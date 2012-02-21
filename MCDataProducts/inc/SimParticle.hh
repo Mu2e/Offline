@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.8 2012/02/20 20:23:55 onoratog Exp $
+// $Id: SimParticle.hh,v 1.9 2012/02/21 21:19:14 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/20 20:23:55 $
+// $Date: 2012/02/21 21:19:14 $
 //
 // Original author Rob Kutschke
 //
@@ -187,7 +187,7 @@ namespace mu2e {
     unsigned     endG4Status()    const { return _endG4Status;   }
     ProcessCode  stoppingCode()   const { return _stoppingCode;  }
     double       preLastStepKineticEnergy() const { return _preLastStepKE; }
-    int          nMCStepPoints()  const { return _nSteps;        }
+    int          nSteps()  const { return _nSteps;        }
 
     // SimParticle indices of daughters of this track.
     std::vector<key_type>               const& daughterIds() const { return _daughterIds;}

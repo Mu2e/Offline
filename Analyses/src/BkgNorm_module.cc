@@ -1,9 +1,9 @@
 //
 // A module to evaluate the normalization of background to simulate
 //
-// $Id: BkgNorm_module.cc,v 1.9 2012/02/20 20:24:46 onoratog Exp $
+// $Id: BkgNorm_module.cc,v 1.10 2012/02/21 21:19:14 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/20 20:24:46 $
+// $Date: 2012/02/21 21:19:14 $
 //
 // Original author Gianni Onorato
 //
@@ -342,7 +342,7 @@ namespace mu2e {
       tntpArray[idx++] = sim.endPosition().getZ();
       tntpArray[idx++] = sim.endGlobalTime();
       tntpArray[idx++] = sim.preLastStepKineticEnergy();
-      tntpArray[idx++] = sim.nMCStepPoints();
+      tntpArray[idx++] = sim.nSteps();
 
       int nEvolutionSteps = 0;
       SimParticleCollection::key_type Dau1Idx = SimParticleCollection::key_type(0);
@@ -524,7 +524,7 @@ namespace mu2e {
         cntpArray[idx++] = sim.endPosition().getZ();
         cntpArray[idx++] = sim.endGlobalTime();
         cntpArray[idx++] = sim.preLastStepKineticEnergy();
-        cntpArray[idx++] = sim.nMCStepPoints();
+        cntpArray[idx++] = sim.nSteps();
 
         int nEvolutionSteps = 0;
         SimParticleCollection::key_type Dau1Idx = SimParticleCollection::key_type(0);
