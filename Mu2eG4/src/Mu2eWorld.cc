@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.118 2012/02/21 22:25:02 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.119 2012/02/21 22:25:46 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:25:02 $
+// $Date: 2012/02/21 22:25:46 $
 //
 // Original author Rob Kutschke
 //
@@ -157,7 +157,7 @@ namespace mu2e {
 
   // This is the callback called by G4 via G4VPhysicalVolume* WorldMaker::Construct()
   G4VPhysicalVolume * Mu2eWorld::construct(){
-    
+
     _helper = &(*(art::ServiceHandle<G4Helper>()));
 
     // Get access to the master geometry system and its run time config.
@@ -167,19 +167,19 @@ namespace mu2e {
     // Construct all of the Mu2e world, hall, detectors, beamline ...
     return constructWorld();
   }
-  
+
   // Construct all of the Mu2e world, hall, detectors, beamline ...
   G4VPhysicalVolume * Mu2eWorld::constructWorld(){
-    
+
     _verbosityLevel = _config->getInt("world.verbosityLevel", 0);
     art::ServiceHandle<GeometryService> geom;
 
     // If you play with the order of these calls, you may break things.
     GeomHandle<WorldG4> worldGeom;
     if ( _config->getBool("hasITracker",false) ) {
-      ITGasLayerSD::setMu2eDetCenterInWorld( 
-					    GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() + worldGeom->mu2eOriginInWorld() 
-					    - G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0)) );
+      ITGasLayerSD::setMu2eDetCenterInWorld(
+                                            GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() + worldGeom->mu2eOriginInWorld()
+                                            - G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0)) );
     }
 
     instantiateSensitiveDetectors();
@@ -342,7 +342,7 @@ namespace mu2e {
   // the relevant volumes or to the world
 
   void Mu2eWorld::constructBFieldAndManagers(){
-    
+
     GeomHandle<WorldG4> worldGeom;
 
     // Get some information needed further
@@ -371,13 +371,13 @@ namespace mu2e {
       // Handle to the BField manager.
       GeomHandle<BFieldManager> bfMgr;
       _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue()*CLHEP::tesla, worldGeom->mu2eOriginInWorld() );
-      
+
       // Create field manager for the gradient field in DS3
       if( fabs(bfMgr->getDSGradientValue().z())>1.0e-9 ) {
-	needDSGradient = true;
-	_dsGradient = FieldMgr::forGradientField( bfMgr->getDSUniformValue().z()*CLHEP::tesla,
-						  bfMgr->getDSGradientValue().z()*CLHEP::tesla/CLHEP::m,
-						  beamZ0 );
+        needDSGradient = true;
+        _dsGradient = FieldMgr::forGradientField( bfMgr->getDSUniformValue().z()*CLHEP::tesla,
+                                                  bfMgr->getDSGradientValue().z()*CLHEP::tesla/CLHEP::m,
+                                                  beamZ0 );
       }
     }
 
@@ -415,17 +415,17 @@ namespace mu2e {
     }
     if ( dsFieldForm == dsModelUniform || dsFieldForm == dsModelSplit ){
       if( needDSGradient ) {
-	ds3Vacuum->SetFieldManager( _dsGradient->manager(), true);
-	cout << "Use gradient field in DS3" << endl;
+        ds3Vacuum->SetFieldManager( _dsGradient->manager(), true);
+        cout << "Use gradient field in DS3" << endl;
       } else {
-	ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
-	cout << "Use uniform field in DS3" << endl;
+        ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
+        cout << "Use uniform field in DS3" << endl;
       }
       /*
       if( _config->getBool("hasMBS",false) ) {
-	VolumeInfo const & MBSMotherInfo = _helper->locateVolInfo("MBSMother");
-	G4LogicalVolume* mbsMother = MBSMotherInfo.logical;
-	mbsMother->SetFieldManager(0,true);
+        VolumeInfo const & MBSMotherInfo = _helper->locateVolInfo("MBSMother");
+        G4LogicalVolume* mbsMother = MBSMotherInfo.logical;
+        mbsMother->SetFieldManager(0,true);
       }
       */
     }
@@ -502,7 +502,7 @@ namespace mu2e {
       (**i).SetUserLimits( stepLimit);
     }
 
-    // AG: need to limit step size in these non-vaccum volumes to 
+    // AG: need to limit step size in these non-vaccum volumes to
     // visually validate geometry of the filter channel
     G4LogicalVolume* emfcMagnetAperture = _helper->locateVolInfo("ExtMonFNALFilterMagnetAperture").logical;
     if(emfcMagnetAperture) {
@@ -623,7 +623,7 @@ namespace mu2e {
     StoppingTargetSD* stSD = new StoppingTargetSD(  SensitiveDetectorName::StoppingTarget(),  *_config);
     SDman->AddNewDetector(stSD);
 
-    CRSScintillatorBarSD* sbSD = 
+    CRSScintillatorBarSD* sbSD =
       new CRSScintillatorBarSD(SensitiveDetectorName::CRSScintillatorBar(), *_config);
     SDman->AddNewDetector(sbSD);
 
