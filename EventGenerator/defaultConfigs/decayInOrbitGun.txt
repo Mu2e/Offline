@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: decayInOrbitGun.txt,v 1.3 2012/02/17 03:23:30 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/02/17 03:23:30 $
+// $Id: decayInOrbitGun.txt,v 1.4 2012/02/21 00:07:06 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/21 00:07:06 $
 //
 // Original author Rob Kutschke
 // added DecayInOrbitGun process
@@ -51,6 +51,9 @@ bool decayinorbitGun.doHistograms = true;
 
 // Number of bins in the binned representation of the energy spectrum.
 int decayinorbitGun.nbins = 1000;
+
+// Time folding option. Uncomment to deactivate it.
+// bool FoilParticleGenerator.foldingTimeOption = false;
 
 
 // This tells emacs to view this file in c++ mode.
