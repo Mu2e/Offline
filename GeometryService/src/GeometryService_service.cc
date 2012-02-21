@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.16 2012/01/28 07:19:53 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/01/28 07:19:53 $
+// $Id: GeometryService_service.cc,v 1.17 2012/02/21 22:26:23 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/21 22:26:23 $
 //
 // Original author Rob Kutschke
 //
@@ -45,6 +45,8 @@
 #include "ITrackerGeom/inc/ITrackerMaker.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/CalorimeterMaker.hh"
+#include "BFieldGeom/inc/BFieldConfig.hh"
+#include "BFieldGeom/inc/BFieldConfigMaker.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "BFieldGeom/inc/BFieldManagerMaker.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
@@ -160,15 +162,18 @@ namespace mu2e {
       ExtMonUCI::ExtMonMaker extmon( *_config );
       addDetector( extmon.getDetectorPtr() );
     }
-    
+
     if(_config->getBool("hasVirtualDetector",false)){
       VirtualDetectorMaker vdm( *_config );
       addDetector( vdm.getVirtualDetectorPtr() );
     }
 
     if(_config->getBool("hasBFieldManager",false)){
-      BFieldManagerMaker bfmgr( *_config);
-      addDetector( bfmgr.getBFieldManager() );
+
+      std::auto_ptr<BFieldConfig> bfc(BFieldConfigMaker( *_config).getBFieldConfig());
+      BFieldManagerMaker bfmgr(*bfc);
+      addDetector(bfc);
+      addDetector(bfmgr.getBFieldManager());
     }
   }
 

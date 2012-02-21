@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.119 2012/02/21 22:25:46 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.120 2012/02/21 22:26:23 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:25:46 $
+// $Date: 2012/02/21 22:26:23 $
 //
 // Original author Rob Kutschke
 //
@@ -74,6 +74,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/Mu2eBuilding.hh"
+#include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
@@ -356,27 +357,23 @@ namespace mu2e {
     G4ThreeVector ds2Z0 = ds2VacuumVacInfo.centerInWorld;
     G4ThreeVector beamZ0( ds2Z0.x(), ds2Z0.y(), ds2Z0.z()+ds2HL );
 
-    // Figure out which magnetic field managers are needed.
-    int dsFieldForm    = _config->getInt("detSolFieldForm", dsModelUniform);
-
     // Decide on the G4 Stepper
-
-    bool needDSUniform = (dsFieldForm == dsModelSplit || dsFieldForm == dsModelUniform );
+    GeomHandle<BFieldConfig> bfconf;
+    bool needDSUniform = (bfconf->dsFieldForm() == BFieldConfig::dsModelSplit || bfconf->dsFieldForm() == BFieldConfig::dsModelUniform );
     bool needDSGradient = false;
 
     string stepper = _config->getString("g4.stepper","G4SimpleRunge");
 
     // Create field manager for the uniform DS field.
-    if ( needDSUniform){
-      // Handle to the BField manager.
-      GeomHandle<BFieldManager> bfMgr;
-      _dsUniform = FieldMgr::forUniformField( bfMgr->getDSUniformValue()*CLHEP::tesla, worldGeom->mu2eOriginInWorld() );
+    if (needDSUniform) {
+
+      _dsUniform = FieldMgr::forUniformField( bfconf->getDSUniformValue()*CLHEP::tesla, worldGeom->mu2eOriginInWorld() );
 
       // Create field manager for the gradient field in DS3
-      if( fabs(bfMgr->getDSGradientValue().z())>1.0e-9 ) {
+      if(bfconf->dsFieldForm() == BFieldConfig::dsModelSplit) {
         needDSGradient = true;
-        _dsGradient = FieldMgr::forGradientField( bfMgr->getDSUniformValue().z()*CLHEP::tesla,
-                                                  bfMgr->getDSGradientValue().z()*CLHEP::tesla/CLHEP::m,
+        _dsGradient = FieldMgr::forGradientField( bfconf->getDSUniformValue().z()*CLHEP::tesla,
+                                                  bfconf->getDSGradientValue().z()*CLHEP::tesla/CLHEP::m,
                                                   beamZ0 );
       }
     }
@@ -409,11 +406,11 @@ namespace mu2e {
 
     // Define uniform field region in the detector solenoid, if neccessary
 
-    if (dsFieldForm == dsModelUniform  ){
+    if (bfconf->dsFieldForm() == BFieldConfig::dsModelUniform  ){
       ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
       cout << "Use uniform field in DS2" << endl;
     }
-    if ( dsFieldForm == dsModelUniform || dsFieldForm == dsModelSplit ){
+    if (bfconf->dsFieldForm() == BFieldConfig::dsModelUniform || bfconf->dsFieldForm() == BFieldConfig::dsModelSplit){
       if( needDSGradient ) {
         ds3Vacuum->SetFieldManager( _dsGradient->manager(), true);
         cout << "Use gradient field in DS3" << endl;

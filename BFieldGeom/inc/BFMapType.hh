@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for magnetic field types.
 //
-// $Id: BFMapType.hh,v 1.6 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: BFMapType.hh,v 1.7 2012/02/21 22:26:23 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/21 22:26:23 $
 //
 // Original author Rob Kutschke
 //
@@ -23,7 +23,7 @@
 //    So there is no isValid() member function.
 //
 
-#include <iosfwd>
+#include <iostream>
 #include <string>
 
 namespace mu2e {

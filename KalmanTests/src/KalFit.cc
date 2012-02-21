@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.16 2012/02/17 23:15:40 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/02/17 23:15:40 $
+// $Id: KalFit.cc,v 1.17 2012/02/21 22:26:23 gandr Exp $
+// $Author: gandr $ 
+// $Date: 2012/02/21 22:26:23 $
 //
 
 // the following has to come before other BaBar includes
@@ -13,7 +13,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
+#include "BFieldGeom/inc/BFieldConfig.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -448,8 +448,8 @@ namespace mu2e
   KalFit::bField() {
     if(_bfield == 0){
 // create a wrapper around the mu2e nominal DS field
-      GeomHandle<BFieldManager> bfMgr;
-      _bfield=new BFieldFixed(bfMgr->getDSUniformValue());
+      GeomHandle<BFieldConfig> bfconf;
+      _bfield=new BFieldFixed(bfconf->getDSUniformValue());
       assert(_bfield != 0);
     }
     return _bfield;

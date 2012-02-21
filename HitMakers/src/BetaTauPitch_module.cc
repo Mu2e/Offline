@@ -6,9 +6,9 @@
 // Starts from ReadDPIStrawCluster_plugin.cc, adding the quantities of
 // interest to these angles, and gradually eliminating the rest.
 //
-// $Id: BetaTauPitch_module.cc,v 1.13 2012/01/08 17:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/01/08 17:52:03 $
+// $Id: BetaTauPitch_module.cc,v 1.14 2012/02/21 22:26:23 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/21 22:26:23 $
 //
 // Original author: Mark Fischler modifying code by Hans Wenzel
 //
@@ -48,7 +48,7 @@
 #include "TVirtualFitter.h"
 
 // Mu2e includes.
-#include "BFieldGeom/inc/BFieldManager.hh"
+#include "BFieldGeom/inc/BFieldConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -461,8 +461,8 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     //
     if (!magset)
       {
-        GeomHandle<BFieldManager> bfMgr;
-        B= bfMgr->getDSUniformValue();
+        GeomHandle<BFieldConfig> bfconf;
+        B= bfconf->getDSUniformValue();
         cout << " B-field (getDSUniformValue()):  " <<B<<endl;
         Bmagnet=B.getZ();
         magset=true;

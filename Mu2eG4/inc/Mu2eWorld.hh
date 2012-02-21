@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.39 2012/01/26 21:57:12 genser Exp $
-// $Author: genser $
-// $Date: 2012/01/26 21:57:12 $
+// $Id: Mu2eWorld.hh,v 1.40 2012/02/21 22:26:23 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/21 22:26:23 $
 //
 // Original author Rob Kutschke
 //
@@ -83,12 +83,6 @@ namespace mu2e {
 
     // Stash a pointer to the config object so that all methods can get at it easily.
     SimpleConfig const* _config;
-
-    // Models of the DS magnetic field:
-    // 0 - whole DS uses the field map.
-    // 1 - upstream uses the full field map; downstream uses a uniform field.
-    // 2 - whole DS uses a uniform field.
-    enum DSFieldModel { dsModelFull, dsModelSplit, dsModelUniform};
 
     // Field managers for the different regions of magnetic field.
     // These have a lifetime equal to that of the G4 geometry.

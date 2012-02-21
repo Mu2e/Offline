@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.27 2012/02/21 22:25:28 gandr Exp $
+// $Id: BFieldManagerMaker.cc,v 1.28 2012/02/21 22:26:23 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:25:28 $
+// $Date: 2012/02/21 22:26:23 $
 //
 
 // Includes from C++
@@ -32,6 +32,7 @@
 // Includes from Mu2e
 #include "BFieldGeom/inc/BFieldManagerMaker.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
+#include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/DiskRecord.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "GeneralUtilities/inc/MinMax.hh"
@@ -72,96 +73,41 @@ namespace mu2e {
     }
   }
 
-  BFieldManagerMaker::BFieldManagerMaker( const SimpleConfig& config ):
+  BFieldManagerMaker::BFieldManagerMaker(const BFieldConfig& config) :
     _resolveFullPath(),
-    _config(config),
     _bfmgr(new BFieldManager())
   {
+    if(config.mapType() == BFMapType::GMC) {
 
-    _bfmgr->_xOffset =_config.getDouble("mu2e.solenoidOffset");
-
-    string format = _config.getString("bfield.format","GMC");
-
-    if( format=="GMC" ) {
-
-      // These maps require torus radius of 2926 mm
-      std::string torusName("toyTS.rTorus");
-      const double torusRadius = 2926.0; // Required number
-      if( fabs(_config.getDouble(torusName,0.0)-torusRadius)>0.1 ){
-        throw cet::exception("GEOM")
-          << "The GMC magnetic field files require torus radius of 2926 mm."
-          << " Check " << torusName << " value in the config file."
-          << " Maps are not loaded.\n";
+      // Add the field maps.
+      for(unsigned i=0; i<config.gmcDimensions().size(); ++i) {
+        loadGMC(basename(config.outerMapFiles()[i]),
+                _resolveFullPath(config.outerMapFiles()[i]),
+                config.gmcDimensions()[i],
+                config.scaleFactor()
+                );
       }
 
-      _bfmgr->_type   = BFMapType::GMC;
-      _bfmgr->_rTorus = torusRadius;
+    } else if(config.mapType() == BFMapType::G4BL) {
 
-      // Add the DS, TS and PS field maps.
-      loadGMC( "DS", "bfield.dsFile", "bfield.dsDimensions" );
-      loadGMC( "TS", "bfield.tsFile", "bfield.tsDimensions" );
-      loadGMC( "PS", "bfield.psFile", "bfield.psDimensions" );
-
-      //throw cet::exception("GEOM") << "Temporal end." << "\n";
-
-    } else if( format=="G4BL" ) {
-
-      // These maps require torus radius of 2929 mm
-      std::string torusName("toyTS.rTorus");
-      const double torusRadius = 2929.0; // Required number
-      if( fabs(_config.getDouble(torusName,0.0)-torusRadius)>0.1 ){
-        throw cet::exception("GEOM")
-          << "The G4BL magnetic field files require torus radius of 2929 mm."
-          << " Check " << torusName << " value in the config file."
-          << " Maps are not loaded.\n";
-      }
-      _bfmgr->_type   = BFMapType::G4BL;
-      _bfmgr->_rTorus = torusRadius;
-
-      // Read list of files with maps from the config file
-      // The list can be specified directly with
-      // bfield.files = { ... }
-      // or using old style bfield.dsFile=... etc.
-
-      vector<string> filesToLoad;
-      if ( config.hasName("bfield.files") ){
-        config.getVectorString("bfield.files",filesToLoad);
-      } else {
-
-        // This form is deprecated.
-        vector<string> keysToLoad;
-        keysToLoad.push_back("bfield.dsFile");
-        keysToLoad.push_back("bfield.psFile");
-        keysToLoad.push_back("bfield.tsuFile");
-        keysToLoad.push_back("bfield.tsdFile");
-        for( unsigned int i=0; i<keysToLoad.size(); ++i ) {
-          if ( ! _config.hasName(keysToLoad[i]) ){
-            cout << "No magnetic field file specified for: "
-                 << keysToLoad[i]
-                 << "   Hope that's OK." << endl;
-          } else {
-            filesToLoad.push_back(_config.getString(keysToLoad[i]));
-          }
-        }
-      }
-
-      bool writeBinaries = _config.getBool("bfield.writeG4BLBinaries", false);
-      for( unsigned int i=0; i<filesToLoad.size(); ++i ) {
-        string filename = filesToLoad[i];
-        cout << "Read " << filename << endl;
-        std::string mapkey = basename(filename);
-        loadG4BL( mapkey,  filename  );
-        if( writeBinaries ){
-          writeG4BLBinary(mapkey);
-        }
-      }
+      loadG4BL(config.innerMapFiles(), config.scaleFactor());
+      loadG4BL(config.outerMapFiles(), config.scaleFactor());
 
     } else {
 
       throw cet::exception("GEOM")
-        << "Unknown format of file with magnetic field maps: " << format
+        << "Unknown format of file with magnetic field maps: " << config.mapType()
         << "\n";
 
+    }
+
+    if( config.writeBinaries()) {
+      for(BFieldManager::MapContainerType::const_iterator i = _bfmgr->getMapContainer().begin();
+          i != _bfmgr->getMapContainer().end();
+          ++i)
+        {
+          writeG4BLBinary(i->second, i->first + ".bin");
+        }
     }
 
     // For debug purposes: print the field in the target region
@@ -171,47 +117,28 @@ namespace mu2e {
          << b.y() << ","
          << b.z() << ")"
          << endl;
-
-    // Special case for the uniform DS field.
-    loadUniformDS();
-
-  }
-
-  BFieldManagerMaker::~BFieldManagerMaker(){
   }
 
   // Parse the config file to learn about one magnetic field map.
   // Create an empty map and call the code to load the map from the file.
-  void BFieldManagerMaker::loadGMC( const std::string& key,
-                                    const std::string& fileKey,
-                                    const std::string& dimensionKey ){
-
-    if ( ! _config.hasName(fileKey) ){
-      cout << "No magnetic field file specified for: "
-           << fileKey
-           << "   Hope that's OK." << endl;
-      return;
-    }
-
-    // Get filename and expected dimensions.
-    string filename = _config.getString(fileKey);
-    vector<int> dim;
-    _config.getVectorInt(dimensionKey,dim, 3);
-
-    double scaleFactor(_config.getDouble("bfield.scaleFactor",1.0));
+  void BFieldManagerMaker::loadGMC(const std::string& mapKey,
+                                   const std::string& resolvedFileName,
+                                   const std::vector<int>& dim,
+                                   double scaleFactor)
+  {
+    assert(dim.size() == 3);
 
     // Create an empty map.
-    BFMap& bfmap = _bfmgr->addBFMap( key,
-                                     dim[0],
-                                     dim[1],
-                                     dim[2],
-                                     BFMapType::GMC,
-                                     scaleFactor );
+    BFMap& bfmap = _bfmgr->addBFMap(mapKey,
+                                    dim[0],
+                                    dim[1],
+                                    dim[2],
+                                    BFMapType::GMC,
+                                    scaleFactor
+                                    );
 
     // Fill the map.
-    readGMCMap( filename, bfmap );
-
-    //dsmap.print(std::cout);
+    readGMCMap(resolvedFileName, bfmap);
   }
 
   // Anonymous namespace to hold some helper functions
@@ -344,31 +271,39 @@ namespace mu2e {
 
   } // end anonymous namespace
 
+
+  // Loads a sequence of G4BL files
+  void BFieldManagerMaker::loadG4BL(const BFieldConfig::FileSequenceType& files, double scaleFactor) {
+    typedef BFieldConfig::FileSequenceType::const_iterator Iter;
+
+    for(Iter i = files.begin(); i != files.end(); ++i) {
+      cout << "Reading " << *i << endl;
+      const std::string mapkey = basename(*i);
+      loadG4BL(mapkey, _resolveFullPath(*i), scaleFactor);
+    }
+  }
+
   // Parse the config file to learn about one magnetic field map.
   // Create an empty map and call the code to load the map from the file.
-  void BFieldManagerMaker::loadG4BL( const std::string& key,
-                                     const std::string& filename ) {
-
-    // Find the file under MU2E_SEARCH_PATH
-    string path(_resolveFullPath(filename));
-
+  void BFieldManagerMaker::loadG4BL(const std::string& key,
+                                    const std::string& resolvedFileName,
+                                    double scaleFactor
+                                    )
+  {
     // Extract information from the header.
     vector<double> X0;
     vector<int>    dim;
     vector<double> dX;
     CLHEP::Hep3Vector G4BL_offset;
-    parseG4BLHeader( path, X0, dim, dX, G4BL_offset );
-
-    // Extract information from the run-time configuration.
-    double scaleFactor(_config.getDouble("bfield.scaleFactor",1.0));
+    parseG4BLHeader(resolvedFileName, X0, dim, dX, G4BL_offset);
 
     // Create an empty map.
-    BFMap& dsmap = _bfmgr->addBFMap( key,
-                                     dim[0],
-                                     dim[1],
-                                     dim[2],
-                                     BFMapType::G4BL,
-                                     scaleFactor );
+    BFMap& dsmap = _bfmgr->addBFMap(key,
+                                    dim[0],
+                                    dim[1],
+                                    dim[2],
+                                    BFMapType::G4BL,
+                                    scaleFactor );
 
     // Set defined region for the map
     dsmap.setLimits(X0[0],X0[0]+(dim[0]-1)*dX[0],
@@ -376,14 +311,11 @@ namespace mu2e {
                     X0[2],X0[2]+(dim[2]-1)*dX[2]);
 
     // Fill the map from the disk file.
-    if ( filename.find(".header") != string::npos ) {
-      readG4BLBinary( filename, dsmap );
+    if (resolvedFileName.find(".header") != string::npos ) {
+      readG4BLBinary(resolvedFileName, dsmap);
     } else {
-      readG4BLMap( filename, dsmap, G4BL_offset );
+      readG4BLMap(resolvedFileName, dsmap, G4BL_offset);
     }
-
-    //dsmap.print(std::cout);
-
   }
 
   //
@@ -724,21 +656,15 @@ namespace mu2e {
 
   } // end BFieldManagerMaker::readG4BLBinary
 
-  void BFieldManagerMaker::writeG4BLBinary(std::string const& key){
-    const std::string outputfile(key + ".bin");
-
-    // Get the map to be written out.
-    const BFMap& bf = _bfmgr->getMapByName(key);
-
+  void BFieldManagerMaker::writeG4BLBinary(const BFMap& bf, const std::string& outputfile) {
     // Number of points in each big array.
     int nPoints = bf.nx()*bf.ny()*bf.nz();
 
     // Number of bytes in each big array.
     size_t nBytes = sizeof(CLHEP::Hep3Vector)*nPoints;
 
-    cout << "Writing G4BL Magnetic field map in binary format: "
-         << "map key: " << key
-         << "file: " << outputfile
+    cout << "Writing G4BL Magnetic field map in binary format to file: "
+         << outputfile
          << endl;
 
     // A marker to catch endian mismatch on readback.
@@ -795,7 +721,7 @@ namespace mu2e {
 
     close(fd);
 
-    cout << "Writing complete for map key: " << key << endl;
+    cout << "Writing complete for file: " << outputfile << endl;
 
   }  // end BFieldManagerMaker::writeG4BLBinary
 
@@ -819,18 +745,6 @@ namespace mu2e {
     // Compute number of records.
     int nrecords  = info.st_size / sizeof(DiskRecord);
     return nrecords;
-  }
-
-  void BFieldManagerMaker::loadUniformDS(){
-    double bz = _config.getDouble("toyDS.bz", 0.);
-    double scaleFactor(_config.getDouble("bfield.scaleFactor",1.0));
-
-    _bfmgr->_dsUniformValue = CLHEP::Hep3Vector( 0., 0., bz*scaleFactor);
-
-    double grad = _config.getDouble("toyDS.gradient", 0.);
-
-    _bfmgr->_dsGradientValue = CLHEP::Hep3Vector( 0., 0., grad*scaleFactor);
-
   }
 
 } // end namespace mu2e

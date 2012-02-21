@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.12 2012/02/21 22:25:28 gandr Exp $
+// $Id: BFieldManager.cc,v 1.13 2012/02/21 22:26:23 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:25:28 $
+// $Date: 2012/02/21 22:26:23 $
 //
 
 // Includes from C++
@@ -20,12 +20,7 @@ using namespace std;
 
 namespace mu2e {
 
-  BFieldManager::BFieldManager():
-    _dsUniformValue(), _last_map(0) {
-  }
-
-  BFieldManager::~BFieldManager(){
-  }
+  BFieldManager::BFieldManager() : _last_map(0) {}
 
   // Check if point belongs to any map
   bool BFieldManager::isValid(CLHEP::Hep3Vector const& point) const {

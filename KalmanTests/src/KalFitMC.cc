@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.16 2012/02/17 23:15:40 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/02/17 23:15:40 $
+// $Id: KalFitMC.cc,v 1.17 2012/02/21 22:26:23 gandr Exp $
+// $Author: gandr $ 
+// $Date: 2012/02/21 22:26:23 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -11,7 +11,7 @@
 #include "VirtualDetectorGeom/inc/VirtualDetector.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
+#include "BFieldGeom/inc/BFieldConfig.hh"
 // services
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
@@ -151,7 +151,7 @@ namespace mu2e
         }
         if(indices.size() >= _minnhits && indices.size() <= _maxnhits){
 // nominal magnetic field.
-          GeomHandle<BFieldManager> bfMgr;
+          GeomHandle<BFieldConfig> bfconf;
           HepVector parvec(5,0);
 // Babar interface still uses HepPoint: FIXME!!!!
 // use the z component of th enominal field to define the initial helix parameters.  Off-axis terms are
@@ -159,7 +159,7 @@ namespace mu2e
           double hflt(0.0);
           TrkHelixUtils::helixFromMom( parvec, hflt, 
             HepPoint(pos.x(),pos.y(),pos.z()),
-            mom,charge,bfMgr->getDSUniformValue().z());
+            mom,charge,bfconf->getDSUniformValue().z());
   // dummy covariance matrix; this should be set according to measured values, FIXME!!!!!
           HepSymMatrix dummy(5,1); 
           dummy(1,1)=1.; dummy(2,2)=0.1*0.1;dummy(3,3)=1e-2*1e-2;
@@ -358,7 +358,7 @@ namespace mu2e
   }
 
   void KalFitMC::mcTrkInfo() {
-    GeomHandle<BFieldManager> bfMgr;
+    GeomHandle<BFieldConfig> bfconf;
 // find the mc info at the entrance to the detector
     std::vector<MCStepItr> steps;
     GeomHandle<VirtualDetector> vdg;
@@ -378,7 +378,7 @@ namespace mu2e
       HepVector mcpar(5,0);
       TrkHelixUtils::helixFromMom( mcpar, mclen,
         HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
-        mcmom,-1.,bfMgr->getDSUniformValue().z());
+        mcmom,-1.,bfconf->getDSUniformValue().z());
       _mcentmom = imcs->momentum().mag();
       _mcentpar = helixpar(mcpar);
       _mcentt0 = imcs->time();
@@ -399,7 +399,7 @@ namespace mu2e
       HepVector mcpar(5,0);
       TrkHelixUtils::helixFromMom( mcpar, mclen,
         HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
-        mcmom,-1.,bfMgr->getDSUniformValue().z());
+        mcmom,-1.,bfconf->getDSUniformValue().z());
       _mcmidmom = imcs->momentum().mag();
       _mcmidpar = helixpar(mcpar);
       _mcmidt0 = imcs->time();
@@ -420,7 +420,7 @@ namespace mu2e
       HepVector mcpar(5,0);
       TrkHelixUtils::helixFromMom( mcpar, mclen,
         HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
-        mcmom,-1.,bfMgr->getDSUniformValue().z());
+        mcmom,-1.,bfconf->getDSUniformValue().z());
       _mcxitmom = imcs->momentum().mag();
       _mcxitpar = helixpar(mcpar);
       _mcxitt0 = imcs->time();
