@@ -3,9 +3,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.hh,v 1.12 2012/02/21 22:25:28 gandr Exp $
+// $Id: BFieldManager.hh,v 1.13 2012/02/21 22:26:02 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:25:28 $
+// $Date: 2012/02/21 22:26:02 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -52,8 +52,10 @@ namespace mu2e {
     // Just return zero for out of range.
     CLHEP::Hep3Vector getBField(const CLHEP::Hep3Vector& pos) const {
       CLHEP::Hep3Vector result;
-      if( getBFieldWithStatus(pos,result) ) return result;
-      else return CLHEP::Hep3Vector(0,0,0);
+      if(!getBFieldWithStatus(pos,result)) {
+        result = CLHEP::Hep3Vector(0,0,0);
+      }
+      return result;  // make sure NRVO can be applied
     }
 
     // Check if point belongs to any map
