@@ -1,9 +1,9 @@
 //
 // G4 interface to the Detector Solenoid full magnetic field.
 //
-// $Id: Mu2eGlobalField.cc,v 1.1 2012/02/21 22:24:49 gandr Exp $
+// $Id: Mu2eGlobalField.cc,v 1.2 2012/02/21 22:25:02 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:24:49 $
+// $Date: 2012/02/21 22:25:02 $
 //
 // Original author Julie Managan and Bob Bernstein
 // Major rewrite by Rob Kutschke at version 1.4
@@ -14,7 +14,6 @@
 
 // Mu2e includes.
 #include "Mu2eG4/inc/Mu2eGlobalField.hh"
-#include "BFieldGeom/inc/BFMapBase.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 
@@ -26,9 +25,8 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eGlobalField::Mu2eGlobalField( std::string name, G4ThreeVector mapOrigin ):
-    _name(name){
-
+  Mu2eGlobalField::Mu2eGlobalField(const G4ThreeVector& mapOrigin)
+  {
     // Load map.
     update(mapOrigin);
   }
@@ -65,7 +63,7 @@ namespace mu2e {
     GeomHandle<BFieldManager> bfMgr;
 
     // Throws if the map is not found.
-    _map = &bfMgr->getMapByName(_name);
+    _map = &*bfMgr;
   }
 
 } // end namespace mu2e

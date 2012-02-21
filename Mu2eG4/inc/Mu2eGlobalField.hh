@@ -3,9 +3,9 @@
 //
 // G4 interface to the Detector Solenoid full magnetic field.
 //
-// $Id: Mu2eGlobalField.hh,v 1.1 2012/02/21 22:24:49 gandr Exp $
+// $Id: Mu2eGlobalField.hh,v 1.2 2012/02/21 22:25:02 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:24:49 $
+// $Date: 2012/02/21 22:25:02 $
 //
 // Original author Julie Managan and Bob Bernstein
 // Major rewrite Rob Kutschke at version 1.4
@@ -20,36 +20,30 @@
 namespace mu2e {
 
   // Forward references
-  class BFMapBase;
+  class BFieldManager;
 
   class Mu2eGlobalField: public G4MagneticField {
 
   public:
 
-    Mu2eGlobalField( std::string name, G4ThreeVector mapOrigin );
+    explicit Mu2eGlobalField(const G4ThreeVector& mapOrigin);
     virtual ~Mu2eGlobalField(){}
 
     // This is called by G4.
     virtual void GetFieldValue(const G4double Point[4],
                                G4double *Bfield) const;
 
-    const std::string& name() const { return _name; }
-
     // Update the map and its origin.  Must be called whenever
     // the map or the offset changes (begin run probably).
     void update( const G4ThreeVector& mapOrigin );
 
   private:
-
-    // Name of this map.
-    std::string _name;
-
     // The map is stored in the Mu2e coordinate system.
     // This is the location of the origin the Mu2e system, measured in the G4 world system.
     G4ThreeVector _mapOrigin;
 
     // Non-owning pointer to the field map object (it is owned by the geometry service).
-    const BFMapBase* _map;
+    const BFieldManager* _map;
 
   };
 }

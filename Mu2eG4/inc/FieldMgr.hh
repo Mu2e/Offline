@@ -4,9 +4,9 @@
 // Create a G4FieldManager object. Provide accessors to the field manager
 // and to the parts from which it is made.
 //
-// $Id: FieldMgr.hh,v 1.7 2012/02/21 22:24:49 gandr Exp $
+// $Id: FieldMgr.hh,v 1.8 2012/02/21 22:25:02 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:24:49 $
+// $Date: 2012/02/21 22:25:02 $
 //
 // Original author Rob Kutschke
 //
@@ -90,7 +90,7 @@ namespace mu2e {
 
       std::auto_ptr<FieldMgr> mgr(new FieldMgr() );
 
-      mgr->_field       = std::auto_ptr<G4MagneticField>        (new Mu2eGlobalField  ( fieldName, mu2eOrigin) );
+      mgr->_field       = std::auto_ptr<G4MagneticField>        (new Mu2eGlobalField  ( mu2eOrigin) );
       mgr->_rhs         = std::auto_ptr<G4Mag_UsualEqRhs>       (new G4Mag_UsualEqRhs ( mgr->field()) );
       mgr->_integrator  = std::auto_ptr<G4MagIntegratorStepper> (new INTEGRATOR       ( mgr->rhs()) );
       mgr->_chordFinder = std::auto_ptr<G4ChordFinder>          (new G4ChordFinder    ( mgr->field(),
