@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.26 2012/02/16 04:59:38 gandr Exp $
+// $Id: BFieldManagerMaker.cc,v 1.27 2012/02/21 22:25:28 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/16 04:59:38 $
+// $Date: 2012/02/21 22:25:28 $
 //
 
 // Includes from C++
@@ -728,7 +728,7 @@ namespace mu2e {
     const std::string outputfile(key + ".bin");
 
     // Get the map to be written out.
-    BFMap const& bf = _bfmgr->getContainedMapByName(key);
+    const BFMap& bf = _bfmgr->getMapByName(key);
 
     // Number of points in each big array.
     int nPoints = bf.nx()*bf.ny()*bf.nz();

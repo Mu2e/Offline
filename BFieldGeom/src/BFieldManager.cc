@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.11 2012/02/11 00:43:11 gandr Exp $
+// $Id: BFieldManager.cc,v 1.12 2012/02/21 22:25:28 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/11 00:43:11 $
+// $Date: 2012/02/21 22:25:28 $
 //
 
 // Includes from C++
@@ -21,7 +21,7 @@ using namespace std;
 namespace mu2e {
 
   BFieldManager::BFieldManager():
-    _key(""), _dsUniformValue(), _last_map(0) {
+    _dsUniformValue(), _last_map(0) {
   }
 
   BFieldManager::~BFieldManager(){
@@ -69,17 +69,7 @@ namespace mu2e {
   }
 
   // Get an arbitrary map, throw if it cannot be found.
-  // Search includes the manager class itself.
-  const BFMapBase& BFieldManager::getMapByName( const std::string& key ) const{
-
-    if( key == _key ) return (*this);
-    return getContainedMapByName(key);
-
-  }
-
-  // Get an arbitrary map, throw if it cannot be found.
-  // Search excludes the manager class itself.
-  const BFMap& BFieldManager::getContainedMapByName( const std::string& key ) const{
+  const BFMap& BFieldManager::getMapByName( const std::string& key ) const{
 
     MapContainerType::const_iterator i = _map.find(key);
     if ( i == _map.end() ){
@@ -117,14 +107,6 @@ namespace mu2e {
   }
 
   void BFieldManager::print( ostream& out){
-    if ( _key.empty() ) {
-      cout << "BFieldManager key name is the empty string."
-           << endl;
-    } else{
-      cout << "BFieldManager key name is the empty string."
-           << _key
-           << endl;
-    }
     for ( MapContainerType::iterator i =_map.begin();
           i != _map.end(); ++i ){
       i->second.print(out);

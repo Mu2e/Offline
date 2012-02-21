@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.14 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: BFMap.cc,v 1.15 2012/02/21 22:25:28 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/21 22:25:28 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -33,9 +33,6 @@
 using namespace std;
 
 namespace mu2e {
-
-  // Destructor
-  BFMap::~BFMap(){}
 
   // function to determine if the point is in the map; take into account Y-symmetry
   bool BFMap::isValid(CLHEP::Hep3Vector const& point) const{

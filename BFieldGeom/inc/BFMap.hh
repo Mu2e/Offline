@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.12 2011/05/18 02:27:14 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:14 $
+// $Id: BFMap.hh,v 1.13 2012/02/21 22:25:28 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/21 22:25:28 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -16,13 +16,12 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
-#include "BFieldGeom/inc/BFMapBase.hh"
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/Container3D.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
-  class BFMap : public BFMapBase {
+  class BFMap {
 
   public:
 
@@ -75,8 +74,6 @@ namespace mu2e {
       _type(atype),
       _scaleFactor(scale){
     };
-
-    virtual ~BFMap();
 
     // Accessors
     bool getBFieldWithStatus(const CLHEP::Hep3Vector &, CLHEP::Hep3Vector &) const;

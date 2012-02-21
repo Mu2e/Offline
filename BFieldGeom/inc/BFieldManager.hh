@@ -3,9 +3,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.hh,v 1.11 2012/02/11 00:43:11 gandr Exp $
+// $Id: BFieldManager.hh,v 1.12 2012/02/21 22:25:28 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/11 00:43:11 $
+// $Date: 2012/02/21 22:25:28 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -23,13 +23,12 @@
 
 // Includes from Mu2e
 #include "GeometryService/inc/Detector.hh"
-#include "BFieldGeom/inc/BFMapBase.hh"
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/BFMap.hh"
 
 namespace mu2e {
 
-  class BFieldManager : public Detector, public BFMapBase {
+  class BFieldManager : public Detector {
 
   public:
 
@@ -44,23 +43,24 @@ namespace mu2e {
 
     // Copying disabled - see below.
 
-    std::string name() const { return "BFieldManager";}
+    // Implement the Detector method
+    virtual std::string name() const { return "BFieldManager";}
 
     // Get field at an arbitrary point.
     bool getBFieldWithStatus(const CLHEP::Hep3Vector &, CLHEP::Hep3Vector& ) const;
 
+    // Just return zero for out of range.
+    CLHEP::Hep3Vector getBField(const CLHEP::Hep3Vector& pos) const {
+      CLHEP::Hep3Vector result;
+      if( getBFieldWithStatus(pos,result) ) return result;
+      else return CLHEP::Hep3Vector(0,0,0);
+    }
+
     // Check if point belongs to any map
     bool isValid(CLHEP::Hep3Vector const& point) const;
 
-    // The identifier for treating the BFieldManager as a field map itself.
-    const std::string& getKey() const { return _key; };
-
     // Get an arbitrary map.  Throw if it cannot be found.
-    const BFMapBase& getMapByName( const std::string& key ) const;
-
-    // Get one of the contained maps (not the manager itself).  Throw if it cannot be found.
-    // Return the BFMap interface, not the BFMapBase interface.
-    const BFMap& getContainedMapByName( const std::string& key ) const;
+    const BFMap& getMapByName( const std::string& key ) const;
 
     // The uniform field in the DS is a special case.
     const CLHEP::Hep3Vector getDSUniformValue() const{
@@ -86,9 +86,6 @@ namespace mu2e {
     void print( std::ostream& out );
 
   private:
-
-    // Name of the manager
-    std::string _key;
 
     MapContainerType _map;
 
