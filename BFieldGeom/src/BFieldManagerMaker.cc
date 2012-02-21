@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.28 2012/02/21 22:26:23 gandr Exp $
+// $Id: BFieldManagerMaker.cc,v 1.29 2012/02/21 22:26:40 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:26:23 $
+// $Date: 2012/02/21 22:26:40 $
 //
 
 // Includes from C++
@@ -34,7 +34,6 @@
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/DiskRecord.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "GeneralUtilities/inc/MinMax.hh"
 
 // CLHEP includes
@@ -90,8 +89,8 @@ namespace mu2e {
 
     } else if(config.mapType() == BFMapType::G4BL) {
 
-      loadG4BL(config.innerMapFiles(), config.scaleFactor());
-      loadG4BL(config.outerMapFiles(), config.scaleFactor());
+      loadG4BL(&_bfmgr->innerMaps_, config.innerMapFiles(), config.scaleFactor());
+      loadG4BL(&_bfmgr->outerMaps_, config.outerMapFiles(), config.scaleFactor());
 
     } else {
 
@@ -101,12 +100,24 @@ namespace mu2e {
 
     }
 
+    _bfmgr->cm_.setMaps(_bfmgr->innerMaps_, _bfmgr->outerMaps_);
+
+    // The field manager is fully initialized.
+    // Some extra stuff that is convenient to do here:
+
     if( config.writeBinaries()) {
-      for(BFieldManager::MapContainerType::const_iterator i = _bfmgr->getMapContainer().begin();
-          i != _bfmgr->getMapContainer().end();
+      for(BFieldManager::MapContainerType::const_iterator i = _bfmgr->getInnerMaps().begin();
+          i != _bfmgr->getInnerMaps().end();
           ++i)
         {
-          writeG4BLBinary(i->second, i->first + ".bin");
+          writeG4BLBinary(*i, i->getKey() + ".bin");
+        }
+
+      for(BFieldManager::MapContainerType::const_iterator i = _bfmgr->getOuterMaps().begin();
+          i != _bfmgr->getOuterMaps().end();
+          ++i)
+        {
+          writeG4BLBinary(*i, i->getKey() + ".bin");
         }
     }
 
@@ -129,7 +140,8 @@ namespace mu2e {
     assert(dim.size() == 3);
 
     // Create an empty map.
-    BFMap& bfmap = _bfmgr->addBFMap(mapKey,
+    BFMap& bfmap = _bfmgr->addBFMap(&_bfmgr->outerMaps_,
+                                    mapKey,
                                     dim[0],
                                     dim[1],
                                     dim[2],
@@ -273,19 +285,23 @@ namespace mu2e {
 
 
   // Loads a sequence of G4BL files
-  void BFieldManagerMaker::loadG4BL(const BFieldConfig::FileSequenceType& files, double scaleFactor) {
+  void BFieldManagerMaker::loadG4BL(BFieldManager::MapContainerType *mapContainer,
+                                    const BFieldConfig::FileSequenceType& files,
+                                    double scaleFactor)
+  {
     typedef BFieldConfig::FileSequenceType::const_iterator Iter;
 
     for(Iter i = files.begin(); i != files.end(); ++i) {
       cout << "Reading " << *i << endl;
       const std::string mapkey = basename(*i);
-      loadG4BL(mapkey, _resolveFullPath(*i), scaleFactor);
+      loadG4BL(mapContainer, mapkey, _resolveFullPath(*i), scaleFactor);
     }
   }
 
   // Parse the config file to learn about one magnetic field map.
   // Create an empty map and call the code to load the map from the file.
-  void BFieldManagerMaker::loadG4BL(const std::string& key,
+  void BFieldManagerMaker::loadG4BL(BFieldManager::MapContainerType *mapContainer,
+                                    const std::string& key,
                                     const std::string& resolvedFileName,
                                     double scaleFactor
                                     )
@@ -298,7 +314,8 @@ namespace mu2e {
     parseG4BLHeader(resolvedFileName, X0, dim, dX, G4BL_offset);
 
     // Create an empty map.
-    BFMap& dsmap = _bfmgr->addBFMap(key,
+    BFMap& dsmap = _bfmgr->addBFMap(mapContainer,
+                                    key,
                                     dim[0],
                                     dim[1],
                                     dim[2],
@@ -334,10 +351,7 @@ namespace mu2e {
                                        BFMap& bfmap ){
 
     // Open the input file.
-    string path(_resolveFullPath(filename));
-    if( path.empty())
-      throw "BFieldManagerMaker::readGMCMap: find_file failure!";  // TODO: improve exception
-    int fd = open( path.c_str(), O_RDONLY );
+    int fd = open( filename.c_str(), O_RDONLY );
     if ( !fd ) {
       throw cet::exception("GEOM")
         << "Could not open file containing the magnetic filed map for: "
@@ -495,10 +509,7 @@ namespace mu2e {
 
 
     // Open the input file.
-    string path(_resolveFullPath(filename));
-    if(path.empty())
-      throw "BFieldManagerMaker::readG4BLMap: find_file failure!";  // TODO: improve exception
-    ifstream fin(path.c_str());
+    ifstream fin(filename.c_str());
     if ( !fin.is_open() )
       throw cet::exception("GEOM")<<"Could not open file "<<filename<<"\n";
 
@@ -568,15 +579,7 @@ namespace mu2e {
         << headerFilename << "\n";
     }
     string binFilename = headerFilename.substr(0,i);
-    binFilename += ".bin";
-
-    // Resolve filename into a full path.
-    string path(_resolveFullPath(binFilename));
-    if( path.empty() )
-      throw art::Exception(art::errors::FileOpenError)
-        << "BFieldManagerMaker::readG4BLBinary: find_file failure: \n"
-        << binFilename <<  "\n"
-        << path << "\n";
+    binFilename += ".bin"; // bin file should come from the same dir as the header - do not search the path
 
     // Number of points in each big array.
     int nPoints = bf.nx()*bf.ny()*bf.nz();
@@ -585,12 +588,12 @@ namespace mu2e {
     ssize_t nbytes = sizeof(CLHEP::Hep3Vector)*nPoints;
 
     // Open the binary file.
-    int fd = open( path.c_str(), O_RDONLY );
+    int fd = open( binFilename.c_str(), O_RDONLY );
     if ( fd < 0 ) {
       int errsave = errno;
       char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
-        << "BFieldManagerMaker:readG4BLBinary Error opening " << path
+        << "BFieldManagerMaker:readG4BLBinary Error opening " << binFilename
         << "  errno: " << errsave << " " << errmsg << "\n";
     }
 
@@ -607,7 +610,7 @@ namespace mu2e {
       int errsave = errno;
       char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
-        << "BFieldManagerMaker:readG4BLBinary Error reading endian marker from " << path << "\n"
+        << "BFieldManagerMaker:readG4BLBinary Error reading endian marker from " << binFilename << "\n"
         << "Status: " << s0
         << "  errno: " << errsave << " " << errmsg << "\n";
     }
@@ -615,7 +618,7 @@ namespace mu2e {
     static const unsigned int deadbeef(0XDEADBEEF);
     if ( marker != deadbeef ){
       throw cet::exception("GEOM")
-        << "BFieldManagerMaker:readG4BLBinary endian mismatch" << path
+        << "BFieldManagerMaker:readG4BLBinary endian mismatch" << binFilename
         << "  returned value: " << std:: hex << marker
         << "  expected value: " << deadbeef
         << std::dec << "\n"
@@ -629,7 +632,7 @@ namespace mu2e {
       int errsave = errno;
       char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
-        << "BFieldManagerMaker:readG4BLBinary Error reading grid points from " << path << "\n"
+        << "BFieldManagerMaker:readG4BLBinary Error reading grid points from " << binFilename << "\n"
         << "Status: " << s1
         << "  errno: " << errsave << " " << errmsg << "\n";
     }
@@ -640,7 +643,7 @@ namespace mu2e {
       int errsave = errno;
       char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
-        << "BFieldManagerMaker:readG4BLBinary Error reading field values from " << path << "\n"
+        << "BFieldManagerMaker:readG4BLBinary Error reading field values from " << binFilename << "\n"
         << "Status: " << s2
         << "  errno: " << errsave << " " << errmsg << "\n";
     }

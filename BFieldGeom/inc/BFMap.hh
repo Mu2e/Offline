@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.13 2012/02/21 22:25:28 gandr Exp $
+// $Id: BFMap.hh,v 1.14 2012/02/21 22:26:40 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:25:28 $
+// $Date: 2012/02/21 22:26:40 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -114,7 +114,7 @@ namespace mu2e {
     bool _warnIfOutside;
 
     // Grid dimensions
-    const unsigned int _nx, _ny, _nz;
+    unsigned int _nx, _ny, _nz;
 
     // Min and Max values.
     double _xmin, _xmax, _ymin, _ymax, _zmin, _zmax;

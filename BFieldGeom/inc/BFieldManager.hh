@@ -2,10 +2,11 @@
 #define BFieldGeom_BFieldManager_hh
 //
 // Manage all of the magnetic field maps for Mu2e.
+// This class holds the actual field maps, and provides an interface to compute B field.
 //
-// $Id: BFieldManager.hh,v 1.14 2012/02/21 22:26:23 gandr Exp $
+// $Id: BFieldManager.hh,v 1.15 2012/02/21 22:26:40 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:26:23 $
+// $Date: 2012/02/21 22:26:40 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -22,6 +23,7 @@
 #include "GeometryService/inc/Detector.hh"
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/BFMap.hh"
+#include "BFieldGeom/inc/BFCacheManager.hh"
 
 namespace mu2e {
 
@@ -35,7 +37,7 @@ namespace mu2e {
     friend class BFieldManagerMaker;
 
     // Maps for various parts of the detector.
-    typedef  std::map<std::string,BFMap> MapContainerType;
+    typedef  std::vector<BFMap> MapContainerType;
 
     // Implement the Detector method
     virtual std::string name() const { return "BFieldManager";}
@@ -52,25 +54,15 @@ namespace mu2e {
       return result;  // make sure NRVO can be applied
     }
 
-    // Check if point belongs to any map
-    bool isValid(CLHEP::Hep3Vector const& point) const;
-
-    // Get an arbitrary map.  Throw if it cannot be found.
-    const BFMap& getMapByName( const std::string& key ) const;
-
-    // Does this manager have a map with the given key.
-    bool hasMapByName( const std::string key ) const{
-      return ( _map.find(key) != _map.end() );
-    }
-
-    const MapContainerType& getMapContainer() const { return _map; }
+    const MapContainerType& getInnerMaps() const { return innerMaps_; }
+    const MapContainerType& getOuterMaps() const { return outerMaps_; }
 
     void print( std::ostream& out );
 
   private:
     // Private ctr.  An instance of BFieldManager should be obtained
     // via the BFieldManagerMaker class.
-    BFieldManager();
+    BFieldManager() {}
 
     // This class could support copying but it is not really needed and
     // I would like to prevent unintended copies ( people forgetting to
@@ -78,18 +70,23 @@ namespace mu2e {
     BFieldManager( const BFieldManager& );
     BFieldManager& operator=( const BFieldManager& );
 
-    MapContainerType _map;
+    // Make sure map names are unique on the union of inner and outer maps
+    std::set<std::string> mapKeys_;
+
+    MapContainerType innerMaps_;
+    MapContainerType outerMaps_;
 
     // Add an empty map to the list.  Used by BFieldManagerMaker.
-    BFMap& addBFMap( const std::string& key,
-                     int const nx,
-                     int const ny,
-                     int const nz,
-                     BFMapType::enum_type type,
-                     double scaleFactor );
+    BFMap& addBFMap(MapContainerType *whichMap,
+                    const std::string& key,
+                    int const nx,
+                    int const ny,
+                    int const nz,
+                    BFMapType::enum_type type,
+                    double scaleFactor);
 
-    // Use this pointer to cache access to maps collection
-    mutable const BFMap * _last_map;
+    // Handles caching and overlap resolution logic
+    BFCacheManager cm_;
 
   }; // end class BFieldManager
 

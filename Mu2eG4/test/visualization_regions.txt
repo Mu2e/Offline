@@ -7,20 +7,37 @@
 
 //================================================================
 // Visualization of magnetic field map regions
-bool visregions.fieldMaps.visible  = true;
-bool visregions.fieldMaps.solid    = true;
-string visregions.fieldMaps.material = "G4_AIR";
+bool visregions.innerFieldMaps.visible  = true;
+bool visregions.innerFieldMaps.solid    = true;
+string visregions.innerFieldMaps.material = "G4_AIR";
 
 // The color vectors should be non-empty and of the same size.  If
 // there are more field maps than defined colors, the colors are
 // re-used.  If there are more colors, the extra ones are ignored.
-vector<double> visregions.fieldMaps.color.red =   { 1., 0.5, 0.8, 0.6, 0.0, 0.0, 0.0, 1.0};
-vector<double> visregions.fieldMaps.color.green = { 0., 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0};
-vector<double> visregions.fieldMaps.color.blue =  { 0., 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0};
+vector<double> visregions.innerFieldMaps.color.red =   { 1.0, 0.5, 0.8, 0.6, 1.0, 0.5, 0.8, 0.6};
+vector<double> visregions.innerFieldMaps.color.green = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+vector<double> visregions.innerFieldMaps.color.blue =  { 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5};
 
 // If squashY is defined, the Y coordinate of all field maps is
 // ignored and the squashY values {Ymin, Ymax} are used instead.
-vector<double> visregions.fieldMaps.squashY = { -2, 2 };
+vector<double> visregions.innerFieldMaps.squashY = { -2, 2 };
+
+//================================================================
+// Visualization of magnetic field map regions
+bool visregions.outerFieldMaps.visible  = true;
+bool visregions.outerFieldMaps.solid    = true;
+string visregions.outerFieldMaps.material = "G4_AIR";
+
+// The color vectors should be non-empty and of the same size.  If
+// there are more field maps than defined colors, the colors are
+// re-used.  If there are more colors, the extra ones are ignored.
+vector<double> visregions.outerFieldMaps.color.red =   { 0.0, 0.0, 0.0, 1.0};
+vector<double> visregions.outerFieldMaps.color.green = { 1.0, 0.0, 1.0, 0.0};
+vector<double> visregions.outerFieldMaps.color.blue =  { 0.0, 1.0, 1.0, 1.0};
+
+// If squashY is defined, the Y coordinate of all field maps is
+// ignored and the squashY values {Ymin, Ymax} are used instead.
+vector<double> visregions.outerFieldMaps.squashY = { -1, 1 };
 
 //================================================================
 // Add a set of arbitrary boxes.

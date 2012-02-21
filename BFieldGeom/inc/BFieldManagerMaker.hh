@@ -3,9 +3,9 @@
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.10 2012/02/21 22:26:23 gandr Exp $
+// $Id: BFieldManagerMaker.hh,v 1.11 2012/02/21 22:26:40 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:26:23 $
+// $Date: 2012/02/21 22:26:40 $
 //
 
 // Includes from C++
@@ -17,11 +17,11 @@
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 
 #include "BFieldGeom/inc/BFieldConfig.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
 
 namespace mu2e {
 
   // Forward reference.
-  class BFieldManager;
   class BFMap;
 
   class BFieldManagerMaker {
@@ -50,9 +50,9 @@ namespace mu2e {
                  double scaleFactor
                  );
 
-    void loadG4BL(const BFieldConfig::FileSequenceType& files, double scaleFactor);
+    void loadG4BL(BFieldManager::MapContainerType *whichMap, const BFieldConfig::FileSequenceType& files, double scaleFactor);
     // Create a new magnetic field map, get information from config file.
-    void loadG4BL(const std::string& key, const std::string& resolvedFileName, double scaleFactor);
+    void loadG4BL(BFieldManager::MapContainerType *whichMap, const std::string& key, const std::string& resolvedFileName, double scaleFactor);
 
     // Read a MECO GMC format map.
     void readGMCMap( const std::string& filename,

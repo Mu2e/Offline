@@ -40,40 +40,39 @@
 namespace mu2e {
 
   //================================================================
-  void constructVisualizationRegions(const VolumeInfo& worldVolume, const SimpleConfig& config)
+  // reuse same code for both inner and outer maps
+  void processFieldMaps(const VolumeInfo& worldVolume,
+                        const SimpleConfig& config,
+                        const std::string& configPrefix,
+                        const BFieldManager::MapContainerType& maps)
   {
-    GeomHandle<WorldG4> worldGeom;
+    if(config.getBool(configPrefix + "visible", false)) {
 
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = false; // overlaps are OK
-    const bool placePV             = true;
+      GeomHandle<WorldG4> worldGeom;
 
-    const int verbosityLevel = config.getInt("visregions.verbosityLevel", 0);
+      const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+      const bool doSurfaceCheck      = false; // overlaps are OK
+      const bool placePV             = true;
 
-    //----------------------------------------------------------------
-    // Field maps
-    if(config.getBool("visregions.fieldMaps.visible", false)) {
-      const bool solid = config.getBool("visregions.fieldMaps.solid");
+      const int verbosityLevel = config.getInt("visregions.verbosityLevel", 0);
 
-      std::vector<double> red;   config.getVectorDouble("visregions.fieldMaps.color.red", red);
+      const bool solid = config.getBool(configPrefix + "solid");
+
+      std::vector<double> red;   config.getVectorDouble(configPrefix + "color.red", red);
       if(red.empty()) {
-        throw cet::exception("GEOM")<<"constructVisualizationRegions(): visregions.fieldMaps.color.red is empty";
+        throw cet::exception("GEOM")<<"constructVisualizationRegions(): "<<configPrefix<<"color.red is empty";
       }
-      std::vector<double> green; config.getVectorDouble("visregions.fieldMaps.color.green", green, red.size());
-      std::vector<double> blue;  config.getVectorDouble("visregions.fieldMaps.color.blue", blue, red.size());
+      std::vector<double> green; config.getVectorDouble(configPrefix+"color.green", green, red.size());
+      std::vector<double> blue;  config.getVectorDouble(configPrefix+"color.blue", blue, red.size());
 
-      G4Material *material = findMaterialOrThrow(config.getString("visregions.fieldMaps.material"));
+      G4Material *material = findMaterialOrThrow(config.getString(configPrefix+"material"));
 
       std::vector<double> squashY;
-      config.getVectorDouble("visregions.fieldMaps.squashY", squashY, squashY);
+      config.getVectorDouble(configPrefix+"squashY", squashY, squashY);
 
-
-      GeomHandle<BFieldManager> fieldMgr;
-
-      const BFieldManager::MapContainerType& maps = fieldMgr->getMapContainer();
       int mapNumber(0);
       for(BFieldManager::MapContainerType::const_iterator i=maps.begin(); i!=maps.end(); ++i, ++mapNumber) {
-        const BFMap& field = i->second;
+        const BFMap& field = *i;
 
         CLHEP::Hep3Vector mapCenterInMu2e(field.xmin() + field.dx()*(field.nx()-1)/2,
 
@@ -93,7 +92,7 @@ namespace mu2e {
         G4Colour color(red[icolor], green[icolor], blue[icolor]);
 
         std::ostringstream boxname;
-        boxname<<"VisualizationMapBox_"<<i->first;
+        boxname<<"VisualizationMapBox_"<<field.getKey();
 
         if(verbosityLevel) {
           std::cout<<__func__<<": adding "<<boxname.str()<<" = {";
@@ -117,11 +116,28 @@ namespace mu2e {
 
       }
     }
+  }
+
+  //================================================================
+  void constructVisualizationRegions(const VolumeInfo& worldVolume, const SimpleConfig& config)
+  {
+    //----------------------------------------------------------------
+    GeomHandle<BFieldManager> fieldMgr;
+    processFieldMaps(worldVolume, config, "visregions.innerFieldMaps.", fieldMgr->getInnerMaps());
+    processFieldMaps(worldVolume, config, "visregions.outerFieldMaps.", fieldMgr->getOuterMaps());
 
     //----------------------------------------------------------------
     // Add the arbitrary boxes
 
     if(config.getBool("visregions.boxes.visible", false)) {
+
+      GeomHandle<WorldG4> worldGeom;
+
+      const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+      const bool doSurfaceCheck      = false; // overlaps are OK
+      const bool placePV             = true;
+
+      const int verbosityLevel = config.getInt("visregions.verbosityLevel", 0);
 
       const bool solid(config.getBool("visregions.boxes.solid"));
       G4Material *material = findMaterialOrThrow(config.getString("visregions.boxes.material"));
