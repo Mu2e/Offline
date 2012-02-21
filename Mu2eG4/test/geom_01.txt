@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.122 2012/02/21 22:26:40 gandr Exp $
+// $Id: geom_01.txt,v 1.123 2012/02/21 22:27:02 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:26:40 $
+// $Date: 2012/02/21 22:27:02 $
 //
 // Original author Rob Kutschke
 //
@@ -463,10 +463,15 @@ vector<string> bfield.innerMaps = {
   "BFieldMaps/Mau7/Mu2e_DSMap.header",
   "BFieldMaps/Mau7/Mu2e_PSMap.header",
   "BFieldMaps/Mau7/Mu2e_TSuMap.header",
-  "BFieldMaps/Mau7/Mu2e_TSdMap.header"
+  "BFieldMaps/Mau7/Mu2e_TSdMap.header",
+  "BFieldMaps/Mau7/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau7/ProtonDumpAreaMap.header"
 };
 
-vector<string> bfield.outerMaps = { };
+vector<string> bfield.outerMaps = {
+  "BFieldMaps/Mau7/ExtMonUCIAreaMap.header",
+  "BFieldMaps/Mau7/PSAreaMap.header"
+};
 
 // This scale factor is of limited use.
 // It can make approximate sense to scale the PS field to get a rough
