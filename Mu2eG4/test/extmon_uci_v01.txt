@@ -17,14 +17,6 @@ string extmon_uci.platformMaterialName = "ShieldingConcrete";
 bool   extmon_uci.platformVisible      = true;
 bool   extmon_uci.platformSolid        = false;
 
-// ExtMon Virtual plane 1.
-vector<double> extmon_uci.vd1HalfLengths  = {2500.0, 3000.0, 0.1};
-//vector<double> extmon_uci.vd1Position  = {0.0, 0.0, 2990.0};
-vector<double> extmon_uci.vd1Position  = {5429.0, -1570.0, -16139.0};
-string extmon_uci.vd1MaterialName = "WAGVacuum";
-bool extmon_uci.vd1Visible = true;
-bool extmon_uci.vd1Solid   = false;
-
 // ExtMon Absorber
 vector<double> extmon_uci.abs1Params  = {1000.0, 1000.0, 200.0};
 vector<double> extmon_uci.abs1Offset  = {5429.0, -2450.0, 0.};
@@ -34,7 +26,7 @@ bool extmon_uci.abs1Solid   = false;
 
 // ExtMonUCI Collimator
 int extmon_uci.nCols = 4;
-vector<double> extmon_uci.colOuterHalfLengths = {120.0, 150.0, 300.0,
+vector<double> extmon_uci.colOuterHalfLengths = {120.0, 150.0, 299.98,
                                                  120.0, 150.0, 600.0,
                                                  120.0, 120.0, 300.0,
                                                  120.0, 120.0, 300.0};

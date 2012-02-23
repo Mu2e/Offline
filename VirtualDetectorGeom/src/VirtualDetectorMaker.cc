@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.19 2012/02/17 20:55:46 gandr Exp $
-// $Author: gandr $
+// $Id: VirtualDetectorMaker.cc,v 1.20 2012/02/23 19:19:13 youzy Exp $
+// $Author: youzy $
 //
 
 #include <iostream>
@@ -271,7 +271,6 @@ namespace mu2e {
 
       // Detector in front of the ExtMonUCI front removable shielding
       GeomHandle<ExtMonUCI::ExtMon> extmon;
-      extmon->hallOriginInMu2e();
       _vd->addVirtualDetector(VirtualDetectorId::EMIEntrance1,
                               CLHEP::Hep3Vector(0, 0, 0),
                               0,
@@ -283,6 +282,62 @@ namespace mu2e {
                               extmon->origin(),
                               0,
                               CLHEP::Hep3Vector(0, 0, extmon->envelopeParams()[2] - vdHL)
+                             );
+ 
+      // Detector at the entrance of collimator0
+      _vd->addVirtualDetector(VirtualDetectorId::EMIC0Entrance,
+                              extmon->origin(),
+                              0,
+                              extmon->col(0)->originLocal() + CLHEP::Hep3Vector(0, 0, extmon->col(0)->paramsOuter()[2] + vdHL)
+                             );
+
+      // Detector at the exit of collimator0
+      _vd->addVirtualDetector(VirtualDetectorId::EMIC0Exit,
+                              extmon->origin(),
+                              0,
+                              extmon->col(0)->originLocal() + CLHEP::Hep3Vector(0, 0, -1.0*extmon->col(0)->paramsOuter()[2] - vdHL)
+                             );
+
+      // Detector at the entrance of collimator1
+      _vd->addVirtualDetector(VirtualDetectorId::EMIC1Entrance,
+                              extmon->origin(),
+                              0,
+                              extmon->col(1)->originLocal() + CLHEP::Hep3Vector(0, 0, extmon->col(1)->paramsOuter()[2] + vdHL)
+                             );
+ 
+      // Detector at the exit of collimator1
+      _vd->addVirtualDetector(VirtualDetectorId::EMIC1Exit,
+                              extmon->origin(),
+                              0,
+                              extmon->col(1)->originLocal() + CLHEP::Hep3Vector(0, 0, -1.0*extmon->col(1)->paramsOuter()[2] - vdHL)
+                             );
+
+      // Detector at the entrance of collimator2
+      _vd->addVirtualDetector(VirtualDetectorId::EMIC2Entrance,
+                              extmon->origin(),
+                              0,
+                              extmon->col(2)->originLocal() + CLHEP::Hep3Vector(0, 0, extmon->col(2)->paramsOuter()[2] + vdHL)
+                             ); 
+
+      // Detector at the exit of collimator2
+      _vd->addVirtualDetector(VirtualDetectorId::EMIC2Exit,
+                              extmon->origin(),
+                              0,
+                              extmon->col(2)->originLocal() + CLHEP::Hep3Vector(0, 0, -1.0*extmon->col(2)->paramsOuter()[2] - vdHL)
+                             );
+
+      // Detector at the entrance of collimator3
+      _vd->addVirtualDetector(VirtualDetectorId::EMIC3Entrance,
+                              extmon->origin(),
+                              0,
+                              extmon->col(3)->originLocal() + CLHEP::Hep3Vector(0, 0, extmon->col(3)->paramsOuter()[2] + vdHL)
+                             ); 
+
+      // Detector at the exit of collimator3
+      _vd->addVirtualDetector(VirtualDetectorId::EMIC3Exit,
+                              extmon->origin(),
+                              0,
+                              extmon->col(3)->originLocal() + CLHEP::Hep3Vector(0, 0, -1.0*extmon->col(3)->paramsOuter()[2] - vdHL)
                              );
     }
 

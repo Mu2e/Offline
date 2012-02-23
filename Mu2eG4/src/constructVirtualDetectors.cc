@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.21 2012/02/17 23:25:44 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/17 23:25:44 $
+// $Id: constructVirtualDetectors.cc,v 1.22 2012/02/23 19:19:13 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/02/23 19:19:13 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -958,7 +958,45 @@ namespace mu2e {
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
-    // placing virtual detector between ExtMonUCI removable shielding and front shielding
+    // placing virtual detector at the entrance and exit collimator0-3
+    vdId = VirtualDetectorId::EMIC0Entrance;
+    for (int iCol = 0; iCol < 4; iCol++) {
+      if( vdg->exist(vdId) ) {
+        VolumeInfo const & parent = _helper->locateVolInfo("ExtMonUCI");
+        GeomHandle<ExtMonUCI::ExtMon> extmon;
+
+        std::vector<double> hlen(3);
+        hlen[0] = extmon->col(iCol)->paramsOuter()[0];
+        hlen[1] = extmon->col(iCol)->paramsOuter()[1];
+        hlen[2] = vdg->getHalfLength();
+
+        for (int iFrontBack = 0; iFrontBack < 2; iFrontBack++) {
+          VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+                                      hlen,
+                                      vacuumMaterial,
+                                      0,
+                                      vdg->getLocal(vdId),
+                                      parent,
+                                      vdId,
+                                      vdIsVisible,
+                                      G4Color::Red(),
+                                      vdIsSolid,
+                                      forceAuxEdgeVisible,
+                                      placePV,
+                                      false
+                                     );
+
+          // vd are very thin, a more thorough check is needed
+          doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+          vdInfo.logical->SetSensitiveDetector(vdSD);
+
+          vdId++;
+        }
+      }
+    }
+
+    // An XY plane between the PS and anything ExtMon
     vdId = VirtualDetectorId::ExtMonCommonPlane;
     if( vdg->exist(vdId) ) {
       if ( verbosityLevel > 0) {
