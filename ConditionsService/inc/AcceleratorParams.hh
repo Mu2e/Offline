@@ -3,9 +3,9 @@
 //
 // Some parameters of the accelerator complex.
 //
-// $Id: AcceleratorParams.hh,v 1.4 2012/02/24 16:36:36 gandr Exp $
+// $Id: AcceleratorParams.hh,v 1.5 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 20:55:48 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@ namespace mu2e
 {
   class SimpleConfig;
 
-  struct AcceleratorParams: public ConditionsEntity{
+  struct AcceleratorParams: virtual public ConditionsEntity{
 
     // The nominal debuncher orbital period.
     double deBuncherPeriod;

@@ -16,7 +16,7 @@ namespace mu2e {
 
   class Mu2eBuildingMaker;
 
-  class Mu2eBuilding : public Detector {
+  class Mu2eBuilding : virtual public Detector {
   public:
 
     //    const CLHEP::Hep3Vector& hallCenterInMu2e() const { return _hallCenterInMu2e; }

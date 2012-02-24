@@ -4,9 +4,9 @@
 // Transformations between the Mu2e coordinate system and the detector coordinate system.
 // This is a dumb data class that does not know how to build itself.
 //
-// $Id: DetectorSystem.hh,v 1.5 2012/02/24 16:36:36 gandr Exp $
+// $Id: DetectorSystem.hh,v 1.6 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 20:55:48 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,7 @@
 
 namespace mu2e {
 
-  class DetectorSystem: public Detector{
+  class DetectorSystem: virtual public Detector{
 
   public:
 

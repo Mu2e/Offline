@@ -16,7 +16,7 @@ namespace mu2e
 {
   class SimpleConfig;
 
-  struct PhysicsParams: public ConditionsEntity{
+  struct PhysicsParams: virtual public ConditionsEntity{
 
     // Nominal decay time for bound state in alluminum nucleus
     double decayTime;

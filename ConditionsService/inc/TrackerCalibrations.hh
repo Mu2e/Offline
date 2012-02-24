@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.6 2012/02/24 16:36:36 gandr Exp $
+// $Id: TrackerCalibrations.hh,v 1.7 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 20:55:48 $
 //
 // Original author Vadim Rusu
 //
@@ -24,7 +24,7 @@ namespace mu2e
   class StrawHit;
 
 
-  struct TrackerCalibrations: public ConditionsEntity{
+  struct TrackerCalibrations: virtual public ConditionsEntity{
 
 
     TrackerCalibrations ( SimpleConfig const& config );

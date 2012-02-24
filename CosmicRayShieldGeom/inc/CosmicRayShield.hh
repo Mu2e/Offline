@@ -4,9 +4,9 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.11 2012/02/24 16:37:09 gandr Exp $
+// $Id: CosmicRayShield.hh,v 1.12 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:37:09 $
+// $Date: 2012/02/24 20:55:48 $
 //
 // Original author KLG
 //
@@ -31,7 +31,7 @@ namespace mu2e {
   class SimpleConfig;
   class CosmicRayShieldMaker;
 
-  class CosmicRayShield : public Detector {
+  class CosmicRayShield : virtual public Detector {
 
     friend class CosmicRayShieldMaker;
 

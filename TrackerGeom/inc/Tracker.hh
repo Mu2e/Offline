@@ -3,9 +3,9 @@
 //
 // Pure virtual base class that will used by both LTracker or TTracker.
 //
-// $Id: Tracker.hh,v 1.5 2012/02/24 16:36:36 gandr Exp $
+// $Id: Tracker.hh,v 1.6 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 20:55:48 $
 //
 // Original author Rob Kutschke
 //
@@ -18,7 +18,7 @@
 
 namespace mu2e {
 
-  class Tracker: public Detector{
+  class Tracker: virtual public Detector{
 
   public:
     // No constructor on purpose.

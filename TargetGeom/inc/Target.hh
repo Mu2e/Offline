@@ -5,9 +5,9 @@
 // Class to represent the system of target foils.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: Target.hh,v 1.7 2012/02/24 16:37:09 gandr Exp $
+// $Id: Target.hh,v 1.8 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:37:09 $
+// $Date: 2012/02/24 20:55:48 $
 //
 // Original author Rob Kutschke
 //
@@ -27,7 +27,7 @@ namespace mu2e {
   // Forward reference.
   class SimpleConfig;
 
-  class Target : public Detector{
+  class Target : virtual public Detector{
 
   friend class TargetMaker;
 

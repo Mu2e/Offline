@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCI.hh,v 1.6 2012/02/24 16:37:09 gandr Exp $
+// $Id: ExtMonUCI.hh,v 1.7 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:37:09 $
+// $Date: 2012/02/24 20:55:48 $
 
 #ifndef EXTMONUCI_HH
 #define EXTMONUCI_HH
@@ -28,7 +28,7 @@ namespace mu2e {
 
   namespace ExtMonUCI {
     
-    class ExtMon : public Detector {
+    class ExtMon : virtual public Detector {
 
     friend class ExtMonMaker;
 

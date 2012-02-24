@@ -17,7 +17,7 @@ namespace mu2e {
     
     class ExtMonMaker;
 
-    class ExtMon : public Detector {
+    class ExtMon : virtual public Detector {
     public:
 
       const std::vector<double>&  roomHalfSize() const { return m_roomHalfSize; }

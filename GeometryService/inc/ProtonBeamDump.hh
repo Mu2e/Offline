@@ -16,7 +16,7 @@ namespace mu2e {
 
   class ProtonBeamDumpMaker;
 
-  class ProtonBeamDump : public Detector {
+  class ProtonBeamDump : virtual public Detector {
   public:
 
     //----------------------------------------------------------------

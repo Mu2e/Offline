@@ -3,9 +3,9 @@
 //
 // A base class for objects held by the conditions data system.
 //
-// $Id: ConditionsEntity.hh,v 1.2 2012/02/24 16:37:09 gandr Exp $
+// $Id: ConditionsEntity.hh,v 1.3 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:37:09 $
+// $Date: 2012/02/24 20:55:48 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,6 @@ namespace mu2e
   {
   public:
     virtual ~ConditionsEntity();
-    //virtual std::string name() const = 0;
   };
 }
 

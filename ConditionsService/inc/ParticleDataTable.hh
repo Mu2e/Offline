@@ -3,9 +3,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable
 //
-//   $Id: ParticleDataTable.hh,v 1.10 2012/02/24 16:36:36 gandr Exp $
+//   $Id: ParticleDataTable.hh,v 1.11 2012/02/24 20:55:48 gandr Exp $
 //   $Author: gandr $
-//   $Date: 2012/02/24 16:36:36 $
+//   $Date: 2012/02/24 20:55:48 $
 //
 //  Original author Rob Kutschke
 //
@@ -59,7 +59,7 @@ namespace mu2e {
   // Forward declarations
   class SimpleConfig;
 
-  class ParticleDataTable : public ConditionsEntity{
+  class ParticleDataTable : virtual public ConditionsEntity{
 
   public:
 

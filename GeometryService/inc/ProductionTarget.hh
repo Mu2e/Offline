@@ -16,7 +16,7 @@ namespace mu2e {
     
   class ProductionTargetMaker;
 
-  class ProductionTarget : public Detector {
+  class ProductionTarget : virtual public Detector {
   public: 
 
     // cylinder parameters

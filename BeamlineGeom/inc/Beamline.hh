@@ -15,7 +15,7 @@ namespace mu2e {
   // Forward reference.
   class SimpleConfig;
 
-  class Beamline : public Detector {
+  class Beamline : virtual public Detector {
 
   friend class BeamlineMaker;
 

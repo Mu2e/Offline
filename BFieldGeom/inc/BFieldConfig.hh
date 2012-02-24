@@ -16,7 +16,7 @@
 
 namespace mu2e {
 
-  class BFieldConfig : public Detector {
+  class BFieldConfig : virtual public Detector {
   public:
 
     // The constructor is private, an instance should

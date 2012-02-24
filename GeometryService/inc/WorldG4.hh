@@ -16,7 +16,7 @@ namespace mu2e {
 
   class WorldG4Maker;
 
-  class WorldG4 : public Detector {
+  class WorldG4 : virtual public Detector {
   public:
 
     const std::vector<double>& halfLengths() const { return _halfLengths; }

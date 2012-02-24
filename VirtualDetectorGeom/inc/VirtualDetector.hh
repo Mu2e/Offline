@@ -4,7 +4,7 @@
 //
 // Class to represent the virtual detectors
 //
-// $Id: VirtualDetector.hh,v 1.14 2012/02/24 16:37:09 gandr Exp $
+// $Id: VirtualDetector.hh,v 1.15 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
 //
 
@@ -23,7 +23,7 @@ namespace mu2e {
   // Forward reference.
   class SimpleConfig;
 
-  class VirtualDetector : public Detector {
+  class VirtualDetector : virtual public Detector {
 
   friend class VirtualDetectorMaker;
 

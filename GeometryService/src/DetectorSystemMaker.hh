@@ -3,9 +3,9 @@
 //
 // Construct a DetectorSystem object.
 //
-// $Id: DetectorSystemMaker.hh,v 1.3 2012/02/24 16:36:36 gandr Exp $
+// $Id: DetectorSystemMaker.hh,v 1.4 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 20:55:48 $
 //
 // Original author Rob Kutschke
 //
@@ -22,7 +22,7 @@ namespace mu2e {
   // Forward references
   class SimpleConfig;
 
-  class DetectorSystemMaker: public Detector{
+  class DetectorSystemMaker: virtual public Detector{
 
   public:
 

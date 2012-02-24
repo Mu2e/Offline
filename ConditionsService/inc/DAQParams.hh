@@ -3,9 +3,9 @@
 //
 // Parameters of the DAQ system.
 //
-// $Id: DAQParams.hh,v 1.5 2012/02/24 16:36:36 gandr Exp $
+// $Id: DAQParams.hh,v 1.6 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 20:55:48 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@ namespace mu2e
 {
   class SimpleConfig;
 
-  struct DAQParams: public ConditionsEntity{
+  struct DAQParams: virtual public ConditionsEntity{
 
     // Start of the daq live window, in ns, relative to the arrival time of
     // the protons on the production target.

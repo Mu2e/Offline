@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.14 2012/02/24 16:37:09 gandr Exp $
+// $Id: Calorimeter.hh,v 1.15 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:37:09 $
+// $Date: 2012/02/24 20:55:48 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -21,7 +21,7 @@
 #include "CalorimeterGeom/inc/Vane.hh"
 
 namespace mu2e {
-    class Calorimeter: public Detector{
+    class Calorimeter: virtual public Detector{
 
       friend class CalorimeterMaker;
 

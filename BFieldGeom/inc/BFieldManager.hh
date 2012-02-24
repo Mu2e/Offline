@@ -4,9 +4,9 @@
 // Manage all of the magnetic field maps for Mu2e.
 // This class holds the actual field maps, and provides an interface to compute B field.
 //
-// $Id: BFieldManager.hh,v 1.17 2012/02/24 16:37:09 gandr Exp $
+// $Id: BFieldManager.hh,v 1.18 2012/02/24 20:55:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:37:09 $
+// $Date: 2012/02/24 20:55:48 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -29,7 +29,7 @@ namespace mu2e {
 
   class BFieldManagerMaker;
 
-  class BFieldManager : public Detector {
+  class BFieldManager : virtual public Detector {
 
   public:
 
