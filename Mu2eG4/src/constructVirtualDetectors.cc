@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.22 2012/02/23 19:19:13 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/02/23 19:19:13 $
+// $Id: constructVirtualDetectors.cc,v 1.23 2012/02/24 23:40:26 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 23:40:26 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -1038,6 +1038,45 @@ namespace mu2e {
                                   placePV,
                                   false
                                  );
+
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
+
+    // placing virtual detector at the dump core face
+    vdId = VirtualDetectorId::ProtonBeamDumpCoreFace;
+    if( vdg->exist(vdId) ) {
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+      }
+
+      VolumeInfo const & parent = _helper->locateVolInfo("ProtonBeamDumpCore");
+
+      GeomHandle<ProtonBeamDump> dump;
+
+      CLHEP::Hep3Vector centerInCore(0, 0, dump->coreHalfSize()[2] - vdg->getHalfLength());
+
+      std::vector<double> hlen(3);
+      hlen[0] = dump->coreHalfSize()[0];
+      hlen[1] = dump->coreHalfSize()[1];
+      hlen[2] = vdg->getHalfLength();
+
+      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+                                  hlen,
+                                  vacuumMaterial,
+                                  0,
+                                  centerInCore,
+                                  parent,
+                                  vdId,
+                                  vdIsVisible,
+                                  G4Color::Red(),
+                                  vdIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  false
+                                  );
 
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);

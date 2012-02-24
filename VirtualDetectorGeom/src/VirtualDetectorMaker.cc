@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.20 2012/02/23 19:19:13 youzy Exp $
-// $Author: youzy $
+// $Id: VirtualDetectorMaker.cc,v 1.21 2012/02/24 23:40:26 gandr Exp $
+// $Author: gandr $
 //
 
 #include <iostream>
@@ -342,6 +342,14 @@ namespace mu2e {
     }
 
     if(c.hasName("vd.ExtMonCommonPlane.z")) {
+        // Position and half length of this detector are best computed
+        // in one place.  Since the VirtualDetector data structure
+        // does not store half size, we'll do the computations later.
+        _vd->addVirtualDetector(VirtualDetectorId::ExtMonCommonPlane, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+    }
+
+
+    if(c.getBool("vd.ProtonBeamDumpCoreFace.enabled", false)) {
         // Position and half length of this detector are best computed
         // in one place.  Since the VirtualDetector data structure
         // does not store half size, we'll do the computations later.
