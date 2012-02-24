@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.5 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: constructTS.cc,v 1.6 2012/02/24 21:32:36 genser Exp $
+// $Author: genser $
+// $Date: 2012/02/24 21:32:36 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -69,7 +69,8 @@ namespace mu2e {
 
     MaterialFinder materialFinder(*_config);
 
-    G4Material* coll1Material  = materialFinder.get("coll1.materialName");
+    G4Material* coll1Material1 = materialFinder.get("coll1.material1Name");
+    G4Material* coll1Material2 = materialFinder.get("coll1.material2Name");
     G4Material* coll3Material  = materialFinder.get("coll3.materialName");
     G4Material* coll5Material  = materialFinder.get("coll5.materialName");
 
@@ -132,27 +133,40 @@ namespace mu2e {
                                        doSurfaceCheck
                                        );
 
-    // Place collimator 1
+    // Place collimator 1 (two concentric cyliders placed in ToyTS1Vacuum)
 
-    double coll1Param[7] = { coll1InnerRadius1, rVac,
-                             coll1InnerRadius2, rVac,
-                             coll1HalfLength-2*vdHalfLength,
-                             0.0, 360.0*CLHEP::degree };
+    TubsParams coll1Param1 ( coll1InnerRadius1, coll1InnerRadius2, coll1HalfLength-2*vdHalfLength);
+    TubsParams coll1Param2 ( coll1InnerRadius2,              rVac, coll1HalfLength-2*vdHalfLength);
+ 
+    VolumeInfo coll1Info1 = nestTubs( "Coll11",
+                                      coll1Param1,
+                                      coll1Material1,
+                                      0,
+                                      beamg->getTS().getColl1().getLocal(),
+                                      ts1VacInfo,
+                                      0,
+                                      collVisible,
+                                      G4Color::Gray(),
+                                      collSolid,
+                                      forceAuxEdgeVisible,
+                                      placePV,
+                                      doSurfaceCheck
+                                      );
 
-    VolumeInfo coll1VacInfo = nestCons( "Coll1",
-                                        coll1Param,
-                                        coll1Material,
-                                        0,
-                                        beamg->getTS().getColl1().getLocal(),
-                                        ts1VacInfo,
-                                        0,
-                                        collVisible,
-                                        G4Color::Blue(),
-                                        collSolid,
-                                        forceAuxEdgeVisible,
-                                        placePV,
-                                        doSurfaceCheck
-                                        );
+    VolumeInfo coll1Info2 = nestTubs( "Coll12",
+                                      coll1Param2,
+                                      coll1Material2,
+                                      0,
+                                      beamg->getTS().getColl1().getLocal(),
+                                      ts1VacInfo,
+                                      0,
+                                      collVisible,
+                                      G4Color::Blue(),
+                                      collSolid,
+                                      forceAuxEdgeVisible,
+                                      placePV,
+                                      doSurfaceCheck
+                                      );
 
     // Build TS2.
     double ts2VacParams[5]  = { 0.0,   rVac, rTorus, 1.5*M_PI, 0.5*M_PI };
