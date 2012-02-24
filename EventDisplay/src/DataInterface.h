@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.25 2011/11/05 04:05:34 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/11/05 04:05:34 $
+// $Id: DataInterface.h,v 1.26 2012/02/24 21:12:30 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/02/24 21:12:30 $
 //
 // Original author Ralf Ehrlich
 //
@@ -71,6 +71,7 @@ class DataInterface
   std::vector<boost::shared_ptr<Track> >        _tracks;
   std::vector<boost::shared_ptr<VirtualShape> > _supportstructures;
   std::vector<boost::shared_ptr<VirtualShape> > _otherstructures;
+  std::vector<boost::shared_ptr<VirtualShape> > _mbsstructures;
   double            _xOffset, _zOffset, _zOffsetDS;
   timeminmax        _hitsTimeMinmax, _tracksTimeMinmax;
   spaceminmax       _trackerMinmax, _targetMinmax, _calorimeterMinmax, _tracksMinmax;
@@ -110,6 +111,7 @@ class DataInterface
   void makeOtherStructuresVisible(bool visible);
   void makeStrawsVisibleBeforeStart(bool visible);
   void makeCrystalsVisibleBeforeStart(bool visible);
+  void makeMuonBeamStopStructuresVisible(bool visible);
   void useHitColors(bool hitcolors, bool whitebackground);
   void useTrackColors(boost::shared_ptr<ContentSelector> const &contentSelector, bool trackcolors, bool whitebackground);
   int getNumberHits() {return _numberHits;}

@@ -10,6 +10,7 @@
 #include <TGListBox.h>
 #include <TGTextBuffer.h>
 #include <TGTextEntry.h>
+#include <TGNumberEntry.h>
 #include <TPad.h>
 #include <TPolyLine.h>
 #include <TROOT.h>
@@ -128,6 +129,10 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(_otherStructuresButton, lh1);
   _otherStructuresButton->Associate(this);
 
+  _muonBeamStopStructuresButton = new TGCheckButton(_subFrame, "Show Toy MBS", 38);
+  _subFrame->AddFrame(_muonBeamStopStructuresButton, lh1);
+  _muonBeamStopStructuresButton->Associate(this);
+
   TGHorizontalFrame *subFrameView   = new TGHorizontalFrame(_subFrame,300,15);
   TGTextButton *endViewButton       = new TGTextButton(subFrameView, "____  End View", 70, buttoncontext);
   TGTextButton *sideViewButton      = new TGTextButton(subFrameView, "____  Side View", 71, buttoncontext);
@@ -244,6 +249,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   TGGroupFrame *zoomangleFrame  = new TGGroupFrame(_footLine,"Zoom & Angle");
   TGHorizontalFrame *zoomFrame1 = new TGHorizontalFrame(zoomangleFrame,500,50);
   TGHorizontalFrame *zoomFrame2 = new TGHorizontalFrame(zoomangleFrame,500,50);
+  TGHorizontalFrame *zoomFrame3 = new TGHorizontalFrame(zoomangleFrame,500,50);
   TGHorizontalFrame *angleFrame = new TGHorizontalFrame(zoomangleFrame,500,50);
   TGHorizontalFrame *perspectiveFrame = new TGHorizontalFrame(zoomangleFrame,500,50);
   TGLabel *zoomLabel1  = new TGLabel(zoomFrame1, "minx");
@@ -264,11 +270,19 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _maxXField = new TGTextEntry(zoomFrame2, new TGTextBuffer, 1504);
   _maxYField = new TGTextEntry(zoomFrame2, new TGTextBuffer, 1505);
   _maxZField = new TGTextEntry(zoomFrame2, new TGTextBuffer, 1506);
-  _phiField   = new TGTextEntry(angleFrame, new TGTextBuffer, 1601);
-  _thetaField = new TGTextEntry(angleFrame, new TGTextBuffer, 1602);
-  _psiField   = new TGTextEntry(angleFrame, new TGTextBuffer, 1603);
+  _phiField   = new TGNumberEntry(angleFrame, 180., 3, 1601, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0, 360);
+  _thetaField   = new TGNumberEntry(angleFrame, 60., 3, 1602, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0, 360);
+  _psiField   = new TGNumberEntry(angleFrame, 90., 3, 1603, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0, 360);
   _perspectiveButton = new TGRadioButton(perspectiveFrame, "perspective", 1700);
   _parallelButton    = new TGRadioButton(perspectiveFrame, "parallel", 1701);
+  _zoomInButton      = new TGTextButton(zoomFrame3, "ZoomIn", 1507);
+  _zoomOutButton     = new TGTextButton(zoomFrame3, "ZoomOut", 1508);
+  _plusXButton       = new TGTextButton(zoomFrame3, "+X", 1509);
+  _minusXButton      = new TGTextButton(zoomFrame3, "-X", 1510);
+  _plusYButton       = new TGTextButton(zoomFrame3, "+Y", 1511);
+  _minusYButton      = new TGTextButton(zoomFrame3, "-Y", 1512);
+  _plusZButton       = new TGTextButton(zoomFrame3, "+Z", 1513);
+  _minusZButton      = new TGTextButton(zoomFrame3, "-Z", 1514);
   _minXField->SetWidth(50);
   _minYField->SetWidth(50);
   _minZField->SetWidth(50);
@@ -303,12 +317,23 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   angleFrame->AddFrame(angleLabel4, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   perspectiveFrame->AddFrame(_perspectiveButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   perspectiveFrame->AddFrame(_parallelButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  zoomFrame3->AddFrame(_zoomInButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame3->AddFrame(_zoomOutButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame3->AddFrame(_plusXButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame3->AddFrame(_minusXButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame3->AddFrame(_plusYButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame3->AddFrame(_minusYButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame3->AddFrame(_plusZButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+  zoomFrame3->AddFrame(_minusZButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
+
   zoomangleFrame->AddFrame(zoomFrame1, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   zoomangleFrame->AddFrame(zoomFrame2, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   zoomangleFrame->AddFrame(setRangeButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   zoomangleFrame->AddFrame(angleFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   zoomangleFrame->AddFrame(setAngleButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
   zoomangleFrame->AddFrame(perspectiveFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  zoomangleFrame->AddFrame(zoomFrame3, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+
   _footLine->AddFrame(zoomangleFrame, new TGLayoutHints(kLHintsLeft,0,0,0,0));
 
   _minXField->Associate(this);
@@ -324,6 +349,14 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   setAngleButton->Associate(this);
   _perspectiveButton->Associate(this);
   _parallelButton->Associate(this);
+  _zoomInButton->Associate(this);
+  _zoomOutButton->Associate(this);
+  _plusXButton->Associate(this);
+  _minusXButton->Associate(this);
+  _plusYButton->Associate(this);
+  _minusYButton->Associate(this);
+  _plusZButton->Associate(this);
+  _minusZButton->Associate(this);
   _perspectiveButton->SetState(kButtonDown);
   _parallelButton->SetState(kButtonUp);
 
@@ -661,6 +694,27 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
 {
   switch (GET_MSG(msg))
   {
+    case kC_TEXTENTRY:
+      switch (GET_SUBMSG(msg))
+      {
+        case kTE_TEXTCHANGED:
+          if (param1 ==1601 || param1 == 1602 || param1 == 1603)
+          {
+            double phi = _phiField->GetNumber();
+            double theta = _thetaField->GetNumber();
+            double psi = _psiField->GetNumber();
+            int irep=0;
+            _mainPad->GetView()->SetView(phi,theta,psi,irep);
+            _mainPad->SetPhi(-90-phi);
+            _mainPad->SetTheta(90-theta);
+            _mainPad->Modified();
+            _mainPad->Update();
+          }
+          break;
+        default:
+          break;
+      }
+
     case kC_COMMAND:
       switch (GET_SUBMSG(msg))
       {
@@ -762,9 +816,9 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          }
                          if(param1==1600)
                          {
-                           double phi=atof(_phiField->GetText());
-                           double theta=atof(_thetaField->GetText());
-                           double psi=atof(_psiField->GetText());
+                           double phi = _phiField->GetNumber();
+                           double theta = _thetaField->GetNumber();
+                           double psi = _psiField->GetNumber();
                            int irep=0;
                            _mainPad->GetView()->SetView(phi,theta,psi,irep);
                            _mainPad->SetPhi(-90-phi);
@@ -772,6 +826,65 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _mainPad->Modified();
                            _mainPad->Update();
                          }
+                         if (param1 ==1507 || param1 == 1508) {
+                           double min[3],max[3],hdist,cen;
+                           char c[100];
+                           _mainPad->GetView()->GetRange(min,max);
+                           if(min[0]<max[0] && min[1]<max[1] && min[2]<max[2]) {
+                             for (int i = 0 ; i < 3; ++i) {
+                               hdist = (max[i] - min[i]) /2.;
+                               cen   = min[i] + hdist;
+                               if(param1 == 1507) hdist *= 0.9;
+                               else hdist /= 0.9;
+                               min[i] = cen - hdist;
+                               max[i] = cen + hdist;
+                             }
+                             _mainPad->GetView()->SetRange(min,max);
+                             sprintf(c,"%.0f",min[0]); _minXField->SetText(c);
+                             sprintf(c,"%.0f",min[1]); _minYField->SetText(c);
+                             sprintf(c,"%.0f",min[2]); _minZField->SetText(c);
+                             sprintf(c,"%.0f",max[0]); _maxXField->SetText(c);
+                             sprintf(c,"%.0f",max[1]); _maxYField->SetText(c);
+                             sprintf(c,"%.0f",max[2]); _maxZField->SetText(c);
+                             _mainPad->Modified();
+                             _mainPad->Update();
+                           }
+                         }
+                         if (1509 <= param1 && param1 <= 1514) {
+                           double min[3],max[3];
+                           char c[100];
+                           min[0]=atof(_minXField->GetText());
+                           min[1]=atof(_minYField->GetText());
+                           min[2]=atof(_minZField->GetText());
+                           max[0]=atof(_maxXField->GetText());
+                           max[1]=atof(_maxYField->GetText());
+                           max[2]=atof(_maxZField->GetText());
+                           int mode = (param1 - 1509)/2;
+                           int dir = (param1 - 1509)%2;
+                           double diff = 100;
+                           if (!dir) diff*=-1;
+                           if (0 <= mode && mode <3) {
+                             min[mode] += diff;
+                             max[mode] += diff;
+                             _mainPad->GetView()->SetRange(min,max);
+                             if (mode == 0) {
+                               sprintf(c,"%.0f",min[0]); _minXField->SetText(c);
+                               sprintf(c,"%.0f",max[0]); _maxXField->SetText(c);
+                             }
+                             else if (mode == 1) {
+                               sprintf(c,"%.0f",min[1]); _minYField->SetText(c);
+                               sprintf(c,"%.0f",max[1]); _maxYField->SetText(c);
+                             }
+                             else if (mode == 2) {
+                               sprintf(c,"%.0f",min[2]); _minZField->SetText(c);
+                               sprintf(c,"%.0f",max[2]); _maxZField->SetText(c);
+                             }
+                             else {}
+                             _mainPad->Modified();
+                             _mainPad->Update();
+                           }
+                         }
+
                          break;
    case kCM_RADIOBUTTON: if(param1==1700)
                          {
@@ -839,6 +952,17 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            else
                            {
                              _dataInterface->makeCrystalsVisibleBeforeStart(false);
+                           }
+                           drawEverything();
+                         }
+                         if(param1 == 38) 
+                         {
+                           _mainPad->cd();
+                           if(_muonBeamStopStructuresButton->GetState() == kButtonDown) {
+                             _dataInterface->makeMuonBeamStopStructuresVisible(true);
+                           }
+                           else {
+                             _dataInterface->makeMuonBeamStopStructuresVisible(false);
                            }
                            drawEverything();
                          }

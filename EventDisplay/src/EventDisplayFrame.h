@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.21 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: EventDisplayFrame.h,v 1.22 2012/02/24 21:11:23 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/02/24 21:11:23 $
 //
 // Original author Ralf Ehrlich
 //
@@ -23,12 +23,14 @@ class TGCheckButton;
 class TGLabel;
 class TGRadioButton;
 class TGTextEntry;
+class TGNumberEntry;
 class TPad;
 class TPolyLine;
 class TGCanvas;
 class TRootEmbeddedCanvas;
 class TText;
 class TTimer;
+class TGTextButton;
 
 namespace fhicl 
 {
@@ -112,13 +114,16 @@ namespace mu2e_eventdisplay
     TTimer              *_timer;
     TGCheckButton       *_unhitButton, *_unhitCrystalsButton;
     TGCheckButton       *_supportStructuresButton, *_otherStructuresButton;
+    TGCheckButton       *_muonBeamStopStructuresButton;
     TGCheckButton       *_hitColorButton, *_trackColorButton, *_backgroundButton;
     TGCheckButton       *_repeatAnimationButton;
     TGTextEntry         *_timeIntervalField1, *_timeIntervalField2;
     TGTextEntry         *_minHitField, *_eventToFindField;
     TGTextEntry         *_minXField, *_minYField, *_minZField, *_maxXField, *_maxYField, *_maxZField;
-    TGTextEntry         *_phiField, *_thetaField, *_psiField;
+//    TGTextEntry         *_phiField, *_thetaField, *_psiField;
+    TGNumberEntry       *_phiField, *_thetaField, *_psiField;
     TGRadioButton       *_perspectiveButton, *_parallelButton;
+    TGTextButton        *_zoomInButton, *_zoomOutButton, *_plusXButton, *_minusXButton, *_plusYButton, *_minusYButton, *_plusZButton, *_minusZButton;
     TGLabel             **_eventInfo;
     TText               *_legendText[30], *_legendParticleGroup[30], *_legendParticleText[30];
     TBox                *_legendBox[30];

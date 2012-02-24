@@ -496,6 +496,45 @@ void DataInterface::fillGeometry()
       _crystals[crystalid]=shape;
     }
   }
+  //MBS
+  if(config.getBool("hasMBS", false)) {
+    char c[200];
+    double mbsinr[3], mbsoutr[3], mbslen[3], mbsz[3];
+    mbsinr[0]  = config.getDouble("mbs.BSTCInnerRadius");
+    mbsoutr[0] = config.getDouble("mbs.BSTSOuterRadius");
+    mbsinr[1]  = config.getDouble("mbs.BSBSInnerRadius");
+    mbsoutr[1] = config.getDouble("mbs.BSTSOuterRadius");
+    mbsinr[2]  = config.getDouble("mbs.CLV2InnerRadius");
+    mbsoutr[2] = config.getDouble("mbs.CLV2OuterRadius");
+    mbslen[0]  = config.getDouble("mbs.BSTCHLength");
+    mbslen[1]  = config.getDouble("mbs.BSTSHLength") - mbslen[0];
+    mbslen[2]  = config.getDouble("mbs.CLV2HLength");
+    double mbsbstsz = config.getDouble("mbs.BSTSZ");
+    double mbstotallen = (mbslen[0] + mbslen[1])*2.;
+    double mbsstartz = mbsbstsz - mbstotallen/2. + _zOffset;
+    mbsz[0] = mbsstartz + mbslen[0] ;
+    mbsz[1] = mbsstartz + mbslen[0]*2. + mbslen[1];
+    mbsz[2] = mbsstartz +mbstotallen - mbslen[2];
+    for (unsigned int i = 0 ; i <3 ; ++i) {
+    //for (unsigned int i = 2 ; i <3 ; ++i) {
+      boost::shared_ptr<ComponentInfo> infoMBS(new ComponentInfo());
+      sprintf(c,"MBS %d", i);
+      infoMBS->setName(c);
+      infoMBS->setText(0,c);
+      sprintf(c,"Inner Radius %.f mm  Outer Radius %.f mm",mbsinr[i]/CLHEP::mm,mbsoutr[i]/CLHEP::mm);
+      infoMBS->setText(1,c);
+      sprintf(c,"Length %.f mm",2.0*mbslen[i]/CLHEP::mm);
+      infoMBS->setText(2,c);
+      sprintf(c,"Center at x: 0 mm, y: 0 mm, z: %.f mm",mbsz[i]/CLHEP::mm);
+      infoMBS->setText(3,c);
+      boost::shared_ptr<Cylinder> shapeMBS(new Cylinder(0,0,mbsz[i], 0,0,0,
+                                               mbslen[i], mbsinr[i], mbsoutr[i], NAN,
+                                               _geometrymanager, _topvolume, _mainframe, infoMBS, false));
+      _components.push_back(shapeMBS);
+      _mbsstructures.push_back(shapeMBS);
+    }
+
+  }
 
 //   if(geom->hasElement<mu2e::CosmicRayShield>())
 //   {
@@ -543,6 +582,19 @@ void DataInterface::fillGeometry()
 //     }
 //   }
 
+}
+
+void DataInterface::makeMuonBeamStopStructuresVisible(bool visible)
+{
+  std::vector<boost::shared_ptr<VirtualShape> >::const_iterator structure;
+  for(structure=_mbsstructures.begin(); structure!=_mbsstructures.end(); structure++)
+  {
+    (*structure)->setDefaultVisibility(visible);
+    (*structure)->start();
+  }
+
+  //tracks and straws don't have to be pushed into the foreground if the structure is removed
+  if(visible) toForeground();
 }
 
 void DataInterface::makeSupportStructuresVisible(bool visible)
@@ -1332,6 +1384,7 @@ void DataInterface::removeAllComponents()
   _driftradii.clear();
   _supportstructures.clear();
   _otherstructures.clear();
+  _mbsstructures.clear();
   delete _geometrymanager;
   _geometrymanager=NULL;
 
