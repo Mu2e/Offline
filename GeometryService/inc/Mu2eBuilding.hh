@@ -47,9 +47,6 @@ namespace mu2e {
 
     const CLHEP::Hep3Vector& trackerOriginInMu2e() const { return _trackerOriginInMu2e; }    
 
-    // implement Detector's method
-    virtual std::string name() const { return "Mu2eBuilding"; }
-
     //----------------------------------------------------------------
     // These coordinates are used in more than one place
 

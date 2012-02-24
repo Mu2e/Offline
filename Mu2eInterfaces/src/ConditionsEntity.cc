@@ -2,9 +2,9 @@
 // A base class for objects held by the conditions data system.
 //
 //
-// $Id: ConditionsEntity.cc,v 1.1 2012/02/24 16:36:36 gandr Exp $
+// $Id: ConditionsEntity.cc,v 1.2 2012/02/24 16:37:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 16:37:09 $
 //
 // Original author Rob Kutschke
 //
@@ -14,6 +14,4 @@
 namespace mu2e
 {
   ConditionsEntity::~ConditionsEntity() { }
-  void ConditionsEntity::update() { }
-  std::string ConditionsEntity::name() const { return "NONAME"; }
 }

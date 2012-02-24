@@ -18,8 +18,6 @@ namespace mu2e {
 
   class ProductionTarget : public Detector {
   public: 
-    // implement Detector's method
-    virtual std::string name() const { return "ProductionTarget"; }
 
     // cylinder parameters
     double rOut() const { return _rOut; }

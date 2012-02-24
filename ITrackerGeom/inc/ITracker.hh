@@ -25,9 +25,6 @@ public:
         ITracker();
         ~ITracker() {}
 
-        virtual std::string name() const { return "ITracker";}
-
-
         enum GeomType          { Hexagonal=2, Square };
         enum EnCapType         { Plane, Spherical };
 

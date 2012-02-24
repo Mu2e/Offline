@@ -5,9 +5,9 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.10 2011/08/03 18:31:25 mf Exp $
-// $Author: mf $
-// $Date: 2011/08/03 18:31:25 $
+// $Id: TTracker.hh,v 1.11 2012/02/24 16:37:09 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:37:09 $
 //
 // Original author Rob Kutschke
 //
@@ -38,8 +38,6 @@ namespace mu2e {
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
     void fillPointers () const;
-
-    virtual std::string name() const { return "TTracker";}
 
     double rOut() const { return _rOut;}
     double z0()   const { return _z0;}

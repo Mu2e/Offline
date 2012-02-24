@@ -4,7 +4,7 @@
 //
 // Class to represent the virtual detectors
 //
-// $Id: VirtualDetector.hh,v 1.13 2012/02/24 16:36:36 gandr Exp $
+// $Id: VirtualDetector.hh,v 1.14 2012/02/24 16:37:09 gandr Exp $
 // $Author: gandr $
 //
 
@@ -30,9 +30,6 @@ namespace mu2e {
   public:
     VirtualDetector();
     ~VirtualDetector(){;}
-
-    // Implementation of Detector::name()
-    virtual std::string name() const { return _baseName;}
 
     double getHalfLength() const { return _halfLength; }
 

@@ -1,9 +1,9 @@
 //
 // A base class for detector components.
 //
-// $Id: Detector.cc,v 1.1 2012/02/24 16:36:36 gandr Exp $
+// $Id: Detector.cc,v 1.2 2012/02/24 16:37:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 16:37:09 $
 //
 // Original author Rob Kutschke
 //
@@ -13,6 +13,4 @@
 namespace mu2e
 {
   Detector::~Detector() { }
-  void Detector::update() { }
-  std::string Detector::name() const { return "NONAME"; }
 }

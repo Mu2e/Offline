@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.11 2012/02/24 16:36:36 gandr Exp $
+// $Id: GeometryService.hh,v 1.12 2012/02/24 16:37:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 16:37:09 $
 //
 // Original author Rob Kutschke
 //
@@ -122,7 +122,8 @@ private:
     {
       if(_detectors.find(typeid(DET).name())!=_detectors.end())
         throw cet::exception("GEOM") << "failed to install detector "
-                                     << d->name() << "\nwith type name "
+          //<< d->name()
+                                     << " with type name "
                                      << typeid(DET).name() << "\n";
 
       DetectorPtr ptr(d.release());

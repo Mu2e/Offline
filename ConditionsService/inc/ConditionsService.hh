@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.13 2012/02/24 16:36:36 gandr Exp $
+// $Id: ConditionsService.hh,v 1.14 2012/02/24 16:37:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 16:37:09 $
 //
 // Original author Rob Kutschke
 //
@@ -107,7 +107,8 @@ namespace mu2e {
     {
       if(_entities.find(typeid(ENTITY).name())!=_entities.end())
         throw cet::exception("GEOM") << "failed to install conditions entity "
-                                     << d->name() << "\nwith type name "
+          //<< d->name()
+                                     << " with type name "
                                      << typeid(ENTITY).name() << "\n";
 
       ConditionsEntityPtr ptr(d.release());

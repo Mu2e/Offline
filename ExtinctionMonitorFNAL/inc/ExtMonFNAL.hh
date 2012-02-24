@@ -18,11 +18,8 @@ namespace mu2e {
     class ExtMonMaker;
 
     class ExtMon : public Detector {
-    public: 
-      // implement Detector's method
-      virtual std::string name() const { return "ExtMonFNAL"; }
-      
-      //
+    public:
+
       const std::vector<double>&  roomHalfSize() const { return m_roomHalfSize; }
       double roomCenterHeightAboveDumpCore() const { return m_roomCenterHeightAboveDumpCore; }
       const CLHEP::Hep3Vector&    roomCenterInMu2e() const { return m_roomCenterInMu2e; }

@@ -4,9 +4,9 @@
 //
 // A base class for detector components.
 //
-// $Id: Detector.hh,v 1.1 2012/02/24 16:36:36 gandr Exp $
+// $Id: Detector.hh,v 1.2 2012/02/24 16:37:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 16:37:09 $
 //
 // Original author Rob Kutschke
 //
@@ -20,8 +20,7 @@ namespace mu2e
   {
   public:
     virtual ~Detector();
-    virtual void update();
-    virtual std::string name() const;
+    //virtual std::string name() const = 0;
   };
 }
 

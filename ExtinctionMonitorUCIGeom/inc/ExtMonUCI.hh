@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCI.hh,v 1.5 2012/02/24 16:36:36 gandr Exp $
+// $Id: ExtMonUCI.hh,v 1.6 2012/02/24 16:37:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 16:37:09 $
 
 #ifndef EXTMONUCI_HH
 #define EXTMONUCI_HH
@@ -32,9 +32,7 @@ namespace mu2e {
 
     friend class ExtMonMaker;
 
-    public: 
-      // implement Detector's method
-      virtual std::string name() const { return "ExtMonUCI"; }
+    public:
 
       // Envelope
       const vector<double>& envelopeParams() const { return _envelopeParams; }

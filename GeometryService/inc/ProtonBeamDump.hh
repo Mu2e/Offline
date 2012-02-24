@@ -18,8 +18,6 @@ namespace mu2e {
 
   class ProtonBeamDump : public Detector {
   public:
-    // implement Detector's method
-    virtual std::string name() const { return "ProtonBeamDump"; }
 
     //----------------------------------------------------------------
     class CollimatorExtMonFNAL {

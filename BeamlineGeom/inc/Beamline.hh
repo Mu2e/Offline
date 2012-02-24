@@ -28,8 +28,6 @@ namespace mu2e {
 
     // use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    virtual std::string name() const { return "Beamline";}
-
     double solenoidOffset() const { return _solenoidOffset; };
 
     TransportSolenoid const& getTS() const { return _ts; };

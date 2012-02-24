@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: LTracker.hh,v 1.12 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
+// $Id: LTracker.hh,v 1.13 2012/02/24 16:37:09 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:37:09 $
 //
 // Original author Rob Kutschke
 //
@@ -33,9 +33,6 @@ namespace mu2e {
 
     // Compiler generated copy and assignment constructors
     // should be OK.
-
-    virtual std::string name() const { return "LTracker";}
-
 
     enum LTrackerDeviceId { undefined=-1, wedge, vane};
 

@@ -5,9 +5,9 @@
 // Class to represent the system of target foils.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: Target.hh,v 1.6 2012/02/24 16:36:36 gandr Exp $
+// $Id: Target.hh,v 1.7 2012/02/24 16:37:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 16:37:09 $
 //
 // Original author Rob Kutschke
 //
@@ -35,8 +35,6 @@ namespace mu2e {
     Target();
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
-
-    virtual std::string name() const { return "Target";}
 
     int nFoils() const { return _foils.size(); }
 

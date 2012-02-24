@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.13 2012/02/24 16:36:36 gandr Exp $
+// $Id: Calorimeter.hh,v 1.14 2012/02/24 16:37:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 16:37:09 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -28,8 +28,6 @@ namespace mu2e {
     public:
       Calorimeter(){}
       ~Calorimeter(){}
-
-      virtual std::string name() const { return "Calorimeter";}
 
       CLHEP::Hep3Vector const& getOrigin() const { return _origin; }
 

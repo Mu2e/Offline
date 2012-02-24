@@ -23,9 +23,6 @@ namespace mu2e {
     // be obtained from the maker
     friend class BFieldConfigMaker;
 
-    // Implement the Detector method
-    virtual std::string name() const { return "BFieldConfig";}
-
     // G4BL vs GMC maps
     BFMapType mapType() const { return mapType_; }
 

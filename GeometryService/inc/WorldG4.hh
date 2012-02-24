@@ -39,9 +39,6 @@ namespace mu2e {
     // is outside the G4 world.
     void inWorldOrThrow( CLHEP::Hep3Vector const& x0 ) const;
 
-    // implement Detector's method
-    virtual std::string name() const { return "WorldG4"; }
-
     //----------------------------------------------------------------
   private:
     friend class WorldG4Maker;

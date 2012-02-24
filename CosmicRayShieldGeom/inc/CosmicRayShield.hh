@@ -4,9 +4,9 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.10 2012/02/24 16:36:36 gandr Exp $
+// $Id: CosmicRayShield.hh,v 1.11 2012/02/24 16:37:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:36:36 $
+// $Date: 2012/02/24 16:37:09 $
 //
 // Original author KLG
 //
@@ -37,13 +37,9 @@ namespace mu2e {
 
   public:
 
-    CosmicRayShield():
-      _name("CosmicRayShield")
-    {}
+    CosmicRayShield() {}
 
     ~CosmicRayShield(){}
-
-    std::string name() const { return _name;};
 
     // Get SteelShield
     CRSSteelShield         const & getCRSSteelShield(std::string name) const;
@@ -76,8 +72,6 @@ namespace mu2e {
     }
 
   private:
-
-    std::string _name;
 
     // position of the center in  Mu2e frame
     CLHEP::Hep3Vector _globalOffset;
