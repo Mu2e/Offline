@@ -2,9 +2,9 @@
 #define HitCluster_HitCluster_hh
 //forms clusters of adjacent straws in the L-Tracker for pattern recognition
 //
-// $Id: HitCluster.hh,v 1.11 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: HitCluster.hh,v 1.12 2012/02/24 16:37:21 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:37:21 $
 //
 //original author R. Bernstein
 //
@@ -118,8 +118,6 @@ namespace mu2e{
       std::vector<int> strawsInThisCluster;
 
       //methods
-
-      virtual std::string name() const {return "HitCluster";}
 
       //this part written by Kutschke
       typedef std::vector<Candidate> hitNeighbours;
