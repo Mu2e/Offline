@@ -1,9 +1,9 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.9 2011/06/30 20:16:28 genser Exp $
+// $Id: physicsListDecider.cc,v 1.10 2012/02/24 21:37:11 genser Exp $
 // $Author: genser $
-// $Date: 2011/06/30 20:16:28 $
+// $Date: 2012/02/24 21:37:11 $
 //
 // Original author Rob Kutschke
 //
@@ -38,6 +38,8 @@
 #include "Mu2eG4/inc/PhysicsList.hh"
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
+
+//#include "Mu2eG4/inc/QGSP_BERT_HP_MU2E00.hh"
 
 // G4 includes
 #include "G4PhysListFactory.hh"
@@ -74,6 +76,12 @@ namespace mu2e{
       tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
       physicsList = tmp;
     }
+
+//     else if ( name == "QGSP_BERT_HP_MU2E00" ){
+//       G4VModularPhysicsList* tmp = new QGSP_BERT_HP_MU2E00();
+//       tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
+//       physicsList = tmp;
+//     }
 
     // General case
     else {
