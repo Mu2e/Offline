@@ -1,6 +1,6 @@
-# $Id: SConscript,v 1.9 2011/05/19 19:03:27 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/19 19:03:27 $
+# $Id: SConscript,v 1.10 2012/02/24 17:50:20 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/02/24 17:50:20 $
 #
 # Original author Rob Kutschke.
 #
@@ -16,13 +16,14 @@ libname='#/lib/ConditionsService'
 
 env._dict["LIBPATH"] += ['#/lib']
 env.SharedLibrary(libname, non_plugin_cc,
-        LIBS=[ 'art_Framework_Core',
-               'art_Framework_Services_Registry',
+        LIBS=[ 'Mu2eInterfaces',
                'Mu2eUtilities',
                'HepPDT',
                'HepPID',
-               'MF_MessageLogger'
-             ],
+               'MF_MessageLogger',
+               'art_Framework_Core',
+               'art_Framework_Services_Registry'
+               ],
         )
 
 
