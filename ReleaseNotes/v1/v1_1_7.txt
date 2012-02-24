@@ -1,9 +1,19 @@
 
-  $Id: v1_1_7.txt,v 1.6 2012/02/24 16:36:36 gandr Exp $
-  $Author: gandr $
-  $Date: 2012/02/24 16:36:36 $
+  $Id: v1_1_7.txt,v 1.7 2012/02/24 21:38:37 genser Exp $
+  $Author: genser $
+  $Date: 2012/02/24 21:38:37 $
 
            Release notes for Mu2e Offline software, v1_1_7
+
+
+6) February 24, 2012 genser
+
+   Added two new future stopping processes to  MCDataProducts/inc/ProcessCode.hh
+
+5) February 24, 2012 genser
+
+   Modified Collimator 1 to consist out of  two concentric cylinders
+   of different material
 
 4) February 23, 2012 gandr
 
