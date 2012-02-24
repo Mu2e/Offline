@@ -7,7 +7,7 @@
 #include <string>
 
 // Includes from Mu2e
-#include "GeometryService/inc/Detector.hh"
+#include "Mu2eInterfaces/inc/Detector.hh"
 #include "BeamlineGeom/inc/TransportSolenoid.hh"
 
 namespace mu2e {

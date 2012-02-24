@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.12 2012/01/25 21:24:20 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/01/25 21:24:20 $
+// $Id: ConditionsService.hh,v 1.13 2012/02/24 16:36:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:36:36 $
 //
 // Original author Rob Kutschke
 //
@@ -30,7 +30,7 @@
 
 // Mu2e include files.
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "ConditionsService/inc/ConditionsEntity.hh"
+#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 // Other external include files.
 #include "boost/shared_ptr.hpp"

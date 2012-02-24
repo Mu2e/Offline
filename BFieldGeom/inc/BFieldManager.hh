@@ -4,9 +4,9 @@
 // Manage all of the magnetic field maps for Mu2e.
 // This class holds the actual field maps, and provides an interface to compute B field.
 //
-// $Id: BFieldManager.hh,v 1.15 2012/02/21 22:26:40 gandr Exp $
+// $Id: BFieldManager.hh,v 1.16 2012/02/24 16:36:36 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:26:40 $
+// $Date: 2012/02/24 16:36:36 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -20,7 +20,7 @@
 #include <map>
 
 // Includes from Mu2e
-#include "GeometryService/inc/Detector.hh"
+#include "Mu2eInterfaces/inc/Detector.hh"
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/BFMap.hh"
 #include "BFieldGeom/inc/BFCacheManager.hh"

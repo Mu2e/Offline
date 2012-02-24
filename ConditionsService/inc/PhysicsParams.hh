@@ -10,7 +10,7 @@
 #include <iostream>
 
 // Mu2e includes.
-#include "ConditionsService/inc/ConditionsEntity.hh"
+#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 namespace mu2e
 {

@@ -3,9 +3,9 @@
 //
 // Construct a DetectorSystem object.
 //
-// $Id: DetectorSystemMaker.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: DetectorSystemMaker.hh,v 1.3 2012/02/24 16:36:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:36:36 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 #include <memory>
 
 // Mu2e includes.
-#include "GeometryService/inc/Detector.hh"
+#include "Mu2eInterfaces/inc/Detector.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 
 namespace mu2e {

@@ -3,9 +3,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable
 //
-//   $Id: ParticleDataTable.hh,v 1.9 2011/09/19 14:33:31 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2011/09/19 14:33:31 $
+//   $Id: ParticleDataTable.hh,v 1.10 2012/02/24 16:36:36 gandr Exp $
+//   $Author: gandr $
+//   $Date: 2012/02/24 16:36:36 $
 //
 //  Original author Rob Kutschke
 //
@@ -48,7 +48,7 @@
 //
 
 // Mu2e includes.
-#include "ConditionsService/inc/ConditionsEntity.hh"
+#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 #include "cetlib/maybe_ref.h"
 
 // External includes.

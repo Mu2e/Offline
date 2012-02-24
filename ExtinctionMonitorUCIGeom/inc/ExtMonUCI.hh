@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCI.hh,v 1.4 2012/02/16 20:25:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/02/16 20:25:46 $
+// $Id: ExtMonUCI.hh,v 1.5 2012/02/24 16:36:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:36:36 $
 
 #ifndef EXTMONUCI_HH
 #define EXTMONUCI_HH
@@ -13,7 +13,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 
-#include "GeometryService/inc/Detector.hh"
+#include "Mu2eInterfaces/inc/Detector.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/Mu2eBuilding.hh"
 

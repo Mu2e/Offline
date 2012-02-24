@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.10 2011/11/02 21:29:52 gandr Exp $
+// $Id: GeometryService.hh,v 1.11 2012/02/24 16:36:36 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:29:52 $
+// $Date: 2012/02/24 16:36:36 $
 //
 // Original author Rob Kutschke
 //
@@ -23,7 +23,7 @@
 #include "cetlib/exception.h"
 
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "GeometryService/inc/Detector.hh"
+#include "Mu2eInterfaces/inc/Detector.hh"
 #include "boost/shared_ptr.hpp"
 
 

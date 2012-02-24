@@ -2,14 +2,14 @@
 // A base class for objects held by the conditions data system.
 //
 //
-// $Id: ConditionsEntity.cc,v 1.1 2009/11/12 00:51:08 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2009/11/12 00:51:08 $
+// $Id: ConditionsEntity.cc,v 1.1 2012/02/24 16:36:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:36:36 $
 //
 // Original author Rob Kutschke
 //
 
-#include "ConditionsService/inc/ConditionsEntity.hh"
+#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 namespace mu2e
 {

@@ -11,7 +11,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "GeometryService/inc/Detector.hh"
+#include "Mu2eInterfaces/inc/Detector.hh"
 #include "BFieldGeom/inc/BFMapType.hh"
 
 namespace mu2e {

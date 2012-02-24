@@ -5,9 +5,9 @@
 // Class to represent the system of target foils.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: Target.hh,v 1.5 2011/05/20 15:13:24 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 15:13:24 $
+// $Id: Target.hh,v 1.6 2012/02/24 16:36:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:36:36 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,7 @@
 #include <vector>
 
 // Includes from Mu2e
-#include "GeometryService/inc/Detector.hh"
+#include "Mu2eInterfaces/inc/Detector.hh"
 #include "TargetGeom/inc/TargetFoil.hh"
 
 namespace mu2e {

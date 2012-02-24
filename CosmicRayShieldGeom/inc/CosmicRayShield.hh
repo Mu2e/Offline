@@ -4,9 +4,9 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.9 2011/12/06 22:53:01 gandr Exp $
+// $Id: CosmicRayShield.hh,v 1.10 2012/02/24 16:36:36 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/12/06 22:53:01 $
+// $Date: 2012/02/24 16:36:36 $
 //
 // Original author KLG
 //
@@ -22,7 +22,7 @@
 // Includes from Mu2e
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
 #include "CosmicRayShieldGeom/inc/CRSSteelShield.hh"
-#include "GeometryService/inc/Detector.hh"
+#include "Mu2eInterfaces/inc/Detector.hh"
 
 
 namespace mu2e {

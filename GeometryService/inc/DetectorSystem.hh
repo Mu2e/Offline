@@ -4,15 +4,15 @@
 // Transformations between the Mu2e coordinate system and the detector coordinate system.
 // This is a dumb data class that does not know how to build itself.
 //
-// $Id: DetectorSystem.hh,v 1.4 2012/01/05 16:22:33 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/01/05 16:22:33 $
+// $Id: DetectorSystem.hh,v 1.5 2012/02/24 16:36:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:36:36 $
 //
 // Original author Rob Kutschke
 //
 
 // Mu2e includes.
-#include "GeometryService/inc/Detector.hh"
+#include "Mu2eInterfaces/inc/Detector.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"

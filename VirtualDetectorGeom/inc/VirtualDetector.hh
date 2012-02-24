@@ -4,7 +4,7 @@
 //
 // Class to represent the virtual detectors
 //
-// $Id: VirtualDetector.hh,v 1.12 2012/02/17 20:55:35 gandr Exp $
+// $Id: VirtualDetector.hh,v 1.13 2012/02/24 16:36:36 gandr Exp $
 // $Author: gandr $
 //
 
@@ -13,7 +13,7 @@
 #include <string>
 
 // Includes from Mu2e
-#include "GeometryService/inc/Detector.hh"
+#include "Mu2eInterfaces/inc/Detector.hh"
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"

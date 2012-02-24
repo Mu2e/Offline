@@ -10,7 +10,7 @@
 
 #include "ITrackerGeom/inc/SuperLayer.hh"
 #include "ITrackerGeom/inc/Wall.hh"
-//#include "GeometryService/inc/Detector.hh"
+//#include "Mu2eInterfaces/inc/Detector.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
 #include "ITrackerGeom/inc/CellGeometryHandle.hh"

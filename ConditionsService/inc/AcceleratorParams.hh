@@ -3,9 +3,9 @@
 //
 // Some parameters of the accelerator complex.
 //
-// $Id: AcceleratorParams.hh,v 1.3 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: AcceleratorParams.hh,v 1.4 2012/02/24 16:36:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:36:36 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 #include <iostream>
 
 // Mu2e includes.
-#include "ConditionsService/inc/ConditionsEntity.hh"
+#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 namespace mu2e
 {

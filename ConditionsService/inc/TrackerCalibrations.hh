@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.5 2012/01/25 21:24:20 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/01/25 21:24:20 $
+// $Id: TrackerCalibrations.hh,v 1.6 2012/02/24 16:36:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:36:36 $
 //
 // Original author Vadim Rusu
 //
@@ -14,7 +14,7 @@
 #include <iostream>
 
 // Mu2e includes.
-#include "ConditionsService/inc/ConditionsEntity.hh"
+#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 #include "TrackerGeom/inc/StrawIndex.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 

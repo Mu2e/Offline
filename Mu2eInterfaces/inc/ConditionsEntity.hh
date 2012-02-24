@@ -3,9 +3,9 @@
 //
 // A base class for objects held by the conditions data system.
 //
-// $Id: ConditionsEntity.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
+// $Id: ConditionsEntity.hh,v 1.1 2012/02/24 16:36:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:36:36 $
 //
 // Original author Rob Kutschke
 //

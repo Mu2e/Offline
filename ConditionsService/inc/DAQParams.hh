@@ -3,9 +3,9 @@
 //
 // Parameters of the DAQ system.
 //
-// $Id: DAQParams.hh,v 1.4 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: DAQParams.hh,v 1.5 2012/02/24 16:36:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/24 16:36:36 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 #include <iostream>
 
 // Mu2e includes.
-#include "ConditionsService/inc/ConditionsEntity.hh"
+#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 namespace mu2e
 {
