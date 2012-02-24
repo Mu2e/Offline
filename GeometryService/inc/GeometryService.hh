@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.12 2012/02/24 16:37:09 gandr Exp $
+// $Id: GeometryService.hh,v 1.13 2012/02/24 16:37:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:37:09 $
+// $Date: 2012/02/24 16:37:31 $
 //
 // Original author Rob Kutschke
 //
@@ -117,19 +117,8 @@ private:
     GeometryService const& operator=(GeometryService const& rhs);
     GeometryService(GeometryService const& rhs);
 
-    template <typename DET>
-    void addDetector(std::auto_ptr<DET> d)
-    {
-      if(_detectors.find(typeid(DET).name())!=_detectors.end())
-        throw cet::exception("GEOM") << "failed to install detector "
-          //<< d->name()
-                                     << " with type name "
-                                     << typeid(DET).name() << "\n";
-
-      DetectorPtr ptr(d.release());
-      _detectors[typeid(DET).name()] = ptr;
-    }
-
+    // Don't need to expose definition of private template in header
+    template <typename DET> void addDetector(std::auto_ptr<DET> d);
 
     // Some information that is provided through the GeometryService
     // should only be used inside GEANT jobs.  The following method is

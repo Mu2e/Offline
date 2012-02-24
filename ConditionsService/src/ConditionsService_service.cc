@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.4 2011/12/07 00:32:29 gandr Exp $
+// $Id: ConditionsService_service.cc,v 1.5 2012/02/24 16:37:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/12/07 00:32:29 $
+// $Date: 2012/02/24 16:37:31 $
 //
 // Original author Rob Kutschke
 //
@@ -50,6 +50,20 @@ namespace mu2e {
 
 
   ConditionsService::~ConditionsService(){
+  }
+
+
+  // This template can be defined here because this is a private method which is only
+  // used by the code below in the same file.
+  template <typename ENTITY>
+  void ConditionsService::addEntity(std::auto_ptr<ENTITY> d)
+  {
+    if(_entities.find(typeid(ENTITY).name())!=_entities.end())
+      throw cet::exception("GEOM") << "failed to install conditions entity with type name "
+                                   << typeid(ENTITY).name() << "\n";
+
+    ConditionsEntityPtr ptr(d.release());
+    _entities[typeid(ENTITY).name()] = ptr;
   }
 
   void

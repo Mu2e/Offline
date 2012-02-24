@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.17 2012/02/21 22:26:23 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.18 2012/02/24 16:37:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:26:23 $
+// $Date: 2012/02/24 16:37:31 $
 //
 // Original author Rob Kutschke
 //
@@ -74,6 +74,20 @@ namespace mu2e {
   }
 
   GeometryService::~GeometryService(){
+  }
+
+
+  // This template can be defined here because this is a private method which is only
+  // used by the code below in the same file.
+  template <typename DET>
+  void GeometryService::addDetector(std::auto_ptr<DET> d)
+  {
+    if(_detectors.find(typeid(DET).name())!=_detectors.end())
+      throw cet::exception("GEOM") << "failed to install detector with type name "
+                                     << typeid(DET).name() << "\n";
+
+      DetectorPtr ptr(d.release());
+      _detectors[typeid(DET).name()] = ptr;
   }
 
   void
