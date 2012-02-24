@@ -1,9 +1,9 @@
 #
 # Macro file for setting up the graphics scene and the verbosity level: "xz" view.
 #
-# $Id: visxz.mac,v 1.1 2011/04/25 21:12:34 genser Exp $
+# $Id: visxz.mac,v 1.2 2012/02/24 22:28:35 genser Exp $
 # $Author: genser $
-# $Date: 2011/04/25 21:12:34 $
+# $Date: 2012/02/24 22:28:35 $
 #
 # Original author KLG
 #
@@ -15,7 +15,8 @@
 /run/verbose 0
 /vis/open OGLIX 800x800-0+0
 /vis/viewer/set/background white ! ! 0.01
-/vis/viewer/set/viewpointThetaPhi 90 90 deg
+##### 89 in phi to avoid warnings at 90 deg
+/vis/viewer/set/viewpointThetaPhi 90 89 deg
 /vis/viewer/zoom 1.0
 /vis/disable
 /vis/scene/create
