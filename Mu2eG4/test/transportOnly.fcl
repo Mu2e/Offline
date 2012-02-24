@@ -1,33 +1,29 @@
 # Variant of g4test_03 but with transport only.
 #
 #
-# $Id: transportOnly.fcl,v 1.9 2012/02/06 17:18:44 genser Exp $
+# $Id: transportOnly.fcl,v 1.10 2012/02/24 21:34:21 genser Exp $
 # $Author: genser $
-# $Date: 2012/02/06 17:18:44 $
+# $Date: 2012/02/24 21:34:21 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
+#include "standardServices.fcl"
 
 # Give this job a name.
 process_name : transportOnly
 
 # Start form an empty source
-source :
-{
+source : {
   module_type : EmptyEvent
   maxEvents : 100
 }
 
-services :
-{
-  message : @local::default_message
+services : {
 
-  TFileService :
-  {
-    fileName : "transportOnly.root"
-  }
-
+  message               : @local::default_message
+  TFileService          : { fileName : "transportOnly.root" }
   RandomNumberGenerator : { }
+
 
 # Uncomment to enable memory use profiling
 # SimpleMemoryCheck :
@@ -35,51 +31,49 @@ services :
 #   oncePerEventMode : false
 #   showMallocInfo   : false
 #   ignoreTotal      : 5
-#)
+# }
+#
+# Uncomment to enable per module timing
+#   Timing :
+#   {
+#    useJobReport : true
+#   }
 
-  user :
-  {
-    GeometryService :
-    {
-      inputFile : "Mu2eG4/test/transportOnlyGeom.txt"
-    }
+# Uncomment to enable trace printout to show what the framework calls when.
+#  scheduler: { wantTracer : true }
 
-    ConditionsService :
-    {
-      conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
 
-    G4Helper : { }
-
+  user : {
+    GeometryService   : { inputFile      : "Mu2eG4/test/transportOnlyGeom.txt" }
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt"  }
+    G4Helper          : { }
+    SeedService       : @local::automaticSeeds
   }
 
 }
 
-physics :
-{
-  producers:
-  {
+physics : {
+
+  producers:  {
 
     # Generate Event
     generate:
     {
       module_type   : EventGenerator
       inputfile     : "Mu2eG4/test/genconfig_tonly.txt"
-      seed          : [7789]
     }
 
-    # Run G4 and add hits to the event
+    # Run G4 and add its output to the event
     g4run :
     {
       module_type          : G4
-      diagLevel            : 0
+      diagLevel            : 1
       generatorModuleLabel : generate
 #      visMacro             : "Mu2eG4/test/visxy.mac"
 #      visMacro             : "Mu2eG4/test/visxz.mac"
 #      visMacro             : "Mu2eG4/test/visyz.mac"
 #      visMacro             : "Mu2eG4/test/vis45.mac"
 #      visMacro             : "Mu2eG4/test/visTree.mac"
-      seed                 : [9877]
     }
 
     # Form StrawHits (SH).
@@ -91,53 +85,42 @@ physics :
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
 
-    randomsaver:
-    {
-      module_type          : RandomSaverNumber
-    }
-
+    # Save state of the random number engines.
+    randomsaver : @local::randomsaver
 
   }
 
 
-  analyzers:
-  {
+  analyzers: {
 
-    checkhits:
-    {
+    checkhits: {
       module_type          : ReadBack
       generatorModuleLabel : generate
       g4ModuleLabel        : g4run
+      diagLevel            : 0
       minimumEnergy        : 0.000
       maxFullPrint         : 201
     }
 
     # Look at the hits from TTrackerDeviceSupport Sensitive Detectors
-    checksdd:
-    {
+    checksdd: {
       module_type          : ReadTTrackerDSDetectors
       diagLevel            : 0
       hitMakerModuleLabel  : g4run
       sddStepPoints        : ttrackerDS
       maxFullPrint         : 201
-
     }
     # Look at the hits from virtualdetectors
-    readvd:
-    {
+    readvd: {
       module_type      : ReadVirtualDetector
       vdStepPoints     : virtualdetector
       savePDG          : [13 , -211]
       maxPrint         : 200
     }
 
-#    randomsaver:@local::randomsaver
-
   }
 
-  p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker ]
-  # randomsaver is currently broken.
-  # e1 : [randomsaver, checkhits, outfile]
+  p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver]
   e1 : [checkhits, checksdd, readvd, outfile]
 
   trigger_paths  : [p1]
@@ -145,11 +128,9 @@ physics :
 
 }
 
-outputs:
-{
+outputs:  {
 
-  outfile :
-  {
+  outfile : {
     module_type   :   RootOutput
     fileName      :   "data_06.root"
     outputCommands:   [ "keep *_*_*_*"
@@ -159,7 +140,11 @@ outputs:
 
 }
 
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
 
+// Enable diagnsotic printout for pedagogical purposes.
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
 physics.producers.CaloReadoutHitsMaker.diagLevel : 0
