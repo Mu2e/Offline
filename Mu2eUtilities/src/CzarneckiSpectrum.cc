@@ -3,16 +3,14 @@
 // merge the spectrum with the analytic expression
 // in the endpoint region taken from Czarnecki.
 //
-// $Id: CzarneckiSpectrum.cc,v 1.2 2012/02/07 07:17:09 onoratog Exp $
+// $Id: CzarneckiSpectrum.cc,v 1.3 2012/02/24 20:05:52 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/07 07:17:09 $
+// $Date: 2012/02/24 20:05:52 $
 //
 
 #include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "cetlib/pow.h"

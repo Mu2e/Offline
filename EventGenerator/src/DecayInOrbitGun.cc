@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.46 2012/02/20 20:21:09 onoratog Exp $
+// $Id: DecayInOrbitGun.cc,v 1.47 2012/02/24 20:05:52 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/20 20:21:09 $
+// $Date: 2012/02/24 20:05:52 $
 //
 // Original author Rob Kutschke
 //
@@ -87,6 +87,9 @@ namespace mu2e {
     const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
     _mass = e_data.mass().value();
 
+    const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
+    _mumass = mu_data.mass().value();
+
     // Sanity checks.
     if ( std::abs(_mean) > 99999. ) {
       throw cet::exception("RANGE")
@@ -166,7 +169,7 @@ namespace mu2e {
 
     if ( _energySpectrum == "ShankerWanatabe" ||
          _energySpectrum == "Czarnecki" ) {
-      _randEnergy = auto_ptr<ReadDIOSpectrum>(new ReadDIOSpectrum(13,_elow, _ehi, _spectrumResolution, _energySpectrum, getEngine()));
+      _randEnergy = auto_ptr<ReadDIOSpectrum>(new ReadDIOSpectrum(13, _mumass, _mass, _elow, _ehi, _spectrumResolution, _energySpectrum, getEngine()));
     }
   }
 

@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.26 2012/02/20 20:21:08 onoratog Exp $
+// $Id: DecayInOrbitGun.hh,v 1.27 2012/02/24 20:05:52 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/20 20:21:08 $
+// $Date: 2012/02/24 20:05:52 $
 //
 //
 
@@ -81,7 +81,8 @@ namespace mu2e {
 
     double _p; //particle momentum
 
-    double _mass; //Particle mass
+    double _mass; //electron mass
+    double _mumass; //muon mass needed to pass as paramenter to ReadDIOSpectrum constructor
 
     // Histogram control.
     bool _doHistograms;

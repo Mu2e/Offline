@@ -4,9 +4,9 @@
 // The construction
 // of the spectrum is made by specialized classes
 //
-// $Id: ReadDIOSpectrum.cc,v 1.2 2012/02/07 07:17:09 onoratog Exp $
+// $Id: ReadDIOSpectrum.cc,v 1.3 2012/02/24 20:05:52 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/07 07:17:09 $
+// $Date: 2012/02/24 20:05:52 $
 //
 // Original author: Gianni Onorato
 //
@@ -21,17 +21,19 @@
 #include "Mu2eUtilities/inc/ReadDIOSpectrum.hh"
 #include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 #include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 
 using namespace std;
 
 namespace mu2e {
 
-  ReadDIOSpectrum::ReadDIOSpectrum(int atomicZ, double emin, double emax, double spectRes, string spectrum,
+  ReadDIOSpectrum::ReadDIOSpectrum(int atomicZ, double mumass, double emass, double emin, double emax, 
+                                   double spectRes, string spectrum,
                                    art::RandomNumberGenerator::base_engine_t& engine):
   //atomic number of the foil material
     _znum ( atomicZ ),
+    _mumass ( mumass ),
+    _emass ( emass ),
   //limits on energy generation
     _emin ( emin ),
     _emax ( emax ),
@@ -79,7 +81,7 @@ namespace mu2e {
     vector<double> spectrum;
 
     if (_spectrum == "ShankerWanatabe") {
-      ShankerWanatabeSpectrum WSspec(_znum);
+      ShankerWanatabeSpectrum WSspec(_znum, _mumass, _emass);
       
       double step = _emin;
       

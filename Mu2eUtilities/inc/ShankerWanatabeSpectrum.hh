@@ -4,9 +4,9 @@
 // Read Wanatabe data about DIO spectrum from a table and merge it
 // with the spectrum coming from the Shanker formula
 
-// $Id: ShankerWanatabeSpectrum.hh,v 1.8 2012/02/07 07:17:09 onoratog Exp $
+// $Id: ShankerWanatabeSpectrum.hh,v 1.9 2012/02/24 20:05:52 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/07 07:17:09 $
+// $Date: 2012/02/24 20:05:52 $
 //
 //
 
@@ -29,7 +29,7 @@ namespace mu2e {
 
   public:
 
-    ShankerWanatabeSpectrum(int atomicZ);
+    ShankerWanatabeSpectrum(int atomicZ, double mumass, double emass);
 
     ~ShankerWanatabeSpectrum();
 
@@ -38,6 +38,8 @@ namespace mu2e {
   private:
 
     int _znum;
+
+    double _mumass, _emass;
 
     double _wanaEndPoint, _wanaEndPointVal, _norm;
 

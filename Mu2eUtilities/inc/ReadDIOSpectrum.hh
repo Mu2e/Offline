@@ -4,9 +4,9 @@
 // Generate a momentum for the DIO electrons, using custom
 // spectrum (so far Shanker-Wanatabe or Czarnecki
 //
-// $Id: ReadDIOSpectrum.hh,v 1.2 2012/02/07 07:17:08 onoratog Exp $
+// $Id: ReadDIOSpectrum.hh,v 1.3 2012/02/24 20:05:52 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/07 07:17:08 $
+// $Date: 2012/02/24 20:05:52 $
 //
 // Original Author: Gianni Onorato
 //
@@ -29,8 +29,8 @@ namespace mu2e {
 
   public:
 
-    ReadDIOSpectrum(int atomicZ, double emin, double emax, double spectRes,
-                    std::string spectrum, art::RandomNumberGenerator::base_engine_t & engine);
+    ReadDIOSpectrum(int atomicZ, double mumass, double emass, double emin, double emax, 
+                    double spectRes, std::string spectrum, art::RandomNumberGenerator::base_engine_t & engine);
 
     ~ReadDIOSpectrum();
 
@@ -40,7 +40,7 @@ namespace mu2e {
 
     int _znum;
 
-    double _emin, _emax, _res;
+    double _mumass, _emass, _emin, _emax, _res;
 
     int calculateNBins();
 
