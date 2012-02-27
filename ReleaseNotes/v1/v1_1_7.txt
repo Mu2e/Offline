@@ -1,9 +1,24 @@
 
-  $Id: v1_1_7.txt,v 1.8 2012/02/27 00:40:07 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2012/02/27 00:40:07 $
+  $Id: v1_1_7.txt,v 1.9 2012/02/27 21:12:33 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2012/02/27 21:12:33 $
 
            Release notes for Mu2e Offline software, v1_1_7
+
+8) February 27, 2012 onoratog     
+   The old gas material has been restored in the code but is not the default one.
+   If you want to use it to compare new simulations with old ones, you have to add
+   "StrawGasArCF4" in the list of materials present in the geom_01.txt file, at the point
+
+   vector<string> mu2e.materials = { .... } ;
+
+   Moreover, in the same file, you have to change the line
+   
+   vector<string> ttracker.strawMaterials       = { "Kapton", "StrawGas", "G4_W" };
+
+   in
+        
+   vector<string> ttracker.strawMaterials       = { "Kapton", "StrawGasArCF4", "G4_W" };
 
 7) February 26, 2012 kutschke
    Mu2eG4/src/G4_module.cc
