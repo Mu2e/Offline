@@ -113,7 +113,8 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   TString sconprob(text);
   info->AddText(sconprob);
   info->SetBorderSize(0);
- 
+  valid->SaveAs("mu2e_valid.png");
+
 // log scale
   TCanvas* logcan = new TCanvas("mu2elog","mu2e log scale",1200,800);
   logcan->Clear();
@@ -146,7 +147,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   logcan->cd(2);
   leg->Draw();
   info->Draw();
- 
+  logcan->SaveAs("mu2e_log.png"); 
 
 // linear scale
   TCanvas* lincan = new TCanvas("mu2elin","mu2e linear scale",1200,800);
@@ -211,5 +212,6 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   lincan->cd(2);
   leg->Draw();
   info->Draw();
- 
+  lincan->SaveAs("mu2e_lin.png");
+
 }

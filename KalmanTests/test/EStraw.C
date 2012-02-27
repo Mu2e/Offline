@@ -109,3 +109,85 @@ void estraw_rate(TTree* estraw,double nmicro) {
   hr2->Draw("CONTZ");
 }
 
+void estraw_deadtime(TTree* estraw,double nmicro) {
+
+  TH1F* eloge = new TH1F("eloge","Background straw hit deposited energy;log_{10}(MeV);hits/event",100,-4.5,0);
+  TH1F* ploge = new TH1F("ploge","Background straw hit deposited energy;log_{10}(MeV);hits/event",100,-4.5,0);
+  TH1F* gloge = new TH1F("gloge","Background straw hit deposited energy;log_{10}(MeV);hits/event",100,-4.5,0);
+  TH1F* nloge = new TH1F("nloge","Background straw hit deposited energy;log_{10}(MeV);hits/event",100,-4.5,0);
+  eloge->SetLineColor(kRed);
+  ploge->SetLineColor(kBlue);
+  gloge->SetLineColor(kCyan);
+  nloge->SetLineColor(kOrange);
+  eloge->SetStats(0);
+  ploge->SetStats(0);
+  gloge->SetStats(0);
+  nloge->SetStats(0);
+
+  estraw->Project("eloge","log10(energy)","abs(mcpdg)==11");
+  estraw->Project("ploge","log10(energy)","mcpdg==2212");
+  estraw->Project("gloge","log10(energy)","mcpdg==22");
+  estraw->Project("nloge","log10(energy)","mcpdg==2112");
+
+  double factor=1.0/nmicro;
+  eloge->Scale(factor);
+  ploge->Scale(factor);
+  gloge->Scale(factor);
+  nloge->Scale(factor);
+
+  double scale=ggain*iongain*qe/eele;
+
+  TH1F* elogq = new TH1F("elogq","Background straw hit deposited charge;nC;hits/event",500,-0.0001,0.005);
+  TH1F* plogq = new TH1F("plogq","Background straw hit deposited charge;nC;hits/event",500,-0.0001,0.005);
+  TH1F* glogq = new TH1F("glogq","Background straw hit deposited charge;nC;hits/event",500,-0.0001,0.005);
+  TH1F* nlogq = new TH1F("nlogq","Background straw hit deposited charge;nC;hits/event",500,-0.0001,0.005);
+  elogq->SetLineColor(kRed);
+  plogq->SetLineColor(kBlue);
+  glogq->SetLineColor(kCyan);
+  nlogq->SetLineColor(kOrange);
+  elogq->SetStats(0);
+  plogq->SetStats(0);
+  glogq->SetStats(0);
+  nlogq->SetStats(0);
+
+
+// conversion to nano-Coulombs
+  estraw->Project("elogq","energy*9.6e-3","abs(mcpdg)==11");
+  estraw->Project("plogq","energy*9.6e-3","mcpdg==2212");
+  estraw->Project("glogq","energy*9.6e-3","mcpdg==22");
+  estraw->Project("nlogq","energy*9.6e-3","mcpdg==2112");
+
+  double factor=1.0/nmicro;
+  elogq->Scale(factor);
+  plogq->Scale(factor);
+  glogq->Scale(factor);
+  nlogq->Scale(factor);
+
+// JPs data
+  double fc[7] = {1,2,5,7,10,15,20};
+  double dead[7] = {60,210,370,410,450,490,520};
+  TGraph* jp = new TGraph(7,fc,dead);
+
+  TCanvas* dcan = new TCanvas("dcan","dcan",1200,800);
+  dcan->Divide(2,2);
+  dcan->cd(1);
+  gPad->SetLogy();
+  eloge->Draw();
+  ploge->Draw("same");
+  gloge->Draw("same");
+  nloge->Draw("same");
+  dcan->cd(2);
+  gPad->SetLogy();
+  elogq->Draw();
+  plogq->Draw("same");
+  glogq->Draw("same");
+  nlogq->Draw("same");
+  TLegend* leg = new TLegend(0.7,0.7,0.9,0.9);
+  leg->AddEntry(eloge,"Electrons","l");
+  leg->AddEntry(ploge,"Protons","l");
+  leg->AddEntry(gloge,"gammas","l");
+  leg->AddEntry(nloge,"Neutrons","l");
+  leg->Draw(); 
+
+}
+
