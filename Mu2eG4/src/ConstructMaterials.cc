@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.25 2011/10/30 04:09:06 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/10/30 04:09:06 $
+// $Id: ConstructMaterials.cc,v 1.26 2012/02/27 20:22:06 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/27 20:22:06 $
 //
 // Original author Rob Kutschke
 //
@@ -209,6 +209,21 @@ namespace mu2e {
       IsoButane->AddElement( eH, 10);
     }
 
+    mat = isNeeded(materialsToLoad, "StrawGasArCF4");
+
+    if ( mat.doit ) {
+      
+      G4Material* StrawGasArCF4 =
+        new G4Material(mat.name, 0.0028561*g/cm3, 3); // it is OK not to use kStateGas
+      G4Element* eAr = getElementOrThrow("Ar");
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eF  = getElementOrThrow("F");
+      StrawGasArCF4->AddElement( eAr, 1);
+      StrawGasArCF4->AddElement( eC,  1);
+      StrawGasArCF4->AddElement( eF,  4);
+
+    }
+    
     mat = isNeeded(materialsToLoad, "StrawGas");
     if ( mat.doit ) {
      
@@ -315,6 +330,7 @@ namespace mu2e {
       }
 
     }
+
 
     mat = isNeeded(materialsToLoad, "MBOverburden");
     if ( mat.doit ){
