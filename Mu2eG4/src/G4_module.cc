@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.34 2012/02/08 16:51:17 kutschke Exp $
+// $Id: G4_module.cc,v 1.35 2012/02/27 00:39:43 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/02/08 16:51:17 $
+// $Date: 2012/02/27 00:39:43 $
 //
 // Original author Rob Kutschke
 //
@@ -228,6 +228,9 @@ namespace mu2e {
 
     DiagnosticsG4 _diagnostics;
 
+    // A helper function.
+    void setOtherCuts( SimpleConfig const& config );
+
   };
 
   // Create an instance of the run manager.
@@ -291,13 +294,17 @@ namespace mu2e {
     // add user processes
     addUserProcesses(config);
 
+    _UI = G4UImanager::GetUIpointer();
+
+    // Set other cuts.
+    setOtherCuts( config );
+
     // At this point G4 geometry has been initialized.  So it is safe to initialize
     // objects that depend on G4 geometry.
 
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
-      _UI = G4UImanager::GetUIpointer();
 
       _visManager = new G4VisExecutive;
       _visManager->Initialize();
@@ -536,6 +543,18 @@ namespace mu2e {
   void G4::endJob(){
   }
 
+
+  void G4::setOtherCuts( SimpleConfig const& config ){
+
+    // If this cut is absent, leave the default from G4.
+    string name("g4.minRangeCut");
+    if ( config.hasName(name) ){
+      double minRangeCut = config.getDouble(name);
+      ostringstream out;
+      out << "/run/setCut " << minRangeCut << " mm ";
+      _UI->ApplyCommand(out.str().c_str());
+    }
+  }
 
 
 } // End of namespace mu2e
