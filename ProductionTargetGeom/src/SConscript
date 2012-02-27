@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.6 2011/12/14 00:30:40 gandr Exp $
+# $Id: SConscript,v 1.1 2012/02/27 06:05:35 gandr Exp $
 # $Author: gandr $
-# $Date: 2011/12/14 00:30:40 $
+# $Date: 2012/02/27 06:05:35 $
 #
 # Original author Rob Kutschke.
 #
@@ -16,26 +16,14 @@ for cc in plugin_cc: non_plugin_cc.remove(cc)
 if non_plugin_cc:
 
     # From: /path1/path2/path3/Name/src extract the string Name field.
+    ll=env.Dir('.').abspath
     dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
     local_lib_name=os.path.dirname(dd)
- 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ 'art_Framework_Core',
-                             'Mu2eUtilities',
-                             'BeamlineGeom',
-                             'ExtinctionMonitorFNAL',
-                             'TargetGeom',
-                             'TTrackerGeom',
-                             'MCDataProducts',
-
-                             # FIXME: this introduces a circular dependency.
-                             # 'GeometryService',
-
+                      LIBS=[ 'Mu2eInterfaces',
+                             'Mu2eUtilities'
                              ],
                       )
-    libs=[ '#/lib/' + local_lib_name ]
-else:
-    libs=[]
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

@@ -1,9 +1,6 @@
 // Andrei Gaponenko, 2011
 
-#include "GeometryService/inc/ProtonBeamDumpMaker.hh"
-
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/ProductionTarget.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDumpMaker.hh"
 
 #include <algorithm>
 #include <iterator>
@@ -16,7 +13,7 @@
 
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
-#include "GeometryService/inc/ProtonBeamDump.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
 namespace mu2e {
   //================================================================

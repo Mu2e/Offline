@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.7 2011/12/27 15:54:20 gandr Exp $
+// $Id: constructPS.cc,v 1.8 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/12/27 15:54:20 $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -17,7 +17,7 @@
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/ProductionTarget.hh"
+#include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/constructPS.hh"

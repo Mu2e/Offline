@@ -1,8 +1,8 @@
 #ifndef CalorimeterGeom_CalorimeterMaker_hh
 #define CalorimeterGeom_CalorimeterMaker_hh
-// $Id: CalorimeterMaker.hh,v 1.13 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
+// $Id: CalorimeterMaker.hh,v 1.14 2012/02/27 06:05:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/27 06:05:35 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -36,7 +36,7 @@ namespace mu2e{
     class CalorimeterMaker{
 
     public:
-      CalorimeterMaker(SimpleConfig const& config);
+      CalorimeterMaker(SimpleConfig const& config, double solenoidOffset);
 
       ~CalorimeterMaker();
 

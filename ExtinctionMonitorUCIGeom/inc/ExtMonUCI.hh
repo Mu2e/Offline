@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCI.hh,v 1.7 2012/02/24 20:55:48 gandr Exp $
+// $Id: ExtMonUCI.hh,v 1.8 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 20:55:48 $
+// $Date: 2012/02/27 06:05:35 $
 
 #ifndef EXTMONUCI_HH
 #define EXTMONUCI_HH
@@ -15,7 +15,7 @@
 
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/Mu2eBuilding.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCICol.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIMag.hh"

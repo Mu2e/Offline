@@ -9,7 +9,6 @@
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 #include "BFieldGeom/inc/BFieldConfig.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 
@@ -40,7 +39,7 @@ namespace mu2e {
     }
   }
 
-  BFieldConfigMaker::BFieldConfigMaker(const SimpleConfig& config)
+  BFieldConfigMaker::BFieldConfigMaker(const SimpleConfig& config, const Beamline& beamg)
     : bfconf_(new BFieldConfig())
   {
     bfconf_->writeBinaries_ = config.getBool("bfield.writeG4BLBinaries", false);
@@ -59,11 +58,10 @@ namespace mu2e {
 
       // These maps require torus radius of 2926 mm
       const double requiredTorusRadius = 2926.0 * CLHEP::mm;
-      GeomHandle<Beamline> beamg;
-      if( fabs(beamg->getTS().torusRadius() - requiredTorusRadius)>0.1 ){
+      if( fabs(beamg.getTS().torusRadius() - requiredTorusRadius)>0.1 ){
         throw cet::exception("GEOM")
           << "The GMC magnetic field files require torus radius of 2926 mm."
-          << " The value used by geometry is " <<beamg->getTS().torusRadius()
+          << " The value used by geometry is " <<beamg.getTS().torusRadius()
           << " Maps are not loaded.\n";
       }
       bfconf_->mapType_ = BFMapType::GMC;
@@ -78,11 +76,10 @@ namespace mu2e {
 
       // These maps require torus radius of 2929 mm
       const double requiredTorusRadius = 2929.0 * CLHEP::mm;
-      GeomHandle<Beamline> beamg;
-      if( fabs(beamg->getTS().torusRadius() - requiredTorusRadius)>0.1 ){
+      if( fabs(beamg.getTS().torusRadius() - requiredTorusRadius)>0.1 ){
         throw cet::exception("GEOM")
           << "The G4BL magnetic field files require torus radius of 2929 mm."
-          << " The value used by geometry is " <<beamg->getTS().torusRadius()
+          << " The value used by geometry is " <<beamg.getTS().torusRadius()
           << " Maps are not loaded.\n";
       }
       bfconf_->mapType_ = BFMapType::G4BL;

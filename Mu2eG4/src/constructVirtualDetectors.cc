@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.23 2012/02/24 23:40:26 gandr Exp $
+// $Id: constructVirtualDetectors.cc,v 1.24 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 23:40:26 $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -21,9 +21,9 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/Mu2eBuilding.hh"
-#include "GeometryService/inc/ProtonBeamDump.hh"
-#include "GeometryService/inc/ProductionTarget.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
@@ -32,7 +32,7 @@
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 

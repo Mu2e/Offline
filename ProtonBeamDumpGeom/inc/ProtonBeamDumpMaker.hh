@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-#include "GeometryService/inc/ProtonBeamDump.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 namespace mu2e { class SimpleConfig; }
 
 namespace mu2e {

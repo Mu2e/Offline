@@ -31,7 +31,7 @@
 #include "ConditionsService/inc/PhysicsParams.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
-#include "GeometryService/inc/ProductionTarget.hh"
+#include "ProductionTargetGeom/inc/ProductionTarget.hh"
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"

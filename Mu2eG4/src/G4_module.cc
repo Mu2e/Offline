@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.35 2012/02/27 00:39:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/27 00:39:43 $
+// $Id: G4_module.cc,v 1.36 2012/02/27 06:05:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author Rob Kutschke
 //
@@ -35,7 +35,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/Mu2eBuilding.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "Mu2eG4/inc/DetectorConstruction.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/EventAction.hh"

@@ -15,12 +15,13 @@
 namespace mu2e {
 
   class SimpleConfig;
+  class Beamline;
 
   class BFieldConfigMaker {
 
   public:
 
-    explicit BFieldConfigMaker(const SimpleConfig& config);
+    explicit BFieldConfigMaker(const SimpleConfig& config, const Beamline& beamg);
 
     // Transfer ownership of the BFManager.
     std::auto_ptr<BFieldConfig> getBFieldConfig() { return bfconf_; }

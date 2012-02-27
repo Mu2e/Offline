@@ -1,7 +1,7 @@
 #include "EventGenerator/inc/ExtMonFNALGun.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/ProtonBeamDump.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 
 #include "Mu2eUtilities/inc/SimpleConfig.hh"

@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.6 2012/02/24 21:32:36 genser Exp $
-// $Author: genser $
-// $Date: 2012/02/24 21:32:36 $
+// $Id: constructTS.cc,v 1.7 2012/02/27 06:05:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -25,7 +25,7 @@
 #include "Mu2eG4/inc/nestTorus.hh"
 #include "Mu2eG4/inc/nestCons.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
 
 // G4 includes
 #include "G4ThreeVector.hh"

@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.18 2012/02/24 16:37:31 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.19 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:37:31 $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author Rob Kutschke
 //
@@ -29,12 +29,12 @@
 #include "GeometryService/src/DetectorSystemMaker.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/WorldG4Maker.hh"
-#include "GeometryService/inc/Mu2eBuilding.hh"
-#include "GeometryService/inc/Mu2eBuildingMaker.hh"
-#include "GeometryService/inc/ProductionTarget.hh"
-#include "GeometryService/inc/ProductionTargetMaker.hh"
-#include "GeometryService/inc/ProtonBeamDump.hh"
-#include "GeometryService/inc/ProtonBeamDumpMaker.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuildingMaker.hh"
+#include "ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "ProductionTargetGeom/inc/ProductionTargetMaker.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDumpMaker.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TargetGeom/inc/TargetMaker.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
@@ -51,8 +51,8 @@
 #include "BFieldGeom/inc/BFieldManagerMaker.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/BeamlineMaker.hh"
-#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
-#include "VirtualDetectorGeom/inc/VirtualDetectorMaker.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
+#include "GeometryService/inc/VirtualDetectorMaker.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
@@ -122,24 +122,20 @@ namespace mu2e {
 
     // Make a detector for every component present in the configuration.
 
-    if(_config->getBool("hasBeamline",false)){
-      BeamlineMaker beamlinem( *_config );
-      addDetector( beamlinem.getBeamlinePtr() );
-    }
+    std::auto_ptr<Beamline> tmpBeamline(BeamlineMaker( *_config ).getBeamlinePtr());
+    const Beamline& beamline = *tmpBeamline.get();
+    addDetector(tmpBeamline);
 
-    if(true) {
-      ProductionTargetMaker tm(*_config);
-      addDetector(tm.getDetectorPtr());
-    }
+    std::auto_ptr<ProductionTarget> tmpProdTarget(ProductionTargetMaker(*_config, beamline.solenoidOffset()).getDetectorPtr());
+    addDetector(tmpProdTarget);
 
-    if(true) {
-      addDetector(ProtonBeamDumpMaker(*_config).getPtr());
-    }
+    std::auto_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker(*_config).getPtr());
+    const ProtonBeamDump& dump = *tmpDump.get();
+    addDetector(tmpDump);
 
-    if(true) {
-      Mu2eBuildingMaker b(*_config);
-      addDetector(b.getPtr());
-    }
+    std::auto_ptr<Mu2eBuilding> tmpBuilding(Mu2eBuildingMaker(*_config, dump).getPtr());
+    const Mu2eBuilding& building = *tmpBuilding.get();
+    addDetector(tmpBuilding);
 
     if(_config->getBool("hasTarget",false)){
       TargetMaker targm( *_config );
@@ -158,17 +154,17 @@ namespace mu2e {
     }
 
     if(_config->getBool("hasCalorimeter",false)){
-      CalorimeterMaker calorm( *_config );
+      CalorimeterMaker calorm( *_config, beamline.solenoidOffset() );
       addDetector( calorm.getCalorimeterPtr() );
     }
 
     if(_config->getBool("hasCosmicRayShield",false)){
-      CosmicRayShieldMaker crs( *_config );
+      CosmicRayShieldMaker crs( *_config, beamline.solenoidOffset() );
       addDetector( crs.getCosmicRayShieldPtr() );
     }
 
     if(_config->getBool("hasExtMonFNAL",false)){
-      ExtMonFNAL::ExtMonMaker extmon( *_config );
+      ExtMonFNAL::ExtMonMaker extmon( *_config, dump);
       addDetector( extmon.getDetectorPtr() );
     }
 
@@ -183,8 +179,7 @@ namespace mu2e {
     }
 
     if(_config->getBool("hasBFieldManager",false)){
-
-      std::auto_ptr<BFieldConfig> bfc(BFieldConfigMaker( *_config).getBFieldConfig());
+      std::auto_ptr<BFieldConfig> bfc(BFieldConfigMaker(*_config, beamline).getBFieldConfig());
       BFieldManagerMaker bfmgr(*bfc);
       addDetector(bfc);
       addDetector(bfmgr.getBFieldManager());
@@ -217,6 +212,9 @@ namespace mu2e {
 
   }
 
+  // WorldG4 could be added along with all the other detectors in preBeginRun().
+  // However we don't want to make WorldG4 available in non-Geant jobs.
+  // Therefore it is added by G4_module via this dedicated call.
   void GeometryService::addWorldG4() {
     WorldG4Maker w(*_config);
     addDetector(w.getPtr());

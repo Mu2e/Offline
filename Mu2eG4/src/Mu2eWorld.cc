@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.120 2012/02/21 22:26:23 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.121 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:26:23 $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author Rob Kutschke
 //
@@ -73,13 +73,13 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/Mu2eBuilding.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/TransportSolenoid.hh"
-#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
 #include "Mu2eG4/inc/constructLTracker.hh"
 #include "Mu2eG4/inc/constructTTracker.hh"
 #include "Mu2eG4/inc/constructDummyTracker.hh"

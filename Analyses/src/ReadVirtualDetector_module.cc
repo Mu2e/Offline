@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.9 2012/02/06 17:19:53 genser Exp $
-//  $Author: genser $
-//  $Date: 2012/02/06 17:19:53 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.10 2012/02/27 06:05:35 gandr Exp $
+//  $Author: gandr $
+//  $Date: 2012/02/27 06:05:35 $
 //
 // Original author Ivan Logashenko
 //
@@ -19,7 +19,7 @@
 #include "TH1F.h"
 #include "TNtuple.h"
 #include "TTree.h"
-#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"

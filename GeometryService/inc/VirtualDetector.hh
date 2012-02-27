@@ -4,7 +4,7 @@
 //
 // Class to represent the virtual detectors
 //
-// $Id: VirtualDetector.hh,v 1.15 2012/02/24 20:55:48 gandr Exp $
+// $Id: VirtualDetector.hh,v 1.1 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $
 //
 

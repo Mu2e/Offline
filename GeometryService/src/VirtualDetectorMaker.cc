@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.21 2012/02/24 23:40:26 gandr Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.1 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $
 //
 
@@ -13,12 +13,12 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "VirtualDetectorGeom/inc/VirtualDetectorMaker.hh"
-#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
+#include "GeometryService/inc/VirtualDetectorMaker.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/ProtonBeamDump.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"

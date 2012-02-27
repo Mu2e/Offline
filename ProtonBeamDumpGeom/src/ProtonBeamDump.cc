@@ -1,4 +1,4 @@
-#include "GeometryService/inc/ProtonBeamDump.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
 #include <cmath>
 

@@ -2,9 +2,9 @@
 // Read particles from a file in G4beamline input format.
 // Position of the GenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.26 2012/02/16 05:02:47 gandr Exp $
+// $Id: FromG4BLFile.cc,v 1.27 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/16 05:02:47 $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author Rob Kutschke
 //
@@ -58,7 +58,7 @@
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
-#include "GeometryService/inc/ProductionTarget.hh"
+#include "ProductionTargetGeom/inc/ProductionTarget.hh"
 
 // Root includes
 #include "TH1F.h"

@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.15 2012/02/24 16:36:36 gandr Exp $
+# $Id: SConscript,v 1.16 2012/02/27 06:05:35 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/02/24 16:36:36 $
+# $Date: 2012/02/27 06:05:35 $
 #
 # Original author Rob Kutschke.
 #
@@ -17,19 +17,22 @@ libname='#/lib/GeometryService'
 
 env._dict["LIBPATH"] += ['#/lib']
 env.SharedLibrary(libname, non_plugin_cc,
-        LIBS=[ 'Mu2eUtilities',
+        LIBS=[ 
+               'BFieldGeom',
+               'ExtinctionMonitorUCIGeom',
+               'ExtinctionMonitorFNAL',
+               'CosmicRayShieldGeom',
+               'CalorimeterGeom',
                'LTrackerGeom',
                'TTrackerGeom',
                'ITrackerGeom',
                'TrackerGeom',
                'TargetGeom',
+               'Mu2eBuildingGeom',
+               'ProtonBeamDumpGeom',
+               'ProductionTargetGeom',
                'BeamlineGeom',
-               'VirtualDetectorGeom',
-               'CalorimeterGeom',
-               'BFieldGeom',
-               'CosmicRayShieldGeom',
-               'ExtinctionMonitorFNAL',
-               'ExtinctionMonitorUCIGeom',
+               'Mu2eUtilities',
                'Mu2eInterfaces',
                'art_Framework_Core',
                'art_Framework_Services_Registry',

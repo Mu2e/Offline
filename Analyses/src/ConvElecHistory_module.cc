@@ -1,9 +1,9 @@
 //
 // A module to follow the conversion electron in the events
 //
-// $Id: ConvElecHistory_module.cc,v 1.7 2012/02/14 21:18:28 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/14 21:18:28 $
+// $Id: ConvElecHistory_module.cc,v 1.8 2012/02/27 06:05:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author Gianni Onorato
 //
@@ -40,7 +40,7 @@
 #include "art/Framework/Principal/Provenance.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include <cmath>
 #include <deque>

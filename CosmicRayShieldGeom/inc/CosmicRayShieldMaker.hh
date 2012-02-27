@@ -3,9 +3,9 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.5 2011/05/19 21:36:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/19 21:36:23 $
+// $Id: CosmicRayShieldMaker.hh,v 1.6 2012/02/27 06:05:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author KLG
 //
@@ -29,13 +29,13 @@ class CosmicRayShieldMaker {
 
 public:
 
-  CosmicRayShieldMaker( SimpleConfig const & config );
+  CosmicRayShieldMaker( SimpleConfig const & config, double solenoidOffset );
 
   void parseConfig( SimpleConfig const & _config );
 
   void makeCRSSteelShield(SimpleConfig const & _config);
 
-  void calculateCRSOffsets(SimpleConfig const & _config);
+  void calculateCRSOffsets(SimpleConfig const & _config, double solenoidOffset);
 
   void calculateCommonCRSScintillatorParameters();
   void makeDetails();

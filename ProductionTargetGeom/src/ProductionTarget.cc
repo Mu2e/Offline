@@ -1,4 +1,4 @@
-#include "GeometryService/inc/ProductionTarget.hh"
+#include "ProductionTargetGeom/inc/ProductionTarget.hh"
 
 namespace mu2e {
   ProductionTarget::ProductionTarget(double rOut, double halfLength, double rotX, double rotY, const CLHEP::Hep3Vector& position)

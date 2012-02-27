@@ -5,6 +5,7 @@
 
 namespace mu2e { class SimpleConfig; }
 namespace mu2e { namespace ExtMonFNAL { class ExtMon; } }
+namespace mu2e { class ProtonBeamDump; }
 
 namespace mu2e {
   namespace ExtMonFNAL {
@@ -12,7 +13,7 @@ namespace mu2e {
     class ExtMonMaker {
       std::auto_ptr<ExtMon> m_det;
     public:
-      ExtMonMaker(const SimpleConfig& config);
+      ExtMonMaker(const SimpleConfig& config, const ProtonBeamDump& dump);
 
       // interface to GeometryService
       std::auto_ptr<ExtMon> getDetectorPtr() { return m_det; }

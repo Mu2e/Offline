@@ -1,9 +1,9 @@
 //
-// $Id: VirtualDetector.cc,v 1.10 2011/12/14 22:20:47 gandr Exp $
+// $Id: VirtualDetector.cc,v 1.1 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $
 //
 
-#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 
 namespace mu2e {

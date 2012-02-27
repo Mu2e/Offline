@@ -1,5 +1,5 @@
 #
-# $Id: SConscript,v 1.2 2012/02/27 06:05:35 gandr Exp $
+# $Id: SConscript,v 1.1 2012/02/27 06:05:35 gandr Exp $
 # $Author: gandr $
 # $Date: 2012/02/27 06:05:35 $
 #
@@ -16,19 +16,15 @@ for cc in plugin_cc: non_plugin_cc.remove(cc)
 if non_plugin_cc:
 
     # From: /path1/path2/path3/Name/src extract the string Name field.
+    ll=env.Dir('.').abspath
     dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
     local_lib_name=os.path.dirname(dd)
- 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                       LIBS=[ 'ProtonBeamDumpGeom',
-                             'Mu2eUtilities',
-                             'art_Framework_Core',
-                             'CLHEP'
+                             'Mu2eInterfaces',
+                             'Mu2eUtilities'
                              ],
                       )
-    libs=[ '#/lib/' + local_lib_name ]
-else:
-    libs=[]
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

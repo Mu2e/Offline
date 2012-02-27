@@ -1,9 +1,9 @@
 //
 // Free function to create the earthen overburden.
 //
-// $Id: constructDirt.cc,v 1.7 2011/11/23 16:42:00 gandr Exp $
+// $Id: constructDirt.cc,v 1.8 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/23 16:42:00 $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 //
@@ -18,7 +18,7 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/Mu2eBuilding.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestBox.hh"

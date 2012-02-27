@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.19 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: CalorimeterMaker.cc,v 1.20 2012/02/27 06:05:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/27 06:05:35 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -13,13 +13,10 @@
 
 //
 // Mu2e includes
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/CalorimeterMaker.hh"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 #include "CalorimeterGeom/inc/Vane.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "BeamlineGeom/inc/Beamline.hh"
 
 // Framework include files
 #include "cetlib/exception.h"
@@ -49,7 +46,7 @@ using namespace std;
 
 namespace mu2e{
 
-    CalorimeterMaker::CalorimeterMaker( SimpleConfig const& config)
+  CalorimeterMaker::CalorimeterMaker( SimpleConfig const& config, double solenoidOffset)
     {
       _calo = auto_ptr<Calorimeter>(new Calorimeter());
 
@@ -64,8 +61,6 @@ namespace mu2e{
       _calo->_roHalfTrans          = config.getDouble("calorimeter.crystalReadoutHalfTrans");
       _calo->_roHalfThickness      = config.getDouble("calorimeter.crystalReadoutHalfThickness");
 
-      GeomHandle<Beamline> beamg;
-      double solenoidOffset = beamg->solenoidOffset();
       CLHEP::Hep3Vector center = config.getHep3Vector("calorimeter.calorimeterCenter");
       _calo->_origin = CLHEP::Hep3Vector(-solenoidOffset,0,center.z());
 

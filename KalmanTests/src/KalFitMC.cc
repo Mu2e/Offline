@@ -1,14 +1,14 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.17 2012/02/21 22:26:23 gandr Exp $
+// $Id: KalFitMC.cc,v 1.18 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $ 
-// $Date: 2012/02/21 22:26:23 $
+// $Date: 2012/02/27 06:05:35 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"

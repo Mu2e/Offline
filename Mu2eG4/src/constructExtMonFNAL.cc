@@ -10,7 +10,7 @@
 #include "G4SDManager.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/ProtonBeamDump.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"

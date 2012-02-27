@@ -1,9 +1,9 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.8 2011/12/09 01:28:56 gandr Exp $
+// $Id: constructHall.cc,v 1.9 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/12/09 01:28:56 $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //
@@ -15,7 +15,7 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/Mu2eBuilding.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/finishNesting.hh"

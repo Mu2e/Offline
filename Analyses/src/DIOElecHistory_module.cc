@@ -1,9 +1,9 @@
 //
 // A module to follow the conversion electron in the events
 //
-// $Id: DIOElecHistory_module.cc,v 1.1 2011/12/28 17:19:51 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2011/12/28 17:19:51 $
+// $Id: DIOElecHistory_module.cc,v 1.2 2012/02/27 06:05:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author Gianni Onorato
 //
@@ -39,7 +39,7 @@
 #include "art/Framework/Principal/Provenance.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "VirtualDetectorGeom/inc/VirtualDetector.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include <cmath>
 #include <deque>

@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.12 2011/12/06 22:53:01 gandr Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.13 2012/02/27 06:05:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/12/06 22:53:01 $
+// $Date: 2012/02/27 06:05:35 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -35,9 +35,6 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
 
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "BeamlineGeom/inc/Beamline.hh"
-
 
 using namespace std;
 
@@ -45,7 +42,7 @@ namespace mu2e {
 
   // Constructor that gets information from the config file instead of
   // from arguments.
-  CosmicRayShieldMaker::CosmicRayShieldMaker(SimpleConfig const & _config)
+  CosmicRayShieldMaker::CosmicRayShieldMaker(SimpleConfig const & _config, double solenoidOffset)
   {
 
     _crs = auto_ptr<CosmicRayShield>(new CosmicRayShield());
@@ -54,7 +51,7 @@ namespace mu2e {
 
     parseConfig(_config);
 
-    calculateCRSOffsets(_config);
+    calculateCRSOffsets(_config, solenoidOffset);
 
     if ( _diagLevel > 0) {
       cout << __func__ << " _crs->_globalOffset: " << _crs->_globalOffset << endl;
@@ -947,11 +944,11 @@ namespace mu2e {
   }
 
 
-  void CosmicRayShieldMaker::calculateCRSOffsets(SimpleConfig const & _config) {
+  void CosmicRayShieldMaker::calculateCRSOffsets(SimpleConfig const & _config, double solenoidOffset) {
 
     const double dsCoilZ0          = _config.getDouble("toyDS.z0");
 
-    CLHEP::Hep3Vector detSolCoilPosition(GeomHandle<Beamline>()->solenoidOffset(), 0., -dsCoilZ0);
+    CLHEP::Hep3Vector detSolCoilPosition(solenoidOffset, 0., -dsCoilZ0);
 
     if ( _diagLevel > 0) {
       cout << __func__ << " detSolCoilPosition  : " << detSolCoilPosition  << endl;

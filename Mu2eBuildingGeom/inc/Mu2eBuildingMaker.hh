@@ -5,13 +5,14 @@
 
 namespace mu2e { class SimpleConfig; }
 namespace mu2e { class Mu2eBuilding; }
+namespace mu2e { class ProtonBeamDump; }
 
 namespace mu2e {
   class Mu2eBuildingMaker {
     std::auto_ptr<Mu2eBuilding> _b;
   public:
-    explicit Mu2eBuildingMaker(const SimpleConfig& config);
-    
+    explicit Mu2eBuildingMaker(const SimpleConfig& config, const ProtonBeamDump& dump);
+
     // interface to GeometryService
     std::auto_ptr<Mu2eBuilding> getPtr() { return _b; }
   };

@@ -33,8 +33,8 @@
 #include "cetlib/exception.h"
 
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/ProtonBeamDump.hh"
-#include "GeometryService/inc/Mu2eBuilding.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "GeometryService/inc/WorldG4.hh"
 
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
