@@ -1,9 +1,9 @@
 //
 // module that extract Data of the Electrons tracks that came from the targets and put temporary inside the event
 //
-// $Id: ExtractElectronsData_module.cc,v 1.6 2012/01/30 20:08:44 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/01/30 20:08:44 $
+// $Id: ExtractElectronsData_module.cc,v 1.7 2012/02/28 22:28:27 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2012/02/28 22:28:27 $
 //
 // Original author G. Tassielli
 //
@@ -398,11 +398,11 @@ void ExtractElectronsData::produce(art::Event & event ) {
                         cout<<" Hit Pos "<<hdil._hitPoint<<" Circ center "<<CirCenter<<" phi0 "<< phi0/*/CLHEP::deg*/<<" phi0 at z(-1500) "<< phi0 - CLHEP::twopi*(hdil._hitPoint.getZ()+1500.0)/helStep <<endl;
 
                 }
-                cout<<"Hits of the el track: "<<iEltrk.getNumOfHit() <<" List of hit(Id):"<<endl;
-                for (int ihit=0; ihit<(int)iEltrk.getNumOfHit(); ihit++){
-                        GenElHitData& hdil = iEltrk.getHit(ihit);
-                        if (hdil._isFirst) cout<<"\t"<<hdil._iHit->strawIndex()<<endl;
-                }
+//                cout<<"Hits of the el track: "<<iEltrk.getNumOfHit() <<" List of hit(Id):"<<endl;
+//                for (int ihit=0; ihit<(int)iEltrk.getNumOfHit(); ihit++){
+//                        GenElHitData& hdil = iEltrk.getHit(ihit);
+//                        if (hdil._isFirst) cout<<"\t"<<hdil._iHit->strawIndex()<<endl;
+//                }
 
                 ++genEltrk_it;
         }
