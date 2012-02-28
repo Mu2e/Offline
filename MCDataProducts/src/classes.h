@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.8 2011/12/30 20:31:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
+// $Id: classes.h,v 1.9 2012/02/28 22:27:37 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2012/02/28 22:27:37 $
 //
 // Original author Rob Kutschke
 //
@@ -19,6 +19,7 @@
 // instantiating another template.
 //
 #include <vector>
+#include <map>
 
 #include "art/Persistency/Common/Wrapper.h"
 #include "cetlib/map_vector.h"
@@ -40,6 +41,8 @@
 #include "art/Persistency/Common/RNGsnapshot.h"
 #include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
 
+
+
 // For cet::map_vector<T> instantiate the component pair<> and vector<pair<>> templates.
 template class std::pair<cet::map_vector_key,mu2e::SimParticle>;
 template class std::pair<cet::map_vector_key,mu2e::PointTrajectory>;
@@ -51,6 +54,8 @@ template class std::vector<std::pair<cet::map_vector_key,mu2e::PointTrajectory> 
 template class art::Ptr<mu2e::StepPointMC>;
 template class std::vector<art::Ptr<mu2e::StepPointMC> >;
 template class std::vector<std::vector<art::Ptr<mu2e::StepPointMC> > >;
+template class std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>;
+template class std::map<art::Ptr<mu2e::SimParticle>::key_type,mu2e::GenElHitData>;// GenElHitDataCollection;
 
 template class art::Wrapper<mu2e::GenParticleCollection>;
 template class art::Wrapper<mu2e::StepPointMCCollection>;
@@ -67,5 +72,7 @@ template class art::Wrapper<mu2e::StatusG4>;
 template class art::Wrapper<mu2e::PtrStepPointMCVectorCollection>;
 template class art::Wrapper<mu2e::MixingSummary>;
 template class art::Wrapper<std::vector<art::RNGsnapshot> >;
+
+template class art::Wrapper<mu2e::GenElHitData>;//gio
 template class art::Wrapper<mu2e::VisibleGenElTrackCollection>;
 

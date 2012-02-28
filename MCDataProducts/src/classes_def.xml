@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.8 2011/12/30 20:31:46 youzy Exp $     -->
-<!--  $Author: youzy $ -->
-<!--  $Date: 2011/12/30 20:31:46 $   -->
+<!--  $Id: classes_def.xml,v 1.9 2012/02/28 22:27:37 gianipez Exp $     -->
+<!--  $Author: gianipez $ -->
+<!--  $Date: 2012/02/28 22:27:37 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.8 $$Date: 2011/12/30 20:31:46 $"; -->
+<!--  rev="$Revision: 1.9 $$Date: 2012/02/28 22:27:37 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -57,7 +57,9 @@
  <class name="art::RNGsnapshot"/>
  <class name="std::vector<art::RNGsnapshot>"/>
 
+ <class name="std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>"/>
  <class name="mu2e::GenElHitData"/>
+ <class name="std::map<unsigned long,mu2e::GenElHitData>"/> 
  <class name="mu2e::VisibleGenElTrack"/>
  <class name="mu2e::VisibleGenElTrackCollection" persistent="false"/>
 
@@ -77,6 +79,7 @@
  <class name="art::Wrapper<mu2e::MixingSummary>"/>
  <class name="art::Wrapper<std::vector<art::RNGsnapshot> >"/>
 
+<!-- <class name="art::Wrapper<mu2e::GenElHitData>"/> -->
  <class name="art::Wrapper<mu2e::VisibleGenElTrackCollection>"/>
 
 </lcgdict>
