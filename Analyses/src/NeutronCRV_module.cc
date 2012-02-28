@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: NeutronCRV_module.cc,v 1.11 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: NeutronCRV_module.cc,v 1.12 2012/02/28 23:05:42 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/02/28 23:05:42 $
 //
 // Original author Rob Kutschke
 //
@@ -43,7 +43,6 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "ITrackerGeom/inc/Cell.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
-#include "Analyses/inc/MCCaloUtilities.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
