@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.17 2012/02/29 00:34:48 gandr Exp $
+// $Id: BFMap.hh,v 1.18 2012/02/29 00:35:04 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:34:48 $
+// $Date: 2012/02/29 00:35:04 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -16,6 +16,7 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
+#include <ostream>
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/Container3D.hh"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -26,6 +27,13 @@ namespace mu2e {
   public:
 
     friend class BFieldManagerMaker;
+
+    struct GridPoint {
+      unsigned ix;
+      unsigned iy;
+      unsigned iz;
+      GridPoint(unsigned a, unsigned b, unsigned c) : ix(a), iy(b), iz(c) {}
+    };
 
     BFMap(std::string filename,
           int nx, double xmin, double dx,
@@ -54,7 +62,8 @@ namespace mu2e {
     bool getBFieldWithStatus(const CLHEP::Hep3Vector &, CLHEP::Hep3Vector &) const;
 
     // Validity checker
-    bool isValid(CLHEP::Hep3Vector const& point) const;
+    bool isValid(const CLHEP::Hep3Vector& point) const;
+    bool isValid(const GridPoint& ipoint) const { return _field.isValid(ipoint.ix, ipoint.iy, ipoint.iz); }
 
     // Some extra checks for GMC format maps.
     bool isGMCValid(CLHEP::Hep3Vector const& point) const;
@@ -74,6 +83,11 @@ namespace mu2e {
     CLHEP::Hep3Vector grid2point(unsigned ix, unsigned iy, unsigned iz) const {
       return CLHEP::Hep3Vector(_xmin + ix * _dx, _ymin + iy * _dy, _zmin +  iz * _dz);
     }
+
+    GridPoint point2grid(const CLHEP::Hep3Vector& pos) const;
+
+    // returns vector from ipos to pos normalized to grid spacing
+    CLHEP::Hep3Vector cellFraction(const CLHEP::Hep3Vector& pos, const GridPoint& ipos) const;
 
     BFMapType type() const { return _type; }
 
@@ -127,19 +141,24 @@ namespace mu2e {
     double gmcpoly2(double const f1d[3], double const& x) const;
 
     // Compute grid indices for a given point.
-    std::size_t iX( double x){
+    std::size_t iX( double x) const {
       return static_cast<int>((x - _xmin)/_dx + 0.5);
     }
 
-    std::size_t iY( double y){
+    std::size_t iY( double y) const {
       return static_cast<int>((y - _ymin)/_dy + 0.5);
     }
 
-    std::size_t iZ( double z){
+    std::size_t iZ( double z) const {
       return static_cast<int>((z - _zmin)/_dz + 0.5);
     }
-
   };
+
+  inline BFMap::GridPoint BFMap::point2grid(const CLHEP::Hep3Vector& pos) const {
+    return GridPoint(iX(pos.x()), iY(pos.y()), iZ(pos.z()));
+  }
+
+  std::ostream& operator<<(std::ostream& os, const BFMap::GridPoint& ipoint);
 
 } // end namespace mu2e
 

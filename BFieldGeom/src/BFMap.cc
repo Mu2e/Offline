@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.17 2012/02/29 00:34:48 gandr Exp $
+// $Id: BFMap.cc,v 1.18 2012/02/29 00:35:04 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:34:48 $
+// $Date: 2012/02/29 00:35:04 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -54,6 +54,14 @@ namespace mu2e {
   // Some extra checks for GMC format maps - dummy implementation for now.
   bool BFMap::isGMCValid(CLHEP::Hep3Vector const& point) const{
     return true;
+  }
+
+  CLHEP::Hep3Vector BFMap::cellFraction(const CLHEP::Hep3Vector& pos, const GridPoint& ipos) const {
+    const CLHEP::Hep3Vector gridpos(grid2point(ipos.ix, ipos.iy, ipos.iz));
+    return CLHEP::Hep3Vector( (pos.x() - gridpos.x())/_dx,
+                              (pos.y() - gridpos.y())/_dy,
+                              (pos.z() - gridpos.z())/_dz
+                              );
   }
 
   // Populate a 3x3x3 array with the field values centered on the grid point
@@ -326,6 +334,10 @@ namespace mu2e {
     } else{
       cout << "Will not warn if outside of the valid region." << endl;
     }
+  }
+
+  std::ostream& operator<<(std::ostream& os, const BFMap::GridPoint& p) {
+    return os<<"BFMap::GridPoint("<<p.ix<<", "<<p.iy<<", "<<p.iz<<")";
   }
 
 } // end namespace mu2e

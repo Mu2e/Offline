@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.32 2012/02/29 00:34:48 gandr Exp $
+// $Id: BFieldManagerMaker.cc,v 1.33 2012/02/29 00:35:04 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:34:48 $
+// $Date: 2012/02/29 00:35:04 $
 //
 
 // Includes from C++
@@ -540,22 +540,48 @@ namespace mu2e {
     int nread = 0;
     while( (!in.eof()) && (nread<nrecord) ) {
 
-      // Calculate indexes
-      int ix = (nread/(ny*nz));
-      int iy = (nread/nz)%ny;
-      int iz = nread%nz;
-
       // Read and parse line
-      nread++;
+      ++nread;
       getline(in, cbuf);
       istringstream sin(cbuf);
       if( (sin>>x[0]>>x[1]>>x[2]>>b[0]>>b[1]>>b[2]).fail() ) break;
 
+
       // Store the information into the 3d arrays.
       CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(x[0],x[1],x[2])-G4BL_offset;
-      bfmap._field.set(ix, iy, iz, CLHEP::Hep3Vector(b[0],b[1],b[2]));
-      bfmap._isDefined.set(ix, iy, iz, true);
 
+      // find out the closest grid point
+      BFMap::GridPoint ipos(bfmap.point2grid(pos));
+
+      // check the range
+      if(!bfmap.isValid(ipos)) {
+        throw cet::exception("GEOM")
+          <<"Error while reading "<<filename<<"\n"
+          <<"line: "<<cbuf<<"\n"
+          <<"the coordinates are out of range: grid point would be "<<ipos;
+      }
+
+      // Make sure the coordinates we read match a grid point position
+      const double tolerance = std::numeric_limits<double>::epsilon();
+      CLHEP::Hep3Vector cellfrac(bfmap.cellFraction(pos, ipos));
+      if( (std::abs(cellfrac.x()) > tolerance) ||
+          (std::abs(cellfrac.y()) > tolerance) ||
+          (std::abs(cellfrac.z()) > tolerance) )  {
+        throw cet::exception("GEOM")
+          <<"Error while reading "<<filename<<"\n"
+          <<"line: "<<cbuf<<"\n"
+          <<"the coordinates do not match position of any grid point within the tolerance="<<tolerance;
+        }
+
+      if(bfmap._isDefined(ipos.ix, ipos.iy, ipos.iz)) {
+        throw cet::exception("GEOM")
+          <<"Error while reading "<<filename<<"\n"
+          <<"line: "<<cbuf<<"\n"
+          <<"Attempt to redefine an already defined point.";
+      }
+
+      bfmap._field.set(ipos.ix, ipos.iy, ipos.iz, CLHEP::Hep3Vector(b[0],b[1],b[2]));
+      bfmap._isDefined.set(ipos.ix, ipos.iy, ipos.iz, true);
     }
 
     if( nread!=nrecord ) {
@@ -586,7 +612,7 @@ namespace mu2e {
     int nPoints = bf.nx()*bf.ny()*bf.nz();
 
     // Number of bytes in each big array.
-    ssize_t nbytes = sizeof(CLHEP::Hep3Vector)*nPoints;
+    size_t nbytes = sizeof(CLHEP::Hep3Vector)*nPoints;
 
     // Open the binary file.
     int fd = open( binFilename.c_str(), O_RDONLY );
@@ -604,18 +630,28 @@ namespace mu2e {
 
     bool grid_coordinates_stored = false;
     struct stat info;
-    fstat(fd, &info);
-    if(info.st_size == sizeof(unsigned) + 2*nbytes) {
+    if(fstat(fd, &info)) {
+      int errsave = errno;
+      char* errmsg = strerror(errsave);
+      throw cet::exception("GEOM")
+        << "BFieldManagerMaker:readG4BLBinary: Error doing fstat() on " << binFilename
+        << "  errno: " << errsave << " " << errmsg << "\n";
+
+    }
+    if(unsigned(info.st_size) == sizeof(unsigned) + 2*nbytes) {
       grid_coordinates_stored = true;
     }
     else { // make sure the new format file has the expected size
-      if(info.st_size != sizeof(unsigned) + nbytes) {
+      if(unsigned(info.st_size) != sizeof(unsigned) + nbytes) {
         throw cet::exception("GEOM")
           << "BFieldManagerMaker:readG4BLBinary(): the size = " << info.st_size
           << " of the file "<<binFilename
           << " does not match any of the expected values ("<<sizeof(unsigned) + nbytes
           <<" or "<< sizeof(unsigned) + 2*nbytes<<")";
       }
+    }
+    if(bfieldVerbosityLevel>1) {
+      std::cout<<"grid_coordinates_stored = "<<grid_coordinates_stored<<" for file "<<binFilename<<std::endl;
     }
 
     // A word to receive the endian marker.
@@ -659,7 +695,7 @@ namespace mu2e {
       }
     }
     // Read the field values at the grid points.
-    ssize_t s2 = read( fd, fieldAddr, nbytes );
+    size_t s2 = read( fd, fieldAddr, nbytes );
     if ( s2 != nbytes ){
       int errsave = errno;
       char* errmsg = strerror(errsave);
@@ -745,7 +781,13 @@ namespace mu2e {
 
     // Get the file size, in bytes, ( info.st_size ).
     struct stat info;
-    fstat( fd, &info);
+    if(fstat(fd, &info)) {
+      int errsave = errno;
+      char* errmsg = strerror(errsave);
+      throw cet::exception("GEOM")
+        << "BFieldManagerMaker::computeArraySize(): Error doing fstat() on " << filename
+        << "  errno: " << errsave << " " << errmsg << "\n";
+    }
 
     // Check that an integral number of records fits in the file.
     int remainder = info.st_size % sizeof(DiskRecord);
