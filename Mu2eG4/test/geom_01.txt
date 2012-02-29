@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.125 2012/02/29 00:33:50 gandr Exp $
+// $Id: geom_01.txt,v 1.126 2012/02/29 16:12:21 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:33:50 $
+// $Date: 2012/02/29 16:12:21 $
 //
 // Original author Rob Kutschke
 //
@@ -464,17 +464,17 @@ int  bfield.verbosityLevel =  1;
 bool bfield.writeG4BLBinaries     =  false;
 
 vector<string> bfield.innerMaps = {
-  "BFieldMaps/Mau7/Mu2e_DSMap.header",
-  "BFieldMaps/Mau7/Mu2e_PSMap.header",
-  "BFieldMaps/Mau7/Mu2e_TSuMap.header",
-  "BFieldMaps/Mau7/Mu2e_TSdMap.header",
-  "BFieldMaps/Mau7/PStoDumpAreaMap.header",
-  "BFieldMaps/Mau7/ProtonDumpAreaMap.header"
+  "BFieldMaps/Mau7b/Mu2e_DSMap.header",
+  "BFieldMaps/Mau7b/Mu2e_PSMap.header",
+  "BFieldMaps/Mau7b/Mu2e_TSuMap.header",
+  "BFieldMaps/Mau7b/Mu2e_TSdMap.header",
+  "BFieldMaps/Mau7b/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau7b/ProtonDumpAreaMap.header"
 };
 
 vector<string> bfield.outerMaps = {
-  "BFieldMaps/Mau7/ExtMonUCIAreaMap.header",
-  "BFieldMaps/Mau7/PSAreaMap.header"
+  "BFieldMaps/Mau7b/ExtMonUCIAreaMap.header",
+  "BFieldMaps/Mau7b/PSAreaMap.header"
 };
 
 // This scale factor is of limited use.

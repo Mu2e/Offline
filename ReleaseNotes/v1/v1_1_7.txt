@@ -1,9 +1,13 @@
 
-  $Id: v1_1_7.txt,v 1.10 2012/02/29 00:53:40 gandr Exp $
+  $Id: v1_1_7.txt,v 1.11 2012/02/29 16:12:21 gandr Exp $
   $Author: gandr $
-  $Date: 2012/02/29 00:53:40 $
+  $Date: 2012/02/29 16:12:21 $
 
            Release notes for Mu2e Offline software, v1_1_7
+
+10) February 29, 2012 gandr
+
+    Use corrected hall field maps from Mau7b in geom_01.txt
 
 9) February 28, 2012 gandr
 
