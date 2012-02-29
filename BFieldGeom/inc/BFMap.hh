@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.18 2012/02/29 00:35:04 gandr Exp $
+// $Id: BFMap.hh,v 1.19 2012/02/29 00:44:57 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:35:04 $
+// $Date: 2012/02/29 00:44:57 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -135,7 +135,7 @@ namespace mu2e {
 
     // Interpolator
     CLHEP::Hep3Vector interpolate(CLHEP::Hep3Vector const vec[3][3][3],
-                                  double const frac[3]) const;
+                                  const CLHEP::Hep3Vector& frac) const;
 
     // Polynomial fit function used by interpolator
     double gmcpoly2(double const f1d[3], double const& x) const;

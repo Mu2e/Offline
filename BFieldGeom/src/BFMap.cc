@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.18 2012/02/29 00:35:04 gandr Exp $
+// $Id: BFMap.cc,v 1.19 2012/02/29 00:44:57 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:35:04 $
+// $Date: 2012/02/29 00:44:57 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -91,7 +91,7 @@ namespace mu2e {
   // Function to interpolate the BField value at the point from the values
   // at in the neighbor grid.
   CLHEP::Hep3Vector BFMap::interpolate(CLHEP::Hep3Vector const vec[3][3][3],
-                                       double const frac[3]) const {
+                                       const CLHEP::Hep3Vector& frac) const {
 
     // Create vecs and vectors
     double x1d[3], y1d[3], z1d[3];
@@ -289,12 +289,7 @@ namespace mu2e {
       cout << "Used Point:      " << grid2point(xindex,yindex,zindex) << endl;
     }
 
-
-    double frac[] = {
-      (point.x() - grid2point(xindex,yindex,zindex).x())/_dx,
-      (point.y() - grid2point(xindex,yindex,zindex).y())/_dy,
-      (point.z() - grid2point(xindex,yindex,zindex).z())/_dz
-    };
+    CLHEP::Hep3Vector frac(cellFraction(point, GridPoint(xindex, yindex, zindex)));
 
     // Run the interpolator
     result = interpolate(neighborsBF,frac);
