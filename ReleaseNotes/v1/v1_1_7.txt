@@ -1,9 +1,16 @@
 
-  $Id: v1_1_7.txt,v 1.9 2012/02/27 21:12:33 onoratog Exp $
-  $Author: onoratog $
-  $Date: 2012/02/27 21:12:33 $
+  $Id: v1_1_7.txt,v 1.10 2012/02/29 00:53:40 gandr Exp $
+  $Author: gandr $
+  $Date: 2012/02/29 00:53:40 $
 
            Release notes for Mu2e Offline software, v1_1_7
+
+9) February 28, 2012 gandr
+
+   Magnetic field maps for the hall were misinterpreted by the code
+   because the points came in a different order than in other maps.
+   Improve the map reading code to handle arbitrary ordering of map
+   points.
 
 8) February 27, 2012 onoratog     
    The old gas material has been restored in the code but is not the default one.
