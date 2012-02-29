@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.1 2012/02/27 06:05:35 gandr Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.2 2012/02/29 00:35:44 gandr Exp $
 // $Author: gandr $
 //
 
@@ -353,7 +353,7 @@ namespace mu2e {
         // Position and half length of this detector are best computed
         // in one place.  Since the VirtualDetector data structure
         // does not store half size, we'll do the computations later.
-        _vd->addVirtualDetector(VirtualDetectorId::ExtMonCommonPlane, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+        _vd->addVirtualDetector(VirtualDetectorId::ProtonBeamDumpCoreFace, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
     }
 
   }
