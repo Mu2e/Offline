@@ -1,9 +1,9 @@
 
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.18 2012/02/17 23:02:53 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.19 2012/02/29 02:09:22 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/02/17 23:02:53 $
+// $Date: 2012/02/29 02:09:22 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -573,17 +573,19 @@ namespace mu2e
 	    _phits.clear();
 	    for(std::vector<size_t>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
 	      const StrawHit& sh = _strawhits->at(*ip);
-	      const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(*ip);
 	      TrkHitInfo thinfo;
 	      thinfo._pos = shpos[*ip];
 	      thinfo._resid = sh.time();
-	      thinfo._mcpdg = mcsum[0]._pdgid;
-	      thinfo._mcgen = mcsum[0]._gid;
-	      thinfo._mcproc = mcsum[0]._pid;
+	      if(_kfitmc.mcData()._mcsteps != 0) {
+		const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(*ip);
+		thinfo._mcpdg = mcsum[0]._pdgid;
+		thinfo._mcgen = mcsum[0]._gid;
+		thinfo._mcproc = mcsum[0]._pid;
+		if(mcsum[0]._gid == 2)++_nconv;
+		if(mcsum[0]._gid <0)++_ndelta;
+		if(mcsum[0]._pdgid == 2212)++_nprot;
+	      }
 	      _phits.push_back(thinfo);
-	      if(mcsum[0]._gid == 2)++_nconv;
-	      if(mcsum[0]._gid <0)++_ndelta;
-	      if(mcsum[0]._pdgid == 2212)++_nprot;
 	    }
 	    _dmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
 	    _dmcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
@@ -664,18 +666,21 @@ namespace mu2e
   // optional diagnostics
       if(_diag > 0){
   // summarize the MC truth for this strawhit
-	const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(ihit);
+
 	TrkHitInfo thinfo;
 	HepPoint tpos =  traj.position(hitpoca.flt1());
 	thinfo._pos = CLHEP::Hep3Vector(tpos.x(),tpos.y(),tpos.z());
 	thinfo._resid = hitpoca.doca();
-	thinfo._mcpdg = mcsum[0]._pdgid;
-	thinfo._mcgen = mcsum[0]._gid;
-	thinfo._mcproc = mcsum[0]._pid;
+	if(_kfitmc.mcData()._mcsteps != 0){
+	  const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(ihit);
+	  thinfo._mcpdg = mcsum[0]._pdgid;
+	  thinfo._mcgen = mcsum[0]._gid;
+	  thinfo._mcproc = mcsum[0]._pid;
+	}
 	thivec.push_back(thinfo);
       }
     }
-// update track
+    // update track
     mytrk.setIndices(goodhits);
   }
 
@@ -826,10 +831,10 @@ namespace mu2e
       _time = sh.time();
      // find proximity for different radii
       double dmin;
-      findProximity(shpos,istr,50.0,_n50,dmin);
-      findProximity(shpos,istr,100.0,_n100,dmin);
-      findProximity(shpos,istr,150.0,_n150,dmin);
-      findProximity(shpos,istr,200.0,_n200,dmin);
+//      findProximity(shpos,istr,50.0,_n50,dmin);
+//      findProximity(shpos,istr,100.0,_n100,dmin);
+//      findProximity(shpos,istr,150.0,_n150,dmin);
+//      findProximity(shpos,istr,200.0,_n200,dmin);
       _dmin = dmin;
       double esum(0.0);
       // MC information
@@ -857,21 +862,27 @@ namespace mu2e
 	_pmom /= esum;
       }
       // summarize the MC truth for this strawhit
-      const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(istr); 
-      _mcnunique = mcsum.size();
-      // compute energy sum
-      _mcedep = 0.0;
-      for(std::vector<TrkSum>::const_iterator isum=mcsum.begin(); isum != mcsum.end(); ++isum){
-	_mcedep += isum->_esum;
+      if(_kfitmc.mcData()._mcsteps != 0){
+	const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(istr); 
+	_mcnunique = mcsum.size();
+	// compute energy sum
+	_mcedep = 0.0;
+	for(std::vector<TrkSum>::const_iterator isum=mcsum.begin(); isum != mcsum.end(); ++isum){
+	  _mcedep += isum->_esum;
+	}
+	// first entry
+	_mcemax = mcsum[0]._esum;
+	_mcnmax = mcsum[0]._count;
+	_mcpdg = mcsum[0]._pdgid;
+	_mcgen = mcsum[0]._gid;
+	_mcproc = mcsum[0]._pid;
+	_mctime = mcsum[0]._time;
+	_mcshpos = mcsum[0]._pos;
+	bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
+	if(conversion){
+	  ++_nchit;
+	}
       }
-      // first entry
-      _mcemax = mcsum[0]._esum;
-      _mcnmax = mcsum[0]._count;
-      _mcpdg = mcsum[0]._pdgid;
-      _mcgen = mcsum[0]._gid;
-      _mcproc = mcsum[0]._pid;
-      _mctime = mcsum[0]._time;
-      _mcshpos = mcsum[0]._pos;
       _tight = tflags[istr].tight();
       _delta = tflags[istr].delta();
       _vloose = tflags[istr].veryLoose();
@@ -879,10 +890,6 @@ namespace mu2e
       _shmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
       _shmcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
       _shmctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
-     bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
-      if(conversion){
-	++_nchit;
-      }
       // compare to different time peaks
       _ntpeak = tpeaks.size();
       _nshtpeak = 0;
@@ -960,9 +967,12 @@ namespace mu2e
       double time = sh.time();
       double rad = shpos[istr].perp();
       double phi = shpos[istr].phi();
+      bool conversion(false);
       // summarize the MC truth for this strawhit
-      const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(istr); 
-      bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
+      if(_kfitmc.mcData()._mcsteps != 0) {
+	const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(istr); 
+	conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
+      }
       // fill plots
       rtsp->Fill(time);
       rptsp->Fill(time,phi);
@@ -1022,9 +1032,11 @@ namespace mu2e
     _npeak = tpeak._trkptrs.size();
     for(std::vector<size_t>::const_iterator istr= tpeak._trkptrs.begin(); istr != tpeak._trkptrs.end(); ++istr){
       // summarize the MC truth for this strawhit
-      const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(*istr); 
-      if(mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2)
-	++_nmc;
+      if(_kfitmc.mcData()._mcsteps != 0) {
+	const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(*istr); 
+	if(mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2)
+	  ++_nmc;
+      }
     }
 // fit status 
     _helixfail = helixfit._fit.failure();

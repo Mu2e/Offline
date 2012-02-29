@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.17 2012/02/21 22:26:23 gandr Exp $
-// $Author: gandr $ 
-// $Date: 2012/02/21 22:26:23 $
+// $Id: KalFit.cc,v 1.18 2012/02/29 02:09:13 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/02/29 02:09:13 $
 //
 
 // the following has to come before other BaBar includes
@@ -88,7 +88,9 @@ namespace mu2e
     _herr(pset.get<double>("hiterr",0.1)),
     _ssmear(pset.get<double>("seedsmear",1e6)),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
-    _maxdriftpull(pset.get<double>("maxDriftPull",10))
+    _maxdriftpull(pset.get<double>("maxDriftPull",10)),
+    _t0nsig(pset.get<double>("t0window",2.5)),
+    _fitpart(pset.get<int>("fitparticle",PdtPid::electron))
   {
       _kalcon = new KalContext;
       _kalcon->setBendSites(_fieldcorr);
@@ -106,7 +108,7 @@ namespace mu2e
       _kalcon->setIntersectionTolerance(100);
       _kalcon->setMaxMomDiff(1.0); // 1 MeV
       _kalcon->setTrajBuffer(0.01); // 10um
-      _kalcon->setDefaultType(PdtPid::electron); // by default, fit electrons
+      _kalcon->setDefaultType((PdtPid::PidType)_fitpart);
     }
 
   KalFit::~KalFit(){
@@ -362,8 +364,6 @@ namespace mu2e
 	double t0mean = t0sum/hitst0.size();
 	double t02 = t0sum2/hitst0.size();
 	double t0sig = sqrt(max(t02 - t0mean*t0mean,0.0));
-// TrkT0 window should be a parameter, FIXME!!!!
-        double nsig(2.5);
         double t0(t0med);
         double t0err(-1.0);
 	bool changed(true);
@@ -377,7 +377,7 @@ namespace mu2e
 	  t0sum = t0sum2 = 0.0;
 	  nactive = 0;
 	  for(unsigned ihit=0;ihit<hitst0.size();ihit++){
-	    bool useit = fabs(hitst0[ihit]-t0) < nsig*t0sig;
+	    bool useit = fabs(hitst0[ihit]-t0) < _t0nsig*t0sig;
 	    changed |= useit != used[ihit];
 	    used[ihit] = useit;
 	    if(useit){

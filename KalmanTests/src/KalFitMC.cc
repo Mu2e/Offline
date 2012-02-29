@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.18 2012/02/27 06:05:35 gandr Exp $
-// $Author: gandr $ 
-// $Date: 2012/02/27 06:05:35 $
+// $Id: KalFitMC.cc,v 1.19 2012/02/29 02:09:13 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/02/29 02:09:13 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -95,20 +95,23 @@ namespace mu2e
   KalFitMC::findMCSteps(StepPointMCCollection const* mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids,
   std::vector<MCStepItr>& steps) {
     steps.clear();
-  // Loop over the step points, and find the one corresponding to the given detector
-    for( MCStepItr imcs =mcsteps->begin();imcs!= mcsteps->end();imcs++){
-      if( imcs->trackId() == trkid && std::find(vids.begin(),vids.end(),imcs->volumeId()) != vids.end()){
-        steps.push_back(imcs);
+    if(mcsteps != 0){
+      // Loop over the step points, and find the one corresponding to the given detector
+      for( MCStepItr imcs =mcsteps->begin();imcs!= mcsteps->end();imcs++){
+	if( imcs->trackId() == trkid && std::find(vids.begin(),vids.end(),imcs->volumeId()) != vids.end()){
+	  steps.push_back(imcs);
+	}
       }
+      // sort these in time
+      std::sort(steps.begin(),steps.end(),timecomp());
     }
-  // sort these in time
-    std::sort(steps.begin(),steps.end(),timecomp());
   }
 
 // define seed helix, t0, and hits coming from a given particle using MC truth.  Note that the input
 // trkdef object must reference a valid straw hit collection
   bool
   KalFitMC::trkFromMC(cet::map_vector_key const& trkid,TrkDef& mytrk) {
+    if(_mcdata._mcsteps == 0)return false;
 // preset to failure
     bool retval(false);
     ConditionsHandle<ParticleDataTable> pdt("ignored");
@@ -344,12 +347,14 @@ namespace mu2e
 	tshinfo._trklen = tsh->fltLen();
         PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
         tshinfo._mcn = mcptr.size();
-	std::vector<TrkSum> mcsum;
-	KalFitMC::fillMCHitSum(mcptr,mcsum); 
-	tshinfo._mcnunique = mcsum.size();
-	tshinfo._mcpdg = mcsum[0]._pdgid;
-	tshinfo._mcgen = mcsum[0]._gid;
-	tshinfo._mcproc = mcsum[0]._pid;
+	if(_mcdata._mcsteps != 0){
+	  std::vector<TrkSum> mcsum;
+	  KalFitMC::fillMCHitSum(mcptr,mcsum); 
+	  tshinfo._mcnunique = mcsum.size();
+	  tshinfo._mcpdg = mcsum[0]._pdgid;
+	  tshinfo._mcgen = mcsum[0]._gid;
+	  tshinfo._mcproc = mcsum[0]._pid;
+	}
 	_tshinfo.push_back(tshinfo);
 // count active conversion hits
 	if(tshinfo._mcgen==2&&tsh->isActive())++_ncactive;
