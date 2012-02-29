@@ -1,3 +1,10 @@
+//
+// Construct ExtinctionMonitor UCI.
+//
+// $Id: constructExtMonUCI.cc,v 1.7 2012/02/29 02:54:37 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/02/29 02:54:37 $
+
 #include <iostream>
 
 #include "G4Color.hh"
@@ -13,6 +20,7 @@
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "G4Helper/inc/G4Helper.hh"
+#include "G4Helper/inc/AntiLeakRegistry.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/nestBox.hh"
@@ -45,6 +53,7 @@ namespace mu2e {
       FindSensitiveDetector(SensitiveDetectorName::ExtMonUCITof());
 
     G4Helper* helper = &(*(art::ServiceHandle<G4Helper>()));
+    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 
     bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
     bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
@@ -125,21 +134,21 @@ namespace mu2e {
         YZYDEBUG("collimator InnerParams " << colInnerParams[0] << "  " << colInnerParams[1] << "  " << colInnerParams[2]);
       }
 
-      G4Box *colOuter = new G4Box(colInfo[iCol].name+"_Outer", colOuterParams[0], colOuterParams[1], colOuterParams[2]);
-      G4Box *colInner = new G4Box(colInfo[iCol].name+"_Inner", colInnerParams[0], colInnerParams[1], colInnerParams[2]*1.2);
+      G4Box *colOuter = reg.add( new G4Box(colInfo[iCol].name+"_Outer", colOuterParams[0], colOuterParams[1], colOuterParams[2]) );
+      G4Box *colInner = reg.add( new G4Box(colInfo[iCol].name+"_Inner", colInnerParams[0], colInnerParams[1], colInnerParams[2]*1.2) );
       // The scale 1.2 is to make sure collimator hole fully cut after rotation
       G4ThreeVector colHoleOriginLocal = det.col(iCol)->holeOriginLocal();
-      G4RotationMatrix *colHoleRot = new G4RotationMatrix();
+      G4RotationMatrix *colHoleRot = reg.add( new G4RotationMatrix() );
       *colHoleRot = det.col(iCol)->holeRotation();
       
-      colInfo[iCol].solid = new G4SubtractionSolid(colInfo[iCol].name,
-                                                   colOuter,
-                                                   colInner,
-                                                   colHoleRot,
-                                                   colHoleOriginLocal);
+      colInfo[iCol].solid = reg.add( new G4SubtractionSolid(colInfo[iCol].name,
+                                                            colOuter,
+                                                            colInner,
+                                                            colHoleRot,
+                                                            colHoleOriginLocal) );
 
       G4ThreeVector colOriginLocal = det.col(iCol)->originLocal();
-      G4RotationMatrix *colRot = new G4RotationMatrix();
+      G4RotationMatrix *colRot = reg.add( new G4RotationMatrix() );
       *colRot = det.col(iCol)->rotation();
 
       int nestVerbosity = 0;
@@ -184,16 +193,16 @@ namespace mu2e {
         YZYDEBUG("magnet InnerParams " << magInnerParams[0] << "  " << magInnerParams[1] << "  " << magInnerParams[2]);
       }
 
-      G4Box *magOuter = new G4Box(magInfo[iMag].name+"_Outer", magOuterParams[0], magOuterParams[1], magOuterParams[2]);
-      G4Box *magInner = new G4Box(magInfo[iMag].name+"_Inner", magInnerParams[0], magInnerParams[1], magInnerParams[2]*1.2);
+      G4Box *magOuter = reg.add( new G4Box(magInfo[iMag].name+"_Outer", magOuterParams[0], magOuterParams[1], magOuterParams[2]) );
+      G4Box *magInner = reg.add( new G4Box(magInfo[iMag].name+"_Inner", magInnerParams[0], magInnerParams[1], magInnerParams[2]) );
       // The scale 1.2 is to make sure magnet hole fully cut after rotation
-      magInfo[iMag].solid = new G4SubtractionSolid(magInfo[iMag].name,
-                                                   magOuter,
-                                                   magInner,
-                                                   0,
-                                                   G4ThreeVector(0, 0, 0));
+      magInfo[iMag].solid = reg.add( new G4SubtractionSolid(magInfo[iMag].name,
+                                                            magOuter,
+                                                            magInner,
+                                                            0,
+                                                            G4ThreeVector(0, 0, 0)) );
 
-      G4RotationMatrix *magRot = new G4RotationMatrix();
+      G4RotationMatrix *magRot = reg.add( new G4RotationMatrix() );
       *magRot = det.mag(iMag)->rotation();
       G4ThreeVector magOriginLocal = det.mag(iMag)->originLocal();
 
@@ -241,9 +250,9 @@ namespace mu2e {
           YZYDEBUG("tofParams " << tofParams[0] << "  " << tofParams[1] << "  " << tofParams[2]);
         }
 
-        tofInfo[iTof].solid = new G4Box(tofInfo[iTof].name, tofParams[0], tofParams[1], tofParams[2]);
+        tofInfo[iTof].solid = reg.add( new G4Box(tofInfo[iTof].name, tofParams[0], tofParams[1], tofParams[2]) );
   
-        G4RotationMatrix *tofRot = new G4RotationMatrix();
+        G4RotationMatrix *tofRot = reg.add( new G4RotationMatrix() );
         *tofRot = det.tof(iTofSta, iTofSeg)->rotation();
         G4ThreeVector tofOriginLocal = det.tof(iTofSta, iTofSeg)->originLocal();
 
@@ -411,7 +420,7 @@ namespace mu2e {
     bool shdChannelSolid   = config.getBool("extmon_uci.shdChannelSolid", false);
     G4Material* shdChannelMaterial = materialFinder.get("extmon_uci.shdChannelMaterialName");
 
-    G4RotationMatrix *shdChannelRot = new G4RotationMatrix();
+    G4RotationMatrix *shdChannelRot = reg.add( new G4RotationMatrix() );
     *shdChannelRot = det.col(0)->holeRotation();
 
     const int kNShdChannel = config.getInt("extmon_uci.nShdChannels", 0);
@@ -437,9 +446,9 @@ namespace mu2e {
       shdChannelInfo[iShdChannel] = VolumeInfo( name.str(),
                                                 CLHEP::Hep3Vector(0, 0, 0),
                                                 shdChannelMotherInfo.centerInWorld);
-      shdChannelInfo[iShdChannel].solid = new G4Para( name.str(),
-                                                      shdChannelParams[0], shdChannelParams[1], shdChannelParams[2],
-                                                      0, shdChannelRot->theta(), -0.5*M_PI );
+      shdChannelInfo[iShdChannel].solid = reg.add( new G4Para( name.str(),
+                                                               shdChannelParams[0], shdChannelParams[1], shdChannelParams[2],
+                                                               0, shdChannelRot->theta(), -0.5*M_PI ) );
       finishNesting( shdChannelInfo[iShdChannel],
                      shdChannelMaterial,
                      0,
