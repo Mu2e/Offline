@@ -43,6 +43,8 @@ namespace mu2e {
     : bfconf_(new BFieldConfig())
   {
     bfconf_->writeBinaries_ = config.getBool("bfield.writeG4BLBinaries", false);
+    bfconf_->verbosityLevel_ = config.getInt("bfield.verbosityLevel");
+
     bfconf_->scaleFactor_ = config.getDouble("bfield.scaleFactor",1.0);
 
     bfconf_->dsFieldForm_ = BFieldConfig::DSFieldModel(config.getInt("detSolFieldForm", BFieldConfig::dsModelUniform));

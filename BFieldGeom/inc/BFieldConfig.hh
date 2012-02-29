@@ -63,10 +63,11 @@ namespace mu2e {
     // to trigger the map-writing hack inside the BFieldManagerMaker code.
     bool writeBinaries() const { return writeBinaries_; }
 
+    int verbosityLevel() const { return verbosityLevel_; }
+
   private:
 
-    bool writeBinaries_;
-    BFieldConfig() : writeBinaries_(false), scaleFactor_(1.) {}
+    BFieldConfig() : scaleFactor_(1.), writeBinaries_(false), verbosityLevel_(1) {}
 
     // GMC, G4BL or possible future types.
     BFMapType mapType_;
@@ -87,6 +88,8 @@ namespace mu2e {
     // Special case: gradient field in the DS
     CLHEP::Hep3Vector dsGradientValue_;
 
+    bool writeBinaries_;
+    int  verbosityLevel_;
   };
 
 } // namespace mu2e

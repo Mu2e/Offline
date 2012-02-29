@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.124 2012/02/24 21:33:12 genser Exp $
-// $Author: genser $
-// $Date: 2012/02/24 21:33:12 $
+// $Id: geom_01.txt,v 1.125 2012/02/29 00:33:50 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/02/29 00:33:50 $
 //
 // Original author Rob Kutschke
 //
@@ -460,6 +460,9 @@ double toyDS.gradient      = 0.0; // Tesla/m
 
 // This is recommended field map. See geom_mecofield.txt to use the meco field.
 string bfield.format  = "G4BL";
+int  bfield.verbosityLevel =  1;
+bool bfield.writeG4BLBinaries     =  false;
+
 vector<string> bfield.innerMaps = {
   "BFieldMaps/Mau7/Mu2e_DSMap.header",
   "BFieldMaps/Mau7/Mu2e_PSMap.header",

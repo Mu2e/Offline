@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.29 2012/02/21 22:26:40 gandr Exp $
+// $Id: BFieldManagerMaker.cc,v 1.30 2012/02/29 00:33:50 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:26:40 $
+// $Date: 2012/02/29 00:33:50 $
 //
 
 // Includes from C++
@@ -44,6 +44,10 @@ using namespace std;
 namespace mu2e {
 
   namespace {
+
+    // To control printouts from helper functions in this file
+    int bfieldVerbosityLevel = 0;
+
     // Passing a string (not a const string&) potentially more efficient b/c of the copying
     std::string basename(std::string file) {
       std::string::size_type i = file.rfind('.');
@@ -76,6 +80,8 @@ namespace mu2e {
     _resolveFullPath(),
     _bfmgr(new BFieldManager())
   {
+    bfieldVerbosityLevel = config.verbosityLevel();
+
     if(config.mapType() == BFMapType::GMC) {
 
       // Add the field maps.
@@ -122,12 +128,14 @@ namespace mu2e {
     }
 
     // For debug purposes: print the field in the target region
-    CLHEP::Hep3Vector b = _bfmgr->getBField(CLHEP::Hep3Vector(3900.0,0.0,-6550.0));
-    cout << "B-field at the proton target: ("
-         << b.x() << ","
-         << b.y() << ","
-         << b.z() << ")"
-         << endl;
+    if(bfieldVerbosityLevel > 0) {
+      CLHEP::Hep3Vector b = _bfmgr->getBField(CLHEP::Hep3Vector(3900.0,0.0,-6550.0));
+      cout << "B-field at the proton target: ("
+           << b.x() << ","
+           << b.y() << ","
+           << b.z() << ")"
+           << endl;
+    }
   }
 
   // Parse the config file to learn about one magnetic field map.
@@ -271,7 +279,17 @@ namespace mu2e {
       }
 
       // The offset description is optional and has a default.
-      if ( !offsetFound ) offset = offsetDefault;
+      if ( !offsetFound ) {
+        offset = offsetDefault;
+        if(bfieldVerbosityLevel > 1) {
+          std::cout<<"BFieldManagerMaker: G4BLHeader offset missing, using default = "<<offset<<std::endl;
+        }
+      }
+      else {
+        if(bfieldVerbosityLevel > 1) {
+          std::cout<<"BFieldManagerMaker: using offset from G4BLHeader = "<<offset<<std::endl;
+        }
+      }
 
       // Adjust the lower bounds of the grid.
       X0[0] = X0[0] - offset.x();
@@ -292,7 +310,9 @@ namespace mu2e {
     typedef BFieldConfig::FileSequenceType::const_iterator Iter;
 
     for(Iter i = files.begin(); i != files.end(); ++i) {
-      cout << "Reading " << *i << endl;
+      if(bfieldVerbosityLevel > 0) {
+        cout << "Reading " << *i << endl;
+      }
       const std::string mapkey = basename(*i);
       loadG4BL(mapContainer, mapkey, _resolveFullPath(*i), scaleFactor);
     }
