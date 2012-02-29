@@ -11,16 +11,15 @@
 # absolute pan
 #/vis/viewer/panTo 0.0 0.0
 # absolute zoom:
-/vis/viewer/zoomTo 1.0
+#/vis/viewer/zoomTo 1.0
 /vis/disable
 /vis/scene/create
 #/vis/scene/add/volume world
-#/vis/scene/add/volume HallAir
-/vis/scene/add/volume ProtonBeamDumpShielding
+/vis/scene/add/volume HallAir
+#/vis/scene/add/volume ProtonBeamDumpShielding
 /vis/scene/add/trajectories
 /vis/sceneHandler/attach
 /vis/scene/endOfEventAction refresh
-/vis/enable 
 
 ################################################################
 # Viewer settings for the case top volume is ProtonBeamDumpShielding
@@ -30,10 +29,10 @@
 # /vis/viewer/panTo 0 0 m
 # /vis/viewer/zoomTo 1
 
-## View the magnet
-/vis/viewer/set/viewpointThetaPhi 103.3 0
-/vis/viewer/panTo  +0.5 1.5 m
-/vis/viewer/zoomTo 5
+# ## View the magnet
+# /vis/viewer/set/viewpointThetaPhi 103.3 0
+# /vis/viewer/panTo  +0.5 1.5 m
+# /vis/viewer/zoomTo 5
 
 # ## Zoom onto the entrance to the first collimator, with /vis/scene/add/volume ProtonBeamDumpShielding
 # /vis/viewer/set/viewpointThetaPhi 103.3 0
@@ -56,5 +55,20 @@
 # /vis/viewer/zoomTo 10
 
 ################################################################
+# Settings for top volume ==HallAir
+
+## Look at trajectories from proton target to beam from a side
+/vis/viewer/set/viewpointThetaPhi 103.3 0
+/vis/viewer/panTo 5 0 m
+/vis/viewer/zoomTo 5
+
+# ## Look at trajectories from proton target to beam dump from the top
+# /vis/viewer/set/viewpointThetaPhi 90 89
+# /vis/viewer/panTo 8 -5 m
+# /vis/viewer/zoomTo 5
+
+
+################################################################
+/vis/enable 
 
 # Do NOT issue the /run/beamon command
