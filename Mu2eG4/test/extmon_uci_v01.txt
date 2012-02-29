@@ -62,8 +62,8 @@ string extmon_uci.colHoleMaterialName = "G4_AIR";
 int extmon_uci.nMags = 2;
 vector<double> extmon_uci.magOuterHalfLengths = {120.0, 150.0, 600.0,
                                                  150.0, 120.0, 400.0};
-vector<double> extmon_uci.magInnerHalfLengths = {25.0, 50.0, 610.0,
-                                                 50.0, 25.0, 410.0};
+vector<double> extmon_uci.magInnerHalfLengths = {25.0, 50.0, 600.1,
+                                                 50.0, 25.0, 400.1};
 vector<double> extmon_uci.magPosition1 = {3839.0, 1407.0, -16529.0,
                                           3826.0, 1529.0, -19729.0};
 vector<double> extmon_uci.magPosition2 = {3834.0, 1503.0, -17829.0,
