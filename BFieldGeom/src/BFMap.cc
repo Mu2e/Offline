@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.15 2012/02/21 22:25:28 gandr Exp $
+// $Id: BFMap.cc,v 1.16 2012/02/29 00:34:28 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:25:28 $
+// $Date: 2012/02/29 00:34:28 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -168,9 +168,9 @@ namespace mu2e {
     }
 
     if ( dflag ){
-      cout
-      << "Testpoint:          " << testpoint << endl
-      << "Point:              " << point << endl;
+      cout<< "Map "<<_key<<", dV = "<<_dx<<", "<<_dy<<", "<<_dz<<":\n"
+      << "\tTestpoint:          " << testpoint << endl
+      << "\tPoint:              " << point << endl;
     }
 
     // Check validity.  Return a zero field and optionally print a warning.
@@ -299,23 +299,6 @@ namespace mu2e {
       result.setY(-result.y());
     }
     return true;
-  }
-
-  // Called by BFieldManagerMaker.
-  void BFMap::setLimits ( double xmin, double xmax, double ymin, double ymax,
-                          double zmin, double zmax){
-    _xmin = xmin;
-    _xmax = xmax;
-    _ymin = ymin;
-    _ymax = ymax;
-    _zmin = zmin;
-    _zmax = zmax;
-
-    // Set the distance between gridpoints
-    _dx = (_xmax - _xmin)/(_nx-1.);
-    _dy = (_ymax - _ymin)/(_ny-1.);
-    _dz = (_zmax - _zmin)/(_nz-1.);
-
   }
 
   void BFMap::print( std::ostream& os) const{

@@ -3,9 +3,9 @@
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.11 2012/02/21 22:26:40 gandr Exp $
+// $Id: BFieldManagerMaker.hh,v 1.12 2012/02/29 00:34:28 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:26:40 $
+// $Date: 2012/02/29 00:34:28 $
 //
 
 // Includes from C++
@@ -43,20 +43,16 @@ namespace mu2e {
     // Hold the object while we are creating it. The GeometryService will take ownership.
     std::auto_ptr<BFieldManager> _bfmgr;
 
-    // Create a new magnetic field map, get information from config file.
-    void loadGMC(const std::string& mapKey,
-                 const std::string& resolvedFileName,
-                 const std::vector<int>& dim,
-                 double scaleFactor
-                 );
-
     void loadG4BL(BFieldManager::MapContainerType *whichMap, const BFieldConfig::FileSequenceType& files, double scaleFactor);
     // Create a new magnetic field map, get information from config file.
     void loadG4BL(BFieldManager::MapContainerType *whichMap, const std::string& key, const std::string& resolvedFileName, double scaleFactor);
 
-    // Read a MECO GMC format map.
-    void readGMCMap( const std::string& filename,
-                     BFMap& bfmap );
+    // Create and fill a new magnetic field map
+    void readGMCMap(const std::string& mapKey,
+                    const std::string& resolvedFileName,
+                    const std::vector<int>& dim,
+                    double scaleFactor
+                    );
 
     // Read a G4BL text format map.
     void readG4BLMap( const std::string& filename,

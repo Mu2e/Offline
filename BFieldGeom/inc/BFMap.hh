@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.15 2012/02/29 00:34:09 gandr Exp $
+// $Id: BFMap.hh,v 1.16 2012/02/29 00:34:28 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:34:09 $
+// $Date: 2012/02/29 00:34:28 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -28,9 +28,9 @@ namespace mu2e {
     friend class BFieldManagerMaker;
 
     BFMap(std::string filename,
-          int const nx,
-          int const ny,
-          int const nz,
+          int nx, double xmin, double dx,
+          int ny, double ymin, double dy,
+          int nz, double zmin, double dz,
           BFMapType::enum_type atype,
           double scale,
           bool warnIfOutside=false):
@@ -39,6 +39,10 @@ namespace mu2e {
       _nx(nx),
       _ny(ny),
       _nz(nz),
+      _xmin(xmin), _xmax(xmin + (nx-1)*dx),
+      _ymin(ymin), _ymax(ymin + (ny-1)*dy),
+      _zmin(zmin), _zmax(zmin + (nz-1)*dz),
+      _dx(dx), _dy(dy), _dz(dz),
       _grid(_nx,_ny,_nz),
       _field(_nx,_ny,_nz),
       _isDefined(_nx,_ny,_nz,false),
@@ -119,10 +123,6 @@ namespace mu2e {
 
     // Polynomial fit function used by interpolator
     double gmcpoly2(double const f1d[3], double const& x) const;
-
-    // Define the limits and step sizes for the maps.
-    void setLimits ( double xmin, double xmax, double ymin, double ymax,
-                     double zmin, double zmax);
 
     // Compute grid indices for a given point.
     std::size_t iX( double x){

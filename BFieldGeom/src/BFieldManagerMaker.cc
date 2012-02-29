@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.30 2012/02/29 00:33:50 gandr Exp $
+// $Id: BFieldManagerMaker.cc,v 1.31 2012/02/29 00:34:28 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:33:50 $
+// $Date: 2012/02/29 00:34:28 $
 //
 
 // Includes from C++
@@ -86,11 +86,11 @@ namespace mu2e {
 
       // Add the field maps.
       for(unsigned i=0; i<config.gmcDimensions().size(); ++i) {
-        loadGMC(basename(config.outerMapFiles()[i]),
-                _resolveFullPath(config.outerMapFiles()[i]),
-                config.gmcDimensions()[i],
-                config.scaleFactor()
-                );
+        readGMCMap(basename(config.outerMapFiles()[i]),
+                   _resolveFullPath(config.outerMapFiles()[i]),
+                   config.gmcDimensions()[i],
+                   config.scaleFactor()
+                   );
       }
 
     } else if(config.mapType() == BFMapType::G4BL) {
@@ -136,29 +136,6 @@ namespace mu2e {
            << b.z() << ")"
            << endl;
     }
-  }
-
-  // Parse the config file to learn about one magnetic field map.
-  // Create an empty map and call the code to load the map from the file.
-  void BFieldManagerMaker::loadGMC(const std::string& mapKey,
-                                   const std::string& resolvedFileName,
-                                   const std::vector<int>& dim,
-                                   double scaleFactor)
-  {
-    assert(dim.size() == 3);
-
-    // Create an empty map.
-    BFMap& bfmap = _bfmgr->addBFMap(&_bfmgr->outerMaps_,
-                                    mapKey,
-                                    dim[0],
-                                    dim[1],
-                                    dim[2],
-                                    BFMapType::GMC,
-                                    scaleFactor
-                                    );
-
-    // Fill the map.
-    readGMCMap(resolvedFileName, bfmap);
   }
 
   // Anonymous namespace to hold some helper functions
@@ -336,16 +313,11 @@ namespace mu2e {
     // Create an empty map.
     BFMap& dsmap = _bfmgr->addBFMap(mapContainer,
                                     key,
-                                    dim[0],
-                                    dim[1],
-                                    dim[2],
+                                    dim[0], X0[0], dX[0],
+                                    dim[1], X0[1], dX[1],
+                                    dim[2], X0[2], dX[2],
                                     BFMapType::G4BL,
                                     scaleFactor );
-
-    // Set defined region for the map
-    dsmap.setLimits(X0[0],X0[0]+(dim[0]-1)*dX[0],
-                    X0[1],X0[1]+(dim[1]-1)*dX[1],
-                    X0[2],X0[2]+(dim[2]-1)*dX[2]);
 
     // Fill the map from the disk file.
     if (resolvedFileName.find(".header") != string::npos ) {
@@ -367,15 +339,19 @@ namespace mu2e {
   //      Fill the 3D array from the image in memory.
   //
 
-  void BFieldManagerMaker::readGMCMap( const string& filename,
-                                       BFMap& bfmap ){
+  void BFieldManagerMaker::readGMCMap(const std::string& mapKey,
+                                      const std::string& filename,
+                                      const std::vector<int>& dim,
+                                      double scaleFactor)
+  {
+    assert(dim.size() == 3);
 
     // Open the input file.
     int fd = open( filename.c_str(), O_RDONLY );
     if ( !fd ) {
       throw cet::exception("GEOM")
         << "Could not open file containing the magnetic filed map for: "
-        << bfmap.getKey() << "\n"
+        << mapKey << "\n"
         << "Filename: "
         << filename
         << "\n";
@@ -394,14 +370,14 @@ namespace mu2e {
       if ( s == -1 ){
         throw cet::exception("GEOM")
           << "Error reading magnetic field map: "
-          << bfmap.getKey() << "\n"
+          << mapKey << "\n"
           << "Filename: "
           << filename
           << "\n";
       } else{
         throw cet::exception("GEOM")
           << "Wrong number of bytes read from magnetic field map: "
-          << bfmap.getKey() << "\n"
+          << mapKey << "\n"
           << "Filename: "
           << filename
           << "\n";
@@ -441,7 +417,7 @@ namespace mu2e {
           << "Error reading magnetic field map.  "
           << "Mismatched head and tail byte counts at record: " << data.size() << "\n"
           << "Could not open file containing the magnetic filed map for: "
-          << bfmap.getKey() << "\n"
+          << mapKey << "\n"
           << "Filename: "
           << filename
           << "\n";
@@ -459,9 +435,9 @@ namespace mu2e {
     }
 
     // Expected grid dimentsions.
-    const size_t nx = bfmap._nx;
-    const size_t ny = bfmap._ny;
-    const size_t nz = bfmap._nz;
+    const size_t nx = dim[0];
+    const size_t ny = dim[1];
+    const size_t nz = dim[2];
 
     // Cross-check that the grid read from the file has the size we expected.
     // This is not really a perfect check since there could be round off error
@@ -472,7 +448,7 @@ namespace mu2e {
          Z.size() != nz     ){
       throw cet::exception("GEOM")
         << "Mismatch in expected and observed number of grid points for BField map: "
-        << bfmap.getKey() << "\n"
+        << mapKey << "\n"
         << "From file: "
         << filename
         << "\n"
@@ -485,17 +461,22 @@ namespace mu2e {
     if ( data.size() > nx*ny*nz-1){
       throw cet::exception("GEOM")
         << "Too many values read into the field map: "
-        << bfmap.getKey() << "\n"
+        << mapKey << "\n"
         << "From file: "
         << filename
         << "\n"
         << "Expected/Observed size: " << nx*ny*nz << " " << data.size() << "\n";
     }
 
-    // Tell the magnetic field map what its limits are.
-    bfmap.setLimits( mmX.min(), mmX.max(),
-                     mmY.min(), mmY.max(),
-                     mmZ.min(), mmZ.max() );
+    // Create an empty map.
+    BFMap& bfmap = _bfmgr->addBFMap(&_bfmgr->outerMaps_,
+                                    mapKey,
+                                    nx, mmX.min(), (mmX.max() - mmX.min())/(nx-1),
+                                    ny, mmY.min(), (mmY.max() - mmY.min())/(ny-1),
+                                    nz, mmZ.min(), (mmZ.max() - mmZ.min())/(nz-1),
+                                    BFMapType::GMC,
+                                    scaleFactor
+                                    );
 
     // Store grid points and field values into 3D arrays
     for (vector<DiskRecord>::const_iterator i=data.begin(), e=data.end();

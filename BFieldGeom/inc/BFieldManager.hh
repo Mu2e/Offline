@@ -4,9 +4,9 @@
 // Manage all of the magnetic field maps for Mu2e.
 // This class holds the actual field maps, and provides an interface to compute B field.
 //
-// $Id: BFieldManager.hh,v 1.18 2012/02/24 20:55:48 gandr Exp $
+// $Id: BFieldManager.hh,v 1.19 2012/02/29 00:34:28 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 20:55:48 $
+// $Date: 2012/02/29 00:34:28 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -76,9 +76,9 @@ namespace mu2e {
     // Add an empty map to the list.  Used by BFieldManagerMaker.
     BFMap& addBFMap(MapContainerType *whichMap,
                     const std::string& key,
-                    int const nx,
-                    int const ny,
-                    int const nz,
+                    int nx, double xmin, double dx,
+                    int ny, double ymin, double dy,
+                    int nz, double zmin, double dz,
                     BFMapType::enum_type type,
                     double scaleFactor);
 

@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.14 2012/02/21 22:26:40 gandr Exp $
+// $Id: BFieldManager.cc,v 1.15 2012/02/29 00:34:28 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:26:40 $
+// $Date: 2012/02/29 00:34:28 $
 //
 
 // Includes from C++
@@ -40,9 +40,9 @@ namespace mu2e {
   // Create a new BFMap in the container of BFMaps.
   BFMap& BFieldManager::addBFMap(MapContainerType *mapContainer,
                                  const std::string& key,
-                                 int const nx,
-                                 int const ny,
-                                 int const nz,
+                                 int nx, double xmin, double dx,
+                                 int ny, double ymin, double dy,
+                                 int nz, double zmin, double dz,
                                  BFMapType::enum_type type,
                                  double scaleFactor)
   {
@@ -55,7 +55,7 @@ namespace mu2e {
     }
 
     // Add an empty BFMap.
-    mapContainer->push_back(BFMap(key, nx, ny, nz, type, scaleFactor));
+    mapContainer->push_back(BFMap(key, nx, xmin, dx, ny, ymin, dy, nz, zmin, dz, type, scaleFactor));
 
     return mapContainer->back();
   }
