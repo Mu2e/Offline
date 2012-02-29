@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.16 2012/02/29 00:34:28 gandr Exp $
+// $Id: BFMap.hh,v 1.17 2012/02/29 00:34:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:34:28 $
+// $Date: 2012/02/29 00:34:48 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -43,7 +43,6 @@ namespace mu2e {
       _ymin(ymin), _ymax(ymin + (ny-1)*dy),
       _zmin(zmin), _zmax(zmin + (nz-1)*dz),
       _dx(dx), _dy(dy), _dz(dz),
-      _grid(_nx,_ny,_nz),
       _field(_nx,_ny,_nz),
       _isDefined(_nx,_ny,_nz,false),
       _allDefined(false),
@@ -72,6 +71,10 @@ namespace mu2e {
     double dy() const {return _dy;};
     double dz() const {return _dz;};
 
+    CLHEP::Hep3Vector grid2point(unsigned ix, unsigned iy, unsigned iz) const {
+      return CLHEP::Hep3Vector(_xmin + ix * _dx, _ymin + iy * _dy, _zmin +  iz * _dz);
+    }
+
     BFMapType type() const { return _type; }
 
     const std::string& getKey() const { return _key; };
@@ -99,7 +102,6 @@ namespace mu2e {
     double _dx, _dy, _dz;
 
     // Vector arrays for gridpoints and field values
-    mu2e::Container3D<CLHEP::Hep3Vector> _grid;
     mu2e::Container3D<CLHEP::Hep3Vector> _field;
     mu2e::Container3D<bool> _isDefined;
 

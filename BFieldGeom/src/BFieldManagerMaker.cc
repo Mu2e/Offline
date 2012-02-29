@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.31 2012/02/29 00:34:28 gandr Exp $
+// $Id: BFieldManagerMaker.cc,v 1.32 2012/02/29 00:34:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:34:28 $
+// $Date: 2012/02/29 00:34:48 $
 //
 
 // Includes from C++
@@ -17,6 +17,8 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 // Includes from boost
 #include <boost/regex.hpp>
@@ -491,7 +493,6 @@ namespace mu2e {
       std::size_t iz = bfmap.iZ(r.z);
 
       // Store the information into the 3d arrays.
-      bfmap._grid.set (ix, iy, iz, CLHEP::Hep3Vector(r.x,r.y,r.z));
       bfmap._field.set(ix, iy, iz, CLHEP::Hep3Vector(r.bx,r.by,r.bz));
       bfmap._isDefined.set(ix, iy, iz, true);
 
@@ -552,7 +553,6 @@ namespace mu2e {
 
       // Store the information into the 3d arrays.
       CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(x[0],x[1],x[2])-G4BL_offset;
-      bfmap._grid.set (ix, iy, iz, pos);
       bfmap._field.set(ix, iy, iz, CLHEP::Hep3Vector(b[0],b[1],b[2]));
       bfmap._isDefined.set(ix, iy, iz, true);
 
@@ -598,11 +598,30 @@ namespace mu2e {
         << "  errno: " << errsave << " " << errmsg << "\n";
     }
 
+    // Mu2e binary field map files used to store an array of grid point coordinates.
+    // This is not done any more.  Here we figure out whether we are dealing with the 
+    // old or the new format.
+
+    bool grid_coordinates_stored = false;
+    struct stat info;
+    fstat(fd, &info);
+    if(info.st_size == sizeof(unsigned) + 2*nbytes) {
+      grid_coordinates_stored = true;
+    }
+    else { // make sure the new format file has the expected size
+      if(info.st_size != sizeof(unsigned) + nbytes) {
+        throw cet::exception("GEOM")
+          << "BFieldManagerMaker:readG4BLBinary(): the size = " << info.st_size
+          << " of the file "<<binFilename
+          << " does not match any of the expected values ("<<sizeof(unsigned) + nbytes
+          <<" or "<< sizeof(unsigned) + 2*nbytes<<")";
+      }
+    }
+
     // A word to receive the endian marker.
     unsigned int marker(0);
 
-    // Addresses of first elements in each of the two big arrays.
-    CLHEP::Hep3Vector* gridAddr  = &bf._grid.get(0,0,0);
+    // Address of the first element in the field array
     CLHEP::Hep3Vector* fieldAddr = &bf._field.get(0,0,0);
 
     // Read the endian marker and check that it is OK.
@@ -627,17 +646,18 @@ namespace mu2e {
         << "\n";
     }
 
-    // Read the grid point positions.
-    ssize_t s1 = read( fd, gridAddr, nbytes );
-    if ( s1 != nbytes ){
-      int errsave = errno;
-      char* errmsg = strerror(errsave);
-      throw cet::exception("GEOM")
-        << "BFieldManagerMaker:readG4BLBinary Error reading grid points from " << binFilename << "\n"
-        << "Status: " << s1
-        << "  errno: " << errsave << " " << errmsg << "\n";
+    // Old mu2e binary files had an array of grid pont coordinates stored
+    // Need to skip this to get to the the actual B field data
+    if(grid_coordinates_stored) {
+      off_t res = lseek(fd, nbytes, SEEK_CUR);
+      if (res == off_t(-1)){
+        int errsave = errno;
+        char* errmsg = strerror(errsave);
+        throw cet::exception("GEOM")
+          << "BFieldManagerMaker:readG4BLBinary(): Error doing lseek() on the old format binary " << binFilename << "\n"
+          << "  errno: " << errsave << " " << errmsg << "\n";
+      }
     }
-
     // Read the field values at the grid points.
     ssize_t s2 = read( fd, fieldAddr, nbytes );
     if ( s2 != nbytes ){
@@ -661,10 +681,10 @@ namespace mu2e {
   } // end BFieldManagerMaker::readG4BLBinary
 
   void BFieldManagerMaker::writeG4BLBinary(const BFMap& bf, const std::string& outputfile) {
-    // Number of points in each big array.
+    // Number of points in the big array.
     int nPoints = bf.nx()*bf.ny()*bf.nz();
 
-    // Number of bytes in each big array.
+    // Number of bytes in the big array.
     size_t nBytes = sizeof(CLHEP::Hep3Vector)*nPoints;
 
     cout << "Writing G4BL Magnetic field map in binary format to file: "
@@ -674,8 +694,7 @@ namespace mu2e {
     // A marker to catch endian mismatch on readback.
     unsigned int deadbeef(0XDEADBEEF);
 
-    // Addresses of first elements in each of the two big arrays.
-    CLHEP::Hep3Vector const* gridAddr  = &bf._grid.get(0,0,0);
+    // Address of the first element in the big array.
     CLHEP::Hep3Vector const* fieldAddr = &bf._field.get(0,0,0);
 
     // Open the output file.
@@ -704,14 +723,6 @@ namespace mu2e {
       char* errmsg = strerror(errsave);
       throw cet::exception("GEOM")
         << "BFieldManagerMaker:writeG4BLBinary Error writing endian marker to " << outputfile
-        << "  errno: " << errsave << " " << errmsg << "\n";
-    }
-    ssize_t s1 = write( fd, gridAddr,  nBytes );
-    if ( s1 == -1 ){
-      errsave = errno;
-      char* errmsg = strerror(errsave);
-      throw cet::exception("GEOM")
-        << "BFieldManagerMaker:writeG4BLBinary  Error writing grid points to " << outputfile
         << "  errno: " << errsave << " " << errmsg << "\n";
     }
     ssize_t s2 = write( fd, fieldAddr, nBytes );

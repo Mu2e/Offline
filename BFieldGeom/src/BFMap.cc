@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.16 2012/02/29 00:34:28 gandr Exp $
+// $Id: BFMap.cc,v 1.17 2012/02/29 00:34:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:34:28 $
+// $Date: 2012/02/29 00:34:48 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -229,7 +229,7 @@ namespace mu2e {
            << setw(4) << iy << " "
            << setw(4) << iz << " "
            << endl;
-      cout << "Nearest Point:   " << _grid(ix,iy,iz) << endl
+      cout << "Nearest Point:   " << grid2point(ix,iy,iz) << endl
            << "Indices set to:  " << setw(4) << ix << " " << setw(4) << iy << " " << setw(4) << iz << endl
            << "Field:              " << _field(ix,iy,iz) << endl;
     }
@@ -278,14 +278,14 @@ namespace mu2e {
            << setw(4) << zindex << " "
            << endl;
 
-      cout << "Used Point:      " << _grid(xindex,yindex,zindex) << endl;
+      cout << "Used Point:      " << grid2point(xindex,yindex,zindex) << endl;
     }
 
 
     double frac[] = {
-      (point.x() - _grid(xindex,yindex,zindex).x())/_dx,
-      (point.y() - _grid(xindex,yindex,zindex).y())/_dy,
-      (point.z() - _grid(xindex,yindex,zindex).z())/_dz
+      (point.x() - grid2point(xindex,yindex,zindex).x())/_dx,
+      (point.y() - grid2point(xindex,yindex,zindex).y())/_dy,
+      (point.z() - grid2point(xindex,yindex,zindex).z())/_dz
     };
 
     // Run the interpolator
