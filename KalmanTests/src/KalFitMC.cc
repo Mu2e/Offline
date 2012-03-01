@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.19 2012/02/29 02:09:13 brownd Exp $
+// $Id: KalFitMC.cc,v 1.20 2012/03/01 18:00:58 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/02/29 02:09:13 $
+// $Date: 2012/03/01 18:00:58 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -72,6 +72,7 @@ namespace mu2e
     _mcptrlabel(pset.get<std::string>("MCPtrLabel","makeSH")),
     _mcstepslabel(pset.get<std::string>("MCStepsLabel","g4run")),
     _simpartslabel(pset.get<std::string>("SimParticleLabel","g4run")),
+    _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
     _mintrkmom(pset.get<double>("minTrkMom",60.0)),
     _mct0err(pset.get<double>("mcT0Err",-0.5)),
     _debug(pset.get<int>("debugLevel",0)),
@@ -545,6 +546,7 @@ namespace mu2e
     _trkdiag->Branch("nweediter",&_nweediter,"nweediter/I");
     _trkdiag->Branch("nactive",&_nactive,"nactive/I");
     _trkdiag->Branch("ncactive",&_ncactive,"ncactive/I");
+    _trkdiag->Branch("nchits",&_nchits,"nchits/I");
     _trkdiag->Branch("chisq",&_chisq,"chisq/F");
     _trkdiag->Branch("fitcon",&_fitcon,"fitcon/F");
     _trkdiag->Branch("fitmom",&_fitmom,"fitmom/F");
@@ -635,6 +637,24 @@ namespace mu2e
       mcTrkInfo();
 // fill hit summary
       fillMCHitSummary();
+// count # of conversion straw hits
+      _strawhits = 0;
+      _nchits = 0;
+      art::Handle<mu2e::StrawHitCollection> strawhitsH;
+      if(evt.getByLabel(_strawhitslabel,strawhitsH))
+	_strawhits = strawhitsH.product();
+      if(_strawhits != 0){
+	unsigned nstrs = _strawhits->size();
+	for(unsigned istr=0; istr<nstrs;++istr){
+	  const std::vector<TrkSum>& mcsum = mcHitSummary(istr);
+	  if(mcsum.size()>0){
+	    bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
+	    if(conversion){
+	      ++_nchits;
+	    }
+	  }
+	}
+      }
       return true;
     }
     return false;

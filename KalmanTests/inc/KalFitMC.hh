@@ -1,14 +1,15 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.13 2012/02/17 23:15:40 brownd Exp $
+// $Id: KalFitMC.hh,v 1.14 2012/03/01 18:00:58 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/02/17 23:15:40 $
+// $Date: 2012/03/01 18:00:58 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
 
 // data
 #include "art/Framework/Principal/fwd.h"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -151,6 +152,7 @@ namespace mu2e
   private:
 // cache of event data
     MCEvtData _mcdata;
+    const StrawHitCollection* _strawhits;
 // cache of hit summary
    std::vector<MCHitSum> _mchitsums;
 // event data labels
@@ -158,6 +160,7 @@ namespace mu2e
     std::string _mcptrlabel;
     std::string _mcstepslabel;
     std::string _simpartslabel;
+    std::string _strawhitslabel;
 // helper functions
     void findMCSteps(StepPointMCCollection const* mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids,
       std::vector<MCStepItr>& steps);
@@ -195,6 +198,7 @@ namespace mu2e
     Int_t _nweediter;
     Int_t _nactive;
     Int_t _ncactive;
+    Int_t _nchits;
     Float_t _chisq;
     Float_t _fitcon;
     Float_t _fitmom;
