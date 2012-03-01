@@ -1,9 +1,36 @@
 
-  $Id: v1_1_7.txt,v 1.13 2012/03/01 02:14:54 kutschke Exp $
+  $Id: v1_1_7.txt,v 1.14 2012/03/01 19:40:18 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/03/01 02:14:54 $
+  $Date: 2012/03/01 19:40:18 $
 
            Release notes for Mu2e Offline software, v1_1_7
+
+12) March 1, 2012 kutschke
+    Move StrawIndex.hh from TrackerGeom/inc to DataProducts/inc
+    Now all of the data products are included from the *DataProducts
+    directories.  This may seem a little weird since it means that the
+    Tracker geometry classes depend on a data product. We will live with this
+    for now.
+      TrackerGeom/inc/StrawIndex.hh
+      DataProducts/inc/StrawIndex.hh
+
+    Also changed the files that include this header to get it from the new place:
+      Analyses/src/CEL_module.cc
+      Analyses/src/RPC_module.cc
+      ConditionsService/inc/TrackerCalibrations.hh
+      MCDataProducts/inc/StepPointMC.hh
+      Mu2eUtilities/inc/BkgElecUtilities.hh
+      Mu2eUtilities/inc/ConvElecUtilities.hh
+      RecoDataProducts/inc/StrawHit.hh
+      TrackerGeom/inc/Straw.hh
+
+    Removed StrawId and dependent classes from the schema.
+      DataProducts/src/classes.h
+      DataProducts/src/classes_def.xml
+    StrawId etc were not used by any data product (and probably should not be). They
+    were added to the schema when the strawcluster classes contain lots of extra
+    methods; those methods have since been split out into.
+       HitMakers/inc/StrawClusterUtilities.hh
 
 11) February 29, 2012 kutschke
     Remove unnecessary #includes that were triggering false positives
