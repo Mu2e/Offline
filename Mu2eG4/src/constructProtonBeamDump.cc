@@ -359,31 +359,25 @@ namespace mu2e {
     // Use an extruded solid to have a properly angled facet
     // at which the beam dump can be placed.
 
-    // points need to be in the clock-wise order
     std::vector<G4TwoVector> beamDumpDirtOutiline;
 
-    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmaxAtBeamDumpWall(), building->hallInsideZBeamDumpWall()));
+    std::copy(building->concreteOuterOutline3().begin(),
+              building->concreteOuterOutline3().end(),
+              std::back_inserter(beamDumpDirtOutiline));
 
-    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmin(), building->hallInsideZBeamDumpWall()));
+    std::copy(building->concreteOuterOutline1().begin(),
+              building->concreteOuterOutline1().end(),
+              std::back_inserter(beamDumpDirtOutiline));
 
-    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmin(), world->hallFormalZminInMu2e()));
+    // points need to be in the clock-wise order, need to reverse:
+    std::reverse(beamDumpDirtOutiline.begin(), beamDumpDirtOutiline.end());
 
-    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmax(), world->hallFormalZminInMu2e()));
+    // Add the last two points to complete the outline
+    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmin() - building->hallWallThickness(),
+                                               world->hallFormalZminInMu2e() - building->hallWallThickness()));
 
-    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmax(), building->hallInsideZExtMonUCIWall()));
-
-    beamDumpDirtOutiline.push_back(G4TwoVector(dump->shieldingFaceXmax(), building->hallInsideZExtMonUCIWall()));
-
-    beamDumpDirtOutiline.push_back(G4TwoVector(dump->shieldingFaceXmax(), dump->shieldingFaceZatXmax()));
-
-    if(dump->shieldingFaceZatXmin() > building->hallInsideZBeamDumpWall()) {
-      throw cet::exception("GEOM")<<"constructProtonBeamDump(): hallInsideZBeamDumpWall conflicts with the proton dump enclosure\n";
-    }
-
-    // Don't add the last point if it coincides with the first
-    if(dump->shieldingFaceZatXmin() < building->hallInsideZBeamDumpWall()) {
-      beamDumpDirtOutiline.push_back(G4TwoVector(dump->shieldingFaceXmin(), dump->shieldingFaceZatXmin()));
-    }
+    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmax() + building->hallWallThickness() ,
+                                               world->hallFormalZminInMu2e() - building->hallWallThickness()));
 
     static CLHEP::HepRotation beamDumpDirtRotation(CLHEP::HepRotation::IDENTITY);
     beamDumpDirtRotation.rotateX(-90*CLHEP::degree);
@@ -508,73 +502,6 @@ namespace mu2e {
                                   logicalEnclosure,
                                   dump->collimator2CenterInEnclosure(),
                                   config);
-
-    //----------------------------------------------------------------
-    // Create hall walls that are inside the formal hall box
-
-    static CLHEP::HepRotation wallRotation(CLHEP::HepRotation::IDENTITY);
-    wallRotation.rotateX(-90*CLHEP::degree);
-
-    // part on the +x side
-    if(true) {
-      std::vector<G4TwoVector> outline(building->concreteOuterOutline1());
-      outline.push_back(G4TwoVector(building->hallInsideXmax(), building->hallInsideZExtMonUCIWall() - building->hallWallThickness()));
-      outline.push_back(G4TwoVector(building->hallInsideXmax(), building->hallInsideZExtMonUCIWall()));
-      outline.push_back(G4TwoVector(dump->shieldingFaceXmax(), building->hallInsideZExtMonUCIWall()));
-
-      VolumeInfo wall("HallConcreteExtMonUCIWall",
-                      CLHEP::Hep3Vector(0, 0, 0),
-                      beamDumpDirt.centerInWorld);
-
-      wall.solid = new G4ExtrudedSolid(wall.name, outline,
-                                       (building->hallInsideYmax()-building->hallInsideYmin())/2,
-                                       G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-
-      finishNesting(wall,
-                    materialFinder.get("hall.wallMaterialName"),
-                    0, //&wallRotation,
-                    wall.centerInParent,
-                    beamDumpDirt.logical,
-                    0,
-                    config.getBool("hall.wallsVisible",true),
-                    G4Colour::Grey(),
-                    config.getBool("hall.wallsSolid",false),
-                    forceAuxEdgeVisible,
-                    placePV,
-                    doSurfaceCheck
-                    );
-    }
-
-    // part on the -x side
-    if(true) {
-      std::vector<G4TwoVector> outline(building->concreteOuterOutline3());
-      outline.push_back(G4TwoVector(dump->shieldingFaceXmin(), dump->shieldingFaceZatXmin()));
-      outline.push_back(G4TwoVector(building->hallInsideXmaxAtBeamDumpWall(), building->hallInsideZBeamDumpWall()));
-      outline.push_back(G4TwoVector(building->hallInsideXmin(), building->hallInsideZBeamDumpWall()));
-      outline.push_back(G4TwoVector(building->hallInsideXmin(), building->hallInsideZBeamDumpWall() - building->hallWallThickness()));
-
-      VolumeInfo wall("HallConcreteBeamDumpWall",
-                      CLHEP::Hep3Vector(0, 0, 0),
-                      beamDumpDirt.centerInWorld);
-
-      wall.solid = new G4ExtrudedSolid(wall.name, outline,
-                                       (building->hallInsideYmax()-building->hallInsideYmin())/2,
-                                       G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-
-      finishNesting(wall,
-                    materialFinder.get("hall.wallMaterialName"),
-                    0,
-                    wall.centerInParent,
-                    beamDumpDirt.logical,
-                    0,
-                    config.getBool("hall.wallsVisible",true),
-                    G4Colour::Grey(),
-                    config.getBool("hall.wallsSolid",false),
-                    forceAuxEdgeVisible,
-                    placePV,
-                    doSurfaceCheck
-                    );
-    }
 
     //----------------------------------------------------------------
     // Add some volumes for visualization purposes.
@@ -727,6 +654,5 @@ namespace mu2e {
     }
 
   }
-
 
 }

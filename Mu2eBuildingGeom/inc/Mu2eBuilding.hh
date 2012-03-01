@@ -48,11 +48,24 @@ namespace mu2e {
     const CLHEP::Hep3Vector& trackerOriginInMu2e() const { return _trackerOriginInMu2e; }
 
     //----------------------------------------------------------------
-    // These coordinates are used in more than one place
+    // Outlines used to create hall floor, ceiling, and walls.
+    // Points go clockwise, as requred by G4 extruded solid.
 
+    // Starts at the Xmax dump shielding face corner and goes to
+    // (hallInsideXmax+wallThick, hallInsideZExtMonUCIWall-wallThick)
     const std::vector<CLHEP::Hep2Vector>& concreteOuterOutline1() const { return _concreteOuterOutline1; }
+
+    // Just two points at the outer Zmax line, from Xmax to Xmin
     const std::vector<CLHEP::Hep2Vector>& concreteOuterOutline2() const { return _concreteOuterOutline2; }
+
+    // Outline continuation that starts starts at (Xmin-wallThick) and
+    // goes to the Xmin dump face shielding corner.
     const std::vector<CLHEP::Hep2Vector>& concreteOuterOutline3() const { return _concreteOuterOutline3; }
+
+    // The inner outline of hall walls, all in one piece, clockwise
+    // from the Xmax dump shielding face core around the hall and to
+    // the Xmin dump shielding face corner.
+    const std::vector<CLHEP::Hep2Vector>& hallInsideOutline() const { return _hallInsideOutline; }
 
     //----------------------------------------------------------------
   private:
@@ -88,6 +101,7 @@ namespace mu2e {
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline1;
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline2;
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline3;
+    std::vector<CLHEP::Hep2Vector> _hallInsideOutline;
   };
 
 }

@@ -65,6 +65,7 @@ namespace mu2e {
     //----------------------------------------------------------------
     // Fragment 1
     _b->_concreteOuterOutline1.push_back(Hep2Vector(dump.shieldingFaceXmax(), dump.shieldingFaceZatXmax()));
+    _b->_hallInsideOutline.push_back(_b->_concreteOuterOutline1.back());
 
     const double concreteZmin = _b->hallInsideZExtMonUCIWall() - _b->hallWallThickness();
     if(_b->hallWallExtMonUCIThickness() < (dump.shieldingFaceZatXmax() - concreteZmin)*tan(dump.coreRotY())) {
@@ -81,24 +82,32 @@ namespace mu2e {
       _b->_concreteOuterOutline1.push_back(Hep2Vector(dump.shieldingFaceXmax() - dz*tan(dump.coreRotY()),
                                                       concreteZmin));
     }
+    _b->_hallInsideOutline.push_back(Hep2Vector(dump.shieldingFaceXmax(), concreteZmin + _b->hallWallThickness()));
+
+    _b->_concreteOuterOutline1.push_back(Hep2Vector(_b->hallInsideXmax() + _b->hallWallThickness(), concreteZmin));
+    _b->_hallInsideOutline.push_back(Hep2Vector(_b->hallInsideXmax(), concreteZmin + _b->hallWallThickness()));
 
     //----------------------------------------------------------------
     // Fragment 2
     _b->_concreteOuterOutline2.push_back(Hep2Vector(_b->hallInsideXmax() + _b->hallWallThickness(),
-                                                    concreteZmin));
-
-    _b->_concreteOuterOutline2.push_back(Hep2Vector(_b->hallInsideXmax() + _b->hallWallThickness(),
                                                     _b->hallInsideZmax() + _b->hallWallThickness()));
+
+    _b->_hallInsideOutline.push_back(Hep2Vector(_b->hallInsideXmax(), _b->hallInsideZmax()));
 
 
     _b->_concreteOuterOutline2.push_back(Hep2Vector(_b->hallInsideXmin() - _b->hallWallThickness(),
                                                     _b->hallInsideZmax() + _b->hallWallThickness()));
 
-    _b->_concreteOuterOutline2.push_back(Hep2Vector(_b->hallInsideXmin() - _b->hallWallThickness(),
-                                                    _b->hallInsideZBeamDumpWall() - _b->hallWallThickness()));
+    _b->_hallInsideOutline.push_back(Hep2Vector(_b->hallInsideXmin(), _b->hallInsideZmax()));
 
     //----------------------------------------------------------------
     // Fragment 3
+
+    _b->_concreteOuterOutline3.push_back(Hep2Vector(_b->hallInsideXmin() - _b->hallWallThickness(),
+                                                    _b->hallInsideZBeamDumpWall() - _b->hallWallThickness()));
+
+    _b->_hallInsideOutline.push_back(Hep2Vector(_b->hallInsideXmin(), _b->hallInsideZBeamDumpWall()));
+
 
     _b->_concreteOuterOutline3.push_back(Hep2Vector(_b->hallInsideXmaxAtBeamDumpWall()
                                                     - _b->hallWallThickness()/cos(dump.coreRotY())
@@ -107,12 +116,16 @@ namespace mu2e {
                                                     _b->hallInsideZBeamDumpWall() - _b->hallWallThickness()
                                                     ));
 
+    _b->_hallInsideOutline.push_back(Hep2Vector(_b->hallInsideXmaxAtBeamDumpWall(), _b->hallInsideZBeamDumpWall()));
+
     _b->_concreteOuterOutline3.push_back(Hep2Vector(dump.shieldingFaceXmin()
                                                     - _b->hallWallThickness()*cos(dump.coreRotY())
                                                     ,
                                                     dump.shieldingFaceZatXmin()
                                                     + _b->hallWallThickness()*sin(dump.coreRotY())
                                                     ));
+
+    _b->_hallInsideOutline.push_back(Hep2Vector(dump.shieldingFaceXmin(), dump.shieldingFaceZatXmin()));
 
     //----------------------------------------------------------------
     const int diagLevel = c.getInt("world.verbosityLevel", 0);

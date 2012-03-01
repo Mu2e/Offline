@@ -1,9 +1,9 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.11 2012/03/01 21:18:02 gandr Exp $
+// $Id: constructHall.cc,v 1.12 2012/03/01 21:18:15 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/01 21:18:02 $
+// $Date: 2012/03/01 21:18:15 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //
@@ -115,7 +115,7 @@ namespace mu2e {
                   0,
                   config->getBool("hall.floorVisible",true),
                   G4Colour::Grey(),
-                  config->getBool("hall.floorSolid",false),
+                  config->getBool("hall.floorSolid",true),
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck
@@ -137,7 +137,7 @@ namespace mu2e {
                   hallCeiling.centerInParent,
                   parent.logical,
                   0,
-                  config->getBool("hall.ceilingVisible",true),
+                  config->getBool("hall.ceilingVisible",false),
                   G4Colour::Grey(),
                   config->getBool("hall.ceilingSolid",false),
                   forceAuxEdgeVisible,
@@ -146,92 +146,47 @@ namespace mu2e {
                   );
 
     //----------------------------------------------------------------
-    // The two walls parallel to the YZ plane are simple boxes that extend
-    // in Z outside of hall air to overlap with the XY walls.
+    // Create hall walls. The walls are placed inside the formal hall box.
 
-    if(true) {
-      std::vector<double> hl(3);
-      hl[0] = building->hallWallThickness()/2;
-      hl[1] = (building->hallInsideYmax() - building->hallInsideYmin())/2;
-      hl[2] = (building->hallInsideZmax() - building->hallInsideZExtMonUCIWall())/2 + building->hallWallThickness();
+    std::vector<G4TwoVector> wallConcreteOutline(building->hallInsideOutline());
 
-      nestBox("HallConcreteWallPlusX",
-              hl,
-              wallMaterial,
-              0,
-              CLHEP::Hep3Vector(building->hallInsideXmax() + building->hallWallThickness()/2,
-                                (building->hallInsideYmax() + building->hallInsideYmin())/2,
-                                (building->hallInsideZmax() + building->hallInsideZExtMonUCIWall())/2
-                                )
-              - hallInfo.centerInMu2e(),
-              hallInfo,
-              0,
-              config->getBool("hall.wallsVisible", true),
-              G4Colour::Grey(),
-              config->getBool("hall.wallsSolid", false),
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
-              );
+    // Need the points go clockwise w.r.t. the wall concrete.
+    std::reverse(wallConcreteOutline.begin(), wallConcreteOutline.end());
+
+    // Remove the duplicate
+    if(wallConcreteOutline.back() == horizontalConcreteOutline.front()) {
+      wallConcreteOutline.pop_back();
     }
 
+    std::copy(horizontalConcreteOutline.begin(),
+              horizontalConcreteOutline.end(),
+              std::back_inserter(wallConcreteOutline));
 
-    if(true) {
-      std::vector<double> hl(3);
-      hl[0] = building->hallWallThickness()/2;
-      hl[1] = (building->hallInsideYmax() - building->hallInsideYmin())/2;
-      hl[2] = (building->hallInsideZmax() - building->hallInsideZBeamDumpWall())/2 + building->hallWallThickness();
+    static CLHEP::HepRotation hallWallsRotation(CLHEP::HepRotation::IDENTITY);
+    hallWallsRotation.rotateX(-90*CLHEP::degree);
 
-      nestBox("HallConcreteWallMinusX",
-              hl,
-              wallMaterial,
-              0,
-              CLHEP::Hep3Vector(building->hallInsideXmin() - building->hallWallThickness()/2,
-                                (building->hallInsideYmax() + building->hallInsideYmin())/2,
-                                (building->hallInsideZmax() + building->hallInsideZBeamDumpWall())/2
-                                )
-              - hallInfo.centerInMu2e(),
-              hallInfo,
-              0,
-              config->getBool("hall.wallsVisible", true),
-              G4Colour::Grey(),
-              config->getBool("hall.wallsSolid", false),
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
-              );
-    }
+    VolumeInfo hallWalls("HallWalls",
+                         CLHEP::Hep3Vector(0, (building->hallInsideYmin() + building->hallInsideYmax())/2, 0)
+                         - hallInfo.centerInMu2e(),
+                            hallInfo.centerInWorld);
 
-    //----------------------------------------------------------------
-    // The wall at Zmax is a simple box that fits in between floor,
-    // ceiling, and and other walls.
-    // Walls on the opposite side of hall are handled by the beam dump code.
+    hallWalls.solid = new G4ExtrudedSolid(hallWalls.name, wallConcreteOutline,
+                                             (building->hallInsideYmax() - building->hallInsideYmin())/2,
+                                             G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
 
-    if(true) {
-      std::vector<double> hl(3);
-      hl[0] = (building->hallInsideXmax() - building->hallInsideXmin())/2;
-      hl[1] = (building->hallInsideYmax() - building->hallInsideYmin())/2;
-      hl[2] = building->hallWallThickness()/2;
-
-      nestBox("HallConcreteWallPlusZ",
-              hl,
-              wallMaterial,
-              0,
-              CLHEP::Hep3Vector((building->hallInsideXmax() + building->hallInsideXmin())/2,
-                                (building->hallInsideYmax() + building->hallInsideYmin())/2,
-                                building->hallInsideZmax() + building->hallWallThickness()/2
-                                )
-              - hallInfo.centerInMu2e(),
-              hallInfo,
-              0,
-              config->getBool("hall.wallsVisible", true),
-              G4Colour::Grey(),
-              config->getBool("hall.wallsSolid", false),
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
-              );
-    }
+    finishNesting(hallWalls,
+                  materialFinder.get("hall.wallMaterialName"),
+                  &hallWallsRotation,
+                  hallWalls.centerInParent,
+                  hallInfo.logical,
+                  0,
+                  config->getBool("hall.wallsVisible", true),
+                  G4Colour(0.8, 0.8, 0.8), // lighter grey
+                  config->getBool("hall.wallsSolid", false),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
 
     //----------------------------------------------------------------
     return hallInfo;
