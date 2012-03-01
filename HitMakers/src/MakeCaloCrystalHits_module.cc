@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_module.cc,v 1.9 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: MakeCaloCrystalHits_module.cc,v 1.10 2012/03/01 01:20:11 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/01 01:20:11 $
 //
 // Original author KLG
 //
@@ -31,11 +31,10 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/sort_functors.hh"
 
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-
-#include "Mu2eUtilities/inc/sort_functors.hh"
 
 using namespace std;
 using art::Event;
