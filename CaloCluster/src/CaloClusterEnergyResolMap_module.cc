@@ -1,9 +1,9 @@
 //
 // Visualization of the energy resolution  on the rows and on the columns
 //
-// $Id: CaloClusterEnergyResolMap_module.cc,v 1.1 2012/02/28 22:24:48 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/02/28 22:24:48 $
+// $Id: CaloClusterEnergyResolMap_module.cc,v 1.2 2012/03/01 01:18:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/01 01:18:22 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -39,7 +39,6 @@
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "Mu2eUtilities/inc/sort_functors.hh"
 //#include "CaloCluster/inc/CaloClusterUtilities.hh"
 #include "CaloCluster/inc/CaloClusterer.hh"
 //#include "CaloCluster/inc/CaloClusterFinder.hh"

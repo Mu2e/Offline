@@ -35,7 +35,6 @@
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "Mu2eUtilities/inc/sort_functors.hh"
 //#include "CaloCluster/inc/CaloClusterUtilities.hh"
 #include "CaloCluster/inc/CaloClusterer.hh"
 //#include "CaloCluster/inc/CaloClusterFinder.hh"
