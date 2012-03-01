@@ -19,9 +19,6 @@ namespace mu2e {
   class Mu2eBuilding : virtual public Detector {
   public:
 
-    //    const CLHEP::Hep3Vector& hallCenterInMu2e() const { return _hallCenterInMu2e; }
-    //    const std::vector<double>& hallInsideHalfLengths() const { return _hallInsideHalfLenghts; }
-
     double hallInsideXmin() const { return _hallInsideXmin; }
     double hallInsideXmax() const { return _hallInsideXmax; }
 
@@ -30,8 +27,9 @@ namespace mu2e {
 
     double hallInsideZmax() const { return _hallInsideZmax; }
 
-    double hallInsideZBeamDumpWall() const { return _hallInsideZBeamDumpWall; }
-    double hallInsideXmaxAtBeamDumpWall() const { return _hallInsideXmaxAtBeamDumpWall; }
+    double hallInsideXPSCorner() const { return _hallInsideXPSCorner; }
+    double hallInsideZPSCorner() const { return _hallInsideZPSCorner; }
+    double hallInsideZPStoBeamDumpCorner() const { return _hallInsideZPStoBeamDumpCorner; }
 
     double hallInsideZExtMonUCIWall() const { return _hallInsideZExtMonUCIWall; }
 
@@ -81,8 +79,9 @@ namespace mu2e {
 
     double _hallInsideZmax;
 
-    double _hallInsideZBeamDumpWall;
-    double _hallInsideXmaxAtBeamDumpWall;
+    double _hallInsideXPSCorner;
+    double _hallInsideZPSCorner;
+    double _hallInsideZPStoBeamDumpCorner;
 
     double _hallInsideZExtMonUCIWall;
 

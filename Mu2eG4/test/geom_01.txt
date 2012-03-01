@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.126 2012/02/29 16:12:21 gandr Exp $
+// $Id: geom_01.txt,v 1.127 2012/03/01 21:19:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 16:12:21 $
+// $Date: 2012/03/01 21:19:35 $
 //
 // Original author Rob Kutschke
 //
@@ -150,7 +150,8 @@ bool   dirt.capSolid        = false;
 double hall.insideXmin = -9300;
 double hall.insideXmax = +6250;
 double hall.insideZmax = +20000;
-double hall.insideZBeamDumpWall = -12000;
+double hall.insideXPSCorner = 1005;
+double hall.insideZPSCorner = -3900;
 double hall.insideZExtMonUCIWall = -22000; // -17129;
 double hall.insideFullHeight = 10000.;
 

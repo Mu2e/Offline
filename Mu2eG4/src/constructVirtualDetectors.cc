@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.24 2012/02/27 06:05:35 gandr Exp $
+// $Id: constructVirtualDetectors.cc,v 1.25 2012/03/01 21:19:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/27 06:05:35 $
+// $Date: 2012/03/01 21:19:35 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -1005,22 +1005,24 @@ namespace mu2e {
 
       VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
       GeomHandle<Mu2eBuilding> building;
+      GeomHandle<ProtonBeamDump> dump;
 
       const double requested_z = _config->getDouble("vd.ExtMonCommonPlane.z");
-      if(requested_z  < building->hallInsideZBeamDumpWall() + vdg->getHalfLength()) {
-          throw cet::exception("GEOM")
-          << "The requested z = "<<requested_z<<" of the virtual detector " << VirtualDetectorId(vdId).name()
-          << " would cause it to overlap with hall walls.";
-      }
+
+      const double xmin = std::min(building->hallInsideXPSCorner(),
+                                   dump->enclosureCenterInMu2e()[0]
+                                   + (requested_z - dump->enclosureCenterInMu2e()[2])*tan(dump->coreRotY())
+                                   - dump->enclosureHalfSize()[0]/cos(dump->coreRotY())
+                                   );
 
       CLHEP::Hep3Vector centerInMu2e(
-                                     (building->hallInsideXmax() + building->hallInsideXmin())/2,
+                                     (building->hallInsideXmax() + xmin)/2,
                                      (building->hallInsideYmax() + building->hallInsideYmin())/2,
                                      requested_z
                                      );
 
       std::vector<double> hlen(3);
-      hlen[0] = (building->hallInsideXmax() - building->hallInsideXmin())/2;
+      hlen[0] = (building->hallInsideXmax() - xmin)/2;
       hlen[1] = (building->hallInsideYmax() - building->hallInsideYmin())/2;
       hlen[2] = vdg->getHalfLength();
 

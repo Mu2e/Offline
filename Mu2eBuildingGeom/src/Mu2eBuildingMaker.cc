@@ -24,7 +24,9 @@ namespace mu2e {
     _b->_hallInsideXmax = c.getDouble("hall.insideXmax");
     _b->_hallInsideZmax = c.getDouble("hall.insideZmax");
 
-    _b->_hallInsideZBeamDumpWall = c.getDouble("hall.insideZBeamDumpWall");
+    _b->_hallInsideXPSCorner = c.getDouble("hall.insideXPSCorner");
+    _b->_hallInsideZPSCorner = c.getDouble("hall.insideZPSCorner");
+
     _b->_hallInsideZExtMonUCIWall = c.getDouble("hall.insideZExtMonUCIWall");
 
     _b->_hallInsideYmin = -c.getDouble("mu2e.origin.heightAboveHallFloor");
@@ -47,17 +49,18 @@ namespace mu2e {
     //----------------
     //  Computed stuff
 
-    _b->_hallInsideXmaxAtBeamDumpWall = dump.enclosureCenterInMu2e()[0]
-      + (_b->_hallInsideZBeamDumpWall - dump.enclosureCenterInMu2e()[2]) * tan(dump.coreRotY())
-      - dump.enclosureHalfSize()[0] / cos(dump.coreRotY())
+    _b->_hallInsideZPStoBeamDumpCorner = dump.enclosureCenterInMu2e()[2]
+      + (_b->_hallInsideXPSCorner - dump.enclosureCenterInMu2e()[0])/tan(dump.coreRotY())
+      + dump.enclosureHalfSize()[0]/sin(dump.coreRotY())
       ;
 
     //----------------
     //  Check the assumptions used to construct G4 geometry downstream
 
-    if(dump.shieldingFaceZatXmin() > _b->_hallInsideZBeamDumpWall) {
-      throw cet::exception("GEOM")<<"Mu2eBuildingMaker: hallInsideZBeamDumpWall is too small - conflicts with ProtonBeamDump\n";
+    if(_b->_hallInsideZPStoBeamDumpCorner >= _b->_hallInsideZPSCorner) {
+      throw cet::exception("GEOM")<<"Mu2eBuildingMaker: can not satisfy (hall.insideXPSCorner, hall.insideZPSCorner)\n";
     }
+
     if(dump.shieldingFaceZatXmax() <= _b->_hallInsideZExtMonUCIWall) {
       throw cet::exception("GEOM")<<"Mu2eBuildingMaker: hallInsideZExtMonUCIWall is too large - conflicts with ProtonBeamDump\n";
     }
@@ -104,20 +107,24 @@ namespace mu2e {
     // Fragment 3
 
     _b->_concreteOuterOutline3.push_back(Hep2Vector(_b->hallInsideXmin() - _b->hallWallThickness(),
-                                                    _b->hallInsideZBeamDumpWall() - _b->hallWallThickness()));
+                                                    _b->hallInsideZPSCorner() - _b->hallWallThickness()));
 
-    _b->_hallInsideOutline.push_back(Hep2Vector(_b->hallInsideXmin(), _b->hallInsideZBeamDumpWall()));
+    _b->_hallInsideOutline.push_back(Hep2Vector(_b->hallInsideXmin(), _b->hallInsideZPSCorner()));
 
+    //----------------
+    _b->_concreteOuterOutline3.push_back(Hep2Vector(_b->hallInsideXPSCorner() - _b->hallWallThickness(),
+                                                    _b->hallInsideZPSCorner() - _b->hallWallThickness()));
 
-    _b->_concreteOuterOutline3.push_back(Hep2Vector(_b->hallInsideXmaxAtBeamDumpWall()
-                                                    - _b->hallWallThickness()/cos(dump.coreRotY())
-                                                    - _b->hallWallThickness()*tan(dump.coreRotY())
-                                                    ,
-                                                    _b->hallInsideZBeamDumpWall() - _b->hallWallThickness()
+    _b->_hallInsideOutline.push_back(Hep2Vector(_b->hallInsideXPSCorner(), _b->hallInsideZPSCorner()));
+
+    //----------------
+    _b->_concreteOuterOutline3.push_back(Hep2Vector(_b->hallInsideXPSCorner() - _b->hallWallThickness(),
+                                                    _b->hallInsideZPStoBeamDumpCorner() + _b->hallWallThickness()*tan(dump.coreRotY()/2)
                                                     ));
 
-    _b->_hallInsideOutline.push_back(Hep2Vector(_b->hallInsideXmaxAtBeamDumpWall(), _b->hallInsideZBeamDumpWall()));
+    _b->_hallInsideOutline.push_back(Hep2Vector(_b->hallInsideXPSCorner(), _b->hallInsideZPStoBeamDumpCorner()));
 
+    //----------------
     _b->_concreteOuterOutline3.push_back(Hep2Vector(dump.shieldingFaceXmin()
                                                     - _b->hallWallThickness()*cos(dump.coreRotY())
                                                     ,
