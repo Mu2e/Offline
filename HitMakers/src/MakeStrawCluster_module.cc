@@ -1,7 +1,7 @@
 //
-// $Id: MakeStrawCluster_module.cc,v 1.13 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: MakeStrawCluster_module.cc,v 1.14 2012/03/01 02:40:01 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/01 02:40:01 $
 //
 // Original author Hans Wenzel
 //
@@ -32,7 +32,6 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawCluster.hh"
-#include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
 using namespace std;
 
