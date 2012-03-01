@@ -1,15 +1,14 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.6 2011/07/12 04:52:27 kutschke Exp $
+// $Id: classes.h,v 1.7 2012/03/01 19:30:35 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Date: 2012/03/01 19:30:35 $
 //
 // Original author Rob Kutschke
 //
 
-#include "TrackerGeom/inc/StrawId.hh"
-#include "TrackerGeom/inc/StrawIndex.hh"
+#include "DataProducts/inc/StrawIndex.hh"
 #include "cetlib/map_vector.h"
 #include <vector>
 
