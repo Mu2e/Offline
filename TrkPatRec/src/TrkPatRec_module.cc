@@ -1,9 +1,9 @@
 
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.19 2012/02/29 02:09:22 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.20 2012/03/01 18:00:12 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/02/29 02:09:22 $
+// $Date: 2012/03/01 18:00:12 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -164,16 +164,16 @@ namespace mu2e
     Float_t _edep;
     Float_t _time;
     Float_t _dmin;
-    UInt_t _n50,_n100,_n150,_n200;
-    UInt_t _nmcsteps;
-    UInt_t _mcnunique,_mcnmax;
+    Int_t _n50,_n100,_n150,_n200;
+    Int_t _nmcsteps;
+    Int_t _mcnunique,_mcnmax;
     Int_t _mcpdg,_mcgen,_mcproc;
     threevec _mcshpos;
     Float_t _mcedep,_mcemax;
     Float_t _pdist,_pperp,_pmom;
     Float_t _mctime;
     Int_t _vloose, _loose, _tight, _delta;
-    UInt_t _ntpeak, _nshtpeak;
+    Int_t _ntpeak, _nshtpeak;
     Float_t _shtpeak;
     Float_t _shmct0, _shmcmom, _shmctd;
 // fit tuple variables
@@ -185,8 +185,8 @@ namespace mu2e
     helixpar _hparerr,_sparerr;
     Int_t _snhits, _snactive, _sniter, _sndof, _snweediter;
     Float_t _schisq, _st00, _st0;
-    UInt_t _nchit;
-    UInt_t _npeak, _nmc;
+    Int_t _nchit;
+    Int_t _npeak, _nmc;
     Float_t _peakmax, _tpeak;
 // hit filtering tuple variables
     std::vector<TrkHitInfo> _sfilt, _hfilt;
@@ -196,9 +196,9 @@ namespace mu2e
     Bool_t _isdelta;
     Float_t _pphi, _pt, _prho;
     Float_t _zmin, _zmax, _zgap;
-    UInt_t _ns, _smin, _smax, _nsmiss;
-    UInt_t _nsh, _ndpeak, _ndmax; 
-    UInt_t _nconv, _ndelta, _nprot;
+    Int_t _ns, _smin, _smax, _nsmiss;
+    Int_t _nsh, _ndpeak, _ndmax; 
+    Int_t _nconv, _ndelta, _nprot;
     std::vector<TrkHitInfo> _phits;
     Float_t _dmct0, _dmcmom, _dmctd;
  };
@@ -728,20 +728,20 @@ namespace mu2e
     _shdiag->Branch("shpos",&_shpos,"x/F:y/F:z/F");
     _shdiag->Branch("edep",&_edep,"edep/F");
     _shdiag->Branch("time",&_time,"time/F");
-    _shdiag->Branch("ntpeak",&_ntpeak,"ntpeak/i");
+    _shdiag->Branch("ntpeak",&_ntpeak,"ntpeak/I");
     _shdiag->Branch("tpeak",&_shtpeak,"tpeak/F");
-    _shdiag->Branch("nshtpeak",&_nshtpeak,"nshtpeak/i");
+    _shdiag->Branch("nshtpeak",&_nshtpeak,"nshtpeak/I");
     _shdiag->Branch("dmin",&_dmin,"dmin/F");
-    _shdiag->Branch("n50",&_n50,"n50/i");
-    _shdiag->Branch("n100",&_n100,"n100/i");
-    _shdiag->Branch("n150",&_n150,"n150/i");
-    _shdiag->Branch("n200",&_n200,"n200/i");
+    _shdiag->Branch("n50",&_n50,"n50/I");
+    _shdiag->Branch("n100",&_n100,"n100/I");
+    _shdiag->Branch("n150",&_n150,"n150/I");
+    _shdiag->Branch("n200",&_n200,"n200/I");
     _shdiag->Branch("mcshpos",&_mcshpos,"x/F:y/F:z/F");
     _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
     _shdiag->Branch("mcemax",&_mcemax,"mcemax/F");
-    _shdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/i");
-    _shdiag->Branch("mcnunique",&_mcnunique,"mcnunique/i");
-    _shdiag->Branch("mcnmax",&_mcnmax,"mcnmax/i");
+    _shdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/I");
+    _shdiag->Branch("mcnunique",&_mcnunique,"mcnunique/I");
+    _shdiag->Branch("mcnmax",&_mcnmax,"mcnmax/I");
     _shdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
     _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
     _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
@@ -782,29 +782,29 @@ namespace mu2e
     trkdiag->Branch("st0",&_st0,"st0/F");
     trkdiag->Branch("snhits",&_snhits,"snhits/I");
     trkdiag->Branch("sndof",&_sndof,"sndof/I");
-    trkdiag->Branch("sniter",&_sniter,"sniter/i");
+    trkdiag->Branch("sniter",&_sniter,"sniter/I");
     trkdiag->Branch("snweediter",&_snweediter,"snweediter/I");
     trkdiag->Branch("snactive",&_snactive,"snactive/I");
     trkdiag->Branch("schisq",&_schisq,"schisq/F");
-    trkdiag->Branch("nchit",&_nchit,"nchit/i");
-    trkdiag->Branch("npeak",&_npeak,"npeak/i");
+    trkdiag->Branch("nchit",&_nchit,"nchit/I");
+    trkdiag->Branch("npeak",&_npeak,"npeak/I");
     trkdiag->Branch("tpeak",&_tpeak,"tpeak/F");
-    trkdiag->Branch("nmc",&_nmc,"nmc/i");
+    trkdiag->Branch("nmc",&_nmc,"nmc/I");
     trkdiag->Branch("seedfilt",&_sfilt);
     trkdiag->Branch("helixfilt",&_hfilt);
 // delta diagnostics
     _ddiag=tfs->make<TTree>("ddiag","delta diagnostics");
     _ddiag->Branch("isdelta",&_isdelta,"isdelta/B");
-    _ddiag->Branch("nsh",&_nsh,"nsh/i");
-    _ddiag->Branch("ndpeak",&_ndpeak,"ndpeak/i");
-    _ddiag->Branch("ndmax",&_ndmax,"ndmax/i");
-    _ddiag->Branch("nconv",&_nconv,"nconv/i");
-    _ddiag->Branch("ndelta",&_ndelta,"ndelta/i");
-    _ddiag->Branch("nprot",&_nprot,"nprot/i");
-    _ddiag->Branch("ns",&_ns,"ns/i");
-    _ddiag->Branch("smin",&_smin,"smin/i");
-    _ddiag->Branch("smax",&_smax,"smax/i");
-    _ddiag->Branch("nsmiss",&_nsmiss,"nsmiss/i");
+    _ddiag->Branch("nsh",&_nsh,"nsh/I");
+    _ddiag->Branch("ndpeak",&_ndpeak,"ndpeak/I");
+    _ddiag->Branch("ndmax",&_ndmax,"ndmax/I");
+    _ddiag->Branch("nconv",&_nconv,"nconv/I");
+    _ddiag->Branch("ndelta",&_ndelta,"ndelta/I");
+    _ddiag->Branch("nprot",&_nprot,"nprot/I");
+    _ddiag->Branch("ns",&_ns,"ns/I");
+    _ddiag->Branch("smin",&_smin,"smin/I");
+    _ddiag->Branch("smax",&_smax,"smax/I");
+    _ddiag->Branch("nsmiss",&_nsmiss,"nsmiss/I");
     _ddiag->Branch("pphi",&_pphi,"pphi/F");
     _ddiag->Branch("pt",&_pt,"pt/F");
     _ddiag->Branch("prho",&_prho,"prho/F");
@@ -830,7 +830,7 @@ namespace mu2e
       _edep = sh.energyDep();
       _time = sh.time();
      // find proximity for different radii
-      double dmin;
+      double dmin(0.0);
 //      findProximity(shpos,istr,50.0,_n50,dmin);
 //      findProximity(shpos,istr,100.0,_n100,dmin);
 //      findProximity(shpos,istr,150.0,_n150,dmin);
@@ -845,7 +845,7 @@ namespace mu2e
       _pperp = 0.0;
       _pmom = 0.0;
       _nmcsteps = mcptr.size();
-      for( size_t imc=0; imc< _nmcsteps; ++imc ) {
+      for( size_t imc=0; imc< mcptr.size(); ++imc ) {
 	StepPointMC const& mchit = *mcptr[imc];
 	// distance from production
 	double edep = mchit.eDep();
