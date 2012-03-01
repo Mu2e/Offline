@@ -2,9 +2,9 @@
 // An EDProducer Module that reads ExtMonUCITofHit Stepping MC objects and turns them into
 // ExtMonUCITofHit objects, collection
 //
-// $Id: MakeExtMonUCITofHits_module.cc,v 1.4 2012/01/07 02:48:49 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/01/07 02:48:49 $
+// $Id: MakeExtMonUCITofHits_module.cc,v 1.5 2012/03/01 00:36:41 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/01 00:36:41 $
 //  
 //  
 
@@ -36,7 +36,6 @@
 #include "RecoDataProducts/inc/ExtMonUCITofHitCollection.hh"
 #include "MCDataProducts/inc/ExtMonUCITofHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "Mu2eUtilities/inc/sort_functors.hh"
 
 // Other includes.
 #include "CLHEP/Vector/ThreeVector.h"
