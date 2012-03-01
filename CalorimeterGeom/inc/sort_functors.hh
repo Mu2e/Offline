@@ -1,9 +1,9 @@
-#ifndef Mu2eUtilities_sort_functors_hh
-#define Mu2eUtilities_sort_functors_hh
+#ifndef CalorimeterGeom_sort_functors_hh
+#define CalorimeterGeom_sort_functors_hh
 //
-// $Id: sort_functors.hh,v 1.1 2012/03/01 01:19:24 kutschke Exp $
+// $Id: sort_functors.hh,v 1.2 2012/03/01 01:21:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/01 01:19:24 $
+// $Date: 2012/03/01 01:21:13 $
 //
 // Original author KLG
 //
