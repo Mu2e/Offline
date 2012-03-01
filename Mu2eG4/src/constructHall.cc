@@ -1,9 +1,9 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.10 2012/03/01 21:17:52 gandr Exp $
+// $Id: constructHall.cc,v 1.11 2012/03/01 21:18:02 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/01 21:17:52 $
+// $Date: 2012/03/01 21:18:02 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //
@@ -50,9 +50,9 @@ namespace mu2e {
     GeomHandle<Mu2eBuilding> building;
 
     vector<double> hallFormalHLen(3);
-    hallFormalHLen[0] = (building->hallInsideXmax() - building->hallInsideXmin())/2;
+    hallFormalHLen[0] = (building->hallInsideXmax() - building->hallInsideXmin())/2 + building->hallWallThickness();
     hallFormalHLen[1] = (building->hallInsideYmax() - building->hallInsideYmin())/2;
-    hallFormalHLen[2] = (building->hallInsideZmax() - world->hallFormalZminInMu2e())/2;
+    hallFormalHLen[2] = (building->hallInsideZmax() - world->hallFormalZminInMu2e())/2 + building->hallWallThickness();
 
     CLHEP::Hep3Vector hallFormalCenter
       ( (building->hallInsideXmax() + building->hallInsideXmin())/2,
@@ -163,8 +163,8 @@ namespace mu2e {
                                 (building->hallInsideYmax() + building->hallInsideYmin())/2,
                                 (building->hallInsideZmax() + building->hallInsideZExtMonUCIWall())/2
                                 )
-              - parent.centerInMu2e(),
-              parent,
+              - hallInfo.centerInMu2e(),
+              hallInfo,
               0,
               config->getBool("hall.wallsVisible", true),
               G4Colour::Grey(),
@@ -190,8 +190,8 @@ namespace mu2e {
                                 (building->hallInsideYmax() + building->hallInsideYmin())/2,
                                 (building->hallInsideZmax() + building->hallInsideZBeamDumpWall())/2
                                 )
-              - parent.centerInMu2e(),
-              parent,
+              - hallInfo.centerInMu2e(),
+              hallInfo,
               0,
               config->getBool("hall.wallsVisible", true),
               G4Colour::Grey(),
@@ -221,8 +221,8 @@ namespace mu2e {
                                 (building->hallInsideYmax() + building->hallInsideYmin())/2,
                                 building->hallInsideZmax() + building->hallWallThickness()/2
                                 )
-              - parent.centerInMu2e(),
-              parent,
+              - hallInfo.centerInMu2e(),
+              hallInfo,
               0,
               config->getBool("hall.wallsVisible", true),
               G4Colour::Grey(),
