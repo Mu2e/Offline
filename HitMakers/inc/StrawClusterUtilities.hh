@@ -3,9 +3,9 @@
 //
 // First version of a Cluster.
 //
-// $Id: StrawClusterUtilities.hh,v 1.3 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:07 $
+// $Id: StrawClusterUtilities.hh,v 1.1 2012/03/01 02:09:33 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/01 02:09:33 $
 //
 // Original author Hans Wenzel
 //
@@ -17,13 +17,12 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 // Mu2e includes:
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "Mu2eUtilities/inc/LineSegmentPCA.hh"
+#include "TrackerGeom/inc/DeviceId.hh"
+#include "TrackerGeom/inc/SectorId.hh"
+
 // CLHEP includes:
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"
@@ -40,7 +39,7 @@ namespace mu2e {
 
     // Accessors
     CLHEP::Hep3Vector midX(StrawCluster const& cluster,art::Event const& event) const;
-    CLHEP::Hep3Vector dirX(StrawCluster const& cluster,art::Event const& event) const; 
+    CLHEP::Hep3Vector dirX(StrawCluster const& cluster,art::Event const& event) const;
     CLHEP::Hep3Vector dTX(StrawCluster const& cluster,art::Event const& event) const;
     double Energy(StrawCluster const& cluster,art::Event const& event) const;
     double Halflength(StrawCluster const& cluster,art::Event const& event) const;
