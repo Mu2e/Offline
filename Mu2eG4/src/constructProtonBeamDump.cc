@@ -58,11 +58,11 @@
 namespace mu2e {
 
   //================================================================
-  void constructCollimatorExtMonFNAL(const ProtonBeamDump::CollimatorExtMonFNAL& collimator, 
-				     const VolumeInfo& parent,
-				     const CLHEP::Hep3Vector& collimatorCenterInParent,
-				     const SimpleConfig& config
-				     )
+  void constructCollimatorExtMonFNAL(const ProtonBeamDump::CollimatorExtMonFNAL& collimator,
+                                     const VolumeInfo& parent,
+                                     const CLHEP::Hep3Vector& collimatorCenterInParent,
+                                     const SimpleConfig& config
+                                     )
   {
     GeomHandle<ProtonBeamDump> dump;
 
@@ -74,33 +74,33 @@ namespace mu2e {
     const bool placePV             = true;
 
 
-    // Make sure the solids definining the collimator hole etc are sufficiently long to completely 
+    // Make sure the solids definining the collimator hole etc are sufficiently long to completely
     // exit the concrete on both ends.
 
     const double boxdz = 0.5*collimator.horizontalLength();
     const double dr =  *std::max_element(collimator.alignmentPlugRadius().begin(), collimator.alignmentPlugRadius().end());
     const double cylHalfLength = std::sqrt(std::pow(boxdz, 2) +
-					   std::pow(boxdz * tan(collimator.angleV()) + dr/cos(collimator.angleV()), 2) +
-					   std::pow(boxdz * tan(collimator.angleH()) + dr/cos(collimator.angleH()), 2)
-					   );
+                                           std::pow(boxdz * tan(collimator.angleV()) + dr/cos(collimator.angleV()), 2) +
+                                           std::pow(boxdz * tan(collimator.angleH()) + dr/cos(collimator.angleH()), 2)
+                                           );
 
     double zPlane[] = {-cylHalfLength, -0.5*collimator.radiusTransitiondZ(), +0.5*collimator.radiusTransitiondZ(), +cylHalfLength };
     double rzero[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    
-    G4Box* cutbox = reg.add(new G4Box(collimator.name()+"cutbox", 
-				      dump->enclosureHalfSize()[0], 
-				      dump->enclosureHalfSize()[1], 
-				      0.5*collimator.horizontalLength())
-			    );
-    
+
+    G4Box* cutbox = reg.add(new G4Box(collimator.name()+"cutbox",
+                                      dump->enclosureHalfSize()[0],
+                                      dump->enclosureHalfSize()[1],
+                                      0.5*collimator.horizontalLength())
+                            );
+
     CLHEP::HepRotation *colrot = reg.add(CLHEP::HepRotation::IDENTITY);
     colrot->rotateX(-collimator.angleV());
     colrot->rotateY(-collimator.angleH());
 
     //----------------------------------------------------------------
     // Alignment hole
-      
+
     double rAlignmentHole[] = {
       collimator.alignmentPlugRadius()[1] + collimator.alignmentHoleRClearance()[1],
       collimator.alignmentPlugRadius()[1] + collimator.alignmentHoleRClearance()[1],
@@ -109,37 +109,37 @@ namespace mu2e {
     };
 
     G4Polycone *holeCylinder = reg.add(new G4Polycone(collimator.name()+"holecomponent", 0, 2*M_PI,
-						      sizeof(zPlane)/sizeof(zPlane[0]),
-						      zPlane,
-						      rzero,
-						      rAlignmentHole
-						      )
-				       );
-      
+                                                      sizeof(zPlane)/sizeof(zPlane[0]),
+                                                      zPlane,
+                                                      rzero,
+                                                      rAlignmentHole
+                                                      )
+                                       );
+
 
     VolumeInfo alignmentHole(collimator.name()+"AlignmentHole",
-			     collimatorCenterInParent,
-			     parent.centerInWorld);
-      
-    alignmentHole.solid = new G4IntersectionSolid(alignmentHole.name,
-						  holeCylinder,
-						  cutbox,
-						  G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,0))
-						  );
+                             collimatorCenterInParent,
+                             parent.centerInWorld);
 
-    finishNesting(alignmentHole, 
-		  materialFinder.get("hall.insideMaterialName"),
-		  colrot,
-		  alignmentHole.centerInParent,
-		  parent.logical,
-		  0, 
-		  config.getBool("extMonFilter."+collimator.name()+".alignmentHole.visible"),
-		  G4Colour::Cyan(),
-		  config.getBool("extMonFilter."+collimator.name()+".alignmentHole.solid"),
-		  forceAuxEdgeVisible,
-		  placePV,
-		  doSurfaceCheck
-		  );
+    alignmentHole.solid = new G4IntersectionSolid(alignmentHole.name,
+                                                  holeCylinder,
+                                                  cutbox,
+                                                  G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,0))
+                                                  );
+
+    finishNesting(alignmentHole,
+                  materialFinder.get("hall.insideMaterialName"),
+                  colrot,
+                  alignmentHole.centerInParent,
+                  parent.logical,
+                  0,
+                  config.getBool("extMonFilter."+collimator.name()+".alignmentHole.visible"),
+                  G4Colour::Cyan(),
+                  config.getBool("extMonFilter."+collimator.name()+".alignmentHole.solid"),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
 
     //----------------------------------------------------------------
     // Alignment plug
@@ -152,107 +152,107 @@ namespace mu2e {
     };
 
     G4Polycone *plugCylinder = reg.add(new G4Polycone(collimator.name()+"plugcomponent", 0, 2*M_PI,
-						      sizeof(zPlane)/sizeof(zPlane[0]),
-						      zPlane,
-						      rzero,
-						      rAlignmentPlug
-						      )
-				       );
+                                                      sizeof(zPlane)/sizeof(zPlane[0]),
+                                                      zPlane,
+                                                      rzero,
+                                                      rAlignmentPlug
+                                                      )
+                                       );
 
     VolumeInfo alignmentPlug(collimator.name()+"AlignmentPlug",
-			     CLHEP::Hep3Vector(0,0,0),
-			     alignmentHole.centerInWorld);
-      
+                             CLHEP::Hep3Vector(0,0,0),
+                             alignmentHole.centerInWorld);
+
     alignmentPlug.solid = new G4IntersectionSolid(alignmentPlug.name,
-						  plugCylinder,
-						  cutbox,
-						  G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,0))
-						  );
-      
-    finishNesting(alignmentPlug, 
-		  materialFinder.get("protonBeamDump.material.shielding"),
-		  0,
-		  alignmentPlug.centerInParent,
-		  alignmentHole.logical,
-		  0, 
-		  config.getBool("extMonFilter."+collimator.name()+".alignmentPlug.visible"),
-		  G4Colour::Red(),
-		  config.getBool("extMonFilter."+collimator.name()+".alignmentPlug.solid"),
-		  forceAuxEdgeVisible,
-		  placePV,
-		  doSurfaceCheck
-		  );
+                                                  plugCylinder,
+                                                  cutbox,
+                                                  G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,0))
+                                                  );
+
+    finishNesting(alignmentPlug,
+                  materialFinder.get("protonBeamDump.material.shielding"),
+                  0,
+                  alignmentPlug.centerInParent,
+                  alignmentHole.logical,
+                  0,
+                  config.getBool("extMonFilter."+collimator.name()+".alignmentPlug.visible"),
+                  G4Colour::Red(),
+                  config.getBool("extMonFilter."+collimator.name()+".alignmentPlug.solid"),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
 
     //----------------------------------------------------------------
     // Collimator channel: the upstream half
-    
-    G4Box *upbox = reg.add(new G4Box(collimator.name()+"upbox", 
-				     0.5*collimator.channelWidth()[0],
-				     0.5*collimator.channelHeight()[0],
-				     0.5*cylHalfLength
-				     )
-			   );
-    
+
+    G4Box *upbox = reg.add(new G4Box(collimator.name()+"upbox",
+                                     0.5*collimator.channelWidth()[0],
+                                     0.5*collimator.channelHeight()[0],
+                                     0.5*cylHalfLength
+                                     )
+                           );
+
     VolumeInfo channelUp(collimator.name()+"ChannelUp",CLHEP::Hep3Vector(0,0,0.5*cylHalfLength), alignmentPlug.centerInWorld);
-    
+
     channelUp.solid = new G4IntersectionSolid(channelUp.name,
-					      upbox,
-					      cutbox,
-					      G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,-0.5*cylHalfLength))
-					      );
-    
-    finishNesting(channelUp, 
-		  materialFinder.get("hall.insideMaterialName"),
-		  0,
-		  channelUp.centerInParent,
-		  alignmentPlug.logical,
-		  0, 
-		  config.getBool("extMonFilter."+collimator.name()+".channel.visible"),
-		  G4Colour::Grey(),
-		  config.getBool("extMonFilter."+collimator.name()+".channel.solid"),
-		  forceAuxEdgeVisible,
-		  placePV,
-		  doSurfaceCheck
-		  );
-    
+                                              upbox,
+                                              cutbox,
+                                              G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,-0.5*cylHalfLength))
+                                              );
+
+    finishNesting(channelUp,
+                  materialFinder.get("hall.insideMaterialName"),
+                  0,
+                  channelUp.centerInParent,
+                  alignmentPlug.logical,
+                  0,
+                  config.getBool("extMonFilter."+collimator.name()+".channel.visible"),
+                  G4Colour::Grey(),
+                  config.getBool("extMonFilter."+collimator.name()+".channel.solid"),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
+
     //----------------------------------------------------------------
     // Collimator channel: the downstream half
 
-    G4Box *collimatorDownBox = reg.add(new G4Box(collimator.name()+"dnbox", 
-						 0.5*collimator.channelWidth()[1],
-						 0.5*collimator.channelHeight()[1],
-						 0.5*cylHalfLength)
-				       );
-      
+    G4Box *collimatorDownBox = reg.add(new G4Box(collimator.name()+"dnbox",
+                                                 0.5*collimator.channelWidth()[1],
+                                                 0.5*collimator.channelHeight()[1],
+                                                 0.5*cylHalfLength)
+                                       );
+
     VolumeInfo collimatorDown(collimator.name()+"ChannelDn",CLHEP::Hep3Vector(0,0,-0.5*cylHalfLength), alignmentPlug.centerInWorld);
- 
+
     collimatorDown.solid = new G4IntersectionSolid(collimatorDown.name,
-						   collimatorDownBox,
-						   cutbox,
-						   G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,0.5*cylHalfLength))
-						   );
-      
-    finishNesting(collimatorDown, 
-		  materialFinder.get("hall.insideMaterialName"),
-		  0,
-		  collimatorDown.centerInParent,
-		  alignmentPlug.logical,
-		  0, 
-		  config.getBool("extMonFilter."+collimator.name()+".channel.visible"),
-		  G4Colour::Grey(),
-		  config.getBool("extMonFilter."+collimator.name()+".channel.solid"),
-		  forceAuxEdgeVisible,
-		  placePV,
-		  doSurfaceCheck
-		  );
+                                                   collimatorDownBox,
+                                                   cutbox,
+                                                   G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,0.5*cylHalfLength))
+                                                   );
+
+    finishNesting(collimatorDown,
+                  materialFinder.get("hall.insideMaterialName"),
+                  0,
+                  collimatorDown.centerInParent,
+                  alignmentPlug.logical,
+                  0,
+                  config.getBool("extMonFilter."+collimator.name()+".channel.visible"),
+                  G4Colour::Grey(),
+                  config.getBool("extMonFilter."+collimator.name()+".channel.solid"),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
 
   }
 
   //================================================================
-  void constructFilterMagnet(const ProtonBeamDump& dump, 
-			     const VolumeInfo& parent,
-			     const SimpleConfig& config
-			     )
+  void constructFilterMagnet(const ProtonBeamDump& dump,
+                             const VolumeInfo& parent,
+                             const SimpleConfig& config
+                             )
   {
     MaterialFinder materialFinder(config);
 
@@ -267,18 +267,18 @@ namespace mu2e {
     magnetRotationInParent->rotateX(-dump.filterMagnetAngleV());
 
     const VolumeInfo magnetIron = nestBox("ExtMonFNALFilterMagnetIron",
-					  dump.filterMagnet().outerHalfSize(),
-					  materialFinder.get("extMonFilter.magnet.material"),
-					  magnetRotationInParent,
-					  dump.filterMagnetCenterInEnclosure() - dump.magnetPitCenterInEnclosure(),
-					  parent, 0,
-					  config.getBool("extMonFilter.magnet.iron.visible", true),
-					  G4Colour::Magenta(),
-					  config.getBool("extMonFilter.magnet.iron.solid", false),
-					  forceAuxEdgeVisible,
-					  placePV,
-					  doSurfaceCheck
-					  );
+                                          dump.filterMagnet().outerHalfSize(),
+                                          materialFinder.get("extMonFilter.magnet.material"),
+                                          magnetRotationInParent,
+                                          dump.filterMagnetCenterInEnclosure() - dump.magnetPitCenterInEnclosure(),
+                                          parent, 0,
+                                          config.getBool("extMonFilter.magnet.iron.visible", true),
+                                          G4Colour::Magenta(),
+                                          config.getBool("extMonFilter.magnet.iron.solid", false),
+                                          forceAuxEdgeVisible,
+                                          placePV,
+                                          doSurfaceCheck
+                                          );
 
     std::vector<double> apertureHalfSize(3);
     apertureHalfSize[0] = 0.5*dump.filterMagnet().apertureWidth();
@@ -286,20 +286,20 @@ namespace mu2e {
     apertureHalfSize[2] = dump.filterMagnet().outerHalfSize()[2];
 
     VolumeInfo magnetAperture = nestBox("ExtMonFNALFilterMagnetAperture",
-					apertureHalfSize,
-					materialFinder.get("hall.insideMaterialName"),
-					0,
-					CLHEP::Hep3Vector(0, 0, 0),
-					magnetIron.logical, 0,
-					config.getBool("extMonFilter.magnet.aperture.visible", true),
-					G4Colour::Grey(),
-					config.getBool("extMonFilter.magnet.aperture.solid", false),
-					forceAuxEdgeVisible,
-					placePV,
-					doSurfaceCheck
-					);
+                                        apertureHalfSize,
+                                        materialFinder.get("hall.insideMaterialName"),
+                                        0,
+                                        CLHEP::Hep3Vector(0, 0, 0),
+                                        magnetIron.logical, 0,
+                                        config.getBool("extMonFilter.magnet.aperture.visible", true),
+                                        G4Colour::Grey(),
+                                        config.getBool("extMonFilter.magnet.aperture.solid", false),
+                                        forceAuxEdgeVisible,
+                                        placePV,
+                                        doSurfaceCheck
+                                        );
 
-    
+
     //----------------------------------------------------------------
     // Define the field in the magnet
 
@@ -339,7 +339,7 @@ namespace mu2e {
 
     //----------------------------------------------------------------
   }
-    
+
   //================================================================
 
   void constructProtonBeamDump(const VolumeInfo& parent, const SimpleConfig& config) {
@@ -347,7 +347,7 @@ namespace mu2e {
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<Mu2eBuilding> building;
     GeomHandle<WorldG4> world;
- 
+
     MaterialFinder materialFinder(config);
 
     const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
@@ -356,7 +356,7 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     // Re-fill a part of the formal "HallAir" with dirt.
-    // Use an extruded solid to have a properly angled facet 
+    // Use an extruded solid to have a properly angled facet
     // at which the beam dump can be placed.
 
     // points need to be in the clock-wise order
@@ -389,27 +389,27 @@ namespace mu2e {
     beamDumpDirtRotation.rotateX(-90*CLHEP::degree);
 
     VolumeInfo beamDumpDirt("ProtonBeamDumpDirt",
-			    CLHEP::Hep3Vector(0, (building->hallInsideYmin() + building->hallInsideYmax())/2, 0)
-			    - parent.centerInMu2e(),
-			    parent.centerInWorld);
-    
-    beamDumpDirt.solid = new G4ExtrudedSolid(beamDumpDirt.name, beamDumpDirtOutiline, 
-					     (building->hallInsideYmax() - building->hallInsideYmin())/2, 
-					     G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+                            CLHEP::Hep3Vector(0, (building->hallInsideYmin() + building->hallInsideYmax())/2, 0)
+                            - parent.centerInMu2e(),
+                            parent.centerInWorld);
 
-    finishNesting(beamDumpDirt, 
-		  materialFinder.get("dirt.overburdenMaterialName"),
-		  &beamDumpDirtRotation,
-		  beamDumpDirt.centerInParent,
-		  parent.logical,
-		  0, 
-		  config.getBool("protonBeamDump.dirtVisible", false),
-		  G4Colour::Magenta(),
-		  config.getBool("protonBeamDump.dirtSolid", false),
-		  forceAuxEdgeVisible,
-		  placePV,
-		  doSurfaceCheck
-		  );
+    beamDumpDirt.solid = new G4ExtrudedSolid(beamDumpDirt.name, beamDumpDirtOutiline,
+                                             (building->hallInsideYmax() - building->hallInsideYmin())/2,
+                                             G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+
+    finishNesting(beamDumpDirt,
+                  materialFinder.get("dirt.overburdenMaterialName"),
+                  &beamDumpDirtRotation,
+                  beamDumpDirt.centerInParent,
+                  parent.logical,
+                  0,
+                  config.getBool("protonBeamDump.dirtVisible", false),
+                  G4Colour::Magenta(),
+                  config.getBool("protonBeamDump.dirtSolid", false),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
 
     //----------------------------------------------------------------
     CLHEP::Hep3Vector enclosurePositionInDirt( beamDumpDirtRotation * (dump->enclosureCenterInMu2e() - beamDumpDirt.centerInMu2e()));
@@ -419,102 +419,102 @@ namespace mu2e {
     rotationInDirt.rotateX(+90*CLHEP::degree);
 
     const VolumeInfo logicalEnclosure = nestBox("ProtonBeamDumpShielding",
- 						dump->enclosureHalfSize(), 
- 						materialFinder.get("protonBeamDump.material.shielding"),
-						&rotationInDirt,
- 						enclosurePositionInDirt,
- 						beamDumpDirt, 0,
-						config.getBool("protonBeamDump.logicalEnclosureVisible", true),
- 						G4Colour::Grey(),
-						config.getBool("protonBeamDump.logicalEnclosureSolid", false),
-						forceAuxEdgeVisible,
-						placePV,
-						doSurfaceCheck
- 						);
- 
+                                                dump->enclosureHalfSize(),
+                                                materialFinder.get("protonBeamDump.material.shielding"),
+                                                &rotationInDirt,
+                                                enclosurePositionInDirt,
+                                                beamDumpDirt, 0,
+                                                config.getBool("protonBeamDump.logicalEnclosureVisible", true),
+                                                G4Colour::Grey(),
+                                                config.getBool("protonBeamDump.logicalEnclosureSolid", false),
+                                                forceAuxEdgeVisible,
+                                                placePV,
+                                                doSurfaceCheck
+                                                );
+
     nestBox("ProtonBeamDumpCore",
- 	    dump->coreHalfSize(),
- 	    materialFinder.get("protonBeamDump.material.core"),
- 	    0,
- 	    dump->coreCenterInEnclosure(),
- 	    logicalEnclosure, 0,
-	    config.getBool("protonBeamDump.coreVisible", true),
- 	    G4Colour::Blue(),
-	    config.getBool("protonBeamDump.coreSolid", true),
-	    forceAuxEdgeVisible,
-	    placePV,
-	    doSurfaceCheck
+            dump->coreHalfSize(),
+            materialFinder.get("protonBeamDump.material.core"),
+            0,
+            dump->coreCenterInEnclosure(),
+            logicalEnclosure, 0,
+            config.getBool("protonBeamDump.coreVisible", true),
+            G4Colour::Blue(),
+            config.getBool("protonBeamDump.coreSolid", true),
+            forceAuxEdgeVisible,
+            placePV,
+            doSurfaceCheck
 
- 	    );
- 
+            );
+
     nestBox("ProtonBeamDumpMouth",
- 	    dump->mouthHalfSize(),
- 	    materialFinder.get("protonBeamDump.material.air"),
- 	    0,
- 	    CLHEP::Hep3Vector(0.,
- 			      dump->coreCenterInEnclosure()[1],
- 			      dump->enclosureHalfSize()[2] - dump->mouthHalfSize()[2]),
- 	    logicalEnclosure, 0,
-	    config.getBool("protonBeamDump.mouthVisible", true), 
- 	    G4Colour::Cyan(), 
-	    config.getBool("protonBeamDump.mouthSolid", false), 
-	    forceAuxEdgeVisible,
-	    placePV,
-	    doSurfaceCheck
+            dump->mouthHalfSize(),
+            materialFinder.get("protonBeamDump.material.air"),
+            0,
+            CLHEP::Hep3Vector(0.,
+                              dump->coreCenterInEnclosure()[1],
+                              dump->enclosureHalfSize()[2] - dump->mouthHalfSize()[2]),
+            logicalEnclosure, 0,
+            config.getBool("protonBeamDump.mouthVisible", true),
+            G4Colour::Cyan(),
+            config.getBool("protonBeamDump.mouthSolid", false),
+            forceAuxEdgeVisible,
+            placePV,
+            doSurfaceCheck
 
- 	    );
- 
+            );
+
     nestBox("ProtonBeamNeutronCave",
- 	    dump->neutronCaveHalfSize(),
- 	    materialFinder.get("protonBeamDump.material.air"),
- 	    0,
- 	    CLHEP::Hep3Vector(0.,
- 			      dump->coreCenterInEnclosure()[1],
- 			      dump->enclosureHalfSize()[2] - 2*dump->mouthHalfSize()[2] - dump->neutronCaveHalfSize()[2]),
- 	    logicalEnclosure, 0,
-	    config.getBool("protonBeamDump.neutronCaveVisible", true), 
- 	    G4Colour::Cyan(),
-	    config.getBool("protonBeamDump.neutronCaveSolid", false), 
-	    forceAuxEdgeVisible,
-	    placePV,
-	    doSurfaceCheck
- 	    );
- 
+            dump->neutronCaveHalfSize(),
+            materialFinder.get("protonBeamDump.material.air"),
+            0,
+            CLHEP::Hep3Vector(0.,
+                              dump->coreCenterInEnclosure()[1],
+                              dump->enclosureHalfSize()[2] - 2*dump->mouthHalfSize()[2] - dump->neutronCaveHalfSize()[2]),
+            logicalEnclosure, 0,
+            config.getBool("protonBeamDump.neutronCaveVisible", true),
+            G4Colour::Cyan(),
+            config.getBool("protonBeamDump.neutronCaveSolid", false),
+            forceAuxEdgeVisible,
+            placePV,
+            doSurfaceCheck
+            );
+
     const VolumeInfo magnetPit  = nestBox("ProtonBeamDumpMagnetPit",
-					  dump->magnetPitHalfSize(),
-					  materialFinder.get("protonBeamDump.material.air"),
-					  0,
-					  dump->magnetPitCenterInEnclosure(),
-					  logicalEnclosure, 0,
-					  config.getBool("protonBeamDump.magnetPitVisible", true), 
-					  G4Colour::Cyan(),
-					  config.getBool("protonBeamDump.magnetPitSolid", false),
-					  forceAuxEdgeVisible,
-					  placePV,
-					  doSurfaceCheck
-					  );
+                                          dump->magnetPitHalfSize(),
+                                          materialFinder.get("protonBeamDump.material.air"),
+                                          0,
+                                          dump->magnetPitCenterInEnclosure(),
+                                          logicalEnclosure, 0,
+                                          config.getBool("protonBeamDump.magnetPitVisible", true),
+                                          G4Colour::Cyan(),
+                                          config.getBool("protonBeamDump.magnetPitSolid", false),
+                                          forceAuxEdgeVisible,
+                                          placePV,
+                                          doSurfaceCheck
+                                          );
 
     //----------------------------------------------------------------
     // The ExtMon filter channel
 
     constructCollimatorExtMonFNAL(dump->collimator1(),
-				  logicalEnclosure,
-				  dump->collimator1CenterInEnclosure(),
-				  config);
+                                  logicalEnclosure,
+                                  dump->collimator1CenterInEnclosure(),
+                                  config);
 
     constructFilterMagnet(*dump, magnetPit, config);
 
     constructCollimatorExtMonFNAL(dump->collimator2(),
-				  logicalEnclosure,
-				  dump->collimator2CenterInEnclosure(),
-				  config);
+                                  logicalEnclosure,
+                                  dump->collimator2CenterInEnclosure(),
+                                  config);
 
     //----------------------------------------------------------------
     // Create hall walls that are inside the formal hall box
-    
+
     static CLHEP::HepRotation wallRotation(CLHEP::HepRotation::IDENTITY);
     wallRotation.rotateX(-90*CLHEP::degree);
-    
+
     // part on the +x side
     if(true) {
       std::vector<G4TwoVector> outline(building->concreteOuterOutline1());
@@ -523,26 +523,26 @@ namespace mu2e {
       outline.push_back(G4TwoVector(dump->shieldingFaceXmax(), building->hallInsideZExtMonUCIWall()));
 
       VolumeInfo wall("HallConcreteExtMonUCIWall",
-		      CLHEP::Hep3Vector(0, 0, 0),
-		      beamDumpDirt.centerInWorld);
-      
-      wall.solid = new G4ExtrudedSolid(wall.name, outline, 
-				       (building->hallInsideYmax()-building->hallInsideYmin())/2, 
-				       G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-      
+                      CLHEP::Hep3Vector(0, 0, 0),
+                      beamDumpDirt.centerInWorld);
+
+      wall.solid = new G4ExtrudedSolid(wall.name, outline,
+                                       (building->hallInsideYmax()-building->hallInsideYmin())/2,
+                                       G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+
       finishNesting(wall,
-		    materialFinder.get("hall.wallMaterialName"),
-		    0, //&wallRotation,
-		    wall.centerInParent,
-		    beamDumpDirt.logical,
-		    0, 
-		    config.getBool("hall.wallsVisible",true),
-		    G4Colour::Grey(),
-		    config.getBool("hall.wallsSolid",false),
-		    forceAuxEdgeVisible,
-		    placePV,
-		    doSurfaceCheck
-		    );
+                    materialFinder.get("hall.wallMaterialName"),
+                    0, //&wallRotation,
+                    wall.centerInParent,
+                    beamDumpDirt.logical,
+                    0,
+                    config.getBool("hall.wallsVisible",true),
+                    G4Colour::Grey(),
+                    config.getBool("hall.wallsSolid",false),
+                    forceAuxEdgeVisible,
+                    placePV,
+                    doSurfaceCheck
+                    );
     }
 
     // part on the -x side
@@ -554,43 +554,43 @@ namespace mu2e {
       outline.push_back(G4TwoVector(building->hallInsideXmin(), building->hallInsideZBeamDumpWall() - building->hallWallThickness()));
 
       VolumeInfo wall("HallConcreteBeamDumpWall",
-		      CLHEP::Hep3Vector(0, 0, 0),
-		      beamDumpDirt.centerInWorld);
-      
-      wall.solid = new G4ExtrudedSolid(wall.name, outline, 
-				       (building->hallInsideYmax()-building->hallInsideYmin())/2, 
-				       G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-      
+                      CLHEP::Hep3Vector(0, 0, 0),
+                      beamDumpDirt.centerInWorld);
+
+      wall.solid = new G4ExtrudedSolid(wall.name, outline,
+                                       (building->hallInsideYmax()-building->hallInsideYmin())/2,
+                                       G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+
       finishNesting(wall,
-		    materialFinder.get("hall.wallMaterialName"),
-		    0,
-		    wall.centerInParent,
-		    beamDumpDirt.logical,
-		    0, 
-		    config.getBool("hall.wallsVisible",true),
-		    G4Colour::Grey(),
-		    config.getBool("hall.wallsSolid",false),
-		    forceAuxEdgeVisible,
-		    placePV,
-		    doSurfaceCheck
-		    );
+                    materialFinder.get("hall.wallMaterialName"),
+                    0,
+                    wall.centerInParent,
+                    beamDumpDirt.logical,
+                    0,
+                    config.getBool("hall.wallsVisible",true),
+                    G4Colour::Grey(),
+                    config.getBool("hall.wallsSolid",false),
+                    forceAuxEdgeVisible,
+                    placePV,
+                    doSurfaceCheck
+                    );
     }
 
     //----------------------------------------------------------------
     // Add some volumes for visualization purposes.
-    // 
+    //
     // ROOT's OpenGL graphics refuses to display in a nice way the
     // ProtonBeamDumpShielding volume.  On the other hand it turns out
-    // the same viewer shows existing VirtualDetectors nicely.  
-    // 
+    // the same viewer shows existing VirtualDetectors nicely.
+    //
     // Here we outline the dump shielding using very thin boxes (with
     // the same thickness as the VirtualDetector dimension)
-    // 
+    //
 
     const bool applyVisualizationKludge = config.getBool("protonBeamDump.applyROOTVisualizationKludge", false);
     if(applyVisualizationKludge) {
 
-      const double kludgeHalfThickness = 0.01; // the thickness that works with the current root opengl 
+      const double kludgeHalfThickness = 0.01; // the thickness that works with the current root opengl
       int const nSurfaceCheckPoints = 100000; // for a more thorrow check due to the small thickness
 
       const bool kludgeIsVisible      = true;
@@ -601,123 +601,123 @@ namespace mu2e {
       // The vertical side walls go inside the dump concrete
       if(1) {
 
-	std::vector<double> hlen(3);
-	hlen[0] = kludgeHalfThickness;
-	hlen[1] = dump->enclosureHalfSize()[1];
-	hlen[2] = dump->enclosureHalfSize()[2];
-	
-	VolumeInfo pxInfo = nestBox("BeamDumpShieldingVisKludgePosX", 
-				    hlen,
-				    vacuumMaterial,
-				    0,
-				    CLHEP::Hep3Vector(+dump->enclosureHalfSize()[0] - kludgeHalfThickness, 0., 0.),
-				    logicalEnclosure,
-				    0,
-				    kludgeIsVisible,
-				    G4Color::Grey(),
-				    kludgeIsSolid,
-				    forceAuxEdgeVisible,
-				    true,
-				    false /*surface check*/
-				    );
+        std::vector<double> hlen(3);
+        hlen[0] = kludgeHalfThickness;
+        hlen[1] = dump->enclosureHalfSize()[1];
+        hlen[2] = dump->enclosureHalfSize()[2];
 
-	// the volumes are very thin, a more thorough check is needed
-	doSurfaceCheck && pxInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+        VolumeInfo pxInfo = nestBox("BeamDumpShieldingVisKludgePosX",
+                                    hlen,
+                                    vacuumMaterial,
+                                    0,
+                                    CLHEP::Hep3Vector(+dump->enclosureHalfSize()[0] - kludgeHalfThickness, 0., 0.),
+                                    logicalEnclosure,
+                                    0,
+                                    kludgeIsVisible,
+                                    G4Color::Grey(),
+                                    kludgeIsSolid,
+                                    forceAuxEdgeVisible,
+                                    true,
+                                    false /*surface check*/
+                                    );
 
-	VolumeInfo nxInfo = nestBox("BeamDumpShieldingVisKludgeNegX", 
-				    hlen,
-				    vacuumMaterial,
-				    0,
-				    CLHEP::Hep3Vector(-dump->enclosureHalfSize()[0] + kludgeHalfThickness, 0., 0.),
-				    logicalEnclosure,
-				    0,
-				    kludgeIsVisible,
-				    G4Color::Grey(),
-				    kludgeIsSolid,
-				    forceAuxEdgeVisible,
-				    true,
-				    false /*surface check*/
-				    );
-	
-	// the volumes are very thin, a more thorough check is needed
-	doSurfaceCheck && nxInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+        // the volumes are very thin, a more thorough check is needed
+        doSurfaceCheck && pxInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+        VolumeInfo nxInfo = nestBox("BeamDumpShieldingVisKludgeNegX",
+                                    hlen,
+                                    vacuumMaterial,
+                                    0,
+                                    CLHEP::Hep3Vector(-dump->enclosureHalfSize()[0] + kludgeHalfThickness, 0., 0.),
+                                    logicalEnclosure,
+                                    0,
+                                    kludgeIsVisible,
+                                    G4Color::Grey(),
+                                    kludgeIsSolid,
+                                    forceAuxEdgeVisible,
+                                    true,
+                                    false /*surface check*/
+                                    );
+
+        // the volumes are very thin, a more thorough check is needed
+        doSurfaceCheck && nxInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
       }
 
       // The top "visualization plane kludge" can't be put inside because of the magnet pit volume
       // So put both top and bottom planes outside
-      // 
+      //
       // The top surface:
       if(1) {
 
-	std::vector<double> hlen(3);
-	hlen[0] = dump->enclosureHalfSize()[0];
-	hlen[1] = kludgeHalfThickness;
-	hlen[2] = dump->enclosureHalfSize()[2];
+        std::vector<double> hlen(3);
+        hlen[0] = dump->enclosureHalfSize()[0];
+        hlen[1] = kludgeHalfThickness;
+        hlen[2] = dump->enclosureHalfSize()[2];
 
-	CLHEP::Hep3Vector kludgeCenterInMu2e(dump->enclosureCenterInMu2e()[0],
-					     dump->enclosureCenterInMu2e()[1]+dump->enclosureHalfSize()[1],
-					     dump->enclosureCenterInMu2e()[2]
-					     );
-	
-	CLHEP::Hep3Vector kludgeCenterInDirt( beamDumpDirtRotation*(kludgeCenterInMu2e - beamDumpDirt.centerInMu2e()) );
-	
-	
-	CLHEP::Hep3Vector kludgeOffset(0, 0, kludgeHalfThickness);
-	
-	VolumeInfo pyInfo = nestBox("BeamDumpShieldingVisKludgePosY", 
-				    hlen,
-				    vacuumMaterial,
-				    &rotationInDirt,
-				    kludgeCenterInDirt + kludgeOffset,
-				    beamDumpDirt, // logicalEnclosure,
-				    0,
-				    kludgeIsVisible,
-				    G4Color::Grey(),
-				    kludgeIsSolid,
-				    forceAuxEdgeVisible,
-				    true,
-				    false /*surface check*/
-				    );
+        CLHEP::Hep3Vector kludgeCenterInMu2e(dump->enclosureCenterInMu2e()[0],
+                                             dump->enclosureCenterInMu2e()[1]+dump->enclosureHalfSize()[1],
+                                             dump->enclosureCenterInMu2e()[2]
+                                             );
 
-	// the volumes are very thin, a more thorough check is needed
-	doSurfaceCheck && pyInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+        CLHEP::Hep3Vector kludgeCenterInDirt( beamDumpDirtRotation*(kludgeCenterInMu2e - beamDumpDirt.centerInMu2e()) );
+
+
+        CLHEP::Hep3Vector kludgeOffset(0, 0, kludgeHalfThickness);
+
+        VolumeInfo pyInfo = nestBox("BeamDumpShieldingVisKludgePosY",
+                                    hlen,
+                                    vacuumMaterial,
+                                    &rotationInDirt,
+                                    kludgeCenterInDirt + kludgeOffset,
+                                    beamDumpDirt, // logicalEnclosure,
+                                    0,
+                                    kludgeIsVisible,
+                                    G4Color::Grey(),
+                                    kludgeIsSolid,
+                                    forceAuxEdgeVisible,
+                                    true,
+                                    false /*surface check*/
+                                    );
+
+        // the volumes are very thin, a more thorough check is needed
+        doSurfaceCheck && pyInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
       }
-      
+
       // The bottom surface:
       if(1) {
 
-	std::vector<double> hlen(3);
-	hlen[0] = dump->enclosureHalfSize()[0];
-	hlen[1] = kludgeHalfThickness;
-	hlen[2] = dump->enclosureHalfSize()[2];
+        std::vector<double> hlen(3);
+        hlen[0] = dump->enclosureHalfSize()[0];
+        hlen[1] = kludgeHalfThickness;
+        hlen[2] = dump->enclosureHalfSize()[2];
 
-	CLHEP::Hep3Vector kludgeCenterInMu2e(dump->enclosureCenterInMu2e()[0],
-					     dump->enclosureCenterInMu2e()[1]-dump->enclosureHalfSize()[1],
-					     dump->enclosureCenterInMu2e()[2]
-					     );
-	
-	CLHEP::Hep3Vector kludgeCenterInDirt( beamDumpDirtRotation*(kludgeCenterInMu2e - beamDumpDirt.centerInMu2e()) );
-	
-	
-	CLHEP::Hep3Vector kludgeOffset(0, 0, -kludgeHalfThickness);
-	
-	VolumeInfo nyInfo = nestBox("BeamDumpShieldingVisKludgeNegY", 
-				    hlen,
-				    vacuumMaterial,
-				    &rotationInDirt,
-				    kludgeCenterInDirt + kludgeOffset,
-				    beamDumpDirt, // logicalEnclosure,
-				    0,
-				    kludgeIsVisible,
-				    G4Color::Grey(),
-				    kludgeIsSolid,
-				    forceAuxEdgeVisible,
-				    true,
-				    false /*surface check*/
-				    );
+        CLHEP::Hep3Vector kludgeCenterInMu2e(dump->enclosureCenterInMu2e()[0],
+                                             dump->enclosureCenterInMu2e()[1]-dump->enclosureHalfSize()[1],
+                                             dump->enclosureCenterInMu2e()[2]
+                                             );
 
-	// the volumes are very thin, a more thorough check is needed
-	doSurfaceCheck && nyInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+        CLHEP::Hep3Vector kludgeCenterInDirt( beamDumpDirtRotation*(kludgeCenterInMu2e - beamDumpDirt.centerInMu2e()) );
+
+
+        CLHEP::Hep3Vector kludgeOffset(0, 0, -kludgeHalfThickness);
+
+        VolumeInfo nyInfo = nestBox("BeamDumpShieldingVisKludgeNegY",
+                                    hlen,
+                                    vacuumMaterial,
+                                    &rotationInDirt,
+                                    kludgeCenterInDirt + kludgeOffset,
+                                    beamDumpDirt, // logicalEnclosure,
+                                    0,
+                                    kludgeIsVisible,
+                                    G4Color::Grey(),
+                                    kludgeIsSolid,
+                                    forceAuxEdgeVisible,
+                                    true,
+                                    false /*surface check*/
+                                    );
+
+        // the volumes are very thin, a more thorough check is needed
+        doSurfaceCheck && nyInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
       }
     }
 

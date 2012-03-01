@@ -1,5 +1,5 @@
 // Geometry of the hall, dirt, etc.
-// 
+//
 // Andrei Gaponenko, 2011
 
 #ifndef MU2EBUILDING_HH
@@ -45,7 +45,7 @@ namespace mu2e {
     double dirtCapBottomRadius() const { return _dirtCapBottomRadius; }
     double dirtCapTopRadius() const { return _dirtCapTopRadius; }
 
-    const CLHEP::Hep3Vector& trackerOriginInMu2e() const { return _trackerOriginInMu2e; }    
+    const CLHEP::Hep3Vector& trackerOriginInMu2e() const { return _trackerOriginInMu2e; }
 
     //----------------------------------------------------------------
     // These coordinates are used in more than one place
@@ -55,7 +55,7 @@ namespace mu2e {
     const std::vector<CLHEP::Hep2Vector>& concreteOuterOutline3() const { return _concreteOuterOutline3; }
 
     //----------------------------------------------------------------
-  private: 
+  private:
     friend class Mu2eBuildingMaker;
 
     // Private ctr: the class should be only obtained via the maker
