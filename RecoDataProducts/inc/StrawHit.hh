@@ -3,9 +3,9 @@
 //
 // First version of a hit as described by Mu2e-doc-900.
 //
-// $Id: StrawHit.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
+// $Id: StrawHit.hh,v 1.2 2012/03/01 19:30:06 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
+// $Date: 2012/03/01 19:30:06 $
 //
 // Original author Rob Kutschke
 //
@@ -15,7 +15,7 @@
 #include <vector>
 
 // Mu2e includes
-#include "TrackerGeom/inc/StrawIndex.hh"
+#include "DataProducts/inc/StrawIndex.hh"
 
 namespace mu2e {
 

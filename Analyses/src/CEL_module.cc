@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks conversion electrons
 //
-// $Id: CEL_module.cc,v 1.13 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: CEL_module.cc,v 1.14 2012/03/01 19:30:06 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/01 19:30:06 $
 //
 // Original author R. Bernstein
 //
@@ -32,7 +32,6 @@
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "TrackerGeom/inc/StrawIndex.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"

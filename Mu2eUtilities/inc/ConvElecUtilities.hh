@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.3 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:07 $
+// $Id: ConvElecUtilities.hh,v 1.4 2012/03/01 19:30:06 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/01 19:30:06 $
 //
 // Original author Gianni Onorato
 //
@@ -28,9 +28,6 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "TrackerGeom/inc/StrawIndex.hh"
-
-
 
 namespace mu2e {
 

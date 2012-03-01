@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.6 2011/10/14 23:44:41 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.7 2012/03/01 19:30:06 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/10/14 23:44:41 $
+// $Date: 2012/03/01 19:30:06 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,7 @@
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
-#include "TrackerGeom/inc/StrawIndex.hh"
+#include "DataProducts/inc/StrawIndex.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
