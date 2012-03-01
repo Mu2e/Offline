@@ -10,7 +10,6 @@
 #include "ITrackerGeom/inc/CellId.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "Mu2eUtilities/inc/for_all.hh"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 #include "cetlib/pow.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"

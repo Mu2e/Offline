@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.17 2011/05/22 19:09:16 kutschke Exp $
+// $Id: LTrackerMaker.cc,v 1.18 2012/03/01 16:45:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Date: 2012/03/01 16:45:53 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,6 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
-#include "Mu2eUtilities/inc/for_all.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
@@ -189,13 +188,6 @@ namespace mu2e {
     */
     //const Layer& l0 = _ltt->getLayer( LayerId(LTracker::wedge,0,0) );
     //const vector<const Straw*>& v = l0.getStraws();
-
-    //int nn(-1);
-    //  for_all ( v, strawHacker, nn);
-    //  for_all ( v, strawPrinter2, nn);
-
-    //int mm(-1);
-    //for_all ( v, test, mm);
 
 
     // Must do this after the LTracker has been built since this
