@@ -1,9 +1,9 @@
 #ifndef Mu2eUtilities_sort_functors_hh
 #define Mu2eUtilities_sort_functors_hh
 //
-// $Id: sort_functors.hh,v 1.5 2011/06/15 21:05:20 kutschke Exp $
+// $Id: sort_functors.hh,v 1.1 2012/03/01 01:19:24 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/15 21:05:20 $
+// $Date: 2012/03/01 01:19:24 $
 //
 // Original author KLG
 //
