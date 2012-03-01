@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.21 2012/02/21 22:26:23 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/21 22:26:23 $
+// $Id: ReadStrawCluster_module.cc,v 1.22 2012/03/01 02:35:28 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/01 02:35:28 $
 //
 // Original author Hans Wenzel
 //
@@ -54,7 +54,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LineSegmentPCA.hh"
-#include "Mu2eUtilities/inc/StrawClusterUtilities.hh"
+#include "HitMakers/inc/StrawClusterUtilities.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
