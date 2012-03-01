@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCI.hh,v 1.8 2012/02/27 06:05:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/27 06:05:35 $
+// $Id: ExtMonUCI.hh,v 1.9 2012/03/01 00:41:26 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/01 00:41:26 $
 
 #ifndef EXTMONUCI_HH
 #define EXTMONUCI_HH
@@ -14,7 +14,6 @@
 #include "CLHEP/Vector/Rotation.h"
 
 #include "Mu2eInterfaces/inc/Detector.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCICol.hh"
@@ -27,7 +26,7 @@ using namespace std;
 namespace mu2e {
 
   namespace ExtMonUCI {
-    
+
     class ExtMon : virtual public Detector {
 
     friend class ExtMonMaker;
@@ -52,7 +51,7 @@ namespace mu2e {
       const vector<double>& colPosition()  const { return _colPosition; }
       const vector<double>& colPosition1() const { return _colPosition1; }
       const vector<double>& colPosition2() const { return _colPosition2; }
-      const ExtMonCol* col(unsigned int iCol) const; 
+      const ExtMonCol* col(unsigned int iCol) const;
 
       // Magnets
       int nMags() const { return _nMags; }
@@ -76,20 +75,20 @@ namespace mu2e {
       const vector<double>& shdHalfLengths() const { return _shdHalfLengths; }
       const vector<double>& shdPosition() const { return _shdPosition; }
       const ExtMonShd* shd(unsigned int iShd) const;
-     
+
       // Coordinate conversion to/from the Mu2e frame
-      // 
+      //
       // - The (0,0,0) point is in the middle of the ExtMon detector.
-      // 
+      //
       // In G4 this is the coordinate system of the ExtMonUCI volume.
-      CLHEP::Hep3Vector extMonToMu2ePoint( CLHEP::Hep3Vector const& v ) const;      
-      CLHEP::Hep3Vector extMonToMu2eMomentum( CLHEP::Hep3Vector const& v ) const;      
+      CLHEP::Hep3Vector extMonToMu2ePoint( CLHEP::Hep3Vector const& v ) const;
+      CLHEP::Hep3Vector extMonToMu2eMomentum( CLHEP::Hep3Vector const& v ) const;
       CLHEP::Hep3Vector mu2eToExtMonPoint( CLHEP::Hep3Vector const& v ) const;
       CLHEP::Hep3Vector mu2eToExtMonMomentum( CLHEP::Hep3Vector const& v ) const;
 
-    private: 
+    private:
 
-      ExtMon(const std::vector<double>& envelopeParams, 
+      ExtMon(const std::vector<double>& envelopeParams,
 	     const std::vector<double>& envelopeOrigin);
 
       CLHEP::Hep3Vector   _hallOriginInMu2e;
