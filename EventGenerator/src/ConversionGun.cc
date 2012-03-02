@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.37 2012/02/20 20:21:09 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/20 20:21:09 $
+// $Id: ConversionGun.cc,v 1.38 2012/03/02 17:16:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/02 17:16:22 $
 //
 // Original author Rob Kutschke
 //
@@ -20,6 +20,7 @@
 // Mu2e includes
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/ConversionGun.hh"
@@ -88,7 +89,7 @@ namespace mu2e {
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     ConditionsHandle<DAQParams>         daqPar("ignored");
-    ConditionsHandle<ParticleDataTable> pdt("ignored");
+    GlobalConstantsHandle<ParticleDataTable> pdt;
 
     // Initialize data members that could not be initialized correctly in the initiailizer list.
 

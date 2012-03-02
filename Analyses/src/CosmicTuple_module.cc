@@ -1,16 +1,16 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple_module.cc,v 1.6 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: CosmicTuple_module.cc,v 1.7 2012/03/02 17:16:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/02 17:16:22 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -188,7 +188,7 @@ namespace mu2e {
     art::Handle<StepPointMCCollection> apdhits;
     event.getByLabel(_g4ModuleLabel,"calorimeterRO",apdhits);
 
-    ConditionsHandle<ParticleDataTable> pdt("ignored");
+    GlobalConstantsHandle<ParticleDataTable> pdt;
 
     // Construct an object that ties together all of the simulated particle and hit info.
     SimParticlesWithHits sims( event,

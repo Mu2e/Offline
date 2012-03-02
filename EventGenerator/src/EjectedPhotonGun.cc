@@ -3,9 +3,9 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.  
 // //
-// $Id: EjectedPhotonGun.cc,v 1.7 2012/02/20 20:21:09 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/20 20:21:09 $
+// $Id: EjectedPhotonGun.cc,v 1.8 2012/03/02 17:16:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/02 17:16:22 $
 //
 // Original author Gianni Onorato
 //
@@ -23,6 +23,7 @@
 // Mu2e includes
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/EjectedPhotonGun.hh"
@@ -93,7 +94,7 @@ namespace mu2e {
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     ConditionsHandle<DAQParams>         daqPar("ignored");
-    ConditionsHandle<ParticleDataTable> pdt("ignored");
+    GlobalConstantsHandle<ParticleDataTable> pdt;
 
    
     // Default values for the start and end of the live window.

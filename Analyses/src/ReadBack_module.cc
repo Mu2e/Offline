@@ -1,16 +1,16 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.12 2012/01/07 02:25:51 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/01/07 02:25:51 $
+// $Id: ReadBack_module.cc,v 1.13 2012/03/02 17:16:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/02 17:16:22 $
 //
 // Original author Rob Kutschke
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "ConditionsService/inc/unknownPDGIdName.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
@@ -813,7 +813,7 @@ namespace mu2e {
     // Additional printout and histograms about the simulated particles.
     if ( haveSimPart && (_nAnalyzed < _maxFullPrint) ){
 
-      ConditionsHandle<ParticleDataTable> pdt("ignored");
+      GlobalConstantsHandle<ParticleDataTable> pdt;
 
       for ( SimParticleCollection::const_iterator i=simParticles->begin();
             i!=simParticles->end(); ++i ){

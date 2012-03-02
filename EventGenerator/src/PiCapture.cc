@@ -3,9 +3,9 @@
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 // add internal conversion, 11/2011 rhb
 //
-// $Id: PiCapture.cc,v 1.33 2012/02/20 20:21:09 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/20 20:21:09 $
+// $Id: PiCapture.cc,v 1.34 2012/03/02 17:16:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/02 17:16:22 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -20,7 +20,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "EventGenerator/inc/PiCapture.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
@@ -100,7 +100,7 @@ namespace mu2e {
         << "\n";
     }
 
-    ConditionsHandle<ParticleDataTable> pdt("ignored");
+    GlobalConstantsHandle<ParticleDataTable> pdt;
     // pick up particle mass
     const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
     _electMass = e_data.mass().value();

@@ -2,9 +2,9 @@
 #  - 100 events default, no visualization
 #  - creates a root file in the home directory
 #
-# $Id: isoRPCtest.fcl,v 1.4 2011/05/26 19:21:49 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/26 19:21:49 $
+# $Id: isoRPCtest.fcl,v 1.5 2012/03/02 17:16:22 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/03/02 17:16:22 $
 #
 # Original author Rob Kutschke
 
@@ -52,6 +52,8 @@ services :
     {
       conditionsfile : "Mu2eG4/test/conditions_01.txt"
     }
+
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
   }
 
 } # close of services block

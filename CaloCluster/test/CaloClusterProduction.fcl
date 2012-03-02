@@ -2,9 +2,9 @@
 # 
 # 
 #
-# $Id: CaloClusterProduction.fcl,v 1.1 2012/02/28 22:24:48 gianipez Exp $
-# $Author: gianipez $
-# $Date: 2012/02/28 22:24:48 $
+# $Id: CaloClusterProduction.fcl,v 1.2 2012/03/02 17:16:22 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/03/02 17:16:22 $
 #
 # Original author G.Pezzullo & G.Tassielli
 
@@ -43,7 +43,9 @@ services :
     ConditionsService :
     {
       conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
+    }  
+
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 
     G4Helper : { }
      

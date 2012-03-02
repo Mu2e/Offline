@@ -1,9 +1,9 @@
 # Configuration file for Histforpabs
 # Histforpabs the output of g4test_03.py; make histograms and printout.
 #
-# $Id: histforpabs.fcl,v 1.3 2011/05/26 19:21:49 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2011/05/26 19:21:49 $
+# $Id: histforpabs.fcl,v 1.4 2012/03/02 17:16:22 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/03/02 17:16:22 $
 #
 # Original author Rob Kutschke
 
@@ -47,6 +47,8 @@ services :
     {
       conditionsfile : "Mu2eG4/test/conditions_01.txt"
     }
+
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
   }
 
 } # close of services block

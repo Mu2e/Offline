@@ -2,9 +2,9 @@
 #
 # Readback the output of g4test_03.fcl; make histograms and printout.
 #
-# $Id: vd_readback.fcl,v 1.1 2012/02/16 20:19:58 youzy Exp $
-# $Author: youzy $
-# $Date: 2012/02/16 20:19:58 $
+# $Id: vd_readback.fcl,v 1.2 2012/03/02 17:16:22 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/03/02 17:16:22 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -39,7 +39,9 @@ services :
     ConditionsService :
     {
       conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
+    }  
+
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 
   }
 

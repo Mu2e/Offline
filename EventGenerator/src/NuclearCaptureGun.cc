@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.18 2012/02/20 20:21:09 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/20 20:21:09 $
+// $Id: NuclearCaptureGun.cc,v 1.19 2012/03/02 17:16:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/02 17:16:22 $
 //
 // Original author Gianni Onorato
 //
@@ -24,6 +24,7 @@
 // Mu2e includes
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/NuclearCaptureGun.hh"
@@ -127,7 +128,7 @@ namespace mu2e {
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     ConditionsHandle<DAQParams>         daqPar("ignored");
-    ConditionsHandle<ParticleDataTable> pdt("ignored");
+    GlobalConstantsHandle<ParticleDataTable> pdt;
 
     //Set particle mass
     const HepPDT::ParticleData& p_data     = pdt->particle(PDGCode::p_plus).ref();

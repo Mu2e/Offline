@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.20 2012/03/01 18:00:58 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/03/01 18:00:58 $
+// $Id: KalFitMC.cc,v 1.21 2012/03/02 17:16:22 gandr Exp $
+// $Author: gandr $ 
+// $Date: 2012/03/02 17:16:22 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -13,7 +13,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 // services
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "art/Framework/Services/Optional/TFileService.h"
 // data
@@ -115,7 +115,7 @@ namespace mu2e
     if(_mcdata._mcsteps == 0)return false;
 // preset to failure
     bool retval(false);
-    ConditionsHandle<ParticleDataTable> pdt("ignored");
+    GlobalConstantsHandle<ParticleDataTable> pdt;
     unsigned nstraws = mytrk.strawHitCollection()->size();
     if(nstraws >= _minnhits ){
       GeomHandle<DetectorSystem> det;

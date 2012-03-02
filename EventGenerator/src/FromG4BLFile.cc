@@ -2,9 +2,9 @@
 // Read particles from a file in G4beamline input format.
 // Position of the GenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.27 2012/02/27 06:05:35 gandr Exp $
+// $Id: FromG4BLFile.cc,v 1.28 2012/03/02 17:16:22 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/27 06:05:35 $
+// $Date: 2012/03/02 17:16:22 $
 //
 // Original author Rob Kutschke
 //
@@ -49,7 +49,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/FromG4BLFile.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -184,7 +184,7 @@ namespace mu2e {
     }
 
     // Particle data table.
-    ConditionsHandle<ParticleDataTable> pdt("ignored");
+    GlobalConstantsHandle<ParticleDataTable> pdt;
 
     GeomHandle<WorldG4> worldG4;
 

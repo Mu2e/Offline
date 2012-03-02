@@ -1,6 +1,6 @@
-// $Id: ParticleGunImpl.cc,v 1.2 2012/02/17 18:31:58 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/02/17 18:31:58 $
+// $Id: ParticleGunImpl.cc,v 1.3 2012/03/02 17:16:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/02 17:16:22 $
 // Original author Robert Kutschke
 // Modified by mjlee. See docdb-2049
 
@@ -15,7 +15,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 
 // Root includes
@@ -161,7 +161,7 @@ namespace mu2e {
       const std::string& momentumModeString,
       const std::string& sourceShapeString)
   {
-    ConditionsHandle<ParticleDataTable> pdt("ignored");
+    GlobalConstantsHandle<ParticleDataTable> pdt;
     _mass = pdt->particle(_pdgId).ref().mass().value();
 
     _dp  = ( _pmax - _pmin);

@@ -5,9 +5,9 @@
 // from pi+ -> e+ nu decay that originate from the positions at
 // which the pions stopped.
 //
-// $Id: EplusFromStoppedPion_module.cc,v 1.8 2012/02/08 16:51:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/08 16:51:17 $
+// $Id: EplusFromStoppedPion_module.cc,v 1.9 2012/03/02 17:16:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/02 17:16:22 $
 //
 // Original author Rob Kutschke.
 //
@@ -21,7 +21,7 @@
 //
 
 // Mu2e includes.
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "GeneralUtilities/inc/TwoBodyKinematics.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
@@ -126,7 +126,7 @@ namespace mu2e {
   void EplusFromStoppedPion::beginRun(art::Run& run){
 
     // Get the positron and pi+ masses from the particle data table.  See note 1.
-    ConditionsHandle<ParticleDataTable> pdt("ignored");
+    GlobalConstantsHandle<ParticleDataTable> pdt;
     const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_plus).ref();
     me_ = e_data.mass().value();
 

@@ -9,9 +9,9 @@
 #  - Save state of random numbers to the event-data output file
 #******change 3 places, TFile, input file, outputfile
 #
-# $Id: MakeRPCGrid.fcl,v 1.1 2011/12/21 20:40:44 rhbob Exp $
-# $Author: rhbob $
-# $Date: 2011/12/21 20:40:44 $
+# $Id: MakeRPCGrid.fcl,v 1.2 2012/03/02 17:16:22 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/03/02 17:16:22 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -65,6 +65,8 @@ services :
     {
       conditionsfile : "Mu2eG4/test/conditions_01.txt"
     }
+
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 
     G4Helper : { }
 

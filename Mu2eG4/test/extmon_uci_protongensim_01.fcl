@@ -7,9 +7,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: extmon_uci_protongensim_01.fcl,v 1.4 2012/02/16 20:20:46 youzy Exp $
-# $Author: youzy $
-# $Date: 2012/02/16 20:20:46 $
+# $Id: extmon_uci_protongensim_01.fcl,v 1.5 2012/03/02 17:16:22 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/03/02 17:16:22 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -54,6 +54,7 @@ services :
   {
     GeometryService   : { inputFile : "Mu2eG4/test/geom_01.txt" }
     ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
     G4Helper          : { }
     SeedService       : @local::automaticSeeds
   }

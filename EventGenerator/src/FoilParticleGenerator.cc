@@ -28,6 +28,7 @@
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/PhysicsParams.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
@@ -422,7 +423,7 @@ namespace mu2e {
 
   double FoilParticleGenerator::getMuTimeDecay() {
 
-  ConditionsHandle<PhysicsParams> phyPar("ignored");
+  GlobalConstantsHandle<PhysicsParams> phyPar;
   double tau = phyPar->decayTime;
   if (tau < 0 || tau > 3500) { //bigger than muon decay time
     throw cet::exception("RANGE")
