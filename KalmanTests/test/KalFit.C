@@ -127,53 +127,28 @@ void KalFitTrk (TTree* trks ) {
   chisq->Draw();
 }
 
-KalFitAcc(TTree* trks) {
-  TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
+void KalFitAccPlots(TTree* trks) {
   TH1F* pcost = new TH1F("pcost","e^{-} cos(#theta) at production",55,-1.02,1.02);
   TH1F* pcosta = new TH1F("pcosta","e^{-} cos(#theta) at production",55,-1.02,1.02);
   pcosta->SetLineColor(kBlue);
 
-  TCut hittrk("mcentmom>0.0");
-  TCut pitch("mcenttd/sqrt(1+mcenttd^2)>0.5&&mcenttd/sqrt(1+mcenttd^2)<0.707107");
-  TCut mom("mcentmom>90");
-  TCut reco("fitstatus>0");
-  TCut goodfit("fitcon>1e-2&&nactive>=25");
-
-  trks->Project("pcost","mccost");
-  trks->Project("pcosta","mccost",hittrk);
-//  pcosta->Divide(pcost);
+  TH1F* nmc = new TH1F("nmc","N Straw Hits from MC true CE",71,-0.5,70.5);
 
   TH1F* dcost = new TH1F("dcost","e^{-} cos(#theta) at tracker",55,0.3,1.02);
   TH1F* dmom = new TH1F("dmom","e^{-} momentum at tracker",50,90,108);
   TH1F* rmom = new TH1F("rmom","recsonstructed e^{-} momentum",100,90,108);
-  TH1F* fitcon = new TH1F("fitcon","fit consistency",205,-0.01,1.01);
-  TH1F* acc = new TH1F("acc","Acceptance;cut;cumulative acceptance",6,-0.5,5.5);
-  pcost->SetStats(0);
-  dcost->SetStats(0);
-  dmom->SetStats(0);
-  rmom->SetStats(0);
-  fitcon->SetStats(0);
-  acc->SetStats(0);
-  acc->GetXaxis()->SetBinLabel(1,"All");
-  acc->GetXaxis()->SetBinLabel(2,"Reaches Tracker");
-  acc->GetXaxis()->SetBinLabel(3,"Pitch");
-  acc->GetXaxis()->SetBinLabel(4,"Momentum");
-  acc->GetXaxis()->SetBinLabel(5,"Reconstructed");
-  acc->GetXaxis()->SetBinLabel(6,"Fit Quality");
+  TH1F* fitcon = new TH1F("fitcon","log_{10} fit consistency",101,-5,0);
+
+  trks->Project("pcost","mccost");
+  trks->Project("pcosta","mccost",hittrk);
+//  pcosta->Divide(pcost);
 
   trks->Project("dcost","mcenttd/sqrt(1+mcenttd^2)",hittrk);
   trks->Project("dmom","mcentmom",hittrk+pitch);
   trks->Project("fitcon","fitcon",hittrk+pitch+mom+reco);
   trks->Project("rmom","fitmom",hittrk+pitch+mom+reco+goodfit);
 //  trks->Project("+fitcon","-0.05",hittrk+pitch+mom+"fitstatus<0");
-
-  trks->Project("acc","0.0");
-  trks->Project("+acc","1.0",hittrk);
-  trks->Project("+acc","2.0",hittrk+pitch);
-  trks->Project("+acc","3.0",hittrk+pitch+mom);
-  trks->Project("+acc","4.0",hittrk+pitch+mom+reco);
-  trks->Project("+acc","5.0",hittrk+pitch+mom+reco+goodfit);
-
+  TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
   acan->Clear();
   acan->Divide(3,2);
   acan->cd(1);
@@ -211,7 +186,62 @@ KalFitAcc(TTree* trks) {
   rmom->Draw();
 
   acan->cd(6);
+} 
+
+void KalFitAcc(TTree* trks) {
+  TCut hittrk("mcentmom>0.0");
+  TCut rpitch("td>0.57735&&td<1.0");
+  TCut tpitch("mcenttd>0.57735&&mcenttd<1.0");
+  TCut rmom("fitmom>103.5&&fitmom<104.7");
+  TCut tmom("mcentmom>100");
+  TCut nmch("nchits>=20");
+  TCut reco("fitstatus>0");
+  TCut cosmic("abs(d0)<105 && d0+2/om>460 && d0+2/om<660");
+  TCut goodfit("fitcon>1e-4&&nactive>=20&&t0err<1.5&&fitmomerr<0.2");
+  TCut livegate("t0>810");
+  TCut ce = nmch+tmom;
+
+  unsigned nbins(10);
+  double bmax = nbins-0.5;
+  TH1F* acc = new TH1F("acc","CE Acceptance;cut;cummulative acceptance",nbins,-0.5,bmax);
+  TH1F* racc = new TH1F("racc","CE Acceptance;cut;relative acceptance",nbins,-0.5,bmax);
+//  acc->Sumw2();
+//  racc->Sumw2();
+  acc->GetXaxis()->SetBinLabel(1,"All");
+  acc->GetXaxis()->SetBinLabel(2,">=20 CE SH");
+  acc->GetXaxis()->SetBinLabel(3,"CE p>100 MeV/c");
+  acc->GetXaxis()->SetBinLabel(4,"CE pitch");
+  acc->GetXaxis()->SetBinLabel(5,"KF Track fit");
+  acc->GetXaxis()->SetBinLabel(6,"Reco pitch");
+  acc->GetXaxis()->SetBinLabel(7,"Livegate");
+  acc->GetXaxis()->SetBinLabel(8,"Cosmic Selection");
+  acc->GetXaxis()->SetBinLabel(9,"Fit Quality");
+  acc->GetXaxis()->SetBinLabel(10,"Momentum window");
+
+  racc->GetXaxis()->SetBinLabel(1,"All");
+  racc->GetXaxis()->SetBinLabel(2,">=20 CE SH");
+  racc->GetXaxis()->SetBinLabel(3,"CE p>100 MeV/c");
+  racc->GetXaxis()->SetBinLabel(4,"CE pitch");
+  racc->GetXaxis()->SetBinLabel(5,"KF Track fit");
+  racc->GetXaxis()->SetBinLabel(6,"Reco pitch");
+  racc->GetXaxis()->SetBinLabel(7,"Livegate");
+  racc->GetXaxis()->SetBinLabel(8,"Cosmic Selection");
+  racc->GetXaxis()->SetBinLabel(9,"Fit Quality");
+  racc->GetXaxis()->SetBinLabel(10,"Momentum window");
   
+  
+  trks->Project("acc","0.0");
+  trks->Project("+acc","1.0",nmch);
+  trks->Project("+acc","2.0",nmch+tmom);
+  trks->Project("+acc","3.0",nmch+tmom+tpitch);
+  trks->Project("+acc","4.0",nmch+tmom+tpitch+reco);
+  trks->Project("+acc","5.0",nmch+tmom+tpitch+reco+rpitch);
+  trks->Project("+acc","6.0",nmch+tmom+tpitch+reco+rpitch+livegate);
+  trks->Project("+acc","7.0",nmch+tmom+tpitch+reco+rpitch+livegate+cosmic);
+  trks->Project("+acc","8.0",nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+goodfit);
+  trks->Project("+acc","9.0",nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+goodfit+rmom);
+
+
 
   double all = acc->GetBinContent(1);
   double reach = acc->GetBinContent(2)/all;
@@ -219,15 +249,40 @@ KalFitAcc(TTree* trks) {
   double gmom = acc->GetBinContent(4)/all;
   double greco = acc->GetBinContent(5)/all;
   double good = acc->GetBinContent(6)/all;
+
+
+  double prev = all;
+  for(unsigned ibin=1;ibin<=nbins;++ibin){
+    racc->SetBinContent(ibin,acc->GetBinContent(ibin)/prev);
+    prev = acc->GetBinContent(ibin);
+  }
+  racc->SetMaximum(1.1);
   acc->Scale(1.0/all);
-  acc->Draw();
+  acc->GetXaxis()->SetLabelSize(0.06);
+  racc->GetXaxis()->SetLabelSize(0.06);
+  acc->SetMarkerSize(2.0);
+  racc->SetMarkerSize(2.0);
+  acc->GetYaxis()->SetTitleSize(0.05);
+  racc->GetYaxis()->SetTitleSize(0.05);
 
-  cout << "Acceptance: Reach tracker " << reach << endl 
-  << " Pitch " << gpitch << " relative " << gpitch/reach << endl
-  << " Momentum " << gmom << " relative " << gmom/gpitch << endl
-  << " Reconstruction " << greco << " relative " << greco/gmom << endl
-  << " Fit Quality " << good << " relative " << good/greco << std::endl;
+  gStyle->SetPaintTextFormat("3.2f");
+  TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
+  acan->Clear();
+  acan->Divide(1,2);
+  acan->cd(1);
+  TPad* tp = (TPad*)acan->cd(1);
+  tp->SetBottomMargin(0.15);
+  acc->Draw("histtext0");
+  acan->cd(2);
+  tp = (TPad*)acan->cd(2);
+  tp->SetBottomMargin(0.15);
+  racc->Draw("histtext0");
 
 
+//  cout << "Acceptance: Reach tracker " << reach << endl 
+//  << " Pitch " << gpitch << " relative " << gpitch/reach << endl
+//  << " Momentum " << gmom << " relative " << gmom/gpitch << endl
+//  << " Reconstruction " << greco << " relative " << greco/gmom << endl
+//  << " Fit Quality " << good << " relative " << good/greco << std::endl;
 
 }
