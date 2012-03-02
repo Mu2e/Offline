@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.5 2012/02/24 16:37:31 gandr Exp $
+// $Id: ConditionsService_service.cc,v 1.6 2012/03/02 17:16:40 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:37:31 $
+// $Date: 2012/03/02 17:16:40 $
 //
 // Original author Rob Kutschke
 //
@@ -30,8 +30,6 @@
 // Would like to break the coupling to these.
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
-#include "ConditionsService/inc/PhysicsParams.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 
 using namespace std;
@@ -91,10 +89,8 @@ namespace mu2e {
     checkConsistency();
 
     // Can we break the coupling to the entities?
-    addEntity( std::auto_ptr<ParticleDataTable>  ( new ParticleDataTable  (_config)) );
     addEntity( std::auto_ptr<AcceleratorParams>  ( new AcceleratorParams  (_config)) );
     addEntity( std::auto_ptr<DAQParams>          ( new DAQParams          (_config)) );
-    addEntity( std::auto_ptr<PhysicsParams>      ( new PhysicsParams      (_config)) );
     addEntity( std::auto_ptr<TrackerCalibrations>( new TrackerCalibrations(_config)) );
   }
 
