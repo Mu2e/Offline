@@ -191,7 +191,7 @@ void KalFitAccPlots(TTree* trks) {
 void KalFitAcc(TTree* trks) {
   TCut hittrk("mcentmom>0.0");
   TCut rpitch("td>0.57735&&td<1.0");
-  TCut tpitch("mcenttd>0.57735&&mcenttd<1.0");
+  TCut tpitch("mcenttd>0.5&&mcenttd<1.1");
   TCut rmom("fitmom>103.5&&fitmom<104.7");
   TCut tmom("mcentmom>100");
   TCut nmch("nchits>=20");
@@ -203,29 +203,29 @@ void KalFitAcc(TTree* trks) {
 
   unsigned nbins(10);
   double bmax = nbins-0.5;
-  TH1F* acc = new TH1F("acc","CE Acceptance;cut;cummulative acceptance",nbins,-0.5,bmax);
-  TH1F* racc = new TH1F("racc","CE Acceptance;cut;relative acceptance",nbins,-0.5,bmax);
+  TH1F* acc = new TH1F("acc","CE Acceptance;;cummulative acceptance",nbins,-0.5,bmax);
+  TH1F* racc = new TH1F("racc","CE Acceptance;;relative acceptance",nbins,-0.5,bmax);
 //  acc->Sumw2();
 //  racc->Sumw2();
-  acc->GetXaxis()->SetBinLabel(1,"All");
+  acc->GetXaxis()->SetBinLabel(1,"All CE");
   acc->GetXaxis()->SetBinLabel(2,">=20 CE SH");
   acc->GetXaxis()->SetBinLabel(3,"CE p>100 MeV/c");
   acc->GetXaxis()->SetBinLabel(4,"CE pitch");
   acc->GetXaxis()->SetBinLabel(5,"KF Track fit");
   acc->GetXaxis()->SetBinLabel(6,"Reco pitch");
   acc->GetXaxis()->SetBinLabel(7,"Livegate");
-  acc->GetXaxis()->SetBinLabel(8,"Cosmic Selection");
+  acc->GetXaxis()->SetBinLabel(8,"Cosmic Rejection");
   acc->GetXaxis()->SetBinLabel(9,"Fit Quality");
   acc->GetXaxis()->SetBinLabel(10,"Momentum window");
 
-  racc->GetXaxis()->SetBinLabel(1,"All");
+  racc->GetXaxis()->SetBinLabel(1,"All CE");
   racc->GetXaxis()->SetBinLabel(2,">=20 CE SH");
   racc->GetXaxis()->SetBinLabel(3,"CE p>100 MeV/c");
   racc->GetXaxis()->SetBinLabel(4,"CE pitch");
   racc->GetXaxis()->SetBinLabel(5,"KF Track fit");
   racc->GetXaxis()->SetBinLabel(6,"Reco pitch");
   racc->GetXaxis()->SetBinLabel(7,"Livegate");
-  racc->GetXaxis()->SetBinLabel(8,"Cosmic Selection");
+  racc->GetXaxis()->SetBinLabel(8,"Cosmic Rejection");
   racc->GetXaxis()->SetBinLabel(9,"Fit Quality");
   racc->GetXaxis()->SetBinLabel(10,"Momentum window");
   
@@ -265,7 +265,7 @@ void KalFitAcc(TTree* trks) {
   acc->GetYaxis()->SetTitleSize(0.05);
   racc->GetYaxis()->SetTitleSize(0.05);
 
-  gStyle->SetPaintTextFormat("3.2f");
+  gStyle->SetPaintTextFormat("4.3f");
   TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
   acan->Clear();
   acan->Divide(1,2);
