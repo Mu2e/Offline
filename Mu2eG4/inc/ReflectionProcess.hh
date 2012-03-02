@@ -1,11 +1,14 @@
-#ifndef Mu2eReflection_Mu2eReflection_hh
-#define Mu2eReflection_Mu2eReflection_hh
-
+#ifndef Mu2eG4_ReflectionProcess_hh
+#define Mu2eG4_ReflectionProcess_hh
 //
-// derived class that defines a reflection process in G4; reverses
-// particle momentum and charge, used for debugging magnetic field
-// code
-
+// Still in development.
+//
+// A discrete process that reverses particle momentum and charge.
+// It is used for debugging/tuning code for propagation in magnetic fields.
+//
+//   $Id: ReflectionProcess.hh,v 1.1 2012/03/02 23:57:18 kutschke Exp $
+//   $Author: kutschke $
+//   $Date: 2012/03/02 23:57:18 $
 //
 // Original author R. Bernstein
 
@@ -16,20 +19,17 @@
 #include "G4Track.hh"
 #include "G4VDiscreteProcess.hh"
 #include "G4VParticleChange.hh"
-#include "G4VPhysicalVolume.hh"
-#include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "cetlib/pow.h"
-#include <cmath>
 
 namespace mu2e{
 
-  class Mu2eReflection : public G4VDiscreteProcess{
+  class ReflectionProcess : public G4VDiscreteProcess{
   public:
-    Mu2eReflection(
-                   const G4String& startingVolume, //need to do the string; G4 may not have
-                   const G4String& endingVolume,   //made the volume yet
-                   const double toleranceForQuitting = 0.001*meter):
-      G4VDiscreteProcess("Mu2eReflection",fUserDefined),
+    ReflectionProcess(
+                      const G4String& startingVolume, //need to do the string; G4 may not have
+                      const G4String& endingVolume,   //made the volume yet
+                      const double toleranceForQuitting = 0.001*meter):
+      G4VDiscreteProcess("ReflectionProcess",fUserDefined),
       _startingVolume(startingVolume),
       _endingVolume(endingVolume),
       _toleranceForQuitting(toleranceForQuitting),
@@ -45,7 +45,7 @@ namespace mu2e{
       pParticleChange = &fMu2eParticleChangeForReflection;
 
     }
-    ~Mu2eReflection(){}
+    ~ReflectionProcess(){}
 
   public:
     const G4String _startingVolume;
@@ -72,8 +72,8 @@ namespace mu2e{
     G4VParticleChange* KillIt    (const G4Track& aTrack, const G4Step& aStep);
     G4VParticleChange* DoNothing (const G4Track& aTrack, const G4Step& aStep);
 
-    Mu2eReflection( const Mu2eReflection& right);
-    Mu2eReflection & operator=(const Mu2eReflection &right);
+    ReflectionProcess( const ReflectionProcess& right);
+    ReflectionProcess & operator=(const ReflectionProcess &right);
 
     bool alreadyReflected;
 
@@ -91,4 +91,4 @@ namespace mu2e{
 
 } //end namespace mu2e
 
-#endif /* Mu2eReflection_Mu2eReflection_hh */
+#endif /* Mu2eG4_ReflectionProcess_hh */

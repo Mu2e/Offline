@@ -1,10 +1,15 @@
-
 //
-// Implements reflection code
+// Still in development.
 //
-
+// A discrete process that reverses particle momentum and charge.
+// It is used for debugging/tuning code for propagation in magnetic fields.
+//
+//   $Id: ReflectionProcess.cc,v 1.1 2012/03/02 23:57:18 kutschke Exp $
+//   $Author: kutschke $
+//   $Date: 2012/03/02 23:57:18 $
 //
 // Original author R. Bernstein
+//
 
 // C++ includes
 #include <cstdio>
@@ -14,14 +19,14 @@
 #include "cetlib/exception.h"
 
 // Mu2e includes
-#include "Mu2eReflection/inc/Mu2eReflection.hh"
+#include "Mu2eG4/inc/ReflectionProcess.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
-
+#include "Mu2eUtilities/inc/safeSqrt.hh"
 
 using namespace std;
 
 namespace mu2e {
-  G4VParticleChange* Mu2eReflection::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+  G4VParticleChange* ReflectionProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
   {
     // we want to do something in two cases:
     //   a) we're at the last step of the ending PhysicalVolume, in which case we should
@@ -45,36 +50,36 @@ namespace mu2e {
         alreadyReflected = false;
       }
 
-     if (aTrack.GetVolume()->GetName() == _endingVolume && !alreadyReflected )
-       {
-         alreadyReflected = true;
-         return ReflectIt(aTrack,aStep);
-       }
-      else if (aTrack.GetVolume()->GetName() == _startingVolume && alreadyReflected
-               && (abs (startingVertex.z() - aTrack.GetPosition().z()) < _toleranceForQuitting ) )
-        {
-          G4cout << "z difference at KillIt: " << startingVertex.z() << " " << aTrack.GetPosition().z() << " " <<
-            abs(startingVertex.z() - aTrack.GetPosition().z())<< G4endl;
-          double zDistance = abs(startingVertex.z() - aTrack.GetPosition().z());
-          double totalDistanceAtKill = Distance(startingVertex,aTrack.GetPosition());
-          //  - square(zDistance) );
-          //          double totalDistanceAtKill = safeSqrt(square(Distance(startingVertex,aTrack.GetPosition()))
-          //  - square(zDistance) );
-          double transverseDistanceAtKill = safeSqrt(totalDistanceAtKill*totalDistanceAtKill - zDistance*zDistance);
-          G4cout << "and transverse distance is = " << transverseDistanceAtKill << G4endl;
+    if (aTrack.GetVolume()->GetName() == _endingVolume && !alreadyReflected )
+      {
+        alreadyReflected = true;
+        return ReflectIt(aTrack,aStep);
+      }
+    else if (aTrack.GetVolume()->GetName() == _startingVolume && alreadyReflected
+             && (abs (startingVertex.z() - aTrack.GetPosition().z()) < _toleranceForQuitting ) )
+      {
+        G4cout << "z difference at KillIt: " << startingVertex.z() << " " << aTrack.GetPosition().z() << " " <<
+          abs(startingVertex.z() - aTrack.GetPosition().z())<< G4endl;
+        double zDistance = abs(startingVertex.z() - aTrack.GetPosition().z());
+        double totalDistanceAtKill = Distance(startingVertex,aTrack.GetPosition());
+        //  - square(zDistance) );
+        //          double totalDistanceAtKill = safeSqrt(square(Distance(startingVertex,aTrack.GetPosition()))
+        //  - square(zDistance) );
+        double transverseDistanceAtKill = safeSqrt(totalDistanceAtKill*totalDistanceAtKill - zDistance*zDistance);
+        G4cout << "and transverse distance is = " << transverseDistanceAtKill << G4endl;
 
-          //
-          // and look at direction cosines
+        //
+        // and look at direction cosines
 
-          return KillIt(aTrack,aStep);
-        }
+        return KillIt(aTrack,aStep);
+      }
     else
       {
         return DoNothing(aTrack,aStep);
       }
   }
 
-  G4VParticleChange* Mu2eReflection::ReflectIt( const G4Track& aTrack,
+  G4VParticleChange* ReflectionProcess::ReflectIt( const G4Track& aTrack,
                                                 const G4Step& aStep){
     //
     // reflect momentum and reverse charge since you hit the end of the ending volume
@@ -124,32 +129,32 @@ namespace mu2e {
     fMu2eParticleChangeForReflection.ProposeLocalEnergyDeposit( 0. );
     fMu2eParticleChangeForReflection.ProposeGlobalTime( finalGlobalTime );
 
-     //
-     // don't need to clear number of interaction lengths, since this class is only used with physics processes off....
+    //
+    // don't need to clear number of interaction lengths, since this class is only used with physics processes off....
     //delete reflectedParticle;
     return &fMu2eParticleChangeForReflection;
   }
 
 
-   G4VParticleChange* Mu2eReflection::KillIt(const G4Track& aTrack,const G4Step& aStep){
-     //
-     //you're back where you started, so stop
+  G4VParticleChange* ReflectionProcess::KillIt(const G4Track& aTrack,const G4Step& aStep){
+    //
+    //you're back where you started, so stop
 
-     //do I need to do this initialization??
-     G4cout << "inside KillIt" << G4endl;
-     //     fMu2eParticleChangeForReflection.Initialize(aTrack);
-     fMu2eParticleChangeForReflection.ProposeTrackStatus( fStopAndKill );
-     return &fMu2eParticleChangeForReflection;
-   }
+    //do I need to do this initialization??
+    G4cout << "inside KillIt" << G4endl;
+    //     fMu2eParticleChangeForReflection.Initialize(aTrack);
+    fMu2eParticleChangeForReflection.ProposeTrackStatus( fStopAndKill );
+    return &fMu2eParticleChangeForReflection;
+  }
 
 
-  G4VParticleChange* Mu2eReflection::DoNothing( const G4Track& aTrack,
+  G4VParticleChange* ReflectionProcess::DoNothing( const G4Track& aTrack,
                                                 const G4Step& aStep){
     fMu2eParticleChangeForReflection.Initialize(aTrack); // need to return a proper object
     return &fMu2eParticleChangeForReflection;
   }
 
-  G4double Mu2eReflection::GetMeanFreePath(const G4Track& aTrack, G4double previousStepSize,
+  G4double ReflectionProcess::GetMeanFreePath(const G4Track& aTrack, G4double previousStepSize,
                                            G4ForceCondition* condition)
   {
 
@@ -157,7 +162,7 @@ namespace mu2e {
     return DBL_MAX;
   }
 
-  G4bool Mu2eReflection::IsApplicable(const G4ParticleDefinition& aParticleType)
+  G4bool ReflectionProcess::IsApplicable(const G4ParticleDefinition& aParticleType)
   {
     return (aParticleType.GetPDGCharge() != 0);
   }
