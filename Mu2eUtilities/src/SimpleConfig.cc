@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.17 2011/12/07 00:32:29 gandr Exp $
- * $Author: gandr $
- * $Date: 2011/12/07 00:32:29 $
+ * $Id: SimpleConfig.cc,v 1.18 2012/03/02 00:02:19 kutschke Exp $
+ * $Author: kutschke $
+ * $Date: 2012/03/02 00:02:19 $
  *
  * Original author Rob Kutschke
  *
@@ -25,7 +25,6 @@
 #include <vector>
 
 // Framework includes
-#include "art/Utilities/Exception.h"
 #include "cetlib/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -193,7 +192,7 @@ namespace mu2e {
     getRecord(name).getVectorString(v);
     if ( nRequired < 0 ) return;
     if ( v.size() != static_cast<size_t>(nRequired) ){
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfig: Wrong number of elements in vector<string> "
         << name
         << " in file "
@@ -225,7 +224,7 @@ namespace mu2e {
     // If asked to, check that the default value has the right length.
     if ( nRequired > -1 ) {
       if ( vdefault.size() != static_cast<size_t>(nRequired) ){
-        throw art::Exception(art::errors::Unknown)
+        throw cet::exception("SimpleConfig")
           << "SimpleConfig: Wrong number of elements in vector<string> "
           << name
           << " in file "
@@ -251,7 +250,7 @@ namespace mu2e {
     getRecord(name).getVectorInt(v);
     if ( nRequired < 0 ) return;
     if ( v.size() != static_cast<size_t>(nRequired) ){
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfig: Wrong number of elements in vector<int> "
         << name
         << " in file "
@@ -283,7 +282,7 @@ namespace mu2e {
     // If asked to, check that the default value has the right length.
     if ( nRequired > -1 ) {
       if ( vdefault.size() != static_cast<size_t>(nRequired) ){
-        throw art::Exception(art::errors::Unknown)
+        throw cet::exception("SimpleConfig")
           << "SimpleConfig: Wrong number of elements in vector<int> "
           << name
           << " in file "
@@ -312,7 +311,7 @@ namespace mu2e {
     getRecord(name).getVectorDouble(v);
     if ( nRequired < 0 ) return;
     if ( v.size() != static_cast<size_t>(nRequired) ){
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfig: Wrong number of elements in vector<double> "
         << name
         << " in file "
@@ -345,7 +344,7 @@ namespace mu2e {
     // If asked to, check that the default value has the right length.
     if ( nRequired > -1 ) {
       if ( vdefault.size() != static_cast<size_t>(nRequired) ){
-        throw art::Exception(art::errors::Unknown)
+        throw cet::exception("SimpleConfig")
           << "SimpleConfig: Wrong number of elements in vector<double> "
           << name
           << " in file "
@@ -457,7 +456,7 @@ namespace mu2e {
     if ( !getSharedPointer(name,b) ) {
 
       // Test: fail21.conf
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfig: No such parameter "
         << name
         << " in file "
@@ -482,7 +481,7 @@ namespace mu2e {
     if ( !in ) {
 
       // No conf file for this test.
-      throw art::Exception(art::errors::FileOpenError)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfig: Cannot open input file: "
         << _inputfile
         << endl;
@@ -579,7 +578,7 @@ namespace mu2e {
 
           } else{
             // Test: fail03.conf
-            throw art::Exception(art::errors::Unknown)
+            throw cet::exception("SimpleConfig")
               << "Duplicate parameter name found in the input file: "
               << endl
               << "This record:     "
@@ -670,7 +669,7 @@ namespace mu2e {
     // Find the double quote that opens filename.
     string::size_type j0 = line.find("\"",idx+8);
     if ( j0 == string::npos ){
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "Cannot find first double quote on include line: "
         << line
         << endl;
@@ -680,7 +679,7 @@ namespace mu2e {
     // legal whitespace.  This can be triggered by a missing leading quote.
     for ( string::size_type i=idx+8; i<j0; ++i ){
       if ( line[i] != ' ' && line[i] != '\t' ){
-        throw art::Exception(art::errors::Unknown)
+        throw cet::exception("SimpleConfig")
           << "Unexpected characters after include and before first double quote.\n"
           << "Maybe a missing leading quote?\n"
           << line
@@ -692,7 +691,7 @@ namespace mu2e {
     // Find the double quote that ends the filename.
     string::size_type j1 = line.find("\"",j0+1);
     if ( j1 == string::npos ){
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "Cannot find trailing double quote on include line: \n"
         << line
         << endl;
@@ -700,7 +699,7 @@ namespace mu2e {
 
     // Check for a non-empty file name.
     if ( j1-j0-1 == 0 ){
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "Empty filename in include line: \n"
         << line
         << endl;

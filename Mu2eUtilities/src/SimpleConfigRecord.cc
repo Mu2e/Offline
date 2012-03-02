@@ -3,23 +3,23 @@
  * A class to hold one record within the primitive
  * SimpleConfig utility.
  *
- * $Id: SimpleConfigRecord.cc,v 1.8 2011/05/18 04:36:19 kutschke Exp $
+ * $Id: SimpleConfigRecord.cc,v 1.9 2012/03/02 00:02:19 kutschke Exp $
  * $Author: kutschke $
- * $Date: 2011/05/18 04:36:19 $
+ * $Date: 2012/03/02 00:02:19 $
  *
  * Original author Rob Kutschke
  *
  */
 
+#include "Mu2eUtilities/src/SimpleConfigRecord.hh"
+#include "Mu2eUtilities/inc/TrimInPlace.hh"
+
+#include "cetlib/exception.h"
+
 #include <iostream>
 #include <iomanip>
 #include <sstream>
 #include <algorithm>
-
-#include "Mu2eUtilities/src/SimpleConfigRecord.hh"
-#include "Mu2eUtilities/inc/TrimInPlace.hh"
-
-#include "art/Utilities/Exception.h"
 
 namespace mu2e {
 
@@ -232,7 +232,7 @@ namespace mu2e {
     // Check for syntax of a complete record.
     if ( tmp[tmp.size()-1] != ';' ){
       // Test: fail01.conf
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfigRecord: Not terminated by semicolon: "
         << record;
     }
@@ -278,7 +278,7 @@ namespace mu2e {
     if ( iequal < 3 || iequal+1 >= barerecord.size() ){
 
       // Test: fail04.conf
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfigRecord: Impossible position for equals sign in record: "
         << record;
     }
@@ -298,7 +298,7 @@ namespace mu2e {
          white+2 > tmp.size() ){
 
       // Test: fail05.conf, fail06.conf
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfigRecord: Missing space between type and name: "
         << record;
     }
@@ -322,7 +322,7 @@ namespace mu2e {
     if ( check != string::npos ){
 
       // Test: fail07.conf
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfigRecord: Too many fields before equals sign in record: "
         << record;
     }
@@ -353,7 +353,7 @@ namespace mu2e {
            ( iclose < (iopen+1) ) ){
 
         // Test: fail08.conf, fail09.conf
-        throw art::Exception(art::errors::Unknown)
+        throw cet::exception("SimpleConfig")
           << "SimpleConfigRecord: "
           << "Missing or malformed {} in list of values for a vector: "
           << record;
@@ -461,7 +461,7 @@ namespace mu2e {
         else if ( c == quote ){
 
           // Test: fail10.conf
-          throw art::Exception(art::errors::Unknown)
+          throw cet::exception("SimpleConfig")
             << "SimpleConfigRecord: "
             << "Unexpected \" character in record: "
             << record;
@@ -528,7 +528,7 @@ namespace mu2e {
 
         else{
           // Test: fail12.conf
-          throw art::Exception(art::errors::Unknown)
+          throw cet::exception("SimpleConfig")
             << "SimpleConfigRecord: "
             << "Unexpected white space inside an item in the value list: "
             << record;
@@ -538,7 +538,7 @@ namespace mu2e {
       // There should be no way to reach this else.
       else{
         // No test for this error.
-        throw art::Exception(art::errors::Unknown)
+        throw cet::exception("SimpleConfig")
           << "SimpleConfigRecord: "
           << "Logic bug in the SimpleConfigRecord value parser: "
           << record;
@@ -552,7 +552,7 @@ namespace mu2e {
     if ( state == 2 || state == 12 ){
 
       // Test: fail11.conf
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfigRecord: "
         << "Unclosed quotes in this record: "
         << record;
@@ -572,7 +572,7 @@ namespace mu2e {
     // On a legal record there is no way to reach this else.
     else{
       // No test for this error.
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfigRecord: "
         << "Logic bug at final state in SimpleConfigRecord parser: "
         << record;
@@ -582,7 +582,7 @@ namespace mu2e {
     if ( !_isVector ){
       if( Values.size() != 1 ){
         // Test: fail13.conf, fail19.conf
-        throw art::Exception(art::errors::Unknown)
+        throw cet::exception("SimpleConfig")
           << "SimpleConfigRecord: "
           << "Scalar type record has more than one value: "
           << record;
@@ -599,7 +599,7 @@ namespace mu2e {
   void SimpleConfigRecord::CheckType( string s) const{
     if ( Type != s  ){
       // Tests: fail14.conf,
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfigRecord: "
         << "Type mismatch: "
         << "Requested: " << s
@@ -616,7 +616,7 @@ namespace mu2e {
     if ( Type.substr(0,7) != "vector<"  ){
 
       // Test: fail20.conf
-      throw art::Exception(art::errors::Unknown)
+      throw cet::exception("SimpleConfig")
         << "SimpleConfigRecord: "
         << "Requested a vector for a non-vector record: "
         << record;
@@ -637,7 +637,7 @@ namespace mu2e {
       // Only OK if it is the last character in the string.
       if ( dot != s.size()-1 ){
         // Test: fail16.conf, pass01.conf
-        throw art::Exception(art::errors::Unknown)
+        throw cet::exception("SimpleConfig")
           << "SimpleConfigRecord: "
           << "Floating point value for int parameter: "
           << record;
@@ -651,7 +651,7 @@ namespace mu2e {
     if ( is ) return i;
 
     // Test: fail17.conf
-    throw art::Exception(art::errors::Unknown)
+    throw cet::exception("SimpleConfig")
       << "SimpleConfigRecord: "
       << "Died converting value to int: "
       << s
@@ -667,7 +667,7 @@ namespace mu2e {
     is >> d;
     if ( is ) return d;
     // Test: fail15.conf
-    throw art::Exception(art::errors::Unknown)
+    throw cet::exception("SimpleConfig")
       << "SimpleConfigRecord: "
       << "Died converting value to double: "
       << s
@@ -691,7 +691,7 @@ namespace mu2e {
 
     // All others are errors.
     // Test: fail18.conf
-    throw art::Exception(art::errors::Unknown)
+    throw cet::exception("SimpleConfig")
       << "SimpleConfigRecord: "
       << "Died converting value to bool: "
       << s
@@ -719,7 +719,7 @@ namespace mu2e {
     }
 
     // Test: fail02.conf
-    throw art::Exception(art::errors::Unknown)
+    throw cet::exception("SimpleConfig")
       << "SimpleConfigRecord: "
       << "Unrecognized data type in record: "
       << record;
