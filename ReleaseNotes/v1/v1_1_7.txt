@@ -1,7 +1,7 @@
 
-  $Id: v1_1_7.txt,v 1.17 2012/03/03 00:10:13 kutschke Exp $
+  $Id: v1_1_7.txt,v 1.18 2012/03/03 00:16:37 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/03/03 00:10:13 $
+  $Date: 2012/03/03 00:16:37 $
 
            Release notes for Mu2e Offline software, v1_1_7
 
@@ -14,10 +14,12 @@
     Move the class Mu2eReflection from its own directory into Mu2eG4.
     Rename it to ReflectionProcess.
     Update the one file that includes its header, PhysicsLists.cc
+    Remove link-time dependence of Mu2eG4 on Mu2eReflection
       Mu2eG4/src/ReflectionProcess.cc
       Mu2eG4/inc/ReflectionProcess.hh
       Mu2eG4/src/PhysicsList.cc
       Mu2eReflection/* - removed
+      Mu2eG4/src/SConscript
 
 14) March 2, 2012 gandr
     Move ParticleDataTable and PhysicsParams from ConditionsService to the newly implemented GlobalConstantsService.
