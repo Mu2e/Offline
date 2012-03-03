@@ -5,9 +5,9 @@
 //    with cvs tag: version 1.12 2008/09/22 16:41:20 maire
 //
 //
-// $Id: PhysicsList.cc,v 1.9 2012/01/08 17:56:23 kutschke Exp $
+// $Id: PhysicsList.cc,v 1.10 2012/03/03 00:02:02 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/01/08 17:56:23 $
+// $Date: 2012/03/03 00:02:02 $
 //
 // Original author Rob Kutschke
 //
@@ -18,8 +18,8 @@
 // Mu2e includes
 #include "Mu2eG4/inc/PhysicsList.hh"
 #include "Mu2eG4/inc/addStepLimiter.hh"
+#include "Mu2eG4/inc/ReflectionProcess.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
-#include "Mu2eReflection/inc/Mu2eReflection.hh"
 
 // G4 includes
 #include "globals.hh"
@@ -156,8 +156,7 @@ namespace mu2e{
   // Electromagnetic processes.
   void PhysicsList::ConstructEM(){
 
-    //
-    // are we doing Mu2eReflection?
+    // If the ReflectionProcess will be enabled, skip all else.
 
     if (!( _config->getBool("mu2eReflection",false))) {
       // Loop over all defined particle types.
@@ -239,10 +238,10 @@ namespace mu2e{
     if (_config->getBool("mu2eReflection",false))
       {
         //mu2e reflection; segregate code for debugging
-        Mu2eReflection* theReflectionProcess = new Mu2eReflection(
-                                                                  "TargetFoil_",
-                                                                  "ToyDSDownstreamVacuum",
-                                                                  .001*meter);
+        ReflectionProcess* theReflectionProcess = new ReflectionProcess(
+                                                                     "TargetFoil_",
+                                                                     "ToyDSDownstreamVacuum",
+                                                                     .001*meter);
         theParticleIterator->reset();
         while( (*theParticleIterator)() ){
           G4ParticleDefinition* particle = theParticleIterator->value();
