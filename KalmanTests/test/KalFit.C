@@ -258,6 +258,7 @@ void KalFitAcc(TTree* trks) {
   }
   racc->SetMaximum(1.1);
   acc->Scale(1.0/all);
+  acc->SetMaximum(1.1);
   acc->GetXaxis()->SetLabelSize(0.06);
   racc->GetXaxis()->SetLabelSize(0.06);
   acc->SetMarkerSize(2.0);
@@ -265,7 +266,7 @@ void KalFitAcc(TTree* trks) {
   acc->GetYaxis()->SetTitleSize(0.05);
   racc->GetYaxis()->SetTitleSize(0.05);
 
-  gStyle->SetPaintTextFormat("4.3f");
+  gStyle->SetPaintTextFormat("5.4f");
   TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
   acan->Clear();
   acan->Divide(1,2);
