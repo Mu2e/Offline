@@ -1,9 +1,29 @@
 
-  $Id: v1_1_7.txt,v 1.18 2012/03/03 00:16:37 kutschke Exp $
+  $Id: v1_1_7.txt,v 1.19 2012/03/03 00:53:20 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/03/03 00:16:37 $
+  $Date: 2012/03/03 00:53:20 $
 
            Release notes for Mu2e Offline software, v1_1_7
+
+16) March 2, 2012 kutschke
+    Change default value of tmin for generators that create the decay
+    products of stopped muons.
+     EventGenerator/src/ConversionGun.txt
+     EventGenerator/src/DecayInOrbitGun.txt
+     EventGenerator/src/EjectedProton.txt
+     EventGenerator/src/EjectedNeutron.txt
+     EventGenerator/src/EjectedPhoton.txt
+     EventGenerator/defaultConfigs/conversionGun.txt
+     EventGenerator/defaultConfigs/decayInOrbitGun.txt
+     EventGenerator/defaultConfigs/ejectedNeutronGun.txt
+     EventGenerator/defaultConfigs/ejectedPhotonGun.txt
+     EventGenerator/defaultConfigs/ejectedProtonGun.txt
+     Mu2eG4/test/genconfig_01.txt
+     Mu2eG4/test/genconfig_02.txt
+     Mu2eG4/test/genconfig_03.txt
+     Mu2eG4/test/genconfig_04.txt
+     Mu2eG4/test/genconfig_05.txt
+     Mu2eG4/test/genconfig_tonly.txt
 
 15) March 2, 2012 kutschke
     Move cleanups of unnecessary dependencies across directories.
