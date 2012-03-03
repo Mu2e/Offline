@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: conversionGun.txt,v 1.4 2012/02/21 00:07:06 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/21 00:07:06 $
+// $Id: conversionGun.txt,v 1.5 2012/03/03 00:34:08 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/03 00:34:08 $
 //
 // Original author Rob Kutschke
 
@@ -22,7 +22,7 @@ double conversionGun.phimin = 0.0;
 double conversionGun.phimax = 6.283185307179586;
 
 // Time limits in ns, relative to protons on target.
-//double conversionGun.tmin  =  700.;
+double conversionGun.tmin  =    0.;
 //double conversionGun.tmax  = 1694.;
 
 // Mean multiplicities.

@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: ejectedProtonGun.txt,v 1.4 2012/02/21 00:07:06 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/21 00:07:06 $
+// $Id: ejectedProtonGun.txt,v 1.5 2012/03/03 00:34:08 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/03 00:34:08 $
 //
 // Original author Rob Kutschke
 // added EjectedProtonGun process
@@ -24,7 +24,7 @@ double ejectedProtonGun.elow = 0.0;
 double ejectedProtonGun.ehi = 300.;
 
 // Time limits in ns, relative to protons on target.
-//double ejectedProtonGun.tmin  =  700.;
+double ejectedProtonGun.tmin  =    0.;
 //double ejectedProtonGun.tmax  = 1694.;
 
 // Mean multiplicitie.

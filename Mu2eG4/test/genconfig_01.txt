@@ -1,9 +1,9 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_01.txt,v 1.5 2012/02/08 19:19:57 kutschke Exp $
+// $Id: genconfig_01.txt,v 1.6 2012/03/03 00:34:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/02/08 19:19:57 $
+// $Date: 2012/03/03 00:34:08 $
 //
 // Original author Rob Kutschke
 
@@ -12,7 +12,7 @@ double conversionGun.czmin = -1.0;
 double conversionGun.czmax =  1.0;
 
 // Time limits in ns, relative to protons on target.
-double conversionGun.tmin  =  700.;
+double conversionGun.tmin  =    0.;
 double conversionGun.tmax  = 1694.;
 
 // This tells emacs to view this file in c++ mode.
