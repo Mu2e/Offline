@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.27 2012/02/08 16:46:45 kutschke Exp $
+# $Id: SConscript,v 1.28 2012/03/03 00:15:48 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/02/08 16:46:45 $
+# $Date: 2012/03/03 00:15:48 $
 #
 # Original author Rob Kutschke.
 #
@@ -117,7 +117,6 @@ if non_plugin_cc:
                              'art_Framework_Modules_RandomNumberSaver_module',
                              'art_Framework_Services_Optional_TFileService_service',
                              'Analyses',
-                             'Mu2eReflection',
                              'GeometryService',
                              'ConditionsService',
                              'SeedService_service',
@@ -145,7 +144,6 @@ for cc in plugin_cc:
                             'art_Framework_Services_Optional_TFileService_service',
                             libs,
                             'Analyses',
-                            'Mu2eReflection',
                             'GeometryService',
                             'ConditionsService',
                             'SeedService_service',
