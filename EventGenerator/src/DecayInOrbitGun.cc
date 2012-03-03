@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.48 2012/03/02 17:16:22 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/02 17:16:22 $
+// $Id: DecayInOrbitGun.cc,v 1.49 2012/03/03 00:53:09 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/03 00:53:09 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,6 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
@@ -135,9 +134,8 @@ namespace mu2e {
     // data base key.  There is a second argument that I have let take its
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
-    ConditionsHandle<DAQParams>         daqPar("ignored");
 
-    _tmin   = config.getDouble("decayinorbitGun.tmin",  daqPar->t0 );
+    _tmin   = config.getDouble("decayinorbitGun.tmin",  0. );
     _tmax   = config.getDouble("decayinorbitGun.tmax",  accPar->deBuncherPeriod );
 
     // Make ROOT subdirectory to hold diagnostic histograms; book those histograms.
@@ -188,7 +186,7 @@ namespace mu2e {
     //Loop over particles to generate
 
     for (int i=0; i<n; ++i) {
-      
+
       //Pick up position and momentum
       CLHEP::Hep3Vector pos(0,0,0);
       double time;
@@ -205,7 +203,7 @@ namespace mu2e {
         e = _elow + _randSimpleEnergy.fire() * (_ehi - _elow);
       } else if ( _dioGenId == GenId::dioFlat ) {
         e = _randFlatEnergy.fire();
-      } 
+      }
 
       _p = safeSqrt(e*e - _mass*_mass);
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);

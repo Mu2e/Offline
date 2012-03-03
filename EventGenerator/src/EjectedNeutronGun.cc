@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.25 2012/03/02 17:16:22 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/02 17:16:22 $
+// $Id: EjectedNeutronGun.cc,v 1.26 2012/03/03 00:53:09 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/03 00:53:09 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -25,7 +25,6 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/EjectedNeutronGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -69,14 +68,14 @@ namespace mu2e {
     _nbins(config.getInt("ejectedNeutronGun.nbins",200)),
     _doHistograms(config.getBool("ejectedNeutronGun.doHistograms",true)),
     _spectrumModel(checkSpectrumModel(config.getInt("ejectedNeutronGun.spectrumNumber",0))),
-    _filetoread (config.getString("ejectedNeutronGun.spectrumFile","ConditionsService/data/neutronSpectrum.txt")),							 
+    _filetoread (config.getString("ejectedNeutronGun.spectrumFile","ConditionsService/data/neutronSpectrum.txt")),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
-    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),    
-    _shape ( getEngine() , &(binnedEnergySpectrum()[0]), _nbins ),  
+    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
+    _shape ( getEngine() , &(binnedEnergySpectrum()[0]), _nbins ),
     _STfname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("ejectedNeutronGun.nToSkip",0)),
-    
+
      // Histogram pointers
     _hMultiplicity(),
     _hKE(),
@@ -89,13 +88,12 @@ namespace mu2e {
     _hmudelay(),
     _hpulsedelay()  {
 
-   
+
     // About the ConditionsService:
     // The argument to the constructor is ignored for now.  It will be a
     // data base key.  There is a second argument that I have let take its
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
-    ConditionsHandle<DAQParams>         daqPar("ignored");
     GlobalConstantsHandle<ParticleDataTable> pdt;
 
     //Set particle mass
@@ -105,7 +103,7 @@ namespace mu2e {
 
     // Default values for the start and end of the live window.
     // Can be overriden by the run-time config; see below.
-    _tmin = daqPar->t0;
+    _tmin = 0.;
     _tmax = accPar->deBuncherPeriod;
 
     _tmin = config.getDouble("ejectedNeutronGun.tmin",  _tmin );
@@ -129,37 +127,37 @@ namespace mu2e {
     }
 
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
-									     FoilParticleGenerator::muonFileInputFoil,
+                                                                             FoilParticleGenerator::muonFileInputFoil,
                                                                              FoilParticleGenerator::muonFileInputPos,
-                                                                             FoilParticleGenerator::negExp,          
-									     _PStoDSDelay,
+                                                                             FoilParticleGenerator::negExp,
+                                                                             _PStoDSDelay,
                                                                              _pPulseDelay,
-									     _pPulseShift,
-									     _STfname,
-									     _nToSkip));
+                                                                             _pPulseShift,
+                                                                             _STfname,
+                                                                             _nToSkip));
   }
 
   EjectedNeutronGun::~EjectedNeutronGun(){
   }
-  
+
   // Check bounds of spectrum number and convert to enum
   EjectedNeutronGun::SpectrumType EjectedNeutronGun::checkSpectrumModel(const int i) {
-  
+
     if (i >= last_enum || i < 0) {
       throw cet::exception("RANGE")
        << "Invalid spectrum model given" ;
     }
-  
+
     return SpectrumType(i);
-  
+
   }
 
   void EjectedNeutronGun::generate( GenParticleCollection& genParts ){
 
     // Choose the number of neutrons to generate this event.
-    
+
     long n = _mean < 0 ? static_cast<long>(-_mean):_randPoissonQ.fire();
-    
+
     if ( _doHistograms ) {
       _hMultiplicity->Fill(n);
     }
@@ -174,10 +172,10 @@ namespace mu2e {
       _fGenerator->generatePositionAndTime(pos, time, _timeFolding);
 
       //Pick up energy
-      double eKine = _elow + _shape.fire() * ( _ehi - _elow ); 
+      double eKine = _elow + _shape.fire() * ( _ehi - _elow );
       double e   = eKine + _mass;
-      
-   
+
+
       //Pick up momentum vector
       _p = safeSqrt(e*e - _mass*_mass);
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
@@ -201,8 +199,8 @@ namespace mu2e {
         _hcz->Fill( mom.cosTheta() );
         _hphi->Fill( mom.phi() );
         _htime->Fill( time );
-	_hmudelay   ->Fill(_fGenerator->muDelay());
-	_hpulsedelay->Fill(_fGenerator->pulseDelay());
+        _hmudelay   ->Fill(_fGenerator->muDelay());
+        _hpulsedelay->Fill(_fGenerator->pulseDelay());
       }
     } // end of loop on particles
 
@@ -212,7 +210,7 @@ namespace mu2e {
   // Continuous function of new energy spectrum from doc-db 1619
   double EjectedNeutronGun::energySpectrum(const double x) {
     // Parameters from doc-db 1619
-    
+
     if (x < 10.0) {
       static const double A  = 0.0583;
       static const double B =   3.8278;
@@ -223,19 +221,19 @@ namespace mu2e {
 
       return A*(exp(-pow((x-b1),2)/c1s) + B*exp(-pow((x-b2),2)/c2s));
     }
-    
+
     else {
       static const double Ah  = 0.151;
       static const double Bh =   0.0795;
       static const double c1h    =   3.8292;
       static const double c2h    =  20.0653;
-    
+
       return Ah*(exp(-x/c1h) + Bh*exp(-x/c2h));
     }
-    
+
   } // EjectedNeutronGun::energySpectrum
-  
-  
+
+
   // Compute a binned representation of the energy spectrum of the neutron.
   // Energy in MeV
   std::vector<double> EjectedNeutronGun::binnedEnergySpectrum(){
@@ -250,54 +248,54 @@ namespace mu2e {
         << _nbins
         << "\n";
     }
-    
+
     if (_spectrumModel == docdb1619)
     {
       // Bin width.
       double dE = (_ehi - _elow) / _nbins;
       neutronSpectrum.reserve(_nbins);
-  
+
       for (int ib=0; ib<_nbins; ib++) {
         double x = (_elow+(ib+0.5) * dE)*1000.0; //Function takes energy in MeV
         neutronSpectrum.push_back(energySpectrum(x));
       }
-  
-      return neutronSpectrum; 
-    
+
+      return neutronSpectrum;
+
     }
     else
     {
       ConfigFileLookupPolicy spectrumFileName;
       string NeutronFileFIP =
-	spectrumFileName(_filetoread);
+        spectrumFileName(_filetoread);
       fstream infile(NeutronFileFIP.c_str(), ios::in);
       double supposedBinning = (_ehi - _elow) / _nbins;
       if (infile.is_open()) {
         double en, val;
-	bool read_on = true ;
-	while (read_on) {
+        bool read_on = true ;
+        while (read_on) {
           if (infile.eof()) {
-	    en += supposedBinning;
-	    val = 0;
-	  } else {
-	    infile >> en >> val;
-	  }
+            en += supposedBinning;
+            val = 0;
+          } else {
+            infile >> en >> val;
+          }
           if (en >= _elow && en <= _ehi) {
             neutronSpectrum.push_back(val);
           }
-	  if (en > _ehi) read_on = false;
+          if (en > _ehi) read_on = false;
         }
       }
       else {
-	throw cet::exception("RANGE")
+        throw cet::exception("RANGE")
         << "No file associated for the ejected neutron spectrum" << endl;
       }
 
       return neutronSpectrum;
-  
+
     }
   } // EjectedNeutronGun::binnedEnergySpectrum
-  
-   
+
+
 
 } // namespace mu2e

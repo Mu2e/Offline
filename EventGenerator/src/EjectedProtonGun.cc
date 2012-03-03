@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.34 2012/03/02 17:16:22 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/02 17:16:22 $
+// $Id: EjectedProtonGun.cc,v 1.35 2012/03/03 00:53:09 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/03 00:53:09 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -25,7 +25,6 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/EjectedProtonGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -94,7 +93,6 @@ namespace mu2e {
     // data base key.  There is a second argument that I have let take its
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
-    ConditionsHandle<DAQParams>         daqPar("ignored");
     GlobalConstantsHandle<ParticleDataTable> pdt;
 
     //Set particle mass
@@ -104,7 +102,7 @@ namespace mu2e {
 
     // Default values for the start and end of the live window.
     // Can be overriden by the run-time config; see below.
-    _tmin = daqPar->t0;
+    _tmin = 0.;
     _tmax = accPar->deBuncherPeriod;
 
     _tmin = config.getDouble("ejectedProtonGun.tmin",  _tmin );
@@ -141,8 +139,8 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,
                                                                              _PStoDSDelay,
                                                                              _pPulseDelay,
-									     _pPulseShift,
-									     _STfname,
+                                                                             _pPulseShift,
+                                                                             _STfname,
                                                                              _nToSkip));
   }
 

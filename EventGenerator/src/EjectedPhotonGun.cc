@@ -1,11 +1,11 @@
 //
 //
 // Simulate the photons coming from the stopping target when muons are captured
-// by an Al nucleus.  
+// by an Al nucleus.
 // //
-// $Id: EjectedPhotonGun.cc,v 1.8 2012/03/02 17:16:22 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/02 17:16:22 $
+// $Id: EjectedPhotonGun.cc,v 1.9 2012/03/03 00:53:09 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/03 00:53:09 $
 //
 // Original author Gianni Onorato
 //
@@ -24,7 +24,6 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/EjectedPhotonGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -93,13 +92,12 @@ namespace mu2e {
     // data base key.  There is a second argument that I have let take its
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
-    ConditionsHandle<DAQParams>         daqPar("ignored");
     GlobalConstantsHandle<ParticleDataTable> pdt;
 
-   
+
     // Default values for the start and end of the live window.
     // Can be overriden by the run-time config; see below.
-    _tmin = daqPar->t0;
+    _tmin = 0.;
     _tmax = accPar->deBuncherPeriod;
 
     _tmin = config.getDouble("ejectedPhotonGun.tmin",  _tmin );
@@ -136,8 +134,8 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,
                                                                              _PStoDSDelay,
                                                                              _pPulseDelay,
-									     _pPulseShift,
-									     _STfname,
+                                                                             _pPulseShift,
+                                                                             _STfname,
                                                                              _nToSkip));
   }
 

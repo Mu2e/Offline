@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.38 2012/03/02 17:16:22 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/02 17:16:22 $
+// $Id: ConversionGun.cc,v 1.39 2012/03/03 00:53:09 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/03 00:53:09 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,6 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/ConversionGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -88,13 +87,12 @@ namespace mu2e {
     // data base key.  There is a second argument that I have let take its
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
-    ConditionsHandle<DAQParams>         daqPar("ignored");
     GlobalConstantsHandle<ParticleDataTable> pdt;
 
     // Initialize data members that could not be initialized correctly in the initiailizer list.
 
     // Default values for the start and end of the live window.
-    _tmin = config.getDouble("conversionGun.tmin",  daqPar->t0 );
+    _tmin = config.getDouble("conversionGun.tmin",  0. );
     _tmax = config.getDouble("conversionGun.tmax",  accPar->deBuncherPeriod );
 
     //Get particle mass
@@ -107,8 +105,8 @@ namespace mu2e {
                                                                              FoilParticleGenerator::negExp,
                                                                              _PStoDSDelay,
                                                                              _pPulseDelay,
-									     _pPulseShift,
-									     _STfname,
+                                                                             _pPulseShift,
+                                                                             _STfname,
                                                                              _nToSkip));
     if ( _doHistograms ) bookHistograms();
   }
