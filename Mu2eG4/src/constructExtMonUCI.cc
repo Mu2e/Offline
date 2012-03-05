@@ -1,9 +1,9 @@
 //
 // Construct ExtinctionMonitor UCI.
 //
-// $Id: constructExtMonUCI.cc,v 1.7 2012/02/29 02:54:37 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/02/29 02:54:37 $
+// $Id: constructExtMonUCI.cc,v 1.8 2012/03/05 19:38:47 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/05 19:38:47 $
 
 #include <iostream>
 
@@ -560,14 +560,14 @@ namespace mu2e {
           }
           else if (iKiller >= 1 && iKiller <= 3)
           {
-            VolumeInfo const & ps1VacuumInfo = helper->locateVolInfo("PS1Vacuum");
-            G4ThreeVector originLocal = killerOrigin - ps1VacuumInfo.centerInMu2e();
+            VolumeInfo const & psVacuumInfo = helper->locateVolInfo("PSVacuum");
+            G4ThreeVector originLocal = killerOrigin - psVacuumInfo.centerInMu2e();
             killerInfo[iKiller] = nestTubs( name.str(),
                                           killerParams,
                                           killerMaterial,
                                           0,
                                           originLocal,
-                                          ps1VacuumInfo,
+                                          psVacuumInfo,
                                           0,
                                           killerVisible,
                                           G4Colour::Red(),
