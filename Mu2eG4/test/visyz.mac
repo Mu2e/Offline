@@ -1,18 +1,18 @@
 #
 # Macro file for setting up the graphics scene and the verbosity level: yz view.
 #
-# $Id: visyz.mac,v 1.2 2010/05/22 15:39:15 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/05/22 15:39:15 $
+# $Id: visyz.mac,v 1.3 2012/03/05 19:40:05 genser Exp $
+# $Author: genser $
+# $Date: 2012/03/05 19:40:05 $
 #
 # Original author Rob Kutschke
 
 #
 /control/verbose 0
 /run/verbose 0
-/vis/open OGLIX 600x600-0+0
+/vis/open OGLIX 800x800-0+0
 /vis/viewer/set/viewpointThetaPhi 90 180 deg
-/vis/viewer/zoom 1.0
+/vis/viewer/zoomTo 1.0
 /vis/disable
 /vis/scene/create
 /vis/scene/add/volume world
