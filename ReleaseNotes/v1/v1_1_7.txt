@@ -1,9 +1,25 @@
 
-  $Id: v1_1_7.txt,v 1.19 2012/03/03 00:53:20 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2012/03/03 00:53:20 $
+  $Id: v1_1_7.txt,v 1.20 2012/03/05 19:40:23 genser Exp $
+  $Author: genser $
+  $Date: 2012/03/05 19:40:23 $
 
            Release notes for Mu2e Offline software, v1_1_7
+
+17) March 5, 2012 genser
+
+    Reimplemented main PS parts using newer, more accurate geometry;
+    still reading the data from the geom_01.txt file and using Al as the material (TBC); 
+    renamed PS1Vacuum to PSVacuum
+
+     Mu2eG4/inc/constructPS.hh
+     Mu2eG4/src/Mu2eWorld.cc
+     Mu2eG4/src/constructExtMonUCI.cc
+     Mu2eG4/src/constructPS.cc
+     Mu2eG4/test/genconfig_tonly.txt
+     Mu2eG4/test/geom_01.txt
+     Mu2eG4/test/transportOnlyGeom.txt
+     Mu2eG4/test/visyz.mac
+
 
 16) March 2, 2012 kutschke
     Change default value of tmin for generators that create the decay
