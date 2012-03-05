@@ -1,0 +1,91 @@
+// Read a StepPointMC collection and create a GenParticleCollection
+// from the recorded hits.
+//
+// Andrei Gaponenko, 2012
+
+#include <iostream>
+#include <string>
+#include <memory>
+
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+
+namespace mu2e {
+
+  class FromStepPointMCs : public art::EDProducer {
+  public:
+    explicit FromStepPointMCs(fhicl::ParameterSet const& pset);
+    void produce(art::Event& event);
+
+  private:
+    std::string inModuleLabel_;
+    std::string  inInstanceName_;
+    GlobalConstantsHandle<ParticleDataTable> pdt_;
+    int logLevel_;
+  };
+
+  FromStepPointMCs::FromStepPointMCs(fhicl::ParameterSet const& pset)
+    : inModuleLabel_(pset.get<std::string>("inputModuleLabel"))
+    , inInstanceName_(pset.get<std::string>("inputInstanceName"))
+    , logLevel_(pset.get<int>("logLevel", 0))
+  {
+    produces<GenParticleCollection>();
+  }
+
+  void FromStepPointMCs::produce(art::Event& event) {
+
+    std::cout<<"AG: event loop"<<std::endl;
+    std::auto_ptr<GenParticleCollection> output(new GenParticleCollection);
+
+    // The input collection
+    art::Handle<mu2e::StepPointMCCollection> ih;
+    event.getByLabel(inModuleLabel_, inInstanceName_, ih);
+    const StepPointMCCollection& inhits(*ih);
+
+    // The purpose of this module is to continue simulation of an
+    // event from saved hits (normally in Virtual Detectors).  If our
+    // inputs contain multiple hits made by the same particle
+    // then creation of new GenParticle from each hit would be wrong.
+    // Make sure each SimParticle occurs only once.
+
+    typedef std::set<const SimParticle*> SPSet;
+    SPSet seenParticles;
+    for(StepPointMCCollection::const_iterator i=inhits.begin(); i!=inhits.end(); ++i) {
+      const art::Ptr<SimParticle>& particle = i->simParticle();
+      if(!seenParticles.insert(&*particle).second) {
+        throw cet::exception("BADINPUTS")
+          <<"FromStepPointMCs: duplicate SimParticle in input hits collection. Hit: "<<*i<<" in event "<<event.id();
+      }
+
+      // OK this is not a duplicate.
+      if(logLevel_ > 1) {
+        std::cout<<"AG: creating new GenParticle from hit "<<*i<<std::endl;
+      }
+
+      const double mass = pdt_->particle(particle->pdgId()).ref().mass().value();
+      const CLHEP::HepLorentzVector fourMom(i->momentum(), sqrt(mass*mass + i->momentum().mag2()));
+
+      output->push_back(GenParticle(particle->pdgId(),
+                                    GenId::fromStepPointMCs,
+                                    i->position(),
+                                    fourMom,
+                                    i->time()
+                                    ));
+
+    }
+
+    event.put(output);
+  }
+} // namespace mu2e
+
+DEFINE_ART_MODULE(mu2e::FromStepPointMCs);

@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.6 2012/02/07 07:17:08 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/07 07:17:08 $
+// $Id: GenId.hh,v 1.7 2012/03/05 20:14:42 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/05 20:14:42 $
 //
 // Original author Rob Kutschke
 //
@@ -35,12 +35,12 @@ namespace mu2e {
     // Need to keep the enum and the _name member in sync.
     enum enum_type {
       unknown,       particleGun,       conversionGun,
-      cosmicToy,     cosmicDYB,         cosmic,          dioShankerWanatabe,             
+      cosmicToy,     cosmicDYB,         cosmic,          dioShankerWanatabe,
       dioCzarnecki,  dioFlat,              pionCapture,
       muonCapture,   muonDecayInFlight, ejectedProtonGun,
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi,
       ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC,
-      extMonFNALGun, dioE5,
+      extMonFNALGun, dioE5, fromStepPointMCs,
       lastEnum
     };
 
@@ -52,8 +52,8 @@ namespace mu2e {
       "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",          \
       "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi", \
       "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "internalRPC", \
-      "extMonFNALGun", "dioE5"
-      
+      "extMonFNALGun", "dioE5", "fromStepPointMCs"
+
   public:
 
     // The most important c'tor and accessor methods are first.

@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.36 2012/02/27 06:05:35 gandr Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.37 2012/03/05 20:14:42 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/27 06:05:35 $
+// $Date: 2012/03/05 20:14:42 $
 //
 // Original author Rob Kutschke
 //
@@ -134,7 +134,8 @@ namespace mu2e {
         momentum = primaryProtonGunRotation*momentum;
       } else if ( genpart.generatorId() == GenId::particleGun ||
                   genpart.generatorId() == GenId::extMonFNALGun ||
-                  genpart.generatorId() == GenId::fromG4BLFile ){
+                  genpart.generatorId() == GenId::fromG4BLFile ||
+                  genpart.generatorId() == GenId::fromStepPointMCs) {
         pos += mu2eOrigin;
       } else {
         mf::LogError("KINEMATICS")
