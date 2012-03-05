@@ -2,9 +2,9 @@
 // Standard geometry with physics turned off.
 // We need to put the control of physics elsewhere.
 //
-// $Id: transportOnlyGeom.txt,v 1.4 2012/02/24 21:35:32 genser Exp $
+// $Id: transportOnlyGeom.txt,v 1.5 2012/03/05 19:39:56 genser Exp $
 // $Author: genser $
-// $Date: 2012/02/24 21:35:32 $
+// $Date: 2012/03/05 19:39:56 $
 //
 // Original author Rob Kutschke
 
@@ -26,7 +26,7 @@ bool g4.forceAuxEdgeVisible = true;
 
 bool calorimeter.crystalVisible = false;
 bool calorimeter.vaneBoxVisible = false;
-bool coll.visible = true;
+bool coll.visible = false;
 bool crs.vetoVisible = false;
 bool dirt.capVisible = false;
 bool dirt.visible = false;
@@ -76,11 +76,14 @@ bool protonBeamDump.magnetPitVisible = false;
 bool protonBeamDump.mouthVisible = false;
 bool protonBeamDump.neutronCaveVisible = false;
 bool protonabsorber.visible = false;
+//bool PS.solid               = false;
+bool PS.visible             = true;
 bool target.visible = false;
 bool targetPS.visible = false;
 bool toyDS.visible = false;
-bool toyPS.toyEnclosure.visible = false;
 bool toyPS.visible = false;
+//bool toyPS.toyEnclosure.solid = false;
+bool toyPS.toyEnclosure.visible = true;
 bool toyTS.visible = false;
 bool ttracker.deviceEnvelopeVisible = false;
 bool ttracker.envelopeVisible =  false;
