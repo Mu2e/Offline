@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.121 2012/02/27 06:05:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/27 06:05:35 $
+// $Id: Mu2eWorld.cc,v 1.122 2012/03/05 19:38:36 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/05 19:38:36 $
 //
 // Original author Rob Kutschke
 //
@@ -211,7 +211,7 @@ namespace mu2e {
 
     constructDS(hallInfo,_config);
     constructTS(hallInfo,_config);
-    constructPS(hallInfo,_config);
+    constructPS(hallInfo, *_config);
 
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();
@@ -468,7 +468,7 @@ namespace mu2e {
     G4LogicalVolume* stoppingtarget = _helper->locateVolInfo("StoppingTargetMother").logical;
 
     vector<G4LogicalVolume*> psVacua;
-    psVacua.push_back( _helper->locateVolInfo("PS1Vacuum").logical );
+    psVacua.push_back( _helper->locateVolInfo("PSVacuum").logical );
 
     vector<G4LogicalVolume*> tsVacua;
     tsVacua.push_back( _helper->locateVolInfo("ToyTS1Vacuum").logical );
