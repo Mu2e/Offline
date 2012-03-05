@@ -49,7 +49,6 @@ namespace mu2e {
 
   void FromStepPointMCs::produce(art::Event& event) {
 
-    std::cout<<"AG: event loop"<<std::endl;
     std::auto_ptr<GenParticleCollection> output(new GenParticleCollection);
     std::auto_ptr<GenParticleSPMHistory> history(new GenParticleSPMHistory);
 
