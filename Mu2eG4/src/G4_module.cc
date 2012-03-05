@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.36 2012/02/27 06:05:35 gandr Exp $
+// $Id: G4_module.cc,v 1.37 2012/03/05 19:49:38 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/27 06:05:35 $
+// $Date: 2012/03/05 19:49:38 $
 //
 // Original author Rob Kutschke
 //
@@ -352,7 +352,7 @@ namespace mu2e {
 
     // Handle to the generated particles; need when building art::Ptr to a GenParticle.
     art::Handle<GenParticleCollection> gensHandle;
-    event.getByLabel( "generate", gensHandle);
+    event.getByLabel(_generatorModuleLabel, gensHandle);
 
     // Create empty data products.
     auto_ptr<SimParticleCollection>     simParticles(      new SimParticleCollection);
