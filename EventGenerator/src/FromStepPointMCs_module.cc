@@ -14,11 +14,15 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Assns.h"
 
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/GenParticleSPMHistory.hh"
 
 namespace mu2e {
 
@@ -40,12 +44,16 @@ namespace mu2e {
     , logLevel_(pset.get<int>("logLevel", 0))
   {
     produces<GenParticleCollection>();
+    produces<GenParticleSPMHistory>();
   }
 
   void FromStepPointMCs::produce(art::Event& event) {
 
     std::cout<<"AG: event loop"<<std::endl;
     std::auto_ptr<GenParticleCollection> output(new GenParticleCollection);
+    std::auto_ptr<GenParticleSPMHistory> history(new GenParticleSPMHistory);
+
+    art::ProductID gpc_pid = getProductID<GenParticleCollection>(event);
 
     // The input collection
     art::Handle<mu2e::StepPointMCCollection> ih;
@@ -82,9 +90,14 @@ namespace mu2e {
                                     i->time()
                                     ));
 
+      history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
+                         art::Ptr<StepPointMC>(ih, std::distance(inhits.begin(), i))
+                         );
+
     }
 
     event.put(output);
+    event.put(history);
   }
 } // namespace mu2e
 

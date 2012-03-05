@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.9 2012/02/28 22:27:37 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/02/28 22:27:37 $
+// $Id: classes.h,v 1.10 2012/03/05 20:15:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/05 20:15:14 $
 //
 // Original author Rob Kutschke
 //
@@ -22,6 +22,8 @@
 #include <map>
 
 #include "art/Persistency/Common/Wrapper.h"
+#include "art/Persistency/Common/Assns.h"
+#include "art/Persistency/Common/RNGsnapshot.h"
 #include "cetlib/map_vector.h"
 
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
@@ -38,10 +40,8 @@
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/MixingSummary.hh"
-#include "art/Persistency/Common/RNGsnapshot.h"
 #include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
-
-
+#include "MCDataProducts/inc/GenParticleSPMHistory.hh"
 
 // For cet::map_vector<T> instantiate the component pair<> and vector<pair<>> templates.
 template class std::pair<cet::map_vector_key,mu2e::SimParticle>;
@@ -76,3 +76,10 @@ template class art::Wrapper<std::vector<art::RNGsnapshot> >;
 template class art::Wrapper<mu2e::GenElHitData>;//gio
 template class art::Wrapper<mu2e::VisibleGenElTrackCollection>;
 
+// A way to instantiate a typedef without keeping sync with its definition
+namespace {
+  struct Instantiations {
+    mu2e::GenParticleSPMHistory gpspmh;
+  };
+}
+template class art::Wrapper<mu2e::GenParticleSPMHistory>;
