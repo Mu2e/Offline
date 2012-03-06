@@ -1,9 +1,9 @@
 //
 // A module to evaluate the normalization of background to simulate
 //
-// $Id: BkgNorm_module.cc,v 1.10 2012/02/21 21:19:14 onoratog Exp $
+// $Id: BkgNorm_module.cc,v 1.11 2012/03/06 22:47:19 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/21 21:19:14 $
+// $Date: 2012/03/06 22:47:19 $
 //
 // Original author Gianni Onorato
 //
@@ -164,30 +164,23 @@ namespace mu2e {
 
     if (ncalls == 1) {
 
-      //      art::Handle<PhysicalVolumeInfoCollection> volumes;
-      // evt.getRun().getByLabel(_g4ModuleLabel, volumes);
-
-      // for (size_t i=0; i < volumes->size(); ++i) {
-
-      //        PhysicalVolumeInfo const& volInfo = volumes->at(i);
-      //  cout << i << '\t' <<volInfo.name() << volInfo.copyNo() << endl;
-      // }
+      art::Handle<PhysicalVolumeInfoCollection> volumes;
+      evt.getRun().getByLabel(_g4ModuleLabel, volumes);
+      for (size_t i=0; i < volumes->size(); ++i) {
+	
+	PhysicalVolumeInfo const& volInfo = volumes->at(i);
+        cout << i << '\t' <<volInfo.name() << volInfo.copyNo() << endl;
+      }
 
 
 
       art::ServiceHandle<art::TFileService> tfs;
 
-      // "evt:run:"; //Event info (2 entries)
-      // "time:dt:eDep:lay:dev:sec:strawId:strawX:strawY:strawZ:"; //StrawHit info (10 entries)
-      // "trkPdgId:trkP:trkIsGen:trkStartVolume:trkStepFromEva:EvaIsGen"; //Track making hits info (6 entries)
-      // "genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:"; //Generated particle info (10 entries)
-      // "dau1PdgId:dau1P:dau1StartVolume:"; //First Daughter of generated particle info (3 entries)
-
-      _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple", "evt:run:time:dt:eDep:lay:dev:sec:strawId:strawX:strawY:strawZ:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStartX:trkStartY:trkStartZ:trkStartT:trkEndVolume:trkEndX:trkEndY:trkEndZ:trkEndT:trkEndEK:trkStepPoints:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
-      _cNtup        = tfs->make<TNtuple>( "CaloHits", "calo Ntupla", "evt:run:time:eDep:vane:crId:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStartX:trkStartY:trkStartZ:trkStartT:trkEndVolume:trkEndX:trkEndY:trkEndZ:trkEndT:trkEndEK:trkStepPoints:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
+      _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple", "evt:run:time:dt:eDep:lay:dev:sec:strawId:strawX:strawY:strawZ:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStartX:trkStartY:trkStartZ:trkStartT:trkEndVolume:trkEndX:trkEndY:trkEndZ:trkEndT:trkEndEK:trkEndProcessCode:trkStepPoints:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
+      _cNtup        = tfs->make<TNtuple>( "CaloHits", "calo Ntupla", "evt:run:time:eDep:vane:crId:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStartX:trkStartY:trkStartZ:trkStartT:trkEndVolume:trkEndX:trkEndY:trkEndZ:trkEndT:trkEndEK:trkEndProcessCode:trkStepPoints:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
    }
 
-    doStoppingTarget(evt);
+    //    doStoppingTarget(evt);
 
     doTracker(evt, _skipEvent);
     doCalorimeter(evt, _skipEvent);
@@ -285,7 +278,7 @@ namespace mu2e {
       //time of the hit
       double hitTime = hit.time();
 
-      float tntpArray[42];
+      float tntpArray[43];
       int idx(0);
       tntpArray[idx++] = evt.id().event();
       tntpArray[idx++] = evt.run();
@@ -342,6 +335,7 @@ namespace mu2e {
       tntpArray[idx++] = sim.endPosition().getZ();
       tntpArray[idx++] = sim.endGlobalTime();
       tntpArray[idx++] = sim.preLastStepKineticEnergy();
+      tntpArray[idx++] = sim.stoppingCode();
       tntpArray[idx++] = sim.nSteps();
 
       int nEvolutionSteps = 0;
@@ -463,7 +457,7 @@ namespace mu2e {
         if (ROIds.size() < 1) continue;
 
         bool readCryOnce(false);
-        float cntpArray[36];
+        float cntpArray[37];
         int idx(0);
 
         double firstHitTime = 100000;
@@ -524,6 +518,7 @@ namespace mu2e {
         cntpArray[idx++] = sim.endPosition().getZ();
         cntpArray[idx++] = sim.endGlobalTime();
         cntpArray[idx++] = sim.preLastStepKineticEnergy();
+        cntpArray[idx++] = sim.stoppingCode();
         cntpArray[idx++] = sim.nSteps();
 
         int nEvolutionSteps = 0;
