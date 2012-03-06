@@ -1,9 +1,9 @@
 //
 // A module to evaluate the normalization of background to simulate
 //
-// $Id: BkgNorm_module.cc,v 1.11 2012/03/06 22:47:19 onoratog Exp $
+// $Id: BkgNorm_module.cc,v 1.12 2012/03/06 23:02:01 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/03/06 22:47:19 $
+// $Date: 2012/03/06 23:02:01 $
 //
 // Original author Gianni Onorato
 //
@@ -55,6 +55,9 @@ namespace mu2e {
 
   class BkgNorm : public art::EDAnalyzer {
   public:
+
+    typedef vector<int> Vint;
+
     explicit BkgNorm(fhicl::ParameterSet const& pset):
       _diagLevel(pset.get<int>("diagLevel",0)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
@@ -64,6 +67,7 @@ namespace mu2e {
       _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
       _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel", "CaloCrystalHitsMaker")),
       _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
+      _doStoppingTarget(pset.get<bool>("doStoppingTarget", 0)),
       _tNtup(0),
       _cNtup(0),
       _nDevices(36),
@@ -76,6 +80,12 @@ namespace mu2e {
       _totalcputime(0),
       _totalrealtime(0)
     {
+      Vint const & _particleToSkipInST = pset.get<Vint>("pdgIdToSkipInST", Vint());
+      if (_particleToSkipInST.size() > 0) {
+        for (size_t i = 0; i< _particleToSkipInST.size(); ++i){
+          skipPDG.insert(_particleToSkipInST[i]);
+        }
+      }
     }
     virtual ~BkgNorm() {
     }
@@ -112,6 +122,8 @@ namespace mu2e {
 
     double _minimumEnergy; //minimum energy deposition of hits
 
+    bool _doStoppingTarget;
+
     TNtuple* _tNtup, *_cNtup;
     const int _nDevices, _nSectors, _nLayers, _nStrawsPerLay;
 
@@ -119,6 +131,8 @@ namespace mu2e {
     float _totalcputime, _totalrealtime;
 
     bool _skipEvent;
+
+    set<int> skipPDG;
 
   };
 
@@ -180,8 +194,7 @@ namespace mu2e {
       _cNtup        = tfs->make<TNtuple>( "CaloHits", "calo Ntupla", "evt:run:time:eDep:vane:crId:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStartX:trkStartY:trkStartZ:trkStartT:trkEndVolume:trkEndX:trkEndY:trkEndZ:trkEndT:trkEndEK:trkEndProcessCode:trkStepPoints:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
    }
 
-    //    doStoppingTarget(evt);
-
+    if (_doStoppingTarget) doStoppingTarget(evt);
     doTracker(evt, _skipEvent);
     doCalorimeter(evt, _skipEvent);
 
@@ -614,15 +627,17 @@ namespace mu2e {
 
       PhysicalVolumeInfo const& volInfo = volumes->at(sim->endVolumeIndex());
 
-      if ( sim->fromGenerator() && (sim->pdgId() == 13 || sim->pdgId() == -13)) {
-        if ( volInfo.name() == "TargetFoil_" ) {
-        generatedStopped = true;
+      if ( sim->fromGenerator()) {
+        if ( skipPDG.find(sim->pdgId()) != skipPDG.end()) {
+          if ( volInfo.name() == "TargetFoil_" ) {
+            generatedStopped = true;
+          }
         }
       }
     }
     _skipEvent = generatedStopped;
-  }  // end doStoppingTarget
-
+  } // end doStoppingTarget
+  
 }
 
 using mu2e::BkgNorm;

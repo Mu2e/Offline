@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.29 2012/03/06 22:47:38 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.30 2012/03/06 23:02:01 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/03/06 22:47:38 $
+// $Date: 2012/03/06 23:02:01 $
 //
 // Original author Gianni Onorato
 //
@@ -60,6 +60,9 @@ namespace mu2e {
 
   class BkgRates : public art::EDAnalyzer {
   public:
+
+    typedef vector<int> Vint;
+
     explicit BkgRates(fhicl::ParameterSet const& pset):
       _diagLevel(pset.get<int>("diagLevel",0)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
@@ -69,6 +72,7 @@ namespace mu2e {
       _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
       _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel", "CaloCrystalHitsMaker")),
       _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
+      _doStoppingTarget(pset.get<bool>("doStoppingTarget", 0)),
       _nAnalyzed(0),
       _tNtup(0),
       _cNtup(0),
@@ -86,8 +90,13 @@ namespace mu2e {
       _totalcputime(0),
       _totalrealtime(0)
     {
+      Vint const & _particleToSkipInST = pset.get<Vint>("pdgIdToSkipInST", Vint());
+      if (_particleToSkipInST.size() > 0) {
+        for (size_t i = 0; i< _particleToSkipInST.size(); ++i){
+          skipPDG.insert(_particleToSkipInST[i]);
+        }
+      }
       cout << "Module BkgRates is starting" << endl;
-
     }
     virtual ~BkgRates() {
     }
@@ -126,6 +135,8 @@ namespace mu2e {
     std::string _caloCrystalModuleLabel;
 
     double _minimumEnergy; //minimum energy deposition of hits
+    
+    bool _doStoppingTarget;
 
     //number of analyzed events
     int _nAnalyzed;
@@ -143,6 +154,8 @@ namespace mu2e {
 
     int _nBadG4Status, _nOverflow, _nKilled;
     float _totalcputime, _totalrealtime;
+
+    set<int> skipPDG;
 
   };
 
@@ -235,13 +248,15 @@ namespace mu2e {
       }
       _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
                                           "evt:run:crTime:crE:crRad:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EOutsideAll:EGen:GenHit1x:GenHit1y:GenHit1z:cryFramex:cryFramey:cryFramez:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
-      //      _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",
-      //                                  "evt:run:time:x:y:z:isGen:pdgId:trkId:stVol:isStopped");
 
+      if (_doStoppingTarget) {
+        _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",
+                                            "evt:run:time:x:y:z:isGen:pdgId:trkId:stVol:isStopped");
+      }
     }
 
 
-    //    doStoppingTarget(evt);
+    if (_doStoppingTarget) doStoppingTarget(evt);
 
     if (geom->hasElement<ITracker>()) {
       //      cout << "ITracker selected" << endl;
@@ -1200,7 +1215,7 @@ namespace mu2e {
 
       if (!(sim->fromGenerator())) continue;
 
-      if (sim->pdgId() == 13 || sim->pdgId() == -13) {
+      if (skipPDG.find(sim->pdgId()) != skipPDG.end()) {
         if ( volInfo.name() == "TargetFoil_" ) {
         generatedStopped = true;
 
@@ -1222,7 +1237,7 @@ namespace mu2e {
         tgtntpArray[idx++] = sim->endVolumeIndex();
         tgtntpArray[idx++] = (volInfo.name() == "TargetFoil_");
         
-	//        _tgtNtup->Fill(tgtntpArray);
+        _tgtNtup->Fill(tgtntpArray);
 
       }
     }
