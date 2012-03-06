@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.28 2012/02/28 22:17:25 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/02/28 22:17:25 $
+// $Id: BkgRates_module.cc,v 1.29 2012/03/06 22:47:38 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/03/06 22:47:38 $
 //
 // Original author Gianni Onorato
 //
@@ -235,13 +235,13 @@ namespace mu2e {
       }
       _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
                                           "evt:run:crTime:crE:crRad:crId:crVane:crX:crY:crZ:ESwr:EOutVane:NtrkOutside:OutsideE1:OutsidePdg1:OutsideE2:OutsidePdg2:OutsideE3:OutsidePdg3:EOutsideAll:EGen:GenHit1x:GenHit1y:GenHit1z:cryFramex:cryFramey:cryFramez:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
-      _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",
-                                          "evt:run:time:x:y:z:isGen:pdgId:trkId:stVol:isStopped");
+      //      _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",
+      //                                  "evt:run:time:x:y:z:isGen:pdgId:trkId:stVol:isStopped");
 
     }
 
 
-    doStoppingTarget(evt);
+    //    doStoppingTarget(evt);
 
     if (geom->hasElement<ITracker>()) {
       //      cout << "ITracker selected" << endl;
@@ -1222,7 +1222,7 @@ namespace mu2e {
         tgtntpArray[idx++] = sim->endVolumeIndex();
         tgtntpArray[idx++] = (volInfo.name() == "TargetFoil_");
         
-        _tgtNtup->Fill(tgtntpArray);
+	//        _tgtNtup->Fill(tgtntpArray);
 
       }
     }
