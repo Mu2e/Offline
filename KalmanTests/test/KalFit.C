@@ -1,3 +1,20 @@
+Double_t splitgaus(Double_t *x, Double_t *par) {
+  Double_t retval;
+  Double_t core;
+  Double_t tail;
+  Float_t xval = x[0];
+  if(xval > par[1]) {
+    core = exp(-0.5*pow((xval-par[1])/par[2],2))/par[2];
+    tail = par[4]*exp(-0.5*pow((xval-par[1])/par[5],2))/par[5];
+  } else {
+    core = exp(-0.5*pow((xval-par[1])/par[3],2))/par[3];
+    tail = (1/par[2]-1/par[3]+par[4]/par[5])*exp(-0.5*pow((xval-par[1])/par[6],2));
+  }
+  retval = par[0]*0.398942*(core+tail);
+// add a tail Gaussian
+  return retval;
+}
+
 void KalFitHit (TTree* hits ) {
     TCanvas* dcan = new TCanvas("driftcan","driftcan",1200,800);
     TH1F* dres = new TH1F("dres","Drift radius resolution;mm",100,-1,1);
@@ -189,17 +206,18 @@ void KalFitAccPlots(TTree* trks) {
 } 
 
 void KalFitAcc(TTree* trks) {
-  TCut hittrk("mcentmom>0.0");
-  TCut rpitch("td>0.57735&&td<1.0");
   TCut tpitch("mcenttd>0.5&&mcenttd<1.1");
-  TCut rmom("fitmom>103.5&&fitmom<104.7");
+  TCut tt0("mct0>700.0");
   TCut tmom("mcentmom>100");
   TCut nmch("nchits>=20");
-  TCut reco("fitstatus>0");
-  TCut cosmic("abs(d0)<105 && d0+2/om>460 && d0+2/om<660");
-  TCut goodfit("fitcon>1e-4&&nactive>=20&&t0err<1.5&&fitmomerr<0.2");
-  TCut livegate("t0>810");
   TCut ce = nmch+tmom;
+
+  TCut reco("fitstatus>0");
+  TCut livegate("t0>710");
+  TCut rpitch("td>0.57735&&td<1.0");
+  TCut goodfit("fitcon>1e-4&&nactive>=20&&t0err<1.5&&fitmomerr<0.2");
+  TCut cosmic("abs(d0)<105 && d0+2/om>460 && d0+2/om<660");
+  TCut rmom("fitmom>103.5&&fitmom<104.7");
 
   unsigned nbins(10);
   double bmax = nbins-0.5;
@@ -212,10 +230,10 @@ void KalFitAcc(TTree* trks) {
   acc->GetXaxis()->SetBinLabel(3,"CE p>100 MeV/c");
   acc->GetXaxis()->SetBinLabel(4,"CE pitch");
   acc->GetXaxis()->SetBinLabel(5,"KF Track fit");
-  acc->GetXaxis()->SetBinLabel(6,"Reco pitch");
-  acc->GetXaxis()->SetBinLabel(7,"Livegate");
-  acc->GetXaxis()->SetBinLabel(8,"Cosmic Rejection");
-  acc->GetXaxis()->SetBinLabel(9,"Fit Quality");
+  acc->GetXaxis()->SetBinLabel(6,"Livegate");
+  acc->GetXaxis()->SetBinLabel(7,"Reco pitch");
+  acc->GetXaxis()->SetBinLabel(8,"Fit Quality");
+  acc->GetXaxis()->SetBinLabel(9,"Cosmic Rejection");
   acc->GetXaxis()->SetBinLabel(10,"Momentum window");
 
   racc->GetXaxis()->SetBinLabel(1,"All CE");
@@ -223,10 +241,10 @@ void KalFitAcc(TTree* trks) {
   racc->GetXaxis()->SetBinLabel(3,"CE p>100 MeV/c");
   racc->GetXaxis()->SetBinLabel(4,"CE pitch");
   racc->GetXaxis()->SetBinLabel(5,"KF Track fit");
-  racc->GetXaxis()->SetBinLabel(6,"Reco pitch");
-  racc->GetXaxis()->SetBinLabel(7,"Livegate");
-  racc->GetXaxis()->SetBinLabel(8,"Cosmic Rejection");
-  racc->GetXaxis()->SetBinLabel(9,"Fit Quality");
+  racc->GetXaxis()->SetBinLabel(6,"Livegate");
+  racc->GetXaxis()->SetBinLabel(7,"Reco pitch");
+  racc->GetXaxis()->SetBinLabel(8,"Fit Quality");
+  racc->GetXaxis()->SetBinLabel(9,"Cosmic Rejection");
   racc->GetXaxis()->SetBinLabel(10,"Momentum window");
   
   
@@ -235,9 +253,9 @@ void KalFitAcc(TTree* trks) {
   trks->Project("+acc","2.0",nmch+tmom);
   trks->Project("+acc","3.0",nmch+tmom+tpitch);
   trks->Project("+acc","4.0",nmch+tmom+tpitch+reco);
-  trks->Project("+acc","5.0",nmch+tmom+tpitch+reco+rpitch);
+  trks->Project("+acc","5.0",nmch+tmom+tpitch+reco+livegate);
   trks->Project("+acc","6.0",nmch+tmom+tpitch+reco+rpitch+livegate);
-  trks->Project("+acc","7.0",nmch+tmom+tpitch+reco+rpitch+livegate+cosmic);
+  trks->Project("+acc","7.0",nmch+tmom+tpitch+reco+rpitch+livegate+goodfit);
   trks->Project("+acc","8.0",nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+goodfit);
   trks->Project("+acc","9.0",nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+goodfit+rmom);
 
@@ -287,3 +305,95 @@ void KalFitAcc(TTree* trks) {
 //  << " Fit Quality " << good << " relative " << good/greco << std::endl;
 
 }
+
+void KalFitRes(TTree* trks) {
+  TF1* sgau = new TF1("sgau",splitgaus,-1.,1.,7);
+  sgau->SetParName(0,"Norm");
+  sgau->SetParName(1,"Mean");
+  sgau->SetParName(2,"SigH");
+  sgau->SetParName(3,"SigL");
+  sgau->SetParName(4,"TFH");
+  sgau->SetParName(5,"TSigH");
+  sgau->SetParName(6,"TSigL");
+ 
+  TH1F* momres[4];
+// basic cuts
+  TCut reco("fitstatus>0");
+  double tdlow(0.57735027);
+  double tdhigh(1.0);
+  double t0min(710);
+  char ctext[80];
+  snprintf(ctext,80,"td>%f&&td<%f",tdlow,tdhigh);
+  TCut pitch(ctext);
+  snprintf(ctext,80,"t0>%f",t0min);
+  TCut livegate(ctext);
+// mc selection cuts for efficiency
+  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nchits>=20&&mct0>670");
+// cuts for different tightness of selection
+  TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
+  ncuts[0] = "nactive>=20";
+  ncuts[1] = "nactive>=20";
+  ncuts[2] = "nactive>=25";
+  ncuts[3] = "nactive>=30";
+  t0cuts[0] = "";
+  t0cuts[1] = "t0err<1.5";
+  t0cuts[2] = "t0err<1.0";
+  t0cuts[3] = "t0err<0.9";
+  momcuts[0] = "";
+  momcuts[1] = "fitmomerr<0.2";
+  momcuts[2] = "fitmomerr<0.18";
+  momcuts[3] = "fitmomerr<0.15";
+  fitcuts[0] = "";
+  fitcuts[1] = "fitcon>1e-4";
+  fitcuts[2] = "fitcon>1e-3";
+  fitcuts[3] = "fitcon>1e-2";
+
+  TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
+  trks->Project("effnorm","mcentmom",mcsel);
+ 
+  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
+  rcan->Clear();
+  rcan->Divide(2,2);
+  gStyle->SetOptFit(111111);
+  gStyle->SetOptStat(1111111);
+  for(unsigned ires=0;ires<4;ires++){
+    rcan->cd(ires+1);
+    char mname[50];
+    snprintf(mname,50,"momres%i",ires);
+    momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",151,-2.5,2.5);
+//  momres[ires]->SetStats(0);
+    TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
+    TCut final = (reco+pitch+livegate+quality);
+    trks->Project(mname,"fitmom-mcentmom",final);
+    double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
+    sgau->SetParameters(integral,0.0,momres[ires]->GetRMS(),momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
+    sgau->SetParLimits(5,1.0*momres[ires]->GetRMS(),1.0);
+    sgau->SetParLimits(6,1.0*momres[ires]->GetRMS(),1.0);
+    sgau->SetParLimits(4,0.0,0.8);
+    momres[ires]->Fit("sgau","L");
+
+
+    double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
+    TPaveText* rtext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");  
+    char line[40];
+    snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
+    rtext->AddText(line);
+    snprintf(line,80,"t0>%5.1f nsec",t0min);
+    rtext->AddText(line);
+    sprintf(line,"%s",ncuts[ires].GetTitle());
+    rtext->AddText(line);
+    sprintf(line,"%s",t0cuts[ires].GetTitle());
+    rtext->AddText(line);
+    sprintf(line,"%s",momcuts[ires].GetTitle());
+    rtext->AddText(line);
+    sprintf(line,"%s",fitcuts[ires].GetTitle());
+    rtext->AddText(line);
+    sprintf(line,"Eff=%3.2f",keff);
+    rtext->AddText(line);
+    rtext->Draw();
+ 
+  }
+  rcan->cd(0);
+}
+
+

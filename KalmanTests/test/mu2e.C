@@ -1,6 +1,6 @@
 void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, double nconv=100000) {
 // diogenrange is the momentum range over which the DIO events were generated
-  double nstopped(7.52e17);
+  double nstopped(7.56e17);
   double capfrac(0.609); 
   double decayfrac = 1.0 - capfrac;
   double ndecay = nstopped*decayfrac;
@@ -47,7 +47,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   TCut reco("fitstatus>0");
   double tdlow(0.57735027);
   double tdhigh(1.0);
-  double t0min(810);
+  double t0min(710);
   char ctext[80];
   snprintf(ctext,80,"td>%f&&td<%f",tdlow,tdhigh);
   TCut pitch(ctext);
