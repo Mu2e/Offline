@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.26 2012/02/27 20:22:06 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/27 20:22:06 $
+// $Id: ConstructMaterials.cc,v 1.27 2012/03/07 21:51:34 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/07 21:51:34 $
 //
 // Original author Rob Kutschke
 //
@@ -188,6 +188,7 @@ namespace mu2e {
     }
 
     // Stainless Steel (Medical Physics, Vol 25, No 10, Oct 1998) based on brachytherapy example
+    // FIXME is there a better reference?
     mat = isNeeded(materialsToLoad, "StainlessSteel");
     if ( mat.doit ){
       G4Material* StainlessSteel =
@@ -197,6 +198,148 @@ namespace mu2e {
       StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Cr"), 0.19);
       StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Ni"), 0.10);
       StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.68);
+    }
+
+    // Construction Aluminum
+    //http://asm.matweb.com/search/SpecificMaterial.asp?bassnum=MA5083O
+    //http://ppd-docdb.fnal.gov/cgi-bin/RetrieveFile?docid=1112;filename=MD-ENG-109.pdf;version=1
+    mat = isNeeded(materialsToLoad, "A95083");
+    if ( mat.doit ){
+      G4Material* A95083 =
+        new G4Material( mat.name, 2.66*g/cm3, 9);
+      A95083->AddMaterial(findMaterialOrThrow("G4_Al"), 0.9400);
+      A95083->AddMaterial(findMaterialOrThrow("G4_Mg"), 0.0450);
+      A95083->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.0070);
+      A95083->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.0020);
+      A95083->AddMaterial(findMaterialOrThrow("G4_Si"), 0.0020);
+      A95083->AddMaterial(findMaterialOrThrow("G4_Cr"), 0.0015);
+      A95083->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.0013);
+      A95083->AddMaterial(findMaterialOrThrow("G4_Ti"), 0.0007);
+      A95083->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.0005);
+    }
+
+
+    // NbTi
+    mat = isNeeded(materialsToLoad, "NbTi"); // FIXME verify it
+    if ( mat.doit ){
+      G4Material* NbTi =
+        new G4Material( mat.name, 6.5*g/cm3, 2);
+      NbTi->AddMaterial(findMaterialOrThrow("G4_Nb"), 0.65);
+      NbTi->AddMaterial(findMaterialOrThrow("G4_Ti"), 0.35);
+    }
+
+    // NbTiCu
+    mat = isNeeded(materialsToLoad, "NbTiCu"); // FIXME verify it
+    if ( mat.doit ){
+      G4Material* NbTiCu =
+        new G4Material( mat.name, 7.69*g/cm3, 2);
+      NbTiCu->AddMaterial(findMaterialOrThrow("NbTi"),  0.45);
+      NbTiCu->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.55);
+    }
+
+    // AL999Ni001 by volume ?
+    mat = isNeeded(materialsToLoad, "AL999Ni001"); // FIXME verify it
+    if ( mat.doit ){
+      G4Material* AL999Ni001 =
+        new G4Material( mat.name, 2.706*g/cm3, 3);
+      AL999Ni001->AddMaterial(findMaterialOrThrow("G4_Al"), 0.9967);
+      AL999Ni001->AddMaterial(findMaterialOrThrow("G4_Ni"), 0.0033);
+    }
+
+    // http://personalpages.to.infn.it/~tosello/EngMeet/ITSmat/SDD/Epotek-301-1.html
+    // C_19_H_20_O_4
+
+    mat = isNeeded(materialsToLoad, "C_19_H_20_O_4");
+    if ( mat.doit ){
+      G4Material* C_19_H_20_O_4 =
+        new G4Material( mat.name, 1.16*g/cm3, 3);
+
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eH  = getElementOrThrow("H");
+      G4Element* eO  = getElementOrThrow("O");
+
+      C_19_H_20_O_4->AddElement( eC, 19);
+      C_19_H_20_O_4->AddElement( eH, 20);
+      C_19_H_20_O_4->AddElement( eO,  4);
+
+    }
+
+    // C_10_H_18_O_4
+
+    mat = isNeeded(materialsToLoad, "C_10_H_18_O_4");
+    if ( mat.doit ){
+      G4Material* C_10_H_18_O_4 =
+        new G4Material( mat.name, 1.10*g/cm3, 3);
+
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eH  = getElementOrThrow("H");
+      G4Element* eO  = getElementOrThrow("O");
+
+      C_10_H_18_O_4->AddElement( eC, 10);
+      C_10_H_18_O_4->AddElement( eH, 18);
+      C_10_H_18_O_4->AddElement( eO,  4);
+
+    }
+
+    // C_9_H_22_N_2
+
+    mat = isNeeded(materialsToLoad, "C_9_H_22_N_2");
+    if ( mat.doit ){
+      G4Material* C_9_H_22_N_2 =
+        new G4Material( mat.name, 0.865*g/cm3, 3);
+
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eH  = getElementOrThrow("H");
+      G4Element* eN  = getElementOrThrow("N");
+
+      C_9_H_22_N_2->AddElement( eC,  9);
+      C_9_H_22_N_2->AddElement( eH, 22);
+      C_9_H_22_N_2->AddElement( eN,  2);
+
+    }
+
+    // http://personalpages.to.infn.it/~tosello/EngMeet/ITSmat/SDD/Epotek-301-1.html
+    mat = isNeeded(materialsToLoad, "Epotek301");
+    if ( mat.doit ){
+      G4Material* Epotek301 =
+        new G4Material( mat.name, 1.19*g/cm3, 3);
+      Epotek301->AddMaterial(findMaterialOrThrow("C_19_H_20_O_4"), 0.56);
+      Epotek301->AddMaterial(findMaterialOrThrow("C_10_H_18_O_4"), 0.24);
+      Epotek301->AddMaterial(findMaterialOrThrow("C_9_H_22_N_2"),  0.20);
+    }
+
+    // G10 http://personalpages.to.infn.it/~tosello/EngMeet/ITSmat/SDD/SDD_G10FR4.html
+    // http://pdg.lbl.gov/2002/atomicrpp.pdf
+    mat = isNeeded(materialsToLoad, "G10");
+    if ( mat.doit ){
+      G4Material* G10 =
+        new G4Material( mat.name, 1.7*g/cm3, 2);
+      G10->AddMaterial(findMaterialOrThrow("G4_SILICON_DIOXIDE"), 0.60);//FIXME do e-glass etc...
+      G10->AddMaterial(findMaterialOrThrow("Epotek301"), 0.40);
+    }
+
+    // Superconducting Cable Insulation
+    mat = isNeeded(materialsToLoad, "SCCableInsulation");
+    if ( mat.doit ){
+      G4Material* SCCableInsulation =
+        new G4Material( mat.name, 1.54*g/cm3, 3);
+      SCCableInsulation->AddMaterial(findMaterialOrThrow("G4_KAPTON"), 0.18);
+      SCCableInsulation->AddMaterial(findMaterialOrThrow("Epotek301"), 0.16);
+      SCCableInsulation->AddMaterial(findMaterialOrThrow("G10"), 0.66);
+    }
+
+    //http://sector7.xor.aps.anl.gov/~dufresne/UofM/techinfo/kapton.html
+    //The chemical formula of Kapton is C22H10N205,  its density is 1.43
+    // also see below, do we need more than one?
+
+    // Superconducting Cable
+    mat = isNeeded(materialsToLoad, "SCCable"); // FIXME verify it
+    if ( mat.doit ){
+      G4Material* SCCable =
+        new G4Material( mat.name, 3.95*g/cm3, 3);
+      SCCable->AddMaterial(findMaterialOrThrow("SCCableInsulation"), 0.04);
+      SCCable->AddMaterial(findMaterialOrThrow("AL999Ni001"),        0.43);
+      SCCable->AddMaterial(findMaterialOrThrow("NbTiCu"),            0.53);
     }
 
     mat = isNeeded(materialsToLoad, "IsoButane");
