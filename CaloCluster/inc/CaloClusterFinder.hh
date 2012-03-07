@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloClusterFinder.hh,v 1.1 2012/02/28 22:24:48 gianipez Exp $
+// $Id: CaloClusterFinder.hh,v 1.2 2012/03/07 18:00:38 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/02/28 22:24:48 $
+// $Date: 2012/03/07 18:00:38 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -36,7 +36,8 @@ typedef std::multimap<unsigned int, std::pair<unsigned int, unsigned int> > Clus
 class CaloClusterFinder {
 public :
         CaloClusterFinder(CaloClusterParameters *ccl):
-        HitTimeMin(0.0)
+        HitTimeMin(0.0),
+        HitTimeMax(0.0)
         {
                 _ccl = ccl;
                 looked = new bool *[(unsigned int) _ccl->_nRow];
@@ -52,12 +53,13 @@ public :
                 delete [] looked;
         }
 
-        virtual bool find(ClusterData &cluster, MatrixCaloHit &data , unsigned int row, unsigned int colum ){
+        virtual bool find(ClusterData &cluster, MatrixCaloHit &data , unsigned int row, unsigned int colum, int hitid=-1){
                 return false;
         }
 
         void setFirstHitTime(float &time){
                 HitTimeMin = time;
+                HitTimeMax = time;
         }
 
         virtual void initializeNewSearch(){
@@ -71,6 +73,7 @@ public :
 protected:
         CaloClusterParameters *_ccl;
         float HitTimeMin;
+        float HitTimeMax;
         bool **looked;
 };
 

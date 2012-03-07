@@ -1,9 +1,9 @@
 //
 // General utilities for the calorimeter's studies
 //
-// $Id: CaloClusterUtilities.hh,v 1.1 2012/02/28 22:24:48 gianipez Exp $
+// $Id: CaloClusterUtilities.hh,v 1.2 2012/03/07 18:00:38 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/02/28 22:24:48 $
+// $Date: 2012/03/07 18:00:38 $
 //
 // Original author G. Pezzullo & G. Tassielli & G. Onorato
 //
@@ -95,7 +95,8 @@ typedef std::map<unsigned int, std::map<unsigned int, std::vector<std::pair<Calo
 typedef std::map<unsigned int, MatrixCaloHit> VanesMap;
 
 
-//define the object in which we store a single cluster. the key is the vane's index and the pair contains (row, column)
+//define the object in which we store a single cluster. the key is the row index, and the pair contains the column index and the position of the CaloCrystalHit in the vector
+//stored in the container "vanesMap"
 typedef std::multimap<unsigned int, std::pair<unsigned int, unsigned int> > ClusterData;//row, cloumn, hitId
 
 //parameters used to build the cluster
@@ -117,6 +118,7 @@ public:
 //the following procedure returns the point of impact (3Vector) calculated using the crystal's fraction energy as the weight of the mean
 void cog(CaloCluster &cluster);
 
+CLHEP::Hep3Vector cog_depth(CaloCluster &cluster, double depth);
 
 //on the following we implement an algorithm for the cog which uses the logarithm of the energy as weight (w_{i}). This is not correct, as references show, we need to calculate from simulation an offset to add at each w_{i}
 //void LOGcog(CaloCluster &cluster);

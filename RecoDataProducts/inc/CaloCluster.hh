@@ -1,9 +1,9 @@
 //
 // Calorimeter's data cluster container
 //
-// $Id: CaloCluster.hh,v 1.1 2012/02/28 22:26:01 gianipez Exp $
+// $Id: CaloCluster.hh,v 1.2 2012/03/07 18:00:38 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/02/28 22:26:01 $
+// $Date: 2012/03/07 18:00:38 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -26,72 +26,80 @@
 
 
 namespace mu2e {
-  
-  
-  typedef art::Ptr< CaloCrystalHit>                  CaloCrystalHitPtr;
-  typedef std::vector<CaloCrystalHitPtr>      CaloCrystalHitPtrVector;
-
-  
-  struct CaloCluster{
-
-  private:
 
 
-  public:
-    int                                    _iVane;    //number of vane
-    size_t                              _nCrystal;
-    float                                   _time;    //(ns)
-    //float                                     _dt;    //(ns)
-    float                                 _energy;    //(MeV)
-    CLHEP::Hep3Vector                _impactPoint;    //center of gravity of the cluster in the mu2e frame
-    CLHEP::Hep3Vector           _impactPointError;    //
-    CaloCrystalHitPtrVector      _caloCrystalHits;
-    
- // public:
-    
-    CaloCluster():
-      _iVane(0),
-      _nCrystal(0),
-      _time(0.),
-      //_dt(0.),
-      _energy(0.){
-    }
+typedef art::Ptr< CaloCrystalHit>                  CaloCrystalHitPtr;
+typedef std::vector<CaloCrystalHitPtr>      CaloCrystalHitPtrVector;
 
-    CaloCluster(int                                    iVane):
-      _iVane(iVane),
-      _nCrystal(0),
-      _time(0.),
-      //_dt(0.),
-      _energy(0.){
-    }
 
-    CaloCluster(int                                    iVane,
-		float                                   time,
-		//float                                     dt,
-		float                                 energy,
-		CaloCrystalHitPtrVector              caloCrystalHits):
-      _iVane(iVane),
-      _time(time),
-      //_dt(dt),
-      _energy(energy){
+struct CaloCluster{
 
-            for(CaloCrystalHitPtrVector::iterator it = caloCrystalHits.begin(); it!= caloCrystalHits.end(); ++it){
-                    _caloCrystalHits.push_back(*it);
-            }
-            _nCrystal=caloCrystalHits.size();
-    }
+private:
 
-    void AddHit (CaloCrystalHitPtr &a){
-            _caloCrystalHits.push_back(a);
-            _time*=(float)_nCrystal;
-            ++_nCrystal;
-            _time += a->time();
-            _time /= (float)_nCrystal;
-            _energy += a->energyDep();
-    }
 
-  };
-  
+public:
+        int                                            vaneId;    //number of vane
+        size_t                                    clusterSize;
+        float                                            time;    //(ns)
+        //float                                           _dt;    //(ns)
+        int                                            cogRow;    //running from 0, 1, ... (nCrystalR - 1)
+        int                                         cogColumn;    //running from 0, 1, ... (nCrystalZ - 1)
+        float                                       energyDep;    //(MeV)
+        CLHEP::Hep3Vector                          cog3Vector;    //center of gravity of the cluster in the mu2e frame
+        CLHEP::Hep3Vector                     cog3VectorError;    //
+        CaloCrystalHitPtrVector      caloCrystalHitsPtrVector;
+
+        // public:
+
+        CaloCluster():
+                vaneId(0),
+                clusterSize(0),
+                time(0.),
+                cogRow(0),
+                cogColumn(0),
+                //_dt(0.),
+                energyDep(0.){
+        }
+
+        CaloCluster(int                                    iVane):
+                vaneId(iVane),
+                clusterSize(0),
+                time(0.),
+                cogRow(0),
+                cogColumn(0),
+                //_dt(0.),
+                energyDep(0.){
+        }
+
+        CaloCluster(int                                    iVane,
+                        float                                   time,
+                        //float                                     dt,
+                        float                                 energy,
+                        CaloCrystalHitPtrVector              caloCrystalHits):
+                                vaneId(iVane),
+                                time(time),
+                                //_dt(dt),
+                                energyDep(energy){
+
+                for(CaloCrystalHitPtrVector::iterator it = caloCrystalHits.begin(); it!= caloCrystalHits.end(); ++it){
+                        caloCrystalHitsPtrVector.push_back(*it);
+                }
+                clusterSize=caloCrystalHits.size();
+                cogRow=0;
+                cogColumn=0;
+        }
+
+        void AddHit (CaloCrystalHitPtr &a){
+                caloCrystalHitsPtrVector.push_back(a);
+                time*=(float)clusterSize;
+                ++clusterSize;
+                time += a->time();
+                time /= (float)clusterSize;
+                energyDep += a->energyDep();
+        }
+
+};
+
 } // namespace mu2e
 
 #endif /* RecoDataProducts_CaloCluster_hh */

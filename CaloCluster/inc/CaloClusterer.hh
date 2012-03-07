@@ -1,9 +1,9 @@
 //
 // Functions used to build the clusters
 //
-// $Id: CaloClusterer.hh,v 1.1 2012/02/28 22:24:48 gianipez Exp $
+// $Id: CaloClusterer.hh,v 1.2 2012/03/07 18:00:38 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/02/28 22:24:48 $
+// $Date: 2012/03/07 18:00:38 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -87,8 +87,8 @@ public:
                 }
         }
 
-        bool find(ClusterData &cluster, MatrixCaloHit &data , unsigned int row, unsigned int colum){
-                return _ccf->find(cluster, data , row, colum);
+        bool find(ClusterData &cluster, MatrixCaloHit &data , unsigned int row, unsigned int colum,int hitid=-1 ){
+                return _ccf->find(cluster, data , row, colum, hitid);
         }
 
         void setFirstHitTime(float &time){

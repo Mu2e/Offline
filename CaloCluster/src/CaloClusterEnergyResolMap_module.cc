@@ -1,9 +1,9 @@
 //
 // Visualization of the energy resolution  on the rows and on the columns
 //
-// $Id: CaloClusterEnergyResolMap_module.cc,v 1.2 2012/03/01 01:18:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/01 01:18:22 $
+// $Id: CaloClusterEnergyResolMap_module.cc,v 1.3 2012/03/07 18:00:38 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2012/03/07 18:00:38 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -58,6 +58,7 @@
 #include "TDirectory.h"
 #include "TNtuple.h"
 #include "TH2D.h"
+#include "TF1.h"
 #include "TCanvas.h"
 #include "THStack.h"
 #include "TGraph.h"
@@ -97,6 +98,7 @@ struct elecData{
         unsigned int _Nseed;
         CLHEP::Hep3Vector _cryOrigin;
         CLHEP::Hep3Vector _impMom3Vec;
+        double _cryTime;
 
         bool operator<( const elecData other) const{
                 return ( _impTime< other._impTime);
@@ -114,6 +116,7 @@ struct elecData{
                 _Nseed     = other._Nseed;
                 _cryOrigin = other._cryOrigin;
                 _impMom3Vec =other._impMom3Vec;
+                _cryTime    = other._cryTime;
                 return *this;
         }
         elecData():
@@ -123,55 +126,15 @@ struct elecData{
         }
 };
 
-struct cluData{
-        double _cluEnergy;
-        double _cluTime;
-        double _impTime;
-        double _impMomentum;
-        //CLHEP::Hep3Vector _cluCog;
-        CLHEP::Hep3Vector _impPos;
-       // CLHEP::Hep3Vector _impPosCryFrame;
-        //CLHEP::Hep3Vector _cryOrigin;
-        CLHEP::Hep3Vector _impMom3Vec;
-
-        bool operator<( const cluData other) const{
-                return ( _impTime< other._impTime);
-        }
-        cluData & operator=(const cluData& other) {
-                _cluEnergy = other._cluEnergy;
-                _cluTime   = other._cluTime;
-                _impTime = other._impTime;
-                _impMomentum = other._impMomentum;
-                //_cluCog    = other._cluCog;
-                _impPos = other._impPos;
-                //_impPosCryFrame = other._impPosCryFrame;
-                //_cryOrigin = other._cryOrigin;
-                _impMom3Vec =other._impMom3Vec;
-                return *this;
-        }
-        cluData():
-                _impTime(1e10),
-                _impMomentum(0.0){
-        }
-};
-
-
-
-
 //the key is the the vane
 typedef std::map<unsigned int,std::map<unsigned int, elecData > > ElecMap;
-
-//the first key is the row index, the second is the column index
-typedef std::map<unsigned int, std::map<unsigned int, std::map<unsigned int, cluData > > > inCluMap;
-
-typedef std::map<unsigned int, inCluMap > CluMap;
 
 static int ncalls(0);
 
 class CaloClusterEnergyResolMap : public art::EDAnalyzer {
 public:
         explicit CaloClusterEnergyResolMap(fhicl::ParameterSet const& pset):
-        _diagLevel(pset.get<int>("diagLevel",0)),
+        _diagLevel(pset.get<int>("diagLevel",1)),
         _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
         _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
         _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
@@ -225,12 +188,32 @@ public:
         _hTHistTimeMultiDIO(0),
         _hTHistEnergyMultiSignal(0),
         _hTHistTimeMultiSignal(0),
+        _hTHistDeltaEnergyRowProj(0),
+        _hTHistDeltaEnergyColumnProj(0),
+        _hTHistDeltaEnergyRecRowProj(0),
+        _hTHistDeltaEnergyRecColumnProj(0),
+        _sigmaVsRow(0),
+        _sigmaVsColumn(0),
+        _EpeakVsRow(0),
+        _EpeakVsColumn(0),
+        _hTHistThetaW(0),
+        _hTHistThetaW_v0(0),
+        _hTHistThetaW_v1(0),
+        _hTHistThetaW_v2(0),
+        _hTHistThetaW_v3(0),
+        _hTHistThetaV(0),
+        _hTHistThetaV_v0(0),
+        _hTHistThetaV_v1(0),
+        _hTHistThetaV_v2(0),
+        _hTHistThetaV_v3(0),
+        _hTHistCryVsStepPointTime(0),
 //        _hTHistEnergyCluMulti(0),
 //        _hTHistEnergyMulti(0),
 //        _hTHistTimeCluMulti(0),
 //        _hTHistTimeMulti(0),
         //_hTHistTest(0),
         _EnergyClusterCut(pset.get<double>("energyClusterCut",60.)),//MeV
+        _binWidth(0.5),
         _application(0),
         _directory(0)
         {
@@ -323,10 +306,30 @@ private:
         TH1D* _hTHistTimeMultiDIO;
         TH1D* _hTHistEnergyMultiSignal;
         TH1D* _hTHistTimeMultiSignal;
-
-
+        TH1D* _hTHistDeltaEnergyRowProj;
+        TH1D* _hTHistDeltaEnergyColumnProj;
+        TH1D* _hTHistDeltaEnergyRecRowProj;
+        TH1D* _hTHistDeltaEnergyRecColumnProj;
+        TH1D* _sigmaVsRow;
+        TH1D* _sigmaVsColumn;
+        TH1D* _EpeakVsRow;
+        TH1D* _EpeakVsColumn;
+        TH1D* _hTHistMomDotVaneNorm;
+        TH1D* _hTHistMomRecDotVaneNorm;
+        TH1D* _hTHistThetaW;
+        TH1D* _hTHistThetaW_v0;
+        TH1D* _hTHistThetaW_v1;
+        TH1D* _hTHistThetaW_v2;
+        TH1D* _hTHistThetaW_v3;
+        TH1D* _hTHistThetaV;
+        TH1D* _hTHistThetaV_v0;
+        TH1D* _hTHistThetaV_v1;
+        TH1D* _hTHistThetaV_v2;
+        TH1D* _hTHistThetaV_v3;
+        TH1D*  _hTHistCryVsStepPointTime;
         //TH1D* _hTHistTest;
         double _EnergyClusterCut;
+        double _binWidth;//bin / MeV
 
         std::auto_ptr<MCCaloUtilities> CaloManager;
 
@@ -403,22 +406,27 @@ void CaloClusterEnergyResolMap::analyze(art::Event const & evt ) {
                 // cout << "This should be done only in the first event" << endl;
                 art::ServiceHandle<art::TFileService> tfs;
 
-                _hTHistDeltaEnergy_row   = tfs->make<TH2D>( "DeltaEnergy_row", "DeltaEnergy;row index;Eseed-Eclu [MeV]", cg->nCrystalR(), 0, cg->nCrystalR() , 320, -50., 110.);
-                _hTHistDeltaEnergyRec_row= tfs->make<TH2D>( "DeltaEnergyRec_row", "DeltaEnergyRec;row index;Eseed-Eclu [MeV]", cg->nCrystalR(), 0, cg->nCrystalR(), 320, -50., 110.);
-                _hTHistDeltaEnergy_column   = tfs->make<TH2D>( "DeltaEnergy_column", "DeltaEnergy;column index;Eseed-Eclu [MeV]", cg->nCrystalZ(), 0, cg->nCrystalZ() , 320, -50., 110.);
-                _hTHistDeltaEnergyRec_column= tfs->make<TH2D>( "DeltaEnergyRec_column", "DeltaEnergyRec;column index;Eseed-Eclu [MeV]", cg->nCrystalZ(), 0, cg->nCrystalZ() , 320, -50., 110.);
+                art::TFileDirectory impAngles = tfs->mkdir("ImpactAngles");
+                art::TFileDirectory multClu = tfs->mkdir("MultClu");
+                art::TFileDirectory trkInfo = tfs->mkdir("TrkInfo");
 
-                _hTHistDeltaPmag  = tfs->make<TH1D>( "TrkDeltaPmag", "TrkDeltaPmag;deltaP/Pfirst [%];entries", 2000 , 0., 0.01);
-                _hTHistDeltaPitch = tfs->make<TH1D>( "TrkDeltaPitch","TrkDeltaPitch;deltaPitch/pitchFirst [%];entries", 2000 , 0., 0.01);
 
-                _hTHistDeltaPfirst = tfs->make<TH1D>( "TrkPfirst", "momFirst; momentum [MeV];entries", 2000 , 50., 110.0);
-                _hTHistDeltaPlast  = tfs->make<TH1D>( "TrkPlast","momLast ; momentum [MeV];entries", 2000 , 50., 110.0);
+                _hTHistDeltaEnergy_row   = tfs->make<TH2D>( "DeltaEnergy_row", "DeltaEnergy;row index;Eseed-Eclu [MeV]", cg->nCrystalR(), 0, cg->nCrystalR() , 160 / _binWidth, -50., 110.);
+                _hTHistDeltaEnergyRec_row= tfs->make<TH2D>( "DeltaEnergyRec_row", "DeltaEnergyRec;row index;Eseed-Eclu [MeV]", cg->nCrystalR(), 0, cg->nCrystalR(),  160 / _binWidth, -50., 110.);
+                _hTHistDeltaEnergy_column   = tfs->make<TH2D>( "DeltaEnergy_column", "DeltaEnergy;column index;Eseed-Eclu [MeV]", cg->nCrystalZ(), 0, cg->nCrystalZ() ,  160 / _binWidth, -50., 110.);
+                _hTHistDeltaEnergyRec_column= tfs->make<TH2D>( "DeltaEnergyRec_column", "DeltaEnergyRec;column index;Eseed-Eclu [MeV]", cg->nCrystalZ(), 0, cg->nCrystalZ() ,  160 / _binWidth, -50., 110.);
 
-                _hTHistDeltaEnergyClu   = tfs->make<TH1D>( "DeltaEnergyClu", "DeltaEnergyClu; E_{seed} - Energy_{cluster} [MeV];entries", 320,  -50.0, 110.);
-                _hTHistDeltaEnergyCluRec= tfs->make<TH1D>( "DeltaEnergyCluRec","DeltaEnergyCluRec ; E_{seed} - Energy_{cluster} [MeV];entries", 320, -50.0, 110.);
+                _hTHistDeltaPmag  = trkInfo.make<TH1D>( "TrkDeltaPmag", "TrkDeltaPmag;deltaP/Pfirst [%];Entries [#]", 2000 , 0., 0.01);
+                _hTHistDeltaPitch = trkInfo.make<TH1D>( "TrkDeltaPitch","TrkDeltaPitch;deltaPitch/pitchFirst [%];Entries [#]", 2000 , 0., 0.01);
 
-                _hTHistThetaZ      = tfs->make<TH1D>( "CosThetaZ", "CosThetaZ; cos#theta [MeV];entries", 720 , -180., 180.0);
-                _hTHistThetaZRec      = tfs->make<TH1D>( "CosThetaZRec", "CosThetaZRec; cos#theta [MeV];entries",720 , -180., 180.0);
+                _hTHistDeltaPfirst = trkInfo.make<TH1D>( "TrkPfirst", "momFirst; momentum [MeV];Entries [#]", 2000 , 50., 110.0);
+                _hTHistDeltaPlast  = trkInfo.make<TH1D>( "TrkPlast","momLast ; momentum [MeV];Entries [#]", 2000 , 50., 110.0);
+
+                _hTHistDeltaEnergyClu   = tfs->make<TH1D>( "DeltaEnergyClu", "DeltaEnergyClu; E_{seed} - Energy_{cluster} [MeV];Entries [#]", 320,  -50.0, 110.);
+                _hTHistDeltaEnergyCluRec= tfs->make<TH1D>( "DeltaEnergyCluRec","DeltaEnergyCluRec ; E_{seed} - Energy_{cluster} [MeV];Entries [#]", 320, -50.0, 110.);
+
+                _hTHistThetaZ         = impAngles.make<TH1D>( "CosThetaZ", "CosThetaZ; cos#theta [MeV];Entries [#]", 720 , -180., 180.0);
+                _hTHistThetaZRec      = impAngles.make<TH1D>( "CosThetaZRec", "CosThetaZRec; cos#theta [MeV];Entries [#]",720 , -180., 180.0);
 
                 _hTHistPhi         = tfs->make<TH1D>( "CosPhi","CosPhi ; cos#phi ;entries", 720 , -180., 180.0);
                 _hTHistPhiRec         = tfs->make<TH1D>( "CosPhiRec","CosPhiRec ; cos#phi ;entries", 720 , -180., 180.0);
@@ -433,30 +441,153 @@ void CaloClusterEnergyResolMap::analyze(art::Event const & evt ) {
 
                 _hTHistMulti          = tfs->make<TH2D>( "MultiSeedDistr","MultiSeedDistr ; row index ; column index",  cg->nCrystalR(), 0, cg->nCrystalR(), cg->nCrystalZ(), 0, cg->nCrystalZ() );
 
-                _hTHistEnergyCluMultiDIOdio = tfs->make<TH1D>( "EnergyCluMultiDIOdio","EnergyCluMultiDIOdio ; E_{cluster} [MeV];entries", 1000 , 0., 250.0);
-                _hTHistEnergyMultiDIOdio    = tfs->make<TH1D>( "EnergyMultiDIOdio","EnergyMultiDIOdio ; E_{seed} ;entries", 440 , 0., 110.0);
-                _hTHistTimeCluMultiDIOdio   = tfs->make<TH1D>( "TimeCluMultiDIOdio","TimeCluMultiDIOdio ; Time_{cluster} [ns] ;entries", 300 , -0., 3000.0);
-                _hTHistTimeMultiDIOdio      = tfs->make<TH1D>( "TimeMultiDIOdio","TimeMultiDIOdio ; Time_{seed} [ns] ;entries", 300 , 0., 3000.0);
+                _hTHistEnergyCluMultiDIOdio = multClu.make<TH1D>( "EnergyCluMultiDIOdio","EnergyCluMultiDIOdio ; E_{cluster} [MeV];Entries [#]", 1000 , 0., 250.0);
+                _hTHistEnergyMultiDIOdio    = multClu.make<TH1D>( "EnergyMultiDIOdio","EnergyMultiDIOdio ; E_{seed} ;Entries [#]", 440 , 0., 110.0);
+                _hTHistTimeCluMultiDIOdio   = multClu.make<TH1D>( "TimeCluMultiDIOdio","TimeCluMultiDIOdio ; Time_{cluster} [ns] ;Entries [#]", 300 , -0., 3000.0);
+                _hTHistTimeMultiDIOdio      = multClu.make<TH1D>( "TimeMultiDIOdio","TimeMultiDIOdio ; Time_{seed} [ns] ;Entries [#]", 300 , 0., 3000.0);
 
-                _hTHistEnergyCluMultiDIOsignal = tfs->make<TH1D>( "EnergyCluMultiDIOsignal","EnergyCluMultiDIOsignal ; E_{cluster} [MeV];entries", 1000 , 0., 250.0);
-                _hTHistEnergyMultiDIOsignal    = tfs->make<TH1D>( "EnergyMultiDIOsignal","EnergyMultiDIOsignal ; E_{seed} ;entries", 440 , 0., 110.0);
-                _hTHistTimeCluMultiDIOsignal   = tfs->make<TH1D>( "TimeCluMultiDIOsignal","TimeCluMultiDIOsignal ; Time_{cluster} [ns] ;entries", 300 , -0., 3000.0);
-                _hTHistTimeMultiDIOsignal      = tfs->make<TH1D>( "TimeMultiDIOsignal","TimeMultiDIOsignal ; Time_{seed} [ns] ;entries", 300 , 0., 3000.0);
+                _hTHistEnergyCluMultiDIOsignal = multClu.make<TH1D>( "EnergyCluMultiDIOsignal","EnergyCluMultiDIOsignal ; E_{cluster} [MeV];Entries [#]", 1000 , 0., 250.0);
+                _hTHistEnergyMultiDIOsignal    = multClu.make<TH1D>( "EnergyMultiDIOsignal","EnergyMultiDIOsignal ; E_{seed} ;Entries [#]", 440 , 0., 110.0);
+                _hTHistTimeCluMultiDIOsignal   = multClu.make<TH1D>( "TimeCluMultiDIOsignal","TimeCluMultiDIOsignal ; Time_{cluster} [ns] ;Entries [#]", 300 , -0., 3000.0);
+                _hTHistTimeMultiDIOsignal      = multClu.make<TH1D>( "TimeMultiDIOsignal","TimeMultiDIOsignal ; Time_{seed} [ns] ;Entries [#]", 300 , 0., 3000.0);
 
-                _hTHistEnergyMultiDIO    = tfs->make<TH1D>( "EnergyMultiDIO","EnergyMultiDIO ; E_{seed} ;entries", 440 , 0., 110.0);
-                _hTHistTimeMultiDIO      = tfs->make<TH1D>( "TimeMultiDIO","TimeMultiDIO ; Time_{seed} [ns] ;entries", 300 , 0., 3000.0);
+                _hTHistEnergyMultiDIO          = multClu.make<TH1D>( "EnergyMultiDIO","EnergyMultiDIO ; E_{seed} ;Entries [#]", 440 , 0., 110.0);
+                _hTHistTimeMultiDIO            = multClu.make<TH1D>( "TimeMultiDIO","TimeMultiDIO ; Time_{seed} [ns] ;Entries [#]", 300 , 0., 3000.0);
 
-                _hTHistEnergyMultiSignal    = tfs->make<TH1D>( "EnergyMultiSignal","EnergyMultiSignal ; E_{seed} ;entries", 440 , 0., 110.0);
-                _hTHistTimeMultiSignal      = tfs->make<TH1D>( "TimeMultiSignal","TimeMultiSignal ; Time_{seed} [ns] ;entries", 300 , 0., 3000.0);
-               // _hTHistTest        = tfs->make<TH1D>( "CosPhiRecProva","CosPhiRecProva ; cos#phi ;entries", 720 , -180., 180.0);
+                _hTHistEnergyMultiSignal       = multClu.make<TH1D>( "EnergyMultiSignal","EnergyMultiSignal ; E_{seed} ;Entries [#]", 440 , 0., 110.0);
+                _hTHistTimeMultiSignal         = multClu.make<TH1D>( "TimeMultiSignal","TimeMultiSignal ; Time_{seed} [ns] ;Entries [#]", 300 , 0., 3000.0);
+
+                _hTHistMomDotVaneNorm          = impAngles.make<TH1D>( "MomDotVaneNorm","MomDotVaneNorm ; (#vec{p}, #hat{n}) / |#vec{p}| ;Entries [#]", 720 , -180., 180.0);
+                _hTHistMomRecDotVaneNorm       = impAngles.make<TH1D>( "MomRecDotVaneNorm","MomRecDotVaneNorm ; (#vec{p}, #hat{n}) / |#vec{p}| ;Entries [#]", 720 , -180., 180.0);
+
+                _hTHistThetaW                  = impAngles.make<TH1D>( "ThetaW","ThetaW ; arcTan(#vec{p_{u}}/(#vec{p}, #hat{n}) ) [deg];Entries [#]", 720 , -180., 180.0);
+                _hTHistThetaW_v0               = impAngles.make<TH1D>( "ThetaW_v0","ThetaW_v0 ;  arcTan(#vec{p_{u}}/(#vec{p}, #hat{n}) ) [deg];Entries [#]", 720 , -180., 180.0);
+                _hTHistThetaW_v1               = impAngles.make<TH1D>( "ThetaW_v1","ThetaW_v1 ; arcTan(#vec{p_{u}}/(#vec{p}, #hat{n}) ) [deg];Entries [#]", 720 , -180., 180.0);
+                _hTHistThetaW_v2               = impAngles.make<TH1D>( "ThetaW_v2","ThetaW_v2 ;  arcTan(#vec{p_{u}}/(#vec{p}, #hat{n}) ) [deg];Entries [#]", 720 , -180., 180.0);
+                _hTHistThetaW_v3               = impAngles.make<TH1D>( "ThetaW_v3","ThetaW_v3 ;  arcTan(#vec{p_{u}}/(#vec{p}, #hat{n}) ) [deg];Entries [#]", 720 , -180., 180.0);
+                _hTHistThetaV                  = impAngles.make<TH1D>( "ThetaV","ThetaV ; arcTan(#vec{p_{v}}/(#vec{p}, #hat{n}) ) [deg];Entries [#]", 720 , -180., 180.0);
+                _hTHistThetaV_v0               = impAngles.make<TH1D>( "ThetaV_v0","ThetaV_v0 ; arcTan(#vec{p_{v}}/(#vec{p}, #hat{n}) ) [deg];Entries [#]", 720 , -180., 180.0);
+                _hTHistThetaV_v1               = impAngles.make<TH1D>( "ThetaV_v1","ThetaV_v1 ;arcTan(#vec{p_{v}}/(#vec{p}, #hat{n}) ) [deg];Entries [#]", 720 , -180., 180.0);
+                _hTHistThetaV_v2               = impAngles.make<TH1D>( "ThetaV_v2","ThetaV_v2 ;arcTan(#vec{p_{v}}/(#vec{p}, #hat{n}) ) [deg];Entries [#]", 720 , -180., 180.0);
+                _hTHistThetaV_v3               = impAngles.make<TH1D>( "ThetaV_v3","ThetaV_v3 ; arcTan(#vec{p_{v}}/(#vec{p}, #hat{n}) ) [deg];Entries [#]", 720 , -180., 180.0);
+                _hTHistCryVsStepPointTime      = tfs->make<TH1D>( "CryVsStepPointTime","CryVsStepPointTime ; t_{Cry} - t_{Step} [ns];Entries", 2000 , -1000.0, 1000.0);
+                // _hTHistTest        = tfs->make<TH1D>( "CosPhiRecProva","CosPhiRecProva ; cos#phi ;Entries [#]", 720 , -180., 180.0);
+
+                //__binWidth = _hTHistDeltaEnergy_row->GetYaxis()->GetBinWidth(1);
+
         }
 
         doCalorimeter(evt, _skipEvent);
 
 } // end of analyze
 
-void CaloClusterEnergyResolMap::endJob() {
 
+double logNormale(double *x, double *par){
+        double y = 0.0;
+
+        //con il valore par[4]=-1 si ha la logNormale con coda a sinistra
+        double tempx = (-par[1]+x[0]);
+
+        //e' l'espressione del valore della x in cui si ha il max della logN()
+        // double x_peak = par[1] - TMath::Exp(par[2]-std::pow(par[3],2));
+
+        //con questo if() elimino i problemi che si avrebbero con un agomento del log() minori di zero
+        if(tempx > 0){
+                y = TMath::Gaus(TMath::Log(tempx), par[2], par[3], kTRUE) / tempx ;
+                y += par[4];
+        }
+
+
+
+        y*=par[0];//fisso il valore della normalizzazione, ossia par[0] e' il valore dell'integrale della funzione in tutto il suo campo di esistenza
+        y *= par[5];
+        return y;
+}
+
+void CaloClusterEnergyResolMap::endJob() {
+        art::ServiceHandle<GeometryService> geom;
+        GeomHandle<Calorimeter> cg;
+
+        art::ServiceHandle<art::TFileService> tfs;
+        art::TFileDirectory dirRow = tfs->mkdir("DirRow");
+        art::TFileDirectory dirColumn = tfs->mkdir("DirColumn");
+
+        _sigmaVsRow            = dirRow.make<TH1D>( "sigmaVsRow", "sigmaVsRow; row index; #sigma [MeV]", cg->nCrystalR(), 0.,cg->nCrystalR() );
+        _sigmaVsColumn         = dirColumn.make<TH1D>( "sigmaVsColumn","sigmaVsColumn ; column index;  #sigma [MeV]", cg->nCrystalZ(), 0. ,cg->nCrystalZ() );
+        _EpeakVsRow            = dirRow.make<TH1D>( "EpeakVsRow", "EpeakVsRow; row index; E_{peak} [MeV]", cg->nCrystalR(), 0.,cg->nCrystalR() );
+        _EpeakVsColumn         = dirColumn.make<TH1D>( "EpeakVsColum","EpeakVsColum ; column index;  E_{peak} [MeV]", cg->nCrystalZ(), 0. ,cg->nCrystalZ() );
+
+        TF1 *fitLog = new TF1("fitLog", logNormale, -50., 110., 6);
+        fitLog->SetParameters(500., 0.1, 1., 2.);
+
+        for( int i = 1; i<= _hTHistDeltaEnergy_row->GetNbinsX(); ++i){
+
+                _hTHistDeltaEnergyRowProj= dirRow.make<TH1D>(Form("row_%d",i),Form("row_%d",i),_hTHistDeltaEnergy_row->GetNbinsY(),-50,110);
+
+                _hTHistDeltaEnergyRowProj = _hTHistDeltaEnergy_row->ProjectionY(Form("row_%d",i), i, i);
+                fitLog->SetParameters(_hTHistDeltaEnergyRowProj->GetEntries(), 0.1, 1., 2., 0., _binWidth);
+                fitLog->FixParameter(5, _binWidth);
+                fitLog->SetParLimits(4, 0., _hTHistDeltaEnergyRowProj->GetMaximum() / _binWidth );
+                fitLog->SetParLimits(3, 0., 6.);
+
+                _hTHistDeltaEnergyRowProj->Fit("fitLog", "L");
+                _hTHistDeltaEnergyRowProj->Fit("fitLog", "L");
+                _hTHistDeltaEnergyRowProj->Fit("fitLog", "L");
+                _sigmaVsRow->SetBinContent(i, fitLog->GetParameter(3) );
+                _sigmaVsRow->SetBinError(i, fitLog->GetParError(3) );
+                double sigma = fitLog->GetParameter(3);
+                double mean = fitLog->GetParameter(2);
+                double shift = fitLog->GetParameter(1);
+
+                double Dshift = fitLog->GetParError(1);
+                double Dsigma = fitLog->GetParError(3);
+                double Dmean = fitLog->GetParError(2);
+
+                double Ep = exp(-pow(sigma, 2) )*(exp(mean) +  shift*exp(pow(sigma, 2) ) );
+                double deltaEp = Dshift + exp(mean)*exp(-pow(sigma, 2) )*(Dmean + 2.0*sigma*Dsigma);
+
+                _EpeakVsRow->SetBinContent(i, Ep);
+                _EpeakVsRow->SetBinError(i, deltaEp);
+
+        }
+
+        for( int i = 1; i<= _hTHistDeltaEnergy_column->GetNbinsX(); ++i){
+
+                        _hTHistDeltaEnergyColumnProj= dirColumn.make<TH1D>(Form("column_%d",i),Form("column_%d",i),_hTHistDeltaEnergy_column->GetNbinsY(),-50,110);
+
+                        _hTHistDeltaEnergyColumnProj = _hTHistDeltaEnergy_column->ProjectionY(Form("column_%d",i), i, i);
+                        fitLog->SetParameters(_hTHistDeltaEnergyColumnProj->GetEntries(), 0.1, 1., 2.);
+
+                        fitLog->SetParameters(_hTHistDeltaEnergyColumnProj->GetEntries(), 0.1, 1., 2., 0., _binWidth);
+                        fitLog->FixParameter(5, _binWidth);
+                        fitLog->SetParLimits(4, 0., _hTHistDeltaEnergyColumnProj->GetMaximum() / _binWidth );
+                        fitLog->SetParLimits(3, 0., 6.);
+
+
+                        _hTHistDeltaEnergyColumnProj->Fit("fitLog", "L");
+                        _hTHistDeltaEnergyColumnProj->Fit("fitLog", "L");
+                        _hTHistDeltaEnergyColumnProj->Fit("fitLog", "L");
+                        _sigmaVsColumn->SetBinContent(i, fitLog->GetParameter(3) );
+                        _sigmaVsColumn->SetBinError(i, fitLog->GetParError(3) );
+
+                        double sigma = fitLog->GetParameter(3);
+                        double mean = fitLog->GetParameter(2);
+                        double shift = fitLog->GetParameter(1);
+
+                        double Dshift = fitLog->GetParError(1);
+                        double Dsigma = fitLog->GetParError(3);
+                        double Dmean = fitLog->GetParError(2);
+
+                        double Ep = exp(-pow(sigma, 2) )*(exp(mean) +  shift*exp(pow(sigma, 2) ) );
+                        double deltaEp = Dshift + exp(mean)*exp(-pow(sigma, 2) )*(Dmean + 2.0*sigma*Dsigma);
+
+                        _EpeakVsColumn->SetBinContent(i, Ep);
+                        _EpeakVsColumn->SetBinError(i, deltaEp);
+        //                        _hTHistDeltaEnergyColumnProj(0);
+        //                _h1 = dir1.make<TH1F>("h1","h1",10,0,10);
+        //                _hTHistDeltaEnergyRowProj;
+        //                _hTHistDeltaEnergyColumnProj;
+        }
 }
 
 
@@ -464,7 +595,7 @@ void CaloClusterEnergyResolMap::endJob() {
 void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
 
-        if ( _diagLevel > 0 ) cout << "MakeCaloCluster: produce() begin" << endl;
+        if ( _diagLevel < 0 ) cout << "MakeCaloCluster: produce() begin" << endl;
 
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
@@ -513,6 +644,10 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
         int NtrkCut =0;
         int NtrkTot = 0;
 
+        if ( _diagLevel < 0 ){
+                cout<<"-------------------- 1 -----------------------"<<endl;
+                cout<<"start counting & mapping generated electrons..."<<endl;
+        }
         //mapping &counting the electrons with quality cuts in the TRK
         for ( genEltrk_it = genEltrks->begin(); genEltrk_it!= genEltrks->end(); ++genEltrk_it ){
                 ++NtrkTot;
@@ -558,12 +693,10 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                         NtrkCut++;// # of electrons at the entrance of the TRK which have trkMomCut MeV of kinetic energy and which will light at least 20 straws
                         if(!findTrkId(tmpV, iEltrk.getTrkID().asUint() ) ){
 
-                                //cout<<"faccio il puschback in tmpV..."<<endl;
                                 tmpV.push_back( iEltrk.getTrkID().asUint() );
                                 if ( iEltrk.isConversionEl() ) {
                                         tmpVsignal.push_back( iEltrk.getTrkID().asUint() );
                                 }
-                                //cout<<"--------> puschback in tmpV eseguito..."<<endl;
 
                         }
 
@@ -572,7 +705,13 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
 
         }//end TRK mapping
-        //cout <<"NtrkCut = " <<NtrkCut<<endl;
+        if ( _diagLevel < 0 ){
+                cout<<"-------------------- 2 -----------------------"<<endl;
+
+                       cout<<"end counting & mapping generated electrons..."<<endl;
+                       cout <<"NtrkCut = " <<NtrkCut<<endl;
+
+        }
 
         if (NtrkTot==0) return;
 
@@ -585,28 +724,37 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
         }
 
         ElecMap elecMap;
-        CluMap elecMapMulti;
 
         //adesso leggo i cluster che il mio evento ha generato
         if(caloClusters->size()>0 ){
+                if ( _diagLevel < 0 ){
+                               cout<<"-------------------- 3 -----------------------"<<endl;
+                }
                 int iVane;
                 for(size_t icl=0; icl<caloClusters->size(); ++icl){
 
                         double eDepClu = 0.;
 
                         CaloCluster const& clu = (*caloClusters).at(icl);
-                        eDepClu = clu._energy;
-                        iVane = clu._iVane;
+                        eDepClu = clu.energyDep;
+                        iVane = clu.vaneId;
 
-                        CaloCrystalHitPtrVector caloClusterHits = clu._caloCrystalHits;
+                        CaloCrystalHitPtrVector caloClusterHits = clu.caloCrystalHitsPtrVector;
                         if(eDepClu >= _EnergyClusterCut){
-                                //cout <<"eDepClu >_energyClusterCut"<< endl;
 
-                                // std::vector<elecData> vecElecData;
+                                if(_diagLevel < 0){
+                                        cout <<"eDepClu >energyDepClusterCut"<< endl;
+                                }
+
                                 std::map<unsigned int, unsigned int> seedMap, signalMap;
 
                                 for(size_t i=0; i<caloClusterHits.size(); ++i){
+                                        if ( _diagLevel < 0 ){
+                                                                       cout<<"-------------------- 3."<<i <<" -----------------------"<<endl;
+                                        }
                                         CaloCrystalHit const& hit = *(caloClusterHits.at(i));
+
+                                        double CryTime = hit.time();
 
                                         std::vector<art::Ptr<CaloHit> > const& ROIds = hit.readouts();
                                         if(ROIds.size()<1 ) continue;
@@ -616,13 +764,16 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
                                         PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
                                         size_t nHitsPerCrystal = mcptr.size();
-                                        //size_t tmpJ2 = -1;
 
                                         for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
 
-                                                //cout<< "Start loop..."<< "j2 = "<< j2<<endl;
+                                                if(_diagLevel < 0){
+                                                        cout<<"-------------------- 3."<<i <<"."<< j2<<"-----------------------"<<endl;
+                                                }
 
                                                 StepPointMC const& mchit = *mcptr[j2];
+
+                                                _hTHistCryVsStepPointTime->Fill(CryTime- mchit.time());
 
                                                 // The simulated particle that made this hit.
                                                 SimParticleCollection::key_type trackId(mchit.trackId());
@@ -652,59 +803,37 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                                 if(searchSignal){
                                                                         signalMap[trackId.asUint()] = 1;
                                                                 }
-                                                                elecMap[iVane][trackId.asUint()]._cluEnergy = clu._energy;
-                                                                elecMap[iVane][trackId.asUint()]._cluTime = clu._time;
+                                                                elecMap[iVane][trackId.asUint()]._cluEnergy = clu.energyDep;
+                                                                elecMap[iVane][trackId.asUint()]._cluTime = clu.time;
                                                                 elecMap[iVane][trackId.asUint()]._impTime = mchit.time();
                                                                 elecMap[iVane][trackId.asUint()]._impEnergy = mchit.momentum().mag();
-                                                                elecMap[iVane][trackId.asUint()]._cluCog = clu._impactPoint;
+                                                                elecMap[iVane][trackId.asUint()]._cluCog = clu.cog3Vector;
                                                                 elecMap[iVane][trackId.asUint()]._impPos = mchit.position();
                                                                 elecMap[iVane][trackId.asUint()]._impPosCryFrame = cryFrame;
                                                                 elecMap[iVane][trackId.asUint()]._row    = row;
                                                                 elecMap[iVane][trackId.asUint()]._column = column;
                                                                 elecMap[iVane][trackId.asUint()]._cryOrigin  = cg->getCrystalOriginByRO( thehit.id() );
                                                                 elecMap[iVane][trackId.asUint()]._impMom3Vec = mchit.momentum();
-
-                                                                //                                                                cout<< "###################"<<endl;
-                                                                //                                                                cout<< "idVande = "<< iVane<<endl;
-                                                                //                                                                cout << "cluX = "<<elecMap[iVane][trackId.asUint()]._impPos.getX()<<endl;
-                                                                //                                                                cout << "cluY = "<<elecMap[iVane][trackId.asUint()]._impPos.getY()<<endl;
-                                                                //                                                                cout << "cluZ = "<<elecMap[iVane][trackId.asUint()]._impPos.getZ()<<endl;
-                                                                //                                                                cout<< "###################"<<endl;
+                                                                elecMap[iVane][trackId.asUint()]._cryTime = CryTime;
+                                                                if(_diagLevel < 0){
+                                                                        cout<< "###################"<<endl;
+                                                                        cout<< "idVande = "<< iVane<<endl;
+                                                                        cout << "cluX = "<<elecMap[iVane][trackId.asUint()]._impPos.getX()<<endl;
+                                                                        cout << "cluY = "<<elecMap[iVane][trackId.asUint()]._impPos.getY()<<endl;
+                                                                        cout << "cluZ = "<<elecMap[iVane][trackId.asUint()]._impPos.getZ()<<endl;
+                                                                        cout<< "###################"<<endl;
+                                                                }
                                                         }
-//                                                        cout<<"----------- step 1 --------------"<<endl;
-//
-//                                                        cout<<"----------- step 2:--------------"<<endl;
-//
-//                                                        cout<<"----------- step 2_bis: seed found --------------"<<endl;
-
-//                                                        bool search = false;
-//                                                        for(unsigned int i=0; i!= trkVecTot.size(); ++i){
-//                                                                if(trkVecTot.at(i) == trackId.asUint() ){
-//                                                                        search = true;
-//                                                                }
-//                                                        }
-//
-//                                                        if( search ){
-//                                                                elecMapMulti[iVane][row][column][trackId.asUint()]._cluEnergy  = clu._energy;
-//                                                                elecMapMulti[iVane][row][column][trackId.asUint()]._cluTime    = clu._time;
-//                                                                elecMapMulti[iVane][row][column][trackId.asUint()]._impTime    = mchit.time();
-//                                                                elecMapMulti[iVane][row][column][trackId.asUint()]._impMomentum = mchit.momentum().mag();
-//                                                                elecMapMulti[iVane][row][column][trackId.asUint()]._impPos   = mchit.position();
-//                                                                elecMapMulti[iVane][row][column][trackId.asUint()]._impMom3Vec  = mchit.momentum();
-//                                                                cout<<"cluE = "<<elecMapMulti[iVane][row][column][trackId.asUint()]._cluEnergy<<endl;
-//                                                                cout<<"cluT = "<<elecMapMulti[iVane][row][column][trackId.asUint()]._cluTime<<endl;
-//                                                                cout<<"elecMapMulti Fillata"<<endl;
-//                                                        }
-
 
                                                 }
                                         }
 
-                                }// esco da questo ciclo con: time e Id della particella che per prima ha dato origine al cluster
+                                }
+
                                 if(seedMap.size() > 1){
                                         if(signalMap.size() > 0){
                                                 _hTHistEnergyCluMultiDIOsignal->Fill( eDepClu);
-                                                _hTHistTimeCluMultiDIOsignal->Fill( clu._time);
+                                                _hTHistTimeCluMultiDIOsignal->Fill( clu.time);
 
                                                 for(std::map<unsigned int, unsigned int>::iterator its = seedMap.begin(); its != seedMap.end(); ++its){
                                                         //std::map<unsigned int, unsigned int>::iterator its = seedMap.begin();
@@ -723,12 +852,11 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                 }
                                         }else{
                                                 _hTHistEnergyCluMultiDIOdio->Fill( eDepClu);
-                                                _hTHistTimeCluMultiDIOdio->Fill( clu._time);
+                                                _hTHistTimeCluMultiDIOdio->Fill( clu.time);
 
 
                                                 for(std::map<unsigned int, unsigned int>::iterator its = seedMap.begin(); its != seedMap.end(); ++its){
-                                                        //std::map<unsigned int, unsigned int>::iterator its = seedMap.begin();
-                                                        //its = its + i;
+
                                                         std::map<unsigned int, elecData >::iterator it = elecMap[iVane].find(its->first);
                                                         _hTHistEnergyMultiDIOdio->Fill( (it)->second._impEnergy );
                                                         _hTHistTimeMultiDIOdio->Fill( (it)->second._impTime);
@@ -745,8 +873,9 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
         //counting how many reconstructed clusters match with the generated particles
         unsigned int canc2 = 0;
-
-        //cout <<"-------------------> numero di elettroni generati = "<< trkVecTot.size() <<endl;
+        if(_diagLevel < 0){
+                cout <<"-------------------> number of generated electrons ( trkVecTot.size() ) = "<< trkVecTot.size() <<endl;
+        }
         unsigned int size2 = trkVecTot.size();
         unsigned int it2=0;
         while( it2 < size2){
@@ -754,22 +883,26 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                 bool trovato = false;
                 while(!trovato && ite!=elecMap.end() ){
                         if(ite->second.find(trkVecTot[it2]) != ite->second.end()){
-                                //                                        cout<< "$$$$$$$$$$$$----> vane = "<< ite->first<<endl;
-                                //                                        cout<<"------------------------------------------------------"<<endl;
-                                //                                        cout << "impX = "<<ite->second[trkVec[it2]]._impPos.getX()<<endl;
-                                //                                        cout << "impY = "<<ite->second[trkVec[it2]]._impPos.getY()<<endl;
-                                //                                        cout << "impZ = "<<ite->second[trkVec[it2]]._impPos.getZ()<<endl;
-                                //                                        cout << "impXcryFRame = "<<ite->second[trkVec[it2]]._impPosCryFrame.getX()<<endl;
-                                //                                        cout << "impYcryFRame = "<<ite->second[trkVec[it2]]._impPosCryFrame.getY()<<endl;
-                                //                                        cout << "impZcryFRame = "<<ite->second[trkVec[it2]]._impPosCryFrame.getZ()<<endl;
-                                //                                        cout<< "@@@@@@@@@@@@@@@@@@@"<<endl;
-                                //cout << "cluX = "<<ite->second[trkVec[it2]]._cluCog.getX()<<endl;
-                                //                                        cout << "cluY = "<<ite->second[trkVec[it2]]._cluCog.getY()<<endl;
-                                //                                        cout << "cluZ = "<<ite->second[trkVec[it2]]._cluCog.getZ()<<endl;
-                                //                                        cout<< "@@@@@@@@@@@@@@@@@@@"<<endl;
-                                //                                        cout << "delta X = " << ite->second[trkVec[it2]]._impPos.getX() - ite->second[trkVec[it2]]._cluCog.getX()<<endl;
-                                //                                        cout << "delta Y = " << ite->second[trkVec[it2]]._impPos.getY() - ite->second[trkVec[it2]]._cluCog.getY()<<endl;
-                                //                                        cout << "delta Z = " << ite->second[trkVec[it2]]._impPos.getZ() - ite->second[trkVec[it2]]._cluCog.getZ()<<endl;
+
+                                if(_diagLevel < 0){
+                                        cout<< "$$$$$$$$$$$$----> vane = "<< ite->first<<endl;
+                                        cout<<"------------------------------------------------------"<<endl;
+                                        cout << "impX = "<<ite->second[trkVecTot[it2]]._impPos.getX()<<endl;
+                                        cout << "impY = "<<ite->second[trkVecTot[it2]]._impPos.getY()<<endl;
+                                        cout << "impZ = "<<ite->second[trkVecTot[it2]]._impPos.getZ()<<endl;
+                                        cout << "impXcryFRame = "<<ite->second[trkVecTot[it2]]._impPosCryFrame.getX()<<endl;
+                                        cout << "impYcryFRame = "<<ite->second[trkVecTot[it2]]._impPosCryFrame.getY()<<endl;
+                                        cout << "impZcryFRame = "<<ite->second[trkVecTot[it2]]._impPosCryFrame.getZ()<<endl;
+                                        cout<< "@@@@@@@@@@@@@@@@@@@"<<endl;
+                                        cout << "cluX = "<<ite->second[trkVecTot[it2]]._cluCog.getX()<<endl;
+                                        cout << "cluY = "<<ite->second[trkVecTot[it2]]._cluCog.getY()<<endl;
+                                        cout << "cluZ = "<<ite->second[trkVecTot[it2]]._cluCog.getZ()<<endl;
+                                        cout<< "@@@@@@@@@@@@@@@@@@@"<<endl;
+                                        cout << "delta X = " << ite->second[trkVecTot[it2]]._impPos.getX() - ite->second[trkVecTot[it2]]._cluCog.getX()<<endl;
+                                        cout << "delta Y = " << ite->second[trkVecTot[it2]]._impPos.getY() - ite->second[trkVecTot[it2]]._cluCog.getY()<<endl;
+                                        cout << "delta Z = " << ite->second[trkVecTot[it2]]._impPos.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ()<<endl;
+                                }
+
                                 _hTHistDeltaEnergyCluRec->Fill( ite->second[trkVecTot[it2]]._impEnergy - ite->second[trkVecTot[it2]]._cluEnergy);
 
                                 _hTHistDeltaEnergyRec_row->Fill(_hTHistDeltaEnergyRec_row->GetXaxis()->GetBinCenter(ite->second[trkVecTot[it2]]._row + 1), ite->second[trkVecTot[it2]]._impEnergy - ite->second[trkVecTot[it2]]._cluEnergy);
@@ -787,21 +920,29 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 //                                        _hTHistTimeMulti->Fill( ite->second[trkVecTot[it2]]._impTime);
 //                                }
 
+                                Vane const &vane = cg->getVane(ite->first);
+                                CLHEP::Hep3Vector dirMom = ite->second[trkVecTot[it2]]._impMom3Vec.unit();
+                                CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
+                                _hTHistMomRecDotVaneNorm->Fill(acos(-1.0*dirMom_rotated.getX())*180./TMath::Pi() );
+
                                 if(ite->first == 0 ){
                                         _hTHistPhiRec_v0->Fill(ite->second[trkVecTot[it2]]._impMom3Vec.getPhi()*180./TMath::Pi());
+                                        _hTHistMomRecDotVaneNorm->Fill(acos(-1.0*ite->second[trkVecTot[it2]]._impMom3Vec.getY() /ite->second[trkVecTot[it2]]._impMom3Vec.mag() )*180./TMath::Pi() );
                                 }
                                 if(ite->first == 1 ){
                                         _hTHistPhiRec_v1->Fill(ite->second[trkVecTot[it2]]._impMom3Vec.getPhi()*180./TMath::Pi());
+                                        _hTHistMomRecDotVaneNorm->Fill(acos(ite->second[trkVecTot[it2]]._impMom3Vec.getX() /ite->second[trkVecTot[it2]]._impMom3Vec.mag() )*180./TMath::Pi() );
                                 }
                                 if(ite->first == 2 ){
                                         _hTHistPhiRec_v2->Fill(ite->second[trkVecTot[it2]]._impMom3Vec.getPhi()*180./TMath::Pi());
+                                        _hTHistMomRecDotVaneNorm->Fill( acos(ite->second[trkVecTot[it2]]._impMom3Vec.getY() /ite->second[trkVecTot[it2]]._impMom3Vec.mag() )*180./TMath::Pi() );
                                 }
                                 if(ite->first == 3 ){
                                         _hTHistPhiRec_v3->Fill(ite->second[trkVecTot[it2]]._impMom3Vec.getPhi()*180./TMath::Pi());
+                                        _hTHistMomRecDotVaneNorm->Fill( acos(-1.0*ite->second[trkVecTot[it2]]._impMom3Vec.getX() /ite->second[trkVecTot[it2]]._impMom3Vec.mag() )*180./TMath::Pi() );
                                 }
                                 trovato = true;
                                 canc2 = it2;
-                                //cout<<"$$$ yes! the calo works! $$$"<<endl;
                         }
                         ++ite;
                 }
@@ -816,16 +957,16 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                 }
 
         }
-        //                cout <<"after.... trkVecTot.size = "<< trkVecTot.size() <<endl;
-        //
-        //                cout<<"...\n...\n "<<endl;
 
-        //-----------------------------------
+        if(_diagLevel < 0){
+                cout <<"after.... trkVecTot.size = "<< trkVecTot.size() <<endl;
+                cout<<"...\n...\n "<<endl;
+                cout <<"-------------------> number of quality electrons generated ( trkVec.size() ) = "<< trkVec.size() <<endl;
+        }
+
         //counting how many reconstructed clusters match with the generated particles which pass the quality cuts of the tracker
-
         unsigned int canc = 0;
 
-        //cout <<"-------------------> numero di elettroni di qualita' generati = "<< trkVec.size() <<endl;
         //for(unsigned int it = 0; it != trkVec.size(); ++it){
         unsigned int size = trkVec.size();
         unsigned int it=0;
@@ -834,9 +975,11 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                 bool trovato = false;
                 while(!trovato && ite!=elecMap.end() ){
                         if(ite->second.find(trkVec[it]) != ite->second.end()){
-                                //                                        cout << "impX = "<<ite->second[trkVec[it]]._impPosCryFrame.getX()<<endl;
-                                //                                        cout << "impY = "<<ite->second[trkVec[it]]._impPosCryFrame.getY()<<endl;
-                                //                                        cout << "impZ = "<<ite->second[trkVec[it]]._impPosCryFrame.getZ()<<endl;
+                                if(_diagLevel < 0){
+                                        cout << "impX = "<<ite->second[trkVec[it]]._impPosCryFrame.getX()<<endl;
+                                        cout << "impY = "<<ite->second[trkVec[it]]._impPosCryFrame.getY()<<endl;
+                                        cout << "impZ = "<<ite->second[trkVec[it]]._impPosCryFrame.getZ()<<endl;
+                                }
 
                                 _hTHistDeltaEnergyClu->Fill( ite->second[trkVec[it]]._impEnergy - ite->second[trkVec[it]]._cluEnergy);
 
@@ -846,17 +989,74 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                 _hTHistThetaZ->Fill(ite->second[trkVecTot[it]]._impMom3Vec.getTheta()*180./TMath::Pi());
                                 _hTHistPhi->Fill(ite->second[trkVecTot[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
 
+
+                                CLHEP::Hep3Vector dirMom = ite->second[trkVecTot[it2]]._impMom3Vec;//.unit();
+
+                                Vane const &vane = cg->getVane(ite->first);
+                                dirMom = *(vane.getRotation())*dirMom;
+
+                                _hTHistMomDotVaneNorm->Fill(acos(-1.0*dirMom.getX() / dirMom.mag() )*180./TMath::Pi() );
+                                _hTHistThetaW->Fill(std::atan(-1.0*dirMom.getZ() / dirMom.getX() )*180./TMath::Pi() );
+                                //_hTHistThetaW_v0->Fill(std::atan(-1.0*dirMom.getZ() / dirMom.getX() )*180./TMath::Pi() );
+
+                                _hTHistThetaV->Fill(std::atan(dirMom.getY() /  dirMom.getX() )*180./TMath::Pi() );
+                                //_hTHistThetaV_->Fill(std::atan(dirMom.getY() /  dirMom.getX() )*180./TMath::Pi() );
+
                                 if(ite->first == 0 ){
-                                        _hTHistPhi_v0->Fill(ite->second[trkVecTot[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
+                                        _hTHistPhi_v0->Fill(ite->second[trkVec[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
+                                        //_hTHistMomDotVaneNorm->Fill(acos(-1.0*ite->second[trkVec[it]]._impMom3Vec.getY() /ite->second[trkVec[it]]._impMom3Vec.mag() )*180./TMath::Pi() );
+
+                                        //_hTHistThetaW->Fill(std::atan(-1.0*ite->second[trkVec[it]]._impMom3Vec.getZ() / ite->second[trkVec[it]]._impMom3Vec.getY() )*180./TMath::Pi() );
+                                        _hTHistThetaW_v0->Fill(std::atan(-1.0*ite->second[trkVec[it]]._impMom3Vec.getZ() /  ite->second[trkVec[it]]._impMom3Vec.getY()  )*180./TMath::Pi() );
+                                        if(_diagLevel < 0){
+                                                cout<<"vaneIndex = "<<ite->first <<endl;
+                                                cout<<"Vx = "<<ite->second[trkVec[it]]._impMom3Vec.getX()<<", Vy = "<<ite->second[trkVec[it]]._impMom3Vec.getY() <<", Vz = "<< ite->second[trkVec[it]]._impMom3Vec.getZ()<<endl;
+                                        }
+                                       // _hTHistThetaV->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getX() /  ite->second[trkVec[it]]._impMom3Vec.getY() )*180./TMath::Pi() );
+                                        _hTHistThetaV_v0->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getX() /  ite->second[trkVec[it]]._impMom3Vec.getY() )*180./TMath::Pi() );
+
                                 }
                                 if(ite->first == 1 ){
-                                        _hTHistPhi_v1->Fill(ite->second[trkVecTot[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
+                                        _hTHistPhi_v1->Fill(ite->second[trkVec[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
+                                        //_hTHistMomDotVaneNorm->Fill(acos(ite->second[trkVec[it]]._impMom3Vec.getX() /ite->second[trkVec[it]]._impMom3Vec.mag() )*180./TMath::Pi() );
+
+                                        //_hTHistThetaW->Fill( std::atan(ite->second[trkVec[it]]._impMom3Vec.getZ() /  ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi() );
+                                        _hTHistThetaW_v1->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getZ() /  ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi());
+                                        if(_diagLevel < 0){
+                                                cout<<"vaneIndex = "<<ite->first <<endl;
+                                                cout<<"Vx = "<<ite->second[trkVec[it]]._impMom3Vec.getX()<<", Vy = "<<ite->second[trkVec[it]]._impMom3Vec.getY() <<", Vz = "<< ite->second[trkVec[it]]._impMom3Vec.getZ()<<endl;
+                                        }
+                                       // _hTHistThetaV->Fill( std::atan(ite->second[trkVec[it]]._impMom3Vec.getY() / ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi());
+                                        _hTHistThetaV_v1->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getY() / ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi());
+
                                 }
                                 if(ite->first == 2 ){
-                                        _hTHistPhi_v2->Fill(ite->second[trkVecTot[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
+                                        _hTHistPhi_v2->Fill(ite->second[trkVec[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
+                                       // _hTHistMomDotVaneNorm->Fill(acos(ite->second[trkVec[it]]._impMom3Vec.getY() /ite->second[trkVec[it]]._impMom3Vec.mag() )*180./TMath::Pi() );
+
+                                        //_hTHistThetaW->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getZ() / ite->second[trkVec[it]]._impMom3Vec.getY()  )*180./TMath::Pi() );
+                                        _hTHistThetaW_v2->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getZ() / ite->second[trkVec[it]]._impMom3Vec.getY() )*180./TMath::Pi() );
+                                        if(_diagLevel < 0){
+                                                cout<<"vaneIndex = "<<ite->first <<endl;
+                                                cout<<"Vx = "<<ite->second[trkVec[it]]._impMom3Vec.getX()<<", Vy = "<<ite->second[trkVec[it]]._impMom3Vec.getY() <<", Vz = "<< ite->second[trkVec[it]]._impMom3Vec.getZ()<<endl;
+                                        }
+                                       // _hTHistThetaV->Fill(std::atan(-1.0*ite->second[trkVec[it]]._impMom3Vec.getX() /  ite->second[trkVec[it]]._impMom3Vec.getY()  )*180./TMath::Pi() );
+                                        _hTHistThetaV_v2->Fill(std::atan(-1.0*ite->second[trkVec[it]]._impMom3Vec.getX() /  ite->second[trkVec[it]]._impMom3Vec.getY()  )*180./TMath::Pi() );
+
+
                                 }
                                 if(ite->first == 3 ){
-                                        _hTHistPhi_v3->Fill(ite->second[trkVecTot[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
+                                        _hTHistPhi_v3->Fill(ite->second[trkVec[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
+                                        //_hTHistMomDotVaneNorm->Fill(acos(-1.0*ite->second[trkVec[it]]._impMom3Vec.getX() /ite->second[trkVec[it]]._impMom3Vec.mag() )*180./TMath::Pi() );
+
+                                       // _hTHistThetaW->Fill(std::atan(-1.0*ite->second[trkVec[it]]._impMom3Vec.getZ() /  ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi() );
+                                        _hTHistThetaW_v3->Fill(std::atan(-1.0*ite->second[trkVec[it]]._impMom3Vec.getZ() / ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi());
+                                        if(_diagLevel < 0){
+                                                cout<<"vaneIndex = "<<ite->first <<endl;
+                                                cout<<"Vx = "<<ite->second[trkVec[it]]._impMom3Vec.getX()<<", Vy = "<<ite->second[trkVec[it]]._impMom3Vec.getY() <<", Vz = "<< ite->second[trkVec[it]]._impMom3Vec.getZ()<<endl;
+                                        }
+                                      //  _hTHistThetaV->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getY() / ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi());
+                                        _hTHistThetaV_v3->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getY() /  ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi());
                                 }
 
                                 trovato = true;

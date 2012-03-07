@@ -1,10 +1,12 @@
-/*
- * CaloClusterEff_module.cc
- *
- *  Created on: Feb 16, 2012
- *      Author: giani
- */
-
+//
+// module for the calculation of the efficiency Vs energy cluster cut and other distributions related to the efficiency
+//
+// $Id: CaloClusterEff_module.cc,v 1.3 2012/03/07 18:00:38 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2012/03/07 18:00:38 $
+//
+// Original author G. Pezzullo & G. Tassielli
+//
 
 
 // Framework includes.
@@ -16,6 +18,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/DataViewImpl.h"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
@@ -162,6 +165,12 @@ public:
         _hTHistEnergyCluRec(0),
         _hTHistDistrRow(0),
         _hTHistDistrColumn(0),
+        _hTHistDistrRecRow(0),
+        _hTHistDistrRecColumn(0),
+        _hTHistDistrRowSlice(0),
+        _hTHistDistrColumnSlice(0),
+        _hTHistDistrRecRowSlice(0),
+        _hTHistDistrRecColumnSlice(0),
         _EnergyClusterCut(pset.get<double>("energyClusterCut",60.)),//MeV
         _application(0),
         _directory(0)
@@ -230,8 +239,16 @@ private:
         TH1D* _hTHistDeltaPlast;
         TH2D* _hTHistEnergyClu;
         TH2D* _hTHistEnergyCluRec;
+
         TH2D*  _hTHistDistrRow;
         TH2D*  _hTHistDistrColumn;
+        TH2D*  _hTHistDistrRecRow;
+        TH2D*  _hTHistDistrRecColumn;
+
+        TH1D*  _hTHistDistrRowSlice;
+        TH1D*  _hTHistDistrColumnSlice;
+        TH1D*  _hTHistDistrRecRowSlice;
+        TH1D*  _hTHistDistrRecColumnSlice;
 
         double _EnergyClusterCut;
 
@@ -305,6 +322,10 @@ void CaloClusterEff::analyze(art::Event const & evt ) {
 
                 // cout << "This should be done only in the first event" << endl;
                 art::ServiceHandle<art::TFileService> tfs;
+                art::TFileDirectory seedInfo = tfs->mkdir("SeedInfo");
+                art::TFileDirectory cog = tfs->mkdir("Cog");
+                art::TFileDirectory trkInfo = tfs->mkdir("TrkInfo");
+                art::TFileDirectory clusterInfo = tfs->mkdir("ClusterInfo");
 
 
                 _hTHistEff           = tfs->make<TH2D>( "CaloEff", "CaloEff;EnergyLowCut [MeV];N_{rec} / N_{imp}", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 100, 0., 6.);
@@ -312,29 +333,36 @@ void CaloClusterEff::analyze(art::Event const & evt ) {
                 _hTHistGlobalEff     = tfs->make<TH1D>( "CaloGlobalEffTrk", "CaloGlobalEffTrk;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.);
                 _hTHistGlobalEffNorm = tfs->make<TH1D>( "CaloGlobalEffTrkNorm", "CaloGlobalEffTrkNorm;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.);
                 _hTHistGlobalEffTot  = tfs->make<TH1D>( "CaloGlobalEffTrkTot", "CaloGlobalEffTrkTot;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.);
-                _hTHistDeltaEnergy   = tfs->make<TH2D>( "DeltaEnergy", "DeltaEnergy;EnergyLowCut [MeV];Eseed-Eclu [MeV]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 100, -20., 110.);
-                _hTHistDeltaEnergyRec= tfs->make<TH2D>( "DeltaEnergyRec", "DeltaEnergyRec;EnergyLowCut [MeV];Eseed-Eclu [MeV]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 100, -20., 110.);
-                _hTHistGlobalEffRec  = tfs->make<TH1D>( "CaloGlobalEffRec", "CaloGlobalEffRec;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.);
 
-                _hTHistDeltaXquality= tfs->make<TH2D>( "DeltaXquality", "DeltaXquality;EnergyLowCut [MeV];Xseed-Xclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
-                _hTHistDeltaXRec= tfs->make<TH2D>( "DeltaXRec", "DeltaXRec;EnergyLowCut [MeV];Xseed-Xclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
-                _hTHistDeltaYquality= tfs->make<TH2D>( "DeltaYquality", "DeltaYquality;EnergyLowCut [MeV];Yseed-Yclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
-                _hTHistDeltaYRec= tfs->make<TH2D>( "DeltaYRec", "DeltaYRec;EnergyLowCut [MeV];Yseed-Yclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
-                _hTHistDeltaZquality= tfs->make<TH2D>( "DeltaZquality", "DeltaZquality;EnergyLowCut [MeV];Zseed-Zclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
-                _hTHistDeltaZRec= tfs->make<TH2D>( "DeltaZRec", "DeltaZRec;EnergyLowCut [MeV];Zseed-Zclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+                _hTHistDeltaEnergy     = clusterInfo.make<TH2D>( "DeltaEnergy", "DeltaEnergy;EnergyLowCut [MeV];Eseed-Eclu [MeV]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 100, -20., 110.);
+                _hTHistDeltaEnergyRec  = clusterInfo.make<TH2D>( "DeltaEnergyRec", "DeltaEnergyRec;EnergyLowCut [MeV];Eseed-Eclu [MeV]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 100, -20., 110.);
 
-                _hTHistDeltaPmag  = tfs->make<TH1D>( "TrkDeltaPmag", "TrkDeltaPmag;deltaP/Pfirst [%];entries", 2000 , 0., 0.01);
-                _hTHistDeltaPitch = tfs->make<TH1D>( "TrkDeltaPitch","TrkDeltaPitch;deltaPitch/pitchFirst [%];entries", 2000 , 0., 0.01);
-
-                _hTHistDeltaPfirst = tfs->make<TH1D>( "TrkPfirst", "momFirst; momentum [MeV];entries", 2000 , 50., 110.0);
-                _hTHistDeltaPlast  = tfs->make<TH1D>( "TrkPlast","momLast ; momentum [MeV];entries", 2000 , 50., 110.0);
-
-                _hTHistEnergyClu   = tfs->make<TH2D>( "EnergyClu", "EnergyClu; E_{cluster}^{cut};Energy_{cluster} [MeV]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 450 , 0., 150.0);
-                _hTHistEnergyCluRec= tfs->make<TH2D>( "EnergyCluRec","EnergyCluRec ; E_{cluster}^{cut}; Energy_{cluster} [MeV]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 450 ,0., 150.0);
+                _hTHistGlobalEffRec    = tfs->make<TH1D>( "CaloGlobalEffRec", "CaloGlobalEffRec;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.);
 
 
-                _hTHistDistrRow     = tfs->make<TH2D>( "DistrRow", "DistrRow; E_{cluster}^{cut};row index", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., cg->nCrystalR() , 0., cg->nCrystalR() );
-                _hTHistDistrColumn  = tfs->make<TH2D>( "DistrColumn","DistrColumn ; E_{cluster}^{cut}; column index", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.,cg->nCrystalZ() ,0., cg->nCrystalZ() );
+                _hTHistDeltaXquality   = cog.make<TH2D>( "DeltaXquality", "DeltaXquality;EnergyLowCut [MeV];Xseed-Xclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+                _hTHistDeltaXRec       = cog.make<TH2D>( "DeltaXRec", "DeltaXRec;EnergyLowCut [MeV];Xseed-Xclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+                _hTHistDeltaYquality   = cog.make<TH2D>( "DeltaYquality", "DeltaYquality;EnergyLowCut [MeV];Yseed-Yclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+                _hTHistDeltaYRec       = cog.make<TH2D>( "DeltaYRec", "DeltaYRec;EnergyLowCut [MeV];Yseed-Yclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+                _hTHistDeltaZquality   = cog.make<TH2D>( "DeltaZquality", "DeltaZquality;EnergyLowCut [MeV];Zseed-Zclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+                _hTHistDeltaZRec       = cog.make<TH2D>( "DeltaZRec", "DeltaZRec;EnergyLowCut [MeV];Zseed-Zclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+
+                _hTHistDeltaPmag       = trkInfo.make<TH1D>( "TrkDeltaPmag", "TrkDeltaPmag;deltaP/Pfirst [%];entries", 2000 , 0., 0.01);
+                _hTHistDeltaPitch      = trkInfo.make<TH1D>( "TrkDeltaPitch","TrkDeltaPitch;deltaPitch/pitchFirst [%];entries", 2000 , 0., 0.01);
+
+                _hTHistDeltaPfirst     = trkInfo.make<TH1D>( "TrkPfirst", "momFirst; momentum [MeV];entries", 2000 , 50., 110.0);
+                _hTHistDeltaPlast      = trkInfo.make<TH1D>( "TrkPlast","momLast ; momentum [MeV];entries", 2000 , 50., 110.0);
+
+                _hTHistEnergyClu       = clusterInfo.make<TH2D>( "EnergyClu", "EnergyClu; E_{cluster}^{cut};Energy_{cluster} [MeV]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 450 , 0., 150.0);
+                _hTHistEnergyCluRec    = clusterInfo.make<TH2D>( "EnergyCluRec","EnergyCluRec ; E_{cluster}^{cut}; Energy_{cluster} [MeV]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 450 ,0., 150.0);
+
+
+                _hTHistDistrRow        = seedInfo.make<TH2D>( "DistrRow", "DistrRow; E_{cluster}^{cut};row index", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., cg->nCrystalR() , 0., cg->nCrystalR() );
+                _hTHistDistrColumn     = seedInfo.make<TH2D>( "DistrColumn","DistrColumn ; E_{cluster}^{cut}; column index", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.,cg->nCrystalZ() ,0., cg->nCrystalZ() );
+
+                _hTHistDistrRecRow     = seedInfo.make<TH2D>( "DistrRecRow", "DistrRecRow; E_{cluster}^{cut};row index", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., cg->nCrystalR() , 0., cg->nCrystalR() );
+                _hTHistDistrRecColumn  = seedInfo.make<TH2D>( "DistrRecColumn","DistrRecColumn ; E_{cluster}^{cut}; column index", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.,cg->nCrystalZ() ,0., cg->nCrystalZ() );
+
 
                 globalNtrkCut = 0.0;
                 globalNtrkTot = 0.0;
@@ -354,6 +382,9 @@ void CaloClusterEff::analyze(art::Event const & evt ) {
 } // end of analyze
 
 void CaloClusterEff::endJob() {
+        art::ServiceHandle<art::TFileService> tfs;
+        art::TFileDirectory seedInfoSlice = tfs->mkdir("SeedInfoSlice");
+
         //cout<< "globalNtrkCut = "<< globalNtrkCut << ", globalNtrkTot = "<<globalNtrkTot<<" ==> globalNtrkCut / globalNtrkTot = "<<globalNtrkCut / globalNtrkTot<<endl;
         for(unsigned int b=1; b <=(unsigned int) _hTHistGlobalEff->GetNbinsX(); ++b){
                 double tmpEff = globalVecRec[b-1] / globalNtrkCut;
@@ -374,6 +405,18 @@ void CaloClusterEff::endJob() {
                 _hTHistGlobalEffRec->SetBinError(b, TMath::Sqrt(tmpEff4*fabs(1.0-tmpEff4) / globalNtrkTot ));
 
         }
+        int i = 1;
+        _hTHistDistrRowSlice        = seedInfoSlice.make<TH1D>(Form("DistrRowSlice_%d",i), Form("DistrRowSlice_%d",i), _hTHistDistrRow->GetNbinsY(), 0.,  _hTHistDistrRow->GetNbinsY());
+        _hTHistDistrColumnSlice     = seedInfoSlice.make<TH1D>(Form("DistrColumnSlice_%d",i), Form("DistrColumnSlice_%d",i), _hTHistDistrColumn->GetNbinsY(), 0.,  _hTHistDistrColumn->GetNbinsY());
+
+       _hTHistDistrRecRowSlice      = seedInfoSlice.make<TH1D>(Form("DistrRecRowSlice_%d",i), Form("DistrRecRowSlice_%d",i), _hTHistDistrRecRow->GetNbinsY(), 0.,  _hTHistDistrRecRow->GetNbinsY());
+        _hTHistDistrRecColumnSlice  = seedInfoSlice.make<TH1D>(Form("DistrRecColumnSlice_%d",i), Form("DistrRecColumnSlice_%d",i), _hTHistDistrRecColumn->GetNbinsY(), 0.,  _hTHistDistrRecColumn->GetNbinsY());
+
+        _hTHistDistrRowSlice        =          _hTHistDistrRow->ProjectionY(Form("DistrRowSlice_%d",i), i, i);
+        _hTHistDistrColumnSlice     =         _hTHistDistrColumn->ProjectionY(Form("DistrColumnSlice_%d",i), i, i);
+
+        _hTHistDistrRecRowSlice     =         _hTHistDistrRecRow->ProjectionY(Form("DistrRecRowSlice_%d",i), i, i);
+        _hTHistDistrRecColumnSlice  =         _hTHistDistrRecColumn->ProjectionY(Form("DistrRecColumnSlice_%d",i), i, i);
 
 }
 
@@ -545,10 +588,10 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                                 double eDepClu = 0.;
 
                                 CaloCluster const& clu = (*caloClusters).at(icl);
-                                eDepClu = clu._energy;
-                                iVane = clu._iVane;
+                                eDepClu = clu.energyDep;
+                                iVane = clu.vaneId;
 
-                                CaloCrystalHitPtrVector caloClusterHits = clu._caloCrystalHits;
+                                CaloCrystalHitPtrVector caloClusterHits = clu.caloCrystalHitsPtrVector;
 
                                 if(eDepClu >= (_hTHistEff->GetXaxis()->GetBinCenter(bin) -  0.5*_hTHistEff->GetXaxis()->GetBinWidth(bin) ) ){
                                         vecRec[iVane][bin - 1]+=1.0;
@@ -579,11 +622,11 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
 
                                                         if( (cg->getCrystalRByRO(thehit.id()) != ( _rowToCanc - 1.0 ) && cg->getCrystalZByRO(thehit.id()) != ( _columnToCanc - 1.0 ) ) ){
                                                                 if(elecMap[iVane][trackId.asUint()]._impTime > mchit.time() ){
-                                                                        elecMap[iVane][trackId.asUint()]._cluEnergy = clu._energy;
-                                                                        elecMap[iVane][trackId.asUint()]._cluTime = clu._time;
+                                                                        elecMap[iVane][trackId.asUint()]._cluEnergy = clu.energyDep;
+                                                                        elecMap[iVane][trackId.asUint()]._cluTime = clu.time;
                                                                         elecMap[iVane][trackId.asUint()]._impTime = mchit.time();
                                                                         elecMap[iVane][trackId.asUint()]._impEnergy = mchit.momentum().mag();
-                                                                        elecMap[iVane][trackId.asUint()]._cluCog = clu._impactPoint;
+                                                                        elecMap[iVane][trackId.asUint()]._cluCog = clu.cog3Vector;
                                                                         elecMap[iVane][trackId.asUint()]._impPos = mchit.position();
                                                                         elecMap[iVane][trackId.asUint()]._impPosCryFrame = cryFrame;
                                                                         elecMap[iVane][trackId.asUint()]._row    = cg->getCrystalRByRO(thehit.id() );
@@ -639,6 +682,10 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
 
                                         globalRecCaloCut[bin - 1] += 1.0;
 
+                                        _hTHistDistrRecRow->Fill(_hTHistDistrRecRow->GetXaxis()->GetBinCenter(bin), ite->second[trkVecTot[it2]]._row );
+                                        _hTHistDistrRecColumn->Fill(_hTHistDistrRecColumn->GetXaxis()->GetBinCenter(bin), ite->second[trkVecTot[it2]]._column );
+
+
                                         _hTHistDeltaEnergyRec->Fill(_hTHistDeltaEnergyRec->GetXaxis()->GetBinCenter(bin), ite->second[trkVecTot[it2]]._impEnergy - ite->second[trkVecTot[it2]]._cluEnergy);
 
                                         //the following lines were used ti verify that I used the correct translations in the file "CaloClustertilities.hh"
@@ -651,7 +698,7 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                                         //                                                deltaXc = cryHalfLength + 2.0*cg->roHalfThickness();
                                         //
                                         //                                                //                                                       resError.setX(defaultError);
-                                        //                                                //                                                       resError.setY( RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster._energy);
+                                        //                                                //                                                       resError.setY( RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster.energyDep);
                                         //                                        }
                                         //                                        else if(ite->first == 2){
                                         //                                                //deltaXc = (deltaR )*cryHalfSize*2.;
@@ -659,7 +706,7 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                                         //                                                deltaYc = -1.*cryHalfLength - 2.0*cg->roHalfThickness();
                                         //
                                         //                                                //                                                       resError.setY(defaultError);
-                                        //                                                //                                                       resError.setX(RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster._energy);
+                                        //                                                //                                                       resError.setX(RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster.energyDep);
                                         //
                                         //                                        }else if(ite->first == 1){
                                         //                                                //deltaYc = -1.*(deltaR)*cryHalfSize*2. ;
@@ -667,14 +714,14 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                                         //                                                deltaXc = -1.*cryHalfLength - 2.0*cg->roHalfThickness();
                                         //
                                         //                                                //                                                       resError.setX(defaultError);
-                                        //                                                //                                                       resError.setY(RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster._energy);
+                                        //                                                //                                                       resError.setY(RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster.energyDep);
                                         //                                        }else if(ite->first == 0){
                                         //                                                //deltaXc = -1.0*(deltaR)*cryHalfSize*2.;
                                         //                                                //deltaZc = (deltaZ)*cryHalfSize*2.;
                                         //                                                deltaYc = cryHalfLength + 2.0*cg->roHalfThickness();
                                         //
                                         //                                                //                                                       resError.setY(defaultError);
-                                        //                                                //                                                       resError.setX(RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster._energy);
+                                        //                                                //                                                       resError.setX(RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster.energyDep);
                                         //                                        }
 
                                         if(ite->first == 0 || ite->first == 2){
@@ -728,8 +775,8 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                                         vecRecNorm[(ite->first)][bin - 1]+=1.0;
                                         globalCaloCut[bin - 1] += 1.0;
 
-                                        _hTHistDistrRow->Fill(_hTHistDistrRow->GetXaxis()->GetBinCenter(bin), ite->second[trkVec[it]]._row+1.0 );
-                                        _hTHistDistrColumn->Fill(_hTHistDistrColumn->GetXaxis()->GetBinCenter(bin), ite->second[trkVec[it]]._column +1.0);
+                                        _hTHistDistrRow->Fill(_hTHistDistrRow->GetXaxis()->GetBinCenter(bin), ite->second[trkVec[it]]._row );
+                                        _hTHistDistrColumn->Fill(_hTHistDistrColumn->GetXaxis()->GetBinCenter(bin), ite->second[trkVec[it]]._column );
 
 
                                         _hTHistEnergyClu->Fill(_hTHistEnergyClu->GetXaxis()->GetBinCenter(bin), ite->second[trkVec[it]]._cluEnergy);
@@ -750,7 +797,7 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                                         //                                                deltaXc = cryHalfLength + 2.0*cg->roHalfThickness();
                                         //
                                         //                                                //                                                       resError.setX(defaultError);
-                                        //                                                //                                                       resError.setY( RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster._energy);
+                                        //                                                //                                                       resError.setY( RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster.energyDep);
                                         //                                        }
                                         //                                        else if(ite->first == 2){
                                         //                                                //deltaXc = (deltaR )*cryHalfSize*2.;
@@ -758,7 +805,7 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                                         //                                                deltaYc = -1.*cryHalfLength - 2.0*cg->roHalfThickness();
                                         //
                                         //                                                //                                                       resError.setY(defaultError);
-                                        //                                                //                                                       resError.setX(RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster._energy);
+                                        //                                                //                                                       resError.setX(RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster.energyDep);
                                         //
                                         //                                        }else if(ite->first == 1){
                                         //                                                //deltaYc = -1.*(deltaR)*cryHalfSize*2. ;
@@ -766,14 +813,14 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                                         //                                                deltaXc = -1.*cryHalfLength - 2.0*cg->roHalfThickness();
                                         //
                                         //                                                //                                                       resError.setX(defaultError);
-                                        //                                                //                                                       resError.setY(RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster._energy);
+                                        //                                                //                                                       resError.setY(RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster.energyDep);
                                         //                                        }else if(ite->first == 0){
                                         //                                                //deltaXc = -1.0*(deltaR)*cryHalfSize*2.;
                                         //                                                //deltaZc = (deltaZ)*cryHalfSize*2.;
                                         //                                                deltaYc = cryHalfLength + 2.0*cg->roHalfThickness();
                                         //
                                         //                                                //                                                       resError.setY(defaultError);
-                                        //                                                //                                                       resError.setX(RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster._energy);
+                                        //                                                //                                                       resError.setX(RMScryHalfSize/TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster.energyDep);
                                         //                                        }
                                         if(ite->first == 0 || ite->first == 2){
                                                 _hTHistDeltaXquality->Fill(_hTHistDeltaXquality->GetXaxis()->GetBinCenter(bin),/* ite->second[trkVec[it]]._impPos.getX() - ite->second[trkVec[it]]._cryOrigin.getX() - deltaXc);*/ite->second[trkVec[it]]._impPos.getX() - ite->second[trkVec[it]]._cluCog.getX() );

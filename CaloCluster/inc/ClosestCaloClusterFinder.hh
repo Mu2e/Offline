@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ClosestCaloClusterFinder.hh,v 1.1 2012/02/28 22:24:48 gianipez Exp $
+// $Id: ClosestCaloClusterFinder.hh,v 1.2 2012/03/07 18:00:38 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/02/28 22:24:48 $
+// $Date: 2012/03/07 18:00:38 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -23,7 +23,7 @@ public :
         }
         ~ClosestCaloClusterFinder (){}
 
-        bool find(ClusterData &cluster, MatrixCaloHit &data , unsigned int row, unsigned int colum );
+        bool find(ClusterData &cluster, MatrixCaloHit &data , unsigned int row, unsigned int colum, int hitid=-1 );
 };
 }
 

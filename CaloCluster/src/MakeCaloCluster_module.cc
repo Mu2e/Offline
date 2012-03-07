@@ -80,6 +80,9 @@ public:
 
         bool operator ==(const CryID& b) const { return (_edep == b._edep && _row == b._row && _colum == b._colum && _iCaloCrystalHit == b._iCaloCrystalHit); }
 
+//        void setHitId(size_t Id){
+//                _iCaloCrystalHit = Id;
+//        }
 //        inline std::ostream& operator<<( std::ostream& ost,
 //                                          CryID & hit){
 //           ost<<hit._row<<" , "<<hit._colum<<"  ,   "<< hit._edep<<"   ,   "<< hit._iCaloCrystalHit<<endl;
@@ -264,8 +267,9 @@ MakeCaloCluster::produce(art::Event& evt) {
                         //cout <<"@@@@@@ ENERGY @@@@@@"<<endl;
 
                         while(it != vanesMap.end()){
-
-                                //cout << "vane = "<< it->first <<", energyMap[it->first].size() = "<<energyMap[it->first].size() <<endl;
+                                if(_diagLevel < 0){
+                                        cout << "vane = "<< it->first <<", energyMap[it->first].size() = "<<energyMap[it->first].size() <<endl;
+                                }
                                 if(energyMap[it->first].size() == 0){
                                         ++it;
                                         continue;
@@ -287,7 +291,11 @@ MakeCaloCluster::produce(art::Event& evt) {
                                         tmpColum =itMaxE->_colum;
                                         tmpHitId = itMaxE->_iCaloCrystalHit;
 
-                                        //cout<< "it->second[tmpRow][tmpColum].size = " << it->second[tmpRow][tmpColum].size()<< endl;
+                                        if(_diagLevel < 0){
+
+                                                cout<< "it->second[tmpRow][tmpColum].size = " << it->second[tmpRow][tmpColum].size()<< endl;
+                                        }
+
                                         if(it->second[tmpRow][tmpColum].size()==0){
                                                 CryID tmpCryID(itMaxE->_edep, tmpRow, tmpColum, tmpHitId);
 
@@ -301,69 +309,173 @@ MakeCaloCluster::produce(art::Event& evt) {
 
 
                                         ClusterData cluster;
-//                                        cout <<"itHit preso..."<< endl;
-//                                        cout<<"itHit.first->time() = "<< itHit.first->time() <<endl;
-//                                        cout<<"itHit.first->energyDep() = "<<itHit.first->energyDep()<<endl;
+
+                                        if(_diagLevel < 0){
+                                                cout <<"itHit preso..."<< endl;
+                                                cout<<"itHit.first->time() = "<< itHit.first->time() <<endl;
+                                                cout<<"itHit.first->energyDep() = "<<itHit.first->energyDep()<<endl;
+                                        }
 
                                         clusterer.setFirstHitTime(itHit.first->time());
 
-//                                        cout<<"clusterer.setFirstHitTime(itHit.first->time())------>done"<<endl;
-//                                        cout<<"itHit.first->energyDep() = "<<itHit.first->energyDep()<<endl;
+                                        if(_diagLevel < 0){
+                                                cout<<"clusterer.setFirstHitTime(itHit.first->time())------>done"<<endl;
+                                        }
 
                                         clusterer.initializeNewSearch();
 
-//                                        cout<<"clusterer.initializeNewSearch()---------->done"<<endl;
-//                                        cout<<"itHit.first->energyDep() = "<<itHit.first->energyDep()<<endl;
+                                        if(_diagLevel < 0){
+                                                cout<<"clusterer.initializeNewSearch()---------->done"<<endl;
+                                                cout<<"start find() with new seed..."<<endl;
+                                                cout << "SEED COORDINATES: vaneId = "<< it->first<<", tmpRow = "<< tmpRow<< ", tmpColum = "<<tmpColum<<", tmpHitId = "<<tmpHitId<<endl;
+                                        }
 
-                                        if( clusterer.find( cluster, it->second, tmpRow, tmpColum/*, looked*/ )){ // call to find cluster
-                                               // cout << "-------- cluster found ----------"<<endl;
-
+                                        if( clusterer.find( cluster, it->second, tmpRow, tmpColum, tmpHitId/*, looked*/ )){ // call to find cluster
+                                                if(_diagLevel < 0){
+                                                        cout << "-------- cluster found ----------"<<endl;
+                                                }
                                                 caloClustersPointer->push_back(CaloCluster());
                                                 CaloClusterCollection::iterator tmpCluster = caloClustersPointer->end();
                                                 tmpCluster--;
-                                                tmpCluster->_iVane = it->first;
+                                                tmpCluster->vaneId = it->first;
                                                 for(ClusterData::iterator itCD = cluster.begin(); itCD != cluster.end(); ++itCD){
-                                                        //cout << "-------- 1 ----------"<<endl;
+                                                        if(_diagLevel < 0){
+                                                                cout << "-------- 1 ----------"<<endl;
+                                                                cout<<" clusterDataSize = "<< cluster.size()<<endl;
+                                                        }
+
                                                         tmpRow = itCD->first;
                                                         tmpColum = itCD->second.first;
                                                         tmpHitId = itCD->second.second;
 
+                                                        if(_diagLevel < 0){
+                                                                cout << "vaneId = "<< tmpCluster->vaneId<<", tmpRow = "<< tmpRow<< ", tmpColum = "<<tmpColum<<", tmpHitId = "<<tmpHitId<<endl;
+                                                                cout<<"it->second[tmpRow][tmpColum].size() = "<<it->second[tmpRow][tmpColum].size()<<endl;
+                                                                if(it->second[tmpRow][tmpColum].size() > 0){
+                                                                        for(unsigned int i =0; i <it->second[tmpRow][tmpColum].size(); ++i){
+                                                                                cout<<Form("it->second[tmpRow][tmpColum].at %d ", i) << " = "<<it->second[tmpRow][tmpColum].at(i).second<<endl;
+                                                                        }
+                                                                }
+                                                        }
+
+                                                        if(it->second[tmpRow][tmpColum].size() == 0 ){
+                                                                continue;
+                                                        }
+
                                                         double tmpEnergy = it->second[tmpRow][tmpColum].at(tmpHitId).first->energyDep();
+
+                                                        if(_diagLevel < 0){
+                                                                cout << "tmpEnergy = "<< tmpEnergy <<endl;
+                                                        }
                                                         //double tmpTime = it->second[tmpRow][tmpColum].at(tmpHitId).first->time();
                                                         //tmpCluster->_energy += tmpEnergy;
                                                         //tmpCluster->_time += tmpTime;
 
-                                                        //tmpCluster->_caloCrystalHits.push_back( CaloCrystalHitPtr( caloCrystalHits, it->second[tmpRow][tmpColum].at(tmpHitId).second ) );
+                                                        //tmpCluster->caloCrystalHitsPtrVector.push_back( CaloCrystalHitPtr( caloCrystalHits, it->second[tmpRow][tmpColum].at(tmpHitId).second ) );
+
 
                                                         CaloCrystalHitPtr tmpCrystalPtr( caloCrystalHits, it->second[tmpRow][tmpColum].at(tmpHitId).second );
+
+                                                        if(_diagLevel < 0){
+                                                                cout << "tmpCrystalPtr inizializzato..."<< endl;
+                                                        }
+
                                                         tmpCluster->AddHit( tmpCrystalPtr );
-                                                        //cout << "---------> AddHit done... <--------"<<endl;
+
+                                                        if(_diagLevel < 0){
+                                                                cout << "---------> AddHit done... <--------"<<endl;
+                                                        }
+
                                                         CryID tmpCryID(tmpEnergy, tmpRow, tmpColum, tmpHitId);
 
                                                         it->second[tmpRow][tmpColum].erase( it->second[tmpRow][tmpColum].begin() + tmpHitId);
+                                                        if(_diagLevel < 0){
+                                                                cout << "---------> it->second[tmpRow][tmpColum].erase( it->second[tmpRow][tmpColum].begin() + tmpHitId) done... <--------"<<endl;
+                                                        }
+
 
                                                         energyMap[it->first].erase(tmpCryID);
 
+                                                        if(_diagLevel < 0){
+                                                                cout << "---------> energyMap[it->first].erase(tmpCryID) done... <--------"<<endl;
+                                                        }
+
+                                                        if(energyMap[it->first].size() != 0){
+                                                                 EnergyVec::iterator   itMaxEclean = energyMap[it->first].begin();
+//                                                                --itMaxEclean;
+//                                                                unsigned int count = 0;
+                                                                for(; itMaxEclean != energyMap[it->first].end(); ++itMaxEclean){
+                                                                        if( (itMaxEclean->_row == tmpRow) && (itMaxEclean->_colum == tmpColum) &&  ( itMaxEclean->_iCaloCrystalHit > tmpHitId)){
+                                                                                CryID tmpCryID_delete(itMaxEclean->_edep, tmpRow, tmpColum, itMaxEclean->_iCaloCrystalHit);
+                                                                                CryID tmpCryID_new(itMaxEclean->_edep, tmpRow, tmpColum, itMaxEclean->_iCaloCrystalHit - 1);
+                                                                                if(_diagLevel < 0){
+                                                                                        cout << "tmpCry_before... : edep = "<< itMaxEclean->_edep<<", tmpRow = "<< tmpRow<<", tmpColum = "<< tmpColum <<", iCrystalHit = "<<itMaxEclean->_iCaloCrystalHit<<endl;
+                                                                                }
+
+//                                                                                size_t tmpNewHitId = itMaxEclean->_iCaloCrystalHit - 1;
+//                                                                                itMaxEclean->setHitId(tmpNewHitId);//
+                                                                                energyMap[it->first].erase(tmpCryID_delete);
+
+                                                                                if(_diagLevel < 0){
+                                                                                        cout << "---------> deleted tmpCryID_delete... <--------"<<endl;
+                                                                                }
+                                                                                if(_diagLevel < 0){
+                                                                                        cout << "tmpCry_after... : edep = "<< itMaxEclean->_edep<<", tmpRow = "<< tmpRow<<", tmpColum = "<< tmpColum <<", iCrystalHit = "<<itMaxEclean->_iCaloCrystalHit <<endl;
+                                                                                }
+
+                                                                                energyMap[it->first].insert(tmpCryID_new);
+
+                                                                                if(_diagLevel < 0){
+                                                                                        cout << "---------> inserted tmpCryID_new... <--------"<<endl;
+                                                                                }
+//
+//                                                                                itMaxEclean = energyMap[it->first].end();
+//                                                                                --itMaxEclean;
+                                                                               // --itMaxEclean;
+
+
+                                                                        }
+//                                                                        --itMaxEclean;
+//                                                                        ++count;
+                                                                }
+                                                        }
+
                                                         if( it->second[tmpRow][tmpColum].size() == 0 ){
-                                                                //cout << "-------- it->second[tmpRow][tmpColum].size() == 0 ----------"<<endl;
-                                                                it->second[tmpRow].erase(tmpColum);
-                                                                //cout << "-------- 3 done erase ----------"<<endl;
+                                                                if(_diagLevel < 0){
+                                                                        cout << "-------- it->second[tmpRow][tmpColum].size() == 0 ----------"<<endl;
+                                                                }
+
+                                                                it->second[tmpRow].erase( it->second[tmpRow].find(tmpColum) );
+
+                                                                if(_diagLevel < 0){
+                                                                        cout << "-------- 3 done erase ----------"<<endl;
+                                                                }
 
                                                         }
 
+
+
                                                         if( it->second[tmpRow].size() == 0){
-//                                                                cout << "-------- 4 it->second[tmpRow].size() == 0 ----------"<<endl;
+                                                                if(_diagLevel < 0){
+                                                                        cout << "-------- 4 it->second[tmpRow].size() == 0 ----------"<<endl;
+                                                                }
 
                                                                 it->second.erase(tmpRow);
-//                                                                cout << "-------- 5 done erase ----------"<<endl;
+                                                                if(_diagLevel < 0){
+                                                                        cout << "-------- 5 done erase ----------"<<endl;
+                                                                }
 
                                                         }
 
                                                 }//end for(ClusterData)
-//                                                cout << "---------> end for(ClusterData)... <--------"<<endl;
+                                                if(_diagLevel < 0){
+                                                        cout << "---------> end for(ClusterData)... <--------"<<endl;
+                                                }
 
                                                 cog(*tmpCluster);
-  //                                              cout<<"cog added..."<<endl;
+                                                if(_diagLevel < 0){
+                                                        cout<<"cog added..."<<endl;
+                                                }
                                                 //                                                cout<< "cog.X = " <<tmpCluster->_impactPoint.getX() <<endl;
                                                 //                                                cout<< "cog.Y = " <<tmpCluster->_impactPoint.getY() <<endl;
                                                 //                                                cout<< "cog.Z = " <<tmpCluster->_impactPoint.getZ() <<endl;
@@ -371,69 +483,139 @@ MakeCaloCluster::produce(art::Event& evt) {
 
                                         }else{
                                                 CryID tmpCryID(itHit.first->energyDep(), tmpRow, tmpColum, tmpHitId);
-//                                                cout<<"itHit.first->energyDep() = "<<itHit.first->energyDep()<<endl;
-//                                                cout << "-------- cluster not found ----------"<<endl;
-//                                                cout << "-------- it->second[tmpRow][tmpColum].size() = "<< it->second[tmpRow][tmpColum].size() <<endl;
+                                                if(_diagLevel < 0){
+                                                        cout<<"itHit.first->energyDep() = "<<itHit.first->energyDep()<<endl;
+                                                        cout << "-------- cluster not found ----------"<<endl;
+                                                        cout << "-------- it->second[tmpRow][tmpColum].size() = "<< it->second[tmpRow][tmpColum].size() <<endl;
+                                                }
 
                                                 it->second[tmpRow][tmpColum].erase( it->second[tmpRow][tmpColum].begin() + tmpHitId);
-//                                                cout << "-------- it->second[tmpRow][tmpColum].size() = "<< it->second[tmpRow][tmpColum].size() <<endl;
-//
-//                                                cout<< "energyMap[it->first].sixe = "<< energyMap[it->first].size() <<endl;
+
+                                                if(_diagLevel < 0){
+                                                        cout << "-------- it->second[tmpRow][tmpColum].size() = "<< it->second[tmpRow][tmpColum].size() <<endl;
+                                                        cout<< "energyMap[it->first].sixe = "<< energyMap[it->first].size() <<endl;
+                                                }
 
                                                 EnergyVec::iterator j = energyMap[it->first].find(tmpCryID);
                                                 if(j != energyMap[it->first].end()){
-                                                        //cout<<"j_edep = "<< j->_edep<<endl;
+
+                                                        if(_diagLevel < 0){
+                                                                cout<<"j_edep = "<< j->_edep<<endl;
+                                                        }
                                                         --itMaxE;
                                                         energyMap[it->first].erase(  j  );
+                                                        if(energyMap[it->first].size() != 0){
+                                                                EnergyVec::iterator   itMaxEclean = energyMap[it->first].begin();
+                                                                //                                                                --itMaxEclean;
+                                                                //                                                                unsigned int count = 0;
+                                                                for(; itMaxEclean != energyMap[it->first].end(); ++itMaxEclean){
+                                                                        if( (itMaxEclean->_row == tmpRow) && (itMaxEclean->_colum == tmpColum) &&  ( itMaxEclean->_iCaloCrystalHit > tmpHitId)){
+                                                                                CryID tmpCryID_delete(itMaxEclean->_edep, tmpRow, tmpColum, itMaxEclean->_iCaloCrystalHit);
+                                                                                CryID tmpCryID_new(itMaxEclean->_edep, tmpRow, tmpColum, itMaxEclean->_iCaloCrystalHit - 1);
+                                                                                if(_diagLevel < 0){
+                                                                                        cout << "tmpCry_before... : edep = "<< itMaxEclean->_edep<<", tmpRow = "<< tmpRow<<", tmpColum = "<< tmpColum <<", iCrystalHit = "<<itMaxEclean->_iCaloCrystalHit<<endl;
+                                                                                }
+
+                                                                                //                                                                                size_t tmpNewHitId = itMaxEclean->_iCaloCrystalHit - 1;
+                                                                                //                                                                                itMaxEclean->setHitId(tmpNewHitId);//
+                                                                                energyMap[it->first].erase(tmpCryID_delete);
+
+                                                                                if(_diagLevel < 0){
+                                                                                        cout << "---------> deleted tmpCryID_delete... <--------"<<endl;
+                                                                                }
+                                                                                if(_diagLevel < 0){
+                                                                                        cout << "tmpCry_after... : edep = "<< itMaxEclean->_edep<<", tmpRow = "<< tmpRow<<", tmpColum = "<< tmpColum <<", iCrystalHit = "<<itMaxEclean->_iCaloCrystalHit <<endl;
+                                                                                }
+
+                                                                                energyMap[it->first].insert(tmpCryID_new);
+
+                                                                                if(_diagLevel < 0){
+                                                                                        cout << "---------> inserted tmpCryID_new... <--------"<<endl;
+                                                                                }
+                                                                                //
+                                                                                //                                                                                itMaxEclean = energyMap[it->first].end();
+                                                                                //                                                                                --itMaxEclean;
+                                                                                // --itMaxEclean;
+
+
+                                                                        }
+                                                                        //                                                                        --itMaxEclean;
+                                                                        //                                                                        ++count;
+                                                                }
+                                                        }
 
                                                 }else{
-                                                      //  cout<< "CryID not found*********************"<<endl;
+
+                                                        if(_diagLevel < 0){
+                                                                cout<< "CryID not found*********************"<<endl;
+                                                        }
+
                                                 }
 
 
 
-
-                                               // cout << "-------- 6 done erase ----------"<<endl;
+                                                if(_diagLevel < 0){
+                                                        cout << "-------- 6 done erase ----------"<<endl;
+                                                }
 
                                                 if( it->second[tmpRow][tmpColum].size() == 0 ){
-                                                     //   cout << "-------- it->second[tmpRow][tmpColum].size() == 0 ----------"<<endl;
+                                                        if(_diagLevel < 0){
+                                                                cout << "-------- it->second[tmpRow][tmpColum].size() == 0 ----------"<<endl;
+                                                                cout << "-------- it->second[tmpRow][tmpColum].size() = "<< it->second[tmpRow][tmpColum].size() <<endl;
+                                                        }
 
-                                                    //    cout << "-------- it->second[tmpRow][tmpColum].size() = "<< it->second[tmpRow][tmpColum].size() <<endl;
                                                         it->second[tmpRow].erase( it->second[tmpRow].find(tmpColum) );
 
                                                 }
                                                 if( it->second[tmpRow].size() == 0){
-                                                       // cout << "-------- it->second[tmpRow].size() = "<< it->second[tmpRow].size()<<endl;
-
+                                                        if(_diagLevel < 0){
+                                                                cout << "-------- it->second[tmpRow].size() = "<< it->second[tmpRow].size()<<endl;
+                                                        }
                                                         //                                                it->second.erase(tmpRow);
                                                         it->second.erase(it->second.find(tmpRow));
-//                                                        cout << "-------- 8 done erase ----------"<<endl;
-//                                                        cout << "-------- it->second[tmpRow].size() = "<< it->second[tmpRow].size()<<endl;
-
+                                                        if(_diagLevel < 0){
+                                                                cout << "-------- 8 done erase ----------"<<endl;
+                                                                cout << "-------- it->second[tmpRow].size() = "<< it->second[tmpRow].size()<<endl;
+                                                        }
                                                 }
 
                                                 if(energyMap[it->first].size() == 0) {
-                                                      //  cout << "-------- energyMap[it->first].size() == 0 ----------"<<endl;
-
+                                                        if(_diagLevel < 0){
+                                                                cout << "-------- energyMap[it->first].size() == 0 ----------"<<endl;
+                                                        }
                                                         break;
                                                 }
-                                                //cout<<"itHit.first->energyDep() = "<<itHit.first->energyDep()<<endl;
+
+                                                if(_diagLevel < 0){
+                                                        cout<<"itHit.first->energyDep() = "<<itHit.first->energyDep()<<endl;
+                                                }
 
                                                 itMaxE = energyMap[it->first].end();
                                                 --itMaxE;
-                                                //cout<<"----------------------------------start 2 ---------------------------------------"<<endl;
-                                                for(EnergyVec::iterator q = energyMap[it->first].begin(); q!= energyMap[it->first].end(); ++q){
 
-                                                //        cout<<"(*q)._edep = "<<(*q)._edep<<", row = "<< (*q)._row<<", colum = "<<(*q)._colum<< ", caloCryHitSize = "<<(*q)._iCaloCrystalHit<<endl;
+                                                if(_diagLevel < 0){
+                                                        cout<<"----------------------------------start 2 ---------------------------------------"<<endl;
                                                 }
-                                               // cout<<"------------------------------------end 2 -------------------------------------"<<endl;
+
+                                                for(EnergyVec::iterator q = energyMap[it->first].begin(); q!= energyMap[it->first].end(); ++q){
+                                                        if(_diagLevel < 0){
+                                                                cout<<"(*q)._edep = "<<(*q)._edep<<", row = "<< (*q)._row<<", colum = "<<(*q)._colum<< ", caloCryHitSize = "<<(*q)._iCaloCrystalHit<<endl;
+                                                        }
+                                                }
+                                                if(_diagLevel < 0){
+                                                        cout<<"------------------------------------end 2 -------------------------------------"<<endl;
+                                                }
 
                                         }
                                 }//end cry
-                                //cout<<"end itEmax loop..."<<endl;
+                                if(_diagLevel < 0){
+                                        cout<<"end itEmax loop..."<<endl;
+                                }
                                 ++it;
                         }//end vanes
-                      //  cout << "---------> end for(vanes)... <--------"<<endl;
+                        if(_diagLevel < 0){
+                                cout << "---------> end for(vanes)... <--------"<<endl;
+                        }
 
                 }
                 else if(_caloClusterSeeding.compare("TIME") == 0 ) {
@@ -466,7 +648,7 @@ MakeCaloCluster::produce(art::Event& evt) {
                                                                 CaloClusterCollection::iterator tmpCluster = caloClustersPointer->end();
 
                                                                 tmpCluster--;
-                                                                tmpCluster->_iVane = it->first;
+                                                                tmpCluster->vaneId = it->first;
 
                                                                 for(ClusterData::iterator itCD = cluster.begin(); itCD != cluster.end(); ++itCD){
 
