@@ -1,9 +1,15 @@
 
-  $Id: v1_1_7.txt,v 1.21 2012/03/05 20:16:51 gandr Exp $
-  $Author: gandr $
-  $Date: 2012/03/05 20:16:51 $
+  $Id: v1_1_7.txt,v 1.22 2012/03/07 21:51:53 genser Exp $
+  $Author: genser $
+  $Date: 2012/03/07 21:51:53 $
 
            Release notes for Mu2e Offline software, v1_1_7
+
+19) March 7, 2012 genser
+
+    Added new materials related to parts of Production Solenoid (PS)
+     Mu2eG4/src/ConstructMaterials.cc
+     Mu2eG4/test/geom_01.txt
 
 18) March 5, 2012 gandr
 
