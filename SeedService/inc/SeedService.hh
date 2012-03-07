@@ -3,9 +3,9 @@
 //
 // An art service to assist in the distribution of guaranteed unique seeds to all engines within an art job.
 //
-// $Id: SeedService.hh,v 1.8 2012/02/11 01:49:34 gandr Exp $
+// $Id: SeedService.hh,v 1.9 2012/03/07 03:55:01 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/11 01:49:34 $
+// $Date: 2012/03/07 03:55:01 $
 //
 // Contact person Rob Kutschke
 //
@@ -16,7 +16,7 @@
 // This class is configured from a fhcil parameter set:
 //
 //    SeedService : {
-//       policy           : "autoIncrement"  // Required: Other legal value are listed in the Policy enum below
+//       policy           : "autoIncrement"  // Required: Other legal value are listed in SEED_SERVICE_POLICIES
 //       baseSeed         : 0                // Required: An integer >= 0.
 //       checkRange       : true             // Optional: legal values true or false; defaults to true
 //       maxUniqueEngines : 20               // Required iff checkRange is true.
@@ -114,6 +114,15 @@ namespace art {
   class SubRun;
 }
 
+// The master list of all the policies
+#define SEED_SERVICE_POLICIES                   \
+  X(unDefined)                                  \
+  X(autoIncrement)                              \
+  X(linearMapping)                              \
+  X(preDefinedOffset)                           \
+  X(preDefinedSeed)                             \
+  /**/
+
 namespace mu2e {
 
   class SeedService {
@@ -122,14 +131,9 @@ namespace mu2e {
     typedef art::RandomNumberGenerator::seed_t seed_t;
 
     enum Policy {
-      unDefined,
-
-      autoIncrement,
-      linearMapping,
-      preDefinedOffset,
-      preDefinedSeed,
-
-      numPolicies // numPolicies must be the last member
+#define X(x) x,
+      SEED_SERVICE_POLICIES
+#undef X
     };
 
     static const std::vector<std::string>& policyNames();

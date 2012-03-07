@@ -1,9 +1,9 @@
 //
 // Assist in the distribution of guaranteed unique seeds to all engines within a job.
 //
-// $Id: SeedService_service.cc,v 1.10 2012/02/13 21:23:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/13 21:23:34 $
+// $Id: SeedService_service.cc,v 1.11 2012/03/07 03:55:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/07 03:55:01 $
 //
 // Contact person Rob Kutschke
 //
@@ -40,18 +40,12 @@ namespace mu2e {
   const std::vector<std::string>& SeedService::policyNames() {
     static std::vector<std::string> names;
     if(names.empty()) {
-      names.resize(SeedService::numPolicies);
-
-      names[SeedService::unDefined]        = "unDefined";
-      names[SeedService::autoIncrement]    = "autoIncrement";
-      names[SeedService::linearMapping]    = "linearMapping";
-      names[SeedService::preDefinedOffset] = "preDefinedOffset";
-      names[SeedService::preDefinedSeed]   = "preDefinedSeed";
-
-      // check consistency
-      for(unsigned i=0; i<names.size(); ++i) {
-        assert(!names[i].empty());
-      }
+      const char *cnames[] = {
+#define X(x) #x,
+        SEED_SERVICE_POLICIES
+#undef X
+      };
+      names = std::vector<std::string>(cnames, cnames + sizeof(cnames)/sizeof(cnames[0]));
     }
 
     return names;
