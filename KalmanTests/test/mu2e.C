@@ -162,9 +162,9 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
     double emin(103.5);
     double emax(104.7);
     int istart = diospec[ires]->FindFixBin(emin+0.5*mevperbin);
-    int istop = diospec[ires]->FindFixBin(emax);
+    int istop = diospec[ires]->FindFixBin(emax-0.5*mevperbin);
     cout << "Integration low edge " << diospec[ires]->GetBinLowEdge(istart) << " for cut at " << emin << endl;
-    cout << "Integration high edge " << diospec[ires]->GetBinLowEdge(istop) << " for cut at " << emax << endl;
+    cout << "Integration high edge " << diospec[ires]->GetBinLowEdge(istop)+mevperbin << " for cut at " << emax << endl;
     double dint_err, cint_err;
     double dint = diospec[ires]->IntegralAndError(istart,istop,dint_err);
     double cint = conspec[ires]->IntegralAndError(istart,istop,cint_err);

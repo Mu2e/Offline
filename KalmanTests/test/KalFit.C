@@ -1,3 +1,16 @@
+
+TCut tpitch("mcenttd>0.5&&mcenttd<1.1");
+TCut tt0("mct0>700.0");
+TCut tmom("mcentmom>100");
+TCut nmch("nchits>=20");
+
+TCut reco("fitstatus>0");
+TCut livegate("t0>710");
+TCut rpitch("td>0.57735&&td<1.0");
+TCut goodfit("fitcon>1e-4&&nactive>=20&&t0err<1.5&&fitmomerr<0.2");
+TCut cosmic("abs(d0)<105 && d0+2/om>460 && d0+2/om<660");
+TCut rmom("fitmom>103.5&&fitmom<104.7");
+
 Double_t splitgaus(Double_t *x, Double_t *par) {
   Double_t retval;
   Double_t core;
@@ -51,7 +64,6 @@ void KalFitHit (TTree* hits ) {
     t0res->Fit("gaus");
     tcan->cd(3);
     t0pull->Fit("gaus");
-    
     
     TCanvas* tdcan = new TCanvas("tdcan","tdcan",1200,800);
     TH1F* tdres = new TH1F("tdres","#Deltat V resolution;mm",100,-200,200);
@@ -145,130 +157,194 @@ void KalFitTrk (TTree* trks ) {
 }
 
 void KalFitAccPlots(TTree* trks) {
-  TH1F* pcost = new TH1F("pcost","e^{-} cos(#theta) at production",55,-1.02,1.02);
-  TH1F* pcosta = new TH1F("pcosta","e^{-} cos(#theta) at production",55,-1.02,1.02);
-  pcosta->SetLineColor(kBlue);
 
-  TH1F* nmc = new TH1F("nmc","N Straw Hits from MC true CE",71,-0.5,70.5);
-
-  TH1F* dcost = new TH1F("dcost","e^{-} cos(#theta) at tracker",55,0.3,1.02);
-  TH1F* dmom = new TH1F("dmom","e^{-} momentum at tracker",50,90,108);
-  TH1F* rmom = new TH1F("rmom","recsonstructed e^{-} momentum",100,90,108);
-  TH1F* fitcon = new TH1F("fitcon","log_{10} fit consistency",101,-5,0);
-
-  trks->Project("pcost","mccost");
-  trks->Project("pcosta","mccost",hittrk);
-//  pcosta->Divide(pcost);
-
-  trks->Project("dcost","mcenttd/sqrt(1+mcenttd^2)",hittrk);
-  trks->Project("dmom","mcentmom",hittrk+pitch);
-  trks->Project("fitcon","fitcon",hittrk+pitch+mom+reco);
-  trks->Project("rmom","fitmom",hittrk+pitch+mom+reco+goodfit);
-//  trks->Project("+fitcon","-0.05",hittrk+pitch+mom+"fitstatus<0");
-  TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
-  acan->Clear();
-  acan->Divide(3,2);
-  acan->cd(1);
-  pcost->Draw();
-  pcosta->Draw("same");
-  acan->cd(2);
-  dcost->Draw();
-  TLine* costcut_h = new TLine(0.707107,0.0,0.707107,dcost->GetMaximum());
-  costcut_h->SetLineColor(kBlack);
-  costcut_h->SetLineStyle(2);
-  costcut_h->SetLineWidth(2);
-  TLine* costcut_l = new TLine(0.5,0.0,0.5,dcost->GetMaximum());
-  costcut_l->SetLineColor(kBlack);
-  costcut_l->SetLineStyle(2);
-  costcut_l->SetLineWidth(2);
-  costcut_h->Draw();
-  costcut_l->Draw();
-  acan->cd(3);
-  dmom->Draw();
-  TLine* momcut_l = new TLine(102,0.0,102,dmom->GetMaximum());
-  momcut_l->SetLineColor(kBlack);
-  momcut_l->SetLineStyle(2);
-  momcut_l->SetLineWidth(2);
-  momcut_l->Draw();
+  TH1F* nmc = new TH1F("nmc","N Straw Hits from CE;N straws",81,-0.5,80.5);
+  TH1F* mcmom = new TH1F("mcmom","CE true momentum at tracker;CE momentum (MeV)",57,49,106);
   
-  acan->cd(4);
-  fitcon->Draw();
-  TLine* concut_l = new TLine(1e-2,0.0,1e-2,fitcon->GetMaximum());
-  concut_l->SetLineColor(kBlack);
-  concut_l->SetLineStyle(2);
-  concut_l->SetLineWidth(2);
-  concut_l->Draw();
- 
-  acan->cd(5);
-  rmom->Draw();
+  TH1F* fitcon = new TH1F("fitcon","log_{10} fit consistency",101,-8,0);
+  TH1F* momerr = new TH1F("momerr","Fit momentum error;momentum error (MeV)",100,0,0.5);
+  TH1F* t0err = new TH1F("t0err","Fit t_{0} error; t_{0} error (ns)",100,0,2.0);
+  TH1F* na = new TH1F("na","Fit N active hits;N hits",71,-0.5,70.5);
 
-  acan->cd(6);
+  TH1F* t0 = new TH1F("t0","Track Fit t_{0};t_{0} (ns)",100,300,1800);
+  TH1F* td = new TH1F("td","Track Fit tan(#lambda);tan(#lambda)",100,0.5,1.5);
+  TH1F* d0 = new TH1F("d0","Track fit d_{0};d_{0} (mm)",100,-150,150);
+  TH1F* rmax = new TH1F("rmax","Track fit rmax;d_{0}+2/#omega (mm)",100,300,900);
+
+  TH1F* fitmom = new TH1F("fitmom","Track fit momentum;fit momentum (MeV)",100,98,107);
+
+  trks->Project("nmc","nchits");
+  trks->Project("mcmom","mcentmom",nmch);
+  
+  trks->Project("fitcon","log10(fitcon)",reco+nmch+tmom);
+  trks->Project("momerr","fitmomerr",reco+nmch+tmom);
+  trks->Project("t0err","t0err",reco+nmch+tmom);
+  trks->Project("na","nactive",reco+nmch+tmom);
+
+  trks->Project("t0","t0",reco+nmch+tmom+goodfit);
+  trks->Project("td","td",reco+nmch+tmom+goodfit+livegate);
+
+  trks->Project("d0","d0",reco+nmch+tmom+goodfit+livegate);
+  trks->Project("rmax","d0+2.0/om",reco+nmch+tmom+goodfit+livegate);
+
+  trks->Project("fitmom","fitmom",reco+nmch+tmom+goodfit+livegate+cosmic);
+
+  TCanvas* pcan = new TCanvas("pcan","Pre-acceptance",1200,800);
+  pcan->Clear();
+  pcan->Divide(1,2);
+  pcan->cd(1);
+  gPad->SetLogy();
+  nmc->Draw();
+  TLine* nmccut = new TLine(20,0.0,20,nmc->GetMaximum());
+  nmccut->SetLineColor(kBlack);
+  nmccut->SetLineStyle(2);
+  nmccut->SetLineWidth(2);
+  nmccut->Draw();
+
+  pcan->cd(2);
+  gPad->SetLogy();
+  mcmom->Draw();
+  TLine* tmomcut = new TLine(100,0.0,100,mcmom->GetMaximum());
+  tmomcut->SetLineColor(kBlack);
+  tmomcut->SetLineStyle(2);
+  tmomcut->SetLineWidth(2);
+  tmomcut->Draw();
+
+  TCanvas* fcan = new TCanvas("fcan","Fit Acceptance",1200,800);
+  fcan->Clear();
+  fcan->Divide(2,2);
+  fcan->cd(1);
+  fitcon->Draw();
+  TLine* fitconcut = new TLine(-4,0.0,-4,fitcon->GetMaximum());
+  fitconcut->SetLineColor(kBlack);
+  fitconcut->SetLineStyle(2);
+  fitconcut->SetLineWidth(2);
+  fitconcut->Draw();
+
+  fcan->cd(2);
+  na->Draw();
+  TLine* nacut = new TLine(20,0.0,20,na->GetMaximum());
+  nacut->SetLineColor(kBlack);
+  nacut->SetLineStyle(2);
+  nacut->SetLineWidth(2);
+  nacut->Draw();
+
+  fcan->cd(3);
+  t0err->Draw();
+  TLine* t0errcut = new TLine(1.5,0.0,1.5,t0err->GetMaximum());
+  t0errcut->SetLineColor(kBlack);
+  t0errcut->SetLineStyle(2);
+  t0errcut->SetLineWidth(2);
+  t0errcut->Draw();
+  
+  fcan->cd(4);
+  momerr->Draw();
+  TLine* momerrcut = new TLine(0.2,0.0,0.2,momerr->GetMaximum());
+  momerrcut->SetLineColor(kBlack);
+  momerrcut->SetLineStyle(2);
+  momerrcut->SetLineWidth(2);
+  momerrcut->Draw();
+
+  TCanvas* tcan = new TCanvas("tcan","Track parameter acceptance",1200,800);
+  tcan->Divide(2,2);
+  tcan->cd(1);
+  t0->Draw();
+  TLine* t0cut = new TLine(710,0.0,710,t0->GetMaximum());
+  t0cut->SetLineColor(kBlack);
+  t0cut->SetLineStyle(2);
+  t0cut->SetLineWidth(2);
+  t0cut->Draw();
+
+  tcan->cd(2);
+  td->Draw();
+  TLine* tdcut_l = new TLine(0.57735,0.0,0.57735,td->GetMaximum());
+  tdcut_l->SetLineColor(kBlack);
+  tdcut_l->SetLineStyle(2);
+  tdcut_l->SetLineWidth(2);
+  tdcut_l->Draw();
+  TLine* tdcut_h = new TLine(1.0,0.0,1.0,td->GetMaximum());
+  tdcut_h->SetLineColor(kBlack);
+  tdcut_h->SetLineStyle(2);
+  tdcut_h->SetLineWidth(2);
+  tdcut_h->Draw();
+  
+  tcan->cd(3);
+  d0->Draw();
+  TLine* d0cut = new TLine(105,0.0,105,d0->GetMaximum());
+  d0cut->SetLineColor(kBlack);
+  d0cut->SetLineStyle(2);
+  d0cut->SetLineWidth(2);
+  d0cut->Draw();
+
+  tcan->cd(4);
+  rmax->Draw();
+  TLine* rmaxcut = new TLine(660,0.0,660,rmax->GetMaximum());
+  rmaxcut->SetLineColor(kBlack);
+  rmaxcut->SetLineStyle(2);
+  rmaxcut->SetLineWidth(2);
+  rmaxcut->Draw();
+ 
+  TCanvas* mcan = new TCanvas("mcan","momentum",800,600);
+  mcan->Divide(1,1);
+  mcan->cd(1);
+  fitmom->Draw();
+  TLine* fitmomcut_l = new TLine(103.5,0.0,103.5,fitmom->GetMaximum());
+  fitmomcut_l->SetLineColor(kBlack);
+  fitmomcut_l->SetLineStyle(2);
+  fitmomcut_l->SetLineWidth(2);
+  fitmomcut_l->Draw();
+  TLine* fitmomcut_h = new TLine(104.7,0.0,104.7,fitmom->GetMaximum());
+  fitmomcut_h->SetLineColor(kBlack);
+  fitmomcut_h->SetLineStyle(2);
+  fitmomcut_h->SetLineWidth(2);
+  fitmomcut_h->Draw();
+ 
+
 } 
 
 void KalFitAcc(TTree* trks) {
-  TCut tpitch("mcenttd>0.5&&mcenttd<1.1");
-  TCut tt0("mct0>700.0");
-  TCut tmom("mcentmom>100");
-  TCut nmch("nchits>=20");
-  TCut ce = nmch+tmom;
-
-  TCut reco("fitstatus>0");
-  TCut livegate("t0>710");
-  TCut rpitch("td>0.57735&&td<1.0");
-  TCut goodfit("fitcon>1e-4&&nactive>=20&&t0err<1.5&&fitmomerr<0.2");
-  TCut cosmic("abs(d0)<105 && d0+2/om>460 && d0+2/om<660");
-  TCut rmom("fitmom>103.5&&fitmom<104.7");
-
-  unsigned nbins(10);
+  unsigned nbins(9);
   double bmax = nbins-0.5;
   TH1F* acc = new TH1F("acc","CE Acceptance;;cummulative acceptance",nbins,-0.5,bmax);
   TH1F* racc = new TH1F("racc","CE Acceptance;;relative acceptance",nbins,-0.5,bmax);
 //  acc->Sumw2();
 //  racc->Sumw2();
+  unsigned i(1);
   acc->GetXaxis()->SetBinLabel(1,"All CE");
   acc->GetXaxis()->SetBinLabel(2,">=20 CE SH");
   acc->GetXaxis()->SetBinLabel(3,"CE p>100 MeV/c");
-  acc->GetXaxis()->SetBinLabel(4,"CE pitch");
-  acc->GetXaxis()->SetBinLabel(5,"KF Track fit");
+//  acc->GetXaxis()->SetBinLabel(4,"CE pitch");
+  acc->GetXaxis()->SetBinLabel(4,"KF Track fit");
+  acc->GetXaxis()->SetBinLabel(5,"Fit Quality");
   acc->GetXaxis()->SetBinLabel(6,"Livegate");
   acc->GetXaxis()->SetBinLabel(7,"Reco pitch");
-  acc->GetXaxis()->SetBinLabel(8,"Fit Quality");
-  acc->GetXaxis()->SetBinLabel(9,"Cosmic Rejection");
-  acc->GetXaxis()->SetBinLabel(10,"Momentum window");
+  acc->GetXaxis()->SetBinLabel(8,"Cosmic Rejection");
+  acc->GetXaxis()->SetBinLabel(9,"Momentum window");
 
   racc->GetXaxis()->SetBinLabel(1,"All CE");
   racc->GetXaxis()->SetBinLabel(2,">=20 CE SH");
   racc->GetXaxis()->SetBinLabel(3,"CE p>100 MeV/c");
-  racc->GetXaxis()->SetBinLabel(4,"CE pitch");
-  racc->GetXaxis()->SetBinLabel(5,"KF Track fit");
+//  racc->GetXaxis()->SetBinLabel(4,"CE pitch");
+  racc->GetXaxis()->SetBinLabel(4,"KF Track fit");
+  racc->GetXaxis()->SetBinLabel(5,"Fit Quality");
   racc->GetXaxis()->SetBinLabel(6,"Livegate");
   racc->GetXaxis()->SetBinLabel(7,"Reco pitch");
-  racc->GetXaxis()->SetBinLabel(8,"Fit Quality");
-  racc->GetXaxis()->SetBinLabel(9,"Cosmic Rejection");
-  racc->GetXaxis()->SetBinLabel(10,"Momentum window");
+  racc->GetXaxis()->SetBinLabel(8,"Cosmic Rejection");
+  racc->GetXaxis()->SetBinLabel(9,"Momentum window");
   
   
   trks->Project("acc","0.0");
   trks->Project("+acc","1.0",nmch);
   trks->Project("+acc","2.0",nmch+tmom);
-  trks->Project("+acc","3.0",nmch+tmom+tpitch);
-  trks->Project("+acc","4.0",nmch+tmom+tpitch+reco);
-  trks->Project("+acc","5.0",nmch+tmom+tpitch+reco+livegate);
-  trks->Project("+acc","6.0",nmch+tmom+tpitch+reco+rpitch+livegate);
-  trks->Project("+acc","7.0",nmch+tmom+tpitch+reco+rpitch+livegate+goodfit);
-  trks->Project("+acc","8.0",nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+goodfit);
-  trks->Project("+acc","9.0",nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+goodfit+rmom);
-
-
+//  trks->Project("+acc","3.0",nmch+tmom+tpitch);
+  trks->Project("+acc","3.0",nmch+tmom+reco);
+  trks->Project("+acc","4.0",nmch+tmom+reco+goodfit);
+  trks->Project("+acc","5.0",nmch+tmom+reco+goodfit+livegate);
+  trks->Project("+acc","6.0",nmch+tmom+reco+goodfit+livegate+rpitch);
+  trks->Project("+acc","7.0",nmch+tmom+reco+rpitch+livegate+cosmic+goodfit);
+  trks->Project("+acc","8.0",nmch+tmom+reco+rpitch+livegate+cosmic+goodfit+rmom);
 
   double all = acc->GetBinContent(1);
-  double reach = acc->GetBinContent(2)/all;
-  double gpitch = acc->GetBinContent(3)/all;
-  double gmom = acc->GetBinContent(4)/all;
-  double greco = acc->GetBinContent(5)/all;
-  double good = acc->GetBinContent(6)/all;
-
-
   double prev = all;
   for(unsigned ibin=1;ibin<=nbins;++ibin){
     racc->SetBinContent(ibin,acc->GetBinContent(ibin)/prev);
@@ -296,14 +372,6 @@ void KalFitAcc(TTree* trks) {
   tp = (TPad*)acan->cd(2);
   tp->SetBottomMargin(0.15);
   racc->Draw("histtext0");
-
-
-//  cout << "Acceptance: Reach tracker " << reach << endl 
-//  << " Pitch " << gpitch << " relative " << gpitch/reach << endl
-//  << " Momentum " << gmom << " relative " << gmom/gpitch << endl
-//  << " Reconstruction " << greco << " relative " << greco/gmom << endl
-//  << " Fit Quality " << good << " relative " << good/greco << std::endl;
-
 }
 
 void KalFitRes(TTree* trks) {
