@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.37 2012/03/05 19:49:38 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/05 19:49:38 $
+// $Id: G4_module.cc,v 1.38 2012/03/08 22:30:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/08 22:30:00 $
 //
 // Original author Rob Kutschke
 //
@@ -553,6 +553,8 @@ namespace mu2e {
       ostringstream out;
       out << "/run/setCut " << minRangeCut << " mm ";
       _UI->ApplyCommand(out.str().c_str());
+      mf::LogInfo("GEOM")
+        << "Setting minRange cut to " << minRangeCut << " mm\n";
     }
   }
 
