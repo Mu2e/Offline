@@ -1,9 +1,18 @@
 
-  $Id: v1_1_7.txt,v 1.22 2012/03/07 21:51:53 genser Exp $
-  $Author: genser $
-  $Date: 2012/03/07 21:51:53 $
+  $Id: v1_1_7.txt,v 1.23 2012/03/08 22:34:20 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/03/08 22:34:20 $
 
            Release notes for Mu2e Offline software, v1_1_7
+
+20) March 8, 2012 genser
+    Changed the default physics list to QGSP_BERT_HP with minRangeCut=0.01 mm.
+    Added printout when the minRangeCut is set.  This slows down the example
+    g4test_03.fcl; to speed it up a little I reduced the number of ejected
+    protons made in time with the conversion electron.
+      Mu2eG4/src/G4_module.cc
+      Mu2eG4/test/genconfig_02.txt
+      Mu2eG4/test/geom_01.txt
 
 19) March 7, 2012 genser
 
