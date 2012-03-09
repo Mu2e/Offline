@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.130 2012/03/08 22:30:44 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/08 22:30:44 $
+// $Id: geom_01.txt,v 1.131 2012/03/09 19:34:06 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/09 19:34:06 $
 //
 // Original author Rob Kutschke
 //
@@ -343,8 +343,8 @@ double targetPS_positionX         =      0.;  // mm
 double targetPS_positionY         =      0.;  // mm
 double targetPS_positionZ         =   -35.5;  // mm
 double targetPS_rotX              =      0.;  // degree. Active rotation.
-double targetPS_rotY              =   13.65;  // degree.
-string targetPS_materialName      = "G4_Au";
+double targetPS_rotY              =   14.00;  // degree.
+string targetPS_materialName      = "G4_W";
 bool   targetPS.visible           = true;
 bool   targetPS.solid             = false;
 
