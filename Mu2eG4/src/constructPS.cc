@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.9 2012/03/05 19:39:06 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/05 19:39:06 $
+// $Id: constructPS.cc,v 1.10 2012/03/10 00:00:26 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/10 00:00:26 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -20,6 +20,7 @@
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/constructPS.hh"
+#include "Mu2eG4/inc/constructPSShield.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 
@@ -469,6 +470,7 @@ namespace mu2e {
                                             doSurfaceCheck
                                             );
 
+    constructPSShield(psVacInfo, _config);
 
     // To compare with g4beamline studies: close the vacuum with a solid disk
     // FIXME
