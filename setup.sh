@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.38 2012/01/18 23:08:20 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/01/18 23:08:20 $
+# $Id: setup.sh,v 1.39 2012/03/12 18:44:37 mf Exp $
+# $Author: mf $
+# $Date: 2012/03/12 18:44:37 $
 #
 # Original author Rob Kutschke
 #
@@ -56,7 +56,8 @@ setup g4radiative v3_3
 setup g4abla v3_0
 
 # Other libraries we need.
-setup heppdt v3_04_01 -qgcc46:prof
+setup heppdt v3_04_01 -qgcc46:debug
+setup splines v1_00_01 -q a7:prof
 
 # The build system.
 setup scons v1_3_0b -qgcc46
