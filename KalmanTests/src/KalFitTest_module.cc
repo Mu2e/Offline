@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.11 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/10/28 18:47:06 $
+// $Id: KalFitTest_module.cc,v 1.12 2012/03/12 22:22:36 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/03/12 22:22:36 $
 //
 
 // framework
@@ -90,9 +90,13 @@ namespace mu2e
 
   KalFitTest::~KalFitTest(){}
 
-  void KalFitTest::beginJob(){}
+  void KalFitTest::beginJob(){
+     if(_diag > 0)
+      TTree* trkdiag = _kfitmc.createTrkDiag();
+  }
 
-  void KalFitTest::beginRun(art::Run& ){}
+  void KalFitTest::beginRun(art::Run& ){
+  }
 
   void KalFitTest::produce(art::Event& event ) 
   {
