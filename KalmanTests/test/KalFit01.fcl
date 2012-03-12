@@ -1,8 +1,8 @@
 # Configuration file for KalFit01
 #
-# $Id: KalFit01.fcl,v 1.15 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
+# $Id: KalFit01.fcl,v 1.16 2012/03/12 20:11:10 brownd Exp $
+# $Author: brownd $
+# $Date: 2012/03/12 20:11:10 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -57,7 +57,7 @@ physics :
     KalFitTest :
     {
         module_type    : KalFitTest
-        diagLevel      : 2
+        diagLevel      : 0
     # Kalman fit configuration
         KalFit : 
         {

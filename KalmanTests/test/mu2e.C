@@ -14,14 +14,15 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   double genmax(105);
   double genmin(100);
 
-  TH1F* timeshift = new TH1F("timeshift","T0 - muon conversion time;nsec",100,0,100);
+  TH1F* timeshift = new TH1F("timeshift","T_{0} - muon conversion time;nsec",100,0,100);
+  timeshift->SetStats(0);  
   con->Project("timeshift","t0-mct0","fitstatus>0");
 
-  TProfile* truedio = new TProfile("truedio","Weighted MC true DIO spectrum;MeV/c;d#Gamma/(#Gamma dE) (MeV^{-1})",nbins,mmin,mmax,0,1);
+  TProfile* truedio = new TProfile("truedio","MC true DIO spectrum;MeV/c;d#Gamma/(#Gamma dE) (MeV^{-1})",nbins,mmin,mmax,0,1);
   dio->Project("truedio","diowt:mcmom");
   truedio->SetMaximum(1e-12);
   truedio->SetMinimum(1e-24);
-  TH1F* tdio = new TH1F("tdio","Weighted MC true DIO spectrum;MeV/c;d#Gamma/(#Gamma dE) (MeV^{-1})",nbins,mmin,mmax);
+  TH1F* tdio = new TH1F("tdio","MC true DIO spectrum;MeV/c;d#Gamma/(#Gamma dE) (MeV^{-1})",nbins,mmin,mmax);
   tdio->Sumw2();
   dio->Project("tdio","mcmom","diowt");
   tdio->Scale(diogenrange/(ndio*mevperbin));
@@ -31,6 +32,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   truedio->SetMarkerColor(kRed);
   tdio->SetLineColor(kBlue);
   tdio->SetMarkerColor(kBlue);
+  truedio->SetStats(0);
 
   TCanvas* valid = new TCanvas("valid","validation",1200,800);
   valid->Divide(1,2);
@@ -38,8 +40,14 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   gPad->SetLogy();
   truedio->Draw();
   tdio->Draw("same");
+  TLegend* vleg = new TLegend(0.7,0.8,0.9,0.9);
+  vleg->AddEntry(truedio,"CTM formula","L");
+  vleg->AddEntry(tdio,"Weighted sampling","L");
+  vleg->Draw();
+
   valid->cd(2);
   timeshift->Draw();
+
 
   TH1F* diospec[4];
   TH1F* conspec[4];
@@ -123,10 +131,11 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   for(unsigned ires=0;ires<4;ires++){
     logcan->cd(ires+1);
     gPad->SetLogy();
+    diospec[ires]->SetMinimum(1e-4);
     diospec[ires]->Draw();
     conspec[ires]->Draw("same");
 
-    TPaveText* logtext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");  
+    TPaveText* logtext = new TPaveText(0.1,0.2,0.4,0.5,"NDC");  
  
     char line[40];
     snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
@@ -156,6 +165,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
    for(unsigned ires=0;ires<4;ires++){
     lincan->cd(ires+1);
     TH1F* diocopy = diospec[ires]->DrawCopy();
+    diocopy->SetMinimum(-0.2);
     diocopy->SetMaximum(4);
     conspec[ires]->Draw("same");
 
