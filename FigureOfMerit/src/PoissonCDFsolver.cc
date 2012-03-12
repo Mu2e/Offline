@@ -148,7 +148,7 @@ double feldmanCousins90pctSensitivity ( double b )
   return s(b);
 } 
 
-std::vector<double> sensValues_4() {
+std::vector<double> FeldmanCousins90pctSensitivity::sensValues_4() {
   // From table XII in HUTP-97/A096 
   // arXiv.physics/971021v2
   // column 3, lines 1-9
@@ -165,7 +165,7 @@ std::vector<double> sensValues_4() {
   return v;
 }
 
-std::vector<double> sensValues_415() {
+std::vector<double> FeldmanCousins90pctSensitivity::sensValues_15() {
   // From table XII in HUTP-97/A096 
   // arXiv.physics/971021v2
   // column 3 (integer values in column 1)
@@ -199,8 +199,8 @@ FeldmanCousins90pctSensitivity::FeldmanCousins90pctSensitivity()
 double FeldmanCousins90pctSensitivity::operator() (double b) const 
 { 
   if (b < 0)    return  sensitivity_4(0);
-  if (b < 4.0)  return   sensitivity_4(b);
-  if (b < 15.0) return   sensitivity_15(b);
+  if (b < 4.0)  return  sensitivity_4(b);
+  if (b < 15.0) return  sensitivity_15(b);
   // formula for b > 15 may or may not be particularly accurate
   return 2.132 + 1.404 * std::sqrt(b) + 0.046*b;
 } 
