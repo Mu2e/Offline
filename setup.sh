@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.39 2012/03/12 18:44:37 mf Exp $
+# $Id: setup.sh,v 1.40 2012/03/12 19:45:34 mf Exp $
 # $Author: mf $
-# $Date: 2012/03/12 18:44:37 $
+# $Date: 2012/03/12 19:45:34 $
 #
 # Original author Rob Kutschke
 #
@@ -57,7 +57,8 @@ setup g4abla v3_0
 
 # Other libraries we need.
 setup heppdt v3_04_01 -qgcc46:debug
-setup splines v1_00_01 -q a7:prof
+# Don't setup splines until art v1_00_11 is being used
+#setup splines v1_00_01 -q a7:prof
 
 # The build system.
 setup scons v1_3_0b -qgcc46
