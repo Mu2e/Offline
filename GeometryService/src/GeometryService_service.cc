@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.19 2012/02/27 06:05:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/27 06:05:35 $
+// $Id: GeometryService_service.cc,v 1.20 2012/03/13 19:01:12 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/13 19:01:12 $
 //
 // Original author Rob Kutschke
 //
@@ -33,6 +33,8 @@
 #include "Mu2eBuildingGeom/inc/Mu2eBuildingMaker.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "ProductionTargetGeom/inc/ProductionTargetMaker.hh"
+#include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
+#include "ProductionSolenoidGeom/inc/ProductionSolenoidMaker.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDumpMaker.hh"
 #include "TargetGeom/inc/Target.hh"
@@ -129,12 +131,20 @@ namespace mu2e {
     std::auto_ptr<ProductionTarget> tmpProdTarget(ProductionTargetMaker(*_config, beamline.solenoidOffset()).getDetectorPtr());
     addDetector(tmpProdTarget);
 
+    std::auto_ptr<ProductionSolenoid> 
+      tmpProductionSolenoid(ProductionSolenoidMaker(*_config,
+                                                    beamline.solenoidOffset(),
+                                                    beamline.getTS().torusRadius(),
+                                                    beamline.getTS().getTS1().getHalfLength()
+                                                    ).getProductionSolenoidPtr());
+    addDetector(tmpProductionSolenoid);
+
     std::auto_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker(*_config).getPtr());
     const ProtonBeamDump& dump = *tmpDump.get();
     addDetector(tmpDump);
 
     std::auto_ptr<Mu2eBuilding> tmpBuilding(Mu2eBuildingMaker(*_config, dump).getPtr());
-    const Mu2eBuilding& building = *tmpBuilding.get();
+    //    const Mu2eBuilding& building = *tmpBuilding.get();
     addDetector(tmpBuilding);
 
     if(_config->getBool("hasTarget",false)){
