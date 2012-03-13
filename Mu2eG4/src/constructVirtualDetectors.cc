@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.25 2012/03/01 21:19:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/01 21:19:35 $
+// $Id: constructVirtualDetectors.cc,v 1.26 2012/03/13 19:02:34 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/13 19:02:34 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -21,6 +21,8 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
+#include "GeomPrimitives/inc/Tube.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
@@ -847,36 +849,26 @@ namespace mu2e {
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
-    // placing virtual detector on the exit (beam dump direction) of PS
+    // placing virtual detector on the exit (beam dump direction) and inside of  PS 
     vdId = VirtualDetectorId::PS_FrontExit;
-    if (true)
+    if ( vdg->exist(vdId) )
     {
       VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
 
-      GeomHandle<Beamline> beamg;
-      double solenoidOffset = beamg->solenoidOffset();
-      double rTorus         = beamg->getTS().torusRadius();
-      double ts1HalfLength  = beamg->getTS().getTS1().getHalfLength();
+      ProductionSolenoid const & psgh = *(GeomHandle<ProductionSolenoid>());
 
-      TubsParams psCryoParams( _config->getDouble("toyPS.rIn"),
-                               _config->getDouble("toyPS.rOut"),
-                               _config->getDouble("toyPS.CryoHalfLength"));
+      Tube const & psVacVesselInnerParams = *psgh.getVacVesselInnerParamsPtr();
 
-      // In the Mu2e coordinate system.
-      double psCryoZ0 = -rTorus + -2.*ts1HalfLength - psCryoParams.zHalfLength();
-      G4ThreeVector psCryoPosition( solenoidOffset, 0., psCryoZ0 );
+      G4ThreeVector vdOrigin = psVacVesselInnerParams.originInMu2e() -
+        G4ThreeVector(0.0, 0.0, psVacVesselInnerParams.halfLength() - vdg->getHalfLength());
 
-      G4ThreeVector vdOrigin = psCryoPosition - 
-        G4ThreeVector(0.0, 0.0, psCryoParams.zHalfLength() + vdg->getHalfLength());
-      G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
-
-      TubsParams vdParams(0., psCryoParams.outerRadius(), vdg->getHalfLength());
+      TubsParams vdParams(0., psVacVesselInnerParams.innerRadius(), vdg->getHalfLength());
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
                                    vacuumMaterial,
                                    0,
-                                   vdOrigin - _hallOriginInMu2e,
+                                   vdOrigin - parent.centerInMu2e(),
                                    parent,
                                    vdId,
                                    vdIsVisible,
