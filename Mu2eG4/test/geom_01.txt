@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.132 2012/03/10 00:02:22 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/10 00:02:22 $
+// $Id: geom_01.txt,v 1.133 2012/03/13 19:03:17 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/13 19:03:17 $
 //
 // Original author Rob Kutschke
 //
@@ -199,22 +199,13 @@ int    toyDS.verbosityLevel     = 0;
 bool   toyDS.visible            = true;
 bool   toyDS.solid              = false;
 
-// A toy model of the PS, coils, cryo and vaccum.
-double toyPS.rIn            =   880.;
-double toyPS.rOut           =  1300.;
-double toyPS1.vacHalfLength =  2580.; //2700.;
-double toyPS.CryoHalfLength =  2580.;
-string toyPS.materialName   = "G4_Al";
-bool   toyPS.visible        = true;
-bool   toyPS.solid          = false;
-
 // For g4beamline comparison: close the PS vacuum with a thin disk.
 // A non-positive thickness (default in .cc) means don't create the G4 volume.
 // The disk matches the outside radius of the cryostat.
 // 
 // NB: docdb-1944 uses 2.84mm Titanium disk.
-double toyPS.toyEnclosure.Thickness = 2.84; // mm
-string toyPS.toyEnclosure.materialName = "G4_Ti";
+double PS.toyEnclosure.Thickness = 2.84; // mm
+string PS.toyEnclosure.materialName = "G4_Ti";
 
 // more realistic PS based on doc-2066-v5
 

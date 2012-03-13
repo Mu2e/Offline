@@ -2,9 +2,9 @@
 // Standard geometry with physics turned off.
 // We need to put the control of physics elsewhere.
 //
-// $Id: transportOnlyGeom.txt,v 1.5 2012/03/05 19:39:56 genser Exp $
+// $Id: transportOnlyGeom.txt,v 1.6 2012/03/13 19:03:17 genser Exp $
 // $Author: genser $
-// $Date: 2012/03/05 19:39:56 $
+// $Date: 2012/03/13 19:03:17 $
 //
 // Original author Rob Kutschke
 
@@ -77,13 +77,11 @@ bool protonBeamDump.mouthVisible = false;
 bool protonBeamDump.neutronCaveVisible = false;
 bool protonabsorber.visible = false;
 //bool PS.solid               = false;
-bool PS.visible             = true;
+int    PS.verbosityLevel      = 2;
+bool PS.visible               = true;
 bool target.visible = false;
 bool targetPS.visible = false;
 bool toyDS.visible = false;
-bool toyPS.visible = false;
-//bool toyPS.toyEnclosure.solid = false;
-bool toyPS.toyEnclosure.visible = true;
 bool toyTS.visible = false;
 bool ttracker.deviceEnvelopeVisible = false;
 bool ttracker.envelopeVisible =  false;
