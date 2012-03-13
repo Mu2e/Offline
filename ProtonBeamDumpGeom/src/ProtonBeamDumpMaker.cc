@@ -121,7 +121,7 @@ namespace mu2e {
 
     // core relative to the enclosure
     m_det->_coreCenterInEnclosure[0] = 0;
-    m_det->_coreCenterInEnclosure[1] = -m_det->_magnetPitHalfSize[1];
+    m_det->_coreCenterInEnclosure[1] = -0.5*m_det->_magnetPitHalfSize[1];
     m_det->_coreCenterInEnclosure[2] = -coreOffset;
 
     // position of the magnet pit
