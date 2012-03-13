@@ -1,0 +1,37 @@
+#
+# $Id: SConscript,v 1.1 2012/03/13 19:00:18 genser Exp $
+# $Author: genser $
+# $Date: 2012/03/13 19:00:18 $
+#
+# Original author Rob Kutschke.
+#
+
+import os, re
+Import('env')
+
+plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
+non_plugin_cc = Glob('*.cc', strings=True)
+for cc in plugin_cc: non_plugin_cc.remove(cc)
+
+if non_plugin_cc:
+
+    # From: /path1/path2/path3/Name/src extract the string Name field.
+    dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+    local_lib_name=os.path.dirname(dd)
+
+ # FIXME remove 'TTrackerGeom' when ready
+
+    env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
+                      LIBS=[
+        'TrackerGeom',
+        'CLHEP',
+        ],
+                      )
+    libs=[ '#/lib/' + local_lib_name ]
+else:
+    libs=[]
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:
