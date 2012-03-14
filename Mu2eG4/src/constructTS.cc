@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.7 2012/02/27 06:05:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/27 06:05:35 $
+// $Id: constructTS.cc,v 1.8 2012/03/14 17:34:06 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/14 17:34:06 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -65,6 +65,7 @@ namespace mu2e {
 
     double coll1InnerRadius1   = _config->getDouble("coll1.innerRadius1");
     double coll1InnerRadius2   = _config->getDouble("coll1.innerRadius2");
+    double coll1InnerRadius3   = _config->getDouble("coll1.innerRadius3");
     double coll5InnerRadius    = _config->getDouble("coll5.innerRadius");
 
     MaterialFinder materialFinder(*_config);
@@ -133,26 +134,32 @@ namespace mu2e {
                                        doSurfaceCheck
                                        );
 
-    // Place collimator 1 (two concentric cyliders placed in ToyTS1Vacuum)
+    // Place collimator 1 (concentric cone which can be a cylinder when r1==r2
+    // and a cylinder placed in ToyTS1Vacuum)
 
-    TubsParams coll1Param1 ( coll1InnerRadius1, coll1InnerRadius2, coll1HalfLength-2*vdHalfLength);
-    TubsParams coll1Param2 ( coll1InnerRadius2,              rVac, coll1HalfLength-2*vdHalfLength);
+    // the cone (which can be a tube/cylinder) inside the outer tube/cylinder
+    double coll1Param1[7] = { coll1InnerRadius1, coll1InnerRadius3,
+                              coll1InnerRadius2, coll1InnerRadius3,
+                              coll1HalfLength - 2.*vdHalfLength,
+                              0.0, CLHEP::twopi };
+
+    VolumeInfo coll1VacInfo = nestCons( "Coll11",
+                                        coll1Param1,
+                                        coll1Material1,
+                                        0,
+                                        beamg->getTS().getColl1().getLocal(),
+                                        ts1VacInfo,
+                                        0,
+                                        collVisible,
+                                        G4Color::Cyan(),
+                                        collSolid,
+                                        forceAuxEdgeVisible,
+                                        placePV,
+                                        doSurfaceCheck
+                                        );
+
+    TubsParams coll1Param2 ( coll1InnerRadius3,              rVac, coll1HalfLength-2*vdHalfLength);
  
-    VolumeInfo coll1Info1 = nestTubs( "Coll11",
-                                      coll1Param1,
-                                      coll1Material1,
-                                      0,
-                                      beamg->getTS().getColl1().getLocal(),
-                                      ts1VacInfo,
-                                      0,
-                                      collVisible,
-                                      G4Color::Gray(),
-                                      collSolid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      doSurfaceCheck
-                                      );
-
     VolumeInfo coll1Info2 = nestTubs( "Coll12",
                                       coll1Param2,
                                       coll1Material2,
@@ -169,8 +176,8 @@ namespace mu2e {
                                       );
 
     // Build TS2.
-    double ts2VacParams[5]  = { 0.0,   rVac, rTorus, 1.5*M_PI, 0.5*M_PI };
-    double ts2CryoParams[5] = { rVac, rCryo, rTorus, 1.5*M_PI, 0.5*M_PI };
+    double ts2VacParams[5]  = { 0.0,   rVac, rTorus, 1.5*CLHEP::pi, CLHEP::halfpi };
+    double ts2CryoParams[5] = { rVac, rCryo, rTorus, 1.5*CLHEP::pi, CLHEP::halfpi };
 
     // Position in the Mu2e coordintate system.
     G4ThreeVector ts2VacPosition( ts3HalfLength, 0., -rTorus);
@@ -257,7 +264,7 @@ namespace mu2e {
                                       coll3HoleRadius+5.0,coll3HoleHalfHeight,hDz+1.0);
     G4Tubs* coll3_hole_circle = new G4Tubs("coll3_hole_circle",
                                            0.0,coll3HoleRadius,hDz+1.0,
-                                           0.0, 360.0*CLHEP::degree );
+                                           0.0, CLHEP::twopi );
     G4IntersectionSolid* coll3_hole = new G4IntersectionSolid("coll3_hole",
                                                               coll3_hole_box,
                                                               coll3_hole_circle);
@@ -275,11 +282,11 @@ namespace mu2e {
 
     G4Tubs* coll31_mother = new G4Tubs("Coll31_mother",
                                        0, rVac, coll31HalfLength-2*vdHalfLength,
-                                       0.0, 360.0*CLHEP::degree );
+                                       0.0, CLHEP::twopi );
 
     G4Tubs* coll32_mother = new G4Tubs("Coll32_mother",
                                        0, rVac, coll32HalfLength-2*vdHalfLength,
-                                       0.0, 360.0*CLHEP::degree );
+                                       0.0, CLHEP::twopi );
 
     coll31Info.solid = new G4SubtractionSolid(coll31Info.name,
                                               coll31_mother,
@@ -330,7 +337,7 @@ namespace mu2e {
 
     double pbarHalfLength     = _config->getDouble("pbar.halfLength");
     G4Material* pbarMaterial  = materialFinder.get("pbar.materialName");
-    double pbarParams[5]  = { 0.0,   rVac, pbarHalfLength, 0.0, 360.0*CLHEP::degree };
+    double pbarParams[5]  = { 0.0,   rVac, pbarHalfLength, 0.0, CLHEP::twopi };
 
     VolumeInfo pbarInfo = nestTubs( "PbarAbs",
                                     pbarParams,
@@ -349,8 +356,8 @@ namespace mu2e {
 
     // Build TS4.
 
-    double ts4VacParams[5]  = { 0.0,  rVac, rTorus, 0.5*M_PI, 0.5*M_PI };
-    double ts4CryoParams[5] = {rVac, rCryo, rTorus, 0.5*M_PI, 0.5*M_PI };
+    double ts4VacParams[5]  = { 0.0,  rVac, rTorus, CLHEP::halfpi, CLHEP::halfpi };
+    double ts4CryoParams[5] = {rVac, rCryo, rTorus, CLHEP::halfpi, CLHEP::halfpi };
 
     // Position in the Mu2e coordintate system.
 
@@ -427,7 +434,7 @@ namespace mu2e {
     // Place collimator 5
 
     double coll5Param[5] = { coll5InnerRadius, rVac,
-                             coll5HalfLength-2*vdHalfLength, 0.0, 360.0*CLHEP::degree };
+                             coll5HalfLength-2*vdHalfLength, 0.0, CLHEP::twopi };
 
     VolumeInfo coll5VacInfo = nestTubs( "Coll5",
                                         coll5Param,
