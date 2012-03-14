@@ -1,9 +1,18 @@
 
-  $Id: v1_1_7.txt,v 1.24 2012/03/13 19:04:27 genser Exp $
+  $Id: v1_1_7.txt,v 1.25 2012/03/14 17:35:25 genser Exp $
   $Author: genser $
-  $Date: 2012/03/13 19:04:27 $
+  $Date: 2012/03/14 17:35:25 $
 
            Release notes for Mu2e Offline software, v1_1_7
+
+22) March 14, 2012 genser
+
+   Implemented Collimator 1 to consist out of concentric cone and
+   cylinder thus making it possible to revert to a previous cone only
+   like setup
+
+     Mu2eG4/src/constructTS.cc
+     Mu2eG4/test/geom_01.txt
 
 21) March 13, 2012 genser
     
@@ -32,7 +41,6 @@
      ProductionSolenoidGeom/inc/ProductionSolenoidMaker.hh
      ProductionSolenoidGeom/src/ProductionSolenoidMaker.cc
      ProductionSolenoidGeom/src/SConscript
-
 
 20) March 8, 2012 kutschke
     Changed the default physics list to QGSP_BERT_HP with minRangeCut=0.01 mm.
