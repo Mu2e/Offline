@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.29 2012/03/14 21:46:49 genser Exp $
+# $Id: SConscript,v 1.1 2012/03/14 21:46:50 genser Exp $
 # $Author: genser $
-# $Date: 2012/03/14 21:46:49 $
+# $Date: 2012/03/14 21:46:50 $
 #
 # Original author Rob Kutschke.
 #
@@ -17,6 +17,7 @@ Import('env')
 #
 
 g4inc    = os.environ['G4INCLUDE']
+g4futureinc = '../inc'
 g4libdir = os.environ['G4LIBDIR']
 
 # Compiler switches needed by the default G4 build.
@@ -116,7 +117,6 @@ if non_plugin_cc:
                       LIBS=[ 'art_Framework_Core',
                              'art_Framework_Modules_RandomNumberSaver_module',
                              'art_Framework_Services_Optional_TFileService_service',
-                             'mucapture',
                              'Analyses',
                              'GeometryService',
                              'ConditionsService',
@@ -131,7 +131,7 @@ if non_plugin_cc:
                               XERCESC_LIBS
                            ],
                       CPPFLAGS= [  G4CPPFLAGS, G4OGL_CPPFLAGS ],
-                      parse_flags=[ '-L'+g4libdir, '-I'+g4inc ]
+                      parse_flags=[ '-L'+g4libdir, '-I'+g4inc, '-I'+g4futureinc ]
                       )
     libs=[ local_lib_name ]
 else:
@@ -149,7 +149,6 @@ for cc in plugin_cc:
                             'ConditionsService',
                             'SeedService_service',
                             'G4Helper_service',
-                            G4GRANULARLIBS,
                             'Mu2eUtilities',
                             'MCDataProducts',
                             'GeneralUtilities',
