@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.133 2012/03/13 19:03:17 genser Exp $
+// $Id: geom_01.txt,v 1.134 2012/03/14 17:35:11 genser Exp $
 // $Author: genser $
-// $Date: 2012/03/13 19:03:17 $
+// $Date: 2012/03/14 17:35:11 $
 //
 // Original author Rob Kutschke
 //
@@ -292,8 +292,13 @@ bool   coll.visible        = true;
 bool   coll.solid          = false;
 
 double coll1.halfLength = 500.0;
+// innerRadius1,2 describe the inner cone, which is a cyliner if r1==r2
+// r1 is at the smaller z
 double coll1.innerRadius1 = 150.0;
-double coll1.innerRadius2 = 160.0;
+double coll1.innerRadius2 = 150.0;
+double coll1.innerRadius3 = 160.0; 
+// r3 is outer cylinder inner radius; set it and r2 to 170mm and r1==150mm
+// and both materials to G4_Cu to get the previous setup
 string coll1.material1Name = "G4_C";
 string coll1.material2Name = "G4_Cu";
 
