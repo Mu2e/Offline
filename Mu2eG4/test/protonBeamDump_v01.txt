@@ -34,11 +34,18 @@ vector<double> protonBeamDump.neutronCaveHalfSize = {1250., 1250., 500.};
 // shielding around the core
 double         protonBeamDump.minCoreShieldingThickness = 1000.;
 
-// Relative position of beam dump core w.r.t. the
-// production target is specified in  docdb-1944.
-// Add the offsets to productionTarget.position
-vector<double> protonBeamDump.coreCenterInMu2e = {667., 528., -19429.};
-double         protonBeamDump.coreRotY = 13.3; // degrees
+//----------------------------------------------------------------
+// Dump core positioning:  numbers from the spreadsheet
+// "20120221 Facility data for MARS.xlsx"
+// for Dump_Aluminum:
+//
+//  position = 413.1   529  -20399.4
+// angle = 13.779, core full size { 1500, 1500, 2000. }
+//
+// Translated from MARS to G4 convention:
+//
+vector<double> protonBeamDump.coreCenterInMu2e = {651.3,  529., -19428.2};
+double         protonBeamDump.coreRotY = 13.78; // degrees
 
 //----------------------------------------------------------------
 // The extinction monitor filter channel
