@@ -246,6 +246,11 @@ namespace mu2e {
       std::cout<<__func__<<": ProtonBeamDump core center in mu2e = "<<m_det->_coreCenterInMu2e<<std::endl;
       std::cout<<__func__<<": ProtonBeamDump enclosure center in mu2e = "<<m_det->_enclosureCenterInMu2e<<std::endl;
       std::cout<<__func__<<": coreCenterInEnclosure = "<<m_det->_coreCenterInEnclosure<<std::endl;
+      std::cout<<__func__<<": enclosure half size = { "
+               <<m_det->_enclosureHalfSize[0]<<", "
+               <<m_det->_enclosureHalfSize[1]<<", "
+               <<m_det->_enclosureHalfSize[2]<<" }"
+               <<std::endl;
       std::cout<<__func__<<": magnetPitCenterInEnclosure = "<<m_det->_magnetPitCenterInEnclosure<<std::endl;
       std::cout<<__func__<<": shieldingFaceXmin = "<<m_det->_shieldingFaceXmin
                <<", Xmax = "<<m_det->_shieldingFaceXmax<<std::endl;
