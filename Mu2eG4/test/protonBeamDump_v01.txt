@@ -106,7 +106,8 @@ bool extMonFilter.collimator2.channel.solid = true;
 // The filter magnet room: (horiz tranverse, vertical, along beam)
 // The vertical position of the room is such as to leave the minimal required
 // shielding thickness above the dump core.
-vector<double> extMonFilter.magnetPitHalfSize = {750., 750., 2100.};
+// Sizes from Peter Kasper:
+vector<double> extMonFilter.magnetPitHalfSize = {1524., 1371.5, 2100.};
 
 // The magnet
 vector<double> extMonFilter.magnet.outerHalfSize = {95., 150., 1778. }; // mm
