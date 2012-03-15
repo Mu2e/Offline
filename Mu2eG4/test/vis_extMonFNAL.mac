@@ -25,32 +25,32 @@
 # Viewer settings for the case top volume is ProtonBeamDumpShielding
 
 # ## View the whole dump
-# /vis/viewer/set/viewpointThetaPhi 103.3 0
+# /vis/viewer/set/viewpointThetaPhi 103.78 0
 # /vis/viewer/panTo 0 0 m
 # /vis/viewer/zoomTo 1
 
 # ## View the magnet
-# /vis/viewer/set/viewpointThetaPhi 103.3 0
+# /vis/viewer/set/viewpointThetaPhi 103.78 0
 # /vis/viewer/panTo  +0.5 1.5 m
 # /vis/viewer/zoomTo 5
 
 # ## Zoom onto the entrance to the first collimator, with /vis/scene/add/volume ProtonBeamDumpShielding
-# /vis/viewer/set/viewpointThetaPhi 103.3 0
+# /vis/viewer/set/viewpointThetaPhi 103.78 0
 # /vis/viewer/panTo -5.5 +0.5 m
 # /vis/viewer/zoomTo 40
 
 # ## collimator1 exit and magnet entrance
-# /vis/viewer/set/viewpointThetaPhi 103.3 0
+# /vis/viewer/set/viewpointThetaPhi 103.78 0
 # /vis/viewer/panTo -1.5 +1.2 m
 # /vis/viewer/zoomTo 50
 
 # ## magnet exit and collimator2 entrance
-# /vis/viewer/set/viewpointThetaPhi 103.3 0
+# /vis/viewer/set/viewpointThetaPhi 103.78 0
 # /vis/viewer/panTo +2.5 +1.7 m
 # /vis/viewer/zoomTo 50
 
 # ## collimator2 
-# /vis/viewer/set/viewpointThetaPhi 103.3 0
+# /vis/viewer/set/viewpointThetaPhi 103.78 0
 # /vis/viewer/panTo +4.1 +1.7 m
 # /vis/viewer/zoomTo 10
 
@@ -58,7 +58,7 @@
 # Settings for top volume ==HallAir
 
 ## Look at trajectories from proton target to beam from a side
-/vis/viewer/set/viewpointThetaPhi 103.3 0
+/vis/viewer/set/viewpointThetaPhi 103.78 0
 /vis/viewer/panTo 5 0 m
 /vis/viewer/zoomTo 5
 
