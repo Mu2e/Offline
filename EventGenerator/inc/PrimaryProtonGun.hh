@@ -3,9 +3,9 @@
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGun.hh,v 1.11 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: PrimaryProtonGun.hh,v 1.12 2012/03/15 22:14:49 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/15 22:14:49 $
 //
 //
 // The coordinate system used in this class is:
@@ -51,6 +51,8 @@ namespace mu2e {
     virtual void generate( GenParticleCollection&  );
 
   private:
+
+    double _proton_mass;
 
     // Start parameters from the run time configuration.
 

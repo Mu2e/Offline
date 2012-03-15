@@ -3,9 +3,9 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.16 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: PrimaryProtonGun.cc,v 1.17 2012/03/15 22:14:49 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/15 22:14:49 $
 //
 // Original author Rob Kutschke
 //
@@ -26,6 +26,8 @@
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 #include "TargetGeom/inc/Target.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
 
 // CLHEP includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -39,10 +41,6 @@ using namespace std;
 
 namespace mu2e {
 
-  // Mass of the proton.
-  // Once we have the HepPDT package installed, get this number from there.
-  static const double m = 938.272*CLHEP::MeV;
-
   // The kinetic energy of proton is 8 Gev; E = T + m, p = sqrt(E^2 - m^2)
   static const double pBeam = 8888.6*CLHEP::MeV;
 
@@ -50,6 +48,8 @@ namespace mu2e {
 
     // The base class;
     GeneratorBase(),
+
+    _proton_mass(GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::p_plus).ref().mass().value()),
 
     // Parameters from the run time configuration.
     _p(config.getDouble("primaryProtonGun.p", pBeam )),
@@ -95,8 +95,8 @@ namespace mu2e {
     const double time = _tmin + (_tmax-_tmin)*randFlat.fire();
 
     // Energy and kinetic energy.
-    double e = sqrt( _p*_p +m*m);
-    double ekine = e - m;
+    double e = sqrt( _p*_p + _proton_mass*_proton_mass);
+    double ekine = e - _proton_mass;
 
     // Generated 4 momentum.
     CLHEP::HepLorentzVector mom(  randomUnitSphere.fire(_p), e );
