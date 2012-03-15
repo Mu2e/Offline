@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.26 2012/03/13 19:02:34 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/13 19:02:34 $
+// $Id: constructVirtualDetectors.cc,v 1.27 2012/03/15 22:06:25 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/15 22:06:25 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -827,7 +827,7 @@ namespace mu2e {
       std::vector<double> hlen(3);
       hlen[0] = extmon->roomHalfSize()[0];
       hlen[1] = extmon->roomHalfSize()[1];
-      hlen[2] = 50;//vdg->getHalfLength();
+      hlen[2] = vdg->getHalfLength();
         
       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId), 
                                   hlen, 
