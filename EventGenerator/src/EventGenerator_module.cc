@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.13 2012/02/16 20:58:00 tassiell Exp $
-  $Author: tassiell $
-  $Date: 2012/02/16 20:58:00 $
+  $Id: EventGenerator_module.cc,v 1.14 2012/03/16 19:33:56 genser Exp $
+  $Author: genser $
+  $Date: 2012/03/16 19:33:56 $
 
   Original author Rob Kutschke
 
@@ -39,6 +39,7 @@
 
 // Particular generators that this code knows about.
 #include "EventGenerator/inc/ConversionGun.hh"
+#include "EventGenerator/inc/StoppedMuonGun.hh"
 #include "EventGenerator/inc/CosmicDYB.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
 #include "EventGenerator/inc/EjectedNeutronGun.hh"
@@ -159,7 +160,8 @@ namespace mu2e {
     bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", false );
     bool doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
     bool doNuclearCapture       = config.getBool( "nuclearCaptureGun.do",false );
-    bool doExtMonFNALGun        = config.getBool( "extMonFNALGun.do",false );
+    bool doExtMonFNALGun        = config.getBool( "extMonFNALGun.do",    false );
+    bool doStoppedMuonGun       = config.getBool( "stoppedMuonGun.do",   false );
 
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
@@ -175,6 +177,7 @@ namespace mu2e {
     if ( doFromG4BLFile)         _generators.push_back( GeneratorBasePtr( new FromG4BLFile(     run, config)) );
     if ( doNuclearCapture)       _generators.push_back( GeneratorBasePtr( new NuclearCaptureGun(run, config)) );
     if ( doExtMonFNALGun)        _generators.push_back( GeneratorBasePtr( new ExtMonFNALGun(    run, config)) );
+    if ( doStoppedMuonGun)       _generators.push_back( GeneratorBasePtr( new StoppedMuonGun(   run, config)) );
 
     if ( _generators.size() == 0 ){
       mf::LogWarning("CONTROL")

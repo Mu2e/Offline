@@ -1,0 +1,31 @@
+//
+// Run-time config info for the event generators.
+//
+// $Id: genconfig_mucapture.txt,v 1.1 2012/03/16 19:33:56 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/16 19:33:56 $
+//
+// Original author Rob Kutschke
+
+// Print a copy of this file to the job log.
+bool printConfig = false;
+
+//  Print statistics about this file to the job log.
+bool printConfigStats = false;
+
+// Which generators to enable.
+bool stoppedMuonGun.do    = true;
+
+// Limits on cos(polar angle):
+double stoppedMuonGun.czmin = -1.0;
+double stoppedMuonGun.czmax =  1.0;
+
+// Time limits in ns, relative to protons on target.
+double stoppedMuonGun.tmin  =    0.;
+double stoppedMuonGun.tmax  = 1694.;
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -1,13 +1,13 @@
 //
-// Generate an electron with the conversion energy
+// Generate a (not necessarily stopped) muon
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.40 2012/03/16 19:33:56 genser Exp $
+// $Id: StoppedMuonGun.cc,v 1.1 2012/03/16 19:33:56 genser Exp $
 // $Author: genser $
 // $Date: 2012/03/16 19:33:56 $
 //
-// Original author Rob Kutschke
+// Original author KLG somewhat based on ConversionGun
 //
 
 // C++ includes.
@@ -22,7 +22,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
-#include "EventGenerator/inc/ConversionGun.hh"
+#include "EventGenerator/inc/StoppedMuonGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -37,34 +37,32 @@ using namespace std;
 
 namespace mu2e {
 
-  // Need a Conditions entity to hold info about conversions:  // endpoints and lifetimes for different materials etc
-  // Grab them from Andrew's minimc package?
-  static const double pEndPoint = 104.96;
+  static const double p0 = 0.0;
 
-  ConversionGun::ConversionGun( art::Run& run, const SimpleConfig& config ):
+  StoppedMuonGun::StoppedMuonGun( art::Run& run, const SimpleConfig& config ):
 
     // Base class
     GeneratorBase(),
 
     // Get initializers from the run time configuration.
     // Initialization of tmin and tmax is deferred.
-    _p     (config.getDouble("conversionGun.p", pEndPoint )),
-    _czmin (config.getDouble("conversionGun.czmin", -1.0)),
-    _czmax (config.getDouble("conversionGun.czmax",  1.0)),
-    _phimin(config.getDouble("conversionGun.phimin", 0. )),
-    _phimax(config.getDouble("conversionGun.phimax", CLHEP::twopi )),
-    _PStoDSDelay(config.getBool("conversionGun.PStoDSDelay", true)),
-    _pPulseDelay(config.getBool("conversionGun.pPulseDelay", false)),
-    _pPulseShift(config.getDouble("conversionGun.pPulseShift", 0)),
+    _p     (config.getDouble("stoppedMuonGun.p", p0 )),
+    _czmin (config.getDouble("stoppedMuonGun.czmin", -1.0)),
+    _czmax (config.getDouble("stoppedMuonGun.czmax",  1.0)),
+    _phimin(config.getDouble("stoppedMuonGun.phimin", 0. )),
+    _phimax(config.getDouble("stoppedMuonGun.phimax", CLHEP::twopi )),
+    _PStoDSDelay(config.getBool("stoppedMuonGun.PStoDSDelay", true)),
+    _pPulseDelay(config.getBool("stoppedMuonGun.pPulseDelay", false)),
+    _pPulseShift(config.getDouble("stoppedMuonGun.pPulseShift", 0)),
     _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
     _tmin(0.),
     _tmax(0.),
-    _doHistograms(config.getBool("conversionGun.doHistograms", true )),
+    _doHistograms(config.getBool("stoppedMuonGun.doHistograms", true )),
 
     // Random distribution.
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
     _STfname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
-    _nToSkip (config.getInt("conversionGun.nToSkip",0)),
+    _nToSkip (config.getInt("stoppedMuonGun.nToSkip",0)),
 
     // Properly initialized later.
     _mass(0),
@@ -92,12 +90,12 @@ namespace mu2e {
     // Initialize data members that could not be initialized correctly in the initiailizer list.
 
     // Default values for the start and end of the live window.
-    _tmin = config.getDouble("conversionGun.tmin",  0. );
-    _tmax = config.getDouble("conversionGun.tmax",  accPar->deBuncherPeriod );
+    _tmin = config.getDouble("stoppedMuonGun.tmin",  0. );
+    _tmax = config.getDouble("stoppedMuonGun.tmax",  accPar->deBuncherPeriod );
 
     //Get particle mass
-    const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
-    _mass = e_data.mass().value();
+    const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
+    _mass = mu_data.mass().value();
 
     _fGenerator = auto_ptr<FoilParticleGenerator>
       (new FoilParticleGenerator( getEngine(), _tmin, _tmax,
@@ -113,10 +111,10 @@ namespace mu2e {
   }
 
 
-  ConversionGun::~ConversionGun(){
+  StoppedMuonGun::~StoppedMuonGun(){
   }
 
-  void ConversionGun::generate( GenParticleCollection& genParts ){
+  void StoppedMuonGun::generate( GenParticleCollection& genParts ){
 
     // Compute position and momentum
     double time;
@@ -133,7 +131,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector mom(p3, e);
 
     // Add the particle to  the list.
-    genParts.push_back( GenParticle( PDGCode::e_minus, GenId::conversionGun, pos, mom, time));
+    genParts.push_back( GenParticle( PDGCode::mu_minus, GenId::stoppedMuonGun, pos, mom, time));
 
     if ( !_doHistograms ) return;
 
@@ -153,7 +151,7 @@ namespace mu2e {
 
   }
 
-  void ConversionGun::bookHistograms(){
+  void StoppedMuonGun::bookHistograms(){
 
     // Compute a binning that ensures that the stopping target foils are at bin centers.
     GeomHandle<Target> target;
@@ -161,7 +159,7 @@ namespace mu2e {
     Binning bins2 = zBinningForFoils(*target,3);
 
     art::ServiceHandle<art::TFileService> tfs;
-    art::TFileDirectory tfdir = tfs->mkdir( "ConversionGun" );
+    art::TFileDirectory tfdir = tfs->mkdir( "StoppedMuonGun" );
 
     _hMultiplicity = tfdir.make<TH1F>( "hMultiplicity", "Conversion Multiplicity",  10,  0.,  10.  );
     _hcz           = tfdir.make<TH1F>( "hcz",
