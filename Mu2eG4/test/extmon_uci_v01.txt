@@ -4,7 +4,7 @@ bool   hasExtMonUCI = true;
 int    extmon_uci.verbosity = 0;
 
 //ExtMonEnvelope;
-vector<double> extmon_uci.envelopeParams = { 755.0, 705.0, 3280.0};
+vector<double> extmon_uci.envelopeParams = { 755.0, 700.0, 3280.0};
 vector<double> extmon_uci.envelopeOrigin = {3870.0, 1600.0, -18704.0};
 string extmon_uci.envelopeMaterialName = "G4_AIR";
 bool   extmon_uci.envelopeVisible      = true;
@@ -171,7 +171,7 @@ vector<double> extmon_uci.nshPosition = {
 };
 bool   extmon_uci.nshVisible          = true;
 bool   extmon_uci.nshSolid            = false;
-string extmon_uci.nshMaterialName     = "ShieldingConcrete";
+string extmon_uci.nshMaterialName     = "Polyethylene092";
 
 // ExtMonUCI Table
 int extmon_uci.nTabs = 4;
