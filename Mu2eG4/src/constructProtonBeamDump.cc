@@ -96,7 +96,7 @@ namespace mu2e {
 
     CLHEP::HepRotation *colrot = reg.add(CLHEP::HepRotation::IDENTITY);
     colrot->rotateX(-collimator.angleV());
-    colrot->rotateY(-collimator.angleH());
+    colrot->rotateY(+collimator.angleH());
 
     //----------------------------------------------------------------
     // Alignment hole
@@ -265,6 +265,7 @@ namespace mu2e {
     //----------------------------------------------------------------
     CLHEP::HepRotation *magnetRotationInParent = reg.add(CLHEP::HepRotation::IDENTITY);
     magnetRotationInParent->rotateX(-dump.filterMagnetAngleV());
+    magnetRotationInParent->rotateY(+dump.filterAngleH());
 
     const VolumeInfo magnetIron = nestBox("ExtMonFNALFilterMagnetIron",
                                           dump.filterMagnet().outerHalfSize(),
@@ -304,7 +305,7 @@ namespace mu2e {
     // Define the field in the magnet
 
     CLHEP::HepRotation magnetRotationInWorld(CLHEP::HepRotation::IDENTITY);
-    magnetRotationInWorld.rotateY(dump.coreRotY());
+    magnetRotationInWorld.rotateY(dump.coreRotY() - dump.filterAngleH());
     G4MagneticField *field = reg.add(new G4UniformMagField(dump.filterMagnet().fieldStrength() * (magnetRotationInWorld*CLHEP::Hep3Vector(1,0,0))));
 
     G4Mag_UsualEqRhs *rhs  = reg.add(new G4Mag_UsualEqRhs(field));

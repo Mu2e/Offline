@@ -40,7 +40,7 @@ namespace mu2e {
   {
     GeomHandle<ProtonBeamDump> dump;
     m_rotation.rotateX(dump->filterEntranceAngleV());
-    m_rotation.rotateY(dump->filterAngleH() + dump->coreRotY());
+    m_rotation.rotateY(-dump->filterAngleH() + dump->coreRotY());
 
     m_translation = dump->filterEntranceInMu2e();
   }
