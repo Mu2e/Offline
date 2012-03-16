@@ -1,19 +1,33 @@
 
-  $Id: v1_1_7.txt,v 1.26 2012/03/16 05:09:22 gandr Exp $
-  $Author: gandr $
-  $Date: 2012/03/16 05:09:22 $
+  $Id: v1_1_7.txt,v 1.27 2012/03/16 15:49:01 genser Exp $
+  $Author: genser $
+  $Date: 2012/03/16 15:49:01 $
 
            Release notes for Mu2e Offline software, v1_1_7
 
-23) March 15, 2012 gandr
+24) March 15, 2012 gandr
 
     Implement a more realistic PS Enclosure model.
 
+23) March 14, 2012 genser
+
+    Checked in Kevin Lynch'es muon capture package plus interfaces.
+    Note that this is an initial checkin and one should not use the
+    package for production runs yet.
+    Affected files are:
+     Mu2eG4/src/SConscript
+     Mu2eG4/src/QGSP_BERT_HP_MU2E00.icc
+     Mu2eG4/src/QGSP_BERT_HP_MU2E00.hh
+     Mu2eG4/src/physicsListDecider.cc
+    Plus added files in:
+     mucapture/inc
+     mucapture/src
+
 22) March 14, 2012 genser
 
-   Implemented Collimator 1 to consist out of concentric cone and
-   cylinder thus making it possible to revert to a previous cone only
-   like setup
+    Implemented Collimator 1 to consist out of concentric cone and
+    cylinder thus making it possible to revert to a previous cone only
+    like setup
 
      Mu2eG4/src/constructTS.cc
      Mu2eG4/test/geom_01.txt
