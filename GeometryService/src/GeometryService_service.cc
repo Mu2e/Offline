@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.20 2012/03/13 19:01:12 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/13 19:01:12 $
+// $Id: GeometryService_service.cc,v 1.21 2012/03/16 05:09:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/16 05:09:22 $
 //
 // Original author Rob Kutschke
 //
@@ -35,6 +35,8 @@
 #include "ProductionTargetGeom/inc/ProductionTargetMaker.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoidMaker.hh"
+#include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
+#include "ProductionSolenoidGeom/inc/PSEnclosureMaker.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDumpMaker.hh"
 #include "TargetGeom/inc/Target.hh"
@@ -137,7 +139,15 @@ namespace mu2e {
                                                     beamline.getTS().torusRadius(),
                                                     beamline.getTS().getTS1().getHalfLength()
                                                     ).getProductionSolenoidPtr());
+
+    std::auto_ptr<PSEnclosure>
+      tmpPSEnclosure(PSEnclosureMaker(*_config,
+                                      tmpProductionSolenoid->psEndRefPoint(),
+                                      tmpProductionSolenoid->getVacuumParamsPtr()->materialName()
+                                      ).getPtr());
+
     addDetector(tmpProductionSolenoid);
+    addDetector(tmpPSEnclosure);
 
     std::auto_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker(*_config).getPtr());
     const ProtonBeamDump& dump = *tmpDump.get();

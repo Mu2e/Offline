@@ -1,0 +1,19 @@
+// Original author Andrei Gaponenko
+
+double PSEnclosure.length = 900; // mm
+double PSEnclosure.shell.outerDiameter = 1930.4; // mm
+double PSEnclosure.shell.thickness = 19.05; // mm
+double PSEnclosure.endPlate.thickness = 19.05; // mm
+
+string PSEnclosure.shell.materialName  = "G4_Fe";
+
+bool  PSEnclosure.visible = true;
+bool  PSEnclosure.solid = false;
+
+bool  PSEnclosure.vacuum.visible = false;
+bool  PSEnclosure.vacuum.solid = false;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.122 2012/03/05 19:38:36 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/05 19:38:36 $
+// $Id: Mu2eWorld.cc,v 1.123 2012/03/16 05:09:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/16 05:09:22 $
 //
 // Original author Rob Kutschke
 //
@@ -50,6 +50,7 @@
 #include "Mu2eG4/inc/constructDS.hh"
 #include "Mu2eG4/inc/constructTS.hh"
 #include "Mu2eG4/inc/constructPS.hh"
+#include "Mu2eG4/inc/constructPSEnclosure.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 //#include "Mu2eG4/inc/ITGasLayerSD.hh"
@@ -212,6 +213,7 @@ namespace mu2e {
     constructDS(hallInfo,_config);
     constructTS(hallInfo,_config);
     constructPS(hallInfo, *_config);
+    constructPSEnclosure(hallInfo, *_config);
 
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();

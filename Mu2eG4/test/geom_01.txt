@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.134 2012/03/14 17:35:11 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/14 17:35:11 $
+// $Id: geom_01.txt,v 1.135 2012/03/16 05:09:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/16 05:09:22 $
 //
 // Original author Rob Kutschke
 //
@@ -199,13 +199,7 @@ int    toyDS.verbosityLevel     = 0;
 bool   toyDS.visible            = true;
 bool   toyDS.solid              = false;
 
-// For g4beamline comparison: close the PS vacuum with a thin disk.
-// A non-positive thickness (default in .cc) means don't create the G4 volume.
-// The disk matches the outside radius of the cryostat.
-// 
-// NB: docdb-1944 uses 2.84mm Titanium disk.
-double PS.toyEnclosure.Thickness = 2.84; // mm
-string PS.toyEnclosure.materialName = "G4_Ti";
+#include "Mu2eG4/test/psEnclosure_v01.txt"
 
 // more realistic PS based on doc-2066-v5
 

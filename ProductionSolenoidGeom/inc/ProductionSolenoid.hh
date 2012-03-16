@@ -3,9 +3,9 @@
 
 
 //
-// $Id: ProductionSolenoid.hh,v 1.1 2012/03/13 19:04:11 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/13 19:04:11 $
+// $Id: ProductionSolenoid.hh,v 1.2 2012/03/16 05:09:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/16 05:09:22 $
 //
 // Original author KLG
 //
@@ -41,7 +41,8 @@ namespace mu2e {
 
     Tube const * getVacuumParamsPtr() const { return _psVacuumParams.get(); }
 
-    Tube const * getToyEnclosureParamsPtr() const { return _psToyEnclosureParams.get(); }
+    // The point on the PS axis at the end of the vacuum volume on the downstream (proton exit) side
+    const CLHEP::Hep3Vector& psEndRefPoint() const { return _psEndRefPoint; }
 
   private: 
 
@@ -76,9 +77,7 @@ namespace mu2e {
     // Vacuum
     std::auto_ptr<Tube> _psVacuumParams;
 
-    // ToyEnclosure
-    std::auto_ptr<Tube> _psToyEnclosureParams;
-
+    CLHEP::Hep3Vector   _psEndRefPoint;
   };
 }
 

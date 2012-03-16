@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.11 2012/03/13 19:02:21 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/13 19:02:21 $
+// $Id: constructPS.cc,v 1.12 2012/03/16 05:09:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/16 05:09:22 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -325,29 +325,6 @@ namespace mu2e {
                                             );
 
     constructPSShield(psVacuumInfo, _config);
-
-    // To compare with g4beamline studies: close the vacuum with a solid disk
-    // FIXME
-
-    Tube const & psToyEnclosureParams  = *psgh.getToyEnclosureParamsPtr();
-
-    if(psToyEnclosureParams.halfLength() > 0.) {
-      
-      nestTubs( "PSToyEnclosure",
-		psToyEnclosureParams.getTubsParams(),
-		findMaterialOrThrow(psToyEnclosureParams.materialName()),
-		0,
-		psToyEnclosureParams.originInMu2e() - _hallOriginInMu2e,
-		parent,
-		0,
-		_config.getBool("PS.toyEnclosure.visible", true),
-		G4Colour::Cyan(),
-		_config.getBool("PS.toyEnclosure.solid", true),
-		forceAuxEdgeVisible,
-		placePV,
-		doSurfaceCheck
-		);
-    }
 
   } // end Mu2eWorld::constructPS
 }

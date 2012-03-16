@@ -1,9 +1,9 @@
 //
 // Construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.cc,v 1.1 2012/03/13 19:04:11 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/13 19:04:11 $
+// $Id: ProductionSolenoidMaker.cc,v 1.2 2012/03/16 05:09:22 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/16 05:09:22 $
 //
 // Original author KLG
 //
@@ -199,16 +199,8 @@ namespace mu2e {
                 psVacuumMu2eOffset,
                 0., _psVacVesselrIn, _psVacVesselHalfLength-2.*vdHalfLength));
 
-    // ToyEnclosure
-
-    CLHEP::Hep3Vector psToyEnclosureOffset = psMu2eOffset -
-      CLHEP::Hep3Vector(0., 0., _psVacVesselHalfLength) -
-      CLHEP::Hep3Vector(0., 0., 0.5*_psToyEnclosureThickness);
-
-    ps._psToyEnclosureParams = std::auto_ptr<Tube> 
-      (new Tube(_psToyEnclosureMaterialName,
-                psToyEnclosureOffset,
-                0., _psVacVesselrOut, 0.5*_psToyEnclosureThickness));
+    // Reference point for the enclosure
+    ps._psEndRefPoint = psMu2eOffset - CLHEP::Hep3Vector(0., 0., _psVacVesselHalfLength);
   }
 
   void ProductionSolenoidMaker::parseConfig( SimpleConfig const & _config ){
@@ -274,9 +266,6 @@ namespace mu2e {
     _psCoil3zGap                      = _config.getDouble("PS.Coil3.zGap");
     _psCoil3rOut                      = _config.getDouble("PS.Coil3.rOut");
     _psCoil3Length                    = _config.getDouble("PS.Coil3.Length");
-
-    _psToyEnclosureThickness          = _config.getDouble("PS.toyEnclosure.Thickness");
-    _psToyEnclosureMaterialName       = _config.getString("PS.toyEnclosure.materialName");
   }
 
 } // namespace mu2e
