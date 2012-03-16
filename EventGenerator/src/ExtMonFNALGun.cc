@@ -17,25 +17,25 @@ namespace mu2e {
   ExtMonFNALGun::ExtMonFNALGun(art::Run const&, const SimpleConfig& config)
     : GeneratorBase()
     , m_gun(
-	    config.getDouble("extMonFNALGun.multiplicity",-1.), 
-	    static_cast<PDGCode::type>(config.getInt("extMonFNALGun.pdgId")),
+            config.getDouble("extMonFNALGun.multiplicity",-1.),
+            static_cast<PDGCode::type>(config.getInt("extMonFNALGun.pdgId")),
 
-	    config.getDouble("extMonFNALGun.pmin"),
-	    config.getDouble("extMonFNALGun.pmax"),
-	    
-	    RandomUnitSphereParams(-1., -cos(config.getDouble("extMonFNALGun.coneAngle")),
+            config.getDouble("extMonFNALGun.pmin"),
+            config.getDouble("extMonFNALGun.pmax"),
+
+            RandomUnitSphereParams(-1., -cos(config.getDouble("extMonFNALGun.coneAngle")),
                                    0., 2*M_PI),
-	    
-	    config.getDouble("extMonFNALGun.tmin", 0.),
-	    config.getDouble("extMonFNALGun.tmax", 0.),
+
+            config.getDouble("extMonFNALGun.tmin", 0.),
+            config.getDouble("extMonFNALGun.tmax", 0.),
 
             config.getHep3Vector("extMonFNALGun.offset", CLHEP::Hep3Vector(0.,0.,0.)),
             config.getHep3Vector("extMonFNALGun.halfSize", CLHEP::Hep3Vector(0.,0.,0.)),
-	    
-	    (config.getBool("extMonFNALGun.doHistograms", true) ? "ExtMonFNALGun" : ""),
-	    
-	    config.getBool("extMonFNALGun.verbose",false)
-	    )
+
+            (config.getBool("extMonFNALGun.doHistograms", true) ? "ExtMonFNALGun" : ""),
+
+            config.getBool("extMonFNALGun.verbose",false)
+            )
     , m_rotation(CLHEP::HepRotation::IDENTITY)
   {
     GeomHandle<ProtonBeamDump> dump;
@@ -56,9 +56,9 @@ namespace mu2e {
 
   GenParticle ExtMonFNALGun::transform(const GenParticle& in) const {
     return GenParticle(in.pdgId(),
-                       GenId::extMonFNALGun, 
+                       GenId::extMonFNALGun,
                        m_translation + m_rotation*in.position(),
-                       m_rotation * in.momentum(), 
+                       m_rotation * in.momentum(),
                        in.time()
                        );
   }
