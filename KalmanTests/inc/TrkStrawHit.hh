@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.10 2012/02/17 23:15:40 brownd Exp $
+// $Id: TrkStrawHit.hh,v 1.11 2012/03/19 22:12:20 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/02/17 23:15:40 $
+// $Date: 2012/03/19 22:12:20 $
 //
 // Original author David Brown, LBNL
 //
@@ -13,6 +13,7 @@
 #include "KalmanTests/inc/DetStrawGasElem.hh"
 #include "KalmanTests/inc/DetStrawWallElem.hh"
 #include "KalmanTests/inc/DetStrawHitType.hh"
+#include "KalmanTests/inc/TrkDef.hh"
 #include "TrajGeom/TrkLineTraj.hh"
 #include "TrkBase/TrkEnums.hh"
 #include "TrkBase/TrkHitOnTrk.hh"
@@ -55,7 +56,7 @@ namespace mu2e
   class TrkStrawHit : public TrkHitOnTrk {
   public:
     TrkStrawHit(const StrawHit& strawhit, const Straw& straw,unsigned istraw,
-    double t0, double t0err, double herr, double maxdriftpull);
+    const TrkT0& trkt0, double flt0, double fltlen, double herr, double maxdriftpull);
     virtual ~TrkStrawHit();
 //  Simplistic implementation of TrkHitOnTrk interface.  Lie where necessary
     virtual TrkStrawHit* clone(TrkRep* parentRep, const TrkDifTraj* trkTraj = 0) const;
@@ -87,7 +88,7 @@ namespace mu2e
     void hitPosition(CLHEP::Hep3Vector& hpos) const;
     double hitT0() const { return _hitt0;}
     double hitT0Err() const { return _hitt0_err;}
-    void updateT0(double hitt0,double hitt0_err);
+    void updateT0(const TrkT0&, double t0flt);
     double wallPath(Hep3Vector const& tdir) const; // track pathlength through one wall of the straw
     double gasPath(Hep3Vector const& tdir) const; // track pathlength through 1/2 the gas of the straw
 // intrinsic hit error
@@ -126,6 +127,7 @@ namespace mu2e
     DetStrawGasElem _gelem;
 // parameters that should come from some service: FIXME!!!
     static double _vdrift;
+    static const double _vlight;
     static MatDBInfo* _matdbinfo;
   };
 // unary functor to select TrkStrawHit from a given hit

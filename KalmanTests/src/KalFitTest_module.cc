@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.12 2012/03/12 22:22:36 brownd Exp $
+// $Id: KalFitTest_module.cc,v 1.13 2012/03/19 22:12:20 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/12 22:22:36 $
+// $Date: 2012/03/19 22:12:20 $
 //
 
 // framework
@@ -100,7 +100,7 @@ namespace mu2e
 
   void KalFitTest::produce(art::Event& event ) 
   {
-     auto_ptr<TrkRecoTrkCollection> tracks(new TrkRecoTrkCollection );
+    auto_ptr<TrkRecoTrkCollection> tracks(new TrkRecoTrkCollection );
 // event printout
     int iev=event.id().event();
     if((iev%_printfreq)==0)cout<<"KalFitTest: event="<<iev<<endl;
@@ -115,41 +115,36 @@ namespace mu2e
       return;
     }
     TrkDef mytrk(_strawhits);
-// must initialize t0, momentum, initial trajectory.  These should come from patrec
-// that doesn't yet exist. For now, take from the MC truth.  There must be a better way to define the primary particle, FIXME!!!!!!
+    // must initialize t0, momentum, initial trajectory.  These should come from patrec
+    // that doesn't yet exist. For now, take from the MC truth.  There must be a better way to define the primary particle, FIXME!!!!!!
     cet::map_vector_key trkid(1);
     if(_kfitmc.trkFromMC(trkid,mytrk)){
-// use this to create a track
+      // use this to create a track
       TrkKalFit myfit;
       _kfit.makeTrack(mytrk,myfit);
-// test if fit succeeded
-      if(myfit._fit.success()){
-//  diagnostics
-        if(_diag > 0){
-          _kfitmc.trkDiag(myfit);
-          if(_diag > 1){
-            for(std::vector<TrkStrawHit*>::iterator ihit=myfit._hits.begin();ihit!=myfit._hits.end();ihit++){
-              TrkStrawHit* trkhit = *ihit;
-              _kfitmc.hitDiag(trkhit);
-            }
-          }
-        }
-// If fit is successful, pass ownership of the track to the event.
-        if(myfit._krep != 0 && myfit._krep->fitCurrent()){
-          tracks->push_back( myfit.stealTrack() );
-        }
+      //  diagnostics
+      if(_diag > 0){
+	_kfitmc.trkDiag(myfit);
+	if(_diag > 1){
+	  for(std::vector<TrkStrawHit*>::iterator ihit=myfit._hits.begin();ihit!=myfit._hits.end();ihit++){
+	    TrkStrawHit* trkhit = *ihit;
+	    _kfitmc.hitDiag(trkhit);
+	  }
+	}
       }
+      // If fit is successful, pass ownership of the track to the event.
+      if(myfit._trk != 0)tracks->push_back( myfit.stealTrack() );
     }
     event.put(tracks);
   }
-  
+
   void KalFitTest::endJob()
   {
-// does this cause the file to close?
+    // does this cause the file to close?
     art::ServiceHandle<art::TFileService> tfs;
   }
-  
-// find the input data objects needed to make tracks
+
+  // find the input data objects needed to make tracks
   bool KalFitTest::findData(art::Event& evt){
     _strawhits = 0;
     art::Handle<mu2e::StrawHitCollection> strawhitsH;

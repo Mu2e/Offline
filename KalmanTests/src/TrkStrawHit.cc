@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.12 2012/02/17 23:15:40 brownd Exp $
+// $Id: TrkStrawHit.cc,v 1.13 2012/03/19 22:12:20 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/02/17 23:15:40 $
+// $Date: 2012/03/19 22:12:20 $
 //
 // Original author David Brown, LBNL
 //
@@ -22,11 +22,12 @@ using namespace std;
 
 namespace mu2e
 {
-  
-  // drift velocity is a parameter of the makeStrawHits module; I have no access to that, so I hardcode
-  // this here.   FIXME!!!!!
+// drift velocity is a parameter of the makeStrawHits module; I have no access to that, so I hardcode
+// this here.   FIXME!!!!!
   double TrkStrawHit::_vdrift = 0.05; // mm per nanosecond
-// Material information, BaBar style
+// convert speed of light in mm/nsec
+  const double TrkStrawHit::_vlight = CLHEP::c_light;
+/// Material information, BaBar style
   MatDBInfo* TrkStrawHit::_matdbinfo(new MatDBInfo);
   DetStrawHitType TrkStrawHit::_wtype(_matdbinfo,"straw-wall");
   DetStrawHitType TrkStrawHit::_gtype(_matdbinfo,"straw-gas");
@@ -48,13 +49,11 @@ namespace mu2e
   
   
   TrkStrawHit::TrkStrawHit(const StrawHit& strawhit, const Straw& straw, unsigned istraw,
-    double hitt0, double hitt0_err,double herr,double maxdriftpull) :
+    const TrkT0& trkt0,double flt0,double fltlen,double herr,double maxdriftpull) :
     TrkHitOnTrk(new TrkDummyHit(TrkEnums::xyView,strawhit.strawIndex().asInt(),TrkDetElemId::null),1e-5),
     _strawhit(strawhit),
     _straw(straw),
     _istraw(istraw),
-    _hitt0(hitt0),
-    _hitt0_err(hitt0_err),
     _herr(herr),
     _iamb(0),
     _maxdriftpull(maxdriftpull),
@@ -65,13 +64,15 @@ namespace mu2e
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     tcal->StrawHitInfo(strawhit,_wpos,_wtime,_tddist_err,_wtime_err);
     CLHEP::Hep3Vector const& wiredir = _straw.getDirection();
-  // get ime division and drift information for this straw hit relative to the wire center
+// get ime division and drift information for this straw hit relative to the wire center
     _tddist = tcal->TimeDiffToDistance(_straw.index(),_strawhit.dt());
     CLHEP::Hep3Vector const& mid = _straw.getMidPoint();
+// the hit trajectory is defined as a line segment directed along the wire direction starting from the wire center
     _hittraj = new TrkLineTraj(HepPoint(mid.x(),mid.y(),mid.z()),wiredir,_tddist-_tddist_err,_tddist+_tddist_err);
     setHitLen(_tddist);
-  // compute drift parameters, if the initial t0 error was positive
-    if(_hitt0_err>0.0)updateDrift();
+    setFltLen(fltlen);
+// compute initial hit t0 and drift
+    updateT0(trkt0,flt0);
 //    std::cout << "creating TrkStrawHit " << this << std::endl;
   }
   
@@ -115,25 +116,44 @@ namespace mu2e
   }
   
   void
-  TrkStrawHit::updateT0(double hitt0,double hitt0_err){
-    _hitt0 = hitt0;
-    _hitt0_err = hitt0_err;
+  TrkStrawHit::updateT0(const TrkT0& trkt0,double t0flt){
+// correct for track propagation and signal propagation
+    double dflt = fltLen() - t0flt;
+// the following assumes beta=1, this should come from the fit, FIXME!!!
+    double tprop = dflt/_vlight;  
+    // hitt0 is the time the particle passed closest to the wire.  It does not include
+// drift time or electronics signal propagation time.
+    _hitt0 = trkt0._t0 + tprop;
+// add a term that scales linearly with the flight distance from t0flt.  This should be taken
+// out by the Kalman fit, but it needs additional derivative terms.  FIXME!!!!
+    _hitt0_err = trkt0._t0err;
+// update the drift distance calculation
     updateDrift();
   }
   
   double
   TrkStrawHit::time() const {
-    return _wtime;
+    return strawHit().time();
   }
   
   void
   TrkStrawHit::updateDrift() {
-// assume wire propagation velocity is speed of light: FIXME!!!
-    double tdrift = time() - _hitt0;
+// compute the electronics propagation time.  The convention is that the hit time is at the
+// FAR END of the wire, as signed by the wire direction.
+    ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    double vwire = tcal->SignalVelocity(straw().index());
+    double eprop;
+    if(_poca != 0 && _poca->status().success()){
+      eprop = (straw().getHalfLength()-hitLen())/vwire;
+    } else {
+// if we're missing poca information, use time division instead
+      eprop = (straw().getHalfLength()-_tddist)/vwire;
+    }
+    double tdrift = strawHit().time() - _hitt0 - eprop;
     _rdrift = tdrift*_vdrift;
     double rstraw = _straw.getRadius(); 
   // radial error is combination of time error and intrinsic error.  This doesn't account for correlation between hits
-    double time_err = sqrt(_hitt0_err*_hitt0_err + _wtime_err*_wtime_err);
+    double time_err = sqrt(_hitt0_err*_hitt0_err);
     double rt0err = time_err*_vdrift;
     _rdrift_err = sqrt(rt0err*rt0err + _herr*_herr);
 // If the hit is wildly away from the track , disable it

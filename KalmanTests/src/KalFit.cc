@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.18 2012/02/29 02:09:13 brownd Exp $
+// $Id: KalFit.cc,v 1.19 2012/03/19 22:12:20 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/02/29 02:09:13 $
+// $Date: 2012/03/19 22:12:20 $
 //
 
 // the following has to come before other BaBar includes
@@ -73,24 +73,25 @@ namespace mu2e
   KalFit::KalFit(fhicl::ParameterSet const& pset) : _bfield(0),
     _debug(pset.get<int>("debugLevel",0)),
     _fieldcorr(pset.get<bool>("fieldCorrections",false)),
-    _material(pset.get<bool>("material",false)),
+    _material(pset.get<bool>("material",true)),
     _ambigflip(pset.get<bool>("ambigflip",false)),
     _weedhits(pset.get<bool>("weedhits",true)),
     _updatet0(pset.get<bool>("updateT0",true)),
     _removefailed(pset.get<bool>("RemoveFailedFits",true)),
     _t0tol(pset.get<double>("t0Tolerance",1.0)),
     _maxhitchi(pset.get<double>("maxhitchi",5.0)),
-    _maxiter(pset.get<unsigned>("maxiter",3)),
+    _maxiter(pset.get<unsigned>("maxiter",10)),
     _mingap(pset.get<double>("mingap",0.1)),
-    _minnstraws(pset.get<unsigned>("minnstraws",20)),
-    _minndof(pset.get<unsigned>("minNDOF",15)),
+    _minnstraws(pset.get<unsigned>("minnstraws",15)),
+    _minndof(pset.get<unsigned>("minNDOF",10)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
     _herr(pset.get<double>("hiterr",0.1)),
     _ssmear(pset.get<double>("seedsmear",1e6)),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _maxdriftpull(pset.get<double>("maxDriftPull",10)),
     _t0nsig(pset.get<double>("t0window",2.5)),
-    _fitpart(pset.get<int>("fitparticle",PdtPid::electron))
+    _fitpart(pset.get<int>("fitparticle",PdtPid::electron)),
+    _t0strategy((t0Strategy)pset.get<int>("t0strategy",median))
   {
       _kalcon = new KalContext;
       _kalcon->setBendSites(_fieldcorr);
@@ -150,6 +151,7 @@ namespace mu2e
       myfit._trk = new TrkRecoTrk(_kalcon->defaultType(), 0, 0);
       assert(myfit._trk != 0);
       myfit._trk->setBField(bField());
+      myfit._trk->resetT0(myfit._t0.t0(),myfit._t0.t0Err());
 // create Kalman rep
       if(mytrk.traj() != 0)
 	myfit._krep = new KalRep(mytrk.traj(), hotlist, detinter, myfit._trk, *_kalcon, PdtPid::electron);
@@ -171,19 +173,16 @@ namespace mu2e
 // setup to estimate initial flightlength
       Hep3Vector tdir;
       HepPoint tpos;
+      double flt0 = findZFltlen(myfit,0.0);
       myfit._krep->referenceTraj()->getInfo(0.0,tpos,tdir);
       for(unsigned iind=0;iind<indices.size(); ++iind){
 	size_t istraw = indices[iind];
 	const StrawHit& strawhit(straws->at(istraw));
 	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 	// estimate  initial flightlength
-	double hflt = straw.getMidPoint().z()/tdir.z();
-	// estimate the time the track reaches this hit, assuming speed-of-light travel along the helix. Should use actual
-	// speed based on momentum and assumed particle species FIXME!!!
-	double tprop = hflt/_vlight;
-	double hitt0 = myfit._t0.t0() + tprop;
+	double hflt = findZFltlen(myfit,straw.getMidPoint().z());
 	// create the hit object
-	TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,myfit._t0.t0Err(),_herr,_maxdriftpull);
+	TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,myfit._t0,flt0,hflt,_herr,_maxdriftpull);
 	// flag the added hit
 	trkhit->setUsability(3);
 	assert(trkhit != 0);
@@ -210,21 +209,25 @@ namespace mu2e
     // update t0, and propagate it to the hits
     double oldt0(-1e8);
     myfit._nt0iter = 0;
-    while(_updatet0 && myfit._fit.success() && fabs(myfit._t0.t0()-oldt0) > _t0tol && 
-	myfit._nt0iter < _kalcon->maxIterations()){
-      oldt0 = myfit._t0.t0();
-      if(updateT0(myfit)){
+    unsigned niter(0);
+    bool changed(true);
+    while(changed && myfit._fit.success() && niter < _kalcon->maxIterations()){
+      changed = false;
+      if(_updatet0 && myfit._nt0iter < _kalcon->maxIterations() && updateT0(myfit) && fabs(myfit._t0.t0()-oldt0) > _t0tol  ){
+	oldt0 = myfit._t0.t0();
 	myfit._krep->resetFit();
 	myfit.fit();
 	myfit._nt0iter++;
-      } else
-	break;
+	changed = true;
+      }
       // drop outlyers
       if(_weedhits){
 	myfit._nweediter = 0;
-	weedHits(myfit);
+	changed |= weedHits(myfit);
       }
+      niter++;
     }
+    if(myfit._krep != 0) myfit._krep->addHistory(myfit._fit,"KalFit");
   }
 
   
@@ -234,29 +237,74 @@ namespace mu2e
   }
   
   void
+  KalFit::initT0(TrkDef const& mytrk,TrkT0& t00) {
+// depending on the strategy, either compute T0 from the hits, or take it from the existing defintion directly
+    if(_t0strategy == external){
+      t00 = mytrk.trkT0();
+    } else {
+// make an array of all the hit times, correcting for propagation delay
+      const Tracker& tracker = getTrackerOrThrow();
+      ConditionsHandle<TrackerCalibrations> tcal("ignored");
+      unsigned nind = mytrk.strawHitIndices().size();
+      std::vector<double> times;
+      times.reserve(nind);
+// get flight distance of z=0 (for comparison)
+      double t0flt = mytrk.helix().zFlight(0.0);
+// loop over strawhits
+      for(unsigned iind=0;iind<nind;iind++){
+	unsigned istraw = mytrk.strawHitIndices()[iind];
+	const StrawHit& strawhit(mytrk.strawHitCollection()->at(istraw));
+	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
+	// assume a constant drift velocity means the average drift time is half the maximum drift time
+	double tdrift = 0.5*straw.getRadius()/_vdrift;
+ 	// compute initial flightlength from helix and hit Z
+	double hflt = mytrk.helix().zFlight(straw.getMidPoint().z()) - t0flt;
+	// estimate the time the track reaches this hit from z=0, assuming speed-of-light travel along the helix. Should use actual
+	// speed based on momentum and assumed particle species FIXME!!!
+	double tprop = hflt/_vlight;
+	// estimate signal propagation time on the wire assuming the middle (average)
+	double vwire = tcal->SignalVelocity(straw.index());
+	double teprop = straw.getHalfLength()/vwire;
+	// correct the measured time for these effects: this gives the aveage time the particle passed this straw, WRT
+	// when the track crossed Z=0
+	double htime = strawhit.time() - tprop - teprop - tdrift;
+	times.push_back(htime);
+      }
+      // different strategies for t0 estimate
+      if(_t0strategy == median){
+	// find the median hit time
+	std::sort(times.begin(),times.end());
+	unsigned imed = times.size()/2;
+    // deal with even/odd # of hits separately
+	if(times.size() == 2*imed)
+	  t00._t0 = 0.5*(times[imed-1]+times[imed]);
+	else
+	  t00._t0 = times[imed];
+  // estimate the error using the range
+	double tmax = (times.back()-times.front());
+	t00._t0err = _t0errfac*tmax/sqrt(12*nind);
+      } else if(_t0strategy == histogram) {
+      }
+    }
+  }
+  
+  void
   KalFit::makeHits(TrkDef const& mytrk, TrkKalFit& myfit) {
+// first, find t0.  This can come from the hits or from the track definition
+    TrkT0 t00;
+    initT0(mytrk,t00);
+    myfit._t0 = t00;
+    myfit._t00 = t00;
     const Tracker& tracker = getTrackerOrThrow();
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
     unsigned nind = mytrk.strawHitIndices().size();
-    std::vector<double> times;
-    times.reserve(nind);
     double flt0 = mytrk.helix().zFlight(0.0);
     for(unsigned iind=0;iind<nind;iind++){
       unsigned istraw = mytrk.strawHitIndices()[iind];
       const StrawHit& strawhit(mytrk.strawHitCollection()->at(istraw));
       const Straw& straw = tracker.getStraw(strawhit.strawIndex());
-    // compute initial flightlength from helix and hit Z
-      double hflt = mytrk.helix().zFlight(straw.getMidPoint().z());
-    // estimate the time the track reaches this hit from z=0, assuming speed-of-light travel along the helix. Should use actual
-    // speed based on momentum and assumed particle species FIXME!!!
-      double tprop = hflt/_vlight;
-      double hitt0 = mytrk.trkT0().t0() + tprop;
-    // subtract the propagation time and the average wire signal delay when computing hit time
-      double vwire = tcal->SignalVelocity(straw.index());
-      double htime = strawhit.time() - tprop - straw.getHalfLength()/vwire;
-      times.push_back(htime);
+      double fltlen = mytrk.helix().zFlight(straw.getMidPoint().z());
     // create the hit object
-      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,mytrk.trkT0().t0Err(),_herr,_maxdriftpull);
+      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,t00,flt0,fltlen,_herr,_maxdriftpull);
       assert(trkhit != 0);
     // refine the flightlength, as otherwise hits in the same plane are at exactly the same flt, which can cause problems
       const TrkDifTraj* dtraj = &mytrk.helix();
@@ -267,35 +315,7 @@ namespace mu2e
       }
       myfit._hits.push_back(trkhit);
     }
-  // if the initial t0error was < 0, compute t0 and override
-    if(mytrk.trkT0().t0Err() < 0.0 && nind > 0){
-  // find the median hit time
-      std::sort(times.begin(),times.end());
-      unsigned imed = times.size()/2;
-      double tmed;
-      if(times.size() == 2*imed)
-	tmed = 0.5*(times[imed-1]+times[imed]);
-      else
-	tmed = times[imed];
-  // assuming a flat drift time means correcting by half the maximum drift time
-      double tmax = myfit._hits[0]->straw().getRadius()/_vdrift;
-      double t0 = tmed - 0.5*tmax;
-  // estimate the error using the same assumption
-      double t0err = _t0errfac*tmax/sqrt(12*nind);
-  // save this as the initial T0 value (and the current t0 value)
-      myfit.setT00(TrkT0(t0,t0err));
-      myfit.setT0(TrkT0(t0,t0err));
-    } else {
-  // initialize t0 directly from the tracking object
-      myfit.setT00(mytrk.trkT0());
-      myfit.setT0(mytrk.trkT0());
-    }
-  // update the hits
-    for(std::vector<TrkStrawHit*>::iterator ihit= myfit._hits.begin();ihit != myfit._hits.end(); ihit++){
-      double hitt0 = myfit._t0.t0() + ((*ihit)->fltLen() -flt0)/_vlight;
-      (*ihit)->updateT0(hitt0,myfit._t0.t0Err());
-    }
-  // sort the hits by flightlength
+ // sort the hits by flightlength
     std::sort(myfit._hits.begin(),myfit._hits.end(),fltlencomp());
   }
   
@@ -305,16 +325,7 @@ namespace mu2e
 // need to have a valid fit
     if(myfit._krep->fitValid()){
 // find the global fltlen associated with z=0.  This should be a piectraj function, FIXME!!!
-      double loclen;
-      double flt0 = 0.0;
-      double dz(10.0);
-      unsigned niter = 0;
-      while(fabs(dz) > 1.0 && niter < _kalcon->maxIterations() ) {
-        const HelixTraj* helix = dynamic_cast<const HelixTraj*>(myfit._krep->localTrajectory(flt0,loclen));
-        flt0 += helix->zFlight(0.0)-loclen;
-        dz = myfit._krep->traj().position(flt0).z();
-        niter++;
-      }
+      double flt0 = findZFltlen(myfit,0.0);
 // find hits
       std::vector<double> hitst0; // store t0, to allow outlyer removal
       double t0sum(0.0);
@@ -398,10 +409,7 @@ namespace mu2e
 	if(myfit._trk != 0)myfit._trk->resetT0(t0,t0err);
 // reset all the hit times
         for(std::vector<TrkStrawHit*>::iterator ihit= myfit._hits.begin();ihit != myfit._hits.end(); ihit++){
-          TrkStrawHit* hit = *ihit;
-// correct for flightlength.  Again assumes beta=1, FIXME!!!
-          double hitt0 = t0 + (hit->fltLen()-flt0)/_vlight;
-          hit->updateT0(hitt0,t0err);
+          (*ihit)->updateT0(myfit._t0,flt0);
         }
         retval = true;
       }
@@ -454,5 +462,20 @@ namespace mu2e
     }
     return _bfield;
   }
+
+  double KalFit::findZFltlen(const TrkKalFit& myfit,double zval) {
+    double loclen;
+    double zflt = zval/myfit._krep->traj().direction(0.0).z();
+    double dz(10.0);
+    unsigned niter = 0;
+    while(fabs(dz) > 1.0 && niter < _kalcon->maxIterations() ) {
+      const HelixTraj* helix = dynamic_cast<const HelixTraj*>(myfit._krep->localTrajectory(zflt,loclen));
+      zflt += helix->zFlight(0.0)-loclen;
+      dz = myfit._krep->traj().position(zflt).z();
+      niter++;
+    }
+    return zflt;
+  }
 }
+
 

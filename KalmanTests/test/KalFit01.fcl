@@ -1,8 +1,8 @@
 # Configuration file for KalFit01
 #
-# $Id: KalFit01.fcl,v 1.17 2012/03/12 22:22:36 brownd Exp $
+# $Id: KalFit01.fcl,v 1.18 2012/03/19 22:12:20 brownd Exp $
 # $Author: brownd $
-# $Date: 2012/03/12 22:22:36 $
+# $Date: 2012/03/19 22:12:20 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -28,7 +28,7 @@ services :
 
   user :
   {
-    GeometryService : { inputFile : "geom_noHP.txt" }
+    GeometryService : { inputFile : "Mu2eG4/test/geom_01.txt" }
 
     ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
 
@@ -64,17 +64,10 @@ physics :
     # Kalman fit configuration
         KalFit : 
         {
-            maxiter        : 5
-            debugLevel     : 0
-            material       : true
         }
     # MC truth finder, analyzer configuration
         KalFitMC : 
         {
-            mcT0Err       : -0.5
-            debugLevel     : 0
-            minNHits       : 20
-            maxNHits       : 100
         }        
     }
   }

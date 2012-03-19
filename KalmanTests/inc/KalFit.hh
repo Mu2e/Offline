@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.13 2012/02/29 02:09:13 brownd Exp $
+// $Id: KalFit.hh,v 1.14 2012/03/19 22:12:20 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/02/29 02:09:13 $
+// $Date: 2012/03/19 22:12:20 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -54,6 +54,8 @@ namespace mu2e
   class KalFit
   {
   public:
+// define different t0 strategies.  Eventually t0 finding should be its own class
+    enum t0Strategy {external=0,median,histogram};
 // parameter set should be passed in on construction
     explicit KalFit(fhicl::ParameterSet const&);
     virtual ~KalFit();
@@ -87,12 +89,15 @@ namespace mu2e
     double _maxdriftpull;
     double _t0nsig;
     int _fitpart;
+    t0Strategy _t0strategy;
     // helper functions
     bool fitable(TrkDef const& mytrk);
     bool updateT0(TrkKalFit& myfit);
     bool weedHits(TrkKalFit& myfit);
     void fitTrack(TrkKalFit& myfit);
     void makeHits(TrkDef const& mytrk,TrkKalFit& myfit);
+    void initT0(TrkDef const& mytrk,TrkT0& t0);
+    double findZFltlen(const TrkKalFit& myfit,double zval);
 // general
     static const double _vlight;
     static const double _vdrift;

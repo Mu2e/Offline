@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.21 2012/03/02 17:16:22 gandr Exp $
-// $Author: gandr $ 
-// $Date: 2012/03/02 17:16:22 $
+// $Id: KalFitMC.cc,v 1.22 2012/03/19 22:12:20 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/03/19 22:12:20 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -74,11 +74,11 @@ namespace mu2e
     _simpartslabel(pset.get<std::string>("SimParticleLabel","g4run")),
     _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
     _mintrkmom(pset.get<double>("minTrkMom",60.0)),
-    _mct0err(pset.get<double>("mcT0Err",-0.5)),
+    _mct0err(pset.get<double>("mcT0Err",0.1)),
     _debug(pset.get<int>("debugLevel",0)),
     _minnhits(pset.get<unsigned>("minNHits",10)),
-    _maxnhits(pset.get<unsigned>("maxNHits",200)),
-    _purehits(pset.get<bool>("pureHits",true)),
+    _maxnhits(pset.get<unsigned>("maxNHits",1000)),
+    _purehits(pset.get<bool>("pureHits",false)),
     _trkdiag(0),_hitdiag(0)
   {
 // define the ids of the virtual detectors
@@ -138,9 +138,6 @@ namespace mu2e
           << " momentum = " << mom
           << " time = " << t0 << std::endl;
 // find the indices of the true primary particle straw hits
-// this t0 is a calorimeter artifact introduced in the tracking code, it must be subtracted.
-// eventually this part of the simulation should be moved to the calorimeter code, FIXME!!!      
-        t0 += _mcdata._mcstrawhits->at(0).t0();
         for(unsigned istraw=0;istraw<nstraws;istraw++){
           PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(istraw));
           unsigned nprimary(0);
@@ -238,8 +235,6 @@ namespace mu2e
       _pperp /= esum;
       _pmom /= esum;
     }
-// must correct for straw hit t0; what does that represent physically????
-    mct0 += mcstrawhit.t0();
     _mcpos = mcpos;
     _mchitt0 = mct0;
     _hitdiag->Fill();
@@ -291,42 +286,46 @@ namespace mu2e
 
   void
   KalFitMC::kalDiag(const KalRep* krep) {
-    if(krep != 0 && krep->fitCurrent()){
-      _nhits = krep->hotList()->nHit();
-      _fitstatus = krep->fitCurrent();
-      _niter = krep->iterations();
-      _ndof = krep->nDof();
-      _nactive = krep->nActive();
-      _chisq = krep->chisq();
-      _fitcon = krep->chisqConsistency().significanceLevel();
-      // get the fit at the first hit
-      const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>(krep->firstHit()->kalHit()->hitOnTrack());
-      double fltlen = firsthit->fltLen() - 10;
-      double loclen(0.0);
-      const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
-      _fitpar = helixpar(ltraj->parameters()->parameter());
-      _fiterr = helixpar(ltraj->parameters()->covariance());
-      CLHEP::Hep3Vector fitmom = krep->momentum(fltlen);
-      BbrVectorErr momerr = krep->momentumErr(fltlen);
-      _fitmom = fitmom.mag();
-      Hep3Vector momdir = fitmom.unit();
-      HepVector momvec(3);
-      for(int icor=0;icor<3;icor++)
-        momvec[icor] = momdir[icor];
-      _fitmomerr = sqrt(momerr.covMatrix().similarity(momvec));
-      CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->parentTrack()->bField(),0.0);
-      _seedmom = seedmom.mag();
+    if(krep != 0) {
+      if(krep->fitCurrent()){
+	_fitstatus = krep->fitStatus().success();
+	_nhits = krep->hotList()->nHit();
+	_niter = krep->iterations();
+	_ndof = krep->nDof();
+	_nactive = krep->nActive();
+	_chisq = krep->chisq();
+	_fitcon = krep->chisqConsistency().significanceLevel();
+	// get the fit at the first hit
+	const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>(krep->firstHit()->kalHit()->hitOnTrack());
+	double fltlen = firsthit->fltLen() - 10;
+	double loclen(0.0);
+	const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
+	_fitpar = helixpar(ltraj->parameters()->parameter());
+	_fiterr = helixpar(ltraj->parameters()->covariance());
+	CLHEP::Hep3Vector fitmom = krep->momentum(fltlen);
+	BbrVectorErr momerr = krep->momentumErr(fltlen);
+	_fitmom = fitmom.mag();
+	Hep3Vector momdir = fitmom.unit();
+	HepVector momvec(3);
+	for(int icor=0;icor<3;icor++)
+	  momvec[icor] = momdir[icor];
+	_fitmomerr = sqrt(momerr.covMatrix().similarity(momvec));
+	CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->parentTrack()->bField(),0.0);
+	_seedmom = seedmom.mag();
+      } else {
+	_fitstatus = -krep->fitStatus().failure();
+	_nhits = -1;
+	_fitmom = -1.0;
+	_seedmom = -1.0;
+      }
     } else {
-      _fitstatus = -1;
-      _nhits = -1;
-      _fitmom = -1.0;
-      _seedmom = -1.0;
+      _fitstatus = -1000;
     }
   }
 
   void
-  KalFitMC::hitsDiag(std::vector<TrkStrawHit*> const& hits) {
-    _tshinfo.clear();
+    KalFitMC::hitsDiag(std::vector<TrkStrawHit*> const& hits) {
+      _tshinfo.clear();
     _ncactive = 0;
       // loop over hits.  Order doesn't matter here
     for(std::vector<TrkStrawHit*>::const_iterator itsh = hits.begin(); itsh != hits.end(); itsh++){
@@ -346,15 +345,34 @@ namespace mu2e
 	tshinfo._rdrift = tsh->driftRadius();
 	tshinfo._rdrifterr = tsh->driftRadiusErr();
 	tshinfo._trklen = tsh->fltLen();
+	tshinfo._hlen = tsh->hitLen();
+	tshinfo._ht = tsh->hitT0();
+	tshinfo._tddist = tsh->timeDiffDist();
+	tshinfo._tdderr = tsh->timeDiffDistErr();
+	tshinfo._ambig = tsh->ambig();
+// MC information	
         PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
         tshinfo._mcn = mcptr.size();
 	if(_mcdata._mcsteps != 0){
 	  std::vector<TrkSum> mcsum;
-	  KalFitMC::fillMCHitSum(mcptr,mcsum); 
+	  KalFitMC::fillMCHitSum(mcptr,mcsum);
 	  tshinfo._mcnunique = mcsum.size();
 	  tshinfo._mcpdg = mcsum[0]._pdgid;
 	  tshinfo._mcgen = mcsum[0]._gid;
 	  tshinfo._mcproc = mcsum[0]._pid;
+// first hit is the one that set t0
+	  tshinfo._mcht = mcptr[0]->time();
+// find the step midpoint
+	  Hep3Vector start = mcptr[0]->position();
+	  Hep3Vector dir = mcptr[0]->momentum().unit();
+	  Hep3Vector end = start + dir*mcptr[0]->stepLength();
+	  Hep3Vector mid = 0.5*(start+end);
+	  Hep3Vector mcsep = mid-tsh->straw().getMidPoint();
+	  Hep3Vector mcperp = (dir.cross(tsh->straw().getDirection())).unit();
+	  double dperp = mcperp.dot(mcsep);
+	  tshinfo._mcdist = fabs(dperp);
+	  tshinfo._mcambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
+	  tshinfo._mclen = mcsep.dot(tsh->straw().getDirection());
 	}
 	_tshinfo.push_back(tshinfo);
 // count active conversion hits

@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.14 2012/03/01 18:00:58 brownd Exp $
+// $Id: KalFitMC.hh,v 1.15 2012/03/19 22:12:20 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/01 18:00:58 $
+// $Date: 2012/03/19 22:12:20 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -47,11 +47,13 @@ namespace mu2e
     int _gid,_pid;
     double _time;
     CLHEP::Hep3Vector _pos;
+    CLHEP::Hep3Vector _mom;
     TrkSum() : _esum(0.0),_count(0),_pdgid(0),_gid(0),_time(0.0) {}
     TrkSum(StepPointMC const& mchit,art::Ptr<SimParticle>& spp) : _esum(mchit.eDep()),_count(1),
     _spp(spp),_pdgid(0),_gid(-1),_pid(-1),
     _time(mchit.time()),
-    _pos(mchit.position()){
+    _pos(mchit.position()),
+    _mom(mchit.momentum()){
       if(spp.isNonnull() ){
 	_pdgid = spp->pdgId();
 	_pid = spp->creationCode();
@@ -91,9 +93,13 @@ namespace mu2e
   };
 
   struct TrkStrawHitInfo {
-    Int_t _active,_usable,_strawid;
+    Int_t _active, _usable, _strawid;
     Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
+    Float_t _ht, _tddist, _tdderr, _hlen;
+    Int_t _ambig;
     UInt_t _mcn, _mcnunique, _mcpdg, _mcgen, _mcproc;
+    Float_t _mcht, _mcdist, _mclen;
+    Int_t _mcambig;
 // root 
     ClassDef(TrkStrawHitInfo,1)
   };

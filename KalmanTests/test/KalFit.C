@@ -1,12 +1,40 @@
+// basic cuts
 
-TCut tpitch("mcenttd>0.5&&mcenttd<1.1");
-TCut tt0("mct0>700.0");
+double tdlow(0.57735027);
+double tdhigh(1.0);
+double t0min(710);
+char ctext[80];
+snprintf(ctext,80,"td>%f&&td<%f",tdlow,tdhigh);
+TCut rpitch("td>0.57735027 && td<1.0");
+snprintf(ctext,80,"t0>%f",t0min);
+//TCut livegate(ctext);
+TCut livegate("t0>710");
+// cuts for different tightness of selection
+TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
+ncuts[0] = "nactive>=20";
+ncuts[1] = "nactive>=20";
+ncuts[2] = "nactive>=25";
+ncuts[3] = "nactive>=30";
+t0cuts[0] = "";
+t0cuts[1] = "t0err<1.5";
+t0cuts[2] = "t0err<1.0";
+t0cuts[3] = "t0err<0.9";
+momcuts[0] = "";
+momcuts[1] = "fitmomerr<0.2";
+momcuts[2] = "fitmomerr<0.18";
+momcuts[3] = "fitmomerr<0.15";
+fitcuts[0] = "";
+fitcuts[1] = "fitcon>1e-4";
+fitcuts[2] = "fitcon>1e-3";
+fitcuts[3] = "fitcon>1e-2";
+
+TCut tpitch("mcenttd>0.57735027&&mcenttd<1.0");
+TCut tt0("mct0>710.0");
 TCut tmom("mcentmom>100");
 TCut nmch("nchits>=20");
+TCut mcsel = nmch+tmom+tpitch+tt0;
 
 TCut reco("fitstatus>0");
-TCut livegate("t0>710");
-TCut rpitch("td>0.57735&&td<1.0");
 TCut goodfit("fitcon>1e-4&&nactive>=20&&t0err<1.5&&fitmomerr<0.2");
 TCut cosmic("abs(d0)<105 && d0+2/om>460 && d0+2/om<660");
 TCut rmom("fitmom>103.5&&fitmom<104.7");
@@ -385,37 +413,6 @@ void KalFitRes(TTree* trks) {
   sgau->SetParName(6,"TSigL");
  
   TH1F* momres[4];
-// basic cuts
-  TCut reco("fitstatus>0");
-  double tdlow(0.57735027);
-  double tdhigh(1.0);
-  double t0min(710);
-  char ctext[80];
-  snprintf(ctext,80,"td>%f&&td<%f",tdlow,tdhigh);
-  TCut pitch(ctext);
-  snprintf(ctext,80,"t0>%f",t0min);
-  TCut livegate(ctext);
-// mc selection cuts for efficiency
-  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nchits>=20&&mct0>670");
-// cuts for different tightness of selection
-  TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
-  ncuts[0] = "nactive>=20";
-  ncuts[1] = "nactive>=20";
-  ncuts[2] = "nactive>=25";
-  ncuts[3] = "nactive>=30";
-  t0cuts[0] = "";
-  t0cuts[1] = "t0err<1.5";
-  t0cuts[2] = "t0err<1.0";
-  t0cuts[3] = "t0err<0.9";
-  momcuts[0] = "";
-  momcuts[1] = "fitmomerr<0.2";
-  momcuts[2] = "fitmomerr<0.18";
-  momcuts[3] = "fitmomerr<0.15";
-  fitcuts[0] = "";
-  fitcuts[1] = "fitcon>1e-4";
-  fitcuts[2] = "fitcon>1e-3";
-  fitcuts[3] = "fitcon>1e-2";
-
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
   trks->Project("effnorm","mcentmom",mcsel);
  
@@ -431,7 +428,7 @@ void KalFitRes(TTree* trks) {
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",151,-2.5,2.5);
 //  momres[ires]->SetStats(0);
     TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
-    TCut final = (reco+pitch+livegate+quality);
+    TCut final = (reco+quality+mcsel);
     trks->Project(mname,"fitmom-mcentmom",final);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
     sgau->SetParameters(integral,0.0,momres[ires]->GetRMS(),momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
