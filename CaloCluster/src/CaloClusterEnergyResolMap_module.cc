@@ -1,9 +1,9 @@
 //
 // Visualization of the energy resolution  on the rows and on the columns
 //
-// $Id: CaloClusterEnergyResolMap_module.cc,v 1.4 2012/03/19 19:35:42 gianipez Exp $
+// $Id: CaloClusterEnergyResolMap_module.cc,v 1.5 2012/03/19 21:28:29 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/19 19:35:42 $
+// $Date: 2012/03/19 21:28:29 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -367,7 +367,8 @@ private:
         TDirectory* _directory;
 
         Int_t _clNo,
-        _nCryCl;
+        _nCryCl,
+        _clSeeds;
         //          _cryId,
         //          _vane,
         //          _cryPdgId,
@@ -378,11 +379,10 @@ private:
         Float_t _evt,
         _clE,
         _clT,
-        _clCOGx,
-        _clCOGy,
-        _clCOGz,
-        _clVane,
-        _clSeeds;
+        _clCOGu,
+        _clCOGv,
+        _clCOGw,
+        _clVane;
         //            _cryEdep,
         //            _cryEdepTot,
         //            _cryT;
@@ -570,41 +570,41 @@ void CaloClusterEnergyResolMap::analyze(art::Event const & evt ) {
                 //__binWidth = _hTHistDeltaEnergy_row->GetYaxis()->GetBinWidth(1);
                 _Ntup        = tfs->make<TTree>("ClusterSeedMap", "Cluster seeds info");
 
-                _Ntup->Branch("evt", &_evt , "evt/F");
-                _Ntup->Branch("clNo",&_clNo , "clNo/I");
-                _Ntup->Branch("clE",&_clE , "clE/F");
-                _Ntup->Branch("clT",&_clT , "clT/F");
-                _Ntup->Branch("clCOGx",&_clCOGx , "clCOGx/F");
-                _Ntup->Branch("clCOGy",&_clCOGy , "clCOGy/F");
-                _Ntup->Branch("clCOGz",&_clCOGz , "clCOGz/F");
-                _Ntup->Branch("nCryCl",&_nCryCl , "nCryCl/I");
-                _Ntup->Branch("clVane",&_clVane , "clVane/I");
-                _Ntup->Branch("clSeeds",&_clSeeds , "clSeeds/I");
+                _Ntup->Branch("evt", &_evt , "evt/F");//1
+                _Ntup->Branch("clNo",&_clNo , "clNo/I");//2
+                _Ntup->Branch("clE",&_clE , "clE/F");//3
+                _Ntup->Branch("clT",&_clT , "clT/F");//4
+                _Ntup->Branch("clCOGu",&_clCOGu , "clCOGu/F");//5
+                _Ntup->Branch("clCOGv",&_clCOGv , "clCOGv/F");//6
+                _Ntup->Branch("clCOGw",&_clCOGw , "clCOGw/F");//7
+                _Ntup->Branch("nCryCl",&_nCryCl , "nCryCl/I");//8
+                _Ntup->Branch("clVane",&_clVane , "clVane/I");//9
+                _Ntup->Branch("clSeeds",&_clSeeds , "clSeeds/I");//10
 
-                _Ntup->Branch("clSeedTrakId[clSeeds]",_clSeedTrackId , "clSeedTrakId[clSeeds]/I");
-                _Ntup->Branch("clSeedPdgId[clSeeds]", _clSeedPdgId , "clSeedPdgId[clSeeds]/I");
-                _Ntup->Branch("clSeedTime[clSeeds]",_clSeedTime , "clSeedTime[clSeeds]/F");
-                _Ntup->Branch("clSeedTotEnergyDep[clSeeds]",_clSeedTotEnergyDep , "clSeedTotEnergyDep[clSeeds]/F");
-                _Ntup->Branch("clSeedPx[clSeeds]",_clSeedPx , "clSeedPx[clSeeds]/F");
-                _Ntup->Branch("clSeedPy[clSeeds]",_clSeedPy , "clSeedPy[clSeeds]/F");
-                _Ntup->Branch("clSeedPz[clSeeds]",_clSeedPz , "clSeedPz[clSeeds]/F");
-                _Ntup->Branch("clSeedPu[clSeeds]",_clSeedPu , "clSeedPu[clSeeds]/F");
-                _Ntup->Branch("clSeedPv[clSeeds]",_clSeedPv , "clSeedPv[clSeeds]/F");
-                _Ntup->Branch("clSeedPw[clSeeds]",_clSeedPw , "clSeedPw[clSeeds]/F");
-                _Ntup->Branch("clSeedCryFramePu[clSeeds]",_clSeedCryFramePu , "clSeedCryFramePu[clSeeds]/F");
-                _Ntup->Branch("clSeedCryFramePv[clSeeds]",_clSeedCryFramePv , "clSeedCryFramePv[clSeeds]/F");
-                _Ntup->Branch("clSeedCryFramePw[clSeeds]",_clSeedCryFramePw , "clSeedCryFramePw[clSeeds]/F");
-                _Ntup->Branch("clSeedVaneFramePu[clSeeds]",_clSeedVaneFramePu , "clSeedVaneFramePu[clSeeds]/F");
-                _Ntup->Branch("clSeedVaneFramePv[clSeeds]",_clSeedVaneFramePv , "clSeedVaneFramePv[clSeeds]/F");
-                _Ntup->Branch("clSeedVaneFramePw[clSeeds]",_clSeedVaneFramePw , "clSeedVaneFramePw[clSeeds]/F");
-                _Ntup->Branch("clSeedPpx[clSeeds]",_clSeedPpx , "clSeedPpx[clSeeds]/F");
-                _Ntup->Branch("clSeedPpy[clSeeds]",_clSeedPpy , "clSeedPpy[clSeeds]/F");
-                _Ntup->Branch("clSeedPpz[clSeeds]",_clSeedPpz , "clSeedPpz[clSeeds]/F");
-                _Ntup->Branch("clSeedPpu[clSeeds]",_clSeedPpu , "clSeedPpu[clSeeds]/F");
-                _Ntup->Branch("clSeedPpv[clSeeds]",_clSeedPpv , "clSeedPpv[clSeeds]/F");
-                _Ntup->Branch("clSeedPpw[clSeeds]",_clSeedPpw , "clSeedPpw[clSeeds]/F");
-                _Ntup->Branch("clSeedThetaW[clSeeds]",_clSeedThetaW , "clSeedThetaW[clSeeds]/F");
-                _Ntup->Branch("clSeedThetaV[clSeeds]",_clSeedThetaV , "clSeedThetaV[clSeeds]/F");
+                _Ntup->Branch("clSeedTrakId[clSeeds]",_clSeedTrackId , "clSeedTrakId[clSeeds]/I");//11
+                _Ntup->Branch("clSeedPdgId[clSeeds]", _clSeedPdgId , "clSeedPdgId[clSeeds]/I");//12
+                _Ntup->Branch("clSeedTime[clSeeds]",_clSeedTime , "clSeedTime[clSeeds]/F");//13
+                _Ntup->Branch("clSeedTotEnergyDep[clSeeds]",_clSeedTotEnergyDep , "clSeedTotEnergyDep[clSeeds]/F");//14
+                _Ntup->Branch("clSeedPx[clSeeds]",_clSeedPx , "clSeedPx[clSeeds]/F");//15
+                _Ntup->Branch("clSeedPy[clSeeds]",_clSeedPy , "clSeedPy[clSeeds]/F");//16
+                _Ntup->Branch("clSeedPz[clSeeds]",_clSeedPz , "clSeedPz[clSeeds]/F");//17
+                _Ntup->Branch("clSeedPu[clSeeds]",_clSeedPu , "clSeedPu[clSeeds]/F");//18
+                _Ntup->Branch("clSeedPv[clSeeds]",_clSeedPv , "clSeedPv[clSeeds]/F");//29
+                _Ntup->Branch("clSeedPw[clSeeds]",_clSeedPw , "clSeedPw[clSeeds]/F");//20
+                _Ntup->Branch("clSeedCryFramePu[clSeeds]",_clSeedCryFramePu , "clSeedCryFramePu[clSeeds]/F");//21
+                _Ntup->Branch("clSeedCryFramePv[clSeeds]",_clSeedCryFramePv , "clSeedCryFramePv[clSeeds]/F");//22
+                _Ntup->Branch("clSeedCryFramePw[clSeeds]",_clSeedCryFramePw , "clSeedCryFramePw[clSeeds]/F");//23
+                _Ntup->Branch("clSeedVaneFramePu[clSeeds]",_clSeedVaneFramePu , "clSeedVaneFramePu[clSeeds]/F");//24
+                _Ntup->Branch("clSeedVaneFramePv[clSeeds]",_clSeedVaneFramePv , "clSeedVaneFramePv[clSeeds]/F");//25
+                _Ntup->Branch("clSeedVaneFramePw[clSeeds]",_clSeedVaneFramePw , "clSeedVaneFramePw[clSeeds]/F");//26
+                _Ntup->Branch("clSeedPpx[clSeeds]",_clSeedPpx , "clSeedPpx[clSeeds]/F");//27
+                _Ntup->Branch("clSeedPpy[clSeeds]",_clSeedPpy , "clSeedPpy[clSeeds]/F");//28
+                _Ntup->Branch("clSeedPpz[clSeeds]",_clSeedPpz , "clSeedPpz[clSeeds]/F");//29
+                _Ntup->Branch("clSeedPpu[clSeeds]",_clSeedPpu , "clSeedPpu[clSeeds]/F");//30
+                _Ntup->Branch("clSeedPpv[clSeeds]",_clSeedPpv , "clSeedPpv[clSeeds]/F");//31
+                _Ntup->Branch("clSeedPpw[clSeeds]",_clSeedPpw , "clSeedPpw[clSeeds]/F");//32
+                _Ntup->Branch("clSeedThetaW[clSeeds]",_clSeedThetaW , "clSeedThetaW[clSeeds]/F");//33
+                _Ntup->Branch("clSeedThetaV[clSeeds]",_clSeedThetaV , "clSeedThetaV[clSeeds]/F");//34
                 //                _Ntup->Branch("cryId", &_cryId, "cryId/I");
                 //                _Ntup->Branch("vane",&_vane , "vane/I");
                 //                _Ntup->Branch("cryEdep",&_cryEdep , "cryEdep/F");
@@ -931,9 +931,10 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                         _clNo = icl;
                         _clE = clu.energyDep();
                         _clT = clu.time();
-                        _clCOGx = clu.cog3Vector().x();
-                        _clCOGy = clu.cog3Vector().y();
-                        _clCOGz = clu.cog3Vector().z();
+
+                        _clCOGu = clu.cog3Vector().x();
+                        _clCOGv = clu.cog3Vector().y();
+                        _clCOGw = clu.cog3Vector().z();
                         //_nCryCl = clu.clusterSize;
                         _nCryCl = clu.size();//clusterSize;
 
@@ -1190,10 +1191,12 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
 
                                 if(_diagLevel < 0){
-                                        cout<<"-------------------- Filled _Ntup... -----------------------"<<endl;
+                                        cout<<"-------------------- Filling _Ntup... -----------------------"<<endl;
                                 }
                                 _Ntup->Fill();
-
+                                if(_diagLevel < 0){
+                                        cout<<"-------------------- Filled _Ntup -----------------------"<<endl;
+                                }
 
                                 //---------------------------------------------
                                 if(seedMap.size() > 1){
