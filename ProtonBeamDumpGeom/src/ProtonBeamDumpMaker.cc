@@ -257,11 +257,16 @@ namespace mu2e {
       std::cout<<__func__<<": shieldingFaceZatXmin = "<<m_det->_shieldingFaceZatXmin
                <<", ZatXmax = "<<m_det->_shieldingFaceZatXmax<<std::endl;
       std::cout<<__func__<<": filter nominal momentum = "<<m_det->extMonFilter_nominalMomentum()/CLHEP::GeV<<" GeV/c"<<std::endl;
+      std::cout<<__func__<<": filterAngleH = "<<m_det->filterAngleH()<<std::endl;
       std::cout<<__func__<<": filter half bend angle  = "<<m_det->filterMagnet().trackBendHalfAngle(m_det->extMonFilter_nominalMomentum())<<std::endl;
       std::cout<<__func__<<": filter.angleV = "<<m_det->filterEntranceAngleV()
                <<", c1.angleV  = "<<m_det->collimator1().angleV()
                <<", magnet.angleV = "<<m_det->filterMagnetAngleV()
                <<", c2.angleV() = "<<m_det->collimator2().angleV()<<std::endl;
+      std::cout<<__func__<<": collimator1CenterInEnclosure = "<<m_det->_collimator1CenterInEnclosure<<std::endl;
+      std::cout<<__func__<<": collimator1.horizontalLength = "<<m_det->_collimator1._horizontalLength<<std::endl;
+      std::cout<<__func__<<": collimator2CenterInEnclosure = "<<m_det->_collimator2CenterInEnclosure<<std::endl;
+      std::cout<<__func__<<": collimator2.horizontalLength = "<<m_det->_collimator2._horizontalLength<<std::endl;
     }
   }
 }
