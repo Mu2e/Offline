@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.12 2012/02/08 16:51:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/08 16:51:17 $
+// $Id: MakeStrawHit_module.cc,v 1.13 2012/03/19 21:39:41 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/03/19 21:39:41 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -89,7 +89,6 @@ namespace mu2e {
       _diagLevel(pset.get<int>("diagLevel",0)),
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-      _t0Sigma(pset.get<double>("t0Sigma",0.0)), // ns
       _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
       _minimumLength(pset.get<double>("minimumLength",0.01)),   // mm
       _driftVelocity(pset.get<double>("driftVelocity",0.05)),   // mm/ns
@@ -131,7 +130,6 @@ namespace mu2e {
     std::string _trackerStepPoints;
 
     // Parameters
-    double _t0Sigma;        // T0 spread in ns
     double _minimumEnergy;  // minimum energy deposition of G4 step
     double _minimumLength;  // is G4Step is shorter than this, consider it a point
     double _driftVelocity;
@@ -221,9 +219,6 @@ namespace mu2e {
     auto_ptr<StrawHitMCTruthCollection>      truthHits(new StrawHitMCTruthCollection);
     auto_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
 
-    // Calculate T0 for this event
-    double t0 = _gaussian.fire(0.,_t0Sigma);
-
     // Handle to the conditions service
     ConditionsHandle<TrackerCalibrations> trackerCalibrations("ignored");
 
@@ -306,6 +301,8 @@ namespace mu2e {
             // If the point of closest approach is within the step and wire - thats it.
             hit_dca = pca.dca();
             hit_pca = pca.point1();
+	    // correct the hit time for the propagation to the DCA.  This requires an upgrade to stepPointMC.  FIXME!!!
+	    
 
           } else {
 
@@ -333,8 +330,10 @@ namespace mu2e {
 
         double driftTime = (hit_dca + _gaussian.fire(0.,_driftSigma))/_driftVelocity;
         double distanceToMiddle = (hit_pca-mid).dot(w);
-        double hit_t1 = t0 + hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
-        double hit_t2 = t0 + hitTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
+	// The convention is that the principle time measurement (t1) corresponds to a measurement
+	// at the end of the wire as signed by the wire direction vector. t2 is at the near end.
+        double hit_t1 = hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
+        double hit_t2 = hitTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
 
         straw_hits.push_back( StepHit( *i,edep,hit_dca,driftTime,distanceToMiddle,hit_t1,hit_t2));
 
@@ -355,7 +354,6 @@ namespace mu2e {
                << " t1=" << straw_hits[i]._t1
                << " t2=" << straw_hits[i]._t2
                << " edep=" << straw_hits[i]._edep
-               << " t0=" << t0
                << endl;
         }
       }
@@ -382,7 +380,7 @@ namespace mu2e {
           deltadigitime = (digi_t2-digi_time)+_gaussian.fire(0.,2.*distSigma/signalVelocity);
 
           strawHits->push_back(StrawHit(straw_id,digi_time,deltadigitime,digi_edep));
-          truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
+          truthHits->push_back(StrawHitMCTruth(digi_driftT,digi_dca,digi_toMid));
           mcptrHits->push_back(mcptr);
           // ...and create new hit
           mcptr.clear();
@@ -402,9 +400,9 @@ namespace mu2e {
       }
 
       distSigma = trackerCalibrations->TimeDivisionResolution(straw_id, (strawHalfLength-digi_toMid)/(2.*strawHalfLength) );
-      deltadigitime = (digi_t2-digi_time)+_gaussian.fire(0.,2.*distSigma/signalVelocity);
+      deltadigitime = (digi_t2 - digi_time)+_gaussian.fire(0.,2.*distSigma/signalVelocity);
       strawHits->push_back(StrawHit(straw_id,digi_time,deltadigitime,digi_edep));
-      truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
+      truthHits->push_back(StrawHitMCTruth(digi_driftT,digi_dca,digi_toMid));
       mcptrHits->push_back(mcptr);
 
     }

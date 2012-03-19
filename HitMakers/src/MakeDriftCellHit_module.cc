@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.13 2012/02/08 16:51:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/08 16:51:17 $
+// $Id: MakeDriftCellHit_module.cc,v 1.14 2012/03/19 21:39:41 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/03/19 21:39:41 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -81,7 +81,6 @@ namespace mu2e {
       _diagLevel(pset.get<int>("diagLevel",0)),
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-      _t0Sigma(pset.get<double>("t0Sigma",5.0)), // ns
       _timetodist(pset.get<double>("timetodist",0.0/*149.8962*/)), // mm/ns
       _distSigma(pset.get<double>("distSigma",0.0/*80.*/)), // mm
       _minimumEnergy(pset.get<double>("minimumEnergy",0.00001)), // MeV
@@ -127,7 +126,6 @@ namespace mu2e {
     std::string _trackerStepPoints;
 
     // Parameters
-    double _t0Sigma;        // T0 spread in ns
     double _timetodist;     // const to convert delata t in delat z along the wire in mm/ns
     double _distSigma;      // sigma of dealta z in mm
     double _minimumEnergy;  // minimum energy deposition of G4 step
@@ -177,9 +175,6 @@ namespace mu2e {
     // Ask the event to give us a handle to the requested hits.
     art::Handle<StepPointMCCollection> points;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,points);
-
-    // Calculate T0 for this event
-    double t0 = _gaussian.fire(0.,_t0Sigma);
 
     // Organize hits by cells
 
@@ -345,7 +340,7 @@ namespace mu2e {
 
         double driftTime = fabs(hit_dca + _gaussian.fire(0.,_driftSigma))/_driftVelocity;
         double distanceToMiddle = (hit_pca-mid).dot(w);
-        double hit_t1 = t0 + hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
+        double hit_t1 = hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
         //double hit_t2 = -9999.9;//t0 + hitTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
 
         dcell_hits.push_back(StepHit(hitRef,edep,hit_dca*(sign>0?1.:-1.),driftTime,distanceToMiddle,hit_t1));
@@ -367,7 +362,6 @@ namespace mu2e {
                << " t1=" << dcell_hits[i]._t1
                /*<< " t2=" << dcell_hits[i]._t2*/
                << " edep=" << dcell_hits[i]._edep
-               << " t0=" << t0
                << endl;
         }
       }
@@ -392,7 +386,7 @@ namespace mu2e {
         if( (dcell_hits[i]._t1-dcell_hits[i-1]._t1) > _minimumTimeGap ) {
           // The is bit time gap - save current data as a hit...
           strawHits->push_back(StrawHit(/*StrawIndex(*/dcell_id/*)*/,digi_time,digi_t2/*digi_t2-digi_time*/,digi_edep));
-          truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
+          truthHits->push_back(StrawHitMCTruth(digi_driftT,digi_dca,digi_toMid));
           mcptrHits->push_back(mcptr);
           // ...and create new hit
           mcptr.clear();
@@ -413,7 +407,7 @@ namespace mu2e {
       //deltadigitime=(digi_t2-digi_time)+_gaussian.fire(0.,_distSigma/_timetodist);
       deltadigitime=0.0;
       strawHits->push_back(StrawHit(/*StrawIndex(*/dcell_id/*)*/,digi_time,deltadigitime/*deltadigitime*/,digi_edep));
-      truthHits->push_back(StrawHitMCTruth(t0,digi_driftT,digi_dca,digi_toMid));
+      truthHits->push_back(StrawHitMCTruth(digi_driftT,digi_dca,digi_toMid));
       mcptrHits->push_back(mcptr);
 
     }

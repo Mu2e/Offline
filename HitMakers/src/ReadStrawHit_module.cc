@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.11 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: ReadStrawHit_module.cc,v 1.12 2012/03/19 21:39:41 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/03/19 21:39:41 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -66,7 +66,6 @@ namespace mu2e {
       _hDriftDistance(0),
       _hDistanceToMid(0),
       _hNG4Steps(0),
-      _hT0(0),
       _hG4StepLength(0),
       _hG4StepEdep(0),
       _ntup(0),
@@ -103,7 +102,6 @@ namespace mu2e {
     TH1F* _hDriftDistance;
     TH1F* _hDistanceToMid;
     TH1F* _hNG4Steps;
-    TH1F* _hT0;
     TH1F* _hG4StepLength;
     TH1F* _hG4StepEdep;
     TNtuple* _ntup;
@@ -129,7 +127,6 @@ namespace mu2e {
     _hDriftDistance= tfs->make<TH1F>( "hDriftDistance","Drift Distance, mm", 100, 0., 3. );
     _hDistanceToMid= tfs->make<TH1F>( "hDistanceToMid","Distance to wire center, mm", 160, -1600., 1600. );
     _hNG4Steps     = tfs->make<TH1F>( "hNG4Steps",     "Number of G4Steps per hit", 100, 0., 100. );
-    _hT0           = tfs->make<TH1F>( "hT0",           "T0, ns", 100, -50., 50. );
     _hG4StepLength = tfs->make<TH1F>( "hG4StepLength", "Length of G4Steps, mm", 100, 0., 10. );
     _hG4StepEdep   = tfs->make<TH1F>( "hG4StepEdep",   "Energy deposition of G4Steps, keV", 100, 0., 10. );
     _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple",
@@ -232,11 +229,6 @@ namespace mu2e {
       StrawHit             const& hit(hits.at(i));
       StrawHitMCTruth      const& truth(hits_truth.at(i));
       PtrStepPointMCVector const& mcptr(hits_mcptr.at(i));
-
-      // Fill per-event histograms
-      if( i==0 ) {
-        _hT0->Fill(truth.t0());
-      }
 
       // Use data from hits
       _hHitTime->Fill(hit.time());
