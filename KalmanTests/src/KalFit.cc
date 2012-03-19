@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.19 2012/03/19 22:12:20 brownd Exp $
+// $Id: KalFit.cc,v 1.20 2012/03/19 23:17:40 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/19 22:12:20 $
+// $Date: 2012/03/19 23:17:40 $
 //
 
 // the following has to come before other BaBar includes
@@ -322,6 +322,7 @@ namespace mu2e
   bool
   KalFit::updateT0(TrkKalFit& myfit){
     bool retval(false);
+    ConditionsHandle<TrackerCalibrations> tcal("ignored");
 // need to have a valid fit
     if(myfit._krep->fitValid()){
 // find the global fltlen associated with z=0.  This should be a piectraj function, FIXME!!!
@@ -348,8 +349,10 @@ namespace mu2e
               if(doca > mindoca){
 // propagation time to this hit from z=0.  This assumes beta=1, FIXME!!!
                 double tflt = (hit->fltLen()-flt0)/_vlight;
-// drift time of this hit (plus t0)
-                double tdrift = hit->time() - tflt;
+		double vwire = tcal->SignalVelocity(hit->straw().index());
+		double eprop = (hit->straw().getHalfLength()-poca.flt2())/vwire; 
+		// drift time of this hit (plus t0)
+		double tdrift = hit->time() - tflt - eprop;
 // t0 = Time difference between the drift time and the DOCA time.  sign of DOCA is irrelevant here.
                 double hitt0 = tdrift - doca/_vdrift;
                 hitst0.push_back(hitt0);
