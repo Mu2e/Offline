@@ -20,7 +20,6 @@ namespace mu2e {
   public:
 
     StrawHitMCTruth():
-      _t0(0.),
       _driftTime(0.),
       _driftDistance(0.),
       _distanceToMid(0.) {
@@ -28,18 +27,16 @@ namespace mu2e {
 
     // Constructor for a hit that came from an unpacked digi, either
     // from data or from the full MC chain.
-    StrawHitMCTruth(float t0,
+    StrawHitMCTruth(
                     float driftTime,
                     float driftDistance,
                     float distanceToMid) :
-      _t0(t0),
       _driftTime(driftTime),
       _driftDistance(driftDistance),
       _distanceToMid(distanceToMid) {
     }
 
     // Accessors
-    float   t0()             const { return _t0;}
     float   driftTime()      const { return _driftTime;}
     float   driftDistance()  const { return _driftDistance;}
     float   distanceToMid()  const { return _distanceToMid; }
@@ -51,7 +48,6 @@ namespace mu2e {
 
   private:
 
-    float   _t0;            // ns
     float   _driftTime;     // ns
     float   _driftDistance; // mm
     float   _distanceToMid; // mm

@@ -22,7 +22,6 @@ namespace mu2e {
   void StrawHitMCTruth::print( ostream& ost, bool doEndl ) const {
 
     ost << "Straw Hit MC Truth:"
-        << " t0: "      << _t0
         << " drift time: "      << _driftTime
         << " drift distance: "      << _driftDistance
         << " distance to wire center: "     << _distanceToMid;
