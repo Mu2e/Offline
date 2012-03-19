@@ -1,9 +1,9 @@
 //
 // Visualization of the clusters on each vane with the relative distributions of time, energy and size
 //
-// $Id: CaloClusterTest_module.cc,v 1.2 2012/03/07 18:00:38 gianipez Exp $
+// $Id: CaloClusterTest_module.cc,v 1.3 2012/03/19 19:35:41 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/07 18:00:38 $
+// $Date: 2012/03/19 19:35:41 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -312,22 +312,22 @@ void CaloClusterTest::doCalorimeter(art::Event const& evt, bool skip){
                         double timeClu_check = 0.;
 
                         CaloCluster const& clu = (*caloClusters).at(icl);
-                        eDepClu = clu.energyDep;
-                        iVane = clu.vaneId;
+                        eDepClu = clu.energyDep();
+                        iVane = clu.vaneId();
 
                         if(eDepClu < _EnergyClusterCut) continue;
 
-                        for(size_t icry = 0; icry <  clu.caloCrystalHitsPtrVector.size(); ++icry){
+                        for(size_t icry = 0; icry <  clu.size(); ++icry){
 
-                                eDepCry = clu.caloCrystalHitsPtrVector.at(icry)->energyDep();
-                                eDepTotCry = clu.caloCrystalHitsPtrVector.at(icry)->energyDepTotal();
-                                timeCry = clu.caloCrystalHitsPtrVector.at(icry)->time();
+                                eDepCry = clu.caloCrystalHitsPtrVector().at(icry)->energyDep();
+                                eDepTotCry = clu.caloCrystalHitsPtrVector().at(icry)->energyDepTotal();
+                                timeCry = clu.caloCrystalHitsPtrVector().at(icry)->time();
 
                                 eDepClu_check += eDepCry;
                                 eDepTotClu_check += eDepTotCry;
                                 timeClu_check += timeCry;
 
-                                CaloCrystalHit const& hitClu = *(clu.caloCrystalHitsPtrVector.at(icry));
+                                CaloCrystalHit const& hitClu = *(clu.caloCrystalHitsPtrVector().at(icry));
                                 std::vector<art::Ptr<CaloHit> > const& ROIdsClu = hitClu.readouts();
                                 CaloHit const& thehitClu = *ROIdsClu.at(0);
 
@@ -338,11 +338,11 @@ void CaloClusterTest::doCalorimeter(art::Event const& evt, bool skip){
                                 (*itE)->Fill(eDepCry);
                                 (*itT)->Fill(timeCry);
                         }
-                        timeClu_check /= clu.caloCrystalHitsPtrVector.size();
+                        timeClu_check /= clu.size();
 
 
                         (*itEneC)->Fill(eDepClu);
-                        (*itSizeC)->Fill(clu.caloCrystalHitsPtrVector.size());
+                        (*itSizeC)->Fill(clu.size());
 
 
                         if(colorCode == 10){

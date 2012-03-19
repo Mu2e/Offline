@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.16 2012/03/07 22:34:14 gianipez Exp $
+// $Id: Calorimeter.hh,v 1.17 2012/03/19 19:35:42 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/07 22:34:14 $
+// $Date: 2012/03/19 19:35:42 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -76,8 +76,12 @@ namespace mu2e {
       CLHEP::Hep3Vector toCrystalFrame(int, CLHEP::Hep3Vector const&) const;
 
       //--------------------------------------------------------------------
+
       // Transfer Mu2e coordinates to local vane coordinates
       CLHEP::Hep3Vector toVaneFrame(int, CLHEP::Hep3Vector const&) const;
+      //inverse transformation of "toVaneFrame"
+      CLHEP::Hep3Vector fromVaneFrame(int vaneid, CLHEP::Hep3Vector const& pos) const;
+
       //--------------------------------------------------------------------
 
       // Get crystal center in Mu2e coordinates

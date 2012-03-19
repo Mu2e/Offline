@@ -1,9 +1,9 @@
 //
 // module for the calculation of the efficiency Vs energy cluster cut and other distributions related to the efficiency
 //
-// $Id: CaloClusterEff_module.cc,v 1.3 2012/03/07 18:00:38 gianipez Exp $
+// $Id: CaloClusterEff_module.cc,v 1.4 2012/03/19 19:35:42 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/07 18:00:38 $
+// $Date: 2012/03/19 19:35:42 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -588,10 +588,10 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                                 double eDepClu = 0.;
 
                                 CaloCluster const& clu = (*caloClusters).at(icl);
-                                eDepClu = clu.energyDep;
-                                iVane = clu.vaneId;
+                                eDepClu = clu.energyDep();
+                                iVane = clu.vaneId();
 
-                                CaloCrystalHitPtrVector caloClusterHits = clu.caloCrystalHitsPtrVector;
+                                CaloCrystalHitPtrVector caloClusterHits = clu.caloCrystalHitsPtrVector();
 
                                 if(eDepClu >= (_hTHistEff->GetXaxis()->GetBinCenter(bin) -  0.5*_hTHistEff->GetXaxis()->GetBinWidth(bin) ) ){
                                         vecRec[iVane][bin - 1]+=1.0;
@@ -622,11 +622,11 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
 
                                                         if( (cg->getCrystalRByRO(thehit.id()) != ( _rowToCanc - 1.0 ) && cg->getCrystalZByRO(thehit.id()) != ( _columnToCanc - 1.0 ) ) ){
                                                                 if(elecMap[iVane][trackId.asUint()]._impTime > mchit.time() ){
-                                                                        elecMap[iVane][trackId.asUint()]._cluEnergy = clu.energyDep;
-                                                                        elecMap[iVane][trackId.asUint()]._cluTime = clu.time;
+                                                                        elecMap[iVane][trackId.asUint()]._cluEnergy = clu.energyDep();
+                                                                        elecMap[iVane][trackId.asUint()]._cluTime = clu.time();
                                                                         elecMap[iVane][trackId.asUint()]._impTime = mchit.time();
                                                                         elecMap[iVane][trackId.asUint()]._impEnergy = mchit.momentum().mag();
-                                                                        elecMap[iVane][trackId.asUint()]._cluCog = clu.cog3Vector;
+                                                                        elecMap[iVane][trackId.asUint()]._cluCog = clu.cog3Vector();
                                                                         elecMap[iVane][trackId.asUint()]._impPos = mchit.position();
                                                                         elecMap[iVane][trackId.asUint()]._impPosCryFrame = cryFrame;
                                                                         elecMap[iVane][trackId.asUint()]._row    = cg->getCrystalRByRO(thehit.id() );

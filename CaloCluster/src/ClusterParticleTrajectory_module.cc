@@ -1,7 +1,7 @@
 //
-// $Id: ClusterParticleTrajectory_module.cc,v 1.1 2012/03/07 18:05:13 gianipez Exp $
+// $Id: ClusterParticleTrajectory_module.cc,v 1.2 2012/03/19 19:35:42 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/07 18:05:13 $
+// $Date: 2012/03/19 19:35:42 $
 //
 //Original author Giovanni Onoratto
 
@@ -225,14 +225,14 @@ namespace mu2e {
       CaloCluster const& cl = caloClusters->at(i);
 
       _clNo = i;
-      _clE = cl.energyDep;
-      _clT = cl.time;
-      _clCOGx = cl.cog3Vector.x();
-      _clCOGy = cl.cog3Vector.y();
-      _clCOGz = cl.cog3Vector.z();
-      _nCryCl = cl.clusterSize;
+      _clE = cl.energyDep();
+      _clT = cl.time();
+      _clCOGx = cl.cog3Vector().x();
+      _clCOGy = cl.cog3Vector().y();
+      _clCOGz = cl.cog3Vector().z();
+      _nCryCl = cl.size();
 
-      CaloCrystalHitPtrVector CryPtrVec = cl.caloCrystalHitsPtrVector;
+      CaloCrystalHitPtrVector CryPtrVec = cl.caloCrystalHitsPtrVector();
 
       for (int j = 0; j < _nCryCl; ++j) {
 
@@ -251,9 +251,9 @@ namespace mu2e {
 
         _crynSteps = mcptr.size();
 
-        cout<<"-------------- 1 -------------"<<endl;
-        cout<< "mcptr.size() = "<< mcptr.size()<<endl;
-        cout<<"-------------- 2 -------------"<<endl;
+//        cout<<"-------------- 1 -------------"<<endl;
+//        cout<< "mcptr.size() = "<< mcptr.size()<<endl;
+//        cout<<"-------------- 2 -------------"<<endl;
 
         float earliest = 100000;
 

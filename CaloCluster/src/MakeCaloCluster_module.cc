@@ -337,7 +337,7 @@ MakeCaloCluster::produce(art::Event& evt) {
                                                 caloClustersPointer->push_back(CaloCluster());
                                                 CaloClusterCollection::iterator tmpCluster = caloClustersPointer->end();
                                                 tmpCluster--;
-                                                tmpCluster->vaneId = it->first;
+                                                tmpCluster->SetVaneId(it->first);
                                                 for(ClusterData::iterator itCD = cluster.begin(); itCD != cluster.end(); ++itCD){
                                                         if(_diagLevel < 0){
                                                                 cout << "-------- 1 ----------"<<endl;
@@ -349,7 +349,7 @@ MakeCaloCluster::produce(art::Event& evt) {
                                                         tmpHitId = itCD->second.second;
 
                                                         if(_diagLevel < 0){
-                                                                cout << "vaneId = "<< tmpCluster->vaneId<<", tmpRow = "<< tmpRow<< ", tmpColum = "<<tmpColum<<", tmpHitId = "<<tmpHitId<<endl;
+                                                                cout << "vaneId = "<< tmpCluster->vaneId()<<", tmpRow = "<< tmpRow<< ", tmpColum = "<<tmpColum<<", tmpHitId = "<<tmpHitId<<endl;
                                                                 cout<<"it->second[tmpRow][tmpColum].size() = "<<it->second[tmpRow][tmpColum].size()<<endl;
                                                                 if(it->second[tmpRow][tmpColum].size() > 0){
                                                                         for(unsigned int i =0; i <it->second[tmpRow][tmpColum].size(); ++i){
@@ -648,7 +648,7 @@ MakeCaloCluster::produce(art::Event& evt) {
                                                                 CaloClusterCollection::iterator tmpCluster = caloClustersPointer->end();
 
                                                                 tmpCluster--;
-                                                                tmpCluster->vaneId = it->first;
+                                                                tmpCluster->SetVaneId(it->first);
 
                                                                 for(ClusterData::iterator itCD = cluster.begin(); itCD != cluster.end(); ++itCD){
 
