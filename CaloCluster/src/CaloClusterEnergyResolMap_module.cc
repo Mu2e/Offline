@@ -1,9 +1,9 @@
 //
 // Visualization of the energy resolution  on the rows and on the columns
 //
-// $Id: CaloClusterEnergyResolMap_module.cc,v 1.7 2012/03/20 06:46:30 gianipez Exp $
+// $Id: CaloClusterEnergyResolMap_module.cc,v 1.8 2012/03/20 16:34:57 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/20 06:46:30 $
+// $Date: 2012/03/20 16:34:57 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -923,7 +923,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                 if ( _diagLevel < 0 ){
                         cout<<"-------------------- 3 -----------------------"<<endl;
                 }
-                int iVane;
+                int iVane =-1;
                 for(size_t icl=0; icl<caloClusters->size(); ++icl){
 
                         double eDepClu = 0.;
@@ -955,6 +955,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
                                 std::map<unsigned int, unsigned int> seedMap, signalMap;
                                 CryMap cryMap;
+
                                 for(size_t i=0; i<caloClusterHits.size(); ++i){
 
 
@@ -1003,10 +1004,14 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                 // The simulated particle that made this hit.
                                                 SimParticleCollection::key_type trackId(mchit.trackId());
 
+
                                                 //                                                _SPpdgId[j2] = sim.pdgId();
                                                 //                                                _SPIsGen[j2] = sim.fromGenerator();
 
-                                                if(sim.fromGenerator()==1){
+                                                if(sim.fromGenerator() ){
+                                                        GenParticle const& gen = *sim.genParticle();
+                                                        genId = gen.generatorId();
+
                                                         if(cryMap.find(mchit.trackId().asInt() )==cryMap.end() ){
                                                                 cryMap[mchit.trackId().asInt()].time         = mchit.time();
                                                                 cryMap[mchit.trackId().asInt()].totEnergyDep = mchit.totalEDep();
@@ -1014,22 +1019,23 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                                 cryMap[mchit.trackId().asInt()].isGen        = sim.fromGenerator();
                                                                 cryMap[mchit.trackId().asInt()].position     = mchit.position();
                                                                 cryMap[mchit.trackId().asInt()].momentum     = mchit.momentum();
-                                                                cryMap[mchit.trackId().asInt()].time = mchit.time();
                                                                 CLHEP::Hep3Vector crystalFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
                                                                 cryMap[mchit.trackId().asInt()].cryPosition  = crystalFrame;
                                                                 cryMap[mchit.trackId().asInt()].vane         = iVane;//cg->getVaneByRO(thehit.id());
-                                                                bool searchConv = false;
-                                                                for(unsigned int i=0; i!= tmpVsignal.size(); ++i){
-                                                                        if(tmpVsignal.at(i) == trackId.asUint() ){
-                                                                                searchConv = true;
-                                                                        }
-                                                                }
+                                                                cryMap[mchit.trackId().asInt()].isSignal = genId==GenId::conversionGun;
+//
+//                                                                bool searchConv = false;
+//                                                                for(unsigned int i=0; i!= tmpVsignal.size(); ++i){
+//                                                                        if(tmpVsignal.at(i) == trackId.asUint() ){
+//                                                                                searchConv = true;
+//                                                                        }
+//                                                                }
 
-                                                                if(searchConv) {
-                                                                        cryMap[mchit.trackId().asInt()].isSignal = 1;
-                                                                }else{
-                                                                        cryMap[mchit.trackId().asInt()].isSignal = 0;
-                                                                }
+//                                                                if(searchConv) {
+//                                                                        cryMap[mchit.trackId().asInt()].isSignal = 1;
+//                                                                }else{
+//                                                                        cryMap[mchit.trackId().asInt()].isSignal = 0;
+//                                                                }
                                                         }else if(mchit.time() < cryMap[mchit.trackId().asInt()].time ){
                                                                 cryMap[mchit.trackId().asInt()].time         = mchit.time();
                                                                 cryMap[mchit.trackId().asInt()].totEnergyDep = mchit.totalEDep();
@@ -1037,22 +1043,22 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                                 cryMap[mchit.trackId().asInt()].isGen        = sim.fromGenerator();
                                                                 cryMap[mchit.trackId().asInt()].position     = mchit.position();
                                                                 cryMap[mchit.trackId().asInt()].momentum     = mchit.momentum();
-                                                                cryMap[mchit.trackId().asInt()].time = mchit.time();
                                                                 CLHEP::Hep3Vector crystalFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
                                                                 cryMap[mchit.trackId().asInt()].cryPosition  = crystalFrame;
                                                                 cryMap[mchit.trackId().asInt()].vane         = iVane;//cg->getVaneByRO(thehit.id());
-                                                                bool searchConv = false;
-                                                                for(unsigned int i=0; i!= tmpVsignal.size(); ++i){
-                                                                        if(tmpVsignal.at(i) == trackId.asUint() ){
-                                                                                searchConv = true;
-                                                                        }
-                                                                }
-
-                                                                if(searchConv) {
-                                                                        cryMap[mchit.trackId().asInt()].isSignal = 1;
-                                                                }else{
-                                                                        cryMap[mchit.trackId().asInt()].isSignal = 0;
-                                                                }
+                                                                cryMap[mchit.trackId().asInt()].isSignal = genId==GenId::conversionGun;
+//                                                                bool searchConv = false;
+//                                                                for(unsigned int i=0; i!= tmpVsignal.size(); ++i){
+//                                                                        if(tmpVsignal.at(i) == trackId.asUint() ){
+//                                                                                searchConv = true;
+//                                                                        }
+//                                                                }
+//
+//                                                                if(searchConv) {
+//                                                                        cryMap[mchit.trackId().asInt()].isSignal = 1;
+//                                                                }else{
+//                                                                        cryMap[mchit.trackId().asInt()].isSignal = 0;
+//                                                                }
 
                                                         }
                                                 }
