@@ -1,43 +1,56 @@
-// basic cuts
+// basic parameters
 
 double tdlow(0.57735027);
 double tdhigh(1.0);
-double t0min(710);
-char ctext[80];
-snprintf(ctext,80,"td>%f&&td<%f",tdlow,tdhigh);
-TCut rpitch("td>0.57735027 && td<1.0");
-snprintf(ctext,80,"t0>%f",t0min);
-//TCut livegate(ctext);
-TCut livegate("t0>710");
-// cuts for different tightness of selection
+double t0min(0);
+double momlow(103.5);
+double momhigh(104.7);
+int minnhits(15);
+
 TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
-ncuts[0] = "nactive>=20";
-ncuts[1] = "nactive>=20";
-ncuts[2] = "nactive>=25";
-ncuts[3] = "nactive>=30";
-t0cuts[0] = "";
-t0cuts[1] = "t0err<1.5";
-t0cuts[2] = "t0err<1.0";
-t0cuts[3] = "t0err<0.9";
-momcuts[0] = "";
-momcuts[1] = "fitmomerr<0.2";
-momcuts[2] = "fitmomerr<0.18";
-momcuts[3] = "fitmomerr<0.15";
-fitcuts[0] = "";
-fitcuts[1] = "fitcon>1e-4";
-fitcuts[2] = "fitcon>1e-3";
-fitcuts[3] = "fitcon>1e-2";
+TCut reco,goodfit,cosmic,rmom,rpitch,livegate;
+TCut tpitch, tt0,tmom,nmch,mcsel;
 
-TCut tpitch("mcenttd>0.57735027&&mcenttd<1.0");
-TCut tt0("mct0>710.0");
-TCut tmom("mcentmom>100");
-TCut nmch("nchits>=20");
-TCut mcsel = nmch+tmom+tpitch+tt0;
+void KalCuts() {
+  ncuts[0] = "nactive>=15";
+  ncuts[1] = "nactive>=20";
+  ncuts[2] = "nactive>=25";
+  ncuts[3] = "nactive>=30";
+  t0cuts[0] = "";
+  t0cuts[1] = "t0err<1.5";
+  t0cuts[2] = "t0err<1.0";
+  t0cuts[3] = "t0err<0.9";
+  momcuts[0] = "";
+  momcuts[1] = "fitmomerr<0.2";
+  momcuts[2] = "fitmomerr<0.18";
+  momcuts[3] = "fitmomerr<0.15";
+  fitcuts[0] = "";
+  fitcuts[1] = "fitcon>1e-4";
+  fitcuts[2] = "fitcon>1e-3";
+  fitcuts[3] = "fitcon>1e-2";
 
-TCut reco("fitstatus>0");
-TCut goodfit("fitcon>1e-4&&nactive>=20&&t0err<1.5&&fitmomerr<0.2");
-TCut cosmic("abs(d0)<105 && d0+2/om>460 && d0+2/om<660");
-TCut rmom("fitmom>103.5&&fitmom<104.7");
+  char ctext[80];
+  snprintf(ctext,80,"td>%4.3f&&td<%4.3f",tdlow,tdhigh);
+  rpitch = TCut(ctext);
+  snprintf(ctext,80,"t0>%f",t0min);
+  livegate = TCut(ctext);
+  snprintf(ctext,80,"mcenttd>%4.3f&&mcenttd<%4.3f",tdlow,tdhigh);
+  tpitch = TCut(ctext);
+  snprintf(ctext,80,"mct0>%f",t0min);
+  tt0 = TCut(ctext);
+  tmom = TCut("mcentmom>100");
+  snprintf(ctext,80,"nchits>=%i",minnhits);
+  nmch = TCut(ctext);
+  mcsel = nmch+tmom+tpitch+tt0;
+//  mcsel = nmch+tmom;
+
+  reco = TCut("fitstatus>0");
+  goodfit = ncuts[1]+t0cuts[1]+momcuts[1]+fitcuts[1];
+  cosmic = TCut("abs(d0)<105 && d0+2/om>460 && d0+2/om<660");
+  snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
+  rmom = TCut(ctext);
+
+}
 
 Double_t splitgaus(Double_t *x, Double_t *par) {
   Double_t retval;
@@ -52,78 +65,78 @@ Double_t splitgaus(Double_t *x, Double_t *par) {
     tail = (1/par[2]-1/par[3]+par[4]/par[5])*exp(-0.5*pow((xval-par[1])/par[6],2));
   }
   retval = par[0]*0.398942*(core+tail);
-// add a tail Gaussian
+  // add a tail Gaussian
   return retval;
 }
 
 void KalFitHit (TTree* hits ) {
-    TCanvas* dcan = new TCanvas("driftcan","driftcan",1200,800);
-    TH1F* dres = new TH1F("dres","Drift radius resolution;mm",100,-1,1);
-    TH1F* dpull = new TH1F("dpull","Drift radius pull",100,-10,10);
-    TH2F* drad = new TH2F("drad","Drift radius;true drift radius (mm);reco drift radius (mm)",
+  TCanvas* dcan = new TCanvas("driftcan","driftcan",1200,800);
+  TH1F* dres = new TH1F("dres","Drift radius resolution;mm",100,-1,1);
+  TH1F* dpull = new TH1F("dpull","Drift radius pull",100,-10,10);
+  TH2F* drad = new TH2F("drad","Drift radius;true drift radius (mm);reco drift radius (mm)",
       100,-0.3,2.8,100,-0.3,2.8);
-    TH1F* rpull = new TH1F("rpull","residual pull",100,-10,10);
-    hits->Project("dres","rdrift-mcrdrift","active");
-    hits->Project("dpull","(rdrift-mcrdrift)/rdrifterr","active");
-    hits->Project("rpull","resid/residerr","active");
-    dcan->Clear();
-    dcan->Divide(2,2);
-    dcan->cd(1);
-    hits->Draw("rdrift:mcrdrift>>drad","active");
-    dcan->cd(2);
-    dres->Fit("gaus");
-    dcan->cd(3);
-    dpull->Fit("gaus");
-    dcan->cd(4);
-    rpull->Fit("gaus");
-    
-    TCanvas* tcan = new TCanvas("ht0can","hit_t0can",1200,800);
-    TH1F* t0res = new TH1F("t0res","hit t0 resolution;nsec",100,-10,10);
-    TH1F* t0pull = new TH1F("t0pull","hit t0 pull",100,-10,10);
-    TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
-        100,500,4000,100,500,4000);
-    hits->Project("t0res","hitt0-mchitt0","active");
-    hits->Project("t0pull","(hitt0-mchitt0)/hitt0err","active");
-    tcan->Clear();
-    tcan->Divide(2,2);
-    tcan->cd(1);
-    hits->Draw("hitt0:mchitt0>>dt0","active");
-    tcan->cd(2);
-    t0res->Fit("gaus");
-    tcan->cd(3);
-    t0pull->Fit("gaus");
-    
-    TCanvas* tdcan = new TCanvas("tdcan","tdcan",1200,800);
-    TH1F* tdres = new TH1F("tdres","#Deltat V resolution;mm",100,-200,200);
-    TH1F* tdpull = new TH1F("tdpull","#Deltat V pull",100,-10,10);
-    TH2F* dtd = new TH2F("dtd","Hit V position;true V (mm);#Deltat V (mm)",
+  TH1F* rpull = new TH1F("rpull","residual pull",100,-10,10);
+  hits->Project("dres","rdrift-mcrdrift","active");
+  hits->Project("dpull","(rdrift-mcrdrift)/rdrifterr","active");
+  hits->Project("rpull","resid/residerr","active");
+  dcan->Clear();
+  dcan->Divide(2,2);
+  dcan->cd(1);
+  hits->Draw("rdrift:mcrdrift>>drad","active");
+  dcan->cd(2);
+  dres->Fit("gaus");
+  dcan->cd(3);
+  dpull->Fit("gaus");
+  dcan->cd(4);
+  rpull->Fit("gaus");
+
+  TCanvas* tcan = new TCanvas("ht0can","hit_t0can",1200,800);
+  TH1F* t0res = new TH1F("t0res","hit t0 resolution;nsec",100,-10,10);
+  TH1F* t0pull = new TH1F("t0pull","hit t0 pull",100,-10,10);
+  TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
+      100,500,4000,100,500,4000);
+  hits->Project("t0res","hitt0-mchitt0","active");
+  hits->Project("t0pull","(hitt0-mchitt0)/hitt0err","active");
+  tcan->Clear();
+  tcan->Divide(2,2);
+  tcan->cd(1);
+  hits->Draw("hitt0:mchitt0>>dt0","active");
+  tcan->cd(2);
+  t0res->Fit("gaus");
+  tcan->cd(3);
+  t0pull->Fit("gaus");
+
+  TCanvas* tdcan = new TCanvas("tdcan","tdcan",1200,800);
+  TH1F* tdres = new TH1F("tdres","#Deltat V resolution;mm",100,-200,200);
+  TH1F* tdpull = new TH1F("tdpull","#Deltat V pull",100,-10,10);
+  TH2F* dtd = new TH2F("dtd","Hit V position;true V (mm);#Deltat V (mm)",
       100,-600,600,100,-600,600);
-    TH2F* pocatd = new TH2F("pocatd","Hit POCA V;true V (mm);POCA V (mm)",
+  TH2F* pocatd = new TH2F("pocatd","Hit POCA V;true V (mm);POCA V (mm)",
       100,-600,600,100,-600,600);
-        
-    hits->Project("tdres","dmid-mcdmid","active");
-    hits->Project("tdpull","(dmid-mcdmid)/dmiderr","active");
-    tdcan->Clear();
-    tdcan->Divide(2,2);
-    tdcan->cd(1);
-    hits->Draw("dmid:mcdmid>>dtd","active");
-    tdcan->cd(2);
-    hits->Draw("hflt:mcdmid>>pocatd","active");
-    tdcan->cd(3);
-    tdres->Fit("gaus");
-    tdcan->cd(4);
-    tdpull->Fit("gaus");
-    
+
+  hits->Project("tdres","dmid-mcdmid","active");
+  hits->Project("tdpull","(dmid-mcdmid)/dmiderr","active");
+  tdcan->Clear();
+  tdcan->Divide(2,2);
+  tdcan->cd(1);
+  hits->Draw("dmid:mcdmid>>dtd","active");
+  tdcan->cd(2);
+  hits->Draw("hflt:mcdmid>>pocatd","active");
+  tdcan->cd(3);
+  tdres->Fit("gaus");
+  tdcan->cd(4);
+  tdpull->Fit("gaus");
+
 }
 
 void KalFitTrk (TTree* trks ) {
-  
+
   TCanvas* tcan = new TCanvas("tt0can","trk_t0can",1200,800);
   TH1F* t00res = new TH1F("t00res","Initial t0 resolution;nsec",100,-20,20);
   TH1F* t0res = new TH1F("t0res","Final t0 resolution;nsec",100,-10,10);
   TH1F* t0pull = new TH1F("t0pull","Track t0 pull",100,-10,10);
   TH2F* dt0 = new TH2F("dt0","Track t0;true t0 (nsec);Initial t0 (nsec)",
-    100,500,4000,100,500,4000);
+      100,500,4000,100,500,4000);
   trks->Project("t00res","t00-mct0","fitstatus>0");
   trks->Project("t0res","t0-mct0","fitstatus>0");
   trks->Project("t0pull","(t0-mct0)/t0err","fitstatus>0");
@@ -251,7 +264,7 @@ void KalFitAccPlots(TTree* trks) {
 
   fcan->cd(2);
   na->Draw();
-  TLine* nacut = new TLine(20,0.0,20,na->GetMaximum());
+  TLine* nacut = new TLine(minnhits,0.0,minnhits,na->GetMaximum());
   nacut->SetLineColor(kBlack);
   nacut->SetLineStyle(2);
   nacut->SetLineWidth(2);
@@ -277,7 +290,7 @@ void KalFitAccPlots(TTree* trks) {
   tcan->Divide(2,2);
   tcan->cd(1);
   t0->Draw();
-  TLine* t0cut = new TLine(710,0.0,710,t0->GetMaximum());
+  TLine* t0cut = new TLine(t0min,0.0,t0min,t0->GetMaximum());
   t0cut->SetLineColor(kBlack);
   t0cut->SetLineStyle(2);
   t0cut->SetLineWidth(2);
@@ -285,12 +298,12 @@ void KalFitAccPlots(TTree* trks) {
 
   tcan->cd(2);
   td->Draw();
-  TLine* tdcut_l = new TLine(0.57735,0.0,0.57735,td->GetMaximum());
+  TLine* tdcut_l = new TLine(tdlow,0.0,tdlow,td->GetMaximum());
   tdcut_l->SetLineColor(kBlack);
   tdcut_l->SetLineStyle(2);
   tdcut_l->SetLineWidth(2);
   tdcut_l->Draw();
-  TLine* tdcut_h = new TLine(1.0,0.0,1.0,td->GetMaximum());
+  TLine* tdcut_h = new TLine(tdhigh,0.0,tdhigh,td->GetMaximum());
   tdcut_h->SetLineColor(kBlack);
   tdcut_h->SetLineStyle(2);
   tdcut_h->SetLineWidth(2);
@@ -439,7 +452,17 @@ void KalFitRes(TTree* trks) {
 
 
     double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
-    TPaveText* rtext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");  
+
+    TPaveText* ttext = new TPaveText(0.1,0.75,0.4,0.9,"NDC");  
+    ttext->AddText("Truth Cuts");
+    ttext->AddText(nmch.GetTitle());
+    ttext->AddText(tmom.GetTitle());
+    ttext->AddText(tpitch.GetTitle());
+    ttext->Draw();
+ 
+
+    TPaveText* rtext = new TPaveText(0.1,0.4,0.4,0.75,"NDC");
+    rtext->AddText("Reco Cuts");
     char line[40];
     snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
     rtext->AddText(line);

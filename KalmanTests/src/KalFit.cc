@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.20 2012/03/19 23:17:40 brownd Exp $
+// $Id: KalFit.cc,v 1.21 2012/03/20 17:15:36 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/19 23:17:40 $
+// $Date: 2012/03/20 17:15:36 $
 //
 
 // the following has to come before other BaBar includes
@@ -88,6 +88,7 @@ namespace mu2e
     _herr(pset.get<double>("hiterr",0.1)),
     _ssmear(pset.get<double>("seedsmear",1e6)),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
+    _mint0doca(pset.get<double>("minT0DOCA",-0.2)),
     _maxdriftpull(pset.get<double>("maxDriftPull",10)),
     _t0nsig(pset.get<double>("t0window",2.5)),
     _fitpart(pset.get<int>("fitparticle",PdtPid::electron)),
@@ -342,11 +343,11 @@ namespace mu2e
           if(hitsite != 0 && myfit._krep->smoothedTraj(hitsite,straj)){
             TrkPoca poca(*straj,hit->fltLen(),*(hit->hitTraj()),hit->hitLen());
             if(poca.status().success()){
-// DOCA can't be more than the straw radius!
-              double doca = std::min(fabs(poca.doca()),hit->straw().getRadius());
-// require a minimum doca to avoid ambiguity bias.  mindoca shoudl be a parameter, FIXME!!!
-              static double mindoca(0.0);
-              if(doca > mindoca){
+	      double rad = hit->straw().getRadius();
+// sign doca by the ambiguity.  Restrict to the physical maximum
+              double doca = std::min(poca.doca()*hit->ambig(),rad);
+// restrict the range, symmetrically to avoid bias
+              if(doca > _mint0doca){
 // propagation time to this hit from z=0.  This assumes beta=1, FIXME!!!
                 double tflt = (hit->fltLen()-flt0)/_vlight;
 		double vwire = tcal->SignalVelocity(hit->straw().index());

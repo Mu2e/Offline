@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.15 2012/03/19 22:12:20 brownd Exp $
+// $Id: KalFitMC.hh,v 1.16 2012/03/20 17:15:36 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/19 22:12:20 $
+// $Date: 2012/03/20 17:15:36 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -97,7 +97,8 @@ namespace mu2e
     Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
     Float_t _ht, _tddist, _tdderr, _hlen;
     Int_t _ambig;
-    UInt_t _mcn, _mcnunique, _mcpdg, _mcgen, _mcproc;
+    UInt_t _mcn, _mcnunique, _mcppdg, _mcpgen, _mcpproc;
+    UInt_t _mcpdg, _mcgen, _mcproc;
     Float_t _mcht, _mcdist, _mclen;
     Int_t _mcambig;
 // root 

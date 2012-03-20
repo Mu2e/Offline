@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.22 2012/03/19 22:12:20 brownd Exp $
+// $Id: KalFitMC.cc,v 1.23 2012/03/20 17:15:36 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/19 22:12:20 $
+// $Date: 2012/03/20 17:15:36 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -357,11 +357,17 @@ namespace mu2e
 	  std::vector<TrkSum> mcsum;
 	  KalFitMC::fillMCHitSum(mcptr,mcsum);
 	  tshinfo._mcnunique = mcsum.size();
-	  tshinfo._mcpdg = mcsum[0]._pdgid;
-	  tshinfo._mcgen = mcsum[0]._gid;
-	  tshinfo._mcproc = mcsum[0]._pid;
+	  tshinfo._mcppdg = mcsum[0]._pdgid;
+	  tshinfo._mcpgen = mcsum[0]._gid;
+	  tshinfo._mcpproc = mcsum[0]._pid;
 // first hit is the one that set t0
 	  tshinfo._mcht = mcptr[0]->time();
+	  art::Ptr<SimParticle> sp = mcptr[0]->simParticle();
+	  tshinfo._mcpdg = sp->pdgId();
+	  tshinfo._mcproc = sp->creationCode();
+	  tshinfo._mcgen = -1;
+	  if(sp->genParticle().isNonnull())
+	    tshinfo._mcgen = sp->genParticle()->generatorId().id();
 // find the step midpoint
 	  Hep3Vector start = mcptr[0]->position();
 	  Hep3Vector dir = mcptr[0]->momentum().unit();

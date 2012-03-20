@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.14 2012/03/19 22:12:20 brownd Exp $
+// $Id: KalFit.hh,v 1.15 2012/03/20 17:15:36 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/19 22:12:20 $
+// $Date: 2012/03/20 17:15:36 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -86,6 +86,7 @@ namespace mu2e
     double _herr;
     double _ssmear;
     double _t0errfac;
+    double _mint0doca;
     double _maxdriftpull;
     double _t0nsig;
     int _fitpart;
