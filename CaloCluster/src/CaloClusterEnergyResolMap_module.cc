@@ -1,9 +1,9 @@
 //
 // Visualization of the energy resolution  on the rows and on the columns
 //
-// $Id: CaloClusterEnergyResolMap_module.cc,v 1.6 2012/03/19 23:30:14 gianipez Exp $
+// $Id: CaloClusterEnergyResolMap_module.cc,v 1.7 2012/03/20 06:46:30 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/19 23:30:14 $
+// $Date: 2012/03/20 06:46:30 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -390,7 +390,8 @@ private:
 
         Int_t _clSeedTrackId[10000],
         _clSeedPdgId[10000],
-        _clSeedIsGen[10000];
+        _clSeedIsGen[10000],
+        _clSeedIsSignal[10000];
 
         //        _SPpdgId[10000],
         //          _SPIsGen[10000],
@@ -585,6 +586,7 @@ void CaloClusterEnergyResolMap::analyze(art::Event const & evt ) {
                 _Ntup->Branch("clSeedTrakId[clSeeds]",_clSeedTrackId , "clSeedTrakId[clSeeds]/I");//11
                 _Ntup->Branch("clSeedPdgId[clSeeds]", _clSeedPdgId , "clSeedPdgId[clSeeds]/I");//12
                 _Ntup->Branch("clSeedIsGen[clSeeds]", _clSeedIsGen , "clSeedIsGen[clSeeds]/I");
+                _Ntup->Branch("clSeedIsSignal[clSeeds]", _clSeedIsSignal , "clSeedIsSignal[clSeeds]/I");
                 _Ntup->Branch("clSeedTime[clSeeds]",_clSeedTime , "clSeedTime[clSeeds]/F");//13
                 _Ntup->Branch("clSeedTotEnergyDep[clSeeds]",_clSeedTotEnergyDep , "clSeedTotEnergyDep[clSeeds]/F");//14
                 _Ntup->Branch("clSeedPx[clSeeds]",_clSeedPx , "clSeedPx[clSeeds]/F");//15
@@ -1164,6 +1166,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                 tmpVane                = it->second.vane;
                                                 _clSeedPdgId[j]        = it->second.pdgId;
                                                 _clSeedIsGen[j]        = it->second.isGen;
+                                                _clSeedIsSignal[j]     = it->second.isSignal;
                                                 _clSeedTime[j]         = it->second.time ;
                                                 _clSeedTotEnergyDep[j] = it->second.totEnergyDep;
                                                 _clSeedPx[j]           = it->second.position.x();
@@ -1197,8 +1200,9 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                         _clSeeds = 1;
                                         //_clVane = -1;
                                         _clSeedTrackId[0]      = -1;
-                                        _clSeedPdgId[0]        = 0.0;
+                                        _clSeedPdgId[0]        = 0;
                                         _clSeedIsGen[0]        = 0.0;
+                                        _clSeedIsSignal[0]     = 0;
                                         _clSeedTime[0]         = 0.0;
                                         _clSeedTotEnergyDep[0] = 0.0;
                                         _clSeedPx[0]           = 0.0;
