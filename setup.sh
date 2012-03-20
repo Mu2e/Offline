@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.40 2012/03/12 19:45:34 mf Exp $
-# $Author: mf $
-# $Date: 2012/03/12 19:45:34 $
+# $Id: setup.sh,v 1.41 2012/03/20 14:49:05 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2012/03/20 14:49:05 $
 #
 # Original author Rob Kutschke
 #
@@ -56,7 +56,7 @@ setup g4radiative v3_3
 setup g4abla v3_0
 
 # Other libraries we need.
-setup heppdt v3_04_01 -qgcc46:debug
+setup heppdt v3_04_01 -qgcc46:prof
 # Don't setup splines until art v1_00_11 is being used
 #setup splines v1_00_01 -q a7:prof
 
