@@ -1,9 +1,9 @@
 //
 // Visualization of the energy resolution  on the rows and on the columns
 //
-// $Id: CaloClusterEnergyResolMap_module.cc,v 1.8 2012/03/20 16:34:57 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/03/20 16:34:57 $
+// $Id: CaloClusterEnergyResolMap_module.cc,v 1.9 2012/03/20 18:46:58 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/03/20 18:46:58 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -1010,7 +1010,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
                                                 if(sim.fromGenerator() ){
                                                         GenParticle const& gen = *sim.genParticle();
-                                                        genId = gen.generatorId();
+                                                        GenId genId = gen.generatorId();
 
                                                         if(cryMap.find(mchit.trackId().asInt() )==cryMap.end() ){
                                                                 cryMap[mchit.trackId().asInt()].time         = mchit.time();
