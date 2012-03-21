@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for TTrackerDeviceSupport
 //
-// $Id: TTrackerDeviceSupportSD.cc,v 1.1 2012/01/26 21:54:53 genser Exp $
-// $Author: genser $
-// $Date: 2012/01/26 21:54:53 $
+// $Id: TTrackerDeviceSupportSD.cc,v 1.2 2012/03/21 15:52:09 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/21 15:52:09 $
 //
 // Original author KLG
 //
@@ -40,12 +40,12 @@ namespace mu2e {
     _mu2eOrigin(GeomHandle<WorldG4>()->mu2eOriginInWorld()),
     _TrackerVersion(0),
     _debugList(0),
-    _verbosityLevel(config.getInt("ttracker.verbosityLevel",0)),
     _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
     _currentSize(0),
     _simID(0),
     _event(0)
   {
+    SetVerboseLevel(config.getInt("ttracker.verbosityLevel",0));
 
     // Get list of events for which to make debug printout.
     string key("g4.ttrackerDeviceSupportSDEventList");
@@ -113,7 +113,7 @@ namespace mu2e {
     //    G4TouchableHistory* theTouchable =
     //  (G4TouchableHistory*)( aStep->GetPreStepPoint()->GetTouchable() );
 
-    if (_verbosityLevel > 1) {
+    if (verboseLevel > 1) {
 
       cout << "TTrackerDeviceSupportSD::" << __func__ << " Debugging history depth " <<
         setw(4) << touchableHandle->GetHistoryDepth() << endl;
@@ -164,7 +164,7 @@ namespace mu2e {
                             endCode
                             ));
 
-    if (_verbosityLevel >0) {
+    if (verboseLevel >0) {
       cout << "TTrackerDeviceSupportSD::" << __func__ << " Event " << setw(4) <<
         G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() <<
         " TTrackerDeviceSupport " << 

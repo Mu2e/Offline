@@ -3,9 +3,9 @@
 //
 // Defines a sensitive detector for TTrackerDeviceSupport
 //
-// $Id: TTrackerDeviceSupportSD.hh,v 1.1 2012/01/26 21:54:40 genser Exp $
-// $Author: genser $
-// $Date: 2012/01/26 21:54:40 $
+// $Id: TTrackerDeviceSupportSD.hh,v 1.2 2012/03/21 15:52:09 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/21 15:52:09 $
 //
 // Original author KLG
 //
@@ -61,7 +61,6 @@ namespace mu2e {
 
     // List of events for which to enable debug printout and verbosityLevel
     EventNumberList _debugList;
-    int _verbosityLevel;
 
     // Limit maximum size of the steps collection
     int _sizeLimit;
