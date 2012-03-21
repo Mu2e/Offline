@@ -36,13 +36,13 @@ namespace mu2e {
     if( mode<=0 ) return;
 
     art::ServiceHandle<art::TFileService> tfs;
-    
+
     TNtuple * _nt = tfs->make<TNtuple>( "ntfield", "Field along main path",
-					"xg:yg:zg:xl:yl:zl:nx:ny:nz:bx:by:bz:btot:bl:s");
+                                        "xg:yg:zg:xl:yl:zl:nx:ny:nz:bx:by:bz:btot:bl:s");
     Float_t nt[100];
 
     // Map magnetic field
-    
+
     double Bfield[10], point[4];
     G4Navigator *n = (G4TransportationManager::GetTransportationManager())->GetNavigatorForTracking();
     G4FieldManager *fm = (G4TransportationManager::GetTransportationManager())->GetFieldManager();
@@ -53,26 +53,26 @@ namespace mu2e {
     double Lturn = L + 3.14159/2*R;
 
     for( int i=-1100; i<2200; i++ ) {
-      
+
       double s = i*10.0;
       double dx, dz, nx, nz;
-      
-      if( fabs(s)<=L ) { 
-	dx = -s;
-	dz = 0;
-	nx = -1;
-	nz = 0;
+
+      if( fabs(s)<=L ) {
+        dx = -s;
+        dz = 0;
+        nx = -1;
+        nz = 0;
       } else if( fabs(s)>Lturn ) {
-	dx = -R-L;
-	dz = fabs(s)-Lturn+R;
-	nx = 0;
-	nz = 1;
+        dx = -R-L;
+        dz = fabs(s)-Lturn+R;
+        nx = 0;
+        nz = 1;
       } else {
-	double phi = (fabs(s)-L)/R;
-	dx = -L-R*sin(phi);
-	dz = R-R*cos(phi);
-	nz = sin(phi);
-	nx = -cos(phi);
+        double phi = (fabs(s)-L)/R;
+        dx = -L-R*sin(phi);
+        dz = R-R*cos(phi);
+        nz = sin(phi);
+        nx = -cos(phi);
       }
       if( s<0 ) { dx*=-1; dz*=-1; }
 
@@ -89,43 +89,43 @@ namespace mu2e {
       if( ! fmv ) fmv=fm;
       if( fmv ) {
 
-	fmv->GetDetectorField()->GetFieldValue(point,Bfield);
+        fmv->GetDetectorField()->GetFieldValue(point,Bfield);
 
-	cout << "X=(" << dx << ", " << dz << ") "
-	     << "n=(" << nx << ", " << nz << ") "
-	     << "s=" << s << " "
-	     << "B=(" 
-	     << Bfield[0]/CLHEP::tesla << ", "
-	     << Bfield[1]/CLHEP::tesla << ", "
-	     << Bfield[2]/CLHEP::tesla << ") "
-	     << p1->GetName()
-	     << endl;
-	
-	nt[0] = point[0];
-	nt[1] = point[1];
-	nt[2] = point[2];
-	nt[3] = dx;
-	nt[4] = 0;
-	nt[5] = dz;
-	nt[6] = nx;
-	nt[7] = 0;
-	nt[8] = nz;
-	nt[9] = Bfield[0]/CLHEP::tesla;
-	nt[10] = Bfield[1]/CLHEP::tesla;
-	nt[11] = Bfield[2]/CLHEP::tesla;
-	nt[12] = sqrt(Bfield[0]*Bfield[0]+Bfield[1]*Bfield[1]+Bfield[2]*Bfield[2])/CLHEP::tesla;
-	nt[13] = (Bfield[0]*nx+Bfield[2]*nz)/CLHEP::tesla;
-	nt[14] = s;
-	
-	_nt->Fill(nt);
+        cout << "X=(" << dx << ", " << dz << ") "
+             << "n=(" << nx << ", " << nz << ") "
+             << "s=" << s << " "
+             << "B=("
+             << Bfield[0]/CLHEP::tesla << ", "
+             << Bfield[1]/CLHEP::tesla << ", "
+             << Bfield[2]/CLHEP::tesla << ") "
+             << p1->GetName()
+             << endl;
+
+        nt[0] = point[0];
+        nt[1] = point[1];
+        nt[2] = point[2];
+        nt[3] = dx;
+        nt[4] = 0;
+        nt[5] = dz;
+        nt[6] = nx;
+        nt[7] = 0;
+        nt[8] = nz;
+        nt[9] = Bfield[0]/CLHEP::tesla;
+        nt[10] = Bfield[1]/CLHEP::tesla;
+        nt[11] = Bfield[2]/CLHEP::tesla;
+        nt[12] = sqrt(Bfield[0]*Bfield[0]+Bfield[1]*Bfield[1]+Bfield[2]*Bfield[2])/CLHEP::tesla;
+        nt[13] = (Bfield[0]*nx+Bfield[2]*nz)/CLHEP::tesla;
+        nt[14] = s;
+
+        _nt->Fill(nt);
 
       } else {
-	//cout << "No field manager" << endl;
-	continue;
+        //cout << "No field manager" << endl;
+        continue;
       }
-      
+
     }
-    
+
   } // end Mu2eWorld::generateFieldMap
 
 }
