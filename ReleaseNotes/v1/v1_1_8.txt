@@ -1,10 +1,30 @@
-  $Id: v1_1_8.txt,v 1.3 2012/03/21 05:03:08 brownd Exp $
-  $Author: brownd $
-  $Date: 2012/03/21 05:03:08 $
+  $Id: v1_1_8.txt,v 1.4 2012/03/21 23:35:36 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/03/21 23:35:36 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_8
+
+4) March 21, 2012 kutschke
+   Mu2eG4/src/G4_module.cc
+    - Now it initializes G4 only on the first beginRun call.
+    - Previously it did so on every beginRun call, which meant that we
+      were limited to one run per job.  We now have a use case that
+      requires multiple runs per job.
+    - The G4 geometry may not NOT be changed at new runs.  We may allow this some day.
+    - On subsequent beginRun calls all other bookkeeping is done.
+
+   To implement the above we needed to tweak:
+   Mu2eG4/inc/SteppingAction.hh
+   Mu2eG4/src/SteppingAction.cc
+     - Split the beginRun method into beginRun and finishConstruction.  The latter
+       is only called at the first beginRun.
+
+   Fixed some targets of opportunity:
+     Mu2eG4/src/StackingAction.cc
+     Mu2eG4/src/generateFieldMap.cc
+
 3) March 20, 2012 brownd
 
     - Fix error when calculating straw wall material when DOCA is larger than
