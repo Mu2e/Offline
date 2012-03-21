@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.23 2012/03/20 17:15:36 brownd Exp $
+// $Id: KalFitMC.cc,v 1.24 2012/03/21 04:53:47 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/20 17:15:36 $
+// $Date: 2012/03/21 04:53:47 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -235,7 +235,7 @@ namespace mu2e
       _pperp /= esum;
       _pmom /= esum;
     }
-    _mcpos = mcpos;
+    _mchpos = mcpos;
     _mchitt0 = mct0;
     _hitdiag->Fill();
   }
@@ -295,6 +295,10 @@ namespace mu2e
 	_nactive = krep->nActive();
 	_chisq = krep->chisq();
 	_fitcon = krep->chisqConsistency().significanceLevel();
+	_radlen = krep->radiationFraction();
+	_nsites = krep->siteList().size();
+	_firstflt = krep->firstHit()->globalLength();
+	_lastflt = krep->lastHit()->globalLength();
 	// get the fit at the first hit
 	const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>(krep->firstHit()->kalHit()->hitOnTrack());
 	double fltlen = firsthit->fltLen() - 10;
@@ -471,6 +475,7 @@ namespace mu2e
 	_mcmom = sp.startMomentum().vect().mag();
 	_mccost = sp.startMomentum().vect().cosTheta();
 	_mct0 = sp.startGlobalTime();
+	_mcpos = det->toDetector(sp.startPosition());
 	parent = true;
       }
 // find photons with parent = the conversion electron created by brems
@@ -573,6 +578,10 @@ namespace mu2e
     _trkdiag->Branch("nchits",&_nchits,"nchits/I");
     _trkdiag->Branch("chisq",&_chisq,"chisq/F");
     _trkdiag->Branch("fitcon",&_fitcon,"fitcon/F");
+    _trkdiag->Branch("radlen",&_radlen,"radlen/F");
+    _trkdiag->Branch("firstflt",&_firstflt,"firstflt/F");
+    _trkdiag->Branch("lastflt",&_lastflt,"lastflt/F");
+    _trkdiag->Branch("nsites",&_nsites,"nsites/I");
     _trkdiag->Branch("fitmom",&_fitmom,"fitmom/F");
     _trkdiag->Branch("fitmomerr",&_fitmomerr,"fitmomerr/F");
     _trkdiag->Branch("seedmom",&_seedmom,"seedmom/F");
@@ -582,6 +591,7 @@ namespace mu2e
     _trkdiag->Branch("mccost",&_mccost,"mccost/F");
     _trkdiag->Branch("mct0",&_mct0,"mct0/F");
     _trkdiag->Branch("mcmom",&_mcmom,"mcmom/F");
+    _trkdiag->Branch("mcpos",&_mcpos,"mcx/F:mcy/F:mcz/F");
 // mc info at tracker entrance and midplane
     _trkdiag->Branch("mcentpar",&_mcentpar,"mcentd0/F:mcentp0/F:mcentom/F:mcentz0/F:mcenttd/F");
     _trkdiag->Branch("mcentt0",&_mcentt0,"mcentt0/F");
@@ -625,7 +635,7 @@ namespace mu2e
     _hitdiag->Branch("pmom",&_pmom,"pmom/F");
 
     _hitdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/i");
-    _hitdiag->Branch("mcpos",&_mcpos,"x/F:y/F:z/F");
+    _hitdiag->Branch("mchpos",&_mchpos,"x/F:y/F:z/F");
     _hitdiag->Branch("mcrdrift",&_mcrdrift,"mcrdrift/F");
     _hitdiag->Branch("mchitt0",&_mchitt0,"mchitt0/F");
     _hitdiag->Branch("mcdmid",&_mcdmid,"mcdmid/F");

@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.16 2012/03/20 17:15:36 brownd Exp $
+// $Id: KalFitMC.hh,v 1.17 2012/03/21 04:53:47 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/20 17:15:36 $
+// $Date: 2012/03/21 04:53:47 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -208,10 +208,14 @@ namespace mu2e
     Int_t _nchits;
     Float_t _chisq;
     Float_t _fitcon;
+    Float_t _radlen;
     Float_t _fitmom;
     Float_t _fitmomerr;
+    Float_t _firstflt, _lastflt;
+    Int_t _nsites;
     Float_t _mcmom;
     Float_t _mccost;
+    threevec _mcpos;
     Float_t _mcentmom;
     Float_t _mcmidmom;
     Float_t _mcxitmom;
@@ -245,7 +249,7 @@ namespace mu2e
     Bool_t _active;
     Int_t _use;
     UInt_t _nmcsteps;
-    threevec _mcpos;
+    threevec _mchpos;
     Float_t _mcdmid;
     Float_t _mchitt0;
     Float_t _mcrdrift;

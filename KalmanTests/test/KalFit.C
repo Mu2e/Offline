@@ -460,7 +460,6 @@ void KalFitRes(TTree* trks) {
     ttext->AddText(tpitch.GetTitle());
     ttext->Draw();
  
-
     TPaveText* rtext = new TPaveText(0.1,0.4,0.4,0.75,"NDC");
     rtext->AddText("Reco Cuts");
     char line[40];
@@ -484,4 +483,135 @@ void KalFitRes(TTree* trks) {
   rcan->cd(0);
 }
 
+void KalFitResid(TTree* t) {
+  TCut delta("_mcproc==17");
+  TCut ambig("_mcambig==_ambig");
+  TCut active("fitstatus==1 && _active>0");
+  TCut goodmc = mcsel;
 
+  TH1F* rdg = new TH1F("rdg","True Drift radius;radius (mm);N hits",100,-0.05,2.55);
+  TH1F* rdb = new TH1F("rdb","True Drift radius;radius (mm);N hits",100,-0.05,2.55);
+  rdg->SetLineColor(kBlue);
+  rdb->SetLineColor(kRed);
+  rdg->SetStats(0);
+  rdb->SetStats(0);
+
+  TH1F* rpullg = new TH1F("rpullg","Residual Pull;Pull;N hits",100,-6,6);
+  TH1F* rpullb = new TH1F("rpullb","Residual Pull;Pull;N hits",100,-6,6);
+  TH1F* rpulld = new TH1F("rpulld","Residual Pull;Pull;N hits",100,-6,6);
+  rpullg->SetLineColor(kBlue);
+  rpullb->SetLineColor(kRed);
+  rpulld->SetLineColor(kGreen);
+
+  t->Project("rdg","_mcdist",goodmc+active+ambig+(!delta));
+  t->Project("rdb","_mcdist",goodmc+active+(!ambig)+(!delta));
+
+  t->Project("rpullg","_resid/_residerr",goodmc+active+ambig+(!delta));
+  t->Project("rpullb","_resid/_residerr",goodmc+active+(!ambig)+(!delta));
+  t->Project("rpulld","_resid/_residerr",goodmc+active+ambig+delta);
+
+  TCanvas* residcan = new TCanvas("residcan","Residuals",1200,800);
+  residcan->Divide(2,1);
+  residcan->cd(1);
+  rdg->Draw();
+  rdb->Draw("same");
+
+  TLegend* leg = new TLegend(0.3,0.3,0.8,0.5);
+  leg->AddEntry(rpullg,"Correct ambiguity","l");
+  leg->AddEntry(rpullb,"Incorrect ambiguity","l");
+  leg->AddEntry(rpulld,"eIoni (#delta ray)","l");
+  leg->Draw();
+
+  residcan->cd(2);
+  rpullg->Fit("gaus");
+  rpullb->Draw("same");
+  rpulld->Draw("same");
+
+  residcan->cd(0);
+
+}
+
+void KalFitCon(TTree* t) {
+  TH1F* fcon1 = new TH1F("fcon1","log_{10}(#chi^{2}) fit consistency",100,-10,0);
+  TH1F* fcon2 = new TH1F("fcon2","log_{10}(#chi^{2}) fit consistency",100,-10,0);
+  fcon1->SetLineColor(kBlue);
+  fcon2->SetLineColor(kRed);
+  fcon1->SetStats(0);
+  fcon2->SetStats(0);
+
+  t->Project("fcon1","log10(fitcon)",mcsel+"fitstatus==1");
+  t->Project("fcon2","log10(fitcon)",mcsel+"fitstatus==2");
+
+  TCanvas* fccan = new TCanvas("fccan","fit consistency",500,500);
+  fcon1->Draw();
+  fcon2->Draw("same");
+
+  TLegend* leg = new TLegend(0.1,0.6,0.4,0.8);
+  leg->AddEntry(fcon1,"Fully Converged Fit","l");
+  leg->AddEntry(fcon2,"Unconverged Fit","l");
+  leg->Draw();
+
+}
+
+void KalFitError(TTree* t){
+    unsigned ires=1;
+    TF1* sgau = new TF1("sgau",splitgaus,-1.,1.,7);
+    sgau->SetParName(0,"Norm");
+    sgau->SetParName(1,"Mean");
+    sgau->SetParName(2,"SigH");
+    sgau->SetParName(3,"SigL");
+    sgau->SetParName(4,"TFH");
+    sgau->SetParName(5,"TSigH");
+    sgau->SetParName(6,"TSigL");
+
+//    TCut quality = ncuts[ires] && fitcuts[ires];
+    TCut final = (reco+mcsel);
+    TH1F* momres1 = new TH1F("momres1","momentum resolution at start of tracker;MeV",151,-2.5,2.5);
+    TH1F* momres2 = new TH1F("momres2","momentum resolution at start of tracker;MeV",151,-2.5,2.5);
+//    momres1->SetStats(0);
+//    momres2->SetStats(0);
+    
+    t->Project("momres1","fitmom-mcentmom",final+"fitmomerr<0.15");
+    t->Project("momres2","fitmom-mcentmom",final+"fitmomerr>0.2");
+    
+    double integral = momres1->GetEntries()*momres1->GetBinWidth(1);
+    sgau->SetParameters(integral,0.0,momres1->GetRMS(),momres1->GetRMS(),0.01,2*momres1->GetRMS(),2*momres1->GetRMS());
+    sgau->SetParLimits(5,1.0*momres1->GetRMS(),1.0);
+    sgau->SetParLimits(6,1.0*momres1->GetRMS(),1.0);
+    sgau->SetParLimits(4,0.0,0.8);
+    momres1->Fit("sgau","L");
+
+    integral = momres2->GetEntries()*momres1->GetBinWidth(1);
+    sgau->SetParameters(integral,0.0,momres2->GetRMS(),momres2->GetRMS(),0.01,2*momres2->GetRMS(),2*momres2->GetRMS());
+    sgau->SetParLimits(5,1.0*momres2->GetRMS(),1.0);
+    sgau->SetParLimits(6,1.0*momres2->GetRMS(),1.0);
+    sgau->SetParLimits(4,0.0,0.8);
+    momres2->Fit("sgau","L");
+
+   TCanvas* mecan = new TCanvas("mecan","Momentum Res",800,500);
+   mecan->Divide(2,1);
+   mecan->cd(1);
+   momres1->Draw();
+   mecan->cd(2);
+   momres2->Draw();
+
+}
+
+void KalFitDrift(TTree* t){
+
+  TH1F* rdg = new TH1F("rdg","Reco Hit Drift Radius;radius (mm);N hits",100,-0.05,2.55);
+  TH1F* rdb = new TH1F("rdb","Reco Hit Drift Radius;radius (mm);N hits",100,-0.05,2.55);
+  rdg->SetStats(0);
+  rdb->SetStats(0);
+
+  t->Project("rdg","_rdrift","fitstatus==1&&fitmomerr<0.15&&_active");
+  t->Project("rdb","_rdrift","fitstatus==1&&fitmomerr>0.2&&_active");
+
+  TCanvas* dcan = new TCanvas("dcan","Drift Radius",800,500);
+  dcan->Divide(2,1);
+  dcan->cd(1);
+  rdg->Draw();
+  dcan->cd(2);
+  rdb->Draw();
+
+}
