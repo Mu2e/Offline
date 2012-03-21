@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions.
 //
-// $Id: StackingAction.cc,v 1.19 2011/07/13 19:25:14 logash Exp $
-// $Author: logash $
-// $Date: 2011/07/13 19:25:14 $
+// $Id: StackingAction.cc,v 1.20 2012/03/21 23:35:26 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/21 23:35:26 $
 //
 // Original author Rob Kutschke
 //
@@ -89,11 +89,11 @@ namespace mu2e {
       config.getVectorInt("g4.killLowEKinePDG", _killLowKineticEnergyPDG, vector<int>() );
       config.getVectorDouble("g4.eKineMinPDG", _eKineMinPDG, vector<double>() );
       if( _killLowKineticEnergyPDG.size() != _eKineMinPDG.size() ) {
-	throw cet::exception("G4CONTROL")
-	  << "Sizes of g4.killLowEKinePDG and g4.eKineMinPDG do not match: "
-	  << _killLowKineticEnergyPDG.size() <<  " "
-	  << _eKineMinPDG.size() <<  " "
-	  << "\n";
+        throw cet::exception("G4CONTROL")
+          << "Sizes of g4.killLowEKinePDG and g4.eKineMinPDG do not match: "
+          << _killLowKineticEnergyPDG.size() <<  " "
+          << _eKineMinPDG.size() <<  " "
+          << "\n";
       }
     }
 
@@ -131,7 +131,7 @@ namespace mu2e {
     // Find the addresses of some physical volumes of interest.  See note 3.
     _dirtBodyPhysVol = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtBody");
     _dirtCapPhysVol  = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtCap");
-    
+
     if( _killPitchToLowToStore ) {
 
       // Get the value of maximum (sort-of) field in DS3. It is used later
@@ -140,33 +140,33 @@ namespace mu2e {
       double Bfield[10], point[4];
       G4Navigator *n = (G4TransportationManager::GetTransportationManager())->GetNavigatorForTracking();
       _globalFM = (G4TransportationManager::GetTransportationManager())->GetFieldManager();
-      
+
       // This is a point above MBS somewhere in DS3
       point[0]=-3904;
       point[1]=-7150+600;
       point[2]=-4000+14000;
       point[3]=0;
-      
+
       G4VPhysicalVolume* p1 = n->LocateGlobalPointAndSetup(G4ThreeVector(point[0],point[1],point[2]));
 
       cout << "StakingAction: get max field in " << p1->GetName() << endl;
       G4FieldManager *fmv = p1->GetLogicalVolume()->GetFieldManager();
       if( ! fmv ) fmv=_globalFM;
-    
+
       fmv->GetDetectorField()->GetFieldValue(point,Bfield);
-      
+
       _Bmax = sqrt(Bfield[0]*Bfield[0]+Bfield[1]*Bfield[1]+Bfield[2]*Bfield[2]);
-      
-      cout << "X=(" 
-	   << point[0]/CLHEP::tesla << ", "
-	   << point[1]/CLHEP::tesla << ", "
-	   << point[2]/CLHEP::tesla << ") "
-	   << "B=(" 
-	   << Bfield[0]/CLHEP::tesla << ", "
-	   << Bfield[1]/CLHEP::tesla << ", "
-	   << Bfield[2]/CLHEP::tesla << ") "
-	   << _Bmax/CLHEP::tesla << endl;
-      
+
+      cout << "X=("
+           << point[0]/CLHEP::mm << ", "
+           << point[1]/CLHEP::mm << ", "
+           << point[2]/CLHEP::mm << ") "
+           << "B=("
+           << Bfield[0]/CLHEP::tesla << ", "
+           << Bfield[1]/CLHEP::tesla << ", "
+           << Bfield[2]/CLHEP::tesla << ") "
+           << _Bmax/CLHEP::tesla << endl;
+
     }
 
   }
@@ -219,39 +219,39 @@ namespace mu2e {
       }
       int pdg(trk->GetDefinition()->GetPDGEncoding());
       for( size_t i=0; i<_killLowKineticEnergyPDG.size(); ++i ) {
-	if( _killLowKineticEnergyPDG[i] == pdg ) {
-	  if( trk->GetKineticEnergy() < _eKineMinPDG[i] ) return fKill;
-	  else break;
-	}
+        if( _killLowKineticEnergyPDG[i] == pdg ) {
+          if( trk->GetKineticEnergy() < _eKineMinPDG[i] ) return fKill;
+          else break;
+        }
       }
     }
 
     if ( _killPitchToLowToStore ){
 
       // Very special test: we check that muon pitch is large enough to store it
-      // in DS. Used only for special studies. 
+      // in DS. Used only for special studies.
       int pdg(trk->GetDefinition()->GetPDGEncoding());
-      if( pdg==-13 || pdg==13 ) { 
+      if( pdg==-13 || pdg==13 ) {
 
-	G4FieldManager *fmv = trk->GetVolume()->GetLogicalVolume()->GetFieldManager();
-	if( ! fmv ) fmv=_globalFM;
-	
-	double Bfield[10], point[4];
+        G4FieldManager *fmv = trk->GetVolume()->GetLogicalVolume()->GetFieldManager();
+        if( ! fmv ) fmv=_globalFM;
 
-	point[0]=trk->GetPosition().x();
-	point[1]=trk->GetPosition().y();
+        double Bfield[10], point[4];
 
-	point[2]=trk->GetPosition().z();
-	point[3]=0;
-	  
-	fmv->GetDetectorField()->GetFieldValue(point,Bfield);
-	
-	double B = sqrt(Bfield[0]*Bfield[0]+Bfield[1]*Bfield[1]+Bfield[2]*Bfield[2]);
-	if( fabs(B)>1e-6 && trk->GetMomentum().mag2()>0 ) {
-	  if( B>_Bmax ) return fKill;
-	  if( (trk->GetMomentum().perp2()/trk->GetMomentum().mag2())<(B/_Bmax) ) return fKill;
-	}
-	
+        point[0]=trk->GetPosition().x();
+        point[1]=trk->GetPosition().y();
+
+        point[2]=trk->GetPosition().z();
+        point[3]=0;
+
+        fmv->GetDetectorField()->GetFieldValue(point,Bfield);
+
+        double B = sqrt(Bfield[0]*Bfield[0]+Bfield[1]*Bfield[1]+Bfield[2]*Bfield[2]);
+        if( fabs(B)>1e-6 && trk->GetMomentum().mag2()>0 ) {
+          if( B>_Bmax ) return fKill;
+          if( (trk->GetMomentum().perp2()/trk->GetMomentum().mag2())<(B/_Bmax) ) return fKill;
+        }
+
       }
 
     }
@@ -336,4 +336,3 @@ namespace mu2e {
   } // end StackingAction::cosmicKiller
 
 } // end namespace mu2e
-

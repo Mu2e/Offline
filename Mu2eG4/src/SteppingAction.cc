@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.29 2012/02/20 20:22:48 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/20 20:22:48 $
+// $Id: SteppingAction.cc,v 1.30 2012/03/21 23:35:26 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/21 23:35:26 $
 //
 // Original author Rob Kutschke
 //
@@ -44,7 +44,7 @@ namespace mu2e {
     _eKineMinPDG(),
     _debugEventList(),
     _debugTrackList(),
-    
+
     // Other parameters.
     _lastPosition(),
     _lastMomentum(),
@@ -67,10 +67,10 @@ namespace mu2e {
     // make sure the old job options are fixed:
     if(config.hasName("g4SteppingAction.killInHallAir")) {
       throw cet::exception("G4CONTROL")
-	<< "The parameter g4SteppingAction.killInHallAir "
-	<< "has been replaced with g4SteppingAction.killInTheseVolumes. "
-	<< "Please fix the geometry configuration file. "
-	<< "\n";
+        << "The parameter g4SteppingAction.killInHallAir "
+        << "has been replaced with g4SteppingAction.killInTheseVolumes. "
+        << "Please fix the geometry configuration file. "
+        << "\n";
     }
 
     // If this cut is enabled, the cut value must be supplied in the run time config.
@@ -80,11 +80,11 @@ namespace mu2e {
       config.getVectorInt("g4.killLowEKinePDG", _killLowKineticEnergyPDG, vector<int>() );
       config.getVectorDouble("g4.eKineMinPDG", _eKineMinPDG, vector<double>() );
       if( _killLowKineticEnergyPDG.size() != _eKineMinPDG.size() ) {
-	throw cet::exception("G4CONTROL")
-	  << "Sizes of g4.killLowEKinePDG and g4.eKineMinPDG do not match: "
-	  << _killLowKineticEnergyPDG.size() <<  " "
-	  << _eKineMinPDG.size() <<  " "
-	  << "\n";
+        throw cet::exception("G4CONTROL")
+          << "Sizes of g4.killLowEKinePDG and g4.eKineMinPDG do not match: "
+          << _killLowKineticEnergyPDG.size() <<  " "
+          << _eKineMinPDG.size() <<  " "
+          << "\n";
       }
     }
 
@@ -159,18 +159,23 @@ namespace mu2e {
   }
 
   void SteppingAction::beginRun(PhysicsProcessInfo& processInfo,
-				CLHEP::Hep3Vector const& mu2eOrigin ){
+                                CLHEP::Hep3Vector const& mu2eOrigin ){
 
     _currentSize    = 0;
     _processInfo    = &processInfo;
     _mu2eOrigin     =  mu2eOrigin;
 
+  }
+
+  void SteppingAction::finishConstruction(){
+
     for(unsigned i=0; i<_killInTheseVolumes.size(); ++i) {
       if ( true ){
-	std::cout<<"Adding G4 killer volume = "<<_killInTheseVolumes[i]<<std::endl;
+        std::cout<<"Adding G4 killer volume = "<<_killInTheseVolumes[i]<<std::endl;
       }
       _killerVolumes.insert(getPhysicalVolumeOrThrow(_killInTheseVolumes[i]));
     }
+
   }
 
   void SteppingAction::UserSteppingAction(const G4Step* step){
@@ -194,7 +199,7 @@ namespace mu2e {
     // Save hits in time virtual detector
     for( unsigned int i=0; i<tvd_time.size(); ++i ) {
       if( prept->GetGlobalTime()<=tvd_time[i] && postpt->GetGlobalTime()>tvd_time[i] ) {
-	addTimeVDHit(step,i+1);
+        addTimeVDHit(step,i+1);
       }
     }
 
@@ -317,8 +322,8 @@ namespace mu2e {
     int pdg(trk->GetDefinition()->GetPDGEncoding());
     for( size_t i=0; i<_killLowKineticEnergyPDG.size(); ++i ) {
       if( _killLowKineticEnergyPDG[i] == pdg ) {
-	if( trk->GetKineticEnergy() < _eKineMinPDG[i] ) return true;
-	else return false;
+        if( trk->GetKineticEnergy() < _eKineMinPDG[i] ) return true;
+        else return false;
       }
     }
 
@@ -335,8 +340,8 @@ namespace mu2e {
 
     if ( _killerVerbose ){
       cout << "Killed track " << trk->GetTrackID()
-	   << " in volume " << (*p)->GetName()
-	   << endl;
+           << " in volume " << (*p)->GetName()
+           << endl;
     }
     return true;
   }
@@ -372,8 +377,8 @@ namespace mu2e {
   }
 
   void SteppingAction::BeginOfEvent(StepPointMCCollection& outputHits,
-				    art::ProductID const& simID,
-				    art::Event const& event ) {
+                                    art::ProductID const& simID,
+                                    art::Event const& event ) {
     _nKilledStepLimit = 0;
     _collection  = &outputHits;
     _simID         = &simID;
@@ -398,7 +403,7 @@ namespace mu2e {
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
         mf::LogWarning("G4") << "Maximum number of particles reached in time virtual detector "
-			     << _currentSize << endl;
+                             << _currentSize << endl;
       }
       return false;
     }
@@ -422,7 +427,7 @@ namespace mu2e {
                             ));
 
     return true;
-    
+
   }
 
 } // end namespace mu2e

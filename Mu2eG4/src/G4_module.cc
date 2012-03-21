@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.38 2012/03/08 22:30:00 kutschke Exp $
+// $Id: G4_module.cc,v 1.39 2012/03/21 23:35:26 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/08 22:30:00 $
+// $Date: 2012/03/21 23:35:26 $
 //
 // Original author Rob Kutschke
 //
@@ -129,6 +129,7 @@ namespace mu2e {
   public:
     explicit G4(fhicl::ParameterSet const& pSet):
       _runManager(0),
+      _warnOnMultipleRuns(pSet.get<bool>("warnOnMultipleRuns",true)),
       _genAction(0),
       _trackingAction(0),
       _steppingAction(0),
@@ -191,6 +192,9 @@ namespace mu2e {
   private:
     auto_ptr<Mu2eG4RunManager> _runManager;
 
+    // Do we issue warnings about multiple runs?
+    bool _warnOnMultipleRuns;
+
     PrimaryGeneratorAction* _genAction;
     TrackingAction*         _trackingAction;
     SteppingAction*         _steppingAction;
@@ -228,6 +232,9 @@ namespace mu2e {
 
     DiagnosticsG4 _diagnostics;
 
+    // Do the G4 initialization that must be done only once per job, not once per run
+    void initializeG4( GeometryService& geom, art::Run const& run );
+
     // A helper function.
     void setOtherCuts( SimpleConfig const& config );
 
@@ -238,21 +245,59 @@ namespace mu2e {
     _runManager = auto_ptr<Mu2eG4RunManager>(new Mu2eG4RunManager);
   }
 
-  // Initialze G4.
+  // On the first call, initialize G4.  On subsequent calls 
   void G4::beginRun( art::Run &run){
 
-    art::ServiceHandle<GeometryService> geom;
-    geom->addWorldG4();
-
-    SimpleConfig const& config = geom->config();
-
     static int ncalls(0);
+    ++ncalls;
 
-    if ( ++ncalls > 1 ){
-      mf::LogWarning("GEOM")
-        << "This version of the code does not update the G4 geometry on run boundaries.";
-      return;
+    art::ServiceHandle<GeometryService> geom;
+
+    // Do the main initialization of G4; only once per job.
+    if ( ncalls == 1 ) {
+      initializeG4( *geom, run );
+    } else {
+      if ( _warnOnMultipleRuns ){
+        mf::LogWarning("G4")
+          << "G4 does not change state when we cross run boundaries - hope this is OK .... ";
+      }
     }
+
+    // Tell G4 that we are starting a new run.
+    _runManager->BeamOnBeginRun( run.id().run() );
+
+    // Helps with indexology related to persisting G4 volume information.
+    _physVolHelper.beginRun();
+    _processInfo.beginRun();
+
+    // Add info about the G4 volumes to the run-data.
+    // The framework rules requires we make a copy and add the copy.
+    const PhysicalVolumeInfoCollection& vinfo = _physVolHelper.persistentInfo();
+    auto_ptr<PhysicalVolumeInfoCollection> volumes(new PhysicalVolumeInfoCollection(vinfo));
+    run.put(volumes);
+
+    // Some of the user actions have beginRun methods.
+    GeomHandle<WorldG4>  worldGeom;
+    _trackingAction->beginRun( _physVolHelper, _processInfo, worldGeom->mu2eOriginInWorld() );
+    _steppingAction->beginRun( _processInfo, worldGeom->mu2eOriginInWorld() );
+    _stackingAction->beginRun( worldGeom->dirtG4Ymin(), worldGeom->dirtG4Ymax() );
+
+    // A few more things that only need to be done only once per job, not once per run, but which need to be
+    // done after the call to BeamOnBeginRun.
+    if ( ncalls == 1 ) {
+
+      _steppingAction->finishConstruction();
+
+      if( _checkFieldMap>0 ) generateFieldMap(worldGeom->mu2eOriginInWorld(),_checkFieldMap);
+    }
+
+  }
+
+  void G4::initializeG4( GeometryService& geom, art::Run const& run ){
+
+    SimpleConfig const& config = geom.config();
+
+    geom.addWorldG4();
 
     mf::LogInfo logInfo("GEOM");
     logInfo << "Initializing Geant 4 for " << run.id() << " with verbosity " << _rmvlevel << endl;
@@ -305,7 +350,6 @@ namespace mu2e {
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
-
       _visManager = new G4VisExecutive;
       _visManager->Initialize();
 
@@ -318,34 +362,11 @@ namespace mu2e {
 
     }
 
-    // Start a run
-    _runManager->BeamOnBeginRun( run.id().run() );
-
-    // Helps with indexology related to persisting G4 volume information.
-    _physVolHelper.beginRun();
-    _processInfo.beginRun();
-
-    // Add info about the G4 volumes to the run-data.
-    // The framework rules requires we make a copy and add the copy.
-    const PhysicalVolumeInfoCollection& vinfo = _physVolHelper.persistentInfo();
-    auto_ptr<PhysicalVolumeInfoCollection> volumes(new PhysicalVolumeInfoCollection(vinfo));
-    run.put(volumes);
-
-    GeomHandle<WorldG4>  worldGeom;
-
-    // Some of the user actions have beginRun methods.
-    _trackingAction->beginRun( _physVolHelper, _processInfo, worldGeom->mu2eOriginInWorld() );
-    _steppingAction->beginRun( _processInfo, worldGeom->mu2eOriginInWorld() );
-    _stackingAction->beginRun( worldGeom->dirtG4Ymin(), worldGeom->dirtG4Ymax() );
-
-    // test field map
-    if( _checkFieldMap>0 ) generateFieldMap(worldGeom->mu2eOriginInWorld(),_checkFieldMap);
-
     // Book some diagnostic histograms.
     art::ServiceHandle<art::TFileService> tfs;
     _diagnostics.book("Outputs");
 
-  }
+  } // end G4::initializeG4
 
   // Create one G4 event and copy its output to the art::event.
   void G4::produce(art::Event& event) {
@@ -528,8 +549,12 @@ namespace mu2e {
 
   // Tell G4 that this run is over.
   void G4::endRun(art::Run & run){
-
     _runManager->BeamOnEndRun();
+  }
+
+  void G4::endJob(){
+
+    // Yes, these are named endRun, but they are really endJob actions.
     _physVolHelper.endRun();
     _trackingAction->endRun();
 
@@ -538,9 +563,6 @@ namespace mu2e {
     }
 
     delete _visManager;
-  }
-
-  void G4::endJob(){
   }
 
 

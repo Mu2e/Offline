@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.19 2012/02/20 20:22:48 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/20 20:22:48 $
+// $Id: SteppingAction.hh,v 1.20 2012/03/21 23:35:26 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/21 23:35:26 $
 //
 // Original author Rob Kutschke
 //
@@ -59,13 +59,17 @@ namespace mu2e {
     // Called by G4_plugin.
     void beginRun(PhysicsProcessInfo&, CLHEP::Hep3Vector const& mu2eOrigin );
 
+    // Called by G4_plugin: the final phase of the c'tor cannot be completed until after
+    // G4 has initialized itself.
+    void finishConstruction();
+
     G4ThreeVector const& lastPosition() const { return _lastPosition; }
     G4ThreeVector const& lastMomentum() const { return _lastMomentum; }
 
     void setZRef( G4double zref){
       _zref=zref;
     }
-    
+
   private:
 
     // Start: information from the run time configuration.
