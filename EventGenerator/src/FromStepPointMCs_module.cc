@@ -26,6 +26,21 @@
 
 namespace mu2e {
 
+  namespace {
+    std::string toStr(const SimParticle& particle) {
+      std::ostringstream os;
+      os<<"SimParticle("
+        <<"id = "<<particle.id()
+        <<", pdgId="<<particle.pdgId()
+        <<", hasParent="<<particle.hasParent()
+        <<", parentId = "<<particle.parentId()
+        <<", startPosition="<<particle.startPosition()
+        <<", endPosition="<<particle.endPosition()
+        <<")";
+      return os.str();
+    }
+  }
+
   class FromStepPointMCs : public art::EDProducer {
   public:
     explicit FromStepPointMCs(fhicl::ParameterSet const& pset);
@@ -36,12 +51,14 @@ namespace mu2e {
     std::string  inInstanceName_;
     GlobalConstantsHandle<ParticleDataTable> pdt_;
     int logLevel_;
+    bool allowDuplicates_;  // easily get a wrong answer by double counting particles
   };
 
   FromStepPointMCs::FromStepPointMCs(fhicl::ParameterSet const& pset)
     : inModuleLabel_(pset.get<std::string>("inputModuleLabel"))
     , inInstanceName_(pset.get<std::string>("inputInstanceName"))
     , logLevel_(pset.get<int>("logLevel", 0))
+    , allowDuplicates_(pset.get<bool>("allowDuplicates", false))
   {
     produces<GenParticleCollection>();
     produces<GenParticleSPMHistory>();
@@ -70,11 +87,17 @@ namespace mu2e {
     for(StepPointMCCollection::const_iterator i=inhits.begin(); i!=inhits.end(); ++i) {
       const art::Ptr<SimParticle>& particle = i->simParticle();
       if(!seenParticles.insert(&*particle).second) {
-        throw cet::exception("BADINPUTS")
-          <<"FromStepPointMCs: duplicate SimParticle in input hits collection. Hit: "<<*i<<" in event "<<event.id();
+        std::ostringstream os;
+        os <<"FromStepPointMCs: duplicate SimParticle "<<toStr(*particle)<<" in input hits collection. Hit: "<<*i<<" in event "<<event.id();
+        if(allowDuplicates_) {
+          mf::LogWarning warn("FromStepPointMCs");
+          warn<<"WARNING: "<<os.str()<<"\n";
+        }
+        else {
+          throw cet::exception("BADINPUTS")<<os.str();
+        }
       }
 
-      // OK this is not a duplicate.
       if(logLevel_ > 1) {
         std::cout<<"AG: creating new GenParticle from hit "<<*i<<std::endl;
       }
