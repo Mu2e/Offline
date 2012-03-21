@@ -61,6 +61,9 @@ namespace mu2e {
     c.getVectorDouble("extMonFilter.magnetPitHalfSize", m_det->_magnetPitHalfSize, 3);
     m_det->_minCoreShieldingThickness = c.getDouble("protonBeamDump.minCoreShieldingThickness");
 
+    // The default width is determined by core and shielding parameters.   This option lets to increase the default:
+    const double enclosureHalfWidthMin = c.getDouble("protonBeamDump.enclosureHalfWidthMin", 0);
+
     // position
     m_det->_coreCenterInMu2e = c.getHep3Vector("protonBeamDump.coreCenterInMu2e");
     const double coreRotY = m_det->_coreRotY = c.getDouble("protonBeamDump.coreRotY") * CLHEP::degree;
@@ -85,7 +88,7 @@ namespace mu2e {
     // Compute the overall size
     m_det->_enclosureHalfSize.resize(3);
 
-    m_det->_enclosureHalfSize[0] =  m_det->_coreHalfSize[0] + m_det->_minCoreShieldingThickness;
+    m_det->_enclosureHalfSize[0] =  std::max(m_det->_coreHalfSize[0] + m_det->_minCoreShieldingThickness, enclosureHalfWidthMin);
 
     m_det->_enclosureHalfSize[1] =  m_det->_coreHalfSize[1] + m_det->_minCoreShieldingThickness + m_det->_magnetPitHalfSize[1];
 
