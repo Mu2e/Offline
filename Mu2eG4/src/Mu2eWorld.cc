@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.123 2012/03/16 05:09:22 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.124 2012/03/21 15:50:15 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/16 05:09:22 $
+// $Date: 2012/03/21 15:50:15 $
 //
 // Original author Rob Kutschke
 //
@@ -590,17 +590,15 @@ namespace mu2e {
         itrackerSD = new ITGasLayerSD_Hexagonal(SensitiveDetectorName::ItrackerGasVolume(), *_config);
       else if ( itracker->geomType()==ITracker::Square )
         itrackerSD = new ITGasLayerSD_Square(   SensitiveDetectorName::ItrackerGasVolume(), *_config);
-      //itrackerSD->SetVerboseLevel(1);
+
       SDman->AddNewDetector(itrackerSD);
     }
     else {
       StrawSD* strawSD      = new StrawSD(  SensitiveDetectorName::StrawGasVolume(),  *_config);
-      //strawSD->SetVerboseLevel(1);
       SDman->AddNewDetector(strawSD);
 
       TTrackerDeviceSupportSD* ttdsSD =
         new TTrackerDeviceSupportSD(SensitiveDetectorName::TTrackerDeviceSupport(), *_config);
-      ttdsSD->SetVerboseLevel(_verbosityLevel);
       SDman->AddNewDetector(ttdsSD);
     }
 
