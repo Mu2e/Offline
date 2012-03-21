@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.13 2012/03/19 21:39:41 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/03/19 21:39:41 $
+// $Id: MakeStrawHit_module.cc,v 1.14 2012/03/21 00:34:11 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/21 00:34:11 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -19,10 +19,12 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
+#include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/MassCache.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "SeedService/inc/SeedService.hh"
 
@@ -43,6 +45,7 @@
 // Other includes.
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Units/PhysicalConstants.h"
 
 // C++ includes.
 #include <iostream>
@@ -95,6 +98,7 @@ namespace mu2e {
       _driftSigma(pset.get<double>("driftSigma",0.1)),          // mm
       _minimumTimeGap(pset.get<double>("minimumTimeGap",100.0)),// ns
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+      _enableFlightTimeCorrection(pset.get<bool>("flightTimeCorrection",false)),
 
       // Random number distributions
       _gaussian( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
@@ -136,6 +140,7 @@ namespace mu2e {
     double _driftSigma;
     double _minimumTimeGap;
     string _g4ModuleLabel;  // Name of the module that made these hits.
+    bool   _enableFlightTimeCorrection;
 
     // Random number distributions
     CLHEP::RandGaussQ _gaussian;
@@ -199,7 +204,7 @@ namespace mu2e {
       }
     }
 
-  }   // end MakeStrawHit::fillHitMap 
+  }   // end MakeStrawHit::fillHitMap
 
 
   void
@@ -228,6 +233,9 @@ namespace mu2e {
 
     // Temporary working space per straw.
     vector<StepHit> straw_hits;
+
+    // Cache of recently used masses from the particle data table.
+    MassCache cache;
 
     // Loop over all straws and create StrawHits. There can be several
     // hits per straw if they are separated by time. The general algorithm
@@ -277,9 +285,12 @@ namespace mu2e {
                << endl;
         }
 
-        // Calculate the drift distance from this step.
+        // Calculate the drift distance and the point on the wire at the end of the dca vector.
         double hit_dca;
         CLHEP::Hep3Vector hit_pca;
+
+        // Length along the step from the start to the dca.
+        double hit_s(0.);
 
         if( length < _minimumLength ) {
 
@@ -288,23 +299,23 @@ namespace mu2e {
           LinePointPCA pca(mid, w, pos);
           hit_dca = pca.dca();
           hit_pca = pca.pca();
+          hit_s   = 0.;
 
         } else {
 
           // Step is not a point. Calculate the distance between two lines.
 
           TwoLinePCA pca( mid, w, pos, mom);
-          CLHEP::Hep3Vector const& p2 = pca.point2();
 
-          if( (pos-p2).mag()<=length && (pos-p2).dot(mom)<=0 ) {
+          if ( pca.s2() >=0 && pca.s2() <= length ){
 
             // If the point of closest approach is within the step and wire - thats it.
             hit_dca = pca.dca();
             hit_pca = pca.point1();
-	    // correct the hit time for the propagation to the DCA.  This requires an upgrade to stepPointMC.  FIXME!!!
-	    
+            hit_s   = pca.s2();
 
           } else {
+
 
             // The point of closest approach is not within the step. In this case
             // the closes distance should be calculated from the ends
@@ -314,26 +325,38 @@ namespace mu2e {
             if( pca1.dca() < pca2.dca() ) {
               hit_dca = pca1.dca();
               hit_pca = pca1.pca();
+              hit_s   = 0.;
+
             } else {
               hit_dca = pca2.dca();
               hit_pca = pca2.pca();
+              hit_s   = length;
             }
 
           }
 
         } // drift distance calculation
 
+        // Flight time of particle from start of step to the DCA.
+        double flightTime = 0.;
+        if ( _enableFlightTimeCorrection ){
+          double mass = cache.mass( hit.simParticle()->pdgId() );
+          double p    = mom.mag();
+          double e    = sqrt( p*p + mass*mass);
+          double beta = p/e;
+          flightTime  = ( beta > 0 ) ? hit_s/beta/CLHEP::c_light : 0.;
+        }
+
         // Calculate signal time. It is Geant4 time + signal propagation time
         // t1 is signal time at positive end (along w vector),
         // t2 - at negative end (opposite to w vector)
 
-
         double driftTime = (hit_dca + _gaussian.fire(0.,_driftSigma))/_driftVelocity;
         double distanceToMiddle = (hit_pca-mid).dot(w);
-	// The convention is that the principle time measurement (t1) corresponds to a measurement
-	// at the end of the wire as signed by the wire direction vector. t2 is at the near end.
-        double hit_t1 = hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
-        double hit_t2 = hitTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
+        // The convention is that the principle time measurement (t1) corresponds to a measurement
+        // at the end of the wire as signed by the wire direction vector. t2 is at the near end.
+        double hit_t1 = hitTime + flightTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
+        double hit_t2 = hitTime + flightTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
 
         straw_hits.push_back( StepHit( *i,edep,hit_dca,driftTime,distanceToMiddle,hit_t1,hit_t2));
 
