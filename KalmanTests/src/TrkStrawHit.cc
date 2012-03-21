@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.13 2012/03/19 22:12:20 brownd Exp $
+// $Id: TrkStrawHit.cc,v 1.14 2012/03/21 04:53:08 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/19 22:12:20 $
+// $Date: 2012/03/21 04:53:08 $
 //
 // Original author David Brown, LBNL
 //
@@ -228,9 +228,9 @@ namespace mu2e
     double radius = straw().getRadius();
     double drift = fabs(driftRadius());
     if(drift-radius > 3*driftRadiusErr())
-      drift = radius/2.0;
-    else if(drift>radius)
-      drift = 0.95*radius;
+      drift = 0.5*radius;
+    else if(drift>=radius)
+      drift = 0.96*radius;
     double wallpath =  (sqrt( (radius+thick+drift)*(radius+thick-drift) ) -
       sqrt( (radius+drift)*(radius-drift) ));
   // scale for the other dimension
@@ -256,8 +256,8 @@ namespace mu2e
     double drift = fabs(driftRadius());
     if(drift-radius > 3*driftRadiusErr())
       drift = radius/2.0;
-    else if(drift>radius)
-      drift = 0.95*radius;
+    else if(drift>=radius)
+      drift = 0.96*radius;
     double gaspath = sqrt( (radius+drift)*(radius-drift) );
 // scale for the other dimension
     double cost = tdir.dot(_straw.getDirection());
