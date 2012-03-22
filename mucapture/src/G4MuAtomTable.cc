@@ -99,6 +99,19 @@ G4MuAtom* G4MuAtomTable::CreateMuAtom(G4int Z, G4int A, G4int iSpin){
 	cckt = gckt->Clone(muatom);
       }
       muatom->CaptureKineticsTable(cckt);
+
+      // FIXME remove this crosscheck
+      G4ProcessManager* pmanager = muatom->GetProcessManager();
+      G4ProcessVector const* pVector = pmanager->GetProcessList();
+
+      G4cout << "G4MuAtomTable::GetMuAtom " << muatom->GetParticleName() 
+             << " processes: " << G4endl;
+      for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
+        G4VProcess* proc = (*pVector)[j];
+        G4String const & name  = proc->GetProcessName();
+        G4cout << "G4MuAtomTable::GetMuAtom " << name << G4endl;
+      }
+
     } else {
       G4cout << "GenericMuAtom needs a process manager!\n";
     }
@@ -106,21 +119,6 @@ G4MuAtom* G4MuAtomTable::CreateMuAtom(G4int Z, G4int A, G4int iSpin){
     // If not, we complain
     G4cout << "GenericMuAtom needs to be instantiated for implicit MuAtom creation!\n"; 
   }
-
-  // this needs to be done via process, not physics list
-
-  // which process? G4MuAtomNuclearCapture? How?
-
-  // it should be the process which invoked this function
-
-  // how could we access it???
-
-  // we do know it that we deal with the muons here ...
-  // it was created by: muproc = new G4MuonMinusAtomicCapture();
-
-  // G4HadronicProcess* FindProcess(const G4ParticleDefinition*, 
-  //			 G4HadronicProcessType subType);
-
 
   //G4MuonMinus::Definition()
   //SetProcessSubType(fCapture)
