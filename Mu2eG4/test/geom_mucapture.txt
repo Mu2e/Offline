@@ -1,9 +1,9 @@
 //
 // Geometry file for study of muon capture, do NOT use unless you know the details
 //
-// $Id: geom_mucapture.txt,v 1.1 2012/03/16 19:33:56 genser Exp $
+// $Id: geom_mucapture.txt,v 1.2 2012/03/22 20:23:14 genser Exp $
 // $Author: genser $
-// $Date: 2012/03/16 19:33:56 $
+// $Date: 2012/03/22 20:23:14 $
 //
 // Original author KLG
 //
@@ -13,6 +13,8 @@
 // Choose a PhysicsList and set related parameters.
 string g4.physicsListName = "QGSP_BERT_HP_MU2E00";
 double g4.minRangeCut     = 0.01;            // mm
+
+bool   g4.useNewMuMinusAtomicCapture = true;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
