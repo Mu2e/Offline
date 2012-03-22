@@ -9,9 +9,9 @@
 // muMinusConversionAtRest.do - turns on the at rest G4 process
 // MuonMinusConversionAtRest and turns off MuonMinusCaptureAtRest
 //
-// $Id: toggleProcesses.cc,v 1.6 2011/05/18 21:14:30 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 21:14:30 $
+// $Id: toggleProcesses.cc,v 1.7 2012/03/22 20:22:07 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/22 20:22:07 $
 //
 //-----------------------------------------------------------------------------
 
@@ -25,6 +25,9 @@
 #include "G4VRestProcess.hh"
 #include "G4ProcessManager.hh"
 
+// Framework includes
+#include "cetlib/exception.h"
+
 // Mu2e includes
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -32,7 +35,6 @@
 using namespace std;
 
 namespace mu2e{
-
 
   void switchDecayOff(const SimpleConfig& config) {
 
@@ -75,33 +77,52 @@ namespace mu2e{
   }
 
 
- void addUserProcesses(const SimpleConfig& config) {
+  void addUserProcesses(const SimpleConfig& config) {
 
     G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();
 
     // so far, only muon is defined as a particle for processes to be added
     G4ParticleDefinition* particle = theParticleTable->FindParticle(13);
     G4ProcessManager* pmanager = particle->GetProcessManager();
-    G4ProcessVector const* pVector      = pmanager->GetProcessList();
+    G4ProcessVector const* pVector = pmanager->GetProcessList();
+    G4String const & particleName = particle->GetParticleName();
 
-    G4VRestProcess *muProcess = 0;
-    if ( config.getBool( "g4.doMuMinusConversionAtRest", 1) ) {
+    G4String pNameToRemove("muMinusCaptureAtRest");
 
-        // add muMinusConversionAtRest
-        muProcess = new muMinusConversionAtRest( config );
-        pmanager->AddRestProcess(muProcess);
+    bool muConversionAtRest = config.getBool( "g4.doMuMinusConversionAtRest", true);
+    bool muAtomicCapture    = config.getBool( "g4.useNewMuMinusAtomicCapture", false);
 
-         // remove muMinusCaptureAtRest
-         for( G4int j=0; j<pmanager->GetProcessListLength(); j++ ) {
-            G4VProcess* proc = (*pVector)[j];
-            G4String name  = proc->GetProcessName();
-            if( name == "muMinusCaptureAtRest" ) pmanager->RemoveProcess(proc);
-     }
+    if ( muAtomicCapture && muConversionAtRest )
+      throw cet::exception("muon processes")
+        << "Can not have both "
+        << " g4.useNewMuMinusAtomicCapture and g4.doMuMinusConversionAtRest\n";
 
-   }
+    if ( muConversionAtRest ) {
 
- }
+      cout << __func__ << " " << particleName << " processes: " << endl;
+      for ( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
+        G4VProcess* proc = (*pVector)[j];
+        G4String const & processName = proc->GetProcessName();
+        cout << __func__ << " " << processName << endl;
+      }
 
+      // add muMinusConversionAtRest
+      G4VRestProcess *muProcess = new muMinusConversionAtRest( config );
+      cout << __func__ << " Adding " << muProcess->GetProcessName()
+           << " to " << particleName << endl;
+      pmanager->AddRestProcess(muProcess);
 
+      // remove muMinusCaptureAtRest
+      for ( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
+        G4VProcess* proc = (*pVector)[j];
+        G4String const & processName  = proc->GetProcessName();
+        if ( processName == pNameToRemove ) {
+          cout << __func__ << " Removing " << processName << " from " << particleName << endl;
+          pmanager->RemoveProcess(proc);
+          break;
+        }
+      }
+    }
+  }
 
 } // end namespace mu2e
