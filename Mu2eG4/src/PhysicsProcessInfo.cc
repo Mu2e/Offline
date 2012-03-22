@@ -1,9 +1,9 @@
 //
 // Information about physics processes.
 //
-// $Id: PhysicsProcessInfo.cc,v 1.4 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: PhysicsProcessInfo.cc,v 1.5 2012/03/22 20:22:21 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/22 20:22:21 $
 //
 // Original author Rob Kutschke
 //
@@ -79,7 +79,7 @@ namespace mu2e{
           ProcessCode code = ProcessCode::findByName(name);
           if ( code.id() == ProcessCode::unknown ){
             ++nUnknownProcesses;
-            cout << "Phyics process named: " << name
+            cout << "Physics process named: " << name
                  << " is not known to the ProcessCode enum."
                  << endl;
           }
