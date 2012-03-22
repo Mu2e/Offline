@@ -1,9 +1,9 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.11 2012/03/14 21:46:49 genser Exp $
+// $Id: physicsListDecider.cc,v 1.12 2012/03/22 20:21:37 genser Exp $
 // $Author: genser $
-// $Date: 2012/03/14 21:46:49 $
+// $Date: 2012/03/22 20:21:37 $
 //
 // Original author Rob Kutschke
 //
@@ -79,7 +79,7 @@ namespace mu2e{
     }
 
     else if ( name == "QGSP_BERT_HP_MU2E00" ){
-      G4VModularPhysicsList* tmp = new QGSP_BERT_HP_MU2E00();
+      G4VModularPhysicsList* tmp = new QGSP_BERT_HP_MU2E00(config);
       tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
       physicsList = tmp;
     }
