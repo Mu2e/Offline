@@ -9,9 +9,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_mucapture.fcl,v 1.1 2012/03/16 19:33:56 genser Exp $
+# $Id: g4test_mucapture.fcl,v 1.2 2012/03/22 20:22:57 genser Exp $
 # $Author: genser $
-# $Date: 2012/03/16 19:33:56 $
+# $Date: 2012/03/22 20:22:57 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -143,3 +143,5 @@ physics.producers.CaloCrystalHitsMaker.diagLevel : 0
 physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
 
 physics.producers.generate.inputfile : "Mu2eG4/test/genconfig_mucapture.txt"
+
+physics.producers.g4run.diagLevel  : 0
