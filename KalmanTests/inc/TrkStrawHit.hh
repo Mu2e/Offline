@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.11 2012/03/19 22:12:20 brownd Exp $
+// $Id: TrkStrawHit.hh,v 1.12 2012/03/22 22:31:14 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/19 22:12:20 $
+// $Date: 2012/03/22 22:31:14 $
 //
 // Original author David Brown, LBNL
 //
@@ -89,8 +89,8 @@ namespace mu2e
     double hitT0() const { return _hitt0;}
     double hitT0Err() const { return _hitt0_err;}
     void updateT0(const TrkT0&, double t0flt);
-    double wallPath(Hep3Vector const& tdir) const; // track pathlength through one wall of the straw
-    double gasPath(Hep3Vector const& tdir) const; // track pathlength through 1/2 the gas of the straw
+    double wallPath(double pdist,Hep3Vector const& tdir) const; // track pathlength through one wall of the straw
+    double gasPath(double pdist,Hep3Vector const& tdir) const; // track pathlength through 1/2 the gas of the straw
 // intrinsic hit error
     double hitErr() const { return _herr; }
 // access to associated detector elements

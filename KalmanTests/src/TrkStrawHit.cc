@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.14 2012/03/21 04:53:08 brownd Exp $
+// $Id: TrkStrawHit.cc,v 1.15 2012/03/22 22:29:55 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/21 04:53:08 $
+// $Date: 2012/03/22 22:29:55 $
 //
 // Original author David Brown, LBNL
 //
@@ -223,16 +223,13 @@ namespace mu2e
 
 // compute the pathlength through one wall of the straw, given the drift distance and straw geometry
   double
-  TrkStrawHit::wallPath(Hep3Vector const& tdir) const {
+  TrkStrawHit::wallPath(double pdist,Hep3Vector const& tdir) const {
     double thick = straw().getThickness();
     double radius = straw().getRadius();
-    double drift = fabs(driftRadius());
-    if(drift-radius > 3*driftRadiusErr())
-      drift = 0.5*radius;
-    else if(drift>=radius)
-      drift = 0.96*radius;
-    double wallpath =  (sqrt( (radius+thick+drift)*(radius+thick-drift) ) -
-      sqrt( (radius+drift)*(radius-drift) ));
+    if(pdist>=radius)
+      pdist = 0.96*radius;
+    double wallpath =  (sqrt( (radius+thick+pdist)*(radius+thick-pdist) ) -
+      sqrt( (radius+pdist)*(radius-pdist) ));
   // scale for the other dimension
     double cost = tdir.dot(_straw.getDirection());
     if(fabs(cost)<0.999)
@@ -250,15 +247,12 @@ namespace mu2e
   
   // compute the pathlength through half the gas , given the drift distance and straw geometry
   double
-  TrkStrawHit::gasPath(Hep3Vector const& tdir) const {
+  TrkStrawHit::gasPath(double pdist,Hep3Vector const& tdir) const {
     double radius = straw().getRadius();
     double hlen = straw().getHalfLength();
-    double drift = fabs(driftRadius());
-    if(drift-radius > 3*driftRadiusErr())
-      drift = radius/2.0;
-    else if(drift>=radius)
-      drift = 0.96*radius;
-    double gaspath = sqrt( (radius+drift)*(radius-drift) );
+    if(pdist>=radius)
+      pdist = 0.96*radius;
+    double gaspath = sqrt( (radius+pdist)*(radius-pdist) );
 // scale for the other dimension
     double cost = tdir.dot(_straw.getDirection());
     if(fabs(cost)<0.999)
