@@ -87,9 +87,9 @@ G4MuonMinusAtomicCapture* G4MuonMinusCapture::GetMuonMinusAtomicCaptureProcess()
 {
 
   if (muproc == 0 ) {
-      G4Exception("G4MuonMinusCapture::GetMuonMinusAtomicCaptureProcess",
-                  "MMAC0001", JustWarning,
-                  "No mu- process manager");
+    G4Exception("G4MuonMinusCapture::GetMuonMinusAtomicCaptureProcess",
+                "MMAC0001", JustWarning,
+                "No mu- capture process");
   }
   return muproc;
 
@@ -114,7 +114,7 @@ void G4MuonMinusCapture::ConstructParticle()
   G4MuAtom* muatom;  
   // Singlet muP
   muatom = G4MuAtom::MuAtom(1,1,0);
-  G4cout << muatom->GetParticleName() << '\n';
+  if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
   G4MuAtomDecayTable *dt = new G4MuAtomDecayTable();
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
@@ -126,7 +126,7 @@ void G4MuonMinusCapture::ConstructParticle()
 
   // Triplet muP
   muatom = G4MuAtom::MuAtom(1,1,2);
-  G4cout << muatom->GetParticleName() << '\n';
+  if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
   dt = new G4MuAtomDecayTable();
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
@@ -138,7 +138,7 @@ void G4MuonMinusCapture::ConstructParticle()
 
   // muD
   muatom = G4MuAtom::MuAtom(1,2);
-  G4cout << muatom->GetParticleName() << '\n';
+  if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
   dt = new G4MuAtomDecayTable();
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
@@ -148,7 +148,7 @@ void G4MuonMinusCapture::ConstructParticle()
 
   // muT
   muatom = G4MuAtom::MuAtom(1,3);
-  G4cout << muatom->GetParticleName() << '\n';
+  if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
   dt = new G4MuAtomDecayTable();
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
@@ -158,7 +158,7 @@ void G4MuonMinusCapture::ConstructParticle()
 
   // mu_He3
   muatom = G4MuAtom::MuAtom(2,3);
-  G4cout << muatom->GetParticleName() << '\n';
+  if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
   dt = new G4MuAtomDecayTable();
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
@@ -170,7 +170,7 @@ void G4MuonMinusCapture::ConstructParticle()
 
   // mu_He4
   muatom = G4MuAtom::MuAtom(2,4);
-  G4cout << muatom->GetParticleName() << '\n';
+  if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
   dt = new G4MuAtomDecayTable();
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
@@ -182,7 +182,7 @@ void G4MuonMinusCapture::ConstructParticle()
 
   // Generic MuAtom
   muatom = G4GenericMuAtom::GenericMuAtom();
-  G4cout << muatom->GetParticleName() << '\n';
+  if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
   dt = new G4MuAtomDecayTable();
   dt->Insert(new G4MuAtomDIOChannel("GenericMuAtom", 1.) );
   muatom->SetMuAtomDecayTable(dt);
@@ -191,9 +191,36 @@ void G4MuonMinusCapture::ConstructParticle()
   ckt->Insert(new G4Mu2eConversionChannel(muatom, 1./(2197.*ns))); //FIXME constant
   muatom->CaptureKineticsTable(ckt);
 
+  // FIXME remove this crosscheck
+  //   if (verboseLevel>0) {
+  //     no process managers at this stage yet
+  //     G4ProcessManager* pmanager = muatom->GetProcessManager();
+
+  //     if ( pmanager == 0) {
+  //       // no process manager
+  //       // FIXME use #ifdef G4VERBOSE ?
+  //       if (verboseLevel>0){
+  //         G4cout <<"G4MuonMinusCapture::ConstructProcess"
+  //                <<" : No Process Manager for "
+  //                << muatom->GetParticleName() 
+  //                << G4endl;
+  //       }
+  //     }
+
+  //     G4ProcessVector const* pVector = pmanager->GetProcessList();
+
+  //     G4cout << "G4MuonMinusCapture::ConstructParticle" << " " 
+  //            << muatom->GetParticleName() << " processes: " << G4endl;
+  //     for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
+  //       G4VProcess* proc = (*pVector)[j];
+  //       G4String const & name  = proc->GetProcessName();
+  //       G4cout << "G4MuonMinusCapture::ConstructParticle " << name << G4endl;
+  //     }
+  //   }
+
   // P_mu_P
   G4MuMolecule *mumol = G4MuMolecule::Definition(1,1,1,1);
-  G4cout << mumol->GetParticleName() << '\n';
+  if (verboseLevel>0) G4cout << mumol->GetParticleName() << G4endl;
   //  G4MuMoleculeCaptureKineticsTable *molckt = 
   //    new G4MuMoleculteCaptureKineticsTable(mumol);
   //  mumol->CaptureKineticsTable(molckt);
@@ -201,7 +228,7 @@ void G4MuonMinusCapture::ConstructParticle()
   // D_mu_D
   mumol = G4MuMolecule::Definition(1,2,1,2); // FIXME this leaks,
                                              // P_mu_P not inserted ???
-  G4cout << mumol->GetParticleName() << '\n';
+  if (verboseLevel>0) G4cout << mumol->GetParticleName() << G4endl;
   G4MuMoleculeCaptureKineticsTable *molckt =
     new G4MuMoleculeCaptureKineticsTable(mumol);
   molckt->Insert( new G4DMuDFusionHe3Channel(mumol,1/(2197.*ns)) );
@@ -246,6 +273,7 @@ void G4MuonMinusCapture::ConstructProcess()
     G4ParticleDefinition* particle = theParticleIterator->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
 
+    G4String pNameToRemove("Decay");
 
     if ( pmanager == 0) {
       // no process manager
@@ -262,66 +290,132 @@ void G4MuonMinusCapture::ConstructProcess()
                   "No process manager");
  
     }
-    G4String pname = particle->GetParticleName();
+    G4String const & particleName = particle->GetParticleName();
 
-    // FIXME should one not factor out particle->GetParticleName() below ???
-
-    (verboseLevel>0) &&
+    (verboseLevel>1) &&
       G4cout <<"G4MuonMinusCapture::ConstructProcess"
              <<" : Working on  "
-             << pname
+             << particleName
              << G4endl;
     
-    if( particle->GetParticleName() == "mu-" ){
-
-      // FIXME leak ??? Do ~G4ProcessManager's delete the underlying
-      // processes??? NO, but
-      // G4VUserPhysicsList::RemoveProcessManager() does;
-
+    if( particleName == "mu-" ){
+      // remove muMinusCaptureAtRest if present
+      G4String pNameToRemove("muMinusCaptureAtRest");
+      G4ProcessVector* pVector = pmanager->GetProcessList();
+      for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
+        G4VProcess* proc = (*pVector)[j];
+        G4String const & name  = proc->GetProcessName();
+        if( name == pNameToRemove )  {
+          if (verboseLevel>0) {
+            G4cout << "G4MuonMinusCapture::ConstructProcess" 
+                   << " Removing " << name << " from " << particleName << G4endl;
+            pmanager->RemoveProcess(proc);
+            break;
+          }
+        }
+      }
       muproc = new G4MuonMinusAtomicCapture();
       pmanager->AddProcess(muproc);
       pmanager->SetProcessOrdering(muproc, idxAtRest);
     }
     
-    if( particle->GetParticleName() == "GenericMuAtom" ){//||
-      G4cout << "Attach decay to GenericMuAtom\n";
-      //      G4MuAtomDecay* decay = new G4MuAtomDecay();
-      //      decay->SetVerboseLevel(verboseLevel);
-      //      pmanager ->AddProcess(decay);
-      //      pmanager ->SetProcessOrdering(decay, idxPostStep);
-      //      pmanager ->SetProcessOrdering(decay, idxAtRest);
-      G4cout << "Attach Nuclear Capture to " << particle->GetParticleName() << '\n';
+    if( particleName == "GenericMuAtom" ){
+      G4MuAtomDecay* decay = new G4MuAtomDecay();
+      if (verboseLevel>0) G4cout << "G4MuonMinusCapture::ConstructProcess Attach " << decay->GetProcessName() <<" to "<< particleName << G4endl;
+      decay->SetVerboseLevel(verboseLevel);
+      pmanager ->AddProcess(decay);
+      pmanager ->SetProcessOrdering(decay, idxPostStep);
+      pmanager ->SetProcessOrdering(decay, idxAtRest);
+      // FIXME we need to remove Decay if present; this imposes constrait on the ordering wrt 
+      // RegisterPhysics( new G4DecayPhysics(ver) )
+
+      G4ProcessVector const* pVector = pmanager->GetProcessList();
+      for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
+        G4VProcess* proc = (*pVector)[j];
+        G4String const & name  = proc->GetProcessName();
+        if( name == pNameToRemove ) {
+          if (verboseLevel>0) G4cout << "G4MuonMinusCapture::ConstructProcess" 
+                                     << " Removing " << name << " from " 
+                                     << particleName << G4endl;
+          pmanager->RemoveProcess(proc);
+          break;
+        }          
+      }
+
       // FIXME leak ???
       G4MuAtomNuclearCapture * capture = new G4MuAtomNuclearCapture();
+      if (verboseLevel>0) G4cout << "G4MuonMinusCapture::ConstructProcess Attach " << capture->GetProcessName() <<" to "<< particleName << G4endl;
       capture->SetVerboseLevel(verboseLevel);
       pmanager->AddProcess(capture);
       pmanager->SetProcessOrdering(capture, idxPostStep);
       pmanager->SetProcessOrdering(capture, idxAtRest);
+
+      // FIXME remove this crosscheck
+      if (verboseLevel>0) {
+        G4ProcessVector const* pVector = pmanager->GetProcessList();
+
+        G4cout << "G4MuonMinusCapture::ConstructProcess" << " " 
+               << particleName << " processes: " << G4endl;
+        for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
+          G4VProcess* proc = (*pVector)[j];
+          G4String const & name  = proc->GetProcessName();
+          G4cout << "G4MuonMinusCapture::ConstructProcess " << name << G4endl;
+        }
+      }
+
     }
 
     // FIXME are those leaks??? does one need to split it or have a
     // container for G4MuAtomNuclearCapture's?
 
-    if( particle->GetParticleName() == "mu_P" ||
-        particle->GetParticleName() == "mu_P_1" ||
-        particle->GetParticleName() == "mu_D" ||
-        particle->GetParticleName() == "mu_T" ||
-        particle->GetParticleName() == "mu_He3" ||
-        particle->GetParticleName() == "mu_He4" ){
-      G4cout << "Attach Nuclear Capture to " << particle->GetParticleName() << '\n';
+    if( particleName == "mu_P" ||
+        particleName == "mu_P_1" ||
+        particleName == "mu_D" ||
+        particleName == "mu_T" ||
+        particleName == "mu_He3" ||
+        particleName == "mu_He4" ){
+
+      G4ProcessVector const* pVector = pmanager->GetProcessList();
+      for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
+        G4VProcess* proc = (*pVector)[j];
+        G4String const & name  = proc->GetProcessName();
+        if( name == pNameToRemove ) {
+          if (verboseLevel>0) G4cout << "G4MuonMinusCapture::ConstructProcess" 
+                                     << " Removing " << name << " from " 
+                                     << particleName << G4endl;
+          pmanager->RemoveProcess(proc);
+          break;
+        }          
+      }
+
       // FIXME leak ???
       G4MuAtomNuclearCapture * capture = new G4MuAtomNuclearCapture();
+      if (verboseLevel>0) G4cout << "G4MuonMinusCapture::ConstructProcess Attach " << capture->GetProcessName() <<" to "<< particleName << G4endl;
       capture->SetVerboseLevel(verboseLevel);
       pmanager->AddProcess(capture);
       pmanager->SetProcessOrdering(capture, idxPostStep);
       pmanager->SetProcessOrdering(capture, idxAtRest);
     }
 
-    if( particle->GetParticleName() == "D_mu_D" ){
-      G4cout << "Attach Nuclear Capture to " << particle->GetParticleName() << '\n';
+    if( particleName == "D_mu_D" ){
+
+      G4ProcessVector const* pVector      = pmanager->GetProcessList();
+      for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
+        G4VProcess* proc = (*pVector)[j];
+        G4String const & name  = proc->GetProcessName();
+        if( name == pNameToRemove ) {
+          if (verboseLevel>0) G4cout << "G4MuonMinusCapture::ConstructProcess" 
+                                     << " Removing " << name << " from " 
+                                     << particleName << G4endl;
+          pmanager->RemoveProcess(proc);
+          break;
+        }          
+      }
+
       // FIXME leak ???
       G4MuMoleculeNuclearCapture * capture = new G4MuMoleculeNuclearCapture();
       capture->SetVerboseLevel(verboseLevel);
+      if (verboseLevel>0) G4cout << "G4MuonMinusCapture::ConstructProcess Attach " << capture->GetProcessName() <<" to "<< particleName << G4endl;
       pmanager->AddProcess(capture);
       pmanager->SetProcessOrdering(capture, idxPostStep);
       pmanager->SetProcessOrdering(capture, idxAtRest);
