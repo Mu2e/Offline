@@ -1,3 +1,15 @@
+#include "TH1F.h"
+#include "TF1.h"
+#include "TTree.h"
+#include "TLegend.h"
+#include "TPad.h"
+#include "TPaveText.h"
+#include "TCanvas.h"
+#include "TH2F.h"
+#include "TStyle.h"
+#include "TCut.h"
+#include "TMath.h"
+
 // basic parameters
 
 double tdlow(0.57735027);
@@ -66,6 +78,25 @@ Double_t splitgaus(Double_t *x, Double_t *par) {
   }
   retval = par[0]*0.398942*(core+tail);
   // add a tail Gaussian
+  return retval;
+}
+
+Double_t doublegausexp(Double_t *x, Double_t *par) {
+  Double_t retval(0.0);
+  Double_t core;
+  Double_t gtail;
+  Double_t etail;
+  Float_t xval = x[0]-par[3];
+//  double nu = par[7]+1.0;
+  core = 0.398942*(1.0-par[1]-par[2])*exp(-0.5*pow(xval/par[4],2))/par[4];
+  gtail = 0.398942*par[1]*exp(-0.5*pow(xval/par[5],2))/par[5];
+  if(xval <= 0.0)
+    etail = -par[2]*xval*exp(xval/par[6])/pow(par[6],2);
+//    etail = 0.5*par[2]*xval*xval*exp(xval/par[6])/pow(par[6],3);
+//    etail = TMath::Gamma(nu)*par[2]*pow((double)fabs(xval),par[7])*exp(xval/par[6])/pow(par[6],nu);
+  else
+    etail = 0;
+  retval = par[0]*(core+gtail+etail);
   return retval;
 }
 
@@ -416,7 +447,7 @@ void KalFitAcc(TTree* trks) {
 }
 
 void KalFitRes(TTree* trks) {
-  TF1* sgau = new TF1("sgau",splitgaus,-1.,1.,7);
+  TF1* sgau = new TF1("sgau",splitgaus,-1.5,1.5,7);
   sgau->SetParName(0,"Norm");
   sgau->SetParName(1,"Mean");
   sgau->SetParName(2,"SigH");
@@ -424,6 +455,17 @@ void KalFitRes(TTree* trks) {
   sgau->SetParName(4,"TFH");
   sgau->SetParName(5,"TSigH");
   sgau->SetParName(6,"TSigL");
+
+//  TF1* degau = new TF1("degau",doublegausexp,-1.5,1.5,8);
+  TF1* degau = new TF1("degau",doublegausexp,-1.5,1.5,7);
+  degau->SetParName(0,"Norm");
+  degau->SetParName(1,"GTailFrac");
+  degau->SetParName(2,"ETailFrac");
+  degau->SetParName(3,"Mean");
+  degau->SetParName(4,"CoreSig");
+  degau->SetParName(5,"GTailSig");
+  degau->SetParName(6,"ETailLambda");
+//  degau->SetParName(7,"ETailPower");
  
   TH1F* momres[4];
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
@@ -433,23 +475,31 @@ void KalFitRes(TTree* trks) {
   rcan->Clear();
   rcan->Divide(2,2);
   gStyle->SetOptFit(111111);
-  gStyle->SetOptStat(1111111);
+  gStyle->SetOptStat("oumr");
   for(unsigned ires=0;ires<4;ires++){
     rcan->cd(ires+1);
     char mname[50];
     snprintf(mname,50,"momres%i",ires);
-    momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",151,-2.5,2.5);
+    momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",251,-2.5,2.5);
 //  momres[ires]->SetStats(0);
     TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
     TCut final = (reco+quality+mcsel);
     trks->Project(mname,"fitmom-mcentmom",final);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
-    sgau->SetParameters(integral,0.0,momres[ires]->GetRMS(),momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
-    sgau->SetParLimits(5,1.0*momres[ires]->GetRMS(),1.0);
-    sgau->SetParLimits(6,1.0*momres[ires]->GetRMS(),1.0);
+    sgau->SetParameters(integral,0.0,0.5*momres[ires]->GetRMS(),0.5*momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
+    sgau->SetParLimits(5,0.1,1.0);
+    sgau->SetParLimits(6,0.1,1.0);
     sgau->SetParLimits(4,0.0,0.8);
-    momres[ires]->Fit("sgau","L");
+//    momres[ires]->Fit("sgau","LIR");
 
+    degau->SetParameters(integral,0.1,0.2,0.0,0.3*momres[ires]->GetRMS(),2*momres[ires]->GetRMS(),0.5*momres[ires]->GetRMS(),0.25);
+    degau->SetParLimits(1,0.02,0.3);
+    degau->SetParLimits(2,0.02,0.3);
+    degau->SetParLimits(4,0.05,momres[ires]->GetRMS());
+    degau->SetParLimits(5,0.12,2*momres[ires]->GetRMS());
+    degau->SetParLimits(6,0.1,momres[ires]->GetRMS());
+//    degau->SetParLimits(7,1,3.0);
+    momres[ires]->Fit("degau","LIR");
 
     double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
 
