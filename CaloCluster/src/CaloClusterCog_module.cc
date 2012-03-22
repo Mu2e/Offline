@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position on the electrons on the calorimeter
 //
-// $Id: CaloClusterCog_module.cc,v 1.4 2012/03/19 19:35:41 gianipez Exp $
+// $Id: CaloClusterCog_module.cc,v 1.5 2012/03/22 13:41:00 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/19 19:35:41 $
+// $Date: 2012/03/22 13:41:00 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -317,6 +317,8 @@ private:
         _seedThetaV,
         _seedDeltaW,
         _seedDeltaV,
+        _seedDeltaCorrW,
+        _seedDeltaCorrV,
         _distToCog,
         _cogDca,
         _depth,
@@ -348,6 +350,50 @@ bool findTrkId(std::vector<unsigned int> vec, unsigned int t){
                 }
         }
         return res;
+}
+
+double triangoloVar(double x, string d){
+        double y =0.;
+        double par[6] = {0.};
+        if(d.compare("V")==1){
+                double p1[6] = { 0.1689, 29.92, -1.344, 4.136, 0.6882, 0.004642};
+                for(int y=0; y<6; ++y){
+                        par[y] = p1[y];
+                }
+        } else if (d.compare("W")==1){
+                double p2[6] = { 0.343, 30., -4.25, -1.441, 0.5152, 0.0001403};
+                for(int y=0; y<6; ++y){
+                        par[y] = p2[y];
+                }
+        }
+
+        if(par[1] == 0.) return y;
+
+        double m = par[0], xp = par[1], q = par[2], s = par[3], p1 = par[4], p0 = par[5];
+
+        double amp = p0*x;
+        amp = TMath::Exp(amp);
+
+        double tempx = x - s;
+        double temp;
+        double p2 = 1.- p1;
+        //if(tempx < 0.){
+        //  temp = tempx/xp +1.;
+        //}else {
+        temp = tempx/xp;
+        //}
+        double cut = (temp - ( (int) temp)+( tempx <0 ? +1. : 0)  );
+
+        if(cut < p1){
+                y = m*xp*cut + q;
+        } else {
+                double mp = -p1*m/p2, qp = q - mp*xp;
+                y= mp*xp*cut + qp ;
+        }
+
+        y *= amp;
+        return y;
+
 }
 
 
@@ -462,6 +508,9 @@ void CaloClusterCog::analyze(art::Event const & evt ) {
                 _Ntup->Branch("seedThetaV", &_seedThetaV , "seedThetaV/F");
                 _Ntup->Branch("seedDeltaW", &_seedDeltaW , "seedDeltaW/F");
                 _Ntup->Branch("seedDeltaV", &_seedDeltaV , "seedDeltaV/F");
+                _Ntup->Branch("seedDeltaCorrW", &_seedDeltaCorrW , "seedDeltaCorrW/F");
+                _Ntup->Branch("seedDeltaCorrV", &_seedDeltaCorrV , "seedDeltaCorrV/F");
+
                 _Ntup->Branch("cogDca", &_cogDca , "cogDca/F");
                 _Ntup->Branch("depth", &_depth , "depth/F");
                 _Ntup->Branch("distToCog", &_distToCog , "distToCog/F");
@@ -857,6 +906,10 @@ void CaloClusterCog::doCalorimeter(art::Event const& evt, bool skip){
                                         double deltaZ = (tmpDepth /*- impactParam/cos(thetaWimpact) */)*tan(thetaWimpact);
                                         deltaZ =  vaneFrame.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() + deltaZ ;
                                         _seedDeltaW = deltaZ;
+                                        std::string W="W";
+                                        double corrW = triangoloVar(vaneFrame.z(), W);
+                                        deltaZ -= corrW;
+                                        _seedDeltaCorrW = deltaZ ;
 
 
                                         double thetaVimpact = std::atan(dirMom_rotated.getY() /  dirMom_rotated.getX() ) ;
@@ -866,7 +919,10 @@ void CaloClusterCog::doCalorimeter(art::Event const& evt, bool skip){
                                         _prova1     = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() + deltaY;
                                         deltaY = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY ;
                                         _seedDeltaV = deltaY;
-
+                                        std::string V="V";
+                                        double corrV = triangoloVar(vaneFrame.y(), V);
+                                        deltaY -= corrV;
+                                        _seedDeltaCorrV = deltaY ;
 
                                         _hTHistDeltaURec->Fill(tmpDepth, vaneFrame.getX() - ite->second[trkVecTot[it2]]._cluCog.getX() );
                                         _hTHistDeltaWRec->Fill(tmpDepth,  deltaZ );
