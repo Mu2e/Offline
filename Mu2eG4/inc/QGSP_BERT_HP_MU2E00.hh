@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: QGSP_BERT_HP_MU2E00.hh,v 1.1 2012/03/14 21:46:49 genser Exp $
+// $Id: QGSP_BERT_HP_MU2E00.hh,v 1.2 2012/03/22 20:21:02 genser Exp $
 // GEANT4 tag $Name:  $
 //
 //---------------------------------------------------------------------------
@@ -46,8 +46,9 @@
 template<class T>
 class TQGSP_BERT_HP_MU2E00: public T
 {
+
 public:
-  TQGSP_BERT_HP_MU2E00(G4int ver=1);
+  explicit TQGSP_BERT_HP_MU2E00(mu2e::SimpleConfig const & config, G4int ver=1);
   virtual ~TQGSP_BERT_HP_MU2E00();
   
 public:
@@ -63,6 +64,3 @@ typedef TQGSP_BERT_HP_MU2E00<G4VModularPhysicsList> QGSP_BERT_HP_MU2E00;
 // 2002 by J.P. Wellisch
 
 #endif
-
-
-

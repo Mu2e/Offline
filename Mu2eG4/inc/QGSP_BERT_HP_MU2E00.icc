@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: QGSP_BERT_HP_MU2E00.icc,v 1.1 2012/03/14 21:46:49 genser Exp $
+// $Id: QGSP_BERT_HP_MU2E00.icc,v 1.2 2012/03/22 20:21:02 genser Exp $
 // GEANT4 tag $Name:  $
 //
 //---------------------------------------------------------------------------
@@ -69,8 +69,10 @@
 
 // FIXME once migrated to G4
 #include "mucapture/inc/G4MuonMinusCapture.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
 
-template<class T> TQGSP_BERT_HP_MU2E00<T>::TQGSP_BERT_HP_MU2E00(G4int ver):  T()
+template<class T> TQGSP_BERT_HP_MU2E00<T>::TQGSP_BERT_HP_MU2E00(mu2e::SimpleConfig const & config, 
+                                                                G4int ver):  T()
 {
 
   G4DataQuestionaire it(photon, neutron);
@@ -86,21 +88,23 @@ template<class T> TQGSP_BERT_HP_MU2E00<T>::TQGSP_BERT_HP_MU2E00(G4int ver):  T()
   // Synchroton Radiation & GN Physics
   this->RegisterPhysics( new G4EmExtraPhysics(ver) );
 
-  // Decays
+  // Decays - FIXME beware that we do not want decays of muonic atoms etc...
   this->RegisterPhysics( new G4DecayPhysics(ver) );
 
    // Hadron Elastic scattering
-  this-> RegisterPhysics( new G4HadronElasticPhysicsHP(ver) );
+  this->RegisterPhysics( new G4HadronElasticPhysicsHP(ver) );
 
   // Hadron Physics
   this->RegisterPhysics( new HadronPhysicsQGSP_BERT_HP(ver));
 
   // Stopping Physics
-  // this->RegisterPhysics( new G4QStoppingPhysics(ver));
-  // turn off old muon stopping
-  this->RegisterPhysics( new G4QStoppingPhysics("stopping",ver,false));
-  // use the new  muon stopping
-  this->RegisterPhysics( new G4MuonMinusCapture(ver));
+  this->RegisterPhysics( new G4QStoppingPhysics(ver));
+  // this->RegisterPhysics( new G4QStoppingPhysics("stopping",ver,true));
+
+  // use the new  muon stopping FIXME (this should go inside G4QStoppingPhysics)
+  if ( config.getBool( "g4.useNewMuMinusAtomicCapture", false) ) {
+    this->RegisterPhysics( new G4MuonMinusCapture(ver));
+  }
 
   // Ion Physics
   this->RegisterPhysics( new G4IonPhysics(ver));
