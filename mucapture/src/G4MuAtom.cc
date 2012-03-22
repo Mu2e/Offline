@@ -246,6 +246,7 @@ G4String G4MuAtom::MakeName(G4int Z, G4int A, G4int iSpin){
     name = o.str();
   }
   
+  //  G4cout << "G4MuAtom::MakeName" << " making " << name << G4endl;
   return name;
 }
 
@@ -253,7 +254,7 @@ G4int G4MuAtom::MakeEncoding(G4int Z, G4int A){
   G4int encoding = 
     G4ParticleTable::GetParticleTable()->GetIonTable()->GetNucleusEncoding(Z, A, 0);
   encoding += 1000000000;
-  //  G4cout << "Z " << Z << " A " << A << " encoding " << encoding << '\n';
+  //  G4cout  << "G4MuAtom::MakeEncoding" << " Z " << Z << " A " << A << " encoding " << encoding << G4endl;
 
   return encoding;
 }
