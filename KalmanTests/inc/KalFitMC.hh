@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.17 2012/03/21 04:53:47 brownd Exp $
+// $Id: KalFitMC.hh,v 1.18 2012/03/22 22:32:30 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/21 04:53:47 $
+// $Date: 2012/03/22 22:32:30 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -176,6 +176,7 @@ namespace mu2e
 // config parameters
     double _mintrkmom; // minimum true momentum at z=0 to create a track from
     double _mct0err;
+    bool _mcambig;
     int _debug;
     unsigned _minnhits,_maxnhits;
     bool _purehits;

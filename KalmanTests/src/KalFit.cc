@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.21 2012/03/20 17:15:36 brownd Exp $
+// $Id: KalFit.cc,v 1.22 2012/03/22 22:31:51 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/20 17:15:36 $
+// $Date: 2012/03/22 22:31:51 $
 //
 
 // the following has to come before other BaBar includes
@@ -166,7 +166,7 @@ namespace mu2e
     }
   }
 
-  void KalFit::addHits(TrkKalFit& myfit,const StrawHitCollection* straws, std::vector<size_t> indices) {
+  void KalFit::addHits(TrkKalFit& myfit,const StrawHitCollection* straws, std::vector<hitIndex> indices) {
 // there must be a valid Kalman fit to add hits to
     if(myfit._krep != 0 && myfit._fit.success()){
       ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -177,16 +177,17 @@ namespace mu2e
       double flt0 = findZFltlen(myfit,0.0);
       myfit._krep->referenceTraj()->getInfo(0.0,tpos,tdir);
       for(unsigned iind=0;iind<indices.size(); ++iind){
-	size_t istraw = indices[iind];
+	size_t istraw = indices[iind]._index;
 	const StrawHit& strawhit(straws->at(istraw));
 	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 	// estimate  initial flightlength
 	double hflt = findZFltlen(myfit,straw.getMidPoint().z());
 	// create the hit object
 	TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,myfit._t0,flt0,hflt,_herr,_maxdriftpull);
+	assert(trkhit != 0);
+	if(indices[iind]._ambig != 0)trkhit->setAmbig(indices[iind]._ambig);
 	// flag the added hit
 	trkhit->setUsability(3);
-	assert(trkhit != 0);
 // add the hit to the track and the fit
 	myfit._krep->addHot(trkhit);
 	myfit._hits.push_back(trkhit);
@@ -253,7 +254,7 @@ namespace mu2e
       double t0flt = mytrk.helix().zFlight(0.0);
 // loop over strawhits
       for(unsigned iind=0;iind<nind;iind++){
-	unsigned istraw = mytrk.strawHitIndices()[iind];
+	size_t istraw = mytrk.strawHitIndices()[iind]._index;
 	const StrawHit& strawhit(mytrk.strawHitCollection()->at(istraw));
 	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 	// assume a constant drift velocity means the average drift time is half the maximum drift time
@@ -300,13 +301,14 @@ namespace mu2e
     unsigned nind = mytrk.strawHitIndices().size();
     double flt0 = mytrk.helix().zFlight(0.0);
     for(unsigned iind=0;iind<nind;iind++){
-      unsigned istraw = mytrk.strawHitIndices()[iind];
+      size_t istraw = mytrk.strawHitIndices()[iind]._index;
       const StrawHit& strawhit(mytrk.strawHitCollection()->at(istraw));
       const Straw& straw = tracker.getStraw(strawhit.strawIndex());
       double fltlen = mytrk.helix().zFlight(straw.getMidPoint().z());
     // create the hit object
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,t00,flt0,fltlen,_herr,_maxdriftpull);
       assert(trkhit != 0);
+      if(mytrk.strawHitIndices()[iind]._ambig != 0)trkhit->setAmbig(mytrk.strawHitIndices()[iind]._ambig);
     // refine the flightlength, as otherwise hits in the same plane are at exactly the same flt, which can cause problems
       const TrkDifTraj* dtraj = &mytrk.helix();
       if(mytrk.traj() != 0)dtraj = mytrk.traj();

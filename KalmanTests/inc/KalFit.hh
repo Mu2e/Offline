@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.15 2012/03/20 17:15:36 brownd Exp $
+// $Id: KalFit.hh,v 1.16 2012/03/22 22:32:23 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/20 17:15:36 $
+// $Date: 2012/03/22 22:32:23 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -62,7 +62,7 @@ namespace mu2e
 // main function: given a track definition, create a fit object from it
     void makeTrack(TrkDef const& mytrk,TrkKalFit& myfit);
 // add a set of hits to an existing fit
-    void addHits(TrkKalFit& myfit,const StrawHitCollection* straws, std::vector<size_t> indices);
+    void addHits(TrkKalFit& myfit,const StrawHitCollection* straws, std::vector<hitIndex> indices);
   private:
 // Fetch the BField.  this function fetches the field if it's not yet initialized
     const BField* bField();

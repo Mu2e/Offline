@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.24 2012/03/21 04:53:47 brownd Exp $
+// $Id: KalFitMC.cc,v 1.25 2012/03/22 22:31:58 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/21 04:53:47 $
+// $Date: 2012/03/22 22:31:58 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -75,6 +75,7 @@ namespace mu2e
     _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
     _mintrkmom(pset.get<double>("minTrkMom",60.0)),
     _mct0err(pset.get<double>("mcT0Err",0.1)),
+    _mcambig(pset.get<bool>("mcAmbiguity",true)),
     _debug(pset.get<int>("debugLevel",0)),
     _minnhits(pset.get<unsigned>("minNHits",10)),
     _maxnhits(pset.get<unsigned>("maxNHits",1000)),
@@ -116,11 +117,12 @@ namespace mu2e
 // preset to failure
     bool retval(false);
     GlobalConstantsHandle<ParticleDataTable> pdt;
+    const Tracker& tracker = getTrackerOrThrow();
     unsigned nstraws = mytrk.strawHitCollection()->size();
     if(nstraws >= _minnhits ){
       GeomHandle<DetectorSystem> det;
       GeomHandle<VirtualDetector> vdg;
-      std::vector<size_t> indices;
+      std::vector<hitIndex> indices;
 // find the mcstep at the middle of the detector
       std::vector<MCStepItr> steps;
       findMCSteps(_mcdata._mcvdsteps,trkid,_midvids,steps);
@@ -138,9 +140,23 @@ namespace mu2e
           << " momentum = " << mom
           << " time = " << t0 << std::endl;
 // find the indices of the true primary particle straw hits
-        for(unsigned istraw=0;istraw<nstraws;istraw++){
+        for(size_t istraw=0;istraw<nstraws;istraw++){
           PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(istraw));
-          unsigned nprimary(0);
+	  StrawHit const& sh = mytrk.strawHitCollection()->at(istraw);
+	  Straw const& straw = tracker.getStraw(sh.strawIndex());
+	  int ambig(0);
+	  if(_mcambig){
+// compute the hit ambiguity using MC truth, using the earliest energy deposit
+	    Hep3Vector dir = mcptr[0]->momentum().unit();
+	    Hep3Vector start = mcptr[0]->position();
+	    Hep3Vector end = start + dir*mcptr[0]->stepLength();
+	    Hep3Vector mid = 0.5*(start+end);
+	    Hep3Vector mcsep = mid - straw.getMidPoint();
+	    Hep3Vector mcperp = (dir.cross(straw.getDirection())).unit();
+	    double dperp = mcperp.dot(mcsep);
+	    ambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
+	  }
+	  unsigned nprimary(0);
           for( size_t j=0; j<mcptr.size(); ++j ) {
             StepPointMC const& mchit = *mcptr[j];
  // not sure if this works with bkgs merged FIXME!!!!  we also need to treat energy from daughters different
@@ -148,7 +164,7 @@ namespace mu2e
             if( mchit.trackId() == trkid )nprimary++;
           }
 // decide if we want all hits with any contribution from this particle, or only pure hits from this particle.
-          if( nprimary > 0 && (nprimary == mcptr.size() || (!_purehits) ) )indices.push_back(istraw);
+          if( nprimary > 0 && (nprimary == mcptr.size() || (!_purehits) ) )indices.push_back(hitIndex(istraw,ambig));
         }
         if(indices.size() >= _minnhits && indices.size() <= _maxnhits){
 // nominal magnetic field.
