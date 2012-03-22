@@ -79,7 +79,7 @@ G4MuonMinusAtomicCapture::AtRestDoIt(const G4Track& track, const G4Step& step){
   G4MuAtom *muAtom = table->GetMuAtom(targetZ, targetA, iSpin); // FIXME this leaks
   dynMuAtom->SetDefinition(muAtom);
   dynMuAtom->SetMomentum(G4ThreeVector()); // how is the muon energy dissipated ???
-  G4int charge = table->ChargeModel(targetZ, targetA)->GetCharge(step);
+  G4int charge = table->ChargeModel(targetZ, targetA)->GetCharge(step); // this is also channel insertion
   dynMuAtom->SetCharge(charge); // sets in units of eplus
   // FIXME ... need to include the electron binding energy contribution...
   dynMuAtom->SetMass(electron_mass_c2*(targetZ-1)+muAtom->GetPDGMass());
@@ -113,7 +113,7 @@ G4MuonMinusAtomicCapture::AtRestDoIt(const G4Track& track, const G4Step& step){
 }
 
 
-// do we need those???
+// FIXME do we need those???
 void G4MuonMinusAtomicCapture::PreparePhysicsTable(const G4ParticleDefinition& p) 
 {
   G4HadronicProcessStore::Instance()->RegisterParticleForExtraProcess(this, &p);
