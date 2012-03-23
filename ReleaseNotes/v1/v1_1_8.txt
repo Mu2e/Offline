@@ -1,6 +1,6 @@
-  $Id: v1_1_8.txt,v 1.7 2012/03/23 22:34:13 brownd Exp $
+  $Id: v1_1_8.txt,v 1.8 2012/03/23 22:34:41 brownd Exp $
   $Author: brownd $
-  $Date: 2012/03/23 22:34:13 $
+  $Date: 2012/03/23 22:34:41 $
 
  Still under construction
 
@@ -64,7 +64,6 @@
      Mu2eG4/src/StackingAction.cc
      Mu2eG4/src/generateFieldMap.cc
 
->>>>>>> 1.6
 3) March 20, 2012 brownd
 
     - Fix error when calculating straw wall material when DOCA is larger than
