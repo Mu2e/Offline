@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.cc,v 1.5 2011/11/15 20:40:21 brownd Exp $
+// $Id: TrkHelixFit.cc,v 1.6 2012/03/23 22:27:50 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2011/11/15 20:40:21 $
+// $Date: 2012/03/23 22:27:50 $
 //
 //
 // the following has to come before other BaBar includes
@@ -382,9 +382,9 @@ namespace mu2e
     const Tracker& tracker = getTrackerOrThrow();
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
 // loop over straw hits, and store their positions
-    for(std::vector<size_t>::const_iterator istr=mytrk.strawHitIndices().begin();
+    for(std::vector<hitIndex>::const_iterator istr=mytrk.strawHitIndices().begin();
     istr != mytrk.strawHitIndices().end(); ++istr){
-      StrawHit const& sh = mytrk.strawHitCollection()->at(*istr);
+      StrawHit const& sh = mytrk.strawHitCollection()->at(istr->_index);
       CLHEP::Hep3Vector wpos;
       double wtime,wtimeres,tdres;
       tcal->StrawHitInfo(sh,wpos,wtime,tdres,wtimeres);

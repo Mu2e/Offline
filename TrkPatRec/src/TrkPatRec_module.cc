@@ -1,9 +1,9 @@
 
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.20 2012/03/01 18:00:12 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.21 2012/03/23 22:27:50 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/01 18:00:12 $
+// $Date: 2012/03/23 22:27:50 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -62,7 +62,7 @@ namespace mu2e
 {
 // struct to keep track of hits in a time peak
   struct TrkTimePeak {
-    std::vector<size_t> _trkptrs;
+    std::vector<hitIndex> _trkptrs;
     double _tpeak;
     double _peakmax;
     TrkTimePeak(double tpeak,double ymax) : _tpeak(tpeak),_peakmax(ymax) {}
@@ -149,7 +149,7 @@ namespace mu2e
     void filterDeltas(std::vector<CLHEP::Hep3Vector> const& shpos, std::vector<TrkHitFlag>& tflags);
     void findTimePeaks(std::vector<TrkHitFlag> const& tflags, std::vector<TrkTimePeak>& tpeaks);
     void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitInfo>& thivec);
-    void findMissingHits(std::vector<TrkHitFlag> const& tflags, TrkKalFit& kalfit, std::vector<size_t>& indices);
+    void findMissingHits(std::vector<TrkHitFlag> const& tflags, TrkKalFit& kalfit, std::vector<hitIndex>& indices);
     void createDiagnostics();
     void fillStrawDiag(std::vector<CLHEP::Hep3Vector> const& shpos,std::vector<TrkHitFlag> const& tflags,
       std::vector<TrkTimePeak>& tpeaks);
@@ -352,7 +352,7 @@ namespace mu2e
 	  if(kalfit._fit.success()){
 	    findkal = true;
 	    if(_addhits){
-	      std::vector<size_t> misshits;
+	      std::vector<hitIndex> misshits;
 	      findMissingHits(hitflags,kalfit,misshits);
 	      if(misshits.size() > 0){
 		_kfit.addHits(kalfit,_strawhits,misshits);
@@ -501,7 +501,7 @@ namespace mu2e
       if(npeak >= _mindp){
 // find all the hits near this peak
 	TrkTimePeak tpeak(xp,yp);
-        for(unsigned istr=0; istr<nstrs;++istr){
+        for(size_t istr=0; istr<nstrs;++istr){
 	  if(hitflags[istr].veryLoose()){
 	    StrawHit const& sh = _strawhits->at(istr);
 	    double phi = shpos[istr].phi();
@@ -518,12 +518,12 @@ namespace mu2e
 	  std::vector<double> hitz;
 	  std::vector<bool> devices(ndevices,false);
 	  double rho(0.0);
-	  for(std::vector<size_t>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
-	    const StrawHit& sh = _strawhits->at(*ip);
+	  for(std::vector<hitIndex>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
+	    const StrawHit& sh = _strawhits->at(ip->_index);
 	    unsigned idevice = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getDeviceId());
-	    hitz.push_back(shpos[*ip].z());
+	    hitz.push_back(shpos[ip->_index].z());
 	    devices[idevice] = true;
-	    rho += shpos[*ip].perp();
+	    rho += shpos[ip->_index].perp();
 	  }
 	  rho /= tpeak._trkptrs.size();
 	  std::sort(hitz.begin(),hitz.end());
@@ -547,8 +547,8 @@ namespace mu2e
 // decide if these hits are deltas: if so, flag them
 	  bool isdelta = zgap < _maxzgap || nsmiss <= _maxnsmiss || rho > _maxdrho || rho < _mindrho;
 	  if(isdelta){
-	    for(std::vector<size_t>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
-	      hitflags[*ip].setDelta();  	
+	    for(std::vector<hitIndex>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
+	      hitflags[ip->_index].setDelta();  	
 	    }
 	  }
 // diagnostics
@@ -571,13 +571,13 @@ namespace mu2e
 	    _nprot = 0;
 	    _ndelta = 0;
 	    _phits.clear();
-	    for(std::vector<size_t>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
-	      const StrawHit& sh = _strawhits->at(*ip);
+	    for(std::vector<hitIndex>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
+	      const StrawHit& sh = _strawhits->at(ip->_index);
 	      TrkHitInfo thinfo;
-	      thinfo._pos = shpos[*ip];
+	      thinfo._pos = shpos[ip->_index];
 	      thinfo._resid = sh.time();
 	      if(_kfitmc.mcData()._mcsteps != 0) {
-		const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(*ip);
+		const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(ip->_index);
 		thinfo._mcpdg = mcsum[0]._pdgid;
 		thinfo._mcgen = mcsum[0]._gid;
 		thinfo._mcproc = mcsum[0]._pid;
@@ -646,10 +646,10 @@ namespace mu2e
     const Tracker& tracker = getTrackerOrThrow();
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     const StrawHitCollection* hits = mytrk.strawHitCollection();
-    const std::vector<size_t>& indices = mytrk.strawHitIndices();
-    std::vector<size_t> goodhits;
+    const std::vector<hitIndex>& indices = mytrk.strawHitIndices();
+    std::vector<hitIndex> goodhits;
     for(unsigned ihit=0;ihit<indices.size();++ihit){
-      StrawHit const& sh = hits->at(indices[ihit]);
+      StrawHit const& sh = hits->at(indices[ihit]._index);
       Straw const& straw = tracker.getStraw(sh.strawIndex());
       CLHEP::Hep3Vector hpos = straw.getMidPoint();
       CLHEP::Hep3Vector hdir = straw.getDirection();
@@ -685,7 +685,7 @@ namespace mu2e
   }
 
   void
-  TrkPatRec::findMissingHits(std::vector<TrkHitFlag> const& hitflags,TrkKalFit& kalfit,std::vector<size_t>& misshits) {
+  TrkPatRec::findMissingHits(std::vector<TrkHitFlag> const& hitflags,TrkKalFit& kalfit,std::vector<hitIndex>& misshits) {
     const Tracker& tracker = getTrackerOrThrow();
     //  Trajectory info
     Hep3Vector tdir;
@@ -1030,10 +1030,10 @@ namespace mu2e
     _peakmax = tpeak._peakmax;
     _tpeak = tpeak._tpeak;
     _npeak = tpeak._trkptrs.size();
-    for(std::vector<size_t>::const_iterator istr= tpeak._trkptrs.begin(); istr != tpeak._trkptrs.end(); ++istr){
+    for(std::vector<hitIndex>::const_iterator istr= tpeak._trkptrs.begin(); istr != tpeak._trkptrs.end(); ++istr){
       // summarize the MC truth for this strawhit
       if(_kfitmc.mcData()._mcsteps != 0) {
-	const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(*istr); 
+	const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(istr->_index); 
 	if(mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2)
 	  ++_nmc;
       }
