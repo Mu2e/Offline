@@ -1,11 +1,17 @@
-  $Id: v1_1_8.txt,v 1.5 2012/03/22 20:49:19 genser Exp $
-  $Author: genser $
-  $Date: 2012/03/22 20:49:19 $
+  $Id: v1_1_8.txt,v 1.6 2012/03/23 18:13:20 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/03/23 18:13:20 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_8
 
+
+6) March 23, 2012 kutschke
+   Added codes for a subset of G4 nuclei to MCDataProducts/inc/PDGCode.hh
+   Not all nuclei are present, just those that showed up in a 2 hour run of G4.
+   This is the start of a bigger project to add the G4 nuclei and ions to this
+   enum and to the Particle data table.
 
 5) March 22, 2012 genser
 
