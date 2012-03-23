@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position on the electrons on the calorimeter
 //
-// $Id: CaloClusterCog_module.cc,v 1.5 2012/03/22 13:41:00 gianipez Exp $
+// $Id: CaloClusterCog_module.cc,v 1.6 2012/03/23 18:53:12 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/22 13:41:00 $
+// $Date: 2012/03/23 18:53:12 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -352,15 +352,15 @@ bool findTrkId(std::vector<unsigned int> vec, unsigned int t){
         return res;
 }
 
-double triangoloVar(double x, string d){
+double triangoloVar(double x, char d){
         double y =0.;
         double par[6] = {0.};
-        if(d.compare("V")==1){
+        if(d == 'V' ){
                 double p1[6] = { 0.1689, 29.92, -1.344, 4.136, 0.6882, 0.004642};
                 for(int y=0; y<6; ++y){
                         par[y] = p1[y];
                 }
-        } else if (d.compare("W")==1){
+        } else if (d == 'W'){
                 double p2[6] = { 0.343, 30., -4.25, -1.441, 0.5152, 0.0001403};
                 for(int y=0; y<6; ++y){
                         par[y] = p2[y];
@@ -906,8 +906,9 @@ void CaloClusterCog::doCalorimeter(art::Event const& evt, bool skip){
                                         double deltaZ = (tmpDepth /*- impactParam/cos(thetaWimpact) */)*tan(thetaWimpact);
                                         deltaZ =  vaneFrame.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() + deltaZ ;
                                         _seedDeltaW = deltaZ;
-                                        std::string W="W";
-                                        double corrW = triangoloVar(vaneFrame.z(), W);
+
+
+                                        double corrW = triangoloVar(vaneFrame.z(), 'W');
                                         deltaZ -= corrW;
                                         _seedDeltaCorrW = deltaZ ;
 
@@ -919,8 +920,7 @@ void CaloClusterCog::doCalorimeter(art::Event const& evt, bool skip){
                                         _prova1     = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() + deltaY;
                                         deltaY = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY ;
                                         _seedDeltaV = deltaY;
-                                        std::string V="V";
-                                        double corrV = triangoloVar(vaneFrame.y(), V);
+                                        double corrV = triangoloVar(vaneFrame.y(), 'V');
                                         deltaY -= corrV;
                                         _seedDeltaCorrV = deltaY ;
 
