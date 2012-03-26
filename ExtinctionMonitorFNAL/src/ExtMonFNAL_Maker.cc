@@ -60,7 +60,9 @@ namespace mu2e {
         .rotateX(-dump.collimator2().angleV())
         .rotateY(-dump.collimator2().angleH());
 
-      const double detectorCenterInRoomZ = config.getDouble("extmon_fnal.detectorCenterInRoomZ");
+      const double detectorDistanceToWall = config.getDouble("extmon_fnal.detectorDistanceToWall");
+      const double detectorCenterInRoomZ = m_det->m_roomHalfSize[2]
+        - (detectorDistanceToWall + m_det->m_detectorHalfSize[2]) * cos(dump.collimator2().angleV()) * cos(dump.collimator2().angleH());
 
       const double col2CenterInRoomZ = dump.collimator2CenterInEnclosure()[2] + m_det->m_roomHalfSize[2] + dump.enclosureHalfSize()[2];
       const double col2CenterInRoomX = dump.collimator2CenterInEnclosure()[0];
@@ -74,11 +76,14 @@ namespace mu2e {
       //----------------------------------------------------------------
       if(verbose) {
         std::cout<<__func__<<": ExtMonFNAL room center in mu2e = "<<m_det->roomCenterInMu2e()<<std::endl;
+        std::cout<<__func__<<": ExtMonFNAL room rotY = "<<dump.coreRotY()<<std::endl;
         std::cout<<__func__<<": ExtMonFNAL room half size = ("
                  <<m_det->roomHalfSize()[0]<<", "
                  <<m_det->roomHalfSize()[1]<<", "
                  <<m_det->roomHalfSize()[2]<<")"
                  <<std::endl;
+
+        std::cout<<__func__<<": ExtMonFNAL detector center in room = "<<m_det->m_detectorCenterInRoom<<std::endl;
       }
     }
 

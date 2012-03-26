@@ -21,9 +21,12 @@ bool           extmon_fnal.detectorBoxSolid     = false;
 bool           extmon_fnal.detectorPlaneVisible   = true;
 bool           extmon_fnal.detectorPlaneSolid     = true;
 
-// detector location in room: the center is on the continuation
-// of collimator2 center line.   Need to specify just one coord:
-double extmon_fnal.detectorCenterInRoomZ = 500;
+// Detector location in room: the center is on the continuation of
+// collimator2 center line.  Need to specify just one additional parameter.
+// We use the distance between the intersection points of collimator2
+// axis with the detector envelope and with the wall (inside-the-room
+// side).
+double extmon_fnal.detectorDistanceToWall = 100;
 
 // Details of the detector.  All of these vectors should be
 // of the same size: one entry per detector plane.

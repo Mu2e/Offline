@@ -67,6 +67,10 @@
 # /vis/viewer/panTo 8 -5 m
 # /vis/viewer/zoomTo 5
 
+# # ExtMonFNAL detector and collimator2
+# /vis/viewer/set/viewpointThetaPhi 103.78 0
+# /vis/viewer/panTo 20 1 m
+# /vis/viewer/zoomTo 5
 
 ################################################################
 /vis/enable 
