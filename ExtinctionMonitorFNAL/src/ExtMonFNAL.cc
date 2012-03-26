@@ -6,9 +6,9 @@ namespace mu2e {
   namespace ExtMonFNAL {
 
     //================================================================
-    ExtMon::ExtMon(const std::vector<double>& logicalEnclosureHalfDim, 
-		   double roomCenterHeightAboveDumpCore) 
-      
+    ExtMon::ExtMon(const std::vector<double>& logicalEnclosureHalfDim,
+                   double roomCenterHeightAboveDumpCore)
+
       : m_roomHalfSize(logicalEnclosureHalfDim)
       , m_roomCenterHeightAboveDumpCore(roomCenterHeightAboveDumpCore)
       , m_detectorRotationInRoom(CLHEP::HepRotation::IDENTITY)

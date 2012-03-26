@@ -1,14 +1,14 @@
 // Extinction monitor parameters
-// 
+//
 // Andrei Gaponenko, 2011
 
 bool           hasExtMonFNAL = true;
 
 // Half lengths of the extmon.fnal room, in mm.
 vector<double> extmon_fnal.roomHalfSize  = { 1000., 1200., 1200.};
-// the room is adjacent to the proton beam dump box, and 
+// the room is adjacent to the proton beam dump box, and
 // is centered in the transverse horizontal direction along
-// its plane of symmetry.  To fully specify the position 
+// its plane of symmetry.  To fully specify the position
 // of the room we only need to constrain its vertical coordinate.
 double         extmon_fnal.roomCenterHeightAboveDumpCore = 2575; // 3375;
 
@@ -23,7 +23,7 @@ bool           extmon_fnal.detectorPlaneSolid     = true;
 
 // detector location in room: the center is on the continuation
 // of collimator2 center line.   Need to specify just one coord:
-double extmon_fnal.detectorCenterInRoomZ = 500; 
+double extmon_fnal.detectorCenterInRoomZ = 500;
 
 // Details of the detector.  All of these vectors should be
 // of the same size: one entry per detector plane.

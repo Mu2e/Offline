@@ -1,5 +1,5 @@
 // Geometrical info for the extinction monitor
-// 
+//
 // Andrei Gaponenko, 2011
 
 #ifndef EXTMONFNAL_HH
@@ -14,7 +14,7 @@
 
 namespace mu2e {
   namespace ExtMonFNAL {
-    
+
     class ExtMonMaker;
 
     class ExtMon : virtual public Detector {
@@ -24,7 +24,7 @@ namespace mu2e {
       double roomCenterHeightAboveDumpCore() const { return m_roomCenterHeightAboveDumpCore; }
       const CLHEP::Hep3Vector&    roomCenterInMu2e() const { return m_roomCenterInMu2e; }
 
-      // 
+      //
       unsigned nplanes() const { return m_sensor_zoffset.size(); }
       const std::vector<double>& sensor_zoffset() const { return m_sensor_zoffset; }
       const std::vector<double>& sensor_xoffset() const { return m_sensor_xoffset; }
@@ -48,27 +48,27 @@ namespace mu2e {
 
       // Coordinate conversion to/from the Mu2e frame
       // The ExtMonFNAL frame is defined in the following way:
-      // 
-      // - The z_em axis is along the channel (i.e. the secondaries we 
+      //
+      // - The z_em axis is along the channel (i.e. the secondaries we
       //   observe have large pz and small px, py).
       // - The x_em axis in in the horizontal plane
       // - The y_em axis forms a right-handed (x_em, y_em, z_em) frame.
-      // 
+      //
       // - The (0,0,0) point is in the middle of the ExtMon detector.
-      // 
+      //
       // In G4 this is the coordinate system of the ExtMonFNAL volume.
-      CLHEP::Hep3Vector extMonToMu2ePoint( CLHEP::Hep3Vector const& v ) const;      
-      CLHEP::Hep3Vector extMonToMu2eMomentum( CLHEP::Hep3Vector const& v ) const;      
+      CLHEP::Hep3Vector extMonToMu2ePoint( CLHEP::Hep3Vector const& v ) const;
+      CLHEP::Hep3Vector extMonToMu2eMomentum( CLHEP::Hep3Vector const& v ) const;
       CLHEP::Hep3Vector mu2eToExtMonPoint( CLHEP::Hep3Vector const& v ) const;
       CLHEP::Hep3Vector mu2eToExtMonMomentum( CLHEP::Hep3Vector const& v ) const;
 
       //----------------------------------------------------------------
-    private: 
+    private:
       friend class ExtMonMaker;
       // Private ctr: the class should be only obtained via ExtMonFNAL::ExtMonMaker.
-      ExtMon(const std::vector<double>& roomHalfSize, 
-	     double roomCenterHeightAboveDumpCore);
-      
+      ExtMon(const std::vector<double>& roomHalfSize,
+             double roomCenterHeightAboveDumpCore);
+
       std::vector<double> m_roomHalfSize;
       double m_roomCenterHeightAboveDumpCore;
       CLHEP::Hep3Vector m_roomCenterInMu2e;
@@ -86,7 +86,7 @@ namespace mu2e {
       std::vector<double> m_sensor_halfdx;
       std::vector<double> m_sensor_halfdy;
       std::vector<double> m_sensor_halfdz;
-      
+
       // Readout electronics is (at the moment) created with the same (x,y) size as the sensor,
       // as a box parallel to the sensor.  One thing that remains to be specified is:
       std::vector<double> m_readout_halfdz;
