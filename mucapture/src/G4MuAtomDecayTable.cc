@@ -4,6 +4,9 @@
 //      History: first implementation, cloned from G4DecayTable.cc
 //      20 February 2010 Kevin Lynch
 // ------------------------------------------------------------
+// $Id: G4MuAtomDecayTable.cc,v 1.2 2012/03/26 17:59:56 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/26 17:59:56 $
 
 #include "globals.hh"
 #include "Randomize.hh"
@@ -40,7 +43,7 @@ G4MuAtomDecayTable::G4MuAtomDecayTable(const G4MuAtomDecayTable & rhs):
 }
 
 G4MuAtomDecayTable* G4MuAtomDecayTable::Clone(G4MuAtom const* muatom) const {
-  G4MuAtomDecayTable* table = new G4MuAtomDecayTable(*this);
+  G4MuAtomDecayTable* table = new G4MuAtomDecayTable(*this); // FIXME leak
   G4VMuAtomDecayChannelVector *v = table->channels;
   G4VMuAtomDecayChannelVector::iterator i;
   for( i = v->begin(); i != v->end(); ++i )

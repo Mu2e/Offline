@@ -3,6 +3,9 @@
 //
 //      History: first implementation, Kevin Lynch, March 12 2010
 // ----------------------------------------------------------------
+// $Id: G4MuAtomGenericCaptureChannel.cc,v 1.2 2012/03/26 17:59:56 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/26 17:59:56 $
 
 #include "G4MuAtomGenericCaptureChannel.hh"
 
@@ -94,7 +97,7 @@ CaptureIt(G4DynamicParticle const* pParticle){
   G4LorentzVector const momInitial(0.0,0.0,0.0,muatom->GetPDGMass());
   G4LorentzVector momResidual;
   G4double const residualMass = G4NucleiProperties::GetNuclearMass(A,Z-1);
-  G4ReactionProduct* aNu = new G4ReactionProduct();
+  G4ReactionProduct* aNu = new G4ReactionProduct(); // FIXME leak
   aNu->SetDefinition( G4NeutrinoMu::NeutrinoMu() );
 
   // pick random proton inside nucleus 

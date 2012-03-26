@@ -3,6 +3,9 @@
 //
 //      History: first implementation, Kevin Lynch, February 12 2010
 // ----------------------------------------------------------------
+// $Id: G4TCaptureKineticsTable.icc,v 1.2 2012/03/26 17:59:56 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/26 17:59:56 $
 
 
 #ifndef G4TCAPTUREKINETICSTABLE_ICC
@@ -29,7 +32,7 @@ G4TCaptureKineticsTable<T>::~G4TCaptureKineticsTable(){
 
 template<class T> G4TCaptureKineticsTable<T>* 
 G4TCaptureKineticsTable<T>::Clone(T const* p) const {
-  G4TCaptureKineticsTable<T>* table = new G4TCaptureKineticsTable<T>(p);
+  G4TCaptureKineticsTable<T>* table = new G4TCaptureKineticsTable<T>(p); // FIXME leak
   const_iterator i;
   for(i = channels.begin(); i!=channels.end(); ++i){
     if( (*i)->IsCloneable() ){

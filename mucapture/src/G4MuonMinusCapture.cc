@@ -1,13 +1,16 @@
 //---------------------------------------------------------------------------
 //
-// ClassName:   G4MuonMinusCapture (incorporating K Lynch Muon Capture physics)
+// ClassName:   G4MuonMinusCapture (incorporating Kevin Lynch'es Muon Capture physics)
 //
-// Author: 2011 12 21 K. Genser first version based almost direcly on physicsList by KL
+// Author: 2011 12 21 K. Genser first version based almost direcly on physicsList by Kevin Lynch
 //
 // Modified:
 //
 //----------------------------------------------------------------------------
 //
+// $Id: G4MuonMinusCapture.cc,v 1.3 2012/03/26 17:59:56 genser Exp $
+// $Author: genser $
+// $Date: 2012/03/26 17:59:56 $
 
 #include "globals.hh"
 
@@ -115,10 +118,10 @@ void G4MuonMinusCapture::ConstructParticle()
   // Singlet muP
   muatom = G4MuAtom::MuAtom(1,1,0);
   if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
-  G4MuAtomDecayTable *dt = new G4MuAtomDecayTable();
+  G4MuAtomDecayTable *dt = new G4MuAtomDecayTable(); // FIXME leak
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
-  G4MuAtomCaptureKineticsTable *ckt = new G4MuAtomCaptureKineticsTable(muatom);
+  G4MuAtomCaptureKineticsTable *ckt = new G4MuAtomCaptureKineticsTable(muatom); // FIXME leak
   //  ckt->Insert(new G4MuPCaptureChannel(muatom));
   //  ckt->Insert(new muPHyperfineStoT(muatom,1./(2197.*ns)));
   ckt->Insert(new PmuPFormationChannel(muatom,1./(2197.*ns)));
@@ -127,10 +130,10 @@ void G4MuonMinusCapture::ConstructParticle()
   // Triplet muP
   muatom = G4MuAtom::MuAtom(1,1,2);
   if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
-  dt = new G4MuAtomDecayTable();
+  dt = new G4MuAtomDecayTable(); // FIXME leak
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
-  ckt = new G4MuAtomCaptureKineticsTable(muatom);
+  ckt = new G4MuAtomCaptureKineticsTable(muatom); // FIXME leak
   //  ckt->Insert(new G4MuPCaptureChannel(muatom));
   //  ckt->Insert(new muPHyperfineTtoS(muatom, 1./(2197.*ns)));
   ckt->Insert(new PmuPFormationChannel(muatom,1./(2197.*ns)));
@@ -139,30 +142,30 @@ void G4MuonMinusCapture::ConstructParticle()
   // muD
   muatom = G4MuAtom::MuAtom(1,2);
   if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
-  dt = new G4MuAtomDecayTable();
+  dt = new G4MuAtomDecayTable(); // FIXME leak
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
-  ckt = new G4MuAtomCaptureKineticsTable(muatom);
+  ckt = new G4MuAtomCaptureKineticsTable(muatom); // FIXME leak
   ckt->Insert(new G4MuDCaptureChannel(muatom));
   muatom->CaptureKineticsTable(ckt);
 
   // muT
   muatom = G4MuAtom::MuAtom(1,3);
   if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
-  dt = new G4MuAtomDecayTable();
+  dt = new G4MuAtomDecayTable(); // FIXME leak
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
-  ckt = new G4MuAtomCaptureKineticsTable(muatom);
+  ckt = new G4MuAtomCaptureKineticsTable(muatom); // FIXME leak
   ckt->Insert(new G4MuTCaptureChannel(muatom));
   muatom->CaptureKineticsTable(ckt);
 
   // mu_He3
   muatom = G4MuAtom::MuAtom(2,3);
   if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
-  dt = new G4MuAtomDecayTable();
+  dt = new G4MuAtomDecayTable(); // FIXME leak
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
-  ckt = new G4MuAtomCaptureKineticsTable(muatom);
+  ckt = new G4MuAtomCaptureKineticsTable(muatom); // FIXME leak
   ckt->Insert(new G4MuHe3ProtonChannel(muatom, 1.e6/(2197.*ns)));
   ckt->Insert(new G4MuHe3DeuteronChannel(muatom, 1./(2197.*ns)));
   ckt->Insert(new G4MuHe3TritonChannel(muatom, 1./(2197.*ns)));
@@ -171,10 +174,10 @@ void G4MuonMinusCapture::ConstructParticle()
   // mu_He4
   muatom = G4MuAtom::MuAtom(2,4);
   if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
-  dt = new G4MuAtomDecayTable();
+  dt = new G4MuAtomDecayTable(); // FIXME leak
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
-  ckt = new G4MuAtomCaptureKineticsTable(muatom);
+  ckt = new G4MuAtomCaptureKineticsTable(muatom); // FIXME leak
   ckt->Insert(new G4MuHe4ProtonChannel(muatom));
   ckt->Insert(new G4MuHe4DeuteronChannel(muatom));
   ckt->Insert(new G4MuHe4TritonChannel(muatom));
@@ -183,10 +186,10 @@ void G4MuonMinusCapture::ConstructParticle()
   // Generic MuAtom
   muatom = G4GenericMuAtom::GenericMuAtom();
   if (verboseLevel>0) G4cout << muatom->GetParticleName() << G4endl;
-  dt = new G4MuAtomDecayTable();
+  dt = new G4MuAtomDecayTable(); // FIXME leak
   dt->Insert(new G4MuAtomDIOChannel("GenericMuAtom", 1.) );
   muatom->SetMuAtomDecayTable(dt);
-  ckt = new G4MuAtomCaptureKineticsTable(muatom);
+  ckt = new G4MuAtomCaptureKineticsTable(muatom);  // FIXME leak
   ckt->Insert(new G4MuAtomGenericCaptureChannel(muatom));
   ckt->Insert(new G4Mu2eConversionChannel(muatom, 1./(2197.*ns))); //FIXME constant
   muatom->CaptureKineticsTable(ckt);
@@ -230,7 +233,7 @@ void G4MuonMinusCapture::ConstructParticle()
                                              // P_mu_P not inserted ???
   if (verboseLevel>0) G4cout << mumol->GetParticleName() << G4endl;
   G4MuMoleculeCaptureKineticsTable *molckt =
-    new G4MuMoleculeCaptureKineticsTable(mumol);
+    new G4MuMoleculeCaptureKineticsTable(mumol); // FIXME leak
   molckt->Insert( new G4DMuDFusionHe3Channel(mumol,1/(2197.*ns)) );
   molckt->Insert( new G4DMuDFusionMuHe3Channel(mumol,1/(2197.*ns)) );
   molckt->Insert( new G4DMuDFusionTChannel(mumol,1/(2197.*ns)) );
@@ -314,13 +317,13 @@ void G4MuonMinusCapture::ConstructProcess()
           }
         }
       }
-      muproc = new G4MuonMinusAtomicCapture();
+      muproc = new G4MuonMinusAtomicCapture(); // FIXME leak
       pmanager->AddProcess(muproc);
       pmanager->SetProcessOrdering(muproc, idxAtRest);
     }
     
     if( particleName == "GenericMuAtom" ){
-      G4MuAtomDecay* decay = new G4MuAtomDecay();
+      G4MuAtomDecay* decay = new G4MuAtomDecay(); // FIXME leak
       if (verboseLevel>0) G4cout << "G4MuonMinusCapture::ConstructProcess Attach " << decay->GetProcessName() <<" to "<< particleName << G4endl;
       decay->SetVerboseLevel(verboseLevel);
       pmanager ->AddProcess(decay);
