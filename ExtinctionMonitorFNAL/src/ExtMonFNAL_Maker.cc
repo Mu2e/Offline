@@ -58,7 +58,7 @@ namespace mu2e {
       //----------------------------------------------------------------
       m_det->m_detectorRotationInRoom
         .rotateX(-dump.collimator2().angleV())
-        .rotateY(-dump.collimator2().angleH());
+        .rotateY(+dump.collimator2().angleH());
 
       const double detectorDistanceToWall = config.getDouble("extmon_fnal.detectorDistanceToWall");
       const double detectorCenterInRoomZ = m_det->m_roomHalfSize[2]
