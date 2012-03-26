@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.2 2012/02/29 00:35:44 gandr Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.3 2012/03/26 20:46:05 gandr Exp $
 // $Author: gandr $
 //
 
@@ -354,6 +354,11 @@ namespace mu2e {
         // in one place.  Since the VirtualDetector data structure
         // does not store half size, we'll do the computations later.
         _vd->addVirtualDetector(VirtualDetectorId::ProtonBeamDumpCoreFace, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+    }
+
+    if(geom->hasElement<ExtMonFNAL::ExtMon>() && c.getBool("extmon_fnal.vd.enabled", false)) {
+      _vd->addVirtualDetector(VirtualDetectorId::EMFDetectorEntrance, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+      _vd->addVirtualDetector(VirtualDetectorId::EMFDetectorExit, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
     }
 
   }

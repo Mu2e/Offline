@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.27 2012/03/15 22:06:25 gandr Exp $
+// $Id: constructVirtualDetectors.cc,v 1.28 2012/03/26 20:46:05 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/15 22:06:25 $
+// $Date: 2012/03/26 20:46:05 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -1077,5 +1077,53 @@ namespace mu2e {
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
-  }
+
+    // ExtMonFNAL detector
+    for(int vdId = VirtualDetectorId::EMFDetectorEntrance; vdId <= VirtualDetectorId::EMFDetectorExit; ++vdId) {
+      if( vdg->exist(vdId) ) {
+        if ( verbosityLevel > 0) {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+        }
+
+        VolumeInfo const & parent = _helper->locateVolInfo("ExtMonFNALRoom");
+
+        GeomHandle<ExtMonFNAL::ExtMon> extmon;
+
+        CLHEP::Hep3Vector centerInParent = extmon->detectorCenterInRoom()
+          + extmon->detectorRotationInRoom().inverse()
+          * CLHEP::Hep3Vector(0,
+                              0,
+                              (vdId == VirtualDetectorId::EMFDetectorEntrance ? 1 : -1)
+                              * (extmon->detectorHalfSize()[2] + vdg->getHalfLength())
+                              );
+
+
+        std::vector<double> hlen(3);
+        hlen[0] = _config->getDouble("extmon_fnal.vd.halfdx");
+        hlen[1] = _config->getDouble("extmon_fnal.vd.halfdy");
+        hlen[2] = vdg->getHalfLength();
+
+        VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+                                    hlen,
+                                    vacuumMaterial,
+                                    &extmon->detectorRotationInRoom(),
+                                    centerInParent,
+                                    parent,
+                                    vdId,
+                                    vdIsVisible,
+                                    G4Color::Red(),
+                                    vdIsSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    false
+                                    );
+
+        // vd are very thin, a more thorough check is needed
+        doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+        vdInfo.logical->SetSensitiveDetector(vdSD);
+      }
+    }
+
+  } // constructVirtualDetectors()
 }

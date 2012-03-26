@@ -41,6 +41,22 @@ vector<double> extmon_fnal.sensor_halfdy =  { 20., 20., 20., 20., 20., 20.};
 vector<double> extmon_fnal.sensor_halfdz =  { 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
 vector<double> extmon_fnal.readout_halfdz = { 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
+// These are detector VDs (not filter ones)
+//
+// Notes:
+//
+//    - We want to be able to look at hits in an area larger than the
+//      exact sensor size, so VD transverse dimensions are additional
+//      parameters.
+//
+//    - Because GeometryService objects are supposed to contain only
+//      "physical" parameters and VDs are virtual G4-only objects,
+//      these sizes are not a part of the ExtMonFNAL object.
+//
+bool   extmon_fnal.vd.enabled = true;
+double extmon_fnal.vd.halfdx = 100; // transverse size
+double extmon_fnal.vd.halfdy = 100; // transverse size
+
 //
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
