@@ -1,8 +1,8 @@
 # Configuration file for KalFit01
 #
-# $Id: KalFit_mcpatrec.fcl,v 1.2 2012/03/23 22:28:21 brownd Exp $
+# $Id: KalFit_mcpatrec.fcl,v 1.3 2012/03/28 21:23:59 brownd Exp $
 # $Author: brownd $
-# $Date: 2012/03/23 22:28:21 $
+# $Date: 2012/03/28 21:23:59 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -101,5 +101,5 @@ source.firstRun                            :  1
 services.user.SeedService.baseSeed         :  1
 services.user.SeedService.maxUniqueEngines :  20
 physics.producers.KalFitTest.KalFit.RemoveFailedFits : false
-physics.producers.KalFitTest.KalFitMC.pureHits : true
+physics.producers.KalFitTest.KalFitMC.pureHits : false
 #

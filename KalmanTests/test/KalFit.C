@@ -295,7 +295,7 @@ void KalFitAccPlots(TTree* trks) {
 
   fcan->cd(2);
   na->Draw();
-  TLine* nacut = new TLine(minnhits,0.0,minnhits,na->GetMaximum());
+  TLine* nacut = new TLine(20,0.0,20,na->GetMaximum());
   nacut->SetLineColor(kBlack);
   nacut->SetLineStyle(2);
   nacut->SetLineWidth(2);
