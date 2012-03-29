@@ -32,7 +32,7 @@ namespace mu2e {
     }
 
     // The particle id was not in the map, so figure out its mass.
-    lastMass_ = ( id < 100000000 ) ? getMassFromPDT(id) : ionHack(id);
+    lastMass_ = ( id <= PDGCode::G4Threshold ) ? getMassFromPDT(id) : ionHack(id);
 
     // Insert the mass into the cache.
     result.first->second = lastMass_;
