@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.28 2012/03/26 20:46:05 gandr Exp $
+// $Id: constructVirtualDetectors.cc,v 1.29 2012/03/29 19:07:36 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/26 20:46:05 $
+// $Date: 2012/03/29 19:07:36 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -853,22 +853,19 @@ namespace mu2e {
     vdId = VirtualDetectorId::PS_FrontExit;
     if ( vdg->exist(vdId) )
     {
-      VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
+      const VolumeInfo& parent = _helper->locateVolInfo("PSVacuum");
 
-      ProductionSolenoid const & psgh = *(GeomHandle<ProductionSolenoid>());
+      const Tube& psvac = *GeomHandle<ProductionSolenoid>()->getVacuumParamsPtr();
 
-      Tube const & psVacVesselInnerParams = *psgh.getVacVesselInnerParamsPtr();
+      TubsParams vdParams(0., psvac.outerRadius(), vdg->getHalfLength());
 
-      G4ThreeVector vdOrigin = psVacVesselInnerParams.originInMu2e() -
-        G4ThreeVector(0.0, 0.0, psVacVesselInnerParams.halfLength() - vdg->getHalfLength());
-
-      TubsParams vdParams(0., psVacVesselInnerParams.innerRadius(), vdg->getHalfLength());
+      G4ThreeVector vdCenterInParent(0., 0., -psvac.halfLength() + vdg->getHalfLength());
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
                                    vacuumMaterial,
                                    0,
-                                   vdOrigin - parent.centerInMu2e(),
+                                   vdCenterInParent,
                                    parent,
                                    vdId,
                                    vdIsVisible,

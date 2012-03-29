@@ -1,9 +1,9 @@
 //
 // Construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.cc,v 1.6 2012/03/29 19:07:23 gandr Exp $
+// $Id: ProductionSolenoidMaker.cc,v 1.7 2012/03/29 19:07:36 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/29 19:07:23 $
+// $Date: 2012/03/29 19:07:36 $
 //
 // Original author KLG
 //
@@ -146,11 +146,8 @@ namespace mu2e {
                 _psCoilrIn, _psCoil3rOut, _psCoil3Length*0.5));
 
     // PSVacuum
-    // we shorten/shift the vacuum to place the vd.  ??? FIXME: why not put vd in the vacuum instead?
-    const double vacStartZ =
-      ps._psEndRefPoint[2] + (_config.getBool("hasVirtualDetector",false) ? 2*_config.getDouble("vd.halfLength") : 0);
-
-    const double vacEndZ = -rTorus + -2.*ts1HalfLength;
+    const double vacStartZ = ps._psEndRefPoint[2];
+    const double vacEndZ   = -rTorus + -2.*ts1HalfLength;
 
     CLHEP::Hep3Vector psVacuumMu2eOffset(solenoidOffset, 0, 0.5*(vacStartZ + vacEndZ));
 
