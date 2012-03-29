@@ -6,9 +6,9 @@
 // to the PDG identifier codes for various particles.
 // It has been extended to include a subset of the G4 nuclei codes.
 //
-// $Id: PDGCode.hh,v 1.2 2012/03/23 18:11:28 kutschke Exp $
+// $Id: PDGCode.hh,v 1.3 2012/03/29 16:26:18 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/23 18:11:28 $
+// $Date: 2012/03/29 16:26:18 $
 //
 // This file was initially taken directly from BaBar's pdt/PdtPdg.hh
 //
@@ -469,6 +469,9 @@ namespace mu2e {
         He3 = 0,
         Cerenkov = 0,
         null = 0,
+
+        // Codes above or equal to this value are defined by G4.
+        G4Threshold = 999999999,
 
         // G4 extensions to PDG codes, for nuclei:
         // This list is not exhaustive.  It was obtained by running a G4 job and extracting the
