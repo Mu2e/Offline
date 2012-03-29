@@ -4,9 +4,9 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.12 2012/02/24 20:55:48 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/24 20:55:48 $
+// $Id: CosmicRayShield.hh,v 1.13 2012/03/29 18:47:54 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/29 18:47:54 $
 //
 // Original author KLG
 //
@@ -63,7 +63,7 @@ namespace mu2e {
       return _allCRSScintillatorBars;
     }
 
-    const CRSScintillatorBar& getCRSScintillatorBar ( CRSScintillatorBarIndex index ) const {
+    const CRSScintillatorBar& getBar ( CRSScintillatorBarIndex index ) const {
       return _allCRSScintillatorBars.at(index.asInt());
     }
 
