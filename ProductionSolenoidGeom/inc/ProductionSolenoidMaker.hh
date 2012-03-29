@@ -3,9 +3,9 @@
 //
 // Class to construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.hh,v 1.2 2012/03/29 19:06:06 gandr Exp $
+// $Id: ProductionSolenoidMaker.hh,v 1.3 2012/03/29 19:06:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/29 19:06:06 $
+// $Date: 2012/03/29 19:06:31 $
 //
 // Original author KLG
 //
@@ -47,7 +47,6 @@ namespace mu2e {
 
     std::auto_ptr<ProductionSolenoid> _ps;
 
-    double _psLocalOriginZ;
     int    _verbosityLevel;
     bool   _psVisible;
     bool   _psSolid;
@@ -90,7 +89,6 @@ namespace mu2e {
 
     // Z offset from the local origin
     double _psCoil1zOffset;
-    double _psCoil1zGap;
     // outer radius
     double _psCoil1rOut;
     double _psCoil1Length;

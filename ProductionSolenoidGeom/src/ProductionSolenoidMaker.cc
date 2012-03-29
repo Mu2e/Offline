@@ -1,9 +1,9 @@
 //
 // Construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.cc,v 1.3 2012/03/29 19:06:06 gandr Exp $
+// $Id: ProductionSolenoidMaker.cc,v 1.4 2012/03/29 19:06:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/29 19:06:06 $
+// $Date: 2012/03/29 19:06:31 $
 //
 // Original author KLG
 //
@@ -50,14 +50,11 @@ namespace mu2e {
 
     parseConfig(_config);
 
-    //    calculateOffsets(_config, solenoidOffset);
+    ps._psEndRefPoint = CLHEP::Hep3Vector(solenoidOffset, 0, _config.getDouble("PS.cryostatRefZ"));
 
-    double psCenterZ0     = -rTorus + -2.*ts1HalfLength - _psVacVesselHalfLength;
+    CLHEP::Hep3Vector psCryoMu2eOffset = ps._psEndRefPoint + CLHEP::Hep3Vector(0, 0, _psVacVesselHalfLength );
 
-    //FIXME we should do it like this or so
-    // double psCenterZ0BasedOnLocalOriginZ = _psLocalOriginZ + 220. - 212 - 30. + _psVacVesselHalfLength;
-
-    CLHEP::Hep3Vector psMu2eOffset( solenoidOffset, 0., psCenterZ0 );
+    const double psCoilRefZ = _config.getDouble("PS.coilRefZ");
 
     // now create the specific components
 
@@ -65,14 +62,14 @@ namespace mu2e {
 
     ps._psVacVesselInnerParams = std::auto_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
-                psMu2eOffset,
+                psCryoMu2eOffset,
                  _psVacVesselrIn,
                 _psVacVesselrIn +_psVacVesselWallThickness,
                 _psVacVesselHalfLength));
 
     ps._psVacVesselOuterParams = std::auto_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
-                psMu2eOffset,
+                psCryoMu2eOffset,
                 _psVacVesselrOut-_psVacVesselWallThickness,
                 _psVacVesselrOut,
                 _psVacVesselHalfLength));
@@ -80,26 +77,18 @@ namespace mu2e {
 
     // two endplates
 
-    double        psVacVesselEndPlateDMu2eOffsetZ0 =
-      psCenterZ0+_psVacVesselHalfLength-_psVacVesselEndPlateHalfThickness;
-    CLHEP::Hep3Vector psVacVesselEndPlateDMu2eOffset
-      ( solenoidOffset, 0., psVacVesselEndPlateDMu2eOffsetZ0 );
+    CLHEP::Hep3Vector endPlateShift(0, 0, _psVacVesselHalfLength-_psVacVesselEndPlateHalfThickness);
 
     ps._psVacVesselEndPlateDParams = std::auto_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
-                psVacVesselEndPlateDMu2eOffset,
+                psCryoMu2eOffset + endPlateShift,
                 _psVacVesselrIn +_psVacVesselWallThickness,
                 _psVacVesselrOut-_psVacVesselWallThickness,
                 _psVacVesselEndPlateHalfThickness));
 
-    double        psVacVesselEndPlateUMu2eOffsetZ0 =
-      psCenterZ0-_psVacVesselHalfLength+_psVacVesselEndPlateHalfThickness;
-    CLHEP::Hep3Vector psVacVesselEndPlateUMu2eOffset
-      ( solenoidOffset, 0., psVacVesselEndPlateUMu2eOffsetZ0 );
-
     ps._psVacVesselEndPlateUParams = std::auto_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
-                psVacVesselEndPlateUMu2eOffset,
+                psCryoMu2eOffset - endPlateShift,
                 _psVacVesselrIn +_psVacVesselWallThickness,
                 _psVacVesselrOut-_psVacVesselWallThickness,
                 _psVacVesselEndPlateHalfThickness));
@@ -116,6 +105,7 @@ namespace mu2e {
                         _psCoilShell2rOut,
                         _psCoilShell3rOut};
 
+    // FIXME: just use polycone params from config
     double z1 = _psCoilShell1zGap   + _psCoilShell1Length + _psCoilShell2zGap;
     double z2 = _psCoilShell2Length + _psCoilShell3zGap   + _psCoilShell3Length;
 
@@ -129,14 +119,12 @@ namespace mu2e {
     assert ( nPlanes == (sizeof(rOuter) /sizeof( rOuter[0])) );
     assert ( nPlanes == (sizeof(zPlanes)/sizeof(zPlanes[0])) );
 
-    double psCoilShellLength = z1+z2;
-
-    // note that the origin of the G4Polycone is not at its center but
+    // Use the cold mass reference point to position the "shell" (stabilizer)
+    // Note that the origin of the G4Polycone is not at its center but
     // at the center of the edge wall of lower Z
 
     //aka originInMu2e:
-    CLHEP::Hep3Vector  psCoilShellMu2eOffset = psMu2eOffset -
-      CLHEP::Hep3Vector ( 0., 0., psCoilShellLength*0.5 );
+    CLHEP::Hep3Vector psCoilShellMu2eOffset(solenoidOffset, 0, psCoilRefZ + _psCoil1zOffset - _psCoilShell1zGap );
 
     // CoilShell is a Polycone
 
@@ -151,62 +139,56 @@ namespace mu2e {
                     _psCoilShellMaterialName));
 
     // Coils are Tubes placed inside the Coil Shell
-
-    CLHEP::Hep3Vector psCoil1LocalOffset(0.,0.,_psCoil1zGap + _psCoil1Length*0.5);
-
-    CLHEP::Hep3Vector psCoil1Mu2eOffset = psCoil1LocalOffset + psCoilShellMu2eOffset;
+    CLHEP::Hep3Vector psCoil1Mu2eOffset(solenoidOffset,
+                                        0,
+                                        psCoilRefZ + _psCoil1zOffset +
+                                        _psCoil1Length*0.5);
 
     ps._psCoil1Params = std::auto_ptr<Tube>
       (new Tube(_psCoilMaterialName,
                 psCoil1Mu2eOffset,
                 _psCoilrIn, _psCoil1rOut, _psCoil1Length*0.5));
 
-
-    CLHEP::Hep3Vector psCoil2LocalOffset(0.,0.,
-                                         _psCoil1zGap + _psCoil1Length +
-                                         _psCoil2zGap + _psCoil2Length*0.5);
-
-    CLHEP::Hep3Vector psCoil2Mu2eOffset = psCoil2LocalOffset + psCoilShellMu2eOffset;
+    CLHEP::Hep3Vector psCoil2Mu2eOffset(solenoidOffset,
+                                        0,
+                                        psCoilRefZ + _psCoil1zOffset +
+                                        _psCoil1Length + _psCoil2zGap +
+                                        _psCoil2Length*0.5);
 
     ps._psCoil2Params = std::auto_ptr<Tube>
       (new Tube(_psCoilMaterialName,
                 psCoil2Mu2eOffset,
                 _psCoilrIn, _psCoil2rOut, _psCoil2Length*0.5));
 
-    CLHEP::Hep3Vector psCoil3LocalOffset(0.,0.,
-                                         _psCoil1zGap + _psCoil1Length +
-                                         _psCoil2zGap + _psCoil2Length +
-                                         _psCoil3zGap + _psCoil3Length*0.5);
-
-    CLHEP::Hep3Vector psCoil3Mu2eOffset = psCoil3LocalOffset + psCoilShellMu2eOffset;
+    CLHEP::Hep3Vector psCoil3Mu2eOffset(solenoidOffset,
+                                        0,
+                                        psCoilRefZ + _psCoil1zOffset +
+                                        _psCoil1Length + _psCoil2zGap +
+                                        _psCoil2Length + _psCoil3zGap +
+                                        _psCoil3Length*0.5);
 
     ps._psCoil3Params = std::auto_ptr<Tube>
       (new Tube(_psCoilMaterialName,
                 psCoil3Mu2eOffset,
                 _psCoilrIn, _psCoil3rOut, _psCoil3Length*0.5));
 
-    double vdHalfLength = 0.;
-    if( _config.getBool("hasVirtualDetector",false)){
-      vdHalfLength = _config.getDouble("vd.halfLength");
-    }
-
     // PSVacuum
-    // we shorten/shift the vacuum to place the vd
+    // we shorten/shift the vacuum to place the vd.  ??? FIXME: why not put vd in the vacuum instead?
+    const double vacStartZ =
+      ps._psEndRefPoint[2] + (_config.getBool("hasVirtualDetector",false) ? 2*_config.getDouble("vd.halfLength") : 0);
 
-    CLHEP::Hep3Vector psVacuumMu2eOffset = psMu2eOffset + CLHEP::Hep3Vector(0., 0., vdHalfLength);
+    const double vacEndZ = -rTorus + -2.*ts1HalfLength;
+
+    CLHEP::Hep3Vector psVacuumMu2eOffset(solenoidOffset, 0, 0.5*(vacStartZ + vacEndZ));
+
     ps._psVacuumParams = std::auto_ptr<Tube>
       (new Tube(_psInsideMaterialName,
                 psVacuumMu2eOffset,
-                0., _psVacVesselrIn, _psVacVesselHalfLength-2.*vdHalfLength));
+                0., _psVacVesselrIn, 0.5*(vacEndZ - vacStartZ)));
 
-    // Reference point for the enclosure
-    ps._psEndRefPoint = psMu2eOffset - CLHEP::Hep3Vector(0., 0., _psVacVesselHalfLength);
   }
 
   void ProductionSolenoidMaker::parseConfig( SimpleConfig const & _config ){
-
-    _psLocalOriginZ                   = _config.getDouble("PS.localOriginZ"); // will not use for now
-    // FIXME use the above once params are reconciled
 
     _verbosityLevel                   = _config.getInt("PS.verbosityLevel");
     _psVisible                        = _config.getBool("PS.visible");
@@ -252,7 +234,6 @@ namespace mu2e {
 // Z offset from the local origin
 
     _psCoil1zOffset                   = _config.getDouble("PS.Coil1.zOffset");
-    _psCoil1zGap                      = _config.getDouble("PS.Coil1.zGap");
 // outer radius
     _psCoil1rOut                      = _config.getDouble("PS.Coil1.rOut");
     _psCoil1Length                    = _config.getDouble("PS.Coil1.Length");

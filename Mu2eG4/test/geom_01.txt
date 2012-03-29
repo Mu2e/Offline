@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.135 2012/03/16 05:09:22 gandr Exp $
+// $Id: geom_01.txt,v 1.136 2012/03/29 19:06:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/16 05:09:22 $
+// $Date: 2012/03/29 19:06:31 $
 //
 // Original author Rob Kutschke
 //
@@ -199,72 +199,9 @@ int    toyDS.verbosityLevel     = 0;
 bool   toyDS.visible            = true;
 bool   toyDS.solid              = false;
 
+#include "Mu2eG4/test/ProductionSolenoid_v01.txt"
 #include "Mu2eG4/test/psEnclosure_v01.txt"
 
-// more realistic PS based on doc-2066-v5
-
-// Z reference point the Mu2e coordinate system
-
-double PS.localOriginZ        = -7929.;// this seems to be inconsistent
-                                       // with 16-feb-12 drawing and
-                                       // dec-2011 one wrt the end
-                                       // plate thickness
-int    PS.verbosityLevel      = 0;
-bool   PS.visible             = true;
-bool   PS.solid               = false;
-
-double PS.VacVessel.rIn            =  750.;
-double PS.VacVessel.rOut           = 1300.;
-double PS.VacVessel.WallThickness  = 20.; 
-double PS.VacVessel.EndPlateHalfThickness = 15.; // is it 15 or 20
-double PS.VacVessel.HalfLength     = 2250.;
-string PS.VacVessel.materialName   = "G4_Al";
-string PS.insideMaterialName       = "DSVacuum";
-
-// the three coils are done "together" 
-// all have the same inner radius
-double PS.Coil.rIn                 =    850.;
-
-string PS.Coil.materialName       = "SCCable";
-
-// Z offset from the origin
-
-double PS.Coil1.zOffset            =    220.;
-double PS.Coil1.zGap               =     40.; // it is not a gap per se but we call it so
-// outer radius
-double PS.Coil1.rOut               =    946.;
-double PS.Coil1.Length             =   1710.;
-
-// offset from coil1
-double PS.Coil2.zGap               =     40.;
-double PS.Coil2.rOut               =    914.;
-double PS.Coil2.Length             =   1332.;
-
-// offset from coil2
-double PS.Coil3.zGap               =    120.;
-double PS.Coil3.rOut               =    914.;
-double PS.Coil3.Length             =    750.;
-
-// coil "outer shell"
-double PS.CoilShell.rIn            =    850.;
-string PS.CoilShell.materialName  =    "A95083";
-
-// Z offset from the origin
-double PS.CoilShell1.zOffset       =    220.;
-double PS.CoilShell1.zGap          =     40.; // it is not a gap per se but we call it so
-// outer radius
-double PS.CoilShell1.rOut          =   1031.;
-double PS.CoilShell1.Length        =   1710.;
-
-// offset from coilShell1
-double PS.CoilShell2.zGap          =     40.;
-double PS.CoilShell2.rOut          =    956.;
-double PS.CoilShell2.Length        =   1332.;
-
-// offset from coilShell2
-double PS.CoilShell3.zGap          =    120.;
-double PS.CoilShell3.rOut          =    956.;
-double PS.CoilShell3.Length        =    775.; // we add the 25mm  "end gap" here
 
 // Parameters for TS volumes.
 double toyTS.rVac        =  240.;          // Outer radius of vacuum volume
