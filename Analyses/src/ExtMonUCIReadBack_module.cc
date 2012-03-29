@@ -1,46 +1,25 @@
 //
 // An EDAnalyzer module that reads back ExtMonUCI hits created by G4 and makes trees.
 //
-// $Id: ExtMonUCIReadBack_module.cc,v 1.1 2012/01/25 02:02:00 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/01/25 02:02:00 $
+// $Id: ExtMonUCIReadBack_module.cc,v 1.2 2012/03/29 13:32:35 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/29 13:32:35 $
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
-#include "ConditionsService/inc/unknownPDGIdName.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBarIndex.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
-#include "G4Helper/inc/G4Helper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
-#include "LTrackerGeom/inc/LTracker.hh"
-#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/ExtMonUCITofHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/ExtMonUCITofHitCollection.hh"
 #include "TDirectory.h"
 #include "TGraph.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TNtuple.h"
-#include "TTrackerGeom/inc/TTracker.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
