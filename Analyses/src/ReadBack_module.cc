@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.15 2012/03/29 14:59:17 kutschke Exp $
+// $Id: ReadBack_module.cc,v 1.16 2012/03/29 22:59:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/29 14:59:17 $
+// $Date: 2012/03/29 22:59:13 $
 //
 // Original author Rob Kutschke
 //
@@ -1156,12 +1156,9 @@ namespace mu2e {
     // Get a reference to CosmicRayShield (it contains crv)
 
     GeomHandle<CosmicRayShield> cosmicRayShieldGeomHandle;
+    CosmicRayShield const& crv(*cosmicRayShieldGeomHandle);
 
-    std::vector<CRSScintillatorBar> const & allBars =
-      cosmicRayShieldGeomHandle->getAllCRSScintillatorBars();
-
-    CRSScintillatorBarDetail const & barDetail =
-      cosmicRayShieldGeomHandle->getCRSScintillatorBarDetail();
+    CRSScintillatorBarDetail const & barDetail = crv.getCRSScintillatorBarDetail();
 
     CLHEP::Hep3Vector barLengths = CLHEP::Hep3Vector(barDetail.getHalfLengths()[0],
                                                      barDetail.getHalfLengths()[1],
@@ -1227,7 +1224,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector& mom = hit.momentum();
 
       // Get the CRSScintillatorBar information:
-      const CRSScintillatorBar&  bar = allBars.at( hit.volumeId() );
+      const CRSScintillatorBar&  bar = crv.getBar( hit.barIndex() );
       CLHEP::Hep3Vector const &  mid = bar.getGlobalOffset();
 
       CLHEP::HepRotationX RX(bar.getGlobalRotationAngles()[0]);

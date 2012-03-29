@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Bar in CosmicRayShield.
 //
-// $Id: CRSScintillatorBar.hh,v 1.8 2011/12/06 22:53:01 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/06 22:53:01 $
+// $Id: CRSScintillatorBar.hh,v 1.9 2012/03/29 22:59:13 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/03/29 22:59:13 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's Straw
 //
@@ -14,8 +14,8 @@
 #include <string>
 
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarId.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBarIndex.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
+#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
