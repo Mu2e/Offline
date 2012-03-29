@@ -1,9 +1,9 @@
 //
 // Representation of common properties of the Scintillator Bars etc...
 //
-// $Id: CRSScintillatorBarDetail.cc,v 1.3 2011/05/18 15:47:40 kutschke Exp $
+// $Id: CRSScintillatorBarDetail.cc,v 1.4 2012/03/29 22:56:21 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Date: 2012/03/29 22:56:21 $
 //
 // Original author KLG; somewhat based on Rob Kutschke StrawDetail
 //
@@ -11,7 +11,6 @@
 #include <sstream>
 
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBarIndex.hh"
 
 using namespace std;
 
