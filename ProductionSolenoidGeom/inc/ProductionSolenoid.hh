@@ -3,9 +3,9 @@
 
 
 //
-// $Id: ProductionSolenoid.hh,v 1.2 2012/03/16 05:09:22 gandr Exp $
+// $Id: ProductionSolenoid.hh,v 1.3 2012/03/29 19:06:06 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/16 05:09:22 $
+// $Date: 2012/03/29 19:06:06 $
 //
 // Original author KLG
 //
@@ -18,12 +18,12 @@
 #include "Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {
-    
+
   class ProductionSolenoidMaker;
 
   class ProductionSolenoid : virtual public Detector {
 
-  public: 
+  public:
 
     // do we need more than that? does the Tube have all the accessors?
 
@@ -44,7 +44,7 @@ namespace mu2e {
     // The point on the PS axis at the end of the vacuum volume on the downstream (proton exit) side
     const CLHEP::Hep3Vector& psEndRefPoint() const { return _psEndRefPoint; }
 
-  private: 
+  private:
 
     friend class ProductionSolenoidMaker;
 

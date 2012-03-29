@@ -1,9 +1,9 @@
 //
 // Construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.cc,v 1.2 2012/03/16 05:09:22 gandr Exp $
+// $Id: ProductionSolenoidMaker.cc,v 1.3 2012/03/29 19:06:06 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/16 05:09:22 $
+// $Date: 2012/03/29 19:06:06 $
 //
 // Original author KLG
 //
@@ -33,7 +33,7 @@ namespace mu2e {
 
   // Constructor that gets information from the config file instead of
   // from arguments.
-  ProductionSolenoidMaker::ProductionSolenoidMaker(SimpleConfig const & _config, 
+  ProductionSolenoidMaker::ProductionSolenoidMaker(SimpleConfig const & _config,
                                                    double solenoidOffset,
                                                    double rTorus,
                                                    double ts1HalfLength)
@@ -70,9 +70,9 @@ namespace mu2e {
                 _psVacVesselrIn +_psVacVesselWallThickness,
                 _psVacVesselHalfLength));
 
-    ps._psVacVesselOuterParams = std::auto_ptr<Tube> 
+    ps._psVacVesselOuterParams = std::auto_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
-                psMu2eOffset, 
+                psMu2eOffset,
                 _psVacVesselrOut-_psVacVesselWallThickness,
                 _psVacVesselrOut,
                 _psVacVesselHalfLength));
@@ -80,24 +80,24 @@ namespace mu2e {
 
     // two endplates
 
-    double        psVacVesselEndPlateDMu2eOffsetZ0 = 
+    double        psVacVesselEndPlateDMu2eOffsetZ0 =
       psCenterZ0+_psVacVesselHalfLength-_psVacVesselEndPlateHalfThickness;
     CLHEP::Hep3Vector psVacVesselEndPlateDMu2eOffset
       ( solenoidOffset, 0., psVacVesselEndPlateDMu2eOffsetZ0 );
 
-    ps._psVacVesselEndPlateDParams = std::auto_ptr<Tube> 
+    ps._psVacVesselEndPlateDParams = std::auto_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
                 psVacVesselEndPlateDMu2eOffset,
                 _psVacVesselrIn +_psVacVesselWallThickness,
                 _psVacVesselrOut-_psVacVesselWallThickness,
                 _psVacVesselEndPlateHalfThickness));
 
-    double        psVacVesselEndPlateUMu2eOffsetZ0 = 
+    double        psVacVesselEndPlateUMu2eOffsetZ0 =
       psCenterZ0-_psVacVesselHalfLength+_psVacVesselEndPlateHalfThickness;
     CLHEP::Hep3Vector psVacVesselEndPlateUMu2eOffset
       ( solenoidOffset, 0., psVacVesselEndPlateUMu2eOffsetZ0 );
 
-    ps._psVacVesselEndPlateUParams = std::auto_ptr<Tube> 
+    ps._psVacVesselEndPlateUParams = std::auto_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
                 psVacVesselEndPlateUMu2eOffset,
                 _psVacVesselrIn +_psVacVesselWallThickness,
@@ -128,7 +128,7 @@ namespace mu2e {
 
     assert ( nPlanes == (sizeof(rOuter) /sizeof( rOuter[0])) );
     assert ( nPlanes == (sizeof(zPlanes)/sizeof(zPlanes[0])) );
-    
+
     double psCoilShellLength = z1+z2;
 
     // note that the origin of the G4Polycone is not at its center but
@@ -211,7 +211,7 @@ namespace mu2e {
     _verbosityLevel                   = _config.getInt("PS.verbosityLevel");
     _psVisible                        = _config.getBool("PS.visible");
     _psSolid                          = _config.getBool("PS.solid");
-                                                
+
     _psVacVesselrIn                   = _config.getDouble("PS.VacVessel.rIn");
     _psVacVesselrOut                  = _config.getDouble("PS.VacVessel.rOut");
     _psVacVesselWallThickness         = _config.getDouble("PS.VacVessel.WallThickness");
@@ -225,19 +225,19 @@ namespace mu2e {
 // coil "outer shell
     _psCoilShellrIn                   = _config.getDouble("PS.CoilShell.rIn");
     _psCoilShellMaterialName          = _config.getString("PS.CoilShell.materialName");
-                                                
+
 // Z offset from the local  origin
     _psCoilShell1zOffset              = _config.getDouble("PS.CoilShell1.zOffset");
     _psCoilShell1zGap                 = _config.getDouble("PS.CoilShell1.zGap");
 // outer radius
     _psCoilShell1rOut                 = _config.getDouble("PS.CoilShell1.rOut");
     _psCoilShell1Length               = _config.getDouble("PS.CoilShell1.Length");
-                                                
+
 // offset from coilShell1
     _psCoilShell2zGap                 = _config.getDouble("PS.CoilShell2.zGap");
     _psCoilShell2rOut                 = _config.getDouble("PS.CoilShell2.rOut");
     _psCoilShell2Length               = _config.getDouble("PS.CoilShell2.Length");
-                                                
+
 // offset from coilShell2
     _psCoilShell3zGap                 = _config.getDouble("PS.CoilShell3.zGap");
     _psCoilShell3rOut                 = _config.getDouble("PS.CoilShell3.rOut");
@@ -256,12 +256,12 @@ namespace mu2e {
 // outer radius
     _psCoil1rOut                      = _config.getDouble("PS.Coil1.rOut");
     _psCoil1Length                    = _config.getDouble("PS.Coil1.Length");
-                                                
+
 // offset from coil1
     _psCoil2zGap                      = _config.getDouble("PS.Coil2.zGap");
     _psCoil2rOut                      = _config.getDouble("PS.Coil2.rOut");
     _psCoil2Length                    = _config.getDouble("PS.Coil2.Length");
-                                                
+
 // offset from coil2
     _psCoil3zGap                      = _config.getDouble("PS.Coil3.zGap");
     _psCoil3rOut                      = _config.getDouble("PS.Coil3.rOut");

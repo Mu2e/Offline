@@ -3,9 +3,9 @@
 //
 // Class to construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.hh,v 1.1 2012/03/13 19:04:11 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/13 19:04:11 $
+// $Id: ProductionSolenoidMaker.hh,v 1.2 2012/03/29 19:06:06 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/29 19:06:06 $
 //
 // Original author KLG
 //
@@ -25,7 +25,7 @@ namespace mu2e {
 
   public:
 
-    ProductionSolenoidMaker( SimpleConfig const & config, 
+    ProductionSolenoidMaker( SimpleConfig const & config,
                              double solenoidOffset,
                              double rTorus,
                              double ts1HalfLength);
