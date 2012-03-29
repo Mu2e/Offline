@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.12 2012/03/16 05:09:22 gandr Exp $
+// $Id: constructPS.cc,v 1.13 2012/03/29 19:07:23 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/16 05:09:22 $
+// $Date: 2012/03/29 19:07:23 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -158,9 +158,9 @@ namespace mu2e {
                                               psCoilShellParams.phi0(),
                                               psCoilShellParams.phiTotal(),
                                               psCoilShellParams.numZPlanes(),
-                                              psCoilShellParams.zPlanes(),
-                                              psCoilShellParams.rInner(),
-                                              psCoilShellParams.rOuter());
+                                              &psCoilShellParams.zPlanes()[0],
+                                              &psCoilShellParams.rInner()[0],
+                                              &psCoilShellParams.rOuter()[0]);
     
     G4Material* psCoilShellMaterial = findMaterialOrThrow(psCoilShellParams.materialName());
 

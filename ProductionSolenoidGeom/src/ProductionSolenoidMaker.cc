@@ -1,9 +1,9 @@
 //
 // Construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.cc,v 1.5 2012/03/29 19:06:50 gandr Exp $
+// $Id: ProductionSolenoidMaker.cc,v 1.6 2012/03/29 19:07:23 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/29 19:06:50 $
+// $Date: 2012/03/29 19:07:23 $
 //
 // Original author KLG
 //
@@ -104,12 +104,9 @@ namespace mu2e {
     CLHEP::Hep3Vector psCoilShellMu2eOffset(solenoidOffset, 0, psCoilRefZ);
 
     ps._psCoilShellParams = std::auto_ptr<Polycone>
-      (new Polycone(0.,
-                    CLHEP::twopi,
-                    zPlane.size(),
-                    &zPlane[0],
-                    &rIn[0],
-                    &rOut[0],
+      (new Polycone(zPlane,
+                    rIn,
+                    rOut,
                     psCoilShellMu2eOffset,
                     _config.getString("PS.CoilShell.materialName")
                     ));

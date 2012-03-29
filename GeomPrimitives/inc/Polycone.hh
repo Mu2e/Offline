@@ -4,19 +4,16 @@
 //
 // The parameters of a Polycone
 //
-// $Id: Polycone.hh,v 1.2 2012/03/29 19:07:00 gandr Exp $
+// $Id: Polycone.hh,v 1.3 2012/03/29 19:07:23 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/29 19:07:00 $
+// $Date: 2012/03/29 19:07:23 $
 //
 // Original author KLG
 //
 
-#include <cmath>
-#include <string>
-#include <algorithm>
-#include <iterator>
-#include <ostream>
 #include <vector>
+#include <string>
+#include <cmath>
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -35,43 +32,30 @@ namespace mu2e {
 
   public:
 
-    // we may need to use better containers here
-    Polycone( unsigned int numZPlanes,
-              double zPlanes[],
-              double rInner[],
-              double rOuter[],
-              CLHEP::Hep3Vector const & originInMu2e,
-              std::string const & materialName,
-              double phiStart = 0.,
-              double phiTotal = CLHEP::twopi);
-
-    Polycone( double phiStart,
-              double phiTotal,
-              unsigned int numZPlanes,
-              double zPlanes[],
-              double rInner[],
-              double rOuter[],
-              CLHEP::Hep3Vector const & originInMu2e,
-              std::string const & materialName);
+    Polycone(const std::vector<double>& zPlanes,
+             const std::vector<double>& rInner,
+             const std::vector<double>& rOuter,
+             const CLHEP::Hep3Vector& originInMu2e,
+             const std::string& materialName,
+             double phiStart = 0.,
+             double phiTotal = CLHEP::twopi);
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
     double phi0()           const { return _phiStart; }
     double phiTotal()       const { return _phiTotal; }
 
-    std::string const & materialName() const { return _materialName; }
+    const std::string& materialName() const { return _materialName; }
 
-    CLHEP::Hep3Vector const & originInMu2e() const { return _originInMu2e; }
+    const CLHEP::Hep3Vector& originInMu2e() const { return _originInMu2e; }
 
-    double const * zPlanes() const { return &_zPlanes[0]; }
-    double const * rInner() const { return &_rInner[0]; }
-    double const * rOuter() const { return &_rOuter[0]; }
+    const std::vector<double>& zPlanes() const { return _zPlanes; }
+    const std::vector<double>& rInner()  const { return _rInner; }
+    const std::vector<double>& rOuter()  const { return _rOuter; }
 
-    int const numZPlanes() const { return _numZPlanes; }
+    unsigned numZPlanes() const { return _zPlanes.size(); }
 
   private:
-
-    int const _numZPlanes;
 
     std::vector<double> _zPlanes;
     std::vector<double> _rInner;
