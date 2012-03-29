@@ -61,24 +61,18 @@ double PS.Coil3.rOut               =    914.;
 double PS.Coil3.Length             =    750.;
 
 // Coil "outer shell" - the stabilizer around the superconductor
-double PS.CoilShell.rIn            =    850.;
+// We use a polycone that approximates the shape
+// shown in docdb-2066-v5 file PS_Dec2011.pdf
+// The radii from the plot are used directly.  The Z coordinates
+// w.r.t. the coils/cold mass ref point are computed from the plot.
+//
+// the step in rOut is at z = 220 + 40 + 1710 + 40 = 2010
+// zmax = 220 + 4017 = 4237
+//
+vector<double> PS.CoilShell.zPlane = {  220., 2010., 2010., 4237. };
+vector<double> PS.CoilShell.rIn =    {  850.,  850.,  850.,  850. };
+vector<double> PS.CoilShell.rOut =   { 1031., 1031.,  956.,  956. };
 string PS.CoilShell.materialName  =    "A95083";
-
-// Z offsets are from coilRefZ.  See PS_Dec2011.pdf in docdb-2066
-double PS.CoilShell1.zOffset       =    220.;
-double PS.CoilShell1.zGap          =     40.; // it is not a gap per se but we call it so
-double PS.CoilShell1.rOut          =   1031.;
-double PS.CoilShell1.Length        =   1710.;
-
-// offset from coilShell1
-double PS.CoilShell2.zGap          =     40.;
-double PS.CoilShell2.rOut          =    956.;
-double PS.CoilShell2.Length        =   1332.;
-
-// offset from coilShell2
-double PS.CoilShell3.zGap          =    120.;
-double PS.CoilShell3.rOut          =    956.;
-double PS.CoilShell3.Length        =    775.; // we add the 25mm  "end gap" here
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

@@ -1,9 +1,9 @@
 //
 // Construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.cc,v 1.4 2012/03/29 19:06:31 gandr Exp $
+// $Id: ProductionSolenoidMaker.cc,v 1.5 2012/03/29 19:06:50 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/29 19:06:31 $
+// $Date: 2012/03/29 19:06:50 $
 //
 // Original author KLG
 //
@@ -95,48 +95,24 @@ namespace mu2e {
 
 
     //    PolyConeParams psCoilShellParams
-
-    double & ria  = _psCoilShellrIn;
-
-    double  rInner[] = {ria,ria,ria,ria};
-
-    double  rOuter[] = {_psCoilShell1rOut,
-                        _psCoilShell1rOut,
-                        _psCoilShell2rOut,
-                        _psCoilShell3rOut};
-
-    // FIXME: just use polycone params from config
-    double z1 = _psCoilShell1zGap   + _psCoilShell1Length + _psCoilShell2zGap;
-    double z2 = _psCoilShell2Length + _psCoilShell3zGap   + _psCoilShell3Length;
-
-    double  zPlanes[] = {0.,
-                         z1,
-                         z1,
-                         z1+z2};
-
-    unsigned int nPlanes = sizeof(rOuter)/sizeof(rOuter[0]);
-
-    assert ( nPlanes == (sizeof(rOuter) /sizeof( rOuter[0])) );
-    assert ( nPlanes == (sizeof(zPlanes)/sizeof(zPlanes[0])) );
-
-    // Use the cold mass reference point to position the "shell" (stabilizer)
-    // Note that the origin of the G4Polycone is not at its center but
-    // at the center of the edge wall of lower Z
+    std::vector<double> zPlane, rIn, rOut;
+    _config.getVectorDouble("PS.CoilShell.zPlane", zPlane);
+    _config.getVectorDouble("PS.CoilShell.rIn",    rIn, zPlane.size());
+    _config.getVectorDouble("PS.CoilShell.rOut",   rOut, zPlane.size());
 
     //aka originInMu2e:
-    CLHEP::Hep3Vector psCoilShellMu2eOffset(solenoidOffset, 0, psCoilRefZ + _psCoil1zOffset - _psCoilShell1zGap );
-
-    // CoilShell is a Polycone
+    CLHEP::Hep3Vector psCoilShellMu2eOffset(solenoidOffset, 0, psCoilRefZ);
 
     ps._psCoilShellParams = std::auto_ptr<Polycone>
       (new Polycone(0.,
                     CLHEP::twopi,
-                    nPlanes,
-                    zPlanes,
-                    rInner,
-                    rOuter,
+                    zPlane.size(),
+                    &zPlane[0],
+                    &rIn[0],
+                    &rOut[0],
                     psCoilShellMu2eOffset,
-                    _psCoilShellMaterialName));
+                    _config.getString("PS.CoilShell.materialName")
+                    ));
 
     // Coils are Tubes placed inside the Coil Shell
     CLHEP::Hep3Vector psCoil1Mu2eOffset(solenoidOffset,
@@ -201,29 +177,6 @@ namespace mu2e {
     _psVacVesselEndPlateHalfThickness = _config.getDouble("PS.VacVessel.EndPlateHalfThickness");
     _psVacVesselMaterialName          = _config.getString("PS.VacVessel.materialName");
     _psInsideMaterialName             = _config.getString("PS.insideMaterialName");
-
-    //
-
-// coil "outer shell
-    _psCoilShellrIn                   = _config.getDouble("PS.CoilShell.rIn");
-    _psCoilShellMaterialName          = _config.getString("PS.CoilShell.materialName");
-
-// Z offset from the local  origin
-    _psCoilShell1zOffset              = _config.getDouble("PS.CoilShell1.zOffset");
-    _psCoilShell1zGap                 = _config.getDouble("PS.CoilShell1.zGap");
-// outer radius
-    _psCoilShell1rOut                 = _config.getDouble("PS.CoilShell1.rOut");
-    _psCoilShell1Length               = _config.getDouble("PS.CoilShell1.Length");
-
-// offset from coilShell1
-    _psCoilShell2zGap                 = _config.getDouble("PS.CoilShell2.zGap");
-    _psCoilShell2rOut                 = _config.getDouble("PS.CoilShell2.rOut");
-    _psCoilShell2Length               = _config.getDouble("PS.CoilShell2.Length");
-
-// offset from coilShell2
-    _psCoilShell3zGap                 = _config.getDouble("PS.CoilShell3.zGap");
-    _psCoilShell3rOut                 = _config.getDouble("PS.CoilShell3.rOut");
-    _psCoilShell3Length               = _config.getDouble("PS.CoilShell3.Length");
 
     //
 

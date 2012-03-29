@@ -3,9 +3,9 @@
 //
 // Class to construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.hh,v 1.3 2012/03/29 19:06:31 gandr Exp $
+// $Id: ProductionSolenoidMaker.hh,v 1.4 2012/03/29 19:06:50 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/29 19:06:31 $
+// $Date: 2012/03/29 19:06:50 $
 //
 // Original author KLG
 //
@@ -58,29 +58,6 @@ namespace mu2e {
     double _psVacVesselHalfLength;
     std::string _psVacVesselMaterialName;
     std::string _psInsideMaterialName;
-
-    //Coil "Outer Shell"
-
-    double _psCoilShell1zOffset;
-
-    double _psCoilShellrIn;
-    std::string _psCoilShellMaterialName;
-
-    // Z offset from the local  origin
-    double _psCoilShell1zGap;
-    // outer radius
-    double _psCoilShell1rOut;
-    double _psCoilShell1Length;
-
-    // offset from coilShell1
-    double _psCoilShell2zGap;
-    double _psCoilShell2rOut;
-    double _psCoilShell2Length;
-
-    // offset from coilShell2
-    double _psCoilShell3zGap;
-    double _psCoilShell3rOut;
-    double _psCoilShell3Length;
 
     // the superconducting Coils
 
