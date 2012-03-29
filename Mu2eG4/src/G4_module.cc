@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.39 2012/03/21 23:35:26 kutschke Exp $
+// $Id: G4_module.cc,v 1.40 2012/03/29 17:05:12 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/21 23:35:26 $
+// $Date: 2012/03/29 17:05:12 $
 //
 // Original author Rob Kutschke
 //
@@ -32,6 +32,7 @@
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
+#include "Mu2eG4/inc/exportG4PDT.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
@@ -69,6 +70,7 @@
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
+#include "MCDataProducts/inc/StepInstanceName.hh"
 
 // From art and its tool chain.
 #include "art/Framework/Principal/Event.h"
@@ -129,7 +131,9 @@ namespace mu2e {
   public:
     explicit G4(fhicl::ParameterSet const& pSet):
       _runManager(0),
-      _warnOnMultipleRuns(pSet.get<bool>("warnOnMultipleRuns",true)),
+      _warnEveryNewRun(pSet.get<bool>("warnEveryNewRun",false)),
+      _exportPDTStart(pSet.get<bool>("exportPDTStart",false)),
+      _exportPDTEnd(pSet.get<bool>("exportPDTEnd",false)),
       _genAction(0),
       _trackingAction(0),
       _steppingAction(0),
@@ -144,28 +148,28 @@ namespace mu2e {
       _physVolHelper(),
       _processInfo(),
       _printPhysicsProcessSummary(false),
-      _trackerOutputName("tracker"),
-      _vdOutputName("virtualdetector"),
-      _tvdOutputName("timeVD"),
-      _stOutputName("stoppingtarget"),
-      _sbOutputName("CRV"),
-      _caloOutputName("calorimeter"),
-      _caloROOutputName("calorimeterRO"),
-      _extMonFNALOutputName("ExtMonFNAL"),
-      _extMonUCITofOutputName("ExtMonUCITof"),
-      _ttrackerDeviceSupportOutputName("ttrackerDS"),
+      _trackerOutputName(StepInstanceName::tracker),
+      _vdOutputName(StepInstanceName::virtualdetector),
+      _tvdOutputName(StepInstanceName::timeVD),
+      _stOutputName(StepInstanceName::stoppingtarget),
+      _sbOutputName(StepInstanceName::CRV),
+      _caloOutputName(StepInstanceName::calorimeter),
+      _caloROOutputName(StepInstanceName::calorimeterRO),
+      _extMonFNALOutputName(StepInstanceName::ExtMonFNAL),
+      _extMonUCITofOutputName(StepInstanceName::ExtMonUCITof),
+      _ttrackerDeviceSupportOutputName(StepInstanceName::ttrackerDS),
       _diagnostics(){
 
-      produces<StepPointMCCollection>(_trackerOutputName);
-      produces<StepPointMCCollection>(_vdOutputName);
-      produces<StepPointMCCollection>(_tvdOutputName);
-      produces<StepPointMCCollection>(_stOutputName);
-      produces<StepPointMCCollection>(_sbOutputName);
-      produces<StepPointMCCollection>(_caloOutputName);
-      produces<StepPointMCCollection>(_caloROOutputName);
-      produces<StepPointMCCollection>(_extMonFNALOutputName);
-      produces<StepPointMCCollection>(_extMonUCITofOutputName);
-      produces<StepPointMCCollection>(_ttrackerDeviceSupportOutputName);
+      produces<StepPointMCCollection>(_trackerOutputName.name());
+      produces<StepPointMCCollection>(_vdOutputName.name());
+      produces<StepPointMCCollection>(_tvdOutputName.name());
+      produces<StepPointMCCollection>(_stOutputName.name());
+      produces<StepPointMCCollection>(_sbOutputName.name());
+      produces<StepPointMCCollection>(_caloOutputName.name());
+      produces<StepPointMCCollection>(_caloROOutputName.name());
+      produces<StepPointMCCollection>(_extMonFNALOutputName.name());
+      produces<StepPointMCCollection>(_extMonUCITofOutputName.name());
+      produces<StepPointMCCollection>(_ttrackerDeviceSupportOutputName.name());
       produces<SimParticleCollection>();
       produces<PhysicalVolumeInfoCollection,art::InRun>();
       produces<PointTrajectoryCollection>();
@@ -193,7 +197,11 @@ namespace mu2e {
     auto_ptr<Mu2eG4RunManager> _runManager;
 
     // Do we issue warnings about multiple runs?
-    bool _warnOnMultipleRuns;
+    bool _warnEveryNewRun;
+
+    // Do we want to export the G4 particle data table.
+    bool  _exportPDTStart;
+    bool  _exportPDTEnd;
 
     PrimaryGeneratorAction* _genAction;
     TrackingAction*         _trackingAction;
@@ -219,16 +227,17 @@ namespace mu2e {
     bool _printPhysicsProcessSummary;
 
     // Names of output collections
-    const std::string _trackerOutputName;
-    const std::string      _vdOutputName;
-    const std::string     _tvdOutputName;
-    const std::string      _stOutputName;
-    const std::string      _sbOutputName;
-    const std::string    _caloOutputName;
-    const std::string  _caloROOutputName;
-    const std::string  _extMonFNALOutputName;
-    const std::string  _extMonUCITofOutputName;
-    const std::string  _ttrackerDeviceSupportOutputName;
+    //const std::string _trackerOutputName;
+    const StepInstanceName _trackerOutputName;
+    const StepInstanceName      _vdOutputName;
+    const StepInstanceName     _tvdOutputName;
+    const StepInstanceName      _stOutputName;
+    const StepInstanceName      _sbOutputName;
+    const StepInstanceName    _caloOutputName;
+    const StepInstanceName  _caloROOutputName;
+    const StepInstanceName  _extMonFNALOutputName;
+    const StepInstanceName  _extMonUCITofOutputName;
+    const StepInstanceName  _ttrackerDeviceSupportOutputName;
 
     DiagnosticsG4 _diagnostics;
 
@@ -245,7 +254,6 @@ namespace mu2e {
     _runManager = auto_ptr<Mu2eG4RunManager>(new Mu2eG4RunManager);
   }
 
-  // On the first call, initialize G4.  On subsequent calls 
   void G4::beginRun( art::Run &run){
 
     static int ncalls(0);
@@ -257,9 +265,12 @@ namespace mu2e {
     if ( ncalls == 1 ) {
       initializeG4( *geom, run );
     } else {
-      if ( _warnOnMultipleRuns ){
-        mf::LogWarning("G4")
-          << "G4 does not change state when we cross run boundaries - hope this is OK .... ";
+      if ( ncalls ==2 || _warnEveryNewRun ){
+        mf::LogWarning log("G4");
+        log << "G4 does not change state when we cross run boundaries - hope this is OK .... ";
+        if ( ncalls == 2 && !_warnEveryNewRun ){
+          log << "\nThis message will not be repeated on subsequent new runs.";
+        }
       }
     }
 
@@ -289,6 +300,8 @@ namespace mu2e {
       _steppingAction->finishConstruction();
 
       if( _checkFieldMap>0 ) generateFieldMap(worldGeom->mu2eOriginInWorld(),_checkFieldMap);
+
+      if ( _exportPDTStart ) exportG4PDT( );
     }
 
   }
@@ -494,16 +507,16 @@ namespace mu2e {
     // Add data products to the event.
     event.put(g4stat);
     event.put(simParticles);
-    event.put(outputHits, _trackerOutputName);
-    event.put(vdHits,     _vdOutputName);
-    event.put(tvdHits,    _tvdOutputName);
-    event.put(stHits,     _stOutputName);
-    event.put(sbHits,     _sbOutputName);
-    event.put(caloHits,   _caloOutputName);
-    event.put(caloROHits, _caloROOutputName);
-    event.put(extMonFNALHits, _extMonFNALOutputName);
-    event.put(extMonUCITofHits,  _extMonUCITofOutputName);
-    event.put(ttrackerDeviceSupportHits, _ttrackerDeviceSupportOutputName);
+    event.put(outputHits,        _trackerOutputName.name()     );
+    event.put(vdHits,           _vdOutputName.name()           );
+    event.put(tvdHits,          _tvdOutputName.name()          );
+    event.put(stHits,           _stOutputName.name()           );
+    event.put(sbHits,           _sbOutputName.name()           );
+    event.put(caloHits,         _caloOutputName.name()         );
+    event.put(caloROHits,       _caloROOutputName.name()       );
+    event.put(extMonFNALHits,   _extMonFNALOutputName.name()   );
+    event.put(extMonUCITofHits, _extMonUCITofOutputName.name() );
+    event.put(ttrackerDeviceSupportHits, _ttrackerDeviceSupportOutputName.name() );
     event.put(pointTrajectories);
 
     // Pause to see graphics.
@@ -553,6 +566,8 @@ namespace mu2e {
   }
 
   void G4::endJob(){
+
+    if ( _exportPDTEnd ) exportG4PDT();
 
     // Yes, these are named endRun, but they are really endJob actions.
     _physVolHelper.endRun();
