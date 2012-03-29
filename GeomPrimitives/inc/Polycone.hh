@@ -2,11 +2,11 @@
 #define GeomPrimitives_Polycone_hh
 
 //
-// The parameters of a Polycone 
+// The parameters of a Polycone
 //
-// $Id: Polycone.hh,v 1.1 2012/03/13 19:00:18 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/13 19:00:18 $
+// $Id: Polycone.hh,v 1.2 2012/03/29 19:07:00 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/29 19:07:00 $
 //
 // Original author KLG
 //
@@ -25,7 +25,7 @@ namespace mu2e {
 
   class Polycone{
 
-    //   G4Polycone( const G4String& name, 
+    //   G4Polycone( const G4String& name,
     //               G4double phiStart,     // initial phi starting angle
     //               G4double phiTotal,     // total phi angle
     //               G4int numZPlanes,     // number of z planes
@@ -41,7 +41,7 @@ namespace mu2e {
               double rInner[],
               double rOuter[],
               CLHEP::Hep3Vector const & originInMu2e,
-              std::string const & materialName, 
+              std::string const & materialName,
               double phiStart = 0.,
               double phiTotal = CLHEP::twopi);
 
@@ -70,9 +70,9 @@ namespace mu2e {
     int const numZPlanes() const { return _numZPlanes; }
 
   private:
-    
+
     int const _numZPlanes;
-  
+
     std::vector<double> _zPlanes;
     std::vector<double> _rInner;
     std::vector<double> _rOuter;

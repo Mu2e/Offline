@@ -1,9 +1,9 @@
 //
-// The parameters of a Polycone 
+// The parameters of a Polycone
 //
-// $Id: Polycone.cc,v 1.1 2012/03/13 19:00:18 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/13 19:00:18 $
+// $Id: Polycone.cc,v 1.2 2012/03/29 19:07:00 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/29 19:07:00 $
 //
 // Original author KLG
 //
@@ -27,7 +27,7 @@ namespace mu2e {
                       double rInner[],
                       double rOuter[],
                       CLHEP::Hep3Vector const & originInMu2e,
-                      std::string const & materialName, 
+                      std::string const & materialName,
                       double phiStart,
                       double phiTotal):
     _numZPlanes(numZPlanes),
