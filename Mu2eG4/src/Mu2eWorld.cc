@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.124 2012/03/21 15:50:15 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/21 15:50:15 $
+// $Id: Mu2eWorld.cc,v 1.125 2012/03/29 15:22:05 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2012/03/29 15:22:05 $
 //
 // Original author Rob Kutschke
 //
@@ -542,11 +542,11 @@ namespace mu2e {
 
     }
     G4VPhysicalVolume *iDau;
-    //cout<<"N IT daughter: "<<tracker->TotalVolumeEntities()<<endl;
-    for (int iDaughter=0; iDaughter<tracker->TotalVolumeEntities(); iDaughter++){
+    cout<<"N IT daughter: "<<tracker->GetNoDaughters()<<endl;
+    for (int iDaughter=0; iDaughter<tracker->GetNoDaughters(); iDaughter++){
             iDau = tracker->GetDaughter(iDaughter);
-            if (!iDau) break;
-            //cout<<"Vol Name "<< iDau->GetName()<<" is Tracking: "<<iDau->GetName().contains("volS")<<endl;
+	    if (!iDau) break;
+	    //            cout<<"Vol Name "<< iDau->GetName()<<" is Tracking: "<<iDau->GetName().contains("volS")<<endl;
             if (iDau->GetName().contains("volS")) iDau->GetLogicalVolume()->SetUserLimits(stepLimit);
     }
 
