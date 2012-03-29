@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.14 2012/03/29 13:32:35 kutschke Exp $
+// $Id: ReadBack_module.cc,v 1.15 2012/03/29 14:59:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/29 13:32:35 $
+// $Date: 2012/03/29 14:59:17 $
 //
 // Original author Rob Kutschke
 //
@@ -17,7 +17,6 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
-#include "G4Helper/inc/G4Helper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"

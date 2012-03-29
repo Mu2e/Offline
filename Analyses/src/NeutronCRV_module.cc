@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: NeutronCRV_module.cc,v 1.13 2012/03/29 13:32:35 kutschke Exp $
+// $Id: NeutronCRV_module.cc,v 1.14 2012/03/29 14:59:00 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/29 13:32:35 $
+// $Date: 2012/03/29 14:59:00 $
 //
 // Original author Rob Kutschke
 //
@@ -61,9 +61,6 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-
-#include "G4Helper/inc/G4Helper.hh"
-
 
 // Root includes.
 #include "TDirectory.h"
