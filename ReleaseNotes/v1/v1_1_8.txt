@@ -1,10 +1,21 @@
-  $Id: v1_1_8.txt,v 1.8 2012/03/23 22:34:41 brownd Exp $
-  $Author: brownd $
-  $Date: 2012/03/23 22:34:41 $
+  $Id: v1_1_8.txt,v 1.9 2012/03/29 16:28:17 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/03/29 16:28:17 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_8
+
+8) March 29, 2012 kutschke
+   MCDataProducts/inc/PDGCode.hh
+   Added the enum value:
+    G4Threshold = 999999999,
+
+   To test if a PDGCode is G4 defined,
+    if ( id > PDGCode::G4Threshold ){
+       // This code is defined by G4
+    }
+
 
 7) March 23, 2012 brownd
     - Keep straw material from inactive hots when the track passes inside
