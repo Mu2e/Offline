@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.7 2012/03/01 19:30:06 kutschke Exp $
+// $Id: StepPointMC.hh,v 1.8 2012/03/29 22:59:43 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/01 19:30:06 $
+// $Date: 2012/03/29 22:59:43 $
 //
 // Original author Rob Kutschke
 //
@@ -22,6 +22,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 #include "DataProducts/inc/StrawIndex.hh"
+#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -102,12 +103,19 @@ namespace mu2e {
     double eDep() const { return _totalEnergyDeposit;    }
 
     // Return the volumeId as a StrawIndex.
+    // This only makes sense for StepPointMCs from the tracker collection.
     // It's the user's job to know if this is a reasonable thing to do.
     StrawIndex strawIndex() const { return StrawIndex(_volumeId); }
 
     // Return the volumeId as a VirtualDetectorId.
+    // This only makes sense for StepPointMCs from the virtual detector collection.
     // It's the user's job to know if this is a reasonable thing to do.
     VirtualDetectorId virtualDetectorId() const { return VirtualDetectorId(_volumeId); }
+
+    // Return the volumeId as a CRSScintillatorBarIndex
+    // This only makes sense for StepPointMCs from the virtual detector collection.
+    // It's the user's job to know if this is a reasonable thing to do.
+    CRSScintillatorBarIndex barIndex() const { return CRSScintillatorBarIndex(_volumeId); }
 
   private:
 
