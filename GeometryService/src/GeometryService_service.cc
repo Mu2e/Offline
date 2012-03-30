@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.23 2012/03/30 19:18:03 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.24 2012/03/30 20:37:34 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/30 19:18:03 $
+// $Date: 2012/03/30 20:37:34 $
 //
 // Original author Rob Kutschke
 //
@@ -128,7 +128,7 @@ namespace mu2e {
 
     // Make a detector for every component present in the configuration.
 
-    std::auto_ptr<Beamline> tmpBeamline(BeamlineMaker( *_config ).getBeamlinePtr());
+    std::auto_ptr<Beamline> tmpBeamline(BeamlineMaker::make(*_config));
     const Beamline& beamline = *tmpBeamline.get();
     addDetector(tmpBeamline);
 

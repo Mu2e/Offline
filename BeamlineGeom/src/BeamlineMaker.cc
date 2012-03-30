@@ -2,9 +2,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.5 2011/05/19 18:47:25 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/19 18:47:25 $
+// $Id: BeamlineMaker.cc,v 1.6 2012/03/30 20:37:34 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/30 20:37:34 $
 //
 // Original author Peter Shanahan
 //
@@ -28,27 +28,18 @@ using namespace std;
 
 namespace mu2e {
 
-  // Constructor that gets information from the config file instead of
-  // from arguments.
-  BeamlineMaker::BeamlineMaker(SimpleConfig const& c):
-    _beamline()
-  {
-    // Do the real work.
-    BuildBeamline(c);
-    BuildTS(c);
+  std::auto_ptr<Beamline> BeamlineMaker::make(const SimpleConfig& c) {
+    std::auto_ptr<Beamline> res;
+    BuildBeamline(c, res.get());
+    BuildTS(c, res.get());
+    return res;
   }
 
-  void BeamlineMaker::BuildBeamline(SimpleConfig const& c){
-
-    // Build the global beamline Geometry.
-
-    _beamline = auto_ptr<Beamline>(new Beamline());
-
+  void BeamlineMaker::BuildBeamline(const SimpleConfig& c, Beamline* _beamline) {
     _beamline->_solenoidOffset = c.getDouble("mu2e.solenoidOffset");
+  }
 
-  }//::BuildBeamline
-
-  void BeamlineMaker::BuildTS(SimpleConfig const& c){
+  void BeamlineMaker::BuildTS(const SimpleConfig& c, Beamline* _beamline) {
 
     // Build the TransportSolenoid Geometry.
 

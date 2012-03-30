@@ -4,9 +4,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.hh,v 1.4 2011/05/19 18:47:25 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/19 18:47:25 $
+// $Id: BeamlineMaker.hh,v 1.5 2012/03/30 20:37:34 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/30 20:37:34 $
 //
 // Original author Peter Shanahan
 //
@@ -18,38 +18,19 @@
 
 namespace mu2e {
 
-class Beamline;
-class SimpleConfig;
-class TransportSolenoid;
+  class Beamline;
+  class SimpleConfig;
+  class TransportSolenoid;
 
-class BeamlineMaker {
+  class BeamlineMaker {
 
-public:
+  public:
+    static std::auto_ptr<Beamline> make(const SimpleConfig& config);
 
-  BeamlineMaker( SimpleConfig const& config );
-
-  // use compiler-generated copy c'tor, copy assignment, and d'tor
-
-  // This is deprecated and will go away soon.
-  // Still needed for root graphics version.
-  const Beamline& getBeamline() const { return *_beamline;}
-
-  // This is the accessor that will remain.
-  std::auto_ptr<Beamline> getBeamlinePtr() { return _beamline; }
-
-private:
-
-  void BuildBeamline(SimpleConfig const&);
-  void BuildTS(SimpleConfig const&);
-
-  //SimpleConfig const& _config;
-
-  // pointer to the Mu2E Geometry Beamline being made
-  std::auto_ptr<Beamline> _beamline;
-
-  // Read these variables from config file, data base, etc.
-
-};
+  private:
+    static void BuildBeamline(const SimpleConfig&, Beamline*);
+    static void BuildTS(const SimpleConfig&, Beamline*);
+  };
 
 }  //namespace mu2e
 
