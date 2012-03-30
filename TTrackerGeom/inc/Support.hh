@@ -5,16 +5,16 @@
 // Describe the properites of a support for the TTracker.
 //
 //
-//  $Id: Support.hh,v 1.4 2011/05/19 22:23:06 wb Exp $
-//  $Author: wb $
-//  $Date: 2011/05/19 22:23:06 $
+//  $Id: Support.hh,v 1.5 2012/03/30 15:13:35 gandr Exp $
+//  $Author: gandr $
+//  $Date: 2012/03/30 15:13:35 $
 //
 //  Original author Rob Kutschke
 //
 
 #include <string>
 
-#include "TrackerGeom/inc/TubsParams.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
 
 namespace mu2e {
 

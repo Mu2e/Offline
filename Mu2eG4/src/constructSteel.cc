@@ -1,9 +1,9 @@
 //
 // Free function to create Hall Steel
 //
-// $Id: constructSteel.cc,v 1.9 2011/12/06 22:53:01 gandr Exp $
+// $Id: constructSteel.cc,v 1.10 2012/03/30 15:13:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/12/06 22:53:01 $
+// $Date: 2012/03/30 15:13:35 $
 //
 // Original author KLG based on Mu2eWorld constructSteel
 //
@@ -21,7 +21,7 @@
 #include "Mu2eG4/inc/constructSteel.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/nestBox.hh"
-#include "TrackerGeom/inc/TubsParams.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
 
 
 // G4 includes

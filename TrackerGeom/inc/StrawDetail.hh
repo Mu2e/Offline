@@ -7,14 +7,14 @@
 // straws in the LTracker and for different lengths of straws in the TTracker.
 //
 //
-// $Id: StrawDetail.hh,v 1.7 2011/05/20 19:18:45 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:45 $
+// $Id: StrawDetail.hh,v 1.8 2012/03/30 15:13:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/30 15:13:35 $
 //
 // Original author Rob Kutschke
 //
 
-#include "TrackerGeom/inc/TubsParams.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
 
 #include <string>
 #include <vector>

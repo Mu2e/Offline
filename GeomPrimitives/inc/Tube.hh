@@ -3,9 +3,9 @@
 //
 // "Typical" Tube object
 //
-// $Id: Tube.hh,v 1.1 2012/03/13 19:00:18 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/13 19:00:18 $
+// $Id: Tube.hh,v 1.2 2012/03/30 15:13:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/30 15:13:35 $
 //
 // Original author KLG
 //
@@ -16,7 +16,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
-#include "TrackerGeom/inc/TubsParams.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
 
 
 namespace mu2e {

@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 //
-// $Id: nestTubs.hh,v 1.12 2011/09/29 22:47:38 gandr Exp $
+// $Id: nestTubs.hh,v 1.13 2012/03/30 15:13:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/09/29 22:47:38 $
+// $Date: 2012/03/30 15:13:35 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "G4Helper/inc/VolumeInfo.hh"
-#include "TrackerGeom/inc/TubsParams.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
 
 class G4CSGSolid;
 class G4LogicalVolume;

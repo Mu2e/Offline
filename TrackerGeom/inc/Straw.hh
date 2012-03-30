@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.15 2012/03/01 19:30:06 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/01 19:30:06 $
+// $Id: Straw.hh,v 1.16 2012/03/30 15:13:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/03/30 15:13:35 $
 //
 // Original author Rob Kutschke
 //
@@ -16,7 +16,7 @@
 #include "TrackerGeom/inc/StrawDetail.hh"
 #include "TrackerGeom/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIndex.hh"
-#include "TrackerGeom/inc/TubsParams.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 

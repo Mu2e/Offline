@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.17 2012/03/13 19:01:12 genser Exp $
-# $Author: genser $
-# $Date: 2012/03/13 19:01:12 $
+# $Id: SConscript,v 1.18 2012/03/30 15:13:35 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/03/30 15:13:35 $
 #
 # Original author Rob Kutschke.
 #
@@ -33,6 +33,7 @@ env.SharedLibrary(libname, non_plugin_cc,
                'ProductionTargetGeom',
                'ProductionSolenoidGeom',
                'BeamlineGeom',
+               'GeomPrimitives',
                'Mu2eUtilities',
                'Mu2eInterfaces',
                'art_Framework_Core',

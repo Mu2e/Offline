@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.6 2011/05/18 19:18:10 greenc Exp $
-# $Author: greenc $
-# $Date: 2011/05/18 19:18:10 $
+# $Id: SConscript,v 1.7 2012/03/30 15:13:35 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/03/30 15:13:35 $
 #
 # Original author Rob Kutschke.
 #
@@ -23,6 +23,7 @@ if non_plugin_cc:
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                       LIBS=[ 'art_Framework_Core',
                              'TrackerGeom',
+                             'GeomPrimitives',
                              'Mu2eUtilities',
                              'CLHEP'
                              ],

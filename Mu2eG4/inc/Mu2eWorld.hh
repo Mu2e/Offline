@@ -3,9 +3,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.hh,v 1.40 2012/02/21 22:26:23 gandr Exp $
+// $Id: Mu2eWorld.hh,v 1.41 2012/03/30 15:13:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/21 22:26:23 $
+// $Date: 2012/03/30 15:13:35 $
 //
 // Original author Rob Kutschke
 //
@@ -37,7 +37,7 @@ class G4UserLimits;
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
 #include "G4Helper/inc/G4Helper.hh"
-#include "TrackerGeom/inc/TubsParams.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
 
 //G4 includes
 #include "G4String.hh"

@@ -5,9 +5,9 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.11 2012/02/24 16:37:09 gandr Exp $
+// $Id: TTracker.hh,v 1.12 2012/03/30 15:13:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 16:37:09 $
+// $Date: 2012/03/30 15:13:35 $
 //
 // Original author Rob Kutschke
 //
@@ -22,7 +22,7 @@
 #include "TrackerGeom/inc/SectorId.hh"
 #include "TrackerGeom/inc/StrawDetail.hh"
 #include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/TubsParams.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
 
 #include "TTrackerGeom/inc/Station.hh"
 

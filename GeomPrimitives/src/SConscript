@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.1 2012/03/13 19:00:18 genser Exp $
-# $Author: genser $
-# $Date: 2012/03/13 19:00:18 $
+# $Id: SConscript,v 1.2 2012/03/30 15:13:35 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/03/30 15:13:35 $
 #
 # Original author Rob Kutschke.
 #
@@ -18,14 +18,8 @@ if non_plugin_cc:
     # From: /path1/path2/path3/Name/src extract the string Name field.
     dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
     local_lib_name=os.path.dirname(dd)
-
- # FIXME remove 'TTrackerGeom' when ready
-
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[
-        'TrackerGeom',
-        'CLHEP',
-        ],
+                      LIBS=[ 'CLHEP', ],
                       )
     libs=[ '#/lib/' + local_lib_name ]
 else:
