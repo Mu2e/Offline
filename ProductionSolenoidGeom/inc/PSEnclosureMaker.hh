@@ -3,14 +3,15 @@
 //
 // Class to construct and return PSEnclosure
 //
-// $Id: PSEnclosureMaker.hh,v 1.1 2012/03/16 05:09:22 gandr Exp $
+// $Id: PSEnclosureMaker.hh,v 1.2 2012/03/30 04:14:38 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/16 05:09:22 $
+// $Date: 2012/03/30 04:14:38 $
 //
 // Original author Andrei Gaponenko
 //
 
 #include <memory>
+#include <string>
 #include "boost/utility.hpp"
 
 namespace CLHEP { class Hep3Vector; }
