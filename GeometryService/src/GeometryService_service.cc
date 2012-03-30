@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.22 2012/03/30 14:07:13 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.23 2012/03/30 19:18:03 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/30 14:07:13 $
+// $Date: 2012/03/30 19:18:03 $
 //
 // Original author Rob Kutschke
 //
@@ -124,7 +124,7 @@ namespace mu2e {
     checkConfig();
 
     // This must be the first detector added since other makers may wish to use it.
-    addDetector( DetectorSystemMaker( *_config).getDetectorSystemPtr() );
+    addDetector(DetectorSystemMaker::make( *_config));
 
     // Make a detector for every component present in the configuration.
 
@@ -132,36 +132,29 @@ namespace mu2e {
     const Beamline& beamline = *tmpBeamline.get();
     addDetector(tmpBeamline);
 
-    std::auto_ptr<ProductionTarget> tmpProdTarget(ProductionTargetMaker(*_config, beamline.solenoidOffset()).getDetectorPtr());
-    addDetector(tmpProdTarget);
+    addDetector(ProductionTargetMaker::make(*_config, beamline.solenoidOffset()));
 
-    std::auto_ptr<ProductionSolenoid> 
+    std::auto_ptr<ProductionSolenoid>
       tmpProductionSolenoid(ProductionSolenoidMaker(*_config,
                                                     beamline.solenoidOffset(),
                                                     beamline.getTS().torusRadius(),
                                                     beamline.getTS().getTS1().getHalfLength()
                                                     ).getProductionSolenoidPtr());
 
-    std::auto_ptr<PSEnclosure>
-      tmpPSEnclosure(PSEnclosureMaker(*_config,
-                                      tmpProductionSolenoid->psEndRefPoint(),
-                                      tmpProductionSolenoid->getVacuumParamsPtr()->materialName()
-                                      ).getPtr());
+    const ProductionSolenoid& ps = *tmpProductionSolenoid.get();
+    addDetector(tmpProductionSolenoid);
+
+    addDetector(PSEnclosureMaker::make(*_config, ps.psEndRefPoint(), ps.getVacuumParamsPtr()->materialName()));
 
     if(_config->getBool("hasPSShield",false)){
-      addDetector(PSShieldMaker::make(*_config, tmpProductionSolenoid->psEndRefPoint()));
+      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint()));
     }
 
-    addDetector(tmpProductionSolenoid);
-    addDetector(tmpPSEnclosure);
-
-    std::auto_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker(*_config).getPtr());
+    std::auto_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config));
     const ProtonBeamDump& dump = *tmpDump.get();
     addDetector(tmpDump);
 
-    std::auto_ptr<Mu2eBuilding> tmpBuilding(Mu2eBuildingMaker(*_config, dump).getPtr());
-    //    const Mu2eBuilding& building = *tmpBuilding.get();
-    addDetector(tmpBuilding);
+    addDetector(Mu2eBuildingMaker::make(*_config, dump));
 
     if(_config->getBool("hasTarget",false)){
       TargetMaker targm( *_config );
@@ -190,8 +183,7 @@ namespace mu2e {
     }
 
     if(_config->getBool("hasExtMonFNAL",false)){
-      ExtMonFNAL::ExtMonMaker extmon( *_config, dump);
-      addDetector( extmon.getDetectorPtr() );
+      addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, dump));
     }
 
     if(_config->getBool("hasExtMonUCI",false)){
@@ -200,8 +192,7 @@ namespace mu2e {
     }
 
     if(_config->getBool("hasVirtualDetector",false)){
-      VirtualDetectorMaker vdm( *_config );
-      addDetector( vdm.getVirtualDetectorPtr() );
+      addDetector(VirtualDetectorMaker::make(*_config));
     }
 
     if(_config->getBool("hasBFieldManager",false)){

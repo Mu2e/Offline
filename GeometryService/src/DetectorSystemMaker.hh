@@ -3,9 +3,9 @@
 //
 // Construct a DetectorSystem object.
 //
-// $Id: DetectorSystemMaker.hh,v 1.4 2012/02/24 20:55:48 gandr Exp $
+// $Id: DetectorSystemMaker.hh,v 1.5 2012/03/30 19:18:03 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/24 20:55:48 $
+// $Date: 2012/03/30 19:18:03 $
 //
 // Original author Rob Kutschke
 //
@@ -23,20 +23,8 @@ namespace mu2e {
   class SimpleConfig;
 
   class DetectorSystemMaker: virtual public Detector{
-
   public:
-
-    DetectorSystemMaker( SimpleConfig const& );
-
-    // Accept the compiler generator d'tor, copy c'tor and copy assigment.
-
-    // Give control of the detector system to the caller.
-    std::auto_ptr<DetectorSystem> getDetectorSystemPtr() { return _detectorSystem; }
-
-  private:
-
-    std::auto_ptr<DetectorSystem> _detectorSystem;
-
+    static std::auto_ptr<DetectorSystem> make(const SimpleConfig&);
   };
 
 } //namespace mu2e

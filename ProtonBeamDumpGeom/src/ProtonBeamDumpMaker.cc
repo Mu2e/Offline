@@ -50,9 +50,10 @@ namespace mu2e {
   }
 
   //================================================================
-  ProtonBeamDumpMaker::ProtonBeamDumpMaker(const SimpleConfig& c)
-    : m_det(new ProtonBeamDump())
-  {
+  std::auto_ptr<ProtonBeamDump> ProtonBeamDumpMaker::make(const SimpleConfig& c) {
+
+    std::auto_ptr<ProtonBeamDump> m_det(new ProtonBeamDump());
+
     int verbose = c.getInt("protonBeamDump.verbosityLevel", 0);
 
     c.getVectorDouble("protonBeamDump.coreHalfSize", m_det->_coreHalfSize, 3);
@@ -271,5 +272,8 @@ namespace mu2e {
       std::cout<<__func__<<": collimator2CenterInEnclosure = "<<m_det->_collimator2CenterInEnclosure<<std::endl;
       std::cout<<__func__<<": collimator2.horizontalLength = "<<m_det->_collimator2._horizontalLength<<std::endl;
     }
-  }
-}
+
+    return m_det;
+  } // make()
+
+} // namespace mu2e

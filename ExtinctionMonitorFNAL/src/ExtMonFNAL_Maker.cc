@@ -14,14 +14,14 @@
 namespace mu2e {
   namespace ExtMonFNAL {
 
-    ExtMonMaker::ExtMonMaker(const SimpleConfig& config, const ProtonBeamDump& dump)
-      : m_det(0)
+    std::auto_ptr<ExtMon> ExtMonMaker::make(const SimpleConfig& config, const ProtonBeamDump& dump)
     {
       const int verbose = config.getInt("extmon_fnal.verbosityLevel", 0);
 
       std::vector<double> hs;
       config.getVectorDouble("extmon_fnal.roomHalfSize", hs, 3);
-      m_det.reset(new ExtMon(hs, config.getDouble("extmon_fnal.roomCenterHeightAboveDumpCore")));
+
+      std::auto_ptr<ExtMon> m_det(new ExtMon(hs, config.getDouble("extmon_fnal.roomCenterHeightAboveDumpCore")));
 
       m_det->m_roomCenterInMu2e[0] = dump.enclosureCenterInMu2e()[0]
         - sin(dump.coreRotY())*(dump.enclosureHalfSize()[2]+m_det->m_roomHalfSize[2]);
@@ -85,7 +85,10 @@ namespace mu2e {
 
         std::cout<<__func__<<": ExtMonFNAL detector center in room = "<<m_det->m_detectorCenterInRoom<<std::endl;
       }
-    }
 
-  }
-}
+      return m_det;
+
+    } // make()
+
+  } // namespace ExtMonFNAL
+} // namespace mu2e

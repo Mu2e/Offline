@@ -15,9 +15,10 @@
 
 namespace mu2e {
 
-  Mu2eBuildingMaker::Mu2eBuildingMaker(const SimpleConfig& c, const ProtonBeamDump& dump)
-    : _b(new Mu2eBuilding())
+  std::auto_ptr<Mu2eBuilding> Mu2eBuildingMaker::make(const SimpleConfig& c, const ProtonBeamDump& dump)
   {
+    std::auto_ptr<Mu2eBuilding> _b(new Mu2eBuilding());
+
     using CLHEP::Hep2Vector;
 
     _b->_hallInsideXmin = c.getDouble("hall.insideXmin");
@@ -139,5 +140,7 @@ namespace mu2e {
     if(diagLevel > 0) {
       std::cout << __func__ << " trackerOriginInMu2e : " <<  _b->_trackerOriginInMu2e  << std::endl;
     }
+
+    return _b;
   }
 }

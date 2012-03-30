@@ -11,12 +11,8 @@ namespace mu2e {
   namespace ExtMonFNAL {
 
     class ExtMonMaker {
-      std::auto_ptr<ExtMon> m_det;
     public:
-      ExtMonMaker(const SimpleConfig& config, const ProtonBeamDump& dump);
-
-      // interface to GeometryService
-      std::auto_ptr<ExtMon> getDetectorPtr() { return m_det; }
+      static std::auto_ptr<ExtMon> make(const SimpleConfig& config, const ProtonBeamDump& dump);
     };
   }
 }

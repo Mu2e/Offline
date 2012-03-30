@@ -3,16 +3,15 @@
 //
 // Class to construct and return PSEnclosure
 //
-// $Id: PSEnclosureMaker.hh,v 1.2 2012/03/30 04:14:38 gandr Exp $
+// $Id: PSEnclosureMaker.hh,v 1.3 2012/03/30 19:18:03 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/30 04:14:38 $
+// $Date: 2012/03/30 19:18:03 $
 //
 // Original author Andrei Gaponenko
 //
 
-#include <memory>
 #include <string>
-#include "boost/utility.hpp"
+#include <memory>
 
 namespace CLHEP { class Hep3Vector; }
 
@@ -21,23 +20,15 @@ namespace mu2e {
   class PSEnclosure;
   class SimpleConfig;
 
-  class PSEnclosureMaker : boost::noncopyable {
-
+  class PSEnclosureMaker {
   public:
 
-    PSEnclosureMaker(const SimpleConfig& config,
+    static std::auto_ptr<PSEnclosure>  make(const SimpleConfig& config,
 
-                     // The center of the downstream surface of the PS
-                     const CLHEP::Hep3Vector& psEndRefPoint,
+                                            // The center of the downstream surface of the PS
+                                            const CLHEP::Hep3Vector& psEndRefPoint,
 
-                     const std::string& psInsideMaterialName);
-
-    std::auto_ptr<PSEnclosure> getPtr() { return pse_; }
-
-  private:
-
-    std::auto_ptr<PSEnclosure> pse_;
-
+                                            const std::string& psInsideMaterialName);
   };
 
 }  //namespace mu2e

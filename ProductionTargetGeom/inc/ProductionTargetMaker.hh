@@ -8,12 +8,8 @@ namespace mu2e { class ProductionTarget; }
 
 namespace mu2e {
   class ProductionTargetMaker {
-    std::auto_ptr<ProductionTarget> m_det;
   public:
-    explicit ProductionTargetMaker(const SimpleConfig& config, double solenoidOffset);
-
-    // interface to GeometryService
-    std::auto_ptr<ProductionTarget> getDetectorPtr() { return m_det; }
+    static std::auto_ptr<ProductionTarget> make(const SimpleConfig& config, double solenoidOffset);
   };
 }
 
