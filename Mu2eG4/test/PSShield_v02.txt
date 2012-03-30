@@ -28,8 +28,7 @@ string PSShield.materialName = "G4_Cu";
 bool   PSShield.visible = true;
 bool   PSShield.solid = false;
 
-// Optional recording of hits on the shield
-bool   PSShield.sd.enabled = false;
+int PSShield.verbosityLevel = 0;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

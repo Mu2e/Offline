@@ -25,8 +25,10 @@ double PSShield.distanceToCryoRefZ = 1; // 1 mm like in MARS
 // FIXME: should be low density bronze
 string PSShield.materialName = "G4_Cu";
 
-bool   PSShield.visible = true;
-bool   PSShield.solid = false;
+bool PSShield.visible = true;
+bool PSShield.solid = false;
+
+int PSShield.verbosityLevel = 0;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

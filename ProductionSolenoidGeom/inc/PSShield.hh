@@ -2,12 +2,14 @@
 #define ProductionSolenoidGeom_PSShield_hh
 
 //
-// $Id: PSShield.hh,v 1.1 2012/03/30 14:07:14 gandr Exp $
+// $Id: PSShield.hh,v 1.2 2012/03/30 16:31:10 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/30 14:07:14 $
+// $Date: 2012/03/30 16:31:10 $
 //
 // Original author Andrei Gaponenko
 //
+
+#include <ostream>
 
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "GeomPrimitives/inc/Polycone.hh"
@@ -51,6 +53,9 @@ namespace mu2e {
     double   cutoutHalfLength_;
     double   cutoutRotY_;
   };
+
+
+  std::ostream& operator<<(std::ostream& os, const PSShield& shield);
 }
 
 #endif/*ProductionSolenoidGeom_PSShield_hh*/

@@ -66,6 +66,7 @@ double extMonFilter.magnet.fieldStrength = 0.222; // Tesla
 
 // bool   vd.visible       = false;
 // bool PSShield.solid = true;
+int PSShield.verbosityLevel = 1;
 
 //int protonBeamDump.verbosityLevel = 1;
 //int extmon_fnal.verbosityLevel = 1;

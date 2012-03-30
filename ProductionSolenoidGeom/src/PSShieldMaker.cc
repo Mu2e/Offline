@@ -1,6 +1,6 @@
-// $Id: PSShieldMaker.cc,v 1.1 2012/03/30 14:07:14 gandr Exp $
+// $Id: PSShieldMaker.cc,v 1.2 2012/03/30 16:31:10 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/30 14:07:14 $
+// $Date: 2012/03/30 16:31:10 $
 //
 // Original author Andrei Gaponenko
 
@@ -35,18 +35,26 @@ namespace mu2e {
     // Put the shield at the required distance to the ref plane
     const CLHEP::Hep3Vector shieldOriginInMu2e(psEndRefPoint + CLHEP::Hep3Vector(0,0,  distanceToCryoRefZ - zPlane[0]));
 
-    return std::auto_ptr<PSShield>(new PSShield(
-                                                Polycone(zPlane, rIn, rOut,
-                                                         shieldOriginInMu2e,
-                                                         c.getString("PSShield.materialName")
-                                                         ),
 
-                                                c.getHep3Vector("PSShield.cutout.refPoint"),
-                                                c.getDouble("PSShield.cutout.r")*CLHEP::mm,
-                                                c.getDouble("PSShield.cutout.halfLengh")*CLHEP::mm,
-                                                c.getDouble("PSShield.cutout.rotY")*CLHEP::degree
-                                                )
-                                   );
+
+    std::auto_ptr<PSShield> res(new PSShield(
+                                             Polycone(zPlane, rIn, rOut,
+                                                      shieldOriginInMu2e,
+                                                      c.getString("PSShield.materialName")
+                                                      ),
+
+                                             c.getHep3Vector("PSShield.cutout.refPoint"),
+                                             c.getDouble("PSShield.cutout.r")*CLHEP::mm,
+                                             c.getDouble("PSShield.cutout.halfLengh")*CLHEP::mm,
+                                             c.getDouble("PSShield.cutout.rotY")*CLHEP::degree
+                                             )
+                                );
+
+    if(c.getInt("PSShield.verbosityLevel") > 0) {
+      std::cout<<*res.get()<<std::endl;
+    }
+
+    return res;
   }
 
 } // namespace mu2e
