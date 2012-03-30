@@ -11,8 +11,6 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   double mmin(101);
   double mmax(106);
   double mevperbin = (mmax-mmin)/nbins;
-  double genmax(105);
-  double genmin(100);
 
   TH1F* timeshift = new TH1F("timeshift","T_{0} - muon conversion time;nsec",100,0,100);
   timeshift->SetStats(0);  
@@ -151,11 +149,11 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
     sprintf(line,"%s",fitcuts[ires].GetTitle());
     logtext->AddText(line);
     logtext->Draw();
-
+    leg->Draw();
+    info->Draw();
+ 
   }
-  logcan->cd(2);
-  leg->Draw();
-  info->Draw();
+  logcan->cd(0);
   logcan->SaveAs("mu2e_log.png"); 
 
 // linear scale
@@ -217,11 +215,11 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
     emaxl->SetLineStyle(2);
     emaxl->SetLineWidth(2);
     emaxl->Draw();
-
+    leg->Draw();
+    info->Draw();
+ 
   }
-  lincan->cd(2);
-  leg->Draw();
-  info->Draw();
+  lincan->cd(0);
   lincan->SaveAs("mu2e_lin.png");
 
 }

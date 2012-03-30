@@ -665,3 +665,23 @@ void KalFitDrift(TTree* t){
   rdb->Draw();
 
 }
+
+void KalFitNHits(TTree* t){
+  TH1F* nch = new TH1F("nch","Number of Conversion Electron Tracker Hits;N hits;N Conversion Tracks",100,-0.5,99.5);
+  TH1F* ncha = new TH1F("ncha","Number of Conversion Electron Tracker Hits;N hits;N Conversion Tracks",100,-0.5,99.5);
+  nch->SetStats(0);
+  nch->SetStats(0);
+  t->Project("nch","nchits",tmom+tpitch);
+  t->Project("ncha","nchits",tmom+tpitch+"fitstatus>0");
+  nch->SetLineColor(kRed);
+  ncha->SetLineColor(kBlue);
+  TLegend* leg = new TLegend(0.6,0.7,0.9,0.9);
+  leg->AddEntry(nch,"Generated","l");
+  leg->AddEntry(ncha,"Reconstructed","l");
+  TCanvas* ncan = new TCanvas("ncan","Number of hits",800,600);
+//  nch->SetMaximum(2000);
+  nch->Draw();
+  ncha->Draw("same");
+  leg->Draw();
+}
+
