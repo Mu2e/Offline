@@ -1,14 +1,17 @@
 //
 // The parameters of a Polycone
 //
-// $Id: Polycone.cc,v 1.3 2012/03/29 19:07:23 gandr Exp $
+// $Id: Polycone.cc,v 1.4 2012/03/30 16:30:53 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/29 19:07:23 $
+// $Date: 2012/03/30 16:30:53 $
 //
 // Original author KLG
 //
 
 #include "GeomPrimitives/inc/Polycone.hh"
+
+#include <iterator>
+#include <algorithm>
 
 #include "cetlib/exception.h"
 
@@ -43,5 +46,21 @@ namespace mu2e {
                                   <<"\n";
     }
   };
+
+  std::ostream& operator<<(std::ostream& os, const Polycone& p) {
+    os<<"Polycone(numZPlanes = "<<p.numZPlanes()<<", z={";
+    std::copy(p.zPlanes().begin(), p.zPlanes().end(), std::ostream_iterator<double>(os, ", "));
+    os<<"}, rIn={";
+    std::copy(p.rInner().begin(), p.rInner().end(), std::ostream_iterator<double>(os, ", "));
+    os<<"}, rOut={";
+    std::copy(p.rOuter().begin(), p.rOuter().end(), std::ostream_iterator<double>(os, ", "));
+    os<<"}"
+      <<", originInMu2e="<<p.originInMu2e()
+      <<", phi0="<<p.phi0()
+      <<", phiTotal="<<p.phiTotal()
+      <<", materialName="<<p.materialName()
+      <<")";
+    return os;
+  }
 
 }

@@ -4,16 +4,16 @@
 //
 // The parameters of a Polycone
 //
-// $Id: Polycone.hh,v 1.3 2012/03/29 19:07:23 gandr Exp $
+// $Id: Polycone.hh,v 1.4 2012/03/30 16:30:53 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/29 19:07:23 $
+// $Date: 2012/03/30 16:30:53 $
 //
 // Original author KLG
 //
 
 #include <vector>
 #include <string>
-#include <cmath>
+#include <ostream>
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -67,30 +67,11 @@ namespace mu2e {
     double _phiStart;
     double _phiTotal;
 
-  // do we need/want the rotation here?
+    // do we need/want the rotation here?
 
-};
+  };
 
-// TBD
-//   inline std::ostream& operator<<(std::ostream& ost,
-//                                   const Polycone& tp ){
-//     ost << "("
-//         << tp.innerRadius() << " "
-//         << tp.outerRadius() << " "
-//         << tp.zHalfLength() << " "
-//         << tp.phi0()        << " "
-//         << tp.phiMax()      << ")"
-//         << " )";
-//     return ost;
-//   }
-
-// could use something like
-//      std::copy (rOuter[0],rOuter[_numZPlanes],
-//                 ostream_iterator<double>(std::cout,", "));
-
-
-
+  std::ostream& operator<<(std::ostream& os, const Polycone& p);
 }
-
 
 #endif /* GeomPrimitives_TubsParams_hh */
