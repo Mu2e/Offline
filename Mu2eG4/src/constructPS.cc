@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.13 2012/03/29 19:07:23 gandr Exp $
+// $Id: constructPS.cc,v 1.14 2012/03/30 14:07:13 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/29 19:07:23 $
+// $Date: 2012/03/30 14:07:13 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -26,6 +26,9 @@
 #include "Mu2eG4/inc/constructPSShield.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+
+// FIXME: only needed when the constructPSShield() call below is conditional
+#include "ProductionSolenoidGeom/inc/PSShield.hh"
 
 // G4 includes
 #include "G4ThreeVector.hh"
@@ -324,7 +327,11 @@ namespace mu2e {
                                             doSurfaceCheck
                                             );
 
-    constructPSShield(psVacuumInfo, _config);
+
+    // FIXME: make unconditional
+    if(art::ServiceHandle<GeometryService>()->hasElement<PSShield>()) {
+      constructPSShield(psVacuumInfo, _config);
+    }
 
   } // end Mu2eWorld::constructPS
 }

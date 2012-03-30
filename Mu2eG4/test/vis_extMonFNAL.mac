@@ -58,9 +58,9 @@
 # Settings for top volume ==HallAir
 
 ## Look at trajectories from proton target to beam from a side
-/vis/viewer/set/viewpointThetaPhi 103.78 0
-/vis/viewer/panTo 5 0 m
-/vis/viewer/zoomTo 5
+#/vis/viewer/set/viewpointThetaPhi 103.78 0
+#/vis/viewer/panTo 5 0 m
+#/vis/viewer/zoomTo 5
 
 # ## Look at trajectories from proton target to beam dump from the top
 # /vis/viewer/set/viewpointThetaPhi 90 89
@@ -71,6 +71,12 @@
 # /vis/viewer/set/viewpointThetaPhi 103.78 0
 # /vis/viewer/panTo 20 1 m
 # /vis/viewer/zoomTo 5
+
+## Look at PSShield
+/vis/viewer/set/viewpointThetaPhi 90 89
+/vis/viewer/panTo 4 -5 m
+/vis/viewer/zoomTo 5
+
 
 ################################################################
 /vis/enable 

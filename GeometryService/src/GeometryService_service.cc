@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.21 2012/03/16 05:09:22 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.22 2012/03/30 14:07:13 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/16 05:09:22 $
+// $Date: 2012/03/30 14:07:13 $
 //
 // Original author Rob Kutschke
 //
@@ -37,6 +37,8 @@
 #include "ProductionSolenoidGeom/inc/ProductionSolenoidMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosureMaker.hh"
+#include "ProductionSolenoidGeom/inc/PSShield.hh"
+#include "ProductionSolenoidGeom/inc/PSShieldMaker.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDumpMaker.hh"
 #include "TargetGeom/inc/Target.hh"
@@ -145,6 +147,10 @@ namespace mu2e {
                                       tmpProductionSolenoid->psEndRefPoint(),
                                       tmpProductionSolenoid->getVacuumParamsPtr()->materialName()
                                       ).getPtr());
+
+    if(_config->getBool("hasPSShield",false)){
+      addDetector(PSShieldMaker::make(*_config, tmpProductionSolenoid->psEndRefPoint()));
+    }
 
     addDetector(tmpProductionSolenoid);
     addDetector(tmpPSEnclosure);

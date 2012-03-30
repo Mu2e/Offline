@@ -2,6 +2,8 @@
 
 #include "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
 
+#include "Mu2eG4/test/PSShield_v01.txt"
+
 // Make sure the face of beam dump shielding is not shadowed
 bool hasExtMonUCI = false;
 
@@ -63,6 +65,7 @@ double extMonFilter.magnet.fieldStrength = 0.222; // Tesla
 //string GDMLFileName     = "extmon_fnal.gdml";
 
 // bool   vd.visible       = false;
+// bool PSShield.solid = true;
 
 //int protonBeamDump.verbosityLevel = 1;
 //int extmon_fnal.verbosityLevel = 1;

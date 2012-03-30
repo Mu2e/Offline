@@ -1,0 +1,34 @@
+// PS heat and radiation shield.
+//
+// Original author: Andrei Gaponenko
+
+// FIXME: this will go away
+bool hasPSShield = true;
+
+// Numbers from MARS times 10 (for cm=>mm) to define the shape
+// The polycone
+vector<double> PSShield.zPlane = {1050, 1700., 2290.5, 2290.5, 3340.5, 3340.5, 4580., 5000. };
+vector<double> PSShield.rIn    = { 450., 300.,   300.,   250.,   250.,   300.,  300.,  150. };
+vector<double> PSShield.rOut   = { 700., 700.,   700.,   700.,   700.,   700.,  700.,  700. };
+
+// The cutout for spent beam exit
+vector<double> PSShield.cutout.refPoint =  { -600, 0., -30.}; // MARS reference point for the cutout
+double PSShield.cutout.r         = 200.; // mm
+double PSShield.cutout.halfLengh = 2500.; // NB: == mars full length, but G4 ref pos is the center.
+double PSShield.cutout.rotY      = 14.00; // degrees
+
+// The shield is positioned on the PS axis.
+// To fix its Z position we specify the distance between the
+// PS.cryostatRefZ plane and the shield (i.e. min(zPlane))
+double PSShield.distanceToCryoRefZ = 1; // 1 mm like in MARS
+
+// FIXME: should be low density bronze
+string PSShield.materialName = "G4_Cu";
+
+bool   PSShield.visible = true;
+bool   PSShield.solid = false;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
