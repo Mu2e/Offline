@@ -1,4 +1,9 @@
-// PS heat and radiation shield.  Replicating MARS version as of Feb 2012.
+// PS heat and radiation shield.
+//
+// Alternative shape by Peter Kasper:  Add 50 mm radius at the end of
+// the exit cone opening, keep the cone angle the same as in the
+// original MARS design.  Also add 25 mm to the outer raduis (part of
+// the length).
 //
 // Original author: Andrei Gaponenko
 
@@ -7,9 +12,9 @@ bool hasPSShield = true;
 
 // Numbers from MARS times 10 (for cm=>mm) to define the shape
 // The polycone
-vector<double> PSShield.zPlane = {1050, 1700., 2290.5, 2290.5, 3340.5, 3340.5, 4580., 5000. };
-vector<double> PSShield.rIn    = { 450., 300.,   300.,   250.,   250.,   300.,  300.,  150. };
-vector<double> PSShield.rOut   = { 700., 700.,   700.,   700.,   700.,   700.,  700.,  700. };
+vector<double> PSShield.zPlane = {1050, 1916.7, 2290.5, 2290.5, 3340.5, 3340.5, 4580., 5000. };
+vector<double> PSShield.rIn    = { 500.,  300.,   300.,   250.,   250.,   300.,  300.,  150. };
+vector<double> PSShield.rOut   = { 725.,  725.,   725.,   700.,   700.,   700.,  700.,  700. };
 
 // The cutout for spent beam exit
 vector<double> PSShield.cutout.refPoint =  { -600, 0., -30.}; // MARS reference point for the cutout
@@ -17,16 +22,14 @@ double PSShield.cutout.r         = 200.; // mm
 double PSShield.cutout.halfLengh = 2500.; // NB: == mars full length, but G4 ref pos is the center.
 double PSShield.cutout.rotY      = 14.00; // degrees
 
-// The shield is positioned on the PS axis.
-// To fix its Z position we specify the distance between the
-// PS.cryostatRefZ plane and the shield (i.e. min(zPlane))
-double PSShield.distanceToCryoRefZ = 1; // 1 mm like in MARS
-
 // FIXME: should be low density bronze
 string PSShield.materialName = "G4_Cu";
 
 bool   PSShield.visible = true;
 bool   PSShield.solid = false;
+
+// Optional recording of hits on the shield
+bool   PSShield.sd.enabled = false;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
