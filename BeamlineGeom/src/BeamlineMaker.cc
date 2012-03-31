@@ -2,9 +2,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.6 2012/03/30 20:37:34 gandr Exp $
+// $Id: BeamlineMaker.cc,v 1.7 2012/03/31 01:29:29 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/30 20:37:34 $
+// $Date: 2012/03/31 01:29:29 $
 //
 // Original author Peter Shanahan
 //
@@ -29,7 +29,7 @@ using namespace std;
 namespace mu2e {
 
   std::auto_ptr<Beamline> BeamlineMaker::make(const SimpleConfig& c) {
-    std::auto_ptr<Beamline> res;
+    std::auto_ptr<Beamline> res(new Beamline());
     BuildBeamline(c, res.get());
     BuildTS(c, res.get());
     return res;
