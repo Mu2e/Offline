@@ -2,9 +2,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.7 2012/03/31 01:29:29 gandr Exp $
+// $Id: BeamlineMaker.cc,v 1.8 2012/04/02 16:30:01 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/31 01:29:29 $
+// $Date: 2012/04/02 16:30:01 $
 //
 // Original author Peter Shanahan
 //
@@ -35,17 +35,17 @@ namespace mu2e {
     return res;
   }
 
-  void BeamlineMaker::BuildBeamline(const SimpleConfig& c, Beamline* _beamline) {
-    _beamline->_solenoidOffset = c.getDouble("mu2e.solenoidOffset");
+  void BeamlineMaker::BuildBeamline(const SimpleConfig& c, Beamline* beamline) {
+    beamline->_solenoidOffset = c.getDouble("mu2e.solenoidOffset");
   }
 
-  void BeamlineMaker::BuildTS(const SimpleConfig& c, Beamline* _beamline) {
+  void BeamlineMaker::BuildTS(const SimpleConfig& c, Beamline* beamline) {
 
     // Build the TransportSolenoid Geometry.
 
     // Read or calculate data
 
-    double solenoidOffset = _beamline->_solenoidOffset;
+    double solenoidOffset = beamline->_solenoidOffset;
 
     double rTorus = c.getDouble("toyTS.rTorus");
     double rVac   = c.getDouble("toyTS.rVac");
@@ -65,24 +65,24 @@ namespace mu2e {
 
     // Save results to the geometry objects
 
-    _beamline->_ts._rTorus = rTorus;
-    _beamline->_ts._rVac   = rVac;
-    _beamline->_ts._rCryo  = rCryo;
+    beamline->_ts._rTorus = rTorus;
+    beamline->_ts._rVac   = rVac;
+    beamline->_ts._rCryo  = rCryo;
 
-    _beamline->_ts._ts1.set(ts1HalfLength,
+    beamline->_ts._ts1.set(ts1HalfLength,
                             CLHEP::Hep3Vector(solenoidOffset,0.0,ts1zOffset),
                             0 );
-    _beamline->_ts._ts3.set(ts3HalfLength,
+    beamline->_ts._ts3.set(ts3HalfLength,
                             CLHEP::Hep3Vector(0.0,0.0,0.0),
                             new CLHEP::HepRotation(CLHEP::HepRotationY(90.0*CLHEP::degree)) );
-    _beamline->_ts._ts5.set(ts5HalfLength,
+    beamline->_ts._ts5.set(ts5HalfLength,
                             CLHEP::Hep3Vector(-solenoidOffset,0.0,ts5zOffset),
                             0 );
 
-    _beamline->_ts._coll1.set( coll1HalfLength,CLHEP::Hep3Vector(0.0,0.0,-ts1HalfLength+coll1HalfLength));
-    _beamline->_ts._coll31.set(coll3HalfLength,CLHEP::Hep3Vector(0.0,0.0,-coll3HalfLength-coll3Hole/2));
-    _beamline->_ts._coll32.set(coll3HalfLength,CLHEP::Hep3Vector(0.0,0.0, coll3HalfLength+coll3Hole/2));
-    _beamline->_ts._coll5.set( coll5HalfLength,CLHEP::Hep3Vector(0.0,0.0, ts5HalfLength-coll5HalfLength));
+    beamline->_ts._coll1.set( coll1HalfLength,CLHEP::Hep3Vector(0.0,0.0,-ts1HalfLength+coll1HalfLength));
+    beamline->_ts._coll31.set(coll3HalfLength,CLHEP::Hep3Vector(0.0,0.0,-coll3HalfLength-coll3Hole/2));
+    beamline->_ts._coll32.set(coll3HalfLength,CLHEP::Hep3Vector(0.0,0.0, coll3HalfLength+coll3Hole/2));
+    beamline->_ts._coll5.set( coll5HalfLength,CLHEP::Hep3Vector(0.0,0.0, ts5HalfLength-coll5HalfLength));
 
   }
 

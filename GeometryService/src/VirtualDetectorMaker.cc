@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.4 2012/03/30 19:18:03 gandr Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.5 2012/04/02 16:30:01 gandr Exp $
 // $Author: gandr $
 //
 
@@ -33,16 +33,16 @@ namespace mu2e {
 
   std::auto_ptr<VirtualDetector> VirtualDetectorMaker::make(const SimpleConfig& c) {
 
-    auto_ptr<VirtualDetector> _vd(new VirtualDetector());
+    auto_ptr<VirtualDetector> vd(new VirtualDetector());
 
     art::ServiceHandle<GeometryService> geom;
 
-    _vd = auto_ptr<VirtualDetector>(new VirtualDetector());
+    vd = auto_ptr<VirtualDetector>(new VirtualDetector());
 
     if(c.getBool("hasVirtualDetector",false)) {
 
       const double vdHL = c.getDouble("vd.halfLength",0.01*mm);
-      _vd->_halfLength = vdHL;
+      vd->_halfLength = vdHL;
 
       // Need some data from other subsystems
       GeomHandle<Beamline> bg;
@@ -59,9 +59,9 @@ namespace mu2e {
       Hep3Vector coll1pos = bg->getTS().getColl1().getLocal();
       Hep3Vector deltaZ1(0,0,coll1HL-vdHL);
 
-      _vd->addVirtualDetector( VirtualDetectorId::Coll1_In,
+      vd->addVirtualDetector( VirtualDetectorId::Coll1_In,
                                ts1pos, ts1rot, coll1pos-deltaZ1);
-      _vd->addVirtualDetector( VirtualDetectorId::Coll1_Out,
+      vd->addVirtualDetector( VirtualDetectorId::Coll1_Out,
                                ts1pos, ts1rot, coll1pos+deltaZ1);
 
       // VD Coll31_In, Coll31_Out, Coll32_In, Coll32_Out are placed
@@ -79,13 +79,13 @@ namespace mu2e {
       Hep3Vector deltaZ31(0,0,coll31HL-vdHL);
       Hep3Vector deltaZ32(0,0,coll32HL-vdHL);
 
-      _vd->addVirtualDetector( VirtualDetectorId::Coll31_In,
+      vd->addVirtualDetector( VirtualDetectorId::Coll31_In,
                                ts3pos, ts3rot, coll31pos-deltaZ31);
-      _vd->addVirtualDetector( VirtualDetectorId::Coll31_Out,
+      vd->addVirtualDetector( VirtualDetectorId::Coll31_Out,
                                ts3pos, ts3rot, coll31pos+deltaZ31);
-      _vd->addVirtualDetector( VirtualDetectorId::Coll32_In,
+      vd->addVirtualDetector( VirtualDetectorId::Coll32_In,
                                ts3pos, ts3rot, coll32pos-deltaZ32);
-      _vd->addVirtualDetector( VirtualDetectorId::Coll32_Out,
+      vd->addVirtualDetector( VirtualDetectorId::Coll32_Out,
                                ts3pos, ts3rot, coll32pos+deltaZ32);
 
       // VD Coll5_In, Coll5_Out are at the front and back of collimator
@@ -99,9 +99,9 @@ namespace mu2e {
       Hep3Vector coll5pos = bg->getTS().getColl5().getLocal();
       Hep3Vector deltaZ5(0,0,coll5HL-vdHL);
 
-      _vd->addVirtualDetector( VirtualDetectorId::Coll5_In,
+      vd->addVirtualDetector( VirtualDetectorId::Coll5_In,
                                ts5pos, ts5rot, coll5pos-deltaZ5);
-      _vd->addVirtualDetector( VirtualDetectorId::Coll5_Out,
+      vd->addVirtualDetector( VirtualDetectorId::Coll5_Out,
                                ts5pos, ts5rot, coll5pos+deltaZ5);
 
       // VD ST_In, ST_Out are placed inside DS2, just before and after
@@ -121,9 +121,9 @@ namespace mu2e {
       Hep3Vector targetOffset(0.,0.,(12000.+z0-ds2Z0));
       Hep3Vector shift(0.,0.,zHalf+vdHL);
 
-      _vd->addVirtualDetector( VirtualDetectorId::ST_In,
+      vd->addVirtualDetector( VirtualDetectorId::ST_In,
                                ds2Offset, 0, targetOffset-shift);
-      _vd->addVirtualDetector( VirtualDetectorId::ST_Out,
+      vd->addVirtualDetector( VirtualDetectorId::ST_Out,
                                ds2Offset, 0, targetOffset+shift);
 
       if (c.getBool("hasTTracker",false)){
@@ -149,18 +149,18 @@ namespace mu2e {
 
         Hep3Vector vdTTMidOffset(0.,0.,0.);
 
-        _vd->addVirtualDetector( VirtualDetectorId::TT_Mid,
+        vd->addVirtualDetector( VirtualDetectorId::TT_Mid,
                                  ttOffset, 0, vdTTMidOffset);
 
-        _vd->addVirtualDetector( VirtualDetectorId::TT_MidInner,
+        vd->addVirtualDetector( VirtualDetectorId::TT_MidInner,
                                  ttOffset, 0, vdTTMidOffset);
 
         //       int static const verbosityLevel = 1;
         //       if (verbosityLevel >0) {
         //         for ( int vdId=11; vdId<=12; ++vdId) {
         //           cout << __func__ << " VD " << vdId << " offsets L, G " <<
-        //             _vd->getLocal(vdId) << ", " <<
-        //             _vd->getGlobal(vdId) << endl;
+        //             vd->getLocal(vdId) << ", " <<
+        //             vd->getGlobal(vdId) << endl;
         //         }
         //       }
 
@@ -178,7 +178,7 @@ namespace mu2e {
         // the TTracker and rely on the global offsets in the mu2e
         // detector frame (note that their local offsets are wrt TTracker)
 
-        _vd->addVirtualDetector( VirtualDetectorId::TT_FrontHollow,
+        vd->addVirtualDetector( VirtualDetectorId::TT_FrontHollow,
                                  ttOffset,
                                  0,
                                  vdTTFrontOffset);
@@ -187,7 +187,7 @@ namespace mu2e {
 
         if (c.getBool("hasProtonAbsorber",false)){
 
-          _vd->addVirtualDetector(  VirtualDetectorId::TT_FrontPA,
+          vd->addVirtualDetector(  VirtualDetectorId::TT_FrontPA,
                                     ttOffset,
                                     0,
                                     vdTTFrontOffset);
@@ -197,7 +197,7 @@ namespace mu2e {
                                   0.,
                                   ttracker.getTrackerEnvelopeParams().zHalfLength()+vdHL);
 
-        _vd->addVirtualDetector( VirtualDetectorId::TT_Back,
+        vd->addVirtualDetector( VirtualDetectorId::TT_Back,
                                  ttOffset,
                                  0,
                                  vdTTBackOffset);
@@ -207,10 +207,10 @@ namespace mu2e {
 
         Hep3Vector vdTTOutSurfOffset(0.,0.,0.);
 
-        _vd->addVirtualDetector( VirtualDetectorId::TT_OutSurf,
+        vd->addVirtualDetector( VirtualDetectorId::TT_OutSurf,
                                  ttOffset, 0, vdTTOutSurfOffset);
 
-        _vd->addVirtualDetector( VirtualDetectorId::TT_InSurf,
+        vd->addVirtualDetector( VirtualDetectorId::TT_InSurf,
                                  ttOffset, 0, vdTTOutSurfOffset);
 
       }
@@ -223,12 +223,12 @@ namespace mu2e {
         // This detector will be placed on the face of beam dump
         // shielding.  Computing offsets here is invonvenient since we
         // don't have VolumeInfo for the parent. Just ignore them.
-        _vd->addVirtualDetector(VirtualDetectorId::EMFC1Entrance,
+        vd->addVirtualDetector(VirtualDetectorId::EMFC1Entrance,
                                 vzero, 0, vzero
                                 );
 
         // Detector inside the ExtMonFNAL magnet pit, on the face of the upstream wall
-        _vd->addVirtualDetector(VirtualDetectorId::EMFC1Exit,
+        vd->addVirtualDetector(VirtualDetectorId::EMFC1Exit,
                                 dump->magnetPitCenterInEnclosure() + dump->enclosureCenterInMu2e(),
                                 &dump->enclosureRotationInMu2e(),
                                 /*local position in parent*/
@@ -236,7 +236,7 @@ namespace mu2e {
                                 );
 
         // Detector inside the ExtMonFNAL magnet pit, on the face of the downstream wall
-        _vd->addVirtualDetector(VirtualDetectorId::EMFC2Entrance,
+        vd->addVirtualDetector(VirtualDetectorId::EMFC2Entrance,
                                 dump->magnetPitCenterInEnclosure() + dump->enclosureCenterInMu2e(),
                                 &dump->enclosureRotationInMu2e(),
                                 /*local position in parent*/
@@ -248,7 +248,7 @@ namespace mu2e {
       if(geom->hasElement<ExtMonFNAL::ExtMon>()) {
         // Detector inside the ExtMonFNAL detector room, on the face of the upstream wall
         GeomHandle<ExtMonFNAL::ExtMon> extmon;
-        _vd->addVirtualDetector(VirtualDetectorId::EMFC2Exit,
+        vd->addVirtualDetector(VirtualDetectorId::EMFC2Exit,
                                 extmon->roomCenterInMu2e(),
                                 &dump->enclosureRotationInMu2e(),
                                 /*local position in parent*/
@@ -262,7 +262,7 @@ namespace mu2e {
 
         // This detector will be placed on the front (-Z direction) exit of PS.
         // Computing offsets in G4 since PS is not in GeomHandle.
-        _vd->addVirtualDetector(VirtualDetectorId::PS_FrontExit,
+        vd->addVirtualDetector(VirtualDetectorId::PS_FrontExit,
                                 vzero, 0, vzero
                                 );
       }
@@ -271,70 +271,70 @@ namespace mu2e {
 
         // Detector in front of the ExtMonUCI front removable shielding
         GeomHandle<ExtMonUCI::ExtMon> extmon;
-        _vd->addVirtualDetector(VirtualDetectorId::EMIEntrance1,
+        vd->addVirtualDetector(VirtualDetectorId::EMIEntrance1,
                                 CLHEP::Hep3Vector(0, 0, 0),
                                 0,
                                 extmon->shd(8)->origin() + CLHEP::Hep3Vector(0, 0, extmon->shd(8)->params()[2] + vdHL)
                                 );
 
         // Detector between ExtMonUCI front removable shielding and front shielding
-        _vd->addVirtualDetector(VirtualDetectorId::EMIEntrance2,
+        vd->addVirtualDetector(VirtualDetectorId::EMIEntrance2,
                                 extmon->origin(),
                                 0,
                                 CLHEP::Hep3Vector(0, 0, extmon->envelopeParams()[2] - vdHL)
                                 );
 
         // Detector at the entrance of collimator0
-        _vd->addVirtualDetector(VirtualDetectorId::EMIC0Entrance,
+        vd->addVirtualDetector(VirtualDetectorId::EMIC0Entrance,
                                 extmon->origin(),
                                 0,
                                 extmon->col(0)->originLocal() + CLHEP::Hep3Vector(0, 0, extmon->col(0)->paramsOuter()[2] + vdHL)
                                 );
 
         // Detector at the exit of collimator0
-        _vd->addVirtualDetector(VirtualDetectorId::EMIC0Exit,
+        vd->addVirtualDetector(VirtualDetectorId::EMIC0Exit,
                                 extmon->origin(),
                                 0,
                                 extmon->col(0)->originLocal() + CLHEP::Hep3Vector(0, 0, -1.0*extmon->col(0)->paramsOuter()[2] - vdHL)
                                 );
 
         // Detector at the entrance of collimator1
-        _vd->addVirtualDetector(VirtualDetectorId::EMIC1Entrance,
+        vd->addVirtualDetector(VirtualDetectorId::EMIC1Entrance,
                                 extmon->origin(),
                                 0,
                                 extmon->col(1)->originLocal() + CLHEP::Hep3Vector(0, 0, extmon->col(1)->paramsOuter()[2] + vdHL)
                                 );
 
         // Detector at the exit of collimator1
-        _vd->addVirtualDetector(VirtualDetectorId::EMIC1Exit,
+        vd->addVirtualDetector(VirtualDetectorId::EMIC1Exit,
                                 extmon->origin(),
                                 0,
                                 extmon->col(1)->originLocal() + CLHEP::Hep3Vector(0, 0, -1.0*extmon->col(1)->paramsOuter()[2] - vdHL)
                                 );
 
         // Detector at the entrance of collimator2
-        _vd->addVirtualDetector(VirtualDetectorId::EMIC2Entrance,
+        vd->addVirtualDetector(VirtualDetectorId::EMIC2Entrance,
                                 extmon->origin(),
                                 0,
                                 extmon->col(2)->originLocal() + CLHEP::Hep3Vector(0, 0, extmon->col(2)->paramsOuter()[2] + vdHL)
                                 );
 
         // Detector at the exit of collimator2
-        _vd->addVirtualDetector(VirtualDetectorId::EMIC2Exit,
+        vd->addVirtualDetector(VirtualDetectorId::EMIC2Exit,
                                 extmon->origin(),
                                 0,
                                 extmon->col(2)->originLocal() + CLHEP::Hep3Vector(0, 0, -1.0*extmon->col(2)->paramsOuter()[2] - vdHL)
                                 );
 
         // Detector at the entrance of collimator3
-        _vd->addVirtualDetector(VirtualDetectorId::EMIC3Entrance,
+        vd->addVirtualDetector(VirtualDetectorId::EMIC3Entrance,
                                 extmon->origin(),
                                 0,
                                 extmon->col(3)->originLocal() + CLHEP::Hep3Vector(0, 0, extmon->col(3)->paramsOuter()[2] + vdHL)
                                 );
 
         // Detector at the exit of collimator3
-        _vd->addVirtualDetector(VirtualDetectorId::EMIC3Exit,
+        vd->addVirtualDetector(VirtualDetectorId::EMIC3Exit,
                                 extmon->origin(),
                                 0,
                                 extmon->col(3)->originLocal() + CLHEP::Hep3Vector(0, 0, -1.0*extmon->col(3)->paramsOuter()[2] - vdHL)
@@ -345,7 +345,7 @@ namespace mu2e {
         // Position and half length of this detector are best computed
         // in one place.  Since the VirtualDetector data structure
         // does not store half size, we'll do the computations later.
-        _vd->addVirtualDetector(VirtualDetectorId::ExtMonCommonPlane, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+        vd->addVirtualDetector(VirtualDetectorId::ExtMonCommonPlane, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
       }
 
 
@@ -353,17 +353,17 @@ namespace mu2e {
         // Position and half length of this detector are best computed
         // in one place.  Since the VirtualDetector data structure
         // does not store half size, we'll do the computations later.
-        _vd->addVirtualDetector(VirtualDetectorId::ProtonBeamDumpCoreFace, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+        vd->addVirtualDetector(VirtualDetectorId::ProtonBeamDumpCoreFace, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
       }
 
       if(geom->hasElement<ExtMonFNAL::ExtMon>() && c.getBool("extmon_fnal.vd.enabled", false)) {
-        _vd->addVirtualDetector(VirtualDetectorId::EMFDetectorEntrance, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
-        _vd->addVirtualDetector(VirtualDetectorId::EMFDetectorExit, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+        vd->addVirtualDetector(VirtualDetectorId::EMFDetectorEntrance, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+        vd->addVirtualDetector(VirtualDetectorId::EMFDetectorExit, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
       }
 
     } // if(hasVirtualDetector)
 
-    return _vd;
+    return vd;
 
   } // make()
 
