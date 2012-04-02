@@ -3,9 +3,9 @@
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.12 2012/02/29 00:34:28 gandr Exp $
+// $Id: BFieldManagerMaker.hh,v 1.13 2012/04/02 18:28:56 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:34:28 $
+// $Date: 2012/04/02 18:28:56 $
 //
 
 // Includes from C++
@@ -67,6 +67,8 @@ namespace mu2e {
 
     // Compute the size of the array needed to hold the raw data of the field map.
     int computeArraySize( int fd, const std::string& filename );
+
+    void flipMap(BFMap *bf);
 
   }; // end class BFieldManagerMaker
 

@@ -65,9 +65,11 @@ namespace mu2e {
 
     int verbosityLevel() const { return verbosityLevel_; }
 
+    bool flipBFieldMaps() const { return flipBFieldMaps_; }
+
   private:
 
-    BFieldConfig() : scaleFactor_(1.), writeBinaries_(false), verbosityLevel_(1) {}
+    BFieldConfig() : scaleFactor_(1.), writeBinaries_(false), verbosityLevel_(1), flipBFieldMaps_(false) {}
 
     // GMC, G4BL or possible future types.
     BFMapType mapType_;
@@ -90,6 +92,7 @@ namespace mu2e {
 
     bool writeBinaries_;
     int  verbosityLevel_;
+    bool flipBFieldMaps_;
   };
 
 } // namespace mu2e

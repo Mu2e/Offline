@@ -44,6 +44,7 @@ namespace mu2e {
   {
     bfconf_->writeBinaries_ = config.getBool("bfield.writeG4BLBinaries", false);
     bfconf_->verbosityLevel_ = config.getInt("bfield.verbosityLevel");
+    bfconf_->flipBFieldMaps_ = config.getBool("bfield.flipMaps", false);
 
     bfconf_->scaleFactor_ = config.getDouble("bfield.scaleFactor",1.0);
 

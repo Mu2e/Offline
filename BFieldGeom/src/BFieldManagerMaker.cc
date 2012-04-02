@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.33 2012/02/29 00:35:04 gandr Exp $
+// $Id: BFieldManagerMaker.cc,v 1.34 2012/04/02 18:28:56 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/29 00:35:04 $
+// $Date: 2012/04/02 18:28:56 $
 //
 
 // Includes from C++
@@ -112,6 +112,21 @@ namespace mu2e {
 
     // The field manager is fully initialized.
     // Some extra stuff that is convenient to do here:
+    if(config.flipBFieldMaps()) {
+      for(BFieldManager::MapContainerType::iterator i = _bfmgr->getInnerMaps().begin();
+          i != _bfmgr->getInnerMaps().end();
+          ++i)
+        {
+          flipMap(&*i);
+        }
+
+      for(BFieldManager::MapContainerType::iterator i = _bfmgr->getOuterMaps().begin();
+          i != _bfmgr->getOuterMaps().end();
+          ++i)
+        {
+          flipMap(&*i);
+        }
+    }
 
     if( config.writeBinaries()) {
       for(BFieldManager::MapContainerType::const_iterator i = _bfmgr->getInnerMaps().begin();
@@ -802,6 +817,17 @@ namespace mu2e {
     // Compute number of records.
     int nrecords  = info.st_size / sizeof(DiskRecord);
     return nrecords;
+  }
+
+  void BFieldManagerMaker::flipMap(BFMap *bf) {
+    std::cout << "Flipping B field vector in map "<<bf->getKey()<<std::endl;
+    for(int ix = 0; ix < bf->nx(); ++ix) {
+      for(int iy = 0; iy< bf->ny(); ++iy) {
+        for(int iz = 0; iz< bf->nz(); ++iz) {
+          bf->_field.set(ix, iy, iz, -bf->_field.get(ix, iy, iz) );
+        }
+      }
+    }
   }
 
 } // end namespace mu2e
