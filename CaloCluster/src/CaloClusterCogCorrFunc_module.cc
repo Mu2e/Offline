@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position on the electrons on the calorimeter
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.1 2012/04/03 13:40:14 gianipez Exp $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.2 2012/04/03 21:21:56 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/04/03 13:40:14 $
+// $Date: 2012/04/03 21:21:56 $
 //
 // Original author G. Pezzullo
 //
@@ -449,7 +449,7 @@ double cogVcorrFunc(double x){
 }
 
 double cogWcorrFunc(double x){
-        double par[13] = {8.021, 0., 0., 1., -23.33, 54.38, 12.31, -99.97, 34.06, 0.9499, -1036, 470., -90.05};
+        double par[13] = {4.263e4, 0., 0., 1., 7.466, -56.24, 159.3, -200.3, 71.76, 1.487, -32.87, -21.72, -0.8187};
         return corrFunc(x, par);
 }
 
@@ -495,20 +495,20 @@ void CaloClusterCogCorrFunc::analyze(art::Event const & evt ) {
                 _hTHistDeltaEnergy   = energyResol.make<TH1D>( "DeltaEnergy", "DeltaEnergy;Eseed-Eclu [MeV]", 100, -20., 110.);
                 _hTHistDeltaEnergVRec= energyResol.make<TH1D>( "DeltaEnergVRec", "DeltaEnergVRec;Eseed-Eclu [MeV]", 100, -20., 110.);
 
-                _hTHistDeltaUquality = cogResol.make<TH1D>( "DeltaUquality", "DeltaUquality; depth_{MaxShower} [mm];Xseed-Xclu [mm]", 200, -100., 100. );
-                _hTHistDeltaURec     = cogResol.make<TH1D>( "DeltaURec", "DeltaURec; depth_{MaxShower} [mm];Xseed-Xclu [mm]",  200, -100., 100.);
-                _hTHistDeltaVquality = cogResol.make<TH1D>( "DeltaVquality", "DeltaVquality; depth_{MaxShower} [mm];Yseed-Yclu [mm]",  200, -100., 100.);
-                _hTHistDeltaVRec     = cogResol.make<TH1D>( "DeltaVRec", "DeltaVRec; depth_{MaxShower} [mm]; Yseed-Yclu [mm]",  200, -100., 100.);
-                _hTHistDeltaWquality = cogResol.make<TH1D>( "DeltaWquality", "DeltaWquality; depth_{MaxShower} [mm];vZseed-Zclu [mm]",  200, -100., 100.);
-                _hTHistDeltaWRec     = cogResol.make<TH1D>( "DeltaWRec", "DeltaWRec; depth_{MaxShower} [mm];Zseed-Zclu [mm]", 200, -100., 100.);
+                _hTHistDeltaUquality = cogResol.make<TH1D>( "DeltaUquality", "DeltaUquality ;Xseed-Xclu [mm]", 200, -100., 100. );
+                _hTHistDeltaURec     = cogResol.make<TH1D>( "DeltaURec", "DeltaURec ;Xseed-Xclu [mm]",  200, -100., 100.);
+                _hTHistDeltaVquality = cogResol.make<TH1D>( "DeltaVquality", "DeltaVquality ;Yseed-Yclu [mm]",  200, -100., 100.);
+                _hTHistDeltaVRec     = cogResol.make<TH1D>( "DeltaVRec", "DeltaVRec ; Yseed-Yclu [mm]",  200, -100., 100.);
+                _hTHistDeltaWquality = cogResol.make<TH1D>( "DeltaWquality", "DeltaWquality ;vZseed-Zclu [mm]",  200, -100., 100.);
+                _hTHistDeltaWRec     = cogResol.make<TH1D>( "DeltaWRec", "DeltaWRec ;Zseed-Zclu [mm]", 200, -100., 100.);
 
                 _hTHistImpactParam   = dcaCog.make<TH1D>( "ImpactParam", "ImpactParam;  depth_{MaxShower} [mm];ImpactParam [mm]",  600,  0., 150.);
-                _hTHistDistanceToCog = dcaCog.make<TH1D>( "DistanceToCog", "DistanceToCog; depth_{MaxShower} [mm]; |#vec{x}_{seed} - #vec{x}_{cog}| [mm]",   600,  0., 150.);
-                _hTHistMomDotVaneNorm= dcaCog.make<TH1D>( "MomDotVaneNorm","MomDotVaneNorm ; depth_{MaxShower} [mm] ;ArcCos(#vec{p}, #hat{n}) / |#vec{p}| ",  720 , -180., 180.0);
+                _hTHistDistanceToCog = dcaCog.make<TH1D>( "DistanceToCog", "DistanceToCog ; |#vec{x}_{seed} - #vec{x}_{cog}| [mm]",   600,  0., 150.);
+                _hTHistMomDotVaneNorm= dcaCog.make<TH1D>( "MomDotVaneNorm","MomDotVaneNorm   ;ArcCos(#vec{p}, #hat{n}) / |#vec{p}| ",  720 , -180., 180.0);
 
                 _hTHistRecImpactParam   = dcaCog.make<TH1D>( "RecImpactParam", "RecImpactParam;  depth_{MaxShower} [mm];ImpactParam [mm]",  400,  0., 100.);
-                _hTHistRecDistanceToCog = dcaCog.make<TH1D>( "RecDistanceToCog", "RecDistanceToCog; depth_{MaxShower} [mm]; |#vec{x}_{seed} - #vec{x}_{cog}| [mm]",  400,  0., 100.);
-                _hTHistMomRecDotVaneNorm= dcaCog.make<TH1D>( "MomRecDotVaneNorm","MomRecDotVaneNorm ; depth_{MaxShower} [mm]; ArcCos(#vec{p}, #hat{n}) / |#vec{p}| ",  720 , -180., 180.0);
+                _hTHistRecDistanceToCog = dcaCog.make<TH1D>( "RecDistanceToCog", "RecDistanceToCog ; |#vec{x}_{seed} - #vec{x}_{cog}| [mm]",  400,  0., 100.);
+                _hTHistMomRecDotVaneNorm= dcaCog.make<TH1D>( "MomRecDotVaneNorm","MomRecDotVaneNorm  ; ArcCos(#vec{p}, #hat{n}) / |#vec{p}| ",  720 , -180., 180.0);
                 _Ntup        = tfs->make<TTree>("ClusterTrj", "Cluster trajectory info");
 
                 _Ntup->Branch("evt", &_evt , "evt/F");
@@ -961,7 +961,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                         _seedThetaW = thetaWimpact*180./TMath::Pi();
 
                                         double deltaZ = cogWcorrFunc(tan(thetaWimpact) );
-                                        deltaZ =  vaneFrame.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() + deltaZ ;
+                                        deltaZ =  vaneFrame.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() - deltaZ ;
                                         _seedDeltaW = deltaZ;
 
 
@@ -976,7 +976,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                         double deltaY = cogVcorrFunc( tan(thetaVimpact) );
                                         _prova1     = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY;
 
-                                        deltaY = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() + deltaY ;
+                                        deltaY = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY ;
 
                                         _seedDeltaV = deltaY;
 
