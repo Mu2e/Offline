@@ -22,6 +22,11 @@ double PSShield.cutout.r         = 200.; // mm
 double PSShield.cutout.halfLengh = 2500.; // NB: == mars full length, but G4 ref pos is the center.
 double PSShield.cutout.rotY      = 14.00; // degrees
 
+// The shield is positioned on the PS axis.
+// To fix its Z position we specify the distance between the
+// PS.cryostatRefZ plane and the shield (i.e. min(zPlane))
+double PSShield.distanceToCryoRefZ = 1; // 1 mm like in MARS
+
 // FIXME: should be low density bronze
 string PSShield.materialName = "G4_Cu";
 
