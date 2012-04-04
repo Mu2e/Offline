@@ -5,7 +5,7 @@
 
 bool           hasProtonBeamDump = true;
 
-string         protonBeamDump.material.core  = "G4_Fe";
+string         protonBeamDump.material.core  = "G4_Al";
 string         protonBeamDump.material.shielding = "ShieldingConcrete";
 string         protonBeamDump.material.air = "G4_AIR";
 
