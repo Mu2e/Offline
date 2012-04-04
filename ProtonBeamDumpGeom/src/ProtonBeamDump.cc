@@ -12,10 +12,10 @@ namespace mu2e {
     // The constant factor is 1/c_light scaled such as
     // to get rTrack in millimeters
     const double rTrack = 3335.64095198 * (momentum/CLHEP::GeV) / (_fieldStrength/CLHEP::tesla);
-    
-//    std::cerr<<"AG: got rTrack = "<<rTrack<<" mm for p = "
-//	     <<(momentum/CLHEP::GeV)<<" GeV and  B = "
-//	     <<(_fieldStrength()/CLHEP::tesla)<<" tesla"<<std::endl;
+
+    //    std::cerr<<"AG: got rTrack = "<<rTrack<<" mm for p = "
+    //           <<(momentum/CLHEP::GeV)<<" GeV and  B = "
+    //           <<(_fieldStrength()/CLHEP::tesla)<<" tesla"<<std::endl;
 
     // Can't do momenta that are too low.  For simplicity we just
     // check for the "absolutely impossible" requests here.  The real
@@ -27,7 +27,7 @@ namespace mu2e {
     }
     else {
       throw cet::exception("GEOM")<<"ProtonBeamDump::FilterMagnetExtMonFNAL::trackBendHalfAngle(): "
-				  <<"requested momentum p="<<momentum/CLHEP::GeV<<" GeV is too low ";
+                                  <<"requested momentum p="<<momentum/CLHEP::GeV<<" GeV is too low ";
     }
   }
 
@@ -36,7 +36,7 @@ namespace mu2e {
     CLHEP::Hep3Vector filterEntranceInEnclosure(_coreCenterInEnclosure[0] + _filterEntranceOffsetX,
                                                 _coreCenterInEnclosure[1] + _filterEntranceOffsetY,
                                                 _enclosureHalfSize[2]);
-    
+
     return _enclosureCenterInMu2e + _enclosureRotationInMu2e.inverse() * filterEntranceInEnclosure;
   }
 }
