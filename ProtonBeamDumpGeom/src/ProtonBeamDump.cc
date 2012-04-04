@@ -39,4 +39,25 @@ namespace mu2e {
 
     return _enclosureCenterInMu2e + _enclosureRotationInMu2e.inverse() * filterEntranceInEnclosure;
   }
+
+  //================================================================
+  CLHEP::Hep3Vector ProtonBeamDump::mu2eToBeamDump_position(const CLHEP::Hep3Vector& mu2epos) const {
+
+    const CLHEP::Hep3Vector rel(mu2epos - _coreCenterInMu2e);
+
+    const CLHEP::Hep3Vector res = _enclosureRotationInMu2e * rel;
+
+    // AGDEBUG("POS: mu2e = "<<mu2epos<<", rel = "<<rel<<", res = "<<res);
+
+    return res;
+  }
+
+  //================================================================
+  CLHEP::Hep3Vector ProtonBeamDump::mu2eToBeamDump_momentum(const CLHEP::Hep3Vector& mu2emom) const {
+    const CLHEP::Hep3Vector res = _enclosureRotationInMu2e * mu2emom;
+    // AGDEBUG("MOM: mu2e = "<<mu2emom<<", res = "<<res);
+    return res;
+  }
+
+  //================================================================
 }

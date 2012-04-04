@@ -130,6 +130,13 @@ namespace mu2e {
     CLHEP::Hep3Vector filterEntranceInMu2e() const;
 
     //----------------------------------------------------------------
+    // Transform to the "beam dump" coordinate system, which is centered
+    // at the core center, and is rotated around the Y axis w.r.t the mu2e system
+
+    CLHEP::Hep3Vector mu2eToBeamDump_position(const CLHEP::Hep3Vector& mu2epos) const;
+    CLHEP::Hep3Vector mu2eToBeamDump_momentum(const CLHEP::Hep3Vector& mu2emom) const;
+
+    //----------------------------------------------------------------
   private:
     friend class ProtonBeamDumpMaker;
 
