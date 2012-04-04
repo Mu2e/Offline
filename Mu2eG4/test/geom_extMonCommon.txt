@@ -1,8 +1,5 @@
 #include "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
 
-double PS.toyEnclosure.Thickness = 2.84; // mm
-string PS.toyEnclosure.materialName = "G4_Ti";
-
 int g4.steppingActionMaxSteps = 100000;
 int g4.stepsSizeLimit = 100000;
 int g4.particlesSizeLimit = 100000;

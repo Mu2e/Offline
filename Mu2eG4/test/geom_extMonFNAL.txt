@@ -7,9 +7,6 @@
 // Make sure the face of beam dump shielding is not shadowed
 bool hasExtMonUCI = false;
 
-double PS.toyEnclosure.Thickness = 2.84; // mm
-string PS.toyEnclosure.materialName = "G4_Ti";
-
 //int g4.steppingActionMaxSteps = 100000;
 //int g4.stepsSizeLimit = 10000;
 int g4.particlesSizeLimit = 100000;
