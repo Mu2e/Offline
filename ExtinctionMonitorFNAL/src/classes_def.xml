@@ -1,0 +1,4 @@
+<lcgdict>
+ <class name="mu2e::ExtMonFNAL::ExtMon"/>
+ <class name="art::Wrapper<mu2e::ExtMonFNAL::ExtMon>"/> 
+</lcgdict>

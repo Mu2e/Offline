@@ -10,6 +10,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 
+#include "art/Persistency/Common/Wrapper.h"
+
 #include "Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {
@@ -68,6 +70,10 @@ namespace mu2e {
       // Private ctr: the class should be only obtained via ExtMonFNAL::ExtMonMaker.
       ExtMon(const std::vector<double>& roomHalfSize,
              double roomCenterHeightAboveDumpCore);
+
+      // Or read back from persistent storage
+      template<class T> friend class art::Wrapper;
+      ExtMon() {}
 
       std::vector<double> m_roomHalfSize;
       double m_roomCenterHeightAboveDumpCore;
