@@ -3,9 +3,9 @@
 //
 // "Typical" Tube object
 //
-// $Id: Tube.hh,v 1.2 2012/03/30 15:13:35 gandr Exp $
+// $Id: Tube.hh,v 1.3 2012/04/05 18:43:07 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/30 15:13:35 $
+// $Date: 2012/04/05 18:43:07 $
 //
 // Original author KLG
 //
@@ -45,6 +45,9 @@ namespace mu2e {
     CLHEP::Hep3Vector const & originInMu2e() const { return _originInMu2e; }
 
     TubsParams const & getTubsParams() const { return _params; }
+
+    // Used by default constructors required for ROOT persistency mechanism
+    static const Tube UNINITIALIZED;
 
   private:
     

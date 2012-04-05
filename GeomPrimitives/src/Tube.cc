@@ -1,9 +1,9 @@
 //
 // "Typical" Tube object
 //
-// $Id: Tube.cc,v 1.1 2012/03/13 19:00:18 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/13 19:00:18 $
+// $Id: Tube.cc,v 1.2 2012/04/05 18:43:07 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/04/05 18:43:07 $
 //
 // Original author KLG
 //
@@ -39,5 +39,7 @@ namespace mu2e {
     _originInMu2e(originInMu2e),
     _materialName(materialName)
   {};
+
+  const Tube Tube::UNINITIALIZED("", CLHEP::Hep3Vector(), 0, 0, 0);
   
 }
