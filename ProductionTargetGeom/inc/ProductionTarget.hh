@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "art/Persistency/Common/Wrapper.h"
+
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 
@@ -44,11 +46,15 @@ namespace mu2e {
     CLHEP::HepRotation _protonBeamRotation;
 
     // can't return by const ref if invert on the fly so need to store redundant data
-    CLHEP::HepRotation _protonBeamInverseRotation;
+    CLHEP::HepRotation _protonBeamInverseRotation;// FIXME: should be transient
 
     CLHEP::Hep3Vector _prodTargetPosition;
     double _rOut;
     double _halfLength;
+
+    // Needed for persistency
+    template<class T> friend class art::Wrapper;
+    ProductionTarget() {}
   };
 }
 
