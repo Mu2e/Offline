@@ -10,6 +10,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 
+#include "art/Persistency/Common/Wrapper.h"
+
 #include "Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {
@@ -139,9 +141,10 @@ namespace mu2e {
     //----------------------------------------------------------------
   private:
     friend class ProtonBeamDumpMaker;
-
     // Private ctr: the class should be only obtained via ProtonBeamDumpFNAL::ProtonBeamDumpMaker.
     ProtonBeamDump() : _enclosureRotationInMu2e(CLHEP::HepRotation::IDENTITY) {}
+    // Or read back from persistent storage
+    template<class T> friend class art::Wrapper;
 
     std::vector<double> _coreHalfSize;
     std::vector<double> _neutronCaveHalfSize;

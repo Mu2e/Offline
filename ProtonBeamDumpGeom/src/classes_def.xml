@@ -1,0 +1,6 @@
+<lcgdict>
+ <class name="mu2e::ProtonBeamDump"/>
+ <class name="mu2e::ProtonBeamDump::CollimatorExtMonFNAL"/>
+ <class name="mu2e::ProtonBeamDump::FilterMagnetExtMonFNAL"/>
+ <class name="art::Wrapper<mu2e::ProtonBeamDump>"/> 
+</lcgdict>
