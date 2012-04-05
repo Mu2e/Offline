@@ -10,6 +10,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 
+#include "art/Persistency/Common/Wrapper.h"
+
 #include "Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {
@@ -42,6 +44,7 @@ namespace mu2e {
     //----------------------------------------------------------------
   private:
     friend class WorldG4Maker;
+    template<class T> friend class art::Wrapper; // Needed for persistency
 
     // Private ctr: the class should be only obtained via the maker
     WorldG4() {}

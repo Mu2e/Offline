@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.18 2012/03/30 15:13:35 gandr Exp $
+# $Id: SConscript,v 1.19 2012/04/05 18:15:15 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/03/30 15:13:35 $
+# $Date: 2012/04/05 18:15:15 $
 #
 # Original author Rob Kutschke.
 #
@@ -13,10 +13,10 @@ plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=Tru
 non_plugin_cc = Glob('*.cc',strings=True)
 for cc in plugin_cc: non_plugin_cc.remove(cc)
 
-libname='#/lib/GeometryService'
+local_lib_name='GeometryService'
 
 env._dict["LIBPATH"] += ['#/lib']
-env.SharedLibrary(libname, non_plugin_cc,
+env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
         LIBS=[ 
                'BFieldGeom',
                'ExtinctionMonitorUCIGeom',
@@ -51,11 +51,22 @@ env.SharedLibrary(libname, non_plugin_cc,
              ],
 )
 
+env.DictionarySource(['#/tmp/src/GeometryService/src/%s_dict.cpp'%(local_lib_name),
+                      '#/tmp/src/GeometryService/src/%s_map.cpp'%(local_lib_name)],
+                     ['classes.h','classes_def.xml'])
 
-libnm=os.path.basename(libname)
+env.SharedLibrary('#/lib/%s_dict'%(local_lib_name,),
+                  '#/tmp/src/GeometryService/src/%s_dict.cpp'%(local_lib_name),
+                  LIBS=[local_lib_name, 'CLHEP'])
+
+env.SharedLibrary('#/lib/%s_map'%(local_lib_name,),
+                  '#/tmp/src/GeometryService/src/%s_map.cpp'%(local_lib_name))
+
+
+#================================================================
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
-    env.SharedLibrary( libname, cc, LIBS=[ libnm ] )
+    env.SharedLibrary( libname, cc, LIBS=[ local_lib_name ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

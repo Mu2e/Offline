@@ -1,0 +1,4 @@
+<lcgdict>
+ <class name="mu2e::WorldG4"/>
+ <class name="art::Wrapper<mu2e::WorldG4>"/>
+</lcgdict>
