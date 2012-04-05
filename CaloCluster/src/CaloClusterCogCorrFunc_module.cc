@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position on the electrons on the calorimeter
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.2 2012/04/03 21:21:56 gianipez Exp $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.3 2012/04/05 23:54:36 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/04/03 21:21:56 $
+// $Date: 2012/04/05 23:54:36 $
 //
 // Original author G. Pezzullo
 //
@@ -444,12 +444,14 @@ double corrFunc(double x, double *par){
 }
 
 double cogVcorrFunc(double x){
-        double par[13] = {-0.5943, -3.393, -26.8, 0.9915, -7.886, -30.87, -35.87, -0.3304, -6.319, -1.594, 171.8, 250.5, 114.3};
+//        double par[13] = {-0.5943, -3.393, -26.8, 0.9915, -7.886, -30.87, -35.87, -0.3304, -6.319, -1.594, 171.8, 250.5, 114.3};
+        double par[13] = {4139., 0.8839, -33.3, 441.9, -2.449e-7, -4.651e-5, -0.0006987, 0.4832, 0.9593, -2.156e4, 0., 0., 0.};
         return corrFunc(x, par);
 }
 
 double cogWcorrFunc(double x){
-        double par[13] = {4.263e4, 0., 0., 1., 7.466, -56.24, 159.3, -200.3, 71.76, 1.487, -32.87, -21.72, -0.8187};
+//        double par[13] = {4.263e4, 0., 0., 1., 7.466, -56.24, 159.3, -200.3, 71.76, 1.487, -32.87, -21.72, -0.8187};
+        double par[13] = {44.03, 0.8839, -33.3, 441.9, -6.497e-6, 0.001035, -0.04497, -0.00266, 0.6607, -219.7, 0., 0., 0.};
         return corrFunc(x, par);
 }
 
