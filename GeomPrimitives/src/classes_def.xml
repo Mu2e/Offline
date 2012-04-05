@@ -1,0 +1,5 @@
+<lcgdict>
+ <class name="mu2e::Polycone"/>
+ <class name="mu2e::Tube"/>
+ <class name="mu2e::TubsParams"/>
+</lcgdict>
