@@ -12,6 +12,8 @@
 
 #include "Mu2eInterfaces/inc/Detector.hh"
 
+#include "art/Persistency/Common/Wrapper.h"
+
 namespace mu2e {
 
   class Mu2eBuildingMaker;
@@ -71,6 +73,8 @@ namespace mu2e {
 
     // Private ctr: the class should be only obtained via the maker
     Mu2eBuilding() {}
+    // Or read back from persistent storage
+    template<class T> friend class art::Wrapper;
 
     double _hallInsideXmin;
     double _hallInsideXmax;

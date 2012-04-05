@@ -1,30 +1,43 @@
 #
-# $Id: SConscript,v 1.1 2012/02/27 06:05:35 gandr Exp $
+# $Id: SConscript,v 1.2 2012/04/05 18:43:22 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/02/27 06:05:35 $
+# $Date: 2012/04/05 18:43:22 $
 #
 # Original author Rob Kutschke.
 #
 
-import os, re
+import os.path, re
 Import('env')
 
 plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
 non_plugin_cc = Glob('*.cc', strings=True)
 for cc in plugin_cc: non_plugin_cc.remove(cc)
 
-if non_plugin_cc:
+# From: /path1/path2/path3/Name/src extract the string Name field.
+dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+local_lib_name=os.path.dirname(dd)
 
-    # From: /path1/path2/path3/Name/src extract the string Name field.
-    ll=env.Dir('.').abspath
-    dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
-    local_lib_name=os.path.dirname(dd)
+my_libs=['CLHEP']  # default if no cc_files
+if non_plugin_cc:
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ 'ProtonBeamDumpGeom',
-                             'Mu2eInterfaces',
-                             'Mu2eUtilities'
+                      LIBS=[ 'Mu2eInterfaces',
+                             'Mu2eUtilities',
+                             'CLHEP'
                              ],
                       )
+    my_libs=[local_lib_name] + my_libs
+    pass
+
+env.DictionarySource(['#/tmp/src/%s/%s_dict.cpp'%(dd,local_lib_name),
+                      '#/tmp/src/%s/%s_map.cpp'%(dd,local_lib_name)],
+                     ['classes.h','classes_def.xml'])
+
+env.SharedLibrary('#/lib/%s_dict'%(local_lib_name,),
+                  '#/tmp/src/%s/%s_dict.cpp'%(dd,local_lib_name),
+                  LIBS=my_libs)
+
+env.SharedLibrary('#/lib/%s_map'%(local_lib_name,),
+                  '#/tmp/src/%s/%s_map.cpp'%(dd,local_lib_name))
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
