@@ -2,9 +2,9 @@
 #define ProductionSolenoidGeom_PSShield_hh
 
 //
-// $Id: PSShield.hh,v 1.2 2012/03/30 16:31:10 gandr Exp $
+// $Id: PSShield.hh,v 1.3 2012/04/05 18:43:39 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/30 16:31:10 $
+// $Date: 2012/04/05 18:43:39 $
 //
 // Original author Andrei Gaponenko
 //
@@ -13,6 +13,8 @@
 
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "GeomPrimitives/inc/Polycone.hh"
+
+#include "art/Persistency/Common/Wrapper.h"
 
 namespace mu2e {
 
@@ -46,6 +48,10 @@ namespace mu2e {
       , cutoutHalfLength_(cutoutHalfLength)
       , cutoutRotY_(cutoutRotY)
     {};
+
+    // Or read back from persistent storage
+    PSShield();
+    template<class T> friend class art::Wrapper;
 
     Polycone bulk_;
     CLHEP::Hep3Vector cutoutRefPoint_;

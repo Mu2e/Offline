@@ -2,15 +2,17 @@
 #define ProductionSolenoidGeom_PSEnclosure_hh
 
 //
-// $Id: PSEnclosure.hh,v 1.1 2012/03/16 05:09:22 gandr Exp $
+// $Id: PSEnclosure.hh,v 1.2 2012/04/05 18:43:39 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/16 05:09:22 $
+// $Date: 2012/04/05 18:43:39 $
 //
 // Original author Andrei Gaponenko
 //
 
 #include "GeomPrimitives/inc/Tube.hh"
 #include "Mu2eInterfaces/inc/Detector.hh"
+
+#include "art/Persistency/Common/Wrapper.h"
 
 namespace mu2e {
 
@@ -32,6 +34,10 @@ namespace mu2e {
     PSEnclosure(const Tube& shell, const Tube& vac, const Tube& ep)
       : shell_(shell), vacuum_(vac), endPlate_(ep)
     {};
+
+    // Or read back from persistent storage
+    PSEnclosure();
+    template<class T> friend class art::Wrapper;
 
     // The real enclosure shape is shown in docdb-2066 It is
     // approximated here by a cylinder closed with a flat end plate.
