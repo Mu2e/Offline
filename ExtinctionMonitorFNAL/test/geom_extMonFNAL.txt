@@ -64,11 +64,11 @@ double extMonFilter.magnet.fieldStrength = 0.222; // Tesla
 
 // bool   vd.visible       = false;
 // bool PSShield.solid = true;
-int PSShield.verbosityLevel = 1;
 
-//int protonBeamDump.verbosityLevel = 1;
-//int extmon_fnal.verbosityLevel = 1;
-//int world.verbosityLevel  = 1;
+int PSShield.verbosityLevel = 1;
+int protonBeamDump.verbosityLevel = 1;
+int extmon_fnal.verbosityLevel = 1;
+int world.verbosityLevel  = 1;
 //
 
 // This tells emacs to view this file in c++ mode.

@@ -31,13 +31,26 @@ namespace mu2e {
     }
   }
 
-
+  //================================================================
   CLHEP::Hep3Vector ProtonBeamDump::filterEntranceInMu2e() const {
     CLHEP::Hep3Vector filterEntranceInEnclosure(_coreCenterInEnclosure[0] + _filterEntranceOffsetX,
                                                 _coreCenterInEnclosure[1] + _filterEntranceOffsetY,
                                                 _enclosureHalfSize[2]);
 
     return _enclosureCenterInMu2e + _enclosureRotationInMu2e.inverse() * filterEntranceInEnclosure;
+  }
+
+  //================================================================
+  CLHEP::Hep3Vector ProtonBeamDump::filterExitInMu2e() const {
+    CLHEP::Hep3Vector filterExitInEnclosure(_collimator2CenterInEnclosure[0]
+                                            + 0.5*_collimator2.horizontalLength()*tan(_collimator2.angleH()),
+
+                                            _collimator2CenterInEnclosure[1]
+                                            + 0.5*_collimator2.horizontalLength()*tan(_collimator2.angleV()),
+
+                                            -_enclosureHalfSize[2]);
+
+    return _enclosureCenterInMu2e + _enclosureRotationInMu2e.inverse() * filterExitInEnclosure;
   }
 
   //================================================================

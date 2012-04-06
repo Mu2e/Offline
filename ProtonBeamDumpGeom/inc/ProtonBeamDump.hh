@@ -37,6 +37,7 @@ namespace mu2e {
 
     public:
       std::string name() const { return _name; }
+      // NB: "horizontal" is historic name, this is actually the length of projection on dump Z axis.
       double horizontalLength() const { return _horizontalLength; }
       const std::vector<double> &channelWidth() const { return _channelWidth; }
       const std::vector<double> &channelHeight() const { return _channelHeight; }
@@ -130,6 +131,8 @@ namespace mu2e {
     // convenience accessor for event generators
     // returns the point of intersection of collimator1 axis with the dump shielding face
     CLHEP::Hep3Vector filterEntranceInMu2e() const;
+    // collimator2 exit
+    CLHEP::Hep3Vector filterExitInMu2e() const;
 
     //----------------------------------------------------------------
     // Transform to the "beam dump" coordinate system, which is centered

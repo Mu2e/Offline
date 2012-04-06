@@ -74,6 +74,15 @@ namespace mu2e {
       det->m_detectorCenterInRoom = CLHEP::Hep3Vector(detectorCenterInRoomX, detectorCenterInRoomY, detectorCenterInRoomZ);
 
       //----------------------------------------------------------------
+      // Coordinate transform info
+
+      det->m_coordinateCenterInMu2e = dump.filterExitInMu2e();
+
+      det->m_coordinateRotationInMu2e
+        .rotateX(-dump.collimator2().angleV())
+        .rotateY(+dump.collimator2().angleH() - dump.coreRotY());
+
+      //----------------------------------------------------------------
       if(verbose) {
         std::cout<<__func__<<": ExtMonFNAL room center in mu2e = "<<det->roomCenterInMu2e()<<std::endl;
         std::cout<<__func__<<": ExtMonFNAL room rotY = "<<dump.coreRotY()<<std::endl;
@@ -84,6 +93,9 @@ namespace mu2e {
                  <<std::endl;
 
         std::cout<<__func__<<": ExtMonFNAL detector center in room = "<<det->m_detectorCenterInRoom<<std::endl;
+
+        std::cout<<__func__<<": ExtMonFNAL coordinateCenterInMu2e = "<<det->m_coordinateCenterInMu2e<<std::endl;
+        std::cout<<__func__<<": ExtMonFNAL coordinateRotationInMu2e = "<<det->m_coordinateRotationInMu2e<<std::endl;
       }
 
       return det;
