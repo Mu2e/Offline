@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position on the electrons on the calorimeter
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.3 2012/04/05 23:54:36 gianipez Exp $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.4 2012/04/06 15:45:15 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/04/05 23:54:36 $
+// $Date: 2012/04/06 15:45:15 $
 //
 // Original author G. Pezzullo
 //
@@ -962,7 +962,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                         double thetaWimpact = std::atan(-1.0*dirMom_rotated.getZ() / dirMom_rotated.getX() ) ;
                                         _seedThetaW = thetaWimpact*180./TMath::Pi();
 
-                                        double deltaZ = cogWcorrFunc(tan(thetaWimpact) );
+                                        double deltaZ = cogWcorrFunc(thetaWimpact );
                                         deltaZ =  vaneFrame.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() - deltaZ ;
                                         _seedDeltaW = deltaZ;
 
@@ -975,7 +975,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                         double thetaVimpact = std::atan(dirMom_rotated.getY() /  dirMom_rotated.getX() ) ;
                                         _seedThetaV = thetaVimpact*180./TMath::Pi();
 
-                                        double deltaY = cogVcorrFunc( tan(thetaVimpact) );
+                                        double deltaY = cogVcorrFunc( thetaVimpact );
                                         _prova1     = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY;
 
                                         deltaY = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY ;
