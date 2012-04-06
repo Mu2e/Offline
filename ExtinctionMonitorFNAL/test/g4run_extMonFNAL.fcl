@@ -42,6 +42,8 @@ physics : {
             module_type          : G4
             generatorModuleLabel : generate
         }
+
+        geom : { module_type : GeometryRecorder }
     }
 
     filters: {
@@ -63,12 +65,13 @@ physics : {
 
     t1  : [ generate, g4run, fvd1  ]
     t16 : [ generate, g4run, fvd16 ]
+    gm  : [ geom ]
 
     eall : [ outVD1, outVD16, fullOutput ]
     efiltered: [ outVD1, outVD16 ]
     e16: [ outVD16 ]
 
-    trigger_paths  : [t16]
+    trigger_paths  : [gm, t16]
     end_paths      : [e16]
 }
 
