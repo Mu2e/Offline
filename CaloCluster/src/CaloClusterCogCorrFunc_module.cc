@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position on the electrons on the calorimeter
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.4 2012/04/06 15:45:15 gianipez Exp $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.5 2012/04/08 21:23:50 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/04/06 15:45:15 $
+// $Date: 2012/04/08 21:23:50 $
 //
 // Original author G. Pezzullo
 //
@@ -356,12 +356,14 @@ double triangoloVar(double x, char d){
         double y =0.;
         double par[6] = {0.};
         if(d == 'V' ){
-                double p1[6] = { 0.1689, 29.92, -1.344, 4.136, 0.6882, 0.004642};
+//                double p1[6] = { 0.1689, 29.92, -1.344, 4.136, 0.6882, 0.004642};//linear corr
+                double p1[6] = {0.3822, 29.75, -7.595, 5.384, 0.6845, 4.219e-15};//pol4 corr
                 for(int y=0; y<6; ++y){
                         par[y] = p1[y];
                 }
         } else if (d == 'W'){
-                double p2[6] = { 0.343, 30., -4.25, -1.441, 0.5152, 0.0001403};
+//                double p2[6] = { 0.343, 30., -4.25, -1.441, 0.5152, 0.0001403};//linear corr
+                double p2[6] = {0.3201, 30., -24.76, -1.257, 0.5072, 9.911e-6};//pol4 corr
                 for(int y=0; y<6; ++y){
                         par[y] = p2[y];
                 }
