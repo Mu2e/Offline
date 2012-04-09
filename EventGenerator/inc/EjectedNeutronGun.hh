@@ -6,16 +6,16 @@
 // on an Al nucleus.  Use the MARS distribution for the kinetic energy of the
 // neutron.
 //
-// $Id: EjectedNeutronGun.hh,v 1.13 2012/02/20 20:21:08 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/20 20:21:08 $
+// $Id: EjectedNeutronGun.hh,v 1.14 2012/04/09 16:48:18 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/04/09 16:48:18 $
 //
 //
 
 // C++ includes
 #include <memory>
 #include <string>
- 
+
 // Mu2e includes
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "EventGenerator/inc/GeneratorBase.hh"
@@ -48,30 +48,25 @@ namespace mu2e {
 
     // Start: parameters that can be configured from the config file.
 
+    // Which model of the energy spectrum will be used?
     enum SpectrumType { mars , docdb1619 , last_enum };
-    
+
     double _mean;    // Mean number of neutrons per event
-    double _elow;    // Range of neutrons energy.
-    double _ehi;     //
+    double _kelow;   // Range of kinetic energy for the neutrons.
+    double _kehi;    //
     double _czmin;   // Range of cos(polar angle)
     double _czmax;
     double _phimin;  // Range of azimuth
     double _phimax;
-    bool _PStoDSDelay;
-    bool _pPulseDelay;
+    bool   _PStoDSDelay;
+    bool   _pPulseDelay;
     double _pPulseShift;
 
     // Activate the folding procedure on generation time. Default is on
     bool _timeFolding;
 
-    int    _nbins;   // number of bins in neutron energy pdf
-
-    // Class object to generate position and time of the particle
-    std::auto_ptr<FoilParticleGenerator> _fGenerator;
-
-    double _mass; //Particle mass
-
-    double _p; //Particle momentum
+    // Number of bins in neutron energy pdf
+    int  _nbins;
 
     // Limits on the generated time.
     double _tmin;
@@ -79,13 +74,18 @@ namespace mu2e {
 
     // Histogram control.
     bool _doHistograms;
-    
+
     // Function to check that a valid neutron spectrum model is being used
     SpectrumType checkSpectrumModel(const int i);
     SpectrumType _spectrumModel;
 
     // end: parameters that can be configured from the config file.
 
+    // Class object to generate position and time of the particle
+    std::auto_ptr<FoilParticleGenerator> _fGenerator;
+
+    //Particle mass
+    double _mass;
 
     std::string _filetoread;
 
@@ -106,9 +106,9 @@ namespace mu2e {
     TH1D* _htime;
     TH1D* _hmudelay;
     TH1D* _hpulsedelay;
-    
-    
-    
+
+
+
     // Continuous spectrum function
     double energySpectrum(const double e);
 

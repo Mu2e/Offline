@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.26 2012/03/03 00:53:09 kutschke Exp $
+// $Id: EjectedNeutronGun.cc,v 1.27 2012/04/09 16:48:18 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/03 00:53:09 $
+// $Date: 2012/04/09 16:48:18 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -42,6 +42,8 @@
 #include "TH1D.h"
 #include "TMath.h"
 
+#include "cetlib/pow.h"
+
 using namespace std;
 
 static const double spectrumEndPoint = 100.;
@@ -54,9 +56,9 @@ namespace mu2e {
     GeneratorBase(),
 
     // Configurable parameters
-    _mean(config.getDouble("ejectedNeutronGun.mean",1.25)),
-    _elow(config.getDouble("ejectedNeutronGun.elow",0.)),
-    _ehi(config.getDouble("ejectedNeutronGun.ehi",spectrumEndPoint)),
+    _mean(config.getDouble("ejectedNeutronGun.mean",-1.0)),
+    _kelow(config.getDouble("ejectedNeutronGun.elow",0.)),
+    _kehi(config.getDouble("ejectedNeutronGun.ehi",spectrumEndPoint)),
     _czmin(config.getDouble("ejectedNeutronGun.czmin",  -1.)),
     _czmax(config.getDouble("ejectedNeutronGun.czmax",  1.)),
     _phimin(config.getDouble("ejectedNeutronGun.phimin", 0. )),
@@ -66,8 +68,11 @@ namespace mu2e {
     _pPulseShift(config.getDouble("ejectedNeutronGun.pPulseShift", 0)),
     _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
     _nbins(config.getInt("ejectedNeutronGun.nbins",200)),
+    _tmin(config.getDouble("ejectedNeutronGun.tmin",  0. )),
+    _tmax(0.),
     _doHistograms(config.getBool("ejectedNeutronGun.doHistograms",true)),
     _spectrumModel(checkSpectrumModel(config.getInt("ejectedNeutronGun.spectrumNumber",0))),
+    _fGenerator(0),
     _filetoread (config.getString("ejectedNeutronGun.spectrumFile","ConditionsService/data/neutronSpectrum.txt")),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
@@ -100,30 +105,29 @@ namespace mu2e {
     const HepPDT::ParticleData& p_data = pdt->particle(PDGCode::n0).ref();
     _mass = p_data.mass().value();
 
+    // High side of the live window.
+    _tmax = config.getDouble("ejectedNeutronGun.tmax",  accPar->deBuncherPeriod );
 
-    // Default values for the start and end of the live window.
-    // Can be overriden by the run-time config; see below.
-    _tmin = 0.;
-    _tmax = accPar->deBuncherPeriod;
-
-    _tmin = config.getDouble("ejectedNeutronGun.tmin",  _tmin );
-    _tmax = config.getDouble("ejectedNeutronGun.tmax",  _tmax );
-
+    // Limits of the momentum histotgram
+    double eLow  = _kelow + _mass;
+    double eHigh = _kehi  + _mass;
+    double pLow  = (eLow  > _mass) ? sqrt(cet::diff_of_squares(eLow, _mass)) : 0.;
+    double pHigh = (eHigh > _mass) ? sqrt(cet::diff_of_squares(eHigh,_mass)) : _mass;
 
     // Book histograms.
     if ( _doHistograms ){
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir  = tfs->mkdir( "EjectedNeutronGun" );
-      _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "Neutron Multiplicity",                20,     0,     20  );
-      _hKE           = tfdir.make<TH1D>( "hKE",           "Neutron Kinetic Energy",              100, _elow,   _ehi  );
-      _hMomentumMeV  = tfdir.make<TH1D>( "hMomentumMeV",  "Neutron Momentum in MeV",             50, _elow,   _ehi  );
-      _hKEZoom       = tfdir.make<TH1D>( "hEZoom",        "Neutron Kinetic Energy (zoom)",      200, _elow,   _ehi  );
-      _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "Neutron z Position (Tracker Coord)", 200, -6600., -5600. );
-      _hcz           = tfdir.make<TH1D>( "hcz",           "Neutron cos(theta)",                 100,    -1.,     1. );
-      _hphi          = tfdir.make<TH1D>( "hphi",          "Neutron azimuth",                    100,  -M_PI,  M_PI  );
-      _htime         = tfdir.make<TH1D>( "htime",         "Neutron time ",                      210,   -200.,  3000. );
+      _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "Neutron Multiplicity",                20,        0,     20   );
+      _hKE           = tfdir.make<TH1D>( "hKE",           "Neutron Kinetic Energy",             100,   _kelow,   _kehi  );
+      _hMomentumMeV  = tfdir.make<TH1D>( "hMomentumMeV",  "Neutron Momentum in MeV",             50,     pLow,   pHigh  );
+      _hKEZoom       = tfdir.make<TH1D>( "hEZoom",        "Neutron Kinetic Energy (zoom)",      200,   _kelow,   _kehi  );
+      _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "Neutron z Position (Tracker Coord)", 200,   -6600.,   -5600. );
+      _hcz           = tfdir.make<TH1D>( "hcz",           "Neutron cos(theta)",                 100,      -1.,       1. );
+      _hphi          = tfdir.make<TH1D>( "hphi",          "Neutron azimuth",                    100,    -M_PI,    M_PI  );
+      _htime         = tfdir.make<TH1D>( "htime",         "Neutron time ",                      210,    -200.,    3000. );
       _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 300, 0., 2000. );
-      _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, 0., 300. );
+      _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)",      60, 0.,  300. );
     }
 
     _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
@@ -172,13 +176,13 @@ namespace mu2e {
       _fGenerator->generatePositionAndTime(pos, time, _timeFolding);
 
       //Pick up energy
-      double eKine = _elow + _shape.fire() * ( _ehi - _elow );
-      double e   = eKine + _mass;
+      double eKine = _kelow + _shape.fire() * ( _kehi - _kelow );
+      double e     = eKine + _mass;
 
 
       //Pick up momentum vector
-      _p = safeSqrt(e*e - _mass*_mass);
-      CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
+      double p = safeSqrt(e*e - _mass*_mass);
+      CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(p);
 
       //Set Four-momentum
       CLHEP::HepLorentzVector mom(0,0,0,0);
@@ -194,7 +198,7 @@ namespace mu2e {
       if ( _doHistograms) {
         _hKE->Fill( eKine );
         _hKEZoom->Fill( eKine );
-        _hMomentumMeV->Fill( _p );
+        _hMomentumMeV->Fill( p );
         _hzPosition->Fill( pos.z() );
         _hcz->Fill( mom.cosTheta() );
         _hphi->Fill( mom.phi() );
@@ -252,11 +256,11 @@ namespace mu2e {
     if (_spectrumModel == docdb1619)
     {
       // Bin width.
-      double dE = (_ehi - _elow) / _nbins;
+      double dE = (_kehi - _kelow) / _nbins;
       neutronSpectrum.reserve(_nbins);
 
       for (int ib=0; ib<_nbins; ib++) {
-        double x = (_elow+(ib+0.5) * dE)*1000.0; //Function takes energy in MeV
+        double x = (_kelow+(ib+0.5) * dE)*1000.0; //Function takes energy in MeV
         neutronSpectrum.push_back(energySpectrum(x));
       }
 
@@ -269,7 +273,7 @@ namespace mu2e {
       string NeutronFileFIP =
         spectrumFileName(_filetoread);
       fstream infile(NeutronFileFIP.c_str(), ios::in);
-      double supposedBinning = (_ehi - _elow) / _nbins;
+      double supposedBinning = (_kehi - _kelow) / _nbins;
       if (infile.is_open()) {
         double en, val;
         bool read_on = true ;
@@ -280,10 +284,10 @@ namespace mu2e {
           } else {
             infile >> en >> val;
           }
-          if (en >= _elow && en <= _ehi) {
+          if (en >= _kelow && en <= _kehi) {
             neutronSpectrum.push_back(val);
           }
-          if (en > _ehi) read_on = false;
+          if (en > _kehi) read_on = false;
         }
       }
       else {
