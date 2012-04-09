@@ -1,10 +1,23 @@
-  $Id: v1_1_8.txt,v 1.13 2012/04/09 16:52:03 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2012/04/09 16:52:03 $
+  $Id: v1_1_8.txt,v 1.14 2012/04/09 23:12:06 ehrlich Exp $
+  $Author: ehrlich $
+  $Date: 2012/04/09 23:12:06 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_8
+
+15) April 09, 2012 ehrlich
+    CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc  
+    CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh  
+    Mu2eG4/test/geom_01.txt  
+    Mu2eBuildingGeom/inc/Mu2eBuilding.hh  
+    Mu2eBuildingGeom/src/Mu2eBuildingMaker.cc
+    
+    -The concrete walls/ceiling/floor of the detector hall got an 
+    additional corner to make it more realistic. 
+    -The dirt overburden is gone - only a 3ft concrete ceiling is left. 
+    -The bottom section of the cosmic ray shield was removed and 
+    the dimensions of the other sections were updated.
 
 14) April 09, 2012 kutschke
     EventGenerator/defaultConfigs/ejectedNeutronGun.txt
