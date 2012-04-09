@@ -1,10 +1,19 @@
-  $Id: v1_1_8.txt,v 1.12 2012/03/29 23:05:34 kutschke Exp $
+  $Id: v1_1_8.txt,v 1.13 2012/04/09 16:52:03 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/03/29 23:05:34 $
+  $Date: 2012/04/09 16:52:03 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_8
+
+14) April 09, 2012 kutschke
+    EventGenerator/defaultConfigs/ejectedNeutronGun.txt
+       Default value of ejectedNeutronGun.mean is now -1.
+
+    EventGenerator/inc/EjectedNeutronGun.hh
+    EventGenerator/src/EjectedNeutronGun.cc
+      No functional changes.
+      Fixed binning on diagnostics histograms and cleaned up targets of opportunity.
 
 13) March 29, 2012 kutschke
     DataProducts/inc/CRSScintillatorBarIndex.hh
