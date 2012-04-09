@@ -2,9 +2,9 @@
  *
  * Main class in a primitive runtime parameter utility.
  *
- * $Id: SimpleConfig.cc,v 1.18 2012/03/02 00:02:19 kutschke Exp $
+ * $Id: SimpleConfig.cc,v 1.19 2012/04/09 22:57:49 kutschke Exp $
  * $Author: kutschke $
- * $Date: 2012/03/02 00:02:19 $
+ * $Date: 2012/04/09 22:57:49 $
  *
  * Original author Rob Kutschke
  *
@@ -566,12 +566,14 @@ namespace mu2e {
             _rmap[key] = *b0;
 
             if ( _messageOnReplacement ){
-              mf::LogPrint("CONFIG")
-                << "SimpleConfig replacing parameter in: "
-                << _inputfile << "\n"
-                << "old record: " << *old << "\n"
-                << "new record: " << **b0
-                << "\n";
+
+              // Replace with mf::LogPrint when we learn how to
+              // disable exponential backoff.
+              cerr << "SimpleConfig replacing parameter in: "
+                   << _inputfile << "\n"
+                   << "old record: " << *old << "\n"
+                   << "new record: " << **b0
+                   << endl;
             }
 
 
