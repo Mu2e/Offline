@@ -1,9 +1,9 @@
 //
 // General utilities for the calorimeter's studies
 //
-// $Id: CaloClusterUtilities.cc,v 1.3 2012/03/19 19:35:42 gianipez Exp $
+// $Id: CaloClusterUtilities.cc,v 1.4 2012/04/10 20:28:57 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/19 19:35:42 $
+// $Date: 2012/04/10 20:28:57 $
 //
 // Original author G. Pezzullo & G. Tassielli & G. Onorato
 //
@@ -297,7 +297,10 @@ void cog(CaloCluster &cluster){
 
                 double tR = cg->getCrystalRByRO(thehit.id());
 //                cout<<"----------cog1."<<c<<".3"<<" --------"<<endl;
-
+                Z += tZ;
+                RQ += pow(tR, 2);
+                R += tR;
+                RZ += tZ*tR;
                 //                if( (*itCD)->time() < tmpTime){
                 //                        tmpTime = (*itCD)->time();
                 //                        timeR = tR;
@@ -313,10 +316,10 @@ void cog(CaloCluster &cluster){
                 tR*=(*itCD)->energyDep();
 //                cout<<"----------cog1."<<c<<".4"<<" --------"<<endl;
 
-                Z += tZ;
-                RQ += pow(tR, 2);
-                R += tR;
-                RZ += tZ*tR;
+//                Z += tZ;
+//                RQ += pow(tR, 2);
+//                R += tR;
+//                RZ += tZ*tR;
 
                 //Calculate the sum of the square of the weight for derive the error of the weighted mean
                 tmpEq += std::pow((*itCD)->energyDep(), 2.);
@@ -429,9 +432,12 @@ void cog_depth(CaloCluster &cluster, double depth, ClusterMap &clusterMap){
                 tmpEq += std::pow((*itCD)->energyDep(), 2.);
         }
 
-        clusterMap._COGcrySize = cluster.size();
-        float m = V*W - VW;//R*Z - RZ;//
-        m /= (pow(V,2) - VQ);//(pow(R,2) - RQ);
+        int size = cluster.size();
+        clusterMap._COGcrySize = size;
+        float m = V*W - size*VW;//R*Z - RZ;//
+        m /= (pow(V,2) - size*VQ);//(pow(R,2) - RQ);
+
+
         float D = RQ - pow(R,2);
         float errM = (1- pow(m,2)*D);
         if(errM>=0.0){
