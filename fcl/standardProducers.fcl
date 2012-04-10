@@ -3,8 +3,10 @@ BEGIN_PROLOG
 # Generate Event
 generate:
 {
-  module_type   : EventGenerator
-  inputfile     : "Mu2eG4/test/genconfig_02.txt"
+  module_type          : EventGenerator
+  inputfile            : "Mu2eG4/test/genconfig_02.txt"
+  allowReplacement     : true
+  messageOnReplacement : true
 }
 
 # Run geant4 on the generated event.
