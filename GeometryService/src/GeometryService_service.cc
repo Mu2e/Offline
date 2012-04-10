@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.24 2012/03/30 20:37:34 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 20:37:34 $
+// $Id: GeometryService_service.cc,v 1.25 2012/04/10 14:24:51 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/04/10 14:24:51 $
 //
 // Original author Rob Kutschke
 //
@@ -70,9 +70,12 @@ using namespace std;
 
 namespace mu2e {
 
-  GeometryService::GeometryService(fhicl::ParameterSet const& iPS,
+  GeometryService::GeometryService(fhicl::ParameterSet const& pset,
                                    art::ActivityRegistry&iRegistry) :
-    _inputfile(iPS.get<std::string>("inputFile","geom000.txt")),
+    _inputfile(            pset.get<std::string> ("inputFile",            "geom000.txt")),
+    _allowReplacement(     pset.get<bool>        ("allowReplacement",     true)),
+    _messageOnReplacement( pset.get<bool>        ("messageOnReplacement", true)),
+    _config(0),
     _detectors(),
     _run_count()
   {
@@ -107,7 +110,7 @@ namespace mu2e {
     mf::LogInfo  log("GEOM");
     log << "Geometry input file is: " << _inputfile << "\n";
 
-    _config = auto_ptr<SimpleConfig>(new SimpleConfig(_inputfile));
+    _config = auto_ptr<SimpleConfig>(new SimpleConfig(_inputfile,_allowReplacement,_messageOnReplacement));
 
     if ( _config->getBool("printConfig",false) ){
       log << *_config;

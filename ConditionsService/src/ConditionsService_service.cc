@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.6 2012/03/02 17:16:40 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/02 17:16:40 $
+// $Id: ConditionsService_service.cc,v 1.7 2012/04/10 14:24:51 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/04/10 14:24:51 $
 //
 // Original author Rob Kutschke
 //
@@ -14,14 +14,8 @@
 #include <typeinfo>
 
 // Framework include files
-//#include "art/Persistency/Provenance/ModuleDescription.h"
-//#include "art/Persistency/Provenance/EventID.h"
-//#include "art/Persistency/Provenance/Timestamp.h"
-//#include "art/Persistency/Provenance/SubRunID.h"
-//#include "art/Persistency/Provenance/RunID.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
 
 // Mu2e include files
 #include "ConditionsService/inc/ConditionsService.hh"
@@ -36,20 +30,21 @@ using namespace std;
 
 namespace mu2e {
 
-  ConditionsService::ConditionsService(fhicl::ParameterSet const& iPS,
+  ConditionsService::ConditionsService(fhicl::ParameterSet const& pset,
                                        art::ActivityRegistry&iRegistry) :
-    _conditionsFile(iPS.get<std::string>("conditionsfile","conditions.txt")),
-    _config(_conditionsFile),
+    _conditionsFile(pset.get<std::string>("conditionsfile","conditions.txt")),
+    _config(_conditionsFile,
+            pset.get<bool>("allowReplacement",     true),
+            pset.get<bool>("messageOnReplacement", true)
+            ),
     _entities(),
     _run_count()
   {
     iRegistry.watchPreBeginRun(this, &ConditionsService::preBeginRun);
   }
 
-
   ConditionsService::~ConditionsService(){
   }
-
 
   // This template can be defined here because this is a private method which is only
   // used by the code below in the same file.

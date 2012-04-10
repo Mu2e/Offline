@@ -47,7 +47,9 @@ namespace mu2e {
   public:
 
     explicit G4BeamlineGenerator(fhicl::ParameterSet const& pSet):
-      _configfile(pSet.get<std::string>("inputfile","generatorconfig.txt"))
+      _configfile(           pSet.get<std::string>("inputfile",            "generatorconfig.txt")),
+      _allowReplacement(     pSet.get<bool>       ("allowReplacement",     true)),
+      _messageOnReplacement( pSet.get<bool>       ("messageOnReplacement", true))
     {
       // A placeholder until I make a real data product.
       produces<GenParticleCollection>();
@@ -70,6 +72,10 @@ namespace mu2e {
 
     // Name of the run-time configuration file.
     string _configfile;
+
+    // Some c'tor attributes for the run-time configuration object.
+    bool _allowReplacement;
+    bool _messageOnReplacement;
 
     // A collection of all of the generators that we will run.
     typedef  boost::shared_ptr<FromG4BLFile> GeneratorBasePtr;
@@ -94,7 +100,7 @@ namespace mu2e {
         << _configfile
         << "\n\n";
 
-    SimpleConfig config(_configfile);
+    SimpleConfig config(_configfile, _allowReplacement, _messageOnReplacement );
     checkConfig(config);
 
     if ( config.getBool("printConfig",false) ){

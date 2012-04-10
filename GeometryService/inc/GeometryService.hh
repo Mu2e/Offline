@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.13 2012/02/24 16:37:31 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/24 16:37:31 $
+// $Id: GeometryService.hh,v 1.14 2012/04/10 14:24:51 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/04/10 14:24:51 $
 //
 // Original author Rob Kutschke
 //
@@ -26,13 +26,9 @@
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "boost/shared_ptr.hpp"
 
-
-
 // FIXME: Make a backdoor to geom svc to instantiate detector by hand. - call from G4_Module::beginRun.
 // right after geom initialize.
-// 
-
-
+//
 
 namespace mu2e {
 
@@ -69,6 +65,15 @@ public:
 
 private:
 
+    // The name of the run-time configuration file.
+    // Some day this will become a database key or similar.
+    std::string _inputfile;
+
+    // Some c'tor attributes for the run-time configuration object.
+    bool _allowReplacement;
+    bool _messageOnReplacement;
+
+    // The object that parses run-time configuration file.
     std::auto_ptr<SimpleConfig> _config;
 
     // Check the configuration.
@@ -107,10 +112,10 @@ private:
       return d;
     }
 
-    // The name of the input file.  Later will be a db key or similar.
-    std::string _inputfile;
-
+    // All of the detectors that we know about.
     DetMap _detectors;
+
+    // Keep a count of how many runs we have seen.
     int _run_count;
 
     // This is not copyable or assignable - private and unimplemented.

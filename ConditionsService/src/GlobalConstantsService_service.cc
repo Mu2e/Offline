@@ -32,9 +32,12 @@ namespace mu2e {
   }
 
   //================================================================
-  GlobalConstantsService::GlobalConstantsService(fhicl::ParameterSet const& iPS,
+  GlobalConstantsService::GlobalConstantsService(fhicl::ParameterSet const& pset,
                                                  art::ActivityRegistry&iRegistry)
-    : config_(iPS.get<std::string>("inputFile"))
+    : config_(pset.get<std::string>("inputFile"),
+              pset.get<bool>("allowReplacement",     true),
+              pset.get<bool>("messageOnReplacement", true)
+             )
   {
     mf::LogPrint log("GlobalConstants");
     log<<"GlobalConstantsService input file is: "<<config_.inputFile()<<"\n";

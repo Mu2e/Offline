@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.14 2012/03/16 19:33:56 genser Exp $
-  $Author: genser $
-  $Date: 2012/03/16 19:33:56 $
+  $Id: EventGenerator_module.cc,v 1.15 2012/04/10 14:24:51 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/04/10 14:24:51 $
 
   Original author Rob Kutschke
 
@@ -81,13 +81,12 @@ namespace mu2e {
   public:
 
     explicit EventGenerator(fhicl::ParameterSet const& pSet):
-      _configfile(pSet.get<std::string>("inputfile","generatorconfig.txt"))
+      _configfile(           pSet.get<std::string>("inputfile",            "generatorconfig.txt")),
+      _allowReplacement(     pSet.get<bool>       ("allowReplacement",     true)),
+      _messageOnReplacement( pSet.get<bool>       ("messageOnReplacement", true))
     {
       // A placeholder until I make a real data product.
       produces<GenParticleCollection>();
-
-      // Print generators for which Id's are defined.
-      //GenId::printAll();
 
       // Provide a common engine for the generators to use via the service
       createEngine( art::ServiceHandle<SeedService>()->getSeed() );
@@ -103,6 +102,10 @@ namespace mu2e {
 
     // Name of the run-time configuration file.
     string _configfile;
+
+    // Some c'tor attributes for the run-time configuration object.
+    bool _allowReplacement;
+    bool _messageOnReplacement;
 
     // A collection of all of the generators that we will run.
     typedef  boost::shared_ptr<GeneratorBase> GeneratorBasePtr;
@@ -127,7 +130,7 @@ namespace mu2e {
         << _configfile
         << "\n\n";
 
-    SimpleConfig config(_configfile);
+    SimpleConfig config(_configfile, _allowReplacement, _messageOnReplacement);
     checkConfig(config);
 
     if ( config.getBool("printConfig",false) ){
