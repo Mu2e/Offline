@@ -1,22 +1,53 @@
-  $Id: v1_1_8.txt,v 1.14 2012/04/09 23:12:06 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2012/04/09 23:12:06 $
+  $Id: v1_1_8.txt,v 1.15 2012/04/10 14:47:02 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/04/10 14:47:02 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_8
 
+16) April 10, 2012 kutschke
+    All modules/services that use a SimpleConfig object to get some of
+    their run time configuration have two new run time parameters in
+    their parameter set.  The names and default values are:
+
+      allowReplacement     : true
+      messageOnReplacement : true
+
+    These values have been default for a long time but there was no way to
+    change them at run time until now.
+
+    If the first is set to true then an existing parameter may be overriden
+    by a subsequent definition ( the last definition always wins ).  If it
+    is set to false then a second defintion of a parameter cause the program
+    to stop.  If the first parameter is true, then second parameter controls
+    whether or not a message will be given to announce the redefinition.
+
+    ConditionsService/src/ConditionsService_service.cc
+    ConditionsService/src/GlobalConstantsService_service.cc
+    EventGenerator/src/EventGenerator_module.cc
+    EventGenerator/src/G4BeamlineGenerator_module.cc
+    GeometryService/inc/GeometryService.hh
+    GeometryService/src/GeometryService_service.cc
+
+    Also add these parameters, with their default values, to the
+    parameter sets in:
+      fcl/standardProducers.fcl
+      Mu2eG4/test/beamline_01.fcl
+      Mu2eG4/test/beamline_02.fcl
+      Mu2eG4/test/g4test_03.fcl
+
 15) April 09, 2012 ehrlich
-    CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc  
-    CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh  
-    Mu2eG4/test/geom_01.txt  
-    Mu2eBuildingGeom/inc/Mu2eBuilding.hh  
+    CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc
+    CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh
+    Mu2eG4/test/geom_01.txt
+    Mu2eBuildingGeom/inc/Mu2eBuilding.hh
     Mu2eBuildingGeom/src/Mu2eBuildingMaker.cc
-    
-    -The concrete walls/ceiling/floor of the detector hall got an 
-    additional corner to make it more realistic. 
-    -The dirt overburden is gone - only a 3ft concrete ceiling is left. 
-    -The bottom section of the cosmic ray shield was removed and 
+
+    -The concrete walls/ceiling/floor of the detector hall got an
+    additional corner to make it more realistic.
+    -The dirt overburden is gone - only a 3ft concrete ceiling is left.
+    -The bottom section of the cosmic ray shield was removed and
     the dimensions of the other sections were updated.
 
 14) April 09, 2012 kutschke
