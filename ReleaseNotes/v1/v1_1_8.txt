@@ -1,10 +1,13 @@
-  $Id: v1_1_8.txt,v 1.16 2012/04/10 21:27:09 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2012/04/10 21:27:09 $
+  $Id: v1_1_8.txt,v 1.17 2012/04/10 23:23:40 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/04/10 23:23:40 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_8
+
+18) April 10, 2012 kutschke
+    Added a new accessor, get(), to GeometryService/inc/GeomHandle.hh
 
 17) April 10, 2012 ehrlich
     CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc
