@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.139 2012/04/10 20:59:46 ehrlich Exp $
+// $Id: geom_01.txt,v 1.140 2012/04/10 21:27:09 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/04/10 20:59:46 $
+// $Date: 2012/04/10 21:27:09 $
 //
 // Original author Rob Kutschke
 //
@@ -121,7 +121,7 @@ bool g4.printMaterials = false;
 // make detector volume structure visible where enabled
 bool g4.forceAuxEdgeVisible = true;
 // invoke volume overlap check where enabled (draws random numbers)
-bool g4.doSurfaceCheck = true;
+bool g4.doSurfaceCheck = false;
 
 // The world volume should enclose the everything.
 // The margins are
