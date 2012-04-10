@@ -12,7 +12,7 @@
 
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
-
+  
 namespace mu2e {
 
   std::auto_ptr<Mu2eBuilding> Mu2eBuildingMaker::make(const SimpleConfig& c, const ProtonBeamDump& dump)
@@ -24,9 +24,6 @@ namespace mu2e {
     b->_hallInsideXmin = c.getDouble("hall.insideXmin");
     b->_hallInsideXmax = c.getDouble("hall.insideXmax");
     b->_hallInsideZmax = c.getDouble("hall.insideZmax");
-
-    b->_hallInsideXDSCorner = c.getDouble("hall.insideXDSCorner");
-    b->_hallInsideZDSCorner = c.getDouble("hall.insideZDSCorner");
 
     b->_hallInsideXPSCorner = c.getDouble("hall.insideXPSCorner");
     b->_hallInsideZPSCorner = c.getDouble("hall.insideZPSCorner");
@@ -97,23 +94,10 @@ namespace mu2e {
     //----------------------------------------------------------------
     // Fragment 2
     b->_concreteOuterOutline2.push_back(Hep2Vector(b->hallInsideXmax() + b->hallWallThickness(),
-                                                    b->hallInsideZDSCorner() + b->hallWallThickness()));
-
-    b->_hallInsideOutline.push_back(Hep2Vector(b->hallInsideXmax(), b->hallInsideZDSCorner()));
-
-    //----------------
-    b->_concreteOuterOutline2.push_back(Hep2Vector(b->hallInsideXDSCorner() + b->hallWallThickness(),
-                                                    b->hallInsideZDSCorner() + b->hallWallThickness()));
-
-    b->_hallInsideOutline.push_back(Hep2Vector(b->hallInsideXDSCorner(), b->hallInsideZDSCorner()));
-
-    //----------------
-    b->_concreteOuterOutline2.push_back(Hep2Vector(b->hallInsideXDSCorner() + b->hallWallThickness(),
                                                     b->hallInsideZmax() + b->hallWallThickness()));
 
-    b->_hallInsideOutline.push_back(Hep2Vector(b->hallInsideXDSCorner(), b->hallInsideZmax()));
+    b->_hallInsideOutline.push_back(Hep2Vector(b->hallInsideXmax(), b->hallInsideZmax()));
 
-    //----------------
 
     b->_concreteOuterOutline2.push_back(Hep2Vector(b->hallInsideXmin() - b->hallWallThickness(),
                                                     b->hallInsideZmax() + b->hallWallThickness()));

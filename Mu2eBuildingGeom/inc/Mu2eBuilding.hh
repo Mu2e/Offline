@@ -13,7 +13,7 @@
 #include "Mu2eInterfaces/inc/Detector.hh"
 
 #include "art/Persistency/Common/Wrapper.h"
-
+ 
 namespace mu2e {
 
   class Mu2eBuildingMaker;
@@ -29,8 +29,6 @@ namespace mu2e {
 
     double hallInsideZmax() const { return _hallInsideZmax; }
 
-    double hallInsideXDSCorner() const { return _hallInsideXDSCorner; }
-    double hallInsideZDSCorner() const { return _hallInsideZDSCorner; }
     double hallInsideXPSCorner() const { return _hallInsideXPSCorner; }
     double hallInsideZPSCorner() const { return _hallInsideZPSCorner; }
     double hallInsideZPStoBeamDumpCorner() const { return _hallInsideZPStoBeamDumpCorner; }
@@ -85,8 +83,6 @@ namespace mu2e {
 
     double _hallInsideZmax;
 
-    double _hallInsideXDSCorner;
-    double _hallInsideZDSCorner;
     double _hallInsideXPSCorner;
     double _hallInsideZPSCorner;
     double _hallInsideZPStoBeamDumpCorner;

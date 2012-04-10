@@ -3,13 +3,13 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.7 2012/04/09 19:45:55 ehrlich Exp $
+// $Id: CosmicRayShieldMaker.hh,v 1.8 2012/04/10 20:59:46 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/04/09 19:45:55 $
+// $Date: 2012/04/10 20:59:46 $
 //
 // Original author KLG
 //
-
+ 
 #include <memory>
 #include <string>
 #include <vector>
@@ -59,14 +59,14 @@ private:
   int _diagLevel;
 
   double _HallSteelHalfThick;
-  double _HallSteelHalfLengthX;
-  double _HallSteelHalfLengthY;
+  double _HallSteelHalfLengthXY;
   double _HallSteelHalfLengthZ;
   double _HallSteelHoleRadius;
 
   std::vector<double> _HallSteelOffset;
 
   CLHEP::Hep3Vector _TopHallSteelOffset;
+  CLHEP::Hep3Vector _BottomHallSteelOffset;
   CLHEP::Hep3Vector _LeftHallSteelOffset;
   CLHEP::Hep3Vector _RightHallSteelOffset;
   CLHEP::Hep3Vector _DownstreamHallSteelOffset;
