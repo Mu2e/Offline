@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.15 2012/03/22 22:29:55 brownd Exp $
+// $Id: TrkStrawHit.cc,v 1.16 2012/04/11 19:51:24 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/22 22:29:55 $
+// $Date: 2012/04/11 19:51:24 $
 //
 // Original author David Brown, LBNL
 //
@@ -64,7 +64,7 @@ namespace mu2e
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     tcal->StrawHitInfo(strawhit,_wpos,_wtime,_tddist_err,_wtime_err);
     CLHEP::Hep3Vector const& wiredir = _straw.getDirection();
-// get ime division and drift information for this straw hit relative to the wire center
+// get time division and drift information for this straw hit relative to the wire center
     _tddist = tcal->TimeDiffToDistance(_straw.index(),_strawhit.dt());
     CLHEP::Hep3Vector const& mid = _straw.getMidPoint();
 // the hit trajectory is defined as a line segment directed along the wire direction starting from the wire center

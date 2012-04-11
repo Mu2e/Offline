@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.22 2012/03/22 22:31:51 brownd Exp $
+// $Id: KalFit.cc,v 1.23 2012/04/11 19:51:24 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/22 22:31:51 $
+// $Date: 2012/04/11 19:51:24 $
 //
 
 // the following has to come before other BaBar includes
@@ -49,8 +49,6 @@ namespace mu2e
 {
 // convert speed of light in mm/nsec
   const double KalFit::_vlight = CLHEP::c_light;
-// drift velocity should come from a service FIXME!!!  
-  const double KalFit::_vdrift = 0.05; // 50 um/nsec
 // comparison functor for ordering hits
   struct fltlencomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
           bool operator()(TrkStrawHit* x, TrkStrawHit* y) { return x->fltLen() < y->fltLen(); }
@@ -257,8 +255,10 @@ namespace mu2e
 	size_t istraw = mytrk.strawHitIndices()[iind]._index;
 	const StrawHit& strawhit(mytrk.strawHitCollection()->at(istraw));
 	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
-	// assume a constant drift velocity means the average drift time is half the maximum drift time
-	double tdrift = 0.5*straw.getRadius()/_vdrift;
+	// assume the average drift time is half the maximum drift distance.  This is a poor approximation, but good enough for now
+	double tdrift, tdrifterr;
+	static CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
+	tcal->DistanceToTime(straw.index(),0.5*straw.getRadius(),zdir,tdrift,tdrifterr);
  	// compute initial flightlength from helix and hit Z
 	double hflt = mytrk.helix().zFlight(straw.getMidPoint().z()) - t0flt;
 	// estimate the time the track reaches this hit from z=0, assuming speed-of-light travel along the helix. Should use actual
@@ -345,19 +345,22 @@ namespace mu2e
           if(hitsite != 0 && myfit._krep->smoothedTraj(hitsite,straj)){
             TrkPoca poca(*straj,hit->fltLen(),*(hit->hitTraj()),hit->hitLen());
             if(poca.status().success()){
-	      double rad = hit->straw().getRadius();
-// sign doca by the ambiguity.  Restrict to the physical maximum
-              double doca = std::min(poca.doca()*hit->ambig(),rad);
+// Sign doca by the ambiguity
+	      double doca = poca.doca()*hit->ambig();
 // restrict the range, symmetrically to avoid bias
-              if(doca > _mint0doca){
-// propagation time to this hit from z=0.  This assumes beta=1, FIXME!!!
+	      double rad = hit->straw().getRadius();
+              if(doca > _mint0doca && doca < rad-_mint0doca){
+// translate the DOCA into a time
+		double tdrift,tdrifterr;
+		tcal->DistanceToTime(hit->straw().index(),doca,straj->direction(poca.flt1()),tdrift,tdrifterr);
+// particle transit time to this hit from z=0.  This assumes beta=1, FIXME!!!
                 double tflt = (hit->fltLen()-flt0)/_vlight;
-		double vwire = tcal->SignalVelocity(hit->straw().index());
-		double eprop = (hit->straw().getHalfLength()-poca.flt2())/vwire; 
-		// drift time of this hit (plus t0)
-		double tdrift = hit->time() - tflt - eprop;
-// t0 = Time difference between the drift time and the DOCA time.  sign of DOCA is irrelevant here.
-                double hitt0 = tdrift - doca/_vdrift;
+// electronic signal transit time from the POCA to the primary straw end.
+// This calculation corresponds tot he conventions that the time is measured WRT the far end of the wire as defined
+// by the wire direction, and that the hit trajectory starts in the middle of the straw, going in the wire direction.
+		double teprop = (hit->straw().getHalfLength()-poca.flt2())/tcal->SignalVelocity(hit->straw().index()); 
+// t0 = Time difference between the hit time and the sum of all propagation
+                double hitt0 = hit->time() - tdrift - tflt - teprop;
                 hitst0.push_back(hitt0);
 		t0sum += hitt0;
 		t0sum2 += hitt0*hitt0;
