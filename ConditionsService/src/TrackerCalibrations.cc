@@ -1,9 +1,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.5 2012/01/25 21:32:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/01/25 21:32:10 $
+// $Id: TrackerCalibrations.cc,v 1.6 2012/04/11 19:48:08 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/04/11 19:48:08 $
 //
 
 // Mu2e include files
@@ -19,18 +19,36 @@ namespace mu2e {
   TrackerCalibrations::TrackerCalibrations( SimpleConfig const& config ){
 
     // Here we should eventually interface to some database
-    _resopar0 = config.getDouble("TDResolution_0",64.2);
-    _resopar1 = config.getDouble("TDResolution_1",60.7);
+    _tdresopar0 = config.getDouble("TDResolution_0",64.2);
+    _tdresopar1 = config.getDouble("TDResolution_1",60.7);
+    // simplistic placeholder for drift calibration parameters
+    _vdrift = config.getDouble("DriftVelocity",0.05); // mm/ns
+    _rres = config.getDouble("DriftRadiusResolution",0.1); //mm
+  }
+  
+  void TrackerCalibrations::DistanceToTime(StrawIndex strawIndex,double rdrift, CLHEP::Hep3Vector const& tdir,
+    double& tdrift, double& tdrifterr) const {
+    // oversimplfied model, FIXME!!!
+    // Note that negative drift radii are allowed: this is necessary to allow continuous derivatives at the wire.
+    // Calling classes that require a positive time should pass abs(rdrift).
+    tdrift = rdrift/_vdrift;
+    tdrifterr = _rres/_vdrift;
+  }
+
+  void TrackerCalibrations::TimeToDistance(StrawIndex strawIndex, double tdrift, CLHEP::Hep3Vector const& tdir,
+    double& rdrift, double& rdrifterr) const {
+    rdrift = tdrift*_vdrift;
+    rdrifterr = _rres;
   }
 
   double TrackerCalibrations::TimeDivisionResolution(StrawIndex , double znorm) const {
-    double reso  = _resopar0 + _resopar1 * (znorm - 0.5) * (znorm - 0.5); //resolution in mm
+    double reso  = _tdresopar0 + _tdresopar1 * (znorm - 0.5) * (znorm - 0.5); //resolution in mm
     return reso;
 
   }
 
   double TrackerCalibrations::SignalVelocity(StrawIndex ) const {
-    double distvsdeltat = 231.;
+    static const double distvsdeltat = 231.;
     return distvsdeltat; //mm/ns
   }
 
