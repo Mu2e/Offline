@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.14 2012/03/21 00:34:11 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/21 00:34:11 $
+// $Id: MakeStrawHit_module.cc,v 1.15 2012/04/11 19:50:39 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/04/11 19:50:39 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -94,8 +94,6 @@ namespace mu2e {
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
       _minimumLength(pset.get<double>("minimumLength",0.01)),   // mm
-      _driftVelocity(pset.get<double>("driftVelocity",0.05)),   // mm/ns
-      _driftSigma(pset.get<double>("driftSigma",0.1)),          // mm
       _minimumTimeGap(pset.get<double>("minimumTimeGap",100.0)),// ns
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
       _enableFlightTimeCorrection(pset.get<bool>("flightTimeCorrection",false)),
@@ -136,8 +134,6 @@ namespace mu2e {
     // Parameters
     double _minimumEnergy;  // minimum energy deposition of G4 step
     double _minimumLength;  // is G4Step is shorter than this, consider it a point
-    double _driftVelocity;
-    double _driftSigma;
     double _minimumTimeGap;
     string _g4ModuleLabel;  // Name of the module that made these hits.
     bool   _enableFlightTimeCorrection;
@@ -351,7 +347,10 @@ namespace mu2e {
         // t1 is signal time at positive end (along w vector),
         // t2 - at negative end (opposite to w vector)
 
-        double driftTime = (hit_dca + _gaussian.fire(0.,_driftSigma))/_driftVelocity;
+	double tdrift,tdrifterr;
+	trackerCalibrations->DistanceToTime(straw_id,hit_dca,mom,tdrift,tdrifterr);
+	// smear the time to account for dispersion and measurement error.  Truncate at 0
+        double driftTime = std::max(0.0,tdrift + _gaussian.fire(0.,tdrifterr));
         double distanceToMiddle = (hit_pca-mid).dot(w);
         // The convention is that the principle time measurement (t1) corresponds to a measurement
         // at the end of the wire as signed by the wire direction vector. t2 is at the near end.
