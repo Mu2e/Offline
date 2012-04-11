@@ -1,9 +1,9 @@
 //
-// implementation of different algorithm to reconstruct the impact position on the electrons on the calorimeter
+// implementation of different algorithm to reconstruct the impact position
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.5 2012/04/08 21:23:50 gianipez Exp $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.6 2012/04/11 10:35:13 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/04/08 21:23:50 $
+// $Date: 2012/04/11 10:35:13 $
 //
 // Original author G. Pezzullo
 //
@@ -356,13 +356,13 @@ double triangoloVar(double x, char d){
         double y =0.;
         double par[6] = {0.};
         if(d == 'V' ){
-//                double p1[6] = { 0.1689, 29.92, -1.344, 4.136, 0.6882, 0.004642};//linear corr
+                //                double p1[6] = { 0.1689, 29.92, -1.344, 4.136, 0.6882, 0.004642};//linear corr
                 double p1[6] = {0.3822, 29.75, -7.595, 5.384, 0.6845, 4.219e-15};//pol4 corr
                 for(int y=0; y<6; ++y){
                         par[y] = p1[y];
                 }
         } else if (d == 'W'){
-//                double p2[6] = { 0.343, 30., -4.25, -1.441, 0.5152, 0.0001403};//linear corr
+                //                double p2[6] = { 0.343, 30., -4.25, -1.441, 0.5152, 0.0001403};//linear corr
                 double p2[6] = {0.3201, 30., -24.76, -1.257, 0.5072, 9.911e-6};//pol4 corr
                 for(int y=0; y<6; ++y){
                         par[y] = p2[y];
@@ -419,8 +419,7 @@ double corrFunc(double x, double *par){
         double a = -1.*(-3.*e + 3.*l + -2.*d*y - c*y*y + h*y*y -f*pow(y,4) )/pow(y,4),
                         b = -1.*(4.*e - 4.*l +3.*d*y -3.*i*y +2.*c*y*y - 2.*h*y*y - g*y*y*y) / pow(y,3),
                         m = -1.*(3.*l -3.*q + 2*i*y1 - 2.*p*y1 + h*y1*y1 - o*y1*y1 - f*pow(y1, 4) )/pow(y1, 4),
-                        n = -1.*(-
-                                        4.*l +4.*q -3*i*y1 + 3.*p*y1 -2.*h*y1*y1 +2.*o*y1*y1 - g*pow(y1, 3))/pow(y1, 3);
+                        n = -1.*(-4.*l +4.*q -3*i*y1 + 3.*p*y1 -2.*h*y1*y1 +2.*o*y1*y1 - g*pow(y1, 3))/pow(y1, 3);
 
         if(x >= y){
                 res += a*pow(x, 4);
@@ -446,14 +445,16 @@ double corrFunc(double x, double *par){
 }
 
 double cogVcorrFunc(double x){
-//        double par[13] = {-0.5943, -3.393, -26.8, 0.9915, -7.886, -30.87, -35.87, -0.3304, -6.319, -1.594, 171.8, 250.5, 114.3};
-        double par[13] = {4139., 0.8839, -33.3, 441.9, -2.449e-7, -4.651e-5, -0.0006987, 0.4832, 0.9593, -2.156e4, 0., 0., 0.};
+        //        double par[13] = {-0.5943, -3.393, -26.8, 0.9915, -7.886, -30.87, -35.87, -0.3304, -6.319, -1.594, 171.8, 250.5, 114.3};//function of tan(seedThetaV)
+        //        double par[13] = {4139., 0.8839, -33.3, 441.9, -2.449e-7, -4.651e-5, -0.0006987, 0.4832, 0.9593, -2.156e4, 0., 0., 0.};
+        double par[13] = {1.06e4, 0.8839, -33.3, 441.9, -0.0002132, 0.03959, -2.759, 85.47, -975.8, 40., -0.0007464, 0.4805, 0.9861};//func of seedThetaV
         return corrFunc(x, par);
 }
 
 double cogWcorrFunc(double x){
-//        double par[13] = {4.263e4, 0., 0., 1., 7.466, -56.24, 159.3, -200.3, 71.76, 1.487, -32.87, -21.72, -0.8187};
-        double par[13] = {44.03, 0.8839, -33.3, 441.9, -6.497e-6, 0.001035, -0.04497, -0.00266, 0.6607, -219.7, 0., 0., 0.};
+        //        double par[13] = {4.263e4, 0., 0., 1., 7.466, -56.24, 159.3, -200.3, 71.76, 1.487, -32.87, -21.72, -0.8187};
+        //        double par[13] = {44.03, 0.8839, -33.3, 441.9, -6.497e-6, 0.001035, -0.04497, -0.00266, 0.6607, -219.7, 0., 0., 0.};//func of seedThetaW
+        double par[13] = {51.86, -859.6, 9.515e-7, 0.0002434, -0.02172, -0.002659, -4.938, 11.84, 5.795, -29.08, 48.75};//func of seedThetaW
         return corrFunc(x, par);
 }
 
@@ -694,420 +695,420 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
         globalNtrkTot += NtrkTot;
 
 
-//        for(int bin =1; bin <= _hTHistDeltaURec->GetNbinsX(); ++bin){
-                std::vector<unsigned int> trkVec, trkVecTot;
-                for(unsigned int f = 0; f != tmpV.size(); ++f){
-                        trkVec.push_back(tmpV[f]);
-                }
-                for(unsigned int f = 0; f != tmpVTot.size(); ++f){
-                        trkVecTot.push_back(tmpVTot[f]);
-                }
-                ElecMap elecMap;
+        //        for(int bin =1; bin <= _hTHistDeltaURec->GetNbinsX(); ++bin){
+        std::vector<unsigned int> trkVec, trkVecTot;
+        for(unsigned int f = 0; f != tmpV.size(); ++f){
+                trkVec.push_back(tmpV[f]);
+        }
+        for(unsigned int f = 0; f != tmpVTot.size(); ++f){
+                trkVecTot.push_back(tmpVTot[f]);
+        }
+        ElecMap elecMap;
 
-                if(caloClusters->size()>0 ){
-                        int iVane;
-                        for(size_t icl=0; icl<caloClusters->size(); ++icl){
-                                CaloCluster const& clu = (*caloClusters).at(icl);
+        if(caloClusters->size()>0 ){
+                int iVane;
+                for(size_t icl=0; icl<caloClusters->size(); ++icl){
+                        CaloCluster const& clu = (*caloClusters).at(icl);
 
-                                caloClustersPointer->push_back(clu);
-                                CaloClusterCollection::iterator tmpCluster = caloClustersPointer->end();
-                                tmpCluster--;
+                        caloClustersPointer->push_back(clu);
+                        CaloClusterCollection::iterator tmpCluster = caloClustersPointer->end();
+                        tmpCluster--;
 
-                                if(_diagLevel <0) cout<<"calculating cog()..."<<endl;
-                                //CLHEP::Hep3Vector cogDepth = cog_depth(*tmpCluster,_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) );//- 0.5*_hTHistDeltaURec->GetXaxis()->GetBinWidth(bin) );
-                                //CLHEP::Hep3Vector cogDepth = LOGcog(*tmpCluster, _CogOffSet, _hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) );//- 0.5*_hTHistDeltaURec->GetXaxis()->GetBinWidth(bin) );
-                                ClusterMap clusterMap;
-                                //LOGcogMap( *tmpCluster, _CogOffSet, _hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) , clusterMap );
-                                cog_depth( *tmpCluster, _Depth , clusterMap );
-                                CLHEP::Hep3Vector cogDepth = clusterMap._cluCOG;
-                                if(_diagLevel <0) cout<<"cog() calculated!!"<<endl;
-                                iVane = clu.vaneId();
+                        if(_diagLevel <0) cout<<"calculating cog()..."<<endl;
+                        //CLHEP::Hep3Vector cogDepth = cog_depth(*tmpCluster,_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) );//- 0.5*_hTHistDeltaURec->GetXaxis()->GetBinWidth(bin) );
+                        //CLHEP::Hep3Vector cogDepth = LOGcog(*tmpCluster, _CogOffSet, _hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) );//- 0.5*_hTHistDeltaURec->GetXaxis()->GetBinWidth(bin) );
+                        ClusterMap clusterMap;
+                        //LOGcogMap( *tmpCluster, _CogOffSet, _hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) , clusterMap );
+                        cog_depth( *tmpCluster, _Depth , clusterMap );
+                        CLHEP::Hep3Vector cogDepth = clusterMap._cluCOG;
+                        if(_diagLevel <0) cout<<"cog() calculated!!"<<endl;
+                        iVane = clu.vaneId();
 
-                                CaloCrystalHitPtrVector caloClusterHits = clu.caloCrystalHitsPtrVector();
+                        CaloCrystalHitPtrVector caloClusterHits = clu.caloCrystalHitsPtrVector();
 
-                                for(size_t i=0; i<caloClusterHits.size(); ++i){
-                                        CaloCrystalHit const& hit = *(caloClusterHits.at(i));
+                        for(size_t i=0; i<caloClusterHits.size(); ++i){
+                                CaloCrystalHit const& hit = *(caloClusterHits.at(i));
 
-                                        std::vector<art::Ptr<CaloHit> > const& ROIds = hit.readouts();
-                                        if(ROIds.size()<1 ) continue;
+                                std::vector<art::Ptr<CaloHit> > const& ROIds = hit.readouts();
+                                if(ROIds.size()<1 ) continue;
 
-                                        CaloHit const& thehit = *ROIds.at(0);
-                                        size_t collectionPosition = ROIds.at(0).key();
+                                CaloHit const& thehit = *ROIds.at(0);
+                                size_t collectionPosition = ROIds.at(0).key();
 
-                                        PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
-                                        if(mcptr.size() <=0) continue;
+                                PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
+                                if(mcptr.size() <=0) continue;
 
-                                        size_t nHitsPerCrystal = mcptr.size();
+                                size_t nHitsPerCrystal = mcptr.size();
 
-                                        for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
+                                for (size_t j2=0; j2<nHitsPerCrystal; ++j2) {
 
-                                                //cout<< "Start loop..."<< "j2 = "<< j2<<endl;
+                                        //cout<< "Start loop..."<< "j2 = "<< j2<<endl;
 
-                                                StepPointMC const& mchit = *mcptr[j2];
+                                        StepPointMC const& mchit = *mcptr[j2];
 
-                                                // The simulated particle that made this hit.
-                                                SimParticleCollection::key_type trackId(mchit.trackId());
-                                                SimParticle const& sim = *(simParticles->getOrNull(mchit.trackId()));
+                                        // The simulated particle that made this hit.
+                                        SimParticleCollection::key_type trackId(mchit.trackId());
+                                        SimParticle const& sim = *(simParticles->getOrNull(mchit.trackId()));
 
-                                                CLHEP::Hep3Vector cryFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
+                                        CLHEP::Hep3Vector cryFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
 
-                                                if( (cg->getCrystalRByRO(thehit.id()) != ( _rowToCanc - 1 ) && cg->getCrystalZByRO(thehit.id()) != ( _columnToCanc - 1 ) ) ){
+                                        if( (cg->getCrystalRByRO(thehit.id()) != ( _rowToCanc - 1 ) && cg->getCrystalZByRO(thehit.id()) != ( _columnToCanc - 1 ) ) ){
 
-                                                        if(elecMap[iVane][trackId.asUint()]._impTime > mchit.time() ){
-                                                                elecMap[iVane][trackId.asUint()]._cluEnergy = clu.energyDep();
-                                                                elecMap[iVane][trackId.asUint()]._cluTime = clu.time();
-                                                                elecMap[iVane][trackId.asUint()]._cluSize = clu.size();
-                                                                elecMap[iVane][trackId.asUint()]._cryEnergyDep = hit.energyDep();
-                                                                elecMap[iVane][trackId.asUint()]._cryEnergyDepTotal = hit.energyDepTotal();
-                                                                elecMap[iVane][trackId.asUint()]._impTime = mchit.time();
-                                                                elecMap[iVane][trackId.asUint()]._impEnergy = mchit.momentum().mag();
-                                                                elecMap[iVane][trackId.asUint()]._cluCog = cogDepth;// clu._impactPoint;//logCog;
-                                                                elecMap[iVane][trackId.asUint()]._impPos = mchit.position();
-                                                                elecMap[iVane][trackId.asUint()]._impPosCryFrame = cryFrame;
-                                                                elecMap[iVane][trackId.asUint()]._vane = iVane;
-                                                                elecMap[iVane][trackId.asUint()]._row = cg->getCrystalRByRO(thehit.id());
-                                                                elecMap[iVane][trackId.asUint()]._colum = cg->getCrystalZByRO(thehit.id());
-                                                                elecMap[iVane][trackId.asUint()]._impMom3Vec = mchit.momentum();
-                                                                elecMap[iVane][trackId.asUint()]._impPdgId = sim.pdgId();
-                                                                elecMap[iVane][trackId.asUint()]._impIsGen = sim.fromGenerator();
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._cluSize        = clusterMap._cluSize      ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._COGcrySize     = clusterMap._COGcrySize   ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._cluSize        = clusterMap._cluSize      ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._vane           = clusterMap._vane         ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._cluCogRow      = clusterMap._cluCogRow    ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._cluCogColumn   = clusterMap._cluCogColumn ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._cluCOG         = clusterMap._cluCOG       ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._rowVec         = clusterMap._rowVec       ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._columnVec      = clusterMap._columnVec    ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._cryEdepVec     = clusterMap._cryEdepVec  ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._COGrowVec      = clusterMap._COGrowVec    ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._COGcolumnVec   = clusterMap._COGcolumnVec ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._showerDir      = clusterMap._showerDir ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._errShowerDir   = clusterMap._errShowerDir;
+                                                if(elecMap[iVane][trackId.asUint()]._impTime > mchit.time() ){
+                                                        elecMap[iVane][trackId.asUint()]._cluEnergy = clu.energyDep();
+                                                        elecMap[iVane][trackId.asUint()]._cluTime = clu.time();
+                                                        elecMap[iVane][trackId.asUint()]._cluSize = clu.size();
+                                                        elecMap[iVane][trackId.asUint()]._cryEnergyDep = hit.energyDep();
+                                                        elecMap[iVane][trackId.asUint()]._cryEnergyDepTotal = hit.energyDepTotal();
+                                                        elecMap[iVane][trackId.asUint()]._impTime = mchit.time();
+                                                        elecMap[iVane][trackId.asUint()]._impEnergy = mchit.momentum().mag();
+                                                        elecMap[iVane][trackId.asUint()]._cluCog = cogDepth;// clu._impactPoint;//logCog;
+                                                        elecMap[iVane][trackId.asUint()]._impPos = mchit.position();
+                                                        elecMap[iVane][trackId.asUint()]._impPosCryFrame = cryFrame;
+                                                        elecMap[iVane][trackId.asUint()]._vane = iVane;
+                                                        elecMap[iVane][trackId.asUint()]._row = cg->getCrystalRByRO(thehit.id());
+                                                        elecMap[iVane][trackId.asUint()]._colum = cg->getCrystalZByRO(thehit.id());
+                                                        elecMap[iVane][trackId.asUint()]._impMom3Vec = mchit.momentum();
+                                                        elecMap[iVane][trackId.asUint()]._impPdgId = sim.pdgId();
+                                                        elecMap[iVane][trackId.asUint()]._impIsGen = sim.fromGenerator();
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._cluSize        = clusterMap._cluSize      ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._COGcrySize     = clusterMap._COGcrySize   ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._cluSize        = clusterMap._cluSize      ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._vane           = clusterMap._vane         ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._cluCogRow      = clusterMap._cluCogRow    ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._cluCogColumn   = clusterMap._cluCogColumn ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._cluCOG         = clusterMap._cluCOG       ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._rowVec         = clusterMap._rowVec       ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._columnVec      = clusterMap._columnVec    ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._cryEdepVec     = clusterMap._cryEdepVec  ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._COGrowVec      = clusterMap._COGrowVec    ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._COGcolumnVec   = clusterMap._COGcolumnVec ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._showerDir      = clusterMap._showerDir ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._errShowerDir   = clusterMap._errShowerDir;
 
 
-                                                                if(_diagLevel < 0){
-                                                                        cout<< "###################"<<endl;
-                                                                        cout<< "idVande = "<< iVane<<endl;
-                                                                        cout << "cluU = "<<elecMap[iVane][trackId.asUint()]._impPos.getX()<<endl;
-                                                                        cout << "cluV = "<<elecMap[iVane][trackId.asUint()]._impPos.getY()<<endl;
-                                                                        cout << "cluW = "<<elecMap[iVane][trackId.asUint()]._impPos.getZ()<<endl;
-                                                                        cout<< "elecMapclusterMar.CogRow = "<<elecMap[iVane][trackId.asUint()]._clusterMap._cluCogRow<<endl;
-                                                                        cout<< "elecMapclusterMar.CogColumn = "<<elecMap[iVane][trackId.asUint()]._clusterMap._cluCogColumn<<endl;
-                                                                        cout<< "elecMapclusterMar.COGcrySize ="<<elecMap[iVane][trackId.asUint()]._clusterMap._COGcrySize<<endl;
-                                                                        cout<< "clusterMar.CogRow = "<<clusterMap._cluCogRow<<endl;
-                                                                        cout<< "clusterMar.CogColumn = "<<clusterMap._cluCogColumn<<endl;
-                                                                        cout<< "clusterMar.COGcrySize ="<<clusterMap._COGcrySize<<endl;
-                                                                        cout<< "###################"<<endl;
-                                                                }
-
+                                                        if(_diagLevel < 0){
+                                                                cout<< "###################"<<endl;
+                                                                cout<< "idVande = "<< iVane<<endl;
+                                                                cout << "cluU = "<<elecMap[iVane][trackId.asUint()]._impPos.getX()<<endl;
+                                                                cout << "cluV = "<<elecMap[iVane][trackId.asUint()]._impPos.getY()<<endl;
+                                                                cout << "cluW = "<<elecMap[iVane][trackId.asUint()]._impPos.getZ()<<endl;
+                                                                cout<< "elecMapclusterMar.CogRow = "<<elecMap[iVane][trackId.asUint()]._clusterMap._cluCogRow<<endl;
+                                                                cout<< "elecMapclusterMar.CogColumn = "<<elecMap[iVane][trackId.asUint()]._clusterMap._cluCogColumn<<endl;
+                                                                cout<< "elecMapclusterMar.COGcrySize ="<<elecMap[iVane][trackId.asUint()]._clusterMap._COGcrySize<<endl;
+                                                                cout<< "clusterMar.CogRow = "<<clusterMap._cluCogRow<<endl;
+                                                                cout<< "clusterMar.CogColumn = "<<clusterMap._cluCogColumn<<endl;
+                                                                cout<< "clusterMar.COGcrySize ="<<clusterMap._COGcrySize<<endl;
+                                                                cout<< "###################"<<endl;
                                                         }
-                                                }
-                                        }
-
-                                }
-
-
-                        }//end for(caloClsuters.size)
-                }//end if(caloClsuters.size() > 0)
-
-                //counting how many reconstructed clusters match with the generated particles
-                unsigned int canc2 = 0;
-
-                //cout <<"-------------------> numero di elettroni generati = "<< trkVecTot.size() <<endl;
-                unsigned int size2 = trkVecTot.size();
-                unsigned int it2=0;
-                while( it2 < size2){
-                        ElecMap::iterator ite = elecMap.begin();
-                        bool trovato = false;
-                        while(!trovato && ite!=elecMap.end() ){
-                                if(ite->second.find(trkVecTot[it2]) != ite->second.end()){
-                                        _evt = evt.id().event();
-                                        _seedPdgId = 0;
-                                        _seedIsGen= 0;
-
-                                        _clVane = ite->second[trkVec[it2]]._vane;
-                                        _clE = ite->second[trkVec[it2]]._cluEnergy;
-                                        _clT = ite->second[trkVec[it2]]._cluTime;
-                                        _clSize = ite->second[trkVec[it2]]._cluSize;
-                                        _clCOGu = ite->second[trkVec[it2]]._cluCog.x();
-                                        _clCOGv = ite->second[trkVec[it2]]._cluCog.y();
-                                        _clCOGw = ite->second[trkVec[it2]]._cluCog.z();
-                                        CLHEP::Hep3Vector Mu2eFrame = cg->fromVaneFrame(ite->first, ite->second[trkVec[it2]]._cluCog);
-                                        _clCOGx = Mu2eFrame.x();
-                                        _clCOGy = Mu2eFrame.y();
-                                        _clCOGz = Mu2eFrame.z();
-
-                                        _cryEdepTot = ite->second[trkVec[it2]]._cryEnergyDepTotal;
-                                        _clCogCrySize     = ite->second[trkVec[it2]]._clusterMap._COGcrySize;
-                                        _clCOGrow         = ite->second[trkVec[it2]]._clusterMap._cluCogRow;
-                                        _clCOGcolumn      = ite->second[trkVec[it2]]._clusterMap._cluCogColumn;
-                                        for(int i = 0; i<_clSize; ++i ){
-                                                _cryEdep[i] = ite->second[trkVec[it2]]._cryEnergyDep;
-                                                _clRows[i]         = ite->second[trkVec[it2]]._clusterMap._rowVec[i];
-                                                _clColumns[i]      = ite->second[trkVec[it2]]._clusterMap._columnVec[i];
-                                        }
-                                        for(int j=0; j<_clCogCrySize; ++j ){
-                                                _clCogRows[j]      = ite->second[trkVec[it2]]._clusterMap._COGrowVec[j];
-                                                _clCogColumns[j]   = ite->second[trkVec[it2]]._clusterMap._COGcolumnVec[j];
-                                        }
-                                        _clShowerDir =  ite->second[trkVec[it2]]._clusterMap._showerDir;
-                                        _clErrShowerDir = ite->second[trkVec[it2]]._clusterMap._errShowerDir;
-
-                                        _seedPx = ite->second[trkVec[it2]]._impPos.x();
-                                        _seedPy = ite->second[trkVec[it2]]._impPos.y();
-                                        _seedPz =ite->second[trkVec[it2]]._impPos.z();
-                                        _seedTime  = ite->second[trkVec[it2]]._impTime;
-                                        _seedE =ite->second[trkVec[it2]]._impEnergy;
-                                        _seedPpx = ite->second[trkVec[it2]]._impMom3Vec.x();
-                                        _seedPpy = ite->second[trkVec[it2]]._impMom3Vec.y();
-                                        _seedPpz = ite->second[trkVec[it2]]._impMom3Vec.z();
-                                        _seedRow = ite->second[trkVec[it2]]._row;
-                                        _seedColumn = ite->second[trkVec[it2]]._colum;
-
-                                        _seedPpCosTh = ite->second[trkVec[it2]]._impMom3Vec.cosTheta()*180./TMath::Pi();
-                                        _seedPpPhi = ite->second[trkVec[it2]]._impMom3Vec.phi()*180./TMath::Pi();
-
-                                        _seedPdgId = ite->second[trkVec[it2]]._impPdgId;
-                                        _seedIsGen = ite->second[trkVec[it2]]._impIsGen;
-                                        //                                        cout << "delta X = " << ite->second[trkVec[it2]]._impPos.getX() - ite->second[trkVec[it2]]._cluCog.getX()<<endl;
-                                        //                                        cout << "delta Y = " << ite->second[trkVec[it2]]._impPos.getY() - ite->second[trkVec[it2]]._cluCog.getY()<<endl;
-                                        //                                        cout << "delta Z = " << ite->second[trkVec[it2]]._impPos.getZ() - ite->second[trkVec[it2]]._cluCog.getZ()<<endl;
-
-
-
-                                        CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, ite->second[trkVecTot[it2]]._impPos);
-                                        _seedPu = vaneFrame.x();
-                                        _seedPv = vaneFrame.y();
-                                        _seedPw = vaneFrame.z();
-
-                                        CLHEP::Hep3Vector dirMom = ite->second[trkVecTot[it2]]._impMom3Vec.unit();
-                                        if(_diagLevel < 1){
-                                                if(cry(ite->second[trkVec[it2]]._cluCog.y()) ==15.0 || cry( ite->second[trkVec[it2]]._cluCog.z() ) ==15.0 ){
-                                                        cout<<"ecco il mukkio...."<<endl;
-                                                        cout<<"cogDepth.v() = " <<cry(ite->second[trkVec[it2]]._cluCog.y())<<", cogDepth.w() = "<< cry( ite->second[trkVec[it2]]._cluCog.z() )<<", cogDepth.u() = "<<cry( ite->second[trkVec[it2]]._cluCog.x() )<<endl;
-                                                        cout <<"iVane = "<<ite->second[trkVec[it2]]._vane<<", cluSize = "<<ite->second[trkVec[it2]]._cluSize<<", cluEdep = "<< ite->second[trkVec[it2]]._cluEnergy<<", depth = "<<_Depth<<endl;
-                                                        //                                                        CLHEP::Hep3Vector cogDepth2 = cog_depth(*tmpCluster,_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) );
-                                                        //                                                        cout<<"instead, the linear COG give..."<<endl;
-                                                        //                                                        cout<<"cogDepth2.v() = " <<cry( cogDepth2.y() )<<", cogDepth2.w() = "<< cry( cogDepth2.z() )<<", cogDepth2.u() = "<< cry( cogDepth2.x() )<<endl;
-                                                        cout<<"fine del mukkio...."<<endl;
-
 
                                                 }
-                                                cout<<"vaneId = "<<ite->first<<endl;
-                                                cout<<"posX = "<<ite->second[trkVecTot[it2]]._impPos.getX()<<", posY = "<<ite->second[trkVecTot[it2]]._impPos.getY()<<", posZ = "<< ite->second[trkVecTot[it2]]._impPos.getZ()<<endl;
-                                                cout<<"on vane ref..."<<endl;
-                                                cout<<"posU = "<<vaneFrame.getX()<<", posV = "<<vaneFrame.getY()<<", posW = "<< vaneFrame.getZ()<<endl;
-                                                cout << "dirMomX = "<< dirMom.getX()<<", dirMomY = "<< dirMom.getY()<<", dirMomZ = "<<dirMom.getZ() <<endl;
                                         }
-                                        Vane const &vane = cg->getVane(ite->first);
-                                        CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
-                                        _seedPpu = dirMom_rotated.x()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
-                                        _seedPpv = dirMom_rotated.y()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
-                                        _seedPpw = dirMom_rotated.z()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
-                                        _seedPpRotCosTh = dirMom_rotated.cosTheta()*180./TMath::Pi();
-                                        _seedPpRotPhi = dirMom_rotated.phi()*180./TMath::Pi();
-
-                                        if(_diagLevel < 0){
-                                                cout<<"after rotation..."<<endl;
-                                                cout << "dirMomU = "<< dirMom_rotated.getX()<<", dirMomV = "<< dirMom_rotated.getY()<<", dirMomW = "<<dirMom_rotated.getZ() <<endl;
-                                                cout<<"cog coordinates... on vane ref!"<<endl;
-                                                cout<<"cluU = "<< ite->second[trkVecTot[it2]]._cluCog.getX()<< ", cluV = "<<ite->second[trkVecTot[it2]]._cluCog.getY() <<", cluW = "<<ite->second[trkVecTot[it2]]._cluCog.getZ()<<endl;
-                                        }
-
-                                        LinePointPCA lppca(vaneFrame,dirMom_rotated,  ite->second[trkVecTot[it2]]._cluCog);
-                                        //                                        LinePointPCA lppca(ite->second[trkVecTot[it2]]._impPos,dirMom,  ite->second[trkVecTot[it2]]._cluCog);
-
-                                        CLHEP::Hep3Vector dcaV = lppca.unit();
-                                        double impactParam = lppca.dca();
-                                        _cogDca = impactParam;
-                                        _DCAu = dcaV.x()*impactParam;
-                                        _DCAv = dcaV.y()*impactParam;
-                                        _DCAw = dcaV.z()*impactParam;
-
-                                        //                                        _prova1 = sqrt( pow(dcaV.z(),2) + pow(dcaV.x(),2))*impactParam;
-
-                                        _prova2 = sqrt( pow(dcaV.y(),2) + pow(dcaV.x(),2))*impactParam;
-
-                                        double distanceToCog = sqrt( pow(vaneFrame.getX() -ite->second[trkVecTot[it2]]._cluCog.getX() ,2) + pow(vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() ,2) + pow(vaneFrame.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() ,2) );
-                                        _distToCog = distanceToCog;
-
-                                        //                                        double distanceToCog = sqrt( pow(ite->second[trkVecTot[it2]]._impPos.getX() -ite->second[trkVecTot[it2]]._cluCog.getX() ,2) + pow(ite->second[trkVecTot[it2]]._impPos.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() ,2) + pow(ite->second[trkVecTot[it2]]._impPos.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() ,2) );
-                                        double tmpDepth = _Depth;//_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaURec->GetXaxis()->GetBinWidth(bin)*0.5;
-
-                                        _depth = tmpDepth;
-
-                                        _hTHistRecDistanceToCog->Fill(  distanceToCog);
-                                        _hTHistRecImpactParam->Fill(  impactParam);
-                                        _hTHistMomRecDotVaneNorm->Fill(  asin(impactParam / distanceToCog)*180./TMath::Pi());
-                                        if(_diagLevel < 0){
-                                                cout<<"------------------------------------------------------"<<endl;
-                                                cout<< "dcaV_U = "<<dcaV.getX()<< ", dcaV_V = "<<dcaV.getY()<<", dcaV_W = "<<dcaV.getZ()<<endl;
-                                                cout << "impactParam = "<< impactParam<<endl;
-                                                cout<< "distance ImpPointToCog = "<< distanceToCog << endl;
-                                                cout<< "-----------------------------> vane = "<< ite->first<<endl;
-                                                cout << "impX = "<< vaneFrame.getX()<<endl;
-                                                cout << "impY = "<< vaneFrame.getY()<<endl;
-                                                cout << "impZ = "<< vaneFrame.getZ()<<endl;
-                                                cout<<"------------------------------------------------------"<<endl;
-                                                cout << "cluX = "<<ite->second[trkVec[it2]]._cluCog.getX()<<endl;
-                                                cout << "cluY = "<<ite->second[trkVec[it2]]._cluCog.getY()<<endl;
-                                                cout << "cluZ = "<<ite->second[trkVec[it2]]._cluCog.getZ()<<endl;
-                                                cout<<"------------------------------------------------------"<<endl;
-                                        }
-                                       // if(bin == 1){
-                                        _hTHistDeltaEnergVRec->Fill( ite->second[trkVecTot[it2]]._impEnergy - ite->second[trkVecTot[it2]]._cluEnergy);
-
-
-                                        //}
-                                        //CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, vane.getOrigin() );
-                                        double thetaWimpact = std::atan(-1.0*dirMom_rotated.getZ() / dirMom_rotated.getX() ) ;
-                                        _seedThetaW = thetaWimpact*180./TMath::Pi();
-
-                                        double deltaZ = cogWcorrFunc(thetaWimpact );
-                                        deltaZ =  vaneFrame.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() - deltaZ ;
-                                        _seedDeltaW = deltaZ;
-
-
-                                        double corrW = triangoloVar(vaneFrame.z(), 'W');
-                                        deltaZ -= corrW;
-                                        _seedDeltaCorrW = deltaZ ;
-
-
-                                        double thetaVimpact = std::atan(dirMom_rotated.getY() /  dirMom_rotated.getX() ) ;
-                                        _seedThetaV = thetaVimpact*180./TMath::Pi();
-
-                                        double deltaY = cogVcorrFunc( thetaVimpact );
-                                        _prova1     = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY;
-
-                                        deltaY = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY ;
-
-                                        _seedDeltaV = deltaY;
-
-                                        double corrV = triangoloVar(vaneFrame.y(), 'V');
-                                        deltaY -= corrV;
-                                        _seedDeltaCorrV = deltaY ;
-
-                                        _hTHistDeltaURec->Fill(  vaneFrame.getX() - ite->second[trkVecTot[it2]]._cluCog.getX() );
-                                        _hTHistDeltaWRec->Fill(   deltaZ );
-                                        _hTHistDeltaVRec->Fill(   deltaY );
-
-
-                                        //                                        if(ite->first == 0 || ite->first == 2){
-                                        //
-                                        //                                                _hTHistDeltaURec->Fill(_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin), ite->second[trkVecTot[it2]]._impPos.getX() - ite->second[trkVecTot[it2]]._cluCog.getX() );
-                                        //                                        }else{
-                                        //                                                _hTHistDeltaVRec->Fill(_hTHistDeltaVRec->GetXaxis()->GetBinCenter(bin), ite->second[trkVecTot[it2]]._impPos.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() );
-                                        //                                        }
-                                        //                                        _hTHistDeltaWRec->Fill(_hTHistDeltaWRec->GetXaxis()->GetBinCenter(bin), ite->second[trkVecTot[it2]]._impPos.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() );
-
-                                        trovato = true;
-                                        canc2 = it2;
                                 }
-                                ++ite;
+
                         }
 
-                        if(trovato){
-                                std::vector<unsigned int>::iterator er = trkVecTot.begin();
-                                er +=canc2;
-                                trkVecTot.erase(er);
-                                size2 = trkVecTot.size();
-                        }else{
-                                ++it2;
-                        }
 
-                }
+                }//end for(caloClsuters.size)
+        }//end if(caloClsuters.size() > 0)
 
-                _Ntup->Fill();
+        //counting how many reconstructed clusters match with the generated particles
+        unsigned int canc2 = 0;
 
-                //counting how many reconstructed clusters match with the generated particles which pass the quality cuts of the tracker
-                unsigned int canc = 0;
-                if(_diagLevel < 0){
-                        cout <<"after.... trkVecTot.size = "<< trkVecTot.size() <<endl;
-                        cout <<"-------------------> number of quality generated electrons = "<< trkVec.size() <<endl;
-                }
-                unsigned int size = trkVec.size();
-                unsigned int it=0;
-                while( it < size){
-                        ElecMap::iterator ite = elecMap.begin();
-                        bool trovato = false;
-                        while(!trovato && ite!=elecMap.end() ){
-                                if(ite->second.find(trkVec[it]) != ite->second.end()){
+        //cout <<"-------------------> numero di elettroni generati = "<< trkVecTot.size() <<endl;
+        unsigned int size2 = trkVecTot.size();
+        unsigned int it2=0;
+        while( it2 < size2){
+                ElecMap::iterator ite = elecMap.begin();
+                bool trovato = false;
+                while(!trovato && ite!=elecMap.end() ){
+                        if(ite->second.find(trkVecTot[it2]) != ite->second.end()){
+                                _evt = evt.id().event();
+                                _seedPdgId = 0;
+                                _seedIsGen= 0;
 
-                                        if(_diagLevel < 0){
-                                                cout << "impX = "<<ite->second[trkVec[it]]._impPosCryFrame.getX()<<endl;
-                                                cout << "impY = "<<ite->second[trkVec[it]]._impPosCryFrame.getY()<<endl;
-                                                cout << "impZ = "<<ite->second[trkVec[it]]._impPosCryFrame.getZ()<<endl;
-                                        }
+                                _clVane = ite->second[trkVec[it2]]._vane;
+                                _clE = ite->second[trkVec[it2]]._cluEnergy;
+                                _clT = ite->second[trkVec[it2]]._cluTime;
+                                _clSize = ite->second[trkVec[it2]]._cluSize;
+                                _clCOGu = ite->second[trkVec[it2]]._cluCog.x();
+                                _clCOGv = ite->second[trkVec[it2]]._cluCog.y();
+                                _clCOGw = ite->second[trkVec[it2]]._cluCog.z();
+                                CLHEP::Hep3Vector Mu2eFrame = cg->fromVaneFrame(ite->first, ite->second[trkVec[it2]]._cluCog);
+                                _clCOGx = Mu2eFrame.x();
+                                _clCOGy = Mu2eFrame.y();
+                                _clCOGz = Mu2eFrame.z();
 
-                                        //globalCaloCut[bin - 1] += 1.0;
-
-                                        trovato = true;
-                                        canc = it;
-
-                                        CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, ite->second[trkVec[it]]._impPos);
-
-                                        CLHEP::Hep3Vector dirMom = ite->second[trkVec[it]]._impMom3Vec.unit();
-
-                                        Vane const &vane = cg->getVane(ite->first);
-                                        CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
-
-                                        LinePointPCA lppca(vaneFrame,dirMom_rotated,  ite->second[trkVec[it]]._cluCog);
-
-                                        CLHEP::Hep3Vector dcaV = lppca.unit();
-                                        double impactParam = lppca.dca();
-
-                                        double distanceToCog = sqrt( pow(vaneFrame.getX() -ite->second[trkVec[it]]._cluCog.getX() ,2) + pow(vaneFrame.getY() - ite->second[trkVec[it]]._cluCog.getY() ,2) + pow(vaneFrame.getZ() - ite->second[trkVec[it]]._cluCog.getZ() ,2) );
-
-                                        _hTHistDistanceToCog->Fill( distanceToCog);
-                                        _hTHistImpactParam->Fill(  impactParam);
-                                        _hTHistMomDotVaneNorm->Fill(  asin(impactParam / distanceToCog)*180./TMath::Pi() );
-
-                                        //if(bin ==1){
-                                        _hTHistDeltaEnergy->Fill(ite->second[trkVec[it]]._impEnergy - ite->second[trkVec[it]]._cluEnergy);
-                                                //_hTHistDeltaWquality->Fill(vaneFrame.getY() - ite->second[trkVec[it]]._cluCog.getY() );
-                                        //}
-                                        //CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, vane.getOrigin() );
-                                        double tmpDepth = _Depth;//_hTHistDeltaUquality->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaUquality->GetXaxis()->GetBinWidth(bin)*0.5;
-
-                                        double impactParamPrjW = impactParam*(pow(dcaV.getX(), 2) + pow(dcaV.getZ(), 2));
-                                        double impactParamPrjV = impactParam*(pow(dcaV.getX(), 2) + pow(dcaV.getY(), 2));
-
-                                        double deltaW = (tmpDepth - impactParamPrjW/cos(_thetaWimpact) )*tan(_thetaWimpact);
-                                        int sign = -1;
-                                        if(dcaV.getY() < 0){
-                                                sign = 1;
-                                        }
-                                        double deltaV = sign*(tmpDepth - impactParamPrjV/cos(_thetaVimpact) )*tan(_thetaVimpact);
-
-                                        _hTHistDeltaUquality->Fill( vaneFrame.getX() - ite->second[trkVec[it]]._cluCog.getX() );
-                                        _hTHistDeltaWquality->Fill(  vaneFrame.getZ() - ite->second[trkVec[it]]._cluCog.getZ() + deltaW );
-                                        _hTHistDeltaVquality->Fill(  vaneFrame.getY() - ite->second[trkVec[it]]._cluCog.getY() + deltaV );
-
-                                        //  _hTHistDeltaUquality->Fill(_hTHistDeltaUquality->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaUquality->GetXaxis()->GetBinWidth(bin)*0.5, vaneFrame.getX() - ite->second[trkVec[it]]._cluCog.getX() );
-                                        // _hTHistDeltaWquality->Fill(_hTHistDeltaWquality->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaWquality->GetXaxis()->GetBinWidth(bin)*0.5, vaneFrame.getZ() - ite->second[trkVec[it]]._cluCog.getZ() );
-
+                                _cryEdepTot = ite->second[trkVec[it2]]._cryEnergyDepTotal;
+                                _clCogCrySize     = ite->second[trkVec[it2]]._clusterMap._COGcrySize;
+                                _clCOGrow         = ite->second[trkVec[it2]]._clusterMap._cluCogRow;
+                                _clCOGcolumn      = ite->second[trkVec[it2]]._clusterMap._cluCogColumn;
+                                for(int i = 0; i<_clSize; ++i ){
+                                        _cryEdep[i] = ite->second[trkVec[it2]]._cryEnergyDep;
+                                        _clRows[i]         = ite->second[trkVec[it2]]._clusterMap._rowVec[i];
+                                        _clColumns[i]      = ite->second[trkVec[it2]]._clusterMap._columnVec[i];
                                 }
-                                ++ite;
-                        }
+                                for(int j=0; j<_clCogCrySize; ++j ){
+                                        _clCogRows[j]      = ite->second[trkVec[it2]]._clusterMap._COGrowVec[j];
+                                        _clCogColumns[j]   = ite->second[trkVec[it2]]._clusterMap._COGcolumnVec[j];
+                                }
+                                _clShowerDir =  ite->second[trkVec[it2]]._clusterMap._showerDir;
+                                _clErrShowerDir = ite->second[trkVec[it2]]._clusterMap._errShowerDir;
 
-                        if(trovato){
-                                std::vector<unsigned int>::iterator er = trkVec.begin();
-                                er +=canc;
-                                trkVec.erase(er);
-                                size = trkVec.size();
-                        }else{
-                                ++it;
-                        }
+                                _seedPx = ite->second[trkVec[it2]]._impPos.x();
+                                _seedPy = ite->second[trkVec[it2]]._impPos.y();
+                                _seedPz =ite->second[trkVec[it2]]._impPos.z();
+                                _seedTime  = ite->second[trkVec[it2]]._impTime;
+                                _seedE =ite->second[trkVec[it2]]._impEnergy;
+                                _seedPpx = ite->second[trkVec[it2]]._impMom3Vec.x();
+                                _seedPpy = ite->second[trkVec[it2]]._impMom3Vec.y();
+                                _seedPpz = ite->second[trkVec[it2]]._impMom3Vec.z();
+                                _seedRow = ite->second[trkVec[it2]]._row;
+                                _seedColumn = ite->second[trkVec[it2]]._colum;
 
+                                _seedPpCosTh = ite->second[trkVec[it2]]._impMom3Vec.cosTheta()*180./TMath::Pi();
+                                _seedPpPhi = ite->second[trkVec[it2]]._impMom3Vec.phi()*180./TMath::Pi();
+
+                                _seedPdgId = ite->second[trkVec[it2]]._impPdgId;
+                                _seedIsGen = ite->second[trkVec[it2]]._impIsGen;
+                                //                                        cout << "delta X = " << ite->second[trkVec[it2]]._impPos.getX() - ite->second[trkVec[it2]]._cluCog.getX()<<endl;
+                                //                                        cout << "delta Y = " << ite->second[trkVec[it2]]._impPos.getY() - ite->second[trkVec[it2]]._cluCog.getY()<<endl;
+                                //                                        cout << "delta Z = " << ite->second[trkVec[it2]]._impPos.getZ() - ite->second[trkVec[it2]]._cluCog.getZ()<<endl;
+
+
+
+                                CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, ite->second[trkVecTot[it2]]._impPos);
+                                _seedPu = vaneFrame.x();
+                                _seedPv = vaneFrame.y();
+                                _seedPw = vaneFrame.z();
+
+                                CLHEP::Hep3Vector dirMom = ite->second[trkVecTot[it2]]._impMom3Vec.unit();
+                                if(_diagLevel < 1){
+                                        if(cry(ite->second[trkVec[it2]]._cluCog.y()) ==15.0 || cry( ite->second[trkVec[it2]]._cluCog.z() ) ==15.0 ){
+                                                cout<<"ecco il mukkio...."<<endl;
+                                                cout<<"cogDepth.v() = " <<cry(ite->second[trkVec[it2]]._cluCog.y())<<", cogDepth.w() = "<< cry( ite->second[trkVec[it2]]._cluCog.z() )<<", cogDepth.u() = "<<cry( ite->second[trkVec[it2]]._cluCog.x() )<<endl;
+                                                cout <<"iVane = "<<ite->second[trkVec[it2]]._vane<<", cluSize = "<<ite->second[trkVec[it2]]._cluSize<<", cluEdep = "<< ite->second[trkVec[it2]]._cluEnergy<<", depth = "<<_Depth<<endl;
+                                                //                                                        CLHEP::Hep3Vector cogDepth2 = cog_depth(*tmpCluster,_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) );
+                                                //                                                        cout<<"instead, the linear COG give..."<<endl;
+                                                //                                                        cout<<"cogDepth2.v() = " <<cry( cogDepth2.y() )<<", cogDepth2.w() = "<< cry( cogDepth2.z() )<<", cogDepth2.u() = "<< cry( cogDepth2.x() )<<endl;
+                                                cout<<"fine del mukkio...."<<endl;
+
+
+                                        }
+                                        cout<<"vaneId = "<<ite->first<<endl;
+                                        cout<<"posX = "<<ite->second[trkVecTot[it2]]._impPos.getX()<<", posY = "<<ite->second[trkVecTot[it2]]._impPos.getY()<<", posZ = "<< ite->second[trkVecTot[it2]]._impPos.getZ()<<endl;
+                                        cout<<"on vane ref..."<<endl;
+                                        cout<<"posU = "<<vaneFrame.getX()<<", posV = "<<vaneFrame.getY()<<", posW = "<< vaneFrame.getZ()<<endl;
+                                        cout << "dirMomX = "<< dirMom.getX()<<", dirMomY = "<< dirMom.getY()<<", dirMomZ = "<<dirMom.getZ() <<endl;
+                                }
+                                Vane const &vane = cg->getVane(ite->first);
+                                CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
+                                _seedPpu = dirMom_rotated.x()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
+                                _seedPpv = dirMom_rotated.y()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
+                                _seedPpw = dirMom_rotated.z()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
+                                _seedPpRotCosTh = dirMom_rotated.cosTheta()*180./TMath::Pi();
+                                _seedPpRotPhi = dirMom_rotated.phi()*180./TMath::Pi();
+
+                                if(_diagLevel < 0){
+                                        cout<<"after rotation..."<<endl;
+                                        cout << "dirMomU = "<< dirMom_rotated.getX()<<", dirMomV = "<< dirMom_rotated.getY()<<", dirMomW = "<<dirMom_rotated.getZ() <<endl;
+                                        cout<<"cog coordinates... on vane ref!"<<endl;
+                                        cout<<"cluU = "<< ite->second[trkVecTot[it2]]._cluCog.getX()<< ", cluV = "<<ite->second[trkVecTot[it2]]._cluCog.getY() <<", cluW = "<<ite->second[trkVecTot[it2]]._cluCog.getZ()<<endl;
+                                }
+
+                                LinePointPCA lppca(vaneFrame,dirMom_rotated,  ite->second[trkVecTot[it2]]._cluCog);
+                                //                                        LinePointPCA lppca(ite->second[trkVecTot[it2]]._impPos,dirMom,  ite->second[trkVecTot[it2]]._cluCog);
+
+                                CLHEP::Hep3Vector dcaV = lppca.unit();
+                                double impactParam = lppca.dca();
+                                _cogDca = impactParam;
+                                _DCAu = dcaV.x()*impactParam;
+                                _DCAv = dcaV.y()*impactParam;
+                                _DCAw = dcaV.z()*impactParam;
+
+                                //                                        _prova1 = sqrt( pow(dcaV.z(),2) + pow(dcaV.x(),2))*impactParam;
+
+                                _prova2 = sqrt( pow(dcaV.y(),2) + pow(dcaV.x(),2))*impactParam;
+
+                                double distanceToCog = sqrt( pow(vaneFrame.getX() -ite->second[trkVecTot[it2]]._cluCog.getX() ,2) + pow(vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() ,2) + pow(vaneFrame.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() ,2) );
+                                _distToCog = distanceToCog;
+
+                                //                                        double distanceToCog = sqrt( pow(ite->second[trkVecTot[it2]]._impPos.getX() -ite->second[trkVecTot[it2]]._cluCog.getX() ,2) + pow(ite->second[trkVecTot[it2]]._impPos.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() ,2) + pow(ite->second[trkVecTot[it2]]._impPos.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() ,2) );
+                                double tmpDepth = _Depth;//_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaURec->GetXaxis()->GetBinWidth(bin)*0.5;
+
+                                _depth = tmpDepth;
+
+                                _hTHistRecDistanceToCog->Fill(  distanceToCog);
+                                _hTHistRecImpactParam->Fill(  impactParam);
+                                _hTHistMomRecDotVaneNorm->Fill(  asin(impactParam / distanceToCog)*180./TMath::Pi());
+                                if(_diagLevel < 0){
+                                        cout<<"------------------------------------------------------"<<endl;
+                                        cout<< "dcaV_U = "<<dcaV.getX()<< ", dcaV_V = "<<dcaV.getY()<<", dcaV_W = "<<dcaV.getZ()<<endl;
+                                        cout << "impactParam = "<< impactParam<<endl;
+                                        cout<< "distance ImpPointToCog = "<< distanceToCog << endl;
+                                        cout<< "-----------------------------> vane = "<< ite->first<<endl;
+                                        cout << "impX = "<< vaneFrame.getX()<<endl;
+                                        cout << "impY = "<< vaneFrame.getY()<<endl;
+                                        cout << "impZ = "<< vaneFrame.getZ()<<endl;
+                                        cout<<"------------------------------------------------------"<<endl;
+                                        cout << "cluX = "<<ite->second[trkVec[it2]]._cluCog.getX()<<endl;
+                                        cout << "cluY = "<<ite->second[trkVec[it2]]._cluCog.getY()<<endl;
+                                        cout << "cluZ = "<<ite->second[trkVec[it2]]._cluCog.getZ()<<endl;
+                                        cout<<"------------------------------------------------------"<<endl;
+                                }
+                                // if(bin == 1){
+                                _hTHistDeltaEnergVRec->Fill( ite->second[trkVecTot[it2]]._impEnergy - ite->second[trkVecTot[it2]]._cluEnergy);
+
+
+                                //}
+                                //CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, vane.getOrigin() );
+                                double thetaWimpact = std::atan(-1.0*dirMom_rotated.getZ() / dirMom_rotated.getX() ) ;
+                                _seedThetaW = thetaWimpact*180./TMath::Pi();
+
+                                double deltaZ = cogWcorrFunc(thetaWimpact );
+                                deltaZ =  vaneFrame.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() - deltaZ ;
+                                _seedDeltaW = deltaZ;
+
+
+                                double corrW = triangoloVar(vaneFrame.z(), 'W');
+                                deltaZ -= corrW;
+                                _seedDeltaCorrW = deltaZ ;
+
+
+                                double thetaVimpact = std::atan(dirMom_rotated.getY() /  dirMom_rotated.getX() ) ;
+                                _seedThetaV = thetaVimpact*180./TMath::Pi();
+
+                                double deltaY = cogVcorrFunc( thetaVimpact );
+                                _prova1     = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY;
+
+                                deltaY = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY ;
+
+                                _seedDeltaV = deltaY;
+
+                                double corrV = triangoloVar(vaneFrame.y(), 'V');
+                                deltaY -= corrV;
+                                _seedDeltaCorrV = deltaY ;
+
+                                _hTHistDeltaURec->Fill(  vaneFrame.getX() - ite->second[trkVecTot[it2]]._cluCog.getX() );
+                                _hTHistDeltaWRec->Fill(   deltaZ );
+                                _hTHistDeltaVRec->Fill(   deltaY );
+
+
+                                //                                        if(ite->first == 0 || ite->first == 2){
+                                //
+                                //                                                _hTHistDeltaURec->Fill(_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin), ite->second[trkVecTot[it2]]._impPos.getX() - ite->second[trkVecTot[it2]]._cluCog.getX() );
+                                //                                        }else{
+                                //                                                _hTHistDeltaVRec->Fill(_hTHistDeltaVRec->GetXaxis()->GetBinCenter(bin), ite->second[trkVecTot[it2]]._impPos.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() );
+                                //                                        }
+                                //                                        _hTHistDeltaWRec->Fill(_hTHistDeltaWRec->GetXaxis()->GetBinCenter(bin), ite->second[trkVecTot[it2]]._impPos.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() );
+
+                                trovato = true;
+                                canc2 = it2;
+                        }
+                        ++ite;
                 }
 
-                if(_diagLevel < 0){
-                        cout <<"after.... trkVec.size = "<< trkVec.size() <<endl;
-                        cout<<"...\n...\n "<<endl;
+                if(trovato){
+                        std::vector<unsigned int>::iterator er = trkVecTot.begin();
+                        er +=canc2;
+                        trkVecTot.erase(er);
+                        size2 = trkVecTot.size();
+                }else{
+                        ++it2;
                 }
 
-       // }//end for(_hTHistEff->GetNbinsX())
+        }
+
+        _Ntup->Fill();
+
+        //counting how many reconstructed clusters match with the generated particles which pass the quality cuts of the tracker
+        unsigned int canc = 0;
+        if(_diagLevel < 0){
+                cout <<"after.... trkVecTot.size = "<< trkVecTot.size() <<endl;
+                cout <<"-------------------> number of quality generated electrons = "<< trkVec.size() <<endl;
+        }
+        unsigned int size = trkVec.size();
+        unsigned int it=0;
+        while( it < size){
+                ElecMap::iterator ite = elecMap.begin();
+                bool trovato = false;
+                while(!trovato && ite!=elecMap.end() ){
+                        if(ite->second.find(trkVec[it]) != ite->second.end()){
+
+                                if(_diagLevel < 0){
+                                        cout << "impX = "<<ite->second[trkVec[it]]._impPosCryFrame.getX()<<endl;
+                                        cout << "impY = "<<ite->second[trkVec[it]]._impPosCryFrame.getY()<<endl;
+                                        cout << "impZ = "<<ite->second[trkVec[it]]._impPosCryFrame.getZ()<<endl;
+                                }
+
+                                //globalCaloCut[bin - 1] += 1.0;
+
+                                trovato = true;
+                                canc = it;
+
+                                CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, ite->second[trkVec[it]]._impPos);
+
+                                CLHEP::Hep3Vector dirMom = ite->second[trkVec[it]]._impMom3Vec.unit();
+
+                                Vane const &vane = cg->getVane(ite->first);
+                                CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
+
+                                LinePointPCA lppca(vaneFrame,dirMom_rotated,  ite->second[trkVec[it]]._cluCog);
+
+                                CLHEP::Hep3Vector dcaV = lppca.unit();
+                                double impactParam = lppca.dca();
+
+                                double distanceToCog = sqrt( pow(vaneFrame.getX() -ite->second[trkVec[it]]._cluCog.getX() ,2) + pow(vaneFrame.getY() - ite->second[trkVec[it]]._cluCog.getY() ,2) + pow(vaneFrame.getZ() - ite->second[trkVec[it]]._cluCog.getZ() ,2) );
+
+                                _hTHistDistanceToCog->Fill( distanceToCog);
+                                _hTHistImpactParam->Fill(  impactParam);
+                                _hTHistMomDotVaneNorm->Fill(  asin(impactParam / distanceToCog)*180./TMath::Pi() );
+
+                                //if(bin ==1){
+                                _hTHistDeltaEnergy->Fill(ite->second[trkVec[it]]._impEnergy - ite->second[trkVec[it]]._cluEnergy);
+                                //_hTHistDeltaWquality->Fill(vaneFrame.getY() - ite->second[trkVec[it]]._cluCog.getY() );
+                                //}
+                                //CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, vane.getOrigin() );
+                                double tmpDepth = _Depth;//_hTHistDeltaUquality->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaUquality->GetXaxis()->GetBinWidth(bin)*0.5;
+
+                                double impactParamPrjW = impactParam*(pow(dcaV.getX(), 2) + pow(dcaV.getZ(), 2));
+                                double impactParamPrjV = impactParam*(pow(dcaV.getX(), 2) + pow(dcaV.getY(), 2));
+
+                                double deltaW = (tmpDepth - impactParamPrjW/cos(_thetaWimpact) )*tan(_thetaWimpact);
+                                int sign = -1;
+                                if(dcaV.getY() < 0){
+                                        sign = 1;
+                                }
+                                double deltaV = sign*(tmpDepth - impactParamPrjV/cos(_thetaVimpact) )*tan(_thetaVimpact);
+
+                                _hTHistDeltaUquality->Fill( vaneFrame.getX() - ite->second[trkVec[it]]._cluCog.getX() );
+                                _hTHistDeltaWquality->Fill(  vaneFrame.getZ() - ite->second[trkVec[it]]._cluCog.getZ() + deltaW );
+                                _hTHistDeltaVquality->Fill(  vaneFrame.getY() - ite->second[trkVec[it]]._cluCog.getY() + deltaV );
+
+                                //  _hTHistDeltaUquality->Fill(_hTHistDeltaUquality->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaUquality->GetXaxis()->GetBinWidth(bin)*0.5, vaneFrame.getX() - ite->second[trkVec[it]]._cluCog.getX() );
+                                // _hTHistDeltaWquality->Fill(_hTHistDeltaWquality->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaWquality->GetXaxis()->GetBinWidth(bin)*0.5, vaneFrame.getZ() - ite->second[trkVec[it]]._cluCog.getZ() );
+
+                        }
+                        ++ite;
+                }
+
+                if(trovato){
+                        std::vector<unsigned int>::iterator er = trkVec.begin();
+                        er +=canc;
+                        trkVec.erase(er);
+                        size = trkVec.size();
+                }else{
+                        ++it;
+                }
+
+        }
+
+        if(_diagLevel < 0){
+                cout <<"after.... trkVec.size = "<< trkVec.size() <<endl;
+                cout<<"...\n...\n "<<endl;
+        }
+
+        // }//end for(_hTHistEff->GetNbinsX())
         cout << "Event "<<evt.id().event()<<" CaloClusterCogCorrFunc done..."<<endl;
 
 }
