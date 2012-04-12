@@ -15,6 +15,19 @@ int g4.particlesSizeLimit = 100000;
 // bool g4SteppingAction.killerVerbose = true;
 vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance", "VirtualDetector_Coll1_In" };
 
+//signal-only studies: vector<string> g4SteppingAction.killInTheseVolumes = {
+//signal-only studies:   "VirtualDetector_EMFC1Entrance",
+//signal-only studies:   "VirtualDetector_Coll1_In",
+//signal-only studies:   "ProtonBeamDumpCore",
+//signal-only studies:   "HallConcreteFloor",
+//signal-only studies:   "HallConcreteCeiling",
+//signal-only studies:   "HallWalls"
+//signal-only studies: };
+//signal-only studies: 
+//signal-only studies: double g4.minRangeCut = 1.;            // mm
+//signal-only studies: bool g4.killLowEKine = true;
+//signal-only studies: double g4.eKineMin = 100.; // MeV
+
 // // Uncomment to enable debug printout on a per event or per track basis.
 // vector<int> g4.steppingActionEventList = { 0, 1, 2, 3, 4, 5 };
 // vector<int> g4.steppingActionTrackList = {    1, 2, 3, 4, 5 };
