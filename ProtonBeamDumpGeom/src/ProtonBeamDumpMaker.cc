@@ -118,14 +118,14 @@ namespace mu2e {
       + dump->_coreHalfSize[2] - enclosureHalfSize[2];
 
     dump->_enclosureCenterInMu2e[0] = dump->_coreCenterInMu2e[0] + coreOffset*sin(coreRotY);
-    dump->_enclosureCenterInMu2e[1] = dump->_coreCenterInMu2e[1] + 0.5*dump->_magnetPitHalfSize[1];
+    dump->_enclosureCenterInMu2e[1] = dump->_coreCenterInMu2e[1] + dump->_magnetPitHalfSize[1];
     dump->_enclosureCenterInMu2e[2] = dump->_coreCenterInMu2e[2] + coreOffset*cos(coreRotY);
 
     const CLHEP::Hep3Vector& enclosureCenterInMu2e = dump->_enclosureCenterInMu2e;
 
     // core relative to the enclosure
     dump->_coreCenterInEnclosure[0] = 0;
-    dump->_coreCenterInEnclosure[1] = -0.5*dump->_magnetPitHalfSize[1];
+    dump->_coreCenterInEnclosure[1] = -dump->_magnetPitHalfSize[1];
     dump->_coreCenterInEnclosure[2] = -coreOffset;
 
     // position of the magnet pit
