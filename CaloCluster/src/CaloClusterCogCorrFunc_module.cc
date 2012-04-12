@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.7 2012/04/12 10:33:16 gianipez Exp $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.8 2012/04/12 21:32:25 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/04/12 10:33:16 $
+// $Date: 2012/04/12 21:32:25 $
 //
 // Original author G. Pezzullo
 //
@@ -87,6 +87,14 @@ using namespace std;
 namespace mu2e {
 
 struct elecData{
+        double _gentime;
+        double _genx;
+        double _geny;
+        double _genz;
+        double _gencosth;
+        double _genphi;
+        double _genp;
+        double _gene;
         double _cluEnergy;
         double _cluTime;
         int _cluSize;
@@ -293,6 +301,14 @@ private:
         _DCAu,
         _DCAv,
         _DCAw,
+        _seedGenp,
+        _seedGene,
+        _seedGenx,
+        _seedGeny,
+        _seedGenz,
+        _seedGencosth,
+        _seedGenphi,
+        _seedGentime,
         _seedPx ,
         _seedPy ,
         _seedPz ,
@@ -596,6 +612,14 @@ void CaloClusterCogCorrFunc::analyze(art::Event const & evt ) {
                 _Ntup->Branch("DCAu",     &_DCAu , "DCAu/F");
                 _Ntup->Branch("DCAv",     &_DCAv , "DCAv/F");
                 _Ntup->Branch("DCAw",     &_DCAw , "DCAw/F");
+                _Ntup->Branch("seedGenp",     &_seedGenp , "seedGenp/F");
+                _Ntup->Branch("seedGene",     &_seedGene , "seedGene/F");
+                _Ntup->Branch("seedGenx",     &_seedGenx , "seedGenx/F");
+                _Ntup->Branch("seedGeny",     &_seedGeny , "seedGeny/F");
+                _Ntup->Branch("seedGenz",     &_seedGenz , "seedGenz/F");
+                _Ntup->Branch("seedGentime",     &_seedGentime , "seedGentime/F");
+                _Ntup->Branch("seedGencosth",     &_seedGencosth , "seedGencosth/F");
+                _Ntup->Branch("seedGenphi",     &_seedGenphi , "seedGenphi/F");
                 _Ntup->Branch("seedPx",     &_seedPx , "seedPx/F");
                 _Ntup->Branch("seedPy",     &_seedPy , "seedPy/F");
                 _Ntup->Branch("seedPz",     &_seedPz , "seedPz/F");
@@ -681,9 +705,9 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
         evt.getByLabel(_g4ModuleLabel, simParticles);
 
         art::Handle<CaloClusterCollection> caloClusters;
-        evt.getByLabel(_caloClusterModuleLabel,_producerName,caloClusters );
+        evt.getByLabel(_caloClusterModuleLabel,_producerName, caloClusters );
 
-        auto_ptr<CaloClusterCollection>             caloClustersPointer(new CaloClusterCollection);
+        auto_ptr<CaloClusterCollection> caloClustersPointer(new CaloClusterCollection);
 
         art::Handle<VisibleGenElTrackCollection> genEltrksHandle;
         evt.getByLabel(_extractElectronsData,genEltrksHandle);
@@ -802,14 +826,44 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                         SimParticleCollection::key_type trackId(mchit.trackId());
                                         SimParticle const& sim = *(simParticles->getOrNull(mchit.trackId()));
 
+
                                         CLHEP::Hep3Vector cryFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
 
                                         if( (cg->getCrystalRByRO(thehit.id()) != ( _rowToCanc - 1 ) && cg->getCrystalZByRO(thehit.id()) != ( _columnToCanc - 1 ) ) ){
 
                                                 if(elecMap[iVane][trackId.asUint()]._impTime > mchit.time() ){
+                                                        if(sim.fromGenerator() ){
+                                                                //GenParticle const& gen = *sim.genParticle();
+                                                                GenParticle const& gen = genParticles->at(sim.generatorIndex());
+//                                                                cout <<"gen = "<< gen << endl;
+//                                                                cout <<" gen.momentum().mag() = "<<gen.momentum().vect().mag()<<endl;
+//                                                                cout <<" gen.momentum().e() = "<<gen.momentum().e()<<endl;
+//                                                                cout <<" gen.pdgId() = "<<gen.pdgId()<<endl;
+//                                                                cout <<" gen.position().x() = "<<gen.position().x()<<endl;
+//                                                                cout <<" gen.position().y() = "<<gen.position().y()<<endl;
+//                                                                cout <<" gen.position().z() = "<<gen.position().z()<<endl;
+
+                                                                elecMap[iVane][trackId.asUint()]._genp      = gen.momentum().vect().mag();//sim.startMomentum().vect().mag();//
+                                                                elecMap[iVane][trackId.asUint()]._gene      = gen.momentum().e();//sim.startMomentum().e();//
+                                                                elecMap[iVane][trackId.asUint()]._gentime   = gen.time();//sim.startGlobalTime();//
+                                                                elecMap[iVane][trackId.asUint()]._genx      = gen.position().x();//sim.startPosition().x();//
+                                                                elecMap[iVane][trackId.asUint()]._geny      = gen.position().y();//sim.startPosition().y();//
+                                                                elecMap[iVane][trackId.asUint()]._genz      = gen.position().z();//sim.startPosition().z();//
+                                                                elecMap[iVane][trackId.asUint()]._gencosth  = gen.momentum().cosTheta();//sim.startMomentum().cosTheta();//
+                                                                elecMap[iVane][trackId.asUint()]._genphi    = gen.momentum().phi();//sim.startMomentum().phi();//
+                                                        }else {
+                                                                elecMap[iVane][trackId.asUint()]._genp      = -1e6;
+                                                                elecMap[iVane][trackId.asUint()]._gene      = -1e6;
+                                                                elecMap[iVane][trackId.asUint()]._gentime   = -1e6;
+                                                                elecMap[iVane][trackId.asUint()]._genx      = -1e6;
+                                                                elecMap[iVane][trackId.asUint()]._geny      = -1e6;
+                                                                elecMap[iVane][trackId.asUint()]._genz      = -1e6;
+                                                                elecMap[iVane][trackId.asUint()]._gencosth  = -1e6;
+                                                                elecMap[iVane][trackId.asUint()]._genphi    = -1e6;
+                                                        }
                                                         elecMap[iVane][trackId.asUint()]._cluEnergy = clu.energyDep();
-                                                        elecMap[iVane][trackId.asUint()]._cluTime = clu.time();
-                                                        elecMap[iVane][trackId.asUint()]._cluSize = clu.size();
+                                                        elecMap[iVane][trackId.asUint()]._cluTime   = clu.time();
+                                                        elecMap[iVane][trackId.asUint()]._cluSize   = clu.size();
                                                         elecMap[iVane][trackId.asUint()]._cryEnergyDep = hit.energyDep();
                                                         elecMap[iVane][trackId.asUint()]._cryEnergyDepTotal = hit.energyDepTotal();
                                                         elecMap[iVane][trackId.asUint()]._impTime = mchit.time();
@@ -907,6 +961,14 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 _clShowerDir =  ite->second[trkVec[it2]]._clusterMap._showerDir;
                                 _clErrShowerDir = ite->second[trkVec[it2]]._clusterMap._errShowerDir;
 
+                                _seedGenp = ite->second[trkVec[it2]]._genp;
+                                _seedGene = ite->second[trkVec[it2]]._gene;
+                                _seedGenx = ite->second[trkVec[it2]]._genx;
+                                _seedGeny = ite->second[trkVec[it2]]._geny;
+                                _seedGenz = ite->second[trkVec[it2]]._genz;
+                                _seedGencosth = ite->second[trkVec[it2]]._gencosth;
+                                _seedGenphi = ite->second[trkVec[it2]]._genphi;
+                                _seedGentime = ite->second[trkVec[it2]]._gentime;
                                 _seedPx = ite->second[trkVec[it2]]._impPos.x();
                                 _seedPy = ite->second[trkVec[it2]]._impPos.y();
                                 _seedPz =ite->second[trkVec[it2]]._impPos.z();
