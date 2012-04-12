@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.6 2012/04/11 10:35:13 gianipez Exp $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.7 2012/04/12 10:33:16 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/04/11 10:35:13 $
+// $Date: 2012/04/12 10:33:16 $
 //
 // Original author G. Pezzullo
 //
@@ -357,13 +357,15 @@ double triangoloVar(double x, char d){
         double par[6] = {0.};
         if(d == 'V' ){
                 //                double p1[6] = { 0.1689, 29.92, -1.344, 4.136, 0.6882, 0.004642};//linear corr
-                double p1[6] = {0.3822, 29.75, -7.595, 5.384, 0.6845, 4.219e-15};//pol4 corr
+                //                double p1[6] = {0.3822, 29.75, -7.595, 5.384, 0.6845, 4.219e-15};//pol4 corr
+                double p1[6] = {0.4825, 30.06, -9.645, 3.767, 0.6561, -0.001441};
                 for(int y=0; y<6; ++y){
                         par[y] = p1[y];
                 }
         } else if (d == 'W'){
                 //                double p2[6] = { 0.343, 30., -4.25, -1.441, 0.5152, 0.0001403};//linear corr
-                double p2[6] = {0.3201, 30., -24.76, -1.257, 0.5072, 9.911e-6};//pol4 corr
+                //                double p2[6] = {0.3201, 30., -24.76, -1.257, 0.5072, 9.911e-6};//pol4 corr
+                double p2[6] = {0.3203, 30., -35.87, -1.29, 0.51, 6.046e-6};
                 for(int y=0; y<6; ++y){
                         par[y] = p2[y];
                 }
@@ -397,6 +399,56 @@ double triangoloVar(double x, char d){
         return y;
 
 }
+
+double triangoloVarSpread(double x, char d){
+        double y =0.;
+        double par[6] = {0.};
+        if(d == 'V' ){
+                //                double p1[6] = { 0.1689, 29.92, -1.344, 4.136, 0.6882, 0.004642};//linear corr
+                //                double p1[6] = {0.3822, 29.75, -7.595, 5.384, 0.6845, 4.219e-15};//pol4 corr
+                double p1[6] = {0.5092, 29.22, -5.829, 11.64, 0.54, 0.00167};
+                for(int y=0; y<6; ++y){
+                        par[y] = p1[y];
+                }
+        } else if (d == 'W'){
+                //                double p2[6] = { 0.343, 30., -4.25, -1.441, 0.5152, 0.0001403};//linear corr
+                //                double p2[6] = {0.3201, 30., -24.76, -1.257, 0.5072, 9.911e-6};//pol4 corr
+                double p2[6] = {0.3148, 30., -35.87, -1.33, 0.5083, 2.726e-6};
+                for(int y=0; y<6; ++y){
+                        par[y] = p2[y];
+                }
+        }
+
+        if(par[1] == 0.) return y;
+
+        double m = par[0], xp = par[1], q = par[2], s = par[3], p1 = par[4], p0 = par[5];
+
+        double amp = p0*x;
+        amp = TMath::Exp(amp);
+
+        double tempx = x - s;
+        double temp;
+        double p2 = 1.- p1;
+        //if(tempx < 0.){
+        //  temp = tempx/xp +1.;
+        //}else {
+        temp = tempx/xp;
+        //}
+        double cut = (temp - ( (int) temp)+( tempx <0 ? +1. : 0)  );
+
+        if(cut < p1){
+                y = m*xp*cut + q;
+        } else {
+                double mp = -p1*m/p2, qp = q - mp*xp;
+                y= mp*xp*cut + qp ;
+        }
+
+        y *= amp;
+        return y;
+
+}
+
+
 
 double corrFunc(double x, double *par){
         double res=0.0;
@@ -928,7 +980,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
 
                                 //                                        _prova1 = sqrt( pow(dcaV.z(),2) + pow(dcaV.x(),2))*impactParam;
 
-                                _prova2 = sqrt( pow(dcaV.y(),2) + pow(dcaV.x(),2))*impactParam;
+                                //                                _prova2 = sqrt( pow(dcaV.y(),2) + pow(dcaV.x(),2))*impactParam;
 
                                 double distanceToCog = sqrt( pow(vaneFrame.getX() -ite->second[trkVecTot[it2]]._cluCog.getX() ,2) + pow(vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() ,2) + pow(vaneFrame.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() ,2) );
                                 _distToCog = distanceToCog;
@@ -974,12 +1026,16 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 deltaZ -= corrW;
                                 _seedDeltaCorrW = deltaZ ;
 
+                                double corrSpreadW = triangoloVarSpread(vaneFrame.z(), 'W');
+                                deltaZ += corrW;
+                                deltaZ -= corrSpreadW;
+                                _prova1 = deltaZ;
 
                                 double thetaVimpact = std::atan(dirMom_rotated.getY() /  dirMom_rotated.getX() ) ;
                                 _seedThetaV = thetaVimpact*180./TMath::Pi();
 
                                 double deltaY = cogVcorrFunc( thetaVimpact );
-                                _prova1     = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY;
+
 
                                 deltaY = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY ;
 
@@ -988,6 +1044,12 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 double corrV = triangoloVar(vaneFrame.y(), 'V');
                                 deltaY -= corrV;
                                 _seedDeltaCorrV = deltaY ;
+
+                                double corrSpreadV = triangoloVarSpread(vaneFrame.y(), 'V');
+                                deltaY += corrV;
+                                deltaY -= corrSpreadV;
+                                _prova2 = deltaY;
+
 
                                 _hTHistDeltaURec->Fill(  vaneFrame.getX() - ite->second[trkVecTot[it2]]._cluCog.getX() );
                                 _hTHistDeltaWRec->Fill(   deltaZ );
