@@ -100,7 +100,7 @@ TrkPatRec :
                 maxhitchi                               : 5.0
                 weedhits        : true
                 updateT0        : false
-                ambigflip       : true
+                ambiguityStrategy       : 0
         }
 # Kalman fit configuration for the final track fit
         KalFit :
@@ -108,11 +108,11 @@ TrkPatRec :
                 maxiter                                 : 5
                 debugLevel                      : 0
                 material                                : true
-                hiterr                                  : 0.1
                 seedsmear                               : 100000
                 maxhitchi                               : 3.0
                 mingap                                  : 1.0
                 weedhits                                : true
+		ambiguityStrategy			: 1
         }
 # MC truth finder, analyzer configuration
   KalFitMC :
