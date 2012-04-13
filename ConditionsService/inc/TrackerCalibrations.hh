@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.9 2012/04/11 19:48:08 brownd Exp $
+// $Id: TrackerCalibrations.hh,v 1.10 2012/04/13 14:46:25 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/04/11 19:48:08 $
+// $Date: 2012/04/13 14:46:25 $
 //
 // Original author Vadim Rusu
 //
@@ -23,6 +23,18 @@ namespace mu2e
   class SimpleConfig;
   class StrawHit;
 
+// simple struct to hold output of timeToDistance function
+  struct T2D {
+    double _rdrift;
+    double _rdrifterr;
+    double _vdrift; // local drift velocity at this radius, ie dr/dt(rdrift).
+  };
+
+// simple struct to hold output of distanceToTime function
+  struct D2T {
+    double _tdrift;
+    double _tdrifterr;
+  };
 
   struct TrackerCalibrations: virtual public ConditionsEntity{
 
@@ -35,13 +47,11 @@ namespace mu2e
     double TimeDivisionResolution(StrawIndex strawIndex, double znorm) const;
     double SignalVelocity(StrawIndex strawIndex) const;
     // Drift time calibration for reconstruction.  This returns the transverse radius and the error on that, NOT INCLUDING the
-    // effective error from uncertainty in the ambiguity assignment.
+    // effective error from uncertainty in the ambiguity assignment or t0 determination.
     // The track direction is used to compute Lorentz effects
-    void TimeToDistance(StrawIndex strawIndex, double tdrift, CLHEP::Hep3Vector const& tdir,
-      double& rdrift, double& rdrifterr) const;
+    void TimeToDistance(StrawIndex strawIndex, double tdrift, CLHEP::Hep3Vector const& tdir, T2D& t2d) const;
     // Inverse drift time calibration for use in simulation.  takes the transverse radius and track direction as input.
-    void DistanceToTime(StrawIndex strawIndex,double rdrift, CLHEP::Hep3Vector const& tdir,
-      double& tdrift, double& tdrifterr) const;
+    void DistanceToTime(StrawIndex strawIndex,double rdrift, CLHEP::Hep3Vector const& tdir, D2T& d2t) const;
 
     // time difference calibration
     double TimeDiffToDistance(StrawIndex strawIndex, double deltaT) const;

@@ -1,9 +1,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.6 2012/04/11 19:48:08 brownd Exp $
+// $Id: TrackerCalibrations.cc,v 1.7 2012/04/13 14:46:25 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/04/11 19:48:08 $
+// $Date: 2012/04/13 14:46:25 $
 //
 
 // Mu2e include files
@@ -26,19 +26,18 @@ namespace mu2e {
     _rres = config.getDouble("DriftRadiusResolution",0.1); //mm
   }
   
-  void TrackerCalibrations::DistanceToTime(StrawIndex strawIndex,double rdrift, CLHEP::Hep3Vector const& tdir,
-    double& tdrift, double& tdrifterr) const {
+  void TrackerCalibrations::DistanceToTime(StrawIndex strawIndex,double rdrift, CLHEP::Hep3Vector const& tdir,D2T& d2t) const {
     // oversimplfied model, FIXME!!!
     // Note that negative drift radii are allowed: this is necessary to allow continuous derivatives at the wire.
     // Calling classes that require a positive time should pass abs(rdrift).
-    tdrift = rdrift/_vdrift;
-    tdrifterr = _rres/_vdrift;
+    d2t._tdrift = rdrift/_vdrift;
+    d2t._tdrifterr = _rres/_vdrift;
   }
 
-  void TrackerCalibrations::TimeToDistance(StrawIndex strawIndex, double tdrift, CLHEP::Hep3Vector const& tdir,
-    double& rdrift, double& rdrifterr) const {
-    rdrift = tdrift*_vdrift;
-    rdrifterr = _rres;
+  void TrackerCalibrations::TimeToDistance(StrawIndex strawIndex, double tdrift, CLHEP::Hep3Vector const& tdir,T2D& t2d) const {
+    t2d._rdrift = tdrift*_vdrift;
+    t2d._rdrifterr = _rres;
+    t2d._vdrift = _vdrift;
   }
 
   double TrackerCalibrations::TimeDivisionResolution(StrawIndex , double znorm) const {
