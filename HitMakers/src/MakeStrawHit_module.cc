@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.15 2012/04/11 19:50:39 brownd Exp $
+// $Id: MakeStrawHit_module.cc,v 1.16 2012/04/13 14:49:21 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/04/11 19:50:39 $
+// $Date: 2012/04/13 14:49:21 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -347,10 +347,10 @@ namespace mu2e {
         // t1 is signal time at positive end (along w vector),
         // t2 - at negative end (opposite to w vector)
 
-	double tdrift,tdrifterr;
-	trackerCalibrations->DistanceToTime(straw_id,hit_dca,mom,tdrift,tdrifterr);
+	D2T d2t;
+	trackerCalibrations->DistanceToTime(straw_id,hit_dca,mom,d2t);
 	// smear the time to account for dispersion and measurement error.  Truncate at 0
-        double driftTime = std::max(0.0,tdrift + _gaussian.fire(0.,tdrifterr));
+        double driftTime = std::max(0.0,d2t._tdrift + _gaussian.fire(0.,d2t._tdrifterr));
         double distanceToMiddle = (hit_pca-mid).dot(w);
         // The convention is that the principle time measurement (t1) corresponds to a measurement
         // at the end of the wire as signed by the wire direction vector. t2 is at the near end.
