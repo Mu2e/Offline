@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.23 2012/04/11 19:51:24 brownd Exp $
+// $Id: KalFit.cc,v 1.24 2012/04/13 14:49:46 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/04/11 19:51:24 $
+// $Date: 2012/04/13 14:49:46 $
 //
 
 // the following has to come before other BaBar includes
@@ -72,7 +72,7 @@ namespace mu2e
     _debug(pset.get<int>("debugLevel",0)),
     _fieldcorr(pset.get<bool>("fieldCorrections",false)),
     _material(pset.get<bool>("material",true)),
-    _ambigflip(pset.get<bool>("ambigflip",false)),
+//    _ambigflip(pset.get<bool>("ambigflip",false)),
     _weedhits(pset.get<bool>("weedhits",true)),
     _updatet0(pset.get<bool>("updateT0",true)),
     _removefailed(pset.get<bool>("RemoveFailedFits",true)),
@@ -83,19 +83,24 @@ namespace mu2e
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
     _minndof(pset.get<unsigned>("minNDOF",10)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
-    _herr(pset.get<double>("hiterr",0.1)),
+    _herr(pset.get<double>("hiterr",0.0)),
     _ssmear(pset.get<double>("seedsmear",1e6)),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _mint0doca(pset.get<double>("minT0DOCA",-0.2)),
     _maxdriftpull(pset.get<double>("maxDriftPull",10)),
     _t0nsig(pset.get<double>("t0window",2.5)),
     _fitpart(pset.get<int>("fitparticle",PdtPid::electron)),
-    _t0strategy((t0Strategy)pset.get<int>("t0strategy",median))
+    _t0strategy((t0Strategy)pset.get<int>("t0Strategy",median)),
+    _ambigstrategy((ambigStrategy)pset.get<int>("ambiguityStrategy",singlehit))
   {
       _kalcon = new KalContext;
       _kalcon->setBendSites(_fieldcorr);
       _kalcon->setMaterialSites(_material);
-      _kalcon->setForbidAmbigFlips(_ambigflip); //false: free left-rigth ambiguity, true: will be fixed from sim
+    // depending on the ambiguity strategy, either allow or not the hit to change it itself
+      if(_ambigstrategy == singlehit)
+	_kalcon->setForbidAmbigFlips(false); //false: free left-rigth ambiguity, true: will be fixed externally
+      else
+	_kalcon->setForbidAmbigFlips(true);
       _kalcon->setMaxIterations(_maxiter);
       _kalcon->setMinGap(_mingap); // minimum separation between sites when creating trajectory pieces
       // these are currently fixed, they should be set as parameters and re-optimized FIXME!!!!
@@ -256,9 +261,9 @@ namespace mu2e
 	const StrawHit& strawhit(mytrk.strawHitCollection()->at(istraw));
 	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 	// assume the average drift time is half the maximum drift distance.  This is a poor approximation, but good enough for now
-	double tdrift, tdrifterr;
+	D2T d2t;
 	static CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
-	tcal->DistanceToTime(straw.index(),0.5*straw.getRadius(),zdir,tdrift,tdrifterr);
+	tcal->DistanceToTime(straw.index(),0.5*straw.getRadius(),zdir,d2t);
  	// compute initial flightlength from helix and hit Z
 	double hflt = mytrk.helix().zFlight(straw.getMidPoint().z()) - t0flt;
 	// estimate the time the track reaches this hit from z=0, assuming speed-of-light travel along the helix. Should use actual
@@ -269,7 +274,7 @@ namespace mu2e
 	double teprop = straw.getHalfLength()/vwire;
 	// correct the measured time for these effects: this gives the aveage time the particle passed this straw, WRT
 	// when the track crossed Z=0
-	double htime = strawhit.time() - tprop - teprop - tdrift;
+	double htime = strawhit.time() - tprop - teprop - d2t._tdrift;
 	times.push_back(htime);
       }
       // different strategies for t0 estimate
@@ -308,7 +313,8 @@ namespace mu2e
     // create the hit object
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,t00,flt0,fltlen,_herr,_maxdriftpull);
       assert(trkhit != 0);
-      if(mytrk.strawHitIndices()[iind]._ambig != 0)trkhit->setAmbig(mytrk.strawHitIndices()[iind]._ambig);
+    // if ambiguity was predefined, set it
+      if(_ambigstrategy == fixed)trkhit->setAmbig(mytrk.strawHitIndices()[iind]._ambig);
     // refine the flightlength, as otherwise hits in the same plane are at exactly the same flt, which can cause problems
       const TrkDifTraj* dtraj = &mytrk.helix();
       if(mytrk.traj() != 0)dtraj = mytrk.traj();
@@ -351,8 +357,8 @@ namespace mu2e
 	      double rad = hit->straw().getRadius();
               if(doca > _mint0doca && doca < rad-_mint0doca){
 // translate the DOCA into a time
-		double tdrift,tdrifterr;
-		tcal->DistanceToTime(hit->straw().index(),doca,straj->direction(poca.flt1()),tdrift,tdrifterr);
+		D2T d2t;
+		tcal->DistanceToTime(hit->straw().index(),doca,straj->direction(poca.flt1()),d2t);
 // particle transit time to this hit from z=0.  This assumes beta=1, FIXME!!!
                 double tflt = (hit->fltLen()-flt0)/_vlight;
 // electronic signal transit time from the POCA to the primary straw end.
@@ -360,7 +366,7 @@ namespace mu2e
 // by the wire direction, and that the hit trajectory starts in the middle of the straw, going in the wire direction.
 		double teprop = (hit->straw().getHalfLength()-poca.flt2())/tcal->SignalVelocity(hit->straw().index()); 
 // t0 = Time difference between the hit time and the sum of all propagation
-                double hitt0 = hit->time() - tdrift - tflt - teprop;
+                double hitt0 = hit->time() - d2t._tdrift - tflt - teprop;
                 hitst0.push_back(hitt0);
 		t0sum += hitt0;
 		t0sum2 += hitt0*hitt0;

@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.16 2012/04/11 19:51:24 brownd Exp $
+// $Id: TrkStrawHit.cc,v 1.17 2012/04/13 14:49:46 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/04/11 19:51:24 $
+// $Date: 2012/04/13 14:49:46 $
 //
 // Original author David Brown, LBNL
 //
@@ -13,6 +13,7 @@
 #include "TrkBase/TrkPoca.hh"
 #include "TrkBase/TrkDifTraj.hh"
 #include "TrkBase/TrkDetElemId.hh"
+#include "TrkBase/TrkRep.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -22,9 +23,6 @@ using namespace std;
 
 namespace mu2e
 {
-// drift velocity is a parameter of the makeStrawHits module; I have no access to that, so I hardcode
-// this here.   FIXME!!!!!
-  double TrkStrawHit::_vdrift = 0.05; // mm per nanosecond
 // convert speed of light in mm/nsec
   const double TrkStrawHit::_vlight = CLHEP::c_light;
 /// Material information, BaBar style
@@ -127,8 +125,6 @@ namespace mu2e
 // add a term that scales linearly with the flight distance from t0flt.  This should be taken
 // out by the Kalman fit, but it needs additional derivative terms.  FIXME!!!!
     _hitt0_err = trkt0._t0err;
-// update the drift distance calculation
-    updateDrift();
   }
   
   double
@@ -138,24 +134,28 @@ namespace mu2e
   
   void
   TrkStrawHit::updateDrift() {
-// compute the electronics propagation time.  The convention is that the hit time is at the
+// compute the electronics propagation time.  The convention is that the hit time is measured at the
 // FAR END of the wire, as signed by the wire direction.
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     double vwire = tcal->SignalVelocity(straw().index());
-    double eprop;
+    double teprop;
     if(_poca != 0 && _poca->status().success()){
-      eprop = (straw().getHalfLength()-hitLen())/vwire;
+      teprop = (straw().getHalfLength()-hitLen())/vwire;
     } else {
 // if we're missing poca information, use time division instead
-      eprop = (straw().getHalfLength()-_tddist)/vwire;
+      teprop = (straw().getHalfLength()-_tddist)/vwire;
     }
-    double tdrift = strawHit().time() - _hitt0 - eprop;
-    _rdrift = tdrift*_vdrift;
+    double tdrift = strawHit().time() - _hitt0 - teprop;
+// find the track direction at this hit
+    CLHEP::Hep3Vector tdir = getParentRep()->traj().direction(fltLen());
+// convert time to distance.  This computes the intrinsic drift radius error as well
+    T2D t2d;
+    tcal->TimeToDistance(straw().index(),tdrift,tdir,t2d);
+    _rdrift = t2d._rdrift;
     double rstraw = _straw.getRadius(); 
-  // radial error is combination of time error and intrinsic error.  This doesn't account for correlation between hits
-    double time_err = sqrt(_hitt0_err*_hitt0_err);
-    double rt0err = time_err*_vdrift;
-    _rdrift_err = sqrt(rt0err*rt0err + _herr*_herr);
+  // total drift radius error is the combination of t0 error, intrinsic error, and external error.  This doesn't account for correlation between hits
+    double rt0err = _hitt0_err*t2d._vdrift;
+    _rdrift_err = sqrt(rt0err*rt0err + t2d._rdrifterr*t2d._rdrifterr + _herr*_herr);
 // If the hit is wildly away from the track , disable it
     if( _rdrift - rstraw > _maxdriftpull*_rdrift_err ||
       _rdrift < -_maxdriftpull*_rdrift_err){
@@ -188,17 +188,16 @@ namespace mu2e
     TrkErrCode status(TrkErrCode::fail);
 // find POCA to the wire
     updatePoca(traj);
+// update the drift distance using this traj direction
+    updateDrift();
     if(_poca != 0 && _poca->status().success()) {
       status = _poca->status();
-// set the ambiguity if it was never set, or if allowed, check both ambiguities and set as necessary
-      if(_iamb == 0 || !maintainAmbiguity){
-// reset ambiguity only if the difference is significant.  This avoids frothing during the fit iterations
-//        if(_rdrift > _herr ||  _iamb == 0){
-          int newamb = _poca->doca() > 0 ? 1 : -1;
-          setAmbig(newamb);
-//        }
+// set the ambiguity if allowed, based on the sign of DOCA
+      if(!maintainAmbiguity){
+	int newamb = _poca->doca() > 0 ? 1 : -1;
+	setAmbig(newamb);
       }
-// sign drift distance by ambiguity
+// sign drift distance by ambiguity.  Note that an ambiguity of 0 means to ignore the drift
       double residual = _poca->doca() - _rdrift*_iamb;
       setHitResid(residual);
       setHitRms(_rdrift_err);
