@@ -1,9 +1,9 @@
 
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.21 2012/03/23 22:27:50 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.22 2012/04/14 17:54:02 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/23 22:27:50 $
+// $Date: 2012/04/14 17:54:02 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -160,6 +160,7 @@ namespace mu2e
     KalFitMC _kfitmc;
 // strawhit tuple variables
     TTree* _shdiag;
+    Int_t _eventid;
     threevec _shpos;
     Float_t _edep;
     Float_t _time;
@@ -173,6 +174,7 @@ namespace mu2e
     Float_t _pdist,_pperp,_pmom;
     Float_t _mctime;
     Int_t _vloose, _loose, _tight, _delta;
+    Int_t _device, _sector, _layer, _straw;
     Int_t _ntpeak, _nshtpeak;
     Float_t _shtpeak;
     Float_t _shmct0, _shmcmom, _shmctd;
@@ -265,11 +267,13 @@ namespace mu2e
 // create a histogram of throughput: this is a basic diagnostic that should ALWAYS be on
     art::ServiceHandle<art::TFileService> tfs;
     _cutflow=tfs->make<TH1F>("cutflow","Cutflow",10,-0.5,9.5);
+    _eventid = 0;
   }
 
   void TrkPatRec::beginRun(art::Run& ){}
 
   void TrkPatRec::produce(art::Event& event ) {
+    ++_eventid;
     _cutflow->Fill(0.0);
 // create output
     auto_ptr<TrkRecoTrkCollection> tracks(new TrkRecoTrkCollection );
@@ -725,9 +729,14 @@ namespace mu2e
     art::ServiceHandle<art::TFileService> tfs;
 // straw hit tuple
     _shdiag=tfs->make<TTree>("shdiag","strawhit diagnostics");
+    _shdiag->Branch("eventid",&_eventid,"eventid/I");
     _shdiag->Branch("shpos",&_shpos,"x/F:y/F:z/F");
     _shdiag->Branch("edep",&_edep,"edep/F");
     _shdiag->Branch("time",&_time,"time/F");
+    _shdiag->Branch("device",&_device,"device/I");
+    _shdiag->Branch("sector",&_sector,"sector/I");
+    _shdiag->Branch("layer",&_layer,"layer/I");
+    _shdiag->Branch("straw",&_straw,"straw/I");
     _shdiag->Branch("ntpeak",&_ntpeak,"ntpeak/I");
     _shdiag->Branch("tpeak",&_shtpeak,"tpeak/F");
     _shdiag->Branch("nshtpeak",&_nshtpeak,"nshtpeak/I");
@@ -759,6 +768,7 @@ namespace mu2e
     _shdiag->Branch("mctd",&_shmctd,"mctd/F");
 // extend the KalFitMC track diagnostic tuple
     TTree* trkdiag = _kfitmc.createTrkDiag();
+    trkdiag->Branch("eventid",&_eventid,"eventid/I");
     trkdiag->Branch("nadd",&_nadd,"nadd/I");
     trkdiag->Branch("ipeak",&_ipeak,"ipeak/I");
     trkdiag->Branch("hcx",&_hcx,"hcx/F");
@@ -822,10 +832,17 @@ namespace mu2e
     std::vector<TrkHitFlag> const& tflags,
     std::vector<TrkTimePeak>& tpeaks) {
     GeomHandle<DetectorSystem> det;
+    const Tracker& tracker = getTrackerOrThrow();
     _nchit = 0;
     unsigned nstrs = _strawhits->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawHit const& sh = _strawhits->at(istr);
+      const Straw& straw = tracker.getStraw( sh.strawIndex() );
+      _device = straw.id().getDevice();
+      _sector = straw.id().getSector();
+      _layer = straw.id().getLayer();
+      _straw = straw.id().getStraw();
+
       _shpos = shpos[istr];
       _edep = sh.energyDep();
       _time = sh.time();

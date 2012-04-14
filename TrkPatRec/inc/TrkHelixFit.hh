@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.hh,v 1.4 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $ 
-// $Date: 2011/10/28 18:47:07 $
+// $Id: TrkHelixFit.hh,v 1.5 2012/04/14 17:54:02 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/04/14 17:54:02 $
 //
 #ifndef TrkHelixFit_HH
 #define TrkHelixFit_HH
@@ -33,6 +33,7 @@ namespace mu2e
     double _radius;
 // Z parameters; dfdz is the slope of phi vs z (=1/(R*tandip)), fz0 is the phi value of the particle where it goes through z=0
     double _dfdz, _fz0;
+    TrkHelix() : _fit(TrkErrCode::fail),_radius(-1.0),_dfdz(0.0),_fz0(0.0) {}
  };
   
 // utility struct
