@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.18 2012/03/22 22:32:30 brownd Exp $
+// $Id: KalFitMC.hh,v 1.19 2012/04/14 17:53:37 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/22 22:32:30 $
+// $Date: 2012/04/14 17:53:37 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -97,8 +97,8 @@ namespace mu2e
     Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
     Float_t _ht, _tddist, _tdderr, _hlen;
     Int_t _ambig;
-    UInt_t _mcn, _mcnunique, _mcppdg, _mcpgen, _mcpproc;
-    UInt_t _mcpdg, _mcgen, _mcproc;
+    Int_t _mcn, _mcnunique, _mcppdg, _mcpgen, _mcpproc;
+    Int_t _mcpdg, _mcgen, _mcproc;
     Float_t _mcht, _mcdist, _mclen;
     Int_t _mcambig;
 // root 
@@ -189,7 +189,6 @@ namespace mu2e
 // trk tuple variables
     public:
     TTree *_trkdiag;
-    UInt_t _eventid;
     Int_t _fitstatus;
     Float_t _t00;
     Float_t _t00err;

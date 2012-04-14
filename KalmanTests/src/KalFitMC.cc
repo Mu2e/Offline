@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.25 2012/03/22 22:31:58 brownd Exp $
+// $Id: KalFitMC.cc,v 1.26 2012/04/14 17:53:37 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/22 22:31:58 $
+// $Date: 2012/04/14 17:53:37 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -578,7 +578,6 @@ namespace mu2e
   KalFitMC::createTrkDiag(){
     art::ServiceHandle<art::TFileService> tfs;
     _trkdiag=tfs->make<TTree>("trkdiag","trk diagnostics");
-    _trkdiag->Branch("eventid",&_eventid,"eventid/i");
     _trkdiag->Branch("fitstatus",&_fitstatus,"fitstatus/I");
     _trkdiag->Branch("t00",&_t00,"t00/F");
     _trkdiag->Branch("t00err",&_t0err,"t00err/F");

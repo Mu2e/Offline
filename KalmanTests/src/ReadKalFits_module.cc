@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.5 2012/01/31 18:29:20 brownd Exp $
+// $Id: ReadKalFits_module.cc,v 1.6 2012/04/14 17:53:37 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/01/31 18:29:20 $
+// $Date: 2012/04/14 17:53:37 $
 //
 // Original author Rob Kutschke
 //
@@ -66,7 +66,7 @@ namespace mu2e {
     TH1F* _hChisq;
 
     TTree* _trkdiag;
-    Int_t _trkid;
+    Int_t _trkid,_eventid;
     Float_t _diowt;
 
   };
@@ -87,13 +87,15 @@ namespace mu2e {
     _hChisq   = tfs->make<TH1F>( "hChisq",   "Chisquared of the Track fit.",       100, 0.,  500. );
     _trkdiag = _kfitmc.createTrkDiag();
 // add local branches
+    _trkdiag->Branch("eventid",&_eventid,"eventid/I");
     _trkdiag->Branch("trkid",&_trkid,"trkid/I");
     _trkdiag->Branch("diowt",&_diowt,"diowt/f");
+    _eventid = 0;
   }
 
   // For each event, look at tracker hits and calorimeter hits.
   void ReadKalFits::analyze(const art::Event& event) {
-      
+    _eventid++;
     _kfitmc.findMCData(event);
     // DIO spectrum weight; use the generated momenum magnitude
     double ee = _kfitmc._mcmom;
