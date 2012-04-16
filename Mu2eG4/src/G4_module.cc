@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.40 2012/03/29 17:05:12 kutschke Exp $
+// $Id: G4_module.cc,v 1.41 2012/04/16 21:41:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/29 17:05:12 $
+// $Date: 2012/04/16 21:41:13 $
 //
 // Original author Rob Kutschke
 //
@@ -33,6 +33,7 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
 #include "Mu2eG4/inc/exportG4PDT.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
@@ -448,13 +449,15 @@ namespace mu2e {
       (SDman->FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar()))->
       beforeG4Event(*sbHits, _processInfo, simPartId, event );
 
-    static_cast<CaloCrystalSD*>
-      (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal()))->
-      beforeG4Event(*caloHits, _processInfo, simPartId, event );
+    if ( geom->hasElement<Calorimeter>() ) {
+      static_cast<CaloCrystalSD*>
+        (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal()))->
+        beforeG4Event(*caloHits, _processInfo, simPartId, event );
 
-    static_cast<CaloReadoutSD*>
-      (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloReadout()))->
-      beforeG4Event(*caloROHits, _processInfo, simPartId, event );
+      static_cast<CaloReadoutSD*>
+        (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloReadout()))->
+        beforeG4Event(*caloROHits, _processInfo, simPartId, event );
+    }
 
     static_cast<ExtMonFNAL_SD*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))->
@@ -553,7 +556,6 @@ namespace mu2e {
       _UI->ApplyCommand("/vis/scene/endOfEventAction refresh");
 
     }   // end !_visMacro.empty()
-
 
     // This deletes the object pointed to by currentEvent.
     _runManager->BeamOnEndEvent();

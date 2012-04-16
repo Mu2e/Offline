@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.125 2012/03/29 15:22:05 ignatov Exp $
-// $Author: ignatov $
-// $Date: 2012/03/29 15:22:05 $
+// $Id: Mu2eWorld.cc,v 1.126 2012/04/16 21:41:02 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/04/16 21:41:02 $
 //
 // Original author Rob Kutschke
 //
@@ -77,6 +77,7 @@
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/TransportSolenoid.hh"
@@ -579,6 +580,8 @@ namespace mu2e {
 
   void Mu2eWorld::instantiateSensitiveDetectors(){
 
+    art::ServiceHandle<GeometryService> geom;
+
     G4SDManager* SDman      = G4SDManager::GetSDMpointer();
 
     // G4 takes ownership and will delete the detectors at the job end
@@ -605,11 +608,13 @@ namespace mu2e {
     VirtualDetectorSD* vdSD = new VirtualDetectorSD(SensitiveDetectorName::VirtualDetector(), *_config);
     SDman->AddNewDetector(vdSD);
 
-    CaloCrystalSD* ccSD     = new CaloCrystalSD(    SensitiveDetectorName::CaloCrystal(),     *_config);
-    SDman->AddNewDetector(ccSD);
+    if (  geom->hasElement<Calorimeter>() ) {
+      CaloCrystalSD* ccSD     = new CaloCrystalSD(    SensitiveDetectorName::CaloCrystal(),     *_config);
+      SDman->AddNewDetector(ccSD);
 
-    CaloReadoutSD* crSD     = new CaloReadoutSD(    SensitiveDetectorName::CaloReadout(),     *_config);
-    SDman->AddNewDetector(crSD);
+      CaloReadoutSD* crSD     = new CaloReadoutSD(    SensitiveDetectorName::CaloReadout(),     *_config);
+      SDman->AddNewDetector(crSD);
+    }
 
     ExtMonFNAL_SD* emfSD     = new ExtMonFNAL_SD(    SensitiveDetectorName::ExtMonFNAL(),     *_config);
     SDman->AddNewDetector(emfSD);
