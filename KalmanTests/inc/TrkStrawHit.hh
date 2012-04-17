@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.12 2012/03/22 22:31:14 brownd Exp $
+// $Id: TrkStrawHit.hh,v 1.13 2012/04/17 00:02:24 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/22 22:31:14 $
+// $Date: 2012/04/17 00:02:24 $
 //
 // Original author David Brown, LBNL
 //
@@ -63,7 +63,7 @@ namespace mu2e
     virtual TrkEnums::TrkViewInfo whatView() const              { return TrkEnums::xyView; }
     virtual unsigned layerNumber() const                        { return _straw.id().getLayer(); }
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
-    virtual bool timeResid(double& t, double& error) const      { return false; }
+    virtual bool timeResid(double& t, double& error) const      { return false; } // implement these:: FIXME!!!
     virtual bool timeAbsolute(double& t, double& error) const   { return false; }
     virtual int ambig() const { return _iamb; }
     virtual void setAmbig(int newambig);
@@ -91,8 +91,10 @@ namespace mu2e
     void updateT0(const TrkT0&, double t0flt);
     double wallPath(double pdist,Hep3Vector const& tdir) const; // track pathlength through one wall of the straw
     double gasPath(double pdist,Hep3Vector const& tdir) const; // track pathlength through 1/2 the gas of the straw
-// intrinsic hit error
+// external hit error; the intrinsic error comes from the t2d calibration object
     double hitErr() const { return _herr; }
+// changing the extneral hit error invalidates the cache, it should invalidate the fit, FIXME!!!! 
+    void setHitErr(double herr) { _herr = herr; }
 // access to associated detector elements
     DetStrawGasElem const& gasElem() const { return _gelem; }
     DetStrawWallElem const& wallElem() const { return _welem; }

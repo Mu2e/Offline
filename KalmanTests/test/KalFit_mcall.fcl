@@ -1,8 +1,8 @@
 # Configuration file for KalFit01
 #
-# $Id: KalFit_mcall.fcl,v 1.1 2012/03/29 13:31:01 brownd Exp $
+# $Id: KalFit_mcall.fcl,v 1.2 2012/04/17 00:02:24 brownd Exp $
 # $Author: brownd $
-# $Date: 2012/03/29 13:31:01 $
+# $Date: 2012/04/17 00:02:24 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -64,6 +64,7 @@ physics :
     # Kalman fit configuration
         KalFit : 
         {
+	  hiterr : [ 0.0 ]
         }
     # MC truth finder, analyzer configuration
         KalFitMC : 
@@ -106,3 +107,4 @@ physics.producers.KalFitTest.KalFit.ambigflip : true
 physics.producers.KalFitTest.KalFit.RemoveFailedFits : false
 physics.producers.KalFitTest.KalFitMC.mcAmbiguity : true
 physics.producers.KalFitTest.KalFitMC.pureHits : true
+

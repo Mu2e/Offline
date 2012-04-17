@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.24 2012/04/13 14:49:46 brownd Exp $
+// $Id: KalFit.cc,v 1.25 2012/04/17 00:02:24 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/04/13 14:49:46 $
+// $Date: 2012/04/17 00:02:24 $
 //
 
 // the following has to come before other BaBar includes
@@ -83,7 +83,7 @@ namespace mu2e
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
     _minndof(pset.get<unsigned>("minNDOF",10)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
-    _herr(pset.get<double>("hiterr",0.0)),
+    _herr(pset.get< vector<double> >("hiterr")),
     _ssmear(pset.get<double>("seedsmear",1e6)),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _mint0doca(pset.get<double>("minT0DOCA",-0.2)),
@@ -93,6 +93,9 @@ namespace mu2e
     _t0strategy((t0Strategy)pset.get<int>("t0Strategy",median)),
     _ambigstrategy((ambigStrategy)pset.get<int>("ambiguityStrategy",singlehit))
   {
+//      _herr.push_back( pset.get< double >("hiterr") );
+  // make sure we have at least one entry for additional errors
+      if(_herr.size() <= 0) throw cet::exception("RECO")<<"mu2e::KalFit: no hit errors specified" << endl;
       _kalcon = new KalContext;
       _kalcon->setBendSites(_fieldcorr);
       _kalcon->setMaterialSites(_material);
@@ -185,8 +188,8 @@ namespace mu2e
 	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 	// estimate  initial flightlength
 	double hflt = findZFltlen(myfit,straw.getMidPoint().z());
-	// create the hit object
-	TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,myfit._t0,flt0,hflt,_herr,_maxdriftpull);
+	// create the hit object.  Assume we're at the last iteration over added error
+	TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,myfit._t0,flt0,hflt,_herr.back(),_maxdriftpull);
 	assert(trkhit != 0);
 	if(indices[iind]._ambig != 0)trkhit->setAmbig(indices[iind]._ambig);
 	// flag the added hit
@@ -209,53 +212,61 @@ namespace mu2e
   }
 
   void KalFit::fitTrack(TrkKalFit& myfit){
-    // fit the track
-    myfit.fit();
-    // update t0, and propagate it to the hits
-    double oldt0(-1e8);
-    myfit._nt0iter = 0;
-    unsigned niter(0);
-    bool changed(true);
-    while(changed && myfit._fit.success() && niter < _kalcon->maxIterations()){
-      changed = false;
-      if(_updatet0 && myfit._nt0iter < _kalcon->maxIterations() && updateT0(myfit) && fabs(myfit._t0.t0()-oldt0) > _t0tol  ){
-	oldt0 = myfit._t0.t0();
-	myfit._krep->resetFit();
-	myfit.fit();
-	myfit._nt0iter++;
-	changed = true;
+    // loop over external hit errors
+    for(std::vector<double>::const_iterator iherr= _herr.begin(); iherr != _herr.end(); ++iherr){
+// update the external hit errors.  This isn't strictly necessary on the 1st iteration.
+      for(std::vector<TrkStrawHit*>::iterator itsh = myfit._hits.begin(); itsh != myfit._hits.end(); ++itsh){
+	(*itsh)->setHitErr(*iherr);
       }
-      // drop outlyers
-      if(_weedhits){
-	myfit._nweediter = 0;
-	changed |= weedHits(myfit);
+// reset the fit
+      myfit._krep->resetFit();
+// initial fit
+      myfit.fit();
+      // update t0, and propagate it to the hits
+      double oldt0(-1e8);
+      myfit._nt0iter = 0;
+      unsigned niter(0);
+      bool changed(true);
+      while(changed && myfit._fit.success() && niter < _kalcon->maxIterations()){
+	changed = false;
+	if(_updatet0 && myfit._nt0iter < _kalcon->maxIterations() && updateT0(myfit) && fabs(myfit._t0.t0()-oldt0) > _t0tol  ){
+	  oldt0 = myfit._t0.t0();
+	  myfit._krep->resetFit();
+	  myfit.fit();
+	  myfit._nt0iter++;
+	  changed = true;
+	}
+	// drop outlyers
+	if(_weedhits){
+	  myfit._nweediter = 0;
+	  changed |= weedHits(myfit);
+	}
+	niter++;
       }
-      niter++;
+      if(myfit._krep != 0) myfit._krep->addHistory(myfit._fit,"KalFit");
     }
-    if(myfit._krep != 0) myfit._krep->addHistory(myfit._fit,"KalFit");
   }
 
-  
   bool
   KalFit::fitable(TrkDef const& mytrk){
     return mytrk.strawHitIndices().size() >= _minnstraws;
   }
-  
+
   void
   KalFit::initT0(TrkDef const& mytrk,TrkT0& t00) {
-// depending on the strategy, either compute T0 from the hits, or take it from the existing defintion directly
+    // depending on the strategy, either compute T0 from the hits, or take it from the existing defintion directly
     if(_t0strategy == external){
       t00 = mytrk.trkT0();
     } else {
-// make an array of all the hit times, correcting for propagation delay
+      // make an array of all the hit times, correcting for propagation delay
       const Tracker& tracker = getTrackerOrThrow();
       ConditionsHandle<TrackerCalibrations> tcal("ignored");
       unsigned nind = mytrk.strawHitIndices().size();
       std::vector<double> times;
       times.reserve(nind);
-// get flight distance of z=0 (for comparison)
+      // get flight distance of z=0 (for comparison)
       double t0flt = mytrk.helix().zFlight(0.0);
-// loop over strawhits
+      // loop over strawhits
       for(unsigned iind=0;iind<nind;iind++){
 	size_t istraw = mytrk.strawHitIndices()[iind]._index;
 	const StrawHit& strawhit(mytrk.strawHitCollection()->at(istraw));
@@ -264,7 +275,7 @@ namespace mu2e
 	D2T d2t;
 	static CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
 	tcal->DistanceToTime(straw.index(),0.5*straw.getRadius(),zdir,d2t);
- 	// compute initial flightlength from helix and hit Z
+	// compute initial flightlength from helix and hit Z
 	double hflt = mytrk.helix().zFlight(straw.getMidPoint().z()) - t0flt;
 	// estimate the time the track reaches this hit from z=0, assuming speed-of-light travel along the helix. Should use actual
 	// speed based on momentum and assumed particle species FIXME!!!
@@ -282,12 +293,12 @@ namespace mu2e
 	// find the median hit time
 	std::sort(times.begin(),times.end());
 	unsigned imed = times.size()/2;
-    // deal with even/odd # of hits separately
+	// deal with even/odd # of hits separately
 	if(times.size() == 2*imed)
 	  t00._t0 = 0.5*(times[imed-1]+times[imed]);
 	else
 	  t00._t0 = times[imed];
-  // estimate the error using the range
+	// estimate the error using the range
 	double tmax = (times.back()-times.front());
 	t00._t0err = _t0errfac*tmax/sqrt(12*nind);
       } else if(_t0strategy == histogram) {
@@ -310,8 +321,8 @@ namespace mu2e
       const StrawHit& strawhit(mytrk.strawHitCollection()->at(istraw));
       const Straw& straw = tracker.getStraw(strawhit.strawIndex());
       double fltlen = mytrk.helix().zFlight(straw.getMidPoint().z());
-    // create the hit object
-      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,t00,flt0,fltlen,_herr,_maxdriftpull);
+    // create the hit object.  Start with the 1st additional error for anealing
+      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,t00,flt0,fltlen,_herr.front(),_maxdriftpull);
       assert(trkhit != 0);
     // if ambiguity was predefined, set it
       if(_ambigstrategy == fixed)trkhit->setAmbig(mytrk.strawHitIndices()[iind]._ambig);

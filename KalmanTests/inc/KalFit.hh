@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.17 2012/04/13 14:49:46 brownd Exp $
+// $Id: KalFit.hh,v 1.18 2012/04/17 00:02:24 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/04/13 14:49:46 $
+// $Date: 2012/04/17 00:02:24 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -85,7 +85,7 @@ namespace mu2e
     unsigned _minnstraws;
     unsigned _minndof;
     unsigned _maxweed;
-    double _herr;
+    std::vector<double> _herr;
     double _ssmear;
     double _t0errfac;
     double _mint0doca;
@@ -104,7 +104,6 @@ namespace mu2e
     double findZFltlen(const TrkKalFit& myfit,double zval);
 // general
     static const double _vlight;
-    static const double _vdrift;
 // 
   };
 }

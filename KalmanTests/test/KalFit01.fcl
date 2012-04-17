@@ -1,8 +1,8 @@
 # Configuration file for KalFit01
 #
-# $Id: KalFit01.fcl,v 1.18 2012/03/19 22:12:20 brownd Exp $
+# $Id: KalFit01.fcl,v 1.19 2012/04/17 00:02:24 brownd Exp $
 # $Author: brownd $
-# $Date: 2012/03/19 22:12:20 $
+# $Date: 2012/04/17 00:02:24 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -64,6 +64,7 @@ physics :
     # Kalman fit configuration
         KalFit : 
         {
+	  hiterr : [ 0.0 ]
         }
     # MC truth finder, analyzer configuration
         KalFitMC : 
