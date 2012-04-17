@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkPatRecDisplay.fcl,v 1.3 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
+# $Id: TrkPatRecDisplay.fcl,v 1.4 2012/04/17 00:08:19 brownd Exp $
+# $Author: brownd $
+# $Date: 2012/04/17 00:08:19 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -75,48 +75,10 @@ physics :
     # Form StrawHits (SH).
     makeSH : @local::makeSH
 
-    # test module for Kalman fit: the 
+    # pat rec 
  
+    TrkPatRec : @local::TrkPatRec
 
-   TrkPatRec :
-    {
-        module_type    : TrkPatRec
-        diagLevel      : 0
-        MCHelix         : false
-    # Helix fit configuration
-        HelixFit : 
-        {
-            diagLevel       : 0
-        }
-
-    # Kalman fit configuration for the helix seed fit
-         SeedFit : 
-        {
-            maxiter        : 5
-            debugLevel     : 0
-            material       : false
-            hiterr          : 2.5
-            seedsmear       : 10000
-            weedhits        : true
-            updateT0        : false
-            ambigflip       : true
-        }
-    # Kalman fit configuration for the final track fit
-         KalFit : 
-        {
-            maxiter        : 5
-            debugLevel     : 0
-            material       : true
-            hiterr          : 0.1
-            seedsmear       : 100000
-            weedhits        : true
-        }
-        
-    # MC truth finder, analyzer configuration
-        KalFitMC : 
-        {
-        }        
-    }
   }
   p1 :  [generate , g4run, makeSH, TrkPatRec]
   e1 : [eventdisplay]
