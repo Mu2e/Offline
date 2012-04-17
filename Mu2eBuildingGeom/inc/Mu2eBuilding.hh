@@ -13,7 +13,7 @@
 #include "Mu2eInterfaces/inc/Detector.hh"
 
 #include "art/Persistency/Common/Wrapper.h"
- 
+
 namespace mu2e {
 
   class Mu2eBuildingMaker;
@@ -40,10 +40,10 @@ namespace mu2e {
     double hallWallThickness() const { return _hallWallThickness; }
     double hallWallExtMonUCIThickness() const { return _hallWallExtMonUCIThickness; }
 
-    double dirtOverburdenDepth() const { return _dirtOverburdenDepth; }
-    double dirtCapHalfHeight() const { return _dirtCapHalfHeight; }
-    double dirtCapBottomRadius() const { return _dirtCapBottomRadius; }
-    double dirtCapTopRadius() const { return _dirtCapTopRadius; }
+    double floorTopDepthBelowGrade() const { return _floorTopDepthBelowGrade; }
+
+    // computed: the level of dirt outside the formal box volume
+    double yFlatEarth() const { return _floorTopDepthBelowGrade + _hallInsideYmin; }
 
     const CLHEP::Hep3Vector& trackerOriginInMu2e() const { return _trackerOriginInMu2e; }
 
@@ -95,11 +95,7 @@ namespace mu2e {
     double _hallCeilingThickness;
     double _hallWallThickness;
     double _hallWallExtMonUCIThickness;
-
-    double _dirtOverburdenDepth;
-    double _dirtCapHalfHeight;
-    double _dirtCapBottomRadius;
-    double _dirtCapTopRadius;
+    double _floorTopDepthBelowGrade;
 
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline1;
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline2;

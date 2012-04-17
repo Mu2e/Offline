@@ -1,9 +1,9 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.12 2012/03/01 21:18:15 gandr Exp $
+// $Id: constructHall.cc,v 1.13 2012/04/17 19:56:56 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/01 21:18:15 $
+// $Date: 2012/04/17 19:56:56 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //
@@ -35,13 +35,13 @@ using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructHall(const VolumeInfo& parent, SimpleConfig const * const config ) {
+  VolumeInfo constructHall(const VolumeInfo& worldInfo, const SimpleConfig& config) {
 
-    bool const forceAuxEdgeVisible = config->getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = config->getBool("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
+    bool const doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
     bool const placePV             = true;
 
-    MaterialFinder materialFinder(*config);
+    MaterialFinder materialFinder(config);
 
     // Materials for the hall walls, floor, and ceiling
     G4Material* wallMaterial = materialFinder.get("hall.wallMaterialName");
@@ -49,28 +49,17 @@ namespace mu2e {
     GeomHandle<WorldG4> world;
     GeomHandle<Mu2eBuilding> building;
 
-    vector<double> hallFormalHLen(3);
-    hallFormalHLen[0] = (building->hallInsideXmax() - building->hallInsideXmin())/2 + building->hallWallThickness();
-    hallFormalHLen[1] = (building->hallInsideYmax() - building->hallInsideYmin())/2;
-    hallFormalHLen[2] = (building->hallInsideZmax() - world->hallFormalZminInMu2e())/2 + building->hallWallThickness();
-
-    CLHEP::Hep3Vector hallFormalCenter
-      ( (building->hallInsideXmax() + building->hallInsideXmin())/2,
-        (building->hallInsideYmax() + building->hallInsideYmin())/2,
-        (building->hallInsideZmax() + world->hallFormalZminInMu2e())/2
-        );
-
     // The formal hall volume
     VolumeInfo hallInfo = nestBox( "HallAir",
-                                   hallFormalHLen,
+                                   world->hallFormalHalfSize(),
                                    materialFinder.get("hall.insideMaterialName"),
                                    0,
-                                   hallFormalCenter - parent.centerInMu2e(),
-                                   parent,
+                                   world->hallFormalCenterInWorld(),
+                                   worldInfo,
                                    0,
-                                   config->getBool("hall.formalBoxVisible",false),
+                                   config.getBool("hall.formalBoxVisible"),
                                    G4Colour::Red(),
-                                   config->getBool("hall.formalBoxSolid",false),
+                                   config.getBool("hall.formalBoxSolid"),
                                    forceAuxEdgeVisible,
                                    placePV,
                                    doSurfaceCheck
@@ -100,8 +89,8 @@ namespace mu2e {
 
     VolumeInfo hallFloor("HallConcreteFloor",
                          CLHEP::Hep3Vector(0, building->hallInsideYmin() - building->hallFloorThickness()/2, 0)
-                         - parent.centerInMu2e(),
-                         parent.centerInWorld);
+                         - hallInfo.centerInMu2e(),
+                         hallInfo.centerInWorld);
 
     hallFloor.solid = new G4ExtrudedSolid(hallFloor.name, horizontalConcreteOutline,
                                           building->hallFloorThickness()/2,
@@ -111,11 +100,11 @@ namespace mu2e {
                   wallMaterial,
                   &horizontalConcreteRotation,
                   hallFloor.centerInParent,
-                  parent.logical,
+                  hallInfo.logical,
                   0,
-                  config->getBool("hall.floorVisible",true),
+                  config.getBool("hall.floorVisible"),
                   G4Colour::Grey(),
-                  config->getBool("hall.floorSolid",true),
+                  config.getBool("hall.floorSolid"),
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck
@@ -124,8 +113,8 @@ namespace mu2e {
 
     VolumeInfo hallCeiling("HallConcreteCeiling",
                            CLHEP::Hep3Vector(0, building->hallInsideYmax() + building->hallCeilingThickness()/2, 0)
-                           - parent.centerInMu2e(),
-                           parent.centerInWorld);
+                           - hallInfo.centerInMu2e(),
+                           hallInfo.centerInWorld);
 
     hallCeiling.solid = new G4ExtrudedSolid(hallCeiling.name, horizontalConcreteOutline,
                                             building->hallCeilingThickness()/2,
@@ -135,11 +124,11 @@ namespace mu2e {
                   wallMaterial,
                   &horizontalConcreteRotation,
                   hallCeiling.centerInParent,
-                  parent.logical,
+                  hallInfo.logical,
                   0,
-                  config->getBool("hall.ceilingVisible",false),
+                  config.getBool("hall.ceilingVisible"),
                   G4Colour::Grey(),
-                  config->getBool("hall.ceilingSolid",false),
+                  config.getBool("hall.ceilingSolid"),
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck
@@ -180,9 +169,9 @@ namespace mu2e {
                   hallWalls.centerInParent,
                   hallInfo.logical,
                   0,
-                  config->getBool("hall.wallsVisible", true),
+                  config.getBool("hall.wallsVisible"),
                   G4Colour(0.8, 0.8, 0.8), // lighter grey
-                  config->getBool("hall.wallsSolid", false),
+                  config.getBool("hall.wallsSolid"),
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck

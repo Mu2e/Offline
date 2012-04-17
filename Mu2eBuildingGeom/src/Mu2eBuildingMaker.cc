@@ -1,3 +1,5 @@
+// Andrei Gaponenko, 2012
+
 #include "Mu2eBuildingGeom/inc/Mu2eBuildingMaker.hh"
 
 #include <iostream>
@@ -12,7 +14,7 @@
 
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
-  
+
 namespace mu2e {
 
   std::auto_ptr<Mu2eBuilding> Mu2eBuildingMaker::make(const SimpleConfig& c, const ProtonBeamDump& dump)
@@ -33,18 +35,16 @@ namespace mu2e {
     b->_hallInsideYmin = -c.getDouble("mu2e.origin.heightAboveHallFloor");
     b->_hallInsideYmax = b->_hallInsideYmin + c.getDouble("hall.insideFullHeight");
 
-    b->_dirtOverburdenDepth  = c.getDouble("dirt.overburdenDepth");
-    b->_dirtCapHalfHeight    = c.getDouble("dirt.capHalfHeight");
-    b->_dirtCapBottomRadius    = c.getDouble("dirt.capBottomRadius");
-    b->_dirtCapTopRadius    = c.getDouble("dirt.capTopRadius");
-
     b->_hallFloorThickness = c.getDouble("hall.floorThick");
     b->_hallCeilingThickness = c.getDouble("hall.ceilingThick");
     b->_hallWallThickness = c.getDouble("hall.wallThick");
     b->_hallWallExtMonUCIThickness = c.getDouble("hall.wallExtMonUCIThick");
+    b->_floorTopDepthBelowGrade = c.getDouble("hall.floorTopDepthBelowGrade");
 
     // Origin used to construct the MECO detector.
     // Magic number to fix:
+
+    // FIXME:::: Use numbers from DetectorSystem! (At least SolenoidOffset?)
     b->_trackerOriginInMu2e = CLHEP::Hep3Vector( -3904., 0., 12000.);
 
     //----------------

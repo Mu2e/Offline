@@ -3,24 +3,19 @@
 //
 // Free function to create the earthen overburden.
 //
-// $Id: constructDirt.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: constructDirt.hh,v 1.4 2012/04/17 19:56:56 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/04/17 19:56:56 $
 //
 // Original author KLG
 //
 
-// Mu2e includes.
-#include "G4Helper/inc/VolumeInfo.hh"
-
 namespace mu2e {
 
   class SimpleConfig;
+  class VolumeInfo;
 
-  VolumeInfo constructDirt(VolumeInfo   const & parent,
-                           SimpleConfig const * const _config
-                           );
-
+  void constructDirt(const VolumeInfo& parent, const SimpleConfig& config);
 }
 
 #endif /* Mu2eG4_constructDirt_hh */

@@ -2,9 +2,9 @@
 // Standard geometry with physics turned off.
 // We need to put the control of physics elsewhere.
 //
-// $Id: transportOnlyGeom.txt,v 1.6 2012/03/13 19:03:17 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/13 19:03:17 $
+// $Id: transportOnlyGeom.txt,v 1.7 2012/04/17 19:56:56 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/04/17 19:56:56 $
 //
 // Original author Rob Kutschke
 
@@ -17,10 +17,6 @@ string detector.name = "transportOnlyGeom";
 // Disable all physics except transport.
 string g4.physicsListName = "Minimal";
 
-//double dirt.capHalfHeight = 2000.;
-//double dirt.capBottomRadius = 5000.;
-//double dirt.capTopRadius =  500.;
-
 bool g4.forceAuxEdgeVisible = true;
 
 
@@ -28,8 +24,6 @@ bool calorimeter.crystalVisible = false;
 bool calorimeter.vaneBoxVisible = false;
 bool coll.visible = false;
 bool crs.vetoVisible = false;
-bool dirt.capVisible = false;
-bool dirt.visible = false;
 bool extMonFilter.collimator1.alignmentHole.visible = false;
 bool extMonFilter.collimator1.alignmentHole.visible = false;
 bool extMonFilter.collimator1.alignmentPlug.visible = false;

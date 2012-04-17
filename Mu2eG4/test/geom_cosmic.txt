@@ -1,9 +1,9 @@
 //
 // See Mu2e-doc-???? for details.
 //
-// $Id: geom_cosmic.txt,v 1.2 2010/08/04 09:49:09 timothym Exp $
-// $Author: timothym $
-// $Date: 2010/08/04 09:49:09 $
+// $Id: geom_cosmic.txt,v 1.3 2012/04/17 19:56:56 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/04/17 19:56:56 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,6 @@
 #include "Mu2eG4/test/geom_01.txt"
 
 // Modifications for this job//
-double dirt.overburdenDepth = 6000.;
 string hall.insideMaterialName = "G4_Fe";
 bool g4.doCosmicKiller = true;
 int  g4.cosmicKillLevel = 2;

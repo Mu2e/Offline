@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.25 2012/04/10 14:24:51 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/04/10 14:24:51 $
+// $Id: GeometryService_service.cc,v 1.26 2012/04/17 19:56:56 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/04/17 19:56:56 $
 //
 // Original author Rob Kutschke
 //
@@ -236,8 +236,7 @@ namespace mu2e {
   // However we don't want to make WorldG4 available in non-Geant jobs.
   // Therefore it is added by G4_module via this dedicated call.
   void GeometryService::addWorldG4() {
-    WorldG4Maker w(*_config);
-    addDetector(w.getPtr());
+    addDetector(WorldG4Maker::make(*_config));
   }
 
 } // end namespace mu2e

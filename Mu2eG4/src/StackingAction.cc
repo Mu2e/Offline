@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions.
 //
-// $Id: StackingAction.cc,v 1.20 2012/03/21 23:35:26 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/21 23:35:26 $
+// $Id: StackingAction.cc,v 1.21 2012/04/17 19:56:56 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/04/17 19:56:56 $
 //
 // Original author Rob Kutschke
 //
@@ -128,9 +128,15 @@ namespace mu2e {
     _dirtG4Ymin = dirtG4Ymin;
     _dirtG4Ymax = dirtG4Ymax;
 
-    // Find the addresses of some physical volumes of interest.  See note 3.
-    _dirtBodyPhysVol = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtBody");
-    _dirtCapPhysVol  = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtCap");
+//FIXME:  Dirt volumes have changed, there is no "DirtBody" and "DirtCap"
+//FIXME:  Comment this out for now.  That will leave the pointers NULL, which is save
+//FIXME:  for this class.
+//FIXME:  AG 20120413.
+//FIXME:
+//FIXME:
+//FIXME:    // Find the addresses of some physical volumes of interest.  See note 3.
+//FIXME:    _dirtBodyPhysVol = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtBody");
+//FIXME:    _dirtCapPhysVol  = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtCap");
 
     if( _killPitchToLowToStore ) {
 

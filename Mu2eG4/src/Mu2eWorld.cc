@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.126 2012/04/16 21:41:02 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/04/16 21:41:02 $
+// $Id: Mu2eWorld.cc,v 1.127 2012/04/17 19:56:56 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/04/17 19:56:56 $
 //
 // Original author Rob Kutschke
 //
@@ -187,21 +187,16 @@ namespace mu2e {
 
     instantiateSensitiveDetectors();
 
-    VolumeInfo worldVInfo = constructWorldVolume(_config);
+    VolumeInfo worldVInfo = constructWorldVolume(*_config);
 
     if ( _verbosityLevel > 0) {
       cout << __func__ << " worldVInfo.centerInParent : " <<  worldVInfo.centerInParent << endl;
       cout << __func__ << " worldVInfo.centerInWorld  : " <<  worldVInfo.centerInWorld  << endl;
     }
 
-    VolumeInfo dirtInfo  = constructDirt( worldVInfo,_config );
+    constructDirt(worldVInfo, *_config);
 
-    if ( _verbosityLevel > 0) {
-      cout << __func__ << " dirtInfo.centerInParent   : " <<  dirtInfo.centerInParent << endl;
-      cout << __func__ << " dirtInfo.centerInWorld    : " <<  dirtInfo.centerInWorld  << endl;
-    }
-
-    VolumeInfo hallInfo  = constructHall( dirtInfo,_config );
+    VolumeInfo hallInfo  = constructHall(worldVInfo, *_config);
 
     if ( _verbosityLevel > 0) {
       cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;

@@ -374,22 +374,28 @@ namespace mu2e {
     std::reverse(beamDumpDirtOutiline.begin(), beamDumpDirtOutiline.end());
 
     // Add the last two points to complete the outline
+    const CLHEP::Hep3Vector mu2eCenterInHall(world->mu2eOriginInWorld() - world->hallFormalCenterInWorld());
+    const double hallFormalZminInMu2e  = -world->hallFormalHalfSize()[2] - mu2eCenterInHall.z();
+
     beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmin() - building->hallWallThickness(),
-                                               world->hallFormalZminInMu2e() - building->hallWallThickness()));
+                                               hallFormalZminInMu2e));
 
     beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmax() + building->hallWallThickness() ,
-                                               world->hallFormalZminInMu2e() - building->hallWallThickness()));
+                                               hallFormalZminInMu2e));
 
     static CLHEP::HepRotation beamDumpDirtRotation(CLHEP::HepRotation::IDENTITY);
     beamDumpDirtRotation.rotateX(-90*CLHEP::degree);
 
+    const double dumpDirtYmin = world->dumpDirtFormalYminInMu2e();
+    const double dumpDirtYmax = world->dumpDirtFormalYmaxInMu2e();
+
     VolumeInfo beamDumpDirt("ProtonBeamDumpDirt",
-                            CLHEP::Hep3Vector(0, (building->hallInsideYmin() + building->hallInsideYmax())/2, 0)
+                            CLHEP::Hep3Vector(0, (dumpDirtYmax+dumpDirtYmin)/2, 0)
                             - parent.centerInMu2e(),
                             parent.centerInWorld);
 
     beamDumpDirt.solid = new G4ExtrudedSolid(beamDumpDirt.name, beamDumpDirtOutiline,
-                                             (building->hallInsideYmax() - building->hallInsideYmin())/2,
+                                             (dumpDirtYmax - dumpDirtYmin)/2,
                                              G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
 
     finishNesting(beamDumpDirt,
@@ -399,7 +405,7 @@ namespace mu2e {
                   parent.logical,
                   0,
                   config.getBool("protonBeamDump.dirtVisible", false),
-                  G4Colour::Magenta(),
+                  G4Colour(0.9, 0, 0.9), //G4Colour::Magenta(),
                   config.getBool("protonBeamDump.dirtSolid", false),
                   forceAuxEdgeVisible,
                   placePV,

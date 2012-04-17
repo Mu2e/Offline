@@ -4,13 +4,22 @@
 
 #include "GeometryService/inc/WorldG4.hh"
 
+#include <limits>
+#include <algorithm>
+#include <iterator>
+
 #include "cetlib/exception.h"
 
 using namespace std;
 
 namespace mu2e {
 
-  // The arugment is a point in Mu2e coordinates.  Return true if this point
+  WorldG4::WorldG4()
+    : _dirtG4Ymin(std::numeric_limits<double>::max())
+    , _dirtG4Ymax(std::numeric_limits<double>::min())
+  {}
+
+  // The argument is a point in Mu2e coordinates.  Return true if this point
   // is inside the G4 world, false otherwise.
   bool WorldG4::inWorld( CLHEP::Hep3Vector const& x0InMu2e ) const{
 
@@ -32,6 +41,19 @@ namespace mu2e {
     }
     return;
 
+  }
+
+  std::ostream& operator<<(std::ostream& os, const WorldG4& w) {
+    os<<"WordG4(halfLengths = {";
+    std::copy(w.halfLengths().begin(), w.halfLengths().end(), std::ostream_iterator<double>(os, ", "));
+    os<<"}, hallFormalHalfSize = {";
+    std::copy(w.hallFormalHalfSize().begin(), w.hallFormalHalfSize().end(), std::ostream_iterator<double>(os, ", "));
+    os<<"}, hallFormalCenterInWorld = "<<w.hallFormalCenterInWorld()
+      <<", mu2eOriginInWorld = "<<w.mu2eOriginInWorld()
+      <<", cosmicReferencePoint = "<<w.cosmicReferencePoint()
+      <<")";
+
+    return os;
   }
 
 }

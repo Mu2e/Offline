@@ -2,9 +2,9 @@
 // Geometry description for the Mu2e detector and hall. 
 // See Mu2e-doc-???? for details.
 //
-// $Id: geomReflection.txt,v 1.3 2012/03/13 19:03:17 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/13 19:03:17 $
+// $Id: geomReflection.txt,v 1.4 2012/04/17 19:56:56 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/04/17 19:56:56 $
 //
 // Original author Rob Kutschke
 
@@ -74,14 +74,6 @@ double world.mu2eOrigin.height  =  2350.;
 double world.mu2eOrigin.zoffset = -4000.;
 
 double world.prodSolXoff = 3904.;
-
-// Overburden above the detector: 20 ft in proposal.
-// I have arbitrarily split it into a flat part and a dome.
-double dirt.overburdenDepth = 4000.;  
-double dirt.capHalfHeight   = 1500.;
-double dirt.capBottomRadius = 6000.;
-double dirt.capTopRadius    = 1000.;
-string dirt.overburdenMaterialName = "MBOverburden";
 
 // Inside dimensions of the hall.  Order is: (x,y,z) = width, height, length.
 // Thicknesses of the hall walls.

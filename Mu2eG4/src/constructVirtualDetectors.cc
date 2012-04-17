@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.29 2012/03/29 19:07:36 gandr Exp $
+// $Id: constructVirtualDetectors.cc,v 1.30 2012/04/17 19:56:56 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/29 19:07:36 $
+// $Date: 2012/04/17 19:56:56 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -71,6 +71,8 @@ namespace mu2e {
 
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;
+
+    GeomHandle<Mu2eBuilding> building;
 
     GeomHandle<Beamline> beamg;
     double rVac         = CLHEP::mm * beamg->getTS().innerRadius();
@@ -733,14 +735,23 @@ namespace mu2e {
       VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
       GeomHandle<ProtonBeamDump> dump;
 
+      const double vdYmin = dump->enclosureCenterInMu2e().y() - dump->enclosureHalfSize()[1];
+      const double vdYmax = std::min(
+                                     dump->enclosureCenterInMu2e().y() + dump->enclosureHalfSize()[1],
+                                     building->hallInsideYmax()
+                                     );
+
       std::vector<double> hlen(3);
       hlen[0] = dump->enclosureHalfSize()[0];
-      hlen[1] = dump->enclosureHalfSize()[1];
+      hlen[1] = (vdYmax - vdYmin)/2;
       hlen[2] = vdg->getHalfLength();
 
+      // NB: it's not "shielding" center in Y in case the ceiling height is a limitation
       CLHEP::Hep3Vector shieldingFaceCenterInMu2e( (dump->shieldingFaceXmin()+
                                                     dump->shieldingFaceXmax())/2,
-                                                   dump->enclosureCenterInMu2e()[1],
+
+                                                   (vdYmax + vdYmin)/2,
+
                                                    (dump->shieldingFaceZatXmin()+
                                                     dump->shieldingFaceZatXmax())/2
                                                  );
@@ -993,7 +1004,6 @@ namespace mu2e {
       }
 
       VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
-      GeomHandle<Mu2eBuilding> building;
       GeomHandle<ProtonBeamDump> dump;
 
       const double requested_z = _config->getDouble("vd.ExtMonCommonPlane.z");
