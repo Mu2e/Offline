@@ -95,7 +95,9 @@ TrkPatRec :
                 maxiter                                 : 3
                 debugLevel                      : 0
                 material                                : false
-                hiterr                                  : 5
+# additional hit errors: final value = straw diameter/sqrt(12)
+                hiterr                                  : [ 5.0, 1.44 ]
+#                hiterr                                  : [ 5.0 ]
                 seedsmear       : 10000
                 maxhitchi                               : 5.0
                 weedhits        : true
@@ -106,8 +108,10 @@ TrkPatRec :
         KalFit :
         {
                 maxiter                                 : 5
-                debugLevel                      : 0
+                debugLevel				: 0
                 material                                : true
+		hiterr					: [ 0.4 , 0.0 ]
+#		hiterr					: [ 0.0 ]
                 seedsmear                               : 100000
                 maxhitchi                               : 3.0
                 mingap                                  : 1.0
