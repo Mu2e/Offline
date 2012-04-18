@@ -812,6 +812,7 @@ void ITrackerMaker::Build(){
                                 if (_notExtVoxel) voxelizationFactor = 1.0/((float)nFwire);
                                 itl->_voxelizationFactor=voxelizationFactor;
 
+				zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
                                 zlength/=cos(epsilon);
                                 boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
 
@@ -842,6 +843,9 @@ void ITrackerMaker::Build(){
                                 itl->_layerType=ITLayer::gas;
                                 if (_notExtVoxel) voxelizationFactor = 5.0/((float)((1+_nVerticalFWire)*num_wire));
                                 itl->_voxelizationFactor=voxelizationFactor;
+				
+				zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
+				zlength/=cos(epsilon);
 
                                 boost::shared_ptr<WireDetail> sw;
                                 boost::shared_ptr<CellDetail> celld;
@@ -853,7 +857,7 @@ void ITrackerMaker::Build(){
                                 for( iring=0; iring< _nVerticalFWire ; iring++ ){
 
                                         //iradius+=idelta_radius;
-                                        ITWireLocater(fw1,Wire::field,itl,num_wire,iradius,phi,ringangle+cellStaggering,sign_epsilon*epsilon,alfa,iring*num_wire);
+                                        ITWireLocater(fw1,Wire::field,itl,num_wire,senseWireRing_radius_0,phi,ringangle+cellStaggering,sign_epsilon*epsilon,alfa,iring*num_wire);
 
                                 }
 
@@ -887,6 +891,7 @@ void ITrackerMaker::Build(){
                         if (_notExtVoxel) voxelizationFactor = 1.0/((float)nFwire);
                         itl->_voxelizationFactor=voxelizationFactor;
 
+			zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
                         zlength/=cos(epsilon);
 
                         boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
