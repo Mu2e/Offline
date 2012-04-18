@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.8 2012/03/16 19:33:56 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/16 19:33:56 $
+// $Id: GenId.hh,v 1.9 2012/04/18 22:57:19 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/04/18 22:57:19 $
 //
 // Original author Rob Kutschke
 //
@@ -40,7 +40,7 @@ namespace mu2e {
       muonCapture,   muonDecayInFlight, ejectedProtonGun,
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi,
       ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC,
-      extMonFNALGun, dioE5, fromStepPointMCs, stoppedMuonGun,
+      extMonFNALGun, dioE5, fromStepPointMCs, stoppedMuonGun, PiCaptureCombined,
       lastEnum
     };
 
@@ -52,7 +52,7 @@ namespace mu2e {
       "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",          \
       "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi", \
       "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "internalRPC", \
-      "extMonFNALGun", "dioE5", "fromStepPointMCs", "stoppedMuonGun"
+      "extMonFNALGun", "dioE5", "fromStepPointMCs", "stoppedMuonGun", "PiCaptureCombined"
   public:
 
     // The most important c'tor and accessor methods are first.
@@ -109,6 +109,9 @@ namespace mu2e {
       return true;
     }
 
+    // Return the GenId that corresponds to this name.
+    static GenId findByName ( std::string const& name);
+
     static void printAll( std::ostream& ost);
 
     static void printAll(){
@@ -122,6 +125,11 @@ namespace mu2e {
 
     // List of names corresponding to the enum.
     const static char* _name[];
+
+    // Number of valid codes, not including lastEnum, but including "unknown".
+    static size_t size(){
+      return lastEnum;
+    }
 
   private:
 

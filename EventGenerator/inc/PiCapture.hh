@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 //
-// $Id: PiCapture.hh,v 1.22 2012/02/20 20:21:09 onoratog Exp $
+// $Id: PiCapture.hh,v 1.23 2012/04/18 22:57:19 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/20 20:21:09 $
+// $Date: 2012/04/18 22:57:19 $
 //
 // Original author Rob Kutschke, P. Shanahan
 //
@@ -22,9 +22,8 @@
 
 // CLHEP includes
 #include "CLHEP/Random/RandExponential.h"
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandGeneral.h"
 #include "CLHEP/Random/RandPoissonQ.h"
+#include "Mu2eUtilities/inc/PiCaptureEffects.hh"
 
 // Forward declarations outside of namespace mu2e.
 class TH1D;
@@ -53,8 +52,6 @@ namespace mu2e {
     double _elow;         //< lower photon energy
     double _ehi;          //< upper photon energy
     double _probInternalConversion;
-    double _eElect;       // electron energy for internal conversions
-    double _ePosit;       // positron energy for internal conversions
     bool _PStoDSDelay;
     bool _pPulseDelay;
     double _pPulseShift;
@@ -74,10 +71,6 @@ namespace mu2e {
 
     // Random number distributions
     CLHEP::RandPoissonQ _randPoissonQ;
-    RandomUnitSphere    _randomUnitSphere;
-    CLHEP::RandFlat     _randFlat;
-    CLHEP::RandGeneral  _spectrum;
-    CLHEP::RandGeneral  _internalFractionalSpectrum;
 
     std::string _STfname;
 
@@ -96,20 +89,7 @@ namespace mu2e {
     TH1D* _hpulsedelay;
     TH1D* _hFoilNumber;
 
-    // Photon energy spectrum as a continuous function.
-    double energySpectrum(const double e);
-
-    // Internal conversion fractional spectrum as a continuous function.
-    double internalFractionalSpectrum(const double e);
-
-    // Compute a binned representation of the photon energy spectrum.
-    std::vector<double> binnedEnergySpectrum();
-
-   // Compute a binned representation of the fractional internal conversion energy spectrum.
-    std::vector<double> internalFractionalBinnedSpectrum();
-
-    // for internal conversions.  
-    double _electMass;
+    PiCaptureEffects* _piCaptureInfo;
 
   };
 

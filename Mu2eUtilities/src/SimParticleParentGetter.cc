@@ -8,6 +8,7 @@
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/GenParticleSPMHistory.hh"
+#include "MCDataProducts/inc/GenSimParticleLink.hh"
 
 #include "cetlib/exception.h"
 
@@ -35,27 +36,53 @@ namespace mu2e {
       }
 
       // try to find associated hits
-      if(map_.empty()) { // need to load the associations
+      if(stepPointMap_.empty()) { // need to load the associations
 
-        typedef std::vector<art::Handle<GenParticleSPMHistory> > Handles;
-        Handles results;
-        evt_->getManyByType(results);
+        typedef std::vector<art::Handle<GenParticleSPMHistory> > StepPointHandles;
+        StepPointHandles stepPointResults;
+        evt_->getManyByType(stepPointResults);
 
-        for(Handles::const_iterator h = results.begin(); h != results.end(); ++h) {
-          AGDEBUG("In loop over handles");
+	if (stepPointResults.empty() ) { //no associations with StepPoints. Trying with simparticle end points
+
+	  if (simParticleMap_.empty()) { //need to load the associations
+
+	    typedef std::vector<art::Handle<GenSimParticleLink> > SimParticleHandles;
+	    SimParticleHandles simParticleResults;
+	    evt_->getManyByType(simParticleResults);
+
+	    for(SimParticleHandles::const_iterator h = simParticleResults.begin(); h != simParticleResults.end(); ++h) {
+	      AGDEBUG("In loop over simParticleHandles");
+	      // could filter out entries here
+	      for(GenSimParticleLink::assn_iterator i = (*h)->begin(); i != (*h)->end(); ++i) {
+		AGDEBUG("In loop over sim particle assns");
+		if(!simParticleMap_.insert(std::make_pair(i->first, i->second)).second) {
+		  throw cet::exception("BADINPUTS")<<"Non-unique GenParticle ptr in GenSimParticleLink";
+		}
+	      }
+	    }
+	  }
+
+	  SimParticleMapType::const_iterator gensimpair = simParticleMap_.find(gp);
+
+	  return (gensimpair == simParticleMap_.end()) ? nullPtr_ : gensimpair->second;
+
+	}
+
+        for(StepPointHandles::const_iterator h = stepPointResults.begin(); h != stepPointResults.end(); ++h) {
+          AGDEBUG("In loop over stepPointHandles");
           // could filter out entries here
           for(GenParticleSPMHistory::assn_iterator i = (*h)->begin(); i != (*h)->end(); ++i) {
-            AGDEBUG("In loop over assns");
-            if(!map_.insert(std::make_pair(i->first, i->second)).second) {
+            AGDEBUG("In loop over step point assns");
+            if(!stepPointMap_.insert(std::make_pair(i->first, i->second)).second) {
               throw cet::exception("BADINPUTS")<<"Non-unique GenParticle ptr in GenParticleSPMHistory";
             }
           }
         }
       }
 
-      MapType::const_iterator hit = map_.find(gp);
+      StepPointMapType::const_iterator hit = stepPointMap_.find(gp);
 
-      return (hit == map_.end()) ? nullPtr_ : hit->second->simParticle();
+      return (hit == stepPointMap_.end()) ? nullPtr_ : hit->second->simParticle();
 
     } // else  (!hasParent)
 

@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.10 2012/03/05 20:15:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/05 20:15:14 $
+// $Id: classes.h,v 1.11 2012/04/18 22:57:19 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/04/18 22:57:19 $
 //
 // Original author Rob Kutschke
 //
@@ -42,6 +42,7 @@
 #include "MCDataProducts/inc/MixingSummary.hh"
 #include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
 #include "MCDataProducts/inc/GenParticleSPMHistory.hh"
+#include "MCDataProducts/inc/GenSimParticleLink.hh"
 
 // For cet::map_vector<T> instantiate the component pair<> and vector<pair<>> templates.
 template class std::pair<cet::map_vector_key,mu2e::SimParticle>;
@@ -80,6 +81,8 @@ template class art::Wrapper<mu2e::VisibleGenElTrackCollection>;
 namespace {
   struct Instantiations {
     mu2e::GenParticleSPMHistory gpspmh;
+    mu2e::GenSimParticleLink gspl;
   };
 }
 template class art::Wrapper<mu2e::GenParticleSPMHistory>;
+template class art::Wrapper<mu2e::GenSimParticleLink>;

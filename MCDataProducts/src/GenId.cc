@@ -2,9 +2,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.cc,v 1.1 2011/05/24 17:16:44 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:44 $
+// $Id: GenId.cc,v 1.2 2012/04/18 22:57:19 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/04/18 22:57:19 $
 //
 // Original author Rob Kutschke
 #include <iomanip>
@@ -27,6 +27,17 @@ namespace mu2e {
     for ( int i=0; i<lastEnum; ++i){
       ost << setw(2) << i << " " << _name[i] << std::endl;
     }
+  }
+
+  GenId GenId::findByName ( std::string const& name){
+
+    // Size must be at least 2 (for unknown and lastEnum).
+    for ( size_t i=0; i<size(); ++i ){
+      if ( _name[i] == name ){
+        return GenId(i);
+      }
+    }
+    return GenId(unknown);
   }
 
 

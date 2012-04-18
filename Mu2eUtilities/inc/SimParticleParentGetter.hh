@@ -26,6 +26,11 @@
 //    art::Ptr<SimParticle> parent = pg.parent(current);
 //
 // Andrei Gaponenko, 2012
+// The class has been extended to get the the parent of a GenParticle
+// that comes form the end point of a previous job SimParticle
+// created with the modue EventGenerator/src/FromSimParticleEndPoint_module.cc
+
+
 
 #ifndef Mu2eUtilities_SimParticleParentGetter_hh
 #define Mu2eUtilities_SimParticleParentGetter_hh
@@ -45,8 +50,11 @@ namespace mu2e {
   class SimParticleParentGetter {
     const art::Event *evt_;
 
-    typedef std::map<art::Ptr<GenParticle>, art::Ptr<StepPointMC> > MapType;
-    mutable MapType map_;
+    typedef std::map<art::Ptr<GenParticle>, art::Ptr<StepPointMC> > StepPointMapType;
+    mutable StepPointMapType stepPointMap_;
+
+    typedef std::map<art::Ptr<GenParticle>, art::Ptr<SimParticle> > SimParticleMapType;
+    mutable SimParticleMapType simParticleMap_;
 
     static art::Ptr<SimParticle> nullPtr_;
   public:
