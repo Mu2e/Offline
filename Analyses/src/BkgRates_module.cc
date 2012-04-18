@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.30 2012/03/06 23:02:01 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.31 2012/04/18 22:58:00 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/03/06 23:02:01 $
+// $Date: 2012/04/18 22:58:00 $
 //
 // Original author Gianni Onorato
 //
@@ -465,7 +465,7 @@ namespace mu2e {
             LinePointPCA lppca(stMidPoint3, strDir, StartPos);
             double insideDistance = lppca.dca();
             if (insideDistance >= strRadius) {
-              notFirstTrack = true;
+              notFirstTrack = false;
               firstTrackId = trackId;
             }
           }

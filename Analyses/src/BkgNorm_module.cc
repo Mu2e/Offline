@@ -1,9 +1,9 @@
 //
 // A module to evaluate the normalization of background to simulate
 //
-// $Id: BkgNorm_module.cc,v 1.12 2012/03/06 23:02:01 onoratog Exp $
+// $Id: BkgNorm_module.cc,v 1.13 2012/04/18 22:58:00 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/03/06 23:02:01 $
+// $Date: 2012/04/18 22:58:00 $
 //
 // Original author Gianni Onorato
 //
@@ -67,13 +67,10 @@ namespace mu2e {
       _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
       _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel", "CaloCrystalHitsMaker")),
       _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
-      _doStoppingTarget(pset.get<bool>("doStoppingTarget", 0)),
+      _doStoppingTarget(pset.get<bool>("doStoppingTarget", true)),
       _tNtup(0),
       _cNtup(0),
-      _nDevices(36),
-      _nSectors(6),
-      _nLayers(2),
-      _nStrawsPerLay(50),
+      _tgtNtup(0),
       _nBadG4Status(0),
       _nOverflow(0),
       _nKilled(0),
@@ -124,8 +121,7 @@ namespace mu2e {
 
     bool _doStoppingTarget;
 
-    TNtuple* _tNtup, *_cNtup;
-    const int _nDevices, _nSectors, _nLayers, _nStrawsPerLay;
+    TNtuple* _tNtup, *_cNtup, *_tgtNtup;
 
     int _nBadG4Status, _nOverflow, _nKilled;
     float _totalcputime, _totalrealtime;
@@ -192,12 +188,18 @@ namespace mu2e {
 
       _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple", "evt:run:time:dt:eDep:lay:dev:sec:strawId:strawX:strawY:strawZ:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStartX:trkStartY:trkStartZ:trkStartT:trkEndVolume:trkEndX:trkEndY:trkEndZ:trkEndT:trkEndEK:trkEndProcessCode:trkStepPoints:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
       _cNtup        = tfs->make<TNtuple>( "CaloHits", "calo Ntupla", "evt:run:time:eDep:vane:crId:trkPdgId:trkP:trkIsGen:trkStartVolume:trkStartX:trkStartY:trkStartZ:trkStartT:trkEndVolume:trkEndX:trkEndY:trkEndZ:trkEndT:trkEndEK:trkEndProcessCode:trkStepPoints:trkStepFromEva:EvaIsGen:genPdgId:genId:genP:genE:genX:genY:genZ:genT:genPhi:genCosth:dau1PdgId:dau1P:dau1StartVolume");
-   }
 
+      if (_doStoppingTarget) {
+        _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",
+                                            "evt:run:time:x:y:z:isGen:pdgId:trkId:stVol:isStopped");
+      }
+      
+    }
+    
     if (_doStoppingTarget) doStoppingTarget(evt);
     doTracker(evt, _skipEvent);
     doCalorimeter(evt, _skipEvent);
-
+    
   } // end of analyze
 
   void BkgNorm::endJob() {
@@ -306,17 +308,17 @@ namespace mu2e {
       tntpArray[idx++] = yc;
       tntpArray[idx++] = z;
 
-      bool notFirstTrack = true;
-
       size_t j = 0;
+      size_t jrider = 0;
 
       CLHEP::Hep3Vector const& strDir = str.direction();
 
       double strRadius = str.getRadius();
 
-      while (notFirstTrack && j<mcptr.size()) {
-        if (j==mcptr.size()-1) {
-          j=0;
+      double firsthittime = 1e20; 
+
+      while (jrider<mcptr.size()) {
+        if (jrider==mcptr.size()-1) {
           break;
         }
         StepPointMC const& mchit = *mcptr[j];
@@ -324,12 +326,12 @@ namespace mu2e {
         CLHEP::Hep3Vector const& StartPos = sim.startPosition();
         LinePointPCA lppca(stMidPoint3, strDir, StartPos);
         double insideDistance = lppca.dca();
-        if (insideDistance >= strRadius) {
-          notFirstTrack = false;
-          break;
-        } else {
-          ++j;
-        }
+        if (insideDistance > strRadius+0.01) {
+	  if (mchit.time() < firsthittime) {
+	    j = jrider;
+	  } 
+	}
+	++jrider;
       }
 
       StepPointMC const& mchit = *mcptr[j];
@@ -626,15 +628,36 @@ namespace mu2e {
       if( !sim ) continue;
 
       PhysicalVolumeInfo const& volInfo = volumes->at(sim->endVolumeIndex());
-
-      if ( sim->fromGenerator()) {
-        if ( skipPDG.find(sim->pdgId()) != skipPDG.end()) {
-          if ( volInfo.name() == "TargetFoil_" ) {
-            generatedStopped = true;
-          }
+      
+      if (!(sim->fromGenerator())) continue;
+      
+      if (skipPDG.find(sim->pdgId()) != skipPDG.end()) {
+        if ( volInfo.name() == "TargetFoil_" ) {
+	  generatedStopped = true;
+	  
         }
       }
+      
+      if( stoppedtracks.insert(trackId).second ) {
+        float tgtntpArray[11];
+        int idx(0);
+        tgtntpArray[idx++] = event.id().event();
+        tgtntpArray[idx++] = event.run();
+        tgtntpArray[idx++] = sim->endGlobalTime();
+        tgtntpArray[idx++] = sim->endPosition().x();
+        tgtntpArray[idx++] = sim->endPosition().y();
+        tgtntpArray[idx++] = sim->endPosition().z();
+        tgtntpArray[idx++] = sim->fromGenerator();
+        tgtntpArray[idx++] = sim->pdgId();
+        tgtntpArray[idx++] = trackId.asInt();
+        tgtntpArray[idx++] = sim->endVolumeIndex();
+        tgtntpArray[idx++] = (volInfo.name() == "TargetFoil_");
+        
+        _tgtNtup->Fill(tgtntpArray);
+	
+      }
     }
+    
     _skipEvent = generatedStopped;
   } // end doStoppingTarget
   
