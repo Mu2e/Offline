@@ -1,10 +1,45 @@
-  $Id: v1_1_8.txt,v 1.20 2012/04/17 19:59:07 gandr Exp $
-  $Author: gandr $
-  $Date: 2012/04/17 19:59:07 $
+  $Id: v1_1_8.txt,v 1.21 2012/04/18 23:13:14 onoratog Exp $
+  $Author: onoratog $
+  $Date: 2012/04/18 23:13:14 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_8
+
+22) April 18, 2012 onoratog
+
+    A new module
+    EventGenerator/src/FromSimParticleEndPoint_module.cc
+
+    An example fcl for the module is in
+    EventGenerator/test/FromSPEndPointTest.fcl
+
+    It is a generator that can create new particles with a given genId 
+    (taken from the one already existing) using position and time from 
+    the endpoint of simparticle from a previous job.
+    As module parameter one have to give the PdgId(s) of the particle(s) 
+    you want to look at in the input job, the volume(s) you are interested,
+    the end process code to look for and the GenId of the particle to create. 
+    The module will look in the input job, searching for all the particle 
+    of the given pdgId, which die in the given volume with the given end
+    process code.
+    From the end time and end position of the selected simparticle, it 
+    creates a new particle with the given GenId.
+
+    So far the module has been implemented only for production of picaptures
+
+    See doc-db 2210 for further information
+
+    Other changes needed to make the module work:
+
+      - A class to navigate through input and present.
+      - The generation of momentum and energy for PiCapture has been 
+        factorized in a class
+      - Mu2eUtilities/inc/PiCaptureEffects.cc  (name could change soon)
+      - Now both the standard picapture generator and this new module 
+        use that class.
+      - A new GenId has been added PiCaptureCombined
+
 
 21) April 17, 2012 gandr
 
