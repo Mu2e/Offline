@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.16 2012/03/30 15:13:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 15:13:35 $
+// $Id: Straw.hh,v 1.17 2012/04/18 20:58:22 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2012/04/18 20:58:22 $
 //
 // Original author Rob Kutschke
 //
@@ -130,12 +130,12 @@ namespace mu2e {
     }
 
     // Straw Radius
-    double getRadius() const {
+    virtual double getRadius() const {
       return _detail->outerRadius();
     }
 
     // Straw Thickness
-    double getThickness() const {
+    virtual double getThickness() const {
       return _detail->thickness();
     }
 

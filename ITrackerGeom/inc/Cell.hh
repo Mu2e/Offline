@@ -61,6 +61,8 @@ public:
 
   double getHalfLength() const { return _senseWire.get()->getDetail()->halfLength();}
 
+  double getRadius() const { return getDetail()->CirumscribedRadius();}
+  double getThickness() const { return 0.;}
 //  int hack;
 
 protected:
