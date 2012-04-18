@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.8 2012/04/12 21:32:25 gianipez Exp $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.9 2012/04/18 21:51:56 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/04/12 21:32:25 $
+// $Date: 2012/04/18 21:51:56 $
 //
 // Original author G. Pezzullo
 //
@@ -950,7 +950,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 _clCOGrow         = ite->second[trkVec[it2]]._clusterMap._cluCogRow;
                                 _clCOGcolumn      = ite->second[trkVec[it2]]._clusterMap._cluCogColumn;
                                 for(int i = 0; i<_clSize; ++i ){
-                                        _cryEdep[i] = ite->second[trkVec[it2]]._cryEnergyDep;
+                                        _cryEdep[i] = ite->second[trkVec[it2]]._clusterMap._cryEdepVec[i];//_cryEnergyDep;
                                         _clRows[i]         = ite->second[trkVec[it2]]._clusterMap._rowVec[i];
                                         _clColumns[i]      = ite->second[trkVec[it2]]._clusterMap._columnVec[i];
                                 }
