@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.14 2012/03/19 21:39:41 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/03/19 21:39:41 $
+// $Id: MakeDriftCellHit_module.cc,v 1.15 2012/04/18 21:48:51 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2012/04/18 21:48:51 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -34,6 +34,10 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+
+// conditions
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/TrackerCalibrations.hh"
 
 // Other includes.
 #include "CLHEP/Random/RandGaussQ.h"
@@ -85,8 +89,6 @@ namespace mu2e {
       _distSigma(pset.get<double>("distSigma",0.0/*80.*/)), // mm
       _minimumEnergy(pset.get<double>("minimumEnergy",0.00001)), // MeV
       _minimumLength(pset.get<double>("minimumLength",0.005/*0.01*/)),   // mm
-      _driftVelocity(pset.get<double>("driftVelocity",0.035/*0.05*/)),   // mm/ns
-      _driftSigma(pset.get<double>("driftSigma",0.2/*0.1*/)),          // mm
       _minimumTimeGap(pset.get<double>("minimumTimeGap",500.0/*100.0*/)),// ns depends by the cell dimension it will change after
       _nzHittingZone(pset.get<int>("nzHittingZone",1)),
       _zZoneLimits(pset.get< vector<double> >("zZoneLimits")),
@@ -167,6 +169,9 @@ namespace mu2e {
     //const ITracker& tracker     = static_cast<const ITracker&>(tracker);
     //GeomHandle<ITracker> tracker;
 
+    ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    const double signalVelocity = tcal->SignalVelocity(StrawIndex(0));//231.;//299.792458; // mm/ns
+
     // A container to hold the output hits.
     auto_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
     auto_ptr<StrawHitMCTruthCollection>      truthHits(new StrawHitMCTruthCollection);
@@ -191,7 +196,7 @@ namespace mu2e {
     }
 
     vector<StepHit> dcell_hits;
-
+    double tdrifterr=0;
     // Loop over all drift cells and create StrawHits. There can be several
     // hits per cell if they are separated by time. The general algorithm
     // is as follows: calculate signal time for each G4step, order them
@@ -336,9 +341,10 @@ namespace mu2e {
         // t1 is signal time at positive end (along w vector),
         // (Not used for ITracker) t2 - at negative end (opposite to w vector)
 
-        const double signalVelocity = 299.792458; // mm/ns
-
-        double driftTime = fabs(hit_dca + _gaussian.fire(0.,_driftSigma))/_driftVelocity;
+        D2T d2t;
+        tcal->DistanceToTime(dcell_id,hit_dca,mom,d2t);
+	tdrifterr=d2t._tdrifterr;
+        double driftTime = fabs(d2t._tdrift);
         double distanceToMiddle = (hit_pca-mid).dot(w);
         double hit_t1 = hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
         //double hit_t2 = -9999.9;//t0 + hitTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
@@ -370,7 +376,7 @@ namespace mu2e {
 
       if( dcell_hits.size()<1 ) continue; // This should never be needed. Added for safety.
 
-      double digi_time   = dcell_hits[0]._t1;
+      double digi_time   = dcell_hits[0]._t1+_gaussian.fire(0.,tdrifterr);
       double digi_t2     = 0.0;//dcell_hits[0]._t2;
       double digi_edep   = dcell_hits[0]._edep;
       double digi_driftT = dcell_hits[0]._driftTime;
