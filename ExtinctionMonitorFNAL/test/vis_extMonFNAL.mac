@@ -6,6 +6,8 @@
 /vis/open OGLIX 1600x800-0+0
 /vis/viewer/set/background white ! ! 0.01
 
+/vis/viewer/set/projection orthogonal
+
 /vis/viewer/set/viewpointThetaPhi 90 89
 
 # absolute pan
@@ -25,7 +27,8 @@
 # Viewer settings for the case top volume is ProtonBeamDumpShielding
 
 # ## View the whole dump
-# /vis/viewer/set/viewpointThetaPhi 103.78 0
+# #/vis/viewer/set/viewpointThetaPhi 103.78 0
+# /vis/viewer/set/viewpointThetaPhi 90 89
 # /vis/viewer/panTo 0 0 m
 # /vis/viewer/zoomTo 1
 
@@ -36,7 +39,13 @@
 
 # ## Zoom onto the entrance to the first collimator, with /vis/scene/add/volume ProtonBeamDumpShielding
 # /vis/viewer/set/viewpointThetaPhi 103.78 0
-# /vis/viewer/panTo -5.5 +0.5 m
+# #/vis/viewer/set/viewpointThetaPhi 98.354 0
+# /vis/viewer/panTo -5.1 -0.15
+# /vis/viewer/zoomTo 40
+
+# ## Zoom onto the entrance to the first collimator - plan view
+# /vis/viewer/set/viewpointThetaPhi 90 89
+# /vis/viewer/panTo -4.7 -2.2 m 
 # /vis/viewer/zoomTo 40
 
 # ## collimator1 exit and magnet entrance
@@ -62,21 +71,39 @@
 #/vis/viewer/panTo 5 0 m
 #/vis/viewer/zoomTo 5
 
-# ## Look at trajectories from proton target to beam dump from the top
-# /vis/viewer/set/viewpointThetaPhi 90 89
-# /vis/viewer/panTo 8 -5 m
-# /vis/viewer/zoomTo 5
+# Trajectories through the channel
+/vis/viewer/set/viewpointThetaPhi 103.78 0
+/vis/viewer/panTo 16 0 m
+/vis/viewer/zoomTo 2
+
+## Look at trajectories from proton target to beam dump from the top
+#/vis/viewer/set/viewpointThetaPhi 90 89
+#/vis/viewer/panTo 8 -5 m
+#/vis/viewer/zoomTo 5
+
+# # Collimator1 entrance
+# /vis/viewer/set/viewpointThetaPhi 103.78 0
+# /vis/viewer/panTo 11.6 0.85 m
+# /vis/viewer/zoomTo 200
 
 # # ExtMonFNAL detector and collimator2
 # /vis/viewer/set/viewpointThetaPhi 103.78 0
 # /vis/viewer/panTo 20 1 m
 # /vis/viewer/zoomTo 5
 
-## Look at PSShield
-/vis/viewer/set/viewpointThetaPhi 90 89
-/vis/viewer/panTo 4 -5 m
-/vis/viewer/zoomTo 5
+# ## Look at PSShield
+# /vis/viewer/set/viewpointThetaPhi 90 89
+# /vis/viewer/panTo 4 -5 m
+# /vis/viewer/zoomTo 5
 
+
+################################################################
+# Simple plan view for whatever the top volume is
+#/vis/viewer/set/viewpointThetaPhi 90 89
+#/vis/viewer/zoomTo 2
+# 
+# /vis/viewer/panTo 22 -3 m
+# /vis/viewer/zoomTo 6   
 
 ################################################################
 /vis/enable 
