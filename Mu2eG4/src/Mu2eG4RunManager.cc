@@ -2,9 +2,9 @@
 // Override the G4RunManager class so that the Mu2e framework can drive
 // the event loop.
 //
-// $Id: Mu2eG4RunManager.cc,v 1.7 2011/08/22 20:11:23 genser Exp $
+// $Id: Mu2eG4RunManager.cc,v 1.8 2012/04/19 16:17:20 genser Exp $
 // $Author: genser $
-// $Date: 2011/08/22 20:11:23 $
+// $Date: 2012/04/19 16:17:20 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,9 @@
 #include "G4ScoringManager.hh"
 #include "G4Timer.hh"
 #include "G4Run.hh"
+
+// C++
+#include <limits>
 
 using namespace std;
 
@@ -75,7 +78,9 @@ namespace mu2e {
       _n_select = -1;
     }
 
-    numberOfEventToBeProcessed = 1;
+    //numberOfEventToBeProcessed should be the total number of events to be processed 
+    // or a large number and NOT 1 for G4 to work properly
+    numberOfEventToBeProcessed = std::numeric_limits<int>::max(); // largest int for now
     ConstructScoringWorlds();
     RunInitialization();
 
