@@ -1,10 +1,16 @@
-  $Id: v1_1_8.txt,v 1.23 2012/04/19 22:58:40 genser Exp $
+  $Id: v1_1_8.txt,v 1.24 2012/04/19 23:00:29 genser Exp $
   $Author: genser $
-  $Date: 2012/04/19 22:58:40 $
+  $Date: 2012/04/19 23:00:29 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_8
+
+25) April 19, 2012 genser
+
+    Added 
+      mucapture/CMakeLists.txt
+    which is a cmake file for Geant4 testing (should be transparent to scons)
 
 24) April 19, 2012 genser
 
