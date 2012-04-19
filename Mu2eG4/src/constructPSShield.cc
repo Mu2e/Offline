@@ -56,7 +56,7 @@ namespace mu2e {
                                            ));
 
     //----------------------------------------------------------------
-    VolumeInfo pss("PPShield", hrs->originInMu2e() - parent.centerInMu2e(), parent.centerInWorld);
+    VolumeInfo pss("PSShield", hrs->originInMu2e() - parent.centerInMu2e(), parent.centerInWorld);
 
     pss.solid = new G4SubtractionSolid(pss.name,
                                        psspoly, psscutout,
