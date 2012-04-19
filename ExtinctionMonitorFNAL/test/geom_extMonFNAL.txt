@@ -13,20 +13,21 @@ bool hasExtMonUCI = false;
 int g4.particlesSizeLimit = 100000;
 
 // bool g4SteppingAction.killerVerbose = true;
-vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance", "VirtualDetector_Coll1_In" };
+//vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance", "VirtualDetector_Coll1_In" };
 
-//signal-only studies: vector<string> g4SteppingAction.killInTheseVolumes = {
-//signal-only studies:   "VirtualDetector_EMFC1Entrance",
-//signal-only studies:   "VirtualDetector_Coll1_In",
-//signal-only studies:   "ProtonBeamDumpCore",
-//signal-only studies:   "HallConcreteFloor",
-//signal-only studies:   "HallConcreteCeiling",
-//signal-only studies:   "HallWalls"
-//signal-only studies: };
-//signal-only studies: 
-//signal-only studies: double g4.minRangeCut = 1.;            // mm
-//signal-only studies: bool g4.killLowEKine = true;
-//signal-only studies: double g4.eKineMin = 100.; // MeV
+vector<string> g4SteppingAction.killInTheseVolumes = {
+  "PSShield",
+  "VirtualDetector_EMFC1Entrance",
+  "VirtualDetector_Coll1_In",
+  "ProtonBeamDumpCore",
+  "HallConcreteFloor",
+  "HallConcreteCeiling",
+  "HallWalls"
+};
+
+double g4.minRangeCut = 1.;            // mm
+bool g4.killLowEKine = true;
+double g4.eKineMin = 100.; // MeV
 
 // // Uncomment to enable debug printout on a per event or per track basis.
 // vector<int> g4.steppingActionEventList = { 0, 1, 2, 3, 4, 5 };
@@ -55,9 +56,15 @@ bool extMonFilter.magnet.iron.solid = false;
 bool extMonFilter.magnet.aperture.visible = true;
 bool extMonFilter.magnet.aperture.solid = false;
 
-// change momentum setting for the debugging
-double extMonFilter.nominalMomentum = 4000.; // MeV/c
-double extMonFilter.magnet.fieldStrength = 0.222; // Tesla
+//// change momentum setting for the debugging
+//double extMonFilter.nominalMomentum = 3600.; // MeV/c
+//double         extMonFilter.entranceOffsetX = 1000;
+//double         extMonFilter.entranceOffsetY = 1250;
+//double         extMonFilter.angleH = 0.15; //0.0947; //radians
+//double         extMonFilter.entranceAngleV = 0.1644; //radians
+////vector<double> extmon_fnal.roomHalfSize  = { 5500., 1200., 1200.};
+////double         protonBeamDump.enclosureHalfWidthMin = 2500.;
+////vector<double> extMonFilter.magnetPitHalfSize = {2000., 1371.5, 2100.};
 
 //test: // Disable all physics except transport.
 //test: string g4.physicsListName = "Minimal";
@@ -71,11 +78,11 @@ double extMonFilter.magnet.fieldStrength = 0.222; // Tesla
 //----------------------------------------------------------------
 
 //// Write mu2e geometry into a GDML file
-//bool   writeGDML        = false;
-//bool   protonBeamDump.applyROOTVisualizationKludge = false;
+//bool   writeGDML        = true;
+//bool   protonBeamDump.applyROOTVisualizationKludge = true;
 //string GDMLFileName     = "extmon_fnal.gdml";
 
-// bool   vd.visible       = false;
+// bool   vd.visible       = true;
 // bool PSShield.solid = true;
 
 int PSShield.verbosityLevel = 1;
