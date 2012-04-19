@@ -1,9 +1,9 @@
 // Read a SimParticle collection and create a GenParticleCollection from the end point of the former.
 //
 //
-// $Id: FromSimParticleEndPoint_module.cc,v 1.2 2012/04/19 20:20:26 onoratog Exp $
+// $Id: FromSimParticleEndPoint_module.cc,v 1.3 2012/04/19 20:24:50 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/04/19 20:20:26 $
+// $Date: 2012/04/19 20:24:50 $
 //
 // Original author Gianni Onorato
 // 
@@ -189,7 +189,6 @@ namespace mu2e {
 
     // Loop on SimParticle of the previous run
 
-    int counter = 0;
     for(SimParticleCollection::const_iterator i=insims.begin(); i!=insims.end(); ++i) {
 
       SimParticle const& aParticle(i->second);
