@@ -20,8 +20,8 @@ namespace mu2e {
             config.getDouble("extMonFNALGun.multiplicity",-1.),
             static_cast<PDGCode::type>(config.getInt("extMonFNALGun.pdgId")),
 
-            config.getDouble("extMonFNALGun.pmin"),
-            config.getDouble("extMonFNALGun.pmax"),
+            config.getDouble("extMonFNALGun.pmin", GeomHandle<ProtonBeamDump>()->extMonFilter_nominalMomentum()),
+            config.getDouble("extMonFNALGun.pmax", GeomHandle<ProtonBeamDump>()->extMonFilter_nominalMomentum()),
 
             RandomUnitSphereParams(-1., -cos(config.getDouble("extMonFNALGun.coneAngle")),
                                    0., 2*M_PI),
