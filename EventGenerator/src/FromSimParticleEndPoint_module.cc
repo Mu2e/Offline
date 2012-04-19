@@ -1,9 +1,9 @@
 // Read a SimParticle collection and create a GenParticleCollection from the end point of the former.
 //
 //
-// $Id: FromSimParticleEndPoint_module.cc,v 1.1 2012/04/18 22:57:19 onoratog Exp $
+// $Id: FromSimParticleEndPoint_module.cc,v 1.2 2012/04/19 20:20:26 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/04/18 22:57:19 $
+// $Date: 2012/04/19 20:20:26 $
 //
 // Original author Gianni Onorato
 // 
@@ -64,10 +64,13 @@ namespace mu2e {
     double _piCaptureELow, _piCaptureEHi, _piCaptureNBins, _piCaptureProbInternalConversion;
     bool _doHistograms;
     int _diagLevel;
+    bool _firstevent;
     vector<unsigned> _selVolumes;
     TNtuple* _ntup;
     PiCaptureEffects* _piCaptCreator;
-  };
+    void readVolumesToSelect(art::Event& event);
+
+ };
 
 
   FromSimParticleEndPoint::FromSimParticleEndPoint(fhicl::ParameterSet const& pset):
@@ -81,7 +84,8 @@ namespace mu2e {
     _piCaptureNBins(pset.get<double>("picaptureNbins",1000)),
     _piCaptureProbInternalConversion(pset.get<double>("picaptureProbInternalConversion", 0.0069)),
     _doHistograms(pset.get<bool>("doHistograms",true)),
-    _diagLevel(pset.get<int>("diagLevel", -1))
+    _diagLevel(pset.get<int>("diagLevel", -1)),
+    _firstevent(true)
   {
     produces<GenParticleCollection>();
     produces<GenSimParticleLink>();
@@ -133,27 +137,18 @@ namespace mu2e {
     ntup->Fill(nt);
   }
 
-  void FromSimParticleEndPoint::produce(art::Event& event) {
+  void FromSimParticleEndPoint::readVolumesToSelect(art::Event& event) {
 
-    std::auto_ptr<GenParticleCollection> output(new GenParticleCollection);
-    std::auto_ptr<GenSimParticleLink> history(new GenSimParticleLink);
-    art::ProductID gpc_pid = (getProductID<GenParticleCollection>(event));
+      art::Handle<PhysicalVolumeInfoCollection> volsHandle;
+      event.getRun().getByLabel(_inModuleLabel,volsHandle);
+      PhysicalVolumeInfoCollection const& vols(*volsHandle);
 
-    art::Handle<PhysicalVolumeInfoCollection> volsHandle;
-    event.getRun().getByLabel(_inModuleLabel,volsHandle);
-    PhysicalVolumeInfoCollection const& vols(*volsHandle);
-
-    static int ncalls(0);
-    ++ncalls;
-
-    if (ncalls == 1) {
-      
       for (size_t i=0; i<vols.size(); ++i) {
         PhysicalVolumeInfo const& theVol = vols.at(i);
         
         for (size_t j=0; j<_inVolumes.size(); ++j) {
           if (theVol.name().compare(0,_inVolumes[j].size(),_inVolumes[j]) == 0) {
-            _selVolumes.push_back(j);
+            _selVolumes.push_back(i);
           }
         }
       }
@@ -161,17 +156,30 @@ namespace mu2e {
       if (_diagLevel>-1) {
         cout << "Searching for all ";
         for (size_t i = 0; i < _inPdgId.size(); ++i ) {
-        cout << _inPdgId[i] << " ";
+	  cout << _inPdgId[i] << " ";
         }
         cout << "dead in ";
         for (size_t i = 0; i < _selVolumes.size(); ++i ) {
-          cout << vols.at(_selVolumes[i]).name() << " ";
+          cout << vols.at(_selVolumes[i]).name() << endl;
         }
         cout << "with process code ";
-       cout << _inProcessCodeToLook.name() << " ";
-       cout << "to create a " << _outGenIdToCreate.name() << endl;
+	cout << _inProcessCodeToLook.name() << " ";
+	cout << "to create a " << _outGenIdToCreate.name() << endl;
       }
-      
+  }
+
+  void FromSimParticleEndPoint::produce(art::Event& event) {
+
+
+    std::auto_ptr<GenParticleCollection> output(new GenParticleCollection);
+    std::auto_ptr<GenSimParticleLink> history(new GenSimParticleLink);
+    art::ProductID gpc_pid = (getProductID<GenParticleCollection>(event));
+
+    if (_firstevent) {
+
+      readVolumesToSelect(event);
+      _firstevent = false;
+
     }
 
     // The input collection
@@ -180,6 +188,8 @@ namespace mu2e {
     const SimParticleCollection& insims(*inh);
 
     // Loop on SimParticle of the previous run
+
+    int counter = 0;
     for(SimParticleCollection::const_iterator i=insims.begin(); i!=insims.end(); ++i) {
 
       SimParticle const& aParticle(i->second);
@@ -202,8 +212,8 @@ namespace mu2e {
         if (findvolume) {
 
           if (_diagLevel>-1) {
-            cout << "find particle " << aParticle.pdgId() << endl;
-            cout << "find volume " << vols.at(aParticle.endVolumeIndex()) << endl;
+            cout << "find particle " << aParticle.pdgId(); 
+            cout << " in the selected volume " << endl;
           }
           if (_inProcessCodeToLook == aParticle.stoppingCode() ) {
             
@@ -215,37 +225,41 @@ namespace mu2e {
             if (_outGenIdToCreate == GenId::PiCaptureCombined) {
            
 	      _piCaptCreator->defineOutput();
-   
+	      
               if (_piCaptCreator->doPhoton()) {
+
+		if (_diagLevel>1) cout << "creating photon" << endl;
+		
                 output->push_back(_piCaptCreator->outputGamma(pos, time));
                 history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
                                    art::Ptr<SimParticle>(inh, std::distance(insims.begin(), i)) );
-                if (_doHistograms) 
+                if (_doHistograms) {
                   setNtuplaInfo(event, output->back(),_ntup);
-
-                if (_diagLevel>-1) cout << "creating photon" << endl;
+		}
 
               }
               
               if (_piCaptCreator->doElectron()) {
+
+                if (_diagLevel>1) cout << "creating electron" << endl;
+
                 output->push_back(_piCaptCreator->outputElec(pos, time));
                 history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
                                    art::Ptr<SimParticle>(inh, std::distance(insims.begin(), i)) );
                 if (_doHistograms) 
                   setNtuplaInfo(event, output->back(),_ntup);
 
-                if (_diagLevel>-1) cout << "creating electron" << endl;
-
               }
               
               if (_piCaptCreator->doPositron()) {
+
+                if (_diagLevel>1) cout << "creating positron" << endl;
+
                 output->push_back(_piCaptCreator->outputPosit(pos, time));
                 history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
                                    art::Ptr<SimParticle>(inh, std::distance(insims.begin(), i)) );
                 if (_doHistograms) 
                   setNtuplaInfo(event, output->back(),_ntup);
-
-                if (_diagLevel>-1) cout << "creating positron" << endl;
                 
               }
             }
