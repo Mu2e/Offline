@@ -1,11 +1,11 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_mucapture.txt,v 1.1 2012/03/16 19:33:56 genser Exp $
+// $Id: genconfig_mucapture.txt,v 1.2 2012/04/19 22:15:13 genser Exp $
 // $Author: genser $
-// $Date: 2012/03/16 19:33:56 $
+// $Date: 2012/04/19 22:15:13 $
 //
-// Original author Rob Kutschke
+// Original author KLG somewhat based on conversionGun
 
 // Print a copy of this file to the job log.
 bool printConfig = false;
