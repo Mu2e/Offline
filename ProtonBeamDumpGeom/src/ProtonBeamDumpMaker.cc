@@ -16,6 +16,18 @@
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
 namespace mu2e {
+
+  //================================================================
+  namespace {
+    CLHEP::Hep3Vector enclosureToMu2ePoint(const ProtonBeamDump& dump, double xe, double ye, double ze) {
+      const CLHEP::Hep3Vector& ec(dump.enclosureCenterInMu2e());
+      return CLHEP::Hep3Vector(  ec[0] + xe*cos(dump.coreRotY()) + ze*sin(dump.coreRotY())
+                               , ec[1] + ye
+                               , ec[2] - xe*sin(dump.coreRotY()) + ze*cos(dump.coreRotY())
+                               );
+    }
+  }
+
   //================================================================
   ProtonBeamDump::CollimatorExtMonFNAL
   ProtonBeamDumpMaker::readCollimatorExtMonFNAL(const std::string& name,
@@ -105,7 +117,7 @@ namespace mu2e {
     const std::vector<double>& enclosureHalfSize = dump->_enclosureHalfSize;
 
     if(verbose) {
-      std::cout<<__func__<<": ProtonBeamDump enclosure half size = ";
+      std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump enclosure half size = ";
       std::copy(enclosureHalfSize.begin(), enclosureHalfSize.end(), std::ostream_iterator<double>(std::cout, ", "));
       std::cout<<std::endl;
     }
@@ -165,7 +177,7 @@ namespace mu2e {
 
                                                          dump->coreCenterInEnclosure()[1]
                                                          + dump->filterEntranceOffsetY()
-                                                         + 0.5*dump->collimator1().horizontalLength()*tan(dump->collimator1().angleV()),
+                                                         + 0.5*dump->collimator1().horizontalLength()*tan(dump->collimator1().angleV())/cos(dump->filterAngleH()),
 
                                                          dump->enclosureHalfSize()[2] - 0.5*dump->collimator1().horizontalLength());
 
@@ -197,7 +209,7 @@ namespace mu2e {
 
     // Height of the entrance point (in enclosure coords)
     const double magnetEntranceY = dump->coreCenterInEnclosure()[1] + dump->filterEntranceOffsetY()
-      + tan(dump->filterEntranceAngleV()) * (dump->enclosureHalfSize()[2] - magnetEntranceZ)
+      + (dump->enclosureHalfSize()[2] - magnetEntranceZ)*tan(dump->filterEntranceAngleV())/cos(dump->filterAngleH())
 
       // the entrance point should be on the trajectory of reference
       // particle at the *bottom* of the collimator1 channel - shift for that:
@@ -239,38 +251,98 @@ namespace mu2e {
     // Height of the exit point (in enclosure coords)
     const double magnetExitY = magnetEntranceY + sin(magnetAngleV) * 2*dump->_filterMagnet._outerHalfSize[2];
 
-    const double col2CenterY = magnetExitY + tan(dump->_collimator2.angleV())*(magnetExitZ - col2CenterZ)
+    const double col2CenterY = magnetExitY + (magnetExitZ - col2CenterZ)*tan(dump->_collimator2.angleV())/cos(dump->filterAngleH())
       + 0.5 * dump->_collimator2._channelHeight[0]/cos(dump->_collimator2.angleV());
 
     dump->_collimator2CenterInEnclosure = CLHEP::Hep3Vector(col2CenterX, col2CenterY, col2CenterZ);
 
     //----------------------------------------------------------------
     if(verbose) {
-      std::cout<<__func__<<": coreOffset = "<<coreOffset<<std::endl;
-      std::cout<<__func__<<": ProtonBeamDump core center in mu2e = "<<dump->_coreCenterInMu2e<<std::endl;
-      std::cout<<__func__<<": ProtonBeamDump enclosure center in mu2e = "<<dump->_enclosureCenterInMu2e<<std::endl;
-      std::cout<<__func__<<": coreCenterInEnclosure = "<<dump->_coreCenterInEnclosure<<std::endl;
-      std::cout<<__func__<<": enclosure half size = { "
+      std::cout<<"ProtonBeamDumpMaker"<<": Filter entrance offsets  = ("<<dump->_filterEntranceOffsetX<<", "<<dump->_filterEntranceOffsetY<<")"<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": coreOffset = "<<coreOffset<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump core center in mu2e = "<<dump->_coreCenterInMu2e<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump enclosure center in mu2e = "<<dump->_enclosureCenterInMu2e<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": coreCenterInEnclosure = "<<dump->_coreCenterInEnclosure<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": enclosure half size = { "
                <<dump->_enclosureHalfSize[0]<<", "
                <<dump->_enclosureHalfSize[1]<<", "
                <<dump->_enclosureHalfSize[2]<<" }"
                <<std::endl;
-      std::cout<<__func__<<": magnetPitCenterInEnclosure = "<<dump->_magnetPitCenterInEnclosure<<std::endl;
-      std::cout<<__func__<<": shieldingFaceXmin = "<<dump->_shieldingFaceXmin
+      std::cout<<"ProtonBeamDumpMaker"<<": magnetPitCenterInEnclosure = "<<dump->_magnetPitCenterInEnclosure<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": shieldingFaceXmin = "<<dump->_shieldingFaceXmin
                <<", Xmax = "<<dump->_shieldingFaceXmax<<std::endl;
-      std::cout<<__func__<<": shieldingFaceZatXmin = "<<dump->_shieldingFaceZatXmin
+      std::cout<<"ProtonBeamDumpMaker"<<": shieldingFaceZatXmin = "<<dump->_shieldingFaceZatXmin
                <<", ZatXmax = "<<dump->_shieldingFaceZatXmax<<std::endl;
-      std::cout<<__func__<<": filter nominal momentum = "<<dump->extMonFilter_nominalMomentum()/CLHEP::GeV<<" GeV/c"<<std::endl;
-      std::cout<<__func__<<": filterAngleH = "<<dump->filterAngleH()<<std::endl;
-      std::cout<<__func__<<": filter half bend angle  = "<<dump->filterMagnet().trackBendHalfAngle(dump->extMonFilter_nominalMomentum())<<std::endl;
-      std::cout<<__func__<<": filter.angleV = "<<dump->filterEntranceAngleV()
+      std::cout<<"ProtonBeamDumpMaker"<<": filter nominal momentum = "<<dump->extMonFilter_nominalMomentum()/CLHEP::GeV<<" GeV/c"<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": filterAngleH = "<<dump->filterAngleH()<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": filter half bend angle  = "<<dump->filterMagnet().trackBendHalfAngle(dump->extMonFilter_nominalMomentum())<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": filter.angleV = "<<dump->filterEntranceAngleV()
                <<", c1.angleV  = "<<dump->collimator1().angleV()
                <<", magnet.angleV = "<<dump->filterMagnetAngleV()
                <<", c2.angleV() = "<<dump->collimator2().angleV()<<std::endl;
-      std::cout<<__func__<<": collimator1CenterInEnclosure = "<<dump->_collimator1CenterInEnclosure<<std::endl;
-      std::cout<<__func__<<": collimator1.horizontalLength = "<<dump->_collimator1._horizontalLength<<std::endl;
-      std::cout<<__func__<<": collimator2CenterInEnclosure = "<<dump->_collimator2CenterInEnclosure<<std::endl;
-      std::cout<<__func__<<": collimator2.horizontalLength = "<<dump->_collimator2._horizontalLength<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": collimator1CenterInEnclosure = "<<dump->_collimator1CenterInEnclosure<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": collimator1.horizontalLength = "<<dump->_collimator1._horizontalLength<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": collimator2CenterInEnclosure = "<<dump->_collimator2CenterInEnclosure<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": collimator2.horizontalLength = "<<dump->_collimator2._horizontalLength<<std::endl;
+    }
+
+    if(verbose) {
+      // Compute some positions in mu2e coordinates for verification and comparisons
+      std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump::filterEntranceInMu2e() = "<<dump->filterEntranceInMu2e()<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<" in Mu2e: col1 start = "
+               <<enclosureToMu2ePoint(*dump.get(),
+                                      // col1 start in enclosure coordinates
+                                      dump->_collimator1CenterInEnclosure[0] - 0.5*dump->_collimator1._horizontalLength*tan(dump->_collimator1._angleH),
+                                      dump->_collimator1CenterInEnclosure[1] - 0.5*dump->_collimator1._horizontalLength*tan(dump->_collimator1._angleV)/cos(dump->_filterAngleH),
+                                      dump->_enclosureHalfSize[2]
+                                      )
+               <<std::endl;
+
+      std::cout<<"ProtonBeamDumpMaker"<<" in Mu2e: col1 end = "
+               <<enclosureToMu2ePoint(*dump.get(),
+                                      dump->_collimator1CenterInEnclosure[0] + 0.5*dump->_collimator1._horizontalLength*tan(dump->_collimator1._angleH),
+                                      dump->_collimator1CenterInEnclosure[1] + 0.5*dump->_collimator1._horizontalLength*tan(dump->_collimator1._angleV)/cos(dump->_filterAngleH),
+                                      dump->_enclosureHalfSize[2] - dump->_collimator1._horizontalLength
+                                      )
+               <<std::endl;
+
+      //----------------------------------------------------------------
+      std::cout<<"ProtonBeamDumpMaker"<<" in Mu2e: col2 start = "
+               <<enclosureToMu2ePoint(*dump.get(),
+                                      dump->_collimator2CenterInEnclosure[0] - 0.5*dump->_collimator2._horizontalLength*tan(dump->_collimator2._angleH),
+                                      dump->_collimator2CenterInEnclosure[1] - 0.5*dump->_collimator2._horizontalLength*tan(dump->_collimator2._angleV)/cos(dump->_filterAngleH),
+                                      -dump->_enclosureHalfSize[2] + dump->_collimator2._horizontalLength
+                                      )
+               <<std::endl;
+
+      std::cout<<"ProtonBeamDumpMaker"<<" in Mu2e: col2 end = "
+               <<enclosureToMu2ePoint(*dump.get(),
+                                      dump->_collimator2CenterInEnclosure[0] + 0.5*dump->_collimator2._horizontalLength*tan(dump->_collimator2._angleH),
+                                      dump->_collimator2CenterInEnclosure[1] + 0.5*dump->_collimator2._horizontalLength*tan(dump->_collimator2._angleV)/cos(dump->_filterAngleH),
+                                      -dump->_enclosureHalfSize[2]
+                                      )
+               <<std::endl;
+
+      std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump::filterExitInMu2e() = "<<dump->filterExitInMu2e()<<std::endl;
+
+      //----------------------------------------------------------------
+      std::cout<<"ProtonBeamDumpMaker"<<": in Mu2e: magnet start = "
+               <<enclosureToMu2ePoint(*dump.get(),
+                                      dump->_filterMagnetCenterInEnclosure[0] - dump->_filterMagnet._outerHalfSize[2]*cos(dump->_filterMagnetAngleV)*sin(dump->_filterAngleH),
+                                      dump->_filterMagnetCenterInEnclosure[1] - dump->_filterMagnet._outerHalfSize[2]*sin(dump->_filterMagnetAngleV),
+                                      dump->_filterMagnetCenterInEnclosure[2] + dump->_filterMagnet._outerHalfSize[2]*cos(dump->_filterMagnetAngleV)*cos(dump->_filterAngleH)
+                                      )
+               <<std::endl;
+
+      std::cout<<"ProtonBeamDumpMaker"<<": in Mu2e: magnet end = "
+               <<enclosureToMu2ePoint(*dump.get(),
+                                      dump->_filterMagnetCenterInEnclosure[0] + dump->_filterMagnet._outerHalfSize[2]*cos(dump->_filterMagnetAngleV)*sin(dump->_filterAngleH),
+                                      dump->_filterMagnetCenterInEnclosure[1] + dump->_filterMagnet._outerHalfSize[2]*sin(dump->_filterMagnetAngleV),
+                                      dump->_filterMagnetCenterInEnclosure[2] - dump->_filterMagnet._outerHalfSize[2]*cos(dump->_filterMagnetAngleV)*cos(dump->_filterAngleH)
+                                      )
+               <<std::endl;
+
+
     }
 
     return dump;

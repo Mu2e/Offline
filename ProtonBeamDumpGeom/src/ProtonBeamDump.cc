@@ -46,7 +46,7 @@ namespace mu2e {
                                             + 0.5*_collimator2.horizontalLength()*tan(_collimator2.angleH()),
 
                                             _collimator2CenterInEnclosure[1]
-                                            + 0.5*_collimator2.horizontalLength()*tan(_collimator2.angleV()),
+                                            + 0.5*_collimator2.horizontalLength()*tan(_collimator2.angleV())/cos(_collimator2.angleH()),
 
                                             -_enclosureHalfSize[2]);
 
