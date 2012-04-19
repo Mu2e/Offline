@@ -6,6 +6,13 @@
 
 namespace mu2e {
 
+  ProtonBeamDump::ProtonBeamDump()
+    : _enclosureRotationInMu2e(CLHEP::HepRotation::IDENTITY)
+    , _collimator1RotationInMu2e(CLHEP::HepRotation::IDENTITY)
+    , _filterMagnetRotationInMu2e(CLHEP::HepRotation::IDENTITY)
+    , _collimator2RotationInMu2e(CLHEP::HepRotation::IDENTITY)
+  {}
+
   double ProtonBeamDump::FilterMagnetExtMonFNAL::trackBendHalfAngle(double momentum) const {
 
     // In the bend plane: compute the gyroradius
@@ -37,7 +44,7 @@ namespace mu2e {
                                                 _coreCenterInEnclosure[1] + _filterEntranceOffsetY,
                                                 _enclosureHalfSize[2]);
 
-    return _enclosureCenterInMu2e + _enclosureRotationInMu2e.inverse() * filterEntranceInEnclosure;
+    return _enclosureCenterInMu2e + _enclosureRotationInMu2e * filterEntranceInEnclosure;
   }
 
   //================================================================
@@ -50,7 +57,7 @@ namespace mu2e {
 
                                             -_enclosureHalfSize[2]);
 
-    return _enclosureCenterInMu2e + _enclosureRotationInMu2e.inverse() * filterExitInEnclosure;
+    return _enclosureCenterInMu2e + _enclosureRotationInMu2e * filterExitInEnclosure;
   }
 
   //================================================================
@@ -58,7 +65,8 @@ namespace mu2e {
 
     const CLHEP::Hep3Vector rel(mu2epos - _coreCenterInMu2e);
 
-    const CLHEP::Hep3Vector res = _enclosureRotationInMu2e * rel;
+    static const CLHEP::HepRotation invRot(_enclosureRotationInMu2e.inverse());
+    const CLHEP::Hep3Vector res = invRot * rel;
 
     // AGDEBUG("POS: mu2e = "<<mu2epos<<", rel = "<<rel<<", res = "<<res);
 
@@ -67,7 +75,8 @@ namespace mu2e {
 
   //================================================================
   CLHEP::Hep3Vector ProtonBeamDump::mu2eToBeamDump_momentum(const CLHEP::Hep3Vector& mu2emom) const {
-    const CLHEP::Hep3Vector res = _enclosureRotationInMu2e * mu2emom;
+    static const CLHEP::HepRotation invRot(_enclosureRotationInMu2e.inverse());
+    const CLHEP::Hep3Vector res = invRot * mu2emom;
     // AGDEBUG("MOM: mu2e = "<<mu2emom<<", res = "<<res);
     return res;
   }

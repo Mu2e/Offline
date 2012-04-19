@@ -122,11 +122,13 @@ namespace mu2e {
     double shieldingFaceZatXmax() const { return _shieldingFaceZatXmax; }
 
     const CLHEP::Hep3Vector& collimator1CenterInEnclosure() const { return _collimator1CenterInEnclosure; }
+    const CLHEP::HepRotation& collimator1RotationInMu2e() const { return _collimator1RotationInMu2e; }
 
     const CLHEP::Hep3Vector& filterMagnetCenterInEnclosure() const { return _filterMagnetCenterInEnclosure; }
-    double filterMagnetAngleV() const { return _filterMagnetAngleV; }
+    const CLHEP::HepRotation& filterMagnetRotationInMu2e() const { return _filterMagnetRotationInMu2e; }
 
     const CLHEP::Hep3Vector& collimator2CenterInEnclosure() const { return _collimator2CenterInEnclosure; }
+    const CLHEP::HepRotation& collimator2RotationInMu2e() const { return _collimator2RotationInMu2e; }
 
     // convenience accessor for event generators
     // returns the point of intersection of collimator1 axis with the dump shielding face
@@ -145,7 +147,7 @@ namespace mu2e {
   private:
     friend class ProtonBeamDumpMaker;
     // Private ctr: the class should be only obtained via ProtonBeamDumpFNAL::ProtonBeamDumpMaker.
-    ProtonBeamDump() : _enclosureRotationInMu2e(CLHEP::HepRotation::IDENTITY) {}
+    ProtonBeamDump();
     // Or read back from persistent storage
     template<class T> friend class art::Wrapper;
 
@@ -183,11 +185,13 @@ namespace mu2e {
     double _shieldingFaceZatXmax;
 
     CLHEP::Hep3Vector _collimator1CenterInEnclosure;
+    CLHEP::HepRotation _collimator1RotationInMu2e;
 
     CLHEP::Hep3Vector _filterMagnetCenterInEnclosure;
-    double _filterMagnetAngleV;
+    CLHEP::HepRotation _filterMagnetRotationInMu2e;
 
     CLHEP::Hep3Vector _collimator2CenterInEnclosure;
+    CLHEP::HepRotation _collimator2RotationInMu2e;
   };
 }
 

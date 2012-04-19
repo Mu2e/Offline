@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.30 2012/04/17 19:56:56 gandr Exp $
+// $Id: constructVirtualDetectors.cc,v 1.31 2012/04/19 23:00:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/17 19:56:56 $
+// $Date: 2012/04/19 23:00:31 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -37,6 +37,7 @@
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "G4Helper/inc/AntiLeakRegistry.hh"
 
 // G4 includes
 
@@ -69,6 +70,7 @@ namespace mu2e {
 
     int const nSurfaceCheckPoints = 100000; // for a more thorrow check due to the vd shape
 
+    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;
 
@@ -756,8 +758,7 @@ namespace mu2e {
                                                     dump->shieldingFaceZatXmax())/2
                                                  );
 
-      CLHEP::Hep3Vector vdOffset(dump->enclosureRotationInMu2e().inverse() * 
-                                 CLHEP::Hep3Vector(0, 0, hlen[2]));
+      CLHEP::Hep3Vector vdOffset(dump->enclosureRotationInMu2e() * CLHEP::Hep3Vector(0, 0, hlen[2]));
       
 
       if ( verbosityLevel > 0) {
@@ -770,7 +771,7 @@ namespace mu2e {
       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId), 
                                   hlen, 
                                   vacuumMaterial, 
-                                  &dump->enclosureRotationInMu2e(),
+                                  reg.add(dump->enclosureRotationInMu2e().inverse()),
                                   shieldingFaceCenterInMu2e + vdOffset - parent.centerInMu2e(),
                                   parent,
                                   vdId, 
@@ -1085,52 +1086,7 @@ namespace mu2e {
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
-    // ExtMonFNAL detector
-    for(int vdId = VirtualDetectorId::EMFDetectorEntrance; vdId <= VirtualDetectorId::EMFDetectorExit; ++vdId) {
-      if( vdg->exist(vdId) ) {
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
-
-        VolumeInfo const & parent = _helper->locateVolInfo("ExtMonFNALRoom");
-
-        GeomHandle<ExtMonFNAL::ExtMon> extmon;
-
-        CLHEP::Hep3Vector centerInParent = extmon->detectorCenterInRoom()
-          + extmon->detectorRotationInRoom().inverse()
-          * CLHEP::Hep3Vector(0,
-                              0,
-                              (vdId == VirtualDetectorId::EMFDetectorEntrance ? 1 : -1)
-                              * (extmon->detectorHalfSize()[2] + vdg->getHalfLength())
-                              );
-
-
-        std::vector<double> hlen(3);
-        hlen[0] = _config->getDouble("extmon_fnal.vd.halfdx");
-        hlen[1] = _config->getDouble("extmon_fnal.vd.halfdy");
-        hlen[2] = vdg->getHalfLength();
-
-        VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-                                    hlen,
-                                    vacuumMaterial,
-                                    &extmon->detectorRotationInRoom(),
-                                    centerInParent,
-                                    parent,
-                                    vdId,
-                                    vdIsVisible,
-                                    G4Color::Red(),
-                                    vdIsSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    false
-                                    );
-
-        // vd are very thin, a more thorough check is needed
-        doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-
-        vdInfo.logical->SetSensitiveDetector(vdSD);
-      }
-    }
+    // ExtMonFNAL detector VDs - created in constructExtMonFNAL()
 
   } // constructVirtualDetectors()
 }

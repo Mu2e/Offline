@@ -16,7 +16,6 @@
 #include "G4ExtrudedSolid.hh"
 #include "G4IntersectionSolid.hh"
 #include "G4TwoVector.hh"
-#include "G4Transform3D.hh"
 #include "G4SDManager.hh"
 
 #include "G4UniformMagField.hh"
@@ -61,6 +60,7 @@ namespace mu2e {
   void constructCollimatorExtMonFNAL(const ProtonBeamDump::CollimatorExtMonFNAL& collimator,
                                      const VolumeInfo& parent,
                                      const CLHEP::Hep3Vector& collimatorCenterInParent,
+                                     const CLHEP::HepRotation& collimatorRotationInParent,
                                      const SimpleConfig& config
                                      )
   {
@@ -69,19 +69,24 @@ namespace mu2e {
     MaterialFinder materialFinder(config);
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
     const bool placePV             = true;
 
+    // The G4 interface we use through finishNesting() applies
+    // the backwards interpretation of rotations.  Be consistent
+    // and use the "backwards" interface of boolean solids.
+    CLHEP::HepRotation *colrot = reg.add(collimatorRotationInParent.inverse());
 
     // Make sure the solids definining the collimator hole etc are sufficiently long to completely
     // exit the concrete on both ends.
 
+    using std::abs;
     const double boxdz = 0.5*collimator.horizontalLength();
     const double dr =  *std::max_element(collimator.alignmentPlugRadius().begin(), collimator.alignmentPlugRadius().end());
     const double cylHalfLength = std::sqrt(std::pow(boxdz, 2) +
-                                           std::pow(boxdz * tan(collimator.angleV()) + dr/cos(collimator.angleV()), 2) +
-                                           std::pow(boxdz * tan(collimator.angleH()) + dr/cos(collimator.angleH()), 2)
+                                           std::pow(boxdz * abs(tan(collimator.angleV())/cos(collimator.angleH())) + dr/abs(cos(collimator.angleV())), 2) +
+                                           std::pow(boxdz * abs(tan(collimator.angleH())) + dr/abs(cos(collimator.angleH())), 2)
                                            );
 
     double zPlane[] = {-cylHalfLength, -0.5*collimator.radiusTransitiondZ(), +0.5*collimator.radiusTransitiondZ(), +cylHalfLength };
@@ -93,10 +98,6 @@ namespace mu2e {
                                       dump->enclosureHalfSize()[1],
                                       0.5*collimator.horizontalLength())
                             );
-
-    CLHEP::HepRotation *colrot = reg.add(CLHEP::HepRotation::IDENTITY);
-    colrot->rotateX(-collimator.angleV());
-    colrot->rotateY(+collimator.angleH());
 
     //----------------------------------------------------------------
     // Alignment hole
@@ -122,19 +123,20 @@ namespace mu2e {
                              parent.centerInWorld);
 
     alignmentHole.solid = new G4IntersectionSolid(alignmentHole.name,
-                                                  holeCylinder,
                                                   cutbox,
-                                                  G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,0))
+                                                  holeCylinder,
+                                                  colrot,
+                                                  CLHEP::Hep3Vector(0,0,0)
                                                   );
 
     finishNesting(alignmentHole,
                   materialFinder.get("hall.insideMaterialName"),
-                  colrot,
+                  0,
                   alignmentHole.centerInParent,
                   parent.logical,
                   0,
                   config.getBool("extMonFilter."+collimator.name()+".alignmentHole.visible"),
-                  G4Colour::Cyan(),
+                  G4Colour::Red(),//                  G4Colour::Cyan(),
                   config.getBool("extMonFilter."+collimator.name()+".alignmentHole.solid"),
                   forceAuxEdgeVisible,
                   placePV,
@@ -164,9 +166,10 @@ namespace mu2e {
                              alignmentHole.centerInWorld);
 
     alignmentPlug.solid = new G4IntersectionSolid(alignmentPlug.name,
-                                                  plugCylinder,
                                                   cutbox,
-                                                  G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,0))
+                                                  plugCylinder,
+                                                  colrot,
+                                                  CLHEP::Hep3Vector(0,0,0)
                                                   );
 
     finishNesting(alignmentPlug,
@@ -176,7 +179,7 @@ namespace mu2e {
                   alignmentHole.logical,
                   0,
                   config.getBool("extMonFilter."+collimator.name()+".alignmentPlug.visible"),
-                  G4Colour::Red(),
+                  G4Colour(0.4, 0, 0), // G4Colour::Red(),
                   config.getBool("extMonFilter."+collimator.name()+".alignmentPlug.solid"),
                   forceAuxEdgeVisible,
                   placePV,
@@ -193,12 +196,15 @@ namespace mu2e {
                                      )
                            );
 
-    VolumeInfo channelUp(collimator.name()+"ChannelUp",CLHEP::Hep3Vector(0,0,0.5*cylHalfLength), alignmentPlug.centerInWorld);
+    VolumeInfo channelUp(collimator.name()+"ChannelUp",
+                         CLHEP::Hep3Vector(0, 0, 0),
+                         alignmentPlug.centerInWorld);
 
     channelUp.solid = new G4IntersectionSolid(channelUp.name,
-                                              upbox,
                                               cutbox,
-                                              G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,-0.5*cylHalfLength))
+                                              upbox,
+                                              colrot,
+                                              colrot->inverse()*CLHEP::Hep3Vector(0,0,0.5*cylHalfLength)
                                               );
 
     finishNesting(channelUp,
@@ -208,7 +214,7 @@ namespace mu2e {
                   alignmentPlug.logical,
                   0,
                   config.getBool("extMonFilter."+collimator.name()+".channel.visible"),
-                  G4Colour::Grey(),
+                  G4Colour::Yellow(),
                   config.getBool("extMonFilter."+collimator.name()+".channel.solid"),
                   forceAuxEdgeVisible,
                   placePV,
@@ -218,28 +224,32 @@ namespace mu2e {
     //----------------------------------------------------------------
     // Collimator channel: the downstream half
 
-    G4Box *collimatorDownBox = reg.add(new G4Box(collimator.name()+"dnbox",
-                                                 0.5*collimator.channelWidth()[1],
-                                                 0.5*collimator.channelHeight()[1],
-                                                 0.5*cylHalfLength)
-                                       );
+    G4Box *downbox = reg.add(new G4Box(collimator.name()+"downbox",
+                                       0.5*collimator.channelWidth()[1],
+                                       0.5*collimator.channelHeight()[1],
+                                       0.5*cylHalfLength
+                                       )
+                             );
 
-    VolumeInfo collimatorDown(collimator.name()+"ChannelDn",CLHEP::Hep3Vector(0,0,-0.5*cylHalfLength), alignmentPlug.centerInWorld);
+    VolumeInfo channelDown(collimator.name()+"ChannelDown",
+                           CLHEP::Hep3Vector(0, 0, 0),
+                           alignmentPlug.centerInWorld);
 
-    collimatorDown.solid = new G4IntersectionSolid(collimatorDown.name,
-                                                   collimatorDownBox,
-                                                   cutbox,
-                                                   G4Transform3D(*colrot, CLHEP::Hep3Vector(0,0,0.5*cylHalfLength))
-                                                   );
+    channelDown.solid = new G4IntersectionSolid(channelDown.name,
+                                                cutbox,
+                                                downbox,
+                                                colrot,
+                                                colrot->inverse()*CLHEP::Hep3Vector(0, 0, -0.5*cylHalfLength)
+                                                );
 
-    finishNesting(collimatorDown,
+    finishNesting(channelDown,
                   materialFinder.get("hall.insideMaterialName"),
                   0,
-                  collimatorDown.centerInParent,
+                  channelDown.centerInParent,
                   alignmentPlug.logical,
                   0,
                   config.getBool("extMonFilter."+collimator.name()+".channel.visible"),
-                  G4Colour::Grey(),
+                  G4Colour::Yellow(),
                   config.getBool("extMonFilter."+collimator.name()+".channel.solid"),
                   forceAuxEdgeVisible,
                   placePV,
@@ -256,16 +266,28 @@ namespace mu2e {
   {
     MaterialFinder materialFinder(config);
 
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
     const bool placePV             = true;
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 
     //----------------------------------------------------------------
-    CLHEP::HepRotation *magnetRotationInParent = reg.add(CLHEP::HepRotation::IDENTITY);
-    magnetRotationInParent->rotateX(-dump.filterMagnetAngleV());
-    magnetRotationInParent->rotateY(+dump.filterAngleH());
+    // finishNesting() uses the backwards interpretation of rotations
+    // We need: (dump.enclosureRotationInMu2e().inverse()*dump.filterMagnetRotationInMu2e()).inverse()
+    // == dump.filterMagnetRotationInMu2e().inverse() * dump.enclosureRotationInMu2e()
+
+    CLHEP::HepRotation *magnetRotationInParent =
+      reg.add(dump.filterMagnetRotationInMu2e().inverse()*dump.enclosureRotationInMu2e());
+
+    const CLHEP::Hep3Vector nx(1, 0, 0);
+    const CLHEP::Hep3Vector ny(0, 1, 0);
+    const CLHEP::Hep3Vector nz(0, 0, 1);
+    std::cout<<"AG: DEGUB: magnetRotationInParent.inv * Nx = \n"
+             <<magnetRotationInParent->inverse()*nx<<"\n"
+             <<magnetRotationInParent->inverse()*ny<<"\n"
+             <<magnetRotationInParent->inverse()*nz<<"\n"
+             <<std::endl;
 
     const VolumeInfo magnetIron = nestBox("ExtMonFNALFilterMagnetIron",
                                           dump.filterMagnet().outerHalfSize(),
@@ -273,9 +295,9 @@ namespace mu2e {
                                           magnetRotationInParent,
                                           dump.filterMagnetCenterInEnclosure() - dump.magnetPitCenterInEnclosure(),
                                           parent, 0,
-                                          config.getBool("extMonFilter.magnet.iron.visible", true),
+                                          config.getBool("extMonFilter.magnet.iron.visible"),
                                           G4Colour::Magenta(),
-                                          config.getBool("extMonFilter.magnet.iron.solid", false),
+                                          config.getBool("extMonFilter.magnet.iron.solid"),
                                           forceAuxEdgeVisible,
                                           placePV,
                                           doSurfaceCheck
@@ -292,9 +314,9 @@ namespace mu2e {
                                         0,
                                         CLHEP::Hep3Vector(0, 0, 0),
                                         magnetIron.logical, 0,
-                                        config.getBool("extMonFilter.magnet.aperture.visible", true),
+                                        config.getBool("extMonFilter.magnet.aperture.visible"),
                                         G4Colour::Grey(),
-                                        config.getBool("extMonFilter.magnet.aperture.solid", false),
+                                        config.getBool("extMonFilter.magnet.aperture.solid"),
                                         forceAuxEdgeVisible,
                                         placePV,
                                         doSurfaceCheck
@@ -304,9 +326,12 @@ namespace mu2e {
     //----------------------------------------------------------------
     // Define the field in the magnet
 
-    CLHEP::HepRotation magnetRotationInWorld(CLHEP::HepRotation::IDENTITY);
-    magnetRotationInWorld.rotateY(dump.coreRotY() - dump.filterAngleH());
-    G4MagneticField *field = reg.add(new G4UniformMagField(dump.filterMagnet().fieldStrength() * (magnetRotationInWorld*CLHEP::Hep3Vector(1,0,0))));
+    const CLHEP::Hep3Vector BFieldVector(dump.filterMagnet().fieldStrength()
+                                         * (dump.filterMagnetRotationInMu2e()*CLHEP::Hep3Vector(1,0,0)));
+
+    std::cout<<"AG: ExtMonFNAL filter magnet field = "<<BFieldVector<<std::endl;
+
+    G4MagneticField *field = reg.add(new G4UniformMagField(BFieldVector));
 
     G4Mag_UsualEqRhs *rhs  = reg.add(new G4Mag_UsualEqRhs(field));
 
@@ -336,7 +361,8 @@ namespace mu2e {
             <<", deltaOneStep = "<<manager->GetDeltaOneStep()
             );
 
-    magnetAperture.logical->SetFieldManager(manager, true);
+    //magnetAperture.logical->SetFieldManager(manager, true);
+    magnetIron.logical->SetFieldManager(manager, true);
 
     //----------------------------------------------------------------
   }
@@ -351,8 +377,8 @@ namespace mu2e {
 
     MaterialFinder materialFinder(config);
 
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
     const bool placePV             = true;
 
     //----------------------------------------------------------------
@@ -383,8 +409,12 @@ namespace mu2e {
     beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmax() + building->hallWallThickness() ,
                                                hallFormalZminInMu2e));
 
-    static CLHEP::HepRotation beamDumpDirtRotation(CLHEP::HepRotation::IDENTITY);
-    beamDumpDirtRotation.rotateX(-90*CLHEP::degree);
+    // We want to rotate the X'Y' plane of the extruded solid
+    // to become XZ plane of Mu2e.   Need to rotate by +90 degrees around X.
+    // Because the interfaces below use a backward interpretation of rotations,
+    // it's more convenient to work with the inverse matrix
+    static CLHEP::HepRotation beamDumpDirtRotationInv(CLHEP::HepRotation::IDENTITY);
+    beamDumpDirtRotationInv.rotateX(-90*CLHEP::degree);
 
     const double dumpDirtYmin = world->dumpDirtFormalYminInMu2e();
     const double dumpDirtYmax = world->dumpDirtFormalYmaxInMu2e();
@@ -400,24 +430,24 @@ namespace mu2e {
 
     finishNesting(beamDumpDirt,
                   materialFinder.get("dirt.overburdenMaterialName"),
-                  &beamDumpDirtRotation,
+                  &beamDumpDirtRotationInv,
                   beamDumpDirt.centerInParent,
                   parent.logical,
                   0,
-                  config.getBool("protonBeamDump.dirtVisible", false),
+                  config.getBool("protonBeamDump.dirtVisible"),
                   G4Colour(0.9, 0, 0.9), //G4Colour::Magenta(),
-                  config.getBool("protonBeamDump.dirtSolid", false),
+                  config.getBool("protonBeamDump.dirtSolid"),
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck
                   );
 
     //----------------------------------------------------------------
-    CLHEP::Hep3Vector enclosurePositionInDirt( beamDumpDirtRotation * (dump->enclosureCenterInMu2e() - beamDumpDirt.centerInMu2e()));
+    CLHEP::Hep3Vector enclosurePositionInDirt( beamDumpDirtRotationInv * (dump->enclosureCenterInMu2e() - beamDumpDirt.centerInMu2e()));
 
-    static CLHEP::HepRotation rotationInDirt(CLHEP::HepRotation::IDENTITY);
-    rotationInDirt.rotateZ(dump->coreRotY());
-    rotationInDirt.rotateX(+90*CLHEP::degree);
+    // finishNesting() uses the backwards interpretation of rotations.
+    // We need: (beamDumpDirtRotation.inverse()*dump.enclosureRotationInMu2e()).inverse()
+    static CLHEP::HepRotation rotationInDirt( (beamDumpDirtRotationInv*dump->enclosureRotationInMu2e()).inverse() );
 
     const VolumeInfo logicalEnclosure = nestBox("ProtonBeamDumpShielding",
                                                 dump->enclosureHalfSize(),
@@ -425,9 +455,9 @@ namespace mu2e {
                                                 &rotationInDirt,
                                                 enclosurePositionInDirt,
                                                 beamDumpDirt, 0,
-                                                config.getBool("protonBeamDump.logicalEnclosureVisible", true),
+                                                config.getBool("protonBeamDump.logicalEnclosureVisible"),
                                                 G4Colour::Grey(),
-                                                config.getBool("protonBeamDump.logicalEnclosureSolid", false),
+                                                config.getBool("protonBeamDump.logicalEnclosureSolid"),
                                                 forceAuxEdgeVisible,
                                                 placePV,
                                                 doSurfaceCheck
@@ -439,9 +469,9 @@ namespace mu2e {
             0,
             dump->coreCenterInEnclosure(),
             logicalEnclosure, 0,
-            config.getBool("protonBeamDump.coreVisible", true),
+            config.getBool("protonBeamDump.coreVisible"),
             G4Colour::Blue(),
-            config.getBool("protonBeamDump.coreSolid", true),
+            config.getBool("protonBeamDump.coreSolid"),
             forceAuxEdgeVisible,
             placePV,
             doSurfaceCheck
@@ -456,9 +486,9 @@ namespace mu2e {
                               dump->coreCenterInEnclosure()[1],
                               dump->enclosureHalfSize()[2] - dump->mouthHalfSize()[2]),
             logicalEnclosure, 0,
-            config.getBool("protonBeamDump.mouthVisible", true),
+            config.getBool("protonBeamDump.mouthVisible"),
             G4Colour::Cyan(),
-            config.getBool("protonBeamDump.mouthSolid", false),
+            config.getBool("protonBeamDump.mouthSolid"),
             forceAuxEdgeVisible,
             placePV,
             doSurfaceCheck
@@ -473,9 +503,9 @@ namespace mu2e {
                               dump->coreCenterInEnclosure()[1],
                               dump->enclosureHalfSize()[2] - 2*dump->mouthHalfSize()[2] - dump->neutronCaveHalfSize()[2]),
             logicalEnclosure, 0,
-            config.getBool("protonBeamDump.neutronCaveVisible", true),
+            config.getBool("protonBeamDump.neutronCaveVisible"),
             G4Colour::Cyan(),
-            config.getBool("protonBeamDump.neutronCaveSolid", false),
+            config.getBool("protonBeamDump.neutronCaveSolid"),
             forceAuxEdgeVisible,
             placePV,
             doSurfaceCheck
@@ -487,9 +517,9 @@ namespace mu2e {
                                           0,
                                           dump->magnetPitCenterInEnclosure(),
                                           logicalEnclosure, 0,
-                                          config.getBool("protonBeamDump.magnetPitVisible", true),
+                                          config.getBool("protonBeamDump.magnetPitVisible"),
                                           G4Colour::Cyan(),
-                                          config.getBool("protonBeamDump.magnetPitSolid", false),
+                                          config.getBool("protonBeamDump.magnetPitSolid"),
                                           forceAuxEdgeVisible,
                                           placePV,
                                           doSurfaceCheck
@@ -501,6 +531,7 @@ namespace mu2e {
     constructCollimatorExtMonFNAL(dump->collimator1(),
                                   logicalEnclosure,
                                   dump->collimator1CenterInEnclosure(),
+                                  dump->enclosureRotationInMu2e().inverse()*dump->collimator1RotationInMu2e(),
                                   config);
 
     constructFilterMagnet(*dump, magnetPit, config);
@@ -508,6 +539,7 @@ namespace mu2e {
     constructCollimatorExtMonFNAL(dump->collimator2(),
                                   logicalEnclosure,
                                   dump->collimator2CenterInEnclosure(),
+                                  dump->enclosureRotationInMu2e().inverse()*dump->collimator2RotationInMu2e(),
                                   config);
 
     //----------------------------------------------------------------
@@ -593,7 +625,7 @@ namespace mu2e {
                                              dump->enclosureCenterInMu2e()[2]
                                              );
 
-        CLHEP::Hep3Vector kludgeCenterInDirt( beamDumpDirtRotation*(kludgeCenterInMu2e - beamDumpDirt.centerInMu2e()) );
+        CLHEP::Hep3Vector kludgeCenterInDirt( beamDumpDirtRotationInv*(kludgeCenterInMu2e - beamDumpDirt.centerInMu2e()) );
 
 
         CLHEP::Hep3Vector kludgeOffset(0, 0, kludgeHalfThickness);
@@ -630,7 +662,7 @@ namespace mu2e {
                                              dump->enclosureCenterInMu2e()[2]
                                              );
 
-        CLHEP::Hep3Vector kludgeCenterInDirt( beamDumpDirtRotation*(kludgeCenterInMu2e - beamDumpDirt.centerInMu2e()) );
+        CLHEP::Hep3Vector kludgeCenterInDirt( beamDumpDirtRotationInv*(kludgeCenterInMu2e - beamDumpDirt.centerInMu2e()) );
 
 
         CLHEP::Hep3Vector kludgeOffset(0, 0, -kludgeHalfThickness);
@@ -655,9 +687,10 @@ namespace mu2e {
       }
     }
 
+
     //----------------------------------------------------------------
     if(art::ServiceHandle<GeometryService>()->hasElement<mu2e::ExtMonFNAL::ExtMon>()) {
-      constructExtMonFNAL(beamDumpDirt, beamDumpDirtRotation, &rotationInDirt, config);
+      constructExtMonFNAL(beamDumpDirt, beamDumpDirtRotationInv.inverse(), config);
     }
 
   }

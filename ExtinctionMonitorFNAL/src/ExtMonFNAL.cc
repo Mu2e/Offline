@@ -16,8 +16,6 @@ namespace mu2e {
 
       : m_roomHalfSize(logicalEnclosureHalfDim)
       , m_roomCenterHeightAboveDumpCore(roomCenterHeightAboveDumpCore)
-      , m_detectorRotationInRoom(CLHEP::HepRotation::IDENTITY)
-
     {}
 
     //================================================================

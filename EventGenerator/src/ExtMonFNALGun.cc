@@ -36,14 +36,9 @@ namespace mu2e {
 
             config.getBool("extMonFNALGun.verbose",false)
             )
-    , m_rotation(CLHEP::HepRotation::IDENTITY)
-  {
-    GeomHandle<ProtonBeamDump> dump;
-    m_rotation.rotateX(dump->filterEntranceAngleV());
-    m_rotation.rotateY(-dump->filterAngleH() + dump->coreRotY());
-
-    m_translation = dump->filterEntranceInMu2e();
-  }
+    , m_rotation(GeomHandle<ProtonBeamDump>()->collimator1RotationInMu2e())
+    , m_translation(GeomHandle<ProtonBeamDump>()->filterEntranceInMu2e())
+  {}
 
   void ExtMonFNALGun::generate( GenParticleCollection& outParts) {
     GenParticleCollection localParts;

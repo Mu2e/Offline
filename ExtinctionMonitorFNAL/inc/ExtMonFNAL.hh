@@ -44,7 +44,7 @@ namespace mu2e {
 
       // Location of the detector
       CLHEP::Hep3Vector detectorCenterInRoom() const { return m_detectorCenterInRoom; }
-      CLHEP::HepRotation const& detectorRotationInRoom() const { return m_detectorRotationInRoom; }
+      CLHEP::HepRotation const& detectorRotationInMu2e() const { return m_detectorRotationInMu2e; }
       // the size is computed from sensor pars above
       const std::vector<double>& detectorHalfSize() const { return m_detectorHalfSize; }
 
@@ -83,7 +83,7 @@ namespace mu2e {
       CLHEP::Hep3Vector m_roomCenterInMu2e;
 
       std::vector<double> m_detectorHalfSize;
-      CLHEP::HepRotation m_detectorRotationInRoom;
+      CLHEP::HepRotation m_detectorRotationInMu2e;
       CLHEP::Hep3Vector m_detectorCenterInRoom;
 
       // Sensor center positions

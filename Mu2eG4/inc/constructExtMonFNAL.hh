@@ -10,8 +10,6 @@ namespace mu2e {
 
   void constructExtMonFNAL(const VolumeInfo& parent,
                            const CLHEP::HepRotation& parentRotationInMu2e,
-                           // ownership not passed, the object must stay valid until the job end
-                           const CLHEP::HepRotation *rotationInParent,
                            const SimpleConfig& config);
 
 }

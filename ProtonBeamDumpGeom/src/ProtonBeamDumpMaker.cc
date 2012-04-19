@@ -91,7 +91,6 @@ namespace mu2e {
 
     dump->_filterMagnet = readFilterMagnetExtMonFNAL(c);
 
-
     dump->_collimator1 = readCollimatorExtMonFNAL("collimator1", angleH, entranceAngleV, c);
     dump->_collimator2 = readCollimatorExtMonFNAL("collimator2",
                                                    angleH,
@@ -123,7 +122,7 @@ namespace mu2e {
     }
 
     // compute the position of the overall enclosure
-    dump->_enclosureRotationInMu2e.rotateY(-coreRotY);
+    dump->_enclosureRotationInMu2e.rotateY(coreRotY);
 
     // The offset of the enclosure center w.r.t. the core, along the dump z
     const double coreOffset = 2*dump->_mouthHalfSize[2] + 2*dump->_neutronCaveHalfSize[2]
@@ -183,6 +182,12 @@ namespace mu2e {
 
     dump->_collimator1CenterInEnclosure = collimator1CenterInEnclosure;
 
+    {
+      CLHEP::HepRotation tmp(CLHEP::HepRotation::IDENTITY);
+      tmp.rotateX(entranceAngleV).rotateY(-angleH);
+      dump->_collimator1RotationInMu2e = dump->_enclosureRotationInMu2e * tmp;
+    }
+
     //----------------------------------------------------------------
     // Position the magnet.  Keep B field horizontal.  Then there is
     // no bend in the XZ plane and the magnet center should be on the
@@ -197,8 +202,14 @@ namespace mu2e {
     // bottom center of the magnet aperture, bend down, and exit a the
     // bottom center of magnet aperture.
 
-    const double magnetAngleV = dump->_filterMagnetAngleV =
+    const double magnetAngleV =
       dump->filterEntranceAngleV() - dump->filterMagnet().trackBendHalfAngle(dump->extMonFilter_nominalMomentum());
+
+    {
+      CLHEP::HepRotation tmp(CLHEP::HepRotation::IDENTITY);
+      tmp.rotateX(magnetAngleV).rotateY(-angleH);
+      dump->_filterMagnetRotationInMu2e = dump->_enclosureRotationInMu2e * tmp;
+    }
 
     // Arbitrary fix the (center,bottom,center) point of the magnet
     // aperture at the Z position of the magnet room center.
@@ -256,6 +267,12 @@ namespace mu2e {
 
     dump->_collimator2CenterInEnclosure = CLHEP::Hep3Vector(col2CenterX, col2CenterY, col2CenterZ);
 
+    {
+      CLHEP::HepRotation tmp(CLHEP::HepRotation::IDENTITY);
+      tmp.rotateX(dump->_collimator2._angleV).rotateY(-angleH);
+      dump->_collimator2RotationInMu2e = dump->_enclosureRotationInMu2e * tmp;
+    }
+
     //----------------------------------------------------------------
     if(verbose) {
       std::cout<<"ProtonBeamDumpMaker"<<": Filter entrance offsets  = ("<<dump->_filterEntranceOffsetX<<", "<<dump->_filterEntranceOffsetY<<")"<<std::endl;
@@ -275,10 +292,11 @@ namespace mu2e {
                <<", ZatXmax = "<<dump->_shieldingFaceZatXmax<<std::endl;
       std::cout<<"ProtonBeamDumpMaker"<<": filter nominal momentum = "<<dump->extMonFilter_nominalMomentum()/CLHEP::GeV<<" GeV/c"<<std::endl;
       std::cout<<"ProtonBeamDumpMaker"<<": filterAngleH = "<<dump->filterAngleH()<<std::endl;
+      std::cout<<"ProtonBeamDumpMaker"<<": filterAngleH in Mu2e, degrees= "<<(dump->coreRotY() - dump->filterAngleH())/CLHEP::degree<<std::endl;
       std::cout<<"ProtonBeamDumpMaker"<<": filter half bend angle  = "<<dump->filterMagnet().trackBendHalfAngle(dump->extMonFilter_nominalMomentum())<<std::endl;
       std::cout<<"ProtonBeamDumpMaker"<<": filter.angleV = "<<dump->filterEntranceAngleV()
                <<", c1.angleV  = "<<dump->collimator1().angleV()
-               <<", magnet.angleV = "<<dump->filterMagnetAngleV()
+               <<", magnet.angleV = "<<magnetAngleV
                <<", c2.angleV() = "<<dump->collimator2().angleV()<<std::endl;
       std::cout<<"ProtonBeamDumpMaker"<<": collimator1CenterInEnclosure = "<<dump->_collimator1CenterInEnclosure<<std::endl;
       std::cout<<"ProtonBeamDumpMaker"<<": collimator1.horizontalLength = "<<dump->_collimator1._horizontalLength<<std::endl;
@@ -328,17 +346,17 @@ namespace mu2e {
       //----------------------------------------------------------------
       std::cout<<"ProtonBeamDumpMaker"<<": in Mu2e: magnet start = "
                <<enclosureToMu2ePoint(*dump.get(),
-                                      dump->_filterMagnetCenterInEnclosure[0] - dump->_filterMagnet._outerHalfSize[2]*cos(dump->_filterMagnetAngleV)*sin(dump->_filterAngleH),
-                                      dump->_filterMagnetCenterInEnclosure[1] - dump->_filterMagnet._outerHalfSize[2]*sin(dump->_filterMagnetAngleV),
-                                      dump->_filterMagnetCenterInEnclosure[2] + dump->_filterMagnet._outerHalfSize[2]*cos(dump->_filterMagnetAngleV)*cos(dump->_filterAngleH)
+                                      dump->_filterMagnetCenterInEnclosure[0] - dump->_filterMagnet._outerHalfSize[2]*cos(magnetAngleV)*sin(dump->_filterAngleH),
+                                      dump->_filterMagnetCenterInEnclosure[1] - dump->_filterMagnet._outerHalfSize[2]*sin(magnetAngleV),
+                                      dump->_filterMagnetCenterInEnclosure[2] + dump->_filterMagnet._outerHalfSize[2]*cos(magnetAngleV)*cos(dump->_filterAngleH)
                                       )
                <<std::endl;
 
       std::cout<<"ProtonBeamDumpMaker"<<": in Mu2e: magnet end = "
                <<enclosureToMu2ePoint(*dump.get(),
-                                      dump->_filterMagnetCenterInEnclosure[0] + dump->_filterMagnet._outerHalfSize[2]*cos(dump->_filterMagnetAngleV)*sin(dump->_filterAngleH),
-                                      dump->_filterMagnetCenterInEnclosure[1] + dump->_filterMagnet._outerHalfSize[2]*sin(dump->_filterMagnetAngleV),
-                                      dump->_filterMagnetCenterInEnclosure[2] - dump->_filterMagnet._outerHalfSize[2]*cos(dump->_filterMagnetAngleV)*cos(dump->_filterAngleH)
+                                      dump->_filterMagnetCenterInEnclosure[0] + dump->_filterMagnet._outerHalfSize[2]*cos(magnetAngleV)*sin(dump->_filterAngleH),
+                                      dump->_filterMagnetCenterInEnclosure[1] + dump->_filterMagnet._outerHalfSize[2]*sin(magnetAngleV),
+                                      dump->_filterMagnetCenterInEnclosure[2] - dump->_filterMagnet._outerHalfSize[2]*cos(magnetAngleV)*cos(dump->_filterAngleH)
                                       )
                <<std::endl;
 
