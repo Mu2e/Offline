@@ -1,10 +1,24 @@
-  $Id: v1_1_8.txt,v 1.22 2012/04/19 16:18:12 genser Exp $
+  $Id: v1_1_8.txt,v 1.23 2012/04/19 22:58:40 genser Exp $
   $Author: genser $
-  $Date: 2012/04/19 16:18:12 $
+  $Date: 2012/04/19 22:58:40 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_8
+
+24) April 19, 2012 genser
+
+    Enabled seting up of geant4 9.5.p01 and 9.4.p02
+    Added    setup_g4951.sh 
+      which sets up geant4 9.5.p01 and other new products e.g. art, clhep
+    Modified 
+             Mu2eG4/src/SConscript
+             mucapture/src/SConscript
+    to allow for a build time selection of the Geant4 libraries depending on
+    the environment setup by the setup.sh/setup_g4951.sh files.
+
+    The modifications should be transparent to those who will only use
+    setup.sh (and stay with Geant4 9.4.p02) 
 
 23) April 19, 2012 genser
 
