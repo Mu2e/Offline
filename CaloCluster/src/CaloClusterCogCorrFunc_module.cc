@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.9 2012/04/18 21:51:56 gianipez Exp $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.10 2012/04/20 16:30:41 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/04/18 21:51:56 $
+// $Date: 2012/04/20 16:30:41 $
 //
 // Original author G. Pezzullo
 //
@@ -296,11 +296,15 @@ private:
         _clCogColumns[10000],
         _clShowerDir,
         _clErrShowerDir,
+        _cleCryEnergyMaxRow,
+        _cleCryEnergyMaxColumn,
         _cryEdep[10000],
         _cryEdepTot,
         _DCAu,
         _DCAv,
         _DCAw,
+        _seedIsGoodTrk,
+        _seedNGoodTrkPerEvent,
         _seedGenp,
         _seedGene,
         _seedGenx,
@@ -607,11 +611,15 @@ void CaloClusterCogCorrFunc::analyze(art::Event const & evt ) {
 
                 _Ntup->Branch("clShowerDir", &_clShowerDir , "clShowerDir/F");
                 _Ntup->Branch("clErrShowerDir", &_clErrShowerDir , "clErrShowerDir/F");
+                _Ntup->Branch("cleCryEnergyMaxRow", &_cleCryEnergyMaxRow , "cleCryEnergyMaxRow/F");
+                _Ntup->Branch("cleCryEnergyMaxColumn", &_cleCryEnergyMaxColumn , "cleCryEnergyMaxColumn/F");
                 _Ntup->Branch("cryEdep[clSize]",     _cryEdep , "cryEdep[clSize]/F");
                 _Ntup->Branch("cryEdepTot",     &_cryEdepTot , "cryEdepTot/F");
                 _Ntup->Branch("DCAu",     &_DCAu , "DCAu/F");
                 _Ntup->Branch("DCAv",     &_DCAv , "DCAv/F");
                 _Ntup->Branch("DCAw",     &_DCAw , "DCAw/F");
+                _Ntup->Branch("seedIsGoodTrk",     &_seedIsGoodTrk , "seedIsGoodTrk/F");
+                _Ntup->Branch("seedNGoodTrkPerEvent",     &_seedNGoodTrkPerEvent , "seedNGoodTrkPerEvent/F");
                 _Ntup->Branch("seedGenp",     &_seedGenp , "seedGenp/F");
                 _Ntup->Branch("seedGene",     &_seedGene , "seedGene/F");
                 _Ntup->Branch("seedGenx",     &_seedGenx , "seedGenx/F");
@@ -835,13 +843,13 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                                         if(sim.fromGenerator() ){
                                                                 //GenParticle const& gen = *sim.genParticle();
                                                                 GenParticle const& gen = genParticles->at(sim.generatorIndex());
-//                                                                cout <<"gen = "<< gen << endl;
-//                                                                cout <<" gen.momentum().mag() = "<<gen.momentum().vect().mag()<<endl;
-//                                                                cout <<" gen.momentum().e() = "<<gen.momentum().e()<<endl;
-//                                                                cout <<" gen.pdgId() = "<<gen.pdgId()<<endl;
-//                                                                cout <<" gen.position().x() = "<<gen.position().x()<<endl;
-//                                                                cout <<" gen.position().y() = "<<gen.position().y()<<endl;
-//                                                                cout <<" gen.position().z() = "<<gen.position().z()<<endl;
+                                                                //                                                                cout <<"gen = "<< gen << endl;
+                                                                //                                                                cout <<" gen.momentum().mag() = "<<gen.momentum().vect().mag()<<endl;
+                                                                //                                                                cout <<" gen.momentum().e() = "<<gen.momentum().e()<<endl;
+                                                                //                                                                cout <<" gen.pdgId() = "<<gen.pdgId()<<endl;
+                                                                //                                                                cout <<" gen.position().x() = "<<gen.position().x()<<endl;
+                                                                //                                                                cout <<" gen.position().y() = "<<gen.position().y()<<endl;
+                                                                //                                                                cout <<" gen.position().z() = "<<gen.position().z()<<endl;
 
                                                                 elecMap[iVane][trackId.asUint()]._genp      = gen.momentum().vect().mag();//sim.startMomentum().vect().mag();//
                                                                 elecMap[iVane][trackId.asUint()]._gene      = gen.momentum().e();//sim.startMomentum().e();//
@@ -918,20 +926,22 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                 }//end for(caloClsuters.size)
         }//end if(caloClsuters.size() > 0)
 
-        //counting how many reconstructed clusters match with the generated particles
-        unsigned int canc2 = 0;
+        //counting how many reconstructed clusters match with the generated particles which pass the quality cuts of the tracker
+        unsigned int canc2 = 0, canc1;
 
         //cout <<"-------------------> numero di elettroni generati = "<< trkVecTot.size() <<endl;
-        unsigned int size2 = trkVecTot.size();
+        unsigned int size2 = trkVec.size();
         unsigned int it2=0;
         while( it2 < size2){
                 ElecMap::iterator ite = elecMap.begin();
                 bool trovato = false;
                 while(!trovato && ite!=elecMap.end() ){
-                        if(ite->second.find(trkVecTot[it2]) != ite->second.end()){
+                        if(ite->second.find(trkVec[it2]) != ite->second.end()){
                                 _evt = evt.id().event();
                                 _seedPdgId = 0;
                                 _seedIsGen= 0;
+                                _cleCryEnergyMaxRow = 0.0;
+                                _cleCryEnergyMaxColumn = 0.0;
 
                                 _clVane = ite->second[trkVec[it2]]._vane;
                                 _clE = ite->second[trkVec[it2]]._cluEnergy;
@@ -949,10 +959,21 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 _clCogCrySize     = ite->second[trkVec[it2]]._clusterMap._COGcrySize;
                                 _clCOGrow         = ite->second[trkVec[it2]]._clusterMap._cluCogRow;
                                 _clCOGcolumn      = ite->second[trkVec[it2]]._clusterMap._cluCogColumn;
+
+                                _cleCryEnergyMaxRow = ite->second[trkVec[it2]]._clusterMap._rowVec[0];
+                                _cleCryEnergyMaxColumn = ite->second[trkVec[it2]]._clusterMap._columnVec[0];
+                                double tempEmaxCry = ite->second[trkVec[it2]]._clusterMap._cryEdepVec[0];
                                 for(int i = 0; i<_clSize; ++i ){
                                         _cryEdep[i] = ite->second[trkVec[it2]]._clusterMap._cryEdepVec[i];//_cryEnergyDep;
+
                                         _clRows[i]         = ite->second[trkVec[it2]]._clusterMap._rowVec[i];
                                         _clColumns[i]      = ite->second[trkVec[it2]]._clusterMap._columnVec[i];
+
+                                        if(_cryEdep[i] > tempEmaxCry){
+                                                _cleCryEnergyMaxRow =      _clRows[i]   ;
+                                                _cleCryEnergyMaxColumn =   _clColumns[i];
+                                                tempEmaxCry = _cryEdep[i];
+                                        }
                                 }
                                 for(int j=0; j<_clCogCrySize; ++j ){
                                         _clCogRows[j]      = ite->second[trkVec[it2]]._clusterMap._COGrowVec[j];
@@ -960,6 +981,9 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 }
                                 _clShowerDir =  ite->second[trkVec[it2]]._clusterMap._showerDir;
                                 _clErrShowerDir = ite->second[trkVec[it2]]._clusterMap._errShowerDir;
+
+                                _seedIsGoodTrk = 0.0;
+                                _seedNGoodTrkPerEvent = tmpV.size();
 
                                 _seedGenp = ite->second[trkVec[it2]]._genp;
                                 _seedGene = ite->second[trkVec[it2]]._gene;
@@ -991,12 +1015,12 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
 
 
 
-                                CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, ite->second[trkVecTot[it2]]._impPos);
+                                CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, ite->second[trkVec[it2]]._impPos);
                                 _seedPu = vaneFrame.x();
                                 _seedPv = vaneFrame.y();
                                 _seedPw = vaneFrame.z();
 
-                                CLHEP::Hep3Vector dirMom = ite->second[trkVecTot[it2]]._impMom3Vec.unit();
+                                CLHEP::Hep3Vector dirMom = ite->second[trkVec[it2]]._impMom3Vec.unit();
                                 if(_diagLevel < 1){
                                         if(cry(ite->second[trkVec[it2]]._cluCog.y()) ==15.0 || cry( ite->second[trkVec[it2]]._cluCog.z() ) ==15.0 ){
                                                 cout<<"ecco il mukkio...."<<endl;
@@ -1010,16 +1034,16 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
 
                                         }
                                         cout<<"vaneId = "<<ite->first<<endl;
-                                        cout<<"posX = "<<ite->second[trkVecTot[it2]]._impPos.getX()<<", posY = "<<ite->second[trkVecTot[it2]]._impPos.getY()<<", posZ = "<< ite->second[trkVecTot[it2]]._impPos.getZ()<<endl;
+                                        cout<<"posX = "<<ite->second[trkVec[it2]]._impPos.getX()<<", posY = "<<ite->second[trkVec[it2]]._impPos.getY()<<", posZ = "<< ite->second[trkVec[it2]]._impPos.getZ()<<endl;
                                         cout<<"on vane ref..."<<endl;
                                         cout<<"posU = "<<vaneFrame.getX()<<", posV = "<<vaneFrame.getY()<<", posW = "<< vaneFrame.getZ()<<endl;
                                         cout << "dirMomX = "<< dirMom.getX()<<", dirMomY = "<< dirMom.getY()<<", dirMomZ = "<<dirMom.getZ() <<endl;
                                 }
                                 Vane const &vane = cg->getVane(ite->first);
                                 CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
-                                _seedPpu = dirMom_rotated.x()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
-                                _seedPpv = dirMom_rotated.y()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
-                                _seedPpw = dirMom_rotated.z()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
+                                _seedPpu = dirMom_rotated.x()*ite->second[trkVec[it2]]._impMom3Vec.mag();
+                                _seedPpv = dirMom_rotated.y()*ite->second[trkVec[it2]]._impMom3Vec.mag();
+                                _seedPpw = dirMom_rotated.z()*ite->second[trkVec[it2]]._impMom3Vec.mag();
                                 _seedPpRotCosTh = dirMom_rotated.cosTheta()*180./TMath::Pi();
                                 _seedPpRotPhi = dirMom_rotated.phi()*180./TMath::Pi();
 
@@ -1027,11 +1051,11 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                         cout<<"after rotation..."<<endl;
                                         cout << "dirMomU = "<< dirMom_rotated.getX()<<", dirMomV = "<< dirMom_rotated.getY()<<", dirMomW = "<<dirMom_rotated.getZ() <<endl;
                                         cout<<"cog coordinates... on vane ref!"<<endl;
-                                        cout<<"cluU = "<< ite->second[trkVecTot[it2]]._cluCog.getX()<< ", cluV = "<<ite->second[trkVecTot[it2]]._cluCog.getY() <<", cluW = "<<ite->second[trkVecTot[it2]]._cluCog.getZ()<<endl;
+                                        cout<<"cluU = "<< ite->second[trkVec[it2]]._cluCog.getX()<< ", cluV = "<<ite->second[trkVec[it2]]._cluCog.getY() <<", cluW = "<<ite->second[trkVec[it2]]._cluCog.getZ()<<endl;
                                 }
 
-                                LinePointPCA lppca(vaneFrame,dirMom_rotated,  ite->second[trkVecTot[it2]]._cluCog);
-                                //                                        LinePointPCA lppca(ite->second[trkVecTot[it2]]._impPos,dirMom,  ite->second[trkVecTot[it2]]._cluCog);
+                                LinePointPCA lppca(vaneFrame,dirMom_rotated,  ite->second[trkVec[it2]]._cluCog);
+                                //                                        LinePointPCA lppca(ite->second[trkVec[it2]]._impPos,dirMom,  ite->second[trkVec[it2]]._cluCog);
 
                                 CLHEP::Hep3Vector dcaV = lppca.unit();
                                 double impactParam = lppca.dca();
@@ -1044,10 +1068,10 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
 
                                 //                                _prova2 = sqrt( pow(dcaV.y(),2) + pow(dcaV.x(),2))*impactParam;
 
-                                double distanceToCog = sqrt( pow(vaneFrame.getX() -ite->second[trkVecTot[it2]]._cluCog.getX() ,2) + pow(vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() ,2) + pow(vaneFrame.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() ,2) );
+                                double distanceToCog = sqrt( pow(vaneFrame.getX() -ite->second[trkVec[it2]]._cluCog.getX() ,2) + pow(vaneFrame.getY() - ite->second[trkVec[it2]]._cluCog.getY() ,2) + pow(vaneFrame.getZ() - ite->second[trkVec[it2]]._cluCog.getZ() ,2) );
                                 _distToCog = distanceToCog;
 
-                                //                                        double distanceToCog = sqrt( pow(ite->second[trkVecTot[it2]]._impPos.getX() -ite->second[trkVecTot[it2]]._cluCog.getX() ,2) + pow(ite->second[trkVecTot[it2]]._impPos.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() ,2) + pow(ite->second[trkVecTot[it2]]._impPos.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() ,2) );
+                                //                                        double distanceToCog = sqrt( pow(ite->second[trkVec[it2]]._impPos.getX() -ite->second[trkVec[it2]]._cluCog.getX() ,2) + pow(ite->second[trkVec[it2]]._impPos.getY() - ite->second[trkVec[it2]]._cluCog.getY() ,2) + pow(ite->second[trkVec[it2]]._impPos.getZ() - ite->second[trkVec[it2]]._cluCog.getZ() ,2) );
                                 double tmpDepth = _Depth;//_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaURec->GetXaxis()->GetBinWidth(bin)*0.5;
 
                                 _depth = tmpDepth;
@@ -1071,7 +1095,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                         cout<<"------------------------------------------------------"<<endl;
                                 }
                                 // if(bin == 1){
-                                _hTHistDeltaEnergVRec->Fill( ite->second[trkVecTot[it2]]._impEnergy - ite->second[trkVecTot[it2]]._cluEnergy);
+                                _hTHistDeltaEnergVRec->Fill( ite->second[trkVec[it2]]._impEnergy - ite->second[trkVec[it2]]._cluEnergy);
 
 
                                 //}
@@ -1080,7 +1104,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 _seedThetaW = thetaWimpact*180./TMath::Pi();
 
                                 double deltaZ = cogWcorrFunc(thetaWimpact );
-                                deltaZ =  vaneFrame.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() - deltaZ ;
+                                deltaZ =  vaneFrame.getZ() - ite->second[trkVec[it2]]._cluCog.getZ() - deltaZ ;
                                 _seedDeltaW = deltaZ;
 
 
@@ -1099,7 +1123,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 double deltaY = cogVcorrFunc( thetaVimpact );
 
 
-                                deltaY = vaneFrame.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() - deltaY ;
+                                deltaY = vaneFrame.getY() - ite->second[trkVec[it2]]._cluCog.getY() - deltaY ;
 
                                 _seedDeltaV = deltaY;
 
@@ -1113,124 +1137,292 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 _prova2 = deltaY;
 
 
-                                _hTHistDeltaURec->Fill(  vaneFrame.getX() - ite->second[trkVecTot[it2]]._cluCog.getX() );
+                                _hTHistDeltaURec->Fill(  vaneFrame.getX() - ite->second[trkVec[it2]]._cluCog.getX() );
                                 _hTHistDeltaWRec->Fill(   deltaZ );
                                 _hTHistDeltaVRec->Fill(   deltaY );
 
 
                                 //                                        if(ite->first == 0 || ite->first == 2){
                                 //
-                                //                                                _hTHistDeltaURec->Fill(_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin), ite->second[trkVecTot[it2]]._impPos.getX() - ite->second[trkVecTot[it2]]._cluCog.getX() );
+                                //                                                _hTHistDeltaURec->Fill(_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin), ite->second[trkVec[it2]]._impPos.getX() - ite->second[trkVec[it2]]._cluCog.getX() );
                                 //                                        }else{
-                                //                                                _hTHistDeltaVRec->Fill(_hTHistDeltaVRec->GetXaxis()->GetBinCenter(bin), ite->second[trkVecTot[it2]]._impPos.getY() - ite->second[trkVecTot[it2]]._cluCog.getY() );
+                                //                                                _hTHistDeltaVRec->Fill(_hTHistDeltaVRec->GetXaxis()->GetBinCenter(bin), ite->second[trkVec[it2]]._impPos.getY() - ite->second[trkVec[it2]]._cluCog.getY() );
                                 //                                        }
-                                //                                        _hTHistDeltaWRec->Fill(_hTHistDeltaWRec->GetXaxis()->GetBinCenter(bin), ite->second[trkVecTot[it2]]._impPos.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() );
+                                //                                        _hTHistDeltaWRec->Fill(_hTHistDeltaWRec->GetXaxis()->GetBinCenter(bin), ite->second[trkVec[it2]]._impPos.getZ() - ite->second[trkVec[it2]]._cluCog.getZ() );
+
+                                _Ntup->Fill();
 
                                 trovato = true;
                                 canc2 = it2;
-                        }
-                        ++ite;
-                }
-
-                if(trovato){
-                        std::vector<unsigned int>::iterator er = trkVecTot.begin();
-                        er +=canc2;
-                        trkVecTot.erase(er);
-                        size2 = trkVecTot.size();
-                }else{
-                        ++it2;
-                }
-
-        }
-
-        _Ntup->Fill();
-
-        //counting how many reconstructed clusters match with the generated particles which pass the quality cuts of the tracker
-        unsigned int canc = 0;
-        if(_diagLevel < 0){
-                cout <<"after.... trkVecTot.size = "<< trkVecTot.size() <<endl;
-                cout <<"-------------------> number of quality generated electrons = "<< trkVec.size() <<endl;
-        }
-        unsigned int size = trkVec.size();
-        unsigned int it=0;
-        while( it < size){
-                ElecMap::iterator ite = elecMap.begin();
-                bool trovato = false;
-                while(!trovato && ite!=elecMap.end() ){
-                        if(ite->second.find(trkVec[it]) != ite->second.end()){
-
-                                if(_diagLevel < 0){
-                                        cout << "impX = "<<ite->second[trkVec[it]]._impPosCryFrame.getX()<<endl;
-                                        cout << "impY = "<<ite->second[trkVec[it]]._impPosCryFrame.getY()<<endl;
-                                        cout << "impZ = "<<ite->second[trkVec[it]]._impPosCryFrame.getZ()<<endl;
-                                }
-
-                                //globalCaloCut[bin - 1] += 1.0;
-
-                                trovato = true;
-                                canc = it;
-
-                                CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, ite->second[trkVec[it]]._impPos);
-
-                                CLHEP::Hep3Vector dirMom = ite->second[trkVec[it]]._impMom3Vec.unit();
-
-                                Vane const &vane = cg->getVane(ite->first);
-                                CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
-
-                                LinePointPCA lppca(vaneFrame,dirMom_rotated,  ite->second[trkVec[it]]._cluCog);
-
-                                CLHEP::Hep3Vector dcaV = lppca.unit();
-                                double impactParam = lppca.dca();
-
-                                double distanceToCog = sqrt( pow(vaneFrame.getX() -ite->second[trkVec[it]]._cluCog.getX() ,2) + pow(vaneFrame.getY() - ite->second[trkVec[it]]._cluCog.getY() ,2) + pow(vaneFrame.getZ() - ite->second[trkVec[it]]._cluCog.getZ() ,2) );
-
-                                _hTHistDistanceToCog->Fill( distanceToCog);
-                                _hTHistImpactParam->Fill(  impactParam);
-                                _hTHistMomDotVaneNorm->Fill(  asin(impactParam / distanceToCog)*180./TMath::Pi() );
-
-                                //if(bin ==1){
-                                _hTHistDeltaEnergy->Fill(ite->second[trkVec[it]]._impEnergy - ite->second[trkVec[it]]._cluEnergy);
-                                //_hTHistDeltaWquality->Fill(vaneFrame.getY() - ite->second[trkVec[it]]._cluCog.getY() );
-                                //}
-                                //CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, vane.getOrigin() );
-                                double tmpDepth = _Depth;//_hTHistDeltaUquality->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaUquality->GetXaxis()->GetBinWidth(bin)*0.5;
-
-                                double impactParamPrjW = impactParam*(pow(dcaV.getX(), 2) + pow(dcaV.getZ(), 2));
-                                double impactParamPrjV = impactParam*(pow(dcaV.getX(), 2) + pow(dcaV.getY(), 2));
-
-                                double deltaW = (tmpDepth - impactParamPrjW/cos(_thetaWimpact) )*tan(_thetaWimpact);
-                                int sign = -1;
-                                if(dcaV.getY() < 0){
-                                        sign = 1;
-                                }
-                                double deltaV = sign*(tmpDepth - impactParamPrjV/cos(_thetaVimpact) )*tan(_thetaVimpact);
-
-                                _hTHistDeltaUquality->Fill( vaneFrame.getX() - ite->second[trkVec[it]]._cluCog.getX() );
-                                _hTHistDeltaWquality->Fill(  vaneFrame.getZ() - ite->second[trkVec[it]]._cluCog.getZ() + deltaW );
-                                _hTHistDeltaVquality->Fill(  vaneFrame.getY() - ite->second[trkVec[it]]._cluCog.getY() + deltaV );
-
-                                //  _hTHistDeltaUquality->Fill(_hTHistDeltaUquality->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaUquality->GetXaxis()->GetBinWidth(bin)*0.5, vaneFrame.getX() - ite->second[trkVec[it]]._cluCog.getX() );
-                                // _hTHistDeltaWquality->Fill(_hTHistDeltaWquality->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaWquality->GetXaxis()->GetBinWidth(bin)*0.5, vaneFrame.getZ() - ite->second[trkVec[it]]._cluCog.getZ() );
-
+                                canc1 = ite->first;
                         }
                         ++ite;
                 }
 
                 if(trovato){
                         std::vector<unsigned int>::iterator er = trkVec.begin();
-                        er +=canc;
+                        er +=canc2;
                         trkVec.erase(er);
-                        size = trkVec.size();
+                        size2 = trkVec.size();
+                      //  cout<< "before erase trkVec[] size =  "<< size2 <<endl;
+                        elecMap[canc1].erase( trkVec[it2]);
+                        //cout<< "after erase trkVec[] size =  "<< trkVec.size() <<endl;
+
+                        if(elecMap[canc1].size() == 0){
+                          //      cout<< "elecMap[ "<< canc1 <<" ] == 0"<<endl;
+                                elecMap.erase(elecMap.find(canc1) );
+                            //    cout<< "elecMap[ "<< canc1 <<" ] == erased..."<<endl;
+                        }
+                        ite = elecMap.begin();
+
                 }else{
-                        ++it;
+                        ++it2;
                 }
 
+
         }
 
-        if(_diagLevel < 0){
-                cout <<"after.... trkVec.size = "<< trkVec.size() <<endl;
-                cout<<"...\n...\n "<<endl;
+        for(ElecMap::iterator ite = elecMap.begin(); ite != elecMap.end(); ++ite ){
+                if(ite->second.size() == 0) continue;
+                cout<< "start filling non good tracks"<<endl;
+                cout<< "elecMap[.] size =  "<< ite->second.size() <<endl;
+                for(std::map<unsigned int, elecData >::iterator it = ite->second.begin();it != ite->second.end() ;++it){
+                        if(it == ite->second.end() ) {
+                                cout<<"krekko!!!"<<endl;
+                                break;
+                        }
+                        cout<<"start filling Ntupla..."<<endl;
+
+                        _evt = evt.id().event();
+                        _seedPdgId = 0;
+                        _seedIsGen= 0;
+                        _cleCryEnergyMaxRow = 0.0;
+                        _cleCryEnergyMaxColumn = 0.0;
+                        cout<<"-------0.1--------"<<endl;
+
+                        _clVane =it->second._vane;
+                        _clE =it->second._cluEnergy;
+                        _clT =it->second._cluTime;
+                        cout<<"-------0.2--------"<<endl;
+                        _clSize =it->second._cluSize;
+                        _clCOGu =it->second._cluCog.x();
+                        _clCOGv =it->second._cluCog.y();
+                        _clCOGw =it->second._cluCog.z();
+                        cout<<"-------0.3--------"<<endl;
+                        CLHEP::Hep3Vector Mu2eFrame = cg->fromVaneFrame(ite->first,it->second._cluCog);
+                        _clCOGx = Mu2eFrame.x();
+                        _clCOGy = Mu2eFrame.y();
+                        _clCOGz = Mu2eFrame.z();
+                        cout<<"-------0.4--------"<<endl;
+                        _cryEdepTot =it->second._cryEnergyDepTotal;
+                        _clCogCrySize     =it->second._clusterMap._COGcrySize;
+                        _clCOGrow         =it->second._clusterMap._cluCogRow;
+                        _clCOGcolumn      =it->second._clusterMap._cluCogColumn;
+                        cout<<"-------0.5--------"<<endl;
+                        _cleCryEnergyMaxRow = -1.;//it->second._clusterMap._rowVec[0];
+                        _cleCryEnergyMaxColumn = -1.;//it->second._clusterMap._columnVec[0];
+                        double tempEmaxCry = -1.;//it->second._clusterMap._cryEdepVec[0];
+                        cout<<"-------1--------"<<endl;
+                        cout<<"_clSize = "<< _clSize <<endl;
+                        for(int i = 0; i<_clSize; ++i ){
+                                _cryEdep[i] =it->second._clusterMap._cryEdepVec[i];//_cryEnergyDep;
+
+                                _clRows[i]         =it->second._clusterMap._rowVec[i];
+                                _clColumns[i]      =it->second._clusterMap._columnVec[i];
+
+                                if(_cryEdep[i] > tempEmaxCry){
+                                        _cleCryEnergyMaxRow =      _clRows[i]   ;
+                                        _cleCryEnergyMaxColumn =   _clColumns[i];
+                                        tempEmaxCry = _cryEdep[i];
+                                }
+                        }
+                        cout<<"-------2--------"<<endl;
+                        for(int j=0; j<_clCogCrySize; ++j ){
+                                _clCogRows[j]      =it->second._clusterMap._COGrowVec[j];
+                                _clCogColumns[j]   =it->second._clusterMap._COGcolumnVec[j];
+                        }
+                        _clShowerDir = it->second._clusterMap._showerDir;
+                        _clErrShowerDir =it->second._clusterMap._errShowerDir;
+
+                        _seedIsGoodTrk = 1.0;
+                        _seedNGoodTrkPerEvent = tmpV.size();
+
+                        _seedGenp =it->second._genp;
+                        _seedGene =it->second._gene;
+                        _seedGenx =it->second._genx;
+                        _seedGeny =it->second._geny;
+                        _seedGenz =it->second._genz;
+                        _seedGencosth =it->second._gencosth;
+                        _seedGenphi =it->second._genphi;
+                        _seedGentime =it->second._gentime;
+                        _seedPx =it->second._impPos.x();
+                        _seedPy =it->second._impPos.y();
+                        _seedPz =it->second._impPos.z();
+                        _seedTime  =it->second._impTime;
+                        _seedE =it->second._impEnergy;
+                        _seedPpx =it->second._impMom3Vec.x();
+                        _seedPpy =it->second._impMom3Vec.y();
+                        _seedPpz =it->second._impMom3Vec.z();
+                        _seedRow =it->second._row;
+                        _seedColumn =it->second._colum;
+                        cout<<"-------3--------"<<endl;
+                        _seedPpCosTh =it->second._impMom3Vec.cosTheta()*180./TMath::Pi();
+                        _seedPpPhi =it->second._impMom3Vec.phi()*180./TMath::Pi();
+
+                        _seedPdgId =it->second._impPdgId;
+                        _seedIsGen =it->second._impIsGen;
+                        //                                        cout << "delta X = " <<it->second._impPos.getX() -it->second._cluCog.getX()<<endl;
+                        //                                        cout << "delta Y = " <<it->second._impPos.getY() -it->second._cluCog.getY()<<endl;
+                        //                                        cout << "delta Z = " <<it->second._impPos.getZ() -it->second._cluCog.getZ()<<endl;
+
+
+
+                        CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first,it->second._impPos);
+                        _seedPu = vaneFrame.x();
+                        _seedPv = vaneFrame.y();
+                        _seedPw = vaneFrame.z();
+
+                        CLHEP::Hep3Vector dirMom =it->second._impMom3Vec.unit();
+                        if(_diagLevel < 1){
+                                if(cry(ite->second[trkVec[it2]]._cluCog.y()) ==15.0 || cry(it->second._cluCog.z() ) ==15.0 ){
+                                        cout<<"ecco il mukkio...."<<endl;
+                                        cout<<"cogDepth.v() = " <<cry(ite->second[trkVec[it2]]._cluCog.y())<<", cogDepth.w() = "<< cry(it->second._cluCog.z() )<<", cogDepth.u() = "<<cry(it->second._cluCog.x() )<<endl;
+                                        cout <<"iVane = "<<ite->second[trkVec[it2]]._vane<<", cluSize = "<<ite->second[trkVec[it2]]._cluSize<<", cluEdep = "<<it->second._cluEnergy<<", depth = "<<_Depth<<endl;
+                                        //                                                        CLHEP::Hep3Vector cogDepth2 = cog_depth(*tmpCluster,_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) );
+                                        //                                                        cout<<"instead, the linear COG give..."<<endl;
+                                        //                                                        cout<<"cogDepth2.v() = " <<cry( cogDepth2.y() )<<", cogDepth2.w() = "<< cry( cogDepth2.z() )<<", cogDepth2.u() = "<< cry( cogDepth2.x() )<<endl;
+                                        cout<<"fine del mukkio...."<<endl;
+
+
+                                }
+                                cout<<"vaneId = "<<ite->first<<endl;
+                                cout<<"posX = "<<ite->second[trkVec[it2]]._impPos.getX()<<", posY = "<<ite->second[trkVec[it2]]._impPos.getY()<<", posZ = "<<it->second._impPos.getZ()<<endl;
+                                cout<<"on vane ref..."<<endl;
+                                cout<<"posU = "<<vaneFrame.getX()<<", posV = "<<vaneFrame.getY()<<", posW = "<< vaneFrame.getZ()<<endl;
+                                cout << "dirMomX = "<< dirMom.getX()<<", dirMomY = "<< dirMom.getY()<<", dirMomZ = "<<dirMom.getZ() <<endl;
+                        }
+                        Vane const &vane = cg->getVane(ite->first);
+                        CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
+                        _seedPpu = dirMom_rotated.x()*ite->second[trkVec[it2]]._impMom3Vec.mag();
+                        _seedPpv = dirMom_rotated.y()*ite->second[trkVec[it2]]._impMom3Vec.mag();
+                        _seedPpw = dirMom_rotated.z()*ite->second[trkVec[it2]]._impMom3Vec.mag();
+                        _seedPpRotCosTh = dirMom_rotated.cosTheta()*180./TMath::Pi();
+                        _seedPpRotPhi = dirMom_rotated.phi()*180./TMath::Pi();
+                        cout<<"-------4--------"<<endl;
+                        if(_diagLevel < 0){
+                                cout<<"after rotation..."<<endl;
+                                cout << "dirMomU = "<< dirMom_rotated.getX()<<", dirMomV = "<< dirMom_rotated.getY()<<", dirMomW = "<<dirMom_rotated.getZ() <<endl;
+                                cout<<"cog coordinates... on vane ref!"<<endl;
+                                cout<<"cluU = "<<it->second._cluCog.getX()<< ", cluV = "<<ite->second[trkVec[it2]]._cluCog.getY() <<", cluW = "<<ite->second[trkVec[it2]]._cluCog.getZ()<<endl;
+                        }
+
+                        LinePointPCA lppca(vaneFrame,dirMom_rotated, it->second._cluCog);
+                        //                                        LinePointPCA lppca(ite->second[trkVec[it2]]._impPos,dirMom, it->second._cluCog);
+
+                        CLHEP::Hep3Vector dcaV = lppca.unit();
+                        double impactParam = lppca.dca();
+                        _cogDca = impactParam;
+                        _DCAu = dcaV.x()*impactParam;
+                        _DCAv = dcaV.y()*impactParam;
+                        _DCAw = dcaV.z()*impactParam;
+
+                        //                                        _prova1 = sqrt( pow(dcaV.z(),2) + pow(dcaV.x(),2))*impactParam;
+
+                        //                                _prova2 = sqrt( pow(dcaV.y(),2) + pow(dcaV.x(),2))*impactParam;
+
+                        double distanceToCog = sqrt( pow(vaneFrame.getX() -ite->second[trkVec[it2]]._cluCog.getX() ,2) + pow(vaneFrame.getY() -it->second._cluCog.getY() ,2) + pow(vaneFrame.getZ() -it->second._cluCog.getZ() ,2) );
+                        _distToCog = distanceToCog;
+
+                        //                                        double distanceToCog = sqrt( pow(ite->second[trkVec[it2]]._impPos.getX() -ite->second[trkVec[it2]]._cluCog.getX() ,2) + pow(ite->second[trkVec[it2]]._impPos.getY() -it->second._cluCog.getY() ,2) + pow(ite->second[trkVec[it2]]._impPos.getZ() -it->second._cluCog.getZ() ,2) );
+                        double tmpDepth = _Depth;//_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) -_hTHistDeltaURec->GetXaxis()->GetBinWidth(bin)*0.5;
+
+                        _depth = tmpDepth;
+
+                        _hTHistRecDistanceToCog->Fill(  distanceToCog);
+                        _hTHistRecImpactParam->Fill(  impactParam);
+                        _hTHistMomRecDotVaneNorm->Fill(  asin(impactParam / distanceToCog)*180./TMath::Pi());
+                        if(_diagLevel < 0){
+                                cout<<"------------------------------------------------------"<<endl;
+                                cout<< "dcaV_U = "<<dcaV.getX()<< ", dcaV_V = "<<dcaV.getY()<<", dcaV_W = "<<dcaV.getZ()<<endl;
+                                cout << "impactParam = "<< impactParam<<endl;
+                                cout<< "distance ImpPointToCog = "<< distanceToCog << endl;
+                                cout<< "-----------------------------> vane = "<< ite->first<<endl;
+                                cout << "impX = "<< vaneFrame.getX()<<endl;
+                                cout << "impY = "<< vaneFrame.getY()<<endl;
+                                cout << "impZ = "<< vaneFrame.getZ()<<endl;
+                                cout<<"------------------------------------------------------"<<endl;
+                                cout << "cluX = "<<ite->second[trkVec[it2]]._cluCog.getX()<<endl;
+                                cout << "cluY = "<<ite->second[trkVec[it2]]._cluCog.getY()<<endl;
+                                cout << "cluZ = "<<ite->second[trkVec[it2]]._cluCog.getZ()<<endl;
+                                cout<<"------------------------------------------------------"<<endl;
+                        }
+                        // if(bin == 1){
+                        _hTHistDeltaEnergVRec->Fill(it->second._impEnergy -it->second._cluEnergy);
+
+
+                        //}
+                        //CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, vane.getOrigin() );
+                        double thetaWimpact = std::atan(-1.0*dirMom_rotated.getZ() / dirMom_rotated.getX() ) ;
+                        _seedThetaW = thetaWimpact*180./TMath::Pi();
+
+                        double deltaZ = cogWcorrFunc(thetaWimpact );
+                        deltaZ =  vaneFrame.getZ() -it->second._cluCog.getZ() - deltaZ ;
+                        _seedDeltaW = deltaZ;
+
+
+                        double corrW = triangoloVar(vaneFrame.z(), 'W');
+                        deltaZ -= corrW;
+                        _seedDeltaCorrW = deltaZ ;
+
+                        double corrSpreadW = triangoloVarSpread(vaneFrame.z(), 'W');
+                        deltaZ += corrW;
+                        deltaZ -= corrSpreadW;
+                        _prova1 = deltaZ;
+
+                        double thetaVimpact = std::atan(dirMom_rotated.getY() /  dirMom_rotated.getX() ) ;
+                        _seedThetaV = thetaVimpact*180./TMath::Pi();
+
+                        double deltaY = cogVcorrFunc( thetaVimpact );
+
+
+                        deltaY = vaneFrame.getY() -it->second._cluCog.getY() - deltaY ;
+
+                        _seedDeltaV = deltaY;
+
+                        double corrV = triangoloVar(vaneFrame.y(), 'V');
+                        deltaY -= corrV;
+                        _seedDeltaCorrV = deltaY ;
+
+                        double corrSpreadV = triangoloVarSpread(vaneFrame.y(), 'V');
+                        deltaY += corrV;
+                        deltaY -= corrSpreadV;
+                        _prova2 = deltaY;
+                        cout<<"-------5--------"<<endl;
+
+                        _hTHistDeltaURec->Fill(  vaneFrame.getX() -it->second._cluCog.getX() );
+                        _hTHistDeltaWRec->Fill(   deltaZ );
+                        _hTHistDeltaVRec->Fill(   deltaY );
+
+
+                        //                                        if(ite->first == 0 || ite->first == 2){
+                                //
+                                //                                                _hTHistDeltaURec->Fill(_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin),it->second._impPos.getX() -it->second._cluCog.getX() );
+                        //                                        }else{
+                        //                                                _hTHistDeltaVRec->Fill(_hTHistDeltaVRec->GetXaxis()->GetBinCenter(bin),it->second._impPos.getY() -it->second._cluCog.getY() );
+                        //                                        }
+                        //                                        _hTHistDeltaWRec->Fill(_hTHistDeltaWRec->GetXaxis()->GetBinCenter(bin),it->second._impPos.getZ() -it->second._cluCog.getZ() );
+
+                        _Ntup->Fill();
+                        cout<< "Ntupla filled..."<<endl;
+
+                }
         }
+
+
+        //        _Ntup->Fill();
+
+        //counting how many reconstructed clusters match with the generated particles which pass the quality cuts of the tracker
+
 
         // }//end for(_hTHistEff->GetNbinsX())
         cout << "Event "<<evt.id().event()<<" CaloClusterCogCorrFunc done..."<<endl;
