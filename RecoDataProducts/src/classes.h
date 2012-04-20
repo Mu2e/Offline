@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.9 2012/02/28 22:26:01 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/02/28 22:26:01 $
+// $Id: classes.h,v 1.10 2012/04/20 07:18:34 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/04/20 07:18:34 $
 //
 // Original author Rob Kutschke
 //
@@ -22,6 +22,7 @@
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
 #include "RecoDataProducts/inc/SctrSttnClusterGroupCollection.hh"
 #include "RecoDataProducts/inc/ZRotStrawHitMapCollection.hh"
+#include "RecoDataProducts/inc/TrackerHitByID.hh"
 
 //added by Gianipez
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
@@ -35,6 +36,7 @@ template class art::Ptr<mu2e::StrawHit>;
 template class std::vector<art::Ptr<mu2e::StrawHit> >;
 template class art::Ptr<mu2e::TrackerHitTimeCluster>;
 template class std::vector<art::Ptr<mu2e::TrackerHitTimeCluster> >;
+template class std::multimap<unsigned long int, art::Ptr<mu2e::StrawHit> >;
 
 //added by Gianipez
 template class art::Ptr<mu2e::CaloCrystalHit>;
@@ -57,3 +59,5 @@ template class art::Wrapper<mu2e::SubEventCollection>;
 template class art::Wrapper<mu2e::TrackerHitTimeClusterCollection>;
 template class art::Wrapper<mu2e::SctrSttnClusterGroupCollection>;
 template class art::Wrapper<mu2e::ZRotStrawHitMapCollection>;
+template class art::Wrapper<mu2e::TrackerHitByID>;
+
