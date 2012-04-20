@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.31 2012/04/19 23:00:31 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/19 23:00:31 $
+// $Id: constructVirtualDetectors.cc,v 1.32 2012/04/20 07:10:38 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/04/20 07:10:38 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -168,7 +168,7 @@ namespace mu2e {
     // If there is no neutron absorber, virtual detectors 9 and 10 extend to
     // inner wall of DS2 minus 5 mm. If neutron absorber is defined, these
     // detectors extend to neutron absorber minus 5 mm.
-
+    if ( !_config->getBool("isDumbbell",false) ){
     double Ravr = _config->getDouble("toyDS.rIn");
     double deltaR = 0;
     double Z0 = 0;
@@ -201,7 +201,7 @@ namespace mu2e {
 
         TubsParams vdParamsTarget(0.,rvd,vdHalfLength);
 
-        VolumeInfo const & parent = _helper->locateVolInfo("ToyDS2Vacuum");
+        VolumeInfo const & parent = ( _config->getBool("isDumbbell",false) ) ? _helper->locateVolInfo("ToyDS3Vacuum") : _helper->locateVolInfo("ToyDS2Vacuum"); //ToyDS3Vacuum to move the targets
 
         if (verbosityLevel >0) {
           cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z offset in Mu2e    : " <<
@@ -225,6 +225,7 @@ namespace mu2e {
 
         vd.logical->SetSensitiveDetector(vdSD);
       }
+    }
 
     // placing virtual detectors in the middle of the ttracker
 

@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.127 2012/04/17 19:56:56 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/17 19:56:56 $
+// $Id: Mu2eWorld.cc,v 1.128 2012/04/20 07:10:38 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/04/20 07:10:38 $
 //
 // Original author Rob Kutschke
 //
@@ -317,7 +317,7 @@ namespace mu2e {
   VolumeInfo Mu2eWorld::constructTarget(){
 
     // The target is built inside this volume.
-    VolumeInfo const & detSolUpstreamVacInfo   = _helper->locateVolInfo("ToyDS2Vacuum");
+    VolumeInfo const & detSolUpstreamVacInfo   = ( _config->getBool("isDumbbell",false) ) ? _helper->locateVolInfo("ToyDS3Vacuum") : _helper->locateVolInfo("ToyDS2Vacuum");//ToyDS3Vacuum to move the targets
 
     if ( _verbosityLevel > 0) {
       cout << "detSolUpstreamVacInfo.centerInWorld.z()=" << detSolUpstreamVacInfo.centerInWorld.z() << endl;
