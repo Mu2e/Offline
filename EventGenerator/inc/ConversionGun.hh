@@ -7,9 +7,9 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.18 2012/02/20 20:21:08 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/20 20:21:08 $
+// $Id: ConversionGun.hh,v 1.19 2012/04/20 07:01:24 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/04/20 07:01:24 $
 //
 
 // C++ includes
@@ -64,6 +64,11 @@ namespace mu2e {
     // Limits on the generated time.
     double _tmin;
     double _tmax;
+
+    // Select the position, type and time type for the generation
+    int _foilGen;
+    int _posGen;
+    int _timeGen;
 
     // Control histograms.
     bool _doHistograms;

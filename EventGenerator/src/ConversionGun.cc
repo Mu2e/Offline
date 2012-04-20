@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.40 2012/03/16 19:33:56 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/16 19:33:56 $
+// $Id: ConversionGun.cc,v 1.41 2012/04/20 07:01:24 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/04/20 07:01:24 $
 //
 // Original author Rob Kutschke
 //
@@ -59,6 +59,9 @@ namespace mu2e {
     _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
     _tmin(0.),
     _tmax(0.),
+    _foilGen(config.getInt("conversionGun.foilGen", 4)),
+    _posGen(config.getInt("conversionGun.posGen", 1)),
+    _timeGen(config.getInt("conversionGun.timeGen", 3)),
     _doHistograms(config.getBool("conversionGun.doHistograms", true )),
 
     // Random distribution.
@@ -101,9 +104,9 @@ namespace mu2e {
 
     _fGenerator = auto_ptr<FoilParticleGenerator>
       (new FoilParticleGenerator( getEngine(), _tmin, _tmax,
-                                  FoilParticleGenerator::muonFileInputFoil,
-                                  FoilParticleGenerator::muonFileInputPos,
-                                  FoilParticleGenerator::negExp,
+                                  FoilParticleGenerator::foilGen_enum(_foilGen),
+                                  FoilParticleGenerator::posGen_enum(_posGen),
+                                  FoilParticleGenerator::timeGen_enum(_timeGen),
                                   _PStoDSDelay,
                                   _pPulseDelay,
                                   _pPulseShift,
