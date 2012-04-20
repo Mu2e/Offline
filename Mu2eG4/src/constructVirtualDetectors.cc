@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.32 2012/04/20 07:10:38 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/04/20 07:10:38 $
+// $Id: constructVirtualDetectors.cc,v 1.33 2012/04/20 17:24:25 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/04/20 17:24:25 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -21,7 +21,7 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
+#include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
 #include "GeomPrimitives/inc/Tube.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
@@ -862,17 +862,20 @@ namespace mu2e {
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
-    // placing virtual detector on the exit (beam dump direction) and inside of  PS 
+    // placing virtual detector on the exit (beam dump direction) and inside
+    // of PS vacuum,  right before the PS enclosure end plate.
     vdId = VirtualDetectorId::PS_FrontExit;
     if ( vdg->exist(vdId) )
     {
-      const VolumeInfo& parent = _helper->locateVolInfo("PSVacuum");
+      const VolumeInfo& parent = _helper->locateVolInfo("PSEnclosureVacuum");
 
-      const Tube& psvac = *GeomHandle<ProductionSolenoid>()->getVacuumParamsPtr();
+      GeomHandle<PSEnclosure> pse;
 
-      TubsParams vdParams(0., psvac.outerRadius(), vdg->getHalfLength());
+      const Tube& psevac = GeomHandle<PSEnclosure>()->vacuum();
 
-      G4ThreeVector vdCenterInParent(0., 0., -psvac.halfLength() + vdg->getHalfLength());
+      TubsParams vdParams(0., psevac.outerRadius(), vdg->getHalfLength());
+
+      G4ThreeVector vdCenterInParent(0., 0., -psevac.halfLength() + vdg->getHalfLength());
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
