@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.49 2012/03/03 00:53:09 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/03 00:53:09 $
+// $Id: DecayInOrbitGun.cc,v 1.50 2012/04/20 21:32:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/04/20 21:32:25 $
 //
 // Original author Rob Kutschke
 //
@@ -58,6 +58,9 @@ namespace mu2e {
     _pPulseDelay(config.getBool("decayinorbitGun.pPulseDelay", false)),
     _pPulseShift(config.getDouble("decayinorbitGun.pPulseShift", 0)),
     _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
+    _foilGen(config.getString("decayinorbitGun.foilGen", "muonFileInputFoil")),
+    _posGen(config.getString("decayinorbitGun.posGen", "muonFileInputPos")),
+    _timeGen(config.getString("decayinorbitGun.timeGen", "negExp")),
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
     _spectrumResolution(config.getDouble("decayinorbitGun.spectrumResolution", 0.1)),
     _energySpectrum(config.getString("decayinorbitGun.energySpectrum", "Czarnecki")),
@@ -155,16 +158,16 @@ namespace mu2e {
       _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, 0., 300. );
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
-                                                                             FoilParticleGenerator::muonFileInputFoil,
-                                                                             FoilParticleGenerator::muonFileInputPos,
-                                                                             FoilParticleGenerator::negExp,
-                                                                             _pStodSDelay,
-                                                                             _pPulseDelay,
-                                                                             _pPulseShift,
-                                                                             _stFname,
-                                                                             _nToSkip));
-
+    _fGenerator = auto_ptr<FoilParticleGenerator>
+      (new FoilParticleGenerator( getEngine(), _tmin, _tmax,
+                                  FoilParticleGenerator::findFoilGenByName(_foilGen),
+                                  FoilParticleGenerator::findPosGenByName(_posGen),
+                                  FoilParticleGenerator::findTimeGenByName(_timeGen),
+                                  _pStodSDelay,
+                                  _pPulseDelay,
+                                  _pPulseShift,
+                                  _stFname,
+                                  _nToSkip));
 
     if ( _energySpectrum == "ShankerWanatabe" ||
          _energySpectrum == "Czarnecki" ) {

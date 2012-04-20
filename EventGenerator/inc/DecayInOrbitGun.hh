@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.27 2012/02/24 20:05:52 onoratog Exp $
+// $Id: DecayInOrbitGun.hh,v 1.28 2012/04/20 21:32:25 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/24 20:05:52 $
+// $Date: 2012/04/20 21:32:25 $
 //
 //
 
@@ -74,6 +74,11 @@ namespace mu2e {
 
     // Activate the folding procedure on generation time. Default is on
     bool _timeFolding;
+
+    // Select the position, type and time type for the generation
+    std::string _foilGen;
+    std::string _posGen;
+    std::string _timeGen;
 
     // Limits on the generated time.
     double _tmin;

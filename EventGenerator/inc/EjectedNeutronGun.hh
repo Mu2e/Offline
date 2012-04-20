@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MARS distribution for the kinetic energy of the
 // neutron.
 //
-// $Id: EjectedNeutronGun.hh,v 1.14 2012/04/09 16:48:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/04/09 16:48:18 $
+// $Id: EjectedNeutronGun.hh,v 1.15 2012/04/20 21:32:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/04/20 21:32:25 $
 //
 //
 
@@ -64,6 +64,11 @@ namespace mu2e {
 
     // Activate the folding procedure on generation time. Default is on
     bool _timeFolding;
+
+    // Select the position, type and time type for the generation
+    std::string _foilGen;
+    std::string _posGen;
+    std::string _timeGen;
 
     // Number of bins in neutron energy pdf
     int  _nbins;

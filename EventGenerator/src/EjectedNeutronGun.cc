@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.27 2012/04/09 16:48:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/04/09 16:48:18 $
+// $Id: EjectedNeutronGun.cc,v 1.28 2012/04/20 21:32:26 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/04/20 21:32:26 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -67,6 +67,9 @@ namespace mu2e {
     _pPulseDelay(config.getBool("ejectedNeutronGun.pPulseDelay", false)),
     _pPulseShift(config.getDouble("ejectedNeutronGun.pPulseShift", 0)),
     _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
+    _foilGen(config.getString("ejectedNeutronGun.foilGen", "muonFileInputFoil")),
+    _posGen(config.getString("ejectedNeutronGun.posGen", "muonFileInputPos")),
+    _timeGen(config.getString("ejectedNeutronGun.timeGen", "negExp")),
     _nbins(config.getInt("ejectedNeutronGun.nbins",200)),
     _tmin(config.getDouble("ejectedNeutronGun.tmin",  0. )),
     _tmax(0.),
@@ -130,15 +133,17 @@ namespace mu2e {
       _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)",      60, 0.,  300. );
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
-                                                                             FoilParticleGenerator::muonFileInputFoil,
-                                                                             FoilParticleGenerator::muonFileInputPos,
-                                                                             FoilParticleGenerator::negExp,
-                                                                             _PStoDSDelay,
-                                                                             _pPulseDelay,
-                                                                             _pPulseShift,
-                                                                             _STfname,
-                                                                             _nToSkip));
+    _fGenerator = auto_ptr<FoilParticleGenerator>
+      (new FoilParticleGenerator( getEngine(), _tmin, _tmax,
+                                  FoilParticleGenerator::findFoilGenByName(_foilGen),
+                                  FoilParticleGenerator::findPosGenByName(_posGen),
+                                  FoilParticleGenerator::findTimeGenByName(_timeGen),
+                                  _PStoDSDelay,
+                                  _pPulseDelay,
+                                  _pPulseShift,
+                                  _STfname,
+                                  _nToSkip));
+
   }
 
   EjectedNeutronGun::~EjectedNeutronGun(){

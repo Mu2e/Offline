@@ -3,9 +3,9 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.
 // //
-// $Id: EjectedPhotonGun.cc,v 1.9 2012/03/03 00:53:09 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/03 00:53:09 $
+// $Id: EjectedPhotonGun.cc,v 1.10 2012/04/20 21:32:26 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/04/20 21:32:26 $
 //
 // Original author Gianni Onorato
 //
@@ -64,6 +64,9 @@ namespace mu2e {
     _pPulseDelay(config.getBool("ejectedPhotonGun.pPulseDelay", false)),
     _pPulseShift(config.getDouble("ejectedPhotonGun.pPulseShift", 0)),
     _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
+    _foilGen(config.getString("ejectedPhotonGun.foilGen", "muonFileInputFoil")),
+    _posGen(config.getString("ejectedPhotonGun.posGen", "muonFileInputPos")),
+    _timeGen(config.getString("ejectedPhotonGun.timeGen", "negExp")),
     // Initialize random number distributions; getEngine comes from the base class.
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
@@ -128,15 +131,17 @@ namespace mu2e {
 
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
-                                                                             FoilParticleGenerator::muonFileInputFoil,
-                                                                             FoilParticleGenerator::muonFileInputPos,
-                                                                             FoilParticleGenerator::negExp,
-                                                                             _PStoDSDelay,
-                                                                             _pPulseDelay,
-                                                                             _pPulseShift,
-                                                                             _STfname,
-                                                                             _nToSkip));
+    _fGenerator = auto_ptr<FoilParticleGenerator>
+      (new FoilParticleGenerator( getEngine(), _tmin, _tmax,
+                                  FoilParticleGenerator::findFoilGenByName(_foilGen),
+                                  FoilParticleGenerator::findPosGenByName(_posGen),
+                                  FoilParticleGenerator::findTimeGenByName(_timeGen),
+                                  _PStoDSDelay,
+                                  _pPulseDelay,
+                                  _pPulseShift,
+                                  _STfname,
+                                  _nToSkip));
+
   }
 
   EjectedPhotonGun::~EjectedPhotonGun(){

@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 //
-// $Id: PiCapture.hh,v 1.23 2012/04/18 22:57:19 onoratog Exp $
+// $Id: PiCapture.hh,v 1.24 2012/04/20 21:32:25 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/04/18 22:57:19 $
+// $Date: 2012/04/20 21:32:25 $
 //
 // Original author Rob Kutschke, P. Shanahan
 //
@@ -58,6 +58,11 @@ namespace mu2e {
 
     // Activate the folding procedure on generation time. Default is on
     bool _timeFolding;
+
+    // Select the position, type and time type for the generation
+    std::string _foilGen;
+    std::string _posGen;
+    std::string _timeGen;
 
     int    _nbins;        //< number of bins in photon energy pdf
     bool   _doHistograms; // Enable/disable histograms.

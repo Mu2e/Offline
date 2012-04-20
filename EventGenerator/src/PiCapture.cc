@@ -3,9 +3,9 @@
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 // add internal conversion, 11/2011 rhb
 //
-// $Id: PiCapture.cc,v 1.35 2012/04/18 22:57:19 onoratog Exp $
+// $Id: PiCapture.cc,v 1.36 2012/04/20 21:32:26 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/04/18 22:57:19 $
+// $Date: 2012/04/20 21:32:26 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -59,6 +59,9 @@ namespace mu2e {
     _pPulseDelay(config.getBool("picapture.pPulseDelay", true)),
     _pPulseShift(config.getDouble("picapture.pPulseShift", 0)),
     _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
+    _foilGen(config.getString("picapture.foilGen", "expoVolWeightFoil")),
+    _posGen(config.getString("picapture.posGen", "flatPos")),
+    _timeGen(config.getString("picapture.timeGen", "limitedExpoTime")),
     _nbins(config.getInt("picapture.nbins",  1000)),
     _doHistograms(config.getBool("picapture.doHistograms",true)),
 
@@ -126,15 +129,17 @@ namespace mu2e {
     //
     // 24.5 is from Rick Coleman telling me the stopped pi's fall a factor of two over the 17 foils
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>( new FoilParticleGenerator(getEngine(), 0 ,tcycle,
-                                                                             FoilParticleGenerator::expoVolWeightFoil,
-                                                                             FoilParticleGenerator::flatPos,
-                                                                             FoilParticleGenerator::limitedExpoTime,
-                                                                             _PStoDSDelay,
-                                                                             _pPulseDelay,
-                                                                             _pPulseShift,
-                                                                             _STfname));
-    
+
+    _fGenerator = auto_ptr<FoilParticleGenerator>
+      (new FoilParticleGenerator( getEngine(), 0, tcycle,
+                                  FoilParticleGenerator::findFoilGenByName(_foilGen),
+                                  FoilParticleGenerator::findPosGenByName(_posGen),
+                                  FoilParticleGenerator::findTimeGenByName(_timeGen),
+                                  _PStoDSDelay,
+                                  _pPulseDelay,
+                                  _pPulseShift,
+                                  _STfname));
+
     _piCaptureInfo = new PiCaptureEffects(_probInternalConversion, _elow, _ehi, _nbins);
 
   } // end PiCapture::PiCapture

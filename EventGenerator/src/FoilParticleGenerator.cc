@@ -46,6 +46,11 @@ static bool skipbegin = false;
 
 namespace mu2e {
 
+  const char* FoilParticleGenerator::_foilName[] = { FOILALGO_NAMES };
+  const char* FoilParticleGenerator::_posName[] = { POSALGO_NAMES };
+  const char* FoilParticleGenerator::_timeName[] = { TIMEALGO_NAMES };
+
+
   fstream & FoilParticleGenerator::STfile(string STinfilename){
 
     bool init(true);
@@ -459,6 +464,46 @@ namespace mu2e {
     return _randTime.fire(0, _tmax, _muTimeDecay);
 
   }
+
+
+  FoilParticleGenerator::foilGen_enum FoilParticleGenerator::findFoilGenByName (std::string const& name) {
+
+    size_t theSize = lastFoil_enum;
+    for (size_t i=0; i<theSize; ++i) {
+      if (_foilName[i] == name) {
+	return (foilGen_enum)i;
+      }
+    }
+    throw cet::exception("LABEL")
+      << "The " << name << " algorithm for foil generation doesn't exist";
+  }
+
+
+  FoilParticleGenerator::posGen_enum  FoilParticleGenerator::findPosGenByName (std::string const& name){
+   
+    size_t theSize = lastPos_enum;
+    for (size_t i=0; i<theSize; ++i) {
+      if (_posName[i] == name) {
+	return (posGen_enum)i;
+      }
+    }
+    throw cet::exception("LABEL")
+      << "The " << name << " algorithm for position generation doesn't exist";
+  }
+
+
+
+  FoilParticleGenerator::timeGen_enum FoilParticleGenerator::findTimeGenByName (std::string const& name){
+    size_t theSize = lastTime_enum;
+    for (size_t i=0; i<theSize; ++i) {
+      if (_timeName[i] == name) {
+	return (timeGen_enum)i;
+      }
+    }
+    throw cet::exception("LABEL")
+      << "The " << name << " algorithm for time generation doesn't exist";
+  }
+
 }
 
 

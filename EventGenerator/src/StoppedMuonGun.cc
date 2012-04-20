@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: StoppedMuonGun.cc,v 1.1 2012/03/16 19:33:56 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/16 19:33:56 $
+// $Id: StoppedMuonGun.cc,v 1.2 2012/04/20 21:32:26 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/04/20 21:32:26 $
 //
 // Original author KLG somewhat based on ConversionGun
 //
@@ -55,6 +55,9 @@ namespace mu2e {
     _pPulseDelay(config.getBool("stoppedMuonGun.pPulseDelay", false)),
     _pPulseShift(config.getDouble("stoppedMuonGun.pPulseShift", 0)),
     _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
+    _foilGen(config.getString("stoppedMuonGun.foilGen", "expoVolWeightFoil")),
+    _posGen(config.getString("stoppedMuonGun.posGen", "flatPos")),
+    _timeGen(config.getString("stoppedMuonGun.timeGen", "limitedExpoTime")),
     _tmin(0.),
     _tmax(0.),
     _doHistograms(config.getBool("stoppedMuonGun.doHistograms", true )),
@@ -99,14 +102,15 @@ namespace mu2e {
 
     _fGenerator = auto_ptr<FoilParticleGenerator>
       (new FoilParticleGenerator( getEngine(), _tmin, _tmax,
-                                  FoilParticleGenerator::muonFileInputFoil,
-                                  FoilParticleGenerator::muonFileInputPos,
-                                  FoilParticleGenerator::negExp,
+                                  FoilParticleGenerator::findFoilGenByName(_foilGen),
+                                  FoilParticleGenerator::findPosGenByName(_posGen),
+                                  FoilParticleGenerator::findTimeGenByName(_timeGen),
                                   _PStoDSDelay,
                                   _pPulseDelay,
                                   _pPulseShift,
                                   _STfname,
                                   _nToSkip));
+    
     if ( _doHistograms ) bookHistograms();
   }
 

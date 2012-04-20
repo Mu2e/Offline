@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.41 2012/04/20 07:01:24 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/04/20 07:01:24 $
+// $Id: ConversionGun.cc,v 1.42 2012/04/20 21:32:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/04/20 21:32:25 $
 //
 // Original author Rob Kutschke
 //
@@ -59,9 +59,9 @@ namespace mu2e {
     _timeFolding(config.getBool("FoilParticleGenerator.foldingTimeOption", true)),
     _tmin(0.),
     _tmax(0.),
-    _foilGen(config.getInt("conversionGun.foilGen", 4)),
-    _posGen(config.getInt("conversionGun.posGen", 1)),
-    _timeGen(config.getInt("conversionGun.timeGen", 3)),
+    _foilGen(config.getString("conversionGun.foilGen", "muonFileInputFoil")),
+    _posGen(config.getString("conversionGun.posGen", "muonFileInputPos")),
+    _timeGen(config.getString("conversionGun.timeGen", "negExp")),
     _doHistograms(config.getBool("conversionGun.doHistograms", true )),
 
     // Random distribution.
@@ -104,9 +104,9 @@ namespace mu2e {
 
     _fGenerator = auto_ptr<FoilParticleGenerator>
       (new FoilParticleGenerator( getEngine(), _tmin, _tmax,
-                                  FoilParticleGenerator::foilGen_enum(_foilGen),
-                                  FoilParticleGenerator::posGen_enum(_posGen),
-                                  FoilParticleGenerator::timeGen_enum(_timeGen),
+                                  FoilParticleGenerator::findFoilGenByName(_foilGen),
+                                  FoilParticleGenerator::findPosGenByName(_posGen),
+                                  FoilParticleGenerator::findTimeGenByName(_timeGen),
                                   _PStoDSDelay,
                                   _pPulseDelay,
                                   _pPulseShift,

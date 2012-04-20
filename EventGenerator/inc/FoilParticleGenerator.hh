@@ -36,32 +36,52 @@ namespace mu2e {
   public:
 
     enum foilGen_enum {
-      flatFoil, volWeightFoil, expoFoil, expoVolWeightFoil, muonFileInputFoil
+      flatFoil, volWeightFoil, expoFoil, expoVolWeightFoil, muonFileInputFoil, lastFoil_enum
     };
 
     enum posGen_enum {
-      flatPos, muonFileInputPos
+      flatPos, muonFileInputPos, lastPos_enum
     };
 
     enum timeGen_enum {
-      flatTime, limitedExpoTime, negExp
+      flatTime, limitedExpoTime, negExp, lastTime_enum
     };
-
+    
+    
+#define FOILALGO_NAMES							\
+    "flatFoil", "volWeightFoil", "expoFoil", "expoVolWeightFoil" , "muonFileInputFoil" 
+    
+#define POSALGO_NAMES				\
+    "flatPos", "muonFileInputPos"
+    
+#define TIMEALGO_NAMES				\
+    "flatTime", "limitedExpoTime", "negExp"    
+    
+  public:
+    
     FoilParticleGenerator( art::RandomNumberGenerator::base_engine_t& engine,
-                           double tmin, double tmax, foilGen_enum foilAlgo,
-                           posGen_enum  posAlgo, timeGen_enum  timeAlgo,
-                           bool PTtoSTdelay, 
+			   double tmin, double tmax, foilGen_enum foilAlgo,
+			   posGen_enum  posAlgo, timeGen_enum  timeAlgo,
+			   bool PTtoSTdelay, 
 			   bool pPulseDelay, double pPulseShift,
-			   std::string STinfilename, int linesToSkip = 0);
-
+			     std::string STinfilename, int linesToSkip = 0);
+    
     ~FoilParticleGenerator();
-
+    
     void generatePositionAndTime(CLHEP::Hep3Vector& pos, double& time, bool foldingTimeOption);
-
+    
     int iFoil();
-
+    
     double pulseDelay();
     double muDelay();
+
+    static foilGen_enum findFoilGenByName (std::string const& name);
+    static posGen_enum  findPosGenByName (std::string const& name);
+    static timeGen_enum findTimeGenByName (std::string const& name);
+
+    const static char *_foilName[];
+    const static char* _posName[];
+    const static char* _timeName[];
 
   private:
 

@@ -7,9 +7,9 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: StoppedMuonGun.hh,v 1.1 2012/03/16 19:33:56 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/16 19:33:56 $
+// $Id: StoppedMuonGun.hh,v 1.2 2012/04/20 21:32:25 onoratog Exp $
+// $Author: onoratog $
+// $Date: 2012/04/20 21:32:25 $
 //
 // Original author KLG somewhat based on ConversionGun
 //
@@ -62,6 +62,11 @@ namespace mu2e {
 
     // Activate the folding procedure on generation time. Default is on
     bool _timeFolding;
+
+    // Select the position, type and time type for the generation
+    std::string _foilGen;
+    std::string _posGen;
+    std::string _timeGen;
 
     // Limits on the generated time.
     double _tmin;

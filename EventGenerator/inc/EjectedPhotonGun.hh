@@ -5,7 +5,7 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.
 //
-// $Id: EjectedPhotonGun.hh,v 1.4 2012/02/20 20:21:09 onoratog Exp $
+// $Id: EjectedPhotonGun.hh,v 1.5 2012/04/20 21:32:25 onoratog Exp $
 // $Author: &
 // $Date: &
 //
@@ -73,6 +73,11 @@ namespace mu2e {
 
     // Activate the folding procedure on generation time. Default is on
     bool _timeFolding;
+
+    // Select the position, type and time type for the generation
+    std::string _foilGen;
+    std::string _posGen;
+    std::string _timeGen;
 
     // end: parameters that can be configured from the config file.
 
