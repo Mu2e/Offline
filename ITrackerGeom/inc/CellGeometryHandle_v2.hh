@@ -17,11 +17,13 @@ public:
 
         ~CellGeometryHandle_v2();
 
-        virtual void  SelectCell(int SupLayer, int CelLayer, int Cell);
+        virtual void  SelectCell(int SupLayer, int CelLayer, int Cell, bool isUpstrm=false);
+        virtual void  SelectCell(int absRadID, int Cell, bool isUpstrm=false);
+        virtual int computeAbsRadID(int SupLayer, int CelLayer, bool isUpstrm=false);
 
 protected:
-    const ITracker *_itr;
-
+        const ITracker *_itr;
+        void  SelectCell();
 };
 
 }

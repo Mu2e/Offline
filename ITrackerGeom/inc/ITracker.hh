@@ -25,8 +25,13 @@ public:
         ITracker();
         ~ITracker() {}
 
+//        virtual std::string name() const { return "ITracker";}
+
         enum GeomType          { Hexagonal=2, Square };
         enum EnCapType         { Plane, Spherical };
+
+        bool isDumbbell()      const { return _isDumbbell; }
+        double* zZonesLimits() const { return _zZonesLimits.get(); }
 
         double r0()            const { return _r0;}
         double z0()            const { return _z0;}
@@ -71,6 +76,15 @@ public:
                 return dynamic_cast<Straw&>( *(getCellGeometryHandle()->GetITCell().get()) );
         }
         const std::deque<Straw>& getAllStraws()           const throw(cet::exception) {
+               /* if (fakeStrawDeq.empty()) {
+                        for ( int iS=0; iS<_nSuperLayers; iS++) {
+                                for ( int iL=0; iL<_sprlr[iS].nLayers(); iL++ ) {
+                                        for ( int iC=0; iC<_sprlr[iS].getLayer(iL)->nCells(); iC++ ) {
+                                                fakeStrawDeq.push_back( static_cast<mu2e::Straw>( (*(_sprlr[iS].getLayer(iL)->getCell(iC).get())) ) );
+                                        }
+                                }
+                        }
+                }*/
                 throw cet::exception("GEOM")<< "Fake method \"getAllStraws()\", not used for the ITracker";
                 return fakeStrawDeq;
         }
@@ -96,6 +110,8 @@ protected:
         int _nSWire;
         int _nSDeltaWire;
         int _nRing;
+        bool _isDumbbell;
+        std::auto_ptr<double> _zZonesLimits;
 
         // Outer radius of a logical volume that will just contain the entire tracker.
         double _rOut;
@@ -127,6 +143,8 @@ protected:
         void addWall(Wall *wall);
 
         std::auto_ptr<CellGeometryHandle> _cellhnd;
+
+        //std::deque<Straw> fakeStrawDeq;
 
 private:
         std::multimap <Wall::Walltype,boost::shared_ptr<Wall> >::iterator _walls_it;

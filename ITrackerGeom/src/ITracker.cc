@@ -10,6 +10,7 @@ ITracker::ITracker() {
         _nSWire          =0;
         _nSDeltaWire     =0;
         _nRing           =0;
+        _isDumbbell      =false;
         _rOut            =0.0;
         _extFile         ="";
         _isExternal      =false;
@@ -21,6 +22,9 @@ ITracker::ITracker() {
         _endcapType      =ITracker::Plane;
         _displayGasLayer =false;
         _displayWires    =false;
+        _zZonesLimits.reset(new double[2]);
+        _zZonesLimits.get()[0] =0.0;
+        _zZonesLimits.get()[1] =0.0;
 }
 
 SuperLayer* ITracker::getSuperLayer(int n) const throw(cet::exception) {

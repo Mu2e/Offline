@@ -21,6 +21,8 @@ class Cell : public Straw {
   friend class CellGeometryHandle;
   friend class CellGeometryHandle_v2;
   friend class CellGeometryHandle_v3;
+  friend class CellGeometryHandle_v2_DBL;
+  friend class CellGeometryHandle_v3_DBL;
   friend class ITracker;
   friend class ITrackerMaker;
   friend class SuperLayer;

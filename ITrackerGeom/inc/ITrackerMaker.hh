@@ -54,6 +54,8 @@ private:
   double _halfLength;           //Nominal Half-Length of the tracker in the barrel region
   double _rOut;                 //Nominal Outer radius of the tracker
   double _drop;                 //Drop distance of the wires (the wires stereo angles depend by it)
+  bool   _isDumbbell;           //true=dumbbell option, false=the wires are unique
+  std::vector<double> _zZones;  //limits in z of the active wire zones in the case of dumbbell option
 
   int _geomType;                //Cell Geometry type: 2 hexagonal, 3 square
   int _endCapType;              //EndCap shape type: 0 plane, 1 spherical

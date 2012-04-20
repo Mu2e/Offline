@@ -12,7 +12,7 @@ CellGeometryHandle_v3::CellGeometryHandle_v3(ITracker *itr) :
 CellGeometryHandle_v3::~CellGeometryHandle_v3() {
 }
 
-void CellGeometryHandle_v3::SelectCell(int SupLayer, int CelLayer, int Cell) {
+void CellGeometryHandle_v3::SelectCell(int SupLayer, int CelLayer, int Cell, bool isUpstrm) {
         SuperLayer *sl=_itr->getSuperLayer(SupLayer);
         if (SupLayer==_nLayer && CelLayer==1) CelLayer=0;
         if (CelLayer>0)        throw cet::exception("GEOM")<< "The requested cell layer is not allowed in the Square cell geometry"<<std::endl;
@@ -27,6 +27,7 @@ void CellGeometryHandle_v3::SelectCell(int SupLayer, int CelLayer, int Cell) {
         _fSuperLayer=SupLayer;
         _fLayer=CelLayer;
         _fWire=Cell;
+        _absRadID = _fSuperLayer;
 }
 
 void CellGeometryHandle_v3::SelectCellDet(unsigned long  det) {
@@ -42,7 +43,12 @@ void CellGeometryHandle_v3::SelectCellDet(unsigned long  det) {
         SelectCell(fSuperLayer,0,fWire);
 }
 
-unsigned long CellGeometryHandle_v3::computeDet(int SupLayer, int CelLayer, int Cell) {
+void  CellGeometryHandle_v3::SelectCell(int absRadID, int Cell, bool isUpstrm) {
+        _absRadID=absRadID;
+        SelectCell(absRadID,0,Cell,isUpstrm);
+}
+
+unsigned long CellGeometryHandle_v3::computeDet(int SupLayer, int CelLayer, int Cell, bool isUpstrm) {
         unsigned long det = ((SupLayer+1)*10000)+(Cell);
         return det;
 }

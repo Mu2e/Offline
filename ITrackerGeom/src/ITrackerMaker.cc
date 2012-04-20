@@ -7,6 +7,8 @@
 #include "ITrackerGeom/inc/CellGeometryHandle_ExtGeom.hh"
 #include "ITrackerGeom/inc/CellGeometryHandle_v2.hh"
 #include "ITrackerGeom/inc/CellGeometryHandle_v3.hh"
+#include "ITrackerGeom/inc/CellGeometryHandle_v2_DBL.hh"
+#include "ITrackerGeom/inc/CellGeometryHandle_v3_DBL.hh"
 #include "ITrackerGeom/inc/CellId.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
@@ -64,6 +66,9 @@ ITrackerMaker::ITrackerMaker( SimpleConfig const& config):
         _halfLength     = config.getDouble("itracker.zHalfLength");
         _rOut           = config.getDouble("itracker.rOut");
         _drop           = config.getDouble("itracker.drop");
+        _isDumbbell     = config.getBool("itracker.isDumbbell",false);
+        if (_isDumbbell) config.getVectorDouble("itracker.zZonesLimits", _zZones, 2);
+
         _fillMaterial   = config.getString("itracker.fillMaterial");
 
         _geomType       = config.getInt("itracker.geomType");
@@ -178,6 +183,12 @@ void ITrackerMaker::Build(){
 
                 _ltt->_displayGasLayer = _displayGasLayer;
                 _ltt->_displayWires    = _displayWires;
+
+                _ltt->_isDumbbell      = _isDumbbell;
+                if (_isDumbbell) {
+                        _ltt->_zZonesLimits.get()[0] = _zZones[0];
+                        _ltt->_zZonesLimits.get()[1] = _zZones[1];
+                }
 
                 SuperLayer *_sprlr     = new SuperLayer[_nSuperLayer];
 
@@ -319,7 +330,11 @@ void ITrackerMaker::Build(){
 
                 if (geomType==20) {
                         _ltt->_geomType   = ITracker::Hexagonal;
-                        _ltt->_cellhnd.reset(new CellGeometryHandle_v2(_ltt.get()));
+                        if(_isDumbbell) {
+                                _ltt->_cellhnd.reset(new CellGeometryHandle_v2_DBL(_ltt.get()));
+                        } else {
+                                _ltt->_cellhnd.reset(new CellGeometryHandle_v2(_ltt.get()));
+                        }
 
                         for ( superlayer=0;superlayer<nsuperlayer/*2*/;superlayer++ ) {
                                 cout <<"Building super layer: "<<superlayer+1<<endl;
@@ -452,7 +467,11 @@ void ITrackerMaker::Build(){
                 else if (geomType==30) {
 
                         _ltt->_geomType     = ITracker::Square;
-                        _ltt->_cellhnd.reset(new CellGeometryHandle_v3(_ltt.get()));
+                        if (_isDumbbell) {
+                                _ltt->_cellhnd.reset(new CellGeometryHandle_v3_DBL(_ltt.get()));
+                        } else {
+                                _ltt->_cellhnd.reset(new CellGeometryHandle_v3(_ltt.get()));
+                        }
 
                         delta_radius_ring   = _cellDimension;
                         float fwireDist     = _FWireStep;
@@ -589,7 +608,11 @@ void ITrackerMaker::Build(){
                 else if (geomType==31) {
 
                         _ltt->_geomType      = ITracker::Square;
-                        _ltt->_cellhnd.reset(new CellGeometryHandle_v3(_ltt.get()));
+                        if (_isDumbbell) {
+                                _ltt->_cellhnd.reset(new CellGeometryHandle_v3_DBL(_ltt.get()));
+                        } else {
+                                _ltt->_cellhnd.reset(new CellGeometryHandle_v3(_ltt.get()));
+                        }
 
                         delta_radius_ring    = _cellDimension;
                         float fwireDist      = _FWireStep;
@@ -743,7 +766,11 @@ void ITrackerMaker::Build(){
                 else if (geomType==41) {
 
                         _ltt->_geomType     = ITracker::Square;
-                        _ltt->_cellhnd.reset(new CellGeometryHandle_v3(_ltt.get()));
+                        if(_isDumbbell) {
+                                _ltt->_cellhnd.reset(new CellGeometryHandle_v3_DBL(_ltt.get()));
+                        } else {
+                                _ltt->_cellhnd.reset(new CellGeometryHandle_v3(_ltt.get()));
+                        }
 
                         num_wire            = _nSWire;
                         delta_radius_ring   = _cellDimension;

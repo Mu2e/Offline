@@ -17,9 +17,10 @@ public:
 
     ~CellGeometryHandle_v3();
 
-    virtual void  SelectCell(int SupLayer, int CelLayer, int Cell);
+    virtual void  SelectCell(int SupLayer, int CelLayer, int Cell, bool isUpstrm=false);
     virtual void  SelectCellDet(unsigned long det);
-    virtual unsigned long computeDet(int SupLayer, int CelLayer, int Cell);
+    virtual void  SelectCell(int absRadID, int Cell, bool isUpstrm=false);
+    virtual unsigned long computeDet(int SupLayer, int CelLayer, int Cell, bool isUpstrm=false);
 
 protected:
     const ITracker *_itr;

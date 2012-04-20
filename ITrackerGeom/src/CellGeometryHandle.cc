@@ -73,6 +73,28 @@ void CellGeometryHandle::WirePosAtLength(float length, float *pos)
         pos[2]=tmpPos.z();
 }
 
+void CellGeometryHandle::WirePosAtEndcap(CLHEP::Hep3Vector &right, CLHEP::Hep3Vector &left)
+{
+        tmpRight.set(0.0,0.0,_cell->getWire()->getDetail()->halfLength());
+        tmpLeft.set(0.0,0.0,-tmpRight.z());
+        tmpRight.transform(_matrx);
+        tmpLeft.transform(_matrx);
+        right.set(tmpRight.x(),tmpRight.y(),tmpRight.z());
+        left.set(tmpLeft.x(),tmpLeft.y(),tmpLeft.z());
+}
+
+void CellGeometryHandle::WirePosAtZ(float z, CLHEP::Hep3Vector &pos)
+{
+        WirePosAtLength(z/cos(_cell->getWire()->getEpsilon()), pos);
+}
+
+void CellGeometryHandle::WirePosAtLength(float length, CLHEP::Hep3Vector &pos)
+{
+        tmpPos.set(0.0,0.0,length);
+        tmpPos.transform(_matrx);
+        pos.set(tmpPos.x(),tmpPos.y(),tmpPos.z());
+}
+
 float CellGeometryHandle::GetWireAlfa()
 {
         return (float) _cell->getWire()->getAlpha();
@@ -88,12 +110,24 @@ float CellGeometryHandle::GetCellRad()
         return (float) _cell->getDetail()->CirumscribedRadius();
 }
 
-CLHEP::Hep3Vector CellGeometryHandle::GetWireCenter() const {
+const CLHEP::Hep3Vector& CellGeometryHandle::GetWireCenter() const {
         return _cell->getMidPoint();
 }
 
-CLHEP::Hep3Vector CellGeometryHandle::GetWireDirection() const {
+const CLHEP::Hep3Vector& CellGeometryHandle::GetWireDirection() const {
         return _cell->getDirection();
+}
+
+const CLHEP::Hep3Vector& CellGeometryHandle::GetCellCenter() const {
+        return _cell->getMidPoint();
+}
+
+const CLHEP::Hep3Vector& CellGeometryHandle::GetCellDirection() const {
+        return _cell->getDirection();
+}
+
+double CellGeometryHandle::GetCellHalfLength() const {
+        return _cell->getHalfLength();
 }
 
 double CellGeometryHandle::DistFromWire(double *global)
@@ -102,6 +136,30 @@ double CellGeometryHandle::DistFromWire(double *global)
 }
 
 double CellGeometryHandle::DistFromWireCenter(double *global)
+{
+        tmpGlobal.set(global[0],global[1],global[2]);
+        tmpLocal=_invmatrx*tmpGlobal;
+        return sqrt(sum_of_squares(tmpLocal.x(), tmpLocal.y()));
+}
+
+double CellGeometryHandle::DistFromWire(CLHEP::Hep3Vector &global)
+{
+        return (DistFromWireCenter(global)-_cell->getDetail()->wireRadius());
+}
+
+double CellGeometryHandle::DistFromWireCenter(CLHEP::Hep3Vector &global)
+{
+        tmpGlobal.set(global[0],global[1],global[2]);
+        tmpLocal=_invmatrx*tmpGlobal;
+        return sqrt(sum_of_squares(tmpLocal.x(), tmpLocal.y()));
+}
+
+double CellGeometryHandle::DistFromWire(CLHEP::Hep3Vector const &global)
+{
+        return (DistFromWireCenter(global)-_cell->getDetail()->wireRadius());
+}
+
+double CellGeometryHandle::DistFromWireCenter(CLHEP::Hep3Vector const &global)
 {
         tmpGlobal.set(global[0],global[1],global[2]);
         tmpLocal=_invmatrx*tmpGlobal;
