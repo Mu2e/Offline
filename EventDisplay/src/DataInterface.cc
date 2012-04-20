@@ -275,24 +275,85 @@ void DataInterface::fillGeometry()
                             int idLayer =  s->Id().getLayer();
                             itwp->SelectCell(iS,idLayer,iC);
 
-                            const CLHEP::Hep3Vector& p = itwp->GetWireCenter(); //s->getMidPoint();
-                            const CLHEP::Hep3Vector& d = itwp->GetWireDirection(); //s->getDirection();
-                            double x = p.x();
-                            double y = p.y();
-                            double z = p.z()+zoff;
-                            double theta = d.theta();
-                            double phi = d.phi();
-                            double l = s->getHalfLength();
-                            int index = itwp->computeDet(iS,idLayer,iC); //s->index().asInt();
+//                            const CLHEP::Hep3Vector& p = itwp->GetWireCenter(); //s->getMidPoint();
+//                            const CLHEP::Hep3Vector& d = itwp->GetWireDirection(); //s->getDirection();
+//                            double theta = d.theta();
+//                            double phi = d.phi();
 
-                            char c[200];
-                            sprintf(c,"Cell %i  Layer %i  SuperLayer %i",iC,idLayer,iS);
-                            boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-                            info->setName(c);
-                            info->setText(0,c);
-                            boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, info, false));
-                            _components.push_back(shape);
-                            _straws[index]=shape;
+                            if (itracker.isDumbbell()){
+                                    /*
+                                    float wCntPos[3];
+                                    double l = (itracker.zHalfLength()-itracker.zZonesLimits()[1])*0.5;
+                                    float zWCnt = itracker.zZonesLimits()[1]+l;
+                                    itwp->WirePosAtZ(zWCnt,wCntPos);
+                                    wCntPos[2]+=zoff;
+                                    double wl=l/cos(itwp->GetWireEpsilon()) ;
+                                    */
+                                    const CLHEP::Hep3Vector& p = itwp->GetCellCenter(); //s->getMidPoint();
+                                    const CLHEP::Hep3Vector& d = itwp->GetCellDirection(); //s->getDirection();
+                                    double theta = d.theta();
+                                    double phi = d.phi();
+                                    double x = p.x();
+                                    double y = p.y();
+                                    double z = p.z()+zoff;
+                                    double l = itwp->GetCellHalfLength();
+                                    int index = itwp->computeDet(iS,idLayer,iC); //s->index().asInt();
+
+                                    char c[200];
+                                    sprintf(c,"Cell %i  Layer %i  SuperLayer %i DownStream",iC,idLayer,iS);
+                                    boost::shared_ptr<ComponentInfo> infoDnS(new ComponentInfo());
+                                    infoDnS->setName(c);
+                                    infoDnS->setText(0,c);
+                                    //boost::shared_ptr<Straw> shapeDnS(new Straw(wCntPos[0],wCntPos[1],wCntPos[2], NAN, theta, phi, wl, _geometrymanager, _topvolume, _mainframe, infoDnS, false));
+                                    boost::shared_ptr<Straw> shapeDnS(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, infoDnS, false));
+                                    _components.push_back(shapeDnS);
+                                    _straws[index]=shapeDnS;
+
+                                    /*
+                                    zWCnt = itracker.zZonesLimits()[0]-l;
+                                    itwp->WirePosAtZ(zWCnt,wCntPos);
+                                    wCntPos[2]+=zoff;
+                                    */
+                                    itwp->SelectCell(iS,idLayer,iC,true);
+                                    const CLHEP::Hep3Vector& pUp = itwp->GetCellCenter(); //s->getMidPoint();
+                                    const CLHEP::Hep3Vector& dUp = itwp->GetCellDirection(); //s->getDirection();
+                                    theta = dUp.theta();
+                                    phi = dUp.phi();
+                                    x = pUp.x();
+                                    y = pUp.y();
+                                    z = pUp.z()+zoff;
+                                    l = itwp->GetCellHalfLength();
+                                    index = itwp->computeDet(iS,idLayer,iC,true); //s->index().asInt();
+
+                                    sprintf(c,"Cell %i  Layer %i  SuperLayer %i UpStream",iC,idLayer,iS);
+                                    boost::shared_ptr<ComponentInfo> infoUpS(new ComponentInfo());
+                                    infoUpS->setName(c);
+                                    infoUpS->setText(0,c);
+                                    //boost::shared_ptr<Straw> shapeUpS(new Straw(wCntPos[0],wCntPos[1],wCntPos[2], NAN, theta, phi, wl, _geometrymanager, _topvolume, _mainframe, infoUpS, false));
+                                    boost::shared_ptr<Straw> shapeUpS(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, infoUpS, false));
+                                    _components.push_back(shapeUpS);
+                                    _straws[index]=shapeUpS;
+
+                            }else {
+                                    const CLHEP::Hep3Vector& p = itwp->GetCellCenter(); //s->getMidPoint();
+                                    const CLHEP::Hep3Vector& d = itwp->GetCellDirection(); //s->getDirection();
+                                    double theta = d.theta();
+                                    double phi = d.phi();
+                                    double x = p.x();
+                                    double y = p.y();
+                                    double z = p.z()+zoff;
+                                    double l = s->getHalfLength();
+                                    int index = itwp->computeDet(iS,idLayer,iC); //s->index().asInt();
+
+                                    char c[200];
+                                    sprintf(c,"Cell %i  Layer %i  SuperLayer %i",iC,idLayer,iS);
+                                    boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+                                    info->setName(c);
+                                    info->setText(0,c);
+                                    boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, info, false));
+                                    _components.push_back(shape);
+                                    _straws[index]=shape;
+                            }
                     }
             }
     }
