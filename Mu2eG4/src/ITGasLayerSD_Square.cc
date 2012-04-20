@@ -86,6 +86,16 @@ namespace mu2e {
           double phihit=TMath::ATan2(pos[1],pos[0]);
           double hit[4]={pos[0],pos[1],pos[2],aStep->GetPreStepPoint()->GetGlobalTime()};
 
+          bool isDML_Upstrm=false;
+          if (itracker->isDumbbell()) {
+             if (pos[2]<itracker->zZonesLimits()[0]) {
+                     isDML_Upstrm=true;
+             }
+             else if (pos[2]<=itracker->zZonesLimits()[1]) {
+                     return false;
+             }
+          }
+
           float xywire[3];
           double phiwire1=0;
           int wire1=-1;
@@ -158,7 +168,13 @@ namespace mu2e {
                   if ( _debugList.inList() )  std::cout<<"Cirumscribed Cell Radius "<<itracker->getCellGeometryHandle()->GetCellRad()<<std::endl;
                   if ( _debugList.inList() )  std::cout<<"selected wire "<<ring<<" "<<wire<<std::endl;
 
-                  unsigned long det=itracker->getCellGeometryHandle()->computeDet(_superlayer,ring,wire);
+                  unsigned long det=0;
+                  if (itracker->isDumbbell()) {
+                          det = itracker->getCellGeometryHandle()->computeDet(_superlayer,ring,wire,isDML_Upstrm);
+                  }
+                  else {
+                          det = itracker->getCellGeometryHandle()->computeDet(_superlayer,ring,wire);
+                  }
 
    //                StepPointG4* newHit =
    //                                new StepPointG4( aStep->GetTrack()->GetTrackID(),
