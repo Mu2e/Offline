@@ -385,8 +385,9 @@ void ITrackerMaker::Build(){
                                         itl->_layerType=ITLayer::wire;
                                         itl->_voxelizationFactor=voxelizationFactor;
 
-
                                         zlength/=cos(epsilon);
+                                        zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
+
                                         boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
 
                                         ITFldWireLocater(fw,itl,2*num_wire,radius_ring_0,theta_ring,ringangle,sign_epsilon*epsilon,alfa);
@@ -457,6 +458,8 @@ void ITrackerMaker::Build(){
                         itl->_voxelizationFactor=voxelizationFactor;
 
                         zlength/=cos(epsilon);
+                        zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
+
                         boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
 
                         ITFldWireLocater(fw,itl,2*num_wire,radius_ring_0,theta_ring,ringangle,sign_epsilon*epsilon,alfa);
@@ -528,6 +531,8 @@ void ITrackerMaker::Build(){
                                 itl->_voxelizationFactor=voxelizationFactor;
 
                                 zlength/=cos(epsilon);
+                                zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
+
                                 boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
 
                                 theta_ring = CLHEP::twopi/((float) nFwire);
@@ -596,6 +601,7 @@ void ITrackerMaker::Build(){
                         itl->_voxelizationFactor=voxelizationFactor;
 
                         zlength/=cos(epsilon);
+                        zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
 
                         boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
                         nFwire = (unsigned int) (CLHEP::twopi*radius_ring_0/fwireDist);
@@ -675,6 +681,8 @@ void ITrackerMaker::Build(){
                                 itl->_voxelizationFactor=voxelizationFactor;
 
                                 zlength/=cos(epsilon);
+                                zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
+
                                 boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
 
                                 theta_ring = CLHEP::twopi/((float) nFwire);
@@ -750,6 +758,7 @@ void ITrackerMaker::Build(){
                         itl->_voxelizationFactor=voxelizationFactor;
 
                         zlength/=cos(epsilon);
+                        zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
 
                         boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
                         nFwire = (unsigned int) (CLHEP::twopi*radius_ring_0/fwireDist);
@@ -780,8 +789,7 @@ void ITrackerMaker::Build(){
                         double cellStaggering;
                         //bool isCellStaggered;
                         double theta_ring1;
-                        float iradius/*, idelta_radius=0.0*/;
-                        //idelta_radius = delta_radius_ring/((float) (1+_nVerticalFWire));
+                        float iradius, idelta_radius=0.0;
                         double senseWireRing_radius_0;
 
                         double scaleFactor = (1.0+CLHEP::pi/num_wire)/(1.0-CLHEP::pi/num_wire);
@@ -839,8 +847,9 @@ void ITrackerMaker::Build(){
                                 if (_notExtVoxel) voxelizationFactor = 1.0/((float)nFwire);
                                 itl->_voxelizationFactor=voxelizationFactor;
 
-				zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
                                 zlength/=cos(epsilon);
+                                zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
+
                                 boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
 
                                 if (/*isCellStaggered &&*/ (superlayer%2==1)) cellStaggering=theta_ring;
@@ -871,8 +880,8 @@ void ITrackerMaker::Build(){
                                 if (_notExtVoxel) voxelizationFactor = 5.0/((float)((1+_nVerticalFWire)*num_wire));
                                 itl->_voxelizationFactor=voxelizationFactor;
 				
-				zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
 				zlength/=cos(epsilon);
+                                zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
 
                                 boost::shared_ptr<WireDetail> sw;
                                 boost::shared_ptr<CellDetail> celld;
@@ -881,10 +890,11 @@ void ITrackerMaker::Build(){
                                 ITWireLocater(sw,Wire::sense,itl,num_wire,senseWireRing_radius_0,phi,0.0+cellStaggering,sign_epsilon*epsilon,alfa,0,&celld);
 
                                 boost::shared_ptr<WireDetail> fw1( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
+                                idelta_radius = delta_radius_ring/((float) (1+_nVerticalFWire));
                                 for( iring=0; iring< _nVerticalFWire ; iring++ ){
 
-                                        //iradius+=idelta_radius;
-                                        ITWireLocater(fw1,Wire::field,itl,num_wire,senseWireRing_radius_0,phi,ringangle+cellStaggering,sign_epsilon*epsilon,alfa,iring*num_wire);
+                                        iradius+=idelta_radius;
+                                        ITWireLocater(fw1,Wire::field,itl,num_wire,iradius,phi,ringangle+cellStaggering,sign_epsilon*epsilon,alfa,iring*num_wire);
 
                                 }
 
@@ -918,8 +928,8 @@ void ITrackerMaker::Build(){
                         if (_notExtVoxel) voxelizationFactor = 1.0/((float)nFwire);
                         itl->_voxelizationFactor=voxelizationFactor;
 
-			zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
                         zlength/=cos(epsilon);
+                        zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
 
                         boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
                         //nFwire = (unsigned int) (CLHEP::twopi*radius_ring_0/fwireDist);
