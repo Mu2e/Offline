@@ -111,8 +111,10 @@ namespace mu2e {
     // (x,z) points in Mu2e coordinates (not a direct copy of inputs!)
     const std::vector<CLHEP::Hep2Vector>& roomInsideOutline() const { return roomInsideOutline_; }
     const std::vector<CLHEP::Hep2Vector>& wallOutsideOutline() const { return wallOutsideOutline_; }
-    // same as the outside wall
+    // the ceiling is the same as the outside wall
     const std::vector<CLHEP::Hep2Vector>& ceilingOutline() const { return wallOutsideOutline_; }
+    // the floor is different because of interference with core back shielding
+    const std::vector<CLHEP::Hep2Vector>& floorOutline() const { return floorOutsideOutline_; }
 
     double roomInsideFullHeight() const { return roomInsideFullHeight_; }
 
@@ -129,6 +131,7 @@ namespace mu2e {
     double roomInsideYmax() const { return roomInsideYmax_; }
 
     CLHEP::Hep3Vector ceilingRefPointInMu2e() const;
+    CLHEP::Hep3Vector floorRefPointInMu2e() const;
 
     CLHEP::Hep3Vector coll2ShieldingCenterInMu2e() const { return coll2ShieldingCenterInMu2e_; }
     CLHEP::HepRotation coll2ShieldingRotationInMu2e() const { return coll2ShieldingRotationInMu2e_; }
@@ -166,6 +169,7 @@ namespace mu2e {
 
     std::vector<CLHEP::Hep2Vector> roomInsideOutline_;
     std::vector<CLHEP::Hep2Vector> wallOutsideOutline_;
+    std::vector<CLHEP::Hep2Vector> floorOutsideOutline_;
     double roomInsideFullHeight_;
     double roomWallThickness_;
     double roomFloorThickness_;

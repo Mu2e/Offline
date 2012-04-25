@@ -496,6 +496,34 @@ namespace mu2e {
     }
 
     //----------------------------------------------------------------
+    if(true) {
+      const CLHEP::Hep3Vector floorRefPointInParent(mainParentRotationInMu2e.inverse()*(emfb->floorRefPointInMu2e() - mainParent.centerInMu2e()));
+
+      VolumeInfo floor("ExtMonFNALRoomFloor", floorRefPointInParent, mainParent.centerInWorld);
+      // FIXME: we should not need to correct the wrong information
+      floor.centerInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld() + emfb->floorRefPointInMu2e();
+
+      floor.solid = new G4ExtrudedSolid(floor.name,
+                                          emfb->floorOutline(),
+                                          0.5*emfb->roomFloorThickness(),
+                                          G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+
+      finishNesting(floor,
+                    materialFinder.get("extMonFNAL.room.wall.materialName"),
+                    &roomRotationInParentInv,
+                    floor.centerInParent,
+                    mainParent.logical,
+                    0,
+                    config.getBool("extMonFNAL.room.floor.visible"),
+                    G4Colour::Grey(),
+                    config.getBool("extMonFNAL.room.floor.solid"),
+                    forceAuxEdgeVisible,
+                    placePV,
+                    doSurfaceCheck
+                    );
+    }
+
+    //----------------------------------------------------------------
     // Collimator2 shielding
 
     static const CLHEP::HepRotation coll2ShieldingRotationInRoomInv

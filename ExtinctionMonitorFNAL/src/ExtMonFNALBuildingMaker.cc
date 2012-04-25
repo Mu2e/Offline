@@ -371,6 +371,19 @@ namespace mu2e {
     } // for(points)
 
     //----------------------------------------------------------------
+    // Floor outline differs from the ceiling because the first and last points
+    // need to be shifted to not interfere with the back dump core back shielding.
+    // Shift them along dump Z by the full (z) dimension of the shielding
+    if(true) {
+      emfb->floorOutsideOutline_ = emfb->wallOutsideOutline_;
+      Hep3Vector shiftInDump(0, 0, -2*dump.backShieldingHalfSize()[2]);
+      Hep3Vector shiftInMu2e = dump.coreRotationInMu2e() * shiftInDump;
+      CLHEP::Hep2Vector shift(shiftInMu2e.x(), shiftInMu2e.z());
+      emfb->floorOutsideOutline_.front() += shift;
+      emfb->floorOutsideOutline_.back()  += shift;
+    }
+
+    //----------------------------------------------------------------
     const Hep3Vector coll2ShieldingCenterInDump(
                                                 (emfb->coll2ShieldingDumpXmax() + emfb->coll2ShieldingDumpXmin())/2
                                                 ,

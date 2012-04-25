@@ -77,5 +77,11 @@ namespace mu2e {
   }
 
   //================================================================
+  CLHEP::Hep3Vector ExtMonFNALBuilding::floorRefPointInMu2e() const {
+    return roomRefPointInMu2e() + CLHEP::Hep3Vector
+      (0, -0.5*(roomInsideFullHeight_ + roomFloorThickness_), 0);
+  }
+
+  //================================================================
 
 }
