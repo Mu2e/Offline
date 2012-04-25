@@ -57,6 +57,7 @@ namespace mu2e {
   //================================================================
   std::auto_ptr<ExtMonFNALBuilding> ExtMonFNALBuildingMaker::make(const SimpleConfig& c, const ProtonBeamDump& dump) {
     using CLHEP::Hep3Vector;
+    using CLHEP::Hep2Vector;
 
     std::auto_ptr<ExtMonFNALBuilding> emfb(new ExtMonFNALBuilding());
 
@@ -270,6 +271,13 @@ namespace mu2e {
         ;
     }
 
+    if(roomInsideZ[0] != 0.) {
+      throw cet::exception("GEOM")<<"ExtMonFNALBuildingMaker: ERROR: roomInsideZ[0] must be 0";
+    }
+    if(roomInsideZ.back() != 0.) {
+      throw cet::exception("GEOM")<<"ExtMonFNALBuildingMaker: ERROR: the last entry in roomInsideZ must be 0";
+    }
+
     // Convert inside outline to Mu2e coords
     for(unsigned i=0; i<roomInsideX.size(); ++i) {
       // Convert inputs to Mu2e coordinates
@@ -278,7 +286,7 @@ namespace mu2e {
                              roomInsideZ[i] + dump.coreCenterDistanceToShieldingFace() - 2*dump.frontShieldingHalfSize()[2]);
 
       Hep3Vector pointInMu2e(dump.beamDumpToMu2e_position(pointInDump));
-      emfb->roomInsideOutline_.push_back(CLHEP::Hep2Vector(pointInMu2e.x(), pointInMu2e.z()));
+      emfb->roomInsideOutline_.push_back(Hep2Vector(pointInMu2e.x(), pointInMu2e.z()));
     }
 
     // Add the wall thickness as appropriate to the inside outline to get the outside outline
@@ -354,7 +362,7 @@ namespace mu2e {
 
       // Convert inputs to Mu2e coordinates
       Hep3Vector outsidePointInMu2e(dump.beamDumpToMu2e_position(outsidePointInDump));
-      emfb->wallOutsideOutline_.push_back(CLHEP::Hep2Vector(outsidePointInMu2e.x(), outsidePointInMu2e.z()));
+      emfb->wallOutsideOutline_.push_back(Hep2Vector(outsidePointInMu2e.x(), outsidePointInMu2e.z()));
 
       // debug:
       if(false) {
@@ -372,16 +380,65 @@ namespace mu2e {
     } // for(points)
 
     //----------------------------------------------------------------
-    // Floor outline differs from the ceiling because the first and last points
-    // need to be shifted to not interfere with the back dump core back shielding.
-    // Shift them along dump Z by the full (z) dimension of the shielding
+    // Floor outline differs from the ceiling because the back dump
+    // core back shielding protrudes there.
+    //
+    // Need to add new first/last points, or shift the existing ones.
     if(true) {
       emfb->floorOutsideOutline_ = emfb->wallOutsideOutline_;
+
       Hep3Vector shiftInDump(0, 0, -2*dump.backShieldingHalfSize()[2]);
       Hep3Vector shiftInMu2e = dump.coreRotationInMu2e() * shiftInDump;
-      CLHEP::Hep2Vector shift(shiftInMu2e.x(), shiftInMu2e.z());
-      emfb->floorOutsideOutline_.front() += shift;
-      emfb->floorOutsideOutline_.back()  += shift;
+      Hep2Vector shift(shiftInMu2e.x(), shiftInMu2e.z());
+
+      Hep3Vector fsRef(0,
+                       0,
+                       dump.coreCenterDistanceToShieldingFace() - 2*dump.frontShieldingHalfSize()[2]
+                       );
+
+      // Start of the path:
+      if(roomInsideX[0] - wallThickness < -dump.backShieldingHalfSize()[0]) { // Need to add points
+
+        Hep3Vector startFirst = dump.beamDumpToMu2e_position
+          (fsRef + Hep3Vector(-dump.backShieldingHalfSize()[0], 0, -2*dump.backShieldingHalfSize()[2]));
+
+        Hep3Vector startSecond =  dump.beamDumpToMu2e_position
+          (fsRef + Hep3Vector(-dump.backShieldingHalfSize()[0], 0, 0));
+
+        emfb->floorOutsideOutline_.insert(emfb->floorOutsideOutline_.begin(),
+                                          Hep2Vector(startSecond.x(), startSecond.z()));
+
+        emfb->floorOutsideOutline_.insert(emfb->floorOutsideOutline_.begin(),
+                                          Hep2Vector(startFirst.x(), startFirst.z()));
+      }
+      else { // need to shift
+        emfb->floorOutsideOutline_.front() += shift;
+      }
+
+      // End of the path:
+      if(roomInsideX.back() + wallThickness > +dump.backShieldingHalfSize()[0]) { // Need to add points
+        Hep3Vector endLast = dump.beamDumpToMu2e_position
+          (fsRef + Hep3Vector(+dump.backShieldingHalfSize()[0], 0, -2*dump.backShieldingHalfSize()[2]));
+
+        Hep3Vector endSecond =  dump.beamDumpToMu2e_position
+          (fsRef + Hep3Vector(+dump.backShieldingHalfSize()[0], 0, 0));
+
+        emfb->floorOutsideOutline_.push_back(Hep2Vector(endSecond.x(), endSecond.z()));
+        emfb->floorOutsideOutline_.push_back(Hep2Vector(endLast.x(), endLast.z()));
+      }
+      else { // need to shift
+        emfb->floorOutsideOutline_.back()  += shift;
+      }
+    }
+
+    // debug:
+    if(false) {
+      for(unsigned i = 0; i < emfb->floorOutsideOutline_.size(); ++i) {
+        std::cout<<"extMonFNAL_floor "
+                 <<" "<<emfb->floorOutsideOutline_[i].x()
+                 <<" "<<emfb->floorOutsideOutline_[i].y()
+                 <<std::endl;
+      }
     }
 
     //----------------------------------------------------------------
