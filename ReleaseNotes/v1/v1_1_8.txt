@@ -1,10 +1,19 @@
-  $Id: v1_1_8.txt,v 1.27 2012/04/25 00:19:37 youzy Exp $
-  $Author: youzy $
-  $Date: 2012/04/25 00:19:37 $
+  $Id: v1_1_8.txt,v 1.28 2012/04/25 18:51:31 gandr Exp $
+  $Author: gandr $
+  $Date: 2012/04/25 18:51:31 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_8
+
+29) April 25, 2012 gandr
+
+    A more realistic description of conventional construction relevant
+    for ExtMonFNAL.  ExtMonFNAL elements are taken out of of
+    ProtonBeamDump and put into new class ExtMonFNALBuilding.
+
+    Affected code includes WorldG4, Mu2eBuilding and ProtonBeamDump
+    related stuff.
 
 28) April 24, 2012 youzy
 
