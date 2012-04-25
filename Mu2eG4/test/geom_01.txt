@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.143 2012/04/25 18:47:32 gandr Exp $
+// $Id: geom_01.txt,v 1.144 2012/04/25 19:16:30 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/25 18:47:32 $
+// $Date: 2012/04/25 19:16:30 $
 //
 // Original author Rob Kutschke
 //
@@ -129,12 +129,12 @@ bool g4.doSurfaceCheck = false;
 // world boundaries.  All other objects (beam dump, hall concrete,
 // more dirt, etc.) are placed inside the formal hall box.
 //
-double world.margin.top = 3398;
-double world.margin.bottom = 1000;
-double world.margin.xmin = 10400;
-double world.margin.xmax = 13450;
+double world.margin.top = 3000;
+double world.margin.bottom = 3000;
+double world.margin.xmin = 3000;
+double world.margin.xmax = 3000;
 double world.margin.zmin = 3000;
-double world.margin.zmax =  3700;
+double world.margin.zmax =  3000;
 
 string world.materialName = "G4_AIR";
 bool   world.boxVisible   = true;
