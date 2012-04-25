@@ -1,9 +1,9 @@
 //
 // module that extract Data of the Electrons tracks that came from the targets and put temporary inside the event
 //
-// $Id: ExtractElectronsData_module.cc,v 1.7 2012/02/28 22:28:27 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/02/28 22:28:27 $
+// $Id: ExtractElectronsData_module.cc,v 1.8 2012/04/25 14:48:10 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/04/25 14:48:10 $
 //
 // Original author G. Tassielli
 //
@@ -95,7 +95,7 @@ public:
         }
 
         virtual void beginJob();
-        //void endJob();
+        void endJob();
 
         // This is called for each event.
         //void analyze(art::Event const& e);
@@ -139,18 +139,19 @@ private:
 
 ExtractElectronsData::ExtractElectronsData(fhicl::ParameterSet const& pset) :
 
-                    // Run time parameters
-                    _moduleLabel(pset.get<string>("module_label")),/*@module_label*/
-                    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
-                    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-                    _makerModuleLabel(pset.get<string>("makerModuleLabel")),
-                    _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate"))/*,
-
+      // Run time parameters
+      _moduleLabel(pset.get<string>("module_label")),/*@module_label*/
+      _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+      _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+      _makerModuleLabel(pset.get<string>("makerModuleLabel")),
+      _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate"))
+     /*,
     _fakeCanvas(0),
 
     // Some ugly but necessary ROOT related bookkeeping.
     _application(0),
-    _directory(0)*/{
+    _directory(0)*/
+{
         // Tell the framework what we make.
         produces<VisibleGenElTrackCollection>();
 
@@ -196,21 +197,23 @@ void ExtractElectronsData::produce(art::Event & event ) {
         StrawHitCollection const* hits = pdataHandle.product();
 
         // Get the persistent data about the StrawHitsMCTruth.
-        art::Handle<StrawHitMCTruthCollection> truthHandle;
-        event.getByLabel(_makerModuleLabel,truthHandle);
-        StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
+        //art::Handle<StrawHitMCTruthCollection> truthHandle;
+        //event.getByLabel(_makerModuleLabel,truthHandle);
+        //StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
 
         // Get the persistent data about pointers to StepPointMCs
         art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
         event.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
         PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
 
-        if (!(hits->size() == hits_truth->size() &&
+        if (!(/*hits->size() == hits_truth->size() &&*/
                         hits_mcptr->size() == hits->size() ) ) {
-                throw cet::exception("RANGE")
+                /*throw cet::exception("RANGE")*/
+                mf::LogError("RANGE")
                 << "Strawhits: " << hits->size()
-                << " MCTruthStrawHits: " << hits_truth->size()
+                /*<< " MCTruthStrawHits: " << hits_truth->size()*/
                 << " MCPtr: " << hits_mcptr->size();
+                return;
         }
 
         // Get handles to the generated and simulated particles.
@@ -411,9 +414,10 @@ void ExtractElectronsData::produce(art::Event & event ) {
         event.put(genEltrk);
 
 
-} // end produce
+  } // end produce
 
-//  void ExtractElectronsData::endJob(){
+  void ExtractElectronsData::endJob(){
+
 //
 //    // cd() to correct root directory. See note 3.
 //    //TDirectory* save = gDirectory;
@@ -425,7 +429,7 @@ void ExtractElectronsData::produce(art::Event & event ) {
 //    // cd() back to where we were.  See note 3.
 //    //save->cd();
 //
-//  }
+  }
 
 
 }  // end namespace mu2e
