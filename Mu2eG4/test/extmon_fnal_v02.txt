@@ -174,7 +174,10 @@ bool           extMonFNAL.room.visible   = false;
 bool           extMonFNAL.room.solid     = false;
 
 bool           extMonFNAL.room.wall.visible   = true;
-bool           extMonFNAL.room.wall.solid     = true;
+bool           extMonFNAL.room.wall.solid     = false;
+
+bool           extMonFNAL.room.ceiling.visible   = true;
+bool           extMonFNAL.room.ceiling.solid     = false;
 
 bool extMonFNAL.collimator2.shielding.visible = true;
 bool extMonFNAL.collimator2.shielding.solid = false;

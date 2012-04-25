@@ -437,33 +437,63 @@ namespace mu2e {
                   );
 
     //----------------------------------------------------------------
-    VolumeInfo roomWall("ExtMonFNALRoomWall", roomRefPointInParent, mainParent.centerInWorld);
-    std::vector<CLHEP::Hep2Vector> wallConcreteOutline(emfb->wallOutsideOutline());
-    // the inside points go in the reverse order
-    std::copy(emfb->roomInsideOutline().rbegin(), emfb->roomInsideOutline().rend(),
-              std::back_inserter(wallConcreteOutline));
+    if(true) {
+      VolumeInfo roomWall("ExtMonFNALRoomWall", roomRefPointInParent, mainParent.centerInWorld);
+      // FIXME: we should not need to correct the wrong information
+      roomWall.centerInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld() + emfb->roomRefPointInMu2e();
 
-    roomWall.solid = new G4ExtrudedSolid(roomWall.name,
-                                         wallConcreteOutline,
-                                         0.5*emfb->roomInsideFullHeight(),
-                                         G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+      std::vector<CLHEP::Hep2Vector> wallConcreteOutline(emfb->wallOutsideOutline());
+      // the inside points go in the reverse order
+      std::copy(emfb->roomInsideOutline().rbegin(), emfb->roomInsideOutline().rend(),
+                std::back_inserter(wallConcreteOutline));
 
-    // FIXME: we should not need to correct the wrong information
-    roomWall.centerInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld() + emfb->roomRefPointInMu2e();
+      roomWall.solid = new G4ExtrudedSolid(roomWall.name,
+                                           wallConcreteOutline,
+                                           0.5*emfb->roomInsideFullHeight(),
+                                           G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
 
-    finishNesting(roomWall,
-                  materialFinder.get("extMonFNAL.room.wall.materialName"),
-                  &roomRotationInParentInv,
-                  roomAir.centerInParent,
-                  mainParent.logical,
-                  0,
-                  config.getBool("extMonFNAL.room.wall.visible"),
-                  G4Colour::Grey(),
-                  config.getBool("extMonFNAL.room.wall.solid"),
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
+      finishNesting(roomWall,
+                    materialFinder.get("extMonFNAL.room.wall.materialName"),
+                    &roomRotationInParentInv,
+                    roomAir.centerInParent,
+                    mainParent.logical,
+                    0,
+                    config.getBool("extMonFNAL.room.wall.visible"),
+                    G4Colour::Grey(),
+                    config.getBool("extMonFNAL.room.wall.solid"),
+                    forceAuxEdgeVisible,
+                    placePV,
+                    doSurfaceCheck
+                    );
+    }
+
+    //----------------------------------------------------------------
+    if(true) {
+      const CLHEP::Hep3Vector ceilingRefPointInParent(mainParentRotationInMu2e.inverse()*(emfb->ceilingRefPointInMu2e() - mainParent.centerInMu2e()));
+
+      VolumeInfo ceiling("ExtMonFNALRoomCeiling", ceilingRefPointInParent, mainParent.centerInWorld);
+      // FIXME: we should not need to correct the wrong information
+      ceiling.centerInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld() + emfb->ceilingRefPointInMu2e();
+
+      ceiling.solid = new G4ExtrudedSolid(ceiling.name,
+                                          emfb->ceilingOutline(),
+                                          0.5*emfb->roomCeilingThickness(),
+                                          G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+
+      finishNesting(ceiling,
+                    materialFinder.get("extMonFNAL.room.wall.materialName"),
+                    &roomRotationInParentInv,
+                    ceiling.centerInParent,
+                    mainParent.logical,
+                    0,
+                    config.getBool("extMonFNAL.room.ceiling.visible"),
+                    G4Colour::Grey(),
+                    config.getBool("extMonFNAL.room.ceiling.solid"),
+                    forceAuxEdgeVisible,
+                    placePV,
+                    doSurfaceCheck
+                    );
+    }
 
     //----------------------------------------------------------------
     // Collimator2 shielding
