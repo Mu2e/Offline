@@ -41,6 +41,9 @@ double extMonFNAL.room.wall.thickness = 300;
 double extMonFNAL.room.floor.thickness = 300;
 double extMonFNAL.room.ceiling.thickness = 300;
 
+// Amount of dirt above ExtMonFNAL room.  From drawing S-9:  6'-0'' minus ceiling thickness
+double extMonFNAL.dirtOverhead.thickness = 1530;
+
 //----------------------------------------------------------------
 // The extinction monitor filter channel
 

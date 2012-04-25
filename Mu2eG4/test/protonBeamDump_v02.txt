@@ -36,7 +36,7 @@ string protonBeamDump.material.core  = "G4_Al";
 string protonBeamDump.material.shielding = "ShieldingConcrete";
 string protonBeamDump.material.air = "G4_AIR";
 
-bool   protonBeamDump.dirtVisible = false;
+bool   protonBeamDump.dirtVisible = true;
 bool   protonBeamDump.dirtSolid   = false;
 
 bool   protonBeamDump.coreVisible = true;

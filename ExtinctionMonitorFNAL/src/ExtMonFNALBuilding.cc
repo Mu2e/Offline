@@ -15,6 +15,7 @@ namespace mu2e {
     , roomWallThickness_(0.)
     , roomFloorThickness_(0.)
     , roomCeilingThickness_(0.)
+    , dirtOverheadThickness_(0.)
     , magnetRoomLength_(0.)
     , coll2ShieldingDumpXmin_(0.)
     , coll2ShieldingDumpXmax_(0.)

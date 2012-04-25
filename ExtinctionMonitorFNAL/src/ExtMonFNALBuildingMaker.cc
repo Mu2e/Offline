@@ -69,6 +69,7 @@ namespace mu2e {
     const double wallThickness = emfb->roomWallThickness_ = c.getDouble("extMonFNAL.room.wall.thickness");
     emfb->roomFloorThickness_ = c.getDouble("extMonFNAL.room.floor.thickness");
     emfb->roomCeilingThickness_ = c.getDouble("extMonFNAL.room.ceiling.thickness");
+    emfb->dirtOverheadThickness_ = c.getDouble("extMonFNAL.dirtOverhead.thickness");
 
     emfb->magnetRoomLength_ = c.getDouble("extMonFNAL.magnetRoomLength");
     emfb->coll2ShieldingDumpXmin_ = c.getDouble("extMonFNAL.collimator2.shielding.dumpXmin");

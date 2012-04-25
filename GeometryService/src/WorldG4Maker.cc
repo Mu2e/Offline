@@ -89,7 +89,7 @@ namespace mu2e {
                );
 
     const double dirtFormalYmax  = std::max(
-                                            emfb->roomInsideYmax() + emfb->roomCeilingThickness()
+                                            emfb->roomInsideYmax() + emfb->roomCeilingThickness() + emfb->dirtOverheadThickness()
                                             ,
                                             dump->frontShieldingCenterInMu2e()[1] + dump->frontShieldingHalfSize()[1]
                                             );
