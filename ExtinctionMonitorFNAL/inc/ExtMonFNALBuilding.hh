@@ -110,6 +110,7 @@ namespace mu2e {
 
     // (x,z) points in Mu2e coordinates (not a direct copy of inputs!)
     const std::vector<CLHEP::Hep2Vector>& roomInsideOutline() const { return roomInsideOutline_; }
+    const std::vector<CLHEP::Hep2Vector>& wallOutsideOutline() const { return wallOutsideOutline_; }
 
     double roomInsideFullHeight() const { return roomInsideFullHeight_; }
 
@@ -160,6 +161,7 @@ namespace mu2e {
     CLHEP::HepRotation _collimator2RotationInMu2e;
 
     std::vector<CLHEP::Hep2Vector> roomInsideOutline_;
+    std::vector<CLHEP::Hep2Vector> wallOutsideOutline_;
     double roomInsideFullHeight_;
     double roomWallThickness_;
     double roomFloorThickness_;

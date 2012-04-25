@@ -55,8 +55,8 @@ namespace mu2e {
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<ExtMonFNALBuilding> emfb;
 
-    const std::pair<double,double> emfXlimits = getMinMax(emfb->roomInsideOutline(), &CLHEP::Hep2Vector::x);
-    const std::pair<double,double> emfZlimits = getMinMax(emfb->roomInsideOutline(), &CLHEP::Hep2Vector::y);
+    const std::pair<double,double> emfXlimits = getMinMax(emfb->wallOutsideOutline(), &CLHEP::Hep2Vector::x);
+    const std::pair<double,double> emfZlimits = getMinMax(emfb->wallOutsideOutline(), &CLHEP::Hep2Vector::y);
 
     const double hallFormalZminInMu2e =
       std::min(

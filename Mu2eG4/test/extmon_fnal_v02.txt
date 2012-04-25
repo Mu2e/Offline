@@ -29,19 +29,17 @@ bool           hasExtMonFNAL = true;
 //
 // The above conflicts with ExtMonUCI location.  The easiest solution is to adjust the corner near the shaft
 // to avoid the overlap.
-
-vector<double> extMonFNAL.roomInsideX = { -1750, -1750, -3731, -3731, -1750, -1750, +2822, +2822, +3584, +3584, +2080, +2080 };
-vector<double> extMonFNAL.roomInsideZ = {     0, -2928, -2928, -7422, -7422, -9200, -9200, -4200, -4200, -1400, -1400,     0};
-
+vector<double> extMonFNAL.roomInsideX = { -1750, -1750, -3731, -3731, -1750, -1750, +2822, +2822, +3584, +3584, +1780, +1780 };
+vector<double> extMonFNAL.roomInsideZ = {     0, -2928, -2928, -7422, -7422, -9200, -9200, -4200, -4200, -1700, -1700,     0 };
 
 // The top of the room floor is assumed to be at the same level as the
 // top of ProtonBeamDump "back" shielding,
 // i.e. minCoreShieldingThickness above the top surface dump core.
 double extMonFNAL.room.insideFullHeight = 2743;
 
-double extMonFNAL.room.wallThickness = 300;
-double extMonFNAL.room.floorThickness = 300;
-double extMonFNAL.room.ceilingThickness = 300;
+double extMonFNAL.room.wall.thickness = 300;
+double extMonFNAL.room.floor.thickness = 300;
+double extMonFNAL.room.ceiling.thickness = 300;
 
 //----------------------------------------------------------------
 // The extinction monitor filter channel
@@ -170,10 +168,13 @@ double extMonFNAL.vd.halfdy = 100; // transverse size
 
 //----------------------------------------------------------------
 string         extMonFNAL.room.materialName  = "G4_AIR";
-string         extMonFNAL.room.wallMaterialName  = "ShieldingConcrete";
+string         extMonFNAL.room.wall.materialName  = "ShieldingConcrete";
 
-bool           extMonFNAL.room.visible   = true;
+bool           extMonFNAL.room.visible   = false;
 bool           extMonFNAL.room.solid     = false;
+
+bool           extMonFNAL.room.wall.visible   = true;
+bool           extMonFNAL.room.wall.solid     = true;
 
 bool extMonFNAL.collimator2.shielding.visible = true;
 bool extMonFNAL.collimator2.shielding.solid = false;
