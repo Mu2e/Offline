@@ -3,14 +3,18 @@
 
 #include <memory>
 
-namespace mu2e { class SimpleConfig; }
-namespace mu2e { class Mu2eBuilding; }
-namespace mu2e { class ProtonBeamDump; }
-
 namespace mu2e {
+
+  class SimpleConfig;
+  class Mu2eBuilding;
+  class BuildingBasics;
+  class ProtonBeamDump;
+
   class Mu2eBuildingMaker {
   public:
-    static std::auto_ptr<Mu2eBuilding> make(const SimpleConfig& config, const ProtonBeamDump& dump);
+    static std::auto_ptr<Mu2eBuilding> make(const SimpleConfig& config,
+                                            const BuildingBasics& basics,
+                                            const ProtonBeamDump& dump);
   };
 }
 

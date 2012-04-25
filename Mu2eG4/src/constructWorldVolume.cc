@@ -1,9 +1,9 @@
 // Free function to create world mother volume and partly fill it with
 // dirt around the formal hall box.
 //
-// $Id: constructWorldVolume.cc,v 1.6 2012/04/17 19:56:56 gandr Exp $
+// $Id: constructWorldVolume.cc,v 1.7 2012/04/25 18:19:14 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/17 19:56:56 $
+// $Date: 2012/04/25 18:19:14 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 // Updated by Andrei Gaponenko.
@@ -13,6 +13,7 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
+#include "Mu2eBuildingGeom/inc/BuildingBasics.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
@@ -47,6 +48,7 @@ namespace mu2e {
     const bool placePV             = true;
 
     GeomHandle<WorldG4> world;
+    GeomHandle<BuildingBasics> basics;
     GeomHandle<Mu2eBuilding> building;
 
     VolumeInfo worldInfo = nestBox("World", world->halfLengths(),
@@ -80,7 +82,7 @@ namespace mu2e {
 
     // The height parameters are common to all 4 side slabs
     const double dirtYmin = -world->hallFormalHalfSize()[1] + world->hallFormalCenterInWorld().y();
-    const double dirtYmax = building->yFlatEarth() + world->mu2eOriginInWorld().y();
+    const double dirtYmax = basics->yFlatEarth() + world->mu2eOriginInWorld().y();
     const double dirtCenterY = (dirtYmax + dirtYmin)/2;
     const double dirtHalfSizeY = (dirtYmax - dirtYmin)/2;
 

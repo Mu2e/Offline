@@ -11,6 +11,7 @@
 #include "CLHEP/Vector/TwoVector.h"
 
 #include "Mu2eInterfaces/inc/Detector.hh"
+#include "Mu2eBuildingGeom/inc/BuildingBasics.hh"
 
 #include "art/Persistency/Common/Wrapper.h"
 
@@ -24,8 +25,8 @@ namespace mu2e {
     double hallInsideXmin() const { return _hallInsideXmin; }
     double hallInsideXmax() const { return _hallInsideXmax; }
 
-    double hallInsideYmin() const { return _hallInsideYmin; }
-    double hallInsideYmax() const { return _hallInsideYmax; }
+    double hallInsideYmin() const { return basics_.detectorHallFloorTopY(); }
+    double hallInsideYmax() const { return basics_.detectorHallFloorTopY() + basics_.detectorHallInsideFullHeight(); }
 
     double hallInsideZmax() const { return _hallInsideZmax; }
 
@@ -35,15 +36,10 @@ namespace mu2e {
 
     double hallInsideZExtMonUCIWall() const { return _hallInsideZExtMonUCIWall; }
 
-    double hallFloorThickness() const { return _hallFloorThickness; }
-    double hallCeilingThickness() const { return _hallCeilingThickness; }
+    double hallFloorThickness() const { return basics_.detectorHallFloorThickness(); }
+    double hallCeilingThickness() const { return basics_.detectorHallCeilingThickness(); }
     double hallWallThickness() const { return _hallWallThickness; }
     double hallWallExtMonUCIThickness() const { return _hallWallExtMonUCIThickness; }
-
-    double floorTopDepthBelowGrade() const { return _floorTopDepthBelowGrade; }
-
-    // computed: the level of dirt outside the formal box volume
-    double yFlatEarth() const { return _floorTopDepthBelowGrade + _hallInsideYmin; }
 
     const CLHEP::Hep3Vector& trackerOriginInMu2e() const { return _trackerOriginInMu2e; }
 
@@ -72,14 +68,15 @@ namespace mu2e {
     friend class Mu2eBuildingMaker;
 
     // Private ctr: the class should be only obtained via the maker
-    Mu2eBuilding() {}
+    Mu2eBuilding(const BuildingBasics& basics = BuildingBasics() /* need default for I/O */);
+
     // Or read back from persistent storage
     template<class T> friend class art::Wrapper;
 
+    BuildingBasics basics_;
+
     double _hallInsideXmin;
     double _hallInsideXmax;
-    double _hallInsideYmin;
-    double _hallInsideYmax;
 
     double _hallInsideZmax;
 
@@ -91,11 +88,8 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _trackerOriginInMu2e;
 
-    double _hallFloorThickness;
-    double _hallCeilingThickness;
     double _hallWallThickness;
     double _hallWallExtMonUCIThickness;
-    double _floorTopDepthBelowGrade;
 
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline1;
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline2;

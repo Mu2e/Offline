@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.26 2012/04/17 19:56:56 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.27 2012/04/25 18:19:14 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/17 19:56:56 $
+// $Date: 2012/04/25 18:19:14 $
 //
 // Original author Rob Kutschke
 //
@@ -29,6 +29,8 @@
 #include "GeometryService/src/DetectorSystemMaker.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/WorldG4Maker.hh"
+#include "Mu2eBuildingGeom/inc/BuildingBasics.hh"
+#include "Mu2eBuildingGeom/inc/BuildingBasicsMaker.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuildingMaker.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
@@ -153,11 +155,15 @@ namespace mu2e {
       addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint()));
     }
 
+    std::auto_ptr<BuildingBasics> tmpBasics(BuildingBasicsMaker::make(*_config));
+    const BuildingBasics& buildingBasics = *tmpBasics.get();
+    addDetector(tmpBasics);
+
     std::auto_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config));
     const ProtonBeamDump& dump = *tmpDump.get();
     addDetector(tmpDump);
 
-    addDetector(Mu2eBuildingMaker::make(*_config, dump));
+    addDetector(Mu2eBuildingMaker::make(*_config, buildingBasics, dump));
 
     if(_config->getBool("hasTarget",false)){
       TargetMaker targm( *_config );

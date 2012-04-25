@@ -17,9 +17,11 @@
 
 namespace mu2e {
 
-  std::auto_ptr<Mu2eBuilding> Mu2eBuildingMaker::make(const SimpleConfig& c, const ProtonBeamDump& dump)
+  std::auto_ptr<Mu2eBuilding> Mu2eBuildingMaker::make(const SimpleConfig& c,
+                                                      const BuildingBasics& basics,
+                                                      const ProtonBeamDump& dump)
   {
-    std::auto_ptr<Mu2eBuilding> b(new Mu2eBuilding());
+    std::auto_ptr<Mu2eBuilding> b(new Mu2eBuilding(basics));
 
     using CLHEP::Hep2Vector;
 
@@ -32,14 +34,8 @@ namespace mu2e {
 
     b->_hallInsideZExtMonUCIWall = c.getDouble("hall.insideZExtMonUCIWall");
 
-    b->_hallInsideYmin = -c.getDouble("mu2e.origin.heightAboveHallFloor");
-    b->_hallInsideYmax = b->_hallInsideYmin + c.getDouble("hall.insideFullHeight");
-
-    b->_hallFloorThickness = c.getDouble("hall.floorThick");
-    b->_hallCeilingThickness = c.getDouble("hall.ceilingThick");
     b->_hallWallThickness = c.getDouble("hall.wallThick");
     b->_hallWallExtMonUCIThickness = c.getDouble("hall.wallExtMonUCIThick");
-    b->_floorTopDepthBelowGrade = c.getDouble("hall.floorTopDepthBelowGrade");
 
     // Origin used to construct the MECO detector.
     // Magic number to fix:

@@ -1,0 +1,29 @@
+// Andrei Gaponenko, 2012
+
+#include "Mu2eBuildingGeom/inc/BuildingBasicsMaker.hh"
+
+#include <iostream>
+
+#include "cetlib/exception.h"
+
+#include "CLHEP/Units/SystemOfUnits.h"
+
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
+
+#include "Mu2eBuildingGeom/inc/BuildingBasics.hh"
+
+namespace mu2e {
+
+  std::auto_ptr<BuildingBasics> BuildingBasicsMaker::make(const SimpleConfig& c)
+  {
+    std::auto_ptr<BuildingBasics> b(new BuildingBasics());
+
+    b->detectorHallFloorTopY_ = -c.getDouble("mu2e.origin.heightAboveHallFloor");
+    b->detectorHallInsideFullHeight_ = c.getDouble("hall.insideFullHeight");
+    b->detectorHallCeilingThickness_ = c.getDouble("hall.ceilingThick");
+    b->detectorHallFloorThickness_ = c.getDouble("hall.floorThick");
+    b->detectorHallFloorTopDepthBelowGrade_ = c.getDouble("hall.floorTopDepthBelowGrade");
+
+    return b;
+  }
+}
