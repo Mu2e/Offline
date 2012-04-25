@@ -1,10 +1,19 @@
-  $Id: v1_1_8.txt,v 1.26 2012/04/20 21:37:24 onoratog Exp $
-  $Author: onoratog $
-  $Date: 2012/04/20 21:37:24 $
+  $Id: v1_1_8.txt,v 1.27 2012/04/25 00:19:37 youzy Exp $
+  $Author: youzy $
+  $Date: 2012/04/25 00:19:37 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_8
+
+28) April 24, 2012 youzy
+
+    Add a Filter module for events with ExtMonUCI hits.
+    Added
+      Filters/src/ExtMonUCIFilter_module.cc
+    Add Filter module in 
+      Mu2eG4/test/extmon_uci_protongensim_01.fcl
+      Mu2eG4/test/extmon_uci_sim_01.fcl
 
 27) April 20, 2012 onoratog
     
