@@ -4,12 +4,13 @@
 #  - Run these through G4.
 #  - No event display.
 #  - Form ExtMonUCITofHits from StepPointMC objects
+#  - Filter events with at least 1 ExtMonUCITofStepPoint
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: extmon_uci_protongensim_01.fcl,v 1.5 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
+# $Id: extmon_uci_protongensim_01.fcl,v 1.6 2012/04/25 00:12:38 youzy Exp $
+# $Author: youzy $
+# $Date: 2012/04/25 00:12:38 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -81,6 +82,13 @@ physics :
 #      visMacro             : "Mu2eG4/test/extmon_uci_visxz.mac"
     }
 
+    filter :
+    {
+      module_type          : ExtMonUCIFilter
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+    }
+
     # Form ExtMonUCITofHits
     ExtMonUCITofHitsMaker : @local::ExtMonUCITofHitsMaker
 
@@ -90,6 +98,7 @@ physics :
 
   p1 : [generate, g4run,
         ExtMonUCITofHitsMaker,
+        filter,
         randomsaver ]
   e1 : [outfile]
 
@@ -112,6 +121,7 @@ outputs:
 #                        "drop mu2e::SimParticlemv_*_*_*",
                         "drop mu2e::PointTrajectorymv_*_*_*"
                       ]
+    SelectEvents  : { SelectEvents: [p1]  }
   }
 
 }
