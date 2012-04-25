@@ -11,6 +11,7 @@
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
@@ -41,6 +42,7 @@ namespace mu2e {
     produces<Mu2eBuilding, art::InRun>();
     produces<ProductionTarget, art::InRun>();
     produces<ProtonBeamDump, art::InRun>();
+    produces<ExtMonFNALBuilding, art::InRun>();
     produces<ExtMonFNAL::ExtMon, art::InRun>();
     produces<PSEnclosure, art::InRun>();
     produces<PSShield, art::InRun>();
@@ -56,6 +58,7 @@ namespace mu2e {
     put<Mu2eBuilding>(run);
     put<ProductionTarget>(run);
     put<ProtonBeamDump>(run);
+    put<ExtMonFNALBuilding>(run);
     put<ExtMonFNAL::ExtMon>(run);
     put<PSEnclosure>(run);
     put<PSShield>(run);

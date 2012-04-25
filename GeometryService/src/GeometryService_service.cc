@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.27 2012/04/25 18:19:14 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.28 2012/04/25 18:47:32 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/25 18:19:14 $
+// $Date: 2012/04/25 18:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -63,6 +63,8 @@
 #include "GeometryService/inc/VirtualDetectorMaker.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuildingMaker.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL_Maker.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
@@ -159,7 +161,12 @@ namespace mu2e {
     const BuildingBasics& buildingBasics = *tmpBasics.get();
     addDetector(tmpBasics);
 
-    std::auto_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config));
+    const double dumpFrontShieldingYmin = buildingBasics.detectorHallFloorTopY() - buildingBasics.detectorHallFloorThickness();
+    const double dumpFrontShieldingYmax = dumpFrontShieldingYmin +
+      buildingBasics.detectorHallInsideFullHeight() + buildingBasics.detectorHallCeilingThickness();
+
+    std::auto_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config, dumpFrontShieldingYmin, dumpFrontShieldingYmax));
+
     const ProtonBeamDump& dump = *tmpDump.get();
     addDetector(tmpDump);
 
@@ -192,7 +199,10 @@ namespace mu2e {
     }
 
     if(_config->getBool("hasExtMonFNAL",false)){
-      addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, dump));
+      std::auto_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, dump));
+      const ExtMonFNALBuilding& emfb = *tmpemb.get();
+      addDetector(tmpemb);
+      addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, emfb));
     }
 
     if(_config->getBool("hasExtMonUCI",false)){

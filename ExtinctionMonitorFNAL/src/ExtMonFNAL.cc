@@ -11,14 +11,6 @@ namespace mu2e {
   namespace ExtMonFNAL {
 
     //================================================================
-    ExtMon::ExtMon(const std::vector<double>& logicalEnclosureHalfDim,
-                   double roomCenterHeightAboveDumpCore)
-
-      : m_roomHalfSize(logicalEnclosureHalfDim)
-      , m_roomCenterHeightAboveDumpCore(roomCenterHeightAboveDumpCore)
-    {}
-
-    //================================================================
     std::vector<double> ExtMon::sensorHalfSize(unsigned iplane) const {
       std::vector<double> res(3);
       res[0] = sensor_halfdx()[iplane];

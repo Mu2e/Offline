@@ -1,4 +1,10 @@
 <lcgdict>
  <class name="mu2e::ExtMonFNAL::ExtMon"/>
  <class name="art::Wrapper<mu2e::ExtMonFNAL::ExtMon>"/> 
+
+ <class name="mu2e::ExtMonFNALBuilding::CollimatorExtMonFNAL"/>
+ <class name="mu2e::ExtMonFNALBuilding::FilterMagnetExtMonFNAL"/>
+ <class name="mu2e::ExtMonFNALBuilding"/>
+ <class name="art::Wrapper<mu2e::ExtMonFNALBuilding>"/> 
+
 </lcgdict>

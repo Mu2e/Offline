@@ -21,12 +21,6 @@ namespace mu2e {
 
     class ExtMon : virtual public Detector {
     public:
-
-      const std::vector<double>&  roomHalfSize() const { return m_roomHalfSize; }
-      double roomCenterHeightAboveDumpCore() const { return m_roomCenterHeightAboveDumpCore; }
-      const CLHEP::Hep3Vector&    roomCenterInMu2e() const { return m_roomCenterInMu2e; }
-
-      //
       unsigned nplanes() const { return m_sensor_zoffset.size(); }
       const std::vector<double>& sensor_zoffset() const { return m_sensor_zoffset; }
       const std::vector<double>& sensor_xoffset() const { return m_sensor_xoffset; }
@@ -43,7 +37,7 @@ namespace mu2e {
       CLHEP::Hep3Vector sensorOffsetInParent(unsigned iplane) const;
 
       // Location of the detector
-      CLHEP::Hep3Vector detectorCenterInRoom() const { return m_detectorCenterInRoom; }
+      CLHEP::Hep3Vector detectorCenterInMu2e() const { return m_detectorCenterInMu2e; }
       CLHEP::HepRotation const& detectorRotationInMu2e() const { return m_detectorRotationInMu2e; }
       // the size is computed from sensor pars above
       const std::vector<double>& detectorHalfSize() const { return m_detectorHalfSize; }
@@ -71,20 +65,14 @@ namespace mu2e {
     private:
       friend class ExtMonMaker;
       // Private ctr: the class should be only obtained via ExtMonFNAL::ExtMonMaker.
-      ExtMon(const std::vector<double>& roomHalfSize,
-             double roomCenterHeightAboveDumpCore);
+      ExtMon() {}
 
       // Or read back from persistent storage
       template<class T> friend class art::Wrapper;
-      ExtMon() {}
-
-      std::vector<double> m_roomHalfSize;
-      double m_roomCenterHeightAboveDumpCore;
-      CLHEP::Hep3Vector m_roomCenterInMu2e;
 
       std::vector<double> m_detectorHalfSize;
       CLHEP::HepRotation m_detectorRotationInMu2e;
-      CLHEP::Hep3Vector m_detectorCenterInRoom;
+      CLHEP::Hep3Vector m_detectorCenterInMu2e;
 
       // Sensor center positions
       std::vector<double> m_sensor_zoffset;

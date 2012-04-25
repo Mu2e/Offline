@@ -13,42 +13,41 @@ vector<string> bfield.outerMaps = {};
 //----------------------------------------------------------------
 // Channel settings
 
-//double extMonFilter.nominalMomentum = 3500.; // MeV/c
+//double extMonFNAL.nominalMomentum = 3500.; // MeV/c
 //
-//double         extMonFilter.entranceOffsetX = 900;
-//double         extMonFilter.entranceOffsetY = 1500;
-//double         extMonFilter.angleH = 0.; //radians
-//double         extMonFilter.entranceAngleV = 0.1645; //radians
-//
-//vector<double> extmon_fnal.roomHalfSize  = { 5500., 1200., 1200.};
-//double         protonBeamDump.enclosureHalfWidthMin = 2500.;
-//vector<double> extMonFilter.magnetPitHalfSize = {2000., 1371.5, 2100.};
+//double         extMonFNAL.entranceOffsetX = 900;
+//double         extMonFNAL.entranceOffsetY = 1500;
+//double         extMonFNAL.angleH = 0.; //radians
+//double         extMonFNAL.entranceAngleV = 0.1645; //radians
+
+// Need this to see a nice curved trajectory
+double extMonFNAL.maxG4StepLength = 10.; // mm
 
 //----------------------------------------------------------------
 // Tweak visibility for debugging the channel setup
 
-bool extMonFilter.collimator1.alignmentHole.visible = false;
-bool extMonFilter.collimator1.alignmentHole.solid = false;
-bool extMonFilter.collimator1.alignmentPlug.visible = false;
-bool extMonFilter.collimator1.alignmentPlug.solid = false;
-bool extMonFilter.collimator1.channel.visible = true;
-bool extMonFilter.collimator1.channel.solid = false;
+bool extMonFNAL.collimator1.alignmentHole.visible = false;
+bool extMonFNAL.collimator1.alignmentHole.solid = false;
+bool extMonFNAL.collimator1.alignmentPlug.visible = false;
+bool extMonFNAL.collimator1.alignmentPlug.solid = false;
+bool extMonFNAL.collimator1.channel.visible = true;
+bool extMonFNAL.collimator1.channel.solid = false;
 
-bool extMonFilter.collimator2.alignmentHole.visible = false;
-bool extMonFilter.collimator2.alignmentHole.solid = false;
-bool extMonFilter.collimator2.alignmentPlug.visible = false;
-bool extMonFilter.collimator2.alignmentPlug.solid = false;
-bool extMonFilter.collimator2.channel.visible = true;
-bool extMonFilter.collimator2.channel.solid = false;
+bool extMonFNAL.collimator2.alignmentHole.visible = false;
+bool extMonFNAL.collimator2.alignmentHole.solid = false;
+bool extMonFNAL.collimator2.alignmentPlug.visible = false;
+bool extMonFNAL.collimator2.alignmentPlug.solid = false;
+bool extMonFNAL.collimator2.channel.visible = true;
+bool extMonFNAL.collimator2.channel.solid = false;
 
-bool extMonFilter.magnet.iron.visible = true;
-bool extMonFilter.magnet.iron.solid = false;
-bool extMonFilter.magnet.aperture.visible = true;
-bool extMonFilter.magnet.aperture.solid = false;
+bool extMonFNAL.magnet.iron.visible = true;
+bool extMonFNAL.magnet.iron.solid = false;
+bool extMonFNAL.magnet.aperture.visible = true;
+bool extMonFNAL.magnet.aperture.solid = false;
 
 //----------------------------------------------------------------
 int protonBeamDump.verbosityLevel = 1;
-int extmon_fnal.verbosityLevel = 1;
+int extMonFNAL.verbosityLevel = 1;
 int world.verbosityLevel  = 1;
 //
 

@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.33 2012/04/20 17:24:25 gandr Exp $
+// $Id: constructVirtualDetectors.cc,v 1.34 2012/04/25 18:47:32 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/20 17:24:25 $
+// $Date: 2012/04/25 18:47:32 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -26,7 +26,6 @@
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
@@ -738,14 +737,17 @@ namespace mu2e {
       VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
       GeomHandle<ProtonBeamDump> dump;
 
-      const double vdYmin = dump->enclosureCenterInMu2e().y() - dump->enclosureHalfSize()[1];
+      const double vdYmin = dump->frontShieldingCenterInMu2e().y()
+        - dump->frontShieldingHalfSize()[1]
+        + building->hallFloorThickness()
+        ;
       const double vdYmax = std::min(
-                                     dump->enclosureCenterInMu2e().y() + dump->enclosureHalfSize()[1],
+                                     dump->frontShieldingCenterInMu2e().y() + dump->frontShieldingHalfSize()[1],
                                      building->hallInsideYmax()
                                      );
 
       std::vector<double> hlen(3);
-      hlen[0] = dump->enclosureHalfSize()[0];
+      hlen[0] = dump->frontShieldingHalfSize()[0];
       hlen[1] = (vdYmax - vdYmin)/2;
       hlen[2] = vdg->getHalfLength();
 
@@ -759,7 +761,7 @@ namespace mu2e {
                                                     dump->shieldingFaceZatXmax())/2
                                                  );
 
-      CLHEP::Hep3Vector vdOffset(dump->enclosureRotationInMu2e() * CLHEP::Hep3Vector(0, 0, hlen[2]));
+      CLHEP::Hep3Vector vdOffset(dump->coreRotationInMu2e() * CLHEP::Hep3Vector(0, 0, hlen[2]));
       
 
       if ( verbosityLevel > 0) {
@@ -772,7 +774,7 @@ namespace mu2e {
       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId), 
                                   hlen, 
                                   vacuumMaterial, 
-                                  reg.add(dump->enclosureRotationInMu2e().inverse()),
+                                  reg.add(dump->coreRotationInMu2e().inverse()),
                                   shieldingFaceCenterInMu2e + vdOffset - parent.centerInMu2e(),
                                   parent,
                                   vdId, 
@@ -789,78 +791,6 @@ namespace mu2e {
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
-
-    for(int vdId = VirtualDetectorId::EMFC1Exit; 
-        vdId <= VirtualDetectorId::EMFC2Entrance; ++vdId) {
-      if( vdg->exist(vdId) ) {
-        
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
-        
-        VolumeInfo const & parent = _helper->locateVolInfo("ProtonBeamDumpMagnetPit");
-        GeomHandle<ProtonBeamDump> dump;
-        
-        std::vector<double> hlen(3);
-        hlen[0] = dump->magnetPitHalfSize()[0];
-        hlen[1] = dump->magnetPitHalfSize()[1];
-        hlen[2] = vdg->getHalfLength();
-        
-        VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId), 
-                                    hlen, 
-                                    vacuumMaterial, 
-                                    0,
-                                    vdg->getLocal(vdId),
-                                    parent,
-                                    vdId, 
-                                    vdIsVisible,
-                                    G4Color::Red(), 
-                                    vdIsSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    false);
-        
-        // vd are very thin, a more thorough check is needed
-        doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-        
-        vdInfo.logical->SetSensitiveDetector(vdSD);
-      }
-    }
-
-    vdId = VirtualDetectorId::EMFC2Exit;
-    if( vdg->exist(vdId) ) {
-      
-      if ( verbosityLevel > 0) {
-        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-      }
-        
-      VolumeInfo const & parent = _helper->locateVolInfo("ExtMonFNALRoom");
-      GeomHandle<ExtMonFNAL::ExtMon> extmon;
-        
-      std::vector<double> hlen(3);
-      hlen[0] = extmon->roomHalfSize()[0];
-      hlen[1] = extmon->roomHalfSize()[1];
-      hlen[2] = vdg->getHalfLength();
-        
-      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId), 
-                                  hlen, 
-                                  vacuumMaterial, 
-                                  0,
-                                  vdg->getLocal(vdId),
-                                  parent,
-                                  vdId, 
-                                  vdIsVisible,
-                                  G4Color::Red(), 
-                                  vdIsSolid,
-                                  forceAuxEdgeVisible,
-                                  placePV,
-                                  false);
-        
-      // vd are very thin, a more thorough check is needed
-      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-        
-      vdInfo.logical->SetSensitiveDetector(vdSD);
-    }
 
     // placing virtual detector on the exit (beam dump direction) and inside
     // of PS vacuum,  right before the PS enclosure end plate.
@@ -1014,9 +944,9 @@ namespace mu2e {
       const double requested_z = _config->getDouble("vd.ExtMonCommonPlane.z");
 
       const double xmin = std::min(building->hallInsideXPSCorner(),
-                                   dump->enclosureCenterInMu2e()[0]
-                                   + (requested_z - dump->enclosureCenterInMu2e()[2])*tan(dump->coreRotY())
-                                   - dump->enclosureHalfSize()[0]/cos(dump->coreRotY())
+                                   dump->frontShieldingCenterInMu2e()[0]
+                                   + (requested_z - dump->frontShieldingCenterInMu2e()[2])*tan(dump->coreRotY())
+                                   - dump->frontShieldingHalfSize()[0]/cos(dump->coreRotY())
                                    );
 
       CLHEP::Hep3Vector centerInMu2e(

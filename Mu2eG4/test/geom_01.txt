@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.142 2012/04/20 08:26:51 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/04/20 08:26:51 $
+// $Id: geom_01.txt,v 1.143 2012/04/25 18:47:32 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/04/25 18:47:32 $
 //
 // Original author Rob Kutschke
 //
@@ -280,9 +280,9 @@ string targetPS_materialName      = "G4_W";
 bool   targetPS.visible           = true;
 bool   targetPS.solid             = false;
 
-#include "Mu2eG4/test/protonBeamDump_v01.txt"
+#include "Mu2eG4/test/protonBeamDump_v02.txt"
 
-#include "Mu2eG4/test/extmon_fnal_v01.txt"
+#include "Mu2eG4/test/extmon_fnal_v02.txt"
 #include "Mu2eG4/test/extmon_uci_v01.txt"
 
 // Describe dummy stopping target that is just one big G4TUBS.

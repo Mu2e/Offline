@@ -62,9 +62,6 @@ bool extMonFilter.magnet.aperture.solid = false;
 //double         extMonFilter.entranceOffsetY = 1250;
 //double         extMonFilter.angleH = 0.15; //0.0947; //radians
 //double         extMonFilter.entranceAngleV = 0.1644; //radians
-////vector<double> extmon_fnal.roomHalfSize  = { 5500., 1200., 1200.};
-////double         protonBeamDump.enclosureHalfWidthMin = 2500.;
-////vector<double> extMonFilter.magnetPitHalfSize = {2000., 1371.5, 2100.};
 
 //test: // Disable all physics except transport.
 //test: string g4.physicsListName = "Minimal";
@@ -80,14 +77,14 @@ bool extMonFilter.magnet.aperture.solid = false;
 //// Write mu2e geometry into a GDML file
 //bool   writeGDML        = true;
 //bool   protonBeamDump.applyROOTVisualizationKludge = true;
-//string GDMLFileName     = "extmon_fnal.gdml";
+//string GDMLFileName     = "extMonFNAL.gdml";
 
 // bool   vd.visible       = true;
 // bool PSShield.solid = true;
 
 int PSShield.verbosityLevel = 1;
 int protonBeamDump.verbosityLevel = 1;
-int extmon_fnal.verbosityLevel = 1;
+int extMonFNAL.verbosityLevel = 1;
 int world.verbosityLevel  = 1;
 //
 

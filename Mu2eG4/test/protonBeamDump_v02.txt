@@ -1,0 +1,56 @@
+// Proton beam dump parameters.
+// See mu2e docdb #948 and #1944
+//
+// Andrei Gaponenko, 2011
+
+
+//----------------------------------------------------------------
+// Dump core positioning:  numbers from the spreadsheet
+// "20120221 Facility data for MARS.xlsx"
+// for Dump_Aluminum:
+//
+//  position = 413.1   529  -20399.4
+// angle = 13.779, core full size { 1500, 1500, 2000. }
+//
+// Translated from MARS to G4 convention:
+//
+vector<double> protonBeamDump.coreCenterInMu2e = {651.3,  529., -19428.2};
+double         protonBeamDump.coreRotY = 13.78; // degrees
+
+// Sizes below are given in mm in this order:
+//  {horizontal transverse to beam, vertical, horizontal along beam}
+vector<double> protonBeamDump.coreHalfSize  = { 750., 750., 1000.};
+// Beam entrance.
+vector<double> protonBeamDump.mouthHalfSize = {750., 750., 500.};
+// Neutron cave
+vector<double> protonBeamDump.neutronCaveHalfSize = {1250., 1250., 500.};
+
+// shielding around the core, minimal req.
+double         protonBeamDump.minCoreShieldingThickness = 1000.;
+
+// This is the shielding containing ExtMonFNAL collimator1
+double         protonBeamDump.frontShieldingThickness = 4000.;
+
+//----------------------------------------------------------------
+string protonBeamDump.material.core  = "G4_Al";
+string protonBeamDump.material.shielding = "ShieldingConcrete";
+string protonBeamDump.material.air = "G4_AIR";
+
+bool   protonBeamDump.dirtVisible = false;
+bool   protonBeamDump.dirtSolid   = false;
+
+bool   protonBeamDump.coreVisible = true;
+bool   protonBeamDump.coreSolid   = true;
+bool   protonBeamDump.shieldingVisible = true;
+bool   protonBeamDump.shieldingSolid   = false;
+bool   protonBeamDump.mouthVisible = true;
+bool   protonBeamDump.mouthSolid   = false;
+bool   protonBeamDump.neutronCaveVisible = true;
+bool   protonBeamDump.neutronCaveSolid   = false;
+
+int protonBeamDump.verbosityLevel = 0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

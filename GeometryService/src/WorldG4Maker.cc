@@ -4,10 +4,13 @@
 #include <algorithm>
 #include <iterator>
 #include <cmath>
+#include <utility>
+#include <cassert>
 
 #include "cetlib/exception.h"
 
 #include "CLHEP/Units/SystemOfUnits.h"
+#include "CLHEP/Vector/TwoVector.h"
 
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
@@ -17,10 +20,27 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
 
 namespace mu2e {
 
+  namespace {
+    // a helper to compute the bounds of an extruded solid
+    template<class Point>
+    std::pair<double,double> getMinMax(const std::vector<Point>& outline, double (Point::*coord)() const) {
+      typename std::vector<Point>::const_iterator i = outline.begin();
+      assert(i != outline.end());
+      double a = ((*i).*coord)();
+      double b = a;
+      for(; i!=outline.end(); ++i) {
+        a = std::min(a, ((*i).*coord)());
+        b = std::max(b, ((*i).*coord)());
+      }
+      return std::make_pair(a, b);
+    }
+  }
+
+  //----------------------------------------------------------------
   std::auto_ptr<WorldG4> WorldG4Maker::make(const SimpleConfig& c) {
 
     std::auto_ptr<WorldG4> res(new WorldG4());
@@ -33,30 +53,45 @@ namespace mu2e {
 
     GeomHandle<Mu2eBuilding> building;
     GeomHandle<ProtonBeamDump> dump;
-    GeomHandle<ExtMonFNAL::ExtMon> emf;
+    GeomHandle<ExtMonFNALBuilding> emfb;
+
+    const std::pair<double,double> emfXlimits = getMinMax(emfb->roomInsideOutline(), &CLHEP::Hep2Vector::x);
+    const std::pair<double,double> emfZlimits = getMinMax(emfb->roomInsideOutline(), &CLHEP::Hep2Vector::y);
 
     const double hallFormalZminInMu2e =
       std::min(
-               building->hallInsideZExtMonUCIWall() - building->hallWallThickness(),
-
-               // NB: no walls for this room at the moment
-               emf->roomCenterInMu2e()[2]
-               - emf->roomHalfSize()[2]*std::abs(cos(dump->coreRotY()))
-               - emf->roomHalfSize()[0]*std::abs(sin(dump->coreRotY()))
+               building->hallInsideZExtMonUCIWall() - building->hallWallThickness()
+               ,
+               emfZlimits.first
                );
 
     const double hallFormalZmaxInMu2e = building->hallInsideZmax() + building->hallWallThickness();
 
-    const double hallFormalXminInMu2e = building->hallInsideXmin() - building->hallWallThickness();
+    const double hallFormalXminInMu2e =
+      std::min(
+               building->hallInsideXmin() - building->hallWallThickness()
+               ,
+               emfXlimits.first
+               );
 
-    const double hallFormalXmaxInMu2e = building->hallInsideXmax() + building->hallWallThickness();
+    const double hallFormalXmaxInMu2e =
+      std::max(
+               building->hallInsideXmax() + building->hallWallThickness()
+               ,
+               emfXlimits.second
+               );
 
-    const double hallFormalYminInMu2e = building->hallInsideYmin() - building->hallFloorThickness();
+    const double hallFormalYminInMu2e =
+      std::min(
+               building->hallInsideYmin() - building->hallFloorThickness()
+               ,
+               emfb->roomInsideYmin() - emfb->roomFloorThickness()
+               );
 
     const double dirtFormalYmax  = std::max(
-                                            emf->roomCenterInMu2e()[1] + emf->roomHalfSize()[1]
+                                            emfb->roomInsideYmax() + emfb->roomCeilingThickness()
                                             ,
-                                            dump->enclosureCenterInMu2e()[1] + dump->enclosureHalfSize()[1]
+                                            dump->frontShieldingCenterInMu2e()[1] + dump->frontShieldingHalfSize()[1]
                                             );
 
     const double hallFormalYmaxInMu2e =

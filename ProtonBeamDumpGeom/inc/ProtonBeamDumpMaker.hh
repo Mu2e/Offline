@@ -11,10 +11,10 @@ namespace mu2e { class SimpleConfig; }
 
 namespace mu2e {
   class ProtonBeamDumpMaker {
-    static ProtonBeamDump::CollimatorExtMonFNAL readCollimatorExtMonFNAL(const std::string& name, double angleH, double angleV, const SimpleConfig& c);
-    static ProtonBeamDump::FilterMagnetExtMonFNAL readFilterMagnetExtMonFNAL(const SimpleConfig& c);
   public:
-    static std::auto_ptr<ProtonBeamDump> make(const SimpleConfig& config);
+    static std::auto_ptr<ProtonBeamDump> make(const SimpleConfig& config,
+                                              double frontShieldingYmin,
+                                              double frontShieldingYmax);
   };
 }
 

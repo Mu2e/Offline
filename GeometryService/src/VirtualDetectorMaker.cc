@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.5 2012/04/02 16:30:01 gandr Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.6 2012/04/25 18:47:32 gandr Exp $
 // $Author: gandr $
 //
 
@@ -20,6 +20,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "TargetGeom/inc/Target.hh"
@@ -215,45 +216,22 @@ namespace mu2e {
 
       }
 
-      // These VDs are related to the beam dump, which is always present
-      GeomHandle<ProtonBeamDump> dump;
-      if(true) {
-        const CLHEP::Hep3Vector vzero(0,0,0);
+      if(geom->hasElement<ExtMonFNALBuilding>()) {
+        CLHEP::Hep3Vector vzero;
 
         // This detector will be placed on the face of beam dump
-        // shielding.  Computing offsets here is invonvenient since we
+        // shielding.  Computing offsets here is inconvenient since we
         // don't have VolumeInfo for the parent. Just ignore them.
-        vd->addVirtualDetector(VirtualDetectorId::EMFC1Entrance,
-                                vzero, 0, vzero
-                                );
+        vd->addVirtualDetector(VirtualDetectorId::EMFC1Entrance, vzero, 0, vzero);
 
-        // Detector inside the ExtMonFNAL magnet pit, on the face of the upstream wall
-        vd->addVirtualDetector(VirtualDetectorId::EMFC1Exit,
-                                dump->magnetPitCenterInEnclosure() + dump->enclosureCenterInMu2e(),
-                                &dump->enclosureRotationInMu2e(),
-                                /*local position in parent*/
-                                CLHEP::Hep3Vector(0, 0, +dump->magnetPitHalfSize()[2] - vdHL)
-                                );
+        // Detector inside the ExtMonFNAL magnet room, on the face of the upstream wall
+        vd->addVirtualDetector(VirtualDetectorId::EMFC1Exit, vzero, 0, vzero);
 
-        // Detector inside the ExtMonFNAL magnet pit, on the face of the downstream wall
-        vd->addVirtualDetector(VirtualDetectorId::EMFC2Entrance,
-                                dump->magnetPitCenterInEnclosure() + dump->enclosureCenterInMu2e(),
-                                &dump->enclosureRotationInMu2e(),
-                                /*local position in parent*/
-                                CLHEP::Hep3Vector(0, 0, -dump->magnetPitHalfSize()[2] + vdHL)
-                                );
+        // Detector inside the ExtMonFNAL magnet room, on the face of the downstream wall
+        vd->addVirtualDetector(VirtualDetectorId::EMFC2Entrance, vzero, 0, vzero);
 
-      }
-
-      if(geom->hasElement<ExtMonFNAL::ExtMon>()) {
         // Detector inside the ExtMonFNAL detector room, on the face of the upstream wall
-        GeomHandle<ExtMonFNAL::ExtMon> extmon;
-        vd->addVirtualDetector(VirtualDetectorId::EMFC2Exit,
-                                extmon->roomCenterInMu2e(),
-                                &dump->enclosureRotationInMu2e(),
-                                /*local position in parent*/
-                                CLHEP::Hep3Vector(0, 0, extmon->roomHalfSize()[2] - vdHL)
-                                );
+        vd->addVirtualDetector(VirtualDetectorId::EMFC2Exit, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
       }
 
       // This VD is related to PS
@@ -356,7 +334,7 @@ namespace mu2e {
         vd->addVirtualDetector(VirtualDetectorId::ProtonBeamDumpCoreFace, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
       }
 
-      if(geom->hasElement<ExtMonFNAL::ExtMon>() && c.getBool("extmon_fnal.vd.enabled", false)) {
+      if(geom->hasElement<ExtMonFNAL::ExtMon>() && c.getBool("extMonFNAL.vd.enabled", false)) {
         vd->addVirtualDetector(VirtualDetectorId::EMFDetectorEntrance, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
         vd->addVirtualDetector(VirtualDetectorId::EMFDetectorExit, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
       }

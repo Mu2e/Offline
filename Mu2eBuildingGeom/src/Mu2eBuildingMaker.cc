@@ -46,9 +46,9 @@ namespace mu2e {
     //----------------
     //  Computed stuff
 
-    b->_hallInsideZPStoBeamDumpCorner = dump.enclosureCenterInMu2e()[2]
-      + (b->_hallInsideXPSCorner - dump.enclosureCenterInMu2e()[0])/tan(dump.coreRotY())
-      + dump.enclosureHalfSize()[0]/sin(dump.coreRotY())
+    b->_hallInsideZPStoBeamDumpCorner = dump.frontShieldingCenterInMu2e()[2]
+      + (b->_hallInsideXPSCorner - dump.frontShieldingCenterInMu2e()[0])/tan(dump.coreRotY())
+      + dump.frontShieldingHalfSize()[0]/sin(dump.coreRotY())
       ;
 
     //----------------

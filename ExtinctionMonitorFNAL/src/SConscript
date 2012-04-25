@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.4 2012/04/05 18:15:55 gandr Exp $
+# $Id: SConscript,v 1.5 2012/04/25 18:47:32 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/04/05 18:15:55 $
+# $Date: 2012/04/25 18:47:32 $
 #
 # Original author Rob Kutschke.
 #
@@ -22,6 +22,7 @@ if non_plugin_cc:
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                       LIBS=[ 'Mu2eInterfaces',
                              'Mu2eUtilities',
+                             'ProtonBeamDumpGeom',
                              'CLHEP'
                              ],
                       )

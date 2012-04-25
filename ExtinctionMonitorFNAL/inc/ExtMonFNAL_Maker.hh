@@ -5,14 +5,14 @@
 
 namespace mu2e { class SimpleConfig; }
 namespace mu2e { namespace ExtMonFNAL { class ExtMon; } }
-namespace mu2e { class ProtonBeamDump; }
+namespace mu2e { class ExtMonFNALBuilding; }
 
 namespace mu2e {
   namespace ExtMonFNAL {
 
     class ExtMonMaker {
     public:
-      static std::auto_ptr<ExtMon> make(const SimpleConfig& config, const ProtonBeamDump& dump);
+      static std::auto_ptr<ExtMon> make(const SimpleConfig& config, const ExtMonFNALBuilding& room);
     };
   }
 }

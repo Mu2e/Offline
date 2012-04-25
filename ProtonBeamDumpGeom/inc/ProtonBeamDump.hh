@@ -22,53 +22,6 @@ namespace mu2e {
   public:
 
     //----------------------------------------------------------------
-    class CollimatorExtMonFNAL {
-      friend class ProtonBeamDumpMaker;
-
-      std::string _name;
-      double _horizontalLength;
-      std::vector<double> _channelWidth;
-      std::vector<double> _channelHeight;
-      std::vector<double> _alignmentPlugRadius;
-      std::vector<double> _alignmentHoleRClearance;
-      double _radiusTransitiondZ;
-      double _angleH;
-      double _angleV;
-
-    public:
-      std::string name() const { return _name; }
-      // NB: "horizontal" is historic name, this is actually the length of projection on dump Z axis.
-      double horizontalLength() const { return _horizontalLength; }
-      const std::vector<double> &channelWidth() const { return _channelWidth; }
-      const std::vector<double> &channelHeight() const { return _channelHeight; }
-      const std::vector<double> &alignmentPlugRadius() const { return _alignmentPlugRadius; }
-      const std::vector<double> &alignmentHoleRClearance() const { return _alignmentHoleRClearance; }
-      double radiusTransitiondZ() const { return _radiusTransitiondZ; }
-
-      // these two are not just "positioning" parameters but also affect the shape
-      // thus they belong to this class
-      double angleH() const { return _angleH; }
-      double angleV() const { return _angleV; }
-    };
-
-    //----------------------------------------------------------------
-    class FilterMagnetExtMonFNAL {
-      friend class ProtonBeamDumpMaker;
-      std::vector<double> _outerHalfSize;
-      double _apertureWidth;
-      double _apertureHeight;
-      double _fieldStrength;
-    public:
-      const std::vector<double> &outerHalfSize() const { return _outerHalfSize; }
-      double apertureWidth() const { return _apertureWidth; }
-      double apertureHeight() const { return _apertureHeight; }
-      double fieldStrength() const { return _fieldStrength; }
-
-      // derived:
-      double trackBendHalfAngle(double momentum) const;
-    };
-
-    //----------------------------------------------------------------
     // Primary inputs: sizes
 
     const std::vector<double>& coreHalfSize() const { return _coreHalfSize; }
@@ -77,43 +30,30 @@ namespace mu2e {
 
     const std::vector<double>& mouthHalfSize() const { return _mouthHalfSize; }
 
-    const std::vector<double>& magnetPitHalfSize() const { return _magnetPitHalfSize; }
-
     double minCoreShieldingThickness() const { return _minCoreShieldingThickness; }
 
     //----
     // Primary inputs: placement
-
     const CLHEP::Hep3Vector& coreCenterInMu2e() const { return _coreCenterInMu2e; }
     // absolute w.r.t to the Mu2e
     double coreRotY() const { return _coreRotY; }
-
-    // The offsets are w.r.t. the dump core center, in the plane of the
-    // dump shielding face.
-    double filterEntranceOffsetX() const { return _filterEntranceOffsetX; }
-    double filterEntranceOffsetY() const { return _filterEntranceOffsetY; }
-
-    double filterAngleH() const { return _filterAngleH; }
-    double filterEntranceAngleV() const { return _filterEntranceAngleV; }
-
-    double extMonFilter_nominalMomentum() const { return _extMonFilter_nominalMomentum; }
-
-    const FilterMagnetExtMonFNAL& filterMagnet() const { return _filterMagnet; }
-    const CollimatorExtMonFNAL& collimator1() const { return _collimator1; }
-    const CollimatorExtMonFNAL& collimator2() const { return _collimator2; }
+    const CLHEP::HepRotation& coreRotationInMu2e() const { return _coreRotationInMu2e; }
 
     //---
     // Derived stuff
 
-    // The box containing the dump, the filter magnet room, and the two collimators
-    // for the secondaries.
-    // Does not include the wedge.
-    const std::vector<double>& enclosureHalfSize() const { return _enclosureHalfSize; }
-    const CLHEP::Hep3Vector& enclosureCenterInMu2e() const { return _enclosureCenterInMu2e; }
-    const CLHEP::HepRotation& enclosureRotationInMu2e() const { return _enclosureRotationInMu2e; }
+    // Front core shielding: contains the dump core and collimator1.
+    double coreCenterDistanceToShieldingFace() const { return _coreCenterDistanceToShieldingFace; }
 
-    const CLHEP::Hep3Vector& coreCenterInEnclosure() const { return _coreCenterInEnclosure; }
-    const CLHEP::Hep3Vector& magnetPitCenterInEnclosure() const { return _magnetPitCenterInEnclosure; }
+    const std::vector<double>& frontShieldingHalfSize() const { return _frontShieldingHalfSize; }
+    const CLHEP::Hep3Vector& frontShieldingCenterInMu2e() const { return _frontShieldingCenterInMu2e; }
+
+    const CLHEP::Hep3Vector& mouthCenterInMu2e() const { return _mouthCenterInMu2e; }
+    const CLHEP::Hep3Vector& neutronCaveCenterInMu2e() const { return _neutronCaveCenterInMu2e; }
+
+    // May need to add extra shielding to "frontShielding" to satisfy the min. shielding requirement
+    const std::vector<double>& backShieldingHalfSize() const { return _backShieldingHalfSize; }
+    const CLHEP::Hep3Vector& backShieldingCenterInMu2e() const { return _backShieldingCenterInMu2e; }
 
     double shieldingFaceXmin() const { return _shieldingFaceXmin; }
     double shieldingFaceXmax() const { return _shieldingFaceXmax; }
@@ -121,27 +61,15 @@ namespace mu2e {
     double shieldingFaceZatXmin() const { return _shieldingFaceZatXmin; }
     double shieldingFaceZatXmax() const { return _shieldingFaceZatXmax; }
 
-    const CLHEP::Hep3Vector& collimator1CenterInEnclosure() const { return _collimator1CenterInEnclosure; }
-    const CLHEP::HepRotation& collimator1RotationInMu2e() const { return _collimator1RotationInMu2e; }
-
-    const CLHEP::Hep3Vector& filterMagnetCenterInEnclosure() const { return _filterMagnetCenterInEnclosure; }
-    const CLHEP::HepRotation& filterMagnetRotationInMu2e() const { return _filterMagnetRotationInMu2e; }
-
-    const CLHEP::Hep3Vector& collimator2CenterInEnclosure() const { return _collimator2CenterInEnclosure; }
-    const CLHEP::HepRotation& collimator2RotationInMu2e() const { return _collimator2RotationInMu2e; }
-
-    // convenience accessor for event generators
-    // returns the point of intersection of collimator1 axis with the dump shielding face
-    CLHEP::Hep3Vector filterEntranceInMu2e() const;
-    // collimator2 exit
-    CLHEP::Hep3Vector filterExitInMu2e() const;
-
     //----------------------------------------------------------------
     // Transform to the "beam dump" coordinate system, which is centered
     // at the core center, and is rotated around the Y axis w.r.t the mu2e system
 
     CLHEP::Hep3Vector mu2eToBeamDump_position(const CLHEP::Hep3Vector& mu2epos) const;
     CLHEP::Hep3Vector mu2eToBeamDump_momentum(const CLHEP::Hep3Vector& mu2emom) const;
+
+    CLHEP::Hep3Vector beamDumpToMu2e_position(const CLHEP::Hep3Vector& dumppos) const;
+    CLHEP::Hep3Vector beamDumpToMu2e_momentum(const CLHEP::Hep3Vector& dumpmom) const;
 
     //----------------------------------------------------------------
   private:
@@ -151,47 +79,30 @@ namespace mu2e {
     // Or read back from persistent storage
     template<class T> friend class art::Wrapper;
 
+    CLHEP::Hep3Vector _coreCenterInMu2e;
+    double _coreRotY;
+    CLHEP::HepRotation _coreRotationInMu2e;
+
     std::vector<double> _coreHalfSize;
     std::vector<double> _neutronCaveHalfSize;
     std::vector<double> _mouthHalfSize;
-    std::vector<double> _magnetPitHalfSize;
     double _minCoreShieldingThickness;
 
-    CLHEP::Hep3Vector _coreCenterInMu2e;
-    double _coreRotY;
-
-    double _filterEntranceOffsetX;
-    double _filterEntranceOffsetY;
-    double _filterAngleH;
-    double _filterEntranceAngleV;
-
-    double _extMonFilter_nominalMomentum;
-
-    FilterMagnetExtMonFNAL _filterMagnet;
-    CollimatorExtMonFNAL _collimator1;
-    CollimatorExtMonFNAL _collimator2;
-
     // computed stuff
-    std::vector<double> _enclosureHalfSize;
-    CLHEP::Hep3Vector _enclosureCenterInMu2e;
-    CLHEP::HepRotation _enclosureRotationInMu2e;
+    double _coreCenterDistanceToShieldingFace;
+    std::vector<double> _frontShieldingHalfSize;
+    CLHEP::Hep3Vector _frontShieldingCenterInMu2e;
 
-    CLHEP::Hep3Vector _coreCenterInEnclosure;
-    CLHEP::Hep3Vector _magnetPitCenterInEnclosure;
+    std::vector<double> _backShieldingHalfSize;
+    CLHEP::Hep3Vector _backShieldingCenterInMu2e;
+
+    CLHEP::Hep3Vector _mouthCenterInMu2e;
+    CLHEP::Hep3Vector _neutronCaveCenterInMu2e;
 
     double _shieldingFaceXmin;
     double _shieldingFaceXmax;
     double _shieldingFaceZatXmin;
     double _shieldingFaceZatXmax;
-
-    CLHEP::Hep3Vector _collimator1CenterInEnclosure;
-    CLHEP::HepRotation _collimator1RotationInMu2e;
-
-    CLHEP::Hep3Vector _filterMagnetCenterInEnclosure;
-    CLHEP::HepRotation _filterMagnetRotationInMu2e;
-
-    CLHEP::Hep3Vector _collimator2CenterInEnclosure;
-    CLHEP::HepRotation _collimator2RotationInMu2e;
   };
 }
 
