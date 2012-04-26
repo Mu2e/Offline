@@ -9,7 +9,8 @@
 bool hasExtMonUCI = false;
 
 /// ProtonBeamDumpMaker: shieldingFaceZatXmin = -16097.7, ZatXmax = -16931.4
-double hall.insideZExtMonUCIWall = -16931.4;  // to the corner of dump shielding
+// Using -16931.4 works for G4, but leads to problems with the exported ROOT geometry. Move farther back:
+double hall.insideZExtMonUCIWall = -17200;  // to the corner of dump shielding
 
 // From the drawing S-1:
 vector<double> extMonFNAL.roomInsideX = { -1750, -1750, -3731, -3731, -1750, -1750, +2822, +2822, +3584, +3584, +2822, +2822 };
