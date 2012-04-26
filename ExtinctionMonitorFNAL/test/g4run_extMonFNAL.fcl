@@ -60,6 +60,7 @@ physics : {
             inputInstanceName  : "virtualdetector"
             acceptedVids       : [ 16 ]
             storeParents       : true
+            storeExtraHits     : true
         }
     }
 

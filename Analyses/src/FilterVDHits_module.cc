@@ -61,6 +61,8 @@ namespace mu2e {
 
     bool _storeParents;
 
+    bool _storeExtraHits; // store all VD hits for saved particles, not just in _vids.
+
   public:
     explicit FilterVDHits(const fhicl::ParameterSet& pset);
     virtual bool filter(art::Event& event);
@@ -74,10 +76,22 @@ namespace mu2e {
     , _inInstanceName(pset.get<std::string>("inputInstanceName"))
     , _vids(pset.get<std::vector<VolumeId> >("acceptedVids"))
     , _storeParents(pset.get<bool>("storeParents"))
+      // default to false for compatibility with existing .fcl files.
+    , _storeExtraHits(pset.get<bool>("storeExtraHits", false))
   {
+    std::cout<<"FilterVDHits(): storeParents = "<<_storeParents<<std::endl;
+    std::cout<<"FilterVDHits(): storeExtraVDs = "<<_storeExtraHits<<std::endl;
+
+    if(_storeExtraHits && !_storeParents) {
+      throw cet::exception("BADCONFIG")
+        <<"FilterVDHits: attempting to storeExtraHits without storeParents probably does not make sense.";
+    }
+
     produces<StepPointMCCollection>();
     produces<SimParticleCollection>();
-    std::cout<<"FilterVDHits(): storeParents = "<<_storeParents<<std::endl;
+    if(_storeExtraHits) {
+      produces<StepPointMCCollection>("extraHits");
+    }
   }
 
   //================================================================
@@ -92,6 +106,7 @@ namespace mu2e {
     const StepPointMCCollection& inhits(*ih);
 
     std::auto_ptr<StepPointMCCollection> outhits(new StepPointMCCollection());
+    std::auto_ptr<StepPointMCCollection> extrahits(new StepPointMCCollection());
 
     for(StepPointMCCollection::const_iterator i=inhits.begin(); i!=inhits.end(); ++i) {
 
@@ -166,14 +181,44 @@ namespace mu2e {
 
         AGDEBUG("after p/d reset: particle id = "<<particle.id());
       }
-    }
-    else { // _storeParents
+    } // if(_storeParents)
+    else {
       art::Handle<SimParticleCollection> inparts;
       event.getByLabel(_inModuleLabel, "", inparts);
 
       ParticleSelector selector(particlesWithHits);
       compressSimParticleCollection(newProductId, newProductGetter, *inparts, selector, *outparts);
-    }
+    } // else(_storeParents)
+
+    //----------------------------------------------------------------
+    // We have a set of saved particles.  Some of their hits are
+    // already in the output collection, _storeExtraHits requrests to
+    // add any remaining hits made by those particles.
+    if(_storeExtraHits) {
+
+      for(StepPointMCCollection::const_iterator i=inhits.begin(); i!=inhits.end(); ++i) {
+
+        // Hits in _vids are already stored.  Just store the complement.
+        if(std::find(_vids.begin(), _vids.end(), i->volumeId()) == _vids.end() ) {
+
+          const art::Ptr<SimParticle>& particle = i->simParticle();
+          if(!particle.get()) {
+            throw cet::exception("MISSINGINFO")
+              <<"storeExtraHits: NULL particle pointer for StepPointMC = "<<*i
+              <<" in event "<<event.id()
+              ;
+          }
+          else {
+            AGDEBUG("here: particle = "<<particle<<" (internal id = "<< particle->id()<<")"<<" for hit "<<*i);
+            if(outparts->has(particle->id())) {
+              extrahits->push_back(*i);
+            }
+          }
+        }
+      }
+    } // if(_storeExtraHits)
+
+    //----------------------------------------------------------------
 
     AGDEBUG("here");
     event.put(outparts);
@@ -187,6 +232,22 @@ namespace mu2e {
       i->simParticle() = art::Ptr<SimParticle>(newProductId, oldPtr->id().asUint(), newProductGetter);
     }
     AGDEBUG("here");
+
+    if(_storeExtraHits) {
+      // Update pointers in the extra hits collection
+      AGDEBUG("here");
+      for(StepPointMCCollection::iterator i=extrahits->begin(); i!=extrahits->end(); ++i) {
+        AGDEBUG("here");
+        art::Ptr<SimParticle> oldPtr(i->simParticle());
+        AGDEBUG("here: settting id = "<< oldPtr->id()<<", newProductId = "<<newProductId <<" for hit "<<*i);
+        i->simParticle() = art::Ptr<SimParticle>(newProductId, oldPtr->id().asUint(), newProductGetter);
+      }
+      AGDEBUG("here");
+
+      event.put(extrahits, "extraHits");
+    }
+
+    //----------------------------------------------------------------
 
     bool nonEmpty = !outhits->empty();
     event.put(outhits);
