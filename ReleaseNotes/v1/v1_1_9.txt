@@ -1,10 +1,14 @@
-  $Id: v1_1_9.txt,v 1.2 2012/04/27 05:39:11 gandr Exp $
-  $Author: gandr $
-  $Date: 2012/04/27 05:39:11 $
+  $Id: v1_1_9.txt,v 1.3 2012/04/27 23:00:08 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/04/27 23:00:08 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+2) April 27, 2012 gandr
+   Add checks to GeometryService so that it will throw if we try to load
+   a geometry in which two calorimeters are defined.
 
 1) April 27, 2012 gandr
 
