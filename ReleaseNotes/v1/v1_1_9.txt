@@ -1,7 +1,11 @@
-  $Id: v1_1_9.txt,v 1.1 2012/04/26 04:01:16 gandr Exp $
+  $Id: v1_1_9.txt,v 1.2 2012/04/27 05:39:11 gandr Exp $
   $Author: gandr $
-  $Date: 2012/04/26 04:01:16 $
+  $Date: 2012/04/27 05:39:11 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+1) April 27, 2012 gandr
+
+   Install PS heat and radiation shield.
