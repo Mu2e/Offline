@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.14 2012/04/10 14:24:51 kutschke Exp $
+// $Id: GeometryService.hh,v 1.15 2012/04/27 22:59:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/04/10 14:24:51 $
+// $Date: 2012/04/27 22:59:58 $
 //
 // Original author Rob Kutschke
 //
@@ -78,6 +78,8 @@ private:
 
     // Check the configuration.
     void checkConfig();
+    void checkTrackerConfig();
+    void checkCalorimeterConfig();
 
     typedef boost::shared_ptr<Detector> DetectorPtr;
     typedef std::map<std::string,DetectorPtr> DetMap;

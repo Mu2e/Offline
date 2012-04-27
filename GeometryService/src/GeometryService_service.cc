@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.29 2012/04/27 05:37:32 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/27 05:37:32 $
+// $Id: GeometryService_service.cc,v 1.30 2012/04/27 22:59:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/04/27 22:59:58 $
 //
 // Original author Rob Kutschke
 //
@@ -222,6 +222,12 @@ namespace mu2e {
 
   // Check that the configuration is self consistent.
   void GeometryService::checkConfig(){
+    checkTrackerConfig();
+    checkCalorimeterConfig();
+  }
+
+  // Check that the Tracker configuration is self consistent.
+  void GeometryService::checkTrackerConfig(){
     int ntrackers(0);
     string allTrackers;
     if ( _config->getBool("hasLTracker",false) ) {
@@ -241,6 +247,28 @@ namespace mu2e {
       throw cet::exception("GEOM")
         << "This configuration has more than one tracker: "
         << allTrackers
+        << "\n";
+    }
+
+  }
+
+  // Check that the Tracker configuration is self consistent.
+  void GeometryService::checkCalorimeterConfig(){
+    int nCalorimeters(0);
+    string allCalorimeters;
+    if ( _config->getBool("hasCalorimeter",false) ) {
+      allCalorimeters += " Calorimeter";
+      ++nCalorimeters;
+    }
+    if ( _config->getBool("hasDiskCalorimeter",false) ) {
+      allCalorimeters += " DiskCalorimeter";
+      ++nCalorimeters;
+    }
+
+    if ( nCalorimeters > 1 ){
+      throw cet::exception("GEOM")
+        << "This configuration has more than one calorimeter: "
+        << allCalorimeters
         << "\n";
     }
 
