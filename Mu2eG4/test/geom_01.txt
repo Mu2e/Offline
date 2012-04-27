@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.144 2012/04/25 19:16:30 gandr Exp $
+// $Id: geom_01.txt,v 1.145 2012/04/27 05:37:32 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/25 19:16:30 $
+// $Date: 2012/04/27 05:37:32 $
 //
 // Original author Rob Kutschke
 //
@@ -207,9 +207,7 @@ bool   toyDS.solid              = false;
 
 #include "Mu2eG4/test/ProductionSolenoid_v01.txt"
 #include "Mu2eG4/test/psEnclosure_v01.txt"
-
-//// Uncomment to enable PS heat and radiation shield
-//#include "Mu2eG4/test/PSShield_v01.txt"
+#include "Mu2eG4/test/PSShield_v01.txt"
 
 // Parameters for TS volumes.
 double toyTS.rVac        =  240.;          // Outer radius of vacuum volume

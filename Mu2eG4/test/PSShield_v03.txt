@@ -1,4 +1,4 @@
-// PS heat and radiation shield.  Replicating MARS version as of Feb 2012.
+// PS heat and radiation shield.  A two grooves version with parameters from Peter Kasper.
 //
 // Original author: Andrei Gaponenko
 
@@ -11,7 +11,7 @@ vector<double> PSShield.rOut   = { 700., 700.,   700.,   700.,   700.,   700.,  
 // Each groove is a cylinder of the given dimensions, with the center
 // at the given reference point and rotated by the given angles, which
 // is subtracted from the polycone above.
-int PSShield.nGrooves = 1;
+int PSShield.nGrooves = 2;
 
 // The groove for spent beam exit
 double PSShield.groove1.r         = 200.; // mm
@@ -19,6 +19,14 @@ double PSShield.groove1.halfLengh = 2500.; // NB: == mars full length, but G4 re
 vector<double> PSShield.groove1.refPoint =  { -600, 0., -30.}; // MARS reference point for the groove
 double PSShield.groove1.theta     = 14.00; // angle to Mu2e Z axis, degrees
 double PSShield.groove1.phi       = 180.; // angle between Mu2e X axis and projection of the groove axis on XY, degrees.
+
+// The groove ExtMonFNAL: just like the above but in a different direction
+// Need to rotate the ref point (-600, 0) at 180 deg  ==> (cos(145*deg) * 600, sin(145*deg)*600) at 145 deg
+double PSShield.groove2.r         = 200.; // mm
+double PSShield.groove2.halfLengh = 2500.; // NB: == mars full length, but G4 ref pos is the center.
+vector<double> PSShield.groove2.refPoint =  { -491.5, 344.1, -30.}; // MARS reference point for the groove
+double PSShield.groove2.theta     = 14.00; // angle to Mu2e Z axis, degrees
+double PSShield.groove2.phi       = 145.; // angle between Mu2e X axis and projection of the groove axis on XY, degrees.
 
 // The shield is positioned on the PS axis.
 // To fix its Z position we specify the distance between the

@@ -7,20 +7,22 @@
 //
 // Original author: Andrei Gaponenko
 
-// FIXME: this will go away
-bool hasPSShield = true;
-
-// Numbers from MARS times 10 (for cm=>mm) to define the shape
 // The polycone
 vector<double> PSShield.zPlane = {1050, 1916.7, 2290.5, 2290.5, 3340.5, 3340.5, 4580., 5000. };
 vector<double> PSShield.rIn    = { 500.,  300.,   300.,   250.,   250.,   300.,  300.,  150. };
 vector<double> PSShield.rOut   = { 725.,  725.,   725.,   700.,   700.,   700.,  700.,  700. };
 
+// Each groove is a cylinder of the given dimensions, with the center
+// at the given reference point and rotated by the given angles, which
+// is subtracted from the polycone above.
+int PSShield.nGrooves = 1;
+
 // The cutout for spent beam exit
-vector<double> PSShield.cutout.refPoint =  { -600, 0., -30.}; // MARS reference point for the cutout
-double PSShield.cutout.r         = 200.; // mm
-double PSShield.cutout.halfLengh = 2500.; // NB: == mars full length, but G4 ref pos is the center.
-double PSShield.cutout.rotY      = 14.00; // degrees
+double PSShield.groove1.r         = 200.; // mm
+double PSShield.groove1.halfLengh = 2500.; // NB: == mars full length, but G4 ref pos is the center.
+vector<double> PSShield.groove1.refPoint =  { -600, 0., -30.}; // MARS reference point for the cutout
+double PSShield.groove1.theta     = 14.00; // angle to Mu2e Z axis, degrees
+double PSShield.groove1.phi       = 180.; // angle between Mu2e X axis and projection of the groove axis on XY, degrees.
 
 // The shield is positioned on the PS axis.
 // To fix its Z position we specify the distance between the

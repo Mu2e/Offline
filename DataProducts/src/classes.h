@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.10 2012/04/05 18:43:07 gandr Exp $
+// $Id: classes.h,v 1.11 2012/04/27 05:37:32 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/05 18:43:07 $
+// $Date: 2012/04/27 05:37:32 $
 //
 // Original author Rob Kutschke
 //
@@ -20,6 +20,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/EulerAngles.h"
+#include <CLHEP/Geometry/Transform3D.h>
 
 template class std::vector<CLHEP::Hep2Vector>;
 template class std::vector<cet::map_vector_key>;

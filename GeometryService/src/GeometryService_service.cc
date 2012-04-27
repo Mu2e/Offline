@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.28 2012/04/25 18:47:32 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.29 2012/04/27 05:37:32 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/25 18:47:32 $
+// $Date: 2012/04/27 05:37:32 $
 //
 // Original author Rob Kutschke
 //
@@ -153,9 +153,7 @@ namespace mu2e {
 
     addDetector(PSEnclosureMaker::make(*_config, ps.psEndRefPoint(), ps.getVacuumParamsPtr()->materialName()));
 
-    if(_config->getBool("hasPSShield",false)){
-      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint()));
-    }
+    addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint()));
 
     std::auto_ptr<BuildingBasics> tmpBasics(BuildingBasicsMaker::make(*_config));
     const BuildingBasics& buildingBasics = *tmpBasics.get();

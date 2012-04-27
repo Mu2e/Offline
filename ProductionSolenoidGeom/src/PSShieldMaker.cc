@@ -1,10 +1,11 @@
-// $Id: PSShieldMaker.cc,v 1.2 2012/03/30 16:31:10 gandr Exp $
+// $Id: PSShieldMaker.cc,v 1.3 2012/04/27 05:37:32 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/30 16:31:10 $
+// $Date: 2012/04/27 05:37:32 $
 //
 // Original author Andrei Gaponenko
 
 #include <algorithm>
+#include <sstream>
 
 #include "cetlib/exception.h"
 
@@ -17,6 +18,19 @@
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 namespace mu2e {
+
+  PSShield::Groove PSShieldMaker::readGroove(int i, const SimpleConfig& c) {
+      std::ostringstream prefix;
+      prefix<<"PSShield.groove"<<1+i<<".";
+
+      return PSShield::Groove(
+                              c.getHep3Vector(prefix.str()+"refPoint"),
+                              c.getDouble(prefix.str()+"theta")*CLHEP::degree,
+                              c.getDouble(prefix.str()+"phi")*CLHEP::degree,
+                              c.getDouble(prefix.str()+"r")*CLHEP::mm,
+                              c.getDouble(prefix.str()+"halfLengh")*CLHEP::mm
+                              );
+  }
 
   std::auto_ptr<PSShield> PSShieldMaker::make(const SimpleConfig& c, const CLHEP::Hep3Vector& psEndRefPoint)
   {
@@ -35,20 +49,18 @@ namespace mu2e {
     // Put the shield at the required distance to the ref plane
     const CLHEP::Hep3Vector shieldOriginInMu2e(psEndRefPoint + CLHEP::Hep3Vector(0,0,  distanceToCryoRefZ - zPlane[0]));
 
-
-
-    std::auto_ptr<PSShield> res(new PSShield(
-                                             Polycone(zPlane, rIn, rOut,
+    std::auto_ptr<PSShield> res(new PSShield(Polycone(
+                                                      zPlane, rIn, rOut,
                                                       shieldOriginInMu2e,
                                                       c.getString("PSShield.materialName")
-                                                      ),
-
-                                             c.getHep3Vector("PSShield.cutout.refPoint"),
-                                             c.getDouble("PSShield.cutout.r")*CLHEP::mm,
-                                             c.getDouble("PSShield.cutout.halfLengh")*CLHEP::mm,
-                                             c.getDouble("PSShield.cutout.rotY")*CLHEP::degree
+                                                      )
                                              )
                                 );
+
+    const int nGrooves = c.getInt("PSShield.nGrooves");
+    for(int i=0; i<nGrooves; ++i) {
+      res->grooves_.push_back(readGroove(i, c));
+    }
 
     if(c.getInt("PSShield.verbosityLevel") > 0) {
       std::cout<<*res.get()<<std::endl;

@@ -23,6 +23,9 @@
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
+//#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
+#define AGDEBUG(stuff)
+
 namespace mu2e {
   void constructPSShield(const VolumeInfo& parent, const SimpleConfig& config) {
 
@@ -36,32 +39,40 @@ namespace mu2e {
     const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
     const bool placePV             = true;
 
-    CLHEP::HepRotation *cutrot = reg.add(CLHEP::HepRotation::IDENTITY);
-    cutrot->rotateY(hrs->cutoutRotY());
+    // start with the polycone
+    G4VSolid *psssolid = reg.add(new G4Polycone("PSShieldPoly",
+                                                0, 2*M_PI,
+                                                hrs->bulk().numZPlanes(),
+                                                &hrs->bulk().zPlanes()[0],
+                                                &hrs->bulk().rInner()[0],
+                                                &hrs->bulk().rOuter()[0]
+                                                )
+                                 );
 
-    G4Polycone *psspoly = reg.add(new G4Polycone("PSShieldPoly",
-                                                 0, 2*M_PI,
-                                                 hrs->bulk().numZPlanes(),
-                                                 &hrs->bulk().zPlanes()[0],
-                                                 &hrs->bulk().rInner()[0],
-                                                 &hrs->bulk().rOuter()[0]
-                                                 )
-                                  );
+    // and cut out the grooves
+    for(unsigned i=0; i<hrs->nGrooves(); ++i) {
+      std::ostringstream gname;
+      gname<<"PSShieldGroove"<<i;
+      G4Tubs *groove = reg.add(new G4Tubs(gname.str(),
+                                          0., hrs->grooves()[i].r(),
+                                          hrs->grooves()[i].halfLength(),
+                                          0., 2*M_PI
+                                          ));
 
-    G4Tubs *psscutout = reg.add(new G4Tubs("PSShieldCut",
-                                           0.,
-                                           hrs->cutoutR(),
-                                           hrs->cutoutHalfLength(),
-                                           0., 2*M_PI
-                                           ));
+      std::ostringstream tmpname;
+      tmpname<<"PSShieldTemp"<<i;
+      psssolid = new G4SubtractionSolid(tmpname.str(),
+                                        psssolid,
+                                        groove,
+                                        hrs->grooves()[i].placement()
+                                        );
+
+    }
 
     //----------------------------------------------------------------
     VolumeInfo pss("PSShield", hrs->originInMu2e() - parent.centerInMu2e(), parent.centerInWorld);
-
-    pss.solid = new G4SubtractionSolid(pss.name,
-                                       psspoly, psscutout,
-                                       G4Transform3D(*cutrot, hrs->cutoutRefPoint())
-                                       );
+    pss.solid = psssolid;
+    pss.solid->SetName(pss.name);
 
     finishNesting(pss,
                   materialFinder.get("PSShield.materialName"),
@@ -70,7 +81,7 @@ namespace mu2e {
                   parent.logical,
                   0,
                   config.getBool("PSShield.visible"),
-                  G4Colour::Magenta(),
+                  G4Colour(0xFF/double(0xFF), 0x99/double(0xFF), 0),
                   config.getBool("PSShield.solid"),
                   forceAuxEdgeVisible,
                   placePV,

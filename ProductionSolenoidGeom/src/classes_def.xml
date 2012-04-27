@@ -1,4 +1,6 @@
 <lcgdict>
+ <class name="mu2e::PSShield::Groove"/>
+ <class name="std::vector<mu2e::PSShield::Groove>"/>
  <class name="mu2e::PSShield"/>
  <class name="art::Wrapper<mu2e::PSShield>"/> 
  <class name="mu2e::PSEnclosure"/>
