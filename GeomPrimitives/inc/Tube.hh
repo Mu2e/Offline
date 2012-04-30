@@ -3,9 +3,9 @@
 //
 // "Typical" Tube object
 //
-// $Id: Tube.hh,v 1.3 2012/04/05 18:43:07 gandr Exp $
+// $Id: Tube.hh,v 1.4 2012/04/30 16:21:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/05 18:43:07 $
+// $Date: 2012/04/30 16:21:31 $
 //
 // Original author KLG
 //
@@ -46,11 +46,11 @@ namespace mu2e {
 
     TubsParams const & getTubsParams() const { return _params; }
 
-    // Used by default constructors required for ROOT persistency mechanism
-    static const Tube UNINITIALIZED;
+    // Genreflex can't do persistency of vector<Tube> without a default constructor
+    Tube() : _params(0,0,0) {}
 
   private:
-    
+
     TubsParams        _params;
     CLHEP::Hep3Vector _originInMu2e;
     std::string       _materialName;

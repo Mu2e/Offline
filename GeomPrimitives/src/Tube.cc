@@ -1,9 +1,9 @@
 //
 // "Typical" Tube object
 //
-// $Id: Tube.cc,v 1.2 2012/04/05 18:43:07 gandr Exp $
+// $Id: Tube.cc,v 1.3 2012/04/30 16:21:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/05 18:43:07 $
+// $Date: 2012/04/30 16:21:31 $
 //
 // Original author KLG
 //
@@ -40,6 +40,4 @@ namespace mu2e {
     _materialName(materialName)
   {};
 
-  const Tube Tube::UNINITIALIZED("", CLHEP::Hep3Vector(), 0, 0, 0);
-  
 }
