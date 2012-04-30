@@ -1,8 +1,10 @@
-// $Id: PSEnclosureMaker.cc,v 1.2 2012/03/30 19:18:03 gandr Exp $
+// $Id: PSEnclosureMaker.cc,v 1.3 2012/04/30 16:21:47 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/30 19:18:03 $
+// $Date: 2012/04/30 16:21:47 $
 //
 // Original author Andrei Gaponenko
+
+#include <sstream>
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -13,6 +15,28 @@
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 namespace mu2e {
+
+  namespace {
+    Tube readWindow(int i, const SimpleConfig& c, const CLHEP::Hep3Vector& winRefPoint) {
+      std::ostringstream sprefix;
+      sprefix<<"PSEnclosure.window"<<1+i<<".";
+      const std::string prefix(sprefix.str());
+
+      const double xoff = c.getDouble(prefix+"x")*CLHEP::mm;
+      const double yoff = c.getDouble(prefix+"y")*CLHEP::mm;
+      const double halfThick = 0.5*c.getDouble(prefix+"thickness")*CLHEP::mm;
+
+      const CLHEP::Hep3Vector windowCenterInMu2e = winRefPoint + CLHEP::Hep3Vector(xoff, yoff, -halfThick);
+
+      return Tube(c.getString(prefix+"materialName"),
+                  windowCenterInMu2e,
+                  0., // rIn
+                  c.getDouble(prefix+"r")*CLHEP::mm,
+                  halfThick
+                  );
+    }
+  }
+
 
   std::auto_ptr<PSEnclosure>  PSEnclosureMaker::make(const SimpleConfig& c,
                                                      const CLHEP::Hep3Vector& psEndRefPoint,
@@ -32,7 +56,7 @@ namespace mu2e {
                                                    // cylindrical shell
                                                    Tube(shellMaterialName,
                                                         shellOriginInMu2e,
-                                                        0.5*(shellOD - shellThickness),
+                                                        0.5*(shellOD - 2*shellThickness),
                                                         0.5*shellOD,
                                                         0.5*shellLength),
 
@@ -40,7 +64,7 @@ namespace mu2e {
                                                    Tube(psInsideMaterialName,
                                                         shellOriginInMu2e,
                                                         0.,
-                                                        0.5*(shellOD - shellThickness),
+                                                        0.5*(shellOD - 2*shellThickness),
                                                         0.5*shellLength
                                                         ),
 
@@ -55,6 +79,19 @@ namespace mu2e {
                                                    )
 
                                    );
+
+    //----------------------------------------------------------------
+    const CLHEP::Hep3Vector winRefPoint = psEndRefPoint + CLHEP::Hep3Vector(0, 0, -totalLength);
+
+    const int nwin = c.getInt("PSEnclosure.nWindows");
+    for(int i=0; i<nwin; ++i) {
+      res->windows_.push_back(readWindow(i, c, winRefPoint));
+    }
+
+    //----------------------------------------------------------------
+    if(c.getInt("PSEnclosure.verbosityLevel") > 0) {
+      std::cout<<*res<<std::endl;
+    }
 
     return res;
   }

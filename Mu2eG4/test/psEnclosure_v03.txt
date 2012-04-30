@@ -1,3 +1,5 @@
+// The configuration to be used with the two-grooves PSShield design v03.
+
 // Original author Andrei Gaponenko
 
 double PSEnclosure.length = 900; // mm
@@ -20,7 +22,7 @@ double PSEnclosure.window1.y =  100; // relative to PS center
 string PSEnclosure.window2.materialName = "G4_Ti";
 double PSEnclosure.window2.thickness = 2.84;
 double PSEnclosure.window2.r =  100;
-double PSEnclosure.window2.x = -440; // relative to PS center
+double PSEnclosure.window2.x = -590; // relative to PS center
 double PSEnclosure.window2.y =  455; // relative to PS center
 
 bool  PSEnclosure.visible = true;

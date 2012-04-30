@@ -11,6 +11,8 @@ double PSEnclosure.endPlate.thickness = 2.84; // mm
 
 string PSEnclosure.shell.materialName  = "G4_Ti";
 
+int  PSEnclosure.nWindows = 0;
+
 bool  PSEnclosure.visible = true;
 bool  PSEnclosure.solid = false;
 

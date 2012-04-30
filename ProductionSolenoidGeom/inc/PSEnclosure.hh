@@ -2,12 +2,15 @@
 #define ProductionSolenoidGeom_PSEnclosure_hh
 
 //
-// $Id: PSEnclosure.hh,v 1.2 2012/04/05 18:43:39 gandr Exp $
+// $Id: PSEnclosure.hh,v 1.3 2012/04/30 16:21:47 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/05 18:43:39 $
+// $Date: 2012/04/30 16:21:47 $
 //
 // Original author Andrei Gaponenko
 //
+
+#include <vector>
+#include <ostream>
 
 #include "GeomPrimitives/inc/Tube.hh"
 #include "Mu2eInterfaces/inc/Detector.hh"
@@ -25,6 +28,9 @@ namespace mu2e {
     const Tube& shell() const { return shell_; }
     const Tube& vacuum() const { return vacuum_; }
     const Tube& endPlate() const { return endPlate_; }
+    const std::vector<Tube>& windows() const { return windows_; }
+
+    unsigned nWindows() const { return windows_.size(); }
 
   private:
 
@@ -44,7 +50,11 @@ namespace mu2e {
     Tube shell_;
     Tube vacuum_;
     Tube endPlate_;
+    std::vector<Tube> windows_;
   };
+
+  std::ostream& operator<<(std::ostream& os, const PSEnclosure& pse);
+
 }
 
 #endif/*ProductionSolenoidGeom_PSEnclosure_hh*/
