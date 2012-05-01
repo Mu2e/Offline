@@ -102,19 +102,25 @@ namespace mu2e {
         std::cout<<"AG: creating new GenParticle from hit "<<*i<<std::endl;
       }
 
-      const double mass = pdt_->particle(particle->pdgId()).ref().mass().value();
-      const CLHEP::HepLorentzVector fourMom(i->momentum(), sqrt(mass*mass + i->momentum().mag2()));
+      if(pdt_->particle(particle->pdgId())) {
+        const double mass = pdt_->particle(particle->pdgId()).ref().mass().value();
+        const CLHEP::HepLorentzVector fourMom(i->momentum(), sqrt(mass*mass + i->momentum().mag2()));
 
-      output->push_back(GenParticle(particle->pdgId(),
-                                    GenId::fromStepPointMCs,
-                                    i->position(),
-                                    fourMom,
-                                    i->time()
-                                    ));
+        output->push_back(GenParticle(particle->pdgId(),
+                                      GenId::fromStepPointMCs,
+                                      i->position(),
+                                      fourMom,
+                                      i->time()
+                                      ));
 
-      history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
-                         art::Ptr<StepPointMC>(ih, std::distance(inhits.begin(), i))
-                         );
+        history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
+                           art::Ptr<StepPointMC>(ih, std::distance(inhits.begin(), i))
+                           );
+      }
+      else {
+        mf::LogWarning warn("FromStepPointMCs");
+        warn<<"WARNING: No particle data for pdgId = "<<particle->pdgId()<<"\n";
+      }
 
     }
 
