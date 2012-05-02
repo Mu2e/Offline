@@ -53,7 +53,7 @@ physics : {
     }
 
     filters: {
-        emfd: {
+        fvd36: {
             module_type: FilterVDHits
             inputModuleLabel   : "g4run"
             inputInstanceName  : "virtualdetector"
@@ -63,23 +63,23 @@ physics : {
         }
     }
 
-    td : [fromVD16, g4run, emfd, randomsaver ]
+    t36 : [fromVD16, randomsaver, g4run, fvd36 ]
     gm : [ geoms2 ]
 
-    ed : [ outemfd, fullOutput ]
-    //e16 : [ outemfd ]
+    //e36 : [ outfvd36, fullOutput ]
+    e36 : [ outfvd36 ]
 
-    trigger_paths  : [gm, td]
-    end_paths      : [ed]
+    trigger_paths  : [gm, t36]
+    end_paths      : [e36]
 }
 
 outputs:
 {
-    outemfd: {
+    outfvd36: {
         module_type: RootOutput
         fileName: "extMonFNALDetectorVD.root"
-        SelectEvents: { SelectEvents: [td] }
-        outputCommands:   [ "keep *_emfd_*_*", "keep *_randomsaver_*_*", "keep *_geom_*_*" ]
+        SelectEvents: { SelectEvents: [t36] }
+        outputCommands:   [ "keep *_fvd*_*_*", "keep *_fromVD*_*_*", "keep *_randomsaver_*_*", "keep *_geom*_*_*" ]
     }
 
     fullOutput :
