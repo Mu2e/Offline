@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.14 2012/03/30 14:07:13 gandr Exp $
+// $Id: constructPS.cc,v 1.15 2012/05/03 19:35:52 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/30 14:07:13 $
+// $Date: 2012/05/03 19:35:52 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -56,9 +56,6 @@ namespace mu2e {
     bool const _psSolid                 = _config.getBool("PS.solid");
                                                 
     G4Material* psVacVesselMaterial = findMaterialOrThrow(psVacVesselInnerParams.materialName());
-
-    //    double        psCenterZ0 = -rTorus + -2.*ts1HalfLength - _psVacVesselHalfLength;
-    G4ThreeVector psMu2eOffset( psVacVesselInnerParams.originInMu2e() );
 
     verbosityLevel >0 && 
       cout << __func__ << " verbosityLevel                   : " << verbosityLevel  << endl;
@@ -316,7 +313,7 @@ namespace mu2e {
                                             prodTargetParams,
                                             prodTargetMaterial,
                                             &tgt->productionTargetRotation(),
-                                            tgt->position() - psMu2eOffset,
+                                            tgt->position() - psVacuumInfo.centerInMu2e(),
                                             psVacuumInfo,
                                             0,
                                             prodTargetVisible,
