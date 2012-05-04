@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.31 2012/01/10 22:28:43 mu2ecvs Exp $
-# $Author: mu2ecvs $
-# $Date: 2012/01/10 22:28:43 $
+# $Id: SConstruct,v 1.32 2012/05/04 14:35:35 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2012/05/04 14:35:35 $
 #
 # Original author Rob Kutschke.
 #
@@ -57,7 +57,7 @@ for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',  'ROOTSYS'
         osenv[var] = os.environ[var]
         pass
     pass
-    
+
 env = Environment( CPPPATH=[ cpppath_frag,
                              base,
                              base+'/BaBar/include',
@@ -143,11 +143,17 @@ if not(os.path.exists('BaBar/BaBar/src/SConscript')):
 else:
 #  Remove Dch code for now: not used by any officlal package
     for root,dirs,files in os.walk('BaBar/Dch'):
-	for file in files:
-	    if file == 'SConscript': ss.remove('%s/%s'%(root[0:],file))
-	    #print '%s/%s'%(root[0:],file)
-	    pass
-	pass
+        for file in files:
+            if file == 'SConscript': ss.remove('%s/%s'%(root[0:],file))
+            #print '%s/%s'%(root[0:],file)
+            pass
+        pass
+
+# If the splines package is absent, skip the figure of merit tool.
+if not os.environ.has_key('SPLINES_DIR'):
+    if os.path.exists('FigureOfMerit/src/SConscript'):
+        ss.remove('FigureOfMerit/src/SConscript')
+
 
 #
 # Tell scons to operate on all of the SConscript files found in the previous step.
