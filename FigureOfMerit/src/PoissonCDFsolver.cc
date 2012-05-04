@@ -8,6 +8,11 @@
 #include <vector>
 #include <cassert>
 
+//#define DISPLAY_PMS_RESULTS
+//#define TRACE_MUGESSES
+//#define TRACE_CCDF
+//#define TRACE_PMS
+
 namespace mu2e {
 
 // determine, for a given mu, the first n such that CDF > a given p-value
@@ -58,7 +63,7 @@ int poissonInverseCDF (double mu, double pValue) {
   }
   return r-1;
 }
-  
+
 // determine, for a given p-value and n, the mu such that CDF at that n
 // is equal to that p-value
 double poissonMeanSolver (int n, double pValue) {
@@ -91,7 +96,12 @@ double poissonMeanSolver (int n, double pValue) {
     oldMuGuess = newMuGuess;
     double mu = oldMuGuess;
     double ccdf = poissonComplementaryCDF(mu,n);
-    double slope = poissonComplementaryCDF(mu,n-1)- ccdf;
+    double slope;
+    if (n > 0) {
+      slope = poissonComplementaryCDF(mu,n-1)- ccdf;
+    } else {
+      slope = 1 - ccdf;
+    }
 #ifdef TRACE_CCDF
     std::cout << "  ccdf = " << ccdf << "  slope = " << slope << "\n";
 #endif
@@ -103,8 +113,75 @@ double poissonMeanSolver (int n, double pValue) {
             << " at n = " << n << " is " << newMuGuess << "\n";
 #endif
   return newMuGuess;
-}
+} // poissonMeanSolver
   
+// determine, for a given p-value and (n1,n2), the mu such that the prob
+// slice from n1 to n2 is is equal to that p-value.  This takes the hint that
+// the solution is in the interval [mu_1,mu_2]
+double poissonMeanSliceSolver (int n1, int n2, double pValue, 
+                               double mu_1, double mu_2)
+{
+#ifdef TRACE_PMS
+  std::cout << "poissonMeanSliceSolver (" << n1 << ", " << n2 
+            << ", " << pValue << ", " << mu_1 << ", " << mu_2 << ")\n"; 
+#endif
+  assert( n1>=0 && n2>=n1 && pValue > 0 && pValue < 1 );
+
+ // up to here
+
+
+  if ( (n1==0) && (n2==0) ) {
+#ifdef DISPLAY_PMS_RESULTS
+    std::cout << "The mu that has a slice probability of " << pValue 
+              << " at (" << n1 << ", " << n2  
+              << ") is " << -std::log(pValue) << "\n";
+#endif
+    return -std::log(pValue);
+  }
+  // Use Newton's method, with initial guess (mu_1+mu_2)/2
+  double t = 1-pValue;
+#ifdef TRACE_PMS
+  std::cout <<  " t = " << t << "\n";
+#endif
+  double oldMuGuess = mu_1;
+  double muTolAbs = 1.0e-6;
+  double newMuGuess = (mu_1+mu_2)/2;
+  for (int i = 0; i < 100; ++i)  {
+    if (std::fabs(newMuGuess-oldMuGuess) < muTolAbs) break;
+#ifdef TRACE_MUGESSES
+    std::cout << "  newMuGuess = " << newMuGuess 
+              << "  delta = " << newMuGuess - oldMuGuess;
+#endif
+    oldMuGuess = newMuGuess;
+    double mu = oldMuGuess;
+    double ccdf  = 1 - poissonProbabilitySlice(mu,n1, n2);
+    double slope;
+    if (n1 > 0) {
+      slope  = 1 - ccdf - poissonProbabilitySlice(mu,n1-1,n2-1);
+    } else if ( n2 > 0) {
+      slope = 1 - ccdf - poissonProbabilitySlice(mu,0,n2-1);
+    } else {
+      slope = 1 - ccdf;
+    }
+#ifdef TRACE_CCDF
+    std::cout << "  ccdf = " << ccdf << "  slope = " << slope << "\n";
+#endif
+    newMuGuess =  std::min(.75*mu_2+.25*oldMuGuess, 
+                                oldMuGuess + (t-ccdf)/slope);
+    if (newMuGuess <= mu_1) newMuGuess = .75*mu_1 + .25*oldMuGuess;
+    if ( i == 99 ) {
+      std::cout << "???? poissonMeanSliceSolver (" << n1 << ", " << n2 
+            << ", " << pValue << ", " << mu_1 << ", " << mu_2 
+            << ") did not converge\n"; 
+    }
+  }
+#ifdef DISPLAY_PMS_RESULTS
+  std::cout << "The mu that has a slice probability of " << pValue 
+              << " at (" << n1 << ", " << n2  
+              << ") is " << newMuGuess << "\n";
+#endif
+  return newMuGuess;
+} // poissonMeanSliceSolver
 
 // determine pValue corresponding to given mu and n (for completeness)
 double poissonCDF (double mu, int n) 
@@ -141,70 +218,15 @@ double poissonComplementaryCDF (double mu, int n)
   return series*std::exp(-mu);
 }
 
-// determine Feldman/Cousins 90% CL sensitivity given a background mean b
-double feldmanCousins90pctSensitivity ( double b ) 
-{
-  static  FeldmanCousins90pctSensitivity s;
-  return s(b);
-} 
-
-std::vector<double> FeldmanCousins90pctSensitivity::sensValues_4() {
-  // From table XII in HUTP-97/A096 
-  // arXiv.physics/971021v2
-  // column 3, lines 1-9
-  std::vector<double> v;
-  v.push_back(2.44);
-  v.push_back(2.86);
-  v.push_back(3.28);
-  v.push_back(3.62);
-  v.push_back(3.94);
-  v.push_back(4.20);
-  v.push_back(4.42);
-  v.push_back(4.63);
-  v.push_back(4.83);
-  return v;
+// Determine the probability sum from n1 to n2
+double poissonProbabilitySlice (double mu, int n1, int n2) {
+  if (n1 == 0) {
+    return poissonCDF (mu,n2);
+  } else {
+    return poissonCDF (mu,n2) - poissonCDF (mu,n1-1);
+    // Yes, this can be done almost twice as efficiently...
+  }
 }
-
-std::vector<double> FeldmanCousins90pctSensitivity::sensValues_15() {
-  // From table XII in HUTP-97/A096 
-  // arXiv.physics/971021v2
-  // column 3 (integer values in column 1)
-  std::vector<double> v;
-  v.push_back(2.44);
-  v.push_back(3.28);
-  v.push_back(3.94);
-  v.push_back(4.42);
-  v.push_back(4.83);
-  v.push_back(5.18);
-  v.push_back(5.53);
-  v.push_back(5.90);
-  v.push_back(6.18);
-  v.push_back(6.49);
-  v.push_back(6.76);
-  v.push_back(7.02);
-  v.push_back(7.28);
-  v.push_back(7.51);
-  v.push_back(7.75);
-  v.push_back(7.99);
-  return v;
-}
-
-FeldmanCousins90pctSensitivity::FeldmanCousins90pctSensitivity() 
-  : grid_4 (0.0,  4.5,  9)
-  , grid_15(0.0, 16.0, 16)
-  , sensitivity_4  ( sensValues_4(),  grid_4  )
-  , sensitivity_15 ( sensValues_15(), grid_15 )
-{ }
-  
-double FeldmanCousins90pctSensitivity::operator() (double b) const 
-{ 
-  if (b < 0)    return  sensitivity_4(0);
-  if (b < 4.0)  return  sensitivity_4(b);
-  if (b < 15.0) return  sensitivity_15(b);
-  // formula for b > 15 may or may not be particularly accurate
-  return 2.132 + 1.404 * std::sqrt(b) + 0.046*b;
-} 
-  
 
 
 } // end namespace mu2e

@@ -1,0 +1,67 @@
+#
+# $Id: SConscript,v 1.1 2012/05/04 21:00:27 mf Exp $
+# $Author: mf $
+# $Date: 2012/05/04 21:00:27 $
+#
+# Original author Rob Kutschke.
+#
+
+# NEEDED TODO: Beef up with root stuff, from, e.g. DataProducts/src/SConscript
+
+import os, re
+Import('env')
+
+splines_inc       = os.environ['SPLINES_INC']
+splines_lib       = os.environ['SPLINES_LIB']
+
+rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 
+             'Graf3d', 'Gpad', 'Tree', 'TreePlayer',
+             'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
+
+plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
+non_plugin_cc = Glob('*.cc', strings=True)
+for cc in plugin_cc: non_plugin_cc.remove(cc)
+
+if non_plugin_cc:
+    # From: /path1/path2/path3/Name/src extract the string Name field.
+    dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+    local_lib_name=os.path.dirname(dd)
+
+    env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
+                      LIBS=[ 'splines'
+                           ],
+                      parse_flags=[ '-L'+splines_lib, '-I'+splines_inc ]
+                      )
+    libs=[ local_lib_name ]
+else:
+    libs=[]
+
+for cc in plugin_cc:
+    libname='#/lib/'+cc[:cc.find('.cc')]
+    env.SharedLibrary( libname, cc,
+                     LIBS=[ 'art_Framework_Core',
+                            libs,
+                            'splines'
+                          ],
+                     parse_flags=[ '-L'+splines_lib, '-I'+splines_inc ]
+                     )
+
+
+# This tells scoons to compile and link cpp files 
+#for t in Glob('*.cpp',strings=True):
+#  env.Program('#/tmp/bin/'+t[:t.find('.cpp')], [ t ], LIBS = cLIBS, 
+#                LINKFLAGS=[ll.split(),'-lGeom'] )
+for t in Glob('*.cpp',strings=True):
+  env.Program('#/tmp/bin/'+t[:t.find('.cpp')], [ t ], 
+                     LIBS=[ libs,
+                            'splines',
+                            rootlibs
+                          ],
+                     parse_flags=[ '-L'+splines_lib, '-I'+splines_inc ]
+                     )
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:
+

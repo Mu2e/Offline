@@ -1,9 +1,9 @@
 //
 //  The TestFofM1 plugin; the first example of a module.
 //
-//  $Id: TestFofM1_module.cc,v 1.1 2012/03/12 18:23:25 mf Exp $
+//  $Id: TestFofM1_module.cc,v 1.2 2012/05/04 21:00:27 mf Exp $
 //  $Author: mf $
-//  $Date: 2012/03/12 18:23:25 $
+//  $Date: 2012/05/04 21:00:27 $
 //
 //  Original author Rob Kutschke
 //
@@ -460,7 +460,8 @@ namespace mu2e {
     FofM::Spectrum DIO_spectrum (DIObackground, lowestPoint, endingPoint);
     FofM figureOfMeritCalculator ( CE_spectrum, 
                                    DIO_spectrum, 
-                                   protonsOnTarget );  
+                                   protonsOnTarget, 
+                                   SmoothedPunziMeritFunction );  
 //#define EXAMINESPECTRUM
 #ifdef EXAMINESPECTRUM
     figureOfMeritCalculator.displayBackground(lowestBin, topOfLastBin, 100);

@@ -16,11 +16,17 @@
 #include "splines/Grid.h"
 #include "splines/Spline.h"
 #include "cpp0x/functional"
+#include "FigureOfMerit/inc/FeldmanCousinsSensitivity.h"
 // include of root THF1 header and maybe others
 
 
 
 namespace mu2e {
+
+enum MeritFunctionChoice {
+    SmoothedPunziMeritFunction
+  , FCsensitivityMeritFunction
+};
 
 class FofM {
 
@@ -105,14 +111,17 @@ public:
   // ctors
   
   FofM ( FofM::Spectrum signalEfficiency, 
-         double protonsOnProductionTarget );
+         double protonsOnProductionTarget,
+         MeritFunctionChoice mfunction);
   FofM ( FofM::Spectrum signalEfficiency, 
          FofM::Spectrum backgroundStrength,
-         double protonsOnProductionTarget );
+         double protonsOnProductionTarget,
+         MeritFunctionChoice mfunction); 
   FofM ( FofM::Spectrum signalEfficiency, 
          FofM::Spectrum backgroundStrength,
          FofM::Smearing resolution,
-         double protonsOnProductionTarget );
+         double protonsOnProductionTarget,
+         MeritFunctionChoice mfunction);
 
   // Preparing signal and background spectra
 
@@ -243,6 +252,7 @@ private:
   splines::Spline<1> signal;
   splines::Spline<1> background;
   splines::Grid<1>   grid;
+  MeritFunctionChoice mfunc;
   mutable bool computationIsDone;
   // TODO - other mutables
 
@@ -265,7 +275,8 @@ private:
                 std::vector<double> const & CLlowerBR,
                 std::vector<double> const & CLupperBR,
                 bool lowCutFixed, bool highCutFixed ) const;
-  
+  FeldmanCousins90pctSensitivity fc90;
+   
 };  // FofM
 
 // --------------------
@@ -366,30 +377,38 @@ class FofMwithLowerLimitVarying {
 public:
   FofMwithLowerLimitVarying( splines::Spline<1> const & s, 
                              splines::Spline<1> const & b,
-                             double luminosity )
+                             double luminosity, 
+                             mu2e::MeritFunctionChoice mfunction )
       : negIntegratedSignal(s)
       , negIntegratedBackground(b)
-      , L(luminosity) {}
+      , L(luminosity)
+      , mfunc (mfunction) {}
   double operator()(double a) const;
 private:
   splines::Spline<1> negIntegratedSignal;
   splines::Spline<1> negIntegratedBackground;
   double L;
+  MeritFunctionChoice mfunc;
+  FeldmanCousins90pctSensitivity fc90;
 };
 
 class FofMwithUpperLimitVarying {
 public:
   FofMwithUpperLimitVarying( splines::Spline<1> const & s, 
                              splines::Spline<1> const & b,
-                             double luminosity )
+                             double luminosity, 
+                             MeritFunctionChoice mfunction )
       : integratedSignal(s)
       , integratedBackground(b)
-      , L(luminosity) {}
+      , L(luminosity) 
+      , mfunc (mfunction) {}
   double operator()(double a) const;
 private:
   splines::Spline<1> integratedSignal;
   splines::Spline<1> integratedBackground;
   double L;
+  MeritFunctionChoice mfunc;
+  FeldmanCousins90pctSensitivity fc90;
 };
 
 } // end namespace mu2e

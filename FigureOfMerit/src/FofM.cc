@@ -6,6 +6,7 @@
 #include "splines/Spline.h"
 #include "FigureOfMerit/inc/FofM.h"
 #include "FigureOfMerit/inc/PoissonCDFsolver.h"
+#include "FigureOfMerit/inc/FeldmanCousinsSensitivity.h"
 
 #include <vector>
 #include <iostream>
@@ -128,26 +129,31 @@ splines::Spline<1> FofM::Smearing::representation() const {
 // FofM
 // ----
 
-FofM::FofM ( FofM::Spectrum signalEfficiency, double protonsOnProductionTarget )
+FofM::FofM ( FofM::Spectrum signalEfficiency, 
+             double protonsOnProductionTarget,
+             MeritFunctionChoice mfunction )
   : L (protonsOnProductionTarget)
   , a (NullBackgroundSpectrum().a())
   , b (NullBackgroundSpectrum().b())
   , signal (signalEfficiency.representation())
   , background (NullBackgroundSpectrum().representation())
   , grid (NullBackgroundSpectrum().grid())
+  , mfunc(mfunction)
   , computationIsDone(false)
 {
 } // ctor from signal and L; null background implied
   
 FofM::FofM ( FofM::Spectrum signalEfficiency, 
              FofM::Spectrum backgroundStrength,
-             double protonsOnProductionTarget )
+             double protonsOnProductionTarget,
+             MeritFunctionChoice mfunction )
   : L (protonsOnProductionTarget)
   , a (backgroundStrength.a())
   , b (backgroundStrength.b())
   , signal (signalEfficiency.representation())
   , background (backgroundStrength.representation())
   , grid (backgroundStrength.grid())
+  , mfunc(mfunction)
   , computationIsDone(false)
 {
   // TODO -- We are taking the grid from the background only.
@@ -158,7 +164,8 @@ FofM::FofM ( FofM::Spectrum signalEfficiency,
 FofM::FofM ( FofM::Spectrum signalEfficiency, 
              FofM::Spectrum backgroundStrength,
              FofM::Smearing resolution,
-             double protonsOnProductionTarget )
+             double protonsOnProductionTarget,
+             MeritFunctionChoice mfunction )
   : L (protonsOnProductionTarget)
   , a (backgroundStrength.a())
   , b (backgroundStrength.b())
@@ -167,6 +174,7 @@ FofM::FofM ( FofM::Spectrum signalEfficiency,
   , background 
      (backgroundStrength.representation().convolution(resolution.representation()))
   , grid (backgroundStrength.grid())
+  , mfunc(mfunction)
   , computationIsDone(false)
 {
   // TODO -- We are taking the grid from the background only.
@@ -270,7 +278,19 @@ void FofM::results (int maximumSignalCount,
    
   epsilon = integratedSignalEfficiency;
   B =  integratedBackground;
-  figOfM = epsilon / meritDenominator(B); // equation (2)        
+  
+  std::cout << "(optimized) integratedSignalEfficiency = " << epsilon << "\n"
+            << "(optimized) integratedBackground = " << B << "\n"
+            << "meritDenominator(B) = " << meritDenominator(B) << "\n"
+            << "fc90(B) = " << fc90(B) << "\n";
+
+  if (mfunc == SmoothedPunziMeritFunction) {
+    figOfM = epsilon / FofM::meritDenominator (B);  // equation (2)
+  } else {
+    figOfM = epsilon / fc90 (B);
+  }
+
+  // figOfM = epsilon / meritDenominator(B); // equation (2)        
 
   fillHypotheticalVectors( maximumSignalCount,
                 epsilon, B, discoveryThresholdN, 
@@ -307,7 +327,20 @@ void FofM::results_fixed_highCut (int maximumSignalCount,
        CL90Sensitivity, singleEventSensitivity);
   epsilon = integratedSignalEfficiency;
   B =  integratedBackground;
-  figOfM = epsilon / meritDenominator(B); // equation (2)        
+  
+  #ifdef TRACE_MERIT_DENOMINATOR
+  std::cout << "(optimized) integratedSignalEfficiency = " << epsilon << "\n"
+            << "(optimized) integratedBackground = " << B << "\n"
+            << "meritDenominator(B) = " << meritDenominator(B) << "\n"
+            << "fc90(B) = " << fc90(B) << "\n";
+  #endif
+  
+  if (mfunc == SmoothedPunziMeritFunction) {
+    figOfM = epsilon / FofM::meritDenominator (B);  // equation (2)
+  } else {
+    figOfM = epsilon / fc90 (B);
+  }
+  
   fillHypotheticalVectors( maximumSignalCount,
                 epsilon, B, discoveryThresholdN, 
                 upperLimitBR, CLlowerBR, CLupperBR );  
@@ -343,7 +376,21 @@ void FofM::results_fixed_lowCut (int maximumSignalCount,
        CL90Sensitivity, singleEventSensitivity);
   epsilon = integratedSignalEfficiency;
   B =  integratedBackground;
-  figOfM = epsilon / meritDenominator(B); // equation (2)        
+  
+  #ifdef TRACE_MERIT_DENOMINATOR
+  std::cout << "(optimized) integratedSignalEfficiency = " << epsilon << "\n"
+            << "(optimized) integratedBackground = " << B << "\n"
+            << "meritDenominator(B) = " << meritDenominator(B) << "\n"
+            << "fc90(B) = " << fc90(B) << "\n";
+  #endif
+  
+  if (mfunc == SmoothedPunziMeritFunction) {
+    figOfM = epsilon / FofM::meritDenominator (B);  // equation (2)
+  } else {
+    figOfM = epsilon / fc90 (B);
+  }
+  
+  // figOfM = epsilon / meritDenominator(B); // equation (2)        
   fillHypotheticalVectors( maximumSignalCount,
                 epsilon, B, discoveryThresholdN, 
                 upperLimitBR, CLlowerBR, CLupperBR );  
@@ -379,7 +426,21 @@ void FofM::results_fixed_cuts  (int maximumSignalCount,
    
   epsilon = integratedSignalEfficiency;
   B =  integratedBackground;
-  figOfM = epsilon / meritDenominator(B); // equation (2)        
+  
+  #ifdef TRACE_MERIT_DENOMINATOR
+  std::cout << "integratedSignalEfficiency = " << epsilon << "\n"
+            << "integratedBackground = " << B << "\n"
+            << "meritDenominator(B) = " << meritDenominator(B) << "\n"
+            << "fc90(B) = " << fc90(B) << "\n";
+  #endif
+  
+  if (mfunc == SmoothedPunziMeritFunction) {
+    figOfM = epsilon / FofM::meritDenominator (B);  // equation (2)
+  } else {
+    figOfM = epsilon / fc90 (B);
+  }
+  
+  // figOfM = epsilon / meritDenominator(B); // equation (2)        
 
   fillHypotheticalVectors( maximumSignalCount,
                 epsilon, B, discoveryThresholdN, 
@@ -403,17 +464,18 @@ void FofM::computeSensitivities(
 {
   double p5sigma = 1.0 - 2.86652e-7;
   discoveryThresholdN =  poissonInverseCDF(B, p5sigma);
-  discoveryThreshold = discoveryThresholdN/(eps*L);
+  if (discoveryThresholdN < 5) discoveryThresholdN = 5;
+  discoveryThreshold = (discoveryThresholdN-B)/(eps*L);
   smoothedWorstCaseSensitivity = meritDenominator(B)/(eps*L);
   double p90pct = 0.90;
   double punziSensitivityMu = 
         poissonMeanSolver(discoveryThresholdN-1,1-p90pct);
   punziSensitivity = (punziSensitivityMu-B)/(eps*L);
-  FeldmanCousins90pctSensitivity fc90;
+//  FeldmanCousins90pctSensitivity fc90;
   CL90Sensitivity = fc90(B)/(eps*L);
   singleEventSensitivity = 1.0/(eps*L);
   
-  // To check - since teh quoted BR limit is based on total counts, and that
+  // To check - since the quoted BR limit is based on total counts, and that
   // includes B, it seems that we needed to subtract B from the count level
   // to translate to a BR.  The two that are not background-based, of course,
   // do not subtract B.  So we need to subtract B when computing the Punzi
@@ -646,7 +708,15 @@ std::string FofM::tablesString (int maximumSignalCount,
     t << "(fixed) momentum range  " << lowCut 
       << " --- " << highCut << "\n";
   }
-  
+  if ( (!lowCutFixed) || (!highCutFixed) ) {
+    t << "optimization based on ";
+    if (mfunc == SmoothedPunziMeritFunction) {
+      t << "smoothed worst-case sensitivity \n";
+    } else {
+      t << "90% CL sensitivity \n";
+    }
+  }
+    
   t << "Signal Efficiency with those cuts:  " << epsilon << "\n";
   t << "Background mean with those cuts:  " << B 
     << " (" << L << " protons on target)\n";
@@ -654,14 +724,23 @@ std::string FofM::tablesString (int maximumSignalCount,
     << singleEventSensitivity * displayScale << "\n";
   t << "90% CL sensitivity (cutting at stated momentum range)      : " 
     << CL90Sensitivity * displayScale << "\n";
-  t << "BR sensistivity by Punzi's worst-case definition           : " 
+  t << "BR sensitivity by Punzi's worst-case definition           : " 
     << punziSensitivity * displayScale << "\n";
   t << "Smoothed worst-case BR sensitivity                         : " 
     << smoothedWorstCaseSensitivity * displayScale << "\n";
 
-  t << "\nFigure of merit (based on smoothed worst-case sensitivity) = "
-    << figOfM << "\n\n";     
-
+  if (mfunc == SmoothedPunziMeritFunction) {
+    t << "\nFigure of merit (based on 90% CL sensitivity) =              "
+      << figOfM * smoothedWorstCaseSensitivity/CL90Sensitivity << "\n";     
+    t << "\nFigure of merit (based on smoothed worst-case sensitivity) = "
+      << figOfM << "\n\n";     
+  } else {
+    t << "\nFigure of merit (based on 90% CL sensitivity) =              "
+      << figOfM << "\n";     
+    t << "\nFigure of merit (based on smoothed worst-case sensitivity) = "
+      << figOfM * CL90Sensitivity/smoothedWorstCaseSensitivity << "\n\n";     
+  }  
+  
   t << "(5-sigma) Discovery threshold: " << discoveryThresholdN << "\n";
   t << "BR quoted mean if minimum counts for a discovery are seen  : " 
     << discoveryThreshold * displayScale << "\n";
@@ -742,7 +821,8 @@ double FofM::optimize_low_cut  (double fixed_high_cut) const
             <<  "  gridMax = " << gridMax << "\n";
 #endif
   splines::Grid<1> optimizingGrid( gridMin, gridMax, nPointsInOptimizingGrid );
-  FofMwithLowerLimitVarying f(negIntegratedSignal, negIntegratedBackground, L);
+  FofMwithLowerLimitVarying f(negIntegratedSignal, negIntegratedBackground, 
+                                L, SmoothedPunziMeritFunction);
 
 #ifdef ANALYSIS_OUTPUT
   std::cout << "\nnegIntegratedSignal at high cut of " 
@@ -804,7 +884,8 @@ double FofM::optimize_high_cut (double fixed_low_cut) const
             <<  "  gridMin = " << gridMin << "\n";
 #endif
   splines::Grid<1> optimizingGrid( gridMin, gridMax, nPointsInOptimizingGrid );
-  FofMwithUpperLimitVarying f(integratedSignal, integratedBackground, L);
+  FofMwithUpperLimitVarying f(integratedSignal, integratedBackground, 
+                                L, SmoothedPunziMeritFunction);
 
 #ifdef ANALYSIS_OUTPUT
   std::cout << "\nintegratedSignal at low cut of " 
@@ -848,7 +929,12 @@ double FofMwithLowerLimitVarying::operator()(double a) const
 {
   double eps = - negIntegratedSignal(a);
   double B   = - L * negIntegratedBackground(a);
-  double f   = eps / FofM::meritDenominator (B);
+  double f;
+  if (mfunc == SmoothedPunziMeritFunction) {
+    f = eps / FofM::meritDenominator (B);
+  } else {
+    f = eps / fc90 (B);
+  }
   return f;
 }
 
@@ -856,7 +942,12 @@ double FofMwithUpperLimitVarying::operator()(double a) const
 {
   double eps = integratedSignal(a);
   double B   = L * integratedBackground(a);
-  double f   = eps / FofM::meritDenominator (B);
+  double f;
+  if (mfunc == SmoothedPunziMeritFunction) {
+    f = eps / FofM::meritDenominator (B);
+  } else {
+    f = eps / fc90 (B);
+  }
   return f;
 }
 
