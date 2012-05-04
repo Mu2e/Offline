@@ -4,9 +4,9 @@
 // Read Czarnecki DIO spectrum from a table and merge it
 // with the spectrum coming from the endopoint region formula
 
-// $Id: CzarneckiSpectrum.hh,v 1.2 2012/02/07 07:17:08 onoratog Exp $
+// $Id: CzarneckiSpectrum.hh,v 1.3 2012/05/04 20:12:16 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/07 07:17:08 $
+// $Date: 2012/05/04 20:12:16 $
 //
 // Original Author: Gianni Onorato
 //
@@ -34,7 +34,7 @@ namespace mu2e {
 
     ~CzarneckiSpectrum();
 
-    double operator[](double E);
+    double operator()(double E);
 
   private:
 
@@ -43,6 +43,8 @@ namespace mu2e {
     std::vector<std::pair<double, double> > _table;
 
     void readTable();
+
+    void checkTable();
 
     //    double FitCzarnecki(double E); maybe we'll use it later
 

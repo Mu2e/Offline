@@ -4,9 +4,9 @@
 // The construction
 // of the spectrum is made by specialized classes
 //
-// $Id: ReadDIOSpectrum.cc,v 1.3 2012/02/24 20:05:52 onoratog Exp $
+// $Id: ReadDIOSpectrum.cc,v 1.4 2012/05/04 20:12:16 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/24 20:05:52 $
+// $Date: 2012/05/04 20:12:16 $
 //
 // Original author: Gianni Onorato
 //
@@ -86,7 +86,7 @@ namespace mu2e {
       double step = _emin;
       
       while (step <= _emax) {
-        spectrum.push_back(WSspec[step]);
+        spectrum.push_back(WSspec(step));
         step += _res;
       }
     } else if (_spectrum == "Czarnecki") {
@@ -96,7 +96,7 @@ namespace mu2e {
       double step = _emin;
       
       while (step <= _emax) {
-        spectrum.push_back(CZspec[step]);
+        spectrum.push_back(CZspec(step));
         step += _res;
 
       }

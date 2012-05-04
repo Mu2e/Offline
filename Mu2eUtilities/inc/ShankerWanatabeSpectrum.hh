@@ -4,9 +4,9 @@
 // Read Wanatabe data about DIO spectrum from a table and merge it
 // with the spectrum coming from the Shanker formula
 
-// $Id: ShankerWanatabeSpectrum.hh,v 1.9 2012/02/24 20:05:52 onoratog Exp $
+// $Id: ShankerWanatabeSpectrum.hh,v 1.10 2012/05/04 20:12:16 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/24 20:05:52 $
+// $Date: 2012/05/04 20:12:16 $
 //
 //
 
@@ -33,7 +33,7 @@ namespace mu2e {
 
     ~ShankerWanatabeSpectrum();
 
-    double operator[](double E);
+    double operator()(double E);
 
   private:
 
@@ -46,6 +46,8 @@ namespace mu2e {
     std::vector<std::pair<double, double> > _wanatable;
 
     void readWanatabeTable();
+
+    void checkTable();
 
     double evaluateShanker(double E);
 

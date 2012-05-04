@@ -3,9 +3,9 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWanatabeSpectrum.cc,v 1.13 2012/02/24 20:05:52 onoratog Exp $
+// $Id: ShankerWanatabeSpectrum.cc,v 1.14 2012/05/04 20:12:16 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/24 20:05:52 $
+// $Date: 2012/05/04 20:12:16 $
 //
 
 #include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
@@ -33,6 +33,7 @@ namespace mu2e {
     _emass ( emass )
   {
     readWanatabeTable();
+    checkTable();
     //cout << "interpulation test f(x) = x^2+3x-5. f(3) = " << Interpulate(3,0,-5,2,5,10,125) << endl;
       _norm = _wanaEndPointVal / evaluateShanker(_wanaEndPoint);
   }
@@ -41,7 +42,7 @@ namespace mu2e {
   {
   }
 
-  double ShankerWanatabeSpectrum::operator[](double E) {
+  double ShankerWanatabeSpectrum::operator()(double E) {
 
     double value=0;
     if (E<_wanaEndPoint) {
@@ -75,6 +76,21 @@ namespace mu2e {
     _wanaEndPointVal = _wanatable.front().second;
 
   }
+
+  void ShankerWanatabeSpectrum::checkTable() {
+
+    double valueToCompare = (_wanatable.at(0).first) + 1e9; 
+    //order check
+    for ( vector<pair<double, double> >::iterator it =  _wanatable.begin(); it != _wanatable.end(); ++it) {
+      if (it->first >= valueToCompare) {
+      throw cet::exception("Format")
+        << "Wrong value in the wanatabe table: " << it->first;
+      }
+    }
+    //    unsigned tablesize = _table.size();
+
+  }
+
 
   double ShankerWanatabeSpectrum::evaluateShanker(double E) {
 

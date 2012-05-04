@@ -1,11 +1,12 @@
 //
 // Read the table with data about DIO spectrum, and
 // merge the spectrum with the analytic expression
-// in the endpoint region taken from Czarnecki.
+// in the endpoint region taken from Czarnecki spectrum
+// Czarneckki et al 10.1103/PhysRevD.84.013006
 //
-// $Id: CzarneckiSpectrum.cc,v 1.3 2012/02/24 20:05:52 onoratog Exp $
+// $Id: CzarneckiSpectrum.cc,v 1.4 2012/05/04 20:12:16 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/02/24 20:05:52 $
+// $Date: 2012/05/04 20:12:16 $
 //
 
 #include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
@@ -31,13 +32,14 @@ namespace mu2e {
     _znum ( atomicZ )
   {
     readTable();
+    checkTable();
   }
 
   CzarneckiSpectrum::~CzarneckiSpectrum()
   {
   }
 
-  double CzarneckiSpectrum::operator[](double E) {
+  double CzarneckiSpectrum::operator()(double E) {
 
     vector<pair<double, double> >::iterator it = _table.begin();
     //    cout << "Searching for " << E << endl;
@@ -86,6 +88,21 @@ namespace mu2e {
     }
 
   }
+
+  void CzarneckiSpectrum::checkTable() {
+
+    double valueToCompare = (_table.at(0).first) + 1e9; 
+    //order check
+    for ( vector<pair<double, double> >::iterator it =  _table.begin(); it != _table.end(); ++it) {
+      if (it->first >= valueToCompare) {
+      throw cet::exception("Format")
+        << "Wrong value in the czernacki table: " << it->first;
+      }
+    }
+    //    unsigned tablesize = _table.size();
+
+  }
+
 
   /*  double CzarneckiSpectrum::FitCzarnecki(double E) {
       
