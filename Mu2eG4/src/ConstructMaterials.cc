@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.28 2012/05/04 00:20:19 youzy Exp $
+// $Id: ConstructMaterials.cc,v 1.29 2012/05/04 01:00:01 youzy Exp $
 // $Author: youzy $
-// $Date: 2012/05/04 00:20:19 $
+// $Date: 2012/05/04 01:00:01 $
 //
 // Original author Rob Kutschke
 //
@@ -671,11 +671,11 @@ namespace mu2e {
       G4Element* eO  = getElementOrThrow("O");
       G4Element* eZr  = getElementOrThrow("Zr");
 
-      ZirconiumHydridePolyethylene->AddElement( eC, 8.9);
-      ZirconiumHydridePolyethylene->AddElement( eH, 3.4);
-      ZirconiumHydridePolyethylene->AddElement( eB, 0.5);
-      ZirconiumHydridePolyethylene->AddElement( eO, 2.2);
-      ZirconiumHydridePolyethylene->AddElement( eZr, 85.0);
+      ZirconiumHydridePolyethylene->AddElement( eC, 8.9*perCent);
+      ZirconiumHydridePolyethylene->AddElement( eH, 3.4*perCent);
+      ZirconiumHydridePolyethylene->AddElement( eB, 0.5*perCent);
+      ZirconiumHydridePolyethylene->AddElement( eO, 2.2*perCent);
+      ZirconiumHydridePolyethylene->AddElement( eZr, 85.0*perCent);
     }
 
 
