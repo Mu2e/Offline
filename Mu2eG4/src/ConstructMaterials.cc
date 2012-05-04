@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.27 2012/03/07 21:51:34 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/07 21:51:34 $
+// $Id: ConstructMaterials.cc,v 1.28 2012/05/04 00:20:19 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/05/04 00:20:19 $
 //
 // Original author Rob Kutschke
 //
@@ -659,6 +659,23 @@ namespace mu2e {
       G4Material *CFoam = new G4Material(mat.name, density = 0.030*g/cm3, nel=1);
       G4Element* C  = getElementOrThrow("C");
       CFoam->AddElement(C, 100.0*perCent );
+    }
+
+    mat = isNeeded(materialsToLoad, "ZirconiumHydridePolyethylene");
+    if ( mat.doit ){
+      G4Material* ZirconiumHydridePolyethylene =
+        new G4Material( mat.name, 3.67*g/cm3, 5);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eH  = getElementOrThrow("H");
+      G4Element* eB  = getElementOrThrow("B");
+      G4Element* eO  = getElementOrThrow("O");
+      G4Element* eZr  = getElementOrThrow("Zr");
+
+      ZirconiumHydridePolyethylene->AddElement( eC, 8.9);
+      ZirconiumHydridePolyethylene->AddElement( eH, 3.4);
+      ZirconiumHydridePolyethylene->AddElement( eB, 0.5);
+      ZirconiumHydridePolyethylene->AddElement( eO, 2.2);
+      ZirconiumHydridePolyethylene->AddElement( eZr, 85.0);
     }
 
 

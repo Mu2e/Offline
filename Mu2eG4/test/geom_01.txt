@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.145 2012/04/27 05:37:32 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/27 05:37:32 $
+// $Id: geom_01.txt,v 1.146 2012/05/04 00:20:19 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/05/04 00:20:19 $
 //
 // Original author Rob Kutschke
 //
@@ -111,7 +111,8 @@ vector<string> mu2e.materials =
     "CFoam_080", "Polyethylene092B050d095", "Polyethylene092B300d119",
     "Polyethylene092Li075d106", "Polyethylene092", "StainlessSteel", "Lyso_01",
     "A95083", "NbTi", "NbTiCu", "AL999Ni001", "C_19_H_20_O_4", "C_10_H_18_O_4",
-    "C_9_H_22_N_2", "Epotek301", "G10", "SCCableInsulation", "SCCable"
+    "C_9_H_22_N_2", "Epotek301", "G10", "SCCableInsulation", "SCCable",
+    "ZirconiumHydridePolyethylene"
 };
 
 // Control printout of element and material lists.
