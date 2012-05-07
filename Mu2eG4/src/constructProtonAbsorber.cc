@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.10 2012/02/27 06:05:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/27 06:05:35 $
+// $Id: constructProtonAbsorber.cc,v 1.11 2012/05/07 23:35:58 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/05/07 23:35:58 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -25,6 +25,8 @@
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestCons.hh"
+#include "Mu2eG4/inc/ProtonAbsorberSD.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -34,6 +36,7 @@
 #include "G4Tubs.hh"
 #include "G4BooleanSolid.hh"
 #include "G4VPhysicalVolume.hh"
+#include "G4SDManager.hh"
 
 using namespace std;
 
@@ -45,6 +48,8 @@ namespace mu2e {
     if( !_config->getBool("hasProtonAbsorber", true) ) return;
 
     int  const verbosityLevel           = _config->getInt("protonabsorber.verbosityLevel", 0);
+
+    G4VSensitiveDetector *paSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector (SensitiveDetectorName::ProtonAbsorber());
 
     // Access to the G4HelperService.
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
@@ -195,6 +200,7 @@ namespace mu2e {
                                           placePV,
                                           doSurfaceCheck
                                           );
+    protonabs1Info.logical->SetSensitiveDetector (paSD);
 
     if ( verbosityLevel > 0) {
       double pzhl   = static_cast<G4Cons*>(protonabs1Info.solid)->GetZHalfLength();
@@ -224,6 +230,8 @@ namespace mu2e {
                                           placePV,
                                           doSurfaceCheck
                                           );
+    protonabs2Info.logical->SetSensitiveDetector (paSD);
+
     if ( verbosityLevel > 0) {
       double pzhl   = static_cast<G4Cons*>(protonabs2Info.solid)->GetZHalfLength();
       double pabs2Z = protonabs2Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
@@ -240,6 +248,7 @@ namespace mu2e {
         protonabs2Info.physical->GetTranslation() << endl; // const &
 
     }
+
 
   }
 

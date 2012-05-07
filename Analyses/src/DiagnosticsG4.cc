@@ -2,9 +2,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.cc,v 1.5 2011/12/30 20:31:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
+// $Id: DiagnosticsG4.cc,v 1.6 2012/05/07 23:35:57 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/05/07 23:35:57 $
 //
 // Original author Rob Kutschke
 //
@@ -91,6 +91,7 @@ namespace mu2e {
     hNExtMonUCITofSteps_ = tfdir.make<TH1F>( "hNExtMonUCITofSteps", "N ExtinctionMonoitorUCI Tof StepPointMCs", 200,  1.,   201    );
     hNTrajectories_ = tfdir.make<TH1F>( "hNTrajectories", "Number of saved trajectories",              50,  1.,    51    );
     hNPhysVolumes_  = tfdir.make<TH1F>( "hNPhysVolumes",  "Number of Physical Volumes",               200,  1., 20001    );
+    hNPASteps_      = tfdir.make<TH1F>( "hNPASteps",      "N Proton Absorber StepPointMCs",           200,  1.,   201    );
   }
 
   void DiagnosticsG4::fillStatus( StatusG4 const& status){
@@ -136,6 +137,10 @@ namespace mu2e {
     hNTrajectories_ ->Fill(trajectories.size());
     hNPhysVolumes_  ->Fill(volInfo.size());
 
+  }
+
+  void DiagnosticsG4::fillPA ( StepPointMCCollection        const& paSteps) {
+    hNPASteps_->Fill(paSteps.size());
   }
 
 }  // end namespace mu2e

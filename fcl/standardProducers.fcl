@@ -124,7 +124,7 @@ TrkPatRec :
   }
 } # end TrkPatRec
 
-stepInstanceNames   : [ "tracker", "virtualdetector", "timeVD", "stoppingtarget", "CRV", "calorimeter", "calorimeterRO" ]
+stepInstanceNames   : [ "tracker", "virtualdetector", "timeVD", "stoppingtarget", "CRV", "calorimeter", "calorimeterRO", "protonabsorber"]
 
 dioMixer: {
    // Parameters for the MixFilter template

@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.129 2012/04/25 18:47:32 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/25 18:47:32 $
+// $Id: Mu2eWorld.cc,v 1.130 2012/05/07 23:35:57 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/05/07 23:35:57 $
 //
 // Original author Rob Kutschke
 //
@@ -58,6 +58,7 @@
 #include "Mu2eG4/inc/ITGasLayerSD_Square.hh"
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/StoppingTargetSD.hh"
+#include "Mu2eG4/inc/ProtonAbsorberSD.hh"
 #include "Mu2eG4/inc/CRSScintillatorBarSD.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
@@ -623,6 +624,9 @@ namespace mu2e {
     CRSScintillatorBarSD* sbSD =
       new CRSScintillatorBarSD(SensitiveDetectorName::CRSScintillatorBar(), *_config);
     SDman->AddNewDetector(sbSD);
+
+    ProtonAbsorberSD* paSD = new ProtonAbsorberSD(  SensitiveDetectorName::ProtonAbsorber(),  *_config);
+    SDman->AddNewDetector(paSD);
 
   } // instantiateSensitiveDetectors
 

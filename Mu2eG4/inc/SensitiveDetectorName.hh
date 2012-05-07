@@ -2,9 +2,9 @@
 #define Mu2eG4_SensitiveDetectorName_hh
 // Define names of Sensitive Detectors
 //
-// $Id: SensitiveDetectorName.hh,v 1.9 2012/01/26 21:56:50 genser Exp $
-// $Author: genser $
-// $Date: 2012/01/26 21:56:50 $
+// $Id: SensitiveDetectorName.hh,v 1.10 2012/05/07 23:35:57 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/05/07 23:35:57 $
 //
 // Original author KLG
 
@@ -54,6 +54,10 @@ namespace mu2e {
 
     static char const * TTrackerDeviceSupport(){
       return "TTrackerDeviceSupport";
+    }
+
+    static char const * ProtonAbsorber() {
+      return "ProtonAbsorber";
     }
 
   };

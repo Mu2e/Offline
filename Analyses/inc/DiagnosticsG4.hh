@@ -4,9 +4,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.hh,v 1.4 2011/12/30 20:31:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
+// $Id: DiagnosticsG4.hh,v 1.5 2012/05/07 23:35:57 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/05/07 23:35:57 $
 //
 // Original author Rob Kutschke
 //
@@ -67,6 +67,9 @@ namespace mu2e {
                PointTrajectoryCollection    const& trajectories,
                PhysicalVolumeInfoCollection const& volInfo);
 
+    // Fill information for PA only
+    void fillPA ( StepPointMCCollection        const& paSteps);
+
   private:
 
     // Not copyable or assignable.  These will not be implemented.
@@ -92,6 +95,7 @@ namespace mu2e {
     TH1F* hNExtMonUCITofSteps_;
     TH1F* hNTrajectories_;
     TH1F* hNPhysVolumes_;
+    TH1F* hNPASteps_;
 
 
   }; // end class Diagnostics G4
