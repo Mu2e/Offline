@@ -4,9 +4,9 @@
 // in the endpoint region taken from Czarnecki spectrum
 // Czarneckki et al 10.1103/PhysRevD.84.013006
 //
-// $Id: CzarneckiSpectrum.cc,v 1.4 2012/05/04 20:12:16 onoratog Exp $
+// $Id: CzarneckiSpectrum.cc,v 1.5 2012/05/08 19:09:59 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/05/04 20:12:16 $
+// $Date: 2012/05/08 19:09:59 $
 //
 
 #include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
@@ -41,9 +41,9 @@ namespace mu2e {
 
   double CzarneckiSpectrum::operator()(double E) {
 
-    vector<pair<double, double> >::iterator it = _table.begin();
+    vector<Value>::iterator it = _table.begin();
     //    cout << "Searching for " << E << endl;
-    while ((E < it->first-0.0049) && it != _table.end()) {
+    while ((it != _table.end()) && (E < it->energy-0.0049)) {
       //    cout << "In the table I have " << it->first << endl;
       it++;
     }
@@ -52,17 +52,17 @@ namespace mu2e {
       return 0;
     } 
 
-    if (it->first <= E + 0.0049 || it->first >= E - 0.0049 ) { //tollerance of 0.0049 MeV
-      //  cout << "And so I assign " << it->second << endl;
-      return it->second;
+    if (it->energy <= E + 0.0049 || it->energy >= E - 0.0049 ) { //tollerance of 0.0049 MeV
+      //  cout << "And so I assign " << it->weight << endl;
+      return it->weight;
     } else {
       // cout << "Interpulating" << endl;
-      return interpulate(E, (it+1)->first, (it+1)->second,
-                         it->first, it->second,
-                         (it-1)->first, (it-1)->second);
+      return interpulate(E, (it+1)->energy, (it+1)->weight,
+                         it->energy, it->weight,
+                         (it-1)->energy, (it-1)->weight);
     }
 
-    //    if (it->first < E) {
+    //    if (it->energy < E) {
     //  cout << "Assignin through fit" << endl;
     //  return FitCzarnecki(E);
     // }
@@ -83,20 +83,23 @@ namespace mu2e {
     double en, prob;
     while (!(intable.eof())) {
       intable >> en >> prob;
-      if (en!=0&&prob!=0)
-        _table.push_back(pair<double,double>(en,prob));
+      if (en!=0&&prob!=0) {
+	Value valueToAdd;
+	valueToAdd.energy = en;
+	valueToAdd.weight = prob;
+	_table.push_back(valueToAdd);
+      }
     }
-
   }
 
   void CzarneckiSpectrum::checkTable() {
 
-    double valueToCompare = (_table.at(0).first) + 1e9; 
+    double valueToCompare = (_table.at(0).energy) + 1e9; 
     //order check
-    for ( vector<pair<double, double> >::iterator it =  _table.begin(); it != _table.end(); ++it) {
-      if (it->first >= valueToCompare) {
+    for ( vector<Value>::iterator it =  _table.begin(); it != _table.end(); ++it) {
+      if (it->energy >= valueToCompare) {
       throw cet::exception("Format")
-        << "Wrong value in the czernacki table: " << it->first;
+        << "Wrong value in the czernacki table: " << it->energy;
       }
     }
     //    unsigned tablesize = _table.size();

@@ -4,9 +4,9 @@
 // Read Czarnecki DIO spectrum from a table and merge it
 // with the spectrum coming from the endopoint region formula
 
-// $Id: CzarneckiSpectrum.hh,v 1.3 2012/05/04 20:12:16 onoratog Exp $
+// $Id: CzarneckiSpectrum.hh,v 1.4 2012/05/08 19:09:59 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/05/04 20:12:16 $
+// $Date: 2012/05/08 19:09:59 $
 //
 // Original Author: Gianni Onorato
 //
@@ -28,10 +28,16 @@ namespace mu2e {
 
   class CzarneckiSpectrum {
 
+    struct Value{
+      double energy;
+      double weight;
+    };
+      
+      
   public:
-
+    
     CzarneckiSpectrum(int atomicZ);
-
+    
     ~CzarneckiSpectrum();
 
     double operator()(double E);
@@ -40,7 +46,7 @@ namespace mu2e {
 
     int _znum;
 
-    std::vector<std::pair<double, double> > _table;
+    std::vector<Value> _table;
 
     void readTable();
 

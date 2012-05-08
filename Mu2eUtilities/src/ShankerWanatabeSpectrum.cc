@@ -3,9 +3,9 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWanatabeSpectrum.cc,v 1.14 2012/05/04 20:12:16 onoratog Exp $
+// $Id: ShankerWanatabeSpectrum.cc,v 1.15 2012/05/08 19:09:59 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/05/04 20:12:16 $
+// $Date: 2012/05/08 19:09:59 $
 //
 
 #include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
@@ -68,23 +68,27 @@ namespace mu2e {
     double en, prob;
     while (!(intable.eof())) {
       intable >> en >> prob;
-      if (en!=0&&prob!=0)
-        _wanatable.push_back(pair<double,double>(en,prob));
+      if (en!=0&&prob!=0) {
+	Value valueToAdd;
+	valueToAdd.energy = en;
+	valueToAdd.weight = prob;
+        _wanatable.push_back(valueToAdd);
+      }
     }
 
-    _wanaEndPoint = _wanatable.front().first;
-    _wanaEndPointVal = _wanatable.front().second;
+    _wanaEndPoint = _wanatable.front().energy;
+    _wanaEndPointVal = _wanatable.front().weight;
 
   }
 
   void ShankerWanatabeSpectrum::checkTable() {
 
-    double valueToCompare = (_wanatable.at(0).first) + 1e9; 
+    double valueToCompare = (_wanatable.at(0).energy) + 1e9; 
     //order check
-    for ( vector<pair<double, double> >::iterator it =  _wanatable.begin(); it != _wanatable.end(); ++it) {
-      if (it->first >= valueToCompare) {
+    for ( vector<Value>::iterator it =  _wanatable.begin(); it != _wanatable.end(); ++it) {
+      if (it->energy >= valueToCompare) {
       throw cet::exception("Format")
-        << "Wrong value in the wanatabe table: " << it->first;
+        << "Wrong value in the wanatabe table: " << it->energy;
       }
     }
     //    unsigned tablesize = _table.size();
@@ -124,8 +128,8 @@ namespace mu2e {
 
   double ShankerWanatabeSpectrum::evaluateWanatabe(double E) {
 
-    vector<pair<double, double> >::iterator it = _wanatable.begin();
-    while ((E < it->first-0.0049) && it != _wanatable.end()) {
+    vector<Value>::iterator it = _wanatable.begin();
+    while ((it != _wanatable.end()) &&(E < it->energy-0.0049)) {
       it++;
     }
 
@@ -133,12 +137,12 @@ namespace mu2e {
       return 0;
     }
 
-    if (it->first <= E + 0.0049 || it->first >= E - 0.0049 ) { //tollerance of 0.049 MeV
-      return it->second;
+    if (it->energy <= E + 0.0049 || it->energy >= E - 0.0049 ) { //tollerance of 0.049 MeV
+      return it->weight;
     } else {
-      return interpulate(E, (it+1)->first, (it+1)->second,
-                         it->first, it->second,
-                         (it-1)->first, (it-1)->second);
+      return interpulate(E, (it+1)->energy, (it+1)->weight,
+                         it->energy, it->weight,
+                         (it-1)->energy, (it-1)->weight);
     }
 
     return 0;
