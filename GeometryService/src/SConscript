@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.19 2012/04/05 18:15:15 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/04/05 18:15:15 $
+# $Id: SConscript,v 1.20 2012/05/10 23:43:15 mjlee Exp $
+# $Author: mjlee $
+# $Date: 2012/05/10 23:43:15 $
 #
 # Original author Rob Kutschke.
 #
@@ -33,6 +33,7 @@ env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                'ProductionTargetGeom',
                'ProductionSolenoidGeom',
                'BeamlineGeom',
+               'MECOStyleProtonAbsorberGeom',
                'GeomPrimitives',
                'Mu2eUtilities',
                'Mu2eInterfaces',

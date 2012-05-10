@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.30 2012/04/27 22:59:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/04/27 22:59:58 $
+// $Id: GeometryService_service.cc,v 1.31 2012/05/10 23:43:15 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/05/10 23:43:15 $
 //
 // Original author Rob Kutschke
 //
@@ -69,6 +69,8 @@
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL_Maker.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIMaker.hh"
+#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorberMaker.hh"
 
 using namespace std;
 
@@ -217,6 +219,11 @@ namespace mu2e {
       BFieldManagerMaker bfmgr(*bfc);
       addDetector(bfc);
       addDetector(bfmgr.getBFieldManager());
+    }
+
+    if(_config->getBool("hasProtonAbsorber",false)){
+      MECOStyleProtonAbsorberMaker mecopam( *_config );
+      addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
     }
   }
 
