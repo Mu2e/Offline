@@ -4,9 +4,9 @@
 // in the endpoint region taken from Czarnecki spectrum
 // Czarneckki et al 10.1103/PhysRevD.84.013006
 //
-// $Id: CzarneckiSpectrum.cc,v 1.5 2012/05/08 19:09:59 onoratog Exp $
+// $Id: CzarneckiSpectrum.cc,v 1.6 2012/05/10 21:38:47 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/05/08 19:09:59 $
+// $Date: 2012/05/10 21:38:47 $
 //
 
 #include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
@@ -43,7 +43,7 @@ namespace mu2e {
 
     vector<Value>::iterator it = _table.begin();
     //    cout << "Searching for " << E << endl;
-    while ((it != _table.end()) && (E < it->energy-0.0049)) {
+    while ((it != _table.end()) && (it->energy > E)) {
       //    cout << "In the table I have " << it->first << endl;
       it++;
     }
@@ -52,23 +52,17 @@ namespace mu2e {
       return 0;
     } 
 
-    if (it->energy <= E + 0.0049 || it->energy >= E - 0.0049 ) { //tollerance of 0.0049 MeV
-      //  cout << "And so I assign " << it->weight << endl;
-      return it->weight;
-    } else {
-      // cout << "Interpulating" << endl;
-      return interpulate(E, (it+1)->energy, (it+1)->weight,
-                         it->energy, it->weight,
-                         (it-1)->energy, (it-1)->weight);
+    if (it->energy <= E) { 
+      if ( it==_table.begin() || (it+1)==_table.end()) {
+	return it->weight;
+      } else {
+	// cout << "Interpulating" << endl;
+	return interpulate(E, (it+1)->energy, (it+1)->weight,
+			   it->energy, it->weight,
+			   (it-1)->energy, (it-1)->weight);
+      }
     }
-
-    //    if (it->energy < E) {
-    //  cout << "Assignin through fit" << endl;
-    //  return FitCzarnecki(E);
-    // }
-
     return 0;
-
   }
 
   void CzarneckiSpectrum::readTable() {
@@ -83,15 +77,15 @@ namespace mu2e {
     double en, prob;
     while (!(intable.eof())) {
       intable >> en >> prob;
-      if (en!=0&&prob!=0) {
-	Value valueToAdd;
-	valueToAdd.energy = en;
-	valueToAdd.weight = prob;
+      Value valueToAdd;
+      valueToAdd.energy = en;
+      valueToAdd.weight = prob;
+      if (!(intable.eof())) {
 	_table.push_back(valueToAdd);
       }
     }
   }
-
+  
   void CzarneckiSpectrum::checkTable() {
 
     double valueToCompare = (_table.at(0).energy) + 1e9; 
