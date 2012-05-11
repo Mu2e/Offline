@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.34 2012/04/25 18:47:32 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/25 18:47:32 $
+// $Id: constructVirtualDetectors.cc,v 1.35 2012/05/11 23:28:27 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/05/11 23:28:27 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -834,11 +834,13 @@ namespace mu2e {
       GeomHandle<ExtMonUCI::ExtMon> extmon;
 
       std::vector<double> hlen(3);
-      hlen[0] = extmon->shd(8)->params()[0];
-      hlen[1] = extmon->shd(8)->params()[1];
+      hlen[0] = _config->getDouble("vd.ExtMonUCIEntrance1.HalfLengths", 100.0);
+      hlen[1] = _config->getDouble("vd.ExtMonUCIEntrance1.HalfLengths", 100.0);
       hlen[2] = vdg->getHalfLength();
 
-      G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+      std::vector<double> pos;
+      _config->getVectorDouble("vd.ExtMonUCIEntrance1.Position", pos, 3);
+      G4ThreeVector vdLocalOffset = G4ThreeVector( pos[0], pos[1], pos[2] ) - parent.centerInMu2e();
 
       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
                                   hlen,
