@@ -2,9 +2,9 @@
 #
 # Readback the output of g4test_03.fcl; make histograms and printout.
 #
-# $Id: vd_readback.fcl,v 1.3 2012/05/11 22:38:34 youzy Exp $
+# $Id: vd_readback.fcl,v 1.4 2012/05/11 22:53:19 youzy Exp $
 # $Author: youzy $
-# $Date: 2012/05/11 22:38:34 $
+# $Date: 2012/05/11 22:53:19 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -26,7 +26,7 @@ services :
 
   TFileService : 
   {
-    fileName : "readback.root"
+    fileName : "vd_readback.root"
   }
 
   user :
