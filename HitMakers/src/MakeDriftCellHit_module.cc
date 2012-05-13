@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.16 2012/04/26 14:32:11 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/04/26 14:32:11 $
+// $Id: MakeDriftCellHit_module.cc,v 1.17 2012/05/13 21:23:15 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2012/05/13 21:23:15 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -306,6 +306,7 @@ namespace mu2e {
       //_minimumTimeGap                = 0.5*(cell->getDetail()->InscribedCircleRadius()+cell->getDetail()->CirumscribedRadius())/_driftVelocity;
       _minimumTimeGap                = 0.5*(cell.getDetail()->InscribedCircleRadius()+cell.getDetail()->CirumscribedRadius())/_driftVelocity;
 
+      //      std::cout<<"cell lay,cell "<<dcell_id.asUint()/10000<<" "<< dcell_id.asUint()%10000<<endl;
       // Prepare info for hit creation
       dcell_hits.clear();
 
@@ -383,9 +384,16 @@ namespace mu2e {
           //          if( (pos-p2).mag()<=length && (pos-p2).dot(mom)<=0 ) {
 
             // If the point of closest approach is within the step and wire - thats it.
-            hit_dca = pca.dca();
+	    //double hit_dca_l = pca.dca();
             hit_pca = pca.point1();
             sign=w.cross(mom).dot(hit_pca-p2);
+	    
+	    //small correction (~10mum) forr track is not line
+	    double dl=(p2-pos).perp();
+	    CLHEP::Hep3Vector b(0,0,1.);
+	    CLHEP::Hep3Vector pcurv=p2+b.cross(mom)/mom.perp()*dl*dl/2/(mom.perp()*3);
+	    hit_dca=(pcurv-hit_pca).mag();
+	    // cout<<"hit "<<i<<" dca "<<hit_dca_l<<" "<<hit_dca<<" dl "<<dl<<" "<<dl*dl/2/(mom.perp()*3)<<" pos "<<pos<<" mom "<<mom<<" hit "<<p2<<" w "<<hit_pca<<endl;
             /*
           } else {
 
