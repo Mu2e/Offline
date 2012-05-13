@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.10 2012/04/13 14:46:25 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/04/13 14:46:25 $
+// $Id: TrackerCalibrations.hh,v 1.11 2012/05/13 21:26:32 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2012/05/13 21:26:32 $
 //
 // Original author Vadim Rusu
 //
@@ -71,7 +71,9 @@ namespace mu2e
     // temoprary constant drift velocity and time resolution.  Replace these with a more physical model	FIXME!!!
     double _vdrift;
     double _rres;
-    
+
+    //velocity of signal propagation in wire mm/ns
+    double _distvsdeltat;
   };
 
   // Shift left (printing) operator.

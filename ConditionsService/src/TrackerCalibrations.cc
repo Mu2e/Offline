@@ -1,9 +1,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.7 2012/04/13 14:46:25 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/04/13 14:46:25 $
+// $Id: TrackerCalibrations.cc,v 1.8 2012/05/13 21:26:32 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2012/05/13 21:26:32 $
 //
 
 // Mu2e include files
@@ -24,6 +24,7 @@ namespace mu2e {
     // simplistic placeholder for drift calibration parameters
     _vdrift = config.getDouble("DriftVelocity",0.05); // mm/ns
     _rres = config.getDouble("DriftRadiusResolution",0.1); //mm
+    _distvsdeltat = config.getDouble("SignalVelocity",231.); //mm/ns
   }
   
   void TrackerCalibrations::DistanceToTime(StrawIndex strawIndex,double rdrift, CLHEP::Hep3Vector const& tdir,D2T& d2t) const {
@@ -47,8 +48,7 @@ namespace mu2e {
   }
 
   double TrackerCalibrations::SignalVelocity(StrawIndex ) const {
-    static const double distvsdeltat = 231.;
-    return distvsdeltat; //mm/ns
+    return _distvsdeltat; //mm/ns
   }
 
   double TrackerCalibrations::TimeDiffToDistance(StrawIndex strawIndex, double deltaT) const{
