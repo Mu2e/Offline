@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.146 2012/05/04 00:20:19 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/05/04 00:20:19 $
+// $Id: geom_01.txt,v 1.147 2012/05/14 21:25:36 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/14 21:25:36 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,7 @@ bool hasCalorimeter     = true;
 bool hasBFieldManager   = true;
 bool hasBeamline        = true;
 bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now
-bool hasCosmicRayShield = true;
+bool hasCosmicRayShield = true; // note the two subcomponents, see crs section below
 bool hasMBS             = true; // MBS assumes the presence of CosmicRayShield(Steel) & NeutronAbsorber
 
 // Write mu2e geometry into a GDML file
@@ -384,6 +384,13 @@ bool calorimeter.crystalVisible = false;
 bool calorimeter.crystalSolid   = true;
 int  calorimeter.verbosityLevel = 0;
 
+// Cosmic Ray Sheld consist of the two components
+// for now the are in the two sections: the fluxcrv and the crs itself
+// initially the passive part was called the iron yoke or the HallSteel, the material has evolved though
+
+bool crs.hasPassiveShield     = true;
+bool crs.hasActiveShield      = true;
+
 // Dimensions of steel, assuming constant thickness all around, and square shape.
 double fluxcrv.HallSteelHalfThick    = 250.;  // newer drawings seem to have it at 150 in the D/U ends
 double fluxcrv.HallSteelHalfLengthXY = 2048.;
@@ -392,7 +399,7 @@ double fluxcrv.HallSteelEndCapHalfLengthZ  = 1085;
 double fluxcrv.HallSteelEndCapHalfThick    =  250.;
 string fluxcrv.HallSteelMaterialName = "G4_Fe";
 double fluxcrv.HallSteelHoleRadius   = 850;
-vector<double> fluxcrv.HallSteelOffset  = {0.,0., -80.}; // mm
+vector<double> fluxcrv.HallSteelOffset  = {-3904.,0.,9306.}; // mm
 bool   fluxcrv.visible          = true;
 bool   fluxcrv.solid            = false;
 
@@ -413,7 +420,7 @@ string         crs.scintillatorModuleOuterSheetMaterial     = "G4_Al";
 string         crs.scintillatorModuleInterLayerSheetMaterialName  = "G4_POLYSTYRENE";
 double         crs.scintillatorModuleInterLayerSheetHalfThickness = 6.0; // 0.125"=3.175mm; or 57.2-30-3.2/4
 vector<double> crs.moduleUnistrutHalfLengths                = {28.,  2475., 157.}; // fig 11.9 p.179
-double         crs.wallUnistrutHalfThickness                = 28.;  // (154 - 41)/4 = 28.25 ~28
+// double         crs.wallUnistrutHalfThickness    = 28.;  // (154 - 41)/4 = 28.25 ~28 ; not used
 // assume the unistrut on the steel to be of the same thickness as the one on the modules
 double         crs.scintillatorOverlap                      = 100.; // fig 11.5
 
@@ -426,15 +433,15 @@ vector<int>    crs.shieldT_NumberOfModules  = {10,  1};
 vector<int>    crs.shieldB_NumberOfModules  = {10,  1};
 vector<int>    crs.shieldTS_NumberOfModules = { 2,  6}; // not implemented yet
 
-// additional relative offsets wrt the center of the shields in their local reference frame before rotation
-
-vector<double> crs.shieldR_Offset  = {   0., 75.,1419.};
-vector<double> crs.shieldL_Offset  = {   0., 75.,-531.};
-vector<double> crs.shieldD_Offset  = {1670.,  0.,   0.};
-vector<double> crs.shieldU_Offset  = {4508.,  0., 925.};
-vector<double> crs.shieldT_Offset  = {   0., 75.,1419.};
-vector<double> crs.shieldB_Offset  = {   0., 75.,1419.};
-vector<double> crs.shieldTS_Offset = {   0.,  0., 0.};
+vector<double> crs.scintillatorShieldOffset  = {-3904.,0.,9306.}; // mm aka CRV offset
+// shields offsets wrt the above point in their local reference frame before rotation
+vector<double> crs.shieldR_Offset  = { 2467.2,75.,1419.};
+vector<double> crs.shieldL_Offset  = { 2467.2,75.,-531.};
+vector<double> crs.shieldT_Offset  = { 2467.2,75.,1419.};
+vector<double> crs.shieldB_Offset  = { 2467.2,75.,1419.};
+vector<double> crs.shieldD_Offset  = { 8989.2, 0.,   0.};
+vector<double> crs.shieldU_Offset  = {11827.2, 0., 925.};
+vector<double> crs.shieldTS_Offset = {    0.,  0.,   0.};
 
 bool   crs.vetoVisible    = false;
 bool   crs.vetoSolid      = false;
