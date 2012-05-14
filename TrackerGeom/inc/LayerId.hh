@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: LayerId.hh,v 1.7 2011/05/20 19:18:44 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Id: LayerId.hh,v 1.8 2012/05/14 19:20:45 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/05/14 19:20:45 $
 //
 // Original author Rob Kutschke
 //
@@ -75,6 +75,10 @@ namespace mu2e {
       return !( *this == rhs);
     }
 
+    bool operator < (LayerId const& rhs) const {
+      return _sid < rhs._sid || (_sid == rhs._sid && _layer < rhs._layer);
+    }
+  
     friend std::ostream& operator<<(std::ostream& ost,
                                     const LayerId& l ){
       ost << l._sid << " " << l._layer;

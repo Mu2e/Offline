@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: SectorId.hh,v 1.7 2011/05/20 19:18:44 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:44 $
+// $Id: SectorId.hh,v 1.8 2012/05/14 19:20:45 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/05/14 19:20:45 $
 //
 // Original author Rob Kutschke
 //
@@ -58,6 +58,10 @@ namespace mu2e {
 
     bool operator!=(SectorId const& rhs) const{
       return !( *this == rhs);
+    }
+
+    bool operator < (SectorId const& rhs) const {
+      return _did < rhs._did || (_did == rhs._did && _sector < rhs._sector);
     }
 
     friend std::ostream& operator<<(std::ostream& ost,
