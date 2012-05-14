@@ -1,10 +1,27 @@
-  $Id: v1_1_9.txt,v 1.8 2012/05/10 23:43:37 mjlee Exp $
-  $Author: mjlee $
-  $Date: 2012/05/10 23:43:37 $
+  $Id: v1_1_9.txt,v 1.9 2012/05/14 21:26:17 genser Exp $
+  $Author: genser $
+  $Date: 2012/05/14 21:26:17 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+8) May 14, 2012 genser
+
+   Made the two components of the Cosmic Ray Shield (CRV & Steel)
+   independent of one another with their offsets being defined in the
+   mu2e system.
+
+      Analyses/src/NeutronCRV_module.cc
+      Analyses/src/ReadBack_module.cc
+      CosmicRayShieldGeom/inc/CosmicRayShield.hh
+      CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh
+      CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/constructCRV.cc
+      Mu2eG4/src/constructSteel.cc
+      Mu2eG4/test/geom_01.txt
+
 
 7) May 10, 2012 mjlee
    MECOStyleProtonAbsorberGeom is prepared for the geometry service 
