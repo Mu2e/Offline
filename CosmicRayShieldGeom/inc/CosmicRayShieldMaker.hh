@@ -3,9 +3,9 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.8 2012/04/10 20:59:46 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/04/10 20:59:46 $
+// $Id: CosmicRayShieldMaker.hh,v 1.9 2012/05/14 21:22:55 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/14 21:22:55 $
 //
 // Original author KLG
 //
@@ -35,8 +35,6 @@ public:
 
   void makeCRSSteelShield(SimpleConfig const & _config);
 
-  void calculateCRSOffsets(SimpleConfig const & _config, double solenoidOffset);
-
   void calculateCommonCRSScintillatorParameters();
   void makeDetails();
   void makeShields();
@@ -58,12 +56,15 @@ private:
 
   int _diagLevel;
 
+  bool _hasPassiveShield;
+  bool _hasActiveShield;
+
   double _HallSteelHalfThick;
   double _HallSteelHalfLengthXY;
   double _HallSteelHalfLengthZ;
   double _HallSteelHoleRadius;
 
-  std::vector<double> _HallSteelOffset;
+  CLHEP::Hep3Vector _HallSteelOffset; // aka CRPassiveShield offset
 
   CLHEP::Hep3Vector _TopHallSteelOffset;
   CLHEP::Hep3Vector _BottomHallSteelOffset;
@@ -88,7 +89,7 @@ private:
   double              _scintillatorModuleInterLayerSheetHalfThickness;
   double              _scintillatorOverlap;
   std::vector<double> _moduleUnistrutHalfLengths;
-  double              _wallUnistrutHalfThickness;
+  //  double              _wallUnistrutHalfThickness; // was used to displace the CRV
 
   std::vector<int>    _shieldR_NumberOfModules;
   std::vector<int>    _shieldL_NumberOfModules;
@@ -97,6 +98,8 @@ private:
   std::vector<int>    _shieldT_NumberOfModules;
   std::vector<int>    _shieldB_NumberOfModules;
   std::vector<int>    _shieldTS_NumberOfModules;
+
+  CLHEP::Hep3Vector   _scintillatorShieldOffset; // aka CRActiveShield offset
 
   std::vector<double> _shieldR_Offset;
   std::vector<double> _shieldL_Offset;
@@ -127,7 +130,7 @@ private:
 
   double _scintillatorShieldHalfThickness;
 
-  double _scintillatorShieldOffsetToTheSideOfHallSteel;
+// double _scintillatorShieldOffsetToTheSideOfHallSteel; // was calculated based on _wallUnistrutHalfThickness
 
 };
 

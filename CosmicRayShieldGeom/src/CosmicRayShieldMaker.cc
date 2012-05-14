@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.15 2012/04/10 20:59:46 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/04/10 20:59:46 $
+// $Id: CosmicRayShieldMaker.cc,v 1.16 2012/05/14 21:22:55 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/14 21:22:55 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -51,17 +51,20 @@ namespace mu2e {
 
     parseConfig(_config);
 
-    calculateCRSOffsets(_config, solenoidOffset);
-
     if ( _diagLevel > 0) {
-      cout << __func__ << " _crs->_globalOffset: " << _crs->_globalOffset << endl;
+      cout << __func__ << " _HallSteelOffset:    "       << _HallSteelOffset    << endl;
+      cout << __func__ << " _scintillatorShieldOffset: " << _scintillatorShieldOffset << endl;
     }
 
-    makeCRSSteelShield(_config);
-
-    makeShields();
-
-
+    if ( _hasPassiveShield ) {
+      makeCRSSteelShield(_config);
+      _crs->_hasPassiveShield = true;
+    }
+    // this order of calculations is important
+    if ( _hasActiveShield ) {
+      makeShields();
+      _crs->_hasActiveShield = true;
+    }
   }
 
   void CosmicRayShieldMaker::parseConfig( SimpleConfig const & _config ){
@@ -69,12 +72,17 @@ namespace mu2e {
     // we readin/store crs parameters needed in more than one function
     _diagLevel = _config.getInt("crs.verbosityLevel",0);
 
-    _HallSteelHalfThick     = _config.getDouble("fluxcrv.HallSteelHalfThick");
-    _HallSteelHalfLengthXY  = _config.getDouble("fluxcrv.HallSteelHalfLengthXY");
-    _HallSteelHalfLengthZ   = _config.getDouble("fluxcrv.HallSteelHalfLengthZ");
-    _HallSteelMaterialName  = _config.getString("fluxcrv.HallSteelMaterialName");
-    _HallSteelHoleRadius    = _config.getDouble("fluxcrv.HallSteelHoleRadius");
-    _config.getVectorDouble("fluxcrv.HallSteelOffset",_HallSteelOffset,3);
+    _hasPassiveShield =  _config.getBool("crs.hasPassiveShield", true);
+    _hasActiveShield  =  _config.getBool("crs.hasActiveShield",  true);
+
+    if (_hasPassiveShield) {
+      _HallSteelHalfThick     = _config.getDouble("fluxcrv.HallSteelHalfThick");
+      _HallSteelHalfLengthXY  = _config.getDouble("fluxcrv.HallSteelHalfLengthXY");
+      _HallSteelHalfLengthZ   = _config.getDouble("fluxcrv.HallSteelHalfLengthZ");
+      _HallSteelMaterialName  = _config.getString("fluxcrv.HallSteelMaterialName");
+      _HallSteelHoleRadius    = _config.getDouble("fluxcrv.HallSteelHoleRadius");
+      _HallSteelOffset        = _config.getHep3Vector("fluxcrv.HallSteelOffset");
+    }
 
     _scintillatorLayersPerModule  = _config.getInt("crs.scintillatorLayersPerModule");
     _scintillatorBarsPerFullLayer = _config.getInt("crs.scintillatorBarsPerFullLayer");
@@ -87,7 +95,7 @@ namespace mu2e {
     _config.getVectorDouble("crs.scintillatorBarHalfLengths",_scintillatorBarHalfLengths,3);
     _scintillatorBarMaterialName  = _config.getString("crs.scintillatorBarMaterialName");
     _scintillatorLayerShift       = _config.getDouble("crs.scintillatorLayerShift");
-    _scintillatorLayerGap       = _config.getDouble("crs.scintillatorLayerGap");
+    _scintillatorLayerGap         = _config.getDouble("crs.scintillatorLayerGap");
 
     _scintillatorBarPigmentationHalfThickness       =
       _config.getDouble("crs.scintillatorBarPigmentationHalfThickness");
@@ -111,6 +119,8 @@ namespace mu2e {
     _config.getVectorInt("crs.shieldB_NumberOfModules",_shieldB_NumberOfModules,2);
     _config.getVectorInt("crs.shieldTS_NumberOfModules",_shieldTS_NumberOfModules,2);
 
+    _scintillatorShieldOffset = _config.getHep3Vector("crs.scintillatorShieldOffset");
+
     _config.getVectorDouble("crs.shieldR_Offset",_shieldR_Offset,3);
     _config.getVectorDouble("crs.shieldL_Offset",_shieldL_Offset,3);
     _config.getVectorDouble("crs.shieldD_Offset",_shieldD_Offset,3);
@@ -120,7 +130,7 @@ namespace mu2e {
     _config.getVectorDouble("crs.shieldTS_Offset",_shieldTS_Offset,3);
 
     _config.getVectorDouble("crs.moduleUnistrutHalfLengths",_moduleUnistrutHalfLengths,3);
-    _wallUnistrutHalfThickness  = _config.getDouble("crs.wallUnistrutHalfThickness");
+    //    _wallUnistrutHalfThickness  = _config.getDouble("crs.wallUnistrutHalfThickness");
 
   }
 
@@ -178,7 +188,6 @@ namespace mu2e {
     // the shields are placed in a "nominal" postion first
 
     CLHEP::Hep3Vector CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_scintillatorShieldOffsetToTheSideOfHallSteel + _HallSteelHalfLengthXY, 0., 0.) +
       CLHEP::Hep3Vector(_shieldR_Offset[0],_shieldR_Offset[1],_shieldR_Offset[2]);
 
     if ( _diagLevel > 0) {
@@ -188,6 +197,19 @@ namespace mu2e {
 
     // we set the rotation agles of the shields so that they "start" from the downstream end
     // but we do not actually rotate the shields, modules or layers as of now, we do it for bars only
+
+    if (_hasPassiveShield) {
+        
+      CLHEP::Hep3Vector diff = CRSScintillatorShieldOffset + _scintillatorShieldOffset - 
+        _RightHallSteelOffset - _HallSteelOffset;
+
+      if ( fabs(diff.x())<0. ){
+        throw cet::exception("GEOM")
+          << "The CRPassiveShield && hasCRActiveShield configurations are inconsistent "
+          << name
+          << "\n";
+      }
+    }
 
     std::vector<double> CRSScintillatorShieldRotationAngles; // x,y,z
     CRSScintillatorShieldRotationAngles.reserve(3);
@@ -201,7 +223,7 @@ namespace mu2e {
       CRSScintillatorShield(ishield,
                             name,
                             CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _crs->_globalOffset, // in Mu2e
+                            CRSScintillatorShieldOffset + _scintillatorShieldOffset, // in Mu2e
                             _scintillatorShieldHalfThickness,
                             numberOfModules);
 
@@ -214,13 +236,25 @@ namespace mu2e {
     numberOfModules = _shieldL_NumberOfModules;
 
     CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_scintillatorShieldOffsetToTheSideOfHallSteel + _HallSteelHalfLengthXY, 0., 0.) +
       CLHEP::Hep3Vector(_shieldL_Offset[0],_shieldL_Offset[1],_shieldL_Offset[2]);
 
     if ( _diagLevel > 0) {
       cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " <<
         CRSScintillatorShieldOffset << endl;
 
+    }
+
+    if (_hasPassiveShield) {
+        
+      CLHEP::Hep3Vector diff = CRSScintillatorShieldOffset + _scintillatorShieldOffset - 
+        _RightHallSteelOffset - _HallSteelOffset;
+
+      if ( fabs(diff.x())<0. ){
+        throw cet::exception("GEOM")
+          << "The CRPassiveShield && hasCRActiveShield configurations are inconsistent "
+          << name
+          << "\n";
+      }
     }
 
     // around x, y, z
@@ -234,7 +268,7 @@ namespace mu2e {
       CRSScintillatorShield(ishield,
                             name,
                             CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _crs->_globalOffset,
+                            CRSScintillatorShieldOffset + _scintillatorShieldOffset,
                             _scintillatorShieldHalfThickness,
                             numberOfModules);
 
@@ -247,12 +281,24 @@ namespace mu2e {
     numberOfModules = _shieldT_NumberOfModules;
 
     CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_scintillatorShieldOffsetToTheSideOfHallSteel + _HallSteelHalfLengthXY, 0., 0.) +
       CLHEP::Hep3Vector(_shieldT_Offset[0],_shieldT_Offset[1],_shieldT_Offset[2]);
 
     if ( _diagLevel > 0) {
       cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " <<
         CRSScintillatorShieldOffset << endl;
+    }
+
+    if (_hasPassiveShield) {
+        
+      CLHEP::Hep3Vector diff = CRSScintillatorShieldOffset + _scintillatorShieldOffset - 
+        _RightHallSteelOffset - _HallSteelOffset;
+
+      if ( fabs(diff.x())<0. ){
+        throw cet::exception("GEOM")
+          << "The CRPassiveShield && hasCRActiveShield configurations are inconsistent "
+          << name
+          << "\n";
+      }
     }
 
     // around x, y, z
@@ -266,7 +312,7 @@ namespace mu2e {
       CRSScintillatorShield(ishield,
                             name,
                             CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _crs->_globalOffset,
+                            CRSScintillatorShieldOffset + _scintillatorShieldOffset,
                             _scintillatorShieldHalfThickness,
                             numberOfModules);
 
@@ -280,12 +326,24 @@ namespace mu2e {
     numberOfModules = _shieldB_NumberOfModules;
 
     CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_scintillatorShieldOffsetToTheSideOfHallSteel + _HallSteelHalfLengthXY, 0., 0.) +
       CLHEP::Hep3Vector(_shieldB_Offset[0],_shieldB_Offset[1],_shieldB_Offset[2]);
 
     if ( _diagLevel > 0) {
       cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " <<
         CRSScintillatorShieldOffset << endl;
+    }
+
+    if (_hasPassiveShield) {
+        
+      CLHEP::Hep3Vector diff = CRSScintillatorShieldOffset + _scintillatorShieldOffset - 
+        _RightHallSteelOffset - _HallSteelOffset;
+
+      if ( fabs(diff.x())<0. ){
+        throw cet::exception("GEOM")
+          << "The CRPassiveShield && hasCRActiveShield configurations are inconsistent "
+          << name
+          << "\n";
+      }
     }
 
     // around x, y, z
@@ -299,7 +357,7 @@ namespace mu2e {
       CRSScintillatorShield(ishield,
                             name,
                             CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _crs->_globalOffset,
+                            CRSScintillatorShieldOffset + _scintillatorShieldOffset,
                             _scintillatorShieldHalfThickness,
                             numberOfModules);
 
@@ -312,14 +370,14 @@ namespace mu2e {
     numberOfModules = _shieldD_NumberOfModules;
 
     CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_scintillatorShieldOffsetToTheSideOfHallSteel +
-                        _HallSteelHalfLengthZ - _HallSteelHalfThick, 0., 0.) +
       CLHEP::Hep3Vector(_shieldD_Offset[0],_shieldD_Offset[1],_shieldD_Offset[2]);
 
     if ( _diagLevel > 0) {
       cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " <<
         CRSScintillatorShieldOffset << endl;
     }
+
+    // no good check against overlaps yet
 
     // around x, y, z
     CRSScintillatorShieldRotationAngles.clear();
@@ -332,7 +390,7 @@ namespace mu2e {
       CRSScintillatorShield(ishield,
                             name,
                             CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _crs->_globalOffset,
+                            CRSScintillatorShieldOffset + _scintillatorShieldOffset,
                             _scintillatorShieldHalfThickness,
                             numberOfModules);
 
@@ -346,14 +404,14 @@ namespace mu2e {
     numberOfModules = _shieldU_NumberOfModules;
 
     CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_scintillatorShieldOffsetToTheSideOfHallSteel +
-                        _HallSteelHalfLengthZ - _HallSteelHalfThick, 0., 0.) +
       CLHEP::Hep3Vector(_shieldU_Offset[0],_shieldU_Offset[1],_shieldU_Offset[2]);
 
     if ( _diagLevel > 0) {
       cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " <<
         CRSScintillatorShieldOffset << endl;
     }
+
+    // no good check against overlaps yet
 
     // around x, y, z
     CRSScintillatorShieldRotationAngles.clear();
@@ -366,7 +424,7 @@ namespace mu2e {
       CRSScintillatorShield(ishield,
                             name,
                             CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _crs->_globalOffset,
+                            CRSScintillatorShieldOffset + _scintillatorShieldOffset,
                             _scintillatorShieldHalfThickness,
                             numberOfModules);
 
@@ -417,7 +475,7 @@ namespace mu2e {
       CLHEP::HepRotation shieldRotation(RX*RY*RZ);
 
       CLHEP::Hep3Vector shieldGlobalCRSOffsetRotated =
-        (shieldRotation * (shield._globalOffset - _crs->_globalOffset)) + _crs->_globalOffset;
+        (shieldRotation * (shield._globalOffset - _scintillatorShieldOffset)) + _scintillatorShieldOffset;
 
       cout << __func__ << " shieldGlobalCRSOffsetRotated : " << shield._name << " : "
            << shieldGlobalCRSOffsetRotated << endl;
@@ -637,7 +695,7 @@ namespace mu2e {
 
       // we will now calculate position of the bar wrt the CRS origin and rotate it wrt that origin
 
-      CLHEP::Hep3Vector barCRSOffset = layer._globalOffset + barLocalOffset - _crs->_globalOffset;
+      CLHEP::Hep3Vector barCRSOffset = layer._globalOffset + barLocalOffset - _scintillatorShieldOffset;
 
       CLHEP::HepRotationX RX(bar._globalRotationAngles[0]);
       CLHEP::HepRotationY RY(bar._globalRotationAngles[1]);
@@ -651,7 +709,7 @@ namespace mu2e {
 
       //  note that difference, see the comments above, rotation done for the bars only so far
 
-      bar._globalOffset = barCRSOffsetRotated + _crs->_globalOffset;
+      bar._globalOffset = barCRSOffsetRotated + _scintillatorShieldOffset;
 
       layer._bars.push_back(&bar);
       bar._detail = &_crs->_barDetails;
@@ -769,32 +827,6 @@ namespace mu2e {
         _scintillatorShieldHalfThickness << endl;
     }
 
-    // this is offset outward from the plane centered in the center of the steel wall
-    //
-    _scintillatorShieldOffsetToTheSideOfHallSteel = _HallSteelHalfThick +
-      2.*_wallUnistrutHalfThickness + _scintillatorShieldHalfThickness;
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " ShieldOutwardOffset  : " <<
-        _scintillatorShieldOffsetToTheSideOfHallSteel << endl;
-    }
-
-    // the shield has modules overlaping on their edges, hence a global 2.* below
-    // see fig. 3.4 in meco-crs-05-001
-
-    // should be the same as above
-    double ShieldOutwardOffset1 =
-      _HallSteelHalfThick +
-      2.*(_wallUnistrutHalfThickness    +
-          _moduleUnistrutHalfLengths[0] +
-          2.*_scintillatorModuleOuterSheetHalfLengths[0] +
-          _scintillatorLayersPerModule*_scintillatorBarHalfLengths[0]+
-          (_scintillatorLayersPerModule-1)*_scintillatorModuleInterLayerSheetHalfThickness);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " ShieldOutwardOffset1 : " << ShieldOutwardOffset1 << endl;
-    }
-
     // we need to allocate space for all the bars at once to avoid pointer invalidatation
 
     _totalNumberOfBars =
@@ -896,28 +928,28 @@ namespace mu2e {
     _crs->_steelShields[name] =
       CRSSteelShield(name,
                      0,                                           // HepRotation*
-                     _TopHallSteelOffset + _crs->_globalOffset, // global offset in Mu2e
+                     _TopHallSteelOffset + _HallSteelOffset, // global offset in Mu2e
                      CRSSteelShieldTopDims);
 
     name = "CRSSteelBottomShield";
     _crs->_steelShields[name] =
       CRSSteelShield(name,
                      0,
-                     _BottomHallSteelOffset + _crs->_globalOffset,
+                     _BottomHallSteelOffset + _HallSteelOffset,
                      CRSSteelShieldTopDims);
 
     name = "CRSSteelLeftShield";
     _crs->_steelShields[name] =
       CRSSteelShield(name,
                      0,
-                     _LeftHallSteelOffset + _crs->_globalOffset,
+                     _LeftHallSteelOffset + _HallSteelOffset,
                      CRSSteelShieldSideDims);
 
     name = "CRSSteelRightShield";
     _crs->_steelShields[name] =
       CRSSteelShield(name,
                      0,
-                     _RightHallSteelOffset + _crs->_globalOffset,
+                     _RightHallSteelOffset + _HallSteelOffset,
                      CRSSteelShieldSideDims);
 
     double downStreamHoleRadius = _config.getBool("hasMBS",false) ?
@@ -927,7 +959,7 @@ namespace mu2e {
     _crs->_steelShields[name] =
       CRSSteelShield(name,
                      0,
-                     _DownstreamHallSteelOffset + _crs->_globalOffset,
+                     _DownstreamHallSteelOffset + _HallSteelOffset,
                      CRSSteelShieldUpstreamDims,
                      downStreamHoleRadius
                      );
@@ -936,36 +968,10 @@ namespace mu2e {
     _crs->_steelShields[name] =
       CRSSteelShield(name,
                      0,
-                     _UpstreamHallSteelOffset + _crs->_globalOffset,
+                     _UpstreamHallSteelOffset + _HallSteelOffset,
                      CRSSteelShieldUpstreamDims,
                      _config.getDouble("fluxcrv.HallSteelHoleRadius")
                      );
-
-  }
-
-
-  void CosmicRayShieldMaker::calculateCRSOffsets(SimpleConfig const & _config, double solenoidOffset) {
-
-    const double dsCoilZ0          = _config.getDouble("toyDS.z0");
-
-    CLHEP::Hep3Vector detSolCoilPosition(solenoidOffset, 0., -dsCoilZ0);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " detSolCoilPosition  : " << detSolCoilPosition  << endl;
-    }
-
-    CLHEP::Hep3Vector CRSSteelShieldOffset = _config.getHep3Vector("fluxcrv.HallSteelOffset");
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " CRSSteelShieldOffset     : " << CRSSteelShieldOffset  << endl;
-    }
-
-    _crs->_globalOffset = -(detSolCoilPosition + CRSSteelShieldOffset);
-
-    // the global offset will be wrt mu2e
-    if ( _diagLevel > 0) {
-      cout << __func__ << " _crs->_globalOffset    : " << _crs->_globalOffset << endl;
-    }
 
   }
 
