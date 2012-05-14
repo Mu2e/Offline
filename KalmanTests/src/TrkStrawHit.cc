@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.17 2012/04/13 14:49:46 brownd Exp $
+// $Id: TrkStrawHit.cc,v 1.18 2012/05/14 19:20:02 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/04/13 14:49:46 $
+// $Date: 2012/05/14 19:20:02 $
 //
 // Original author David Brown, LBNL
 //
@@ -47,13 +47,16 @@ namespace mu2e
   
   
   TrkStrawHit::TrkStrawHit(const StrawHit& strawhit, const Straw& straw, unsigned istraw,
-    const TrkT0& trkt0,double flt0,double fltlen,double herr,double maxdriftpull) :
+    const TrkT0& trkt0,double flt0,double fltlen,double exterr,double maxdriftpull) :
     TrkHitOnTrk(new TrkDummyHit(TrkEnums::xyView,strawhit.strawIndex().asInt(),TrkDetElemId::null),1e-5),
     _strawhit(strawhit),
     _straw(straw),
     _istraw(istraw),
-    _herr(herr),
+    _exterr(exterr),
+    _penerr(0.0),
+    _toterr(0.0),
     _iamb(0),
+    _ambigupdate(false),
     _maxdriftpull(maxdriftpull),
     _welem(&_wtype,this),
     _gelem(&_gtype,this)
@@ -83,10 +86,12 @@ namespace mu2e
       _wpos(other._wpos),
       _hitt0(other._hitt0),
       _hitt0_err(other._hitt0_err),
-      _herr(other._herr),
+      _exterr(other._exterr),
+      _penerr(other._penerr),
+      _toterr(other._toterr),
       _iamb(other._iamb),
-      _rdrift(other._rdrift),
-      _rdrift_err(other._rdrift_err),
+      _ambigupdate(false),
+      _t2d(other._t2d),
       _tddist(other._tddist),
       _tddist_err(other._tddist_err),
       _wtime(other._wtime),
@@ -149,24 +154,30 @@ namespace mu2e
 // find the track direction at this hit
     CLHEP::Hep3Vector tdir = getParentRep()->traj().direction(fltLen());
 // convert time to distance.  This computes the intrinsic drift radius error as well
-    T2D t2d;
-    tcal->TimeToDistance(straw().index(),tdrift,tdir,t2d);
-    _rdrift = t2d._rdrift;
-    double rstraw = _straw.getRadius(); 
-  // total drift radius error is the combination of t0 error, intrinsic error, and external error.  This doesn't account for correlation between hits
-    double rt0err = _hitt0_err*t2d._vdrift;
-    _rdrift_err = sqrt(rt0err*rt0err + t2d._rdrifterr*t2d._rdrifterr + _herr*_herr);
+    tcal->TimeToDistance(straw().index(),tdrift,tdir,_t2d);
+// Propogate error in t0, using local drift velocity
+    double rt0err = _hitt0_err*_t2d._vdrift;
+// deal with ambiguity updating
+    if(_ambigupdate) {
+      int iamb = _poca->doca() > 0 ? 1 : -1;
+      setAmbig(iamb);
+// pply a penalty if the drift distance is too small
+//      if(fabs(_t2d._rdrift) < _
+    }
+    // total hit error is the sum of all
+    _toterr = sqrt(_t2d._rdrifterr*_t2d._rdrifterr + rt0err*rt0err + _exterr*_exterr + _penerr*_penerr);
 // If the hit is wildly away from the track , disable it
-    if( _rdrift - rstraw > _maxdriftpull*_rdrift_err ||
-      _rdrift < -_maxdriftpull*_rdrift_err){
+    double rstraw = _straw.getRadius(); 
+    if( _t2d._rdrift - rstraw > _maxdriftpull*_toterr ||
+      _t2d._rdrift < -_maxdriftpull*_toterr){
         setUsability(-10);
         setActivity(false);
     } else {
 // otherwise restrict to a physical range
-      if (_rdrift < 0.0){
-	_rdrift = 0.0;
-      } else if( _rdrift > rstraw){
-	_rdrift = rstraw;
+      if (_t2d._rdrift < 0.0){
+	_t2d._rdrift = 0.0;
+      } else if( _t2d._rdrift > rstraw){
+	_t2d._rdrift = rstraw;
       }
     }
   }
@@ -184,23 +195,18 @@ namespace mu2e
   }
 
   TrkErrCode
-  TrkStrawHit::updateMeasurement(const TrkDifTraj* traj, bool maintainAmbiguity) {
+  TrkStrawHit::updateMeasurement(const TrkDifTraj* traj) {
     TrkErrCode status(TrkErrCode::fail);
 // find POCA to the wire
     updatePoca(traj);
-// update the drift distance using this traj direction
-    updateDrift();
-    if(_poca != 0 && _poca->status().success()) {
+   if(_poca != 0 && _poca->status().success()) {
       status = _poca->status();
-// set the ambiguity if allowed, based on the sign of DOCA
-      if(!maintainAmbiguity){
-	int newamb = _poca->doca() > 0 ? 1 : -1;
-	setAmbig(newamb);
-      }
-// sign drift distance by ambiguity.  Note that an ambiguity of 0 means to ignore the drift
-      double residual = _poca->doca() - _rdrift*_iamb;
+// update the drift distance using this traj direction
+      updateDrift();
+ // sign drift distance by ambiguity.  Note that an ambiguity of 0 means to ignore the drift
+      double residual = _poca->doca() - _t2d._rdrift*_iamb;
       setHitResid(residual);
-      setHitRms(_rdrift_err);
+      setHitRms(_toterr);
     } else {
       cout << "TrkStrawHit:: updateMeasurement() failed" << endl;
       setHitResid(999999);
@@ -214,7 +220,7 @@ namespace mu2e
   TrkStrawHit::hitPosition(CLHEP::Hep3Vector& hpos) const{
     if(_poca != 0 && _poca->status().success()){
       CLHEP::Hep3Vector pdir = (trkTraj()->position(fltLen()) - hitTraj()->position(hitLen())).unit();
-      hpos = _wpos + pdir*_rdrift*_iamb;
+      hpos = _wpos + pdir*_t2d._rdrift*_iamb;
     } else {
       hpos = _wpos;
     }

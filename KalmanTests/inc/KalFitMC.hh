@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.19 2012/04/14 17:53:37 brownd Exp $
+// $Id: KalFitMC.hh,v 1.20 2012/05/14 19:20:02 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/04/14 17:53:37 $
+// $Date: 2012/05/14 19:20:02 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -93,8 +93,9 @@ namespace mu2e
   };
 
   struct TrkStrawHitInfo {
-    Int_t _active, _usable, _strawid;
+    Int_t _active, _usable, _device, _sector, _layer, _straw;
     Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
+    Float_t _doca, _exerr, _penerr, _t0err;
     Float_t _ht, _tddist, _tdderr, _hlen;
     Int_t _ambig;
     Int_t _mcn, _mcnunique, _mcppdg, _mcpgen, _mcpproc;

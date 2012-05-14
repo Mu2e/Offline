@@ -36,7 +36,9 @@ namespace mu2e {
       _strawhit->updatePoca(dtraj);
       if(_strawhit->pocaStatus().success()){
 	pflt = _strawhit->fltLen();
-	pdist = fabs(_strawhit->driftRadius());
+// can't use drift radius as t2d not initialized on construction
+//	pdist = fabs(_strawhit->driftRadius());
+	pdist = fabs(_strawhit->poca()->doca());
 	retval =  true;
       }
     } else {

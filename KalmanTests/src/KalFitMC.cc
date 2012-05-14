@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.26 2012/04/14 17:53:37 brownd Exp $
+// $Id: KalFitMC.cc,v 1.27 2012/05/14 19:20:02 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/04/14 17:53:37 $
+// $Date: 2012/05/14 19:20:02 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -37,6 +37,7 @@
 #include "KalmanTests/inc/KalFitMC.hh"
 #include "TrkBase/TrkHelixUtils.hh"
 #include "TrkBase/TrkHotList.hh"
+#include "TrkBase/TrkPoca.hh"
 #include "TrkBase/TrkMomCalculator.hh"
 #include "BField/BFieldFixed.hh"
 #include "KalmanTrack/KalHit.hh"
@@ -151,10 +152,10 @@ namespace mu2e
 	    Hep3Vector start = mcptr[0]->position();
 	    Hep3Vector end = start + dir*mcptr[0]->stepLength();
 	    Hep3Vector mid = 0.5*(start+end);
-	    Hep3Vector mcsep = mid - straw.getMidPoint();
+	    Hep3Vector mcsep = straw.getMidPoint() - mid;
 	    Hep3Vector mcperp = (dir.cross(straw.getDirection())).unit();
 	    double dperp = mcperp.dot(mcsep);
-	    ambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
+	    ambig = dperp > 0 ? 1 : -1; // follow TrkPoca convention
 	  }
 	  unsigned nprimary(0);
           for( size_t j=0; j<mcptr.size(); ++j ) {
@@ -354,7 +355,10 @@ namespace mu2e
         TrkStrawHitInfo tshinfo;
         tshinfo._active = tsh->isActive();
         tshinfo._usable = tsh->usability();
-	tshinfo._strawid = tsh->strawHit().strawIndex().asInt();
+	tshinfo._device = tsh->straw().id().getDevice();
+	tshinfo._sector = tsh->straw().id().getSector();
+	tshinfo._layer = tsh->straw().id().getLayer();
+	tshinfo._straw = tsh->straw().id().getStraw();
 	double resid,residerr;
 	if(tsh->resid(resid,residerr,true)){
 	  tshinfo._resid = resid;
@@ -370,6 +374,10 @@ namespace mu2e
 	tshinfo._tddist = tsh->timeDiffDist();
 	tshinfo._tdderr = tsh->timeDiffDistErr();
 	tshinfo._ambig = tsh->ambig();
+	tshinfo._doca = tsh->poca()->doca();
+	tshinfo._exerr = tsh->extErr();
+	tshinfo._penerr = tsh->penaltyErr();
+	tshinfo._t0err = tsh->t0Err();
 // MC information	
         PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
         tshinfo._mcn = mcptr.size();

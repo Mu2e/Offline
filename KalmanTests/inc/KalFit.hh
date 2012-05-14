@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.18 2012/04/17 00:02:24 brownd Exp $
+// $Id: KalFit.hh,v 1.19 2012/05/14 19:20:02 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/04/17 00:02:24 $
+// $Date: 2012/05/14 19:20:02 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -22,6 +22,7 @@
 // KalFit objects
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
+#include "KalmanTests/inc/AmbigResolver.hh"
 #include "KalmanTrack/KalContext.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "BField/BField.hh"
@@ -57,7 +58,7 @@ namespace mu2e
 // define different t0 strategies.  Eventually t0 finding should be its own class
     enum t0Strategy {external=0,median,histogram};
 // define different ambiguity resolution strategies.  These will eventually be their own classes
-    enum ambigStrategy {fixed=0,singlehit,panel};
+    enum ambigStrategy {fixedambig=0,pocaambig,hitambig,panelambig};
 // parameter set should be passed in on construction
     explicit KalFit(fhicl::ParameterSet const&);
     virtual ~KalFit();
@@ -93,7 +94,8 @@ namespace mu2e
     double _t0nsig;
     int _fitpart;
     t0Strategy _t0strategy;
-    ambigStrategy _ambigstrategy;
+    std::vector<int> _ambigstrategy;
+    std::vector<AmbigResolver*> _ambigresolver;
     // helper functions
     bool fitable(TrkDef const& mytrk);
     bool updateT0(TrkKalFit& myfit);

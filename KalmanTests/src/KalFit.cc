@@ -1,14 +1,18 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.25 2012/04/17 00:02:24 brownd Exp $
+// $Id: KalFit.cc,v 1.26 2012/05/14 19:20:02 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/04/17 00:02:24 $
+// $Date: 2012/05/14 19:20:02 $
 //
 
 // the following has to come before other BaBar includes
 #include "BaBar/BaBar.hh"
 #include "KalmanTests/inc/KalFit.hh"
+#include "KalmanTests/inc/PanelAmbigResolver.hh"
+#include "KalmanTests/inc/PocaAmbigResolver.hh"
+#include "KalmanTests/inc/HitAmbigResolver.hh"
+#include "KalmanTests/inc/FixedAmbigResolver.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -91,19 +95,16 @@ namespace mu2e
     _t0nsig(pset.get<double>("t0window",2.5)),
     _fitpart(pset.get<int>("fitparticle",PdtPid::electron)),
     _t0strategy((t0Strategy)pset.get<int>("t0Strategy",median)),
-    _ambigstrategy((ambigStrategy)pset.get<int>("ambiguityStrategy",singlehit))
+    _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy"))
   {
 //      _herr.push_back( pset.get< double >("hiterr") );
   // make sure we have at least one entry for additional errors
       if(_herr.size() <= 0) throw cet::exception("RECO")<<"mu2e::KalFit: no hit errors specified" << endl;
+      if(_herr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
       _kalcon = new KalContext;
       _kalcon->setBendSites(_fieldcorr);
       _kalcon->setMaterialSites(_material);
     // depending on the ambiguity strategy, either allow or not the hit to change it itself
-      if(_ambigstrategy == singlehit)
-	_kalcon->setForbidAmbigFlips(false); //false: free left-rigth ambiguity, true: will be fixed externally
-      else
-	_kalcon->setForbidAmbigFlips(true);
       _kalcon->setMaxIterations(_maxiter);
       _kalcon->setMinGap(_mingap); // minimum separation between sites when creating trajectory pieces
       // these are currently fixed, they should be set as parameters and re-optimized FIXME!!!!
@@ -117,10 +118,31 @@ namespace mu2e
       _kalcon->setMaxMomDiff(1.0); // 1 MeV
       _kalcon->setTrajBuffer(0.01); // 10um
       _kalcon->setDefaultType((PdtPid::PidType)_fitpart);
+// construct the ambiguity resolvers
+      for(size_t iambig=0;iambig<_ambigstrategy.size();++iambig){
+	switch (_ambigstrategy[iambig] ){
+	  case fixedambig: default:
+	    _ambigresolver.push_back(new FixedAmbigResolver(pset));
+	    break;
+	  case hitambig:
+	    _ambigresolver.push_back(new HitAmbigResolver(pset));
+	    break;
+	  case panelambig:
+	    _ambigresolver.push_back(new PanelAmbigResolver(pset));
+	    break;
+	  case pocaambig:
+	    _ambigresolver.push_back(new PocaAmbigResolver(pset));
+	    break;
+	}
+      }
+
     }
 
   KalFit::~KalFit(){
     delete _kalcon;
+    for(size_t iambig=0;iambig<_ambigresolver.size();++iambig){
+      delete _ambigresolver[iambig];
+    }
   }
 
   void KalFit::makeTrack(TrkDef const& mytrk,TrkKalFit& myfit) {
@@ -213,28 +235,27 @@ namespace mu2e
 
   void KalFit::fitTrack(TrkKalFit& myfit){
     // loop over external hit errors
-    for(std::vector<double>::const_iterator iherr= _herr.begin(); iherr != _herr.end(); ++iherr){
+    for(size_t iherr=0;iherr < _herr.size(); ++iherr){
 // update the external hit errors.  This isn't strictly necessary on the 1st iteration.
       for(std::vector<TrkStrawHit*>::iterator itsh = myfit._hits.begin(); itsh != myfit._hits.end(); ++itsh){
-	(*itsh)->setHitErr(*iherr);
+	(*itsh)->setExtErr(_herr[iherr]);
       }
-// reset the fit
-      myfit._krep->resetFit();
-// initial fit
-      myfit.fit();
       // update t0, and propagate it to the hits
-      double oldt0(-1e8);
+      double oldt0(myfit._t0.t0());
       myfit._nt0iter = 0;
       unsigned niter(0);
       bool changed(true);
-      while(changed && myfit._fit.success() && niter < _kalcon->maxIterations()){
+//      myfit.fit();
+      while(changed && niter < _kalcon->maxIterations()){
 	changed = false;
-	if(_updatet0 && myfit._nt0iter < _kalcon->maxIterations() && updateT0(myfit) && fabs(myfit._t0.t0()-oldt0) > _t0tol  ){
+	_ambigresolver[iherr]->resolveTrk(myfit);
+	myfit._krep->resetFit();
+	myfit.fit();
+	if(! myfit._fit.success())break;
+	if(_updatet0){
+	  updateT0(myfit);
+	  changed |= fabs(myfit._t0.t0()-oldt0) > _t0tol;
 	  oldt0 = myfit._t0.t0();
-	  myfit._krep->resetFit();
-	  myfit.fit();
-	  myfit._nt0iter++;
-	  changed = true;
 	}
 	// drop outlyers
 	if(_weedhits){
@@ -324,8 +345,8 @@ namespace mu2e
     // create the hit object.  Start with the 1st additional error for anealing
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,t00,flt0,fltlen,_herr.front(),_maxdriftpull);
       assert(trkhit != 0);
-    // if ambiguity was predefined, set it
-      if(_ambigstrategy == fixed)trkhit->setAmbig(mytrk.strawHitIndices()[iind]._ambig);
+    // set the initial ambiguity based on the input
+      trkhit->setAmbig(mytrk.strawHitIndices()[iind]._ambig);
     // refine the flightlength, as otherwise hits in the same plane are at exactly the same flt, which can cause problems
       const TrkDifTraj* dtraj = &mytrk.helix();
       if(mytrk.traj() != 0)dtraj = mytrk.traj();
