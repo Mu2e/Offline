@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.16 2012/03/29 22:59:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/29 22:59:13 $
+// $Id: ReadBack_module.cc,v 1.17 2012/05/14 21:23:15 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/14 21:23:15 $
 //
 // Original author Rob Kutschke
 //
@@ -390,7 +390,10 @@ namespace mu2e {
     doStoppingTarget(event);
 
     if( geom->hasElement<CosmicRayShield>() ) {
-      doCRV(event);
+      GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
+      if(CosmicRayShieldGeomHandle->hasActiveShield()) {
+        doCRV(event);
+      }
     }
 
     if(geom->hasElement<ExtMonUCI::ExtMon>() ) {

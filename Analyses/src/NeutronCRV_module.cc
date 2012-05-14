@@ -1,12 +1,14 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: NeutronCRV_module.cc,v 1.14 2012/03/29 14:59:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/29 14:59:00 $
+// $Id: NeutronCRV_module.cc,v 1.15 2012/05/14 21:23:15 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/14 21:23:15 $
 //
 // Original author Rob Kutschke
 //
+// Notes:
+// make sure hasCosmicRayShield & crs.hasPassiveShield flags are on
 
 // C++ includes
 #include <cmath>
@@ -244,7 +246,19 @@ namespace mu2e {
     art::ServiceHandle<GeometryService> geom;
 
     if( geom->hasElement<CosmicRayShield>() ) {
-      doCRV(event);
+      GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
+      if(CosmicRayShieldGeomHandle->hasActiveShield()) {
+        doCRV(event);
+      }
+      else {
+        throw cet::exception("GEOM")
+          << "Need CosmicRayShield and PassiveShield: check the crs.hasPassiveShield flag"
+          << "\n";
+      }
+    } else {
+      throw cet::exception("GEOM")
+        << "Need CosmicRayShield: check the hasCosmicRayShield flag"
+        << "\n";
     }
   }
 
