@@ -1,9 +1,9 @@
 //
 // Free function to create Hall Steel
 //
-// $Id: constructSteel.cc,v 1.10 2012/03/30 15:13:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 15:13:35 $
+// $Id: constructSteel.cc,v 1.11 2012/05/14 21:24:55 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/14 21:24:55 $
 //
 // Original author KLG based on Mu2eWorld constructSteel
 //
@@ -41,6 +41,12 @@ namespace mu2e {
                        SimpleConfig const * const _config
                        ){
 
+    // get the CRS parameters from the geometry service and place the steel boxes
+
+    GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
+
+    if(!CosmicRayShieldGeomHandle->hasPassiveShield()) return;
+
     int const verbosityLevel = _config->getInt("crs.verbosityLevel",0);
 
     MaterialFinder materialFinder(*_config);
@@ -53,10 +59,6 @@ namespace mu2e {
     bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
     bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
     bool const placePV             = true;
-
-    // get the CRS parameters from the geometry service and place the steel boxes
-
-    GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
     std::map<std::string,CRSSteelShield> const & shields =
       CosmicRayShieldGeomHandle->getCRSSteelShields();
