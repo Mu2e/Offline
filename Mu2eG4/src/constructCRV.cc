@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.10 2011/12/07 00:32:29 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/07 00:32:29 $
+// $Id: constructCRV.cc,v 1.11 2012/05/14 21:24:46 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/14 21:24:46 $
 //
 // Original author KLG
 //
@@ -50,6 +50,11 @@ namespace mu2e {
                      SimpleConfig const * const _config
                      ){
 
+    // get the CRS parameters from the geometry service and place the veto elements
+
+    GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
+    if(!CosmicRayShieldGeomHandle->hasActiveShield()) return;
+
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
@@ -60,10 +65,6 @@ namespace mu2e {
 
     bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
     bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
-
-    // get the CRS parameters from the geometry service and place the veto elements
-
-    GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
     std::map<std::string,CRSScintillatorShield> const & shields =
       CosmicRayShieldGeomHandle->getCRSScintillatorShields();
