@@ -4,9 +4,9 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.13 2012/03/29 18:47:54 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/29 18:47:54 $
+// $Id: CosmicRayShield.hh,v 1.14 2012/05/14 21:22:24 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/14 21:22:24 $
 //
 // Original author KLG
 //
@@ -37,7 +37,10 @@ namespace mu2e {
 
   public:
 
-    CosmicRayShield() {}
+    CosmicRayShield() {
+      _hasActiveShield = false;
+      _hasPassiveShield = false;
+    }
 
     ~CosmicRayShield(){}
 
@@ -67,14 +70,15 @@ namespace mu2e {
       return _allCRSScintillatorBars.at(index.asInt());
     }
 
-    CLHEP::Hep3Vector const & getGlobalOffset() const {
-      return _globalOffset;
+    bool const hasActiveShield() const {
+      return _hasActiveShield;
+    }
+
+    bool const hasPassiveShield() const {
+      return _hasPassiveShield;
     }
 
   private:
-
-    // position of the center in  Mu2e frame
-    CLHEP::Hep3Vector _globalOffset;
 
     std::map<std::string,CRSSteelShield>         _steelShields;
 
@@ -85,6 +89,9 @@ namespace mu2e {
 
     // global holder of all scintillator bars
     std::vector<CRSScintillatorBar>  _allCRSScintillatorBars;
+
+    bool _hasActiveShield;
+    bool _hasPassiveShield;
 
     // for a future reference:
 
