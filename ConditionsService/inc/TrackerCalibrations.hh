@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.11 2012/05/13 21:26:32 ignatov Exp $
-// $Author: ignatov $
-// $Date: 2012/05/13 21:26:32 $
+// $Id: TrackerCalibrations.hh,v 1.12 2012/05/14 19:29:57 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/05/14 19:29:57 $
 //
 // Original author Vadim Rusu
 //
@@ -28,12 +28,14 @@ namespace mu2e
     double _rdrift;
     double _rdrifterr;
     double _vdrift; // local drift velocity at this radius, ie dr/dt(rdrift).
+    T2D() : _rdrift(0.0), _rdrifterr(1.0), _vdrift(0.0) {}
   };
 
 // simple struct to hold output of distanceToTime function
   struct D2T {
     double _tdrift;
     double _tdrifterr;
+    D2T() : _tdrift(0.0),_tdrifterr(1.0) {}
   };
 
   struct TrackerCalibrations: virtual public ConditionsEntity{
