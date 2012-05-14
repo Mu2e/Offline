@@ -110,7 +110,7 @@ vector<double> extmon_uci.shdHalfLengths = {
         750.0, 250.0, 1225.0,  // 5: TopBack
         250.0,  90.0, 1550.0,  // 6: DownFront
         250.0, 180.0, 1225.0,  // 7: DownBack
-        750.0,2200.0,  500.0   // 8: FrontRemovable
+        750.0,2200.0, 1000.0   // 8: FrontRemovable
 };
 vector<double> extmon_uci.shdPosition = {
         3870.0, 1600.0, -15679.0, // 0: Front
@@ -121,7 +121,7 @@ vector<double> extmon_uci.shdPosition = {
         3870.0, 2050.0, -20254.0, // 5: TopBack
         3870.0,  990.0, -17479.0, // 6: DownFront
         3870.0, 1080.0, -20254.0, // 7: DownBack
-        3870.0,  150.0, -14924.0  // 8: FrontRemovable
+        3870.0,  150.0, -14424.0  // 8: FrontRemovable
 };
 bool   extmon_uci.shdVisible          = true;
 bool   extmon_uci.shdSolid            = false;
@@ -218,13 +218,17 @@ string extmon_uci.shdHoleCuMaterialName = "G4_Cu";
 
 // Channel on Shielding
 int extmon_uci.nShdChannels = 2;
-vector<double> extmon_uci.shdChannelHalfLengths = {30, 40, 250,
-                                                   60, 80, 500};
+vector<double> extmon_uci.shdChannelHalfLengths = {30.0, 40.0,  250.0,
+                                                   60.0, 80.0, 1000.0};
 vector<double> extmon_uci.shdChannelPosition = {3840.00,      1291.00,       -15679.0,
-                                                3840.00,      1184.37,       -14924.0};
+                                                3840.00,      1113.75,       -14424.0};
 bool   extmon_uci.shdChannelVisible      = true;
 bool   extmon_uci.shdChannelSolid        = false;
 string extmon_uci.shdChannelMaterialName = "G4_AIR";
+
+// Virtual Detector
+double vd.ExtMonUCIEntrance1.HalfLengths = 100.0;
+vector<double> vd.ExtMonUCIEntrance1.Position = {3840.0, 972.52, -13419.0};
 
 // ExtMonUCI Killer Volume
 bool   extmon_uci.hasKiller           = false;
