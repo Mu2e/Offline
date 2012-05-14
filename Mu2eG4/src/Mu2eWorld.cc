@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.130 2012/05/07 23:35:57 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/05/07 23:35:57 $
+// $Id: Mu2eWorld.cc,v 1.131 2012/05/14 21:23:46 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/14 21:23:46 $
 //
 // Original author Rob Kutschke
 //
@@ -79,6 +79,7 @@
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/TransportSolenoid.hh"
@@ -221,9 +222,11 @@ namespace mu2e {
     constructCal();
     constructMagnetYoke();
 
-    if ( _config->getBool("hasCosmicRayShield",false) ) {
-      constructSteel(hallInfo,_config);
-      constructCRV(hallInfo,_config);
+    if ( geom->hasElement<CosmicRayShield>() ) {
+      
+      GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
+      if(CosmicRayShieldGeomHandle->hasPassiveShield()) constructSteel(hallInfo,_config);
+      if(CosmicRayShieldGeomHandle->hasActiveShield()) constructCRV(hallInfo,_config);
     }
 
     if ( _config->getBool("hasNeutronAbsorber",false) ) {
@@ -231,6 +234,19 @@ namespace mu2e {
     }
 
     if ( _config->getBool("hasMBS",false) ) {
+      // has to have the "steel"
+      if ( !geom->hasElement<CosmicRayShield>() ) {
+        throw cet::exception("GEOM")
+          << "Need CosmicRayShield to construct MBS, check the hasCosmicRayShield flag"
+          << "\n";
+      }
+      GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
+      if(!CosmicRayShieldGeomHandle->hasPassiveShield()) {
+        throw cet::exception("GEOM")
+          << "Need CosmicRayShield and PassiveShield to construct MBS, "
+          << "check the crs.hasPassiveShield flag"
+          << "\n";        
+      }
       constructMBS(_config);
     }
 
