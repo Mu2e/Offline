@@ -4,9 +4,9 @@
 //
 // Class to represent the system of MECO Style Proton Absorber
 //
-// $Id: MECOStyleProtonAbsorber.hh,v 1.1 2012/05/10 23:40:59 mjlee Exp $
+// $Id: MECOStyleProtonAbsorber.hh,v 1.2 2012/05/15 20:19:00 mjlee Exp $
 // $Author: mjlee $
-// $Date: 2012/05/10 23:40:59 $
+// $Date: 2012/05/15 20:19:00 $
 //
 // Original author MyeongJae Lee
 //
@@ -43,7 +43,7 @@ namespace mu2e {
     double distanceFromTargetEnd() const { return _distfromtargetend; }
     double halfLength () const { return _halflength; }
     double thickness() const { return _thickness;}
-    bool isAvailable (int id) ;
+    bool isAvailable (int id) const ;
 
   protected:
 
