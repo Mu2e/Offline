@@ -54,6 +54,16 @@ services :
 
 physics :
 {
+  filters:
+  {
+    # Look at the bad events from G4.
+    skipBadEvents:
+    {
+      module_type          : KilledEventFilter
+      g4ModuleLabel        : g4run
+    }
+  }
+
   producers:
   {
     # Look at the hits from G4.
@@ -95,7 +105,7 @@ physics :
       module_type           : EvalBkgTrackRejection
       elextractModuleLabel  : extractElData
       tRejecterModuleLabel  : trckRjctByTime
-      gRejecterModuleLabel  : trckRjctByGmTplg
+      #gRejecterModuleLabel  : trckRjctByGmTplg
       #generatorModuleLabel  : generate
       #g4ModuleLabel         : g4run
       makerModuleLabel      : makeSH
@@ -107,9 +117,10 @@ physics :
     }
   }
 
-  #p1 : []
+  #p1 : [skipBadEvents]
   #e1 : [trckRjctByGmTplg]
-  p1 : [extractElData,trckRjctByGmTplg]
+  #p1 : [skipBadEvents,extractElData,trckRjctByGmTplg]
+  p1 : [skipBadEvents,extractElData]
   e1 : [evalTrckRjctn]
 
 

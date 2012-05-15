@@ -54,6 +54,16 @@ services :
 
 physics :
 {
+  filters:
+  {
+    # Look at the bad events from G4.
+    skipBadEvents:
+    {
+      module_type          : KilledEventFilter
+      g4ModuleLabel        : g4run
+    }
+  }
+
   producers:
   {
     # Look at the hits from G4.
@@ -77,7 +87,8 @@ physics :
       g4ModuleLabel         : g4run
       makerModuleLabel      : makeSH
       nsigmaForTimeSel      : 1.645               #-1: use default time window, x>0: x sigma of the fitted time peak  (ex. 1.960, 1.645 ..)
-      protonRejecEff        : -1.0                #efficiency of proton rejection, x<=0: disable proton rejection
+      protonRejecEff        : -1.0                #efficiency of proton rejection, x<=0: disable the proton rejection               (to switch on the proton rejection both protonRejecEff and pulseCut must be on)
+      pulseCut              : 0.015               #pulse cut (in MeV) for the proton rejection, x<=0: disable the proton rejection  (to switch on the proton rejection both protonRejecEff and pulseCut must be on)
       ADCSttnPeriod         : -1.0                #periodicity of the Station equipped with ADC, x<=0: no periodicity (all Stations)
       seed                  : [1234]
       #trackerStepPoints    : tracker
@@ -135,9 +146,9 @@ physics :
     }
   }
 
-  #p1 : []
+  #p1 : [skipBadEvents]
   #e1 : [trckRjctByGmTplg]
-  p1 : [extractElData,trckRjctByTime,trckRjctByGmTplg]
+  p1 : [skipBadEvents,extractElData,trckRjctByTime,trckRjctByGmTplg]
   e1 : [evalTrckRjctn]
 
 
