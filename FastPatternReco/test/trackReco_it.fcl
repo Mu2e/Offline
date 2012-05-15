@@ -115,7 +115,7 @@ physics :
     }
   }
 
-  p1 : [skipBadEvents,maptrackerHit]#,trckRjctByTime
+  p1 : [skipBadEvents,maptrackerHit,trckRjctByTime]
   e1 : [trackReco]
 
 
