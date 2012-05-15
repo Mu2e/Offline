@@ -1,9 +1,9 @@
 //
 // example of a module to read Data of the Electrons tracks that came from the targets
 //
-// $Id: ReadExtractElectronsData_module.cc,v 1.4 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: ReadExtractElectronsData_module.cc,v 1.5 2012/05/15 07:48:33 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/05/15 07:48:33 $
 //
 // Original author G. Tassielli
 //
@@ -128,6 +128,8 @@ namespace mu2e {
     unsigned int  runID, eventID, convElGoodNHit, convElTotNHit, convElNLoop;
     float         el_Start_px, el_Start_py, el_Start_pz, el_AtTracker_px, el_AtTracker_py, el_AtTracker_pz;
     float         convElFHitTime/*, convElStartTime*/;
+    float         signalTimeCoin[1000], lastSignalTimeCoin[1000];
+
     // End: run time parameters
 
 //    TCanvas*      _fakeCanvas;
@@ -203,6 +205,8 @@ namespace mu2e {
     _dataConvEl->Branch("ConvEl_Tracker_pz",&el_AtTracker_pz,"el_AtTracker_pz/F");
     _dataConvEl->Branch("ConvEl_FrstHit_Time",&convElFHitTime,"convElFHitTime/F");
     //_dataConvEl->Branch("ConvEl_Start_Time",&convElStartTime,"convElStartTime/F");
+    _dataConvEl->Branch("ConvEl_Frst_Time_Coinc",signalTimeCoin,"signalTimeCoin[convElTotNHit]/F");
+    _dataConvEl->Branch("ConvEl_Last_Time_Coinc",lastSignalTimeCoin,"lastSignalTimeCoin[convElTotNHit]/F");
 
     //_fakeCanvas = new TCanvas("canvas_Fake","double click for next event",300,100);
 
@@ -281,6 +285,10 @@ namespace mu2e {
                             if (genElhit._isOverlapped) {
                                     convElHitOvrlppd++;
                                     if (genElhit._isOvrlpByProton) convElHitOvrlppdByP++;
+                            }
+                            if (iElHit<1000) {
+                                    signalTimeCoin[iElHit]=genElhit._iHit->time()-convElFHitTime;
+                                    lastSignalTimeCoin[iElHit]=signalTimeCoin[iElHit]+genElhit._iHit->dt();
                             }
                     }
                     _hNhitOverlapConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppd);
