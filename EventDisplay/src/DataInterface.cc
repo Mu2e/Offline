@@ -8,6 +8,7 @@
 #include "Cube.h"
 #include "Cylinder.h"
 #include "EventDisplayFrame.h"
+#include "FilterDialog.h"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -61,6 +62,16 @@ DataInterface::DataInterface(EventDisplayFrame *mainframe):
               _geometrymanager(NULL),_topvolume(NULL),_mainframe(mainframe),
               _showUnhitStraws(false), _showUnhitCrystals(false)
 {
+    _minPoints=0;
+    _minTime=NAN;
+    _maxTime=NAN;
+    _minMomentum=0;
+    _showElectrons=true;
+    _showMuons=true;
+    _showGammas=true;
+    _showNeutrinos=true;
+    _showNeutrons=true;
+    _showOthers=true;
 }
 
 DataInterface::~DataInterface()
@@ -120,6 +131,37 @@ void DataInterface::updateComponents(double time)
   for(driftradius=_driftradii.begin(); driftradius!=_driftradii.end(); driftradius++)
   {
     (*driftradius)->update(time);
+  }
+}
+
+void DataInterface::setTrackFilter(unsigned int minPoints, double minTime, double maxTime, double minMomentum,
+                                   bool showElectrons, bool showMuons, bool showGammas, 
+                                   bool showNeutrinos, bool showNeutrons, bool showOthers)
+{
+    _minPoints=minPoints;
+    _minTime=minTime;
+    _maxTime=maxTime;
+    _minMomentum=minMomentum;
+    _showElectrons=showElectrons;
+    _showMuons=showMuons;
+    _showGammas=showGammas;
+    _showNeutrinos=showNeutrinos;
+    _showNeutrons=showNeutrons;
+    _showOthers=showOthers;
+}
+
+void DataInterface::filterTracks()
+{
+  new FilterDialog(gClient->GetRoot(), this,
+                   _minPoints, _minTime, _maxTime, _minMomentum,
+                   _showElectrons, _showMuons, _showGammas, 
+                   _showNeutrinos, _showNeutrons, _showOthers);
+std::cout<<__LINE__<<" "<<_minTime<<" "<<_maxTime<<std::endl;
+  std::vector<boost::shared_ptr<Track> >::const_iterator track;
+  for(track=_tracks.begin(); track!=_tracks.end(); track++)
+  {
+    (*track)->setFilter(_minPoints, _minTime, _maxTime, _minMomentum,
+                        _showElectrons, _showMuons, _showGammas, _showNeutrinos, _showNeutrons, _showOthers);
   }
 }
 
@@ -1180,7 +1222,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       {
         info->expandLine(4,daughter->asInt(),"");
       }
-      boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, trackclass, trackclassindex, 
+      boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, trackclass, trackclassindex, e1, 
                                                _geometrymanager, _topvolume, _mainframe, info));
       findTrajectory(contentSelector,shape,particleKey, t1,t2, simParticles,particle.daughterIds(), trackInfos[i]);
       _components.push_back(shape);
@@ -1257,12 +1299,23 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         }
         if(hitcount>0) offset/=hitcount; else offset=0;
 
-        boost::shared_ptr<Track> track(new Track(particleid, trackclass, trackclassindex, _geometrymanager, _topvolume, _mainframe, info));
+        double fltLMin=trkrep->startValidRange();
+        double fltLMax=trkrep->endValidRange();
+        double p1=trkrep->momentum(fltLMin).mag();
+        double p2=trkrep->momentum(fltLMax).mag();
+        double x1=trkrep->position(fltLMin).x();
+        double y1=trkrep->position(fltLMin).y();
+        double z1=trkrep->position(fltLMin).z();
+        double x2=trkrep->position(fltLMax).x();
+        double y2=trkrep->position(fltLMax).y();
+        double z2=trkrep->position(fltLMax).z();
+        double t1=trkrep->arrivalTime(fltLMin)+offset;
+        double t2=trkrep->arrivalTime(fltLMax)+offset;
+        boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, trackclass, trackclassindex, p1, 
+                                                 _geometrymanager, _topvolume, _mainframe, info));
         _components.push_back(track);
         _tracks.push_back(track);
 
-        double fltLMin=trkrep->startValidRange();
-        double fltLMax=trkrep->endValidRange();
         double fltStep = (fltLMax - fltLMin)/400.0;
         for(unsigned int step = 0; step <= 400.0; step++) 
         {		
@@ -1273,18 +1326,12 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
           track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
         }
-        double t1=trkrep->arrivalTime(fltLMin)+offset;
-        double t2=trkrep->arrivalTime(fltLMax)+offset;
-        track->setStartTime(t1);
-        track->setEndTime(t2);
         const KalRep* kalrep = dynamic_cast<const KalRep*>(trkrep);
         if(kalrep!=NULL)
         {
           int charge = kalrep->charge();
           sprintf(c2,"Charge %i",charge);
           info->setText(1,c2);
-          double p1=trkrep->momentum(fltLMin).mag();
-          double p2=trkrep->momentum(fltLMax).mag();
           sprintf(c3,"Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV);
           sprintf(c4,"T0 %gns",t0/CLHEP::ns);
           info->setText(2,c3);

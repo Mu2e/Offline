@@ -45,6 +45,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   TGMainFrame(p, w, h),
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run"))
 {
+  SetCleanup(kDeepCleanup);
   Move(20,20);
 
   FontStruct_t buttonfont = gClient->GetFontByName("-*-helvetica-medium-r-*-*-8-*-*-*-*-*-iso8859-1");
@@ -112,11 +113,11 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, trackBox, _g4ModuleLabel));
 
   _unhitButton = new TGCheckButton(_subFrame,"Show Unhit Straws",31);
-  _subFrame->AddFrame(_unhitButton, lh1);
+//  _subFrame->AddFrame(_unhitButton, lh1);
   _unhitButton->Associate(this);
 
   _unhitCrystalsButton = new TGCheckButton(_subFrame,"Show Unhit Crystals",36);
-  _subFrame->AddFrame(_unhitCrystalsButton, lh1);
+//  _subFrame->AddFrame(_unhitCrystalsButton, lh1);
   _unhitCrystalsButton->Associate(this);
 
   _supportStructuresButton = new TGCheckButton(_subFrame,"Show Tracker Supports, Calo Vanes, Target",32);
@@ -217,12 +218,15 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _hitColorButton = new TGCheckButton(_subFrame,"Use Hit Colors",60);
   _trackColorButton = new TGCheckButton(_subFrame,"Use Track Colors",61);
   _backgroundButton = new TGCheckButton(_subFrame,"White Background",62);
-  _subFrame->AddFrame(_hitColorButton, lh1);
-  _subFrame->AddFrame(_trackColorButton, lh1);
+  TGTextButton *filterButton       = new TGTextButton(_subFrame, "Filter", 63);
+//  _subFrame->AddFrame(_hitColorButton, lh1);
+//  _subFrame->AddFrame(_trackColorButton, lh1);
   _subFrame->AddFrame(_backgroundButton, lh1);
+  _subFrame->AddFrame(filterButton, lh1);
   _hitColorButton->Associate(this);
   _trackColorButton->Associate(this);
   _backgroundButton->Associate(this);
+  filterButton->Associate(this);
   _hitColorButton->SetState(kButtonDown);
   _trackColorButton->SetState(kButtonDown);
   _backgroundButton->SetState(kButtonUp);
@@ -785,7 +789,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          if(param1==51)
                          {
                            std::string filename;
-                           bool isRootFile;
+                           bool isRootFile=false;
                            if(SaveDialogManager::animatedImage(filename,isRootFile))
                            {
                              _saveAnim=true;
@@ -884,7 +888,11 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                              _mainPad->Update();
                            }
                          }
-
+                         if(param1==63)
+                         {
+                           _dataInterface->filterTracks();
+                           drawEverything();
+                         }
                          break;
    case kCM_RADIOBUTTON: if(param1==1700)
                          {

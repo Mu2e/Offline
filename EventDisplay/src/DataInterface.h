@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.26 2012/02/24 21:12:30 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/02/24 21:12:30 $
+// $Id: DataInterface.h,v 1.27 2012/05/15 20:14:25 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/05/15 20:14:25 $
 //
 // Original author Ralf Ehrlich
 //
@@ -77,6 +77,16 @@ class DataInterface
   spaceminmax       _trackerMinmax, _targetMinmax, _calorimeterMinmax, _tracksMinmax;
   int               _numberHits, _numberCrystalHits;
   bool              _showUnhitStraws, _showUnhitCrystals;
+  unsigned int _minPoints;
+  double _minTime;
+  double _maxTime;
+  double _minMomentum;
+  bool _showElectrons;
+  bool _showMuons;
+  bool _showGammas;
+  bool _showNeutrinos;
+  bool _showNeutrons;
+  bool _showOthers;
 
   void createGeometryManager();
   void removeAllComponents();
@@ -114,6 +124,10 @@ class DataInterface
   void makeMuonBeamStopStructuresVisible(bool visible);
   void useHitColors(bool hitcolors, bool whitebackground);
   void useTrackColors(boost::shared_ptr<ContentSelector> const &contentSelector, bool trackcolors, bool whitebackground);
+  void setTrackFilter(unsigned int minPoints, double minTime, double maxTime, double minMomentum,
+                              bool showElectrons, bool showMuons, bool showGammas, 
+                              bool showNeutrinos, bool showNeutrons, bool showOthers);
+  void filterTracks();
   int getNumberHits() {return _numberHits;}
   int getNumberCrystalHits() {return _numberCrystalHits;}
 

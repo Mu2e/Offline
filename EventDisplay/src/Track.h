@@ -1,9 +1,9 @@
 //
 // Container class for all particle tracks. Tracks are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). The displayed length of the track depends is time-dependent.
 //
-// $Id: Track.h,v 1.13 2011/12/06 21:47:47 ehrlich Exp $
+// $Id: Track.h,v 1.14 2012/05/15 20:14:25 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/12/06 21:47:47 $
+// $Date: 2012/05/15 20:14:25 $
 //
 // Original author Ralf Ehrlich
 //
@@ -32,6 +32,18 @@ class Track: public VirtualShape
   bool _trajectory;
   int _particleId;
   int _trackClass, _trackClassIndex;
+  double _momentum;
+
+  unsigned int _minPoints;
+  double _minTime;
+  double _maxTime;
+  double _minMomentum;
+  bool _showElectrons;
+  bool _showMuons;
+  bool _showGammas;
+  bool _showNeutrinos;
+  bool _showNeutrons;
+  bool _showOthers;
 
   public:
 //constructor for tracks with start and end point only 
@@ -39,10 +51,13 @@ class Track: public VirtualShape
   Track(double x1, double y1, double z1, double t1,
         double x2, double y2, double z2, double t2,
         int particleId, int trackClass, int trackClassIndex, 
+        double momentum, 
         const TGeoManager *geomanager, TGeoVolume *topvolume,
         EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info):
         VirtualShape(geomanager, topvolume, mainframe, info, false)
   {
+    resetFilter();
+    _momentum=momentum;
     pt p;
     p.x=x1;
     p.y=y1;
@@ -64,14 +79,17 @@ class Track: public VirtualShape
     _line->Draw();
     start();
   }
-
+/*
 //constructor for a track without any points
 //trajectory points can be added later
   Track(int particleId, int trackClass, int trackClassIndex,
+        double momentum, 
         const TGeoManager *geomanager, TGeoVolume *topvolume,
         EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info):
         VirtualShape(geomanager, topvolume, mainframe, info, false)
   {
+    resetFilter();
+    _momentum=momentum;
     _particleId=particleId;
     _trackClass=trackClass;
     _trackClassIndex=trackClassIndex;
@@ -79,7 +97,7 @@ class Track: public VirtualShape
     _line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
     _line->Draw();
   }
-
+*/
   void addTrajectoryPoint(double x, double y, double z, double t)
   {
     if(!_trajectory) {_pVec.clear();}
@@ -111,10 +129,65 @@ class Track: public VirtualShape
     _line->Draw();
   }
 
+  void resetFilter()
+  {
+    _minPoints=0;
+    _minTime=NAN;
+    _maxTime=NAN;
+    _minMomentum=0;
+    _showElectrons=true;
+    _showMuons=true;
+    _showGammas=true;
+    _showNeutrinos=true;
+    _showNeutrons=true;
+    _showOthers=true;
+  }
+
+  void setFilter(unsigned int minPoints, double minTime, double maxTime, double minMomentum,
+                 bool showElectrons, bool showMuons, bool showGammas, bool showNeutrinos, bool showNeutrons, bool showOthers)
+  {
+    _minPoints=minPoints;
+    _minTime=minTime;
+    _maxTime=maxTime;
+    _minMomentum=minMomentum;
+    _showElectrons=showElectrons;
+    _showMuons=showMuons;
+    _showGammas=showGammas;
+    _showNeutrinos=showNeutrinos;
+    _showNeutrons=showNeutrons;
+    _showOthers=showOthers;
+  }
+
   void update(double time)
   {
-//un-comment this line if you only want to draw tracks with more than 2 points
-//if(_pVec.size()<=2) return;
+    //Filter
+    bool toDelete=false;
+    if(_pVec.size()<_minPoints) toDelete=true;
+    if(getEndTime()<_minTime) toDelete=true;
+    if(getStartTime()>_maxTime) toDelete=true;
+    if(_momentum<_minMomentum) toDelete=true;
+    switch(_particleId)
+    {
+                case   11: 
+                case  -11: if(!_showElectrons) toDelete=true; break;   //e+,e-
+                case   13:
+                case  -13: if(!_showMuons) toDelete=true; break;   //mu+,mu-
+                case   22: if(!_showGammas) toDelete=true; break;   //gamma
+                case 2112: if(!_showNeutrons) toDelete=true; break;   //n0
+                case   12:
+                case  -12:
+                case   14:
+                case  -14:
+                case   16:
+                case  -16: if(!_showNeutrinos) toDelete=true; break;   //neutrinos
+                default  : if(!_showOthers) toDelete=true;
+    };
+    if(toDelete)
+    {
+      start();  //shortens the track to a length of 0
+      return;
+    }
+
     if(time<getStartTime()) return;
     for(unsigned int i=1; i<_pVec.size(); i++)
     {
