@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on time peak analysis
 //
-// $Id: BkgTrackRejecterByTime_module.cc,v 1.7 2012/02/08 16:51:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/08 16:51:17 $
+// $Id: BkgTrackRejecterByTime_module.cc,v 1.8 2012/05/15 07:46:58 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/05/15 07:46:58 $
 //
 // Original author G. Tassielli
 //
@@ -380,12 +380,25 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 
     auto_ptr<TrackerHitTimeClusterCollection> thcc(new TrackerHitTimeClusterCollection);
 
+    float intTimeWind = 0.0;
 
+    art::ServiceHandle<mu2e::GeometryService> geom;
     const Tracker& tracker = getTrackerOrThrow();
-    const TTracker &ttr = static_cast<const TTracker&>( tracker );
-    const std::vector<Device> ttrdev = ttr.getDevices();
+    if(geom->hasElement<mu2e::TTracker>()) {
+            const TTracker &ttr = static_cast<const TTracker&>( tracker );
+            //const std::vector<Device> ttrdev = ttr.getDevices();
+            intTimeWind = ttr.strawRadius();
+    } else if(geom->hasElement<mu2e::ITracker>()) {
+            const ITracker &itr = static_cast<const ITracker&>( tracker );
+            CellGeometryHandle *itwp = itr.getCellGeometryHandle();
+            itwp->SelectCell(0,0,0);
+            intTimeWind += itwp->GetCellRad();
+            itwp->SelectCell(itr.nSuperLayers()-1,0,0);
+            intTimeWind += itwp->GetCellRad();
+            intTimeWind *= 0.5;
+    }
 
-    float intTimeWind = ttr.strawRadius()/_driftVelocity + 20.0;   //max drift time + max TOF of a signal electron
+    intTimeWind = intTimeWind/_driftVelocity + 20.0;   //max drift time + max TOF of a signal electron
     stbrel timeBin_Straw_rel;
     int tmpiTimeBin;
 

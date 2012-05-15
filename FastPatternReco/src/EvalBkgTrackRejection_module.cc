@@ -1,9 +1,9 @@
 //
 // performance evaluation of the Bkg rejection modules
 //
-// $Id: EvalBkgTrackRejection_module.cc,v 1.6 2012/01/30 19:51:42 tassiell Exp $
+// $Id: EvalBkgTrackRejection_module.cc,v 1.7 2012/05/15 07:46:58 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/01/30 19:51:42 $
+// $Date: 2012/05/15 07:46:58 $
 //
 // Original author G. Tassielli
 //
@@ -40,8 +40,8 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
+//#include "TrackerGeom/inc/Tracker.hh"
+//#include "TrackerGeom/inc/Straw.hh"
 //#include "ITrackerGeom/inc/Cell.hh"
 //#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 //#include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -136,6 +136,7 @@ namespace mu2e {
 
 //    TCanvas*      _fakeCanvas;
     // Pointers to histograms, ntuples, TGraphs.
+    bool          _evalTimeSel;
     TH1F*         _hNtrackableEv;
     TH1F*         _hNhitTrackableEv;
     TH1F*         _hNBestTimePeakEv;
@@ -143,6 +144,7 @@ namespace mu2e {
     TH2F*         _hLostHitBstTmPkEv;
     TH1F*         _hNoiseHitBstTmPkEv;
 
+    bool          _evalGeomSel;
     TH1F*         _hNBestSGClInTmPkEv;
     TH1F*         _hSGClHitInBstTmPkEv;
     TH2F*         _hLostHitBstSGClBstTmPkEv;
@@ -171,8 +173,8 @@ namespace mu2e {
     // Run time parameters
     _makerModuleLabel(pset.get<string>("makerModuleLabel")),
     _extractElectronsData(pset.get<string>("elextractModuleLabel")),
-    _timeRejecterModuleLabel(pset.get<string>("tRejecterModuleLabel")),
-    _geomRejecterModuleLabel(pset.get<string>("gRejecterModuleLabel")),
+    _timeRejecterModuleLabel(pset.get<string>("tRejecterModuleLabel","off")),
+    _geomRejecterModuleLabel(pset.get<string>("gRejecterModuleLabel","off")),
 //    _moduleLabel(pset.get<string>("module_label")),/*@module_label*/
 //    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
 //    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
@@ -201,89 +203,101 @@ namespace mu2e {
           sel_ptMeV=sel_ptMeV_start=sel_ptMeV_end=sel_plMeV=sel_plMeV_start=sel_plMeV_end=convElFHitTime=0.0;
           bestTPcElNHit=bestTPNHit=nPeaksFound=0;
           bestClGcElNHit=bestClGNHit=bestClGcNCls=nPotentTracks=0;
+          if (_timeRejecterModuleLabel.compare("off")==0) { _evalTimeSel=false; }
+          else { _evalTimeSel=true; }
+          if (_geomRejecterModuleLabel.compare("off")==0) { _evalGeomSel=false; }
+          else { _evalGeomSel=true; }
+          cout<<"_evalTimeSel "<<_evalTimeSel<<" _evalGeomSel "<<_evalGeomSel<<endl;
  }
 
   void EvalBkgTrackRejection::beginJob(){
 
-	  cout<<"Starting EvalBkgTrackRejection jos!"<<endl;
+          cout<<"Starting EvalBkgTrackRejection jos!"<<endl;
 
-    // Get access to the TFile service and save current directory for later use.
-    art::ServiceHandle<art::TFileService> tfs;
+          // Get access to the TFile service and save current directory for later use.
+          art::ServiceHandle<art::TFileService> tfs;
 
-    // If needed, create the ROOT interactive environment. See note 1.
-//    if ( !gApplication ){
-//      int    tmp_argc(0);
-//      char** tmp_argv(0);
-//      _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
-//    }
+          // If needed, create the ROOT interactive environment. See note 1.
+          //    if ( !gApplication ){
+          //      int    tmp_argc(0);
+          //      char** tmp_argv(0);
+          //      _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+          //    }
 
-    gStyle->SetPalette(1);
-    gROOT->SetStyle("Plain");
+          gStyle->SetPalette(1);
+          gROOT->SetStyle("Plain");
 
-    // Create a histogram.
-    _hNtrackableEv       = tfs->make<TH1F>( "hNtrackableEv",   "N of trackable signal electrons", 111, 49.75, 105.25  );
-    _hNhitTrackableEv    = tfs->make<TH1F>( "hNhitTrackableEv",   "N of hits for each signal electrons track", 111, 49.75, 105.25  );
-    _hNBestTimePeakEv    = tfs->make<TH1F>( "hNBestTimePeakEv",   "N of peak time that has the best agreement with trackable signal electrons", 111, 49.75, 105.25  );
-    _hNhitBestTimePeakEv = tfs->make<TH1F>( "hNhitBestTimePeakEv",   "N of hits of the signal electrons track that are found in the best time peak", 111, 49.75, 105.25  );
-    _hLostHitBstTmPkEv   = tfs->make<TH2F>( "hLostHitBstTmPkEv",   "N of lost hits of the signal electrons track that in the best time peak", 111, 49.75, 105.25, 20, 0, 20  );
-    _hNoiseHitBstTmPkEv  = tfs->make<TH1F>( "hNoiseHitBstTmPkEv",   "N of hits of noise present in the the best time peak over signal electrons track hits", 111, 49.75, 105.25  );
+          // Create a histogram.
+          if (_evalTimeSel) {
+                  _hNtrackableEv       = tfs->make<TH1F>( "hNtrackableEv",   "N of trackable signal electrons", 111, 49.75, 105.25  );
+                  _hNhitTrackableEv    = tfs->make<TH1F>( "hNhitTrackableEv",   "N of hits for each signal electrons track", 111, 49.75, 105.25  );
+                  _hNBestTimePeakEv    = tfs->make<TH1F>( "hNBestTimePeakEv",   "N of peak time that has the best agreement with trackable signal electrons", 111, 49.75, 105.25  );
+                  _hNhitBestTimePeakEv = tfs->make<TH1F>( "hNhitBestTimePeakEv",   "N of hits of the signal electrons track that are found in the best time peak", 111, 49.75, 105.25  );
+                  _hLostHitBstTmPkEv   = tfs->make<TH2F>( "hLostHitBstTmPkEv",   "N of lost hits of the signal electrons track that in the best time peak", 111, 49.75, 105.25, 20, 0, 20  );
+                  _hNoiseHitBstTmPkEv  = tfs->make<TH1F>( "hNoiseHitBstTmPkEv",   "N of hits of noise present in the the best time peak over signal electrons track hits", 111, 49.75, 105.25  );
 
-    _hNtrackableEv      ->SetXTitle("pt [MeV]");
-    _hNhitTrackableEv   ->SetXTitle("pt [MeV]");
-    _hNBestTimePeakEv   ->SetXTitle("pt [MeV]");
-    _hNhitBestTimePeakEv->SetXTitle("pt [MeV]");
-    _hLostHitBstTmPkEv  ->SetXTitle("pt [MeV]");
-    _hNoiseHitBstTmPkEv ->SetXTitle("pt [MeV]");
+                  _hNtrackableEv      ->SetXTitle("pt [MeV]");
+                  _hNhitTrackableEv   ->SetXTitle("pt [MeV]");
+                  _hNBestTimePeakEv   ->SetXTitle("pt [MeV]");
+                  _hNhitBestTimePeakEv->SetXTitle("pt [MeV]");
+                  _hLostHitBstTmPkEv  ->SetXTitle("pt [MeV]");
+                  _hNoiseHitBstTmPkEv ->SetXTitle("pt [MeV]");
+          }
 
-    _hNBestSGClInTmPkEv  = tfs->make<TH1F>( "hNBestSGClInTmPkEv",   "N of Best Selected Clusters Group in the best peak time", 111, 49.75, 105.25  );
-    _hSGClHitInBstTmPkEv = tfs->make<TH1F>( "hSGClHitInBstTmPkEv",   "N of signal electron hit selected by best geom clustering algo from the best time peak", 111, 49.75, 105.25  );
-    _hLostHitBstSGClBstTmPkEv = tfs->make<TH2F>( "hLostHitBstSGClBstTmPkEv",   "N of lost hits of the signal electrons track that in the best geom cluster from the best time peak", 111, 49.75, 105.25, 20, 0, 20  );
-    _hLostHitBstSGClEv   = tfs->make<TH2F>( "hLostHitBstSGClEv",   "N of lost hits of the signal electrons track that in the best geom cluster", 111, 49.75, 105.25, 20, 0, 20  );
-    _hNoiseHitBstSGClEv  = tfs->make<TH1F>( "hNoiseHitBstSGClEv",   "N of hits of noise present in the the best geom cluster over signal electrons track hits", 111, 49.75, 105.25  );
-    _hNLoopResBstSGClEv  = tfs->make<TH2F>( "hNLoopResBstSGClEv",   "Res of N of track loop measured by the best geom cluster", 111, 49.75, 105.25, 21, -10.5, 10.5  );
+          if (_evalGeomSel) {
+                  _hNBestSGClInTmPkEv  = tfs->make<TH1F>( "hNBestSGClInTmPkEv",   "N of Best Selected Clusters Group in the best peak time", 111, 49.75, 105.25  );
+                  _hSGClHitInBstTmPkEv = tfs->make<TH1F>( "hSGClHitInBstTmPkEv",   "N of signal electron hit selected by best geom clustering algo from the best time peak", 111, 49.75, 105.25  );
+                  _hLostHitBstSGClBstTmPkEv = tfs->make<TH2F>( "hLostHitBstSGClBstTmPkEv",   "N of lost hits of the signal electrons track that in the best geom cluster from the best time peak", 111, 49.75, 105.25, 20, 0, 20  );
+                  _hLostHitBstSGClEv   = tfs->make<TH2F>( "hLostHitBstSGClEv",   "N of lost hits of the signal electrons track that in the best geom cluster", 111, 49.75, 105.25, 20, 0, 20  );
+                  _hNoiseHitBstSGClEv  = tfs->make<TH1F>( "hNoiseHitBstSGClEv",   "N of hits of noise present in the the best geom cluster over signal electrons track hits", 111, 49.75, 105.25  );
+                  _hNLoopResBstSGClEv  = tfs->make<TH2F>( "hNLoopResBstSGClEv",   "Res of N of track loop measured by the best geom cluster", 111, 49.75, 105.25, 21, -10.5, 10.5  );
 
-    _hNBestSGClInTmPkEv  ->SetXTitle("pt [MeV]");
-    _hSGClHitInBstTmPkEv ->SetXTitle("pt [MeV]");
-    _hLostHitBstSGClBstTmPkEv ->SetXTitle("pt [MeV]");
-    _hLostHitBstSGClEv ->SetXTitle("pt [MeV]");
-    _hNoiseHitBstSGClEv ->SetXTitle("pt [MeV]");
-    _hNLoopResBstSGClEv ->SetXTitle("pt [MeV]");
+                  _hNBestSGClInTmPkEv  ->SetXTitle("pt [MeV]");
+                  _hSGClHitInBstTmPkEv ->SetXTitle("pt [MeV]");
+                  _hLostHitBstSGClBstTmPkEv ->SetXTitle("pt [MeV]");
+                  _hLostHitBstSGClEv ->SetXTitle("pt [MeV]");
+                  _hNoiseHitBstSGClEv ->SetXTitle("pt [MeV]");
+                  _hNLoopResBstSGClEv ->SetXTitle("pt [MeV]");
+          }
 
-    _dataEvalBkgRejec = tfs->make<TTree>( "dataEvalBkgRejec", "data for Bkg Rejection performance evaluation" );
-    _dataEvalBkgRejec->Branch("Run",&runID,"runID/i");
-    _dataEvalBkgRejec->Branch("Event",&eventID,"eventID/i");
-    _dataEvalBkgRejec->Branch("EvTotNHit",&evNHit,"evNHit/i");
-    _dataEvalBkgRejec->Branch("ConvElNHit",&convElNHit,"convElNHit/i");
-    _dataEvalBkgRejec->Branch("ConvElNLoop",&convElNLoop,"convElNLoop/i");
-    _dataEvalBkgRejec->Branch("ConvEl_ptMeV_Tracker",&sel_ptMeV,"sel_ptMeV/F");
-    _dataEvalBkgRejec->Branch("ConvEl_ptMeV_start",&sel_ptMeV_start,"sel_ptMeV_start/F");
-    _dataEvalBkgRejec->Branch("ConvEl_ptMeV_end",&sel_ptMeV_end,"sel_ptMeV_end/F");
-    _dataEvalBkgRejec->Branch("ConvEl_plMeV",&sel_plMeV,"sel_plMeV/F");
-    _dataEvalBkgRejec->Branch("ConvEl_plMeV_start",&sel_plMeV_start,"sel_plMeV_start/F");
-    _dataEvalBkgRejec->Branch("ConvEl_plMeV_end",&sel_plMeV_end,"sel_plMeV_end/F");
-    _dataEvalBkgRejec->Branch("ConvEl_FrstHit_Time",&convElFHitTime,"convElFHitTime/F");
-    _dataEvalBkgRejec->Branch("BestTPcElNHit",&bestTPcElNHit,"bestTPcElNHit/I");
-    _dataEvalBkgRejec->Branch("BestTPNHit",&bestTPNHit,"bestTPNHit/I");
-    _dataEvalBkgRejec->Branch("TotNPeaksFound",&nPeaksFound,"nPeaksFound/I");
-    _dataEvalBkgRejec->Branch("BestClGcElNHit",&bestClGcElNHit,"bestClGcElNHit/I");
-    _dataEvalBkgRejec->Branch("BestClGNHit",&bestClGNHit,"bestClGNHit/I");
-    _dataEvalBkgRejec->Branch("BestClGcNCls",&bestClGcNCls,"bestClGcNCls/I");
-    _dataEvalBkgRejec->Branch("NPotentTracksFound",&nPotentTracks,"nPotentTracks/I");
+          _dataEvalBkgRejec = tfs->make<TTree>( "dataEvalBkgRejec", "data for Bkg Rejection performance evaluation" );
+          _dataEvalBkgRejec->Branch("Run",&runID,"runID/i");
+          _dataEvalBkgRejec->Branch("Event",&eventID,"eventID/i");
+          _dataEvalBkgRejec->Branch("EvTotNHit",&evNHit,"evNHit/i");
+          _dataEvalBkgRejec->Branch("ConvElNHit",&convElNHit,"convElNHit/i");
+          _dataEvalBkgRejec->Branch("ConvElNLoop",&convElNLoop,"convElNLoop/i");
+          _dataEvalBkgRejec->Branch("ConvEl_ptMeV_Tracker",&sel_ptMeV,"sel_ptMeV/F");
+          _dataEvalBkgRejec->Branch("ConvEl_ptMeV_start",&sel_ptMeV_start,"sel_ptMeV_start/F");
+          _dataEvalBkgRejec->Branch("ConvEl_ptMeV_end",&sel_ptMeV_end,"sel_ptMeV_end/F");
+          _dataEvalBkgRejec->Branch("ConvEl_plMeV",&sel_plMeV,"sel_plMeV/F");
+          _dataEvalBkgRejec->Branch("ConvEl_plMeV_start",&sel_plMeV_start,"sel_plMeV_start/F");
+          _dataEvalBkgRejec->Branch("ConvEl_plMeV_end",&sel_plMeV_end,"sel_plMeV_end/F");
+          _dataEvalBkgRejec->Branch("ConvEl_FrstHit_Time",&convElFHitTime,"convElFHitTime/F");
+          if (_evalTimeSel) {
+                  _dataEvalBkgRejec->Branch("BestTPcElNHit",&bestTPcElNHit,"bestTPcElNHit/I");
+                  _dataEvalBkgRejec->Branch("BestTPNHit",&bestTPNHit,"bestTPNHit/I");
+                  _dataEvalBkgRejec->Branch("TotNPeaksFound",&nPeaksFound,"nPeaksFound/I");
+          }
+          if (_evalGeomSel) {
+                  _dataEvalBkgRejec->Branch("BestClGcElNHit",&bestClGcElNHit,"bestClGcElNHit/I");
+                  _dataEvalBkgRejec->Branch("BestClGNHit",&bestClGNHit,"bestClGNHit/I");
+                  _dataEvalBkgRejec->Branch("BestClGcNCls",&bestClGcNCls,"bestClGcNCls/I");
+                  _dataEvalBkgRejec->Branch("NPotentTracksFound",&nPotentTracks,"nPotentTracks/I");
+          }
 
+          //_fakeCanvas = new TCanvas("canvas_Fake","double click for next event",300,100);
 
-    //_fakeCanvas = new TCanvas("canvas_Fake","double click for next event",300,100);
-
-    // See note 3.
-    _directory = gDirectory;
+          // See note 3.
+          _directory = gDirectory;
 
   }
 
   void EvalBkgTrackRejection::analyze(art::Event const& event ) {
 
 
-    const Tracker& tracker = getTrackerOrThrow();
-    const TTracker &ttr = static_cast<const TTracker&>( tracker );
-    const std::vector<Device> ttrdev = ttr.getDevices();
+    //const Tracker& tracker = getTrackerOrThrow();
+    //const TTracker &ttr = static_cast<const TTracker&>( tracker );
+    //const std::vector<Device> ttrdev = ttr.getDevices();
 
     art::Handle<StrawHitCollection> pdataHandle;
     event.getByLabel(_makerModuleLabel,pdataHandle);
@@ -294,13 +308,19 @@ namespace mu2e {
     event.getByLabel(_extractElectronsData,genEltrksHandle);
     VisibleGenElTrackCollection const* genEltrks = genEltrksHandle.product();
 
-    art::Handle<TrackerHitTimeClusterCollection> tclustHandle;
-    event.getByLabel(_timeRejecterModuleLabel,tclustHandle);
-    TrackerHitTimeClusterCollection const* tclusts = tclustHandle.product();
+    TrackerHitTimeClusterCollection * tclusts=0x0;
+    if (_evalTimeSel) {
+            art::Handle<TrackerHitTimeClusterCollection> tclustHandle;
+            event.getByLabel(_timeRejecterModuleLabel,tclustHandle);
+            tclusts = const_cast<TrackerHitTimeClusterCollection *> (tclustHandle.product());
+    }
 
-    art::Handle<SctrSttnClusterGroupCollection> gclusgtHandle;
-    event.getByLabel(_geomRejecterModuleLabel,gclusgtHandle);
-    SctrSttnClusterGroupCollection const* gclustgs = gclusgtHandle.product();
+    SctrSttnClusterGroupCollection * gclustgs=0x0;
+    if (_evalGeomSel) {
+            art::Handle<SctrSttnClusterGroupCollection> gclusgtHandle;
+            event.getByLabel(_geomRejecterModuleLabel,gclusgtHandle);
+            gclustgs = const_cast<SctrSttnClusterGroupCollection *> (gclusgtHandle.product());
+    }
 
     std::vector<mu2e::VisibleGenElTrack>::const_iterator genEltrk_it;
 
@@ -376,156 +396,160 @@ namespace mu2e {
     }
 
 
-    //---------------- for time algorithm ----------------
-    size_t nTimeClusPerEvent = tclusts->size();
-    nPeaksFound=nTimeClusPerEvent;
-
     unsigned int elHitFound;
     std::multimap< unsigned int, size_t, less<unsigned int> > foundElHitInPeak;
     std::multimap< unsigned int, size_t, less<unsigned int> >::reverse_iterator BestFoundElInPeak_it;
     std::map<size_t, std::vector<StrawHitPtr> > signElGoodHitsInTmpks;
 
-    if (goodEvent) {
+    //---------------- for time algorithm ----------------
+    if (_evalTimeSel) {
+            size_t nTimeClusPerEvent = tclusts->size();
+            nPeaksFound=nTimeClusPerEvent;
+
+            if (goodEvent) {
 
 
-            for (size_t ipeak=0; ipeak<nTimeClusPerEvent; ipeak++) {
-                    TrackerHitTimeCluster const&  tclust(tclusts->at(ipeak));
-                    cout<<"\t Hit in peak "<<tclust._selectedTrackerHits.size()<<endl;
+                    for (size_t ipeak=0; ipeak<nTimeClusPerEvent; ipeak++) {
+                            TrackerHitTimeCluster const&  tclust(tclusts->at(ipeak));
+                            cout<<"\t Hit in peak "<<tclust._selectedTrackerHits.size()<<endl;
 
-                    elHitFound=0;
-                    std::vector<StrawHitPtr> tmpElHits;
+                            elHitFound=0;
+                            std::vector<StrawHitPtr> tmpElHits;
 
-                    for (std::vector<StrawHitPtr>::const_iterator iTCHit=tclust._selectedTrackerHits.begin(); iTCHit!=tclust._selectedTrackerHits.end(); ++iTCHit){
-                            // Access data
+                            for (std::vector<StrawHitPtr>::const_iterator iTCHit=tclust._selectedTrackerHits.begin(); iTCHit!=tclust._selectedTrackerHits.end(); ++iTCHit){
+                                    // Access data
 
-                            //for ( int iElHit=0; iElHit<signaLEltrk->getNumOfHit(); iElHit++) {
-                            //        GenElHitData& genEl = signaLEltrk->getHit(iElHit);
-                            for ( std::vector<StrawHitPtr>::iterator iGoodSelHit_it=signElGoodHit.begin(); iGoodSelHit_it!=signElGoodHit.end(); ++iGoodSelHit_it ) {
-                                    if ( iTCHit->key()==iGoodSelHit_it->key() ) {
-                                            elHitFound++;
-                                            tmpElHits.push_back(*iTCHit);
-                                            break;
-                                    }
-                            }
-
-                            //                //                cout<<"\t\t iHit in peak at "<<*iTCHit<<endl;
-                            //                //StrawHit        const&      hit(hits->at(*iTCHit));
-                            //                StrawHit        const&      hit=*(*iTCHit);
-                            //                StrawIndex si = hit.strawIndex();
-                            //                const Straw & str = tracker.getStraw(si);
-                            //
-                            //                // cout << "Getting informations about cells" << endl;
-                            //
-                            //                sid = str.id();
-                    }
-
-                    if ( elHitFound>0 ) {
-                            foundElHitInPeak.insert( pair<unsigned int, size_t> (elHitFound,ipeak) );
-                            signElGoodHitsInTmpks.insert( pair< size_t, std::vector<StrawHitPtr> > (ipeak,tmpElHits) );
-                    }
-            }
-
-            if ( !foundElHitInPeak.empty() ) {
-                    _hNBestTimePeakEv->Fill(sel_ptMeV);
-                    BestFoundElInPeak_it=foundElHitInPeak.rbegin();
-                    bestTPcElNHit=BestFoundElInPeak_it->first;
-                    bestTPNHit=tclusts->at(BestFoundElInPeak_it->second)._selectedTrackerHits.size();
-                    _hNhitBestTimePeakEv->Fill(sel_ptMeV,bestTPcElNHit);
-                    _hLostHitBstTmPkEv->Fill(sel_ptMeV, (signElGoodHit.size() - bestTPcElNHit) );
-                    _hNoiseHitBstTmPkEv->Fill(sel_ptMeV, (bestTPNHit - bestTPcElNHit) );
-            }
-    }
-    //---------------- for geom algorithm ----------------
-
-    cout<<"N of group of Ttracker cluster of Hit found that could be tracks: "<<gclustgs->size()<<endl;
-    nPotentTracks=gclustgs->size();
-
-    SctrSttnClusterGroupCollection::const_iterator gclustgs_it;
-    std::vector<SectorStationCluster>::const_iterator iclustg_it;
-    int igroup=0, iclust;
-
-    //_hSGClHitInBstTmPkEv
-
-    std::multimap< unsigned int, int, less<unsigned int> > foundElHitSClGrp;
-    std::multimap< unsigned int, int, less<unsigned int> >::reverse_iterator BestFoundElInSClGrp_it;
-    std::map< int, unsigned int > foundElSClGrpHit;
-    std::map<int, std::vector<StrawHitPtr> > signElGoodHitsInSClGrps;
-    std::map<int, std::vector<StrawHitPtr> >::iterator sgnElGdHtsInSClGrps_it;
-
-    int sClGrpTotalHit, iHitInCl, iCl;//, elHitFoundInCl;
-
-    if (goodEvent && !foundElHitInPeak.empty()) {
-
-            for ( gclustgs_it=gclustgs->begin(); gclustgs_it!=gclustgs->end(); ++gclustgs_it ) {
-                    cout<<"i-th group :"<<igroup<<" : "<<endl<<*gclustgs_it;
-                    iclust=0;
-                    for ( iclustg_it=gclustgs_it->_selectedClusters.begin(); iclustg_it!=gclustgs_it->_selectedClusters.end(); ++iclustg_it ){
-                            cout<<"i-th clust :"<<iclust<<" : "<<endl<<*iclustg_it;
-                            iclust++;
-                    }
-
-                    elHitFound=0;
-                    std::vector<StrawHitPtr> tmpElHits;
-                    sClGrpTotalHit=0;
-
-                    if (gclustgs_it->_relatedTimeCluster.key()==BestFoundElInPeak_it->second) {
-                            iCl=0;
-                            for ( iclustg_it=gclustgs_it->_selectedClusters.begin(); iclustg_it!=gclustgs_it->_selectedClusters.end(); ++iclustg_it ){
-                                    sClGrpTotalHit+=iclustg_it->_selectedTrackerHits.size();
-                                    cout<<"--- N Hits in Cls "<<sClGrpTotalHit<<" partial "<<iclustg_it->_selectedTrackerHits.size()<<endl;
-                                    //cout<<"hit in Cls "
-                                    iHitInCl=0;
-                                    //elHitFoundInCl=0;
-                                    for ( std::vector<StrawHitPtr>::const_iterator iSClGrpHit_it=iclustg_it->_selectedTrackerHits.begin(); iSClGrpHit_it!=iclustg_it->_selectedTrackerHits.end(); ++iSClGrpHit_it ) {
-                                            iHitInCl++;
-                                            for ( std::vector<StrawHitPtr>::iterator iGeTpHit_it=signElGoodHitsInTmpks[BestFoundElInPeak_it->second].begin(); iGeTpHit_it!=signElGoodHitsInTmpks[BestFoundElInPeak_it->second].end(); ++iGeTpHit_it ) {
-                                            //for ( std::vector<StrawHitPtr>::iterator iGoodSelHit_it=signElGoodHit.begin(); iGoodSelHit_it!=signElGoodHit.end(); ++iGoodSelHit_it ) {
-                                                    //cout<<"Check in Cl "<<iCl<<" i-th hit "<<iHitInCl<<" with key "<<iSClGrpHit_it->key()<<" vs "<<iGeTpHit_it->key()/*iGoodSelHit_it->key()*/<<endl;
-                                                    if ( iSClGrpHit_it->key()==iGeTpHit_it->key() ) {
-                                                    //if ( iSClGrpHit_it->key()==iGoodSelHit_it->key() ) {
-                                                            elHitFound++;
-                                                            //elHitFoundInCl++;
-                                                            tmpElHits.push_back(*iSClGrpHit_it);
-                                                            break;
-                                                    }
+                                    //for ( int iElHit=0; iElHit<signaLEltrk->getNumOfHit(); iElHit++) {
+                                    //        GenElHitData& genEl = signaLEltrk->getHit(iElHit);
+                                    for ( std::vector<StrawHitPtr>::iterator iGoodSelHit_it=signElGoodHit.begin(); iGoodSelHit_it!=signElGoodHit.end(); ++iGoodSelHit_it ) {
+                                            if ( iTCHit->key()==iGoodSelHit_it->key() ) {
+                                                    elHitFound++;
+                                                    tmpElHits.push_back(*iTCHit);
+                                                    break;
                                             }
                                     }
-                                    //cout<<"hit Found in Cl "<<elHitFoundInCl<<endl;
-                                    iCl++;
+
+                                    //                //                cout<<"\t\t iHit in peak at "<<*iTCHit<<endl;
+                                    //                //StrawHit        const&      hit(hits->at(*iTCHit));
+                                    //                StrawHit        const&      hit=*(*iTCHit);
+                                    //                StrawIndex si = hit.strawIndex();
+                                    //                const Straw & str = tracker.getStraw(si);
+                                    //
+                                    //                // cout << "Getting informations about cells" << endl;
+                                    //
+                                    //                sid = str.id();
                             }
-                            cout<<"Clgroup elHitFound "<<elHitFound<<endl;
+
                             if ( elHitFound>0 ) {
-                                    cout<<"------------ el trk found "<<endl;
-                                    foundElHitSClGrp.insert( pair<unsigned int, int> (elHitFound,igroup) );
-                                    sgnElGdHtsInSClGrps_it=signElGoodHitsInSClGrps.find(igroup);
-                                    foundElSClGrpHit.insert( pair<int,unsigned int> (igroup,sClGrpTotalHit) );
-                                    if ( sgnElGdHtsInSClGrps_it==signElGoodHitsInSClGrps.end() ) signElGoodHitsInSClGrps.insert( pair< int, std::vector<StrawHitPtr> > (igroup,tmpElHits) );
-                                    else if ( elHitFound>sgnElGdHtsInSClGrps_it->second.size() ) {
-                                            cout<<"------------ removing previous el trk found "<<endl;
-                                            signElGoodHitsInSClGrps.erase(sgnElGdHtsInSClGrps_it);
-                                            signElGoodHitsInSClGrps.insert( pair< int, std::vector<StrawHitPtr> > (igroup,tmpElHits) );
-                                    }
+                                    foundElHitInPeak.insert( pair<unsigned int, size_t> (elHitFound,ipeak) );
+                                    signElGoodHitsInTmpks.insert( pair< size_t, std::vector<StrawHitPtr> > (ipeak,tmpElHits) );
                             }
                     }
 
-                    igroup++;
+                    if ( !foundElHitInPeak.empty() ) {
+                            _hNBestTimePeakEv->Fill(sel_ptMeV);
+                            BestFoundElInPeak_it=foundElHitInPeak.rbegin();
+                            bestTPcElNHit=BestFoundElInPeak_it->first;
+                            bestTPNHit=tclusts->at(BestFoundElInPeak_it->second)._selectedTrackerHits.size();
+                            _hNhitBestTimePeakEv->Fill(sel_ptMeV,bestTPcElNHit);
+                            _hLostHitBstTmPkEv->Fill(sel_ptMeV, (signElGoodHit.size() - bestTPcElNHit) );
+                            _hNoiseHitBstTmPkEv->Fill(sel_ptMeV, (bestTPNHit - bestTPcElNHit) );
+                    }
             }
+    }
 
-            if ( !foundElHitSClGrp.empty() ) {
-                    cout<<"------------ histogramming"<<endl;
-                    _hNBestSGClInTmPkEv->Fill(sel_ptMeV);
-                    BestFoundElInSClGrp_it=foundElHitSClGrp.rbegin();
-                    bestClGcElNHit=BestFoundElInSClGrp_it->first;
-                    bestClGNHit=foundElSClGrpHit.find(BestFoundElInSClGrp_it->second)->second;
-                    cout<<"--- convElNHit "<<convElNHit<<" bestTPcElNHit "<<bestTPcElNHit<<" bestClGcElNHit "<<bestClGcElNHit<<endl;
-                    //cout<<"---  bestClGNHit "<<foundElSClGrpHit.find(BestFoundElInSClGrp_it->second)->second<<" = "<<bestClGNHit<<endl;
-                    bestClGcNCls=gclustgs->at(BestFoundElInSClGrp_it->second)._selectedClusters.size();
-                    _hSGClHitInBstTmPkEv->Fill(sel_ptMeV,bestClGcElNHit);
-                    _hLostHitBstSGClBstTmPkEv->Fill(sel_ptMeV, (BestFoundElInPeak_it->first - bestClGcElNHit) );
-                    cout<<"---     !!!!!!!!!  "<<sel_ptMeV<<" - "<<BestFoundElInPeak_it->first<<" - "<<bestClGcElNHit<<endl;
-                    _hLostHitBstSGClEv->Fill(sel_ptMeV, (signElGoodHit.size() - bestClGcElNHit) );
-                    _hNoiseHitBstSGClEv->Fill(sel_ptMeV, (bestClGNHit - bestClGcElNHit) );
-                    _hNLoopResBstSGClEv->Fill(sel_ptMeV, (convElNLoop - bestClGcNCls ) );
+    //---------------- for geom algorithm ----------------
+    if (_evalGeomSel) {
+            cout<<"N of group of Ttracker cluster of Hit found that could be tracks: "<<gclustgs->size()<<endl;
+            nPotentTracks=gclustgs->size();
+
+            SctrSttnClusterGroupCollection::const_iterator gclustgs_it;
+            std::vector<SectorStationCluster>::const_iterator iclustg_it;
+            int igroup=0, iclust;
+
+            //_hSGClHitInBstTmPkEv
+
+            std::multimap< unsigned int, int, less<unsigned int> > foundElHitSClGrp;
+            std::multimap< unsigned int, int, less<unsigned int> >::reverse_iterator BestFoundElInSClGrp_it;
+            std::map< int, unsigned int > foundElSClGrpHit;
+            std::map<int, std::vector<StrawHitPtr> > signElGoodHitsInSClGrps;
+            std::map<int, std::vector<StrawHitPtr> >::iterator sgnElGdHtsInSClGrps_it;
+
+            int sClGrpTotalHit, iHitInCl, iCl;//, elHitFoundInCl;
+
+            if (goodEvent && !foundElHitInPeak.empty()) {
+
+                    for ( gclustgs_it=gclustgs->begin(); gclustgs_it!=gclustgs->end(); ++gclustgs_it ) {
+                            cout<<"i-th group :"<<igroup<<" : "<<endl<<*gclustgs_it;
+                            iclust=0;
+                            for ( iclustg_it=gclustgs_it->_selectedClusters.begin(); iclustg_it!=gclustgs_it->_selectedClusters.end(); ++iclustg_it ){
+                                    cout<<"i-th clust :"<<iclust<<" : "<<endl<<*iclustg_it;
+                                    iclust++;
+                            }
+
+                            elHitFound=0;
+                            std::vector<StrawHitPtr> tmpElHits;
+                            sClGrpTotalHit=0;
+
+                            if (gclustgs_it->_relatedTimeCluster.key()==BestFoundElInPeak_it->second) {
+                                    iCl=0;
+                                    for ( iclustg_it=gclustgs_it->_selectedClusters.begin(); iclustg_it!=gclustgs_it->_selectedClusters.end(); ++iclustg_it ){
+                                            sClGrpTotalHit+=iclustg_it->_selectedTrackerHits.size();
+                                            cout<<"--- N Hits in Cls "<<sClGrpTotalHit<<" partial "<<iclustg_it->_selectedTrackerHits.size()<<endl;
+                                            //cout<<"hit in Cls "
+                                            iHitInCl=0;
+                                            //elHitFoundInCl=0;
+                                            for ( std::vector<StrawHitPtr>::const_iterator iSClGrpHit_it=iclustg_it->_selectedTrackerHits.begin(); iSClGrpHit_it!=iclustg_it->_selectedTrackerHits.end(); ++iSClGrpHit_it ) {
+                                                    iHitInCl++;
+                                                    for ( std::vector<StrawHitPtr>::iterator iGeTpHit_it=signElGoodHitsInTmpks[BestFoundElInPeak_it->second].begin(); iGeTpHit_it!=signElGoodHitsInTmpks[BestFoundElInPeak_it->second].end(); ++iGeTpHit_it ) {
+                                                            //for ( std::vector<StrawHitPtr>::iterator iGoodSelHit_it=signElGoodHit.begin(); iGoodSelHit_it!=signElGoodHit.end(); ++iGoodSelHit_it ) {
+                                                            //cout<<"Check in Cl "<<iCl<<" i-th hit "<<iHitInCl<<" with key "<<iSClGrpHit_it->key()<<" vs "<<iGeTpHit_it->key()/*iGoodSelHit_it->key()*/<<endl;
+                                                            if ( iSClGrpHit_it->key()==iGeTpHit_it->key() ) {
+                                                                    //if ( iSClGrpHit_it->key()==iGoodSelHit_it->key() ) {
+                                                                    elHitFound++;
+                                                                    //elHitFoundInCl++;
+                                                                    tmpElHits.push_back(*iSClGrpHit_it);
+                                                                    break;
+                                                            }
+                                                    }
+                                            }
+                                            //cout<<"hit Found in Cl "<<elHitFoundInCl<<endl;
+                                            iCl++;
+                                    }
+                                    cout<<"Clgroup elHitFound "<<elHitFound<<endl;
+                                    if ( elHitFound>0 ) {
+                                            cout<<"------------ el trk found "<<endl;
+                                            foundElHitSClGrp.insert( pair<unsigned int, int> (elHitFound,igroup) );
+                                            sgnElGdHtsInSClGrps_it=signElGoodHitsInSClGrps.find(igroup);
+                                            foundElSClGrpHit.insert( pair<int,unsigned int> (igroup,sClGrpTotalHit) );
+                                            if ( sgnElGdHtsInSClGrps_it==signElGoodHitsInSClGrps.end() ) signElGoodHitsInSClGrps.insert( pair< int, std::vector<StrawHitPtr> > (igroup,tmpElHits) );
+                                            else if ( elHitFound>sgnElGdHtsInSClGrps_it->second.size() ) {
+                                                    cout<<"------------ removing previous el trk found "<<endl;
+                                                    signElGoodHitsInSClGrps.erase(sgnElGdHtsInSClGrps_it);
+                                                    signElGoodHitsInSClGrps.insert( pair< int, std::vector<StrawHitPtr> > (igroup,tmpElHits) );
+                                            }
+                                    }
+                            }
+
+                            igroup++;
+                    }
+
+                    if ( !foundElHitSClGrp.empty() ) {
+                            cout<<"------------ histogramming"<<endl;
+                            _hNBestSGClInTmPkEv->Fill(sel_ptMeV);
+                            BestFoundElInSClGrp_it=foundElHitSClGrp.rbegin();
+                            bestClGcElNHit=BestFoundElInSClGrp_it->first;
+                            bestClGNHit=foundElSClGrpHit.find(BestFoundElInSClGrp_it->second)->second;
+                            cout<<"--- convElNHit "<<convElNHit<<" bestTPcElNHit "<<bestTPcElNHit<<" bestClGcElNHit "<<bestClGcElNHit<<endl;
+                            //cout<<"---  bestClGNHit "<<foundElSClGrpHit.find(BestFoundElInSClGrp_it->second)->second<<" = "<<bestClGNHit<<endl;
+                            bestClGcNCls=gclustgs->at(BestFoundElInSClGrp_it->second)._selectedClusters.size();
+                            _hSGClHitInBstTmPkEv->Fill(sel_ptMeV,bestClGcElNHit);
+                            _hLostHitBstSGClBstTmPkEv->Fill(sel_ptMeV, (BestFoundElInPeak_it->first - bestClGcElNHit) );
+                            cout<<"---     !!!!!!!!!  "<<sel_ptMeV<<" - "<<BestFoundElInPeak_it->first<<" - "<<bestClGcElNHit<<endl;
+                            _hLostHitBstSGClEv->Fill(sel_ptMeV, (signElGoodHit.size() - bestClGcElNHit) );
+                            _hNoiseHitBstSGClEv->Fill(sel_ptMeV, (bestClGNHit - bestClGcElNHit) );
+                            _hNLoopResBstSGClEv->Fill(sel_ptMeV, (convElNLoop - bestClGcNCls ) );
+                    }
             }
     }
 
