@@ -2,9 +2,9 @@
 // Standard geometry with physics turned off.
 // We need to put the control of physics elsewhere.
 //
-// $Id: transportOnlyGeom.txt,v 1.9 2012/04/20 16:17:08 genser Exp $
+// $Id: transportOnlyGeom.txt,v 1.10 2012/05/16 16:20:29 genser Exp $
 // $Author: genser $
-// $Date: 2012/04/20 16:17:08 $
+// $Date: 2012/05/16 16:20:29 $
 //
 // Original author Rob Kutschke
 
@@ -19,30 +19,36 @@ string g4.physicsListName = "Minimal";
 
 bool g4.forceAuxEdgeVisible = true;
 
+bool PS.visible   = false;
+
+bool PSEnclosure.visible = false;
+bool PSEnclosure.vacuum.visible = false;
+
+bool PSShield.visible = false;
 
 bool calorimeter.crystalVisible = false;
-bool calorimeter.vaneBoxVisible = false;
+bool calorimeter.vaneBoxVisible = true;
+
 bool coll.visible = false;
+
 bool crs.vetoVisible = false;
-bool extMonFilter.collimator1.alignmentHole.visible = false;
-bool extMonFilter.collimator1.alignmentHole.visible = false;
-bool extMonFilter.collimator1.alignmentPlug.visible = false;
-bool extMonFilter.collimator1.alignmentPlug.visible = false;
-bool extMonFilter.collimator1.channel.visible = false;
-bool extMonFilter.collimator1.channel.visible = false;
-bool extMonFilter.collimator2.alignmentHole.visible = false;
-bool extMonFilter.collimator2.alignmentHole.visible = false;
-bool extMonFilter.collimator2.alignmentPlug.visible = false;
-bool extMonFilter.collimator2.alignmentPlug.visible = false;
-bool extMonFilter.collimator2.channel.visible = false;
-bool extMonFilter.collimator2.channel.visible = false;
-bool extMonFilter.magnet.aperture.visible = false;
-bool extMonFilter.magnet.aperture.visible = false;
-bool extMonFilter.magnet.iron.visible = false;
-bool extMonFilter.magnet.iron.visible = false;
-bool extmon_fnal.detectorBoxVisible = false;
-bool extmon_fnal.detectorPlaneVisible = false;
-bool extmon_fnal.roomVisible = false;
+
+bool extMonFNAL.collimator1.alignmentHole.visible = false;
+bool extMonFNAL.collimator1.alignmentPlug.visible = false;
+bool extMonFNAL.collimator1.channel.visible = false;
+bool extMonFNAL.collimator2.alignmentHole.visible = false;
+bool extMonFNAL.collimator2.alignmentPlug.visible = false;
+bool extMonFNAL.collimator2.channel.visible = false;
+bool extMonFNAL.collimator2.shielding.visible = false;
+bool extMonFNAL.detectorBoxVisible   = false;
+bool extMonFNAL.detectorPlaneVisible   = false;
+bool extMonFNAL.magnet.aperture.visible = false;
+bool extMonFNAL.magnet.iron.visible = false;
+bool extMonFNAL.room.ceiling.visible   = false;
+bool extMonFNAL.room.floor.visible   = false;
+bool extMonFNAL.room.visible   = false;
+bool extMonFNAL.room.wall.visible   = false;
+
 bool extmon_uci.abs1Visible = false;
 bool extmon_uci.calVisible = false;
 bool extmon_uci.colVisible = false;
@@ -56,35 +62,44 @@ bool extmon_uci.shdHoleVisible = false;
 bool extmon_uci.shdVisible = false;
 bool extmon_uci.tabVisible = false;
 bool extmon_uci.tofVisible = false;
-bool fluxcrv.visible = false;
+
+bool fluxcrv.visible = true;
+
 bool hall.ceilingVisible = false;
 bool hall.floorVisible = false;
 bool hall.formalBoxVisible = false;
 bool hall.wallsVisible = false;
-bool mbs.visible = false;
-bool neutronabsorber.visible = false;
+
+bool mbs.visible = true;
+
+bool neutronabsorber.visible = true;
+
 bool protonBeamDump.coreVisible = false;
 bool protonBeamDump.dirtVisible = false;
-bool protonBeamDump.logicalEnclosureVisible = false;
-bool protonBeamDump.magnetPitVisible = false;
 bool protonBeamDump.mouthVisible = false;
 bool protonBeamDump.neutronCaveVisible = false;
+bool protonBeamDump.shieldingVisible = false;
+
 bool protonabsorber.visible = false;
-int    PS.verbosityLevel      = 0;
-bool PS.visible               = false;
-bool target.visible = true;
-bool targetPS.visible = true;
+
+bool target.visible = false;
+
+bool targetPS.visible = false;
+
 bool toyDS.visible = false;
+
 bool toyTS.visible = false;
+
 bool ttracker.deviceEnvelopeVisible = false;
 bool ttracker.envelopeVisible =  false;
 bool ttracker.sectorEnvelopeVisible = false;
 bool ttracker.strawVisible =  false;
 bool ttracker.supportVisible = false;
+
 bool vd.visible = false;
+
 bool world.boxVisible = false;
 bool world.dirt.visible = false;
-
 
 //
 // This tells emacs to view this file in c++ mode.
