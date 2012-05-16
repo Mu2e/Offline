@@ -4,9 +4,9 @@
 //     c++ rewrite of the Karimaki circle fit (CLEFIT)
 //     original code CERN acbz.f
 //
-// $Id: KarimakiCircle.hh,v 1.1 2012/05/15 07:51:36 tassiell Exp $
+// $Id: KarimakiCircle.hh,v 1.2 2012/05/16 19:30:07 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/15 07:51:36 $
+// $Date: 2012/05/16 19:30:07 $
 //
 // Original author G. Tassielli
 //
@@ -69,6 +69,8 @@ public:
         ~KarimakiCircle() {}
 
         void addHit ( float xx, float yy, float errxx, float erryy );
+        bool checkBfrAddHit( float xx, float yy, float errxx, float erryy, float maxChi2=10.0, int minNDOFcutImprvChi2=20 );
+        bool rejectHits(std::vector<circPoint>::iterator &points_it, float maxChi2=10.0);
         void testHit ( float xx, float yy, float errxx, float erryy );
 
         size_t np() const{
