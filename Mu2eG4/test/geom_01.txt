@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.148 2012/05/16 01:02:53 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/05/16 01:02:53 $
+// $Id: geom_01.txt,v 1.149 2012/05/16 20:02:24 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/16 20:02:24 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@ bool hasBFieldManager   = true;
 bool hasBeamline        = true;
 bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now
 bool hasCosmicRayShield = true; // note the two subcomponents, see crs section below
-bool hasMBS             = true; // MBS assumes the presence of CosmicRayShield(Steel) & NeutronAbsorber
+bool hasMBS             = true; // note the two subcomponents, see mbs section below
 
 // Write mu2e geometry into a GDML file
 bool   writeGDML        = false;
@@ -528,6 +528,9 @@ bool   neutronabsorber.solid        = false;
 
 // the initial implementation is described in doc-1519
 
+bool   mbs.hasCryoSeal      = true;
+bool   mbs.hasEndPlug       = true;
+
 double mbs.BSTSInnerRadius  =   410.0;
 double mbs.BSTSOuterRadius  =   430.0;
 double mbs.BSTSHLength      =  1700.0;
@@ -548,10 +551,21 @@ double mbs.CLV2InnerRadius  =    50.0;
 double mbs.CLV2OuterRadius  =   320.0;
 double mbs.CLV2HLength      =    50.0;
 string mbs.CLV2MaterialName = "Polyethylene092B300d119";
-double mbs.CryoSealHLength    = 150.0;
+
+double mbs.CryoSealInnerRadius  =   452.0;
+double mbs.CryoSealOuterRadius  =  1000.0;
+double mbs.CryoSealZ            = 15580.0;
+double mbs.CryoSealHLength      =   150.0;
 string mbs.CryoSealMaterialName = "StainlessSteel";
-string mbs.EndPlugMaterialName  = "StainlessSteel";
-double mbs.EndPlugDiskHLength   = 50.0;
+
+double mbs.EndPlugTubeInnerRadius =   452.0;
+double mbs.EndPlugTubeOuterRadius =  1000.0;
+double mbs.EndPlugTubeZ           = 16653.0;
+double mbs.EndPlugTubeHLength     =   197.0;
+double mbs.EndPlugDiskInnerRadius =     0.0;
+double mbs.EndPlugDiskOuterRadius =  1000.0;
+double mbs.EndPlugDiskHLength     =    50.0;
+string mbs.EndPlugMaterialName    = "StainlessSteel";
 
 int    mbs.verbosityLevel = 0;
 bool   mbs.visible      = true;
