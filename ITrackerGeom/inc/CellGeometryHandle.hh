@@ -76,6 +76,9 @@ public:
         virtual const CLHEP::Hep3Vector& GetCellCenter() const    ;
         virtual const CLHEP::Hep3Vector& GetCellDirection() const ;
         virtual double GetCellHalfLength() const                  ;
+        virtual bool  canIntersectInZ(float &zCorss, float &distWires, unsigned long compDet) const;
+        virtual bool  canIntersectInZ(float &zCorss, float &distWires, int compAbsRadID, int compICell, bool compIsUpstrm=false) const { return false; };
+        virtual bool  canIntersectInZ(float &zCorss, float &distWires, int compSupLayer, int compCelLayer, int compICell, bool compIsUpstrm=false) const { return false; };
 
         virtual double DistFromWire(double *global)               ;
         virtual double DistFromWireCenter(double *global)         ;

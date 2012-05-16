@@ -19,7 +19,9 @@ public:
 
         virtual void  SelectCell(int SupLayer, int CelLayer, int Cell, bool isUpstrm=false);
         virtual void  SelectCell(int absRadID, int Cell, bool isUpstrm=false);
-        virtual int computeAbsRadID(int SupLayer, int CelLayer, bool isUpstrm=false);
+        virtual int   computeAbsRadID(int SupLayer, int CelLayer, bool isUpstrm=false);
+        virtual bool  canIntersectInZ(float &zCorss, float &distWires, int compAbsRadID, int compICell, bool compIsUpstrm=false) const;
+        virtual bool  canIntersectInZ(float &zCorss, float &distWires, int compSupLayer, int compCelLayer, int compCell, bool compIsUpstrm=false) const;
 
 protected:
         const ITracker *_itr;

@@ -130,6 +130,23 @@ double CellGeometryHandle::GetCellHalfLength() const {
         return _cell->getHalfLength();
 }
 
+bool  CellGeometryHandle::canIntersectInZ(float &zCorss, float &distWires, unsigned long compDet) const {
+        // Return the SuperLayer
+         int compSuperLayer=(int)(compDet*0.00001);
+
+         //Return the Layer
+         int compLayer=(int)((compDet)-((compSuperLayer)*100000));
+
+         compLayer=(int)(compLayer*0.001);
+
+         //Return the Wire
+         int compWire=(int)(((compDet)-((compSuperLayer)*100000))-compLayer*1000);
+
+         compSuperLayer--;
+
+         return canIntersectInZ (zCorss, distWires, compSuperLayer, compLayer, compWire);
+}
+
 double CellGeometryHandle::DistFromWire(double *global)
 {
         return (DistFromWireCenter(global)-_cell->getDetail()->wireRadius());
