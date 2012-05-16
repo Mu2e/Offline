@@ -156,7 +156,6 @@ void DataInterface::filterTracks()
                    _minPoints, _minTime, _maxTime, _minMomentum,
                    _showElectrons, _showMuons, _showGammas, 
                    _showNeutrinos, _showNeutrons, _showOthers);
-std::cout<<__LINE__<<" "<<_minTime<<" "<<_maxTime<<std::endl;
   std::vector<boost::shared_ptr<Track> >::const_iterator track;
   for(track=_tracks.begin(); track!=_tracks.end(); track++)
   {

@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.22 2012/02/24 21:11:23 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/02/24 21:11:23 $
+// $Id: EventDisplayFrame.h,v 1.23 2012/05/16 00:21:23 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/05/16 00:21:23 $
 //
 // Original author Ralf Ehrlich
 //
@@ -71,8 +71,11 @@ namespace mu2e_eventdisplay
     void             fillZoomAngleFields();
     void             addHistDraw();
     virtual void     CloseWindow(); //inherited from TGMainFrame
+    void             changeSetup(bool whiteBackground, bool showUnhitStraws, bool showUnhitCrystals,
+                                 bool useHitColors, bool useTrackColors);
 
     private:
+    void initSetup();
     void shrinkButton(TGTextButton *button);
     void fillEvent(bool firstLoop=false);
     void updateTimeIntervalFields(bool allTracks=false);
@@ -104,6 +107,8 @@ namespace mu2e_eventdisplay
     bool                _saveAnim, _saveAnimRoot;
     int                 _saveAnimCounter;
     std::string         _saveAnimFile;
+    bool                _whiteBackground, _showUnhitStraws, _showUnhitCrystals, _useHitColors, _useTrackColors;
+
     //bare pointers needed since ROOT manages these objects
     TGHorizontalFrame   *_mainFrame, *_footLine;
     TGVerticalFrame     *_subFrame;
@@ -112,10 +117,8 @@ namespace mu2e_eventdisplay
     TPad                *_mainPad, *_infoPad;
     TText               *_clock, *_eventNumberText, *_runNumberText;
     TTimer              *_timer;
-    TGCheckButton       *_unhitButton, *_unhitCrystalsButton;
     TGCheckButton       *_supportStructuresButton, *_otherStructuresButton;
     TGCheckButton       *_muonBeamStopStructuresButton;
-    TGCheckButton       *_hitColorButton, *_trackColorButton, *_backgroundButton;
     TGCheckButton       *_repeatAnimationButton;
     TGTextEntry         *_timeIntervalField1, *_timeIntervalField2;
     TGTextEntry         *_minHitField, *_eventToFindField;

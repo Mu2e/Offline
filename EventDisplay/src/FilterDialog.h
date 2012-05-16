@@ -38,11 +38,11 @@ class FilterDialog : public TGMainFrame
   {
     SetCleanup(kDeepCleanup);
 
-    TGVerticalFrame *subFrame1  = new TGVerticalFrame(this,300,20);
-    TGVerticalFrame *subFrame2  = new TGVerticalFrame(this,300,20);
-    TGVerticalFrame *subFrame3  = new TGVerticalFrame(this,300,20);
-    TGVerticalFrame *subFrame4  = new TGVerticalFrame(this,300,20);
-    TGVerticalFrame *subFrame5  = new TGVerticalFrame(this,300,20);
+    TGHorizontalFrame *subFrame1  = new TGHorizontalFrame(this,500,20);
+    TGHorizontalFrame *subFrame2  = new TGHorizontalFrame(this,500,20);
+    TGHorizontalFrame *subFrame3  = new TGHorizontalFrame(this,500,20);
+    TGHorizontalFrame *subFrame4  = new TGHorizontalFrame(this,500,20);
+    TGHorizontalFrame *subFrame5  = new TGHorizontalFrame(this,500,20);
 
     TGLayoutHints *lh = new TGLayoutHints(kLHintsTop,2,1,2,2);
     AddFrame(subFrame1,  lh);
@@ -75,10 +75,10 @@ class FilterDialog : public TGMainFrame
     _textEntry3->Associate(this);
     _textEntry4->Associate(this);
 
-    _textEntry1->SetWidth(200);
-    _textEntry2->SetWidth(200);
-    _textEntry3->SetWidth(200);
-    _textEntry4->SetWidth(200);
+    _textEntry1->SetWidth(100);
+    _textEntry2->SetWidth(100);
+    _textEntry3->SetWidth(100);
+    _textEntry4->SetWidth(100);
 
     char c[100];
     sprintf(c,"%i",minPoints);   _textEntry1->SetText(c);

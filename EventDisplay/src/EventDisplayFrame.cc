@@ -26,6 +26,7 @@
 #include "RootFileManager.h"
 #include "DataInterface.h"
 #include "EventDisplayFrame.h"
+#include "SetupDialog.h"
 #include "dict_classes/EventDisplayViewSetup.h"
 #include "dict_classes/ComponentInfoContainer.h"
 #include "dict_classes/HistDraw.h"
@@ -75,6 +76,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
     _legendParticleLine[i]=NULL;
   }
 
+  initSetup();
+
   //bare pointers needed since ROOT manages the following object
   _mainFrame = new TGHorizontalFrame(this,GetWidth()-270,GetHeight()*0.7);
   _mainCanvas = new TRootEmbeddedCanvas("EventDisplayCanvas",_mainFrame,GetWidth()-270,GetHeight()*0.7);
@@ -112,14 +115,6 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
 
   _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, trackBox, _g4ModuleLabel));
 
-  _unhitButton = new TGCheckButton(_subFrame,"Show Unhit Straws",31);
-//  _subFrame->AddFrame(_unhitButton, lh1);
-  _unhitButton->Associate(this);
-
-  _unhitCrystalsButton = new TGCheckButton(_subFrame,"Show Unhit Crystals",36);
-//  _subFrame->AddFrame(_unhitCrystalsButton, lh1);
-  _unhitCrystalsButton->Associate(this);
-
   _supportStructuresButton = new TGCheckButton(_subFrame,"Show Tracker Supports, Calo Vanes, Target",32);
   _supportStructuresButton->SetState(kButtonDown);
   _subFrame->AddFrame(_supportStructuresButton, lh1);
@@ -131,6 +126,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _otherStructuresButton->Associate(this);
 
   _muonBeamStopStructuresButton = new TGCheckButton(_subFrame, "Show Toy MBS", 38);
+  _muonBeamStopStructuresButton->SetState(kButtonUp);
   _subFrame->AddFrame(_muonBeamStopStructuresButton, lh1);
   _muonBeamStopStructuresButton->Associate(this);
 
@@ -215,21 +211,14 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   setRootFileButton->Associate(this);
   addToRootFileButton->Associate(this);
 
-  _hitColorButton = new TGCheckButton(_subFrame,"Use Hit Colors",60);
-  _trackColorButton = new TGCheckButton(_subFrame,"Use Track Colors",61);
-  _backgroundButton = new TGCheckButton(_subFrame,"White Background",62);
-  TGTextButton *filterButton       = new TGTextButton(_subFrame, "Filter", 63);
-//  _subFrame->AddFrame(_hitColorButton, lh1);
-//  _subFrame->AddFrame(_trackColorButton, lh1);
-  _subFrame->AddFrame(_backgroundButton, lh1);
-  _subFrame->AddFrame(filterButton, lh1);
-  _hitColorButton->Associate(this);
-  _trackColorButton->Associate(this);
-  _backgroundButton->Associate(this);
+  TGHorizontalFrame *subFrameFilterSetup = new TGHorizontalFrame(_subFrame,300,15);
+  TGTextButton *filterButton = new TGTextButton(subFrameFilterSetup, "Filter", 63);
+  TGTextButton *setupButton  = new TGTextButton(subFrameFilterSetup, "Setup", 64);
+  subFrameFilterSetup->AddFrame(filterButton, lh1);
+  subFrameFilterSetup->AddFrame(setupButton, lh1);
+  _subFrame->AddFrame(subFrameFilterSetup, lh0);
   filterButton->Associate(this);
-  _hitColorButton->SetState(kButtonDown);
-  _trackColorButton->SetState(kButtonDown);
-  _backgroundButton->SetState(kButtonUp);
+  setupButton->Associate(this);
 
   _eventInfo = new TGLabel*[2];
   for(int i=0; i<2; i++)
@@ -453,6 +442,60 @@ void EventDisplayFrame::shrinkButton(TGTextButton *button)
   button->Resize(w,h);
 }
 
+void EventDisplayFrame::initSetup()
+{
+  _whiteBackground=false;
+  _showUnhitStraws=false;
+  _showUnhitCrystals=false;
+  _useHitColors=true;
+  _useTrackColors=true;
+}
+
+void EventDisplayFrame::changeSetup(bool whiteBackground, bool showUnhitStraws, bool showUnhitCrystals,
+                         bool useHitColors, bool useTrackColors)
+{
+  _mainPad->cd();
+  if(_whiteBackground!=whiteBackground)
+  {
+    _whiteBackground=whiteBackground;
+    if(whiteBackground) _mainPad->SetFillColor(0);
+    else _mainPad->SetFillColor(1);
+    _dataInterface->useHitColors(useHitColors, whiteBackground);
+    _dataInterface->useTrackColors(_contentSelector, useTrackColors, whiteBackground);
+  }
+
+  if(_showUnhitStraws!=showUnhitStraws)
+  {
+    _showUnhitStraws=showUnhitStraws;
+    if(showUnhitStraws) _dataInterface->makeStrawsVisibleBeforeStart(true);
+    else _dataInterface->makeStrawsVisibleBeforeStart(false);
+  }
+
+  if(_showUnhitCrystals!=showUnhitCrystals)
+  {
+    _showUnhitCrystals=showUnhitCrystals;
+    if(showUnhitCrystals) _dataInterface->makeCrystalsVisibleBeforeStart(true);
+    else _dataInterface->makeCrystalsVisibleBeforeStart(false);
+  }
+
+  if(_useHitColors!=useHitColors)
+  {
+    _useHitColors=useHitColors;
+    _dataInterface->useHitColors(useHitColors, whiteBackground);
+    updateHitLegend(useHitColors);
+  }
+
+  if(_useTrackColors!=useTrackColors)
+  {
+    _useTrackColors=useTrackColors;
+    _dataInterface->useTrackColors(_contentSelector, useTrackColors, whiteBackground);
+    updateTrackLegend(useTrackColors);
+  }
+
+  if(isnan(_timeCurrent)) drawEverything();
+  else drawSituation();
+}
+
 EventDisplayFrame::~EventDisplayFrame()
 {
   // TODO
@@ -568,15 +611,12 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
   else _runNumberText->SetTitle(eventInfoText);
 
   _dataInterface->fillEvent(_contentSelector);
-  _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown,
-                               _backgroundButton->GetState()==kButtonDown);
-  _dataInterface->useTrackColors(_contentSelector,
-                                 _trackColorButton->GetState()==kButtonDown,
-                                 _backgroundButton->GetState()==kButtonDown);
+  _dataInterface->useHitColors(_useHitColors, _whiteBackground);
+  _dataInterface->useTrackColors(_contentSelector, _useTrackColors, _whiteBackground);
 
   updateTimeIntervalFields();
-  updateHitLegend(_hitColorButton->GetState()==kButtonDown);
-  updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
+  updateHitLegend(_useHitColors);
+  updateTrackLegend(_useTrackColors);
 
   sprintf(eventInfoText,"Number of tracker hits: %i",_dataInterface->getNumberHits());
   _eventInfo[0]->SetText(eventInfoText);
@@ -893,6 +933,12 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _dataInterface->filterTracks();
                            drawEverything();
                          }
+                         if(param1==64)
+                         {
+                           new SetupDialog(gClient->GetRoot(), this, _whiteBackground, 
+                                           _showUnhitStraws, _showUnhitCrystals,
+                                           _useHitColors, _useTrackColors);
+                         }
                          break;
    case kCM_RADIOBUTTON: if(param1==1700)
                          {
@@ -911,20 +957,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _mainPad->Update();
                          }
                          break;
-   case kCM_CHECKBUTTON: if(param1==31)
-                         {
-                           _mainPad->cd();
-                           if(_unhitButton->GetState()==kButtonDown)
-                           {
-                             _dataInterface->makeStrawsVisibleBeforeStart(true);
-                           }
-                           else
-                           {
-                             _dataInterface->makeStrawsVisibleBeforeStart(false);
-                           }
-                           drawEverything();
-                         }
-                         if(param1==32)
+   case kCM_CHECKBUTTON: if(param1==32)
                          {
                            _mainPad->cd();
                            if(_supportStructuresButton->GetState()==kButtonDown)
@@ -950,61 +983,18 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            }
                            drawEverything();
                          }
-                         if(param1==36)
-                         {
-                           _mainPad->cd();
-                           if(_unhitCrystalsButton->GetState()==kButtonDown)
-                           {
-                             _dataInterface->makeCrystalsVisibleBeforeStart(true);
-                           }
-                           else
-                           {
-                             _dataInterface->makeCrystalsVisibleBeforeStart(false);
-                           }
-                           drawEverything();
-                         }
                          if(param1 == 38) 
                          {
                            _mainPad->cd();
-                           if(_muonBeamStopStructuresButton->GetState() == kButtonDown) {
+                           if(_muonBeamStopStructuresButton->GetState() == kButtonDown) 
+                           {
                              _dataInterface->makeMuonBeamStopStructuresVisible(true);
                            }
-                           else {
+                           else 
+                           {
                              _dataInterface->makeMuonBeamStopStructuresVisible(false);
                            }
                            drawEverything();
-                         }
-                         if(param1==60)
-                         {
-                           _mainPad->cd();
-                           _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown,
-                                                        _backgroundButton->GetState()==kButtonDown);
-                           updateHitLegend(_hitColorButton->GetState()==kButtonDown);
-                           if(isnan(_timeCurrent)) drawEverything();
-                           else drawSituation();
-                         }
-                         if(param1==61)
-                         {
-                           _mainPad->cd();
-                           _dataInterface->useTrackColors(_contentSelector,
-                                                          _trackColorButton->GetState()==kButtonDown,
-                                                          _backgroundButton->GetState()==kButtonDown);
-                           updateTrackLegend(_trackColorButton->GetState()==kButtonDown);
-                           if(isnan(_timeCurrent)) drawEverything();
-                           else drawSituation();
-                         }
-                         if(param1==62)
-                         {
-                           _mainPad->cd();
-                           if(_backgroundButton->GetState()==kButtonDown) _mainPad->SetFillColor(0);
-                           else _mainPad->SetFillColor(1);
-                           _dataInterface->useHitColors(_hitColorButton->GetState()==kButtonDown,
-                                                        _backgroundButton->GetState()==kButtonDown);
-                           _dataInterface->useTrackColors(_contentSelector,
-                                                          _trackColorButton->GetState()==kButtonDown,
-                                                          _backgroundButton->GetState()==kButtonDown);
-                           if(isnan(_timeCurrent)) drawEverything();
-                           else drawSituation();
                          }
                          break;
   case kCM_COMBOBOX : if(param1==10) fillEvent();
