@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.16 2012/05/14 21:22:55 genser Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.17 2012/05/16 19:10:15 genser Exp $
 // $Author: genser $
-// $Date: 2012/05/14 21:22:55 $
+// $Date: 2012/05/16 19:10:15 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -970,7 +970,7 @@ namespace mu2e {
                      0,
                      _UpstreamHallSteelOffset + _HallSteelOffset,
                      CRSSteelShieldUpstreamDims,
-                     _config.getDouble("fluxcrv.HallSteelHoleRadius")
+                     _HallSteelHoleRadius
                      );
 
   }
