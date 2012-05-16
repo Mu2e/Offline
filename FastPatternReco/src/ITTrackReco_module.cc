@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.1 2012/05/15 07:52:41 tassiell Exp $
+// $Id: ITTrackReco_module.cc,v 1.2 2012/05/16 05:49:01 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/15 07:52:41 $
+// $Date: 2012/05/16 05:49:01 $
 //
 // Original author G. Tassielli
 //
@@ -217,9 +217,14 @@ namespace mu2e {
     //void SctrSttnMapAnalyze(TH2I *startDist, TH2I *votingArray, int minPitch=3, int maxPitch=11);
     //rwclinrwrel rwClst_forRw_rel;
     //std::vector<Clust> clustersList;
+    bool *notAssociatedHits;
+    size_t nAssociatedHit;
+
     bool  findCluster(int &did, int &lid, int &sid, size_t &iglbHit, std::set<size_t> &hitLoked, closClstcol &clusCont, TrackerHitByID const* hitByID, TrackerHitTimeCluster const&  tclust, CellGeometryHandle *itwp);
     bool  findClosClust( unsigned int tmpX, unsigned int tmpY, std::map<unsigned int, bool> &notLooked, CHTVotArr &cmapCHTVotArr, ClosClustCHTVot &votClus );
+    bool  findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, circlesCont & potcircles, std::string type);
     bool  findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, std::vector<confMapDraw*> &rCMap, circlesCont & potcircles, std::string type="", unsigned int thrCHTaddVot=5);
+    bool  findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, CellGeometryHandle *itwp, circlesCont & potcircles, int minClusMultBend=10);
     void  mergeCircles( circlesCont &potCircles );
     void  printPotCircles( circlesCont &potCircles );
 
@@ -270,6 +275,8 @@ namespace mu2e {
     ntimeBin(0),
     maxTimeHist(2500.0),
     timeBinDim(10.0),
+
+    notAssociatedHits(0),
 
     // Some ugly but necessary ROOT related bookkeeping.
     _application(0)
@@ -424,8 +431,14 @@ namespace mu2e {
     closClinRadLay radCls_Pl, radCls_Min;// radCls_Pl_Ups, radCls_Min_Ups;
     closClinRadLay::iterator radCls_it, sndRadCls_it;
 
+    notAssociatedHits = new bool[nStrawPerEvent];
+    for (size_t jhit=0; jhit<nStrawPerEvent; ++jhit) { notAssociatedHits[jhit]=true; }
+
     for (size_t ipeak=0; ipeak<nTimeClusPerEvent; ipeak++) {
-    	TrackerHitTimeCluster const&  tclust(tclusts->at(ipeak));
+
+        nAssociatedHit=0;
+
+        TrackerHitTimeCluster const&  tclust(tclusts->at(ipeak));
     	cout<<"\t Hit in peak "<<tclust._selectedTrackerHits.size()<<endl;
 
     	i1peak=ipeak;
@@ -535,23 +548,28 @@ namespace mu2e {
         }
 
         cout<<"------- start research ------"<<endl;
-        isHitIDUsed associedHits;
+        //isHitIDUsed notAssociatedHits;
+        //notAssociatedHits.clear();
 
         cout<<"   ----  stereo - ----   "<<endl;
         circlesCont potCirclesMin;
+        findCircles3D(radCls_Min, radCls_Pl, itwp, potCirclesMin);
         bool foundCircles_Min = findCircles(radCls_Min,itwp,rCMap_Min,potCirclesMin,"Min");
+        //bool foundCircles_Min = findCircles(radCls_Min,itwp,potCirclesMin,"Min");
         if ( foundCircles_Min ) {
                 printPotCircles(potCirclesMin);
-                mergeCircles(potCirclesMin);
-                printPotCircles(potCirclesMin);
+                //mergeCircles(potCirclesMin);
+                //printPotCircles(potCirclesMin);
         }
         cout<<"   ----  stereo + ----   "<<endl;
         circlesCont potCirclesPl;
+        findCircles3D(radCls_Pl, radCls_Min, itwp, potCirclesPl);
         bool foundCircles_Pl = findCircles(radCls_Pl,itwp,rCMap_Pl,potCirclesPl,"Pl");
+        //bool foundCircles_Pl = findCircles(radCls_Pl,itwp,potCirclesPl,"Pl");
         if ( foundCircles_Pl ) {
                 printPotCircles(potCirclesPl);
-                mergeCircles(potCirclesPl);
-                printPotCircles(potCirclesPl);
+                //mergeCircles(potCirclesPl);
+                //printPotCircles(potCirclesPl);
 
         }
         //findCircles(radCls_Min_Up,itwp,rCMap_Min_Up,"Min_Up");
@@ -649,13 +667,14 @@ namespace mu2e {
                         drawPotCirclesMin.back()->SetLineStyle(4);
                         //drawPotCirclesMin.back()->Draw("same");
                         CLHEP::Hep2Vector radDir;
+                        float rSign = (potCirclesMin_it->_krmCircFit.rho>=0.0) ? 1.0 : -1.0;
                         radDir.setX( cos(potCirclesMin_it->_krmCircFit.phi) );
                         radDir.setY( sin(potCirclesMin_it->_krmCircFit.phi) );
-                        radDir.rotate( ( (potCirclesMin_it->_krmCircFit.rho>=0.0) ? -90.0 : 90.0 )*CLHEP::degree );
+                        radDir.rotate( /*( (potCirclesMin_it->_krmCircFit.rho>=0.0) ? -90.0 : 90.0 )*/-90.0*rSign*CLHEP::degree );
                         radDir=radDir.unit();
                         HepGeom::Point3D<double> CirCenter (0.0,0.0,0.0);
                         float krmRad = 1.0/fabs(potCirclesMin_it->_krmCircFit.rho);
-                        CirCenter = CirCenter +  (krmRad-potCirclesMin_it->_krmCircFit.dca)*radDir;
+                        CirCenter = CirCenter +  (krmRad + rSign*potCirclesMin_it->_krmCircFit.dca)*radDir;
                         drawPotKrmCirclesMin.push_back( new TEllipse( CirCenter.x()/CLHEP::cm, CirCenter.y()/CLHEP::cm, krmRad/CLHEP::cm, krmRad/CLHEP::cm) );
                         //radDir *= (krmRad-potCirclesMin_it->_krmCircFit.dca);
                         //drawPotKrmCirclesMin.push_back( new TEllipse( radDir.x()/CLHEP::cm, radDir.y()/CLHEP::cm, krmRad/CLHEP::cm, krmRad/CLHEP::cm) );
@@ -700,13 +719,14 @@ namespace mu2e {
                         drawPotCirclesPl.back()->SetLineStyle(4);
                         //drawPotCirclesPl.back()->Draw("same");
                         CLHEP::Hep2Vector radDir;
+                        float rSign = (potCirclesPl_it->_krmCircFit.rho>=0.0) ? 1.0 : -1.0;
                         radDir.setX( cos(potCirclesPl_it->_krmCircFit.phi) );
                         radDir.setY( sin(potCirclesPl_it->_krmCircFit.phi) );
-                        radDir.rotate( ( (potCirclesPl_it->_krmCircFit.rho>=0.0) ? -90.0 : 90.0 )*CLHEP::degree );
+                        radDir.rotate( /*( (potCirclesPl_it->_krmCircFit.rho>=0.0) ? -90.0 : 90.0 )*/-90.0*rSign*CLHEP::degree );
                         radDir=radDir.unit();
                         HepGeom::Point3D<double> CirCenter (0.0,0.0,0.0);
                         float krmRad = 1.0/fabs(potCirclesPl_it->_krmCircFit.rho);
-                        CirCenter = CirCenter + (krmRad-potCirclesPl_it->_krmCircFit.dca)*radDir;
+                        CirCenter = CirCenter + (krmRad + rSign*potCirclesPl_it->_krmCircFit.dca)*radDir;
                         drawPotKrmCirclesPl.push_back( new TEllipse( CirCenter.x()/CLHEP::cm, CirCenter.y()/CLHEP::cm, krmRad/CLHEP::cm, krmRad/CLHEP::cm) );
                         //radDir *= (krmRad-potCirclesPl_it->_krmCircFit.dca);
                         //drawPotKrmCirclesMin.push_back( new TEllipse( radDir.x()/CLHEP::cm, radDir.y()/CLHEP::cm, krmRad/CLHEP::cm, krmRad/CLHEP::cm) );
@@ -781,6 +801,7 @@ namespace mu2e {
     }
 
     if (isStereoMin!=0x0) delete [] isStereoMin;
+    if (notAssociatedHits!=0x0) delete [] notAssociatedHits;
 
 
     //event.put(sscc);
@@ -926,6 +947,421 @@ namespace mu2e {
                   }
           }
           return addHit;
+  }
+
+  bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, CellGeometryHandle *itwp, circlesCont & potcircles, int minClusMultBend) {
+          int nPotBending=0;
+          bool foundCircles = false;
+
+          float refX, refY, refRes2, closeCntCellX, closeCntCellY, cmapU, cmapV, TmpR2, invTmpR2, minGoodR=150.0, maxGoodR=450.0 ;
+          int closeCntCellID, closeCntCellShift, halfwayCellID;
+          float cmapU_clsCntCell, cmapV_clsCntCell, CHTtanTheta0_DX, CHTtanTheta0_DY, CHTtanTheta0, CHTTheta0, CHTr0, CHTcosArcTanT0;
+          unsigned int votArrBin, halfwayVotArrBin;
+          CHTVotArr_HitPtrrel votArr_HitPtrrel;
+          ptrHitInClosCust refHitptr, clsCntCellHitptr;
+          closeCntCellShift = (_minClusMultBend+1)/4+1;
+          halfwayCellID = closeCntCellShift/2;
+          if (halfwayCellID==0) halfwayCellID=1;
+          if (halfwayCellID==closeCntCellShift) halfwayCellID=-1;
+
+          float cellAveRes;
+          float tmpCirChi2, tmpRad;
+          bool firstInsert = false;
+          bool foundWrCross;
+          float zCorssPos, wrsDistAtz, minZCorssPos, minWrsDistAtz, cutWrsDistAtz;
+          int crossCellId;
+          int tmpAbsRad;
+
+          //std::map<int, std::vector<std::> > wrsCrossingMap
+
+          //loop over all one view hits clusters, starting by the external radius, and make a CHT respect to the center of the starting cluster
+          for ( closClinRadLay::iterator radCls_1v_it = radCls_1v.begin(); radCls_1v_it != radCls_1v.end(); ++radCls_1v_it ) {
+                  for ( closClstcol::iterator closCls_it = radCls_1v_it->second.begin(); closCls_it != radCls_1v_it->second.end(); ++closCls_it ) {
+                          if ((*closCls_it)->_nHit>minClusMultBend){
+                                  ++nPotBending;
+
+                                  itwp->SelectCell(radCls_1v_it->first, (*closCls_it)->_maxCellID);
+                                  cutWrsDistAtz = 2.5*itwp->GetCellRad();
+                                  tmpAbsRad = (radCls_1v_it->first-1);
+                                  closClinRadLay::iterator radCls_2v_it = radCls_2v.find( tmpAbsRad );
+                                  if (radCls_2v_it!=radCls_2v.end()) {
+                                          for ( closClstcol::iterator lowRadClosCls_it = radCls_2v_it->second.begin(); lowRadClosCls_it != radCls_2v_it->second.end(); ++lowRadClosCls_it) {
+                                                  minWrsDistAtz=100.0;
+                                                  foundWrCross=false;
+                                                  cout<<"----------- ("<< radCls_1v_it->first<<","<< (*closCls_it)->_maxCellID<<") and ("<< tmpAbsRad<<","<< (*lowRadClosCls_it)->_minCellID<<") is? "<<itwp->canIntersectInZ(zCorssPos, wrsDistAtz, tmpAbsRad, (*lowRadClosCls_it)->_minCellID )<<endl;
+                                                  if ( itwp->canIntersectInZ(zCorssPos, wrsDistAtz, tmpAbsRad, (*lowRadClosCls_it)->_minCellID ) ) {
+                                                          cout<<"tmp z cross "<<zCorssPos<<" wires dist "<<wrsDistAtz<<endl;
+                                                          if (wrsDistAtz<cutWrsDistAtz && wrsDistAtz<minWrsDistAtz) {
+                                                                  minWrsDistAtz= wrsDistAtz;
+                                                                  minZCorssPos=zCorssPos;
+                                                                  crossCellId=(*lowRadClosCls_it)->_minCellID;
+                                                                  foundWrCross=true;
+                                                          }
+                                                  }
+                                                  cout<<"----------- ("<< radCls_1v_it->first<<","<< (*closCls_it)->_maxCellID<<") and ("<< tmpAbsRad<<","<< (*lowRadClosCls_it)->_maxCellID<<") is? "<<itwp->canIntersectInZ(zCorssPos, wrsDistAtz, tmpAbsRad, (*lowRadClosCls_it)->_maxCellID )<<endl;
+                                                  if ( itwp->canIntersectInZ(zCorssPos, wrsDistAtz, tmpAbsRad, (*lowRadClosCls_it)->_maxCellID ) ) {
+                                                          cout<<" tmp z cross "<<zCorssPos<<" wires dist "<<wrsDistAtz<<endl;
+                                                          if (wrsDistAtz<cutWrsDistAtz && wrsDistAtz<minWrsDistAtz) {
+                                                                  minWrsDistAtz= wrsDistAtz;
+                                                                  minZCorssPos=zCorssPos;
+                                                                  crossCellId=(*lowRadClosCls_it)->_maxCellID;
+                                                                  foundWrCross=true;
+                                                          }
+                                                  }
+                                                  if (foundWrCross) {
+                                                          cout<<"Found cross between (AbsRad,CellId) ("<<radCls_1v_it->first<<","<< (*closCls_it)->_maxCellID<<") and ("<<tmpAbsRad<<","<<crossCellId<<") "<<endl;
+                                                          cout<<"\t at z "<<minZCorssPos<<" distance between wires "<<minWrsDistAtz<<endl;
+                                                  }
+                                          }
+                                  }
+
+//                                  (*closCls_it)->_minCellID;
+//
+//                                  SimpleCircle2D tmpCircle;
+//
+//                                  itwp->SelectCell(radCls_1v_it->first, (*closCls_it)->_centerCellID);
+//                                  refX = itwp->GetCellCenter().getX();
+//                                  refY = itwp->GetCellCenter().getY();
+//                                  refRes2 = itwp->GetCellRad()*itwp->GetCellRad()/3.0;
+//                                  cellAveRes = sqrt(refRes2);
+//                                  tmpCircle._krmCircFit.addHit(refX,refY,cellAveRes,cellAveRes);
+//
+//                                  closeCntCellID = (*closCls_it)->_centerCellID+closeCntCellShift;//-1;
+//                                  nCellPerLayer = itwp->GetITLayer()->nCells();
+//                                  if (closeCntCellID<0) closeCntCellID+=nCellPerLayer;
+//                                  closeCntCellID=closeCntCellID%nCellPerLayer;
+//                                  itwp->SelectCell(radCls_1v_it->first, closeCntCellID);
+//                                  closeCntCellX = itwp->GetCellCenter().getX();
+//                                  closeCntCellY = itwp->GetCellCenter().getY();
+//
+//                                  tmpCircle._krmCircFit.addHit(closeCntCellX,closeCntCellY,cellAveRes,cellAveRes);
+//                                  //cout<<"------ ref (ID,x,y) "<<(*closCls_it)->_centerCellID<<", "<<refX<<", "<<refY<<" close "<<closeCntCellID<<", "<<closeCntCellX<<", "<<closeCntCellY<<endl;
+//
+//
+//                                  halfwayCellID = (*closCls_it)->_centerCellID + halfwayCellID;
+//                                  if (halfwayCellID<0) halfwayCellID+=nCellPerLayer;
+//                                  halfwayCellID=halfwayCellID%nCellPerLayer;
+//
+//                                  firstInsert = false;
+//
+//                                  for (hitsInClsID::const_iterator clHitsIDs_it=(*closCls_it)->_hitIdx.begin(); clHitsIDs_it!=(*closCls_it)->_hitIdx.end(); ++clHitsIDs_it) {
+//                                          if ((*closCls_it)->_centerCellID==clHitsIDs_it->first) {
+//                                                  tmpCircle._listHitptrs.insert( tmpCircle._listHitptrs.begin(), ptrHitInClosCust(clHitsIDs_it,closCls_it,radCls_1v_it) );
+//                                                  firstInsert = true;
+//                                                  continue;
+//                                          }
+//                                          if (closeCntCellID==clHitsIDs_it->first) {
+//                                                  if (firstInsert) {
+//                                                          tmpCircle._listHitptrs.insert( (tmpCircle._listHitptrs.begin()+1), ptrHitInClosCust(clHitsIDs_it,closCls_it,radCls_1v_it) );
+//                                                  }
+//                                                  else {
+//                                                          tmpCircle._listHitptrs.insert( tmpCircle._listHitptrs.begin(), ptrHitInClosCust(clHitsIDs_it,closCls_it,radCls_1v_it) );
+//                                                  }
+//                                                 continue;
+//                                          }
+//                                          if (halfwayCellID==clHitsIDs_it->first) {
+//                                          }
+//
+//                                          itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+//                                          tmpCircle._krmCircFit.addHit(itwp->GetCellCenter().getX(),itwp->GetCellCenter().getY(),cellAveRes,cellAveRes);
+//                                          tmpCircle._listHitptrs.push_back( ptrHitInClosCust(clHitsIDs_it,closCls_it,radCls_1v_it) );
+//
+//                                          //confMap.push_back( confMapPoint(cmapU,cmapV,invTmpR2,/*15.0*invSqrt12*/itwp->GetCellRad()*invSqrt3) );
+//                                          /*votArr_HitPtrrel.insert(
+//                                                          CHTVotArr_HitPtrrel::value_type(
+//                                                                          votArrBin,
+//                                                                          ptrHitInClosCust(clHitsIDs_it,closCls_it,radCls_1v_it)
+//                                                                          )
+//                                          );*/
+//                                          //cout<<"Hit of the ref cluster goes into hit of CHT vot "<<votArrBin<<endl;
+//                                  }
+//                                  if ( !tmpCircle._krmCircFit.computeBestCirc() ) {
+//                                          cout<<"Circle not good"<<endl;
+//                                          break;////////////////FIXME
+//                                  }
+//
+//                                  closClinRadLay::iterator sndRadCls_1v_it = radCls_1v_it;
+//                                  ++sndRadCls_1v_it;
+//                                  for ( ; sndRadCls_1v_it != radCls_1v.end(); ++sndRadCls_1v_it ) {
+//                                          itwp->SelectCell(sndRadCls_1v_it->first, 0);
+//                                          cellAveRes = itwp->GetCellRad()*invSqrt3;
+//
+//                                          for ( closClstcol::iterator sndClosCls_it = sndRadCls_1v_it->second.begin(); sndClosCls_it != sndRadCls_1v_it->second.end(); ++sndClosCls_it ) {
+//                                                  for (hitsInClsID::const_iterator clHitsIDs_it=(*sndClosCls_it)->_hitIdx.begin(); clHitsIDs_it!=(*sndClosCls_it)->_hitIdx.end(); ++clHitsIDs_it) {
+//                                                          itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+//                                                          if ( tmpCircle._krmCircFit.checkBfrAddHit(itwp->GetCellCenter().getX(),itwp->GetCellCenter().getY(),cellAveRes,cellAveRes) ) {
+//                                                                  tmpCircle._listHitptrs.push_back( ptrHitInClosCust(clHitsIDs_it,sndClosCls_it,sndRadCls_1v_it) );
+//                                                                  cout<<"Point added"<<endl;
+//                                                          }
+//                                                 }
+//                                          }
+//                                  }
+//
+//                                  if ( tmpCircle._krmCircFit.ierror==0 ) {
+//                                          tmpCirChi2 = tmpCircle._krmCircFit.chicir/((float) (tmpCircle._krmCircFit.np()-3));
+//                                          if ( tmpCirChi2>0.001 && tmpCirChi2<_circChi2cut ) {
+//                                                  cout<<"Circ Chi2 good"<<endl;
+//                                                  tmpRad = 1.0/tmpCircle._krmCircFit.rho;
+//                                                  //if (tmpRad>=minGoodR && tmpRad<=maxGoodR ) {
+//                                                          cout<<"Circle added"<<endl;
+//                                                          potcircles.push_back( tmpCircle );
+//                                                          foundCircles = true;
+//                                                  //}
+//                                          }
+//                                  }
+
+
+                                  /*
+                                  if (_diagLevel>1) {
+                                          int icmpel=0;
+                                          cout<<"for pot bend "<<nPotBending<<" :"<<endl;
+                                          for (std::vector<confMapPoint >::iterator confMap_it=confMap.begin(); confMap_it!=confMap.end(); ++confMap_it) {
+                                                  cout<<"\t u "<<confMap_it->_u<<" v "<<confMap_it->_v<<" r "<<sqrt(confMap_it->_rSq)<<endl;
+                                                  ++icmpel;
+                                          }
+
+                                          cout<<"Point over threshold in CHT voting array of the conformal mapping: "<<endl;
+                                          cout<<"\t points: ";
+                                          for ( std::set<unsigned int>::iterator overThrs_it = cmapCHTVotArr._overTHRs.begin(); overThrs_it != cmapCHTVotArr._overTHRs.end(); ++overThrs_it ){
+                                                  cmapCHTVotArr.uIDToxy(*overThrs_it, tmpCHTvot_X, tmpCHTvot_Y);
+                                                  cout<<" ("<<tmpCHTvot_X<<", "<<tmpCHTvot_Y<<") with val "<<cmapCHTVotArr.get(tmpCHTvot_X, tmpCHTvot_Y);
+                                          }
+                                          cout<<endl;
+
+                                          int clusOfVot = 0;
+                                          //for ( std::set<ClosClustCHTVot>::iterator closClustCHTVots_it=closClustCHTVots.begin(); closClustCHTVots_it!=closClustCHTVots.end(); ++closClustCHTVots_it ) {
+                                          for ( std::vector<ClosClustCHTVot>::iterator closClustCHTVots_it=closClustCHTVots.begin(); closClustCHTVots_it!=closClustCHTVots.end(); ++closClustCHTVots_it ) {
+                                                  ++clusOfVot;
+                                                  cout<<"clusOfVot "<<clusOfVot<<", meanX "<<closClustCHTVots_it->_meanX<<", meanY "<<closClustCHTVots_it->_meanY
+                                                                  <<", sigmaX "<<closClustCHTVots_it->_sigmaX<<", sigmaY "<<closClustCHTVots_it->_sigmaY<<endl;
+                                                  cout<<"\t points: ";
+                                                  for ( std::set<unsigned int>::iterator votInClus_it = closClustCHTVots_it->_listCHTVotIDs.begin();  votInClus_it != closClustCHTVots_it->_listCHTVotIDs.end(); ++votInClus_it ) {
+                                                          cmapCHTVotArr.uIDToxy(*votInClus_it, tmpCHTvot_X, tmpCHTvot_Y);
+                                                          cout<<" ("<<tmpCHTvot_X<<", "<<tmpCHTvot_Y<<") with val "<<cmapCHTVotArr.get(tmpCHTvot_X, tmpCHTvot_Y);
+                                                  }
+                                                  cout<<endl;
+                                          }
+
+                                  }
+                                  if (_doDisplay) {
+                                          //rCMap.push_back(new TH2F( Form("hRCMapHitStereo%s_%i",type.c_str(),nPotBending), "Relative Conformal Mapping of Stereo- Hits per Event at z=0", 2000, -2, 2, 2000, -2, 2 ));
+                                          float *Uarr=new float[confMap.size()];
+                                          float *Varr=new float[confMap.size()];
+                                          float *errUarr=new float[confMap.size()];
+                                          float *errVarr=new float[confMap.size()];
+                                          int icmpel=0;
+                                          for (std::vector<confMapPoint >::iterator confMap_it=confMap.begin(); confMap_it!=confMap.end(); ++confMap_it) {
+                                                  //rCMap.back()->Fill(confMap_it->_u,confMap_it->_v);
+                                                  Uarr[icmpel] = confMap_it->_u;
+                                                  Varr[icmpel] = confMap_it->_v;
+                                                  errUarr[icmpel] = 0.0;//confMap_it->_errU;
+                                                  errVarr[icmpel] = 0.0;//confMap_it->_errV;
+                                                  ++icmpel;
+                                          }
+                                          rCMap.push_back(new confMapDraw());
+                                          rCMap.back()->_cmap = new TGraphErrors( icmpel, Uarr, Varr, errUarr, errVarr );
+                                          delete Uarr;
+                                          delete Varr;
+                                          delete errUarr;
+                                          delete errVarr;
+
+                                          rCMap.back()->_cmapCHT = new TH2F( Form("hRCHT_CMapHitStereo%s_%i",type.c_str(),nPotBending), Form("Relative CHT of Conformal Mapping of Stereo%s Hits per Event at z=0",type.c_str()), 2513, -TMath::Pi(), TMath::Pi(), 500, -0.25, 0.25 );
+                                          for (std::vector<std::pair<double, double> >::iterator CHTconfMap_it = CHTconfMap.begin(); CHTconfMap_it != CHTconfMap.end(); ++CHTconfMap_it){
+                                                  rCMap.back()->_cmapCHT->Fill(CHTconfMap_it->first,CHTconfMap_it->second);
+                                          }
+                                  }
+                                  */
+                          }
+                  }
+          }
+
+          return foundCircles;
+  }
+
+  bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, circlesCont & potcircles, std::string type) {
+          int nPotBending=0;
+          bool foundCircles = false;
+
+          float refX, refY, refRes2, closeCntCellX, closeCntCellY, cmapU, cmapV, TmpR2, invTmpR2, minGoodR=150.0, maxGoodR=450.0 ;
+          int closeCntCellID, closeCntCellShift, halfwayCellID;
+          float cmapU_clsCntCell, cmapV_clsCntCell, CHTtanTheta0_DX, CHTtanTheta0_DY, CHTtanTheta0, CHTTheta0, CHTr0, CHTcosArcTanT0;
+          unsigned int votArrBin, halfwayVotArrBin;
+          CHTVotArr_HitPtrrel votArr_HitPtrrel;
+          ptrHitInClosCust refHitptr, clsCntCellHitptr;
+          closeCntCellShift = (_minClusMultBend+1)/4+1;
+          halfwayCellID = closeCntCellShift/2;
+          if (halfwayCellID==0) halfwayCellID=1;
+          if (halfwayCellID==closeCntCellShift) halfwayCellID=-1;
+
+          float cellAveRes;
+          float tmpCirChi2, tmpRad;
+          bool firstInsert = false;
+
+          //loop over all one view hits clusters, starting by the external radius, and make a CHT respect to the center of the starting cluster
+          for ( closClinRadLay::iterator radCls_it = radCls.begin(); radCls_it != radCls.end(); ++radCls_it ) {
+                  for ( closClstcol::iterator closCls_it = radCls_it->second.begin(); closCls_it != radCls_it->second.end(); ++closCls_it ) {
+                          if ((*closCls_it)->_nHit>_minClusMultBend){
+                                  ++nPotBending;
+
+                                  SimpleCircle2D tmpCircle;
+
+                                  itwp->SelectCell(radCls_it->first, (*closCls_it)->_centerCellID);
+                                  refX = itwp->GetCellCenter().getX();
+                                  refY = itwp->GetCellCenter().getY();
+                                  refRes2 = itwp->GetCellRad()*itwp->GetCellRad()/3.0;
+                                  cellAveRes = sqrt(refRes2);
+                                  tmpCircle._krmCircFit.addHit(refX,refY,cellAveRes,cellAveRes);
+
+                                  closeCntCellID = (*closCls_it)->_centerCellID+closeCntCellShift;//-1;
+                                  nCellPerLayer = itwp->GetITLayer()->nCells();
+                                  if (closeCntCellID<0) closeCntCellID+=nCellPerLayer;
+                                  closeCntCellID=closeCntCellID%nCellPerLayer;
+                                  itwp->SelectCell(radCls_it->first, closeCntCellID);
+                                  closeCntCellX = itwp->GetCellCenter().getX();
+                                  closeCntCellY = itwp->GetCellCenter().getY();
+
+                                  tmpCircle._krmCircFit.addHit(closeCntCellX,closeCntCellY,cellAveRes,cellAveRes);
+                                  //cout<<"------ ref (ID,x,y) "<<(*closCls_it)->_centerCellID<<", "<<refX<<", "<<refY<<" close "<<closeCntCellID<<", "<<closeCntCellX<<", "<<closeCntCellY<<endl;
+
+
+                                  halfwayCellID = (*closCls_it)->_centerCellID + halfwayCellID;
+                                  if (halfwayCellID<0) halfwayCellID+=nCellPerLayer;
+                                  halfwayCellID=halfwayCellID%nCellPerLayer;
+
+                                  firstInsert = false;
+
+                                  for (hitsInClsID::const_iterator clHitsIDs_it=(*closCls_it)->_hitIdx.begin(); clHitsIDs_it!=(*closCls_it)->_hitIdx.end(); ++clHitsIDs_it) {
+                                          if ((*closCls_it)->_centerCellID==clHitsIDs_it->first) {
+                                                  tmpCircle._listHitptrs.insert( tmpCircle._listHitptrs.begin(), ptrHitInClosCust(clHitsIDs_it,closCls_it,radCls_it) );
+                                                  firstInsert = true;
+                                                  continue;
+                                          }
+                                          if (closeCntCellID==clHitsIDs_it->first) {
+                                                  if (firstInsert) {
+                                                          tmpCircle._listHitptrs.insert( (tmpCircle._listHitptrs.begin()+1), ptrHitInClosCust(clHitsIDs_it,closCls_it,radCls_it) );
+                                                  }
+                                                  else {
+                                                          tmpCircle._listHitptrs.insert( tmpCircle._listHitptrs.begin(), ptrHitInClosCust(clHitsIDs_it,closCls_it,radCls_it) );
+                                                  }
+                                                 continue;
+                                          }
+                                          if (halfwayCellID==clHitsIDs_it->first) {
+                                          }
+
+                                          itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+                                          tmpCircle._krmCircFit.addHit(itwp->GetCellCenter().getX(),itwp->GetCellCenter().getY(),cellAveRes,cellAveRes);
+                                          tmpCircle._listHitptrs.push_back( ptrHitInClosCust(clHitsIDs_it,closCls_it,radCls_it) );
+
+                                          //confMap.push_back( confMapPoint(cmapU,cmapV,invTmpR2,/*15.0*invSqrt12*/itwp->GetCellRad()*invSqrt3) );
+                                          /*votArr_HitPtrrel.insert(
+                                                          CHTVotArr_HitPtrrel::value_type(
+                                                                          votArrBin,
+                                                                          ptrHitInClosCust(clHitsIDs_it,closCls_it,radCls_it)
+                                                                          )
+                                          );*/
+                                          //cout<<"Hit of the ref cluster goes into hit of CHT vot "<<votArrBin<<endl;
+                                  }
+                                  if ( !tmpCircle._krmCircFit.computeBestCirc() ) {
+                                          cout<<"Circle not good"<<endl;
+                                          break;////////////////FIXME
+                                  }
+
+                                  closClinRadLay::iterator sndRadCls_it = radCls_it;
+                                  ++sndRadCls_it;
+                                  for ( ; sndRadCls_it != radCls.end(); ++sndRadCls_it ) {
+                                          itwp->SelectCell(sndRadCls_it->first, 0);
+                                          cellAveRes = itwp->GetCellRad()*invSqrt3;
+
+                                          for ( closClstcol::iterator sndClosCls_it = sndRadCls_it->second.begin(); sndClosCls_it != sndRadCls_it->second.end(); ++sndClosCls_it ) {
+                                                  for (hitsInClsID::const_iterator clHitsIDs_it=(*sndClosCls_it)->_hitIdx.begin(); clHitsIDs_it!=(*sndClosCls_it)->_hitIdx.end(); ++clHitsIDs_it) {
+                                                          itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+                                                          if ( tmpCircle._krmCircFit.checkBfrAddHit(itwp->GetCellCenter().getX(),itwp->GetCellCenter().getY(),cellAveRes,cellAveRes) ) {
+                                                                  tmpCircle._listHitptrs.push_back( ptrHitInClosCust(clHitsIDs_it,sndClosCls_it,sndRadCls_it) );
+                                                                  cout<<"Point added"<<endl;
+                                                          }
+                                                 }
+                                          }
+                                  }
+
+                                  if ( tmpCircle._krmCircFit.ierror==0 ) {
+                                          tmpCirChi2 = tmpCircle._krmCircFit.chicir/((float) (tmpCircle._krmCircFit.np()-3));
+                                          if ( tmpCirChi2>0.001 && tmpCirChi2<_circChi2cut ) {
+                                                  cout<<"Circ Chi2 good"<<endl;
+                                                  tmpRad = 1.0/tmpCircle._krmCircFit.rho;
+                                                  //if (tmpRad>=minGoodR && tmpRad<=maxGoodR ) {
+                                                          cout<<"Circle added"<<endl;
+                                                          potcircles.push_back( tmpCircle );
+                                                          foundCircles = true;
+                                                  //}
+                                          }
+                                  }
+
+
+                                  /*
+                                  if (_diagLevel>1) {
+                                          int icmpel=0;
+                                          cout<<"for pot bend "<<nPotBending<<" :"<<endl;
+                                          for (std::vector<confMapPoint >::iterator confMap_it=confMap.begin(); confMap_it!=confMap.end(); ++confMap_it) {
+                                                  cout<<"\t u "<<confMap_it->_u<<" v "<<confMap_it->_v<<" r "<<sqrt(confMap_it->_rSq)<<endl;
+                                                  ++icmpel;
+                                          }
+
+                                          cout<<"Point over threshold in CHT voting array of the conformal mapping: "<<endl;
+                                          cout<<"\t points: ";
+                                          for ( std::set<unsigned int>::iterator overThrs_it = cmapCHTVotArr._overTHRs.begin(); overThrs_it != cmapCHTVotArr._overTHRs.end(); ++overThrs_it ){
+                                                  cmapCHTVotArr.uIDToxy(*overThrs_it, tmpCHTvot_X, tmpCHTvot_Y);
+                                                  cout<<" ("<<tmpCHTvot_X<<", "<<tmpCHTvot_Y<<") with val "<<cmapCHTVotArr.get(tmpCHTvot_X, tmpCHTvot_Y);
+                                          }
+                                          cout<<endl;
+
+                                          int clusOfVot = 0;
+                                          //for ( std::set<ClosClustCHTVot>::iterator closClustCHTVots_it=closClustCHTVots.begin(); closClustCHTVots_it!=closClustCHTVots.end(); ++closClustCHTVots_it ) {
+                                          for ( std::vector<ClosClustCHTVot>::iterator closClustCHTVots_it=closClustCHTVots.begin(); closClustCHTVots_it!=closClustCHTVots.end(); ++closClustCHTVots_it ) {
+                                                  ++clusOfVot;
+                                                  cout<<"clusOfVot "<<clusOfVot<<", meanX "<<closClustCHTVots_it->_meanX<<", meanY "<<closClustCHTVots_it->_meanY
+                                                                  <<", sigmaX "<<closClustCHTVots_it->_sigmaX<<", sigmaY "<<closClustCHTVots_it->_sigmaY<<endl;
+                                                  cout<<"\t points: ";
+                                                  for ( std::set<unsigned int>::iterator votInClus_it = closClustCHTVots_it->_listCHTVotIDs.begin();  votInClus_it != closClustCHTVots_it->_listCHTVotIDs.end(); ++votInClus_it ) {
+                                                          cmapCHTVotArr.uIDToxy(*votInClus_it, tmpCHTvot_X, tmpCHTvot_Y);
+                                                          cout<<" ("<<tmpCHTvot_X<<", "<<tmpCHTvot_Y<<") with val "<<cmapCHTVotArr.get(tmpCHTvot_X, tmpCHTvot_Y);
+                                                  }
+                                                  cout<<endl;
+                                          }
+
+                                  }
+                                  if (_doDisplay) {
+                                          //rCMap.push_back(new TH2F( Form("hRCMapHitStereo%s_%i",type.c_str(),nPotBending), "Relative Conformal Mapping of Stereo- Hits per Event at z=0", 2000, -2, 2, 2000, -2, 2 ));
+                                          float *Uarr=new float[confMap.size()];
+                                          float *Varr=new float[confMap.size()];
+                                          float *errUarr=new float[confMap.size()];
+                                          float *errVarr=new float[confMap.size()];
+                                          int icmpel=0;
+                                          for (std::vector<confMapPoint >::iterator confMap_it=confMap.begin(); confMap_it!=confMap.end(); ++confMap_it) {
+                                                  //rCMap.back()->Fill(confMap_it->_u,confMap_it->_v);
+                                                  Uarr[icmpel] = confMap_it->_u;
+                                                  Varr[icmpel] = confMap_it->_v;
+                                                  errUarr[icmpel] = 0.0;//confMap_it->_errU;
+                                                  errVarr[icmpel] = 0.0;//confMap_it->_errV;
+                                                  ++icmpel;
+                                          }
+                                          rCMap.push_back(new confMapDraw());
+                                          rCMap.back()->_cmap = new TGraphErrors( icmpel, Uarr, Varr, errUarr, errVarr );
+                                          delete Uarr;
+                                          delete Varr;
+                                          delete errUarr;
+                                          delete errVarr;
+
+                                          rCMap.back()->_cmapCHT = new TH2F( Form("hRCHT_CMapHitStereo%s_%i",type.c_str(),nPotBending), Form("Relative CHT of Conformal Mapping of Stereo%s Hits per Event at z=0",type.c_str()), 2513, -TMath::Pi(), TMath::Pi(), 500, -0.25, 0.25 );
+                                          for (std::vector<std::pair<double, double> >::iterator CHTconfMap_it = CHTconfMap.begin(); CHTconfMap_it != CHTconfMap.end(); ++CHTconfMap_it){
+                                                  rCMap.back()->_cmapCHT->Fill(CHTconfMap_it->first,CHTconfMap_it->second);
+                                          }
+                                  }
+                                  */
+                          }
+                  }
+          }
+
+          return foundCircles;
   }
 
   bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, std::vector<confMapDraw*> &rCMap, circlesCont & potcircles, std::string type, unsigned int thrCHTaddVot) {
@@ -1114,18 +1550,16 @@ namespace mu2e {
                                                   //        cmapCHTVotArr.uIDToxy(*votInClus_it, tmpCHTvot_X, tmpCHTvot_Y);
                                                   //        cout<<" ("<<tmpCHTvot_X<<", "<<tmpCHTvot_Y<<") with val "<<cmapCHTVotArr.get(tmpCHTvot_X, tmpCHTvot_Y);
                                                   //}
-                                                  tmpCircle._listHitptrs.push_back(refHitptr);//insert(refHitptr);
-                                                  tmpCircle._listHitptrs.push_back(clsCntCellHitptr);//insert(clsCntCellHitptr);
-
-                                                  /*itwp->SelectCell(refHitptr.getRadLayID(), refHitptr.getinLayerCellID());
-                                                  cellAveRes = itwp->GetCellRad() * invSqrt3;
-                                                  tmpCircle._krmCircFit.addHit( itwp->GetCellCenter().getX(), itwp->GetCellCenter().getY(), cellAveRes, cellAveRes );
-                                                  itwp->SelectCell(clsCntCellHitptr.getRadLayID(), clsCntCellHitptr.getinLayerCellID());
-                                                  cellAveRes = itwp->GetCellRad() * invSqrt3;
-                                                  tmpCircle._krmCircFit.addHit( itwp->GetCellCenter().getX(), itwp->GetCellCenter().getY(), cellAveRes, cellAveRes );*/
                                                   cellAveRes = sqrt(refRes2);
+                                                  if ( notAssociatedHits[refHitptr.getinEventHitID()] ) {
+                                                  tmpCircle._listHitptrs.push_back(refHitptr);//insert(refHitptr);
                                                   tmpCircle._krmCircFit.addHit( refX, refY, cellAveRes, cellAveRes );
+                                                  }
+
+                                                  if ( notAssociatedHits[clsCntCellHitptr.getinEventHitID()] ) {
+                                                  tmpCircle._listHitptrs.push_back(clsCntCellHitptr);//insert(clsCntCellHitptr);
                                                   tmpCircle._krmCircFit.addHit( closeCntCellX, closeCntCellY, cellAveRes, cellAveRes );
+                                                  }
 
                                                   //cout<<"For Potential circles"<<endl;
                                                   for (std::set< unsigned int >::const_iterator listCHTVotIDs_it=closClustCHTVots_it->_listCHTVotIDs.begin();
@@ -1136,17 +1570,67 @@ namespace mu2e {
                                                           for ( CHTVotArr_HitPtrrel::iterator tmpCHTVotArr_HitPtrrel_it=votArr_HitPtrrel_its.first;
                                                                           tmpCHTVotArr_HitPtrrel_it!=votArr_HitPtrrel_its.second;
                                                                           ++tmpCHTVotArr_HitPtrrel_it ) {
-                                                                  tmpCircle._listHitptrs.push_back(tmpCHTVotArr_HitPtrrel_it->second);//insert(tmpCHTVotArr_HitPtrrel_it->second);
-                                                                  itwp->SelectCell(tmpCHTVotArr_HitPtrrel_it->second.getRadLayID(), tmpCHTVotArr_HitPtrrel_it->second.getinLayerCellID());
-                                                                  cellAveRes = itwp->GetCellRad() * invSqrt3;
-                                                                  tmpCircle._krmCircFit.addHit( itwp->GetCellCenter().getX(), itwp->GetCellCenter().getY(), cellAveRes, cellAveRes );
+                                                                  if ( notAssociatedHits[tmpCHTVotArr_HitPtrrel_it->second.getinEventHitID()] ) {
+                                                                          tmpCircle._listHitptrs.push_back(tmpCHTVotArr_HitPtrrel_it->second);//insert(tmpCHTVotArr_HitPtrrel_it->second);
+                                                                          itwp->SelectCell(tmpCHTVotArr_HitPtrrel_it->second.getRadLayID(), tmpCHTVotArr_HitPtrrel_it->second.getinLayerCellID());
+                                                                          cellAveRes = itwp->GetCellRad() * invSqrt3;
+                                                                          tmpCircle._krmCircFit.addHit( itwp->GetCellCenter().getX(), itwp->GetCellCenter().getY(), cellAveRes, cellAveRes );
+                                                                  }
                                                          }
                                                   }
-                                                  foundCircles = true;
+
                                                   if ( tmpCircle._krmCircFit.computeBestCirc(/*closeCntCellX, closeCntCellY*/) ) {
                                                           tmpCirChi2 = tmpCircle._krmCircFit.chicir/((float) (tmpCircle._krmCircFit.np()-3));
                                                           if ( tmpCirChi2>0.001 && tmpCirChi2<_circChi2cut ) {
-                                                                  potcircles.push_back( tmpCircle );
+                                                                  foundCircles = true;
+                                                                  size_t irej = 2;
+                                                                  for (std::vector<circPoint>::iterator points_it =(tmpCircle._krmCircFit.points.begin()+2); points_it !=tmpCircle._krmCircFit.points.end();) {
+                                                                          if ( tmpCircle._krmCircFit.rejectHits(points_it) ) {
+                                                                                  cout<<"Rejected hit "<<irej<<endl;
+                                                                                  tmpCircle._listHitptrs.erase(tmpCircle._listHitptrs.begin()+irej);
+                                                                                  continue;
+                                                                          }
+                                                                          ++points_it;
+                                                                          ++irej;
+                                                                          if (tmpCircle._krmCircFit.points.size()==3) {
+                                                                                  foundCircles = false;
+                                                                                  break;
+                                                                          }
+                                                                  }
+                                                                  if (foundCircles) {
+                                                                          tmpRad = 1.0/fabs(tmpCircle._krmCircFit.rho);
+                                                                          if (tmpRad<minGoodR || tmpRad>maxGoodR) {
+                                                                                  foundCircles = false;
+                                                                          }
+                                                                  }
+                                                                  if (foundCircles) {
+                                                                          for (std::vector< ptrHitInClosCust >::iterator listHitptrs_it = tmpCircle._listHitptrs.begin(); listHitptrs_it != tmpCircle._listHitptrs.end(); ++listHitptrs_it) {
+                                                                                  notAssociatedHits[listHitptrs_it->getinEventHitID()]=false;
+                                                                                  ++nAssociatedHit;
+                                                                          }
+
+                                                                          closClinRadLay::iterator sndRadCls_it = radCls_it;
+                                                                          ++sndRadCls_it;
+                                                                          for ( ; sndRadCls_it != radCls.end(); ++sndRadCls_it ) {
+                                                                                  itwp->SelectCell(sndRadCls_it->first, 0);
+                                                                                  cellAveRes = itwp->GetCellRad()*invSqrt3;
+
+                                                                                  for ( closClstcol::iterator sndClosCls_it = sndRadCls_it->second.begin(); sndClosCls_it != sndRadCls_it->second.end(); ++sndClosCls_it ) {
+                                                                                          for (hitsInClsID::const_iterator clHitsIDs_it=(*sndClosCls_it)->_hitIdx.begin(); clHitsIDs_it!=(*sndClosCls_it)->_hitIdx.end(); ++clHitsIDs_it) {
+                                                                                                  if ( notAssociatedHits[clHitsIDs_it->second] ) {
+                                                                                                          itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+                                                                                                          if ( tmpCircle._krmCircFit.checkBfrAddHit(itwp->GetCellCenter().getX(),itwp->GetCellCenter().getY(),cellAveRes,cellAveRes,_circChi2cut, 1 ) ) {
+                                                                                                                  tmpCircle._listHitptrs.push_back( ptrHitInClosCust(clHitsIDs_it,sndClosCls_it,sndRadCls_it) );
+                                                                                                                  notAssociatedHits[clHitsIDs_it->second]=false;
+                                                                                                                  ++nAssociatedHit;
+                                                                                                                  cout<<"Point added"<<endl;
+                                                                                                          }
+                                                                                                  }
+                                                                                         }
+                                                                                  }
+                                                                          }
+                                                                          potcircles.push_back( tmpCircle );
+                                                                  }
                                                           }
                                                   }
                                           }
