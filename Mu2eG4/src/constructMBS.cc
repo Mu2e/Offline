@@ -1,9 +1,9 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.8 2011/07/13 19:25:14 logash Exp $
-// $Author: logash $
-// $Date: 2011/07/13 19:25:14 $
+// $Id: constructMBS.cc,v 1.9 2012/05/16 20:02:11 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/16 20:02:11 $
 //
 // Original author KLG
 //
@@ -180,7 +180,8 @@ namespace mu2e {
     }
 
     // SPBS 
-    // This one is placed directly into DS3Vacuum
+    // This one is placed directly into DS3Vacuum; 
+    // Note that its radius is lager than theone of BSTS
     
     CLHEP::Hep3Vector SPBSOffsetInMu2e  = CLHEP::Hep3Vector(solenoidOffset,0.,SPBSZ);
 
@@ -340,166 +341,154 @@ namespace mu2e {
 
     // the hollow disk aka CryoSeal
 
-    double CryoSealInnerRadius = SPBSOuterRadius; // may need to be BSTSOuterRadius TBD
-    double CryoSealOuterRadius = _config->getDouble("toyDS.rIn");
-    double CryoSealHLength     = _config->getDouble("mbs.CryoSealHLength");
+    bool const hasCryoSeal = _config->getBool("mbs.hasCryoSeal", true);
 
-    TubsParams CryoSealParams ( CryoSealInnerRadius,
-                                CryoSealOuterRadius,
-                                CryoSealHLength);
+    if (hasCryoSeal) {
 
-    double CryoSealZ = _config->getDouble("neutronabsorber.internalZ01") +
-      _config->getDouble("neutronabsorber.internalHalfLengthZ01") +
-      2.*_config->getDouble("neutronabsorber.internalHalfLengthZ02") + CryoSealHLength;
+      double const CryoSealInnerRadius = _config->getDouble("mbs.CryoSealInnerRadius");
+      double const CryoSealOuterRadius = _config->getDouble("mbs.CryoSealOuterRadius");
+      double const CryoSealHLength     = _config->getDouble("mbs.CryoSealHLength");
 
-    CLHEP::Hep3Vector CryoSealOffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,CryoSealZ);
+      TubsParams CryoSealParams ( CryoSealInnerRadius,
+                                  CryoSealOuterRadius,
+                                  CryoSealHLength);
 
-    CLHEP::Hep3Vector CryoSealOffset = CryoSealOffsetInMu2e - hallInfo.centerInMu2e();
+      double CryoSealZ           = _config->getDouble("mbs.CryoSealZ");
 
-    string const CryoSealMaterialName  = _config->getString("mbs.CryoSealMaterialName");
+      CLHEP::Hep3Vector CryoSealOffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,CryoSealZ);
 
-    VolumeInfo CryoSealInfo  = nestTubs("DSCryoSeal",
-                                        CryoSealParams,
-                                        findMaterialOrThrow(CryoSealMaterialName),
-                                        0,
-                                        CryoSealOffset,
-                                        hallInfo,
-                                        0,
-                                        MBSisVisible,
-                                        G4Colour::Green(),
-                                        MBSisSolid,
-                                        forceAuxEdgeVisible,
-                                        placePV,
-                                        doSurfaceCheck
-                                        );
+      CLHEP::Hep3Vector CryoSealOffset = CryoSealOffsetInMu2e - hallInfo.centerInMu2e();
+
+      string const CryoSealMaterialName  = _config->getString("mbs.CryoSealMaterialName");
+
+      VolumeInfo CryoSealInfo  = nestTubs("DSCryoSeal",
+                                          CryoSealParams,
+                                          findMaterialOrThrow(CryoSealMaterialName),
+                                          0,
+                                          CryoSealOffset,
+                                          hallInfo,
+                                          0,
+                                          MBSisVisible,
+                                          G4Colour::Green(),
+                                          MBSisSolid,
+                                          forceAuxEdgeVisible,
+                                          placePV,
+                                          doSurfaceCheck
+                                          );
 
 
-    if ( verbosityLevel > 0) {
-      double zhl         = static_cast<G4Tubs*>(CryoSealInfo.solid)->GetZHalfLength();
-      double CryoSealOffsetInMu2eZ = CryoSealOffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " CryoSeal     Z extent in Mu2e    : " <<
-        CryoSealOffsetInMu2eZ - zhl << ", " << CryoSealOffsetInMu2eZ + zhl << endl;
+      if ( verbosityLevel > 0) {
+        double zhl         = static_cast<G4Tubs*>(CryoSealInfo.solid)->GetZHalfLength();
+        double CryoSealOffsetInMu2eZ = CryoSealOffsetInMu2e[CLHEP::Hep3Vector::Z];
+        cout << __func__ << " CryoSeal     Z extent in Mu2e    : " <<
+          CryoSealOffsetInMu2eZ - zhl << ", " << CryoSealOffsetInMu2eZ + zhl << endl;
+      }
+
     }
+
+    bool const hasEndPlug = _config->getBool("mbs.hasEndPlug", true);
 
     // now the endplug itself, the hollow part first
 
-    double EndPlug1InnerRadius = SPBSOuterRadius;
-    double EndPlug1OuterRadius = CryoSealOuterRadius;
+    if (hasEndPlug) {
 
-    // from the end of the BSTS to the Iron   x 0.5
+      double const EndPlugTubeInnerRadius = _config->getDouble("mbs.EndPlugTubeInnerRadius");
+      double const EndPlugTubeOuterRadius = _config->getDouble("mbs.EndPlugTubeOuterRadius");
+      double const EndPlugTubeHLength     = _config->getDouble("mbs.EndPlugTubeHLength");
 
-    double EndPlug1DSZ = BSTSZ + BSTSHLength;
+      TubsParams EndPlugTubeParams ( EndPlugTubeInnerRadius,
+                                     EndPlugTubeOuterRadius,
+                                     EndPlugTubeHLength );
 
-    if ( verbosityLevel > 0) {
+      double const EndPlugTubeZ           = _config->getDouble("mbs.EndPlugTubeZ");
 
-      cout << __func__ << " EndPlug1DSZ : " << EndPlug1DSZ << endl;
+      if ( verbosityLevel > 0) {
+
+        double EndPlugTubeDSZ = EndPlugTubeZ + EndPlugTubeHLength;
+        double EndPlugTubeUSZ = EndPlugTubeZ - EndPlugTubeHLength;
+        cout << __func__ << " EndPlugTubeDSZ : " << EndPlugTubeDSZ << endl;
+        cout << __func__ << " EndPlugTubeUSZ : " << EndPlugTubeUSZ << endl;
+        cout << __func__ << " EndPlugTubeZ   : " << EndPlugTubeZ << endl;
+
+      }
+
+      CLHEP::Hep3Vector EndPlugTubeOffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,EndPlugTubeZ);
+
+      CLHEP::Hep3Vector EndPlugTubeOffset = EndPlugTubeOffsetInMu2e - hallInfo.centerInMu2e();
+
+      string const EndPlugTubeMaterialName  = _config->getString("mbs.EndPlugMaterialName");
+
+      VolumeInfo EndPlugTubeInfo  = nestTubs("DSEndPlugTube",
+                                             EndPlugTubeParams,
+                                             findMaterialOrThrow(EndPlugTubeMaterialName),
+                                             0,
+                                             EndPlugTubeOffset,
+                                             hallInfo,
+                                             0,
+                                             MBSisVisible,
+                                             G4Colour::Gray(),
+                                             MBSisSolid,
+                                             forceAuxEdgeVisible,
+                                             placePV,
+                                             doSurfaceCheck
+                                             );
+
+
+      if ( verbosityLevel > 0) {
+        double zhl         = static_cast<G4Tubs*>(EndPlugTubeInfo.solid)->GetZHalfLength();
+        double EndPlugTubeOffsetInMu2eZ = EndPlugTubeOffsetInMu2e[CLHEP::Hep3Vector::Z];
+        cout << __func__ << " EndPlugTube     Z extent in Mu2e    : " <<
+          EndPlugTubeOffsetInMu2eZ - zhl << ", " << EndPlugTubeOffsetInMu2eZ + zhl << endl;
+      }
+
+      // the end plug end disk
+
+      double const EndPlugDiskInnerRadius  = _config->getDouble("mbs.EndPlugDiskInnerRadius");
+      double const EndPlugDiskOuterRadius  = _config->getDouble("mbs.EndPlugDiskOuterRadius");
+      double const EndPlugDiskHLength      = _config->getDouble("mbs.EndPlugDiskHLength");
+
+      TubsParams EndPlugDiskParams ( EndPlugDiskInnerRadius,
+                                     EndPlugDiskOuterRadius,
+                                     EndPlugDiskHLength );
+
+      double EndPlugDiskZ = EndPlugTubeZ + EndPlugTubeHLength + EndPlugDiskHLength;
+
+      if ( verbosityLevel > 0) {
+
+        cout << __func__ << " EndPlugDiskZ  : " << EndPlugDiskZ << endl;
+
+      }
+
+      CLHEP::Hep3Vector EndPlugDiskOffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,EndPlugDiskZ);
+
+      CLHEP::Hep3Vector EndPlugDiskOffset  = EndPlugDiskOffsetInMu2e - hallInfo.centerInMu2e();
+
+      string const EndPlugDiskMaterialName = _config->getString("mbs.EndPlugMaterialName");
+
+      VolumeInfo EndPlugDiskInfo  = nestTubs("DSEndPlugDisk",
+                                             EndPlugDiskParams,
+                                             findMaterialOrThrow(EndPlugDiskMaterialName),
+                                             0,
+                                             EndPlugDiskOffset,
+                                             hallInfo,
+                                             0,
+                                             MBSisVisible,
+                                             G4Colour::Gray(),
+                                             MBSisSolid,
+                                             forceAuxEdgeVisible,
+                                             placePV,
+                                             doSurfaceCheck
+                                             );
+
+
+      if ( verbosityLevel > 0) {
+        double zhl         = static_cast<G4Tubs*>(EndPlugDiskInfo.solid)->GetZHalfLength();
+        double EndPlugDiskOffsetInMu2eZ = EndPlugDiskOffsetInMu2e[CLHEP::Hep3Vector::Z];
+        cout << __func__ << " EndPlugDisk  Z extent in Mu2e    : " <<
+          EndPlugDiskOffsetInMu2eZ - zhl << ", " << EndPlugDiskOffsetInMu2eZ + zhl << endl;
+      }
 
     }
-
-    GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
-
-    CRSSteelShield const & dssshield =
-      CosmicRayShieldGeomHandle->getCRSSteelShield("CRSSteelDownstreamShield");
-
-    double EndPlug1USZ = dssshield.getHalfLengths()[2] + dssshield.getGlobalOffset()[CLHEP::Hep3Vector::Z];
-
-    if ( verbosityLevel > 0) {
-
-      cout << __func__ << " EndPlug1USZ : " << EndPlug1USZ << endl;
-
-    }
-
-    double EndPlug1HLength   = (EndPlug1DSZ - EndPlug1USZ)*0.5;
-
-    TubsParams EndPlug1Params ( EndPlug1InnerRadius,
-                               EndPlug1OuterRadius,
-                               EndPlug1HLength );
-
-    double EndPlug1Z = (EndPlug1DSZ + EndPlug1USZ)*0.5;
-
-    if ( verbosityLevel > 0) {
-
-      cout << __func__ << " EndPlug1Z  : " << EndPlug1Z << endl;
-
-    }
-
-    CLHEP::Hep3Vector EndPlug1OffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,EndPlug1Z);
-
-    CLHEP::Hep3Vector EndPlug1Offset = EndPlug1OffsetInMu2e - hallInfo.centerInMu2e();
-
-    string const EndPlug1MaterialName  = _config->getString("mbs.EndPlugMaterialName");
-
-    VolumeInfo EndPlug1Info  = nestTubs("DSEndPlug1",
-                                        EndPlug1Params,
-                                        findMaterialOrThrow(EndPlug1MaterialName),
-                                        0,
-                                        EndPlug1Offset,
-                                        hallInfo,
-                                        0,
-                                        MBSisVisible,
-                                        G4Colour::Gray(),
-                                        MBSisSolid,
-                                        forceAuxEdgeVisible,
-                                        placePV,
-                                        doSurfaceCheck
-                                        );
-
-
-    if ( verbosityLevel > 0) {
-      double zhl         = static_cast<G4Tubs*>(EndPlug1Info.solid)->GetZHalfLength();
-      double EndPlug1OffsetInMu2eZ = EndPlug1OffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " EndPlug1     Z extent in Mu2e    : " <<
-        EndPlug1OffsetInMu2eZ - zhl << ", " << EndPlug1OffsetInMu2eZ + zhl << endl;
-    }
-
-    // the end plug end disk
-
-    double EndPlugDiskInnerRadius = 0.0;
-    double EndPlugDiskOuterRadius = CryoSealOuterRadius;
-
-    double EndPlugDiskHLength     = _config->getDouble("mbs.EndPlugDiskHLength");
-
-    TubsParams EndPlugDiskParams ( EndPlugDiskInnerRadius,
-                                   EndPlugDiskOuterRadius,
-                                   EndPlugDiskHLength );
-
-    double EndPlugDiskZ = EndPlug1Z + EndPlug1HLength + EndPlugDiskHLength;
-
-    if ( verbosityLevel > 0) {
-
-      cout << __func__ << " EndPlugDiskZ  : " << EndPlugDiskZ << endl;
-
-    }
-
-    CLHEP::Hep3Vector EndPlugDiskOffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,EndPlugDiskZ);
-
-    CLHEP::Hep3Vector EndPlugDiskOffset = EndPlugDiskOffsetInMu2e - hallInfo.centerInMu2e();
-
-    string const EndPlugDiskMaterialName  = _config->getString("mbs.EndPlugMaterialName");
-
-    VolumeInfo EndPlugDiskInfo  = nestTubs("DSEndPlugDisk",
-                                           EndPlugDiskParams,
-                                           findMaterialOrThrow(EndPlugDiskMaterialName),
-                                           0,
-                                           EndPlugDiskOffset,
-                                           hallInfo,
-                                           0,
-                                           MBSisVisible,
-                                           G4Colour::Gray(),
-                                           MBSisSolid,
-                                           forceAuxEdgeVisible,
-                                           placePV,
-                                           doSurfaceCheck
-                                           );
-
-
-    if ( verbosityLevel > 0) {
-      double zhl         = static_cast<G4Tubs*>(EndPlugDiskInfo.solid)->GetZHalfLength();
-      double EndPlugDiskOffsetInMu2eZ = EndPlugDiskOffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " EndPlugDisk  Z extent in Mu2e    : " <<
-        EndPlugDiskOffsetInMu2eZ - zhl << ", " << EndPlugDiskOffsetInMu2eZ + zhl << endl;
-    }
-
 
   } // end of constructMBS;
 
