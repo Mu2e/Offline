@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.131 2012/05/14 21:23:46 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.132 2012/05/16 20:01:37 genser Exp $
 // $Author: genser $
-// $Date: 2012/05/14 21:23:46 $
+// $Date: 2012/05/16 20:01:37 $
 //
 // Original author Rob Kutschke
 //
@@ -234,19 +234,6 @@ namespace mu2e {
     }
 
     if ( _config->getBool("hasMBS",false) ) {
-      // has to have the "steel"
-      if ( !geom->hasElement<CosmicRayShield>() ) {
-        throw cet::exception("GEOM")
-          << "Need CosmicRayShield to construct MBS, check the hasCosmicRayShield flag"
-          << "\n";
-      }
-      GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
-      if(!CosmicRayShieldGeomHandle->hasPassiveShield()) {
-        throw cet::exception("GEOM")
-          << "Need CosmicRayShield and PassiveShield to construct MBS, "
-          << "check the crs.hasPassiveShield flag"
-          << "\n";        
-      }
       constructMBS(_config);
     }
 
