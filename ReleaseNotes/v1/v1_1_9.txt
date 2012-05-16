@@ -1,10 +1,25 @@
-  $Id: v1_1_9.txt,v 1.9 2012/05/14 21:26:17 genser Exp $
-  $Author: genser $
-  $Date: 2012/05/14 21:26:17 $
+  $Id: v1_1_9.txt,v 1.10 2012/05/16 00:32:52 ehrlich Exp $
+  $Author: ehrlich $
+  $Date: 2012/05/16 00:32:52 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+9) May 15, 2012 ehrlich
+   Added two dialog boxes for the track filter and the display setup.
+   This adds the option to filter out tracks in the event display with
+   respect to the number of trajectory points, track momentum, 
+   time window, and particle type.
+   Modified Files:
+      EventDisplay/src/DataInterface.cc  
+      EventDisplay/src/EventDisplayFrame.cc  
+      EventDisplay/src/EventDisplayFrame.h    
+      EventDisplay/src/Track.h           
+   Added Files:
+      EventDisplay/src/FilterDialog.h      
+      EventDisplay/src/SetupDialog.h    
+
 
 8) May 14, 2012 genser
 
