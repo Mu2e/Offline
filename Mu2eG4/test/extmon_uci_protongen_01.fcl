@@ -8,33 +8,30 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: extmon_uci_protongen_01.fcl,v 1.4 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
+# $Id: extmon_uci_protongen_01.fcl,v 1.5 2012/05/16 01:02:53 youzy Exp $
+# $Author: youzy $
+# $Date: 2012/05/16 01:02:53 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
 # Give this job a name.
-process_name : ExtMonUCIProtonGen
+process_name : ExtMonUCIProtonGen01
 
 # Start form an empty source
 source :
 {
   module_type : EmptyEvent
   maxEvents : 100
+  firstRun  : 33
+  numberEventsInRun : 1000000
 }
 
 services :
 {
-  message : @local::default_message
-
-  TFileService :
-  {
-    fileName : "g4test_03.root"
-  }
-
+  message               : @local::default_message
+  TFileService          : { fileName : "g4test_03.root" }
   RandomNumberGenerator : { }
 
 # Uncomment to enable memory use profiling
@@ -82,17 +79,27 @@ physics :
     {
       module_type          : G4
       generatorModuleLabel : generate
-      visMacro             : "Mu2eG4/test/extmon_uci_visxz.mac"
+#      visMacro             : "Mu2eG4/test/extmon_uci_visxz.mac"
     }
 
     randomsaver : @local::randomsaver
 
   }
 
+  filters: {
+    fvd21: {
+      module_type: FilterVDHits
+      inputModuleLabel   : "g4run"
+      inputInstanceName  : "virtualdetector"
+      acceptedVids       : [ 21 ]
+      storeParents       : true
+    }
+  }
+
   p1 : [generate, g4run,
+        fvd21,
         randomsaver ]
-  e1 : []
-#  e1 : [outfile]
+  e1 : [outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -105,9 +112,12 @@ outputs:
   {
     module_type   :   RootOutput
     fileName      :   "data_03.root"
-    outputCommands:   [ "keep *_*_*_*"
-                        ,"drop mu2e::PointTrajectorymv_*_*_*"
+    outputCommands:   [ "keep *_*_*_*",
+#                        "drop mu2e::StepPointMCs_g4run_*_*",
+#                        "drop mu2e::SimParticlemv_g4run_*_*",
+                        "drop mu2e::PointTrajectorymv_*_*_*"
                       ]
+    SelectEvents  : { SelectEvents: [p1]  }
   }
 
 }

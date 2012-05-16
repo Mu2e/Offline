@@ -1,10 +1,13 @@
-  $Id: v1_1_9.txt,v 1.10 2012/05/16 00:32:52 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2012/05/16 00:32:52 $
+  $Id: v1_1_9.txt,v 1.11 2012/05/16 01:02:53 youzy Exp $
+  $Author: youzy $
+  $Date: 2012/05/16 01:02:53 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+10) May 15, 2012 youzy
+    Extinction Monitor UCI geometry optimized.
 
 9) May 15, 2012 ehrlich
    Added two dialog boxes for the track filter and the display setup.

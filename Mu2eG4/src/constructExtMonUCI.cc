@@ -1,9 +1,9 @@
 //
 // Construct ExtinctionMonitor UCI.
 //
-// $Id: constructExtMonUCI.cc,v 1.8 2012/03/05 19:38:47 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/05 19:38:47 $
+// $Id: constructExtMonUCI.cc,v 1.9 2012/05/16 01:02:53 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/05/16 01:02:53 $
 
 #include <iostream>
 
@@ -420,14 +420,16 @@ namespace mu2e {
     bool shdChannelSolid   = config.getBool("extmon_uci.shdChannelSolid", false);
     G4Material* shdChannelMaterial = materialFinder.get("extmon_uci.shdChannelMaterialName");
 
-    G4RotationMatrix *shdChannelRot = reg.add( new G4RotationMatrix() );
-    *shdChannelRot = det.col(0)->holeRotation();
-
     const int kNShdChannel = config.getInt("extmon_uci.nShdChannels", 0);
     vector<double> shdChannelHalfLengths;
     config.getVectorDouble("extmon_uci.shdChannelHalfLengths", shdChannelHalfLengths, 3*kNShdChannel);
     vector<double> shdChannelPosition;
     config.getVectorDouble("extmon_uci.shdChannelPosition", shdChannelPosition, 3*kNShdChannel);
+
+    vector<double> shdChannelPosition1;
+    config.getVectorDouble("extmon_uci.shdChannelPosition1", shdChannelPosition1, kNShdChannel*3);
+    vector<double> shdChannelPosition2;
+    config.getVectorDouble("extmon_uci.shdChannelPosition2", shdChannelPosition2, kNShdChannel*3);
 
     VolumeInfo shdChannelInfo[kNShdChannel];
     VolumeInfo shdChannelMotherInfo;
@@ -442,6 +444,20 @@ namespace mu2e {
 
       if (iShdChannel == 0) shdChannelMotherInfo = shdInfo[0];
       else if (iShdChannel == 1) shdChannelMotherInfo = shdInfo[8];
+
+      G4RotationMatrix *shdChannelRot = reg.add( new G4RotationMatrix() );
+      const CLHEP::Hep3Vector interZ(0.0, 
+                                     shdChannelPosition1[3*iShdChannel+1]-shdChannelPosition2[3*iShdChannel+1], 
+                                     shdChannelPosition1[3*iShdChannel+2]-shdChannelPosition2[3*iShdChannel+2]);
+      const CLHEP::Hep3Vector newY = interZ.cross( CLHEP::Hep3Vector(1.0, 0.0, 0.0) ).unit();
+      const CLHEP::Hep3Vector newZ = CLHEP::Hep3Vector(shdChannelPosition1[3*iShdChannel] - shdChannelPosition2[3*iShdChannel],
+                                                       shdChannelPosition1[3*iShdChannel+1] - shdChannelPosition2[3*iShdChannel+1],
+                                                       shdChannelPosition1[3*iShdChannel+2] - shdChannelPosition2[3*iShdChannel+2]).unit();
+      const CLHEP::Hep3Vector newX = newY.cross(newZ);
+      *shdChannelRot = CLHEP::HepRotation::IDENTITY;
+      shdChannelRot->rotateAxes( newX, newY, newZ );
+      shdChannelRot->invert();
+      shdChannelRot->print(cout);
 
       shdChannelInfo[iShdChannel] = VolumeInfo( name.str(),
                                                 CLHEP::Hep3Vector(0, 0, 0),

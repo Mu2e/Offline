@@ -8,16 +8,16 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: extmon_uci_sim_01.fcl,v 1.5 2012/04/25 00:12:38 youzy Exp $
+# $Id: extmon_uci_sim_01.fcl,v 1.6 2012/05/16 01:02:53 youzy Exp $
 # $Author: youzy $
-# $Date: 2012/04/25 00:12:38 $
+# $Date: 2012/05/16 01:02:53 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
 # Give this job a name.
-process_name : ExtMonUCISim
+process_name : ExtMonUCISim01
 
 # Start form an empty source
 source :
@@ -103,7 +103,6 @@ physics :
         ExtMonUCITofHitsMaker,
         filter,
         randomsaver ]
-#  e1 : []
   e1 : [outfile]
 
   trigger_paths  : [p1]
