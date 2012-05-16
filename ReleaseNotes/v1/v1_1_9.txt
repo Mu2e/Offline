@@ -1,10 +1,22 @@
-  $Id: v1_1_9.txt,v 1.11 2012/05/16 01:02:53 youzy Exp $
-  $Author: youzy $
-  $Date: 2012/05/16 01:02:53 $
+  $Id: v1_1_9.txt,v 1.12 2012/05/16 20:02:44 genser Exp $
+  $Author: genser $
+  $Date: 2012/05/16 20:02:44 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+11) May 16, 2012 genser
+
+    Separated CryoSeal and EndPlug from MBS into two optional
+    subcomponents with their offsets being defined in the Mu2e
+    coordinate system to remove MBS direct dependence on crs
+    PassiveShield and neutronAbsorber.
+
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/constructMBS.cc
+      Mu2eG4/test/geom_01.txt
+
 
 10) May 15, 2012 youzy
     Extinction Monitor UCI geometry optimized.
