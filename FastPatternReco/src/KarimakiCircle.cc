@@ -2,9 +2,9 @@
 //     c++ rewrite of the Karimaki circle fit (CLEFIT)
 //     original code CERN acbz.f
 //
-// $Id: KarimakiCircle.cc,v 1.2 2012/05/16 05:49:01 tassiell Exp $
+// $Id: KarimakiCircle.cc,v 1.3 2012/05/17 09:52:51 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/16 05:49:01 $
+// $Date: 2012/05/17 09:52:51 $
 //
 // Original author G. Tassielli
 //
@@ -97,7 +97,9 @@ void KarimakiCircle::addHit ( float xx, float yy, float errxx, float erryy ){
         if (points.size()<3 || s1 <= 0.0) {
                 ierror = 1;
         }
-        ierror = 0;
+        else {
+                ierror = 0;
+        }
 }
 
 bool KarimakiCircle::checkBfrAddHit( float xx, float yy, float errxx, float erryy, float maxChi2, int minNDOFcutImprvChi2 ) {
@@ -111,7 +113,7 @@ bool KarimakiCircle::checkBfrAddHit( float xx, float yy, float errxx, float erry
                 tmpChi2 = chicir/ndof;
                 tmpDistChi2 = fabs(1.0-tmpChi2);
                 percChange = fabs(tmpDistChi2-startDistChi2)/startDistChi2;
-                if ( tmpChi2>0.001 && tmpChi2<maxChi2 && ( ndof<=minNDOFcutImprvChi2 || (ndof>minNDOFcutImprvChi2 && (tmpDistChi2<startDistChi2 || percChange<0.1) ) ) ) {
+                if ( tmpChi2>0.001 && tmpChi2<maxChi2 && ( ndof<=minNDOFcutImprvChi2 || (ndof>minNDOFcutImprvChi2 && (tmpDistChi2<startDistChi2 || percChange<0.5) ) ) ) {
                         points.push_back( circPoint( xx, yy, errxx, erryy ) );
                         startDistChi2=tmpDistChi2;
                         added = true;
@@ -139,7 +141,7 @@ bool KarimakiCircle::rejectHits(std::vector<circPoint>::iterator &points_it, flo
                         tmpChi2 = chicir/ndof;
                         tmpDistChi2 = fabs(1.0-tmpChi2);
                         percChange = (tmpDistChi2-startDistChi2)/startDistChi2;
-                        if ( tmpChi2>0.001 && tmpChi2<maxChi2 && percChange>0.1/*tmpDistChi2<startDistChi2*/ ) {
+                        if ( tmpChi2>0.001 && tmpChi2<maxChi2 && (tmpDistChi2<startDistChi2 || percChange<0.15)/*tmpDistChi2<startDistChi2*/ ) {
                                 points.erase(points_it);
                                 startDistChi2=tmpDistChi2;
                                 removed = true;

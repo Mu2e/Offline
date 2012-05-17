@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition Data type and method of general use
 //
-// $Id: FastPatRecoUtilsAndDataDef.hh,v 1.1 2012/05/15 07:51:36 tassiell Exp $
+// $Id: FastPatRecoUtilsAndDataDef.hh,v 1.2 2012/05/17 09:52:51 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/15 07:51:36 $
+// $Date: 2012/05/17 09:52:51 $
 //
 // Original author G. Tassielli
 //
@@ -660,5 +660,57 @@ struct SimpleCircle2D {
 
 typedef std::vector<mu2e::SimpleCircle2D> circlesCont;
 //typedef std::multimap<size_t, circlesCont::iterator > hitIDCircRel;
+
+
+struct corssingPoints {
+        corssingPoints() :
+                _sigmax(0.0),
+                _sigmay(0.0),
+                _sigmaz(0.0)
+        {}
+
+        int const & getRadLayID () const {
+                return _hitRef.getRadLayID();
+        }
+
+        mu2e::closHitClust const & getHitClust () const {
+                return _hitRef.getHitClust();
+        }
+
+        int const & getInLayerCellID () const {
+                return _hitRef.getinLayerCellID();
+        }
+
+        size_t const & getInEventHitID () const {
+                return _hitRef.getinEventHitID();
+        }
+
+        int const & getCrossRadLayID () const {
+                return _crossHitRef.getRadLayID();
+        }
+
+        mu2e::closHitClust const & getCrossHitClust () const {
+                return _crossHitRef.getHitClust();
+        }
+
+        int const & getCrossInLayerCellID () const {
+                return _crossHitRef.getinLayerCellID();
+        }
+
+        size_t const & getCrossInEventHitID () const {
+                return _crossHitRef.getinEventHitID();
+        }
+
+        CLHEP::Hep3Vector _pos;
+        float _sigmax;
+        float _sigmay;
+        float _sigmaz;
+
+        ptrHitInClosCust _hitRef;
+        ptrHitInClosCust _crossHitRef;
+};
+
+typedef std::vector<corssingPoints > points3D;
+typedef std::set< std::pair<size_t,size_t>  > hitCrossingList;
 
 }  // end namespace mu2e
