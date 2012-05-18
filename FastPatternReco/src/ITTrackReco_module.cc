@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.3 2012/05/17 09:52:51 tassiell Exp $
+// $Id: ITTrackReco_module.cc,v 1.4 2012/05/18 06:37:35 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/17 09:52:51 $
+// $Date: 2012/05/18 06:37:35 $
 //
 // Original author G. Tassielli
 //
@@ -61,6 +61,10 @@
 #include "RecoDataProducts/inc/TrackerHitByID.hh"
 #include "FastPatternReco/inc/FastPatRecoUtilsAndDataDef.hh"
 
+//temp El Visual
+#include "MCDataProducts/inc/VisibleGenElTrack.hh"
+#include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
+
 // Root includes.
 #include "TApplication.h"
 #include "TCanvas.h"
@@ -86,6 +90,7 @@
 
 #define invSqrt3 0.577350269
 #define invSqrt12 0.288675135
+#define sqrt2 1.414213562
 
 using namespace std;
 
@@ -179,6 +184,10 @@ private:
 
         bool _doDisplay;
 
+        //temp El Visual
+        // Label of the module that made the hits.
+        std::string _extractElectronsData;
+
         //    // Number of events to accumulate between prompts.
         //    int _nAccumulate;
 
@@ -230,10 +239,10 @@ private:
         void  markUsedHit( circlesCont &potCircles );
         void  printPotCircles( circlesCont &potCircles );
 
-        bool  findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, CellGeometryHandle *itwp, points3D &potLoopPoints/*circlesCont & potcircles*/, int minClusMultBend=10, bool elForwDirection=true);
-        inline bool findWireCross(int crossCellId1, int crossCellId2, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, hitsInClsID::const_iterator &clHitsIDs_it,  closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, hitsInClsID::const_iterator &lowRadClHitsIDs_it, CellGeometryHandle *itwp, points3D &potLoopPoints);
-        bool  iteratMaxMinWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, CellGeometryHandle *itwp, points3D &potLoopPoints);
-        bool  iteratMinMaxWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, CellGeometryHandle *itwp, points3D &potLoopPoints);
+        bool  findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, CellGeometryHandle *itwp, std::vector<points3D> &potLoops/*circlesCont & potcircles*/, int minClusMultBend=10, bool elForwDirection=true);
+        inline bool findWireCross(int crossCellId1, int crossCellId2, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, hitsInClsID::const_iterator &clHitsIDs_it,  closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, hitsInClsID::const_iterator &lowRadClHitsIDs_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints);
+        bool  iteratMaxMinWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints);
+        bool  iteratMinMaxWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints);
 
         // Some ugly but necessary ROOT related bookkeeping:
 
@@ -259,6 +268,7 @@ ITTrackReco::ITTrackReco(fhicl::ParameterSet const& pset) :
                     /*_nAccumulate(pset.get<int>("nAccumulate",20)),*/
                     _diagLevel(pset.get<int>("diagLevel",0)),
                     _doDisplay(pset.get<bool>("doDisplay",false)),
+                    _extractElectronsData(pset.get<string>("elextractModuleLabel")),//temp El Visual
 
                     // ROOT objects that are the main focus of this example.
                     //_peaksCanvHistos(0),
@@ -402,6 +412,13 @@ void ITTrackReco::analyze(art::Event const& event ) {
         TrackerHitByID::const_iterator hitByID_it;
         std::pair<TrackerHitByID::const_iterator, TrackerHitByID::const_iterator> rangeHitByID_it;
         //std::set<size_t> hitLoked;
+
+
+        //temp El Visual
+        art::Handle<VisibleGenElTrackCollection> genEltrksHandle;
+        event.getByLabel(_extractElectronsData,genEltrksHandle);
+        VisibleGenElTrackCollection const* genEltrks = genEltrksHandle.product();
+
 
 
         clock_t startClock = clock();
@@ -570,8 +587,14 @@ void ITTrackReco::analyze(art::Event const& event ) {
                 int minClusMultBend = _minClusMultBend;
                 size_t prevFound=0;
                 int nPotLoops=0;
-                while (minClusMultBend>2) {
-                        potLoops.push_back(points3D());
+                while (minClusMultBend>=1) {
+                        //hitCrossingChecked.clear();
+                        //hitCrossingCheckedT.clear();
+                        findCircles3D(radCls_Min, radCls_Pl, itwp, potLoops,minClusMultBend);
+                        //hitCrossingChecked.clear();
+                        //hitCrossingCheckedT.clear();
+                        findCircles3D(radCls_Pl, radCls_Min, itwp, potLoops,minClusMultBend);
+                        /*potLoops.push_back(points3D());
                         findCircles3D(radCls_Min, radCls_Pl, itwp, potLoops.back(),minClusMultBend);
                         if (potLoops.back().size()>3) {
                                 potLoops.push_back(points3D());
@@ -583,7 +606,8 @@ void ITTrackReco::analyze(art::Event const& event ) {
 
                         if (potLoops.back().size()<4) {
                                 potLoops.pop_back();
-                        }
+                        }*/
+                        /*
                         for (std::vector<points3D>::iterator potLoops_it = (potLoops.begin()+prevFound); potLoops_it < potLoops.end(); ++potLoops_it) {
                                 for (points3D::iterator loopPoints_it = potLoops_it->begin(); loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
                                         //cout<<"----------- "<<endl;
@@ -592,7 +616,7 @@ void ITTrackReco::analyze(art::Event const& event ) {
                                         notAssociatedHits[loopPoints_it->getInEventHitID()] = false;
                                         notAssociatedHits[loopPoints_it->getCrossInEventHitID()] = false;
                                 }
-                        }
+                        }*/
 
                         cout<<"Using cluster size cut for starting search of "<<minClusMultBend<<" found:"<<endl;
                         cout<<"\t n potential loop "<<potLoops.size()<<endl;
@@ -852,7 +876,7 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         TCanvas *tmpCircleFound3D = new TCanvas("PotCirclesDraw3D","",860,430);
                         tmpCircleFound3D->Divide(2,1);
                         TH2F hHit3DT( "hHit3DT",  "Hits per Event at z crossing", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
-                        TH2F hHit3DL( "hHit3DL",  "Hits per Event at z", 3000, -150.0, 150.0, 1500, -75.0, 75.0 );
+                        TH2F hHit3DL( "hHit3DL",  "Hits per Event at z", 3000, -150.0, 150.0, 750, 0, 75.0 );
                         hHit3DT.SetXTitle("cm");
                         hHit3DT.SetYTitle("cm");
                         hHit3DL.SetXTitle("cm");
@@ -863,8 +887,22 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         innerWall.Draw("same");
                         outerWall.Draw("same");
                         tmpCircleFound3D->cd(2);
+                        TLine innerWallL;
+                        TLine outerWallL;
+                        innerWallL.SetX1(hHit3DL.GetXaxis()->GetXmin());
+                        innerWallL.SetY1(rIn);
+                        innerWallL.SetX2(hHit3DL.GetXaxis()->GetXmax());
+                        innerWallL.SetY2(rIn);
+                        outerWallL.SetX1(hHit3DL.GetXaxis()->GetXmin());
+                        outerWallL.SetY1(rOut);
+                        outerWallL.SetX2(hHit3DL.GetXaxis()->GetXmax());
+                        outerWallL.SetY2(rOut);
+                        innerWallL.SetLineWidth(1.5);
+                        outerWallL.SetLineWidth(1.5);
                         hHit3DL.SetStats(kFALSE);
                         hHit3DL.Draw();
+                        innerWallL.Draw("same");
+                        outerWallL.Draw("same");
 
                         iCol = 0;
                         std::vector<TClonesArray *> drawPotCircPnts3D;
@@ -906,6 +944,92 @@ void ITTrackReco::analyze(art::Event const& event ) {
                                 drawPotCircPnts3D_L.back()->SetMarkerSize(0.8);
                                 drawPotCircPnts3D_L.back()->SetMarkerStyle(8);
                                 drawPotCircPnts3D_L.back()->Draw("P");
+                        }
+
+
+                        //temp El Visual
+                        std::vector<TGraph *> drawTracksT;
+                        std::vector<TGraph *> drawTracksL;
+                        std::vector<float *> simXarr;
+                        std::vector<float *> simYarr;
+                        std::vector<float *> simZarr;
+                        std::vector<float *> simRarr;
+                        int ielTrack=0, trckCol=0;
+                        cout<<"Generate el tracks "<<genEltrks->size()<<endl;
+                        for ( std::vector<mu2e::VisibleGenElTrack>::const_iterator genEltrk_it = genEltrks->begin(); genEltrk_it!= genEltrks->end(); ++genEltrk_it ){
+                                VisibleGenElTrack &iEltrk = const_cast<VisibleGenElTrack &>(*genEltrk_it);
+
+                                simXarr.push_back(new float [iEltrk.getNumOfHit()] );
+                                simYarr.push_back(new float [iEltrk.getNumOfHit()] );
+                                simZarr.push_back(new float [iEltrk.getNumOfHit()] );
+                                simRarr.push_back(new float [iEltrk.getNumOfHit()] );
+
+                                /*
+                                unsigned short &nloops = iEltrk.getNumOfLoops();
+                                cout<<"N loops "<<nloops<<endl;
+                                convElNLoop=nloops;
+                                for ( unsigned int ilp=0; ilp<nloops; ilp++ ){
+                                        GenElHitData& hdil = iEltrk.getithLoopHit(ilp);
+                                        ptMeV = sqrt( pow(hdil._hitMomentum[0],2) + pow(hdil._hitMomentum[1],2) );
+                                        rho   = ptMeV/(B*0.3);
+                                        cout<<ilp<<" -th loop: p_t "<<ptMeV<<" rho mm "<<rho<<endl;
+                                        CirCenter.set(hdil._hitPoint.getX(),hdil._hitPoint.getY(),hdil._hitPoint.getZ());
+                                        radDir.setX(hdil._hitMomentum.getX());
+                                        radDir.setY(hdil._hitMomentum.getY());
+                                        radDir.rotate( ( (hdil._hitMomentum.getZ()>=0.0) ? 90.0 : -90.0 )*CLHEP::degree );
+                                        radDir=radDir.unit();
+                                        CirCenter=CirCenter+rho*radDir;
+                                        cout<<" Hit Pos "<<hdil._hitPoint<<" Circ center "<<CirCenter<<endl;
+
+                                }*/
+                                if ( iEltrk.isConversionEl() ) {
+                                        trckCol = kGreen+2;
+                                        for ( unsigned int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
+                                                GenElHitData& genElhit = iEltrk.getHit((int)iElHit);
+                                                simXarr.at(ielTrack)[iElHit] = genElhit._hitPoint.x()/CLHEP::cm;
+                                                simYarr.at(ielTrack)[iElHit] = genElhit._hitPoint.y()/CLHEP::cm;
+                                                simZarr.at(ielTrack)[iElHit] = genElhit._hitPoint.z()/CLHEP::cm;
+                                                simRarr.at(ielTrack)[iElHit] = genElhit._hitPoint.perp()/CLHEP::cm;
+
+                                                //cout<<"El Hit data "<<genElhit._hitPoint<<endl;
+                                                if (genElhit._isFirst) {
+                                                }
+                                        }
+
+                                }
+                                else {
+                                        /*
+                                        convElHitOvrlppd=0;
+                                        convElHitOvrlppdByP=0;
+                                        for ( unsigned int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
+                                                GenElHitData& genElhit = iEltrk.getHit((int)iElHit);
+                                                if (genElhit._isOverlapped) {
+                                                        convElHitOvrlppd++;
+                                                        if (genElhit._isOvrlpByProton) convElHitOvrlppdByP++;
+                                                }
+                                        }
+                                        _hNhitOverlapNoConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppd);
+                                        _hNhitOverlapByPNoConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppdByP);
+                                        */
+                                }
+
+                                drawTracksT.push_back(new TGraph( iEltrk.getNumOfHit(), simXarr.back(), simYarr.back() ) );
+                                drawTracksL.push_back(new TGraph( iEltrk.getNumOfHit(), simZarr.back(), simRarr.back() ) );
+
+                                tmpCircleFound3D->cd(1);
+                                drawTracksT.back()->SetMarkerColor(trckCol);
+                                drawTracksT.back()->SetMarkerSize(0.5);
+                                drawTracksT.back()->SetMarkerStyle(6);
+                                drawTracksT.back()->Draw("P");
+                                tmpCircleFound3D->cd(2);
+                                drawTracksL.back()->SetMarkerColor(trckCol);
+                                drawTracksL.back()->SetMarkerSize(0.5);
+                                drawTracksL.back()->SetMarkerStyle(6);
+                                drawTracksL.back()->Draw("P");
+
+
+                                ++ielTrack;
+
                         }
 
 
@@ -1122,7 +1246,7 @@ bool ITTrackReco::findClosClust( unsigned int tmpX, unsigned int tmpY, std::map<
         return addHit;
 }
 
-bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, CellGeometryHandle *itwp, points3D &potLoopPoints/*circlesCont & potcircles*/, int minClusMultBend, bool elForwDirection) {
+bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, CellGeometryHandle *itwp, std::vector<points3D> &potLoops/*circlesCont & potcircles*/, int minClusMultBend, bool elForwDirection) {
         int nPotBending=0;
         bool foundCircles = false;
 
@@ -1153,6 +1277,8 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                 for ( closClstcol::iterator closCls_it = radCls_1v_it->second.begin(); closCls_it != radCls_1v_it->second.end(); ++closCls_it ) {
                         if ((*closCls_it)->_nHit>minClusMultBend){
                                 ++nPotBending;
+                                potLoops.push_back(points3D());
+                                points3D &potLoopPoints = potLoops.back();
 
                                 itwp->SelectCell(radCls_1v_it->first, (*closCls_it)->_maxCellID);
                                 cellAveRes = itwp->GetCellRad() * invSqrt3;
@@ -1185,29 +1311,29 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                                   }*/
                                                 if (elForwDirection) {
                                                         crossCellId1 = (*closCls_it)->_maxCellID;
-                                                        crossCellId2=(*lowRadClosCls_it)->_minCellID;
+                                                        crossCellId2 = (*lowRadClosCls_it)->_minCellID;
                                                         hitsInClsID::const_iterator clHitsIDs_it=((*closCls_it)->_hitIdx.end()-1);
                                                         hitsInClsID::const_iterator lowRadClHitsIDs_it = (*lowRadClosCls_it)->_hitIdx.begin();
-                                                        if (notAssociatedHits[clHitsIDs_it->second] && notAssociatedHits[lowRadClHitsIDs_it->second] &&
+                                                        if (/*notAssociatedHits[clHitsIDs_it->second] && notAssociatedHits[lowRadClHitsIDs_it->second] &&*/
                                                                         hitCrossingChecked.find(std::pair<size_t,size_t>(clHitsIDs_it->second,lowRadClHitsIDs_it->second))==hitCrossingChecked.end() &&
                                                                         hitCrossingCheckedT.find(std::pair<size_t,size_t>(lowRadClHitsIDs_it->second,clHitsIDs_it->second))==hitCrossingCheckedT.end() )
                                                         {
-                                                                foundWrCross = findWireCross( crossCellId1, crossCellId2, radCls_1v_it, closCls_it, clHitsIDs_it, radCls_2v_it, lowRadClosCls_it, lowRadClHitsIDs_it, itwp, potLoopPoints);
+                                                                foundWrCross = findWireCross( crossCellId1, crossCellId2, radCls_1v_it, closCls_it, clHitsIDs_it, radCls_2v_it, lowRadClosCls_it, lowRadClHitsIDs_it, 0, 0.0, itwp, potLoopPoints);
                                                                 if (foundWrCross) {
-                                                                        iteratMaxMinWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, itwp, potLoopPoints);
+                                                                        iteratMaxMinWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, /*0*/1, potLoopPoints.back()._pos.z(), itwp, potLoopPoints);
                                                                 }
                                                                 if ((*closCls_it)->_nHit>3) {
                                                                         crossCellId1 = (*closCls_it)->_minCellID;
-                                                                        crossCellId2=(*lowRadClosCls_it)->_maxCellID;
+                                                                        crossCellId2 = (*lowRadClosCls_it)->_maxCellID;
                                                                         hitsInClsID::const_iterator sClHitsIDs_it=(*closCls_it)->_hitIdx.begin();
                                                                         hitsInClsID::const_iterator sLowRadClHitsIDs_it = ((*lowRadClosCls_it)->_hitIdx.end()-1);
-                                                                        if (notAssociatedHits[sClHitsIDs_it->second] && notAssociatedHits[sLowRadClHitsIDs_it->second] &&
+                                                                        if (/*notAssociatedHits[sClHitsIDs_it->second] && notAssociatedHits[sLowRadClHitsIDs_it->second] &&*/
                                                                                         hitCrossingChecked.find(std::pair<size_t,size_t>(sClHitsIDs_it->second,sLowRadClHitsIDs_it->second))==hitCrossingChecked.end() &&
                                                                                         hitCrossingCheckedT.find(std::pair<size_t,size_t>(sLowRadClHitsIDs_it->second,sClHitsIDs_it->second))==hitCrossingCheckedT.end() )
                                                                         {
-                                                                                foundWrCross = findWireCross( crossCellId1, crossCellId2, radCls_1v_it, closCls_it, sClHitsIDs_it, radCls_2v_it, lowRadClosCls_it, sLowRadClHitsIDs_it, itwp, potLoopPoints);
+                                                                                foundWrCross = findWireCross( crossCellId1, crossCellId2, radCls_1v_it, closCls_it, sClHitsIDs_it, radCls_2v_it, lowRadClosCls_it, sLowRadClHitsIDs_it, 0, 0.0, itwp, potLoopPoints);
                                                                                 if (foundWrCross) {
-                                                                                        iteratMinMaxWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, itwp, potLoopPoints);
+                                                                                        iteratMinMaxWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, /*0*/-1, potLoopPoints.back()._pos.z(), itwp, potLoopPoints);
                                                                                 }
                                                                         }
                                                                 }
@@ -1217,26 +1343,26 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                                         crossCellId2=(*lowRadClosCls_it)->_maxCellID;
                                                         hitsInClsID::const_iterator clHitsIDs_it=(*closCls_it)->_hitIdx.begin();
                                                         hitsInClsID::const_iterator lowRadClHitsIDs_it = ((*lowRadClosCls_it)->_hitIdx.end()-1);
-                                                        if (notAssociatedHits[clHitsIDs_it->second] && notAssociatedHits[lowRadClHitsIDs_it->second] &&
+                                                        if (/*notAssociatedHits[clHitsIDs_it->second] && notAssociatedHits[lowRadClHitsIDs_it->second] &&*/
                                                                         hitCrossingChecked.find(std::pair<size_t,size_t>(clHitsIDs_it->second,lowRadClHitsIDs_it->second))==hitCrossingChecked.end() &&
                                                                         hitCrossingCheckedT.find(std::pair<size_t,size_t>(lowRadClHitsIDs_it->second,clHitsIDs_it->second))==hitCrossingCheckedT.end() )
                                                         {
-                                                                foundWrCross = findWireCross( crossCellId1, crossCellId2, radCls_1v_it, closCls_it, clHitsIDs_it, radCls_2v_it, lowRadClosCls_it, lowRadClHitsIDs_it, itwp, potLoopPoints);
+                                                                foundWrCross = findWireCross( crossCellId1, crossCellId2, radCls_1v_it, closCls_it, clHitsIDs_it, radCls_2v_it, lowRadClosCls_it, lowRadClHitsIDs_it, 0, 0.0, itwp, potLoopPoints);
                                                                 if (foundWrCross) {
-                                                                        iteratMinMaxWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, itwp, potLoopPoints);
+                                                                        iteratMinMaxWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, /*0*/-1, potLoopPoints.back()._pos.z(), itwp, potLoopPoints);
                                                                 }
                                                                 if ((*closCls_it)->_nHit>3) {
                                                                         crossCellId1 = (*closCls_it)->_maxCellID;
                                                                         crossCellId2=(*lowRadClosCls_it)->_minCellID;
                                                                         hitsInClsID::const_iterator sClHitsIDs_it=((*closCls_it)->_hitIdx.end()-1);
                                                                         hitsInClsID::const_iterator sLowRadClHitsIDs_it = (*lowRadClosCls_it)->_hitIdx.begin();
-                                                                        if (notAssociatedHits[sClHitsIDs_it->second] && notAssociatedHits[sLowRadClHitsIDs_it->second] &&
+                                                                        if (/*notAssociatedHits[sClHitsIDs_it->second] && notAssociatedHits[sLowRadClHitsIDs_it->second] &&*/
                                                                                         hitCrossingChecked.find(std::pair<size_t,size_t>(sClHitsIDs_it->second,sLowRadClHitsIDs_it->second))==hitCrossingChecked.end() &&
                                                                                         hitCrossingCheckedT.find(std::pair<size_t,size_t>(sLowRadClHitsIDs_it->second,sClHitsIDs_it->second))==hitCrossingCheckedT.end() )
                                                                         {
-                                                                                foundWrCross = findWireCross( crossCellId1, crossCellId2, radCls_1v_it, closCls_it, sClHitsIDs_it, radCls_2v_it, lowRadClosCls_it, sLowRadClHitsIDs_it, itwp, potLoopPoints);
+                                                                                foundWrCross = findWireCross( crossCellId1, crossCellId2, radCls_1v_it, closCls_it, sClHitsIDs_it, radCls_2v_it, lowRadClosCls_it, sLowRadClHitsIDs_it, 0, 0.0, itwp, potLoopPoints);
                                                                                 if (foundWrCross) {
-                                                                                        iteratMaxMinWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, itwp, potLoopPoints);
+                                                                                        iteratMaxMinWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, /*0*/1, potLoopPoints.back()._pos.z(), itwp, potLoopPoints);
                                                                                 }
                                                                         }
                                                                 }
@@ -1249,6 +1375,16 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                                 //        cout<<"\t at z "<<minZCorssPos<<" distance between wires "<<minWrsDistAtz<<endl;
                                                 //}
                                         }
+                                }
+
+                                if (potLoops.back().size()<10) {
+                                        for (points3D::iterator points_it = potLoops.back().begin(); points_it != potLoops.back().end(); ++points_it ) {
+                                                std::pair<size_t,size_t> clearCross(points_it->getInEventHitID(),points_it->getCrossInEventHitID());
+                                                std::pair<size_t,size_t> clearCrossT(points_it->getCrossInEventHitID(),points_it->getInEventHitID());
+                                                hitCrossingChecked.erase(clearCross);
+                                                hitCrossingCheckedT.erase(clearCrossT);
+                                       }
+                                        potLoops.pop_back();
                                 }
 
                                 //                                  (*closCls_it)->_minCellID;
@@ -1414,19 +1550,31 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
         return foundCircles;
 }
 
-inline bool ITTrackReco::findWireCross(int crossCellId1, int crossCellId2, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, hitsInClsID::const_iterator &clHitsIDs_it,  closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, hitsInClsID::const_iterator &lowRadClHitsIDs_it, CellGeometryHandle *itwp, points3D &potLoopPoints) {
+inline bool ITTrackReco::findWireCross(int crossCellId1, int crossCellId2, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, hitsInClsID::const_iterator &clHitsIDs_it,  closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, hitsInClsID::const_iterator &lowRadClHitsIDs_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints) {
         itwp->SelectCell(radCls_1v_it->first, crossCellId1);
         float zCorssPos=0.0, wrsDistAtz=0.0, cutWrsDistAtz;
         float cellAveRes, cellAveZRes;
         cellAveRes = itwp->GetCellRad() * invSqrt3;
-        cellAveZRes = cellAveRes/cos( itwp->GetWireEpsilon() );
+        cellAveZRes = sqrt2 * cellAveRes/cos( itwp->GetWireEpsilon() );
         cutWrsDistAtz = 2.5*itwp->GetCellRad();
         bool foundWrCross=false;
+        bool condition = false;
+        float deltaZ, deltaZRes = sqrt2*cellAveZRes;
 
         //cout<<"Looking cross between (AbsRad,CellId) ("<<radCls_1v_it->first<<","<< crossCellId1<<") and ("<<radCls_2v_it->first<<","<<crossCellId2<<") "<<endl;
 
         if ( itwp->canIntersectInZ(zCorssPos, wrsDistAtz, radCls_2v_it->first, crossCellId2 ) ) {
-                if (wrsDistAtz<cutWrsDistAtz) {
+                condition = wrsDistAtz<cutWrsDistAtz;
+                if (matchZdir!=0) { //matchZdir = 0 disable z matching
+                        deltaZ = zCorssPos-prevZVal;
+                        if (matchZdir>0) {
+                                condition =  condition && ( deltaZ>-7.0*deltaZRes && deltaZ<15.0*deltaZRes );
+                        } else {
+                                condition =  condition && ( deltaZ>-15.0*deltaZRes && deltaZ<7.0*deltaZRes );
+                        }
+                }
+
+                if (condition) {
                         potLoopPoints.push_back( corssingPoints() );
                         itwp->WirePosAtZ( zCorssPos, potLoopPoints.back()._pos );
                         potLoopPoints.back()._sigmax = cellAveRes;
@@ -1446,13 +1594,14 @@ inline bool ITTrackReco::findWireCross(int crossCellId1, int crossCellId2, closC
         return foundWrCross;
 }
 
-bool ITTrackReco::iteratMaxMinWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it,  closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, CellGeometryHandle *itwp, points3D &potLoopPoints) {
+bool ITTrackReco::iteratMaxMinWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it,  closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints) {
         closClinRadLay::iterator newRadCls_1v_it = radCls_2v_it;
         int crossCellId1 = (*lowRadClosCls_it)->_maxCellID;
         hitsInClsID::const_iterator newClHitsIDs_it=((*lowRadClosCls_it)->_hitIdx.end()-1);
         closClstcol::iterator newClosCls_it = lowRadClosCls_it;
         int tmpAbsRad = (newRadCls_1v_it->first-1);
         closClinRadLay::iterator newRadCls_2v_it = radCls_1v.find( tmpAbsRad );
+        //float oldZ = potLoopPoints.back()._pos.z();
 
         //cout<<"iteratMaxMinWireCross"<<endl;
         bool newFoundWrCross = false;
@@ -1460,13 +1609,14 @@ bool ITTrackReco::iteratMaxMinWireCross(closClinRadLay &radCls_1v, closClinRadLa
                 for ( closClstcol::iterator newLowRadClosCls_it = newRadCls_2v_it->second.begin(); newLowRadClosCls_it != newRadCls_2v_it->second.end(); ++newLowRadClosCls_it ) {
                         int crossCellId2=(*newLowRadClosCls_it)->_minCellID;
                         hitsInClsID::const_iterator newLowRadClHitsIDs_it = (*newLowRadClosCls_it)->_hitIdx.begin();
-                        if ( notAssociatedHits[newClHitsIDs_it->second] && notAssociatedHits[newLowRadClHitsIDs_it->second] &&
+                        if ( /*(notAssociatedHits[newClHitsIDs_it->second] || notAssociatedHits[newLowRadClHitsIDs_it->second]) &&*/
                                         hitCrossingChecked.find(std::pair<size_t,size_t>(newClHitsIDs_it->second,newLowRadClHitsIDs_it->second))==hitCrossingChecked.end() &&
                                         hitCrossingCheckedT.find(std::pair<size_t,size_t>(newLowRadClHitsIDs_it->second,newClHitsIDs_it->second))==hitCrossingCheckedT.end() ) {
                                 //cout<<"checking"<<endl;
-                                newFoundWrCross = findWireCross( crossCellId1, crossCellId2, newRadCls_1v_it, newClosCls_it, newClHitsIDs_it, newRadCls_2v_it, newLowRadClosCls_it, newLowRadClHitsIDs_it, itwp, potLoopPoints);
+                                newFoundWrCross = findWireCross( crossCellId1, crossCellId2, newRadCls_1v_it, newClosCls_it, newClHitsIDs_it, newRadCls_2v_it, newLowRadClosCls_it, newLowRadClHitsIDs_it, matchZdir, prevZVal, itwp, potLoopPoints);
                                 if (newFoundWrCross) {
-                                        iteratMaxMinWireCross( radCls_2v, radCls_1v, newRadCls_1v_it, newClosCls_it, newRadCls_2v_it, newLowRadClosCls_it, itwp, potLoopPoints );
+                                        float newPrevZ = potLoopPoints.back()._pos.z();
+                                        iteratMaxMinWireCross( radCls_2v, radCls_1v, newRadCls_1v_it, newClosCls_it, newRadCls_2v_it, newLowRadClosCls_it, matchZdir, newPrevZ, itwp, potLoopPoints );
                                 }
                         }
                 }
@@ -1475,7 +1625,7 @@ bool ITTrackReco::iteratMaxMinWireCross(closClinRadLay &radCls_1v, closClinRadLa
 
 }
 
-bool ITTrackReco::iteratMinMaxWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it,  closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, CellGeometryHandle *itwp, points3D &potLoopPoints) {
+bool ITTrackReco::iteratMinMaxWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it,  closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints) {
         closClinRadLay::iterator newRadCls_1v_it = radCls_2v_it;
         int crossCellId1 = (*lowRadClosCls_it)->_minCellID;
         hitsInClsID::const_iterator newClHitsIDs_it=(*lowRadClosCls_it)->_hitIdx.begin();
@@ -1489,13 +1639,14 @@ bool ITTrackReco::iteratMinMaxWireCross(closClinRadLay &radCls_1v, closClinRadLa
                 for ( closClstcol::iterator newLowRadClosCls_it = newRadCls_2v_it->second.begin(); newLowRadClosCls_it != newRadCls_2v_it->second.end(); ++newLowRadClosCls_it ) {
                         int crossCellId2=(*newLowRadClosCls_it)->_maxCellID;
                         hitsInClsID::const_iterator newLowRadClHitsIDs_it = ((*newLowRadClosCls_it)->_hitIdx.end()-1);
-                        if ( notAssociatedHits[newClHitsIDs_it->second] && notAssociatedHits[newLowRadClHitsIDs_it->second] &&
+                        if ( /*(notAssociatedHits[newClHitsIDs_it->second] || notAssociatedHits[newLowRadClHitsIDs_it->second]) &&*/
                                         hitCrossingChecked.find(std::pair<size_t,size_t>(newClHitsIDs_it->second,newLowRadClHitsIDs_it->second))==hitCrossingChecked.end() &&
                                         hitCrossingCheckedT.find(std::pair<size_t,size_t>(newLowRadClHitsIDs_it->second,newClHitsIDs_it->second))==hitCrossingCheckedT.end() ) {
                                 //cout<<"checking"<<endl;
-                                newFoundWrCross = findWireCross( crossCellId1, crossCellId2, newRadCls_1v_it, newClosCls_it, newClHitsIDs_it, newRadCls_2v_it, newLowRadClosCls_it, newLowRadClHitsIDs_it, itwp, potLoopPoints);
+                                newFoundWrCross = findWireCross( crossCellId1, crossCellId2, newRadCls_1v_it, newClosCls_it, newClHitsIDs_it, newRadCls_2v_it, newLowRadClosCls_it, newLowRadClHitsIDs_it, matchZdir, prevZVal, itwp, potLoopPoints);
                                 if (newFoundWrCross) {
-                                        iteratMaxMinWireCross( radCls_2v, radCls_1v, newRadCls_1v_it, newClosCls_it, newRadCls_2v_it, newLowRadClosCls_it, itwp, potLoopPoints );
+                                        float newPrevZ = potLoopPoints.back()._pos.z();
+                                        iteratMinMaxWireCross( radCls_2v, radCls_1v, newRadCls_1v_it, newClosCls_it, newRadCls_2v_it, newLowRadClosCls_it, matchZdir, newPrevZ, itwp, potLoopPoints );
                                 }
                         }
                 }
