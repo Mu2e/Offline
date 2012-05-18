@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.hh,v 1.5 2012/04/14 17:54:02 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/04/14 17:54:02 $
+// $Id: TrkHelixFit.hh,v 1.6 2012/05/18 17:59:31 mu2ecvs Exp $
+// $Author: mu2ecvs $ 
+// $Date: 2012/05/18 17:59:31 $
 //
 #ifndef TrkHelixFit_HH
 #define TrkHelixFit_HH
@@ -80,7 +80,7 @@ namespace mu2e
     bool findHelix(TrkDef const& mytrk,TrkHelix& myfit);
 // convert to BaBar helix parameters.  Also return an error estimate
     void helixParams (TrkHelix const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const;
-  private:
+  protected:
 // utlity functions
     bool findXY(std::vector<XYZP>& xyzp,TrkHelix& myhel);
     bool findZ(std::vector<XYZP> const& xyzp,TrkHelix& myhel);
