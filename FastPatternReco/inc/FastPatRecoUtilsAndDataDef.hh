@@ -1,12 +1,14 @@
 //
 // Fast Patter recognition Data type and method of general use
 //
-// $Id: FastPatRecoUtilsAndDataDef.hh,v 1.2 2012/05/17 09:52:51 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/17 09:52:51 $
+// $Id: FastPatRecoUtilsAndDataDef.hh,v 1.3 2012/05/18 18:14:35 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2012/05/18 18:14:35 $
 //
 // Original author G. Tassielli
 //
+#ifndef FastPatRecoUtilsAndDataDef_HH
+#define FastPatRecoUtilsAndDataDef_HH  
 
 // C++ includes.
 #include <set>
@@ -23,12 +25,16 @@
 #include "cetlib/exception.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Persistency/Common/Ptr.h"
 
 #include "CLHEP/Vector/TwoVector.h"
 
 // Mu2e includes.
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "FastPatternReco/inc/KarimakiCircle.hh"
+#include "RecoDataProducts/inc/TrackerHitTimeCluster.hh"
+#include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
+#include "RecoDataProducts/inc/TrackerHitByID.hh"
 
 using namespace std;
 
@@ -714,3 +720,4 @@ typedef std::vector<corssingPoints > points3D;
 typedef std::set< std::pair<size_t,size_t>  > hitCrossingList;
 
 }  // end namespace mu2e
+#endif

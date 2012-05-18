@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.4 2012/05/18 06:37:35 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/18 06:37:35 $
+// $Id: ITTrackReco_module.cc,v 1.5 2012/05/18 18:14:36 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2012/05/18 18:14:36 $
 //
 // Original author G. Tassielli
 //
@@ -60,6 +60,10 @@
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitByID.hh"
 #include "FastPatternReco/inc/FastPatRecoUtilsAndDataDef.hh"
+
+#include "BaBar/BaBar.hh"
+#include "KalmanTests/inc/TrkDef.hh"
+#include "FastPatternReco/inc/TrkHelixFitIT.hh"
 
 //temp El Visual
 #include "MCDataProducts/inc/VisibleGenElTrack.hh"
@@ -188,6 +192,10 @@ private:
         // Label of the module that made the hits.
         std::string _extractElectronsData;
 
+
+        // robust helix fitter
+        TrkHelixFitIT _hfit;
+
         //    // Number of events to accumulate between prompts.
         //    int _nAccumulate;
 
@@ -269,7 +277,7 @@ ITTrackReco::ITTrackReco(fhicl::ParameterSet const& pset) :
                     _diagLevel(pset.get<int>("diagLevel",0)),
                     _doDisplay(pset.get<bool>("doDisplay",false)),
                     _extractElectronsData(pset.get<string>("elextractModuleLabel")),//temp El Visual
-
+		    _hfit(pset.get<fhicl::ParameterSet>("HelixFit")),
                     // ROOT objects that are the main focus of this example.
                     //_peaksCanvHistos(0),
                     //_hPkStDistTrs(0),
@@ -621,12 +629,42 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         cout<<"Using cluster size cut for starting search of "<<minClusMultBend<<" found:"<<endl;
                         cout<<"\t n potential loop "<<potLoops.size()<<endl;
                         for (std::vector<points3D>::iterator potLoops_it = (potLoops.begin()+prevFound); potLoops_it < potLoops.end(); ++potLoops_it) {
-                                cout<<"\t\t nCrossing Point for "<<++nPotLoops<<"-th = "<<potLoops_it->size()<<endl;
+  
+			  cout<<"\t\t nCrossing Point for "<<++nPotLoops<<"-th = "<<potLoops_it->size()<<endl;
+			  for (points3D::iterator loopPoints_it = potLoops_it->begin(); 
+			       loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
+			    std::cout<<"3dpoint "<<event.id().event()<<" "<<nPotLoops<<" hid "<<loopPoints_it->getInEventHitID()<<" xyz "
+				     <<loopPoints_it->_pos.x()<<" "<<loopPoints_it->_pos.y()<<" "<<loopPoints_it->_pos.z()<<std::endl;
+			  }
                         }
 
                         prevFound = potLoops.size();
                         minClusMultBend/=2;
                 }
+
+		vector<HelixTraj> trkhelixes;
+		for (std::vector<points3D>::iterator potLoops_it = potLoops.begin(); 
+		     potLoops_it != potLoops.end(); ++potLoops_it) {
+		  std::vector<hitIndex> strawhits;
+		  for (points3D::iterator loopPoints_it = potLoops_it->begin(); 
+		       loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
+		    strawhits.push_back(hitIndex(loopPoints_it->getInEventHitID()));
+		  }
+		  TrkDef helixdef(hits, strawhits);
+
+		  TrkHelix helixfit;
+		  HepVector hpar;
+		  HepVector hparerr;
+		  bool isfitted=_hfit.findHelix(helixdef,(*potLoops_it),helixfit);
+		  _hfit.helixParams(helixfit,hpar,hparerr);
+		  HepSymMatrix hcov = vT_times_v(hparerr);
+		  trkhelixes.push_back(HelixTraj(hpar,hcov));
+		  HelixTraj& seed=trkhelixes.back();
+		  std::cout<<"fitted "<<isfitted<<" ";
+		  seed.printAll(std::cout);
+		}
+
+
 
                 //        cout<<"Using cluster size cut for starting search of "<<_minClusMultBend<<" found:"<<endl;
                 //        cout<<"\t n potential loop "<<potLoops.size()<<endl;
@@ -876,11 +914,11 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         TCanvas *tmpCircleFound3D = new TCanvas("PotCirclesDraw3D","",860,430);
                         tmpCircleFound3D->Divide(2,1);
                         TH2F hHit3DT( "hHit3DT",  "Hits per Event at z crossing", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
-                        TH2F hHit3DL( "hHit3DL",  "Hits per Event at z", 3000, -150.0, 150.0, 750, 0, 75.0 );
+                        TH2F hHit3DL( "hHit3DL",  "Hits per Event at z", 3000, -250.0, 250.0, 1500, -75.0, 75.0 );
                         hHit3DT.SetXTitle("cm");
                         hHit3DT.SetYTitle("cm");
                         hHit3DL.SetXTitle("cm");
-                        hHit3DL.SetYTitle("cm");
+                        hHit3DL.SetYTitle("r, cm");
                         tmpCircleFound3D->cd(1);
                         hHit3DT.SetStats(kFALSE);
                         hHit3DT.Draw();
@@ -911,6 +949,7 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         std::vector<float *> rarr;
                         std::vector<float *> errzarr;
                         std::vector<float *> errrarr;
+
                         for (std::vector<points3D>::iterator potLoops_it = potLoops.begin(); potLoops_it != potLoops.end(); ++potLoops_it) {
                                 ++iCol;
                                 zarr.push_back(new float[potLoops_it->size()]);
@@ -1032,6 +1071,34 @@ void ITTrackReco::analyze(art::Event const& event ) {
 
                         }
 
+			iCol = 0;
+			for(vector<HelixTraj>::iterator ittrk=trkhelixes.begin();ittrk!=trkhelixes.end();ittrk++){
+			  iCol++;
+			  TGraph *xy=new TGraph(1000);
+			  TGraph *zr=new TGraph(1000);
+			  double flt0=(*ittrk).zFlight(-2000);
+			  double flt1=(*ittrk).zFlight(2000);
+			  // std::cout<<flt0<<" "<<flt1<<std::endl;
+			  for(int i=0;i<1000;i++){
+			    HepPoint pos=(*ittrk).position(flt0+(flt1-flt0)*i/1000);
+			    // std::cout<<i<<" "<<pos<<endl;
+			    xy->SetPoint(i,pos.x()/CLHEP::cm,pos.y()/CLHEP::cm);
+			    zr->SetPoint(i,pos.z()/CLHEP::cm,std::hypot(pos.x()/CLHEP::cm,pos.y()/CLHEP::cm));
+			  }
+			  xy->SetMarkerColor(iCol);
+			  zr->SetMarkerColor(iCol);
+			  xy->SetMarkerSize(0.1);
+			  xy->SetMarkerStyle(6);
+			  zr->SetMarkerSize(0.1);
+			  zr->SetMarkerStyle(6);
+			  tmpCircleFound3D->cd(1);
+			  xy->Draw("P");
+			  tmpCircleFound3D->cd(2);
+			  zr->Draw("P");
+
+			  drawTracksT.push_back(xy);
+			  drawTracksL.push_back(zr);
+			}
 
 
                         cerr << "Double click in the canvas_Fake to continue:" ;

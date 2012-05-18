@@ -2,15 +2,19 @@
 //     c++ rewrite of the Karimaki circle fit (CLEFIT)
 //     original code CERN acbz.f
 //
-// $Id: KarimakiCircle.cc,v 1.3 2012/05/17 09:52:51 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/17 09:52:51 $
+// $Id: KarimakiCircle.cc,v 1.4 2012/05/18 18:14:36 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2012/05/18 18:14:36 $
 //
 // Original author G. Tassielli
 //
 
 // Mu2e includes.
 #include "FastPatternReco/inc/KarimakiCircle.hh"
+
+/* Table of constant values */
+double picons = CLHEP::pi;//(float)3.14159265;
+double pi2con = CLHEP::twopi;//(float)6.28318531;
 
 using namespace std;
 

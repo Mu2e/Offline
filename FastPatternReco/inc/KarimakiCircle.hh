@@ -4,9 +4,9 @@
 //     c++ rewrite of the Karimaki circle fit (CLEFIT)
 //     original code CERN acbz.f
 //
-// $Id: KarimakiCircle.hh,v 1.2 2012/05/16 19:30:07 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/16 19:30:07 $
+// $Id: KarimakiCircle.hh,v 1.3 2012/05/18 18:14:35 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2012/05/18 18:14:35 $
 //
 // Original author G. Tassielli
 //
@@ -46,9 +46,6 @@ using namespace std;
 
 namespace mu2e {
 
-/* Table of constant values */
-double picons = CLHEP::pi;//(float)3.14159265;
-double pi2con = CLHEP::twopi;//(float)6.28318531;
 
 struct circPoint {
         circPoint (float &xx, float &yy, float &errxx, float &erryy ) :

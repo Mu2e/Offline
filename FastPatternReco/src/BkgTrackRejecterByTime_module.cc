@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on time peak analysis
 //
-// $Id: BkgTrackRejecterByTime_module.cc,v 1.8 2012/05/15 07:46:58 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/15 07:46:58 $
+// $Id: BkgTrackRejecterByTime_module.cc,v 1.9 2012/05/18 18:14:36 mu2ecvs Exp $
+// $Author: mu2ecvs $
+// $Date: 2012/05/18 18:14:36 $
 //
 // Original author G. Tassielli
 //
@@ -797,10 +797,10 @@ typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stbrel;
 
                     if (_useSigmaForTimeSel){
                             int width=rndup(_nsigmaForTimeSel*sigmaFitted);
-                            frstTimeBinInP = timepeakPosId[ipeak] - width;
+                            frstTimeBinInP = timepeakPosId[ipeak]>width?(timepeakPosId[ipeak] - width):0;
                             lastTimeBinInP = timepeakPosId[ipeak] + width;
                    } else {
-                            frstTimeBinInP = timepeakPosId[ipeak] - binHalf -1;
+		            frstTimeBinInP = (timepeakPosId[ipeak] > binHalf+1) ?(timepeakPosId[ipeak] - binHalf -1):0;
                             lastTimeBinInP = timepeakPosId[ipeak] + binHalf +1;
                     }
                     cout<<"Peak range limits: "<<frstTimeBinInP<<" "<<lastTimeBinInP<<endl;

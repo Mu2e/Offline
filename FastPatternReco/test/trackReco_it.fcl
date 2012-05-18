@@ -9,7 +9,7 @@ process_name : TrackRecoIT
 source :
 {
   module_type : RootInput
-  fileNames : ["data_03.root"]
+  fileNames : ["data_it_100.root"]
   maxEvents : -1
 }
 
@@ -37,7 +37,7 @@ services :
   {
     GeometryService :
     {
-      inputFile : "Mu2eG4/test/geom_01.txt"
+      inputFile : "Mu2eG4/test/geom_01dumbbell.txt"
     }
 
     ConditionsService :
@@ -128,6 +128,14 @@ physics :
       diagLevel             : 2
       elextractModuleLabel  : extractElData
       #clickToAdvance       : false
+
+      HelixFit :
+        {
+                diagLevel                               : 2
+		nsigma : 1000
+		minzsep: 0.1
+        }
+
     }
   }
 
