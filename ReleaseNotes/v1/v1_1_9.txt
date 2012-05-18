@@ -1,10 +1,25 @@
-  $Id: v1_1_9.txt,v 1.12 2012/05/16 20:02:44 genser Exp $
+  $Id: v1_1_9.txt,v 1.13 2012/05/18 16:56:35 genser Exp $
   $Author: genser $
-  $Date: 2012/05/16 20:02:44 $
+  $Date: 2012/05/18 16:56:35 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+12) May 18, 2012 genser
+
+    Added MBS into the GeometryService and used it in constructMBS to
+    construct the MBS core components.
+    Added:
+      MBSGeom/inc/MBS.hh
+      MBSGeom/inc/MBSMaker.hh
+      MBSGeom/src/MBSMaker.cc
+      MBSGeom/src/SConscript
+    Modified:
+      GeometryService/src/GeometryService_service.cc
+      GeometryService/src/SConscript
+      Mu2eG4/src/constructMBS.cc
+
 
 11) May 16, 2012 genser
 
