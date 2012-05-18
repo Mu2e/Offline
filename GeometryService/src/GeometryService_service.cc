@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.31 2012/05/10 23:43:15 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/05/10 23:43:15 $
+// $Id: GeometryService_service.cc,v 1.32 2012/05/18 16:55:08 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/18 16:55:08 $
 //
 // Original author Rob Kutschke
 //
@@ -71,6 +71,8 @@
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIMaker.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorberMaker.hh"
+#include "MBSGeom/inc/MBS.hh"
+#include "MBSGeom/inc/MBSMaker.hh"
 
 using namespace std;
 
@@ -208,6 +210,11 @@ namespace mu2e {
     if(_config->getBool("hasExtMonUCI",false)){
       ExtMonUCI::ExtMonMaker extmon( *_config );
       addDetector( extmon.getDetectorPtr() );
+    }
+
+    if(_config->getBool("hasMBS",false)){
+      MBSMaker mbs( *_config, beamline.solenoidOffset() );
+      addDetector( mbs.getMBSPtr() );
     }
 
     if(_config->getBool("hasVirtualDetector",false)){
