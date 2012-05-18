@@ -1,9 +1,9 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.9 2012/05/16 20:02:11 genser Exp $
+// $Id: constructMBS.cc,v 1.10 2012/05/18 16:55:57 genser Exp $
 // $Author: genser $
-// $Date: 2012/05/16 20:02:11 $
+// $Date: 2012/05/18 16:55:57 $
 //
 // Original author KLG
 //
@@ -29,6 +29,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CRSSteelShield.hh"
+#include "MBSGeom/inc/MBS.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestBox.hh"
@@ -52,35 +53,17 @@ namespace mu2e {
 
     // BSTS is the main support tube; the other z positions are dependent upon it
 
-    double const BSTSInnerRadius   = _config->getDouble("mbs.BSTSInnerRadius");
-    double const BSTSOuterRadius   = _config->getDouble("mbs.BSTSOuterRadius");
-    double const BSTSHLength       = _config->getDouble("mbs.BSTSHLength");
-    string const BSTSMaterialName  = _config->getString("mbs.BSTSMaterialName");
-    double const BSTSZ             = _config->getDouble("mbs.BSTSZ");
-    double const SPBSInnerRadius   = _config->getDouble("mbs.SPBSInnerRadius");
-    double const SPBSOuterRadius   = _config->getDouble("mbs.SPBSOuterRadius");
-    double const SPBSHLength       = _config->getDouble("mbs.SPBSHLength");
-    string const SPBSMaterialName  = _config->getString("mbs.SPBSMaterialName");
-    double const SPBSZ             = BSTSZ + BSTSHLength - SPBSHLength;
-    double const BSTCInnerRadius   = _config->getDouble("mbs.BSTCInnerRadius");
-    double const BSTCOuterRadius   = _config->getDouble("mbs.BSTCOuterRadius");
-    double const BSTCHLength       = _config->getDouble("mbs.BSTCHLength");
-    string const BSTCMaterialName  = _config->getString("mbs.BSTCMaterialName");
-    double const BSTCZ             = BSTSZ - BSTSHLength + BSTCHLength;
-    double const BSBSInnerRadius   = _config->getDouble("mbs.BSBSInnerRadius");
-    double const BSBSOuterRadius   = _config->getDouble("mbs.BSBSOuterRadius");
-    double const BSBSHLength       = BSTSHLength - BSTCHLength;
-    string const BSBSMaterialName  = _config->getString("mbs.BSBSMaterialName");
-    double const BSBSZ             = BSTSZ + BSTSHLength - BSBSHLength;
-    double const CLV2InnerRadius   = _config->getDouble("mbs.CLV2InnerRadius");
-    double const CLV2OuterRadius   = _config->getDouble("mbs.CLV2OuterRadius");
-    double const CLV2HLength       = _config->getDouble("mbs.CLV2HLength");
-    string const CLV2MaterialName  = _config->getString("mbs.CLV2MaterialName");
-    double const CLV2Z             = BSTSZ + BSTSHLength - CLV2HLength;
+    MBS const & mbsgh = *(GeomHandle<MBS>());
+
+    Tube const & pBSTSParams = *mbsgh.getBSTSPtr();
+    Tube const & pSPBSParams = *mbsgh.getSPBSPtr();
+    Tube const & pBSTCParams = *mbsgh.getBSTCPtr();
+    Tube const & pBSBSParams = *mbsgh.getBSBSPtr();
+    Tube const & pCLV2Params = *mbsgh.getCLV2Ptr();
 
     bool const MBSisVisible        = _config->getBool("mbs.visible",true);
     bool const MBSisSolid          = _config->getBool("mbs.solid", false);
-    int  const verbosityLevel           = _config->getInt("mbs.verbosityLevel", 0);
+    int  const verbosityLevel      = _config->getInt("mbs.verbosityLevel", 0);
 
     bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
     bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
@@ -91,7 +74,6 @@ namespace mu2e {
 
     GeomHandle<Beamline> beamg;
     double solenoidOffset = -beamg->solenoidOffset();
-
 
     cout << __func__ << " verbosityLevel                          : " << verbosityLevel  << endl;
 
@@ -114,7 +96,7 @@ namespace mu2e {
 
     // BSTS see WBS 5.8 for the naming conventions
 
-    CLHEP::Hep3Vector BSTSOffsetInMu2e  = CLHEP::Hep3Vector(solenoidOffset,0.,BSTSZ);
+    CLHEP::Hep3Vector BSTSOffsetInMu2e = pBSTSParams.originInMu2e();
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " BSTSOffsetInMu2e                 : " << BSTSOffsetInMu2e << endl;
@@ -131,10 +113,6 @@ namespace mu2e {
 				  BSTSHLength);
     G4Material* vacuumMaterial     = findMaterialOrThrow(_config->getString("toyDS.insideMaterialName"));
     */
-
-    TubsParams BSTSParams ( BSTSInnerRadius,
-                            BSTSOuterRadius,
-                            BSTSHLength);
 
     /*
     VolumeInfo MBSMotherInfo  = nestTubs("MBSMother",
@@ -154,8 +132,8 @@ namespace mu2e {
     */
 
     VolumeInfo BSTSInfo  = nestTubs("BSTS",
-                                    BSTSParams,
-                                    findMaterialOrThrow(BSTSMaterialName),
+                                    pBSTSParams.getTubsParams(),
+                                    findMaterialOrThrow(pBSTSParams.materialName()),
                                     0,
 				    BSTSOffset,
 				    //G4ThreeVector(0,0,0),
@@ -183,22 +161,18 @@ namespace mu2e {
     // This one is placed directly into DS3Vacuum; 
     // Note that its radius is lager than theone of BSTS
     
-    CLHEP::Hep3Vector SPBSOffsetInMu2e  = CLHEP::Hep3Vector(solenoidOffset,0.,SPBSZ);
+    CLHEP::Hep3Vector SPBSOffsetInMu2e = pSPBSParams.originInMu2e();
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " SPBSOffsetInMu2e                 : " << SPBSOffsetInMu2e << endl;
     }
 
     // now local offset in mother volume
-    CLHEP::Hep3Vector SPBSOffset =  SPBSOffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e();
-
-    TubsParams SPBSParams ( SPBSInnerRadius,
-                            SPBSOuterRadius,
-                            SPBSHLength);
+    CLHEP::Hep3Vector SPBSOffset = SPBSOffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e();
 
     VolumeInfo SPBSInfo  = nestTubs("SPBS",
-                                    SPBSParams,
-                                    findMaterialOrThrow(SPBSMaterialName),
+                                    pSPBSParams.getTubsParams(),
+                                    findMaterialOrThrow(pSPBSParams.materialName()),
                                     0,
                                     SPBSOffset,
                                     detSolDownstreamVacInfo,
@@ -220,23 +194,19 @@ namespace mu2e {
 
     // BSTC
 
-    CLHEP::Hep3Vector BSTCOffsetInMu2e  = CLHEP::Hep3Vector(solenoidOffset,0.,BSTCZ);
+    CLHEP::Hep3Vector BSTCOffsetInMu2e = pBSTCParams.originInMu2e();
     // now local offset in mother volume
     CLHEP::Hep3Vector BSTCOffset =  BSTCOffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e(); // - MBSMotherInfo.centerInMu2e(); 
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " BSTCOffsetInMu2e                 : " << BSTCOffsetInMu2e << endl;
-      cout << __func__ << " BSTCOffsetInMBS                 : " << BSTCOffset << endl;
+      cout << __func__ << " BSTCOffsetInMBS                  : " << BSTCOffset << endl;
     }
-
-    TubsParams BSTCParams ( BSTCInnerRadius,
-                            BSTCOuterRadius,
-                            BSTCHLength);
 
     G4Colour  orange  (.75, .55, .0);
     VolumeInfo BSTCInfo  = nestTubs("BSTC",
-                                    BSTCParams,
-                                    findMaterialOrThrow(BSTCMaterialName),
+                                    pBSTCParams.getTubsParams(),
+                                    findMaterialOrThrow(pBSTCParams.materialName()),
                                     0,
                                     BSTCOffset,
                                     //MBSMotherInfo,
@@ -260,7 +230,7 @@ namespace mu2e {
 
     // BSBS
 
-    CLHEP::Hep3Vector BSBSOffsetInMu2e  = CLHEP::Hep3Vector(solenoidOffset,0.,BSBSZ);
+    CLHEP::Hep3Vector BSBSOffsetInMu2e = pBSBSParams.originInMu2e();
 
     // now local offset in mother volume
     CLHEP::Hep3Vector BSBSOffset =  BSBSOffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e(); //-MBSMotherInfo.centerInMu2e();
@@ -270,13 +240,9 @@ namespace mu2e {
       cout << __func__ << " BSBSOffsetInMBS                  : " << BSBSOffset << endl;
     }
 
-    TubsParams BSBSParams ( BSBSInnerRadius,
-                            BSBSOuterRadius,
-                            BSBSHLength);
-
     VolumeInfo BSBSInfo  = nestTubs("BSBS",
-                                    BSBSParams,
-                                    findMaterialOrThrow(BSBSMaterialName),
+                                    pBSBSParams.getTubsParams(),
+                                    findMaterialOrThrow(pBSBSParams.materialName()),
                                     0,
                                     BSBSOffset,
                                     //MBSMotherInfo,
@@ -290,7 +256,6 @@ namespace mu2e {
                                     doSurfaceCheck
                                     );
 
-
     if ( verbosityLevel > 0) {
       double zhl         = static_cast<G4Tubs*>(BSBSInfo.solid)->GetZHalfLength();
       double BSBSOffsetInMu2eZ = BSBSOffsetInMu2e[CLHEP::Hep3Vector::Z];
@@ -300,23 +265,19 @@ namespace mu2e {
 
     // CLV2
 
-    CLHEP::Hep3Vector CLV2OffsetInMu2e  = CLHEP::Hep3Vector(solenoidOffset,0.,CLV2Z);
+    CLHEP::Hep3Vector CLV2OffsetInMu2e = pCLV2Params.originInMu2e();
 
     // now local offset in mother volume
-    CLHEP::Hep3Vector CLV2Offset =  CLV2OffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e();//- MBSMotherInfo.centerInMu2e(); 
+    CLHEP::Hep3Vector CLV2Offset = CLV2OffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e();//- MBSMotherInfo.centerInMu2e(); 
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " CLV2OffsetInMu2e                 : " << CLV2OffsetInMu2e << endl;
       cout << __func__ << " CLV2OffsetInMBS                  : " << CLV2Offset << endl;
     }
 
-    TubsParams CLV2Params ( CLV2InnerRadius,
-                            CLV2OuterRadius,
-                            CLV2HLength);
-
     VolumeInfo CLV2Info  = nestTubs("CLV2",
-                                    CLV2Params,
-                                    findMaterialOrThrow(CLV2MaterialName),
+                                    pCLV2Params.getTubsParams(),
+                                    findMaterialOrThrow(pCLV2Params.materialName()),
                                     0,
                                     CLV2Offset,
                                     detSolDownstreamVacInfo,
