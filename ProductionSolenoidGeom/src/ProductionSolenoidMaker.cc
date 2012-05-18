@@ -1,9 +1,9 @@
 //
 // Construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.cc,v 1.7 2012/03/29 19:07:36 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/29 19:07:36 $
+// $Id: ProductionSolenoidMaker.cc,v 1.8 2012/05/18 16:56:19 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/18 16:56:19 $
 //
 // Original author KLG
 //
@@ -149,7 +149,7 @@ namespace mu2e {
     const double vacStartZ = ps._psEndRefPoint[2];
     const double vacEndZ   = -rTorus + -2.*ts1HalfLength;
 
-    CLHEP::Hep3Vector psVacuumMu2eOffset(solenoidOffset, 0, 0.5*(vacStartZ + vacEndZ));
+    CLHEP::Hep3Vector psVacuumMu2eOffset(solenoidOffset, 0.0, 0.5*(vacStartZ + vacEndZ));
 
     ps._psVacuumParams = std::auto_ptr<Tube>
       (new Tube(_psInsideMaterialName,
@@ -161,8 +161,6 @@ namespace mu2e {
   void ProductionSolenoidMaker::parseConfig( SimpleConfig const & _config ){
 
     _verbosityLevel                   = _config.getInt("PS.verbosityLevel");
-    _psVisible                        = _config.getBool("PS.visible");
-    _psSolid                          = _config.getBool("PS.solid");
 
     _psVacVesselrIn                   = _config.getDouble("PS.VacVessel.rIn");
     _psVacVesselrOut                  = _config.getDouble("PS.VacVessel.rOut");

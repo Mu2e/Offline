@@ -3,9 +3,9 @@
 //
 // Class to construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.hh,v 1.4 2012/03/29 19:06:50 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/29 19:06:50 $
+// $Id: ProductionSolenoidMaker.hh,v 1.5 2012/05/18 16:56:19 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/18 16:56:19 $
 //
 // Original author KLG
 //
@@ -48,8 +48,6 @@ namespace mu2e {
     std::auto_ptr<ProductionSolenoid> _ps;
 
     int    _verbosityLevel;
-    bool   _psVisible;
-    bool   _psSolid;
 
     double _psVacVesselrIn;
     double _psVacVesselrOut;
