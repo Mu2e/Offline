@@ -90,6 +90,21 @@ physics :
       #doDisplay            : true
       #clickToAdvance       : false
     }
+
+    # Look at the hits from G4.
+    extractElData:
+    {
+      module_type          : ExtractElectronsData
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+      makerModuleLabel     : makeDcH
+      #trackerStepPoints    : tracker
+      #minEnergyDep         : 0.0001
+      #minHits              : 5
+      #doDisplay            : true
+      #clickToAdvance       : false
+    }
+
   }
 
   analyzers:
@@ -102,7 +117,7 @@ physics :
       tRejecterModuleLabel  : trckRjctByTime
       mapTrackerHitByID     : maptrackerHit
       minClusMultBend       : 6                   #Threshold on the multiplicity of Closest Hit Clusters to identify a potential bending point
-      circChi2cut           :10.0                 #Max acceptable value for the Chi2/NDOF for a circle
+      circChi2cut           :12.0                 #Max acceptable value for the Chi2/NDOF for a circle
       #nsigmaForTimeSel      : 1.250               #-1: use default time window, x>0: x sigma of the fitted time peak  (ex. 1.960, 1.645 ..)
       #protonRejecEff        : 1.00                #efficiency of proton rejection, x<=0: disable the proton rejection               (to switch on the proton rejection both protonRejecEff and pulseCut must be on)
       #pulseCut              : 0.015               #pulse cut (in MeV) for the proton rejection, x<=0: disable the proton rejection  (to switch on the proton rejection both protonRejecEff and pulseCut must be on)
@@ -111,11 +126,12 @@ physics :
       #minHits              : 5
       doDisplay            : true
       diagLevel             : 2
+      elextractModuleLabel  : extractElData
       #clickToAdvance       : false
     }
   }
 
-  p1 : [skipBadEvents,maptrackerHit,trckRjctByTime]
+  p1 : [skipBadEvents,maptrackerHit,extractElData,trckRjctByTime]#
   e1 : [trackReco]
 
 
