@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.27 2012/05/14 19:20:02 brownd Exp $
+// $Id: KalFitMC.cc,v 1.28 2012/05/19 07:44:09 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Date: 2012/05/19 07:44:09 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -62,9 +62,19 @@ using namespace std;
 namespace mu2e 
 {
   // comparison functor for ordering step points
-    struct timecomp : public binary_function<MCStepItr,MCStepItr, bool> {
-      bool operator()(MCStepItr x,MCStepItr y) { return x->time() < y->time(); }
+  struct timecomp : public binary_function<MCStepItr,MCStepItr, bool> {
+    bool operator()(MCStepItr x,MCStepItr y) { return x->time() < y->time(); }
   };
+  struct devicecomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
+    bool operator()(TrkStrawHit* x, TrkStrawHit* y) { 
+// predicate on device first, as fltlen might be ambiguous for inactive hots
+      if(x->straw().id().getDevice() == y->straw().id().getDevice())
+	return x->fltLen() < y->fltLen();
+      else
+	return(x->straw().id().getDevice() < y->straw().id().getDevice());
+    }
+  };
+
 
  KalFitMC::~KalFitMC(){}
   
@@ -78,8 +88,10 @@ namespace mu2e
     _mct0err(pset.get<double>("mcT0Err",0.1)),
     _mcambig(pset.get<bool>("mcAmbiguity",true)),
     _debug(pset.get<int>("debugLevel",0)),
+    _diag(pset.get<int>("diagLevel",1)),
     _minnhits(pset.get<unsigned>("minNHits",10)),
-    _maxnhits(pset.get<unsigned>("maxNHits",1000)),
+    _maxnhits(pset.get<unsigned>("maxNHits",120)),
+    _maxarcgap(pset.get<int>("MaxArcGap",2)),
     _purehits(pset.get<bool>("pureHits",false)),
     _trkdiag(0),_hitdiag(0)
   {
@@ -272,7 +284,7 @@ namespace mu2e
 // kalman fit diagnostics
     kalDiag(myfit._krep);
 // hits diagnostic
-    hitsDiag(myfit._hits);
+    if(_diag > 1)hitsDiag(myfit._hits);
 // fill tree    
    _trkdiag->Fill(); 
   }
@@ -296,7 +308,8 @@ namespace mu2e
      TrkStrawHit* hit = dynamic_cast<TrkStrawHit*>(ihot.get());
       if(hit != 0)hits.push_back(hit);
     }
-    hitsDiag(hits);
+    std::sort(hits.begin(),hits.end(),devicecomp());
+    if(_diag > 1)hitsDiag(hits);
 // fill tree    
    _trkdiag->Fill(); 
   }
@@ -344,13 +357,27 @@ namespace mu2e
     }
   }
 
-  void
-    KalFitMC::hitsDiag(std::vector<TrkStrawHit*> const& hits) {
-      _tshinfo.clear();
+  void KalFitMC::hitsDiag(std::vector<TrkStrawHit*> const& hits) {
+    _tshinfo.clear();
+    _tainfo.clear();
     _ncactive = 0;
-      // loop over hits.  Order doesn't matter here
-    for(std::vector<TrkStrawHit*>::const_iterator itsh = hits.begin(); itsh != hits.end(); itsh++){
-      const TrkStrawHit* tsh = *itsh;
+// find the arcs
+    std::vector<TrkArc> arcs;
+    findArcs(hits,arcs);
+    _narcs = arcs.size();
+// loop over arcs
+    for(size_t iarc=0;iarc < arcs.size(); ++iarc){
+      TrkArcInfo tainfo;
+      TrkArc const& arc = arcs[iarc];
+      tainfo._narctsh = arc._ntsh;
+      tainfo._narcactive = arc._nactive;
+      tainfo._arctshlen = hits[arc._end]->fltLen() - hits[arc._begin]->fltLen();
+      tainfo._arcactivelen = hits[arc._endactive]->fltLen() - hits[arc._beginactive]->fltLen();
+      _tainfo.push_back(tainfo);
+    }
+ // loop over hits
+    for(size_t itsh=0;itsh<hits.size();++itsh){
+      const TrkStrawHit* tsh = hits[itsh];
       if(tsh != 0){
         TrkStrawHitInfo tshinfo;
         tshinfo._active = tsh->isActive();
@@ -359,6 +386,11 @@ namespace mu2e
 	tshinfo._sector = tsh->straw().id().getSector();
 	tshinfo._layer = tsh->straw().id().getLayer();
 	tshinfo._straw = tsh->straw().id().getStraw();
+	static HepPoint origin(0.0,0.0,0.0);
+	CLHEP::Hep3Vector hpos = tsh->hitTraj()->position(tsh->hitLen()) - origin;
+	tshinfo._z = hpos.z();
+	tshinfo._phi = hpos.phi();
+	tshinfo._rho = hpos.perp();
 	double resid,residerr;
 	if(tsh->resid(resid,residerr,true)){
 	  tshinfo._resid = resid;
@@ -374,13 +406,37 @@ namespace mu2e
 	tshinfo._tddist = tsh->timeDiffDist();
 	tshinfo._tdderr = tsh->timeDiffDistErr();
 	tshinfo._ambig = tsh->ambig();
-	tshinfo._doca = tsh->poca()->doca();
+	if(tsh->poca() != 0)
+	  tshinfo._doca = tsh->poca()->doca();
+	else
+	  tshinfo._doca = -100.0;
 	tshinfo._exerr = tsh->extErr();
 	tshinfo._penerr = tsh->penaltyErr();
 	tshinfo._t0err = tsh->t0Err();
-// MC information	
-        PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
-        tshinfo._mcn = mcptr.size();
+// arc information
+	int iarc = findArc(itsh,arcs);
+	tshinfo._iarc = iarc;
+	if(iarc >= 0){
+	  TrkArc const& arc = arcs[iarc];
+	  tshinfo._iarchit = itsh-arc._begin;
+	  tshinfo._architlen = tsh->fltLen() - hits[arc._beginactive]->fltLen();
+	  if(itsh > arc._begin)
+	    tshinfo._gaplow = tsh->fltLen() - hits[itsh-1]->fltLen();
+	  else
+	    tshinfo._gaplow = -1;
+	  if(itsh < arc._end)
+	    tshinfo._gaphi = hits[itsh+1]->fltLen()-tsh->fltLen();
+	  else
+	    tshinfo._gaphi = -1;
+	} else {
+	  tshinfo._iarchit = -1;
+	  tshinfo._architlen = -1;
+	  tshinfo._gaplow = -1;
+	  tshinfo._gaphi = -1;
+	}
+	// MC information	
+	PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
+	tshinfo._mcn = mcptr.size();
 	if(_mcdata._mcsteps != 0){
 	  std::vector<TrkSum> mcsum;
 	  KalFitMC::fillMCHitSum(mcptr,mcsum);
@@ -598,6 +654,7 @@ namespace mu2e
     _trkdiag->Branch("nweediter",&_nweediter,"nweediter/I");
     _trkdiag->Branch("nactive",&_nactive,"nactive/I");
     _trkdiag->Branch("ncactive",&_ncactive,"ncactive/I");
+    _trkdiag->Branch("narcs",&_narcs,"narcs/I");
     _trkdiag->Branch("nchits",&_nchits,"nchits/I");
     _trkdiag->Branch("chisq",&_chisq,"chisq/F");
     _trkdiag->Branch("fitcon",&_fitcon,"fitcon/F");
@@ -629,7 +686,8 @@ namespace mu2e
     _trkdiag->Branch("bremsesum",&_bremsesum,"bremsesum/F");
     _trkdiag->Branch("bremsemax",&_bremsemax,"bremsemax/F");
     _trkdiag->Branch("bremsz",&_bremsz,"bremsz/F");
-// track hit info    
+// track hit and arc info    
+    _trkdiag->Branch("tainfo",&_tainfo);
     _trkdiag->Branch("tshinfo",&_tshinfo);
     return _trkdiag;
   }
@@ -746,4 +804,46 @@ namespace mu2e
 	return _mcxitpar;
     }
   }
+
+  void
+  KalFitMC::findArcs(std::vector<TrkStrawHit*> const& straws, std::vector<TrkArc>& arcs) const {
+    arcs.clear();
+// define an initial arc
+    size_t istraw(0);
+    while(istraw < straws.size()){
+      int igap(0);
+      TrkArc arc(istraw);
+      bool firstactive(false);
+      do {
+	arc._end = istraw;
+	++arc._ntsh;
+	if(straws[istraw]->isActive()){
+	  arc._endactive = istraw;
+	  ++arc._nactive;
+	  if(!firstactive){
+	    arc._beginactive = istraw;
+	    firstactive = true;
+	  }
+	}
+// advance to the next straw and compute the gap
+	++istraw;
+      	if(istraw< straws.size())igap = straws[istraw]->straw().id().getDevice()-straws[arc._end]->straw().id().getDevice();
+// loop while the gap is small
+      } while(istraw < straws.size() && igap <= _maxarcgap);
+// end of an arc: record it
+      arcs.push_back(arc);
+// update the arc to start with this new straw
+      arc = TrkArc(istraw);
+    }
+  }
+
+  int
+  KalFitMC::findArc(size_t itsh,std::vector<TrkArc>& arcs ) {
+    for(size_t iarc=0;iarc<arcs.size();++iarc){
+      if(itsh >= arcs[iarc]._begin && itsh <= arcs[iarc]._end)
+	return iarc;
+    }
+    return -1;
+  }
+
 }

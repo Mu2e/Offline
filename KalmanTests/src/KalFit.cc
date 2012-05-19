@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.26 2012/05/14 19:20:02 brownd Exp $
+// $Id: KalFit.cc,v 1.27 2012/05/19 07:44:09 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Date: 2012/05/19 07:44:09 $
 //
 
 // the following has to come before other BaBar includes
@@ -55,11 +55,16 @@ namespace mu2e
   const double KalFit::_vlight = CLHEP::c_light;
 // comparison functor for ordering hits
   struct fltlencomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
-          bool operator()(TrkStrawHit* x, TrkStrawHit* y) { return x->fltLen() < y->fltLen(); }
+    bool operator()(TrkStrawHit* x, TrkStrawHit* y) { 
+// predicate on device first, as fltlen might be ambiguous for inactive hots
+      if(x->straw().id().getDevice() == y->straw().id().getDevice())
+	return x->fltLen() < y->fltLen();
+      else
+	return(x->straw().id().getDevice() < y->straw().id().getDevice());
+    }
   };
 
   void TrkKalFit::deleteTrack() {
-
     if(_trk != 0 && _krep != 0){
       _hits.clear(); delete _trk; _trk=0; _krep = 0; 
 //      std::cout << "deleting fit with track " << std::endl;

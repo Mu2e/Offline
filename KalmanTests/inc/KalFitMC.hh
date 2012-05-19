@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.20 2012/05/14 19:20:02 brownd Exp $
+// $Id: KalFitMC.hh,v 1.21 2012/05/19 07:44:09 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Date: 2012/05/19 07:44:09 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -94,10 +94,13 @@ namespace mu2e
 
   struct TrkStrawHitInfo {
     Int_t _active, _usable, _device, _sector, _layer, _straw;
+    Float_t _z, _phi, _rho;
     Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
     Float_t _doca, _exerr, _penerr, _t0err;
     Float_t _ht, _tddist, _tdderr, _hlen;
     Int_t _ambig;
+    Int_t _iarc, _iarchit;
+    Float_t _architlen, _gaplow, _gaphi;
     Int_t _mcn, _mcnunique, _mcppdg, _mcpgen, _mcpproc;
     Int_t _mcpdg, _mcgen, _mcproc;
     Float_t _mcht, _mcdist, _mclen;
@@ -120,7 +123,27 @@ namespace mu2e
     const StepPointMCCollection *_mcsteps, *_mcvdsteps;
     const SimParticleCollection *_simparts;
   };
-  
+ 
+ // struct to describe an arc within a vector of TrkStrawHits
+  struct TrkArc {
+    size_t _begin;
+    size_t _end;
+    size_t _beginactive;
+    size_t _endactive;
+    unsigned _ntsh;
+    unsigned _nactive;
+// initialize to 0
+    TrkArc(size_t begin=0) : _begin(begin),_end(begin),_beginactive(begin),_endactive(begin),_ntsh(0),_nactive(0){}
+  };
+
+
+  struct TrkArcInfo {
+    Int_t _narctsh, _narcactive;
+    Float_t _arctshlen, _arcactivelen;
+// root 
+    ClassDef(TrkArcInfo,1)
+  };
+
   typedef StepPointMCCollection::const_iterator MCStepItr;
 //  struct test : public binary_function<double,double,bool> {
 //    bool operator()(double x, double y) { return x < y;}
@@ -171,15 +194,18 @@ namespace mu2e
     std::string _strawhitslabel;
 // helper functions
     void findMCSteps(StepPointMCCollection const* mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids,
-      std::vector<MCStepItr>& steps);
+	std::vector<MCStepItr>& steps);
     static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
-   void fillMCHitSummary();
+    void fillMCHitSummary();
+    void findArcs(std::vector<TrkStrawHit*> const& straws, std::vector<TrkArc>&  arcs) const;
+    static int findArc(size_t itsh,std::vector<TrkArc>& arcs );
 // config parameters
     double _mintrkmom; // minimum true momentum at z=0 to create a track from
     double _mct0err;
     bool _mcambig;
-    int _debug;
+    int _debug,_diag;
     unsigned _minnhits,_maxnhits;
+    int _maxarcgap;
     bool _purehits;
 // vector of detector Ids corresponding to entrance and midplane
     std::vector<int> _midvids;
@@ -206,6 +232,7 @@ namespace mu2e
     Int_t _nweediter;
     Int_t _nactive;
     Int_t _ncactive;
+    Int_t _narcs;
     Int_t _nchits;
     Float_t _chisq;
     Float_t _fitcon;
@@ -231,6 +258,7 @@ namespace mu2e
     Float_t _bremsz;
  
     std::vector<TrkStrawHitInfo> _tshinfo;
+    std::vector<TrkArcInfo> _tainfo;
 
 // hit tuple variables
     TTree *_hitdiag;

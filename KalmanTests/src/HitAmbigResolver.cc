@@ -2,9 +2,9 @@
 // class to resolve hit ambiguities one hit at a time, assuming a reasonable track
 // fit as input
 //
-// $Id: HitAmbigResolver.cc,v 1.1 2012/05/14 19:20:02 brownd Exp $
+// $Id: HitAmbigResolver.cc,v 1.2 2012/05/19 07:44:09 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Date: 2012/05/19 07:44:09 $
 //
 #include "KalmanTests/inc/HitAmbigResolver.hh"
 #include "KalmanTests/inc/KalFit.hh"
@@ -25,7 +25,7 @@ namespace mu2e {
   HitAmbigResolver::HitAmbigResolver(fhicl::ParameterSet const& pset) : AmbigResolver(pset),
   _mindrift(pset.get<double>("HitMinDrift",0.2)),
   _zeropenalty(pset.get<double>("ZeroDriftPenalty",0.2)),
-  _penalty(pset.get<bool>("HitAmbigPenalty",true)),
+  _penalty(pset.get<bool>("HitAmbigPenalty",false)),
   _expnorm(pset.get<double>("HitExpNorm",0.03907)),
   _lambda(pset.get<double>("HitLambda",0.1254)),
   _offset(pset.get<double>("HitOffset",0.073)),
