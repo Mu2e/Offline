@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.5 2012/05/18 18:14:36 mu2ecvs Exp $
+// $Id: ITTrackReco_module.cc,v 1.6 2012/05/21 15:08:55 mu2ecvs Exp $
 // $Author: mu2ecvs $
-// $Date: 2012/05/18 18:14:36 $
+// $Date: 2012/05/21 15:08:55 $
 //
 // Original author G. Tassielli
 //
@@ -60,14 +60,28 @@
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitByID.hh"
 #include "FastPatternReco/inc/FastPatRecoUtilsAndDataDef.hh"
-
-#include "BaBar/BaBar.hh"
-#include "KalmanTests/inc/TrkDef.hh"
 #include "FastPatternReco/inc/TrkHelixFitIT.hh"
 
 //temp El Visual
 #include "MCDataProducts/inc/VisibleGenElTrack.hh"
 #include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
+
+
+//For track fit
+// BaBar
+#include "BaBar/BaBar.hh"
+#include "KalmanTests/inc/TrkDef.hh"
+//#include "KalmanTests/inc/TrkStrawHit.hh"
+//#include "KalmanTests/inc/KalFit.hh"
+//#include "KalmanTests/inc/KalFitMC.hh"
+#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+//#include "TrkPatRec/inc/TrkHitFilter.hh"
+//#include "TrkPatRec/inc/TrkHelixFit.hh"
+//#include "TrkBase/TrkPoca.hh"
+//#include "TrkPatRec/src/TrkPatRec_module.cc"
+#include "TrkPatRec/inc/TrkPatRec.hh"
+
+
 
 // Root includes.
 #include "TApplication.h"
@@ -99,6 +113,10 @@
 using namespace std;
 
 namespace mu2e {
+
+//typedef std::map<std::vector<XYZP>::iterator, std::pair<size_t, size_t> > RbstFitPntsLpsPntsRel;
+typedef std::map<size_t, std::pair<size_t, size_t> > RbstFitPntsLpsPntsRel;
+
 
 struct confMapDraw{
 
@@ -196,6 +214,7 @@ private:
         // robust helix fitter
         TrkHelixFitIT _hfit;
 
+
         //    // Number of events to accumulate between prompts.
         //    int _nAccumulate;
 
@@ -277,7 +296,9 @@ ITTrackReco::ITTrackReco(fhicl::ParameterSet const& pset) :
                     _diagLevel(pset.get<int>("diagLevel",0)),
                     _doDisplay(pset.get<bool>("doDisplay",false)),
                     _extractElectronsData(pset.get<string>("elextractModuleLabel")),//temp El Visual
-		    _hfit(pset.get<fhicl::ParameterSet>("HelixFit")),
+
+                    _hfit(pset),
+
                     // ROOT objects that are the main focus of this example.
                     //_peaksCanvHistos(0),
                     //_hPkStDistTrs(0),
@@ -290,7 +311,6 @@ ITTrackReco::ITTrackReco(fhicl::ParameterSet const& pset) :
                     //_hPkAccArrSecStation(0),
                     _hClockCicles(0),
                     _hExecTime(0),
-
                     //    _fg(0),
                     //    _cnvForPeakstudy(0),
 
@@ -397,6 +417,8 @@ void ITTrackReco::analyze(art::Event const& event ) {
         const ITracker &itr = static_cast<const ITracker&>( tracker );
         CellGeometryHandle *itwp = itr.getCellGeometryHandle();
 
+        //_hfit._itwp = itwp;
+
         double rIn  = itr.r0()+itr.getWalls()->find(Wall::inner)->second->getTotalThickness();
         double rOut = itr.rOut()-itr.getWalls()->find(Wall::outer)->second->getTotalThickness();
         rIn/=CLHEP::cm;
@@ -465,6 +487,9 @@ void ITTrackReco::analyze(art::Event const& event ) {
 
         notAssociatedHits = new bool[nStrawPerEvent];
         for (size_t jhit=0; jhit<nStrawPerEvent; ++jhit) { notAssociatedHits[jhit]=true; }
+
+        //find for ciclres using Dave's trkpaterc code
+        std::vector<TrkTimePeak> tpeaks;
 
         for (size_t ipeak=0; ipeak<nTimeClusPerEvent; ipeak++) {
 
@@ -642,27 +667,84 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         minClusMultBend/=2;
                 }
 
-		vector<HelixTraj> trkhelixes;
-		for (std::vector<points3D>::iterator potLoops_it = potLoops.begin(); 
-		     potLoops_it != potLoops.end(); ++potLoops_it) {
-		  std::vector<hitIndex> strawhits;
-		  for (points3D::iterator loopPoints_it = potLoops_it->begin(); 
-		       loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
-		    strawhits.push_back(hitIndex(loopPoints_it->getInEventHitID()));
-		  }
-		  TrkDef helixdef(hits, strawhits);
 
-		  TrkHelix helixfit;
-		  HepVector hpar;
-		  HepVector hparerr;
-		  bool isfitted=_hfit.findHelix(helixdef,(*potLoops_it),helixfit);
-		  _hfit.helixParams(helixfit,hpar,hparerr);
-		  HepSymMatrix hcov = vT_times_v(hparerr);
-		  trkhelixes.push_back(HelixTraj(hpar,hcov));
-		  HelixTraj& seed=trkhelixes.back();
-		  std::cout<<"fitted "<<isfitted<<" ";
-		  seed.printAll(std::cout);
-		}
+                points3D selectedPnts;
+
+                // track fitting objects for this peak
+                std::vector<TrkHelix> helixesfit;
+		std::vector<HelixTraj> trkhelixes;
+                RbstFitPntsLpsPntsRel xyzpLoopRel;
+                std::vector<XYZP> xyzp;
+                if (potLoops.size()>0) {
+                        tpeaks.push_back( TrkTimePeak(tclust._meanTime,tclust._maxHitTime) );
+                        size_t iPotLoop = 0, iPntInLoop=0;
+                        for (std::vector<points3D>::iterator potLoops_it = potLoops.begin(); potLoops_it != potLoops.end(); ++potLoops_it) {
+                                iPntInLoop=0;
+                                for (points3D::iterator loopPoints_it = potLoops_it->begin(); loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
+                                        itwp->SelectCell(loopPoints_it->getRadLayID(),loopPoints_it->getInLayerCellID());
+                                        xyzp.push_back(XYZP( loopPoints_it->_pos, itwp->GetCellDirection(), loopPoints_it->_sigmaz,loopPoints_it->_sigmax)); //sigmax=sigmay=sigmaR
+                                        //std::vector<XYZP>::iterator lastPoint = xyzp.end();
+                                        //--lastPoint;
+                                        //xyzpLoopRel.insert( RbstFitPntsLpsPntsRel::value_type ( lastPoint,
+                                        xyzpLoopRel.insert( RbstFitPntsLpsPntsRel::value_type ( xyzp.size()-1,
+                                                        std::pair<size_t, size_t > (iPotLoop,iPntInLoop) ) );
+                                        tpeaks.back()._trkptrs.push_back( hitIndex(loopPoints_it->getInEventHitID()) );
+                                        ++iPntInLoop;
+                                }
+                                ++iPotLoop;
+                        }
+
+                        double _tdriftmean = 200.0;
+                        double _tpeakerr = (tclust._maxHitTime - tclust._minHitTime)*invSqrt12;
+
+                        // track fitting objects for this peak
+                        TrkHelix helixfit;
+                        //TrkKalFit seedfit, kalfit;
+                        // create track definitions for the different fits from this initial information
+                        TrkDef helixdef(hits,/*tpeaks[ipeak]*/tpeaks.back()._trkptrs);
+                        helixdef.setTrkT0(tpeaks[ipeak]._tpeak-_tdriftmean,_tpeakerr);
+                        // robust helix fit
+			bool isfitted=_hfit.findHelix(helixdef,helixfit,xyzp);
+                        if(isfitted){
+                                cout<<"Using Robust Fit, Circle Found with center "<<helixfit._center<<" and Rad "<<helixfit._radius<<endl;
+                                helixesfit.push_back(helixfit);
+
+
+                                for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
+                                        XYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
+                                        if ( tmpXYZP._use ) {
+                                                double tmpDist = fabs( sqrt( pow(tmpXYZP._pos.x()-helixesfit.back()._center.x(),2) +
+                                                                pow(tmpXYZP._pos.y()-helixesfit.back()._center.y(),2) ) -
+                                                                helixesfit.back()._radius );
+                                                if ( tmpDist<3.0*tmpXYZP._serr ) {
+                                                        selectedPnts.push_back( potLoops.at(xyzpLoopRel_it->second.first).at(xyzpLoopRel_it->second.second) );
+                                                }
+                                        }
+                                }
+                        }
+			HepVector hpar;
+			HepVector hparerr;
+			_hfit.helixParams(helixfit,hpar,hparerr);
+			HepSymMatrix hcov = vT_times_v(hparerr);
+			HelixTraj seed(hpar,hcov);
+			std::cout<<"fitted "<<isfitted<<" ";
+			seed.printAll(std::cout);
+			if(isfitted) trkhelixes.push_back(seed);
+                }
+
+
+
+                /*
+                for (std::vector<XYZP>::iterator xyzp_it = xyzp.begin(); xyzp_it != xyzp.end(); ++xyzp_it ) {
+                        cout<<" xyzp "<<xyzp_it->_pos<<" serr "<<xyzp_it->_serr<<" use "<<xyzp_it->_use<<endl;
+                }
+                cout<<"-----------------------------------------"<<endl;
+                for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
+                        //cout<<" xyzp "<<xyzpLoopRel_it->first->_pos<<" serr "<<xyzpLoopRel_it->first->_serr<<" use "<<xyzpLoopRel_it->first->_use<<endl;
+                        cout<<" xyzp "<<xyzp.at(xyzpLoopRel_it->first)._pos<<" serr "<<xyzp.at(xyzpLoopRel_it->first)._serr<<" use "<<xyzp.at(xyzpLoopRel_it->first)._use<<endl;
+                }
+                */
+
 
 
 
@@ -911,14 +993,14 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         tmpCircleFound->Update();
 
 
-                        TCanvas *tmpCircleFound3D = new TCanvas("PotCirclesDraw3D","",860,430);
-                        tmpCircleFound3D->Divide(2,1);
+                        TCanvas *tmpCircleFound3D = new TCanvas("PotCirclesDraw3D","",860,860);
+                        tmpCircleFound3D->Divide(2,2);
                         TH2F hHit3DT( "hHit3DT",  "Hits per Event at z crossing", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
-                        TH2F hHit3DL( "hHit3DL",  "Hits per Event at z", 3000, -250.0, 250.0, 1500, -75.0, 75.0 );
-                        hHit3DT.SetXTitle("cm");
-                        hHit3DT.SetYTitle("cm");
-                        hHit3DL.SetXTitle("cm");
-                        hHit3DL.SetYTitle("r, cm");
+                        TH2F hHit3DL( "hHit3DL",  "Hits per Event at z", 3000, -250.0, 250.0, 750, 0, 75.0 );
+                        hHit3DT.SetXTitle("X [cm]");
+                        hHit3DT.SetYTitle("Y [cm]");
+                        hHit3DL.SetXTitle("Z [cm]");
+                        hHit3DL.SetYTitle("R [cm]");
                         tmpCircleFound3D->cd(1);
                         hHit3DT.SetStats(kFALSE);
                         hHit3DT.Draw();
@@ -949,7 +1031,6 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         std::vector<float *> rarr;
                         std::vector<float *> errzarr;
                         std::vector<float *> errrarr;
-
                         for (std::vector<points3D>::iterator potLoops_it = potLoops.begin(); potLoops_it != potLoops.end(); ++potLoops_it) {
                                 ++iCol;
                                 zarr.push_back(new float[potLoops_it->size()]);
@@ -984,11 +1065,112 @@ void ITTrackReco::analyze(art::Event const& event ) {
                                 drawPotCircPnts3D_L.back()->SetMarkerStyle(8);
                                 drawPotCircPnts3D_L.back()->Draw("P");
                         }
+                        for (size_t jLoop = 0; jLoop<zarr.size();++jLoop) {
+                        delete [] zarr.at(jLoop);
+                        delete [] rarr.at(jLoop);
+                        delete [] errzarr.at(jLoop);
+                        delete [] errrarr.at(jLoop);
+                        }
+
+
+                        tmpCircleFound3D->cd(1);
+                        int iRobCirCol = 0;
+                        std::vector<TEllipse *> drawPotCirclesRobustFit;
+                        for (std::vector<TrkHelix>::iterator helixesfit_it = helixesfit.begin(); helixesfit_it != helixesfit.end(); ++helixesfit_it ) {
+                                drawPotCirclesRobustFit.push_back( new TEllipse( helixesfit_it->_center.x()/CLHEP::cm, helixesfit_it->_center.y()/CLHEP::cm, helixesfit_it->_radius/CLHEP::cm, helixesfit_it->_radius/CLHEP::cm) );
+                                drawPotCirclesRobustFit.back()->SetFillStyle(0);
+                                drawPotCirclesRobustFit.back()->SetLineWidth(2);
+                                drawPotCirclesRobustFit.back()->SetLineColor(++iRobCirCol);
+                                drawPotCirclesRobustFit.back()->SetLineStyle(4);
+                                drawPotCirclesRobustFit.back()->Draw("same");
+				tmpCircleFound3D->cd(3);
+                                drawPotCirclesRobustFit.back()->Draw("same");
+
+                        }
+
+
+                        tmpCircleFound3D->cd(3);
+                        hHit3DT.Draw();
+                        innerWall.Draw("same");
+                        outerWall.Draw("same");
+                        tmpCircleFound3D->cd(4);
+                        hHit3DL.Draw();
+                        innerWallL.Draw("same");
+                        outerWallL.Draw("same");
+                        tmpCircleFound3D->cd(3);
+			if(helixesfit.size()>0)
+			  for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
+			    XYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
+			    if ( tmpXYZP._use ) {
+			      double tmpDist = fabs( sqrt( pow(tmpXYZP._pos.x()-helixesfit.back()._center.x(),2) +
+							   pow(tmpXYZP._pos.y()-helixesfit.back()._center.y(),2) ) -
+						     helixesfit.back()._radius );
+			      if ( tmpDist<3.0*tmpXYZP._serr ) {
+				((TEllipse *) drawPotCircPnts3D.at(xyzpLoopRel_it->second.first)->At(xyzpLoopRel_it->second.second))->Draw("same");
+			      }
+			    }
+			  }
+                        tmpCircleFound3D->cd(4);
+                        float * selZarr = new float [selectedPnts.size()];
+                        float * selRarr = new float [selectedPnts.size()];
+                        float * selErrZarr = new float [selectedPnts.size()];
+                        float * selErrRarr = new float [selectedPnts.size()];
+                        int iSelPnt=0;
+                        for (points3D::iterator selectedPnts_it = selectedPnts.begin(); selectedPnts_it != selectedPnts.end(); ++selectedPnts_it) {
+                                selZarr[iSelPnt] = selectedPnts_it->_pos.z()/CLHEP::cm;
+                                selRarr[iSelPnt] = selectedPnts_it->_pos.perp()/CLHEP::cm;
+                                selErrZarr[iSelPnt] = selectedPnts_it->_sigmaz/CLHEP::cm;
+                                selErrRarr[iSelPnt] = selectedPnts_it->_sigmax/CLHEP::cm;
+                                ++iSelPnt;
+                        }
+                        TGraphErrors drawSelPotCircPnts3D_L( selectedPnts.size(),selZarr,selRarr,selErrZarr,selErrRarr );
+			if(selectedPnts.size()){
+			  //drawSelPotCircPnts3D_L.SetMarkerColor(iCol);
+			  drawSelPotCircPnts3D_L.SetMarkerSize(0.8);
+			  drawSelPotCircPnts3D_L.SetMarkerStyle(8);
+			  drawSelPotCircPnts3D_L.Draw("P");
+			}
+			delete [] selZarr;
+                        delete [] selRarr;
+                        delete [] selErrZarr;
+                        delete [] selErrRarr;
+
+                        std::vector<TGraph *> drawTracksT;
+                        std::vector<TGraph *> drawTracksL;
+
+			iRobCirCol = 0;
+			for(std::vector<HelixTraj>::iterator ittrk=trkhelixes.begin();ittrk!=trkhelixes.end();ittrk++){
+			  iRobCirCol ++;
+			  TGraph *xy=new TGraph(400);
+			  TGraph *zr=new TGraph(400);
+			  double flt0=(*ittrk).zFlight(-2000);
+			  double flt1=(*ittrk).zFlight(2000);
+			  // std::cout<<flt0<<" "<<flt1<<std::endl;
+			  for(int i=0;i<1000;i++){
+			    HepPoint pos=(*ittrk).position(flt0+(flt1-flt0)*i/1000);
+			    // std::cout<<i<<" "<<pos<<endl;
+			    xy->SetPoint(i,pos.x()/CLHEP::cm,pos.y()/CLHEP::cm);
+			    zr->SetPoint(i,pos.z()/CLHEP::cm,std::hypot(pos.x()/CLHEP::cm,pos.y()/CLHEP::cm));
+			  }
+			  xy->SetMarkerColor(iRobCirCol);
+			  zr->SetMarkerColor(iRobCirCol);
+			  xy->SetMarkerSize(0.1);
+			  xy->SetMarkerStyle(6);
+			  zr->SetMarkerSize(0.1);
+			  zr->SetMarkerStyle(6);
+			  tmpCircleFound3D->cd(2);
+			  zr->Draw("P");
+			  tmpCircleFound3D->cd(4);
+			  zr->Draw("P");
+
+			  drawTracksT.push_back(xy);
+			  drawTracksL.push_back(zr);
+			}
+
+
 
 
                         //temp El Visual
-                        std::vector<TGraph *> drawTracksT;
-                        std::vector<TGraph *> drawTracksL;
                         std::vector<float *> simXarr;
                         std::vector<float *> simYarr;
                         std::vector<float *> simZarr;
@@ -1071,34 +1253,6 @@ void ITTrackReco::analyze(art::Event const& event ) {
 
                         }
 
-			iCol = 0;
-			for(vector<HelixTraj>::iterator ittrk=trkhelixes.begin();ittrk!=trkhelixes.end();ittrk++){
-			  iCol++;
-			  TGraph *xy=new TGraph(1000);
-			  TGraph *zr=new TGraph(1000);
-			  double flt0=(*ittrk).zFlight(-2000);
-			  double flt1=(*ittrk).zFlight(2000);
-			  // std::cout<<flt0<<" "<<flt1<<std::endl;
-			  for(int i=0;i<1000;i++){
-			    HepPoint pos=(*ittrk).position(flt0+(flt1-flt0)*i/1000);
-			    // std::cout<<i<<" "<<pos<<endl;
-			    xy->SetPoint(i,pos.x()/CLHEP::cm,pos.y()/CLHEP::cm);
-			    zr->SetPoint(i,pos.z()/CLHEP::cm,std::hypot(pos.x()/CLHEP::cm,pos.y()/CLHEP::cm));
-			  }
-			  xy->SetMarkerColor(iCol);
-			  zr->SetMarkerColor(iCol);
-			  xy->SetMarkerSize(0.1);
-			  xy->SetMarkerStyle(6);
-			  zr->SetMarkerSize(0.1);
-			  zr->SetMarkerStyle(6);
-			  tmpCircleFound3D->cd(1);
-			  xy->Draw("P");
-			  tmpCircleFound3D->cd(2);
-			  zr->Draw("P");
-
-			  drawTracksT.push_back(xy);
-			  drawTracksL.push_back(zr);
-			}
 
 
                         cerr << "Double click in the canvas_Fake to continue:" ;
@@ -1132,7 +1286,7 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         }
 
                         delete tmpCircleFound3D;
-                        int iLoop = 0;
+                        ///*int*/ iLoop = 0;
                         for (std::vector<TClonesArray *>::iterator drawPotCircPnts3D_it = drawPotCircPnts3D.begin(); drawPotCircPnts3D_it != drawPotCircPnts3D.end(); ++drawPotCircPnts3D_it ) {
                                 (*drawPotCircPnts3D_it)->Delete();
                                 //if ( drawPotCircPnts3D_L.at(iLoop)!=0x0 ) drawPotCircPnts3D_L.at(iLoop)->Delete();
@@ -1141,6 +1295,15 @@ void ITTrackReco::analyze(art::Event const& event ) {
                                 //if ( errzarr.at(iLoop)!=0x0 ) delete [] errzarr.at(iLoop);
                                 //if ( errrarr.at(iLoop)!=0x0 ) delete [] errrarr.at(iLoop);
                         }
+
+                        for (std::vector<TEllipse *>::iterator drawPotCirclesRobustFit_it = drawPotCirclesRobustFit.begin(); drawPotCirclesRobustFit_it != drawPotCirclesRobustFit.end(); ++drawPotCirclesRobustFit_it ) {
+                                delete *drawPotCirclesRobustFit_it;
+                        }
+			
+			for_each(drawTracksT.begin(), drawTracksT.end(), std::bind2nd(std::mem_fun(&TGraph::Delete),""));
+			for_each(drawTracksL.begin(), drawTracksL.end(), std::bind2nd(std::mem_fun(&TGraph::Delete),""));
+
+
 
                 }
 

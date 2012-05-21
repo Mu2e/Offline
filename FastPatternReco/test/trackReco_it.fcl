@@ -121,21 +121,25 @@ physics :
       #nsigmaForTimeSel      : 1.250               #-1: use default time window, x>0: x sigma of the fitted time peak  (ex. 1.960, 1.645 ..)
       #protonRejecEff        : 1.00                #efficiency of proton rejection, x<=0: disable the proton rejection               (to switch on the proton rejection both protonRejecEff and pulseCut must be on)
       #pulseCut              : 0.015               #pulse cut (in MeV) for the proton rejection, x<=0: disable the proton rejection  (to switch on the proton rejection both protonRejecEff and pulseCut must be on)
-      #trackerStepPoints    : tracker
-      #minEnergyDep         : 0.0001
-      #minHits              : 5
-      doDisplay            : true
+      #trackerStepPoints     : tracker
+      #minEnergyDep          : 0.0001
+      #minHits               : 5
+      doDisplay             : true
       diagLevel             : 2
       elextractModuleLabel  : extractElData
-      #clickToAdvance       : false
+      #clickToAdvance        : false
+      
 
-      HelixFit :
+      # Helix fit configuration
+        HelixFit :
         {
-                diagLevel                               : 2
-		nsigma : 1000
-		minzsep: 0.1
+        minNHit               : 10
+        maxniter              : 100
+        minlambda             : 0.1
+	minzsep: 0.1
         }
 
+      
     }
   }
 
