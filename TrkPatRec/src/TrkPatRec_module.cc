@@ -1,9 +1,9 @@
 
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.22 2012/04/14 17:54:02 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/04/14 17:54:02 $
+// $Id: TrkPatRec_module.cc,v 1.23 2012/05/21 07:41:55 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2012/05/21 07:41:55 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -36,6 +36,7 @@
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/TrkHelixFit.hh"
 #include "TrkBase/TrkPoca.hh"
+#include "TrkPatRec/inc/TrkPatRec.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 
@@ -60,34 +61,8 @@ using namespace std;
 
 namespace mu2e 
 {
-// struct to keep track of hits in a time peak
-  struct TrkTimePeak {
-    std::vector<hitIndex> _trkptrs;
-    double _tpeak;
-    double _peakmax;
-    TrkTimePeak(double tpeak,double ymax) : _tpeak(tpeak),_peakmax(ymax) {}
-    bool operator < (TrkTimePeak const& other ) const { return _trkptrs.size() < other._trkptrs.size(); }
-    bool operator > (TrkTimePeak const& other ) const { return _trkptrs.size() > other._trkptrs.size(); }
-  };
 
-// struct for flagging hits
-  struct TrkHitFlag {
-#define TIGHTBIT 0x1
-#define LOOSEBIT 0x2
-#define VERYLOOSEBIT 0x4
-#define DELTABIT 0x8
-    TrkHitFlag() : _iflag(0) {}
-    void setVeryLoose() { _iflag |= VERYLOOSEBIT; }
-    void setLoose() { _iflag |= LOOSEBIT; }
-    void setTight() { _iflag |= TIGHTBIT; }
-    void setDelta() { _iflag |= DELTABIT; }
-    bool veryLoose() const { return (_iflag & VERYLOOSEBIT) != 0; }
-    bool loose() const { return (_iflag & LOOSEBIT) != 0; }
-    bool tight() const { return (_iflag & TIGHTBIT) != 0; }
-    bool delta() const { return (_iflag & DELTABIT) != 0; }
-    unsigned _iflag;
-  };
-  class TrkPatRec : public art::EDProducer
+class TrkPatRec : public art::EDProducer
   {
   public:
     enum fitType {helixFit=0,seedFit,kalFit};
