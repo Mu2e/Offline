@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.17 2012/05/16 19:10:15 genser Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.18 2012/05/22 21:26:57 genser Exp $
 // $Author: genser $
-// $Date: 2012/05/16 19:10:15 $
+// $Date: 2012/05/22 21:26:57 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -72,8 +72,13 @@ namespace mu2e {
     // we readin/store crs parameters needed in more than one function
     _diagLevel = _config.getInt("crs.verbosityLevel",0);
 
-    _hasPassiveShield =  _config.getBool("crs.hasPassiveShield", true);
-    _hasActiveShield  =  _config.getBool("crs.hasActiveShield",  true);
+    _hasPassiveShield =  _config.getBool("crs.hasPassiveShield");
+    _hasActiveShield  =  _config.getBool("crs.hasActiveShield");
+
+    if ( !_hasPassiveShield && !_hasActiveShield ){
+      throw cet::exception("GEOM")
+        << " CosmicRayShield requested but none of the parts selected \n";
+    }
 
     if (_hasPassiveShield) {
       _HallSteelHalfThick     = _config.getDouble("fluxcrv.HallSteelHalfThick");
