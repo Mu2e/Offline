@@ -1,10 +1,15 @@
-  $Id: v1_1_9.txt,v 1.14 2012/05/21 19:34:02 kutschke Exp $
+  $Id: v1_1_9.txt,v 1.15 2012/05/22 16:49:22 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/05/21 19:34:02 $
+  $Date: 2012/05/22 16:49:22 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+14) May 22, 2012 kutschke
+    SConstruct
+      Add FastPatternReco to the list of packages not built unless the
+      BaBar code is present.
 
 13) May 21, 2012 kutschke
     EventDisplay/test/timeWindowDisplay.fcl
