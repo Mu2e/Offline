@@ -1,6 +1,6 @@
-  $Id: v1_1_9.txt,v 1.16 2012/05/22 21:42:10 brownd Exp $
+  $Id: v1_1_9.txt,v 1.17 2012/05/22 21:42:51 brownd Exp $
   $Author: brownd $
-  $Date: 2012/05/22 21:42:10 $
+  $Date: 2012/05/22 21:42:51 $
 
  Still under construction
 
@@ -83,7 +83,6 @@
       Mu2eG4/test/geom_01.txt
 
 
->>>>>>> 1.15
 7) May 10, 2012 mjlee
    MECOStyleProtonAbsorberGeom is prepared for the geometry service 
    of current style (or MECO style) cone-shape proton absorber. 
