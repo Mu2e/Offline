@@ -1,10 +1,10 @@
-//
+
 // class to resolve hit ambiguities by panel, assuming a reasonable track
 // fit as input
 //
-// $Id: PanelAmbigResolver.cc,v 1.1 2012/05/14 19:20:02 brownd Exp $
+// $Id: PanelAmbigResolver.cc,v 1.2 2012/05/22 21:35:42 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Date: 2012/05/22 21:35:42 $
 //
 #include "KalmanTests/inc/PanelAmbigResolver.hh"
 #include "KalmanTests/inc/KalFit.hh"
@@ -47,9 +47,10 @@ namespace mu2e {
   PanelAmbigResolver::PanelAmbigResolver(fhicl::ParameterSet const& pset) : AmbigResolver(pset),
     _minsep(pset.get<double>("minChisqSep",6.0)),
     _inactivepenalty(pset.get<double>("inactivePenalty",16.0)),
-    _penaltyres(pset.get<double>("PenaltyResolution",0.5)),
-    _setactivity(pset.get<bool>("sethitactivity",true))
+    _penaltyres(pset.get<double>("PenaltyResolution",0.5))
   {
+    double nullerr = pset.get<double>("NullAmbigPenalty",0.05);
+    _nullerr2 = nullerr*nullerr;
     std::vector<int> allowed = pset.get< std::vector<int> >("AllowedHitStates");
     for(std::vector<int>::iterator ial = allowed.begin();ial != allowed.end();++ial){
       if(*ial >= TrkStrawHitState::noambig && *ial < TrkStrawHitState::nstates){
@@ -95,29 +96,24 @@ namespace mu2e {
       fillResult(pinfo,kfit._t0,result);
       if(result._status == 0)results.push_back(result);
     } while(tshsv.increment());
-// sort the results to have lowest chisquard first
-    std::sort(results.begin(),results.end(),resultcomp());
-// compare the chisquared of the top 2 values: if these are separated by more than the minimum,
-// we consider this panel fully resolved
-    if(results.size() == 1 || (results.size() > 1 && results[1]._chisq - results[0]._chisq > _minsep) ){
-      results[0]._state.setHitStates(_setactivity);
-// apply the state of the solution
-    } else if(results.size()>1){
-// for now, set the hit state according to the best result.  In future, maybe we want to treat
-// cases with different ambiguities differently from inactive hits
-      results[0]._state.setHitStates(_setactivity);
-// determine the state of hits one-by-one: if they are different between patterns consistent within the
-// minimum, inflate their errors
+    if(results.size() > 0){
+      // sort the results to have lowest chisquard first
+      std::sort(results.begin(),results.end(),resultcomp());
+      // for now, set the hit state according to the best result.  In future, maybe we want to treat
+      // cases with different ambiguities differently from inactive hits
+      results[0]._state.setHitStates();
+      // determine the state of hits one-by-one: if they are different between patterns consistent within the
+      // minimum, inflate their errors
       size_t nhits = results[0]._state.nHits();
-      unsigned ires(1);
-      do {
+      unsigned ires(0);
+      while (ires < results.size() && results[ires]._chisq - results[0]._chisq < _minsep){
 	for(size_t ihit=0;ihit<nhits;++ihit){
 	  if(results[ires]._state.states()[ihit] != results[0]._state.states()[ihit]){
 	    results[ires]._state.states()[ihit].hit()->setPenalty(_penaltyres);
 	  }
 	}
 	++ires;
-      } while (ires < results.size() && results[ires]._chisq - results[0]._chisq < _minsep);
+      }
     }
   }
 
@@ -174,6 +170,7 @@ namespace mu2e {
     std::vector<TrkStrawHitState> const& hitstates = result._state.states();
     if(ntsh != hitstates.size())  
       throw cet::exception("RECO")<<"mu2e::PanelAmbigResolver: inconsistent hits" << std::endl;
+    unsigned nused(0);
     for(size_t itsh=0;itsh<ntsh;++itsh){
 // only accumulate if the state is active
       TrkStrawHitState const& tshs = hitstates[itsh];
@@ -181,7 +178,8 @@ namespace mu2e {
 // consistency check
       if(tshs.hit() != tshui._tsh)
 	throw cet::exception("RECO")<<"mu2e::PanelAmbigResolver: inconsistent hits" << std::endl;
-      if(tshs.state() != TrkStrawHitState::inactive){
+      if(tshs.state() != TrkStrawHitState::inactive && tshs.state() != TrkStrawHitState::ignore){
+	++nused;
 	double w = tshui._uwt;
 	double r = tshui._tsh->driftRadius();
 	double v = tshui._tsh->driftVelocity();
@@ -189,6 +187,9 @@ namespace mu2e {
 	if(tshs.state() == TrkStrawHitState::negambig){
 	  r *= -1;
 	  v *= -1;
+	} else if(tshs.state() == TrkStrawHitState::noambig){
+	  r = 0;
+	  w = 1.0/(1.0/w + _nullerr2);
 	}
 	double u = tshui._upos + r;
 	wsum += w;
@@ -200,43 +201,48 @@ namespace mu2e {
       } else
 	chi2penalty += _inactivepenalty;
     }
-// add track consistency information; position and t0
-    double t0wt = 1.0/(t0._t0err*t0._t0err);
-    vvwsum += t0wt; // t0 has unit derrivative
-// track position is like a hit, but with r=v=0
-    wsum += pinfo._utwt;
-    uwsum += pinfo._utpos*pinfo._utwt;
-    uuwsum += pinfo._utpos*pinfo._utpos*pinfo._utwt;
-// now compute the scalar, vector, and tensor term for the 2nd-order chisquared expansion
-    double alpha = uuwsum;
-    CLHEP::HepVector beta(2);
-    beta(1) = uwsum;
-    beta(2) = uvwsum;
-    HepSymMatrix gamma(2);
-    gamma.fast(1,1) = wsum;
-    gamma.fast(2,2) = vvwsum;
-    gamma.fast(1,2) = vwsum;
-// invert and solve
-    gamma.invert(result._status);
-    if(result._status == 0){
-      result._dcov = gamma;
-      result._delta = gamma * beta;
-      result._chisq = alpha - gamma.similarity(beta) + chi2penalty;
-// debug printout
-      double g11 = gamma.fast(1,1);
-      double g22 = gamma.fast(2,2);
-      double g12 = gamma.fast(1,2);
-      double g21 = gamma.fast(2,1);
-      double b1 = beta(1);
-      double b2 = beta(2);
-      double d1 = result._delta(1);
-      double d2 = result._delta(2);
-      double sim = gamma.similarity(beta);
-      double test = alpha - sim;
-      double test2 = alpha -2*dot(beta,result._delta) + gamma.similarity(result._delta);
+    if(nused > 0){
+      // add track consistency information; position and t0
+      double t0wt = 1.0/(t0._t0err*t0._t0err);
+      vvwsum += t0wt; // t0 has unit derrivative
+      // track position is like a hit, but with r=v=0
+      wsum += pinfo._utwt;
+      uwsum += pinfo._utpos*pinfo._utwt;
+      uuwsum += pinfo._utpos*pinfo._utpos*pinfo._utwt;
+      // now compute the scalar, vector, and tensor term for the 2nd-order chisquared expansion
+      double alpha = uuwsum;
+      CLHEP::HepVector beta(2);
+      beta(1) = uwsum;
+      beta(2) = uvwsum;
+      HepSymMatrix gamma(2);
+      gamma.fast(1,1) = wsum;
+      gamma.fast(2,2) = vvwsum;
+      gamma.fast(1,2) = vwsum;
+      // invert and solve
+      gamma.invert(result._status);
+      if(result._status == 0){
+	result._dcov = gamma;
+	result._delta = gamma * beta;
+	result._chisq = alpha - gamma.similarity(beta) + chi2penalty;
+	// debug printout
+#ifdef DEBUG
+	double g11 = gamma.fast(1,1);
+	double g22 = gamma.fast(2,2);
+	double g12 = gamma.fast(1,2);
+	double g21 = gamma.fast(2,1);
+	double b1 = beta(1);
+	double b2 = beta(2);
+	double d1 = result._delta(1);
+	double d2 = result._delta(2);
+	double sim = gamma.similarity(beta);
+	double test = alpha - sim;
+	double test2 = alpha -2*dot(beta,result._delta) + gamma.similarity(result._delta);
+#endif
 // add a penalty term (if any) for this particular pattern.  Still to be written, FIXME!!!
-//  addPatternPenalty();
+	//  addPatternPenalty();
+      }
+    } else {
+      result._status = -100;
     }
   }
-
 }

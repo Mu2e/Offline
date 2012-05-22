@@ -1,9 +1,9 @@
 //
 // Object to allow exhaustively iterating over state permutations of a set of TrkStrawHits
 //
-// $Id: TrkStrawHitState.cc,v 1.1 2012/05/14 19:20:02 brownd Exp $
+// $Id: TrkStrawHitState.cc,v 1.2 2012/05/22 21:35:42 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Date: 2012/05/22 21:35:42 $
 //
 // Original author David Brown, LBNL
 //
@@ -16,9 +16,9 @@
 namespace mu2e 
 {
 
-  TrkStrawHitState::TrkStrawHitState(TrkStrawHit* tsh) : _state(unknown), _tsh(tsh) {
+  TrkStrawHitState::TrkStrawHitState(TrkStrawHit* tsh) : _state(ignore), _tsh(tsh) {
     if(tsh->isActive()){
-      if(tsh->ambig() < 0)
+      if(tsh->ambig() > 0)
 	_state = negambig;
       else if(tsh->ambig() < 0)
 	_state = posambig;
@@ -29,42 +29,47 @@ namespace mu2e
   }
 
   void
-  TrkStrawHitState::setHitState(bool setactivity) const {
+  TrkStrawHitState::setHitState() const {
 // the sign here is a result of the perverse convention in the BaBar
 // code that a track displaced from the wire in the poAsitive 'U' direction has negative DOCA
     if(_tsh != 0){
       _tsh->setAmbigUpdate(true);
       switch (_state) {
 	case inactive:
-	  if(setactivity)_tsh->setActivity(false);
+	  _tsh->setActivity(false);
 	  break;
-	case unknown: default:
+	case ignore : default:
 	  break;
 	case noambig:
+	  _tsh->setActivity(true);
 	  _tsh->setAmbig(0);
-	  if(setactivity)_tsh->setActivity(true);
 	  break;
 	case negambig:
-	  if(setactivity)_tsh->setActivity(true);
+	  _tsh->setActivity(true);
 	  _tsh->setAmbig(1);
 	  break;
 	case posambig:
-	  if(setactivity)_tsh->setActivity(true);
+	  _tsh->setActivity(true);
 	  _tsh->setAmbig(-1);
 	  break;
       }
     }
   }
 
-  TrkStrawHitStateVector::TrkStrawHitStateVector() :  _state(0), _nstates(0) {
+  TrkStrawHitStateVector::TrkStrawHitStateVector() :  _nstates(0) {
   }
 
-  TrkStrawHitStateVector::TrkStrawHitStateVector(std::vector<TrkStrawHit*> const& tshv,TSHSSV const& allowed) : _allowed(allowed) {
+  TrkStrawHitStateVector::TrkStrawHitStateVector(TSHV const& tshv,TSHSSV const& allowed) : _allowed(allowed) {
     _tshsv.reserve(tshv.size());
-    for(std::vector<TrkStrawHit*>::const_iterator itsh=tshv.begin();itsh != tshv.end(); ++itsh){
-      _tshsv.push_back(TrkStrawHitState(*itsh));
+    for(TSHV::const_iterator itsh=tshv.begin();itsh != tshv.end(); ++itsh){
+// only record those hits whose states are currently allowed.  The others will be held frozen
+      TrkStrawHitState tshs(*itsh);
+      TSHSSV::const_iterator ish = std::find(_allowed.begin(),_allowed.end(),tshs.state());
+      if(ish != _allowed.end())
+	_tshsv.push_back(tshs);
+      else
+	_tshsv.push_back(TrkStrawHitState(TrkStrawHitState::ignore,*itsh));
     }
-    _nstates = ipow(_allowed.size(),_tshsv.size());
     vectToInt();
   }
 
@@ -84,16 +89,15 @@ namespace mu2e
   }
 
   void
-  TrkStrawHitStateVector::setHitStates(bool setactivity) const {
+  TrkStrawHitStateVector::setHitStates() const {
     for(size_t itsh =0; itsh < _tshsv.size(); ++itsh){
-	_tshsv[itsh].setHitState(setactivity);
+	_tshsv[itsh].setHitState();
     }
   }
   
   bool
   TrkStrawHitStateVector::increment() {
-    if(_state < nStates()-1){
-      ++_state;
+    if(incrementState()){
       intToVect();
       return true;
     } else
@@ -102,8 +106,7 @@ namespace mu2e
 
   bool
   TrkStrawHitStateVector::decrement() {
-    if(_state > 0){
-      --_state;
+    if(decrementState()){
       intToVect();
       return true;
     } else
@@ -112,38 +115,77 @@ namespace mu2e
 
   void
   TrkStrawHitStateVector::reset() {
-    _state = 0;
+    resetState();
     intToVect();
+  }
+
+  bool
+  TrkStrawHitStateVector::incrementState() {
+    bool retval(false);
+// increment the first possible state
+    for(size_t itsh=0;itsh<_tshsv.size();++itsh){
+      if(_tshsv[itsh].state() != TrkStrawHitState::ignore){
+	if(_state[itsh] < (int)(_allowed.size()-1)){
+	  ++_state[itsh];
+	  retval = true;
+	  break;
+	} else {
+	  _state[itsh] = 0;
+	}
+      }
+    }
+    return retval;
+  }
+
+  bool
+  TrkStrawHitStateVector::decrementState() {
+    bool retval(false);
+// decrement the first possible state
+    for(size_t itsh=0;itsh<_tshsv.size();++itsh){
+      if(_tshsv[itsh].state() != TrkStrawHitState::ignore){
+	if(_state[itsh] > 0){
+	  --_state[itsh];
+	  retval = true;
+	  break;
+	} else {
+	  _state[itsh] = _allowed.size()-1;
+	}
+      }
+    }
+    return retval;
+  }
+
+  void 
+  TrkStrawHitStateVector::resetState() {
+    for(size_t itsh=0;itsh<_tshsv.size();++itsh){
+      if(_tshsv[itsh].state() != TrkStrawHitState::ignore){
+	_state[itsh] = 0;
+      }
+    }
   }
 
   void
   TrkStrawHitStateVector::intToVect() {
-// work from the highest bits to the lowest
-// using a floating rep of the state
-    unsigned state = _state;
-    for(int itsh=_tshsv.size()-1;itsh>=0;--itsh){
-      unsigned npow = ipow(_allowed.size(),(unsigned)itsh);
-      unsigned istate = state/npow;
-// check
-      if(istate < _allowed.size()){
-	_tshsv[itsh].setState(_allowed[istate]);
-	state -= istate*npow;
-      } else {
-	throw cet::exception("RECO")<<"mu2e::TrkStrawHitStateVector: illegal state" << std::endl;
-	state = 0.0;
+    for(size_t itsh=0;itsh<_tshsv.size();++itsh){
+      if(_tshsv[itsh].state() != TrkStrawHitState::ignore){
+	_tshsv[itsh].setState(_allowed[_state[itsh]]);
       }
     }
-// check for completeness
-    if(state != 0)throw cet::exception("RECO")<<"mu2e::TrkStrawHitStateVector: illegal set of states" << std::endl;
   }
 
   void
   TrkStrawHitStateVector::vectToInt() {
-    _state = 0;
-    for(unsigned itsh=0;itsh<_tshsv.size();++itsh){
-      TSHSSV::const_iterator ish = std::find(_allowed.begin(),_allowed.end(),_tshsv[itsh].state());
-      if(ish == _allowed.end())throw cet::exception("RECO")<<"mu2e::TrkStrawHitStateVector: illegal state" << std::endl;
-      _state += ((ish-_allowed.begin())/sizeof(TSHSSV::const_iterator))*ipow(_allowed.size(),itsh);
+    _nstates = 1;
+    for(size_t itsh=0;itsh<_tshsv.size();++itsh){
+      if(_tshsv[itsh].state() != TrkStrawHitState::ignore){
+	TSHSSV::const_iterator ish = std::find(_allowed.begin(),_allowed.end(),_tshsv[itsh].state());
+	if(ish == _allowed.end())throw cet::exception("RECO")<<"mu2e::TrkStrawHitStateVector: illegal state" << std::endl;
+	size_t state = (ish-_allowed.begin());
+	_state.push_back(state);
+	_nstates *= _allowed.size();
+      } else {
+	_state.push_back(-1);
+      }
     }
   }
 

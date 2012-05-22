@@ -538,6 +538,7 @@ void KalFitRes(TTree* trks) {
 
 void KalFitAmbig(TTree* t) {
   if(!donecuts)KalCuts();
+  gStyle->SetOptStat(1111);
 
   TCut gambig("_mcambig==_ambig");
   TCut bambig("_mcambig!=_ambig&&_ambig!=0");
@@ -546,11 +547,11 @@ void KalFitAmbig(TTree* t) {
   TCut goodtrk =mcsel+reco+rpitch;
 //  TCut goodtrk ="fitstatus>0";
 
-  TH1F* rdg = new TH1F("rdg","Ambiguity vs Drift Radius;true radius (mm);N hits",100,0.0,2.55);
-  TH1F* rdn = new TH1F("rdn","Ambiguity vs Drift Radius;true radius (mm);N hits",100,0.0,2.55);
-  TH1F* rdb = new TH1F("rdb","Ambiguity vs Drift Radius;true radius (mm);N hits",100,0.0,2.55);
-  TH1F* rda = new TH1F("rda","Drift Radius;true radius (mm)",100,0.0,2.55);
-  TH1F* rdi = new TH1F("rdi","Drift Radius;true radius (mm)",100,0.0,2.55);
+  TH1F* rdg = new TH1F("rdg","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
+  TH1F* rdn = new TH1F("rdn","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
+  TH1F* rdb = new TH1F("rdb","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
+  TH1F* rda = new TH1F("rda","Drift radius;true radius (mm)",100,0.0,2.7);
+  TH1F* rdi = new TH1F("rdi","Drift radius;true radius (mm)",100,0.0,2.7);
   rdg->SetLineColor(kGreen);
   rdn->SetLineColor(kBlue);
   rdb->SetLineColor(kRed);
@@ -558,7 +559,7 @@ void KalFitAmbig(TTree* t) {
   rdi->SetLineColor(kCyan);
   rdg->SetStats(0);
   rdn->SetStats(0);
-  rdb->SetStats(0);
+//  rdb->SetStats(0);
   rdi->SetStats(0);
   rda->SetStats(0);
   rdg->Sumw2();
@@ -591,9 +592,9 @@ void KalFitAmbig(TTree* t) {
 //  t->Project("frdb","_mcdist",mcsel+active+(!ambig)+(!goodfit));
 
 
-  TH1F* momres0 = new TH1F("momres0","momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
-  TH1F* momres1 = new TH1F("momres1","momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
-  TH1F* momres2 = new TH1F("momres2","momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
+  TH1F* momres0 = new TH1F("momres0","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
+  TH1F* momres1 = new TH1F("momres1","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
+  TH1F* momres2 = new TH1F("momres2","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
   momres0->SetLineColor(kBlack);
   momres1->SetMarkerColor(kCyan);
   momres1->SetMarkerStyle(4);
@@ -604,10 +605,10 @@ void KalFitAmbig(TTree* t) {
   t->Project("momres1","fitmom-mcentmom",goodtrk&&"fitstatus==1");
   t->Project("momres2","fitmom-mcentmom",goodtrk&&"fitstatus==2");
 
-  TH1F* afg = new TH1F("afg","Hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c);Hit Fraction",41,-4,4);
-  TH1F* afn = new TH1F("afn","Hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c):Hit Fraction",41,-4,4);
-  TH1F* afb = new TH1F("afb","Hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c);Hit Fraction",41,-4,4);
-  TH1F* afa = new TH1F("afa","Hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c);Hit Fraction",41,-4,4);
+  TH1F* afg = new TH1F("afg","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c);hit fraction",41,-4,4);
+  TH1F* afn = new TH1F("afn","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c):hit fraction",41,-4,4);
+  TH1F* afb = new TH1F("afb","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c);hit fraction",41,-4,4);
+  TH1F* afa = new TH1F("afa","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c);hit fraction",41,-4,4);
   afg->SetStats(0);
   afn->SetStats(0);
   afb->SetStats(0);
@@ -636,7 +637,7 @@ void KalFitAmbig(TTree* t) {
   ambigcan->cd(1);
   rda->Draw();
   rdi->Draw("same");
-  TLegend* drleg = new TLegend(0.4,0.3,0.8,0.6);
+  TLegend* drleg = new TLegend(0.15,0.35,0.55,0.5);
   char dtitle[100];
   snprintf(dtitle,100,"%4.0f Active hits",rda->GetEntries());
   drleg->AddEntry(rda,dtitle,"l");
@@ -651,14 +652,14 @@ void KalFitAmbig(TTree* t) {
   ex->SetParName(0,"ExpNorm");
   ex->SetParName(1,"Lambda");
   ex->SetParName(2,"Slope");
-  ex->SetParName(3,"Offset");
+  ex->SetParName(3,"Intercept");
   rdb->SetMaximum(1.1);
   rdb->SetMinimum(0.0);
   rdb->Fit(ex,"L");
   rdn->Draw("same");
   rdg->Draw("same");
 
-  TLegend* leg = new TLegend(0.3,0.3,0.8,0.5);
+  TLegend* leg = new TLegend(0.16,0.35,0.625,0.6);
   char title[80];
   snprintf(title,80,"Correct ambiguity %4.3f",nright/ntotal);
   leg->AddEntry(rdg,title,"l");
@@ -689,7 +690,7 @@ void KalFitAmbig(TTree* t) {
   momres0->Fit(degau);
   momres1->Draw("psame");
   momres2->Draw("psame");
-  TLegend* mleg = new TLegend(0.1,0.6,0.4,0.8);
+  TLegend* mleg = new TLegend(0.13,0.6,0.43,0.85);
   snprintf(title,80,"%4.0f All Fits",momres0->GetEntries());
   mleg->AddEntry(momres0,title,"l");
   snprintf(title,80,"%4.0f Converged Fits",momres1->GetEntries());
@@ -703,10 +704,10 @@ void KalFitAmbig(TTree* t) {
   afg->Draw();
   afn->Draw("same");
   afb->Draw("same");
-  TLegend* fleg = new TLegend(0.3,0.3,0.8,0.5);
-  fleg->AddEntry(afg,"Correct Ambiguity Fraction","l");
-  fleg->AddEntry(afn,"No Ambiguity Fraction","l");
-  fleg->AddEntry(afb,"Incorrect Ambiguity Fraction","l");
+  TLegend* fleg = new TLegend(0.16,0.35,0.625,0.6);
+  fleg->AddEntry(afg,"Correct Ambiguity","l");
+  fleg->AddEntry(afn,"No Ambiguity","l");
+  fleg->AddEntry(afb,"Incorrect Ambiguity","l");
   fleg->Draw();
 
   ambigcan->cd(0);
@@ -863,3 +864,64 @@ void KalFitNHits(TTree* t){
   leg->Draw();
 }
 
+void KalFitNactive(TTree* t) {
+  if(!donecuts)KalCuts();
+  gStyle->SetOptStat(111111);
+  TCut pure("nactive-ncactive==0");
+  TCut goodtrk =mcsel+reco+rpitch;
+
+  TH1F* dna = new TH1F("dna","N non-conversion hits active in fit;N_{active}-N_{active,conversion}",10,-0.5,9.5);
+  t->Project("dna","nactive-ncactive",goodtrk);
+
+  TH1F* momres0 = new TH1F("momres0","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
+  TH1F* momres1 = new TH1F("momres1","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
+  TH1F* momres2 = new TH1F("momres2","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
+  momres0->SetLineColor(kBlack);
+  momres1->SetMarkerColor(kCyan);
+  momres1->SetMarkerStyle(4);
+  momres2->SetMarkerColor(kOrange);
+  momres2->SetMarkerStyle(5);
+ //  momres->SetStats(0);
+  t->Project("momres0","fitmom-mcentmom",goodtrk);
+  t->Project("momres1","fitmom-mcentmom",goodtrk&&pure);
+  t->Project("momres2","fitmom-mcentmom",goodtrk&&!pure);
+
+  TCanvas* ncan = new TCanvas("ncan","N hits",1000,800);
+  ncan->Divide(1,2);
+  ncan->cd(2);
+  //gPad->SetLogy();
+  dna->Draw();
+
+  ncan->cd(1);
+  TF1* degau = new TF1("degau",doublegausexp,-1.5,1.5,7);
+  degau->SetParName(0,"Norm");
+  degau->SetParName(1,"GTailFrac");
+  degau->SetParName(2,"ETailFrac");
+  degau->SetParName(3,"Mean");
+  degau->SetParName(4,"CoreSig");
+  degau->SetParName(5,"GTailSig");
+  degau->SetParName(6,"ETailLambda");
+  double integral = momres0->GetEntries()*momres0->GetBinWidth(1);
+  degau->SetParameters(integral,0.1,0.2,0.0,0.3*momres0->GetRMS(),2*momres0->GetRMS(),0.5*momres0->GetRMS(),0.25);
+  degau->SetParLimits(1,0.02,0.3);
+  degau->SetParLimits(2,0.02,0.3);
+  degau->SetParLimits(4,0.05,momres0->GetRMS());
+  degau->SetParLimits(5,0.12,2*momres0->GetRMS());
+  degau->SetParLimits(6,0.1,momres0->GetRMS());
+
+  gPad->SetLogy();
+  momres0->Fit(degau);
+  momres1->Draw("psame");
+  momres2->Draw("psame");
+  TLegend* mleg = new TLegend(0.13,0.6,0.43,0.85);
+  char title[80];
+  snprintf(title,80,"%4.0f All Fits",momres0->GetEntries());
+  mleg->AddEntry(momres0,title,"l");
+  snprintf(title,80,"%4.0f Pure conversion hits",momres1->GetEntries());
+  mleg->AddEntry(momres1,title,"p");
+  snprintf(title,80,"%4.0f >=1 non-conversion hits",momres2->GetEntries());
+  mleg->AddEntry(momres2,title,"p");
+  mleg->Draw();
+
+
+}

@@ -1,9 +1,9 @@
 //
 // Object to allow exhaustively iterating over state permutations of a set of TrkStrawHits
 //
-// $Id: TrkStrawHitState.hh,v 1.1 2012/05/14 19:20:02 brownd Exp $
+// $Id: TrkStrawHitState.hh,v 1.2 2012/05/22 21:35:42 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Date: 2012/05/22 21:35:42 $
 //
 #ifndef TrkStrawHitState_HH
 #define TrkStrawHitState_HH
@@ -15,22 +15,21 @@ namespace mu2e {
 // class to describe the ambiguity and activity state of a single TrkStrawHit
   class TrkStrawHitState {
     public:
-      enum TSHState {unknown=-1,noambig=0,negambig,posambig,inactive,nstates};
+      enum TSHState {ignore=-1,noambig=0,negambig,posambig,inactive,nstates};
       // set state explicitly.  
-      TrkStrawHitState(TSHState state=unknown) : _state(state), _tsh(0) {}
+      TrkStrawHitState(TSHState state=ignore, TrkStrawHit* tsh=0) : _state(state), _tsh(tsh) {}
       // set state from an existing strawhit
       TrkStrawHitState(TrkStrawHit* tsh);
       // acces the underlying hit
       TrkStrawHit* hit() { return _tsh; }
       const TrkStrawHit* hit() const { return _tsh; }
       // set the state of the straw hit to correspond to its cached hit
-      void setHitState(bool setactivity) const;
+      void setHitState() const;
       // return the state as an integer
       TSHState state() const { return _state; }
       // total number of states
       static unsigned nStates() { return nstates; }
       // return to default state
-      void reset() { _state=unknown; }
       void setState(TSHState state) { _state = state; }
       // comparators
       bool operator == (TrkStrawHitState const& other) const { return _state == other._state; }
@@ -54,7 +53,7 @@ namespace mu2e {
       TrkStrawHitStateVector(TrkStrawHitStateVector const& other);
       TrkStrawHitStateVector& operator =(TrkStrawHitStateVector const& other);
       // set the state of the referenced TrkStrawHits.
-      void setHitStates(bool setactivity) const;
+      void setHitStates() const;
       // access the raw states
       TSHSV const & states() const { return _tshsv; }
       TSHSV & states() { return _tshsv; }
@@ -68,10 +67,13 @@ namespace mu2e {
       // return the sum of all penalties for the states of each TrkStrawHit
       static unsigned ipow(unsigned base, unsigned exp);
      private:
-      TSHSV _tshsv;
+      TSHSV _tshsv; // vector of actua states
       TSHSSV _allowed; // allowed states
-      unsigned _state; // integer representing the current state
+      std::vector<int> _state; // integer representation of the state
       unsigned _nstates; // cache of the number of states
+      bool incrementState(); // increment state integers;
+      bool decrementState(); // decrement state integers;
+      void resetState(); // reset state integers;
       void intToVect();  // transform integer into state vector for each hit
       void vectToInt(); // transform state vector of each hit into integer
   };
