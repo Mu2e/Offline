@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.2 2012/02/08 16:46:30 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/02/08 16:46:30 $
+# $Id: SConscript,v 1.3 2012/05/22 06:37:04 tassiell Exp $
+# $Author: tassiell $
+# $Date: 2012/05/22 06:37:04 $
 #
 # Original author Rob Kutschke.
 #
@@ -13,6 +13,12 @@ Import('env')
 # Then guess at the correct location of Spectrum and MLP.
 rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
              'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
+
+
+babarlibs = [ 'BaBar_KalmanTrack', 'BaBar_DetectorModel',  'BaBar_TrkBase',    'BaBar_BField',
+              'BaBar_TrajGeom',    'BaBar_BbrGeom',        'BaBar_difAlgebra', 'BaBar_ProbTools',
+              'BaBar_BaBar',       'BaBar_CLHEP',          'BaBar_MatEnv' ]
+
 
 plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
 non_plugin_cc = Glob('*.cc', strings=True)
@@ -26,6 +32,7 @@ if non_plugin_cc:
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                       LIBS=[ 'art_Framework_Core',
                              'art_Framework_Services_Optional_TFileService_service',
+                              babarlibs,
                              'GeometryService',
                              'ConditionsService',
                              'SeedService_service',
@@ -33,6 +40,8 @@ if non_plugin_cc:
                              'GeneralUtilities',
                              'MCDataProducts',
                              'RecoDataProducts',
+                             'TrkPatRec',
+                             'KalmanTests',
                              'CLHEP',
                              rootlibs
                              ],
@@ -54,6 +63,8 @@ for cc in plugin_cc:
                              'GeneralUtilities',
                              'MCDataProducts',
                              'RecoDataProducts',
+                             'TrkPatRec',
+                             'KalmanTests',
                              'CLHEP',
                               rootlibs
                               ], )

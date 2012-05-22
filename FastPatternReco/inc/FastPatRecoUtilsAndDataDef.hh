@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition Data type and method of general use
 //
-// $Id: FastPatRecoUtilsAndDataDef.hh,v 1.3 2012/05/18 18:14:35 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/05/18 18:14:35 $
+// $Id: FastPatRecoUtilsAndDataDef.hh,v 1.4 2012/05/22 06:37:04 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/05/22 06:37:04 $
 //
 // Original author G. Tassielli
 //
@@ -718,6 +718,14 @@ struct corssingPoints {
 
 typedef std::vector<corssingPoints > points3D;
 typedef std::set< std::pair<size_t,size_t>  > hitCrossingList;
+
+typedef std::pair<double,size_t> zHitIdrel;
+
+bool operator <( const zHitIdrel &c1, const zHitIdrel &c2 ) {
+        return c1.first < c2.first;
+}
+
+typedef std::vector< zHitIdrel > listZHitIdrels;
 
 }  // end namespace mu2e
 #endif

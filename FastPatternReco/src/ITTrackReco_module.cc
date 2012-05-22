@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.6 2012/05/21 15:08:55 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/05/21 15:08:55 $
+// $Id: ITTrackReco_module.cc,v 1.7 2012/05/22 06:37:04 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/05/22 06:37:04 $
 //
 // Original author G. Tassielli
 //
@@ -195,6 +195,10 @@ private:
         // Max acceptable value for the Chi2/NDOF for a circle
         float _circChi2cut;
 
+        float _minGoodR, _maxGoodR;
+        float _minZ, _maxZ;
+        double _rIn;
+
         // Use n times sigma for matching the clusters in the Sector plane
         //float _nSigmaForClMatch;
 
@@ -270,6 +274,8 @@ private:
         inline bool findWireCross(int crossCellId1, int crossCellId2, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, hitsInClsID::const_iterator &clHitsIDs_it,  closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, hitsInClsID::const_iterator &lowRadClHitsIDs_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints);
         bool  iteratMaxMinWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints);
         bool  iteratMinMaxWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints);
+        int   findZclusters( std::vector<XYZP> &xyzp, float zdim=20.0, float zPeakSigma=4.0, float zPeakThr=0.01, TH1F *zHist=0x0 );
+        int   findZclusters( HelixTraj &trkhelixe, std::vector<XYZP> &xyzp, std::vector< std::vector<size_t> > &pntIdsLoops/*, std::vector<TrkHelix> &helixeFitLoops, std::vector<HelixTraj> &trkhelixeLoops*/);
 
         // Some ugly but necessary ROOT related bookkeeping:
 
@@ -290,6 +296,8 @@ ITTrackReco::ITTrackReco(fhicl::ParameterSet const& pset) :
                     _mapTrackerHitByID(pset.get<string>("mapTrackerHitByID")),
                     _minClusMultBend(pset.get<int>("minClusMultBend")),
                     _circChi2cut(pset.get<float>("circChi2cut")),
+                    _minGoodR(150.0),
+                    _maxGoodR(450.0),
                     //_nSigmaForClMatch(pset.get<float>("nSigmaForClMatch")),
                     //_nSigmaForClSlope(pset.get<float>("nSigmaForClSlope")),
                     /*_nAccumulate(pset.get<int>("nAccumulate",20)),*/
@@ -416,11 +424,15 @@ void ITTrackReco::analyze(art::Event const& event ) {
         const Tracker& tracker = getTrackerOrThrow();
         const ITracker &itr = static_cast<const ITracker&>( tracker );
         CellGeometryHandle *itwp = itr.getCellGeometryHandle();
+        _maxZ =  itr.maxEndCapDim()-itr.getWalls()->find(Wall::endcap)->second->getTotalThickness();
+        _minZ = -_maxZ;
+
 
         //_hfit._itwp = itwp;
 
         double rIn  = itr.r0()+itr.getWalls()->find(Wall::inner)->second->getTotalThickness();
         double rOut = itr.rOut()-itr.getWalls()->find(Wall::outer)->second->getTotalThickness();
+        _rIn = rIn;
         rIn/=CLHEP::cm;
         rOut/=CLHEP::cm;
 
@@ -673,8 +685,19 @@ void ITTrackReco::analyze(art::Event const& event ) {
                 // track fitting objects for this peak
                 std::vector<TrkHelix> helixesfit;
 		std::vector<HelixTraj> trkhelixes;
+		size_t iTrackFound=0;
+                std::map<size_t, std::vector<TrkHelix> > helixesfitLoops;
+                std::map<size_t, std::vector<HelixTraj> > trkhelixesLoops;
+                std::map<size_t,  std::vector< std::vector<size_t> > > helixezPntIdsLoops;
                 RbstFitPntsLpsPntsRel xyzpLoopRel;
                 std::vector<XYZP> xyzp;
+                std::vector<XYZP> xyzpSel;
+                std::vector<std::pair<size_t,size_t> > sel_AllxyzPntsRel;
+                std::vector<XYZP> xyzpRej;
+                std::vector<std::pair<size_t,size_t> > rej_AllxyzPntsRel;
+
+                //TH1F tmpZhist ("tmpZhist","tmpZhist", TMath::Nint( fabs(_maxZ-_minZ)/40.0 ), _minZ,_maxZ);
+
                 if (potLoops.size()>0) {
                         tpeaks.push_back( TrkTimePeak(tclust._meanTime,tclust._maxHitTime) );
                         size_t iPotLoop = 0, iPntInLoop=0;
@@ -705,31 +728,84 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         helixdef.setTrkT0(tpeaks[ipeak]._tpeak-_tdriftmean,_tpeakerr);
                         // robust helix fit
 			bool isfitted=_hfit.findHelix(helixdef,helixfit,xyzp);
-                        if(isfitted){
-                                cout<<"Using Robust Fit, Circle Found with center "<<helixfit._center<<" and Rad "<<helixfit._radius<<endl;
-                                helixesfit.push_back(helixfit);
+			if(isfitted){
+			        cout<<"Using Robust Fit, Circle Found with center "<<helixfit._center<<" and Rad "<<helixfit._radius<<endl;
+			        for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
+			                XYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
+			                if ( tmpXYZP._use ) {
+			                        double tmpDist = fabs( sqrt( pow(tmpXYZP._pos.x()-helixfit._center.x(),2) +
+			                                        pow(tmpXYZP._pos.y()-helixfit._center.y(),2) ) -
+			                                        helixfit._radius );
+			                        if ( tmpDist<3.0*tmpXYZP._serr ) {
+			                                selectedPnts.push_back( potLoops.at(xyzpLoopRel_it->second.first).at(xyzpLoopRel_it->second.second) );
+			                                xyzpSel.push_back(tmpXYZP);
+		                                        sel_AllxyzPntsRel.push_back( std::pair<size_t,size_t> (xyzpSel.size()-1, xyzpLoopRel_it->first) );
+			                        } else {
+			                                tmpXYZP._use = false;
+			                                xyzpRej.push_back(tmpXYZP);
+		                                        rej_AllxyzPntsRel.push_back( std::pair<size_t,size_t> (xyzpRej.size()-1, xyzpLoopRel_it->first) );
+			                        }
+			                }
+			                xyzpRej.push_back(tmpXYZP);
+			                rej_AllxyzPntsRel.push_back( std::pair<size_t,size_t> (xyzpRej.size()-1, xyzpLoopRel_it->first) );
+			        }
 
+			        if (helixfit._radius>=_minGoodR && helixfit._radius<=_maxGoodR ) {
+	                                helixesfit.push_back(helixfit);
+			        } else {
+			                cout<<"Track rejected for radius"<<endl;
+			                isfitted = false;
+			        }
+                                //try to use the rejected points to find a new circle!!! FIXME
+			}
 
-                                for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
-                                        XYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
-                                        if ( tmpXYZP._use ) {
-                                                double tmpDist = fabs( sqrt( pow(tmpXYZP._pos.x()-helixesfit.back()._center.x(),2) +
-                                                                pow(tmpXYZP._pos.y()-helixesfit.back()._center.y(),2) ) -
-                                                                helixesfit.back()._radius );
-                                                if ( tmpDist<3.0*tmpXYZP._serr ) {
-                                                        selectedPnts.push_back( potLoops.at(xyzpLoopRel_it->second.first).at(xyzpLoopRel_it->second.second) );
-                                                }
+			if(isfitted) {
+			        HepVector hpar;
+			        HepVector hparerr;
+			        _hfit.helixParams(helixfit,hpar,hparerr);
+			        HepSymMatrix hcov = vT_times_v(hparerr);
+			        HelixTraj seed(hpar,hcov);
+			        std::cout<<"fitted "<<isfitted<<" ";
+			        seed.printAll(std::cout);
+			        trkhelixes.push_back(seed);
+
+			        findZclusters( trkhelixes.back(), xyzpSel, helixezPntIdsLoops[iTrackFound]/*, helixesfitLoops[iTrackFound], trkhelixesLoops[iTrackFound]*/ );
+			        bool isLoopFitted;
+			        for ( size_t iTrkLoop=0; iTrkLoop<helixezPntIdsLoops[iTrackFound].size(); ++iTrkLoop ) {
+                                        std::vector<size_t> &loopPntIds = helixezPntIdsLoops[iTrackFound].at(iTrkLoop);
+                                        std::vector<XYZP> xyzpLoop;
+                                        for (std::vector<size_t>::iterator loopPntIds_it = loopPntIds.begin(); loopPntIds_it != loopPntIds.end(); ++loopPntIds_it) {
+                                                xyzpLoop.push_back( xyzpSel.at(*loopPntIds_it) );
                                         }
+                                        TrkHelix helixfitLoop;
+                                        isLoopFitted=_hfit.findHelix(helixdef,helixfitLoop,xyzpLoop);
+                                        if (isLoopFitted) {
+                                                helixesfitLoops[iTrackFound].push_back(helixfitLoop);
+                                                HepVector hparLoop;
+                                                HepVector hparerrLoop;
+                                                _hfit.helixParams(helixfitLoop,hparLoop,hparerrLoop);
+                                                HepSymMatrix hcovLoop = vT_times_v(hparerrLoop);
+                                                HelixTraj seedLoop(hparLoop,hcovLoop);
+                                                std::cout<<"fitted "<<iTrkLoop<<"-th loop:"<<endl;
+                                                seedLoop.printAll(std::cout);
+                                                trkhelixesLoops[iTrackFound].push_back(seedLoop);
+                                        }
+
                                 }
-                        }
-			HepVector hpar;
-			HepVector hparerr;
-			_hfit.helixParams(helixfit,hpar,hparerr);
-			HepSymMatrix hcov = vT_times_v(hparerr);
-			HelixTraj seed(hpar,hcov);
-			std::cout<<"fitted "<<isfitted<<" ";
-			seed.printAll(std::cout);
-			if(isfitted) trkhelixes.push_back(seed);
+
+			        if (_diagLevel>1) {
+			                cout<<"For "<<iTrackFound<<"-th track n Loops "<<helixezPntIdsLoops[iTrackFound].size()<<endl;
+			                for ( size_t iTrkLoop=0; iTrkLoop<helixezPntIdsLoops[iTrackFound].size(); ++iTrkLoop ) {
+			                        cout<<"\t for "<<iTrkLoop<<"-th loop z points:"<<endl;
+			                        std::vector<size_t> &loopPntIds = helixezPntIdsLoops[iTrackFound].at(iTrkLoop);
+			                        for (std::vector<size_t>::iterator loopPntIds_it = loopPntIds.begin(); loopPntIds_it != loopPntIds.end(); ++loopPntIds_it) {
+			                                cout<<"\t\t "<<xyzpSel.at(*loopPntIds_it)._pos<<endl;
+			                        }
+			                }
+			        }
+
+			        ++iTrackFound;
+			}
                 }
 
 
@@ -996,7 +1072,7 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         TCanvas *tmpCircleFound3D = new TCanvas("PotCirclesDraw3D","",860,860);
                         tmpCircleFound3D->Divide(2,2);
                         TH2F hHit3DT( "hHit3DT",  "Hits per Event at z crossing", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
-                        TH2F hHit3DL( "hHit3DL",  "Hits per Event at z", 3000, -250.0, 250.0, 750, 0, 75.0 );
+                        TH2F hHit3DL( "hHit3DL",  "Hits per Event at z", TMath::Nint((_maxZ-_minZ)/10.0), _minZ/CLHEP::cm, _maxZ/CLHEP::cm, 750, 0, 75.0 );
                         hHit3DT.SetXTitle("X [cm]");
                         hHit3DT.SetYTitle("Y [cm]");
                         hHit3DL.SetXTitle("Z [cm]");
@@ -1023,6 +1099,15 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         hHit3DL.Draw();
                         innerWallL.Draw("same");
                         outerWallL.Draw("same");
+                        tmpCircleFound3D->cd(3);
+                        hHit3DT.Draw();
+                        innerWall.Draw("same");
+                        outerWall.Draw("same");
+                        tmpCircleFound3D->cd(4);
+                        hHit3DL.Draw();
+                        innerWallL.Draw("same");
+                        outerWallL.Draw("same");
+                        tmpCircleFound3D->cd(3);
 
                         iCol = 0;
                         std::vector<TClonesArray *> drawPotCircPnts3D;
@@ -1089,15 +1174,6 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         }
 
 
-                        tmpCircleFound3D->cd(3);
-                        hHit3DT.Draw();
-                        innerWall.Draw("same");
-                        outerWall.Draw("same");
-                        tmpCircleFound3D->cd(4);
-                        hHit3DL.Draw();
-                        innerWallL.Draw("same");
-                        outerWallL.Draw("same");
-                        tmpCircleFound3D->cd(3);
 			if(helixesfit.size()>0)
 			  for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
 			    XYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
@@ -1139,34 +1215,66 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         std::vector<TGraph *> drawTracksL;
 
 			iRobCirCol = 0;
+			iTrackFound = 0;
 			for(std::vector<HelixTraj>::iterator ittrk=trkhelixes.begin();ittrk!=trkhelixes.end();ittrk++){
-			  iRobCirCol ++;
-			  TGraph *xy=new TGraph(400);
-			  TGraph *zr=new TGraph(400);
-			  double flt0=(*ittrk).zFlight(-2000);
-			  double flt1=(*ittrk).zFlight(2000);
-			  // std::cout<<flt0<<" "<<flt1<<std::endl;
-			  for(int i=0;i<1000;i++){
-			    HepPoint pos=(*ittrk).position(flt0+(flt1-flt0)*i/1000);
-			    // std::cout<<i<<" "<<pos<<endl;
-			    xy->SetPoint(i,pos.x()/CLHEP::cm,pos.y()/CLHEP::cm);
-			    zr->SetPoint(i,pos.z()/CLHEP::cm,std::hypot(pos.x()/CLHEP::cm,pos.y()/CLHEP::cm));
-			  }
-			  xy->SetMarkerColor(iRobCirCol);
-			  zr->SetMarkerColor(iRobCirCol);
-			  xy->SetMarkerSize(0.1);
-			  xy->SetMarkerStyle(6);
-			  zr->SetMarkerSize(0.1);
-			  zr->SetMarkerStyle(6);
-			  tmpCircleFound3D->cd(2);
-			  zr->Draw("P");
-			  tmpCircleFound3D->cd(4);
-			  zr->Draw("P");
+			        iRobCirCol++;
+			        TGraph *xy=new TGraph(400);
+			        TGraph *zr=new TGraph(400);
+			        double flt0=(*ittrk).zFlight(_minZ);
+			        double flt1=(*ittrk).zFlight(_maxZ);
+			        // std::cout<<flt0<<" "<<flt1<<std::endl;
+			        for(int i=0;i<1000;i++){
+			                HepPoint pos=(*ittrk).position(flt0+(flt1-flt0)*i/1000);
+			                // std::cout<<i<<" "<<pos<<endl;
+			                xy->SetPoint(i,pos.x()/CLHEP::cm,pos.y()/CLHEP::cm);
+			                zr->SetPoint(i,pos.z()/CLHEP::cm,std::hypot(pos.x()/CLHEP::cm,pos.y()/CLHEP::cm));
+			        }
+			        xy->SetMarkerColor(iRobCirCol);
+			        zr->SetMarkerColor(iRobCirCol);
+			        xy->SetMarkerSize(0.1);
+			        xy->SetMarkerStyle(6);
+			        zr->SetMarkerSize(0.1);
+			        zr->SetMarkerStyle(6);
+			        tmpCircleFound3D->cd(2);
+			        zr->Draw("P");
+			        tmpCircleFound3D->cd(4);
+			        zr->Draw("P");
 
-			  drawTracksT.push_back(xy);
-			  drawTracksL.push_back(zr);
+			        drawTracksT.push_back(xy);
+			        drawTracksL.push_back(zr);
+
+			        int iMarckerLoop = 7;
+			        cout<<"For i track "<<iTrackFound<<" there are "<<trkhelixesLoops[iTrackFound].size()<<" Loops to draw"<<endl;
+			        for (std::vector<HelixTraj>::iterator trkhelixesLoop_it = trkhelixesLoops[iTrackFound].begin(); trkhelixesLoop_it != trkhelixesLoops[iTrackFound].end(); ++trkhelixesLoop_it) {
+			                cout<<"Drawing single Loop for track "<<iTrackFound<<endl;
+			                TGraph *xyLoop=new TGraph(400);
+			                TGraph *zrLoop=new TGraph(400);
+			                double flt0Loop=(*trkhelixesLoop_it).zFlight(_minZ);
+			                double flt1Loop=(*trkhelixesLoop_it).zFlight(_maxZ);
+			                // std::cout<<flt0<<" "<<flt1<<std::endl;
+			                for(int i=0;i<1000;i++){
+			                        HepPoint pos=(*trkhelixesLoop_it).position(flt0Loop+(flt1Loop-flt0Loop)*i/1000);
+			                        // std::cout<<i<<" "<<pos<<endl;
+			                        xyLoop->SetPoint(i,pos.x()/CLHEP::cm,pos.y()/CLHEP::cm);
+			                        zrLoop->SetPoint(i,pos.z()/CLHEP::cm,std::hypot(pos.x()/CLHEP::cm,pos.y()/CLHEP::cm));
+			                }
+			                xyLoop->SetMarkerColor(iRobCirCol);
+			                zrLoop->SetMarkerColor(iRobCirCol);
+			                xyLoop->SetMarkerSize(0.1);
+			                xyLoop->SetMarkerStyle(iMarckerLoop);
+			                zrLoop->SetMarkerSize(0.1);
+			                zrLoop->SetMarkerStyle(iMarckerLoop);
+			                tmpCircleFound3D->cd(2);
+			                zrLoop->Draw("P");
+			                tmpCircleFound3D->cd(4);
+			                zrLoop->Draw("P");
+
+			                drawTracksT.push_back(xyLoop);
+			                drawTracksL.push_back(zrLoop);
+			                ++iMarckerLoop;
+			        }
+			        ++iTrackFound;
 			}
-
 
 
 
@@ -1254,6 +1362,9 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         }
 
 
+                        //TCanvas *zClustCanv = new TCanvas();
+                        //tmpZhist.Draw();
+
 
                         cerr << "Double click in the canvas_Fake to continue:" ;
                         _fakeCanvas->cd();
@@ -1302,8 +1413,9 @@ void ITTrackReco::analyze(art::Event const& event ) {
 			
 			for_each(drawTracksT.begin(), drawTracksT.end(), std::bind2nd(std::mem_fun(&TGraph::Delete),""));
 			for_each(drawTracksL.begin(), drawTracksL.end(), std::bind2nd(std::mem_fun(&TGraph::Delete),""));
+                        for_each(drawPotCircPnts3D_L.begin(), drawPotCircPnts3D_L.end(), std::bind2nd(std::mem_fun(&TGraphErrors::Delete),""));
 
-
+			//delete zClustCanv;
 
                 }
 
@@ -1480,7 +1592,7 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
         int nPotBending=0;
         bool foundCircles = false;
 
-        float refX, refY, refRes2, closeCntCellX, closeCntCellY, cmapU, cmapV, TmpR2, invTmpR2, minGoodR=150.0, maxGoodR=450.0 ;
+        float refX, refY, refRes2, closeCntCellX, closeCntCellY, cmapU, cmapV, TmpR2, invTmpR2;
         int closeCntCellID, closeCntCellShift, halfwayCellID;
         float cmapU_clsCntCell, cmapV_clsCntCell, CHTtanTheta0_DX, CHTtanTheta0_DY, CHTtanTheta0, CHTTheta0, CHTr0, CHTcosArcTanT0;
         unsigned int votArrBin, halfwayVotArrBin;
@@ -1704,7 +1816,7 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                 //                                          if ( tmpCirChi2>0.001 && tmpCirChi2<_circChi2cut ) {
                                 //                                                  cout<<"Circ Chi2 good"<<endl;
                                 //                                                  tmpRad = 1.0/tmpCircle._krmCircFit.rho;
-                                //                                                  //if (tmpRad>=minGoodR && tmpRad<=maxGoodR ) {
+                                //                                                  //if (tmpRad>=_minGoodR && tmpRad<=_maxGoodR ) {
                                 //                                                          cout<<"Circle added"<<endl;
                                 //                                                          potcircles.push_back( tmpCircle );
                                 //                                                          foundCircles = true;
@@ -1884,11 +1996,121 @@ bool ITTrackReco::iteratMinMaxWireCross(closClinRadLay &radCls_1v, closClinRadLa
         return newFoundWrCross;
 }
 
+int   ITTrackReco::findZclusters( std::vector<XYZP> &xyzp, float zdim, float zPeakSigma, float zPeakThr, TH1F *zHist ) {
+
+        int nBins;
+        TH1F *tmpZhist;
+        if (zHist!=0x0) {
+                tmpZhist = zHist;
+                nBins = tmpZhist->GetNbinsX();
+        } else {
+                nBins = TMath::Nint( fabs(_maxZ-_minZ)/zdim );
+                tmpZhist = new TH1F("tmpZhist","tmpZhist", nBins, _minZ,_maxZ);
+        }
+        //cout<<"ZMin "<<_minZ<<" Zmax "<<_maxZ<<" nBins "<<nBins<<endl;
+        std::multimap <int, size_t> hitBinsrel;
+        size_t kHit=0;
+        for (std::vector<XYZP>::iterator xyzp_it=xyzp.begin(); xyzp_it!=xyzp.end(); ++xyzp_it) {
+                hitBinsrel.insert ( std::pair<int,size_t> (tmpZhist->Fill(xyzp_it->_pos.z()), kHit) );
+                ++kHit;
+        }
+        tmpZhist->Smooth(4);
+        TSpectrum peaksSearcher;
+        int nfound =  peaksSearcher.Search( tmpZhist, zPeakSigma, "", zPeakThr );
+        cout<<"n of z Peaks found "<<nfound<<endl;
+        if (nfound>0) {
+                float *PosX = new float[nfound];
+                float *PosX1 = new float[nfound];
+                float *PosY = new float[nfound];
+                //PosX = _peakFinder->GetPositionX();
+                //PosX = peaksSearcher.GetPositionX();
+                for (int iPF = 0; iPF < nfound; iPF++) {
+                        PosX[iPF]   = peaksSearcher.GetPositionX()[iPF];
+                        //                                    PosX[iPF]   = validPeakPos[iPF];
+                        ///FixPos[iPF] = false;
+                        //FixAmp[iPF] = false;
+                        PosX1[iPF]  = (PosX[iPF]-_minZ)/zdim;
+                        PosY[iPF]   = hitBinsrel.count( (int)(PosX1[iPF]) );
+
+                        cout<<"peak pos at z "<<PosX[iPF]<<" = bin "<<(int)(PosX1[iPF])<<" with nhit "<<PosY[iPF]<<endl;
+                }
+                delete [] PosX;
+                delete [] PosX1;
+                delete [] PosY;
+        }
+        return nfound;
+}
+
+int   ITTrackReco::findZclusters( HelixTraj &trkhelixe, std::vector<XYZP> &xyzp, std::vector< std::vector<size_t> > &pntIdsLoops/*, std::vector<TrkHelix> &helixeFitLoops, std::vector<HelixTraj> &trkhelixeLoops*/) {
+
+        size_t lHit=0;
+        listZHitIdrels pntsOdered;
+        for (std::vector<XYZP>::iterator xyzp_it = xyzp.begin(); xyzp_it != xyzp.end(); ++xyzp_it) {
+                pntsOdered.push_back( make_pair(xyzp_it->_pos.z(),lHit) );
+                ++lHit;
+        }
+        std::sort( pntsOdered.begin(), pntsOdered.end() );
+
+        std::vector< std::pair<double, double> > loopsZRange;
+        double firstZ = pntsOdered.front().first;
+        double lastZ  = pntsOdered.back().first;
+        HepPoint fPos=trkhelixe.position( trkhelixe.zFlight(firstZ) );
+        double startRange=0.0;
+        bool   prevNegSign=false;
+        if ( (std::hypot(fPos.x(),fPos.y()) - _rIn) >= 0 ) {
+                startRange = firstZ;
+                prevNegSign = false;
+        } else {
+                startRange = -1000000.0;
+                prevNegSign = true;
+        }
+        double tmpZ = firstZ+50.0;
+        while ( tmpZ<=lastZ ) {
+                HepPoint tmpPos=trkhelixe.position( trkhelixe.zFlight(tmpZ) );
+                if ( (std::hypot(tmpPos.x(),tmpPos.y()) - _rIn) > 0 ) {
+                        if ( prevNegSign ) {
+                                startRange = tmpZ - 50.0;
+                        }
+                        prevNegSign = false;
+                } else {
+                        if ( !prevNegSign ) {
+                                loopsZRange.push_back( make_pair(startRange,tmpZ) );
+                        }
+                        prevNegSign = true;
+                }
+                tmpZ+=50.0;
+        }
+        if (!prevNegSign) {
+                loopsZRange.push_back( make_pair(startRange,lastZ) );
+        }
+
+        listZHitIdrels::iterator pntsOdered_it = pntsOdered.begin();
+
+        for ( std::vector< std::pair<double, double> >::iterator loopsZRange_it = loopsZRange.begin(); loopsZRange_it != loopsZRange.end(); ++loopsZRange_it) {
+                std::vector<size_t> iHelLoopPntIds;
+                //TrkHelix iHelLoop;
+                //HelixTraj iHelTraj;
+                for ( ; pntsOdered_it != pntsOdered.end(); ++pntsOdered_it) {
+                        if (pntsOdered_it->first>loopsZRange_it->second) {
+                                break;
+                        }
+                        if (pntsOdered_it->first>=loopsZRange_it->first) {
+                                iHelLoopPntIds.push_back(pntsOdered_it->second);
+                        }
+                }
+                pntIdsLoops.push_back(iHelLoopPntIds);
+                //helixeFitLoops.push_back(iHelLoop);
+                //trkhelixeLoops.push_back(iHelTraj);
+        }
+
+}
+
+
 bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, circlesCont & potcircles, std::string type) {
         int nPotBending=0;
         bool foundCircles = false;
 
-        float refX, refY, refRes2, closeCntCellX, closeCntCellY, cmapU, cmapV, TmpR2, invTmpR2, minGoodR=150.0, maxGoodR=450.0 ;
+        float refX, refY, refRes2, closeCntCellX, closeCntCellY, cmapU, cmapV, TmpR2, invTmpR2;
         int closeCntCellID, closeCntCellShift, halfwayCellID;
         float cmapU_clsCntCell, cmapV_clsCntCell, CHTtanTheta0_DX, CHTtanTheta0_DY, CHTtanTheta0, CHTTheta0, CHTr0, CHTcosArcTanT0;
         unsigned int votArrBin, halfwayVotArrBin;
@@ -1994,7 +2216,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                         if ( tmpCirChi2>0.001 && tmpCirChi2<_circChi2cut ) {
                                                 cout<<"Circ Chi2 good"<<endl;
                                                 tmpRad = 1.0/tmpCircle._krmCircFit.rho;
-                                                //if (tmpRad>=minGoodR && tmpRad<=maxGoodR ) {
+                                                //if (tmpRad>=_minGoodR && tmpRad<=_maxGoodR ) {
                                                 cout<<"Circle added"<<endl;
                                                 potcircles.push_back( tmpCircle );
                                                 foundCircles = true;
@@ -2074,7 +2296,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
         int nPotBending=0;
         bool foundCircles = false;
 
-        float refX, refY, refRes2, closeCntCellX, closeCntCellY, cmapU, cmapV, TmpR2, invTmpR2, minGoodR=150.0, maxGoodR=450.0 ;
+        float refX, refY, refRes2, closeCntCellX, closeCntCellY, cmapU, cmapV, TmpR2, invTmpR2;
         int closeCntCellID, closeCntCellShift, halfwayCellID;
         float cmapU_clsCntCell, cmapV_clsCntCell, CHTtanTheta0_DX, CHTtanTheta0_DY, CHTtanTheta0, CHTTheta0, CHTr0, CHTcosArcTanT0;
         unsigned int votArrBin, halfwayVotArrBin;
@@ -2276,7 +2498,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                                 tmpCMap_sigmaA2    *= ( tmpCMap_sigmaB2  +  tmpCMap_A2*tmpCHT_sigmaTheta2 / ( tmpCHT_CosTheta2*tmpCHT_CosTheta2 ) );
 
                                                 tmpRad = sqrt( tmpCMap_A2 + tmpCMap_B2 );
-                                                if (tmpRad>=minGoodR && tmpRad<=maxGoodR ) {
+                                                if (tmpRad>=_minGoodR && tmpRad<=_maxGoodR ) {
                                                         tmpCircle.SetCenter( tmpCMap_A + refX, tmpCMap_B + refY, sqrt( tmpCMap_sigmaA2 + refRes2 ), sqrt( tmpCMap_sigmaB2 + refRes2 ) );
                                                         tmpCircle.SetRadius( tmpRad, sqrt( tmpCMap_A2*tmpCMap_sigmaA2 + tmpCMap_B2*tmpCMap_sigmaB2 )/tmpRad );
                                                         //for ( std::set<unsigned int>::iterator votInClus_it = closClustCHTVots_it->_listCHTVotIDs.begin();  votInClus_it != closClustCHTVots_it->_listCHTVotIDs.end(); ++votInClus_it ) {
@@ -2354,7 +2576,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                                                         }
                                                                         if (foundCircles) {
                                                                                 tmpRad = 1.0/fabs(tmpCircle._krmCircFit.rho);
-                                                                                if (tmpRad<minGoodR || tmpRad>maxGoodR) {
+                                                                                if (tmpRad<_minGoodR || tmpRad>_maxGoodR) {
                                                                                         foundCircles = false;
                                                                                 }
                                                                         }
