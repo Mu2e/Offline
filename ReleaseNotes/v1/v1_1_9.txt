@@ -1,10 +1,17 @@
-  $Id: v1_1_9.txt,v 1.17 2012/05/22 21:42:51 brownd Exp $
-  $Author: brownd $
-  $Date: 2012/05/22 21:42:51 $
+  $Id: v1_1_9.txt,v 1.18 2012/05/23 18:45:47 genser Exp $
+  $Author: genser $
+  $Date: 2012/05/23 18:45:47 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+16) May 23, 2012 genser
+
+    Enabled separate turning on/off of the NeutronAbsorber subcomponents
+      Mu2eG4/src/constructNeutronAbsorber.cc
+      Mu2eG4/src/constructVirtualDetectors.cc
+      Mu2eG4/test/geom_01.txt
 
 15) May 16-22, 2012 brownd
    Simplify and fix some bugs in the ambiguity resolver infrastructure.
