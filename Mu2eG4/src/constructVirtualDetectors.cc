@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.35 2012/05/11 23:28:27 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/05/11 23:28:27 $
+// $Id: constructVirtualDetectors.cc,v 1.36 2012/05/23 18:44:39 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/23 18:44:39 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -168,62 +168,65 @@ namespace mu2e {
     // inner wall of DS2 minus 5 mm. If neutron absorber is defined, these
     // detectors extend to neutron absorber minus 5 mm.
     if ( !_config->getBool("isDumbbell",false) ){
-    double Ravr = _config->getDouble("toyDS.rIn");
-    double deltaR = 0;
-    double Z0 = 0;
-    double deltaZ = 1.0;
+      double Ravr = _config->getDouble("toyDS.rIn");
+      double deltaR = 0;
+      double Z0 = 0;
+      double deltaZ = 1.0;
 
-    if ( _config->getBool("hasNeutronAbsorber",false) ) {
-      double NAIInnerRadius0     = _config->getDouble("neutronabsorber.internalInnerRadius0");
-      double NAIInnerRadius1     = _config->getDouble("neutronabsorber.internalInnerRadius1");
-      Ravr   = (NAIInnerRadius0+NAIInnerRadius1)/2;
-      deltaR = (NAIInnerRadius1-NAIInnerRadius0);
-      Z0     = _config->getDouble("neutronabsorber.internalZ01");
-      deltaZ = 2.0 *_config->getDouble("neutronabsorber.internalHalfLengthZ01");
-    }
-
-    for( int vdId=VirtualDetectorId::ST_In; 
-         vdId<=VirtualDetectorId::ST_Out; 
-         ++vdId) if( vdg->exist(vdId) ) {
-      
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
-
-        double zvd = vdg->getGlobal(vdId).z();
-        double rvd = Ravr + deltaR/deltaZ*(zvd-Z0) - 5.0;
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-            " z, r : " << zvd << ", " << rvd << endl;
-        }
-
-        TubsParams vdParamsTarget(0.,rvd,vdHalfLength);
-
-        VolumeInfo const & parent = ( _config->getBool("isDumbbell",false) ) ? _helper->locateVolInfo("ToyDS3Vacuum") : _helper->locateVolInfo("ToyDS2Vacuum"); //ToyDS3Vacuum to move the targets
-
-        if (verbosityLevel >0) {
-          cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z offset in Mu2e    : " <<
-            zvd << endl;      
-          cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z extent in Mu2e    : " <<
-            zvd - vdHalfLength << ", " << zvd + vdHalfLength << endl;
-        }
-
-        VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                  vdParamsTarget, vacuumMaterial, 0,
-                                  vdg->getLocal(vdId),
-                                  parent,
-                                  vdId,
-                                  vdIsVisible, 
-                                  G4Color::Red(), vdIsSolid,
-                                  forceAuxEdgeVisible,
-                                  placePV,
-                                  false);
-        // vd are very thin, a more thorough check is needed
-        doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-
-        vd.logical->SetSensitiveDetector(vdSD);
+      if ( _config->getBool("hasNeutronAbsorber",false) &&  
+           _config->getBool("neutronabsorber.hasInternalPart") ) {
+        double NAIInnerRadius0     = _config->getDouble("neutronabsorber.internalInnerRadius0");
+        double NAIInnerRadius1     = _config->getDouble("neutronabsorber.internalInnerRadius1");
+        Ravr   = (NAIInnerRadius0+NAIInnerRadius1)/2;
+        deltaR = (NAIInnerRadius1-NAIInnerRadius0);
+        Z0     = _config->getDouble("neutronabsorber.internalZ01");
+        deltaZ = 2.0 *_config->getDouble("neutronabsorber.internalHalfLengthZ01");
       }
+
+      for( int vdId=VirtualDetectorId::ST_In; 
+           vdId<=VirtualDetectorId::ST_Out; 
+           ++vdId) if( vdg->exist(vdId) ) {
+      
+          if ( verbosityLevel > 0) {
+            cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+          }
+
+          double zvd = vdg->getGlobal(vdId).z();
+          double rvd = Ravr + deltaR/deltaZ*(zvd-Z0) - 5.0;
+
+          if ( verbosityLevel > 0) {
+            cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+              " z, r : " << zvd << ", " << rvd << endl;
+          }
+
+          TubsParams vdParamsTarget(0.,rvd,vdHalfLength);
+
+          VolumeInfo const & parent = ( _config->getBool("isDumbbell",false) ) ? 
+            _helper->locateVolInfo("ToyDS3Vacuum") : 
+            _helper->locateVolInfo("ToyDS2Vacuum"); //ToyDS3Vacuum to move the targets
+
+          if (verbosityLevel >0) {
+            cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z offset in Mu2e    : " <<
+              zvd << endl;      
+            cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z extent in Mu2e    : " <<
+              zvd - vdHalfLength << ", " << zvd + vdHalfLength << endl;
+          }
+
+          VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
+                                    vdParamsTarget, vacuumMaterial, 0,
+                                    vdg->getLocal(vdId),
+                                    parent,
+                                    vdId,
+                                    vdIsVisible, 
+                                    G4Color::Red(), vdIsSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    false);
+          // vd are very thin, a more thorough check is needed
+          doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+          vd.logical->SetSensitiveDetector(vdSD);
+        }
     }
 
     // placing virtual detectors in the middle of the ttracker
@@ -759,7 +762,7 @@ namespace mu2e {
 
                                                    (dump->shieldingFaceZatXmin()+
                                                     dump->shieldingFaceZatXmax())/2
-                                                 );
+                                                   );
 
       CLHEP::Hep3Vector vdOffset(dump->coreRotationInMu2e() * CLHEP::Hep3Vector(0, 0, hlen[2]));
       
@@ -796,36 +799,36 @@ namespace mu2e {
     // of PS vacuum,  right before the PS enclosure end plate.
     vdId = VirtualDetectorId::PS_FrontExit;
     if ( vdg->exist(vdId) )
-    {
-      const VolumeInfo& parent = _helper->locateVolInfo("PSEnclosureVacuum");
+      {
+        const VolumeInfo& parent = _helper->locateVolInfo("PSEnclosureVacuum");
 
-      GeomHandle<PSEnclosure> pse;
+        GeomHandle<PSEnclosure> pse;
 
-      const Tube& psevac = GeomHandle<PSEnclosure>()->vacuum();
+        const Tube& psevac = GeomHandle<PSEnclosure>()->vacuum();
 
-      TubsParams vdParams(0., psevac.outerRadius(), vdg->getHalfLength());
+        TubsParams vdParams(0., psevac.outerRadius(), vdg->getHalfLength());
 
-      G4ThreeVector vdCenterInParent(0., 0., -psevac.halfLength() + vdg->getHalfLength());
+        G4ThreeVector vdCenterInParent(0., 0., -psevac.halfLength() + vdg->getHalfLength());
 
-      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                   vdParams,
-                                   vacuumMaterial,
-                                   0,
-                                   vdCenterInParent,
-                                   parent,
-                                   vdId,
-                                   vdIsVisible,
-                                   G4Color::Red(),
-                                   vdIsSolid,
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   false
-                                  );
-      // vd are very thin, a more thorough check is needed
-      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+        VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                     vdParams,
+                                     vacuumMaterial,
+                                     0,
+                                     vdCenterInParent,
+                                     parent,
+                                     vdId,
+                                     vdIsVisible,
+                                     G4Color::Red(),
+                                     vdIsSolid,
+                                     forceAuxEdgeVisible,
+                                     placePV,
+                                     false
+                                     );
+        // vd are very thin, a more thorough check is needed
+        doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
-    }
+        vdInfo.logical->SetSensitiveDetector(vdSD);
+      }
 
     // placing virtual detector infront of ExtMonUCI removable shielding
     vdId = VirtualDetectorId::EMIEntrance1;
@@ -855,7 +858,7 @@ namespace mu2e {
                                   forceAuxEdgeVisible,
                                   placePV,
                                   false
-                                 );
+                                  );
 
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
@@ -887,7 +890,7 @@ namespace mu2e {
                                   forceAuxEdgeVisible,
                                   placePV,
                                   false
-                                 );
+                                  );
 
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
@@ -921,7 +924,7 @@ namespace mu2e {
                                       forceAuxEdgeVisible,
                                       placePV,
                                       false
-                                     );
+                                      );
 
           // vd are very thin, a more thorough check is needed
           doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
@@ -975,7 +978,7 @@ namespace mu2e {
                                   forceAuxEdgeVisible,
                                   placePV,
                                   false
-                                 );
+                                  );
 
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
