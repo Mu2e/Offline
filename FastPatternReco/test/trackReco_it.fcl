@@ -37,7 +37,7 @@ services :
   {
     GeometryService :
     {
-      inputFile : "Mu2eG4/test/geom_01dumbbell.txt"
+      inputFile : "Mu2eG4/test/geom_01.txt" #dumbbell
     }
 
     ConditionsService :
@@ -105,10 +105,10 @@ physics :
       #clickToAdvance       : false
     }
 
-  }
-
-  analyzers:
-  {
+#  }
+#
+#  analyzers:
+#  {
     # Look at the hits from G4.
     trackReco:
     {
@@ -143,8 +143,8 @@ physics :
     }
   }
 
-  p1 : [skipBadEvents,maptrackerHit,extractElData,trckRjctByTime]#
-  e1 : [trackReco]
+  p1 : [skipBadEvents,maptrackerHit,extractElData,trckRjctByTime,trackReco]#
+  e1 : []#trackReco
 
 
   trigger_paths  : [p1]
