@@ -4,9 +4,9 @@
 //     c++ rewrite of the Karimaki circle fit (CLEFIT)
 //     original code CERN acbz.f
 //
-// $Id: KarimakiCircle.hh,v 1.3 2012/05/18 18:14:35 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/05/18 18:14:35 $
+// $Id: KarimakiCircle.hh,v 1.4 2012/05/23 07:53:06 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/05/23 07:53:06 $
 //
 // Original author G. Tassielli
 //
@@ -42,7 +42,7 @@
 // CLHEP includes.
 #include "CLHEP/Units/PhysicalConstants.h"
 
-using namespace std;
+//using namespace std;
 
 namespace mu2e {
 

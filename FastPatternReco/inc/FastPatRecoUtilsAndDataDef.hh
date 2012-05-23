@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition Data type and method of general use
 //
-// $Id: FastPatRecoUtilsAndDataDef.hh,v 1.4 2012/05/22 06:37:04 tassiell Exp $
+// $Id: FastPatRecoUtilsAndDataDef.hh,v 1.5 2012/05/23 07:53:06 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/22 06:37:04 $
+// $Date: 2012/05/23 07:53:06 $
 //
 // Original author G. Tassielli
 //
@@ -36,7 +36,7 @@
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitByID.hh"
 
-using namespace std;
+//using namespace std;
 
 namespace mu2e {
 
@@ -44,21 +44,21 @@ typedef std::set<size_t> isHitIDUsed;
 
 //----------------- for TTtracker -----------------
 
-typedef std::multimap<unsigned int, size_t, less<unsigned int> > stbrel;                                        //"Straw-histogram bin" relation (navigation)
+typedef std::multimap<unsigned int, size_t, std::less<unsigned int> > stbrel;                                        //"Straw-histogram bin" relation (navigation)
 
-typedef std::multimap<unsigned short, unsigned short, less<unsigned short> > ptcsctrrel;                        //"Station Pitch-Station" relation
+typedef std::multimap<unsigned short, unsigned short, std::less<unsigned short> > ptcsctrrel;                        //"Station Pitch-Station" relation
 typedef std::map<unsigned short, ptcsctrrel> ptcbnrel;                                                          //container for each row "Station Pitch-Station" relation
-typedef std::set<unsigned short, less<unsigned short> > goodsttnrel;                                                               //"good Station" that has at least one vote in both scan direction per row
+typedef std::set<unsigned short, std::less<unsigned short> > goodsttnrel;                                                               //"good Station" that has at least one vote in both scan direction per row
 typedef std::map<unsigned short, goodsttnrel> goodsctrstatnrel;                                                 //container for each row "good Station"
-typedef std::multimap<unsigned short, std::pair<size_t, unsigned short>, less<unsigned short> > ptcclsbrel;     //"Station Pitch-row Cluster" relation ("row Cluster" = cluster along each row in the Station-Sector map)
-typedef std::multimap<unsigned short, ptcclsbrel, less<unsigned short> > ptcmaprowclsrel;                       //container of the "Station Pitch-row Cluster" relation for each sector (row should be see like an alias for sector)
+typedef std::multimap<unsigned short, std::pair<size_t, unsigned short>, std::less<unsigned short> > ptcclsbrel;     //"Station Pitch-row Cluster" relation ("row Cluster" = cluster along each row in the Station-Sector map)
+typedef std::multimap<unsigned short, ptcclsbrel, std::less<unsigned short> > ptcmaprowclsrel;                       //container of the "Station Pitch-row Cluster" relation for each sector (row should be see like an alias for sector)
 typedef std::pair<size_t, size_t> rwclclcpl;                                                                    //"row Cluster-row Cluster" coupling along a row
 typedef std::map<rwclclcpl, std::vector<unsigned short> > avptcclscpl;                                          //list of all available station pitch for each "row Cluster-row Cluster" pair
-typedef std::multimap<unsigned short, avptcclscpl , less<unsigned short> > rwavptcclscpl;                       //container of the data for "row Cluster-row Cluster" pair for each row
+typedef std::multimap<unsigned short, avptcclscpl , std::less<unsigned short> > rwavptcclscpl;                       //container of the data for "row Cluster-row Cluster" pair for each row
 
 
 typedef art::Ptr<StrawHit> StrawHitPtr;
-typedef std::multimap<unsigned int, StrawHitPtr, less<unsigned int> > stMaprel;
+typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stMaprel;
 typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
 
@@ -195,7 +195,7 @@ struct ptrHitInClosCust {
                                   const ptrHitInClosCust& gtd_ ){
                 ost<<"Cell "<<gtd_._hitsInClsID_it->first<<" RadLayer "<<gtd_._closClinRadLay_it->first<<" hit n. "<<gtd_._hitsInClsID_it->second<<
                                 " cluster size "<<(*gtd_._closClstcol_it)->_nHit<<" minCell "<<(*gtd_._closClstcol_it)->_minCellID<<" maxCell "<<
-                                (*gtd_._closClstcol_it)->_maxCellID<<" centralCell "<<(*gtd_._closClstcol_it)->_centerCellID<<endl;
+                                (*gtd_._closClstcol_it)->_maxCellID<<" centralCell "<<(*gtd_._closClstcol_it)->_centerCellID<<std::endl;
 
                 return ost;
         }
@@ -250,7 +250,7 @@ struct confMapPoint{
 //        {}
 //
 //        ~confMapDraw() {
-//                //cout<<" pointers "<<_cmap<<" "<<_cmapCHT<<endl;
+//                //std::cout<<" pointers "<<_cmap<<" "<<_cmapCHT<<std::endl;
 //                if (_cmap!=0x0) delete _cmap;
 //                if (_cmapCHT!=0x0) delete _cmapCHT;
 //        }
@@ -487,7 +487,7 @@ struct SimpleCircle2D {
                 float tmpDist  = _radius - tmpCirc._radius;
                 tmpSigma *= sigmaLevel;
                 if ( tmpDist>-tmpSigma && tmpDist<tmpSigma) {
-                        //cout<<"Compatible by R"<<endl;
+                        //std::cout<<"Compatible by R"<<std::endl;
                         float dx2, dy2;
                         dx2 = _center.x()-tmpCirc._center.x();
                         dx2*=dx2;
@@ -498,7 +498,7 @@ struct SimpleCircle2D {
                                          dy2/tmpDist*(_sigmaCenter[1]*_sigmaCenter[1] + tmpCirc._sigmaCenter[1]*tmpCirc._sigmaCenter[1]) );
                         tmpDist  = sqrt(tmpDist);
                         if (tmpDist<sigmaLevel*tmpSigma) {
-                                //cout<<"Compatible by Center"<<endl;
+                                //std::cout<<"Compatible by Center"<<std::endl;
                                 return true;
                         }
                 }
@@ -510,17 +510,17 @@ struct SimpleCircle2D {
                 float tmpDist  = _krmCircFit.rho - tmpCirc._krmCircFit.rho;
                 tmpSigma *= sigmaLevel;
                 if ( tmpDist>-tmpSigma && tmpDist<tmpSigma) {
-                        //cout<<"Compatible by Rho"<<endl;
+                        //std::cout<<"Compatible by Rho"<<std::endl;
                         tmpSigma = sqrt( _krmCircFit.covrfd[2] + tmpCirc._krmCircFit.covrfd[2] );
                         tmpDist  = _krmCircFit.phi - tmpCirc._krmCircFit.phi;
                         tmpSigma *= sigmaLevel;
                         if ( tmpDist>-tmpSigma && tmpDist<tmpSigma) {
-                                //cout<<"Compatible by Phi"<<endl;
+                                //std::cout<<"Compatible by Phi"<<std::endl;
                                 tmpSigma = sqrt( _krmCircFit.covrfd[5] + tmpCirc._krmCircFit.covrfd[5] );
                                 tmpDist  = _krmCircFit.dca - tmpCirc._krmCircFit.dca;
                                 tmpSigma *= sigmaLevel;
                                 if ( tmpDist>-tmpSigma && tmpDist<tmpSigma) {
-                                        //cout<<"Compatible by Dca"<<endl;
+                                        //std::cout<<"Compatible by Dca"<<std::endl;
                                         return true;
                                 }
                         }
@@ -593,7 +593,7 @@ struct SimpleCircle2D {
         void summCirc ( SimpleCircle2D const & addCirc, int skipFrstNPnts=0 ) {
                 if (skipFrstNPnts>addCirc._listHitptrs.size()) {
                         throw cet::exception("RANGE")
-                          << "Asked to skip more points than that are present in the added circle"<<endl;
+                          << "Asked to skip more points than that are present in the added circle"<<std::endl;
 
                 }
                 float w1, w2, invSumW;

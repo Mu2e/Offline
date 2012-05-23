@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on geometry considerations
 //
-// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.7 2012/01/30 19:51:42 tassiell Exp $
+// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.8 2012/05/23 07:53:06 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/01/30 19:51:42 $
+// $Date: 2012/05/23 07:53:06 $
 //
 // Original author G. Tassielli
 //
@@ -250,10 +250,10 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
           }
           void addRwClust( unsigned short iRow, rwClustPtr &iRwclust ) {
-                  //cout<<"\t start adding I row "<<iRow<<" to cluster"<<endl;
-                  //cout<<"\t previous dim of _rClusts "<<_rClusts.size()<<endl;
+                  //std::cout<<"\t start adding I row "<<iRow<<" to cluster"<<endl;
+                  //std::cout<<"\t previous dim of _rClusts "<<_rClusts.size()<<endl;
                   _rClusts.insert( rwclincl::value_type( iRow, iRwclust ) );
-                  //cout<<"\t --------------------- 1 ---------------------"<<endl;
+                  //std::cout<<"\t --------------------- 1 ---------------------"<<endl;
                   _nHit+=iRwclust->_nHit;
                   if ( iRow<_firstSectorID ) _firstSectorID=iRow;
                   if ( iRow>_lastSectorID ) _lastSectorID=iRow;
@@ -294,7 +294,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                   }
                           }
                   }
-                  //cout<<"\t I row "<<iRow<<" added to cluster"<<endl;
+                  //std::cout<<"\t I row "<<iRow<<" added to cluster"<<endl;
           }
 
           rwclincl _rClusts;
@@ -441,11 +441,11 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
   BkgTrackRejecterByGeomTplg::BkgTrackRejecterByGeomTplg(fhicl::ParameterSet const& pset) :
 
     // Run time parameters
-    _moduleLabel(pset.get<string>("module_label")),/*@module_label*/
-    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
-    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-    _makerModuleLabel(pset.get<string>("makerModuleLabel")),
-    _timeRejecterModuleLabel(pset.get<string>("tRejecterModuleLabel")),
+    _moduleLabel(pset.get<std::string>("module_label")),/*@module_label*/
+    _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
+    _trackerStepPoints(pset.get<std::string>("trackerStepPoints","tracker")),
+    _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
+    _timeRejecterModuleLabel(pset.get<std::string>("tRejecterModuleLabel")),
     _nSigmaForClMatch(pset.get<float>("nSigmaForClMatch")),
     _nSigmaForClSlope(pset.get<float>("nSigmaForClSlope")),
     _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
@@ -479,7 +479,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     _application(0)
 //    _directory(0)
   {
-          cout<<"Constructed"<<endl;
+          std::cout<<"Constructed"<<endl;
           if ( _nSigmaForClMatch<0.0 ) _nSigmaForClMatch*=-1.00000;
           if ( _nSigmaForClSlope<0.0 ) _nSigmaForClSlope*=-1.00000;
           // Tell the framework what we make.
@@ -489,7 +489,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
   void BkgTrackRejecterByGeomTplg::beginJob(){
 
-    cout<<"Bkg rejection by Geom job!"<<endl;
+    std::cout<<"Bkg rejection by Geom job!"<<endl;
 
     // Get access to the TFile service and save current directory for later use.
     art::ServiceHandle<art::TFileService> tfs;
@@ -594,9 +594,9 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
 
     size_t nTimeClusPerEvent = tclusts->size();
-    cout<<"----------------------------------------------------------------------------------"<<endl;
-    cout<<"event "<<event.id().event()<<" N peak found "<<nTimeClusPerEvent<<endl;
-    cout<<"----------------------------------------------------------------------------------"<<endl;
+    std::cout<<"----------------------------------------------------------------------------------"<<endl;
+    std::cout<<"event "<<event.id().event()<<" N peak found "<<nTimeClusPerEvent<<endl;
+    std::cout<<"----------------------------------------------------------------------------------"<<endl;
     int i1peak;
 
     StrawId sid;
@@ -627,7 +627,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
     for (size_t ipeak=0; ipeak<nTimeClusPerEvent; ipeak++) {
     	TrackerHitTimeCluster const&  tclust(tclusts->at(ipeak));
-    	cout<<"\t Hit in peak "<<tclust._selectedTrackerHits.size()<<endl;
+    	std::cout<<"\t Hit in peak "<<tclust._selectedTrackerHits.size()<<endl;
 
     	i1peak=ipeak;
         ++i1peak;
@@ -662,13 +662,13 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
         ihit=0;
         for (std::vector<StrawHitPtr>::const_iterator iTCHit=tclust._selectedTrackerHits.begin(); iTCHit!=tclust._selectedTrackerHits.end(); ++iTCHit){
                 // Access data
-//                cout<<"\t\t iHit in peak at "<<*iTCHit<<endl;
+//                std::cout<<"\t\t iHit in peak at "<<*iTCHit<<endl;
                 //StrawHit        const&      hit(hits->at(*iTCHit));
                 StrawHit        const&      hit=*(*iTCHit);
                 StrawIndex si = hit.strawIndex();
                 const Straw & str = tracker.getStraw(si);
 
-                // cout << "Getting informations about cells" << endl;
+                // std::cout << "Getting informations about cells" << endl;
 
                 sid = str.id();
                 stn     = sid.getStraw();
@@ -778,7 +778,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
         }
 
-        cout<<"------- start research ------"<<endl;
+        std::cout<<"------- start research ------"<<endl;
         SctrSttnMapAnalyze(ihPkSecVsStationDist2W, ihPkAccArrSecStation);
         storeNewClstrsGrpFortPeak=false;
         icl=0;
@@ -805,7 +805,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                         addingBadCluster=false;
                         //for ( sscc_it=sscc->begin(); sscc_it!=sscc->end(); ++sscc_it ) {
 
-                        //cout<<" ---- storedClutID size "<<storedClutID.size()<<endl;
+                        //std::cout<<" ---- storedClutID size "<<storedClutID.size()<<endl;
                         for ( clugrouprel::iterator sCID_it=storedClutID.begin(); sCID_it!=storedClutID.end(); ++sCID_it ) {
                                 clSctrDist=clstlst_it->_mean_Sctr - clustersList[sCID_it->second]._mean_Sctr;
                                 //                - ((clstlst_it->_lastSectorID>11) ? 12 : 0);
@@ -838,10 +838,10 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                 lastsCID_it=storedClutID.insert( clugrouprel::value_type(groupStoredInEv+iclgr,icl) );
                                 //sscc->push_back(SectorStationCluster());
                                 sscc->push_back(SctrSttnClusterGroup());
-                                //cout<<"Before "<<endl;
+                                //std::cout<<"Before "<<endl;
                                 sscc->back()._relatedTimeCluster = TrackerHitTimeClusterPtr( tclustHandle, ipeak );
                                 if ( clMcompatibleWith0/*clstlst_it->_m==0.00000*/ || clstlst_it->_m==std::numeric_limits<float>::infinity() || hugeCluster ) addingBadCluster=true;
-                                //cout<<"After "<<endl;
+                                //std::cout<<"After "<<endl;
                                 //storeNewClstrsGrpFortPeak=false;
                                 recheckprevious=true;
                         }
@@ -872,9 +872,9 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                 }
                         }
                 }
-                //cout<<"----------------------- 0 -----------------------"<<endl;
+                //std::cout<<"----------------------- 0 -----------------------"<<endl;
                 if (storeClusterHit){
-                        //cout<<"Cluster "<<icl<<" with hit "<<clstlst_it->_nHit<<endl;
+                        //std::cout<<"Cluster "<<icl<<" with hit "<<clstlst_it->_nHit<<endl;
                         SctrSttnClusterGroup &clugrp = sscc->at(lastsCID_it->first);
                         clugrp._selectedClusters.push_back(
                                         SectorStationCluster(clstlst_it->_mean_Sttn, clstlst_it->_sigma_Sttn, clstlst_it->_mean_Sctr, clstlst_it->_sigma_Sctr,
@@ -887,20 +887,20 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                         }
                         else if ( clugrp._coupling==SctrSttnClusterGroup::mixed ) clugrp._coupling=SctrSttnClusterGroup::good;
                         for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
-                                //cout<<"i row "<<rwclincl_it->first<<" station "<<rwclincl_it->second->_firstStationID<<" - "<<rwclincl_it->second->_lastStationID<<endl;
+                                //std::cout<<"i row "<<rwclincl_it->first<<" station "<<rwclincl_it->second->_firstStationID<<" - "<<rwclincl_it->second->_lastStationID<<endl;
                                 ssmap_Bin_Straw_rel.begin();
                                 tmpiGeomBinRow = ( ( (nMapXBin+2)*(rwclincl_it->first+1-((rwclincl_it->first>15)?12:0)) ) +1 );
                                 tmpiGeomBin= tmpiGeomBinRow +  rwclincl_it->second->_firstStationID;
                                 ssmpbnstrw_rel_it=ssmap_Bin_Straw_rel.find(tmpiGeomBin);
                                 while ( ssmpbnstrw_rel_it->first<= (tmpiGeomBinRow +  rwclincl_it->second->_lastStationID) ) {
-                                        //cout<<"I'm storing bin i-th "<<ssmpbnstrw_rel_it->first<<endl;
+                                        //std::cout<<"I'm storing bin i-th "<<ssmpbnstrw_rel_it->first<<endl;
                                         clugrp._selectedClusters.back()._selectedTrackerHits.push_back( ssmpbnstrw_rel_it->second );
                                         ++ssmpbnstrw_rel_it;
                                         if ( ssmpbnstrw_rel_it==ssmap_Bin_Straw_rel.end() ) break;
                                 }
                         }
 
-                        //cout<<"A) in Time Peak Cluster Group: "<<lastsCID_it->first<<" - "<<clugrp<<endl;
+                        //std::cout<<"A) in Time Peak Cluster Group: "<<lastsCID_it->first<<" - "<<clugrp<<endl;
                 }
                 if (recheckprevious){
                         icl=0;
@@ -911,7 +911,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                 }
          }
 
-        //cout<<"----------------------- 1 -----------------------"<<endl;
+        //std::cout<<"----------------------- 1 -----------------------"<<endl;
 
         if (!storedClutID.empty()) {
                 std::vector<unsigned int> clinGrp;
@@ -935,7 +935,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                 }//store the index of the clusters of a group ordered for cluster position in z plane
                                 if (addCl) clinGrp.push_back(sCID_it->second);
 
-                                cout<<"!!!!!!!!!!!!!!! Cluster saved at: min station "<<clustersList[sCID_it->second]._minStationID<<" max station "<<clustersList[sCID_it->second]._maxStationID<<" first sect "
+                                std::cout<<"!!!!!!!!!!!!!!! Cluster saved at: min station "<<clustersList[sCID_it->second]._minStationID<<" max station "<<clustersList[sCID_it->second]._maxStationID<<" first sect "
                                                 <<clustersList[sCID_it->second]._firstSectorID<<" last sect "<<clustersList[sCID_it->second]._lastSectorID<<endl;
                         }
                         if ( clinGrp.size()>1 ) {
@@ -961,12 +961,12 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                 clugrp._sigmaPitch=clustersList[clinGrp[0]]._sigma_Sttn;
                         }
                        //}
-                        //cout<<"B) in Time Peak Cluster Group: "<<jclgr<<" - "<<clugrp<<endl;
+                        //std::cout<<"B) in Time Peak Cluster Group: "<<jclgr<<" - "<<clugrp<<endl;
 
                 }
         }
 
-        //cout<<"----------------------- 2 -----------------------"<<endl;
+        //std::cout<<"----------------------- 2 -----------------------"<<endl;
 
         if (_doDisplay) {
                 _peaksCanvHistos->AddAtAndExpand(new TCanvas(Form("canvasForHistos_%d-th_peak",i1peak),Form("Histograms of the peak at %f ns",tclust._meanTime),1290,860),ipeak);
@@ -1068,11 +1068,11 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
     event.put(sscc);
 
-    //for (unsigned long i=0; i<1000000; i++) cout<<"lost time "<<endl;
+    //for (unsigned long i=0; i<1000000; i++) std::cout<<"lost time "<<endl;
     clock_t stopClock = clock();
     _hClockCicles->Fill((unsigned long)(stopClock-startClock));
     _hExecTime->Fill( (float)(stopClock-startClock)/((float) CLOCKS_PER_SEC ) );
-    cout<<"-------- N clok to analyze 1 ev by BkgTrackRejecterByGeomTplg "<<stopClock-startClock<<" @ "<<CLOCKS_PER_SEC<<endl;
+    std::cout<<"-------- N clok to analyze 1 ev by BkgTrackRejecterByGeomTplg "<<stopClock-startClock<<" @ "<<CLOCKS_PER_SEC<<endl;
 
     if (_doDisplay) {
             cerr << "Double click in the canvas_Fake to continue:" ;
@@ -1162,7 +1162,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
           rwclclcpl tmp_rwClrwClpair;
 
 
-//          for (int i=0; i<nYbin; i++) { for(int j=0; j<nXbin; j++) cout<<contArr[(i+1)*(nXbin+2)+1+j]<<" "; cout<<endl;}
+//          for (int i=0; i<nYbin; i++) { for(int j=0; j<nXbin; j++) std::cout<<contArr[(i+1)*(nXbin+2)+1+j]<<" "; std::cout<<endl;}
 
           for ( iY=0; iY<nYbin; iY++) {
                   memcpy( dataArr[iY], contArr+( ( (nXbin+2)*(iY+1) ) +1 ), nXbin*4);
@@ -1256,7 +1256,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
                   for ( iVotX=1; iVotX<=nVotXbin; iVotX++) {
                           tmpMinPitch=iVotX-1+minPitch;  //is the pitch under check
-                          //if ( votArr[iVotX] && votArrRev[iVotX] ) cout<<"found"<<endl;
+                          //if ( votArr[iVotX] && votArrRev[iVotX] ) std::cout<<"found"<<endl;
                           if ( (votArr[iVotX] && !votArrRev[iVotX]) || (!votArr[iVotX] && votArrRev[iVotX]) ) {
                                   ptcsctrrel::iterator ptcst_it=tmp_ptc_sctr_rel.find(tmpMinPitch);
                                   while ( ptcst_it != tmp_ptc_sctr_rel.end() ){
@@ -1267,7 +1267,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 //                          if ( votArr[iVotX] && !votArrRev[iVotX] ) {
 //
 //
-//                                  cout<<"\t !!!! I'm removing vote at row "<<iY<<" and pitch "<<tmpMinPitch<<endl;
+//                                  std::cout<<"\t !!!! I'm removing vote at row "<<iY<<" and pitch "<<tmpMinPitch<<endl;
 //
 //                                  ptcclsbrel::iterator prcc_it=tmp_ptc_rowClst__rel.find(tmpMinPitch);
 //                                  while ( prcc_it != tmp_ptc_rowClst__rel.end() ){
@@ -1294,16 +1294,16 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                           rowClst_Column_rel.insert( stbrel::value_type((unsigned int) iY, nRowClust) );
                           ptcst_it++;
                           for ( iEl=1; iEl<(unsigned short)tmp_good_sctr_val.size(); iEl++ ) {
-                                  //cout<<"Element "<<(*ptcst_it)<<" previous "<<lastElement<<endl;
+                                  //std::cout<<"Element "<<(*ptcst_it)<<" previous "<<lastElement<<endl;
                                   if ( ((*ptcst_it)-lastElement)>1 ) {
-                                  //        cout<<"New Cluster added"<<endl;
+                                  //        std::cout<<"New Cluster added"<<endl;
                                           rowClusts.push_back( rwClustPtr ( new rowClust( (*ptcst_it), (unsigned short) dataArr[iY][(*ptcst_it)]) ) );
                                           rwClst_forRw_rel[(unsigned short) iY].push_back(rowClusts.back());
                                           nRowClust++;
                                           rowClst_Column_rel.insert( stbrel::value_type((unsigned int) iY, nRowClust) );
                                   }
                                   else {
-                                  //        cout<<"hit added to Cluster"<<endl;
+                                  //        std::cout<<"hit added to Cluster"<<endl;
                                           rowClusts.back()->addHit( (*ptcst_it), (unsigned short) dataArr[iY][(*ptcst_it)]);
                                   }
                                   lastElement=*ptcst_it;
@@ -1354,10 +1354,10 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
           rwClustPtr startingRowClust;
 
           for ( rwclinrwrel::iterator rcr_it=rwClst_forRw_rel.begin(); rcr_it!=rwClst_forRw_rel.end(); ++rcr_it ) {
-//                  cout<<"i-th row "<<rcr_it->first<<endl;
+//                  std::cout<<"i-th row "<<rcr_it->first<<endl;
 //                  for ( rwclstvec::iterator cr_it=rcr_it->second.begin();  cr_it!=rcr_it->second.end();  ++cr_it  ) {
 //                          rwClustPtr &irClus = *cr_it;
-//                          cout<<"\t cluster data: "<<irClus->_firstStationID<<" "<<irClus->_lastStationID<<" "<<irClus->_nHit
+//                          std::cout<<"\t cluster data: "<<irClus->_firstStationID<<" "<<irClus->_lastStationID<<" "<<irClus->_nHit
 //                                          <<" "<<irClus->_mean<<" "<<irClus->_sigma<<endl;
 //
 //                  }
@@ -1368,7 +1368,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                   while (cr_it!=rcr_it->second.end()){
                   //if ( clustersList.empty() ) {
                           startingRowClust=*cr_it;
-                          cout<<"New cluster start at row "<<rcr_it->first<<" with cluster of row bin "<<startingRowClust->_firstStationID<<" "<<startingRowClust->_lastStationID<<endl;
+                          std::cout<<"New cluster start at row "<<rcr_it->first<<" with cluster of row bin "<<startingRowClust->_firstStationID<<" "<<startingRowClust->_lastStationID<<endl;
                           clustersList.push_back( Clust(  rcr_it->first, startingRowClust ) );
                           rcr_it->second.erase(cr_it);
                           findCluster(rcr_it->first, startingRowClust);
@@ -1399,49 +1399,49 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
 
           for ( stbrel::iterator rcc_it=rowClst_Column_rel.begin(); rcc_it!=rowClst_Column_rel.end(); ++rcc_it ) {
-                  cout<<"i-th row "<<rcc_it->first<<" j-th clusters "<<rcc_it->second<<endl;
+                  std::cout<<"i-th row "<<rcc_it->first<<" j-th clusters "<<rcc_it->second<<endl;
                   rwClustPtr &irClus = rowClusts.at(rcc_it->second);
-                  cout<<"\t cluster data: "<<irClus->_firstStationID<<" "<<irClus->_lastStationID<<" "<<irClus->_nHit
+                  std::cout<<"\t cluster data: "<<irClus->_firstStationID<<" "<<irClus->_lastStationID<<" "<<irClus->_nHit
                                   <<" "<<irClus->_mean<<" "<<irClus->_sigma<<endl;
           }
           for ( ptcmaprowclsrel::const_iterator pmrcc_it=ptcMap_rowCls_rel.begin(); pmrcc_it!=ptcMap_rowCls_rel.end(); ++pmrcc_it ) {
-                  cout<<"i-th row "<<pmrcc_it->first<<endl;
+                  std::cout<<"i-th row "<<pmrcc_it->first<<endl;
                   for ( ptcclsbrel::const_iterator prcc_it=pmrcc_it->second.begin(); prcc_it!=pmrcc_it->second.end(); ++prcc_it ) {
-                          cout<<"\t pitch: "<<prcc_it->first<<" rowClust "<<prcc_it->second.first<<" from bin "<<prcc_it->second.second<<endl;
+                          std::cout<<"\t pitch: "<<prcc_it->first<<" rowClust "<<prcc_it->second.first<<" from bin "<<prcc_it->second.second<<endl;
                   }
 
-                  cout<<"Row Clust pairs"<<endl;
+                  std::cout<<"Row Clust pairs"<<endl;
                   rwavptcclscpl::iterator ptcrwClrwClmap_it = rwMap_avPtc_rwClrwCl.find(pmrcc_it->first);
                   for ( ptcrwClrwCl_it=ptcrwClrwClmap_it->second.begin(); ptcrwClrwCl_it!=ptcrwClrwClmap_it->second.end(); ++ptcrwClrwCl_it ){
-                          cout<<"\t row Clusters pair "<<ptcrwClrwCl_it->first.first<<" - "<<ptcrwClrwCl_it->first.second<<endl;
-                          cout<<"\t\t available pitches: ";
+                          std::cout<<"\t row Clusters pair "<<ptcrwClrwCl_it->first.first<<" - "<<ptcrwClrwCl_it->first.second<<endl;
+                          std::cout<<"\t\t available pitches: ";
                           for ( std::vector<unsigned short>::iterator ptcList=ptcrwClrwCl_it->second.begin(); ptcList!=ptcrwClrwCl_it->second.end(); ++ptcList ){
-                                  cout<<*ptcList<<" ";
+                                  std::cout<<*ptcList<<" ";
                           }
-                          cout<<endl;
+                          std::cout<<endl;
 
                   }
 
           }
 
 
-          for (int i=0; i<nYbin; i++) { for(int j=0; j<nXbin; j++) cout<<dataArr[i][j]<<" "; cout<<endl;}
-//          cout<<"reverse"<<endl;
-//          for (int i=0; i<nYbin; i++) { for(int j=0; j<nXbin; j++) cout<<dataArrRev[i][j]<<" "; cout<<endl;}
+          for (int i=0; i<nYbin; i++) { for(int j=0; j<nXbin; j++) std::cout<<dataArr[i][j]<<" "; std::cout<<endl;}
+//          std::cout<<"reverse"<<endl;
+//          for (int i=0; i<nYbin; i++) { for(int j=0; j<nXbin; j++) std::cout<<dataArrRev[i][j]<<" "; std::cout<<endl;}
           for ( ptcbnrel::iterator sttnptc_it=sttn_sectPitch_rel.begin(); sttnptc_it!=sttn_sectPitch_rel.end(); ++sttnptc_it ){
-                  cout<<"Row "<<sttnptc_it->first<<" : ";
+                  std::cout<<"Row "<<sttnptc_it->first<<" : ";
                   for ( ptcsctrrel::iterator ptcst_it=sttnptc_it->second.begin(); ptcst_it!=sttnptc_it->second.end(); ++ptcst_it ) {
-                          cout<<ptcst_it->second<<" ";
+                          std::cout<<ptcst_it->second<<" ";
                   }
-                  cout<<endl;
+                  std::cout<<endl;
           }
-          cout<<"--- without station repetitions ---"<<endl;
+          std::cout<<"--- without station repetitions ---"<<endl;
           for ( goodsctrstatnrel::iterator sttnptc_it=good_sttn_sctr_rel.begin(); sttnptc_it!=good_sttn_sctr_rel.end(); ++sttnptc_it ){
-                  cout<<"Row "<<sttnptc_it->first<<" : ";
+                  std::cout<<"Row "<<sttnptc_it->first<<" : ";
                   for ( goodsttnrel::iterator ptcst_it=sttnptc_it->second.begin(); ptcst_it!=sttnptc_it->second.end(); ++ptcst_it ) {
-                          cout<<*ptcst_it<<" ";
+                          std::cout<<*ptcst_it<<" ";
                   }
-                  cout<<endl;
+                  std::cout<<endl;
           }
 
 
@@ -1479,9 +1479,9 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
           int iCl=0;
           for ( std::vector<Clust>::iterator clstlst_it=clustersList.begin(); clstlst_it!=clustersList.end(); ++clstlst_it ) {
-                 cout<<"Cluster "<< iCl<<endl;
+                 std::cout<<"Cluster "<< iCl<<endl;
                  for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
-                         cout<<"\t row "<<rwclincl_it->first<<" rwclst bin "<<rwclincl_it->second->_firstStationID<<" "<<rwclincl_it->second->_lastStationID<<endl;
+                         std::cout<<"\t row "<<rwclincl_it->first<<" rwclst bin "<<rwclincl_it->second->_firstStationID<<" "<<rwclincl_it->second->_lastStationID<<endl;
 
                  }
                  iCl++;
@@ -1517,12 +1517,12 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                   tmpMaxSect_2-=12;
                                   tmpMinSect_2-=12;
                           }
-                          cout<<"Clust 1 "<<clstlst_it->_firstSectorID<<" - "<<clstlst_it->_lastSectorID<<" renorm "<<tmpMinSect_1<<" - "<<tmpMaxSect_1<<" - "<<clstlst_it->_minStationID<<" - "<<clstlst_it->_maxStationID<<endl;
-                          cout<<"Clust 2 "<<tmp_clstlst_it->_firstSectorID<<" - "<<tmp_clstlst_it->_lastSectorID<<" renorm "<<tmpMinSect_2<<" - "<<tmpMaxSect_2<<" - "<<tmp_clstlst_it->_minStationID<<" - "<<tmp_clstlst_it->_maxStationID<<endl;
+                          std::cout<<"Clust 1 "<<clstlst_it->_firstSectorID<<" - "<<clstlst_it->_lastSectorID<<" renorm "<<tmpMinSect_1<<" - "<<tmpMaxSect_1<<" - "<<clstlst_it->_minStationID<<" - "<<clstlst_it->_maxStationID<<endl;
+                          std::cout<<"Clust 2 "<<tmp_clstlst_it->_firstSectorID<<" - "<<tmp_clstlst_it->_lastSectorID<<" renorm "<<tmpMinSect_2<<" - "<<tmpMaxSect_2<<" - "<<tmp_clstlst_it->_minStationID<<" - "<<tmp_clstlst_it->_maxStationID<<endl;
 //                          if ( ( tmpMaxSect_1>=tmpMaxSect_2 && tmpMinSect_1<=tmpMinSect_2 ) &&
 //                               ( clstlst_it->_minStationID<=tmp_clstlst_it->_minStationID && clstlst_it->_maxStationID>=tmp_clstlst_it->_maxStationID ) ) {
 //                                  clustersList.erase(tmp_clstlst_it);
-//                                  cout<<"Cluster 2 removed"<<endl;
+//                                  std::cout<<"Cluster 2 removed"<<endl;
 //                                  noCl2erased=false;
 //                                  end_clstlst_it=clustersList.end();
 //                                  //break;
@@ -1532,14 +1532,14 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 //                                  if ( ( tmpMaxSect_2>=tmpMaxSect_1 && tmpMinSect_2<=tmpMinSect_1 ) &&
 //                                                  ( tmp_clstlst_it->_minStationID<=clstlst_it->_minStationID && tmp_clstlst_it->_maxStationID>=clstlst_it->_maxStationID ) ) {
 //                                          clustersList.erase(clstlst_it);
-//                                          cout<<"Cluster 1 removed"<<endl;
+//                                          std::cout<<"Cluster 1 removed"<<endl;
 //                                          nexClust=false;
 //                                          end_clstlst_it=clustersList.end();
 //                                          break;
 //                                  }
 //                                  else {
                                           //identify and remove cluster that partly match
-                                          cout<<"--- Cl dist "<<abs(clstlst_it->_mean_Sttn-tmp_clstlst_it->_mean_Sttn)<<" err "<<3.0*sqrt(pow(clstlst_it->_sigma_Sttn,2)+pow(tmp_clstlst_it->_sigma_Sttn,2))<<endl;
+                                          std::cout<<"--- Cl dist "<<abs(clstlst_it->_mean_Sttn-tmp_clstlst_it->_mean_Sttn)<<" err "<<3.0*sqrt(pow(clstlst_it->_sigma_Sttn,2)+pow(tmp_clstlst_it->_sigma_Sttn,2))<<endl;
                                           if ( abs(clstlst_it->_mean_Sttn-tmp_clstlst_it->_mean_Sttn)<
                                                3.0*sqrt(pow(clstlst_it->_sigma_Sttn,2)+pow(tmp_clstlst_it->_sigma_Sttn,2)) ) {
                                                   nonMatching_Cl1.clear();
@@ -1580,9 +1580,9 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 //                                                          for ( rwclincl::iterator tmp_rwclincl_it=tmp_clstlst_it->_rClusts.begin(); tmp_rwclincl_it!=tmp_clstlst_it->_rClusts.end(); ++tmp_rwclincl_it) {
 //                                                                  Cl1_2_NoMatching=true;
 //                                                                  alreadyChecked=false;
-//                                                                  cout<<"--- rw clust 1 "<<rwclincl_it->second->_firstStationID<<" - "<<rwclincl_it->second->_lastStationID<<" - "<<rwclincl_it->second->_nHit<<endl;
-//                                                                  cout<<"--- rw clust 2 "<<tmp_rwclincl_it->second->_firstStationID<<" - "<<tmp_rwclincl_it->second->_lastStationID<<" - "<<tmp_rwclincl_it->second->_nHit<<endl;
-//                                                                  cout<<"--- matching? "<<((*(rwclincl_it->second))==(*(tmp_rwclincl_it->second)))<<endl;
+//                                                                  std::cout<<"--- rw clust 1 "<<rwclincl_it->second->_firstStationID<<" - "<<rwclincl_it->second->_lastStationID<<" - "<<rwclincl_it->second->_nHit<<endl;
+//                                                                  std::cout<<"--- rw clust 2 "<<tmp_rwclincl_it->second->_firstStationID<<" - "<<tmp_rwclincl_it->second->_lastStationID<<" - "<<tmp_rwclincl_it->second->_nHit<<endl;
+//                                                                  std::cout<<"--- matching? "<<((*(rwclincl_it->second))==(*(tmp_rwclincl_it->second)))<<endl;
 //                                                                  for ( rwclincl::iterator tmp_match_it=matching_Cl1_2.begin(); tmp_match_it!=matching_Cl1_2.end(); ++tmp_match_it ) {
 //                                                                          if ( (*(tmp_rwclincl_it->second))==(*(tmp_match_it->second))/*tmp_rwclincl_it->second._internal_equiv( tmp_match_it->second)*/ ) {
 //                                                                                  alreadyChecked=true;
@@ -1610,58 +1610,58 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 //                                                          if (Cl1_2_NoMatching) nonMatching_Cl1.insert( rwclincl::value_type( rwclincl_it->first, rwclincl_it->second ) );
 //                                                  }
 
-                                                  /*cout<<"--------------------------------------------------------"<<endl;
+                                                  /*std::cout<<"--------------------------------------------------------"<<endl;
                                                   for ( rwclincl::iterator tmp_match_it=matching_Cl1_2.begin(); tmp_match_it!=matching_Cl1_2.end(); ++tmp_match_it ) {
-                                                          cout<<"--- rw clust in Cl1 that matches Cl2: "<<"rw "<<tmp_match_it->first<<" @ "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" n Hit "<<tmp_match_it->second->_nHit<<endl;
+                                                          std::cout<<"--- rw clust in Cl1 that matches Cl2: "<<"rw "<<tmp_match_it->first<<" @ "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" n Hit "<<tmp_match_it->second->_nHit<<endl;
                                                   }
-                                                  cout<<"--------------------------------------------------------"<<endl;
+                                                  std::cout<<"--------------------------------------------------------"<<endl;
                                                   for ( rwclincl::iterator tmp_match_it=nonMatching_Cl1.begin(); tmp_match_it!=nonMatching_Cl1.end(); ++tmp_match_it ) {
-                                                          cout<<"--- rw clust in Cl1 that doens't match Cl2: "<<"rw "<<tmp_match_it->first<<" @ "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" n Hit "<<tmp_match_it->second->_nHit<<endl;
+                                                          std::cout<<"--- rw clust in Cl1 that doens't match Cl2: "<<"rw "<<tmp_match_it->first<<" @ "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" n Hit "<<tmp_match_it->second->_nHit<<endl;
                                                   }
-                                                  cout<<"--------------------------------------------------------"<<endl;
+                                                  std::cout<<"--------------------------------------------------------"<<endl;
                                                   for ( rwclincl::iterator tmp_match_it=nonMatching_Cl2.begin(); tmp_match_it!=nonMatching_Cl2.end(); ++tmp_match_it ) {
-                                                          cout<<"--- rw clust in Cl2 that doens't match Cl1: "<<"rw "<<tmp_match_it->first<<" @ "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" n Hit "<<tmp_match_it->second->_nHit<<endl;
+                                                          std::cout<<"--- rw clust in Cl2 that doens't match Cl1: "<<"rw "<<tmp_match_it->first<<" @ "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" n Hit "<<tmp_match_it->second->_nHit<<endl;
                                                   }
-                                                  cout<<"--------------------------------------------------------"<<endl;
+                                                  std::cout<<"--------------------------------------------------------"<<endl;
                                                  */
                                                   if ( !matching_Cl1_2.empty() ) {
                                                           if ( !nonMatching_Cl1.empty() && nonMatching_Cl2.empty() ) {
                                                                   clustersList.erase(tmp_clstlst_it);
-                                                                  cout<<"Cluster 2 removed"<<endl;
+                                                                  std::cout<<"Cluster 2 removed"<<endl;
                                                                   noCl2erased=false;
                                                                   end_clstlst_it=clustersList.end();
                                                                   //break;
                                                           }
                                                           else if ( nonMatching_Cl1.empty() && !nonMatching_Cl2.empty() ) {
                                                                   clustersList.erase(clstlst_it);
-                                                                  cout<<"Cluster 1 removed"<<endl;
+                                                                  std::cout<<"Cluster 1 removed"<<endl;
                                                                   nexClust=false;
                                                                   end_clstlst_it=clustersList.end();
                                                                   break;
                                                           }
                                                           else {
                                                                   if ( tmpMinSect_2<0 ) {
-                                                                          cout<<"Cluster 1 removed and Cluster 2 modified"<<endl;
-                                                                          //cout<<"no Matching rw cluster in Cl1 "<<nonMatching_Cl1.size()<<endl;
+                                                                          std::cout<<"Cluster 1 removed and Cluster 2 modified"<<endl;
+                                                                          //std::cout<<"no Matching rw cluster in Cl1 "<<nonMatching_Cl1.size()<<endl;
                                                                           for ( rwclincl::iterator tmp_match_it=nonMatching_Cl1.begin(); tmp_match_it!=nonMatching_Cl1.end(); ++tmp_match_it ) {
-                                                                                  //cout<<"--- rw clust in Cl1 that doens't match Cl2 "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" - "<<tmp_match_it->second->_nHit<<endl;
+                                                                                  //std::cout<<"--- rw clust in Cl1 that doens't match Cl2 "<<tmp_match_it->second->_firstStationID<<" - "<<tmp_match_it->second->_lastStationID<<" - "<<tmp_match_it->second->_nHit<<endl;
                                                                                   /*if ( (tmp_match_it->first + 12) <16 )*/ tmp_clstlst_it->addRwClust( tmp_match_it->first+12, tmp_match_it->second );
-                                                                                  //cout<<"--- row cl added to Cl 2"<<endl;
+                                                                                  //std::cout<<"--- row cl added to Cl 2"<<endl;
                                                                           }
-                                                                          //cout<<"--- All no matching row cls of Cl 1 added to Cl 2"<<endl;
+                                                                          //std::cout<<"--- All no matching row cls of Cl 1 added to Cl 2"<<endl;
                                                                           clustersList.erase(clstlst_it);
                                                                           nexClust=false;
                                                                           end_clstlst_it=clustersList.end();
                                                                           break;
                                                                   }
                                                                   else {
-                                                                          cout<<"Cluster 2 removed and Cluster 1 modified"<<endl;
-                                                                          //cout<<"no Matching rw cluster in Cl2 "<<nonMatching_Cl1.size()<<endl;
+                                                                          std::cout<<"Cluster 2 removed and Cluster 1 modified"<<endl;
+                                                                          //std::cout<<"no Matching rw cluster in Cl2 "<<nonMatching_Cl1.size()<<endl;
                                                                           for ( rwclincl::iterator tmp_match_it=nonMatching_Cl2.begin(); tmp_match_it!=nonMatching_Cl2.end(); ++tmp_match_it ) {
                                                                                   if ( (tmp_match_it->first - 12) >0 ) clstlst_it->addRwClust( tmp_match_it->first-12, tmp_match_it->second );
-                                                                                  //cout<<"--- row cl added to Cl 1"<<endl;
+                                                                                  //std::cout<<"--- row cl added to Cl 1"<<endl;
                                                                           }
-                                                                          //cout<<"--- All no matching row cls of Cl 2 added to Cl 1"<<endl;
+                                                                          //std::cout<<"--- All no matching row cls of Cl 2 added to Cl 1"<<endl;
                                                                           clustersList.erase(tmp_clstlst_it);
                                                                           noCl2erased=false;
                                                                           end_clstlst_it=clustersList.end();
@@ -1669,7 +1669,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                                                   }
                                                           }
                                                   }
-                                                  //cout<<"New Clusters group stored n: "<<clustersList.size()<<endl;
+                                                  //std::cout<<"New Clusters group stored n: "<<clustersList.size()<<endl;
                                                   //if (clustersList.size()<2) break;
                                           }
 //                                  }//end of fixing the partly match clusters issue
@@ -1685,15 +1685,15 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                   //clstlst_it=clustersList.begin();
           }// periodic (in sector) clusters removed
 
-          cout<<"------------ double cluster removed ------------"<<endl;
-          cout<<"Cluster List size "<<clustersList.size()<<endl;
+          std::cout<<"------------ double cluster removed ------------"<<endl;
+          std::cout<<"Cluster List size "<<clustersList.size()<<endl;
           iCl=0;
           for ( std::vector<Clust>::iterator clstlst_it=clustersList.begin(); clstlst_it!=clustersList.end(); ++clstlst_it ) {
-                 cout<<"Cluster "<< iCl <<" Station mean "<<clstlst_it->_mean_Sttn<<" sigma "<<clstlst_it->_sigma_Sttn<<
+                 std::cout<<"Cluster "<< iCl <<" Station mean "<<clstlst_it->_mean_Sttn<<" sigma "<<clstlst_it->_sigma_Sttn<<
                                  " Sector mean "<<clstlst_it->_mean_Sctr<<" sigma "<<clstlst_it->_sigma_Sctr<<endl;
-                 cout<<"Cluster m "<<clstlst_it->_m<<" q "<<clstlst_it->_q<<" errm "<<clstlst_it->_errm<<" errq "<<clstlst_it->_errq<<endl;
+                 std::cout<<"Cluster m "<<clstlst_it->_m<<" q "<<clstlst_it->_q<<" errm "<<clstlst_it->_errm<<" errq "<<clstlst_it->_errq<<endl;
                  for ( rwclincl::iterator rwclincl_it=clstlst_it->_rClusts.begin(); rwclincl_it!=clstlst_it->_rClusts.end(); ++rwclincl_it) {
-                         cout<<"\t row "<<rwclincl_it->first<<" rwclst bin "<<rwclincl_it->second->_firstStationID<<" "<<rwclincl_it->second->_lastStationID<<
+                         std::cout<<"\t row "<<rwclincl_it->first<<" rwclst bin "<<rwclincl_it->second->_firstStationID<<" "<<rwclincl_it->second->_lastStationID<<
                                          " mean "<<rwclincl_it->second->_mean<<" sigma "<<rwclincl_it->second->_sigma<<endl;
                  }
                  iCl++;
@@ -1711,7 +1711,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
           tmp_rcr_it=rwClst_forRw_rel.find(tmpRowId);
           bool notFound;
           if (tmp_rcr_it!=rwClst_forRw_rel.end()) {
-                  //cout<<"Up) Lokking for row cluster to add in row "<<tmpRowId<<endl;
+                  //std::cout<<"Up) Lokking for row cluster to add in row "<<tmpRowId<<endl;
                   if (!tmp_rcr_it->second.empty()) {
                           //for ( rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin(); tmp_cr_it!=tmp_rcr_it->second.end(); ++tmp_cr_it) {
                           rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin();
@@ -1737,7 +1737,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
           tmpRowId--; tmpRowId--;
           tmp_rcr_it=rwClst_forRw_rel.find(tmpRowId);
           if (tmp_rcr_it!=rwClst_forRw_rel.end()) {
-                  //cout<<"Down) Lokking for row cluster to add in row "<<tmpRowId<<endl;
+                  //std::cout<<"Down) Lokking for row cluster to add in row "<<tmpRowId<<endl;
                   if (!tmp_rcr_it->second.empty()) {
                           //for ( rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin(); tmp_cr_it!=tmp_rcr_it->second.end(); ++tmp_cr_it) {
                           rwclstvec::iterator tmp_cr_it=tmp_rcr_it->second.begin();

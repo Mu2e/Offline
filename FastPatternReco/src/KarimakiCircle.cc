@@ -2,9 +2,9 @@
 //     c++ rewrite of the Karimaki circle fit (CLEFIT)
 //     original code CERN acbz.f
 //
-// $Id: KarimakiCircle.cc,v 1.4 2012/05/18 18:14:36 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/05/18 18:14:36 $
+// $Id: KarimakiCircle.cc,v 1.5 2012/05/23 07:53:06 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/05/23 07:53:06 $
 //
 // Original author G. Tassielli
 //
@@ -523,6 +523,7 @@ KarimakiCircle & KarimakiCircle::operator= ( KarimakiCircle const& tmpKrm ) {
         xref = tmpKrm.xref;
         yref = tmpKrm.yref;
 
+        return *this;
 }
 
 }  // end namespace mu2e
