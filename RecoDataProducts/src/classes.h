@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.10 2012/04/20 07:18:34 tassiell Exp $
+// $Id: classes.h,v 1.11 2012/05/23 07:58:06 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/04/20 07:18:34 $
+// $Date: 2012/05/23 07:58:06 $
 //
 // Original author Rob Kutschke
 //
@@ -23,9 +23,8 @@
 #include "RecoDataProducts/inc/SctrSttnClusterGroupCollection.hh"
 #include "RecoDataProducts/inc/ZRotStrawHitMapCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitByID.hh"
-
-//added by Gianipez
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/TrackSeedCollection.hh"
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
@@ -37,13 +36,12 @@ template class std::vector<art::Ptr<mu2e::StrawHit> >;
 template class art::Ptr<mu2e::TrackerHitTimeCluster>;
 template class std::vector<art::Ptr<mu2e::TrackerHitTimeCluster> >;
 template class std::multimap<unsigned long int, art::Ptr<mu2e::StrawHit> >;
-
-//added by Gianipez
 template class art::Ptr<mu2e::CaloCrystalHit>;
 template class std::vector<art::Ptr<mu2e::CaloCrystalHit> >;
 template class art::Ptr<mu2e::CaloCluster>;
 template class std::vector<art::Ptr<mu2e::CaloCluster> >;
-
+template class art::Ptr<mu2e::TrackSeed>;
+template class std::vector<art::Ptr<mu2e::TrackSeed> >;
 
 
 template class art::Wrapper<mu2e::StrawHitCollection>;
@@ -60,4 +58,5 @@ template class art::Wrapper<mu2e::TrackerHitTimeClusterCollection>;
 template class art::Wrapper<mu2e::SctrSttnClusterGroupCollection>;
 template class art::Wrapper<mu2e::ZRotStrawHitMapCollection>;
 template class art::Wrapper<mu2e::TrackerHitByID>;
+template class art::Wrapper<mu2e::TrackSeedCollection>;
 
