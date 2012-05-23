@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.7 2012/05/22 06:37:04 tassiell Exp $
+// $Id: ITTrackReco_module.cc,v 1.8 2012/05/23 07:56:01 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/22 06:37:04 $
+// $Date: 2012/05/23 07:56:01 $
 //
 // Original author G. Tassielli
 //
@@ -25,8 +25,8 @@
 #include <boost/shared_ptr.hpp>
 
 // Framework includes.
-//#include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Core/EDProducer.h"
+//#include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
@@ -59,8 +59,12 @@
 #include "RecoDataProducts/inc/TrackerHitTimeCluster.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitByID.hh"
+#include "RecoDataProducts/inc/HelixVal.hh"
+#include "RecoDataProducts/inc/TrackSeed.hh"
+#include "RecoDataProducts/inc/TrackSeedCollection.hh"
 #include "FastPatternReco/inc/FastPatRecoUtilsAndDataDef.hh"
 #include "FastPatternReco/inc/TrkHelixFitIT.hh"
+#include "FastPatternReco/inc/TrackSeedUtils.hh"
 
 //temp El Visual
 #include "MCDataProducts/inc/VisibleGenElTrack.hh"
@@ -143,7 +147,7 @@ struct confMapDraw{
 };
 
 
-class ITTrackReco : public art::EDAnalyzer {
+class ITTrackReco : public art::EDProducer/*art::EDAnalyzer*/ {
 
 public:
 
@@ -170,8 +174,8 @@ public:
         void endJob();
 
         // This is called for each event.
-        //void produce(art::Event & e);
-        void analyze(art::Event const& e);
+        void produce(art::Event & e);
+        //void analyze(art::Event const& e);
 
 private:
 
@@ -338,8 +342,9 @@ ITTrackReco::ITTrackReco(fhicl::ParameterSet const& pset) :
         cout<<"Constructed"<<endl;
         //if ( _nSigmaForClMatch<0.0 ) _nSigmaForClMatch*=-1.00000;
         //if ( _nSigmaForClSlope<0.0 ) _nSigmaForClSlope*=-1.00000;
+
         // Tell the framework what we make.
-        //produces<SctrSttnClusterGroupCollection>();
+        produces<TrackSeedCollection>();
 
 }
 
@@ -391,8 +396,8 @@ void ITTrackReco::beginJob(){
 
 }
 
-//  void ITTrackReco::produce(art::Event & event ) {
-void ITTrackReco::analyze(art::Event const& event ) {
+void ITTrackReco::produce(art::Event & event ) {
+//void ITTrackReco::analyze(art::Event const& event ) {
 
         /*
 
@@ -418,7 +423,7 @@ void ITTrackReco::analyze(art::Event const& event ) {
         //_peakFinder->Clear();
         //_peaksCanvases->Clear();
 
-        //auto_ptr<SctrSttnClusterGroupCollection> sscc(new SctrSttnClusterGroupCollection);
+        auto_ptr<TrackSeedCollection> seeds(new TrackSeedCollection);
 
 
         const Tracker& tracker = getTrackerOrThrow();
@@ -618,6 +623,9 @@ void ITTrackReco::analyze(art::Event const& event ) {
                         cout<<"NClus "<<nClus<<" n. Tot hit grouped in clusters "<<nTotHitInCls<<" n. Hit in Clusters for Stereo Min "<<nTotHitInCls_MIn<<" n. Hit in Clusters for Stereo Pl "<<nTotHitInCls_Pl<<endl;
                 }
 
+                double _tdriftmean = 200.0;
+                double _tpeakerr = (tclust._maxHitTime - tclust._minHitTime)*invSqrt12;
+
                 cout<<"------- start research ------"<<endl;
                 //isHitIDUsed notAssociatedHits;
                 //notAssociatedHits.clear();
@@ -717,9 +725,6 @@ void ITTrackReco::analyze(art::Event const& event ) {
                                 ++iPotLoop;
                         }
 
-                        double _tdriftmean = 200.0;
-                        double _tpeakerr = (tclust._maxHitTime - tclust._minHitTime)*invSqrt12;
-
                         // track fitting objects for this peak
                         TrkHelix helixfit;
                         //TrkKalFit seedfit, kalfit;
@@ -808,6 +813,99 @@ void ITTrackReco::analyze(art::Event const& event ) {
 			}
                 }
 
+
+
+                int jTrackFound = 0;
+                for(std::vector<HelixTraj>::iterator ittrk=trkhelixes.begin(); ittrk!=trkhelixes.end(); ittrk++){
+                        cout<<"For i track "<<jTrackFound<<" there are "<<trkhelixesLoops[jTrackFound].size()<<" Loops to draw"<<endl;
+
+
+                        TrackSeed tmpOutSeed;
+                        HelixTraj2HelixVal (*ittrk, tmpOutSeed._fullTrkSeed);
+
+                        std::set<size_t > hitInserted;
+                        double minSeedTime = 1.e9, tmpSeedHitTime=0.0;
+                        for ( int jSeedPoint = 0; jSeedPoint<sel_AllxyzPntsRel.size(); ++jSeedPoint ) {
+                                std::pair<size_t, size_t> &iPLoop_jPnt = xyzpLoopRel[sel_AllxyzPntsRel.at(jSeedPoint).second];
+                                corssingPoints &crossPoint = potLoops[iPLoop_jPnt.first][iPLoop_jPnt.second];
+                                //insert the two crossing points
+                                if ( hitInserted.find(crossPoint.getInEventHitID())==hitInserted.end() ) {
+                                        tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getInEventHitID() ) );
+                                        tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getInEventHitID() ) );
+                                        hitInserted.insert(crossPoint.getInEventHitID());
+                                        tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
+                                        if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
+                                }
+                                if ( hitInserted.find(crossPoint.getCrossInEventHitID())==hitInserted.end() ) {
+                                        tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getCrossInEventHitID() ) );
+                                        tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getCrossInEventHitID() ) );
+                                        hitInserted.insert(crossPoint.getCrossInEventHitID());
+                                        tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
+                                        if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
+                                }
+
+                                //inserted all the points of the cluster that contains the upper of the two crossing points
+                                for ( hitsInClsID::const_iterator hitsInCls_it = crossPoint.getHitClust()._hitIdx.begin();
+                                                hitsInCls_it != crossPoint.getHitClust()._hitIdx.end(); ++hitsInCls_it ) {
+                                        if ( hitInserted.find(hitsInCls_it->second)==hitInserted.end() ) {
+                                                tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( hitsInCls_it->second ) );
+                                                tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, hitsInCls_it->second ) );
+                                                hitInserted.insert(hitsInCls_it->second);
+                                                tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
+                                                if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
+                                        }
+                                }
+                        }
+                        tmpOutSeed._t0    = minSeedTime;
+                        tmpOutSeed._errt0 = _tpeakerr;
+
+                        int kTrckLoop=0;
+                        for (std::vector<HelixTraj>::iterator trkhelixesLoop_it = trkhelixesLoops[jTrackFound].begin(); trkhelixesLoop_it != trkhelixesLoops[jTrackFound].end(); ++trkhelixesLoop_it) {
+                                cout<<"Drawing single Loop for track "<<jTrackFound<<endl;
+                                HelixVal tmpSeedLoop;
+                                HelixTraj2HelixVal (*trkhelixesLoop_it, tmpSeedLoop);
+                                std::vector<size_t> &hitsInLoopId = helixezPntIdsLoops[jTrackFound].at(kTrckLoop);
+                                std::set<size_t > loopHitInserted;
+
+                                for (std::vector<size_t>::iterator hitsInLoopId_it = hitsInLoopId.begin(); hitsInLoopId_it != hitsInLoopId.end(); ++hitsInLoopId_it) {
+                                        std::pair<size_t, size_t> &iPLoop_jPnt = xyzpLoopRel[sel_AllxyzPntsRel.at(*hitsInLoopId_it).second];
+                                        corssingPoints &crossPoint = potLoops[iPLoop_jPnt.first][iPLoop_jPnt.second];
+                                        //insert the two crossing points
+                                        if ( loopHitInserted.find(crossPoint.getInEventHitID())==loopHitInserted.end() ) {
+                                                tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getInEventHitID() ) );
+                                                tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getInEventHitID() ) );
+                                                loopHitInserted.insert(crossPoint.getInEventHitID());
+                                                tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
+                                                if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
+                                        }
+                                        if ( loopHitInserted.find(crossPoint.getCrossInEventHitID())==loopHitInserted.end() ) {
+                                                tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getCrossInEventHitID() ) );
+                                                tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getCrossInEventHitID() ) );
+                                                loopHitInserted.insert(crossPoint.getCrossInEventHitID());
+                                                tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
+                                                if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
+                                        }
+
+                                        //inserted all the points of the cluster that contains the upper of the two crossing points
+                                        for ( hitsInClsID::const_iterator hitsInCls_it = crossPoint.getHitClust()._hitIdx.begin();
+                                                        hitsInCls_it != crossPoint.getHitClust()._hitIdx.end(); ++hitsInCls_it ) {
+                                                if ( loopHitInserted.find(hitsInCls_it->second)==loopHitInserted.end() ) {
+                                                        tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( hitsInCls_it->second ) );
+                                                        tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, hitsInCls_it->second ) );
+                                                        loopHitInserted.insert(hitsInCls_it->second);
+                                                        tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
+                                                        if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
+                                                }
+                                        }
+                                }
+
+                                tmpOutSeed._loopSeeds.push_back(tmpSeedLoop);
+                                ++kTrckLoop;
+                        }
+
+                        seeds->push_back(tmpOutSeed);
+                        ++jTrackFound;
+                }
 
 
                 /*
@@ -1443,7 +1541,7 @@ void ITTrackReco::analyze(art::Event const& event ) {
         if (notAssociatedHits!=0x0) delete [] notAssociatedHits;
 
 
-        //event.put(sscc);
+        event.put(seeds);
 
         //for (unsigned long i=0; i<1000000; i++) cout<<"lost time "<<endl;
         clock_t stopClock = clock();
