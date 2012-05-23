@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition Data type and method of general use
 //
-// $Id: FastPatRecoUtilsAndDataDef.hh,v 1.5 2012/05/23 07:53:06 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/23 07:53:06 $
+// $Id: FastPatRecoUtilsAndDataDef.hh,v 1.6 2012/05/23 12:26:05 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2012/05/23 12:26:05 $
 //
 // Original author G. Tassielli
 //
@@ -285,7 +285,7 @@ struct CHTVotArr {
         }
 
         ~CHTVotArr() {
-                for (int i=0; i<_nBinX; ++i) {
+                for (unsigned int i=0; i<_nBinX; ++i) {
                         delete [] _dataArr[i];
                 }
                 delete [] _dataArr;
@@ -438,6 +438,7 @@ struct ClosClustCHTVot {
                 tmpMeanY       = tmpClus.tmpMSY;
                 tmpMSY         = tmpClus.tmpMSY;
                 _listCHTVotIDs = tmpClus._listCHTVotIDs;
+		return *this;
         }
 
         std::set< unsigned int > _listCHTVotIDs; //list of the unique ID of the points in the voting array
@@ -591,7 +592,7 @@ struct SimpleCircle2D {
         }
 
         void summCirc ( SimpleCircle2D const & addCirc, int skipFrstNPnts=0 ) {
-                if (skipFrstNPnts>addCirc._listHitptrs.size()) {
+        	if (skipFrstNPnts>int(addCirc._listHitptrs.size())) {
                         throw cet::exception("RANGE")
                           << "Asked to skip more points than that are present in the added circle"<<std::endl;
 
@@ -651,7 +652,7 @@ struct SimpleCircle2D {
                 _sigmaRad      = tmpCirc._sigmaRad;
                 _listHitptrs   = tmpCirc._listHitptrs;
                 _krmCircFit    = tmpCirc._krmCircFit;
-
+		return *this;
         }
 
         //std::unordered_set< ptrHitInClosCust > _listHitptrs; //list of the pointers to the hits that are associated into the circle

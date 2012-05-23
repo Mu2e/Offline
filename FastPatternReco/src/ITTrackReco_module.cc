@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.8 2012/05/23 07:56:01 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/23 07:56:01 $
+// $Id: ITTrackReco_module.cc,v 1.9 2012/05/23 12:26:05 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2012/05/23 12:26:05 $
 //
 // Original author G. Tassielli
 //
@@ -821,6 +821,7 @@ void ITTrackReco::produce(art::Event & event ) {
 
 
                         TrackSeed tmpOutSeed;
+			tmpOutSeed._relatedTimeCluster=TrackerHitTimeClusterPtr(tclustHandle,ipeak);
                         HelixTraj2HelixVal (*ittrk, tmpOutSeed._fullTrkSeed);
 
                         std::set<size_t > hitInserted;
@@ -872,14 +873,14 @@ void ITTrackReco::produce(art::Event & event ) {
                                         corssingPoints &crossPoint = potLoops[iPLoop_jPnt.first][iPLoop_jPnt.second];
                                         //insert the two crossing points
                                         if ( loopHitInserted.find(crossPoint.getInEventHitID())==loopHitInserted.end() ) {
-                                                tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getInEventHitID() ) );
+                                                tmpSeedLoop._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getInEventHitID() ) );
                                                 tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getInEventHitID() ) );
                                                 loopHitInserted.insert(crossPoint.getInEventHitID());
                                                 tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
                                                 if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
                                         }
                                         if ( loopHitInserted.find(crossPoint.getCrossInEventHitID())==loopHitInserted.end() ) {
-                                                tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getCrossInEventHitID() ) );
+                                                tmpSeedLoop._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getCrossInEventHitID() ) );
                                                 tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getCrossInEventHitID() ) );
                                                 loopHitInserted.insert(crossPoint.getCrossInEventHitID());
                                                 tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
@@ -890,7 +891,7 @@ void ITTrackReco::produce(art::Event & event ) {
                                         for ( hitsInClsID::const_iterator hitsInCls_it = crossPoint.getHitClust()._hitIdx.begin();
                                                         hitsInCls_it != crossPoint.getHitClust()._hitIdx.end(); ++hitsInCls_it ) {
                                                 if ( loopHitInserted.find(hitsInCls_it->second)==loopHitInserted.end() ) {
-                                                        tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( hitsInCls_it->second ) );
+                                                        tmpSeedLoop._selectedTrackerHitsIdx.push_back( HitIndex( hitsInCls_it->second ) );
                                                         tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, hitsInCls_it->second ) );
                                                         loopHitInserted.insert(hitsInCls_it->second);
                                                         tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
@@ -981,7 +982,28 @@ void ITTrackReco::produce(art::Event & event ) {
                 if (_doDisplay) {
                         //cout<<"************************ 1.1 ************************"<<endl;
 
-                        TCanvas *tmpRCP_Min = new TCanvas();
+		  TEllipse innerWall (0.0,0.0,rIn,rIn);
+		  innerWall.SetFillStyle(0);
+		  innerWall.SetLineWidth(1.5);
+		  
+		  TEllipse outerWall (0.0,0.0,rOut,rOut);
+		  outerWall.SetFillStyle(0);
+		  outerWall.SetLineWidth(1.5);
+		  
+		  TCanvas *tmpRCP_Min=0,*tmpRCP_Pl=0,*tmpCircleFound=0;
+		  TH2F hHitStereoPl( "hHitStereoPl",  "Stereo+ Hits per Event at z=0", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
+		  TH2F hHitStereoMin( "hHitStereoMin",  "Stereo- Hits per Event at z=0", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
+		  std::vector<TEllipse *> drawPotCirclesMin;
+		  std::vector<TEllipse *> drawPotKrmCirclesMin;
+		  std::vector<TClonesArray *> drawPotCircPntsMin;
+
+		  std::vector<TEllipse *> drawPotCirclesPl;
+		  std::vector<TEllipse *> drawPotKrmCirclesPl;
+		  std::vector<TClonesArray *> drawPotCircPntsPl;
+
+		  bool drawStereoProj=false;
+		  if(drawStereoProj){//stereo projections
+		    tmpRCP_Min = new TCanvas();
                         /*
                 int nlrgCl_Min = rCMap_Min.size();
                 if (nlrgCl_Min>0) {
@@ -1007,7 +1029,7 @@ void ITTrackReco::produce(art::Event & event ) {
                 }
                          */
                         //cout<<"************************ 1.2 ************************"<<endl;
-                        TCanvas *tmpRCP_Pl = new TCanvas();
+		    tmpRCP_Pl = new TCanvas();
                         /*
                 int nlrgCl_Pl = rCMap_Pl.size();
                 if (nlrgCl_Pl>0) {
@@ -1042,18 +1064,8 @@ void ITTrackReco::produce(art::Event & event ) {
 
                         //cout<<"************************ 1.3 ************************"<<endl;
 
-                        TEllipse innerWall (0.0,0.0,rIn,rIn);
-                        innerWall.SetFillStyle(0);
-                        innerWall.SetLineWidth(1.5);
-
-                        TEllipse outerWall (0.0,0.0,rOut,rOut);
-                        outerWall.SetFillStyle(0);
-                        outerWall.SetLineWidth(1.5);
-
-                        TCanvas *tmpCircleFound = new TCanvas("PotCirclesDraw","",860,430);
+                        tmpCircleFound = new TCanvas("PotCirclesDraw","",860,430);
                         tmpCircleFound->Divide(2,1);
-                        TH2F hHitStereoPl( "hHitStereoPl",  "Stereo+ Hits per Event at z=0", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
-                        TH2F hHitStereoMin( "hHitStereoMin",  "Stereo- Hits per Event at z=0", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
                         hHitStereoPl.SetXTitle("cm");
                         hHitStereoPl.SetYTitle("cm");
                         hHitStereoMin.SetXTitle("cm");
@@ -1064,9 +1076,6 @@ void ITTrackReco::produce(art::Event & event ) {
                         innerWall.Draw("same");
                         outerWall.Draw("same");
                         int iCol = 0;
-                        std::vector<TEllipse *> drawPotCirclesMin;
-                        std::vector<TEllipse *> drawPotKrmCirclesMin;
-                        std::vector<TClonesArray *> drawPotCircPntsMin;
                         for (circlesCont::iterator potCirclesMin_it = potCirclesMin.begin(); potCirclesMin_it != potCirclesMin.end(); ++potCirclesMin_it ) {
                                 drawPotCirclesMin.push_back( new TEllipse( potCirclesMin_it->_center.x()/CLHEP::cm, potCirclesMin_it->_center.y()/CLHEP::cm, potCirclesMin_it->_radius/CLHEP::cm, potCirclesMin_it->_radius/CLHEP::cm) );
                                 drawPotCirclesMin.back()->SetFillStyle(0);
@@ -1118,9 +1127,6 @@ void ITTrackReco::produce(art::Event & event ) {
                         innerWall.Draw("same");
                         outerWall.Draw("same");
                         iCol = 0;
-                        std::vector<TEllipse *> drawPotCirclesPl;
-                        std::vector<TEllipse *> drawPotKrmCirclesPl;
-                        std::vector<TClonesArray *> drawPotCircPntsPl;
                         for (circlesCont::iterator potCirclesPl_it = potCirclesPl.begin(); potCirclesPl_it != potCirclesPl.end(); ++potCirclesPl_it ) {
                                 drawPotCirclesPl.push_back( new TEllipse( potCirclesPl_it->_center.x()/CLHEP::cm, potCirclesPl_it->_center.y()/CLHEP::cm, potCirclesPl_it->_radius/CLHEP::cm, potCirclesPl_it->_radius/CLHEP::cm) );
                                 drawPotCirclesPl.back()->SetFillStyle(0);
@@ -1165,7 +1171,7 @@ void ITTrackReco::produce(art::Event & event ) {
                         }
                         tmpCircleFound->Modified();
                         tmpCircleFound->Update();
-
+		  }
 
                         TCanvas *tmpCircleFound3D = new TCanvas("PotCirclesDraw3D","",860,860);
                         tmpCircleFound3D->Divide(2,2);
@@ -1207,7 +1213,7 @@ void ITTrackReco::produce(art::Event & event ) {
                         outerWallL.Draw("same");
                         tmpCircleFound3D->cd(3);
 
-                        iCol = 0;
+                        int iCol = 0;
                         std::vector<TClonesArray *> drawPotCircPnts3D;
                         std::vector<TGraphErrors *> drawPotCircPnts3D_L;
                         std::vector<float *> zarr;
@@ -1467,7 +1473,7 @@ void ITTrackReco::produce(art::Event & event ) {
                         cerr << "Double click in the canvas_Fake to continue:" ;
                         _fakeCanvas->cd();
                         TLatex *printEvN = new TLatex(0.15,0.4,Form("Current Event: %d - Tpeak %d",event.id().event(),ipeak));
-                        printEvN->SetTextFont(62);
+                        //printEvN->SetTextFont(50);
                         printEvN->SetTextSizePixels(160);
                         printEvN->Draw();
                         _fakeCanvas->Modified();
@@ -1476,8 +1482,9 @@ void ITTrackReco::produce(art::Event & event ) {
                         cerr << endl;
                         delete printEvN;
 
-                        delete tmpRCP_Min;
-                        delete tmpRCP_Pl;
+			delete tmpRCP_Min;
+			delete tmpRCP_Pl;
+			
 
                         delete tmpCircleFound;
                         for (std::vector<TEllipse *>::iterator drawPotCircles_it = drawPotCirclesMin.begin(); drawPotCircles_it != drawPotCirclesMin.end(); ++drawPotCircles_it ){

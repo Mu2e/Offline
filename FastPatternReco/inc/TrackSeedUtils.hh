@@ -1,9 +1,9 @@
 //
 // Utilities functions to manage track seeds
 //
-// $Id: TrackSeedUtils.hh,v 1.1 2012/05/23 07:56:02 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/23 07:56:02 $
+// $Id: TrackSeedUtils.hh,v 1.2 2012/05/23 12:26:05 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2012/05/23 12:26:05 $
 //
 // Original author G. Tassielli
 //
@@ -22,7 +22,7 @@
 
 namespace mu2e {
 
-inline void HelixTraj2HelixVal (HelixTraj & helIn, HelixVal &helOut) {
+inline void HelixTraj2HelixVal (const HelixTraj & helIn, HelixVal &helOut) {
         helOut._d0     = helIn.d0();
         helOut._phi0   = helIn.phi0();
         helOut._omega  = helIn.omega();
@@ -30,7 +30,7 @@ inline void HelixTraj2HelixVal (HelixTraj & helIn, HelixVal &helOut) {
         helOut._tanDip = helIn.tanDip();
 }
 
-inline void HelixVal2HelixTraj ( HelixVal &helIn, HelixTraj &helOut) {
+inline void HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut) {
         //TrkExchangePar helParams( helIn._d0, helIn._phi0, helIn._omega, helIn._z0, helIn._tanDip );
         HepVector helParams(5);
         helParams(1) = helIn._d0;
