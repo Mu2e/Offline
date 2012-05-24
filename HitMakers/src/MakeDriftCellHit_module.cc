@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.17 2012/05/13 21:23:15 ignatov Exp $
-// $Author: ignatov $
-// $Date: 2012/05/13 21:23:15 $
+// $Id: MakeDriftCellHit_module.cc,v 1.18 2012/05/24 05:44:44 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/05/24 05:44:44 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -229,8 +229,9 @@ namespace mu2e {
     // Throw exception if not successful.
     //const Tracker& tracker = getTrackerOrThrow();
     const Tracker& tracker = getTrackerOrThrow();
-    //const ITracker& tracker     = static_cast<const ITracker&>(tracker);
+    const ITracker& itr     = static_cast<const ITracker&>(tracker);
     //GeomHandle<ITracker> tracker;
+    CellGeometryHandle *itwp = itr.getCellGeometryHandle();
 
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     const double signalVelocity = tcal->SignalVelocity(StrawIndex(0));//231.;//299.792458; // mm/ns
@@ -290,9 +291,13 @@ namespace mu2e {
       StrawIndex dcell_id = idcell->first;
       //const Straw&  cell = tracker.getStraw(dcell_id);
       const Cell&    cell = static_cast<const Cell&>( tracker.getStraw(dcell_id) );
-      CLHEP::Hep3Vector const& mid   = cell.getMidPoint();
-      CLHEP::Hep3Vector const& w     = cell.getDirection();
-      double strawHalfLength         = cell.getHalfLength();
+      //CLHEP::Hep3Vector const& mid   = cell.getMidPoint();
+      //CLHEP::Hep3Vector const& w     = cell.getDirection();
+      //double strawHalfLength         = cell.getHalfLength();
+      itwp->SelectCellDet(dcell_id.asUint());
+      CLHEP::Hep3Vector const& mid   = itwp->GetCellCenter();
+      CLHEP::Hep3Vector const& w     = itwp->GetCellDirection();
+      double strawHalfLength         = itwp->GetCellHalfLength();
 
 //      StrawIndex dcell_id = idcell->first;
 //      itracker->getCellGeometryHandle()->SelectCellDet(dcell_id.asUint());
