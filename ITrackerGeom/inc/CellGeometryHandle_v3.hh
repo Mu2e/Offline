@@ -21,6 +21,10 @@ public:
     virtual void  SelectCellDet(unsigned long det);
     virtual void  SelectCell(int absRadID, int Cell, bool isUpstrm=false);
     virtual unsigned long computeDet(int SupLayer, int CelLayer, int Cell, bool isUpstrm=false);
+    virtual void  SelectComp_Cell(int compSupLayer, int compCelLayer, int compICell, bool compIsUpStream=false);
+    virtual void  SelectComp_CellDet(unsigned long compDet);
+    virtual void  SelectComp_Cell(int compIAbsRadID, int compICell, bool compIsUpStream=false);
+    virtual bool  canIntersectInZ(float &zCorss, float &distWires) const;
     virtual bool  canIntersectInZ(float &zCorss, float &distWires, unsigned long compDet) const;
     virtual bool  canIntersectInZ(float &zCorss, float &distWires, int compAbsRadID, int compICell, bool compIsUpstrm=false) const;
     virtual bool  canIntersectInZ(float &zCorss, float &distWires, int compSupLayer, int compCelLayer, int compCell, bool compIsUpstrm=false) const;

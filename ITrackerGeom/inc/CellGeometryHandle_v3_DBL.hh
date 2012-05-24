@@ -25,6 +25,10 @@ public:
     virtual const CLHEP::Hep3Vector& GetCellCenter() const;
     virtual const CLHEP::Hep3Vector& GetCellDirection() const;
     virtual double GetCellHalfLength() const;
+    virtual void  SelectComp_Cell(int compSupLayer, int compCelLayer, int compICell, bool compIsUpStream=false);
+    virtual void  SelectComp_CellDet(unsigned long compDet);
+    virtual void  SelectComp_Cell(int compIAbsRadID, int compICell, bool compIsUpStream=false);
+    virtual bool  canIntersectInZ(float &zCorss, float &distWires) const;
 
 private:
     // no copying:
@@ -38,6 +42,17 @@ private:
     CLHEP::Hep3Vector _tmpDirection;
     CLHEP::Hep3Vector _tmpMidPoint;
     float wCntPos[3];
+
+    inline void  Comp_AdjustMatrix();
+    void  Comp_WirePosAtLength(float length, float *pos);
+    bool _Comp_isUpStream;
+    double _Comp_DnStrmDeadWireLngt;
+    double _Comp_UpStrmDeadWireLngt;
+    double _Comp_tmpCellHalfLength;
+    CLHEP::Hep3Vector _Comp_tmpDirection;
+    CLHEP::Hep3Vector _Comp_tmpMidPoint;
+    float Comp_wCntPos[3];
+
 };
 
 }

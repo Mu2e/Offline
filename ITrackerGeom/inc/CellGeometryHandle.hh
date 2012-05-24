@@ -18,6 +18,9 @@ protected:
         CellGeometryHandle() {
                 _isDownStream=true;
                 _isUpStream=false;
+
+                _Comp_isDownStream=true;
+                _Comp_isUpStream=false;
         }
 
 public:
@@ -79,6 +82,7 @@ public:
         virtual bool  canIntersectInZ(float &zCorss, float &distWires, unsigned long compDet) const;
         virtual bool  canIntersectInZ(float &zCorss, float &distWires, int compAbsRadID, int compICell, bool compIsUpstrm=false) const { return false; };
         virtual bool  canIntersectInZ(float &zCorss, float &distWires, int compSupLayer, int compCelLayer, int compICell, bool compIsUpstrm=false) const { return false; };
+        virtual bool  canIntersectInZ(float &zCorss, float &distWires) const {return false;}
 
         virtual double DistFromWire(double *global)               ;
         virtual double DistFromWireCenter(double *global)         ;
@@ -91,6 +95,30 @@ public:
         virtual boost::shared_ptr<Cell> GetITCell()               { return _cell; }
         bool isUpStream()   { return _isUpStream; }
         bool isDownStream() { return _isDownStream; }
+
+        virtual void  SelectComp_Cell(int compSupLayer, int compCelLayer, int compICell, bool isUpstrm=false) {
+                throw cet::exception("GEOM")<< "SelectCell Method not implemented for the interface class CellGeometryHandle, please use one of the real implementation"<<std::endl;
+        }
+        virtual void  SelectComp_CellDet(unsigned long compDet) {
+                // Return the SuperLayer
+                int compSupLayer=(int)(compDet*0.00001);
+
+                //Return the Layer
+                int compCelLayer=(int)((compDet)-((compSupLayer)*100000));
+
+                compCelLayer=(int)(compCelLayer*0.001);
+
+                //Return the Wire
+                int compICell=(int)(((compDet)-((compSupLayer)*100000))-compCelLayer*1000);
+
+                compSupLayer--;
+
+                //Call the upper method
+                SelectCell(compSupLayer,compCelLayer,compICell);
+        }
+        virtual void  SelectComp_Cell(int compIAbsRadID, int compICell, bool isUpstrm=false) {
+                SelectCell(compIAbsRadID,0,compICell,isUpstrm);
+        }
 
 protected:
         int       _fSuperLayer;
@@ -109,6 +137,12 @@ protected:
 
         bool _isUpStream;
         bool _isDownStream;
+
+        bool _Comp_isUpStream;
+        bool _Comp_isDownStream;
+        int  _Comp_SuperLayer;
+        boost::shared_ptr<Cell> _Comp_cell;
+        HepGeom::Transform3D _Comp_matrx;
 
 };
 
