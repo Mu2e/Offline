@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.10 2012/05/24 01:04:20 tassiell Exp $
+// $Id: ITTrackReco_module.cc,v 1.11 2012/05/24 05:41:30 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/24 01:04:20 $
+// $Date: 2012/05/24 05:41:30 $
 //
 // Original author G. Tassielli
 //
@@ -455,7 +455,6 @@ void ITTrackReco::produce(art::Event & event ) {
 
         stMaprel ssmap_Bin_Straw_rel;           //relation between straw and the AbsSector (Rotation) vs Station map
         stMaprel::iterator ssmpbnstrw_rel_it;   //iterator for relation between straw and the AbsSector (Rotation) vs Station map
-        int tmpiGeomBin, tmpiGeomBinRow;
 
         art::Handle<StrawHitCollection> pdataHandle;
         event.getByLabel(_makerModuleLabel,pdataHandle);
@@ -490,13 +489,12 @@ void ITTrackReco::produce(art::Event & event ) {
         int i1peak;
 
         int sid, lid, did, radId;
-        unsigned int absSect/*, devStId*/;
         unsigned int ihit;
 
         //double refX, refY, /*tmpX, tmpY,*/ cmapU, cmapV, invTmpR2;
         size_t iglbHit=0;
         bool *isStereoMin = new (nothrow) bool [nStrawPerEvent];
-        for (int jhit=0; jhit<nStrawPerEvent; ++jhit) {
+        for (size_t jhit=0; jhit<nStrawPerEvent; ++jhit) {
                 isStereoMin[jhit] = false;
         }
 
@@ -506,9 +504,7 @@ void ITTrackReco::produce(art::Event & event ) {
         //TCanvas * iCanvHist=0x0;
 
         //int nCellPerLayer = 0;
-        int tmpSid=0, lost=0, hitClSizeInLayer=1;
         int nClus=0, nTotHitInCls=0, nTotHitInCls_Pl=0, nTotHitInCls_MIn=0, nTotHit_Pl=0, nTotHit_MIn=0;
-        bool lostHit=true;
         //closClstcol
         closClinRadLay radCls_Pl, radCls_Min, radCls_Pl_Ups, radCls_Min_Ups;
         closClinRadLay::iterator radCls_it, sndRadCls_it;
@@ -864,22 +860,22 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
         int nPotBending=0;
         bool foundCircles = false;
 
-        float refX, refY, refRes2, closeCntCellX, closeCntCellY, cmapU, cmapV, TmpR2, invTmpR2;
-        int closeCntCellID, closeCntCellShift, halfwayCellID;
-        float cmapU_clsCntCell, cmapV_clsCntCell, CHTtanTheta0_DX, CHTtanTheta0_DY, CHTtanTheta0, CHTTheta0, CHTr0, CHTcosArcTanT0;
-        unsigned int votArrBin, halfwayVotArrBin;
-        CHTVotArr_HitPtrrel votArr_HitPtrrel;
-        ptrHitInClosCust refHitptr, clsCntCellHitptr;
-        closeCntCellShift = (_minClusMultBend+1)/4+1;
-        halfwayCellID = closeCntCellShift/2;
-        if (halfwayCellID==0) halfwayCellID=1;
-        if (halfwayCellID==closeCntCellShift) halfwayCellID=-1;
+        //float refX, refY, refRes2, closeCntCellX, closeCntCellY, cmapU, cmapV, TmpR2, invTmpR2;
+        //int closeCntCellID, closeCntCellShift, halfwayCellID;
+        //float cmapU_clsCntCell, cmapV_clsCntCell, CHTtanTheta0_DX, CHTtanTheta0_DY, CHTtanTheta0, CHTTheta0, CHTr0, CHTcosArcTanT0;
+        //unsigned int votArrBin, halfwayVotArrBin;
+        //CHTVotArr_HitPtrrel votArr_HitPtrrel;
+        //ptrHitInClosCust refHitptr, clsCntCellHitptr;
+        //closeCntCellShift = (_minClusMultBend+1)/4+1;
+        //halfwayCellID = closeCntCellShift/2;
+        //if (halfwayCellID==0) halfwayCellID=1;
+        //if (halfwayCellID==closeCntCellShift) halfwayCellID=-1;
 
-        float cellAveRes, cellAveZRes;
-        float tmpCirChi2, tmpRad;
-        bool firstInsert = false;
-        bool foundWrCross;
-        float zCorssPos, wrsDistAtz, minZCorssPos, minWrsDistAtz, cutWrsDistAtz;
+        //float cellAveRes, cellAveZRes;
+        //float tmpCirChi2, tmpRad;
+        //bool firstInsert = false;
+        bool foundWrCross=false;
+        //float zCorssPos, wrsDistAtz, minZCorssPos, minWrsDistAtz, cutWrsDistAtz;
         int crossCellId1, crossCellId2;
         int tmpAbsRad;
         int matchZdir=1;
@@ -890,15 +886,15 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
         //loop over all one view hits clusters, starting by the external radius, and make a CHT respect to the center of the starting cluster
         for ( closClinRadLay::iterator radCls_1v_it = radCls_1v.begin(); radCls_1v_it != radCls_1v.end(); ++radCls_1v_it ) {
                 for ( closClstcol::iterator closCls_it = radCls_1v_it->second.begin(); closCls_it != radCls_1v_it->second.end(); ++closCls_it ) {
-                        if ((*closCls_it)->_nHit>minClusMultBend){
+                        if ((*closCls_it)->_nHit>((unsigned int)minClusMultBend)){
                                 ++nPotBending;
                                 potLoops.push_back(points3D());
                                 points3D &potLoopPoints = potLoops.back();
 
                                 itwp->SelectCell(radCls_1v_it->first, (*closCls_it)->_maxCellID,_hitsInUpstream);
-                                cellAveRes = itwp->GetCellRad() * invSqrt3;
-                                cellAveZRes = cellAveRes/cos( itwp->GetWireEpsilon() );
-                                cutWrsDistAtz = 2.5*itwp->GetCellRad();
+                                //cellAveRes = itwp->GetCellRad() * invSqrt3;
+                                //cellAveZRes = cellAveRes/cos( itwp->GetWireEpsilon() );
+                                //cutWrsDistAtz = 2.5*itwp->GetCellRad();
                                 tmpAbsRad = (radCls_1v_it->first-1);
                                 closClinRadLay::iterator radCls_2v_it = radCls_2v.find( tmpAbsRad );
                                 if (radCls_2v_it!=radCls_2v.end()) {
@@ -1384,6 +1380,7 @@ int   ITTrackReco::findZclusters( HelixTraj &trkhelixe, std::vector<XYZP> &xyzp,
                 //trkhelixeLoops.push_back(iHelTraj);
         }
 
+        return loopsZRange.size();
 }
 
 
@@ -1391,10 +1388,10 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
         int nPotBending=0;
         bool foundCircles = false;
 
-        float refX, refY, refRes2, closeCntCellX, closeCntCellY, cmapU, cmapV, TmpR2, invTmpR2;
+        float refX, refY, refRes2, closeCntCellX, closeCntCellY/*, cmapU, cmapV, TmpR2, invTmpR2*/;
         int closeCntCellID, closeCntCellShift, halfwayCellID;
-        float cmapU_clsCntCell, cmapV_clsCntCell, CHTtanTheta0_DX, CHTtanTheta0_DY, CHTtanTheta0, CHTTheta0, CHTr0, CHTcosArcTanT0;
-        unsigned int votArrBin, halfwayVotArrBin;
+        //float cmapU_clsCntCell, cmapV_clsCntCell, CHTtanTheta0_DX, CHTtanTheta0_DY, CHTtanTheta0, CHTTheta0, CHTr0, CHTcosArcTanT0;
+        //unsigned int votArrBin, halfwayVotArrBin;
         CHTVotArr_HitPtrrel votArr_HitPtrrel;
         ptrHitInClosCust refHitptr, clsCntCellHitptr;
         closeCntCellShift = (_minClusMultBend+1)/4+1;
@@ -1403,13 +1400,13 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
         if (halfwayCellID==closeCntCellShift) halfwayCellID=-1;
 
         float cellAveRes;
-        float tmpCirChi2, tmpRad;
+        float tmpCirChi2/*, tmpRad*/;
         bool firstInsert = false;
 
         //loop over all one view hits clusters, starting by the external radius, and make a CHT respect to the center of the starting cluster
         for ( closClinRadLay::iterator radCls_it = radCls.begin(); radCls_it != radCls.end(); ++radCls_it ) {
                 for ( closClstcol::iterator closCls_it = radCls_it->second.begin(); closCls_it != radCls_it->second.end(); ++closCls_it ) {
-                        if ((*closCls_it)->_nHit>_minClusMultBend){
+                        if ((*closCls_it)->_nHit>((unsigned int)_minClusMultBend)){
                                 ++nPotBending;
 
                                 SimpleCircle2D tmpCircle;
@@ -1496,7 +1493,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                         tmpCirChi2 = tmpCircle._krmCircFit.chicir/((float) (tmpCircle._krmCircFit.np()-3));
                                         if ( tmpCirChi2>0.001 && tmpCirChi2<_circChi2cut ) {
                                                 cout<<"Circ Chi2 good"<<endl;
-                                                tmpRad = 1.0/tmpCircle._krmCircFit.rho;
+                                                //tmpRad = 1.0/tmpCircle._krmCircFit.rho;
                                                 //if (tmpRad>=_minGoodR && tmpRad<=_maxGoodR ) {
                                                 cout<<"Circle added"<<endl;
                                                 potcircles.push_back( tmpCircle );
@@ -1579,7 +1576,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
 
         float refX, refY, refRes2, closeCntCellX, closeCntCellY, cmapU, cmapV, TmpR2, invTmpR2;
         int closeCntCellID, closeCntCellShift, halfwayCellID;
-        float cmapU_clsCntCell, cmapV_clsCntCell, CHTtanTheta0_DX, CHTtanTheta0_DY, CHTtanTheta0, CHTTheta0, CHTr0, CHTcosArcTanT0;
+        float cmapU_clsCntCell, cmapV_clsCntCell, CHTtanTheta0_DX, CHTtanTheta0_DY, CHTtanTheta0, CHTTheta0, CHTr0/*, CHTcosArcTanT0*/;
         unsigned int votArrBin, halfwayVotArrBin;
         CHTVotArr_HitPtrrel votArr_HitPtrrel;
         ptrHitInClosCust refHitptr, clsCntCellHitptr;
@@ -1595,7 +1592,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
         for ( closClinRadLay::iterator radCls_it = radCls.begin(); radCls_it != radCls.end(); ++radCls_it ) {
                 for ( closClstcol::iterator closCls_it = radCls_it->second.begin(); closCls_it != radCls_it->second.end(); ++closCls_it ) {
                         startPointNotUsed = true;
-                        if ((*closCls_it)->_nHit>minClusMultBend ){
+                        if ((*closCls_it)->_nHit>((unsigned int)minClusMultBend) ){
                                 if (skipAssociated) {
                                         for (hitsInClsID::const_iterator clHitsIDs_it=(*closCls_it)->_hitIdx.begin(); clHitsIDs_it!=(*closCls_it)->_hitIdx.end(); ++clHitsIDs_it) {
                                                 if ((*closCls_it)->_centerCellID==clHitsIDs_it->first) {
@@ -1995,11 +1992,11 @@ void ITTrackReco::mergeCircles( circlesCont &potCircles ) {
         cout<<"Circle couples found "<<matchingCirc.size()<<endl;
         if ( matchingCirc.size()>0 ) {
                 bool removeCirc = false;
-                int nAddedPoints = 0;
+                //int nAddedPoints = 0;
                 for ( std::vector<circlePair >::iterator matchingCirc_it = matchingCirc.begin(); matchingCirc_it != matchingCirc.end(); ++matchingCirc_it ) {
-                        nAddedPoints = 0;
+                        //nAddedPoints = 0;
                         //if ( matchingCirc_it->first->_listHitptrs.size()>=matchingCirc_it->second->_listHitptrs.size() ) {
-                        nAddedPoints = matchingCirc_it->first->mergeCirc( *matchingCirc_it->second, removeCirc);
+                        //nAddedPoints = matchingCirc_it->first->mergeCirc( *matchingCirc_it->second, removeCirc);
                         if (removeCirc) {
                                 circToErase.insert(matchingCirc_it->second);
                         }
@@ -2311,7 +2308,7 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
 
                 std::set<size_t > hitInserted;
                 double minSeedTime = 1.e9, tmpSeedHitTime=0.0;
-                for ( int jSeedPoint = 0; jSeedPoint<sel_AllxyzPntsRel.size(); ++jSeedPoint ) {
+                for ( size_t jSeedPoint = 0; jSeedPoint<sel_AllxyzPntsRel.size(); ++jSeedPoint ) {
                         std::pair<size_t, size_t> &iPLoop_jPnt = xyzpLoopRel[sel_AllxyzPntsRel.at(jSeedPoint).second];
                         corssingPoints &crossPoint = potLoops[iPLoop_jPnt.first][iPLoop_jPnt.second];
                         //insert the two crossing points
