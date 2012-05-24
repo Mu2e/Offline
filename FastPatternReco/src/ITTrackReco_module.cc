@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.9 2012/05/23 12:26:05 ignatov Exp $
-// $Author: ignatov $
-// $Date: 2012/05/23 12:26:05 $
+// $Id: ITTrackReco_module.cc,v 1.10 2012/05/24 01:04:20 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/05/24 01:04:20 $
 //
 // Original author G. Tassielli
 //
@@ -199,9 +199,11 @@ private:
         // Max acceptable value for the Chi2/NDOF for a circle
         float _circChi2cut;
 
-        float _minGoodR, _maxGoodR;
-        float _minZ, _maxZ;
+        float  _minGoodR, _maxGoodR;
+        float  _minZ, _maxZ;
         double _rIn;
+        double _rOut;
+        bool   _hitsInUpstream;
 
         // Use n times sigma for matching the clusters in the Sector plane
         //float _nSigmaForClMatch;
@@ -254,9 +256,8 @@ private:
         float maxTimeHist; //ns
         float timeBinDim;  //ns
 
-        inline unsigned int iRot(int device, int sector){
-                return (unsigned int) (device%2)+2*sector;
-        }
+        double _maxTdrift;
+        double _tpeakerr;
 
         //void SctrSttnMapAnalyze(TH2I *startDist, TH2I *votingArray, int minPitch=3, int maxPitch=11);
         //rwclinrwrel rwClst_forRw_rel;
@@ -265,8 +266,10 @@ private:
         size_t nAssociatedHit;
         hitCrossingList hitCrossingChecked;
         hitCrossingList hitCrossingCheckedT;
+        hitCrossingList segmantHitCrossingChecked;
+        hitCrossingList segmantHitCrossingCheckedT;
 
-        bool  findCluster(int &did, int &lid, int &sid, size_t &iglbHit, std::set<size_t> &hitLoked, closClstcol &clusCont, TrackerHitByID const* hitByID, TrackerHitTimeCluster const&  tclust, CellGeometryHandle *itwp);
+        bool  findCluster(int &did, int &lid, int &sid, bool isUpStream, size_t &iglbHit, std::set<size_t> &hitLoked, closClstcol &clusCont, TrackerHitByID const* hitByID, TrackerHitTimeCluster const&  tclust, CellGeometryHandle *itwp);
         bool  findClosClust( unsigned int tmpX, unsigned int tmpY, std::map<unsigned int, bool> &notLooked, CHTVotArr &cmapCHTVotArr, ClosClustCHTVot &votClus );
         bool  findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, circlesCont & potcircles, std::string type);
         bool  findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, std::vector<confMapDraw*> &rCMap, circlesCont & potcircles, std::string type="", int minClusMultBend =6, unsigned int thrCHTaddVot=5, bool skipAssociated=false);
@@ -280,6 +283,11 @@ private:
         bool  iteratMinMaxWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints);
         int   findZclusters( std::vector<XYZP> &xyzp, float zdim=20.0, float zPeakSigma=4.0, float zPeakThr=0.01, TH1F *zHist=0x0 );
         int   findZclusters( HelixTraj &trkhelixe, std::vector<XYZP> &xyzp, std::vector< std::vector<size_t> > &pntIdsLoops/*, std::vector<TrkHelix> &helixeFitLoops, std::vector<HelixTraj> &trkhelixeLoops*/);
+
+        void  searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls_Min, auto_ptr<TrackSeedCollection> &seeds,
+                        CellGeometryHandle *itwp, std::vector<TrkTimePeak> &tpeaks, size_t &ipeak, art::Handle<TrackerHitTimeClusterCollection> &tclustHandle, art::Handle<StrawHitCollection> &pdataHandle
+                        , VisibleGenElTrackCollection const* genEltrks
+                        );
 
         // Some ugly but necessary ROOT related bookkeeping:
 
@@ -302,6 +310,11 @@ ITTrackReco::ITTrackReco(fhicl::ParameterSet const& pset) :
                     _circChi2cut(pset.get<float>("circChi2cut")),
                     _minGoodR(150.0),
                     _maxGoodR(450.0),
+                    _minZ(0.0),
+                    _maxZ(0.0),
+                    _rIn(0.0),
+                    _rOut(0.0),
+                    _hitsInUpstream(false),
                     //_nSigmaForClMatch(pset.get<float>("nSigmaForClMatch")),
                     //_nSigmaForClSlope(pset.get<float>("nSigmaForClSlope")),
                     /*_nAccumulate(pset.get<int>("nAccumulate",20)),*/
@@ -432,14 +445,13 @@ void ITTrackReco::produce(art::Event & event ) {
         _maxZ =  itr.maxEndCapDim()-itr.getWalls()->find(Wall::endcap)->second->getTotalThickness();
         _minZ = -_maxZ;
 
+        _maxTdrift = 200.0;
+
 
         //_hfit._itwp = itwp;
 
-        double rIn  = itr.r0()+itr.getWalls()->find(Wall::inner)->second->getTotalThickness();
-        double rOut = itr.rOut()-itr.getWalls()->find(Wall::outer)->second->getTotalThickness();
-        _rIn = rIn;
-        rIn/=CLHEP::cm;
-        rOut/=CLHEP::cm;
+        _rIn  = itr.r0()+itr.getWalls()->find(Wall::inner)->second->getTotalThickness();
+        _rOut = itr.rOut()-itr.getWalls()->find(Wall::outer)->second->getTotalThickness();
 
         stMaprel ssmap_Bin_Straw_rel;           //relation between straw and the AbsSector (Rotation) vs Station map
         stMaprel::iterator ssmpbnstrw_rel_it;   //iterator for relation between straw and the AbsSector (Rotation) vs Station map
@@ -482,7 +494,6 @@ void ITTrackReco::produce(art::Event & event ) {
         unsigned int ihit;
 
         //double refX, refY, /*tmpX, tmpY,*/ cmapU, cmapV, invTmpR2;
-        std::vector<confMapDraw*> rCMap_Pl, rCMap_Min, rCMap_Pl2, rCMap_Min2;// rCMap_Pl_Ups, rCMap_Min_Ups;
         size_t iglbHit=0;
         bool *isStereoMin = new (nothrow) bool [nStrawPerEvent];
         for (int jhit=0; jhit<nStrawPerEvent; ++jhit) {
@@ -499,7 +510,7 @@ void ITTrackReco::produce(art::Event & event ) {
         int nClus=0, nTotHitInCls=0, nTotHitInCls_Pl=0, nTotHitInCls_MIn=0, nTotHit_Pl=0, nTotHit_MIn=0;
         bool lostHit=true;
         //closClstcol
-        closClinRadLay radCls_Pl, radCls_Min;// radCls_Pl_Ups, radCls_Min_Ups;
+        closClinRadLay radCls_Pl, radCls_Min, radCls_Pl_Ups, radCls_Min_Ups;
         closClinRadLay::iterator radCls_it, sndRadCls_it;
 
         notAssociatedHits = new bool[nStrawPerEvent];
@@ -540,7 +551,8 @@ void ITTrackReco::produce(art::Event & event ) {
                         sid = cell.Id().getCell();
                         lid = cell.Id().getLayer();
                         did = cell.Id().getLayerId().getSuperLayer();
-                        itwp->SelectCell(did,lid,sid);
+                        itwp->SelectCellDet(si.asUint());
+                        //itwp->SelectCell(did,lid,sid);
                         radId = itwp->GetCellAbsRadID();
 
                         //const CLHEP::Hep3Vector stMidPoint3 = itwp->GetCellCenter();//str.getMidPoint();
@@ -558,21 +570,37 @@ void ITTrackReco::produce(art::Event & event ) {
                                 //idHitStereoMin.push_back(iglbHit);
                                 //_hCMapHitStereoMi->Fill(cmapU,cmapV);
 
-                                radCls_it=radCls_Min.find(radId);
-                                if (radCls_it==radCls_Min.end()) {
-                                        radCls_it=( radCls_Min.insert( closClinRadLay::value_type( radId, closClstcol() ) ) ).first;
+                                if (itwp->isDownStream()) {
+                                        radCls_it=radCls_Min.find(radId);
+                                        if (radCls_it==radCls_Min.end()) {
+                                                radCls_it=( radCls_Min.insert( closClinRadLay::value_type( radId, closClstcol() ) ) ).first;
+                                        }
+                                        findCluster(did, lid, sid, false, iglbHit, hitLoked, radCls_it->second, hitByID, tclust, itwp);
+                                } else if (itwp->isUpStream()) {
+                                        radCls_it=radCls_Min_Ups.find(radId);
+                                        if (radCls_it==radCls_Min_Ups.end()) {
+                                                radCls_it=( radCls_Min_Ups.insert( closClinRadLay::value_type( radId, closClstcol() ) ) ).first;
+                                        }
+                                        findCluster(did, lid, sid, true, iglbHit, hitLoked, radCls_it->second, hitByID, tclust, itwp);
                                 }
-                                findCluster(did, lid, sid, iglbHit, hitLoked, radCls_it->second, hitByID, tclust, itwp);
                         }
                         else {
                                 //isStereoMin[iglbHit]=false;
                                 ++nTotHit_Pl;
 
-                                radCls_it=radCls_Pl.find(radId);
-                                if (radCls_it==radCls_Pl.end()) {
-                                        radCls_it=( radCls_Pl.insert( closClinRadLay::value_type( radId, closClstcol() ) ) ).first;
+                                if (itwp->isDownStream()) {
+                                        radCls_it=radCls_Pl.find(radId);
+                                        if (radCls_it==radCls_Pl.end()) {
+                                                radCls_it=( radCls_Pl.insert( closClinRadLay::value_type( radId, closClstcol() ) ) ).first;
+                                        }
+                                        findCluster(did, lid, sid, false, iglbHit, hitLoked, radCls_it->second, hitByID, tclust, itwp);
+                                } else if (itwp->isUpStream()) {
+                                        radCls_it=radCls_Pl_Ups.find(radId);
+                                        if (radCls_it==radCls_Pl_Ups.end()) {
+                                                radCls_it=( radCls_Pl_Ups.insert( closClinRadLay::value_type( radId, closClstcol() ) ) ).first;
+                                        }
+                                        findCluster(did, lid, sid, false, iglbHit, hitLoked, radCls_it->second, hitByID, tclust, itwp);
                                 }
-                                findCluster(did, lid, sid, iglbHit, hitLoked, radCls_it->second, hitByID, tclust, itwp);
                         }
                         //-------------------------------------------------
 
@@ -618,929 +646,68 @@ void ITTrackReco::produce(art::Event & event ) {
                                 }
                         }
 
+                        int nTotHitInCls_MIn_Ups=0, nTotHitInCls_Pl_Ups=0;
+                        if (itr.isDumbbell()) {
+                                cout<<"Clusters for Min Upstream streo:"<<endl;
+
+                                for ( closClinRadLay::iterator radCls_it = radCls_Min_Ups.begin(); radCls_it != radCls_Min_Ups.end(); ++radCls_it ) {
+                                        cout<<"***** cluster for Radial layer "<<radCls_it->first<<" :"<<endl;
+                                        for ( closClstcol::iterator closCls_it = radCls_it->second.begin(); closCls_it != radCls_it->second.end(); ++closCls_it ) {
+                                                cout<<"-- cluster n "<<nClus<<endl;
+                                                ++nClus;
+                                                nTotHitInCls_MIn_Ups+=(*closCls_it)->_nHit;
+                                                nTotHitInCls+=(*closCls_it)->_nHit;
+                                                cout<<"\t cluster size "<<(*closCls_it)->_nHit<<" minCell "<<(*closCls_it)->_minCellID<<" maxCell "<<(*closCls_it)->_maxCellID<<" centralCell "<<(*closCls_it)->_centerCellID<<endl;
+                                                cout<<"\t hits in cluster: ";
+                                                for (hitsInClsID::const_iterator clsHit_it = (*closCls_it)->_hitIdx.begin(); clsHit_it != (*closCls_it)->_hitIdx.end(); ++clsHit_it){
+                                                        cout<<"("<<clsHit_it->first<<", "<<clsHit_it->second<<") ";
+                                                }
+                                                cout<<endl;
+                                        }
+                                }
+                                cout<<"Clusters for Plus Upstream streo:"<<endl;
+
+                                for ( closClinRadLay::iterator radCls_it = radCls_Pl_Ups.begin(); radCls_it != radCls_Pl_Ups.end(); ++radCls_it ) {
+                                        cout<<"***** cluster for Radial layer "<<radCls_it->first<<" :"<<endl;
+                                        for ( closClstcol::iterator closCls_it = radCls_it->second.begin(); closCls_it != radCls_it->second.end(); ++closCls_it ) {
+                                                cout<<"-- cluster n "<<nClus<<endl;
+                                                ++nClus;
+                                                nTotHitInCls_Pl_Ups+=(*closCls_it)->_nHit;
+                                                nTotHitInCls+=(*closCls_it)->_nHit;
+                                                cout<<"\t cluster size "<<(*closCls_it)->_nHit<<" minCell "<<(*closCls_it)->_minCellID<<" maxCell "<<(*closCls_it)->_maxCellID<<" centralCell "<<(*closCls_it)->_centerCellID<<endl;
+                                                cout<<"\t hits in cluster: ";
+                                                for (hitsInClsID::const_iterator clsHit_it = (*closCls_it)->_hitIdx.begin(); clsHit_it != (*closCls_it)->_hitIdx.end(); ++clsHit_it){
+                                                        cout<<"("<<clsHit_it->first<<", "<<clsHit_it->second<<") ";
+                                                }
+                                                cout<<endl;
+                                        }
+                                }
+                        }
+
                         cout<<"In Time peak :"<<endl;
                         cout<<" n. Hit for Stereo Min "<<nTotHit_MIn<<" n. Hit for Stereo Pl "<<nTotHit_Pl<<endl;
-                        cout<<"NClus "<<nClus<<" n. Tot hit grouped in clusters "<<nTotHitInCls<<" n. Hit in Clusters for Stereo Min "<<nTotHitInCls_MIn<<" n. Hit in Clusters for Stereo Pl "<<nTotHitInCls_Pl<<endl;
+                        cout<<"NClus "<<nClus<<" n. Tot hit grouped in clusters "<<nTotHitInCls<<" n. Hit in Clusters for Stereo Min "<<nTotHitInCls_MIn<<" n. Hit in Clusters for Stereo Pl "<<nTotHitInCls_Pl;
+                        if (itr.isDumbbell()) {cout<<" n. Hit in Clusters for Stereo Min Ups "<<nTotHitInCls_MIn_Ups<<" n. Hit in Clusters for Stereo Pl Ups "<<nTotHitInCls_Pl_Ups;}
+                        cout<<endl;
                 }
 
-                double _tdriftmean = 200.0;
-                double _tpeakerr = (tclust._maxHitTime - tclust._minHitTime)*invSqrt12;
+                _tpeakerr = (tclust._maxHitTime - tclust._minHitTime)*invSqrt12;
 
-                cout<<"------- start research ------"<<endl;
+                cout<<"------- start Tracks search for event "<<event.id().event()<<" ------"<<endl;
                 //isHitIDUsed notAssociatedHits;
                 //notAssociatedHits.clear();
-                rCMap_Pl.clear();
+                /*rCMap_Pl.clear();
                 rCMap_Min.clear();
                 rCMap_Pl2.clear();
-                rCMap_Min2.clear();
-                circlesCont potCirclesMin;
-                circlesCont potCirclesPl;
+                rCMap_Min2.clear();*/
 
-                std::vector<points3D> potLoops;
-                int minClusMultBend = _minClusMultBend;
-                size_t prevFound=0;
-                int nPotLoops=0;
-                while (minClusMultBend>=1) {
-                        //hitCrossingChecked.clear();
-                        //hitCrossingCheckedT.clear();
-                        findCircles3D(radCls_Min, radCls_Pl, itwp, potLoops,minClusMultBend);
-                        //hitCrossingChecked.clear();
-                        //hitCrossingCheckedT.clear();
-                        findCircles3D(radCls_Pl, radCls_Min, itwp, potLoops,minClusMultBend);
-                        /*potLoops.push_back(points3D());
-                        findCircles3D(radCls_Min, radCls_Pl, itwp, potLoops.back(),minClusMultBend);
-                        if (potLoops.back().size()>3) {
-                                potLoops.push_back(points3D());
-                        } else {
-                                potLoops.back().clear();
-                        }
-
-                        findCircles3D(radCls_Pl, radCls_Min, itwp, potLoops.back(),minClusMultBend);
-
-                        if (potLoops.back().size()<4) {
-                                potLoops.pop_back();
-                        }*/
-                        /*
-                        for (std::vector<points3D>::iterator potLoops_it = (potLoops.begin()+prevFound); potLoops_it < potLoops.end(); ++potLoops_it) {
-                                for (points3D::iterator loopPoints_it = potLoops_it->begin(); loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
-                                        //cout<<"----------- "<<endl;
-                                        //cout<<loopPoints_it->getInEventHitID()<<endl;
-                                        //cout<<loopPoints_it->getCrossInEventHitID()<<endl;
-                                        notAssociatedHits[loopPoints_it->getInEventHitID()] = false;
-                                        notAssociatedHits[loopPoints_it->getCrossInEventHitID()] = false;
-                                }
-                        }*/
-
-                        cout<<"Using cluster size cut for starting search of "<<minClusMultBend<<" found:"<<endl;
-                        cout<<"\t n potential loop "<<potLoops.size()<<endl;
-                        for (std::vector<points3D>::iterator potLoops_it = (potLoops.begin()+prevFound); potLoops_it < potLoops.end(); ++potLoops_it) {
-  
-			  cout<<"\t\t nCrossing Point for "<<++nPotLoops<<"-th = "<<potLoops_it->size()<<endl;
-			  for (points3D::iterator loopPoints_it = potLoops_it->begin(); 
-			       loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
-			    std::cout<<"3dpoint "<<event.id().event()<<" "<<nPotLoops<<" hid "<<loopPoints_it->getInEventHitID()<<" xyz "
-				     <<loopPoints_it->_pos.x()<<" "<<loopPoints_it->_pos.y()<<" "<<loopPoints_it->_pos.z()<<std::endl;
-			  }
-                        }
-
-                        prevFound = potLoops.size();
-                        minClusMultBend/=2;
+                _hitsInUpstream=false;
+                searchTracks(radCls_Pl, radCls_Min, seeds, itwp, tpeaks, ipeak, tclustHandle, pdataHandle, genEltrks);
+                if (itr.isDumbbell()) {
+                        _hitsInUpstream=true;
+                        searchTracks(radCls_Pl_Ups, radCls_Min_Ups, seeds, itwp, tpeaks, ipeak, tclustHandle, pdataHandle, genEltrks);
                 }
 
-
-                points3D selectedPnts;
-
-                // track fitting objects for this peak
-                std::vector<TrkHelix> helixesfit;
-		std::vector<HelixTraj> trkhelixes;
-		size_t iTrackFound=0;
-                std::map<size_t, std::vector<TrkHelix> > helixesfitLoops;
-                std::map<size_t, std::vector<HelixTraj> > trkhelixesLoops;
-                std::map<size_t,  std::vector< std::vector<size_t> > > helixezPntIdsLoops;
-                RbstFitPntsLpsPntsRel xyzpLoopRel;
-                std::vector<XYZP> xyzp;
-                std::vector<XYZP> xyzpSel;
-                std::vector<std::pair<size_t,size_t> > sel_AllxyzPntsRel;
-                std::vector<XYZP> xyzpRej;
-                std::vector<std::pair<size_t,size_t> > rej_AllxyzPntsRel;
-
-                //TH1F tmpZhist ("tmpZhist","tmpZhist", TMath::Nint( fabs(_maxZ-_minZ)/40.0 ), _minZ,_maxZ);
-
-                if (potLoops.size()>0) {
-                        tpeaks.push_back( TrkTimePeak(tclust._meanTime,tclust._maxHitTime) );
-                        size_t iPotLoop = 0, iPntInLoop=0;
-                        for (std::vector<points3D>::iterator potLoops_it = potLoops.begin(); potLoops_it != potLoops.end(); ++potLoops_it) {
-                                iPntInLoop=0;
-                                for (points3D::iterator loopPoints_it = potLoops_it->begin(); loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
-                                        itwp->SelectCell(loopPoints_it->getRadLayID(),loopPoints_it->getInLayerCellID());
-                                        xyzp.push_back(XYZP( loopPoints_it->_pos, itwp->GetCellDirection(), loopPoints_it->_sigmaz,loopPoints_it->_sigmax)); //sigmax=sigmay=sigmaR
-                                        //std::vector<XYZP>::iterator lastPoint = xyzp.end();
-                                        //--lastPoint;
-                                        //xyzpLoopRel.insert( RbstFitPntsLpsPntsRel::value_type ( lastPoint,
-                                        xyzpLoopRel.insert( RbstFitPntsLpsPntsRel::value_type ( xyzp.size()-1,
-                                                        std::pair<size_t, size_t > (iPotLoop,iPntInLoop) ) );
-                                        tpeaks.back()._trkptrs.push_back( hitIndex(loopPoints_it->getInEventHitID()) );
-                                        ++iPntInLoop;
-                                }
-                                ++iPotLoop;
-                        }
-
-                        // track fitting objects for this peak
-                        TrkHelix helixfit;
-                        //TrkKalFit seedfit, kalfit;
-                        // create track definitions for the different fits from this initial information
-                        TrkDef helixdef(hits,/*tpeaks[ipeak]*/tpeaks.back()._trkptrs);
-                        helixdef.setTrkT0(tpeaks[ipeak]._tpeak-_tdriftmean,_tpeakerr);
-                        // robust helix fit
-			bool isfitted=_hfit.findHelix(helixdef,helixfit,xyzp);
-			if(isfitted){
-			        cout<<"Using Robust Fit, Circle Found with center "<<helixfit._center<<" and Rad "<<helixfit._radius<<endl;
-			        for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
-			                XYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
-			                if ( tmpXYZP._use ) {
-			                        double tmpDist = fabs( sqrt( pow(tmpXYZP._pos.x()-helixfit._center.x(),2) +
-			                                        pow(tmpXYZP._pos.y()-helixfit._center.y(),2) ) -
-			                                        helixfit._radius );
-			                        if ( tmpDist<3.0*tmpXYZP._serr ) {
-			                                selectedPnts.push_back( potLoops.at(xyzpLoopRel_it->second.first).at(xyzpLoopRel_it->second.second) );
-			                                xyzpSel.push_back(tmpXYZP);
-		                                        sel_AllxyzPntsRel.push_back( std::pair<size_t,size_t> (xyzpSel.size()-1, xyzpLoopRel_it->first) );
-			                        } else {
-			                                tmpXYZP._use = false;
-			                                xyzpRej.push_back(tmpXYZP);
-		                                        rej_AllxyzPntsRel.push_back( std::pair<size_t,size_t> (xyzpRej.size()-1, xyzpLoopRel_it->first) );
-			                        }
-			                }
-			                xyzpRej.push_back(tmpXYZP);
-			                rej_AllxyzPntsRel.push_back( std::pair<size_t,size_t> (xyzpRej.size()-1, xyzpLoopRel_it->first) );
-			        }
-
-			        if (helixfit._radius>=_minGoodR && helixfit._radius<=_maxGoodR ) {
-	                                helixesfit.push_back(helixfit);
-			        } else {
-			                cout<<"Track rejected for radius"<<endl;
-			                isfitted = false;
-			        }
-                                //try to use the rejected points to find a new circle!!! FIXME
-			}
-
-			if(isfitted) {
-			        HepVector hpar;
-			        HepVector hparerr;
-			        _hfit.helixParams(helixfit,hpar,hparerr);
-			        HepSymMatrix hcov = vT_times_v(hparerr);
-			        HelixTraj seed(hpar,hcov);
-			        std::cout<<"fitted "<<isfitted<<" ";
-			        seed.printAll(std::cout);
-			        trkhelixes.push_back(seed);
-
-			        findZclusters( trkhelixes.back(), xyzpSel, helixezPntIdsLoops[iTrackFound]/*, helixesfitLoops[iTrackFound], trkhelixesLoops[iTrackFound]*/ );
-			        bool isLoopFitted;
-			        for ( size_t iTrkLoop=0; iTrkLoop<helixezPntIdsLoops[iTrackFound].size(); ++iTrkLoop ) {
-                                        std::vector<size_t> &loopPntIds = helixezPntIdsLoops[iTrackFound].at(iTrkLoop);
-                                        std::vector<XYZP> xyzpLoop;
-                                        for (std::vector<size_t>::iterator loopPntIds_it = loopPntIds.begin(); loopPntIds_it != loopPntIds.end(); ++loopPntIds_it) {
-                                                xyzpLoop.push_back( xyzpSel.at(*loopPntIds_it) );
-                                        }
-                                        TrkHelix helixfitLoop;
-                                        isLoopFitted=_hfit.findHelix(helixdef,helixfitLoop,xyzpLoop);
-                                        if (isLoopFitted) {
-                                                helixesfitLoops[iTrackFound].push_back(helixfitLoop);
-                                                HepVector hparLoop;
-                                                HepVector hparerrLoop;
-                                                _hfit.helixParams(helixfitLoop,hparLoop,hparerrLoop);
-                                                HepSymMatrix hcovLoop = vT_times_v(hparerrLoop);
-                                                HelixTraj seedLoop(hparLoop,hcovLoop);
-                                                std::cout<<"fitted "<<iTrkLoop<<"-th loop:"<<endl;
-                                                seedLoop.printAll(std::cout);
-                                                trkhelixesLoops[iTrackFound].push_back(seedLoop);
-                                        }
-
-                                }
-
-			        if (_diagLevel>1) {
-			                cout<<"For "<<iTrackFound<<"-th track n Loops "<<helixezPntIdsLoops[iTrackFound].size()<<endl;
-			                for ( size_t iTrkLoop=0; iTrkLoop<helixezPntIdsLoops[iTrackFound].size(); ++iTrkLoop ) {
-			                        cout<<"\t for "<<iTrkLoop<<"-th loop z points:"<<endl;
-			                        std::vector<size_t> &loopPntIds = helixezPntIdsLoops[iTrackFound].at(iTrkLoop);
-			                        for (std::vector<size_t>::iterator loopPntIds_it = loopPntIds.begin(); loopPntIds_it != loopPntIds.end(); ++loopPntIds_it) {
-			                                cout<<"\t\t "<<xyzpSel.at(*loopPntIds_it)._pos<<endl;
-			                        }
-			                }
-			        }
-
-			        ++iTrackFound;
-			}
-                }
-
-
-
-                int jTrackFound = 0;
-                for(std::vector<HelixTraj>::iterator ittrk=trkhelixes.begin(); ittrk!=trkhelixes.end(); ittrk++){
-                        cout<<"For i track "<<jTrackFound<<" there are "<<trkhelixesLoops[jTrackFound].size()<<" Loops to draw"<<endl;
-
-
-                        TrackSeed tmpOutSeed;
-			tmpOutSeed._relatedTimeCluster=TrackerHitTimeClusterPtr(tclustHandle,ipeak);
-                        HelixTraj2HelixVal (*ittrk, tmpOutSeed._fullTrkSeed);
-
-                        std::set<size_t > hitInserted;
-                        double minSeedTime = 1.e9, tmpSeedHitTime=0.0;
-                        for ( int jSeedPoint = 0; jSeedPoint<sel_AllxyzPntsRel.size(); ++jSeedPoint ) {
-                                std::pair<size_t, size_t> &iPLoop_jPnt = xyzpLoopRel[sel_AllxyzPntsRel.at(jSeedPoint).second];
-                                corssingPoints &crossPoint = potLoops[iPLoop_jPnt.first][iPLoop_jPnt.second];
-                                //insert the two crossing points
-                                if ( hitInserted.find(crossPoint.getInEventHitID())==hitInserted.end() ) {
-                                        tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getInEventHitID() ) );
-                                        tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getInEventHitID() ) );
-                                        hitInserted.insert(crossPoint.getInEventHitID());
-                                        tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
-                                        if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
-                                }
-                                if ( hitInserted.find(crossPoint.getCrossInEventHitID())==hitInserted.end() ) {
-                                        tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getCrossInEventHitID() ) );
-                                        tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getCrossInEventHitID() ) );
-                                        hitInserted.insert(crossPoint.getCrossInEventHitID());
-                                        tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
-                                        if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
-                                }
-
-                                //inserted all the points of the cluster that contains the upper of the two crossing points
-                                for ( hitsInClsID::const_iterator hitsInCls_it = crossPoint.getHitClust()._hitIdx.begin();
-                                                hitsInCls_it != crossPoint.getHitClust()._hitIdx.end(); ++hitsInCls_it ) {
-                                        if ( hitInserted.find(hitsInCls_it->second)==hitInserted.end() ) {
-                                                tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( hitsInCls_it->second ) );
-                                                tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, hitsInCls_it->second ) );
-                                                hitInserted.insert(hitsInCls_it->second);
-                                                tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
-                                                if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
-                                        }
-                                }
-                        }
-                        tmpOutSeed._t0    = minSeedTime;
-                        tmpOutSeed._errt0 = _tpeakerr;
-
-                        int kTrckLoop=0;
-                        for (std::vector<HelixTraj>::iterator trkhelixesLoop_it = trkhelixesLoops[jTrackFound].begin(); trkhelixesLoop_it != trkhelixesLoops[jTrackFound].end(); ++trkhelixesLoop_it) {
-                                cout<<"Drawing single Loop for track "<<jTrackFound<<endl;
-                                HelixVal tmpSeedLoop;
-                                HelixTraj2HelixVal (*trkhelixesLoop_it, tmpSeedLoop);
-                                std::vector<size_t> &hitsInLoopId = helixezPntIdsLoops[jTrackFound].at(kTrckLoop);
-                                std::set<size_t > loopHitInserted;
-
-                                for (std::vector<size_t>::iterator hitsInLoopId_it = hitsInLoopId.begin(); hitsInLoopId_it != hitsInLoopId.end(); ++hitsInLoopId_it) {
-                                        std::pair<size_t, size_t> &iPLoop_jPnt = xyzpLoopRel[sel_AllxyzPntsRel.at(*hitsInLoopId_it).second];
-                                        corssingPoints &crossPoint = potLoops[iPLoop_jPnt.first][iPLoop_jPnt.second];
-                                        //insert the two crossing points
-                                        if ( loopHitInserted.find(crossPoint.getInEventHitID())==loopHitInserted.end() ) {
-                                                tmpSeedLoop._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getInEventHitID() ) );
-                                                tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getInEventHitID() ) );
-                                                loopHitInserted.insert(crossPoint.getInEventHitID());
-                                                tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
-                                                if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
-                                        }
-                                        if ( loopHitInserted.find(crossPoint.getCrossInEventHitID())==loopHitInserted.end() ) {
-                                                tmpSeedLoop._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getCrossInEventHitID() ) );
-                                                tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getCrossInEventHitID() ) );
-                                                loopHitInserted.insert(crossPoint.getCrossInEventHitID());
-                                                tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
-                                                if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
-                                        }
-
-                                        //inserted all the points of the cluster that contains the upper of the two crossing points
-                                        for ( hitsInClsID::const_iterator hitsInCls_it = crossPoint.getHitClust()._hitIdx.begin();
-                                                        hitsInCls_it != crossPoint.getHitClust()._hitIdx.end(); ++hitsInCls_it ) {
-                                                if ( loopHitInserted.find(hitsInCls_it->second)==loopHitInserted.end() ) {
-                                                        tmpSeedLoop._selectedTrackerHitsIdx.push_back( HitIndex( hitsInCls_it->second ) );
-                                                        tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, hitsInCls_it->second ) );
-                                                        loopHitInserted.insert(hitsInCls_it->second);
-                                                        tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
-                                                        if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
-                                                }
-                                        }
-                                }
-
-                                tmpOutSeed._loopSeeds.push_back(tmpSeedLoop);
-                                ++kTrckLoop;
-                        }
-
-                        seeds->push_back(tmpOutSeed);
-                        ++jTrackFound;
-                }
-
-
-                /*
-                for (std::vector<XYZP>::iterator xyzp_it = xyzp.begin(); xyzp_it != xyzp.end(); ++xyzp_it ) {
-                        cout<<" xyzp "<<xyzp_it->_pos<<" serr "<<xyzp_it->_serr<<" use "<<xyzp_it->_use<<endl;
-                }
-                cout<<"-----------------------------------------"<<endl;
-                for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
-                        //cout<<" xyzp "<<xyzpLoopRel_it->first->_pos<<" serr "<<xyzpLoopRel_it->first->_serr<<" use "<<xyzpLoopRel_it->first->_use<<endl;
-                        cout<<" xyzp "<<xyzp.at(xyzpLoopRel_it->first)._pos<<" serr "<<xyzp.at(xyzpLoopRel_it->first)._serr<<" use "<<xyzp.at(xyzpLoopRel_it->first)._use<<endl;
-                }
-                */
-
-
-
-
-                //        cout<<"Using cluster size cut for starting search of "<<_minClusMultBend<<" found:"<<endl;
-                //        cout<<"\t n potential loop "<<potLoops.size()<<endl;
-                //        int nPotLoops=0;
-                //        for (std::vector<points3D>::iterator potLoops_it = potLoops.begin(); potLoops_it != potLoops.end(); ++potLoops_it) {
-                //                cout<<"\t\t nCrossing Point for "<<++nPotLoops<<"-th = "<<potLoops_it->size()<<endl;
-                //        }
-
-                //        cout<<"   ----  stereo - ----   "<<endl;
-                //        findCircles3D(radCls_Min, radCls_Pl, itwp, potCirclesMin);
-                //
-                //        bool foundCircles_Min = false ;/*findCircles(radCls_Min,itwp,rCMap_Min,potCirclesMin,"Min", _minClusMultBend, 10, true);
-                //        //bool foundCircles_Min = findCircles(radCls_Min,itwp,potCirclesMin,"Min");
-                //        if ( foundCircles_Min ) {
-                //                printPotCircles(potCirclesMin);
-                //                //mergeCircles(potCirclesMin);
-                //                //markUsedHit(potCirclesMin);
-                //                //cout<<"**** After merging ****"<<endl;
-                //                //printPotCircles(potCirclesMin);
-                //        }
-                //        cout<<"   ----  second search stereo - ----   "<<endl;
-                //        foundCircles_Min = findCircles(radCls_Min,itwp,rCMap_Min2,potCirclesMin,"Min", 6, 5, true);
-                //        //bool foundCircles_Min = findCircles(radCls_Min,itwp,potCirclesMin,"Min");
-                //        if ( foundCircles_Min ) {
-                //                printPotCircles(potCirclesMin);
-                //                //mergeCircles(potCirclesMin);
-                //                //printPotCircles(potCirclesMin);
-                //        }
-                //        */
-                //        cout<<"   ----  stereo + ----   "<<endl;
-                //        findCircles3D(radCls_Pl, radCls_Min, itwp, potCirclesPl);
-                //        bool foundCircles_Pl = false; /*findCircles(radCls_Pl,itwp,rCMap_Pl,potCirclesPl,"Pl", _minClusMultBend, 10,true);
-                //        //bool foundCircles_Pl = findCircles(radCls_Pl,itwp,potCirclesPl,"Pl");
-                //        if ( foundCircles_Pl ) {
-                //                printPotCircles(potCirclesPl);
-                //                //mergeCircles(potCirclesPl);
-                //                //markUsedHit(potCirclesPl);
-                //                //cout<<"**** After merging ****"<<endl;
-                //                //printPotCircles(potCirclesPl);
-                //
-                //        }
-                //        cout<<"   ----  second search stereo + ----   "<<endl;
-                //        foundCircles_Pl = findCircles(radCls_Pl,itwp,rCMap_Pl2,potCirclesPl,"Pl", 6, 5, true);
-                //        //bool foundCircles_Pl = findCircles(radCls_Pl,itwp,potCirclesPl,"Pl");
-                //        if ( foundCircles_Pl ) {
-                //                printPotCircles(potCirclesPl);
-                //                //mergeCircles(potCirclesPl);
-                //                //printPotCircles(potCirclesPl);
-                //
-                //        }*/
-                //        //findCircles(radCls_Min_Up,itwp,rCMap_Min_Up,"Min_Up");
-                //        //findCircles(radCls_Pl_Up,itwp,rCMap_Pl_Up,"Pl_Up");
-                //
-                //        if ( foundCircles_Min && foundCircles_Pl) {
-                //
-                //        }
-
-                if (_doDisplay) {
-                        //cout<<"************************ 1.1 ************************"<<endl;
-
-		  TEllipse innerWall (0.0,0.0,rIn,rIn);
-		  innerWall.SetFillStyle(0);
-		  innerWall.SetLineWidth(1.5);
-		  
-		  TEllipse outerWall (0.0,0.0,rOut,rOut);
-		  outerWall.SetFillStyle(0);
-		  outerWall.SetLineWidth(1.5);
-		  
-		  TCanvas *tmpRCP_Min=0,*tmpRCP_Pl=0,*tmpCircleFound=0;
-		  TH2F hHitStereoPl( "hHitStereoPl",  "Stereo+ Hits per Event at z=0", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
-		  TH2F hHitStereoMin( "hHitStereoMin",  "Stereo- Hits per Event at z=0", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
-		  std::vector<TEllipse *> drawPotCirclesMin;
-		  std::vector<TEllipse *> drawPotKrmCirclesMin;
-		  std::vector<TClonesArray *> drawPotCircPntsMin;
-
-		  std::vector<TEllipse *> drawPotCirclesPl;
-		  std::vector<TEllipse *> drawPotKrmCirclesPl;
-		  std::vector<TClonesArray *> drawPotCircPntsPl;
-
-		  bool drawStereoProj=false;
-		  if(drawStereoProj){//stereo projections
-		    tmpRCP_Min = new TCanvas();
-                        /*
-                int nlrgCl_Min = rCMap_Min.size();
-                if (nlrgCl_Min>0) {
-                int iPad = 0, maxPad = 1;
-                if (nlrgCl_Min>=1) {
-                        tmpRCP_Min->Divide(2,nlrgCl_Min);
-                        maxPad = 2*nlrgCl_Min;
-                        iPad=1;
-                }
-                int iColor = 0;
-                for (std::vector<confMapDraw*>::iterator hCmapMin_it = rCMap_Min.begin(); hCmapMin_it != rCMap_Min.end(); ++hCmapMin_it ) {
-                        if (iPad>maxPad) break;
-                        tmpRCP_Min->cd(iPad);
-                        (*hCmapMin_it)->_cmap->SetMarkerStyle(8);
-                        (*hCmapMin_it)->_cmap->SetMarkerSize(0.8);
-                        (*hCmapMin_it)->_cmap->SetMarkerColor(++iColor);
-                        (*hCmapMin_it)->_cmap->Draw("AP");
-                        ++iPad;
-                        tmpRCP_Min->cd(iPad);
-                        (*hCmapMin_it)->_cmapCHT->Draw("colz");
-                        ++iPad;
-                }
-                }
-                         */
-                        //cout<<"************************ 1.2 ************************"<<endl;
-		    tmpRCP_Pl = new TCanvas();
-                        /*
-                int nlrgCl_Pl = rCMap_Pl.size();
-                if (nlrgCl_Pl>0) {
-                int iPad = 0, maxPad = 1;
-                if (nlrgCl_Pl>=1) {
-                        tmpRCP_Pl->Divide(2,nlrgCl_Pl);
-                        maxPad = 2*nlrgCl_Pl;
-                        iPad=1;
-                }
-                int iColor = 0;
-                for (std::vector<confMapDraw*>::iterator hCmapPl_it = rCMap_Pl.begin(); hCmapPl_it != rCMap_Pl.end(); ++hCmapPl_it ) {
-                        if (iPad>maxPad) break;
-                        tmpRCP_Pl->cd(iPad);
-                        (*hCmapPl_it)->_cmap->SetMarkerStyle(8);
-                        (*hCmapPl_it)->_cmap->SetMarkerSize(0.8);
-                        (*hCmapPl_it)->_cmap->SetMarkerColor(++iColor);
-                        (*hCmapPl_it)->_cmap->Draw("AP");
-                        ++iPad;
-                        tmpRCP_Pl->cd(iPad);
-                        (*hCmapPl_it)->_cmapCHT->Draw("colz");
-                        ++iPad;
-                }
-                }
-                         */
-
-                        tmpRCP_Min->Modified();
-                        tmpRCP_Min->Update();
-
-                        tmpRCP_Pl->Modified();
-                        tmpRCP_Pl->Update();
-
-
-                        //cout<<"************************ 1.3 ************************"<<endl;
-
-                        tmpCircleFound = new TCanvas("PotCirclesDraw","",860,430);
-                        tmpCircleFound->Divide(2,1);
-                        hHitStereoPl.SetXTitle("cm");
-                        hHitStereoPl.SetYTitle("cm");
-                        hHitStereoMin.SetXTitle("cm");
-                        hHitStereoMin.SetYTitle("cm");
-                        tmpCircleFound->cd(1);
-                        hHitStereoMin.SetStats(kFALSE);
-                        hHitStereoMin.Draw();
-                        innerWall.Draw("same");
-                        outerWall.Draw("same");
-                        int iCol = 0;
-                        for (circlesCont::iterator potCirclesMin_it = potCirclesMin.begin(); potCirclesMin_it != potCirclesMin.end(); ++potCirclesMin_it ) {
-                                drawPotCirclesMin.push_back( new TEllipse( potCirclesMin_it->_center.x()/CLHEP::cm, potCirclesMin_it->_center.y()/CLHEP::cm, potCirclesMin_it->_radius/CLHEP::cm, potCirclesMin_it->_radius/CLHEP::cm) );
-                                drawPotCirclesMin.back()->SetFillStyle(0);
-                                drawPotCirclesMin.back()->SetLineWidth(2);
-                                drawPotCirclesMin.back()->SetLineColor(++iCol);
-                                drawPotCirclesMin.back()->SetLineStyle(4);
-                                //drawPotCirclesMin.back()->Draw("same");
-                                CLHEP::Hep2Vector radDir;
-                                float rSign = (potCirclesMin_it->_krmCircFit.rho>=0.0) ? 1.0 : -1.0;
-                                radDir.setX( cos(potCirclesMin_it->_krmCircFit.phi) );
-                                radDir.setY( sin(potCirclesMin_it->_krmCircFit.phi) );
-                                radDir.rotate( /*( (potCirclesMin_it->_krmCircFit.rho>=0.0) ? -90.0 : 90.0 )*/-90.0*rSign*CLHEP::degree );
-                                radDir=radDir.unit();
-                                HepGeom::Point3D<double> CirCenter (0.0,0.0,0.0);
-                                float krmRad = 1.0/fabs(potCirclesMin_it->_krmCircFit.rho);
-                                CirCenter = CirCenter +  (krmRad + rSign*potCirclesMin_it->_krmCircFit.dca)*radDir;
-                                drawPotKrmCirclesMin.push_back( new TEllipse( CirCenter.x()/CLHEP::cm, CirCenter.y()/CLHEP::cm, krmRad/CLHEP::cm, krmRad/CLHEP::cm) );
-                                //radDir *= (krmRad-potCirclesMin_it->_krmCircFit.dca);
-                                //drawPotKrmCirclesMin.push_back( new TEllipse( radDir.x()/CLHEP::cm, radDir.y()/CLHEP::cm, krmRad/CLHEP::cm, krmRad/CLHEP::cm) );
-                                drawPotKrmCirclesMin.back()->SetFillStyle(0);
-                                drawPotKrmCirclesMin.back()->SetLineWidth(2);
-                                drawPotKrmCirclesMin.back()->SetLineColor(iCol);
-                                drawPotKrmCirclesMin.back()->SetLineStyle(4);
-                                drawPotKrmCirclesMin.back()->Draw("same");
-
-                                drawPotCircPntsMin.push_back( new TClonesArray("TEllipse") );
-                                drawPotCircPntsMin.back()->ExpandCreateFast(potCirclesMin_it->_listHitptrs.size());
-                                int iHit = 0;
-                                for ( std::vector< ptrHitInClosCust >::iterator potCirclesPntsMin_it = potCirclesMin_it->_listHitptrs.begin(); potCirclesPntsMin_it != potCirclesMin_it->_listHitptrs.end(); ++potCirclesPntsMin_it ) {
-                                        itwp->SelectCell( potCirclesPntsMin_it->getRadLayID(), potCirclesPntsMin_it->getinLayerCellID() );
-                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetX1(itwp->GetCellCenter().x()/CLHEP::cm);
-                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetY1(itwp->GetCellCenter().y()/CLHEP::cm);
-                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetR1(itwp->GetCellRad()/CLHEP::cm);
-                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetR2( ( itwp->GetCellRad()/cos(itwp->GetWireEpsilon()) )/CLHEP::cm );
-                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetTheta( itwp->GetCellCenter().phi()/CLHEP::degree );
-                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetFillStyle(0);
-                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetLineWidth(2);
-                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetLineColor(iCol);
-                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->Draw("same");
-                                        ++iHit;
-                                }
-                        }
-
-                        //cout<<"************************ 1.4 ************************"<<endl;
-
-                        tmpCircleFound->cd(2);
-                        hHitStereoPl.SetStats(kFALSE);
-                        hHitStereoPl.Draw();
-                        innerWall.Draw("same");
-                        outerWall.Draw("same");
-                        iCol = 0;
-                        for (circlesCont::iterator potCirclesPl_it = potCirclesPl.begin(); potCirclesPl_it != potCirclesPl.end(); ++potCirclesPl_it ) {
-                                drawPotCirclesPl.push_back( new TEllipse( potCirclesPl_it->_center.x()/CLHEP::cm, potCirclesPl_it->_center.y()/CLHEP::cm, potCirclesPl_it->_radius/CLHEP::cm, potCirclesPl_it->_radius/CLHEP::cm) );
-                                drawPotCirclesPl.back()->SetFillStyle(0);
-                                drawPotCirclesPl.back()->SetLineWidth(2);
-                                drawPotCirclesPl.back()->SetLineColor(++iCol);
-                                drawPotCirclesPl.back()->SetLineStyle(4);
-                                //drawPotCirclesPl.back()->Draw("same");
-                                CLHEP::Hep2Vector radDir;
-                                float rSign = (potCirclesPl_it->_krmCircFit.rho>=0.0) ? 1.0 : -1.0;
-                                radDir.setX( cos(potCirclesPl_it->_krmCircFit.phi) );
-                                radDir.setY( sin(potCirclesPl_it->_krmCircFit.phi) );
-                                radDir.rotate( /*( (potCirclesPl_it->_krmCircFit.rho>=0.0) ? -90.0 : 90.0 )*/-90.0*rSign*CLHEP::degree );
-                                radDir=radDir.unit();
-                                HepGeom::Point3D<double> CirCenter (0.0,0.0,0.0);
-                                float krmRad = 1.0/fabs(potCirclesPl_it->_krmCircFit.rho);
-                                CirCenter = CirCenter + (krmRad + rSign*potCirclesPl_it->_krmCircFit.dca)*radDir;
-                                drawPotKrmCirclesPl.push_back( new TEllipse( CirCenter.x()/CLHEP::cm, CirCenter.y()/CLHEP::cm, krmRad/CLHEP::cm, krmRad/CLHEP::cm) );
-                                //radDir *= (krmRad-potCirclesPl_it->_krmCircFit.dca);
-                                //drawPotKrmCirclesMin.push_back( new TEllipse( radDir.x()/CLHEP::cm, radDir.y()/CLHEP::cm, krmRad/CLHEP::cm, krmRad/CLHEP::cm) );
-                                drawPotKrmCirclesPl.back()->SetFillStyle(0);
-                                drawPotKrmCirclesPl.back()->SetLineWidth(2);
-                                drawPotKrmCirclesPl.back()->SetLineColor(iCol);
-                                drawPotKrmCirclesPl.back()->SetLineStyle(4);
-                                drawPotKrmCirclesPl.back()->Draw("same");
-
-                                drawPotCircPntsPl.push_back( new TClonesArray("TEllipse") );
-                                drawPotCircPntsPl.back()->ExpandCreateFast(potCirclesPl_it->_listHitptrs.size());
-                                int iHit = 0;
-                                for ( std::vector< ptrHitInClosCust >::iterator potCirclesPntsPl_it = potCirclesPl_it->_listHitptrs.begin(); potCirclesPntsPl_it != potCirclesPl_it->_listHitptrs.end(); ++potCirclesPntsPl_it ) {
-                                        itwp->SelectCell( potCirclesPntsPl_it->getRadLayID(), potCirclesPntsPl_it->getinLayerCellID() );
-                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetX1(itwp->GetCellCenter().x()/CLHEP::cm);
-                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetY1(itwp->GetCellCenter().y()/CLHEP::cm);
-                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetR1(itwp->GetCellRad()/CLHEP::cm);
-                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetR2( ( itwp->GetCellRad()/cos(itwp->GetWireEpsilon()) )/CLHEP::cm );
-                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetTheta( itwp->GetCellCenter().phi()/CLHEP::degree );
-                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetFillStyle(0);
-                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetLineWidth(2);
-                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetLineColor(iCol);
-                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->Draw("same");
-                                        ++iHit;
-                                }
-                        }
-                        tmpCircleFound->Modified();
-                        tmpCircleFound->Update();
-		  }
-
-                        TCanvas *tmpCircleFound3D = new TCanvas("PotCirclesDraw3D","",860,860);
-                        tmpCircleFound3D->Divide(2,2);
-                        TH2F hHit3DT( "hHit3DT",  "Hits per Event at z crossing", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
-                        TH2F hHit3DL( "hHit3DL",  "Hits per Event at z", TMath::Nint((_maxZ-_minZ)/10.0), _minZ/CLHEP::cm, _maxZ/CLHEP::cm, 750, 0, 75.0 );
-                        hHit3DT.SetXTitle("X [cm]");
-                        hHit3DT.SetYTitle("Y [cm]");
-                        hHit3DL.SetXTitle("Z [cm]");
-                        hHit3DL.SetYTitle("R [cm]");
-                        tmpCircleFound3D->cd(1);
-                        hHit3DT.SetStats(kFALSE);
-                        hHit3DT.Draw();
-                        innerWall.Draw("same");
-                        outerWall.Draw("same");
-                        tmpCircleFound3D->cd(2);
-                        TLine innerWallL;
-                        TLine outerWallL;
-                        innerWallL.SetX1(hHit3DL.GetXaxis()->GetXmin());
-                        innerWallL.SetY1(rIn);
-                        innerWallL.SetX2(hHit3DL.GetXaxis()->GetXmax());
-                        innerWallL.SetY2(rIn);
-                        outerWallL.SetX1(hHit3DL.GetXaxis()->GetXmin());
-                        outerWallL.SetY1(rOut);
-                        outerWallL.SetX2(hHit3DL.GetXaxis()->GetXmax());
-                        outerWallL.SetY2(rOut);
-                        innerWallL.SetLineWidth(1.5);
-                        outerWallL.SetLineWidth(1.5);
-                        hHit3DL.SetStats(kFALSE);
-                        hHit3DL.Draw();
-                        innerWallL.Draw("same");
-                        outerWallL.Draw("same");
-                        tmpCircleFound3D->cd(3);
-                        hHit3DT.Draw();
-                        innerWall.Draw("same");
-                        outerWall.Draw("same");
-                        tmpCircleFound3D->cd(4);
-                        hHit3DL.Draw();
-                        innerWallL.Draw("same");
-                        outerWallL.Draw("same");
-                        tmpCircleFound3D->cd(3);
-
-                        int iCol = 0;
-                        std::vector<TClonesArray *> drawPotCircPnts3D;
-                        std::vector<TGraphErrors *> drawPotCircPnts3D_L;
-                        std::vector<float *> zarr;
-                        std::vector<float *> rarr;
-                        std::vector<float *> errzarr;
-                        std::vector<float *> errrarr;
-                        for (std::vector<points3D>::iterator potLoops_it = potLoops.begin(); potLoops_it != potLoops.end(); ++potLoops_it) {
-                                ++iCol;
-                                zarr.push_back(new float[potLoops_it->size()]);
-                                rarr.push_back(new float[potLoops_it->size()]);
-                                errzarr.push_back(new float[potLoops_it->size()]);
-                                errrarr.push_back(new float[potLoops_it->size()]);
-                                drawPotCircPnts3D.push_back( new TClonesArray("TEllipse") );
-                                drawPotCircPnts3D.back()->ExpandCreateFast(potLoops_it->size());
-                                int iHit = 0;
-                                tmpCircleFound3D->cd(1);
-                                for (points3D::iterator loopPoints_it = potLoops_it->begin(); loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
-                                        //cout<<"hit "<<loopPoints_it->_pos.x()<<endl;
-                                        ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetX1(loopPoints_it->_pos.x()/CLHEP::cm);
-                                        ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetY1(loopPoints_it->_pos.y()/CLHEP::cm);
-                                        ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetR1(loopPoints_it->_sigmax/invSqrt3/CLHEP::cm);
-                                        ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetR2(loopPoints_it->_sigmay/invSqrt3/CLHEP::cm );
-                                        ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetTheta( loopPoints_it->_pos.phi()/CLHEP::degree );
-                                        ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetFillStyle(0);
-                                        ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetLineWidth(2);
-                                        ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetLineColor(iCol);
-                                        ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->Draw("same");
-                                        zarr.back()[iHit] = loopPoints_it->_pos.z()/CLHEP::cm;
-                                        errzarr.back()[iHit] = loopPoints_it->_sigmaz/CLHEP::cm;
-                                        rarr.back()[iHit] = loopPoints_it->_pos.perp()/CLHEP::cm;
-                                        errrarr.back()[iHit] = loopPoints_it->_sigmax/CLHEP::cm;
-                                        ++iHit;
-                                }
-                                tmpCircleFound3D->cd(2);
-                                drawPotCircPnts3D_L.push_back( new TGraphErrors(potLoops_it->size(),zarr.back(),rarr.back(),errzarr.back(),errrarr.back()) );
-                                drawPotCircPnts3D_L.back()->SetMarkerColor(iCol);
-                                drawPotCircPnts3D_L.back()->SetMarkerSize(0.8);
-                                drawPotCircPnts3D_L.back()->SetMarkerStyle(8);
-                                drawPotCircPnts3D_L.back()->Draw("P");
-                        }
-                        for (size_t jLoop = 0; jLoop<zarr.size();++jLoop) {
-                        delete [] zarr.at(jLoop);
-                        delete [] rarr.at(jLoop);
-                        delete [] errzarr.at(jLoop);
-                        delete [] errrarr.at(jLoop);
-                        }
-
-
-                        tmpCircleFound3D->cd(1);
-                        int iRobCirCol = 0;
-                        std::vector<TEllipse *> drawPotCirclesRobustFit;
-                        for (std::vector<TrkHelix>::iterator helixesfit_it = helixesfit.begin(); helixesfit_it != helixesfit.end(); ++helixesfit_it ) {
-                                drawPotCirclesRobustFit.push_back( new TEllipse( helixesfit_it->_center.x()/CLHEP::cm, helixesfit_it->_center.y()/CLHEP::cm, helixesfit_it->_radius/CLHEP::cm, helixesfit_it->_radius/CLHEP::cm) );
-                                drawPotCirclesRobustFit.back()->SetFillStyle(0);
-                                drawPotCirclesRobustFit.back()->SetLineWidth(2);
-                                drawPotCirclesRobustFit.back()->SetLineColor(++iRobCirCol);
-                                drawPotCirclesRobustFit.back()->SetLineStyle(4);
-                                drawPotCirclesRobustFit.back()->Draw("same");
-				tmpCircleFound3D->cd(3);
-                                drawPotCirclesRobustFit.back()->Draw("same");
-
-                        }
-
-
-			if(helixesfit.size()>0)
-			  for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
-			    XYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
-			    if ( tmpXYZP._use ) {
-			      double tmpDist = fabs( sqrt( pow(tmpXYZP._pos.x()-helixesfit.back()._center.x(),2) +
-							   pow(tmpXYZP._pos.y()-helixesfit.back()._center.y(),2) ) -
-						     helixesfit.back()._radius );
-			      if ( tmpDist<3.0*tmpXYZP._serr ) {
-				((TEllipse *) drawPotCircPnts3D.at(xyzpLoopRel_it->second.first)->At(xyzpLoopRel_it->second.second))->Draw("same");
-			      }
-			    }
-			  }
-                        tmpCircleFound3D->cd(4);
-                        float * selZarr = new float [selectedPnts.size()];
-                        float * selRarr = new float [selectedPnts.size()];
-                        float * selErrZarr = new float [selectedPnts.size()];
-                        float * selErrRarr = new float [selectedPnts.size()];
-                        int iSelPnt=0;
-                        for (points3D::iterator selectedPnts_it = selectedPnts.begin(); selectedPnts_it != selectedPnts.end(); ++selectedPnts_it) {
-                                selZarr[iSelPnt] = selectedPnts_it->_pos.z()/CLHEP::cm;
-                                selRarr[iSelPnt] = selectedPnts_it->_pos.perp()/CLHEP::cm;
-                                selErrZarr[iSelPnt] = selectedPnts_it->_sigmaz/CLHEP::cm;
-                                selErrRarr[iSelPnt] = selectedPnts_it->_sigmax/CLHEP::cm;
-                                ++iSelPnt;
-                        }
-                        TGraphErrors drawSelPotCircPnts3D_L( selectedPnts.size(),selZarr,selRarr,selErrZarr,selErrRarr );
-			if(selectedPnts.size()){
-			  //drawSelPotCircPnts3D_L.SetMarkerColor(iCol);
-			  drawSelPotCircPnts3D_L.SetMarkerSize(0.8);
-			  drawSelPotCircPnts3D_L.SetMarkerStyle(8);
-			  drawSelPotCircPnts3D_L.Draw("P");
-			}
-			delete [] selZarr;
-                        delete [] selRarr;
-                        delete [] selErrZarr;
-                        delete [] selErrRarr;
-
-                        std::vector<TGraph *> drawTracksT;
-                        std::vector<TGraph *> drawTracksL;
-
-			iRobCirCol = 0;
-			iTrackFound = 0;
-			for(std::vector<HelixTraj>::iterator ittrk=trkhelixes.begin();ittrk!=trkhelixes.end();ittrk++){
-			        iRobCirCol++;
-			        TGraph *xy=new TGraph(400);
-			        TGraph *zr=new TGraph(400);
-			        double flt0=(*ittrk).zFlight(_minZ);
-			        double flt1=(*ittrk).zFlight(_maxZ);
-			        // std::cout<<flt0<<" "<<flt1<<std::endl;
-			        for(int i=0;i<1000;i++){
-			                HepPoint pos=(*ittrk).position(flt0+(flt1-flt0)*i/1000);
-			                // std::cout<<i<<" "<<pos<<endl;
-			                xy->SetPoint(i,pos.x()/CLHEP::cm,pos.y()/CLHEP::cm);
-			                zr->SetPoint(i,pos.z()/CLHEP::cm,std::hypot(pos.x()/CLHEP::cm,pos.y()/CLHEP::cm));
-			        }
-			        xy->SetMarkerColor(iRobCirCol);
-			        zr->SetMarkerColor(iRobCirCol);
-			        xy->SetMarkerSize(0.1);
-			        xy->SetMarkerStyle(6);
-			        zr->SetMarkerSize(0.1);
-			        zr->SetMarkerStyle(6);
-			        tmpCircleFound3D->cd(2);
-			        zr->Draw("P");
-			        tmpCircleFound3D->cd(4);
-			        zr->Draw("P");
-
-			        drawTracksT.push_back(xy);
-			        drawTracksL.push_back(zr);
-
-			        int iMarckerLoop = 7;
-			        cout<<"For i track "<<iTrackFound<<" there are "<<trkhelixesLoops[iTrackFound].size()<<" Loops to draw"<<endl;
-			        for (std::vector<HelixTraj>::iterator trkhelixesLoop_it = trkhelixesLoops[iTrackFound].begin(); trkhelixesLoop_it != trkhelixesLoops[iTrackFound].end(); ++trkhelixesLoop_it) {
-			                cout<<"Drawing single Loop for track "<<iTrackFound<<endl;
-			                TGraph *xyLoop=new TGraph(400);
-			                TGraph *zrLoop=new TGraph(400);
-			                double flt0Loop=(*trkhelixesLoop_it).zFlight(_minZ);
-			                double flt1Loop=(*trkhelixesLoop_it).zFlight(_maxZ);
-			                // std::cout<<flt0<<" "<<flt1<<std::endl;
-			                for(int i=0;i<1000;i++){
-			                        HepPoint pos=(*trkhelixesLoop_it).position(flt0Loop+(flt1Loop-flt0Loop)*i/1000);
-			                        // std::cout<<i<<" "<<pos<<endl;
-			                        xyLoop->SetPoint(i,pos.x()/CLHEP::cm,pos.y()/CLHEP::cm);
-			                        zrLoop->SetPoint(i,pos.z()/CLHEP::cm,std::hypot(pos.x()/CLHEP::cm,pos.y()/CLHEP::cm));
-			                }
-			                xyLoop->SetMarkerColor(iRobCirCol);
-			                zrLoop->SetMarkerColor(iRobCirCol);
-			                xyLoop->SetMarkerSize(0.1);
-			                xyLoop->SetMarkerStyle(iMarckerLoop);
-			                zrLoop->SetMarkerSize(0.1);
-			                zrLoop->SetMarkerStyle(iMarckerLoop);
-			                tmpCircleFound3D->cd(2);
-			                zrLoop->Draw("P");
-			                tmpCircleFound3D->cd(4);
-			                zrLoop->Draw("P");
-
-			                drawTracksT.push_back(xyLoop);
-			                drawTracksL.push_back(zrLoop);
-			                ++iMarckerLoop;
-			        }
-			        ++iTrackFound;
-			}
-
-
-
-                        //temp El Visual
-                        std::vector<float *> simXarr;
-                        std::vector<float *> simYarr;
-                        std::vector<float *> simZarr;
-                        std::vector<float *> simRarr;
-                        int ielTrack=0, trckCol=0;
-                        cout<<"Generate el tracks "<<genEltrks->size()<<endl;
-                        for ( std::vector<mu2e::VisibleGenElTrack>::const_iterator genEltrk_it = genEltrks->begin(); genEltrk_it!= genEltrks->end(); ++genEltrk_it ){
-                                VisibleGenElTrack &iEltrk = const_cast<VisibleGenElTrack &>(*genEltrk_it);
-
-                                simXarr.push_back(new float [iEltrk.getNumOfHit()] );
-                                simYarr.push_back(new float [iEltrk.getNumOfHit()] );
-                                simZarr.push_back(new float [iEltrk.getNumOfHit()] );
-                                simRarr.push_back(new float [iEltrk.getNumOfHit()] );
-
-                                /*
-                                unsigned short &nloops = iEltrk.getNumOfLoops();
-                                cout<<"N loops "<<nloops<<endl;
-                                convElNLoop=nloops;
-                                for ( unsigned int ilp=0; ilp<nloops; ilp++ ){
-                                        GenElHitData& hdil = iEltrk.getithLoopHit(ilp);
-                                        ptMeV = sqrt( pow(hdil._hitMomentum[0],2) + pow(hdil._hitMomentum[1],2) );
-                                        rho   = ptMeV/(B*0.3);
-                                        cout<<ilp<<" -th loop: p_t "<<ptMeV<<" rho mm "<<rho<<endl;
-                                        CirCenter.set(hdil._hitPoint.getX(),hdil._hitPoint.getY(),hdil._hitPoint.getZ());
-                                        radDir.setX(hdil._hitMomentum.getX());
-                                        radDir.setY(hdil._hitMomentum.getY());
-                                        radDir.rotate( ( (hdil._hitMomentum.getZ()>=0.0) ? 90.0 : -90.0 )*CLHEP::degree );
-                                        radDir=radDir.unit();
-                                        CirCenter=CirCenter+rho*radDir;
-                                        cout<<" Hit Pos "<<hdil._hitPoint<<" Circ center "<<CirCenter<<endl;
-
-                                }*/
-                                if ( iEltrk.isConversionEl() ) {
-                                        trckCol = kGreen+2;
-                                        for ( unsigned int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
-                                                GenElHitData& genElhit = iEltrk.getHit((int)iElHit);
-                                                simXarr.at(ielTrack)[iElHit] = genElhit._hitPoint.x()/CLHEP::cm;
-                                                simYarr.at(ielTrack)[iElHit] = genElhit._hitPoint.y()/CLHEP::cm;
-                                                simZarr.at(ielTrack)[iElHit] = genElhit._hitPoint.z()/CLHEP::cm;
-                                                simRarr.at(ielTrack)[iElHit] = genElhit._hitPoint.perp()/CLHEP::cm;
-
-                                                //cout<<"El Hit data "<<genElhit._hitPoint<<endl;
-                                                if (genElhit._isFirst) {
-                                                }
-                                        }
-
-                                }
-                                else {
-                                        /*
-                                        convElHitOvrlppd=0;
-                                        convElHitOvrlppdByP=0;
-                                        for ( unsigned int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
-                                                GenElHitData& genElhit = iEltrk.getHit((int)iElHit);
-                                                if (genElhit._isOverlapped) {
-                                                        convElHitOvrlppd++;
-                                                        if (genElhit._isOvrlpByProton) convElHitOvrlppdByP++;
-                                                }
-                                        }
-                                        _hNhitOverlapNoConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppd);
-                                        _hNhitOverlapByPNoConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppdByP);
-                                        */
-                                }
-
-                                drawTracksT.push_back(new TGraph( iEltrk.getNumOfHit(), simXarr.back(), simYarr.back() ) );
-                                drawTracksL.push_back(new TGraph( iEltrk.getNumOfHit(), simZarr.back(), simRarr.back() ) );
-
-                                tmpCircleFound3D->cd(1);
-                                drawTracksT.back()->SetMarkerColor(trckCol);
-                                drawTracksT.back()->SetMarkerSize(0.5);
-                                drawTracksT.back()->SetMarkerStyle(6);
-                                drawTracksT.back()->Draw("P");
-                                tmpCircleFound3D->cd(2);
-                                drawTracksL.back()->SetMarkerColor(trckCol);
-                                drawTracksL.back()->SetMarkerSize(0.5);
-                                drawTracksL.back()->SetMarkerStyle(6);
-                                drawTracksL.back()->Draw("P");
-
-
-                                ++ielTrack;
-
-                        }
-
-
-                        //TCanvas *zClustCanv = new TCanvas();
-                        //tmpZhist.Draw();
-
-
-                        cerr << "Double click in the canvas_Fake to continue:" ;
-                        _fakeCanvas->cd();
-                        TLatex *printEvN = new TLatex(0.15,0.4,Form("Current Event: %d - Tpeak %d",event.id().event(),ipeak));
-                        //printEvN->SetTextFont(50);
-                        printEvN->SetTextSizePixels(160);
-                        printEvN->Draw();
-                        _fakeCanvas->Modified();
-                        _fakeCanvas->Update();
-                        _fakeCanvas->WaitPrimitive();
-                        cerr << endl;
-                        delete printEvN;
-
-			delete tmpRCP_Min;
-			delete tmpRCP_Pl;
-			
-
-                        delete tmpCircleFound;
-                        for (std::vector<TEllipse *>::iterator drawPotCircles_it = drawPotCirclesMin.begin(); drawPotCircles_it != drawPotCirclesMin.end(); ++drawPotCircles_it ){
-                                delete *drawPotCircles_it;
-                        }
-                        for (std::vector<TEllipse *>::iterator drawPotCircles_it = drawPotCirclesPl.begin(); drawPotCircles_it != drawPotCirclesPl.end(); ++drawPotCircles_it ){
-                                delete *drawPotCircles_it;
-                        }
-
-                        for (std::vector<TClonesArray *>::iterator drawPotCircPntsMin_it = drawPotCircPntsMin.begin(); drawPotCircPntsMin_it != drawPotCircPntsMin.end(); ++drawPotCircPntsMin_it ) {
-                                (*drawPotCircPntsMin_it)->Delete();
-                        }
-                        for (std::vector<TClonesArray *>::iterator drawPotCircPntsPl_it = drawPotCircPntsPl.begin(); drawPotCircPntsPl_it != drawPotCircPntsPl.end(); ++drawPotCircPntsPl_it ) {
-                                (*drawPotCircPntsPl_it)->Delete();
-                        }
-
-                        delete tmpCircleFound3D;
-                        ///*int*/ iLoop = 0;
-                        for (std::vector<TClonesArray *>::iterator drawPotCircPnts3D_it = drawPotCircPnts3D.begin(); drawPotCircPnts3D_it != drawPotCircPnts3D.end(); ++drawPotCircPnts3D_it ) {
-                                (*drawPotCircPnts3D_it)->Delete();
-                                //if ( drawPotCircPnts3D_L.at(iLoop)!=0x0 ) drawPotCircPnts3D_L.at(iLoop)->Delete();
-                                //if ( zarr.at(iLoop)!=0x0 ) delete [] zarr.at(iLoop);
-                                //if ( rarr.at(iLoop)!=0x0 ) delete [] rarr.at(iLoop);
-                                //if ( errzarr.at(iLoop)!=0x0 ) delete [] errzarr.at(iLoop);
-                                //if ( errrarr.at(iLoop)!=0x0 ) delete [] errrarr.at(iLoop);
-                        }
-
-                        for (std::vector<TEllipse *>::iterator drawPotCirclesRobustFit_it = drawPotCirclesRobustFit.begin(); drawPotCirclesRobustFit_it != drawPotCirclesRobustFit.end(); ++drawPotCirclesRobustFit_it ) {
-                                delete *drawPotCirclesRobustFit_it;
-                        }
-			
-			for_each(drawTracksT.begin(), drawTracksT.end(), std::bind2nd(std::mem_fun(&TGraph::Delete),""));
-			for_each(drawTracksL.begin(), drawTracksL.end(), std::bind2nd(std::mem_fun(&TGraph::Delete),""));
-                        for_each(drawPotCircPnts3D_L.begin(), drawPotCircPnts3D_L.end(), std::bind2nd(std::mem_fun(&TGraphErrors::Delete),""));
-
-			//delete zClustCanv;
-
-                }
-
-                for (std::vector<confMapDraw*>::iterator hCmapMin_it = rCMap_Min.begin(); hCmapMin_it != rCMap_Min.end(); ++hCmapMin_it ) {
-                        delete (*hCmapMin_it);
-                }
-                for (std::vector<confMapDraw*>::iterator hCmapPl_it = rCMap_Pl.begin(); hCmapPl_it != rCMap_Pl.end(); ++hCmapPl_it ) {
-                        delete (*hCmapPl_it);
-                }
-                rCMap_Min.clear();
-                rCMap_Pl.clear();
-
-                for (std::vector<confMapDraw*>::iterator hCmapMin_it = rCMap_Min2.begin(); hCmapMin_it != rCMap_Min2.end(); ++hCmapMin_it ) {
-                        delete (*hCmapMin_it);
-                }
-                for (std::vector<confMapDraw*>::iterator hCmapPl_it = rCMap_Pl2.begin(); hCmapPl_it != rCMap_Pl2.end(); ++hCmapPl_it ) {
-                        delete (*hCmapPl_it);
-                }
-                rCMap_Min2.clear();
-                rCMap_Pl2.clear();
 
         }
 
@@ -1601,7 +768,7 @@ void ITTrackReco::endJob(){
         ////
 }
 
-bool ITTrackReco::findCluster(int &did, int &lid, int &sid, size_t &iglbHit, std::set<size_t> &hitLoked, closClstcol &clusCont ,TrackerHitByID const* hitByID, TrackerHitTimeCluster const&  tclust, CellGeometryHandle *itwp){
+bool ITTrackReco::findCluster(int &did, int &lid, int &sid, bool isUpStream, size_t &iglbHit, std::set<size_t> &hitLoked, closClstcol &clusCont ,TrackerHitByID const* hitByID, TrackerHitTimeCluster const&  tclust, CellGeometryHandle *itwp){
         if ( hitLoked.find(iglbHit)==hitLoked.end() ){
                 unsigned long int tmpIndex;
                 //tmpIndex = si.asUint();
@@ -1617,7 +784,7 @@ bool ITTrackReco::findCluster(int &did, int &lid, int &sid, size_t &iglbHit, std
                 bool lostHit=true;
                 for (int icel=1; icel<nCellPerLayer; icel++){
                         tmpSid = (sid+icel)%nCellPerLayer;
-                        tmpIndex = itwp->computeDet(did,lid,tmpSid);
+                        tmpIndex = itwp->computeDet(did,lid,tmpSid,isUpStream);
                         if ( hitByID->count(tmpIndex)>0 ){
                                 lostHit=true;
                                 rangeHitByID_it= hitByID->equal_range(tmpIndex);
@@ -1640,7 +807,7 @@ bool ITTrackReco::findCluster(int &did, int &lid, int &sid, size_t &iglbHit, std
                         tmpSid = sid-icel;
                         if (tmpSid<0) tmpSid+=nCellPerLayer;
                         tmpSid=tmpSid%nCellPerLayer;
-                        tmpIndex = itwp->computeDet(did,lid,tmpSid);
+                        tmpIndex = itwp->computeDet(did,lid,tmpSid,isUpStream);
                         if ( hitByID->count(tmpIndex)>0 ){
                                 lostHit=true;
                                 rangeHitByID_it= hitByID->equal_range(tmpIndex);
@@ -1659,7 +826,7 @@ bool ITTrackReco::findCluster(int &did, int &lid, int &sid, size_t &iglbHit, std
                         if (lost>0) { break; }
                 }
                 if(_diagLevel > 1){
-                        cout<<"***** tmpClust ***** starting hitId "<<iglbHit<<" at SL "<<did<<" lay "<<lid<<" cell "<<sid<<endl;
+                        cout<<"***** tmpClust ***** starting hitId "<<iglbHit<<" at SL "<<did<<" lay "<<lid<<" cell "<<sid<<" isUpstream "<<isUpStream<<endl;
                         cout<<"before "<<tmpClust->_nHit<<" min "<<tmpClust->_minCellID<<" max "<<tmpClust->_maxCellID<<" center "<<tmpClust->_centerCellID<<endl;
                         closClstcol::iterator tmpClust_it = ( clusCont.insert( boost::shared_ptr<mu2e::closHitClust>(tmpClust) ) ).first;
                         cout<<"after "<<(*tmpClust_it)->_nHit<<" min "<<(*tmpClust_it)->_minCellID<<" max "<<(*tmpClust_it)->_maxCellID<<" center "<<(*tmpClust_it)->_centerCellID<<endl;
@@ -1715,6 +882,7 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
         float zCorssPos, wrsDistAtz, minZCorssPos, minWrsDistAtz, cutWrsDistAtz;
         int crossCellId1, crossCellId2;
         int tmpAbsRad;
+        int matchZdir=1;
 
         //std::map<int, std::vector<std::> > wrsCrossingMap
         //notAssociatedHits
@@ -1727,7 +895,7 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                 potLoops.push_back(points3D());
                                 points3D &potLoopPoints = potLoops.back();
 
-                                itwp->SelectCell(radCls_1v_it->first, (*closCls_it)->_maxCellID);
+                                itwp->SelectCell(radCls_1v_it->first, (*closCls_it)->_maxCellID,_hitsInUpstream);
                                 cellAveRes = itwp->GetCellRad() * invSqrt3;
                                 cellAveZRes = cellAveRes/cos( itwp->GetWireEpsilon() );
                                 cutWrsDistAtz = 2.5*itwp->GetCellRad();
@@ -1767,9 +935,11 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                                         {
                                                                 foundWrCross = findWireCross( crossCellId1, crossCellId2, radCls_1v_it, closCls_it, clHitsIDs_it, radCls_2v_it, lowRadClosCls_it, lowRadClHitsIDs_it, 0, 0.0, itwp, potLoopPoints);
                                                                 if (foundWrCross) {
-                                                                        iteratMaxMinWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, /*0*/1, potLoopPoints.back()._pos.z(), itwp, potLoopPoints);
+                                                                        matchZdir = (_hitsInUpstream) ? -1 : 1;
+                                                                        iteratMaxMinWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, /*0*/matchZdir, potLoopPoints.back()._pos.z(), itwp, potLoopPoints);
                                                                 }
                                                                 if ((*closCls_it)->_nHit>3) {
+                                                                        matchZdir = (_hitsInUpstream) ? 1 : -1;
                                                                         crossCellId1 = (*closCls_it)->_minCellID;
                                                                         crossCellId2 = (*lowRadClosCls_it)->_maxCellID;
                                                                         hitsInClsID::const_iterator sClHitsIDs_it=(*closCls_it)->_hitIdx.begin();
@@ -1780,7 +950,7 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                                                         {
                                                                                 foundWrCross = findWireCross( crossCellId1, crossCellId2, radCls_1v_it, closCls_it, sClHitsIDs_it, radCls_2v_it, lowRadClosCls_it, sLowRadClHitsIDs_it, 0, 0.0, itwp, potLoopPoints);
                                                                                 if (foundWrCross) {
-                                                                                        iteratMinMaxWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, /*0*/-1, potLoopPoints.back()._pos.z(), itwp, potLoopPoints);
+                                                                                        iteratMinMaxWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, /*0*/matchZdir, potLoopPoints.back()._pos.z(), itwp, potLoopPoints);
                                                                                 }
                                                                         }
                                                                 }
@@ -1796,9 +966,11 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                                         {
                                                                 foundWrCross = findWireCross( crossCellId1, crossCellId2, radCls_1v_it, closCls_it, clHitsIDs_it, radCls_2v_it, lowRadClosCls_it, lowRadClHitsIDs_it, 0, 0.0, itwp, potLoopPoints);
                                                                 if (foundWrCross) {
-                                                                        iteratMinMaxWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, /*0*/-1, potLoopPoints.back()._pos.z(), itwp, potLoopPoints);
+                                                                        matchZdir = (_hitsInUpstream) ? -1 : 1;
+                                                                        iteratMinMaxWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, /*0*/matchZdir, potLoopPoints.back()._pos.z(), itwp, potLoopPoints);
                                                                 }
                                                                 if ((*closCls_it)->_nHit>3) {
+                                                                        matchZdir = (_hitsInUpstream) ? 1 : -1;
                                                                         crossCellId1 = (*closCls_it)->_maxCellID;
                                                                         crossCellId2=(*lowRadClosCls_it)->_minCellID;
                                                                         hitsInClsID::const_iterator sClHitsIDs_it=((*closCls_it)->_hitIdx.end()-1);
@@ -1809,7 +981,7 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                                                         {
                                                                                 foundWrCross = findWireCross( crossCellId1, crossCellId2, radCls_1v_it, closCls_it, sClHitsIDs_it, radCls_2v_it, lowRadClosCls_it, sLowRadClHitsIDs_it, 0, 0.0, itwp, potLoopPoints);
                                                                                 if (foundWrCross) {
-                                                                                        iteratMaxMinWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, /*0*/1, potLoopPoints.back()._pos.z(), itwp, potLoopPoints);
+                                                                                        iteratMaxMinWireCross(radCls_1v, radCls_2v, radCls_1v_it, closCls_it, radCls_2v_it, lowRadClosCls_it, /*0*/matchZdir, potLoopPoints.back()._pos.z(), itwp, potLoopPoints);
                                                                                 }
                                                                         }
                                                                 }
@@ -1838,7 +1010,7 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                 //
                                 //                                  SimpleCircle2D tmpCircle;
                                 //
-                                //                                  itwp->SelectCell(radCls_1v_it->first, (*closCls_it)->_centerCellID);
+                                //                                  itwp->SelectCell(radCls_1v_it->first, (*closCls_it)->_centerCellID, _hitsInUpstream);
                                 //                                  refX = itwp->GetCellCenter().getX();
                                 //                                  refY = itwp->GetCellCenter().getY();
                                 //                                  refRes2 = itwp->GetCellRad()*itwp->GetCellRad()/3.0;
@@ -1849,7 +1021,7 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                 //                                  nCellPerLayer = itwp->GetITLayer()->nCells();
                                 //                                  if (closeCntCellID<0) closeCntCellID+=nCellPerLayer;
                                 //                                  closeCntCellID=closeCntCellID%nCellPerLayer;
-                                //                                  itwp->SelectCell(radCls_1v_it->first, closeCntCellID);
+                                //                                  itwp->SelectCell(radCls_1v_it->first, closeCntCellID, _hitsInUpstream);
                                 //                                  closeCntCellX = itwp->GetCellCenter().getX();
                                 //                                  closeCntCellY = itwp->GetCellCenter().getY();
                                 //
@@ -1881,7 +1053,7 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                 //                                          if (halfwayCellID==clHitsIDs_it->first) {
                                 //                                          }
                                 //
-                                //                                          itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+                                //                                          itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first, _hitsInUpstream);
                                 //                                          tmpCircle._krmCircFit.addHit(itwp->GetCellCenter().getX(),itwp->GetCellCenter().getY(),cellAveRes,cellAveRes);
                                 //                                          tmpCircle._listHitptrs.push_back( ptrHitInClosCust(clHitsIDs_it,closCls_it,radCls_1v_it) );
                                 //
@@ -1902,12 +1074,12 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
                                 //                                  closClinRadLay::iterator sndRadCls_1v_it = radCls_1v_it;
                                 //                                  ++sndRadCls_1v_it;
                                 //                                  for ( ; sndRadCls_1v_it != radCls_1v.end(); ++sndRadCls_1v_it ) {
-                                //                                          itwp->SelectCell(sndRadCls_1v_it->first, 0);
+                                //                                          itwp->SelectCell(sndRadCls_1v_it->first, 0, _hitsInUpstream);
                                 //                                          cellAveRes = itwp->GetCellRad()*invSqrt3;
                                 //
                                 //                                          for ( closClstcol::iterator sndClosCls_it = sndRadCls_1v_it->second.begin(); sndClosCls_it != sndRadCls_1v_it->second.end(); ++sndClosCls_it ) {
                                 //                                                  for (hitsInClsID::const_iterator clHitsIDs_it=(*sndClosCls_it)->_hitIdx.begin(); clHitsIDs_it!=(*sndClosCls_it)->_hitIdx.end(); ++clHitsIDs_it) {
-                                //                                                          itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+                                //                                                          itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first, _hitsInUpstream);
                                 //                                                          if ( tmpCircle._krmCircFit.checkBfrAddHit(itwp->GetCellCenter().getX(),itwp->GetCellCenter().getY(),cellAveRes,cellAveRes) ) {
                                 //                                                                  tmpCircle._listHitptrs.push_back( ptrHitInClosCust(clHitsIDs_it,sndClosCls_it,sndRadCls_1v_it) );
                                 //                                                                  cout<<"Point added"<<endl;
@@ -1998,7 +1170,7 @@ bool ITTrackReco::findCircles3D(closClinRadLay &radCls_1v, closClinRadLay &radCl
 }
 
 inline bool ITTrackReco::findWireCross(int crossCellId1, int crossCellId2, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, hitsInClsID::const_iterator &clHitsIDs_it,  closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, hitsInClsID::const_iterator &lowRadClHitsIDs_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints) {
-        itwp->SelectCell(radCls_1v_it->first, crossCellId1);
+        itwp->SelectCell(radCls_1v_it->first, crossCellId1, _hitsInUpstream);
         float zCorssPos=0.0, wrsDistAtz=0.0, cutWrsDistAtz;
         float cellAveRes, cellAveZRes;
         cellAveRes = itwp->GetCellRad() * invSqrt3;
@@ -2010,14 +1182,18 @@ inline bool ITTrackReco::findWireCross(int crossCellId1, int crossCellId2, closC
 
         //cout<<"Looking cross between (AbsRad,CellId) ("<<radCls_1v_it->first<<","<< crossCellId1<<") and ("<<radCls_2v_it->first<<","<<crossCellId2<<") "<<endl;
 
-        if ( itwp->canIntersectInZ(zCorssPos, wrsDistAtz, radCls_2v_it->first, crossCellId2 ) ) {
+        //if ( itwp->canIntersectInZ(zCorssPos, wrsDistAtz, radCls_2v_it->first, crossCellId2 ) ) {
+        itwp->SelectComp_Cell(radCls_2v_it->first, crossCellId2, _hitsInUpstream);
+        if ( itwp->canIntersectInZ(zCorssPos, wrsDistAtz ) ) {
                 condition = wrsDistAtz<cutWrsDistAtz;
                 if (matchZdir!=0) { //matchZdir = 0 disable z matching
                         deltaZ = zCorssPos-prevZVal;
                         if (matchZdir>0) {
                                 condition =  condition && ( deltaZ>-7.0*deltaZRes && deltaZ<15.0*deltaZRes );
+                                //condition =  condition && ( deltaZ>-3.0*deltaZRes && deltaZ<10.0*deltaZRes );
                         } else {
                                 condition =  condition && ( deltaZ>-15.0*deltaZRes && deltaZ<7.0*deltaZRes );
+                                //condition =  condition && ( deltaZ>-10.0*deltaZRes && deltaZ<3.0*deltaZRes );
                         }
                 }
 
@@ -2238,7 +1414,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
 
                                 SimpleCircle2D tmpCircle;
 
-                                itwp->SelectCell(radCls_it->first, (*closCls_it)->_centerCellID);
+                                itwp->SelectCell(radCls_it->first, (*closCls_it)->_centerCellID, _hitsInUpstream);
                                 refX = itwp->GetCellCenter().getX();
                                 refY = itwp->GetCellCenter().getY();
                                 refRes2 = itwp->GetCellRad()*itwp->GetCellRad()/3.0;
@@ -2249,7 +1425,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                 nCellPerLayer = itwp->GetITLayer()->nCells();
                                 if (closeCntCellID<0) closeCntCellID+=nCellPerLayer;
                                 closeCntCellID=closeCntCellID%nCellPerLayer;
-                                itwp->SelectCell(radCls_it->first, closeCntCellID);
+                                itwp->SelectCell(radCls_it->first, closeCntCellID, _hitsInUpstream);
                                 closeCntCellX = itwp->GetCellCenter().getX();
                                 closeCntCellY = itwp->GetCellCenter().getY();
 
@@ -2281,7 +1457,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                         if (halfwayCellID==clHitsIDs_it->first) {
                                         }
 
-                                        itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+                                        itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first, _hitsInUpstream);
                                         tmpCircle._krmCircFit.addHit(itwp->GetCellCenter().getX(),itwp->GetCellCenter().getY(),cellAveRes,cellAveRes);
                                         tmpCircle._listHitptrs.push_back( ptrHitInClosCust(clHitsIDs_it,closCls_it,radCls_it) );
 
@@ -2302,12 +1478,12 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                 closClinRadLay::iterator sndRadCls_it = radCls_it;
                                 ++sndRadCls_it;
                                 for ( ; sndRadCls_it != radCls.end(); ++sndRadCls_it ) {
-                                        itwp->SelectCell(sndRadCls_it->first, 0);
+                                        itwp->SelectCell(sndRadCls_it->first, 0, _hitsInUpstream);
                                         cellAveRes = itwp->GetCellRad()*invSqrt3;
 
                                         for ( closClstcol::iterator sndClosCls_it = sndRadCls_it->second.begin(); sndClosCls_it != sndRadCls_it->second.end(); ++sndClosCls_it ) {
                                                 for (hitsInClsID::const_iterator clHitsIDs_it=(*sndClosCls_it)->_hitIdx.begin(); clHitsIDs_it!=(*sndClosCls_it)->_hitIdx.end(); ++clHitsIDs_it) {
-                                                        itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+                                                        itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first, _hitsInUpstream);
                                                         if ( tmpCircle._krmCircFit.checkBfrAddHit(itwp->GetCellCenter().getX(),itwp->GetCellCenter().getY(),cellAveRes,cellAveRes) ) {
                                                                 tmpCircle._listHitptrs.push_back( ptrHitInClosCust(clHitsIDs_it,sndClosCls_it,sndRadCls_it) );
                                                                 cout<<"Point added"<<endl;
@@ -2440,7 +1616,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                         CHTVotArr cmapCHTVotArr;
                                         cmapCHTVotArr.setTHR(thrCHTaddVot);
 
-                                        itwp->SelectCell(radCls_it->first, (*closCls_it)->_centerCellID);
+                                        itwp->SelectCell(radCls_it->first, (*closCls_it)->_centerCellID, _hitsInUpstream);
                                         refX = itwp->GetCellCenter().getX();
                                         refY = itwp->GetCellCenter().getY();
                                         refRes2 = itwp->GetCellRad()*itwp->GetCellRad()/3.0;
@@ -2448,7 +1624,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                         nCellPerLayer = itwp->GetITLayer()->nCells();
                                         if (closeCntCellID<0) closeCntCellID+=nCellPerLayer;
                                         closeCntCellID=closeCntCellID%nCellPerLayer;
-                                        itwp->SelectCell(radCls_it->first, closeCntCellID);
+                                        itwp->SelectCell(radCls_it->first, closeCntCellID, _hitsInUpstream);
                                         closeCntCellX = itwp->GetCellCenter().getX();
                                         closeCntCellY = itwp->GetCellCenter().getY();
                                         cmapU_clsCntCell = closeCntCellX - refX;
@@ -2472,7 +1648,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                                         refHitptr.setHitInClosCust(clHitsIDs_it,closCls_it,radCls_it);
                                                         continue;
                                                 }
-                                                itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+                                                itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first, _hitsInUpstream);
                                                 cmapU = itwp->GetCellCenter().getX() - refX;
                                                 cmapV = itwp->GetCellCenter().getY() - refY;
                                                 TmpR2 = cmapU*cmapU+cmapV*cmapV;
@@ -2512,14 +1688,14 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                         closClinRadLay::iterator sndRadCls_it = radCls_it;
                                         ++sndRadCls_it;
                                         for ( ; sndRadCls_it != radCls.end(); ++sndRadCls_it ) {
-                                                itwp->SelectCell(sndRadCls_it->first, 0);
+                                                itwp->SelectCell(sndRadCls_it->first, 0, _hitsInUpstream);
                                                 for ( closClstcol::iterator sndClosCls_it = sndRadCls_it->second.begin(); sndClosCls_it != sndRadCls_it->second.end(); ++sndClosCls_it ) {
                                                         for (hitsInClsID::const_iterator clHitsIDs_it=(*sndClosCls_it)->_hitIdx.begin(); clHitsIDs_it!=(*sndClosCls_it)->_hitIdx.end(); ++clHitsIDs_it) {
                                                                 if ( skipAssociated && !notAssociatedHits[clHitsIDs_it->second] ) {
                                                                         continue;
                                                                 }
 
-                                                                itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+                                                                itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first, _hitsInUpstream);
                                                                 cmapU = itwp->GetCellCenter().getX() - refX;
                                                                 cmapV = itwp->GetCellCenter().getY() - refY;
                                                                 TmpR2 = cmapU*cmapU+cmapV*cmapV;
@@ -2639,13 +1815,13 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                                                         if ( skipAssociated ) {
                                                                                 if ( notAssociatedHits[tmpCHTVotArr_HitPtrrel_it->second.getinEventHitID()] ) {
                                                                                         tmpCircle._listHitptrs.push_back(tmpCHTVotArr_HitPtrrel_it->second);//insert(tmpCHTVotArr_HitPtrrel_it->second);
-                                                                                        itwp->SelectCell(tmpCHTVotArr_HitPtrrel_it->second.getRadLayID(), tmpCHTVotArr_HitPtrrel_it->second.getinLayerCellID());
+                                                                                        itwp->SelectCell(tmpCHTVotArr_HitPtrrel_it->second.getRadLayID(), tmpCHTVotArr_HitPtrrel_it->second.getinLayerCellID(), _hitsInUpstream);
                                                                                         cellAveRes = itwp->GetCellRad() * invSqrt3;
                                                                                         tmpCircle._krmCircFit.addHit( itwp->GetCellCenter().getX(), itwp->GetCellCenter().getY(), cellAveRes, cellAveRes );
                                                                                 }
                                                                         } else {
                                                                                 tmpCircle._listHitptrs.push_back(tmpCHTVotArr_HitPtrrel_it->second);//insert(tmpCHTVotArr_HitPtrrel_it->second);
-                                                                                itwp->SelectCell(tmpCHTVotArr_HitPtrrel_it->second.getRadLayID(), tmpCHTVotArr_HitPtrrel_it->second.getinLayerCellID());
+                                                                                itwp->SelectCell(tmpCHTVotArr_HitPtrrel_it->second.getRadLayID(), tmpCHTVotArr_HitPtrrel_it->second.getinLayerCellID(), _hitsInUpstream);
                                                                                 cellAveRes = itwp->GetCellRad() * invSqrt3;
                                                                                 tmpCircle._krmCircFit.addHit( itwp->GetCellCenter().getX(), itwp->GetCellCenter().getY(), cellAveRes, cellAveRes );
                                                                         }
@@ -2698,14 +1874,14 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                                                                 closClinRadLay::iterator sndRadCls_it = radCls_it;
                                                                                 ++sndRadCls_it;
                                                                                 for ( ; sndRadCls_it != radCls.end(); ++sndRadCls_it ) {
-                                                                                        itwp->SelectCell(sndRadCls_it->first, 0);
+                                                                                        itwp->SelectCell(sndRadCls_it->first, 0, _hitsInUpstream);
                                                                                         cellAveRes = itwp->GetCellRad()*invSqrt3;
 
                                                                                         for ( closClstcol::iterator sndClosCls_it = sndRadCls_it->second.begin(); sndClosCls_it != sndRadCls_it->second.end(); ++sndClosCls_it ) {
                                                                                                 for (hitsInClsID::const_iterator clHitsIDs_it=(*sndClosCls_it)->_hitIdx.begin(); clHitsIDs_it!=(*sndClosCls_it)->_hitIdx.end(); ++clHitsIDs_it) {
                                                                                                         if ( skipAssociated ) {
                                                                                                                 if ( notAssociatedHits[clHitsIDs_it->second] ) {
-                                                                                                                        itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+                                                                                                                        itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first, _hitsInUpstream);
                                                                                                                         if ( tmpCircle._krmCircFit.checkBfrAddHit(itwp->GetCellCenter().getX(),itwp->GetCellCenter().getY(),cellAveRes,cellAveRes,_circChi2cut, 1 ) ) {
                                                                                                                                 tmpCircle._listHitptrs.push_back( ptrHitInClosCust(clHitsIDs_it,sndClosCls_it,sndRadCls_it) );
                                                                                                                                 notAssociatedHits[clHitsIDs_it->second]=false;
@@ -2714,7 +1890,7 @@ bool ITTrackReco::findCircles(closClinRadLay &radCls, CellGeometryHandle *itwp, 
                                                                                                                         }
                                                                                                                 }
                                                                                                         } else {
-                                                                                                                itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first);
+                                                                                                                itwp->SelectCell(itwp->GetSuperLayer(),itwp->GetCelRing(),clHitsIDs_it->first, _hitsInUpstream);
                                                                                                                 if ( tmpCircle._krmCircFit.checkBfrAddHit(itwp->GetCellCenter().getX(),itwp->GetCellCenter().getY(),cellAveRes,cellAveRes,_circChi2cut, 1 ) ) {
                                                                                                                         tmpCircle._listHitptrs.push_back( ptrHitInClosCust(clHitsIDs_it,sndClosCls_it,sndRadCls_it) );
                                                                                                                         cout<<"Point added"<<endl;
@@ -2929,6 +2105,932 @@ void ITTrackReco::printPotCircles( circlesCont &potCircles ) {
                         }
                 }
         }
+}
+
+
+void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls_Min, auto_ptr<TrackSeedCollection> &seeds,
+                CellGeometryHandle *itwp, std::vector<TrkTimePeak> &tpeaks, size_t &ipeak, art::Handle<TrackerHitTimeClusterCollection> &tclustHandle, art::Handle<StrawHitCollection> &pdataHandle
+                , VisibleGenElTrackCollection const* genEltrks
+                ) {
+
+        TrackerHitTimeCluster const&  tclust(tclustHandle.product()->at(ipeak));
+        StrawHitCollection const* hits = pdataHandle.product();
+
+        std::vector<confMapDraw*> rCMap_Pl, rCMap_Min, rCMap_Pl2, rCMap_Min2;
+
+        circlesCont potCirclesMin;
+        circlesCont potCirclesPl;
+
+        std::vector<points3D> potLoops;
+        int minClusMultBend = _minClusMultBend;
+        size_t prevFound=0;
+        int nPotLoops=0;
+        while (minClusMultBend>=1) {
+                //hitCrossingChecked.clear();
+                //hitCrossingCheckedT.clear();
+                findCircles3D(radCls_Min, radCls_Pl, itwp, potLoops,minClusMultBend);
+                //hitCrossingChecked.clear();
+                //hitCrossingCheckedT.clear();
+                findCircles3D(radCls_Pl, radCls_Min, itwp, potLoops,minClusMultBend);
+                /*potLoops.push_back(points3D());
+                findCircles3D(radCls_Min, radCls_Pl, itwp, potLoops.back(),minClusMultBend);
+                if (potLoops.back().size()>3) {
+                        potLoops.push_back(points3D());
+                } else {
+                        potLoops.back().clear();
+                }
+
+                findCircles3D(radCls_Pl, radCls_Min, itwp, potLoops.back(),minClusMultBend);
+
+                if (potLoops.back().size()<4) {
+                        potLoops.pop_back();
+                }*/
+                /*
+                for (std::vector<points3D>::iterator potLoops_it = (potLoops.begin()+prevFound); potLoops_it < potLoops.end(); ++potLoops_it) {
+                        for (points3D::iterator loopPoints_it = potLoops_it->begin(); loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
+                                //cout<<"----------- "<<endl;
+                                //cout<<loopPoints_it->getInEventHitID()<<endl;
+                                //cout<<loopPoints_it->getCrossInEventHitID()<<endl;
+                                notAssociatedHits[loopPoints_it->getInEventHitID()] = false;
+                                notAssociatedHits[loopPoints_it->getCrossInEventHitID()] = false;
+                        }
+                }*/
+
+                cout<<"Using cluster size cut for starting search of "<<minClusMultBend<<" found:"<<endl;
+                cout<<"\t n potential loop "<<potLoops.size()<<endl;
+                for (std::vector<points3D>::iterator potLoops_it = (potLoops.begin()+prevFound); potLoops_it < potLoops.end(); ++potLoops_it) {
+
+                  cout<<"\t\t nCrossing Point for "<<++nPotLoops<<"-th = "<<potLoops_it->size()<<endl;
+                  for (points3D::iterator loopPoints_it = potLoops_it->begin();
+                       loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
+                    std::cout<<"3dpoint in Pot Loop "<<nPotLoops<<" hid "<<loopPoints_it->getInEventHitID()<<" xyz "
+                             <<loopPoints_it->_pos.x()<<" "<<loopPoints_it->_pos.y()<<" "<<loopPoints_it->_pos.z()<<std::endl;
+                  }
+                }
+
+                prevFound = potLoops.size();
+                minClusMultBend/=2;
+        }
+
+
+        points3D selectedPnts;
+
+        // track fitting objects for this peak
+        std::vector<TrkHelix> helixesfit;
+        std::vector<HelixTraj> trkhelixes;
+        size_t iTrackFound=0;
+        std::map<size_t, std::vector<TrkHelix> > helixesfitLoops;
+        std::map<size_t, std::vector<HelixTraj> > trkhelixesLoops;
+        std::map<size_t,  std::vector< std::vector<size_t> > > helixezPntIdsLoops;
+        RbstFitPntsLpsPntsRel xyzpLoopRel;
+        std::vector<XYZP> xyzp;
+        std::vector<XYZP> xyzpSel;
+        std::vector<std::pair<size_t,size_t> > sel_AllxyzPntsRel;
+        std::vector<XYZP> xyzpRej;
+        std::vector<std::pair<size_t,size_t> > rej_AllxyzPntsRel;
+
+        //TH1F tmpZhist ("tmpZhist","tmpZhist", TMath::Nint( fabs(_maxZ-_minZ)/40.0 ), _minZ,_maxZ);
+
+        if (potLoops.size()>0) {
+                tpeaks.push_back( TrkTimePeak(tclust._meanTime,tclust._maxHitTime) );
+                size_t iPotLoop = 0, iPntInLoop=0;
+                for (std::vector<points3D>::iterator potLoops_it = potLoops.begin(); potLoops_it != potLoops.end(); ++potLoops_it) {
+                        iPntInLoop=0;
+                        for (points3D::iterator loopPoints_it = potLoops_it->begin(); loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
+                                itwp->SelectCell(loopPoints_it->getRadLayID(),loopPoints_it->getInLayerCellID(), _hitsInUpstream);
+                                xyzp.push_back(XYZP( loopPoints_it->_pos, itwp->GetCellDirection(), loopPoints_it->_sigmaz,loopPoints_it->_sigmax)); //sigmax=sigmay=sigmaR
+                                //std::vector<XYZP>::iterator lastPoint = xyzp.end();
+                                //--lastPoint;
+                                //xyzpLoopRel.insert( RbstFitPntsLpsPntsRel::value_type ( lastPoint,
+                                xyzpLoopRel.insert( RbstFitPntsLpsPntsRel::value_type ( xyzp.size()-1,
+                                                std::pair<size_t, size_t > (iPotLoop,iPntInLoop) ) );
+                                tpeaks.back()._trkptrs.push_back( hitIndex(loopPoints_it->getInEventHitID()) );
+                                ++iPntInLoop;
+                        }
+                        ++iPotLoop;
+                }
+
+                // track fitting objects for this peak
+                TrkHelix helixfit;
+                //TrkKalFit seedfit, kalfit;
+                // create track definitions for the different fits from this initial information
+                TrkDef helixdef(hits,/*tpeaks[ipeak]*/tpeaks.back()._trkptrs);
+                helixdef.setTrkT0(tpeaks[ipeak]._tpeak-_maxTdrift,_tpeakerr);
+                // robust helix fit
+                bool isfitted=_hfit.findHelix(helixdef,helixfit,xyzp);
+                if(isfitted){
+                        cout<<"Using Robust Fit, Circle Found with center "<<helixfit._center<<" and Rad "<<helixfit._radius<<endl;
+                        for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
+                                XYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
+                                if ( tmpXYZP._use ) {
+                                        double tmpDist = fabs( sqrt( pow(tmpXYZP._pos.x()-helixfit._center.x(),2) +
+                                                        pow(tmpXYZP._pos.y()-helixfit._center.y(),2) ) -
+                                                        helixfit._radius );
+                                        if ( tmpDist<3.0*tmpXYZP._serr ) {
+                                                selectedPnts.push_back( potLoops.at(xyzpLoopRel_it->second.first).at(xyzpLoopRel_it->second.second) );
+                                                xyzpSel.push_back(tmpXYZP);
+                                                sel_AllxyzPntsRel.push_back( std::pair<size_t,size_t> (xyzpSel.size()-1, xyzpLoopRel_it->first) );
+                                        } else {
+                                                tmpXYZP._use = false;
+                                                xyzpRej.push_back(tmpXYZP);
+                                                rej_AllxyzPntsRel.push_back( std::pair<size_t,size_t> (xyzpRej.size()-1, xyzpLoopRel_it->first) );
+                                        }
+                                }
+                                xyzpRej.push_back(tmpXYZP);
+                                rej_AllxyzPntsRel.push_back( std::pair<size_t,size_t> (xyzpRej.size()-1, xyzpLoopRel_it->first) );
+                        }
+
+                        if (helixfit._radius>=_minGoodR && helixfit._radius<=_maxGoodR ) {
+                                helixesfit.push_back(helixfit);
+                        } else {
+                                cout<<"Track rejected for radius"<<endl;
+                                isfitted = false;
+                        }
+                        //try to use the rejected points to find a new circle!!! FIXME
+                }
+
+                if(isfitted) {
+                        HepVector hpar;
+                        HepVector hparerr;
+                        _hfit.helixParams(helixfit,hpar,hparerr);
+                        HepSymMatrix hcov = vT_times_v(hparerr);
+                        HelixTraj seed(hpar,hcov);
+                        std::cout<<"fitted "<<isfitted<<" ";
+                        seed.printAll(std::cout);
+                        trkhelixes.push_back(seed);
+
+                        findZclusters( trkhelixes.back(), xyzpSel, helixezPntIdsLoops[iTrackFound]/*, helixesfitLoops[iTrackFound], trkhelixesLoops[iTrackFound]*/ );
+                        bool isLoopFitted;
+                        for ( size_t iTrkLoop=0; iTrkLoop<helixezPntIdsLoops[iTrackFound].size(); ++iTrkLoop ) {
+                                std::vector<size_t> &loopPntIds = helixezPntIdsLoops[iTrackFound].at(iTrkLoop);
+                                std::vector<XYZP> xyzpLoop;
+                                for (std::vector<size_t>::iterator loopPntIds_it = loopPntIds.begin(); loopPntIds_it != loopPntIds.end(); ++loopPntIds_it) {
+                                        xyzpLoop.push_back( xyzpSel.at(*loopPntIds_it) );
+                                }
+                                TrkHelix helixfitLoop;
+                                isLoopFitted=_hfit.findHelix(helixdef,helixfitLoop,xyzpLoop);
+                                if (isLoopFitted) {
+                                        helixesfitLoops[iTrackFound].push_back(helixfitLoop);
+                                        HepVector hparLoop;
+                                        HepVector hparerrLoop;
+                                        _hfit.helixParams(helixfitLoop,hparLoop,hparerrLoop);
+                                        HepSymMatrix hcovLoop = vT_times_v(hparerrLoop);
+                                        HelixTraj seedLoop(hparLoop,hcovLoop);
+                                        std::cout<<"fitted "<<iTrkLoop<<"-th loop:"<<endl;
+                                        seedLoop.printAll(std::cout);
+                                        trkhelixesLoops[iTrackFound].push_back(seedLoop);
+                                }
+
+                        }
+
+                        if (_diagLevel>1) {
+                                cout<<"For "<<iTrackFound<<"-th track n Loops "<<helixezPntIdsLoops[iTrackFound].size()<<endl;
+                                for ( size_t iTrkLoop=0; iTrkLoop<helixezPntIdsLoops[iTrackFound].size(); ++iTrkLoop ) {
+                                        cout<<"\t for "<<iTrkLoop<<"-th loop z points:"<<endl;
+                                        std::vector<size_t> &loopPntIds = helixezPntIdsLoops[iTrackFound].at(iTrkLoop);
+                                        for (std::vector<size_t>::iterator loopPntIds_it = loopPntIds.begin(); loopPntIds_it != loopPntIds.end(); ++loopPntIds_it) {
+                                                cout<<"\t\t "<<xyzpSel.at(*loopPntIds_it)._pos<<endl;
+                                        }
+                                }
+                        }
+
+                        ++iTrackFound;
+                }
+        }
+
+
+
+        int jTrackFound = 0;
+        for(std::vector<HelixTraj>::iterator ittrk=trkhelixes.begin(); ittrk!=trkhelixes.end(); ittrk++){
+                cout<<"For i track "<<jTrackFound<<" there are "<<trkhelixesLoops[jTrackFound].size()<<" Loops to draw"<<endl;
+
+
+                TrackSeed tmpOutSeed;
+                tmpOutSeed._relatedTimeCluster=TrackerHitTimeClusterPtr(tclustHandle,ipeak);
+                HelixTraj2HelixVal (*ittrk, tmpOutSeed._fullTrkSeed);
+
+                std::set<size_t > hitInserted;
+                double minSeedTime = 1.e9, tmpSeedHitTime=0.0;
+                for ( int jSeedPoint = 0; jSeedPoint<sel_AllxyzPntsRel.size(); ++jSeedPoint ) {
+                        std::pair<size_t, size_t> &iPLoop_jPnt = xyzpLoopRel[sel_AllxyzPntsRel.at(jSeedPoint).second];
+                        corssingPoints &crossPoint = potLoops[iPLoop_jPnt.first][iPLoop_jPnt.second];
+                        //insert the two crossing points
+                        if ( hitInserted.find(crossPoint.getInEventHitID())==hitInserted.end() ) {
+                                tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getInEventHitID() ) );
+                                tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getInEventHitID() ) );
+                                hitInserted.insert(crossPoint.getInEventHitID());
+                                tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
+                                if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
+                        }
+                        if ( hitInserted.find(crossPoint.getCrossInEventHitID())==hitInserted.end() ) {
+                                tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getCrossInEventHitID() ) );
+                                tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getCrossInEventHitID() ) );
+                                hitInserted.insert(crossPoint.getCrossInEventHitID());
+                                tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
+                                if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
+                        }
+
+                        //inserted all the points of the cluster that contains the upper of the two crossing points
+                        for ( hitsInClsID::const_iterator hitsInCls_it = crossPoint.getHitClust()._hitIdx.begin();
+                                        hitsInCls_it != crossPoint.getHitClust()._hitIdx.end(); ++hitsInCls_it ) {
+                                if ( hitInserted.find(hitsInCls_it->second)==hitInserted.end() ) {
+                                        tmpOutSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( HitIndex( hitsInCls_it->second ) );
+                                        tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, hitsInCls_it->second ) );
+                                        hitInserted.insert(hitsInCls_it->second);
+                                        tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
+                                        if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
+                                }
+                        }
+                }
+                tmpOutSeed._t0    = minSeedTime;
+                tmpOutSeed._errt0 = _tpeakerr;
+
+                int kTrckLoop=0;
+                for (std::vector<HelixTraj>::iterator trkhelixesLoop_it = trkhelixesLoops[jTrackFound].begin(); trkhelixesLoop_it != trkhelixesLoops[jTrackFound].end(); ++trkhelixesLoop_it) {
+                        cout<<"Drawing single Loop for track "<<jTrackFound<<endl;
+                        HelixVal tmpSeedLoop;
+                        HelixTraj2HelixVal (*trkhelixesLoop_it, tmpSeedLoop);
+                        std::vector<size_t> &hitsInLoopId = helixezPntIdsLoops[jTrackFound].at(kTrckLoop);
+                        std::set<size_t > loopHitInserted;
+
+                        for (std::vector<size_t>::iterator hitsInLoopId_it = hitsInLoopId.begin(); hitsInLoopId_it != hitsInLoopId.end(); ++hitsInLoopId_it) {
+                                std::pair<size_t, size_t> &iPLoop_jPnt = xyzpLoopRel[sel_AllxyzPntsRel.at(*hitsInLoopId_it).second];
+                                corssingPoints &crossPoint = potLoops[iPLoop_jPnt.first][iPLoop_jPnt.second];
+                                //insert the two crossing points
+                                if ( loopHitInserted.find(crossPoint.getInEventHitID())==loopHitInserted.end() ) {
+                                        tmpSeedLoop._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getInEventHitID() ) );
+                                        tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getInEventHitID() ) );
+                                        loopHitInserted.insert(crossPoint.getInEventHitID());
+                                        tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
+                                        if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
+                                }
+                                if ( loopHitInserted.find(crossPoint.getCrossInEventHitID())==loopHitInserted.end() ) {
+                                        tmpSeedLoop._selectedTrackerHitsIdx.push_back( HitIndex( crossPoint.getCrossInEventHitID() ) );
+                                        tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, crossPoint.getCrossInEventHitID() ) );
+                                        loopHitInserted.insert(crossPoint.getCrossInEventHitID());
+                                        tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
+                                        if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
+                                }
+
+                                //inserted all the points of the cluster that contains the upper of the two crossing points
+                                for ( hitsInClsID::const_iterator hitsInCls_it = crossPoint.getHitClust()._hitIdx.begin();
+                                                hitsInCls_it != crossPoint.getHitClust()._hitIdx.end(); ++hitsInCls_it ) {
+                                        if ( loopHitInserted.find(hitsInCls_it->second)==loopHitInserted.end() ) {
+                                                tmpSeedLoop._selectedTrackerHitsIdx.push_back( HitIndex( hitsInCls_it->second ) );
+                                                tmpOutSeed._selectedTrackerHits.push_back( StrawHitPtr ( pdataHandle, hitsInCls_it->second ) );
+                                                loopHitInserted.insert(hitsInCls_it->second);
+                                                tmpSeedHitTime = tmpOutSeed._selectedTrackerHits.back()->time();// correct for TOF and signal propagation!!! FIXME
+                                                if (tmpSeedHitTime<minSeedTime) { minSeedTime=tmpSeedHitTime; }
+                                        }
+                                }
+                        }
+
+                        tmpOutSeed._loopSeeds.push_back(tmpSeedLoop);
+                        ++kTrckLoop;
+                }
+
+                seeds->push_back(tmpOutSeed);
+                ++jTrackFound;
+        }
+
+        /*
+        for (std::vector<XYZP>::iterator xyzp_it = xyzp.begin(); xyzp_it != xyzp.end(); ++xyzp_it ) {
+                cout<<" xyzp "<<xyzp_it->_pos<<" serr "<<xyzp_it->_serr<<" use "<<xyzp_it->_use<<endl;
+        }
+        cout<<"-----------------------------------------"<<endl;
+        for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
+                //cout<<" xyzp "<<xyzpLoopRel_it->first->_pos<<" serr "<<xyzpLoopRel_it->first->_serr<<" use "<<xyzpLoopRel_it->first->_use<<endl;
+                cout<<" xyzp "<<xyzp.at(xyzpLoopRel_it->first)._pos<<" serr "<<xyzp.at(xyzpLoopRel_it->first)._serr<<" use "<<xyzp.at(xyzpLoopRel_it->first)._use<<endl;
+        }
+        */
+
+
+
+
+        //        cout<<"Using cluster size cut for starting search of "<<_minClusMultBend<<" found:"<<endl;
+        //        cout<<"\t n potential loop "<<potLoops.size()<<endl;
+        //        int nPotLoops=0;
+        //        for (std::vector<points3D>::iterator potLoops_it = potLoops.begin(); potLoops_it != potLoops.end(); ++potLoops_it) {
+        //                cout<<"\t\t nCrossing Point for "<<++nPotLoops<<"-th = "<<potLoops_it->size()<<endl;
+        //        }
+
+        //        cout<<"   ----  stereo - ----   "<<endl;
+        //        findCircles3D(radCls_Min, radCls_Pl, itwp, potCirclesMin);
+        //
+        //        bool foundCircles_Min = false ;/*findCircles(radCls_Min,itwp,rCMap_Min,potCirclesMin,"Min", _minClusMultBend, 10, true);
+        //        //bool foundCircles_Min = findCircles(radCls_Min,itwp,potCirclesMin,"Min");
+        //        if ( foundCircles_Min ) {
+        //                printPotCircles(potCirclesMin);
+        //                //mergeCircles(potCirclesMin);
+        //                //markUsedHit(potCirclesMin);
+        //                //cout<<"**** After merging ****"<<endl;
+        //                //printPotCircles(potCirclesMin);
+        //        }
+        //        cout<<"   ----  second search stereo - ----   "<<endl;
+        //        foundCircles_Min = findCircles(radCls_Min,itwp,rCMap_Min2,potCirclesMin,"Min", 6, 5, true);
+        //        //bool foundCircles_Min = findCircles(radCls_Min,itwp,potCirclesMin,"Min");
+        //        if ( foundCircles_Min ) {
+        //                printPotCircles(potCirclesMin);
+        //                //mergeCircles(potCirclesMin);
+        //                //printPotCircles(potCirclesMin);
+        //        }
+        //        */
+        //        cout<<"   ----  stereo + ----   "<<endl;
+        //        findCircles3D(radCls_Pl, radCls_Min, itwp, potCirclesPl);
+        //        bool foundCircles_Pl = false; /*findCircles(radCls_Pl,itwp,rCMap_Pl,potCirclesPl,"Pl", _minClusMultBend, 10,true);
+        //        //bool foundCircles_Pl = findCircles(radCls_Pl,itwp,potCirclesPl,"Pl");
+        //        if ( foundCircles_Pl ) {
+        //                printPotCircles(potCirclesPl);
+        //                //mergeCircles(potCirclesPl);
+        //                //markUsedHit(potCirclesPl);
+        //                //cout<<"**** After merging ****"<<endl;
+        //                //printPotCircles(potCirclesPl);
+        //
+        //        }
+        //        cout<<"   ----  second search stereo + ----   "<<endl;
+        //        foundCircles_Pl = findCircles(radCls_Pl,itwp,rCMap_Pl2,potCirclesPl,"Pl", 6, 5, true);
+        //        //bool foundCircles_Pl = findCircles(radCls_Pl,itwp,potCirclesPl,"Pl");
+        //        if ( foundCircles_Pl ) {
+        //                printPotCircles(potCirclesPl);
+        //                //mergeCircles(potCirclesPl);
+        //                //printPotCircles(potCirclesPl);
+        //
+        //        }*/
+        //        //findCircles(radCls_Min_Up,itwp,rCMap_Min_Up,"Min_Up");
+        //        //findCircles(radCls_Pl_Up,itwp,rCMap_Pl_Up,"Pl_Up");
+        //
+        //        if ( foundCircles_Min && foundCircles_Pl) {
+        //
+        //        }
+
+        if (_doDisplay) {
+
+                double rIn  = _rIn/CLHEP::cm;
+                double rOut = _rOut/CLHEP::cm;
+
+                //cout<<"************************ 1.1 ************************"<<endl;
+
+                TEllipse innerWall (0.0,0.0,rIn,rIn);
+                innerWall.SetFillStyle(0);
+                innerWall.SetLineWidth(1.5);
+
+                TEllipse outerWall (0.0,0.0,rOut,rOut);
+                outerWall.SetFillStyle(0);
+                outerWall.SetLineWidth(1.5);
+
+                TCanvas *tmpRCP_Min=0,*tmpRCP_Pl=0,*tmpCircleFound=0;
+                TH2F hHitStereoPl( "hHitStereoPl",  "Stereo+ Hits per Event at z=0", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
+                TH2F hHitStereoMin( "hHitStereoMin",  "Stereo- Hits per Event at z=0", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
+                std::vector<TEllipse *> drawPotCirclesMin;
+                std::vector<TEllipse *> drawPotKrmCirclesMin;
+                std::vector<TClonesArray *> drawPotCircPntsMin;
+
+                std::vector<TEllipse *> drawPotCirclesPl;
+                std::vector<TEllipse *> drawPotKrmCirclesPl;
+                std::vector<TClonesArray *> drawPotCircPntsPl;
+
+                bool drawStereoProj=false;
+                if(drawStereoProj){//stereo projections
+                        tmpRCP_Min = new TCanvas();
+                        /*
+        int nlrgCl_Min = rCMap_Min.size();
+        if (nlrgCl_Min>0) {
+        int iPad = 0, maxPad = 1;
+        if (nlrgCl_Min>=1) {
+                tmpRCP_Min->Divide(2,nlrgCl_Min);
+                maxPad = 2*nlrgCl_Min;
+                iPad=1;
+        }
+        int iColor = 0;
+        for (std::vector<confMapDraw*>::iterator hCmapMin_it = rCMap_Min.begin(); hCmapMin_it != rCMap_Min.end(); ++hCmapMin_it ) {
+                if (iPad>maxPad) break;
+                tmpRCP_Min->cd(iPad);
+                (*hCmapMin_it)->_cmap->SetMarkerStyle(8);
+                (*hCmapMin_it)->_cmap->SetMarkerSize(0.8);
+                (*hCmapMin_it)->_cmap->SetMarkerColor(++iColor);
+                (*hCmapMin_it)->_cmap->Draw("AP");
+                ++iPad;
+                tmpRCP_Min->cd(iPad);
+                (*hCmapMin_it)->_cmapCHT->Draw("colz");
+                ++iPad;
+        }
+        }
+                         */
+                        //cout<<"************************ 1.2 ************************"<<endl;
+                        tmpRCP_Pl = new TCanvas();
+                        /*
+        int nlrgCl_Pl = rCMap_Pl.size();
+        if (nlrgCl_Pl>0) {
+        int iPad = 0, maxPad = 1;
+        if (nlrgCl_Pl>=1) {
+                tmpRCP_Pl->Divide(2,nlrgCl_Pl);
+                maxPad = 2*nlrgCl_Pl;
+                iPad=1;
+        }
+        int iColor = 0;
+        for (std::vector<confMapDraw*>::iterator hCmapPl_it = rCMap_Pl.begin(); hCmapPl_it != rCMap_Pl.end(); ++hCmapPl_it ) {
+                if (iPad>maxPad) break;
+                tmpRCP_Pl->cd(iPad);
+                (*hCmapPl_it)->_cmap->SetMarkerStyle(8);
+                (*hCmapPl_it)->_cmap->SetMarkerSize(0.8);
+                (*hCmapPl_it)->_cmap->SetMarkerColor(++iColor);
+                (*hCmapPl_it)->_cmap->Draw("AP");
+                ++iPad;
+                tmpRCP_Pl->cd(iPad);
+                (*hCmapPl_it)->_cmapCHT->Draw("colz");
+                ++iPad;
+        }
+        }
+                         */
+
+                        tmpRCP_Min->Modified();
+                        tmpRCP_Min->Update();
+
+                        tmpRCP_Pl->Modified();
+                        tmpRCP_Pl->Update();
+
+
+                        //cout<<"************************ 1.3 ************************"<<endl;
+
+                        tmpCircleFound = new TCanvas("PotCirclesDraw","",860,430);
+                        tmpCircleFound->Divide(2,1);
+                        hHitStereoPl.SetXTitle("cm");
+                        hHitStereoPl.SetYTitle("cm");
+                        hHitStereoMin.SetXTitle("cm");
+                        hHitStereoMin.SetYTitle("cm");
+                        tmpCircleFound->cd(1);
+                        hHitStereoMin.SetStats(kFALSE);
+                        hHitStereoMin.Draw();
+                        innerWall.Draw("same");
+                        outerWall.Draw("same");
+                        int iCol = 0;
+                        for (circlesCont::iterator potCirclesMin_it = potCirclesMin.begin(); potCirclesMin_it != potCirclesMin.end(); ++potCirclesMin_it ) {
+                                drawPotCirclesMin.push_back( new TEllipse( potCirclesMin_it->_center.x()/CLHEP::cm, potCirclesMin_it->_center.y()/CLHEP::cm, potCirclesMin_it->_radius/CLHEP::cm, potCirclesMin_it->_radius/CLHEP::cm) );
+                                drawPotCirclesMin.back()->SetFillStyle(0);
+                                drawPotCirclesMin.back()->SetLineWidth(2);
+                                drawPotCirclesMin.back()->SetLineColor(++iCol);
+                                drawPotCirclesMin.back()->SetLineStyle(4);
+                                //drawPotCirclesMin.back()->Draw("same");
+                                CLHEP::Hep2Vector radDir;
+                                float rSign = (potCirclesMin_it->_krmCircFit.rho>=0.0) ? 1.0 : -1.0;
+                                radDir.setX( cos(potCirclesMin_it->_krmCircFit.phi) );
+                                radDir.setY( sin(potCirclesMin_it->_krmCircFit.phi) );
+                                radDir.rotate( /*( (potCirclesMin_it->_krmCircFit.rho>=0.0) ? -90.0 : 90.0 )*/-90.0*rSign*CLHEP::degree );
+                                radDir=radDir.unit();
+                                HepGeom::Point3D<double> CirCenter (0.0,0.0,0.0);
+                                float krmRad = 1.0/fabs(potCirclesMin_it->_krmCircFit.rho);
+                                CirCenter = CirCenter +  (krmRad + rSign*potCirclesMin_it->_krmCircFit.dca)*radDir;
+                                drawPotKrmCirclesMin.push_back( new TEllipse( CirCenter.x()/CLHEP::cm, CirCenter.y()/CLHEP::cm, krmRad/CLHEP::cm, krmRad/CLHEP::cm) );
+                                //radDir *= (krmRad-potCirclesMin_it->_krmCircFit.dca);
+                                //drawPotKrmCirclesMin.push_back( new TEllipse( radDir.x()/CLHEP::cm, radDir.y()/CLHEP::cm, krmRad/CLHEP::cm, krmRad/CLHEP::cm) );
+                                drawPotKrmCirclesMin.back()->SetFillStyle(0);
+                                drawPotKrmCirclesMin.back()->SetLineWidth(2);
+                                drawPotKrmCirclesMin.back()->SetLineColor(iCol);
+                                drawPotKrmCirclesMin.back()->SetLineStyle(4);
+                                drawPotKrmCirclesMin.back()->Draw("same");
+
+                                drawPotCircPntsMin.push_back( new TClonesArray("TEllipse") );
+                                drawPotCircPntsMin.back()->ExpandCreateFast(potCirclesMin_it->_listHitptrs.size());
+                                int iHit = 0;
+                                for ( std::vector< ptrHitInClosCust >::iterator potCirclesPntsMin_it = potCirclesMin_it->_listHitptrs.begin(); potCirclesPntsMin_it != potCirclesMin_it->_listHitptrs.end(); ++potCirclesPntsMin_it ) {
+                                        itwp->SelectCell( potCirclesPntsMin_it->getRadLayID(), potCirclesPntsMin_it->getinLayerCellID(), _hitsInUpstream );
+                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetX1(itwp->GetCellCenter().x()/CLHEP::cm);
+                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetY1(itwp->GetCellCenter().y()/CLHEP::cm);
+                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetR1(itwp->GetCellRad()/CLHEP::cm);
+                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetR2( ( itwp->GetCellRad()/cos(itwp->GetWireEpsilon()) )/CLHEP::cm );
+                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetTheta( itwp->GetCellCenter().phi()/CLHEP::degree );
+                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetFillStyle(0);
+                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetLineWidth(2);
+                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->SetLineColor(iCol);
+                                        ((TEllipse *) drawPotCircPntsMin.back()->At(iHit))->Draw("same");
+                                        ++iHit;
+                                }
+                        }
+
+                        //cout<<"************************ 1.4 ************************"<<endl;
+
+                        tmpCircleFound->cd(2);
+                        hHitStereoPl.SetStats(kFALSE);
+                        hHitStereoPl.Draw();
+                        innerWall.Draw("same");
+                        outerWall.Draw("same");
+                        iCol = 0;
+                        for (circlesCont::iterator potCirclesPl_it = potCirclesPl.begin(); potCirclesPl_it != potCirclesPl.end(); ++potCirclesPl_it ) {
+                                drawPotCirclesPl.push_back( new TEllipse( potCirclesPl_it->_center.x()/CLHEP::cm, potCirclesPl_it->_center.y()/CLHEP::cm, potCirclesPl_it->_radius/CLHEP::cm, potCirclesPl_it->_radius/CLHEP::cm) );
+                                drawPotCirclesPl.back()->SetFillStyle(0);
+                                drawPotCirclesPl.back()->SetLineWidth(2);
+                                drawPotCirclesPl.back()->SetLineColor(++iCol);
+                                drawPotCirclesPl.back()->SetLineStyle(4);
+                                //drawPotCirclesPl.back()->Draw("same");
+                                CLHEP::Hep2Vector radDir;
+                                float rSign = (potCirclesPl_it->_krmCircFit.rho>=0.0) ? 1.0 : -1.0;
+                                radDir.setX( cos(potCirclesPl_it->_krmCircFit.phi) );
+                                radDir.setY( sin(potCirclesPl_it->_krmCircFit.phi) );
+                                radDir.rotate( /*( (potCirclesPl_it->_krmCircFit.rho>=0.0) ? -90.0 : 90.0 )*/-90.0*rSign*CLHEP::degree );
+                                radDir=radDir.unit();
+                                HepGeom::Point3D<double> CirCenter (0.0,0.0,0.0);
+                                float krmRad = 1.0/fabs(potCirclesPl_it->_krmCircFit.rho);
+                                CirCenter = CirCenter + (krmRad + rSign*potCirclesPl_it->_krmCircFit.dca)*radDir;
+                                drawPotKrmCirclesPl.push_back( new TEllipse( CirCenter.x()/CLHEP::cm, CirCenter.y()/CLHEP::cm, krmRad/CLHEP::cm, krmRad/CLHEP::cm) );
+                                //radDir *= (krmRad-potCirclesPl_it->_krmCircFit.dca);
+                                //drawPotKrmCirclesMin.push_back( new TEllipse( radDir.x()/CLHEP::cm, radDir.y()/CLHEP::cm, krmRad/CLHEP::cm, krmRad/CLHEP::cm) );
+                                drawPotKrmCirclesPl.back()->SetFillStyle(0);
+                                drawPotKrmCirclesPl.back()->SetLineWidth(2);
+                                drawPotKrmCirclesPl.back()->SetLineColor(iCol);
+                                drawPotKrmCirclesPl.back()->SetLineStyle(4);
+                                drawPotKrmCirclesPl.back()->Draw("same");
+
+                                drawPotCircPntsPl.push_back( new TClonesArray("TEllipse") );
+                                drawPotCircPntsPl.back()->ExpandCreateFast(potCirclesPl_it->_listHitptrs.size());
+                                int iHit = 0;
+                                for ( std::vector< ptrHitInClosCust >::iterator potCirclesPntsPl_it = potCirclesPl_it->_listHitptrs.begin(); potCirclesPntsPl_it != potCirclesPl_it->_listHitptrs.end(); ++potCirclesPntsPl_it ) {
+                                        itwp->SelectCell( potCirclesPntsPl_it->getRadLayID(), potCirclesPntsPl_it->getinLayerCellID(), _hitsInUpstream );
+                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetX1(itwp->GetCellCenter().x()/CLHEP::cm);
+                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetY1(itwp->GetCellCenter().y()/CLHEP::cm);
+                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetR1(itwp->GetCellRad()/CLHEP::cm);
+                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetR2( ( itwp->GetCellRad()/cos(itwp->GetWireEpsilon()) )/CLHEP::cm );
+                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetTheta( itwp->GetCellCenter().phi()/CLHEP::degree );
+                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetFillStyle(0);
+                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetLineWidth(2);
+                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->SetLineColor(iCol);
+                                        ((TEllipse *) drawPotCircPntsPl.back()->At(iHit))->Draw("same");
+                                        ++iHit;
+                                }
+                        }
+                        tmpCircleFound->Modified();
+                        tmpCircleFound->Update();
+                }
+
+                TCanvas *tmpCircleFound3D = new TCanvas("PotCirclesDraw3D","",860,860);
+                tmpCircleFound3D->Divide(2,2);
+                TH2F hHit3DT( "hHit3DT",  "Hits per Event at z crossing", 1500, -75.0, 75.0, 1500, -75.0, 75.0 );
+                TH2F hHit3DL( "hHit3DL",  "Hits per Event at z", TMath::Nint((_maxZ-_minZ)/10.0), _minZ/CLHEP::cm, _maxZ/CLHEP::cm, 750, 0, 75.0 );
+                hHit3DT.SetXTitle("X [cm]");
+                hHit3DT.SetYTitle("Y [cm]");
+                hHit3DL.SetXTitle("Z [cm]");
+                hHit3DL.SetYTitle("R [cm]");
+                tmpCircleFound3D->cd(1);
+                hHit3DT.SetStats(kFALSE);
+                hHit3DT.Draw();
+                innerWall.Draw("same");
+                outerWall.Draw("same");
+                tmpCircleFound3D->cd(2);
+                TLine innerWallL;
+                TLine outerWallL;
+                innerWallL.SetX1(hHit3DL.GetXaxis()->GetXmin());
+                innerWallL.SetY1(rIn);
+                innerWallL.SetX2(hHit3DL.GetXaxis()->GetXmax());
+                innerWallL.SetY2(rIn);
+                outerWallL.SetX1(hHit3DL.GetXaxis()->GetXmin());
+                outerWallL.SetY1(rOut);
+                outerWallL.SetX2(hHit3DL.GetXaxis()->GetXmax());
+                outerWallL.SetY2(rOut);
+                innerWallL.SetLineWidth(1.5);
+                outerWallL.SetLineWidth(1.5);
+                hHit3DL.SetStats(kFALSE);
+                hHit3DL.Draw();
+                innerWallL.Draw("same");
+                outerWallL.Draw("same");
+                tmpCircleFound3D->cd(3);
+                hHit3DT.Draw();
+                innerWall.Draw("same");
+                outerWall.Draw("same");
+                tmpCircleFound3D->cd(4);
+                hHit3DL.Draw();
+                innerWallL.Draw("same");
+                outerWallL.Draw("same");
+                tmpCircleFound3D->cd(3);
+
+                int iCol = 0;
+                std::vector<TClonesArray *> drawPotCircPnts3D;
+                std::vector<TGraphErrors *> drawPotCircPnts3D_L;
+                std::vector<float *> zarr;
+                std::vector<float *> rarr;
+                std::vector<float *> errzarr;
+                std::vector<float *> errrarr;
+                for (std::vector<points3D>::iterator potLoops_it = potLoops.begin(); potLoops_it != potLoops.end(); ++potLoops_it) {
+                        ++iCol;
+                        zarr.push_back(new float[potLoops_it->size()]);
+                        rarr.push_back(new float[potLoops_it->size()]);
+                        errzarr.push_back(new float[potLoops_it->size()]);
+                        errrarr.push_back(new float[potLoops_it->size()]);
+                        drawPotCircPnts3D.push_back( new TClonesArray("TEllipse") );
+                        drawPotCircPnts3D.back()->ExpandCreateFast(potLoops_it->size());
+                        int iHit = 0;
+                        tmpCircleFound3D->cd(1);
+                        for (points3D::iterator loopPoints_it = potLoops_it->begin(); loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
+                                //cout<<"hit "<<loopPoints_it->_pos.x()<<endl;
+                                ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetX1(loopPoints_it->_pos.x()/CLHEP::cm);
+                                ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetY1(loopPoints_it->_pos.y()/CLHEP::cm);
+                                ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetR1(loopPoints_it->_sigmax/invSqrt3/CLHEP::cm);
+                                ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetR2(loopPoints_it->_sigmay/invSqrt3/CLHEP::cm );
+                                ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetTheta( loopPoints_it->_pos.phi()/CLHEP::degree );
+                                ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetFillStyle(0);
+                                ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetLineWidth(2);
+                                ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->SetLineColor(iCol);
+                                ((TEllipse *) drawPotCircPnts3D.back()->At(iHit))->Draw("same");
+                                zarr.back()[iHit] = loopPoints_it->_pos.z()/CLHEP::cm;
+                                errzarr.back()[iHit] = loopPoints_it->_sigmaz/CLHEP::cm;
+                                rarr.back()[iHit] = loopPoints_it->_pos.perp()/CLHEP::cm;
+                                errrarr.back()[iHit] = loopPoints_it->_sigmax/CLHEP::cm;
+                                ++iHit;
+                        }
+                        tmpCircleFound3D->cd(2);
+                        drawPotCircPnts3D_L.push_back( new TGraphErrors(potLoops_it->size(),zarr.back(),rarr.back(),errzarr.back(),errrarr.back()) );
+                        drawPotCircPnts3D_L.back()->SetMarkerColor(iCol);
+                        drawPotCircPnts3D_L.back()->SetMarkerSize(0.8);
+                        drawPotCircPnts3D_L.back()->SetMarkerStyle(8);
+                        drawPotCircPnts3D_L.back()->Draw("P");
+                }
+                for (size_t jLoop = 0; jLoop<zarr.size();++jLoop) {
+                        delete [] zarr.at(jLoop);
+                        delete [] rarr.at(jLoop);
+                        delete [] errzarr.at(jLoop);
+                        delete [] errrarr.at(jLoop);
+                }
+
+
+                tmpCircleFound3D->cd(1);
+                int iRobCirCol = 0;
+                std::vector<TEllipse *> drawPotCirclesRobustFit;
+                for (std::vector<TrkHelix>::iterator helixesfit_it = helixesfit.begin(); helixesfit_it != helixesfit.end(); ++helixesfit_it ) {
+                        drawPotCirclesRobustFit.push_back( new TEllipse( helixesfit_it->_center.x()/CLHEP::cm, helixesfit_it->_center.y()/CLHEP::cm, helixesfit_it->_radius/CLHEP::cm, helixesfit_it->_radius/CLHEP::cm) );
+                        drawPotCirclesRobustFit.back()->SetFillStyle(0);
+                        drawPotCirclesRobustFit.back()->SetLineWidth(2);
+                        drawPotCirclesRobustFit.back()->SetLineColor(++iRobCirCol);
+                        drawPotCirclesRobustFit.back()->SetLineStyle(4);
+                        drawPotCirclesRobustFit.back()->Draw("same");
+                        tmpCircleFound3D->cd(3);
+                        drawPotCirclesRobustFit.back()->Draw("same");
+
+                }
+
+
+                if(helixesfit.size()>0)
+                        for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
+                                XYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
+                                if ( tmpXYZP._use ) {
+                                        double tmpDist = fabs( sqrt( pow(tmpXYZP._pos.x()-helixesfit.back()._center.x(),2) +
+                                                        pow(tmpXYZP._pos.y()-helixesfit.back()._center.y(),2) ) -
+                                                        helixesfit.back()._radius );
+                                        if ( tmpDist<3.0*tmpXYZP._serr ) {
+                                                ((TEllipse *) drawPotCircPnts3D.at(xyzpLoopRel_it->second.first)->At(xyzpLoopRel_it->second.second))->Draw("same");
+                                        }
+                                }
+                        }
+                tmpCircleFound3D->cd(4);
+                float * selZarr = new float [selectedPnts.size()];
+                float * selRarr = new float [selectedPnts.size()];
+                float * selErrZarr = new float [selectedPnts.size()];
+                float * selErrRarr = new float [selectedPnts.size()];
+                int iSelPnt=0;
+                for (points3D::iterator selectedPnts_it = selectedPnts.begin(); selectedPnts_it != selectedPnts.end(); ++selectedPnts_it) {
+                        selZarr[iSelPnt] = selectedPnts_it->_pos.z()/CLHEP::cm;
+                        selRarr[iSelPnt] = selectedPnts_it->_pos.perp()/CLHEP::cm;
+                        selErrZarr[iSelPnt] = selectedPnts_it->_sigmaz/CLHEP::cm;
+                        selErrRarr[iSelPnt] = selectedPnts_it->_sigmax/CLHEP::cm;
+                        ++iSelPnt;
+                }
+                TGraphErrors drawSelPotCircPnts3D_L( selectedPnts.size(),selZarr,selRarr,selErrZarr,selErrRarr );
+                if(selectedPnts.size()){
+                        //drawSelPotCircPnts3D_L.SetMarkerColor(iCol);
+                        drawSelPotCircPnts3D_L.SetMarkerSize(0.8);
+                        drawSelPotCircPnts3D_L.SetMarkerStyle(8);
+                        drawSelPotCircPnts3D_L.Draw("P");
+                }
+                delete [] selZarr;
+                delete [] selRarr;
+                delete [] selErrZarr;
+                delete [] selErrRarr;
+
+                std::vector<TGraph *> drawTracksT;
+                std::vector<TGraph *> drawTracksL;
+
+                iRobCirCol = 0;
+                iTrackFound = 0;
+                for(std::vector<HelixTraj>::iterator ittrk=trkhelixes.begin();ittrk!=trkhelixes.end();ittrk++){
+                        iRobCirCol++;
+                        TGraph *xy=new TGraph(400);
+                        TGraph *zr=new TGraph(400);
+                        double flt0=(*ittrk).zFlight(_minZ);
+                        double flt1=(*ittrk).zFlight(_maxZ);
+                        // std::cout<<flt0<<" "<<flt1<<std::endl;
+                        for(int i=0;i<1000;i++){
+                                HepPoint pos=(*ittrk).position(flt0+(flt1-flt0)*i/1000);
+                                // std::cout<<i<<" "<<pos<<endl;
+                                xy->SetPoint(i,pos.x()/CLHEP::cm,pos.y()/CLHEP::cm);
+                                zr->SetPoint(i,pos.z()/CLHEP::cm,std::hypot(pos.x()/CLHEP::cm,pos.y()/CLHEP::cm));
+                        }
+                        xy->SetMarkerColor(iRobCirCol);
+                        zr->SetMarkerColor(iRobCirCol);
+                        xy->SetMarkerSize(0.1);
+                        xy->SetMarkerStyle(6);
+                        zr->SetMarkerSize(0.1);
+                        zr->SetMarkerStyle(6);
+                        tmpCircleFound3D->cd(2);
+                        zr->Draw("P");
+                        tmpCircleFound3D->cd(4);
+                        zr->Draw("P");
+
+                        drawTracksT.push_back(xy);
+                        drawTracksL.push_back(zr);
+
+                        int iMarckerLoop = 7;
+                        cout<<"For i track "<<iTrackFound<<" there are "<<trkhelixesLoops[iTrackFound].size()<<" Loops to draw"<<endl;
+                        for (std::vector<HelixTraj>::iterator trkhelixesLoop_it = trkhelixesLoops[iTrackFound].begin(); trkhelixesLoop_it != trkhelixesLoops[iTrackFound].end(); ++trkhelixesLoop_it) {
+                                cout<<"Drawing single Loop for track "<<iTrackFound<<endl;
+                                TGraph *xyLoop=new TGraph(400);
+                                TGraph *zrLoop=new TGraph(400);
+                                double flt0Loop=(*trkhelixesLoop_it).zFlight(_minZ);
+                                double flt1Loop=(*trkhelixesLoop_it).zFlight(_maxZ);
+                                // std::cout<<flt0<<" "<<flt1<<std::endl;
+                                for(int i=0;i<1000;i++){
+                                        HepPoint pos=(*trkhelixesLoop_it).position(flt0Loop+(flt1Loop-flt0Loop)*i/1000);
+                                        // std::cout<<i<<" "<<pos<<endl;
+                                        xyLoop->SetPoint(i,pos.x()/CLHEP::cm,pos.y()/CLHEP::cm);
+                                        zrLoop->SetPoint(i,pos.z()/CLHEP::cm,std::hypot(pos.x()/CLHEP::cm,pos.y()/CLHEP::cm));
+                                }
+                                xyLoop->SetMarkerColor(iRobCirCol);
+                                zrLoop->SetMarkerColor(iRobCirCol);
+                                xyLoop->SetMarkerSize(0.1);
+                                xyLoop->SetMarkerStyle(iMarckerLoop);
+                                zrLoop->SetMarkerSize(0.1);
+                                zrLoop->SetMarkerStyle(iMarckerLoop);
+                                tmpCircleFound3D->cd(2);
+                                zrLoop->Draw("P");
+                                tmpCircleFound3D->cd(4);
+                                zrLoop->Draw("P");
+
+                                drawTracksT.push_back(xyLoop);
+                                drawTracksL.push_back(zrLoop);
+                                ++iMarckerLoop;
+                        }
+                        ++iTrackFound;
+                }
+
+
+
+                //temp El Visual
+                std::vector<float *> simXarr;
+                std::vector<float *> simYarr;
+                std::vector<float *> simZarr;
+                std::vector<float *> simRarr;
+                int ielTrack=0, trckCol=0;
+                cout<<"Generate el tracks "<<genEltrks->size()<<endl;
+                for ( std::vector<mu2e::VisibleGenElTrack>::const_iterator genEltrk_it = genEltrks->begin(); genEltrk_it!= genEltrks->end(); ++genEltrk_it ){
+                        VisibleGenElTrack &iEltrk = const_cast<VisibleGenElTrack &>(*genEltrk_it);
+
+                        simXarr.push_back(new float [iEltrk.getNumOfHit()] );
+                        simYarr.push_back(new float [iEltrk.getNumOfHit()] );
+                        simZarr.push_back(new float [iEltrk.getNumOfHit()] );
+                        simRarr.push_back(new float [iEltrk.getNumOfHit()] );
+
+                        /*
+                        unsigned short &nloops = iEltrk.getNumOfLoops();
+                        cout<<"N loops "<<nloops<<endl;
+                        convElNLoop=nloops;
+                        for ( unsigned int ilp=0; ilp<nloops; ilp++ ){
+                                GenElHitData& hdil = iEltrk.getithLoopHit(ilp);
+                                ptMeV = sqrt( pow(hdil._hitMomentum[0],2) + pow(hdil._hitMomentum[1],2) );
+                                rho   = ptMeV/(B*0.3);
+                                cout<<ilp<<" -th loop: p_t "<<ptMeV<<" rho mm "<<rho<<endl;
+                                CirCenter.set(hdil._hitPoint.getX(),hdil._hitPoint.getY(),hdil._hitPoint.getZ());
+                                radDir.setX(hdil._hitMomentum.getX());
+                                radDir.setY(hdil._hitMomentum.getY());
+                                radDir.rotate( ( (hdil._hitMomentum.getZ()>=0.0) ? 90.0 : -90.0 )*CLHEP::degree );
+                                radDir=radDir.unit();
+                                CirCenter=CirCenter+rho*radDir;
+                                cout<<" Hit Pos "<<hdil._hitPoint<<" Circ center "<<CirCenter<<endl;
+
+                        }*/
+                        if ( iEltrk.isConversionEl() ) {
+                                trckCol = kGreen+2;
+                                for ( unsigned int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
+                                        GenElHitData& genElhit = iEltrk.getHit((int)iElHit);
+                                        simXarr.at(ielTrack)[iElHit] = genElhit._hitPoint.x()/CLHEP::cm;
+                                        simYarr.at(ielTrack)[iElHit] = genElhit._hitPoint.y()/CLHEP::cm;
+                                        simZarr.at(ielTrack)[iElHit] = genElhit._hitPoint.z()/CLHEP::cm;
+                                        simRarr.at(ielTrack)[iElHit] = genElhit._hitPoint.perp()/CLHEP::cm;
+
+                                        //cout<<"El Hit data "<<genElhit._hitPoint<<endl;
+                                        if (genElhit._isFirst) {
+                                        }
+                                }
+
+                        }
+                        else {
+                                /*
+                                convElHitOvrlppd=0;
+                                convElHitOvrlppdByP=0;
+                                for ( unsigned int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
+                                        GenElHitData& genElhit = iEltrk.getHit((int)iElHit);
+                                        if (genElhit._isOverlapped) {
+                                                convElHitOvrlppd++;
+                                                if (genElhit._isOvrlpByProton) convElHitOvrlppdByP++;
+                                        }
+                                }
+                                _hNhitOverlapNoConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppd);
+                                _hNhitOverlapByPNoConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppdByP);
+                                 */
+                        }
+
+                        drawTracksT.push_back(new TGraph( iEltrk.getNumOfHit(), simXarr.back(), simYarr.back() ) );
+                        drawTracksL.push_back(new TGraph( iEltrk.getNumOfHit(), simZarr.back(), simRarr.back() ) );
+
+                        tmpCircleFound3D->cd(1);
+                        drawTracksT.back()->SetMarkerColor(trckCol);
+                        drawTracksT.back()->SetMarkerSize(0.5);
+                        drawTracksT.back()->SetMarkerStyle(6);
+                        drawTracksT.back()->Draw("P");
+                        tmpCircleFound3D->cd(2);
+                        drawTracksL.back()->SetMarkerColor(trckCol);
+                        drawTracksL.back()->SetMarkerSize(0.5);
+                        drawTracksL.back()->SetMarkerStyle(6);
+                        drawTracksL.back()->Draw("P");
+
+
+                        ++ielTrack;
+
+                }
+
+
+                //TCanvas *zClustCanv = new TCanvas();
+                //tmpZhist.Draw();
+
+
+                cerr << "Double click in the canvas_Fake to continue:" ;
+                _fakeCanvas->cd();
+                //TLatex *printEvN = new TLatex(0.15,0.4,Form("Current Event: %d - Tpeak %d",event.id().event(),ipeak));
+                TLatex *printEvN = new TLatex(0.15,0.4,"Double click here to continue:");
+                //printEvN->SetTextFont(50);
+                printEvN->SetTextSizePixels(160);
+                printEvN->Draw();
+                _fakeCanvas->Modified();
+                _fakeCanvas->Update();
+                _fakeCanvas->WaitPrimitive();
+                cerr << endl;
+                delete printEvN;
+
+                delete tmpRCP_Min;
+                delete tmpRCP_Pl;
+
+
+                delete tmpCircleFound;
+                for (std::vector<TEllipse *>::iterator drawPotCircles_it = drawPotCirclesMin.begin(); drawPotCircles_it != drawPotCirclesMin.end(); ++drawPotCircles_it ){
+                        delete *drawPotCircles_it;
+                }
+                for (std::vector<TEllipse *>::iterator drawPotCircles_it = drawPotCirclesPl.begin(); drawPotCircles_it != drawPotCirclesPl.end(); ++drawPotCircles_it ){
+                        delete *drawPotCircles_it;
+                }
+
+                for (std::vector<TClonesArray *>::iterator drawPotCircPntsMin_it = drawPotCircPntsMin.begin(); drawPotCircPntsMin_it != drawPotCircPntsMin.end(); ++drawPotCircPntsMin_it ) {
+                        (*drawPotCircPntsMin_it)->Delete();
+                }
+                for (std::vector<TClonesArray *>::iterator drawPotCircPntsPl_it = drawPotCircPntsPl.begin(); drawPotCircPntsPl_it != drawPotCircPntsPl.end(); ++drawPotCircPntsPl_it ) {
+                        (*drawPotCircPntsPl_it)->Delete();
+                }
+
+                delete tmpCircleFound3D;
+                ///*int*/ iLoop = 0;
+                for (std::vector<TClonesArray *>::iterator drawPotCircPnts3D_it = drawPotCircPnts3D.begin(); drawPotCircPnts3D_it != drawPotCircPnts3D.end(); ++drawPotCircPnts3D_it ) {
+                        (*drawPotCircPnts3D_it)->Delete();
+                        //if ( drawPotCircPnts3D_L.at(iLoop)!=0x0 ) drawPotCircPnts3D_L.at(iLoop)->Delete();
+                        //if ( zarr.at(iLoop)!=0x0 ) delete [] zarr.at(iLoop);
+                        //if ( rarr.at(iLoop)!=0x0 ) delete [] rarr.at(iLoop);
+                        //if ( errzarr.at(iLoop)!=0x0 ) delete [] errzarr.at(iLoop);
+                        //if ( errrarr.at(iLoop)!=0x0 ) delete [] errrarr.at(iLoop);
+                }
+
+                for (std::vector<TEllipse *>::iterator drawPotCirclesRobustFit_it = drawPotCirclesRobustFit.begin(); drawPotCirclesRobustFit_it != drawPotCirclesRobustFit.end(); ++drawPotCirclesRobustFit_it ) {
+                        delete *drawPotCirclesRobustFit_it;
+                }
+
+                for_each(drawTracksT.begin(), drawTracksT.end(), std::bind2nd(std::mem_fun(&TGraph::Delete),""));
+                for_each(drawTracksL.begin(), drawTracksL.end(), std::bind2nd(std::mem_fun(&TGraph::Delete),""));
+                for_each(drawPotCircPnts3D_L.begin(), drawPotCircPnts3D_L.end(), std::bind2nd(std::mem_fun(&TGraphErrors::Delete),""));
+
+                //delete zClustCanv;
+
+        }
+
+        for (std::vector<confMapDraw*>::iterator hCmapMin_it = rCMap_Min.begin(); hCmapMin_it != rCMap_Min.end(); ++hCmapMin_it ) {
+                delete (*hCmapMin_it);
+        }
+        for (std::vector<confMapDraw*>::iterator hCmapPl_it = rCMap_Pl.begin(); hCmapPl_it != rCMap_Pl.end(); ++hCmapPl_it ) {
+                delete (*hCmapPl_it);
+        }
+        rCMap_Min.clear();
+        rCMap_Pl.clear();
+
+        for (std::vector<confMapDraw*>::iterator hCmapMin_it = rCMap_Min2.begin(); hCmapMin_it != rCMap_Min2.end(); ++hCmapMin_it ) {
+                delete (*hCmapMin_it);
+        }
+        for (std::vector<confMapDraw*>::iterator hCmapPl_it = rCMap_Pl2.begin(); hCmapPl_it != rCMap_Pl2.end(); ++hCmapPl_it ) {
+                delete (*hCmapPl_it);
+        }
+        rCMap_Min2.clear();
+        rCMap_Pl2.clear();
+
 }
 
 }  // end namespace mu2e
