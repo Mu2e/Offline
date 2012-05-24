@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on time peak analysis
 //
-// $Id: BkgTrackRejecterByTime_module.cc,v 1.10 2012/05/23 07:53:59 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/23 07:53:59 $
+// $Id: BkgTrackRejecterByTime_module.cc,v 1.11 2012/05/24 13:44:28 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2012/05/24 13:44:28 $
 //
 // Original author G. Tassielli
 //
@@ -793,11 +793,11 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
                                                   //noFittingError=false;
                                                   sigmaFitted=newSigma;
                                                   for (int iPF = 0; iPF < nfound; iPF++) timepeakPos[iPF] = PosX[iPF];
-                                                  delete FixPos;
-                                                  delete FixAmp;
-                                                  delete PosX;
-                                                  delete PosX1;
-                                                  delete PosY;
+                                                  delete [] FixPos;
+                                                  delete [] FixAmp;
+                                                  delete [] PosX;
+                                                  delete [] PosX1;
+                                                  delete [] PosY;
                                                   break;
 
                                           }
@@ -808,11 +808,11 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
                                           if ( ChiRes>oldChiRes ) {
                                                   nfound=oldNfound;
                                                   sigmaFitted=oldSigmaFitted;
-                                                  delete FixPos;
-                                                  delete FixAmp;
-                                                  delete PosX;
-                                                  delete PosX1;
-                                                  delete PosY;
+                                                  delete [] FixPos;
+                                                  delete [] FixAmp;
+                                                  delete [] PosX;
+                                                  delete [] PosX1;
+                                                  delete [] PosY;
                                                   break;
                                           }
                                           oldNfound=nfound;
@@ -824,11 +824,11 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
 
                                           //delete pfit;
                                           //pfit->Delete();
-                                          delete FixPos;
-                                          delete FixAmp;
-                                          delete PosX;
-                                          delete PosX1;
-                                          delete PosY;
+                                          delete [] FixPos;
+                                          delete [] FixAmp;
+                                          delete [] PosX;
+                                          delete [] PosX1;
+                                          delete [] PosY;
                                           //peaksearcher->Delete();
                                           //delete peaksearcher;
                                           //std::cout<<"---- Ending of Number of iteration for peak finder "<<ipkfinderIter<<std::endl;
@@ -840,9 +840,9 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
 
           std::cout<<"End of peak finder "<<ipkfinderIter<<std::endl;
 
-          delete BaseSource;
-          delete source;
-          delete dest;
+          delete [] BaseSource;
+          delete [] source;
+          delete [] dest;
 
           //    tmpHhitClustTime->Draw();
           //    if ( noFittingError ) {
