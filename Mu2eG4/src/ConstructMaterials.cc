@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.29 2012/05/04 01:00:01 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/05/04 01:00:01 $
+// $Id: ConstructMaterials.cc,v 1.30 2012/05/25 05:55:25 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/05/25 05:55:25 $
 //
 // Original author Rob Kutschke
 //
@@ -487,6 +487,40 @@ namespace mu2e {
       mbOverburden->AddElement( eO,  65);
       mbOverburden->AddElement( eSi, 20);
       mbOverburden->AddElement( eAl, 15);
+    }
+
+    mat = isNeeded(materialsToLoad, "ITGasHe_95Isob_5");
+    if ( mat.doit ){
+
+      G4double density, temperature, pressure;
+      G4int nel;
+
+      G4double densityHe   = 0.000166 *g/cm3;
+      G4double densityIsoB = 0.00249  *g/cm3;
+      G4double fractionHe  = 95.0*perCent;
+
+      density = fractionHe*densityHe + (1.0-fractionHe)*densityIsoB;
+
+      G4Material *GasMix = new G4Material( mat.name, density, nel=3,
+                                           kStateGas, temperature= 293.15*kelvin, pressure= 1*atmosphere);
+
+      G4Element* He = getElementOrThrow("He");
+      G4Element* C  = getElementOrThrow("C");
+      G4Element* H  = getElementOrThrow("H");
+
+      G4double atomicWeight_He =  4.002602 *g/mole;
+      G4double atomicWeight_C  = 12.0107   *g/mole;
+      G4double atomicWeight_H  =  1.00794  *g/mole;
+      G4double pwHe = fractionHe*atomicWeight_He;
+      G4double pwC  = (1.0-fractionHe) *  4.0*atomicWeight_C;
+      G4double pwH  = (1.0-fractionHe) * 10.0*atomicWeight_H;
+      G4double atomicWeightMix = pwHe + pwC + pwH ;
+
+      pwHe/=atomicWeightMix;
+      pwH/=atomicWeightMix;
+      GasMix->AddElement(He, pwHe );
+      GasMix->AddElement(H , pwH  );
+      GasMix->AddElement(C , 1.0-pwHe-pwH  );
     }
 
     mat = isNeeded(materialsToLoad, "ITGasHe_90Isob_10");
