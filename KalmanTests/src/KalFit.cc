@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.27 2012/05/19 07:44:09 brownd Exp $
+// $Id: KalFit.cc,v 1.28 2012/05/25 20:57:59 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/19 07:44:09 $
+// $Date: 2012/05/25 20:57:59 $
 //
 
 // the following has to come before other BaBar includes
@@ -250,8 +250,8 @@ namespace mu2e
       myfit._nt0iter = 0;
       unsigned niter(0);
       bool changed(true);
-//      myfit.fit();
-      while(changed && niter < _kalcon->maxIterations()){
+      myfit._fit = TrkErrCode::succeed;
+      while(myfit._fit.success() && changed && niter < _kalcon->maxIterations()){
 	changed = false;
 	_ambigresolver[iherr]->resolveTrk(myfit);
 	myfit._krep->resetFit();
@@ -270,6 +270,7 @@ namespace mu2e
 	niter++;
       }
       if(myfit._krep != 0) myfit._krep->addHistory(myfit._fit,"KalFit");
+      if(! myfit._fit.success())break;
     }
   }
 

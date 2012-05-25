@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.19 2012/05/14 19:20:02 brownd Exp $
+// $Id: KalFit.hh,v 1.20 2012/05/25 20:57:59 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Date: 2012/05/25 20:57:59 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -43,11 +43,12 @@ namespace mu2e
     unsigned _nt0iter; // number of times t0 was iterated
     unsigned _nweediter; // number of iterations on hit weeding
     TrkKalFit() : _trk(0),_krep(0), _fit(TrkErrCode::fail) {}
+//    TrkKalFit() : _trk(0),_krep(0), _fit(TrkErrCode::succeed) {}
     ~TrkKalFit() { delete _trk;}
     void setT0(const TrkT0& t0) { _t0 = t0; }
     void setT00(const TrkT0& t0) { _t00 = t0; }
     void removeFailed() { if(_fit.failure())deleteTrack(); }
-    void fit() { _fit = _krep->fit(); }
+    void fit() { if(_fit.success()) _fit = _krep->fit(); }
     void deleteTrack();
     TrkRecoTrk* stealTrack() { TrkRecoTrk* retval = _trk; _trk=0; _krep=0; _hits.clear(); return retval; }
   };
