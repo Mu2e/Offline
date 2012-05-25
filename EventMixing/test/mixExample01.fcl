@@ -1,9 +1,9 @@
 #
 # Example of running event mixing.
 #
-# $Id: mixExample01.fcl,v 1.1 2012/05/25 20:31:25 kutschke Exp $
+# $Id: mixExample01.fcl,v 1.2 2012/05/25 20:36:13 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/05/25 20:31:25 $
+# $Date: 2012/05/25 20:36:13 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -94,6 +94,7 @@ outputs: {
 }
 
 // Mixing input files:
+// For these files,event generation started at 500 ns.
 physics.producers.dioMixer.fileNames     : [ "/mu2e/data/users/kutschke/MixTest_06/dio_data.root"     ]
 physics.producers.neutronMixer.fileNames : [ "/mu2e/data/users/kutschke/MixTest_06/neutron_data.root" ]
 physics.producers.protonMixer.fileNames  : [ "/mu2e/data/users/kutschke/MixTest_06/proton_data.root"  ]
