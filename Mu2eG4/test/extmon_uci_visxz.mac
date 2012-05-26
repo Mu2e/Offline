@@ -1,9 +1,9 @@
 #
 # Macro file for setting up the graphics scene and the verbosity level: "xz" view.
 #
-# $Id: extmon_uci_visxz.mac,v 1.6 2012/05/16 00:59:53 youzy Exp $
+# $Id: extmon_uci_visxz.mac,v 1.7 2012/05/26 00:13:55 youzy Exp $
 # $Author: youzy $
-# $Date: 2012/05/16 00:59:53 $
+# $Date: 2012/05/26 00:13:55 $
 #
 # Original author KLG
 #
@@ -15,17 +15,19 @@
 /run/verbose 0
 /vis/open OGLIX 1300x800-0+0
 /vis/viewer/set/background white ! ! 0.01
-#/vis/viewer/set/viewpointThetaPhi 90 90.1 deg
-/vis/viewer/set/viewpointThetaPhi 90 180 deg
+/vis/viewer/set/viewpointThetaPhi 90 90.1 deg
+#/vis/viewer/set/viewpointThetaPhi 90 180 deg
 /vis/disable
 /vis/scene/create
 #draw wold begin
 /vis/scene/add/volume world
 /vis/scene/add/axes      0 -7150 6439.09 3000 mm
-/vis/viewer/panTo -13.5 -5.5 
-/vis/viewer/zoom 4
+/vis/viewer/panTo -13 6 
+/vis/viewer/zoom 10
 #cut view
 /vis/viewer/set/cutawayMode multiply
+#cut with 1 x plane
+#/vis/viewer/addCutawayPlane 5.0 0 0 m 1
 #cut with 2 x planes
 #/vis/viewer/addCutawayPlane 5.229 0 0 m 1
 #/vis/viewer/addCutawayPlane 5.629 0 0 m -1
