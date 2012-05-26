@@ -2,9 +2,9 @@
 // An EDProducer Module that reads ExtMonUCITofHit Stepping MC objects and turns them into
 // ExtMonUCITofHit objects, collection
 //
-// $Id: MakeExtMonUCITofHits_module.cc,v 1.5 2012/03/01 00:36:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/01 00:36:41 $
+// $Id: MakeExtMonUCITofHits_module.cc,v 1.6 2012/05/26 00:16:23 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/05/26 00:16:23 $
 //  
 //  
 
@@ -204,6 +204,11 @@ namespace mu2e {
                 << " nTofSegments " << nTofSegments << std::endl;
     }
 
+    bool keepNoEdep = _config->getBool("extmon_uci.keepNoEdep" );
+    if ( _diagLevel >= 2)
+    {
+      std::cout << "MakeExtMonUCITofHits::makeExtMonUCITofHits : " << " keepNoEdep " << keepNoEdep << std::endl;
+    }
 
     double timeGap = _config->getDouble("extmon_uci.tofTimeGap" );
     if ( _diagLevel >= 2)
@@ -264,7 +269,7 @@ namespace mu2e {
         {
           std::cout << "time " << h.time() << "  edep " << edep << std::endl;
         }
-        if( edep<=0.0 ) continue; // Do not create hit if there is no energy deposition
+        if( edep<0.0 || (edep==0.0 && !keepNoEdep) ) continue; // Do not create hit if there is no energy deposition
 
         /*
           // Hit position in Mu2e frame
@@ -394,7 +399,7 @@ namespace mu2e {
           {
             std::cout << "Track hit ref " << hitRef << " trackId " << h.trackId() << " edep " << edep << " time " << h.time() << std::endl;
           }
-          if( edep<=0.0 ) continue; // Do not create hit if there is no energy deposition
+          if( edep<0.0 || (edep==0.0 && !keepNoEdep) ) continue; // Do not create hit if there is no energy deposition
           h_energy += edep;
 
           double time = h.time();
@@ -404,7 +409,7 @@ namespace mu2e {
           }
         }
 
-        if ( h_energy == 0.0 ) continue;
+        if ( h_energy == 0.0 && !keepNoEdep ) continue;
 
         int trackId_int = -1;
         int pdgId = -1;
