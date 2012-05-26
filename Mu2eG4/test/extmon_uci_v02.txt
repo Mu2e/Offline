@@ -4,15 +4,15 @@ bool   hasExtMonUCI = true;
 int    extmon_uci.verbosity = 0;
 
 //ExtMonEnvelope;
-vector<double> extmon_uci.envelopeParams = { 755.0, 700.0, 3280.0};
-vector<double> extmon_uci.envelopeOrigin = {3870.0, 1600.0, -18704.0};
+vector<double> extmon_uci.envelopeParams = {1000.0,  700.0,   3280.0};
+vector<double> extmon_uci.envelopeOrigin = {4066.0, 1600.0, -18704.0};
 string extmon_uci.envelopeMaterialName = "G4_AIR";
-bool   extmon_uci.envelopeVisible      = true;
+bool   extmon_uci.envelopeVisible      = false;
 bool   extmon_uci.envelopeSolid        = false;
 
 //ExtMon Platform
-vector<double> extmon_uci.platformHalfLengths = {1500.0, 1475.0, 3280.0};
-vector<double> extmon_uci.platformPosition = {4620.0, -575.0, -18704.0};
+vector<double> extmon_uci.platformHalfLengths = {1527.0, 1475.0, 3280.0};
+vector<double> extmon_uci.platformPosition = {4593.0, -575.0, -18704.0};
 string extmon_uci.platformMaterialName = "ShieldingConcrete";
 bool   extmon_uci.platformVisible      = true;
 bool   extmon_uci.platformSolid        = false;
@@ -100,35 +100,42 @@ bool   extmon_uci.calSolid           = false;
 string extmon_uci.calMaterialName    = "Lyso_01";
 
 // ExtMonUCI Shielding
-int extmon_uci.nShds = 9;
+int extmon_uci.nShds = 10;
 vector<double> extmon_uci.shdHalfLengths = {
-        750.0, 700.0,  250.0,  // 0: Front 
-        750.0, 700.0,  250.0,  // 1: Back
-        250.0, 450.0, 2775.0,  // 2: -X
-        250.0, 450.0, 2775.0,  // 3: +X
-        750.0, 250.0, 1550.0,  // 4: TopFront
-        750.0, 250.0, 1225.0,  // 5: TopBack
+        777.0, 700.0,  250.0,  // 0: Front 
+        650.0, 700.0,  250.0,  // 1: Back
+        100.0, 450.0, 2775.0,  // 2: -X
+        200.0, 450.0, 2775.0,  // 3: +X
+        650.0, 250.0, 1550.0,  // 4: TopFront
+        650.0, 250.0, 1225.0,  // 5: TopBack
         250.0,  90.0, 1550.0,  // 6: DownFront
         250.0, 180.0, 1225.0,  // 7: DownBack
-        750.0,2200.0, 1000.0   // 8: FrontRemovable
+       1500.0,2200.0,  850.0,  // 8: FrontRemovable
+       1621.5,2200.0,  150.0   // 9: FrontRemovable Iron
 };
 vector<double> extmon_uci.shdPosition = {
-        3870.0, 1600.0, -15679.0, // 0: Front
-        3870.0, 1600.0, -21729.0, // 1: Back
-        3370.0, 1350.0, -18704.0, // 2: -X
-        4370.0, 1350.0, -18704.0, // 3: +X
-        3870.0, 2050.0, -17479.0, // 4: TopFront
-        3870.0, 2050.0, -20254.0, // 5: TopBack
+        3843.0, 1600.0, -15679.0, // 0: Front
+        3970.0, 1600.0, -21729.0, // 1: Back
+        3420.0, 1350.0, -18704.0, // 2: -X
+        4420.0, 1350.0, -18704.0, // 3: +X
+        3970.0, 2050.0, -17479.0, // 4: TopFront
+        3970.0, 2050.0, -20254.0, // 5: TopBack
         3870.0,  990.0, -17479.0, // 6: DownFront
         3870.0, 1080.0, -20254.0, // 7: DownBack
-        3870.0,  150.0, -14424.0  // 8: FrontRemovable
+       4565.51,  150.0, -14574.0, // 8: FrontRemovable
+       4444.02,  150.0, -13574.0  // 9: FrontRemovable Iron
 };
+int    extmon_uci.removableIndex      = 8;
+bool   extmon_uci.removableOn         = false;
+
 bool   extmon_uci.shdVisible          = true;
 bool   extmon_uci.shdSolid            = false;
 string extmon_uci.shdMaterialName     = "ShieldingConcrete";
+int    extmon_uci.ironIndex           = 9;
+string extmon_uci.shdIronMaterialName     = "G4_Fe";
 
 // ExtMonUCI Neutron Shielding
-int extmon_uci.nNSHs = 18;
+int extmon_uci.nNSHs = 20;
 vector<double> extmon_uci.nshHalfLengths = {
          44.0, 225.0,  300.0,  // 0: Col0-X
          80.0, 225.0,  300.0,  // 1: Col0+X
@@ -147,7 +154,9 @@ vector<double> extmon_uci.nshHalfLengths = {
         250.0,  60.0,  650.0,  //14: Mag0Top
          30.0, 210.0,  425.0,  //15: Mag1-X
          50.0, 210.0,  425.0,  //16: Mag1+X
-        250.0,  60.0,  425.0   //17: Mag1Top
+        250.0,  60.0,  425.0,  //17: Mag1Top
+         50.0, 450.0, 2775.0,  //18: -X
+         50.0, 450.0, 2775.0   //19: +X
 };
 vector<double> extmon_uci.nshPosition = {
         3664.0, 1305.0, -16229.0, // 0: Col0-X
@@ -167,27 +176,33 @@ vector<double> extmon_uci.nshPosition = {
         3870.0, 1740.0, -17179.0, //14: Mag0Top
         3650.0, 1470.0, -20254.0, //15: Mag1-X
         4070.0, 1470.0, -20254.0, //16: Mag1+X
-        3870.0, 1740.0, -20254.0  //17: Mag1Top
+        3870.0, 1740.0, -20254.0, //17: Mag1Top
+        3570.0, 1350.0, -18704.0, //18: -X
+        4170.0, 1350.0, -18704.0  //19: +X
 };
 bool   extmon_uci.nshVisible          = true;
 bool   extmon_uci.nshSolid            = false;
 string extmon_uci.nshMaterialName     = "ZirconiumHydridePolyethylene";
 
 // ExtMonUCI Table
-int extmon_uci.nTabs = 4;
-vector<double> extmon_uci.tabHalfLengths = {120.0, 25.0, 1550.0,
+int extmon_uci.nTabs = 6;
+vector<double> extmon_uci.tableHalfLengths = {120.0, 25.0, 1550.0,
                                             120.0, 25.0,  400.0,
                                             165.0, 25.0,  425.0,
-                                            120.0, 25.0,  400.0
+                                            120.0, 25.0,  400.0,
+                                            127.0,700.0, 3025.0,  
+                                            150.0,700.0, 3275.0
 };
-vector<double> extmon_uci.tabPosition = {3834.0, 1140.0, -17479.0,
+vector<double> extmon_uci.tablePosition = {3834.0, 1140.0, -17479.0,
                                          3825.0, 1325.0, -19429.0,
                                          3850.0, 1325.0, -20254.0,
-                                         3885.0, 1325.0, -21079.0
+                                         3885.0, 1325.0, -21079.0,
+                                         3193.0, 1600.0, -18954.0,
+                                         4770.0, 1600.0, -18704.0 
 };
-bool   extmon_uci.tabVisible          = true;
-bool   extmon_uci.tabSolid            = false;
-string extmon_uci.tabMaterialName     = "G4_Fe";
+bool   extmon_uci.tableVisible          = true;
+bool   extmon_uci.tableSolid            = false;
+string extmon_uci.tableMaterialName     = "G4_Fe";
 
 // Hole on Shielding
 int extmon_uci.nShdHoles = 8;
@@ -217,19 +232,40 @@ string extmon_uci.shdHoleAirMaterialName = "G4_AIR";
 string extmon_uci.shdHoleCuMaterialName = "G4_Cu";
 
 // Channel on Shielding
-int extmon_uci.nShdChannels = 2;
+int extmon_uci.nShdChannels = 3;
 vector<double> extmon_uci.shdChannelHalfLengths = {20.0, 20.0,  250.0,
-                                                   21.0, 21.0, 1000.0};
+                                                   21.0, 21.0,  850.0,
+                                                   21.0, 21.0,  150.0};
 vector<double> extmon_uci.shdChannelPosition = {3840.00,      1295.50,       -15679.0,
-                                                3844.50,      1134.00,       -14424.0};
+                                                3843.97,      1153.62,       -14574.0,
+                                                3847.46,      1024.95,       -13574.0};
 vector<double> extmon_uci.shdChannelPosition1 = {3841.00,      1263.00,      -15424.0,
-                                                 3848.00,      1005.00,      -13419.0};
+                                                 3846.94,      1044.25,      -13724.0,
+                                                 3847.98,      1005.64,      -13424.0};
 vector<double> extmon_uci.shdChannelPosition2 = {3839.00,      1328.00,      -15929.0,
-                                                 3841.00,      1263.00,      -15424.0};
+                                                 3841.00,      1263.00,      -15424.0,
+                                                 3846.94,      1044.25,      -13724.0};
 
 bool   extmon_uci.shdChannelVisible      = true;
 bool   extmon_uci.shdChannelSolid        = false;
 string extmon_uci.shdChannelMaterialName = "G4_AIR";
+
+// Side Shielding
+bool   extmon_uci.sideShieldOn           = false;
+int    extmon_uci.sideShieldNumber = 1;
+vector<int> extmon_uci.sideShieldPoints = {4};
+vector<double> extmon_uci.sideShieldPositionXZ = { 2094.29, -16693.31,
+                                                   3065.51, -16931.4,
+                                                   3065.51, -13724.0,
+                                                   2822.53, -13724.0
+                                                 };
+vector<double> extmon_uci.sideShieldPositionY = { 120.0 };
+vector<double> extmon_uci.sideShieldHalfLengths = { 2200.0 };
+
+bool   extmon_uci.sideShieldVisible      = true;
+bool   extmon_uci.sideShieldSolid        = false;
+string extmon_uci.sideShieldMaterialName = "ShieldingConcrete";
+
 
 // Virtual Detector
 double vd.ExtMonUCIEntrance1.HalfLengths = 100.0;

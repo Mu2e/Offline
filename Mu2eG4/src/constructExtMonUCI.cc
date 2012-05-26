@@ -1,9 +1,9 @@
 //
 // Construct ExtinctionMonitor UCI.
 //
-// $Id: constructExtMonUCI.cc,v 1.9 2012/05/16 01:02:53 youzy Exp $
+// $Id: constructExtMonUCI.cc,v 1.10 2012/05/26 00:15:42 youzy Exp $
 // $Author: youzy $
-// $Date: 2012/05/16 01:02:53 $
+// $Date: 2012/05/26 00:15:42 $
 
 #include <iostream>
 
@@ -15,6 +15,8 @@
 #include "G4Para.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4IntersectionSolid.hh"
+#include "G4TwoVector.hh"
+#include "G4ExtrudedSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4SDManager.hh"
 
@@ -283,42 +285,42 @@ namespace mu2e {
     //
     // Building Tables
     //
-    bool tabVisible = config.getBool("extmon_uci.tabVisible", true);
-    bool tabSolid   = config.getBool("extmon_uci.tabSolid", false);
-    G4Material* tabMaterial = materialFinder.get("extmon_uci.tabMaterialName");
+    bool tableVisible = config.getBool("extmon_uci.tableVisible", true);
+    bool tableSolid   = config.getBool("extmon_uci.tableSolid", false);
+    G4Material* tableMaterial = materialFinder.get("extmon_uci.tableMaterialName");
     
     const int kNTab = config.getInt("extmon_uci.nTabs", 0);
-    vector<double> tabHalfLengths;
-    config.getVectorDouble("extmon_uci.tabHalfLengths", tabHalfLengths, 3*kNTab);
-    vector<double> tabPosition;
-    config.getVectorDouble("extmon_uci.tabPosition", tabPosition, 3*kNTab);
+    vector<double> tableHalfLengths;
+    config.getVectorDouble("extmon_uci.tableHalfLengths", tableHalfLengths, 3*kNTab);
+    vector<double> tablePosition;
+    config.getVectorDouble("extmon_uci.tablePosition", tablePosition, 3*kNTab);
     
-    VolumeInfo tabInfo[kNTab];
+    VolumeInfo tableInfo[kNTab];
     for (int iTab = 0; iTab < kNTab; iTab++)
     {
       name.str("");
       name << extmonBaseName << "Table" << iTab;
 
-      vector<double> tabParams;
-      for (int iDim = 0; iDim < 3; iDim++) tabParams.push_back(tabHalfLengths[3*iTab+iDim]);
-      G4ThreeVector tabOrigin(tabPosition[3*iTab], tabPosition[3*iTab+1], tabPosition[3*iTab+2]);
+      vector<double> tableParams;
+      for (int iDim = 0; iDim < 3; iDim++) tableParams.push_back(tableHalfLengths[3*iTab+iDim]);
+      G4ThreeVector tableOrigin(tablePosition[3*iTab], tablePosition[3*iTab+1], tablePosition[3*iTab+2]);
 
       if (verbosity >= 2)
       {
-        YZYDEBUG("table Params " << tabParams[0] << "  " << tabParams[1] << "  " << tabParams[2]);
-        YZYDEBUG("table Origin " << tabOrigin[0] << "  " << tabOrigin[1] << "  " << tabOrigin[2]);
+        YZYDEBUG("tablele Params " << tableParams[0] << "  " << tableParams[1] << "  " << tableParams[2]);
+        YZYDEBUG("tablele Origin " << tableOrigin[0] << "  " << tableOrigin[1] << "  " << tableOrigin[2]);
       }
 
-      tabInfo[iTab] = nestBox( name.str(),
-                               tabParams,
-                               tabMaterial,
+      tableInfo[iTab] = nestBox( name.str(),
+                               tableParams,
+                               tableMaterial,
                                0,
-                               tabOrigin - det.origin(),
+                               tableOrigin - det.origin(),
                                envelopeInfo,
                                0,
-                               tabVisible,
+                               tableVisible,
                                G4Colour::Red(),
-                               tabSolid,
+                               tableSolid,
                                forceAuxEdgeVisible, placePV, doSurfaceCheck
                              );
     }
@@ -336,9 +338,16 @@ namespace mu2e {
     vector<double> shdPosition;
     config.getVectorDouble("extmon_uci.shdPosition", shdPosition, 3*kNShd);
 
+    int  removableIndex = config.getInt("extmon_uci.removableIndex", 8);
+    bool removableOn    = config.getBool("extmon_uci.removableOn", true);
+    int  ironIndex = config.getInt("extmon_uci.ironIndex", 9);
+    G4Material* shdIronMaterial = materialFinder.get("extmon_uci.shdIronMaterialName");
+
+
     VolumeInfo shdInfo[kNShd];
     for (int iShd = 0; iShd < kNShd; iShd++)
     {
+      if (iShd >= removableIndex && !removableOn) continue;
       name.str("");
       name << extmonBaseName << "Shield" << iShd;
 
@@ -354,10 +363,10 @@ namespace mu2e {
 
       shdInfo[iShd] = nestBox( name.str(),
                                shdParams,
-                               shdMaterial,
+                               (iShd == ironIndex ? shdIronMaterial : shdMaterial),
                                0,
-                               (iShd == 8 ? shdOrigin - hallOriginInMu2e : shdOrigin - det.origin()),
-                               (iShd == 8 ? parent : envelopeInfo),
+                               (iShd >= removableIndex ? shdOrigin - hallOriginInMu2e : shdOrigin - det.origin()),
+                               (iShd >= removableIndex ? parent : envelopeInfo),
                                0,
                                shdVisible,
                                G4Colour::Cyan(),
@@ -435,6 +444,7 @@ namespace mu2e {
     VolumeInfo shdChannelMotherInfo;
     for (int iShdChannel = 0; iShdChannel < kNShdChannel; iShdChannel++)
     {
+      if ( iShdChannel >= 1 && !removableOn)
       name.str("");
       name << extmonBaseName << "ShieldChannel" << iShdChannel;
 
@@ -444,6 +454,7 @@ namespace mu2e {
 
       if (iShdChannel == 0) shdChannelMotherInfo = shdInfo[0];
       else if (iShdChannel == 1) shdChannelMotherInfo = shdInfo[8];
+      else if (iShdChannel == 2) shdChannelMotherInfo = shdInfo[9];
 
       G4RotationMatrix *shdChannelRot = reg.add( new G4RotationMatrix() );
       const CLHEP::Hep3Vector interZ(0.0, 
@@ -519,6 +530,76 @@ namespace mu2e {
                                nshSolid,
                                forceAuxEdgeVisible, placePV, doSurfaceCheck
                              );
+    }
+
+    //
+    // Building Side Shielding 
+    //
+    bool sideShieldOn = config.getBool("extmon_uci.sideShieldOn", false);
+    if (sideShieldOn)
+    {
+      bool sideShieldVisible = config.getBool("extmon_uci.sideShieldVisible", true);
+      bool sideShieldSolid   = config.getBool("extmon_uci.sideShieldSolid", false);
+      G4Material* sideShieldMaterial = materialFinder.get("extmon_uci.sideShieldMaterialName");
+
+      const int sideShieldNumber = config.getInt("extmon_uci.sideShieldNumber", 1);
+      int totalPoints = 0;
+      vector<int> sideShieldPoints;
+      config.getVectorInt("extmon_uci.sideShieldPoints", sideShieldPoints, sideShieldNumber);
+      for (int iSideShield = 0; iSideShield < sideShieldNumber; iSideShield++) totalPoints += sideShieldPoints[iSideShield];
+      vector<double> sideShieldPositionXZ;
+      config.getVectorDouble("extmon_uci.sideShieldPositionXZ", sideShieldPositionXZ, 2*totalPoints);
+      vector<double> sideShieldPositionY;
+      config.getVectorDouble("extmon_uci.sideShieldPositionY", sideShieldPositionY, sideShieldNumber);
+      vector<double> sideShieldHalfLengths;
+      config.getVectorDouble("extmon_uci.sideShieldHalfLengths", sideShieldHalfLengths, sideShieldNumber);
+
+      int pointCount = 0;
+      vector<G4TwoVector> sideShieldOutline[sideShieldNumber];
+      for (int iSideShield = 0; iSideShield < sideShieldNumber; iSideShield++)
+      {
+        int pointBegin = pointCount;
+        // clockwise
+        for (int iPoint = pointBegin; iPoint < pointBegin+sideShieldPoints[iSideShield]; iPoint++)
+        {
+          sideShieldOutline[iSideShield].push_back(G4TwoVector(sideShieldPositionXZ[2*iPoint], sideShieldPositionXZ[2*iPoint+1]));
+          pointCount++;
+        }
+        if (verbosity >= 2)
+        {
+          YZYDEBUG("Side Shield " << iSideShield << " Points " << sideShieldPoints[iSideShield]);
+        }
+      }
+
+      static const CLHEP::HepRotation sideShieldRotationInv(CLHEP::HepRotationX(-90*CLHEP::degree));
+      VolumeInfo sideShieldInfo[sideShieldNumber];
+      for (int iSideShield = 0; iSideShield < sideShieldNumber; iSideShield++)
+      {
+        name.str("");
+        name << extmonBaseName << "SideShield" << iSideShield;
+
+        sideShieldInfo[iSideShield] = VolumeInfo( name.str(),
+                                                  CLHEP::Hep3Vector(0, sideShieldPositionY[iSideShield], 0)
+                                                  - parent.centerInMu2e(),
+                                                  parent.centerInWorld);
+
+        sideShieldInfo[iSideShield].solid = new G4ExtrudedSolid( sideShieldInfo[iSideShield].name,
+                                                                 sideShieldOutline[iSideShield],
+                                                                 sideShieldHalfLengths[iSideShield],
+                                                                 G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+
+        finishNesting( sideShieldInfo[iSideShield],
+                       sideShieldMaterial,
+                       &sideShieldRotationInv,
+                       sideShieldInfo[iSideShield].centerInParent,
+                       parent.logical,
+                       0,
+                       sideShieldVisible,
+                       G4Colour::Cyan(),
+                       sideShieldSolid,
+                       forceAuxEdgeVisible, placePV, doSurfaceCheck
+                    );
+      }
     }
 
     //
