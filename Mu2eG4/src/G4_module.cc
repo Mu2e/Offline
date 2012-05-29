@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.44 2012/05/25 05:57:04 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/25 05:57:04 $
+// $Id: G4_module.cc,v 1.45 2012/05/29 22:54:25 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/29 22:54:25 $
 //
 // Original author Rob Kutschke
 //
@@ -48,16 +48,14 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
-#include "Mu2eG4/inc/StrawSD.hh"
-#include "Mu2eG4/inc/ITGasLayerSD.hh"
-#include "Mu2eG4/inc/VirtualDetectorSD.hh"
-#include "Mu2eG4/inc/StoppingTargetSD.hh"
-#include "Mu2eG4/inc/ProtonAbsorberSD.hh"
-#include "Mu2eG4/inc/CRSScintillatorBarSD.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/ExtMonFNAL_SD.hh"
 #include "Mu2eG4/inc/ExtMonUCITofSD.hh"
+#include "Mu2eG4/inc/ITGasLayerSD.hh"
+#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/ProtonAbsorberSD.hh"
+#include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/TTrackerDeviceSupportSD.hh"
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "Mu2eG4/inc/toggleProcesses.hh"
@@ -469,15 +467,15 @@ namespace mu2e {
         beforeG4Event(*ttrackerDeviceSupportHits, _processInfo, simPartId, event );
     }
 
-    static_cast<VirtualDetectorSD*>
+    static_cast<Mu2eSensitiveDetector*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::VirtualDetector()))->
       beforeG4Event(*vdHits, _processInfo, simPartId, event );
 
-    static_cast<StoppingTargetSD*>
+    static_cast<Mu2eSensitiveDetector*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::StoppingTarget()))->
       beforeG4Event(*stHits, _processInfo, simPartId, event );
 
-    static_cast<CRSScintillatorBarSD*>
+    static_cast<Mu2eSensitiveDetector*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar()))->
       beforeG4Event(*sbHits, _processInfo, simPartId, event );
 
