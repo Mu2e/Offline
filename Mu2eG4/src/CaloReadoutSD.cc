@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for calorimetric readout
 //
-// $Id: CaloReadoutSD.cc,v 1.15 2011/11/02 21:30:31 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/11/02 21:30:31 $
+// $Id: CaloReadoutSD.cc,v 1.16 2012/05/29 22:56:28 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/29 22:56:28 $
 //
 // Original author Ivan Logashenko
 //
@@ -25,51 +25,23 @@
 // G4 includes
 #include "G4RunManager.hh"
 #include "G4Step.hh"
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
 #include "G4ios.hh"
 
 using namespace std;
 
 namespace mu2e {
 
-  CaloReadoutSD::CaloReadoutSD(G4String name, const SimpleConfig& config)
-    : G4VSensitiveDetector(name),
-      _collection(0),
-      _processInfo(0),
-      _mu2eOrigin(GeomHandle<WorldG4>()->mu2eOriginInWorld()),
-      _nro(0),
-      _minE(0.0),
-      _debugList(0),
-      _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
-      _currentSize(0),
-      _simID(0),
-      _event(0)
+  CaloReadoutSD::CaloReadoutSD(G4String name, SimpleConfig const & config ):
+    Mu2eSensitiveDetector(name,config),
+    _nro(0),
+    _minE(0.0)
   {
-
-    // Get list of events for which to make debug printout.
-    string key("g4.calorimeterSDEventList");
-    if ( config.hasName(key) ){
-      vector<int> list;
-      config.getVectorInt(key,list);
-      _debugList.add(list);
-    }
-
-  }
-
-
-  CaloReadoutSD::~CaloReadoutSD(){ }
-
-  void CaloReadoutSD::Initialize(G4HCofThisEvent* HCE){
-
-    _currentSize=0;
 
     GeomHandle<Calorimeter> cg;
     _nro  = cg->nROPerCrystal();
     _minE = cg->getElectronEmin();
 
   }
-
 
   G4bool CaloReadoutSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
@@ -88,8 +60,10 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in CaloCrystalSD: "
-                              << _currentSize << endl;
+        mf::LogWarning("G4") << "Maximum number of particles reached in " 
+                             << SensitiveDetectorName
+                             << ": "
+                             << _currentSize << endl;
       }
       return false;
     }
@@ -107,7 +81,10 @@ namespace mu2e {
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
-      push_back(StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _event->productGetter(*_simID) ),
+      push_back(StepPointMC(art::Ptr<SimParticle>
+                            ( *_simID,
+                              aStep->GetTrack()->GetTrackID(),
+                              _event->productGetter(*_simID) ),
                             idro,
                             aStep->GetTotalEnergyDeposit(),
                             aStep->GetNonIonizingEnergyDeposit(),
@@ -122,39 +99,6 @@ namespace mu2e {
     return true;
 
   }
-
-
-  void CaloReadoutSD::EndOfEvent(G4HCofThisEvent*){
-
-    if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
-      mf::LogWarning("G4") << "Total of " << _currentSize
-                            << " calorimeter RO hits were generated in the event."
-                            << endl
-                            << "Only " << _sizeLimit << " are saved in output collection."
-                            << endl;
-    }
-
-    if (verboseLevel>0) {
-      G4int NbHits = _collection->size();
-      G4cout << "\n-------->Hits Collection: in this event they are " << NbHits
-             << " RO hits in the calorimeter: " << G4endl;
-      for (G4int i=0;i<NbHits;i++) (*_collection)[i].print(G4cout);
-    }
-
-  }
-
-
-  void CaloReadoutSD::beforeG4Event(StepPointMCCollection& outputHits,
-                                    PhysicsProcessInfo& processInfo,
-                                    art::ProductID const& simID,
-                                    art::Event const & event ){
-    _collection    = &outputHits;
-    _processInfo   = &processInfo;
-    _simID         = &simID;
-    _event = &event;
-
-    return;
-  } // end of beforeG4Event
 
 
 } //namespace mu2e

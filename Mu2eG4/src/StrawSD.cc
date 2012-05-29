@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.35 2011/10/28 18:47:07 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:07 $
+// $Id: StrawSD.cc,v 1.36 2012/05/29 22:57:26 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/29 22:57:26 $
 //
 // Original author Rob Kutschke
 //
@@ -44,26 +44,12 @@ using namespace std;
 
 namespace mu2e {
 
-  StrawSD::StrawSD(G4String name, const SimpleConfig& config ):
-    G4VSensitiveDetector(name),
-    _collection(0),
-    _processInfo(0),
+  StrawSD::StrawSD(G4String name, SimpleConfig const & config ):
+    Mu2eSensitiveDetector(name,config),
     _nStrawsPerDevice(0),
     _nStrawsPerSector(0),
-    _TrackerVersion(0),
-    _debugList(0),
-    _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
-    _currentSize(0),
-    _simID(0),
-    _event(0){
-
-    // Get list of events for which to make debug printout.
-    string key("g4.strawSDEventList");
-    if ( config.hasName(key) ){
-      vector<int> list;
-      config.getVectorInt(key,list);
-      _debugList.add(list);
-    }
+    _TrackerVersion(0)
+  {
 
     art::ServiceHandle<GeometryService> geom;
 
@@ -109,20 +95,16 @@ namespace mu2e {
 
   }
 
-  StrawSD::~StrawSD(){ }
-
-  void StrawSD::Initialize(G4HCofThisEvent* HCE){
-    _currentSize=0;
-  }
-
   G4bool StrawSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
     _currentSize += 1;
 
-    if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
+    if ( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in StrawSD: "
-                              << _currentSize << endl;
+        mf::LogWarning("G4") << "Maximum number of particles reached in " 
+                             << SensitiveDetectorName
+                             << ": "
+                             << _currentSize << endl;
       }
       return false;
     }
@@ -389,28 +371,6 @@ namespace mu2e {
 
   }
 
-  void StrawSD::EndOfEvent(G4HCofThisEvent*){
-
-    if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
-      mf::LogWarning("G4") << "Total of " << _currentSize
-                            << " straw hits were generated in the event."
-                            << endl
-                            << "Only " << _sizeLimit << " are saved in output collection."
-                            << endl;
-      cout << "Total of " << _currentSize
-           << " straw hits were generated in the event."
-           << endl
-           << "Only " << _sizeLimit << " are saved in output collection."
-           << endl;
-    }
-
-    if (verboseLevel>0) {
-      G4int NbHits = _collection->size();
-      G4cout << "\n-------->Hits Collection: in this event they are " << NbHits
-             << " hits in the straw chambers: " << G4endl;
-      for (G4int i=0;i<NbHits;i++) (*_collection)[i].print(G4cout);
-    }
-  }
 
   G4ThreeVector StrawSD::GetTrackerOrigin(const G4TouchableHandle & touchableHandle) {
 
@@ -455,16 +415,5 @@ namespace mu2e {
     return cdo;
 
   }
-
-  void StrawSD::beforeG4Event(StepPointMCCollection& outputHits, 
-                              PhysicsProcessInfo& processInfo,
-                              art::ProductID const& simID, 
-                              art::Event const& event ){
-    _collection    = &outputHits;
-    _processInfo   = &processInfo;
-    _simID         = &simID;
-    _event = &event;
-    return;
-  } // end of beforeG4Event
 
 } //namespace mu2e
