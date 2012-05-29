@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.11 2012/05/14 21:24:46 genser Exp $
+// $Id: constructCRV.cc,v 1.12 2012/05/29 22:58:13 genser Exp $
 // $Author: genser $
-// $Date: 2012/05/14 21:24:46 $
+// $Date: 2012/05/29 22:58:13 $
 //
 // Original author KLG
 //
@@ -22,8 +22,6 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-
-#include "Mu2eG4/inc/CRSScintillatorBarSD.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 // G4 includes

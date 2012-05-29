@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.14 2011/08/04 18:52:59 genser Exp $
+// $Id: constructStoppingTarget.cc,v 1.15 2012/05/29 22:58:13 genser Exp $
 // $Author: genser $
-// $Date: 2011/08/04 18:52:59 $
+// $Date: 2012/05/29 22:58:13 $
 //
 // Original author Peter Shanahan
 //
@@ -24,9 +24,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-//#include "Mu2eG4/inc/nestTubs.hh"
 #include "G4Helper/inc/G4Helper.hh"
-#include "Mu2eG4/inc/StoppingTargetSD.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 // G4 includes

@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.36 2012/05/23 18:44:39 genser Exp $
+// $Id: constructVirtualDetectors.cc,v 1.37 2012/05/29 22:58:13 genser Exp $
 // $Author: genser $
-// $Date: 2012/05/23 18:44:39 $
+// $Date: 2012/05/29 22:58:13 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -29,7 +29,6 @@
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
