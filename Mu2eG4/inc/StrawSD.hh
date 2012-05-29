@@ -3,9 +3,9 @@
 //
 // Define a sensitive detector for Straws.
 //
-// $Id: StrawSD.hh,v 1.14 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: StrawSD.hh,v 1.15 2012/05/29 22:56:59 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/29 22:56:59 $
 //
 // Original author Rob Kutschke
 //
@@ -13,9 +13,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-
-// G4 includes
-#include "G4VSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 
 // Art includes
 #include "art/Persistency/Provenance/ProductID.h"
@@ -26,51 +24,20 @@ class G4HCofThisEvent;
 
 namespace mu2e {
 
-  // Forward declarations in mu2e namespace
-  class SimpleConfig;
-  class PhysicsProcessInfo;
-
-  class StrawSD : public G4VSensitiveDetector{
+  class StrawSD : public Mu2eSensitiveDetector{
 
   public:
-    StrawSD(G4String, const SimpleConfig& config);
-    ~StrawSD();
+    StrawSD(const G4String, SimpleConfig const & config);
 
-    void Initialize(G4HCofThisEvent*);
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
-    void EndOfEvent(G4HCofThisEvent*);
-
-    void beforeG4Event(StepPointMCCollection& outputHits, 
-                       PhysicsProcessInfo & processInfo,
-                       art::ProductID const& simID, 
-                       art::Event const & event
-                       );
 
   private:
 
     G4ThreeVector GetTrackerOrigin(const G4TouchableHandle & touchableHandle);
 
-    // Non-owning pointer to the  collection into which hits will be added.
-    StepPointMCCollection* _collection;
-
-    // Non-ownning pointer and object that returns code describing physics processes.
-    PhysicsProcessInfo* _processInfo;
-
     int _nStrawsPerDevice;
     int _nStrawsPerSector;
     int _TrackerVersion;
-
-    // List of events for which to enable debug printout.
-    EventNumberList _debugList;
-
-    // Limit maximum size of the steps collection
-    int _sizeLimit;
-    int _currentSize;
-
-    // Information about the SimParticleCollection, needed to instantiate art::Ptr.
-    art::ProductID const *      _simID;
-    art::Event const* _event;
-
 
   };
 
