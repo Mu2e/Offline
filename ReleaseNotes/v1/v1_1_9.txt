@@ -1,10 +1,38 @@
-  $Id: v1_1_9.txt,v 1.19 2012/05/26 00:20:03 youzy Exp $
-  $Author: youzy $
-  $Date: 2012/05/26 00:20:03 $
+  $Id: v1_1_9.txt,v 1.20 2012/05/29 22:58:58 genser Exp $
+  $Author: genser $
+  $Date: 2012/05/29 22:58:58 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+18) May 29, 2012 genser
+
+    Introduced new "generic" Mu2eSensitiveDetector base class to
+    factorize Sensitive Detector code; Replaced VirtualDetectorSD,
+    StoppingTargetSD, CRSScintillatorBarSD with Mu2eSensitiveDetector;
+    Inherited from Mu2eSensitiveDetector in CaloCrystalSD,
+    CaloReadoutSD, StrawSD, TTrackerDeviceSupportSD
+
+    Added:
+      Mu2eG4/inc/Mu2eSensitiveDetector.hh
+      Mu2eG4/src/Mu2eSensitiveDetector.cc
+
+    Modified:
+      Mu2eG4/inc/CaloCrystalSD.hh
+      Mu2eG4/inc/CaloReadoutSD.hh
+      Mu2eG4/inc/StrawSD.hh
+      Mu2eG4/inc/TTrackerDeviceSupportSD.hh
+      Mu2eG4/src/CaloCrystalSD.cc
+      Mu2eG4/src/CaloReadoutSD.cc
+      Mu2eG4/src/G4_module.cc
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/StrawSD.cc
+      Mu2eG4/src/TTrackerDeviceSupportSD.cc
+      Mu2eG4/src/constructCRV.cc
+      Mu2eG4/src/constructStoppingTarget.cc
+      Mu2eG4/src/constructVirtualDetectors.cc
+
 
 17) May 25, 2012 youzy
     Add iron, side concrete and side neutron shielding for Extinction 
