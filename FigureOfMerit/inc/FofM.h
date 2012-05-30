@@ -103,11 +103,27 @@ class Smearing {
   splines::Spline<1> spline_;
 }; // Smearing 
 
+// Utility sub-class for summary
+// -----------------------------
+
+public:
+
+  struct Summary;
+
+struct Summary {
+  double singleEventSensitivity;
+  double CL90sensitivity;
+  double smoothedPunziSensitivity;
+  double pCutLo;
+  double pCutHi;
+  double figureOfMerit;
+};  
+
+
 // The main FofM class
 // -------------------
 
 public:
-
   // ctors
   
   FofM ( FofM::Spectrum signalEfficiency, 
@@ -140,7 +156,8 @@ public:
   double worstCaseBranchingRatio () const;
   double lowMomentumCut () const;
   double highMomentumCut () const;
-  std::string tables (int maximumSignalCount) const; 
+  std::string tables (int maximumSignalCount, 
+                      std::ostream & os, FofM::Summary & summary) const; 
   void results (int maximumSignalCount,
                 double &lowCut,  double &highCut, 
                 double &signalEff,
@@ -154,7 +171,8 @@ public:
                 double &singleEventSensitivity,
                 std::vector<double> & upperLimitBR,
                 std::vector<double> & CLlowerBR,
-                std::vector<double> & CLupperBR ) const; 
+                std::vector<double> & CLupperBR,
+                std::ostream & os ) const; 
 
   // Obtain Figure of Merit and hypothetical results table,pinning momentum cuts
 
@@ -163,7 +181,8 @@ public:
   double worstCaseBranchingRatio_fixed_highCut (double momcutHigh) const;
   double lowMomentumCut_fixed_highCut (double momcutHigh) const;
   std::string tables_fixed_highCut 
-        (int maximumSignalCount, double momcutHigh) const; 
+        (int maximumSignalCount, double momcutHigh, 
+                     std::ostream & os, FofM::Summary & summary) const; 
   void results_fixed_highCut (int maximumSignalCount, 
                 double &lowCut,  double highCut, 
                 double &signalEff,
@@ -177,14 +196,16 @@ public:
                 double &singleEventSensitivity,
                 std::vector<double> & upperLimitBR,
                 std::vector<double> & CLlowerBR,
-                std::vector<double> & CLupperBR ) const; 
+                std::vector<double> & CLupperBR ,
+                std::ostream & os ) const;  
 
   // fix low cut only
   double figureOfMerit_fixed_lowCut (double momcutLow) const;
   double worstCaseBranchingRatio_fixed_lowCut (double momcutLow) const;
   double highMomentumCut_fixed_highCut (double momcutLow) const;
   std::string tables_fixed_lowCut 
-        (int maximumSignalCount, double momcutLow) const; 
+        (int maximumSignalCount, double momcutLow, 
+                     std::ostream & os, FofM::Summary & summary) const; 
   void results_fixed_lowCut (int maximumSignalCount, 
                 double lowCut,  double &highCut, 
                 double &signalEff,
@@ -198,7 +219,8 @@ public:
                 double &singleEventSensitivity,
                 std::vector<double> & upperLimitBR,
                 std::vector<double> & CLlowerBR,
-                std::vector<double> & CLupperBR ) const; 
+                std::vector<double> & CLupperBR,
+                std::ostream & os ) const; 
 
   // fix both cuts
   double figureOfMerit_fixed_cuts 
@@ -206,7 +228,8 @@ public:
   double worstCaseBranchingRatio_fixed_cuts 
         (double momcutLow, double momcutHigh) const;
   std::string tables_fixed_cuts (int maximumSignalEventCount, 
-                                 double momcutLow, double momcutHigh) const; 
+                double momcutLow, double momcutHigh, 
+                     std::ostream & os, FofM::Summary & summary) const; 
   void results_fixed_cuts  (int maximumSignalCount, 
                 double lowCut, double highCut, 
                 double &signalEff,
@@ -220,10 +243,11 @@ public:
                 double &singleEventSensitivity,
                 std::vector<double> & upperLimitBR,
                 std::vector<double> & CLlowerBR,
-                std::vector<double> & CLupperBR ) const; 
+                std::vector<double> & CLupperBR,
+                std::ostream & os ) const;  
 
   // The following may be useful for understanding calculations or debugging
-  static double meritDenominator ( double B );
+  static double punziMeritDenominator ( double B );
   static double discoveryCount   ( double B );   
   void displayBackground(double pmin, double pmax, int n);
   splines::Grid<1>   getGrid      () const {return grid;}
@@ -274,7 +298,7 @@ private:
                 std::vector<double> const & upperLimitBR,
                 std::vector<double> const & CLlowerBR,
                 std::vector<double> const & CLupperBR,
-                bool lowCutFixed, bool highCutFixed ) const;
+                bool lowCutFixed, bool highCutFixed) const;
   FeldmanCousins90pctSensitivity fc90;
    
 };  // FofM
@@ -364,7 +388,9 @@ typedef CzarneckiDIOSpectrum DIOmomentumSpectrum;
 
 // Output results table  
 std::ostream & operator<< (std::ostream & os, mu2e::FofM const & fm) {
-  return os << fm.tables(25);
+  mu2e::FofM::Summary s;
+  std::string t = fm.tables(25, os, s);
+  return os << t << "\nFigure of merit = " << s.figureOfMerit << "\n";
 }
 
 // -----------------------------

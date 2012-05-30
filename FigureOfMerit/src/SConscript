@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.1 2012/05/04 21:00:27 mf Exp $
+# $Id: SConscript,v 1.2 2012/05/30 16:12:02 mf Exp $
 # $Author: mf $
-# $Date: 2012/05/04 21:00:27 $
+# $Date: 2012/05/30 16:12:02 $
 #
 # Original author Rob Kutschke.
 #
@@ -28,8 +28,9 @@ if non_plugin_cc:
     local_lib_name=os.path.dirname(dd)
 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ 'splines'
-                           ],
+                      LIBS=[ 'splines',
+                             'fhiclcpp'
+                            ],
                       parse_flags=[ '-L'+splines_lib, '-I'+splines_inc ]
                       )
     libs=[ local_lib_name ]
@@ -39,9 +40,9 @@ else:
 for cc in plugin_cc:
     libname='#/lib/'+cc[:cc.find('.cc')]
     env.SharedLibrary( libname, cc,
-                     LIBS=[ 'art_Framework_Core',
-                            libs,
-                            'splines'
+                     LIBS=[ libs,
+                            'splines',
+                            'fhiclcpp'
                           ],
                      parse_flags=[ '-L'+splines_lib, '-I'+splines_inc ]
                      )
@@ -55,7 +56,8 @@ for t in Glob('*.cpp',strings=True):
   env.Program('#/tmp/bin/'+t[:t.find('.cpp')], [ t ], 
                      LIBS=[ libs,
                             'splines',
-                            rootlibs
+                            rootlibs,
+                            'fhiclcpp'
                           ],
                      parse_flags=[ '-L'+splines_lib, '-I'+splines_inc ]
                      )

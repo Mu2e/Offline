@@ -1,9 +1,9 @@
 //
 //  The TestFofM1 plugin; the first example of a module.
 //
-//  $Id: TestFofM1_module.cc,v 1.2 2012/05/04 21:00:27 mf Exp $
+//  $Id: TestFofM1_module.cc,v 1.3 2012/05/30 16:12:02 mf Exp $
 //  $Author: mf $
-//  $Date: 2012/05/04 21:00:27 $
+//  $Date: 2012/05/30 16:12:02 $
 //
 //  Original author Rob Kutschke
 //
@@ -541,20 +541,24 @@ namespace mu2e {
     std::cin >> highCut;
     
     std::string t; 
+    FofM::Summary summary;
     if ((lowCut == 0) && (highCut == 0)) {    
-      t = figureOfMeritCalculator.tables(maximumSignalCount);
+      t = figureOfMeritCalculator.tables
+                        (maximumSignalCount, std::cout, summary);
     } else if (lowCut == 0) { 
       t = figureOfMeritCalculator.tables_fixed_highCut 
-                                (maximumSignalCount, highCut);
+                        (maximumSignalCount, highCut, std::cout, summary);
     } else if (highCut == 0) { 
       t = figureOfMeritCalculator.tables_fixed_lowCut 
-                                (maximumSignalCount, lowCut);
+                        (maximumSignalCount, lowCut, std::cout, summary);
     } else {
       t = figureOfMeritCalculator.tables_fixed_cuts 
-                                (maximumSignalCount, lowCut, highCut);
+                    (maximumSignalCount, lowCut, highCut, std::cout, summary);
     }
 
     std::cout << t << "\n";
+       
+    std::cout << "Figure of merit is " << summary.figureOfMerit << "\n";
        
     std::cout << "\n--------------------------------------- \n\n";
 

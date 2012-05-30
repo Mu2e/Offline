@@ -11,11 +11,12 @@
 #include <cstdlib>
 
 // art and art externals includes
-
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/intermediate_table.h"
+#include "fhiclcpp/make_ParameterSet.h"
+#include "fhiclcpp/parse.h"
 
 // mu2e includes
-#include "FigureOfMerit/inc/FofM.h"
 #include "FigureOfMerit/inc/PoissonCDFsolver.h"
 
 // Root includes.
@@ -33,22 +34,23 @@ namespace mu2e {
 
 
 using namespace std;
+using fhicl::ParameterSet;
 
 namespace mu2e {
 
-FMtool::FMtool() 
-  : OUTPUT_signalEfficiency     (true)
-  , OUTPUT_spectra              (false)
-  , OUTPUT_backgroundStrength   (true)
-  , OUTPUT_backgroundSplines    (false)
+FMtool::FMtool(ParameterSet const & p, std::ostream & o) 
+  : pset( p )
+  , os  ( o ) 
   , RPCtimeProbability(RPCtimeProbabilitySpline())
 {
+  decideVerbosity();  // under control of the fcl file
 }
 
 void FMtool::analyze()
 {
   // TODO - replace the setup steps by a driver that uses a file or whatever
   //        to get data inputs.
+  
   
   setFilterLevels();
   setCanonicals();
@@ -66,130 +68,21 @@ void FMtool::setFilterLevels()
 {
   // TODO - get this data from a file or from the user; allow choices.
 
-  TrackerCutsSet trackerCutsChoice = TrackerCuts_B;
-  std::string choice;
-  bool trackerCutsChoiceMade = false;
-  while (!trackerCutsChoiceMade) {
-    std::cout << 
-      "Enter uppercase letter A, B, C, or D to specify tracker cuts choice: ";
-    std::cin >> choice;
-    trackerCutsChoiceMade = true;
-    if        (choice[0] == 'A') {
-      trackerCutsChoice = TrackerCuts_A;
-    } else if (choice[0] == 'B') { 
-      trackerCutsChoice = TrackerCuts_B;
-    } else if (choice[0] == 'C') { 
-      trackerCutsChoice = TrackerCuts_C;
-    } else if (choice[0] == 'D') { 
-      trackerCutsChoice = TrackerCuts_D;
-    } else {
-      std::cout << 
-          "Tracker cuts choice must be A, B, C, or D\n";
-      trackerCutsChoiceMade = false;
-    }
-  }
-  ourTrackerCuts (trackerCutsChoice,       
-                  minimum_nactive,
-                  maximum_t0err,
-                  maximum_fitmomerr,
-                  minimum_fitcon);
-  if ((trackerCutsChoice != TrackerCuts_D) && choice.size() > 1) {
-    nextTrackerCuts(trackerCutsChoice);   
-    double fraction = 0.0;
-    if ( choice[1] >= '0' && choice[1] <= '9') { 
-      fraction = (choice[1] - '0')/10.0;
-    }
-    int n_nactive = 0;
-    float n_t0err = 0;
-    float n_fitmomerr = 0;
-    float n_fitcon = 0;
-    ourTrackerCuts (trackerCutsChoice,       
-                    n_nactive,
-                    n_t0err,
-                    n_fitmomerr,
-                    n_fitcon);
-    minimum_nactive = static_cast<int> 
-        (fraction*n_nactive + (1.0-fraction)*minimum_nactive);
-    maximum_t0err     = fraction*n_t0err     + (1.0-fraction)*maximum_t0err;
-    maximum_fitmomerr = fraction*n_fitmomerr + (1.0-fraction)*maximum_fitmomerr;
-    minimum_fitcon = std::exp
-      ( fraction*std::log(n_fitcon) + (1.0-fraction)*std::log(minimum_fitcon) );
-    std::cout << "minimum_nactive   = " << minimum_nactive << "\n"
-              << "maximum_t0err     = " << maximum_t0err << "\n"
-              << "maximum_fitmomerr = " << maximum_fitmomerr << "\n"
-              << "minimum_fitcon    = " << minimum_fitcon << "\n";
-  }
+  ParameterSet cuts = pset.get<ParameterSet>("trackerCuts");
 
-  std::cout << "Enter the t0 cut (or 0 to use pre-set live window fractions): ";
-  std::cin >> minimum_t0;
+  minimum_nactive   = cuts.get<int>("minimum_nactive"); 
+  maximum_t0err     = cuts.get<float>("maximum_t0err"); 
+  maximum_fitmomerr = cuts.get<float>("maximum_fitmomerr"); 
+  minimum_fitcon    = cuts.get<float>("minimum_fitcon"); 
+  
+  tCuts = pset.get< std::vector<double> >("t0cuts");
 
 }  // setFilterLevels
 
-void FMtool::ourTrackerCuts ( TrackerCutsSet cuts, 
-                              int & nactive, 
-                              float & t0err, 
-                              float & fitmomerr,
-                              float & fitcon )
-{
-  switch (cuts) {
-    case TrackerCuts_A:
-      nactive   = 20;           // minimum
-      t0err     = 10.0;         // maximum
-      fitmomerr = 1.0;          // maximum
-      fitcon    = 1.0e-6;       // minimum
-    break;
-    case TrackerCuts_B:
-      nactive   = 20;           // minimum
-      t0err     = 1.5;          // maximum
-      fitmomerr = 0.2;          // maximum
-      fitcon    = 1.0e-4;       // minimum
-    break;
-    case TrackerCuts_C:
-      nactive   = 25;          // minimum
-      t0err     = 1.0;         // maximum
-      fitmomerr = 0.18;        // maximum
-      fitcon    = 1.0e-3;      // minimum
-    break;
-    case TrackerCuts_D:
-      nactive   = 30;          // minimum
-      t0err     = 0.9;         // maximum
-      fitmomerr = 0.15;        // maximum
-      fitcon    = 1.0e-2;      // minimum
-    break;
-    default:
-      std::cout << "???? trackerCutsChoice switch was not one of the cases!\n";
-      std::cout << "???? using cuts set B by default\n";
-      nactive   = 20;
-      t0err     = 1.5; 
-      fitmomerr = 0.2;
-      fitcon    = 1.0e-4;
-  }
-} // ourTrackerCuts
-
-void FMtool::nextTrackerCuts( TrackerCutsSet & cuts ) 
-{
-  TrackerCutsSet result;
-  switch (cuts) {
-    case TrackerCuts_A:
-      result = TrackerCuts_B;
-    break;
-    case TrackerCuts_B:
-      result = TrackerCuts_C;
-    break;
-    case TrackerCuts_C:
-      result = TrackerCuts_D;
-    break;
-    default:
-      result = cuts;
-  }
-  cuts = result;
-}  // nextTrackerCuts
 
 void FMtool::setCanonicals() 
 {
   // TODO - allow this to be set from file or whatever.
-
-  // TODO - some way to control which merit figure is used to optimize
 
   // Canonical range
   canonicalRangeLo = 103.51;
@@ -205,20 +98,13 @@ void FMtool::setCanonicals()
     // TODO -- obtain these normalization-related constants from some sort of 
     // database or conditions service. 
   protonsOnTarget = 3.6e20;  
+  cadence = 1694;  // nsec after start of proton pulse
   stoppedMuonsPerPOT = 0.0021;  // I have seen .00215; new  number is .0016
   capturedMuonsPerStoppedMuon = 0.609; // DocDB 48 - I have seen .59
   RPCperStoppedPion = 0.021;     // DocDB 1087
   stoppedPionsPerPOT = 1.53e-6;
   
-  liveGateFraction = .47;  // or .50 -- captures in time window in 48
-  if ( minimum_t0 != 0 )  liveGateFraction = 1.0;        
-
-  // Ad hoc rescaling to try various effects
-  adHocSignalrescaler = 1.0;
-  adHocDIOrescaler    = 1.0;
-  adHocRPCrescaler    = 1.0;
-  
-  // control of table size and retruned vectors from FofM
+  // control of table size and returned vectors from FofM
   maximumSignalCount = 25;
  
 } // setCanonicals
@@ -226,40 +112,42 @@ void FMtool::setCanonicals()
 
 double FMtool::obtainCEdata() 
 {
-// Returns a number of CE's generated, for use when normalizing.
-  // TODO - get the instructions for obtaining this data 
-  // from a file or from the user.
-
-  if (OUTPUT_signalEfficiency) {
-    std::cout << 
-        "\nObtaining conversion electron signal efficiency spectrum...\n";
-  }
-
   // Obtain the CE data as a vector of momenta
-  double numberOfGeneratedMuonConversions;
+
+  // Returns a number of CE's generated, for use when normalizing.
+
+  if (OUTPUT_progress || OUTPUT_signalEfficiency) {
+    os << "\nObtaining conversion electron signal efficiency spectrum...\n";
+  }
   
-  std::vector<std::string> CEfileList;
-//#define UseCEFilesMixedForCEdata
-#ifdef  UseCEFilesMixedForCEdata
-  CEfileList.push_back(
-        std::string("/mu2e/data/users/mf/CEFilesMixed.root") );
-  numberOfGeneratedMuonConversions = 50000.;
-#endif
-//#define UseCEFilesMixedAllTime_CE34322ForCEdata
-#ifdef  UseCEFilesMixedAllTime_CE34322ForCEdata
-  CEfileList.push_back(
-     std::string("/mu2e/data/users/mf/CEFilesMixedAllTime/CE34322_0_49.root") );
-  numberOfGeneratedMuonConversions = 490000.;
-#endif
-#define UseCEFilesBrown_CE36825ForCEdata
-#ifdef  UseCEFilesBrown_CE36825ForCEdata
-  CEfileList.push_back(
-     std::string("/mu2e/data/users/mf/CEFilesBrown/CE36825_0_9.root") );
-  numberOfGeneratedMuonConversions = 100000.;
-#endif
+  ParameterSet CEpset = pset.get<ParameterSet>("conversionElectrons");
+  std::vector<std::string> CEfileList =
+    CEpset.get< std::vector<std::string> > ("CEdataFiles");
+
+  double numberOfGeneratedMuonConversions = 
+    CEpset.get<double>("numberOfGeneratedMuonConversions");
+ 
+  CEliveGateFraction = CEpset.get<double>("liveGateFraction", 1.0);
+     
+  size_t nTcuts = tCuts.size();
   sigEfficiency.clear();
-  sigEfficiency.resize(nBins);
+  sigEfficiency.resize(nTcuts);
+  for (size_t tCutNumber = 0; tCutNumber < nTcuts; ++tCutNumber) {
+    sigEfficiency[tCutNumber].clear();
+    sigEfficiency[tCutNumber].resize(nBins);
+  }
   extractFitmom ( CEfileList, sigEfficiency );
+
+  if (OUTPUT_dataProperties) {
+    os << "CE's based on " << numberOfGeneratedMuonConversions 
+       << " generated muon conversions \n"; 
+    if (CEliveGateFraction != 1.0) {
+      os << "CE data used a live time gate fraction of " 
+         << CEliveGateFraction << "\n";
+    }
+  }
+  adHocSignalrescaler = CEpset.get<double>("adHocSignalrescaler",1.0);
+
   return numberOfGeneratedMuonConversions;
   
 } // obtainCEdata
@@ -275,53 +163,80 @@ void FMtool::normalizeSignalEfficiency(double numberOfGeneratedMuonConversions)
   //       by capturedMuonsPerStoppedMuon to go from number of CE's generated
   //       to number of POT's represented.
 
-  // TODO - provide some for user to provide the # of generated muons
+  liveGateFraction = CEliveGateFraction;
 
   double POTsRepresented = numberOfGeneratedMuonConversions /
      ( stoppedMuonsPerPOT * capturedMuonsPerStoppedMuon * liveGateFraction );
   double sigEffCountNormalization =  1.0/POTsRepresented;
   double sigEffNormalization =  sigEffCountNormalization / binSize;
 
+  os << "sigEffNormalization = " << sigEffNormalization << "\n";
+
   if ( adHocSignalrescaler != 1.0 ) {
-    std::cout << "\n**** For this trial, signal normalization is scaled to "
-              << adHocSignalrescaler << " times its actual value ****\n\n";
+    os << "\n** For this trial, signal normalization is scaled to "
+              << adHocSignalrescaler << " times its actual value **\n\n";
     sigEffNormalization *= adHocSignalrescaler;
   }
- 
-  if (OUTPUT_signalEfficiency)
-  { std::cout << "Signal Efficiency: \n"; }
-  unsigned int canonicalRangeCEcount = 0;
-  for (unsigned int i=0; i < sigEfficiency.size(); ++i) {
-    double p = lowestBin + binSize*i;
-    if ( (p >= canonicalRangeLo) && (p <= canonicalRangeHi) ) {
-      canonicalRangeCEcount += sigEfficiency[i];
+
+  for (size_t t = 0; t < tCuts.size(); ++t) {
+    if (OUTPUT_signalEfficiency)
+      { os << "Signal Efficiency with time cut at " << tCuts[t] << ": \n"; }
+    unsigned int canonicalRangeCEcount = 0;
+    for (unsigned int i=0; i < sigEfficiency[t].size(); ++i) {
+      double p = lowestBin + binSize*i;
+      if ( (p >= canonicalRangeLo) && (p <= canonicalRangeHi) ) {
+        canonicalRangeCEcount += sigEfficiency[t][i];
+      }
     }
-  }
-  if (OUTPUT_signalEfficiency) {
-    std::cout << "There are " <<  canonicalRangeCEcount
-              << " CE's in the files in the range of "
-              << canonicalRangeLo << " - "  << canonicalRangeHi << " \n";
-    std::cout << "With normalization, this amounts to "
-              << canonicalRangeCEcount * sigEffCountNormalization
-                                       * protonsOnTarget * 1.0e-16
-               << " CE events in range if BR = 1.0E-16\n";
-  }
-  for (unsigned int i=0; i < sigEfficiency.size(); ++i) {
-    sigEfficiency[i] *= sigEffNormalization;
+    if (OUTPUT_signalEfficiency) {
+      os << "There are " <<  canonicalRangeCEcount
+         << " CE's in the files in the range of "
+         << canonicalRangeLo << " - "  << canonicalRangeHi << " \n";
+      os << "With normalization, this amounts to "
+         << canonicalRangeCEcount * sigEffCountNormalization
+                                  * protonsOnTarget * 1.0e-16
+         << " CE events in range if BR = 1.0E-16\n";
+    }
+
+//    double priorIntegratedSignalEfficiencyInRange = 0;
+//
+//    for (unsigned int i=0; i < sigEfficiency[t].size(); ++i) {
+//      double p = lowestBin + binSize*i ;
+//      if ( (p >= canonicalRangeLo) && (p <= canonicalRangeHi) ) {
+//        priorIntegratedSignalEfficiencyInRange += sigEfficiency[t][i];
+//      } 
+//    }
+//    os << "For time window " << tCuts[t] << ", before normalization, \n"
+//      << "summed signal efficency in range (" << canonicalRangeLo
+//       << ", " << canonicalRangeHi << ") is " 
+//       << priorIntegratedSignalEfficiencyInRange << "\n";
+
+    for (unsigned int i=0; i < sigEfficiency[t].size(); ++i) {
+      sigEfficiency[t][i] *= sigEffNormalization;     // MULIPLICATION STEP AAA
+    }
+
     if (OUTPUT_signalEfficiency && OUTPUT_spectra) {
-      std::cout << lowestBin + binSize*i << ":   " 
-                << sigEfficiency[i]/sigEffNormalization;
-      std::cout << " --> " << sigEfficiency[i] 
-                << " ==> " << sigEfficiency[i] * protonsOnTarget << "\n";
+      for (unsigned int i=0; i < sigEfficiency[t].size(); ++i) {
+        os << lowestBin + binSize*i << ":   " 
+           << sigEfficiency[t][i]/sigEffNormalization;
+        os << " --> " << sigEfficiency[t][i] 
+           << " ==> " << sigEfficiency[t][i] * protonsOnTarget << "\n";
+      }
     }
-  }
-  double integratedSignalEfficiencyInRange = 0;
-  for (unsigned int i=0; i < sigEfficiency.size(); ++i) {
-    double p = lowestBin + binSize*i ;
-    if ( (p >= canonicalRangeLo) && (p <= canonicalRangeHi) ) {
-      integratedSignalEfficiencyInRange += sigEfficiency[i];
-    } 
-  }
+    if (OUTPUT_signalEfficiency) {
+      double integratedSignalEfficiencyInRange = 0;
+      for (unsigned int i=0; i < sigEfficiency[t].size(); ++i) {
+        double p = lowestBin + binSize*i ;
+        if ( (p >= canonicalRangeLo) && (p <= canonicalRangeHi) ) {
+          integratedSignalEfficiencyInRange += sigEfficiency[t][i];
+        } 
+      }
+      os << "Summed signal efficency in range (" << canonicalRangeLo
+         << ", " << canonicalRangeHi << ") is " 
+         << integratedSignalEfficiencyInRange << "\n";
+    }   
+  } // end of loop over t
+  
 } // normalizeSignalEfficiency
 
 double FMtool::obtainDIOdata(bool & use_diowt) 
@@ -329,132 +244,155 @@ double FMtool::obtainDIOdata(bool & use_diowt)
   // TODO - get the instructions for obtaining this data 
   // from a file or from the user.
 
-  if (OUTPUT_backgroundStrength) {
-    std::cout << "\nObtaining DIO spectrum...\n";
+  if (OUTPUT_progress || OUTPUT_backgroundStrength) {
+    os << "\nObtaining DIO spectrum...\n";
   }
 
   // Obtain the DIO data as a vector of momenta 
-  double numberOfGeneratedDIOs;
-  
-  // Since there will be multiple files for DIO's, we use a list.
-  // (Because the TTree is placed under a directory, we cannot use
-  // a TChain, we must use a list of TFiles.  Oh well...)
-  std::vector<std::string> DIOfileList;
-//#define UseDIOFilesMixedntagForDIOdata
-#ifdef  UseDIOFilesMixedntagForDIOdata
-  DIOfileList.push_back(
-              std::string("/mu2e/data/users/mf/DIOFilesMixed1tag.root") );
-  DIOfileList.push_back(
-              std::string("/mu2e/data/users/mf/DIOFilesMixed2tag.root") );
-  numberOfGeneratedDIOs = 194000;
-#endif
-//#define UseDIOFilesMixedAllTime_DIO34393ForDIOdata
-#ifdef  UseDIOFilesMixedAllTime_DIO34393ForDIOdata
-  DIOfileList.push_back(
-   std::string("/mu2e/data/users/mf/DIOFilesMixedAllTime/DIO34393_0_49.root"));
-  DIOfileList.push_back(
-   std::string("/mu2e/data/users/mf/DIOFilesMixedAllTime/DIO34393_50_99.root"));
-  DIOfileList.push_back(
-   std::string("/mu2e/data/users/mf/DIOFilesMixedAllTime/DIO34393_100_199.root"));
-  numberOfGeneratedDIOs = 2815000.;
-#endif
-#define UseDIOFilesBrown_DIO36831ForCEdata
-#ifdef  UseDIOFilesBrown_DIO36831ForCEdata
-  DIOfileList.push_back(
-     std::string("/mu2e/data/users/mf/DIOFilesBrown/DIO36831_0_99.root") );
-  DIOfileList.push_back(
-     std::string("/mu2e/data/users/mf/DIOFilesBrown/DIO36831_100_199.root") );
-  DIOfileList.push_back(
-     std::string("/mu2e/data/users/mf/DIOFilesBrown/DIO36831_200_299.root") );
-  DIOfileList.push_back(
-     std::string("/mu2e/data/users/mf/DIOFilesBrown/DIO36831_300_399.root") );
-  numberOfGeneratedDIOs = 10000000.;
-#endif
 
+  ParameterSet DIOpset = pset.get<ParameterSet>("decayInOrbitElectrons");
+  std::vector<std::string> DIOfileList =
+    DIOpset.get< std::vector<std::string> > ("DIOdataFiles");
+
+  double numberOfGeneratedDIOs = DIOpset.get<double>("numberOfGeneratedDIOs");
+
+  DIOliveGateFraction = DIOpset.get<double>("liveGateFraction");
+    
   DIObackground.clear();
   DIObackground.resize(nBins);
   double count103 = 0.0;
   double count104 = 0.0;
   double countRatioThreshold = 5.0;  
   countMcmom ( DIOfileList, count103, count104 ); 
-  use_diowt = true;
+
+  use_diowt = DIOpset.get<bool>("dioTracksWeighted");
+
+  os << "The ratio of DIO's near 103 to near 104 in this set is "
+     << count103/count104 << " -- \n";
+
   if (count104 <= 0) {
-    std::cout << "There are no DIO's near 104 in this set.\n"
-              << "Apparently, the DIO tracks were generated according to the "
-              << "momentum distribution\n" 
-              << "and need not be weighted\n";
-    use_diowt = false;
+    if ( use_diowt ) {
+      std::cerr << "Warning: Discrepancy detected involving use of diowt! \n"; 
+      os << "There are no DIO's near 104 in this set.\n"
+         << "Apparently, the DIO tracks were generated \n"
+         << "according to the DIO momentum distribution " 
+         << "and should not not be weighted.\n"
+         << "But dioTracksWeighted (in the fcl) has value true.\n";
+      os        << "Warning: Discrepancy detected involving use of diowt! \n"; 
+    }
   } else if (count103/count104 > countRatioThreshold){
-    std::cout << "The ratio of DIO's near 103 to near 104 in this set is "
-              << count103/count104 << " -- \n"
-              << "Apparently, the DIO tracks were generated according to the "
-              << "momentum distribution\n" 
-              << "and need not be weighted\n";
-    use_diowt = false;
+    if ( use_diowt ) {
+      std::cerr << "Warning: Discrepancy detected involving use of diowt! \n"; 
+      os << "The ratio of DIO's near 103 to near 104 in this set is "
+         << count103/count104 << " -- \n"
+         << "Apparently, the DIO tracks were generated \n"
+         << "according to the DIO momentum distribution " 
+         << "and should not be weighted\n"
+         << "But dioTracksWeighted (in the fcl) has value true.\n";
+      os        << "Warning: Discrepancy detected involving use of diowt! \n"; 
+    }
   } else {
-    std::cout << "The ratio of DIO's near 103 to near 104 in this set is "
-              << count103/count104 << " -- \n"
-              << "Apparently, the DIO tracks were generated according to a "
-              << "roughly flat momentum distribution.\n" 
-              << "The tracks will be weighted using diowt\n";
-    use_diowt = true;
+    if ( !use_diowt ) {
+      std::cerr << "Warning: Discrepancy detected involving use of diowt! \n"; 
+      os << "The ratio of DIO's near 103 to near 104 in this set is "
+         << count103/count104 << " -- \n"
+         << "Apparently, the DIO tracks were generated \n"
+         << "according to a roughly flat momentum distribution "
+         << "and need to be weighted.\n" 
+         << "But dioTracksWeighted (in the fcl) has value false.\n";
+      os        << "Warning: Discrepancy detected involving use of diowt! \n"; 
+    }
+  }
+ 
+  if ( use_diowt ) {
+    fractionOfDIOsRepresented = 1.0;
+  } else {
+    fractionOfDIOsRepresented = 
+      DIOpset.get<double>("fractionOfDIOsRepresented");
   }
 
+  size_t nTcuts = tCuts.size();
+  DIObackground.clear();
+  DIObackground.resize(nTcuts);
+  for (size_t tCutNumber = 0; tCutNumber < nTcuts; ++tCutNumber) {
+    DIObackground[tCutNumber].clear();
+    DIObackground[tCutNumber].resize(nBins);
+  }
   extractFitmom ( DIOfileList, DIObackground, use_diowt );
   
+  if (OUTPUT_dataProperties) {
+    os << "DIO's based on " << numberOfGeneratedDIOs 
+       << "  generated DIO electrons \n"; 
+    if (DIOliveGateFraction != 1.0) {
+      os << "DIO data used a live time gate fraction of " 
+         << DIOliveGateFraction << "\n";
+    }
+  }
+  adHocDIOrescaler = DIOpset.get<double>("adHocDIOrescaler",1.0);
+
   return numberOfGeneratedDIOs;
   
 } // obtainDIOdata
 
 double FMtool::obtainRPCdata() 
 {
-  // TODO - get the instructions for obtaining this data 
-  // from a file or from the user.
+  // Obtain the RPC data as a vector of momenta
 
-  if (OUTPUT_backgroundStrength) {
-    std::cout << "\nObtaining RPC spectrum...\n";
+  if (OUTPUT_progress || OUTPUT_backgroundStrength) {
+    os << "\nObtaining RPC spectrum...\n";
   }
 
-  double numberOfGeneratedStoppedPions;
+  ParameterSet RPCpset = 
+    pset.get<ParameterSet>("radiativePionCaptureElectrons");
+  std::vector<std::string> RPCfileList =
+    RPCpset.get< std::vector<std::string> > ("RPCdataFiles");
+
+  double numberOfGeneratedRPCs = 
+    RPCpset.get<double>("numberOfGeneratedRPCs");
   
-  // Obtain the RPC data as a vector of momenta
-  // Since there will be multiple files for this, we use a list.
-  std::vector<std::string> RPCfileList;
-
-#define UseRPCfiles_RPCFilesMixedxtag_ForRPCdata
-#ifdef  UseRPCfiles_RPCFilesMixedxtag_ForRPCdata
-  RPCfileList.push_back(
-              std::string("/mu2e/data/users/mf/RPCFilesMixed1tag.root") );
-  RPCfileList.push_back(
-              std::string("/mu2e/data/users/mf/RPCFilesMixed2tag.root") );
-  numberOfGeneratedStoppedPions = 2.0e7;
-#endif
-  RPCbackground.clear();
-  RPCbackground.resize(nBins);
-
-  // There is never a menaingful minimum_t0 to cut on in the RPC data 
+  // There is never a meaningful minimum_t0 to cut on in the RPC data 
   // because the distribution drops so rapidly one would never create an honest 
-  // one.  Instead, analytic weighting is always used.  So we turn off cutting.
-  double remember_minimum_t0 = minimum_t0;
-  minimum_t0 = 0;
-  extractFitmom ( RPCfileList, RPCbackground );
-  minimum_t0 = remember_minimum_t0;
+  // one.  Instead, analytic weighting is always used.  So we use an option
+  // of extractFitmom that turns off time cutting, and produce only one
+  // entry in the collection of time-cut-dependent "histograms."
 
-  std::cout << "Enter extinction level, times 10^10: ";
-  std::cin >> extinction;
-  extinction *= 1.0e-10;
-  std::cout << "Using extinction of " << extinction << "\n";
+  size_t nTcuts = tCuts.size();
+  RPCbackground.clear();
+  RPCbackground.resize(nTcuts);
+  for (size_t tCutNumber = 0; tCutNumber < nTcuts; ++tCutNumber) {
+    RPCbackground[tCutNumber].clear();
+    RPCbackground[tCutNumber].resize(nBins);
+  }
+  RPCbackground[0].clear();
+  RPCbackground[0].resize(nBins);
 
-  return numberOfGeneratedStoppedPions;
+  extractFitmom    ( RPCfileList, 
+                     RPCbackground,
+                     false, //  use_diowt
+                     false  //  apply_timeCuts
+                   );
+
+  extinction = RPCpset.get<double>("extinction");
+  
+  if (OUTPUT_dataProperties) {
+    os << "RPC's based on " << numberOfGeneratedRPCs 
+       << " generated RPC electrons from stopped pions \n"; 
+    os << "Using extinction of " << extinction << "\n";
+  }
+
+  adHocRPCrescaler = RPCpset.get<double>("adHocRPCrescaler",1.0);
+  
+  return numberOfGeneratedRPCs;
   
 } // obtainRPCdata
 
 void FMtool::extractFitmom 
-  ( TTree * tracks, std::vector<double> & counts, bool use_diowt )
+  ( TTree * tracks, 
+    std::vector< std::vector<double> > & counts, 
+    bool use_diowt, 
+    bool apply_timeCuts )
 {
-  // Obtain the momentum data as a vector of momenta
-  std::vector<double> momenta;
-  std::vector<double> diowts;
+  // Set up place to obtain the momentum and other data for immediate use 
   tracks->SetBranchStyle(0);
   int   nactive;   tracks->SetBranchAddress("nactive"  , &nactive);
   float t0err;     tracks->SetBranchAddress("t0err"    , &t0err);    
@@ -465,75 +403,75 @@ void FMtool::extractFitmom
   float diowt;     tracks->SetBranchAddress("diowt"    ,  &diowt);    
   float t0;        tracks->SetBranchAddress("t0"       ,  &t0);    
   int ntracks = 0;
+
+  double binSize = (topOfLastBin - lowestBin)/nBins;
+  std::vector<int> nBinnedTracks(tCuts.size());
+  std::vector<double> dioTotalWeight(tCuts.size());
+  size_t nt = tCuts.size();
   for (int i = 0; true; ++i) {
     int bytesRead = tracks->GetEntry(i);
     if (bytesRead == 0) break;
     ++ntracks;
-    if  (    (fitstatus == 1) 
+    if  (    (fitstatus == 1)     // track quality cuts 
           && (nactive   >= minimum_nactive)
           && (t0err     <= maximum_t0err)
           && (fitmomerr <= maximum_fitmomerr)
           && (fitcon    >= minimum_fitcon) 
-          && (fitmom    < 130.0) // deals with the one really screwy track    
+          && (fitmom    < 120.0) // deals with any really screwy tracks    
         ) 
     {
-      if ( minimum_t0 == 0 || t0 > minimum_t0 ) {
-        momenta.push_back( fitmom );           
-        if ( use_diowt ) {
-          diowts.push_back( diowt );
-        }
+      for (size_t t = 0; t < nt; ++t) {
+        if ( (!apply_timeCuts) || (t0 >= tCuts[t]) ) {   // found a good track!
+          double p = fitmom;
+          if (p >= lowestBin && p < topOfLastBin) { // p in range to be binned
+            unsigned int binNumber = (p-lowestBin)/binSize;
+            if (binNumber >= nBins) binNumber = nBins-1;
+            if ( use_diowt ) {
+              counts[t][binNumber] += diowt;  // weighted DIO tracks
+              dioTotalWeight[t] += diowt;
+            } else {
+              counts[t][binNumber] += 1.0; // everything has equal weight
+            }
+            ++nBinnedTracks[t];
+          } // end of *if* on p in range to be binned
+        } // end of *if* on found a good track
+      } // end of *for* on t going up to nt 
+    } // end of *if* checking the track quality cuts    
+  } // end of *for* loop on i which goes thru track entries
+  if (OUTPUT_fileEntriesStatistics) {
+    os << "There are " << ntracks << " entries in the tree\n";
+    for ( size_t i = 0; i < nt; ++i ) {
+      os << "There are " << nBinnedTracks[i] 
+         << " binned entries passing the cuts with t0 >= " 
+         << tCuts[i] << "\n";
+      if (use_diowt) { 
+        os << "(total of DIO weights passing cuts with t0 >= "
+           <<  tCuts[i] << " is " << dioTotalWeight[i] << ")\n";
       }
-    }     
-  } 
-  std::cout << "There are " << ntracks << " entries in the tree\n";
-  std::cout << "There are " << momenta.size() 
-            << " entries passing the cuts\n";
-  double binSize = (topOfLastBin - lowestBin)/nBins;
-  int nBinnedTracks = 0;
-  double dioTotalWeight = 0.0;
-  if ( use_diowt ) {
-    std::cout << "Extracting DIO's using diowt...\n";
-  }
-  for (unsigned int i=0; i < momenta.size(); ++i) {
-    double p = momenta[i];
-    if (p >= lowestBin && p < topOfLastBin) {
-      unsigned int binNumber = (p-lowestBin)/binSize;
-      if (binNumber >= nBins) binNumber = nBins-1;
-      if ( use_diowt ) {
-        counts[binNumber] += diowts[i];  // weighted DIO tracks
-        dioTotalWeight += diowts[i];
-//        if ( (p > 103.5) && (p < 105.0) ) {
-//          std::cout << "p = " << p << "  doiwt = " << diowts[i] << "\n";
-//        }
-      } else {
-        counts[binNumber] += 1.0; // everything has equal weight
-      }
-      ++nBinnedTracks;
     }
-  }
-  std::cout << "There are " 
-            << nBinnedTracks << " tracks between " << lowestBin << " and "
-            << topOfLastBin << "\n";
-  if ( use_diowt ) {
-    std::cout << "(total of DIO weights is " << dioTotalWeight << ")\n";
   }
               
 } // extractFitmom
 
-
-
 void FMtool::extractFitmom 
   ( std::vector<std::string> const & listOfFileNames
-  , std::vector<double> & counts, bool use_diowt )
+  , std::vector< std::vector<double> > & counts
+  , bool use_diowt
+  , bool apply_timeCuts 
+  )
 {
-  std::cout << "extracting fitmom from a chain of files \n";
   // Obtain the momentum data as a vector of momenta
+  if (OUTPUT_fileNames) {
+    os << "extracting fitmom from a chain of files \n";
+  }
   for (unsigned int i=0; i<listOfFileNames.size(); ++i) {
-   std::cout << "listOfFileNames["  << i << "].c_str() = "
-              << listOfFileNames[i].c_str() << "\n";
+    if (OUTPUT_fileNames) {
+      os << "["  << i << "] : "
+                << listOfFileNames[i].c_str() << "\n";
+    }
     TTreeAccessor ta = accessTTree ( listOfFileNames[i] );
     extractFitmom 
-      (  ta.tracks,  counts, use_diowt );
+      (  ta.tracks,  counts, use_diowt, apply_timeCuts );
     delete ta.tracks;   ta.tracks = 0;
     delete ta.tfp;      ta.tfp = 0;
   }
@@ -559,15 +497,20 @@ FMtool::accessTTree(std::string const & fileName) const
   //  std::cout << "tft is not a zombie \n";
   ta.tracks = (TTree*)ta.tfp->Get ("ReadKalFits/trkdiag");
   if (ta.tracks != 0) {
-    std::cout << "(tracks TTree found in ReadKalFits/trkdiag)\n";
+    if (OUTPUT_tracksTTreeLocation) 
+        os << "(tracks TTree found in ReadKalFits/trkdiag)\n";
   } else {
     ta.tracks = (TTree*)ta.tfp->Get ("trkdiag");
     if (ta.tracks != 0) {
-      std::cout << "(tracks TTree found in trkdiag)\n";
+      if (OUTPUT_tracksTTreeLocation) 
+        os << "(tracks TTree found in trkdiag)\n";
     }
   }
   if (ta.tracks == 0) {
     std::cerr << "In file " << fileName << ":\n"
+              << "  Failed to open tracks at "  
+              << "ReadKalFits/trkdiag or trkdiag" <<  "\n";
+    os        << "In file " << fileName << ":\n"
               << "  Failed to open tracks at "  
               << "ReadKalFits/trkdiag or trkdiag" <<  "\n";
     std::exit(1);
@@ -597,7 +540,6 @@ void FMtool::countMcmom
   ( std::vector<std::string> const & listOfFileNames
   , double & count103, double & count104 )
 {
-  std::cout << "counting mcmom near 103 and 104 from a chain of files \n";
   count103 = 0.0;
   count104 = 0.0;
   // Obtain the momentum data as a vector of momenta
@@ -620,16 +562,17 @@ void FMtool::normalizeDIObackground(double numberOfGeneratedDIOs, bool use_diowt
 
   // All the DIO's in the files that generated DIO's according to the
   // czarnecki distribution were created from a distribution of DIO's 
-  // with p >= 102.5.
+  // with p >= 102.5 (or, in principle, some other lower limit).  If
+  // the tracks were generated with a momentum distribution following
+  // czarnecki, then the tracks should not be weghted, but an overall 
+  // factor representing the fraction of DIO's above the minimum momnetum
+  // must be used.  For a minimum p of 102.5, this factor is 4.42e-15.
   //
-  // Sometimes DIO's were generated flat in some range (e.g., 95-105) and
-  // should be weighted according to diowt instead.
+  // In other files, DIO's were generated flat in some momentum range 
+  // (e.g., 95-105) in which case the tracks should be weighted according 
+  // to diowt.  The typical diowt is in the area of 1.0e-15.
 
-  // TODO - provide some for user to provide the # of generated DIOs etc.
-
-  double fractionOfDIOsAbove102_5 = 4.42e-15;
-  
-  double DIOgenerationWeighting = use_diowt ? 1.0 : fractionOfDIOsAbove102_5;
+  double DIOgenerationWeighting = use_diowt ? 1.0 : fractionOfDIOsRepresented;
 
   double DIOsPerStoppedMuon =  1.0 - capturedMuonsPerStoppedMuon;
   double DIObackgroundCountNormalization =
@@ -638,13 +581,16 @@ void FMtool::normalizeDIObackground(double numberOfGeneratedDIOs, bool use_diowt
       ( numberOfGeneratedDIOs );
 
   if ( adHocDIOrescaler != 1.0 ) {
-    std::cout << "\n**** For this trial, DIO normalization is scaled to "
-              << adHocDIOrescaler << " times its actual value ****\n\n";
+     os << "\n** For this trial, DIO normalization is scaled to "
+        << adHocDIOrescaler << " times its actual value **\n\n";
      DIObackgroundCountNormalization *= adHocDIOrescaler;
   }
 
   DIObackgroundNormalization = DIObackgroundCountNormalization/binSize;
-  normalizeAbackground("DIO", DIObackgroundCountNormalization, DIObackground);
+  for (size_t t =0; t <  tCuts.size(); ++t) {
+    normalizeAbackground( "DIO", 
+      DIObackgroundCountNormalization, DIObackground[t] );
+  }
 
 } // normalizeDIObackground
 
@@ -656,60 +602,93 @@ void FMtool::normalizeRPCbackground(double numberOfGeneratedRPCs)
   // number per proton on target, so the luminosity does not appear in 
   // the background normalization.
 
-  double internalRPCconversionFactor = 2.0;
-  double RPCnormalization =  internalRPCconversionFactor * 9.45e-5;   
-       // Explanation:  This is the number to multiply the counts in these 2
-        // files by, to get a number of RPC's per 3.6e20 POTs.  It includes
-        // the .021 RPC's per stopped pion, and the live gate fraction,
-        // which is very small (at t = 792 it is 2.6e-16) because most stopped 
-        // pions are in the first 260 nsec, and the lifetime is only 21 nsec.  
-        // Since the files in mixed1 and mixed2 were based on generating 2*10^7 
-        // stopped pions, this product gives 9.45e-5.  
-        //
-        // Since we want a number per POT, we'll need to divide that back out.  
-        //
-        // The number 9.45e-5 is based on just the processes Bob B. had
-        // simulated to get these files.  But in fact there are other processes,
-        // in particular, internal conversion is almost exactly as intense
-        // as as RPC photon converts in the stopping target (though the angular
-        // distribution will be a bit different.    
-        // An email (rhbob) has said to just multiply the normalization by 2, 
-        // (nternalRPCconversionFactor) which we do above.
+  // Explanation of factors considered:
+  //
+  // We start by forming RPCnormalization which is the number of RMC
+  // electrons over the lifetime of the experiment, represented by one
+  // count in the files.  We illustrate the caluclation with numbers
+  // taken from Bob's first RPC files.
+  //
+  // The normalization function has been passed  
+  // (2.0e7).  So the files represent 2.0e7 "incidents," where an
+  // incident is the forcing of a stopped pion to create one RPC electron.  
+  // So one count represents 1 RPC per numberOfGeneratedRPCs incidents.
+  //
+  // Then we know that in reality, not every stopped pi leads to an RCP:
+  // we have RPCperStoppedPion (.021) incidents per per stopped pion.
+  // Thus there are RPCperStoppedPion/numberOfGeneratedRPCs RPC's per
+  // stopped pion.
+  //
+  // Next, we have RPCtimeProbability stopped pions (**in the accepted time
+  // window**) per POT.  For example, with t0 = 792, RPCtimeProbability was
+  // 2.5e-16.  This probability is a combination of the chance of generating a 
+  // pion that stops in the target, times the chance of that pion surviving
+  // to at least t0.
+  // Thus (although we will multiply by RPCtimeProbability later on) we have
+  // RPCperStoppedPion/numberOfGeneratedRPCs * RPCtimeProbability
+  // RPC electrons per POT.
+  // 
+  // Since we want a number per POT, we need not factor in 
+  // the number of protons on target.  RPCbackgroundCountNormalization is
+  //
+  // 1 count = 1 RCP / numberOfGeneratedRPCs 
+  //         * RPCperStoppedPion * RPCtimeProbability 
+  //
+  // If we want, we can normalize RPCnormalization to POT times this,
+  // saying how many RPC's each count represents over the experiment lifetime.
+  // With the original RPC files this was 1/(2e7) * .021 * 2.5e-16 * 3.6e20
+  // which was 9.45e-5.
 
-  if ( minimum_t0 != 0.0 ) {
-    double RPCliveGateFraction;
-    if (minimum_t0 < 400) {
-      RPCliveGateFraction = RPCtimeProbability(400);
-    } else if (minimum_t0 > 1000) {
-      RPCliveGateFraction = 0;
-    } else {
-      RPCliveGateFraction = RPCtimeProbability(minimum_t0);
-    }
-    RPCliveGateFraction += extinction * stoppedPionsPerPOT;
-    
-    RPCnormalization = protonsOnTarget * RPCperStoppedPion * RPCliveGateFraction
-                     * internalRPCconversionFactor / numberOfGeneratedRPCs;  
-    std::cout << "with minimum_t0 = " << minimum_t0 
-              << " and extinction = " << extinction << "\n"
-              << "RPCliveGateFraction is "  
-              << RPCliveGateFraction - extinction * stoppedPionsPerPOT
-              << " + " << extinction * stoppedPionsPerPOT << "\n"
-              << "RPCnormalization is " << RPCnormalization << "\n";
-  }
+  // The number 9.45e-5 was based on just the processes Bob B. had
+  // simulated to get these files.  But in fact there are other processes,
+  // in particular, internal conversion, which was left out is is about
+  // as intense as RPC photon conversions in the stopping target.
+  // So at the time we multiplied by a further nternalRPCconversionFactor of 2.
+  // However, we will assume now that all the relevant processes are included
+  // in the simulation.  (If not, one can supply an ad hoc factor for RPC's.)
+
+  ParameterSet RPCpset = 
+    pset.get<ParameterSet>("radiativePionCaptureElectrons");  
   
-  
-  double RPCbackgroundCountNormalization =
-        ( RPCnormalization ) /
-        ( protonsOnTarget );
+  double RPCnormalizationBase =  RPCperStoppedPion / numberOfGeneratedRPCs;  
+  // RPCnormalizationBase still needs a factor of RPCtimeProbability
 
   if ( adHocRPCrescaler != 1.0 ) {
-    std::cout << "\n**** For this trial, RPC normalization is scaled to "
+     os << "\n**** For this trial, RPC normalization is scaled to "
               << adHocRPCrescaler << " times its actual value ****\n\n";
-     RPCbackgroundCountNormalization *= adHocRPCrescaler;
+     RPCnormalizationBase *= adHocRPCrescaler;
   }
 
-  RPCbackgroundNormalization = RPCbackgroundCountNormalization/binSize;
-  normalizeAbackground("RPC", RPCbackgroundCountNormalization, RPCbackground);
+  for (size_t t = 0; t <  tCuts.size(); ++t) {
+    double RPClivePionFraction =  RPCtimeProbability(tCuts[t]);
+    double flatPionBackgroundInLiveGate = extinction * stoppedPionsPerPOT 
+                * (cadence - tCuts[t]) / cadence;
+        // This is the number of stopped pions arriving in the live gate
+        // (between the cut time and the end of the tiem window) per
+        // desirable POT, due to the (tiny) number of POT's outside the
+        // proton pulse (the non-extinct protons)   
+    if (OUTPUT_RPClivePionFraction) {
+      os << "RPClivePionFraction = " << RPClivePionFraction << " + " 
+         << flatPionBackgroundInLiveGate << " = " 
+         << RPClivePionFraction + flatPionBackgroundInLiveGate << "\n";
+    }
+    
+    RPClivePionFraction += flatPionBackgroundInLiveGate;
+    double RPCbackgroundCountNormalization = 
+                RPCnormalizationBase * RPClivePionFraction;
+    if (OUTPUT_backgroundStrength) {
+      os << "\nWith minimum t0 = " << tCuts[t]
+         << " and extinction = " << extinction << "\n"
+         << "RPCliveGateFraction is "  
+         << RPClivePionFraction - extinction * stoppedPionsPerPOT
+         << " + " << extinction * stoppedPionsPerPOT 
+         << " = " << RPClivePionFraction << "\n"
+         << "RPCbackgroundCountNormalization is " 
+         << RPCbackgroundCountNormalization << "\n";
+    }
+    normalizeAbackground( "RPC", 
+      RPCbackgroundCountNormalization, RPCbackground[t] );
+  }
 
 } // normalizeRPCbackground
 
@@ -721,10 +700,11 @@ void FMtool::normalizeAbackground(
   double backgroundNormalization =  backgroundCountNormalization / binSize;  
              
   if (OUTPUT_backgroundStrength) {
-    std::cout << "\n" << bname << "background: (Count normalization is " 
-              << backgroundCountNormalization << " ==> " 
-              << backgroundCountNormalization*protonsOnTarget << ")\n\n";
+    os <<  bname << "background: (Count normalization is " 
+       << backgroundCountNormalization << " ==> " 
+       << backgroundCountNormalization*protonsOnTarget << ")\n";
   }
+
   double canonicalRangeCount = 0;
   for (unsigned int i=0; i < background.size(); ++i) {
     double p = lowestBin + binSize*i;
@@ -733,32 +713,32 @@ void FMtool::normalizeAbackground(
     }
   }
   if (OUTPUT_backgroundStrength) {
-    std::cout << "There are " <<  canonicalRangeCount
-              << " " << bname << "'s in the files in the range of "
-              << canonicalRangeLo << " - "  << canonicalRangeHi << " \n";
-    std::cout << "With normalization, this amounts to "
-              << canonicalRangeCount * backgroundCountNormalization 
-                                        * protonsOnTarget 
-               << " " << bname << " events in the range \n";
+    os << "There are " <<  canonicalRangeCount
+       << " " << bname << "'s in the files in the range of "
+       << canonicalRangeLo << " - "  << canonicalRangeHi << " \n";
+    os << "With normalization, this amounts to "
+       << canonicalRangeCount * backgroundCountNormalization 
+                              * protonsOnTarget 
+       << " " << bname << " events in the range \n";
   }
   for (unsigned int i=0; i < background.size(); ++i) {
     background[i] *= backgroundNormalization;
     if (OUTPUT_backgroundStrength && OUTPUT_spectra) {
-      std::cout << lowestBin + binSize*i << ":   "
-                << background[i] << " --> " 
-                << background[i] / backgroundCountNormalization;
-      std::cout << " --> " << background[i] 
-                << " ==> " << background[i] * protonsOnTarget << "\n";
+      os << lowestBin + binSize*i << ":   "
+         << background[i] << " --> " 
+         << background[i] / backgroundCountNormalization;
+      os << " --> " << background[i] 
+         << " ==> " << background[i] * protonsOnTarget << "\n";
     }
   }
 
 } // normalizeAbackground
 
-
 void FMtool::applyFofM() const
 {
   //
-  // Use the FofM class to calculate quantities of interest
+  // Use the FofM class to calculate quantities of interest,
+  // once for each t cut.
   //
 
   // Since our vectors represent values at the middle of intervals,
@@ -768,37 +748,100 @@ void FMtool::applyFofM() const
   double lowestPoint = lowestBin + midBinOffset;
   double endingPoint = topOfLastBin - midBinOffset;
 
-  std::cout << "\n------------------------------------ \n\n"
-            << "Using the FofM tool \n\n";
+  os << "\n------------------------------------ \n\n"
+     << "Using the FofM tool \n\n";
 
 
-  std::cout << "lowestBin = " << lowestBin
-            << "  topOfLastBin = " << topOfLastBin 
-            << "\nlowestPoint = " << lowestPoint
-            << "  endingPoint = " << endingPoint
-            << "  nBins = " << nBins << "\n\n";    
+  os << "lowestBin = " << lowestBin
+     << "  topOfLastBin = " << topOfLastBin 
+     << "\nlowestPoint = " << lowestPoint
+     << "  endingPoint = " << endingPoint
+     << "  nBins = " << nBins << "\n\n";    
 
   // TODO - think out and implement the way we want users to exercise this
   //        control
   double lowCut;
   double highCut;
-  std::cout <<
-    "Enter fixed low momentum cut (or 0 for automatic optimizing): ";
-  std::cin >> lowCut;
-  std::cout <<
-    "Enter fixed high momentum cut (or 0 for automatic optimizing): ";
-  std::cin >> highCut;
-  MeritFunctionChoice mfc = SmoothedPunziMeritFunction; 
-  int mfcN;
-  if ( (lowCut == 0) || (highCut == 0) ) {
-    std::cout << "Momentum cut optimization: \n"
-              << "Enter 0 to use smoothed-worst-case merit function \n" 
-              << "Enter 1 to use 90% CL sensitivity merit function:   ";
-    std::cin>> mfcN;
-    if (mfcN == 1) mfc = FCsensitivityMeritFunction;
-  } 
-  FofM::Spectrum CE_spectrum (sigEfficiency, lowestPoint, endingPoint);
-  FofM::Spectrum DIO_spectrum (DIObackground, lowestPoint, endingPoint);
+  ParameterSet pCutpset = pset.get<ParameterSet>("momentumCuts");
+  bool optimize_pcut_low = pCutpset.get<bool>("optimize_pcut_low",true);
+  lowCut = optimize_pcut_low ? 0 : pCutpset.get<double>("fixed_pcut_low");
+  bool optimize_pcut_high = pCutpset.get<bool>("optimize_pcut_high",true);
+  highCut = optimize_pcut_high ? 0 : pCutpset.get<double>("fixed_pcut_high");
+  
+  bool useSmoothedPunziFMtoOptimize = pset.get<bool>
+                        ("useSmoothedPunziFMtoOptimize", false);
+                         
+  MeritFunctionChoice mfc = useSmoothedPunziFMtoOptimize ? 
+        SmoothedPunziMeritFunction : FCsensitivityMeritFunction; 
+
+  std::string table;
+  std::vector<FofM::Summary> summaries(tCuts.size());
+  double best_tCutMerit  = 0;
+  size_t best_tCutNumber = 0;
+  for (size_t tCutNumber=0; tCutNumber<tCuts.size(); ++tCutNumber) {
+    summaries[tCutNumber] = 
+        applyFofM( tCutNumber, lowestPoint, endingPoint, table, 
+                        mfc, lowCut, highCut );
+    if (summaries[tCutNumber].figureOfMerit > best_tCutMerit) {
+      best_tCutMerit  = summaries[tCutNumber].figureOfMerit ;
+      best_tCutNumber = tCutNumber;
+    }
+    if (OUTPUT_allTables) {
+      os << table << "\n--------------------------------------- \n\n";
+    }
+  }
+
+  os << "\nFigure of merit versus minimum of t0 window: \n\n";
+  os << "tCut    FofM            SES         CL90         SPunzi    "
+     << " pLow     Phigh \n";
+  for (size_t tCutNumber=0; tCutNumber<tCuts.size(); ++tCutNumber) {
+    os << tCuts[tCutNumber] 
+       << "  " << summaries[tCutNumber].figureOfMerit;
+    if (tCutNumber == best_tCutNumber) {
+      os << " ** ";
+    } else {
+      os << "    ";
+    }
+    os <<  summaries[tCutNumber].singleEventSensitivity 
+       << "  " << summaries[tCutNumber].CL90sensitivity 
+       << "  " << summaries[tCutNumber].smoothedPunziSensitivity 
+       << "  "  <<  summaries[tCutNumber].pCutLo
+       << "  "  <<  summaries[tCutNumber].pCutHi << "\n";
+  }
+
+// Repeat the best one if there were more than 2 t cuts explored:
+  if ( (tCuts.size() > 2) || (!OUTPUT_allTables) ) {
+    summaries[best_tCutNumber] = 
+        applyFofM( best_tCutNumber, lowestPoint, endingPoint, table, 
+                        mfc, lowCut, highCut );
+    os << table << "\n--------------------------------------- \n\n";
+  }
+  
+  os << "\n--------------------------------------- \n\n";
+  
+}  // applyFofM()
+
+FofM::Summary
+FMtool::applyFofM( size_t tCutNumber,
+                   double lowestPoint,
+                   double endingPoint,
+                   std::string & table, 
+                   MeritFunctionChoice mfc,
+                   double lowCut, double highCut ) const
+{
+  //
+  // Use the FofM class to calculate quantities of interest
+  //
+
+
+  os << "================================= \n"
+     << "Time window minimum = " << tCuts[tCutNumber] << "\n"
+     << "================================= \n";
+
+  FofM::Spectrum CE_spectrum (sigEfficiency[tCutNumber], 
+                                lowestPoint, endingPoint);
+  FofM::Spectrum DIO_spectrum (DIObackground[tCutNumber], 
+                                lowestPoint, endingPoint);
   FofM figureOfMeritCalculator ( CE_spectrum, 
                                  DIO_spectrum, 
                                  protonsOnTarget,
@@ -808,46 +851,50 @@ void FMtool::applyFofM() const
     figureOfMeritCalculator.displayBackground(lowestBin, topOfLastBin, 100);
     splines::Spline<1> sbkg = figureOfMeritCalculator.getBackground();
     splines::Grid<1> sgrid = figureOfMeritCalculator.getGrid();
-    std::cout << " L * DIO Background (normalized) vs L * Background \n";
+    os << " L * DIO Background (normalized) vs L * Background \n";
     double roughInt = 0.0;
     double gridstep = sgrid[1] - sgrid[0];
     for (unsigned int i = 0; i < sgrid.nPoints(); ++i) {
       double p =  sgrid[i];
-      std::cout << i << ": p = " << p  << "  " 
-                << DIObackground[i] / DIObackgroundNormalization << "  "
-                << protonsOnTarget * DIObackground[i] << "  "
-                << protonsOnTarget * sbkg(p) << "\n";
+      os << i << ": p = " << p  << "  " 
+         << DIObackground[tCutNumber][i] / DIObackgroundNormalization << "  "
+         << protonsOnTarget * DIObackground[tCutNumber][i] << "  "
+         << protonsOnTarget * sbkg(p) << "\n";
       if ( (p >= canonicalRangeLo) && (p <= canonicalRangeHi) )  {
         roughInt += sbkg(p);
       }
     } 
-    std::cout << "Rough integral in canonical range based on sbkg = " 
-              << protonsOnTarget*gridstep*roughInt << "\n";
+    os << "Rough integral in canonical range based on sbkg = " 
+       << protonsOnTarget*gridstep*roughInt << "\n";
   }
 
-  FofM::Spectrum RPC_spectrum (RPCbackground, lowestPoint, endingPoint);
+  // Add the RPC background - note that though time cuts are handled
+  // analytically for RPC's, we are keeping one RPCbackground spectrum 
+  // for each time cut.
+  FofM::Spectrum RPC_spectrum (RPCbackground[tCutNumber], 
+                                lowestPoint, endingPoint);
   figureOfMeritCalculator.addBackground (RPC_spectrum);
 
   if (OUTPUT_backgroundSplines) { 
     figureOfMeritCalculator.displayBackground(lowestBin, topOfLastBin, 100);
     splines::Spline<1> sbkg = figureOfMeritCalculator.getBackground();
     splines::Grid<1> sgrid = figureOfMeritCalculator.getGrid();
-    std::cout << " L * (DIO+RPC) Background (normalized) vs L * Background \n";
+    os << " L * (DIO+RPC) Background (normalized) vs L * Background \n";
     double roughInt = 0.0;
     double gridstep = sgrid[1] - sgrid[0];
     for (unsigned int i = 0; i < sgrid.nPoints(); ++i) {
       double p =  sgrid[i];
-      std::cout << i << ": p = " << p  << "  " 
-                << DIObackground[i] / DIObackgroundNormalization 
-                +  RPCbackground[i] / RPCbackgroundNormalization << "  "
-                << protonsOnTarget * 
-                        (DIObackground[i] + RPCbackground[i]) << "  "
-                << protonsOnTarget * sbkg(p) << "\n";
+      os << i << ": p = " << p  << "  " 
+         << DIObackground[tCutNumber][i] / DIObackgroundNormalization 
+         +  RPCbackground[tCutNumber][i] / RPCbackgroundNormalization << "  "
+         << protonsOnTarget * 
+           (DIObackground[tCutNumber][i] + RPCbackground[tCutNumber][i]) << "  "
+         << protonsOnTarget * sbkg(p) << "\n";
       if ( (p >= canonicalRangeLo) && (p <= canonicalRangeHi) )  {
         roughInt += sbkg(p);
       }
     } 
-    std::cout << "DIO + RPC Rough integral in canonical range based on sbkg = " 
+    os << "DIO + RPC Rough integral in canonical range based on sbkg = " 
               << protonsOnTarget*gridstep*roughInt << "\n";
   }
 
@@ -872,25 +919,28 @@ void FMtool::applyFofM() const
        upperLimitBR, CLlowerBR, CLupperBR); 
 #endif
 
+  FofM::Summary summary;
   std::string t; 
   if ((lowCut == 0) && (highCut == 0)) {    
-    t = figureOfMeritCalculator.tables(maximumSignalCount);
+    t = figureOfMeritCalculator.tables(maximumSignalCount, os, summary);
   } else if (lowCut == 0) { 
     t = figureOfMeritCalculator.tables_fixed_highCut 
-                              (maximumSignalCount, highCut);
+                              (maximumSignalCount, highCut, os, summary);
   } else if (highCut == 0) { 
     t = figureOfMeritCalculator.tables_fixed_lowCut 
-                              (maximumSignalCount, lowCut);
+                              (maximumSignalCount, lowCut, os, summary);
   } else {
     t = figureOfMeritCalculator.tables_fixed_cuts 
-                              (maximumSignalCount, lowCut, highCut);
+                            (maximumSignalCount, lowCut, highCut, os, summary);
   }
 
-  std::cout << t << "\n";
+  os << t << "\n";
 
-  std::cout << "\n--------------------------------------- \n\n";
+  os << "\n--------------------------------------- \n\n";
 
-} // applyFofM()
+  return summary;
+  
+} // applyFofM(cutNumber...)
 
 
 std::vector<double> FMtool::RPCtimeProbabilityVector() const {
@@ -981,10 +1031,59 @@ splines::Spline<1> FMtool::RPCtimeProbabilitySpline()  const
   return s;
 }
 
+void FMtool::decideVerbosity()
+{
+  ParameterSet v = pset.get<ParameterSet>("verbosity");
+  OUTPUT_signalEfficiency = v.get<bool>("signalEfficiency", false);
+  OUTPUT_backgroundStrength = v.get<bool>("backgroundStrength", false);
+  OUTPUT_tracksTTreeLocation = v.get<bool>("tracksTTreeLocation", false);
+  OUTPUT_progress = v.get<bool>("progress", false);
+  OUTPUT_fileNames = v.get<bool>("fileNames", false);
+  OUTPUT_dataProperties = v.get<bool>("dataProperties", false);
+  OUTPUT_RPClivePionFraction = v.get<bool>("RPClivePionFraction",false);
+  OUTPUT_spectra = v.get<bool>("spectra", false);
+  OUTPUT_backgroundSplines = v.get<bool>("backgroundSplines", false);
+  OUTPUT_allTables = v.get<bool>("allTables", false);
+}
+
 } // end namespace mu2e
 
-int main () {
-  mu2e::FMtool f;
-  f.analyze();
+static ParameterSet obtainPset(std::string const & parametersFile) 
+{
+  // The following is part of the mantra seen in 
+  // artexternals/fhiclcpp/v2_16_03/example
+  // It may or may not be strictly necessary in terms of 
+  // getting to the fhicl file desired:
+  putenv(const_cast<char*>("FHICL_FILE_PATH=./test:."));
+  cet::filepath_lookup policy("FHICL_FILE_PATH");
+  
+  // Get the table from the file
+  fhicl::intermediate_table tbl;
+  std::cout << "The name of the fhicl file is " << parametersFile << "\n";
+  fhicl::parse_document(parametersFile, policy, tbl);
+
+  ParameterSet p;
+  // convert to ParameterSet
+  fhicl::make_ParameterSet(tbl, p);
+  return p;
+}
+
+int main (int argc, char*argv[]) {
+  if ( argc != 2 ) {
+    std::cout << "This application requires exactly one argument: \n"
+              << "The name of the controlling parameter set (.fcl) file. \n";
+    exit (-1);
+  }
+  ParameterSet pset = obtainPset( argv[1] );
+
+  std::string outputName = pset.get<std::string>("outputFile"); 
+  if (outputName == "cout") {
+    mu2e::FMtool f (pset, std::cout) ;
+    f.analyze();
+  } else {
+    std::ofstream os (outputName.c_str());
+    mu2e::FMtool f (pset, os) ;
+    f.analyze();
+  }
   return 0;
 }

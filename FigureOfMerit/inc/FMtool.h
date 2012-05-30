@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 // Root includes.
 #include "TFile.h"
@@ -22,13 +23,17 @@
 
 // mu2e includes
 #include "splines/Spline.h"
+#include "FigureOfMerit/inc/FofM.h"
+
+// art and art externals includes
+#include "fhiclcpp/ParameterSet.h"
 
 namespace mu2e {
 
 class FMtool
 {
 public:
-  FMtool();
+  FMtool (fhicl::ParameterSet const & p, std::ostream & o);
   void   analyze();
   void   setFilterLevels();
   void   setCanonicals();
@@ -43,30 +48,23 @@ public:
           double backgroundCountNormalization, 
           std::vector<double> & background);
   void   applyFofM() const;
+  FofM::Summary applyFofM( 
+                    size_t tCutNumber,  double lowestPoint,
+                    double endingPoint, std::string & table,
+                    MeritFunctionChoice mfc,
+                    double lowCut, double highCut ) const;
   
 private:
 
-  enum TrackerCutsSet {
-      TrackerCuts_A
-    , TrackerCuts_B
-    , TrackerCuts_C
-    , TrackerCuts_D 
-  };
-
-  void ourTrackerCuts ( TrackerCutsSet cuts, 
-                        int & nactive, 
-                        float & t0err, 
-                        float & fitmomerr,
-                        float & fitcon );
-  void nextTrackerCuts( TrackerCutsSet & cuts );  
+  void decideVerbosity();
   void extractFitmom 
         ( TTree * tracks
-        , std::vector<double> & counts
-        , bool use_diowt = false );
+        , std::vector< std::vector<double> > & counts
+        , bool use_diowt = false, bool apply_timeCuts = true );
   void extractFitmom 
        ( std::vector<std::string> const & listOfFileNames
-       , std::vector<double> & counts
-       , bool use_diowt = false  );
+       , std::vector< std::vector<double> > & counts
+       , bool use_diowt = false, bool apply_timeCuts = true  );
   struct TTreeAccessor {
     TFile* tfp;
     TTree* tracks;
@@ -80,10 +78,20 @@ private:
   splines::Spline<1> RPCtimeProbabilitySpline()  const;
 
 public:
+  // hard-coded verbosity flags
+
+  // fcl controlled verbocity flags
   bool OUTPUT_signalEfficiency;
   bool OUTPUT_spectra;
   bool OUTPUT_backgroundStrength;
   bool OUTPUT_backgroundSplines;
+  bool OUTPUT_progress;
+  bool OUTPUT_tracksTTreeLocation;
+  bool OUTPUT_fileNames;
+  bool OUTPUT_fileEntriesStatistics;
+  bool OUTPUT_dataProperties;
+  bool OUTPUT_RPClivePionFraction;
+  bool OUTPUT_allTables;
 
   double adHocSignalrescaler;
   double adHocDIOrescaler;
@@ -91,13 +99,24 @@ public:
 
 private:
 
+  // parameter input
+  fhicl::ParameterSet const & pset;
+
+  // output file
+  std::ostream & os;
+
   // filter information
   int    minimum_nactive;  
   float  maximum_t0err;    
   float  maximum_fitmomerr;
   float  minimum_fitcon;   
   float  minimum_t0;
-    
+
+  // time windows
+  std::vector<double> tCuts;
+  double  CEliveGateFraction;
+  double DIOliveGateFraction;   
+  
   // canonical numbers
   double canonicalRangeLo;
   double canonicalRangeHi;
@@ -115,15 +134,17 @@ private:
   double protonsOnTarget;  
   double stoppedMuonsPerPOT;
   double capturedMuonsPerStoppedMuon;
+  double cadence;  // inverse frequency, nsec
   double liveGateFraction;
   double RPCperStoppedPion;
     
   // Spectra
-  std::vector<double> sigEfficiency;
-  std::vector<double> DIObackground;
-  std::vector<double> RPCbackground;
+  std::vector< std::vector<double> > sigEfficiency;
+  std::vector< std::vector<double> > DIObackground;
+  std::vector< std::vector<double> > RPCbackground;
   
   // normalization factors used
+  double fractionOfDIOsRepresented;
   double DIObackgroundNormalization;
   double RPCbackgroundNormalization;
 

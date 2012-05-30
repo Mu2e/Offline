@@ -232,7 +232,8 @@ void FofM::results (int maximumSignalCount,
                 double &singleEventSensitivity,
                 std::vector<double> & upperLimitBR,
                 std::vector<double> & CLlowerBR,
-                std::vector<double> & CLupperBR ) const
+                std::vector<double> & CLupperBR,
+                std::ostream & os ) const
 {
   // starting guesses for momentum cuts
   double old_pmin = 103.6;
@@ -279,13 +280,14 @@ void FofM::results (int maximumSignalCount,
   epsilon = integratedSignalEfficiency;
   B =  integratedBackground;
   
-  std::cout << "(optimized) integratedSignalEfficiency = " << epsilon << "\n"
+      os    << "(optimized) integratedSignalEfficiency = " << epsilon << "\n"
             << "(optimized) integratedBackground = " << B << "\n"
-            << "meritDenominator(B) = " << meritDenominator(B) << "\n"
-            << "fc90(B) = " << fc90(B) << "\n";
+            << "Smoothed Punzi merit denominator(B) = " 
+            << punziMeritDenominator(B) << "\n"
+            << "fc90 merit denominator(B) = " << fc90(B) << "\n";
 
   if (mfunc == SmoothedPunziMeritFunction) {
-    figOfM = epsilon / FofM::meritDenominator (B);  // equation (2)
+    figOfM = epsilon / FofM::punziMeritDenominator (B);  // equation (2)
   } else {
     figOfM = epsilon / fc90 (B);
   }
@@ -296,6 +298,8 @@ void FofM::results (int maximumSignalCount,
                 epsilon, B, discoveryThresholdN, 
                 upperLimitBR, CLlowerBR, CLupperBR );
 } // results (free-floating range)
+
+#define TRACE_MERIT_DENOMINATOR
 
 void FofM::results_fixed_highCut (int maximumSignalCount, 
                 double &lowCut,  double highCut, 
@@ -310,7 +314,8 @@ void FofM::results_fixed_highCut (int maximumSignalCount,
                 double &singleEventSensitivity,
                 std::vector<double> & upperLimitBR,
                 std::vector<double> & CLlowerBR,
-                std::vector<double> & CLupperBR ) const
+                std::vector<double> & CLupperBR,
+                std::ostream & os ) const
 {
   double pmax = highCut;
   double pmin = optimize_low_cut ( pmax );
@@ -329,14 +334,15 @@ void FofM::results_fixed_highCut (int maximumSignalCount,
   B =  integratedBackground;
   
   #ifdef TRACE_MERIT_DENOMINATOR
-  std::cout << "(optimized) integratedSignalEfficiency = " << epsilon << "\n"
+       os   << "(optimized) integratedSignalEfficiency = " << epsilon << "\n"
             << "(optimized) integratedBackground = " << B << "\n"
-            << "meritDenominator(B) = " << meritDenominator(B) << "\n"
-            << "fc90(B) = " << fc90(B) << "\n";
+            << "Smoothed Punzi merit denominator(B) = " 
+            << punziMeritDenominator(B) << "\n"
+            << "fc90 merit denominator(B) = " << fc90(B) << "\n";
   #endif
   
   if (mfunc == SmoothedPunziMeritFunction) {
-    figOfM = epsilon / FofM::meritDenominator (B);  // equation (2)
+    figOfM = epsilon / FofM::punziMeritDenominator (B);  // equation (2)
   } else {
     figOfM = epsilon / fc90 (B);
   }
@@ -359,7 +365,8 @@ void FofM::results_fixed_lowCut (int maximumSignalCount,
                 double &singleEventSensitivity,
                 std::vector<double> & upperLimitBR,
                 std::vector<double> & CLlowerBR,
-                std::vector<double> & CLupperBR ) const
+                std::vector<double> & CLupperBR,
+                std::ostream & os ) const
 {
   double pmin = lowCut;
   double pmax = optimize_high_cut ( pmin );
@@ -378,14 +385,15 @@ void FofM::results_fixed_lowCut (int maximumSignalCount,
   B =  integratedBackground;
   
   #ifdef TRACE_MERIT_DENOMINATOR
-  std::cout << "(optimized) integratedSignalEfficiency = " << epsilon << "\n"
+       os   << "(optimized) integratedSignalEfficiency = " << epsilon << "\n"
             << "(optimized) integratedBackground = " << B << "\n"
-            << "meritDenominator(B) = " << meritDenominator(B) << "\n"
-            << "fc90(B) = " << fc90(B) << "\n";
+            << "Smoothed Punzi merit denominator(B) = " 
+            << punziMeritDenominator(B) << "\n"
+            << "fc90 merit denominator(B) = " << fc90(B) << "\n";
   #endif
   
   if (mfunc == SmoothedPunziMeritFunction) {
-    figOfM = epsilon / FofM::meritDenominator (B);  // equation (2)
+    figOfM = epsilon / FofM::punziMeritDenominator (B);  // equation (2)
   } else {
     figOfM = epsilon / fc90 (B);
   }
@@ -409,7 +417,8 @@ void FofM::results_fixed_cuts  (int maximumSignalCount,
                 double &singleEventSensitivity,
                 std::vector<double> & upperLimitBR,
                 std::vector<double> & CLlowerBR,
-                std::vector<double> & CLupperBR ) const
+                std::vector<double> & CLupperBR,
+                std::ostream & os ) const
 {
   double pmin = lowCut;
   double pmax = highCut;
@@ -428,14 +437,15 @@ void FofM::results_fixed_cuts  (int maximumSignalCount,
   B =  integratedBackground;
   
   #ifdef TRACE_MERIT_DENOMINATOR
-  std::cout << "integratedSignalEfficiency = " << epsilon << "\n"
-            << "integratedBackground = " << B << "\n"
-            << "meritDenominator(B) = " << meritDenominator(B) << "\n"
-            << "fc90(B) = " << fc90(B) << "\n";
+       os   << "(optimized) integratedSignalEfficiency = " << epsilon << "\n"
+            << "(optimized) integratedBackground = " << B << "\n"
+            << "Smoothed Punzi merit denominator(B) = " 
+            << punziMeritDenominator(B) << "\n"
+            << "fc90 merit denominator(B) = " << fc90(B) << "\n";
   #endif
   
   if (mfunc == SmoothedPunziMeritFunction) {
-    figOfM = epsilon / FofM::meritDenominator (B);  // equation (2)
+    figOfM = epsilon / FofM::punziMeritDenominator (B);  // equation (2)
   } else {
     figOfM = epsilon / fc90 (B);
   }
@@ -447,7 +457,7 @@ void FofM::results_fixed_cuts  (int maximumSignalCount,
                 upperLimitBR, CLlowerBR, CLupperBR );
 } // results (fixed momentum cuts)
 
-double FofM::meritDenominator ( double B )  {
+double FofM::punziMeritDenominator ( double B )  {
   if (B < 0) return 3.148;
   double s = std::sqrt(B);
   return 3.148 + 3.538 * std::sqrt(s) + 5.390 * s;
@@ -466,7 +476,7 @@ void FofM::computeSensitivities(
   discoveryThresholdN =  poissonInverseCDF(B, p5sigma);
   if (discoveryThresholdN < 5) discoveryThresholdN = 5;
   discoveryThreshold = (discoveryThresholdN-B)/(eps*L);
-  smoothedWorstCaseSensitivity = meritDenominator(B)/(eps*L);
+  smoothedWorstCaseSensitivity = punziMeritDenominator(B)/(eps*L);
   double p90pct = 0.90;
   double punziSensitivityMu = 
         poissonMeanSolver(discoveryThresholdN-1,1-p90pct);
@@ -550,7 +560,8 @@ void FofM::fillHypotheticalVectors (int maximumSignalCount,
   }
 }  // fillHypotheticalVectors             
 
-std::string FofM::tables (int maximumSignalCount) const
+std::string FofM::tables (int maximumSignalCount, 
+             std::ostream & os, FofM::Summary & summary) const
 {
   double lowCut;
   double highCut; 
@@ -561,7 +572,7 @@ std::string FofM::tables (int maximumSignalCount) const
   double discoveryThreshold;
   double smoothedWorstCaseSensitivity;
   double punziSensitivity;
-  double CL90Sensitivity;
+  double CL90sensitivity;
   double singleEventSensitivity;
   std::vector<double>  upperLimitBR;
   std::vector<double>  CLlowerBR;
@@ -570,19 +581,26 @@ std::string FofM::tables (int maximumSignalCount) const
            lowCut, highCut, epsilon, B, figOfM, 
            discoveryThresholdN, discoveryThreshold,
            smoothedWorstCaseSensitivity,punziSensitivity,
-           CL90Sensitivity, singleEventSensitivity,
-           upperLimitBR, CLlowerBR, CLupperBR );
+           CL90sensitivity, singleEventSensitivity,
+           upperLimitBR, CLlowerBR, CLupperBR, os );
+  summary.singleEventSensitivity = singleEventSensitivity;
+  summary.CL90sensitivity = CL90sensitivity;
+  summary.smoothedPunziSensitivity = smoothedWorstCaseSensitivity;
+  summary.pCutLo = lowCut;
+  summary.pCutHi = highCut;
+  summary.figureOfMerit = figOfM;
   return tablesString (maximumSignalCount,
            lowCut, highCut, epsilon, B, figOfM, 
            discoveryThresholdN, discoveryThreshold,
            smoothedWorstCaseSensitivity,punziSensitivity,
-           CL90Sensitivity, singleEventSensitivity,
+           CL90sensitivity, singleEventSensitivity,
            upperLimitBR, CLlowerBR, CLupperBR,
-           false, false );
+           false, false);
 } // tables (floating cuts)
 
 std::string FofM::tables_fixed_highCut 
-        (int maximumSignalCount, double highCut) const
+        (int maximumSignalCount, double highCut, 
+             std::ostream & os, FofM::Summary & summary) const
 {
   double lowCut;
   double epsilon;
@@ -592,7 +610,7 @@ std::string FofM::tables_fixed_highCut
   double discoveryThreshold;
   double smoothedWorstCaseSensitivity;
   double punziSensitivity;
-  double CL90Sensitivity;
+  double CL90sensitivity;
   double singleEventSensitivity;
   std::vector<double>  upperLimitBR;
   std::vector<double>  CLlowerBR;
@@ -601,19 +619,26 @@ std::string FofM::tables_fixed_highCut
            lowCut, highCut, epsilon, B, figOfM, 
            discoveryThresholdN, discoveryThreshold,
            smoothedWorstCaseSensitivity,punziSensitivity,
-           CL90Sensitivity, singleEventSensitivity,
-           upperLimitBR, CLlowerBR, CLupperBR );
+           CL90sensitivity, singleEventSensitivity,
+           upperLimitBR, CLlowerBR, CLupperBR, os );
+  summary.singleEventSensitivity = singleEventSensitivity;
+  summary.CL90sensitivity = CL90sensitivity;
+  summary.smoothedPunziSensitivity = smoothedWorstCaseSensitivity;
+  summary.pCutLo = lowCut;
+  summary.pCutHi = highCut;
+  summary.figureOfMerit = figOfM;
   return tablesString (maximumSignalCount,
            lowCut, highCut, epsilon, B, figOfM, 
            discoveryThresholdN, discoveryThreshold,
            smoothedWorstCaseSensitivity,punziSensitivity,
-           CL90Sensitivity, singleEventSensitivity,
+           CL90sensitivity, singleEventSensitivity,
            upperLimitBR, CLlowerBR, CLupperBR,
-           false, true );
+           false, true);
 } // tables (fixed high cut)
 
 std::string FofM::tables_fixed_lowCut 
-        (int maximumSignalCount, double lowCut) const
+        (int maximumSignalCount, double lowCut, 
+             std::ostream & os, FofM::Summary & summary) const
 {
   double highCut;
   double epsilon;
@@ -623,7 +648,7 @@ std::string FofM::tables_fixed_lowCut
   double discoveryThreshold;
   double smoothedWorstCaseSensitivity;
   double punziSensitivity;
-  double CL90Sensitivity;
+  double CL90sensitivity;
   double singleEventSensitivity;
   std::vector<double>  upperLimitBR;
   std::vector<double>  CLlowerBR;
@@ -632,19 +657,26 @@ std::string FofM::tables_fixed_lowCut
            lowCut, highCut, epsilon, B, figOfM, 
            discoveryThresholdN, discoveryThreshold,
            smoothedWorstCaseSensitivity,punziSensitivity,
-           CL90Sensitivity, singleEventSensitivity,
-           upperLimitBR, CLlowerBR, CLupperBR );
+           CL90sensitivity, singleEventSensitivity,
+           upperLimitBR, CLlowerBR, CLupperBR, os );
+  summary.singleEventSensitivity = singleEventSensitivity;
+  summary.CL90sensitivity = CL90sensitivity;
+  summary.smoothedPunziSensitivity = smoothedWorstCaseSensitivity;
+  summary.pCutLo = lowCut;
+  summary.pCutHi = highCut;
+  summary.figureOfMerit = figOfM;
   return tablesString (maximumSignalCount,
            lowCut, highCut, epsilon, B, figOfM, 
            discoveryThresholdN, discoveryThreshold,
            smoothedWorstCaseSensitivity,punziSensitivity,
-           CL90Sensitivity, singleEventSensitivity,
+           CL90sensitivity, singleEventSensitivity,
            upperLimitBR, CLlowerBR, CLupperBR,
            true, false );
 } // tables (fixed low cut)
 
 std::string FofM::tables_fixed_cuts (int maximumSignalCount, 
-                                 double momcutLow, double momcutHigh) const
+                  double momcutLow, double momcutHigh, 
+             std::ostream & os, FofM::Summary & summary) const
 {
   double lowCut  = momcutLow;
   double highCut = momcutHigh; 
@@ -655,7 +687,7 @@ std::string FofM::tables_fixed_cuts (int maximumSignalCount,
   double discoveryThreshold;
   double smoothedWorstCaseSensitivity;
   double punziSensitivity;
-  double CL90Sensitivity;
+  double CL90sensitivity;
   double singleEventSensitivity;
   std::vector<double>  upperLimitBR;
   std::vector<double>  CLlowerBR;
@@ -664,15 +696,21 @@ std::string FofM::tables_fixed_cuts (int maximumSignalCount,
            lowCut, highCut, epsilon, B, figOfM, 
            discoveryThresholdN, discoveryThreshold,
            smoothedWorstCaseSensitivity,punziSensitivity,
-           CL90Sensitivity, singleEventSensitivity,
-           upperLimitBR, CLlowerBR, CLupperBR );
+           CL90sensitivity, singleEventSensitivity,
+           upperLimitBR, CLlowerBR, CLupperBR, os);
+  summary.singleEventSensitivity = singleEventSensitivity;
+  summary.CL90sensitivity = CL90sensitivity;
+  summary.smoothedPunziSensitivity = smoothedWorstCaseSensitivity;
+  summary.pCutLo = lowCut;
+  summary.pCutHi = highCut;
+  summary.figureOfMerit = figOfM;
   return tablesString (maximumSignalCount,
            momcutLow, momcutHigh, epsilon, B, figOfM, 
            discoveryThresholdN, discoveryThreshold,
            smoothedWorstCaseSensitivity,punziSensitivity,
-           CL90Sensitivity, singleEventSensitivity,
+           CL90sensitivity, singleEventSensitivity,
            upperLimitBR, CLlowerBR, CLupperBR,
-           true, true );
+           true, true);
 } // tables (fixed cuts)
            
 std::string FofM::tablesString (int maximumSignalCount,
@@ -689,7 +727,7 @@ std::string FofM::tablesString (int maximumSignalCount,
                 std::vector<double> const & upperLimitBR,
                 std::vector<double> const & CLlowerBR,
                 std::vector<double> const & CLupperBR,
-                bool lowCutFixed, bool highCutFixed ) const
+                bool lowCutFixed, bool highCutFixed) const
 {
   std::ostringstream t;
   t << "\nSensitivity tables: All branching ratios given  are * 10^{-16} \n\n";
@@ -698,15 +736,15 @@ std::string FofM::tablesString (int maximumSignalCount,
   if ( (!lowCutFixed) && (!highCutFixed) ) {
     t << "(optimized) momentum range  " << lowCut 
       << " --- " << highCut << "\n";
-  } else if (lowCutFixed)  {
+  } else if (lowCutFixed && !(highCutFixed) )  {
     t << "momentum range  " << lowCut 
       << " (fixed) --- " << highCut << " (optimized)\n";
-  } else if (highCutFixed) {
+  } else if (highCutFixed && !(lowCutFixed)) {
     t << "momentum range  " << lowCut 
       << " (optimized) --- " << highCut << " (fixed)\n";
   } else {
-    t << "(fixed) momentum range  " << lowCut 
-      << " --- " << highCut << "\n";
+    t << "momentum range  " << lowCut 
+      << " (fixed) --- " << highCut << " (fixed)\n";
   }
   if ( (!lowCutFixed) || (!highCutFixed) ) {
     t << "optimization based on ";
@@ -931,7 +969,7 @@ double FofMwithLowerLimitVarying::operator()(double a) const
   double B   = - L * negIntegratedBackground(a);
   double f;
   if (mfunc == SmoothedPunziMeritFunction) {
-    f = eps / FofM::meritDenominator (B);
+    f = eps / FofM::punziMeritDenominator (B);
   } else {
     f = eps / fc90 (B);
   }
@@ -944,7 +982,7 @@ double FofMwithUpperLimitVarying::operator()(double a) const
   double B   = L * integratedBackground(a);
   double f;
   if (mfunc == SmoothedPunziMeritFunction) {
-    f = eps / FofM::meritDenominator (B);
+    f = eps / FofM::punziMeritDenominator (B);
   } else {
     f = eps / fc90 (B);
   }
