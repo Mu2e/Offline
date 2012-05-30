@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.150 2012/05/23 18:45:20 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/23 18:45:20 $
+// $Id: geom_01.txt,v 1.151 2012/05/30 15:57:52 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/05/30 15:57:52 $
 //
 // Original author Rob Kutschke
 //
@@ -495,14 +495,8 @@ vector<string> bfield.outerMaps = {
 double bfield.scaleFactor = 1.0;
 
 // Proton Absorber
-string protonabsorber.materialName = "Polyethylene092";
-double protonabsorber.OutRadius1   =  380.0;
-double protonabsorber.OutRadius0   =  335.2;
-double protonabsorber.halfLength   = 1250.0;
-double protonabsorber.thickness    =    0.5;
-int    protonabsorber.verbosityLevel = 0;
-bool   protonabsorber.visible      = true;
-bool   protonabsorber.solid        = false;
+//#include "Mu2eG4/test/protonAbsorber_conical.txt"
+#include "Mu2eG4/test/protonAbsorber_helical.txt"
 
 // Neutron Absorber (document draft dated 2010-07-16)
 
