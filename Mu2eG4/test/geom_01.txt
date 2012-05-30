@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.151 2012/05/30 15:57:52 tassiell Exp $
+// $Id: geom_01.txt,v 1.152 2012/05/30 16:01:09 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/30 15:57:52 $
+// $Date: 2012/05/30 16:01:09 $
 //
 // Original author Rob Kutschke
 //
@@ -495,8 +495,8 @@ vector<string> bfield.outerMaps = {
 double bfield.scaleFactor = 1.0;
 
 // Proton Absorber
-//#include "Mu2eG4/test/protonAbsorber_conical.txt"
-#include "Mu2eG4/test/protonAbsorber_helical.txt"
+#include "Mu2eG4/test/protonAbsorber_conical.txt"
+//#include "Mu2eG4/test/protonAbsorber_helical.txt"
 
 // Neutron Absorber (document draft dated 2010-07-16)
 
