@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.12 2012/05/30 15:56:30 tassiell Exp $
+// $Id: constructProtonAbsorber.cc,v 1.13 2012/05/30 20:19:29 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/30 15:56:30 $
+// $Date: 2012/05/30 20:19:29 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -84,11 +84,13 @@ namespace mu2e {
                 outerPhis[1] = _config->getDouble("protonabsorber.phiOuter_1");
                 outerPhis[2] = _config->getDouble("protonabsorber.phiOuter_2");
 
+                bool addSD   = _config->getBool("protonabsorber.saveStepPnts",false);
+
                 HelicalProtonAbsorber* hpabs = new HelicalProtonAbsorber( ds2HalfLen-helPabsLength,
                                 helPabsLength*lengthScaleFact,/*ScaleFact is a trick FIXME */
                                 innerRadii, outerRasii, innerPhis, outerPhis,
                                 helPabsThickness, /*numOfTurns,*/
-                                _config->getInt("protonabsorber.NumOfVanes"), pabsMaterial, parent1Info.logical, paSD);
+                                _config->getInt("protonabsorber.NumOfVanes"), pabsMaterial, parent1Info.logical, (addSD) ? paSD : 0x0 );
 
                 if ( _config->getBool("g4.doSurfaceCheck",false) ) {
                         hpabs->checkOverlaps( 1000000, 0.001, true );
@@ -100,6 +102,8 @@ namespace mu2e {
                                         _config->getBool("g4.forceAuxEdgeVisible",false),
                                         G4Color::Green(), reg);
                 }
+
+                delete hpabs;
 
         } else {
 
