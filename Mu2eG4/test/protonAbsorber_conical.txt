@@ -1,0 +1,32 @@
+//
+// conical proton absorber geometry file.
+//
+// $Id: protonAbsorber_conical.txt,v 1.1 2012/05/30 15:58:33 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/05/30 15:58:33 $
+//
+// Original author G. Tassielli
+//
+// Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
+
+string protonabsorber.materialName = "Polyethylene092";
+double protonabsorber.OutRadius1   =  380.0;
+double protonabsorber.OutRadius0   =  335.2;
+double protonabsorber.halfLength   = 1250.0;
+double protonabsorber.thickness    =    0.5;
+int    protonabsorber.verbosityLevel = 0;
+bool   protonabsorber.visible      = true;
+bool   protonabsorber.solid        = false;
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
