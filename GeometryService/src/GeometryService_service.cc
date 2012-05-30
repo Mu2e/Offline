@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.32 2012/05/18 16:55:08 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/18 16:55:08 $
+// $Id: GeometryService_service.cc,v 1.33 2012/05/30 18:38:43 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/05/30 18:38:43 $
 //
 // Original author Rob Kutschke
 //
@@ -228,7 +228,7 @@ namespace mu2e {
       addDetector(bfmgr.getBFieldManager());
     }
 
-    if(_config->getBool("hasProtonAbsorber",false)){
+    if(_config->getBool("hasProtonAbsorber",false) && !_config->getBool("protonabsorber.isHelical", false) ){
       MECOStyleProtonAbsorberMaker mecopam( *_config );
       addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
     }
