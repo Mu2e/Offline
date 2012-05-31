@@ -1,3 +1,9 @@
+//
+// $Id: ExtMonFNAL_SD.cc,v 1.5 2012/05/31 17:08:18 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/31 17:08:18 $
+//
+
 #include <cstdio>
 
 // G4 includes
@@ -27,22 +33,9 @@ using namespace std;
 namespace mu2e {
   const int EMFrameToSensorDepth = 1;   // The sensitive volume is the direct daughter of the volume that defines the EMF frame
 
-  ExtMonFNAL_SD::ExtMonFNAL_SD(G4String name, const SimpleConfig& config) :
-    G4VSensitiveDetector(name),
-    _collection(0),
-    _processInfo(0),
-    _mu2eOrigin(GeomHandle<WorldG4>()->mu2eOriginInWorld()),
-    _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
-    _currentSize(0),
-    _simID(0),
-    _event(0)
-  {
-  }
-
-  void ExtMonFNAL_SD::Initialize(G4HCofThisEvent* HCE){
-    _currentSize=0;
-  }
-
+  ExtMonFNAL_SD::ExtMonFNAL_SD(G4String const name, SimpleConfig const & config ):
+    Mu2eSensitiveDetector(name,config)
+  { }
 
   G4bool ExtMonFNAL_SD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
@@ -56,14 +49,16 @@ namespace mu2e {
 
     _currentSize += 1;
 
-    if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
+    if ( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in ExtMonFNAL_SD: "
+        mf::LogWarning("G4") << "Maximum number of particles reached in " 
+                             << SensitiveDetectorName
+                             << ": "
                              << _currentSize << endl;
       }
       return false;
     }
-
+    
     //G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
     //G4int eventId = event->GetEventID();
     //G4int trackId = aStep->GetTrack()->GetTrackID();
@@ -127,39 +122,5 @@ namespace mu2e {
     return true;
 
   }
-
-
-  void ExtMonFNAL_SD::EndOfEvent(G4HCofThisEvent*){
-
-    if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
-      mf::LogWarning("G4") << "Total of " << _currentSize
-                           << " calorimeter hits were generated in the event."
-                           << endl
-                           << "Only " << _sizeLimit << " are saved in output collection."
-                           << endl;
-    }
-
-    if (verboseLevel>0) {
-      G4int NbHits = _collection->size();
-      G4cout << "\n-------->Hits Collection: in this event they are " << NbHits
-             << " hits in the calorimeter: " << G4endl;
-      for (G4int i=0;i<NbHits;i++) (*_collection)[i].print(G4cout);
-    }
-
-  }
-
-
-  void ExtMonFNAL_SD::beforeG4Event(StepPointMCCollection& outputHits,
-                                    PhysicsProcessInfo& processInfo,
-                                    art::ProductID const& simID,
-                                    art::Event const & event ){
-    _collection    = &outputHits;
-    _processInfo   = &processInfo;
-    _simID         = &simID;
-    _event         = &event;
-
-    return;
-  } // end of beforeG4Event
-
 
 } //namespace mu2e
