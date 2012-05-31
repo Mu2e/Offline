@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.28 2012/05/19 07:44:09 brownd Exp $
+// $Id: KalFitMC.cc,v 1.29 2012/05/31 05:37:32 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/19 07:44:09 $
+// $Date: 2012/05/31 05:37:32 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -86,7 +86,7 @@ namespace mu2e
     _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
     _mintrkmom(pset.get<double>("minTrkMom",60.0)),
     _mct0err(pset.get<double>("mcT0Err",0.1)),
-    _mcambig(pset.get<bool>("mcAmbiguity",true)),
+    _mcambig(pset.get<bool>("mcAmbiguity",false)),
     _debug(pset.get<int>("debugLevel",0)),
     _diag(pset.get<int>("diagLevel",1)),
     _minnhits(pset.get<unsigned>("minNHits",10)),

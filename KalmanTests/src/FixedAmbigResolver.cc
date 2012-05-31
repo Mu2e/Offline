@@ -2,9 +2,9 @@
 // class to resolve hit ambiguities one hit at a time, assuming a reasonable track
 // fit as input
 //
-// $Id: FixedAmbigResolver.cc,v 1.1 2012/05/14 19:20:02 brownd Exp $
+// $Id: FixedAmbigResolver.cc,v 1.2 2012/05/31 05:37:32 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Date: 2012/05/31 05:37:32 $
 //
 #include "KalmanTests/inc/FixedAmbigResolver.hh"
 #include "KalmanTests/inc/KalFit.hh"
@@ -16,7 +16,7 @@ namespace mu2e {
   typedef std::vector<TrkStrawHit*>::iterator TSHI;
 
   FixedAmbigResolver::FixedAmbigResolver(fhicl::ParameterSet const& pset) : AmbigResolver(pset), 
-     _neutralize(pset.get<bool>("Neutralize",false))
+     _neutralize(pset.get<bool>("Neutralize",true))
  {}
 
   FixedAmbigResolver::~FixedAmbigResolver() {}
