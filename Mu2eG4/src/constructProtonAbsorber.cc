@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.13 2012/05/30 20:19:29 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/30 20:19:29 $
+// $Id: constructProtonAbsorber.cc,v 1.14 2012/05/31 17:09:13 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/31 17:09:13 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -25,7 +25,6 @@
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestCons.hh"
-#include "Mu2eG4/inc/ProtonAbsorberSD.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/HelicalProtonAbsorber.hh"
 

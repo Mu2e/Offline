@@ -1,3 +1,9 @@
+//
+// $Id: constructExtMonFNAL.cc,v 1.11 2012/05/31 17:09:13 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/31 17:09:13 $
+//
+//
 // Andrei Gaponenko, 2011
 
 #include "Mu2eG4/inc/constructExtMonFNAL.hh"
@@ -24,7 +30,6 @@
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
-#include "Mu2eG4/inc/VirtualDetectorSD.hh"
 
 // FIXME: should not need WorldG4 here
 #include "GeometryService/inc/WorldG4.hh"
