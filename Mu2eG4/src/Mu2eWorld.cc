@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.133 2012/05/29 22:54:34 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.134 2012/05/31 17:08:54 genser Exp $
 // $Author: genser $
-// $Date: 2012/05/29 22:54:34 $
+// $Date: 2012/05/31 17:08:54 $
 //
 // Original author Rob Kutschke
 //
@@ -59,7 +59,6 @@
 #include "Mu2eG4/inc/ITGasLayerSD_Hexagonal.hh"
 #include "Mu2eG4/inc/ITGasLayerSD_Square.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
-#include "Mu2eG4/inc/ProtonAbsorberSD.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/TTrackerDeviceSupportSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -594,7 +593,7 @@ namespace mu2e {
     }
     else {
       StrawSD* strawSD      = 
-        new StrawSD(  SensitiveDetectorName::StrawGasVolume(),  *_config);
+        new StrawSD(                SensitiveDetectorName::StrawGasVolume(),  *_config);
       SDman->AddNewDetector(strawSD);
 
       TTrackerDeviceSupportSD* ttdsSD =
@@ -603,37 +602,37 @@ namespace mu2e {
     }
 
     Mu2eSensitiveDetector* vdSD = 
-      new Mu2eSensitiveDetector(SensitiveDetectorName::VirtualDetector(), *_config);
+      new Mu2eSensitiveDetector(    SensitiveDetectorName::VirtualDetector(), *_config);
     SDman->AddNewDetector(vdSD);
 
     if (  geom->hasElement<Calorimeter>() ) {
       CaloCrystalSD* ccSD     = 
-        new CaloCrystalSD(    SensitiveDetectorName::CaloCrystal(),     *_config);
+        new CaloCrystalSD(          SensitiveDetectorName::CaloCrystal(),     *_config);
       SDman->AddNewDetector(ccSD);
 
       CaloReadoutSD* crSD     = 
-        new CaloReadoutSD(    SensitiveDetectorName::CaloReadout(),     *_config);
+        new CaloReadoutSD(          SensitiveDetectorName::CaloReadout(),     *_config);
       SDman->AddNewDetector(crSD);
     }
 
     ExtMonFNAL_SD* emfSD     = 
-      new ExtMonFNAL_SD(    SensitiveDetectorName::ExtMonFNAL(),     *_config);
+      new ExtMonFNAL_SD(            SensitiveDetectorName::ExtMonFNAL(),     *_config);
     SDman->AddNewDetector(emfSD);
 
     ExtMonUCITofSD* emuTofSD = 
-      new ExtMonUCITofSD(    SensitiveDetectorName::ExtMonUCITof(),  *_config);
+      new ExtMonUCITofSD(           SensitiveDetectorName::ExtMonUCITof(),  *_config);
     SDman->AddNewDetector(emuTofSD);
 
     Mu2eSensitiveDetector* stSD = 
-      new Mu2eSensitiveDetector(  SensitiveDetectorName::StoppingTarget(),  *_config);
+      new Mu2eSensitiveDetector(    SensitiveDetectorName::StoppingTarget(),  *_config);
     SDman->AddNewDetector(stSD);
 
     Mu2eSensitiveDetector* sbSD =
-      new Mu2eSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar(), *_config);
+      new Mu2eSensitiveDetector(    SensitiveDetectorName::CRSScintillatorBar(), *_config);
     SDman->AddNewDetector(sbSD);
 
-    ProtonAbsorberSD* paSD = 
-      new ProtonAbsorberSD(  SensitiveDetectorName::ProtonAbsorber(),  *_config);
+    Mu2eSensitiveDetector* paSD = 
+      new Mu2eSensitiveDetector(    SensitiveDetectorName::ProtonAbsorber(),  *_config);
     SDman->AddNewDetector(paSD);
 
   } // instantiateSensitiveDetectors

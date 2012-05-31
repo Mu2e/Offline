@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.45 2012/05/29 22:54:25 genser Exp $
+// $Id: G4_module.cc,v 1.46 2012/05/31 17:08:45 genser Exp $
 // $Author: genser $
-// $Date: 2012/05/29 22:54:25 $
+// $Date: 2012/05/31 17:08:45 $
 //
 // Original author Rob Kutschke
 //
@@ -54,7 +54,6 @@
 #include "Mu2eG4/inc/ExtMonUCITofSD.hh"
 #include "Mu2eG4/inc/ITGasLayerSD.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
-#include "Mu2eG4/inc/ProtonAbsorberSD.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/TTrackerDeviceSupportSD.hh"
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
@@ -497,7 +496,7 @@ namespace mu2e {
       (SDman->FindSensitiveDetector(SensitiveDetectorName::ExtMonUCITof()))->
       beforeG4Event(*extMonUCITofHits, _processInfo, simPartId, event );
 
-    static_cast<ProtonAbsorberSD*>
+    static_cast<Mu2eSensitiveDetector*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::ProtonAbsorber()))->
       beforeG4Event(*paHits, _processInfo, simPartId, event );
 
