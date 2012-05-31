@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkPatRecTest02.fcl,v 1.6 2012/04/13 12:56:13 brownd Exp $
+# $Id: TrkPatRecTest02.fcl,v 1.7 2012/05/31 17:34:10 brownd Exp $
 # $Author: brownd $
-# $Date: 2012/04/13 12:56:13 $
+# $Date: 2012/05/31 17:34:10 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -70,7 +70,7 @@ physics :
 
 physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_01.txt"
 physics.producers.makeSH.diagLevel    : 0
-physics.producers.TrkPatRec.diagLevel    : 1 
+physics.producers.TrkPatRec.diagLevel    : 2
 physics.producers.makeSH.maxFullPrint : 0
 services.user.SeedService.baseSeed         :  0
 services.user.SeedService.maxUniqueEngines :  20
