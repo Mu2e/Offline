@@ -6,6 +6,8 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   double ndecay = nstopped*decayfrac;
   double ncap = nstopped*capfrac;
   double conprob(1e-15);
+  double momlow(103.3);
+  double momhigh(104.7);
 
   unsigned nbins(100);
   double mmin(101);
@@ -167,19 +169,17 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
     diocopy->SetMaximum(4);
     conspec[ires]->Draw("same");
 
-    double emin(103.5);
-    double emax(104.7);
-    int istart = diospec[ires]->FindFixBin(emin+0.5*mevperbin);
-    int istop = diospec[ires]->FindFixBin(emax-0.5*mevperbin);
-    cout << "Integration low edge " << diospec[ires]->GetBinLowEdge(istart) << " for cut at " << emin << endl;
-    cout << "Integration high edge " << diospec[ires]->GetBinLowEdge(istop)+mevperbin << " for cut at " << emax << endl;
+    int istart = diospec[ires]->FindFixBin(momlow+0.5*mevperbin);
+    int istop = diospec[ires]->FindFixBin(momhigh-0.5*mevperbin);
+    cout << "Integration low edge " << diospec[ires]->GetBinLowEdge(istart) << " for cut at " << momlow << endl;
+    cout << "Integration high edge " << diospec[ires]->GetBinLowEdge(istop)+mevperbin << " for cut at " << momhigh << endl;
     double dint_err, cint_err;
     double dint = diospec[ires]->IntegralAndError(istart,istop,dint_err);
     double cint = conspec[ires]->IntegralAndError(istart,istop,cint_err);
 
     TPaveText* inttext = new TPaveText(0.5,0.6,0.9,0.8,"NDC");
     char itext[50];
-    snprintf(itext,50,"%4.2f MeV/c < P < %4.2f MeV/c",emin,emax);
+    snprintf(itext,50,"%4.2f MeV/c < P < %4.2f MeV/c",momlow,momhigh);
     inttext->AddText(itext);
     snprintf(itext,50,"DIO integral = %5.3f #pm %4.3f",dint,dint_err);
     inttext->AddText(itext);
@@ -204,17 +204,17 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
     lintext->AddText(line);
     lintext->Draw();
 
-    TLine* eminl = new TLine(emin,0.0,emin,1.5*conspec[ires]->GetBinContent(conspec[ires]->GetMaximumBin()));
-    eminl->SetLineColor(kBlack);
-    eminl->SetLineStyle(2);
-    eminl->SetLineWidth(2);
-    eminl->Draw();
+    TLine* momlowl = new TLine(momlow,0.0,momlow,1.5*conspec[ires]->GetBinContent(conspec[ires]->GetMaximumBin()));
+    momlowl->SetLineColor(kBlack);
+    momlowl->SetLineStyle(2);
+    momlowl->SetLineWidth(2);
+    momlowl->Draw();
 
-    TLine* emaxl = new TLine(emax,0.0,emax,1.5*conspec[ires]->GetBinContent(conspec[ires]->GetMaximumBin()));
-    emaxl->SetLineColor(kBlack);
-    emaxl->SetLineStyle(2);
-    emaxl->SetLineWidth(2);
-    emaxl->Draw();
+    TLine* momhighl = new TLine(momhigh,0.0,momhigh,1.5*conspec[ires]->GetBinContent(conspec[ires]->GetMaximumBin()));
+    momhighl->SetLineColor(kBlack);
+    momhighl->SetLineStyle(2);
+    momhighl->SetLineWidth(2);
+    momhighl->Draw();
     leg->Draw();
     info->Draw();
  

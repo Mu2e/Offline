@@ -16,9 +16,10 @@
 double tdlow(0.57735027);
 double tdhigh(1.0);
 double t0min(720);
-double momlow(103.5);
+double momlow(103.3);
 double momhigh(104.7);
 int minnhits(15);
+size_t icut=2;
 
 TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
 TCut reco,goodfit,cosmic,rmom,rpitch,livegate;
@@ -59,7 +60,7 @@ void KalCuts() {
 //  mcsel = nmch+tmom;
 
   reco = TCut("fitstatus>0");
-  goodfit = reco+ncuts[1]+t0cuts[1]+momcuts[1]+fitcuts[1];
+  goodfit = reco+ncuts[icut]+t0cuts[icut]+momcuts[icut]+fitcuts[icut];
   cosmic = TCut("abs(d0)<105 && d0+2/om>460 && d0+2/om<660");
   snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
   rmom = TCut(ctext);
@@ -362,12 +363,12 @@ void KalFitAccPlots(TTree* trks) {
   mcan->Divide(1,1);
   mcan->cd(1);
   fitmom->Draw();
-  TLine* fitmomcut_l = new TLine(103.5,0.0,103.5,fitmom->GetMaximum());
+  TLine* fitmomcut_l = new TLine(momlow,0.0,momlow,fitmom->GetMaximum());
   fitmomcut_l->SetLineColor(kBlack);
   fitmomcut_l->SetLineStyle(2);
   fitmomcut_l->SetLineWidth(2);
   fitmomcut_l->Draw();
-  TLine* fitmomcut_h = new TLine(104.7,0.0,104.7,fitmom->GetMaximum());
+  TLine* fitmomcut_h = new TLine(momhigh,0.0,momhigh,fitmom->GetMaximum());
   fitmomcut_h->SetLineColor(kBlack);
   fitmomcut_h->SetLineStyle(2);
   fitmomcut_h->SetLineWidth(2);
