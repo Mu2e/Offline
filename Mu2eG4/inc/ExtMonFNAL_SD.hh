@@ -1,6 +1,10 @@
 #ifndef Mu2eG4_ExtMonFNAL_SD_hh
 #define Mu2eG4_ExtMonFNAL_SD_hh
 //
+// $Id: ExtMonFNAL_SD.hh,v 1.4 2012/05/31 17:08:02 genser Exp $
+// $Author: genser $
+// $Date: 2012/05/31 17:08:02 $
+//
 // Define a sensitive detector for the FNAL extinction monitor
 // Derived from the CaloCrystalSD code.
 // Andrei Gaponenko, 2011
@@ -12,56 +16,21 @@
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-
-// G4 includes
-#include "G4VSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 
 // Art includes
 #include "art/Persistency/Provenance/ProductID.h"
 #include "art/Framework/Principal/Event.h"
 
-class G4Step;
-class G4HCofThisEvent;
-
 namespace mu2e {
 
-  // Forward declarations in mu2e namespace
-  class SimpleConfig;
-  class PhysicsProcessInfo;
-
-  class ExtMonFNAL_SD : public G4VSensitiveDetector{
+  class ExtMonFNAL_SD : public Mu2eSensitiveDetector{
 
   public:
-    ExtMonFNAL_SD(G4String, const SimpleConfig& config);
 
-    void Initialize(G4HCofThisEvent*);
+    ExtMonFNAL_SD(G4String const name, SimpleConfig const & config);
+
     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
-    void EndOfEvent(G4HCofThisEvent*);
-
-    void beforeG4Event(StepPointMCCollection& outputHits,
-                       PhysicsProcessInfo & processInfo,
-                       art::ProductID const& simID,
-                       art::Event const & event );
-
-
-  private:
-
-    // Non-owning pointer to the  collection into which hits will be added.
-    StepPointMCCollection* _collection;
-
-    // Non-ownning pointer and object that returns code describing physics processes.
-    PhysicsProcessInfo* _processInfo;
-
-    // Mu2e point of origin
-    G4ThreeVector _mu2eOrigin;
-    
-    // Limit maximum size of the steps collection
-    int _sizeLimit;
-    int _currentSize;
-
-    // Information about the SimParticleCollection, needed to instantiate art::Ptr.
-    art::ProductID const *      _simID;
-    art::Event const * _event;
 
   };
 
