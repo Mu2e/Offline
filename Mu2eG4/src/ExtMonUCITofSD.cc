@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for extinction monitor tof
 //
-// $Id: ExtMonUCITofSD.cc,v 1.1 2011/12/30 20:31:46 youzy Exp $
+// $Id: ExtMonUCITofSD.cc,v 1.2 2012/06/03 06:54:57 youzy Exp $
 // $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
+// $Date: 2012/06/03 06:54:57 $
 //
 
 #include <cstdio>
@@ -32,36 +32,8 @@ using namespace std;
 namespace mu2e {
 
   ExtMonUCITofSD::ExtMonUCITofSD(G4String name, const SimpleConfig& config):
-    G4VSensitiveDetector(name),
-    _collection(0),
-    _processInfo(0),
-    _mu2eOrigin(GeomHandle<WorldG4>()->mu2eOriginInWorld()),
-    _debugList(0),
-    _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
-    _currentSize(0),
-    _simID(0),
-    _event(0)
-  {
-
-    // Get list of events for which to make debug printout.
-    string key("g4.extMonUCITofSDEventList");
-    if ( config.hasName(key) ){
-      vector<int> list;
-      config.getVectorInt(key,list);
-      _debugList.add(list);
-    }
-
-  }
-
-
-  ExtMonUCITofSD::~ExtMonUCITofSD(){ }
-
-  void ExtMonUCITofSD::Initialize(G4HCofThisEvent* HCE){
-
-    _currentSize=0;
-
-  }
-
+    Mu2eSensitiveDetector(name,config)
+  { }
 
   G4bool ExtMonUCITofSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
@@ -115,42 +87,5 @@ namespace mu2e {
     return true;
 
   }
-
-
-  void ExtMonUCITofSD::EndOfEvent(G4HCofThisEvent*){
-
-    if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
-      mf::LogWarning("G4") << "Total of " << _currentSize
-                            << " ExtMonUCI Tof hits were generated in the event."
-                            << endl
-                            << "Only " << _sizeLimit << " are saved in output collection."
-                            << endl;
-      cout << "Total of " << _currentSize
-           << " ExtMonUCI Tof hits were generated in the event."
-           << endl
-           << "Only " << _sizeLimit << " are saved in output collection."
-           << endl;
-    }
-
-    if (verboseLevel>0) {
-      G4int NbHits = _collection->size();
-      G4cout << "\n-------->Hits Collection: in this event they are " << NbHits
-             << " hits in the ExtMonUCI Tof detectors: " << G4endl;
-      for (G4int i=0;i<NbHits;i++) (*_collection)[i].print(G4cout);
-    }
-
-  }
-
-  void ExtMonUCITofSD::beforeG4Event(StepPointMCCollection& outputHits,
-                                    PhysicsProcessInfo& processInfo,
-                                    art::ProductID const& simID,
-                                    art::Event const & event ){
-    _collection    = &outputHits;
-    _processInfo   = &processInfo;
-    _simID         = &simID;
-    _event         = &event;
-
-    return;
-  } // end of beforeG4Event
 
 } //namespace mu2e
