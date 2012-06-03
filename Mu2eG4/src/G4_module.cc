@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.46 2012/05/31 17:08:45 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/31 17:08:45 $
+// $Id: G4_module.cc,v 1.47 2012/06/03 16:11:47 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/06/03 16:11:47 $
 //
 // Original author Rob Kutschke
 //
@@ -91,9 +91,6 @@
 #include "G4Run.hh"
 #include "G4Timer.hh"
 #include "G4VUserPhysicsList.hh"
-
-#include "G4eMultipleScattering.hh"
-#include "G4UrbanMscModel92.hh"
 
 // ROOT includes
 #include "TNtuple.h"
@@ -356,30 +353,6 @@ namespace mu2e {
 
     // add user processes
     addUserProcesses(config);
-    if ( config.getBool("hasITracker",false) && config.getBool("itracker.changeMSC",false) ) {
-            G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();
-            G4ParticleDefinition* particle = theParticleTable->FindParticle(11);
-            G4ProcessManager* pmanager = particle->GetProcessManager();
-            G4ProcessVector const* pVector = pmanager->GetProcessList();
-            for( G4int j=0; j<pmanager->GetProcessListLength(); j++ ) {
-                    G4VProcess* proc = (*pVector)[j];
-                    G4String name  = proc->GetProcessName();
-                    if( name == "msc" ) pmanager->RemoveProcess(proc);
-                    //if( name == "msc" ) pmanager->SetProcessActivation(proc,false);
-                    //if( name == "eBrem" ) pmanager->SetProcessActivation(proc,false);
-                    //      if( name == "eIoni" ) pmanager->SetProcessActivation(proc,false);
-            }
-            {
-                    G4eMultipleScattering* msc = new G4eMultipleScattering();
-                    msc->AddEmModel(0, new G4UrbanMscModel92());
-                    //msc->SetStepLimitType(fUseDistanceToBoundary);
-                    //      msc->AddEmModel(0, new G4GoudsmitSaundersonMscModel());
-                    //ph->RegisterProcess(msc,particle);
-                    pmanager->AddProcess(msc,                       -1, 1, 1);
-                    cout<<"in G4::initializeG4  Using UrbanMscModel92 for e-"<<endl;
-            }
-
-    }
 
     _UI = G4UImanager::GetUIpointer();
 
