@@ -1,10 +1,18 @@
-  $Id: v1_1_9.txt,v 1.22 2012/06/03 06:54:57 youzy Exp $
-  $Author: youzy $
-  $Date: 2012/06/03 06:54:57 $
+  $Id: v1_1_9.txt,v 1.23 2012/06/03 16:17:46 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/06/03 16:17:46 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+21) Jun 3, 2012 kutschke
+    Mu2eG4/src/G4module.cc
+      Removed changes in introduced at revision 1.44. These are the
+      changes that Gianfrano made to allow a switch to a different EM model.
+      The problem was the requested model is not present in G4 v4.9.5.1;
+      this caused compilation errors when we tried to compile with the
+      more recent G4 version.
 
 20) Jun 2, 2012 youzy
 
