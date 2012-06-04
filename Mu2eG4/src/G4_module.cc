@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.48 2012/06/04 04:10:31 kutschke Exp $
+// $Id: G4_module.cc,v 1.49 2012/06/04 19:30:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/06/04 04:10:31 $
+// $Date: 2012/06/04 19:30:13 $
 //
 // Original author Rob Kutschke
 //
@@ -48,10 +48,10 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
+#include "Mu2eG4/inc/postG4InitializeTasks.hh"
 #include "Mu2eG4/inc/ITGasLayerSD.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
-#include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Analyses/inc/DiagnosticsG4.hh"
 #include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/generateFieldMap.hh"
@@ -77,6 +77,7 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
 // Geant4 includes
+#include "G4UIExecutive.hh"
 #include "G4UImanager.hh"
 #include "G4NistManager.hh"
 #include "G4VisExecutive.hh"
@@ -99,19 +100,6 @@
 #include <memory>
 #include <sstream>
 #include <iomanip>
-
-// not sure why this needs to be here; if it is above with other
-// Geant4 includes a complier error occurs...
-
-// In file included from ./MCDataProducts/inc/SimParticle.hh:22,
-//              from ./MCDataProducts/inc/SimParticleCollection.hh:16,
-//              from ./Mu2eG4/inc/TrackingAction.hh:22,
-//              from Mu2eG4/src/G4_plugin.cc:63:
-//./Mu2eUtilities/inc/PDGCode.hh:222: error: expected identifier before numeric constant
-//./Mu2eUtilities/inc/PDGCode.hh:222: error: expected `}' before numeric constant
-//./Mu2eUtilities/inc/PDGCode.hh:222: error: expected unqualified-id before numeric constant
-//      B0 = 511 ,
-#include "G4UIExecutive.hh"
 
 using namespace std;
 using CLHEP::Hep3Vector;
@@ -184,10 +172,7 @@ namespace mu2e {
     // Do the G4 initialization that must be done only once per job, not once per run
     void initializeG4( GeometryService& geom, art::Run const& run );
 
-    // A helper function.
-    void setOtherCuts( SimpleConfig const& config );
-
-  };
+  }; // end G4 header
 
   G4::G4(fhicl::ParameterSet const& pSet):
     _runManager(0),
@@ -340,19 +325,14 @@ namespace mu2e {
     // Initialize G4 for this run.
     _runManager->Initialize();
 
-    // Switch off the decay of some particles
-    switchDecayOff(config);
+    // At this point G4 geometry and physics processes have been initialized.
+    // So it is safe to modify physics processes and to compute information
+    // that is derived from the G4 geometry or physics processes.
 
-    // add user processes
-    addUserProcesses(config);
+    // Mu2e specific customizations that must be done after the call to Initialize.
+    postG4InitializeTasks(config);
 
     _UI = G4UImanager::GetUIpointer();
-
-    // Set other cuts; call after _UI is established.
-    setOtherCuts( config );
-
-    // At this point G4 geometry has been initialized.  So it is safe to initialize
-    // objects that depend on G4 geometry.
 
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
@@ -577,22 +557,6 @@ namespace mu2e {
 
     delete _visManager;
   }
-
-
-  void G4::setOtherCuts( SimpleConfig const& config ){
-
-    // If this cut is absent, leave the default from G4.
-    string name("g4.minRangeCut");
-    if ( config.hasName(name) ){
-      double minRangeCut = config.getDouble(name);
-      ostringstream out;
-      out << "/run/setCut " << minRangeCut << " mm ";
-      _UI->ApplyCommand(out.str().c_str());
-      mf::LogInfo("GEOM")
-        << "Setting minRange cut to " << minRangeCut << " mm\n";
-    }
-  }
-
 
 } // End of namespace mu2e
 
