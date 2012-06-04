@@ -4,9 +4,9 @@
 //
 // Do not put G4 code in this steering routine.
 //
-// $Id: postG4InitializeTasks.cc,v 1.1 2012/06/04 19:32:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/04 19:32:25 $
+// $Id: postG4InitializeTasks.cc,v 1.2 2012/06/04 23:50:50 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/06/04 23:50:50 $
 //
 
 #include "Mu2eG4/inc/postG4InitializeTasks.hh"
@@ -14,6 +14,8 @@
 
 #include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Mu2eG4/inc/setMinimumRangeCut.hh"
+
+#include "Mu2eG4/inc/checkMSCmodel.hh"
 
 namespace mu2e{
 
@@ -27,6 +29,9 @@ namespace mu2e{
 
     // If requested, change the minimum range cut.
     setMinimumRangeCut(config);
+
+    // If the ITracker is used, check the geant4 Multiple Scattering Model selected.
+    checkMSCmodel(config);
 
   }
 

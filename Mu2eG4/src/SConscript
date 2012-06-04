@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.30 2012/04/19 22:57:29 genser Exp $
-# $Author: genser $
-# $Date: 2012/04/19 22:57:29 $
+# $Id: SConscript,v 1.31 2012/06/04 23:50:50 tassiell Exp $
+# $Author: tassiell $
+# $Date: 2012/06/04 23:50:50 $
 #
 # Original author Rob Kutschke.
 #
@@ -18,6 +18,9 @@ Import('env')
 
 g4inc    = os.environ['G4INCLUDE']
 g4libdir = os.environ['G4LIBDIR']
+g4_version = os.environ['GEANT4_VERSION']
+g4_version=g4_version.replace('_','')
+g4_version = g4_version[1:4]
 
 # Compiler switches needed by the default G4 build.
 G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
@@ -25,7 +28,8 @@ G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
                '-DG4UI_USE',             '-DG4VIS_USE_DAWNFILE',
                '-DG4VIS_USE_HEPREPFILE', '-DG4VIS_USE_RAYTRACER',
                '-DG4VIS_USE_VRMLFILE',   '-DG4VIS_USE_ASCIITREE',
-               '-DG4VIS_USE_GAGTREE',    '-DG4VIS_USE'
+               '-DG4VIS_USE_GAGTREE',    '-DG4VIS_USE',
+               '-DG4VERSION='+g4_version
             ]
 
 # Compiler switches if we want to build G4 with OPENGL
