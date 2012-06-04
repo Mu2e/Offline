@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.47 2012/06/03 16:11:47 kutschke Exp $
+// $Id: G4_module.cc,v 1.48 2012/06/04 04:10:31 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/06/03 16:11:47 $
+// $Date: 2012/06/04 04:10:31 $
 //
 // Original author Rob Kutschke
 //
@@ -48,14 +48,8 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
-#include "Mu2eG4/inc/CaloCrystalSD.hh"
-#include "Mu2eG4/inc/CaloReadoutSD.hh"
-#include "Mu2eG4/inc/ExtMonFNAL_SD.hh"
-#include "Mu2eG4/inc/ExtMonUCITofSD.hh"
 #include "Mu2eG4/inc/ITGasLayerSD.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
-#include "Mu2eG4/inc/StrawSD.hh"
-#include "Mu2eG4/inc/TTrackerDeviceSupportSD.hh"
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Analyses/inc/DiagnosticsG4.hh"
@@ -106,7 +100,6 @@
 #include <sstream>
 #include <iomanip>
 
-
 // not sure why this needs to be here; if it is above with other
 // Geant4 includes a complier error occurs...
 
@@ -128,63 +121,8 @@ namespace mu2e {
   class G4 : public art::EDProducer {
 
   public:
-    explicit G4(fhicl::ParameterSet const& pSet):
-      _runManager(0),
-      _warnEveryNewRun(pSet.get<bool>("warnEveryNewRun",false)),
-      _exportPDTStart(pSet.get<bool>("exportPDTStart",false)),
-      _exportPDTEnd(pSet.get<bool>("exportPDTEnd",false)),
-      _genAction(0),
-      _trackingAction(0),
-      _steppingAction(0),
-      _stackingAction(0),
-      _session(0),
-      _visManager(0),
-      _UI(0),
-      _rmvlevel(pSet.get<int>("diagLevel",0)),
-      _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
-      _visMacro(pSet.get<std::string>("visMacro","")),
-      _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel")),
-      _physVolHelper(),
-      _processInfo(),
-      _printPhysicsProcessSummary(false),
-      _trackerOutputName(StepInstanceName::tracker),
-      _vdOutputName(StepInstanceName::virtualdetector),
-      _tvdOutputName(StepInstanceName::timeVD),
-      _stOutputName(StepInstanceName::stoppingtarget),
-      _sbOutputName(StepInstanceName::CRV),
-      _caloOutputName(StepInstanceName::calorimeter),
-      _caloROOutputName(StepInstanceName::calorimeterRO),
-      _extMonFNALOutputName(StepInstanceName::ExtMonFNAL),
-      _extMonUCITofOutputName(StepInstanceName::ExtMonUCITof),
-      _ttrackerDeviceSupportOutputName(StepInstanceName::ttrackerDS),
-      _paOutputName(StepInstanceName::protonabsorber),
-      _diagnostics(){
-
-      produces<StepPointMCCollection>(_trackerOutputName.name());
-      produces<StepPointMCCollection>(_vdOutputName.name());
-      produces<StepPointMCCollection>(_tvdOutputName.name());
-      produces<StepPointMCCollection>(_stOutputName.name());
-      produces<StepPointMCCollection>(_sbOutputName.name());
-      produces<StepPointMCCollection>(_caloOutputName.name());
-      produces<StepPointMCCollection>(_caloROOutputName.name());
-      produces<StepPointMCCollection>(_extMonFNALOutputName.name());
-      produces<StepPointMCCollection>(_extMonUCITofOutputName.name());
-      produces<StepPointMCCollection>(_ttrackerDeviceSupportOutputName.name());
-      produces<StepPointMCCollection>(_paOutputName.name());
-      produces<SimParticleCollection>();
-      produces<PhysicalVolumeInfoCollection,art::InRun>();
-      produces<PointTrajectoryCollection>();
-
-      produces<StatusG4>();
-
-      // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
-      createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
-
-    }
-
-    virtual ~G4() {
-      // See note 1.
-    }
+    G4(fhicl::ParameterSet const& pSet);
+    // Accept compiler supplied d'tor
 
     virtual void produce(art::Event& e);
 
@@ -250,6 +188,60 @@ namespace mu2e {
     void setOtherCuts( SimpleConfig const& config );
 
   };
+
+  G4::G4(fhicl::ParameterSet const& pSet):
+    _runManager(0),
+    _warnEveryNewRun(pSet.get<bool>("warnEveryNewRun",false)),
+    _exportPDTStart(pSet.get<bool>("exportPDTStart",false)),
+    _exportPDTEnd(pSet.get<bool>("exportPDTEnd",false)),
+    _genAction(0),
+    _trackingAction(0),
+    _steppingAction(0),
+    _stackingAction(0),
+    _session(0),
+    _visManager(0),
+    _UI(0),
+    _rmvlevel(pSet.get<int>("diagLevel",0)),
+    _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
+    _visMacro(pSet.get<std::string>("visMacro","")),
+    _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel")),
+    _physVolHelper(),
+    _processInfo(),
+    _printPhysicsProcessSummary(false),
+    _trackerOutputName(StepInstanceName::tracker),
+    _vdOutputName(StepInstanceName::virtualdetector),
+    _tvdOutputName(StepInstanceName::timeVD),
+    _stOutputName(StepInstanceName::stoppingtarget),
+    _sbOutputName(StepInstanceName::CRV),
+    _caloOutputName(StepInstanceName::calorimeter),
+    _caloROOutputName(StepInstanceName::calorimeterRO),
+    _extMonFNALOutputName(StepInstanceName::ExtMonFNAL),
+    _extMonUCITofOutputName(StepInstanceName::ExtMonUCITof),
+    _ttrackerDeviceSupportOutputName(StepInstanceName::ttrackerDS),
+    _paOutputName(StepInstanceName::protonabsorber),
+    _diagnostics(){
+
+    produces<StepPointMCCollection>(_trackerOutputName.name());
+    produces<StepPointMCCollection>(_vdOutputName.name());
+    produces<StepPointMCCollection>(_tvdOutputName.name());
+    produces<StepPointMCCollection>(_stOutputName.name());
+    produces<StepPointMCCollection>(_sbOutputName.name());
+    produces<StepPointMCCollection>(_caloOutputName.name());
+    produces<StepPointMCCollection>(_caloROOutputName.name());
+    produces<StepPointMCCollection>(_extMonFNALOutputName.name());
+    produces<StepPointMCCollection>(_extMonUCITofOutputName.name());
+    produces<StepPointMCCollection>(_ttrackerDeviceSupportOutputName.name());
+    produces<StepPointMCCollection>(_paOutputName.name());
+    produces<SimParticleCollection>();
+    produces<PhysicalVolumeInfoCollection,art::InRun>();
+    produces<PointTrajectoryCollection>();
+
+    produces<StatusG4>();
+
+    // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
+    createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
+
+  } // end G4:G4(fhicl::ParameterSet const& pSet);
 
   // Create an instance of the run manager.
   void G4::beginJob(){
@@ -356,7 +348,7 @@ namespace mu2e {
 
     _UI = G4UImanager::GetUIpointer();
 
-    // Set other cuts.
+    // Set other cuts; call after _UI is established.
     setOtherCuts( config );
 
     // At this point G4 geometry has been initialized.  So it is safe to initialize
@@ -430,11 +422,11 @@ namespace mu2e {
         beforeG4Event(*outputHits, _processInfo, simPartId, event );
 
     }else {
-      static_cast<StrawSD*>
+      static_cast<Mu2eSensitiveDetector*>
         (SDman->FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()))->
         beforeG4Event(*outputHits, _processInfo, simPartId, event );
 
-      static_cast<TTrackerDeviceSupportSD*>
+      static_cast<Mu2eSensitiveDetector*>
         (SDman->FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport()))->
         beforeG4Event(*ttrackerDeviceSupportHits, _processInfo, simPartId, event );
     }
@@ -452,20 +444,20 @@ namespace mu2e {
       beforeG4Event(*sbHits, _processInfo, simPartId, event );
 
     if ( geom->hasElement<Calorimeter>() ) {
-      static_cast<CaloCrystalSD*>
+      static_cast<Mu2eSensitiveDetector*>
         (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal()))->
         beforeG4Event(*caloHits, _processInfo, simPartId, event );
 
-      static_cast<CaloReadoutSD*>
+      static_cast<Mu2eSensitiveDetector*>
         (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloReadout()))->
         beforeG4Event(*caloROHits, _processInfo, simPartId, event );
     }
 
-    static_cast<ExtMonFNAL_SD*>
+    static_cast<Mu2eSensitiveDetector*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))->
       beforeG4Event(*extMonFNALHits, _processInfo, simPartId, event );
 
-    static_cast<ExtMonUCITofSD*>
+    static_cast<Mu2eSensitiveDetector*>
       (SDman->FindSensitiveDetector(SensitiveDetectorName::ExtMonUCITof()))->
       beforeG4Event(*extMonUCITofHits, _processInfo, simPartId, event );
 
