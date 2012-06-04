@@ -1,3 +1,10 @@
+//
+//
+//  $Id: ITGasLayerSD_Hexagonal.cc,v 1.13 2012/06/04 23:46:23 tassiell Exp $
+//  $Author: tassiell $
+//  $Date: 2012/06/04 23:46:23 $
+//
+//
 #include "Mu2eG4/inc/ITGasLayerSD_Hexagonal.hh"
 
 #include "G4VProcess.hh"
@@ -21,11 +28,13 @@ namespace mu2e {
     ++_currentSize;
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
-      if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in ItrackerSD: "
-                              << _currentSize << endl;
-      }
-      return false;
+            if( (_currentSize - _sizeLimit)==1 ) {
+                    mf::LogWarning("G4") << "Maximum number of particles reached "
+                                    << SensitiveDetectorName
+                                    << ": "
+                                    << _currentSize << endl;
+            }
+            return false;
     }
 
     G4double edep = aStep->GetTotalEnergyDeposit();

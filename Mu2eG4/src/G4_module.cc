@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.49 2012/06/04 19:30:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/04 19:30:13 $
+// $Id: G4_module.cc,v 1.50 2012/06/04 23:46:23 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/06/04 23:46:23 $
 //
 // Original author Rob Kutschke
 //
@@ -49,7 +49,6 @@
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/postG4InitializeTasks.hh"
-#include "Mu2eG4/inc/ITGasLayerSD.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "Analyses/inc/DiagnosticsG4.hh"
@@ -397,7 +396,7 @@ namespace mu2e {
     _printPhysicsProcessSummary  = _config->getBool("g4.printPhysicsProcessSummary",false);
 
     if ( _config->getBool("hasITracker",false) ) {
-      static_cast<ITGasLayerSD*>
+      static_cast<Mu2eSensitiveDetector*>
         (SDman->FindSensitiveDetector(SensitiveDetectorName::ItrackerGasVolume()))->
         beforeG4Event(*outputHits, _processInfo, simPartId, event );
 
