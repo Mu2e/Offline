@@ -1,9 +1,9 @@
 //
 // Construct ExtinctionMonitor UCI.
 //
-// $Id: constructExtMonUCI.cc,v 1.10 2012/05/26 00:15:42 youzy Exp $
+// $Id: constructExtMonUCI.cc,v 1.11 2012/06/04 23:23:01 youzy Exp $
 // $Author: youzy $
-// $Date: 2012/05/26 00:15:42 $
+// $Date: 2012/06/04 23:23:01 $
 
 #include <iostream>
 
@@ -311,12 +311,20 @@ namespace mu2e {
         YZYDEBUG("tablele Origin " << tableOrigin[0] << "  " << tableOrigin[1] << "  " << tableOrigin[2]);
       }
 
+      G4ThreeVector tableOriginLocal = tableOrigin - det.origin();
+      VolumeInfo tableMotherInfo = envelopeInfo;
+      if (iTab == 6)
+      {
+        tableOriginLocal = tableOrigin - platformInfo.centerInMu2e(); 
+        tableMotherInfo = platformInfo;
+      }
+
       tableInfo[iTab] = nestBox( name.str(),
                                tableParams,
                                tableMaterial,
                                0,
-                               tableOrigin - det.origin(),
-                               envelopeInfo,
+                               tableOriginLocal,
+                               tableMotherInfo,
                                0,
                                tableVisible,
                                G4Colour::Red(),
@@ -337,9 +345,9 @@ namespace mu2e {
     config.getVectorDouble("extmon_uci.shdHalfLengths", shdHalfLengths, 3*kNShd);
     vector<double> shdPosition;
     config.getVectorDouble("extmon_uci.shdPosition", shdPosition, 3*kNShd);
+    vector<int> shieldSwitch;
+    config.getVectorInt("extmon_uci.shieldSwitch", shieldSwitch, kNShd);
 
-    int  removableIndex = config.getInt("extmon_uci.removableIndex", 8);
-    bool removableOn    = config.getBool("extmon_uci.removableOn", true);
     int  ironIndex = config.getInt("extmon_uci.ironIndex", 9);
     G4Material* shdIronMaterial = materialFinder.get("extmon_uci.shdIronMaterialName");
 
@@ -347,7 +355,7 @@ namespace mu2e {
     VolumeInfo shdInfo[kNShd];
     for (int iShd = 0; iShd < kNShd; iShd++)
     {
-      if (iShd >= removableIndex && !removableOn) continue;
+      if ( shieldSwitch[iShd] == 0) continue;
       name.str("");
       name << extmonBaseName << "Shield" << iShd;
 
@@ -365,11 +373,11 @@ namespace mu2e {
                                shdParams,
                                (iShd == ironIndex ? shdIronMaterial : shdMaterial),
                                0,
-                               (iShd >= removableIndex ? shdOrigin - hallOriginInMu2e : shdOrigin - det.origin()),
-                               (iShd >= removableIndex ? parent : envelopeInfo),
+                               (shieldSwitch[iShd] == 2 ? shdOrigin - hallOriginInMu2e : shdOrigin - det.origin()),
+                               (shieldSwitch[iShd] == 2 ? parent : envelopeInfo),
                                0,
                                shdVisible,
-                               G4Colour::Cyan(),
+                               (iShd == 9 ? G4Colour::Red() : G4Colour::Cyan()),
                                shdSolid,
                                forceAuxEdgeVisible, placePV, doSurfaceCheck
                              );
@@ -444,7 +452,9 @@ namespace mu2e {
     VolumeInfo shdChannelMotherInfo;
     for (int iShdChannel = 0; iShdChannel < kNShdChannel; iShdChannel++)
     {
-      if ( iShdChannel >= 1 && !removableOn)
+      if      ( iShdChannel == 1 && shieldSwitch[8] == 0 ) continue;
+      else if ( iShdChannel == 2 && shieldSwitch[9] == 0 ) continue;
+
       name.str("");
       name << extmonBaseName << "ShieldChannel" << iShdChannel;
 
@@ -468,7 +478,7 @@ namespace mu2e {
       *shdChannelRot = CLHEP::HepRotation::IDENTITY;
       shdChannelRot->rotateAxes( newX, newY, newZ );
       shdChannelRot->invert();
-      shdChannelRot->print(cout);
+      if (verbosity >= 2) shdChannelRot->print(cout);
 
       shdChannelInfo[iShdChannel] = VolumeInfo( name.str(),
                                                 CLHEP::Hep3Vector(0, 0, 0),

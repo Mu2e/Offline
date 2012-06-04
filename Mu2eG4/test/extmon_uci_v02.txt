@@ -103,30 +103,30 @@ string extmon_uci.calMaterialName    = "Lyso_01";
 int extmon_uci.nShds = 10;
 vector<double> extmon_uci.shdHalfLengths = {
         777.0, 700.0,  250.0,  // 0: Front 
-        650.0, 700.0,  250.0,  // 1: Back
-        100.0, 450.0, 2775.0,  // 2: -X
+        600.0, 700.0,  250.0,  // 1: Back
+         50.0, 450.0, 2775.0,  // 2: -X
         200.0, 450.0, 2775.0,  // 3: +X
-        650.0, 250.0, 1550.0,  // 4: TopFront
-        650.0, 250.0, 1225.0,  // 5: TopBack
+        600.0, 250.0, 1550.0,  // 4: TopFront
+        600.0, 250.0, 1225.0,  // 5: TopBack
         250.0,  90.0, 1550.0,  // 6: DownFront
         250.0, 180.0, 1225.0,  // 7: DownBack
        1500.0,2200.0,  850.0,  // 8: FrontRemovable
-       1621.5,2200.0,  150.0   // 9: FrontRemovable Iron
+       1500.0,2200.0,  150.0   // 9: FrontRemovable Iron
 };
 vector<double> extmon_uci.shdPosition = {
         3843.0, 1600.0, -15679.0, // 0: Front
-        3970.0, 1600.0, -21729.0, // 1: Back
-        3420.0, 1350.0, -18704.0, // 2: -X
+        4020.0, 1600.0, -21729.0, // 1: Back
+        3470.0, 1350.0, -18704.0, // 2: -X
         4420.0, 1350.0, -18704.0, // 3: +X
-        3970.0, 2050.0, -17479.0, // 4: TopFront
-        3970.0, 2050.0, -20254.0, // 5: TopBack
+        4020.0, 2050.0, -17479.0, // 4: TopFront
+        4020.0, 2050.0, -20254.0, // 5: TopBack
         3870.0,  990.0, -17479.0, // 6: DownFront
         3870.0, 1080.0, -20254.0, // 7: DownBack
        4565.51,  150.0, -14574.0, // 8: FrontRemovable
-       4444.02,  150.0, -13574.0  // 9: FrontRemovable Iron
+       4565.51,  150.0, -13574.0  // 9: FrontRemovable Iron
 };
-int    extmon_uci.removableIndex      = 8;
-bool   extmon_uci.removableOn         = false;
+vector<int> extmon_uci.shieldSwitch = {1, 1, 1, 1, 1,
+                                       1, 1, 1, 2, 2};
 
 bool   extmon_uci.shdVisible          = true;
 bool   extmon_uci.shdSolid            = false;
@@ -185,20 +185,22 @@ bool   extmon_uci.nshSolid            = false;
 string extmon_uci.nshMaterialName     = "ZirconiumHydridePolyethylene";
 
 // ExtMonUCI Table
-int extmon_uci.nTabs = 6;
+int extmon_uci.nTabs = 7;
 vector<double> extmon_uci.tableHalfLengths = {120.0, 25.0, 1550.0,
                                             120.0, 25.0,  400.0,
                                             165.0, 25.0,  425.0,
                                             120.0, 25.0,  400.0,
-                                            127.0,700.0, 3025.0,  
-                                            150.0,700.0, 3275.0
+                                            177.0,700.0, 3025.0,  
+                                            150.0,700.0, 3275.0,
+                                            177.0,300.0, 1750.0                                 
 };
 vector<double> extmon_uci.tablePosition = {3834.0, 1140.0, -17479.0,
                                          3825.0, 1325.0, -19429.0,
                                          3850.0, 1325.0, -20254.0,
                                          3885.0, 1325.0, -21079.0,
-                                         3193.0, 1600.0, -18954.0,
-                                         4770.0, 1600.0, -18704.0 
+                                         3243.0, 1600.0, -18954.0,
+                                         4770.0, 1600.0, -18704.0,
+                                         3243.0,  600.0, -19729.0 
 };
 bool   extmon_uci.tableVisible          = true;
 bool   extmon_uci.tableSolid            = false;
@@ -254,8 +256,8 @@ string extmon_uci.shdChannelMaterialName = "G4_AIR";
 bool   extmon_uci.sideShieldOn           = false;
 int    extmon_uci.sideShieldNumber = 1;
 vector<int> extmon_uci.sideShieldPoints = {4};
-vector<double> extmon_uci.sideShieldPositionXZ = { 2094.29, -16693.31,
-                                                   3065.51, -16931.4,
+vector<double> extmon_uci.sideShieldPositionXZ = { 2095.00, -16693.0,
+                                                   3065.51, -16931.0,
                                                    3065.51, -13724.0,
                                                    2822.53, -13724.0
                                                  };
