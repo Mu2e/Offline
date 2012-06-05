@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.38 2012/05/30 18:21:56 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/30 18:21:56 $
+// $Id: constructVirtualDetectors.cc,v 1.39 2012/06/05 16:20:13 genser Exp $
+// $Author: genser $
+// $Date: 2012/06/05 16:20:13 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -54,16 +54,16 @@ namespace mu2e {
 
   // Construct the virtual detectors
 
-  void constructVirtualDetectors( SimpleConfig const * const _config ){
+  void constructVirtualDetectors( SimpleConfig const & _config ){
 
     // Place virtual detectors
 
-    int static const verbosityLevel = _config->getInt("vd.verbosityLevel",0);
+    int static const verbosityLevel = _config.getInt("vd.verbosityLevel",0);
 
-    bool vdIsVisible         = _config->getBool("vd.visible",true);
-    bool vdIsSolid           = _config->getBool("vd.solid",true);
-    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool vdIsVisible         = _config.getBool("vd.visible",true);
+    bool vdIsSolid           = _config.getBool("vd.solid",true);
+    bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
 
     int const nSurfaceCheckPoints = 100000; // for a more thorrow check due to the vd shape
@@ -79,7 +79,7 @@ namespace mu2e {
 
     double vdHalfLength = CLHEP::mm * vdg->getHalfLength();
 
-    MaterialFinder materialFinder(*_config);
+    MaterialFinder materialFinder(_config);
     G4Material* vacuumMaterial     = materialFinder.get("toyDS.insideMaterialName");
 
     TubsParams vdParams(0,rVac,vdHalfLength);
@@ -161,25 +161,60 @@ namespace mu2e {
         vd.logical->SetSensitiveDetector(vdSD);
       }
 
+    // Virtual Detectors Coll5_OutSurf surrounds the outer cylindrical surface of collimator in TS5
+
+    int vdId = VirtualDetectorId::Coll5_OutSurf;
+    if( vdg->exist(vdId) ) {
+
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+      }
+
+      // the detector is on the outer surface of the coll5
+      // it is thin cylinder, NOT a thin disk
+
+      VolumeInfo const & parent = _helper->locateVolInfo("ToyTS5Vacuum");
+
+      double coll5OuterRadius    = _config.getDouble("coll5.outerRadius");
+      double coll5HalfLength     = beamg->getTS().getColl5().getHalfLength();
+
+      TubsParams  vdParamsColl5OutSurf(coll5OuterRadius - 2.*vdHalfLength,
+                                       coll5OuterRadius,
+                                       coll5HalfLength - 2.*vdHalfLength);
+
+      VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
+                                vdParamsColl5OutSurf, vacuumMaterial, 0,
+                                vdg->getLocal(vdId),
+                                parent,
+                                vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
+                                forceAuxEdgeVisible,
+                                placePV,
+                                false);
+      // vd are very thin, a more thorough check is needed
+      doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+      vd.logical->SetSensitiveDetector(vdSD);
+
+    }
+
     // Virtual Detectors ST_In, ST_Out are placed inside DS2, just before and after stopping target
 
     // If there is no neutron absorber, virtual detectors 9 and 10 extend to
     // inner wall of DS2 minus 5 mm. If neutron absorber is defined, these
     // detectors extend to neutron absorber minus 5 mm.
-    if ( !_config->getBool("isDumbbell",false) ){
-      double Ravr = _config->getDouble("toyDS.rIn");
+    if ( !_config.getBool("isDumbbell",false) ){
+      double Ravr = _config.getDouble("toyDS.rIn");
       double deltaR = 0;
       double Z0 = 0;
       double deltaZ = 1.0;
 
-      if ( _config->getBool("hasNeutronAbsorber",false) &&  
-           _config->getBool("neutronabsorber.hasInternalPart") ) {
-        double NAIInnerRadius0     = _config->getDouble("neutronabsorber.internalInnerRadius0");
-        double NAIInnerRadius1     = _config->getDouble("neutronabsorber.internalInnerRadius1");
+      if ( _config.getBool("hasNeutronAbsorber",false) &&  
+           _config.getBool("neutronabsorber.hasInternalPart") ) {
+        double NAIInnerRadius0     = _config.getDouble("neutronabsorber.internalInnerRadius0");
+        double NAIInnerRadius1     = _config.getDouble("neutronabsorber.internalInnerRadius1");
         Ravr   = (NAIInnerRadius0+NAIInnerRadius1)/2;
         deltaR = (NAIInnerRadius1-NAIInnerRadius0);
-        Z0     = _config->getDouble("neutronabsorber.internalZ01");
-        deltaZ = 2.0 *_config->getDouble("neutronabsorber.internalHalfLengthZ01");
+        Z0     = _config.getDouble("neutronabsorber.internalZ01");
+        deltaZ = 2.0 *_config.getDouble("neutronabsorber.internalHalfLengthZ01");
       }
 
       for( int vdId=VirtualDetectorId::ST_In; 
@@ -200,7 +235,7 @@ namespace mu2e {
 
           TubsParams vdParamsTarget(0.,rvd,vdHalfLength);
 
-          VolumeInfo const & parent = ( _config->getBool("isDumbbell",false) ) ? 
+          VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ? 
             _helper->locateVolInfo("ToyDS3Vacuum") : 
             _helper->locateVolInfo("ToyDS2Vacuum"); //ToyDS3Vacuum to move the targets
 
@@ -233,7 +268,7 @@ namespace mu2e {
     // check if ttracker exists and if the number of devices
     // ttracker.numDevices is even is done in VirtualDetectorMaker
 
-    int vdId = VirtualDetectorId::TT_Mid;
+    vdId = VirtualDetectorId::TT_Mid;
     if( vdg->exist(vdId) ) {
       
       if ( verbosityLevel > 0) {
@@ -313,7 +348,7 @@ namespace mu2e {
     // of the ttracker (in the proton absorber region); check if
     // ttracker exist is done in VirtualDetectorMaker
 
-    if ( _config->getBool("hasProtonAbsorber",false) && !_config->getBool("protonabsorber.isHelical", false) ) {
+    if ( _config.getBool("hasProtonAbsorber",false) && !_config.getBool("protonabsorber.isHelical", false) ) {
 
       vdId = VirtualDetectorId::TT_FrontHollow;
       if( vdg->exist(vdId) ) {
@@ -321,7 +356,7 @@ namespace mu2e {
         if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
         }
-        if ( !_config->getBool("hasProtonAbsorber",false) ) {
+        if ( !_config.getBool("hasProtonAbsorber",false) ) {
           throw cet::exception("GEOM")
             << "This virtual detector " << VirtualDetectorId(vdId).name()
             << " can only be placed if proton absorber is present\n";
@@ -836,12 +871,12 @@ namespace mu2e {
       GeomHandle<ExtMonUCI::ExtMon> extmon;
 
       std::vector<double> hlen(3);
-      hlen[0] = _config->getDouble("vd.ExtMonUCIEntrance1.HalfLengths", 100.0);
-      hlen[1] = _config->getDouble("vd.ExtMonUCIEntrance1.HalfLengths", 100.0);
+      hlen[0] = _config.getDouble("vd.ExtMonUCIEntrance1.HalfLengths", 100.0);
+      hlen[1] = _config.getDouble("vd.ExtMonUCIEntrance1.HalfLengths", 100.0);
       hlen[2] = vdg->getHalfLength();
 
       std::vector<double> pos;
-      _config->getVectorDouble("vd.ExtMonUCIEntrance1.Position", pos, 3);
+      _config.getVectorDouble("vd.ExtMonUCIEntrance1.Position", pos, 3);
       G4ThreeVector vdLocalOffset = G4ThreeVector( pos[0], pos[1], pos[2] ) - parent.centerInMu2e();
 
       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
@@ -945,7 +980,7 @@ namespace mu2e {
       VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
       GeomHandle<ProtonBeamDump> dump;
 
-      const double requested_z = _config->getDouble("vd.ExtMonCommonPlane.z");
+      const double requested_z = _config.getDouble("vd.ExtMonCommonPlane.z");
 
       const double xmin = std::min(building->hallInsideXPSCorner(),
                                    dump->frontShieldingCenterInMu2e()[0]
