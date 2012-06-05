@@ -1,5 +1,5 @@
 // Geometry of the production target. This also defines the proton beam direction.
-// 
+//
 // Andrei Gaponenko, 2011
 
 #ifndef PRODUCTIONTARGET_HH
@@ -15,11 +15,11 @@
 #include "Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {
-    
+
   class ProductionTargetMaker;
 
   class ProductionTarget : virtual public Detector {
-  public: 
+  public:
 
     // cylinder parameters
     double rOut() const { return _rOut; }
@@ -28,7 +28,7 @@ namespace mu2e {
     // in mu2e coordinates
     const CLHEP::Hep3Vector& position() const { return _prodTargetPosition; }
 
-    // this is used to transorm particle momentum and position from 
+    // this is used to transorm particle momentum and position from
     // the PrimaryProtonGun frame to the Mu2e frame
     const CLHEP::HepRotation& protonBeamRotation() const { return _protonBeamRotation; }
 
@@ -37,7 +37,7 @@ namespace mu2e {
     const CLHEP::HepRotation& productionTargetRotation() const { return _protonBeamInverseRotation; }
 
     //----------------------------------------------------------------
-  private: 
+  private:
     friend class ProductionTargetMaker;
 
     // Private ctr: the class should be only obtained via ProductionTargetFNAL::ProductionTargetMaker.
