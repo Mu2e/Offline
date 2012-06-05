@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.134 2012/05/31 17:08:54 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.135 2012/06/05 16:20:51 genser Exp $
 // $Author: genser $
-// $Date: 2012/05/31 17:08:54 $
+// $Date: 2012/06/05 16:20:51 $
 //
 // Original author Rob Kutschke
 //
@@ -204,8 +204,8 @@ namespace mu2e {
 
     constructProtonBeamDump(hallInfo, *_config);
 
-    constructDS(hallInfo,_config);
-    constructTS(hallInfo,_config);
+    constructDS(hallInfo, _config);
+    constructTS(hallInfo, *_config);
     constructPS(hallInfo, *_config);
     constructPSEnclosure(hallInfo, *_config);
 
@@ -237,7 +237,7 @@ namespace mu2e {
       constructExtMonUCI(hallInfo, *_config);
     }
 
-    constructVirtualDetectors(_config); // beware of the placement order of this function
+    constructVirtualDetectors(*_config); // beware of the placement order of this function
 
     constructVisualizationRegions(worldVInfo, *_config);
 
