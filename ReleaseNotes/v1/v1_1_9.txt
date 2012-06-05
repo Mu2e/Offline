@@ -1,12 +1,40 @@
-  $Id: v1_1_9.txt,v 1.25 2012/06/04 19:34:19 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2012/06/04 19:34:19 $
+  $Id: v1_1_9.txt,v 1.26 2012/06/05 16:05:39 tassiell Exp $
+  $Author: tassiell $
+  $Date: 2012/06/05 16:05:39 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
 
-23) Jun 4, 2012 kutschke
+27) June 5, 2012 tassiell
+    Removed from the cvs the following files:  
+      ITrackerGeom/ITrackerGeom_2fr_hlfSL.gdml
+      ITrackerGeom/ITrackerGeom.gdml
+      ITrackerGeom/ITrackerWireData.root
+    They contained an old description of ITracker geometry, 
+    and they are no more used.      
+
+26) June 4, 2012 tassiell
+    Reintroduced switch for the MSC model for e-, needed by the ITracker,
+    only for the geant4 version less than 4.9.5 
+    (this fix the problem at point 22).
+    The switch is done into the method checkMSCmodel.
+    Mu2eG4/src/SConscript
+      Added G4VERSION variable that can be used by preprocessors statements
+      to know the running geant4 version number.
+
+25) June 4, 2012 tassiell
+    Update of the classes ITGasLayerSDs to be derived classes 
+    from Mu2eSensitiveDetector.
+    Changes into files:  
+    Mu2eG4/inc/ITGasLayerSD.hh
+    Mu2eG4/inc/ITGasLayerSD_Square.hh
+    Mu2eG4/inc/ITGasLayerSD_Hexagonal.hh
+    Mu2eG4/src/ITGasLayerSD.cc
+    Mu2eG4/src/ITGasLayerSD_Square.cc
+    Mu2eG4/src/ITGasLayerSD_Hexagonal.cc
+
+24) Jun 4, 2012 kutschke
     Mu2eG4/src/G4module.cc
       More refactoring.  Created a new free function to act as a steering
       routine for the all of the G4 customization that takes place after the
@@ -21,7 +49,7 @@
       Moved the old G4::setOtherCuts method into this free function.
       It is called from postG4InitializeTasks.
 
-22) Jun 3, 2012 kutschke
+23) Jun 3, 2012 kutschke
     Mu2eG4/src/G4module.cc
       Refactoring only.  In the code that calls the beginG4Event of each
       sensitive detector object, it is only necessary to up cast to
@@ -29,7 +57,7 @@
       Also, the c'tor has become very, very big; move it out of the header
       just to make the header easier to read.
 
-21) Jun 3, 2012 kutschke
+22) Jun 3, 2012 kutschke
     Mu2eG4/src/G4module.cc
       Removed changes in introduced at revision 1.44. These are the
       changes that Gianfrano made to allow a switch to a different EM model.
@@ -37,14 +65,14 @@
       this caused compilation errors when we tried to compile with the
       more recent G4 version.
 
-20) Jun 2, 2012 youzy
+21) Jun 2, 2012 youzy
 
     Inherited from Mu2eSensitiveDetector in ExtMonUCITofSD
 
       Mu2eG4/inc/ExtMonUCITofSD.hh
       Mu2eG4/src/ExtMonUCITofSD.cc
 
-19) May 31, 2012 genser
+20) May 31, 2012 genser
 
     Replaced ProtonAbsorberSD with Mu2eSensitiveDetector
     Inherited from Mu2eSensitiveDetector in ExtMonFNAL_SD
@@ -56,6 +84,10 @@
       Mu2eG4/src/Mu2eWorld.cc
       Mu2eG4/src/constructExtMonFNAL.cc
       Mu2eG4/src/constructProtonAbsorber.cc
+
+19) May 30, 2012 tassiell
+    Implemented helical proton absorber (for details see mu2e-doc 2264,
+    1786, 1667) into the framework.
 
 18) May 29, 2012 genser
 
