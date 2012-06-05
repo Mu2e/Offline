@@ -2,9 +2,9 @@
 // Standard geometry with physics turned off.
 // We need to put the control of physics elsewhere.
 //
-// $Id: transportOnlyGeom.txt,v 1.10 2012/05/16 16:20:29 genser Exp $
+// $Id: transportOnlyGeom.txt,v 1.11 2012/06/05 16:21:50 genser Exp $
 // $Author: genser $
-// $Date: 2012/05/16 16:20:29 $
+// $Date: 2012/06/05 16:21:50 $
 //
 // Original author Rob Kutschke
 
@@ -27,7 +27,7 @@ bool PSEnclosure.vacuum.visible = false;
 bool PSShield.visible = false;
 
 bool calorimeter.crystalVisible = false;
-bool calorimeter.vaneBoxVisible = true;
+bool calorimeter.vaneBoxVisible = false;
 
 bool coll.visible = false;
 
@@ -49,30 +49,30 @@ bool extMonFNAL.room.floor.visible   = false;
 bool extMonFNAL.room.visible   = false;
 bool extMonFNAL.room.wall.visible   = false;
 
-bool extmon_uci.abs1Visible = false;
-bool extmon_uci.calVisible = false;
-bool extmon_uci.colVisible = false;
-bool extmon_uci.envelopeVisible = false;
-bool extmon_uci.killerVisible = false;
-bool extmon_uci.magVisible = false;
-bool extmon_uci.nshVisible = false;
-bool extmon_uci.platformVisible = false;
+bool extmon_uci.abs1Visible       = false;
+bool extmon_uci.calVisible        = false;
+bool extmon_uci.colVisible        = false;
+bool extmon_uci.killerVisible     = false;
+bool extmon_uci.magVisible        = false;
+bool extmon_uci.nshVisible        = false;
+bool extmon_uci.platformVisible   = false;
 bool extmon_uci.shdChannelVisible = false;
-bool extmon_uci.shdHoleVisible = false;
-bool extmon_uci.shdVisible = false;
-bool extmon_uci.tabVisible = false;
-bool extmon_uci.tofVisible = false;
+bool extmon_uci.shdHoleVisible    = false;
+bool extmon_uci.shdVisible        = false;
+bool extmon_uci.sideShieldVisible = false;
+bool extmon_uci.tableVisible      = false;
+bool extmon_uci.tofVisible        = false;
 
-bool fluxcrv.visible = true;
+bool fluxcrv.visible = false;
 
 bool hall.ceilingVisible = false;
 bool hall.floorVisible = false;
 bool hall.formalBoxVisible = false;
 bool hall.wallsVisible = false;
 
-bool mbs.visible = true;
+bool mbs.visible = false;
 
-bool neutronabsorber.visible = true;
+bool neutronabsorber.visible = false;
 
 bool protonBeamDump.coreVisible = false;
 bool protonBeamDump.dirtVisible = false;
