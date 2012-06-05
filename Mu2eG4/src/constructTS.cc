@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.8 2012/03/14 17:34:06 genser Exp $
+// $Id: constructTS.cc,v 1.9 2012/06/05 16:20:02 genser Exp $
 // $Author: genser $
-// $Date: 2012/03/14 17:34:06 $
+// $Date: 2012/06/05 16:20:02 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -13,6 +13,9 @@
 // C++ includes
 //#include <iostream>
 
+// Framework includes
+#include "cetlib/exception.h"
+
 // Mu2e includes.
 #include "Mu2eG4/inc/constructTS.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
@@ -20,12 +23,14 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestTorus.hh"
 #include "Mu2eG4/inc/nestCons.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
+#include "GeomPrimitives/inc/Tube.hh"
 
 // G4 includes
 #include "G4ThreeVector.hh"
@@ -36,18 +41,20 @@
 #include "G4IntersectionSolid.hh"
 #include "G4SubtractionSolid.hh"
 
-
 using namespace std;
 
 namespace mu2e {
 
-  void constructTS( const VolumeInfo& parent,
-                    SimpleConfig const * const _config
+  void constructTS( VolumeInfo const & parent,
+                    SimpleConfig const & _config
                     ){
 
     // Extract base parameters from config information.
     GeomHandle<Beamline> beamg;
     //double solenoidOffset = beamg->solenoidOffset();
+
+    int const verbosityLevel = _config.getInt("coll.verbosityLevel", 0);
+
     double rTorus         = beamg->getTS().torusRadius();
     double rVac           = beamg->getTS().innerRadius();
     double rCryo          = beamg->getTS().outerRadius();
@@ -55,36 +62,45 @@ namespace mu2e {
     double ts3HalfLength  = beamg->getTS().getTS3().getHalfLength();
     double ts5HalfLength  = beamg->getTS().getTS5().getHalfLength();
 
-    bool toyTSVisible = _config->getBool("toyTS.visible",true);
-    bool toyTSSolid   = _config->getBool("toyTS.solid",true);
+    bool toyTSVisible = _config.getBool("toyTS.visible",true);
+    bool toyTSSolid   = _config.getBool("toyTS.solid",true);
 
     double coll1HalfLength     = beamg->getTS().getColl1().getHalfLength();
     double coll31HalfLength    = beamg->getTS().getColl31().getHalfLength();
     double coll32HalfLength    = beamg->getTS().getColl32().getHalfLength();
     double coll5HalfLength     = beamg->getTS().getColl5().getHalfLength();
 
-    double coll1InnerRadius1   = _config->getDouble("coll1.innerRadius1");
-    double coll1InnerRadius2   = _config->getDouble("coll1.innerRadius2");
-    double coll1InnerRadius3   = _config->getDouble("coll1.innerRadius3");
-    double coll5InnerRadius    = _config->getDouble("coll5.innerRadius");
+    double coll1InnerRadius1   = _config.getDouble("coll1.innerRadius1");
+    double coll1InnerRadius2   = _config.getDouble("coll1.innerRadius2");
+    double coll1InnerRadius3   = _config.getDouble("coll1.innerRadius3");
 
-    MaterialFinder materialFinder(*_config);
+    double coll5InnerRadius    = _config.getDouble("coll5.innerRadius");
+    double coll5MidRadius1     = _config.getDouble("coll5.midRadius1");
+    double coll5MidRadius2     = _config.getDouble("coll5.midRadius2");
+    double coll5OuterRadius    = _config.getDouble("coll5.outerRadius");
+
+    double coll5HalfLengthU    = _config.getDouble("coll5.halfLengthU");
+    double coll5HalfLengthD    = _config.getDouble("coll5.halfLengthD");
+
+    MaterialFinder materialFinder(_config);
 
     G4Material* coll1Material1 = materialFinder.get("coll1.material1Name");
     G4Material* coll1Material2 = materialFinder.get("coll1.material2Name");
     G4Material* coll3Material  = materialFinder.get("coll3.materialName");
-    G4Material* coll5Material  = materialFinder.get("coll5.materialName");
+    // G4Material* coll5Material  = materialFinder.get("coll5.materialName");
+    string coll5MaterialName         = _config.getString("coll5.materialName");
+    string coll5AbsorberMaterialName = _config.getString("coll5.absorberMaterialName");
 
     // Special parameters for coll3
-    double coll3RotationAngle    = _config->getDouble("coll3.rotationAngle");
-    double coll3HoleRadius       = _config->getDouble("coll3.holeRadius");
-    double coll3HoleHalfHeight   = _config->getDouble("coll3.holeHalfHeight");
-    double coll3HoleDisplacement = _config->getDouble("coll3.holeDisplacement");
+    double coll3RotationAngle    = _config.getDouble("coll3.rotationAngle");
+    double coll3HoleRadius       = _config.getDouble("coll3.holeRadius");
+    double coll3HoleHalfHeight   = _config.getDouble("coll3.holeHalfHeight");
+    double coll3HoleDisplacement = _config.getDouble("coll3.holeDisplacement");
 
-    bool collVisible         = _config->getBool("coll.visible",true);
-    bool collSolid           = _config->getBool("coll.solid",true);
-    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool collVisible         = _config.getBool("coll.visible",true);
+    bool collSolid           = _config.getBool("coll.solid",true);
+    bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
 
     // For how all pieces are made from one of two types of material,
@@ -158,7 +174,7 @@ namespace mu2e {
                                         doSurfaceCheck
                                         );
 
-    TubsParams coll1Param2 ( coll1InnerRadius3,              rVac, coll1HalfLength-2*vdHalfLength);
+    TubsParams coll1Param2 ( coll1InnerRadius3,              rVac, coll1HalfLength-2.*vdHalfLength);
  
     VolumeInfo coll1Info2 = nestTubs( "Coll12",
                                       coll1Param2,
@@ -281,11 +297,11 @@ namespace mu2e {
     coll32Info.name = "Coll32";
 
     G4Tubs* coll31_mother = new G4Tubs("Coll31_mother",
-                                       0, rVac, coll31HalfLength-2*vdHalfLength,
+                                       0, rVac, coll31HalfLength-2.*vdHalfLength,
                                        0.0, CLHEP::twopi );
 
     G4Tubs* coll32_mother = new G4Tubs("Coll32_mother",
-                                       0, rVac, coll32HalfLength-2*vdHalfLength,
+                                       0, rVac, coll32HalfLength-2.*vdHalfLength,
                                        0.0, CLHEP::twopi );
 
     coll31Info.solid = new G4SubtractionSolid(coll31Info.name,
@@ -335,7 +351,7 @@ namespace mu2e {
 
     // Place Pbar absorber between Coll31 and Coll32
 
-    double pbarHalfLength     = _config->getDouble("pbar.halfLength");
+    double pbarHalfLength     = _config.getDouble("pbar.halfLength");
     G4Material* pbarMaterial  = materialFinder.get("pbar.materialName");
     double pbarParams[5]  = { 0.0,   rVac, pbarHalfLength, 0.0, CLHEP::twopi };
 
@@ -433,23 +449,222 @@ namespace mu2e {
 
     // Place collimator 5
 
-    double coll5Param[5] = { coll5InnerRadius, rVac,
-                             coll5HalfLength-2*vdHalfLength, 0.0, CLHEP::twopi };
+    if ( coll5OuterRadius > rVac || 
+         coll5MidRadius2  > coll5OuterRadius - 2.*vdHalfLength || 
+         coll5MidRadius1  >= coll5MidRadius2 || 
+         coll5InnerRadius > coll5MidRadius1 ||
+         coll5InnerRadius < 0.0 ) {
 
-    VolumeInfo coll5VacInfo = nestTubs( "Coll5",
-                                        coll5Param,
-                                        coll5Material,
-                                        0,
-                                        beamg->getTS().getColl5().getLocal(),
-                                        ts5VacInfo,
-                                        0,
-                                        collVisible,
-                                        G4Color::Blue(),
-                                        collSolid,
-                                        forceAuxEdgeVisible,
-                                        placePV,
-                                        doSurfaceCheck
-                                        );
+      throw cet::exception("GEOM")<< " constructTS: wrong coll5 radii: " 
+                                  << "\n rVac             : " << rVac
+                                  << "\n coll5OuterRadius : " << coll5OuterRadius
+                                  << "\n coll5MidRadius2  : " << coll5MidRadius2
+                                  << "\n coll5MidRadius1  : " << coll5MidRadius1
+                                  << "\n coll5InnerRadiu  : " << coll5InnerRadius
+                                  << "\n";
+    }
+
+    if ( coll5HalfLengthU < 0.0 || coll5HalfLengthD < 0.0 ||
+         coll5HalfLengthU + coll5HalfLengthD > coll5HalfLength - 2.*vdHalfLength) {
+
+      throw cet::exception("GEOM")<< " constructTS: wrong coll5 longitudinal params " 
+                                  << "\n coll5HalfLength   : " << coll5HalfLength
+                                  << "\n coll5HalfLengthU  : " << coll5HalfLengthU
+                                  << "\n coll5HalfLengthD  : " << coll5HalfLengthD
+                                  << "\n";
+    }
+
+    if ( verbosityLevel > 0) {
+
+      cout << __func__ << " TS5  OffsetInMu2e    : "
+           << beamg->getTS().getTS5().getGlobal() << endl;
+      cout << __func__ << " Coll5 local offset   : " 
+           << beamg->getTS().getColl5().getLocal() << endl;
+      cout << __func__ << " beamg->getTS().getTS5().getRotation(): "
+           << beamg->getTS().getTS5().getRotation() << endl;
+
+    }
+
+    CLHEP::Hep3Vector coll5OffsetInMu2e = beamg->getTS().getTS5().getGlobal() + 
+      ( ( beamg->getTS().getTS5().getRotation() != 0x0 ) ?
+        *(beamg->getTS().getTS5().getRotation()) * beamg->getTS().getColl5().getLocal() : 
+        beamg->getTS().getColl5().getLocal() );
+
+    if ( verbosityLevel > 0) {
+
+      cout << __func__ << "  coll5OffsetInMu2e    : "
+           << coll5OffsetInMu2e << endl;
+      cout << __func__ << "  Coll5 calc local offset : "
+           << coll5OffsetInMu2e - beamg->getTS().getTS5().getGlobal() << endl;
+
+    }
+
+    // the most outer part (with Virtual Detectors on the outer surfaces of the Coll5)
+
+    collVisible = true;
+
+    Tube coll5Param(coll5MaterialName,
+                    coll5OffsetInMu2e,
+                    coll5InnerRadius,
+                    coll5OuterRadius - 2.*vdHalfLength,
+                    coll5HalfLength - 2.*vdHalfLength);
+
+    VolumeInfo coll5Info = nestTubs( "Coll5",
+                                     coll5Param.getTubsParams(),
+                                     findMaterialOrThrow(coll5Param.materialName()),
+                                     0,
+                                     coll5Param.originInMu2e() - ts5VacInfo.centerInMu2e(),
+                                     ts5VacInfo,
+                                     0,
+                                     collVisible,
+                                     G4Color::Blue(),
+                                     collSolid,
+                                     forceAuxEdgeVisible,
+                                     placePV,
+                                     doSurfaceCheck
+                                     );
+
+    // decide if we need to add absorber parts
+
+    if ( coll5HalfLengthD > 0.0 ) {
+      
+      // + downstream absorber
+      
+      CLHEP::Hep3Vector coll5AbsorberOffsetInColl5 = 
+        CLHEP::Hep3Vector (0.0, 0.0, coll5HalfLength - 2.*vdHalfLength - coll5HalfLengthD);
+
+      CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
+        ( ( beamg->getTS().getTS5().getRotation() != 0x0 ) ?
+          *(beamg->getTS().getTS5().getRotation()) * coll5AbsorberOffsetInColl5 :
+          coll5AbsorberOffsetInColl5 );
+
+      Tube coll5DAbsParam(coll5AbsorberMaterialName,
+                          coll5AbsorberOffsetInMu2e,
+                          coll5InnerRadius,
+                          coll5OuterRadius - 2.*vdHalfLength,
+                          coll5HalfLengthD);
+
+      VolumeInfo coll5DAbsorberInfo = nestTubs( "coll5DAbsorber",
+                                                coll5DAbsParam.getTubsParams(),
+                                                findMaterialOrThrow(coll5DAbsParam.materialName()),
+                                                0,
+                                                coll5AbsorberOffsetInColl5,
+                                                coll5Info,
+                                                0,
+                                                collVisible,
+                                                G4Color::Gray(),
+                                                collSolid,
+                                                forceAuxEdgeVisible,
+                                                placePV,
+                                                doSurfaceCheck
+                                                );
+    }
+
+    if ( coll5HalfLengthU > 0.0 ) {
+
+      // + upstream absorber
+    
+      CLHEP::Hep3Vector coll5AbsorberOffsetInColl5 = 
+        CLHEP::Hep3Vector (0.0, 0.0, - coll5HalfLength + 2.*vdHalfLength + coll5HalfLengthU);
+
+      CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
+        ( ( beamg->getTS().getTS5().getRotation() != 0x0 ) ?
+          *(beamg->getTS().getTS5().getRotation()) * coll5AbsorberOffsetInColl5 :
+          coll5AbsorberOffsetInColl5 );
+
+      Tube coll5AbsParam(coll5AbsorberMaterialName,
+                          coll5AbsorberOffsetInMu2e,
+                          coll5InnerRadius,
+                          coll5OuterRadius - 2.*vdHalfLength,
+                          coll5HalfLengthU);
+
+      VolumeInfo coll5UAbsorberInfo = nestTubs( "coll5UAbsorber",
+                                                coll5AbsParam.getTubsParams(),
+                                                findMaterialOrThrow(coll5AbsParam.materialName()),
+                                                0,
+                                                coll5AbsorberOffsetInColl5,
+                                                coll5Info,
+                                                0,
+                                                collVisible,
+                                                G4Color::Gray(),
+                                                collSolid,
+                                                forceAuxEdgeVisible,
+                                                placePV,
+                                                doSurfaceCheck
+                                                );
+    }
+
+    if ( coll5MidRadius1 > coll5InnerRadius ) {
+
+      // + "inner radius" absorber
+    
+      CLHEP::Hep3Vector coll5AbsorberOffsetInColl5 =
+        CLHEP::Hep3Vector (0.0, 0.0,
+                           coll5HalfLengthU - coll5HalfLengthD);
+
+      CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
+        ( ( beamg->getTS().getTS5().getRotation() != 0x0 ) ?
+          *(beamg->getTS().getTS5().getRotation()) * coll5AbsorberOffsetInColl5 :
+          coll5AbsorberOffsetInColl5 );
+
+      Tube coll5AbsParam(coll5AbsorberMaterialName,
+                         coll5AbsorberOffsetInMu2e,
+                         coll5InnerRadius,
+                         coll5MidRadius1,
+                         coll5HalfLength - 2.*vdHalfLength - 
+                         coll5HalfLengthD - coll5HalfLengthU);
+
+      VolumeInfo coll5IAbsorberInfo = nestTubs( "coll5IAbsorber",
+                                                coll5AbsParam.getTubsParams(),
+                                                findMaterialOrThrow(coll5AbsParam.materialName()),
+                                                0,
+                                                coll5AbsorberOffsetInColl5,
+                                                coll5Info,
+                                                0,
+                                                collVisible,
+                                                G4Color::Gray(),
+                                                collSolid,
+                                                forceAuxEdgeVisible,
+                                                placePV,
+                                                doSurfaceCheck
+                                                );
+    }
+
+    if ( coll5MidRadius2 < coll5OuterRadius - 2.*vdHalfLength) {
+
+      // + "outer radius" absorber
+    
+      CLHEP::Hep3Vector coll5AbsorberOffsetInColl5 =
+        CLHEP::Hep3Vector (0.0, 0.0,
+                           coll5HalfLengthU - coll5HalfLengthD);
+
+      CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
+        ( ( beamg->getTS().getTS5().getRotation() != 0x0 ) ?
+          *(beamg->getTS().getTS5().getRotation()) * coll5AbsorberOffsetInColl5 :
+          coll5AbsorberOffsetInColl5 );
+
+      Tube coll5AbsParam(coll5AbsorberMaterialName,
+                         coll5AbsorberOffsetInMu2e,
+                         coll5MidRadius2,
+                         coll5OuterRadius - 2.*vdHalfLength,
+                         coll5HalfLength - 2.*vdHalfLength - 
+                         coll5HalfLengthD - coll5HalfLengthU);
+
+      VolumeInfo coll5OAbsorberInfo = nestTubs( "coll5OAbsorber",
+                                                coll5AbsParam.getTubsParams(),
+                                                findMaterialOrThrow(coll5AbsParam.materialName()),
+                                                0,
+                                                coll5AbsorberOffsetInColl5,
+                                                coll5Info,
+                                                0,
+                                                collVisible,
+                                                G4Color::Gray(),
+                                                collSolid,
+                                                forceAuxEdgeVisible,
+                                                placePV,
+                                                doSurfaceCheck
+                                                );
+    }
 
   } // end Mu2eWorld::constructTS
 
