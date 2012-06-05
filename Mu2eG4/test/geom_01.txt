@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.152 2012/05/30 16:01:09 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/30 16:01:09 $
+// $Id: geom_01.txt,v 1.153 2012/06/05 16:21:37 genser Exp $
+// $Author: genser $
+// $Date: 2012/06/05 16:21:37 $
 //
 // Original author Rob Kutschke
 //
@@ -143,7 +143,7 @@ double world.margin.zmax =  3000;
 string world.materialName = "G4_AIR";
 bool   world.boxVisible   = true;
 bool   world.boxSolid     = false;
-int    world.verbosityLevel = 1;
+int    world.verbosityLevel = 0;
 
 string dirt.overburdenMaterialName = "MBOverburden";
 
@@ -231,6 +231,7 @@ string pbar.materialName = "G4_Be";
 
 bool   coll.visible        = true;
 bool   coll.solid          = false;
+int    coll.verbosityLevel = 1;
 
 double coll1.halfLength = 500.0;
 // innerRadius1,2 describe the inner cone, which is a cyliner if r1==r2
@@ -251,9 +252,20 @@ double coll3.holeRadius       = 150.0;
 double coll3.holeHalfHeight   = 100.0;
 double coll3.holeDisplacement = 90.0;
 
-double coll5.halfLength   = 500.0;
-double coll5.innerRadius  = 128.0;
+// coll5 is special; its "middle" is made out of "material"
+// its "outer/external" part, if any, is made out of "absorberMaterial"
+//
+
+double coll5.halfLength    = 500.0;
+double coll5.halfLengthU   =   0.0; // upstream insert; need to accomodate 2.*vdHalfLength in calc
+double coll5.halfLengthD   =   0.0; // downstream insert; halfLength - u -d >= 2.*vdHalfLength
+double coll5.outerRadius   = 240.0; // not to exceed toyTS.rVac
+double coll5.midRadius2    = 239.98; // not to exceed outerRadius - 2.*vdHalfLength
+double coll5.midRadius1    = 128.0; // not to be equal or exceed midRadius2; change materialName if needed
+double coll5.innerRadius   = 128.0; // not to exceed midRadius1
 string coll5.materialName = "G4_Cu";
+string coll5.absorberMaterialName = "Polyethylene092";
+
 
 // Virtual detectors
 
