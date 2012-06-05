@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.6 2012/04/25 18:47:32 gandr Exp $
-// $Author: gandr $
+// $Id: VirtualDetectorMaker.cc,v 1.7 2012/06/05 16:18:15 genser Exp $
+// $Author: genser $
 //
 
 #include <iostream>
@@ -338,6 +338,13 @@ namespace mu2e {
         vd->addVirtualDetector(VirtualDetectorId::EMFDetectorEntrance, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
         vd->addVirtualDetector(VirtualDetectorId::EMFDetectorExit, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
       }
+
+      // VD Coll5_OutSurf is at the outer surfaceof the collimator
+      // 5, which is placed inside TS5.
+
+      vd->addVirtualDetector( VirtualDetectorId::Coll5_OutSurf,
+                               ts5pos, ts5rot, coll5pos);
+
 
     } // if(hasVirtualDetector)
 
