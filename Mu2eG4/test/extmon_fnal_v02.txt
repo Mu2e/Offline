@@ -194,6 +194,7 @@ bool           extMonFNAL.detectorPlaneVisible   = true;
 bool           extMonFNAL.detectorPlaneSolid     = true;
 
 int            extMonFNAL.verbosityLevel = 2;
+int            extMonFNAL.sd.verbosityLevel = 0;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

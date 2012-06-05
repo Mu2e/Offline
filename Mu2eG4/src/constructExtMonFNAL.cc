@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.11 2012/05/31 17:09:13 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/31 17:09:13 $
+// $Id: constructExtMonFNAL.cc,v 1.12 2012/06/05 18:30:50 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/06/05 18:30:50 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -102,7 +102,7 @@ namespace mu2e {
                                   0,
                                   extmon->sensorOffsetInParent(iplane),
                                   detector,
-                                  0,
+                                  iplane,
                                   config.getBool("extMonFNAL.detectorPlaneVisible"),
                                   G4Colour::Magenta(),
                                   config.getBool("extMonFNAL.detectorPlaneSolid"),
