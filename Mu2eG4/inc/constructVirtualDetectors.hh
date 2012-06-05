@@ -3,19 +3,18 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: constructVirtualDetectors.hh,v 1.3 2012/06/05 16:19:24 genser Exp $
+// $Author: genser $
+// $Date: 2012/06/05 16:19:24 $
 //
 // Original author KLG
 //
 
 namespace mu2e {
 
-  class G4Helper;
   class SimpleConfig;
 
-  void constructVirtualDetectors( SimpleConfig const * const _config
+  void constructVirtualDetectors( SimpleConfig const & _config
                                   );
 
 }
