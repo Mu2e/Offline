@@ -3,9 +3,9 @@
 //
 // Class to construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.hh,v 1.5 2012/05/18 16:56:19 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/18 16:56:19 $
+// $Id: ProductionSolenoidMaker.hh,v 1.6 2012/06/06 19:29:31 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/06/06 19:29:31 $
 //
 // Original author KLG
 //
@@ -26,9 +26,7 @@ namespace mu2e {
   public:
 
     ProductionSolenoidMaker( SimpleConfig const & config,
-                             double solenoidOffset,
-                             double rTorus,
-                             double ts1HalfLength);
+                             double solenoidOffset);
 
     void parseConfig( SimpleConfig const & _config );
 
@@ -55,7 +53,6 @@ namespace mu2e {
     double _psVacVesselEndPlateHalfThickness;
     double _psVacVesselHalfLength;
     std::string _psVacVesselMaterialName;
-    std::string _psInsideMaterialName;
 
     // the superconducting Coils
 

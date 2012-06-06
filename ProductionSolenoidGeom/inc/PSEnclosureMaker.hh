@@ -3,9 +3,9 @@
 //
 // Class to construct and return PSEnclosure
 //
-// $Id: PSEnclosureMaker.hh,v 1.3 2012/03/30 19:18:03 gandr Exp $
+// $Id: PSEnclosureMaker.hh,v 1.4 2012/06/06 19:29:30 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/30 19:18:03 $
+// $Date: 2012/06/06 19:29:30 $
 //
 // Original author Andrei Gaponenko
 //
@@ -26,9 +26,7 @@ namespace mu2e {
     static std::auto_ptr<PSEnclosure>  make(const SimpleConfig& config,
 
                                             // The center of the downstream surface of the PS
-                                            const CLHEP::Hep3Vector& psEndRefPoint,
-
-                                            const std::string& psInsideMaterialName);
+                                            const CLHEP::Hep3Vector& psEndRefPoint);
   };
 
 }  //namespace mu2e

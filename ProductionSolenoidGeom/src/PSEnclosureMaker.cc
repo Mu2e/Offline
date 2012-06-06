@@ -1,6 +1,6 @@
-// $Id: PSEnclosureMaker.cc,v 1.3 2012/04/30 16:21:47 gandr Exp $
+// $Id: PSEnclosureMaker.cc,v 1.4 2012/06/06 19:29:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/30 16:21:47 $
+// $Date: 2012/06/06 19:29:31 $
 //
 // Original author Andrei Gaponenko
 
@@ -39,8 +39,7 @@ namespace mu2e {
 
 
   std::auto_ptr<PSEnclosure>  PSEnclosureMaker::make(const SimpleConfig& c,
-                                                     const CLHEP::Hep3Vector& psEndRefPoint,
-                                                     const std::string& psInsideMaterialName)
+                                                     const CLHEP::Hep3Vector& psEndRefPoint)
   {
     const double shellOD = c.getDouble("PSEnclosure.shell.outerDiameter")*CLHEP::mm;
     const double totalLength = c.getDouble("PSEnclosure.length")*CLHEP::mm;
@@ -59,14 +58,6 @@ namespace mu2e {
                                                         0.5*(shellOD - 2*shellThickness),
                                                         0.5*shellOD,
                                                         0.5*shellLength),
-
-                                                   // vacuum
-                                                   Tube(psInsideMaterialName,
-                                                        shellOriginInMu2e,
-                                                        0.,
-                                                        0.5*(shellOD - 2*shellThickness),
-                                                        0.5*shellLength
-                                                        ),
 
                                                    // end plate
                                                    Tube(shellMaterialName,

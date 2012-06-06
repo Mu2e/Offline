@@ -15,6 +15,7 @@
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
+#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 
 // art includes.
 #include "fhiclcpp/ParameterSet.h"
@@ -46,6 +47,7 @@ namespace mu2e {
     produces<ExtMonFNAL::ExtMon, art::InRun>();
     produces<PSEnclosure, art::InRun>();
     produces<PSShield, art::InRun>();
+    produces<PSVacuum, art::InRun>();
 
     produces<WorldG4, art::InRun>();
   }
@@ -62,6 +64,7 @@ namespace mu2e {
     put<ExtMonFNAL::ExtMon>(run);
     put<PSEnclosure>(run);
     put<PSShield>(run);
+    put<PSVacuum>(run);
 
     art::ServiceHandle<GeometryService> geom;
     if(geom->hasElement<WorldG4>()) {

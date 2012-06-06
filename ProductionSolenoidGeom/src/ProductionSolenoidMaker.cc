@@ -1,9 +1,9 @@
 //
 // Construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.cc,v 1.8 2012/05/18 16:56:19 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/18 16:56:19 $
+// $Id: ProductionSolenoidMaker.cc,v 1.9 2012/06/06 19:29:31 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/06/06 19:29:31 $
 //
 // Original author KLG
 //
@@ -34,9 +34,7 @@ namespace mu2e {
   // Constructor that gets information from the config file instead of
   // from arguments.
   ProductionSolenoidMaker::ProductionSolenoidMaker(SimpleConfig const & _config,
-                                                   double solenoidOffset,
-                                                   double rTorus,
-                                                   double ts1HalfLength)
+                                                   double solenoidOffset)
   {
 
     // if( ! _config.getBool("hasProductionSolenoid",false) ) return;
@@ -145,17 +143,6 @@ namespace mu2e {
                 psCoil3Mu2eOffset,
                 _psCoilrIn, _psCoil3rOut, _psCoil3Length*0.5));
 
-    // PSVacuum
-    const double vacStartZ = ps._psEndRefPoint[2];
-    const double vacEndZ   = -rTorus + -2.*ts1HalfLength;
-
-    CLHEP::Hep3Vector psVacuumMu2eOffset(solenoidOffset, 0.0, 0.5*(vacStartZ + vacEndZ));
-
-    ps._psVacuumParams = std::auto_ptr<Tube>
-      (new Tube(_psInsideMaterialName,
-                psVacuumMu2eOffset,
-                0., _psVacVesselrIn, 0.5*(vacEndZ - vacStartZ)));
-
   }
 
   void ProductionSolenoidMaker::parseConfig( SimpleConfig const & _config ){
@@ -168,7 +155,6 @@ namespace mu2e {
     _psVacVesselHalfLength            = _config.getDouble("PS.VacVessel.HalfLength");
     _psVacVesselEndPlateHalfThickness = _config.getDouble("PS.VacVessel.EndPlateHalfThickness");
     _psVacVesselMaterialName          = _config.getString("PS.VacVessel.materialName");
-    _psInsideMaterialName             = _config.getString("PS.insideMaterialName");
 
     //
 

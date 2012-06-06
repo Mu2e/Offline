@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.33 2012/05/30 18:38:43 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/30 18:38:43 $
+// $Id: GeometryService_service.cc,v 1.34 2012/06/06 19:29:30 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/06/06 19:29:30 $
 //
 // Original author Rob Kutschke
 //
@@ -39,6 +39,8 @@
 #include "ProductionSolenoidGeom/inc/ProductionSolenoidMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosureMaker.hh"
+#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "ProductionSolenoidGeom/inc/PSVacuumMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
 #include "ProductionSolenoidGeom/inc/PSShieldMaker.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
@@ -143,19 +145,24 @@ namespace mu2e {
     const Beamline& beamline = *tmpBeamline.get();
     addDetector(tmpBeamline);
 
-    addDetector(ProductionTargetMaker::make(*_config, beamline.solenoidOffset()));
+    std::auto_ptr<ProductionTarget> tmpProdTgt(ProductionTargetMaker::make(*_config, beamline.solenoidOffset()));
+    const ProductionTarget& prodTarget = *tmpProdTgt.get();
+    addDetector(tmpProdTgt);
 
     std::auto_ptr<ProductionSolenoid>
-      tmpProductionSolenoid(ProductionSolenoidMaker(*_config,
-                                                    beamline.solenoidOffset(),
-                                                    beamline.getTS().torusRadius(),
-                                                    beamline.getTS().getTS1().getHalfLength()
-                                                    ).getProductionSolenoidPtr());
+      tmpProductionSolenoid(ProductionSolenoidMaker(*_config, beamline.solenoidOffset()).getProductionSolenoidPtr());
 
     const ProductionSolenoid& ps = *tmpProductionSolenoid.get();
     addDetector(tmpProductionSolenoid);
 
-    addDetector(PSEnclosureMaker::make(*_config, ps.psEndRefPoint(), ps.getVacuumParamsPtr()->materialName()));
+    std::auto_ptr<PSEnclosure>
+      tmpPSE(PSEnclosureMaker::make(*_config, ps.psEndRefPoint()));
+    const PSEnclosure& pse = *tmpPSE.get();
+    addDetector(tmpPSE);
+
+    // The Z coordinate of the boundary between PS and TS vacua
+    const double vacPS_TS_z = -beamline.getTS().torusRadius() - 2*beamline.getTS().getTS1().getHalfLength();
+    addDetector(PSVacuumMaker::make(*_config, ps, pse, vacPS_TS_z));
 
     addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint()));
 

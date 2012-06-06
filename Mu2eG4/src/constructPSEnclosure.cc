@@ -5,6 +5,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
+#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
@@ -20,6 +21,7 @@ namespace mu2e {
   void constructPSEnclosure(const VolumeInfo& parent, const SimpleConfig& config) {
 
     GeomHandle<PSEnclosure> pse;
+    GeomHandle<PSVacuum> psv;
 
     const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
     const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
@@ -36,21 +38,6 @@ namespace mu2e {
              config.getBool("PSEnclosure.visible"),
              G4Colour::Blue(),
              config.getBool("PSEnclosure.solid"),
-             forceAuxEdgeVisible,
-             placePV,
-             doSurfaceCheck
-             );
-
-    nestTubs("PSEnclosureVacuum",
-             pse->vacuum().getTubsParams(),
-             findMaterialOrThrow(pse->vacuum().materialName()),
-             0,
-             pse->vacuum().originInMu2e() - parent.centerInMu2e(),
-             parent,
-             0,
-             config.getBool("PSEnclosure.vacuum.visible"),
-             G4Colour::Black(),
-             config.getBool("PSEnclosure.vacuum.solid"),
              forceAuxEdgeVisible,
              placePV,
              doSurfaceCheck
@@ -91,7 +78,7 @@ namespace mu2e {
       vname<<"PSEnclosureWindowVac"<<i;
       nestTubs(vname.str(),
                vacTubs,
-               findMaterialOrThrow(pse->vacuum().materialName()),
+               findMaterialOrThrow(psv->vacuum().materialName()),
                0,
                vacCenter - endPlate.centerInMu2e(),
                endPlate,

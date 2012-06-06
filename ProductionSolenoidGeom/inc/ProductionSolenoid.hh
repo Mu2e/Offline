@@ -3,9 +3,9 @@
 
 
 //
-// $Id: ProductionSolenoid.hh,v 1.3 2012/03/29 19:06:06 gandr Exp $
+// $Id: ProductionSolenoid.hh,v 1.4 2012/06/06 19:29:30 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/29 19:06:06 $
+// $Date: 2012/06/06 19:29:30 $
 //
 // Original author KLG
 //
@@ -39,9 +39,7 @@ namespace mu2e {
     Tube const * getCoil2ParamsPtr() const { return _psCoil2Params.get(); }
     Tube const * getCoil3ParamsPtr() const { return _psCoil3Params.get(); }
 
-    Tube const * getVacuumParamsPtr() const { return _psVacuumParams.get(); }
-
-    // The point on the PS axis at the end of the vacuum volume on the downstream (proton exit) side
+    // The point on the PS axis at the end of the cryostat on the downstream (proton exit) side
     const CLHEP::Hep3Vector& psEndRefPoint() const { return _psEndRefPoint; }
 
   private:
@@ -73,9 +71,6 @@ namespace mu2e {
     std::auto_ptr<Tube> _psCoil1Params;
     std::auto_ptr<Tube> _psCoil2Params;
     std::auto_ptr<Tube> _psCoil3Params;
-
-    // Vacuum
-    std::auto_ptr<Tube> _psVacuumParams;
 
     CLHEP::Hep3Vector   _psEndRefPoint;
   };

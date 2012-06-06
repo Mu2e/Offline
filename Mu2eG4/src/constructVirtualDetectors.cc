@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.39 2012/06/05 16:20:13 genser Exp $
-// $Author: genser $
-// $Date: 2012/06/05 16:20:13 $
+// $Id: constructVirtualDetectors.cc,v 1.40 2012/06/06 19:29:30 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/06/06 19:29:30 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -21,7 +21,7 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
+#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "GeomPrimitives/inc/Tube.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
@@ -834,11 +834,9 @@ namespace mu2e {
     vdId = VirtualDetectorId::PS_FrontExit;
     if ( vdg->exist(vdId) )
       {
-        const VolumeInfo& parent = _helper->locateVolInfo("PSEnclosureVacuum");
+        const VolumeInfo& parent = _helper->locateVolInfo("PSVacuum");
 
-        GeomHandle<PSEnclosure> pse;
-
-        const Tube& psevac = GeomHandle<PSEnclosure>()->vacuum();
+        const Tube& psevac = GeomHandle<PSVacuum>()->vacuum();
 
         TubsParams vdParams(0., psevac.outerRadius(), vdg->getHalfLength());
 

@@ -2,9 +2,9 @@
 #define ProductionSolenoidGeom_PSEnclosure_hh
 
 //
-// $Id: PSEnclosure.hh,v 1.3 2012/04/30 16:21:47 gandr Exp $
+// $Id: PSEnclosure.hh,v 1.4 2012/06/06 19:29:30 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/30 16:21:47 $
+// $Date: 2012/06/06 19:29:30 $
 //
 // Original author Andrei Gaponenko
 //
@@ -26,7 +26,6 @@ namespace mu2e {
   public:
 
     const Tube& shell() const { return shell_; }
-    const Tube& vacuum() const { return vacuum_; }
     const Tube& endPlate() const { return endPlate_; }
     const std::vector<Tube>& windows() const { return windows_; }
 
@@ -37,8 +36,8 @@ namespace mu2e {
     friend class PSEnclosureMaker;
 
     // Private ctr: the class should only be constructed via PSEnclosure::PSEnclosureMaker.
-    PSEnclosure(const Tube& shell, const Tube& vac, const Tube& ep)
-      : shell_(shell), vacuum_(vac), endPlate_(ep)
+    PSEnclosure(const Tube& shell, const Tube& ep)
+      : shell_(shell), endPlate_(ep)
     {};
 
     // Or read back from persistent storage
@@ -48,7 +47,6 @@ namespace mu2e {
     // The real enclosure shape is shown in docdb-2066 It is
     // approximated here by a cylinder closed with a flat end plate.
     Tube shell_;
-    Tube vacuum_;
     Tube endPlate_;
     std::vector<Tube> windows_;
   };

@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.15 2012/05/03 19:35:52 gandr Exp $
+// $Id: constructPS.cc,v 1.16 2012/06/06 19:29:30 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/05/03 19:35:52 $
+// $Date: 2012/06/06 19:29:30 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -26,6 +26,8 @@
 #include "Mu2eG4/inc/constructPSShield.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+
+#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 
 // FIXME: only needed when the constructPSShield() call below is conditional
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
@@ -283,7 +285,7 @@ namespace mu2e {
     // drawings where the collimators enter the PS area
 
 
-    Tube const & psVacuumParams  = *psgh.getVacuumParamsPtr();
+    Tube const & psVacuumParams  = GeomHandle<PSVacuum>()->vacuum();
 
     VolumeInfo psVacuumInfo   = nestTubs( "PSVacuum",
                                           psVacuumParams.getTubsParams(),
