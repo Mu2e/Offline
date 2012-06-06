@@ -3,9 +3,9 @@
 //
 // Class to construct and return PSShield
 //
-// $Id: PSShieldMaker.hh,v 1.2 2012/04/27 05:37:32 gandr Exp $
+// $Id: PSShieldMaker.hh,v 1.3 2012/06/06 19:29:43 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/27 05:37:32 $
+// $Date: 2012/06/06 19:29:43 $
 //
 // Original author Andrei Gaponenko
 //
@@ -25,8 +25,11 @@ namespace mu2e {
   public:
 
     static std::auto_ptr<PSShield> make(const SimpleConfig& config,
-                                        // The center of the downstream surface of the PS
-                                        const CLHEP::Hep3Vector& psEndRefPoint);
+                                        // The HRS is placed on PS axis
+                                        const CLHEP::Hep3Vector& psEndRefPoint,
+                                        // The z position is relative to the proton target
+                                        const CLHEP::Hep3Vector& productionTargetCenter
+                                        );
   };
 
 }  //namespace mu2e

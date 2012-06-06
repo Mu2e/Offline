@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.34 2012/06/06 19:29:30 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.35 2012/06/06 19:29:43 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/06/06 19:29:30 $
+// $Date: 2012/06/06 19:29:43 $
 //
 // Original author Rob Kutschke
 //
@@ -164,7 +164,7 @@ namespace mu2e {
     const double vacPS_TS_z = -beamline.getTS().torusRadius() - 2*beamline.getTS().getTS1().getHalfLength();
     addDetector(PSVacuumMaker::make(*_config, ps, pse, vacPS_TS_z));
 
-    addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint()));
+    addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
 
     std::auto_ptr<BuildingBasics> tmpBasics(BuildingBasicsMaker::make(*_config));
     const BuildingBasics& buildingBasics = *tmpBasics.get();

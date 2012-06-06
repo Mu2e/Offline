@@ -25,9 +25,13 @@ double PSShield.groove1.theta     = 14.00; // angle to Mu2e Z axis, degrees
 double PSShield.groove1.phi       = 180.; // angle between Mu2e X axis and projection of the groove axis on XY, degrees.
 
 // The shield is positioned on the PS axis.
-// To fix its Z position we specify the distance between the
-// PS.cryostatRefZ plane and the shield (i.e. min(zPlane))
-double PSShield.distanceToCryoRefZ = 1; // 1 mm like in MARS
+// To fix its Z position we specify the offset w.r.t. to the production target center
+// of the PSShield point at the most negative z.
+//
+// From Peter Kasper's e-mail May 17, 2012:
+//     HRS downstream end z = -8018.0
+//     Target center      z = -6164.5
+double PSShield.zOffsetFromProductionTarget = -1853.5;
 
 // FIXME: should be low density bronze
 string PSShield.materialName = "G4_Cu";
