@@ -1,10 +1,19 @@
-  $Id: v1_1_9.txt,v 1.27 2012/06/05 16:25:31 genser Exp $
-  $Author: genser $
-  $Date: 2012/06/05 16:25:31 $
+  $Id: v1_1_9.txt,v 1.28 2012/06/06 19:29:56 gandr Exp $
+  $Author: gandr $
+  $Date: 2012/06/06 19:29:56 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+29) June 6, 2012 gandr
+
+    - Merge PS and PSE vacua into a single volume.  Introduce new
+      geometry class PSVacuum to support this.  This change is a
+      pre-requisite for the HRS move.
+
+    - Move the heat and radiation shield to agree with MARS and
+      G4Beamline positions.
 
 28) Jun 5, 2012 genser
 
