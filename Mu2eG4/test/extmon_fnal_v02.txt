@@ -153,6 +153,17 @@ vector<double> extMonFNAL.sensor_halfdy =  { 20., 20., 20., 20., 20., 20.};
 vector<double> extMonFNAL.sensor_halfdz =  { 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
 vector<double> extMonFNAL.readout_halfdz = { 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
+//----------------------------------------------------------------
+// Place test materials behind the detector for MARS activation studies.
+
+double extMonFNAL.testMaterial.distanceToDetector = 50; //mm
+double extMonFNAL.testMaterial.halfsize = 40; // mm, transverse
+double extMonFNAL.testMaterial.thickness = 2; // mm
+double extMonFNAL.testMaterial.spacing = 8; // mm, between plates
+vector<string> extMonFNAL.testMaterial.materials = { "G10", "G4_Cu", "G4_Si", "G4_Al" };
+bool   extMonFNAL.testMaterial.visible = true;
+bool   extMonFNAL.testMaterial.solid = true;
+
 // These are detector VDs (not filter ones)
 //
 // Notes:

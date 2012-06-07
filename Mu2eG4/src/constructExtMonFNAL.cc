@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.12 2012/06/05 18:30:50 gandr Exp $
+// $Id: constructExtMonFNAL.cc,v 1.13 2012/06/07 16:53:38 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/06/05 18:30:50 $
+// $Date: 2012/06/07 16:53:38 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -33,6 +33,9 @@
 
 // FIXME: should not need WorldG4 here
 #include "GeometryService/inc/WorldG4.hh"
+
+//#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
+#define AGDEBUG(stuff)
 
 namespace mu2e {
   void constructExtMonFNAL(const VolumeInfo& collimator1Parent,
@@ -114,6 +117,50 @@ namespace mu2e {
       vplane.logical->SetSensitiveDetector(emSD);
 
     } // for()
+
+    //----------------------------------------------------------------
+    // Test material plates behind the detector
+
+    if(true) {
+      AGDEBUG("constructing test materials: "<<extmon->testMaterialNames().size()<<" plates");
+
+      bool testMaterialVisible         = config.getBool("extMonFNAL.testMaterial.visible");
+      bool testMaterialSolid           = config.getBool("extMonFNAL.testMaterial.solid");
+      bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
+      bool const placePV       = true;
+
+      for(unsigned itest = 0; itest < extmon->testMaterialNames().size(); ++itest) {
+
+        CLHEP::Hep3Vector centerInRoom = detectorCenterInRoom
+          + detectorRotationInRoomInv.inverse()
+          * CLHEP::Hep3Vector(0,
+                              0,
+                              -(extmon->detectorHalfSize()[2]
+                                + extmon->testMaterialDistanceToDetector()
+                                + extmon->testMaterialHalfSize()[2]
+                                + itest * extmon->testMaterialPitch()
+                                )
+                              );
+
+        AGDEBUG("constructing test plate: "<<extmon->testMaterialNames()[itest]);
+
+        nestBox("ExtMonFNALTestMaterial_"+extmon->testMaterialNames()[itest],
+                extmon->testMaterialHalfSize(),
+                findMaterialOrThrow(extmon->testMaterialNames()[itest]),
+                &detectorRotationInRoomInv,
+                centerInRoom,
+                roomAir,
+                0,
+                testMaterialVisible,
+                G4Color(1, 0.5, 1),
+                testMaterialSolid,
+                forceAuxEdgeVisible,
+                placePV,
+                false
+                );
+
+      } // for()
+    } // test material block
 
     //----------------------------------------------------------------
     // The Virtual Detectors around ExtMonFNAL

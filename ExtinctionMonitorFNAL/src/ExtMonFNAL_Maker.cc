@@ -10,11 +10,15 @@
 
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
+//#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
+#define AGDEBUG(stuff)
+
 namespace mu2e {
   namespace ExtMonFNAL {
 
     std::auto_ptr<ExtMon> ExtMonMaker::make(const SimpleConfig& config, const ExtMonFNALBuilding& room)
     {
+      AGDEBUG("ExtMonFNAL maker begin");
       const int verbose = config.getInt("extMonFNAL.verbosityLevel", 0);
 
       std::auto_ptr<ExtMon> det(new ExtMon());
@@ -26,6 +30,24 @@ namespace mu2e {
       config.getVectorDouble("extMonFNAL.sensor_halfdy",  det->m_sensor_halfdy,  det->m_sensor_zoffset.size());
       config.getVectorDouble("extMonFNAL.sensor_halfdz",  det->m_sensor_halfdz,  det->m_sensor_zoffset.size());
       config.getVectorDouble("extMonFNAL.readout_halfdz", det->m_readout_halfdz, det->m_sensor_zoffset.size());
+
+      //----------------------------------------------------------------
+      // Test material plates
+      const double testMaterialThickness = config.getDouble("extMonFNAL.testMaterial.thickness");
+      const double testMaterialXY = config.getDouble("extMonFNAL.testMaterial.halfsize");
+
+      det->m_testMaterialHalfSize.resize(3);
+      det->m_testMaterialHalfSize[0] = testMaterialXY;
+      det->m_testMaterialHalfSize[1] = testMaterialXY;
+      det->m_testMaterialHalfSize[2] = testMaterialThickness/2;
+
+      det->m_testMaterialDistanceToDetector = config.getDouble("extMonFNAL.testMaterial.distanceToDetector");
+      det->m_testMaterialPitch = testMaterialThickness + config.getDouble("extMonFNAL.testMaterial.spacing");
+
+      config.getVectorString("extMonFNAL.testMaterial.materials", det->m_testMaterialNames);
+
+      //----------------------------------------------------------------
+      // Compute the size of the detector box.  It should contain pixel planes and the test materials
 
       det->m_detectorHalfSize.resize(3);
       for(unsigned i=0; i<det->m_sensor_zoffset.size(); ++i) {
@@ -60,6 +82,8 @@ namespace mu2e {
         std::cout<<"ExtMonFNAL_Maker: coordinateCenterInMu2e = "<<det->m_coordinateCenterInMu2e<<std::endl;
         std::cout<<"ExtMonFNAL_Maker: coordinateRotationInMu2e = "<<det->m_coordinateRotationInMu2e<<std::endl;
       }
+
+      AGDEBUG("ExtMonFNAL maker end");
 
       return det;
 

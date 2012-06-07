@@ -42,6 +42,12 @@ namespace mu2e {
       // the size is computed from sensor pars above
       const std::vector<double>& detectorHalfSize() const { return m_detectorHalfSize; }
 
+      // Test materials for MARS activation studies
+      const std::vector<double>& testMaterialHalfSize() const { return m_testMaterialHalfSize; }
+      double testMaterialDistanceToDetector() const { return m_testMaterialDistanceToDetector; }
+      double testMaterialPitch() const { return m_testMaterialPitch; }
+      const std::vector<std::string>&  testMaterialNames() const { return m_testMaterialNames; }
+
       // Coordinate conversion to/from the Mu2e frame
       // The ExtMonFNAL frame is defined in the following way:
       //
@@ -87,6 +93,12 @@ namespace mu2e {
       // Readout electronics is (at the moment) created with the same (x,y) size as the sensor,
       // as a box parallel to the sensor.  One thing that remains to be specified is:
       std::vector<double> m_readout_halfdz;
+
+      // Test materials for MARS activation studies
+      std::vector<double> m_testMaterialHalfSize;
+      double m_testMaterialDistanceToDetector;
+      double m_testMaterialPitch;
+      std::vector<std::string> m_testMaterialNames;
 
       // data for coordinate system transformations
       CLHEP::Hep3Vector m_coordinateCenterInMu2e;
