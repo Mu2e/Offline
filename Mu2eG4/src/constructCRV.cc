@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.12 2012/05/29 22:58:13 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/29 22:58:13 $
+// $Id: constructCRV.cc,v 1.13 2012/06/07 04:55:00 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/06/07 04:55:00 $
 //
 // Original author KLG
 //
@@ -216,8 +216,18 @@ namespace mu2e {
               cout << __func__ << " barAirOffset         : " <<  barAirOffset << endl;
             }
 
+/*
             new G4PVPlacement( shieldRotation,
                                barAirOffset,
+                               scintillatorBarLogical,
+                               bar.name(scintillatorBarName+"_"),
+                               parent.logical,
+                               0,
+                               bar.index().asInt(),
+                               doSurfaceCheck);
+*/
+            new G4PVPlacement(G4Transform3D( *shieldRotation,
+                               barAirOffset),
                                scintillatorBarLogical,
                                bar.name(scintillatorBarName+"_"),
                                parent.logical,

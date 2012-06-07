@@ -4,9 +4,9 @@
 //
 // Representation of CRSSteelShield aka the flux return yoke
 //
-// $Id: CRSSteelShield.hh,v 1.6 2011/12/06 22:53:01 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/06 22:53:01 $
+// $Id: CRSSteelShield.hh,v 1.7 2012/06/07 04:54:59 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/06/07 04:54:59 $
 //
 // Original author KLG
 //
@@ -30,7 +30,8 @@ namespace mu2e {
       _rotation(),
       _globalOffset(),
       _halfLengths(),
-      _holeRadius()
+      _holeRadius(),
+      _holeOffset()
     {}
 
     // accept default d'tor etc...
@@ -39,11 +40,13 @@ namespace mu2e {
                                CLHEP::HepRotation* rotation,
                                CLHEP::Hep3Vector   globalOffset,
                                double const        halfLengths[3],
-                               double              holeRadius = 0.):
+                               double              holeRadius = 0.,
+                               CLHEP::Hep3Vector   holeOffset = CLHEP::Hep3Vector(0,0,0)):
       _name(name),
       _rotation(rotation),
       _globalOffset(globalOffset),
-      _holeRadius(holeRadius)
+      _holeRadius(holeRadius),
+      _holeOffset(holeOffset)
     {
       _halfLengths[0] = halfLengths[0];
       _halfLengths[1] = halfLengths[1];
@@ -53,6 +56,7 @@ namespace mu2e {
     std::string         const & name() const { return _name;};
     CLHEP::Hep3Vector   const & getGlobalOffset() const { return _globalOffset; };
     CLHEP::HepRotation* const  getRotation()     const { return _rotation; };
+    CLHEP::Hep3Vector   const & getHoleOffset() const { return _holeOffset; };
 
     // Return halfLengths, yes nestBox can take it directly as an argument
     double const* getHalfLengths()  const { return _halfLengths; };
@@ -76,6 +80,9 @@ namespace mu2e {
     double _halfLengths[3];
 
     double _holeRadius;
+
+    // position of the center of the hole relative to the center of the (downstream) steel shield
+    CLHEP::Hep3Vector _holeOffset;
 
   };
 

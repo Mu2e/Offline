@@ -3,9 +3,9 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.9 2012/05/14 21:22:55 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/14 21:22:55 $
+// $Id: CosmicRayShieldMaker.hh,v 1.10 2012/06/07 04:55:00 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/06/07 04:55:00 $
 //
 // Original author KLG
 //
@@ -60,18 +60,17 @@ private:
   bool _hasActiveShield;
 
   double _HallSteelHalfThick;
-  double _HallSteelHalfLengthXY;
+  double _HallSteelHalfLengthX;
+  double _HallSteelHalfLengthY;
   double _HallSteelHalfLengthZ;
   double _HallSteelHoleRadius;
 
   CLHEP::Hep3Vector _HallSteelOffset; // aka CRPassiveShield offset
 
   CLHEP::Hep3Vector _TopHallSteelOffset;
-  CLHEP::Hep3Vector _BottomHallSteelOffset;
   CLHEP::Hep3Vector _LeftHallSteelOffset;
   CLHEP::Hep3Vector _RightHallSteelOffset;
   CLHEP::Hep3Vector _DownstreamHallSteelOffset;
-  CLHEP::Hep3Vector _UpstreamHallSteelOffset;
 
   std::string _HallSteelMaterialName;
 
@@ -94,20 +93,20 @@ private:
   std::vector<int>    _shieldR_NumberOfModules;
   std::vector<int>    _shieldL_NumberOfModules;
   std::vector<int>    _shieldD_NumberOfModules;
-  std::vector<int>    _shieldU_NumberOfModules;
   std::vector<int>    _shieldT_NumberOfModules;
-  std::vector<int>    _shieldB_NumberOfModules;
-  std::vector<int>    _shieldTS_NumberOfModules;
+  std::vector<int>    _shieldTSR_NumberOfModules;
+  std::vector<int>    _shieldTSL_NumberOfModules;
+  std::vector<int>    _shieldTST_NumberOfModules;
 
   CLHEP::Hep3Vector   _scintillatorShieldOffset; // aka CRActiveShield offset
 
   std::vector<double> _shieldR_Offset;
   std::vector<double> _shieldL_Offset;
   std::vector<double> _shieldD_Offset;
-  std::vector<double> _shieldU_Offset;
   std::vector<double> _shieldT_Offset;
-  std::vector<double> _shieldB_Offset;
-  std::vector<double> _shieldTS_Offset;
+  std::vector<double> _shieldTSR_Offset;
+  std::vector<double> _shieldTSL_Offset;
+  std::vector<double> _shieldTST_Offset;
 
   // derived quantities etc...
 
