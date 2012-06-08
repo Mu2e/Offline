@@ -1,11 +1,13 @@
 #
-# $Id: setup_g4951.sh,v 1.1 2012/04/19 22:58:09 genser Exp $
-# $Author: genser $
-# $Date: 2012/04/19 22:58:09 $
+# $Id: setup_g4951.sh,v 1.2 2012/06/08 19:05:07 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2012/06/08 19:05:07 $
 #
-# Original author KLG based on setup.sh
+# Original author Rob Kutschke
 #
-# Interim setup to introduce geant4 9.5.p01
+# Setup the environment to build or use a full release of the Mu2e software.
+# This checks that you have already established the Mu2e environment.
+#
 
 if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
     echo "You should be sourcing this file, not executing it."
@@ -25,29 +27,56 @@ if [ "${MU2E_BASE_RELEASE}" != '' ];then
     return 1
 fi
 
-getfn() { fn="$1"; while [ -L "$fn" ]; do fn="`readlink $fn`"; done; echo "$fn"; }
+# A very ill-defined state.  We have  a test release but no base release!
+if [ "${MU2E_TEST_RELEASE}" != '' ];then
+    echo "ERROR: A test release has already been setup but there is no base release."
+    echo "Suggest that you log out, log in and restart from the beginning."
+    echo "The test release is: " ${MU2E_TEST_RELEASE}
+    return 1
+fi
 
-# This variable contains the absolute path to the directory
-# that contains this file  (regardless of cwd when this script is sourced ).
-myLocation=`cd "$(dirname $(getfn ${BASH_SOURCE}) )" >/dev/null 2>&1 && echo \$PWD`
+# Define the directory in which this file lives as the root of a release.
+export MU2E_BASE_RELEASE=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && echo \$PWD`
+echo "Base release directory is: " $MU2E_BASE_RELEASE
 
-source ${myLocation}/setup.sh
+# Remove any test release environment.  TODO: test this and abort.
+export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE/:$MU2E_DATA_PATH/
+echo "MU2E_SEACH_PATH:   "  $MU2E_SEARCH_PATH
 
 # Setup the framework and its dependent products
 setup art v1_00_11 -qmu2e:prof
-setup splines v1_00_01 -q a7:prof
 
 # Geant4 and its cross-section files.
 setup geant4 v4_9_5_p01 -qgcc46:prof
 
-setup g4abla v3_0
-setup g4emlow v6_23
-setup g4neutron v4_0
+setup g4abla      v3_0
+setup g4emlow     v6_23
+setup g4neutron   v4_0
 setup g4neutronxs v1_1
-setup g4photon v2_2
-setup g4pii v1_3
+setup g4photon    v2_2
+setup g4pii       v1_3
 setup g4radiative v3_4
-setup g4surface v1_0
+setup g4surface   v1_0
+
+# Other libraries we need.
+setup heppdt  v3_04_01 -qgcc46:prof
+setup splines v1_00_01 -qa7:prof
+
+# The build system.
+setup scons v1_3_0b -qgcc46
+
+# Search path for fcl files
+export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
+
+# Tell the framework to look in the local area to find modules.
+source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
+
+# Build the symlink directories for the BaBar code.
+# Only do so if the BaBar package is checked out locally.
+if [  -f "./BaBar/makeInclude.sh" ]
+then
+  ./BaBar/makeInclude.sh
+fi
 
 # A hack that we hope can go away soon.
 export G4LIBDIR=$G4LIB/$G4SYSTEM
