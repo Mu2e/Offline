@@ -1,12 +1,15 @@
 #ifndef Mu2eG4_SensitiveDetectorName_hh
 #define Mu2eG4_SensitiveDetectorName_hh
-// Define names of Sensitive Detectors
+// Define names of Sensitive Detectors; revised to forward the names of the
+// StepInstanceName names.
 //
-// $Id: SensitiveDetectorName.hh,v 1.11 2012/06/08 22:32:18 kutschke Exp $
+// $Id: SensitiveDetectorName.hh,v 1.12 2012/06/08 22:54:10 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/06/08 22:32:18 $
+// $Date: 2012/06/08 22:54:10 $
 //
 // Original author KLG
+
+#include "MCDataProducts/inc/StepInstanceName.hh"
 
 namespace mu2e {
 
@@ -16,44 +19,43 @@ namespace mu2e {
 
     // we define the functins here to avoid a run time undefined symbol error
     static char const * TrackerGas(){
-      // string literals are statically allocated, so this is safe
-      return "tracker";
+      return StepInstanceName::name(StepInstanceName::tracker).c_str();
     }
 
     static char const * VirtualDetector(){
-      return "VirtualDetector";
+      return StepInstanceName::name(StepInstanceName::virtualdetector).c_str();
     }
 
     static char const * CaloCrystal(){
-      return "CaloCrystal";
+      return StepInstanceName::name(StepInstanceName::calorimeter).c_str();
     }
 
     static char const * CaloReadout(){
-      return "CaloReadout";
+      return StepInstanceName::name(StepInstanceName::calorimeterRO).c_str();
     }
 
     static char const * ExtMonFNAL(){
-      return "ExtMonFNAL";
+      return StepInstanceName::name(StepInstanceName::ExtMonFNAL).c_str();
     }
 
     static char const * ExtMonUCITof(){
-      return "ExtMonUCITof";
+      return StepInstanceName::name(StepInstanceName::ExtMonUCITof).c_str();
     }
 
     static char const * StoppingTarget(){
-      return "StoppingTarget";
+      return StepInstanceName::name(StepInstanceName::stoppingtarget).c_str();
     }
 
     static char const * CRSScintillatorBar(){
-      return "CRSScintillatorBar";
+      return StepInstanceName::name(StepInstanceName::CRV).c_str();
     }
 
     static char const * TTrackerDeviceSupport(){
-      return "TTrackerDeviceSupport";
+      return StepInstanceName::name(StepInstanceName::ttrackerDS).c_str();
     }
 
     static char const * ProtonAbsorber() {
-      return "ProtonAbsorber";
+      return StepInstanceName::name(StepInstanceName::protonabsorber).c_str();
     }
 
   };
