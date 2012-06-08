@@ -2,9 +2,9 @@
 #define Mu2eG4_SensitiveDetectorName_hh
 // Define names of Sensitive Detectors
 //
-// $Id: SensitiveDetectorName.hh,v 1.10 2012/05/07 23:35:57 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/05/07 23:35:57 $
+// $Id: SensitiveDetectorName.hh,v 1.11 2012/06/08 22:32:18 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/06/08 22:32:18 $
 //
 // Original author KLG
 
@@ -15,13 +15,9 @@ namespace mu2e {
   public:
 
     // we define the functins here to avoid a run time undefined symbol error
-    static char const * StrawGasVolume(){
+    static char const * TrackerGas(){
       // string literals are statically allocated, so this is safe
-      return "StrawGasVolume";
-    }
-
-    static char const * ItrackerGasVolume(){
-       return "ItrackerGasVolume";
+      return "tracker";
     }
 
     static char const * VirtualDetector(){

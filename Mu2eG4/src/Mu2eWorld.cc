@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.135 2012/06/05 16:20:51 genser Exp $
-// $Author: genser $
-// $Date: 2012/06/05 16:20:51 $
+// $Id: Mu2eWorld.cc,v 1.136 2012/06/08 22:32:18 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/06/08 22:32:18 $
 //
 // Original author Rob Kutschke
 //
@@ -177,6 +177,15 @@ namespace mu2e {
 
     // If you play with the order of these calls, you may break things.
     GeomHandle<WorldG4> worldGeom;
+    G4ThreeVector tmp =    GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() + worldGeom->mu2eOriginInWorld()
+      - G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0));
+    cout << "RKK test: "
+         << tmp  << " | "
+         << GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() << " "
+         << worldGeom->mu2eOriginInWorld() <<  " : "
+         << _config->getDouble("itracker.z0",0.0)
+         << endl;
+
     if ( _config->getBool("hasITracker",false) ) {
       ITGasLayerSD::setMu2eDetCenterInWorld(
                                             GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() + worldGeom->mu2eOriginInWorld()
@@ -219,7 +228,7 @@ namespace mu2e {
     constructMagnetYoke();
 
     if ( geom->hasElement<CosmicRayShield>() ) {
-      
+
       GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
       if(CosmicRayShieldGeomHandle->hasPassiveShield()) constructSteel(hallInfo,_config);
       if(CosmicRayShieldGeomHandle->hasActiveShield()) constructCRV(hallInfo,_config);
@@ -585,15 +594,15 @@ namespace mu2e {
       GeomHandle<ITracker> itracker;
       ITGasLayerSD* itrackerSD=0x0;
       if ( itracker->geomType()==ITracker::Hexagonal )
-        itrackerSD = new ITGasLayerSD_Hexagonal(SensitiveDetectorName::ItrackerGasVolume(), *_config);
+        itrackerSD = new ITGasLayerSD_Hexagonal(SensitiveDetectorName::TrackerGas(), *_config);
       else if ( itracker->geomType()==ITracker::Square )
-        itrackerSD = new ITGasLayerSD_Square(   SensitiveDetectorName::ItrackerGasVolume(), *_config);
+        itrackerSD = new ITGasLayerSD_Square(   SensitiveDetectorName::TrackerGas(), *_config);
 
       SDman->AddNewDetector(itrackerSD);
     }
     else {
-      StrawSD* strawSD      = 
-        new StrawSD(                SensitiveDetectorName::StrawGasVolume(),  *_config);
+      StrawSD* strawSD      =
+        new StrawSD(                SensitiveDetectorName::TrackerGas(),  *_config);
       SDman->AddNewDetector(strawSD);
 
       TTrackerDeviceSupportSD* ttdsSD =
@@ -601,29 +610,29 @@ namespace mu2e {
       SDman->AddNewDetector(ttdsSD);
     }
 
-    Mu2eSensitiveDetector* vdSD = 
+    Mu2eSensitiveDetector* vdSD =
       new Mu2eSensitiveDetector(    SensitiveDetectorName::VirtualDetector(), *_config);
     SDman->AddNewDetector(vdSD);
 
     if (  geom->hasElement<Calorimeter>() ) {
-      CaloCrystalSD* ccSD     = 
+      CaloCrystalSD* ccSD     =
         new CaloCrystalSD(          SensitiveDetectorName::CaloCrystal(),     *_config);
       SDman->AddNewDetector(ccSD);
 
-      CaloReadoutSD* crSD     = 
+      CaloReadoutSD* crSD     =
         new CaloReadoutSD(          SensitiveDetectorName::CaloReadout(),     *_config);
       SDman->AddNewDetector(crSD);
     }
 
-    ExtMonFNAL_SD* emfSD     = 
+    ExtMonFNAL_SD* emfSD     =
       new ExtMonFNAL_SD(            SensitiveDetectorName::ExtMonFNAL(),     *_config);
     SDman->AddNewDetector(emfSD);
 
-    ExtMonUCITofSD* emuTofSD = 
+    ExtMonUCITofSD* emuTofSD =
       new ExtMonUCITofSD(           SensitiveDetectorName::ExtMonUCITof(),  *_config);
     SDman->AddNewDetector(emuTofSD);
 
-    Mu2eSensitiveDetector* stSD = 
+    Mu2eSensitiveDetector* stSD =
       new Mu2eSensitiveDetector(    SensitiveDetectorName::StoppingTarget(),  *_config);
     SDman->AddNewDetector(stSD);
 
@@ -631,7 +640,7 @@ namespace mu2e {
       new Mu2eSensitiveDetector(    SensitiveDetectorName::CRSScintillatorBar(), *_config);
     SDman->AddNewDetector(sbSD);
 
-    Mu2eSensitiveDetector* paSD = 
+    Mu2eSensitiveDetector* paSD =
       new Mu2eSensitiveDetector(    SensitiveDetectorName::ProtonAbsorber(),  *_config);
     SDman->AddNewDetector(paSD);
 

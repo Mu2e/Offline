@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.25 2012/01/26 21:57:42 genser Exp $
-// $Author: genser $
-// $Date: 2012/01/26 21:57:42 $
+// $Id: constructTTrackerv3.cc,v 1.26 2012/06/08 22:32:18 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/06/08 22:32:18 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -83,7 +83,7 @@ namespace mu2e{
       int oldPrecision = cout.precision(newPrecision);
       int oldWidth = cout.width(newWidth);
       std::ios::fmtflags oldFlags = cout.flags();
-      cout.setf(std::ios::fixed,std::ios::floatfield); 
+      cout.setf(std::ios::fixed,std::ios::floatfield);
       cout << "Debugging tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
 	"   " <<
 	envelopeParams.innerRadius() << ", " <<
@@ -121,7 +121,7 @@ namespace mu2e{
       double motherOffsetInMu2eZ = motherInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
       int oldPrecision = cout.precision(3);
       std::ios::fmtflags oldFlags = cout.flags();
-      cout.setf(std::ios::fixed,std::ios::floatfield); 
+      cout.setf(std::ios::fixed,std::ios::floatfield);
       cout << __func__ << " motherOffsetZ           in Mu2e    : " <<
         motherOffsetInMu2eZ << endl;
       cout << __func__ << " mother         Z extent in Mu2e    : " <<
@@ -204,7 +204,7 @@ namespace mu2e{
       int oldPrecision = cout.precision(newPrecision);
       int oldWidth = cout.width(newWidth);
       std::ios::fmtflags oldFlags = cout.flags();
-      cout.setf(std::ios::fixed,std::ios::floatfield); 
+      cout.setf(std::ios::fixed,std::ios::floatfield);
       cout << "Debugging device env idev, deviceEnvelopeParams ir,or,zhl,phi0,phimax: " <<
       idev << ", " <<
       deviceEnvelopeParams.innerRadius() << ", " <<
@@ -286,7 +286,7 @@ namespace mu2e{
       int oldPrecision = cout.precision(newPrecision);
       int oldWidth = cout.width(newWidth);
       std::ios::fmtflags oldFlags = cout.flags();
-      cout.setf(std::ios::fixed,std::ios::floatfield); 
+      cout.setf(std::ios::fixed,std::ios::floatfield);
       cout << "Debugging sector box isec, sector.boxHalfLengths().at(4,3,2,2,1): " <<
 	isec << ", " <<
 	sector.boxHalfLengths().at(4) << ", " <<
@@ -294,7 +294,7 @@ namespace mu2e{
 	sector.boxHalfLengths().at(2) << ", " <<
 	sector.boxHalfLengths().at(2) << ", " <<
 	sector.boxHalfLengths().at(1) << ", " <<
-	endl;      
+	endl;
       cout.setf(oldFlags);
       cout.precision(oldPrecision);
       cout.width(oldWidth);
@@ -372,7 +372,7 @@ namespace mu2e{
 	  int oldPrecision = cout.precision(newPrecision);
 	  int oldWidth = cout.width(newWidth);
 	  std::ios::fmtflags oldFlags = cout.flags();
-	  cout.setf(std::ios::fixed,std::ios::floatfield); 
+	  cout.setf(std::ios::fixed,std::ios::floatfield);
           cout << "Debugging Straw istr, RYForTrapezoids, midpoint: " <<
 	    istr << ", " << RYForTrapezoids << ", " <<
 	    mid << ", " <<
@@ -434,7 +434,7 @@ namespace mu2e{
 
         strawGasInfo.logical->
           SetSensitiveDetector(G4SDManager::GetSDMpointer()->
-                               FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()) );
+                               FindSensitiveDetector(SensitiveDetectorName::TrackerGas()) );
 
       }   // end loop over straws
     }     // end loop over layers

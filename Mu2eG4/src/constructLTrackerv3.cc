@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the LTracker
 //
-// $Id: constructLTrackerv3.cc,v 1.21 2011/05/22 19:09:16 kutschke Exp $
+// $Id: constructLTrackerv3.cc,v 1.22 2012/06/08 22:32:18 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/22 19:09:16 $
+// $Date: 2012/06/08 22:32:18 $
 //
 // Original author Rob Kutschke
 //
@@ -296,7 +296,7 @@ namespace mu2e{
 
     strawGas.logical->
       SetSensitiveDetector(G4SDManager::GetSDMpointer()->
-                           FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()));
+                           FindSensitiveDetector(SensitiveDetectorName::TrackerGas()));
 
     return trackerInfo;
 

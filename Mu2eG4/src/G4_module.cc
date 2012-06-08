@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.50 2012/06/04 23:46:23 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/06/04 23:46:23 $
+// $Id: G4_module.cc,v 1.51 2012/06/08 22:32:18 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/06/08 22:32:18 $
 //
 // Original author Rob Kutschke
 //
@@ -397,12 +397,12 @@ namespace mu2e {
 
     if ( _config->getBool("hasITracker",false) ) {
       static_cast<Mu2eSensitiveDetector*>
-        (SDman->FindSensitiveDetector(SensitiveDetectorName::ItrackerGasVolume()))->
+        (SDman->FindSensitiveDetector(SensitiveDetectorName::TrackerGas()))->
         beforeG4Event(*outputHits, _processInfo, simPartId, event );
 
     }else {
       static_cast<Mu2eSensitiveDetector*>
-        (SDman->FindSensitiveDetector(SensitiveDetectorName::StrawGasVolume()))->
+        (SDman->FindSensitiveDetector(SensitiveDetectorName::TrackerGas()))->
         beforeG4Event(*outputHits, _processInfo, simPartId, event );
 
       static_cast<Mu2eSensitiveDetector*>
