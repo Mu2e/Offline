@@ -1,22 +1,32 @@
-  $Id: v1_1_9.txt,v 1.29 2012/06/07 04:57:51 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2012/06/07 04:57:51 $
+  $Id: v1_1_9.txt,v 1.30 2012/06/08 19:08:34 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/06/08 19:08:34 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
 
+31) June 8, 2012 kutschke
+    setup_g4951.sh
+      - Previously this failed if it was used on a system on which artexternals
+        contained only the products needed for art v1_00_11.
+      - I simplified to be an exact copy of setup.sh but with the version
+        numbers changed and the few additions.
+      - The intention is that this file is a hack that will go away as soon
+        as the default setup moves to art v1_00_11 - so there are no
+        long term maintenance issues.
+
 30) June 6, 2012 ehrlich
     updated the active and passive cosmic ray shields
     and the geometry of the detector hall
     updated files:
-        CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc 
-        CosmicRayShieldGeom/inc/CRSSteelShield.hh 
-        CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh 
-        Mu2eBuildingGeom/inc/Mu2eBuilding.hh 
-        Mu2eBuildingGeom/src/Mu2eBuildingMaker.cc 
-        Mu2eG4/src/constructSteel.cc Mu2eG4/src/constructCRV.cc 
-        Mu2eG4/test/geom_01.txt 
+        CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc
+        CosmicRayShieldGeom/inc/CRSSteelShield.hh
+        CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh
+        Mu2eBuildingGeom/inc/Mu2eBuilding.hh
+        Mu2eBuildingGeom/src/Mu2eBuildingMaker.cc
+        Mu2eG4/src/constructSteel.cc Mu2eG4/src/constructCRV.cc
+        Mu2eG4/test/geom_01.txt
 
 
 29) June 6, 2012 gandr
@@ -46,16 +56,16 @@
       Mu2eG4/test/geom_01.txt
 
 27) June 5, 2012 tassiell
-    Removed from the cvs the following files:  
+    Removed from the cvs the following files:
       ITrackerGeom/ITrackerGeom_2fr_hlfSL.gdml
       ITrackerGeom/ITrackerGeom.gdml
       ITrackerGeom/ITrackerWireData.root
-    They contained an old description of ITracker geometry, 
-    and they are no more used.      
+    They contained an old description of ITracker geometry,
+    and they are no more used.
 
 26) June 4, 2012 tassiell
     Reintroduced switch for the MSC model for e-, needed by the ITracker,
-    only for the geant4 version less than 4.9.5 
+    only for the geant4 version less than 4.9.5
     (this fix the problem at point 22).
     The switch is done into the method checkMSCmodel.
     Mu2eG4/src/SConscript
@@ -63,9 +73,9 @@
       to know the running geant4 version number.
 
 25) June 4, 2012 tassiell
-    Update of the classes ITGasLayerSDs to be derived classes 
+    Update of the classes ITGasLayerSDs to be derived classes
     from Mu2eSensitiveDetector.
-    Changes into files:  
+    Changes into files:
     Mu2eG4/inc/ITGasLayerSD.hh
     Mu2eG4/inc/ITGasLayerSD_Square.hh
     Mu2eG4/inc/ITGasLayerSD_Hexagonal.hh
@@ -157,7 +167,7 @@
 
 
 17) May 25, 2012 youzy
-    Add iron, side concrete and side neutron shielding for Extinction 
+    Add iron, side concrete and side neutron shielding for Extinction
     Monitor UCI.
 
 16) May 23, 2012 genser
@@ -215,16 +225,16 @@
 9) May 15, 2012 ehrlich
    Added two dialog boxes for the track filter and the display setup.
    This adds the option to filter out tracks in the event display with
-   respect to the number of trajectory points, track momentum, 
+   respect to the number of trajectory points, track momentum,
    time window, and particle type.
    Modified Files:
-      EventDisplay/src/DataInterface.cc  
-      EventDisplay/src/EventDisplayFrame.cc  
-      EventDisplay/src/EventDisplayFrame.h    
-      EventDisplay/src/Track.h           
+      EventDisplay/src/DataInterface.cc
+      EventDisplay/src/EventDisplayFrame.cc
+      EventDisplay/src/EventDisplayFrame.h
+      EventDisplay/src/Track.h
    Added Files:
-      EventDisplay/src/FilterDialog.h      
-      EventDisplay/src/SetupDialog.h    
+      EventDisplay/src/FilterDialog.h
+      EventDisplay/src/SetupDialog.h
 
 
 8) May 14, 2012 genser
@@ -245,21 +255,21 @@
 
 
 7) May 10, 2012 mjlee
-   MECOStyleProtonAbsorberGeom is prepared for the geometry service 
-   of current style (or MECO style) cone-shape proton absorber. 
+   MECOStyleProtonAbsorberGeom is prepared for the geometry service
+   of current style (or MECO style) cone-shape proton absorber.
 
 6) May 7, 2012 mjlee
    ProtonAbsorber is now sensitive detector. Followings are modified :
-    Analyses/inc/DiagnosticsG4.hh 
-    Analyses/src/DiagnosticsG4.cc 
-    MCDataProducts/inc/StepInstanceName.hh 
-    Mu2eG4/inc/SensitiveDetectorName.hh 
-    Mu2eG4/inc/constructProtonAbsorber.cc 
+    Analyses/inc/DiagnosticsG4.hh
+    Analyses/src/DiagnosticsG4.cc
+    MCDataProducts/inc/StepInstanceName.hh
+    Mu2eG4/inc/SensitiveDetectorName.hh
+    Mu2eG4/inc/constructProtonAbsorber.cc
     Mu2eG4/inc/Mu2eWorld.cc
     Mu2eG4/inc/G4_module.cc
     fcl/standardProducers.fcl
-    Mu2eG4/src/ProtonAbsorberSD.cc 
-    Mu2eG4/inc/ProtonAbsorberSD.hh 
+    Mu2eG4/src/ProtonAbsorberSD.cc
+    Mu2eG4/inc/ProtonAbsorberSD.hh
 
 5) May 4, 2012 kutschke
    In SConstruct, remove FigureOfMerit from the build when the splines
