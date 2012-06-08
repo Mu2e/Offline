@@ -1,10 +1,20 @@
-  $Id: v1_1_9.txt,v 1.30 2012/06/08 19:08:34 kutschke Exp $
+  $Id: v1_1_9.txt,v 1.31 2012/06/08 22:35:54 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/06/08 19:08:34 $
+  $Date: 2012/06/08 22:35:54 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+32) June 8, 2012 kutschke
+    In preparation for a future change, the name of the sensitive detector
+    for all trackers was changed to "tracker", to match the StepInstanceName.
+      Mu2eG4/inc/SensitiveDetectorName.hh
+      Mu2eG4/src/G4_module.cc
+      Mu2eG4/src/ITrackerBuilder.cc
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/constructLTrackerv3.cc
+      Mu2eG4/src/constructTTrackerv3.cc
 
 31) June 8, 2012 kutschke
     setup_g4951.sh
