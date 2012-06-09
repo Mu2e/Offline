@@ -1,10 +1,28 @@
-  $Id: v1_1_9.txt,v 1.32 2012/06/08 22:56:06 kutschke Exp $
+  $Id: v1_1_9.txt,v 1.33 2012/06/09 20:11:46 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/06/08 22:56:06 $
+  $Date: 2012/06/09 20:11:46 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+33) June 9, 2012 kutschke
+    Mu2eG4/src/G4_module.cc
+       More refactoring and removal of stale comments.
+       Ten of the 11 StepPointMCCollections have a lot of repeated code.
+       This code was moved into loops that live inside a new class,
+       SensitiveDetectorHelper.
+       The 11th collection, for time virtual detectors does not use the
+       G4 sensitive detector mechanism.  Instead it is dealt with inside
+       the user stepping action code.  It was left unchanged.
+
+    MCDataProducts/inc/StepInstanceName.hh
+    MCDataProducts/src/StepInstanceName.cc
+       Added the allValues method, needed by the new code in G4_module.cc
+
+    New files:
+      Mu2eG4/inc/SensitiveDetectorHelper.hh
+      Mu2eG4/src/SensitiveDetectorHelper.cc
 
 32) June 8, 2012 kutschke
     In preparation for a future change, the name of the sensitive detectors
