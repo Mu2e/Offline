@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.51 2012/06/08 22:32:18 kutschke Exp $
+// $Id: G4_module.cc,v 1.52 2012/06/09 20:04:51 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/06/08 22:32:18 $
+// $Date: 2012/06/09 20:04:51 $
 //
 // Original author Rob Kutschke
 //
@@ -14,26 +14,15 @@
 //    take ownership of the object that is passed to it.  So we must
 //    not delete them.
 //
-// 2) Consider having a data product that is a collection type.  At
-//    present there is no properly supported way for one element of the
-//    collection to have an art::Ptr that refers to a different element
-//    within the same collection. The issue is that we need a handle to
-//    the collection before we can make the Ptrs; but we do not have
-//    a handle until after the collection has become readonly.
-//    The interim solution is to cast away constness.  The longer term
-//    solution is to modify the post.insert() feature of data products
-//    so that it can be used for a cet::map_vector<T>.
-//
 
 // Mu2e includes
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "Mu2eG4/inc/Mu2eG4RunManager.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
 #include "Mu2eG4/inc/exportG4PDT.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
@@ -78,10 +67,7 @@
 // Geant4 includes
 #include "G4UIExecutive.hh"
 #include "G4UImanager.hh"
-#include "G4NistManager.hh"
 #include "G4VisExecutive.hh"
-#include "G4SDManager.hh"
-#include "G4ParticleTable.hh"
 #include "G4Run.hh"
 #include "G4Timer.hh"
 #include "G4VUserPhysicsList.hh"
@@ -91,17 +77,13 @@
 
 // C++ includes.
 #include <iostream>
-#include <stdexcept>
 #include <string>
 #include <vector>
-#include <cmath>
 #include <cstdlib>
 #include <memory>
-#include <sstream>
 #include <iomanip>
 
 using namespace std;
-using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
@@ -135,8 +117,8 @@ namespace mu2e {
     StackingAction*         _stackingAction;
 
     G4UIsession  *_session;
-    G4VisManager *_visManager;
     G4UImanager  *_UI;
+    std::auto_ptr<G4VisManager> _visManager;
     int _rmvlevel;
     int _checkFieldMap;
 
@@ -152,20 +134,12 @@ namespace mu2e {
     PhysicsProcessInfo _processInfo;
     bool _printPhysicsProcessSummary;
 
-    // Names of output collections
-    //const std::string _trackerOutputName;
-    const StepInstanceName _trackerOutputName;
-    const StepInstanceName      _vdOutputName;
-    const StepInstanceName     _tvdOutputName;
-    const StepInstanceName      _stOutputName;
-    const StepInstanceName      _sbOutputName;
-    const StepInstanceName    _caloOutputName;
-    const StepInstanceName  _caloROOutputName;
-    const StepInstanceName  _extMonFNALOutputName;
-    const StepInstanceName  _extMonUCITofOutputName;
-    const StepInstanceName  _ttrackerDeviceSupportOutputName;
-    const StepInstanceName      _paOutputName;
+    SensitiveDetectorHelper _sensitiveDetectorHelper;
 
+    // Instance name of the timeVD StepPointMC data product.
+    const StepInstanceName _tvdOutputName;
+
+    // A class to make some standard histograms.
     DiagnosticsG4 _diagnostics;
 
     // Do the G4 initialization that must be done only once per job, not once per run
@@ -183,8 +157,8 @@ namespace mu2e {
     _steppingAction(0),
     _stackingAction(0),
     _session(0),
-    _visManager(0),
     _UI(0),
+    _visManager(0),
     _rmvlevel(pSet.get<int>("diagLevel",0)),
     _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
     _visMacro(pSet.get<std::string>("visMacro","")),
@@ -192,35 +166,25 @@ namespace mu2e {
     _physVolHelper(),
     _processInfo(),
     _printPhysicsProcessSummary(false),
-    _trackerOutputName(StepInstanceName::tracker),
-    _vdOutputName(StepInstanceName::virtualdetector),
+    _sensitiveDetectorHelper(pSet),
     _tvdOutputName(StepInstanceName::timeVD),
-    _stOutputName(StepInstanceName::stoppingtarget),
-    _sbOutputName(StepInstanceName::CRV),
-    _caloOutputName(StepInstanceName::calorimeter),
-    _caloROOutputName(StepInstanceName::calorimeterRO),
-    _extMonFNALOutputName(StepInstanceName::ExtMonFNAL),
-    _extMonUCITofOutputName(StepInstanceName::ExtMonUCITof),
-    _ttrackerDeviceSupportOutputName(StepInstanceName::ttrackerDS),
-    _paOutputName(StepInstanceName::protonabsorber),
     _diagnostics(){
 
-    produces<StepPointMCCollection>(_trackerOutputName.name());
-    produces<StepPointMCCollection>(_vdOutputName.name());
-    produces<StepPointMCCollection>(_tvdOutputName.name());
-    produces<StepPointMCCollection>(_stOutputName.name());
-    produces<StepPointMCCollection>(_sbOutputName.name());
-    produces<StepPointMCCollection>(_caloOutputName.name());
-    produces<StepPointMCCollection>(_caloROOutputName.name());
-    produces<StepPointMCCollection>(_extMonFNALOutputName.name());
-    produces<StepPointMCCollection>(_extMonUCITofOutputName.name());
-    produces<StepPointMCCollection>(_ttrackerDeviceSupportOutputName.name());
-    produces<StepPointMCCollection>(_paOutputName.name());
-    produces<SimParticleCollection>();
-    produces<PhysicalVolumeInfoCollection,art::InRun>();
-    produces<PointTrajectoryCollection>();
-
     produces<StatusG4>();
+    produces<SimParticleCollection>();
+
+    // The main group of StepPointMCCollections.
+    vector<string> const& instanceNames = _sensitiveDetectorHelper.stepInstanceNamesToBeProduced();
+    for ( vector<string>::const_iterator i=instanceNames.begin();
+          i != instanceNames.end(); ++i){
+      produces<StepPointMCCollection>(*i);
+    }
+
+    // The timevd collection is special.
+    produces<StepPointMCCollection>(_tvdOutputName.name());
+
+    produces<PointTrajectoryCollection>();
+    produces<PhysicalVolumeInfoCollection,art::InRun>();
 
     // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
     createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
@@ -282,6 +246,10 @@ namespace mu2e {
       if ( _exportPDTStart ) exportG4PDT( );
     }
 
+    // Get some run-time configuration information that is stored in the geometry file.
+    SimpleConfig const& config  = geom->config();
+    _printPhysicsProcessSummary = config.getBool("g4.printPhysicsProcessSummary",false);
+
   }
 
   void G4::initializeG4( GeometryService& geom, art::Run const& run ){
@@ -330,13 +298,14 @@ namespace mu2e {
 
     // Mu2e specific customizations that must be done after the call to Initialize.
     postG4InitializeTasks(config);
+    _sensitiveDetectorHelper.registerSensitiveDetectors();
 
     _UI = G4UImanager::GetUIpointer();
 
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
-      _visManager = new G4VisExecutive;
+      _visManager = std::auto_ptr<G4VisManager>(new G4VisExecutive);
       _visManager->Initialize();
 
       ConfigFileLookupPolicy visPath;
@@ -363,20 +332,11 @@ namespace mu2e {
 
     // Create empty data products.
     auto_ptr<SimParticleCollection>     simParticles(      new SimParticleCollection);
-    auto_ptr<StepPointMCCollection>     outputHits(        new StepPointMCCollection);
-    auto_ptr<StepPointMCCollection>     vdHits(            new StepPointMCCollection);
     auto_ptr<StepPointMCCollection>     tvdHits(           new StepPointMCCollection);
-    auto_ptr<StepPointMCCollection>     stHits(            new StepPointMCCollection);
-    auto_ptr<StepPointMCCollection>     sbHits(            new StepPointMCCollection);
-    auto_ptr<StepPointMCCollection>     caloHits(          new StepPointMCCollection);
-    auto_ptr<StepPointMCCollection>     caloROHits(        new StepPointMCCollection);
-    auto_ptr<StepPointMCCollection>     extMonFNALHits(    new StepPointMCCollection);
-    auto_ptr<StepPointMCCollection>     extMonUCITofHits(  new StepPointMCCollection);
-    auto_ptr<StepPointMCCollection>     paHits(            new StepPointMCCollection);
-    auto_ptr<StepPointMCCollection>     ttrackerDeviceSupportHits(  new StepPointMCCollection);
     auto_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
+    _sensitiveDetectorHelper.createProducts();
 
-    // ProductID for SimParticleCollection
+    // ProductID for the SimParticleCollection.
     art::ProductID simPartId(getProductID<SimParticleCollection>(event));
 
     // Some of the user actions have begein event methods. These are not G4 standards.
@@ -384,65 +344,8 @@ namespace mu2e {
     _genAction->setEvent(event);
     _steppingAction->BeginOfEvent(*tvdHits,  simPartId, event );
 
-    // enable Sensitive Detectors to store the Framework Data Products
-
-    G4SDManager* SDman      = G4SDManager::GetSDMpointer();
-
-    // Get access to the master geometry system and its run time config.
-    art::ServiceHandle<GeometryService> geom;
-    SimpleConfig const* _config = &(geom->config());
-
-    // Get some run-time configuration information.
-    _printPhysicsProcessSummary  = _config->getBool("g4.printPhysicsProcessSummary",false);
-
-    if ( _config->getBool("hasITracker",false) ) {
-      static_cast<Mu2eSensitiveDetector*>
-        (SDman->FindSensitiveDetector(SensitiveDetectorName::TrackerGas()))->
-        beforeG4Event(*outputHits, _processInfo, simPartId, event );
-
-    }else {
-      static_cast<Mu2eSensitiveDetector*>
-        (SDman->FindSensitiveDetector(SensitiveDetectorName::TrackerGas()))->
-        beforeG4Event(*outputHits, _processInfo, simPartId, event );
-
-      static_cast<Mu2eSensitiveDetector*>
-        (SDman->FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport()))->
-        beforeG4Event(*ttrackerDeviceSupportHits, _processInfo, simPartId, event );
-    }
-
-    static_cast<Mu2eSensitiveDetector*>
-      (SDman->FindSensitiveDetector(SensitiveDetectorName::VirtualDetector()))->
-      beforeG4Event(*vdHits, _processInfo, simPartId, event );
-
-    static_cast<Mu2eSensitiveDetector*>
-      (SDman->FindSensitiveDetector(SensitiveDetectorName::StoppingTarget()))->
-      beforeG4Event(*stHits, _processInfo, simPartId, event );
-
-    static_cast<Mu2eSensitiveDetector*>
-      (SDman->FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar()))->
-      beforeG4Event(*sbHits, _processInfo, simPartId, event );
-
-    if ( geom->hasElement<Calorimeter>() ) {
-      static_cast<Mu2eSensitiveDetector*>
-        (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal()))->
-        beforeG4Event(*caloHits, _processInfo, simPartId, event );
-
-      static_cast<Mu2eSensitiveDetector*>
-        (SDman->FindSensitiveDetector(SensitiveDetectorName::CaloReadout()))->
-        beforeG4Event(*caloROHits, _processInfo, simPartId, event );
-    }
-
-    static_cast<Mu2eSensitiveDetector*>
-      (SDman->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))->
-      beforeG4Event(*extMonFNALHits, _processInfo, simPartId, event );
-
-    static_cast<Mu2eSensitiveDetector*>
-      (SDman->FindSensitiveDetector(SensitiveDetectorName::ExtMonUCITof()))->
-      beforeG4Event(*extMonUCITofHits, _processInfo, simPartId, event );
-
-    static_cast<Mu2eSensitiveDetector*>
-      (SDman->FindSensitiveDetector(SensitiveDetectorName::ProtonAbsorber()))->
-      beforeG4Event(*paHits, _processInfo, simPartId, event );
+    // Connect the newly created StepPointMCCollections to their sensitive detector objects.
+    _sensitiveDetectorHelper.updateSensitiveDetectors( _processInfo, simPartId, event );
 
     // Run G4 for this event and access the completed event.
     _runManager->BeamOnDoOneEvent( event.id().event() );
@@ -474,32 +377,23 @@ namespace mu2e {
 
     _diagnostics.fill( *g4stat,
                        *simParticles,
-                       *outputHits,
-                       *caloHits,
-                       *caloROHits,
-                       *sbHits,
-                       *stHits,
-                       *vdHits,
-                       *extMonUCITofHits,
+                       _sensitiveDetectorHelper.steps(StepInstanceName::tracker).ref(),
+                       _sensitiveDetectorHelper.steps(StepInstanceName::calorimeter).ref(),
+                       _sensitiveDetectorHelper.steps(StepInstanceName::calorimeterRO).ref(),
+                       _sensitiveDetectorHelper.steps(StepInstanceName::CRV).ref(),
+                       _sensitiveDetectorHelper.steps(StepInstanceName::stoppingtarget).ref(),
+                       _sensitiveDetectorHelper.steps(StepInstanceName::virtualdetector).ref(),
+                       _sensitiveDetectorHelper.steps(StepInstanceName::ExtMonUCITof).ref(),
                        *pointTrajectories,
                        _physVolHelper.persistentInfo() );
-    _diagnostics.fillPA(*paHits);
+    _diagnostics.fillPA( _sensitiveDetectorHelper.steps(StepInstanceName::protonabsorber).ref() );
 
     // Add data products to the event.
     event.put(g4stat);
     event.put(simParticles);
-    event.put(outputHits,        _trackerOutputName.name()     );
-    event.put(vdHits,           _vdOutputName.name()           );
     event.put(tvdHits,          _tvdOutputName.name()          );
-    event.put(stHits,           _stOutputName.name()           );
-    event.put(sbHits,           _sbOutputName.name()           );
-    event.put(caloHits,         _caloOutputName.name()         );
-    event.put(caloROHits,       _caloROOutputName.name()       );
-    event.put(extMonFNALHits,   _extMonFNALOutputName.name()   );
-    event.put(extMonUCITofHits, _extMonUCITofOutputName.name() );
-    event.put(ttrackerDeviceSupportHits, _ttrackerDeviceSupportOutputName.name() );
-    event.put(paHits,           _paOutputName.name()           );
     event.put(pointTrajectories);
+    _sensitiveDetectorHelper.put(event);
 
     // Pause to see graphics.
     if ( !_visMacro.empty() ){
@@ -554,7 +448,6 @@ namespace mu2e {
       _processInfo.endRun();
     }
 
-    delete _visManager;
   }
 
 } // End of namespace mu2e

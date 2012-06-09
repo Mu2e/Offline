@@ -3,9 +3,9 @@
 // An enum-matched-to-names class for the names of the StepPointMC
 // collections produced inside G4_module.
 //
-// $Id: StepInstanceName.cc,v 1.1 2011/10/12 20:00:21 kutschke Exp $
+// $Id: StepInstanceName.cc,v 1.2 2012/06/09 20:04:51 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/10/12 20:00:21 $
+// $Date: 2012/06/09 20:04:51 $
 //
 // Contact person Rob Kutschke
 //
@@ -81,5 +81,17 @@ namespace mu2e {
 
     return StepInstanceName(unknown);
   } // end StepInstanceName::findByName
+
+  // Get all values, as class instances; this includes the unknown value.
+  std::vector<StepInstanceName> const& StepInstanceName::allValues(){
+
+    static std::vector<StepInstanceName> values;
+    for ( size_t i=unknown; i<lastEnum; ++i ){
+      values.push_back(StepInstanceName(i));
+    }
+    return values;
+
+  } // end StepInstanceName::allValues
+
 
 } // end namespace mu2e

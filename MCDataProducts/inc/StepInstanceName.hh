@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for the names of the StepPointMC
 // collections produced inside G4_module.
 //
-// $Id: StepInstanceName.hh,v 1.3 2012/05/07 23:35:57 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/05/07 23:35:57 $
+// $Id: StepInstanceName.hh,v 1.4 2012/06/09 20:04:51 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/06/09 20:04:51 $
 //
 // Contact person Rob Kutschke
 //
@@ -112,8 +112,11 @@ namespace mu2e {
     // Static version of the name method.
     static std::string const& name( enum_type id );
 
-    // Get a vector of all known names.
+    // Get all names, as strings.
     static std::vector<std::string> const& names();
+
+    // Get all values, as class instances.
+    static std::vector<StepInstanceName> const& allValues();
 
     // Check validity of an Id.
     static bool isValid( enum_type id){
