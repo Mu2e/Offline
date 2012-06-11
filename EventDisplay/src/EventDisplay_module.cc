@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.18 2012/02/04 00:36:35 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/02/04 00:36:35 $
+// $Id: EventDisplay_module.cc,v 1.19 2012/06/11 05:22:43 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/06/11 05:22:43 $
 //
 
 #include <iostream>
@@ -163,7 +163,7 @@ namespace mu2e
         int numberHits=0;
         for(unsigned int i=0; i<kalmantrackCollection->size(); i++)
         {
-          const TrkRecoTrk &particle = kalmantrackCollection->at(i);
+          const TrkRecoTrk &particle = *kalmantrackCollection->at(i);
           const TrkHotList* hots = particle.hots();
           if(hots!=NULL) numberHits+=hots->nHit();
         }

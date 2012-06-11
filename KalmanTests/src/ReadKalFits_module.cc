@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.6 2012/04/14 17:53:37 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/04/14 17:53:37 $
+// $Id: ReadKalFits_module.cc,v 1.7 2012/06/11 05:22:43 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/06/11 05:22:43 $
 //
 // Original author Rob Kutschke
 //
@@ -110,7 +110,7 @@ namespace mu2e {
     _trkid = -1;
     for ( size_t i=0; i< trks.size(); ++i ){
       _trkid = i;
-      TrkRecoTrk const& trk = trks[i];
+      TrkRecoTrk const& trk = *trks[i];
       TrkRep const* trep = trk.getRep(PdtPid::electron);
       if ( !trep ) continue;
 

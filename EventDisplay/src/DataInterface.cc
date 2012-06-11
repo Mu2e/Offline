@@ -993,7 +993,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
     for(unsigned int i=0; i<trkRecoTrkHits->size(); i++)
     {
-      const TrkRecoTrk &particle = trkRecoTrkHits->at(i);
+      const TrkRecoTrk &particle = *trkRecoTrkHits->at(i);
       const TrkHotList* hots = particle.hots();
       if(hots!=NULL)
       {
@@ -1237,7 +1237,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     const mu2e::TrkRecoTrkCollection *trkRecoTrks=trkRecoTrkCollectionVector[i];
     for(unsigned int j=0; j<trkRecoTrks->size(); j++)
     {
-      const TrkRecoTrk &particle = trkRecoTrks->at(j);
+      const TrkRecoTrk &particle = *trkRecoTrks->at(j);
       double t0=particle.trackT0();
       const TrkRep* trkrep = particle.getRep(particle.defaultType());
       if(trkrep!=NULL)
