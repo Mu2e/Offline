@@ -284,12 +284,13 @@ void FofM::results (int maximumSignalCount,
             << "(optimized) integratedBackground = " << B << "\n"
             << "Smoothed Punzi merit denominator(B) = " 
             << punziMeritDenominator(B) << "\n"
-            << "fc90 merit denominator(B) = " << fc90(B) << "\n";
+            << "fc90 merit denominator(B) = " << fc90MeritDenominator(B) 
+            << "\n";
 
   if (mfunc == SmoothedPunziMeritFunction) {
     figOfM = epsilon / FofM::punziMeritDenominator (B);  // equation (2)
   } else {
-    figOfM = epsilon / fc90 (B);
+    figOfM = epsilon / fc90MeritDenominator (B);
   }
 
   // figOfM = epsilon / meritDenominator(B); // equation (2)        
@@ -338,13 +339,14 @@ void FofM::results_fixed_highCut (int maximumSignalCount,
             << "(optimized) integratedBackground = " << B << "\n"
             << "Smoothed Punzi merit denominator(B) = " 
             << punziMeritDenominator(B) << "\n"
-            << "fc90 merit denominator(B) = " << fc90(B) << "\n";
+            << "fc90 merit denominator(B) = " << fc90MeritDenominator(B) 
+            << "\n";
   #endif
   
   if (mfunc == SmoothedPunziMeritFunction) {
     figOfM = epsilon / FofM::punziMeritDenominator (B);  // equation (2)
   } else {
-    figOfM = epsilon / fc90 (B);
+    figOfM = epsilon / fc90MeritDenominator (B);
   }
   
   fillHypotheticalVectors( maximumSignalCount,
@@ -389,13 +391,14 @@ void FofM::results_fixed_lowCut (int maximumSignalCount,
             << "(optimized) integratedBackground = " << B << "\n"
             << "Smoothed Punzi merit denominator(B) = " 
             << punziMeritDenominator(B) << "\n"
-            << "fc90 merit denominator(B) = " << fc90(B) << "\n";
+            << "fc90 merit denominator(B) = " << fc90MeritDenominator(B) 
+            << "\n";
   #endif
   
   if (mfunc == SmoothedPunziMeritFunction) {
     figOfM = epsilon / FofM::punziMeritDenominator (B);  // equation (2)
   } else {
-    figOfM = epsilon / fc90 (B);
+    figOfM = epsilon / fc90MeritDenominator (B);
   }
   
   // figOfM = epsilon / meritDenominator(B); // equation (2)        
@@ -441,13 +444,14 @@ void FofM::results_fixed_cuts  (int maximumSignalCount,
             << "(optimized) integratedBackground = " << B << "\n"
             << "Smoothed Punzi merit denominator(B) = " 
             << punziMeritDenominator(B) << "\n"
-            << "fc90 merit denominator(B) = " << fc90(B) << "\n";
+            << "fc90 merit denominator(B) = " << fc90MeritDenominator(B) 
+            << "\n";
   #endif
   
   if (mfunc == SmoothedPunziMeritFunction) {
     figOfM = epsilon / FofM::punziMeritDenominator (B);  // equation (2)
   } else {
-    figOfM = epsilon / fc90 (B);
+    figOfM = epsilon / fc90MeritDenominator (B);
   }
   
   // figOfM = epsilon / meritDenominator(B); // equation (2)        
@@ -482,7 +486,7 @@ void FofM::computeSensitivities(
         poissonMeanSolver(discoveryThresholdN-1,1-p90pct);
   punziSensitivity = (punziSensitivityMu-B)/(eps*L);
 //  FeldmanCousins90pctSensitivity fc90;
-  CL90Sensitivity = fc90(B)/(eps*L);
+  CL90Sensitivity = fc90MeritDenominator(B)/(eps*L);
   singleEventSensitivity = 1.0/(eps*L);
   
   // To check - since the quoted BR limit is based on total counts, and that
@@ -858,10 +862,11 @@ double FofM::optimize_low_cut  (double fixed_high_cut) const
             <<  "  nPointsInOptimizingGrid = " << nPointsInOptimizingGrid
             <<  "  gridMax = " << gridMax << "\n";
 #endif
+  
   splines::Grid<1> optimizingGrid( gridMin, gridMax, nPointsInOptimizingGrid );
   FofMwithLowerLimitVarying f(negIntegratedSignal, negIntegratedBackground, 
-                                L, SmoothedPunziMeritFunction);
-
+                                L, mfunc);
+  // mfunc is either SmoothedPunziMeritFunction or FCsensitivityMeritFunction
 #ifdef ANALYSIS_OUTPUT
   std::cout << "\nnegIntegratedSignal at high cut of " 
             << fixed_high_cut << ": \n\n";
@@ -891,6 +896,16 @@ double FofM::optimize_low_cut  (double fixed_high_cut) const
 #endif
   
   splines::Spline<1> figureOfMeritSpline ( f, optimizingGrid );
+#ifdef ANALYSIS_OUTPUT
+  std::cout << "\nfigureOfMeritSpline for fixed high cut of "
+            <<  fixed_high_cut << ": \n\n";
+  for (unsigned int i=0; i< optimizingGrid.nPoints(); ++i) {
+    if (i%5 == 0) {
+      double x = optimizingGrid[i];
+      std::cout << x << "    " << figureOfMeritSpline(x) << "\n";
+    }
+  }
+#endif
   double maximum =  figureOfMeritSpline.maximum();  
   // TODO - There may be a much quicker way to do this, if we modify the
   //        splines package to add the right capabilities.  That is a 
@@ -923,7 +938,7 @@ double FofM::optimize_high_cut (double fixed_low_cut) const
 #endif
   splines::Grid<1> optimizingGrid( gridMin, gridMax, nPointsInOptimizingGrid );
   FofMwithUpperLimitVarying f(integratedSignal, integratedBackground, 
-                                L, SmoothedPunziMeritFunction);
+                                L, mfunc);
 
 #ifdef ANALYSIS_OUTPUT
   std::cout << "\nintegratedSignal at low cut of " 
@@ -954,6 +969,16 @@ double FofM::optimize_high_cut (double fixed_low_cut) const
 #endif
   
   splines::Spline<1> figureOfMeritSpline ( f, optimizingGrid );
+#ifdef ANALYSIS_OUTPUT
+  std::cout << "\nfigureOfMeritSpline for fixed high cut of "
+            <<  fixed_high_cut << ": \n\n";
+  for (unsigned int i=0; i< optimizingGrid.nPoints(); ++i) {
+    if (i%5 == 0) {
+      double x = optimizingGrid[i];
+      std::cout << x << "    " << figureOfMeritSpline(x) << "\n";
+    }
+  }
+#endif
   double maximum =  figureOfMeritSpline.maximum();  
   return maximum;
 }
@@ -971,7 +996,7 @@ double FofMwithLowerLimitVarying::operator()(double a) const
   if (mfunc == SmoothedPunziMeritFunction) {
     f = eps / FofM::punziMeritDenominator (B);
   } else {
-    f = eps / fc90 (B);
+    f = eps / fc90MeritDenominator (B);
   }
   return f;
 }
@@ -984,7 +1009,7 @@ double FofMwithUpperLimitVarying::operator()(double a) const
   if (mfunc == SmoothedPunziMeritFunction) {
     f = eps / FofM::punziMeritDenominator (B);
   } else {
-    f = eps / fc90 (B);
+    f = eps / fc90MeritDenominator (B);
   }
   return f;
 }

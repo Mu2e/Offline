@@ -1,12 +1,10 @@
 #
-# $Id: SConscript,v 1.2 2012/05/30 16:12:02 mf Exp $
+# $Id: SConscript,v 1.3 2012/06/11 20:20:41 mf Exp $
 # $Author: mf $
-# $Date: 2012/05/30 16:12:02 $
+# $Date: 2012/06/11 20:20:41 $
 #
 # Original author Rob Kutschke.
 #
-
-# NEEDED TODO: Beef up with root stuff, from, e.g. DataProducts/src/SConscript
 
 import os, re
 Import('env')

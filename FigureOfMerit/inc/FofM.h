@@ -299,7 +299,7 @@ private:
                 std::vector<double> const & CLlowerBR,
                 std::vector<double> const & CLupperBR,
                 bool lowCutFixed, bool highCutFixed) const;
-  FeldmanCousins90pctSensitivity fc90;
+  FeldmanCousins90pctSensitivity fc90MeritDenominator;
    
 };  // FofM
 
@@ -415,7 +415,7 @@ private:
   splines::Spline<1> negIntegratedBackground;
   double L;
   MeritFunctionChoice mfunc;
-  FeldmanCousins90pctSensitivity fc90;
+  FeldmanCousins90pctSensitivity fc90MeritDenominator;
 };
 
 class FofMwithUpperLimitVarying {
@@ -434,7 +434,7 @@ private:
   splines::Spline<1> integratedBackground;
   double L;
   MeritFunctionChoice mfunc;
-  FeldmanCousins90pctSensitivity fc90;
+  FeldmanCousins90pctSensitivity fc90MeritDenominator;
 };
 
 } // end namespace mu2e

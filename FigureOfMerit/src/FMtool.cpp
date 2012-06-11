@@ -793,7 +793,7 @@ void FMtool::applyFofM() const
 
   os << "\nFigure of merit versus minimum of t0 window: \n\n";
   os << "tCut    FofM            SES         CL90         SPunzi    "
-     << " pLow     Phigh \n";
+     << " pLow    Phigh \n";
   for (size_t tCutNumber=0; tCutNumber<tCuts.size(); ++tCutNumber) {
     os << tCuts[tCutNumber] 
        << "  " << summaries[tCutNumber].figureOfMerit;
@@ -804,9 +804,11 @@ void FMtool::applyFofM() const
     }
     os <<  summaries[tCutNumber].singleEventSensitivity 
        << "  " << summaries[tCutNumber].CL90sensitivity 
-       << "  " << summaries[tCutNumber].smoothedPunziSensitivity 
-       << "  "  <<  summaries[tCutNumber].pCutLo
+       << "  " << summaries[tCutNumber].smoothedPunziSensitivity;
+    int pr = os.precision(5); 
+    os << "  "  <<  summaries[tCutNumber].pCutLo
        << "  "  <<  summaries[tCutNumber].pCutHi << "\n";
+    os.precision(pr);
   }
 
 // Repeat the best one if there were more than 2 t cuts explored:

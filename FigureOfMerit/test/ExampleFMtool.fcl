@@ -137,16 +137,6 @@ verbosity:
 ## stopped muons that are captured would be captured after 700 nsec. 
 #}
 
-# Bernstein's  CE4322 CE data
-#conversionElectrons:
-#{
-#CEdataFiles : 
-#[
-#"/mu2e/data/users/mf/CEFilesMixedAllTime/CE34322_0_49.root"
-#]
-#numberOfGeneratedMuonConversions : 490000
-#}
-
 # Bernstein's first mixed no tag   DIO data
 #decayInOrbitElectrons:
 #{
@@ -167,18 +157,4 @@ verbosity:
 ## stopped muons that DIO would do so after 700 nsec. 
 #}
 
-# Bernstein's mixed all time DIO34393 DIO data
-#decayInOrbitElectrons:
-#{
-#DIOdataFiles : 
-#[
-#"/mu2e/data/users/mf/DIOFilesMixedAllTime/DIO34393_0_49.root"    ,
-#"/mu2e/data/users/mf/DIOFilesMixedAllTime/DIO34393_50_99.root"   ,
-#"/mu2e/data/users/mf/DIOFilesMixedAllTime/DIO34393_100_199.root" 
-#]
-#numberOfGeneratedDIOs     : 2815000
-#dioTracksWeighted         : false
-#fractionOfDIOsRepresented : 4.42e-15
-#liveGateFraction          : 1.00
-#}
 
