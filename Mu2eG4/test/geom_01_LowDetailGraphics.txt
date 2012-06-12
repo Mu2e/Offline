@@ -2,9 +2,9 @@
 // Full geometry with selected features made invisible
 // so that the scene renders faster.
 //
-// $Id: geom_01_LowDetailGraphics.txt,v 1.1 2011/05/03 04:11:44 kutschke Exp $
+// $Id: geom_01_LowDetailGraphics.txt,v 1.2 2012/06/12 20:10:12 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/05/03 04:11:44 $
+// $Date: 2012/06/12 20:10:12 $
 //
 
 #include "Mu2eG4/test/geom_01.txt"
@@ -19,6 +19,9 @@ bool vd.visible              = false;
 bool ttracker.envelopeVisible       = false;
 bool ttracker.deviceEnvelopeVisible = false;
 bool ttracker.supportVisible        = false;
+
+string g4.physicsListName = "QGSP_BERT";
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
