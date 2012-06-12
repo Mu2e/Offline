@@ -1,3 +1,13 @@
+#include "TTree.h"
+#include "TH1F.h"
+#include "TLegend.h"
+#include "TCanvas.h"
+#include "TProfile.h"
+#include "TCut.h"
+#include "TPaveText.h"
+#include "TLine.h"
+#include <iostream>
+
 void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, double nconv=100000) {
 // diogenrange is the momentum range over which the DIO events were generated
   double nstopped(7.56e17);
@@ -8,6 +18,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   double conprob(1e-15);
   double momlow(103.3);
   double momhigh(104.7);
+  double trueconvmom(105);
 
   unsigned nbins(100);
   double mmin(101);
@@ -61,6 +72,8 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   TCut pitch(ctext);
   snprintf(ctext,80,"t0>%f",t0min);
   TCut livegate(ctext);
+  snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
+  TCut momwin(ctext);
 // cuts for different tightness of selection
   TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
   ncuts[0] = "nactive>=20";
@@ -164,7 +177,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   lincan->Divide(2,2);
    for(unsigned ires=0;ires<4;ires++){
     lincan->cd(ires+1);
-    TH1F* diocopy = diospec[ires]->DrawCopy();
+    TH1* diocopy = diospec[ires]->DrawCopy();
     diocopy->SetMinimum(-0.2);
     diocopy->SetMaximum(4);
     conspec[ires]->Draw("same");
@@ -222,4 +235,57 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   lincan->cd(0);
   lincan->SaveAs("mu2e_lin.png");
 
+  TCanvas* dioc = new TCanvas("dio","dio",1200,800);
+  dioc->Divide(1,2);
+
+  Double_t dmhi = trueconvmom;
+  Double_t dmlow = trueconvmom - diogenrange;
+  TH1F* diogen = new TH1F("diogen","True DIO momentum;MeV",100,dmlow,dmhi);
+  TH1F* diowt = new TH1F("diowt","True DIO momentum;MeV",100,dmlow,dmhi);
+//  diowt->Sumw2();
+  dio->Project("diogen","mcmom");
+  dio->Project("diowt","mcmom","diowt");
+  double scale =ndecay*diogenrange/ndio;
+  cout << "DIO scale factor = " << scale << endl;
+  diowt->Scale(scale);
+  diowt->SetLineColor(kBlue);
+  diogen->SetLineColor(kRed);
+  diowt->SetStats(0);
+  diogen->SetStats(0);
+  dioc->cd(1);
+  gPad->SetLogy();
+  diowt->Draw();
+  diogen->Draw("same");
+  TLegend* dioleg = new TLegend(.2,.4,.6,.6);
+  dioleg->AddEntry(diogen,"Generated","l");
+  dioleg->AddEntry(diowt,"Weighted","l");
+  dioleg->Draw();
+
+
+  dioc->cd(2);
+  gPad->SetLogy();
+  Int_t colors[4] = {kRed,kBlue,kGreen,kBlack};
+  TH1F* diogenwin[4];
+  TH1F* diogood[4];
+  char* dopt[4] = {"","same","same","same"};
+  char* cutset[4] = {"Cutset A","Cutset B","Cutset C","Cutset D"};
+  TLegend* dgenwinleg = new TLegend(.5,.6,.7,.9);
+  for(unsigned ires=0;ires<4;ires++){
+    char dioname[50];
+    snprintf(dioname,50,"diogenwin%i",ires);
+    diogenwin[ires] = new TH1F(dioname,"True DIO momentum of fake signals;MeV",100,dmlow,dmhi);
+    diogenwin[ires]->SetStats(0);
+//   TH1F* diogood[ires] = new TH1F("diogood","True DIO momentum",100,dmlow,dmhi);
+//    dio->Project("diogoodwt","mcmom",goodfit);
+
+
+    TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
+    TCut final = (reco+pitch+livegate+quality);
+    dio->Project(dioname,"mcmom",final+momwin);
+    diogenwin[ires]->SetLineColor(colors[ires]);
+    dgenwinleg->AddEntry(diogenwin[ires],cutset[ires],"l");
+    diogenwin[ires]->Draw(dopt[ires]);
+  }
+  dgenwinleg->Draw();
+  dioc->SaveAs("diocan.png");
 }

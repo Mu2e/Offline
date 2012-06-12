@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.28 2012/05/25 20:57:59 brownd Exp $
+// $Id: KalFit.cc,v 1.29 2012/06/12 21:06:20 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/25 20:57:59 $
+// $Date: 2012/06/12 21:06:20 $
 //
 
 // the following has to come before other BaBar includes
@@ -56,11 +56,7 @@ namespace mu2e
 // comparison functor for ordering hits
   struct fltlencomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
     bool operator()(TrkStrawHit* x, TrkStrawHit* y) { 
-// predicate on device first, as fltlen might be ambiguous for inactive hots
-      if(x->straw().id().getDevice() == y->straw().id().getDevice())
-	return x->fltLen() < y->fltLen();
-      else
-	return(x->straw().id().getDevice() < y->straw().id().getDevice());
+      return x->fltLen() < y->fltLen();
     }
   };
 

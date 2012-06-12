@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.7 2012/06/11 05:22:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/11 05:22:43 $
+// $Id: ReadKalFits_module.cc,v 1.8 2012/06/12 21:06:20 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/06/12 21:06:20 $
 //
 // Original author Rob Kutschke
 //
@@ -57,6 +57,8 @@ namespace mu2e {
 
     // Module label of the module that performed the fits.
     std::string _fitterModuleLabel;
+    // whether to weight the DIO or not
+    bool _weight;
   // diagnostic of Kalman fit
     KalFitMC _kfitmc;
  
@@ -73,6 +75,7 @@ namespace mu2e {
 
   ReadKalFits::ReadKalFits(fhicl::ParameterSet const& pset):
     _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
+    _weight(pset.get<bool>("WeightEvents",true)),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC")),
     _hNTracks(0),
     _hfitCL(0),
@@ -99,8 +102,9 @@ namespace mu2e {
     _kfitmc.findMCData(event);
     // DIO spectrum weight; use the generated momenum magnitude
     double ee = _kfitmc._mcmom;
-    _diowt = DIOspectrum(ee);
-
+    _diowt = 1.0;
+    if(_weight)
+      _diowt = DIOspectrum(ee);
     // Get handle to calorimeter hit collection.
     art::Handle<TrkRecoTrkCollection> trksHandle;
     event.getByLabel(_fitterModuleLabel,trksHandle);
