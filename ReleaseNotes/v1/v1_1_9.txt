@@ -1,10 +1,18 @@
-  $Id: v1_1_9.txt,v 1.36 2012/06/12 20:19:28 kutschke Exp $
+  $Id: v1_1_9.txt,v 1.37 2012/06/13 01:12:05 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/06/12 20:19:28 $
+  $Date: 2012/06/13 01:12:05 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v1_1_9
+
+37) June 12, 2012 kutschke
+    Filters/src/MinimumHits_module.cc
+      - Add a mode capability so that it can do different sorts of selections.
+
+    New files added to support this:
+      MCDataProducts/inc/StepFilterMode.hh
+      MCDataProducts/src/StepFilterMode.cc
 
 36) June 12, 2012 kutschke
     Mu2eG4/test/geom_01_LowDetailGraphics.txt
