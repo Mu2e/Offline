@@ -1,8 +1,8 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: MinimumHits_module.cc,v 1.7 2012/01/07 20:36:08 kutschke Exp $
+// $Id: MinimumHits_module.cc,v 1.8 2012/06/13 00:54:30 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/01/07 20:36:08 $
+// $Date: 2012/06/13 00:54:30 $
 //
 // Contact person Rob Kutschke.
 //
@@ -12,6 +12,7 @@
 #include "Analyses/inc/GeneratorSummaryHistograms.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
+#include "MCDataProducts/inc/StepFilterMode.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
@@ -51,6 +52,9 @@ namespace mu2e {
 
   private:
 
+    // Which data product collections do we want to look at.
+    StepFilterMode mode_;
+
     // Module label of the g4 module that made the generated particles
     std::string generatorModuleLabel_;
 
@@ -85,9 +89,17 @@ namespace mu2e {
     // Number of events that pass the filter.
     int nPassed_;
 
+    // Returns true if the event fails the filter.
+    bool doesEventPass( StepPointMCCollection const& trkSteps,
+                        StepPointMCCollection const& calSteps,
+                        StepPointMCCollection const& calROSteps,
+                        StepPointMCCollection const& crvROSteps
+                        );
+
   };
 
   MinimumHits::MinimumHits(fhicl::ParameterSet const& pset):
+    mode_(StepFilterMode(pset.get<string>("mode"))),
     generatorModuleLabel_(pset.get<string>("generatorModuleLabel")),
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel")),
     strawHitMakerLabel_(pset.get<string>("strawHitMakerLabel")),
@@ -108,6 +120,9 @@ namespace mu2e {
     diagnostics_(),
     genSummary_(),
     nPassed_(0){
+
+    mf::LogInfo("CONFIG")
+      << "MinimumHits_module will run in the mode: " << mode_  << "\n";
   }
 
   bool MinimumHits::beginRun(art::Run& ){
@@ -130,6 +145,51 @@ namespace mu2e {
 
     return true;
   }
+
+  // Returns true if the event fails the filter
+  bool MinimumHits::doesEventPass( StepPointMCCollection const& trkSteps,
+                                   StepPointMCCollection const& calSteps,
+                                   StepPointMCCollection const& calROSteps,
+                                   StepPointMCCollection const& crvSteps
+                                   ){
+    bool fail(true);
+
+    switch(mode_) {
+
+    case StepFilterMode::anyDetector      :
+      fail=trkSteps.empty()&&
+        calSteps.empty()&&
+        calROSteps.empty()&&
+        crvSteps.empty();
+      break;
+
+    case StepFilterMode::trackerOnly      :
+      fail=trkSteps.empty();
+      break;
+
+    case StepFilterMode::calorimeterOnly  :
+      fail=calSteps.empty()&&
+        calROSteps.empty();
+      break;
+
+    case StepFilterMode::CRVOnly      :
+      fail=crvSteps.empty();
+      break;
+
+    case StepFilterMode::trackerOrCalorimeter:
+      fail=trkSteps.empty()&&
+        calSteps.empty()&&
+        calROSteps.empty();
+      break;
+
+    default:
+      throw cet::exception("CONFIG")
+        << "MinimumHits module has been given a mode it does not know about.\n";
+    }
+
+    return !fail;
+  }
+
 
   bool
   MinimumHits::filter(art::Event& event) {
@@ -159,8 +219,14 @@ namespace mu2e {
     event.getByLabel(g4ModuleLabel_, caloROStepPoints_, caloROStepsHandle);
     StepPointMCCollection const& caloROSteps(*caloROStepsHandle);
 
-    // Anticipate future use that selects on other combinations.
-    if ( trackerSteps.empty() ){
+    art::Handle<StepPointMCCollection> crvStepsHandle;
+    event.getByLabel(g4ModuleLabel_, crvStepPoints_, crvStepsHandle);
+    StepPointMCCollection const& crvSteps(*crvStepsHandle);
+
+    // Make filter decision
+    bool pass = doesEventPass( trackerSteps, caloSteps, caloROSteps, crvSteps );
+
+    if ( !pass ){
       return false;
     }
 
@@ -176,10 +242,6 @@ namespace mu2e {
     art::Handle<StepPointMCCollection> foilStepsHandle;
     event.getByLabel(g4ModuleLabel_, foilStepPoints_, foilStepsHandle);
     StepPointMCCollection const& foilSteps(*foilStepsHandle);
-
-    art::Handle<StepPointMCCollection> crvStepsHandle;
-    event.getByLabel(g4ModuleLabel_, crvStepPoints_, crvStepsHandle);
-    StepPointMCCollection const& crvSteps(*crvStepsHandle);
 
     art::Handle<StepPointMCCollection> vDetStepsHandle;
     event.getByLabel(g4ModuleLabel_, vDetStepPoints_, vDetStepsHandle);
@@ -268,8 +330,8 @@ namespace mu2e {
   } // end of ::analyze.
 
   void MinimumHits::endJob() {
-    mf::LogInfo("Summary") 
-      << "MinimumHits_module: Number of events passing the filter: " 
+    mf::LogInfo("Summary")
+      << "MinimumHits_module: Number of events passing the filter: "
       << nPassed_
       << "\n";
   }
