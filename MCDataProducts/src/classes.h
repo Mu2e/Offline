@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.11 2012/04/18 22:57:19 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/18 22:57:19 $
+// $Id: classes.h,v 1.12 2012/06/13 15:29:10 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/06/13 15:29:10 $
 //
 // Original author Rob Kutschke
 //
@@ -44,6 +44,8 @@
 #include "MCDataProducts/inc/GenParticleSPMHistory.hh"
 #include "MCDataProducts/inc/GenSimParticleLink.hh"
 
+#include "MCDataProducts/inc/StepFilterMode.hh"
+
 // For cet::map_vector<T> instantiate the component pair<> and vector<pair<>> templates.
 template class std::pair<cet::map_vector_key,mu2e::SimParticle>;
 template class std::pair<cet::map_vector_key,mu2e::PointTrajectory>;
@@ -74,7 +76,7 @@ template class art::Wrapper<mu2e::PtrStepPointMCVectorCollection>;
 template class art::Wrapper<mu2e::MixingSummary>;
 template class art::Wrapper<std::vector<art::RNGsnapshot> >;
 
-template class art::Wrapper<mu2e::GenElHitData>;//gio
+template class art::Wrapper<mu2e::GenElHitData>;
 template class art::Wrapper<mu2e::VisibleGenElTrackCollection>;
 
 // A way to instantiate a typedef without keeping sync with its definition
