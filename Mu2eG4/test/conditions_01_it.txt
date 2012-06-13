@@ -1,0 +1,18 @@
+//
+// Input file for the prototype conditions system.
+//
+// $Id: conditions_01_it.txt,v 1.1 2012/06/13 19:48:17 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/06/13 19:48:17 $
+//
+
+#include "Mu2eG4/test/conditions_01.txt"
+
+double DriftVelocity = 0.035;
+double DriftRadiusResolution = 0.2;
+double SignalVelocity= 235.000000;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
