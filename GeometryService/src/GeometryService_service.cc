@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.35 2012/06/06 19:29:43 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.36 2012/06/14 20:33:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/06/06 19:29:43 $
+// $Date: 2012/06/14 20:33:09 $
 //
 // Original author Rob Kutschke
 //
@@ -75,6 +75,7 @@
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorberMaker.hh"
 #include "MBSGeom/inc/MBS.hh"
 #include "MBSGeom/inc/MBSMaker.hh"
+#include "GeometryService/inc/Mu2eEnvelope.hh"
 
 using namespace std;
 
@@ -179,7 +180,10 @@ namespace mu2e {
     const ProtonBeamDump& dump = *tmpDump.get();
     addDetector(tmpDump);
 
-    addDetector(Mu2eBuildingMaker::make(*_config, buildingBasics, dump));
+
+    std::auto_ptr<Mu2eBuilding> tmpbld(Mu2eBuildingMaker::make(*_config, buildingBasics, dump));
+    const Mu2eBuilding& building = *tmpbld.get();
+    addDetector(tmpbld);
 
     if(_config->getBool("hasTarget",false)){
       TargetMaker targm( *_config );
@@ -207,10 +211,10 @@ namespace mu2e {
       addDetector( crs.getCosmicRayShieldPtr() );
     }
 
+    std::auto_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, dump));
+    const ExtMonFNALBuilding& emfb = *tmpemb.get();
+    addDetector(tmpemb);
     if(_config->getBool("hasExtMonFNAL",false)){
-      std::auto_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, dump));
-      const ExtMonFNALBuilding& emfb = *tmpemb.get();
-      addDetector(tmpemb);
       addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, emfb));
     }
 
@@ -239,7 +243,10 @@ namespace mu2e {
       MECOStyleProtonAbsorberMaker mecopam( *_config );
       addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
     }
-  }
+
+    addDetector(std::auto_ptr<Mu2eEnvelope>(new Mu2eEnvelope(building, dump, emfb)));
+
+  } // preBeginRun()
 
   // Check that the configuration is self consistent.
   void GeometryService::checkConfig(){

@@ -7,6 +7,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
+#include "GeometryService/inc/Mu2eEnvelope.hh"
 #include "Mu2eBuildingGeom/inc/BuildingBasics.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
@@ -48,6 +49,7 @@ namespace mu2e {
     produces<PSEnclosure, art::InRun>();
     produces<PSShield, art::InRun>();
     produces<PSVacuum, art::InRun>();
+    produces<Mu2eEnvelope, art::InRun>();
 
     produces<WorldG4, art::InRun>();
   }
@@ -65,6 +67,7 @@ namespace mu2e {
     put<PSEnclosure>(run);
     put<PSShield>(run);
     put<PSVacuum>(run);
+    put<Mu2eEnvelope>(run);
 
     art::ServiceHandle<GeometryService> geom;
     if(geom->hasElement<WorldG4>()) {
