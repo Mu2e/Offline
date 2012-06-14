@@ -1,4 +1,16 @@
 #include <algorithm>
+#include "Ttree.h"
+#include "TCut.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TLegend.h"
+#include "TCanvas.h"
+#include "TRoot.h"
+#include "TLine.h"
+#include "TStyle.h"
+#include <iostream>
+using namespace std;
+
 void StrawHitTest (TTree* hits, char* page="bcan" ) {
 
   TString spage(page);
@@ -85,12 +97,12 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
 
     TCanvas* bcan = new TCanvas("bcan","background",1200,800);
 
-    TH1F* econv = new TH1F("econv","StrawHit EDep;MeV",200,-0.01,0.15);
-    TH1F* edio = new TH1F("edio","StrawHit EDep;MeV",200,-0.01,0.15);
-    TH1F* eneut = new TH1F("eneut","StrawHit EDep;MeV",200,-0.01,0.15);
-    TH1F* ephot = new TH1F("ephot","StrawHit EDep;MeV",200,-0.01,0.15);
-    TH1F* edelta = new TH1F("edelta","StrawHit EDep;MeV",200,-0.01,0.15);
-    TH1F* ep = new TH1F("ep","StrawHit EDep;MeV",200,-0.01,0.15);
+    TH1F* econv = new TH1F("econv","StrawHit EDep;MeV",200,-0.001,0.015);
+    TH1F* edio = new TH1F("edio","StrawHit EDep;MeV",200,-0.001,0.015);
+    TH1F* eneut = new TH1F("eneut","StrawHit EDep;MeV",200,-0.001,0.015);
+    TH1F* ephot = new TH1F("ephot","StrawHit EDep;MeV",200,-0.001,0.015);
+    TH1F* edelta = new TH1F("edelta","StrawHit EDep;MeV",200,-0.001,0.015);
+    TH1F* ep = new TH1F("ep","StrawHit EDep;MeV",200,-0.001,0.015);
     econv->SetLineColor(kRed);
     edio->SetLineColor(kGreen);
     edelta->SetLineColor(kCyan);
@@ -253,14 +265,14 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
 
     TCanvas* ccan = new TCanvas("ccan","cleaned hits",1200,800);
     TCut clean = goodpeak+TCut("tight>0&&delta==0");
-    /*    
+        
 	  TH1F* gid = new TH1F("gid","Generator code",21,-1.5,19.5);
 	  TH1F* gidc = new TH1F("gidc","Generator code",21,-1.5,19.5);
 
 	  TH1F* rres = new TH1F("rres","StrawHit Radius resolution;mm",100,-200,200);
-     */
+   
     TH1F* pres = new TH1F("pres","StrawHit #phi resolution;mm",100,-0.5,0.5);
-    /*    
+        
 
 	  gid->SetLineColor(kBlue);
 	  gidc->SetLineColor(kRed);
@@ -268,7 +280,7 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
 	  hits->Project("gidc","mcgen",conv);
 
 	  hits->Project("rres","sqrt(shpos.y^2+shpos.x^2)-sqrt(mcshpos.y^2+mcshpos.x^2)");
-     */
+    
     hits->Project("pres","atan2(shpos.y,shpos.x)-atan2(mcshpos.y,mcshpos.x)");
 
     /*
