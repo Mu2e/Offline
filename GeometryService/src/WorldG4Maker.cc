@@ -1,16 +1,8 @@
 #include "GeometryService/inc/WorldG4Maker.hh"
 
 #include <iostream>
-#include <algorithm>
-#include <iterator>
-#include <cmath>
-#include <utility>
-#include <cassert>
-
-#include "cetlib/exception.h"
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "CLHEP/Vector/TwoVector.h"
 
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
@@ -18,27 +10,9 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
+#include "GeometryService/inc/Mu2eEnvelope.hh"
 
 namespace mu2e {
-
-  namespace {
-    // a helper to compute the bounds of an extruded solid
-    template<class Point>
-    std::pair<double,double> getMinMax(const std::vector<Point>& outline, double (Point::*coord)() const) {
-      typename std::vector<Point>::const_iterator i = outline.begin();
-      assert(i != outline.end());
-      double a = ((*i).*coord)();
-      double b = a;
-      for(; i!=outline.end(); ++i) {
-        a = std::min(a, ((*i).*coord)());
-        b = std::max(b, ((*i).*coord)());
-      }
-      return std::make_pair(a, b);
-    }
-  }
 
   //----------------------------------------------------------------
   std::auto_ptr<WorldG4> WorldG4Maker::make(const SimpleConfig& c) {
@@ -51,67 +25,14 @@ namespace mu2e {
     // it is guaranteed it will be called after all other detector objects
     // are available in geometry service, therefore it can access their data.
 
-    GeomHandle<Mu2eBuilding> building;
-    GeomHandle<ProtonBeamDump> dump;
-    GeomHandle<ExtMonFNALBuilding> emfb;
+    GeomHandle<Mu2eEnvelope> env;
 
-    const std::pair<double,double> emfXlimits = getMinMax(emfb->wallOutsideOutline(), &CLHEP::Hep2Vector::x);
-    const std::pair<double,double> emfZlimits = getMinMax(emfb->wallOutsideOutline(), &CLHEP::Hep2Vector::y);
-
-    const double hallFormalZminInMu2e =
-      std::min(
-               building->hallInsideZExtMonUCIWall() - building->hallWallThickness()
-               ,
-               emfZlimits.first
-               );
-
-    const double hallFormalZmaxInMu2e = building->hallInsideZmax() + building->hallWallThickness();
-
-    const double hallFormalXminInMu2e =
-      std::min(
-               building->hallInsideXmin() - building->hallWallThickness()
-               ,
-               emfXlimits.first
-               );
-
-    const double hallFormalXmaxInMu2e =
-      std::max(
-               building->hallInsideXmax() + building->hallWallThickness()
-               ,
-               emfXlimits.second
-               );
-
-    const double hallFormalYminInMu2e =
-      std::min(
-               building->hallInsideYmin() - building->hallFloorThickness()
-               ,
-               emfb->roomInsideYmin() - emfb->roomFloorThickness()
-               );
-
-    const double dirtFormalYmax  = std::max(
-                                            emfb->roomInsideYmax() + emfb->roomCeilingThickness() + emfb->dirtOverheadThickness()
-                                            ,
-                                            dump->frontShieldingCenterInMu2e()[1] + dump->frontShieldingHalfSize()[1]
-                                            );
-
-    const double hallFormalYmaxInMu2e =
-      std::max(
-               dirtFormalYmax
-               ,
-               building->hallInsideYmax() + building->hallCeilingThickness()
-               // + building->dirtOverburdenDepth() + 2*building->dirtCapHalfHeight()
-               );
-
-    res->_dumpDirtFormalYminInMu2e = hallFormalYminInMu2e;
-    res->_dumpDirtFormalYmaxInMu2e = dirtFormalYmax;
-
-    //----------------------------------------------------------------
-    const double worldBottomInMu2e = hallFormalYminInMu2e - c.getDouble("world.margin.bottom");
-    const double worldTopInMu2e    = hallFormalYmaxInMu2e + c.getDouble("world.margin.top");
-    const double worldXminInMu2e   = hallFormalXminInMu2e - c.getDouble("world.margin.xmin");
-    const double worldXmaxInMu2e   = hallFormalXmaxInMu2e + c.getDouble("world.margin.xmax");
-    const double worldZminInMu2e   = hallFormalZminInMu2e - c.getDouble("world.margin.zmin");
-    const double worldZmaxInMu2e   = hallFormalZmaxInMu2e + c.getDouble("world.margin.zmax");
+    const double worldBottomInMu2e = env->ymin() - c.getDouble("world.margin.bottom");
+    const double worldTopInMu2e    = env->ymax() + c.getDouble("world.margin.top");
+    const double worldXminInMu2e   = env->xmin() - c.getDouble("world.margin.xmin");
+    const double worldXmaxInMu2e   = env->xmax() + c.getDouble("world.margin.xmax");
+    const double worldZminInMu2e   = env->zmin() - c.getDouble("world.margin.zmin");
+    const double worldZmaxInMu2e   = env->zmax() + c.getDouble("world.margin.zmax");
 
     // Dimensions of the world box
     res->_halfLengths = std::vector<double>(3);
@@ -127,14 +48,14 @@ namespace mu2e {
                                                  );
 
     res->_hallFormalHalfSize.resize(3);
-    res->_hallFormalHalfSize[0] = (hallFormalXmaxInMu2e - hallFormalXminInMu2e)/2;
-    res->_hallFormalHalfSize[1] = (hallFormalYmaxInMu2e - hallFormalYminInMu2e)/2;
-    res->_hallFormalHalfSize[2] = (hallFormalZmaxInMu2e - hallFormalZminInMu2e)/2;
+    res->_hallFormalHalfSize[0] = (env->xmax() - env->xmin())/2;
+    res->_hallFormalHalfSize[1] = (env->ymax() - env->ymin())/2;
+    res->_hallFormalHalfSize[2] = (env->zmax() - env->zmin())/2;
 
     const CLHEP::Hep3Vector hallFormalCenterInMu2e(
-                                                   (hallFormalXmaxInMu2e + hallFormalXminInMu2e)/2,
-                                                   (hallFormalYmaxInMu2e + hallFormalYminInMu2e)/2,
-                                                   (hallFormalZmaxInMu2e + hallFormalZminInMu2e)/2
+                                                   (env->xmax() + env->xmin())/2,
+                                                   (env->ymax() + env->ymin())/2,
+                                                   (env->zmax() + env->zmin())/2
                                                    );
 
     res->_hallFormalCenterInWorld = hallFormalCenterInMu2e + res->_mu2eOriginInWorld;

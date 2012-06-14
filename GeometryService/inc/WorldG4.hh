@@ -30,10 +30,6 @@ namespace mu2e {
 
     const std::vector<double>& halfLengths() const { return _halfLengths; }
 
-    // Parameters of the formal dirt volume around bean dump and ExtMonFNAL room
-    double dumpDirtFormalYminInMu2e() const { return _dumpDirtFormalYminInMu2e; }
-    double dumpDirtFormalYmaxInMu2e() const { return _dumpDirtFormalYmaxInMu2e; }
-
     // The formal hall box
     const std::vector<double>& hallFormalHalfSize() const { return _hallFormalHalfSize; }
     const CLHEP::Hep3Vector&   hallFormalCenterInWorld() const { return _hallFormalCenterInWorld; }
@@ -68,8 +64,6 @@ namespace mu2e {
     CLHEP::Hep3Vector _hallFormalCenterInWorld;
     CLHEP::Hep3Vector _mu2eOriginInWorld;
     CLHEP::Hep3Vector _cosmicReferencePoint;
-    double _dumpDirtFormalYminInMu2e;
-    double _dumpDirtFormalYmaxInMu2e;
     double _dirtG4Ymin;
     double _dirtG4Ymax;
   };

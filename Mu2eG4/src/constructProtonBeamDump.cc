@@ -34,6 +34,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
 #include "GeometryService/inc/WorldG4.hh"
 
 #include "G4Helper/inc/G4Helper.hh"
@@ -58,6 +59,7 @@ namespace mu2e {
 
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<Mu2eBuilding> building;
+    GeomHandle<ExtMonFNALBuilding> emfb;
     GeomHandle<WorldG4> world;
 
     MaterialFinder materialFinder(config);
@@ -100,8 +102,18 @@ namespace mu2e {
     // it's more convenient to work with the inverse matrix
     static const CLHEP::HepRotation beamDumpDirtRotationInv(CLHEP::HepRotationX(-90*CLHEP::degree));
 
-    const double dumpDirtYmin = world->dumpDirtFormalYminInMu2e();
-    const double dumpDirtYmax = world->dumpDirtFormalYmaxInMu2e();
+    // To the bottom of the formal hall box, in mu2e coords
+    const double dumpDirtYmin =
+      world->hallFormalCenterInWorld()[1] - world->hallFormalHalfSize()[1]
+      - world->mu2eOriginInWorld()[1]
+      ;
+
+    const double dumpDirtYmax = std::max(
+                                         emfb->roomInsideYmax() + emfb->roomCeilingThickness() + emfb->dirtOverheadThickness()
+                                         ,
+                                         dump->frontShieldingCenterInMu2e()[1] + dump->frontShieldingHalfSize()[1]
+                                         );
+
 
     VolumeInfo beamDumpDirt("ProtonBeamDumpDirt",
                             CLHEP::Hep3Vector(0, (dumpDirtYmax+dumpDirtYmin)/2, 0)
