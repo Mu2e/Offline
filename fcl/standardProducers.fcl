@@ -93,14 +93,14 @@ TrkPatRec :
         SeedFit :
         {
                 maxiter                                 : 3
-                debugLevel                      : 0
+                debugLevel                      	: 0
                 material                                : false
-                hiterr                                  : [ 5.0, 1.44 ]
-                seedsmear       : 10000
+                seedsmear       			: 10000
                 maxhitchi                               : 5.0
-                weedhits        : true
-                updateT0        : false
-                ambiguityStrategy       : [0,0]
+                weedhits        			: true
+                updateT0        			: false
+                hiterr                                  : [ 5.0, 1.44 ]
+                ambiguityStrategy       		: [0,0]
         }
 # Kalman fit configuration for the final track fit
         KalFit :
@@ -113,8 +113,14 @@ TrkPatRec :
                 maxhitchi                               : 3.0
                 mingap                                  : 1.0
                 weedhits                                : true
-		ambiguityStrategy			: [ 1 ]
-        }
+		hiterr 					: [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
+		ambiguityStrategy    			: [0, 0, 2, 2, 2, 2, 2, 2, 2 ]
+		HitAmbigPenalty 			: false
+		HitMinDrift 				: 0.05
+		ZeroDriftPenalty 			: 0.0
+		Neutralize 				: true
+
+	}
 # MC truth finder, analyzer configuration
   KalFitMC :
   {
