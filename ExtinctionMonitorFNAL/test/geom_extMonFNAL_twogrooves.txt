@@ -1,0 +1,23 @@
+#include "ExtinctionMonitorFNAL/test/geom_extMonFNAL.txt"
+#include "Mu2eG4/test/PSShield_v03.txt"
+#include "Mu2eG4/test/psEnclosure_v03.txt"
+
+// From Peter:
+//
+// param EMFilter_p=4.2 GeV/c
+// param EMFilter_dx=325.0 mm
+// param EMFilter_dy=1250.0 mm
+// param EMFilter_pitch=0.1653 rad
+// param EMFilter_yaw=0.0317 rad
+//
+
+double extMonFNAL.nominalMomentum = 4200.; // MeV/c
+double extMonFNAL.entranceOffsetX = 325;
+double extMonFNAL.entranceOffsetY = 1250;
+double extMonFNAL.entranceAngleV = 0.1653; //radians
+double extMonFNAL.angleH = 0.0317; //radians
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
