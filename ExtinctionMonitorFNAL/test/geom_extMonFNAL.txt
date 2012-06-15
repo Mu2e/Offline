@@ -1,6 +1,6 @@
 // Full geometry for running ExtMonFNAL studies.
 
-#include "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
+#include "Mu2eG4/test/geom_01.txt"
 
 // #include "Mu2eG4/test/PSShield_v01.txt"
 // #include "Mu2eG4/test/psEnclosure_v01.txt"
@@ -34,6 +34,8 @@ vector<string> g4SteppingAction.killInTheseVolumes = {
   "HallWalls"
 };
 
+//string g4.physicsListName = "Minimal";
+string g4.physicsListName = "QGSP_BERT_HP";
 double g4.minRangeCut = 1.;            // mm
 bool g4.killLowEKine = true;
 double g4.eKineMin = 100.; // MeV
@@ -82,16 +84,27 @@ bool extMonFilter.magnet.aperture.solid = false;
 // double extMonFilter.magnet.deltaOneStep = 1.e-6;
 
 //----------------------------------------------------------------
+bool toyDS.visible           = false;
+bool crs.vetoVisible         = false;
+bool protonabsorber.visible  = false;
+bool neutronabsorber.visible = false;
+bool mbs.visible             = false;
+bool vd.visible              = true;
 
+bool ttracker.envelopeVisible       = false;
+bool ttracker.deviceEnvelopeVisible = false;
+bool ttracker.supportVisible        = false;
+
+// bool PSShield.solid = true;
+
+//----------------------------------------------------------------
 //// Write mu2e geometry into a GDML file
 //bool   writeGDML        = true;
 //bool   protonBeamDump.applyROOTVisualizationKludge = true;
 //string GDMLFileName     = "extMonFNAL.gdml";
 
-// bool   vd.visible       = true;
-// bool PSShield.solid = true;
-
 int PSShield.verbosityLevel = 1;
+int PSEnclosure.verbosityLevel = 1;
 int protonBeamDump.verbosityLevel = 1;
 int extMonFNAL.verbosityLevel = 1;
 int world.verbosityLevel  = 1;
