@@ -44,6 +44,10 @@ double extMonFNAL.room.ceiling.thickness = 300;
 // Amount of dirt above ExtMonFNAL room.  From drawing S-9:  6'-0'' minus ceiling thickness
 double extMonFNAL.dirtOverhead.thickness = 1530;
 
+// Guaranteed horizontal extension along x and z of the dirt shielding
+// beyond the extMonFNAL ceiling outline.
+double extMonFNAL.dirtOverhead.horizontalMargin = 2000;
+
 //----------------------------------------------------------------
 // The extinction monitor filter channel
 

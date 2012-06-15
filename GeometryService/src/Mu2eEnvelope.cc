@@ -52,7 +52,7 @@ namespace mu2e {
       std::min(
                building.hallInsideZExtMonUCIWall() - building.hallWallThickness()
                ,
-               emfZlimits.first
+               emfZlimits.first - emfb.dirtOverheadHorizontalMargin()
                );
 
     zmax_ = building.hallInsideZmax() + building.hallWallThickness();
@@ -61,14 +61,14 @@ namespace mu2e {
       std::min(
                building.hallInsideXmin() - building.hallWallThickness()
                ,
-               emfXlimits.first
+               emfXlimits.first - emfb.dirtOverheadHorizontalMargin()
                );
 
     xmax_ =
       std::max(
                building.hallInsideXmax() + building.hallWallThickness()
                ,
-               emfXlimits.second
+               emfXlimits.second + emfb.dirtOverheadHorizontalMargin()
                );
 
     ymin_ =

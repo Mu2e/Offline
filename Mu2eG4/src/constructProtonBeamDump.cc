@@ -36,6 +36,7 @@
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
 #include "GeometryService/inc/WorldG4.hh"
+#include "GeometryService/inc/Mu2eEnvelope.hh"
 
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
@@ -60,6 +61,7 @@ namespace mu2e {
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<Mu2eBuilding> building;
     GeomHandle<ExtMonFNALBuilding> emfb;
+    GeomHandle<Mu2eEnvelope> env;
     GeomHandle<WorldG4> world;
 
     MaterialFinder materialFinder(config);
@@ -86,15 +88,23 @@ namespace mu2e {
     // points need to be in the clock-wise order, need to reverse:
     std::reverse(beamDumpDirtOutiline.begin(), beamDumpDirtOutiline.end());
 
-    // Add the last two points to complete the outline
+    // Add points to complete the outline
     const CLHEP::Hep3Vector mu2eCenterInHall(world->mu2eOriginInWorld() - world->hallFormalCenterInWorld());
     const double hallFormalZminInMu2e  = -world->hallFormalHalfSize()[2] - mu2eCenterInHall.z();
+    const double dumpDirtXmin = env->xmin();
+    const double dumpDirtXmax = env->xmax();
 
-    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmin() - building->hallWallThickness(),
-                                               hallFormalZminInMu2e));
+    if(dumpDirtXmin < beamDumpDirtOutiline.back().x()) {
+      beamDumpDirtOutiline.push_back(G4TwoVector(dumpDirtXmin, beamDumpDirtOutiline.back().y()));
+    }
 
-    beamDumpDirtOutiline.push_back(G4TwoVector(building->hallInsideXmax() + building->hallWallThickness() ,
-                                               hallFormalZminInMu2e));
+    // Two points at the back
+    beamDumpDirtOutiline.push_back(G4TwoVector(dumpDirtXmin, hallFormalZminInMu2e));
+    beamDumpDirtOutiline.push_back(G4TwoVector(dumpDirtXmax, hallFormalZminInMu2e));
+
+    if(dumpDirtXmax > beamDumpDirtOutiline.front().x()) {
+      beamDumpDirtOutiline.push_back(G4TwoVector(dumpDirtXmax, beamDumpDirtOutiline.front().y()));
+    }
 
     // We want to rotate the X'Y' plane of the extruded solid
     // to become XZ plane of Mu2e.   Need to rotate by +90 degrees around X.

@@ -121,7 +121,10 @@ namespace mu2e {
     double roomWallThickness() const { return roomWallThickness_; }
     double roomFloorThickness() const { return roomFloorThickness_; }
     double roomCeilingThickness() const { return roomCeilingThickness_; }
+
     double dirtOverheadThickness() const { return dirtOverheadThickness_; }
+    // min. extension outide of the ceiling outline
+    double dirtOverheadHorizontalMargin() const { return dirtOverheadHorizontalMargin_; }
 
     double magnetRoomLength() const { return magnetRoomLength_; }
     double coll2ShieldingDumpXmin() const { return coll2ShieldingDumpXmin_; }
@@ -176,6 +179,7 @@ namespace mu2e {
     double roomFloorThickness_;
     double roomCeilingThickness_;
     double dirtOverheadThickness_;
+    double dirtOverheadHorizontalMargin_;
 
     double magnetRoomLength_;
     double coll2ShieldingDumpXmin_;
