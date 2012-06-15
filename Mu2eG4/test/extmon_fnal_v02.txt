@@ -142,7 +142,7 @@ bool extMonFNAL.collimator2.channel.solid = false;
 // collimator2 center line.  Need to specify just one additional parameter.
 // We use the distance along the collimator2 axis between the
 // wall (inside the room surface) and reference point of the detector.
-double extMonFNAL.detectorDistanceToWall = 1000;
+double extMonFNAL.detectorDistanceToWall = 450;
 
 // Details of the detector.  All of these vectors should be
 // of the same size: one entry per detector plane.
