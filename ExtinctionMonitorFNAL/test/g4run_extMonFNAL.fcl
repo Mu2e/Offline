@@ -62,18 +62,28 @@ physics : {
             storeParents       : true
             storeExtraHits     : true
         }
+        fvd35: {
+            module_type: FilterVDHits
+            inputModuleLabel   : "g4run"
+            inputInstanceName  : "virtualdetector"
+            acceptedVids       : [ 35 ]
+            storeParents       : true
+            storeExtraHits     : true
+        }
     }
 
     t1  : [ generate, g4run, fvd1  ]
     t16 : [ generate, g4run, fvd16 ]
+    t35 : [ generate, g4run, fvd35 ]
     gm  : [ geom ]
 
-    eall : [ outVD1, outVD16, fullOutput ]
-    efiltered: [ outVD1, outVD16 ]
-    e16: [ outVD16 ]
+    eall : [ outVD1, outVD16, outVD35, fullOutput ]
+    efiltered: [ outVD1, outVD16, outVD35 ]
+    e16: [  outVD16 ]
+    e35: [  outVD35 ]
 
-    trigger_paths  : [gm, t16]
-    end_paths      : [e16]
+    trigger_paths  : [gm, t16, t35]
+    end_paths      : [e16, e35]
 }
 
 outputs:
@@ -90,6 +100,13 @@ outputs:
         fileName: "gvd16.root"
         SelectEvents: { SelectEvents: [t16] }
         outputCommands:   [ "keep *_fvd16_*_*", "keep *_geom_*_*" ]
+    }
+
+    outVD35: {
+        module_type: RootOutput
+        fileName: "gvd35.root"
+        SelectEvents: { SelectEvents: [t35] }
+        outputCommands:   [ "keep *_fvd35_*_*", "keep *_geom_*_*" ]
     }
 
     fullOutput :

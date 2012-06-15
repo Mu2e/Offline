@@ -2,8 +2,9 @@
 
 #include "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
 
-#include "Mu2eG4/test/PSShield_v01.txt"
-#include "ExtinctionMonitorFNAL/test/psEnclosure_thin.txt"
+// #include "Mu2eG4/test/PSShield_v01.txt"
+// #include "Mu2eG4/test/psEnclosure_v01.txt"
+// //#include "ExtinctionMonitorFNAL/test/psEnclosure_thin.txt"
 
 // ExtMonUCI interferes with the civil construction
 bool hasExtMonUCI = false;
@@ -26,7 +27,6 @@ int g4.particlesSizeLimit = 100000;
 
 vector<string> g4SteppingAction.killInTheseVolumes = {
   "PSShield",
-  "VirtualDetector_EMFC1Entrance",
   "VirtualDetector_Coll1_In",
   "ProtonBeamDumpCore",
   "HallConcreteFloor",
