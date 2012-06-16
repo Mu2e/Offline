@@ -106,7 +106,7 @@ bool ttracker.supportVisible        = false;
 int PSShield.verbosityLevel = 1;
 int PSEnclosure.verbosityLevel = 1;
 int protonBeamDump.verbosityLevel = 1;
-int extMonFNAL.verbosityLevel = 1;
+int extMonFNAL.verbosityLevel = 2;
 int world.verbosityLevel  = 1;
 //
 

@@ -1,6 +1,10 @@
 #include "ExtinctionMonitorFNAL/test/geom_extMonFNAL.txt"
+
 #include "Mu2eG4/test/PSShield_v03.txt"
+int PSShield.verbosityLevel = 1;
+
 #include "Mu2eG4/test/psEnclosure_v03.txt"
+int PSEnclosure.verbosityLevel = 1;
 
 // From Peter:
 //
