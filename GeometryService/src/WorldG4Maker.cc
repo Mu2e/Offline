@@ -72,6 +72,7 @@ namespace mu2e {
     //res->_dirtG4Ymin = yCeilingOutside;
 
     if ( diagLevel > 0) {
+      std::cout<<*env<<std::endl;
       std::cout<<*res<<std::endl;
     }
 

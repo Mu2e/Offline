@@ -93,4 +93,17 @@ namespace mu2e {
                );
   }
 
+  //================================================================
+  std::ostream& operator<<(std::ostream& os, const Mu2eEnvelope& env) {
+    return os<<"Mu2eEnvelope(xmin="<<env.xmin()
+	     <<",xmax="<<env.xmax()
+	     <<",ymin="<<env.ymin()
+	     <<",ymax="<<env.ymax()
+	     <<",zmin="<<env.zmin()
+	     <<",zmax="<<env.zmax()
+	     <<" )";
+  }
+
+  //================================================================
+
 } // namespace mu2e

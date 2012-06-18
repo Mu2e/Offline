@@ -7,6 +7,8 @@
 #ifndef MU2EENVELOPE_HH
 #define MU2EENVELOPE_HH
 
+#include <ostream>
+
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "art/Persistency/Common/Wrapper.h"
 
@@ -44,6 +46,8 @@ namespace mu2e {
     double zmax_;
 
   };
+
+  std::ostream& operator<<(std::ostream& os, const Mu2eEnvelope& env);
 
 }
 
