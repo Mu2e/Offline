@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.22 2012/06/18 14:56:44 wieschie Exp $
+// $Id: CosmicDYB.cc,v 1.23 2012/06/18 19:31:23 wieschie Exp $
 // $Author: wieschie $
-// $Date: 2012/06/18 14:56:44 $
+// $Date: 2012/06/18 19:31:23 $
 //
 // Original author Yury Kolomensky
 //
@@ -53,6 +53,7 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Units/SystemOfUnits.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 // From Root.
 #include "TH1D.h"
@@ -227,7 +228,7 @@ namespace mu2e {
    
     // here: take different values depending on config
     // e.g. extMonFNAL->detectorCenterInMu2e()
-    Hep3Vector cosmicReferencePointInMu2e;
+    CLHEP::Hep3Vector cosmicReferencePointInMu2e;
     switch (_choice){
     case TRACKER:
       cosmicReferencePointInMu2e =  Hep3Vector(detsys->getOrigin().x(),
@@ -250,6 +251,8 @@ namespace mu2e {
       {
 	_checkedProductionPlane=true;
 
+	std::cout<<"CosmicDYB: cosmicReferencePointInMu2e = "<<cosmicReferencePointInMu2e<<std::endl;
+
 	art::ServiceHandle<GeometryService> geom;
 
 	if(geom->hasElement<WorldG4>()) {
@@ -258,13 +261,12 @@ namespace mu2e {
 	  Hep3Vector const& mu2eOrigin = worldGeom->mu2eOriginInWorld();
 	  std::vector<double> const& halfLengths = worldGeom->halfLengths();
 
-	  double marginXMin = halfLengths[0] + (cosmicReferencePointInMu2e.x()-_dx) + mu2eOrigin.x();
-	  double marginZMin = halfLengths[2] + (cosmicReferencePointInMu2e.z()-_dz) + mu2eOrigin.z();
-	  double marginXMax = halfLengths[0] - (cosmicReferencePointInMu2e.x()+_dx) + mu2eOrigin.x();
-	  double marginZMax = halfLengths[2] - (cosmicReferencePointInMu2e.z()+_dz) + mu2eOrigin.z();
-
-	  double marginYMin = halfLengths[1] + (cosmicReferencePointInMu2e.y()+_y0) + mu2eOrigin.y();
-	  double marginYMax = halfLengths[1] - (cosmicReferencePointInMu2e.y()+_y0) + mu2eOrigin.y();
+	  double marginXMin = halfLengths[0] + (cosmicReferencePointInMu2e.x()-_dx + mu2eOrigin.x());
+	  double marginZMin = halfLengths[2] + (cosmicReferencePointInMu2e.z()-_dz + mu2eOrigin.z());
+	  double marginXMax = halfLengths[0] - (cosmicReferencePointInMu2e.x()+_dx + mu2eOrigin.x());
+	  double marginZMax = halfLengths[2] - (cosmicReferencePointInMu2e.z()+_dz + mu2eOrigin.z());
+	  double marginYMin = halfLengths[1] + (cosmicReferencePointInMu2e.y()+_y0 + mu2eOrigin.y());
+	  double marginYMax = halfLengths[1] - (cosmicReferencePointInMu2e.y()+_y0 + mu2eOrigin.y());
 
 	  std::cout<<std::endl<<"distances from the edges of the cosmic ray production plane to the borders of the world volume:"<<std::endl
 		   <<"in negative x direction: "<<marginXMin<<std::endl

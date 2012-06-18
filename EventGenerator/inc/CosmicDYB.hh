@@ -3,9 +3,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.hh,v 1.8 2012/01/28 07:19:53 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/01/28 07:19:53 $
+// $Id: CosmicDYB.hh,v 1.9 2012/06/18 19:31:23 wieschie Exp $
+// $Author: wieschie $
+// $Date: 2012/06/18 19:31:23 $
 //
 // Original author Yury Kolomensky
 //
@@ -88,6 +88,10 @@ namespace mu2e {
     // Checks whether the production plane is within the world volume.
     bool _checkedProductionPlane;
     void checkCosmicRayProductionPlane(double margin, std::string name);
+
+    enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL};
+    RefPointChoice _choice;
+
   };  // CosmicDYB
 
 }  // namespace mu2e
