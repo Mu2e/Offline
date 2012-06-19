@@ -7,7 +7,7 @@ double PSEnclosure.endPlate.thickness = 19.05; // mm
 
 string PSEnclosure.shell.materialName  = "G4_Fe";
 
-int  PSEnclosure.nWindows = 2;
+int  PSEnclosure.nWindows = 3;
 
 // Primary beam window
 string PSEnclosure.window1.materialName = "G4_Ti";
@@ -22,6 +22,13 @@ double PSEnclosure.window2.thickness = 2.84;
 double PSEnclosure.window2.r =  100;
 double PSEnclosure.window2.x = -440; // relative to PS center
 double PSEnclosure.window2.y =  455; // relative to PS center
+
+// ExtMonUCI window
+string PSEnclosure.window3.materialName = "G4_Ti";
+double PSEnclosure.window3.thickness = 2.84;
+double PSEnclosure.window3.r =  100;
+double PSEnclosure.window3.x =   50; // relative to PS center
+double PSEnclosure.window3.y = 422.5; // relative to PS center
 
 bool  PSEnclosure.visible = true;
 bool  PSEnclosure.solid = false;
