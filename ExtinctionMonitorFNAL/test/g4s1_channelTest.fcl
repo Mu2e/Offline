@@ -64,9 +64,7 @@ physics : {
 }
 
 //----------------------------------------------------------------
-
-physics.producers.g4run.visMacro : "ExtinctionMonitorFNAL/test/vis_extMonFNAL.mac"
-//physics.producers.g4run.visMacro : "ExtinctionMonitorFNAL/test/vis_extMonFNAL_magnetFront.mac"
+physics.producers.g4run.visMacro : "ExtinctionMonitorFNAL/test/vis_extMonFNAL_channelTest.mac"
 
 services.user.SeedService.baseSeed         :  0
 services.user.SeedService.maxUniqueEngines :  20

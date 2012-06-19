@@ -18,15 +18,15 @@ bool extMonFNALGun.do        = true;
 double extMonFNALGun.coneAngle = 0.; //0.050; // rad
 int    extMonFNALGun.pdgId = -13; // -13 is mu+, 2212 is p+, 102 is charged geantino
 
-vector<double> extMonFNALGun.offset = {0., 0., 200.};
-vector<double> extMonFNALGun.halfSize = {0., 0., 0.};
+//vector<double> extMonFNALGun.offset = {0., 0., 200.};
+//vector<double> extMonFNALGun.halfSize = {0., 0., 0.};
 
-////----------------------------------------------------------------
-//// A "road" of tracks
-//
-//vector<double> extMonFNALGun.offset = {0., 0., 0.};
-//vector<double> extMonFNALGun.halfSize = {25., 25., 0.};
-//double extMonFNALGun.multiplicity = -400;
+//----------------------------------------------------------------
+// A "road" of tracks
+
+vector<double> extMonFNALGun.offset = {0., 0., 0.};
+vector<double> extMonFNALGun.halfSize = {25., 25., 0.};
+double extMonFNALGun.multiplicity = -400;
 
 // //----------------------------------------------------------------
 // // This is to launch stuff starting in the magnet:

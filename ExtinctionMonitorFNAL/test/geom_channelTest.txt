@@ -1,6 +1,6 @@
 // Special settings to verify alignment of the ExtMonFNAL filter channel
 
-#include "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
+#include "ExtinctionMonitorFNAL/test/geom_extMonFNAL_twogrooves.txt"
 bool hasExtMonUCI = false;
 
 // Disable all physics except transport.
