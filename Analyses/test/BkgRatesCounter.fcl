@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.fcl,v 1.15 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
+# $Id: BkgRatesCounter.fcl,v 1.16 2012/06/19 16:21:49 onoratog Exp $
+# $Author: onoratog $
+# $Date: 2012/06/19 16:21:49 $
 #
 # Original author Gianni Onorato.
 
@@ -112,15 +112,8 @@ physics :
       makerModuleLabel    : makeSH
       maxFullPrint        : 0
       # g4ModuleLabel     : g4run
-      # minimumEnergy     : 0.000
-    }
-
-    BkgNorm:
-    {
-    module_type       : BkgNorm
-    diagLevel         : -1
-    makerModuleLabel    : makeSH
-    maxFullPrint        : 0
+      minimumEnergyTracker: 0.000
+      minimumEnergyCalo   : 0.000
     }
 
     eventdisplay:
@@ -141,7 +134,7 @@ physics :
        , CaloCrystalHitsMaker
        # , filterEmpty
        ]
-  e1 : [CountRates, BkgNorm, outfile ]
+  e1 : [CountRates, outfile ]
 
 
   trigger_paths  : [p1]
