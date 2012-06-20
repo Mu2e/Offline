@@ -134,10 +134,13 @@ namespace mu2e {
     // on XZ as the collimator(s).
     //
     // The reference trajectory: a positive particle with the nominal
-    // momentum, travelling parallel to collimator1 axis at the bottom
-    // center of collimator1 aperture, should enter magnet at the
-    // bottom center of the magnet aperture, bend down, and exit a the
-    // bottom center of magnet aperture.
+    // momentum, travelling along collimator1 axis, enters magnet
+    // aperture at (0,y1) in "magnet face" coordinates, is at (0,y2)
+    // when it is half way through the magnet, and exits at (0,y3)
+    // We require: -y1==+y2==-y3>0.  Denote yb:=y2.
+
+    const double yb = 0.5 * emfb->filterMagnet().trackBendRadius(emfb->extMonFNAL_nominalMomentum())
+      * (1. - cos(emfb->filterMagnet().trackBendHalfAngle(emfb->extMonFNAL_nominalMomentum())));
 
     const double magnetAngleV =
       emfb->filterEntranceAngleV() - emfb->filterMagnet().trackBendHalfAngle(emfb->extMonFNAL_nominalMomentum());
@@ -148,45 +151,34 @@ namespace mu2e {
       emfb->_filterMagnetRotationInMu2e = dump.coreRotationInMu2e() * tmp;
     }
 
-    // The z position of the (center,bottom,center) point of the magnet aperture
-    // in dump coordinates
-    const double magnetRefZ = dump.coreCenterDistanceToShieldingFace()
+    // distance from the reference magnet entrance point (0,-yb) to magnet center in projection on (XZ)
+    const double projLength =
+      (emfb->filterMagnet().outerHalfSize()[2]* cos(magnetAngleV) - yb*sin(magnetAngleV));
+
+    // The z position of the magnet center in dump coordinates
+    const double magnetCenterZ = dump.coreCenterDistanceToShieldingFace()
       - 2*dump.frontShieldingHalfSize()[2]
       - c.getDouble("extMonFNAL.magnet.refDistanceToUpstreamWall");
 
-    // Z of magnet entrance at the (center,bottom) of aperture (in dump coords)
-    const double magnetEntranceZ = magnetRefZ
-      + emfb->filterMagnet().outerHalfSize()[2] * cos(magnetAngleV) * cos(emfb->filterAngleH());
+    // Z of the reference entrance point (0,-yb)
+    const double magnetEntranceZ = magnetCenterZ + projLength*cos(emfb->filterAngleH());
 
-    // Height of the entrance point, dump coords
+    // Height of the reference entrance point, dump coords
     const double magnetEntranceY = collimator1CenterInDump[1]
       + (collimator1CenterInDump[2] - magnetEntranceZ)*tan(emfb->filterEntranceAngleV())/cos(emfb->filterAngleH())
-
-      // the entrance point should be on the trajectory of reference
-      // particle at the *bottom* of the collimator1 channel - shift for that:
-      - 0.5 * emfb->collimator1().channelHeight()[emfb->collimator1().channelHeight().size()-1]/cos(emfb->collimator1().angleV())
       ;
 
-    AGDEBUG("magnetEntranceY = "<<magnetEntranceY<<" = "<<emfb->_collimator1CenterInMu2e[1]<<" - "<<dump.coreCenterInMu2e()[1]
-            <<" + "<<(emfb->_collimator1CenterInMu2e[2] - (magnetEntranceZ+dump.coreCenterInMu2e()[2]))*tan(emfb->filterEntranceAngleV())/cos(emfb->filterAngleH())
-            <<" - "<<0.5 * emfb->collimator1().channelHeight()[emfb->collimator1().channelHeight().size()-1]/cos(emfb->collimator1().angleV())
-            );
-
-    // X of the entrance point, dump coords
-    const double magnetEntranceX = emfb->_filterEntranceOffsetX
-      + tan(emfb->filterAngleH()) * (dump.coreCenterDistanceToShieldingFace() - magnetEntranceZ);
-
-    // length from magnet entrance to magnet center in projection on (XZ)
-    const double projLength =
-      (emfb->filterMagnet().outerHalfSize()[2]* cos(magnetAngleV) - 0.5*emfb->filterMagnet().apertureHeight()*sin(magnetAngleV));
+    // X of the magnet center, dump coords
+    const double magnetCenterX = emfb->_filterEntranceOffsetX
+      + tan(emfb->filterAngleH()) * (dump.coreCenterDistanceToShieldingFace() - magnetCenterZ);
 
     // Compute the center of the magnet
     const Hep3Vector magnetCenterInDump
-      (magnetEntranceX + sin(emfb->filterAngleH()) * projLength
+      (magnetCenterX
        ,
-       magnetEntranceY + sin(magnetAngleV)*emfb->filterMagnet().outerHalfSize()[2] + cos(magnetAngleV)*0.5*emfb->filterMagnet().apertureHeight()
+       magnetEntranceY + sin(magnetAngleV)*emfb->filterMagnet().outerHalfSize()[2] + cos(magnetAngleV)*yb
        ,
-       magnetEntranceZ - cos(emfb->filterAngleH()) * projLength
+       magnetCenterZ
        );
 
     AGDEBUG("magnetCenterInDump = "<<magnetCenterInDump);
@@ -210,17 +202,14 @@ namespace mu2e {
     const double col2CenterX = emfb->_filterEntranceOffsetX +
       tan(emfb->filterAngleH()) * (dump.coreCenterDistanceToShieldingFace() - col2CenterZ);
 
-    // Z of the exit point from the magnet, at the (center,bottom) of aperture (in dump coords)
+    // Z of the exit point of the reference trajectory from the magnet, in dump coords
     const double magnetExitZ = magnetEntranceZ
       - 2*emfb->filterMagnet().outerHalfSize()[2] * cos(magnetAngleV) * cos(emfb->filterAngleH());
 
     // Height of the exit point (in dump coords)
     const double magnetExitY = magnetEntranceY + sin(magnetAngleV) * 2*emfb->_filterMagnet._outerHalfSize[2];
 
-
-
-    const double col2CenterY = magnetExitY + (magnetExitZ - col2CenterZ)*tan(emfb->_collimator2.angleV())/cos(emfb->filterAngleH())
-      + 0.5 * emfb->_collimator2._channelHeight[0]/cos(emfb->_collimator2.angleV());
+    const double col2CenterY = magnetExitY + (magnetExitZ - col2CenterZ)*tan(emfb->_collimator2.angleV())/cos(emfb->filterAngleH());
 
     emfb->_collimator2CenterInMu2e = dump.beamDumpToMu2e_position(Hep3Vector(col2CenterX, col2CenterY, col2CenterZ));
 
@@ -244,6 +233,7 @@ namespace mu2e {
       std::cout<<"ExtMonFNALBuildingMaker"<<": collimator1CenterInMu2e = "<<emfb->_collimator1CenterInMu2e<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": collimator1.horizontalLength = "<<emfb->_collimator1._horizontalLength<<std::endl;
 
+      std::cout<<"ExtMonFNALBuildingMaker"<<": yb = "<<yb<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": filterMagnetCenterInMu2e = "<<emfb->_filterMagnetCenterInMu2e<<std::endl;
 
       std::cout<<"ExtMonFNALBuildingMaker"<<": collimator2CenterInMu2e = "<<emfb->_collimator2CenterInMu2e<<std::endl;

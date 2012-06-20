@@ -25,8 +25,7 @@ namespace mu2e {
   {}
 
   //================================================================
-  double ExtMonFNALBuilding::FilterMagnetExtMonFNAL::trackBendHalfAngle(double momentum) const {
-
+  double ExtMonFNALBuilding::FilterMagnetExtMonFNAL::trackBendRadius(double momentum) const {
     // In the bend plane: compute the gyroradius
     // The constant factor is 1/c_light scaled such as
     // to get rTrack in millimeters
@@ -35,6 +34,14 @@ namespace mu2e {
     //    std::cerr<<"AG: got rTrack = "<<rTrack<<" mm for p = "
     //           <<(momentum/CLHEP::GeV)<<" GeV and  B = "
     //           <<(_fieldStrength()/CLHEP::tesla)<<" tesla"<<std::endl;
+
+    return rTrack;
+  }
+
+  //================================================================
+  double ExtMonFNALBuilding::FilterMagnetExtMonFNAL::trackBendHalfAngle(double momentum) const {
+
+    const double rTrack = trackBendRadius(momentum);
 
     // Can't do momenta that are too low.  For simplicity we just
     // check for the "absolutely impossible" requests here.  The real

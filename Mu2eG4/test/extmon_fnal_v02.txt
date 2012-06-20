@@ -102,8 +102,7 @@ bool extMonFNAL.magnet.iron.solid = false;
 bool extMonFNAL.magnet.aperture.visible = true;
 bool extMonFNAL.magnet.aperture.solid = false;
 
-// Along dump Z, the magnet is positioned with the
-// {center,bottom,center} point of its aperture at
+// Along dump Z, the geometrical center of the magnet is placed at
 double extMonFNAL.magnet.refDistanceToUpstreamWall = 2100;
 
 // The magnet is placed in such a way that a positive particle with

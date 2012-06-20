@@ -70,6 +70,7 @@ namespace mu2e {
       double fieldStrength() const { return _fieldStrength; }
 
       // derived:
+      double trackBendRadius(double momentum) const;
       double trackBendHalfAngle(double momentum) const;
     };
 
