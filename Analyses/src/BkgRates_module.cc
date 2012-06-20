@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.33 2012/06/20 17:08:11 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.34 2012/06/20 20:57:29 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/06/20 17:08:11 $
+// $Date: 2012/06/20 20:57:29 $
 //
 // Original author Gianni Onorato
 //
@@ -199,13 +199,13 @@ namespace mu2e {
 
       if (geom->hasElement<TTracker>()) {
         _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
-                                            "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:trkId:pdgId:isGen:StepFromEva:EvaIsGen:EvaCreationCode:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime::driftTime:driftDist" );
+                                            "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:trkId:pdgId:isGen:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:StepFromEva:EvaIsGen:EvaCreationCode:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
       } else if(geom->hasElement<ITracker>()) {
         _tNtup        = tfs->make<TNtuple>( "CellHits", "Cell Ntuple",
-                                            "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:trkId:pdgId:isGen:StepFromEva:EvaIsGen:EvaCreationCode:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
+                                            "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:trkId:pdgId:isGen:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:StepFromEva:EvaIsGen:EvaCreationCode:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
       }
       _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
-                                          "evt:run:time:eDep:rad:crId:crVane:crX:crY:crZ:trkId:pdgId:isGen:StepFromEva:EvaIsGen:EvaCreationCode:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:cryFrameEnterX:cryFrameEnterY:cryFrameEnterZ:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
+                                          "evt:run:time:eDep:rad:crId:crVane:crX:crY:crZ:trkId:pdgId:isGen:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:cryFrameEnterX:cryFrameEnterY:cryFrameEnterZ:StepFromEva:EvaIsGen:EvaCreationCode:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
 
       if (_doStoppingTarget) {
         _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",
@@ -372,6 +372,19 @@ namespace mu2e {
 	  tntpArray[idx++] = mchit.trackId().asInt(); //leaf 15
 	  tntpArray[idx++] = sim.pdgId();//leaf 16
 	  tntpArray[idx++] = sim.fromGenerator();//leaf 17
+	  tntpArray[idx++] = sim.startMomentum().vect().mag(); // leaf 21
+	  tntpArray[idx++] = sim.creationCode(); // leaf 22
+	  tntpArray[idx++] = sim.startVolumeIndex(); // leaf 23
+	  tntpArray[idx++] = sim.startPosition().x(); // leaf 24
+	  tntpArray[idx++] = sim.startPosition().y(); // leaf 25
+	  tntpArray[idx++] = sim.startPosition().z(); // leaf 26
+	  tntpArray[idx++] = sim.startGlobalTime(); // leaf 27
+	  tntpArray[idx++] = sim.stoppingCode(); // leaf 28
+	  tntpArray[idx++] = sim.endVolumeIndex(); // leaf 29
+	  tntpArray[idx++] = sim.endPosition().x(); // leaf 30
+	  tntpArray[idx++] = sim.endPosition().y(); // leaf 31
+	  tntpArray[idx++] = sim.endPosition().z(); // leaf 32
+	  tntpArray[idx++] = sim.endGlobalTime(); // leaf 33
 	  
 	  int steps = 0;
 	  bool foundEva = false;
@@ -388,29 +401,13 @@ namespace mu2e {
 	      break;
 	    }
 	    
-	    tempSim = const_cast<SimParticle&>(*sim.parent());
+	    tempSim = const_cast<SimParticle&>(*tempSim.parent());
 	    steps++;
 	  }
 	  
 	  tntpArray[idx++] = steps; // leaf 18
 	  tntpArray[idx++] = evaIsGen; // leaf 19
 	  tntpArray[idx++] = evaCreationCode; // leaf 20
-	  
-	  
-	  tntpArray[idx++] = sim.startMomentum().vect().mag(); // leaf 21
-	  tntpArray[idx++] = sim.creationCode(); // leaf 22
-	  tntpArray[idx++] = sim.startVolumeIndex(); // leaf 23
-	  tntpArray[idx++] = sim.startPosition().x(); // leaf 24
-	  tntpArray[idx++] = sim.startPosition().y(); // leaf 25
-	  tntpArray[idx++] = sim.startPosition().z(); // leaf 26
-	  tntpArray[idx++] = sim.startGlobalTime(); // leaf 27
-
-	  tntpArray[idx++] = sim.stoppingCode(); // leaf 28
-	  tntpArray[idx++] = sim.endVolumeIndex(); // leaf 29
-	  tntpArray[idx++] = sim.endPosition().x(); // leaf 30
-	  tntpArray[idx++] = sim.endPosition().y(); // leaf 31
-	  tntpArray[idx++] = sim.endPosition().z(); // leaf 32
-	  tntpArray[idx++] = sim.endGlobalTime(); // leaf 33
 	  foundTrack = true;	  
 	  
 	}
@@ -617,6 +614,21 @@ namespace mu2e {
 	tntpArray[idx++] = trackId.asInt(); //leaf 11
 	tntpArray[idx++] = sim.pdgId();//leaf 12
 	tntpArray[idx++] = sim.fromGenerator();//leaf 13
+	tntpArray[idx++] = sim.startMomentum().vect().mag(); // leaf 17
+	tntpArray[idx++] = sim.creationCode(); // leaf 18
+	tntpArray[idx++] = sim.startVolumeIndex(); // leaf 19
+	tntpArray[idx++] = sim.startPosition().x(); // leaf 20
+	tntpArray[idx++] = sim.startPosition().y(); // leaf 21
+	tntpArray[idx++] = sim.startPosition().z(); // leaf 22
+	tntpArray[idx++] = sim.startGlobalTime(); // leaf 23
+	
+	tntpArray[idx++] = sim.stoppingCode(); // leaf 24
+	tntpArray[idx++] = sim.endVolumeIndex(); // leaf 25
+	tntpArray[idx++] = sim.endPosition().x(); // leaf 26
+	tntpArray[idx++] = sim.endPosition().y(); // leaf 27
+	tntpArray[idx++] = sim.endPosition().z(); // leaf 28
+	tntpArray[idx++] = sim.endGlobalTime(); // leaf 29
+	
 	
 	int steps = 0;
 	bool foundEva = false;
@@ -633,7 +645,7 @@ namespace mu2e {
 	    break;
 	  }
 	  
-	  tempSim = const_cast<SimParticle&>(*sim.parent());
+	  tempSim = const_cast<SimParticle&>(*tempSim.parent());
 	  steps++;
 	}
 	
@@ -641,21 +653,6 @@ namespace mu2e {
 	tntpArray[idx++] = evaIsGen; // leaf 15
 	tntpArray[idx++] = evaCreationCode; // leaf 16
 	
-	tntpArray[idx++] = sim.startMomentum().vect().mag(); // leaf 17
-	tntpArray[idx++] = sim.creationCode(); // leaf 18
-	tntpArray[idx++] = sim.startVolumeIndex(); // leaf 19
-	tntpArray[idx++] = sim.startPosition().x(); // leaf 20
-	tntpArray[idx++] = sim.startPosition().y(); // leaf 21
-	tntpArray[idx++] = sim.startPosition().z(); // leaf 22
-	tntpArray[idx++] = sim.startGlobalTime(); // leaf 23
-	
-	tntpArray[idx++] = sim.stoppingCode(); // leaf 24
-	tntpArray[idx++] = sim.endVolumeIndex(); // leaf 25
-	tntpArray[idx++] = sim.endPosition().x(); // leaf 26
-	tntpArray[idx++] = sim.endPosition().y(); // leaf 27
-	tntpArray[idx++] = sim.endPosition().z(); // leaf 28
-	tntpArray[idx++] = sim.endGlobalTime(); // leaf 29
-
       } else if ( !haveSimPart) {
 
 	tntpArray[idx++] = 0; // leaf 11
@@ -730,7 +727,7 @@ namespace mu2e {
 
     if (skip) return;
 
-    const double CrDensity = 7.4*CLHEP::g/CLHEP::cm3;
+    const double CrDensity = 7.4*(CLHEP::g/CLHEP::cm3);
 
     //Get handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;
@@ -738,11 +735,11 @@ namespace mu2e {
     GeomHandle<Calorimeter> cg;
     double CrSize = cg->crystalHalfSize();
     double CrLength = cg->crystalHalfLength();
-    double CrVolumeCm3 = (CrSize*CrSize*CrLength)*CLHEP::cm3/CLHEP::mm3; //factor 1000 because they are in mm
-    double CrMassKg = CrDensity*CrVolumeCm3*CLHEP::kg/CLHEP::g;
+    double CrVolume = 8*(CrSize*CrSize*CrLength);
+    double CrMass = CrDensity*CrVolume;
 
-    cout << CrSize << '\t' << CrLength << '\t' << CrVolumeCm3
-         << '\t' << CrDensity << '\t' << CrMassKg << endl;
+    //    cout << CrSize << '\t' << CrLength << '\t' << CrVolume
+    //     << '\t' << CrDensity << '\t' << CrMass << endl;
 
     // Get handles to calorimeter collections
     art::Handle<CaloHitCollection> caloHits;
@@ -820,8 +817,7 @@ namespace mu2e {
       cntpArray[idx++] = evt.run();
       cntpArray[idx++] = hit.time();
       cntpArray[idx++] = hit.energyDep();
-      double CrEjoule = hit.energyDep()*CLHEP::joule/CLHEP::megaelectronvolt;
-      double dose = CrEjoule/CrMassKg;
+      double dose = hit.energyDep() / CrMass / (CLHEP::joule/CLHEP::kg);
       cntpArray[idx++] = dose;
       cntpArray[idx++] = cg->getCrystalByRO(thehit.id());
       cntpArray[idx++] = vane;
@@ -850,28 +846,6 @@ namespace mu2e {
 	       << sim.endGlobalTime() << endl;
 	}
 	
-	int steps = 0;
-	bool foundEva = false;
-	int evaIsGen = 0;
-	int evaCreationCode = 0;
-	SimParticle& tempSim = const_cast<SimParticle&>(sim);
-	while (!foundEva) {
-	  if (!(tempSim.hasParent()) ) {
-	    foundEva = true;
-	    if ( tempSim.fromGenerator()) {
-	      evaIsGen = 1;
-	    }
-	    evaCreationCode = tempSim.creationCode();
-	    break;
-	  }
-	  
-	  tempSim = const_cast<SimParticle&>(*sim.parent());
-	  steps++;
-	}
-	
-	cntpArray[idx++] = steps;
-	cntpArray[idx++] = evaIsGen;
-	cntpArray[idx++] = evaCreationCode;
 	cntpArray[idx++] = sim.startMomentum().vect().mag();
 	cntpArray[idx++] = sim.creationCode();
 	cntpArray[idx++] = sim.startVolumeIndex();
@@ -892,6 +866,32 @@ namespace mu2e {
 	cntpArray[idx++] = cryFrame.x();
 	cntpArray[idx++] = cryFrame.y();
 	cntpArray[idx++] = cryFrame.z();                        
+
+
+	int steps = 0;
+	bool foundEva = false;
+	int evaIsGen = 0;
+	int evaCreationCode = 0;
+	SimParticle& tempSim = const_cast<SimParticle&>(sim);
+	while (!foundEva) {
+	  if (!(tempSim.hasParent()) ) {
+	    foundEva = true;
+	    if ( tempSim.fromGenerator()) {
+	      evaIsGen = 1;
+	    }
+	    evaCreationCode = tempSim.creationCode();
+	    break;
+	  }
+	  
+	  tempSim = const_cast<SimParticle&>(*tempSim.parent());
+	  steps++;
+	}
+	
+	cntpArray[idx++] = steps;
+	cntpArray[idx++] = evaIsGen;
+	cntpArray[idx++] = evaCreationCode;
+
+
 	
       } else if (!haveSimPart) {
 	
