@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.32 2012/06/19 16:21:49 onoratog Exp $
+// $Id: BkgRates_module.cc,v 1.33 2012/06/20 17:08:11 onoratog Exp $
 // $Author: onoratog $
-// $Date: 2012/06/19 16:21:49 $
+// $Date: 2012/06/20 17:08:11 $
 //
 // Original author Gianni Onorato
 //
@@ -146,32 +146,7 @@ namespace mu2e {
 
   };
 
-  typedef  list< pair <SimParticleCollection::key_type , double> >  PairList;
-
-
-
-  bool SortByEnergy(const pair<SimParticleCollection::key_type,double> & a,
-                    const pair<SimParticleCollection::key_type,double> & b ) {
-    return a.second < b.second;
-  }
-
-
-  void PairListAdd(PairList& list, SimParticleCollection::key_type prt, double e) {
-
-    for (PairList::iterator it = list.begin();
-         it != list.end(); ++it) {
-      if (it->first == prt) {
-        it->second += e;
-        return;
-      }
-    }
-    list.push_back(pair<SimParticleCollection::key_type,double>(prt,e));
-    return;
-  }
-
-
   void BkgRates::beginJob( ) {
-
   }
 
   void BkgRates::analyze(art::Event const& evt ) {
@@ -224,13 +199,13 @@ namespace mu2e {
 
       if (geom->hasElement<TTracker>()) {
         _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
-                                            "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:trkId:pdgId:isGen:StepFromEva:EvaIsGen:EvaCreationCode:P:CreationCode:StartVolume:StoppingCode:EndVolume:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime::driftTime:driftDist" );
+                                            "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:trkId:pdgId:isGen:StepFromEva:EvaIsGen:EvaCreationCode:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime::driftTime:driftDist" );
       } else if(geom->hasElement<ITracker>()) {
         _tNtup        = tfs->make<TNtuple>( "CellHits", "Cell Ntuple",
-                                            "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:trkId:pdgId:isGen:StepFromEva:P:CreationCode:StartVolume:StoppingCode:EndVolume:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
+                                            "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:trkId:pdgId:isGen:StepFromEva:EvaIsGen:EvaCreationCode:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
       }
       _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
-                                          "evt:run:time:eDep:rad:crId:crVane:crX:crY:crZ:trkId:pdgId:isGen:StepFromEva:EvaIsGen:EvaCreationCode:P:CreationCode:StartVolume:StoppingCode:EndVolume:cryFrameEnterX:cryFrameEnterY:cryFrameEnterZ:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
+                                          "evt:run:time:eDep:rad:crId:crVane:crX:crY:crZ:trkId:pdgId:isGen:StepFromEva:EvaIsGen:EvaCreationCode:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:cryFrameEnterX:cryFrameEnterY:cryFrameEnterZ:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
 
       if (_doStoppingTarget) {
         _tgtNtup      = tfs->make<TNtuple>( "ST", "Particle dead in ST ntuple",
@@ -314,7 +289,7 @@ namespace mu2e {
 
     for (size_t i=0; i<nStrawPerEvent; ++i) {
 
-      float tntpArray[36];
+      float tntpArray[44];
       int idx(0);
 
       // Access data
@@ -425,9 +400,17 @@ namespace mu2e {
 	  tntpArray[idx++] = sim.startMomentum().vect().mag(); // leaf 21
 	  tntpArray[idx++] = sim.creationCode(); // leaf 22
 	  tntpArray[idx++] = sim.startVolumeIndex(); // leaf 23
-	  tntpArray[idx++] = sim.stoppingCode(); // leaf 24
-	  tntpArray[idx++] = sim.endVolumeIndex(); // leaf 25
-	  
+	  tntpArray[idx++] = sim.startPosition().x(); // leaf 24
+	  tntpArray[idx++] = sim.startPosition().y(); // leaf 25
+	  tntpArray[idx++] = sim.startPosition().z(); // leaf 26
+	  tntpArray[idx++] = sim.startGlobalTime(); // leaf 27
+
+	  tntpArray[idx++] = sim.stoppingCode(); // leaf 28
+	  tntpArray[idx++] = sim.endVolumeIndex(); // leaf 29
+	  tntpArray[idx++] = sim.endPosition().x(); // leaf 30
+	  tntpArray[idx++] = sim.endPosition().y(); // leaf 31
+	  tntpArray[idx++] = sim.endPosition().z(); // leaf 32
+	  tntpArray[idx++] = sim.endGlobalTime(); // leaf 33
 	  foundTrack = true;	  
 	  
 	}
@@ -444,6 +427,14 @@ namespace mu2e {
 	tntpArray[idx++] = 0; // leaf 23
 	tntpArray[idx++] = 0; // leaf 24
 	tntpArray[idx++] = 0; // leaf 25
+	tntpArray[idx++] = 0; // leaf 26
+	tntpArray[idx++] = 0; // leaf 27
+	tntpArray[idx++] = 0; // leaf 28
+	tntpArray[idx++] = 0; // leaf 29
+	tntpArray[idx++] = 0; // leaf 30
+	tntpArray[idx++] = 0; // leaf 31
+	tntpArray[idx++] = 0; // leaf 32
+	tntpArray[idx++] = 0; // leaf 33
 	
       }
       
@@ -463,30 +454,30 @@ namespace mu2e {
       
       if (ngen > 0) {
         GenParticle const& gen = genParticles->at(0);
-        tntpArray[idx++] = gen.generatorId().id();//leaf 26
-        tntpArray[idx++] = gen.momentum().vect().mag();//leaf 27
-        tntpArray[idx++] = gen.momentum().e();//leaf 28
-        tntpArray[idx++] = gen.position().x();//leaf 29
-        tntpArray[idx++] = gen.position().y();//leaf 30
-        tntpArray[idx++] = gen.position().z();//leaf 31
-        tntpArray[idx++] = gen.momentum().cosTheta();//leaf 32
-        tntpArray[idx++] = gen.momentum().phi();//leaf 33
-        tntpArray[idx++] = gen.time();//leaf 34
+        tntpArray[idx++] = gen.generatorId().id();//leaf 34
+        tntpArray[idx++] = gen.momentum().vect().mag();//leaf 35
+        tntpArray[idx++] = gen.momentum().e();//leaf 36
+        tntpArray[idx++] = gen.position().x();//leaf 37
+        tntpArray[idx++] = gen.position().y();//leaf 38
+        tntpArray[idx++] = gen.position().z();//leaf 39
+        tntpArray[idx++] = gen.momentum().cosTheta();//leaf 40
+        tntpArray[idx++] = gen.momentum().phi();//leaf 41
+        tntpArray[idx++] = gen.time();//leaf 42
       } else if ( ngen == 0 ) {
-        tntpArray[idx++] = 0;//leaf 26
-        tntpArray[idx++] = 0;//leaf 27
-        tntpArray[idx++] = 0;//leaf 28
-        tntpArray[idx++] = 0;//leaf 29
-        tntpArray[idx++] = 0;//leaf 30
-        tntpArray[idx++] = 0;//leaf 31
-        tntpArray[idx++] = 0;//leaf 32
-        tntpArray[idx++] = 0;//leaf 33
         tntpArray[idx++] = 0;//leaf 34
+        tntpArray[idx++] = 0;//leaf 35
+        tntpArray[idx++] = 0;//leaf 36
+        tntpArray[idx++] = 0;//leaf 37
+        tntpArray[idx++] = 0;//leaf 38
+        tntpArray[idx++] = 0;//leaf 39
+        tntpArray[idx++] = 0;//leaf 40
+        tntpArray[idx++] = 0;//leaf 41
+        tntpArray[idx++] = 0;//leaf 42
       }
 
       // Store MC truth data
-      tntpArray[idx++] = truth.driftTime(); //leaf 35
-      tntpArray[idx++] = truth.driftDistance(); //leaf 36
+      tntpArray[idx++] = truth.driftTime(); //leaf 43
+      tntpArray[idx++] = truth.driftDistance(); //leaf 44
 
       _tNtup->Fill(tntpArray);
 
@@ -514,10 +505,6 @@ namespace mu2e {
     art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
     evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
     PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
-
-    // Get the persistent data about the StepPointMCs. More correct implementation
-    // should look for product ids in PtrStepPointMCVectorCollection, rather than
-    // use producer name directly (_g4ModuleLabel).
 
     if (!(hits->size() == hits_truth->size() &&
           hits_mcptr->size() == hits->size() ) ) {
@@ -593,125 +580,107 @@ namespace mu2e {
 
       //  cout << "Filling ntupla" << endl;
 
-      float tntpArray[34];
+      float tntpArray[40];
       int idx(0);
-      tntpArray[idx++] = evt.id().event();
-      tntpArray[idx++] = evt.run();
-      tntpArray[idx++] = hitTime;
-      tntpArray[idx++] = hitEnergy;
-      tntpArray[idx++] = lid;
-      tntpArray[idx++] = did;
-      tntpArray[idx++] = sid;
-      tntpArray[idx++] = MCHitPoint.getX();
-      tntpArray[idx++] = MCHitPoint.getY();
-      tntpArray[idx++] = vMC;
+      tntpArray[idx++] = evt.id().event(); //1
+      tntpArray[idx++] = evt.run();//2
+      tntpArray[idx++] = hitTime;//3
+      tntpArray[idx++] = hitEnergy;//4
+      tntpArray[idx++] = lid;//5
+      tntpArray[idx++] = did;//6
+      tntpArray[idx++] = sid;//7
+      tntpArray[idx++] = MCHitPoint.getX();//8
+      tntpArray[idx++] = MCHitPoint.getY();//9
+      tntpArray[idx++] = vMC;//10
 
 
-      //Get related G4 hits to identify the track.
 
-      // cout << "Tracks info" << endl;
+      if ( haveSimPart ){
+	//Find the first stepPointMC by time of flight
+	double temptime = 10e9;
+	size_t jfirst = 0;
+	for (size_t j = 0; j < mcptr.size(); ++j) {
+	  
+	  if (mcptr[j]->time() < temptime) {
+	    temptime = mcptr[j]->time(); 
+	    jfirst = j;
+	  }
+	}
+	
+	StepPointMC const& mchit = *mcptr[jfirst];
+	
+	// The simulated particle that made this hit.
+	SimParticleCollection::key_type trackId(mchit.trackId());
+		
+	SimParticle const& sim = simParticles->at(trackId);
+	
+	tntpArray[idx++] = trackId.asInt(); //leaf 11
+	tntpArray[idx++] = sim.pdgId();//leaf 12
+	tntpArray[idx++] = sim.fromGenerator();//leaf 13
+	
+	int steps = 0;
+	bool foundEva = false;
+	int evaIsGen = 0;
+	int evaCreationCode = 0;
+	SimParticle& tempSim = const_cast<SimParticle&>(sim);
+	while (!foundEva) {
+	  if (!(tempSim.hasParent()) ) {
+	    foundEva = true;
+	    if ( tempSim.fromGenerator()) {
+	      evaIsGen = 1;
+	    }
+	    evaCreationCode = tempSim.creationCode();
+	    break;
+	  }
+	  
+	  tempSim = const_cast<SimParticle&>(*sim.parent());
+	  steps++;
+	}
+	
+	tntpArray[idx++] = steps; // leaf 14
+	tntpArray[idx++] = evaIsGen; // leaf 15
+	tntpArray[idx++] = evaCreationCode; // leaf 16
+	
+	tntpArray[idx++] = sim.startMomentum().vect().mag(); // leaf 17
+	tntpArray[idx++] = sim.creationCode(); // leaf 18
+	tntpArray[idx++] = sim.startVolumeIndex(); // leaf 19
+	tntpArray[idx++] = sim.startPosition().x(); // leaf 20
+	tntpArray[idx++] = sim.startPosition().y(); // leaf 21
+	tntpArray[idx++] = sim.startPosition().z(); // leaf 22
+	tntpArray[idx++] = sim.startGlobalTime(); // leaf 23
+	
+	tntpArray[idx++] = sim.stoppingCode(); // leaf 24
+	tntpArray[idx++] = sim.endVolumeIndex(); // leaf 25
+	tntpArray[idx++] = sim.endPosition().x(); // leaf 26
+	tntpArray[idx++] = sim.endPosition().y(); // leaf 27
+	tntpArray[idx++] = sim.endPosition().z(); // leaf 28
+	tntpArray[idx++] = sim.endGlobalTime(); // leaf 29
+
+      } else if ( !haveSimPart) {
+
+	tntpArray[idx++] = 0; // leaf 11
+	tntpArray[idx++] = 0; // leaf 12
+	tntpArray[idx++] = 0; // leaf 13
+	tntpArray[idx++] = 0; // leaf 14
+	tntpArray[idx++] = 0; // leaf 15
+	tntpArray[idx++] = 0; // leaf 16
+	tntpArray[idx++] = 0; // leaf 17
+	tntpArray[idx++] = 0; // leaf 18
+	tntpArray[idx++] = 0; // leaf 19
+	tntpArray[idx++] = 0; // leaf 20
+	tntpArray[idx++] = 0; // leaf 21
+	tntpArray[idx++] = 0; // leaf 22
+	tntpArray[idx++] = 0; // leaf 23
+	tntpArray[idx++] = 0; // leaf 24
+	tntpArray[idx++] = 0; // leaf 25
+	tntpArray[idx++] = 0; // leaf 26
+	tntpArray[idx++] = 0; // leaf 27
+	tntpArray[idx++] = 0; // leaf 28
+	tntpArray[idx++] = 0; // leaf 29
 
 
-      //Map of track id as key, and vector index as value
-      map<SimParticleCollection::key_type , size_t > StrawTracksMap;
-
-      //Vectors of pdgId and GenId of the tracks associated to the strawhit
-      vector<int>     PdgIdTracks;
-      vector<bool>    IsGenerated;
-
-      //List of trackId and energy deposition
-      PairList TracksEDep;
-
-      //common index for vectors
-      size_t trackIdx(0);
-
-      for (size_t j = 0; j < mcptr.size(); ++j) {
-
-        StepPointMC const& mchit = *mcptr[j];
-
-        // The simulated particle that made this hit.
-        SimParticleCollection::key_type trackId(mchit.trackId());
-
-        //Find in the map if the track is already stored
-        map<SimParticleCollection::key_type , size_t >::iterator it;
-        it = StrawTracksMap.find(trackId);
-
-        //if the contributing track id does not exist in the map
-        //add an element to the map itself, energy to the list and pdgId and genId to the vectors
-        if (it==StrawTracksMap.end()) {
-
-          //insert track id in the trackId vector
-          StrawTracksMap.insert(pair<SimParticleCollection::key_type, size_t>(trackId,trackIdx));
-
-          //insert trackId, and energy deposition in the list
-          TracksEDep.push_back(pair<SimParticleCollection::key_type, double>(trackId,mchit.eDep()));
-
-          if ( haveSimPart ){
-            SimParticle const& sim = simParticles->at(trackId);
-
-            // PDG Particle Id of the sim particle that made this hit.
-            PdgIdTracks.push_back(sim.pdgId());
-            IsGenerated.push_back(sim.fromGenerator());
-
-          } else if ( !haveSimPart) {
-            PdgIdTracks.push_back(0);
-            IsGenerated.push_back(false);
-          }
-
-          //increment index
-          trackIdx++;
-        } else if (it != StrawTracksMap.end()) {
-          for (PairList::iterator it2 = TracksEDep.begin(); it2 != TracksEDep.end(); ++it2) {
-            if (it2->first == trackId) {
-              it2->second += mchit.eDep();
-            }
-          }
-        }
       }
-
-      TracksEDep.sort(SortByEnergy);
-
-      int nTrkPerStraw = TracksEDep.size();
-
-      if (nTrkPerStraw > 3) {
-        if (_diagLevel > 0) {
-          cout << "More than 3 different tracks contribute to the straw:"
-               << "\nonly the first three with higher e deposit will be stored" << endl;
-        }
-      }
-
-      tntpArray[idx++] = nTrkPerStraw;
-      int counter = 0;
-
-      for (PairList::reverse_iterator it = TracksEDep.rbegin();
-           it != TracksEDep.rend(); ++it) {
-        if (counter == 3) break;
-
-        size_t vec_idx = StrawTracksMap[it->first];
-
-        tntpArray[idx++] = it->first.asInt();
-        tntpArray[idx++] = PdgIdTracks[vec_idx];
-        tntpArray[idx++] = it->second;
-        tntpArray[idx++] = IsGenerated[vec_idx];
-        counter++;
-      }
-
-
-      //Fill with 0 the rest of the ntupla leaves
-      //if there are less than 3 tracks contributing
-      //to the straw hit
-
-      for (int add_idx = 0; add_idx < 3 - counter; ++add_idx) {
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-      }
-
-
-
-
-
+      
       size_t ngen = genParticles->size();
       if (ngen>1) {
         cout << "The plugin is supposed to analyze single background rates,"
@@ -719,34 +688,40 @@ namespace mu2e {
              << "\nThis event has more than one genparticle. Only the "
              << "first one will be stored" << endl;
       }
+
       if (ngen > 0) {
+	SimParticleCollection::key_type idxInSim = SimParticleCollection::key_type(1);
+	SimParticle const& geninSim = simParticles->at(idxInSim);
+	if (!geninSim.fromGenerator()) {
+	  cout << "Watch out. First particle is not from generator. What's happening?" << endl;
+	}
         GenParticle const& gen = genParticles->at(0);
-        tntpArray[idx++] = gen.generatorId().id();
-        tntpArray[idx++] = gen.momentum().vect().mag();
-        tntpArray[idx++] = gen.momentum().e();
-        tntpArray[idx++] = gen.position().x();
-        tntpArray[idx++] = gen.position().y();
-        tntpArray[idx++] = gen.position().z();
-        tntpArray[idx++] = gen.momentum().cosTheta();
-        tntpArray[idx++] = gen.momentum().phi();
-        tntpArray[idx++] = gen.time();
+        tntpArray[idx++] = gen.generatorId().id(); //30
+        tntpArray[idx++] = gen.momentum().vect().mag(); //31
+        tntpArray[idx++] = gen.momentum().e(); //32
+        tntpArray[idx++] = gen.position().x(); //33
+        tntpArray[idx++] = gen.position().y(); //34
+        tntpArray[idx++] = gen.position().z(); //35
+        tntpArray[idx++] = gen.momentum().cosTheta(); //36
+        tntpArray[idx++] = gen.momentum().phi(); //37
+        tntpArray[idx++] = gen.time(); //38
       } else if ( ngen == 0 ) {
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
-        tntpArray[idx++] = 0;
+        tntpArray[idx++] = 0; //30
+        tntpArray[idx++] = 0; //31
+        tntpArray[idx++] = 0; //32
+        tntpArray[idx++] = 0; //33
+        tntpArray[idx++] = 0; //34
+        tntpArray[idx++] = 0; //35
+        tntpArray[idx++] = 0; //36
+        tntpArray[idx++] = 0; //37
+        tntpArray[idx++] = 0; //38
       }
 
-      tntpArray[idx++] = driftTime;
-      tntpArray[idx++] = driftDistance;
-
+      tntpArray[idx++] = driftTime; //39
+      tntpArray[idx++] = driftDistance; //40
+      
       _tNtup->Fill(tntpArray);
-
+      
     } //end of Cellhits loop
 
   } // end of doITracker
@@ -828,7 +803,7 @@ namespace mu2e {
 	continue;
       }
       
-      float cntpArray[33];
+      float cntpArray[41];
       int idx(0);
       
       
@@ -900,9 +875,18 @@ namespace mu2e {
 	cntpArray[idx++] = sim.startMomentum().vect().mag();
 	cntpArray[idx++] = sim.creationCode();
 	cntpArray[idx++] = sim.startVolumeIndex();
+	cntpArray[idx++] = sim.startPosition().x();
+	cntpArray[idx++] = sim.startPosition().y();
+	cntpArray[idx++] = sim.startPosition().z();
+	cntpArray[idx++] = sim.startGlobalTime();
+
 	cntpArray[idx++] = sim.stoppingCode();
 	cntpArray[idx++] = sim.endVolumeIndex();
-	
+	cntpArray[idx++] = sim.endPosition().x();
+	cntpArray[idx++] = sim.endPosition().y();
+	cntpArray[idx++] = sim.endPosition().z();
+	cntpArray[idx++] = sim.endGlobalTime(); 
+
 	firstHitPos = mchit.position();
 	cryFrame = cg->toCrystalFrame(thehit.id(), firstHitPos);
 	cntpArray[idx++] = cryFrame.x();
