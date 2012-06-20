@@ -3,16 +3,18 @@
 //
 // Export the G4 particle data table.
 //
-// $Id: exportG4PDT.hh,v 1.1 2012/03/29 17:03:14 kutschke Exp $
+// $Id: exportG4PDT.hh,v 1.2 2012/06/20 19:13:07 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/29 17:03:14 $
+// $Date: 2012/06/20 19:13:07 $
 //
 // Contact person Rob Kutschke
 //
 
+#include <string>
+
 namespace mu2e{
 
-  void exportG4PDT();
+  void exportG4PDT( std::string const& tag );
 
 }  // end namespace mu2e
 

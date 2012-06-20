@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.52 2012/06/09 20:04:51 kutschke Exp $
+// $Id: G4_module.cc,v 1.53 2012/06/20 19:13:07 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/06/09 20:04:51 $
+// $Date: 2012/06/20 19:13:07 $
 //
 // Original author Rob Kutschke
 //
@@ -243,7 +243,7 @@ namespace mu2e {
 
       if( _checkFieldMap>0 ) generateFieldMap(worldGeom->mu2eOriginInWorld(),_checkFieldMap);
 
-      if ( _exportPDTStart ) exportG4PDT( );
+      if ( _exportPDTStart ) exportG4PDT( "Start:" );
     }
 
     // Get some run-time configuration information that is stored in the geometry file.
@@ -438,7 +438,7 @@ namespace mu2e {
 
   void G4::endJob(){
 
-    if ( _exportPDTEnd ) exportG4PDT();
+    if ( _exportPDTEnd ) exportG4PDT( "End:" );
 
     // Yes, these are named endRun, but they are really endJob actions.
     _physVolHelper.endRun();
