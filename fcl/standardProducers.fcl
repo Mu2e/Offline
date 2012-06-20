@@ -105,19 +105,15 @@ TrkPatRec :
 # Kalman fit configuration for the final track fit
         KalFit :
         {
-                maxiter                                 : 5
                 debugLevel				: 0
                 material                                : true
-		hiterr					: [ 0.0 ]
-                seedsmear                               : 100000
-                maxhitchi                               : 3.0
-                mingap                                  : 1.0
                 weedhits                                : true
+		mingap					: 1.0
 		hiterr 					: [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
-		ambiguityStrategy    			: [0, 0, 2, 2, 2, 2, 2, 2, 2 ]
+		ambiguityStrategy    			: [ 0, 0, 2, 2, 2, 2, 2, 2, 2 ]
 		HitAmbigPenalty 			: false
-		HitMinDrift 				: 0.05
-		ZeroDriftPenalty 			: 0.0
+		HitMinDrift 				: 0.1
+		ZeroDriftPenalty 			: 0.05
 		Neutralize 				: true
 
 	}
