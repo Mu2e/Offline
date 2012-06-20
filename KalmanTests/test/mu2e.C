@@ -1,5 +1,6 @@
 #include "TTree.h"
 #include "TH1F.h"
+#include "TF1.h"
 #include "TLegend.h"
 #include "TCanvas.h"
 #include "TProfile.h"
@@ -8,7 +9,26 @@
 #include "TLine.h"
 #include <iostream>
 
-void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, double nconv=100000) {
+
+// the following approximation is from Czarnecki etal, 'Muon decay in orbit:spectrum of high-energy electrons',
+// for E>85 MeV
+Double_t DIOCZ(Double_t *x, Double_t *par) {
+  double ee = x[0];
+  double norm = par[0];
+  double mal(25133);
+//    double mmu(105.654);
+  double emu(105.194);
+//    double emue(104.973);
+//    double me(0.511);
+  double a5(8.6434e-17);
+  double a6(1.16874e-17);
+  double a7(-1.87828e-19);
+  double a8(9.16327e-20);
+  double delta = emu - ee - ee*ee/(2*mal);
+  return norm*(a5*pow(delta,5) + a6*pow(delta,6) + a7*pow(delta,7) + a8*pow(delta,8));
+}
+
+void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,bool weightdio=true) {
 // diogenrange is the momentum range over which the DIO events were generated
   double nstopped(7.56e17);
   double capfrac(0.609); 
@@ -18,47 +38,28 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   double conprob(1e-15);
   double momlow(103.3);
   double momhigh(104.7);
-  double trueconvmom(105);
+  double trueconvmom(104.973);
 
   unsigned nbins(100);
   double mmin(101);
   double mmax(106);
   double mevperbin = (mmax-mmin)/nbins;
 
-  TH1F* timeshift = new TH1F("timeshift","T_{0} - muon conversion time;nsec",100,0,100);
-  timeshift->SetStats(0);  
-  con->Project("timeshift","t0-mct0","fitstatus>0");
-
-  TProfile* truedio = new TProfile("truedio","MC true DIO spectrum;MeV/c;d#Gamma/(#Gamma dE) (MeV^{-1})",nbins,mmin,mmax,0,1);
-  dio->Project("truedio","diowt:mcmom");
-  truedio->SetMaximum(1e-12);
-  truedio->SetMinimum(1e-24);
-  TH1F* tdio = new TH1F("tdio","MC true DIO spectrum;MeV/c;d#Gamma/(#Gamma dE) (MeV^{-1})",nbins,mmin,mmax);
-  tdio->Sumw2();
-  dio->Project("tdio","mcmom","diowt");
-  tdio->Scale(diogenrange/(ndio*mevperbin));
-  tdio->SetMaximum(1e-12);
-  tdio->SetMinimum(1e-24);
-  truedio->SetLineColor(kRed);
-  truedio->SetMarkerColor(kRed);
-  tdio->SetLineColor(kBlue);
-  tdio->SetMarkerColor(kBlue);
-  truedio->SetStats(0);
-
-  TCanvas* valid = new TCanvas("valid","validation",1200,800);
-  valid->Divide(1,2);
-  valid->cd(1);
-  gPad->SetLogy();
-  truedio->Draw();
-  tdio->Draw("same");
-  TLegend* vleg = new TLegend(0.7,0.8,0.9,0.9);
-  vleg->AddEntry(truedio,"CTM formula","L");
-  vleg->AddEntry(tdio,"Weighted sampling","L");
-  vleg->Draw();
-
-  valid->cd(2);
-  timeshift->Draw();
-
+  double conscale = ncap*conprob/ncon;
+  cout << "Conversion scale factor =" << conscale << endl;
+// dio spectrum
+  TF1* diocz_f = new TF1("diocz_f",DIOCZ,85.0,105,1);
+  diocz_f->SetLineColor(kGreen);
+  diocz_f->SetParameter(0,1.0);
+// integrate the DIO spectrum over the range specified.  This is relative to the free decay rate
+  double dioint = diocz_f->Integral(trueconvmom-diogenrange,trueconvmom);
+  double dioscale(1.0);
+  if(weightdio){ 
+    dioscale =ndecay*diogenrange/ndio;
+  } else {
+    dioscale = dioint*ndecay/ndio;
+  }
+  cout << "DIO scale factor = " << dioscale << endl;
 
   TH1F* diospec[4];
   TH1F* conspec[4];
@@ -114,10 +115,10 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
     TCut final = (reco+pitch+livegate+quality);
 
     dio->Project(dioname,"fitmom","diowt"*final);
-    diospec[ires]->Scale(ndecay*diogenrange/ndio);
+    diospec[ires]->Scale(dioscale);
 
     con->Project(conname,"fitmom",final);
-    conspec[ires]->Scale(ncap*conprob/nconv);
+    conspec[ires]->Scale(conscale);
 
   }
 
@@ -134,42 +135,6 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   TString sconprob(text);
   info->AddText(sconprob);
   info->SetBorderSize(0);
-  valid->SaveAs("mu2e_valid.png");
-
-// log scale
-  TCanvas* logcan = new TCanvas("mu2elog","mu2e log scale",1200,800);
-  logcan->Clear();
-  logcan->Divide(2,2);
-
-  for(unsigned ires=0;ires<4;ires++){
-    logcan->cd(ires+1);
-    gPad->SetLogy();
-    diospec[ires]->SetMinimum(1e-4);
-    diospec[ires]->Draw();
-    conspec[ires]->Draw("same");
-
-    TPaveText* logtext = new TPaveText(0.1,0.2,0.4,0.5,"NDC");  
- 
-    char line[40];
-    snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
-    logtext->AddText(line);
-    snprintf(line,80,"t0>%5.1f nsec",t0min);
-    logtext->AddText(line);
-    sprintf(line,"%s",ncuts[ires].GetTitle());
-    logtext->AddText(line);
-    sprintf(line,"%s",t0cuts[ires].GetTitle());
-    logtext->AddText(line);
-    sprintf(line,"%s",momcuts[ires].GetTitle());
-    logtext->AddText(line);
-    sprintf(line,"%s",fitcuts[ires].GetTitle());
-    logtext->AddText(line);
-    logtext->Draw();
-    leg->Draw();
-    info->Draw();
- 
-  }
-  logcan->cd(0);
-  logcan->SaveAs("mu2e_log.png"); 
 
 // linear scale
   TCanvas* lincan = new TCanvas("mu2elin","mu2e linear scale",1200,800);
@@ -184,13 +149,13 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
 
     int istart = diospec[ires]->FindFixBin(momlow+0.5*mevperbin);
     int istop = diospec[ires]->FindFixBin(momhigh-0.5*mevperbin);
-    cout << "Integration low edge " << diospec[ires]->GetBinLowEdge(istart) << " for cut at " << momlow << endl;
-    cout << "Integration high edge " << diospec[ires]->GetBinLowEdge(istop)+mevperbin << " for cut at " << momhigh << endl;
+//    cout << "Integration low edge " << diospec[ires]->GetBinLowEdge(istart) << " for cut at " << momlow << endl;
+//    cout << "Integration high edge " << diospec[ires]->GetBinLowEdge(istop)+mevperbin << " for cut at " << momhigh << endl;
     double dint_err, cint_err;
     double dint = diospec[ires]->IntegralAndError(istart,istop,dint_err);
     double cint = conspec[ires]->IntegralAndError(istart,istop,cint_err);
 
-    TPaveText* inttext = new TPaveText(0.5,0.6,0.9,0.8,"NDC");
+    TPaveText* inttext = new TPaveText(0.5,0.65,0.9,0.8,"NDC");
     char itext[50];
     snprintf(itext,50,"%4.2f MeV/c < P < %4.2f MeV/c",momlow,momhigh);
     inttext->AddText(itext);
@@ -215,7 +180,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
     lintext->AddText(line);
     sprintf(line,"%s",fitcuts[ires].GetTitle());
     lintext->AddText(line);
-    lintext->Draw();
+    //lintext->Draw();
 
     TLine* momlowl = new TLine(momlow,0.0,momlow,1.5*conspec[ires]->GetBinContent(conspec[ires]->GetMaximumBin()));
     momlowl->SetLineColor(kBlack);
@@ -236,54 +201,57 @@ void mu2e(TTree* dio, TTree* con, double diogenrange=5.0, double ndio=100000, do
   lincan->SaveAs("mu2e_lin.png");
 
   TCanvas* dioc = new TCanvas("dio","dio",1200,800);
-  dioc->Divide(1,2);
+  dioc->Divide(2,2);
 
   Double_t dmhi = trueconvmom;
   Double_t dmlow = trueconvmom - diogenrange;
-  TH1F* diogen = new TH1F("diogen","True DIO momentum;MeV",100,dmlow,dmhi);
-  TH1F* diowt = new TH1F("diowt","True DIO momentum;MeV",100,dmlow,dmhi);
+  TH1F* diogen = new TH1F("diogen","True DIO momentum;MeV",nbins,dmlow,dmhi);
+  TH1F* diowt = new TH1F("diowt","True DIO momentum;MeV",nbins,dmlow,dmhi);
 //  diowt->Sumw2();
   dio->Project("diogen","mcmom");
   dio->Project("diowt","mcmom","diowt");
-  double scale =ndecay*diogenrange/ndio;
-  cout << "DIO scale factor = " << scale << endl;
-  diowt->Scale(scale);
+  diowt->Scale(dioscale);
   diowt->SetLineColor(kBlue);
   diogen->SetLineColor(kRed);
   diowt->SetStats(0);
   diogen->SetStats(0);
   dioc->cd(1);
   gPad->SetLogy();
+// dead-reconing on spectrum, accounting for bins
+  double diofscale = ndecay*(dmhi-dmlow)/nbins;
+  diocz_f->SetParameter(0,diofscale);
   diowt->Draw();
+  diocz_f->Draw("same");
   diogen->Draw("same");
   TLegend* dioleg = new TLegend(.2,.4,.6,.6);
   dioleg->AddEntry(diogen,"Generated","l");
   dioleg->AddEntry(diowt,"Weighted","l");
+  dioleg->AddEntry(diocz_f,"Czarnecki etal","l");
   dioleg->Draw();
 
 
   dioc->cd(2);
   gPad->SetLogy();
   Int_t colors[4] = {kRed,kBlue,kGreen,kBlack};
-  TH1F* diogenwin[4];
+  TH1F* diogenwin[4] = {0,0,0,0};
   TH1F* diogood[4];
   char* dopt[4] = {"","same","same","same"};
-  char* cutset[4] = {"Cutset A","Cutset B","Cutset C","Cutset D"};
+  char* cutset[4] = {"Cutset A (no quality cuts)","Cutset B","Cutset C","Cutset D"};
   TLegend* dgenwinleg = new TLegend(.5,.6,.7,.9);
+  diogenwin[0] = new TH1F("diogenwin_0","True momentum of DIO in signal box;MeV",100,dmlow,dmhi);
   for(unsigned ires=0;ires<4;ires++){
     char dioname[50];
     snprintf(dioname,50,"diogenwin%i",ires);
-    diogenwin[ires] = new TH1F(dioname,"True DIO momentum of fake signals;MeV",100,dmlow,dmhi);
+    diogenwin[ires] = new TH1F(dioname,"True momentum of DIO in signal box;MeV",100,dmlow,dmhi);
     diogenwin[ires]->SetStats(0);
 //   TH1F* diogood[ires] = new TH1F("diogood","True DIO momentum",100,dmlow,dmhi);
 //    dio->Project("diogoodwt","mcmom",goodfit);
 
-
     TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
     TCut final = (reco+pitch+livegate+quality);
     dio->Project(dioname,"mcmom",final+momwin);
-    diogenwin[ires]->SetLineColor(colors[ires]);
-    dgenwinleg->AddEntry(diogenwin[ires],cutset[ires],"l");
+    diogenwin[ires]->SetFillColor(colors[ires]);
+    dgenwinleg->AddEntry(diogenwin[ires],cutset[ires],"f");
     diogenwin[ires]->Draw(dopt[ires]);
   }
   dgenwinleg->Draw();

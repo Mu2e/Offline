@@ -103,12 +103,35 @@ Double_t doublegausexp(Double_t *x, Double_t *par) {
   return retval;
 }
 
+Double_t crystalball (Double_t *x, Double_t *par) {
+  // par[0] : norm
+  // par[1] : x0
+  // par[2] : sigma
+  // par[3] : n
+  // par[4] : alpha
+  // par[5] : fraction of 2nd Gaussian
+  // par[6] : tail gaussian sigma
+
+  if ( (x[0]- par[1])/fabs(par[2]) > -1.*par[4]) {
+    double g = par[0]*TMath::Gaus(x[0], par[1], par[2]);
+//    double g2 = par[5]*par[0]*TMath::Gaus(x[0], par[1], par[6]);
+//    return g1+g2;
+    double e = par[0]*par[5]*exp(-(x[0]-par[1])/par[6])/par[6];
+    return g+e;
+  }
+  else {
+    double A = pow(par[3]/fabs(par[4]), par[3])*exp(-0.5*par[4]*par[4]);
+    double B = par[3]/fabs(par[4]) - fabs(par[4]);
+    return par[0]*A*pow(B-(x[0]-par[1])/fabs(par[2]), -1.*par[3]);
+  }
+}
+
 void KalFitHit (TTree* hits ) {
   TCanvas* dcan = new TCanvas("driftcan","driftcan",1200,800);
   TH1F* dres = new TH1F("dres","Drift radius resolution;mm",100,-1,1);
   TH1F* dpull = new TH1F("dpull","Drift radius pull",100,-10,10);
-  TH2F* drad = new TH2F("drad","Drift radius;true drift radius (mm);reco drift radius (mm)",
-      100,-0.3,2.8,100,-0.3,2.8);
+//  TH2F* drad = new TH2F("drad","Drift radius;true drift radius (mm);reco drift radius (mm)",
+//      100,-0.3,2.8,100,-0.3,2.8);
   TH1F* rpull = new TH1F("rpull","residual pull",100,-10,10);
   hits->Project("dres","rdrift-mcrdrift","active");
   hits->Project("dpull","(rdrift-mcrdrift)/rdrifterr","active");
@@ -127,8 +150,8 @@ void KalFitHit (TTree* hits ) {
   TCanvas* tcan = new TCanvas("ht0can","hit_t0can",1200,800);
   TH1F* t0res = new TH1F("t0res","hit t0 resolution;nsec",100,-10,10);
   TH1F* t0pull = new TH1F("t0pull","hit t0 pull",100,-10,10);
-  TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
-      100,500,4000,100,500,4000);
+//  TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
+//      100,500,4000,100,500,4000);
   hits->Project("t0res","hitt0-mchitt0","active");
   hits->Project("t0pull","(hitt0-mchitt0)/hitt0err","active");
   tcan->Clear();
@@ -143,10 +166,10 @@ void KalFitHit (TTree* hits ) {
   TCanvas* tdcan = new TCanvas("tdcan","tdcan",1200,800);
   TH1F* tdres = new TH1F("tdres","#Deltat V resolution;mm",100,-200,200);
   TH1F* tdpull = new TH1F("tdpull","#Deltat V pull",100,-10,10);
-  TH2F* dtd = new TH2F("dtd","Hit V position;true V (mm);#Deltat V (mm)",
-      100,-600,600,100,-600,600);
-  TH2F* pocatd = new TH2F("pocatd","Hit POCA V;true V (mm);POCA V (mm)",
-      100,-600,600,100,-600,600);
+//  TH2F* dtd = new TH2F("dtd","Hit V position;true V (mm);#Deltat V (mm)",
+//      100,-600,600,100,-600,600);
+//  TH2F* pocatd = new TH2F("pocatd","Hit POCA V;true V (mm);POCA V (mm)",
+//      100,-600,600,100,-600,600);
 
   hits->Project("tdres","dmid-mcdmid","active");
   hits->Project("tdpull","(dmid-mcdmid)/dmiderr","active");
@@ -169,8 +192,8 @@ void KalFitTrk (TTree* trks ) {
   TH1F* t00res = new TH1F("t00res","Initial t0 resolution;nsec",100,-20,20);
   TH1F* t0res = new TH1F("t0res","Final t0 resolution;nsec",100,-10,10);
   TH1F* t0pull = new TH1F("t0pull","Track t0 pull",100,-10,10);
-  TH2F* dt0 = new TH2F("dt0","Track t0;true t0 (nsec);Initial t0 (nsec)",
-      100,500,4000,100,500,4000);
+//  TH2F* dt0 = new TH2F("dt0","Track t0;true t0 (nsec);Initial t0 (nsec)",
+//      100,500,4000,100,500,4000);
   trks->Project("t00res","t00-mct0","fitstatus>0");
   trks->Project("t0res","t0-mct0","fitstatus>0");
   trks->Project("t0pull","(t0-mct0)/t0err","fitstatus>0");
@@ -211,8 +234,8 @@ void KalFitTrk (TTree* trks ) {
   tdpull->Fit("gaus");
 
   TCanvas* fcan = new TCanvas("fitcan","fitcan",1200,800);
-  TH2F* mom = new TH2F("mom","momentum at first hit;true mom (MeV);reco mom (MeV)",
-    100,80,110,100,80,110);
+//  TH2F* mom = new TH2F("mom","momentum at first hit;true mom (MeV);reco mom (MeV)",
+//    100,80,110,100,80,110);
   TH1F* mres = new TH1F("mres","momentum resolution at first hit;MeV",100,-2,2);
   TH1F* mpull = new TH1F("mpull","momentum pull at first hit",100,-10,10);
   TH1F* chisq = new TH1F("chisq","Chisq/NDof",100,0,10);
@@ -451,26 +474,35 @@ void KalFitAcc(TTree* trks) {
 }
 
 void KalFitRes(TTree* trks) {
-  TF1* sgau = new TF1("sgau",splitgaus,-1.5,1.5,7);
-  sgau->SetParName(0,"Norm");
-  sgau->SetParName(1,"Mean");
-  sgau->SetParName(2,"SigH");
-  sgau->SetParName(3,"SigL");
-  sgau->SetParName(4,"TFH");
-  sgau->SetParName(5,"TSigH");
-  sgau->SetParName(6,"TSigL");
+//  TF1* sgau = new TF1("sgau",splitgaus,-1.5,1.5,7);
+//  sgau->SetParName(0,"Norm");
+//  sgau->SetParName(1,"Mean");
+//  sgau->SetParName(2,"SigH");
+//  sgau->SetParName(3,"SigL");
+//  sgau->SetParName(4,"TFH");
+//  sgau->SetParName(5,"TSigH");
+//  sgau->SetParName(6,"TSigL");
 
 //  TF1* degau = new TF1("degau",doublegausexp,-1.5,1.5,8);
-  TF1* degau = new TF1("degau",doublegausexp,-1.5,1.5,7);
-  degau->SetParName(0,"Norm");
-  degau->SetParName(1,"GTailFrac");
-  degau->SetParName(2,"ETailFrac");
-  degau->SetParName(3,"Mean");
-  degau->SetParName(4,"CoreSig");
-  degau->SetParName(5,"GTailSig");
-  degau->SetParName(6,"ETailLambda");
+//  TF1* degau = new TF1("degau",doublegausexp,-1.5,1.5,7);
+//  degau->SetParName(0,"Norm");
+//  degau->SetParName(1,"GTailFrac");
+//  degau->SetParName(2,"ETailFrac");
+//  degau->SetParName(3,"Mean");
+//  degau->SetParName(4,"CoreSig");
+//  degau->SetParName(5,"GTailSig");
+//  degau->SetParName(6,"ETailLambda");
 //  degau->SetParName(7,"ETailPower");
- 
+
+  TF1* cball = new TF1("cball",crystalball,-2.0,1.5,7);
+  cball->SetParName(0,"Norm");
+  cball->SetParName(1,"x0");
+  cball->SetParName(2,"sigma");
+  cball->SetParName(3,"n");
+  cball->SetParName(4,"alpha");
+  cball->SetParName(5,"tailfrac");
+  cball->SetParName(6,"taillambda");
+
   TH1F* momres[4];
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
   trks->Project("effnorm","mcentmom",mcsel);
@@ -482,6 +514,7 @@ void KalFitRes(TTree* trks) {
   gStyle->SetOptStat("oumr");
   for(unsigned ires=0;ires<4;ires++){
     rcan->cd(ires+1);
+    gPad->SetLogy();
     char mname[50];
     snprintf(mname,50,"momres%i",ires);
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",251,-2.5,2.5);
@@ -490,20 +523,24 @@ void KalFitRes(TTree* trks) {
     TCut final = (reco+quality+mcsel);
     trks->Project(mname,"fitmom-mcentmom",final);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
-    sgau->SetParameters(integral,0.0,0.5*momres[ires]->GetRMS(),0.5*momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
-    sgau->SetParLimits(5,0.1,1.0);
-    sgau->SetParLimits(6,0.1,1.0);
-    sgau->SetParLimits(4,0.0,0.8);
+//    sgau->SetParameters(integral,0.0,0.5*momres[ires]->GetRMS(),0.5*momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
+//    sgau->SetParLimits(5,0.1,1.0);
+//    sgau->SetParLimits(6,0.1,1.0);
+//    sgau->SetParLimits(4,0.0,0.8);
 //    momres[ires]->Fit("sgau","LIR");
-
-    degau->SetParameters(integral,0.1,0.2,0.0,0.3*momres[ires]->GetRMS(),2*momres[ires]->GetRMS(),0.5*momres[ires]->GetRMS(),0.25);
-    degau->SetParLimits(1,0.02,0.3);
-    degau->SetParLimits(2,0.02,0.3);
-    degau->SetParLimits(4,0.05,momres[ires]->GetRMS());
-    degau->SetParLimits(5,0.12,2*momres[ires]->GetRMS());
-    degau->SetParLimits(6,0.1,momres[ires]->GetRMS());
+//    degau->SetParameters(integral,0.1,0.2,0.0,0.3*momres[ires]->GetRMS(),2*momres[ires]->GetRMS(),0.5*momres[ires]->GetRMS(),0.25);
+//    degau->SetParLimits(1,0.02,0.3);
+//    degau->SetParLimits(2,0.02,0.3);
+//    degau->SetParLimits(4,0.05,momres[ires]->GetRMS());
+//    degau->SetParLimits(5,0.12,2*momres[ires]->GetRMS());
+//    degau->SetParLimits(6,0.1,momres[ires]->GetRMS());
 //    degau->SetParLimits(7,1,3.0);
-    momres[ires]->Fit("degau","LIR");
+  
+    cball->SetParameters(integral,0.0,0.1,1.0,1.0,0.05,0.5);
+    cball->SetParLimits(5,0.001,0.4);
+    cball->SetParLimits(6,0.1,momres[ires]->GetRMS());
+
+    momres[ires]->Fit("cball","LIR");
 
     double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
 
@@ -537,7 +574,7 @@ void KalFitRes(TTree* trks) {
   rcan->cd(0);
 }
 
-void KalFitAmbig(TTree* t) {
+void KalFitAmbig(TTree* t, size_t acut=0) {
   if(!donecuts)KalCuts();
   gStyle->SetOptStat(1111);
 
@@ -545,7 +582,10 @@ void KalFitAmbig(TTree* t) {
   TCut bambig("_mcambig!=_ambig&&_ambig!=0");
   TCut nambig("_ambig==0");
   TCut active("_active>0");
-  TCut goodtrk =mcsel+reco+rpitch;
+// apply requested cuts
+  TCut quality = ncuts[acut] && t0cuts[acut] && momcuts[acut] && fitcuts[acut];
+  TCut goodtrk = (reco+quality+mcsel);
+
 //  TCut goodtrk ="fitstatus>0";
 
   TH1F* rdg = new TH1F("rdg","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
@@ -581,7 +621,6 @@ void KalFitAmbig(TTree* t) {
   rdn->Divide(rda);
   rdb->Divide(rda);
 
-
 //  TH1F* frdg = new TH1F("frdg","True Drift radius, failed fits;radius (mm);N hits",100,-0.05,2.55);
 //  TH1F* frdb = new TH1F("frdb","True Drift radius, failed fits;radius (mm);N hits",100,-0.05,2.55);
 //  frdg->SetLineColor(kBlue);
@@ -592,10 +631,9 @@ void KalFitAmbig(TTree* t) {
 //  t->Project("frdg","_mcdist",mcsel+active+ambig+(!goodfit));
 //  t->Project("frdb","_mcdist",mcsel+active+(!ambig)+(!goodfit));
 
-
-  TH1F* momres0 = new TH1F("momres0","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
-  TH1F* momres1 = new TH1F("momres1","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
-  TH1F* momres2 = new TH1F("momres2","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
+  TH1F* momres0 = new TH1F("momres0","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",151,-4,4);
+  TH1F* momres1 = new TH1F("momres1","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",151,-4,4);
+  TH1F* momres2 = new TH1F("momres2","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",151,-4,4);
   momres0->SetLineColor(kBlack);
   momres1->SetMarkerColor(kCyan);
   momres1->SetMarkerStyle(4);
@@ -671,24 +709,35 @@ void KalFitAmbig(TTree* t) {
   leg->Draw();
 
   ambigcan->cd(3);
-  TF1* degau = new TF1("degau",doublegausexp,-1.5,1.5,7);
-  degau->SetParName(0,"Norm");
-  degau->SetParName(1,"GTailFrac");
-  degau->SetParName(2,"ETailFrac");
-  degau->SetParName(3,"Mean");
-  degau->SetParName(4,"CoreSig");
-  degau->SetParName(5,"GTailSig");
-  degau->SetParName(6,"ETailLambda");
+//  TF1* degau = new TF1("degau",doublegausexp,-1.5,1.5,7);
+//  degau->SetParName(0,"Norm");
+//  degau->SetParName(1,"GTailFrac");
+//  degau->SetParName(2,"ETailFrac");
+//  degau->SetParName(3,"Mean");
+//  degau->SetParName(4,"CoreSig");
+//  degau->SetParName(5,"GTailSig");
+//  degau->SetParName(6,"ETailLambda");
   double integral = momres0->GetEntries()*momres0->GetBinWidth(1);
-  degau->SetParameters(integral,0.1,0.2,0.0,0.3*momres0->GetRMS(),2*momres0->GetRMS(),0.5*momres0->GetRMS(),0.25);
-  degau->SetParLimits(1,0.02,0.3);
-  degau->SetParLimits(2,0.02,0.3);
-  degau->SetParLimits(4,0.05,momres0->GetRMS());
-  degau->SetParLimits(5,0.12,2*momres0->GetRMS());
-  degau->SetParLimits(6,0.1,momres0->GetRMS());
+//  degau->SetParameters(integral,0.1,0.2,0.0,0.3*momres0->GetRMS(),2*momres0->GetRMS(),0.5*momres0->GetRMS(),0.25);
+//  degau->SetParLimits(1,0.02,0.3);
+//  degau->SetParLimits(2,0.02,0.3);
+//  degau->SetParLimits(4,0.05,momres0->GetRMS());
+//  degau->SetParLimits(5,0.12,2*momres0->GetRMS());
+//  degau->SetParLimits(6,0.1,momres0->GetRMS());
+  TF1* cball = new TF1("cball",crystalball,-2.0,1.5,7);
+  cball->SetParName(0,"Norm");
+  cball->SetParName(1,"x0");
+  cball->SetParName(2,"sigma");
+  cball->SetParName(3,"n");
+  cball->SetParName(4,"alpha");
+  cball->SetParName(5,"tailfrac");
+  cball->SetParName(6,"taillambda");
+  cball->SetParameters(integral,0.0,0.1,1.0,1.0,0.05,0.5);
+  cball->SetParLimits(5,0.001,0.4);
+  cball->SetParLimits(6,0.1,momres0->GetRMS());
 
   gPad->SetLogy();
-  momres0->Fit(degau);
+  momres0->Fit("cball","LIR");
   momres1->Draw("psame");
   momres2->Draw("psame");
   TLegend* mleg = new TLegend(0.13,0.6,0.43,0.85);
@@ -719,7 +768,6 @@ void KalFitResid(TTree* t) {
   TCut delta("_mcproc==17");
   TCut ambig("_mcambig==_ambig");
   TCut active("fitstatus==1 && _active>0");
-  TCut mcsel = mcsel;
 
   TH1F* rdg = new TH1F("rdg","True Drift radius;radius (mm);N hits",100,-0.05,2.55);
   TH1F* rdb = new TH1F("rdb","True Drift radius;radius (mm);N hits",100,-0.05,2.55);
@@ -775,6 +823,7 @@ void KalFitCon(TTree* t) {
   t->Project("fcon2","log10(fitcon)",mcsel+"fitstatus==2");
 
   TCanvas* fccan = new TCanvas("fccan","fit consistency",500,500);
+  fccan->Clear();
   fcon1->Draw();
   fcon2->Draw("same");
 
@@ -786,7 +835,6 @@ void KalFitCon(TTree* t) {
 }
 
 void KalFitError(TTree* t){
-    unsigned ires=1;
     TF1* sgau = new TF1("sgau",splitgaus,-1.,1.,7);
     sgau->SetParName(0,"Norm");
     sgau->SetParName(1,"Mean");
@@ -859,6 +907,7 @@ void KalFitNHits(TTree* t){
   leg->AddEntry(nch,"Generated","l");
   leg->AddEntry(ncha,"Reconstructed","l");
   TCanvas* ncan = new TCanvas("ncan","Number of hits",800,600);
+  ncan->Clear();
 //  nch->SetMaximum(2000);
   nch->Draw();
   ncha->Draw("same");
