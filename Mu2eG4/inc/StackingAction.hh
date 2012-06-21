@@ -5,9 +5,9 @@
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.15 2011/07/13 19:25:14 logash Exp $
+// $Id: StackingAction.hh,v 1.16 2012/06/21 19:51:38 logash Exp $
 // $Author: logash $
-// $Date: 2011/07/13 19:25:14 $
+// $Date: 2012/06/21 19:51:38 $
 //
 // Original author Rob Kutschke
 //
@@ -73,6 +73,7 @@ namespace mu2e {
 
     // Special condition for storage studies
     bool _killPitchToLowToStore;
+    double _minPitch;
 
     // Only one of these may be non-empty.
     // List of particles to remove (others will be kept).

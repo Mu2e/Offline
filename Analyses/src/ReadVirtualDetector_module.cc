@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.11 2012/05/11 22:34:08 youzy Exp $
-//  $Author: youzy $
-//  $Date: 2012/05/11 22:34:08 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.12 2012/06/21 19:51:38 logash Exp $
+//  $Author: logash $
+//  $Date: 2012/06/21 19:51:38 $
 //
 // Original author Ivan Logashenko
 //
@@ -116,7 +116,8 @@ namespace mu2e {
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
       _vd_required(pset.get<int>("requireVD",0)),
       _timeCut(pset.get<double>("timeCut",0.0)),
-      _stopped_only(pset.get<bool>("saveStopped",false))
+      _stopped_only(pset.get<bool>("saveStopped",false)),
+      _add_proper_time(pset.get<bool>("addProperTime",false))
     {
 
       Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
@@ -195,6 +196,9 @@ namespace mu2e {
     // Save only stopped particles in the particles ntuple
     bool _stopped_only;
 
+    // Should we add together proper time for the whole decay chain
+    bool _add_proper_time;
+
   };
 
   void ReadVirtualDetector::beginJob(){
@@ -268,7 +272,7 @@ namespace mu2e {
     _ntpart->Branch("parent_pz",  &ntp.parent_pz,  "parent_pz/F");
     _ntpart->Branch("parent_p",   &ntp.parent_p,   "parent_p/F");
     _ntpart->Branch("nvd",        &ntp.nvd,        "nvd/I");
-    _ntpart->Branch("isvd",        ntp.isvd,       "isvd[nvd]/F");
+    _ntpart->Branch("isvd",        ntp.isvd,       "isvd[nvd]/O");
     _ntpart->Branch("tvd",         ntp.tvd,        "tvd[nvd]/F");
     _ntpart->Branch("gtvd",        ntp.gtvd,       "gtvd[nvd]/F");
     _ntpart->Branch("xvd",         ntp.xvd,        "xvd[nvd]/F");
@@ -487,7 +491,6 @@ namespace mu2e {
     // Fill tracks ntuple
     if( haveSimPart && pdg_save.size()>0 ) {
 
-
       // Go through SimParticle container and analyze one particle at a time
       for ( SimParticleCollection::const_iterator isp=simParticles->begin();
             isp!=simParticles->end(); ++isp ){
@@ -496,13 +499,27 @@ namespace mu2e {
         // It particle PDG ID is not in the list - skip it
         if( pdg_save.find(sim.pdgId()) == pdg_save.end() ) continue;
 
-        // Save SimParticle info
+        // Save SimParticle header info
         ntp.run = event.id().run();      // run_id
         ntp.evt = event.id().event();    // event_id
         ntp.trk = sim.id().asInt();      // track_id
         ntp.pdg = sim.pdgId();           // PDG id
+
+	// Calculate parent proper time
+	double gtime_parent = 0.0;
+	if( _add_proper_time ) {
+	  SimParticle const* sim_parent = &sim;
+	  while( sim_parent && sim_parent->hasParent() ) {
+	    sim_parent = simParticles->getOrNull(sim_parent->parentId());
+	    if( sim_parent && sim_parent->pdgId()==ntp.pdg && sim.endDefined() ) {
+	      gtime_parent += sim_parent->endProperTime();
+	    }
+	  }
+	}
+
+        // Save SimParticle other info
         ntp.time = sim.startGlobalTime(); // start time
-        ntp.gtime = sim.startProperTime(); // start time
+        ntp.gtime = gtime_parent+sim.startProperTime(); // start time
         CLHEP::Hep3Vector const & pos_start = sim.startPosition();
         CLHEP::Hep3Vector const & mom_start = sim.startMomentum();
         ntp.x = pos_start.x();
@@ -522,7 +539,7 @@ namespace mu2e {
             ntp.isstop = false;
           }
           ntp.tstop = sim.endGlobalTime();
-          ntp.gtstop = sim.endProperTime();
+          ntp.gtstop = gtime_parent+sim.endProperTime();
           CLHEP::Hep3Vector const & pos_end = sim.endPosition();
           ntp.xstop = pos_end.x();
           ntp.ystop = pos_end.y();
@@ -625,7 +642,7 @@ namespace mu2e {
 
           ntp.isvd[id-1] = true;
           ntp.tvd[id-1]  = hit.time();
-          ntp.gtvd[id-1] = hit.properTime();
+          ntp.gtvd[id-1] = gtime_parent+hit.properTime();
           ntp.xvd[id-1]  = pos.x();
           ntp.yvd[id-1]  = pos.y();
           ntp.zvd[id-1]  = pos.z();

@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions.
 //
-// $Id: StackingAction.cc,v 1.21 2012/04/17 19:56:56 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/17 19:56:56 $
+// $Id: StackingAction.cc,v 1.22 2012/06/21 19:51:38 logash Exp $
+// $Author: logash $
+// $Date: 2012/06/21 19:51:38 $
 //
 // Original author Rob Kutschke
 //
@@ -61,6 +61,7 @@ namespace mu2e {
     _killLowKineticEnergyPDG(),
     _eKineMinPDG(),
     _killPitchToLowToStore(false),
+    _minPitch(0.),
     _pdgToDrop(),
     _pdgToKeep(),
     _dirtBodyPhysVol(0),
@@ -78,6 +79,7 @@ namespace mu2e {
     _primaryOnly          = config.getBool  ("g4.stackPrimaryOnly", _primaryOnly    );
     _killLowKineticEnergy = config.getBool  ("g4.killLowEKine",     _killLowKineticEnergy );
     _killPitchToLowToStore= config.getBool  ("g4.killPitchToLowToStore",_killPitchToLowToStore);
+    _minPitch             = config.getDouble("g4.minPitch",         _minPitch );
 
     config.getVectorInt("g4.stackingActionDropPDG", _pdgToDrop, vector<int>() );
     config.getVectorInt("g4.stackingActionKeepPDG", _pdgToKeep, vector<int>() );
@@ -258,6 +260,20 @@ namespace mu2e {
           if( (trk->GetMomentum().perp2()/trk->GetMomentum().mag2())<(B/_Bmax) ) return fKill;
         }
 
+      }
+
+    }
+
+    if ( _minPitch>0.01 ) {
+
+      // This is simplified version of killPitchToLowToStore. It sets
+      // cut on minimum pitch of muon independent on the point where 
+      // muon is born. This cut only used in simulation of stored 
+      // (trapped) muons. 
+
+      int pdg(trk->GetDefinition()->GetPDGEncoding());
+      if( pdg==-13 || pdg==13 ) {
+	if( (trk->GetMomentum().perp()/trk->GetMomentum().mag())<_minPitch ) return fKill;
       }
 
     }

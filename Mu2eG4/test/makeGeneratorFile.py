@@ -22,6 +22,7 @@ Options:
    -t, --tau {lifetime}: use this lifetime in (ns) to calculate weight from
                        : proper time. This is used in the cases, when decays
                        : are switched off.
+       --sin {sin(th)} : minimum sin(Theta) to be extracted (default:0)
    -h, --help          : this message
 
 If -i option is used, only one input file is read. If -i option is not used,
@@ -45,7 +46,7 @@ if len(sys.argv) < 2:
 try:
     opts,args=getopt.getopt(sys.argv[1:],'i:o:p:v:hdt:',
                             ['help','input=','output=','pdg=','vd=',
-                             'pmin=','debug','tau='])
+                             'pmin=','debug','tau=', 'sin='])
 except getopt.GetoptError:
     print USAGE
     sys.exit(2)
@@ -57,6 +58,7 @@ pdg = None
 vd = 8
 pmin = 0.0
 tau = None
+sinth = 0.0
 
 for o,a in opts:
     if o in ('-h','--help'):
@@ -88,6 +90,12 @@ for o,a in opts:
         except:
             pmin = None
             print "Wrong minimum momentum: ",a
+    elif o in ('--sin'):
+        try:
+            sinth = float(a)
+        except:
+            sinth = None
+            print "Wrong minimum sin(th): ",a
     elif o in ('-d','--debug'):
         debug_print = True
 
@@ -107,12 +115,16 @@ if pdg is None :
     print "Particle PDG code is not specified"
     all_defined = False
 
-if vd is None :
-    print "Virtual detector id is not specified"
+if vd is None or vd<=0 :
+    print "Virtual detector id is not specified or wrong number"
     all_defined = False
 
 if pmin is None :
     print "Minimum momentum is not specified"
+    all_defined = False
+
+if sinth is None :
+    print "Minimum sin(th) is not specified"
     all_defined = False
 
 if not all_defined :
@@ -127,7 +139,7 @@ fout = open(output_file,"w")
 
 # Open ROOT file
 
-chain = TChain("readvd/ntvd")
+chain = TChain("readvd/ntpart")
 for fname in input_file:
     chain.Add(fname)
 
@@ -153,19 +165,26 @@ for i in xrange(nevents):
     if nb <= 0:
         continue
 
-    if( chain.pdg == pdg and chain.sid == vd ) :
-        ptot = math.sqrt(chain.px*chain.px+chain.py*chain.py+chain.pz*chain.pz)
-        if ptot<pmin : continue
-        weight = 1.0
-        if not (tau is None) and tau>0:
-            weight = math.exp(-chain.gtime/tau)
-        str = " %.2f %.2f %.2f %.2f %.2f %.2f %.2f %d %d %d %d %g" % (
-            chain.x, chain.y, chain.z,
-            chain.px, chain.py, chain.pz,
-            chain.time,
-            int(chain.pdg), int(chain.evt), int(chain.trk), 0, weight)
-        fout.write(str+"\n")
-        nwrite+=1
+    if chain.pdg != pdg : continue
+    if chain.pvd[vd-1]<1.0 : continue
+    
+    ptot = chain.pvd[vd-1]
+    if ptot<pmin : continue
+    
+    if sinth>0 :
+        sth = math.sqrt(1-chain.pzvd[vd-1]**2/ptot**2)
+        if sth<sinth : continue
+        
+    weight = chain.g4bl_weight
+    if not (tau is None) and tau>0:
+        weight = math.exp(-chain.gtvd[vd-1]/tau)
+    str = " %.2f %.2f %.2f %.2f %.2f %.2f %.2f %d %d %d %d %g" % (
+        chain.xvd[vd-1], chain.yvd[vd-1], chain.zvd[vd-1],
+        chain.pxvd[vd-1], chain.pyvd[vd-1], chain.pzvd[vd-1],
+        chain.tvd[vd-1],
+        int(chain.pdg), int(chain.evt), int(chain.trk), 0, weight)
+    fout.write(str+"\n")
+    nwrite+=1
 
 fout.close()
 
