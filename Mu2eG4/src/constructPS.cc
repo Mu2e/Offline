@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.16 2012/06/06 19:29:30 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/06 19:29:30 $
+// $Id: constructPS.cc,v 1.17 2012/06/22 18:14:56 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/06/22 18:14:56 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -26,6 +26,7 @@
 #include "Mu2eG4/inc/constructPSShield.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 
@@ -37,6 +38,7 @@
 #include "G4Material.hh"
 #include "G4Color.hh"
 #include "G4Polycone.hh"
+#include "G4SDManager.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
@@ -65,6 +67,8 @@ namespace mu2e {
     bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
     bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
+
+    bool psVacuumSensitive = _config.getBool("PS.Vacuum.Sensitive", false);
 
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
 
@@ -301,6 +305,12 @@ namespace mu2e {
                                           placePV,
                                           doSurfaceCheck
                                           );
+
+    if(psVacuumSensitive) {
+      G4VSensitiveDetector* psVacuumSD = G4SDManager::GetSDMpointer()->
+        FindSensitiveDetector(SensitiveDetectorName::PSVacuum());
+      psVacuumInfo.logical->SetSensitiveDetector(psVacuumSD);
+    }
 
     // Build the production target.
     GeomHandle<ProductionTarget> tgt;

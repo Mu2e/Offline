@@ -3,9 +3,9 @@
 // Define names of Sensitive Detectors; revised to forward the names of the
 // StepInstanceName names.
 //
-// $Id: SensitiveDetectorName.hh,v 1.12 2012/06/08 22:54:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/08 22:54:10 $
+// $Id: SensitiveDetectorName.hh,v 1.13 2012/06/22 18:14:56 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/06/22 18:14:56 $
 //
 // Original author KLG
 
@@ -56,6 +56,10 @@ namespace mu2e {
 
     static char const * ProtonAbsorber() {
       return StepInstanceName::name(StepInstanceName::protonabsorber).c_str();
+    }
+
+    static char const * PSVacuum() {
+      return StepInstanceName::name(StepInstanceName::PSVacuum).c_str();
     }
 
   };

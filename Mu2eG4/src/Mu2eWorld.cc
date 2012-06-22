@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.136 2012/06/08 22:32:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/08 22:32:18 $
+// $Id: Mu2eWorld.cc,v 1.137 2012/06/22 18:14:56 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/06/22 18:14:56 $
 //
 // Original author Rob Kutschke
 //
@@ -643,6 +643,10 @@ namespace mu2e {
     Mu2eSensitiveDetector* paSD =
       new Mu2eSensitiveDetector(    SensitiveDetectorName::ProtonAbsorber(),  *_config);
     SDman->AddNewDetector(paSD);
+
+    Mu2eSensitiveDetector* psVacuumSD =
+      new Mu2eSensitiveDetector(    SensitiveDetectorName::PSVacuum(),  *_config);
+    SDman->AddNewDetector(psVacuumSD);
 
   } // instantiateSensitiveDetectors
 

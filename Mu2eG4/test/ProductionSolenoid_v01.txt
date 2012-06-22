@@ -36,6 +36,7 @@ double PS.VacVessel.EndPlateHalfThickness = 40.;
 double PS.VacVessel.HalfLength     = 2250.;
 string PS.VacVessel.materialName   = "G4_Al";
 string PS.insideMaterialName       = "DSVacuum";
+bool   PS.Vacuum.Sensitive         = false;
 
 // the three coils are done "together"
 // all have the same inner radius
