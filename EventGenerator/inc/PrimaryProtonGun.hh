@@ -3,9 +3,9 @@
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGun.hh,v 1.12 2012/03/15 22:14:49 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/15 22:14:49 $
+// $Id: PrimaryProtonGun.hh,v 1.13 2012/06/22 22:48:07 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/06/22 22:48:07 $
 //
 //
 // The coordinate system used in this class is:
@@ -74,6 +74,12 @@ namespace mu2e {
     // Time of generation is a flat distribution within these limits. Time in ns.
     double _tmin;
     double _tmax;
+
+    // Shape
+    std::string _shape;
+
+    // radius max, for flat distribution
+    double _rmax;
 
     // Make histograms or not.
     bool _doHistograms;

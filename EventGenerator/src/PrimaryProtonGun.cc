@@ -3,9 +3,9 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.17 2012/03/15 22:14:49 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/15 22:14:49 $
+// $Id: PrimaryProtonGun.cc,v 1.18 2012/06/22 22:48:07 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/06/22 22:48:07 $
 //
 // Original author Rob Kutschke
 //
@@ -61,6 +61,8 @@ namespace mu2e {
     _phimax(config.getDouble("primaryProtonGun.phimax", CLHEP::twopi)),
     _tmin(config.getDouble("primaryProtonGun.tmin",   0.)),
     _tmax(config.getDouble("primaryProtonGun.tmax", 100.)),
+    _shape(config.getString("primaryProtonGun.shape", "gaus")),
+    _rmax(config.getDouble("primaryProtonGun.rmax", 100.)),
     _doHistograms(config.getBool("primaryProtonGun.doHistograms", true)){
 
     if ( _doHistograms ){
@@ -83,8 +85,22 @@ namespace mu2e {
     static RandomUnitSphere  randomUnitSphere( getEngine(), _czmin, _czmax, _phimin, _phimax);
 
     // Simulate the size of the beam spot.
-    double dx = randGaussQ.fire();
-    double dy = randGaussQ.fire();
+    double dx = 0;
+    double dy = 0;
+    double dr = 0;
+    double phi = 0;
+
+    if (_shape == std::string("gaus")) {
+      dx = randGaussQ.fire();
+      dy = randGaussQ.fire();
+    }
+    else if (_shape == std::string("flat")) {
+      // even in the circle
+      dr = _rmax*sqrt( randFlat.fire() ); 
+      phi = 2.*M_PI*randFlat.fire(); 
+      dx = dr*cos(phi);
+      dy = dr*sin(phi);
+    }
 
     // Generated position.
     CLHEP::Hep3Vector pos( _beamDisplacementOnTarget.x() + dx,
