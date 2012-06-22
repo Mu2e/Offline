@@ -27,7 +27,7 @@ double PSEnclosure.window2.y =  455; // relative to PS center
 string PSEnclosure.window3.materialName = "G4_Ti";
 double PSEnclosure.window3.thickness = 2.84;
 double PSEnclosure.window3.r =  100;
-double PSEnclosure.window3.x =   50; // relative to PS center
+double PSEnclosure.window3.x =  -50; // relative to PS center
 double PSEnclosure.window3.y = 422.5; // relative to PS center
 
 bool  PSEnclosure.visible = true;
