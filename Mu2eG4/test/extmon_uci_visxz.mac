@@ -1,9 +1,9 @@
 #
 # Macro file for setting up the graphics scene and the verbosity level: "xz" view.
 #
-# $Id: extmon_uci_visxz.mac,v 1.7 2012/05/26 00:13:55 youzy Exp $
+# $Id: extmon_uci_visxz.mac,v 1.8 2012/06/22 18:13:37 youzy Exp $
 # $Author: youzy $
-# $Date: 2012/05/26 00:13:55 $
+# $Date: 2012/06/22 18:13:37 $
 #
 # Original author KLG
 #
@@ -22,22 +22,22 @@
 #draw wold begin
 /vis/scene/add/volume world
 /vis/scene/add/axes      0 -7150 6439.09 3000 mm
-/vis/viewer/panTo -13 6 
-/vis/viewer/zoom 10
+/vis/viewer/panTo -15 0 
+/vis/viewer/zoom 6
 #cut view
 /vis/viewer/set/cutawayMode multiply
 #cut with 1 x plane
 #/vis/viewer/addCutawayPlane 5.0 0 0 m 1
-#cut with 2 x planes
-#/vis/viewer/addCutawayPlane 5.229 0 0 m 1
-#/vis/viewer/addCutawayPlane 5.629 0 0 m -1
-#/vis/viewer/panTo -1 -2.2
-#/vis/viewer/zoom 10
 #cut with 2 y planes
-#/vis/viewer/addCutawayPlane 0 -2.012 0 m 0 1
-#/vis/viewer/addCutawayPlane 0 -1.612 0 m 0 -1
-#/vis/viewer/panTo -1.2 5.2
-#/vis/viewer/zoom 10
+/vis/viewer/addCutawayPlane 0 -2.412 0 m 0 1
+/vis/viewer/addCutawayPlane 0 -1.212 0 m 0 -1
+/vis/viewer/panTo -7.2 4.2
+/vis/viewer/zoom 2
+#cut with 2 x planes
+#/vis/viewer/addCutawayPlane 3.859 0 0 m 1
+#/vis/viewer/addCutawayPlane 5.059 0 0 m -1
+#/vis/viewer/panTo -7.2 -2.2
+#/vis/viewer/zoom 2
 #/vis/viewer/clearCutawayPlanes
 #end of cut view
 #draw world end
