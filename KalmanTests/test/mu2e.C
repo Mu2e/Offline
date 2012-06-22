@@ -81,15 +81,15 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
   ncuts[1] = "nactive>=20";
   ncuts[2] = "nactive>=25";
   ncuts[3] = "nactive>=30";
-  t0cuts[0] = "";
+  t0cuts[0] = "t0err<2";
   t0cuts[1] = "t0err<1.5";
   t0cuts[2] = "t0err<1.0";
   t0cuts[3] = "t0err<0.9";
-  momcuts[0] = "";
+  momcuts[0] = "fitmomerr<0.3";
   momcuts[1] = "fitmomerr<0.2";
   momcuts[2] = "fitmomerr<0.18";
   momcuts[3] = "fitmomerr<0.15";
-  fitcuts[0] = "";
+  fitcuts[0] = "fitcon>1e-6";
   fitcuts[1] = "fitcon>1e-4";
   fitcuts[2] = "fitcon>1e-3";
   fitcuts[3] = "fitcon>1e-2";
@@ -144,7 +144,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
     lincan->cd(ires+1);
     TH1* diocopy = diospec[ires]->DrawCopy();
     diocopy->SetMinimum(-0.2);
-    diocopy->SetMaximum(4);
+    diocopy->SetMaximum(5);
     conspec[ires]->Draw("same");
 
     int istart = diospec[ires]->FindFixBin(momlow+0.5*mevperbin);
@@ -180,7 +180,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
     lintext->AddText(line);
     sprintf(line,"%s",fitcuts[ires].GetTitle());
     lintext->AddText(line);
-    //lintext->Draw();
+    lintext->Draw();
 
     TLine* momlowl = new TLine(momlow,0.0,momlow,1.5*conspec[ires]->GetBinContent(conspec[ires]->GetMaximumBin()));
     momlowl->SetLineColor(kBlack);
@@ -231,12 +231,11 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
 
 
   dioc->cd(2);
-  gPad->SetLogy();
+//  gPad->SetLogy();
   Int_t colors[4] = {kRed,kBlue,kGreen,kBlack};
   TH1F* diogenwin[4] = {0,0,0,0};
-  TH1F* diogood[4];
-  char* dopt[4] = {"","same","same","same"};
-  char* cutset[4] = {"Cutset A (no quality cuts)","Cutset B","Cutset C","Cutset D"};
+  const char* dopt[4] = {"","same","same","same"};
+  const char* cutset[4] = {"Cutset A","Cutset B","Cutset C","Cutset D"};
   TLegend* dgenwinleg = new TLegend(.5,.6,.7,.9);
   diogenwin[0] = new TH1F("diogenwin_0","True momentum of DIO in signal box;MeV",100,dmlow,dmhi);
   for(unsigned ires=0;ires<4;ires++){

@@ -27,19 +27,19 @@ TCut tpitch, tt0,tmom,nmch,mcsel;
 
 bool donecuts(false);
 void KalCuts() {
-  ncuts[0] = "nactive>=15";
+  ncuts[0] = "nactive>=20";
   ncuts[1] = "nactive>=20";
   ncuts[2] = "nactive>=25";
   ncuts[3] = "nactive>=30";
-  t0cuts[0] = "";
+  t0cuts[0] = "t0err<2.0";
   t0cuts[1] = "t0err<1.5";
   t0cuts[2] = "t0err<1.0";
   t0cuts[3] = "t0err<0.9";
-  momcuts[0] = "";
+  momcuts[0] = "fitmomerr<0.3";
   momcuts[1] = "fitmomerr<0.2";
   momcuts[2] = "fitmomerr<0.18";
   momcuts[3] = "fitmomerr<0.15";
-  fitcuts[0] = "";
+  fitcuts[0] = "fitcon>1e-6";
   fitcuts[1] = "fitcon>1e-4";
   fitcuts[2] = "fitcon>1e-3";
   fitcuts[3] = "fitcon>1e-2";
@@ -49,7 +49,7 @@ void KalCuts() {
   rpitch = TCut(ctext);
   snprintf(ctext,80,"t0>%f",t0min);
   livegate = TCut(ctext);
-  snprintf(ctext,80,"mcenttd>%4.3f&&mcenttd<%4.3f",tdlow,tdhigh);
+  snprintf(ctext,80,"mcenttd>%4.3f&&mcenttd<%4.3f",tdlow-0.02,tdhigh+0.02);
   tpitch = TCut(ctext);
   snprintf(ctext,80,"mct0>%f",t0min);
   tt0 = TCut(ctext);
@@ -401,49 +401,53 @@ void KalFitAccPlots(TTree* trks) {
 } 
 
 void KalFitAcc(TTree* trks) {
-  unsigned nbins(9);
+  unsigned nbins(10);
   double bmax = nbins-0.5;
   TH1F* acc = new TH1F("acc","CE Acceptance;;cummulative acceptance",nbins,-0.5,bmax);
   TH1F* racc = new TH1F("racc","CE Acceptance;;relative acceptance",nbins,-0.5,bmax);
 //  acc->Sumw2();
 //  racc->Sumw2();
-  acc->GetXaxis()->SetBinLabel(1,"All CE");
-  acc->GetXaxis()->SetBinLabel(2,">=20 CE SH");
-  acc->GetXaxis()->SetBinLabel(3,"CE p>100 MeV/c");
-//  acc->GetXaxis()->SetBinLabel(4,"CE pitch");
-  acc->GetXaxis()->SetBinLabel(4,"KF Track fit");
-  acc->GetXaxis()->SetBinLabel(5,"Fit Quality");
-  acc->GetXaxis()->SetBinLabel(6,"Livegate");
-  acc->GetXaxis()->SetBinLabel(7,"Reco pitch");
-  acc->GetXaxis()->SetBinLabel(8,"Cosmic Rejection");
-  acc->GetXaxis()->SetBinLabel(9,"Momentum window");
+  unsigned ibin(1);
+  acc->GetXaxis()->SetBinLabel(ibin++,"All CE");
+  acc->GetXaxis()->SetBinLabel(ibin++,">=20 CE SH");
+  acc->GetXaxis()->SetBinLabel(ibin++,"CE p>100 MeV/c");
+  acc->GetXaxis()->SetBinLabel(ibin++,"CE pitch");
+  acc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
 
-  racc->GetXaxis()->SetBinLabel(1,"All CE");
-  racc->GetXaxis()->SetBinLabel(2,">=20 CE SH");
-  racc->GetXaxis()->SetBinLabel(3,"CE p>100 MeV/c");
-//  racc->GetXaxis()->SetBinLabel(4,"CE pitch");
-  racc->GetXaxis()->SetBinLabel(4,"KF Track fit");
-  racc->GetXaxis()->SetBinLabel(5,"Fit Quality");
-  racc->GetXaxis()->SetBinLabel(6,"Livegate");
-  racc->GetXaxis()->SetBinLabel(7,"Reco pitch");
-  racc->GetXaxis()->SetBinLabel(8,"Cosmic Rejection");
-  racc->GetXaxis()->SetBinLabel(9,"Momentum window");
+
+  ibin = 1;
+  racc->GetXaxis()->SetBinLabel(ibin++,"All CE");
+  racc->GetXaxis()->SetBinLabel(ibin++,">=20 CE SH");
+  racc->GetXaxis()->SetBinLabel(ibin++,"CE p>100 MeV/c");
+  racc->GetXaxis()->SetBinLabel(ibin++,"CE pitch");
+  racc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
   
-  
-  trks->Project("acc","0.0");
-  trks->Project("+acc","1.0",nmch);
-  trks->Project("+acc","2.0",nmch+tmom);
-//  trks->Project("+acc","3.0",nmch+tmom+tpitch);
-  trks->Project("+acc","3.0",nmch+tmom+reco);
-  trks->Project("+acc","4.0",nmch+tmom+reco+goodfit);
-  trks->Project("+acc","5.0",nmch+tmom+reco+goodfit+livegate);
-  trks->Project("+acc","6.0",nmch+tmom+reco+goodfit+livegate+rpitch);
-  trks->Project("+acc","7.0",nmch+tmom+reco+rpitch+livegate+cosmic+goodfit);
-  trks->Project("+acc","8.0",nmch+tmom+reco+rpitch+livegate+cosmic+goodfit+rmom);
+  ibin = 0;
+  const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
+  trks->Project("acc",binnames[ibin++]);
+  trks->Project("+acc",binnames[ibin++],nmch);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+goodfit);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+goodfit+livegate);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+goodfit+livegate+rpitch);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+goodfit);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+goodfit+rmom);
 
   double all = acc->GetBinContent(1);
   double prev = all;
-  for(unsigned ibin=1;ibin<=nbins;++ibin){
+  for(ibin=1;ibin<=nbins;ibin++){
     racc->SetBinContent(ibin,acc->GetBinContent(ibin)/prev);
     prev = acc->GetBinContent(ibin);
   }
@@ -542,6 +546,10 @@ void KalFitRes(TTree* trks) {
 
     momres[ires]->Fit("cball","LIR");
 
+    TLine* zero = new TLine(0.0,0.0,0.0,momres[ires]->GetBinContent(momres[ires]->GetMaximumBin()));
+    zero->SetLineStyle(2);
+    zero->Draw();
+  
     double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
 
     TPaveText* ttext = new TPaveText(0.1,0.75,0.4,0.9,"NDC");  
