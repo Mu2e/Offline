@@ -2,9 +2,9 @@
 #
 # Readback the output of g4test_03.fcl; make histograms and printout.
 #
-# $Id: vd_readback.fcl,v 1.4 2012/05/11 22:53:19 youzy Exp $
+# $Id: vd_readback.fcl,v 1.5 2012/06/22 18:09:22 youzy Exp $
 # $Author: youzy $
-# $Date: 2012/05/11 22:53:19 $
+# $Date: 2012/06/22 18:09:22 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -64,7 +64,7 @@ physics :
       minimumEnergy          : 0.000
       maxPrint               : 10
       diagLevel              : -1
-      savePDG                : [11, -11, 13, -13, 22, 111, 211, -211, 2112, 2212, -2212]
+      savePDG                : [11, -11, 13, -13, 22, 111, 211, -211, 321, -321, 2112, 2212, -2212]
     }
 
   } 
