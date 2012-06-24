@@ -582,7 +582,7 @@ void KalFitRes(TTree* trks) {
   rcan->cd(0);
 }
 
-void KalFitAmbig(TTree* t, size_t acut=0) {
+void KalFitAmbig(TTree* t, int acut=0) {
   if(!donecuts)KalCuts();
   gStyle->SetOptStat(1111);
 
@@ -591,7 +591,10 @@ void KalFitAmbig(TTree* t, size_t acut=0) {
   TCut nambig("_ambig==0");
   TCut active("_active>0");
 // apply requested cuts
-  TCut quality = ncuts[acut] && t0cuts[acut] && momcuts[acut] && fitcuts[acut];
+  TCut quality;
+  if(acut>0)
+    quality = ncuts[acut] && t0cuts[acut] && momcuts[acut] && fitcuts[acut];
+
   TCut goodtrk = (reco+quality+mcsel);
 
 //  TCut goodtrk ="fitstatus>0";
