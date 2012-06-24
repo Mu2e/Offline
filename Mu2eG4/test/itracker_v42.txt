@@ -139,7 +139,7 @@ string  itracker.elctContWallMat = "CarbonFiber";
 string  itracker.elctContFillMat = "ITGasHe_90Isob_10";
 double  itracker.electCardLength =  120.000;
 double  itracker.electCardThick  =    3.000;
-double  itracker.electCardHeight =   50.000;
+double  itracker.electCardHeight =   60.000;
 int  itracker.electCardChanPerBord =   16;
 string  itracker.electCardMaterial = "G10_FR4"; 
 
