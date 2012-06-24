@@ -10,6 +10,7 @@
 
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 // G4 includes
 #include "G4LogicalVolume.hh"
@@ -22,6 +23,10 @@ namespace mu2e {
   private:
     static VolumeInfo buildWire(float radius, float length, char *shapeName, char *volName, const std::vector<std::string> &materialName, const std::vector<double> &thicknesses);
     static VolumeInfo buildWall(Wall *wall, ITracker::EnCapType endcapType);
+    static double constructSpiderWeb(G4LogicalVolume* localMother, SimpleConfig const& config);
+    static void   constructWireAnchoring(G4LogicalVolume* localMother, SimpleConfig const& config, double spdWebBaseExcess=0.0);
+    static void   constructSignalCables(G4LogicalVolume* localMother, SimpleConfig const& config);
+    static void   constructHvCables(G4LogicalVolume* localMother, SimpleConfig const& config);
 
   };
 
