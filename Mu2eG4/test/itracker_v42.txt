@@ -1,0 +1,151 @@
+//
+// Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
+
+bool hasITracker      = true;
+
+string itracker.extFile          =    "";   //"ITrackerGeom/ITrackerGeom.gdml";
+string itracker.extWireFile      =    "";   //"ITrackerGeom/ITrackerWireData.root";
+double itracker.r0               =  365.008173333;   //To be consistent check that is = nSWire*cellDimension/2pi -cellDimension/2 -InnerWall_thickness -fieldWireDiameter -1.0e-2 -1.0e-3  // Lengths in mm
+double itracker.z0               =10200.0;
+double itracker.zHalfLength      = 1150.0;   //1300.0;
+double itracker.rOut             =  720.0;   //must be greater than the radius of the outer most filed wire +fieldWireDiameter +OuterWall_thickness
+double itracker.drop             =   17.5;
+
+int    itracker.geomType         =    42;   //decimal digit:magior version, unit digit:minor version  20:Hexagonal, 30:Square with constant cell dimension, 
+                                            //                                         31:Like 30 but with base fw in both directions and shared between two consecutive layers, and layers staggered
+                                            //                                         41:Like 31 but with cell dimension that increases with radius
+int    itracker.endCapType       =     0;   //EndCap shape type: 0 plane, 1 spherical
+double itracker.voxelization     =     0;   //Choose voxelization method for the gas volumes that contain wires, negative: default computation, 0: voxelization off, positive: smartless value
+bool   itracker.displayGasLayer  = false;   //Allow to display the gas inside the chamber. It is recommended to switch on it only for debug, it makes the display slow.
+bool   itracker.displayWires     = false;   //Allow to display every wires inside gas inside the chamber. It is recommended to switch on it only for debug, it makes the display very slow.
+
+
+// Cell parameter needed only for the square cell case
+
+int    itracker.nSWire           =   384;
+double itracker.cellDimension    =  6.27;  //of the innermost layer
+int    itracker.nLayer           =    36;
+int    itracker.nVerticalFWire   =     1;
+int    itracker.StoFWireRation   =     5;
+
+
+// Materials and elements compositions
+string         itracker.fillMaterial    = "ITGasHe_90Isob_10"; //"ITGasMix";
+//string         itracker.fillMaterial    = "WAGVacuum";
+
+bool   itracker.usePhysicalStep  =  false; //Use the physical calculation of the path length, if false a fixed step distance is used by using the freePath variable 
+double itracker.freePath         =    1.0; // free Path length in mm
+bool   itracker.changeMSC        =   true;
+
+// Field wires description
+int    itracker.nFieldWireShells =      2;
+vector<string> itracker.fieldWireMaterials = { "G4_Al", "G4_Au" };
+//vector<string> itracker.fieldWireMaterials = { "WAGVacuum", "WAGVacuum" };
+vector<double> itracker.fieldWireShellsThicknesses = { 0.0195, 0.0005 };
+
+// Sense wires description
+int    itracker.nSenseWireShells =      2;
+vector<string> itracker.senseWireMaterials = { "G4_W", "G4_Au" };
+//vector<string> itracker.senseWireMaterials = { "WAGVacuum", "WAGVacuum" };
+vector<double> itracker.senseWireShellsThicknesses = { 0.0097, 0.0003 };
+
+// Inner Wall description
+int    itracker.nInnerWallShells =      4;
+vector<string> itracker.innerWallMaterials = { "CarbonFiber", "CFoam_166", "CarbonFiber", "ITGasHe_90Isob_10" };
+//vector<string> itracker.innerWallMaterials = { "WAGVacuum", "WAGVacuum", "WAGVacuum" };
+vector<double> itracker.innerWallShellsThicknesses = { 0.120, 4.760, 0.120, 10.000 };
+
+// Outer Wall description
+int    itracker.nOuterWallShells =      4;
+vector<string> itracker.outerWallMaterials = { "G4_Cu" , "CarbonFiber", "CFoam_332", "CarbonFiber" };
+vector<double> itracker.outerWallShellsThicknesses = { 0.018, 2.500, 10.000, 2.500 };
+
+// End Cap description
+int    itracker.nEndCapWallShells =     5;
+int    itracker.structShellsAreLast = 1;  //Which shells of the endcap wall shells vector are the structural ones
+vector<string> itracker.endcapWallMaterials = { "ITGasHe_90Isob_10", "ITGasHe_90Isob_10", "ITGasHe_90Isob_10", "ITGasHe_90Isob_10", "CarbonFiber" }; //the first 3 volumes are used to contain the wires supports and cables 
+vector<double> itracker.endcapWallShellsThicknesses = { 5.000, 10.000, 100.000, 35.000, 0.240 };
+
+// o'ring for End Cap Inner Wall junction description
+string itracker.oringMaterial = "CarbonFiber"; 
+double itracker.oringWidth  = 15.000;
+double itracker.oringHeight = 10.000;
+
+bool   itracker.detailedWireSupport = true;
+
+// Spider Web support
+string itracker.spdWebSpokeMaterial = "CarbonFiber"; 
+int    itracker.spdWebSpokesNumber = 24; 
+double itracker.spdWebBaseWidth = 10.000;
+double itracker.spdWebBaseThickness = 5.000;
+bool   itracker.useSimplefiedSpoke = true;
+double itracker.simplefiedSpokeWidth = 2.645;
+vector<double> itracker.spdWebSpokeFacePntsX = {  2.500,  0.500,  0.500, -0.500, -0.500, -2.500, -2.500, -0.500, -0.500,  0.500,  0.500,  2.500 };
+vector<double> itracker.spdWebSpokeFacePntsY = {  0.500,  0.500,  1.500,  1.500,  0.500,  0.500, -0.500, -0.500, -1.500, -1.500, -0.500, -0.500 };
+
+// Wires Spacer
+string itracker.spacerMaterial = "G4_POLYCARBONATE"; 
+double itracker.spacerBaseWidth = 3.000;
+double itracker.spacerBaseThickness = 0.250;
+double itracker.spacerCoreThickness = 0.500;
+int    itracker.spacerNumCores = 180;
+int    itracker.spacerNumSpokesPerCore = 2;
+double itracker.spacerCoreSurfFrac  = 0.3333333333333333;
+
+// Sense Wires board
+string itracker.swBoardMaterial = "G10_FR4"; 
+double itracker.swBoardWidth = 10.000;
+double itracker.swBoardThickness = 0.200;
+
+// Field Wires board
+string itracker.fwBoardMaterial = "G10_FR4"; 
+double itracker.fwBoardWidth =  4.000;
+double itracker.fwBoardThickness = 0.200;
+
+// HV Capacitance
+string itracker.hvCapMaterial = "G4_Al"; 
+double itracker.hvCapLength =  3.170;
+double itracker.hvCapWidth  =  1.570;
+double itracker.hvCapHeight =  1.700;
+
+// Termination Resistance
+string itracker.trmResMaterial = "G4_Al"; 
+double itracker.trmResLength =  1.600;
+double itracker.trmResWidth  =  0.800;
+double itracker.trmResHeight =  0.450;
+
+// Hv Resistance
+string itracker.hvResMaterial = "G4_Al"; 
+double itracker.hvResLength =  5.000;
+double itracker.hvResWidth  =  2.500;
+double itracker.hvResHeight =  0.550;
+
+// Signal Cables
+string itracker.cableDielMaterial = "Kapton"; 
+double itracker.cableDielThickness =  0.025;
+double itracker.cableDielWidth =  20.320;
+string itracker.cableWireMaterial = "G4_Cu"; 
+double itracker.cableWireDiameter =  0.040;
+double itracker.cableWirePitch =  0.635;
+
+// HV Cables
+vector<string> itracker.hvCableMaterials = { "G4_Cu", "G4_TEFLON" };
+vector<double> itracker.hvCableShellsThicknesses = { 0.250, 0.500 };
+
+// electronics Container
+double  itracker.elctContRmax = 800.000; 
+double  itracker.elctContWallThick = 10.000; 
+string  itracker.elctContWallMat = "CarbonFiber";
+string  itracker.elctContFillMat = "ITGasHe_90Isob_10";
+double  itracker.electCardLength =  120.000;
+double  itracker.electCardThick  =    3.000;
+double  itracker.electCardHeight =   50.000;
+int  itracker.electCardChanPerBord =   16;
+string  itracker.electCardMaterial = "G10_FR4"; 
+
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
