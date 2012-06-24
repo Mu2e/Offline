@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.137 2012/06/22 18:14:56 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/06/22 18:14:56 $
+// $Id: Mu2eWorld.cc,v 1.138 2012/06/24 05:09:15 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/06/24 05:09:15 $
 //
 // Original author Rob Kutschke
 //
@@ -552,7 +552,7 @@ namespace mu2e {
             iDau = tracker->GetDaughter(iDaughter);
 	    if (!iDau) break;
 	    //            cout<<"Vol Name "<< iDau->GetName()<<" is Tracking: "<<iDau->GetName().contains("volS")<<endl;
-            if (iDau->GetName().contains("volS")) iDau->GetLogicalVolume()->SetUserLimits(stepLimit);
+            if ( iDau->GetName().contains("gvolS") || iDau->GetName().contains("wvolS") ) iDau->GetLogicalVolume()->SetUserLimits(stepLimit);
     }
 
     cout<<"IT Step limits set"<<endl;
