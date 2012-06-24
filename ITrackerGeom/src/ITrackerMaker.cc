@@ -88,7 +88,7 @@ ITrackerMaker::ITrackerMaker( SimpleConfig const& config):
         _cellDimension  = config.getDouble("itracker.cellDimension",0.0);
         _FWireStep      = config.getDouble("itracker.FWireStep",0.0);
         _StoFWireRatio  = config.getInt("itracker.StoFWireRation",1);
-        if (_geomType==30 || _geomType==31 || _geomType==41) {
+        if (_geomType==30 || _geomType==31 || _geomType==41 || _geomType==42) {
                 _nSuperLayer    = config.getInt("itracker.nLayer");
                 _nRing          = 1;
         }
@@ -882,6 +882,177 @@ void ITrackerMaker::Build(){
 				
                                 zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
 				zlength/=cos(epsilon);
+
+                                boost::shared_ptr<WireDetail> sw;
+                                boost::shared_ptr<CellDetail> celld;
+                                sw.reset( new WireDetail(_swShellsThicknesses,_swMaterialsName,zlength) );
+                                celld.reset( new CellDetail(circumscribedRadius,inscribedRadius,sw) );
+                                ITWireLocater(sw,Wire::sense,itl,num_wire,senseWireRing_radius_0,phi,0.0+cellStaggering,sign_epsilon*epsilon,alfa,0,&celld);
+
+                                boost::shared_ptr<WireDetail> fw1( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
+                                idelta_radius = delta_radius_ring/((float) (1+_nVerticalFWire));
+                                for( iring=0; iring< _nVerticalFWire ; iring++ ){
+
+                                        iradius+=idelta_radius;
+                                        ITWireLocater(fw1,Wire::field,itl,num_wire,iradius,phi,ringangle+cellStaggering,sign_epsilon*epsilon,alfa,iring*num_wire);
+
+                                }
+
+                                delta_radius_ring *= scaleFactor;
+
+                        }
+
+                        radius_ring_0    +=_fWireDiameter;
+                        radius_ring      = radius_ring_0+drop;
+                        alfa             = acos(1.-(drop/radius_ring)) * CLHEP::radian;
+                        epsilon          = atan(radius_ring/length*sin(alfa)) * CLHEP::radian;
+
+                        radius_ringIn_0  = radius_ringOut_0;
+                        radius_ringIn    = radius_ringOut;
+                        epsilonIn        = epsilonOut;
+
+                        radius_ringOut_0 = radius_ring_0+_fWireDiameter+secure;
+                        radius_ringOut   = radius_ringOut_0+drop;
+                        epsilonOut       = atan(sqrt(diff_of_squares(radius_ringOut, radius_ringOut_0))/length) * CLHEP::radian;
+
+                        //if (EndCap_type==1) zlength = sqrt( diff_of_squares(max_EndCap_dim, radius_ringOut) );
+                        //else zlength = length;
+                        zlength = length;
+
+                        --superlayer;
+                        _sprlr[superlayer].addLayer(new ITLayer());
+                        itl = _sprlr[superlayer]._layers.back();
+                        itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
+                        itl->_id = ITLayerId(&_sprlr[superlayer]._id, 1);
+                        itl->_layerType=ITLayer::wire;
+                        if (_notExtVoxel) voxelizationFactor = 1.0/((float)nFwire);
+                        itl->_voxelizationFactor=voxelizationFactor;
+
+                        zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
+                        zlength/=cos(epsilon);
+
+                        boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
+                        //nFwire = (unsigned int) (CLHEP::twopi*radius_ring_0/fwireDist);
+                        //theta_ring = CLHEP::twopi/((float) nFwire);
+
+                        //nFwire1=nFwire;
+                        //nFwire1/=2;
+                        //theta_ring1=2.0*theta_ring;
+                        ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0-FWradii,theta_ring1,ringangle,sign_epsilon*epsilon,alfa);
+                        ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0+FWradii,theta_ring1,ringangle+theta_ring,-1.0*sign_epsilon*epsilon,alfa,nFwire1);
+                        iring=0;
+
+                }
+                else if (geomType==42) {
+
+                        _ltt->_geomType     = ITracker::Square;
+                        if(_isDumbbell) {
+                                _ltt->_cellhnd.reset(new CellGeometryHandle_v3_DBL(_ltt.get()));
+                        } else {
+                                _ltt->_cellhnd.reset(new CellGeometryHandle_v3(_ltt.get()));
+                        }
+
+                        num_wire            = _nSWire;
+                        delta_radius_ring   = _cellDimension;
+                        //float fwireDist     = _FWireStep;
+                        unsigned int nFwire, nFwire1;
+                        int nHorizontalFWire;
+                        double cellStaggering;
+                        //bool isCellStaggered;
+                        double theta_ring1;
+                        float iradius, idelta_radius=0.0;
+                        double senseWireRing_radius_0;
+
+                        double scaleFactor = (1.0+CLHEP::pi/num_wire)/(1.0-CLHEP::pi/num_wire);
+
+                        radius_ring_0+=FWradii;
+                        nHorizontalFWire    = _StoFWireRatio-_nVerticalFWire;
+                        //isCellStaggered     = ((nHorizontalFWire/2)%2==0) ? true : false;
+
+                        phi         = CLHEP::twopi/((float) num_wire);
+                        nFwire      = nHorizontalFWire*num_wire;
+                        theta_ring  = CLHEP::twopi/((float) nFwire);
+                        nFwire1     = nFwire;
+                        nFwire1     /= 2;
+                        theta_ring1 = 2.0*theta_ring;
+
+                        for ( superlayer=0;superlayer<nsuperlayer;superlayer++ ) {
+                                std::cout <<"Building layer: "<<superlayer+1<<std::endl;
+
+                                _sprlr[superlayer]._id = SuperLayerId(superlayer);
+
+                                //num_wire               = num_wire_sense+superlayer*delta_num_wire_sense;
+                                inscribedRadius        = 0.5*delta_radius_ring; //delta_radius_ring is equal to the cell height of each layer
+                                circumscribedRadius    = inscribedRadius*sqrt(2.0);
+                                senseWireRing_radius_0 = radius_ring_0+inscribedRadius;
+                                //if ( (CLHEP::twopi*radius_ring_0/((float)nFwire))<fwireDist ) throw cet::exception("GEOM")<< "Error during field wire positioning: "<< nFwire
+                                //                                                        <<" field wires don't fit on a circumference with radius of "<<radius_ring_0<<" using a step of "<<fwireDist<<std::endl;
+
+                                sign_epsilon     *=-1;
+
+                                ringangle        = -0.5*phi;
+
+                                iring            = 0;
+                                radius_ring      = radius_ring_0+drop;
+                                alfa             = acos(1.-(drop/radius_ring)) * CLHEP::radian;
+                                epsilon          = atan(radius_ring/length*sin(alfa)) * CLHEP::radian;
+
+                                radius_ringIn_0  = radius_ringOut_0;
+                                radius_ringIn    = radius_ringOut;
+                                epsilonIn        = epsilonOut;
+
+                                radius_ringOut_0 = radius_ring_0+_fWireDiameter+secure;
+                                radius_ringOut   = radius_ringOut_0+drop;
+                                //epsilonOut       = atan((radius_ringOut+drop)/length*sin(alfa));
+                                epsilonOut       = atan(sqrt(diff_of_squares(radius_ringOut, radius_ringOut_0))/length) * CLHEP::radian;
+
+                                //if (EndCap_type==1) zlength = sqrt( diff_of_squares(max_EndCap_dim, radius_ringOut) );
+                                //else zlength = length;
+                                zlength = length;
+
+                                _sprlr[superlayer].addLayer(new ITLayer());
+                                itl = _sprlr[superlayer]._layers.back();
+                                itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
+                                itl->_id = ITLayerId(&_sprlr[superlayer]._id, 0);
+                                itl->_layerType=ITLayer::wire;
+                                if (_notExtVoxel) voxelizationFactor = 1.0/((float)nFwire);
+                                itl->_voxelizationFactor=voxelizationFactor;
+
+                                zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
+                                zlength/=cos(epsilon);
+
+                                boost::shared_ptr<WireDetail> fw( new WireDetail(_fwShellsThicknesses,_fwMaterialsName,zlength) );
+
+                                if (/*isCellStaggered &&*/ (superlayer%2==1)) cellStaggering=theta_ring;
+                                else cellStaggering=0.0;
+
+                                ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0-FWradii,theta_ring1,ringangle,sign_epsilon*epsilon,alfa);
+                                ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0+FWradii,theta_ring1,ringangle+theta_ring,-1.0*sign_epsilon*epsilon,alfa,nFwire1);
+
+                                iradius          = radius_ring_0;
+
+                                radius_ring_0    += delta_radius_ring;
+
+                                radius_ringIn_0  = radius_ringOut_0;
+                                radius_ringIn    = radius_ringOut;
+                                epsilonIn        = epsilonOut;
+                                radius_ringOut_0 = radius_ring_0-_fWireDiameter-secure;
+                                radius_ringOut   = radius_ringOut_0+drop;
+                                epsilonOut       = atan(sqrt(diff_of_squares(radius_ringOut, radius_ringOut_0))/length) * CLHEP::radian;
+                                //if (EndCap_type==1) zlength = sqrt( diff_of_squares(max_EndCap_dim, radius_ringOut) );
+                                //else zlength = length;
+                                zlength = length;
+
+                                _sprlr[superlayer].addLayer(new ITLayer());
+                                itl = _sprlr[superlayer]._layers.back();
+                                itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,radius_ringOut_0,epsilonIn,epsilonOut,zlength,_fillMaterial) );
+                                itl->_id = ITLayerId(&_sprlr[superlayer]._id, 0);
+                                itl->_layerType=ITLayer::gas;
+                                if (_notExtVoxel) voxelizationFactor = 5.0/((float)((1+_nVerticalFWire)*num_wire));
+                                itl->_voxelizationFactor=voxelizationFactor;
+
+                                zlength-=sin(epsilon)*FWradii;//protect from to extrud of mother volume
+                                zlength/=cos(epsilon);
 
                                 boost::shared_ptr<WireDetail> sw;
                                 boost::shared_ptr<CellDetail> celld;
