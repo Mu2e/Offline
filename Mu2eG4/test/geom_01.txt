@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.154 2012/06/07 04:55:00 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/06/07 04:55:00 $
+// $Id: geom_01.txt,v 1.155 2012/06/24 05:12:27 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/06/24 05:12:27 $
 //
 // Original author Rob Kutschke
 //
@@ -33,7 +33,7 @@ string GDMLFileName     = "mu2e.gdml";
 #include "Mu2eG4/test/ttracker_v2.txt"
 //#include "Mu2eG4/test/ttracker_meco.txt"
 //#include "Mu2eG4/test/ltracker_v0.txt"
-//#include "Mu2eG4/test/itracker_v41.txt"
+//#include "Mu2eG4/test/itracker_v42.txt"
 //#include "Mu2eG4/test/dummytracker.txt"
 
 // Uncomment to enable debug printout on a per event or per track basis.
@@ -110,12 +110,12 @@ vector<string> mu2e.materials =
   { "ShieldingConcrete", "IsoButane", "StrawGas",
     "Kapton", "Scintillator", "WAGVacuum", "DSVacuum", "MBOverburden",
     "ITGasHe_90Isob_10", "ITGasHe_90CF4_10", "ITGasMix",
-    "CarbonFiber", "PolypropyleneFoam", "CFoam", "CFoam_480", "CFoam_100",
+    "CarbonFiber", "PolypropyleneFoam", "CFoam", "CFoam_332", "CFoam_166",
     "CFoam_080", "Polyethylene092B050d095", "Polyethylene092B300d119",
     "Polyethylene092Li075d106", "Polyethylene092", "StainlessSteel", "Lyso_01",
     "A95083", "NbTi", "NbTiCu", "AL999Ni001", "C_19_H_20_O_4", "C_10_H_18_O_4",
     "C_9_H_22_N_2", "Epotek301", "G10", "SCCableInsulation", "SCCable",
-    "ZirconiumHydridePolyethylene"
+    "ZirconiumHydridePolyethylene", "EGlass", "G10_FR4"
 };
 
 // Control printout of element and material lists.
