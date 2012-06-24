@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.30 2012/05/25 05:55:25 tassiell Exp $
+// $Id: ConstructMaterials.cc,v 1.31 2012/06/24 05:06:13 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/25 05:55:25 $
+// $Date: 2012/06/24 05:06:13 $
 //
 // Original author Rob Kutschke
 //
@@ -306,6 +306,23 @@ namespace mu2e {
       Epotek301->AddMaterial(findMaterialOrThrow("C_19_H_20_O_4"), 0.56);
       Epotek301->AddMaterial(findMaterialOrThrow("C_10_H_18_O_4"), 0.24);
       Epotek301->AddMaterial(findMaterialOrThrow("C_9_H_22_N_2"),  0.20);
+    }
+
+   // http://personalpages.to.infn.it/~tosello/EngMeet/ITSmat/SDD/E_glass.html
+    mat = isNeeded(materialsToLoad, "EGlass");
+    if ( mat.doit ){
+      G4Material* EGlass =
+	new G4Material (mat.name, 2.61*g/cm3, 10);
+      EGlass->AddMaterial(findMaterialOrThrow("G4_SILICON_DIOXIDE"), 0.54);
+      EGlass->AddMaterial(findMaterialOrThrow("G4_CALCIUM_OXIDE"), 0.19 );
+      EGlass->AddMaterial(findMaterialOrThrow("G4_ALUMINUM_OXIDE"), 0.13 );
+      EGlass->AddMaterial(findMaterialOrThrow("G4_MAGNESIUM_OXIDE"), 0.025 );
+      EGlass->AddMaterial(findMaterialOrThrow("G4_BORON_OXIDE"), 0.075 );
+      EGlass->AddMaterial(findMaterialOrThrow("G4_TITANIUM_DIOXIDE"), 0.008 );
+      EGlass->AddMaterial(findMaterialOrThrow("G4_SODIUM_MONOXIDE"), 0.01 );
+      EGlass->AddMaterial(findMaterialOrThrow("G4_POTASSIUM_OXIDE"), 0.01 );
+      EGlass->AddMaterial(findMaterialOrThrow("G4_FERRIC_OXIDE"), 0.005 );
+      EGlass->AddMaterial(findMaterialOrThrow("G4_F"), 0.007 );
     }
 
     // G10 http://personalpages.to.infn.it/~tosello/EngMeet/ITSmat/SDD/SDD_G10FR4.html
@@ -647,6 +664,20 @@ namespace mu2e {
       Lyso_01->AddElement( Ce, 0.15*perCent );    
     }   
 
+
+    //G10-FR4 used for printed board of the I-Tracker
+    // G10 http://personalpages.to.infn.it/~tosello/EngMeet/ITSmat/SDD/SDD_G10FR4.html
+    // http://pdg.lbl.gov/2002/atomicrpp.pdf
+    mat = isNeeded(materialsToLoad, "G10_FR4");
+    if ( mat.doit ) {
+      G4double density;
+
+      G4Material* G10_FR4 =
+        new G4Material(mat.name, density = 1.8*g/cm3, 2);
+      G10_FR4->AddMaterial(findMaterialOrThrow("EGlass"), 0.60);
+      G10_FR4->AddMaterial(findMaterialOrThrow("Epotek301"), 0.40);
+    }
+
     mat = isNeeded(materialsToLoad, "PolypropyleneFoam");
     if ( mat.doit ){
       //Polypropylene (CH3)
@@ -659,20 +690,20 @@ namespace mu2e {
       Polypropylene->AddElement(C, 1 );
     }
 
-    mat = isNeeded(materialsToLoad, "CFoam_480");
+    mat = isNeeded(materialsToLoad, "CFoam_332");
     if ( mat.doit ){
       G4double density;
       G4int nel;
-      G4Material *CFoam = new G4Material(mat.name, density = 0.480*g/cm3, nel=1);
+      G4Material *CFoam = new G4Material(mat.name, density = 0.332*g/cm3, nel=1);
       G4Element* C  = getElementOrThrow("C");
       CFoam->AddElement(C, 100.0*perCent );
     }
 
-    mat = isNeeded(materialsToLoad, "CFoam_100");
+    mat = isNeeded(materialsToLoad, "CFoam_166");
     if ( mat.doit ){
       G4double density;
       G4int nel;
-      G4Material *CFoam = new G4Material(mat.name, density = 0.100*g/cm3, nel=1);
+      G4Material *CFoam = new G4Material(mat.name, density = 0.166*g/cm3, nel=1);
       G4Element* C  = getElementOrThrow("C");
       CFoam->AddElement(C, 100.0*perCent );
     }
