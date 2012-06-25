@@ -62,6 +62,7 @@ vector<double> itracker.outerWallShellsThicknesses = { 0.001, 10.0 };
 
 // End Cap description
 int    itracker.nEndCapWallShells =     4;
+int    itracker.structShellsAreLast = 2;  //Which shells of the endcap wall shells vector are the structural ones
 vector<string> itracker.endcapWallMaterials = { "CarbonFiber", "ITGasHe_90Isob_10", "G4_Cu", "CarbonFiber" };
 vector<double> itracker.endcapWallShellsThicknesses = { 0.300, 100.000, 0.001, 0.240 };
 
