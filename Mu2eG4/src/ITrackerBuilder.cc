@@ -190,6 +190,15 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                         }
                         else if (iwall->getType() == Wall::inner) {
                                 innerWallOuterRadius = iwall->getRmax();
+
+                                Wall *wall = iwall.get();
+                                int nSub=wall->getNShells();
+                                for (int ishell=0; ishell<nSub; ishell++){
+                                        G4String iWallShellMat = wall->getMaterialsName()->at(ishell);
+                                        if ( iWallShellMat.contains("ITGas") ) {
+                                                innerWallOuterRadius-=wall->getThicknesses()->at(ishell);
+                                        }
+                                }
                                 innerWallHaltLength = iwall->_pDz;
                         }
                         else if (iwall->getType() == Wall::endcap) {
