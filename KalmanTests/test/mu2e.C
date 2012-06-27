@@ -140,7 +140,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
   TCanvas* lincan = new TCanvas("mu2elin","mu2e linear scale",1200,800);
   lincan->Clear();
   lincan->Divide(2,2);
-   for(unsigned ires=0;ires<4;ires++){
+  for(unsigned ires=0;ires<4;ires++){
     lincan->cd(ires+1);
     TH1* diocopy = diospec[ires]->DrawCopy();
     diocopy->SetMinimum(-0.2);
@@ -229,8 +229,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
   dioleg->AddEntry(diocz_f,"Czarnecki etal","l");
   dioleg->Draw();
 
-
-  dioc->cd(2);
+  dioc->cd(3);
 //  gPad->SetLogy();
   Int_t colors[4] = {kRed,kBlue,kGreen,kBlack};
   TH1F* diogenwin[4] = {0,0,0,0};
@@ -254,5 +253,28 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
     diogenwin[ires]->Draw(dopt[ires]);
   }
   dgenwinleg->Draw();
+
+  dioc->cd(2);
+  for(unsigned ires=0;ires<4;ires++){
+    diospec[ires]->SetFillColor(colors[ires]);
+    if(ires==0)
+      diospec[ires]->Draw("Hist");
+    else
+      diospec[ires]->Draw("Histsame");
+  }
+  dgenwinleg->Draw();
+  TLine* momlowl = new TLine(momlow,0.0,momlow,1.5*diospec[0]->GetBinContent(diospec[0]->GetMaximumBin()));
+  momlowl->SetLineColor(kBlack);
+  momlowl->SetLineStyle(2);
+  momlowl->SetLineWidth(2);
+  momlowl->Draw();
+
+  TLine* momhighl = new TLine(momhigh,0.0,momhigh,1.5*diospec[0]->GetBinContent(diospec[0]->GetMaximumBin()));
+  momhighl->SetLineColor(kBlack);
+  momhighl->SetLineStyle(2);
+  momhighl->SetLineWidth(2);
+  momhighl->Draw();
+
   dioc->SaveAs("diocan.png");
+
 }
