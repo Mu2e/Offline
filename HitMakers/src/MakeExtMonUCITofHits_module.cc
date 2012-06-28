@@ -2,9 +2,9 @@
 // An EDProducer Module that reads ExtMonUCITofHit Stepping MC objects and turns them into
 // ExtMonUCITofHit objects, collection
 //
-// $Id: MakeExtMonUCITofHits_module.cc,v 1.6 2012/05/26 00:16:23 youzy Exp $
+// $Id: MakeExtMonUCITofHits_module.cc,v 1.7 2012/06/28 22:04:01 youzy Exp $
 // $Author: youzy $
-// $Date: 2012/05/26 00:16:23 $
+// $Date: 2012/06/28 22:04:01 $
 //  
 //  
 
@@ -204,7 +204,7 @@ namespace mu2e {
                 << " nTofSegments " << nTofSegments << std::endl;
     }
 
-    bool keepNoEdep = _config->getBool("extmon_uci.keepNoEdep" );
+    bool keepNoEdep = _config->getBool("extmon_uci.keepNoEdep", false);
     if ( _diagLevel >= 2)
     {
       std::cout << "MakeExtMonUCITofHits::makeExtMonUCITofHits : " << " keepNoEdep " << keepNoEdep << std::endl;

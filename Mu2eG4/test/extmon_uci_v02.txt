@@ -91,6 +91,7 @@ bool   extmon_uci.tofVisible         = true;
 bool   extmon_uci.tofSolid           = false;
 string extmon_uci.tofMaterialName    = "Scintillator";
 double extmon_uci.tofTimeGap         = 2.0;
+bool   extmon_uci.keepNoEdep         = false;
 
 // ExtMon Calorimeter
 vector<double> extmon_uci.calHalfLengths = {300.0, 300.0, 300.0};
