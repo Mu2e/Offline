@@ -1,0 +1,36 @@
+#
+# $Id: SConscript,v 1.1 2012/06/29 19:56:04 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/06/29 19:56:04 $
+#
+# Original author Rob Kutschke.
+#
+
+import os.path, re
+Import('env')
+
+plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
+non_plugin_cc = Glob('*.cc', strings=True)
+for cc in plugin_cc: non_plugin_cc.remove(cc)
+
+# From: /path1/path2/path3/Name/src extract the string Name field.
+dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+local_lib_name=os.path.dirname(dd)
+
+my_libs=['CLHEP']  # default if no cc_files
+if non_plugin_cc:
+    env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
+                      LIBS=[ 'CLHEP'
+                             ],
+                      )
+    my_libs=[local_lib_name, 'CLHEP']
+    pass
+
+for cc in plugin_cc:
+    libname='#/lib/'+cc[:cc.find('.cc')]
+    env.SharedLibrary( libname, cc, LIBS=[ my_libs ] )
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:
