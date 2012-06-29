@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.16 2012/04/13 14:49:21 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/04/13 14:49:21 $
+// $Id: MakeStrawHit_module.cc,v 1.17 2012/06/29 21:30:46 genser Exp $
+// $Author: genser $
+// $Date: 2012/06/29 21:30:46 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -51,6 +51,7 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -59,7 +60,6 @@ namespace mu2e {
   // Utility class (structure) to hold calculated drift time for G4 hits
 
   class StepHit {
-    typedef art::Handle<StepPointMCCollection> const* PHandle;
 
   public:
 
@@ -93,6 +93,8 @@ namespace mu2e {
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
+      _minimumAmplitude(pset.get<double>("minimumAmplitude",0.0001)), // mV
+      _addCrossTalkHits(pset.get<bool>("addCrossTalkHits",false)),
       _minimumLength(pset.get<double>("minimumLength",0.01)),   // mm
       _minimumTimeGap(pset.get<double>("minimumTimeGap",100.0)),// ns
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
@@ -112,6 +114,7 @@ namespace mu2e {
       produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
 
     }
+
     virtual ~MakeStrawHit() { }
 
     virtual void beginJob();
@@ -120,7 +123,7 @@ namespace mu2e {
 
   private:
 
-    typedef std::map<StrawIndex,std::vector<art::Ptr<StepPointMC> > > StrawHitMap;
+    typedef std::map<StrawIndex,std::vector<art::Ptr<StepPointMC> > > StrawStepPointMap;
 
     // Diagnostics level.
     int _diagLevel;
@@ -133,6 +136,8 @@ namespace mu2e {
 
     // Parameters
     double _minimumEnergy;  // minimum energy deposition of G4 step
+    double _minimumAmplitude; // actually min amplitude difference for crosstalk
+    bool   _addCrossTalkHits; // should we add cross talk hits?
     double _minimumLength;  // is G4Step is shorter than this, consider it a point
     double _minimumTimeGap;
     string _g4ModuleLabel;  // Name of the module that made these hits.
@@ -147,7 +152,7 @@ namespace mu2e {
     // Give some informationation messages only on the first event.
     bool _firstEvent;
 
-    void fillHitMap ( art::Event const& event, StrawHitMap& hitmap );
+    void fillHitMap ( art::Event const& event, StrawStepPointMap& hitmap );
 
   };
 
@@ -156,7 +161,7 @@ namespace mu2e {
 
 
   // Find StepPointMCs in the event and use them to fill the hit map.
-  void MakeStrawHit::fillHitMap ( art::Event const& event, StrawHitMap& hitmap){
+  void MakeStrawHit::fillHitMap ( art::Event const& event, StrawStepPointMap& hitmap){
 
     // This selector will select only data products with the given instance name.
     art::ProductInstanceNameSelector selector("tracker");
@@ -170,7 +175,7 @@ namespace mu2e {
     // Informational message on the first event.
     if ( _firstEvent ) {
       mf::LogInfo log(_messageCategory);
-      log << "MakeStrawHit::fillHitMap will uses StepPointMCs from: \n";
+      log << "MakeStrawHit::fillHitMap will use StepPointMCs from: \n";
       for ( HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end();
             i != e; ++i ){
 
@@ -206,7 +211,7 @@ namespace mu2e {
   void
   MakeStrawHit::produce(art::Event& event) {
 
-    if ( _diagLevel > 0 ) cout << "MakeStrawHit: produce() begin" << endl;
+    if ( _diagLevel > 1 ) cout << "MakeStrawHit: produce() begin; event " << event.id().event() << endl;
 
     static int ncalls(0);
     ++ncalls;
@@ -224,11 +229,114 @@ namespace mu2e {
     ConditionsHandle<TrackerCalibrations> trackerCalibrations("ignored");
 
     // Organize the StepPointMCs by straws.
-    StrawHitMap hitmap;
+    StrawStepPointMap hitmap;
     fillHitMap( event, hitmap );
 
+    if (_addCrossTalkHits) {
+
+      //
+      // loop over all straws and generate crosstalk hits
+      //
+
+      StrawStepPointMap hitsToBeAdded;
+
+      std::deque<Straw> const & allStraws = tracker.getAllStraws();
+
+      for ( std::deque<Straw>::const_iterator i = allStraws.begin(), e = allStraws.end(); i!=e; ++i){
+
+        Straw const & straw = *i;
+
+        // loop over all straws; get their nearest nighbours, 
+        // collect new hits (StepPointMCs) based on those
+
+        StrawIndex si = straw.index();
+        std::vector<StrawIndex> const & nearestStrawInds = straw.nearestNeighboursByIndex();
+
+        if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
+          cout << "MakeStrawHit: Straw #" << si << endl;
+        }
+
+        for( size_t nsi=0, nse=nearestStrawInds.size(); nsi!=nse; ++nsi ) {
+
+          if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
+            cout << "MakeStrawHit    neighbour: " << nearestStrawInds[nsi];
+          } // if
+
+          StrawStepPointMap::const_iterator neighbourStrawIterator = 
+            hitmap.find(nearestStrawInds[nsi]);
+
+          if (neighbourStrawIterator!=hitmap.end()) { 
+            // this neighbour straw has hits
+            std::vector<art::Ptr<StepPointMC> > const & neighbourStrawHitPtrs = 
+              neighbourStrawIterator->second;
+            
+            if ( ncalls < _maxFullPrint && _diagLevel > 3 ) {
+              cout << " has " << neighbourStrawHitPtrs.size() 
+                   << " StepPointMC hits; The ones above threshold are: ";
+            } // if
+
+            double digi_ampl;
+            E2A e2a;
+
+            for( size_t nii=0, eenii=neighbourStrawHitPtrs.size(); nii!=eenii; ++nii ) {
+
+              art::Ptr<StepPointMC> const & thisNeighbHitPtr = neighbourStrawHitPtrs[nii];
+
+              // collect the hit (StepPointMC) if it is above threshold
+
+              // we translate the energy to amplitude here; FIXME this
+              // may be slightly "out of step" or oversimplified as we
+              // have not formed full hits yet
+
+              trackerCalibrations->EnergyToAmplitude(thisNeighbHitPtr->strawIndex(), 
+                                                     thisNeighbHitPtr->totalEDep(), e2a);
+              digi_ampl =  (e2a._ampl + _gaussian.fire(0.,e2a._amplerr))*
+                trackerCalibrations->CrossTalk(si,thisNeighbHitPtr->strawIndex());
+
+              if (digi_ampl<_minimumAmplitude) continue;
+
+              if ( ncalls < _maxFullPrint && _diagLevel > 3 ) {
+                cout << " (" 
+                     << neighbourStrawHitPtrs[nii].id() << " " 
+                     << neighbourStrawHitPtrs[nii].key() << ")";
+              } // if
+
+              hitsToBeAdded[si].push_back(thisNeighbHitPtr);
+
+            } // for
+            
+          } // if
+          if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
+            cout << endl;
+          } // if
+
+        } // for
+
+      } // for
+
+      // now actually merge in the crosstalk hits
+
+      // well, but how to calculate t1 etc...? since we have to do it using another straw as its basis...
+      // but it may just work if we use proper straw index
+
+      for(StrawStepPointMap::const_iterator istraw = hitsToBeAdded.begin(), istrawe = hitsToBeAdded.end(); 
+          istraw != istrawe; ++istraw) {
+
+        // The StepPointMCs to be added that are on this straw.
+        std::vector<art::Ptr<StepPointMC> > const& ihits = istraw->second;
+
+        for( std::vector<art::Ptr<StepPointMC> >::const_iterator spp=ihits.begin(), e=ihits.end();
+             spp!=e ; ++spp){
+          hitmap[istraw->first].push_back(*spp);
+
+        } // for
+
+      } // for
+
+    } // if 
+
     // Temporary working space per straw.
-    vector<StepHit> straw_hits;
+    std::vector<StepHit> straw_hits;
 
     // Cache of recently used masses from the particle data table.
     MassCache cache;
@@ -239,46 +347,73 @@ namespace mu2e {
     // in time and look for gaps. If gap exceeds _minimumTimeGap create
     // separate hit.
 
-    for(StrawHitMap::const_iterator istraw = hitmap.begin(); istraw != hitmap.end(); ++istraw) {
+    // note that the crosstalk hits will have different straw index in their StepPointMCs
+
+    // we still need to rescale the hit energy due to the crosstalk; 
+    // FIXME we do it at the energy not amplitude level for now
+
+    for(StrawStepPointMap::const_iterator istraw = hitmap.begin(), istrawe = hitmap.end(); 
+        istraw != istrawe; ++istraw) {
 
       if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-        cout << "MakeStrawHit: straw ID=" << istraw->first
+        cout << "MakeStrawHit: straw ID=" << istraw->first 
+             << ", " << tracker.getStraw(istraw->first).id()
              << ": number of G4 step hits " << istraw->second.size()
              << endl;
       }
 
       // Get the straw information, also by reference.
       StrawIndex straw_id = istraw->first;
-      Straw const&      straw = tracker.getStraw(straw_id);
-      CLHEP::Hep3Vector const& mid   = straw.getMidPoint();
-      CLHEP::Hep3Vector const& w     = straw.getDirection();
-      double strawHalfLength         = straw.getHalfLength();
 
-      const double signalVelocity = trackerCalibrations->SignalVelocity(straw_id);
+      // we need to get the straw info from the StepPointMCs as they
+      // may be different from the straw being worked on
 
       // The StepPointMCs that are on this straw.
-      vector<art::Ptr<StepPointMC> > const& ihits = istraw->second;
+      std::vector<art::Ptr<StepPointMC> > const& ihits = istraw->second;
 
-      // Prepare working sapce.
+      // Prepare working space.
       straw_hits.clear();
       straw_hits.reserve(ihits.size());
 
       // Loop over all hits found for this straw
       int nn(0);
-      for( vector<art::Ptr<StepPointMC> >::const_iterator i=ihits.begin(), e=ihits.end();
+      for( std::vector<art::Ptr<StepPointMC> >::const_iterator i=ihits.begin(), e=ihits.end();
            i !=e ; ++i, ++nn ){
 
         StepPointMC const& hit = **i;
+
+        StrawIndex spmcStraw_id      = hit.strawIndex();
+        Straw const&  straw          = tracker.getStraw(spmcStraw_id);
+        CLHEP::Hep3Vector const& mid = straw.getMidPoint();
+        CLHEP::Hep3Vector const& w   = straw.getDirection();
+        double strawHalfLength       = straw.getHalfLength();
+        double signalVelocity        = trackerCalibrations->SignalVelocity(spmcStraw_id);
+
         CLHEP::Hep3Vector  const& pos = hit.position();
         CLHEP::Hep3Vector  const& mom = hit.momentum();
         double length  = hit.stepLength();
-        double edep    = hit.totalEDep();
+        double edep    = (straw_id == spmcStraw_id) ?
+          hit.totalEDep() :
+          hit.totalEDep()*trackerCalibrations->CrossTalk(straw_id,spmcStraw_id);
         double hitTime = hit.time();
 
-        if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
+        if ( ncalls < _maxFullPrint && _diagLevel > 3 ) {
+
           cout << "MakeStrawHit: Hit #" << nn << " : length=" << length
-               << " energy=" << edep << " time=" << hitTime
-               << endl;
+               << " energy=" << edep << " time=" << hitTime;
+          if (straw_id != spmcStraw_id) {
+            cout << " is a crosstalk hit of edep " << hit.totalEDep();
+          }
+          cout    << endl;
+          // we'll print the track info
+          cout << "MakeStrawHit: hit.simParticle() id, pdgid, parent id, pdgid : " 
+               << hit.simParticle()->id() << ", " << hit.simParticle()->pdgId();
+          if ( hit.simParticle()->isSecondary() ) {
+            cout << " is a secondary of " << (hit.simParticle()->parent())->id() 
+                 << ", " << (hit.simParticle()->parent())->pdgId() << endl;
+          } else {
+            cout << " is a primary" << endl;
+          }
         }
 
         // Calculate the drift distance and the point on the wire at the end of the dca vector.
@@ -348,7 +483,7 @@ namespace mu2e {
         // t2 - at negative end (opposite to w vector)
 
 	D2T d2t;
-	trackerCalibrations->DistanceToTime(straw_id,hit_dca,mom,d2t);
+	trackerCalibrations->DistanceToTime(spmcStraw_id,hit_dca,mom,d2t);
 	// smear the time to account for dispersion and measurement error.  Truncate at 0
         double driftTime = std::max(0.0,d2t._tdrift + _gaussian.fire(0.,d2t._tdrifterr));
         double distanceToMiddle = (hit_pca-mid).dot(w);
@@ -367,8 +502,8 @@ namespace mu2e {
       // First we need to sort StepHits according to t1 time
       sort(straw_hits.begin(), straw_hits.end() );
 
-      if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-        for( size_t i=0; i<straw_hits.size(); i++ ) {
+      if ( ncalls < _maxFullPrint && _diagLevel > 1 ) {
+        for( size_t i=0, e=straw_hits.size(); i!=e ;++i ) {
           cout << "MakeStrawHit: StepHit # (" << straw_hits[i]._ptr.id() << " " << straw_hits[i]._ptr.key() << ")"
                << " DCA=" << straw_hits[i]._dca
                << " driftT=" << straw_hits[i]._driftTime
@@ -388,22 +523,110 @@ namespace mu2e {
       double digi_t2     = straw_hits[0]._t2;
       double digi_edep   = straw_hits[0]._edep;
       double digi_driftT = straw_hits[0]._driftTime;
+      // the straw which defined digi_toMid is the same one which defined t1
       double digi_toMid  = straw_hits[0]._distanceToMid;
       double digi_dca    = straw_hits[0]._dca;
+      // we prepare ourselves to record which ptr defined t1,t2
+      size_t digi_t1i    = 0;
+      art::Ptr<StepPointMC> digi_t1ptr = straw_hits[0]._ptr;
+      size_t digi_t2i    = 0;
+      art::Ptr<StepPointMC> digi_t2ptr = straw_hits[0]._ptr;
       double deltadigitime;
       double distSigma;
+
+      // to be introduced later
+      // double digi_ampl;
+      // E2A e2a;
+
       PtrStepPointMCVector mcptr;
       mcptr.push_back( straw_hits[0]._ptr );
 
-      for( size_t i=1; i<straw_hits.size(); i++ ) {
+
+      if ( ncalls < _maxFullPrint && _diagLevel > 3 ) {
+
+        cout << "MakeStrawHit: processing StepHit # (" << straw_hits[0]._ptr.id() << 
+          " " << straw_hits[0]._ptr.key() << ")"
+             << " DCA=" << straw_hits[0]._dca
+             << " driftT=" << straw_hits[0]._driftTime
+             << " distToMid=" << straw_hits[0]._distanceToMid
+             << " t1=" << straw_hits[0]._t1
+             << " t2=" << straw_hits[0]._t2
+             << " edep=" << straw_hits[0]._edep
+             << endl;
+
+        cout << "MakeStrawHit: from straw_hits straw_hits[0]._ptr->simParticle() id, pdgid, parent id, pdgid : " 
+             << straw_hits[0]._ptr->simParticle()->id() << ", " << straw_hits[0]._ptr->simParticle()->pdgId();
+        if ( straw_hits[0]._ptr->simParticle()->isSecondary() ) {
+          cout << " is a secondary of " << (straw_hits[0]._ptr->simParticle()->parent())->id() 
+               << ", " << (straw_hits[0]._ptr->simParticle()->parent())->pdgId() << endl;
+        } else {
+          cout << " is a primary" << endl;
+        }
+
+      }
+
+      for( size_t i=1, e=straw_hits.size(); i!=e; ++i ) {
         if( (straw_hits[i]._t1-straw_hits[i-1]._t1) > _minimumTimeGap ) {
           // The is bit time gap - save current data as a hit...
-          distSigma = trackerCalibrations->TimeDivisionResolution(straw_id, (strawHalfLength-digi_toMid)/(2.*strawHalfLength) );
+
+          StrawIndex spmcStraw_id      = straw_hits[i]._ptr->strawIndex();
+          Straw const&  straw          = tracker.getStraw(spmcStraw_id);
+
+          double strawHalfLength       = straw.getHalfLength();
+          double signalVelocity        = trackerCalibrations->SignalVelocity(spmcStraw_id);
+
+          distSigma = trackerCalibrations->TimeDivisionResolution(spmcStraw_id, (strawHalfLength-digi_toMid)/(2.*strawHalfLength) );
           deltadigitime = (digi_t2-digi_time)+_gaussian.fire(0.,2.*distSigma/signalVelocity);
 
+          // trackerCalibrations->EnergyToAmplitude(spmcStraw_id, digi_edep, e2a);
+          // digi_ampl =   e2a._ampl + _gaussian.fire(0.,e2a._amplerr); // this should replace digi_edep
+
+          // we need to record straw_hits[i]._ptr of the "defining" hits
+          // the time is defined by the very first stepHit at index 0
+
+          // how about t2 and energy?
+          // is ancestry important?
+
+          // how about the xtalk?
+          // edep to signal is first though
+
+          // lets start with t2: t2ptr
+
+          if ( ncalls < _maxFullPrint && _diagLevel > 3 ) {
+
+            cout << "MakeStrawHit: StepHit # will go to the next hit(" << straw_hits[i]._ptr.id() << 
+              " " << straw_hits[i]._ptr.key() << ")"
+                 << " DCA=" << straw_hits[i]._dca
+                 << " driftT=" << straw_hits[i]._driftTime
+                 << " distToMid=" << straw_hits[i]._distanceToMid
+                 << " t1=" << straw_hits[i]._t1
+                 << " t2=" << straw_hits[i]._t2
+                 << " edep=" << straw_hits[i]._edep
+                 << endl;
+
+          }
+
+          // strawHits->push_back(StrawHit(straw_id,digi_time,deltadigitime,digi_ampl));
           strawHits->push_back(StrawHit(straw_id,digi_time,deltadigitime,digi_edep));
           truthHits->push_back(StrawHitMCTruth(digi_driftT,digi_dca,digi_toMid));
           mcptrHits->push_back(mcptr);
+
+          if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
+
+            // will print just added hit
+            cout << "MakeStrawHit: added hit: Straw #" << ((*strawHits).back()).strawIndex()
+                 << " time="  << ((*strawHits).back()).time()
+                 << " dt="    << ((*strawHits).back()).dt()
+                 << " edep="  << ((*strawHits).back()).energyDep()
+                 << " nsteps="<< ((*mcptrHits).back()).size()
+                 << " t1i="   << digi_t1i
+              //   << " t1ptr= "<< digi_t1ptr
+                 << " t2i="   << digi_t2i
+              //   << " t2ptr= "<< digi_t2ptr
+                 << endl;
+
+          }
+
           // ...and create new hit
           mcptr.clear();
           mcptr.push_back( straw_hits[i]._ptr );
@@ -413,25 +636,90 @@ namespace mu2e {
           digi_driftT = straw_hits[i]._driftTime;
           digi_toMid  = straw_hits[i]._distanceToMid;
           digi_dca    = straw_hits[i]._dca;
+          digi_t1i    = i;
+          digi_t1ptr  = straw_hits[i]._ptr;
+          digi_t2i    = i;
+          digi_t2ptr  = straw_hits[i]._ptr;
         } else {
           // Append existing hit
-          if( digi_t2 > straw_hits[i]._t2 ) digi_t2 = straw_hits[i]._t2;
+
+          if ( ncalls < _maxFullPrint && _diagLevel > 3 ) {
+
+            cout << "MakeStrawHit: appending StepHit # (" << straw_hits[i]._ptr.id() << 
+              " " << straw_hits[i]._ptr.key() << ")"
+                 << " DCA=" << straw_hits[i]._dca
+                 << " driftT=" << straw_hits[i]._driftTime
+                 << " distToMid=" << straw_hits[i]._distanceToMid
+                 << " t1=" << straw_hits[i]._t1
+                 << " t2=" << straw_hits[i]._t2
+                 << " edep=" << straw_hits[i]._edep
+                 << endl;
+
+            cout << "MakeStrawHit: from straw_hits straw_hits[i]._ptr->simParticle() id, pdgid, parent id, pdgid : " 
+                 << straw_hits[i]._ptr->simParticle()->id() << ", " << straw_hits[i]._ptr->simParticle()->pdgId();
+            if ( straw_hits[i]._ptr->simParticle()->isSecondary() ) {
+              cout << " is a secondary of " << (straw_hits[i]._ptr->simParticle()->parent())->id() 
+                   << ", " << (straw_hits[i]._ptr->simParticle()->parent())->pdgId() << endl;
+            } else {
+              cout << " is a primary" << endl;
+            }
+
+          }
+
+          if( digi_t2 > straw_hits[i]._t2 ) {
+            digi_t2    = straw_hits[i]._t2;
+            digi_t2i   = i;
+            digi_t2ptr = straw_hits[i]._ptr;
+          }
+
           digi_edep += straw_hits[i]._edep;
           mcptr.push_back( straw_hits[i]._ptr );
         }
       }
 
-      distSigma = trackerCalibrations->TimeDivisionResolution(straw_id, (strawHalfLength-digi_toMid)/(2.*strawHalfLength) );
+      // last hit
+
+      StrawIndex spmcStraw_id      = mcptr.back()->strawIndex();
+      Straw const&  straw          = tracker.getStraw(spmcStraw_id);
+
+      double strawHalfLength       = straw.getHalfLength();
+      double signalVelocity        = trackerCalibrations->SignalVelocity(spmcStraw_id);
+
+      distSigma = trackerCalibrations->TimeDivisionResolution(spmcStraw_id, (strawHalfLength-digi_toMid)/(2.*strawHalfLength) );
       deltadigitime = (digi_t2 - digi_time)+_gaussian.fire(0.,2.*distSigma/signalVelocity);
+      
+      // trackerCalibrations->EnergyToAmplitude(spmcStraw_id, digi_edep, e2a);
+      // digi_ampl =   e2a._ampl + _gaussian.fire(0.,e2a._amplerr); // this should replace digi_edep
+
+      // strawHits->push_back(StrawHit(straw_id,digi_time,deltadigitime,digi_ampl));
       strawHits->push_back(StrawHit(straw_id,digi_time,deltadigitime,digi_edep));
+      // truthHits->push_back(StrawHitMCTruth(digi_driftT,digi_dca,digi_toMid,
+      //                      digi_edep,digi_t1ptr,digi_t2ptr));
       truthHits->push_back(StrawHitMCTruth(digi_driftT,digi_dca,digi_toMid));
       mcptrHits->push_back(mcptr);
 
+      if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
+
+        // will print just added hit
+        cout << "MakeStrawHit: added hit: Straw #" << ((*strawHits).back()).strawIndex()
+             << " time="  << ((*strawHits).back()).time()
+             << " dt="    << ((*strawHits).back()).dt()
+             << " edep="  << ((*strawHits).back()).energyDep()
+             << " nsteps="<< ((*mcptrHits).back()).size()
+             << " t1i="   << digi_t1i
+          //  << " t1ptr= "<< digi_t1ptr
+             << " t2i="   << digi_t2i
+          //  << " t2ptr= "<< digi_t2ptr
+             << endl;
+        
+      }
+
     }
 
-    if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-      cout << "MakeStrawHit: Total number of hit straws = " << strawHits->size() << endl;
-      for( size_t i=0; i<strawHits->size(); ++i ) {
+    if ( ncalls < _maxFullPrint && _diagLevel > 1 ) {
+      cout << "MakeStrawHit: Total number of straw hits = " << strawHits->size() << endl;
+
+      for( size_t i=0, e=strawHits->size(); i!=e; ++i ) {
         cout << "MakeStrawHit: Straw #" << (*strawHits)[i].strawIndex()
              << " time="  << (*strawHits)[i].time()
              << " dt="    << (*strawHits)[i].dt()
@@ -441,12 +729,16 @@ namespace mu2e {
       }
     }
 
-    // Add the output hit collection to the event
+    // we have made many changes; we need to check if the sizes are the same
+
+    assert (strawHits->size()==truthHits->size());
+    assert (strawHits->size()==mcptrHits->size());
+
     event.put(strawHits);
     event.put(truthHits);
     event.put(mcptrHits,"StrawHitMCPtr");
 
-    if ( _diagLevel > 0 ) cout << "MakeStrawHit: produce() end" << endl;
+    if ( _diagLevel > 1 ) cout << "MakeStrawHit: produce() end" << endl;
 
     // Done with the first event; disable some messages.
     _firstEvent = false;
