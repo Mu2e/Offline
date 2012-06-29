@@ -7,7 +7,6 @@
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
 #include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
@@ -60,25 +59,10 @@ namespace mu2e {
 
     res->_hallFormalCenterInWorld = hallFormalCenterInMu2e + res->_mu2eOriginInWorld;
 
-    // By construction everything fits inside formalHallBox.
-    // Therefore it is save to start cosmic rays at the Word coordinate
-    double yEverest = res->hallFormalCenterInWorld()[1] + res->hallFormalHalfSize()[1];
-
-    // Build the center for the cosmic ray production (in world coordinates)
-    // at the xz origin of the detector system and on top of the dirt body (incl. the dirt cap).
-    CLHEP::Hep3Vector const& detectorSystemOriginInWorld = GeomHandle<DetectorSystem>()->getOrigin() + res->_mu2eOriginInWorld;
-    res->_cosmicReferencePoint = CLHEP::Hep3Vector(detectorSystemOriginInWorld.x(), yEverest, detectorSystemOriginInWorld.z());
-    //res->_dirtG4Ymax = ySurface;
-    //res->_dirtG4Ymin = yCeilingOutside;
-
     if ( diagLevel > 0) {
       std::cout<<*env<<std::endl;
       std::cout<<*res<<std::endl;
     }
-
-    // Selfconsistency check.
-    CLHEP::Hep3Vector const& cosmicReferenceInMu2e = res->_cosmicReferencePoint - res->_mu2eOriginInWorld;
-    res->inWorldOrThrow(cosmicReferenceInMu2e);
 
     return res;
 

@@ -36,7 +36,6 @@ namespace mu2e {
 
     // All the coordinates are in the G4 world reference frame
     const CLHEP::Hep3Vector& mu2eOriginInWorld() const { return _mu2eOriginInWorld; }
-    const CLHEP::Hep3Vector& cosmicReferencePoint() const { return _cosmicReferencePoint; }
 
     // FIXME: these vars don't have a well defined meaning after the
     // dirt/hall geometry restructuring.

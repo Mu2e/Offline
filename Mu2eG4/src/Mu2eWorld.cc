@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.138 2012/06/24 05:09:15 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/06/24 05:09:15 $
+// $Id: Mu2eWorld.cc,v 1.139 2012/06/29 00:14:38 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/06/29 00:14:38 $
 //
 // Original author Rob Kutschke
 //
@@ -253,7 +253,6 @@ namespace mu2e {
     mf::LogInfo log("GEOM");
     log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
     log << "Mu2e Detector Origin: " << GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() + worldGeom->mu2eOriginInWorld()   << "\n";
-    log << "Cosmic Ref:           " << worldGeom->cosmicReferencePoint() << "\n";
 
     // Create magnetic fields and managers only after all volumes have been defined.
     constructBFieldAndManagers();

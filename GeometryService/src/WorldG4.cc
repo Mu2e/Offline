@@ -50,7 +50,6 @@ namespace mu2e {
     std::copy(w.hallFormalHalfSize().begin(), w.hallFormalHalfSize().end(), std::ostream_iterator<double>(os, ", "));
     os<<"}, hallFormalCenterInWorld = "<<w.hallFormalCenterInWorld()
       <<", mu2eOriginInWorld = "<<w.mu2eOriginInWorld()
-      <<", cosmicReferencePoint = "<<w.cosmicReferencePoint()
       <<")";
 
     return os;
