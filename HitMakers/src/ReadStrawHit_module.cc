@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.12 2012/03/19 21:39:41 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/03/19 21:39:41 $
+// $Id: ReadStrawHit_module.cc,v 1.13 2012/06/29 21:29:24 genser Exp $
+// $Author: genser $
+// $Date: 2012/06/29 21:29:24 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //
@@ -40,8 +40,10 @@
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/TrackerCalibrations.hh"
+
 
 using namespace std;
 
@@ -111,10 +113,13 @@ namespace mu2e {
 
   void ReadStrawHit::beginJob(){
 
-    cout << "Diaglevel: "
-         << _diagLevel << " "
-         << _maxFullPrint
-         << endl;
+
+    if ( _diagLevel > 0 ) {
+      cout << "ReadStrawHit Diaglevel: "
+           << _diagLevel << " "
+           << _maxFullPrint
+           << endl;
+    }
 
     art::ServiceHandle<art::TFileService> tfs;
 
@@ -140,6 +145,9 @@ namespace mu2e {
 
     static int ncalls(0);
     ++ncalls;
+
+    // Handle to the conditions service
+    ConditionsHandle<TrackerCalibrations> trackerCalibrations("ignored");
 
     /*
     // Print the content of current event
@@ -223,6 +231,10 @@ namespace mu2e {
 
     std::map<StrawIndex,int> nhperwire;
 
+    if ( _diagLevel > 2 ) {
+      cout << "ReadStrawHit: Total number of straw hits = " << hits.size() << endl;
+    }
+
     for ( size_t i=0; i<hits.size(); ++i ) {
 
       // Access data
@@ -240,14 +252,22 @@ namespace mu2e {
       _hDriftDistance->Fill(truth.driftDistance());
       _hDistanceToMid->Fill(truth.distanceToMid());
 
+      StrawIndex si = hit.strawIndex();
+
       // Use data from G4 hits
       _hNG4Steps->Fill(mcptr.size());
       for( size_t j=0; j<mcptr.size(); ++j ) {
         StepPointMC const& mchit = *mcptr.at(j);
         _hG4StepLength->Fill(mchit.stepLength());
-        _hG4StepEdep->Fill(mchit.eDep()*1000.0);
+        if (mchit.strawIndex()!=si) {
+          // FIXME: it is an approximation
+          _hG4StepEdep->Fill(mchit.eDep()*1000.0*trackerCalibrations->CrossTalk(si,mchit.strawIndex()));
+        } else {
+          _hG4StepEdep->Fill(mchit.eDep()*1000.0);
+        }
+
       }
-      StrawIndex si = hit.strawIndex();
+
       const  unsigned id = si.asUint();
       Straw str = tracker.getStraw(si);
       StrawId sid = str.id();
@@ -280,20 +300,63 @@ namespace mu2e {
       // Calculate number of hits per wire
       ++nhperwire[hit.strawIndex()];
 
-      if ( int(evt.id().event()) < _maxFullPrint ){
-        cout << "StrawHit: " 
-             << evt.id().event()      << " " 
+      if ( int(evt.id().event()) < _maxFullPrint ) {
+        cout << "ReadStrawHit: " 
+             << evt.id().event()      << " #" 
+             << si                    << " "
              << sid                   << " "
              << hit.time()            << " " 
              << hit.dt()              << " " 
              << hit.energyDep()       << " "
              << truth.driftTime()     << " "
              << truth.driftDistance() << " |";
-        for( size_t j=0; j<mcptr.size(); ++j ) {
+        for ( size_t j=0; j<mcptr.size(); ++j ) {
           StepPointMC const& mchit = *mcptr.at(j);
           cout << " " << mchit.ionizingEdep();
         }
         cout << endl;
+        if ( _diagLevel > 2 ) {
+          for( size_t j=0; j<mcptr.size(); ++j ) {
+            StepPointMC const& mchit = *mcptr.at(j);
+            cout << "ReadStrawHit: StepHit #" << j << " : length=" << mchit.stepLength()
+                 << " energy=" << mchit.totalEDep() << " time=" <<  mchit.time()
+                 << endl;
+            // we'll print the track info
+
+            SimParticle sp = *mchit.simParticle();
+
+            cout << "ReadStrawHit: mchit.simParticle() id, pdgid, parent id, pdgid : " 
+                 << sp.id() << ", " << sp.pdgId();
+            
+            bool isSec = sp.isSecondary();
+
+            if ( isSec ) {
+
+              while ( isSec ) {
+
+                SimParticle parent = *sp.parent();
+
+                cout << " is a secondary of "  << parent.id() 
+                     << ", " << parent.pdgId();
+              
+                isSec = parent.isSecondary();
+                sp = parent;
+
+              }
+
+              cout << " which is a primary" << endl;
+
+            }
+            else {
+
+              cout << " is a primary" << endl;
+
+            }
+
+          }
+
+        }
+
       }
 
     }
