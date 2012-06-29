@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.12 2012/05/14 19:29:57 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/05/14 19:29:57 $
+// $Id: TrackerCalibrations.hh,v 1.13 2012/06/29 21:28:49 genser Exp $
+// $Author: genser $
+// $Date: 2012/06/29 21:28:49 $
 //
 // Original author Vadim Rusu
 //
@@ -38,6 +38,20 @@ namespace mu2e
     D2T() : _tdrift(0.0),_tdrifterr(1.0) {}
   };
 
+// simple struct to hold output of energyToAmplitude function
+  struct E2A {
+    double _ampl;
+    double _amplerr;
+    E2A() : _ampl(0.0), _amplerr(1.0) {}
+  };
+
+// simple struct to hold output of amplitudeToEnergy function
+  struct A2E {
+    double _edep;
+    double _edeperr;
+    A2E() : _edep(0.0),_edeperr(1.0) {}
+  };
+
   struct TrackerCalibrations: virtual public ConditionsEntity{
 
 
@@ -62,6 +76,11 @@ namespace mu2e
     void StrawHitInfo(StrawHit const& strawhit,
       CLHEP::Hep3Vector& pos, double& time,double& tdres, double& timeres) const;
 
+    void EnergyToAmplitude(StrawIndex strawIndex, double edep, E2A& e2a) const;
+    void AmplitudeToEnergy(StrawIndex strawIndex, double ampl, A2E& a2e) const;
+
+    double CrossTalk(StrawIndex strawIndex0, StrawIndex strawIndexN) const;
+
   private:
 
     // We want to discourage multi-phase construction.
@@ -76,6 +95,11 @@ namespace mu2e
 
     //velocity of signal propagation in wire mm/ns
     double _distvsdeltat;
+
+    double _edepToAmpl; // MeV/mV
+    double _amplRes;    // relative
+    double _crossTalk;  // amount of crosstalk
+
   };
 
   // Shift left (printing) operator.

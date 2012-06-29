@@ -1,9 +1,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.8 2012/05/13 21:26:32 ignatov Exp $
-// $Author: ignatov $
-// $Date: 2012/05/13 21:26:32 $
+// $Id: TrackerCalibrations.cc,v 1.9 2012/06/29 21:28:49 genser Exp $
+// $Author: genser $
+// $Date: 2012/06/29 21:28:49 $
 //
 
 // Mu2e include files
@@ -25,6 +25,9 @@ namespace mu2e {
     _vdrift = config.getDouble("DriftVelocity",0.05); // mm/ns
     _rres = config.getDouble("DriftRadiusResolution",0.1); //mm
     _distvsdeltat = config.getDouble("SignalVelocity",231.); //mm/ns
+    _edepToAmpl = config.getDouble("EdepToAmpl",1.0); // mV/MeV
+    _amplRes = config.getDouble("AmplRes", 0.01); //   relative
+    _crossTalk = config.getDouble("crosstalk",0.02); //   relative
   }
   
   void TrackerCalibrations::DistanceToTime(StrawIndex strawIndex,double rdrift, CLHEP::Hep3Vector const& tdir,D2T& d2t) const {
@@ -39,6 +42,20 @@ namespace mu2e {
     t2d._rdrift = tdrift*_vdrift;
     t2d._rdrifterr = _rres;
     t2d._vdrift = _vdrift;
+  }
+
+
+  void TrackerCalibrations::EnergyToAmplitude(StrawIndex strawIndex, double edep, E2A& e2a) const {
+    // oversimplfied model, FIXME!!!
+    e2a._ampl = edep/_edepToAmpl;
+    e2a._amplerr = e2a._ampl*_amplRes;
+  }
+
+  void TrackerCalibrations::AmplitudeToEnergy(StrawIndex strawIndex, double ampl, A2E& a2e) const {
+    // oversimplfied model, FIXME!!!
+    a2e._edep = ampl*_edepToAmpl;
+    a2e._edeperr = ampl*_edepToAmpl*_amplRes;
+
   }
 
   double TrackerCalibrations::TimeDivisionResolution(StrawIndex , double znorm) const {
@@ -73,4 +90,10 @@ namespace mu2e {
 // time resolution is due to intrinsic timing resolution and time difference resolution
     timeres = tdres/vwire;
   }
+
+  double TrackerCalibrations::CrossTalk(StrawIndex strawIndex0, StrawIndex strawIndexN) const {
+    // FIXME oversimplfied model
+    return _crossTalk;
+  }
+
 }
