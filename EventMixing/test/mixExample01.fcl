@@ -1,9 +1,9 @@
 #
 # Example of running event mixing.
 #
-# $Id: mixExample01.fcl,v 1.2 2012/05/25 20:36:13 kutschke Exp $
+# $Id: mixExample01.fcl,v 1.3 2012/07/02 14:51:05 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/05/25 20:36:13 $
+# $Date: 2012/07/02 14:51:05 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -15,7 +15,7 @@ process_name : MixExample01
 # Conversion electron input file.
 source : {
   module_type : RootInput
-  fileNames   : [ "/mu2e/data/users/kutschke/SignalOnly/v2/signalOnly_data.root" ]
+  fileNames   : [ "/mu2e/data/users/kutschke/SignalOnly/v2/signalOnly_data_dropCRV.root" ]
   maxEvents   : 20
 }
 
@@ -77,7 +77,7 @@ physics : {
 
   p1 : [ dioMixer, neutronMixer, protonMixer, photonMixer,
          makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
-  e1 : [checkhits, readStrawHits ]
+  e1 : [ checkhits, readStrawHits ]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -95,10 +95,10 @@ outputs: {
 
 // Mixing input files:
 // For these files,event generation started at 500 ns.
-physics.producers.dioMixer.fileNames     : [ "/mu2e/data/users/kutschke/MixTest_06/dio_data.root"     ]
-physics.producers.neutronMixer.fileNames : [ "/mu2e/data/users/kutschke/MixTest_06/neutron_data.root" ]
-physics.producers.protonMixer.fileNames  : [ "/mu2e/data/users/kutschke/MixTest_06/proton_data.root"  ]
-physics.producers.photonMixer.fileNames  : [ "/mu2e/data/users/kutschke/MixTest_06/photon_data.root"  ]
+physics.producers.dioMixer.fileNames     : [ "/mu2e/data/users/kutschke/MixTest_06/dio_data_dropCRV.root"     ]
+physics.producers.neutronMixer.fileNames : [ "/mu2e/data/users/kutschke/MixTest_06/neutron_data_dropCRV.root" ]
+physics.producers.protonMixer.fileNames  : [ "/mu2e/data/users/kutschke/MixTest_06/proton_data_dropCRV.root"  ]
+physics.producers.photonMixer.fileNames  : [ "/mu2e/data/users/kutschke/MixTest_06/photon_data_dropCRV.root"  ]
 
 // Mixing multiplicities that are correct for these files:
 physics.producers.dioMixer.mean     :  11.6

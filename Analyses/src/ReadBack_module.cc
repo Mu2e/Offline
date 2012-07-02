@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.17 2012/05/14 21:23:15 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/14 21:23:15 $
+// $Id: ReadBack_module.cc,v 1.18 2012/07/02 14:51:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/02 14:51:05 $
 //
 // Original author Rob Kutschke
 //
@@ -1174,6 +1174,7 @@ namespace mu2e {
     // Ask the event to give us a "handle" to the requested hits.
     art::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_crvStepPoints,hits);
+    if ( ! hits.isValid() ) { return; }
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
