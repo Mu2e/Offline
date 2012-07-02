@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.33 2012/05/22 16:48:16 kutschke Exp $
+# $Id: SConstruct,v 1.34 2012/07/02 21:56:44 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/05/22 16:48:16 $
+# $Date: 2012/07/02 21:56:44 $
 #
 # Original author Rob Kutschke.
 #
@@ -133,22 +133,6 @@ for root,dirs,files in os.walk('.'):
         if file == 'SConscript': ss.append('%s/%s'%(root[2:],file))
         pass
     pass
-
-# If the BaBar package is not present, do not make packages that depend on it.
-# This needs to be maintained by hand.
-if not(os.path.exists('BaBar/BaBar/src/SConscript')):
-    ss.remove('KalmanTests/src/SConscript')
-    ss.remove('TrkPatRec/src/SConscript')
-    ss.remove('FastPatternReco/src/SConscript')
-    print 'BaBar package is absent. Will not build packages that depend on it.'
-else:
-#  Remove Dch code for now: not used by any officlal package
-    for root,dirs,files in os.walk('BaBar/Dch'):
-        for file in files:
-            if file == 'SConscript': ss.remove('%s/%s'%(root[0:],file))
-            #print '%s/%s'%(root[0:],file)
-            pass
-        pass
 
 # If the splines package is absent, skip the figure of merit tool.
 if not os.environ.has_key('SPLINES_DIR'):
