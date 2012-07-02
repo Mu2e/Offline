@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.41 2012/03/20 14:49:05 kutschke Exp $
+# $Id: setup.sh,v 1.42 2012/07/02 15:40:43 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/03/20 14:49:05 $
+# $Date: 2012/07/02 15:40:43 $
 #
 # Original author Rob Kutschke
 #
@@ -69,11 +69,16 @@ export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
 # Tell the framework to look in the local area to find modules.
 source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
 
-# Build the symlink directories for the BaBar code.
-# Only do so if the BaBar package is checked out locally.
-if [  -f "./BaBar/makeInclude.sh" ]
-then
+# Check out the BaBar code.
+# First build the symlink directory.  Then checkout the code.
+if [  -f "./BaBar/makeInclude.sh" ]; then
   ./BaBar/makeInclude.sh
+  if [ ! -f "BaBar/BaBar/include/BaBar.hh" ]; then
+   echo "Checking out the BaBar Kalman Filter code."
+   ./BaBar/checkout.sh
+  else
+   echo "BaBar Kalman filter code already present. Not checking it out."
+  fi
 fi
 
 # A hack that we hope can go away soon.
