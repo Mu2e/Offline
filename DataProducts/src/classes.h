@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.11 2012/04/27 05:37:32 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/27 05:37:32 $
+// $Id: classes.h,v 1.12 2012/07/03 03:27:24 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/03 03:27:24 $
 //
 // Original author Rob Kutschke
 //
@@ -20,6 +20,9 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/EulerAngles.h"
+#include "CLHEP/Matrix/Vector.h"
+#include "CLHEP/Matrix/Matrix.h"
+#include "CLHEP/Matrix/SymMatrix.h"
 #include <CLHEP/Geometry/Transform3D.h>
 
 template class std::vector<CLHEP::Hep2Vector>;

@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.13 2012/05/23 07:58:06 tassiell Exp $     -->
-<!--  $Author: tassiell $ -->
-<!--  $Date: 2012/05/23 07:58:06 $   -->
+<!--  $Id: classes_def.xml,v 1.14 2012/07/03 03:27:24 kutschke Exp $     -->
+<!--  $Author: kutschke $ -->
+<!--  $Date: 2012/07/03 03:27:24 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.13 $$Date: 2012/05/23 07:58:06 $"; -->
+<!--  rev="$Revision: 1.14 $$Date: 2012/07/03 03:27:24 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -24,11 +24,20 @@
  <class name="mu2e::CaloHitCollection"/>
  <class name="mu2e::CaloCrystalHit"/>
  <class name="mu2e::CaloCrystalHitCollection"/>
-<!--the following two lines were added by gianipez  -->
  <class name="mu2e::CaloCluster"/>
  <class name="mu2e::CaloClusterCollection"/>
- 
- <class name="mu2e::ExtMonUCITofHit"/> 
+ <class name="mu2e::KalRepPayload">
+    <field name="transientTrack_" transient="true"/>
+ </class>
+ <class name="mu2e::KalRepPayloadCollection"/>
+ <class name="mu2e::LocalHelixPayload"/>
+ <class name="std::vector<mu2e::LocalHelixPayload>"/>
+ <class name="mu2e::HOTPayload"/>
+ <class name="std::vector<mu2e::HOTPayload>"/>
+ <class name="mu2e::KalRepExtensionPayload"/>
+ <class name="mu2e::KalRepExtensionPayloadCollection"/>
+
+ <class name="mu2e::ExtMonUCITofHit"/>
  <class name="mu2e::ExtMonUCITofHitCollection"/>
  <class name="mu2e::HoughCircle"/>
  <class name="mu2e::HoughCircleCollection"/>
@@ -45,9 +54,9 @@
  <class name="mu2e::TrackSeed"/>
  <class name="mu2e::TrackSeedCollection" persistent="false"/>
 
+
  <class name="art::Ptr<mu2e::CaloHit>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloHit> >"/>
-<!--the following two lines were added by gianipez  -->
  <class name="art::Ptr<mu2e::CaloCrystalHit>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloCrystalHit> >"/>
  <class name="art::Ptr<mu2e::CaloCluster>"/>
@@ -67,8 +76,9 @@
  <class name="art::Wrapper<mu2e::StrawClusterCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitCollection>"/>
  <class name="art::Wrapper<mu2e::CaloCrystalHitCollection>"/>
-<!--the following line were added by gianipez  -->
  <class name="art::Wrapper<mu2e::CaloClusterCollection>"/>
+ <class name="art::Wrapper<mu2e::KalRepPayloadCollection>"/>
+ <class name="art::Wrapper<mu2e::KalRepExtensionPayloadCollection>"/>
 
  <class name="art::Wrapper<mu2e::ExtMonUCITofHitCollection>"/>
  <class name="art::Wrapper<mu2e::HoughCircleCollection>"/>
