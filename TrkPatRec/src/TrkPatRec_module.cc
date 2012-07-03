@@ -1,9 +1,9 @@
 
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.23 2012/05/21 07:41:55 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2012/05/21 07:41:55 $
+// $Id: TrkPatRec_module.cc,v 1.24 2012/07/03 04:19:14 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2012/07/03 04:19:14 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -37,6 +37,9 @@
 #include "TrkPatRec/inc/TrkHelixFit.hh"
 #include "TrkBase/TrkPoca.hh"
 #include "TrkPatRec/inc/TrkPatRec.hh"
+// Mu2e
+#include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
+#include "TrkPatRec/inc/PayloadSaver.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 
@@ -113,6 +116,8 @@ class TrkPatRec : public art::EDProducer
     KalFit _seedfit, _kfit;
   // robust helix fitter
     TrkHelixFit _hfit;
+    //
+    PayloadSaver _payloadSaver;
    // helper functions
     bool findData(const art::Event& e);
     bool tighthit(double edep, double rho);
@@ -224,9 +229,11 @@ class TrkPatRec : public art::EDProducer
     _seedfit(pset.get<fhicl::ParameterSet>("SeedFit")),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit")),
     _hfit(pset.get<fhicl::ParameterSet>("HelixFit")),
+    _payloadSaver(pset),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC"))
   {
     produces<TrkRecoTrkCollection>();
+    produces<KalRepPayloadCollection>();
 // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
   }
@@ -358,6 +365,8 @@ class TrkPatRec : public art::EDProducer
     if(_diag > 0 && tpeaks.size() == 0)
       fillFitDiag(-1,dummypeak,dummydef,dummyhfit,dummydef,dummykfit,dummydef,dummykfit);
 // put the tracks into the event
+    art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
+    _payloadSaver.put(*tracks, tracksID, event);
     event.put(tracks);
   }
 
