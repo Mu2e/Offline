@@ -3,9 +3,9 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.18 2012/06/22 22:48:07 youzy Exp $
+// $Id: PrimaryProtonGun.cc,v 1.19 2012/07/03 20:05:53 youzy Exp $
 // $Author: youzy $
-// $Date: 2012/06/22 22:48:07 $
+// $Date: 2012/07/03 20:05:53 $
 //
 // Original author Rob Kutschke
 //
@@ -33,6 +33,8 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "CLHEP/Vector/Rotation.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 
 //ROOT Includes
 #include "TH1D.h"
@@ -54,6 +56,9 @@ namespace mu2e {
     // Parameters from the run time configuration.
     _p(config.getDouble("primaryProtonGun.p", pBeam )),
     _beamDisplacementOnTarget(config.getHep3Vector("beamDisplacementOnTarget")),
+    _beamRotationTheta(config.getDouble("beamRotationTheta", 0)),
+    _beamRotationPhi(config.getDouble("beamRotationPhi", 0)),
+    _beamRotationPsi(config.getDouble("beamRotationPsi", 0)),
     _beamSpotSigma(config.getDouble("primaryProtonGun.beamSpotSigma")),
     _czmin(config.getDouble("primaryProtonGun.czmin", -1.)),
     _czmax(config.getDouble("primaryProtonGun.czmax", -1.)),
@@ -117,6 +122,12 @@ namespace mu2e {
     // Generated 4 momentum.
     CLHEP::HepLorentzVector mom(  randomUnitSphere.fire(_p), e );
 
+    CLHEP::HepRotation rot;
+    rot.setTheta( _beamRotationTheta * CLHEP::degree );
+    rot.setPhi( _beamRotationPhi * CLHEP::degree );
+    rot.setPsi( _beamRotationPsi * CLHEP::degree );
+    mom = rot * mom;
+ 
     // Add the proton to the list of generated particles.
     genParts.push_back( GenParticle( PDGCode::p_plus, GenId::primaryProtonGun, pos, mom, time));
 

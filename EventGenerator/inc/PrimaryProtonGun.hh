@@ -3,9 +3,9 @@
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGun.hh,v 1.13 2012/06/22 22:48:07 youzy Exp $
+// $Id: PrimaryProtonGun.hh,v 1.14 2012/07/03 20:05:53 youzy Exp $
 // $Author: youzy $
-// $Date: 2012/06/22 22:48:07 $
+// $Date: 2012/07/03 20:05:53 $
 //
 //
 // The coordinate system used in this class is:
@@ -61,6 +61,11 @@ namespace mu2e {
 
     // Offset of production point relative to the origin described above; in mm.
     CLHEP::Hep3Vector _beamDisplacementOnTarget;
+
+    // Rotation of beam direction wrt to target angle; in deg.
+    double _beamRotationTheta;
+    double _beamRotationPhi;
+    double _beamRotationPsi;
 
     // Beamspot is a 2D gaussian with this sigma in both x and y.
     double _beamSpotSigma;
