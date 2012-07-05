@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.34 2012/07/02 21:56:44 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/07/02 21:56:44 $
+# $Id: SConstruct,v 1.35 2012/07/05 21:38:53 brownd Exp $
+# $Author: brownd $
+# $Date: 2012/07/05 21:38:53 $
 #
 # Original author Rob Kutschke.
 #
@@ -112,7 +112,7 @@ env.Append(BUILDERS = {'DictionarySource' : genreflex})
 # Set compile and link flags.
 SetOption('warn', 'no-fortran-cxx-mix')
 env.MergeFlags('-g')
-env.MergeFlags('-O3')
+env.MergeFlags('-O0')
 env.MergeFlags('-fno-omit-frame-pointer')
 env.MergeFlags('-DNDEBUG')
 env.MergeFlags('-rdynamic')

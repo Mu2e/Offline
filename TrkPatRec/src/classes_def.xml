@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.1 2011/09/27 21:58:01 mu2ecvs Exp $     -->
-<!--  $Author: mu2ecvs $ -->
-<!--  $Date: 2011/09/27 21:58:01 $   -->
+<!--  $Id: classes_def.xml,v 1.2 2012/07/05 21:38:53 brownd Exp $     -->
+<!--  $Author: brownd $ -->
+<!--  $Date: 2012/07/05 21:38:53 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.1 $$Date: 2011/09/27 21:58:01 $"; -->
+<!--  rev="$Revision: 1.2 $$Date: 2012/07/05 21:38:53 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -16,6 +16,8 @@
 
 
 <lcgdict>
-    <class name="mu2e::TrkHitInfo" />
-    <class name="std::vector<mu2e::TrkHitInfo>" />
+    <class name="mu2e::TrkHitFilter" />
+    <class name="std::vector<mu2e::TrkHitFilter>" />
+    <class name="mu2e::StrawHitInfo" />
+    <class name="std::vector<mu2e::StrawHitInfo>" />
 </lcgdict>

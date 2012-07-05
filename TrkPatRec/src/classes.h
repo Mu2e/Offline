@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.1 2011/09/27 21:58:01 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2011/09/27 21:58:01 $
+// $Id: classes.h,v 1.2 2012/07/05 21:38:53 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/05 21:38:53 $
 //
 // Original author Rob Kutschke
 //
@@ -11,5 +11,8 @@
 #include <vector>
 
 #include "TrkPatRec/inc/TrkHitFilter.hh"
+#include "TrkPatRec/inc/StrawHitInfo.hh"
 
-template class std::vector<mu2e::TrkHitInfo>;
+template class std::vector<mu2e::TrkHitFilter>;
+template class std::vector<mu2e::StrawHitInfo>;
+
