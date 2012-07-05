@@ -592,7 +592,7 @@ void KalFitAmbig(TTree* t, int acut=0) {
   TCut active("_active>0");
 // apply requested cuts
   TCut quality;
-  if(acut>0)
+  if(acut>=0)
     quality = ncuts[acut] && t0cuts[acut] && momcuts[acut] && fitcuts[acut];
 
   TCut goodtrk = (reco+quality+mcsel);
