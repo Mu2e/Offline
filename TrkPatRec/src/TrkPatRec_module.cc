@@ -1,8 +1,8 @@
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.25 2012/07/05 21:38:53 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.26 2012/07/05 22:41:16 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/05 21:38:53 $
+// $Date: 2012/07/05 22:41:16 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -513,9 +513,9 @@ class TrkPatRec : public art::EDProducer
 	    }
 	  }
 	}
-	double tmed = findMedian(ptime);
-	double pmed = findMedian(pphi);
 	if(tpeak._trkptrs.size() >= _mindp){
+	  double tmed = findMedian(ptime);
+	  double pmed = findMedian(pphi);
 // compute Z information and staion spacing, and the average radial position of the peak
 // also compute the spread WRT the median
 	  std::vector<double> hitz;
