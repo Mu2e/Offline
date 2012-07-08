@@ -59,6 +59,10 @@ namespace mu2e {
     // local in memory.
     std::vector<VolumeId> _vids;  // preserve hits in just those volumes
 
+    bool _positionCut;
+    std::vector<double> _positionCenter;
+    std::vector<double> _positionHalfLength;
+
     bool _storeParents;
 
     bool _storeExtraHits; // store all VD hits for saved particles, not just in _vids.
@@ -75,10 +79,18 @@ namespace mu2e {
     : _inModuleLabel(pset.get<std::string>("inputModuleLabel"))
     , _inInstanceName(pset.get<std::string>("inputInstanceName"))
     , _vids(pset.get<std::vector<VolumeId> >("acceptedVids"))
+    , _positionCut(pset.get<bool>("positionCut", false))
+    , _positionCenter(std::vector<double>(3, 0.0))
+    , _positionHalfLength(std::vector<double>(3, 0.0)) 
     , _storeParents(pset.get<bool>("storeParents"))
       // default to false for compatibility with existing .fcl files.
     , _storeExtraHits(pset.get<bool>("storeExtraHits", false))
   {
+    if (_positionCut) {
+      _positionCenter = pset.get<std::vector<double> >("positionCenter");
+      _positionHalfLength = pset.get<std::vector<double> >("positionHalfLength");
+    }
+
     std::cout<<"FilterVDHits(): storeParents = "<<_storeParents<<std::endl;
     std::cout<<"FilterVDHits(): storeExtraVDs = "<<_storeExtraHits<<std::endl;
 
@@ -111,7 +123,12 @@ namespace mu2e {
     for(StepPointMCCollection::const_iterator i=inhits.begin(); i!=inhits.end(); ++i) {
 
       if(std::find(_vids.begin(), _vids.end(), i->volumeId()) != _vids.end()) {
-
+        if ( _positionCut && 
+             ( fabs(i->position().x() - _positionCenter[0]) > _positionHalfLength[0] ||
+               fabs(i->position().y() - _positionCenter[1]) > _positionHalfLength[1] ||
+               fabs(i->position().z() - _positionCenter[2]) > _positionHalfLength[2] ) )
+          continue;
+          
         outhits->push_back(*i);
 
         AGDEBUG("here");
