@@ -4,9 +4,9 @@
 //
 // Define a type for a collection of TrkRecoTrk objects.
 //
-// $Id: TrkRecoTrkCollection.hh,v 1.1 2011/06/11 03:17:48 kutschke Exp $
+// $Id: TrkRecoTrkCollection.hh,v 1.2 2012/07/10 19:31:44 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/11 03:17:48 $
+// $Date: 2012/07/10 19:31:44 $
 //
 // Original author Rob Kutschke
 //
@@ -17,6 +17,7 @@
 // be needed until the BaBar code is modified.
 // using namespace CLHEP:
 
+#include "BaBar/BaBar.hh"
 #include "TrkBase/TrkRecoTrk.hh"
 #include "GeneralUtilities/inc/OwningPointerCollection.hh"
 
