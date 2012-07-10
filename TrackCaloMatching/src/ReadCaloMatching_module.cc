@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.1 2012/07/10 00:02:19 gianipez Exp $
+// $Id: ReadCaloMatching_module.cc,v 1.2 2012/07/10 04:54:49 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
+// $Date: 2012/07/10 04:54:49 $
 //
 // Original author G. Pezzullo
 //
@@ -40,6 +40,16 @@
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+
+//CLHEP includes
+#include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Matrix/Vector.h"
+#include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Matrix/Matrix.h"
+#include "CLHEP/Geometry/HepPoint.h"
+#include "CLHEP/Units/PhysicalConstants.h"
+#include "CLHEP/Matrix/SymMatrix.h"
+
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
 
 

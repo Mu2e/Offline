@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.1 2012/07/10 00:02:19 gianipez Exp $
+// $Id: Calorimeter4VanesGeom.hh,v 1.2 2012/07/10 04:54:49 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
+// $Date: 2012/07/10 04:54:49 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -20,7 +20,16 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
-//#include "Mu2eUtilities/inc/LinePointPCA.hh"
+
+//CLHEP includes
+#include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Matrix/Vector.h"
+#include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Matrix/Matrix.h"
+#include "CLHEP/Geometry/HepPoint.h"
+#include "CLHEP/Units/PhysicalConstants.h"
+#include "CLHEP/Matrix/SymMatrix.h"
+
 #include "KalmanTests/inc/TrkRecoTrkCollection.hh"
 
 // From the art tool-chain

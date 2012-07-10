@@ -1,9 +1,9 @@
 //
 // container for the info of the extrapolated trajectory on the calorimeter
 //
-// $Id: TrkToCaloExtrapol.hh,v 1.1 2012/07/10 00:02:19 gianipez Exp $
+// $Id: TrkToCaloExtrapol.hh,v 1.2 2012/07/10 04:54:49 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
+// $Date: 2012/07/10 04:54:49 $
 //
 // Original author G. Pezzullo
 //
@@ -15,6 +15,9 @@
 // Mu2e includes:
 #include "art/Persistency/Common/Ptr.h"
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Matrix/Vector.h"
+#include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Matrix/Matrix.h"
 #include "CLHEP/Geometry/HepPoint.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/SymMatrix.h"
@@ -38,14 +41,11 @@
 // C++ includes
 #include <vector>
 
-
-
 namespace mu2e {
 
 typedef  art::Ptr< const TrkRecoTrk * const  >            TrkRecoTrkPtr;
 
 struct TrkToCaloExtrapol{
-
 
 private:
         int                                            _vaneId;    //vane index, runs from 0 to nVanes
