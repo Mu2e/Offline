@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.155 2012/06/24 05:12:27 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/06/24 05:12:27 $
+// $Id: geom_01.txt,v 1.156 2012/07/10 00:02:20 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2012/07/10 00:02:20 $
 //
 // Original author Rob Kutschke
 //
@@ -372,10 +372,10 @@ double calorimeter.rInscribed                              = 360.;
 string calorimeter.calorimeterFillMaterial                 = "DSVacuum";
 
 int    calorimeter.numberOfVanes    =  4;
-int    calorimeter.nCrystalRSlices  =  12;
+int    calorimeter.nCrystalRSlices  =  11;
 int    calorimeter.nCrystalZSlices  =  44;
 
-double calorimeter.crystalHalfLong  = 65.;
+double calorimeter.crystalHalfLong  = 55.01;
 double calorimeter.crystalHalfTrans = 15.;
 string calorimeter.crystalMaterial                         = "Lyso_01"; //"G4_PbWO4";
 

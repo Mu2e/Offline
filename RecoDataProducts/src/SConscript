@@ -1,13 +1,18 @@
 #
-# $Id: SConscript,v 1.1 2011/05/24 17:16:43 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/24 17:16:43 $
+# $Id: SConscript,v 1.2 2012/07/10 00:02:20 gianipez Exp $
+# $Author: gianipez $
+# $Date: 2012/07/10 00:02:20 $
 #
 # Original author Rob Kutschke.
 #
 
 import os.path, re
 Import('env')
+
+# This comes from: root-config --cflags --glibs
+# Then guess at the correct location of Spectrum and MLP.
+rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
+             'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
 
 # last two components of the path. Ex: /not/this/but/THIS/AND_THIS
 #                                      "AND_THIS" is usually "src"

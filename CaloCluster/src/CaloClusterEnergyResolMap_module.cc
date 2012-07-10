@@ -1,9 +1,9 @@
 //
 // Visualization of the energy resolution  on the rows and on the columns
 //
-// $Id: CaloClusterEnergyResolMap_module.cc,v 1.9 2012/03/20 18:46:58 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/03/20 18:46:58 $
+// $Id: CaloClusterEnergyResolMap_module.cc,v 1.10 2012/07/10 00:02:20 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2012/07/10 00:02:20 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -39,11 +39,7 @@
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-//#include "CaloCluster/inc/CaloClusterUtilities.hh"
 #include "CaloCluster/inc/CaloClusterer.hh"
-//#include "CaloCluster/inc/CaloClusterFinder.hh"
-//#include "CaloCluster/inc/ClosestCaloClusterFinder.hh"
-//#include "CaloCluster/inc/CaloClusterUtilities.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
@@ -51,7 +47,6 @@
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "cetlib/exception.h"
-//#include "Analyses/inc/MCCaloUtilities.hh"
 
 //Root includes
 #include "TFile.h"
@@ -87,7 +82,7 @@ using namespace std;
 namespace mu2e {
 
 
-struct elecData{
+struct electronData{
         double _cluEnergy;
         double _cluTime;
         double _impTime;
@@ -102,10 +97,10 @@ struct elecData{
         CLHEP::Hep3Vector _impMom3Vec;
         double _cryTime;
 
-        bool operator<( const elecData other) const{
+        bool operator<( const electronData other) const{
                 return ( _impTime< other._impTime);
         }
-        elecData & operator=(const elecData& other) {
+        electronData & operator=(const electronData& other) {
                 _cluEnergy = other._cluEnergy;
                 _cluTime   = other._cluTime;
                 _impTime = other._impTime;
@@ -121,7 +116,7 @@ struct elecData{
                 _cryTime    = other._cryTime;
                 return *this;
         }
-        elecData():
+        electronData():
                 _impTime(1e10),
                 _impEnergy(0.0),
                 _Nseed(0){
@@ -144,7 +139,7 @@ typedef std::map<int , cryInfo> CryMap;
 
 
 //the key is the the vane
-typedef std::map<unsigned int,std::map<unsigned int, elecData > > ElecMap;
+typedef std::map<unsigned int,std::map<unsigned int, electronData > > ElectronMap;
 
 static int ncalls(0);
 
@@ -227,11 +222,7 @@ public:
         _cTCanvSigmaVsRow(0),
         _TGr(0),
         _Ntup(0),
-        //        _hTHistEnergyCluMulti(0),
-        //        _hTHistEnergyMulti(0),
-        //        _hTHistTimeCluMulti(0),
-        //        _hTHistTimeMulti(0),
-        //_hTHistTest(0),
+
         _EnergyClusterCut(pset.get<double>("energyClusterCut",60.)),//MeV
         _binWidth(0.5),
         _application(0),
@@ -420,25 +411,6 @@ private:
         _clSeedPpw[10000],
         _clSeedThetaW[10000],
         _clSeedThetaV[10000];
-        //        _SPx[10000],
-        //          _SPy[10000],
-        //          _SPz[10000],
-        //          _SPu[10000],
-        //          _SPv[10000],
-        //          _SPw[10000],
-        //          _SPuVane[10000],
-        //          _SPvVane[10000],
-        //          _SPwVane[10000],
-        //          _SPT[10000],
-        //          _SPLength[10000],
-        //          _SPE[10000],
-        //          _SPpx[10000],
-        //          _SPpy[10000],
-        //          _SPpz[10000],
-        //          _SPpCosTh[10000],
-        //          _SPpPhi[10000];
-
-
 
 };
 
@@ -461,14 +433,11 @@ bool findTrkId(std::vector<unsigned int> vec, unsigned int t){
 
 
 void CaloClusterEnergyResolMap::beginJob( ) {
-        //        ++_nAnalyzed;
-        //        ++mu2e::ncalls;
 
         cout << "start CaloClusterEnergyResolMap..."<<endl;
 
         CaloManager = auto_ptr<MCCaloUtilities>(new MCCaloUtilities());
 
-        //art::ServiceHandle<art::TFileService> tfs;
 
         // If needed, create the ROOT interactive environment. See note 1.
         if ( !gApplication ){
@@ -480,10 +449,7 @@ void CaloClusterEnergyResolMap::beginJob( ) {
         gStyle->SetPalette(1);
         gROOT->SetStyle("Plain");
 
-        // _fakeCanvas = new TCanvas("canvas_Fake","double click for next event",300,100);
-
-        // See note 3.
-        _directory = gDirectory;
+       _directory = gDirectory;
 
 
 }
@@ -499,7 +465,6 @@ void CaloClusterEnergyResolMap::analyze(art::Event const & evt ) {
         GeomHandle<Calorimeter> cg;
         if (ncalls == 1) {
 
-                // cout << "This should be done only in the first event" << endl;
                 art::ServiceHandle<art::TFileService> tfs;
 
                 art::TFileDirectory impAngles = tfs->mkdir("ImpactAngles");
@@ -567,9 +532,7 @@ void CaloClusterEnergyResolMap::analyze(art::Event const & evt ) {
                 _hTHistThetaV_v2               = impAngles.make<TH1D>( "ThetaV_v2","ThetaV_v2 ;arcTan(#vec{p_{v}}/(#vec{p}, #hat{n}) ) [deg];Entries [#]", 720 , -180., 180.0);
                 _hTHistThetaV_v3               = impAngles.make<TH1D>( "ThetaV_v3","ThetaV_v3 ; arcTan(#vec{p_{v}}/(#vec{p}, #hat{n}) ) [deg];Entries [#]", 720 , -180., 180.0);
                 _hTHistCryVsStepPointTime      = tfs->make<TH1D>( "CryVsStepPointTime","CryVsStepPointTime ; t_{Cry} - t_{Step} [ns];Entries", 200000 , -1000.0, 1000.0);
-                // _hTHistTest        = tfs->make<TH1D>( "CosPhiRecProva","CosPhiRecProva ; cos#phi ;Entries [#]", 720 , -180., 180.0);
 
-                //__binWidth = _hTHistDeltaEnergy_row->GetYaxis()->GetBinWidth(1);
                 _Ntup        = tfs->make<TTree>("ClusterSeedMap", "Cluster seeds info");
 
                 _Ntup->Branch("evt", &_evt , "evt/F");//1
@@ -609,38 +572,6 @@ void CaloClusterEnergyResolMap::analyze(art::Event const & evt ) {
                 _Ntup->Branch("clSeedPpw[clSeeds]",_clSeedPpw , "clSeedPpw[clSeeds]/F");//32
                 _Ntup->Branch("clSeedThetaW[clSeeds]",_clSeedThetaW , "clSeedThetaW[clSeeds]/F");//33
                 _Ntup->Branch("clSeedThetaV[clSeeds]",_clSeedThetaV , "clSeedThetaV[clSeeds]/F");//34
-                //                _Ntup->Branch("cryId", &_cryId, "cryId/I");
-                //                _Ntup->Branch("vane",&_vane , "vane/I");
-                //                _Ntup->Branch("cryEdep",&_cryEdep , "cryEdep/F");
-                //                _Ntup->Branch("cryEdepTot",&_cryEdepTot , "cryEdepTot/F");
-                //                _Ntup->Branch("cryT",&_cryT , "cryT/F");
-                //                _Ntup->Branch("cryPdgId",&_cryPdgId , "cryPdgId/I");
-                //                _Ntup->Branch("cryIsGen",&_cryIsGen , "cryIsGen/I");
-                //                _Ntup->Branch("crytrkId",&_crytrkId , "crytrkId/I");
-                //                _Ntup->Branch("crynSteps",&_crynSteps , "crynSteps/I");
-                //
-                //                _Ntup->Branch("SPx[crynSteps]",_SPx , "SPx[crynSteps]/F");
-                //                _Ntup->Branch("SPy[crynSteps]",_SPy , "SPy[crynSteps]/F");
-                //                _Ntup->Branch("SPz[crynSteps]",_SPz , "SPz[crynSteps]/F");
-                //                _Ntup->Branch("SPu[crynSteps]",_SPu , "SPu[crynSteps]/F");
-                //                _Ntup->Branch("SPv[crynSteps]",_SPv , "SPv[crynSteps]/F");
-                //                _Ntup->Branch("SPw[crynSteps]",_SPw , "SPw[crynSteps]/F");
-                //                _Ntup->Branch("SPu[crynSteps]",_SPuVane , "SPuVane[crynSteps]/F");
-                //                _Ntup->Branch("SPv[crynSteps]",_SPvVane , "SPvVane[crynSteps]/F");
-                //                _Ntup->Branch("SPw[crynSteps]",_SPwVane , "SPwVane[crynSteps]/F");
-                //                _Ntup->Branch("SPT[crynSteps]",_SPT , "SPT[crynSteps]/F");
-                //                _Ntup->Branch("SPpdgId[crynSteps]",_SPpdgId , "SPpdgId[crynSteps]/I");
-                //                _Ntup->Branch("SPLength[crynSteps]",_SPLength , "SPLength[crynSteps]/F");
-                //                _Ntup->Branch("SPE[crynSteps]",_SPE , "SPE[crynSteps]/F");
-                //                _Ntup->Branch("SPpx[crynSteps]",_SPpx , "SPpx[crynSteps]/F");
-                //                _Ntup->Branch("SPpy[crynSteps]",_SPpy , "SPpy[crynSteps]/F");
-                //                _Ntup->Branch("SPpz[crynSteps]",_SPpz , "SPpz[crynSteps]/F");
-                //                _Ntup->Branch("SPpCosTh[crynSteps]",_SPpCosTh , "SPpCosTh[crynSteps]/F");
-                //                _Ntup->Branch("SPpPhi[crynSteps]",_SPpPhi , "SPpPhi[crynSteps]/F");
-                //                _Ntup->Branch("SPIsGen[crynSteps]",_SPIsGen , "SPIsGen[crynSteps]/I");
-                //                _Ntup->Branch("SPTrkId[crynSteps]",_SPTrkId , "SPTrkId[crynSteps]/I");
-                //                _Ntup->Branch("SPIsSignal[crynSteps]",_SPIsSignal , "SPIsSignal[crynSteps]/I");
-
 
         }
 
@@ -652,21 +583,14 @@ void CaloClusterEnergyResolMap::analyze(art::Event const & evt ) {
 double logNormale(double *x, double *par){
         double y = 0.0;
 
-        //con il valore par[4]=-1 si ha la logNormale con coda a sinistra
+        //if par[4]=-1 the logNormal function is defined with the higher tail on the left side
         double tempx = (-par[1]+x[0]);
 
-        //e' l'espressione del valore della x in cui si ha il max della logN()
-        // double x_peak = par[1] - TMath::Exp(par[2]-std::pow(par[3],2));
-
-        //con questo if() elimino i problemi che si avrebbero con un agomento del log() minori di zero
         if(tempx > 0){
                 y = TMath::Gaus(TMath::Log(tempx), par[2], par[3], kTRUE) / tempx ;
                 y += par[4];
         }
-
-
-
-        y*=par[0];//fisso il valore della normalizzazione, ossia par[0] e' il valore dell'integrale della funzione in tutto il suo campo di esistenza
+        y*=par[0];
         y *= par[5];
         return y;
 }
@@ -676,10 +600,10 @@ void CaloClusterEnergyResolMap::endJob() {
         GeomHandle<Calorimeter> cg;
         const int n = cg->nCrystalR();
 
-        float x[n] ;//= {0.}  ;
-        float y[n] ;//= {0.} ;
-        float ex[n];//= {0.} ;
-        float ey[n];//= {0.} ;
+        float x[n] ;
+        float y[n] ;
+        float ex[n];
+        float ey[n];
 
         art::ServiceHandle<art::TFileService> tfs;
         art::TFileDirectory dirRow = tfs->mkdir("DirRow");
@@ -732,7 +656,6 @@ void CaloClusterEnergyResolMap::endJob() {
                 ey[i] = Dsigma;
 
         }
-        ///_TGr                   = dirRow.make<TGraphErrors>(x,y,ex,ey);
         _cTCanvSigmaVsRow->cd();
         _cTCanvSigmaVsRow->SetGrid();
         TGraphErrors *_TGr = new TGraphErrors(n,x,y,ex,ey);
@@ -740,9 +663,6 @@ void CaloClusterEnergyResolMap::endJob() {
         _TGr->SetMarkerColor(4);
         _TGr->SetMarkerStyle(21);
         _TGr->Draw("AP");
-
-        //_cTCanvSigmaVsRow->Update();
-
 
         for( int i = 1; i<= _hTHistDeltaEnergy_column->GetNbinsX(); ++i){
 
@@ -776,10 +696,7 @@ void CaloClusterEnergyResolMap::endJob() {
 
                 _EpeakVsColumn->SetBinContent(i, Ep);
                 _EpeakVsColumn->SetBinError(i, deltaEp);
-                //                        _hTHistDeltaEnergyColumnProj(0);
-                //                _h1 = dir1.make<TH1F>("h1","h1",10,0,10);
-                //                _hTHistDeltaEnergyRowProj;
-                //                _hTHistDeltaEnergyColumnProj;
+
         }
 }
 
@@ -850,10 +767,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
                 if(!findTrkId(tmpVTot, iEltrk.getTrkID().asUint() ) ){
 
-                        //cout<<"faccio il puschback in tmpV..."<<endl;
                         tmpVTot.push_back( iEltrk.getTrkID().asUint() );
-                        //cout<<"--------> puschback in tmpV eseguito..."<<endl;
-
                 }
 
                 double cosTheta = iEltrk.getTrkLrntzVec().cosTheta() ;
@@ -861,10 +775,6 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                 double cosPitch = hdil._hitMomentum.cosTheta();
 
                 double lcosPitch = ldil._hitMomentum.cosTheta();
-
-                //
-                //                cout << "cosThetafirst = "<<cosPitch <<", "<<"costhetaLast = "<<lcosPitch<<endl;
-                //                cout<< "ldil._hitMomentum.mag() = "<<ldil._hitMomentum.mag()<<"hdil._hitMomentum.mag() = "<< hdil._hitMomentum.mag()<<endl;
 
 
                 bool condition = true;
@@ -916,9 +826,8 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                 trkVecTot.push_back(tmpVTot[f]);
         }
 
-        ElecMap elecMap;
+        ElectronMap elecMap;
 
-        //adesso leggo i cluster che il mio evento ha generato
         if(caloClusters->size()>0 ){
                 if ( _diagLevel < 0 ){
                         cout<<"-------------------- 3 -----------------------"<<endl;
@@ -939,8 +848,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                         _clCOGu = clu.cog3Vector().x();
                         _clCOGv = clu.cog3Vector().y();
                         _clCOGw = clu.cog3Vector().z();
-                        //_nCryCl = clu.clusterSize;
-                        _nCryCl = clu.size();//clusterSize;
+                        _nCryCl = clu.size();
 
                         eDepClu = clu.energyDep();
                         iVane = clu.vaneId();
@@ -965,9 +873,6 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                         }
                                         CaloCrystalHit const& hit = *(caloClusterHits.at(i));
 
-                                        //                                        _cryT = hit.time();
-                                        //                                        _cryEdep = hit.energyDep();
-                                        //                                        _cryEdepTot = hit.energyDepTotal();
 
                                         double CryTime = hit.time();
 
@@ -975,15 +880,10 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                         if(ROIds.size()<1 ) continue;
 
                                         CaloHit const& thehit = *ROIds.at(0);
-                                        //
-                                        //                                        _cryId = cg->getCrystalByRO(thehit.id());
-                                        //                                        _vane = cg->getVaneByRO(thehit.id());
 
                                         size_t collectionPosition = ROIds.at(0).key();
 
                                         PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
-
-                                        //                                        _crynSteps = mcptr.size();
 
                                         size_t nHitsPerCrystal = mcptr.size();
 
@@ -999,14 +899,11 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
                                                 StepPointMC const& mchit = *mcptr[j2];
 
-                                                SimParticle const& sim = *(simParticles->getOrNull(mchit.trackId()));
+                                                art::Ptr<SimParticle> const& simptr = mchit.simParticle();
+                                                SimParticle const& sim = *simptr;
 
                                                 // The simulated particle that made this hit.
                                                 SimParticleCollection::key_type trackId(mchit.trackId());
-
-
-                                                //                                                _SPpdgId[j2] = sim.pdgId();
-                                                //                                                _SPIsGen[j2] = sim.fromGenerator();
 
                                                 if(sim.fromGenerator() ){
                                                         GenParticle const& gen = *sim.genParticle();
@@ -1021,21 +918,9 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                                 cryMap[mchit.trackId().asInt()].momentum     = mchit.momentum();
                                                                 CLHEP::Hep3Vector crystalFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
                                                                 cryMap[mchit.trackId().asInt()].cryPosition  = crystalFrame;
-                                                                cryMap[mchit.trackId().asInt()].vane         = iVane;//cg->getVaneByRO(thehit.id());
+                                                                cryMap[mchit.trackId().asInt()].vane         = iVane;
                                                                 cryMap[mchit.trackId().asInt()].isSignal = genId==GenId::conversionGun;
-//
-//                                                                bool searchConv = false;
-//                                                                for(unsigned int i=0; i!= tmpVsignal.size(); ++i){
-//                                                                        if(tmpVsignal.at(i) == trackId.asUint() ){
-//                                                                                searchConv = true;
-//                                                                        }
-//                                                                }
 
-//                                                                if(searchConv) {
-//                                                                        cryMap[mchit.trackId().asInt()].isSignal = 1;
-//                                                                }else{
-//                                                                        cryMap[mchit.trackId().asInt()].isSignal = 0;
-//                                                                }
                                                         }else if(mchit.time() < cryMap[mchit.trackId().asInt()].time ){
                                                                 cryMap[mchit.trackId().asInt()].time         = mchit.time();
                                                                 cryMap[mchit.trackId().asInt()].totEnergyDep = mchit.totalEDep();
@@ -1045,70 +930,15 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                                 cryMap[mchit.trackId().asInt()].momentum     = mchit.momentum();
                                                                 CLHEP::Hep3Vector crystalFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
                                                                 cryMap[mchit.trackId().asInt()].cryPosition  = crystalFrame;
-                                                                cryMap[mchit.trackId().asInt()].vane         = iVane;//cg->getVaneByRO(thehit.id());
+                                                                cryMap[mchit.trackId().asInt()].vane         = iVane;
                                                                 cryMap[mchit.trackId().asInt()].isSignal = genId==GenId::conversionGun;
-//                                                                bool searchConv = false;
-//                                                                for(unsigned int i=0; i!= tmpVsignal.size(); ++i){
-//                                                                        if(tmpVsignal.at(i) == trackId.asUint() ){
-//                                                                                searchConv = true;
-//                                                                        }
-//                                                                }
-//
-//                                                                if(searchConv) {
-//                                                                        cryMap[mchit.trackId().asInt()].isSignal = 1;
-//                                                                }else{
-//                                                                        cryMap[mchit.trackId().asInt()].isSignal = 0;
-//                                                                }
+
 
                                                         }
                                                 }
 
-                                                //                                                _SPx[j2] = mchit.position().x();
-                                                //                                                _SPy[j2] = mchit.position().y();
-                                                //                                                _SPz[j2] = mchit.position().z();
 
-                                                //                                                _SPu[j2] = crystalFrame.x();
-                                                //                                                _SPv[j2] = crystalFrame.y();
-                                                //                                                _SPw[j2] = crystalFrame.z();
-                                                //CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(iVane, mchit.position());
-                                                //                                                _SPuVane[j2] = vaneFrame.x();
-                                                //                                                _SPvVane[j2] = vaneFrame.y();
-                                                //                                                _SPwVane[j2] = vaneFrame.z();
-                                                //                                                _SPLength[j2] = mchit.stepLength();
-                                                //                                                _SPE[j2] = mchit.totalEDep();
-                                                //                                                _SPpx[j2] = mchit.momentum().x();
-                                                //                                                _SPpy[j2] = mchit.momentum().y();
-                                                //                                                _SPpz[j2] = mchit.momentum().z();
-                                                //                                                _SPpCosTh[j2] = mchit.momentum().cosTheta();
-                                                //                                                _SPpPhi[j2] = mchit.momentum().phi();
-                                                //                                                _SPT[j2] = mchit.time();
-
-
-
-                                                //                                                _SPTrkId[j2] = mchit.trackId().asInt();
-                                                //                                                if (_SPT[j2] < earliest) {
-                                                //                                                        _cryPdgId = _SPpdgId[j2];
-                                                //                                                        _cryIsGen = _SPIsGen[j2];
-                                                //                                                        _crytrkId = _SPTrkId[j2];
-                                                //                                                }
-
-                                                //                                                if(_diagLevel < 0){
-                                                //                                                        cout<<"-------------------- Filled branches... -----------------------"<<endl;
-                                                //                                                }
                                                 _hTHistCryVsStepPointTime->Fill(CryTime- mchit.time());
-
-
-                                                //                                                bool searchSignal = false;
-                                                //                                                for(unsigned int i=0; i!= tmpVsignal.size(); ++i){
-                                                //                                                        if(tmpVsignal.at(i) == trackId.asUint() ){
-                                                //                                                                searchSignal = true;
-                                                //                                                        }
-                                                //                                                }
-                                                //                                                if(searchSignal) {
-                                                //                                                        _SPIsSignal[j2] = 1;
-                                                //                                                }else{
-                                                //                                                        _SPIsSignal[j2] = 0;
-                                                //                                                }
 
                                                 CLHEP::Hep3Vector cryFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
 
@@ -1200,11 +1030,9 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                 _clSeedThetaV[j]       = thetaVimpact*180./TMath::Pi();
                                                 ++j;
                                         }
-                                        //_clVane = tmpVane;
 
                                 }else {
                                         _clSeeds = 1;
-                                        //_clVane = -1;
                                         _clSeedTrackId[0]      = -1;
                                         _clSeedPdgId[0]        = 0;
                                         _clSeedIsGen[0]        = 0.0;
@@ -1250,7 +1078,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                 for(std::map<unsigned int, unsigned int>::iterator its = seedMap.begin(); its != seedMap.end(); ++its){
                                                         //std::map<unsigned int, unsigned int>::iterator its = seedMap.begin();
                                                         //its = its + i;
-                                                        std::map<unsigned int, elecData >::iterator it = elecMap[iVane].find(its->first);
+                                                        std::map<unsigned int, electronData >::iterator it = elecMap[iVane].find(its->first);
                                                         _hTHistEnergyMultiDIOsignal->Fill( (it)->second._impEnergy );
                                                         _hTHistTimeMultiDIOsignal->Fill( (it)->second._impTime);
 
@@ -1269,7 +1097,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
                                                 for(std::map<unsigned int, unsigned int>::iterator its = seedMap.begin(); its != seedMap.end(); ++its){
 
-                                                        std::map<unsigned int, elecData >::iterator it = elecMap[iVane].find(its->first);
+                                                        std::map<unsigned int, electronData >::iterator it = elecMap[iVane].find(its->first);
                                                         _hTHistEnergyMultiDIOdio->Fill( (it)->second._impEnergy );
                                                         _hTHistTimeMultiDIOdio->Fill( (it)->second._impTime);
                                                 }
@@ -1291,7 +1119,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
         unsigned int size2 = trkVecTot.size();
         unsigned int it2=0;
         while( it2 < size2){
-                ElecMap::iterator ite = elecMap.begin();
+                ElectronMap::iterator ite = elecMap.begin();
                 bool trovato = false;
                 while(!trovato && ite!=elecMap.end() ){
                         if(ite->second.find(trkVecTot[it2]) != ite->second.end()){
@@ -1322,15 +1150,6 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
                                 _hTHistThetaZRec->Fill(ite->second[trkVecTot[it2]]._impMom3Vec.getTheta()*180./TMath::Pi());
                                 _hTHistPhiRec->Fill(ite->second[trkVecTot[it2]]._impMom3Vec.getPhi()*180./TMath::Pi());
-                                //                                _hTHistTest->Fill( std::acos(ite->second[trkVecTot[it2]]._impMom3Vec.getZ()/ite->second[trkVecTot[it2]]._impMom3Vec.mag() )*180./TMath::Pi() );
-                                //                                cout<<"ite->second[trkVecTot[it2]]._Nseed = "<<ite->second[trkVecTot[it2]]._Nseed<<endl;
-                                //                                if(ite->second[trkVecTot[it2]]._Nseed > 1){
-                                //                                        _hTHistMulti->Fill(ite->second[trkVecTot[it2]]._row + 1, ite->second[trkVecTot[it2]]._column + 1);
-                                //                                        _hTHistEnergyCluMulti->Fill( ite->second[trkVecTot[it2]]._cluEnergy);
-                                //                                        _hTHistEnergyMulti->Fill( ite->second[trkVecTot[it2]]._impEnergy);
-                                //                                        _hTHistTimeCluMulti->Fill( ite->second[trkVecTot[it2]]._cluTime);
-                                //                                        _hTHistTimeMulti->Fill( ite->second[trkVecTot[it2]]._impTime);
-                                //                                }
 
                                 Vane const &vane = cg->getVane(ite->first);
                                 CLHEP::Hep3Vector dirMom = ite->second[trkVecTot[it2]]._impMom3Vec.unit();
@@ -1383,7 +1202,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
         unsigned int size = trkVec.size();
         unsigned int it=0;
         while( it < size){
-                ElecMap::iterator ite = elecMap.begin();
+                ElectronMap::iterator ite = elecMap.begin();
                 bool trovato = false;
                 while(!trovato && ite!=elecMap.end() ){
                         if(ite->second.find(trkVec[it]) != ite->second.end()){
@@ -1409,65 +1228,51 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
                                 _hTHistMomDotVaneNorm->Fill(acos(-1.0*dirMom.getX() / dirMom.mag() )*180./TMath::Pi() );
                                 _hTHistThetaW->Fill(std::atan(-1.0*dirMom.getZ() / dirMom.getX() )*180./TMath::Pi() );
-                                //_hTHistThetaW_v0->Fill(std::atan(-1.0*dirMom.getZ() / dirMom.getX() )*180./TMath::Pi() );
 
                                 _hTHistThetaV->Fill(std::atan(dirMom.getY() /  dirMom.getX() )*180./TMath::Pi() );
-                                //_hTHistThetaV_->Fill(std::atan(dirMom.getY() /  dirMom.getX() )*180./TMath::Pi() );
 
                                 if(ite->first == 0 ){
                                         _hTHistPhi_v0->Fill(ite->second[trkVec[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
-                                        //_hTHistMomDotVaneNorm->Fill(acos(-1.0*ite->second[trkVec[it]]._impMom3Vec.getY() /ite->second[trkVec[it]]._impMom3Vec.mag() )*180./TMath::Pi() );
 
-                                        //_hTHistThetaW->Fill(std::atan(-1.0*ite->second[trkVec[it]]._impMom3Vec.getZ() / ite->second[trkVec[it]]._impMom3Vec.getY() )*180./TMath::Pi() );
                                         _hTHistThetaW_v0->Fill(std::atan(-1.0*ite->second[trkVec[it]]._impMom3Vec.getZ() /  ite->second[trkVec[it]]._impMom3Vec.getY()  )*180./TMath::Pi() );
                                         if(_diagLevel < 0){
                                                 cout<<"vaneIndex = "<<ite->first <<endl;
                                                 cout<<"Vx = "<<ite->second[trkVec[it]]._impMom3Vec.getX()<<", Vy = "<<ite->second[trkVec[it]]._impMom3Vec.getY() <<", Vz = "<< ite->second[trkVec[it]]._impMom3Vec.getZ()<<endl;
                                         }
-                                        // _hTHistThetaV->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getX() /  ite->second[trkVec[it]]._impMom3Vec.getY() )*180./TMath::Pi() );
                                         _hTHistThetaV_v0->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getX() /  ite->second[trkVec[it]]._impMom3Vec.getY() )*180./TMath::Pi() );
 
                                 }
                                 if(ite->first == 1 ){
                                         _hTHistPhi_v1->Fill(ite->second[trkVec[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
-                                        //_hTHistMomDotVaneNorm->Fill(acos(ite->second[trkVec[it]]._impMom3Vec.getX() /ite->second[trkVec[it]]._impMom3Vec.mag() )*180./TMath::Pi() );
 
-                                        //_hTHistThetaW->Fill( std::atan(ite->second[trkVec[it]]._impMom3Vec.getZ() /  ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi() );
                                         _hTHistThetaW_v1->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getZ() /  ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi());
                                         if(_diagLevel < 0){
                                                 cout<<"vaneIndex = "<<ite->first <<endl;
                                                 cout<<"Vx = "<<ite->second[trkVec[it]]._impMom3Vec.getX()<<", Vy = "<<ite->second[trkVec[it]]._impMom3Vec.getY() <<", Vz = "<< ite->second[trkVec[it]]._impMom3Vec.getZ()<<endl;
                                         }
-                                        // _hTHistThetaV->Fill( std::atan(ite->second[trkVec[it]]._impMom3Vec.getY() / ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi());
                                         _hTHistThetaV_v1->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getY() / ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi());
 
                                 }
                                 if(ite->first == 2 ){
                                         _hTHistPhi_v2->Fill(ite->second[trkVec[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
-                                        // _hTHistMomDotVaneNorm->Fill(acos(ite->second[trkVec[it]]._impMom3Vec.getY() /ite->second[trkVec[it]]._impMom3Vec.mag() )*180./TMath::Pi() );
 
-                                        //_hTHistThetaW->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getZ() / ite->second[trkVec[it]]._impMom3Vec.getY()  )*180./TMath::Pi() );
                                         _hTHistThetaW_v2->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getZ() / ite->second[trkVec[it]]._impMom3Vec.getY() )*180./TMath::Pi() );
                                         if(_diagLevel < 0){
                                                 cout<<"vaneIndex = "<<ite->first <<endl;
                                                 cout<<"Vx = "<<ite->second[trkVec[it]]._impMom3Vec.getX()<<", Vy = "<<ite->second[trkVec[it]]._impMom3Vec.getY() <<", Vz = "<< ite->second[trkVec[it]]._impMom3Vec.getZ()<<endl;
                                         }
-                                        // _hTHistThetaV->Fill(std::atan(-1.0*ite->second[trkVec[it]]._impMom3Vec.getX() /  ite->second[trkVec[it]]._impMom3Vec.getY()  )*180./TMath::Pi() );
                                         _hTHistThetaV_v2->Fill(std::atan(-1.0*ite->second[trkVec[it]]._impMom3Vec.getX() /  ite->second[trkVec[it]]._impMom3Vec.getY()  )*180./TMath::Pi() );
 
 
                                 }
                                 if(ite->first == 3 ){
                                         _hTHistPhi_v3->Fill(ite->second[trkVec[it]]._impMom3Vec.getPhi()*180./TMath::Pi());
-                                        //_hTHistMomDotVaneNorm->Fill(acos(-1.0*ite->second[trkVec[it]]._impMom3Vec.getX() /ite->second[trkVec[it]]._impMom3Vec.mag() )*180./TMath::Pi() );
 
-                                        // _hTHistThetaW->Fill(std::atan(-1.0*ite->second[trkVec[it]]._impMom3Vec.getZ() /  ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi() );
                                         _hTHistThetaW_v3->Fill(std::atan(-1.0*ite->second[trkVec[it]]._impMom3Vec.getZ() / ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi());
                                         if(_diagLevel < 0){
                                                 cout<<"vaneIndex = "<<ite->first <<endl;
                                                 cout<<"Vx = "<<ite->second[trkVec[it]]._impMom3Vec.getX()<<", Vy = "<<ite->second[trkVec[it]]._impMom3Vec.getY() <<", Vz = "<< ite->second[trkVec[it]]._impMom3Vec.getZ()<<endl;
                                         }
-                                        //  _hTHistThetaV->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getY() / ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi());
                                         _hTHistThetaV_v3->Fill(std::atan(ite->second[trkVec[it]]._impMom3Vec.getY() /  ite->second[trkVec[it]]._impMom3Vec.getX()  )*180./TMath::Pi());
                                 }
 
@@ -1489,8 +1294,6 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
         }
 
-
-        //                cout <<"after.... trkVec.size = "<< trkVec.size() <<endl;
         cout << "Event "<<evt.id().event()<<" CaloClusterEnergyResolMap done..."<<endl;
 
 

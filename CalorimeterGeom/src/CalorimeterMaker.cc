@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.20 2012/02/27 06:05:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/27 06:05:35 $
+// $Id: CalorimeterMaker.cc,v 1.21 2012/07/10 00:02:20 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2012/07/10 00:02:20 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -56,6 +56,7 @@ namespace mu2e{
       _calo->_nCrystalR  = config.getInt   ("calorimeter.nCrystalRSlices");
       _calo->_nCrystalZ  = config.getInt   ("calorimeter.nCrystalZSlices");
       _calo->_rMin       = config.getDouble("calorimeter.rInscribed");
+      _calo->_rMax       = _calo->_rMin + 4.0*_calo->_crystalHW*_calo->_nCrystalR;
 
       _calo->_wrapperHalfThickness = config.getDouble("calorimeter.crystalWrapperHalfThickness");
       _calo->_roHalfTrans          = config.getDouble("calorimeter.crystalReadoutHalfTrans");
@@ -89,6 +90,12 @@ namespace mu2e{
       _calo->_timeGap       = config.getDouble("calorimeter.timeGap",100.0);
       _calo->_electronEdep  = config.getDouble("calorimeter.electronDepositionAPD",1000.0);
       _calo->_electronEmin  = config.getDouble("calorimeter.electronMinEnergyAPD",0.1);
+
+      _calo->_apdMeanNoise  = config.getDouble("calorimeter.meanNoiseAPD", 0.0);
+      _calo->_apdSigmaNoise  = config.getDouble("calorimeter.sigmaNoiseAPD", 0.03);
+      _calo->_lysoLightYield  = config.getDouble("calorimeter.lysoLightYield", 2000.0);
+      _calo->_apdQuantumEff  = config.getDouble("calorimeter.quantumEffAPD", 0.68);
+      _calo->_lightCollectEffAPD = config.getDouble("calorimeter.lightCollectEffAPD", 0.11);
 
       // Create vanes
       MakeVanes();

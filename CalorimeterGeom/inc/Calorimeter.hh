@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.17 2012/03/19 19:35:42 gianipez Exp $
+// $Id: Calorimeter.hh,v 1.18 2012/07/10 00:02:20 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/19 19:35:42 $
+// $Date: 2012/07/10 00:02:20 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -28,6 +28,10 @@ namespace mu2e {
     public:
       Calorimeter(){}
       ~Calorimeter(){}
+
+
+      double innerRaidus()   const { return _rMin; }
+      double outherRadius() const { return _rMax;}
 
       CLHEP::Hep3Vector const& getOrigin() const { return _origin; }
 
@@ -52,6 +56,13 @@ namespace mu2e {
       double getTimeGap() const { return _timeGap; }
       double getElectronEdep() const { return _electronEdep; }
       double getElectronEmin() const { return _electronEmin; }
+
+      double  getApdMeanNoise() const { return _apdMeanNoise;}
+      double  getApdSigmaNoise() const { return _apdSigmaNoise;}
+
+      double getLysoLightYield() const {return _lysoLightYield;}
+      double getApdQuantumEff() const {return _apdQuantumEff;}
+      double getAPDCollectEff() const {return _lightCollectEffAPD;}
 
       // Vane ID (0..nVanes-1)
       int getVaneByRO(int roid) const {
@@ -101,6 +112,8 @@ namespace mu2e {
       CLHEP::Hep3Vector _origin;
 
       double _rMin;
+      double _rMax;
+
 
       double _vaneTheta;
 
@@ -117,6 +130,12 @@ namespace mu2e {
       double _electronEdep; // energy deposition of charged particle crossing APD
       double _electronEmin; // minimum energy deposition of charged particle crossing APD
 
+      double _apdMeanNoise; //MeV
+      double _apdSigmaNoise;//MeV
+
+      double _lysoLightYield;
+      double _apdQuantumEff;//quantum efficiency for Hamamatsu S8664-1010 for a radiation wavelenght of 402nm (typical of lyso)
+      double _lightCollectEffAPD;//light collection efficiency for 30 × 30 mm2 area of the crystal efficiency for Hamamatsu S8664-1010
     };
 
 } //namespace mu2e

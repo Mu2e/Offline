@@ -1,9 +1,9 @@
 //
 // General utilities for the calorimeter's studies
 //
-// $Id: CaloClusterUtilities.cc,v 1.4 2012/04/10 20:28:57 gianipez Exp $
+// $Id: CaloClusterUtilities.cc,v 1.5 2012/07/10 00:02:19 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/04/10 20:28:57 $
+// $Date: 2012/07/10 00:02:19 $
 //
 // Original author G. Pezzullo & G. Tassielli & G. Onorato
 //
@@ -13,7 +13,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "CLHEP/Vector/Rotation.h"
-
+#include "BaBar/BaBar/include/Constants.hh"
 //-----------------------------------------
 // C++ includes
 #include<iostream>
@@ -98,10 +98,6 @@ void MCCaloUtilities::printOutCaloInfo() {
 
                 CLHEP::Hep3Vector toRightC = ( (Hsize) * Yaxis ) + ( (Hleng+(2*ROsize)) * Xaxis ) + ( (Hsize) * Zaxis );
 
-                //cout << "toleft" << toLeftC
-                //     << "\ttoright" << toRightC;
-
-
                 CLHEP::Hep3Vector lcorner = cntr + toLeftC;
                 CLHEP::Hep3Vector rcorner = cntr + toRightC;
 
@@ -137,29 +133,6 @@ void MCCaloUtilities::setTrackAndRO(const art::Event & event,
 
         _generated = sim.fromGenerator();
 
-        //    art::Handle<PhysicalVolumeInfoCollection> volumes;
-        //event.getRun().getByLabel(_g4ModuleLabel, volumes);
-
-        //PhysicalVolumeInfo const& volInfob = volumes->at(sim.startVolumeIndex());
-        //PhysicalVolumeInfo const& volInfoe = volumes->at(sim.endVolumeIndex());
-        //cout << "start: " << sim.startVolumeIndex() << "   " << volInfob.name() << "  " << volInfob.copyNo() << endl;
-        //cout << "end:   " << sim.endVolumeIndex()   << "   " << volInfoe.name() << "  " << volInfoe.copyNo() << endl;
-        //cout << "Start position: " << sim.startPosition() << '\n'
-        //     << "End position:   " << sim.endPosition() << endl;
-        //cout << "Particle process code " << sim.creationCode().name() << endl;
-        //bool ID(false);
-        // if ( sim.hasParent()) {
-        //   cout  << "Parent id " << sim.parentId() << endl;
-        //   ID = true;
-        // }
-        // if ( sim.fromGenerator() ) {
-        //   cout << "Is from generator" << endl;
-        //   ID =  true;
-        // }
-        // if  (!ID) {
-        //   cout << "dunno where it come from" << endl;
-        // }
-
 }
 
 bool MCCaloUtilities::fromOutside() {
@@ -191,7 +164,6 @@ int MCCaloUtilities::getStartingVane(CLHEP::Hep3Vector origin) {
 
                 Vane const & vane = cg->getVane(i);
                 CLHEP::Hep3Vector rsize = *(vane.getRotation()) * vane.getSize();
-                //cout << "size " << vane.getSize() << " and rotated is " << rsize << endl;
                 CLHEP::Hep3Vector vaneOr = vane.getOrigin();
 
 
@@ -208,11 +180,6 @@ int MCCaloUtilities::getStartingVane(CLHEP::Hep3Vector origin) {
 
 }
 
-
-
-
-
-//------------------------------------------------
 std::string & TOUpper(std::string &in) {
         std::string::iterator i = in.begin();
         std::string::iterator end = in.end();
@@ -225,14 +192,208 @@ std::string & TOUpper(std::string &in) {
 
 
 double cry(double val){
-        double size = 30.0000;
+        GeomHandle<Calorimeter> cg;
+        double size = 2.0*cg->crystalHalfSize();//[mm]
         int index = (int) (val / size);
         double result =  val - index*size;
 
         return result;
 }
+double indexToCoor(double ind){
+        GeomHandle<Calorimeter> cg;
+        double res = ind*2.0*cg->crystalHalfSize();
+        res += cg->crystalHalfSize();
+        return res;
+}
+double indexToCoor(int ind){
+        GeomHandle<Calorimeter> cg;
+        double res = (double)(ind*2.0*cg->crystalHalfSize());
+        res += cg->crystalHalfSize();
+        return res;
+}
+
+//the following method set as the cog of the Cluster the cog which has only the w coordinate
+//corrected using the information of the position of the most energetic crystal
+void w_correction_0(double& clCOGw,double& clCOGwErr, int& clCryEnergyMaxColumn){
+        GeomHandle<Calorimeter> cg;
+        double x = clCOGw - indexToCoor(clCryEnergyMaxColumn), xErr = clCOGwErr;
+        xErr -= (cg->crystalHalfSize()/sqrt(12.0));
+
+        double val = 0.0, valErr = 0.0;
+
+        if(x<-50.) x=-50.;
+        if(x>50.) x=50.;
+
+        double p[10] = {-19.48, 1.178, -0.0223, -0.0001045, 3.044e-6, 4.378e-08, 4.862e-10, -1.462e-11, -1.134e-13, 1.403e-15};
+        for(int j=0; j<9; ++j){
+                val += p[j]*pow(x, j);
+        }
+        int exp = 0;
+        for(int k=1; k<9; ++k){
+                exp = k-1;
+                valErr += k*p[k]*pow(xErr,exp);
+        }
+        valErr +=(cg->crystalHalfSize()/sqrt(12.0));
+        clCOGwErr = valErr;
+
+        clCOGw = val + indexToCoor(clCryEnergyMaxColumn);
+
+}
+
+void v_correction_0( float& extrapolThetaV,  double& clCOGv,  double& clCOGvErr){// the first argument is in [deg]
+        GeomHandle<Calorimeter> cg;
+        double val = 0.0, valErr = 0.0;
+        double x = extrapolThetaV;
+        if(x > 100.)  x = 100.;
+        if(x < -100.) x = -100.;
+
+        const int d = 5;
+
+        double p[d] = {0.9204, 0.4834, -0.0003745, -4.387e-5, -4.722e-7};
+
+        for(int j=0; j<d; ++j){
+                val += p[j]*pow(x, j);
+        }
+
+        for(int j=1; j<d; ++j){
+                valErr += j*p[j]*pow(clCOGvErr, j-1);
+        }
+        valErr += (cg->crystalHalfSize()/sqrt(12.0));
+        val += clCOGv;
+        clCOGv = val;
+        clCOGvErr = valErr;
+
+}
+
+void v_correction_0( double& extrapolThetaV,  double& clCOGv,  double& clCOGvErr){// the first argument is in [deg]
+        GeomHandle<Calorimeter> cg;
+        double val = 0.0, valErr = 0.0;
+        double x = extrapolThetaV;
+        if(x > 100.)  x = 100.;
+        if(x < -100.) x = -100.;
+
+        const int d = 5;
+
+        double p[d] = {0.9204, 0.4834, -0.0003745, -4.387e-5, -4.722e-7};
+
+        for(int j=0; j<d; ++j){
+                val += p[j]*pow(x, j);
+        }
+
+        for(int j=1; j<d; ++j){
+                valErr += j*p[j]*pow(clCOGvErr, j-1);
+        }
+        valErr += (cg->crystalHalfSize()/sqrt(12.0));
+        val += clCOGv;
+        clCOGv = val;
+        clCOGvErr = valErr;
+
+}
+
+void w_correction_1(double& clCOGw,double& clCOGwErr, int& wSize){
+        GeomHandle<Calorimeter> cg;
+        double p[10] = {-36.49, 34.92, -16.15, 3.546, -0.1358, -0.06925, 0.006722, 0.001008, -0.0001886, 8.151e-6};
+        double spo = 0.0;
+        if(wSize < 1.0) wSize = 1.0;
+        if(wSize > 10.0) wSize = 10.0;
+
+        for(int i=0; i<10; ++i){
+                spo += p[i]*pow(wSize, i);
+        }
+        clCOGw -= spo;//the minus is not an error!
+
+        double xErr = (cg->crystalHalfSize()/sqrt(12.0))/wSize;
+
+        double  valErr = 0.0;
+
+        int exp = 0;
+        for(int k=1; k<9; ++k){
+                exp = k-1;
+                valErr += k*p[k]*pow(xErr,exp);
+        }
+        clCOGwErr += valErr;
+}
+
+void v_correction_1(int& clCryEnergyMaxRow,  double& clCOGv,  double& clCOGvErr){
+        GeomHandle<Calorimeter> cg;
+        double val = 0.0, valErr = 0.0;
+        double x = clCOGv - indexToCoor(clCryEnergyMaxRow);
+        if(x > 100.)  x = 100.;
+        if(x < -100.) x = -100.;
+
+        if( x < -50.) x=-50.;
+        if( x > 30.) x = 30.;
+
+        double p[4] = {-0.2246, 0.9762, 0.001116, 7.389e-5};
+
+        for(int j=0; j<4; ++j){
+                val += p[j]*pow(x, j);
+        }
+
+        for(int j=1; j<4; ++j){
+                valErr += j*p[j]*pow(clCOGvErr, j-1);
+        }
+        valErr += (cg->crystalHalfSize()/sqrt(12.0));
+        val += indexToCoor(clCryEnergyMaxRow);
+        clCOGv = val;
+        clCOGvErr = valErr;
+
+}
 
 
+void cog_correction_0(CaloCluster &cluster){
+        //Get handle to calorimeter
+        art::ServiceHandle<GeometryService> geom;
+        if(! geom->hasElement<Calorimeter>() ) return;
+        GeomHandle<Calorimeter> cg;
+        CLHEP::Hep3Vector res(1., 1., 1.);
+
+        CLHEP::Hep3Vector  resError(1e-1, 1e-1, 1e-1);
+
+        //get crystal's geometric information
+        double cryHalfSize      =      cg->crystalHalfSize();
+        double  tmpEq    = 0.;
+
+        float R =0.;
+        float Z =0., RZ = 0., RQ = 0.;
+
+        int c = 0;
+        for( CaloCrystalHitPtrVector::const_iterator itCD = cluster.caloCrystalHitsPtrVector().begin(); itCD != cluster.caloCrystalHitsPtrVector().end(); ++itCD){
+                ++c;
+                std::vector<art::Ptr<CaloHit> > const& ROIds = (*itCD)->readouts();
+                CaloHit const& thehit = *ROIds.at(0);
+                //now I take the first crystal of the cluster as a point of reference for calculating the cog
+
+                //Get Z and R from readout
+                double tZ = cg->getCrystalZByRO(thehit.id());
+                double tR = cg->getCrystalRByRO(thehit.id());
+
+                Z += tZ;
+                RQ += pow(tR, 2);
+                R += tR;
+                RZ += tZ*tR;
+
+                //Multiply Z and R for the crystal's energy, which is the weight we use in that algorithm
+                tZ *=(*itCD)->energyDep();
+                tR*=(*itCD)->energyDep();
+
+                //Calculate the sum of the square of the weight for derive the error of the weighted mean
+                tmpEq += std::pow((*itCD)->energyDep(), 2.);
+        }
+        float m = R*Z - RZ;
+        m /= (pow(R,2) - RQ);
+
+        R/=cluster.energyDep();
+        Z/=cluster.energyDep();
+
+        res.setY( (R*2.+ 1.0)*cryHalfSize);
+        res.setZ( (Z*2.+1.0)*cryHalfSize);
+        res.setX(0.0);
+
+}
+
+//the following procedure fill the CaloCluster object with the COGVector, and its error vector
+// with the respective values obtained using an energy weighted algorithm
 void cog(CaloCluster &cluster){
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
@@ -241,112 +402,65 @@ void cog(CaloCluster &cluster){
         CLHEP::Hep3Vector res(1., 1., 1.);
 
         CLHEP::Hep3Vector  resError(1e-1, 1e-1, 1e-1);
-        //int tmpZ = 0, tmpR = 0;//, vane = -1;
-        //int timeZ = 0, timeR = 0;
 
         //get crystal's geometrical information
         double cryHalfSize      =      cg->crystalHalfSize();
-        //double cryHalfLength    =    cg->crystalHalfLength();
-
-        //double tmpTime = 1e10;
-
-        //using the expression for the RMS of a flat distribution, I calculate the value of the RMS for the face of the crystals
-        //double RMScryHalfSize   =   2.*cryHalfSize / TMath::Sqrt(12.);
-        //double RMScryHalfLenght = 2.*cryHalfLength / TMath::Sqrt(12.);
-        //double defaultError     = 1e-06;//default from geant4
 
         double  tmpEq    = 0.;
-        double  showerDepth = 1.5;
+        double  showerDepth = 0.0;
 
         bool isfirstCrystal=true;
         float R =0.;
         float Z =0., RZ = 0., RQ = 0.;
 
-        //int vaneid = -1;
-        //int counter(0);
-        //cout<< "calosize() = "<< cluster.caloCrystalHitsPtrVector.size() <<endl;
-
-//        cout<<"---------cog 1 --------"<<endl;
         int c = 0;
         for( CaloCrystalHitPtrVector::const_iterator itCD = cluster.caloCrystalHitsPtrVector().begin(); itCD != cluster.caloCrystalHitsPtrVector().end(); ++itCD){
-//                cout<<"----------cog1."<<c<<" --------"<<endl;
                 ++c;
                 std::vector<art::Ptr<CaloHit> > const& ROIds = (*itCD)->readouts();
-//                cout<<"----------cog1."<<c<<".1"<<" --------"<<endl;
                 CaloHit const& thehit = *ROIds.at(0);
-//                cout<<"----------cog1."<<c<<".2"<<" --------"<<endl;
                 //now I take the first crystal of the cluster as a point of reference for calculating the cog
                 if(isfirstCrystal){
-                        //vaneid = cg->getVaneByRO(thehit.id() );
-//                        cout<<"----------cog1."<<c<<".2@"<<" --------"<<endl;
-
                         res = cg->getCrystalOriginByRO(thehit.id());
-//                        cout<<"----------cog1."<<c<<".2@@"<<" --------"<<endl;
-
                         isfirstCrystal = false;
                 }
 
-
-                //cout<< "ctrystals read = " << ++counter<<endl;
-
                 //Get Z and R from readout
-//                cout<<"----------cog1."<<c<<".2@@@"<<" --------"<<endl;
-
                 double tZ = cg->getCrystalZByRO(thehit.id());
-//                cout<<"----------cog1."<<c<<".2@@@@"<<" --------"<<endl;
-
                 double tR = cg->getCrystalRByRO(thehit.id());
-//                cout<<"----------cog1."<<c<<".3"<<" --------"<<endl;
+
+                tZ *=(*itCD)->energyDep();
+                tR*=(*itCD)->energyDep();
+
                 Z += tZ;
                 RQ += pow(tR, 2);
                 R += tR;
                 RZ += tZ*tR;
-                //                if( (*itCD)->time() < tmpTime){
-                //                        tmpTime = (*itCD)->time();
-                //                        timeR = tR;
-                //                        timeZ = tZ;
-                //                }
-
-                //cout << "tZ = "<<tZ<<", tR = "<<tR<<"energy_i = "<< (*itCD)->energyDep()<<endl;
-
-                //                tZ += 1.0;
-                //                tR += 1.0;
-                //Multiply Z and R for thhe crystal's energy, which is the weight we use in that algorithm
-                tZ *=(*itCD)->energyDep();
-                tR*=(*itCD)->energyDep();
-//                cout<<"----------cog1."<<c<<".4"<<" --------"<<endl;
-
-//                Z += tZ;
-//                RQ += pow(tR, 2);
-//                R += tR;
-//                RZ += tZ*tR;
 
                 //Calculate the sum of the square of the weight for derive the error of the weighted mean
                 tmpEq += std::pow((*itCD)->energyDep(), 2.);
         }
-//        cout<<"-------------cog 2--------------"<<endl;
         float m = R*Z - RZ;
         m /= (pow(R,2) - RQ);
 
         R/=cluster.energyDep();
         Z/=cluster.energyDep();
-//        cout<<"-------------cog 3--------------"<<endl;
 
-
-        //        res.setX(res.getX() + deltaXc/* + 3904.*/);//value used to shift in tracker coordinate system
-        //        res.setZ(res.getZ() + deltaZc /*- 10200*/);//value used to shift in tracker coordinate system
-        //        res.setY(res.getY() + deltaYc);
-
-        //        resError.setZ( RMScryHalfSize /TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster.energyDep);
-
-        res.setY( (R*2.+ 1.0)*cryHalfSize);//cg->nCrystalR()*cryHalfSize);//
-        res.setZ( (Z*2.+1.0)*cryHalfSize);//cg->nCrystalZ()*cryHalfSize);//
+        res.setY( (R*2.+ 1.0)*cryHalfSize);
+        res.setZ( (Z*2.+1.0)*cryHalfSize);
         res.setX(- showerDepth);
 
-        cluster.SetShowerDir(m);
+        double error = cryHalfSize*2.0;
+        error /= cluster.energyDep();
+        error /= sqrt(12.0);
+
+        resError.setX(error);
+        resError.setY(error);
+        resError.setZ(error);
+
         cluster.SetCogRow((int) R);
         cluster.SetCogColumn((int) Z);
         cluster.SetCog3Vector(res);
+        cluster.SetCog3VectorError(resError);
 }
 
 
@@ -357,19 +471,9 @@ void cog_depth(CaloCluster &cluster, double depth, ClusterMap &clusterMap){
         CLHEP::Hep3Vector res(1., 1., 1.);
 
         CLHEP::Hep3Vector  resError(1e-1, 1e-1, 1e-1);
-        //        int tmpZ = 0, tmpR = 0;//, vane = -1;
-        //        int timeZ = 0, timeR = 0;
 
         //get crystal's geometrical information
         double cryHalfSize      =      cg->crystalHalfSize();
-        //double cryHalfLength    =    cg->crystalHalfLength();
-
-        // double tmpTime = 1e10;
-
-        //using the expression for the RMS of a flat distribution, I calculate the value of the RMS for the face of the crystals
-        //double RMScryHalfSize   =   2.*cryHalfSize / TMath::Sqrt(12.);
-        //double RMScryHalfLenght = 2.*cryHalfLength / TMath::Sqrt(12.);
-        // double defaultError     = 1e-06;//default from geant4
 
         double  tmpEq    = 0.;
         double  showerDepth = depth;
@@ -387,17 +491,12 @@ void cog_depth(CaloCluster &cluster, double depth, ClusterMap &clusterMap){
                 if(isfirstCrystal){
                         res = cg->getCrystalOriginByRO(thehit.id());
                         isfirstCrystal = false;
-                        //  tmpZ = cg->getCrystalZByRO(thehit.id());
-                        //    tmpR = cg->getCrystalRByRO(thehit.id());
                         int vane = cg->getVaneByRO(thehit.id());
-                        clusterMap._vane = vane;
+                        clusterMap._vaneId = vane;
 
                 }
 
-
-                //cout<< "ctrystals read = " << ++counter<<endl;
-
-                //Get Z and R from readout
+               //Get Z and R from readout
                 double tZ = cg->getCrystalZByRO(thehit.id());
                 double tR = cg->getCrystalRByRO(thehit.id());
 
@@ -413,13 +512,6 @@ void cog_depth(CaloCluster &cluster, double depth, ClusterMap &clusterMap){
                 clusterMap._COGrowVec.push_back(tR);
                 clusterMap._COGcolumnVec.push_back(tZ);
 
-
-                //                if( (*itCD)->time() < tmpTime){
-                //                        tmpTime = (*itCD)->time();
-                //                        timeR = tR;
-                //                        timeZ = tZ;
-                //                }
-
                 //Multiply Z and R for thhe crystal's energy, which is the weight we use in that algorithm
                 tZ *=(*itCD)->energyDep();
                 tR*=(*itCD)->energyDep();
@@ -428,14 +520,15 @@ void cog_depth(CaloCluster &cluster, double depth, ClusterMap &clusterMap){
                 RQ += pow(tR, 2);
                 R += tR;
                 RZ += tZ*tR;
+
                 //Calculate the sum of the square of the weight for derive the error of the weighted mean
                 tmpEq += std::pow((*itCD)->energyDep(), 2.);
         }
 
         int size = cluster.size();
         clusterMap._COGcrySize = size;
-        float m = V*W - size*VW;//R*Z - RZ;//
-        m /= (pow(V,2) - size*VQ);//(pow(R,2) - RQ);
+        float m = V*W - size*VW;
+        m /= (pow(V,2) - size*VQ);
 
 
         float D = RQ - pow(R,2);
@@ -451,19 +544,14 @@ void cog_depth(CaloCluster &cluster, double depth, ClusterMap &clusterMap){
 
         clusterMap._cluCogRow = R;
         clusterMap._cluCogColumn = Z;
-        //        resError.setZ( RMScryHalfSize /TMath::Sqrt(cluster._nCrystal) * TMath::Sqrt(tmpEq)/cluster.energyDep);
 
-        res.setY( (R*2.+ 1.0)*cryHalfSize);//cg->nCrystalR()*cryHalfSize);//
-        res.setZ( (Z*2.+ 1.0)*cryHalfSize);//cg->nCrystalZ()*cryHalfSize);//
+        res.setY( (R*2.+ 1.0)*cryHalfSize);
+        res.setZ( (Z*2.+ 1.0)*cryHalfSize);
         res.setX(- showerDepth);
-        //        Save cog#Vector and its errorVector
-        //        cluster.cog3VectorError = resError;
-        // cluster._impactPoint = res;
 
         clusterMap._cluCOG = res;
         clusterMap._showerDir = m;
         clusterMap._errShowerDir = errM;
-        //  return res;
 
 }
 
@@ -476,19 +564,11 @@ void LOGcogMap(CaloCluster &cluster, double w, double depth, ClusterMap &cluster
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
 
-        //if(! geom->hasElement<Calorimeter>() ) return;
         GeomHandle<Calorimeter> cg;
         CLHEP::Hep3Vector res, resError;
-        //int tmpZ = 0, tmpR = 0, vane = -1;
 
-        //get crystal's geometrical information
+        //get crystal's geometric information
         double cryHalfSize      =      cg->crystalHalfSize();
-        //double cryHalfLength    =    cg->crystalHalfLength();
-
-        //using the expression for the RMS of a flat distribution, I calculate the value of the RMS for the face of the crystals
-        //double RMScryHalfSize   =   2.*cryHalfSize / TMath::Sqrt(12.);
-        //double RMScryHalfLenght = 2.*cryHalfLength / TMath::Sqrt(12.);
-        //double defaultError     = 1e-06;//default from geant4
 
         double  tmpEq    = 0.;
         double  sumEi    = 0.;
@@ -516,10 +596,8 @@ void LOGcogMap(CaloCluster &cluster, double w, double depth, ClusterMap &cluster
                 if(isfirstCrystal){
                         res = cg->getCrystalOriginByRO(thehit.id());
                         isfirstCrystal = false;
-                        //tmpZ = cg->getCrystalZByRO(thehit.id());
-                        //tmpR = cg->getCrystalRByRO(thehit.id());
                         int vane = cg->getVaneByRO(thehit.id());
-                        clusterMap._vane = vane;
+                        clusterMap._vaneId = vane;
                 }
 
                 //Get Z and R from readout
@@ -549,9 +627,6 @@ void LOGcogMap(CaloCluster &cluster, double w, double depth, ClusterMap &cluster
                 //Calculate the sum of the square of the weight for derive the error of the weighted mean
                 tmpEq += std::pow(weight, 2.);
         }
-//        if(count <=1){
-//                cout<< "--> ALLERT! It was used only one crystal for the cog computation..."<<endl;
-//        }
 
         clusterMap._COGcrySize = count;
 
@@ -562,20 +637,11 @@ void LOGcogMap(CaloCluster &cluster, double w, double depth, ClusterMap &cluster
         clusterMap._cluCogColumn = Z;
 
 
-        res.setY( (R*2.+ 1.0)*cryHalfSize);//cg->nCrystalR()*cryHalfSize);//
-        res.setZ( (Z*2.+1.0)*cryHalfSize);//cg->nCrystalZ()*cryHalfSize);//
-        res.setX(-depth/*res.getX() + deltaXc + 3904.*/);//value used to shift in tracker coordinate system
-
-
-        //        resError.setZ( RMScryHalfSize /TMath::Sqrt(cluster.size()) * TMath::Sqrt(tmpEq)/cluster.energyDep);
-
-        //Save cog#Vector and its errorVector
-        //        cluster.cog3VectorError = resError;
-        //        cluster._impactPoint = res;
-
+        res.setY( (R*2.+ 1.0)*cryHalfSize);
+        res.setZ( (Z*2.+1.0)*cryHalfSize);
+        res.setX(-depth);
 
         clusterMap._cluCOG = res;
-        //        return res;
 }
 
 
@@ -583,19 +649,11 @@ CLHEP::Hep3Vector LOGcog(CaloCluster &cluster, double w, double depth){
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
 
-        //if(! geom->hasElement<Calorimeter>() ) return;
         GeomHandle<Calorimeter> cg;
         CLHEP::Hep3Vector res, resError;
-        //int tmpZ = 0, tmpR = 0, vane = -1;
 
         //get crystal's geometrical information
         double cryHalfSize      =      cg->crystalHalfSize();
-        //double cryHalfLength    =    cg->crystalHalfLength();
-
-        //using the expression for the RMS of a flat distribution, I calculate the value of the RMS for the face of the crystals
-        //double RMScryHalfSize   =   2.*cryHalfSize / TMath::Sqrt(12.);
-        //double RMScryHalfLenght = 2.*cryHalfLength / TMath::Sqrt(12.);
-        //double defaultError     = 1e-06;//default from geant4
 
         double  tmpEq    = 0.;
         double  sumEi    = 0.;
@@ -613,8 +671,6 @@ CLHEP::Hep3Vector LOGcog(CaloCluster &cluster, double w, double depth){
                 sumEi += (*itCD)->energyDep();
         }
 
-        //clusterMap._cluSize = cluster.size();
-
         for( CaloCrystalHitPtrVector::const_iterator itCD = cluster.caloCrystalHitsPtrVector().begin(); itCD != cluster.caloCrystalHitsPtrVector().end(); ++itCD){
                 std::vector<art::Ptr<CaloHit> > const& ROIds = (*itCD)->readouts();
                 CaloHit const& thehit = *ROIds.at(0);
@@ -623,18 +679,12 @@ CLHEP::Hep3Vector LOGcog(CaloCluster &cluster, double w, double depth){
                 if(isfirstCrystal){
                         res = cg->getCrystalOriginByRO(thehit.id());
                         isfirstCrystal = false;
-                        //tmpZ = cg->getCrystalZByRO(thehit.id());
-                        //tmpR = cg->getCrystalRByRO(thehit.id());
-                        //int vane = cg->getVaneByRO(thehit.id());
-                        //clusterMap._vane = vane;
+
                 }
 
                 //Get Z and R from readout
                 double tZ = cg->getCrystalZByRO(thehit.id());
                 double tR = cg->getCrystalRByRO(thehit.id());
-
-                //        clusterMap._rowVec.push_back(tR);
-                //        clusterMap._columnVec.push_back(tZ);
 
                 //Multiply Z and R for thhe crystal's energy, which is the weight we use in that algorithm
                 weight = offSet + TMath::Log((*itCD)->energyDep()/sumEi);
@@ -642,8 +692,6 @@ CLHEP::Hep3Vector LOGcog(CaloCluster &cluster, double w, double depth){
                         weight = 0.0;
                 }else{
                         count++;
-                        //                clusterMap._COGrowVec.push_back(tR);
-                        //                clusterMap._COGcolumnVec.push_back(tZ);
                 }
                 tZ *= weight;
                 tR *= weight;
@@ -655,32 +703,14 @@ CLHEP::Hep3Vector LOGcog(CaloCluster &cluster, double w, double depth){
                 //Calculate the sum of the square of the weight for derive the error of the weighted mean
                 tmpEq += std::pow(weight, 2.);
         }
-//        if(count <=1){
-//                cout<< "--> ALLERT! It was used only one crystal for the cog computation..."<<endl;
-//        }
-
-        //clusterMap._COGcrySize = count;
 
         R /= sumW;
         Z /= sumW;
 
-//        clusterMap._cluCogRow = R;
-//        clusterMap._cluCoglumn = Z;
+        res.setY( (R*2.+ 1.0)*cryHalfSize);
+        res.setZ( (Z*2.+1.0)*cryHalfSize);
+        res.setX(-depth);
 
-
-        res.setY( (R*2.+ 1.0)*cryHalfSize);//cg->nCrystalR()*cryHalfSize);//
-        res.setZ( (Z*2.+1.0)*cryHalfSize);//cg->nCrystalZ()*cryHalfSize);//
-        res.setX(-depth/*res.getX() + deltaXc + 3904.*/);//value used to shift in tracker coordinate system
-
-
-        //        resError.setZ( RMScryHalfSize /TMath::Sqrt(cluster.size()) * TMath::Sqrt(tmpEq)/cluster.energyDep);
-
-        //Save cog#Vector and its errorVector
-        //        cluster.cog3VectorError = resError;
-        //        cluster._impactPoint = res;
-
-
-        //        clusterMap._cluCOG = res;
         return res;
 }
 

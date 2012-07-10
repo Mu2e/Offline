@@ -1,9 +1,9 @@
 //
 // module for the calculation of the efficiency Vs energy cluster cut and other distributions related to the efficiency
 //
-// $Id: CaloClusterEff_module.cc,v 1.4 2012/03/19 19:35:42 gianipez Exp $
+// $Id: CaloClusterEff_module.cc,v 1.5 2012/07/10 00:02:19 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/19 19:35:42 $
+// $Date: 2012/07/10 00:02:19 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -84,7 +84,7 @@ using namespace std;
 namespace mu2e {
 
 
-struct elecData{
+struct electronData{
         double _cluEnergy;
         double _cluTime;
         double _impTime;
@@ -96,10 +96,10 @@ struct elecData{
         unsigned int _column;
         CLHEP::Hep3Vector _cryOrigin;
 
-        bool operator<( const elecData other) const{
+        bool operator<( const electronData other) const{
                 return ( _impTime< other._impTime);
         }
-        elecData & operator=(const elecData& other) {
+        electronData & operator=(const electronData& other) {
                 _cluEnergy = other._cluEnergy;
                 _cluTime   = other._cluTime;
                 _impTime = other._impTime;
@@ -112,14 +112,14 @@ struct elecData{
                 _cryOrigin = other._cryOrigin;
                 return *this;
         }
-        elecData():
+        electronData():
                 _impTime(1e10),
                 _impEnergy(0.0){
         }
 };
 
 //the key is the the vane
-typedef std::map<unsigned int,std::map<unsigned int, elecData > > ElecMap;
+typedef std::map<unsigned int,std::map<unsigned int, electronData > > ElectronMap;
 
 
 static int ncalls(0);
@@ -578,7 +578,7 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                 for(unsigned int f = 0; f != tmpVTot.size(); ++f){
                         trkVecTot.push_back(tmpVTot[f]);
                 }
-                ElecMap elecMap;
+                ElectronMap elecMap;
 
                 //start reading the clusters that I reconstructed from the generated particles
                 if(caloClusters->size()>0 ){
@@ -658,7 +658,7 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                 unsigned int size2 = trkVecTot.size();
                 unsigned int it2=0;
                 while( it2 < size2){
-                        ElecMap::iterator ite = elecMap.begin();
+                        ElectronMap::iterator ite = elecMap.begin();
                         bool trovato = false;
                         while(!trovato && ite!=elecMap.end() ){
                                 if(ite->second.find(trkVecTot[it2]) != ite->second.end()){
@@ -733,7 +733,7 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                                         _hTHistDeltaZRec->Fill(_hTHistDeltaZRec->GetXaxis()->GetBinCenter(bin),/*ite->second[trkVecTot[it2]]._impPos.getZ() - ite->second[trkVecTot[it2]]._cryOrigin.getZ());*/ite->second[trkVecTot[it2]]._impPos.getZ() - ite->second[trkVecTot[it2]]._cluCog.getZ() );
                                         //}
 
-                                        //std::map<unsigned int, elecData >::iterator jo = ite->second  ;
+                                        //std::map<unsigned int, electronData >::iterator jo = ite->second  ;
                                         //cout<< "cervavo "<< trkVec[it]<<", trovato "<< jo->first <<endl;
                                         trovato = true;
                                         canc2 = it2;
@@ -765,7 +765,7 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                 unsigned int size = trkVec.size();
                 unsigned int it=0;
                 while( it < size){
-                        ElecMap::iterator ite = elecMap.begin();
+                        ElectronMap::iterator ite = elecMap.begin();
                         bool trovato = false;
                         while(!trovato && ite!=elecMap.end() ){
                                 if(ite->second.find(trkVec[it]) != ite->second.end()){

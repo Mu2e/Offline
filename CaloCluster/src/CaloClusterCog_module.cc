@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position on the electrons on the calorimeter
 //
-// $Id: CaloClusterCog_module.cc,v 1.6 2012/03/23 18:53:12 gianipez Exp $
+// $Id: CaloClusterCog_module.cc,v 1.7 2012/07/10 00:02:19 gianipez Exp $
 // $Author: gianipez $
-// $Date: 2012/03/23 18:53:12 $
+// $Date: 2012/07/10 00:02:19 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -86,7 +86,7 @@ using namespace std;
 
 namespace mu2e {
 
-struct elecData{
+struct electronData{
         double _cluEnergy;
         double _cluTime;
         int _cluSize;
@@ -105,10 +105,10 @@ struct elecData{
         int _impIsGen;
         ClusterMap _clusterMap;
 
-        bool operator<( const elecData other) const{
+        bool operator<( const electronData other) const{
                 return ( _impTime< other._impTime);
         }
-        elecData & operator=(const elecData& other) {
+        electronData & operator=(const electronData& other) {
                 _cluEnergy = other._cluEnergy;
                 _cluTime   = other._cluTime;
                 _cluSize   = other._cluSize;
@@ -130,14 +130,14 @@ struct elecData{
 
                 return *this;
         }
-        elecData():
+        electronData():
                 _impTime(1e10),
                 _impEnergy(0.0){
         }
 };
 
 //the key is the the vane
-typedef std::map<unsigned int,std::map<unsigned int, elecData > > ElecMap;
+typedef std::map<unsigned int,std::map<unsigned int, electronData > > ElectronMap;
 
 
 static int ncalls(0);
@@ -641,7 +641,7 @@ void CaloClusterCog::doCalorimeter(art::Event const& evt, bool skip){
                 for(unsigned int f = 0; f != tmpVTot.size(); ++f){
                         trkVecTot.push_back(tmpVTot[f]);
                 }
-                ElecMap elecMap;
+                ElectronMap elecMap;
 
                 if(caloClusters->size()>0 ){
                         int iVane;
@@ -712,7 +712,7 @@ void CaloClusterCog::doCalorimeter(art::Event const& evt, bool skip){
                                                                 elecMap[iVane][trackId.asUint()]._clusterMap._cluSize        = clusterMap._cluSize      ;
                                                                 elecMap[iVane][trackId.asUint()]._clusterMap._COGcrySize     = clusterMap._COGcrySize   ;
                                                                 elecMap[iVane][trackId.asUint()]._clusterMap._cluSize        = clusterMap._cluSize      ;
-                                                                elecMap[iVane][trackId.asUint()]._clusterMap._vane           = clusterMap._vane         ;
+                                                                elecMap[iVane][trackId.asUint()]._clusterMap._vaneId         = clusterMap._vaneId       ;
                                                                 elecMap[iVane][trackId.asUint()]._clusterMap._cluCogRow      = clusterMap._cluCogRow    ;
                                                                 elecMap[iVane][trackId.asUint()]._clusterMap._cluCogColumn   = clusterMap._cluCogColumn ;
                                                                 elecMap[iVane][trackId.asUint()]._clusterMap._cluCOG         = clusterMap._cluCOG       ;
@@ -757,7 +757,7 @@ void CaloClusterCog::doCalorimeter(art::Event const& evt, bool skip){
                 unsigned int size2 = trkVecTot.size();
                 unsigned int it2=0;
                 while( it2 < size2){
-                        ElecMap::iterator ite = elecMap.begin();
+                        ElectronMap::iterator ite = elecMap.begin();
                         bool trovato = false;
                         while(!trovato && ite!=elecMap.end() ){
                                 if(ite->second.find(trkVecTot[it2]) != ite->second.end()){
@@ -965,7 +965,7 @@ void CaloClusterCog::doCalorimeter(art::Event const& evt, bool skip){
                 unsigned int size = trkVec.size();
                 unsigned int it=0;
                 while( it < size){
-                        ElecMap::iterator ite = elecMap.begin();
+                        ElectronMap::iterator ite = elecMap.begin();
                         bool trovato = false;
                         while(!trovato && ite!=elecMap.end() ){
                                 if(ite->second.find(trkVec[it]) != ite->second.end()){
