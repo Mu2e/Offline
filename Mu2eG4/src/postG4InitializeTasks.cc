@@ -4,14 +4,15 @@
 //
 // Do not put G4 code in this steering routine.
 //
-// $Id: postG4InitializeTasks.cc,v 1.2 2012/06/04 23:50:50 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/06/04 23:50:50 $
+// $Id: postG4InitializeTasks.cc,v 1.3 2012/07/10 21:18:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/10 21:18:05 $
 //
 
 #include "Mu2eG4/inc/postG4InitializeTasks.hh"
 #include "Mu2eUtilities/inc/SimpleConfig.hh"
 
+#include "Mu2eG4/inc/customizeChargedPionDecay.hh"
 #include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Mu2eG4/inc/setMinimumRangeCut.hh"
 
@@ -20,6 +21,9 @@
 namespace mu2e{
 
   void postG4InitializeTasks( SimpleConfig const& config ){
+
+    // G4 does not include pi+ -> e+ nu + cc. Fix that in one of several ways.
+    customizeChargedPionDecay(config);
 
     // Switch off the decay of some particles
     switchDecayOff(config);
