@@ -1,6 +1,6 @@
-  $Id: v2_0_0.txt,v 1.8 2012/07/10 21:35:10 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2012/07/10 21:35:10 $
+  $Id: v2_0_0.txt,v 1.9 2012/07/11 20:29:01 gianipez Exp $
+  $Author: gianipez $
+  $Date: 2012/07/11 20:29:01 $
 
  Still under construction
 
@@ -34,6 +34,23 @@
       was included via other #included headers.
 
 7) July 9, gianipez
+   Add correction function for the calculation of the calorimeter-cluster center of gravity
+   Modified files
+     CaloCluster/inc/CaoClusterUtilities.hh
+     CaloCluster/src/CaoClusterUtilities.cc
+   Add new directory for doing the extrapolation and the matching of the reconstructed tracks with the calorimeter. 
+   It contains two producer modules, one for doing the extrapolation of the reconstructed tracks on the calorimeter (4vanes geometry),
+   and the other for doing the matching with the custers. It contains also a new class "TrkToCaloExtrapolation.hh", which is used to fill
+   the event with the extrapolation informations.
+    TrackCaloMatching/
+   Add a new class that is an art::Assn used for filling matching informations into the event
+    Modified files:
+    RecoDataProducts/inc/TrackClusterLink.hh
+   Changed the calorimter 4 vanes geometry, now is 11 rows times 44 columns
+    Modified files:
+    Mu2eG4/test/geom_01.txt
+   Add new module for studying the pile up in the calorimeter clusters
+    CaloCluster/src/CaloClusterPileUp_module.cc
 
 6) July 8, youzy
    Add position cut for Virtual Detector Filter module.
