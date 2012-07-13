@@ -52,7 +52,7 @@ vector<double> itracker.senseWireShellsThicknesses = { 0.0097, 0.0003 };
 // Inner Wall description
 int    itracker.nInnerWallShells =      4;
 vector<string> itracker.innerWallMaterials = { "CarbonFiber", "CFoam_166", "CarbonFiber", "ITGasHe_90Isob_10" };
-//vector<string> itracker.innerWallMaterials = { "WAGVacuum", "WAGVacuum", "WAGVacuum" };
+//vector<string> itracker.innerWallMaterials = { "WAGVacuum", "WAGVacuum", "WAGVacuum", "ITGasHe_90Isob_10" };
 vector<double> itracker.innerWallShellsThicknesses = { 0.120, 4.760, 0.120, 10.000 };
 
 // Outer Wall description
