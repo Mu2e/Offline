@@ -4,7 +4,7 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 #include "GeometryService/inc/WorldG4.hh"
 

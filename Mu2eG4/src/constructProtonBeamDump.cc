@@ -41,7 +41,7 @@
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "G4Helper/inc/AntiLeakRegistry.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"

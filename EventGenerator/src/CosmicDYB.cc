@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.23 2012/06/18 19:31:23 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2012/06/18 19:31:23 $
+// $Id: CosmicDYB.cc,v 1.24 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Yury Kolomensky
 //
@@ -42,7 +42,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/rm48.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "TargetGeom/inc/Target.hh"

@@ -11,7 +11,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 namespace mu2e {

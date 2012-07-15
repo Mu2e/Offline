@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for proton absorber
 //
-//  $Id: ProtonAbsorberSD.cc,v 1.1 2012/05/07 23:35:58 mjlee Exp $
-//  $Author: mjlee $
-//  $Date: 2012/05/07 23:35:58 $
+//  $Id: ProtonAbsorberSD.cc,v 1.2 2012/07/15 22:06:17 kutschke Exp $
+//  $Author: kutschke $
+//  $Date: 2012/07/15 22:06:17 $
 //
 // Original author MyeongJae Lee
 //
@@ -17,7 +17,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/ProtonAbsorberSD.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 

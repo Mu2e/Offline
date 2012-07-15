@@ -1,9 +1,9 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.19 2012/02/17 18:32:04 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/02/17 18:32:04 $
+// $Id: ParticleGun.cc,v 1.20 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Rob Kutschke
 // Modified by MyeongJae Lee. See docdb-2049
@@ -15,7 +15,7 @@
 
 // Mu2e includes
 #include "MCDataProducts/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"

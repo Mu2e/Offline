@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.cc,v 1.10 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: PiEplusNuGun.cc,v 1.11 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Rob Kutschke heavily modified by R. Bernstein
 //
@@ -25,7 +25,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "TargetGeom/inc/Target.hh"
 

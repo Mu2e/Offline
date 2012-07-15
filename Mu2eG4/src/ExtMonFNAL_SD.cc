@@ -1,7 +1,7 @@
 //
-// $Id: ExtMonFNAL_SD.cc,v 1.6 2012/06/05 18:30:50 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/05 18:30:50 $
+// $Id: ExtMonFNAL_SD.cc,v 1.7 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 
 #include <iostream>
@@ -21,7 +21,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/ExtMonFNAL_SD.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 

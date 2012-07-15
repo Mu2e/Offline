@@ -8,7 +8,7 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 

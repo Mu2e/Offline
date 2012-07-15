@@ -4,13 +4,13 @@
 //
 // Do not put G4 code in this steering routine.
 //
-// $Id: postG4InitializeTasks.cc,v 1.3 2012/07/10 21:18:05 kutschke Exp $
+// $Id: postG4InitializeTasks.cc,v 1.4 2012/07/15 22:06:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/10 21:18:05 $
+// $Date: 2012/07/15 22:06:17 $
 //
 
 #include "Mu2eG4/inc/postG4InitializeTasks.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 #include "Mu2eG4/inc/customizeChargedPionDecay.hh"
 #include "Mu2eG4/inc/toggleProcesses.hh"

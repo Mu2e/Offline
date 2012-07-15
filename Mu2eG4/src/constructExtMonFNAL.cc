@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.13 2012/06/07 16:53:38 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/07 16:53:38 $
+// $Id: constructExtMonFNAL.cc,v 1.14 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -19,7 +19,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"

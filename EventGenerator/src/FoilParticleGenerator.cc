@@ -30,7 +30,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/PhysicsParams.hh"
-#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 

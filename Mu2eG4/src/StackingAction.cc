@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions.
 //
-// $Id: StackingAction.cc,v 1.22 2012/06/21 19:51:38 logash Exp $
-// $Author: logash $
-// $Date: 2012/06/21 19:51:38 $
+// $Id: StackingAction.cc,v 1.23 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Rob Kutschke
 //
@@ -27,7 +27,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/StackingAction.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "cetlib/exception.h"
 #include "MCDataProducts/inc/PDGCode.hh"
 

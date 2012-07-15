@@ -5,9 +5,9 @@
 //    with cvs tag: version 1.12 2008/09/22 16:41:20 maire
 //
 //
-// $Id: PhysicsList.cc,v 1.10 2012/03/03 00:02:02 kutschke Exp $
+// $Id: PhysicsList.cc,v 1.11 2012/07/15 22:06:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/03 00:02:02 $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,7 @@
 #include "Mu2eG4/inc/PhysicsList.hh"
 #include "Mu2eG4/inc/addStepLimiter.hh"
 #include "Mu2eG4/inc/ReflectionProcess.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
 #include "globals.hh"

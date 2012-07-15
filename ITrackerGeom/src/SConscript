@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.7 2011/05/18 19:18:10 greenc Exp $
-# $Author: greenc $
-# $Date: 2011/05/18 19:18:10 $
+# $Id: SConscript,v 1.8 2012/07/15 22:06:17 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2012/07/15 22:06:17 $
 #
 # Original author Rob Kutschke
 #
@@ -26,7 +26,8 @@ if non_plugin_cc:
 
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
                       LIBS=[ 'art_Framework_Core',
-                             'Mu2eUtilities'
+                             'Mu2eUtilities',
+                             'ConfigTools',
                              ],
                       )
     libs=[ '#/lib/' + local_lib_name ]

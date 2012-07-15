@@ -2,9 +2,9 @@
 // Add the decay pi+ -> e+ nu_e to the G4 decay table for pi+ and similarly
 // for pi-.
 //
-// $Id: customizeChargedPionDecay.cc,v 1.1 2012/07/10 21:16:53 kutschke Exp $
+// $Id: customizeChargedPionDecay.cc,v 1.2 2012/07/15 22:06:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/10 21:16:53 $
+// $Date: 2012/07/15 22:06:17 $
 //
 // In default configured G4, the only decy mode for pi+ is pi+ -> mu+ nu_mu.
 // Similarly for pi-.  This function looks at the config file parameter
@@ -36,7 +36,7 @@
 
 #include "Mu2eG4/inc/customizeChargedPionDecay.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 #include "cetlib/exception.h"
 

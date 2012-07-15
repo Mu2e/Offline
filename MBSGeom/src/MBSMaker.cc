@@ -1,9 +1,9 @@
 //
 // Construct and return MBS
 //
-// $Id: MBSMaker.cc,v 1.1 2012/05/18 16:54:22 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/18 16:54:22 $
+// $Id: MBSMaker.cc,v 1.2 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author KLG
 //
@@ -26,7 +26,7 @@
 #include "MBSGeom/inc/MBSMaker.hh"
 #include "MBSGeom/inc/MBS.hh"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 using namespace std;
 

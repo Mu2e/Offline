@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.42 2012/04/20 21:32:25 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/20 21:32:25 $
+// $Id: ConversionGun.cc,v 1.43 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,7 @@
 #include "EventGenerator/inc/ConversionGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "TargetGeom/inc/zBinningForFoils.hh"
 
 // Other external includes.

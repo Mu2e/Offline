@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for virtual detectors
 //
-// $Id: VirtualDetectorSD.cc,v 1.18 2011/11/02 21:30:32 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/11/02 21:30:32 $
+// $Id: VirtualDetectorSD.cc,v 1.19 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Ivan Logashenko
 //
@@ -17,7 +17,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/VirtualDetectorSD.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 

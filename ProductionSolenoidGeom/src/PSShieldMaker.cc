@@ -1,6 +1,6 @@
-// $Id: PSShieldMaker.cc,v 1.4 2012/06/06 19:29:43 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/06 19:29:43 $
+// $Id: PSShieldMaker.cc,v 1.5 2012/07/15 22:06:18 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:18 $
 //
 // Original author Andrei Gaponenko
 
@@ -15,7 +15,7 @@
 #include "ProductionSolenoidGeom/inc/PSShieldMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
 

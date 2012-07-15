@@ -1,16 +1,16 @@
 //
 // Construct a DetectorSystem object.
 //
-// $Id: DetectorSystemMaker.cc,v 1.2 2012/03/30 19:18:03 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 19:18:03 $
+// $Id: DetectorSystemMaker.cc,v 1.3 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Rob Kutschke
 //
 
 // Mu2e includes.
 #include "GeometryService/src/DetectorSystemMaker.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e{
 

@@ -3,9 +3,9 @@
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 // add internal conversion, 11/2011 rhb
 //
-// $Id: PiCapture.cc,v 1.36 2012/04/20 21:32:26 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/20 21:32:26 $
+// $Id: PiCapture.cc,v 1.37 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -24,7 +24,7 @@
 #include "EventGenerator/inc/PiCapture.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoisson.h"

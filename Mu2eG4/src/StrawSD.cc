@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.36 2012/05/29 22:57:26 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/29 22:57:26 $
+// $Id: StrawSD.cc,v 1.37 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Rob Kutschke
 //
@@ -26,7 +26,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
 #include "G4RunManager.hh"

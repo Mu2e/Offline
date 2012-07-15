@@ -1,9 +1,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable
 //
-//   $Id: ParticleDataTable.cc,v 1.13 2011/12/07 00:32:29 gandr Exp $
-//   $Author: gandr $
-//   $Date: 2011/12/07 00:32:29 $
+//   $Id: ParticleDataTable.cc,v 1.14 2012/07/15 22:06:16 kutschke Exp $
+//   $Author: kutschke $
+//   $Date: 2012/07/15 22:06:16 $
 //
 //
 // 1) The Geant4 particle table is a superset of this table.  It includes
@@ -39,8 +39,8 @@
 
 // Mu2e include files
 #include "ConditionsService/inc/ParticleDataTable.hh"
-#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 
 // External include files.

@@ -3,9 +3,9 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.
 // //
-// $Id: EjectedPhotonGun.cc,v 1.10 2012/04/20 21:32:26 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/20 21:32:26 $
+// $Id: EjectedPhotonGun.cc,v 1.11 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Gianni Onorato
 //
@@ -28,7 +28,7 @@
 #include "EventGenerator/inc/EjectedPhotonGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/safeSqrt.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TargetGeom/inc/zBinningForFoils.hh"

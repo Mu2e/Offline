@@ -2,9 +2,9 @@
 // Free function to construct a placeholder for the stopping target.
 // Useful for some low detail graphics.
 //
-// $Id: constructDummyStoppingTarget.cc,v 1.6 2011/08/04 18:52:39 genser Exp $
-// $Author: genser $
-// $Date: 2011/08/04 18:52:39 $
+// $Id: constructDummyStoppingTarget.cc,v 1.7 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 
 // G4 includes

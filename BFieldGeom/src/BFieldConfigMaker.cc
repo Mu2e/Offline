@@ -6,11 +6,11 @@
 
 #include "cetlib/exception.h"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
-#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"

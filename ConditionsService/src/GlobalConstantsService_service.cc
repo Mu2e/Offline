@@ -16,7 +16,7 @@
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "ConditionsService/inc/PhysicsParams.hh"

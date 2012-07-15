@@ -3,15 +3,15 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWanatabeSpectrum.cc,v 1.15 2012/05/08 19:09:59 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/05/08 19:09:59 $
+// $Id: ShankerWanatabeSpectrum.cc,v 1.16 2012/07/15 22:06:18 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:18 $
 //
 
 #include "Mu2eUtilities/inc/ShankerWanatabeSpectrum.hh"
 
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "cetlib/pow.h"
 #include <cmath>

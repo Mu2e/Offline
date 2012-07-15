@@ -1,13 +1,13 @@
 //
 // Set the G4 minimum range cut as specified in the geometry file.
 //
-// $Id: setMinimumRangeCut.cc,v 1.1 2012/06/04 19:28:01 kutschke Exp $
+// $Id: setMinimumRangeCut.cc,v 1.2 2012/07/15 22:06:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/06/04 19:28:01 $
+// $Date: 2012/07/15 22:06:17 $
 //
 
 #include "Mu2eG4/inc/setMinimumRangeCut.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

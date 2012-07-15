@@ -3,9 +3,9 @@
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.13 2012/04/02 18:28:56 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/02 18:28:56 $
+// $Id: BFieldManagerMaker.hh,v 1.14 2012/07/15 22:06:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:16 $
 //
 
 // Includes from C++
@@ -14,7 +14,7 @@
 // Includes from CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"

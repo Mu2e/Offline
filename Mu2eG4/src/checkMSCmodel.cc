@@ -1,13 +1,13 @@
 //
 // In case of use of the ITracker, check if the MSC model matches the ITracker requirements
 //
-// $Id: checkMSCmodel.cc,v 1.1 2012/06/04 23:50:50 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/06/04 23:50:50 $
+// $Id: checkMSCmodel.cc,v 1.2 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 
 #include "Mu2eG4/inc/checkMSCmodel.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

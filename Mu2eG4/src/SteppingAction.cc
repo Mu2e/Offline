@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.30 2012/03/21 23:35:26 kutschke Exp $
+// $Id: SteppingAction.cc,v 1.31 2012/07/15 22:06:17 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/21 23:35:26 $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Rob Kutschke
 //
@@ -18,7 +18,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/SteppingAction.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 

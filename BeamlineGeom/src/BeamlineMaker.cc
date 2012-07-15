@@ -2,9 +2,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.8 2012/04/02 16:30:01 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/02 16:30:01 $
+// $Id: BeamlineMaker.cc,v 1.9 2012/07/15 22:06:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:16 $
 //
 // Original author Peter Shanahan
 //
@@ -20,7 +20,7 @@
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/BeamlineMaker.hh"
 #include "BeamlineGeom/inc/TransportSolenoid.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 #ifndef __CINT__
 

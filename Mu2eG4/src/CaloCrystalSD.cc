@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for CaloCrystal Detectors
 //
-// $Id: CaloCrystalSD.cc,v 1.18 2012/05/29 22:55:56 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/29 22:55:56 $
+// $Id: CaloCrystalSD.cc,v 1.19 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Ivan Logashenko
 //
@@ -17,7 +17,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/WorldG4.hh"
 
 // G4 includes

@@ -5,7 +5,7 @@
 
 // Mu2e include files
 #include "ConditionsService/inc/PhysicsParams.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
 

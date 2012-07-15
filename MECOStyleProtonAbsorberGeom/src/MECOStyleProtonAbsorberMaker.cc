@@ -2,9 +2,9 @@
 // Construct and return MECOStyleProtonAbsorber
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.1 2012/05/10 23:40:59 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/05/10 23:40:59 $
+// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.2 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author MyeongJae Lee
 //
@@ -23,7 +23,7 @@
 // Mu2e includes
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorberMaker.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
 

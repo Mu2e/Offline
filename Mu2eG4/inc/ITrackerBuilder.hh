@@ -10,7 +10,7 @@
 
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
 #include "G4LogicalVolume.hh"

@@ -1,9 +1,9 @@
 //
 // Construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.cc,v 1.9 2012/06/06 19:29:31 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/06 19:29:31 $
+// $Id: ProductionSolenoidMaker.cc,v 1.10 2012/07/15 22:06:18 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:18 $
 //
 // Original author KLG
 //
@@ -25,7 +25,7 @@
 #include "ProductionSolenoidGeom/inc/ProductionSolenoidMaker.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 using namespace std;
 

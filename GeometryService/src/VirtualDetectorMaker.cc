@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.7 2012/06/05 16:18:15 genser Exp $
-// $Author: genser $
+// $Id: VirtualDetectorMaker.cc,v 1.8 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
 //
 
 #include <iostream>
@@ -15,7 +15,7 @@
 // Mu2e includes
 #include "GeometryService/inc/VirtualDetectorMaker.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"

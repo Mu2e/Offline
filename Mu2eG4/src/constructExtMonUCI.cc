@@ -1,9 +1,9 @@
 //
 // Construct ExtinctionMonitor UCI.
 //
-// $Id: constructExtMonUCI.cc,v 1.11 2012/06/04 23:23:01 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/06/04 23:23:01 $
+// $Id: constructExtMonUCI.cc,v 1.12 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 
 #include <iostream>
 
@@ -24,7 +24,7 @@
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/AntiLeakRegistry.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"

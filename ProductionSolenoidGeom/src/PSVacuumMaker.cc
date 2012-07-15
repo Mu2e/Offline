@@ -1,6 +1,6 @@
-// $Id: PSVacuumMaker.cc,v 1.1 2012/06/06 19:29:31 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/06 19:29:31 $
+// $Id: PSVacuumMaker.cc,v 1.2 2012/07/15 22:06:18 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:18 $
 //
 // Original author Andrei Gaponenko
 
@@ -15,7 +15,7 @@
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
 

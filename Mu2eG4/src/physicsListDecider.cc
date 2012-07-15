@@ -1,9 +1,9 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.12 2012/03/22 20:21:37 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/22 20:21:37 $
+// $Id: physicsListDecider.cc,v 1.13 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Rob Kutschke
 //
@@ -37,7 +37,7 @@
 #include "Mu2eG4/inc/QGSP_BERT_MU2E00.hh"
 #include "Mu2eG4/inc/PhysicsList.hh"
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 //tmp arrangement
 #include "Mu2eG4/inc/QGSP_BERT_HP_MU2E00.hh"

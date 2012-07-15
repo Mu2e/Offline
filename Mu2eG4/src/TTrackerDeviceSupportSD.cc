@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for TTrackerDeviceSupport
 //
-// $Id: TTrackerDeviceSupportSD.cc,v 1.3 2012/05/29 22:57:55 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/29 22:57:55 $
+// $Id: TTrackerDeviceSupportSD.cc,v 1.4 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author KLG
 //
@@ -17,7 +17,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/TTrackerDeviceSupportSD.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "TTrackerGeom/inc/TTracker.hh"

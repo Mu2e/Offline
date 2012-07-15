@@ -4,7 +4,7 @@
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"

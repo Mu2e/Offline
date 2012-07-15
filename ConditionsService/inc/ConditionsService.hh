@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.15 2012/02/24 16:37:31 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/24 16:37:31 $
+// $Id: ConditionsService.hh,v 1.16 2012/07/15 22:06:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:16 $
 //
 // Original author Rob Kutschke
 //
@@ -29,7 +29,7 @@
 #include "cetlib/exception.h"
 
 // Mu2e include files.
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 // Other external include files.

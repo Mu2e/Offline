@@ -1,14 +1,14 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.9 2012/06/29 21:28:49 genser Exp $
-// $Author: genser $
-// $Date: 2012/06/29 21:28:49 $
+// $Id: TrackerCalibrations.cc,v 1.10 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 
 // Mu2e include files
 #include "ConditionsService/inc/TrackerCalibrations.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"

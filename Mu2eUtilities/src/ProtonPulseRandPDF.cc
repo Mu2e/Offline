@@ -1,16 +1,16 @@
 //
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.5 2011/06/17 22:30:10 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/06/17 22:30:10 $
+// $Id: ProtonPulseRandPDF.cc,v 1.6 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author Gianni Onorato
 //
 
 // Framework includes
 #include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
-#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 //C++ includes
 #include <cmath>

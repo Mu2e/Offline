@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: StoppedMuonGun.cc,v 1.2 2012/04/20 21:32:26 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/20 21:32:26 $
+// $Id: StoppedMuonGun.cc,v 1.3 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author KLG somewhat based on ConversionGun
 //
@@ -25,7 +25,7 @@
 #include "EventGenerator/inc/StoppedMuonGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "TargetGeom/inc/zBinningForFoils.hh"
 
 // Other external includes.

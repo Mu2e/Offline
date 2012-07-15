@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for extinction monitor tof
 //
-// $Id: ExtMonUCITofSD.cc,v 1.2 2012/06/03 06:54:57 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/06/03 06:54:57 $
+// $Id: ExtMonUCITofSD.cc,v 1.3 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 
 #include <cstdio>
@@ -23,7 +23,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/ExtMonUCITofSD.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 

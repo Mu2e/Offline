@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.39 2012/03/01 16:45:53 kutschke Exp $
+// $Id: TTrackerMaker.cc,v 1.40 2012/07/15 22:06:18 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/01 16:45:53 $
+// $Date: 2012/07/15 22:06:18 $
 //
 // Original author Rob Kutschke
 //
@@ -15,7 +15,7 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TTrackerGeom/inc/TTrackerMaker.hh"

@@ -1,9 +1,9 @@
 //
 // Defines sensitive detector for a typicaly numbered volume using mu2e reference frame
 //
-// $Id: Mu2eSensitiveDetector.cc,v 1.1 2012/05/29 22:53:01 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/29 22:53:01 $
+// $Id: Mu2eSensitiveDetector.cc,v 1.2 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author KLG
 //
@@ -17,7 +17,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 

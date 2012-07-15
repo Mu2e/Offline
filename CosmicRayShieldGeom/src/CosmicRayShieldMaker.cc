@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.19 2012/06/07 04:54:59 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/06/07 04:54:59 $
+// $Id: CosmicRayShieldMaker.cc,v 1.20 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -34,7 +34,7 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorModule.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 using namespace std;
 

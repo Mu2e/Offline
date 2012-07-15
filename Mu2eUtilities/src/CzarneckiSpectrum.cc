@@ -4,15 +4,15 @@
 // in the endpoint region taken from Czarnecki spectrum
 // Czarneckki et al 10.1103/PhysRevD.84.013006
 //
-// $Id: CzarneckiSpectrum.cc,v 1.6 2012/05/10 21:38:47 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/05/10 21:38:47 $
+// $Id: CzarneckiSpectrum.cc,v 1.7 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 //
 
 #include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "Mu2eUtilities/inc/ConfigFileLookupPolicy.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "cetlib/pow.h"
 #include <cmath>

@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCIMaker.cc,v 1.4 2012/02/16 20:25:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/02/16 20:25:46 $
+// $Id: ExtMonUCIMaker.cc,v 1.5 2012/07/15 22:06:17 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/15 22:06:17 $
 
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIMaker.hh"
 
@@ -11,7 +11,7 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 
 namespace mu2e {

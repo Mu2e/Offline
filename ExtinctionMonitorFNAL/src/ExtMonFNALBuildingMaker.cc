@@ -13,7 +13,7 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "Mu2eUtilities/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 #define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 //#define AGDEBUG(stuff)
