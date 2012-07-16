@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.9 2012/04/18 22:57:19 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/18 22:57:19 $
+// $Id: GenId.hh,v 1.10 2012/07/16 19:16:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/16 19:16:00 $
 //
 // Original author Rob Kutschke
 //
@@ -88,6 +88,14 @@ namespace mu2e {
 
     bool operator==(const GenId::enum_type g) const{
       return ( _id == g );
+    }
+
+    bool operator!=(const GenId::enum_type g) const{
+      return ( _id != g );
+    }
+
+    bool operator!=(const GenId g) const{
+      return ( _id != g._id );
     }
 
     bool isDio() {
