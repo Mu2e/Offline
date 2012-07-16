@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.139 2012/06/29 00:14:38 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/29 00:14:38 $
+// $Id: Mu2eWorld.cc,v 1.140 2012/07/16 19:16:53 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/16 19:16:53 $
 //
 // Original author Rob Kutschke
 //
@@ -177,18 +177,18 @@ namespace mu2e {
 
     // If you play with the order of these calls, you may break things.
     GeomHandle<WorldG4> worldGeom;
-    G4ThreeVector tmp =    GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() + worldGeom->mu2eOriginInWorld()
+    G4ThreeVector tmp =    GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() + worldGeom->mu2eOriginInWorld()
       - G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0));
     cout << "RKK test: "
          << tmp  << " | "
-         << GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() << " "
+         << GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() << " "
          << worldGeom->mu2eOriginInWorld() <<  " : "
          << _config->getDouble("itracker.z0",0.0)
          << endl;
 
     if ( _config->getBool("hasITracker",false) ) {
       ITGasLayerSD::setMu2eDetCenterInWorld(
-                                            GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() + worldGeom->mu2eOriginInWorld()
+                                            GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() + worldGeom->mu2eOriginInWorld()
                                             - G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0)) );
     }
 
@@ -252,7 +252,7 @@ namespace mu2e {
 
     mf::LogInfo log("GEOM");
     log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
-    log << "Mu2e Detector Origin: " << GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() + worldGeom->mu2eOriginInWorld()   << "\n";
+    log << "Mu2e Detector Origin: " << GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() + worldGeom->mu2eOriginInWorld()   << "\n";
 
     // Create magnetic fields and managers only after all volumes have been defined.
     constructBFieldAndManagers();

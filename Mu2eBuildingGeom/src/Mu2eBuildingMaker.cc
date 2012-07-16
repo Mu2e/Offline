@@ -44,7 +44,7 @@ namespace mu2e {
     // Magic number to fix:
 
     // FIXME:::: Use numbers from DetectorSystem! (At least SolenoidOffset?)
-    b->_trackerOriginInMu2e = CLHEP::Hep3Vector( -3904., 0., 12000.);
+    b->_relicMECOOriginInMu2e = CLHEP::Hep3Vector( -3904., 0., 12000.);
 
     //----------------
     //  Computed stuff
@@ -149,7 +149,7 @@ namespace mu2e {
     //----------------------------------------------------------------
     const int diagLevel = c.getInt("world.verbosityLevel", 0);
     if(diagLevel > 0) {
-      std::cout << __func__ << " trackerOriginInMu2e : " <<  b->_trackerOriginInMu2e  << std::endl;
+      std::cout << __func__ << " relicMECOOriginInMu2e : " <<  b->_relicMECOOriginInMu2e  << std::endl;
     }
 
     return b;

@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.38 2012/03/16 19:33:56 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/16 19:33:56 $
+// $Id: PrimaryGeneratorAction.cc,v 1.39 2012/07/16 19:16:53 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/16 19:16:53 $
 //
 // Original author Rob Kutschke
 //
@@ -87,10 +87,10 @@ namespace mu2e {
   void PrimaryGeneratorAction::fromEvent(G4Event* event){
 
     GeomHandle<WorldG4>  worldGeom;
-    
+
     // Get the offsets to map from generator world to G4 world.
     G4ThreeVector const& mu2eOrigin                  = worldGeom->mu2eOriginInWorld();
-    G4ThreeVector const& trackerOrigin               = GeomHandle<Mu2eBuilding>()->trackerOriginInMu2e() +  mu2eOrigin;
+    G4ThreeVector const& relicMECOOrigin             = GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() +  mu2eOrigin;
 
     GeomHandle<ProductionTarget> protonTarget;
     G4RotationMatrix const& primaryProtonGunRotation = protonTarget->protonBeamRotation();
@@ -126,7 +126,7 @@ namespace mu2e {
           genpart.generatorId() == GenId::nuclearCaptureGun   ||
           genpart.generatorId() == GenId::stoppedMuonGun      ||
           genpart.generatorId() == GenId::internalRPC){
-        pos += trackerOrigin;
+        pos += relicMECOOrigin;
       } else if ( genpart.generatorId() == GenId::cosmicDYB ||
                   genpart.generatorId() == GenId::cosmic ){
         pos += mu2eOrigin;
@@ -179,7 +179,7 @@ namespace mu2e {
     // All tracks start from the same spot.
     GeomHandle<WorldG4>  world;
     GeomHandle<Mu2eBuilding>  building;
-    G4ThreeVector const& position = building->trackerOriginInMu2e() + world->mu2eOriginInWorld();
+    G4ThreeVector const& position = building->relicMECOOriginInMu2e() + world->mu2eOriginInWorld();
 
     // Magnitude of the momentum.
     G4double p0  = 50. + 100.*G4UniformRand();

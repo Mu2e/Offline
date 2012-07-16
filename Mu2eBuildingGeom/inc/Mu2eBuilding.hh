@@ -44,7 +44,11 @@ namespace mu2e {
     double hallWallThickness() const { return _hallWallThickness; }
     double hallWallExtMonUCIThickness() const { return _hallWallExtMonUCIThickness; }
 
-    const CLHEP::Hep3Vector& trackerOriginInMu2e() const { return _trackerOriginInMu2e; }
+    // When we copied the MECO geometry, the elements inside the DS were described in
+    // a DS-centric coordinate system.  As of July 2012, there were still a few elements
+    // in the Mu2e code that use this system; they are being refactored to use the
+    // Mu2e coordinate system.  When all is done, this method will be removed.
+    const CLHEP::Hep3Vector& relicMECOOriginInMu2e() const { return _relicMECOOriginInMu2e; }
 
     //----------------------------------------------------------------
     // Outlines used to create hall floor, ceiling, and walls.
@@ -92,7 +96,7 @@ namespace mu2e {
 
     double _hallInsideZExtMonUCIWall;
 
-    CLHEP::Hep3Vector _trackerOriginInMu2e;
+    CLHEP::Hep3Vector _relicMECOOriginInMu2e;
 
     double _hallWallThickness;
     double _hallWallExtMonUCIThickness;
