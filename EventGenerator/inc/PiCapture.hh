@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 //
-// $Id: PiCapture.hh,v 1.24 2012/04/20 21:32:25 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/20 21:32:25 $
+// $Id: PiCapture.hh,v 1.25 2012/07/17 20:02:12 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/17 20:02:12 $
 //
 // Original author Rob Kutschke, P. Shanahan
 //
@@ -23,7 +23,7 @@
 // CLHEP includes
 #include "CLHEP/Random/RandExponential.h"
 #include "CLHEP/Random/RandPoissonQ.h"
-#include "Mu2eUtilities/inc/PiCaptureEffects.hh"
+#include "EventGenerator/inc/PiCaptureEffects.hh"
 
 // Forward declarations outside of namespace mu2e.
 class TH1D;

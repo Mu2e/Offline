@@ -1,9 +1,9 @@
 // Read a SimParticle collection and create a GenParticleCollection from the end point of the former.
 //
 //
-// $Id: FromSimParticleEndPoint_module.cc,v 1.3 2012/04/19 20:24:50 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/19 20:24:50 $
+// $Id: FromSimParticleEndPoint_module.cc,v 1.4 2012/07/17 20:02:12 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/17 20:02:12 $
 //
 // Original author Gianni Onorato
 // 
@@ -31,7 +31,7 @@
 #include "MCDataProducts/inc/GenSimParticleLink.hh"
 #include "MCDataProducts/inc/GenId.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
-#include "Mu2eUtilities/inc/PiCaptureEffects.hh"
+#include "EventGenerator/inc/PiCaptureEffects.hh"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "EventGenerator/inc/GeneratorBase.hh"
