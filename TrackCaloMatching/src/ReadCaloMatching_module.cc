@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.2 2012/07/10 04:54:49 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 04:54:49 $
+// $Id: ReadCaloMatching_module.cc,v 1.3 2012/07/17 20:03:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/17 20:03:03 $
 //
 // Original author G. Pezzullo
 //
@@ -66,7 +66,7 @@
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/TrackClusterLink.hh"
+#include "TrackCaloMatching/inc/TrackClusterLink.hh"
 
 // Other includes.
 #include "cetlib/exception.h"
