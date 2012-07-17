@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.13 2012/07/10 00:02:20 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:20 $
+// $Id: classes.h,v 1.14 2012/07/17 20:03:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/17 20:03:59 $
 //
 // Original author Rob Kutschke
 //
@@ -28,7 +28,6 @@
 #include "RecoDataProducts/inc/TrackerHitByID.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
-#include "RecoDataProducts/inc/TrackClusterLink.hh"
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
@@ -64,12 +63,3 @@ template class art::Wrapper<mu2e::SctrSttnClusterGroupCollection>;
 template class art::Wrapper<mu2e::ZRotStrawHitMapCollection>;
 template class art::Wrapper<mu2e::TrackerHitByID>;
 template class art::Wrapper<mu2e::TrackSeedCollection>;
-
-
-// A way to instantiate a typedef without keeping sync with its definition
-namespace {
-  struct Instantiations {
-    mu2e::TrackClusterLink tcl;
-  };
-}
-template class art::Wrapper<mu2e::TrackClusterLink>;
