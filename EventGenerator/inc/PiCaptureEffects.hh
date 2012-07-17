@@ -3,9 +3,9 @@
 
 //
 //
-// $Id: PiCaptureEffects.hh,v 1.1 2012/04/18 22:57:19 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/18 22:57:19 $
+// $Id: PiCaptureEffects.hh,v 1.1 2012/07/17 19:59:46 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/17 19:59:46 $
 //
 // Original author: Gianni Onorato
 //
