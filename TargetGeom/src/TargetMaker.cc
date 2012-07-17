@@ -2,9 +2,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.cc,v 1.11 2012/07/15 22:06:18 kutschke Exp $
+// $Id: TargetMaker.cc,v 1.12 2012/07/17 22:04:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:18 $
+// $Date: 2012/07/17 22:04:27 $
 //
 // Original author Peter Shanahan
 //
@@ -24,7 +24,6 @@
 #include "CLHEP/Vector/RotationZ.h"
 #include "TargetGeom/inc/Target.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 
 #ifndef __CINT__
 

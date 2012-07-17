@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_sort_functors_hh
 #define CalorimeterGeom_sort_functors_hh
 //
-// $Id: sort_functors.hh,v 1.2 2012/03/01 01:21:13 kutschke Exp $
+// $Id: sort_functors.hh,v 1.3 2012/07/17 22:04:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/01 01:21:13 $
+// $Date: 2012/07/17 22:04:27 $
 //
 // Original author KLG
 //
@@ -76,7 +76,7 @@ namespace mu2e {
     explicit lessByCIdAndTimeByPointer( Calorimeter const & cal): _cal(cal) {}
 
     bool operator() (HitT const * a, HitT const * b) const {
-      
+
       return (  _cal.getCrystalByRO(a->id()) <  _cal.getCrystalByRO(b->id()) ||
               ( _cal.getCrystalByRO(a->id()) == _cal.getCrystalByRO(b->id()) &&
                 a->time() < b->time()
@@ -92,4 +92,4 @@ namespace mu2e {
 
 }
 
-#endif /* Mu2eUtilities_sort_functors_hh */
+#endif /* CalorimeterGeom_sort_functors_hh */

@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: CalorimeterMaker.cc,v 1.21 2012/07/10 00:02:20 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:20 $
+// $Id: CalorimeterMaker.cc,v 1.22 2012/07/17 22:04:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/17 22:04:27 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -14,7 +14,6 @@
 //
 // Mu2e includes
 #include "CalorimeterGeom/inc/CalorimeterMaker.hh"
-#include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 #include "CalorimeterGeom/inc/Vane.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 

@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.19 2012/07/15 22:06:17 kutschke Exp $
+// $Id: LTrackerMaker.cc,v 1.20 2012/07/17 22:04:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Date: 2012/07/17 22:04:27 $
 //
 // Original author Rob Kutschke
 //
@@ -26,7 +26,6 @@
 #include "CLHEP/Vector/RotationZ.h"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 
 #ifndef __CINT__
 
