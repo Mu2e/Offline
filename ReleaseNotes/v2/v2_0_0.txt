@@ -1,10 +1,50 @@
-  $Id: v2_0_0.txt,v 1.14 2012/07/16 19:20:41 kutschke Exp $
+  $Id: v2_0_0.txt,v 1.15 2012/07/17 21:13:44 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/07/16 19:20:41 $
+  $Date: 2012/07/17 21:13:44 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_0
+
+16) July 17, kutschke
+    Another round of breaking linkage loops.
+
+    The files
+      Mu2eUtilities/inc/PiCaptureEffects.hh
+      Mu2eUtilities/src/PiCaptureEffects.cc
+    were renamed to:
+      EventGenerator/inc/PiCaptureEffects.hh
+      EventGenerator/src/PiCaptureEffects.cc
+
+    This class uses information from the ConditionsService so it cannot
+    be in Mu2eUtilities.
+
+    Moved:
+         RecoDataProducts/inc/TrackClusterLink.hh
+    to:
+         TrackCaloMatching/inc/TrackClusterLink.hh
+
+    This classes uses information from TrackCaloMatching so it cannot
+    be in RecoDataProducts.  After the next round of refactoring reconstructed
+    track persistency, it can go back into RecoDataProducts.
+
+    Update the followings files to pick up the headers from their new location:
+      EventGenerator/inc/PiCapture.hh
+      EventGenerator/src/FromSimParticleEndPoint_module.cc
+      TrackCaloMatching/src/CaloMatching_module.cc
+      TrackCaloMatching/src/ReadCaloMatching_module.cc
+      TrackCaloMatching/src/ReadExtrapol_module.cc
+
+    Move the genreflex stuff for the moved data product:
+      RecoDataProducts/src/classes_def.xml
+      RecoDataProducts/src/classes.h
+      TrackCaloMatching/src/classes.h
+      TrackCaloMatching/src/classes_def.xml
+
+    This is still one remaining file that causes a linkage loop,
+    RecoDataProducts/src/CaloCluster.cc
+    Giani Pezullo is refactoring this to produce a simpler data product
+    class and a helper class with the additional functionality.
 
 15) July 16, kutschke
     The method Mu2eBuilding::trackerOriginInMu2e was misnamed. It is
