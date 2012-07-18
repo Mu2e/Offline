@@ -53,7 +53,8 @@ private:
   double _r0;                   //Nominal Inner radius of the tracker
   double _halfLength;           //Nominal Half-Length of the tracker in the barrel region
   double _rOut;                 //Nominal Outer radius of the tracker
-  double _drop;                 //Drop distance of the wires (the wires stereo angles depend by it)
+  double _drop;                 //Drop distance of the wires (in case of constant drop version (v41) the wires stereo angles depend by it)
+  double _alpha;                //alpha of the wires (in case of constant alpha version (v42) the wires stereo angles and their drops depend by it)
   bool   _isDumbbell;           //true=dumbbell option, false=the wires are unique
   std::vector<double> _zZones;  //limits in z of the active wire zones in the case of dumbbell option
 
@@ -65,6 +66,10 @@ private:
   bool _displayWires;           //Allow to display every wires inside gas inside the chamber.
 
   double _z0;                   //Shift along z of the center of the tracker
+
+  bool _detailedWireSupport;
+  bool _isElectCont;
+  double _elctContWallThick;
 
   // Number of layers and of cells per layer in superlayer.
   std::vector<SuperLayerInfo> _slayersInfo;
