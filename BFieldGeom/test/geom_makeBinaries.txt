@@ -1,0 +1,21 @@
+//
+// Geometry file for making binary field maps from text format.
+//
+// $Id: geom_makeBinaries.txt,v 1.1 2012/07/19 18:53:28 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/19 18:53:28 $
+//
+
+#include "Mu2eG4/test/geom_01.txt"
+
+// Enable writing of binaries.
+bool bfield.writeG4BLBinaries =  true;
+
+// Give names of .txt files to convert to .bin files.
+// Both innerMaps and outMaps have non-empty default values.
+
+vector<string> bfield.innerMaps = {
+ "BFieldMaps/Mau7_NegativeGradient_v1/Mu2e_DSMap.txt"
+};
+
+vector<string> bfield.outerMaps = {};
