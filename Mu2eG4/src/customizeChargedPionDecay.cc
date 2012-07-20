@@ -2,9 +2,9 @@
 // Add the decay pi+ -> e+ nu_e to the G4 decay table for pi+ and similarly
 // for pi-.
 //
-// $Id: customizeChargedPionDecay.cc,v 1.2 2012/07/15 22:06:17 kutschke Exp $
+// $Id: customizeChargedPionDecay.cc,v 1.3 2012/07/20 00:26:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Date: 2012/07/20 00:26:53 $
 //
 // In default configured G4, the only decy mode for pi+ is pi+ -> mu+ nu_mu.
 // Similarly for pi-.  This function looks at the config file parameter
@@ -20,24 +20,31 @@
 //           Set the e nu branching fraction to the specified number.
 //           and the mu nu branching fraction to (1-nnnnn).
 //
-// If the parameter g4.PiENuPolicy is absent, the default is PDG.
+// Notes:
+// 1) If the parameter g4.PiENuPolicy is absent, the default is PDG.
 //
-// In all cases set B( pi+ -> mu+ nu_mu ) is 1. - B( pi+ -> e+ nu_e)
+// 2) In all cases set B( pi+ -> mu+ nu_mu ) is 1. - B( pi+ -> e+ nu_e)
 //
-// This routine always modifies the decay tables for both pi+ and pi-.
+// 3) This routine always modifies the decay tables for both pi+ and pi-.
 //
-// There is no way to remove the pre-existing pi+ -> mu+ nu_mu channel but
-// we can set its BR to 0.
+// 4) There is no way to remove the pre-existing pi+ -> mu+ nu_mu channel but
+//    we can set its BR to 0.
 //
-// The change to the mu nu BR must be made before the e nu BR is added.
-// Parts of G4 require that the decay table be in order of increasing BR
-// but the list is not resorted if a BR is changed.
+// 5) The change to the mu nu BR must be made before the e nu BR is added.
+//    Parts of G4 require that the decay table be in order of increasing BR
+//    and an addition causes a resort. But changing a BR does not, itself,
+//    trigger a resort.
+//
+// 6) If we are running with a less than complete physics list, for example
+//    transportOnly then some particle or particle table information will
+//    be incomplete.  Test for those cases and skip them.
 //
 
 #include "Mu2eG4/inc/customizeChargedPionDecay.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
 
 #include "G4ParticleTable.hh"
@@ -46,6 +53,8 @@
 
 #include <sstream>
 #include <algorithm>
+
+#include <iostream>
 
 using namespace std;
 
@@ -61,20 +70,37 @@ namespace mu2e{
                 PDGCode::type achild0,
                 PDGCode::type achild1
                 ):
+        ok(true),
         parent(aparent),
         child0(achild0),
         child1(achild1),
-        parentName(pdt->FindParticle(parent)->GetParticleName()),
-        child0Name(pdt->FindParticle(child0)->GetParticleName()),
-        child1Name(pdt->FindParticle(child1)->GetParticleName())
-      {}
+        parentName(name(pdt,parent)),
+        child0Name(name(pdt,child0)),
+        child1Name(name(pdt,child1)){
+      }
 
+      // Is all particle information present; see note 6.
+      bool ok;
+
+      // Decay channel information
       PDGCode::type parent;
       PDGCode::type child0;
       PDGCode::type child1;
       G4String      parentName;
       G4String      child0Name;
       G4String      child1Name;
+
+      // Get name string for the particle. See note 6.
+      G4String name( G4ParticleTable * pdt, PDGCode::type pid ){
+        G4ParticleDefinition * particle  = pdt->FindParticle(pid);
+        if ( particle == 0 ){
+          ok = false;
+          mf::LogWarning("G4") << "There is no G4 particle information for PDGcode: " << pid
+                               << "\nHope that's OK. Skipping and continuing ...\n";
+          return G4String();
+        }
+        return particle->GetParticleName();
+      }
 
     }; // end class Channel
 
@@ -168,9 +194,28 @@ namespace mu2e{
     for ( std::vector<Channel>::const_iterator i=pions.begin();
           i != pions.end(); ++i ) {
 
+      // Incomplete information - skip this channel. See note 6.
+      if ( ! i-> ok ) return;
+
       PDGCode::type parent            = i->parent;
       G4ParticleDefinition * particle = pdt->FindParticle( parent );
-      G4DecayTable * decayTable       = particle->GetDecayTable();
+
+      // See note 6.
+      if ( particle  == 0 ){
+        mf::LogWarning("G4") << "There is no G4 particle information for PDGcode: " << parent
+                             << "\nHope that's OK. Skipping and continuing ...\n";
+        continue;
+      }
+
+      G4DecayTable * decayTable = particle->GetDecayTable();
+
+      // See note 6.
+      if ( decayTable == 0 ){
+        mf::LogWarning("G4") << "There is no decay table for PDGcode: " << parent
+                             << "\nHope that's OK. Skipping and continuing ...\n";
+        continue;
+      }
+
 
       if ( decayTable->entries() != 1 ){
         throw cet::exception("G4")
