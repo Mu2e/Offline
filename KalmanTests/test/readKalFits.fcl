@@ -1,7 +1,7 @@
 # Example of exploring the Kalman filter output.
 # Needs to stay in sync with TrkPatRec/test/TrkPatRecTest02.fcl
 #
-# $Id: readKalFits.fcl,v 1.1 2012/07/20 22:54:25 kutschke Exp $
+# $Id: readKalFits.fcl,v 1.2 2012/07/20 23:04:46 kutschke Exp $
 # $Author: kutschke $
 # $ $
 
@@ -13,12 +13,12 @@ process_name : ReadKalFits
 
 source : {
   module_type : EmptyEvent
-  maxEvents : 100
+  maxEvents   : 100
 }
 
 services : {
   message               : @local::default_message
-  TFileService          : { fileName : "TrkPatRecTest02.root" }
+  TFileService          : { fileName : "readKalFits.root" }
   RandomNumberGenerator : { }
 
   user : {
