@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.32 2012/07/15 22:06:17 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/07/15 22:06:17 $
+# $Id: SConscript,v 1.33 2012/07/20 16:15:39 genser Exp $
+# $Author: genser $
+# $Date: 2012/07/20 16:15:39 $
 #
 # Original author Rob Kutschke.
 #
@@ -136,10 +136,7 @@ G4GLOBALIBS = [
               'libG4zlib'
               ]
 
-# extract g4 version from g4inc and decide which libs to use
-g4version = re.search('^/.*/geant4/v4_([^/]*)/.*$',g4inc).group(1)
-
-if g4version < '9_5':
+if g4_version < '495':
     G4LIBS = G4GRANULARLIBS
 else:
     G4LIBS = G4GLOBALIBS

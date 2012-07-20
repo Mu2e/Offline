@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.2 2012/04/19 22:57:16 genser Exp $
+# $Id: SConscript,v 1.3 2012/07/20 16:15:19 genser Exp $
 # $Author: genser $
-# $Date: 2012/04/19 22:57:16 $
+# $Date: 2012/07/20 16:15:19 $
 #
 # Original author Rob Kutschke.
 #
@@ -19,6 +19,9 @@ Import('env')
 g4inc    = os.environ['G4INCLUDE']
 g4futureinc = '../inc'
 g4libdir = os.environ['G4LIBDIR']
+g4_version = os.environ['GEANT4_VERSION']
+g4_version=g4_version.replace('_','')
+g4_version = g4_version[1:4]
 
 # Compiler switches needed by the default G4 build.
 G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
@@ -27,6 +30,7 @@ G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
                '-DG4VIS_USE_HEPREPFILE', '-DG4VIS_USE_RAYTRACER',
                '-DG4VIS_USE_VRMLFILE',   '-DG4VIS_USE_ASCIITREE',
                '-DG4VIS_USE_GAGTREE',    '-DG4VIS_USE'
+               '-DG4VERSION='+g4_version
             ]
 
 # Compiler switches if we want to build G4 with OPENGL
@@ -133,10 +137,7 @@ G4GLOBALIBS = [
               'libG4zlib'
               ]
 
-# extract g4 version from g4inc and decide which libs to use
-g4version = re.search('^/.*/geant4/v4_([^/]*)/.*$',g4inc).group(1)
-
-if g4version < '9_5':
+if g4_version < '495':
     G4LIBS = G4GRANULARLIBS
 else:
     G4LIBS = G4GLOBALIBS
