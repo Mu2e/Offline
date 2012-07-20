@@ -1,8 +1,8 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: MinimumHits_module.cc,v 1.8 2012/06/13 00:54:30 kutschke Exp $
+// $Id: MinimumHits_module.cc,v 1.9 2012/07/20 00:29:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/06/13 00:54:30 $
+// $Date: 2012/07/20 00:29:59 $
 //
 // Contact person Rob Kutschke.
 //
@@ -126,6 +126,17 @@ namespace mu2e {
   }
 
   bool MinimumHits::beginRun(art::Run& ){
+
+    static int nRuns(0);
+    ++nRuns;
+
+    if ( nRuns >= 1 ){
+      if ( nRuns == 1 ){
+        mf::LogInfo("CONFIG")
+          << "MinimumHits_module ignores any geometry changes at run boundaries.  Hope that's OK.\n";
+      }
+      return 1;
+    }
 
     // Book histograms; must wait until beginRun because some histogram
     // limits are set using the GeometryService.
