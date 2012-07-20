@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.18 2012/05/14 19:20:02 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Id: TrkStrawHit.cc,v 1.19 2012/07/20 22:37:54 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2012/07/20 22:37:54 $
 //
 // Original author David Brown, LBNL
 //
@@ -26,10 +26,19 @@ namespace mu2e
 // convert speed of light in mm/nsec
   const double TrkStrawHit::_vlight = CLHEP::c_light;
 /// Material information, BaBar style
-  MatDBInfo* TrkStrawHit::_matdbinfo(new MatDBInfo);
-  DetStrawHitType TrkStrawHit::_wtype(_matdbinfo,"straw-wall");
-  DetStrawHitType TrkStrawHit::_gtype(_matdbinfo,"straw-gas");
- 
+  MatDBInfo* TrkStrawHit::matdbinfo(){
+    static MatDBInfo mat;
+    return &mat;
+  }
+  DetStrawHitType* TrkStrawHit::wtype(){
+    static DetStrawHitType instance(matdbinfo(),"straw-wall");
+    return &instance;
+  }
+  DetStrawHitType* TrkStrawHit::gtype(){
+    static DetStrawHitType instance(matdbinfo(),"straw-gas");
+    return &instance;
+  }
+
   TrkDummyHit::TrkDummyHit(TrkEnums::TrkViewInfo v, int id, TrkDetElemId::systemIndex sys)
       : _view(v), _eid(id,sys)
   {
@@ -58,8 +67,8 @@ namespace mu2e
     _iamb(0),
     _ambigupdate(false),
     _maxdriftpull(maxdriftpull),
-    _welem(&_wtype,this),
-    _gelem(&_gtype,this)
+    _welem(wtype(),this),
+    _gelem(gtype(),this)
   {
 // is there an efficiency issue fetching the calibration object for every hit???
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -97,8 +106,8 @@ namespace mu2e
       _wtime(other._wtime),
       _wtime_err(other._wtime_err),
       _maxdriftpull(other._maxdriftpull),
-      _welem(&_wtype,this),
-      _gelem(&_gtype,this)
+      _welem(wtype(),this),
+      _gelem(gtype(),this)
   {
 //    std::cout << "creating TrkStrawHit copy " << this << std::endl;
   }

@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.14 2012/05/14 19:20:02 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Id: TrkStrawHit.hh,v 1.15 2012/07/20 22:37:54 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2012/07/20 22:37:54 $
 //
 // Original author David Brown, LBNL
 //
@@ -136,13 +136,13 @@ namespace mu2e
     double _wtime_err;
     double _maxdriftpull;
 // DetModel stuff
-    static DetStrawHitType _wtype;
-    static DetStrawHitType _gtype;
+    static DetStrawHitType* wtype();
+    static DetStrawHitType* gtype();
     DetStrawWallElem _welem;
     DetStrawGasElem _gelem;
 // parameters that should come from some service: FIXME!!!
     static const double _vlight;
-    static MatDBInfo* _matdbinfo;
+    static MatDBInfo* matdbinfo();
   };
 // unary functor to select TrkStrawHit from a given hit
   struct FindTrkStrawHit {
