@@ -1,8 +1,8 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: MinimumHits_module.cc,v 1.9 2012/07/20 00:29:59 kutschke Exp $
+// $Id: MinimumHits_module.cc,v 1.10 2012/07/21 02:26:26 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/20 00:29:59 $
+// $Date: 2012/07/21 02:26:26 $
 //
 // Contact person Rob Kutschke.
 //
@@ -130,8 +130,8 @@ namespace mu2e {
     static int nRuns(0);
     ++nRuns;
 
-    if ( nRuns >= 1 ){
-      if ( nRuns == 1 ){
+    if ( nRuns >= 2 ){
+      if ( nRuns == 2 ){
         mf::LogInfo("CONFIG")
           << "MinimumHits_module ignores any geometry changes at run boundaries.  Hope that's OK.\n";
       }
