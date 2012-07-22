@@ -2,9 +2,9 @@
 #
 # Script to create a test release in the current directory.
 #
-#  $Id: createTestRelease,v 1.2 2012/07/22 00:12:16 kutschke Exp $
+#  $Id: createTestRelease,v 1.3 2012/07/22 23:10:19 kutschke Exp $
 #  $Author: kutschke $
-#  $Date: 2012/07/22 00:12:16 $
+#  $Date: 2012/07/22 23:10:19 $
 #
 # This script resides a base release and it will connect the test release
 # to the base release in which this script resides.  Normally you should
@@ -55,6 +55,7 @@ done
 cp ${candidate_base_release}/SConstruct .
 mkdir -p bin
 mkdir -p lib
+cp ${candidate_base_release}/bin/setup_mu2e_project.sh bin
 
 # Create the setup script for the test release.
 # Hard code the path to the base release.
@@ -70,7 +71,7 @@ cat >> setup.sh <<EOF
 source ${candidate_base_release}/setup.sh
 
 # Add the test release to PATH, LD_LIBRARY_PATH and PYTHON_PATH
-source \${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
+source bin/setup_mu2e_project.sh
 
 # Define the test release environment variables.
 source  \${MU2E_BASE_RELEASE}/bin/addlocal.sh
