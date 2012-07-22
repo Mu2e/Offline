@@ -1,8 +1,8 @@
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.36 2012/07/10 21:18:33 kutschke Exp $
+# $Id: SConstruct,v 1.37 2012/07/22 00:11:58 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/07/10 21:18:33 $
+# $Date: 2012/07/22 00:11:58 $
 #
 # Original author Rob Kutschke.
 #
@@ -49,6 +49,11 @@ else:
     cpppath_frag         = [ ]
     libpath_frag         = [ ]
 
+# The link libraries needed when building the BaBar code.
+babarlibs = [ 'BaBar_KalmanTrack', 'BaBar_DetectorModel',  'BaBar_TrkBase',    'BaBar_BField',
+              'BaBar_TrajGeom',    'BaBar_BbrGeom',        'BaBar_difAlgebra', 'BaBar_ProbTools',
+              'BaBar_BaBar',       'BaBar_CLHEP',          'BaBar_MatEnv' ]
+
 # Define scons-local environment - it will be exported later.
 
 osenv = {}
@@ -92,7 +97,8 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              xercesc_root+'/lib',
                            ],
                    ENV=osenv,
-                   FORTRAN = 'gfortran'
+                   FORTRAN = 'gfortran',
+                   BABARLIBS = [ babarlibs ]
                  )
 
 # Define the rule for building dictionaries.
@@ -126,7 +132,7 @@ env.gcc_ver=gcc_version.replace('.','')
 # Make the modified environment visible to all of the SConscript files
 Export('env')
 
-# Find all Package/src/SConscript files
+# Walk the directory tree to locate all SConscript files.
 ss=[]
 for root,dirs,files in os.walk('.'):
     for file in files:
@@ -134,14 +140,12 @@ for root,dirs,files in os.walk('.'):
         pass
     pass
 
-# If the splines package is absent, skip the figure of merit tool.
+# If the splines package is absent, skip building of the figure of merit tool.
 if not os.environ.has_key('SPLINES_DIR'):
     if os.path.exists('FigureOfMerit/src/SConscript'):
         ss.remove('FigureOfMerit/src/SConscript')
 
-
-#
-# Tell scons to operate on all of the SConscript files found in the previous step.
+# Tell scons to operate on all of the SConscript files found in the previous steps.
 env.SConscript(ss)
 
 # This tells emacs to view this file in python mode.
