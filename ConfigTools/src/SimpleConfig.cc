@@ -1,9 +1,9 @@
 //
 // Main class in a primitive runtime parameter utility.
 //
-// $Id: SimpleConfig.cc,v 1.1 2012/07/15 22:00:35 kutschke Exp $
+// $Id: SimpleConfig.cc,v 1.2 2012/07/22 23:09:50 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:00:35 $
+// $Date: 2012/07/22 23:09:50 $
 //
 // Contact person Rob Kutschke
 //
@@ -708,7 +708,7 @@ namespace mu2e {
     string fname = line.substr(j0+1,j1-j0-1);
 
     // Read the included file.
-    SimpleConfig nestedFile(fname);
+    SimpleConfig nestedFile(fname,_allowReplacement,_messageOnReplacement);
 
     // Copy the contents of the included file into this one.
     for ( Image_type::const_iterator i=nestedFile._image.begin();
