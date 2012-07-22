@@ -25,7 +25,7 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
     if(entry!=NULL) _hitBox->Select(entry->EntryId());
   }
 
-  entry=_caloHitBox->FindEntry("CaloHit:CaloReadoutHitsMaker:");
+  entry=_caloHitBox->FindEntry("CaloCrystalHit:CaloCrystalHitsMaker:");
   if(entry!=NULL) _caloHitBox->Select(entry->EntryId());
 
   entry=_trackBox->FindEntry("TrkRecoTrk:KalFitTest:");
