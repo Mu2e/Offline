@@ -28,8 +28,17 @@ services: {
 }
 
 physics: {
+    analyzers: {
+        printgp: {
+            module_type: PrintGenParticles
+            inputModuleLabel   : "ExtMonFNALMARS"
+            inputInstanceName  : ""
+        }
+    }
+
     e1 : [ outfile ]
-    end_paths      : [e1]
+    e2 : [ printgp ]
+    end_paths      : [e1, e2]
 }
 
 outputs: {
