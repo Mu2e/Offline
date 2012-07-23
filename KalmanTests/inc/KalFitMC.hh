@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.22 2012/07/23 17:52:27 brownd Exp $
+// $Id: KalFitMC.hh,v 1.23 2012/07/23 22:30:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/07/23 22:30:57 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -160,9 +160,8 @@ namespace mu2e
 // create a track definition object based on MC true particle
     bool trkFromMC(cet::map_vector_key const& trkid, TrkDef& mytrk);
 // diagnostic comparison of reconstructed tracks with MC truth
-    void trkDiag(TrkKalFit const& myfit);
     void kalDiag(const KalRep* krep);
-    void hitsDiag(std::vector<TrkStrawHit*> const& hits);
+    void hitsDiag(std::vector<const TrkStrawHit*> const& hits);
     void mcTrkInfo();
     void hitDiag(const TrkStrawHit* strawhit);
 // allow creating the trees
@@ -195,7 +194,7 @@ namespace mu2e
 	std::vector<MCStepItr>& steps);
     static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
     void fillMCHitSummary();
-    void findArcs(std::vector<TrkStrawHit*> const& straws, std::vector<TrkArc>&  arcs) const;
+    void findArcs(std::vector<const TrkStrawHit*> const& straws, std::vector<TrkArc>&  arcs) const;
     static int findArc(size_t itsh,std::vector<TrkArc>& arcs );
 // config parameters
     double _mintrkmom; // minimum true momentum at z=0 to create a track from

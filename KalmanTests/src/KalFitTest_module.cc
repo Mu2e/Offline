@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.14 2012/07/23 17:52:27 brownd Exp $
+// $Id: KalFitTest_module.cc,v 1.15 2012/07/23 22:30:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/07/23 22:30:57 $
 //
 
 // framework
@@ -124,7 +124,7 @@ namespace mu2e
       _kfit.makeTrack(mytrk,myfit);
       //  diagnostics
       if(_diag > 0){
-	_kfitmc.trkDiag(myfit);
+	_kfitmc.kalDiag(myfit._krep);
 	if(_diag > 1){
 	  for(std::vector<TrkStrawHit*>::iterator ihit=myfit._hits.begin();ihit!=myfit._hits.end();ihit++){
 	    TrkStrawHit* trkhit = *ihit;

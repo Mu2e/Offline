@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.10 2012/07/23 17:52:27 brownd Exp $
+// $Id: ReadKalFits_module.cc,v 1.11 2012/07/23 22:30:57 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/07/23 22:30:57 $
 //
 // Original author Rob Kutschke
 //
@@ -178,8 +178,7 @@ namespace mu2e {
     }
 // if there are no tracks, enter dummies
     if(trks.size() == 0){
-      TrkKalFit dummy;
-      _kfitmc.trkDiag(dummy);
+      _kfitmc.kalDiag(0);
     }
   }
 

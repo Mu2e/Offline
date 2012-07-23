@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.30 2012/07/23 17:52:27 brownd Exp $
+// $Id: KalFitMC.cc,v 1.31 2012/07/23 22:30:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/07/23 22:30:57 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -64,8 +64,8 @@ namespace mu2e
   struct timecomp : public binary_function<MCStepItr,MCStepItr, bool> {
     bool operator()(MCStepItr x,MCStepItr y) { return x->time() < y->time(); }
   };
-  struct devicecomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
-    bool operator()(TrkStrawHit* x, TrkStrawHit* y) { 
+  struct devicecomp : public binary_function<const TrkStrawHit*, const TrkStrawHit*, bool> {
+    bool operator()(const TrkStrawHit* x, const TrkStrawHit* y) { 
 // predicate on device first, as fltlen might be ambiguous for inactive hots
       if(x->straw().id().getDevice() == y->straw().id().getDevice())
 	return x->fltLen() < y->fltLen();
@@ -269,69 +269,67 @@ namespace mu2e
   }
   
   void
-  KalFitMC::trkDiag(TrkKalFit const& myfit) {
-    if(_trkdiag == 0)createTrkDiag();
-// initial t0 value
-    _t00 = myfit._t00.t0();
-    _t00err = myfit._t00.t0Err();
-// iterations
-    _nt0iter = myfit._nt0iter;
-    _nweediter = myfit._nweediter;
-// final t0 value
-    _t0 = myfit._t0.t0();
-    _t0err = myfit._t0.t0Err();
-// kalman fit diagnostics
-    kalDiag(myfit._krep);
-// hits diagnostic
-    if(_diag > 1)hitsDiag(myfit._hits);
-// fill tree    
-   _trkdiag->Fill(); 
-  }
-
-  void
   KalFitMC::kalDiag(const KalRep* krep) {
     if(krep != 0) {
-      if(krep->fitCurrent()){
-	_fitstatus = krep->fitStatus().success();
-	_nhits = krep->hotList()->nHit();
-	_niter = krep->iterations();
-	_ndof = krep->nDof();
-	_nactive = krep->nActive();
-	_chisq = krep->chisq();
-	_fitcon = krep->chisqConsistency().significanceLevel();
-	_radlen = krep->radiationFraction();
-	_nsites = krep->siteList().size();
-	_firstflt = krep->firstHit()->globalLength();
-	_lastflt = krep->lastHit()->globalLength();
-	// get the fit at the first hit
-	const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>(krep->firstHit()->kalHit()->hitOnTrack());
-	double fltlen = firsthit->fltLen() - 10;
-	double loclen(0.0);
-	const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
-	_fitpar = helixpar(ltraj->parameters()->parameter());
-	_fiterr = helixpar(ltraj->parameters()->covariance());
-	CLHEP::Hep3Vector fitmom = krep->momentum(fltlen);
-	BbrVectorErr momerr = krep->momentumErr(fltlen);
-	_fitmom = fitmom.mag();
-	Hep3Vector momdir = fitmom.unit();
-	HepVector momvec(3);
-	for(int icor=0;icor<3;icor++)
-	  momvec[icor] = momdir[icor];
-	_fitmomerr = sqrt(momerr.covMatrix().similarity(momvec));
-	CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->bField(),0.0);
-	_seedmom = seedmom.mag();
-      } else {
-	_fitstatus = -krep->fitStatus().failure();
-	_nhits = -1;
-	_fitmom = -1.0;
-	_seedmom = -1.0;
-      }
+     if(_trkdiag == 0)createTrkDiag();
+// no information on iterations either!
+     _nt0iter = _nweediter = -1;
+     if(_diag > 1){
+  // extract the hits from the kalrep and perform diagnstics
+       std::vector<const TrkStrawHit*> hits;
+       const TrkHotList* hots = krep->hotList();
+       hits.reserve(hots->nHit());
+       for(TrkHotList::hot_iterator ihot=hots->begin();ihot != hots->end();++ihot){
+	 const TrkStrawHit* hit = dynamic_cast<const TrkStrawHit*>(ihot.get());
+	 if(hit != 0)hits.push_back(hit);
+       }
+       std::sort(hits.begin(),hits.end(),devicecomp());
+       hitsDiag(hits);
+     }
+     if(krep->fitCurrent()){
+       _t00 = _t0 = krep->t0().t0();
+       _t00err = _t0err = krep->t0().t0Err();
+       _fitstatus = krep->fitStatus().success();
+       _nhits = krep->hotList()->nHit();
+       _niter = krep->iterations();
+       _ndof = krep->nDof();
+       _nactive = krep->nActive();
+       _chisq = krep->chisq();
+       _fitcon = krep->chisqConsistency().significanceLevel();
+       _radlen = krep->radiationFraction();
+       _nsites = krep->siteList().size();
+       _firstflt = krep->firstHit()->globalLength();
+       _lastflt = krep->lastHit()->globalLength();
+       // get the fit at the first hit
+       const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>(krep->firstHit()->kalHit()->hitOnTrack());
+       double fltlen = firsthit->fltLen() - 10;
+       double loclen(0.0);
+       const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
+       _fitpar = helixpar(ltraj->parameters()->parameter());
+       _fiterr = helixpar(ltraj->parameters()->covariance());
+       CLHEP::Hep3Vector fitmom = krep->momentum(fltlen);
+       BbrVectorErr momerr = krep->momentumErr(fltlen);
+       _fitmom = fitmom.mag();
+       Hep3Vector momdir = fitmom.unit();
+       HepVector momvec(3);
+       for(int icor=0;icor<3;icor++)
+	 momvec[icor] = momdir[icor];
+       _fitmomerr = sqrt(momerr.covMatrix().similarity(momvec));
+       CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->bField(),0.0);
+       _seedmom = seedmom.mag();
+     } else {
+       _fitstatus = -krep->fitStatus().failure();
+       _nhits = -1;
+       _fitmom = -1.0;
+       _seedmom = -1.0;
+     }
     } else {
       _fitstatus = -1000;
     }
+    _trkdiag->Fill(); 
   }
 
-  void KalFitMC::hitsDiag(std::vector<TrkStrawHit*> const& hits) {
+  void KalFitMC::hitsDiag(std::vector<const TrkStrawHit*> const& hits) {
     _tshinfo.clear();
     _tainfo.clear();
     _ncactive = 0;
@@ -780,7 +778,7 @@ namespace mu2e
   }
 
   void
-  KalFitMC::findArcs(std::vector<TrkStrawHit*> const& straws, std::vector<TrkArc>& arcs) const {
+  KalFitMC::findArcs(std::vector<const TrkStrawHit*> const& straws, std::vector<TrkArc>& arcs) const {
     arcs.clear();
 // define an initial arc
     size_t istraw(0);

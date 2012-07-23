@@ -1,8 +1,8 @@
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.27 2012/07/23 17:52:27 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.28 2012/07/23 22:30:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/07/23 22:30:57 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -521,7 +521,7 @@ class TrkPatRec : public art::EDProducer
 	  std::vector<double> hitz;
 	  std::vector<bool> devices(ndevices,false);
 	  double rho(0.0);
-	  double stime, sphi;
+	  double stime(0), sphi(0);
 	  for(std::vector<hitIndex>::const_iterator ihi = tpeak._trkptrs.begin();ihi !=tpeak._trkptrs.end();++ihi){
 	    const StrawHit& sh = _strawhits->at(ihi->_index);
 	    unsigned idevice = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getDeviceId());
@@ -1150,7 +1150,7 @@ class TrkPatRec : public art::EDProducer
       if((*ish)->usability()==3)++_nadd;
     }
 // fill kalman fit info
-    _kfitmc.trkDiag(kalfit);
+    _kfitmc.kalDiag(kalfit._krep);
   }
   
   void
