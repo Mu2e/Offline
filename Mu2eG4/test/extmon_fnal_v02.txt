@@ -68,14 +68,14 @@ double extMonFNAL.collimator1.radiusTransitiondZ = 0;
 // transverse to the beam coordinates (horiz, vertical).  The offsets
 // are w.r.t to the core center position (== the nominal beam entrance
 // point).
-double         extMonFNAL.entranceOffsetX = 900;
+double         extMonFNAL.entranceOffsetX = 1000;
 double         extMonFNAL.entranceOffsetY = 1250;
 
 // Filter channel orientation: angles in horizontal and vertical
 // planes w.r.t dump core. Note that angleH is the same for all filter
 // elements, while angleV is different.  We specify angleV at the
 // filter entrance.
-double         extMonFNAL.angleH = 0.0856; //radians
+double         extMonFNAL.angleH = 0.0940; //radians
 double         extMonFNAL.entranceAngleV = 0.1645; //radians
 
 bool extMonFNAL.collimator1.alignmentHole.visible = true;
@@ -110,7 +110,7 @@ double extMonFNAL.magnet.refDistanceToUpstreamWall = 2100;
 // collimator1 channel (at exit) parallel to the collimator1 axis,
 // will enter the magnet aperture at the bottom and exit at at the
 // bottom after being deflected by the magnetic field.
-double extMonFNAL.nominalMomentum = 3500.; // MeV/c
+double extMonFNAL.nominalMomentum = 3000.; // MeV/c
 // double extMonFNAL.maxG4StepLength = 10.; // mm
 
 //----------------------------------------------------------------
