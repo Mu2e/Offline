@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.21 2012/05/19 07:44:09 brownd Exp $
+// $Id: KalFitMC.hh,v 1.22 2012/07/23 17:52:27 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/19 07:44:09 $
+// $Date: 2012/07/23 17:52:27 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -22,7 +22,6 @@
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
 #include "BaBar/BaBar.hh"
-#include "BaBar/PdtPid.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/KalFit.hh"
@@ -162,7 +161,6 @@ namespace mu2e
     bool trkFromMC(cet::map_vector_key const& trkid, TrkDef& mytrk);
 // diagnostic comparison of reconstructed tracks with MC truth
     void trkDiag(TrkKalFit const& myfit);
-    void trkDiag(TrkRecoTrk const& mytrk);
     void kalDiag(const KalRep* krep);
     void hitsDiag(std::vector<TrkStrawHit*> const& hits);
     void mcTrkInfo();

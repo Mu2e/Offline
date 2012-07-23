@@ -16,7 +16,7 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
 {
   TGLBEntry *entry;
 
-  entry=_hitBox->FindEntry("TrkRecoTrk:KalFitTest:");
+  entry=_hitBox->FindEntry("KalRep:KalFitTest:");
   if(entry!=NULL) _hitBox->Select(entry->EntryId());
   else
   {
@@ -28,7 +28,7 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
   entry=_caloHitBox->FindEntry("CaloCrystalHit:CaloCrystalHitsMaker:");
   if(entry!=NULL) _caloHitBox->Select(entry->EntryId());
 
-  entry=_trackBox->FindEntry("TrkRecoTrk:KalFitTest:");
+  entry=_trackBox->FindEntry("KalRep:KalFitTest:");
   if(entry!=NULL) _trackBox->Select(entry->EntryId());
   entry=_trackBox->FindEntry("SimParticle:g4run:");
   if(entry!=NULL) _trackBox->Select(entry->EntryId());
@@ -72,7 +72,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   createNewEntries<mu2e::StepPointMCCollection>(_stepPointMCVector, event, "StepPointMC", newEntries, 1);
   createNewEntries<mu2e::StrawHitCollection>(_strawHitVector, event, "StrawHit", newEntries, 2);
 #ifdef BABARINSTALLED
-  createNewEntries<mu2e::TrkRecoTrkCollection>(_hitOnTrackVector, event, "TrkRecoTrk", newEntries, 3);
+  createNewEntries<mu2e::KalRepCollection>(_hitOnTrackVector, event, "KalRep", newEntries, 3);
 #endif
 
   if(newEntries!=_hitEntries)
@@ -118,7 +118,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   newEntries.clear();
   createNewEntries<mu2e::SimParticleCollection>(_simParticleVector, event, "SimParticle", newEntries, 1);
 #ifdef BABARINSTALLED
-  createNewEntries<mu2e::TrkRecoTrkCollection>(_trkRecoTrkVector, event, "TrkRecoTrk", newEntries, 2);
+  createNewEntries<mu2e::KalRepCollection>(_trkRecoTrkVector, event, "KalRep", newEntries, 2);
 #endif
 
   if(newEntries!=_trackEntries)
@@ -221,7 +221,7 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
              if(index>=static_cast<int>(_strawHitVector.size())) return(NULL);
              return(reinterpret_cast<const CollectionType*>(_strawHitVector[index].product()));
 #ifdef BABARINSTALLED
-    case 3 : if(typeid(CollectionType)!=typeid(mu2e::TrkRecoTrkCollection)) return(NULL);
+    case 3 : if(typeid(CollectionType)!=typeid(mu2e::KalRepCollection)) return(NULL);
              if(index>=static_cast<int>(_hitOnTrackVector.size())) return(NULL);
              return(reinterpret_cast<const CollectionType*>(_hitOnTrackVector[index].product()));
 #endif
@@ -239,7 +239,7 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedHitCollection<mu2e::StepPointMCCollection>() const;
 template const mu2e::StrawHitCollection*    ContentSelector::getSelectedHitCollection<mu2e::StrawHitCollection>() const;
 #ifdef BABARINSTALLED
-template const mu2e::TrkRecoTrkCollection*  ContentSelector::getSelectedHitCollection<mu2e::TrkRecoTrkCollection>() const;
+template const mu2e::KalRepCollection*  ContentSelector::getSelectedHitCollection<mu2e::KalRepCollection>() const;
 #endif
 
 template<typename CollectionType>
@@ -309,7 +309,7 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
                v.push_back(t);
                break;
 #ifdef BABARINSTALLED
-      case 2 : if(typeid(CollectionType)!=typeid(mu2e::TrkRecoTrkCollection)) break;
+      case 2 : if(typeid(CollectionType)!=typeid(mu2e::KalRepCollection)) break;
                if(index>=static_cast<int>(_trkRecoTrkVector.size())) break;
                to_return.push_back(reinterpret_cast<const CollectionType*>(_trkRecoTrkVector[index].product()));
                v.push_back(t);
@@ -321,7 +321,7 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
 }
 template std::vector<const mu2e::SimParticleCollection*> ContentSelector::getSelectedTrackCollection<mu2e::SimParticleCollection>(std::vector<trackInfoStruct> &v) const;
 #ifdef BABARINSTALLED
-template std::vector<const mu2e::TrkRecoTrkCollection*> ContentSelector::getSelectedTrackCollection<mu2e::TrkRecoTrkCollection>(std::vector<trackInfoStruct> &v) const;
+template std::vector<const mu2e::KalRepCollection*> ContentSelector::getSelectedTrackCollection<mu2e::KalRepCollection>(std::vector<trackInfoStruct> &v) const;
 #endif
 
 const mu2e::PhysicalVolumeInfoCollection* ContentSelector::getPhysicalVolumeInfoCollection() const

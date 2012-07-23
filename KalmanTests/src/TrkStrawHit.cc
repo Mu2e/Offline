@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.19 2012/07/20 22:37:54 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2012/07/20 22:37:54 $
+// $Id: TrkStrawHit.cc,v 1.20 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author David Brown, LBNL
 //
@@ -39,25 +39,9 @@ namespace mu2e
     return &instance;
   }
 
-  TrkDummyHit::TrkDummyHit(TrkEnums::TrkViewInfo v, int id, TrkDetElemId::systemIndex sys)
-      : _view(v), _eid(id,sys)
-  {
-//    std::cout << "crated DummyHit " << this << std::endl;
-  }
-  TrkDummyHit::TrkDummyHit(const TrkDummyHit& other)
-      : _view(other._view), _eid(other._eid)
-  {
-//    std::cout << "copied DummyHit " << this << std::endl;
-  }
-  TrkDummyHit::~TrkDummyHit() {
-//    std::cout << "deleted DummyHit " << this << std::endl;
-  }
-  TrkDummyHit* TrkDummyHit::clone() const { return new TrkDummyHit(*this);}
-  
-  
   TrkStrawHit::TrkStrawHit(const StrawHit& strawhit, const Straw& straw, unsigned istraw,
     const TrkT0& trkt0,double flt0,double fltlen,double exterr,double maxdriftpull) :
-    TrkHitOnTrk(new TrkDummyHit(TrkEnums::xyView,strawhit.strawIndex().asInt(),TrkDetElemId::null),1e-5),
+    TrkHitOnTrk(1e-5),
     _strawhit(strawhit),
     _straw(straw),
     _istraw(istraw),
@@ -115,7 +99,6 @@ namespace mu2e
   TrkStrawHit::~TrkStrawHit(){
 // delete the hit
 //    std::cout << "deleting hit " << _theHit << std::endl;
-    delete _theHit; _theHit=0;
     delete _hittraj;
 // ugly trick to keep the base class from trying to delete _TrkDummyHit
     _parentRep=0;  

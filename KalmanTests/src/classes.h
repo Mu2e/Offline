@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.3 2011/06/30 20:46:49 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2011/06/30 20:46:49 $
+// $Id: classes.h,v 1.4 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -13,9 +13,9 @@
 #include "art/Persistency/Common/Wrapper.h"
 
 using namespace CLHEP;
-#include "TrkBase/TrkRecoTrk.hh"
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh" 
+#include "KalmanTrack/KalRep.hh"
+#include "KalmanTests/inc/KalRepCollection.hh" 
 #include "KalmanTests/inc/KalFitMC.hh"
 
-template class art::Wrapper<mu2e::TrkRecoTrkCollection>;
+template class art::Wrapper<mu2e::KalRepCollection>;
 template class std::vector<mu2e::TrkStrawHitInfo>;

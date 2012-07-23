@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.2 2012/07/10 04:54:49 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 04:54:49 $
+// $Id: TrkExtrapol_module.cc,v 1.3 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author G. Pezzullo
 //
@@ -27,14 +27,13 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "KalmanTests/inc/KalRepCollection.hh"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 //tracker includes
-#include "TrkBase/TrkRecoTrk.hh"
 #include "TrkBase/TrkRep.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
@@ -195,9 +194,9 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
 
         Calorimeter4VanesGeom *CaloVanes = new Calorimeter4VanesGeom();
 
-        art::Handle<TrkRecoTrkCollection> trksHandle;
+        art::Handle<KalRepCollection> trksHandle;
         evt.getByLabel(_fitterModuleLabel,trksHandle);
-        TrkRecoTrkCollection const& trks = *trksHandle;
+        KalRepCollection const& trks = *trksHandle;
 
         if(_diagLevel>2){
                 cout<<endl<<"Event Number : "<< evt.event()<< endl;
@@ -210,8 +209,7 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
 
         for ( size_t i=0; i< trks.size(); ++i ){
 
-                TrkRecoTrk const* trk = trks[i];
-                TrkRep const* trep = trk->getRep(PdtPid::electron);
+                KalRep const* trep = trks[i];
                 if ( !trep ) continue;
                 TrkDifTraj const& traj = trep->traj();
                 double pos = 0.0;
@@ -266,7 +264,7 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
                                                 lowrange = it->first;
                                                 highrange = it->second;
 
-                                                TrkRecoTrkPtr tmpRecTrk(trksHandle, i);
+                                                KalRepPtr tmpRecTrk(trksHandle, i);
                                                 tmpExtrapolatedTracks.push_back(
                                                                 TrkToCaloExtrapol( jVane,tmpRecTrk,lowrange, highrange)
                                                 );

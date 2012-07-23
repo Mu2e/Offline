@@ -3,15 +3,15 @@
 //
 // The persistent information from a KalRep
 //
-// $Id: KalRepPayload.hh,v 1.1 2012/07/03 03:27:24 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/03 03:27:24 $
+// $Id: KalRepPayload.hh,v 1.2 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Contact person Rob Kutschke
 //
 // Notes:
 //
-// 1) This class is made from the data within a transient TrkRecoTrk.
+// 1) This class is made from the data within a transient KalRep.
 //    On construction the member transientTrack_ points to the track from which
 //    it was made.  On readback, transientTrack_ is default constructed: that is, it
 //    does not point to anything.  When the transient tracks are reconstructed from
@@ -34,7 +34,7 @@
 
 namespace mu2e {
 
-  class TrkRecoTrk;
+  class KalRep;
 
   class KalRepPayload{
   public:
@@ -51,7 +51,7 @@ namespace mu2e {
     std::vector<LocalHelixPayload> const& trajectory() const { return trajectory_; }
     std::vector<HOTPayload> const& hots()              const { return hots_; }
 
-    art::Ptr< const TrkRecoTrk * const  > const& transientTrack () const { return transientTrack_; }
+    art::Ptr< const KalRep * const  > const& transientTrack () const { return transientTrack_; }
 
     // Constructors
     KalRepPayload():
@@ -73,7 +73,7 @@ namespace mu2e {
                    bool anActive,
                    bool anDof,
                    bool acl,
-                   art::Ptr< const TrkRecoTrk * const  > const& atransientTrack ):
+                   art::Ptr< const KalRep * const  > const& atransientTrack ):
       seed_(aseed),
       success_(asuccess),
       nHit_(anHit),
@@ -97,8 +97,8 @@ namespace mu2e {
     std::vector<HOTPayload>& hots()       { return hots_; }
 
     // See note 1.
-    art::Ptr< const TrkRecoTrk * const>&
-    transientTrack ( art::Ptr<const TrkRecoTrk * const> const& p ) const {
+    art::Ptr< const KalRep * const>&
+    transientTrack ( art::Ptr<const KalRep * const> const& p ) const {
       return transientTrack_=p;
     }
 
@@ -119,7 +119,7 @@ namespace mu2e {
     std::vector<HOTPayload>        hots_;
 
     // See note 1.
-    mutable art::Ptr< const TrkRecoTrk * const  > transientTrack_;
+    mutable art::Ptr< const KalRep * const  > transientTrack_;
 
   };
 

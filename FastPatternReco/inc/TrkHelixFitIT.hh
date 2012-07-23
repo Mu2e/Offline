@@ -4,9 +4,9 @@
 //
 // class derived by TrkPatRec/inc/TrkHelixFit.hh to work with the ITracker
 //
-// $Id: TrkHelixFitIT.hh,v 1.2 2012/05/21 15:08:55 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/05/21 15:08:55 $
+// $Id: TrkHelixFitIT.hh,v 1.3 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author G. Tassielli
 //
@@ -21,7 +21,6 @@
 //#include "KalmanTests/inc/TrkStrawHit.hh"
 //#include "KalmanTests/inc/KalFit.hh"
 //#include "KalmanTests/inc/KalFitMC.hh"
-//#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
 //#include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/TrkHelixFit.hh"
 //#include "TrkBase/TrkPoca.hh"

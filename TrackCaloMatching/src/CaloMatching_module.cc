@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.3 2012/07/17 20:03:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/17 20:03:03 $
+// $Id: CaloMatching_module.cc,v 1.4 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author G. Pezzullo
 //
@@ -28,7 +28,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "KalmanTests/inc/KalRepCollection.hh"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
@@ -501,7 +501,7 @@ double CaloMatching::chiSquare(double& exV, double& exW, double& clV, double& cl
         return res;
 }
 
-bool passCondition(const CaloCluster&clu, const TrkRecoTrk *  const &trk){
+bool passCondition(const CaloCluster&clu, const KalRep *  const &trk){
         return true;
 }
 
@@ -585,9 +585,9 @@ void CaloMatching::doMatching(art::Event & evt, bool skip){
         if(! geom->hasElement<Calorimeter>() ) return;
         GeomHandle<Calorimeter> cg;
 
-        art::Handle<TrkRecoTrkCollection> trksHandle;
+        art::Handle<KalRepCollection> trksHandle;
         evt.getByLabel(_fitterModuleLabel,trksHandle);
-        TrkRecoTrkCollection const& trks = *trksHandle;
+        KalRepCollection const& trks = *trksHandle;
 
         if(_diagLevel>2){
                 cout<<endl<<"Event Number : "<< evt.event()<< endl;
@@ -679,12 +679,12 @@ void CaloMatching::doMatching(art::Event & evt, bool skip){
                         cout<<"trjExtrapols at "<<i<<" step"<<endl;
                 }
 
-                TrkRecoTrkPtr const& trkPtr = trjExtrapols->at(i).trk();
-                const TrkRecoTrk *  const &trk = *trkPtr;
+                KalRepPtr const& trkPtr = trjExtrapols->at(i).trk();
+                const KalRep *  const &trk = *trkPtr;
 
                 if(i>0){
-                        TrkRecoTrkPtr const& tmpTrkPtr = trjExtrapols->at(i-1).trk();
-                        const TrkRecoTrk *  const &tmpTrk = *tmpTrkPtr;
+                        KalRepPtr const& tmpTrkPtr = trjExtrapols->at(i-1).trk();
+                        const KalRep *  const &tmpTrk = *tmpTrkPtr;
                         if(trk == tmpTrk){
                                 ++count;
                         }else{
@@ -718,7 +718,7 @@ void CaloMatching::doMatching(art::Event & evt, bool skip){
                 _recoThetaW = thW;
 
                 tmpPtime = trjExtrapols->at(i).time();
-                tmpPtimeErr = trk->trackT0err();
+                tmpPtimeErr = trk->t0().t0Err();
 
                 _recoTime = tmpPtime;
                 _recoTimeErr = tmpPtimeErr;

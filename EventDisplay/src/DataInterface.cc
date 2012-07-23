@@ -46,13 +46,12 @@
 
 #ifdef BABARINSTALLED
 using namespace CLHEP;
-#include "TrkBase/TrkRecoTrk.hh"
 #include "TrkBase/TrkHotList.hh"
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "KalmanTests/inc/KalRepCollection.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTrack/KalRep.hh"
 #else
-#warning BaBar package is absent. TrkRecoTrk cannot be displayed in the event display.
+#warning BaBar package is absent. KalRep cannot be displayed in the event display.
 #endif
 
 namespace mu2e_eventdisplay
@@ -985,16 +984,16 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
 
 #ifdef BABARINSTALLED
-  const mu2e::TrkRecoTrkCollection *trkRecoTrkHits=contentSelector->getSelectedHitCollection<mu2e::TrkRecoTrkCollection>();
-  if(trkRecoTrkHits!=NULL)
+  const mu2e::KalRepCollection *kalRepHits=contentSelector->getSelectedHitCollection<mu2e::KalRepCollection>();
+  if(kalRepHits!=NULL)
   {
     boost::shared_ptr<TGraphErrors> residualGraph(new TGraphErrors());
     residualGraph->SetTitle("Residual Graph");
 
-    for(unsigned int i=0; i<trkRecoTrkHits->size(); i++)
+    for(unsigned int i=0; i<kalRepHits->size(); i++)
     {
-      const TrkRecoTrk &particle = *trkRecoTrkHits->at(i);
-      const TrkHotList* hots = particle.hots();
+      const KalRep &particle = *kalRepHits->at(i);
+      const TrkHotList* hots = particle.hotList();
       if(hots!=NULL)
       {
         _numberHits+=hots->nHit();
@@ -1231,22 +1230,20 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
 #ifdef BABARINSTALLED
   trackInfos.clear();
-  std::vector<const mu2e::TrkRecoTrkCollection*> trkRecoTrkCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::TrkRecoTrkCollection>(trackInfos);
-  for(unsigned int i=0; i<trkRecoTrkCollectionVector.size(); i++)
+  std::vector<const mu2e::KalRepCollection*> kalRepCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::KalRepCollection>(trackInfos);
+  for(unsigned int i=0; i<kalRepCollectionVector.size(); i++)
   {
-    const mu2e::TrkRecoTrkCollection *trkRecoTrks=trkRecoTrkCollectionVector[i];
-    for(unsigned int j=0; j<trkRecoTrks->size(); j++)
+    const mu2e::KalRepCollection *kalReps=kalRepCollectionVector[i];
+    for(unsigned int j=0; j<kalReps->size(); j++)
     {
-      const TrkRecoTrk &particle = *trkRecoTrks->at(j);
-      double t0=particle.trackT0();
-      const TrkRep* trkrep = particle.getRep(particle.defaultType());
-      if(trkrep!=NULL)
+      KalRep const* kalrep = kalReps->at(j);
+      double t0=kalrep->t0().t0();
       {
         int particleid=0;
         int trackclass=trackInfos[i].classID;
         int trackclassindex=trackInfos[i].index;
         std::string trackcollection=trackInfos[i].entryText;
-        switch(static_cast<int>(trkrep->particleType()))
+        switch(abs(static_cast<int>(kalrep->particleType().particleType())))
         {
            case 0 : particleid=11;   break;  //electron
            case 1 : particleid=13;   break;  //muon
@@ -1256,14 +1253,14 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         };
         std::string particlename=HepPID::particleName(particleid);
         char c0[200], c2[200], c3[200], c4[200];
-        sprintf(c0,"Kalman Track %i  %s  (%s)",static_cast<int>(particle.id()),particlename.c_str(),trackcollection.c_str());
+        sprintf(c0,"Kalman Track %i  %s  (%s)",j,particlename.c_str(),trackcollection.c_str());
         boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
         info->setName(c0);
         info->setText(0,c0);
 
         double hitcount=0;
         double offset=0;
-        const TrkHotList* hots=trkrep->hotList();
+        const TrkHotList* hots=kalrep->hotList();
         if(hots!=NULL)
         {
           boost::shared_ptr<TGraphErrors> residualGraph(new TGraphErrors());
@@ -1279,7 +1276,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
               double weight= strawHit->weight();  
               double fltLen= strawHit->fltLen();
               const HepPoint &p=strawHit->hitTraj()->position(strawHit->hitLen());
-              double t     = trkrep->arrivalTime(fltLen);
+              double t     = kalrep->arrivalTime(fltLen);
               offset+=(trackTime-t)*weight;
               hitcount+=weight;
 
@@ -1298,18 +1295,18 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         }
         if(hitcount>0) offset/=hitcount; else offset=0;
 
-        double fltLMin=trkrep->startValidRange();
-        double fltLMax=trkrep->endValidRange();
-        double p1=trkrep->momentum(fltLMin).mag();
-        double p2=trkrep->momentum(fltLMax).mag();
-        double x1=trkrep->position(fltLMin).x();
-        double y1=trkrep->position(fltLMin).y();
-        double z1=trkrep->position(fltLMin).z();
-        double x2=trkrep->position(fltLMax).x();
-        double y2=trkrep->position(fltLMax).y();
-        double z2=trkrep->position(fltLMax).z();
-        double t1=trkrep->arrivalTime(fltLMin)+offset;
-        double t2=trkrep->arrivalTime(fltLMax)+offset;
+        double fltLMin=kalrep->startValidRange();
+        double fltLMax=kalrep->endValidRange();
+        double p1=kalrep->momentum(fltLMin).mag();
+        double p2=kalrep->momentum(fltLMax).mag();
+        double x1=kalrep->position(fltLMin).x();
+        double y1=kalrep->position(fltLMin).y();
+        double z1=kalrep->position(fltLMin).z();
+        double x2=kalrep->position(fltLMax).x();
+        double y2=kalrep->position(fltLMax).y();
+        double z2=kalrep->position(fltLMax).z();
+        double t1=kalrep->arrivalTime(fltLMin)+offset;
+        double t2=kalrep->arrivalTime(fltLMax)+offset;
         boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, trackclass, trackclassindex, p1, 
                                                  _geometrymanager, _topvolume, _mainframe, info));
         _components.push_back(track);
@@ -1319,23 +1316,19 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         for(unsigned int step = 0; step <= 400.0; step++) 
         {		
           double fltL = fltLMin + step*fltStep;
-          double   t = trkrep->arrivalTime(fltL)+offset;
-          HepPoint p = trkrep->position(fltL);
+          double   t = kalrep->arrivalTime(fltL)+offset;
+          HepPoint p = kalrep->position(fltL);
           findBoundaryT(_tracksTimeMinmax, t);
           findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
           track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
         }
-        const KalRep* kalrep = dynamic_cast<const KalRep*>(trkrep);
-        if(kalrep!=NULL)
-        {
-          int charge = kalrep->charge();
-          sprintf(c2,"Charge %i",charge);
-          info->setText(1,c2);
-          sprintf(c3,"Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV);
-          sprintf(c4,"T0 %gns",t0/CLHEP::ns);
-          info->setText(2,c3);
-          info->setText(3,c4);
-        }
+	int charge = kalrep->charge();
+	sprintf(c2,"Charge %i",charge);
+	info->setText(1,c2);
+	sprintf(c3,"Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV);
+	sprintf(c4,"T0 %gns",t0/CLHEP::ns);
+	info->setText(2,c3);
+	info->setText(3,c4);
       }
     }
   }

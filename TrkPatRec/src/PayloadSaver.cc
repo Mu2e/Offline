@@ -2,9 +2,9 @@
 // Extract the persistent payload from the transient track objects.
 // and put it into the event.
 //
-// $Id: PayloadSaver.cc,v 1.1 2012/07/03 04:19:14 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/03 04:19:14 $
+// $Id: PayloadSaver.cc,v 1.2 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Contact person Rob Kutschke
 //
@@ -24,7 +24,7 @@ namespace mu2e {
     // Someday we will have run-time config information.  Extract that info here.
   }
 
-  void PayloadSaver::put( TrkRecoTrkCollection& tracks,
+  void PayloadSaver::put( KalRepCollection& tracks,
                           art::ProductID const& tracksID,
                           art::Event& event ){
 

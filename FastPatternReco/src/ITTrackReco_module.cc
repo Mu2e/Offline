@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.11 2012/05/24 05:41:30 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/24 05:41:30 $
+// $Id: ITTrackReco_module.cc,v 1.12 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author G. Tassielli
 //
@@ -78,7 +78,6 @@
 //#include "KalmanTests/inc/TrkStrawHit.hh"
 //#include "KalmanTests/inc/KalFit.hh"
 //#include "KalmanTests/inc/KalFitMC.hh"
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
 //#include "TrkPatRec/inc/TrkHitFilter.hh"
 //#include "TrkPatRec/inc/TrkHelixFit.hh"
 //#include "TrkBase/TrkPoca.hh"

@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.2 2012/07/10 04:54:49 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 04:54:49 $
+// $Id: Calorimeter4VanesGeom.hh,v 1.3 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -30,14 +30,13 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "KalmanTests/inc/KalRepCollection.hh"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 //tracker includes
-#include "TrkBase/TrkRecoTrk.hh"
 #include "TrkBase/TrkRep.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
@@ -59,7 +58,7 @@
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/KalFit.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "KalmanTests/inc/KalRepCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/TrkHelixFit.hh"
 #include "TrkBase/TrkPoca.hh"

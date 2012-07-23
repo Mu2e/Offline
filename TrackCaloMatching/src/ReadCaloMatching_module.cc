@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.3 2012/07/17 20:03:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/17 20:03:03 $
+// $Id: ReadCaloMatching_module.cc,v 1.4 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author G. Pezzullo
 //
@@ -17,14 +17,13 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "KalmanTests/inc/KalRepCollection.hh"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 //tracker includes
-#include "TrkBase/TrkRecoTrk.hh"
 #include "TrkBase/TrkRep.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
@@ -402,13 +401,13 @@ CLHEP::Hep3Vector fromTrkToMu2eFrame(CLHEP::Hep3Vector vec){
         return posMu2eFrame;
 }
 
-bool findTrkRecoTrk(art::Handle<TrkToCaloExtrapolCollection> &trkToCaloCollection, TrkRecoTrk const* trk){
+bool findKalRep(art::Handle<TrkToCaloExtrapolCollection> &trkToCaloCollection, KalRep const* trk){
         bool res = false;
         if(trkToCaloCollection->size() == 0) return res;
         size_t i=0;
         while(!res && i<trkToCaloCollection->size()){
-                TrkRecoTrkPtr const& trkPtr = trkToCaloCollection->at(i).trk();
-                const TrkRecoTrk*  const &tmpTrk = *trkPtr;
+                KalRepPtr const& trkPtr = trkToCaloCollection->at(i).trk();
+                const KalRep*  const &tmpTrk = *trkPtr;
 
                 const TrkId &trkId1 = trk->id();
                 const TrkId &trkId2 = tmpTrk->id();
@@ -684,11 +683,11 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
 
         for(size_t i =0; i<trjCaloMatchings->size(); ++i){
                 elecData tmpElec;
-                TrkRecoTrkPtr const& trkPtr = trjCaloMatchings->at(i).first->trk();
-                const TrkRecoTrk *  const &trk = *trkPtr;
+                KalRepPtr const& trkPtr = trjCaloMatchings->at(i).first->trk();
+                const KalRep *  const &trk = *trkPtr;
                 if(i>0){
-                        TrkRecoTrkPtr const& tmpTrkPtr = trjExtrapols->at(i-1).trk();
-                        const TrkRecoTrk *  const &tmpTrk = *tmpTrkPtr;
+                        KalRepPtr const& tmpTrkPtr = trjExtrapols->at(i-1).trk();
+                        const KalRep *  const &tmpTrk = *tmpTrkPtr;
                         if(trk == tmpTrk){
                                 ++count;
                         }else{
@@ -696,7 +695,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                         }
                 }
 
-                TrkHotList const* hots = trk->hots();
+                TrkHotList const* hots = trk->hotList();
 
                 //Map of track id as key, and number of occurrences as value
                 map<size_t , unsigned int > StrawTracksMap;
@@ -1127,13 +1126,13 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
 
 
 
-                TrkRecoTrkPtr const& trkPtr = trkToCaloExtrapol.trk();
-                const TrkRecoTrk *  const &trk = *trkPtr;
+                KalRepPtr const& trkPtr = trkToCaloExtrapol.trk();
+                const KalRep *  const &trk = *trkPtr;
                 if(i>0){
                         TrkToCaloExtrapol const& TMPtrkToCaloExtrapol = *( (*trjCaloMatchings).at(i-1).first.get() );
 
-                        TrkRecoTrkPtr const& tmpTrkPtr = TMPtrkToCaloExtrapol.trk();
-                        const TrkRecoTrk *  const &tmpTrk = *tmpTrkPtr;
+                        KalRepPtr const& tmpTrkPtr = TMPtrkToCaloExtrapol.trk();
+                        const KalRep *  const &tmpTrk = *tmpTrkPtr;
                         if(trk == tmpTrk){
                                 ++count;
                         }else{
@@ -1178,7 +1177,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 //_recoThetaW = thetaWimpact(trkToCaloExtrapol.momentum(), trkToCaloExtrapol.vaneId());
 
                 tmpPtime = trkToCaloExtrapol.time();
-                tmpPtimeErr = trk->trackT0err();
+                tmpPtimeErr = trk->t0().t0Err();
 
                 _recoTime = tmpPtime;
                 _recoTimeErr = tmpPtimeErr;

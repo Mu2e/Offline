@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.29 2012/06/12 21:06:20 brownd Exp $
+// $Id: KalFit.cc,v 1.30 2012/07/23 17:52:27 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/06/12 21:06:20 $
+// $Date: 2012/07/23 17:52:27 $
 //
 
 // the following has to come before other BaBar includes
@@ -29,7 +29,6 @@
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
 #include "KalmanTrack/KalHit.hh"
-#include "TrkBase/TrkRecoTrk.hh"
 #include "TrkBase/HelixTraj.hh"
 #include "TrkBase/TrkHotListFull.hh"
 #include "TrkBase/TrkHelixUtils.hh"
@@ -61,8 +60,8 @@ namespace mu2e
   };
 
   void TrkKalFit::deleteTrack() {
-    if(_trk != 0 && _krep != 0){
-      _hits.clear(); delete _trk; _trk=0; _krep = 0; 
+    if(_krep != 0){
+      _hits.clear(); delete _krep; _krep = 0; 
 //      std::cout << "deleting fit with track " << std::endl;
     } else {
 // if there's no fit, we need to delete the hits
@@ -94,7 +93,7 @@ namespace mu2e
     _mint0doca(pset.get<double>("minT0DOCA",-0.2)),
     _maxdriftpull(pset.get<double>("maxDriftPull",10)),
     _t0nsig(pset.get<double>("t0window",2.5)),
-    _fitpart(pset.get<int>("fitparticle",PdtPid::electron)),
+    _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _t0strategy((t0Strategy)pset.get<int>("t0Strategy",median)),
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy"))
   {
@@ -118,7 +117,7 @@ namespace mu2e
       _kalcon->setIntersectionTolerance(100);
       _kalcon->setMaxMomDiff(1.0); // 1 MeV
       _kalcon->setTrajBuffer(0.01); // 10um
-      _kalcon->setDefaultType((PdtPid::PidType)_fitpart);
+      _kalcon->setDefaultType(_tpart);
 // construct the ambiguity resolvers
       for(size_t iambig=0;iambig<_ambigstrategy.size();++iambig){
 	switch (_ambigstrategy[iambig] ){
@@ -177,18 +176,13 @@ namespace mu2e
 	    detinter.push_back(gasinter);
 	}
       }
-// Create BaBar track
-      myfit._trk = new TrkRecoTrk(_kalcon->defaultType(), 0, 0);
-      assert(myfit._trk != 0);
-      myfit._trk->setBField(bField());
-      myfit._trk->resetT0(myfit._t0.t0(),myfit._t0.t0Err());
 // create Kalman rep
       if(mytrk.traj() != 0)
-	myfit._krep = new KalRep(mytrk.traj(), hotlist, detinter, myfit._trk, *_kalcon, PdtPid::electron);
+	myfit._krep = new KalRep(mytrk.traj(), hotlist, detinter,  *_kalcon, _tpart);
       else
-	myfit._krep = new KalRep(mytrk.helix(), hotlist, detinter, myfit._trk, *_kalcon, PdtPid::electron);
+	myfit._krep = new KalRep(mytrk.helix(), hotlist, detinter, *_kalcon, _tpart);
       assert(myfit._krep != 0);
-      myfit._trk->setRep(myfit._krep);
+      myfit._krep->setT0(myfit._t0);
 // now fit
       fitTrack(myfit);
       if(_removefailed)myfit.removeFailed();
@@ -455,7 +449,7 @@ namespace mu2e
 	}
 // reset t0
         myfit._t0.setT0(t0,t0err);
-	if(myfit._trk != 0)myfit._trk->resetT0(t0,t0err);
+	if(myfit._krep != 0)myfit._krep->setT0(myfit._t0);
 // reset all the hit times
         for(std::vector<TrkStrawHit*>::iterator ihit= myfit._hits.begin();ihit != myfit._hits.end(); ihit++){
           (*ihit)->updateT0(myfit._t0,flt0);

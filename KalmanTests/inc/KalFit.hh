@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.20 2012/05/25 20:57:59 brownd Exp $
+// $Id: KalFit.hh,v 1.21 2012/07/23 17:52:27 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/25 20:57:59 $
+// $Date: 2012/07/23 17:52:27 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -17,8 +17,6 @@
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
 #include "BaBar/BaBar.hh"
-#include "BaBar/PdtPid.hh"
-#include "TrkBase/TrkRecoTrk.hh"
 // KalFit objects
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
@@ -26,6 +24,7 @@
 #include "KalmanTrack/KalContext.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "BField/BField.hh"
+#include "TrkBase/TrkParticle.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // C++
@@ -36,21 +35,19 @@ namespace mu2e
   struct TrkKalFit {
     TrkT0 _t00; // t0 value at start of fit
     TrkT0 _t0; // t0 value at end of fit
-    TrkRecoTrk* _trk; // the track
     KalRep* _krep; // Kalman rep, owned by the trk
     std::vector<TrkStrawHit*> _hits; // straw hits, owned by the KalRep
     TrkErrCode _fit; // error code from last fit
     unsigned _nt0iter; // number of times t0 was iterated
     unsigned _nweediter; // number of iterations on hit weeding
-    TrkKalFit() : _trk(0),_krep(0), _fit(TrkErrCode::fail) {}
-//    TrkKalFit() : _trk(0),_krep(0), _fit(TrkErrCode::succeed) {}
-    ~TrkKalFit() { delete _trk;}
+    TrkKalFit() : _krep(0), _fit(TrkErrCode::fail) {}
+    ~TrkKalFit() { delete _krep;}
     void setT0(const TrkT0& t0) { _t0 = t0; }
     void setT00(const TrkT0& t0) { _t00 = t0; }
     void removeFailed() { if(_fit.failure())deleteTrack(); }
     void fit() { if(_fit.success()) _fit = _krep->fit(); }
     void deleteTrack();
-    TrkRecoTrk* stealTrack() { TrkRecoTrk* retval = _trk; _trk=0; _krep=0; _hits.clear(); return retval; }
+    KalRep* stealTrack() { KalRep* retval = _krep; _krep=0; _hits.clear(); return retval; }
   };
   
   class KalFit
@@ -93,7 +90,7 @@ namespace mu2e
     double _mint0doca;
     double _maxdriftpull;
     double _t0nsig;
-    int _fitpart;
+    TrkParticle _tpart;
     t0Strategy _t0strategy;
     std::vector<int> _ambigstrategy;
     std::vector<AmbigResolver*> _ambigresolver;

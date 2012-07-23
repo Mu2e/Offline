@@ -8,11 +8,11 @@
 // This is designed to allow complex objects made on the heap to be used
 // as transient-only data products.
 //
-// The original use is for TrkRecoTrk.
+// The original use is for BaBar tracks.
 //
-// $Id: OwningPointerCollection.hh,v 1.3 2012/06/11 05:22:06 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/11 05:22:06 $
+// $Id: OwningPointerCollection.hh,v 1.4 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author Rob Kutschke
 //

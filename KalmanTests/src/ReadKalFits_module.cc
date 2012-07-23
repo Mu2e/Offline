@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.9 2012/07/20 22:38:12 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/20 22:38:12 $
+// $Id: ReadKalFits_module.cc,v 1.10 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,6 @@
 using namespace CLHEP;
 
 // BaBar includes
-#include "TrkBase/TrkRecoTrk.hh"
 #include "TrkBase/TrkRep.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
@@ -35,7 +34,7 @@ using namespace CLHEP;
 
 // This is fragile and needs to be last until CLHEP is
 // properly qualified and included in the BaBar classes.
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "KalmanTests/inc/KalRepCollection.hh"
 
 using namespace std;
 
@@ -125,9 +124,9 @@ namespace mu2e {
     if(_weight)
       _diowt = DIOspectrum(ee);
     // Get handle to calorimeter hit collection.
-    art::Handle<TrkRecoTrkCollection> trksHandle;
+    art::Handle<KalRepCollection> trksHandle;
     event.getByLabel(_fitterModuleLabel,trksHandle);
-    TrkRecoTrkCollection const& trks = *trksHandle;
+    KalRepCollection const& trks = *trksHandle;
 
     if ( _verbosity > 0 && _eventid <= _maxPrint ){
       cout << "ReadKalmanFits  for event: " << event.id() << "  Number of fitted tracks: " << trks.size() << endl;
@@ -137,17 +136,13 @@ namespace mu2e {
     _trkid = -1;
     for ( size_t i=0; i< trks.size(); ++i ){
       _trkid = i;
-      TrkRecoTrk const& trk = *trks[i];
-      TrkRep const* trep = trk.getRep(PdtPid::electron);
-      if ( !trep ) continue;
+      KalRep const* krep = trks[i];
+      if ( !krep ) continue;
 
-      _kfitmc.trkDiag(trk);
+      _kfitmc.kalDiag(krep);
 
       // For some quantities you require the concrete representation, not
       // just the base class.
-      KalRep const* krep = dynamic_cast<KalRep const*>(trep);
-      if ( !krep ) continue;
-
       // Fill a histogram.
       _hfitCL->Fill(krep->chisqConsistency().likelihood() );
       _hChisq->Fill(krep->chisqConsistency().chisqValue() );

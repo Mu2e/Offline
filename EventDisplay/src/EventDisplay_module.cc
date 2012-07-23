@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.19 2012/06/11 05:22:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/11 05:22:43 $
+// $Id: EventDisplay_module.cc,v 1.20 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 
 #include <iostream>
@@ -27,9 +27,8 @@
 
 #ifdef BABARINSTALLED
 using namespace CLHEP;
-#include "TrkBase/TrkRecoTrk.hh"
 #include "TrkBase/TrkHotList.hh"
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "KalmanTests/inc/KalRepCollection.hh"
 #endif
 
 namespace mu2e
@@ -155,16 +154,16 @@ namespace mu2e
   {
     std::string className, moduleLabel, productInstanceName;
     bool hasSelectedHits=_frame->getSelectedHitsName(className, moduleLabel, productInstanceName);
-    if(hasSelectedHits && ((className.find("<TrkRecoTrk>")!=std::string::npos) || (className.find("<mu2e::TrkRecoTrk>")!=std::string::npos)))
+    if(hasSelectedHits && ((className.find("<KalRep>")!=std::string::npos) || (className.find("<mu2e::KalRep>")!=std::string::npos)))
     {
-      art::Handle<mu2e::TrkRecoTrkCollection> kalmantrackCollection;
+      art::Handle<mu2e::KalRepCollection> kalmantrackCollection;
       if(event.getByLabel(moduleLabel,productInstanceName,kalmantrackCollection))
       {
         int numberHits=0;
         for(unsigned int i=0; i<kalmantrackCollection->size(); i++)
         {
-          const TrkRecoTrk &particle = *kalmantrackCollection->at(i);
-          const TrkHotList* hots = particle.hots();
+          KalRep const* particle = kalmantrackCollection->at(i);
+          const TrkHotList* hots = particle->hotList();
           if(hots!=NULL) numberHits+=hots->nHit();
         }
         if(numberHits < _frame->getMinimumHits())

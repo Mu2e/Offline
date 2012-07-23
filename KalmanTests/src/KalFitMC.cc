@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.29 2012/05/31 05:37:32 brownd Exp $
+// $Id: KalFitMC.cc,v 1.30 2012/07/23 17:52:27 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/31 05:37:32 $
+// $Date: 2012/07/23 17:52:27 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -31,7 +31,6 @@
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
 #include "BaBar/BaBar.hh"
-#include "BaBar/PdtPid.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
@@ -290,31 +289,6 @@ namespace mu2e
   }
 
   void
-  KalFitMC::trkDiag(TrkRecoTrk const& mytrk) {
-    if(_trkdiag == 0)createTrkDiag();
-// TrkRecoTrk only has primitive t0 information: FIXME!!
-    _t00 = _t0 = mytrk.trackT0();
-    _t00err = _t0err = mytrk.trackT0err();
-// no information on iterations either!
-    _nt0iter = _nweediter = -1;
-// fetch the KalRep from the track
-    const KalRep* krep = dynamic_cast<const KalRep*>(mytrk.getRep(mytrk.defaultType()));
-    kalDiag(krep);
-// extract the hits from the KalRep and perform diagnstics
-    std::vector<TrkStrawHit*> hits;
-    TrkHotList* hots = const_cast<TrkHotList*>(mytrk.hots());
-    hits.reserve(hots->nHit());
-    for(TrkHotList::nc_hot_iterator ihot=hots->begin();ihot != hots->end();++ihot){
-     TrkStrawHit* hit = dynamic_cast<TrkStrawHit*>(ihot.get());
-      if(hit != 0)hits.push_back(hit);
-    }
-    std::sort(hits.begin(),hits.end(),devicecomp());
-    if(_diag > 1)hitsDiag(hits);
-// fill tree    
-   _trkdiag->Fill(); 
-  }
-
-  void
   KalFitMC::kalDiag(const KalRep* krep) {
     if(krep != 0) {
       if(krep->fitCurrent()){
@@ -344,7 +318,7 @@ namespace mu2e
 	for(int icor=0;icor<3;icor++)
 	  momvec[icor] = momdir[icor];
 	_fitmomerr = sqrt(momerr.covMatrix().similarity(momvec));
-	CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->parentTrack()->bField(),0.0);
+	CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->bField(),0.0);
 	_seedmom = seedmom.mag();
       } else {
 	_fitstatus = -krep->fitStatus().failure();

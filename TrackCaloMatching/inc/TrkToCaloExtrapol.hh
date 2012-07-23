@@ -1,9 +1,9 @@
 //
 // container for the info of the extrapolated trajectory on the calorimeter
 //
-// $Id: TrkToCaloExtrapol.hh,v 1.2 2012/07/10 04:54:49 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 04:54:49 $
+// $Id: TrkToCaloExtrapol.hh,v 1.3 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author G. Pezzullo
 //
@@ -24,7 +24,6 @@
 #include "BaBar/BbrGeom/include/BbrLorentzVectorErr.hh"
 
 //tracker includes
-#include "TrkBase/TrkRecoTrk.hh"
 #include "TrkBase/TrkRep.hh"
 #include "KalmanTrack/KalRep.hh"
 
@@ -34,7 +33,6 @@
 //#include "KalmanTests/inc/TrkStrawHit.hh"
 //#include "KalmanTests/inc/KalFit.hh"
 //#include "KalmanTests/inc/KalFitMC.hh"
-//#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
 //#include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/TrkHelixFit.hh"
 
@@ -43,13 +41,13 @@
 
 namespace mu2e {
 
-typedef  art::Ptr< const TrkRecoTrk * const  >            TrkRecoTrkPtr;
+typedef  art::Ptr< const KalRep * const  >            KalRepPtr;
 
 struct TrkToCaloExtrapol{
 
 private:
         int                                            _vaneId;    //vane index, runs from 0 to nVanes
-        TrkRecoTrkPtr                                     _trk;
+        KalRepPtr                                     _trk;
         double                             _pathLengthEntrance;
         double                                 _pathLengthExit;
 
@@ -63,7 +61,7 @@ public:
 
 
 
-        TrkToCaloExtrapol(int& vane, TrkRecoTrkPtr& trk, double& entrance, double& exit):
+        TrkToCaloExtrapol(int& vane, KalRepPtr& trk, double& entrance, double& exit):
                 _vaneId(vane),
                 _trk(trk),
                 _pathLengthEntrance(entrance),
@@ -88,7 +86,7 @@ public:
         BbrPointErr                            exitPositionErr() const;
         Hep3Vector                                    momentum() const;
         BbrVectorErr                               momentumErr() const;
-        TrkRecoTrkPtr const&                               trk() const{ return _trk; }
+        KalRepPtr const&                               trk() const{ return _trk; }
 
 
         void print( std::ostream& ost = std::cout, bool doEndl = true ) const;

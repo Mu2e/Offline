@@ -1,8 +1,8 @@
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.26 2012/07/05 22:41:16 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.27 2012/07/23 17:52:27 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/05 22:41:16 $
+// $Date: 2012/07/23 17:52:27 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -31,7 +31,7 @@
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/KalFit.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "KalmanTests/inc/KalRepCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "TrkPatRec/inc/TrkHelixFit.hh"
@@ -243,7 +243,7 @@ class TrkPatRec : public art::EDProducer
     _payloadSaver(pset),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC"))
   {
-    produces<TrkRecoTrkCollection>();
+    produces<KalRepCollection>();
     produces<KalRepPayloadCollection>();
 // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
@@ -269,7 +269,7 @@ class TrkPatRec : public art::EDProducer
     ++_eventid;
     _cutflow->Fill(0.0);
 // create output
-    auto_ptr<TrkRecoTrkCollection> tracks(new TrkRecoTrkCollection );
+    auto_ptr<KalRepCollection> tracks(new KalRepCollection );
 // event printout
     _iev=event.id().event();
     if((_iev%_printfreq)==0)cout<<"TrkPatRec: event="<<_iev<<endl;

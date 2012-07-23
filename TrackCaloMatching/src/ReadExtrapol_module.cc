@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadExtrapol_module.cc,v 1.3 2012/07/17 20:03:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/17 20:03:03 $
+// $Id: ReadExtrapol_module.cc,v 1.4 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author G. Pezzullo
 //
@@ -27,14 +27,13 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "KalmanTests/inc/KalRepCollection.hh"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 //tracker includes
-#include "TrkBase/TrkRecoTrk.hh"
 #include "TrkBase/TrkRep.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
@@ -62,7 +61,7 @@
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/KalFit.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
-#include "KalmanTests/inc/TrkRecoTrkCollection.hh"
+#include "KalmanTests/inc/KalRepCollection.hh"
 #include "TrkPatRec/inc/TrkHelixFit.hh"
 #include "TrkBase/TrkPoca.hh"
 
@@ -366,13 +365,13 @@ CLHEP::Hep3Vector fromTrkToMu2eGeneralFrame(CLHEP::Hep3Vector vec){
         return posMu2eFrame;
 }
 
-bool findTrkRecoTrk(art::Handle<TrkToCaloExtrapolCollection> &trkToCaloCollection, TrkRecoTrk const* trk){
+bool findKalRep(art::Handle<TrkToCaloExtrapolCollection> &trkToCaloCollection, KalRep const* trk){
         bool res = false;
         if(trkToCaloCollection->size() == 0) return res;
         size_t i=0;
         while(!res && i<trkToCaloCollection->size()){
-                TrkRecoTrkPtr const& trkPtr = trkToCaloCollection->at(i).trk();
-                const TrkRecoTrk*  const &tmpTrk = *trkPtr;
+                KalRepPtr const& trkPtr = trkToCaloCollection->at(i).trk();
+                const KalRep*  const &tmpTrk = *trkPtr;
 
                 const TrkId &trkId1 = trk->id();
                 const TrkId &trkId2 = tmpTrk->id();
@@ -612,18 +611,18 @@ void ReadExtrapol::doExtrapolation(art::Event const& evt, bool skip){
 
         for(size_t i=0; i<trjExtrapols->size(); ++i){
                 elecData tmpElec;
-                TrkRecoTrkPtr const& trkPtr = trjExtrapols->at(i).trk();
-                const TrkRecoTrk *  const &trk = *trkPtr;
+                KalRepPtr const& trkPtr = trjExtrapols->at(i).trk();
+                const KalRep *  const &trk = *trkPtr;
                 if(i>0){
-                        TrkRecoTrkPtr const& tmpTrkPtr = trjExtrapols->at(i-1).trk();
-                        const TrkRecoTrk *  const &tmpTrk = *tmpTrkPtr;
+                        KalRepPtr const& tmpTrkPtr = trjExtrapols->at(i-1).trk();
+                        const KalRep *  const &tmpTrk = *tmpTrkPtr;
                         if(trk == tmpTrk){
                                 ++count;
                         }else{
                                 count = 0;
                         }
                 }
-                TrkHotList const* hots = /*const_cast<TrkHotList*>*/( trk->hots() );
+                TrkHotList const* hots = /*const_cast<TrkHotList*>*/( trk->hotList() );
 
                 //Map of track id as key, and number of occurrences as value
                 map<size_t , unsigned int > StrawTracksMap;
@@ -1199,9 +1198,9 @@ void ReadExtrapol::doExtrapolation(art::Event const& evt, bool skip){
         //   This second part studies how many times the extrapolated trajectories   //
         //   doesn't have any intersection with the calorimeter.                     //
         //---------------------------------------------------------------------------//
-        art::Handle<TrkRecoTrkCollection> trksHandle;
+        art::Handle<KalRepCollection> trksHandle;
         evt.getByLabel(_fitterModuleLabel,trksHandle);
-        TrkRecoTrkCollection const& trks = *trksHandle;
+        KalRepCollection const& trks = *trksHandle;
 
         if(_diagLevel>2){
                 cout<<"//--------------------------//"<<endl<<
@@ -1215,17 +1214,16 @@ void ReadExtrapol::doExtrapolation(art::Event const& evt, bool skip){
 
         for ( size_t i=0; i< trks.size(); ++i ){
 
-                TrkRecoTrk const* trk = trks[i];
-                TrkRep const* trep = trk->getRep(PdtPid::electron);
+                KalRep const* trep = trks[i];
                 if ( !trep ) continue;
 
-                if(!findTrkRecoTrk(trjExtrapols, trk)){
+                if(!findKalRep(trjExtrapols, trep)){
                         int tmpVane = -1;
                         HelixTraj trkHel(trep->helix(0).params(),trep->helix(0).covariance());
 
                         double lowrange = trkHel.zFlight(1740), highrange = trkHel.zFlight(3500);
 
-                        TrkRecoTrkPtr tmpRecTrk(trksHandle, i);
+                        KalRepPtr tmpRecTrk(trksHandle, i);
                         missExtrapolatedTracks.push_back(
                                         TrkToCaloExtrapol( tmpVane,tmpRecTrk,lowrange, highrange) );
 
@@ -1239,9 +1237,9 @@ void ReadExtrapol::doExtrapolation(art::Event const& evt, bool skip){
 
         for(size_t i=0; i<missExtrapolatedTracks.size(); ++i){
                 elecData tmpElec;
-                TrkRecoTrkPtr const& trkPtr = missExtrapolatedTracks.at(i).trk();
-                const TrkRecoTrk *  const &trk = *trkPtr;
-                TrkHotList const* hots = /*const_cast<TrkHotList*>*/( trk->hots() );
+                KalRepPtr const& trkPtr = missExtrapolatedTracks.at(i).trk();
+                const KalRep *  const &trk = *trkPtr;
+                TrkHotList const* hots = /*const_cast<TrkHotList*>*/( trk->hotList() );
 
                 //Map of track id as key, and number of occurrences as value
                 map<size_t , unsigned int > StrawTracksMap;

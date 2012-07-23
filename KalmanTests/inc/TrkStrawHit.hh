@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.15 2012/07/20 22:37:54 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2012/07/20 22:37:54 $
+// $Id: TrkStrawHit.hh,v 1.16 2012/07/23 17:52:27 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author David Brown, LBNL
 //
@@ -17,7 +17,6 @@
 #include "TrajGeom/TrkLineTraj.hh"
 #include "TrkBase/TrkEnums.hh"
 #include "TrkBase/TrkHitOnTrk.hh"
-#include "TrkBase/TrkFundHit.hh"
 #include "TrkBase/TrkDetElemId.hh"
 #include "MatEnv/MatDBInfo.hh"
 // Mu2e
@@ -35,25 +34,6 @@ class SvtHitOnTrack;
 
 namespace mu2e 
 {
-// dummy hit to satisfy BaBar interface; FIXME!!
-  class TrkDummyHit : public TrkFundHit{
-  public:
-    TrkDummyHit(TrkEnums::TrkViewInfo view, int id, TrkDetElemId::systemIndex sys);
-    virtual ~TrkDummyHit();
-    TrkDummyHit* clone() const;
-    // obsolete inteface
-    virtual TrkEnums::TrkViewInfo whatView() const      { return _view; }
-    virtual TrkDetElemId elemId() const                 { return _eid; }
-    virtual const GTrack* getGTrack() const             { return NULL; }
-    // fake the layer number
-    int layerNumber() const { return _eid.systemElemId();}
-    virtual void print(std::ostream&) const {}
-  protected:
-    TrkDummyHit(const TrkDummyHit& other);
-    TrkEnums::TrkViewInfo _view;
-    TrkDetElemId _eid;
-  };
-
   class TrkStrawHit : public TrkHitOnTrk {
   public:
     TrkStrawHit(const StrawHit& strawhit, const Straw& straw,unsigned istraw,

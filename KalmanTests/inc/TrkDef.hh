@@ -1,9 +1,9 @@
 //
 // Define a track; this provides the transfer between pat. rec. and fitting
 //
-// $Id: TrkDef.hh,v 1.10 2012/06/12 21:06:20 brownd Exp $
+// $Id: TrkDef.hh,v 1.11 2012/07/23 17:52:27 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/06/12 21:06:20 $
+// $Date: 2012/07/23 17:52:27 $
 //
 // Original author David Brown, LBNL
 //
@@ -13,6 +13,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 // BaBar
 #include "TrkBase/HelixTraj.hh"
+#include "TrkBase/TrkT0.hh"
 // CLHEP
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
@@ -21,16 +22,6 @@ class TrkDifPieceTraj;
 
 namespace mu2e 
 {
-// simple struct to put together t0 and t0 error
-  struct TrkT0 {
-    TrkT0(double t0, double t0err) : _t0(t0),_t0err(t0err){}
-    TrkT0() : _t0(0.0),_t0err(-1.0){}
-    double t0() const { return _t0; }
-    double t0Err() const { return _t0err; }
-    void setT0(double t0, double t0err) { _t0 = t0; _t0err = t0err; }
-    double _t0; // initial estimate of track t0, defined when the track reaches z=0;
-    double _t0err; // initial estimate of t0 error
-  };
 
   struct hitIndex {
     size_t _index; // index into the straw hit container
