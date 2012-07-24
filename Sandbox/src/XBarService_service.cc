@@ -3,9 +3,9 @@
 // The XBarSerivce depends on the FooService.  The XBarService is just
 // a copy of the BarService but it comes after Foo in an alphabetic sort.
 //
-// $Id: XBarService_service.cc,v 1.1 2012/07/24 20:00:28 kutschke Exp $
+// $Id: XBarService_service.cc,v 1.2 2012/07/24 23:13:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/24 20:00:28 $
+// $Date: 2012/07/24 23:13:13 $
 //
 // Contact person Rob Kutschke
 //
@@ -27,10 +27,11 @@ namespace mu2e {
 
   XBarService::XBarService(fhicl::ParameterSet const& pset,
                            art::ActivityRegistry&iRegistry){
-    cout << "XBarService:: constructor: " << endl;
+    bool doPoke(pset.get<bool>("pokeFoo"));
+    cout << "XBarService:: constructor: " << doPoke << endl;
     iRegistry.watchPreBeginRun(this, &XBarService::preBeginRun);
 
-    if ( pset.get<bool>("pokeFoo",false) ) {
+    if ( doPoke ) {
       art::ServiceHandle<FooService> foo;
       cout << "     ";
       foo->poke();

@@ -1,10 +1,9 @@
 //
 // A test service that prints tracer ouptut. Used to study order of calls.
-// The BarSerivce depends on the FooService.
 //
-// $Id: BarService_service.cc,v 1.1 2012/07/24 20:00:28 kutschke Exp $
+// $Id: BarService_service.cc,v 1.2 2012/07/24 23:13:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/24 20:00:28 $
+// $Date: 2012/07/24 23:13:13 $
 //
 // Contact person Rob Kutschke
 //
@@ -25,13 +24,16 @@ using namespace std;
 namespace mu2e {
 
   BarService::BarService(fhicl::ParameterSet const& pset,
-                                   art::ActivityRegistry&iRegistry){
-    cout << "BarService:: constructor: " << endl;
+                           art::ActivityRegistry&iRegistry){
+    bool doPoke(pset.get<bool>("pokeFoo"));
+    cout << "BarService:: constructor: " << doPoke << endl;
     iRegistry.watchPreBeginRun(this, &BarService::preBeginRun);
 
-    // This fails since foo is constructed last.
-    //art::ServiceHandle<FooService> foo;
-    //foo->poke();
+    if ( doPoke ) {
+      art::ServiceHandle<FooService> foo;
+      cout << "     ";
+      foo->poke();
+    }
     cout << "BarService:: done constructor: " << endl;
   }
 
