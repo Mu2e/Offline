@@ -1,8 +1,8 @@
 // Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.28 2012/07/23 22:30:57 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.29 2012/07/24 00:06:22 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/23 22:30:57 $
+// $Date: 2012/07/24 00:06:22 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -187,7 +187,7 @@ class TrkPatRec : public art::EDProducer
     Float_t _zmin, _zmax, _zgap;
     Int_t _ns, _smin, _smax, _nsmiss;
     Int_t _nsh, _ndpeak, _ndmax; 
-    Int_t _nconv, _ndelta, _nprot;
+    Int_t _nconv, _ndelta, _ncompt, _ngconv, _nebkg, _nprot;
     std::vector<StrawHitInfo> _phits;
     Float_t _dmct0, _dmcmom, _dmctd;
     Float_t _mindist, _mindt, _mindphi;
@@ -609,7 +609,10 @@ class TrkPatRec : public art::EDProducer
 	    _nsmiss = nsmiss;
 	    _nconv = 0;
 	    _nprot = 0;
-	    _ndelta = 0;
+	    _ndelta= 0;
+	    _ncompt = 0;
+	    _ngconv = 0;
+	    _nebkg = 0;
 	    _phits.clear();
 	    for(std::vector<hitIndex>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
 	      StrawHitInfo shinfo;
@@ -617,12 +620,27 @@ class TrkPatRec : public art::EDProducer
 	      fillStrawHitInfo(ish,shinfo);
 	      _phits.push_back(shinfo);
 	      if(shinfo._mcgen == 2)++_nconv;
-	      if(shinfo._mcgen <0)++_ndelta;
+	      if(abs(shinfo._mcpdg) == PDGCode::e_minus && shinfo._mcgen <0){
+		_nebkg++;
+		if(shinfo._mcproc == ProcessCode::eIoni ||shinfo._mcproc == ProcessCode::hIoni ){
+		  ++_ndelta;
+		} else if(shinfo._mcproc == ProcessCode::compt){
+		  ++_ncompt;
+		} else if(shinfo._mcproc == ProcessCode::conv){
+		  ++_ngconv;
+		}
+	      }
 	      if(shinfo._mcpdg == 2212)++_nprot;
 	    }
-	    _dmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
-	    _dmcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
-	    _dmctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
+	    if(_nconv >= 5){
+	      _dmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
+	      _dmcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
+	      _dmctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
+	    } else {
+ 	      _dmct0 = -1;
+	      _dmcmom = 0.0;
+	      _dmctd = -100.0;
+	    }
 	    _ddiag->Fill();
 	  }
 	}
@@ -841,6 +859,9 @@ class TrkPatRec : public art::EDProducer
     _ddiag->Branch("ndmax",&_ndmax,"ndmax/I");
     _ddiag->Branch("nconv",&_nconv,"nconv/I");
     _ddiag->Branch("ndelta",&_ndelta,"ndelta/I");
+    _ddiag->Branch("ncompt",&_ncompt,"ncompt/I");
+    _ddiag->Branch("ngconv",&_ngconv,"ngconv/I");
+    _ddiag->Branch("nebkg",&_nebkg,"nebkg/I");
     _ddiag->Branch("nprot",&_nprot,"nprot/I");
     _ddiag->Branch("ns",&_ns,"ns/I");
     _ddiag->Branch("smin",&_smin,"smin/I");
