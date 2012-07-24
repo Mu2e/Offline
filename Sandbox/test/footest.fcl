@@ -1,0 +1,36 @@
+# Example 5.
+#
+# $Id: footest.fcl,v 1.1 2012/07/24 20:01:16 kutschke Exp $
+# $Author: kutschke $
+# $Id: footest.fcl,v 1.1 2012/07/24 20:01:16 kutschke Exp $
+#
+
+#include "minimalMessageService.fcl"
+
+process_name : Example01
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "/grid/fermiapp/mu2e/DataFiles/ExampleDataFiles/Workbook/conversionOnly_01_data.root" ]
+  maxEvents   : 5
+}
+
+services : {
+  message      : @local::default_message
+
+  user : {
+    FooService : {}
+  }
+}
+
+physics : {
+
+  analyzers : {
+    fooTest : { module_type : FooTest   }
+  }
+
+  e1 : [ fooTest  ]
+
+  end_paths      : [e1]
+
+}
