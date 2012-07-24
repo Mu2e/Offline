@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.30 2012/07/23 17:52:27 brownd Exp $
+// $Id: KalFit.cc,v 1.31 2012/07/24 00:06:05 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/07/24 00:06:05 $
 //
 
 // the following has to come before other BaBar includes
@@ -54,9 +54,11 @@ namespace mu2e
   const double KalFit::_vlight = CLHEP::c_light;
 // comparison functor for ordering hits
   struct fltlencomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
+    fltlencomp(KalFit::fitDirection fdir=KalFit::downstream) : _fdir(fdir) {}
     bool operator()(TrkStrawHit* x, TrkStrawHit* y) { 
-      return x->fltLen() < y->fltLen();
+      return _fdir == KalFit::downstream ? x->fltLen() < y->fltLen() : y->fltLen() < x->fltLen() ;
     }
+    KalFit::fitDirection _fdir;
   };
 
   void TrkKalFit::deleteTrack() {

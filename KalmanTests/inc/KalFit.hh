@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.21 2012/07/23 17:52:27 brownd Exp $
+// $Id: KalFit.hh,v 1.22 2012/07/24 00:06:05 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/07/24 00:06:05 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -53,6 +53,8 @@ namespace mu2e
   class KalFit
   {
   public:
+// define the fit direction as downstream (towards positive Z) or upstream (towards negative Z).
+    enum fitDirection {downstream=0,upstream};
 // define different t0 strategies.  Eventually t0 finding should be its own class
     enum t0Strategy {external=0,median,histogram};
 // define different ambiguity resolution strategies.  These will eventually be their own classes
