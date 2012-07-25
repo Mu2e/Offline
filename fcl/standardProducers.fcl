@@ -122,6 +122,43 @@ TrkPatRec :
   {
   }
 } # end TrkPatRec
+# variants of TrkPatRec for specific particle species and directions. These constitute the 'standard' fits
+# in future we need names instead of values for the particle type
+TrkPatRecDownstreameMinus : @local::TrkPatRec
+TrkPatRecDownstreameMinus.fitparticle : 11
+TrkPatRecDownstreameMinus.fitdirection : 0 
+
+TrkPatRecUpstreameMinus : @local::TrkPatRec
+TrkPatRecUpstreameMinus.fitparticle : 11
+TrkPatRecUpstreameMinus.fitdirection : 1
+
+TrkPatRecDownstreamePlus : @local::TrkPatRec
+TrkPatRecDownstreamePlus.fitparticle : -11
+TrkPatRecDownstreamePlus.fitdirection : 0
+
+TrkPatRecUpstreamePlus : @local::TrkPatRec
+TrkPatRecUpstreamePlus.fitparticle : -11
+TrkPatRecUpstreamePlus.fitdirection : 1
+
+TrkPatRecDownstreammuMinus : @local::TrkPatRec
+TrkPatRecDownstreammuMinus.fitparticle : 13
+TrkPatRecDownstreammuMinus.fitdirection : 0
+
+TrkPatRecUpstreammuMinus : @local::TrkPatRec
+TrkPatRecUpstreammuMinus.fitparticle : 13
+TrkPatRecUpstreammuMinus.fitdirection : 1
+
+TrkPatRecDownstreammuPlus : @local::TrkPatRec
+TrkPatRecDownstreammuPlus.fitparticle : -13
+TrkPatRecDownstreammuPlus.fitdirection : 0
+
+TrkPatRecUpstreammuPlus : @local::TrkPatRec
+TrkPatRecUpstreammuPlus.fitparticle : -13
+TrkPatRecUpstreammuPlus.fitdirection : 1
+
+TrkPatRecDownstreampPlus : @local::TrkPatRec
+TrkPatRecDownstreampPlus.fitparticle : 2212
+TrkPatRecDownstreampPlus.fitdirection : 0
 
 stepInstanceNames   : [ "tracker", "virtualdetector", "timeVD", "stoppingtarget", "calorimeter", "calorimeterRO" ]
 
