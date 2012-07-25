@@ -127,10 +127,10 @@ namespace mu2e {
       table[11] = +11; // e+
       table[12] = -2212; // p- (antiproton)
       table[13] = 111; // pi0
-      //table[14] = ; // deutron
-      //table[15] = ; // H3
-      //table[16] = ; // He3
-      //table[17] = ; // He4
+      table[14] = 1000010020; // deutron
+      table[15] = 1000010030; // H3
+      table[16] = 1000020030; // He3
+      table[17] = 1000020040; // He4
       table[18] = +14; // numu
       table[19] = -14; // numubar
       table[20] = +12; // nue
