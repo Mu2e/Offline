@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <boost/utility.hpp>
+#include <cassert>
+#include <set>
 
 #include "art/Framework/IO/Sources/ReaderSource.h"
 #include "art/Framework/Core/InputSourceMacros.h"
@@ -168,6 +170,7 @@ namespace mu2e {
     art::PrincipalMaker pm_;
     unsigned runNumber_; // from ParSet
     art::SubRunID currentSubRunID_;
+    std::set<art::SubRunID> seenSRIDs_;
 
     GlobalConstantsHandle<ParticleDataTable> pdt_;
 
@@ -247,11 +250,14 @@ namespace mu2e {
     }
 
     currentFileName_ = filename;
-    unsigned newSubRunNumber = getSubRunNumber(filename);
-    if(currentSubRunNumber_ == newSubRunNumber) {
-      throw cet::exception("BADINPUTS")<<"readFile() got the same subrun number as for the previous subrun: ="<<currentSubRunNumber_<<" from input filename="<<filename<<"\n";
+    currentSubRunNumber_ = getSubRunNumber(filename);
+
+    if(!seenSRIDs_.insert(art::SubRunID(runNumber_, currentSubRunNumber_)).second) {
+      ++runNumber_;
+      const bool inserted = seenSRIDs_.insert(art::SubRunID(runNumber_, currentSubRunNumber_)).second;
+      assert(inserted);
     }
-    currentSubRunNumber_ = newSubRunNumber;
+
     currentEventNumber_ = 0;
 
     if(!art::SubRunID(runNumber_, currentSubRunNumber_).isValid()) {
