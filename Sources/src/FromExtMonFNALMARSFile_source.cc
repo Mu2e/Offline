@@ -225,7 +225,7 @@ namespace mu2e {
     , pm_(pm)
     , runNumber_(pset.get<unsigned>("runNumber"))
     , pdt_()
-    , currentSubRunNumber_(0)
+    , currentSubRunNumber_(-1U)
     , currentEventNumber_(0)
       // , random_(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
       // , random_(art::ServiceHandle<art::RandomNumberGenerator>()->createEngine(art::ServiceHandle<SeedService>()->getSeed()))
