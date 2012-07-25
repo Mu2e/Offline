@@ -1,9 +1,9 @@
 //
 // Define a track; this provides the transfer between pat. rec. and fitting
 //
-// $Id: TrkDef.hh,v 1.11 2012/07/23 17:52:27 brownd Exp $
+// $Id: TrkDef.hh,v 1.12 2012/07/25 20:56:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/07/25 20:56:57 $
 //
 // Original author David Brown, LBNL
 //
@@ -11,9 +11,11 @@
 #define TrkDef_HH
 // Mu2e
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "KalmanTests/inc/TrkFitDirection.hh"
 // BaBar
 #include "TrkBase/HelixTraj.hh"
 #include "TrkBase/TrkT0.hh"
+#include "TrkBase/TrkParticle.hh"
 // CLHEP
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
@@ -33,16 +35,18 @@ namespace mu2e
   
   class TrkDef {
   public:
-// define the track direction: either downstream (dZ/dt > 0) or upstream (dZ/dt < 0);
-    enum trkdir {downstream=0,upstream};
-    
     TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits,
-      const HelixTraj& helix, double t0=0.0, double t0err=-1.0);
+      const HelixTraj& helix, TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream,
+      double t0=0.0, double t0err=-1.0);
     TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits,
-      const HepVector& parvec, const HepSymMatrix& covar, double t0=0.0, double t0err=-1.0 );
-    TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits);
-    TrkDef(const StrawHitCollection* strawcollection);
-    TrkDef();
+      const HepVector& parvec, const HepSymMatrix& covar,
+      TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream,
+      double t0=0.0, double t0err=-1.0 );
+    TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits,
+      TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
+    TrkDef(const StrawHitCollection* strawcollection,
+    TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
+    TrkDef(TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
     TrkDef(const TrkDef&);
     TrkDef& operator = (const TrkDef&);
     ~TrkDef();
@@ -54,6 +58,8 @@ namespace mu2e
     const HelixTraj& helix() const { return _h0; }
     const TrkDifPieceTraj* traj() const { return _ptraj; }
     const TrkT0& trkT0() const { return _t0; }
+    TrkParticle const& particle() const { return _tpart; }
+    TrkFitDirection const& fitdir() const { return _fdir; }
     void setHelix(HelixTraj const& helix) { _h0 = helix; }
     void setTraj(const TrkDifPieceTraj* ptraj) { _ptraj = ptraj; }
     void setTrkT0(double t0, double t0err) { _t0.setT0(t0,t0err); }
@@ -64,14 +70,16 @@ namespace mu2e
     std::vector<hitIndex> _indices; // indices to straw hits in the collection to use for this track
     HelixTraj _h0; // helix estimate, valid in the region around z=0
     const TrkDifPieceTraj* _ptraj; // optional initial estimate of the trajectory
-    TrkT0 _t0; // t0 estimate
-// fit direction
-    trkdir _fitdir;
 // particle type.  Note this defines both the charge and the mass
-  
+    TrkParticle _tpart;
+// fit direction
+    TrkFitDirection _fdir;
+    TrkT0 _t0; // t0 estimate
     // dummy variables
     static HepVector _dpar;
     static HepSymMatrix _dcov;
+    static TrkParticle _eminus;
+    static TrkFitDirection _downstream;
   };
 }
 

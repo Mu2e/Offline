@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.16 2012/07/23 17:52:27 brownd Exp $
+// $Id: TrkStrawHit.hh,v 1.17 2012/07/25 20:56:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/07/25 20:56:57 $
 //
 // Original author David Brown, LBNL
 //
@@ -13,7 +13,6 @@
 #include "KalmanTests/inc/DetStrawGasElem.hh"
 #include "KalmanTests/inc/DetStrawWallElem.hh"
 #include "KalmanTests/inc/DetStrawHitType.hh"
-#include "KalmanTests/inc/TrkDef.hh"
 #include "TrajGeom/TrkLineTraj.hh"
 #include "TrkBase/TrkEnums.hh"
 #include "TrkBase/TrkHitOnTrk.hh"
@@ -27,6 +26,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 // forward refs
+class TrkT0;
 class TrkRep;
 class TrkDifTraj;
 class DchHitOnTrack;

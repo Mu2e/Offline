@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.22 2012/07/24 00:06:05 brownd Exp $
+// $Id: KalFit.hh,v 1.23 2012/07/25 20:56:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/24 00:06:05 $
+// $Date: 2012/07/25 20:56:57 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -18,6 +18,7 @@
 // BaBar
 #include "BaBar/BaBar.hh"
 // KalFit objects
+#include "KalmanTests/inc/TrkFitDirection.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/AmbigResolver.hh"
@@ -33,6 +34,8 @@ namespace mu2e
 {
 // struct defining the output of the fit
   struct TrkKalFit {
+    TrkParticle _tpart; // particle type
+    TrkFitDirection _fdir; // fit direction
     TrkT0 _t00; // t0 value at start of fit
     TrkT0 _t0; // t0 value at end of fit
     KalRep* _krep; // Kalman rep, owned by the trk
@@ -53,8 +56,6 @@ namespace mu2e
   class KalFit
   {
   public:
-// define the fit direction as downstream (towards positive Z) or upstream (towards negative Z).
-    enum fitDirection {downstream=0,upstream};
 // define different t0 strategies.  Eventually t0 finding should be its own class
     enum t0Strategy {external=0,median,histogram};
 // define different ambiguity resolution strategies.  These will eventually be their own classes
@@ -93,6 +94,7 @@ namespace mu2e
     double _maxdriftpull;
     double _t0nsig;
     TrkParticle _tpart;
+    TrkFitDirection _fdir;
     t0Strategy _t0strategy;
     std::vector<int> _ambigstrategy;
     std::vector<AmbigResolver*> _ambigresolver;

@@ -2,17 +2,15 @@
 // class to resolve hit ambiguities by panel, assuming a reasonable track
 // fit as input
 //
-// $Id: HitAmbigResolver.hh,v 1.1 2012/05/14 19:20:02 brownd Exp $
+// $Id: HitAmbigResolver.hh,v 1.2 2012/07/25 20:56:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Date: 2012/07/25 20:56:57 $
 //
 #ifndef HitAmbigResolver_HH
 #define HitAmbigResolver_HH
 #include "BaBar/BaBar.hh"
 #include "KalmanTests/inc/AmbigResolver.hh"
-#include "KalmanTests/inc/TrkStrawHitState.hh"
 #include "fhiclcpp/ParameterSet.h"
-#include "KalmanTests/inc/TrkDef.hh"
 #include <cstddef>
 #include <vector>
 

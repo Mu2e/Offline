@@ -2,13 +2,15 @@
 // class to resolve hit ambiguities by panel, assuming a reasonable track
 // fit as input
 //
-// $Id: PanelAmbigResolver.cc,v 1.2 2012/05/22 21:35:42 brownd Exp $
+// $Id: PanelAmbigResolver.cc,v 1.3 2012/07/25 20:56:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/22 21:35:42 $
+// $Date: 2012/07/25 20:56:57 $
 //
 #include "KalmanTests/inc/PanelAmbigResolver.hh"
 #include "KalmanTests/inc/KalFit.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
+#include "BaBar/BaBar.hh"
+#include "TrkBase/TrkT0.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "KalmanTrack/KalSite.hh"
 #include "KalmanTrack/KalHit.hh"

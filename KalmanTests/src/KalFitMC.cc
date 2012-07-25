@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.31 2012/07/23 22:30:57 brownd Exp $
+// $Id: KalFitMC.cc,v 1.32 2012/07/25 20:56:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/23 22:30:57 $
+// $Date: 2012/07/25 20:56:57 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -193,7 +193,10 @@ namespace mu2e
           HepSymMatrix dummy(5,1); 
           dummy(1,1)=1.; dummy(2,2)=0.1*0.1;dummy(3,3)=1e-2*1e-2;
           dummy(4,4)=1.; dummy(5,5)=0.1*0.1;
-          mytrk = TrkDef(mytrk.strawHitCollection(),indices,parvec,dummy,t0,_mct0err);
+	  TrkFitDirection::FitDirection fdir = parvec[4]>0 ?
+	  TrkFitDirection::downstream : TrkFitDirection::upstream;
+	  TrkParticle::type ptype = (TrkParticle::type)imcs->simParticle()->pdgId();
+          mytrk = TrkDef(mytrk.strawHitCollection(),indices,parvec,dummy,TrkParticle(ptype),TrkFitDirection(fdir),t0,_mct0err);
           retval = true;
         }
       }

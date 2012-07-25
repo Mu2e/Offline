@@ -1,8 +1,7 @@
-// Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRec_module.cc,v 1.29 2012/07/24 00:06:22 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.30 2012/07/25 20:56:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/24 00:06:22 $
+// $Date: 2012/07/25 20:56:57 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -110,6 +109,8 @@ class TrkPatRec : public art::EDProducer
     bool _seedt0;
     // outlier cuts
     double _maxseeddoca,_maxhelixdoca,_maxadddoca;
+    TrkParticle _tpart; // particle type being searched for
+    TrkFitDirection _fdir;  // fit direction in search
     // cache of event objects
     const StrawHitCollection* _strawhits;
    // Kalman fitters.  Seed fit has a special configuration
@@ -122,6 +123,7 @@ class TrkPatRec : public art::EDProducer
     std::vector<TrkHitFlag> _tflags;
   // cache of time peaks
     std::vector<TrkTimePeak> _tpeaks;
+    std::string _iname; // data instance name
     //
     PayloadSaver _payloadSaver;
    // helper functions
@@ -196,10 +198,10 @@ class TrkPatRec : public art::EDProducer
     TH1F* _cutflow;
  };
 
-  TrkPatRec::TrkPatRec(fhicl::ParameterSet const& pset) : 
+  TrkPatRec::TrkPatRec(fhicl::ParameterSet const& pset) :
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
-    _printfreq(pset.get<int>("printFrequency",11)),
+    _printfreq(pset.get<int>("printFrequency",101)),
     _addhits(pset.get<bool>("addhits",true)),
     _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
     _edept(pset.get<double>("EDep_tight",0.0045)),
@@ -237,13 +239,17 @@ class TrkPatRec : public art::EDProducer
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
     _maxhelixdoca(pset.get<double>("MaxHelixDoca",40.0)),
     _maxadddoca(pset.get<double>("MaxAddDoca",2.75)),
+    _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
+    _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _seedfit(pset.get<fhicl::ParameterSet>("SeedFit")),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit")),
     _hfit(pset.get<fhicl::ParameterSet>("HelixFit")),
     _payloadSaver(pset),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC"))
   {
-    produces<KalRepCollection>();
+// tag the data product instance by the direction and particle type found by this fitter
+    _iname = _fdir.name() + _tpart.name();
+    produces<KalRepCollection>(_iname);
     produces<KalRepPayloadCollection>();
 // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
@@ -308,7 +314,7 @@ class TrkPatRec : public art::EDProducer
       TrkHelix helixfit;
       TrkKalFit seedfit, kalfit;
 // create track definitions for the different fits from this initial information 
-      TrkDef helixdef(_strawhits,_tpeaks[ipeak]._trkptrs);
+      TrkDef helixdef(_strawhits,_tpeaks[ipeak]._trkptrs,_tpart,_fdir);
       helixdef.setTrkT0(_tpeaks[ipeak]._tpeak-_tdriftmean,_tpeakerr);
       TrkDef seeddef(helixdef);
       TrkDef kaldef(helixdef);
@@ -373,7 +379,7 @@ class TrkPatRec : public art::EDProducer
 // put the tracks into the event
     art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
     _payloadSaver.put(*tracks, tracksID, event);
-    event.put(tracks);
+    event.put(tracks,_iname);
   }
 
   void TrkPatRec::endJob()
@@ -1149,7 +1155,7 @@ class TrkPatRec : public art::EDProducer
       _sparerr = helixpar(ltraj->parameters()->covariance());
     }
 // use MC truth to define hits and seed helix
-    TrkDef mctrk(_strawhits);
+    TrkDef mctrk(_strawhits,_tpart,_fdir);
     // should be chosing the track ID for conversion a better way, FIXME!!!
     cet::map_vector_key itrk(1);
     if(_kfitmc.trkFromMC(itrk,mctrk)){

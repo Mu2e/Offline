@@ -1,17 +1,17 @@
 //
 // base class to resolve hit ambiguities 
 //
-// $Id: AmbigResolver.hh,v 1.1 2012/05/14 19:20:02 brownd Exp $
+// $Id: AmbigResolver.hh,v 1.2 2012/07/25 20:56:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Date: 2012/07/25 20:56:57 $
 //
 #ifndef AmbigResolver_HH
 #define AmbigResolver_HH
 #include "BaBar/BaBar.hh"
 #include "fhiclcpp/ParameterSet.h"
-#include "KalmanTests/inc/TrkDef.hh"
 
 class KalRep;
+class TrkSimpTraj;
 namespace mu2e {
   class TrkKalFit;
   class TrkStrawHit;

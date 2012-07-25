@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.31 2012/07/24 00:06:05 brownd Exp $
+// $Id: KalFit.cc,v 1.32 2012/07/25 20:56:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/24 00:06:05 $
+// $Date: 2012/07/25 20:56:57 $
 //
 
 // the following has to come before other BaBar includes
@@ -54,11 +54,11 @@ namespace mu2e
   const double KalFit::_vlight = CLHEP::c_light;
 // comparison functor for ordering hits
   struct fltlencomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
-    fltlencomp(KalFit::fitDirection fdir=KalFit::downstream) : _fdir(fdir) {}
+    fltlencomp(TrkFitDirection::FitDirection fdir=TrkFitDirection::downstream) : _fdir(fdir) {}
     bool operator()(TrkStrawHit* x, TrkStrawHit* y) { 
-      return _fdir == KalFit::downstream ? x->fltLen() < y->fltLen() : y->fltLen() < x->fltLen() ;
+      return _fdir == TrkFitDirection::downstream ? x->fltLen() < y->fltLen() : y->fltLen() < x->fltLen() ;
     }
-    KalFit::fitDirection _fdir;
+    TrkFitDirection::FitDirection _fdir;
   };
 
   void TrkKalFit::deleteTrack() {
@@ -95,7 +95,6 @@ namespace mu2e
     _mint0doca(pset.get<double>("minT0DOCA",-0.2)),
     _maxdriftpull(pset.get<double>("maxDriftPull",10)),
     _t0nsig(pset.get<double>("t0window",2.5)),
-    _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _t0strategy((t0Strategy)pset.get<int>("t0Strategy",median)),
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy"))
   {
@@ -119,7 +118,6 @@ namespace mu2e
       _kalcon->setIntersectionTolerance(100);
       _kalcon->setMaxMomDiff(1.0); // 1 MeV
       _kalcon->setTrajBuffer(0.01); // 10um
-      _kalcon->setDefaultType(_tpart);
 // construct the ambiguity resolvers
       for(size_t iambig=0;iambig<_ambigstrategy.size();++iambig){
 	switch (_ambigstrategy[iambig] ){
@@ -180,9 +178,9 @@ namespace mu2e
       }
 // create Kalman rep
       if(mytrk.traj() != 0)
-	myfit._krep = new KalRep(mytrk.traj(), hotlist, detinter,  *_kalcon, _tpart);
+	myfit._krep = new KalRep(mytrk.traj(), hotlist, detinter,  *_kalcon, mytrk.particle());
       else
-	myfit._krep = new KalRep(mytrk.helix(), hotlist, detinter, *_kalcon, _tpart);
+	myfit._krep = new KalRep(mytrk.helix(), hotlist, detinter, *_kalcon, mytrk.particle());
       assert(myfit._krep != 0);
       myfit._krep->setT0(myfit._t0);
 // now fit
@@ -355,7 +353,7 @@ namespace mu2e
       myfit._hits.push_back(trkhit);
     }
  // sort the hits by flightlength
-    std::sort(myfit._hits.begin(),myfit._hits.end(),fltlencomp());
+    std::sort(myfit._hits.begin(),myfit._hits.end(),fltlencomp(mytrk.fitdir().fitDirection()));
   }
   
   bool

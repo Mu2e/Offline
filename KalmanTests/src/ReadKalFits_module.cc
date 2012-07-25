@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.11 2012/07/23 22:30:57 brownd Exp $
+// $Id: ReadKalFits_module.cc,v 1.12 2012/07/25 20:56:57 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/07/23 22:30:57 $
+// $Date: 2012/07/25 20:56:57 $
 //
 // Original author Rob Kutschke
 //
@@ -24,8 +24,11 @@
 using namespace CLHEP;
 
 // BaBar includes
-#include "TrkBase/TrkRep.hh"
+#include "BaBar/BaBar.hh"
 #include "KalmanTrack/KalRep.hh"
+#include "TrkBase/TrkParticle.hh"
+// mu2e tracking
+#include "KalmanTests/inc/TrkFitDirection.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
 
 // C++ includes.
@@ -56,6 +59,9 @@ namespace mu2e {
 
     // Module label of the module that performed the fits.
     std::string _fitterModuleLabel;
+    TrkParticle _tpart;
+    TrkFitDirection _fdir;
+    std::string _iname;
     // whether to weight the DIO or not
     bool _weight;
     // diagnostic of Kalman fit
@@ -83,6 +89,8 @@ namespace mu2e {
 
   ReadKalFits::ReadKalFits(fhicl::ParameterSet const& pset):
     _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
+    _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
+    _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _weight(pset.get<bool>("WeightEvents",true)),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC")),
     _verbosity(pset.get<int>("verbosity",0)),
@@ -94,6 +102,8 @@ namespace mu2e {
     _hdp(0),
     _hz0(0),
     _trkdiag(0){
+// construct the data product instance name
+    _iname = _fdir.name() + _tpart.name();
   }
 
   void ReadKalFits::beginJob( ){
@@ -114,7 +124,7 @@ namespace mu2e {
 
   // For each event, look at tracker hits and calorimeter hits.
   void ReadKalFits::analyze(const art::Event& event) {
-    cout << "Enter ReadKalFits:: analyze: " << _verbosity << endl;
+//    cout << "Enter ReadKalFits:: analyze: " << _verbosity << endl;
 
     _eventid++;
     _kfitmc.findMCData(event);
@@ -125,7 +135,7 @@ namespace mu2e {
       _diowt = DIOspectrum(ee);
     // Get handle to calorimeter hit collection.
     art::Handle<KalRepCollection> trksHandle;
-    event.getByLabel(_fitterModuleLabel,trksHandle);
+    event.getByLabel(_fitterModuleLabel,_iname,trksHandle);
     KalRepCollection const& trks = *trksHandle;
 
     if ( _verbosity > 0 && _eventid <= _maxPrint ){

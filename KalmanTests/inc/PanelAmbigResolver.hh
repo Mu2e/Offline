@@ -2,15 +2,14 @@
 // class to resolve hit ambiguities by panel, assuming a reasonable track
 // fit as input
 //
-// $Id: PanelAmbigResolver.hh,v 1.2 2012/05/22 21:35:42 brownd Exp $
+// $Id: PanelAmbigResolver.hh,v 1.3 2012/07/25 20:56:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/22 21:35:42 $
+// $Date: 2012/07/25 20:56:57 $
 //
 #ifndef PanelAmbigResolver_HH
 #define PanelAmbigResolver_HH
 #include "BaBar/BaBar.hh"
 #include "KalmanTests/inc/TrkStrawHitState.hh"
-#include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/AmbigResolver.hh"
 #include "TrackerGeom/inc/LayerId.hh"
 #include "CLHEP/Matrix/SymMatrix.h"
@@ -21,6 +20,7 @@
 #include <vector>
 
 class KalRep;
+class TrkT0;
 
 namespace mu2e {
 

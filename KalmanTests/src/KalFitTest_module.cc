@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.15 2012/07/23 22:30:57 brownd Exp $
+// $Id: KalFitTest_module.cc,v 1.16 2012/07/25 20:56:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/23 22:30:57 $
+// $Date: 2012/07/25 20:56:57 $
 //
 
 // framework
@@ -114,7 +114,7 @@ namespace mu2e
       cout<<"MC information missing "<< endl;
       return;
     }
-    TrkDef mytrk(_strawhits);
+    TrkDef mytrk(_strawhits,TrkParticle(),TrkFitDirection());
     // must initialize t0, momentum, initial trajectory.  These should come from patrec
     // that doesn't yet exist. For now, take from the MC truth.  There must be a better way to define the primary particle, FIXME!!!!!!
     cet::map_vector_key trkid(1);
