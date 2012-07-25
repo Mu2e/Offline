@@ -147,7 +147,7 @@ double extMonFNAL.detectorDistanceToWall = 450;
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
 
-vector<double> extMonFNAL.sensor_zoffset = {-300., -280., -50., +0, +220, +300.};
+vector<double> extMonFNAL.sensor_zoffset = {-300., -290., -5., +5., +290., +300.};
 vector<double> extMonFNAL.sensor_xoffset = {0., 0., 0., 0., 0., 0.};
 vector<double> extMonFNAL.sensor_yoffset = {0., 0., 0., 0., 0., 0. };
 
