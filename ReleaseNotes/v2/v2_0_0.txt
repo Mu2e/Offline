@@ -1,10 +1,13 @@
-  $Id: v2_0_0.txt,v 1.26 2012/07/24 20:05:07 kutschke Exp $
+  $Id: v2_0_0.txt,v 1.27 2012/07/25 22:23:51 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/07/24 20:05:07 $
+  $Date: 2012/07/25 22:23:51 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_0
+
+26) July 25, kutschke
+    Add the *merge.fcl files to EventMixing/inputGeneration/ .
 
 25) July 24, kutschke
     Added 3 services to Sandbox and three assoicated test modules and .fcl
