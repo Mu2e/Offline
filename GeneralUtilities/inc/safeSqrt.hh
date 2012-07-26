@@ -1,14 +1,14 @@
-#ifndef Mu2eUtilities_safeSqrt_hh
-#define Mu2eUtilities_safeSqrt_hh
+#ifndef GeneralUtilities_safeSqrt_hh
+#define GeneralUtilities_safeSqrt_hh
 
 //
 //  Take the sqrt of its argument but protect against
 //  roundoff error that can take the argument negative.
 //
 //
-// $Id: safeSqrt.hh,v 1.3 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: safeSqrt.hh,v 1.1 2012/07/26 18:59:07 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/26 18:59:07 $
 //
 // Original author Rob Kutschke
 //
@@ -27,4 +27,4 @@ namespace mu2e {
   }
 
 }
-#endif /* Mu2eUtilities_safeSqrt_hh */
+#endif /* GeneralUtilities_safeSqrt_hh */
