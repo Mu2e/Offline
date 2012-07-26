@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.30 2012/07/25 20:56:57 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.31 2012/07/26 00:25:38 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/25 20:56:57 $
+// $Date: 2012/07/26 00:25:38 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -193,7 +193,7 @@ class TrkPatRec : public art::EDProducer
     std::vector<StrawHitInfo> _phits;
     Float_t _dmct0, _dmcmom, _dmctd;
     Float_t _mindist, _mindt, _mindphi;
-    Float_t _tmed, _pmed, _stime, _sphi;
+    Float_t _tmed, _pmed, _rmed, _stime, _sphi, _srho;
 // flow diagnostic
     TH1F* _cutflow;
  };
@@ -506,6 +506,7 @@ class TrkPatRec : public art::EDProducer
 	TrkTimePeak tpeak(xp,yp);
 	std::vector<double> ptime;
 	std::vector<double> pphi;
+	std::vector<double> prho;
         for(size_t istr=0; istr<nstrs;++istr){
 	  if(_tflags[istr].veryLoose()){
 	    StrawHit const& sh = _strawhits->at(istr);
@@ -516,30 +517,35 @@ class TrkPatRec : public art::EDProducer
 	      tpeak._trkptrs.push_back(istr);
 	      ptime.push_back(sh.time());
 	      pphi.push_back(phi);
+	      prho.push_back(_shpos[istr].perp());
 	    }
 	  }
 	}
 	if(tpeak._trkptrs.size() >= _mindp){
 	  double tmed = findMedian(ptime);
 	  double pmed = findMedian(pphi);
+	  double rmed = findMedian(prho);
 // compute Z information and staion spacing, and the average radial position of the peak
 // also compute the spread WRT the median
 	  std::vector<double> hitz;
 	  std::vector<bool> devices(ndevices,false);
-	  double rho(0.0);
-	  double stime(0), sphi(0);
+	  double rho(0.0),srho(0.0);
+	  double stime(0.0), sphi(0.0);
 	  for(std::vector<hitIndex>::const_iterator ihi = tpeak._trkptrs.begin();ihi !=tpeak._trkptrs.end();++ihi){
 	    const StrawHit& sh = _strawhits->at(ihi->_index);
 	    unsigned idevice = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getDeviceId());
 	    hitz.push_back(_shpos[ihi->_index].z());
 	    devices[idevice] = true;
-	    rho += _shpos[ihi->_index].perp();
+	    double rhov =_shpos[ihi->_index].perp();
+	    rho += rhov;
+	    srho += pow(rhov-rmed,2);
 	    stime += pow(tmed-sh.time(),2);
 	    sphi += pow(pmed-_shpos[ihi->_index].phi(),2);
 	  }
 	  stime /= tpeak._trkptrs.size();
 	  sphi /= tpeak._trkptrs.size();
 	  rho /= tpeak._trkptrs.size();
+	  srho /= tpeak._trkptrs.size();
 	  std::sort(hitz.begin(),hitz.end());
 	  double zmin = hitz.front();
 	  double zmax = hitz.back();
@@ -603,8 +609,10 @@ class TrkPatRec : public art::EDProducer
 	    _pt = xp;
 	    _tmed = tmed;
 	    _pmed = pmed;
+	    _rmed = rmed;
 	    _stime = stime;
 	    _sphi = sphi;
+	    _srho = srho;
 	    _prho = rho;
 	    _zmin = zmin;
 	    _zmax = zmax;
@@ -884,8 +892,10 @@ class TrkPatRec : public art::EDProducer
     _ddiag->Branch("mindphi",&_mindphi,"mindphi/F");
     _ddiag->Branch("tmed",&_tmed,"tmed/F");
     _ddiag->Branch("pmed",&_pmed,"pmed/F");
+    _ddiag->Branch("rmed",&_rmed,"rmed/F");
     _ddiag->Branch("stime",&_stime,"stime/F");
     _ddiag->Branch("sphi",&_sphi,"sphi/F");
+    _ddiag->Branch("srho",&_srho,"srho/F");
     _ddiag->Branch("phits",&_phits);
     _ddiag->Branch("mct0",&_dmct0,"mct0/F");
     _ddiag->Branch("mcmom",&_dmcmom,"mcmom/F");

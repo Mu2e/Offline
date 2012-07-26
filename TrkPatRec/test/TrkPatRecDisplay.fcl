@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkPatRecDisplay.fcl,v 1.4 2012/04/17 00:08:19 brownd Exp $
+# $Id: TrkPatRecDisplay.fcl,v 1.5 2012/07/26 00:25:38 brownd Exp $
 # $Author: brownd $
-# $Date: 2012/04/17 00:08:19 $
+# $Date: 2012/07/26 00:25:38 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -77,10 +77,11 @@ physics :
 
     # pat rec 
  
-    TrkPatRec : @local::TrkPatRec
+    TrkPatRec1 : @local::TrkPatRecDownstreameMinus
+    TrkPatRec2 : @local::TrkPatRecUpstreamePlus
 
   }
-  p1 :  [generate , g4run, makeSH, TrkPatRec]
+  p1 :  [generate , g4run, makeSH, TrkPatRec1, TrkPatRec2]
   e1 : [eventdisplay]
 
   trigger_paths  : [p1]
