@@ -4,9 +4,9 @@
 // A discrete process that reverses particle momentum and charge.
 // It is used for debugging/tuning code for propagation in magnetic fields.
 //
-//   $Id: ReflectionProcess.cc,v 1.1 2012/03/02 23:57:18 kutschke Exp $
+//   $Id: ReflectionProcess.cc,v 1.2 2012/07/26 19:01:01 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2012/03/02 23:57:18 $
+//   $Date: 2012/07/26 19:01:01 $
 //
 // Original author R. Bernstein
 //
@@ -21,7 +21,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/ReflectionProcess.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/safeSqrt.hh"
+#include "GeneralUtilities/inc/safeSqrt.hh"
 
 using namespace std;
 

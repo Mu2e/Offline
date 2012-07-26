@@ -2,14 +2,15 @@
 // code for finding HoughTransform for circles in the L-tracker
 //
 //
-// $Id: HoughTransform.cc,v 1.12 2011/05/25 18:31:42 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/25 18:31:42 $
+// $Id: HoughTransform.cc,v 1.13 2012/07/26 19:01:01 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/26 19:01:01 $
 //
 // Original author R.Bernstein
 //
 
 #include "HoughTransform/inc/HoughTransform.hh"
+#include "GeneralUtilities/inc/sqrtOrThrow.hh"
 
 #include "cetlib/pow.h"
 

@@ -2,9 +2,9 @@
 // Instantiate CLHEP::Hep3Vectors using polar coordinates.
 // (Not provided in the the native class).
 //
-// $Id: polar3Vector.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: polar3Vector.cc,v 1.5 2012/07/26 19:01:01 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/26 19:01:01 $
 //
 // Original author Rob Kutschke
 //
@@ -12,8 +12,8 @@
 #include <cmath>
 
 #include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
-#include "Mu2eUtilities/inc/safeSqrt.hh"
-#include "Mu2eUtilities/inc/sqrtOrThrow.hh"
+#include "GeneralUtilities/inc/safeSqrt.hh"
+#include "GeneralUtilities/inc/sqrtOrThrow.hh"
 
 using CLHEP::Hep3Vector;
 

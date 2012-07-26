@@ -1,9 +1,9 @@
 #ifndef HoughTransform_HoughTransform_hh
 #define HoughTransform_HoughTransform_hh
 //
-// $Id: HoughTransform.hh,v 1.16 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: HoughTransform.hh,v 1.17 2012/07/26 19:01:01 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/26 19:01:01 $
 //
 // helps perform Hough Transform looking for circles in the L-Tracker,
 // closely tied to HitCluster algorithms.
@@ -42,7 +42,6 @@
 // Mu2e includes.
 #include "HitCluster/inc/HitCluster.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
-#include "Mu2eUtilities/inc/sqrtOrThrow.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 

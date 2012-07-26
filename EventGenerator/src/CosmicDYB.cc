@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.24 2012/07/15 22:06:17 kutschke Exp $
+// $Id: CosmicDYB.cc,v 1.25 2012/07/26 19:01:00 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Date: 2012/07/26 19:01:00 $
 //
 // Original author Yury Kolomensky
 //
@@ -44,7 +44,7 @@
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eUtilities/inc/rm48.hh"
-#include "Mu2eUtilities/inc/safeSqrt.hh"
+#include "GeneralUtilities/inc/safeSqrt.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 
@@ -114,7 +114,7 @@ namespace mu2e {
 
 
   , _choice(UNDEFINED)
-    
+
   {
     mf::LogInfo log("COSMIC");
 
@@ -147,7 +147,7 @@ namespace mu2e {
         << "\n";
     }
 
-	
+
     // Allocate hrndg2 working space on the heap.
     _workingSpace.resize(_ne*_nth);
 
@@ -225,20 +225,20 @@ namespace mu2e {
     GeomHandle<ExtMonFNAL::ExtMon>  extMonFNAL;
     GeomHandle<Mu2eEnvelope> env;
     GeomHandle<DetectorSystem> detsys;
-   
+
     // here: take different values depending on config
     // e.g. extMonFNAL->detectorCenterInMu2e()
     CLHEP::Hep3Vector cosmicReferencePointInMu2e;
     switch (_choice){
     case TRACKER:
       cosmicReferencePointInMu2e =  Hep3Vector(detsys->getOrigin().x(),
-					 env->ymax() + _y0,
-					 detsys->getOrigin().z());
+                                         env->ymax() + _y0,
+                                         detsys->getOrigin().z());
       break;
     case EXTMONFNAL:
       cosmicReferencePointInMu2e = Hep3Vector(extMonFNAL->detectorCenterInMu2e().x(),
-					      env->ymax() + _y0,
-					      extMonFNAL->detectorCenterInMu2e().z());
+                                              env->ymax() + _y0,
+                                              extMonFNAL->detectorCenterInMu2e().z());
       break;
     default:
       throw cet::exception("Configuration")
@@ -249,40 +249,40 @@ namespace mu2e {
 
     if(!_checkedProductionPlane)
       {
-	_checkedProductionPlane=true;
+        _checkedProductionPlane=true;
 
-	std::cout<<"CosmicDYB: cosmicReferencePointInMu2e = "<<cosmicReferencePointInMu2e<<std::endl;
+        std::cout<<"CosmicDYB: cosmicReferencePointInMu2e = "<<cosmicReferencePointInMu2e<<std::endl;
 
-	art::ServiceHandle<GeometryService> geom;
+        art::ServiceHandle<GeometryService> geom;
 
-	if(geom->hasElement<WorldG4>()) {
+        if(geom->hasElement<WorldG4>()) {
 
-	  GeomHandle<WorldG4>  worldGeom;
-	  Hep3Vector const& mu2eOrigin = worldGeom->mu2eOriginInWorld();
-	  std::vector<double> const& halfLengths = worldGeom->halfLengths();
+          GeomHandle<WorldG4>  worldGeom;
+          Hep3Vector const& mu2eOrigin = worldGeom->mu2eOriginInWorld();
+          std::vector<double> const& halfLengths = worldGeom->halfLengths();
 
-	  double marginXMin = halfLengths[0] + (cosmicReferencePointInMu2e.x()-_dx + mu2eOrigin.x());
-	  double marginZMin = halfLengths[2] + (cosmicReferencePointInMu2e.z()-_dz + mu2eOrigin.z());
-	  double marginXMax = halfLengths[0] - (cosmicReferencePointInMu2e.x()+_dx + mu2eOrigin.x());
-	  double marginZMax = halfLengths[2] - (cosmicReferencePointInMu2e.z()+_dz + mu2eOrigin.z());
-	  double marginYMin = halfLengths[1] + (cosmicReferencePointInMu2e.y()+_y0 + mu2eOrigin.y());
-	  double marginYMax = halfLengths[1] - (cosmicReferencePointInMu2e.y()+_y0 + mu2eOrigin.y());
+          double marginXMin = halfLengths[0] + (cosmicReferencePointInMu2e.x()-_dx + mu2eOrigin.x());
+          double marginZMin = halfLengths[2] + (cosmicReferencePointInMu2e.z()-_dz + mu2eOrigin.z());
+          double marginXMax = halfLengths[0] - (cosmicReferencePointInMu2e.x()+_dx + mu2eOrigin.x());
+          double marginZMax = halfLengths[2] - (cosmicReferencePointInMu2e.z()+_dz + mu2eOrigin.z());
+          double marginYMin = halfLengths[1] + (cosmicReferencePointInMu2e.y()+_y0 + mu2eOrigin.y());
+          double marginYMax = halfLengths[1] - (cosmicReferencePointInMu2e.y()+_y0 + mu2eOrigin.y());
 
-	  std::cout<<std::endl<<"distances from the edges of the cosmic ray production plane to the borders of the world volume:"<<std::endl
-		   <<"in negative x direction: "<<marginXMin<<std::endl
-		   <<"in positive x direction: "<<marginXMax<<std::endl
-		   <<"in negative y direction: "<<marginYMin<<std::endl
-		   <<"in positive y direction: "<<marginYMax<<std::endl
-		   <<"in negative z direction: "<<marginZMin<<std::endl
-		   <<"in positive z direction: "<<marginZMax<<std::endl<<std::endl;
+          std::cout<<std::endl<<"distances from the edges of the cosmic ray production plane to the borders of the world volume:"<<std::endl
+                   <<"in negative x direction: "<<marginXMin<<std::endl
+                   <<"in positive x direction: "<<marginXMax<<std::endl
+                   <<"in negative y direction: "<<marginYMin<<std::endl
+                   <<"in positive y direction: "<<marginYMax<<std::endl
+                   <<"in negative z direction: "<<marginZMin<<std::endl
+                   <<"in positive z direction: "<<marginZMax<<std::endl<<std::endl;
 
-	  checkCosmicRayProductionPlane(marginXMin, "world.margin.xmin");
-	  checkCosmicRayProductionPlane(marginXMax, "world.margin.xmax");
-	  checkCosmicRayProductionPlane(marginYMin, "world.margin.top");
-	  checkCosmicRayProductionPlane(marginYMax, "world.margin.bottom");
-	  checkCosmicRayProductionPlane(marginZMin, "world.margin.zmin");
-	  checkCosmicRayProductionPlane(marginZMax, "world.margin.zmax");
-	}
+          checkCosmicRayProductionPlane(marginXMin, "world.margin.xmin");
+          checkCosmicRayProductionPlane(marginXMax, "world.margin.xmax");
+          checkCosmicRayProductionPlane(marginYMin, "world.margin.top");
+          checkCosmicRayProductionPlane(marginYMax, "world.margin.bottom");
+          checkCosmicRayProductionPlane(marginZMin, "world.margin.zmin");
+          checkCosmicRayProductionPlane(marginZMax, "world.margin.zmax");
+        }
       }
 
 

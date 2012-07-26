@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.20 2012/07/15 22:06:17 kutschke Exp $
+// $Id: NuclearCaptureGun.cc,v 1.21 2012/07/26 19:01:01 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Date: 2012/07/26 19:01:01 $
 //
 // Original author Gianni Onorato
 //
@@ -32,7 +32,7 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eUtilities/inc/safeSqrt.hh"
+#include "GeneralUtilities/inc/safeSqrt.hh"
 #include "TargetGeom/inc/Target.hh"
 
 // Other external includes.
@@ -189,11 +189,11 @@ namespace mu2e {
                                                                              FoilParticleGenerator::muonFileInputFoil,
                                                                              FoilParticleGenerator::muonFileInputPos,
                                                                              FoilParticleGenerator::negExp,
-									     _PStoDSDelay,
+                                                                             _PStoDSDelay,
                                                                              _pPulseDelay,
-									     _pPulseShift,
-									     _STfname,
-									     _nToSkip));
+                                                                             _pPulseShift,
+                                                                             _STfname,
+                                                                             _nToSkip));
   }
 
   NuclearCaptureGun::~NuclearCaptureGun(){
@@ -261,8 +261,8 @@ namespace mu2e {
           _hProtonCz->Fill( mom.cosTheta() );
           _hProtonPhi->Fill( mom.phi() );
           _hProtonTime->Fill( time );
-	  _hProtonMudelay   ->Fill(_fGenerator->muDelay());
-	  _hProtonPulsedelay->Fill(_fGenerator->pulseDelay());
+          _hProtonMudelay   ->Fill(_fGenerator->muDelay());
+          _hProtonPulsedelay->Fill(_fGenerator->pulseDelay());
         }
       } // end of loop on protons
 
@@ -292,8 +292,8 @@ namespace mu2e {
           _hNeutronCz->Fill( mom.cosTheta() );
           _hNeutronPhi->Fill( mom.phi() );
           _hNeutronTime->Fill( time );
-	  _hNeutronMudelay   ->Fill(_fGenerator->muDelay());
-	  _hNeutronPulsedelay->Fill(_fGenerator->pulseDelay());
+          _hNeutronMudelay   ->Fill(_fGenerator->muDelay());
+          _hNeutronPulsedelay->Fill(_fGenerator->pulseDelay());
         }
       } // end of loop on neutrons
 
@@ -321,8 +321,8 @@ namespace mu2e {
           _hPhotonCz->Fill( mom.cosTheta() );
           _hPhotonPhi->Fill( mom.phi() );
           _hPhotonTime->Fill( time );
-	  _hPhotonMudelay   ->Fill(_fGenerator->muDelay());
-	  _hPhotonPulsedelay->Fill(_fGenerator->pulseDelay());
+          _hPhotonMudelay   ->Fill(_fGenerator->muDelay());
+          _hPhotonPulsedelay->Fill(_fGenerator->pulseDelay());
         }
       } // end of loop on photons
     }

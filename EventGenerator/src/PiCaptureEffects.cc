@@ -1,8 +1,8 @@
 //
 //
-// $Id: PiCaptureEffects.cc,v 1.1 2012/07/17 19:59:46 kutschke Exp $
+// $Id: PiCaptureEffects.cc,v 1.2 2012/07/26 19:01:01 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/17 19:59:46 $
+// $Date: 2012/07/26 19:01:01 $
 //
 // Original author: Gianni Onorato
 //
@@ -18,7 +18,7 @@
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "Mu2eUtilities/inc/safeSqrt.hh"
+#include "GeneralUtilities/inc/safeSqrt.hh"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 using namespace std;
@@ -49,10 +49,10 @@ namespace mu2e {
   }
 
   void PiCaptureEffects::defineOutput() {
-   
+
     _e = _elow + _spectrum.fire() * (_ehi - _elow);
     _fract = _internalFractionalSpectrum.fire();
-    _doPhoton = _randFlat.fire() > _probInternalConversion;   
+    _doPhoton = _randFlat.fire() > _probInternalConversion;
     _eElec = _e * _fract;
     _ePosit = _e * ( 1 - _fract);
     _elecMom = safeSqrt((_eElec*_eElec) - (_electMass*_electMass));
@@ -80,24 +80,24 @@ namespace mu2e {
 
   GenParticle PiCaptureEffects::outputGamma(CLHEP::Hep3Vector pos, double time) {
     if (!_doPhoton) {
-      throw cet::exception("MODEL") << "Internal conversion: you have to ask for pair production!\n"; 
+      throw cet::exception("MODEL") << "Internal conversion: you have to ask for pair production!\n";
     }
     CLHEP::HepLorentzVector mom (_randomUnitSphere.fire(_e), _e);
-    
+
     GenParticle outGen(PDGCode::gamma, GenId::pionCapture, pos, mom, time);
 
     return outGen;
   }
-  
+
 
   GenParticle PiCaptureEffects::outputElec(CLHEP::Hep3Vector pos, double time) {
 
     if (!doElectron()) {
-      throw cet::exception("MODEL") << "Electron not created. Check with doElectron() before creating it.\n"; 
+      throw cet::exception("MODEL") << "Electron not created. Check with doElectron() before creating it.\n";
     }
-    
+
     CLHEP::HepLorentzVector mom (_randomUnitSphere.fire(_elecMom), _elecMom);
-    
+
     GenParticle outGen(PDGCode::e_minus, GenId::internalRPC, pos, mom, time);
 
     return outGen;
@@ -106,11 +106,11 @@ namespace mu2e {
   GenParticle PiCaptureEffects::outputPosit(CLHEP::Hep3Vector pos, double time) {
 
     if (!doPositron()) {
-      throw cet::exception("MODEL") << "Positron not created. Check with doElectron() before creating it.\n"; 
+      throw cet::exception("MODEL") << "Positron not created. Check with doElectron() before creating it.\n";
     }
-    
+
     CLHEP::HepLorentzVector mom (_randomUnitSphere.fire(_positMom), _positMom);
-    
+
     GenParticle outGen(PDGCode::e_plus, GenId::internalRPC, pos, mom, time);
 
     return outGen;
@@ -195,4 +195,3 @@ namespace mu2e {
   } // PiCaptureEffects::internalFractionalBinnedSpectrum
 
  }
-
