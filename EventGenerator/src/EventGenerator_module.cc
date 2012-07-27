@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.16 2012/07/15 22:06:17 kutschke Exp $
+  $Id: EventGenerator_module.cc,v 1.17 2012/07/27 19:43:01 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/07/15 22:06:17 $
+  $Date: 2012/07/27 19:43:01 $
 
   Original author Rob Kutschke
 
@@ -80,32 +80,26 @@ namespace mu2e {
 
   public:
 
-    explicit EventGenerator(fhicl::ParameterSet const& pSet):
-      _configfile(           pSet.get<std::string>("inputfile",            "generatorconfig.txt")),
-      _allowReplacement(     pSet.get<bool>       ("allowReplacement",     true)),
-      _messageOnReplacement( pSet.get<bool>       ("messageOnReplacement", true))
-    {
-      // A placeholder until I make a real data product.
-      produces<GenParticleCollection>();
+    explicit EventGenerator(fhicl::ParameterSet const& pSet);
+    // Accept compiler written d'tor.  Modules are never moved or copied.
 
-      // Provide a common engine for the generators to use via the service
-      createEngine( art::ServiceHandle<SeedService>()->getSeed() );
-    }
-
-    virtual ~EventGenerator() { }
-
-    virtual void produce(art::Event& e);
-
-    virtual void beginRun(art::Run &r);
+    virtual void produce (art::Event& e);
+    virtual void beginRun(art::Run&   r);
 
   private:
 
     // Name of the run-time configuration file.
     string _configfile;
 
-    // Some c'tor attributes for the run-time configuration object.
+    // Control the behaviour of messages from the SimpleConfig object holding
+    // the geometry parameters.
     bool _allowReplacement;
     bool _messageOnReplacement;
+    bool _messageOnDefault;
+    int  _configStatsVerbosity;
+
+    // Print final config file after all replacements.
+    bool _printConfig;
 
     // A collection of all of the generators that we will run.
     typedef  boost::shared_ptr<GeneratorBase> GeneratorBasePtr;
@@ -114,6 +108,20 @@ namespace mu2e {
     void checkConfig( const SimpleConfig&  config);
 
   };
+
+  EventGenerator::EventGenerator(fhicl::ParameterSet const& pSet):
+    _configfile(           pSet.get<std::string>("inputfile",             "generatorconfig.txt")),
+    _allowReplacement(     pSet.get<bool>       ("allowReplacement",      true)),
+    _messageOnReplacement( pSet.get<bool>       ("messageOnReplacement",  false)),
+    _messageOnDefault(     pSet.get<bool>       ("messageOnDefault",      false)),
+    _configStatsVerbosity( pSet.get<int>        ("configStatsVerbosity",  0)),
+    _printConfig(          pSet.get<bool>       ("printConfig",           false)){
+
+    produces<GenParticleCollection>();
+
+    // A common random engine for the generators to use.
+    createEngine( art::ServiceHandle<SeedService>()->getSeed() );
+  }
 
   // At beginRun time, update any derived geometry information.
   void EventGenerator::beginRun( art::Run &run){
@@ -125,25 +133,17 @@ namespace mu2e {
       return;
     }
 
-    mf::LogInfo log("EventGenerator");
-    log << "Event generator configuration file: "
-        << _configfile
-        << "\n\n";
+    cout << "Event generator configuration file: "
+         << _configfile
+         << "\n"
+         << endl;
 
-    SimpleConfig config(_configfile, _allowReplacement, _messageOnReplacement);
+    SimpleConfig config(_configfile, _allowReplacement, _messageOnReplacement, _messageOnDefault );
     checkConfig(config);
 
-    if ( config.getBool("printConfig",false) ){
-      log << config;
+    if ( _printConfig ){
+      config.print(cout,"EvtGen: ");
     }
-
-    if ( config.getBool("printConfigStats",false) ){
-      // Work around absence of << operator for this print method.
-      ostringstream os;
-      config.printStatistics(os);
-      log << os.str();
-    }
-
 
     // Change this to modify rather than delete and make an new one??
 
@@ -186,6 +186,8 @@ namespace mu2e {
       mf::LogWarning("CONTROL")
         << "EventGenerator has no generators enabled. Hope that's OK.";
     }
+
+    config.printAllSummaries( cout, _configStatsVerbosity, "EvtGen: ");
 
   }
 

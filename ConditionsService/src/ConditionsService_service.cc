@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.7 2012/04/10 14:24:51 kutschke Exp $
+// $Id: ConditionsService_service.cc,v 1.8 2012/07/27 19:42:31 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/04/10 14:24:51 $
+// $Date: 2012/07/27 19:42:31 $
 //
 // Original author Rob Kutschke
 //
@@ -32,15 +32,20 @@ namespace mu2e {
 
   ConditionsService::ConditionsService(fhicl::ParameterSet const& pset,
                                        art::ActivityRegistry&iRegistry) :
-    _conditionsFile(pset.get<std::string>("conditionsfile","conditions.txt")),
-    _config(_conditionsFile,
-            pset.get<bool>("allowReplacement",     true),
-            pset.get<bool>("messageOnReplacement", true)
-            ),
+    _conditionsFile(       pset.get<std::string>("conditionsfile","conditions.txt")),
+    _allowReplacement(     pset.get<bool>       ("allowReplacement",      true)),
+    _messageOnReplacement( pset.get<bool>       ("messageOnReplacement",  false)),
+    _messageOnDefault(     pset.get<bool>       ("messageOnDefault",      false)),
+    _configStatsVerbosity( pset.get<int>        ("configStatsVerbosity",  0)),
+    _printConfig(          pset.get<bool>       ("printConfig",           false)),
+
+    // FIXME: should be initialized in beginRun, not c'tor.
+    _config(_conditionsFile, _allowReplacement, _messageOnReplacement, _messageOnDefault),
     _entities(),
     _run_count()
   {
     iRegistry.watchPreBeginRun(this, &ConditionsService::preBeginRun);
+    iRegistry.watchPostEndJob (this, &ConditionsService::postEndJob   );
   }
 
   ConditionsService::~ConditionsService(){
@@ -67,19 +72,9 @@ namespace mu2e {
       return;
     }
 
-    mf::LogPrint log("CONDITIONS");
-    log << "Conditions input file is: " << _conditionsFile << "\n";
+    cout << "Conditions input file is: " << _conditionsFile << "\n";
 
-    if ( _config.getBool("printConfig",false) ){
-      log << "\n" << _config;
-    }
-
-    if ( _config.getBool("printConfigStats",false) ){
-      // Work around absence of << operator for this print method.
-      ostringstream os;
-      _config.printStatistics(os);
-      log << os.str();
-    }
+    if ( _printConfig ){ _config.print(cout, "Conditions: "); }
 
     checkConsistency();
 
@@ -91,6 +86,11 @@ namespace mu2e {
 
   // Check that the configuration is self consistent.
   void ConditionsService::checkConsistency(){
+  }
+
+  // Called after all modules have completed their end of job.
+  void ConditionsService::postEndJob(){
+    _config.printAllSummaries ( cout, _configStatsVerbosity, "Conditions: " );
   }
 
 } // end namespace mu2e

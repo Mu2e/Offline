@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.16 2012/07/15 22:06:16 kutschke Exp $
+// $Id: ConditionsService.hh,v 1.17 2012/07/27 19:42:31 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:16 $
+// $Date: 2012/07/27 19:42:31 $
 //
 // Original author Rob Kutschke
 //
@@ -44,6 +44,7 @@ namespace mu2e {
     ~ConditionsService();
 
     void preBeginRun(art::Run const &);
+    void postEndJob();
 
     // Not sure if we really want this.  It might be abused more than used?
     SimpleConfig const& config() const { return _config;}
@@ -53,6 +54,17 @@ namespace mu2e {
     // The name of the input file.  Later will be a db key or similar.
     std::string _conditionsFile;
 
+    // Control the behaviour of messages from the SimpleConfig object holding
+    // the geometry parameters.
+    bool _allowReplacement;
+    bool _messageOnReplacement;
+    bool _messageOnDefault;
+    int  _configStatsVerbosity;
+
+    // Print final config file after all replacements.
+    bool _printConfig;
+
+    // FIXME: should be initialized in beginRun, not c'tor.
     // For how the conditions data is held in the file managed by
     // this config object.  It can later evolve to a database.
     SimpleConfig _config;

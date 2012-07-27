@@ -36,6 +36,8 @@ namespace mu2e {
 
     void preloadAllEntities();
 
+    void postEndJob();
+
   private:
 
     template <typename ENTITY> friend class GlobalConstantsHandle;
@@ -46,6 +48,7 @@ namespace mu2e {
     typedef ConditionsEntity* (*MakerPtr)(const SimpleConfig& config, const std::string& key, const std::string& version);
     typedef std::map<std::string, MakerPtr> FactoryMap;
 
+    int  configStatsVerbosity_;
     SimpleConfig config_;
     FactoryMap makers_;
     mutable ConditionsMap entities_;

@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.16 2012/07/15 22:06:17 kutschke Exp $
+// $Id: GeometryService.hh,v 1.17 2012/07/27 19:42:31 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Date: 2012/07/27 19:42:31 $
 //
 // Original author Rob Kutschke
 //
@@ -41,7 +41,9 @@ public:
     GeometryService(const fhicl::ParameterSet&, art::ActivityRegistry&);
     ~GeometryService();
 
+    // Functions registered for callbacks.
     void preBeginRun( art::Run const &run);
+    void postEndJob();
 
     SimpleConfig const& config() const { return *_config;}
 
@@ -69,9 +71,15 @@ private:
     // Some day this will become a database key or similar.
     std::string _inputfile;
 
-    // Some c'tor attributes for the run-time configuration object.
+    // Control the behaviour of messages from the SimpleConfig object holding
+    // the geometry parameters.
     bool _allowReplacement;
     bool _messageOnReplacement;
+    bool _messageOnDefault;
+    int  _configStatsVerbosity;
+
+    // Print final config file after all replacements.
+    bool _printConfig;
 
     // The object that parses run-time configuration file.
     std::auto_ptr<SimpleConfig> _config;

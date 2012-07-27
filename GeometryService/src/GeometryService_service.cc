@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.36 2012/06/14 20:33:09 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/14 20:33:09 $
+// $Id: GeometryService_service.cc,v 1.37 2012/07/27 19:42:31 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/27 19:42:31 $
 //
 // Original author Rob Kutschke
 //
@@ -85,17 +85,20 @@ namespace mu2e {
                                    art::ActivityRegistry&iRegistry) :
     _inputfile(            pset.get<std::string> ("inputFile",            "geom000.txt")),
     _allowReplacement(     pset.get<bool>        ("allowReplacement",     true)),
-    _messageOnReplacement( pset.get<bool>        ("messageOnReplacement", true)),
+    _messageOnReplacement( pset.get<bool>        ("messageOnReplacement", false)),
+    _messageOnDefault(     pset.get<bool>        ("messageOnDefault",     false)),
+    _configStatsVerbosity( pset.get<int>         ("configStatsVerbosity", 0)),
+    _printConfig(          pset.get<bool>        ("printConfig",          false)),
     _config(0),
     _detectors(),
     _run_count()
   {
     iRegistry.watchPreBeginRun(this, &GeometryService::preBeginRun);
+    iRegistry.watchPostEndJob (this, &GeometryService::postEndJob );
   }
 
   GeometryService::~GeometryService(){
   }
-
 
   // This template can be defined here because this is a private method which is only
   // used by the code below in the same file.
@@ -104,7 +107,7 @@ namespace mu2e {
   {
     if(_detectors.find(typeid(DET).name())!=_detectors.end())
       throw cet::exception("GEOM") << "failed to install detector with type name "
-                                     << typeid(DET).name() << "\n";
+                                   << typeid(DET).name() << "\n";
 
       DetectorPtr ptr(d.release());
       _detectors[typeid(DET).name()] = ptr;
@@ -118,21 +121,15 @@ namespace mu2e {
       return;
     }
 
-    mf::LogInfo  log("GEOM");
-    log << "Geometry input file is: " << _inputfile << "\n";
+    cout  << "Geometry input file is: " << _inputfile << "\n";
 
-    _config = auto_ptr<SimpleConfig>(new SimpleConfig(_inputfile,_allowReplacement,_messageOnReplacement));
+    _config = auto_ptr<SimpleConfig>(new SimpleConfig(_inputfile,
+                                                      _allowReplacement,
+                                                      _messageOnReplacement,
+                                                      _messageOnDefault ));
 
-    if ( _config->getBool("printConfig",false) ){
-      log << *_config;
-    }
-
-    if ( _config->getBool("printConfigStats",false) ){
-      // Work around absence of << operator for this print method.
-      ostringstream os;
-      _config->printStatistics(os);
-      log << os.str();
-    }
+    // Print final state of file after all substitutions.
+    if ( _printConfig      ){ _config->print(cout, "Geom: ");       }
 
     // Throw if the configuration is not self consistent.
     checkConfig();
@@ -308,6 +305,13 @@ namespace mu2e {
   void GeometryService::addWorldG4() {
     addDetector(WorldG4Maker::make(*_config));
   }
+
+  // Called after all modules have completed their end of job.
+  void   GeometryService::postEndJob(){
+    _config->printAllSummaries( cout, _configStatsVerbosity, "Geom: " );
+  }
+
+
 
 } // end namespace mu2e
 

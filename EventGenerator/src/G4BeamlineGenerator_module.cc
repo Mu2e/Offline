@@ -46,44 +46,51 @@ namespace mu2e {
 
   public:
 
-    explicit G4BeamlineGenerator(fhicl::ParameterSet const& pSet):
-      _configfile(           pSet.get<std::string>("inputfile",            "generatorconfig.txt")),
-      _allowReplacement(     pSet.get<bool>       ("allowReplacement",     true)),
-      _messageOnReplacement( pSet.get<bool>       ("messageOnReplacement", true))
-    {
-      // A placeholder until I make a real data product.
-      produces<GenParticleCollection>();
-      produces<G4BeamlineInfoCollection>();
+    explicit G4BeamlineGenerator(fhicl::ParameterSet const& pSet);
+    // Accept compiler written d'tor.  Modules are never moved or copied.
 
-      // Print generators for which Id's are defined.
-      //GenId::printAll();
-
-      // Provide a common engine for the generators to use via the service
-      createEngine( art::ServiceHandle<SeedService>()->getSeed() );
-    }
-
-    virtual ~G4BeamlineGenerator() { }
-
-    virtual void produce(art::Event& e);
-
-    virtual void beginRun(art::Run &r);
+    virtual void produce (art::Event& e);
+    virtual void beginRun(art::Run&   r);
 
   private:
 
     // Name of the run-time configuration file.
     string _configfile;
 
-    // Some c'tor attributes for the run-time configuration object.
+    // Control the behaviour of messages from the SimpleConfig object holding
+    // the geometry parameters.
     bool _allowReplacement;
     bool _messageOnReplacement;
+    bool _messageOnDefault;
+    int  _configStatsVerbosity;
+
+    // Print final config file after all replacements.
+    bool _printConfig;
 
     // A collection of all of the generators that we will run.
     typedef  boost::shared_ptr<FromG4BLFile> GeneratorBasePtr;
     GeneratorBasePtr _generator;
 
+    // Check that configuration is internally consistent.
     void checkConfig( const SimpleConfig&  config);
 
   };
+
+  G4BeamlineGenerator::G4BeamlineGenerator(fhicl::ParameterSet const& pSet):
+    _configfile(           pSet.get<std::string>("inputfile",            "generatorconfig.txt")),
+    _allowReplacement(     pSet.get<bool>       ("allowReplacement",     true)),
+    _messageOnReplacement( pSet.get<bool>       ("messageOnReplacement", true)),
+    _messageOnDefault(     pSet.get<bool>       ("messageOnDefault",      false)),
+    _configStatsVerbosity( pSet.get<int>        ("configStatsVerbosity",  0)),
+    _printConfig(          pSet.get<bool>       ("printConfig",           false)){
+
+    produces<GenParticleCollection>();
+    produces<G4BeamlineInfoCollection>();
+
+    // Provide a common engine for the generators to use via the service
+    createEngine( art::ServiceHandle<SeedService>()->getSeed() );
+  }
+
 
   // At beginRun time, update any derived geometry information.
   void G4BeamlineGenerator::beginRun( art::Run &run){
@@ -95,28 +102,22 @@ namespace mu2e {
       return;
     }
 
-    mf::LogInfo log("G4BeamlineGenerator");
-    log << "Event generator configuration file: "
-        << _configfile
-        << "\n\n";
+    cout << "Event generator configuration file: "
+         << _configfile
+         << "\n"
+         << endl;
 
-    SimpleConfig config(_configfile, _allowReplacement, _messageOnReplacement );
+    SimpleConfig config(_configfile, _allowReplacement, _messageOnReplacement, _messageOnDefault );
     checkConfig(config);
 
-    if ( config.getBool("printConfig",false) ){
-      log << config;
-    }
-
-    if ( config.getBool("printConfigStats",false) ){
-      // Work around absence of << operator for this print method.
-      ostringstream os;
-      config.printStatistics(os);
-      log << os.str();
+    if ( _printConfig ){
+      config.print(cout, "G4blGen: " );
     }
 
     // Instantiate generators for this run.
     _generator = GeneratorBasePtr(new FromG4BLFile(run, config));
 
+    config.printAllSummaries( cout, _configStatsVerbosity, "G4blGen: ");
   }
 
   void

@@ -9,12 +9,12 @@
 
 #include "ConditionsService/inc/GlobalConstantsService.hh"
 
+#include <iostream>
 #include <typeinfo>
 #include <cassert>
 
 #include "cetlib/exception.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 
@@ -34,18 +34,30 @@ namespace mu2e {
   //================================================================
   GlobalConstantsService::GlobalConstantsService(fhicl::ParameterSet const& pset,
                                                  art::ActivityRegistry&iRegistry)
-    : config_(pset.get<std::string>("inputFile"),
+    : configStatsVerbosity_((pset.get<int>("configStatsVerbosity", 0))),
+      config_(pset.get<std::string>("inputFile"),
               pset.get<bool>("allowReplacement",     true),
-              pset.get<bool>("messageOnReplacement", true)
+              pset.get<bool>("messageOnReplacement", false),
+              pset.get<bool>("messageOnDefault",     false)
              )
   {
-    mf::LogPrint log("GlobalConstants");
-    log<<"GlobalConstantsService input file is: "<<config_.inputFile()<<"\n";
+
+    iRegistry.watchPostEndJob (this, &GlobalConstantsService::postEndJob );
+
+    std::cout <<"GlobalConstantsService input file is: "<<config_.inputFile() << std::endl;
+    if ( pset.get<bool>("printConfig",false) ) {
+      config_.print(std::cout,"GlobalConstants: ");
+    }
 
     makers_[typeid(mu2e::ParticleDataTable).name()] = &makeT<mu2e::ParticleDataTable>;
     makers_[typeid(mu2e::PhysicsParams).name()]     = &makeT<mu2e::PhysicsParams>;
 
+
     //preloadAllEntities();
+  }
+
+  void GlobalConstantsService::postEndJob(){
+    config_.printAllSummaries( std::cout, configStatsVerbosity_, "GlobalConstants: " );
   }
 
   //================================================================
