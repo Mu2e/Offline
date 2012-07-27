@@ -1,9 +1,9 @@
 //
 // A class to hold one record within the primitive SimpleConfig utility.
 //
-// $Id: SimpleConfigRecord.cc,v 1.1 2012/07/15 22:00:36 kutschke Exp $
+// $Id: SimpleConfigRecord.cc,v 1.2 2012/07/27 19:39:39 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:00:36 $
+// $Date: 2012/07/27 19:39:39 $
 //
 // Contact person Rob Kutschke
 
@@ -42,6 +42,7 @@ namespace mu2e {
   // Constructor.
   SimpleConfigRecord::SimpleConfigRecord( const string& record_a ):
     record(record_a),
+    _accessCount(0),
     _isCommentOrBlank(false),
     _isVector(false),
     _superceded(false){
@@ -49,26 +50,35 @@ namespace mu2e {
   }
 
   // Accessors to return supported data types.
-  string SimpleConfigRecord::getString() const {
+  string SimpleConfigRecord::getString( bool count) const {
+    if ( count ){
+      ++_accessCount;
+    }
     return Values.at(0);
   }
 
   int SimpleConfigRecord::getInt () const {
+    ++_accessCount;
     CheckType("int");
     return toInt( Values.at(0) );
   }
 
   double SimpleConfigRecord::getDouble () const {
+    ++_accessCount;
     CheckType("double");
     return toDouble( Values.at(0) );
   }
 
   bool SimpleConfigRecord::getBool() const {
+    ++_accessCount;
     CheckType("bool");
     return toBool( Values.at(0) );
   }
 
-  void SimpleConfigRecord::getVectorString( vector<string>& v) const{
+  void SimpleConfigRecord::getVectorString( vector<string>& v, bool count) const{
+    if ( count ) {
+      ++_accessCount;
+    }
     AnyVector();
     for ( size_t i=0; i<Values.size(); ++i){
       v.push_back(Values[i]);
@@ -76,6 +86,7 @@ namespace mu2e {
   }
 
   void SimpleConfigRecord::getVectorInt( vector<int>& v) const {
+    ++_accessCount;
     CheckType("vector<int>");
     vector<string>::const_iterator b = Values.begin();
     vector<string>::const_iterator e = Values.end();
@@ -88,6 +99,7 @@ namespace mu2e {
   }
 
   void SimpleConfigRecord::getVectorDouble( vector<double>& V) const {
+    ++_accessCount;
     CheckType("vector<double>");
     vector<string>::const_iterator b = Values.begin();
     vector<string>::const_iterator e = Values.end();
@@ -151,7 +163,7 @@ namespace mu2e {
       } else {
 
         vector<string> V;
-        getVectorString(V);
+        getVectorString(V,false);
         vector<string>::const_iterator b = V.begin();
         vector<string>::const_iterator e = V.end();
 
@@ -184,7 +196,7 @@ namespace mu2e {
         }
       } else {
         s << "\"";
-        s << getString();
+        s << getString(false);
         s << "\"";
       }
     }

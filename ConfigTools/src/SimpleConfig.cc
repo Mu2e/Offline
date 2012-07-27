@@ -1,9 +1,9 @@
 //
 // Main class in a primitive runtime parameter utility.
 //
-// $Id: SimpleConfig.cc,v 1.2 2012/07/22 23:09:50 kutschke Exp $
+// $Id: SimpleConfig.cc,v 1.3 2012/07/27 19:39:39 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/22 23:09:50 $
+// $Date: 2012/07/27 19:39:39 $
 //
 // Contact person Rob Kutschke
 //
@@ -17,6 +17,7 @@
 
 // C++ includes
 #include <fstream>
+#include <sstream>
 #include <iomanip>
 #include <string>
 #include <vector>
@@ -46,9 +47,11 @@ namespace mu2e {
    */
   SimpleConfig::SimpleConfig( const string& filename,
                               bool allowReplacement,
-                              bool messageOnReplacement ):
+                              bool messageOnReplacement,
+                              bool messageOnDefault ):
     _allowReplacement(allowReplacement),
-    _messageOnReplacement(messageOnReplacement){
+    _messageOnReplacement(messageOnReplacement),
+    _messageOnDefault(messageOnDefault){
 
     ConfigFileLookupPolicy configFile;
     _inputfile = configFile(filename);
@@ -95,6 +98,48 @@ namespace mu2e {
   }
 
   /**
+   * A helper used by markDefault.
+   *
+   * @return the value of the parameter.
+   */
+  template <class T>
+  inline std::ostream& operator<<(std::ostream& ost,
+                                  typename std::vector<T> const& v ){
+    for ( typename std::vector<T>::const_iterator i=v.begin(), e=v.end();
+          i != e; ++i ){
+      ost << *i;
+    }
+    return ost;
+  }
+
+  /**
+   * Record the name of records for which the default was taken; keep a count
+   * of how often each name was asked for.
+   *
+   * @return the value of the parameter.
+   */
+  template <class T>
+  void markDefault ( std::string const& rtype,
+                     std::string const& name,
+                     T const& t,
+                     SimpleConfig::DefaultCounter_type& counter,
+                     bool print ){
+    int& count(counter[name]);
+    ++count;
+    if ( print ){
+      ostringstream os;
+      os << t;
+      mf::LogPrint("GEOM")
+        << "SimpleConfig: default value used: ("
+        << setw(5) << count << ") "
+        << rtype   << " "
+        << name    << " "
+        << os.str()
+        << endl;
+    }
+  }
+
+  /**
    * Get a specified parameter as a string, if not present in the file
    * return the value specified by the second argument.
    *
@@ -106,6 +151,7 @@ namespace mu2e {
     if ( getSharedPointer(name,b) ){
       return b->getString();
     }
+    markDefault ( "string ", name, def, _defaultCounter, _messageOnDefault );
     return def;
   }
 
@@ -129,6 +175,7 @@ namespace mu2e {
     if ( getSharedPointer(name,b) ){
       return b->getInt();
     }
+    markDefault ( "int ", name, def, _defaultCounter, _messageOnDefault );
     return def;
   }
 
@@ -152,6 +199,7 @@ namespace mu2e {
     if ( getSharedPointer(name,b) ){
       return b->getDouble();
     }
+    markDefault ( "double ", name, def, _defaultCounter, _messageOnDefault );
     return def;
   }
 
@@ -176,6 +224,7 @@ namespace mu2e {
     if ( getSharedPointer(name,b) ){
       return b->getBool();
     }
+    markDefault ( "bool ", name, def, _defaultCounter, _messageOnDefault );
     return def;
   }
 
@@ -235,6 +284,9 @@ namespace mu2e {
 
     // Assign the default value;
     v = vdefault;
+
+    markDefault ( "vector<string> ", name, v, _defaultCounter, _messageOnDefault );
+
   }
 
 
@@ -293,6 +345,8 @@ namespace mu2e {
 
     // Assign the default value;
     v = vdefault;
+
+    markDefault ( "vector<int> ", name, v, _defaultCounter, _messageOnDefault );
   }
 
 
@@ -355,6 +409,8 @@ namespace mu2e {
 
     // Assign the default value;
     v = vdefault;
+
+    markDefault ( "vector<double> ", name, v, _defaultCounter, _messageOnDefault );
   }
 
   CLHEP::Hep3Vector SimpleConfig::getHep3Vector ( const std::string& name ) const{
@@ -393,11 +449,12 @@ namespace mu2e {
    *
    * @return
    */
-  void SimpleConfig::print( std::ostream& ost ) const{
+  void SimpleConfig::print( std::ostream& ost, std::string tag ) const{
 
     for ( vector<SimpleConfigRecord>::size_type i=0;
           i<_image.size(); ++i ){
       if ( !_image[i]->isCommentOrBlank() && !_image[i]->isSuperceded() ) {
+        ost << tag;
         _image[i]->print(ost);
         ost << endl;
       }
@@ -707,8 +764,8 @@ namespace mu2e {
     // The filename of the file to be included.
     string fname = line.substr(j0+1,j1-j0-1);
 
-    // Read the included file.
-    SimpleConfig nestedFile(fname,_allowReplacement,_messageOnReplacement);
+    // Read the included file; copy verbosity control from this object.
+    SimpleConfig nestedFile(fname,_allowReplacement,_messageOnReplacement,_messageOnDefault);
 
     // Copy the contents of the included file into this one.
     for ( Image_type::const_iterator i=nestedFile._image.begin();
@@ -721,23 +778,29 @@ namespace mu2e {
   }
 
   // Some types used in printStatistics.
-  struct Stats{
-    int count;
-    int nValues;
-    Stats():
+  struct RecordTypeStats{
+    int count;           // Number of records of this type.
+    int nValues;         // Number of distinct values of this type
+                         //   vector<Type> objects are counted by .size() of their values.
+    int accessedCount;   // As above but only if the record has been accessed.
+    int accessednValues; // As above but only if the record has been accessed.
+    RecordTypeStats():
       count(0),
-      nValues(0){
+      nValues(0),
+      accessedCount(0),
+      accessednValues(0){
     }
   };
-  typedef std::map<string,Stats> StatMap;
+
+  typedef std::map<string,RecordTypeStats> StatsByType;
 
   // A helper function used in printStatistics.
   // Find the length of the longest key in the map.
-  int maxKeySize ( const StatMap& m ){
+  int maxKeySize ( const StatsByType& m ){
 
     size_t maxSize(0);
 
-    for ( StatMap::const_iterator i=m.begin();
+    for ( StatsByType::const_iterator i=m.begin();
           i != m.end(); ++i ){
 
       const string& key = i->first;
@@ -749,10 +812,10 @@ namespace mu2e {
   } // end maxKeySize
 
 
-  void SimpleConfig::printStatistics ( std::ostream& ost ){
+  void SimpleConfig::printStatisticsByType ( std::ostream& ost, std::string tag ) const{
 
     // This will hold the accumlated information.
-    StatMap statMap;
+    StatsByType byType;
 
     // Loop over all records and accumulate stats.
     for ( vector<SimpleConfigRecord>::size_type i=0;
@@ -763,11 +826,16 @@ namespace mu2e {
            !_image[i]->isSuperceded() ) {
 
         const SimpleConfigRecord& record = *_image[i];
-        Stats& stats = statMap[record.getType()];
+        RecordTypeStats& stats = byType[record.getType()];
 
         // Accumulate stats.
         ++stats.count;
         stats.nValues += record.size();
+
+        if ( _image[i]->accessCount() > 0 ){
+          ++stats.accessedCount;
+          stats.accessednValues += record.size();
+        }
 
       }
     }
@@ -775,7 +843,7 @@ namespace mu2e {
     // Done computation; start printout.
     ost << "\nStatistics for SimpleConfig file: " << _inputfile << endl;
 
-    if ( statMap.size() == 0 ) {
+    if ( byType.size() == 0 ) {
       ost << "There were no live records in this file." << endl;
       return;
     }
@@ -786,8 +854,12 @@ namespace mu2e {
     // Count total values in the file.
     int totalValues(0);
 
+    // Repeat for accessed.
+    int totalAccessedCount(0);
+    int totalAccessedValues(0);
+
     // Compute the width of field that holds the name of the type.
-    int typeFieldWidth(maxKeySize(statMap));
+    int typeFieldWidth(maxKeySize(byType));
 
     // Make sure there is room for "Total" (in case we only have bool and int).
     typeFieldWidth = ( typeFieldWidth > 5 ) ? typeFieldWidth : 5;
@@ -796,34 +868,200 @@ namespace mu2e {
     int countFieldWidth(8);
     int nValuesFieldWidth(8);
 
-    ost << setw(typeFieldWidth)    << "Type"     << " "
+    ost << tag
+        << setw(typeFieldWidth+countFieldWidth+4) << " All"
+        << setw(nValuesFieldWidth+countFieldWidth+7) << " Accessed\n";
+
+    ost << tag
+        << setw(typeFieldWidth)    << "Type"     << " "
         << setw(countFieldWidth)   << "   Count" << " "
-        << setw(nValuesFieldWidth) << "  Values"
+        << setw(nValuesFieldWidth) << "  Values" << " | "
+        << setw(countFieldWidth)   << "   Count" << " "
+        << setw(nValuesFieldWidth) << "  Values" << " "
         << endl;
 
     // Print the information for each data type and accumulate totals.
-    for ( StatMap::const_iterator i=statMap.begin();
-            i != statMap.end(); ++i ){
+    for ( StatsByType::const_iterator i=byType.begin();
+            i != byType.end(); ++i ){
 
-      const string& type = i->first;
-      const Stats& stats = i->second;
+      const string&           type = i->first;
+      const RecordTypeStats& stats = i->second;
 
-      totalCount += stats.count;
-      totalValues += stats.nValues;
+      totalCount          += stats.count;
+      totalValues         += stats.nValues;
+      totalAccessedCount  += stats.accessedCount;
+      totalAccessedValues += stats.accessednValues;
 
-      ost << setw(typeFieldWidth)    <<  type << " "
-          << setw(countFieldWidth)   << stats.count << " "
-          << setw(nValuesFieldWidth) << stats.nValues
+      ost << tag
+          << setw(typeFieldWidth)     <<  type                 << " "
+          << setw(countFieldWidth)    << stats.count           << " "
+          << setw(nValuesFieldWidth)  << stats.nValues         << "   "
+          << setw(countFieldWidth)    << stats.accessedCount   << " "
+          << setw(nValuesFieldWidth)  << stats.accessednValues << " "
           << endl;
+
     }
 
     // Print totals.
-    ost << setw(typeFieldWidth)    << "Total"     << " "
+
+    ost << tag
+        << setw(typeFieldWidth)    << "Total"     << " "
         << setw(countFieldWidth)   << totalCount  << " "
-        << setw(nValuesFieldWidth) << totalValues
+        << setw(nValuesFieldWidth) << totalValues << "   "
+        << setw(countFieldWidth)   << totalAccessedCount  << " "
+        << setw(nValuesFieldWidth) << totalAccessedValues << " "
         << endl;
 
-  } // end printStatistics
+  } // end printStatisticsByType
+
+  void SimpleConfig::printAccessCounts( ostream& ost, std::string const& tag) const{
+    ost << "\nList of access counts:\n"
+        << "From file: " << _inputfile << endl;
+
+    int n(0);
+    int nValues(0);
+    for ( Image_type::const_iterator i=_image.begin(), e=_image.end();
+          i != e; ++i ){
+
+      const SimpleConfigRecord& record = **i;
+      if ( !record.isCommentOrBlank() &&
+           !record.isSuperceded() ) {
+
+        ost << "Access count: "
+            << tag
+            << setw(4) << record.accessCount() << " "
+            << record.getName()
+            << endl;
+        ++n;
+        nValues += record.size();
+      }
+    }
+    ost << tag << "Number of records:                " << n       << endl;
+    ost << tag << "Number of values in all records : " << nValues << endl;
+  } // end printAccessCounts
+
+  /**
+   * Print the names of all of the records that have not yet been accessed.
+   *
+   * @return
+   */
+  void SimpleConfig::printNeverAccessed( ostream& ost, std::string const& tag) const{
+
+    ost << "\nList of records that have never been accessed.\n"
+        << "From file: " << _inputfile << endl;
+
+    int n(0);
+    int nValues(0);
+    for ( Image_type::const_iterator i=_image.begin(), e=_image.end();
+          i != e; ++i ){
+
+      const SimpleConfigRecord& record = **i;
+      if ( !record.isCommentOrBlank() &&
+           !record.isSuperceded() ) {
+
+        if ( record.accessCount() < 1 ) {
+          ost << "Never accessed: "
+              << tag
+              << record.getName()
+              << endl;
+          ++n;
+          nValues += record.size();
+        }
+      }
+    }
+    ost << "Number of records never accessed:           " << n       << endl;
+    ost << "Number of values in records never accessed: " << nValues << endl;
+
+  } // end printNeverAccessed
+
+  /**
+   * Print the names of all of the records that have been accessed more than once.
+   *
+   * @return
+   */
+  void SimpleConfig::printAccessedMultiple( ostream& ost, std::string const& tag) const{
+
+    ost << "\nList of records that have been accessed more than once.\n"
+        << "From file: " << _inputfile << endl;
+
+    const string header("Multiple access: ");
+    size_t countFieldWidth(6);
+    size_t headerWidth(countFieldWidth+header.size()+tag.size()+7);
+
+    ost << setw(headerWidth) << "Count  Name" << endl;
+
+    int n(0);
+    int nValues(0);
+    for ( Image_type::const_iterator i=_image.begin(), e=_image.end();
+          i != e; ++i ){
+
+      const SimpleConfigRecord& record = **i;
+      if ( !record.isCommentOrBlank() &&
+           !record.isSuperceded() ) {
+
+        if ( record.accessCount() > 1 ) {
+          ost << header
+              << tag
+              << setw(countFieldWidth) << record.accessCount() << " "
+              << record.getName()
+              << endl;
+          ++n;
+          nValues += record.size();
+        }
+      }
+    }
+    ost << "Number of record accessed multiple times:           " << n       << endl;
+    ost << "Number of values in records accessed multiple time: " << nValues << endl;
+  } // end printAccessedMultiple
+
+  /**
+   * Print the names of all of the records that were not present in the file
+   * and for which the default values were used.
+   *
+   * @return
+   */
+  void SimpleConfig::printDefaultCounts( ostream& ost, std::string const& tag) const{
+
+    ost << "\nList of names for which no record was found and for which the default value was used:\n"
+        << "From file: " << _inputfile << endl;
+
+    const std::string header("Default used: ");
+    size_t countFieldWidth(6);
+    size_t headerWidth(countFieldWidth+header.size()+tag.size()+7);
+
+    ost << setw(headerWidth) << "Count  Name" << endl;
+
+    for ( DefaultCounter_type::const_iterator i=_defaultCounter.begin(), e=_defaultCounter.end();
+          i != e; ++i ){
+      ost << header
+          << tag
+          << setw(countFieldWidth) << i->second << "  "
+          << i->first
+          << endl;
+    }
+  }
+
+  /**
+   * Print all of the summaries; this produces redundant information.
+   *
+   * @return
+   */
+  void SimpleConfig::printAllSummaries( std::ostream& ost, int verbosity, std::string const& tag) const{
+    if ( verbosity <= 0 ) return;
+
+    printStatisticsByType(ost, tag);
+
+    if ( verbosity >= 2 ){
+      printAccessCounts ( ost, tag );
+    }
+
+    if ( verbosity >= 3 ){
+      printNeverAccessed    ( ost, tag );
+      printAccessedMultiple ( ost, tag );
+      printDefaultCounts    ( ost, tag );
+    }
+
+  }
 
 
 } // end namespace mu2e

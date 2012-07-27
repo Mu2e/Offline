@@ -3,9 +3,9 @@
 //
 // Main class in a primitive runtime parameter utility.
 //
-// $Id: SimpleConfig.hh,v 1.1 2012/07/15 22:00:35 kutschke Exp $
+// $Id: SimpleConfig.hh,v 1.2 2012/07/27 19:39:39 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:00:35 $
+// $Date: 2012/07/27 19:39:39 $
 //
 // Contact person Rob Kutschke
 //
@@ -19,6 +19,9 @@
 //    a comment.  It will then fail to parse: the closing " and ; are missing.
 //     string name = "//This is not a comment";
 // 2) Does not escape new lines within a string properly.
+// 3) The system is designed to read an input file and thereafter become forever const.
+//    The internal pointers can become invalidated if someone adds a method to
+//    add new parameters.
 //
 
 // C++ includes
@@ -46,18 +49,33 @@ namespace mu2e {
   public:
 
     /**
-     * Constructor.  Takes the name of an input file as an argument.
+     * Constructor taking the control parameters as arguments.
+     *
+     * filename             - The name of the input file.  It is given as a path relative one of the
+     *                        roots found in MU2E_SEARCH_PATH.
+     *
+     * allowReplacement     - If true, a later instance of a parameter overrides the
+     *                        all previous instances ( a last one wins policy ).
+     *                      - If false, it is an error for a parameter to be repeated
+     *                        and the code will throw an exception.
+     *
+     * messageOnReplacement - Print a message when a parameter is replaced with an
+     *                        later instance.
+     *
+     * messageOnDefault     - Print a message when a parameter is not found in the file
+     *                        and takes on a default value.
      *
      */
     SimpleConfig( const std::string& filename = "runtime.conf",
-                  bool allowReplacement=true,
-                  bool messageOnReplacement=true);
+                  bool allowReplacement       = true,
+                  bool messageOnReplacement   = false,
+                  bool messageOnDefault       = false );
 
     ~SimpleConfig(){}
 
   private:
-    // This class is not copyable.  These methods are not implemented.
-    // Need to deal with the pointers to make it copyable.
+
+    // This class is not copyable.  These methods are private and unimplemented.  See note 3.
     SimpleConfig( const SimpleConfig& );
     SimpleConfig& operator=(const SimpleConfig&);
 
@@ -208,6 +226,7 @@ namespace mu2e {
 
     /**
      * Get a specified parameter as a CLHEP::Hep3Vector.
+     * It is specified in the input files as vector<double> of length 3.
      *
      * @return the value of the parameter as CLHEP::Hep3Vector.
      */
@@ -215,6 +234,7 @@ namespace mu2e {
 
     /**
      * Get a specified parameter as a CLHEP::Hep3Vector.
+     * It is specified in the input files as vector<double> of length 3.
      *
      * @return the value of the parameter as a CLHEP::Hep3Vector.
      */
@@ -235,7 +255,7 @@ namespace mu2e {
      *
      * @return
      */
-    void print( std::ostream& ost) const;
+    void print( std::ostream& ost, std::string tag = "") const;
 
     /**
      * Print the config information to std::cout.
@@ -261,8 +281,7 @@ namespace mu2e {
      *
      * @return
      */
-    void printStatistics ( std::ostream& ost );
-
+    void printStatisticsByType ( std::ostream& ost, std::string tag="" ) const;
 
     /**
      * Return the name of the input file.
@@ -271,26 +290,68 @@ namespace mu2e {
      */
     std::string inputFile() const;
 
+    /**
+     * Print access counts for each record.
+     *
+     * @return
+     */
+    void printAccessCounts( std::ostream& ost, std::string const& tag) const;
+
+    /**
+     * Print the names of all of the records that have not yet been accessed.
+     *
+     * @return
+     */
+    void printNeverAccessed( std::ostream& out, std::string const& tag = "" ) const;
+
+    /**
+     * Print the names of all of the records that have been accessed more than once.
+     *
+     * @return
+     */
+    void printAccessedMultiple( std::ostream& ost, std::string const& tag) const;
+
+    /**
+     * Print the names of all of the records that were not present in the file
+     * and for which the default values were used.
+     *
+     * @return
+     */
+    void printDefaultCounts( std::ostream& ost, std::string const& tag) const;
+
+    /**
+     * Print all of the summaries; this produces redundant information.
+     *
+     * @return
+     */
+    void printAllSummaries( std::ostream& ost, int verbosity, std::string const& tag) const;
+
     // Private instance data.
 
   private:
 
+    // A type used for some internal record keeping.
+    typedef std::map<std::string, int> DefaultCounter_type;
+
     // Name of the input file.
     std::string _inputfile;
 
-    // If a parameter is repeated one two things can happen:
+    // If a parameter is repeated in the input file, one two things can happen:
     // true  - the latest value over writes the previous value.
-    // false - it is an error so throw.
+    // false - it is defined to be an error so throw.
     bool _allowReplacement;
 
     // If true, give a message when a parameter is replaced.
     bool _messageOnReplacement;
 
+    // If true, give a message when an accessor returns a default value.
+    bool _messageOnDefault;
+
     typedef boost::shared_ptr<SimpleConfigRecord> Record_sptr;
     typedef std::map<std::string, Record_sptr > Rmap_type;
 
     // Access to the input data, keyed by parameter name.
-    // Records are owned by the variable image so rmap does not need to
+    // Records are owned by the member datum image so rmap does not need to
     // worry about deleting records.
     Rmap_type _rmap;
 
@@ -299,6 +360,11 @@ namespace mu2e {
     // into a single line in this file.
     typedef std::vector<Record_sptr> Image_type;
     Image_type _image;
+
+    // Record the names of records that were not found in the file and
+    // for which the default value was returned, count the number of times
+    // each was requested.
+    mutable DefaultCounter_type _defaultCounter;
 
     // Private methods.
 
@@ -367,7 +433,7 @@ namespace mu2e {
 
   };  // end class SimpleConfig
 
-  // Function to allow printing using the shift-in operator.
+  // Function to allow printing using operator<<.
   inline std::ostream& operator<<(std::ostream& ost, const SimpleConfig& c){
     c.print(ost);
     return ost;

@@ -4,9 +4,9 @@
 // A class to hold one record within the primitive
 // SimpleConfig utility.
 //
-// $Id: SimpleConfigRecord.hh,v 1.1 2012/07/15 22:00:36 kutschke Exp $
+// $Id: SimpleConfigRecord.hh,v 1.2 2012/07/27 19:39:39 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:00:36 $
+// $Date: 2012/07/27 19:39:39 $
 //
 // Contact person Rob Kutschke
 //
@@ -93,9 +93,11 @@ class SimpleConfigRecord {
 
   /**
    * Return the value as string.  This will work for any data type.
+   * This method is used inside the toString method and should not count when
+   * called from there.
    * @return The value as a string.
    */
-  std::string getString() const;
+  std::string getString( bool count=true) const;
 
   /**
    * Return the value as an int.  Only works for recrods that are of type int.
@@ -120,11 +122,13 @@ class SimpleConfigRecord {
 
   /**
    * Return the value as a vector of strings.  Works for all record types.
+   * This method is used inside the toString method and should not count when
+   * called from there.
    *
    * @return The value of a the record.
    */
   // Can return any type of vector as a vector of strings.
-  void getVectorString( std::vector<std::string>& v) const;
+  void getVectorString( std::vector<std::string>& v, bool count=true) const;
 
   /**
    * Return the value as a std::vector<int>.
@@ -160,6 +164,15 @@ class SimpleConfigRecord {
    */
   void print( std::ostream& ) const;
 
+  /**
+   *
+   * Number of times this record has been accessed.
+   *
+   * @return the number of times this record has been accessed.
+   */
+  int accessCount() const { return _accessCount; }
+  void clearAccessCount() { _accessCount = 0; }
+
   bool isSuperceded() const { return _superceded; }
 
   void setSuperceded() {
@@ -194,6 +207,7 @@ private:
   std::vector<std::string> Values;
 
   // State data.
+  mutable int _accessCount;
   bool _isCommentOrBlank;
   bool _isVector;
   bool _superceded;
