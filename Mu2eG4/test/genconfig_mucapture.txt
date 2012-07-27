@@ -1,17 +1,11 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_mucapture.txt,v 1.2 2012/04/19 22:15:13 genser Exp $
-// $Author: genser $
-// $Date: 2012/04/19 22:15:13 $
+// $Id: genconfig_mucapture.txt,v 1.3 2012/07/27 19:45:48 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/27 19:45:48 $
 //
 // Original author KLG somewhat based on conversionGun
-
-// Print a copy of this file to the job log.
-bool printConfig = false;
-
-//  Print statistics about this file to the job log.
-bool printConfigStats = false;
 
 // Which generators to enable.
 bool stoppedMuonGun.do    = true;

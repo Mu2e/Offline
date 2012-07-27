@@ -1,16 +1,10 @@
 //
 // Input file for the prototype conditions system.
 //
-// $Id: conditions_01.txt,v 1.9 2012/06/14 22:13:58 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/06/14 22:13:58 $
+// $Id: conditions_01.txt,v 1.10 2012/07/27 19:45:48 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/27 19:45:48 $
 //
-
-// Print a copy of this file to the job log.
-bool printConfig = false;
-
-//  Print statistics about this file to the job log.
-bool printConfigStats = false;
 
 // Times in ns
 double DAQParams.t0 = 700.;
