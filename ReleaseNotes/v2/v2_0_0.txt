@@ -1,12 +1,12 @@
-  $Id: v2_0_0.txt,v 1.32 2012/07/30 20:36:57 genser Exp $
-  $Author: genser $
-  $Date: 2012/07/30 20:36:57 $
+  $Id: v2_0_0.txt,v 1.33 2012/07/30 20:56:10 brownd Exp $
+  $Author: brownd $
+  $Date: 2012/07/30 20:56:10 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_0
 
-26) July 30, 2012 genser
+31) July 30, 2012 genser
 
     Renamed G4MuonMinusCapture to G4MuonMinusCapturePhysics
 
@@ -17,13 +17,13 @@
       mucapture/src/G4MuonMinusCapturePhysics.cc
 
 
-25) July 30, 2012 gandr
+30) July 30, 2012 gandr
 
     EventGenerators: New parameter extMonFNALGun.reference allows to
     select between starting simulation at the filter entrance or the
     detector.
 
-24) July 27, brownd
+29) July 27, brownd
     Add particle and direction-specific tags to tracks found by TrkPatRec.
     Create standardProducer configurations for finding common configurations
     (downstream e-, upstream e+, ...) so those can be invoked by name in a user
