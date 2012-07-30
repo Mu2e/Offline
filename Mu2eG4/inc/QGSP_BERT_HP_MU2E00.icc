@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: QGSP_BERT_HP_MU2E00.icc,v 1.3 2012/07/15 22:06:17 kutschke Exp $
+// $Id: QGSP_BERT_HP_MU2E00.icc,v 1.4 2012/07/30 19:38:50 genser Exp $
 // GEANT4 tag $Name:  $
 //
 //---------------------------------------------------------------------------
@@ -68,7 +68,7 @@
 #include "HadronPhysicsQGSP_BERT_HP.hh"
 
 // FIXME once migrated to G4
-#include "mucapture/inc/G4MuonMinusCapture.hh"
+#include "mucapture/inc/G4MuonMinusCapturePhysics.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 template<class T> TQGSP_BERT_HP_MU2E00<T>::TQGSP_BERT_HP_MU2E00(mu2e::SimpleConfig const & config, 
@@ -103,7 +103,7 @@ template<class T> TQGSP_BERT_HP_MU2E00<T>::TQGSP_BERT_HP_MU2E00(mu2e::SimpleConf
 
   // use the new  muon stopping FIXME (this should go inside G4QStoppingPhysics)
   if ( config.getBool( "g4.useNewMuMinusAtomicCapture", false) ) {
-    this->RegisterPhysics( new G4MuonMinusCapture(ver));
+    this->RegisterPhysics( new G4MuonMinusCapturePhysics(ver));
   }
 
   // Ion Physics
