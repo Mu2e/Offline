@@ -24,9 +24,13 @@ int    extMonFNALGun.pdgId = -13; // -13 is mu+, 2212 is p+, 102 is charged gean
 //----------------------------------------------------------------
 // A "road" of tracks
 
+string  extMonFNALGun.reference = "filter";
 vector<double> extMonFNALGun.offset = {0., 0., 0.};
 vector<double> extMonFNALGun.halfSize = {25., 25., 0.};
 double extMonFNALGun.multiplicity = -400;
+
+//det: string  extMonFNALGun.reference = "detector";
+//det: vector<double> extMonFNALGun.offset = {0., 0., +350.};
 
 // //----------------------------------------------------------------
 // // This is to launch stuff starting in the magnet:

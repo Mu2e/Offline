@@ -2,12 +2,13 @@
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 
-// Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "cetlib/exception.h"
 
 #include <cmath>
 #include <algorithm>
@@ -36,9 +37,23 @@ namespace mu2e {
 
             config.getBool("extMonFNALGun.verbose",false)
             )
-    , m_rotation(GeomHandle<ExtMonFNALBuilding>()->collimator1RotationInMu2e())
-    , m_translation(GeomHandle<ExtMonFNALBuilding>()->filterEntranceInMu2e())
-  {}
+  {
+    const std::string ref = config.getString("extMonFNALGun.reference");
+    if(ref == "filter") {
+      m_rotation = GeomHandle<ExtMonFNALBuilding>()->collimator1RotationInMu2e();
+      m_translation = GeomHandle<ExtMonFNALBuilding>()->filterEntranceInMu2e();
+    }
+    else if(ref == "detector") {
+      m_rotation = GeomHandle<ExtMonFNAL::ExtMon>()->detectorRotationInMu2e();
+      m_translation = GeomHandle<ExtMonFNAL::ExtMon>()->detectorCenterInMu2e();
+    }
+    else {
+      throw cet::exception("BADCONFIG")
+        << "Unknown value extMonFNALGun.reference == \""<<ref<<"\""
+        << ".  Allowed values: filter, detector."
+        << "\n";
+    }
+  }
 
   void ExtMonFNALGun::generate( GenParticleCollection& outParts) {
     GenParticleCollection localParts;

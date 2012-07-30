@@ -38,6 +38,7 @@ double extMonFNALGun.pmax = 4000; // MeV
 double extMonFNALGun.coneAngle = 0.; //0.050; // rad
 int    extMonFNALGun.pdgId = -13; // -13 is mu+, 2212 is p+, 102 is charged geantino
 
+string  extMonFNALGun.reference = "filter";
 vector<double> extMonFNALGun.offset = {0., -25., 0.};
 
 // //----------------------------------------------------------------
