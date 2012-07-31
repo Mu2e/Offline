@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.31 2012/07/26 00:25:38 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.32 2012/07/31 23:28:56 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/26 00:25:38 $
+// $Date: 2012/07/31 23:28:56 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -52,6 +52,10 @@
 #include "TTree.h"
 #include "TSpectrum.h"
 #include "TSpectrum2.h"
+// boost
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/median.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
 // C++
 #include <iostream>
 #include <fstream>
@@ -90,10 +94,11 @@ class TrkPatRec : public art::EDProducer
     bool _filterdeltas;
     double _max2ddt,_maxdp;
     unsigned _maxndelta, _npbins, _ntbins;
+    int _nselbins;
     double _2dthresh, _2dsigma;
     double _fbf,_mindp;
     double _maxzgap,_maxnsmiss;
-    double _mindrho, _maxdrho;
+    double _minrho, _maxrho;
     // time spectrum parameters
     unsigned _maxnpeak;
     unsigned _minnhits;
@@ -214,19 +219,20 @@ class TrkPatRec : public art::EDProducer
     _maxdt(pset.get<double>("DtMax",35.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
     _filterdeltas(pset.get<bool>("FilterDeltas",true)),
-    _max2ddt(pset.get<double>("Dt2DMax",40.0)),
+    _max2ddt(pset.get<double>("Dt2DMax",50.0)),
     _maxdp(pset.get<double>("DPhiMax",0.25)),
     _maxndelta(pset.get<unsigned>("MaxNDeltas",200)),
-    _npbins(pset.get<unsigned>("NPhiBins",50)),
-    _ntbins(pset.get<unsigned>("NTimeBins",50)),
+    _npbins(pset.get<unsigned>("NPhiBins",100)),
+    _ntbins(pset.get<unsigned>("NTimeBins",100)),
+    _nselbins(pset.get<int>("NSelBins",3)),
     _2dthresh(pset.get<double>("TwoDPeakThreshold",3)),
     _2dsigma(pset.get<double>("TwoDPeakSigma",1.0)),
     _fbf(pset.get<double>("PhiEdgeBuffer",1.1)),
     _mindp(pset.get<double>("Min2dPeak",8)),
     _maxzgap(pset.get<double>("MaxZGap",0.0)),
     _maxnsmiss(pset.get<double>("MaxNMiss",4)),
-    _mindrho(pset.get<double>("MinDrho",410.0)),
-    _maxdrho(pset.get<double>("MaxDrho",660.0)),
+    _minrho(pset.get<double>("MinRho",410.0)),
+    _maxrho(pset.get<double>("MaxRho",660.0)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",0)),
     _tmin(pset.get<double>("tmin",400.0)),
@@ -300,8 +306,8 @@ class TrkPatRec : public art::EDProducer
 // find the time peaks in the time spectrum of selected hits
     findTimePeaks();
 // fill diagnostics if requested
-    if(_diag > 1)fillTimeDiag();
-    if(_diag > 0)fillStrawDiag();
+    if(_diag > 2)fillTimeDiag();
+    if(_diag > 1)fillStrawDiag();
 // dummy objects
     static TrkHelix dummyhfit;
     static TrkKalFit dummykfit;
@@ -489,18 +495,18 @@ class TrkPatRec : public art::EDProducer
     unsigned np = tspec2.GetNPeaks();
     Float_t *xpeaks = tspec2.GetPositionX();
     Float_t *ypeaks = tspec2.GetPositionY();
-// Loop over peaks, looking only at those with a minimum peak value.  Integrate a 3X3 array around the peak bin
+// Loop over peaks, looking only at those with a minimum peak value.  Integrate an array around the peak
+// to select the hits
     for (unsigned ip=0; ip<np; ip++) {
       Float_t xp = xpeaks[ip];
       Float_t yp = ypeaks[ip];
       Int_t ixbin =  tpsp.GetXaxis()->FindFixBin(xp);
       Int_t iybin = tpsp.GetYaxis()->FindFixBin(yp);
-      Int_t ixmin = max(ixbin-1,1);
-      Int_t ixmax = min(ixbin+1,(int)_ntbins);
-      Int_t iymin = max(iybin-1,1);
-      Int_t iymax = min(iybin+1,(int)_npbins);
+      Int_t ixmin = max(ixbin-_nselbins,(int)1);
+      Int_t ixmax = min(ixbin+_nselbins,(int)_ntbins);
+      Int_t iymin = max(iybin-_nselbins,(int)1);
+      Int_t iymax = min(iybin+_nselbins,(int)_npbins);
       Double_t npeak = tpsp.Integral(ixmin,ixmax,iymin,iymax);
-//      Double_t nmax = tpsp.GetBinContent(ixbin,iybin);
       if(npeak >= _mindp){
 // find all the hits near this peak
 	TrkTimePeak tpeak(xp,yp);
@@ -591,17 +597,17 @@ class TrkPatRec : public art::EDProducer
 	    _mindphi = -1.0;
 	  }
 // decide if these hits are deltas: if so, flag them.  This algorithm should be a neural net, FIXME!!!!
-	  bool isdelta = zgap < _maxzgap || nsmiss <= _maxnsmiss || rho > _maxdrho || rho < _mindrho;
-	  if(isdelta){
+	  bool pdelta = zgap < _maxzgap || nsmiss <= _maxnsmiss || rho > _maxrho || rho < _minrho;
+	  if(pdelta){
 	    for(std::vector<hitIndex>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
 // add selection code on individual hits:  FIXME!!!
 	      _tflags[ip->_index].setDelta();
 	    }
 	  }
 // diagnostics
-	  if(_diag > 0){
+	  if(_diag > 1){
 	    _ip = ip;
-	    _isdelta = isdelta;
+	    _isdelta = pdelta;
 	    _nsh = tpeak._trkptrs.size();
 	    _ndpeak = npeak;
 	    _ndmax = tpsp.GetBinContent(ixbin,iybin);
@@ -1225,21 +1231,19 @@ class TrkPatRec : public art::EDProducer
 
   double
   TrkPatRec::findMedian(std::vector<double> const& vector) {
-  // must copy in case input order has significance
-    std::vector<double> copy(vector);
-    std::sort(copy.begin(),copy.end());
-    std::div_t quot = div(copy.size(), 2);
-    double mval(0.0);
-    if(quot.rem == 1){
-      mval = copy[quot.quot];
-    } else {
-// interpolate
-      mval = 0.5*(copy[quot.quot-1] + copy[quot.quot]);
-    }
-    return mval;
+    using namespace boost::accumulators;
+    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acc;
+//    accumulator_set<double, stats<tag::median(with_p_square_cumulative_distribution) > >
+//    acc_cdist( p_square_cumulative_distribution_num_cells = 100 );
+    acc = std::for_each( vector.begin(), vector.end(), acc );
+//    acc_cdist = std::for_each( vector.begin(), vector.end(), acc_cdist );
+    double bmed = extract_result<tag::median>(acc);
+//    double bmed_cdist = extract_result<tag::median>(acc_cdist);
+
+//    std::cout << "my median " << mval << " boost psq med " << bmed << " boost cdist med " << bmed_cdist << endl;
+
+    return bmed;
   }
-
-
 }
 
 using mu2e::TrkPatRec;
