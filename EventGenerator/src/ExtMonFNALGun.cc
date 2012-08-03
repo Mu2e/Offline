@@ -21,8 +21,8 @@ namespace mu2e {
             config.getDouble("extMonFNALGun.multiplicity",-1.),
             static_cast<PDGCode::type>(config.getInt("extMonFNALGun.pdgId")),
 
-            config.getDouble("extMonFNALGun.pmin", GeomHandle<ExtMonFNALBuilding>()->extMonFNAL_nominalMomentum()),
-            config.getDouble("extMonFNALGun.pmax", GeomHandle<ExtMonFNALBuilding>()->extMonFNAL_nominalMomentum()),
+            config.getDouble("extMonFNALGun.pmin", GeomHandle<ExtMonFNALBuilding>()->filterMagnet().nominalMomentum()),
+            config.getDouble("extMonFNALGun.pmax", GeomHandle<ExtMonFNALBuilding>()->filterMagnet().nominalMomentum()),
 
             RandomUnitSphereParams(-1., -cos(config.getDouble("extMonFNALGun.coneAngle")),
                                    0., 2*M_PI),

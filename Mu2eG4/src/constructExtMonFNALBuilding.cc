@@ -261,11 +261,12 @@ namespace mu2e {
   }
 
   //================================================================
-  void constructFilterMagnet(const ExtMonFNALBuilding& emfb,
-                             const VolumeInfo& parent,
-                             const CLHEP::HepRotation& parentRotationInMu2e,
-                             const SimpleConfig& config
-                             )
+  void constructExtMonFNALMagnet(const ExtMonFNALMagnet& mag,
+                                 const VolumeInfo& parent,
+                                 const std::string& volNameSuffix,
+                                 const CLHEP::HepRotation& parentRotationInMu2e,
+                                 const SimpleConfig& config
+                                 )
   {
     MaterialFinder materialFinder(config);
 
@@ -279,51 +280,50 @@ namespace mu2e {
     // finishNesting() uses the backwards interpretation of rotations
     CLHEP::HepRotation *magnetRotationInParentInv =
       // (parentRotationInMu2e.inverse()*magnetRotationInMu2e).inverse()
-      reg.add(emfb.filterMagnet().magnetRotationInMu2e().inverse()*parentRotationInMu2e);
+      reg.add(mag.magnetRotationInMu2e().inverse()*parentRotationInMu2e);
 
     const CLHEP::Hep3Vector nx(1, 0, 0);
     const CLHEP::Hep3Vector ny(0, 1, 0);
     const CLHEP::Hep3Vector nz(0, 0, 1);
-    std::cout<<"AG: DEGUB: magnetRotationInParent.inv * Nx = \n"
-             <<*magnetRotationInParentInv*nx<<"\n"
-             <<*magnetRotationInParentInv*ny<<"\n"
-             <<*magnetRotationInParentInv*nz<<"\n"
-             <<std::endl;
+    AGDEBUG("magnetRotationInParent.inv * Nx = \n"
+            <<*magnetRotationInParentInv*nx<<"\n"
+            <<*magnetRotationInParentInv*ny<<"\n"
+            <<*magnetRotationInParentInv*nz<<"\n"
+            );
 
-
-    AGDEBUG("emfb.filterMagnet().refPointInMu2e() = "<<emfb.filterMagnet().refPointInMu2e());
-    AGDEBUG("emfb.filterMagnet().geometricCenterInMu2e() = "<<emfb.filterMagnet().geometricCenterInMu2e());
+    AGDEBUG("mag.refPointInMu2e() = "<<mag.refPointInMu2e());
+    AGDEBUG("mag.geometricCenterInMu2e() = "<<mag.geometricCenterInMu2e());
     AGDEBUG("magnet parent.centerInMu2e() = "<<parent.centerInMu2e()<<", in world = "<<parent.centerInWorld<<", in parent = "<<parent.centerInParent);
-    AGDEBUG("magnet center in parent = "<<parentRotationInMu2e.inverse()*(emfb.filterMagnet().geometricCenterInMu2e() - parent.centerInMu2e()));
+    AGDEBUG("magnet center in parent = "<<parentRotationInMu2e.inverse()*(mag.geometricCenterInMu2e() - parent.centerInMu2e()));
 
-    const VolumeInfo magnetIron = nestBox("ExtMonFNALFilterMagnetIron",
-                                          emfb.filterMagnet().outerHalfSize(),
-                                          materialFinder.get("extMonFNAL.filter.magnet.material"),
+    const VolumeInfo magnetIron = nestBox("ExtMonFNAL"+volNameSuffix+"MagnetIron",
+                                          mag.outerHalfSize(),
+                                          materialFinder.get("extMonFNAL."+volNameSuffix+".magnet.material"),
                                           magnetRotationInParentInv,
-                                          parentRotationInMu2e.inverse()*(emfb.filterMagnet().geometricCenterInMu2e() - parent.centerInMu2e()),
+                                          parentRotationInMu2e.inverse()*(mag.geometricCenterInMu2e() - parent.centerInMu2e()),
                                           parent, 0,
-                                          config.getBool("extMonFNAL.filter.magnet.iron.visible"),
+                                          config.getBool("extMonFNAL."+volNameSuffix+".magnet.iron.visible"),
                                           G4Colour::Magenta(),
-                                          config.getBool("extMonFNAL.filter.magnet.iron.solid"),
+                                          config.getBool("extMonFNAL."+volNameSuffix+".magnet.iron.solid"),
                                           forceAuxEdgeVisible,
                                           placePV,
                                           doSurfaceCheck
                                           );
 
     std::vector<double> apertureHalfSize(3);
-    apertureHalfSize[0] = 0.5*emfb.filterMagnet().apertureWidth();
-    apertureHalfSize[1] = 0.5*emfb.filterMagnet().apertureHeight();
-    apertureHalfSize[2] = emfb.filterMagnet().outerHalfSize()[2];
+    apertureHalfSize[0] = 0.5*mag.apertureWidth();
+    apertureHalfSize[1] = 0.5*mag.apertureHeight();
+    apertureHalfSize[2] = mag.outerHalfSize()[2];
 
-    VolumeInfo magnetAperture = nestBox("ExtMonFNALFilterMagnetAperture",
+    VolumeInfo magnetAperture = nestBox("ExtMonFNAL"+volNameSuffix+"MagnetAperture",
                                         apertureHalfSize,
                                         materialFinder.get("hall.insideMaterialName"),
                                         0,
                                         CLHEP::Hep3Vector(0, 0, 0),
                                         magnetIron.logical, 0,
-                                        config.getBool("extMonFNAL.filter.magnet.aperture.visible"),
+                                        config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.visible"),
                                         G4Colour::Grey(),
-                                        config.getBool("extMonFNAL.filter.magnet.aperture.solid"),
+                                        config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.solid"),
                                         forceAuxEdgeVisible,
                                         placePV,
                                         doSurfaceCheck
@@ -333,20 +333,20 @@ namespace mu2e {
     //----------------------------------------------------------------
     // Define the field in the magnet
 
-    std::cout<<"AG: ExtMonFNAL filter magnet field = "<<emfb.filterMagnet().bfield()<<std::endl;
+    AGDEBUG("ExtMonFNAL "+volNameSuffix+" magnet field = "<<mag.bfield());
 
-    G4MagneticField *field = reg.add(new G4UniformMagField(emfb.filterMagnet().bfield()));
+    G4MagneticField *field = reg.add(new G4UniformMagField(mag.bfield()));
 
     G4Mag_UsualEqRhs *rhs  = reg.add(new G4Mag_UsualEqRhs(field));
 
     G4MagIntegratorStepper *integrator = reg.add(new G4ExactHelixStepper(rhs));
     //G4MagIntegratorStepper *integrator = reg.add(new G4NystromRK4(rhs));
 
-    const double stepMinimum = config.getDouble("extMonFNAL.filter.magnet.stepMinimum", 1.0e-2 * CLHEP::mm /*The default from G4ChordFinder.hh*/);
+    const double stepMinimum = config.getDouble("extMonFNAL."+volNameSuffix+".magnet.stepMinimum", 1.0e-2 * CLHEP::mm /*The default from G4ChordFinder.hh*/);
     G4ChordFinder          *chordFinder = reg.add(new G4ChordFinder(field, stepMinimum, integrator));
 
     const double deltaOld = chordFinder->GetDeltaChord();
-    chordFinder->SetDeltaChord(config.getDouble("extMonFNAL.filter.magnet.deltaChord", deltaOld));
+    chordFinder->SetDeltaChord(config.getDouble("extMonFNAL."+volNameSuffix+".magnet.deltaChord", deltaOld));
     AGDEBUG("chordFinder: using deltaChord = "<<chordFinder->GetDeltaChord()<<" (default = "<<deltaOld<<")");
 
     G4FieldManager *manager = reg.add(new G4FieldManager(field, chordFinder));
@@ -356,9 +356,9 @@ namespace mu2e {
             <<", deltaOneStep = "<<manager->GetDeltaOneStep()
             );
 
-    manager->SetMinimumEpsilonStep(config.getDouble("extMonFNAL.filter.magnet.minEpsilonStep", manager->GetMinimumEpsilonStep()));
-    manager->SetMaximumEpsilonStep(config.getDouble("extMonFNAL.filter.magnet.maxEpsilonStep", manager->GetMaximumEpsilonStep()));
-    manager->SetDeltaOneStep(config.getDouble("extMonFNAL.filter.magnet.deltaOneStep", manager->GetDeltaOneStep()));
+    manager->SetMinimumEpsilonStep(config.getDouble("extMonFNAL."+volNameSuffix+".magnet.minEpsilonStep", manager->GetMinimumEpsilonStep()));
+    manager->SetMaximumEpsilonStep(config.getDouble("extMonFNAL."+volNameSuffix+".magnet.maxEpsilonStep", manager->GetMaximumEpsilonStep()));
+    manager->SetDeltaOneStep(config.getDouble("extMonFNAL."+volNameSuffix+".magnet.deltaOneStep", manager->GetDeltaOneStep()));
 
     AGDEBUG("new:  manager epsMin = "<<manager->GetMinimumEpsilonStep()
             <<", epsMax = "<<manager->GetMaximumEpsilonStep()
@@ -564,7 +564,8 @@ namespace mu2e {
                                   dump->frontShieldingHalfSize()[1],
                                   config);
 
-    constructFilterMagnet(*emfb, roomAir, emfb->roomRotationInMu2e(), config);
+    //constructFilterMagnet(*emfb, roomAir, emfb->roomRotationInMu2e(), config);
+    constructExtMonFNALMagnet(emfb->filterMagnet(), roomAir, "filter", emfb->roomRotationInMu2e(), config);
 
     constructCollimatorExtMonFNAL(emfb->collimator2(),
                                   coll2Shielding,

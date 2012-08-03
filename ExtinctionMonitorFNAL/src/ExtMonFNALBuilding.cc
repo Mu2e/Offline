@@ -10,7 +10,6 @@ namespace mu2e {
     , _filterEntranceOffsetY(0.)
     , _filterAngleH(0.)
     , _filterEntranceAngleV(0.)
-    , _extMonFNAL_nominalMomentum(0.)
     , roomInsideFullHeight_(0.)
     , roomWallThickness_(0.)
     , roomFloorThickness_(0.)

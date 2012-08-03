@@ -11,36 +11,23 @@ namespace mu2e {
   namespace ExtMonFNAL {
 
     //================================================================
-    std::vector<double> ExtMon::sensorHalfSize(unsigned iplane) const {
-      std::vector<double> res(3);
-      res[0] = sensor_halfdx()[iplane];
-      res[1] = sensor_halfdy()[iplane];
-      res[2] = sensor_halfdz()[iplane];
-      return res;
+    CLHEP::Hep3Vector ExtMon::detectorCenterInMu2e() const {
+      return up_.refPointInMu2e();
     }
 
     //================================================================
-    CLHEP::Hep3Vector ExtMon::sensorOffsetInParent(unsigned iplane) const {
-      CLHEP::Hep3Vector res(3);
-      res[0] = sensor_xoffset()[iplane];
-      res[1] = sensor_yoffset()[iplane];
-      res[2] = sensor_zoffset()[iplane];
-      return res;
+    const CLHEP::HepRotation& ExtMon::detectorRotationInMu2e() const {
+      return up_.rotationInMu2e();
     }
 
     //================================================================
     CLHEP::Hep3Vector ExtMon::mu2eToExtMon_position(const CLHEP::Hep3Vector& mu2epos) const {
-      const CLHEP::Hep3Vector rel(mu2epos - m_coordinateCenterInMu2e);
-      const CLHEP::Hep3Vector res = m_coordinateRotationInMu2e * rel;
-      AGDEBUG("POS: mu2e = "<<mu2epos<<", rel = "<<rel<<", res = "<<res);
-      return res;
+      return up_.mu2eToStack_position(mu2epos);
     }
 
     //================================================================
     CLHEP::Hep3Vector ExtMon::mu2eToExtMon_momentum(const CLHEP::Hep3Vector& mu2emom) const {
-      const CLHEP::Hep3Vector res = m_coordinateRotationInMu2e * mu2emom;
-      AGDEBUG("MOM: mu2e = "<<mu2emom<<", res = "<<res);
-      return res;
+      return up_.mu2eToStack_momentum(mu2emom);
     }
 
     //================================================================

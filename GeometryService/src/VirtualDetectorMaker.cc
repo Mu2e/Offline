@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.8 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
+// $Id: VirtualDetectorMaker.cc,v 1.9 2012/08/03 00:32:10 gandr Exp $
+// $Author: gandr $
 //
 
 #include <iostream>
@@ -335,8 +335,10 @@ namespace mu2e {
       }
 
       if(geom->hasElement<ExtMonFNAL::ExtMon>() && c.getBool("extMonFNAL.vd.enabled", false)) {
-        vd->addVirtualDetector(VirtualDetectorId::EMFDetectorEntrance, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
-        vd->addVirtualDetector(VirtualDetectorId::EMFDetectorExit, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+        vd->addVirtualDetector(VirtualDetectorId::EMFDetectorUpEntrance, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+        vd->addVirtualDetector(VirtualDetectorId::EMFDetectorUpExit, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+        vd->addVirtualDetector(VirtualDetectorId::EMFDetectorDnEntrance, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+        vd->addVirtualDetector(VirtualDetectorId::EMFDetectorDnExit, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
       }
 
       // VD Coll5_OutSurf is at the outer surfaceof the collimator

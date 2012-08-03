@@ -48,10 +48,13 @@
 #/vis/viewer/panTo 25 2 m
 #/vis/viewer/zoomTo 200
 
-# Whole magnet
-/vis/viewer/panTo 23.45 1.75 m
-/vis/viewer/zoomTo 40
+## Whole magnet
+#/vis/viewer/panTo 23.45 1.75 m
+#/vis/viewer/zoomTo 40
 
+# Detector
+/vis/viewer/panTo 28.5 2.5 m
+/vis/viewer/zoomTo 20
 
 # # ExtMonFNAL detector and collimator2
 # /vis/viewer/set/viewpointThetaPhi 103.78 0

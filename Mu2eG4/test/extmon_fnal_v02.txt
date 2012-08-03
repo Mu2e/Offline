@@ -110,7 +110,7 @@ double extMonFNAL.filter.magnet.refDistanceToUpstreamWall = 2100;
 // collimator1 channel (at exit) parallel to the collimator1 axis,
 // will enter the magnet aperture at the bottom and exit at at the
 // bottom after being deflected by the magnetic field.
-double extMonFNAL.nominalMomentum = 3000.; // MeV/c
+double extMonFNAL.filter.nominalMomentum = 3000.; // MeV/c
 // double extMonFNAL.maxG4StepLength = 10.; // mm
 
 //----------------------------------------------------------------
@@ -137,33 +137,91 @@ bool extMonFNAL.collimator2.channel.visible = true;
 bool extMonFNAL.collimator2.channel.solid = false;
 
 //================================================================
-// Detector location in room: the center is on the continuation of
-// collimator2 center line.  Need to specify just one additional parameter.
+// The upstream stack of the sensors.
+//
+// Location in room: the center is on the continuation of
+// collimator2 center line, the axis is parallel to the line.
+//  Need to specify just one additional parameter.
 // We use the distance along the collimator2 axis between the
 // wall (inside the room surface) and reference point of the detector.
+
 double extMonFNAL.detectorDistanceToWall = 450;
+
+// The distance between extMonFNAL.up and
+// extMonFNAL.spectrometer.magnet reference points
+// defines position of the magnet.
+double extMonFNAL.up.distanceToMagnet = 300;
 
 // Details of the detector.  All of these vectors should be
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
 
-vector<double> extMonFNAL.sensor_zoffset = {-300., -290., -5., +5., +290., +300.};
-vector<double> extMonFNAL.sensor_xoffset = {0., 0., 0., 0., 0., 0.};
-vector<double> extMonFNAL.sensor_yoffset = {0., 0., 0., 0., 0., 0. };
+vector<double> extMonFNAL.up.sensor_zoffset = { 0., +290., +300.};
+vector<double> extMonFNAL.up.sensor_xoffset = { 0.,    0.,    0.};
+vector<double> extMonFNAL.up.sensor_yoffset = { 0.,    0.,    0.};
+vector<double> extMonFNAL.up.sensor_halfdx =  {20.,   20.,   20.};
+vector<double> extMonFNAL.up.sensor_halfdy =  {20.,   20.,   20.};
+vector<double> extMonFNAL.up.sensor_halfdz =  {0.2,   0.2,   0.2};
+vector<double> extMonFNAL.up.readout_halfdz = {0.1,   0.1,   0.1};
 
-vector<double> extMonFNAL.sensor_halfdx =  { 20., 20., 20., 20., 20., 20.};
-vector<double> extMonFNAL.sensor_halfdy =  { 20., 20., 20., 20., 20., 20.};
-vector<double> extMonFNAL.sensor_halfdz =  { 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
-vector<double> extMonFNAL.readout_halfdz = { 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+//----------------------------------------------------------------
+// The spectrometer magnet.
+// The ferrite bricks are 4 inches long, separated by 1 inch spacer.
+// Half length of a 4-brick magnet = (4*(4*25.4) + 3*25.4)/2
+vector<double> extMonFNAL.spectrometer.magnet.outerHalfSize = {95., 150., 241.3 }; // mm
+double extMonFNAL.spectrometer.magnet.apertureWidth  =  50.; // mm
+double extMonFNAL.spectrometer.magnet.apertureHeight = 100.; // mm
+string extMonFNAL.spectrometer.magnet.material  = "G4_Fe";
+double extMonFNAL.spectrometer.magnet.fieldStrength = 0.222; // Tesla
+
+bool extMonFNAL.spectrometer.magnet.iron.visible = true;
+bool extMonFNAL.spectrometer.magnet.iron.solid = false;
+bool extMonFNAL.spectrometer.magnet.aperture.visible = true;
+bool extMonFNAL.spectrometer.magnet.aperture.solid = false;
+
+// The spectrometer is tuned to the filter momentum + the adjustment.
+// Put a negative value here to account for momentum loss between
+// filter and spectometer magnets.
+
+double extMonFNAL.spectrometer.nominalMomentumAdjustment = 0; // MeV/c
+
+//================================================================
+// The downstream stack of the sensors.
+//
+// Location in room: the axis goes through the magnet reference point.
+// The angle between the up and down stack axes corresponds to the
+// bend angle in the magnet of a q=+1 particle with the spectrometer
+// nominal momentum.  The distance between magnet and extMonFNAL.dn
+// reference points is
+
+double extMonFNAL.dn.distanceToMagnet = 300;
+
+// Details of the detector.  All of these vectors should be
+// of the same size: one entry per detector plane.
+// The coordinates are relative to the detector box volume.
+
+vector<double> extMonFNAL.dn.sensor_zoffset = {-300., -290.,   0.};
+vector<double> extMonFNAL.dn.sensor_xoffset = { 0.,      0.,   0.};
+vector<double> extMonFNAL.dn.sensor_yoffset = { 0.,      0.,  0. };
+vector<double> extMonFNAL.dn.sensor_halfdx =  { 20.,    20.,  20.};
+vector<double> extMonFNAL.dn.sensor_halfdy =  { 20.,    20.,  20.};
+vector<double> extMonFNAL.dn.sensor_halfdz =  { 0.2,    0.2,  0.2};
+vector<double> extMonFNAL.dn.readout_halfdz = { 0.1,    0.1,  0.1};
 
 //----------------------------------------------------------------
 // Place test materials behind the detector for MARS activation studies.
 
-double extMonFNAL.testMaterial.distanceToDetector = 50; //mm
-double extMonFNAL.testMaterial.halfsize = 40; // mm, transverse
-double extMonFNAL.testMaterial.thickness = 2; // mm
-double extMonFNAL.testMaterial.spacing = 8; // mm, between plates
-vector<string> extMonFNAL.testMaterial.materials = { "G10", "G4_Cu", "G4_Si", "G4_Al", "Epotek301", "G4_KAPTON", "Polyethylene092", "StainlessSteel", "G4_WATER" };
+vector<string> extMonFNAL.dn.testMaterial.materials = { "G10", "G4_Cu", "G4_Si", "G4_Al", "Epotek301", "G4_KAPTON", "Polyethylene092", "StainlessSteel", "G4_WATER" };
+
+// If the above vector is not empty the following parameters are required
+double extMonFNAL.dn.testMaterial.distanceToStack = -450; //mm
+double extMonFNAL.dn.testMaterial.halfsize = 40; // mm, transverse
+double extMonFNAL.dn.testMaterial.thickness = 2; // mm
+double extMonFNAL.dn.testMaterial.spacing = 8; // mm, between plates
+
+vector<string> extMonFNAL.up.testMaterial.materials = {};
+
+// common to both up and dn stacks
 bool   extMonFNAL.testMaterial.visible = true;
 bool   extMonFNAL.testMaterial.solid = true;
 
@@ -202,10 +260,10 @@ bool           extMonFNAL.room.floor.solid     = true;
 bool extMonFNAL.collimator2.shielding.visible = true;
 bool extMonFNAL.collimator2.shielding.solid = false;
 
-bool           extMonFNAL.detectorBoxVisible   = true;
-bool           extMonFNAL.detectorBoxSolid     = false;
-bool           extMonFNAL.detectorPlaneVisible   = true;
-bool           extMonFNAL.detectorPlaneSolid     = true;
+bool           extMonFNAL.stackBoxVisible   = true;
+bool           extMonFNAL.stackBoxSolid     = false;
+bool           extMonFNAL.sensorPlaneVisible   = true;
+bool           extMonFNAL.sensorPlaneSolid     = true;
 
 int            extMonFNAL.verbosityLevel = 2;
 int            extMonFNAL.sd.verbosityLevel = 0;

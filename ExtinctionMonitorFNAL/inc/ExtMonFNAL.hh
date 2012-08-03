@@ -14,6 +14,9 @@
 
 #include "Mu2eInterfaces/inc/Detector.hh"
 
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNALSensorStack.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNALMagnet.hh"
+
 namespace mu2e {
   namespace ExtMonFNAL {
 
@@ -21,40 +24,22 @@ namespace mu2e {
 
     class ExtMon : virtual public Detector {
     public:
-      unsigned nplanes() const { return m_sensor_zoffset.size(); }
-      const std::vector<double>& sensor_zoffset() const { return m_sensor_zoffset; }
-      const std::vector<double>& sensor_xoffset() const { return m_sensor_xoffset; }
-      const std::vector<double>& sensor_yoffset() const { return m_sensor_yoffset; }
 
-      const std::vector<double>& sensor_halfdx() const { return m_sensor_halfdx; }
-      const std::vector<double>& sensor_halfdy() const { return m_sensor_halfdy; }
-      const std::vector<double>& sensor_halfdz() const { return m_sensor_halfdz; }
+      const ExtMonFNALSensorStack& up() const { return up_; }
+      const ExtMonFNALSensorStack& dn() const { return dn_; }
 
-      const std::vector<double>& readout_halfdz() const { return m_readout_halfdz; }
+      const ExtMonFNALMagnet& spectrometerMagnet() const { return spectrometerMagnet_; }
 
-      // same info as above cooked for nestBox()
-      std::vector<double> sensorHalfSize(unsigned iplane) const;
-      CLHEP::Hep3Vector sensorOffsetInParent(unsigned iplane) const;
-
-      // Location of the detector
-      CLHEP::Hep3Vector detectorCenterInMu2e() const { return m_detectorCenterInMu2e; }
-      CLHEP::HepRotation const& detectorRotationInMu2e() const { return m_detectorRotationInMu2e; }
-      // the size is computed from sensor pars above
-      const std::vector<double>& detectorHalfSize() const { return m_detectorHalfSize; }
-
-      // Test materials for MARS activation studies
-      const std::vector<double>& testMaterialHalfSize() const { return m_testMaterialHalfSize; }
-      double testMaterialDistanceToDetector() const { return m_testMaterialDistanceToDetector; }
-      double testMaterialPitch() const { return m_testMaterialPitch; }
-      const std::vector<std::string>&  testMaterialNames() const { return m_testMaterialNames; }
+      // Location of the detector == that of the upstream stack.
+      CLHEP::Hep3Vector detectorCenterInMu2e() const;
+      const CLHEP::HepRotation& detectorRotationInMu2e() const;
 
       // Coordinate conversion to/from the Mu2e frame
       // The ExtMonFNAL frame is defined in the following way:
       //
-      // - The (0,0,0) point is in at the intersection of collimator2 axis with
-      //   the surface of the ExtMonFNAL room wall.
+      // - The (0,0,0) is the reference point of the upstream sensor stack,
       //
-      // - The z_em axis is along the collimator2 channel
+      // - The z_em axis is along the upstream stack axis (perpendicular to the sensor planes)
       // - The x_em axis in in the horizontal plane
       // - The y_em axis forms a right-handed (x_em, y_em, z_em) frame
       //
@@ -70,40 +55,17 @@ namespace mu2e {
       //----------------------------------------------------------------
     private:
       friend class ExtMonMaker;
-      // Private ctr: the class should be only obtained via ExtMonFNAL::ExtMonMaker.
       ExtMon() {}
 
-      // Or read back from persistent storage
+      // For persistency
       template<class T> friend class art::Wrapper;
 
-      std::vector<double> m_detectorHalfSize;
-      CLHEP::HepRotation m_detectorRotationInMu2e;
-      CLHEP::Hep3Vector m_detectorCenterInMu2e;
-
-      // Sensor center positions
-      std::vector<double> m_sensor_zoffset;
-      std::vector<double> m_sensor_xoffset;
-      std::vector<double> m_sensor_yoffset;
-
-      // Sensor size
-      std::vector<double> m_sensor_halfdx;
-      std::vector<double> m_sensor_halfdy;
-      std::vector<double> m_sensor_halfdz;
-
-      // Readout electronics is (at the moment) created with the same (x,y) size as the sensor,
-      // as a box parallel to the sensor.  One thing that remains to be specified is:
-      std::vector<double> m_readout_halfdz;
-
-      // Test materials for MARS activation studies
-      std::vector<double> m_testMaterialHalfSize;
-      double m_testMaterialDistanceToDetector;
-      double m_testMaterialPitch;
-      std::vector<std::string> m_testMaterialNames;
-
-      // data for coordinate system transformations
-      CLHEP::Hep3Vector m_coordinateCenterInMu2e;
-      CLHEP::HepRotation m_coordinateRotationInMu2e;
+      ExtMonFNALSensorStack up_;
+      ExtMonFNALSensorStack dn_;
+      ExtMonFNALMagnet spectrometerMagnet_;
     };
+
+    //================================================================
 
   }
 }

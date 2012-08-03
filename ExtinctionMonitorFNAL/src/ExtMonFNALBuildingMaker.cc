@@ -78,8 +78,6 @@ namespace mu2e {
     const double angleH = emfb->_filterAngleH =  c.getDouble("extMonFNAL.angleH") * CLHEP::radian;
     const double entranceAngleV = emfb->_filterEntranceAngleV =  c.getDouble("extMonFNAL.entranceAngleV") * CLHEP::radian;
 
-    const double pNominal = emfb->_extMonFNAL_nominalMomentum = c.getDouble("extMonFNAL.nominalMomentum") * CLHEP::MeV;
-
     const double col1zLength = 2*dump.frontShieldingHalfSize()[2];
     emfb->_collimator1 = readCollimatorExtMonFNAL("collimator1", col1zLength, angleH, entranceAngleV, c);
 
@@ -117,6 +115,7 @@ namespace mu2e {
 
     const CLHEP::Hep3Vector magnetRefInDump(magnetRefXdump, magnetRefYdump, magnetRefZdump);
 
+    const double pNominal = c.getDouble("extMonFNAL.filter.nominalMomentum") * CLHEP::MeV;
     emfb->_filterMagnet = ExtMonFNALMagnetMaker::read(c, "extMonFNAL.filter.magnet",
                                                       dump.beamDumpToMu2e_position(magnetRefInDump),
                                                       emfb->_collimator1RotationInMu2e,
@@ -151,10 +150,10 @@ namespace mu2e {
     //----------------------------------------------------------------
     if(verbose) {
       std::cout<<"ExtMonFNALBuildingMaker"<<": Filter entrance offsets  = ("<<emfb->_filterEntranceOffsetX<<", "<<emfb->_filterEntranceOffsetY<<")"<<std::endl;
-      std::cout<<"ExtMonFNALBuildingMaker"<<": filter nominal momentum = "<<emfb->extMonFNAL_nominalMomentum()/CLHEP::GeV<<" GeV/c"<<std::endl;
+      std::cout<<"ExtMonFNALBuildingMaker"<<": filter nominal momentum = "<<emfb->filterMagnet().nominalMomentum()/CLHEP::GeV<<" GeV/c"<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": filterAngleH = "<<emfb->filterAngleH()<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": filterAngleH in Mu2e, degrees= "<<(dump.coreRotY() - emfb->filterAngleH())/CLHEP::degree<<std::endl;
-      std::cout<<"ExtMonFNALBuildingMaker"<<": filter half bend angle  = "<<emfb->filterMagnet().trackBendHalfAngle(emfb->extMonFNAL_nominalMomentum())<<std::endl;
+      std::cout<<"ExtMonFNALBuildingMaker"<<": filter half bend angle  = "<<emfb->filterMagnet().trackBendHalfAngle(emfb->filterMagnet().nominalMomentum())<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": filter.angleV = "<<emfb->filterEntranceAngleV()
                <<", c1.angleV  = "<<emfb->collimator1().angleV()
                <<", c2.angleV() = "<<emfb->collimator2().angleV()<<std::endl;

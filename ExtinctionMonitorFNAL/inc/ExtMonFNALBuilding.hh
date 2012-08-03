@@ -68,8 +68,6 @@ namespace mu2e {
     double filterAngleH() const { return _filterAngleH; }
     double filterEntranceAngleV() const { return _filterEntranceAngleV; }
 
-    double extMonFNAL_nominalMomentum() const { return _extMonFNAL_nominalMomentum; }
-
     const ExtMonFNALMagnet& filterMagnet() const { return _filterMagnet; }
     const CollimatorExtMonFNAL& collimator1() const { return _collimator1; }
     const CollimatorExtMonFNAL& collimator2() const { return _collimator2; }
@@ -136,8 +134,6 @@ namespace mu2e {
     double _filterEntranceOffsetY;
     double _filterAngleH;
     double _filterEntranceAngleV;
-
-    double _extMonFNAL_nominalMomentum;
 
     ExtMonFNALMagnet _filterMagnet;
     CollimatorExtMonFNAL _collimator1;

@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.12 2012/06/05 16:17:36 genser Exp $
-// $Author: genser $
-// $Date: 2012/06/05 16:17:36 $
+// $Id: VirtualDetectorId.hh,v 1.13 2012/08/03 00:32:10 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/08/03 00:32:10 $
 //
 // Original author Rob Kutschke
 //
@@ -52,8 +52,9 @@ namespace mu2e {
       EMIC2Entrance,  EMIC2Exit, EMIC3Entrance,  EMIC3Exit,   // 29-32:   4 collimator entrance and exit planes
       ExtMonCommonPlane,                                      //    33:   An XY plane between the PS and anything ExtMon
       ProtonBeamDumpCoreFace,                                 //    34
-      EMFDetectorEntrance, EMFDetectorExit,                   // 35,36
+      EMFDetectorUpEntrance, EMFDetectorUpExit,               // 35,36
       Coll5_OutSurf,                                          // 37       Surround the outer cyl. surface of collimator in TS5
+      EMFDetectorDnEntrance, EMFDetectorDnExit,               // 38,39
       lastEnum
     };
 
@@ -76,8 +77,9 @@ namespace mu2e {
       "EMIC2Entrance", "EMIC2Exit", "EMIC3Entrance", "EMIC3Exit",  \
       "ExtMonCommonPlane",                                         \
       "ProtonBeamDumpCoreFace",                                    \
-      "EMFDetectorEntrance", "EMFDetectorExit",                    \
-      "Coll5_OutSurf"
+      "EMFDetectorUpEntrance", "EMFDetectorUpExit",                \
+      "Coll5_OutSurf",                                             \
+      "EMFDetectorDnEntrance", "EMFDetectorDnExit"
 
   public:
 

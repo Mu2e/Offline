@@ -1,8 +1,9 @@
 <lcgdict>
+ <class name="mu2e::ExtMonFNALSensorStack"/>
+ <class name="mu2e::ExtMonFNALMagnet"/>
+
  <class name="mu2e::ExtMonFNAL::ExtMon"/>
  <class name="art::Wrapper<mu2e::ExtMonFNAL::ExtMon>"/> 
-
- <class name="mu2e::ExtMonFNALMagnet"/>
 
  <class name="mu2e::ExtMonFNALBuilding::CollimatorExtMonFNAL"/>
  <class name="mu2e::ExtMonFNALBuilding"/>
