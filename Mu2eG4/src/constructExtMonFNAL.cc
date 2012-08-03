@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.15 2012/08/03 00:32:10 gandr Exp $
+// $Id: constructExtMonFNAL.cc,v 1.16 2012/08/03 22:04:39 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/03 00:32:10 $
+// $Date: 2012/08/03 22:04:39 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -100,6 +100,37 @@ namespace mu2e {
 
       vplane.logical->SetSensitiveDetector(emSD);
 
+      // install passive readout material, adjacent to each sensor on
+      // the downstream side
+
+      std::ostringstream osr;
+      osr<<"EMFReadout"<<volNameSuffix<<iplane;
+
+      const CLHEP::Hep3Vector readoutCenterInRoom = stackRefPointInRoom
+        + stackRotationInRoom*
+        (stack.sensorOffsetInStack(iplane)
+         + CLHEP::Hep3Vector(0,0, -(stack.sensor_halfdz()[iplane]+stack.readout_halfdz()[iplane]))
+         );
+
+      std::vector<double> rhs(stack.sensorHalfSize(iplane));
+      rhs[2] = stack.readout_halfdz()[iplane];
+
+      nestBox(osr.str(),
+              rhs,
+              findMaterialOrThrow("G4_Si"),
+              stackRotationInRoomInv,
+              readoutCenterInRoom,
+              parent,
+              0,
+              config.getBool("extMonFNAL.readoutPlaneVisible"),
+              G4Colour::Black(),
+              config.getBool("extMonFNAL.readoutPlaneSolid"),
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
+
+
     } // for()
 
     //----------------------------------------------------------------
@@ -175,8 +206,17 @@ namespace mu2e {
             * CLHEP::Hep3Vector(0,
                                 0,
                                 (vdId == entranceVD ?
-                                 stack.sensorOffsetInStack(stack.nplanes()-1)[2] + stack.sensorHalfSize(stack.nplanes()-1)[2] + vdg->getHalfLength() :
-                                 stack.sensorOffsetInStack(0)[2] - stack.sensorHalfSize(0)[2] - vdg->getHalfLength()
+                                 (stack.sensorOffsetInStack(stack.nplanes()-1)[2]
+                                  + stack.sensor_halfdz()[stack.nplanes()-1]
+                                  + 2*stack.readout_halfdz()[stack.nplanes()-1]
+                                  + vdg->getHalfLength()
+                                  ) :
+                                 (
+                                  stack.sensorOffsetInStack(0)[2]
+                                  - stack.sensor_halfdz()[0]
+                                  - 2*stack.readout_halfdz()[0]
+                                  - vdg->getHalfLength()
+                                  )
                                  )
                                 );
 

@@ -266,6 +266,8 @@ bool           extMonFNAL.stackBoxVisible   = true;
 bool           extMonFNAL.stackBoxSolid     = false;
 bool           extMonFNAL.sensorPlaneVisible   = true;
 bool           extMonFNAL.sensorPlaneSolid     = true;
+bool           extMonFNAL.readoutPlaneVisible   = true;
+bool           extMonFNAL.readoutPlaneSolid     = true;
 
 int            extMonFNAL.verbosityLevel = 2;
 int            extMonFNAL.sd.verbosityLevel = 0;
