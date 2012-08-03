@@ -1,10 +1,15 @@
-  $Id: v2_0_0.txt,v 1.33 2012/07/30 20:56:10 brownd Exp $
-  $Author: brownd $
-  $Date: 2012/07/30 20:56:10 $
+  $Id: v2_0_0.txt,v 1.34 2012/08/03 00:33:35 gandr Exp $
+  $Author: gandr $
+  $Date: 2012/08/03 00:33:35 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_0
+
+
+32) August 2, 2012 gandr
+
+    Turn ExtMonFNAL into a magnetic spectometer.
 
 31) July 30, 2012 genser
 
