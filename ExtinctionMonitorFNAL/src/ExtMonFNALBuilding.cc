@@ -25,39 +25,6 @@ namespace mu2e {
   {}
 
   //================================================================
-  double ExtMonFNALBuilding::FilterMagnetExtMonFNAL::trackBendRadius(double momentum) const {
-    // In the bend plane: compute the gyroradius
-    // The constant factor is 1/c_light scaled such as
-    // to get rTrack in millimeters
-    const double rTrack = 3335.64095198 * (momentum/CLHEP::GeV) / (_fieldStrength/CLHEP::tesla);
-
-    //    std::cerr<<"AG: got rTrack = "<<rTrack<<" mm for p = "
-    //           <<(momentum/CLHEP::GeV)<<" GeV and  B = "
-    //           <<(_fieldStrength()/CLHEP::tesla)<<" tesla"<<std::endl;
-
-    return rTrack;
-  }
-
-  //================================================================
-  double ExtMonFNALBuilding::FilterMagnetExtMonFNAL::trackBendHalfAngle(double momentum) const {
-
-    const double rTrack = trackBendRadius(momentum);
-
-    // Can't do momenta that are too low.  For simplicity we just
-    // check for the "absolutely impossible" requests here.  The real
-    // momentum constraint is tighter because of other pieces of
-    // geometry.
-
-    if(_outerHalfSize[2] < rTrack) {
-      return asin(_outerHalfSize[2]/rTrack);
-    }
-    else {
-      throw cet::exception("GEOM")<<"ExtMonFNALBuilding::FilterMagnetExtMonFNAL::trackBendHalfAngle(): "
-                                  <<"requested momentum p="<<momentum/CLHEP::GeV<<" GeV is too low ";
-    }
-  }
-
-  //================================================================
   double ExtMonFNALBuilding::CollimatorExtMonFNAL::halfLength() const {
     using std::pow;
     return 0.5*_horizontalLength *

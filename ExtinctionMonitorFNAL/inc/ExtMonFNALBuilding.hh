@@ -14,6 +14,7 @@
 #include "art/Persistency/Common/Wrapper.h"
 
 #include "Mu2eInterfaces/inc/Detector.hh"
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNALMagnet.hh"
 
 namespace mu2e {
 
@@ -56,24 +57,6 @@ namespace mu2e {
       double angleV() const { return _angleV; }
     };
 
-    //----------------------------------------------------------------
-    class FilterMagnetExtMonFNAL {
-      friend class ExtMonFNALBuildingMaker;
-      std::vector<double> _outerHalfSize;
-      double _apertureWidth;
-      double _apertureHeight;
-      double _fieldStrength;
-    public:
-      const std::vector<double> &outerHalfSize() const { return _outerHalfSize; }
-      double apertureWidth() const { return _apertureWidth; }
-      double apertureHeight() const { return _apertureHeight; }
-      double fieldStrength() const { return _fieldStrength; }
-
-      // derived:
-      double trackBendRadius(double momentum) const;
-      double trackBendHalfAngle(double momentum) const;
-    };
-
     const CLHEP::Hep3Vector& roomRefPointInMu2e() const { return roomRefPointInMu2e_; }
     const CLHEP::HepRotation& roomRotationInMu2e() const { return roomRotationInMu2e_; }
 
@@ -87,7 +70,7 @@ namespace mu2e {
 
     double extMonFNAL_nominalMomentum() const { return _extMonFNAL_nominalMomentum; }
 
-    const FilterMagnetExtMonFNAL& filterMagnet() const { return _filterMagnet; }
+    const ExtMonFNALMagnet& filterMagnet() const { return _filterMagnet; }
     const CollimatorExtMonFNAL& collimator1() const { return _collimator1; }
     const CollimatorExtMonFNAL& collimator2() const { return _collimator2; }
 
@@ -159,7 +142,7 @@ namespace mu2e {
 
     double _extMonFNAL_nominalMomentum;
 
-    FilterMagnetExtMonFNAL _filterMagnet;
+    ExtMonFNALMagnet _filterMagnet;
     CollimatorExtMonFNAL _collimator1;
     CollimatorExtMonFNAL _collimator2;
 

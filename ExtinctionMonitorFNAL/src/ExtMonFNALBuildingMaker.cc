@@ -4,6 +4,8 @@
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
+#include "ExtinctionMonitorFNAL/inc/ExtMonFNALMagnetMaker.hh"
+
 #include <algorithm>
 #include <iterator>
 #include <iostream>
@@ -44,17 +46,6 @@ namespace mu2e {
   }
 
   //================================================================
-  ExtMonFNALBuilding::FilterMagnetExtMonFNAL
-  ExtMonFNALBuildingMaker::readFilterMagnetExtMonFNAL(const SimpleConfig& c) {
-    ExtMonFNALBuilding::FilterMagnetExtMonFNAL mag;
-    c.getVectorDouble("extMonFNAL.magnet.outerHalfSize", mag._outerHalfSize, 3);
-    mag._apertureWidth = c.getDouble("extMonFNAL.magnet.apertureWidth") * CLHEP::mm;
-    mag._apertureHeight = c.getDouble("extMonFNAL.magnet.apertureHeight") * CLHEP::mm;
-    mag._fieldStrength = c.getDouble("extMonFNAL.magnet.fieldStrength") * CLHEP::tesla;
-    return mag;
-  }
-
-  //================================================================
   std::auto_ptr<ExtMonFNALBuilding> ExtMonFNALBuildingMaker::make(const SimpleConfig& c, const ProtonBeamDump& dump) {
     using CLHEP::Hep3Vector;
     using CLHEP::Hep2Vector;
@@ -92,7 +83,8 @@ namespace mu2e {
 
     const double pNominal = emfb->_extMonFNAL_nominalMomentum = c.getDouble("extMonFNAL.nominalMomentum") * CLHEP::MeV;
 
-    emfb->_filterMagnet = readFilterMagnetExtMonFNAL(c);
+    emfb->_filterMagnet = ExtMonFNALMagnetMaker::read(c, "extMonFNAL.magnet");
+
 
     const double col1zLength = 2*dump.frontShieldingHalfSize()[2];
     const double col2zLength = c.getDouble("extMonFNAL.collimator2.shielding.thickness");
@@ -207,7 +199,7 @@ namespace mu2e {
       - 2*emfb->filterMagnet().outerHalfSize()[2] * cos(magnetAngleV) * cos(emfb->filterAngleH());
 
     // Height of the exit point (in dump coords)
-    const double magnetExitY = magnetEntranceY + sin(magnetAngleV) * 2*emfb->_filterMagnet._outerHalfSize[2];
+    const double magnetExitY = magnetEntranceY + sin(magnetAngleV) * 2*emfb->_filterMagnet.outerHalfSize()[2];
 
     const double col2CenterY = magnetExitY + (magnetExitZ - col2CenterZ)*tan(emfb->_collimator2.angleV())/cos(emfb->filterAngleH());
 

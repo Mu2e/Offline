@@ -20,8 +20,6 @@ namespace mu2e {
                                                                              double angleV,
                                                                              const SimpleConfig& c);
 
-    static ExtMonFNALBuilding::FilterMagnetExtMonFNAL readFilterMagnetExtMonFNAL(const SimpleConfig& c);
-
   public:
     static std::auto_ptr<ExtMonFNALBuilding> make(const SimpleConfig& config, const ProtonBeamDump& dump);
   };
