@@ -7,12 +7,20 @@
 
 #include "ExtinctionMonitorFNAL/inc/ExtMonFNALMagnet.hh"
 
+namespace CLHEP { class Hep3Vector; }
+namespace CLHEP { class HepRotation; }
+
 namespace mu2e {
   class SimpleConfig;
 
   class ExtMonFNALMagnetMaker {
   public:
-    static ExtMonFNALMagnet read(const SimpleConfig& c, const std::string& prefix);
+
+    static ExtMonFNALMagnet read(const SimpleConfig& c,
+                                 const std::string& prefix,
+                                 const CLHEP::Hep3Vector& magnetRefPointInMu2e,
+                                 const CLHEP::HepRotation& magnetInRotation,
+                                 double nominalMomentum);
   };
 }
 

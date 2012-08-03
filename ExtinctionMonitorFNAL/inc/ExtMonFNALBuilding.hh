@@ -77,9 +77,6 @@ namespace mu2e {
     const CLHEP::Hep3Vector& collimator1CenterInMu2e() const { return _collimator1CenterInMu2e; }
     const CLHEP::HepRotation& collimator1RotationInMu2e() const { return _collimator1RotationInMu2e; }
 
-    const CLHEP::Hep3Vector& filterMagnetCenterInMu2e() const { return _filterMagnetCenterInMu2e; }
-    const CLHEP::HepRotation& filterMagnetRotationInMu2e() const { return _filterMagnetRotationInMu2e; }
-
     const CLHEP::Hep3Vector& collimator2CenterInMu2e() const { return _collimator2CenterInMu2e; }
     const CLHEP::HepRotation& collimator2RotationInMu2e() const { return _collimator2RotationInMu2e; }
 
@@ -148,9 +145,6 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _collimator1CenterInMu2e;
     CLHEP::HepRotation _collimator1RotationInMu2e;
-
-    CLHEP::Hep3Vector _filterMagnetCenterInMu2e;
-    CLHEP::HepRotation _filterMagnetRotationInMu2e;
 
     CLHEP::Hep3Vector _collimator2CenterInMu2e;
     CLHEP::HepRotation _collimator2RotationInMu2e;

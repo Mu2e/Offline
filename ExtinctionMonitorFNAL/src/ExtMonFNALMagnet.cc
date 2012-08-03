@@ -6,10 +6,9 @@
 
 //================================================================
 mu2e::ExtMonFNALMagnet::ExtMonFNALMagnet()
-  : _outerHalfSize()
-  , _apertureWidth()
-  , _apertureHeight()
-  , _fieldStrength()
+  : outerHalfSize_()
+  , apertureWidth_()
+  , apertureHeight_()
 {}
 
 //================================================================
@@ -17,12 +16,7 @@ double mu2e::ExtMonFNALMagnet::trackBendRadius(double momentum) const {
   // In the bend plane: compute the gyroradius
   // The constant factor is 1/c_light scaled such as
   // to get rTrack in millimeters
-  const double rTrack = 3335.64095198 * (momentum/CLHEP::GeV) / (_fieldStrength/CLHEP::tesla);
-
-  //    std::cerr<<"AG: got rTrack = "<<rTrack<<" mm for p = "
-  //           <<(momentum/CLHEP::GeV)<<" GeV and  B = "
-  //           <<(_fieldStrength()/CLHEP::tesla)<<" tesla"<<std::endl;
-
+  const double rTrack = 3335.64095198 * (momentum/CLHEP::GeV) / (bfield_.mag()/CLHEP::tesla);
   return rTrack;
 }
 
@@ -36,12 +30,12 @@ double mu2e::ExtMonFNALMagnet::trackBendHalfAngle(double momentum) const {
   // momentum constraint is tighter because of other pieces of
   // geometry.
 
-  if(rTrack < _outerHalfSize[2]) {
+  if(rTrack < outerHalfSize_[2]) {
     throw cet::exception("GEOM")<<"ExtMonFNALBuilding::FilterMagnetExtMonFNAL::trackBendHalfAngle(): "
                                 <<"requested momentum p="<<momentum/CLHEP::GeV<<" GeV is too low ";
   }
 
-  return asin(_outerHalfSize[2]/rTrack);
+  return asin(outerHalfSize_[2]/rTrack);
 }
 
 //================================================================

@@ -279,7 +279,7 @@ namespace mu2e {
     // finishNesting() uses the backwards interpretation of rotations
     CLHEP::HepRotation *magnetRotationInParentInv =
       // (parentRotationInMu2e.inverse()*magnetRotationInMu2e).inverse()
-      reg.add(emfb.filterMagnetRotationInMu2e().inverse()*parentRotationInMu2e);
+      reg.add(emfb.filterMagnet().magnetRotationInMu2e().inverse()*parentRotationInMu2e);
 
     const CLHEP::Hep3Vector nx(1, 0, 0);
     const CLHEP::Hep3Vector ny(0, 1, 0);
@@ -291,15 +291,16 @@ namespace mu2e {
              <<std::endl;
 
 
-    AGDEBUG("emfb.filterMagnetCenterInMu2e() = "<<emfb.filterMagnetCenterInMu2e());
+    AGDEBUG("emfb.filterMagnet().refPointInMu2e() = "<<emfb.filterMagnet().refPointInMu2e());
+    AGDEBUG("emfb.filterMagnet().geometricCenterInMu2e() = "<<emfb.filterMagnet().geometricCenterInMu2e());
     AGDEBUG("magnet parent.centerInMu2e() = "<<parent.centerInMu2e()<<", in world = "<<parent.centerInWorld<<", in parent = "<<parent.centerInParent);
-    AGDEBUG("magnet center in parent = "<<parentRotationInMu2e.inverse()*(emfb.filterMagnetCenterInMu2e() - parent.centerInMu2e()));
+    AGDEBUG("magnet center in parent = "<<parentRotationInMu2e.inverse()*(emfb.filterMagnet().geometricCenterInMu2e() - parent.centerInMu2e()));
 
     const VolumeInfo magnetIron = nestBox("ExtMonFNALFilterMagnetIron",
                                           emfb.filterMagnet().outerHalfSize(),
                                           materialFinder.get("extMonFNAL.magnet.material"),
                                           magnetRotationInParentInv,
-                                          parentRotationInMu2e.inverse()*(emfb.filterMagnetCenterInMu2e() - parent.centerInMu2e()),
+                                          parentRotationInMu2e.inverse()*(emfb.filterMagnet().geometricCenterInMu2e() - parent.centerInMu2e()),
                                           parent, 0,
                                           config.getBool("extMonFNAL.magnet.iron.visible"),
                                           G4Colour::Magenta(),
@@ -332,12 +333,9 @@ namespace mu2e {
     //----------------------------------------------------------------
     // Define the field in the magnet
 
-    const CLHEP::Hep3Vector BFieldVector(emfb.filterMagnet().fieldStrength()
-                                         * (emfb.filterMagnetRotationInMu2e()*CLHEP::Hep3Vector(1,0,0)));
+    std::cout<<"AG: ExtMonFNAL filter magnet field = "<<emfb.filterMagnet().bfield()<<std::endl;
 
-    std::cout<<"AG: ExtMonFNAL filter magnet field = "<<BFieldVector<<std::endl;
-
-    G4MagneticField *field = reg.add(new G4UniformMagField(BFieldVector));
+    G4MagneticField *field = reg.add(new G4UniformMagField(emfb.filterMagnet().bfield()));
 
     G4Mag_UsualEqRhs *rhs  = reg.add(new G4Mag_UsualEqRhs(field));
 
@@ -580,7 +578,7 @@ namespace mu2e {
     if(false) {
       G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
       const VolumeInfo& hall = _helper->locateVolInfo("HallAir");
-      VolumeInfo test("emfMagnettest", emfb->filterMagnetCenterInMu2e() - hall.centerInMu2e(), hall.centerInWorld);
+      VolumeInfo test("emfMagnettest", emfb->filterMagnet().geometricCenterInMu2e() - hall.centerInMu2e(), hall.centerInWorld);
       test.solid = new G4Orb(test.name, 500.);
 
       finishNesting(test,

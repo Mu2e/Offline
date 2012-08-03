@@ -7,16 +7,28 @@
 
 #include <vector>
 
+#include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/Rotation.h"
+
 namespace mu2e {
 
   class ExtMonFNALMagnetMaker;
 
   class ExtMonFNALMagnet {
-    std::vector<double> _outerHalfSize;
-    double _apertureWidth;
-    double _apertureHeight;
-    double _fieldStrength;
+    std::vector<double> outerHalfSize_;
+    double apertureWidth_;
+    double apertureHeight_;
 
+    CLHEP::Hep3Vector bfield_;
+
+    double nominalMomentum_;
+
+    CLHEP::Hep3Vector  refPointInMu2e_;
+    CLHEP::HepRotation inRotationInMu2e_;
+    CLHEP::HepRotation outRotationInMu2e_;
+    CLHEP::HepRotation magnetRotationInMu2e_;
+
+    CLHEP::Hep3Vector geometricCenterInMu2e_;
 
   public:
 
@@ -24,14 +36,25 @@ namespace mu2e {
     // An initialized instance of this class should be obtained via ExtMonFNALMagnetMaker
     friend class ExtMonFNALMagnetMaker;
 
-    const std::vector<double> &outerHalfSize() const { return _outerHalfSize; }
-    double apertureWidth() const { return _apertureWidth; }
-    double apertureHeight() const { return _apertureHeight; }
-    double fieldStrength() const { return _fieldStrength; }
+    const std::vector<double>& outerHalfSize() const { return outerHalfSize_; }
+    double apertureWidth() const { return apertureWidth_; }
+    double apertureHeight() const { return apertureHeight_; }
+
+    const CLHEP::Hep3Vector& bfield() const { return bfield_; }
+
+    double nominalMomentum() const { return nominalMomentum_; }
 
     // derived:
     double trackBendRadius(double momentum) const;
     double trackBendHalfAngle(double momentum) const;
+
+    // placement
+    const CLHEP::Hep3Vector&  refPointInMu2e() const { return refPointInMu2e_; }
+    const CLHEP::HepRotation& inRotationInMu2e()     const { return inRotationInMu2e_; }
+    const CLHEP::HepRotation& outRotationInMu2e()    const { return outRotationInMu2e_; }
+    const CLHEP::HepRotation& magnetRotationInMu2e() const { return magnetRotationInMu2e_; }
+
+    const CLHEP::Hep3Vector&  geometricCenterInMu2e() const { return geometricCenterInMu2e_; }
   };
 
 }// namespace mu2e
