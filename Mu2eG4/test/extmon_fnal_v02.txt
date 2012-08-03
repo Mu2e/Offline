@@ -166,13 +166,15 @@ vector<double> extMonFNAL.up.readout_halfdz = {0.1,   0.1,   0.1};
 
 //----------------------------------------------------------------
 // The spectrometer magnet.
-// The ferrite bricks are 4 inches long, separated by 1 inch spacer.
-// Half length of a 4-brick magnet = (4*(4*25.4) + 3*25.4)/2
-vector<double> extMonFNAL.spectrometer.magnet.outerHalfSize = {95., 150., 241.3 }; // mm
+//
+// PDSM magnet: 2''x5''x20'' aperture.  We derive the effective
+// fieldStrength from the known field integral of 0.14 T*m
+
+vector<double> extMonFNAL.spectrometer.magnet.outerHalfSize = {95., 150., 254. }; // mm
 double extMonFNAL.spectrometer.magnet.apertureWidth  =  50.; // mm
-double extMonFNAL.spectrometer.magnet.apertureHeight = 100.; // mm
+double extMonFNAL.spectrometer.magnet.apertureHeight = 127.; // mm
 string extMonFNAL.spectrometer.magnet.material  = "G4_Fe";
-double extMonFNAL.spectrometer.magnet.fieldStrength = 0.222; // Tesla
+double extMonFNAL.spectrometer.magnet.fieldStrength = 0.2756; // Tesla
 
 bool extMonFNAL.spectrometer.magnet.iron.visible = true;
 bool extMonFNAL.spectrometer.magnet.iron.solid = false;
