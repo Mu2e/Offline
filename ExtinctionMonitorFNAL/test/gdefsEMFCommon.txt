@@ -1,10 +1,4 @@
-// Full geometry for running ExtMonFNAL studies.
-
-#include "Mu2eG4/test/geom_01.txt"
-
-// #include "Mu2eG4/test/PSShield_v01.txt"
-// #include "Mu2eG4/test/psEnclosure_v01.txt"
-// //#include "ExtinctionMonitorFNAL/test/psEnclosure_thin.txt"
+// Common overrides for ExtMonFNAL studies
 
 // ExtMonUCI interferes with the civil construction
 bool hasExtMonUCI = false;
@@ -17,22 +11,11 @@ double hall.insideZExtMonUCIWall = -17200;  // to the corner of dump shielding
 vector<double> extMonFNAL.roomInsideX = { -1750, -1750, -3731, -3731, -1750, -1750, +2822, +2822, +3584, +3584, +2822, +2822 };
 vector<double> extMonFNAL.roomInsideZ = {     0, -2928, -2928, -7422, -7422, -9200, -9200, -4200, -4200,  -796,  -796,     0 };
 
-
 //int g4.steppingActionMaxSteps = 100000;
 //int g4.stepsSizeLimit = 10000;
 int g4.particlesSizeLimit = 100000;
 
 // bool g4SteppingAction.killerVerbose = true;
-//vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance", "VirtualDetector_Coll1_In" };
-
-vector<string> g4SteppingAction.killInTheseVolumes = {
-  "PSShield",
-  "VirtualDetector_Coll1_In",
-  "ProtonBeamDumpCore",
-  "HallConcreteFloor",
-  "HallConcreteCeiling",
-  "HallWalls"
-};
 
 //string g4.physicsListName = "Minimal";
 string g4.physicsListName = "QGSP_BERT_HP";
@@ -67,23 +50,6 @@ bool extMonFilter.magnet.iron.solid = false;
 bool extMonFilter.magnet.aperture.visible = true;
 bool extMonFilter.magnet.aperture.solid = false;
 
-//// change momentum setting for the debugging
-//double extMonFilter.nominalMomentum = 3600.; // MeV/c
-//double         extMonFilter.entranceOffsetX = 1000;
-//double         extMonFilter.entranceOffsetY = 1250;
-//double         extMonFilter.angleH = 0.15; //0.0947; //radians
-//double         extMonFilter.entranceAngleV = 0.1644; //radians
-
-//test: // Disable all physics except transport.
-//test: string g4.physicsListName = "Minimal";
-//test: //double extMonFilter.maxG4StepLength = 10.; // mm
-
-// double extMonFilter.magnet.deltaChord = 0.001;
-// double extMonFilter.magnet.minEpsilonStep = 1.e-8;
-// double extMonFilter.magnet.maxEpsilonStep = 1.e-6;
-// double extMonFilter.magnet.deltaOneStep = 1.e-6;
-
-//----------------------------------------------------------------
 bool toyDS.visible           = false;
 bool crs.vetoVisible         = false;
 bool protonabsorber.visible  = false;
@@ -96,6 +62,16 @@ bool ttracker.deviceEnvelopeVisible = false;
 bool ttracker.supportVisible        = false;
 
 // bool PSShield.solid = true;
+
+//----------------------------------------------------------------
+//test: // Disable all physics except transport.
+//test: string g4.physicsListName = "Minimal";
+//test: //double extMonFilter.maxG4StepLength = 10.; // mm
+
+// double extMonFilter.magnet.deltaChord = 0.001;
+// double extMonFilter.magnet.minEpsilonStep = 1.e-8;
+// double extMonFilter.magnet.maxEpsilonStep = 1.e-6;
+// double extMonFilter.magnet.deltaOneStep = 1.e-6;
 
 //----------------------------------------------------------------
 //// Write mu2e geometry into a GDML file

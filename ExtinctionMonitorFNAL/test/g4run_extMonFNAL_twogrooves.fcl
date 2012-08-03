@@ -1,2 +1,0 @@
-#include "ExtinctionMonitorFNAL/test/g4run_extMonFNAL.fcl"
-services.user.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_extMonFNAL_twogrooves.txt"

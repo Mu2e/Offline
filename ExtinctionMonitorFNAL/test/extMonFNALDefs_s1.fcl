@@ -1,0 +1,23 @@
+source : {
+    module_type : EmptyEvent
+    maxEvents : 5
+}
+
+physics.producers.generate : {
+    module_type   : EventGenerator
+    inputfile     : "ExtinctionMonitorFNAL/test/genconfig_extMonFNAL.txt"
+}
+
+physics.producers.g4run.generatorModuleLabel : "generate"
+physics.producers.geoms1: { module_type : GeometryRecorder }
+
+physics.filters.fvd16: @local::filterModule
+physics.filters.fvd16.acceptedVids: [16]
+
+physics.gm : [geoms1]
+physics.trigFilter : [ randomsaver, generate, g4run, fvd16 ]
+
+// This tells emacs to view this file in the JavaScript mode.
+// Local Variables:
+// mode:js
+// End:

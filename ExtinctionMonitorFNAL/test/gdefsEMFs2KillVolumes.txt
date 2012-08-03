@@ -1,0 +1,13 @@
+vector<string> g4SteppingAction.killInTheseVolumes = {
+  "PSShield",
+  "VirtualDetector_Coll1_In",
+  "ProtonBeamDumpCore",
+  "HallConcreteFloor",
+  "HallConcreteCeiling",
+  "HallWalls"
+};
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

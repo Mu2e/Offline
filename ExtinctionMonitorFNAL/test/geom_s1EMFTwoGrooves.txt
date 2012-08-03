@@ -1,0 +1,9 @@
+#include "Mu2eG4/test/geom_01.txt"
+#include "ExtinctionMonitorFNAL/test/gdefsEMFTwoGrooves.txt"
+#include "ExtinctionMonitorFNAL/test/gdefsEMFs1KillVolumes.txt"
+#include "ExtinctionMonitorFNAL/test/gdefsEMFCommon.txt"
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

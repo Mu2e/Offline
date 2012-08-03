@@ -1,9 +1,7 @@
-#include "ExtinctionMonitorFNAL/test/geom_extMonFNAL.txt"
-
-// Don't kill in VirtualDetector_EMFC1Entrance
 vector<string> g4SteppingAction.killInTheseVolumes = {
   "PSShield",
   "VirtualDetector_Coll1_In",
+  "VirtualDetector_EMFC1Entrance",
   "ProtonBeamDumpCore",
   "HallConcreteFloor",
   "HallConcreteCeiling",

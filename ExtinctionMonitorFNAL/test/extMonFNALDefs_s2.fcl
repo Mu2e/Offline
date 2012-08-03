@@ -1,0 +1,25 @@
+source: {
+    module_type: RootInput
+    maxEvents: -1
+}
+
+physics.producers.fromVD16: {
+    module_type: FromStepPointMCs
+    inputModuleLabel : "fvd16"
+    inputInstanceName : ""
+    //logLevel : 2
+}
+
+physics.producers.g4run.generatorModuleLabel : "fromVD16"
+physics.producers.geoms2 : { module_type : GeometryRecorder }
+
+physics.filters.fvd35: @local::filterModule
+physics.filters.fvd35.acceptedVids: [35]
+
+physics.gm : [geoms2]
+physics.trigFilter : [randomsaver, fromVD16, g4run, fvd35 ]
+
+// This tells emacs to view this file in the JavaScript mode.
+// Local Variables:
+// mode:js
+// End:
