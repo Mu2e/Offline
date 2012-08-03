@@ -91,19 +91,19 @@ bool extMonFNAL.collimator1.channel.solid = false;
 double extMonFNAL.magnetRoomLength = 4200.;
 
 // The magnet
-vector<double> extMonFNAL.magnet.outerHalfSize = {95., 150., 1778. }; // mm
-double extMonFNAL.magnet.apertureWidth  =  50.; // mm
-double extMonFNAL.magnet.apertureHeight = 100.; // mm
-string extMonFNAL.magnet.material  = "G4_Fe";
-double extMonFNAL.magnet.fieldStrength = 0.222; // Tesla
+vector<double> extMonFNAL.filter.magnet.outerHalfSize = {95., 150., 1778. }; // mm
+double extMonFNAL.filter.magnet.apertureWidth  =  50.; // mm
+double extMonFNAL.filter.magnet.apertureHeight = 100.; // mm
+string extMonFNAL.filter.magnet.material  = "G4_Fe";
+double extMonFNAL.filter.magnet.fieldStrength = 0.222; // Tesla
 
-bool extMonFNAL.magnet.iron.visible = true;
-bool extMonFNAL.magnet.iron.solid = false;
-bool extMonFNAL.magnet.aperture.visible = true;
-bool extMonFNAL.magnet.aperture.solid = false;
+bool extMonFNAL.filter.magnet.iron.visible = true;
+bool extMonFNAL.filter.magnet.iron.solid = false;
+bool extMonFNAL.filter.magnet.aperture.visible = true;
+bool extMonFNAL.filter.magnet.aperture.solid = false;
 
 // Along dump Z, the geometrical center of the magnet is placed at
-double extMonFNAL.magnet.refDistanceToUpstreamWall = 2100;
+double extMonFNAL.filter.magnet.refDistanceToUpstreamWall = 2100;
 
 // The magnet is placed in such a way that a positive particle with
 // the nominal momentum given below, travelling at the bottom of

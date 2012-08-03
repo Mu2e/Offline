@@ -107,7 +107,7 @@ namespace mu2e {
 
     const double magnetRefZdump = dump.coreCenterDistanceToShieldingFace()
       - 2*dump.frontShieldingHalfSize()[2]
-      - c.getDouble("extMonFNAL.magnet.refDistanceToUpstreamWall");
+      - c.getDouble("extMonFNAL.filter.magnet.refDistanceToUpstreamWall");
 
     const double magnetRefXdump = collimator1CenterInDump[0]
       + (collimator1CenterInDump[2] - magnetRefZdump) * tan(angleH);
@@ -117,7 +117,7 @@ namespace mu2e {
 
     const CLHEP::Hep3Vector magnetRefInDump(magnetRefXdump, magnetRefYdump, magnetRefZdump);
 
-    emfb->_filterMagnet = ExtMonFNALMagnetMaker::read(c, "extMonFNAL.magnet",
+    emfb->_filterMagnet = ExtMonFNALMagnetMaker::read(c, "extMonFNAL.filter.magnet",
                                                       dump.beamDumpToMu2e_position(magnetRefInDump),
                                                       emfb->_collimator1RotationInMu2e,
                                                       pNominal

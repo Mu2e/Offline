@@ -40,10 +40,10 @@ bool extMonFNAL.collimator2.alignmentPlug.solid = false;
 bool extMonFNAL.collimator2.channel.visible = true;
 bool extMonFNAL.collimator2.channel.solid = false;
 
-bool extMonFNAL.magnet.iron.visible = true;
-bool extMonFNAL.magnet.iron.solid = false;
-bool extMonFNAL.magnet.aperture.visible = true;
-bool extMonFNAL.magnet.aperture.solid = false;
+bool extMonFNAL.filter.magnet.iron.visible = true;
+bool extMonFNAL.filter.magnet.iron.solid = false;
+bool extMonFNAL.filter.magnet.aperture.visible = true;
+bool extMonFNAL.filter.magnet.aperture.solid = false;
 
 //----------------------------------------------------------------
 int protonBeamDump.verbosityLevel = 1;

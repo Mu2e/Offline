@@ -298,13 +298,13 @@ namespace mu2e {
 
     const VolumeInfo magnetIron = nestBox("ExtMonFNALFilterMagnetIron",
                                           emfb.filterMagnet().outerHalfSize(),
-                                          materialFinder.get("extMonFNAL.magnet.material"),
+                                          materialFinder.get("extMonFNAL.filter.magnet.material"),
                                           magnetRotationInParentInv,
                                           parentRotationInMu2e.inverse()*(emfb.filterMagnet().geometricCenterInMu2e() - parent.centerInMu2e()),
                                           parent, 0,
-                                          config.getBool("extMonFNAL.magnet.iron.visible"),
+                                          config.getBool("extMonFNAL.filter.magnet.iron.visible"),
                                           G4Colour::Magenta(),
-                                          config.getBool("extMonFNAL.magnet.iron.solid"),
+                                          config.getBool("extMonFNAL.filter.magnet.iron.solid"),
                                           forceAuxEdgeVisible,
                                           placePV,
                                           doSurfaceCheck
@@ -321,9 +321,9 @@ namespace mu2e {
                                         0,
                                         CLHEP::Hep3Vector(0, 0, 0),
                                         magnetIron.logical, 0,
-                                        config.getBool("extMonFNAL.magnet.aperture.visible"),
+                                        config.getBool("extMonFNAL.filter.magnet.aperture.visible"),
                                         G4Colour::Grey(),
-                                        config.getBool("extMonFNAL.magnet.aperture.solid"),
+                                        config.getBool("extMonFNAL.filter.magnet.aperture.solid"),
                                         forceAuxEdgeVisible,
                                         placePV,
                                         doSurfaceCheck
@@ -342,11 +342,11 @@ namespace mu2e {
     G4MagIntegratorStepper *integrator = reg.add(new G4ExactHelixStepper(rhs));
     //G4MagIntegratorStepper *integrator = reg.add(new G4NystromRK4(rhs));
 
-    const double stepMinimum = config.getDouble("extMonFNAL.magnet.stepMinimum", 1.0e-2 * CLHEP::mm /*The default from G4ChordFinder.hh*/);
+    const double stepMinimum = config.getDouble("extMonFNAL.filter.magnet.stepMinimum", 1.0e-2 * CLHEP::mm /*The default from G4ChordFinder.hh*/);
     G4ChordFinder          *chordFinder = reg.add(new G4ChordFinder(field, stepMinimum, integrator));
 
     const double deltaOld = chordFinder->GetDeltaChord();
-    chordFinder->SetDeltaChord(config.getDouble("extMonFNAL.magnet.deltaChord", deltaOld));
+    chordFinder->SetDeltaChord(config.getDouble("extMonFNAL.filter.magnet.deltaChord", deltaOld));
     AGDEBUG("chordFinder: using deltaChord = "<<chordFinder->GetDeltaChord()<<" (default = "<<deltaOld<<")");
 
     G4FieldManager *manager = reg.add(new G4FieldManager(field, chordFinder));
@@ -356,9 +356,9 @@ namespace mu2e {
             <<", deltaOneStep = "<<manager->GetDeltaOneStep()
             );
 
-    manager->SetMinimumEpsilonStep(config.getDouble("extMonFNAL.magnet.minEpsilonStep", manager->GetMinimumEpsilonStep()));
-    manager->SetMaximumEpsilonStep(config.getDouble("extMonFNAL.magnet.maxEpsilonStep", manager->GetMaximumEpsilonStep()));
-    manager->SetDeltaOneStep(config.getDouble("extMonFNAL.magnet.deltaOneStep", manager->GetDeltaOneStep()));
+    manager->SetMinimumEpsilonStep(config.getDouble("extMonFNAL.filter.magnet.minEpsilonStep", manager->GetMinimumEpsilonStep()));
+    manager->SetMaximumEpsilonStep(config.getDouble("extMonFNAL.filter.magnet.maxEpsilonStep", manager->GetMaximumEpsilonStep()));
+    manager->SetDeltaOneStep(config.getDouble("extMonFNAL.filter.magnet.deltaOneStep", manager->GetDeltaOneStep()));
 
     AGDEBUG("new:  manager epsMin = "<<manager->GetMinimumEpsilonStep()
             <<", epsMax = "<<manager->GetMaximumEpsilonStep()
