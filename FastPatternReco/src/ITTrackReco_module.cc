@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.12 2012/07/23 17:52:27 brownd Exp $
+// $Id: ITTrackReco_module.cc,v 1.13 2012/08/04 01:13:54 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/08/04 01:13:54 $
 //
 // Original author G. Tassielli
 //
@@ -2248,7 +2248,7 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
                 if(isfitted) {
                         HepVector hpar;
                         HepVector hparerr;
-                        _hfit.helixParams(helixfit,hpar,hparerr);
+                        _hfit.helixParams(helixdef,helixfit,hpar,hparerr);
                         HepSymMatrix hcov = vT_times_v(hparerr);
                         HelixTraj seed(hpar,hcov);
                         std::cout<<"fitted "<<isfitted<<" ";
@@ -2269,7 +2269,7 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
                                         helixesfitLoops[iTrackFound].push_back(helixfitLoop);
                                         HepVector hparLoop;
                                         HepVector hparerrLoop;
-                                        _hfit.helixParams(helixfitLoop,hparLoop,hparerrLoop);
+                                        _hfit.helixParams(helixdef,helixfitLoop,hparLoop,hparerrLoop);
                                         HepSymMatrix hcovLoop = vT_times_v(hparerrLoop);
                                         HelixTraj seedLoop(hparLoop,hcovLoop);
                                         std::cout<<"fitted "<<iTrkLoop<<"-th loop:"<<endl;
