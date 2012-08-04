@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.32 2012/07/25 20:56:57 brownd Exp $
+// $Id: KalFitMC.cc,v 1.33 2012/08/04 00:38:06 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/25 20:56:57 $
+// $Date: 2012/08/04 00:38:06 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -448,6 +448,7 @@ namespace mu2e
 
   void KalFitMC::mcTrkInfo() {
     GeomHandle<BFieldConfig> bfconf;
+    GlobalConstantsHandle<ParticleDataTable> pdt;
 // find the mc info at the entrance to the detector
     std::vector<MCStepItr> steps;
     GeomHandle<VirtualDetector> vdg;
@@ -462,12 +463,13 @@ namespace mu2e
       MCStepItr imcs = steps[0];
       CLHEP::Hep3Vector mcmom = imcs->momentum();
       CLHEP::Hep3Vector mcpos = det->toDetector(imcs->position());
+      double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
   // initial length estimate defines convention for flightlength, z0
       double mclen(0.0);
       HepVector mcpar(5,0);
       TrkHelixUtils::helixFromMom( mcpar, mclen,
         HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
-        mcmom,-1.,bfconf->getDSUniformValue().z());
+        mcmom,charge,bfconf->getDSUniformValue().z());
       _mcentmom = imcs->momentum().mag();
       _mcentpar = helixpar(mcpar);
       _mcentt0 = imcs->time();
@@ -483,12 +485,13 @@ namespace mu2e
       MCStepItr imcs = steps[0];
       CLHEP::Hep3Vector mcmom = imcs->momentum();
       CLHEP::Hep3Vector mcpos = det->toDetector(imcs->position());
+      double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
 // initial length estimate defines convention for flightlength, z0
       double mclen(0.0);
       HepVector mcpar(5,0);
       TrkHelixUtils::helixFromMom( mcpar, mclen,
         HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
-        mcmom,-1.,bfconf->getDSUniformValue().z());
+        mcmom,charge,bfconf->getDSUniformValue().z());
       _mcmidmom = imcs->momentum().mag();
       _mcmidpar = helixpar(mcpar);
       _mcmidt0 = imcs->time();
@@ -504,12 +507,13 @@ namespace mu2e
       MCStepItr imcs = steps[0];
       CLHEP::Hep3Vector mcmom = imcs->momentum();
       CLHEP::Hep3Vector mcpos = det->toDetector(imcs->position());
+      double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
 // initial length estimate defines convention for flightlength, z0
       double mclen(0.0);
       HepVector mcpar(5,0);
       TrkHelixUtils::helixFromMom( mcpar, mclen,
         HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
-        mcmom,-1.,bfconf->getDSUniformValue().z());
+        mcmom,charge,bfconf->getDSUniformValue().z());
       _mcxitmom = imcs->momentum().mag();
       _mcxitpar = helixpar(mcpar);
       _mcxitt0 = imcs->time();

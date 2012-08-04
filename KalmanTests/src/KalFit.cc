@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.32 2012/07/25 20:56:57 brownd Exp $
+// $Id: KalFit.cc,v 1.33 2012/08/04 00:38:06 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/25 20:56:57 $
+// $Date: 2012/08/04 00:38:06 $
 //
 
 // the following has to come before other BaBar includes
@@ -38,7 +38,6 @@
 #include "BField/BFieldFixed.hh"
 #include "DetectorModel/DetIntersection.hh"
 #include "DetectorModel/DetMaterial.hh"
-#include "BField/BFieldFixed.hh"
 // C++
 #include <iostream>
 #include <fstream>
@@ -520,5 +519,3 @@ namespace mu2e
     return zflt;
   }
 }
-
-
