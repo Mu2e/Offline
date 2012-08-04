@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.15 2012/02/29 00:34:28 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/29 00:34:28 $
+// $Id: BFieldManager.cc,v 1.16 2012/08/04 00:14:08 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/08/04 00:14:08 $
 //
 
 // Includes from C++
@@ -36,6 +36,29 @@ namespace mu2e {
 
     return (m != 0);
 }
+
+  bool BFieldManager::getNeighborPointBF (const CLHEP::Hep3Vector & testpoint, CLHEP::Hep3Vector neighborPoints[3], CLHEP::Hep3Vector neighborBF[3][3][3]) const {
+    
+    const BFMap *m = cm_.findMap(testpoint);
+
+    if(m) {
+      m->getNeighborPointBF(testpoint, neighborPoints, neighborBF);
+    }
+    else {
+      for (int i = 0 ; i <3 ; ++i) {
+        for (int j = 0 ; j <3 ; ++j) {
+          for (int k = 0 ; k <3 ; ++k) {
+            neighborBF[i][j][k] = CLHEP::Hep3Vector(0.,0.,0.);
+          }
+        }
+        neighborPoints[i] = CLHEP::Hep3Vector(0., 0., 0.);
+      }
+    }
+
+    return (m != 0);
+  }
+
+
 
   // Create a new BFMap in the container of BFMaps.
   BFMap& BFieldManager::addBFMap(MapContainerType *mapContainer,

@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.14 2012/07/17 20:03:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/17 20:03:59 $
+// $Id: classes.h,v 1.15 2012/08/04 00:14:08 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/08/04 00:14:08 $
 //
 // Original author Rob Kutschke
 //
@@ -28,6 +28,7 @@
 #include "RecoDataProducts/inc/TrackerHitByID.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
+#include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
@@ -45,6 +46,11 @@ template class art::Ptr<mu2e::CaloCluster>;
 template class std::vector<art::Ptr<mu2e::CaloCluster> >;
 template class art::Ptr<mu2e::TrackSeed>;
 template class std::vector<art::Ptr<mu2e::TrackSeed> >;
+template class art::Ptr<mu2e::TrkExtTrajPoint>;
+template class std::vector<mu2e::TrkExtTrajPoint>;
+template class art::Ptr<mu2e::TrkExtTraj>;
+template class std::vector<mu2e::TrkExtTraj>;
+
 
 template class art::Wrapper<mu2e::StrawHitCollection>;
 template class art::Wrapper<mu2e::StrawClusterCollection>;
@@ -63,3 +69,4 @@ template class art::Wrapper<mu2e::SctrSttnClusterGroupCollection>;
 template class art::Wrapper<mu2e::ZRotStrawHitMapCollection>;
 template class art::Wrapper<mu2e::TrackerHitByID>;
 template class art::Wrapper<mu2e::TrackSeedCollection>;
+template class art::Wrapper<mu2e::TrkExtTrajCollection>;

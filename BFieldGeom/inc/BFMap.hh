@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.19 2012/02/29 00:44:57 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/29 00:44:57 $
+// $Id: BFMap.hh,v 1.20 2012/08/04 00:14:08 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/08/04 00:14:08 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -94,6 +94,9 @@ namespace mu2e {
     const std::string& getKey() const { return _key; };
 
     void print( std::ostream& os) const;
+
+    // public function for getNeighbor 
+    bool getNeighborPointBF (const CLHEP::Hep3Vector &, CLHEP::Hep3Vector neighborPoints[3], CLHEP::Hep3Vector neighborBF[3][3][3]) const;
 
   private:
 

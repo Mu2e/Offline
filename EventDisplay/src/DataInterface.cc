@@ -21,6 +21,9 @@
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "RecoDataProducts/inc/TrkExtTraj.hh"
+#include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "Straw.h"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
@@ -1329,6 +1332,50 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 	sprintf(c4,"T0 %gns",t0/CLHEP::ns);
 	info->setText(2,c3);
 	info->setText(3,c4);
+      }
+    }
+  }
+
+  // TrkExt track
+  trackInfos.clear();
+  std::vector<const mu2e::TrkExtTrajCollection*> trkExtTrajCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::TrkExtTrajCollection>(trackInfos);
+  for(unsigned int i=0; i<trkExtTrajCollectionVector.size(); i++)
+  {
+    // Read a TrkExtTrajCollection
+    const mu2e::TrkExtTrajCollection & trkExtTrajCollection = *trkExtTrajCollectionVector[i];
+    for(unsigned int j=0; j<trkExtTrajCollection.size(); j++)
+    {
+      // read a TrkExtTraj
+      const mu2e::TrkExtTraj &trkExtTraj = trkExtTrajCollection.at(j);
+      int particleid=11;
+      int trackclass=trackInfos[i].classID;
+      int trackclassindex=trackInfos[i].index;
+      std::string trackcollection=trackInfos[i].entryText;
+
+      std::string particlename=HepPID::particleName(particleid);
+      char c0[200];
+      sprintf(c0,"TrkExt Trajectory %i  %s  (%s)", trkExtTraj.id(), particlename.c_str(),trackcollection.c_str());
+      boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+      info->setName(c0);
+      info->setText(0,c0);
+
+      double p1 = trkExtTraj.front().momentum().mag();
+      double x1 = trkExtTraj.front().x();
+      double y1 = trkExtTraj.front().y();
+      double z1 = trkExtTraj.front().z();
+      double x2 = trkExtTraj.back().x();
+      double y2 = trkExtTraj.back().y();
+      double z2 = trkExtTraj.back().z();
+      double t1 = 0;
+      double t2 = 0;
+      boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, trackclass, trackclassindex, p1, 
+                                                 _geometrymanager, _topvolume, _mainframe, info));
+      _components.push_back(track);
+      _tracks.push_back(track);
+
+      for (unsigned int k = 0 ; k < trkExtTraj.size() ; k+=10) {
+        const mu2e::TrkExtTrajPoint & trkExtTrajPoint = trkExtTraj[k];
+        track->addTrajectoryPoint(trkExtTrajPoint.x(), trkExtTrajPoint.y(), trkExtTrajPoint.z(), 0);
       }
     }
   }

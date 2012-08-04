@@ -28,6 +28,8 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
   entry=_caloHitBox->FindEntry("CaloCrystalHit:CaloCrystalHitsMaker:");
   if(entry!=NULL) _caloHitBox->Select(entry->EntryId());
 
+  entry=_trackBox->FindEntry("TrkExtTraj:TrkExt:");
+  if(entry!=NULL) _trackBox->Select(entry->EntryId());
   entry=_trackBox->FindEntry("KalRep:KalFitTest:");
   if(entry!=NULL) _trackBox->Select(entry->EntryId());
   entry=_trackBox->FindEntry("SimParticle:g4run:");
@@ -119,6 +121,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   createNewEntries<mu2e::SimParticleCollection>(_simParticleVector, event, "SimParticle", newEntries, 1);
 #ifdef BABARINSTALLED
   createNewEntries<mu2e::KalRepCollection>(_trkRecoTrkVector, event, "KalRep", newEntries, 2);
+  createNewEntries<mu2e::TrkExtTrajCollection>(_trkExtTrajVector, event, "TrkExtTraj", newEntries, 3);
 #endif
 
   if(newEntries!=_trackEntries)
@@ -314,6 +317,11 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
                to_return.push_back(reinterpret_cast<const CollectionType*>(_trkRecoTrkVector[index].product()));
                v.push_back(t);
                break;
+      case 3 : if(typeid(CollectionType)!=typeid(mu2e::TrkExtTrajCollection)) break;
+               if(index>=static_cast<int>(_trkExtTrajVector.size())) break;
+               to_return.push_back(reinterpret_cast<const CollectionType*>(_trkExtTrajVector[index].product()));
+               v.push_back(t);
+               break;
 #endif
     };
   }
@@ -322,6 +330,7 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
 template std::vector<const mu2e::SimParticleCollection*> ContentSelector::getSelectedTrackCollection<mu2e::SimParticleCollection>(std::vector<trackInfoStruct> &v) const;
 #ifdef BABARINSTALLED
 template std::vector<const mu2e::KalRepCollection*> ContentSelector::getSelectedTrackCollection<mu2e::KalRepCollection>(std::vector<trackInfoStruct> &v) const;
+template std::vector<const mu2e::TrkExtTrajCollection*> ContentSelector::getSelectedTrackCollection<mu2e::TrkExtTrajCollection>(std::vector<trackInfoStruct> &v) const;
 #endif
 
 const mu2e::PhysicalVolumeInfoCollection* ContentSelector::getPhysicalVolumeInfoCollection() const

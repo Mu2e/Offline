@@ -1,9 +1,9 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.13 2012/07/23 17:52:27 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Id: ContentSelector.h,v 1.14 2012/08/04 00:14:08 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/08/04 00:14:08 $
 //
 // Original author Ralf Ehrlich
 //
@@ -28,6 +28,7 @@
 #ifdef BABARINSTALLED
 using namespace CLHEP;
 #include "KalmanTests/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #else
 #warning BaBar package is absent. KalRep cannot be displayed in the event display.
 #endif
@@ -50,6 +51,7 @@ class ContentSelector
 #ifdef BABARINSTALLED
   std::vector<art::Handle<mu2e::KalRepCollection> > _trkRecoTrkVector;
   std::vector<art::Handle<mu2e::KalRepCollection> > _hitOnTrackVector; //Hits on Tracks are stored inside of KalRep
+  std::vector<art::Handle<mu2e::TrkExtTrajCollection> > _trkExtTrajVector;
 #endif
   art::Handle<mu2e::PhysicalVolumeInfoCollection> _physicalVolumes;
   bool _hasPhysicalVolumes;

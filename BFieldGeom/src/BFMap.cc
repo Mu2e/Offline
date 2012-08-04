@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.19 2012/02/29 00:44:57 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/29 00:44:57 $
+// $Id: BFMap.cc,v 1.20 2012/08/04 00:14:08 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/08/04 00:14:08 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -301,6 +301,88 @@ namespace mu2e {
     if (sign == -1){
       result.setY(-result.y());
     }
+    return true;
+  }
+
+  bool BFMap::getNeighborPointBF (const CLHEP::Hep3Vector & testpoint, 
+      CLHEP::Hep3Vector neighborPoints[3], CLHEP::Hep3Vector neighborBF[3][3][3]) const {
+
+    // Allow y-symmetry (grid is only defined for y > 0);
+    int sign(1);
+    CLHEP::Hep3Vector point(testpoint.x(), testpoint.y(), testpoint.z());
+    if (testpoint.y() < 0 ) {
+      sign = -1;
+      double y = -testpoint.y();
+      point.setY(y);
+    }
+
+    // Check validity.  Return a zero field and optionally print a warning.
+    if ( !isValid(point) ){
+      if ( _warnIfOutside ){
+        mf::LogWarning("GEOM")
+          << "Point is outside of the valid region of the map: " << _key << "\n"
+          << "Point in input coordinates: " << testpoint << "\n";
+      }
+      return false;
+    }
+
+    // Get the indices of the nearest grid point
+    unsigned int ix = static_cast<int>((point.x() - _xmin)/_dx + 0.5);
+    unsigned int iy = static_cast<int>((point.y() - _ymin)/_dy + 0.5);
+    unsigned int iz = static_cast<int>((point.z() - _zmin)/_dz + 0.5);
+
+    // Correct for edge points by moving their NGPt just inside the edge
+    if (ix ==     0){++ix;}
+    if (ix == _nx-1){--ix;}
+    if (iy ==     0){++iy;}
+    if (iy == _ny-1){--iy;}
+    if (iz ==     0){++iz;}
+    if (iz == _nz-1){--iz;}
+
+    // check if the point had a field defined
+
+    if ( ! _isDefined(ix,iy,iz) ){
+      if ( _warnIfOutside ){
+        mf::LogWarning("GEOM")
+          << "Point's field is not defined in the map: " << _key << "\n"
+          << "Point in input coordinates: " << testpoint << "\n";
+        mf::LogWarning("GEOM")
+          << "ix=" << ix << " iy=" << iy << " iz=" << iz << "\n";
+      }
+      return false;
+    }
+
+    // set neighborPoints and BFs
+
+    for (int i = 0; i != 3; ++i){
+      unsigned int xindex = ix + i - 1;
+      for (int j = 0; j != 3; ++j){
+        unsigned int yindex = iy + j - 1;
+        for (int k = 0; k != 3; ++k){
+          unsigned int zindex = iz + k - 1;
+          if ( ! _isDefined(xindex,yindex,zindex) ) {
+            if ( _warnIfOutside ){
+              mf::LogWarning("GEOM")
+                << "Point's neighboring field is not defined in the map: " << _key << "\n"
+                << "Point in input coordinates: " << testpoint << "\n";
+              mf::LogWarning("GEOM")
+                << "ix=" << ix << " iy=" << iy << " iz=" << iz << "\n";
+            }
+            return false;
+          }
+          neighborBF[i][j][k] = _field(xindex, yindex, zindex);
+          // Reassign y sign
+          if (sign == -1){ 
+            neighborBF[i][j][k].setY(-neighborBF[i][j][k].y());
+          }
+        }
+      }
+    }
+
+    for (int i = 0 ; i <3 ; ++i) {
+      neighborPoints[i].set( double(ix + i - 1)*_dx+_xmin, double(iy + i - 1)*_dy+_ymin, double(iz + i - 1)*_dz+_zmin);
+    }
+
     return true;
   }
 

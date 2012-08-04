@@ -4,9 +4,9 @@
 // Manage all of the magnetic field maps for Mu2e.
 // This class holds the actual field maps, and provides an interface to compute B field.
 //
-// $Id: BFieldManager.hh,v 1.20 2012/04/02 18:28:56 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/02 18:28:56 $
+// $Id: BFieldManager.hh,v 1.21 2012/08/04 00:14:08 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/08/04 00:14:08 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -58,6 +58,9 @@ namespace mu2e {
     MapContainerType& getOuterMaps() { return outerMaps_; }
 
     void print( std::ostream& out );
+
+    bool getNeighborPointBF (const CLHEP::Hep3Vector &, CLHEP::Hep3Vector neighborPoints[3], CLHEP::Hep3Vector neighborBF[3][3][3]) const;
+
 
   private:
     // Private ctr.  An instance of BFieldManager should be obtained
