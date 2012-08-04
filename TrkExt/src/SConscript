@@ -1,0 +1,82 @@
+#
+# Script to bulid the files found in this directory.
+#
+# $Id: SConscript,v 1.1 2012/08/04 00:22:09 mjlee Exp $
+# $Author: mjlee $
+# $Date: 2012/08/04 00:22:09 $
+#
+# Original author Rob Kutschke.
+#
+
+import os, re
+Import('env')
+
+#g4inc    = os.environ['G4INCLUDE']
+#g4libdir = os.environ['G4LIBDIR']
+
+
+rootlibs = [ ]
+
+babarlibs = [ 'BaBar_KalmanTrack', 'BaBar_DetectorModel',  'BaBar_TrkBase',    'BaBar_BField',
+              'BaBar_TrajGeom',    'BaBar_BbrGeom',        'BaBar_difAlgebra', 'BaBar_ProbTools',
+              'BaBar_BaBar',       'BaBar_CLHEP',          'BaBar_MatEnv' ]
+
+
+plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
+non_plugin_cc = Glob('*.cc', strings=True)
+for cc in plugin_cc: non_plugin_cc.remove(cc)
+
+if non_plugin_cc:
+    dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+    local_lib_name=os.path.dirname(dd)
+
+    env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
+                      LIBS=[ 'art_Framework_Core', ],
+#                      parse_flags=[ '-L'+g4libdir, '-I'+g4inc ]
+
+                      )
+    libs=[ local_lib_name ]
+else:
+    libs=[]
+
+for cc in plugin_cc:
+    libname='#/lib/'+cc[:cc.find('.cc')]
+    env.SharedLibrary( libname, cc,
+                       LIBS=[ libs,
+                             'art_Framework_Core',
+                             'art_Framework_Services_Optional_TFileService_service',
+                              babarlibs,
+                             'GeometryService',
+                             'ConditionsService',
+                             'Mu2eUtilities',
+                             'GeneralUtilities',
+                             'MCDataProducts',
+                             'RecoDataProducts',
+                             'CLHEP',
+                              rootlibs
+                              ], 
+#                        parse_flags=[ '-L'+g4libdir, '-I'+g4inc ]
+
+                    )             
+
+
+
+dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+ff=os.path.dirname(dd)   # THIS
+
+#env.DictionarySource(['#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
+#                      '#/tmp/src/%s/%s_map.cpp'%(dd,ff)],
+#                     ['classes.h','classes_def.xml'])
+
+#env.SharedLibrary('#/lib/%s_dict'%(ff,),
+#                  '#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
+#                  LIBS=libs)
+#env.SharedLibrary('#/lib/%s_map'%(ff,),
+#                  '#/tmp/src/%s/%s_map.cpp'%(dd,ff))
+
+
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:

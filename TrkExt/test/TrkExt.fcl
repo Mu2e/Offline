@@ -1,0 +1,141 @@
+# Configuration file for TrkPatRec01
+#
+# $Id: TrkExt.fcl,v 1.1 2012/08/04 00:22:10 mjlee Exp $
+# $Author: mjlee $
+# $Date: 2012/08/04 00:22:10 $
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+# Give this job a name.
+process_name : TrkExt
+
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : 100
+}
+
+services :
+{
+  message : @local::default_message
+
+  TFileService : { fileName : "result-TrkExt.root" }
+  RandomNumberGenerator : { }
+
+  user :
+  {
+    GeometryService : { inputFile : "TrkExt/test/mygeom.txt" }
+
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+
+    G4Helper : { }
+
+    SeedService       : @local::automaticSeeds
+  }
+
+}
+
+physics :
+{
+  producers :
+  {
+    # Generate the event
+    generate: @local::generate
+
+    # Run G4 and add hits to the event
+    g4run : @local::g4run
+
+    # Form StrawHits (SH).
+    makeSH : @local::makeSH
+    TrkPatRec : @local::TrkPatRec
+
+    trkext :
+    {
+      module_type : TrkExt
+      fitterModuleLabel : TrkPatRec
+      g4ModuleLabel : g4run
+      makerModuleLabel : makeSH 
+      makerModuleLabel : makeSH 
+      maxMomentum : 104.9599
+      turnOnMaterialEffect : true
+      useStoppingPower : false
+      maxNBack : 5000
+      extrapolationStep : 0.1
+      recordingStep : 5.0
+      mcFlag : true
+      useVirtualDetector : false
+      bFieldGradientMode : 0
+      turnOnMultipleScattering : true
+      debugLevel : 1
+    }
+
+   }
+
+ 
+    # test module for Kalman fit: the 
+  analyzers : 
+  {
+    backRec : 
+    {
+      module_type : ReadTrkExt
+      fitterModuleLabel : TrkPatRec
+      trkextModuleLabel : trkext
+      g4ModuleLabel : g4run
+      makerModuleLabel : makeSH 
+      mcFlag : true
+      debugLevel : 2
+    }
+
+    eventdisplay:
+    {
+      module_type : EventDisplay
+      g4ModuleLabel : g4run
+    }
+
+    ReadKalFits :
+    {
+      module_type    : ReadKalFits
+      fitterModuleLabel : TrkPatRec
+#      diagLevel : 2
+# MC truth finder, analyzer configuration
+      KalFitMC :
+      {
+      }
+    }
+
+  }
+
+
+  p1 : [generate , g4run, makeSH, TrkPatRec, trkext]
+  #e1 : [backRec]
+  e1 : [backRec, ReadKalFits, eventdisplay, outfile]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs: {
+    
+  outfile : {
+    module_type   :   RootOutput
+    fileName      :   "alloutput-TrkExt.root"
+    
+    //  An example of how to drop data products.
+    //  outputCommands:   [ "keep *_*_*_*"
+    //                       ,"drop mu2e::PointTrajectorymv_*_*_*"
+    //                    ]
+  } 
+    
+}
+
+
+physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_01.txt"
+physics.producers.makeSH.diagLevel    : 0
+physics.producers.makeSH.maxFullPrint : 0
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
