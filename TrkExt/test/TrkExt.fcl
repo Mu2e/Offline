@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkExt.fcl,v 1.1 2012/08/04 00:22:10 mjlee Exp $
+# $Id: TrkExt.fcl,v 1.2 2012/08/04 01:05:03 mjlee Exp $
 # $Author: mjlee $
-# $Date: 2012/08/04 00:22:10 $
+# $Date: 2012/08/04 01:05:03 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -26,7 +26,7 @@ services :
 
   user :
   {
-    GeometryService : { inputFile : "TrkExt/test/mygeom.txt" }
+    GeometryService : { inputFile : "Mu2eG4/test/geom_01.txt" }
 
     ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
 
@@ -58,7 +58,6 @@ physics :
       module_type : TrkExt
       fitterModuleLabel : TrkPatRec
       g4ModuleLabel : g4run
-      makerModuleLabel : makeSH 
       makerModuleLabel : makeSH 
       maxMomentum : 104.9599
       turnOnMaterialEffect : true
@@ -100,8 +99,6 @@ physics :
     {
       module_type    : ReadKalFits
       fitterModuleLabel : TrkPatRec
-#      diagLevel : 2
-# MC truth finder, analyzer configuration
       KalFitMC :
       {
       }
@@ -111,8 +108,9 @@ physics :
 
 
   p1 : [generate , g4run, makeSH, TrkPatRec, trkext]
-  #e1 : [backRec]
-  e1 : [backRec, ReadKalFits, eventdisplay, outfile]
+  e1 : [backRec]
+# To see the event display and to write out data file, use following line
+# e1 : [backRec, ReadKalFits, eventdisplay, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -125,10 +123,6 @@ outputs: {
     module_type   :   RootOutput
     fileName      :   "alloutput-TrkExt.root"
     
-    //  An example of how to drop data products.
-    //  outputCommands:   [ "keep *_*_*_*"
-    //                       ,"drop mu2e::PointTrajectorymv_*_*_*"
-    //                    ]
   } 
     
 }
