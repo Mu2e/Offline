@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.cc,v 1.6 2012/03/23 22:27:50 brownd Exp $
+// $Id: TrkHelixFit.cc,v 1.7 2012/08/04 01:12:31 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/03/23 22:27:50 $
+// $Date: 2012/08/04 01:12:31 $
 //
 //
 // the following has to come before other BaBar includes
@@ -16,6 +16,16 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "TrackerGeom/inc/Straw.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "BFieldGeom/inc/BFieldConfig.hh"
+//CLHEP
+#include "CLHEP/Units/PhysicalConstants.h"
+// boost
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/median.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+// Root
 #include "TGraph.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -33,9 +43,8 @@ namespace mu2e
   };
 
   // comparison functor for sorting by z
-  typedef std::pair<double,double> FZP;
-  struct zcomp : public std::binary_function<FZP,FZP,bool> {
-    bool operator()(FZP const & p1, FZP const& p2) { return p1.second < p2.second; }
+  struct zcomp : public std::binary_function<XYZP,XYZP,bool> {
+    bool operator()(XYZP const & p1, XYZP const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
   
   void
@@ -49,23 +58,36 @@ namespace mu2e
   }
   
   void
-  TrkHelixFit::helixParams(TrkHelix const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const {
+  TrkHelixFit::helixParams(TrkDef const& mytrk, TrkHelix const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const {
     static const double pi(M_PI);
     static const double twopi(2*pi);
-    static const double halfpi(0.5*pi);
-// should sign omega by the sign of Bz(0), FIXME!!!!!
+    static const double halfpi(pi/2.0);
+// the helix fit introduces a radial bias due to an asymmetry in the detector (more phase space for
+// noise hits outside the circle than inside.  correct for it.
     double radius = helix._radius + _rbias;
     pvec = HepVector(5,0);
-    pvec[HelixTraj::omegaIndex] = 1.0/radius;
-// bias is doubled on d0
-    pvec[HelixTraj::d0Index] = helix._center.perp() - helix._radius - 2*_rbias;
-// account for the convention difference
-    pvec[HelixTraj::phi0Index] = atan2(-helix._center.x(),helix._center.y());
-    pvec[HelixTraj::tanDipIndex] = 1.0/(radius*helix._dfdz);
-    double dphi = pvec[HelixTraj::phi0Index] - helix._fz0 + 3*halfpi;
-    int nloop = (int)rint(dphi/twopi);
-    dphi -= nloop*twopi;
-    pvec[HelixTraj::z0Index] = radius*pvec[HelixTraj::tanDipIndex]*dphi;
+// omega is the inverse transverse radius of the particle's circular motion.  Its
+// signed by the particle angular momentum about the cirle center.
+// This CANNOT be deduced geometrically, so must be supplied as an ad-hoc assumption
+    double amsign = copysign(1.0,-mytrk.particle().charge()*_bz);
+    pvec[HelixTraj::omegaIndex] = amsign/radius;
+// phi0 is the azimuthal angle of the particle velocity vector at the point
+// of closest approach to the origin.  It's sign also depends on the angular
+// momentum.  To translate from the center, we need to reverse coordinates
+    pvec[HelixTraj::phi0Index] = atan2(-amsign*helix._center.x(),amsign*helix._center.y());
+// d0 describes the distance to the origin at closest approach.
+// It is signed by the particle angular momentum WRT the origin.
+// The Helix fit radial bias is anti-correlated with d0; correct for it here.
+    pvec[HelixTraj::d0Index] = amsign*(helix._center.perp() - helix._radius - 2*_rbias);
+// the dip angle is measured WRT the perpendicular.  It is signed by the particle Z momentum    
+    pvec[HelixTraj::tanDipIndex] = amsign/(radius*helix._dfdz);
+// must change conventions here: fz0 is the phi at z=0, z0 is defined at the point of closest approach
+// resolve the loop ambiguity such that the POCA is closest to z=0.
+    double dphi = fmod(pvec[HelixTraj::phi0Index]-helix._fz0 - amsign*halfpi,twopi);
+// choose z0 (which loop) so that f=0 is as close to z=0 as possible
+    if(dphi>pi)dphi -= twopi;
+    if(dphi<-pi)dphi += twopi;
+    pvec[HelixTraj::z0Index] = dphi*pvec[HelixTraj::tanDipIndex]/pvec[HelixTraj::omegaIndex];
 // estimated covariance based on average performance.  These should be parameters, FIXME!!!
     perr = HepVector(5,0);
     perr[HelixTraj::d0Index] = 34.0;
@@ -85,15 +107,21 @@ namespace mu2e
   _lambda0(pset.get<double>("lambda0",1.0)),
   _lstep(pset.get<double>("lstep",0.2)),
   _minlambda(pset.get<double>("minlambda",0.1)),
-  _maxniter(pset.get<unsigned>("maxniter",100)),
-  _nsigma(pset.get<double>("nsigma",10)),
+  _maxniter(pset.get<unsigned>("maxniter",10)),
+  _nsigma(pset.get<double>("nsigma",5)),
   _minzsep(pset.get<double>("minzsep",200)),
   _maxzsep(pset.get<double>("maxzsep",700)),
   _target(pset.get<bool>("targetConstraint",false)),
   _tsig(pset.get<double>("targetSigma",60.0)),
-  _rbias(pset.get<double>("radialBias",-25.0)),
-  _sfac(pset.get<double>("strawSizeFactor",2.0))
-    {}
+  _rbias(pset.get<double>("radialBias",-5.0)),
+  _sfac(pset.get<double>("strawSizeFactor",2.0)),
+  _pmin(pset.get<double>("minP",80)),
+  _pmax(pset.get<double>("maxP",120)),
+  _tdmin(pset.get<double>("minAbsTanDip",0.3)),
+  _tdmax(pset.get<double>("maxAbsTanDip",1.5)),
+  _forcep(pset.get<bool>("forceP",true))
+    {
+    }
 
   TrkHelixFit::~TrkHelixFit()
     {}
@@ -101,21 +129,41 @@ namespace mu2e
   bool
   TrkHelixFit::findHelix(TrkDef const& mytrk,TrkHelix& myhel) {
     bool retval(false);
+// find the magnetic field Z component at the origin
+    GeomHandle<BFieldConfig> bfconf;
+    _bz = bfconf->getDSUniformValue().z();
+//  compute the allowed range in radius for this fit
+    double pb = fabs((CLHEP::c_light*1e-3)/(_bz*mytrk.particle().charge()));
+    _rmin = _pmin/(pb*sqrt(1.0+_tdmax*_tdmax));
+    _rmax = _pmax/(pb*sqrt(1.0+_tdmin*_tdmin));
+//  particle charge, field, and direction affect pitch range
+    _dfdzsign = copysign(1.0,-mytrk.particle().charge()*mytrk.fitdir().dzdt()*_bz);
 // loop over hits, and store the points
     std::vector<XYZP> xyzp;
     fillXYZP(mytrk,xyzp);
 // initialize the circle parameters
-    if(xyzp.size() > _minnhit && initCircle(xyzp,myhel)){
+    if(xyzp.size() > _minnhit){
+      if(initCircle(xyzp,myhel)){
 // solve for the circle parameters
-      retval = findXY(xyzp,myhel);
+	retval = findXY(xyzp,myhel);
+// fill graphs for display if requested
+	if(_diag > 1)plotXY(mytrk,xyzp,myhel);
 // extend those into the z direction
-      if(retval) retval = findZ(xyzp,myhel);
-    }
+	if(retval){
+	  retval = findZ(xyzp,myhel);
+	  if(_diag > 1)plotZ(mytrk,xyzp,myhel);
 // set the success
-    if(retval)
-      myhel._fit = TrkErrCode(TrkErrCode::succeed);
-    else
-      myhel._fit = TrkErrCode(TrkErrCode::fail);
+	  if(retval){
+	    myhel._fit = TrkErrCode(TrkErrCode::succeed);
+	  } else
+	    myhel._fit = TrkErrCode(TrkErrCode::fail,4); // phi-z reconstruction failure
+	} else
+	  myhel._fit = TrkErrCode(TrkErrCode::fail,3); // xy reconstruction failure
+      } else
+	myhel._fit = TrkErrCode(TrkErrCode::fail,2); // initialization failure
+    } else
+      myhel._fit = TrkErrCode(TrkErrCode::fail,1); // insufficient hits
+
     return retval;
   }
   
@@ -135,32 +183,44 @@ namespace mu2e
     }
     myhel._center = center;
     myhel._radius = rmed;
-// fill graphs for display if requested
-    if(_diag > 1){
-      static unsigned igraph(0);
-      art::ServiceHandle<art::TFileService> tfs;
-//      TGraph* graph = tfs->make<TGraph>(xyzp.size());
-      char gname[100];
-      snprintf(gname,100,"shxy%i",++igraph);
-      TH2F* g = tfs->make<TH2F>(gname,"Straw Hit XY positions",100,-500,500,100,-500,500);
-      g->SetMarkerStyle(8);
-//      graph->SetNameTitle(gname,"Straw Hit XY positions");
-      for(unsigned ixyzp=0;ixyzp<xyzp.size();++ixyzp){
-//        graph->SetPoint(ixyzp,xyzp[ixyzp]._pos.x()-myhel._center.x(),xyzp[ixyzp]._pos.y()-myhel._center.y());
-        g->Fill(xyzp[ixyzp]._pos.x()-myhel._center.x(),xyzp[ixyzp]._pos.y()-myhel._center.y());
-      }
-// need 2 TF1 to model circle as root doesn't support parametric functions
-      TF1* circ1 = new TF1("circ1","sqrt([0]*[0]-x*x)",-myhel._radius,myhel._radius);
-      circ1->SetParameter(0,myhel._radius);
-      circ1->SetLineColor(kRed);
-      TF1* circ2 = new TF1("circ2","-sqrt([0]*[0]-x*x)",-myhel._radius,myhel._radius);
-      circ2->SetParameter(0,myhel._radius);
-      circ2->SetLineColor(kRed);
-      TList* flist = g->GetListOfFunctions();
-      flist->Add(circ1);
-      flist->Add(circ2);
-    }    
     return true;
+  }
+
+  void
+  TrkHelixFit::plotXY(TrkDef const& mytrk, std::vector<XYZP> const& xyzp,TrkHelix const& myhel) const {
+    unsigned igraph = 10*mytrk.eventId()+mytrk.trackId();
+    art::ServiceHandle<art::TFileService> tfs;
+    //      TGraph* graph = tfs->make<TGraph>(xyzp.size());
+    char gname[100];
+    snprintf(gname,100,"gshxy%i",igraph);
+    char bname[100];
+    snprintf(bname,100,"bshxy%i",igraph);
+    char title[100];
+    snprintf(title,100,"StrawHit XY evt %i trk %i",mytrk.eventId(),mytrk.trackId());
+    TH2F* g = tfs->make<TH2F>(gname,title,100,-500,500,100,-500,500);
+    TH2F* b = tfs->make<TH2F>(bname,title,100,-500,500,100,-500,500);
+    g->SetMarkerStyle(8);
+    g->SetMarkerColor(kGreen);
+    b->SetMarkerStyle(4);
+    b->SetMarkerColor(kBlue);
+    //      graph->SetNameTitle(gname,"Straw Hit XY positions");
+    for(unsigned ixyzp=0;ixyzp<xyzp.size();++ixyzp){
+      //        graph->SetPoint(ixyzp,xyzp[ixyzp]._pos.x()-myhel._center.x(),xyzp[ixyzp]._pos.y()-myhel._center.y());
+      if(xyzp[ixyzp]._use)
+	g->Fill(xyzp[ixyzp]._pos.x()-myhel._center.x(),xyzp[ixyzp]._pos.y()-myhel._center.y());
+      else
+	b->Fill(xyzp[ixyzp]._pos.x()-myhel._center.x(),xyzp[ixyzp]._pos.y()-myhel._center.y());
+    }
+    // need 2 TF1 to model circle as root doesn't support parametric functions
+    TF1* circ1 = new TF1("circ1","sqrt([0]*[0]-x*x)",-myhel._radius,myhel._radius);
+    circ1->SetParameter(0,myhel._radius);
+    circ1->SetLineColor(kRed);
+    TF1* circ2 = new TF1("circ2","-sqrt([0]*[0]-x*x)",-myhel._radius,myhel._radius);
+    circ2->SetParameter(0,myhel._radius);
+    circ2->SetLineColor(kRed);
+    TList* flist = g->GetListOfFunctions();
+    flist->Add(circ1);
+    flist->Add(circ2);
   }
 
   bool
@@ -225,110 +285,161 @@ namespace mu2e
   }
   
   bool
-  TrkHelixFit::findZ(std::vector<XYZP> const& xyzp,TrkHelix& myhel) {
+  TrkHelixFit::findZ(std::vector<XYZP>& xyzp,TrkHelix& myhel) {
+    using namespace boost::accumulators;
  //
-    std::vector<FZP > fz;
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
 // exclude target region z
-      if(xyzp[ixyzp]._use && xyzp[ixyzp]._pos.z() > _targetz ){
-        double phi = atan2((xyzp[ixyzp]._pos.y()-myhel._center.y()),(xyzp[ixyzp]._pos.x()-myhel._center.x()));
-        fz.push_back(std::make_pair(phi,xyzp[ixyzp]._pos.z()));
-      }
+      xyzp[ixyzp]._phi = atan2((xyzp[ixyzp]._pos.y()-myhel._center.y()),(xyzp[ixyzp]._pos.x()-myhel._center.x()));
     }
 // sort these by z
-    std::sort(fz.begin(),fz.end(),zcomp());
-// make initial estimate of tandip using 'nearby pairs   
+    std::sort(xyzp.begin(),xyzp.end(),zcomp());
+// make initial estimate of dfdz using 'nearby' pairs
     std::vector<double> slopes;
-    slopes.reserve(2*fz.size());
-    static const double pi(3.1415965);
+    slopes.reserve(4*xyzp.size());
+    static const double pi(M_PI);
     static const double twopi(2*pi);
-    for(unsigned ifz=0;ifz<fz.size();++ifz){
-      for(unsigned jfz=ifz+1;jfz<fz.size();++jfz){
-        double dz = fz[jfz].second -fz[ifz].second;
-        if(fabs(dz) > _minzsep && fabs(dz) < _maxzsep){
-// take care of phi mapping around 0; this assumes points are never more than 1 loop apart
-          if(fabs(fz[ifz].first-fz[jfz].first) > pi){
-            if(fz[ifz].first>fz[jfz].first)
-              fz[jfz].first += twopi;
-            else
-              fz[jfz].first -= twopi;
-          }
-          slopes.push_back( (fz[jfz].first-fz[ifz].first)/dz );
+    for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
+      if(xyzp[ixyzp]._use){
+	for(unsigned jxyzp=ixyzp+1; jxyzp < xyzp.size(); ++jxyzp){
+	  if(xyzp[jxyzp]._use){
+	    double dz = xyzp[jxyzp]._pos.z() -xyzp[ixyzp]._pos.z();
+	    if(fabs(dz) > _minzsep && fabs(dz) < _maxzsep){
+	      double dphi = fmod(xyzp[jxyzp]._phi-xyzp[ixyzp]._phi,twopi);
+	      if(dphi>pi)dphi -= twopi;
+	      if(dphi<-pi)dphi += twopi;
+	      slopes.push_back( dphi/dz );
+	    }
+	  }
         }
       }
     }
     if(slopes.size()>0){
-      std::sort(slopes.begin(),slopes.end());
-// find the median could interpolate, but it's false accuracy
-      unsigned ihalf = (unsigned)rint(slopes.size()/2.0);
-      double dfdz = slopes[ihalf];
-// check: if the slope is less than that of a conversion, force it to be the average of a conversion
-// this only works for conversions and so should be an option, FIXME!!!
-      if(dfdz < 0.004)dfdz = 0.0048; // average of all helices
-// Use this estimate to correct all points phi so that they are are all on the same helix
-      for(unsigned ifz=1;ifz<fz.size();++ifz){
-        double phiexp = fz[0].first + (fz[ifz].second-fz[0].second)*dfdz;
-        int nloop = (int)rint((phiexp-fz[ifz].first)/twopi);
-        fz[ifz].first += nloop*twopi;
+      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acc;
+      acc = std::for_each( slopes.begin(), slopes.end(), acc );
+      double dfdz = extract_result<tag::median>(acc);
+// if the sign of dfdz disagrees, abort
+      if( dfdz * _dfdzsign < 0.0)
+	return false;
+// if requested, restrict the range
+      if(_forcep){
+	if(fabs(dfdz) > 1.0/(_rmin*_tdmin))
+	  dfdz = copysign(1.0/(_rmin*_tdmin),dfdz);
+   	if(fabs(dfdz) < 1.0/(_rmax*_tdmax))
+	  dfdz = copysign(1.0/(_rmax*_tdmax),dfdz);
+      } else {
+	if(fabs(dfdz) > 1.0/(_rmin*_tdmin)) return false;
+   	if(fabs(dfdz) < 1.0/(_rmax*_tdmax)) return false;
       }
-// make a long-range estimate of slope
-      slopes.clear();
-      for(unsigned ifz=0;ifz<fz.size();++ifz){
-        for(unsigned jfz=ifz+1;jfz<fz.size();++jfz){
-          double dz = fz[jfz].second -fz[ifz].second;
-          if(fabs(dz) > _minzsep){
-            slopes.push_back( (fz[jfz].first-fz[ifz].first)/dz );
-          }
-        }
+      
+// choose the middle hit Z value to set the convention
+      unsigned icomp(0);
+      for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
+	if(xyzp[ixyzp]._use){
+	  icomp = ixyzp;
+	  break;
+	}
       }
-      std::sort(slopes.begin(),slopes.end());
-      ihalf = (unsigned)rint(slopes.size()/2.0);
-      dfdz = slopes[ihalf];
+// Use this slope estimate to correct all phi values so that they are are all on the same helix
+// iterate over slope and ambiguity resolution
+      bool changed(true);
+      unsigned niter(0);
+      while(changed && niter < _maxniter){
+	changed = false;
+	++niter;
+	for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
+	  double dz = xyzp[ixyzp]._pos.z()-xyzp[icomp]._pos.z();
+	  double phiex = xyzp[icomp]._phi + dz*dfdz;
+	  int nloop = (int)rint((phiex-xyzp[ixyzp]._phi)/twopi);
+	  xyzp[ixyzp]._phi += nloop*twopi;
+	  changed |= nloop != 0;
+	}
+	// make a long-range estimate of slope
+	slopes.clear();
+	for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
+	  if(xyzp[ixyzp]._use){
+	    for(unsigned jxyzp=ixyzp+1; jxyzp < xyzp.size(); ++jxyzp){
+	      if(xyzp[jxyzp]._use){
+		double dz = xyzp[jxyzp]._pos.z() -xyzp[ixyzp]._pos.z();
+		if(fabs(dz) > _minzsep){
+		  slopes.push_back( (xyzp[jxyzp]._phi-xyzp[ixyzp]._phi)/dz );
+		}
+	      }
+	    }
+	  }
+	}
+	accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acc2;
+	acc2 = std::for_each( slopes.begin(), slopes.end(), acc2 );
+	dfdz = extract_result<tag::median>(acc2);
+      }
       myhel._dfdz = dfdz;
 // find phi at z intercept
       std::vector<double> inters;
-      for(unsigned ifz=0;ifz<fz.size();++ifz){
-        inters.push_back(fz[ifz].first - fz[ifz].second*dfdz);
+      for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
+	if(xyzp[ixyzp]._use)
+	  inters.push_back(xyzp[ixyzp]._phi - xyzp[ixyzp]._pos.z()*dfdz);
       }
-      std::sort(inters.begin(),inters.end());
-      unsigned jhalf = (unsigned)rint(inters.size()/2.0);
-      myhel._fz0 = inters[jhalf];
+      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acc3;
+      acc3 = std::for_each( inters.begin(), inters.end(), acc3 );
+      double fz0 = fmod(extract_result<tag::median>(acc3),twopi);
+      if(fz0>pi)fz0 -= twopi;
+      if(fz0<-pi)fz0 += twopi;
+      myhel._fz0 = fz0;
+// fix the phi for the hit points
+      for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
+	double phiex = myhel._fz0 + xyzp[ixyzp]._pos.z()*myhel._dfdz;
+	int nloop = (int)rint((phiex-xyzp[ixyzp]._phi)/twopi);
+	xyzp[ixyzp]._phi += nloop*twopi;
+      }
     } else {
       myhel._dfdz = 0.0;
       myhel._fz0 = 0.0;
       return false;
     }
-// fill graphs for display if requested
-    if(_diag > 1){
-      static unsigned igraph(0);
-      art::ServiceHandle<art::TFileService> tfs;
-//      TGraph* graph = tfs->make<TGraph>(fz.size());
-      char gname[100];
-			snprintf(gname,100,"shphiz%i",++igraph);
-      TH2F* graph = tfs->make<TH2F>(gname,"Straw Hit phi vs Z positions",50,-1500,1500,50,-5,20);
-      graph->SetMarkerStyle(8);
-//        graph->SetNameTitle(gname,"Straw Hit phi vs Z positions");
-      for(unsigned ifz=0;ifz<fz.size();++ifz){
-//        graph->SetPoint(ifz,fz[ifz].second,fz[ifz].first);
-        graph->Fill(fz[ifz].second,fz[ifz].first);
-      }
-      TF1* line = new TF1("line","[0]+[1]*x",-1500,1500);
-      line->SetParameter(0,myhel._fz0);
-      line->SetParameter(1,myhel._dfdz);
-      line->SetLineColor(kRed);
-      TList* flist = graph->GetListOfFunctions();
-      flist->Add(line);
-    }
     return true;
+  }
+  
+  void
+  TrkHelixFit::plotZ(TrkDef const& mytrk, std::vector<XYZP> const& xyzp,TrkHelix const& myhel) const {
+    unsigned igraph = 10*mytrk.eventId()+mytrk.trackId();
+    art::ServiceHandle<art::TFileService> tfs;
+    char gname[100];
+    snprintf(gname,100,"gshphiz%i",igraph);
+    char bname[100];
+    snprintf(bname,100,"bshphiz%i",igraph);
+    char title[100];
+    snprintf(title,100,"StrawHit #phi Z evt %i trk %i",mytrk.eventId(),mytrk.trackId());
+    TH2F* g = tfs->make<TH2F>(gname,title,50,-1500,1500,50,-5,20);
+    TH2F* b = tfs->make<TH2F>(bname,title,50,-1500,1500,50,-5,20);
+    g->SetMarkerStyle(8);
+    g->SetMarkerColor(kGreen);
+    b->SetMarkerStyle(4);
+    b->SetMarkerColor(kBlue);
+    for(unsigned ixyzp=0;ixyzp<xyzp.size();++ixyzp){
+      //        graph->SetPoint(ixyzp,xyzp[ixyzp]._pos.x()-myhel._center.x(),xyzp[ixyzp]._pos.y()-myhel._center.y());
+      if(xyzp[ixyzp]._use)
+	g->Fill(xyzp[ixyzp]._pos.z(),xyzp[ixyzp]._phi);
+      else
+	b->Fill(xyzp[ixyzp]._pos.z(),xyzp[ixyzp]._phi);
+    }
+
+    TF1* line = new TF1("line","[0]+[1]*x",-1500,1500);
+    line->SetParameter(0,myhel._fz0);
+    line->SetParameter(1,myhel._dfdz);
+    line->SetLineColor(kRed);
+    TList* flist = g->GetListOfFunctions();
+    flist->Add(line);
   }
 
   bool
   TrkHelixFit::initCircle(std::vector<XYZP> const& xyzp,TrkHelix& myhel) {
+    bool retval(false);
+    using namespace boost::accumulators;
+    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx, accy;
 // use a subset of hits
     unsigned istep = std::max((int)ceil(xyzp.size()/_maxnhit),1);
 // form all triples, and compute the circle center for unaligned hits.  I can aford to be choosy
     unsigned ntriple(0);
-    double cxsum(0.0), cysum(0.0);
     unsigned nxyzp = xyzp.size();
     for(unsigned ixyzp=0; ixyzp < nxyzp; ixyzp+=istep){
 // pre-compute some values
@@ -351,29 +462,33 @@ namespace mu2e
               (xyzp[kxyzp]._pos.x() - xyzp[jxyzp]._pos.x())*ri2 + 
               (xyzp[ixyzp]._pos.x() - xyzp[kxyzp]._pos.x())*rj2 + 
               (xyzp[jxyzp]._pos.x() - xyzp[ixyzp]._pos.x())*rk2 ) / delta;
-// increment sums              
-// might need to do an iterative outlier search here someday?
+// accumulate 
             ++ntriple;
-            cxsum += cx;
-            cysum += cy;
+	    accx(cx);
+	    accy(cy);
           }
         }
       }
     }
     if(ntriple > _minnhit){
-      myhel._center = CLHEP::Hep3Vector(cxsum/ntriple,cysum/ntriple,0.0);
+      double centx = extract_result<tag::median>(accx);
+      double centy = extract_result<tag::median>(accy);
+      myhel._center = CLHEP::Hep3Vector(centx,centy,0.0);
 // use the center to estimate the radius
-      double rsum(0.0);
+      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accr;
       for(unsigned ixyzp=0; ixyzp<nxyzp; ++ixyzp){
-        rsum += (xyzp[ixyzp]._pos - myhel._center).perpPart().mag();
+        accr((xyzp[ixyzp]._pos - myhel._center).perpPart().mag());
       }
-// set a maximum size; this only works for conversions and should be an option, FIXME!!!
-      double radius = rsum/xyzp.size();
-      if(radius > 300.0) radius = 300.0;
-      myhel._radius = radius;
-      return true;
-    } else
-      return false;
+      myhel._radius = extract_result<tag::median>(accr);
+// restrict the range
+      if(_forcep){
+	myhel._radius = std::max(std::min(myhel._radius,_rmax),_rmin);
+	retval = true;
+      } else {
+	retval = myhel._radius >= _rmin && myhel._radius <= _rmax;
+      }
+    }
+    return retval;
   }
 
   void
@@ -434,11 +549,9 @@ namespace mu2e
       }
       wsum += wt;
     }
-// check for other degenerate case: all the weight in the last entry
-    if(rmed < 0.0)
-      rmed = 270.0;
-// force radius into physical range; this is only for conversion electrons, FIXME!!!
-    if(rmed > 300.0) rmed = 300.0;
+// if requested force radius into range
+    if(_forcep)
+      rmed = std::max(std::min(rmed,_rmax),_rmin);
 // now compute the AGE
     age = 0.0;
     for(unsigned irad=0;irad<radii.size();++irad){

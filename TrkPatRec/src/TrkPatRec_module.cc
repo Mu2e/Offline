@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.32 2012/07/31 23:28:56 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.33 2012/08/04 01:12:31 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/31 23:28:56 $
+// $Date: 2012/08/04 01:12:31 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -212,10 +212,10 @@ class TrkPatRec : public art::EDProducer
     _edept(pset.get<double>("EDep_tight",0.0045)),
     _edepl(pset.get<double>("EDep_loose",0.005)),
     _edepvl(pset.get<double>("EDep_veryloose",0.008)),
-    _rmint(pset.get<double>("RMin_tight",420.0)),
+    _rmint(pset.get<double>("RMin_tight",410.0)),
     _rminl(pset.get<double>("RMin_loose",390.0)),
     _rmaxt(pset.get<double>("RMax_tight",630.0)),
-    _rmaxl(pset.get<double>("RMax_loose",650.0)),
+    _rmaxl(pset.get<double>("RMax_loose",660.0)),
     _maxdt(pset.get<double>("DtMax",35.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
     _filterdeltas(pset.get<bool>("FilterDeltas",true)),
@@ -224,7 +224,7 @@ class TrkPatRec : public art::EDProducer
     _maxndelta(pset.get<unsigned>("MaxNDeltas",200)),
     _npbins(pset.get<unsigned>("NPhiBins",100)),
     _ntbins(pset.get<unsigned>("NTimeBins",100)),
-    _nselbins(pset.get<int>("NSelBins",3)),
+    _nselbins(pset.get<int>("NSelBins",2)),
     _2dthresh(pset.get<double>("TwoDPeakThreshold",3)),
     _2dsigma(pset.get<double>("TwoDPeakSigma",1.0)),
     _fbf(pset.get<double>("PhiEdgeBuffer",1.1)),
@@ -235,11 +235,11 @@ class TrkPatRec : public art::EDProducer
     _maxrho(pset.get<double>("MaxRho",660.0)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",0)),
-    _tmin(pset.get<double>("tmin",400.0)),
+    _tmin(pset.get<double>("tmin",0.0)),
     _tmax(pset.get<double>("tmax",2000.0)),
     _tbin(pset.get<double>("tbin",20.0)),
-    _ymin(pset.get<double>("ymin",5)),
-    _1dthresh(pset.get<double>("OneDPeakThreshold",5.0)),
+    _ymin(pset.get<double>("ymin",3)),
+    _1dthresh(pset.get<double>("OneDPeakThreshold",3.0)),
     _tpeakerr(pset.get<double>("timepeakerr",-8.0)),
     _seedt0(pset.get<bool>("SeedT0",false)),
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
@@ -322,6 +322,8 @@ class TrkPatRec : public art::EDProducer
 // create track definitions for the different fits from this initial information 
       TrkDef helixdef(_strawhits,_tpeaks[ipeak]._trkptrs,_tpart,_fdir);
       helixdef.setTrkT0(_tpeaks[ipeak]._tpeak-_tdriftmean,_tpeakerr);
+      helixdef.setEventId(_eventid);
+      helixdef.setTrackId(ipeak);
       TrkDef seeddef(helixdef);
       TrkDef kaldef(helixdef);
 // robust helix fit
@@ -330,7 +332,7 @@ class TrkPatRec : public art::EDProducer
 // convert the result to standard helix parameters, and initialize the seed definition helix
 	HepVector hpar;
 	HepVector hparerr;
-	_hfit.helixParams(helixfit,hpar,hparerr);
+	_hfit.helixParams(helixdef,helixfit,hpar,hparerr);
 	HepSymMatrix hcov = vT_times_v(hparerr);
 	seeddef.setHelix(HelixTraj(hpar,hcov));
 // Filter outliers using this helix
@@ -1149,7 +1151,7 @@ class TrkPatRec : public art::EDProducer
     if(helixfit._fit.success()){
       HepVector hpar;
       HepVector hparerr;
-      _hfit.helixParams(helixfit,hpar,hparerr);
+      _hfit.helixParams(helixdef,helixfit,hpar,hparerr);
       _hpar = helixpar(hpar);
       _hparerr = helixpar(hparerr);
       _hcx = helixfit._center.x(); _hcy = helixfit._center.y(); _hr = helixfit._radius;
@@ -1181,9 +1183,9 @@ class TrkPatRec : public art::EDProducer
       double cx = -rad*sin(mctrk.helix().phi0());
       double cy = rad*cos(mctrk.helix().phi0());
       _mccx = cx; _mccy = cy; _mcr = rtrue;
-      _mcdfdz = fabs(mctrk.helix().omega())/mctrk.helix().tanDip();
+      _mcdfdz = mctrk.helix().omega()/mctrk.helix().tanDip();
       // fix loop for MC values
-      _mcfz0 = -mctrk.helix().z0()*mctrk.helix().omega()/mctrk.helix().tanDip() + mctrk.helix().phi0() - halfpi;
+      _mcfz0 = -mctrk.helix().z0()*mctrk.helix().omega()/mctrk.helix().tanDip() + mctrk.helix().phi0() - copysign(halfpi,mctrk.helix().omega());
       int nloop = (int)rint((helixfit._fz0 - _mcfz0)/twopi);
       _mcfz0 += nloop*twopi;
     }

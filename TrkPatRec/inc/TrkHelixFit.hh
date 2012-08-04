@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.hh,v 1.6 2012/05/18 17:59:31 mu2ecvs Exp $
-// $Author: mu2ecvs $ 
-// $Date: 2012/05/18 17:59:31 $
+// $Id: TrkHelixFit.hh,v 1.7 2012/08/04 01:12:31 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2012/08/04 01:12:31 $
 //
 #ifndef TrkHelixFit_HH
 #define TrkHelixFit_HH
@@ -31,7 +31,8 @@ namespace mu2e
 // circle parameters; the z center is ignored.
     CLHEP::Hep3Vector _center;
     double _radius;
-// Z parameters; dfdz is the slope of phi vs z (=1/(R*tandip)), fz0 is the phi value of the particle where it goes through z=0
+// Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), fz0 is the phi value of the particle where it goes through z=0
+// note that dfdz has a physical ambiguity in q*zdir.
     double _dfdz, _fz0;
     TrkHelix() : _fit(TrkErrCode::fail),_radius(-1.0),_dfdz(0.0),_fz0(0.0) {}
  };
@@ -45,6 +46,8 @@ namespace mu2e
 // utility struct
   struct XYZP {
     CLHEP::Hep3Vector _pos;
+// ambiguity-resolved phi angle
+    double _phi;
 // wire direction
     CLHEP::Hep3Vector _wdir;
 // straw radial direction, perp to Z and wire direction
@@ -79,14 +82,16 @@ namespace mu2e
 // main function: given a track definition, find the helix parameters
     bool findHelix(TrkDef const& mytrk,TrkHelix& myfit);
 // convert to BaBar helix parameters.  Also return an error estimate
-    void helixParams (TrkHelix const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const;
+    void helixParams (TrkDef const& mytrk, TrkHelix const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const;
   protected:
 // utlity functions
     bool findXY(std::vector<XYZP>& xyzp,TrkHelix& myhel);
-    bool findZ(std::vector<XYZP> const& xyzp,TrkHelix& myhel);
+    bool findZ(std::vector<XYZP>& xyzp,TrkHelix& myhel);
     bool initCircle(std::vector<XYZP> const& xyzp,TrkHelix& myhel);
     void fillXYZP(TrkDef const& mytrk, std::vector<XYZP>& xyzp);
-    
+// diagnostics
+    void plotXY(TrkDef const& mytrk, std::vector<XYZP>const& xyzp,TrkHelix const& myhel) const;
+    void plotZ(TrkDef const& mytrk, std::vector<XYZP> const& xyzp,TrkHelix const& myhel) const;
 // find the Absolute Geometric Error.  Returns the median radius as well.
     bool findCenterAGE(std::vector<XYZP> const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights=false);
     void findAGE(std::vector<XYZP> const& xyzp, Hep3Vector const& center,double& rmed, double& age,bool useweights=false);
@@ -100,13 +105,22 @@ namespace mu2e
     double _rfactor,_lambda0,_lstep,_minlambda; // parameters for AGE center determination
     unsigned _maxniter; // maxium # of iterations to global minimum
     double _nsigma; // # of sigma for filtering outlyers
-    double _minzsep, _maxzsep; // Z separation of points for tandip estimate
-    bool _target; // include target constraint
+    double _minzsep, _maxzsep; // Z separation of points for pitch estimate
+    bool _target; // include target 
     double _tsig; // sigma of target constraint
     double _rbias;  // robust fit parameter bias
-    double _sfac; // error factor on straw position perp to wire direction
+    double _sfac; // error factor  straw position perp to wire direction
+    double _pmin, _pmax; // range of total momentum
+    double _tdmin, _tdmax; // range of abs(tan(dip))
+    bool _forcep; // force the p/pt to be in range (true), or exclude fits outside that range (false)
     static double _targetz; // z position of target hit
+    double _bz; // cached value of Field Z component at the tracker origin
 // 
+  private:
+// cached value of radius and pitch sign: these depend on the particle type
+// and direction
+    double _rmin, _rmax, _dfdzsign
+    ;
   };
 }
 #endif
