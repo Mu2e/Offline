@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.cc,v 1.7 2012/08/04 01:12:31 brownd Exp $
+// $Id: TrkHelixFit.cc,v 1.8 2012/08/05 15:43:37 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/04 01:12:31 $
+// $Date: 2012/08/05 15:43:37 $
 //
 //
 // the following has to come before other BaBar includes
@@ -115,10 +115,10 @@ namespace mu2e
   _tsig(pset.get<double>("targetSigma",60.0)),
   _rbias(pset.get<double>("radialBias",-5.0)),
   _sfac(pset.get<double>("strawSizeFactor",2.0)),
-  _pmin(pset.get<double>("minP",80)),
-  _pmax(pset.get<double>("maxP",120)),
-  _tdmin(pset.get<double>("minAbsTanDip",0.3)),
-  _tdmax(pset.get<double>("maxAbsTanDip",1.5)),
+  _pmin(pset.get<double>("minP",90)),
+  _pmax(pset.get<double>("maxP",115)),
+  _tdmin(pset.get<double>("minAbsTanDip",0.5)),
+  _tdmax(pset.get<double>("maxAbsTanDip",1.2)),
   _forcep(pset.get<bool>("forceP",true))
     {
     }

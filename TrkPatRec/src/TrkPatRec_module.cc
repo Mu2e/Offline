@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.33 2012/08/04 01:12:31 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.34 2012/08/05 15:43:37 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/04 01:12:31 $
+// $Date: 2012/08/05 15:43:37 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -219,12 +219,12 @@ class TrkPatRec : public art::EDProducer
     _maxdt(pset.get<double>("DtMax",35.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
     _filterdeltas(pset.get<bool>("FilterDeltas",true)),
-    _max2ddt(pset.get<double>("Dt2DMax",50.0)),
+    _max2ddt(pset.get<double>("Dt2DMax",40.0)),
     _maxdp(pset.get<double>("DPhiMax",0.25)),
     _maxndelta(pset.get<unsigned>("MaxNDeltas",200)),
-    _npbins(pset.get<unsigned>("NPhiBins",100)),
-    _ntbins(pset.get<unsigned>("NTimeBins",100)),
-    _nselbins(pset.get<int>("NSelBins",2)),
+    _npbins(pset.get<unsigned>("NPhiBins",50)),
+    _ntbins(pset.get<unsigned>("NTimeBins",50)),
+    _nselbins(pset.get<int>("NSelBins",1)),
     _2dthresh(pset.get<double>("TwoDPeakThreshold",3)),
     _2dsigma(pset.get<double>("TwoDPeakSigma",1.0)),
     _fbf(pset.get<double>("PhiEdgeBuffer",1.1)),
