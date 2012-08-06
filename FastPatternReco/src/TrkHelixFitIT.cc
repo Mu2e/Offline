@@ -1,9 +1,9 @@
 //
 // class derived by TrkPatRec/inc/TrkHelixFit.hh to work with the ITracker
 //
-// $Id: TrkHelixFitIT.cc,v 1.2 2012/05/21 15:08:55 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/05/21 15:08:55 $
+// $Id: TrkHelixFitIT.cc,v 1.3 2012/08/06 17:00:52 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/08/06 17:00:52 $
 //
 // Original author G. Tassielli
 //
@@ -20,11 +20,6 @@ bool TrkHelixFitIT::findHelix( TrkDef const& mytrk, TrkHelix& myfit, std::vector
         // loop over hits, and store the points
         //std::vector<XYZP> xyzp;
         //fillXYZP(mytrk,xyzp,potLoops);
-
-        // if requested, add the target
-        if(_target){
-                xyzp.push_back(XYZP(CLHEP::Hep3Vector(0.0,0.0,_targetz),CLHEP::Hep3Vector(1.0,0.0,0.0),_tsig,_tsig));
-        }
 
         // initialize the circle parameters
         if(xyzp.size() > _minnhit && initCircle(xyzp,myfit)){
@@ -50,10 +45,6 @@ bool TrkHelixFitIT::findHelix( TrkDef const& mytrk, TrkHelix& myfit, std::vector
 //                }
 //        }
 //
-//        // if requested, add the target
-//        if(_target){
-//                xyzp.push_back(XYZP(CLHEP::Hep3Vector(0.0,0.0,_targetz),CLHEP::Hep3Vector(1.0,0.0,0.0),_tsig,_tsig));
-//        }
 //}
 
 
