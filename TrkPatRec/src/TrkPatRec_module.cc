@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.34 2012/08/05 15:43:37 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.35 2012/08/06 19:03:40 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/05 15:43:37 $
+// $Date: 2012/08/06 19:03:40 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -212,10 +212,10 @@ class TrkPatRec : public art::EDProducer
     _edept(pset.get<double>("EDep_tight",0.0045)),
     _edepl(pset.get<double>("EDep_loose",0.005)),
     _edepvl(pset.get<double>("EDep_veryloose",0.008)),
-    _rmint(pset.get<double>("RMin_tight",410.0)),
+    _rmint(pset.get<double>("RMin_tight",420.0)),
     _rminl(pset.get<double>("RMin_loose",390.0)),
     _rmaxt(pset.get<double>("RMax_tight",630.0)),
-    _rmaxl(pset.get<double>("RMax_loose",660.0)),
+    _rmaxl(pset.get<double>("RMax_loose",650.0)),
     _maxdt(pset.get<double>("DtMax",35.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
     _filterdeltas(pset.get<bool>("FilterDeltas",true)),
@@ -238,8 +238,8 @@ class TrkPatRec : public art::EDProducer
     _tmin(pset.get<double>("tmin",0.0)),
     _tmax(pset.get<double>("tmax",2000.0)),
     _tbin(pset.get<double>("tbin",20.0)),
-    _ymin(pset.get<double>("ymin",3)),
-    _1dthresh(pset.get<double>("OneDPeakThreshold",3.0)),
+    _ymin(pset.get<double>("ymin",5)),
+    _1dthresh(pset.get<double>("OneDPeakThreshold",5.0)),
     _tpeakerr(pset.get<double>("timepeakerr",-8.0)),
     _seedt0(pset.get<bool>("SeedT0",false)),
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
