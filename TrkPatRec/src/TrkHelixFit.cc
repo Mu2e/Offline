@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.cc,v 1.8 2012/08/05 15:43:37 brownd Exp $
+// $Id: TrkHelixFit.cc,v 1.9 2012/08/06 16:56:38 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/05 15:43:37 $
+// $Date: 2012/08/06 16:56:38 $
 //
 //
 // the following has to come before other BaBar includes
@@ -34,9 +34,6 @@
 
 namespace mu2e 
 {
-    // this should come from a service, FIXME!!!!
-  double TrkHelixFit::_targetz(-1550.0);
-
 // comparison functor for ordering points
   struct radcomp : public std::binary_function<RAD, RAD, bool> {
     bool operator()(RAD const& r1, RAD const& r2) { return r1._radius < r2._radius; }
@@ -111,8 +108,6 @@ namespace mu2e
   _nsigma(pset.get<double>("nsigma",5)),
   _minzsep(pset.get<double>("minzsep",200)),
   _maxzsep(pset.get<double>("maxzsep",700)),
-  _target(pset.get<bool>("targetConstraint",false)),
-  _tsig(pset.get<double>("targetSigma",60.0)),
   _rbias(pset.get<double>("radialBias",-5.0)),
   _sfac(pset.get<double>("strawSizeFactor",2.0)),
   _pmin(pset.get<double>("minP",90)),
@@ -289,7 +284,6 @@ namespace mu2e
     using namespace boost::accumulators;
  //
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
-// exclude target region z
       xyzp[ixyzp]._phi = atan2((xyzp[ixyzp]._pos.y()-myhel._center.y()),(xyzp[ixyzp]._pos.x()-myhel._center.x()));
     }
 // sort these by z
@@ -506,10 +500,6 @@ namespace mu2e
       const Straw& straw = tracker.getStraw(sh.strawIndex());
       xyzp.push_back(XYZP(wpos,straw.getDirection(),tdres,_sfac*straw.getRadius()));
     } 
-// if requested, add the target
-    if(_target){
-      xyzp.push_back(XYZP(CLHEP::Hep3Vector(0.0,0.0,_targetz),CLHEP::Hep3Vector(1.0,0.0,0.0),_tsig,_tsig));
-    }
   }
   
   void

@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.hh,v 1.7 2012/08/04 01:12:31 brownd Exp $
+// $Id: TrkHelixFit.hh,v 1.8 2012/08/06 16:56:38 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/04 01:12:31 $
+// $Date: 2012/08/06 16:56:38 $
 //
 #ifndef TrkHelixFit_HH
 #define TrkHelixFit_HH
@@ -106,14 +106,11 @@ namespace mu2e
     unsigned _maxniter; // maxium # of iterations to global minimum
     double _nsigma; // # of sigma for filtering outlyers
     double _minzsep, _maxzsep; // Z separation of points for pitch estimate
-    bool _target; // include target 
-    double _tsig; // sigma of target constraint
     double _rbias;  // robust fit parameter bias
     double _sfac; // error factor  straw position perp to wire direction
     double _pmin, _pmax; // range of total momentum
     double _tdmin, _tdmax; // range of abs(tan(dip))
     bool _forcep; // force the p/pt to be in range (true), or exclude fits outside that range (false)
-    static double _targetz; // z position of target hit
     double _bz; // cached value of Field Z component at the tracker origin
 // 
   private:
