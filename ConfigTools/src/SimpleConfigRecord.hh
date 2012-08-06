@@ -4,9 +4,9 @@
 // A class to hold one record within the primitive
 // SimpleConfig utility.
 //
-// $Id: SimpleConfigRecord.hh,v 1.2 2012/07/27 19:39:39 kutschke Exp $
+// $Id: SimpleConfigRecord.hh,v 1.3 2012/08/06 19:09:38 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/27 19:39:39 $
+// $Date: 2012/08/06 19:09:38 $
 //
 // Contact person Rob Kutschke
 //
@@ -104,21 +104,21 @@ class SimpleConfigRecord {
    *
    * @return The value of an int record.
    */
-  int getInt () const;
+  int getInt (bool count=true) const;
 
   /**
    * Return the value as an double.  Only works for records that are of type double.
    *
    * @return The value of a double record.
    */
-  double getDouble () const;
+  double getDouble (bool count=true) const;
 
   /**
    * Return the value as a bool.  Only works for records that are of type bool.
    *
    * @return The value of a bool record.
    */
-  bool getBool() const;
+  bool getBool(bool count=true) const;
 
   /**
    * Return the value as a vector of strings.  Works for all record types.
@@ -136,7 +136,7 @@ class SimpleConfigRecord {
    *
    * @return The value of a std::vector<int> record.
    */
-  void getVectorInt( std::vector<int>& v) const;
+  void getVectorInt( std::vector<int>& v, bool count=true) const;
 
   /**
    * Return the value as a std::vector<Double>.
@@ -144,7 +144,7 @@ class SimpleConfigRecord {
    *
    * @return return the value of a std::vector<double> record.
    */
-  void getVectorDouble( std::vector<double>& v ) const;
+  void getVectorDouble( std::vector<double>& v, bool count=true ) const;
 
   /**
    *

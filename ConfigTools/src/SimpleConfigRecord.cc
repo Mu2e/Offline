@@ -1,9 +1,9 @@
 //
 // A class to hold one record within the primitive SimpleConfig utility.
 //
-// $Id: SimpleConfigRecord.cc,v 1.2 2012/07/27 19:39:39 kutschke Exp $
+// $Id: SimpleConfigRecord.cc,v 1.3 2012/08/06 19:09:38 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/27 19:39:39 $
+// $Date: 2012/08/06 19:09:38 $
 //
 // Contact person Rob Kutschke
 
@@ -57,20 +57,26 @@ namespace mu2e {
     return Values.at(0);
   }
 
-  int SimpleConfigRecord::getInt () const {
-    ++_accessCount;
+  int SimpleConfigRecord::getInt (bool count) const {
+    if ( count ){
+      ++_accessCount;
+    }
     CheckType("int");
     return toInt( Values.at(0) );
   }
 
-  double SimpleConfigRecord::getDouble () const {
-    ++_accessCount;
+  double SimpleConfigRecord::getDouble (bool count) const {
+    if ( count ){
+      ++_accessCount;
+    }
     CheckType("double");
     return toDouble( Values.at(0) );
   }
 
-  bool SimpleConfigRecord::getBool() const {
-    ++_accessCount;
+  bool SimpleConfigRecord::getBool(bool count) const {
+    if ( count ){
+      ++_accessCount;
+    }
     CheckType("bool");
     return toBool( Values.at(0) );
   }
@@ -85,8 +91,10 @@ namespace mu2e {
     }
   }
 
-  void SimpleConfigRecord::getVectorInt( vector<int>& v) const {
-    ++_accessCount;
+  void SimpleConfigRecord::getVectorInt( vector<int>& v, bool count) const {
+    if ( count ){
+      ++_accessCount;
+    }
     CheckType("vector<int>");
     vector<string>::const_iterator b = Values.begin();
     vector<string>::const_iterator e = Values.end();
@@ -98,8 +106,10 @@ namespace mu2e {
     }
   }
 
-  void SimpleConfigRecord::getVectorDouble( vector<double>& V) const {
-    ++_accessCount;
+  void SimpleConfigRecord::getVectorDouble( vector<double>& V, bool count) const {
+    if ( count ){
+      ++_accessCount;
+    }
     CheckType("vector<double>");
     vector<string>::const_iterator b = Values.begin();
     vector<string>::const_iterator e = Values.end();
@@ -134,7 +144,7 @@ namespace mu2e {
       s << "{ ";
       if ( Type == "vector<int>" ){
         vector<int> V;
-        getVectorInt(V);
+        getVectorInt(V,false);
         vector<int>::const_iterator b = V.begin();
         vector<int>::const_iterator e = V.end();
         bool first = true;
@@ -148,7 +158,7 @@ namespace mu2e {
         }
       } else if ( Type == "vector<double>"){
         vector<double> V;
-        getVectorDouble(V);
+        getVectorDouble(V,false);
         vector<double>::const_iterator b = V.begin();
         vector<double>::const_iterator e = V.end();
         bool first = true;
@@ -185,11 +195,11 @@ namespace mu2e {
 
       // Scalar types.
       if ( Type == "int" ){
-        s << getInt();
+        s << getInt(false);
       } else if ( Type == "double" ){
-        s << getDouble();
+        s << getDouble(false);
       } else if ( Type == "bool"){
-        if ( getBool() ){
+        if ( getBool(false) ){
           s << "true";
         }else{
           s << "false";
