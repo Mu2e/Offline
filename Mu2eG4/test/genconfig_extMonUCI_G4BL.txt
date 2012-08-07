@@ -5,9 +5,9 @@
 //  - Single particle gun, configured to shoot muons out of the production target.
 //  - Particles from G4beamline format input file.
 //
-// $Id: genconfig_extMonUCI_G4BL.txt,v 1.1 2011/12/30 20:31:46 youzy Exp $
+// $Id: genconfig_extMonUCI_G4BL.txt,v 1.2 2012/08/07 22:27:30 youzy Exp $
 // $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
+// $Date: 2012/08/07 22:27:30 $
 //
 // Original author Rob Kutschke
 
@@ -59,7 +59,7 @@ vector<double> particleGun.point = {3925.2, 0., -6079.5}; //{ 3924.64, 0., -6479
 
 // Particles will be made uniformly in a box, centered on the above point.
 // Half sides of the box are in mm.
-vector<double> particleGun._halfLength = { 0., 0., 0. };
+vector<double> particleGun.halfLength = { 0., 0., 0. };
 
 // For the MECO PS, particles more forward than -0.45 all go 
 double         particleGun.czmin = 0.97029573; // 0.97175543; // 0.98358; // 0.97175;
