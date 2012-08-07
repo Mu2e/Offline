@@ -170,7 +170,7 @@ dioMixer: {
    wrapFiles           : true
 
    // Parameters for the MixDetail class
-   mean                :  11.6
+   mean                :  6.4
    genModuleLabel      : generate
    g4ModuleLabel       : g4run
    stepInstanceNames   : @local::stepInstanceNames
@@ -185,7 +185,7 @@ protonMixer: {
    wrapFiles           : true
 
    // Parameters for the MixDetail class
-   mean                :  14.9
+   mean                :  8.2
    genModuleLabel      : generate
    g4ModuleLabel       : g4run
    stepInstanceNames   : @local::stepInstanceNames
@@ -200,7 +200,7 @@ neutronMixer: {
    wrapFiles           : true
 
    // Parameters for the MixDetail class
-   mean                :  128.2
+   mean                :  71.0
    genModuleLabel      : generate
    g4ModuleLabel       : g4run
    stepInstanceNames   : @local::stepInstanceNames
@@ -215,7 +215,7 @@ photonMixer: {
    wrapFiles           : true
 
    // Parameters for the MixDetail class
-   mean                :  53.7
+   mean                :  29.7
    genModuleLabel      : generate
    g4ModuleLabel       : g4run
    stepInstanceNames   : @local::stepInstanceNames
