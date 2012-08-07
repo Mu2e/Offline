@@ -8,9 +8,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: extmon_uci_protongen_01.fcl,v 1.5 2012/05/16 01:02:53 youzy Exp $
+# $Id: extmon_uci_protongen_01.fcl,v 1.6 2012/08/07 22:22:17 youzy Exp $
 # $Author: youzy $
-# $Date: 2012/05/16 01:02:53 $
+# $Date: 2012/08/07 22:22:17 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -25,7 +25,7 @@ source :
   module_type : EmptyEvent
   maxEvents : 100
   firstRun  : 33
-  numberEventsInRun : 1000000
+  numberEventsInRun : 90000000
 }
 
 services :
