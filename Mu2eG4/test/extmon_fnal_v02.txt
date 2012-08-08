@@ -269,7 +269,7 @@ bool           extMonFNAL.sensorPlaneSolid     = true;
 bool           extMonFNAL.readoutPlaneVisible   = true;
 bool           extMonFNAL.readoutPlaneSolid     = true;
 
-int            extMonFNAL.verbosityLevel = 2;
+int            extMonFNAL.verbosityLevel = 0;
 int            extMonFNAL.sd.verbosityLevel = 0;
 
 // This tells emacs to view this file in c++ mode.
