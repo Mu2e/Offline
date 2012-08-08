@@ -32,7 +32,6 @@
 #include "ConditionsService/inc/PhysicsParams.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -77,7 +76,6 @@ namespace mu2e {
 					       string STinfilename,
 					       int linesToSkip):
     _DSOffset(),
-    _prodTargetCenter(),
     // time generation range
     _tmin ( tmin ),
     _tmax ( tmax ),
@@ -111,9 +109,7 @@ namespace mu2e {
     CLHEP::Hep3Vector offset(-3904.,0,12000.);
     _DSOffset = offset;
 
-    _prodTargetCenter = GeomHandle<ProductionTarget>()->position();
-
-  // Check if nfoils is bigger than 0;
+    // Check if nfoils is bigger than 0;
     if (_nfoils < 1) {
       throw cet::exception("GEOM")
         << "no foils are present";
@@ -255,7 +251,7 @@ namespace mu2e {
       double rout = foil.rOut();
       double rin = foil.rIn();
       double halfthick = foil.halfThickness();
-      double volume = CLHEP::pi*(rout-rin)*(rout-rin)*2.*halfthick;
+      double volume = CLHEP::pi*(rout-rin)*(rout+rin)*2.*halfthick;
       volumes.push_back(volume);
       // cout << "Foil " << i+1 << "  volume  " << volume << endl;
     }
