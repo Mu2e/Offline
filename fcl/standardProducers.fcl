@@ -82,22 +82,14 @@ randomsaver:
 TrkPatRec :
 {
         module_type                             : TrkPatRec
-        diagLevel                                       : 0
 
-# Helix fit configuration
-        HelixFit :
-        {
-                diagLevel                               : 0
-        }
 # Kalman fit configuration for the helix seed fit
         SeedFit :
         {
                 maxiter                                 : 3
-                debugLevel                      	: 0
                 material                                : false
                 seedsmear       			: 10000
                 maxhitchi                               : 5.0
-                weedhits        			: true
                 updateT0        			: false
                 hiterr                                  : [ 5.0, 1.44 ]
                 ambiguityStrategy       		: [0,0]
@@ -105,9 +97,7 @@ TrkPatRec :
 # Kalman fit configuration for the final track fit
         KalFit :
         {
-                debugLevel				: 0
                 material                                : true
-                weedhits                                : true
 		mingap					: 1.0
 		hiterr 					: [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
 		ambiguityStrategy    			: [ 0, 0, 2, 2, 2, 2, 2, 2, 2 ]
@@ -115,12 +105,7 @@ TrkPatRec :
 		HitMinDrift 				: 0.1
 		ZeroDriftPenalty 			: 0.05
 		Neutralize 				: true
-
 	}
-# MC truth finder, analyzer configuration
-  KalFitMC :
-  {
-  }
 } # end TrkPatRec
 # variants of TrkPatRec for specific particle species and directions. These constitute the 'standard' fits
 # in future we need names instead of values for the particle type
