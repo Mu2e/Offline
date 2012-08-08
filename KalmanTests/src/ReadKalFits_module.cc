@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.13 2012/08/08 18:32:52 brownd Exp $
+// $Id: ReadKalFits_module.cc,v 1.14 2012/08/08 20:19:55 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/08/08 18:32:52 $
+// $Date: 2012/08/08 20:19:55 $
 //
 // Original author Rob Kutschke
 //
@@ -154,7 +154,7 @@ namespace mu2e {
       // For some quantities you require the concrete representation, not
       // just the base class.
       // Fill a histogram.
-      _hfitCL->Fill(krep->chisqConsistency().likelihood() );
+      _hfitCL->Fill(krep->chisqConsistency().significanceLevel() );
       _hChisq->Fill(krep->chisqConsistency().chisqValue() );
 
       double s0   = krep->startValidRange();
