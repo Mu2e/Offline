@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.35 2012/08/06 19:03:40 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.36 2012/08/08 18:32:52 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/06 19:03:40 $
+// $Date: 2012/08/08 18:32:52 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -247,11 +247,11 @@ class TrkPatRec : public art::EDProducer
     _maxadddoca(pset.get<double>("MaxAddDoca",2.75)),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _seedfit(pset.get<fhicl::ParameterSet>("SeedFit")),
-    _kfit(pset.get<fhicl::ParameterSet>("KalFit")),
-    _hfit(pset.get<fhicl::ParameterSet>("HelixFit")),
+    _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet())),
+    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
+    _hfit(pset.get<fhicl::ParameterSet>("HelixFit",fhicl::ParameterSet())),
     _payloadSaver(pset),
-    _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC"))
+    _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet()))
   {
 // tag the data product instance by the direction and particle type found by this fitter
     _iname = _fdir.name() + _tpart.name();

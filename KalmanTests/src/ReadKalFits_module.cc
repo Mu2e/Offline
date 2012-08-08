@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.12 2012/07/25 20:56:57 brownd Exp $
+// $Id: ReadKalFits_module.cc,v 1.13 2012/08/08 18:32:52 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/07/25 20:56:57 $
+// $Date: 2012/08/08 18:32:52 $
 //
 // Original author Rob Kutschke
 //
@@ -92,7 +92,7 @@ namespace mu2e {
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _weight(pset.get<bool>("WeightEvents",true)),
-    _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC")),
+    _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
     _verbosity(pset.get<int>("verbosity",0)),
     _maxPrint(pset.get<int>("maxPrint",0)),
     _hNTracks(0),
