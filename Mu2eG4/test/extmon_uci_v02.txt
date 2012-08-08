@@ -5,14 +5,14 @@ int    extmon_uci.verbosity = 0;
 
 //ExtMonEnvelope;
 vector<double> extmon_uci.envelopeParams = {1000.0,  700.0,   3280.0};
-vector<double> extmon_uci.envelopeOrigin = {4066.0, 1600.0, -18704.0};
+vector<double> extmon_uci.envelopeOrigin = {4066.0,  700.0, -18704.0};
 string extmon_uci.envelopeMaterialName = "G4_AIR";
 bool   extmon_uci.envelopeVisible      = false;
 bool   extmon_uci.envelopeSolid        = false;
 
 //ExtMon Platform
-vector<double> extmon_uci.platformHalfLengths = {1527.0, 1475.0, 3280.0};
-vector<double> extmon_uci.platformPosition = {4593.0, -575.0, -18704.0};
+vector<double> extmon_uci.platformHalfLengths = {1527.0, 1175.0, 3280.0};
+vector<double> extmon_uci.platformPosition = {4593.0, -1175.0, -18704.0};
 string extmon_uci.platformMaterialName = "ShieldingConcrete";
 bool   extmon_uci.platformVisible      = true;
 bool   extmon_uci.platformSolid        = false;
@@ -35,22 +35,22 @@ vector<double> extmon_uci.colInnerHalfLengths = {15.0, 20.0, 310.0,
                                                  20.0, 25.0, 310.0,
                                                  24.0, 25.0, 310.0};
 vector<double> extmon_uci.colPosition = {
-        3834,         1366,       -16229,
-        3834,         1511,       -18429,
-        3825,         1525,       -19429,
-        3885,         1525,       -21079
+        3898,          679,       -16229,
+        3898,          680,       -18429,
+        3898,          630,       -19429,
+        3960,          543,       -21079
 };
 vector<double> extmon_uci.colPosition1 = {
-        3839,         1328,       -15929, 
-        3832,         1495,       -17829, 
-        3830,         1515,       -19129, 
-        3864,         1543,       -20779
+        3893,          660,       -15929, 
+        3898,          709,       -17829, 
+        3898,          645,       -19129, 
+        3938,          557,       -20779
 };
 vector<double> extmon_uci.colPosition2 = {
-        3838,         1401,       -16529, 
-        3830,         1514,       -19029, 
-        3829,         1529,       -19729, 
-        3903,         1551,       -21379
+        3893,          698,       -16529, 
+        3898,          650,       -19029, 
+        3898,          616,       -19729, 
+        3983,          528,       -21379
 };
 
 bool   extmon_uci.colVisible          = true;
@@ -64,10 +64,10 @@ vector<double> extmon_uci.magOuterHalfLengths = {120.0, 150.0, 600.0,
                                                  150.0, 120.0, 400.0};
 vector<double> extmon_uci.magInnerHalfLengths = {25.0, 50.0, 600.1,
                                                  50.0, 25.0, 400.1};
-vector<double> extmon_uci.magPosition1 = {3839.0, 1407.0, -16529.0,
-                                          3826.0, 1529.0, -19729.0};
-vector<double> extmon_uci.magPosition2 = {3834.0, 1503.0, -17829.0,
-                                          3864.0, 1543.0, -20779.0};
+vector<double> extmon_uci.magPosition1 = {3898.0,  717.0, -16529.0,   // Mag1 shift y=19
+                                          3886.0,  616.0, -19729.0};  // Mag2 shift x=-12.5
+vector<double> extmon_uci.magPosition2 = {3898.0,  728.0, -17829.0,   // Mag1 shift y=19
+                                          3926.0,  557.0, -20779.0};  // Mag2 shift x=-12.5
 
 bool   extmon_uci.magVisible          = true;
 bool   extmon_uci.magSolid            = false;
@@ -82,23 +82,16 @@ vector<double> extmon_uci.tofHalfLengths  = {3.0, 25.0, 7.5,
                                              3.0, 25.0, 7.5,
                                              3.0, 25.0, 7.5};
 vector<double> extmon_uci.tofPosition    = {
-     3830.0,      1514.5,       -19079.0, 
-     3829.0,      1530.0,       -19779.0, 
-     3861.0,      1542.0,       -20729.0, 
-     3906.0,      1552.0,       -21429.0
+     3898.0,       647.5,       -19079.0, 
+     3898.0,       613.5,       -19779.0, 
+     3934.0,       559.5,       -20729.0, 
+     3987.0,       525.5,       -21429.0
 };
 bool   extmon_uci.tofVisible         = true;
 bool   extmon_uci.tofSolid           = false;
 string extmon_uci.tofMaterialName    = "Scintillator";
 double extmon_uci.tofTimeGap         = 2.0;
 bool   extmon_uci.keepNoEdep         = false;
-
-// ExtMon Calorimeter
-vector<double> extmon_uci.calHalfLengths = {300.0, 300.0, 300.0};
-vector<double> extmon_uci.calPosition    = {0.0, 0.0, -2800.0};
-bool   extmon_uci.calVisible         = true;
-bool   extmon_uci.calSolid           = false;
-string extmon_uci.calMaterialName    = "Lyso_01";
 
 // ExtMonUCI Shielding
 int extmon_uci.nShds = 10;
@@ -109,22 +102,22 @@ vector<double> extmon_uci.shdHalfLengths = {
         200.0, 450.0, 2775.0,  // 3: +X
         600.0, 250.0, 1550.0,  // 4: TopFront
         600.0, 250.0, 1225.0,  // 5: TopBack
-        250.0,  90.0, 1550.0,  // 6: DownFront
-        250.0, 180.0, 1225.0,  // 7: DownBack
-       1500.0,2200.0,  850.0,  // 8: FrontRemovable
-       1500.0,2200.0,  150.0   // 9: FrontRemovable Iron
+        250.0, 200.0, 1550.0,  // 6: DownFront
+        250.0, 160.0, 1225.0,  // 7: DownBack
+       1500.0,2000.0,  850.0,  // 8: FrontRemovable
+       1500.0,2000.0,  150.0   // 9: FrontRemovable Iron
 };
 vector<double> extmon_uci.shdPosition = {
-        3843.0, 1600.0, -15679.0, // 0: Front
-        4020.0, 1600.0, -21729.0, // 1: Back
-        3470.0, 1350.0, -18704.0, // 2: -X
-        4420.0, 1350.0, -18704.0, // 3: +X
-        4020.0, 2050.0, -17479.0, // 4: TopFront
-        4020.0, 2050.0, -20254.0, // 5: TopBack
-        3870.0,  990.0, -17479.0, // 6: DownFront
-        3870.0, 1080.0, -20254.0, // 7: DownBack
-       4565.51,  150.0, -14574.0, // 8: FrontRemovable
-       4565.51,  150.0, -13574.0  // 9: FrontRemovable Iron
+        3843.0,  700.0, -15679.0, // 0: Front
+        4020.0,  700.0, -21729.0, // 1: Back
+        3470.0,  450.0, -18704.0, // 2: -X
+        4420.0,  450.0, -18704.0, // 3: +X
+        4020.0, 1150.0, -17479.0, // 4: TopFront
+        4020.0, 1150.0, -20254.0, // 5: TopBack
+        3870.0,  200.0, -17479.0, // 6: DownFront
+        3870.0,  160.0, -20254.0, // 7: DownBack
+       4565.51, -550.0, -14574.0, // 8: FrontRemovable
+       4565.51, -550.0, -13574.0  // 9: FrontRemovable Iron
 };
 vector<int> extmon_uci.shieldSwitch = {1, 1, 1, 1, 1,
                                        1, 1, 1, 2, 2};
@@ -138,48 +131,48 @@ string extmon_uci.shdIronMaterialName     = "G4_Fe";
 // ExtMonUCI Neutron Shielding
 int extmon_uci.nNSHs = 20;
 vector<double> extmon_uci.nshHalfLengths = {
-         44.0, 225.0,  300.0,  // 0: Col0-X
-         80.0, 225.0,  300.0,  // 1: Col0+X
-        250.0, 135.0,  300.0,  // 2: Col0Top
-         44.0, 300.0,  600.0,  // 3: Col1-X
-         80.0, 300.0,  600.0,  // 4: Col1+X
-        250.0,  60.0,  600.0,  // 5: Col1Top
-         40.0, 200.0,  400.0,  // 6: Col2-X
-         80.0, 200.0,  400.0,  // 7: Col2+X
+         79.0, 200.0,  300.0,  // 0: Col0-X
+         51.0, 200.0,  300.0,  // 1: Col0+X
+        250.0,  35.0,  300.0,  // 2: Col0Top
+         79.0, 200.0,  600.0,  // 3: Col1-X
+         51.0, 200.0,  600.0,  // 4: Col1+X
+        250.0,  35.0,  600.0,  // 5: Col1Top
+         79.0, 220.0,  400.0,  // 6: Col2-X
+         51.0, 220.0,  400.0,  // 7: Col2+X
         250.0,  70.0,  300.0,  // 8: Col2Top
-         70.0, 200.0,  400.0,  // 9: Col3-X
-         55.0, 200.0,  400.0,  //10: Col3+X
-        250.0,  70.0,  300.0,  //11: Col3Top
-         44.0, 300.0,  650.0,  //12: Mag0-X
-         80.0, 300.0,  650.0,  //13: Mag0+X
-        250.0,  60.0,  650.0,  //14: Mag0Top
-         30.0, 210.0,  425.0,  //15: Mag1-X
-         50.0, 210.0,  425.0,  //16: Mag1+X
-        250.0,  60.0,  425.0,  //17: Mag1Top
+        110.0, 180.0,  400.0,  // 9: Col3-X
+         20.0, 180.0,  400.0,  //10: Col3+X
+        250.0, 110.0,  300.0,  //11: Col3Top
+         74.0, 225.0,  650.0,  //12: Mag0-X
+         46.0, 225.0,  650.0,  //13: Mag0+X
+        250.0,  10.0,  650.0,  //14: Mag0Top
+         50.0, 215.0,  425.0,  //15: Mag1-X
+         10.0, 215.0,  425.0,  //16: Mag1+X
+        250.0,  75.0,  425.0,  //17: Mag1Top
          50.0, 450.0, 2775.0,  //18: -X
          50.0, 450.0, 2775.0   //19: +X
 };
 vector<double> extmon_uci.nshPosition = {
-        3664.0, 1305.0, -16229.0, // 0: Col0-X
-        4040.0, 1305.0, -16229.0, // 1: Col0+X
-        3870.0, 1665.0, -16229.0, // 2: Col0Top
-        3664.0, 1380.0, -18429.0, // 3: Col1-X
-        4040.0, 1380.0, -18429.0, // 4: Col1+X
-        3870.0, 1740.0, -18429.0, // 5: Col1Top
-        3660.0, 1460.0, -19429.0, // 6: Col2-X
-        4040.0, 1460.0, -19429.0, // 7: Col2+X
-        3870.0, 1730.0, -19429.0, // 8: Col2Top
-        3690.0, 1460.0, -21079.0, // 9: Col3-X
-        4065.0, 1460.0, -21079.0, //10: Col3+X
-        3870.0, 1730.0, -21079.0, //11: Col3Top
-        3664.0, 1380.0, -17179.0, //12: Mag0-X
-        4040.0, 1380.0, -17179.0, //13: Mag0+X
-        3870.0, 1740.0, -17179.0, //14: Mag0Top
-        3650.0, 1470.0, -20254.0, //15: Mag1-X
-        4070.0, 1470.0, -20254.0, //16: Mag1+X
-        3870.0, 1740.0, -20254.0, //17: Mag1Top
-        3570.0, 1350.0, -18704.0, //18: -X
-        4170.0, 1350.0, -18704.0  //19: +X
+        3699.0,  630.0, -16229.0, // 0: Col0-X
+        4069.0,  630.0, -16229.0, // 1: Col0+X
+        3870.0,  865.0, -16229.0, // 2: Col0Top
+        3699.0,  630.0, -18429.0, // 3: Col1-X
+        4069.0,  630.0, -18429.0, // 4: Col1+X
+        3870.0,  865.0, -18429.0, // 5: Col1Top
+        3699.0,  540.0, -19429.0, // 6: Col2-X
+        4069.0,  540.0, -19429.0, // 7: Col2+X
+        3870.0,  830.0, -19429.0, // 8: Col2Top
+        3730.0,  500.0, -21079.0, // 9: Col3-X
+        4100.0,  500.0, -21079.0, //10: Col3+X
+        3870.0,  790.0, -21079.0, //11: Col3Top
+        3694.0,  655.0, -17179.0, //12: Mag0-X
+        4074.0,  655.0, -17179.0, //13: Mag0+X
+        3870.0,  890.0, -17179.0, //14: Mag0Top
+        3670.0,  535.0, -20254.0, //15: Mag1-X
+        4110.0,  535.0, -20254.0, //16: Mag1+X
+        3870.0,  825.0, -20254.0, //17: Mag1Top
+        3570.0,  450.0, -18704.0, //18: -X
+        4170.0,  450.0, -18704.0  //19: +X
 };
 bool   extmon_uci.nshVisible          = true;
 bool   extmon_uci.nshSolid            = false;
@@ -189,19 +182,19 @@ string extmon_uci.nshMaterialName     = "ZirconiumHydridePolyethylene";
 int extmon_uci.nTabs = 7;
 vector<double> extmon_uci.tableHalfLengths = {120.0, 25.0, 1550.0,
                                             120.0, 25.0,  400.0,
-                                            165.0, 25.0,  425.0,
+                                            190.0, 25.0,  425.0,
                                             120.0, 25.0,  400.0,
                                             177.0,700.0, 3025.0,  
                                             150.0,700.0, 3275.0,
                                             177.0,300.0, 1750.0                                 
 };
-vector<double> extmon_uci.tablePosition = {3834.0, 1140.0, -17479.0,
-                                         3825.0, 1325.0, -19429.0,
-                                         3850.0, 1325.0, -20254.0,
-                                         3885.0, 1325.0, -21079.0,
-                                         3243.0, 1600.0, -18954.0,
-                                         4770.0, 1600.0, -18704.0,
-                                         3243.0,  600.0, -19729.0 
+vector<double> extmon_uci.tablePosition = {3898.0,  475.0, -17479.0,
+                                         3898.0,  395.0, -19429.0,
+                                         3910.0,  395.0, -20254.0,
+                                         3960.0,  395.0, -21079.0,
+                                         3243.0,  700.0, -18954.0,
+                                         4770.0,  700.0, -18704.0,
+                                         3243.0, -300.0, -19729.0 
 };
 bool   extmon_uci.tableVisible          = true;
 bool   extmon_uci.tableSolid            = false;
@@ -220,14 +213,14 @@ vector<double> extmon_uci.shdHoleHalfLengths = {
                                                 70, 100, 40
 };
 vector<double> extmon_uci.shdHolePosition = {
-     3832.17,      1950,       -19079,
-     3829.83,      1950,       -19779,
-     3864.17,      1950,       -20729,
-     3917.83,      1950,       -21429,
-     3832.17,      2200,       -19079,
-     3829.83,      2200,       -19779,
-     3864.17,      2200,       -20729,
-     3917.83,      2200,       -21429
+     3898,      1050,       -19079,
+     3898,      1050,       -19779,
+     3934,      1050,       -20729,
+     3987,      1050,       -21429,
+     3898,      1300,       -19079,
+     3898,      1300,       -19779,
+     3934,      1300,       -20729,
+     3987,      1300,       -21429
 };
 bool   extmon_uci.shdHoleVisible      = true;
 bool   extmon_uci.shdHoleSolid        = false;
@@ -236,18 +229,18 @@ string extmon_uci.shdHoleCuMaterialName = "G4_Cu";
 
 // Channel on Shielding
 int extmon_uci.nShdChannels = 3;
-vector<double> extmon_uci.shdChannelHalfLengths = {20.0, 20.0,  250.0,
-                                                   21.0, 21.0,  850.0,
-                                                   21.0, 21.0,  150.0};
-vector<double> extmon_uci.shdChannelPosition = {3840.00,      1295.50,       -15679.0,
-                                                3843.97,      1153.62,       -14574.0,
-                                                3847.46,      1024.95,       -13574.0};
-vector<double> extmon_uci.shdChannelPosition1 = {3841.00,      1263.00,      -15424.0,
-                                                 3846.94,      1044.25,      -13724.0,
-                                                 3847.98,      1005.64,      -13424.0};
-vector<double> extmon_uci.shdChannelPosition2 = {3839.00,      1328.00,      -15929.0,
-                                                 3841.00,      1263.00,      -15424.0,
-                                                 3846.94,      1044.25,      -13724.0};
+vector<double> extmon_uci.shdChannelHalfLengths = {30.0, 30.0,  250.0,
+                                                   30.0, 30.0,  850.0,
+                                                   30.0, 30.0,  150.0};
+vector<double> extmon_uci.shdChannelPosition = {3898.00,        639.48,       -15679.0,
+                                                3898.00,        568.92,       -14574.0,
+                                                3898.00,        509.92,       -13574.0};
+vector<double> extmon_uci.shdChannelPosition1 = {3898.00,       618.32,      -15424.0,
+                                                 3898.00,       519.52,      -13724.0,
+                                                 3898.00,       500.32,      -13424.0};
+vector<double> extmon_uci.shdChannelPosition2 = {3898.00,       660.64,      -15929.0,
+                                                 3898.00,       618.32,      -15424.0,
+                                                 3898.00,       519.52,      -13724.0};
 
 bool   extmon_uci.shdChannelVisible      = true;
 bool   extmon_uci.shdChannelSolid        = false;
