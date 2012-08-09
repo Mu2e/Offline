@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.15 2012/05/29 22:58:13 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/29 22:58:13 $
+// $Id: constructStoppingTarget.cc,v 1.16 2012/08/09 22:22:53 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/08/09 22:22:53 $
 //
 // Original author Peter Shanahan
 //
@@ -44,7 +44,8 @@ namespace mu2e {
   VolumeInfo constructStoppingTarget( VolumeInfo   const& mother,
                                       SimpleConfig const& config ){
 
-    std::cout<<"In constructStoppingTarget"<<std::endl;
+    int verbosity(config.getInt("target.verbosity",0));
+    if ( verbosity > 1 ) std::cout<<"In constructStoppingTarget"<<std::endl;
     // Master geometry for the Target assembly
     GeomHandle<Target> target;
 
@@ -54,26 +55,23 @@ namespace mu2e {
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
-    double rOut  = CLHEP::mm * target->cylinderRadius();
-    double zHalf = CLHEP::mm * target->cylinderLength()/2.;
+    double rOut  = target->cylinderRadius();
+    double zHalf = target->cylinderLength()/2.;
 
     // center in detector coords, assumed to be on axis
-    double z0    = CLHEP::mm * target->cylinderCenter();
+    double z0    = target->cylinderCenter();
 
     VolumeInfo targetInfo;
 
     // Make the mother volume for the Target
     targetInfo.name = "StoppingTargetMother";
-    std::cout<<"Looking for material "<<target->fillMaterial()<<std::endl;
+    if ( verbosity > 1) std::cout<<"Looking for material "<<target->fillMaterial()<<std::endl;
     G4Material* fillMaterial = findMaterialOrThrow(target->fillMaterial());
-    std::cout<<"Done Looking for material "<<target->fillMaterial()<<std::endl;
+    if ( verbosity > 1) std::cout<<"Done Looking for material "<<target->fillMaterial()<<std::endl;
 
     G4ThreeVector targetOffset(0.,0.,12000+z0- mother.centerInMu2e().z()); 
 
-    std::cout<<"targetOffset="<<targetOffset<<std::endl;
-    cout << "Target Offset: z0: "
-         << z0 << " "
-         << endl;
+    if ( verbosity > 1 ) std::cout<<"targetOffset="<<targetOffset<<std::endl;
 
     targetInfo.solid  = new G4Tubs( targetInfo.name,
                                     0., rOut, zHalf, 0., 2.*M_PI );
@@ -81,13 +79,15 @@ namespace mu2e {
     targetInfo.logical = new G4LogicalVolume( targetInfo.solid, fillMaterial, targetInfo.name);
 
     int nnd = mother.logical->GetNoDaughters();
-    std::cout<<"mother has "<<nnd<<" daughters"<<std::endl;
-    // well the motehr has no daughters yet... but let's leave most of the code here for now
-    if (nnd > 0 ) {
-      std::cout<<" they are:"<<std::endl;
-      for (int id=0; id<nnd; id++) cout<<id<<"="<<
-        mother.logical->GetDaughter(id)->GetName()<<
-        " at "<<mother.logical->GetDaughter(id)->GetTranslation()<<std::endl;
+    if ( verbosity > 1 ) {
+      std::cout<<"mother has "<<nnd<<" daughters"<<std::endl;
+      // well the mother has no daughters yet... but let's leave most of the code here for now
+      if (nnd > 0 ) {
+        std::cout<<" they are:"<<std::endl;
+        for (int id=0; id<nnd; id++) cout<<id<<"="<<
+          mother.logical->GetDaughter(id)->GetName()<<
+          " at "<<mother.logical->GetDaughter(id)->GetTranslation()<<std::endl;
+      }
     }
     targetInfo.physical =  new G4PVPlacement( 0,
                                               targetOffset,
@@ -119,7 +119,7 @@ namespace mu2e {
                                     ,foil.rOut()
                                     ,foil.halfThickness()
                                     ,0.
-                                    ,CLHEP::twopi*CLHEP::radian
+                                    ,CLHEP::twopi
                                     );
 
         foilInfo.logical = new G4LogicalVolume( foilInfo.solid
@@ -132,7 +132,7 @@ namespace mu2e {
         G4RotationMatrix* rot = 0; //... will have to wait
 
         G4ThreeVector foilOffset(foil.center()-G4ThreeVector(0.,0.,z0));
-        cout<<"foil "<<itf<<" center="<<foil.center()<<", offset="<<foilOffset<<endl;
+        if ( verbosity > 1 ) cout<<"foil "<<itf<<" center="<<foil.center()<<", offset="<<foilOffset<<endl;
 
         // G4 manages the lifetime of this object.
         new G4PVPlacement( rot,
