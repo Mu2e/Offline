@@ -2,15 +2,15 @@
 // Construct and return MECOStyleProtonAbsorber
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.2 2012/07/15 22:06:17 kutschke Exp $
+// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.3 2012/08/09 22:20:16 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Date: 2012/08/09 22:20:16 $
 //
 // Original author MyeongJae Lee
 //
 // All in mu2e coordinate system, except target.z0 which is given by old Detector coordinate system. (-3904, 0, 12000)
 // Geometry is based on old construcProtonAbsorber codes.
-// distFromTargetEnd value is prepared for forward compatibility. Do not use now.  
+// distFromTargetEnd value is prepared for forward compatibility. Do not use now.
 
 #include <iostream>
 #include <iomanip>
@@ -26,8 +26,6 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
-
-
 using namespace std;
 
 namespace mu2e {
@@ -37,11 +35,10 @@ namespace mu2e {
   MECOStyleProtonAbsorberMaker::MECOStyleProtonAbsorberMaker( SimpleConfig const& _config)
   {
 
-    if( !_config.getBool("hasProtonAbsorber", true) ) return;
-
     BuildIt (_config);
 
-    PrintConfig();
+    int verbosity(_config.getInt("protonabsorber.verbosity",0));
+    if ( verbosity > 0 ) PrintConfig();
   }
 
   void MECOStyleProtonAbsorberMaker::BuildIt ( SimpleConfig const& _config)
@@ -72,7 +69,7 @@ namespace mu2e {
 
     // Info on targets to locate the center of Proton Absorber
     vector<double> targetRadius;  _config.getVectorDouble("target.radii", targetRadius);
-    double foilwid=_config.getDouble("target.deltaZ"); 
+    double foilwid=_config.getDouble("target.deltaZ");
     double z0valt =_config.getDouble("target.z0");
 
     // adding virtual detector before and after target
@@ -80,7 +77,7 @@ namespace mu2e {
     if (_config.getBool("hasVirtualDetector", true) ) {
       vdHL = _config.getDouble("vd.halfLength");
     }
-    
+
     // subtract virtual detector thickness from the larger outer
     // radius of the proton absorber
     r2out1 -= 2.*vdHL;
@@ -101,10 +98,10 @@ namespace mu2e {
     double taghalflen =(foilwid*numoftf) + 5.0 + 2.*vdHL; // what/why is 5.0 hardcoded here?
 
     // target offset in mu2e coordinate
-    double tagoff =z0valt + 12000.0; 
+    double tagoff =z0valt + 12000.0;
 
     // z of target end in mu2e coordinate
-    double targetEnd = tagoff + taghalflen; 
+    double targetEnd = tagoff + taghalflen;
 
     // distance from target end to ds2-ds3 boundary
     double targetEndToDS2End = ds2HalfLength + (z0DSup - targetEnd);
@@ -114,7 +111,7 @@ namespace mu2e {
     //////////////////////////////////////
     // Decide which pabs will be turned on
     //////////////////////////////////////
-    
+
     bool pabs1 = true;
     bool pabs2 = true;
 
@@ -140,7 +137,7 @@ namespace mu2e {
     //////////////
 
     // old style codes for pabs1/2 half length
-    // double pabs1halflen = (ds2HalfLength + (z0DSup - targetEnd))*0.5; 
+    // double pabs1halflen = (ds2HalfLength + (z0DSup - targetEnd))*0.5;
     // double pabs2halflen  = pabsZHalfLen - pabs1halflen;
 
     double pabs1halflen = 0, pabs2halflen = 0;
@@ -157,11 +154,11 @@ namespace mu2e {
     /////////
 
     // old style for pabs1/2 offset
-    // double pabs1ZOffset = targetEnd + pabs1halflen ; 
+    // double pabs1ZOffset = targetEnd + pabs1halflen ;
     // double pabs2ZOffset = targetEnd + pabs1halflen * 2. + pabs2halflen;
 
     double pabs1ZOffset = targetEnd + 0.01;
-    double pabs2ZOffset = targetEnd + targetEndToDS2End + 0.01; 
+    double pabs2ZOffset = targetEnd + targetEndToDS2End + 0.01;
     if (pabs1) {
       pabs1ZOffset = targetEnd + distFromTargetEnd + pabs1halflen;
     }
@@ -252,4 +249,3 @@ namespace mu2e {
 
 
 } // namespace mu2e
-
