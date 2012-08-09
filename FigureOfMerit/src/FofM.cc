@@ -1064,13 +1064,11 @@ CzarneckiDIOspectrumFunction::CzarneckiDIOspectrumFunction (double strength)
   
   E_mu = 105.194;
   M_Al = 25133;
-  d0 = E_mu*E_mu*E_mu*E_mu/(2*M_Al*M_Al*M_Al);  // or d0 = 3.925e-6
-  d1 = 1+ E_mu/M_Al;                            // or d1 = 1.00420
 }
 
 double CzarneckiDIOspectrumFunction::operator() (double p)
 {
-  double delta = (Emax-p)*d1 + d0;
+  double delta = E_mu - p - p*p/(2.0*M_Al); 
   if (delta < 0) return 0;
   double delta5 = delta*delta*delta*delta*delta;
   double delta6 = delta*delta5;

@@ -53,14 +53,22 @@ void FMtool::analyze()
   
   
   setFilterLevels();
+        if (OUTPUT_detailedTrace) std::cout << "### setFilterLevels returned \n";
   setCanonicals();
+        if (OUTPUT_detailedTrace)  std::cout << "### setCanonicals returned \n";
   double nCE = obtainCEdata();
+        if (OUTPUT_detailedTrace)  std::cout << "### obtainCEdata returned \n";
   normalizeSignalEfficiency(nCE);  
-  bool (use_diowt);
+        if (OUTPUT_detailedTrace)  std::cout << "### normalizeSignalEfficiency returned \n";
+  bool use_diowt;
   double genDIO = obtainDIOdata(use_diowt);
+        if (OUTPUT_detailedTrace)  std::cout << "### obtainDIOdata returned \n";
   normalizeDIObackground(genDIO,use_diowt);  
+        if (OUTPUT_detailedTrace)  std::cout << "### normalizeDIObackground returned \n";
   double genRPC = obtainRPCdata();
+        if (OUTPUT_detailedTrace)  std::cout << "### obtainRPCdata returned \n";
   normalizeRPCbackground(genRPC);  
+        if (OUTPUT_detailedTrace)  std::cout << "### normalizeRPCbackground returned \n";
   applyFofM();
 }
 
@@ -85,7 +93,8 @@ void FMtool::setCanonicals()
   // TODO - allow this to be set from file or whatever.
 
   // Canonical range
-  canonicalRangeLo = 103.51;
+  // canonicalRangeLo = 103.51;
+  canonicalRangeLo = 103.3;
   canonicalRangeHi = 104.70;
 
   // binning info
@@ -257,19 +266,47 @@ double FMtool::obtainDIOdata(bool & use_diowt)
   double numberOfGeneratedDIOs = DIOpset.get<double>("numberOfGeneratedDIOs");
 
   DIOliveGateFraction = DIOpset.get<double>("liveGateFraction");
-    
+  use_diowt = DIOpset.get<bool>("dioTracksWeighted");
+  if (use_diowt) {
+    DIOflatGenerationWindowLo = 
+        DIOpset.get<double>("DIOflatGenerationWindowLo", 0);
+    DIOflatGenerationWindowHi = 
+        DIOpset.get<double>("DIOflatGenerationWindowHi", 0);
+    if (OUTPUT_detailedTrace) 
+      os << "### DIOflatGenerationWindowLo = " << DIOflatGenerationWindowLo
+         << "\nDIOflatGenerationWindowHi = " << DIOflatGenerationWindowHi
+         << "\n";
+    if ( (DIOflatGenerationWindowLo == 0) ||
+         (DIOflatGenerationWindowHi == 0) ) {
+      os << "Since dracksWeighted = true, "
+         << "DIOflatGenerationWindowLo and Hi are needed \n";
+      DIOflatGenerationWindowLo = 
+        DIOpset.get<double>("DIOflatGenerationWindowLo", 0);
+      DIOflatGenerationWindowHi = 
+        DIOpset.get<double>("DIOflatGenerationWindowHi", 0);
+      std::exit(1);
+    }         
+    if ( DIOflatGenerationWindowLo >= DIOflatGenerationWindowHi ) {
+      os << "DIOflatGenerationWindowLo = " << DIOflatGenerationWindowLo
+         << "\nDIOflatGenerationWindowHi = " << DIOflatGenerationWindowHi
+         << "\nThis is not a suitable range for having generated DIOs\n";
+      std::exit(1);
+    }
+  }
   DIObackground.clear();
   DIObackground.resize(nBins);
   double count103 = 0.0;
   double count104 = 0.0;
   double countRatioThreshold = 5.0;  
-  countMcmom ( DIOfileList, count103, count104 ); 
+  countMcmom ( DIOfileList, count103, count104, use_diowt ); 
 
-  use_diowt = DIOpset.get<bool>("dioTracksWeighted");
-
-  os << "The ratio of DIO's near 103 to near 104 in this set is "
+  os << "The ratio of DIO's in 102.5-103.5 to 103.5-104.5 in this set is "
      << count103/count104 << " -- \n";
 
+  os << "That represents " << count103 << " and " << count104 
+     << " counts respectively\n";
+     
+  bool diowt_discrepancy = false;
   if (count104 <= 0) {
     if ( use_diowt ) {
       std::cerr << "Warning: Discrepancy detected involving use of diowt! \n"; 
@@ -279,6 +316,7 @@ double FMtool::obtainDIOdata(bool & use_diowt)
          << "and should not not be weighted.\n"
          << "But dioTracksWeighted (in the fcl) has value true.\n";
       os        << "Warning: Discrepancy detected involving use of diowt! \n"; 
+      diowt_discrepancy = true;
     }
   } else if (count103/count104 > countRatioThreshold){
     if ( use_diowt ) {
@@ -290,6 +328,7 @@ double FMtool::obtainDIOdata(bool & use_diowt)
          << "and should not be weighted\n"
          << "But dioTracksWeighted (in the fcl) has value true.\n";
       os        << "Warning: Discrepancy detected involving use of diowt! \n"; 
+      diowt_discrepancy = true;
     }
   } else {
     if ( !use_diowt ) {
@@ -301,9 +340,14 @@ double FMtool::obtainDIOdata(bool & use_diowt)
          << "and need to be weighted.\n" 
          << "But dioTracksWeighted (in the fcl) has value false.\n";
       os        << "Warning: Discrepancy detected involving use of diowt! \n"; 
+      diowt_discrepancy = true;
     }
   }
- 
+  if (diowt_discrepancy) {
+    os << "Discontinuing FMtool due to discrepancy in use of DIO weights\n";
+    std::cerr << "Discontinuing FMtool due to discrepancy in use of DIO weights\n";
+    std::exit(1);
+  }
   if ( use_diowt ) {
     fractionOfDIOsRepresented = 1.0;
   } else {
@@ -394,24 +438,63 @@ void FMtool::extractFitmom
 {
   // Set up place to obtain the momentum and other data for immediate use 
   tracks->SetBranchStyle(0);
-  int   nactive;   tracks->SetBranchAddress("nactive"  , &nactive);
-  float t0err;     tracks->SetBranchAddress("t0err"    , &t0err);    
-  float fitmomerr; tracks->SetBranchAddress("fitmomerr", &fitmomerr);    
-  float fitcon;    tracks->SetBranchAddress("fitcon"   , &fitcon);    
-  int   fitstatus; tracks->SetBranchAddress("fitstatus", &fitstatus);    
-  float fitmom;    tracks->SetBranchAddress("fitmom"   , &fitmom);    
-  float diowt;     tracks->SetBranchAddress("diowt"    ,  &diowt);    
-  float t0;        tracks->SetBranchAddress("t0"       ,  &t0);    
+  
+  tracks->SetBranchStatus("*",0);
+  tracks->SetBranchStatus("nactive",1);
+  tracks->SetBranchStatus("t0err",1);
+  tracks->SetBranchStatus("fitmomerr",1);
+  tracks->SetBranchStatus("fitcon",1);
+  tracks->SetBranchStatus("fitstatus",1);
+  tracks->SetBranchStatus("fitmom",1);
+  tracks->SetBranchStatus("diowt",1);
+  tracks->SetBranchStatus("t0",1);
+  int   nactive = 0;   tracks->SetBranchAddress("nactive"  , &nactive);
+  float t0err = 0;     tracks->SetBranchAddress("t0err"    , &t0err);    
+  float fitmomerr = 0; tracks->SetBranchAddress("fitmomerr", &fitmomerr);    
+  float fitcon = 0;    tracks->SetBranchAddress("fitcon"   , &fitcon);    
+  int   fitstatus = 0; tracks->SetBranchAddress("fitstatus", &fitstatus);    
+  float fitmom = 0;    tracks->SetBranchAddress("fitmom"   , &fitmom);    
+  float diowt = 0;     tracks->SetBranchAddress("diowt"    ,  &diowt);    
+  float t0 = 0;        tracks->SetBranchAddress("t0"       ,  &t0);    
   int ntracks = 0;
 
   double binSize = (topOfLastBin - lowestBin)/nBins;
   std::vector<int> nBinnedTracks(tCuts.size());
   std::vector<double> dioTotalWeight(tCuts.size());
+  std::vector<double> dioTotalWeightInCanonicalRange (tCuts.size());
   size_t nt = tCuts.size();
-  for (int i = 0; true; ++i) {
+  int treeEntries = tracks->GetEntries();
+  if (OUTPUT_detailedTrace) os << "### treeEntries = " << treeEntries << "\n";
+  int nfitstatus=0;
+  int nnactive =0;
+  int nt0err = 0;
+  int nfitmomerr = 0;
+  int nfitcon=0;
+  int nfitmom=0;
+  for (int i = 0; i < treeEntries; ++i) {
     int bytesRead = tracks->GetEntry(i);
     if (bytesRead == 0) break;
     ++ntracks;
+    if (OUTPUT_detailedTrace) {
+      if (fitstatus == 1) {
+        ++ nfitstatus;
+      }
+      if (nactive   >= minimum_nactive) {
+        ++nnactive;
+      }
+      if (t0err     <= maximum_t0err) {
+        ++nt0err;
+      }
+      if (fitmomerr <= maximum_fitmomerr) {
+        ++nfitmomerr;
+      }
+      if (fitcon    >= minimum_fitcon)  {
+        ++nfitcon;
+      }
+      if (fitmom    < 120.0) {
+        ++nfitmom;
+      }
+    }
     if  (    (fitstatus == 1)     // track quality cuts 
           && (nactive   >= minimum_nactive)
           && (t0err     <= maximum_t0err)
@@ -429,6 +512,9 @@ void FMtool::extractFitmom
             if ( use_diowt ) {
               counts[t][binNumber] += diowt;  // weighted DIO tracks
               dioTotalWeight[t] += diowt;
+              if ( fitmom >= canonicalRangeLo && fitmom <= canonicalRangeHi ) {
+                dioTotalWeightInCanonicalRange[t] += diowt;
+              }
             } else {
               counts[t][binNumber] += 1.0; // everything has equal weight
             }
@@ -440,15 +526,22 @@ void FMtool::extractFitmom
   } // end of *for* loop on i which goes thru track entries
   if (OUTPUT_fileEntriesStatistics) {
     os << "There are " << ntracks << " entries in the tree\n";
-    for ( size_t i = 0; i < nt; ++i ) {
-      os << "There are " << nBinnedTracks[i] 
+    for ( size_t t = 0; t < nt; ++t ) {
+      os << "There are " << nBinnedTracks[t] 
          << " binned entries passing the cuts with t0 >= " 
-         << tCuts[i] << "\n";
+         << tCuts[t] << "\n";
       if (use_diowt) { 
         os << "(total of DIO weights passing cuts with t0 >= "
-           <<  tCuts[i] << " is " << dioTotalWeight[i] << ")\n";
+           <<  tCuts[t] << " is " << dioTotalWeight[t] << ")\n";
+        os << "total weight in " << canonicalRangeLo << " - " 
+           << canonicalRangeHi << " is " << dioTotalWeightInCanonicalRange[t]
+           << "\n";
       }
     }
+    os << "nfitstatus = " << nfitstatus << " nnactive = " << nnactive
+       << " (" << minimum_nactive << ")"
+       << "\nnt0err = " << nt0err << " nfitmomerr = " << nfitmomerr 
+       << "\nnfitcon = " << nfitcon << " nfitmom = " << nfitmom << "\n"; 
   }
               
 } // extractFitmom
@@ -520,11 +613,17 @@ FMtool::accessTTree(std::string const & fileName) const
 
 
 void FMtool::countMcmom 
-  ( TTree * tracks, double & count103, double & count104 )
+  ( TTree * tracks, double & count103, double & count104, bool use_diowt )
 {
   tracks->SetBranchStyle(0);
+  tracks->SetBranchStatus("*",0);
+  tracks->SetBranchStatus("mcmom",1);
+  tracks->SetBranchStatus("diowt",1);  
   float mcmom;     tracks->SetBranchAddress("mcmom"    , &mcmom);    
-  for (int i = 0; true; ++i) {
+  float diowt;     tracks->SetBranchAddress("diowt"    , &diowt);
+  int treeEntries = tracks->GetEntries();
+  CzarneckiDIOspectrumFunction cz(1.0);
+  for (int i = 0; i < treeEntries; ++i) {
     int bytesRead = tracks->GetEntry(i);
     if (bytesRead == 0) break;
     if  (  (mcmom >= 102.5) && (mcmom < 103.5) ) {
@@ -533,12 +632,21 @@ void FMtool::countMcmom
     if  (  (mcmom >= 103.5) && (mcmom < 104.5) ) {
         count104 += 1.0;    
     } 
+    if (use_diowt) {
+      double czweight = cz(mcmom);
+      double wratio = diowt / czweight;
+      if ( wratio < .99 || wratio > 1.01 ) {
+        std::cerr << "Discrepancy in diowt: mcmom = " << mcmom
+                  << " diowt = " << diowt 
+                  << " expected " << czweight << "\n";  
+      }
+    }
   } 
 } // countMcmom
 
 void FMtool::countMcmom 
   ( std::vector<std::string> const & listOfFileNames
-  , double & count103, double & count104 )
+  , double & count103, double & count104, bool use_diowt )
 {
   count103 = 0.0;
   count104 = 0.0;
@@ -546,7 +654,7 @@ void FMtool::countMcmom
   for (unsigned int i=0; i<listOfFileNames.size(); ++i) {
     TTreeAccessor ta = accessTTree ( listOfFileNames[i] );
     countMcmom 
-      (  ta.tracks,  count103, count104 );
+      (  ta.tracks,  count103, count104, use_diowt );
     delete ta.tracks;   ta.tracks = 0;
     delete ta.tfp;      ta.tfp = 0;
   }
@@ -572,8 +680,16 @@ void FMtool::normalizeDIObackground(double numberOfGeneratedDIOs, bool use_diowt
   // (e.g., 95-105) in which case the tracks should be weighted according 
   // to diowt.  The typical diowt is in the area of 1.0e-15.
 
-  double DIOgenerationWeighting = use_diowt ? 1.0 : fractionOfDIOsRepresented;
-
+  double DIOgenerationWeighting = 1.0;
+  
+  if (use_diowt) {
+    DIOgenerationWeighting = 
+        DIOflatGenerationWindowHi - DIOflatGenerationWindowLo;
+    if (OUTPUT_detailedTrace) os << "### DIOgenerationWeighting = "  << DIOgenerationWeighting << "\n";
+  } else {
+    DIOgenerationWeighting = fractionOfDIOsRepresented;
+  }
+ 
   double DIOsPerStoppedMuon =  1.0 - capturedMuonsPerStoppedMuon;
   double DIObackgroundCountNormalization =
       ( stoppedMuonsPerPOT * DIOsPerStoppedMuon 
@@ -588,6 +704,7 @@ void FMtool::normalizeDIObackground(double numberOfGeneratedDIOs, bool use_diowt
 
   DIObackgroundNormalization = DIObackgroundCountNormalization/binSize;
   for (size_t t =0; t <  tCuts.size(); ++t) {
+    os << "Normalizing DIO background for t = " << tCuts[t] << "\n";
     normalizeAbackground( "DIO", 
       DIObackgroundCountNormalization, DIObackground[t] );
   }
@@ -708,7 +825,7 @@ void FMtool::normalizeAbackground(
   double canonicalRangeCount = 0;
   for (unsigned int i=0; i < background.size(); ++i) {
     double p = lowestBin + binSize*i;
-    if ( p >= 103.51 && p <= 104.70 )  {
+    if ( p >= canonicalRangeLo && p < canonicalRangeHi )  {
       canonicalRangeCount += background[i];
     }
   }
@@ -768,12 +885,17 @@ void FMtool::applyFofM() const
   bool optimize_pcut_high = pCutpset.get<bool>("optimize_pcut_high",true);
   highCut = optimize_pcut_high ? 0 : pCutpset.get<double>("fixed_pcut_high");
   
+  // Obsolete, but here so that loder fcl files will still work the same way: 
   bool useSmoothedPunziFMtoOptimize = pset.get<bool>
                         ("useSmoothedPunziFMtoOptimize", false);
-                         
   MeritFunctionChoice mfc = useSmoothedPunziFMtoOptimize ? 
         SmoothedPunziMeritFunction : FCsensitivityMeritFunction; 
 
+  // Newer way:
+  std::string mfcString = pset.get<std::string>("meritFunction","");
+  if ( mfcString == "SmoothedPunzi" ) mfc = SmoothedPunziMeritFunction;
+  if ( mfcString == "FCsensitivity" ) mfc = FCsensitivityMeritFunction;
+  
   std::string table;
   std::vector<FofM::Summary> summaries(tCuts.size());
   double best_tCutMerit  = 0;
@@ -1046,6 +1168,8 @@ void FMtool::decideVerbosity()
   OUTPUT_spectra = v.get<bool>("spectra", false);
   OUTPUT_backgroundSplines = v.get<bool>("backgroundSplines", false);
   OUTPUT_allTables = v.get<bool>("allTables", false);
+  OUTPUT_fileEntriesStatistics = v.get<bool>("fileEntriesStatistics",false);
+  OUTPUT_detailedTrace = v.get<bool>("detailedTrace",false);
 }
 
 } // end namespace mu2e
@@ -1058,12 +1182,14 @@ static ParameterSet obtainPset(std::string const & parametersFile)
   // getting to the fhicl file desired:
   putenv(const_cast<char*>("FHICL_FILE_PATH=./test:."));
   cet::filepath_lookup policy("FHICL_FILE_PATH");
+  // TODO - maybe use filepath_lookup_nonabsolute
+  // cet::filepath_lookup_nonabsolute policy("FHICL_FILE_PATH");
   
   // Get the table from the file
   fhicl::intermediate_table tbl;
   std::cout << "The name of the fhicl file is " << parametersFile << "\n";
-  fhicl::parse_document(parametersFile, policy, tbl);
-
+  fhicl::parse_document(parametersFile, policy, tbl);  
+  
   ParameterSet p;
   // convert to ParameterSet
   fhicl::make_ParameterSet(tbl, p);

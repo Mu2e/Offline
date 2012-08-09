@@ -343,8 +343,6 @@ private:
   double Emax;
   double E_mu;
   double M_Al;
-  double d0;  // constant coefficient in delta = d1*Delta_p + d0
-  double d1;
 };
 
 // Spectra -- each is a class inheriting from Spectrum

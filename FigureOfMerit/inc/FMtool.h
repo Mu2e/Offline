@@ -70,9 +70,10 @@ private:
     TTree* tracks;
   };
   TTreeAccessor accessTTree (std::string const & fileName) const;
-  void countMcmom ( TTree * tracks, double & count103, double & count104);
+  void countMcmom ( TTree * tracks, 
+                        double & count103, double & count104, bool use_diowt);
   void countMcmom ( std::vector<std::string> const & listOfFileNames, 
-                        double & count103, double & count104);
+                        double & count103, double & count104, bool use_diowt);
 
   std::vector<double> RPCtimeProbabilityVector() const;
   splines::Spline<1> RPCtimeProbabilitySpline()  const;
@@ -92,6 +93,7 @@ public:
   bool OUTPUT_dataProperties;
   bool OUTPUT_RPClivePionFraction;
   bool OUTPUT_allTables;
+  bool OUTPUT_detailedTrace;
 
   double adHocSignalrescaler;
   double adHocDIOrescaler;
@@ -147,7 +149,9 @@ private:
   double fractionOfDIOsRepresented;
   double DIObackgroundNormalization;
   double RPCbackgroundNormalization;
-
+  double DIOflatGenerationWindowLo;
+  double DIOflatGenerationWindowHi;
+  
   // time window shapes
   splines::Spline<1> RPCtimeProbability;
   double stoppedPionsPerPOT;
