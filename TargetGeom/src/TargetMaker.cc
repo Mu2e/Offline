@@ -2,9 +2,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.cc,v 1.12 2012/07/17 22:04:27 kutschke Exp $
+// $Id: TargetMaker.cc,v 1.13 2012/08/09 22:25:52 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/17 22:04:27 $
+// $Date: 2012/08/09 22:25:52 $
 //
 // Original author Peter Shanahan
 //
@@ -25,10 +25,6 @@
 #include "TargetGeom/inc/Target.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
-#ifndef __CINT__
-
-
-
 using namespace std;
 
 namespace mu2e {
@@ -38,6 +34,8 @@ namespace mu2e {
   TargetMaker::TargetMaker( SimpleConfig const& c):
     _rIn(0.)
   {
+
+    int verbosity(c.getInt("target.verbosity",0));
 
     // positions are in detector coordinates (mm).
     _z0            = c.getDouble("target.z0");
@@ -98,7 +96,7 @@ namespace mu2e {
     _fillMaterial=c.getString("target.fillMaterial","Target_Unknown");
 
     // debugging print...
-    PrintConfig();
+    if ( verbosity > 0 ) PrintConfig();
 
     // Do the real work.
     BuildIt( );
@@ -230,5 +228,3 @@ namespace mu2e {
   }
 
 } // namespace mu2e
-
-#endif
