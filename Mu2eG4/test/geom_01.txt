@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.159 2012/08/09 19:16:50 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/08/09 19:16:50 $
+// $Id: geom_01.txt,v 1.160 2012/08/09 22:23:30 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/08/09 22:23:30 $
 //
 // Original author Rob Kutschke
 //
@@ -232,7 +232,7 @@ string pbar.materialName = "G4_Be";
 
 bool   coll.visible        = true;
 bool   coll.solid          = false;
-int    coll.verbosityLevel = 1;
+int    coll.verbosityLevel = 0;
 
 double coll1.halfLength = 500.0;
 // innerRadius1,2 describe the inner cone, which is a cyliner if r1==r2
@@ -320,6 +320,7 @@ double target.z0             = -6129.0;    // 12000-(13800.00-7929) = -6129. was
 double target.deltaZ         =    50.0;
 bool   target.visible        = true;
 bool   target.solid          = false;
+int    target.verbosity      =     0;
 
 // all radii must be specified, i.e., nFoils is determined from the size
 // of the radii vector.
@@ -484,7 +485,7 @@ double toyDS.gradient      = 0.0; // Tesla/m
 
 // This is recommended field map. See geom_mecofield.txt to use the meco field.
 string bfield.format  = "G4BL";
-int  bfield.verbosityLevel =  1;
+int  bfield.verbosityLevel =  0;
 bool bfield.writeG4BLBinaries     =  false;
 
 vector<string> bfield.innerMaps = {
