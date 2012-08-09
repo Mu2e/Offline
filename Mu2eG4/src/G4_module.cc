@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.55 2012/07/16 19:16:53 kutschke Exp $
+// $Id: G4_module.cc,v 1.56 2012/08/09 22:20:52 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/16 19:16:53 $
+// $Date: 2012/08/09 22:20:52 $
 //
 // Original author Rob Kutschke
 //
@@ -258,8 +258,11 @@ namespace mu2e {
 
     geom.addWorldG4();
 
-    mf::LogInfo logInfo("GEOM");
-    logInfo << "Initializing Geant 4 for " << run.id() << " with verbosity " << _rmvlevel << endl;
+    if ( _rmvlevel > 0 ) {
+      mf::LogInfo logInfo("GEOM");
+      logInfo << "Initializing Geant 4 for " << run.id()
+              << " with verbosity " << _rmvlevel << endl;
+    }
 
     // Create user actions and register them with G4.
 
