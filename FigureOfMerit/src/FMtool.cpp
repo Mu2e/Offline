@@ -292,7 +292,7 @@ double FMtool::obtainDIOdata(bool & use_diowt)
          << "\nThis is not a suitable range for having generated DIOs\n";
       std::exit(1);
     }
-  }
+  } 
   DIObackground.clear();
   DIObackground.resize(nBins);
   double count103 = 0.0;
@@ -352,7 +352,16 @@ double FMtool::obtainDIOdata(bool & use_diowt)
     fractionOfDIOsRepresented = 1.0;
   } else {
     fractionOfDIOsRepresented = 
-      DIOpset.get<double>("fractionOfDIOsRepresented");
+      DIOpset.get<double>("fractionOfDIOsRepresented",-99);
+    if (fractionOfDIOsRepresented < 0) {
+      double DIOgenerationLowerLimit = 
+      DIOpset.get<double>("DIOgenerationLowerLimit");
+      CzarneckiDIOspectrumFunction cz(1.0);
+      fractionOfDIOsRepresented = cz.integrated(DIOgenerationLowerLimit);
+      os << "DIO Generation Lower Limit = " << DIOgenerationLowerLimit
+         << "  fraction of DIOs represented = " 
+         << fractionOfDIOsRepresented << "\n";
+    }
   }
 
   size_t nTcuts = tCuts.size();

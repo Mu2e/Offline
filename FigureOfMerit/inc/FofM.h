@@ -333,7 +333,8 @@ double branchingFractionForCapturedMuonsToDIO();
 struct CzarneckiDIOspectrumFunction  {
 public:
   explicit CzarneckiDIOspectrumFunction(double strength); 
-  double operator() (double p);    
+  double operator() (double p) const;  
+  double integrated (double p) const;  // integral from p to endpoint   
 private:
   double multiplier;
   double alpha_5;

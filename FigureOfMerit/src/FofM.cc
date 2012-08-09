@@ -1066,7 +1066,7 @@ CzarneckiDIOspectrumFunction::CzarneckiDIOspectrumFunction (double strength)
   M_Al = 25133;
 }
 
-double CzarneckiDIOspectrumFunction::operator() (double p)
+double CzarneckiDIOspectrumFunction::operator() (double p) const
 {
   double delta = E_mu - p - p*p/(2.0*M_Al); 
   if (delta < 0) return 0;
@@ -1077,6 +1077,21 @@ double CzarneckiDIOspectrumFunction::operator() (double p)
   double czarnecki_equation_25 =
          alpha_5*delta5 + alpha_6*delta6 + alpha_7*delta7 + alpha_8*delta8;
   return multiplier * czarnecki_equation_25;
+}
+
+double CzarneckiDIOspectrumFunction::integrated(double p) const
+{
+  double delta = E_mu - p - p*p/(2.0*M_Al); 
+  if (delta < 0) return 0;
+  double delta5 = delta*delta*delta*delta*delta;
+  double delta6 = delta*delta5;
+  double delta7 = delta*delta6;
+  double delta8 = delta*delta7;
+  double delta9 = delta*delta8;
+  double czarnecki_equation_25_integrated =
+         alpha_5*delta6/6 + alpha_6*delta7/7 
+       + alpha_7*delta8/8 + alpha_8*delta9/9;
+  return czarnecki_equation_25_integrated;
 }
 
 CzarneckiDIOSpectrum::CzarneckiDIOSpectrum 
