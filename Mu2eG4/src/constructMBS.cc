@@ -1,9 +1,9 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.10 2012/05/18 16:55:57 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/18 16:55:57 $
+// $Id: constructMBS.cc,v 1.11 2012/08/09 22:22:25 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/08/09 22:22:25 $
 //
 // Original author KLG
 //
@@ -75,9 +75,8 @@ namespace mu2e {
     GeomHandle<Beamline> beamg;
     double solenoidOffset = -beamg->solenoidOffset();
 
-    cout << __func__ << " verbosityLevel                          : " << verbosityLevel  << endl;
-
     if ( verbosityLevel > 0) {
+      cout << __func__ << " verbosityLevel                   : " << verbosityLevel  << endl;
       cout << __func__ << " solenoidOffset                   : " << solenoidOffset  << endl;
     }
 

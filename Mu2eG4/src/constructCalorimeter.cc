@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructCalorimeter.cc,v 1.17 2012/07/15 22:06:17 kutschke Exp $
+// $Id: constructCalorimeter.cc,v 1.18 2012/08/09 22:22:25 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Date: 2012/08/09 22:22:25 $
 //
 // Original author Ivan Logashenko
 //
@@ -79,9 +79,11 @@ namespace mu2e {
 
       double dim[3] = { size.x(), size.y(), size.z() };
 
-      cout << "Calorimeter Vane position: ("
-           << pos.x() << "," << pos.y() << "," << pos.z()
-           << ")" << endl;
+      if ( verbosityLevel > 0 ) {
+        cout << "Calorimeter Vane position: ("
+             << pos.x() << "," << pos.y() << "," << pos.z()
+             << ")" << endl;
+      }
 
       ostringstream name;
       name << "CalorimeterVane_" << i;

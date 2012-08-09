@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.14 2012/05/31 17:09:13 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/31 17:09:13 $
+// $Id: constructProtonAbsorber.cc,v 1.15 2012/08/09 22:22:25 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/08/09 22:22:25 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -224,16 +224,18 @@ namespace mu2e {
                 bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
                 bool const placePV       = true;
 
-                mf::LogInfo log("GEOM");
-                log << "Constructing Proton Absorber -- \n";
-                log << "Proton Abs Offset in DS2:  " << pabs1Offset <<"\n";
-                log << "rIn,  rOut (-z): "<< pabs1rIn0 <<"  "<< pabs1rOut0<<"  ";
-                log << "rIn,  rOut (+z): "<< pabs1rIn1 <<"  "<< pabs1rOut1<<"  ";
-                log << "halflength: "<< pabs1len*0.5 <<"\n";
-                log << "Proton Abs Offset in DS3:  " << pabs2Offset <<"\n";
-                log << "rIn,  rOut (-z): "<< pabs1rIn1 <<"  "<< pabs1rOut1<<"  ";
-                log << "rIn,  rOut (+z): "<< pabs2rIn1 <<"  "<< pabs2rOut1<<"  ";
-                log << "halflength: "<< pabs2len*0.5 <<"\n";
+                if ( verbosityLevel > 0 ) {
+                  mf::LogInfo log("GEOM");
+                  log << "Constructing Proton Absorber -- \n";
+                  log << "Proton Abs Offset in DS2:  " << pabs1Offset <<"\n";
+                  log << "rIn,  rOut (-z): "<< pabs1rIn0 <<"  "<< pabs1rOut0<<"  ";
+                  log << "rIn,  rOut (+z): "<< pabs1rIn1 <<"  "<< pabs1rOut1<<"  ";
+                  log << "halflength: "<< pabs1len*0.5 <<"\n";
+                  log << "Proton Abs Offset in DS3:  " << pabs2Offset <<"\n";
+                  log << "rIn,  rOut (-z): "<< pabs1rIn1 <<"  "<< pabs1rOut1<<"  ";
+                  log << "rIn,  rOut (+z): "<< pabs2rIn1 <<"  "<< pabs2rOut1<<"  ";
+                  log << "halflength: "<< pabs2len*0.5 <<"\n";
+                }
 
                 VolumeInfo protonabs1Info = nestCons( "protonabs1",
                                 pabs1Param,
