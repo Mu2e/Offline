@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.142 2012/08/08 16:28:03 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/08 16:28:03 $
+// $Id: Mu2eWorld.cc,v 1.143 2012/08/09 22:21:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/08/09 22:21:23 $
 //
 // Original author Rob Kutschke
 //
@@ -178,12 +178,6 @@ namespace mu2e {
     GeomHandle<WorldG4> worldGeom;
     G4ThreeVector tmp =    GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() + worldGeom->mu2eOriginInWorld()
       - G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0));
-    cout << "RKK test: "
-         << tmp  << " | "
-         << GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() << " "
-         << worldGeom->mu2eOriginInWorld() <<  " : "
-         << _config->getDouble("itracker.z0",0.0)
-         << endl;
 
     if ( _config->getBool("hasITracker",false) ) {
       ITGasLayerSD::setMu2eDetCenterInWorld(
@@ -249,9 +243,11 @@ namespace mu2e {
 
     constructVisualizationRegions(worldVInfo, *_config);
 
-    mf::LogInfo log("GEOM");
-    log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
-    log << "Mu2e Detector Origin: " << GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() + worldGeom->mu2eOriginInWorld()   << "\n";
+    if ( _verbosityLevel > 0) {
+      mf::LogInfo log("GEOM");
+      log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
+      log << "Mu2e Detector Origin: " << GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() + worldGeom->mu2eOriginInWorld()   << "\n";
+    }
 
     // Create magnetic fields and managers only after all volumes have been defined.
     constructBFieldAndManagers();
@@ -410,18 +406,17 @@ namespace mu2e {
     G4TransportationManager::GetTransportationManager()->SetFieldManager(_manager);
 
     // Define uniform field region in the detector solenoid, if neccessary
-
     if (bfconf->dsFieldForm() == BFieldConfig::dsModelUniform  ){
       ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
-      cout << "Use uniform field in DS2" << endl;
+      if ( _verbosityLevel > 0 ) cout << "Use uniform field in DS2" << endl;
     }
     if (bfconf->dsFieldForm() == BFieldConfig::dsModelUniform || bfconf->dsFieldForm() == BFieldConfig::dsModelSplit){
       if( needDSGradient ) {
         ds3Vacuum->SetFieldManager( _dsGradient->manager(), true);
-        cout << "Use gradient field in DS3" << endl;
+      if ( _verbosityLevel > 0 ) cout << "Use gradient field in DS3" << endl;
       } else {
         ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
-        cout << "Use uniform field in DS3" << endl;
+        if ( _verbosityLevel > 0 ) cout << "Use uniform field in DS3" << endl;
       }
       /*
       if( _config->getBool("hasMBS",false) ) {
