@@ -294,7 +294,7 @@ void DataInterface::fillGeometry()
     infoToyDS->setText(3,c);
     boost::shared_ptr<Cylinder> shapeToyDS(new Cylinder(0,0,z, 0,0,0,
                                                zHalfLength,innerRadius,outerRadius, NAN, 
-                                               _geometrymanager, _topvolume, _mainframe, infoToyDS, true));
+                                               _geometrymanager, _topvolume, _mainframe, infoToyDS, false));
     _components.push_back(shapeToyDS);
     _otherstructures.push_back(shapeToyDS);
   } else if(geom->hasElement<mu2e::ITracker>()) {
@@ -465,7 +465,7 @@ void DataInterface::fillGeometry()
     infoToyDS->setText(3,c);
     boost::shared_ptr<Cylinder> shapeToyDS(new Cylinder(0,0,z, 0,0,0,
                                                zHalfLength,innerRadius,outerRadius, NAN,
-                                               _geometrymanager, _topvolume, _mainframe, infoToyDS, true));
+                                               _geometrymanager, _topvolume, _mainframe, infoToyDS, false));
     _components.push_back(shapeToyDS);
     _otherstructures.push_back(shapeToyDS);
   }
@@ -1242,18 +1242,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       KalRep const* kalrep = kalReps->at(j);
       double t0=kalrep->t0().t0();
       {
-        int particleid=0;
         int trackclass=trackInfos[i].classID;
         int trackclassindex=trackInfos[i].index;
         std::string trackcollection=trackInfos[i].entryText;
-        switch(abs(static_cast<int>(kalrep->particleType().particleType())))
-        {
-           case 0 : particleid=11;   break;  //electron
-           case 1 : particleid=13;   break;  //muon
-           case 2 : particleid=211;  break;  //pion
-           case 3 : particleid=321;  break;  //kaon
-           case 4 : particleid=2212; break;  //proton
-        };
+        int particleid=kalrep->particleType().particleType();
         std::string particlename=HepPID::particleName(particleid);
         char c0[200], c2[200], c3[200], c4[200];
         sprintf(c0,"Kalman Track %i  %s  (%s)",j,particlename.c_str(),trackcollection.c_str());

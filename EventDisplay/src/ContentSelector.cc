@@ -16,7 +16,7 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
 {
   TGLBEntry *entry;
 
-  entry=_hitBox->FindEntry("KalRep:KalFitTest:");
+  entry=_hitBox->FindEntry("KalRep:TrkPatRec:DownstreameMinus");
   if(entry!=NULL) _hitBox->Select(entry->EntryId());
   else
   {
@@ -30,7 +30,7 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
 
   entry=_trackBox->FindEntry("TrkExtTraj:TrkExt:");
   if(entry!=NULL) _trackBox->Select(entry->EntryId());
-  entry=_trackBox->FindEntry("KalRep:KalFitTest:");
+  entry=_trackBox->FindEntry("KalRep:TrkPatRec:DownstreameMinus");
   if(entry!=NULL) _trackBox->Select(entry->EntryId());
   entry=_trackBox->FindEntry("SimParticle:g4run:");
   if(entry!=NULL) _trackBox->Select(entry->EntryId());

@@ -121,7 +121,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _supportStructuresButton->Associate(this);
 
   _otherStructuresButton = new TGCheckButton(_subFrame,"Show Toy DS, CR Steel Shield",37);
-  _otherStructuresButton->SetState(kButtonDown);
+  _otherStructuresButton->SetState(kButtonUp);
   _subFrame->AddFrame(_otherStructuresButton, lh1);
   _otherStructuresButton->Associate(this);
 
