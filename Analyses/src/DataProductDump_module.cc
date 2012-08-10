@@ -2,9 +2,9 @@
 // Dump information about all data products in the file, including
 // event, run and subrun data products.
 //
-// $Id: DataProductDump_module.cc,v 1.5 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: DataProductDump_module.cc,v 1.6 2012/08/10 04:55:25 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/08/10 04:55:25 $
 //
 // Original author Rob Kutschke
 //
@@ -90,12 +90,14 @@ void mu2e::DataProductDumpDetail::print( provs_type const& provs) const {
     string head1("Module Label");
     string head2("Instance Name");
     string head3("Process Name");
+    string head4("Product ID");
 
     // Compute lengths of column headings.
     string::size_type maxlclass(head0.size());
     string::size_type maxlmodule(head1.size());
     string::size_type maxlinstance(head2.size());
     string::size_type maxlprocess(head3.size());
+    string::size_type maxlprodId(head4.size());
 
     // Loop over all products and compute maximum lengths for each column.
     for ( provs_type::const_iterator i=provs.begin();
@@ -118,7 +120,8 @@ void mu2e::DataProductDumpDetail::print( provs_type const& provs) const {
     cout << setw(maxlclass)    << head0 << "  "
          << setw(maxlmodule)   << head1 << "  "
          << setw(maxlinstance) << head2 << "  "
-         << setw(maxlprocess)  << head3
+         << setw(maxlprocess)  << head3 << "     "
+	 << setw(maxlprodId)   << head4
          << endl;
 
     // Printer body of header.
@@ -128,7 +131,8 @@ void mu2e::DataProductDumpDetail::print( provs_type const& provs) const {
       cout << setw(maxlclass)    << prov.friendlyClassName()   << "  "
            << setw(maxlmodule)   << prov.moduleLabel()         << "  "
            << setw(maxlinstance) << prov.productInstanceName() << "  "
-           << setw(maxlprocess)  << prov.processName()
+           << setw(maxlprocess)  << prov.processName()         << "  "
+	   << setw(maxlprodId)   << prov.productID()
            << endl;
     }
 
