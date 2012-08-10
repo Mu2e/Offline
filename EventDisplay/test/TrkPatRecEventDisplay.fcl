@@ -1,8 +1,8 @@
 # Configuration file for KalFit01
 #
-# $Id: TrkPatRecEventDisplay.fcl,v 1.1 2012/08/10 20:52:48 ehrlich Exp $
+# $Id: TrkPatRecEventDisplay.fcl,v 1.2 2012/08/10 21:50:40 ehrlich Exp $
 # $Author: ehrlich $
-# $Date: 2012/08/10 20:52:48 $
+# $Date: 2012/08/10 21:50:40 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -39,6 +39,8 @@ physics :
     generate : @local::generate
     g4run    : @local::g4run
     makeSH   : @local::makeSH
+    CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
     TrkPatRec: @local::TrkPatRec
   }
 
@@ -51,7 +53,7 @@ physics :
     }
   }
 
-  p1 : [generate , g4run, makeSH, TrkPatRec]
+  p1 : [generate , g4run, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, TrkPatRec]
   e1 : [eventdisplay]
 
   trigger_paths  : [p1]

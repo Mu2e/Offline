@@ -16,14 +16,10 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
 {
   TGLBEntry *entry;
 
-  entry=_hitBox->FindEntry("KalRep:TrkPatRec:DownstreameMinus");
+  entry=_hitBox->FindEntry("StrawHit:makeSH:");
+  if(entry==NULL) entry=_hitBox->FindEntry("StrawHit:makeDcH:");
+  if(entry==NULL) entry=_hitBox->FindEntry("KalRep:TrkPatRec:DownstreameMinus");
   if(entry!=NULL) _hitBox->Select(entry->EntryId());
-  else
-  {
-    entry=_hitBox->FindEntry("StrawHit:makeSH:");
-    if(entry==NULL) entry=_hitBox->FindEntry("StrawHit:makeDcH:");
-    if(entry!=NULL) _hitBox->Select(entry->EntryId());
-  }
 
   entry=_caloHitBox->FindEntry("CaloCrystalHit:CaloCrystalHitsMaker:");
   if(entry!=NULL) _caloHitBox->Select(entry->EntryId());
