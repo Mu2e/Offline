@@ -1,0 +1,38 @@
+//
+// Create a TBrowser for the file whose name is passed
+// in as an argument.
+//
+//   $Id: browse.cint,v 1.1 2012/08/11 02:29:05 kutschke Exp $
+//   $Author: kutschke $
+//   $Date: 2012/08/11 02:29:05 $
+//
+//   Contact person Rob Kutschke
+//
+// Because the TFile and TBrowser are created on the heap,
+// their ownership will pass to root/cint once this
+// routine exits.  Root/cint itself will look after
+// deleting the objects when it exits.  I must not
+// delete them myself or else that will result in a
+// double deletion when root tries to do it.
+//
+
+#include "TFile.h"
+#include "TBrowser.h"
+
+using namespace std;
+
+void browse ( char * f ){
+
+  // Get rid of grey background (ugly for print out).
+  gROOT->SetStyle("Plain");
+
+  // Statistics box for histograms to include all of:
+  // Name, Entries, Mean, Rms, Underflows, Overflows, Integral
+  gStyle->SetOptStat("nemruoi");
+
+  gStyle->SetHistLineColor(kBlue);
+
+  TFile *  tf = new TFile(f);
+  TBrowser* b = new TBrowser("Browser",tf);
+
+}

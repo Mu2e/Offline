@@ -1,0 +1,31 @@
+#! /bin/bash
+#
+# Start root, launch a TBrowser and point it at the root file
+# specified as the command line argument.
+#
+#   $Id: browse,v 1.1 2012/08/11 02:29:05 kutschke Exp $
+#   $Author: kutschke $
+#   $Date: 2012/08/11 02:29:05 $
+#
+# Contact person Rob Kutschke
+#
+
+basename $0 2>/dev/null
+
+# Need to exit/return depending if this is source or executed.
+wasSourced=1
+if [ "`basename $0 2>/dev/null`" = "browse" ];then 
+    wasSourced=0
+fi
+
+# We expect exactly one argument.
+if [ ! $# == 1 ]; then
+  echo "browse: must supply at least one argument"
+  echo $*
+  if [ $wasSourced == 1 ]; then 
+     return -1
+  fi
+  exit
+fi
+
+root -l ${MU2E_BASE_RELEASE}/bin/browse.cint\(\"$1\"\)
