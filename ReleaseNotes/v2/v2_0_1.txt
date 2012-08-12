@@ -1,10 +1,25 @@
-  $Id: v2_0_1.txt,v 1.2 2012/08/11 21:30:03 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2012/08/11 21:30:03 $
-
- Still under construction
+  $Id: v2_0_1.txt,v 1.3 2012/08/12 21:02:51 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/08/12 21:02:51 $
 
            Release notes for Mu2e Offline software, v2_0_1
+
+4) August 12, 2012 kutschke
+   Filters/src/InVirtualDetector_module.cc
+     First release. This selects events in which any particle
+     from a specified list makes a StepPointMC in a specified
+     virtual detector volume.
+
+3) August 11, 2012 kutschke
+   New files:
+     bin/browse 
+     bin/browse.cint
+   These are tools for browsing root files.
+
+2) August 10, 2012 kutschke
+   Sandbox/src/BarService_service.cc
+    Bug fix so that it registers its own callbacks after those
+    of FooService.
 
 1) August 10, 2012 ehrlich
    EventDisplay
