@@ -3,9 +3,9 @@
 # Script to create a test release in the current directory and a
 # matching directory on /mu2e/data to hold output files.
 #
-#  $Id: createTestRelease,v 1.4 2012/08/10 01:04:08 kutschke Exp $
+#  $Id: createTestRelease,v 1.5 2012/08/12 21:31:26 kutschke Exp $
 #  $Author: kutschke $
-#  $Date: 2012/08/10 01:04:08 $
+#  $Date: 2012/08/12 21:31:26 $
 #
 # This script resides a base release and it will connect the test release
 # to the base release in which this script resides.  Normally you should
@@ -13,6 +13,10 @@
 # setup a base release, then this script must reside in that release.
 # ( ie for convenience we let you do things out of order but we protect
 #   against cross-stitching things ).
+#
+# The script takes an optional command line argument: the name of the
+# setup file in the base release that you should source when you setup
+# the base release.
 #
 
 if [ "${MU2E}" = '' ];then
@@ -61,6 +65,13 @@ if [ -e  ${outputDir} ]; then
  return 1
 fi
 
+# If the optional argument has been specified, get it.
+setupname="setup.sh"
+if [ $# == 1 ]; then
+  setupname=$1
+fi
+echo "setupname: " $setupname
+
 # All tests passed. Now create the test release.
 
 # Copy some files from the base release.
@@ -86,7 +97,7 @@ cat >> setup.sh <<EOF
 #
 
 # Connect to the base release.
-source ${candidate_base_release}/setup.sh
+source ${candidate_base_release}/${setupname}
 
 # Add the test release to PATH, LD_LIBRARY_PATH and PYTHON_PATH
 source bin/setup_mu2e_project.sh
