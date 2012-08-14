@@ -391,7 +391,7 @@ namespace mu2e {
 
     HelperEventEntry res(mp.weight,
                          GenParticle(PDGCode::type(pdgId),
-                                     GenId::unknown,
+                                     GenId::MARS,
                                      marsToMu2ePosition(mp.x, mp.y, mp.z),
                                      p4,
                                      marsToMu2eTime(mp.tof)

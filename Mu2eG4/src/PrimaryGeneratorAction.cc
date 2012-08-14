@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.39 2012/07/16 19:16:53 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/16 19:16:53 $
+// $Id: PrimaryGeneratorAction.cc,v 1.40 2012/08/14 19:56:19 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/08/14 19:56:19 $
 //
 // Original author Rob Kutschke
 //
@@ -136,6 +136,7 @@ namespace mu2e {
       } else if ( genpart.generatorId() == GenId::particleGun ||
                   genpart.generatorId() == GenId::extMonFNALGun ||
                   genpart.generatorId() == GenId::fromG4BLFile ||
+                  genpart.generatorId() == GenId::MARS ||
                   genpart.generatorId() == GenId::fromStepPointMCs) {
         pos += mu2eOrigin;
       } else {
