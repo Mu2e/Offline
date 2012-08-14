@@ -109,8 +109,8 @@ Double_t crystalball (Double_t *x, Double_t *par) {
   // par[2] : sigma
   // par[3] : n
   // par[4] : alpha
-  // par[5] : fraction of 2nd Gaussian
-  // par[6] : tail gaussian sigma
+  // par[5] : fraction of exponential tail
+  // par[6] : tail exponential lambda
 
   if ( (x[0]- par[1])/fabs(par[2]) > -1.*par[4]) {
     double g = par[0]*TMath::Gaus(x[0], par[1], par[2]);
