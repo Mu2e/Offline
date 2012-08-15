@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions.
 //
-// $Id: StackingAction.cc,v 1.23 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: StackingAction.cc,v 1.24 2012/08/15 04:02:29 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/08/15 04:02:29 $
 //
 // Original author Rob Kutschke
 //
@@ -303,8 +303,9 @@ namespace mu2e {
       // just kill anything electromagnetic in the dirt
       killit =  ( pvol == _dirtBodyPhysVol &&
                   (pType == PDGCode::e_minus ||
-                   pType ==  PDGCode::e_plus ||
-                   PDGCode::gamma ) );
+                   pType == PDGCode::e_plus ||
+                   pType == PDGCode::gamma ) );
+
     } else {
 
       const G4ThreeVector& ppos = trk->GetPosition();
@@ -317,7 +318,6 @@ namespace mu2e {
       // Decide if we want to kill the track.
       killit = ( ppos.y() > (_dirtG4Ymin + _yaboveDirtYmin) && p3mom.mag() <  _cosmicpcut );
     }
-
 
     // Printout about the decision.
     if ( _nevents < 20 ) {
