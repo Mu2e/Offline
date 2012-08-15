@@ -3,9 +3,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.hh,v 1.9 2012/06/18 19:31:23 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2012/06/18 19:31:23 $
+// $Id: CosmicDYB.hh,v 1.10 2012/08/15 04:05:00 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/08/15 04:05:00 $
 //
 // Original author Yury Kolomensky
 //
@@ -92,6 +92,9 @@ namespace mu2e {
     enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL};
     RefPointChoice _choice;
 
+    // Checks whether the distance of closest approach to the detector axis is larger than the cutoff value
+    bool filterGeneratedMuons(CLHEP::Hep3Vector const &posInMu2eCoordinates, CLHEP::HepLorentzVector const &direction);
+    double _filterDistance;
   };  // CosmicDYB
 
 }  // namespace mu2e

@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.25 2012/07/26 19:01:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/26 19:01:00 $
+// $Id: CosmicDYB.cc,v 1.26 2012/08/15 04:05:00 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/08/15 04:05:00 $
 //
 // Original author Yury Kolomensky
 //
@@ -54,6 +54,7 @@
 #include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/TwoVector.h"
 
 // From Root.
 #include "TH1D.h"
@@ -114,6 +115,8 @@ namespace mu2e {
 
 
   , _choice(UNDEFINED)
+
+  , _filterDistance(config.getDouble("cosmicDYB.filterDistance",0.) )
 
   {
     mf::LogInfo log("COSMIC");
@@ -349,6 +352,7 @@ namespace mu2e {
       _cosmicChargeH->Fill(-pid/abs(pid));
 
       // Add the cosmic to  the list.
+      if(filterGeneratedMuons(posInMu2eCoordinates, mom))
       genParts.push_back( GenParticle( pid, GenId::cosmicDYB, posInMu2eCoordinates, mom, time));
 
     }
@@ -360,4 +364,22 @@ namespace mu2e {
                                              <<"Increase "<<name<<" by at least "<<-margin<<"\n";
   }
 
+  bool CosmicDYB::filterGeneratedMuons(CLHEP::Hep3Vector const &posInMu2eCoordinates, CLHEP::HepLorentzVector const &direction)
+  {
+    if(_filterDistance==0) return true;  //don't apply filter
+
+    CLHEP::Hep3Vector const& detectorSystemOriginInMu2eCoordinates = GeomHandle<DetectorSystem>()->getOrigin();
+    CLHEP::Hep2Vector dir(direction.x(),direction.y());
+    CLHEP::Hep2Vector p(posInMu2eCoordinates.x(),posInMu2eCoordinates.y());
+    CLHEP::Hep2Vector a(detectorSystemOriginInMu2eCoordinates.x(),detectorSystemOriginInMu2eCoordinates.y());
+    CLHEP::Hep2Vector b=a-p;
+    double alpha=b.angle(dir);
+    double b_mag=b.mag();
+    double distance=b_mag*sin(alpha);
+
+    if(distance<=_filterDistance) return true;
+
+    std::cout<<"generated muon removed since it is too far away from the detector axis."<<std::endl;
+    return false;
+  }
 }
