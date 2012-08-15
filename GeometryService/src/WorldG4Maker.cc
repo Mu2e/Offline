@@ -26,12 +26,34 @@ namespace mu2e {
 
     GeomHandle<Mu2eEnvelope> env;
 
-    const double worldBottomInMu2e = env->ymin() - c.getDouble("world.margin.bottom");
-    const double worldTopInMu2e    = env->ymax() + c.getDouble("world.margin.top");
-    const double worldXminInMu2e   = env->xmin() - c.getDouble("world.margin.xmin");
-    const double worldXmaxInMu2e   = env->xmax() + c.getDouble("world.margin.xmax");
-    const double worldZminInMu2e   = env->zmin() - c.getDouble("world.margin.zmin");
-    const double worldZmaxInMu2e   = env->zmax() + c.getDouble("world.margin.zmax");
+    const double prelimWorldBottomInMu2e = env->ymin() - c.getDouble("world.minimalMargin.bottom");
+    const double prelimWorldTopInMu2e    = env->ymax() + c.getDouble("world.minimalMargin.top");
+    const double prelimWorldXminInMu2e   = env->xmin() - c.getDouble("world.minimalMargin.xmin");
+    const double prelimWorldXmaxInMu2e   = env->xmax() + c.getDouble("world.minimalMargin.xmax");
+    const double prelimWorldZminInMu2e   = env->zmin() - c.getDouble("world.minimalMargin.zmin");
+    const double prelimWorldZmaxInMu2e   = env->zmax() + c.getDouble("world.minimalMargin.zmax");
+
+    // Using the above we'd get the following position for the origin of the mu2e coordinate system
+    CLHEP::Hep3Vector prelimWorldCenterInMu2e(
+                                              (prelimWorldXminInMu2e + prelimWorldXmaxInMu2e)/2,
+                                              (prelimWorldBottomInMu2e + prelimWorldTopInMu2e)/2,
+                                              (prelimWorldZminInMu2e + prelimWorldZmaxInMu2e)/2
+                                              );
+
+    // This is where we want it
+    const CLHEP::Hep3Vector requestedWorldCenterInMu2e( -c.getHep3Vector("world.mu2eOriginInWorld"));
+    // the shifts we need to correct for
+    const double dx(requestedWorldCenterInMu2e[0] - prelimWorldCenterInMu2e[0]);
+    const double dy(requestedWorldCenterInMu2e[1] - prelimWorldCenterInMu2e[1]);
+    const double dz(requestedWorldCenterInMu2e[2] - prelimWorldCenterInMu2e[2]);
+
+    // Compute the final world boundaries
+    const double worldBottomInMu2e = prelimWorldBottomInMu2e + (dy < 0 ? 2*dy :    0);
+    const double worldTopInMu2e    = prelimWorldTopInMu2e    + (dy < 0 ?    0 : 2*dy);
+    const double worldXminInMu2e   = prelimWorldXminInMu2e   + (dx < 0 ? 2*dx :    0);
+    const double worldXmaxInMu2e   = prelimWorldXmaxInMu2e   + (dx < 0 ?    0 : 2*dx);
+    const double worldZminInMu2e   = prelimWorldZminInMu2e   + (dz < 0 ? 2*dz :    0);
+    const double worldZmaxInMu2e   = prelimWorldZmaxInMu2e   + (dz < 0 ?    0 : 2*dz);
 
     // Dimensions of the world box
     res->_halfLengths = std::vector<double>(3);
@@ -46,6 +68,7 @@ namespace mu2e {
                                                  -(worldZminInMu2e + worldZmaxInMu2e)/2
                                                  );
 
+    //
     res->_hallFormalHalfSize.resize(3);
     res->_hallFormalHalfSize[0] = (env->xmax() - env->xmin())/2;
     res->_hallFormalHalfSize[1] = (env->ymax() - env->ymin())/2;
