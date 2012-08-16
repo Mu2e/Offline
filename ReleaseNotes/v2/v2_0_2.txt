@@ -1,10 +1,16 @@
-  $Id: v2_0_2.txt,v 1.3 2012/08/15 19:11:13 ehrlich Exp $
+  $Id: v2_0_2.txt,v 1.4 2012/08/16 22:21:39 ehrlich Exp $
   $Author: ehrlich $
-  $Date: 2012/08/15 19:11:13 $
+  $Date: 2012/08/16 22:21:39 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_2
+
+3) August 16, 2012 ehrlich
+   Changed the perspective view in the EventDisplay, 
+   so that the tracker is centered in the canvas.
+   EventDisplay/src/EventDisplayFrame.cc
+   EventDisplay/src/dict_classes/EventDisplayViewSetup.h
 
 2) August 15, 2012 ehrlich
      
