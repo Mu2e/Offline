@@ -567,7 +567,7 @@ void EventDisplayFrame::fillGeometry()
   _dataInterface->fillGeometry();
   DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, false);
   _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
-  _mainPad->GetView()->AdjustScales();
+  EventDisplayViewSetup::perspectiveview();
   _mainPad->Modified();
   _mainPad->Update();
 }
@@ -809,11 +809,10 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            }
                            if(param1==73)
                            {
-                             EventDisplayViewSetup::resetangle();
+                             EventDisplayViewSetup::perspectiveview();
                              _parallelButton->SetState(kButtonUp);
                              _perspectiveButton->SetState(kButtonDown);
                              _mainPad->GetView()->SetPerspective();
-                             _mainPad->GetView()->AdjustScales();
                            }
                            _mainPad->Modified();
                            _mainPad->Update();

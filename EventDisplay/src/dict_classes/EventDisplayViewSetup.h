@@ -1,9 +1,9 @@
 //
 // Class which sets up the 3D view of the main pad. It also provides functions that can handle user commands for zuum, rotate, etc.
 //
-// $Id: EventDisplayViewSetup.h,v 1.4 2011/09/16 02:10:19 ehrlich Exp $
+// $Id: EventDisplayViewSetup.h,v 1.5 2012/08/16 22:18:25 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/16 02:10:19 $
+// $Date: 2012/08/16 22:18:25 $
 //
 // Original author Ralf Ehrlich
 //
@@ -26,7 +26,6 @@ class EventDisplayViewSetup
 
   static void setup()
   {
-    resetangle();
     gPad->GetView()->ShowAxis();
     TAxis3D::GetPadAxis(gPad)->SetLabelSize(0.025);
     TAxis3D::GetPadAxis(gPad)->SetTitleOffset(-0.5);
@@ -76,12 +75,26 @@ class EventDisplayViewSetup
     };
   }
 
-  static void resetangle()
+  static void perspectiveview()
   {
     int irep=0;
     gPad->GetView()->SetView(180,60,90,irep);
     gPad->SetPhi(-90-180);
     gPad->SetTheta(90-60);
+
+    double  min[3],max[3];
+    gPad->GetView()->GetRange(min,max);
+    int i;
+    double  maxSide = 0;
+    for(i=0;i<3; i++) maxSide = TMath::Max(maxSide,max[i]-min[i]);
+    for(i=0;i<3; i++)
+    {
+      double diff = maxSide - (max[i]-min[i]);
+      diff    /= 6;
+      max[i]  += diff;
+      min[i]  -= diff;
+    }
+    gPad->GetView()->SetRange(min,max);
   }
 
   static void endview()
