@@ -86,7 +86,7 @@ void TrackColorSelector::drawTrackLegend(TText **legendParticleGroup, TText **le
               drawGroupName(6,_trackInfos->at(2).entryText);
               drawLineAndText(7, 3, "e+, e-");
               drawLineAndText(8, 8, "other particles");
-              drawGroupName(9,_trackInfos->at(2).entryText);
+              drawGroupName(9,_trackInfos->at(3).entryText);
               drawLineAndText(10, 4, "e+, e-");
               drawLineAndText(11, 9, "other particles");
               break;
