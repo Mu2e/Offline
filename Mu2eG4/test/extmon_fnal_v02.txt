@@ -262,8 +262,6 @@ bool           extMonFNAL.room.floor.solid     = true;
 bool extMonFNAL.collimator2.shielding.visible = true;
 bool extMonFNAL.collimator2.shielding.solid = false;
 
-bool           extMonFNAL.stackBoxVisible   = true;
-bool           extMonFNAL.stackBoxSolid     = false;
 bool           extMonFNAL.sensorPlaneVisible   = true;
 bool           extMonFNAL.sensorPlaneSolid     = true;
 bool           extMonFNAL.readoutPlaneVisible   = true;
