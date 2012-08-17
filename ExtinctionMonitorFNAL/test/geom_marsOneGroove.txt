@@ -1,0 +1,138 @@
+// To run G4 simulation using MARS input particles we need to
+// reproduce MARS configuration for the relevant pieces of geometry.
+// That means we need to have the same parameters for the ExtMon filter
+// channel (which also define the ExtMon detector input axis), and
+// for the ExtMonFNAL room.
+//
+// NB: Because of the magnet placement code re-write, the filter
+// magnet and collimator2 have slightly shifted (for the same value of
+// the input paramteres). The difference is:
+//
+//    beforeMagnetMove: ExtMonFNALBuilding::filterExitInMu2e() = (841.473,3148.91,-26888.2)
+//    afterMagnetMove:  ExtMonFNALBuilding::filterExitInMu2e() = (841.473,3149.43,-26888.2)
+//
+// that is, things downstream of the filter magnet shifted
+// up in Y by 0.52 mm. There is no correction for that in this config.
+//
+
+#include "Mu2eG4/test/geom_01.txt"
+
+//----------------------------------------------------------------
+// The top of the room floor is assumed to be at the same level as the
+// top of ProtonBeamDump "back" shielding,
+// i.e. minCoreShieldingThickness above the top surface dump core.
+double extMonFNAL.room.insideFullHeight = 2743;
+
+double extMonFNAL.room.wall.thickness = 300;
+double extMonFNAL.room.floor.thickness = 300;
+double extMonFNAL.room.ceiling.thickness = 300;
+
+// Amount of dirt above ExtMonFNAL room.  From drawing S-9:  6'-0'' minus ceiling thickness
+double extMonFNAL.dirtOverhead.thickness = 1530;
+
+//----------------------------------------------------------------
+// The extinction monitor filter channel
+
+// The first collimator is embedded in frontShielding of ProtonBeamDump
+// and this determines its length.
+//
+
+// Transverse size of the aperture (vector since upstream and downstream halfs
+// may be different):  {upstream size, downstream size}
+vector<double> extMonFNAL.collimator1.channelWidth  = {50., 50.};
+vector<double> extMonFNAL.collimator1.channelHeigh  = {50., 50.};
+// the alignment plug:
+vector<double> extMonFNAL.collimator1.alignmentPlugRadius = { 100, 177.8  };
+vector<double> extMonFNAL.collimator1.alignmentHoleRClearance = { 12.7, 12.7 };
+double extMonFNAL.collimator1.radiusTransitiondZ = 0;
+
+// The entrance point on the face of the beam dump enclosure,
+// transverse to the beam coordinates (horiz, vertical).  The offsets
+// are w.r.t to the core center position (== the nominal beam entrance
+// point).
+double         extMonFNAL.entranceOffsetX = 900;
+double         extMonFNAL.entranceOffsetY = 1250;
+
+// Filter channel orientation: angles in horizontal and vertical
+// planes w.r.t dump core. Note that angleH is the same for all filter
+// elements, while angleV is different.  We specify angleV at the
+// filter entrance.
+double         extMonFNAL.angleH = 0.0856; //radians
+double         extMonFNAL.entranceAngleV = 0.1645; //radians
+
+//----------------------------------------------------------------
+// The filter magnet room.  "Length" is along beam dump Z.
+//
+double extMonFNAL.magnetRoomLength = 4200.;
+
+// The magnet
+vector<double> extMonFNAL.filter.magnet.outerHalfSize = {95., 150., 1778. }; // mm
+double extMonFNAL.filter.magnet.apertureWidth  =  50.; // mm
+double extMonFNAL.filter.magnet.apertureHeight = 100.; // mm
+string extMonFNAL.filter.magnet.material  = "G4_Fe";
+double extMonFNAL.filter.magnet.fieldStrength = 0.222; // Tesla
+
+// Along dump Z, the magnet is positioned with the
+// {center,bottom,center} point of its aperture at
+double extMonFNAL.filter.magnet.refDistanceToUpstreamWall = 2100;
+
+// The magnet is placed in such a way that a positive particle with
+// the nominal momentum given below, travelling at the bottom of
+// collimator1 channel (at exit) parallel to the collimator1 axis,
+// will enter the magnet aperture at the bottom and exit at at the
+// bottom after being deflected by the magnetic field.
+double extMonFNAL.filter.nominalMomentum = 3500.; // MeV/c
+// double extMonFNAL.maxG4StepLength = 10.; // mm
+
+//----------------------------------------------------------------
+// The second collimator
+
+// The thickness of the shielding between magnet and detector rooms.
+double         extMonFNAL.collimator2.shielding.thickness = 2000.;
+double         extMonFNAL.collimator2.shielding.dumpXmin  = -2050.; // to outside the wall
+double         extMonFNAL.collimator2.shielding.dumpXmax  = +2822.; // touch the wall
+
+// the downstream half of the channel is wider
+vector<double> extMonFNAL.collimator2.channelWidth  = {50., 75.};
+vector<double> extMonFNAL.collimator2.channelHeigh  = {50., 75.};
+// the alignment plug:
+vector<double> extMonFNAL.collimator2.alignmentPlugRadius = { 100, 177.8  };
+vector<double> extMonFNAL.collimator2.alignmentHoleRClearance = { 12.7, 12.7 };
+double extMonFNAL.collimator2.radiusTransitiondZ = 0;
+
+//################################################################
+bool           hasExtMonFNAL = true;
+
+// ExtMonUCI interferes with the civil construction
+bool hasExtMonUCI = false;
+
+/// ProtonBeamDumpMaker: shieldingFaceZatXmin = -16097.7, ZatXmax = -16931.4
+// Using -16931.4 works for G4, but leads to problems with the exported ROOT geometry. Move farther back:
+double hall.insideZExtMonUCIWall = -17200;  // to the corner of dump shielding
+
+// From the drawing S-1
+vector<double> extMonFNAL.roomInsideX = { -1750, -1750, -3731, -3731, -1750, -1750, +2822, +2822, +3584, +3584, +2822, +2822 };
+vector<double> extMonFNAL.roomInsideZ = {     0, -2928, -2928, -7422, -7422, -9200, -9200, -4200, -4200,  -796,  -796,     0 };
+
+//----------------------------------------------------------------
+int PSShield.verbosityLevel = 1;
+int protonBeamDump.verbosityLevel = 1;
+int extMonFNAL.verbosityLevel = 2;
+int world.verbosityLevel  = 1;
+//
+
+
+//----------------------------------------------------------------
+string g4.physicsListName = "QGSP_BERT_HP";
+//double g4.minRangeCut = 1.;            // mm
+//bool g4.killLowEKine = true;
+//double g4.eKineMin = 100.; // MeV
+
+int g4.steppingActionMaxSteps = 10000;
+int g4.stepsSizeLimit = 10000;
+int g4.particlesSizeLimit = 1000000;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
