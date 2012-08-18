@@ -4,9 +4,9 @@
 //  B field basically requires mu2e coordinate
 //  G4 uses G4World coordinate
 //
-//  $Id: TrkExt_module.cc,v 1.1 2012/08/04 00:22:09 mjlee Exp $
+//  $Id: TrkExt_module.cc,v 1.2 2012/08/18 22:27:56 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:22:09 $
+//  $Date: 2012/08/18 22:27:56 $
 //
 //  Original author MyeongJae Lee
 //
@@ -294,6 +294,7 @@ namespace mu2e {
 
   void TrkExt::produce(art::Event& event) {
     _evtid = event.id().event();
+    if (_evtid%100 == 0) cerr << "TrkExt: event " << _evtid << endl;
 
     auto_ptr<TrkExtTrajCollection> trajcol(new TrkExtTrajCollection);
 
@@ -312,21 +313,23 @@ namespace mu2e {
 
       //cerr << "Track extrapolation at " << _evtid << ", track " << _trkid << endl;
 
+      _traj.clear();
       if (_useVirtualDetector) {
         TrkHotList const* hits  = trk.hotList();
-        if (readVD(event, hits)) {
-         cerr << "TrkExt Warning: Cannot read VD. Skipping" << endl;
-         continue;
+        if (!(readVD(event, hits))) {
+          cerr << "TrkExt Warning: Cannot read VD at evt " << _evtid << ", trk " << i << ". Skipping" << endl;
+          trajcol->push_back(_traj);
+          continue;
         }
         if (_vdx[2] < -99998 || _vdy[2] < -99998 || _vdz[2] <-99998) {
-          cerr << "TrkExt Warning: VD2 info not found. Skipping" << endl;
+          cerr << "TrkExt Warning: VD2 info not found at evt " << _evtid << ", trk " << i << ". Skipping" << endl;
+          trajcol->push_back(_traj);
           continue;
         }
         xstart.set (_vdx[2], _vdy[2], _vdz[2]);
         pstart.set (_vdpx[2], _vdpy[2], _vdpz[2]);
       }
 
-      _traj.clear();
       int nsteps = doExtrapolation (xstart, pstart, covstart, false);
       if (_flagDiagnostics) {
         _hExitCode->Fill(_traj.exitCode());
@@ -431,10 +434,11 @@ namespace mu2e {
 /////////// Read VD //////////////
 
   bool TrkExt::readVD (const art::Event& event, TrkHotList const * hits) {
-    unsigned int i = 0, j;
+    unsigned int i = 0, j, k = -1;
 
     // iterate from hot list
     for (TrkHotList::hot_iterator iter = hits->begin() ; iter != hits->end() ; ++iter) {
+      ++k;
       const TrkHitOnTrk * hit  = iter.get();
       // read assoc. TrkStrawHit
       const mu2e::TrkStrawHit* trkStrawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hit);

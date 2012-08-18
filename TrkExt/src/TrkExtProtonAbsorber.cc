@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtProtonAbsorber.cc,v 1.1 2012/08/04 00:22:09 mjlee Exp $
+//  $Id: TrkExtProtonAbsorber.cc,v 1.2 2012/08/18 22:27:56 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:22:09 $
+//  $Date: 2012/08/18 22:27:56 $
 //
 //  Original author MyeongJae Lee
 //
@@ -20,6 +20,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 
 using namespace CLHEP;
 
@@ -41,11 +42,21 @@ namespace mu2e {
   void TrkExtProtonAbsorber::initialize() 
   {
     // geometry is read from mu2e coordinate. therefore, it should be transformed to detector coordinate
+    art::ServiceHandle<GeometryService> geom;
+    SimpleConfig const * config = &(geom->config());
+    if (!(config->getBool("hasProtonAbsorber"))) {
+      cerr << "TrkExtProtonAbsorber is disabled!" << endl;
+      valid = false;
+      return;
+    }
+
     GeomHandle<MECOStyleProtonAbsorber> pabs;
-    if ( !(pabs->isAvailable(0)) && !(pabs->isAvailable(0)) ) {
+    if (!(pabs->isAvailable(0)) && !(pabs->isAvailable(0)) ) {
       cerr << "TrkExtProtonAbsorber warning : pabs1 & pabs2 not avaliable" << endl;
       valid = false;
+      return;
     }
+
     int index;
     if (pabs->isAvailable(0))  index = 0; 
     else    index = 1;

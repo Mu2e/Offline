@@ -3,9 +3,9 @@
 //  All in Detector (=Tracker) coordinate. Points other than tracker coordinates are properly transformed. 
 //  B field basically requires mu2e coordinate
 //
-//  $Id: ReadTrkExt_module.cc,v 1.1 2012/08/04 00:16:02 mjlee Exp $
+//  $Id: ReadTrkExt_module.cc,v 1.2 2012/08/18 22:27:56 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:16:02 $
+//  $Date: 2012/08/18 22:27:56 $
 //
 //  Original author MyeongJae Lee
 //
@@ -587,10 +587,18 @@ namespace mu2e {
       else if (i>0 && _back_vid[i-1] == TrkExtDetectorList::StoppingTarget) sthits.push_back(hit);
       else {;}
     }
-    _back_s = traj.flightLength();
-    _back_t = traj.flightTime();
-    _exitcode = traj.exitCode();
-    _nback = int(i);
+    if (traj.size() <=0) {
+      _back_s = 0;
+      _back_t = 0;
+      _exitcode = traj.exitCode();
+      _nback = 0;
+    }
+    else {
+      _back_s = traj.flightLength();
+      _back_t = traj.flightTime();
+      _exitcode = traj.exitCode();
+      _nback = int(i);
+    }
     return; 
   }
 
