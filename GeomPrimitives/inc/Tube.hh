@@ -3,15 +3,14 @@
 //
 // "Typical" Tube object
 //
-// $Id: Tube.hh,v 1.4 2012/04/30 16:21:31 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/30 16:21:31 $
+// $Id: Tube.hh,v 1.5 2012/08/20 14:57:56 greenc Exp $
+// $Author: greenc $
+// $Date: 2012/08/20 14:57:56 $
 //
 // Original author KLG
 //
 
 #include <string>
-#include "cpp0x/array"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -30,7 +29,7 @@ namespace mu2e {
          std::string const & materialName, CLHEP::Hep3Vector const & originInMu2e);
 
     Tube(std::string const & materialName, CLHEP::Hep3Vector const & originInMu2e,
-         double rIn,double rOut,double halfLength, 
+         double rIn,double rOut,double halfLength,
          double phi0 = 0., double phiMax = CLHEP::twopi);
 
     double innerRadius() const { return _params.innerRadius(); }

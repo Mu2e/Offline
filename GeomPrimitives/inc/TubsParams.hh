@@ -4,16 +4,16 @@
 //
 // The parameters of a TUBS
 //
-// $Id: TubsParams.hh,v 1.1 2012/03/30 15:13:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 15:13:35 $
+// $Id: TubsParams.hh,v 1.2 2012/08/20 14:57:56 greenc Exp $
+// $Author: greenc $
+// $Date: 2012/08/20 14:57:56 $
 //
 // Original author Rob Kutschke
 //
 
 #include <cmath>
 #include <ostream>
-#include "cpp0x/array"
+#include "boost/array.hpp"
 
 #include "CLHEP/Units/PhysicalConstants.h"
 
@@ -49,7 +49,7 @@ namespace mu2e {
 
   private:
 
-    std::array<double,5> data_;
+    boost::array<double,5> data_;
 
   };
 

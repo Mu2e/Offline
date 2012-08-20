@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.12 2012/07/03 03:27:24 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/03 03:27:24 $
+// $Id: classes.h,v 1.13 2012/08/20 14:57:56 greenc Exp $
+// $Author: greenc $
+// $Date: 2012/08/20 14:57:56 $
 //
 // Original author Rob Kutschke
 //
@@ -13,7 +13,7 @@
 
 #include "art/Persistency/Common/Wrapper.h"
 #include "cetlib/map_vector.h"
-#include "cpp0x/array"
+#include "boost/array.hpp"
 #include <vector>
 
 #include "CLHEP/Vector/TwoVector.h"
@@ -29,4 +29,4 @@ template class std::vector<CLHEP::Hep2Vector>;
 template class std::vector<cet::map_vector_key>;
 template class art::Wrapper<mu2e::FilterEfficiency>;
 
-template class std::array<double,5>; // used in TubsParams
+template class boost::array<double,5>; // used in TubsParams
