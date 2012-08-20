@@ -1,6 +1,6 @@
-// $Id: ParticleGunImpl.cc,v 1.3 2012/03/02 17:16:22 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/02 17:16:22 $
+// $Id: ParticleGunImpl.cc,v 1.4 2012/08/20 21:23:24 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/08/20 21:23:24 $
 // Original author Robert Kutschke
 // Modified by mjlee. See docdb-2049
 
@@ -17,6 +17,8 @@
 // Mu2e includes
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 
 // Root includes
 #include "TH1F.h"
@@ -48,6 +50,8 @@ namespace mu2e {
       int  iterationLimit,
       bool throwOnIterationLimit,
 
+      bool useDetectorCoordinateSystem,
+
       const std::string& histoDir,
       bool doNtuples,
 
@@ -75,6 +79,7 @@ namespace mu2e {
     , _verbose(verbose)
     , _doHistograms(!histoDir.empty())
     , _histoDir(histoDir)
+    , _useDetectorCoordinateSystem(useDetectorCoordinateSystem)
 
     // Random number distributions; getEngine() comes from base class.
     , _randFlat( getEngine() )
@@ -91,6 +96,9 @@ namespace mu2e {
     , _hY0(0)
     , _hZ0(0)
     , _hT0(0)
+
+    , _origin(0)
+    , _originSetFlag (false)
   {
     initialize(momentumModeString, sourceShapeString);
   }
@@ -135,6 +143,7 @@ namespace mu2e {
     , _verbose(verbose)
     , _doHistograms(!histoDir.empty())
     , _histoDir (histoDir)
+    , _useDetectorCoordinateSystem (false)
 
     // Random number distributions; getEngine() comes from base class.
     , _randFlat( getEngine() )
@@ -151,6 +160,9 @@ namespace mu2e {
     , _hY0(0)
     , _hZ0(0)
     , _hT0(0)
+
+    , _origin(0)
+    , _originSetFlag (false)
   {
     initialize("flat", "box");
   }
@@ -438,6 +450,16 @@ namespace mu2e {
 
       // Time
       double time = _tmin + _dt*_randFlat.fire();
+
+      // transform to detector coordinate system
+      if (_useDetectorCoordinateSystem) {
+        if (!_originSetFlag) {
+          GeomHandle<DetectorSystem> det;
+          _origin = det->toMu2e(CLHEP::Hep3Vector(0.,0.,0.) );
+          _originSetFlag = true;
+        }
+        pos += _origin;
+      }
 
       genParts.push_back( GenParticle( _pdgId, GenId::particleGun, pos, p4, time));
 

@@ -4,9 +4,9 @@
 // Shoots a single particle gun and puts its output into a generated event.
 // This class implements the common code for "particle gun-like" generators.
 //
-// $Id: ParticleGunImpl.hh,v 1.2 2012/02/17 18:31:47 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/02/17 18:31:47 $
+// $Id: ParticleGunImpl.hh,v 1.3 2012/08/20 21:23:24 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/08/20 21:23:24 $
 //
 // Original author Rob Kutschke, re-factored for use in multiple generators by Andrei Gaponenko.
 // Introduced new features by mjlee. See docdb-2049
@@ -53,6 +53,8 @@ namespace mu2e {
 
         int   iterationLimit,
         bool  throwOnIterationLimit,
+
+        bool useDetectorCoordinateSystem,
 
         // empty string "" means don't histogram
         const std::string& histoDir,
@@ -162,6 +164,8 @@ namespace mu2e {
     // Enable histograms
     bool _doHistograms;
     std::string _histoDir;
+    // Mu2e coord. system or Detector coord. system
+    bool _useDetectorCoordinateSystem;
 
     // End: Information from the run time configuration.
 
@@ -192,6 +196,10 @@ namespace mu2e {
     TH1F* _hZ0;
     TH1F* _hT0;
     TNtuple* _hGenerationNtuple;
+
+    // Detector coordinate origin in Mu2e coordinate. Add this to transform from Detector coord. to Mu2e coord. 
+    CLHEP::Hep3Vector _origin;
+    bool _originSetFlag;
 
 
   };
