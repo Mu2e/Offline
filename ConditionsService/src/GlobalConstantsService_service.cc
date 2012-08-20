@@ -76,8 +76,11 @@ namespace mu2e {
           << "GlobalConstantsService: unknown entity type "<<name<< "\n";
       }
       else {
-        raw = im->second(config_, key,version);
-        entities_.insert(std::make_pair(name, raw));
+        std::pair<ConditionsMap::iterator, bool>
+          insert_result =
+          entities_.insert(ConditionsMap::value_type(name,
+                                                     ConditionsMap::mapped_type(im->second(config_, key,version))));
+        raw = insert_result.first->second.get();
       }
     }
     else {
@@ -101,8 +104,8 @@ namespace mu2e {
   void GlobalConstantsService::preloadAllEntities() {
     for(FactoryMap::const_iterator im=makers_.begin(); im != makers_.end(); ++im) {
       if(entities_.find(im->first) == entities_.end()) {
-        ConditionsEntity *raw = im->second(config_, "", "");
-        entities_.insert(std::make_pair(im->first, raw));
+        entities_.insert(ConditionsMap::value_type(im->first,
+                                                   ConditionsMap::mapped_type(im->second(config_, "", ""))));
       }
     }
   }
