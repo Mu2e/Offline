@@ -2,11 +2,12 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.13 2012/06/29 21:29:24 genser Exp $
+// $Id: ReadStrawHit_module.cc,v 1.14 2012/08/22 22:21:32 genser Exp $
 // $Author: genser $
-// $Date: 2012/06/29 21:29:24 $
+// $Date: 2012/08/22 22:21:32 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
+//                               Updated by KLG
 //
 
 // C++ includes.
@@ -31,6 +32,9 @@
 #include "TH1F.h"
 #include "TNtuple.h"
 
+// CLHEP includes.
+#include "CLHEP/Random/RandGaussQ.h"
+
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -43,6 +47,11 @@
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
+
+#include "ConditionsService/inc/MassCache.hh"
+#include "SeedService/inc/SeedService.hh"
+#include "MCDataProducts/inc/StepPointMCStrawHit.hh"
+#include "HitMakers/inc/formStepPointMCStrawHit.hh"
 
 
 using namespace std;
@@ -59,8 +68,12 @@ namespace mu2e {
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
+      _minimumLength(pset.get<double>("minimumLength",0.01)),   // mm
+      _enableFlightTimeCorrection(pset.get<bool>("flightTimeCorrection",false)),
+      _gaussian( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
       _hHitTime(0),
       _hHitDeltaTime(0),
+      _hHitAmplitude(0),
       _hHitEnergy(0),
       _hNHits(0),
       _hNHitsPerWire(0),
@@ -94,9 +107,16 @@ namespace mu2e {
     // Label of the module that made the hits.
     std::string _makerModuleLabel;
 
+    // Some reconstruction related data
+    double _minimumLength;
+    double _enableFlightTimeCorrection;
+    // Random number distributions
+    CLHEP::RandGaussQ _gaussian;
+
     // Some diagnostic histograms.
     TH1F* _hHitTime;
     TH1F* _hHitDeltaTime;
+    TH1F* _hHitAmplitude;
     TH1F* _hHitEnergy;
     TH1F* _hNHits;
     TH1F* _hNHitsPerWire;
@@ -125,8 +145,9 @@ namespace mu2e {
 
     _hHitTime      = tfs->make<TH1F>( "hHitTime",      "Hit Time (ns)", 200, 0., 2000. );
     _hHitDeltaTime = tfs->make<TH1F>( "hHitDeltaTime", "Hit Delta Time (ns)", 80, -20.0, 20. );
+    //    _hHitAmplitude = tfs->make<TH1F>( "hHitAmplitude", "Hit Amplitudes (uV)",  100, 0., 100. );
     _hHitEnergy    = tfs->make<TH1F>( "hHitEnergy",    "Hit Energy (keV)", 100, 0., 100. );
-    _hNHits        = tfs->make<TH1F>( "hNHits",        "Number of straw hits", 500, 0., 500. );
+    _hNHits        = tfs->make<TH1F>( "hNHits",        "Number of straw hits", 500, 0., 10000. );
     _hNHitsPerWire = tfs->make<TH1F>( "hNHitsPerWire", "Number of hits per straw", 10, 0., 10. );
     _hDriftTime    = tfs->make<TH1F>( "hDriftTime",    "Drift time, ns", 100, 0., 100. );
     _hDriftDistance= tfs->make<TH1F>( "hDriftDistance","Drift Distance, mm", 100, 0., 3. );
@@ -235,6 +256,9 @@ namespace mu2e {
       cout << "ReadStrawHit: Total number of straw hits = " << hits.size() << endl;
     }
 
+    // Cache of recently used masses from the particle data table.
+    MassCache cache;
+
     for ( size_t i=0; i<hits.size(); ++i ) {
 
       // Access data
@@ -247,11 +271,6 @@ namespace mu2e {
       _hHitDeltaTime->Fill(hit.dt());
       _hHitEnergy->Fill(hit.energyDep()*1000.0);
 
-      // Use MC truth data
-      _hDriftTime->Fill(truth.driftTime());
-      _hDriftDistance->Fill(truth.driftDistance());
-      _hDistanceToMid->Fill(truth.distanceToMid());
-
       StrawIndex si = hit.strawIndex();
 
       // Use data from G4 hits
@@ -260,8 +279,11 @@ namespace mu2e {
         StepPointMC const& mchit = *mcptr.at(j);
         _hG4StepLength->Fill(mchit.stepLength());
         if (mchit.strawIndex()!=si) {
-          // FIXME: it is an approximation
-          _hG4StepEdep->Fill(mchit.eDep()*1000.0*trackerCalibrations->CrossTalk(si,mchit.strawIndex()));
+          // FIXME: it is an approximation; We plot the "crosstalk
+          // edep" which is in principle calculated using amplitudes
+          // we may also need to store the crosstalk value in a "truth" object
+          _hG4StepEdep->Fill(mchit.eDep()*1000.0*
+                             trackerCalibrations->CrossTalk(si,mchit.strawIndex()));
         } else {
           _hG4StepEdep->Fill(mchit.eDep()*1000.0);
         }
@@ -274,21 +296,60 @@ namespace mu2e {
       LayerId lid = sid.getLayerId();
       DeviceId did = sid.getDeviceId();
       SectorId secid = sid.getSectorId();
+
+
+      if ( ncalls < _maxFullPrint && _diagLevel > 3 ) {
+
+        //if we were to recalculate some of the quantities using
+        //formStepPointMCStrawHit and the first StepPointMC here is how:
+
+        std::auto_ptr<StepPointMCStrawHit> spmcshp = 
+          formStepPointMCStrawHit(
+                                  mcptr.at(0),
+                                  si,
+                                  _minimumLength,
+                                  _enableFlightTimeCorrection,
+                                  cache,
+                                  _gaussian,
+                                  tracker,
+                                  trackerCalibrations);
+        cout << "ReadStrawHit: StepPointMCStrawHit # (" << spmcshp->_ptr.id() << 
+          " " << spmcshp->_ptr.key() << ")"
+             << " DCA=" << spmcshp->_dca
+             << " driftTNonSm=" << spmcshp->_driftTimeNonSm
+             << " driftT=" << spmcshp->_driftTime
+             << " distToMid=" << spmcshp->_distanceToMid
+             << " t1=" << spmcshp->_t1
+             << " t2=" << spmcshp->_t2
+             << " edep=" << spmcshp->_edep
+             << endl;
+
+        //       assert (spmcshp->_driftTNonSm == truth.driftTime());
+        //       assert (spmcshp->_dca == truth.driftDistance());
+        //       assert (spmcshp->_toMid == truth.distanceToMid());
+        
+      }
+
+      // Use MC truth data
+      _hDriftTime->Fill(truth.driftTime());
+      _hDriftDistance->Fill(truth.driftDistance());
+      _hDistanceToMid->Fill(truth.distanceToMid());
+
       float nt[18];
-      const CLHEP::Hep3Vector vec3junk = str.getMidPoint();
-      const CLHEP::Hep3Vector vec3junk1 = str.getDirection();
+      const CLHEP::Hep3Vector smidp  = str.getMidPoint();
+      const CLHEP::Hep3Vector sdir   = str.getDirection();
       // Fill the ntuple:
       nt[0]  = evt.id().event();
       nt[1]  = lid.getLayer();
       nt[2]  = did;
       nt[3]  = secid.getSector();
       nt[4]  = str.getHalfLength();
-      nt[5]  = vec3junk.getX();
-      nt[6]  = vec3junk.getY();
-      nt[7]  = vec3junk.getZ();
-      nt[8]  = vec3junk1.getX();
-      nt[9]  = vec3junk1.getY();
-      nt[10] = vec3junk1.getZ();
+      nt[5]  = smidp.getX();
+      nt[6]  = smidp.getY();
+      nt[7]  = smidp.getZ();
+      nt[8]  = sdir.getX();
+      nt[9]  = sdir.getY();
+      nt[10] = sdir.getZ();
       nt[11] = hit.time();
       nt[12] = hit.dt();
       nt[13] = hit.energyDep();
@@ -318,7 +379,7 @@ namespace mu2e {
         if ( _diagLevel > 2 ) {
           for( size_t j=0; j<mcptr.size(); ++j ) {
             StepPointMC const& mchit = *mcptr.at(j);
-            cout << "ReadStrawHit: StepHit #" << j << " : length=" << mchit.stepLength()
+            cout << "ReadStrawHit: StepPointMC #" << j << " : length=" << mchit.stepLength()
                  << " energy=" << mchit.totalEDep() << " time=" <<  mchit.time()
                  << endl;
             // we'll print the track info
