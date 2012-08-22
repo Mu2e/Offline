@@ -1,0 +1,9 @@
+<!--  -->
+<!--  $Author: tassiell $ -->
+<!--  $Date: 2012/08/22 17:30:38 $   -->
+<!--  -->
+
+<lcgdict>
+ <class name="TrkExchangePar"/>
+<!-- <class name="art::Wrapper<TrkExchangePar>"/> -->
+</lcgdict>

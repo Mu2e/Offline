@@ -1,0 +1,109 @@
+#
+# $Id: SConscript,v 1.1 2012/08/22 17:30:37 tassiell Exp $
+# $Author: tassiell $
+# $Date: 2012/08/22 17:30:37 $
+#
+# Original author Rob Kutschke.
+#
+
+import os, re
+Import('env')
+
+babarlibs = env['BABARLIBS']
+
+g4inc   = os.environ['G4INCLUDE']
+g4lib   = os.environ['G4LIB']
+
+dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+ff=os.path.dirname(dd)   # THIS
+env.DictionarySource(['#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
+                      '#/tmp/src/%s/%s_map.cpp'%(dd,ff)],
+                     ['classes.h','classes_def.xml'])
+
+
+plugin_cc = Glob('*_module.cc', strings=True)
+non_plugin_cc = Glob('*.cc', strings=True)
+for cc in plugin_cc: non_plugin_cc.remove(cc)
+#plugin_cc.remove('GeomExport_module.cc')
+    
+
+if non_plugin_cc:
+    # From: /path1/path2/path3/Name/src extract the string Name field.
+    dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+    local_lib_name=os.path.dirname(dd)
+
+    env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
+                      LIBS=[ 'GeometryService',
+                             'ConditionsService_service',
+                             'SeedService_service',
+                             'BaBar_DchGeom',
+                             'BaBar_DchGeomBase',
+                              babarlibs,
+                             'Mu2eG4',
+                             'Mu2eUtilities',
+                             'GeneralUtilities',
+                             'art_Framework_Core',
+                             'Spectrum',
+                             'MLP','TreePlayer',
+                             'Gpad',
+                             'Graf'
+                             ],
+                      parse_flags=[ '-L'+g4lib, '-I'+g4inc]
+                      )
+    libs=[ local_lib_name ]
+else:
+    libs=['GeneralUtilities']
+
+for cc in plugin_cc:
+    libname='#/lib/'+cc[:cc.find('.cc')]
+    env.SharedLibrary( libname, cc,
+                       LIBS=[ libs,
+                              'GeometryService',
+                             'ConditionsService_service',
+                             'SeedService_service',
+                             'BaBar_DchGeom',
+                             'BaBar_DchGeomBase',
+                              babarlibs,
+                             'Mu2eG4',
+                             'Mu2eUtilities',
+                             'GeneralUtilities',
+                             'art_Framework_Core',
+                             'Spectrum',
+                             'MLP','TreePlayer',
+                             'Gpad',
+                             'Graf'
+                              ], )
+
+
+my_lib=['%s'%(ff,)]
+
+env.SharedLibrary('#/lib/%s_dict'%(ff,),
+                  '#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
+                  LIBS=my_lib)
+env.SharedLibrary('#/lib/%s_map'%(ff,),
+                  '#/tmp/src/%s/%s_map.cpp'%(dd,ff))
+
+
+if os.environ.has_key('VGM_INSTALL'):
+    vgmpath = os.environ['VGM_INSTALL']
+
+    env.SharedLibrary( '#/lib/GeomExport_module', 'GeomExport_module.cc',
+                       LIBS=[ 'art_Framework_Core',
+                              libs,
+                              'Mu2eUtilities',
+                              'ConditionsService',
+                              'CLHEP',
+                              'Tree' ,
+                              'BaseVGM','Geant4GM','RootGM','ClhepVGM'
+                              ],
+                       CPPFLAGS= [ '-DUSE_VGM' ],
+                       parse_flags=[ '-L'+g4lib, '-I'+g4inc, '-I'+vgmpath+'/include', '-L'+vgmpath+'/lib' ]
+                       )
+
+
+
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:
