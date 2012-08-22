@@ -1,9 +1,9 @@
 #
 # Example of running event mixing.
 #
-# $Id: mixExample01.fcl,v 1.3 2012/07/02 14:51:05 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/07/02 14:51:05 $
+# $Id: mixExample01.fcl,v 1.4 2012/08/22 22:24:17 genser Exp $
+# $Author: genser $
+# $Date: 2012/08/22 22:24:17 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -76,6 +76,7 @@ physics : {
   }
 
   p1 : [ dioMixer, neutronMixer, protonMixer, photonMixer,
+#         makeSH, randomsaver ]
          makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
   e1 : [ checkhits, readStrawHits ]
 
@@ -105,6 +106,11 @@ physics.producers.dioMixer.mean     :  11.6
 physics.producers.neutronMixer.mean : 128.2
 physics.producers.protonMixer.mean  :  14.9
 physics.producers.photonMixer.mean  :  53.7
+
+//physics.producers.makeSH.diagLevel : 2
+//physics.producers.makeSH.maxFullPrint :  2
+//physics.producers.makeSH.minimumEnergy : 0.0001
+//physics.producers.makeSH.addCrossTalkHits : true
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.user.SeedService.baseSeed         :  0
