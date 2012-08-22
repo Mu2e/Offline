@@ -1,9 +1,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.10 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: TrackerCalibrations.cc,v 1.11 2012/08/22 22:20:42 genser Exp $
+// $Author: genser $
+// $Date: 2012/08/22 22:20:42 $
 //
 
 // Mu2e include files
@@ -26,8 +26,8 @@ namespace mu2e {
     _rres = config.getDouble("DriftRadiusResolution",0.1); //mm
     _distvsdeltat = config.getDouble("SignalVelocity",231.); //mm/ns
     _edepToAmpl = config.getDouble("EdepToAmpl",1.0); // mV/MeV
-    _amplRes = config.getDouble("AmplRes", 0.01); //   relative
-    _crossTalk = config.getDouble("crosstalk",0.02); //   relative
+    _amplRes = config.getDouble("AmplRes", 0.0); //   relative
+    _crossTalk = config.getDouble("Crosstalk",0.0); //   relative
   }
   
   void TrackerCalibrations::DistanceToTime(StrawIndex strawIndex,double rdrift, CLHEP::Hep3Vector const& tdir,D2T& d2t) const {
