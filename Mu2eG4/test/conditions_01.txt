@@ -1,9 +1,9 @@
 //
 // Input file for the prototype conditions system.
 //
-// $Id: conditions_01.txt,v 1.10 2012/07/27 19:45:48 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/27 19:45:48 $
+// $Id: conditions_01.txt,v 1.11 2012/08/22 22:22:00 genser Exp $
+// $Author: genser $
+// $Date: 2012/08/22 22:22:00 $
 //
 
 // Times in ns
@@ -23,6 +23,14 @@ double TDResolution_1 = 32.9;
 //mm/nsec
 
 double SignalVelocity = 273.;  
+
+double DriftRadiusResolution = 0.1; // 0.1
+
+// uncoment to enable non "null operation" e2a conversion
+// double EdepToAmpl = 1.0;
+// double AmplRes    = 0.01;
+
+double Crosstalk = 0.02;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
