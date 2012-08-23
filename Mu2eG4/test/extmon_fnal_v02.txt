@@ -161,8 +161,8 @@ vector<double> extMonFNAL.up.sensor_xoffset = { 0.,    0.,    0.};
 vector<double> extMonFNAL.up.sensor_yoffset = { 0.,    0.,    0.};
 vector<double> extMonFNAL.up.sensor_halfdx =  {20.,   20.,   20.};
 vector<double> extMonFNAL.up.sensor_halfdy =  {20.,   20.,   20.};
-vector<double> extMonFNAL.up.sensor_halfdz =  {0.2,   0.2,   0.2};
-vector<double> extMonFNAL.up.readout_halfdz = {0.1,   0.1,   0.1};
+vector<double> extMonFNAL.up.sensor_halfdz =  {0.100, 0.100, 0.100};
+vector<double> extMonFNAL.up.readout_halfdz = {0.075, 0.075, 0.075};
 
 //----------------------------------------------------------------
 // The spectrometer magnet.
@@ -207,8 +207,8 @@ vector<double> extMonFNAL.dn.sensor_xoffset = { 0.,      0.,   0.};
 vector<double> extMonFNAL.dn.sensor_yoffset = { 0.,      0.,  0. };
 vector<double> extMonFNAL.dn.sensor_halfdx =  { 20.,    20.,  20.};
 vector<double> extMonFNAL.dn.sensor_halfdy =  { 20.,    20.,  20.};
-vector<double> extMonFNAL.dn.sensor_halfdz =  { 0.2,    0.2,  0.2};
-vector<double> extMonFNAL.dn.readout_halfdz = { 0.1,    0.1,  0.1};
+vector<double> extMonFNAL.dn.sensor_halfdz =  { 0.100, 0.100, 0.100};
+vector<double> extMonFNAL.dn.readout_halfdz = { 0.075, 0.075, 0.075};
 
 //----------------------------------------------------------------
 // Place test materials behind the detector for MARS activation studies.
