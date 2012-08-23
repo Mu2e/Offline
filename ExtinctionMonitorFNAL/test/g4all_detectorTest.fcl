@@ -52,9 +52,9 @@ physics : {
             inputInstanceName : "virtualdetector"
         }
         emfprint: {
-            module_type: EMFCPrint
+            module_type: EMFDetPrint
             inputModuleLabel  : "g4run"
-            inputInstanceName : "ExtMonFNAL"
+            inputInstanceName : ""
         }
     }
 

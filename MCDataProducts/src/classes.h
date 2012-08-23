@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.12 2012/06/13 15:29:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/13 15:29:10 $
+// $Id: classes.h,v 1.13 2012/08/23 23:36:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/08/23 23:36:14 $
 //
 // Original author Rob Kutschke
 //
@@ -43,6 +43,8 @@
 #include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
 #include "MCDataProducts/inc/GenParticleSPMHistory.hh"
 #include "MCDataProducts/inc/GenSimParticleLink.hh"
+#include "MCDataProducts/inc/ExtMonFNALSimHit.hh"
+#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 
 #include "MCDataProducts/inc/StepFilterMode.hh"
 
@@ -59,6 +61,7 @@ template class std::vector<art::Ptr<mu2e::StepPointMC> >;
 template class std::vector<std::vector<art::Ptr<mu2e::StepPointMC> > >;
 template class std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>;
 template class std::map<art::Ptr<mu2e::SimParticle>::key_type,mu2e::GenElHitData>;// GenElHitDataCollection;
+template class std::vector<mu2e::ExtMonFNALSimHit>;
 
 template class art::Wrapper<mu2e::GenParticleCollection>;
 template class art::Wrapper<mu2e::StepPointMCCollection>;
@@ -75,6 +78,7 @@ template class art::Wrapper<mu2e::StatusG4>;
 template class art::Wrapper<mu2e::PtrStepPointMCVectorCollection>;
 template class art::Wrapper<mu2e::MixingSummary>;
 template class art::Wrapper<std::vector<art::RNGsnapshot> >;
+template class art::Wrapper<mu2e::ExtMonFNALSimHitCollection>;
 
 template class art::Wrapper<mu2e::GenElHitData>;
 template class art::Wrapper<mu2e::VisibleGenElTrackCollection>;

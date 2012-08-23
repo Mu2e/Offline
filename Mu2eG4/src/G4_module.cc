@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.56 2012/08/09 22:20:52 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/08/09 22:20:52 $
+// $Id: G4_module.cc,v 1.57 2012/08/23 23:36:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/08/23 23:36:14 $
 //
 // Original author Rob Kutschke
 //
@@ -39,6 +39,8 @@
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/postG4InitializeTasks.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "Analyses/inc/DiagnosticsG4.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -52,6 +54,7 @@
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
+#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 
 // From art and its tool chain.
 #include "art/Framework/Principal/Event.h"
@@ -71,6 +74,7 @@
 #include "G4Run.hh"
 #include "G4Timer.hh"
 #include "G4VUserPhysicsList.hh"
+#include "G4SDManager.hh"
 
 // ROOT includes
 #include "TNtuple.h"
@@ -135,6 +139,7 @@ namespace mu2e {
     bool _printPhysicsProcessSummary;
 
     SensitiveDetectorHelper _sensitiveDetectorHelper;
+    ExtMonFNALPixelSD       *_extMonFNALPixelSD;
 
     // Instance name of the timeVD StepPointMC data product.
     const StepInstanceName _tvdOutputName;
@@ -167,6 +172,7 @@ namespace mu2e {
     _processInfo(),
     _printPhysicsProcessSummary(false),
     _sensitiveDetectorHelper(pSet),
+    _extMonFNALPixelSD(),
     _tvdOutputName(StepInstanceName::timeVD),
     _diagnostics(){
 
@@ -184,6 +190,7 @@ namespace mu2e {
     produces<StepPointMCCollection>(_tvdOutputName.name());
 
     produces<PointTrajectoryCollection>();
+    produces<ExtMonFNALSimHitCollection>();
     produces<PhysicalVolumeInfoCollection,art::InRun>();
 
     // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
@@ -302,6 +309,9 @@ namespace mu2e {
     // Mu2e specific customizations that must be done after the call to Initialize.
     postG4InitializeTasks(config);
     _sensitiveDetectorHelper.registerSensitiveDetectors();
+    _extMonFNALPixelSD =
+      dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
+                                       ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
 
     _UI = G4UImanager::GetUIpointer();
 
@@ -337,6 +347,7 @@ namespace mu2e {
     auto_ptr<SimParticleCollection>     simParticles(      new SimParticleCollection);
     auto_ptr<StepPointMCCollection>     tvdHits(           new StepPointMCCollection);
     auto_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
+    auto_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(   new ExtMonFNALSimHitCollection);
     _sensitiveDetectorHelper.createProducts();
 
     // ProductID for the SimParticleCollection.
@@ -349,6 +360,9 @@ namespace mu2e {
 
     // Connect the newly created StepPointMCCollections to their sensitive detector objects.
     _sensitiveDetectorHelper.updateSensitiveDetectors( _processInfo, simPartId, event );
+    if(_extMonFNALPixelSD) {
+      _extMonFNALPixelSD->beforeG4Event(extMonFNALHits.get(), simPartId, event);
+    }
 
     // Run G4 for this event and access the completed event.
     _runManager->BeamOnDoOneEvent( event.id().event() );
@@ -396,6 +410,9 @@ namespace mu2e {
     event.put(simParticles);
     event.put(tvdHits,          _tvdOutputName.name()          );
     event.put(pointTrajectories);
+    if(_extMonFNALPixelSD) {
+      event.put(extMonFNALHits);
+    }
     _sensitiveDetectorHelper.put(event);
 
     // Pause to see graphics.

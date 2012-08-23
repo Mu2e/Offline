@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.143 2012/08/09 22:21:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/08/09 22:21:23 $
+// $Id: Mu2eWorld.cc,v 1.144 2012/08/23 23:36:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/08/23 23:36:14 $
 //
 // Original author Rob Kutschke
 //
@@ -54,6 +54,7 @@
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
+#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "Mu2eG4/inc/ExtMonUCITofSD.hh"
 #include "Mu2eG4/inc/ITGasLayerSD_Hexagonal.hh"
 #include "Mu2eG4/inc/ITGasLayerSD_Square.hh"
@@ -617,9 +618,7 @@ namespace mu2e {
       SDman->AddNewDetector(crSD);
     }
 
-    Mu2eSensitiveDetector* emfSD     =
-      new Mu2eSensitiveDetector(    SensitiveDetectorName::ExtMonFNAL(),  *_config);
-    SDman->AddNewDetector(emfSD);
+    SDman->AddNewDetector(new ExtMonFNALPixelSD(*_config));
 
     ExtMonUCITofSD* emuTofSD =
       new ExtMonUCITofSD(           SensitiveDetectorName::ExtMonUCITof(),  *_config);

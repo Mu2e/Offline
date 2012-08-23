@@ -3,9 +3,9 @@
 // Define names of Sensitive Detectors; revised to forward the names of the
 // StepInstanceName names.
 //
-// $Id: SensitiveDetectorName.hh,v 1.13 2012/06/22 18:14:56 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/06/22 18:14:56 $
+// $Id: SensitiveDetectorName.hh,v 1.14 2012/08/23 23:36:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/08/23 23:36:14 $
 //
 // Original author KLG
 
@@ -35,7 +35,7 @@ namespace mu2e {
     }
 
     static char const * ExtMonFNAL(){
-      return StepInstanceName::name(StepInstanceName::ExtMonFNAL).c_str();
+      return "ExtMonFNAL";
     }
 
     static char const * ExtMonUCITof(){

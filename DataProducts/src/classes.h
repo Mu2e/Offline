@@ -1,15 +1,16 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.13 2012/08/20 14:57:56 greenc Exp $
-// $Author: greenc $
-// $Date: 2012/08/20 14:57:56 $
+// $Id: classes.h,v 1.14 2012/08/23 23:36:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/08/23 23:36:14 $
 //
 // Original author Rob Kutschke
 //
 
 #include "DataProducts/inc/StrawIndex.hh"
 #include "DataProducts/inc/FilterEfficiency.hh"
+#include "DataProducts/inc/ExtMonFNALSensorId.hh"
 
 #include "art/Persistency/Common/Wrapper.h"
 #include "cetlib/map_vector.h"

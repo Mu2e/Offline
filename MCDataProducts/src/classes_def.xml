@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.12 2012/06/13 15:29:10 kutschke Exp $     -->
-<!--  $Author: kutschke $ -->
-<!--  $Date: 2012/06/13 15:29:10 $   -->
+<!--  $Id: classes_def.xml,v 1.13 2012/08/23 23:36:14 gandr Exp $     -->
+<!--  $Author: gandr $ -->
+<!--  $Date: 2012/08/23 23:36:14 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.12 $$Date: 2012/06/13 15:29:10 $"; -->
+<!--  rev="$Revision: 1.13 $$Date: 2012/08/23 23:36:14 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -85,5 +85,10 @@
  <class name="art::Wrapper<mu2e::GenParticleSPMHistory>"/>
  <class name="mu2e::GenSimParticleLink" />
  <class name="art::Wrapper<mu2e::GenSimParticleLink>"/>
+
+ <class name="mu2e::ExtMonFNALSimHit" />
+ <class name="mu2e::ExtMonFNALSimHitCollection" />
+ <class name="std::vector<mu2e::ExtMonFNALSimHit>" />
+ <class name="art::Wrapper<mu2e::ExtMonFNALSimHitCollection>"/>
 
 </lcgdict>
