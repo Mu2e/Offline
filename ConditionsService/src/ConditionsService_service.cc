@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.8 2012/07/27 19:42:31 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/27 19:42:31 $
+// $Id: ConditionsService_service.cc,v 1.9 2012/08/23 23:41:52 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/08/23 23:41:52 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,7 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "ConditionsService/inc/ExtMonFNALConditions.hh"
 
 using namespace std;
 
@@ -82,6 +83,7 @@ namespace mu2e {
     addEntity( std::auto_ptr<AcceleratorParams>  ( new AcceleratorParams  (_config)) );
     addEntity( std::auto_ptr<DAQParams>          ( new DAQParams          (_config)) );
     addEntity( std::auto_ptr<TrackerCalibrations>( new TrackerCalibrations(_config)) );
+    addEntity( std::auto_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(_config)) );
   }
 
   // Check that the configuration is self consistent.

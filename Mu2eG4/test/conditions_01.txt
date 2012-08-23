@@ -1,9 +1,9 @@
 //
 // Input file for the prototype conditions system.
 //
-// $Id: conditions_01.txt,v 1.11 2012/08/22 22:22:00 genser Exp $
-// $Author: genser $
-// $Date: 2012/08/22 22:22:00 $
+// $Id: conditions_01.txt,v 1.12 2012/08/23 23:41:52 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/08/23 23:41:52 $
 //
 
 // Times in ns
@@ -31,6 +31,14 @@ double DriftRadiusResolution = 0.1; // 0.1
 // double AmplRes    = 0.01;
 
 double Crosstalk = 0.02;
+
+// ExtMonFNAL clock timing.  Set a value that is close to 25 ns
+// but fits in a deBuncherPeriod an integer number of times.
+double extMonFNAL.clockTick = 24.91176; //ns
+double extMonFNAL.t0 = 0;
+
+double extMonFNAL.temperature = 273; // Kelvin
+double extMonFNAL.biasVoltage = -150; // Volts
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
