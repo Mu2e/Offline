@@ -1,9 +1,9 @@
 //
 // Root c++ function to test MakeStrawHit_module
 // 
-// $Id: strawHits.C,v 1.1 2012/08/23 23:17:19 genser Exp $
+// $Id: strawHits.C,v 1.2 2012/08/23 23:34:45 genser Exp $
 // $Author: genser $
-// $Date: 2012/08/23 23:17:19 $
+// $Date: 2012/08/23 23:34:45 $
 // 
 // Original author KLG based on Rob Kutschke's example
 //
@@ -82,20 +82,31 @@ void strawHits()
   std::vector<TH1F*> _hNG4Steps(nfiles);     
   std::vector<TH1F*> _hG4StepLength(nfiles); 
   std::vector<TH1F*> _hG4StepEdep(nfiles);   
-  TH1F* _tmp;
+  TH1F* _tmp = 0;
 
   for (int ii=0; ii!=nfiles; ++ii) {
-    file[ii]->GetObject("readStrawHits/hHitTime",       _tmp); assert(_tmp!=0); _hHitTime[ii]=_tmp;
-    file[ii]->GetObject("readStrawHits/hHitDeltaTime",  _tmp); assert(_tmp!=0); _hHitDeltaTime[ii]=_tmp;
-    file[ii]->GetObject("readStrawHits/hHitEnergy",     _tmp); assert(_tmp!=0); _hHitEnergy[ii]=_tmp;
-    file[ii]->GetObject("readStrawHits/hNHits",         _tmp); assert(_tmp!=0); _hNHits[ii]=_tmp;
-    file[ii]->GetObject("readStrawHits/hNHitsPerWire",  _tmp); assert(_tmp!=0); _hNHitsPerWire[ii]=_tmp;
-    file[ii]->GetObject("readStrawHits/hDriftTime",     _tmp); assert(_tmp!=0); _hDriftTime[ii]=_tmp;
-    file[ii]->GetObject("readStrawHits/hDriftDistance", _tmp); assert(_tmp!=0); _hDriftDistance[ii]=_tmp;
-    file[ii]->GetObject("readStrawHits/hDistanceToMid", _tmp); assert(_tmp!=0); _hDistanceToMid[ii]=_tmp;
-    file[ii]->GetObject("readStrawHits/hNG4Steps",      _tmp); assert(_tmp!=0); _hNG4Steps[ii]=_tmp;
-    file[ii]->GetObject("readStrawHits/hG4StepLength",  _tmp); assert(_tmp!=0); _hG4StepLength[ii]=_tmp;
-    file[ii]->GetObject("readStrawHits/hG4StepEdep",    _tmp); assert(_tmp!=0); _hG4StepEdep[ii]=_tmp;
+    file[ii]->GetObject("readStrawHits/hHitTime",       _tmp); 
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitTime[ii]=_tmp; 
+    file[ii]->GetObject("readStrawHits/hHitDeltaTime",  _tmp); 
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitDeltaTime[ii]=_tmp; 
+    file[ii]->GetObject("readStrawHits/hHitEnergy",     _tmp); 
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitEnergy[ii]=_tmp; 
+    file[ii]->GetObject("readStrawHits/hNHits",         _tmp); 
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hNHits[ii]=_tmp; 
+    file[ii]->GetObject("readStrawHits/hNHitsPerWire",  _tmp); 
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hNHitsPerWire[ii]=_tmp; 
+    file[ii]->GetObject("readStrawHits/hDriftTime",     _tmp); 
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hDriftTime[ii]=_tmp; 
+    file[ii]->GetObject("readStrawHits/hDriftDistance", _tmp); 
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hDriftDistance[ii]=_tmp; 
+    file[ii]->GetObject("readStrawHits/hDistanceToMid", _tmp); 
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hDistanceToMid[ii]=_tmp; 
+    file[ii]->GetObject("readStrawHits/hNG4Steps",      _tmp); 
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hNG4Steps[ii]=_tmp; 
+    file[ii]->GetObject("readStrawHits/hG4StepLength",  _tmp); 
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hG4StepLength[ii]=_tmp; 
+    file[ii]->GetObject("readStrawHits/hG4StepEdep",    _tmp); 
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hG4StepEdep[ii]=_tmp; 
   }
 
   const int nhistograms = 11;
