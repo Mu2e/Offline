@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.13 2012/08/23 23:36:14 gandr Exp $
+// $Id: classes.h,v 1.14 2012/08/23 23:41:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/23 23:36:14 $
+// $Date: 2012/08/23 23:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -45,6 +45,7 @@
 #include "MCDataProducts/inc/GenSimParticleLink.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
 
 #include "MCDataProducts/inc/StepFilterMode.hh"
 
@@ -92,3 +93,9 @@ namespace {
 }
 template class art::Wrapper<mu2e::GenParticleSPMHistory>;
 template class art::Wrapper<mu2e::GenSimParticleLink>;
+
+template class std::vector<mu2e::ExtMonFNALHitTruthBits>;
+template class std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::ExtMonFNALRawHit> >;
+template class std::pair<art::Ptr<mu2e::ExtMonFNALRawHit>,art::Ptr<mu2e::SimParticle> >;
+template class art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRawHit,mu2e::ExtMonFNALHitTruthBits> >;
+template class art::Wrapper<art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,mu2e::ExtMonFNALHitTruthBits> >;

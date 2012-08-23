@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.15 2012/08/04 00:14:08 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/08/04 00:14:08 $
+// $Id: classes.h,v 1.16 2012/08/23 23:41:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/08/23 23:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -29,6 +29,8 @@
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
+#include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
@@ -70,3 +72,6 @@ template class art::Wrapper<mu2e::ZRotStrawHitMapCollection>;
 template class art::Wrapper<mu2e::TrackerHitByID>;
 template class art::Wrapper<mu2e::TrackSeedCollection>;
 template class art::Wrapper<mu2e::TrkExtTrajCollection>;
+
+template class std::vector<mu2e::ExtMonFNALRawHit>;
+template class art::Wrapper<mu2e::ExtMonFNALRawHitCollection>;

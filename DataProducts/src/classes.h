@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.14 2012/08/23 23:36:14 gandr Exp $
+// $Id: classes.h,v 1.15 2012/08/23 23:41:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/23 23:36:14 $
+// $Date: 2012/08/23 23:41:35 $
 //
 // Original author Rob Kutschke
 //
@@ -11,6 +11,8 @@
 #include "DataProducts/inc/StrawIndex.hh"
 #include "DataProducts/inc/FilterEfficiency.hh"
 #include "DataProducts/inc/ExtMonFNALSensorId.hh"
+#include "DataProducts/inc/ExtMonFNALChipId.hh"
+#include "DataProducts/inc/ExtMonFNALPixelId.hh"
 
 #include "art/Persistency/Common/Wrapper.h"
 #include "cetlib/map_vector.h"

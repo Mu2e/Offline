@@ -5,9 +5,9 @@
 // integer (the plane number), but this may change if we decide to
 // have more than one sensor per plane.
 //
-// $Id: ExtMonFNALSensorId.hh,v 1.1 2012/08/23 23:36:13 gandr Exp $
+// $Id: ExtMonFNALSensorId.hh,v 1.2 2012/08/23 23:41:34 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/23 23:36:13 $
+// $Date: 2012/08/23 23:41:34 $
 //
 // Original author Andrei Gaponenko
 
@@ -34,7 +34,7 @@ namespace mu2e {
     }
 
     bool operator<( ExtMonFNALSensorId const& rhs) const{
-      return ( plane_ < rhs.plane_);
+      return (plane_ < rhs.plane_);
     }
 
     // Default constructor is required by ROOT persistency
