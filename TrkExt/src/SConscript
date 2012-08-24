@@ -1,9 +1,11 @@
+#!/usr/bin/env python
+#
 #
 # Script to bulid the files found in this directory.
 #
-# $Id: SConscript,v 1.1 2012/08/04 00:22:09 mjlee Exp $
-# $Author: mjlee $
-# $Date: 2012/08/04 00:22:09 $
+# $Id: SConscript,v 1.2 2012/08/24 20:19:32 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/08/24 20:19:32 $
 #
 # Original author Rob Kutschke.
 #

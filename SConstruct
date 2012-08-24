@@ -1,8 +1,10 @@
+#!/usr/bin/env python
+#
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.38 2012/08/23 16:38:49 tassiell Exp $
-# $Author: tassiell $
-# $Date: 2012/08/23 16:38:49 $
+# $Id: SConstruct,v 1.39 2012/08/24 20:19:31 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/08/24 20:19:31 $
 #
 # Original author Rob Kutschke.
 #
