@@ -4,7 +4,7 @@
 namespace mu2e {
   std::ostream& operator<<(std::ostream& os, const ExtMonFNALSimHit& hit) {
     return os<<"ExtMonFNALSimHit(sid="<<hit.sensorId()
-             <<", particle="<<hit.simParticle()
+             <<", particle="<<hit.simParticle()->id()
              <<", eTot="<<hit.totalEnergyDeposit()
              <<", eIon="<<hit.ionizingEnergyDeposit()
              <<", startPos="<<hit.localStartPosition()
