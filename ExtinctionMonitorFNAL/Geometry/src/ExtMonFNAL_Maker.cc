@@ -34,9 +34,6 @@ namespace mu2e {
       config.getVectorDouble(prefix+".sensor_zoffset", st.m_sensor_zoffset, -1);
       config.getVectorDouble(prefix+".sensor_xoffset", st.m_sensor_xoffset, st.m_sensor_zoffset.size());
       config.getVectorDouble(prefix+".sensor_yoffset", st.m_sensor_yoffset, st.m_sensor_zoffset.size());
-      config.getVectorDouble(prefix+".sensor_halfdx",  st.m_sensor_halfdx,  st.m_sensor_zoffset.size());
-      config.getVectorDouble(prefix+".sensor_halfdy",  st.m_sensor_halfdy,  st.m_sensor_zoffset.size());
-      config.getVectorDouble(prefix+".sensor_halfdz",  st.m_sensor_halfdz,  st.m_sensor_zoffset.size());
       config.getVectorDouble(prefix+".readout_halfdz", st.m_readout_halfdz, st.m_sensor_zoffset.size());
 
       if(!boost::is_sorted(st.m_sensor_zoffset)) {
@@ -74,6 +71,8 @@ namespace mu2e {
       const int verbose = config.getInt("extMonFNAL.verbosityLevel", 0);
 
       std::auto_ptr<ExtMon> det(new ExtMon());
+
+      config.getVectorDouble("extMonFNAL.sensorHalfSize",  det->sensor_.halfSize_, 3);
 
       //----------------------------------------------------------------
       // The upstream stack

@@ -25,15 +25,9 @@ namespace mu2e {
     const std::vector<double>& sensor_xoffset() const { return m_sensor_xoffset; }
     const std::vector<double>& sensor_yoffset() const { return m_sensor_yoffset; }
 
-    const std::vector<double>& sensor_halfdx() const { return m_sensor_halfdx; }
-    const std::vector<double>& sensor_halfdy() const { return m_sensor_halfdy; }
-    const std::vector<double>& sensor_halfdz() const { return m_sensor_halfdz; }
-
     const std::vector<double>& readout_halfdz() const { return m_readout_halfdz; }
 
-    // same info as above cooked for nestBox()
-    std::vector<double> sensorHalfSize(unsigned iplane) const;
-    // offset wrt ref point
+    // offset of sensor center wrt the ref point
     CLHEP::Hep3Vector   sensorOffsetInStack(unsigned iplane) const;
 
     // Positioning of the stack: reference point and rotation.

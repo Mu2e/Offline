@@ -14,6 +14,7 @@
 
 #include "Mu2eInterfaces/inc/Detector.hh"
 
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensor.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensorStack.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
 
@@ -24,6 +25,9 @@ namespace mu2e {
 
     class ExtMon : virtual public Detector {
     public:
+
+      // all sensors are the same
+      const ExtMonFNALSensor& sensor() const { return sensor_; }
 
       const ExtMonFNALSensorStack& up() const { return up_; }
       const ExtMonFNALSensorStack& dn() const { return dn_; }
@@ -60,6 +64,7 @@ namespace mu2e {
       // For persistency
       template<class T> friend class art::Wrapper;
 
+      ExtMonFNALSensor sensor_;
       ExtMonFNALSensorStack up_;
       ExtMonFNALSensorStack dn_;
       ExtMonFNALMagnet spectrometerMagnet_;

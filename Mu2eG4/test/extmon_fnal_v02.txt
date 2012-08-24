@@ -136,6 +136,11 @@ bool extMonFNAL.collimator2.alignmentPlug.solid = false;
 bool extMonFNAL.collimator2.channel.visible = true;
 bool extMonFNAL.collimator2.channel.solid = false;
 
+
+//================================================================
+// Silicon sensor parameters
+vector<double> extMonFNAL.sensorHalfSize =  {20.,   20.,   0.100};
+
 //================================================================
 // The upstream stack of the sensors.
 //
@@ -159,9 +164,6 @@ double extMonFNAL.up.distanceToMagnet = 300;
 vector<double> extMonFNAL.up.sensor_zoffset = { 0., +290., +300.};
 vector<double> extMonFNAL.up.sensor_xoffset = { 0.,    0.,    0.};
 vector<double> extMonFNAL.up.sensor_yoffset = { 0.,    0.,    0.};
-vector<double> extMonFNAL.up.sensor_halfdx =  {20.,   20.,   20.};
-vector<double> extMonFNAL.up.sensor_halfdy =  {20.,   20.,   20.};
-vector<double> extMonFNAL.up.sensor_halfdz =  {0.100, 0.100, 0.100};
 vector<double> extMonFNAL.up.readout_halfdz = {0.075, 0.075, 0.075};
 
 //----------------------------------------------------------------

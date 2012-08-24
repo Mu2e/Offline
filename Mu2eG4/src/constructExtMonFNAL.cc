@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.17 2012/08/24 15:06:59 gandr Exp $
+// $Id: constructExtMonFNAL.cc,v 1.18 2012/08/24 15:07:28 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/24 15:06:59 $
+// $Date: 2012/08/24 15:07:28 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -41,7 +41,8 @@
 namespace mu2e {
 
   //================================================================
-  void constructExtMonFNALSensorStack(const ExtMonFNALSensorStack& stack,
+  void constructExtMonFNALSensorStack(const ExtMonFNALSensor& sensor,
+                                      const ExtMonFNALSensorStack& stack,
                                       const std::string& volNameSuffix,
                                       int   planeNumberingOffset,
                                       VirtualDetectorId::enum_type entranceVD,
@@ -84,7 +85,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector sensorCenterInRoom = stackRefPointInRoom + stackRotationInRoom*stack.sensorOffsetInStack(iplane);
 
       VolumeInfo vplane = nestBox(oss.str(),
-                                  stack.sensorHalfSize(iplane),
+                                  sensor.halfSize(),
                                   findMaterialOrThrow("G4_Si"),
                                   stackRotationInRoomInv,
                                   sensorCenterInRoom,
@@ -109,10 +110,10 @@ namespace mu2e {
       const CLHEP::Hep3Vector readoutCenterInRoom = stackRefPointInRoom
         + stackRotationInRoom*
         (stack.sensorOffsetInStack(iplane)
-         + CLHEP::Hep3Vector(0,0, -(stack.sensor_halfdz()[iplane]+stack.readout_halfdz()[iplane]))
+         + CLHEP::Hep3Vector(0,0, -(sensor.halfSize()[2]+stack.readout_halfdz()[iplane]))
          );
 
-      std::vector<double> rhs(stack.sensorHalfSize(iplane));
+      std::vector<double> rhs(sensor.halfSize());
       rhs[2] = stack.readout_halfdz()[iplane];
 
       nestBox(osr.str(),
@@ -207,13 +208,13 @@ namespace mu2e {
                                 0,
                                 (vdId == entranceVD ?
                                  (stack.sensorOffsetInStack(stack.nplanes()-1)[2]
-                                  + stack.sensor_halfdz()[stack.nplanes()-1]
+                                  + sensor.halfSize()[2]
                                   + 2*stack.readout_halfdz()[stack.nplanes()-1]
                                   + vdg->getHalfLength()
                                   ) :
                                  (
                                   stack.sensorOffsetInStack(0)[2]
-                                  - stack.sensor_halfdz()[0]
+                                  - sensor.halfSize()[2]
                                   - 2*stack.readout_halfdz()[0]
                                   - vdg->getHalfLength()
                                   )
@@ -336,7 +337,8 @@ namespace mu2e {
     GeomHandle<ExtMonFNAL::ExtMon> extmon;
     GeomHandle<ExtMonFNALBuilding> emfb;
 
-    constructExtMonFNALSensorStack(extmon->dn(),
+    constructExtMonFNALSensorStack(extmon->sensor(),
+                                   extmon->dn(),
                                    "Dn",
                                    0, // plane numbering offset
                                    VirtualDetectorId::EMFDetectorDnEntrance,
@@ -344,7 +346,8 @@ namespace mu2e {
                                    emfb->roomRotationInMu2e(),
                                    config);
 
-    constructExtMonFNALSensorStack(extmon->up(),
+    constructExtMonFNALSensorStack(extmon->sensor(),
+                                   extmon->up(),
                                    "Up",
                                    extmon->dn().nplanes(), // plane numbering offset
                                    VirtualDetectorId::EMFDetectorUpEntrance,

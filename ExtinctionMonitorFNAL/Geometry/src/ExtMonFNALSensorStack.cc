@@ -16,15 +16,6 @@ namespace mu2e {
   {}
 
   //================================================================
-  std::vector<double> ExtMonFNALSensorStack::sensorHalfSize(unsigned iplane) const {
-    std::vector<double> res(3);
-    res[0] = sensor_halfdx()[iplane];
-    res[1] = sensor_halfdy()[iplane];
-    res[2] = sensor_halfdz()[iplane];
-    return res;
-  }
-
-  //================================================================
   CLHEP::Hep3Vector ExtMonFNALSensorStack::sensorOffsetInStack(unsigned iplane) const {
     CLHEP::Hep3Vector res(3);
     res[0] = sensor_xoffset()[iplane];
