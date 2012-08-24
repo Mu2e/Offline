@@ -70,7 +70,7 @@ physics : {
     tprint : [ generate, g4run, pixelDigitization ]
     gm  : [ geom ]
 
-    eprint: [ vdprint, FullOutput ]
+    eprint: [ emfprintsim, emfprinttruth, FullOutput ]
 
     trigger_paths  : [gm, tprint]
     end_paths : [ eprint ]
