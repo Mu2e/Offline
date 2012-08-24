@@ -1,17 +1,22 @@
 #
-# $Id: SConscript,v 1.1 2012/08/24 15:08:29 gandr Exp $
+# $Id: SConscript,v 1.2 2012/08/24 18:43:29 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/08/24 15:08:29 $
+# $Date: 2012/08/24 18:43:29 $
 #
 # Original author Rob Kutschke.
 #
 
-import os.path, re
+import os, re
 Import('env')
 
 plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
 non_plugin_cc = Glob('*.cc', strings=True)
 for cc in plugin_cc: non_plugin_cc.remove(cc)
+
+if os.environ['ART_VERSION'] == 'v1_00_08':
+    # FindManyP is broken in that art release
+    print "Not building EMFDetPrintTruth_module for art release ",os.environ['ART_VERSION']
+    plugin_cc.remove('EMFDetPrintTruth_module.cc')
 
 # Construct library name using its path relative to Offline
 local_lib_path = re.sub(r'^.*/Offline/(.*)/src$', r'\1', env.Dir('.').abspath)
