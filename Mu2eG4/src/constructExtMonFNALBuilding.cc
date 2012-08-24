@@ -33,7 +33,7 @@
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "G4Helper/inc/G4Helper.hh"

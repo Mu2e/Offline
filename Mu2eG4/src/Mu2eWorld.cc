@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.144 2012/08/23 23:36:14 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.145 2012/08/24 15:06:59 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/23 23:36:14 $
+// $Date: 2012/08/24 15:06:59 $
 //
 // Original author Rob Kutschke
 //
@@ -87,7 +87,7 @@
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
 #include "Mu2eG4/inc/constructCalorimeter.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 
 // G4 includes

@@ -1,4 +1,4 @@
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALMagnet.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 

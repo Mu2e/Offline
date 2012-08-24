@@ -34,7 +34,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 

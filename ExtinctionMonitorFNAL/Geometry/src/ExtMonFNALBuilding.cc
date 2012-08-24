@@ -1,4 +1,4 @@
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
 #include <cmath>
 

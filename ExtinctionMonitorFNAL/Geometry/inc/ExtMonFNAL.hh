@@ -14,8 +14,8 @@
 
 #include "Mu2eInterfaces/inc/Detector.hh"
 
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALSensorStack.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALMagnet.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensorStack.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

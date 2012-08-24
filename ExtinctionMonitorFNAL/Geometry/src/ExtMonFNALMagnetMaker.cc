@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2011
 
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALMagnetMaker.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnetMaker.hh"
 
 #include <algorithm>
 #include <iterator>

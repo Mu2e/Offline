@@ -1,10 +1,10 @@
 // Andrei Gaponenko, 2011
 
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuildingMaker.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuildingMaker.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALMagnetMaker.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnetMaker.hh"
 
 #include <algorithm>
 #include <iterator>

@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.26 2012/08/15 04:05:00 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/08/15 04:05:00 $
+// $Id: CosmicDYB.cc,v 1.27 2012/08/24 15:06:58 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/08/24 15:06:58 $
 //
 // Original author Yury Kolomensky
 //
@@ -46,7 +46,7 @@
 #include "Mu2eUtilities/inc/rm48.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
 #include "TargetGeom/inc/Target.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 
 // From CLHEP

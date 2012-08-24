@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.37 2012/07/27 19:42:31 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/27 19:42:31 $
+// $Id: GeometryService_service.cc,v 1.38 2012/08/24 15:06:59 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/08/24 15:06:59 $
 //
 // Original author Rob Kutschke
 //
@@ -65,10 +65,10 @@
 #include "GeometryService/inc/VirtualDetectorMaker.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuildingMaker.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL_Maker.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuildingMaker.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL_Maker.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIMaker.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"

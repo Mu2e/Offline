@@ -1,8 +1,8 @@
 #include "EventGenerator/inc/ExtMonFNALGun.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 
 #include "ConfigTools/inc/SimpleConfig.hh"

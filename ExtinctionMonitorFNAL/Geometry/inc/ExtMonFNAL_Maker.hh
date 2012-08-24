@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALSensorStack.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensorStack.hh"
 
 namespace mu2e { class SimpleConfig; }
 namespace mu2e { namespace ExtMonFNAL { class ExtMon; } }

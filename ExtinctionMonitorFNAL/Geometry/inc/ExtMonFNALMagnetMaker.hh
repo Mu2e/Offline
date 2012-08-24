@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALMagnet.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
 
 namespace CLHEP { class Hep3Vector; }
 namespace CLHEP { class HepRotation; }

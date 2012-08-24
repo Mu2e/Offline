@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.9 2012/08/03 00:32:10 gandr Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.10 2012/08/24 15:06:59 gandr Exp $
 // $Author: gandr $
 //
 
@@ -20,8 +20,8 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TTrackerGeom/inc/TTracker.hh"

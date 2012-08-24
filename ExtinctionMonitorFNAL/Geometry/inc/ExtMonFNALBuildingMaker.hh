@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
 namespace mu2e {
   class SimpleConfig;

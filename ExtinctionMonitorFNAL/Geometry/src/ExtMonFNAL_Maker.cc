@@ -1,10 +1,10 @@
 // Andrei Gaponenko, 2011
 
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL_Maker.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALMagnetMaker.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL_Maker.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnetMaker.hh"
 
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
 #include "cetlib/exception.h"
 #include "boost/range/algorithm_ext/is_sorted.hpp"

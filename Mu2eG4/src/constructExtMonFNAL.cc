@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.16 2012/08/03 22:04:39 gandr Exp $
+// $Id: constructExtMonFNAL.cc,v 1.17 2012/08/24 15:06:59 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/03 22:04:39 $
+// $Date: 2012/08/24 15:06:59 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -27,8 +27,8 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 

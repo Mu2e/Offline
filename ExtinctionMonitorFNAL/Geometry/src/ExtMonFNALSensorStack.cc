@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/inc/ExtMonFNALSensorStack.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensorStack.hh"
 
 #include <iostream>
 
