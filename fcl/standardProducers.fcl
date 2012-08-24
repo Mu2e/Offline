@@ -72,6 +72,28 @@ ExtMonUCITofHitsMaker :
   minimumTimeGap       : 100.0
 }
 
+# Form ExtMonFNAL pixel hits
+pixelDigitization : {
+    module_type : ExtMonFNALHitMaker
+    inputModuleLabel : "g4run"
+    inputInstanceName : ""
+
+    // Hardware feature of FE-I4
+    maxToT : 13
+
+    // threshold in units of electron charge
+    discriminatorThreshold : 3750
+
+    // ToT calibration injected charge
+    qCalib : 20000
+
+    // ToT calibration target
+    totCalib : 6
+
+    // Arbitrary, but must be sane
+    numClustersPerHit : 10
+}
+
 # Save state of random numbers at the start of each event
 randomsaver:
 {

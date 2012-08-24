@@ -37,10 +37,9 @@ physics : {
             inputfile     : "ExtinctionMonitorFNAL/test/genconfig_detectorTest.txt"
         }
 
-        g4run : {
-            module_type          : G4
-            generatorModuleLabel : generate
-        }
+        g4run : @local::g4run
+
+        pixelDigitization : @local::pixelDigitization
 
         geom : { module_type : GeometryRecorder }
     }
@@ -51,17 +50,27 @@ physics : {
             inputModuleLabel  : "g4run"
             inputInstanceName : "virtualdetector"
         }
-        emfprint: {
-            module_type: EMFDetPrint
+        emfprintsim: {
+            module_type: EMFDetPrintSim
             inputModuleLabel  : "g4run"
+            inputInstanceName : ""
+        }
+        emfprintraw: {
+            module_type: EMFDetPrintRaw
+            inputModuleLabel  : "pixelDigitization"
+            inputInstanceName : ""
+        }
+        emfprinttruth: {
+            module_type: EMFDetPrintTruth
+            inputModuleLabel  : "pixelDigitization"
             inputInstanceName : ""
         }
     }
 
-    tprint : [ generate, g4run ]
+    tprint : [ generate, g4run, pixelDigitization ]
     gm  : [ geom ]
 
-    eprint: [ vdprint, emfprint, FullOutput ]
+    eprint: [ vdprint, FullOutput ]
 
     trigger_paths  : [gm, tprint]
     end_paths : [ eprint ]

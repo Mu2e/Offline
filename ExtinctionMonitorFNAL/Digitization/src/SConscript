@@ -1,7 +1,7 @@
 #
-# $Id: SConscript,v 1.1 2012/08/24 15:07:50 gandr Exp $
+# $Id: SConscript,v 1.2 2012/08/24 15:08:11 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/08/24 15:07:50 $
+# $Date: 2012/08/24 15:08:11 $
 #
 # Original author Rob Kutschke.
 #
@@ -29,6 +29,11 @@ if non_plugin_cc:
                       )
     my_libs=[local_lib_name, 'CLHEP']
     pass
+
+for cc in plugin_cc:
+    libname='#/lib/'+local_lib_name+'_'+cc[:cc.find('.cc')]
+    env.SharedLibrary( libname, cc, LIBS=[ my_libs ] )
+
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
