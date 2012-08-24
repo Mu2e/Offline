@@ -1,11 +1,19 @@
-  $Id: v2_0_2.txt,v 1.9 2012/08/23 23:43:16 gandr Exp $
+  $Id: v2_0_2.txt,v 1.10 2012/08/24 15:27:00 gandr Exp $
   $Author: gandr $
-  $Date: 2012/08/23 23:43:16 $
+  $Date: 2012/08/24 15:27:00 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_2
 
+
+10) August 24, 2012 gandr
+
+    Implement ExtMonFNAL pixel digitization.
+
+9) August 24, 2012 gandr
+
+   Use deeper directory structure to organize code under ExtinctionMonitorFNAL.
 
 8) August 23, 2012 gandr
 
