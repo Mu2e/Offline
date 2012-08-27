@@ -1,9 +1,9 @@
 //
 // Root c++ function to test MakeStrawHit_module
 // 
-// $Id: strawHits.C,v 1.3 2012/08/27 19:04:03 genser Exp $
+// $Id: strawHits.C,v 1.4 2012/08/27 22:31:40 genser Exp $
 // $Author: genser $
-// $Date: 2012/08/27 19:04:03 $
+// $Date: 2012/08/27 22:31:40 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //
@@ -61,17 +61,17 @@ void strawHits()
   std::vector<TPaveLabel*> fileLabel;
 
   file.push_back(new TFile("mixExample01_2000_before_xtalk_off.root"));
-  fileLabel.push_back(new TPaveLabel(0.505,0.9,0.78,0.95,"before","NDC"));
+  fileLabel.push_back(new TPaveLabel(0.505,0.905,0.78,0.955,"before","NDC"));
   file.push_back(new TFile("mixExample01_2000_after_xtalk_off_e2a_off_save.root"));
-  fileLabel.push_back(new TPaveLabel(0.505,0.9,0.78,0.95,"after xtalk off e2a off","NDC"));
+  fileLabel.push_back(new TPaveLabel(0.505,0.905,0.78,0.955,"after xtalk off e2a off","NDC"));
   file.push_back(new TFile("mixExample01_2000_after_xtalk_on2p_e2a_off.root"));
-  fileLabel.push_back(new TPaveLabel(0.505,0.9,0.78,0.95,"after xtalk on 2\% e2a off","NDC"));
+  fileLabel.push_back(new TPaveLabel(0.505,0.905,0.78,0.955,"after xtalk on 2\% e2a off","NDC"));
   file.push_back(new TFile("mixExample01_2000_after_xtalk_off_e2a_on.root"));
-  fileLabel.push_back(new TPaveLabel(0.505,0.9,0.78,0.95,"after xtalk off e2a on","NDC"));
+  fileLabel.push_back(new TPaveLabel(0.505,0.905,0.78,0.955,"after xtalk off e2a on","NDC"));
   file.push_back(new TFile("mixExample01_2000_after_xtalk_on2p_e2a_on.root"));
-  fileLabel.push_back(new TPaveLabel(0.505,0.9,0.78,0.95,"after xtalk on 2\% e2a on","NDC"));
+  fileLabel.push_back(new TPaveLabel(0.505,0.905,0.78,0.955,"after xtalk on 2\% e2a on","NDC"));
   file.push_back(new TFile("mixExample01_2000_after_xtalk_on1p_e2a_on.root"));
-  fileLabel.push_back(new TPaveLabel(0.505,0.9,0.78,0.95,"after xtalk on 1\% e2a on","NDC"));
+  fileLabel.push_back(new TPaveLabel(0.505,0.905,0.78,0.955,"after xtalk on 1\% e2a on","NDC"));
 
   const int nfiles = file.size();
 
