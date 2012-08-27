@@ -1,11 +1,11 @@
 //
-//  The TestFofM1 plugin; the first example of a module.
+//  The TestFofM1 module.
 //
-//  $Id: TestFofM1_module.cc,v 1.3 2012/05/30 16:12:02 mf Exp $
+//  $Id: TestFofM1_module.cc,v 1.4 2012/08/27 22:19:43 mf Exp $
 //  $Author: mf $
-//  $Date: 2012/05/30 16:12:02 $
+//  $Date: 2012/08/27 22:19:43 $
 //
-//  Original author Rob Kutschke
+//  Original author Mark Fischler
 //
 
 // C++ includes.
@@ -461,7 +461,8 @@ namespace mu2e {
     FofM figureOfMeritCalculator ( CE_spectrum, 
                                    DIO_spectrum, 
                                    protonsOnTarget, 
-                                   SmoothedPunziMeritFunction );  
+                                   SmoothedPunziMeritFunction,
+                                   std::cout );  
 //#define EXAMINESPECTRUM
 #ifdef EXAMINESPECTRUM
     figureOfMeritCalculator.displayBackground(lowestBin, topOfLastBin, 100);
@@ -544,18 +545,18 @@ namespace mu2e {
     FofM::Summary summary;
     if ((lowCut == 0) && (highCut == 0)) {    
       t = figureOfMeritCalculator.tables
-                        (maximumSignalCount, std::cout, summary);
+                    (maximumSignalCount, lowCut, highCut, std::cout, summary);
     } else if (lowCut == 0) { 
       t = figureOfMeritCalculator.tables_fixed_highCut 
-                        (maximumSignalCount, highCut, std::cout, summary);
+                    (maximumSignalCount, lowCut, highCut, std::cout, summary);
     } else if (highCut == 0) { 
       t = figureOfMeritCalculator.tables_fixed_lowCut 
-                        (maximumSignalCount, lowCut, std::cout, summary);
+                    (maximumSignalCount, lowCut, highCut, std::cout, summary);
     } else {
       t = figureOfMeritCalculator.tables_fixed_cuts 
                     (maximumSignalCount, lowCut, highCut, std::cout, summary);
     }
-
+    
     std::cout << t << "\n";
        
     std::cout << "Figure of merit is " << summary.figureOfMerit << "\n";

@@ -128,16 +128,19 @@ public:
   
   FofM ( FofM::Spectrum signalEfficiency, 
          double protonsOnProductionTarget,
-         MeritFunctionChoice mfunction);
+         MeritFunctionChoice mfunction,
+         std::ostream & ost);
   FofM ( FofM::Spectrum signalEfficiency, 
          FofM::Spectrum backgroundStrength,
          double protonsOnProductionTarget,
-         MeritFunctionChoice mfunction); 
+         MeritFunctionChoice mfunction,
+         std::ostream & ost); 
   FofM ( FofM::Spectrum signalEfficiency, 
          FofM::Spectrum backgroundStrength,
          FofM::Smearing resolution,
          double protonsOnProductionTarget,
-         MeritFunctionChoice mfunction);
+         MeritFunctionChoice mfunction,
+         std::ostream & ost);
 
   // Preparing signal and background spectra
 
@@ -156,7 +159,7 @@ public:
   double worstCaseBranchingRatio () const;
   double lowMomentumCut () const;
   double highMomentumCut () const;
-  std::string tables (int maximumSignalCount, 
+  std::string tables (int maximumSignalCount, double & lowCut, double & highCut,
                       std::ostream & os, FofM::Summary & summary) const; 
   void results (int maximumSignalCount,
                 double &lowCut,  double &highCut, 
@@ -181,7 +184,7 @@ public:
   double worstCaseBranchingRatio_fixed_highCut (double momcutHigh) const;
   double lowMomentumCut_fixed_highCut (double momcutHigh) const;
   std::string tables_fixed_highCut 
-        (int maximumSignalCount, double momcutHigh, 
+        (int maximumSignalCount, double& lowCut, double momcutHigh, 
                      std::ostream & os, FofM::Summary & summary) const; 
   void results_fixed_highCut (int maximumSignalCount, 
                 double &lowCut,  double highCut, 
@@ -204,7 +207,7 @@ public:
   double worstCaseBranchingRatio_fixed_lowCut (double momcutLow) const;
   double highMomentumCut_fixed_highCut (double momcutLow) const;
   std::string tables_fixed_lowCut 
-        (int maximumSignalCount, double momcutLow, 
+        (int maximumSignalCount, double momcutLow, double& highCut,
                      std::ostream & os, FofM::Summary & summary) const; 
   void results_fixed_lowCut (int maximumSignalCount, 
                 double lowCut,  double &highCut, 
@@ -270,6 +273,7 @@ public:
                 std::vector<double> & CLupperBR ) const;
   
 private:
+  std::ostream & os;
   double L;
   double a; // momentum range bottom
   double b; // momentum range top
@@ -344,6 +348,12 @@ private:
   double Emax;
   double E_mu;
   double M_Al;
+  double E_mue;
+  double beta_6;
+  double beta_7;
+  double beta_8;
+  double beta_9;
+  double beta_10;
 };
 
 // Spectra -- each is a class inheriting from Spectrum
@@ -388,7 +398,9 @@ typedef CzarneckiDIOSpectrum DIOmomentumSpectrum;
 // Output results table  
 std::ostream & operator<< (std::ostream & os, mu2e::FofM const & fm) {
   mu2e::FofM::Summary s;
-  std::string t = fm.tables(25, os, s);
+  double lowCut;
+  double highCut;
+  std::string t = fm.tables(25, lowCut, highCut, os, s);
   return os << t << "\nFigure of merit = " << s.figureOfMerit << "\n";
 }
 

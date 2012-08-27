@@ -55,15 +55,18 @@ public:
                     double lowCut, double highCut ) const;
   
 private:
-
+  class NthHighest;
+  
   void decideVerbosity();
   void extractFitmom 
         ( TTree * tracks
         , std::vector< std::vector<double> > & counts
+        , std::vector<NthHighest> & lowPs
+        , bool dio = false
         , bool use_diowt = false, bool apply_timeCuts = true );
   void extractFitmom 
        ( std::vector<std::string> const & listOfFileNames
-       , std::vector< std::vector<double> > & counts
+       , std::vector< std::vector<double> > & counts, bool dio = false
        , bool use_diowt = false, bool apply_timeCuts = true  );
   struct TTreeAccessor {
     TFile* tfp;
@@ -78,6 +81,10 @@ private:
   std::vector<double> RPCtimeProbabilityVector() const;
   splines::Spline<1> RPCtimeProbabilitySpline()  const;
 
+  void DIOstatisticsWarning
+                (double computedLowCut, size_t tCutNumber) const;
+  void DIOstatisticsWarningFixedLowCut
+                (double fixedLowCut, size_t tCutNumber) const;
 public:
   // hard-coded verbosity flags
 
@@ -94,7 +101,8 @@ public:
   bool OUTPUT_RPClivePionFraction;
   bool OUTPUT_allTables;
   bool OUTPUT_detailedTrace;
-
+  bool OUTPUT_detailedCutTrace;
+  
   double adHocSignalrescaler;
   double adHocDIOrescaler;
   double adHocRPCrescaler;
@@ -118,7 +126,7 @@ private:
   std::vector<double> tCuts;
   double  CEliveGateFraction;
   double DIOliveGateFraction;   
-  
+    
   // canonical numbers
   double canonicalRangeLo;
   double canonicalRangeHi;
@@ -152,11 +160,37 @@ private:
   double DIOflatGenerationWindowLo;
   double DIOflatGenerationWindowHi;
   
+  // input counting
+  int tracksExtracted;
+  int tracksBinned;
+  
+  // Protection agains low-statistics DIO tails
+  int minimumMeaningfulDIOtail;
+  std::vector<double> lowMomentumCutCeiling;
+  class NthHighest {
+  public:
+    NthHighest (int nn, double topp ) 
+    : n(nn)
+    , m(0)
+    , top(topp)
+    , vals(n,top) {}
+    NthHighest () : n(0) , m(0) {}
+    void add (double p);
+    double value () const {return (m>0 ? vals[0] : 0.0);}
+  private:
+    int n;
+    int m;
+    double top;
+    std::vector<double> vals;
+  };
+
+    
   // time window shapes
   splines::Spline<1> RPCtimeProbability;
   double stoppedPionsPerPOT;
   double extinction;
-   
+  
+  
 }; // FMtool
 
 } // end namespace mu2e

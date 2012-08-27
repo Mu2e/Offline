@@ -13,11 +13,13 @@
 #include <iomanip>
 #include <cmath>
 #include <sstream>
-
+ 
 using std::setw;
 
-namespace mu2e {
+// #define TRACE_INTEGRATED_STRENGTHS
 
+namespace mu2e {
+ 
 // --------
 // Spectrum
 // --------
@@ -131,8 +133,10 @@ splines::Spline<1> FofM::Smearing::representation() const {
 
 FofM::FofM ( FofM::Spectrum signalEfficiency, 
              double protonsOnProductionTarget,
-             MeritFunctionChoice mfunction )
-  : L (protonsOnProductionTarget)
+             MeritFunctionChoice mfunction,
+             std::ostream & ost )
+  : os(ost)
+  , L (protonsOnProductionTarget)
   , a (NullBackgroundSpectrum().a())
   , b (NullBackgroundSpectrum().b())
   , signal (signalEfficiency.representation())
@@ -146,8 +150,10 @@ FofM::FofM ( FofM::Spectrum signalEfficiency,
 FofM::FofM ( FofM::Spectrum signalEfficiency, 
              FofM::Spectrum backgroundStrength,
              double protonsOnProductionTarget,
-             MeritFunctionChoice mfunction )
-  : L (protonsOnProductionTarget)
+             MeritFunctionChoice mfunction ,
+             std::ostream & ost )
+  : os(ost)
+  , L (protonsOnProductionTarget)
   , a (backgroundStrength.a())
   , b (backgroundStrength.b())
   , signal (signalEfficiency.representation())
@@ -158,15 +164,17 @@ FofM::FofM ( FofM::Spectrum signalEfficiency,
 {
   // TODO -- We are taking the grid from the background only.
   //         That is probably right but we should think it through.
-  // std::cout << "FofM ctor from signal and background\n";
+  // os << "FofM ctor from signal and background\n";
 } // ctor from signal, background  and L
          
 FofM::FofM ( FofM::Spectrum signalEfficiency, 
              FofM::Spectrum backgroundStrength,
              FofM::Smearing resolution,
              double protonsOnProductionTarget,
-             MeritFunctionChoice mfunction )
-  : L (protonsOnProductionTarget)
+             MeritFunctionChoice mfunction ,
+             std::ostream & ost )
+  : os(ost)
+  , L (protonsOnProductionTarget)
   , a (backgroundStrength.a())
   , b (backgroundStrength.b())
   , signal 
@@ -247,11 +255,11 @@ void FofM::results (int maximumSignalCount,
   {
     pmin = optimize_low_cut ( old_pmax );
 #ifdef TRACE_PRANGE_OPTIMIZATION
-    std::cout << "Low momentum cut = " << pmin << ";  ";
+    os << "Low momentum cut = " << pmin << ";  ";
 #endif
     pmax = optimize_high_cut( pmin );
 #ifdef TRACE_PRANGE_OPTIMIZATION
-    std::cout << "High momentum cut = " << pmax << "\n";
+    os << "High momentum cut = " << pmax << "\n";
 #endif
     if ( (std::fabs(pmin-old_pmin) < 0.01) && 
          (std::fabs(pmax-old_pmax) < 0.01) ) {
@@ -264,12 +272,21 @@ void FofM::results (int maximumSignalCount,
   highCut = pmax;
   double integratedSignalEfficiency = signal.integrate(pmin,pmax);
   double integratedBackground = L * background.integrate(pmin,pmax);
+#ifdef DETAILS_BACKGROUND_INTEGRATION
+  os << "Details of background integration, from FofM::results()\n";
+  os << "background: \n";
+  for (double pb = 102.6; pb < 105.1; pb += .05) {
+    os << "pb " << pb << "   " << background(pb) << "\n";
+  }
+  os << "pmin = " << pmin << " pmax = " << pmax << "\n"; 
+#endif
+
 #ifdef TRACE_PRANGE_OPTIMIZATION
-  std::cout << "Optimal pmin = "   << pmin 
+  os << "Optimal pmin = "   << pmin 
             << "  Optimal pmax = " << pmax << "\n";
 #endif
 #ifdef TRACE_INTEGRATED_STRENGTHS
-  std::cout << "Integrated signal efficiency = " << integratedSignalEfficiency
+  os << "Integrated signal efficiency = " << integratedSignalEfficiency
             << "    Background counts = " << integratedBackground << "\n";
 #endif
   computeSensitivities (integratedSignalEfficiency, integratedBackground,
@@ -324,8 +341,8 @@ void FofM::results_fixed_highCut (int maximumSignalCount,
   double integratedSignalEfficiency = signal.integrate(pmin,pmax);
   double integratedBackground = L * background.integrate(pmin,pmax);
   #ifdef TRACE_INTEGRATED_STRENGTHS
-  std::cout << "Integrated signal efficiency = " << integratedSignalEfficiency
-            << "    Background counts = " << integratedBackground << "\n";
+  os << "Integrated signal efficiency = " << integratedSignalEfficiency
+     << "    Background counts = " << integratedBackground << "\n";
   #endif
   computeSensitivities (integratedSignalEfficiency, integratedBackground,
        discoveryThresholdN,
@@ -376,8 +393,8 @@ void FofM::results_fixed_lowCut (int maximumSignalCount,
   double integratedSignalEfficiency = signal.integrate(pmin,pmax);
   double integratedBackground = L * background.integrate(pmin,pmax);
   #ifdef TRACE_INTEGRATED_STRENGTHS
-  std::cout << "Integrated signal efficiency = " << integratedSignalEfficiency
-            << "    Background counts = " << integratedBackground << "\n";
+  os << "Integrated signal efficiency = " << integratedSignalEfficiency
+     << "    Background counts = " << integratedBackground << "\n";
   #endif
   computeSensitivities (integratedSignalEfficiency, integratedBackground,
        discoveryThresholdN,
@@ -428,7 +445,7 @@ void FofM::results_fixed_cuts  (int maximumSignalCount,
   double integratedSignalEfficiency = signal.integrate(pmin,pmax);
   double integratedBackground = L * background.integrate(pmin,pmax);
   #ifdef TRACE_INTEGRATED_STRENGTHS
-  std::cout << "Integrated signal efficiency = " << integratedSignalEfficiency
+  os << "Integrated signal efficiency = " << integratedSignalEfficiency
             << "    Background counts = " << integratedBackground << "\n";
   #endif
   computeSensitivities (integratedSignalEfficiency, integratedBackground,
@@ -512,6 +529,10 @@ void FofM::fillHypotheticalVectors (int maximumSignalCount,
   // background is probably going to be less than one count, so the only
   // issue is the upper limit we announce if we see 0 events, and that is
   // pretty cleanly the usual 90% CL number.
+  // HOWEVER -- for certain extreme configurations (for example, with
+  // low-statistics on the DIO background with the proton absorber removed)
+  // B might be is fairly large.  In that case, FC should be used.
+  
   upperLimitBR = std::vector<double>(maximumSignalCount+1);
   CLlowerBR    = std::vector<double>(maximumSignalCount+1);
   CLupperBR    = std::vector<double>(maximumSignalCount+1);
@@ -521,12 +542,13 @@ void FofM::fillHypotheticalVectors (int maximumSignalCount,
   for (int i=0;  i < discoveryThresholdN; ++i) {
     if (i > maximumSignalCount) break;
     upperLimitBR[i] = (poissonMeanSolver(i, 1-p90pct)-B)/(eps*L);
+    // TODO - replace this with a FC upper limit, especailly if B is large
     #ifdef TRACE_TABLE_CREATION
-    std::cout << "n = " << i 
-              << "  upperLimitBR:  poissonMeanSolver(" << i << ", " 
-              << 1-p90pct << ") - B";
-    std::cout <<  " = "  << L*eps*upperLimitBR[i] 
-              << " --> " << upperLimitBR[i] << "\n";
+    os << "n = " << i 
+       << "  upperLimitBR:  poissonMeanSolver(" << i << ", " 
+       << 1-p90pct << ") - B";
+    os <<  " = "  << L*eps*upperLimitBR[i] 
+       << " --> " << upperLimitBR[i] << "\n";
     #endif
   }
   // Past n = discoveryThresholdN, we sould state a 90% CL range for 
@@ -536,39 +558,37 @@ void FofM::fillHypotheticalVectors (int maximumSignalCount,
     CLlowerBR[i] = std::max(0.0,
                 (poissonMeanSolver(i, p90pct_twoSided)-B)/(eps*L));
     #ifdef TRACE_TABLE_CREATION
-    std::cout << "n = " << i 
-              << "  CLlowerBR:  poissonMeanSolver(" << i << ", " 
-              << p90pct_twoSided << ") - B";
-    std::cout <<  " = "  << L*eps*CLlowerBR[i] 
-              << " --> " << CLlowerBR[i] << "\n";
+    os << "n = " << i 
+       << "  CLlowerBR:  poissonMeanSolver(" << i << ", " 
+       << p90pct_twoSided << ") - B";
+    os <<  " = "  << L*eps*CLlowerBR[i] 
+       << " --> " << CLlowerBR[i] << "\n";
     #endif
     if ( CLlowerBR[i] == 0 ) {
       CLupperBR[i] = (poissonMeanSolver(i, 1-p90pct)-B)/(eps*L);
       #ifdef TRACE_TABLE_CREATION
-      std::cout << "n = " << i 
-              << "  CLupperBR:  poissonMeanSolver(" << i << ", " 
-              << 1-p90pct << ") - B";
-      std::cout <<  " = "  << L*eps*CLupperBR[i] 
-                << " --> " << CLupperBR[i] << "\n";
+      os << "n = " << i 
+         << "  CLupperBR:  poissonMeanSolver(" << i << ", " 
+         << 1-p90pct << ") - B";
+      os <<  " = "  << L*eps*CLupperBR[i] 
+         << " --> " << CLupperBR[i] << "\n";
       #endif
     } else {
       CLupperBR[i] = (poissonMeanSolver(i, 1-p90pct_twoSided)-B)/(eps*L);
       #ifdef TRACE_TABLE_CREATION
-      std::cout << "n = " << i 
-              << "  CLupperBR:  poissonMeanSolver(" << i << ", " 
-              << 1-p90pct_twoSided << ") - B";
-      std::cout <<  " = "  << L*eps*CLupperBR[i] 
-                << " --> " << CLupperBR[i] << "\n";
+      os << "n = " << i 
+         << "  CLupperBR:  poissonMeanSolver(" << i << ", " 
+         << 1-p90pct_twoSided << ") - B";
+      os <<  " = "  << L*eps*CLupperBR[i] 
+         << " --> " << CLupperBR[i] << "\n";
       #endif
     }
   }
 }  // fillHypotheticalVectors             
 
-std::string FofM::tables (int maximumSignalCount, 
+std::string FofM::tables (int maximumSignalCount, double & lowCut, double & highCut,
              std::ostream & os, FofM::Summary & summary) const
 {
-  double lowCut;
-  double highCut; 
   double epsilon;
   double B;
   double figOfM;
@@ -603,10 +623,9 @@ std::string FofM::tables (int maximumSignalCount,
 } // tables (floating cuts)
 
 std::string FofM::tables_fixed_highCut 
-        (int maximumSignalCount, double highCut, 
+        (int maximumSignalCount, double & lowCut, double highCut, 
              std::ostream & os, FofM::Summary & summary) const
 {
-  double lowCut;
   double epsilon;
   double B;
   double figOfM;
@@ -641,10 +660,9 @@ std::string FofM::tables_fixed_highCut
 } // tables (fixed high cut)
 
 std::string FofM::tables_fixed_lowCut 
-        (int maximumSignalCount, double lowCut, 
+        (int maximumSignalCount, double lowCut, double& highCut,
              std::ostream & os, FofM::Summary & summary) const
 {
-  double highCut;
   double epsilon;
   double B;
   double figOfM;
@@ -797,7 +815,12 @@ std::string FofM::tablesString (int maximumSignalCount,
     } else {
       t << i;
     } 
-    t << ":  " <<  upperLimitBR[i]  * displayScale << "\n";
+    if (upperLimitBR[i] > 0) { // this check will become moot when FC is used 
+                               // to compute upper limit
+      t << ":  " <<  upperLimitBR[i]  * displayScale << "\n";
+    } else {
+      t << "\n";
+    }      
   }
   t << "90% CL (two-side) range for BR (* 10^{16}) "
     << "if above discovery threshold: \n"
@@ -821,26 +844,26 @@ double FofM::discoveryCount ( double B )  {
   
   if ( B > 20 ) return B + 5.0 * std::sqrt(B);
   // The above is the Gaussian approximation for a Poisson distribution with 
-  // "large" mean, which gives sllightly worse p-values than the true
+  // "large" mean, which gives slightly worse p-values than the true
   // Gaussian 5-sigma.  Below 20, we use a fit (below) to the actual needed 
   // count to get the actual correct p-value; this fit is more accurate.
   // There is a bit of discontinuity here which we can fix later.
   // But this is not urgent; the experiment lives in a region where B << 20.
   return 0.759*B + 6.054* std::sqrt(B) + 2.764;
 }
-
+ 
 double FofM::optimize_low_cut  (double fixed_high_cut) const 
 {
   splines::Spline<1> negIntegratedSignal = 
         signal.indefiniteIntegral(fixed_high_cut);
 
 #ifdef BACKGROUND_TRACE
-  std::cout << "\nBackground spline about to be used at high cut of " 
-            << fixed_high_cut << ": \n\n";
+  os << "\nBackground spline about to be used at high cut of " 
+     << fixed_high_cut << ": \n\n";
   for (unsigned int i=0; i< grid.nPoints(); ++i) {
     if (i%1 == 0) {
       double x = grid[i];
-      std::cout << x << "    " << background(x) << "\n";
+      os << x << "    " << background(x) << "\n";
     }
   }
 #endif
@@ -858,9 +881,9 @@ double FofM::optimize_low_cut  (double fixed_high_cut) const
   int nPointsInOptimizingGrid = (aMax - gridMin)/gridSpacing;
   double gridMax = gridMin + nPointsInOptimizingGrid * gridSpacing;
 #ifdef OPTIMIZATION_OUTPUT
-  std::cout <<  "aMax = " << aMax
-            <<  "  nPointsInOptimizingGrid = " << nPointsInOptimizingGrid
-            <<  "  gridMax = " << gridMax << "\n";
+  os <<  "aMax = " << aMax
+     <<  "  nPointsInOptimizingGrid = " << nPointsInOptimizingGrid
+     <<  "  gridMax = " << gridMax << "\n";
 #endif
   
   splines::Grid<1> optimizingGrid( gridMin, gridMax, nPointsInOptimizingGrid );
@@ -868,41 +891,41 @@ double FofM::optimize_low_cut  (double fixed_high_cut) const
                                 L, mfunc);
   // mfunc is either SmoothedPunziMeritFunction or FCsensitivityMeritFunction
 #ifdef ANALYSIS_OUTPUT
-  std::cout << "\nnegIntegratedSignal at high cut of " 
-            << fixed_high_cut << ": \n\n";
+  os << "\nnegIntegratedSignal at high cut of " 
+     << fixed_high_cut << ": \n\n";
   for (unsigned int i=0; i< optimizingGrid.nPoints(); ++i) {
     if (i%5 == 0) {
       double x = optimizingGrid[i];
-      std::cout << x << "    " << negIntegratedSignal(x) << "\n";
+      os << x << "    " << negIntegratedSignal(x) << "\n";
     }
   }
  
-  std::cout << "\nnegIntegratedBackground at high cut of " 
-            << fixed_high_cut << ": \n\n";
+  os << "\nnegIntegratedBackground at high cut of " 
+     << fixed_high_cut << ": \n\n";
   for (unsigned int i=0; i< optimizingGrid.nPoints(); ++i) {
     if (i%5 == 0) {
       double x = optimizingGrid[i];
-      std::cout << x << "    " << negIntegratedBackground(x) << "\n";
+      os << x << "    " << negIntegratedBackground(x) << "\n";
     }
   }
  
-  std::cout << "\nMerit function used in optimize_low_cut: \n\n";
+  os << "\nMerit function used in optimize_low_cut: \n\n";
   for (unsigned int i=0; i< optimizingGrid.nPoints(); ++i) {
     if (i%5 == 0) {
       double x = optimizingGrid[i];
-      std::cout << x << "    " << f(x) << "\n";
+      os << x << "    " << f(x) << "\n";
     }
   }
 #endif
   
   splines::Spline<1> figureOfMeritSpline ( f, optimizingGrid );
 #ifdef ANALYSIS_OUTPUT
-  std::cout << "\nfigureOfMeritSpline for fixed high cut of "
-            <<  fixed_high_cut << ": \n\n";
+  os << "\nfigureOfMeritSpline for fixed high cut of "
+     <<  fixed_high_cut << ": \n\n";
   for (unsigned int i=0; i< optimizingGrid.nPoints(); ++i) {
     if (i%5 == 0) {
       double x = optimizingGrid[i];
-      std::cout << x << "    " << figureOfMeritSpline(x) << "\n";
+      os << x << "    " << figureOfMeritSpline(x) << "\n";
     }
   }
 #endif
@@ -932,50 +955,50 @@ double FofM::optimize_high_cut (double fixed_low_cut) const
   int nPointsInOptimizingGrid = (gridMax - bMin)/gridSpacing;
   double gridMin = gridMax - nPointsInOptimizingGrid * gridSpacing;
 #ifdef OPTIMIZATION_OUTPUT
-  std::cout <<  "bMin = " << bMin
-            <<  "  nPointsInOptimizingGrid = " << nPointsInOptimizingGrid
-            <<  "  gridMin = " << gridMin << "\n";
+  os <<  "bMin = " << bMin
+     <<  "  nPointsInOptimizingGrid = " << nPointsInOptimizingGrid
+     <<  "  gridMin = " << gridMin << "\n";
 #endif
   splines::Grid<1> optimizingGrid( gridMin, gridMax, nPointsInOptimizingGrid );
   FofMwithUpperLimitVarying f(integratedSignal, integratedBackground, 
                                 L, mfunc);
 
 #ifdef ANALYSIS_OUTPUT
-  std::cout << "\nintegratedSignal at low cut of " 
-            << fixed_low_cut << ": \n\n";
+  os << "\nintegratedSignal at low cut of " 
+     << fixed_low_cut << ": \n\n";
   for (unsigned int i=0; i< optimizingGrid.nPoints(); ++i) {
     if (i%5 == 0) {
       double x = optimizingGrid[i];
-      std::cout << x << "    " << integratedSignal(x) << "\n";
+      os << x << "    " << integratedSignal(x) << "\n";
     }
   }
  
-   std::cout << "\nintegratedBackground at low cut of " 
-            << fixed_low_cut << ": \n\n";
+   os << "\nintegratedBackground at low cut of " 
+      << fixed_low_cut << ": \n\n";
  for (unsigned int i=0; i< optimizingGrid.nPoints(); ++i) {
     if (i%5 == 0) {
       double x = optimizingGrid[i];
-      std::cout << x << "    " << integratedBackground(x) << "\n";
+      os << x << "    " << integratedBackground(x) << "\n";
     }
   }
 
-  std::cout << "\nMerit function used in optimize_high_cut: \n\n";
+  os << "\nMerit function used in optimize_high_cut: \n\n";
   for (unsigned int i=0; i< optimizingGrid.nPoints(); ++i) {
     if (i%5 == 0) {
       double x = optimizingGrid[i];
-      std::cout << x << "    " << f(x) << "\n";
+      os << x << "    " << f(x) << "\n";
     }
   }
 #endif
   
   splines::Spline<1> figureOfMeritSpline ( f, optimizingGrid );
 #ifdef ANALYSIS_OUTPUT
-  std::cout << "\nfigureOfMeritSpline for fixed high cut of "
-            <<  fixed_high_cut << ": \n\n";
+  os << "\nfigureOfMeritSpline for fixed high cut of "
+     <<  fixed_high_cut << ": \n\n";
   for (unsigned int i=0; i< optimizingGrid.nPoints(); ++i) {
     if (i%5 == 0) {
       double x = optimizingGrid[i];
-      std::cout << x << "    " << figureOfMeritSpline(x) << "\n";
+      os << x << "    " << figureOfMeritSpline(x) << "\n";
     }
   }
 #endif
@@ -1016,15 +1039,15 @@ double FofMwithUpperLimitVarying::operator()(double a) const
 
 void FofM::displayBackground(double pmin, double pmax, int n)
 {
-  std::cout << "Background in FofM:\n\n";
+  os << "Background in FofM:\n\n";
   double step = (pmax-pmin)/n;
   double roughIntegral = 0.0;
   for (int i=0; i < n; ++i) {
     double bk = background(pmin + i*step);
-    std::cout << "p = " << pmin + i*step << "  background = " << bk << "\n";
+    os << "p = " << pmin + i*step << "  background = " << bk << "\n";
     roughIntegral += bk*step;
   } 
-  std::cout << "Rough background integral is " <<  roughIntegral << "\n";
+  os << "Rough background integral is " <<  roughIntegral << "\n";
 }
 
 // --------------------
@@ -1064,6 +1087,19 @@ CzarneckiDIOspectrumFunction::CzarneckiDIOspectrumFunction (double strength)
   
   E_mu = 105.194;
   M_Al = 25133;
+  E_mue = E_mu - .5 * E_mu * E_mu / M_Al;
+  
+  // coefficients used in integral of spectrum to endpoint
+  // Note that terms of order 1/kappa^2, and 1-th order terms, 
+  // drop out, because the contribute corrections that are down by 
+  // at least 5 orders of magnitude.
+  double kappa = 2*M_Al + 4*E_mu; // expansion parameter used in integral 
+  double neg_dp_ds = std::sqrt(1.0/(1.0+2*E_mu/M_Al)); 
+  beta_6  = neg_dp_ds * (alpha_5                    ) / 6; 
+  beta_7  = neg_dp_ds * (alpha_6 - 5 * alpha_5/kappa) / 7; 
+  beta_8  = neg_dp_ds * (alpha_7 - 6 * alpha_6/kappa) / 8; 
+  beta_9  = neg_dp_ds * (alpha_8 - 7 * alpha_7/kappa) / 9; 
+  beta_10 = neg_dp_ds * (        - 8 * alpha_8/kappa) /10; 
 }
 
 double CzarneckiDIOspectrumFunction::operator() (double p) const
@@ -1081,16 +1117,35 @@ double CzarneckiDIOspectrumFunction::operator() (double p) const
 
 double CzarneckiDIOspectrumFunction::integrated(double p) const
 {
-  double delta = E_mu - p - p*p/(2.0*M_Al); 
-  if (delta < 0) return 0;
+  // The integral is expressed as a power series in s, rather than in 
+  // delta, because s is linearly related to the integration variable p.
+  double s = std::sqrt(1.0+2*E_mu/M_Al)*(E_mue - p);
+  if (s < 0) return 0;
+  double s3  = s*s*s;
+  double s6  = s3*s3;
+  double s7  = s6*s;
+  double s8  = s7*s;
+  double s9  = s8*s;
+  double s10 = s9*s;
+  double czarnecki_equation_25_integrated = 
+                beta_6*s6 + beta_7*s7 + beta_8*s8 + beta_9*s9 + beta_10*s10; 
+#ifdef INFERIOR_APPROXIMATION
+// The following integrates over delta instead of p -- it is a decent (5%)
+// and simpler approximation but it is not correct.
+  os << "CzarneckiDIOspectrumFunction::integrated(" << p << ")\n";
+  double delta = E_mu - p - p*p/(2*M_Al);
+  os <<  "delta = " << delta << "\n";
   double delta5 = delta*delta*delta*delta*delta;
   double delta6 = delta*delta5;
   double delta7 = delta*delta6;
   double delta8 = delta*delta7;
   double delta9 = delta*delta8;
-  double czarnecki_equation_25_integrated =
+  double czarnecki_equation_25_integrated_2 =
          alpha_5*delta6/6 + alpha_6*delta7/7 
        + alpha_7*delta8/8 + alpha_8*delta9/9;
+  os << "czarnecki_equation_25_integrated (inferior approx) = " 
+            << czarnecki_equation_25_integrated_2 << "\n";
+#endif // INFERIOR_APPROXIMATION
   return czarnecki_equation_25_integrated;
 }
 

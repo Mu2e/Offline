@@ -1,0 +1,12 @@
+        Atlas of Example .fcl Files to Drive FMtool
+        
+Fairly minimal files that analyze various available data sets:
+--------------------------------------------------------------
+
+
+example_bernstein_2.fcl         April fitting of .5M CE's, 3M DIO's, 2M RPC's
+example_hodges_49foil.fcl       August fitting of .1M CE's, .1M DIO's, 2M RPC's
+                                without proton absorber
+
+Illustrative examples of how to use various FMtool features:
+------------------------------------------------------------

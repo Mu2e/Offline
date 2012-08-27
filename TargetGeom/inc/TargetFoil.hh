@@ -5,9 +5,9 @@
 // Class to represent one target foil.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: TargetFoil.hh,v 1.6 2011/05/20 15:13:24 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 15:13:24 $
+// $Id: TargetFoil.hh,v 1.7 2012/08/27 22:19:43 mf Exp $
+// $Author: mf $
+// $Date: 2012/08/27 22:19:43 $
 //
 // Original author Rob Kutschke
 //
@@ -69,7 +69,8 @@ namespace mu2e {
 
     // Thickness in z.
     double _t;
-
+                // Is this the thickness or half thickness??
+                
     std::string _material;
 
   };

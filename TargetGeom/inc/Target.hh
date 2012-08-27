@@ -5,15 +5,18 @@
 // Class to represent the system of target foils.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: Target.hh,v 1.8 2012/02/24 20:55:48 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/24 20:55:48 $
+// $Id: Target.hh,v 1.9 2012/08/27 22:19:43 mf Exp $
+// $Author: mf $
+// $Date: 2012/08/27 22:19:43 $
 //
 // Original author Rob Kutschke
 //
 // Coordinates are given in the detector coordinate
 // system in cm.
 //
+
+        // Do these really mean to be in cm not mm?
+        
 
 // Includes from C++
 #include <vector>

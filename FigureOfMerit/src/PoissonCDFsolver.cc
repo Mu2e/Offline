@@ -12,6 +12,7 @@
 //#define TRACE_MUGESSES
 //#define TRACE_CCDF
 //#define TRACE_PMS
+//#define TRACE_INV_CDF
 
 namespace mu2e {
 
@@ -19,19 +20,46 @@ namespace mu2e {
 // This is optimized for pValues close to 1.
 int poissonInverseCDF (double mu, double pValue) {
   assert (mu > 0 && pValue > 0 && pValue < 1);
+
+  // Math comment - it would be more accurate to determine sums by starting
+  // from the smallest term -- which will be high k -- and working downward.
+  // However, double precision is adequate for p5sigma (with about 9 digits to 
+  // spare) so to avoid algoritm instability for non-small mu, we will keep
+  // our calculations simple instead.
+
+  double term = std::exp(-mu);
+  if (term > pValue) return 0;
+  double sum  = term;
+  int i = 1;
+  for (; i < 200; ++i) {
+    term *= mu/i;
+    sum += term;
+    if ( sum > pValue ) break;
+  }
+  return i;
+
+#ifdef REMOVED_OLD_INCORRECT_ALGORITHM
+#ifdef TRACE_INV_CDF
+  std::cout << "poissonInverseCDF: mu = " << mu << " p = " << pValue 
+            << " 1-p = " << 1-pValue << "\n";
+#endif
   // guess an m such that the m-th term is about 1-p
   if (pValue < std::exp(-mu)) return 0;
   double lneps = std::log(1-pValue);
   double lnmu  = std::log(mu); 
-  //std::cout << "lneps = " << lneps << "  lnmu = " << lnmu << "\n";
+#ifdef TRACE_INV_CDF
+  std::cout << "lneps = " << lneps << "  lnmu = " << lnmu << "\n";
+#endif
   double m0 = lneps/(lnmu-1);
   double m1 = lneps/(1-std::log(m0)+lnmu);
   double m2 = lneps/(1-std::log(m1)+lnmu);
   int m = static_cast<int>(m2);
-  //std::cout << "m0 = " << m0 
-  //          << "  m1 = " << m1
-  //          << "  m2 = " << m2
-  //          << "  m = " << m << "\n";
+#ifdef TRACE_INV_CDF
+   std::cout << "m0 = " << m0 
+            << "  m1 = " << m1
+            << "  m2 = " << m2
+            << "  m = " << m << "\n";
+#endif
   double mthCDFterm = 1.0;
   for (int k=1 ; k < m+1; ++k) {
     mthCDFterm *= mu/k;
@@ -57,11 +85,17 @@ int poissonInverseCDF (double mu, double pValue) {
   for (r = endk; r>0; --r) {
     seriesTerm *= r/mu;
     series += seriesTerm;
-  //  std::cout << "r = " << r << "  seriesTerm = " << seriesTerm 
-  //            << " series = " << series << "\n"; 
+#ifdef TRACE_INV_CDF
+     std::cout << "r = " << r << "  seriesTerm = " << seriesTerm 
+               << " series = " << series << "\n"; 
+#endif
     if (series > target) break;
   }
+#ifdef TRACE_INV_CDF
+     std::cout << "result = " << r-1 << "\n"; 
+#endif  
   return r-1;
+#endif // REMOVED_OLD_INCORRECT_ALGORITHM
 }
 
 // determine, for a given p-value and n, the mu such that CDF at that n

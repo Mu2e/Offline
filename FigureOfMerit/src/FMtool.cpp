@@ -1,5 +1,5 @@
 // FMtool.cpp
-
+ 
 #include "FigureOfMerit/inc/FMtool.h"
 
 // C++ includes.
@@ -9,6 +9,7 @@
 #include <cmath>
 #include <vector>
 #include <cstdlib>
+#include <cassert>
 
 // art and art externals includes
 #include "fhiclcpp/ParameterSet.h"
@@ -53,26 +54,26 @@ void FMtool::analyze()
   
   
   setFilterLevels();
-        if (OUTPUT_detailedTrace) std::cout << "### setFilterLevels returned \n";
+        if (OUTPUT_detailedTrace) os << "### setFilterLevels returned \n";
   setCanonicals();
-        if (OUTPUT_detailedTrace)  std::cout << "### setCanonicals returned \n";
+        if (OUTPUT_detailedTrace)  os << "### setCanonicals returned \n";
   double nCE = obtainCEdata();
-        if (OUTPUT_detailedTrace)  std::cout << "### obtainCEdata returned \n";
+        if (OUTPUT_detailedTrace)  os << "### obtainCEdata returned \n";
   normalizeSignalEfficiency(nCE);  
-        if (OUTPUT_detailedTrace)  std::cout << "### normalizeSignalEfficiency returned \n";
+        if (OUTPUT_detailedTrace)  os << "### normalizeSignalEfficiency returned \n";
   bool use_diowt;
   double genDIO = obtainDIOdata(use_diowt);
-        if (OUTPUT_detailedTrace)  std::cout << "### obtainDIOdata returned \n";
+        if (OUTPUT_detailedTrace)  os << "### obtainDIOdata returned \n";
   normalizeDIObackground(genDIO,use_diowt);  
-        if (OUTPUT_detailedTrace)  std::cout << "### normalizeDIObackground returned \n";
+        if (OUTPUT_detailedTrace)  os << "### normalizeDIObackground returned \n";
   double genRPC = obtainRPCdata();
-        if (OUTPUT_detailedTrace)  std::cout << "### obtainRPCdata returned \n";
+        if (OUTPUT_detailedTrace)  os << "### obtainRPCdata returned \n";
   normalizeRPCbackground(genRPC);  
-        if (OUTPUT_detailedTrace)  std::cout << "### normalizeRPCbackground returned \n";
+        if (OUTPUT_detailedTrace)  os << "### normalizeRPCbackground returned \n";
   applyFofM();
 }
 
-void FMtool::setFilterLevels() 
+void FMtool::setFilterLevels()
 {
   // TODO - get this data from a file or from the user; allow choices.
 
@@ -93,14 +94,17 @@ void FMtool::setCanonicals()
   // TODO - allow this to be set from file or whatever.
 
   // Canonical range
-  // canonicalRangeLo = 103.51;
-  canonicalRangeLo = 103.3;
-  canonicalRangeHi = 104.70;
-
-  // binning info
-  lowestBin = 102.5;  
-  topOfLastBin = 106.0;  // top of last bin
-  nBins = 350;
+  canonicalRangeLo = pset.get<double>("canonicalRangeLo",103.51);
+  canonicalRangeHi = pset.get<double>("canonicalRangeHi",104.70);
+  
+  ParameterSet binningPset = pset.get<ParameterSet>("binning",ParameterSet());
+  double lowestBinDefault = 102.5;  
+  double topOfLastBinDefault = 106.0;  
+  int nBinsDefault = 350;
+  lowestBin    = binningPset.get<double>("lowestBin",   lowestBinDefault);
+  topOfLastBin = binningPset.get<double>("topOfLastBin",topOfLastBinDefault);
+  nBins        = binningPset.get<int>   ("nBins",       nBinsDefault);
+  
   binSize = (topOfLastBin - lowestBin)/nBins;
     
   // Experiment quantities
@@ -108,7 +112,7 @@ void FMtool::setCanonicals()
     // database or conditions service. 
   protonsOnTarget = 3.6e20;  
   cadence = 1694;  // nsec after start of proton pulse
-  stoppedMuonsPerPOT = 0.0021;  // I have seen .00215; new  number is .0016
+  stoppedMuonsPerPOT = 0.0016;  // I have seen .00215; new  number is .0016
   capturedMuonsPerStoppedMuon = 0.609; // DocDB 48 - I have seen .59
   RPCperStoppedPion = 0.021;     // DocDB 1087
   stoppedPionsPerPOT = 1.53e-6;
@@ -278,12 +282,9 @@ double FMtool::obtainDIOdata(bool & use_diowt)
          << "\n";
     if ( (DIOflatGenerationWindowLo == 0) ||
          (DIOflatGenerationWindowHi == 0) ) {
-      os << "Since dracksWeighted = true, "
-         << "DIOflatGenerationWindowLo and Hi are needed \n";
-      DIOflatGenerationWindowLo = 
-        DIOpset.get<double>("DIOflatGenerationWindowLo", 0);
-      DIOflatGenerationWindowHi = 
-        DIOpset.get<double>("DIOflatGenerationWindowHi", 0);
+      os << "Since dioTracksWeighted = true, "
+         << "DIOflatGenerationWindowLo and Hi are needed \n"
+         << "FMtool will exit because it cannot normalize the DIO background\n";
       std::exit(1);
     }         
     if ( DIOflatGenerationWindowLo >= DIOflatGenerationWindowHi ) {
@@ -353,6 +354,10 @@ double FMtool::obtainDIOdata(bool & use_diowt)
   } else {
     fractionOfDIOsRepresented = 
       DIOpset.get<double>("fractionOfDIOsRepresented",-99);
+      if ( fractionOfDIOsRepresented > 0) {
+        os << "fractionOfDIOsRepresented is set by parameter to " 
+           << fractionOfDIOsRepresented << "\n";
+      }
     if (fractionOfDIOsRepresented < 0) {
       double DIOgenerationLowerLimit = 
       DIOpset.get<double>("DIOgenerationLowerLimit");
@@ -361,9 +366,34 @@ double FMtool::obtainDIOdata(bool & use_diowt)
       os << "DIO Generation Lower Limit = " << DIOgenerationLowerLimit
          << "  fraction of DIOs represented = " 
          << fractionOfDIOsRepresented << "\n";
+      os << "Fraction at " << canonicalRangeLo << " would be " 
+          << cz.integrated(canonicalRangeLo) << " (" 
+          << fractionOfDIOsRepresented/cz.integrated(canonicalRangeLo)
+          << ")\n";
     }
   }
+  minimumMeaningfulDIOtail = DIOpset.get<int>("minimumMeaningfulDIOtail",10); 
 
+  bool alsoReadWithNoT0cut = DIOpset.get<bool>("alsoReadWithNoT0cut",false);
+  if (alsoReadWithNoT0cut) {
+    os << "DIO's ignoring t0 cuts:\n: "; 
+    tracksExtracted = 0;
+    tracksBinned = 0;
+    size_t nTcuts = tCuts.size();
+    DIObackground.clear();
+    DIObackground.resize(nTcuts);
+    for (size_t tCutNumber = 0; tCutNumber < nTcuts; ++tCutNumber) {
+      DIObackground[tCutNumber].clear();
+      DIObackground[tCutNumber].resize(nBins);
+    }
+    extractFitmom ( DIOfileList, DIObackground, true, use_diowt, false );  
+    os << "Total DIO tracks extracted passing cuts (except t0): " 
+       << tracksExtracted << "\nof which " << tracksBinned << " were binned \n";
+    os << "Now re-reading DIO's not ignoring t0 cuts:\n: "; 
+  }
+  
+  tracksExtracted = 0;
+  tracksBinned = 0;
   size_t nTcuts = tCuts.size();
   DIObackground.clear();
   DIObackground.resize(nTcuts);
@@ -371,8 +401,10 @@ double FMtool::obtainDIOdata(bool & use_diowt)
     DIObackground[tCutNumber].clear();
     DIObackground[tCutNumber].resize(nBins);
   }
-  extractFitmom ( DIOfileList, DIObackground, use_diowt );
-  
+  extractFitmom ( DIOfileList, DIObackground, true, use_diowt, true );  
+  os << "Total DIO tracks extracted passing cuts: " 
+     << tracksExtracted << "\nof which " << tracksBinned << " were binned \n";
+   
   if (OUTPUT_dataProperties) {
     os << "DIO's based on " << numberOfGeneratedDIOs 
        << "  generated DIO electrons \n"; 
@@ -381,6 +413,7 @@ double FMtool::obtainDIOdata(bool & use_diowt)
          << DIOliveGateFraction << "\n";
     }
   }
+
   adHocDIOrescaler = DIOpset.get<double>("adHocDIOrescaler",1.0);
 
   return numberOfGeneratedDIOs;
@@ -421,6 +454,7 @@ double FMtool::obtainRPCdata()
 
   extractFitmom    ( RPCfileList, 
                      RPCbackground,
+                     false, //  dio -- this is not for dio
                      false, //  use_diowt
                      false  //  apply_timeCuts
                    );
@@ -442,6 +476,8 @@ double FMtool::obtainRPCdata()
 void FMtool::extractFitmom 
   ( TTree * tracks, 
     std::vector< std::vector<double> > & counts, 
+    std::vector<NthHighest> & highPs,
+    bool dio,
     bool use_diowt, 
     bool apply_timeCuts )
 {
@@ -484,26 +520,26 @@ void FMtool::extractFitmom
     int bytesRead = tracks->GetEntry(i);
     if (bytesRead == 0) break;
     ++ntracks;
-    if (OUTPUT_detailedTrace) {
+    if (OUTPUT_detailedCutTrace) {
       if (fitstatus == 1) {
         ++ nfitstatus;
-      }
-      if (nactive   >= minimum_nactive) {
-        ++nnactive;
-      }
-      if (t0err     <= maximum_t0err) {
-        ++nt0err;
-      }
-      if (fitmomerr <= maximum_fitmomerr) {
-        ++nfitmomerr;
-      }
-      if (fitcon    >= minimum_fitcon)  {
-        ++nfitcon;
-      }
-      if (fitmom    < 120.0) {
-        ++nfitmom;
-      }
-    }
+        if (nactive   >= minimum_nactive) {
+          ++nnactive;
+          if (fitcon    >= minimum_fitcon)  {
+            ++nfitcon;
+            if (fitmomerr <= maximum_fitmomerr) {
+              ++nfitmomerr;
+              if (t0err     <= maximum_t0err) {
+                ++nt0err;
+                if (fitmom    < 120.0) {
+                  ++nfitmom;
+                }
+              }
+            }
+          }
+        }
+     }
+     }
     if  (    (fitstatus == 1)     // track quality cuts 
           && (nactive   >= minimum_nactive)
           && (t0err     <= maximum_t0err)
@@ -514,6 +550,7 @@ void FMtool::extractFitmom
     {
       for (size_t t = 0; t < nt; ++t) {
         if ( (!apply_timeCuts) || (t0 >= tCuts[t]) ) {   // found a good track!
+          ++tracksExtracted;
           double p = fitmom;
           if (p >= lowestBin && p < topOfLastBin) { // p in range to be binned
             unsigned int binNumber = (p-lowestBin)/binSize;
@@ -528,6 +565,8 @@ void FMtool::extractFitmom
               counts[t][binNumber] += 1.0; // everything has equal weight
             }
             ++nBinnedTracks[t];
+            ++tracksBinned;
+            if (dio) highPs[t].add(p);
           } // end of *if* on p in range to be binned
         } // end of *if* on found a good track
       } // end of *for* on t going up to nt 
@@ -547,10 +586,22 @@ void FMtool::extractFitmom
            << "\n";
       }
     }
-    os << "nfitstatus = " << nfitstatus << " nnactive = " << nnactive
-       << " (" << minimum_nactive << ")"
-       << "\nnt0err = " << nt0err << " nfitmomerr = " << nfitmomerr 
-       << "\nnfitcon = " << nfitcon << " nfitmom = " << nfitmom << "\n"; 
+    if (OUTPUT_detailedCutTrace){
+      os << "Cuts sequence: " << treeEntries << " tracks\n"
+         << "passing fitstatus cut = " << nfitstatus << "  " 
+         << (double)nfitstatus/treeEntries << "\n"
+         << "passing nactive cut   = " << nnactive << "  " 
+         << (double)nnactive/nfitstatus << "\n"
+         << "passing fitcon cut    = " << nfitcon << "  " 
+         << (double)nfitcon/nnactive << "\n"
+         << "passing fitmomerr cut = " << nfitmomerr << "  " 
+         << (double)nfitmomerr/nfitcon << "\n"
+         << "passing t0err cut     = " << nt0err << "  " 
+         << (double)nt0err/nfitmomerr << "\n"
+         << "passing fitmom sanity = " << nfitmom << "  " 
+         << (double)nfitmom/nt0err 
+         << " ==> " <<  (double)nfitmom/treeEntries << "\n";
+    }
   }
               
 } // extractFitmom
@@ -558,6 +609,7 @@ void FMtool::extractFitmom
 void FMtool::extractFitmom 
   ( std::vector<std::string> const & listOfFileNames
   , std::vector< std::vector<double> > & counts
+  , bool dio
   , bool use_diowt
   , bool apply_timeCuts 
   )
@@ -566,6 +618,14 @@ void FMtool::extractFitmom
   if (OUTPUT_fileNames) {
     os << "extracting fitmom from a chain of files \n";
   }
+  std::vector<NthHighest> highPs;
+  size_t nt = tCuts.size();
+  if (dio) {
+    for (size_t i = 0; i < nt; ++i) {
+      NthHighest nl(minimumMeaningfulDIOtail, topOfLastBin);
+      highPs.push_back(nl);
+    }
+  }
   for (unsigned int i=0; i<listOfFileNames.size(); ++i) {
     if (OUTPUT_fileNames) {
       os << "["  << i << "] : "
@@ -573,9 +633,22 @@ void FMtool::extractFitmom
     }
     TTreeAccessor ta = accessTTree ( listOfFileNames[i] );
     extractFitmom 
-      (  ta.tracks,  counts, use_diowt, apply_timeCuts );
+      (  ta.tracks,  counts, highPs, dio, use_diowt, apply_timeCuts );
     delete ta.tracks;   ta.tracks = 0;
     delete ta.tfp;      ta.tfp = 0;
+  }
+  if (dio) {
+    lowMomentumCutCeiling.clear();
+    lowMomentumCutCeiling.resize(nt);
+    for ( size_t t = 0; t < nt; ++t ) {
+      lowMomentumCutCeiling[t] = highPs[t].value();
+      if (OUTPUT_fileEntriesStatistics) {
+        os << minimumMeaningfulDIOtail 
+           << "-th highest momentum of binned good tracks with t0 >= "
+           << tCuts[t] << " is " 
+           << lowMomentumCutCeiling[t] << "\n";
+      }
+    }
   }
 } 
 
@@ -709,6 +782,23 @@ void FMtool::normalizeDIObackground(double numberOfGeneratedDIOs, bool use_diowt
      os << "\n** For this trial, DIO normalization is scaled to "
         << adHocDIOrescaler << " times its actual value **\n\n";
      DIObackgroundCountNormalization *= adHocDIOrescaler;
+  }
+
+  if (!use_diowt) {
+    os << "DIOgenerationWeighting = " << DIOgenerationWeighting << "\n";
+    os << "stoppedMuonsPerPOT     = " << stoppedMuonsPerPOT << "\n";
+    os << "DIOsPerStoppedMuon     = " << DIOsPerStoppedMuon << "\n";
+    os << "liveGateFraction       = " << liveGateFraction << "\n";
+    os << "G*s*d*F = " << DIOgenerationWeighting*stoppedMuonsPerPOT*
+                          DIOsPerStoppedMuon*liveGateFraction << "\n";
+    os << "Divided by numberOfGeneratedDIOs (" << numberOfGeneratedDIOs
+       << ") = " <<   DIOgenerationWeighting*stoppedMuonsPerPOT*
+                          DIOsPerStoppedMuon*liveGateFraction 
+                          / numberOfGeneratedDIOs << "\n"; 
+    os << "DIObackgroundCountNormalization = " 
+       << DIObackgroundCountNormalization << "\n";                   
+    os << "Times Luminosity " << protonsOnTarget << " = " 
+        << DIObackgroundCountNormalization * protonsOnTarget << "\n";             
   }
 
   DIObackgroundNormalization = DIObackgroundCountNormalization/binSize;
@@ -860,6 +950,53 @@ void FMtool::normalizeAbackground(
 
 } // normalizeAbackground
 
+void FMtool::NthHighest::add(double p) 
+{
+  // Invariants:  vals is of size n; vals contains only supplied 
+  // values of p and values top; for all m<k vals[m] <= vals[k];
+  // m values have been supplied thus far.  Thus vals[0] is always
+  // either the n-th highest or the highest if fewer than m were supplied.
+  if (n==0) return;
+  assert (p <= top);
+  if (m==0) { 
+    vals[0] = p;
+  } else if (m < n) {
+    double q = p;
+    for (int i = 0; i<m; ++i) {
+      if (q < vals[i]) {
+        double t = vals[i];
+        vals[i] = q;
+        q = t;
+      }
+    } 
+    vals[m] = q; 
+  } else {
+    if (p <= vals[0]) {
+      ++m;
+      return;
+    }
+    vals[0] = p;
+    for (int i = 1; i<n; ++i) {
+      if ( p > vals[i]) {
+        vals[i-1] = vals[i];
+        vals[i]   = p;
+      }  else {
+        break;
+      }
+    }
+  }
+  ++m;    
+#ifdef DIAGNOSTIC_FOR_NTHHIGHEST
+  if ( m < 40 && (p <= vals[0]  || m <= n) ) {
+    std::cout << "~~~~~ p: " << p << "\n";
+    for (int j = 0; j < n; ++j) {
+      std::cout << "~~~~~ " << vals[j] << "\n";
+    }
+    std::cout << "\n\n";
+  }
+#endif
+}
+
 void FMtool::applyFofM() const
 {
   //
@@ -894,7 +1031,7 @@ void FMtool::applyFofM() const
   bool optimize_pcut_high = pCutpset.get<bool>("optimize_pcut_high",true);
   highCut = optimize_pcut_high ? 0 : pCutpset.get<double>("fixed_pcut_high");
   
-  // Obsolete, but here so that loder fcl files will still work the same way: 
+  // Obsolete, but here so that older fcl files will still work the same way: 
   bool useSmoothedPunziFMtoOptimize = pset.get<bool>
                         ("useSmoothedPunziFMtoOptimize", false);
   MeritFunctionChoice mfc = useSmoothedPunziFMtoOptimize ? 
@@ -938,11 +1075,22 @@ void FMtool::applyFofM() const
        << "  " << summaries[tCutNumber].smoothedPunziSensitivity;
     int pr = os.precision(5); 
     os << "  "  <<  summaries[tCutNumber].pCutLo
-       << "  "  <<  summaries[tCutNumber].pCutHi << "\n";
+       << "  "  <<  summaries[tCutNumber].pCutHi << "\n\n";
     os.precision(pr);
   }
 
-// Repeat the best one if there were more than 2 t cuts explored:
+// Repeat the best one if there were more than 2 t cuts explored
+// or if we have not been outputting tables:
+
+#ifdef REMOVED_DIAGNOSTICS
+  os << "tCuts.size() = " << tCuts.size() << " and OUTPUT_allTables = "
+     << OUTPUT_allTables << "\n";
+  summaries[best_tCutNumber] = 
+        applyFofM( best_tCutNumber, lowestPoint, endingPoint, table,
+                        mfc, lowCut, highCut );
+        os << table << "\n ***** \n";
+#endif
+          
   if ( (tCuts.size() > 2) || (!OUTPUT_allTables) ) {
     summaries[best_tCutNumber] = 
         applyFofM( best_tCutNumber, lowestPoint, endingPoint, table, 
@@ -978,19 +1126,23 @@ FMtool::applyFofM( size_t tCutNumber,
   FofM figureOfMeritCalculator ( CE_spectrum, 
                                  DIO_spectrum, 
                                  protonsOnTarget,
-                                 mfc );  
+                                 mfc, os );  
 
   if (OUTPUT_backgroundSplines) { 
-    figureOfMeritCalculator.displayBackground(lowestBin, topOfLastBin, 100);
+    figureOfMeritCalculator.displayBackground(lowestBin, topOfLastBin, nBins);
     splines::Spline<1> sbkg = figureOfMeritCalculator.getBackground();
     splines::Grid<1> sgrid = figureOfMeritCalculator.getGrid();
-    os << " L * DIO Background (normalized) vs L * Background \n";
+    os << " L * DIO Background (normalized) vs L * Background (spline)\n";
+    os << " The normalized numbers are counts in bin, per experiment\n";
     double roughInt = 0.0;
     double gridstep = sgrid[1] - sgrid[0];
+//    double DIObackgroundCountNormalization = 
+//      DIObackgroundNormalization * gridstep;
     for (unsigned int i = 0; i < sgrid.nPoints(); ++i) {
       double p =  sgrid[i];
       os << i << ": p = " << p  << "  " 
-         << DIObackground[tCutNumber][i] / DIObackgroundNormalization << "  "
+         << DIObackground[tCutNumber][i] / DIObackgroundNormalization 
+         << "  "
          << protonsOnTarget * DIObackground[tCutNumber][i] << "  "
          << protonsOnTarget * sbkg(p) << "\n";
       if ( (p >= canonicalRangeLo) && (p <= canonicalRangeHi) )  {
@@ -1055,26 +1207,88 @@ FMtool::applyFofM( size_t tCutNumber,
   FofM::Summary summary;
   std::string t; 
   if ((lowCut == 0) && (highCut == 0)) {    
-    t = figureOfMeritCalculator.tables(maximumSignalCount, os, summary);
+    t = figureOfMeritCalculator.tables
+                        (maximumSignalCount, lowCut, highCut, os, summary);
+    if (lowCut > lowMomentumCutCeiling[tCutNumber]) {
+      DIOstatisticsWarning(lowCut,tCutNumber);
+      lowCut = lowMomentumCutCeiling[tCutNumber];
+      t = figureOfMeritCalculator.tables_fixed_lowCut 
+                        (maximumSignalCount, lowCut, highCut, os, summary);
+    }
   } else if (lowCut == 0) { 
     t = figureOfMeritCalculator.tables_fixed_highCut 
-                              (maximumSignalCount, highCut, os, summary);
+                        (maximumSignalCount, lowCut, highCut, os, summary);
+    if (lowCut > lowMomentumCutCeiling[tCutNumber]) {
+      DIOstatisticsWarning(lowCut,tCutNumber);
+      lowCut = lowMomentumCutCeiling[tCutNumber];
+      t = figureOfMeritCalculator.tables_fixed_cuts 
+                        (maximumSignalCount, lowCut, highCut, os, summary);
+    }
   } else if (highCut == 0) { 
     t = figureOfMeritCalculator.tables_fixed_lowCut 
-                              (maximumSignalCount, lowCut, os, summary);
+                        (maximumSignalCount, lowCut, highCut, os, summary);
+    if (lowCut > lowMomentumCutCeiling[tCutNumber]) {
+      DIOstatisticsWarningFixedLowCut(lowCut,tCutNumber);
+    }
   } else {
     t = figureOfMeritCalculator.tables_fixed_cuts 
-                            (maximumSignalCount, lowCut, highCut, os, summary);
+                        (maximumSignalCount, lowCut, highCut, os, summary);
+    if (lowCut > lowMomentumCutCeiling[tCutNumber]) {
+      DIOstatisticsWarningFixedLowCut(lowCut,tCutNumber);
+    }
   }
 
-  os << t << "\n";
+  splines::Spline<1> ceSpline  = CE_spectrum.representation();
+  splines::Spline<1> dioSpline = DIO_spectrum.representation();
+  splines::Spline<1> rpcSpline = RPC_spectrum.representation();
+  
+  double ceN  = ceSpline.integrate(lowCut, highCut) * protonsOnTarget * 1.0e-16;
+  double dioN = dioSpline.integrate(lowCut, highCut) * protonsOnTarget;
+  double rpcN = rpcSpline.integrate(lowCut, highCut) * protonsOnTarget;
 
-  os << "\n--------------------------------------- \n\n";
-
+  os << "\n In momentum range " << lowCut << " -- " << highCut << " There are: \n"
+     << dioN << " DIO \n"
+     << rpcN << " RPC \n"
+     << ceN  << " CE at a branching ratio of 1.0e-16 \n";
+  
+  table = t;
+   
   return summary;
   
 } // applyFofM(cutNumber...)
 
+void FMtool::DIOstatisticsWarning
+                (double computedLowCut, size_t tCutNumber) const
+{
+  os << "Warning -- Low Statistics in DIO tail using time cut at " 
+     << tCuts[tCutNumber] << "\n";
+  os << "Explanation: \n"
+     << "The automated momentum cut optimizer selected a lower p limit of "
+     << computedLowCut << ".\n"
+     << "However, there are fewer than " << minimumMeaningfulDIOtail 
+     << " DIO tracks that pass that momentum cut.\n"
+     << "Sensitivity calculations based on so few tracks are deemed "
+     << "untrustworthy.\n"
+     << "The calculations will be redone fixing a lower momentum cut at "
+     <<  lowMomentumCutCeiling[tCutNumber] << ".\n"
+     << "The resulting FC90 and Smooth Punzi sensitivity numbers should be \n"
+     << "regarded as conservative (high) values due to the low statistics.\n"
+     << "The single event sensitivity should be regarded as optimistic \n" 
+     << "due to the expanded momentum acceptance interval.\n\n";
+}
+
+void FMtool::DIOstatisticsWarningFixedLowCut
+                (double fixedLowCut, size_t tCutNumber) const
+{
+  os << "Warning -- Low Statistics in DIO tail using time cut at " 
+     << tCuts[tCutNumber] << "\n";
+  os << "Explanation: \n"
+     << "A lower p limit of " << fixedLowCut << " was specified.\n"
+     << "There are fewer than " << minimumMeaningfulDIOtail 
+     << " DIO tracks that pass that momentum cut.\n"
+     << "Sensitivity calculations based on so few tracks are deemed "
+     << "untrustworthy.\n\n";
+}
 
 std::vector<double> FMtool::RPCtimeProbabilityVector() const {
   // returns the integrated (to t=1000) probability for 
@@ -1179,8 +1393,9 @@ void FMtool::decideVerbosity()
   OUTPUT_allTables = v.get<bool>("allTables", false);
   OUTPUT_fileEntriesStatistics = v.get<bool>("fileEntriesStatistics",false);
   OUTPUT_detailedTrace = v.get<bool>("detailedTrace",false);
+  OUTPUT_detailedCutTrace = v.get<bool>("detailedCutTrace",false);
 }
-
+ 
 } // end namespace mu2e
 
 static ParameterSet obtainPset(std::string const & parametersFile) 
@@ -1202,6 +1417,7 @@ static ParameterSet obtainPset(std::string const & parametersFile)
   ParameterSet p;
   // convert to ParameterSet
   fhicl::make_ParameterSet(tbl, p);
+  
   return p;
 }
 
@@ -1213,12 +1429,15 @@ int main (int argc, char*argv[]) {
   }
   ParameterSet pset = obtainPset( argv[1] );
 
-  std::string outputName = pset.get<std::string>("outputFile"); 
+  std::string outputName = pset.get<std::string>("outputFile","cout"); 
   if (outputName == "cout") {
+    std::cout << "Parameter set file:  " << argv[1] << "\n";
     mu2e::FMtool f (pset, std::cout) ;
     f.analyze();
   } else {
     std::ofstream os (outputName.c_str());
+    os << "FMtool output file:  " << outputName << "\n";
+    os << "Parameter set file:  " << argv[1] << "\n";
     mu2e::FMtool f (pset, os) ;
     f.analyze();
   }
