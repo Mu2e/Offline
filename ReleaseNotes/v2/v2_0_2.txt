@@ -1,10 +1,16 @@
-  $Id: v2_0_2.txt,v 1.11 2012/08/24 20:19:31 gandr Exp $
-  $Author: gandr $
-  $Date: 2012/08/24 20:19:31 $
+  $Id: v2_0_2.txt,v 1.12 2012/08/27 22:34:19 genser Exp $
+  $Author: genser $
+  $Date: 2012/08/27 22:34:19 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_2
+
+12) August 27, 2012 genser
+
+     Mu2eG4/test/strawHits.cint - removed; use strawHits.C
+     Mu2eG4/test/strawHits.C - a more compact c++ version of strawHits.cint
+
 
 11) August 24, 2012 gandr
 
