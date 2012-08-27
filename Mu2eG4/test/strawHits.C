@@ -1,11 +1,11 @@
 //
 // Root c++ function to test MakeStrawHit_module
 // 
-// $Id: strawHits.C,v 1.2 2012/08/23 23:34:45 genser Exp $
+// $Id: strawHits.C,v 1.3 2012/08/27 19:04:03 genser Exp $
 // $Author: genser $
-// $Date: 2012/08/23 23:34:45 $
+// $Date: 2012/08/27 19:04:03 $
 // 
-// Original author KLG based on Rob Kutschke's example
+// Original author KLG somewat based on Rob Kutschke's example
 //
 // 1) Retrieve histograms and ntuples from the file that was created
 //    by mixExample01.fcl
@@ -29,6 +29,7 @@
 #include <TH1.h>
 #include <TStyle.h>
 #include <TString.h>
+#include <TPaveLabel.h>
 #include <TPad.h>
 #include <TCanvas.h>
 #include <TTree.h>
@@ -56,16 +57,28 @@ void strawHits()
   // Open the input file that contains histograms and ntuples
   // made by ReadStrawHits_module
 
-  std::vector<TFile*> file;
+  std::vector<TFile*>  file;
+  std::vector<TPaveLabel*> fileLabel;
 
   file.push_back(new TFile("mixExample01_2000_before_xtalk_off.root"));
-  file.push_back(new TFile("mixExample01_2000_after_xtalk_off_e2a_off.root"));
+  fileLabel.push_back(new TPaveLabel(0.505,0.9,0.78,0.95,"before","NDC"));
+  file.push_back(new TFile("mixExample01_2000_after_xtalk_off_e2a_off_save.root"));
+  fileLabel.push_back(new TPaveLabel(0.505,0.9,0.78,0.95,"after xtalk off e2a off","NDC"));
   file.push_back(new TFile("mixExample01_2000_after_xtalk_on2p_e2a_off.root"));
+  fileLabel.push_back(new TPaveLabel(0.505,0.9,0.78,0.95,"after xtalk on 2\% e2a off","NDC"));
   file.push_back(new TFile("mixExample01_2000_after_xtalk_off_e2a_on.root"));
+  fileLabel.push_back(new TPaveLabel(0.505,0.9,0.78,0.95,"after xtalk off e2a on","NDC"));
   file.push_back(new TFile("mixExample01_2000_after_xtalk_on2p_e2a_on.root"));
+  fileLabel.push_back(new TPaveLabel(0.505,0.9,0.78,0.95,"after xtalk on 2\% e2a on","NDC"));
   file.push_back(new TFile("mixExample01_2000_after_xtalk_on1p_e2a_on.root"));
+  fileLabel.push_back(new TPaveLabel(0.505,0.9,0.78,0.95,"after xtalk on 1\% e2a on","NDC"));
 
   const int nfiles = file.size();
+
+  for (int ii=0; ii!=nfiles; ++ii) {
+    fileLabel[ii]->SetBorderSize(0);
+    fileLabel[ii]->SetFillColor(0);
+  }
 
   // Name of the output pdf file.
   // Postscript is the only graphics format for which root supports multi-page output files.
@@ -112,8 +125,6 @@ void strawHits()
   const int nhistograms = 11;
   std::vector<std::vector<TH1F*>*> _histograms(nhistograms);
 
-  //  TH1F** _histograms[11];
-
   _histograms[ 0] = &_hHitTime;      // *_histograms[ 0] is _hHitTime;
   _histograms[ 1] = &_hHitDeltaTime;
   _histograms[ 2] = &_hHitEnergy;
@@ -150,8 +161,10 @@ void strawHits()
 
     for (int ii=0; ii!=nfiles; ++ii) {
       canvas->cd(ii+1);
-      cout << jj << " " << ii << " Drawing " << ((*_histograms[jj])[ii])->GetTitle() <<endl;
+      cout << jj << " " << ii << " Drawing " << ((*_histograms[jj])[ii])->GetTitle() 
+           << ", " <<fileLabel[ii]->GetLabel() <<endl;
       ((*_histograms[jj])[ii])->Draw("H9");
+      fileLabel[ii]->Draw("9");
     }
 
     // Flush page to screen
