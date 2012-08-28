@@ -1,4 +1,5 @@
 <lcgdict>
+ <class name="mu2e::ExtMonFNALPixelChip"/>
  <class name="mu2e::ExtMonFNALSensor"/>
  <class name="mu2e::ExtMonFNALSensorStack"/>
  <class name="mu2e::ExtMonFNALMagnet"/>

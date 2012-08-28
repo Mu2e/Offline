@@ -9,6 +9,7 @@
 
 #include "art/Persistency/Common/Wrapper.h"
 
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
 #include "CLHEP/Vector/TwoVector.h"
 
@@ -28,10 +29,17 @@ namespace mu2e {
     // No protection for invalid pixel id
     CLHEP::Hep2Vector sensorCoordinates(const ExtMonFNALPixelId& pix) const;
 
-    ExtMonFNALSensor(const std::vector<double>& hs) : halfSize_(hs) {}
+    const ExtMonFNALPixelChip& chip() const { return chip_; }
+    int nxChips() const;
+    int nyChips() const;
+
+    ExtMonFNALSensor(const ExtMonFNALPixelChip& chip, const std::vector<double>& hs)
+      : chip_(chip), halfSize_(hs)
+    {}
 
     //----------------------------------------------------------------
   private:
+    ExtMonFNALPixelChip chip_;
     std::vector<double> halfSize_;
 
     // Required by genreflex persistency

@@ -14,6 +14,7 @@
 
 #include "Mu2eInterfaces/inc/Detector.hh"
 
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensor.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensorStack.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
@@ -28,6 +29,9 @@ namespace mu2e {
 
       // all sensors are the same
       const ExtMonFNALSensor& sensor() const { return sensor_; }
+
+      // all chips are the same
+      const ExtMonFNALPixelChip& chip() const { return chip_; }
 
       const ExtMonFNALSensorStack& up() const { return up_; }
       const ExtMonFNALSensorStack& dn() const { return dn_; }
@@ -64,6 +68,7 @@ namespace mu2e {
       // For persistency
       template<class T> friend class art::Wrapper;
 
+      ExtMonFNALPixelChip chip_;
       ExtMonFNALSensor sensor_;
       ExtMonFNALSensorStack up_;
       ExtMonFNALSensorStack dn_;
