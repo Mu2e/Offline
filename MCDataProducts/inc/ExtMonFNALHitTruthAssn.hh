@@ -1,9 +1,9 @@
 #ifndef MCDataProducts_ExtMonFNALHitTruthAssn_hh
 #define MCDataProducts_ExtMonFNALHitTruthAssn_hh
 //
-// $Id: ExtMonFNALHitTruthAssn.hh,v 1.1 2012/08/23 23:41:35 gandr Exp $
+// $Id: ExtMonFNALHitTruthAssn.hh,v 1.2 2012/08/28 16:59:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/23 23:41:35 $
+// $Date: 2012/08/28 16:59:35 $
 //
 // Original author Andrei Gaponenko
 //
@@ -29,7 +29,6 @@ namespace mu2e {
   //================================================================
   // The persistent collection of truth information for ExtMonFNALRawHit-s
 
-// FIXME: rename to  ExtMonFNALHitTruthAssn
   typedef art::Assns<SimParticle,ExtMonFNALRawHit,ExtMonFNALHitTruthBits> ExtMonFNALHitTruthAssn;
 
 }

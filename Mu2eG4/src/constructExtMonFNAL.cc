@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.18 2012/08/24 15:07:28 gandr Exp $
+// $Id: constructExtMonFNAL.cc,v 1.19 2012/08/28 16:59:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/24 15:07:28 $
+// $Date: 2012/08/28 16:59:35 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -31,9 +31,6 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
-
-// FIXME: should not need WorldG4 here
-#include "GeometryService/inc/WorldG4.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
