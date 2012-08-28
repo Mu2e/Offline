@@ -1,8 +1,8 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.1 2012/08/24 15:08:11 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.2 2012/08/28 05:05:52 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/24 15:08:11 $
+// $Date: 2012/08/28 05:05:52 $
 //
 // Original author Andrei Gaponenko
 //
@@ -13,6 +13,7 @@
 #include <queue>
 #include <iostream>
 
+#include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -29,6 +30,7 @@
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Persistency/Common/Ptr.h"
 
@@ -43,6 +45,7 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensor.hh"
 #include "ExtinctionMonitorFNAL/Digitization/inc/SiliconProperties.hh"
 #include "ExtinctionMonitorFNAL/Digitization/inc/PixelToTCircuit.hh"
+#include "ExtinctionMonitorFNAL/Digitization/inc/PixelNoise.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -89,7 +92,16 @@ namespace mu2e {
       , discriminatorThreshold_(pset.get<double>("discriminatorThreshold"))
       , qCalib_(pset.get<double>("qCalib"))
       , totCalib_(pset.get<int>("totCalib"))
-      , gaussian_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+
+      , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+
+      , gaussian_(eng_)
+
+      , noise_(eng_,
+               pset.get<double>("pixelNoisePerBC"),
+               pset.get<int>("noiseClockMin"),
+               pset.get<int>("noiseClockMax"))
+
       , extMon_(0)
       , cond_(0)
     {
@@ -119,9 +131,12 @@ namespace mu2e {
     double qCalib_;
     int    totCalib_;
 
+    art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandGaussQ gaussian_;
 
     SiliconProperties siProps_;
+
+    PixelNoise noise_;
 
     // Non-owning pointers to the geometry and conditions objects. The
     // current Mu2e infrastructure does not allow the use of a Handle
@@ -203,13 +218,15 @@ namespace mu2e {
     const art::EDProductGetter *hitsGetter = event.productGetter(hitsPID);
     discriminate(&*outHits, &*outTruth, hitsPID, hitsGetter, pixcharges);
 
+    noise_.add(&*outHits);
+
     event.put(outHits);
     event.put(outTruth);
   }
 
   //================================================================
   void ExtMonFNALHitMaker::collectIonization(PixelChargeCollection *pixcharges,
-                                            const ExtMonFNALSimHitCollection& simhits)
+                                             const ExtMonFNALSimHitCollection& simhits)
   {
     for(ExtMonFNALSimHitCollection::const_iterator i=simhits.begin(); i!= simhits.end(); ++i) {
       collectIonization(pixcharges, *i);
@@ -218,7 +235,7 @@ namespace mu2e {
 
   //================================================================
   void ExtMonFNALHitMaker::collectIonization(PixelChargeCollection *pixcharges,
-                                            const ExtMonFNALSimHit& hit)
+                                             const ExtMonFNALSimHit& hit)
   {
     const double sensorHalfThickness = extMon_->sensor().halfSize()[2];
     const double driftSpeed = siProps_.electronDriftMobility() * siProps_.electricField();
@@ -264,12 +281,12 @@ namespace mu2e {
 
   //================================================================
   void  ExtMonFNALHitMaker::addCharge(PixelChargeCollection *pixcharges,
-                                     ExtMonFNALSensorId sid,
-                                     double time,
-                                     double charge,
-                                     double x_ro,
-                                     double y_ro,
-                                     const art::Ptr<SimParticle>& particle)
+                                      ExtMonFNALSensorId sid,
+                                      double time,
+                                      double charge,
+                                      double x_ro,
+                                      double y_ro,
+                                      const art::Ptr<SimParticle>& particle)
   {
     ExtMonFNALPixelId pix = extMon_->sensor().findPixel(sid, x_ro, y_ro);
     if(pix != ExtMonFNALPixelId()) {
@@ -280,10 +297,10 @@ namespace mu2e {
 
   //================================================================
   void ExtMonFNALHitMaker::discriminate(ExtMonFNALRawHitCollection *outhits,
-                                       ExtMonFNALHitTruthAssn *outtruth,
-                                       art::ProductID hitsPID,
-                                       const art::EDProductGetter *hitsGetter,
-                                       PixelChargeCollection& pixcharges)
+                                        ExtMonFNALHitTruthAssn *outtruth,
+                                        art::ProductID hitsPID,
+                                        const art::EDProductGetter *hitsGetter,
+                                        PixelChargeCollection& pixcharges)
   {
     for(PixelChargeCollection::iterator i=pixcharges.begin(); i!=pixcharges.end(); ++i) {
       discriminate(outhits, outtruth, hitsPID, hitsGetter, i->first, i->second);
@@ -292,11 +309,11 @@ namespace mu2e {
 
   //================================================================
   void ExtMonFNALHitMaker::discriminate(ExtMonFNALRawHitCollection *outhits,
-                                       ExtMonFNALHitTruthAssn *outtruth,
-                                       art::ProductID hitsPID,
-                                       const art::EDProductGetter *hitsGetter,
-                                       const ExtMonFNALPixelId& pix,
-                                       PixelChargeHistory& ch)
+                                        ExtMonFNALHitTruthAssn *outtruth,
+                                        art::ProductID hitsPID,
+                                        const art::EDProductGetter *hitsGetter,
+                                        const ExtMonFNALPixelId& pix,
+                                        PixelChargeHistory& ch)
   {
     PixelToTCircuit cap(discriminatorThreshold_, qCalib_, totCalib_, cond_->clockTick());
 
@@ -354,8 +371,8 @@ namespace mu2e {
           outtruth->addSingle(t->first,
 
                               art::Ptr<ExtMonFNALRawHit>(hitsPID,
-                                                          outhits->size()-1,
-                                                          hitsGetter),
+                                                         outhits->size()-1,
+                                                         hitsGetter),
 
                               ExtMonFNALHitTruthBits(t->second)
                               );
