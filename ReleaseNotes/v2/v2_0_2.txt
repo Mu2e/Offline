@@ -1,10 +1,14 @@
-  $Id: v2_0_2.txt,v 1.13 2012/08/28 05:07:20 gandr Exp $
-  $Author: gandr $
-  $Date: 2012/08/28 05:07:20 $
+  $Id: v2_0_2.txt,v 1.14 2012/08/28 08:29:48 youzy Exp $
+  $Author: youzy $
+  $Date: 2012/08/28 08:29:48 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_2
+
+14) August 28, 2012 youzy
+
+    Change shield channel shape in Mu2eG4/src/constructExtMonUCI.cc
 
 13) Augus 27, 2012 gandr
 
