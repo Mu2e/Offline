@@ -1,10 +1,14 @@
-  $Id: v2_0_2.txt,v 1.12 2012/08/27 22:34:19 genser Exp $
-  $Author: genser $
-  $Date: 2012/08/27 22:34:19 $
+  $Id: v2_0_2.txt,v 1.13 2012/08/28 05:07:20 gandr Exp $
+  $Author: gandr $
+  $Date: 2012/08/28 05:07:20 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_2
+
+13) Augus 27, 2012 gandr
+
+    Add random noise in pixel digitization.
 
 12) August 27, 2012 genser
 
