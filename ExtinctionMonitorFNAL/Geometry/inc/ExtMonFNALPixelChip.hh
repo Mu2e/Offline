@@ -21,6 +21,8 @@ namespace mu2e {
     unsigned int nRows() const;
     double yPitch() const;
 
+    unsigned int nPixels() const;
+
   private:
     // Required by genreflex persistency
     ExtMonFNALPixelChip() {}

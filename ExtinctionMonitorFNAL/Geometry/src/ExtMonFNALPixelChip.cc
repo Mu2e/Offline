@@ -12,4 +12,6 @@ namespace mu2e {
   unsigned int ExtMonFNALPixelChip::nRows() const { return 336; }
   double ExtMonFNALPixelChip::yPitch() const { return 50 * CLHEP::micrometer; }
 
+  unsigned int ExtMonFNALPixelChip::nPixels() const { return nRows() * nColumns(); }
+
 } // namespace mu2e
