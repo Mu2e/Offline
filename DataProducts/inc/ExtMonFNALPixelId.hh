@@ -3,9 +3,9 @@
 
 // Identifier of a silicon pixel in Mu2e ExtMonFNAL detector.
 //
-// $Id: ExtMonFNALPixelId.hh,v 1.1 2012/08/23 23:41:34 gandr Exp $
+// $Id: ExtMonFNALPixelId.hh,v 1.2 2012/08/28 05:02:51 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/23 23:41:34 $
+// $Date: 2012/08/28 05:02:51 $
 //
 // Original author Andrei Gaponenko
 
@@ -18,14 +18,16 @@ namespace mu2e {
   class ExtMonFNALPixelId {
   public:
 
-    ExtMonFNALPixelId(const ExtMonFNALChipId& chip, int col, int row);
+    ExtMonFNALPixelId(const ExtMonFNALChipId& chip, unsigned int col, unsigned int row);
 
     // Default constructor should not be used by Mu2e code, but it is required by ROOT persistency
     ExtMonFNALPixelId() : chip_(), col_(), row_() {}
 
     const ExtMonFNALChipId& chip() const { return chip_; }
-    int   col() const { return col_; }
-    int   row() const { return row_; }
+
+    // Row and column numbers are zero based - this is not the hardware numbering
+    unsigned int col() const { return col_; }
+    unsigned int row() const { return row_; }
 
     bool operator==( ExtMonFNALPixelId const& rhs) const{
       return (chip_ == rhs.chip_)&&(row_ == rhs.row_)&&(col_ == rhs.col_);
@@ -46,8 +48,8 @@ namespace mu2e {
 
   private:
     ExtMonFNALChipId chip_;
-    int col_;
-    int row_;
+    unsigned int col_;
+    unsigned int row_;
   };
 
   std::ostream& operator<<( std::ostream& os, const ExtMonFNALPixelId& id);

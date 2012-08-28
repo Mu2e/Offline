@@ -30,8 +30,8 @@ namespace mu2e {
     CLHEP::Hep2Vector sensorCoordinates(const ExtMonFNALPixelId& pix) const;
 
     const ExtMonFNALPixelChip& chip() const { return chip_; }
-    int nxChips() const;
-    int nyChips() const;
+    unsigned int nxChips() const;
+    unsigned int nyChips() const;
 
     ExtMonFNALSensor(const ExtMonFNALPixelChip& chip, const std::vector<double>& hs)
       : chip_(chip), halfSize_(hs)

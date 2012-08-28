@@ -15,10 +15,10 @@ namespace mu2e {
   class ExtMonFNALPixelChip {
   public:
 
-    int    nColumns() const;
+    unsigned int nColumns() const;
     double xPitch() const;
 
-    int    nRows() const;
+    unsigned int nRows() const;
     double yPitch() const;
 
   private:

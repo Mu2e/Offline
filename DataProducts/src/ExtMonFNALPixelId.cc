@@ -2,8 +2,8 @@
 
 namespace mu2e {
   ExtMonFNALPixelId::ExtMonFNALPixelId(const ExtMonFNALChipId& chip,
-                                       int col,
-                                       int row)
+                                       unsigned int col,
+                                       unsigned int row)
     : chip_(chip)
     , col_(col)
     , row_(row)

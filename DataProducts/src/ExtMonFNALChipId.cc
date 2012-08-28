@@ -2,8 +2,8 @@
 
 namespace mu2e {
   ExtMonFNALChipId::ExtMonFNALChipId(const ExtMonFNALSensorId& sensor,
-                                     int chipCol,
-                                     int chipRow)
+                                     unsigned int chipCol,
+                                     unsigned int chipRow)
     : sensor_(sensor)
     , chipCol_(chipCol)
     , chipRow_(chipRow)

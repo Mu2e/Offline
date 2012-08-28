@@ -10,8 +10,8 @@
 namespace mu2e {
 
   // Code in this file (only!) assumes these nubers are (2,2)
-  int ExtMonFNALSensor::nxChips() const { return 2; }
-  int ExtMonFNALSensor::nyChips() const { return 2; }
+  unsigned int ExtMonFNALSensor::nxChips() const { return 2; }
+  unsigned int ExtMonFNALSensor::nyChips() const { return 2; }
 
   //================================================================
   ExtMonFNALPixelId ExtMonFNALSensor::findPixel(ExtMonFNALSensorId sid,
