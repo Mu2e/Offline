@@ -1,9 +1,9 @@
 //
 // Construct ExtinctionMonitor UCI.
 //
-// $Id: constructExtMonUCI.cc,v 1.12 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: constructExtMonUCI.cc,v 1.13 2012/08/28 08:24:38 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/08/28 08:24:38 $
 
 #include <iostream>
 
@@ -351,6 +351,21 @@ namespace mu2e {
     int  ironIndex = config.getInt("extmon_uci.ironIndex", 9);
     G4Material* shdIronMaterial = materialFinder.get("extmon_uci.shdIronMaterialName");
 
+    // Shield Channel
+    //bool shdChannelVisible = config.getBool("extmon_uci.shdChannelVisible", true);
+    //bool shdChannelSolid   = config.getBool("extmon_uci.shdChannelSolid", false);
+    //G4Material* shdChannelMaterial = materialFinder.get("extmon_uci.shdChannelMaterialName");
+
+    const int kNShdChannel = config.getInt("extmon_uci.nShdChannels", 0);
+    vector<double> shdChannelHalfLengths;
+    config.getVectorDouble("extmon_uci.shdChannelHalfLengths", shdChannelHalfLengths, 3*kNShdChannel);
+    vector<double> shdChannelPosition;
+    config.getVectorDouble("extmon_uci.shdChannelPosition", shdChannelPosition, 3*kNShdChannel);
+
+    vector<double> shdChannelPosition1;
+    config.getVectorDouble("extmon_uci.shdChannelPosition1", shdChannelPosition1, kNShdChannel*3);
+    vector<double> shdChannelPosition2;
+    config.getVectorDouble("extmon_uci.shdChannelPosition2", shdChannelPosition2, kNShdChannel*3);
 
     VolumeInfo shdInfo[kNShd];
     for (int iShd = 0; iShd < kNShd; iShd++)
@@ -358,6 +373,8 @@ namespace mu2e {
       if ( shieldSwitch[iShd] == 0) continue;
       name.str("");
       name << extmonBaseName << "Shield" << iShd;
+      shdInfo[iShd].name = name.str();
+      if (verbosity >= 2) YZYDEBUG("ExtMonUCI shdInfo " << iShd << " name " << shdInfo[iShd].name);
 
       vector<double> shdParams;
       for (int iDim = 0; iDim < 3; iDim++) shdParams.push_back(shdHalfLengths[3*iShd+iDim]);
@@ -369,19 +386,73 @@ namespace mu2e {
         YZYDEBUG("shield Origin " << shdOrigin[0] << "  " << shdOrigin[1] << "  " << shdOrigin[2]);
       }
 
-      shdInfo[iShd] = nestBox( name.str(),
-                               shdParams,
-                               (iShd == ironIndex ? shdIronMaterial : shdMaterial),
-                               0,
-                               (shieldSwitch[iShd] == 2 ? shdOrigin - hallOriginInMu2e : shdOrigin - det.origin()),
-                               (shieldSwitch[iShd] == 2 ? parent : envelopeInfo),
-                               0,
-                               shdVisible,
-                               (iShd == 9 ? G4Colour::Red() : G4Colour::Cyan()),
-                               shdSolid,
-                               forceAuxEdgeVisible, placePV, doSurfaceCheck
-                             );
-    } 
+      if ( iShd != 0 && iShd != 8 && iShd != 9 )
+      {
+        // Shield without channel
+        shdInfo[iShd] = nestBox( name.str(),
+                                 shdParams,
+                                 (iShd == ironIndex ? shdIronMaterial : shdMaterial),
+                                 0,
+                                 (shieldSwitch[iShd] == 2 ? shdOrigin - hallOriginInMu2e : shdOrigin - det.origin()),
+                                 (shieldSwitch[iShd] == 2 ? parent : envelopeInfo),
+                                 0,
+                                 shdVisible,
+                                 (iShd == ironIndex ? G4Colour::Red() : G4Colour::Cyan()),
+                                 shdSolid,
+                                 forceAuxEdgeVisible, placePV, doSurfaceCheck
+                               );
+      }
+      else
+      {
+        // Shield with channel
+        int iShdChannel = 0;
+        if (iShd == 0) iShdChannel = 0;
+        else if (iShd == 8) iShdChannel = 1;
+        else if (iShd == 9) iShdChannel = 2;
+
+        vector<double> shdChannelParams;
+        for (int iDim = 0; iDim < 3; iDim++) shdChannelParams.push_back(shdChannelHalfLengths[3*iShdChannel+iDim]);
+        G4ThreeVector shdChannelOrigin(shdChannelPosition[3*iShdChannel], shdChannelPosition[3*iShdChannel+1], shdChannelPosition[3*iShdChannel+2]);
+
+        G4RotationMatrix *shdChannelRot = reg.add( new G4RotationMatrix() );
+        const CLHEP::Hep3Vector interZ(0.0,
+                                       shdChannelPosition1[3*iShdChannel+1]-shdChannelPosition2[3*iShdChannel+1],
+                                       shdChannelPosition1[3*iShdChannel+2]-shdChannelPosition2[3*iShdChannel+2]);
+        const CLHEP::Hep3Vector newY = interZ.cross( CLHEP::Hep3Vector(1.0, 0.0, 0.0) ).unit();
+        const CLHEP::Hep3Vector newZ = CLHEP::Hep3Vector(shdChannelPosition1[3*iShdChannel] - shdChannelPosition2[3*iShdChannel],
+                                                         shdChannelPosition1[3*iShdChannel+1] - shdChannelPosition2[3*iShdChannel+1],
+                                                         shdChannelPosition1[3*iShdChannel+2] - shdChannelPosition2[3*iShdChannel+2]).unit();
+        const CLHEP::Hep3Vector newX = newY.cross(newZ);
+        *shdChannelRot = CLHEP::HepRotation::IDENTITY;
+        shdChannelRot->rotateAxes( newX, newY, newZ );
+        shdChannelRot->invert();
+        if (verbosity >= 0) shdChannelRot->print(cout);
+
+        G4Box *shdOuter = reg.add( new G4Box( name.str()+"_Outer", shdParams[0], shdParams[1], shdParams[2] ) );
+        G4Box *shdInner = reg.add( new G4Box( name.str()+"_Inner", shdChannelParams[0], shdChannelParams[1], shdChannelParams[2]*1.2 ) );
+        // The scale 1.2 is to make sure channel hole fully cut after rotation
+
+        shdInfo[iShd].solid = reg.add( new G4SubtractionSolid( name.str(),
+                                                               shdOuter,
+                                                               shdInner,
+                                                               shdChannelRot,
+                                                               shdChannelOrigin - shdOrigin ) );
+        int nestVerbosity = 0;
+        if (verbosity >= 2) nestVerbosity = 1;
+        finishNesting(shdInfo[iShd],
+                      (iShd == ironIndex ? shdIronMaterial : shdMaterial),
+                      0,
+                      (shieldSwitch[iShd] == 2 ? shdOrigin - hallOriginInMu2e : shdOrigin - det.origin()),
+                      (shieldSwitch[iShd] == 2 ? parent.logical : envelopeInfo.logical),
+                      0,
+                      shdVisible,
+                      (iShd == ironIndex ? G4Colour::Red() : G4Colour::Cyan()),
+                      shdSolid,
+                      forceAuxEdgeVisible, placePV, doSurfaceCheck,
+                      nestVerbosity
+                     );
+      }
+    }
 
     // Shield Hole
     bool shdHoleVisible = config.getBool("extmon_uci.shdHoleVisible", true);
@@ -430,73 +501,6 @@ namespace mu2e {
                                        shdHoleSolid,
                                        forceAuxEdgeVisible, placePV, doSurfaceCheck
                                      );
-    }
-
-    // Shield Channel
-    bool shdChannelVisible = config.getBool("extmon_uci.shdChannelVisible", true);
-    bool shdChannelSolid   = config.getBool("extmon_uci.shdChannelSolid", false);
-    G4Material* shdChannelMaterial = materialFinder.get("extmon_uci.shdChannelMaterialName");
-
-    const int kNShdChannel = config.getInt("extmon_uci.nShdChannels", 0);
-    vector<double> shdChannelHalfLengths;
-    config.getVectorDouble("extmon_uci.shdChannelHalfLengths", shdChannelHalfLengths, 3*kNShdChannel);
-    vector<double> shdChannelPosition;
-    config.getVectorDouble("extmon_uci.shdChannelPosition", shdChannelPosition, 3*kNShdChannel);
-
-    vector<double> shdChannelPosition1;
-    config.getVectorDouble("extmon_uci.shdChannelPosition1", shdChannelPosition1, kNShdChannel*3);
-    vector<double> shdChannelPosition2;
-    config.getVectorDouble("extmon_uci.shdChannelPosition2", shdChannelPosition2, kNShdChannel*3);
-
-    VolumeInfo shdChannelInfo[kNShdChannel];
-    VolumeInfo shdChannelMotherInfo;
-    for (int iShdChannel = 0; iShdChannel < kNShdChannel; iShdChannel++)
-    {
-      if      ( iShdChannel == 1 && shieldSwitch[8] == 0 ) continue;
-      else if ( iShdChannel == 2 && shieldSwitch[9] == 0 ) continue;
-
-      name.str("");
-      name << extmonBaseName << "ShieldChannel" << iShdChannel;
-
-      vector<double> shdChannelParams;
-      for (int iDim = 0; iDim < 3; iDim++) shdChannelParams.push_back(shdChannelHalfLengths[3*iShdChannel+iDim]);
-      G4ThreeVector shdChannelOrigin(shdChannelPosition[3*iShdChannel], shdChannelPosition[3*iShdChannel+1], shdChannelPosition[3*iShdChannel+2]);
-
-      if (iShdChannel == 0) shdChannelMotherInfo = shdInfo[0];
-      else if (iShdChannel == 1) shdChannelMotherInfo = shdInfo[8];
-      else if (iShdChannel == 2) shdChannelMotherInfo = shdInfo[9];
-
-      G4RotationMatrix *shdChannelRot = reg.add( new G4RotationMatrix() );
-      const CLHEP::Hep3Vector interZ(0.0, 
-                                     shdChannelPosition1[3*iShdChannel+1]-shdChannelPosition2[3*iShdChannel+1], 
-                                     shdChannelPosition1[3*iShdChannel+2]-shdChannelPosition2[3*iShdChannel+2]);
-      const CLHEP::Hep3Vector newY = interZ.cross( CLHEP::Hep3Vector(1.0, 0.0, 0.0) ).unit();
-      const CLHEP::Hep3Vector newZ = CLHEP::Hep3Vector(shdChannelPosition1[3*iShdChannel] - shdChannelPosition2[3*iShdChannel],
-                                                       shdChannelPosition1[3*iShdChannel+1] - shdChannelPosition2[3*iShdChannel+1],
-                                                       shdChannelPosition1[3*iShdChannel+2] - shdChannelPosition2[3*iShdChannel+2]).unit();
-      const CLHEP::Hep3Vector newX = newY.cross(newZ);
-      *shdChannelRot = CLHEP::HepRotation::IDENTITY;
-      shdChannelRot->rotateAxes( newX, newY, newZ );
-      shdChannelRot->invert();
-      if (verbosity >= 2) shdChannelRot->print(cout);
-
-      shdChannelInfo[iShdChannel] = VolumeInfo( name.str(),
-                                                CLHEP::Hep3Vector(0, 0, 0),
-                                                shdChannelMotherInfo.centerInWorld);
-      shdChannelInfo[iShdChannel].solid = reg.add( new G4Para( name.str(),
-                                                               shdChannelParams[0], shdChannelParams[1], shdChannelParams[2],
-                                                               0, shdChannelRot->theta(), -0.5*M_PI ) );
-      finishNesting( shdChannelInfo[iShdChannel],
-                     shdChannelMaterial,
-                     0,
-                     shdChannelOrigin - shdChannelMotherInfo.centerInMu2e(),
-                     shdChannelMotherInfo.logical,
-                     0,
-                     shdChannelVisible,
-                     G4Colour::Cyan(),
-                     shdChannelSolid,
-                     forceAuxEdgeVisible, placePV, doSurfaceCheck
-                   );
     }
 
     //
