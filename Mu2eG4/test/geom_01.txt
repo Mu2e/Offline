@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.161 2012/08/15 16:38:18 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/15 16:38:18 $
+// $Id: geom_01.txt,v 1.162 2012/08/30 04:06:56 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/08/30 04:06:56 $
 //
 // Original author Rob Kutschke
 //
@@ -411,17 +411,25 @@ bool crs.hasPassiveShield     = true;
 bool crs.hasActiveShield      = true;
 
 // Dimensions of steel, assuming constant thickness all around, and square shape.
-double fluxcrv.HallSteelHalfThick    = 229.;  // newer drawings seem to have it at 150 in the D/U ends
-double fluxcrv.HallSteelHalfLengthX  = 1779.; // total width = 2*(halfX+halfThick)
-double fluxcrv.HallSteelHalfLengthY  = 2439.; // total height = 2*halfY
-double fluxcrv.HallSteelHalfLengthZ  = 7150.; // newer drawings have it at 6830; there is also End Cap
-double fluxcrv.HallSteelEndCapHalfLengthZ  = 1085;
-double fluxcrv.HallSteelEndCapHalfThick    =  250.;
+vector<double> fluxcrv.HallSteelOffset  = {-3904.,0.0,0.0}; // mm
+double fluxcrv.HallSteelHalfThick =  228.6;   // mm
+double fluxcrv.HallSteelHalfSideShieldHeight = 2260.7;  // mm
+double fluxcrv.HallSteelHalfRShieldLength    = 9601.0;   // mm
+double fluxcrv.HallSteelHalfLShieldLength    = 7827.5;   // mm
+double fluxcrv.HallSteelHalfTShieldLength    = 7543.0;   // mm
+double fluxcrv.HallSteelHalfTSRShieldLength  = 2743.0;   // mm
+double fluxcrv.HallSteelHalfTSLShieldLength  =  914.5;   // mm
+vector<double> fluxcrv.HallSteelRShieldCenter  = {-1778.6,  -667.3,  7818.1}; // mm
+vector<double> fluxcrv.HallSteelLShieldCenter  = { 1778.6,  -667.3,  9591.6}; // mm
+vector<double> fluxcrv.HallSteelTShieldCenter  = {    0.0,  1822.0,   9876.1}; // mm
+vector<double> fluxcrv.HallSteelDShieldCenter  = {    0.0,  -667.3, 17647.7}; // mm
+vector<double> fluxcrv.HallSteelTSRShieldCenter= {  735.8,  -667.3, -2011.5}; // mm
+vector<double> fluxcrv.HallSteelTSLShieldCenter= { 2921.7,  -667.3,  2011.5}; // mm 
+
 string fluxcrv.HallSteelMaterialName = "G4_CONCRETE";
 double fluxcrv.HallSteelHoleRadius   = 850;
-vector<double> fluxcrv.HallSteelOffset  = {-3904.,-260.,9306.}; // mm
 bool   fluxcrv.visible          = true;
-bool   fluxcrv.solid            = false;
+bool   fluxcrv.solid            = true;
 
 // Parameters of the CRS Scintillator Modules (length in mm)
 // data based mainly on Mu2e Document 388-v1 Mu2e Proposal, fig 11.6,
@@ -431,41 +439,41 @@ int            crs.scintillatorLayersPerModule              = 3;
 int            crs.scintillatorBarsPerFullLayer             = 12;
 vector<double> crs.scintillatorBarHalfLengths               = { 5.,  2350., 50.};
 string         crs.scintillatorBarMaterialName              = "G4_POLYSTYRENE";
-double         crs.scintillatorLayerShift                   = 20.0;
-double         crs.scintillatorLayerGap                     = 2.0;
+double         crs.scintillatorLayerShift                   = 15.0;
+double         crs.scintillatorLayerGap                     = 1.0; // 2.0 according to doc-db 1330, but works only with 1.0
 double         crs.scintillatorBarPigmentationHalfThickness = 0.125; // not used for now
 string         crs.scintillatorBarPigmentationMaterialName  = "G4_TITANIUM_DIOXIDE";
-vector<double> crs.scintillatorModuleOuterSheetHalfLengths  = { 0.8, 2383., 631.}; // doc-db 1330 says 620.5 //0.063"=1.6mm;
+vector<double> crs.scintillatorModuleOuterSheetHalfLengths  = { 0.8, 2383., 620.5}; // doc-db 1330 //0.063"=1.6mm;
 string         crs.scintillatorModuleOuterSheetMaterial     = "G4_Al";
 string         crs.scintillatorModuleInterLayerSheetMaterialName  = "G4_POLYSTYRENE";
 double         crs.scintillatorModuleInterLayerSheetHalfThickness = 1.9; // ?? total thickness is 40.8mm=3*10+2*1.6+2*x
 vector<double> crs.moduleUnistrutHalfLengths                = {28.,  2383., 157.}; //???? // fig 11.9 p.179
 // double         crs.wallUnistrutHalfThickness    = 28.;  // (154 - 41)/4 = 28.25 ~28 ; not used
 // assume the unistrut on the steel to be of the same thickness as the one on the modules
-double         crs.scintillatorOverlap                      = 0.; // fig 11.5  // this has changed
+double         crs.scintillatorOverlap                      = 29.0; // numbers add up only with a gap b/w modules of 1.0
 
 // full, half modules, more specific numbers TBD
 vector<int>    crs.shieldR_NumberOfModules  = {18,  0};
 vector<int>    crs.shieldL_NumberOfModules  = {14,  0};
-vector<int>    crs.shieldD_NumberOfModules  = { 1,  0};
 vector<int>    crs.shieldT_NumberOfModules  = {18,  0};
-vector<int>    crs.shieldTSR_NumberOfModules = { 5,  0}; // not implemented yet
-vector<int>    crs.shieldTSL_NumberOfModules = { 1,  0}; // not implemented yet
-vector<int>    crs.shieldTST_NumberOfModules = { 1,  0}; // not implemented yet
+vector<int>    crs.shieldD_NumberOfModules  = { 1,  0};
+vector<int>    crs.shieldTSR_NumberOfModules = { 5,  0};
+vector<int>    crs.shieldTSL_NumberOfModules = { 1,  0};
+vector<int>    crs.shieldTST_NumberOfModules = { 1,  0};
 
-vector<double> crs.scintillatorShieldOffset  = {-3904.,0.,9306.}; // mm aka CRV offset
+vector<double> crs.scintillatorShieldOffset  = {-3904.,0.,8324.5}; // mm aka CRV offset
 // shields offsets wrt the above point in their local reference frame before rotation
-vector<double> crs.shieldR_Offset  = { 2177.2, 0., 1265.6};
-vector<double> crs.shieldL_Offset  = { 2177.2, 0., -1258.4};
-vector<double> crs.shieldT_Offset  = { 2858.2, 0., 1265.6};
-vector<double> crs.shieldD_Offset  = { 10189.2, 0., -1719..};
-vector<double> crs.shieldTSR_Offset = {    0.,  0.,   0.}; // not implemented yet
-vector<double> crs.shieldTSL_Offset = {    0.,  0.,   0.}; // not implemented yet
-vector<double> crs.shieldTST_Offset = {    0.,  0.,   0.}; // not implemented yet
+vector<double> crs.shieldR_Offset  =  { 2160.4, -280.0,     0.0};
+vector<double> crs.shieldL_Offset  =  { 2160.4,  280.0, -2424.0};
+vector<double> crs.shieldT_Offset  =  { 2170.4,    0.0,     0.0};
+vector<double> crs.shieldD_Offset  =  {10942.9,    0.0, -1571.2};
+vector<double> crs.shieldTSR_Offset = {10594.9, -280.0,   904.5};
+vector<double> crs.shieldTSL_Offset = {-6054.1,  280.0,  2860.5};
+vector<double> crs.shieldTST_Offset = { 2170.4, 8324.5, -3020.5};
 
 bool   crs.vetoVisible    = true;
 bool   crs.vetoSolid      = true;
-int    crs.verbosityLevel = 0;
+int    crs.verbosityLevel = 2;
 
 
 // Magnetic field

@@ -1,10 +1,17 @@
-  $Id: v2_0_2.txt,v 1.14 2012/08/28 08:29:48 youzy Exp $
-  $Author: youzy $
-  $Date: 2012/08/28 08:29:48 $
+  $Id: v2_0_2.txt,v 1.15 2012/08/30 04:09:23 ehrlich Exp $
+  $Author: ehrlich $
+  $Date: 2012/08/30 04:09:23 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_2
+
+15) August 30, 2012 ehrlich
+    Added the TS shields, and fixed the geometry of the DS shields.
+    Modified Files:
+      Mu2eG4/test/geom_01.txt 
+      CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc 
+      CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh 
 
 14) August 28, 2012 youzy
 

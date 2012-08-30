@@ -3,9 +3,9 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.10 2012/06/07 04:55:00 ehrlich Exp $
+// $Id: CosmicRayShieldMaker.hh,v 1.11 2012/08/30 04:06:56 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/06/07 04:55:00 $
+// $Date: 2012/08/30 04:06:56 $
 //
 // Original author KLG
 //
@@ -60,17 +60,21 @@ private:
   bool _hasActiveShield;
 
   double _HallSteelHalfThick;
-  double _HallSteelHalfLengthX;
-  double _HallSteelHalfLengthY;
-  double _HallSteelHalfLengthZ;
+  double _HallSteelHalfSideShieldHeight;
+  double _HallSteelHalfRShieldLength;
+  double _HallSteelHalfLShieldLength;
+  double _HallSteelHalfTShieldLength;
+  double _HallSteelHalfTSRShieldLength;
+  double _HallSteelHalfTSLShieldLength;
   double _HallSteelHoleRadius;
 
   CLHEP::Hep3Vector _HallSteelOffset; // aka CRPassiveShield offset
-
-  CLHEP::Hep3Vector _TopHallSteelOffset;
-  CLHEP::Hep3Vector _LeftHallSteelOffset;
-  CLHEP::Hep3Vector _RightHallSteelOffset;
-  CLHEP::Hep3Vector _DownstreamHallSteelOffset;
+  CLHEP::Hep3Vector _HallSteelRShieldCenter;
+  CLHEP::Hep3Vector _HallSteelLShieldCenter;
+  CLHEP::Hep3Vector _HallSteelTShieldCenter;
+  CLHEP::Hep3Vector _HallSteelDShieldCenter;
+  CLHEP::Hep3Vector _HallSteelTSRShieldCenter;
+  CLHEP::Hep3Vector _HallSteelTSLShieldCenter;
 
   std::string _HallSteelMaterialName;
 
