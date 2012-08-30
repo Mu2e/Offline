@@ -1,9 +1,9 @@
 //
 // Construct ExtinctionMonitor UCI.
 //
-// $Id: constructExtMonUCI.cc,v 1.13 2012/08/28 08:24:38 youzy Exp $
+// $Id: constructExtMonUCI.cc,v 1.14 2012/08/30 14:24:03 youzy Exp $
 // $Author: youzy $
-// $Date: 2012/08/28 08:24:38 $
+// $Date: 2012/08/30 14:24:03 $
 
 #include <iostream>
 
@@ -426,7 +426,7 @@ namespace mu2e {
         *shdChannelRot = CLHEP::HepRotation::IDENTITY;
         shdChannelRot->rotateAxes( newX, newY, newZ );
         shdChannelRot->invert();
-        if (verbosity >= 0) shdChannelRot->print(cout);
+        if (verbosity >= 2) shdChannelRot->print(cout);
 
         G4Box *shdOuter = reg.add( new G4Box( name.str()+"_Outer", shdParams[0], shdParams[1], shdParams[2] ) );
         G4Box *shdInner = reg.add( new G4Box( name.str()+"_Inner", shdChannelParams[0], shdChannelParams[1], shdChannelParams[2]*1.2 ) );
