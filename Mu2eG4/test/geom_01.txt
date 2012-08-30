@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.162 2012/08/30 04:06:56 ehrlich Exp $
+// $Id: geom_01.txt,v 1.163 2012/08/30 21:48:56 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/08/30 04:06:56 $
+// $Date: 2012/08/30 21:48:56 $
 //
 // Original author Rob Kutschke
 //
@@ -446,7 +446,7 @@ string         crs.scintillatorBarPigmentationMaterialName  = "G4_TITANIUM_DIOXI
 vector<double> crs.scintillatorModuleOuterSheetHalfLengths  = { 0.8, 2383., 620.5}; // doc-db 1330 //0.063"=1.6mm;
 string         crs.scintillatorModuleOuterSheetMaterial     = "G4_Al";
 string         crs.scintillatorModuleInterLayerSheetMaterialName  = "G4_POLYSTYRENE";
-double         crs.scintillatorModuleInterLayerSheetHalfThickness = 1.9; // ?? total thickness is 40.8mm=3*10+2*1.6+2*x
+double         crs.scintillatorModuleInterLayerSheetHalfThickness = 2.7; // total thickness is 40.8mm=3*(2*5.0)+2*(2*2.7)
 vector<double> crs.moduleUnistrutHalfLengths                = {28.,  2383., 157.}; //???? // fig 11.9 p.179
 // double         crs.wallUnistrutHalfThickness    = 28.;  // (154 - 41)/4 = 28.25 ~28 ; not used
 // assume the unistrut on the steel to be of the same thickness as the one on the modules
