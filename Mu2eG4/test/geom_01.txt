@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.163 2012/08/30 21:48:56 ehrlich Exp $
+// $Id: geom_01.txt,v 1.164 2012/08/30 21:59:26 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/08/30 21:48:56 $
+// $Date: 2012/08/30 21:59:26 $
 //
 // Original author Rob Kutschke
 //
@@ -473,7 +473,7 @@ vector<double> crs.shieldTST_Offset = { 2170.4, 8324.5, -3020.5};
 
 bool   crs.vetoVisible    = true;
 bool   crs.vetoSolid      = true;
-int    crs.verbosityLevel = 2;
+int    crs.verbosityLevel = 0;
 
 
 // Magnetic field
