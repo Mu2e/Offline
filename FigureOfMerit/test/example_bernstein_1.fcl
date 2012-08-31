@@ -1,20 +1,20 @@
 # Parameters to analyze the following files:
 # 
-# Bob Bernstein's second set of CE and DIO runs 
-# (34322 intended .5M CE's, and 34393 tried for 3M DIO's with CZ distribution 
-# on 102.0 to 105 -- both actually have fewer generated because of job failures)
-# The CE and DIO files were created April 2012 and passed through the
-# ConsolidateMultipleTrackFiles tool. 
+# Bob Bernstein's first set of CE (50000) and DIO (194000 - he tried for 200000
+# but 3 jobs faileed out of a hundred) runs. DIO's with CZ distribution 
+# on 102.5 to 105 -- both actually have fewer generated because of job failures)
+# The CE and DIO files were created Feb 17-22 2012  . 
 # Bob Bernstein's RPC files from Feb 2012 representing 2M generated RPC's;
 # the tool ignores RPC time cuts, using its own semi-analytic weight
 # normalizations.  These RPC files are known to be a bit imperfect, but 
 # "good enough for now".
 
-# The tracks in these files were all found with an early version of the fitter.
-# The momentum error core and tails are larger than they would be today, and
-# efficiency smaller.
+# The tracks in these files were all found with a very early version of the 
+# fitter.
+# The momentum error core and tails are much larger than they would be today, 
+# and efficiency smaller.
 
-outputFile:  "example_bernstein_2.out"
+outputFile:  "example_bernstein_1.out"
 
 trackerCuts: 
 {
@@ -34,36 +34,34 @@ momentumCuts:
 
 # Time cuts (starts of live time windows)
 t0cuts : [770]
-# If you wish to scan possible t0 cuts:
-# t0cuts : [ 710, 730, 750, 770, 790, 810 ]
 
-# Bernstein's  CE34322 CE data
+# Bernstein's  CE4322 CE data
 conversionElectrons:
 {
 CEdataFiles : 
 [
-"/mu2e/data/users/mf/CEFilesMixedAllTime/CE34322_0_49.root"
+"/mu2e/data/users/mf/CEFilesMixed.root"
 ]
-numberOfGeneratedMuonConversions : 490000
-liveGateFraction                 : 1.00
-# Live gate fraction is used if electrons were all generated past some
-# arbitrary time cut.  Here the mct0 distribution is complete:  starts rising
-# at about 250 to a peak at 400, and falls off from there.
+numberOfGeneratedMuonConversions : 50000
+liveGateFraction                 : 0.47
+# The electrons were created starting at 700 nsec.  Only 47% survive to that
+# time.
 }
 
-# Bernstein's mixed all time DIO34393 DIO data
+# Bernstein's first mixed no tag DIO data
 decayInOrbitElectrons:
 {
 DIOdataFiles : 
 [
-"/mu2e/data/users/mf/DIOFilesMixedAllTime/DIO34393_0_49.root"    ,
-"/mu2e/data/users/mf/DIOFilesMixedAllTime/DIO34393_50_99.root"   ,
-"/mu2e/data/users/mf/DIOFilesMixedAllTime/DIO34393_100_199.root" 
+"/mu2e/data/users/mf/DIOFilesMixed1tag.root"    ,
+"/mu2e/data/users/mf/DIOFilesMixed2tag.root"   
 ]
-numberOfGeneratedDIOs     : 2815000
+numberOfGeneratedDIOs     : 194000
 dioTracksWeighted         : false
-DIOgenerationLowerLimit   : 102.0
-liveGateFraction          : 1.00
+DIOgenerationLowerLimit   : 102.5
+liveGateFraction          : 0.47
+# All decays in orbit were generated after 700 nsec.  Only 47% of the 
+# Stopped muons that DIO would do so after 700 nsec.
 }
 
 # Bernsteins's mixed-tag RPC data
