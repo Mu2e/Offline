@@ -116,9 +116,11 @@ TrkPatRec :
                 material                                : false
                 seedsmear       			: 10000
                 maxhitchi                               : 5.0
-                updateT0        			: false
                 hiterr                                  : [ 5.0, 1.44 ]
                 ambiguityStrategy       		: [0,0]
+		t0Tolerance				: [5.0,5.0]
+		initT0					: true 
+		updateT0				: false
         }
 # Kalman fit configuration for the final track fit
         KalFit :
@@ -127,6 +129,7 @@ TrkPatRec :
 		mingap					: 1.0
 		hiterr 					: [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
 		ambiguityStrategy    			: [ 0, 0, 2, 2, 2, 2, 2, 2, 2 ]
+		t0Tolerance				: [2.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.2, 0.2, 0.1]
 		HitAmbigPenalty 			: false
 		HitMinDrift 				: 0.1
 		ZeroDriftPenalty 			: 0.05
