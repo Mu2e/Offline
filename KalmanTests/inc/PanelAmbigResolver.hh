@@ -2,9 +2,9 @@
 // class to resolve hit ambiguities by panel, assuming a reasonable track
 // fit as input
 //
-// $Id: PanelAmbigResolver.hh,v 1.3 2012/07/25 20:56:57 brownd Exp $
+// $Id: PanelAmbigResolver.hh,v 1.4 2012/08/31 22:39:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/25 20:56:57 $
+// $Date: 2012/08/31 22:39:00 $
 //
 #ifndef PanelAmbigResolver_HH
 #define PanelAmbigResolver_HH
@@ -63,10 +63,10 @@ namespace mu2e {
       virtual ~PanelAmbigResolver();
 // resolve a track.  Depending on the configuration, this might
 // update the hit state and the t0 value.
-      virtual void resolveTrk(TrkKalFit& kfit) const;
+      virtual void resolveTrk(KalFitResult& kfit) const;
     private:
 // resolve the ambiguity on a single panel
-      void resolvePanel(TSHV& phits, TrkKalFit& kfit) const;
+      void resolvePanel(TSHV& phits, KalFitResult& kfit) const;
 // fill information about a given panel's track and hits
       bool fillPanelInfo(TSHV const& phits, const KalRep* krep, PanelInfo& pinfo) const;
 // compute the panel result for a given ambiguity/activity state and the ionput t0

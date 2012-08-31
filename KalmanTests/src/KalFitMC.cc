@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.33 2012/08/04 00:38:06 brownd Exp $
+// $Id: KalFitMC.cc,v 1.34 2012/08/31 22:39:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/04 00:38:06 $
+// $Date: 2012/08/31 22:39:00 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -196,7 +196,8 @@ namespace mu2e
 	  TrkFitDirection::FitDirection fdir = parvec[4]>0 ?
 	  TrkFitDirection::downstream : TrkFitDirection::upstream;
 	  TrkParticle::type ptype = (TrkParticle::type)imcs->simParticle()->pdgId();
-          mytrk = TrkDef(mytrk.strawHitCollection(),indices,parvec,dummy,TrkParticle(ptype),TrkFitDirection(fdir),t0,_mct0err);
+          mytrk = TrkDef(mytrk.strawHitCollection(),indices,parvec,dummy,TrkParticle(ptype),TrkFitDirection(fdir));
+	  mytrk.setT0(TrkT0(t0,_mct0err));
           retval = true;
         }
       }
@@ -227,8 +228,8 @@ namespace mu2e
     } else {
       _resid = _residerr = -100.0;
     }
-    _hitt0 = strawhit->hitT0();
-    _hitt0err = strawhit->hitT0Err();
+    _hitt0 = strawhit->hitT0()._t0;
+    _hitt0err = strawhit->hitT0()._t0err;
     _hflt = strawhit->hitLen();
     _trkflt = strawhit->fltLen();
     _active = strawhit->isActive();
@@ -290,8 +291,8 @@ namespace mu2e
        hitsDiag(hits);
      }
      if(krep->fitCurrent()){
-       _t00 = _t0 = krep->t0().t0();
-       _t00err = _t0err = krep->t0().t0Err();
+       _t0 = krep->t0().t0();
+       _t0err = krep->t0().t0Err();
        _fitstatus = krep->fitStatus().success();
        _nhits = krep->hotList()->nHit();
        _niter = krep->iterations();
@@ -377,7 +378,7 @@ namespace mu2e
 	tshinfo._rdrifterr = tsh->driftRadiusErr();
 	tshinfo._trklen = tsh->fltLen();
 	tshinfo._hlen = tsh->hitLen();
-	tshinfo._ht = tsh->hitT0();
+	tshinfo._ht = tsh->hitT0()._t0;
 	tshinfo._tddist = tsh->timeDiffDist();
 	tshinfo._tdderr = tsh->timeDiffDistErr();
 	tshinfo._ambig = tsh->ambig();
@@ -622,8 +623,6 @@ namespace mu2e
     art::ServiceHandle<art::TFileService> tfs;
     _trkdiag=tfs->make<TTree>("trkdiag","trk diagnostics");
     _trkdiag->Branch("fitstatus",&_fitstatus,"fitstatus/I");
-    _trkdiag->Branch("t00",&_t00,"t00/F");
-    _trkdiag->Branch("t00err",&_t0err,"t00err/F");
     _trkdiag->Branch("t0",&_t0,"t0/F");
     _trkdiag->Branch("t0err",&_t0err,"t0err/F");
     _trkdiag->Branch("nhits",&_nhits,"nhits/I");

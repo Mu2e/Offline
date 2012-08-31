@@ -1,9 +1,9 @@
 //
 // base class to resolve hit ambiguities 
 //
-// $Id: AmbigResolver.hh,v 1.2 2012/07/25 20:56:57 brownd Exp $
+// $Id: AmbigResolver.hh,v 1.3 2012/08/31 22:38:59 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/25 20:56:57 $
+// $Date: 2012/08/31 22:38:59 $
 //
 #ifndef AmbigResolver_HH
 #define AmbigResolver_HH
@@ -13,7 +13,7 @@
 class KalRep;
 class TrkSimpTraj;
 namespace mu2e {
-  class TrkKalFit;
+  class KalFitResult;
   class TrkStrawHit;
 
   class AmbigResolver {
@@ -23,7 +23,7 @@ namespace mu2e {
       virtual ~AmbigResolver() = 0;
 // resolve a track.  Depending on the configuration, this might
 // update the hit state and the t0 value.
-      virtual void resolveTrk(TrkKalFit& kfit) const = 0;
+      virtual void resolveTrk(KalFitResult& kfit) const = 0;
     protected:
 // find the local trajectory piece computed from the fit excluding a particular set of hits.
 // the hits are assumed to be contiguous

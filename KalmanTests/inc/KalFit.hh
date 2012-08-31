@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.23 2012/07/25 20:56:57 brownd Exp $
+// $Id: KalFit.hh,v 1.24 2012/08/31 22:39:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/25 20:56:57 $
+// $Date: 2012/08/31 22:39:00 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -20,6 +20,7 @@
 // KalFit objects
 #include "KalmanTests/inc/TrkFitDirection.hh"
 #include "KalmanTests/inc/TrkDef.hh"
+#include "KalmanTests/inc/KalFitResult.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/AmbigResolver.hh"
 #include "KalmanTrack/KalContext.hh"
@@ -32,41 +33,18 @@
 
 namespace mu2e 
 {
-// struct defining the output of the fit
-  struct TrkKalFit {
-    TrkParticle _tpart; // particle type
-    TrkFitDirection _fdir; // fit direction
-    TrkT0 _t00; // t0 value at start of fit
-    TrkT0 _t0; // t0 value at end of fit
-    KalRep* _krep; // Kalman rep, owned by the trk
-    std::vector<TrkStrawHit*> _hits; // straw hits, owned by the KalRep
-    TrkErrCode _fit; // error code from last fit
-    unsigned _nt0iter; // number of times t0 was iterated
-    unsigned _nweediter; // number of iterations on hit weeding
-    TrkKalFit() : _krep(0), _fit(TrkErrCode::fail) {}
-    ~TrkKalFit() { delete _krep;}
-    void setT0(const TrkT0& t0) { _t0 = t0; }
-    void setT00(const TrkT0& t0) { _t00 = t0; }
-    void removeFailed() { if(_fit.failure())deleteTrack(); }
-    void fit() { if(_fit.success()) _fit = _krep->fit(); }
-    void deleteTrack();
-    KalRep* stealTrack() { KalRep* retval = _krep; _krep=0; _hits.clear(); return retval; }
-  };
-  
   class KalFit
   {
   public:
-// define different t0 strategies.  Eventually t0 finding should be its own class
-    enum t0Strategy {external=0,median,histogram};
-// define different ambiguity resolution strategies.  These will eventually be their own classes
+// define different ambiguity resolution strategies
     enum ambigStrategy {fixedambig=0,pocaambig,hitambig,panelambig};
 // parameter set should be passed in on construction
     explicit KalFit(fhicl::ParameterSet const&);
     virtual ~KalFit();
 // main function: given a track definition, create a fit object from it
-    void makeTrack(TrkDef const& mytrk,TrkKalFit& myfit);
+    void makeTrack(KalFitResult& kdef);
 // add a set of hits to an existing fit
-    void addHits(TrkKalFit& myfit,const StrawHitCollection* straws, std::vector<hitIndex> indices);
+    void addHits(KalFitResult& kdef,const StrawHitCollection* straws, std::vector<hitIndex> indices);
   private:
 // Fetch the BField.  this function fetches the field if it's not yet initialized
     const BField* bField();
@@ -78,9 +56,7 @@ namespace mu2e
     bool _material;
 //    bool _ambigflip;
     bool _weedhits;
-    bool _updatet0;
     bool _removefailed;
-    double _t0tol;
     double _maxhitchi;
     unsigned _maxiter;
     double _mingap;
@@ -89,26 +65,29 @@ namespace mu2e
     unsigned _maxweed;
     std::vector<double> _herr;
     double _ssmear;
-    double _t0errfac;
-    double _mint0doca;
     double _maxdriftpull;
-    double _t0nsig;
     TrkParticle _tpart;
     TrkFitDirection _fdir;
-    t0Strategy _t0strategy;
     std::vector<int> _ambigstrategy;
     std::vector<AmbigResolver*> _ambigresolver;
+    bool _initt0,_updatet0;
+    std::vector<double> _t0tol;
+    double _t0errfac; // fudge factor for the calculated t0 error
+    double _mint0doca; // minimum (?) doca for t0 hits
+    double _t0nsig; // # of sigma to include when selecting hits for t0
     // helper functions
-    bool fitable(TrkDef const& mytrk);
-    bool updateT0(TrkKalFit& myfit);
-    bool weedHits(TrkKalFit& myfit);
-    void fitTrack(TrkKalFit& myfit);
-    void makeHits(TrkDef const& mytrk,TrkKalFit& myfit);
-    void initT0(TrkDef const& mytrk,TrkT0& t0);
-    double findZFltlen(const TrkKalFit& myfit,double zval);
-// general
-    static const double _vlight;
-// 
+    bool fitable(TrkDef const& tdef);
+    bool weedHits(KalFitResult& kdef);
+    void fitTrack(KalFitResult& kdef);
+    void fitIteration(KalFitResult& kdef,size_t iiter);
+    void makeHits(KalFitResult& kdef, TrkT0 const& t0);
+    void makeMaterials(KalFitResult& kdef);
+    void initT0(TrkDef const& tdef, TrkT0& t0);
+    bool updateT0(KalFitResult& kdef);
+    void updateHitTimes(KalFitResult& kres);
+    void findBoundingHits(std::vector<TrkStrawHit*>& hits, double flt0,
+	std::vector<TrkStrawHit*>::reverse_iterator& ilow,
+	std::vector<TrkStrawHit*>::iterator& ihigh);
   };
 }
 #endif

@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.16 2012/07/25 20:56:57 brownd Exp $
+// $Id: KalFitTest_module.cc,v 1.17 2012/08/31 22:39:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/25 20:56:57 $
+// $Date: 2012/08/31 22:39:00 $
 //
 
 // framework
@@ -114,26 +114,26 @@ namespace mu2e
       cout<<"MC information missing "<< endl;
       return;
     }
-    TrkDef mytrk(_strawhits,TrkParticle(),TrkFitDirection());
+    TrkDef tdef(_strawhits,TrkParticle(),TrkFitDirection());
     // must initialize t0, momentum, initial trajectory.  These should come from patrec
     // that doesn't yet exist. For now, take from the MC truth.  There must be a better way to define the primary particle, FIXME!!!!!!
     cet::map_vector_key trkid(1);
-    if(_kfitmc.trkFromMC(trkid,mytrk)){
+    if(_kfitmc.trkFromMC(trkid,tdef)){
       // use this to create a track
-      TrkKalFit myfit;
-      _kfit.makeTrack(mytrk,myfit);
+      KalFitResult kdef(tdef);
+      _kfit.makeTrack(kdef);
       //  diagnostics
       if(_diag > 0){
-	_kfitmc.kalDiag(myfit._krep);
+	_kfitmc.kalDiag(kdef._krep);
 	if(_diag > 1){
-	  for(std::vector<TrkStrawHit*>::iterator ihit=myfit._hits.begin();ihit!=myfit._hits.end();ihit++){
+	  for(std::vector<TrkStrawHit*>::iterator ihit=kdef._hits.begin();ihit!=kdef._hits.end();ihit++){
 	    TrkStrawHit* trkhit = *ihit;
 	    _kfitmc.hitDiag(trkhit);
 	  }
 	}
       }
       // If fit is successful, pass ownership of the track to the event.
-      if(myfit._krep != 0)tracks->push_back( myfit.stealTrack() );
+      if(kdef._krep != 0)tracks->push_back( kdef.stealTrack() );
     }
     event.put(tracks);
   }

@@ -2,12 +2,12 @@
 // class to resolve hit ambiguities one hit at a time, assuming a reasonable track
 // fit as input
 //
-// $Id: FixedAmbigResolver.cc,v 1.2 2012/05/31 05:37:32 brownd Exp $
+// $Id: FixedAmbigResolver.cc,v 1.3 2012/08/31 22:39:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/31 05:37:32 $
+// $Date: 2012/08/31 22:39:00 $
 //
 #include "KalmanTests/inc/FixedAmbigResolver.hh"
-#include "KalmanTests/inc/KalFit.hh"
+#include "KalmanTests/inc/KalFitResult.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 
 ///using namespace CLHEP;
@@ -22,7 +22,7 @@ namespace mu2e {
   FixedAmbigResolver::~FixedAmbigResolver() {}
 
   void
-  FixedAmbigResolver::resolveTrk(TrkKalFit& kfit) const {
+  FixedAmbigResolver::resolveTrk(KalFitResult& kfit) const {
 // loop over all the hits
     TSHI ihit = kfit._hits.begin();
     while(ihit != kfit._hits.end()){

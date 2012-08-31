@@ -1,8 +1,8 @@
 //
 // resolver that sets every hit ambiguity according to POCA on each iteration
-// $Id: PocaAmbigResolver.hh,v 1.1 2012/05/14 19:20:02 brownd Exp $
+// $Id: PocaAmbigResolver.hh,v 1.2 2012/08/31 22:39:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
+// $Date: 2012/08/31 22:39:00 $
 //
 #ifndef PocaAmbigResolver_HH
 #define PocaAmbigResolver_HH
@@ -16,7 +16,7 @@ namespace mu2e {
 // construct from parameter set
       explicit PocaAmbigResolver(fhicl::ParameterSet const& pset);
       virtual ~PocaAmbigResolver();
-      virtual void resolveTrk(TrkKalFit& kfit) const;
+      virtual void resolveTrk(KalFitResult& kfit) const;
     private:
   };
 }

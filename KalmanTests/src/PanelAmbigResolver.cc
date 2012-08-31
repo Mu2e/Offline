@@ -2,12 +2,12 @@
 // class to resolve hit ambiguities by panel, assuming a reasonable track
 // fit as input
 //
-// $Id: PanelAmbigResolver.cc,v 1.3 2012/07/25 20:56:57 brownd Exp $
+// $Id: PanelAmbigResolver.cc,v 1.4 2012/08/31 22:39:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/25 20:56:57 $
+// $Date: 2012/08/31 22:39:00 $
 //
 #include "KalmanTests/inc/PanelAmbigResolver.hh"
-#include "KalmanTests/inc/KalFit.hh"
+#include "KalmanTests/inc/KalFitResult.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "BaBar/BaBar.hh"
 #include "TrkBase/TrkT0.hh"
@@ -65,7 +65,7 @@ namespace mu2e {
   PanelAmbigResolver::~PanelAmbigResolver() {}
 
   void 
-  PanelAmbigResolver::resolveTrk(TrkKalFit& kfit) const {
+  PanelAmbigResolver::resolveTrk(KalFitResult& kfit) const {
 // sort by panel
     std::sort(kfit._hits.begin(),kfit._hits.end(),panelcomp());
 // collect hits in the same panel
@@ -84,7 +84,7 @@ namespace mu2e {
   }
 
   void
-  PanelAmbigResolver::resolvePanel(std::vector<TrkStrawHit*>& phits,TrkKalFit& kfit) const {
+  PanelAmbigResolver::resolvePanel(std::vector<TrkStrawHit*>& phits,KalFitResult& kfit) const {
 // fill panel information
     PanelInfo pinfo;
     fillPanelInfo(phits,kfit._krep,pinfo);
@@ -95,7 +95,7 @@ namespace mu2e {
     do {
 // for each state, fill the result of the 1-dimensional optimization
       PanelResult result(tshsv);
-      fillResult(pinfo,kfit._t0,result);
+      fillResult(pinfo,kfit._krep->t0(),result);
       if(result._status == 0)results.push_back(result);
     } while(tshsv.increment());
     if(results.size() > 0){

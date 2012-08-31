@@ -1,9 +1,9 @@
 //
 // Track definition object
 //
-// $Id: TrkDef.cc,v 1.8 2012/08/04 00:38:06 brownd Exp $
+// $Id: TrkDef.cc,v 1.9 2012/08/31 22:39:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/04 00:38:06 $
+// $Date: 2012/08/31 22:39:00 $
 //
 // Original author David Brown, LBNL
 //
@@ -19,34 +19,33 @@ namespace mu2e
   TrkFitDirection TrkDef::_downstream(TrkFitDirection::downstream);
 
   TrkDef::TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits,
-    const HelixTraj& helix, TrkParticle const& tpart, TrkFitDirection const& fdir,
-    double t0, double t0err) : _eventid(0), _trkid(0),
-    _straws(strawcollection), _indices(strawhits),_h0(helix),_ptraj(0),_tpart(tpart),_fdir(fdir),_t0(t0,t0err)
+    const HelixTraj& helix, TrkParticle const& tpart, TrkFitDirection const& fdir) :
+    _eventid(0), _trkid(0),
+    _straws(strawcollection), _indices(strawhits),_h0(helix),_tpart(tpart),_fdir(fdir),_t0(0.0,-1.0)
   {}
     
   TrkDef::TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits,
     const HepVector& parvec, const HepSymMatrix& covar,
-    TrkParticle const& tpart, TrkFitDirection const& fdir,
-    double t0, double t0err) : _eventid(0), _trkid(0),
-    _straws(strawcollection),_indices(strawhits),_h0(parvec,covar),_ptraj(0),_tpart(tpart),_fdir(fdir),_t0(t0,t0err)
+    TrkParticle const& tpart, TrkFitDirection const& fdir) : _eventid(0), _trkid(0),
+    _straws(strawcollection),_indices(strawhits),_h0(parvec,covar),_tpart(tpart),_fdir(fdir),_t0(0.0,-1.0)
   {}
 
   TrkDef::TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits,
     TrkParticle const& tpart, TrkFitDirection const& fdir) : _eventid(0), _trkid(0),
-    _straws(strawcollection), _indices(strawhits),_h0(_dpar,_dcov),_ptraj(0),_tpart(tpart),_fdir(fdir),_t0(0.0,-1.0)
+    _straws(strawcollection), _indices(strawhits),_h0(_dpar,_dcov),_tpart(tpart),_fdir(fdir),_t0(0.0,-1.0)
   {}
 
   TrkDef::TrkDef(const StrawHitCollection* strawcollection,TrkParticle const& tpart, TrkFitDirection const& fdir) :
-   _eventid(0), _trkid(0),_straws(strawcollection),_h0(_dpar,_dcov),_ptraj(0),_tpart(tpart),_fdir(fdir),_t0(0.0,-1.0)
+   _eventid(0), _trkid(0),_straws(strawcollection),_h0(_dpar,_dcov),_tpart(tpart),_fdir(fdir),_t0(0.0,-1.0)
   {}
 
   TrkDef::TrkDef(TrkParticle const& tpart, TrkFitDirection const& fdir) :
-   _eventid(0), _trkid(0),_straws(0),_h0(_dpar,_dcov),_ptraj(0),_tpart(tpart),_fdir(fdir),_t0(0.0,-1.0)
+   _eventid(0), _trkid(0),_straws(0),_h0(_dpar,_dcov),_tpart(tpart),_fdir(fdir),_t0(0.0,-1.0)
   {}
   
   TrkDef::TrkDef(const TrkDef& other ) : _eventid(other._eventid), _trkid(other._trkid),
     _straws(other._straws),_indices(other._indices),
-    _h0(other._h0), _ptraj(other._ptraj), _tpart(other._tpart),
+    _h0(other._h0), _tpart(other._tpart),
     _fdir(other._fdir), _t0(other._t0)
   {}
   
@@ -58,7 +57,6 @@ namespace mu2e
       _straws = other._straws;
       _indices = other._indices;
       _h0 = other._h0;
-      _ptraj = other._ptraj;
       _tpart = other._tpart;
       _fdir = other._fdir;
       _t0 = other._t0;

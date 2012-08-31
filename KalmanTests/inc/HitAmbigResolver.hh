@@ -2,9 +2,9 @@
 // class to resolve hit ambiguities by panel, assuming a reasonable track
 // fit as input
 //
-// $Id: HitAmbigResolver.hh,v 1.2 2012/07/25 20:56:57 brownd Exp $
+// $Id: HitAmbigResolver.hh,v 1.3 2012/08/31 22:38:59 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/25 20:56:57 $
+// $Date: 2012/08/31 22:38:59 $
 //
 #ifndef HitAmbigResolver_HH
 #define HitAmbigResolver_HH
@@ -27,7 +27,7 @@ namespace mu2e {
       virtual ~HitAmbigResolver();
 // resolve a track.  Depending on the configuration, this might
 // update the hit state and the t0 value.
-      virtual void resolveTrk(TrkKalFit& kfit) const;
+      virtual void resolveTrk(KalFitResult& kfit) const;
     private:
 // penalty function depends on the drift radius
       double penaltyError(double rdrift) const;
