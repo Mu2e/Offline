@@ -65,15 +65,23 @@ physics : {
             inputModuleLabel  : "pixelDigitization"
             inputInstanceName : ""
         }
+        hitValidation: {
+            module_type: EMFRawHitsValidator
+            inputModuleLabel : "pixelDigitization"
+            inputInstanceName : ""
+            geomModuleLabel : "geom"
+            geomInstanceName : ""
+        }
     }
 
     tprint : [ generate, g4run, pixelDigitization ]
     gm  : [ geom ]
 
-    eprint: [ emfprintsim, emfprinttruth, FullOutput ]
+    eprint: [ emfprintsim, emfprinttruth, hitValidation ]
+    out : [ FullOutput ]
 
     trigger_paths  : [gm, tprint]
-    end_paths : [ eprint ]
+    end_paths : [ eprint, out ]
 }
 
 outputs: {
