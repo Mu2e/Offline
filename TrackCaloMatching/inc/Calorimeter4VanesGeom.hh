@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.3 2012/07/23 17:52:27 brownd Exp $
+// $Id: Calorimeter4VanesGeom.hh,v 1.4 2012/08/31 22:34:53 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/08/31 22:34:53 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -39,7 +39,6 @@
 //tracker includes
 #include "TrkBase/TrkRep.hh"
 #include "KalmanTrack/KalRep.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -53,15 +52,9 @@
 #include "BaBar/CLHEP/include/Geometry/Transformation.h"
 #include "BaBar/include/DetectorModel/DetElem.hh"
 #include "BaBar/include/TrkBase/TrkDifTraj.hh"
-#include "BaBar/include/TrkBase/TrkExchangePar.hh"
-#include "KalmanTests/inc/TrkDef.hh"
+#include "BaBar/include/TrkBase/HelixTraj.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/KalFit.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
-#include "TrkPatRec/inc/TrkHitFilter.hh"
-#include "TrkPatRec/inc/TrkHelixFit.hh"
-#include "TrkBase/TrkPoca.hh"
 
 //calorimeter includes
 #include "CalorimeterGeom/inc/Calorimeter.hh"

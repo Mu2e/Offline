@@ -3,9 +3,9 @@
 //  All in Detector (=Tracker) coordinate. Points other than tracker coordinates are properly transformed. 
 //  B field basically requires mu2e coordinate
 //
-//  $Id: ReadTrkExt_module.cc,v 1.2 2012/08/18 22:27:56 mjlee Exp $
-//  $Author: mjlee $
-//  $Date: 2012/08/18 22:27:56 $
+//  $Id: ReadTrkExt_module.cc,v 1.3 2012/08/31 22:36:33 brownd Exp $
+//  $Author: brownd $
+//  $Date: 2012/08/31 22:36:33 $
 //
 //  Original author MyeongJae Lee
 //
@@ -35,7 +35,7 @@ using namespace CLHEP;
 
 #include "KalmanTests/inc/KalRepCollection.hh"
 #include "TrkBase/TrkHotList.hh"
-#include "TrkBase/TrkExchangePar.hh"
+#include "TrkBase/HelixParams.hh"
 #include "TrkBase/TrkHitOnTrk.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
@@ -345,7 +345,7 @@ namespace mu2e {
         _hotx[i] = point.x();
         _hoty[i] = point.y();
         _hotz[i] = point.z();
-        _hott0[i] = strawHit->hitT0() / CLHEP::ns;
+        _hott0[i] = strawHit->hitT0()._t0 / CLHEP::ns;
         ++i;
         if (_mcFlag) {
           if (_nsim <=0) _nsim = readSimulation(event, strawHit);
@@ -369,7 +369,7 @@ namespace mu2e {
       _trkx[i] = p.x();
       _trky[i] = p.y();
       _trkz[i] = p.z();
-      TrkExchangePar par = krep.helix(fltlen);
+      HelixParams par = krep.helix(fltlen);
       _trkd0[i] = par.d0();
       _trkz0[i] = par.z0();
       _trkphi[i] = par.phi0();

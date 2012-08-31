@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.3 2012/07/23 17:52:27 brownd Exp $
+// $Id: TrkExtrapol_module.cc,v 1.4 2012/08/31 22:34:53 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/08/31 22:34:53 $
 //
 // Original author G. Pezzullo
 //
@@ -34,6 +34,9 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 //tracker includes
+#include "BaBar/BaBar.hh"
+#include "BaBar/Constants.hh"
+#include "TrkBase/HelixParams.hh"
 #include "TrkBase/TrkRep.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalFitMC.hh"

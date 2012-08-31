@@ -1,12 +1,13 @@
 //
-// $Id: Calorimeter4VanesGeom.cc,v 1.1 2012/07/10 00:02:19 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
+// $Id: Calorimeter4VanesGeom.cc,v 1.2 2012/08/31 22:34:53 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/08/31 22:34:53 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
 
 #include "TrackCaloMatching/inc/Calorimeter4VanesGeom.hh"
+#include "BaBar/Constants.hh"
 #include <cmath>
 
 

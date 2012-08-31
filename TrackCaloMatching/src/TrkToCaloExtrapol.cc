@@ -1,7 +1,7 @@
 //
-// $Id: TrkToCaloExtrapol.cc,v 1.2 2012/07/23 17:52:27 brownd Exp $
+// $Id: TrkToCaloExtrapol.cc,v 1.3 2012/08/31 22:34:53 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/08/31 22:34:53 $
 //
 // Original author G. Pezzullo
 //
@@ -15,6 +15,9 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "BaBar/BaBar.hh"
+#include "TrkBase/HelixParams.hh"
+#include "TrkBase/HelixTraj.hh"
 
 using namespace std;
 
