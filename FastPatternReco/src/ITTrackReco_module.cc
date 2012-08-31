@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.13 2012/08/04 01:13:54 brownd Exp $
+// $Id: ITTrackReco_module.cc,v 1.14 2012/08/31 22:35:54 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/08/04 01:13:54 $
+// $Date: 2012/08/31 22:35:54 $
 //
 // Original author G. Tassielli
 //
@@ -79,7 +79,7 @@
 //#include "KalmanTests/inc/KalFit.hh"
 //#include "KalmanTests/inc/KalFitMC.hh"
 //#include "TrkPatRec/inc/TrkHitFilter.hh"
-//#include "TrkPatRec/inc/TrkHelixFit.hh"
+//#include "TrkPatRec/inc/HelixFit.hh"
 //#include "TrkBase/TrkPoca.hh"
 //#include "TrkPatRec/src/TrkPatRec_module.cc"
 #include "TrkPatRec/inc/TrkPatRec.hh"
@@ -2172,10 +2172,10 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
         points3D selectedPnts;
 
         // track fitting objects for this peak
-        std::vector<TrkHelix> helixesfit;
+        std::vector<HelixFitResult> helixesfit;
         std::vector<HelixTraj> trkhelixes;
         size_t iTrackFound=0;
-        std::map<size_t, std::vector<TrkHelix> > helixesfitLoops;
+        std::map<size_t, std::vector<HelixFitResult> > helixesfitLoops;
         std::map<size_t, std::vector<HelixTraj> > trkhelixesLoops;
         std::map<size_t,  std::vector< std::vector<size_t> > > helixezPntIdsLoops;
         RbstFitPntsLpsPntsRel xyzpLoopRel;
@@ -2206,14 +2206,13 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
                         ++iPotLoop;
                 }
 
-                // track fitting objects for this peak
-                TrkHelix helixfit;
                 //TrkKalFit seedfit, kalfit;
                 // create track definitions for the different fits from this initial information
                 TrkDef helixdef(hits,/*tpeaks[ipeak]*/tpeaks.back()._trkptrs);
-                helixdef.setTrkT0(tpeaks[ipeak]._tpeak-_maxTdrift,_tpeakerr);
+                // track fitting objects for this peak
+                HelixFitResult helixfit(helixdef);
                 // robust helix fit
-                bool isfitted=_hfit.findHelix(helixdef,helixfit,xyzp);
+                bool isfitted=_hfit.findHelix(helixfit,xyzp);
                 if(isfitted){
                         cout<<"Using Robust Fit, Circle Found with center "<<helixfit._center<<" and Rad "<<helixfit._radius<<endl;
                         for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
@@ -2248,7 +2247,7 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
                 if(isfitted) {
                         HepVector hpar;
                         HepVector hparerr;
-                        _hfit.helixParams(helixdef,helixfit,hpar,hparerr);
+                        _hfit.helixParams(helixfit,hpar,hparerr);
                         HepSymMatrix hcov = vT_times_v(hparerr);
                         HelixTraj seed(hpar,hcov);
                         std::cout<<"fitted "<<isfitted<<" ";
@@ -2263,13 +2262,13 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
                                 for (std::vector<size_t>::iterator loopPntIds_it = loopPntIds.begin(); loopPntIds_it != loopPntIds.end(); ++loopPntIds_it) {
                                         xyzpLoop.push_back( xyzpSel.at(*loopPntIds_it) );
                                 }
-                                TrkHelix helixfitLoop;
-                                isLoopFitted=_hfit.findHelix(helixdef,helixfitLoop,xyzpLoop);
+                                HelixFitResult helixfitLoop(helixdef);
+                                isLoopFitted=_hfit.findHelix(helixfitLoop,xyzpLoop);
                                 if (isLoopFitted) {
                                         helixesfitLoops[iTrackFound].push_back(helixfitLoop);
                                         HepVector hparLoop;
                                         HepVector hparerrLoop;
-                                        _hfit.helixParams(helixdef,helixfitLoop,hparLoop,hparerrLoop);
+                                        _hfit.helixParams(helixfitLoop,hparLoop,hparerrLoop);
                                         HepSymMatrix hcovLoop = vT_times_v(hparerrLoop);
                                         HelixTraj seedLoop(hparLoop,hcovLoop);
                                         std::cout<<"fitted "<<iTrkLoop<<"-th loop:"<<endl;
@@ -2749,7 +2748,7 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
                 tmpCircleFound3D->cd(1);
                 int iRobCirCol = 0;
                 std::vector<TEllipse *> drawPotCirclesRobustFit;
-                for (std::vector<TrkHelix>::iterator helixesfit_it = helixesfit.begin(); helixesfit_it != helixesfit.end(); ++helixesfit_it ) {
+                for (std::vector<HelixFitResult>::iterator helixesfit_it = helixesfit.begin(); helixesfit_it != helixesfit.end(); ++helixesfit_it ) {
                         drawPotCirclesRobustFit.push_back( new TEllipse( helixesfit_it->_center.x()/CLHEP::cm, helixesfit_it->_center.y()/CLHEP::cm, helixesfit_it->_radius/CLHEP::cm, helixesfit_it->_radius/CLHEP::cm) );
                         drawPotCirclesRobustFit.back()->SetFillStyle(0);
                         drawPotCirclesRobustFit.back()->SetLineWidth(2);

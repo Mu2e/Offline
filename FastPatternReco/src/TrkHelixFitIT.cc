@@ -1,9 +1,9 @@
 //
 // class derived by TrkPatRec/inc/TrkHelixFit.hh to work with the ITracker
 //
-// $Id: TrkHelixFitIT.cc,v 1.3 2012/08/06 17:00:52 brownd Exp $
+// $Id: TrkHelixFitIT.cc,v 1.4 2012/08/31 22:35:54 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/08/06 17:00:52 $
+// $Date: 2012/08/31 22:35:54 $
 //
 // Original author G. Tassielli
 //
@@ -15,7 +15,7 @@ namespace mu2e {
 
 
 // main function: given a track definition, find the helix parameters
-bool TrkHelixFitIT::findHelix( TrkDef const& mytrk, TrkHelix& myfit, std::vector<XYZP> &xyzp ) {
+bool TrkHelixFitIT::findHelix(HelixFitResult& myfit, std::vector<XYZP> &xyzp ) {
         bool retval(false);
         // loop over hits, and store the points
         //std::vector<XYZP> xyzp;

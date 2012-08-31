@@ -4,9 +4,9 @@
 //
 // class derived by TrkPatRec/inc/TrkHelixFit.hh to work with the ITracker
 //
-// $Id: TrkHelixFitIT.hh,v 1.3 2012/07/23 17:52:27 brownd Exp $
+// $Id: TrkHelixFitIT.hh,v 1.4 2012/08/31 22:35:54 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Date: 2012/08/31 22:35:54 $
 //
 // Original author G. Tassielli
 //
@@ -22,7 +22,7 @@
 //#include "KalmanTests/inc/KalFit.hh"
 //#include "KalmanTests/inc/KalFitMC.hh"
 //#include "TrkPatRec/inc/TrkHitFilter.hh"
-#include "TrkPatRec/inc/TrkHelixFit.hh"
+#include "TrkPatRec/inc/HelixFit.hh"
 //#include "TrkBase/TrkPoca.hh"
 //#include "TrkPatRec/src/TrkPatRec_module.cc"
 
@@ -37,14 +37,14 @@
 
 namespace mu2e {
 
-class TrkHelixFitIT : public TrkHelixFit {
+class TrkHelixFitIT : public HelixFit {
 public:
         // parameter set should be passed in on construction
-        explicit TrkHelixFitIT(fhicl::ParameterSet const& pset):TrkHelixFit(pset) {}
+        explicit TrkHelixFitIT(fhicl::ParameterSet const& pset):HelixFit(pset) {}
 
         virtual ~TrkHelixFitIT(){}
         // main function: given a track definition, find the helix parameters
-        bool findHelix( TrkDef const& mytrk, TrkHelix& myfit, std::vector<XYZP> &xyzp );
+        bool findHelix(  HelixFitResult& myfit, std::vector<XYZP> &xyzp );
         //CellGeometryHandle *_itwp;
 
 private:
