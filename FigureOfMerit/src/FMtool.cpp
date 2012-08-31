@@ -52,7 +52,8 @@ void FMtool::analyze()
   // TODO - replace the setup steps by a driver that uses a file or whatever
   //        to get data inputs.
   
-  
+  setRootGraphics();
+        if (OUTPUT_detailedTrace) os << "### SetRootGraphics returned \n";  
   setFilterLevels();
         if (OUTPUT_detailedTrace) os << "### setFilterLevels returned \n";
   setCanonicals();
@@ -71,6 +72,42 @@ void FMtool::analyze()
   normalizeRPCbackground(genRPC);  
         if (OUTPUT_detailedTrace)  os << "### normalizeRPCbackground returned \n";
   applyFofM();
+}
+
+void FMtool::setRootGraphics()
+{
+  rg.rootFile = 
+        pset.get<std::string>("Root.rootFile","noRootFileNameSpecified");
+  if (rg.rootFile != "noRootFileNameSpecified") {
+    rg.enabled = true;
+    std::string cintFileDefault = rg.rootFile + ".cint"; 
+    rg.cintFile = pset.get<std::string>("Root.cintFile",cintFileDefault);
+    rg.rootfp = new TFile (rg.rootFile.c_str(),"RECREATE");
+    if (rg.rootfp->IsZombie()) {
+      os << "Failed to properly open the root output file " 
+                << rg.rootFile << "\n";
+      std::cerr << "Failed to properly open the root output file " 
+                << rg.rootFile << "\n";
+      delete rg.rootfp;
+      std::exit(1);
+    }
+  } else {
+    rg.enabled = false;
+    os << "No fcl parameter Root.rootFile detected. \n"
+       << "No root file containing data for graphics will be produced.\n";
+  }
+
+}  // setRootGraphics
+
+bool FMtool::RootGraphics::write() const 
+{
+  std::ofstream ofs (cintFile.c_str());
+  if (!ofs) {
+    std::cerr << "Failed to open cint file " << cintFile << " for writing\n";
+    return false;
+  }
+  ofs << cint;
+  return true;
 }
 
 void FMtool::setFilterLevels()
@@ -94,8 +131,8 @@ void FMtool::setCanonicals()
   // TODO - allow this to be set from file or whatever.
 
   // Canonical range
-  canonicalRangeLo = pset.get<double>("canonicalRangeLo",103.51);
-  canonicalRangeHi = pset.get<double>("canonicalRangeHi",104.70);
+  canonicalRangeLo = pset.get<double>("canonicalRangeLo",103.5);
+  canonicalRangeHi = pset.get<double>("canonicalRangeHi",104.7);
   
   ParameterSet binningPset = pset.get<ParameterSet>("binning",ParameterSet());
   double lowestBinDefault = 102.5;  
@@ -538,8 +575,8 @@ void FMtool::extractFitmom
             }
           }
         }
-     }
-     }
+      }
+    }
     if  (    (fitstatus == 1)     // track quality cuts 
           && (nactive   >= minimum_nactive)
           && (t0err     <= maximum_t0err)
@@ -564,6 +601,14 @@ void FMtool::extractFitmom
             } else {
               counts[t][binNumber] += 1.0; // everything has equal weight
             }
+            // #define RPCDIAGNOSTIC
+            #ifdef  RPCDIAGNOSTIC
+            if ( fitmom >= canonicalRangeLo && fitmom <= canonicalRangeHi ) {
+              if (!apply_timeCuts) {
+                std::cout << p << "  " << t0 << "\n";
+              }
+            }                 
+            #endif           
             ++nBinnedTracks[t];
             ++tracksBinned;
             if (dio) highPs[t].add(p);

@@ -30,11 +30,13 @@
 
 namespace mu2e {
 
+
 class FMtool
 {
 public:
   FMtool (fhicl::ParameterSet const & p, std::ostream & o);
   void   analyze();
+  void   setRootGraphics();
   void   setFilterLevels();
   void   setCanonicals();
   double obtainCEdata();
@@ -56,7 +58,8 @@ public:
   
 private:
   class NthHighest;
-  
+  class RootGraphics;
+    
   void decideVerbosity();
   void extractFitmom 
         ( TTree * tracks
@@ -183,15 +186,28 @@ private:
     double top;
     std::vector<double> vals;
   };
-
     
   // time window shapes
   splines::Spline<1> RPCtimeProbability;
   double stoppedPionsPerPOT;
   double extinction;
   
-  
+  // Root graphics 
+  struct RootGraphics
+  {
+    bool enabled;
+    std::string rootFile;
+    std::string cintFile;
+    TFile* rootfp;
+    std::string cint; 
+    RootGraphics() : enabled(false) {}
+    ~RootGraphics() { if (enabled) delete rootfp; }
+    bool write() const;
+  }; 
+
+  RootGraphics rg;
 }; // FMtool
+
 
 } // end namespace mu2e
 
