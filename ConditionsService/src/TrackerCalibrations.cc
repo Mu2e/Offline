@@ -1,9 +1,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.11 2012/08/22 22:20:42 genser Exp $
-// $Author: genser $
-// $Date: 2012/08/22 22:20:42 $
+// $Id: TrackerCalibrations.cc,v 1.12 2012/08/31 22:37:06 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/08/31 22:37:06 $
 //
 
 // Mu2e include files
@@ -36,6 +36,7 @@ namespace mu2e {
     // Calling classes that require a positive time should pass abs(rdrift).
     d2t._tdrift = rdrift/_vdrift;
     d2t._tdrifterr = _rres/_vdrift;
+    d2t._vdrift = _vdrift;
   }
 
   void TrackerCalibrations::TimeToDistance(StrawIndex strawIndex, double tdrift, CLHEP::Hep3Vector const& tdir,T2D& t2d) const {

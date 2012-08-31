@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.13 2012/06/29 21:28:49 genser Exp $
-// $Author: genser $
-// $Date: 2012/06/29 21:28:49 $
+// $Id: TrackerCalibrations.hh,v 1.14 2012/08/31 22:37:06 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/08/31 22:37:06 $
 //
 // Original author Vadim Rusu
 //
@@ -35,7 +35,8 @@ namespace mu2e
   struct D2T {
     double _tdrift;
     double _tdrifterr;
-    D2T() : _tdrift(0.0),_tdrifterr(1.0) {}
+    double _vdrift; // local drift velocity at this radius, ie dr/dt(rdrift).
+    D2T() : _tdrift(0.0),_tdrifterr(1.0), _vdrift(0.0) {}
   };
 
 // simple struct to hold output of energyToAmplitude function
