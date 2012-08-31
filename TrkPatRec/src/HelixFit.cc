@@ -1,14 +1,14 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.cc,v 1.10 2012/08/07 23:42:13 brownd Exp $
+// $Id: HelixFit.cc,v 1.1 2012/08/31 22:39:55 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/07 23:42:13 $
+// $Date: 2012/08/31 22:39:55 $
 //
 //
 // the following has to come before other BaBar includes
 #include "BaBar/BaBar.hh"
-#include "TrkPatRec/inc/TrkHelixFit.hh"
+#include "TrkPatRec/inc/HelixFit.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -53,9 +53,23 @@ namespace mu2e
     rad._radius = 0.5*(rvec1+rvec2);
     rad._rerr = std::max(std::max(fabs(rvec1-rvec),fabs(rvec2-rvec)),_serr);
   }
-  
+
+  HelixFitResult& 
+  HelixFitResult::operator =(HelixFitResult const& other) {
+    if(this != &other){
+      _tdef = other._tdef;
+      _fit = other._fit;
+      _center = other._center;
+      _radius = other._radius;
+      _dfdz = other._dfdz;
+      _fz0 = other._fz0;
+    }
+    return *this;
+  }
+
   void
-  TrkHelixFit::helixParams(TrkDef const& mytrk, TrkHelix const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const {
+  HelixFit::helixParams(HelixFitResult const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const {
+    TrkDef const& mytrk = helix._tdef;
     static const double pi(M_PI);
     static const double twopi(2*pi);
     static const double halfpi(pi/2.0);
@@ -94,7 +108,7 @@ namespace mu2e
     perr[HelixTraj::z0Index] = 15.0;
   }
 
-  TrkHelixFit::TrkHelixFit(fhicl::ParameterSet const& pset) :
+  HelixFit::HelixFit(fhicl::ParameterSet const& pset) :
   _diag(pset.get<int>("diagLevel",0)),
   _debug(pset.get<int>("debugLevel",0)),
   _mindelta(pset.get<double>("minDelta",5000.0)),
@@ -118,12 +132,13 @@ namespace mu2e
     {
     }
 
-  TrkHelixFit::~TrkHelixFit()
+  HelixFit::~HelixFit()
     {}
 
   bool
-  TrkHelixFit::findHelix(TrkDef const& mytrk,TrkHelix& myhel) {
+  HelixFit::findHelix(HelixFitResult& myhel) {
     bool retval(false);
+    TrkDef const& mytrk = myhel._tdef;
 // find the magnetic field Z component at the origin
     GeomHandle<BFieldConfig> bfconf;
     _bz = bfconf->getDSUniformValue().z();
@@ -163,7 +178,7 @@ namespace mu2e
   }
   
   bool
-  TrkHelixFit::findXY(std::vector<XYZP>& xyzp,TrkHelix& myhel) {
+  HelixFit::findXY(std::vector<XYZP>& xyzp,HelixFitResult& myhel) {
     double rmed, age;
     Hep3Vector center = myhel._center;
 // first, find the center without weights
@@ -182,7 +197,7 @@ namespace mu2e
   }
 
   void
-  TrkHelixFit::plotXY(TrkDef const& mytrk, std::vector<XYZP> const& xyzp,TrkHelix const& myhel) const {
+  HelixFit::plotXY(TrkDef const& mytrk, std::vector<XYZP> const& xyzp,HelixFitResult const& myhel) const {
     unsigned igraph = 10*mytrk.eventId()+mytrk.trackId();
     art::ServiceHandle<art::TFileService> tfs;
     //      TGraph* graph = tfs->make<TGraph>(xyzp.size());
@@ -219,7 +234,7 @@ namespace mu2e
   }
 
   bool
-  TrkHelixFit::findCenterAGE(std::vector<XYZP> const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights) {
+  HelixFit::findCenterAGE(std::vector<XYZP> const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights) {
 // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs"
 // initialize step
     double lambda = _lambda0;
@@ -280,7 +295,7 @@ namespace mu2e
   }
   
   bool
-  TrkHelixFit::findZ(std::vector<XYZP>& xyzp,TrkHelix& myhel) {
+  HelixFit::findZ(std::vector<XYZP>& xyzp,HelixFitResult& myhel) {
     using namespace boost::accumulators;
  //
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
@@ -394,7 +409,7 @@ namespace mu2e
   }
   
   void
-  TrkHelixFit::plotZ(TrkDef const& mytrk, std::vector<XYZP> const& xyzp,TrkHelix const& myhel) const {
+  HelixFit::plotZ(TrkDef const& mytrk, std::vector<XYZP> const& xyzp,HelixFitResult const& myhel) const {
     unsigned igraph = 10*mytrk.eventId()+mytrk.trackId();
     art::ServiceHandle<art::TFileService> tfs;
     char gname[100];
@@ -426,7 +441,7 @@ namespace mu2e
   }
 
   bool
-  TrkHelixFit::initCircle(std::vector<XYZP> const& xyzp,TrkHelix& myhel) {
+  HelixFit::initCircle(std::vector<XYZP> const& xyzp,HelixFitResult& myhel) {
     bool retval(false);
     using namespace boost::accumulators;
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx, accy;
@@ -486,7 +501,7 @@ namespace mu2e
   }
 
   void
-  TrkHelixFit::fillXYZP(TrkDef const& mytrk, std::vector<XYZP>& xyzp) {
+  HelixFit::fillXYZP(TrkDef const& mytrk, std::vector<XYZP>& xyzp) {
 // calibration and tracker information
     const Tracker& tracker = getTrackerOrThrow();
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -503,7 +518,7 @@ namespace mu2e
   }
   
   void
-  TrkHelixFit::findAGE(std::vector<XYZP> const& xyzp, Hep3Vector const& center,double& rmed, double& age,bool useweights) {
+  HelixFit::findAGE(std::vector<XYZP> const& xyzp, Hep3Vector const& center,double& rmed, double& age,bool useweights) {
 // protection against empty data
     if(xyzp.size() == 0)return;
 // fill radial information for all points, given this center
@@ -553,7 +568,7 @@ namespace mu2e
   }
   
   void
-  TrkHelixFit::fillSums(std::vector<XYZP> const& xyzp, Hep3Vector const& center,double rmed,SUMS& sums,bool useweights) {
+  HelixFit::fillSums(std::vector<XYZP> const& xyzp, Hep3Vector const& center,double rmed,SUMS& sums,bool useweights) {
 // initialize sums
     sums.clear();
 // compute the transverse sums
@@ -597,7 +612,7 @@ namespace mu2e
   }
   
   void
-  TrkHelixFit::filter(std::vector<XYZP>& xyzp, Hep3Vector const& center,double rmed,bool& changed) {
+  HelixFit::filter(std::vector<XYZP>& xyzp, Hep3Vector const& center,double rmed,bool& changed) {
     changed = false;
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
       RAD rad;

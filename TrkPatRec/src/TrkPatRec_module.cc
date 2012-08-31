@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.36 2012/08/08 18:32:52 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.37 2012/08/31 22:39:55 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/08 18:32:52 $
+// $Date: 2012/08/31 22:39:55 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -33,7 +33,7 @@
 #include "KalmanTests/inc/KalRepCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
-#include "TrkPatRec/inc/TrkHelixFit.hh"
+#include "TrkPatRec/inc/HelixFit.hh"
 #include "TrkBase/TrkPoca.hh"
 #include "TrkPatRec/inc/TrkPatRec.hh"
 // Mu2e
@@ -109,9 +109,6 @@ class TrkPatRec : public art::EDProducer
     double _ymin;
     double _1dthresh;
     double _tpeakerr;
-    double _tdriftmean;
-    // used seed fit t0?
-    bool _seedt0;
     // outlier cuts
     double _maxseeddoca,_maxhelixdoca,_maxadddoca;
     TrkParticle _tpart; // particle type being searched for
@@ -121,7 +118,7 @@ class TrkPatRec : public art::EDProducer
    // Kalman fitters.  Seed fit has a special configuration
     KalFit _seedfit, _kfit;
   // robust helix fitter
-    TrkHelixFit _hfit;
+    HelixFit _hfit;
   // cache of hit positions
     std::vector<CLHEP::Hep3Vector> _shpos;
   // cache of hit falgs
@@ -142,14 +139,15 @@ class TrkPatRec : public art::EDProducer
     void filterDeltas();
     void findTimePeaks();
     void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
-    void findMissingHits(TrkKalFit& kalfit, std::vector<hitIndex>& indices);
+    void findMissingHits(KalFitResult& kalfit, std::vector<hitIndex>& indices);
     void createDiagnostics();
     void fillStrawDiag();
     void fillTimeDiag();
-    void fillFitDiag(int ipeak, TrkDef const& helixdef,TrkHelix const& helixfit,
-	TrkDef const& seeddef, TrkKalFit const& seedfit, TrkDef const& kaldef, TrkKalFit const& kalfit);
+    void fillFitDiag(int ipeak, HelixFitResult const& helixfit,
+	KalFitResult const& seedfit,KalFitResult const& kalfit);
     void fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const;
     static double findMedian(std::vector<double> const& vector);
+    double correctedTime(size_t istr) const;
 // MC tools
     KalFitMC _kfitmc;
 // strawhit tuple variables
@@ -157,7 +155,7 @@ class TrkPatRec : public art::EDProducer
     Int_t _eventid;
     threevec _shp;
     Float_t _edep;
-    Float_t _time;
+    Float_t _time, _corrtime;
     Float_t _dmin;
     Int_t _n50,_n100,_n150,_n200;
     Int_t _nmcsteps;
@@ -180,7 +178,7 @@ class TrkPatRec : public art::EDProducer
     helixpar _hpar,_spar;
     helixpar _hparerr,_sparerr;
     Int_t _snhits, _snactive, _sniter, _sndof, _snweediter;
-    Float_t _schisq, _st00, _st0;
+    Float_t _schisq, _st0;
     Int_t _nchit;
     Int_t _npeak, _nmc;
     Float_t _peakmax, _tpeak;
@@ -241,7 +239,6 @@ class TrkPatRec : public art::EDProducer
     _ymin(pset.get<double>("ymin",5)),
     _1dthresh(pset.get<double>("OneDPeakThreshold",5.0)),
     _tpeakerr(pset.get<double>("timepeakerr",-8.0)),
-    _seedt0(pset.get<bool>("SeedT0",false)),
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
     _maxhelixdoca(pset.get<double>("MaxHelixDoca",40.0)),
     _maxadddoca(pset.get<double>("MaxAddDoca",2.75)),
@@ -264,9 +261,6 @@ class TrkPatRec : public art::EDProducer
   TrkPatRec::~TrkPatRec(){}
 
   void TrkPatRec::beginJob(){
-// compute the mean drift time.  This is half the straw radius divided by the drift velocity.
-// These numbers should come from conditions objects, FIXME!!!
-    _tdriftmean = 0.5*2.5/0.05;
 // create diagnostics if requested
     if(_diag > 0)createDiagnostics();
 // create a histogram of throughput: this is a basic diagnostic that should ALWAYS be on
@@ -309,51 +303,50 @@ class TrkPatRec : public art::EDProducer
     if(_diag > 2)fillTimeDiag();
     if(_diag > 1)fillStrawDiag();
 // dummy objects
-    static TrkHelix dummyhfit;
-    static TrkKalFit dummykfit;
     static TrkDef dummydef;
+    static HelixFitResult dummyhfit(dummydef);
+    static KalFitResult dummykfit(dummydef);
 // loop over the accepted time peaks
     if(_tpeaks.size()>0)_cutflow->Fill(1.0);
     bool findhelix(false), findseed(false), findkal(false);
     for(unsigned ipeak=0;ipeak<_tpeaks.size();++ipeak){
-// track fitting objects for this peak
-      TrkHelix helixfit;
-      TrkKalFit seedfit, kalfit;
-// create track definitions for the different fits from this initial information 
+// create track definitions for the helix fit from this initial information 
       TrkDef helixdef(_strawhits,_tpeaks[ipeak]._trkptrs,_tpart,_fdir);
-      helixdef.setTrkT0(_tpeaks[ipeak]._tpeak-_tdriftmean,_tpeakerr);
+// set some identifiers
       helixdef.setEventId(_eventid);
       helixdef.setTrackId(ipeak);
+// copy this for the other fits
       TrkDef seeddef(helixdef);
       TrkDef kaldef(helixdef);
+// track fitting objects for this peak
+      HelixFitResult helixfit(helixdef);
+      KalFitResult seedfit(seeddef);
+      KalFitResult kalfit(kaldef);
+// initialize filters.  These are used only for diagnostics
+      _hfilt.clear();
+      _sfilt.clear();
 // robust helix fit
-      if(_hfit.findHelix(helixdef,helixfit)){
+      if(_hfit.findHelix(helixfit)){
 	findhelix = true;
 // convert the result to standard helix parameters, and initialize the seed definition helix
 	HepVector hpar;
 	HepVector hparerr;
-	_hfit.helixParams(helixdef,helixfit,hpar,hparerr);
+	_hfit.helixParams(helixfit,hpar,hparerr);
 	HepSymMatrix hcov = vT_times_v(hparerr);
 	seeddef.setHelix(HelixTraj(hpar,hcov));
 // Filter outliers using this helix
-	_hfilt.clear();
 	filterOutliers(seeddef,seeddef.helix(),_maxhelixdoca,_hfilt);
 // now, fit the seed helix from the filtered hits
-	_seedfit.makeTrack(seeddef,seedfit);
+	_seedfit.makeTrack(seedfit);
 	if(seedfit._fit.success()){
 	  findseed = true;
 // find the helix parameters from the helix fit, and initialize the full Kalman fit with this
-	  double midflt = 0.5*(seedfit._krep->lowFitRange() + seedfit._krep->hiFitRange());
 	  double locflt;
-	  const HelixTraj* shelix = dynamic_cast<const HelixTraj*>(seedfit._krep->localTrajectory(midflt,locflt));
+	  const HelixTraj* shelix = dynamic_cast<const HelixTraj*>(seedfit._krep->localTrajectory(seedfit._krep->flt0(),locflt));
 	  kaldef.setHelix(*shelix);
 // filter the outliers
-	  _sfilt.clear();
 	  filterOutliers(kaldef,seedfit._krep->traj(),_maxseeddoca,_sfilt);
-// if requested, use the t0 values from the seed fit.  Otherwise, this is re-computed from the hits
-	  if(_seedt0)kaldef.setTrkT0(seedfit._t0);
-	  kaldef.setTraj(&seedfit._krep->pieceTraj());
-	  _kfit.makeTrack(kaldef,kalfit);
+	  _kfit.makeTrack(kalfit);
 // if successfull, try to add missing hits
 	  if(kalfit._fit.success()){
 	    findkal = true;
@@ -369,7 +362,7 @@ class TrkPatRec : public art::EDProducer
       }
 // fill fit diagnostics if requested
       if(_diag > 0)
-	fillFitDiag(ipeak,helixdef,helixfit,seeddef,seedfit,kaldef,kalfit);
+	fillFitDiag(ipeak,helixfit,seedfit,kalfit);
       if(kalfit._fit.success()){
 // save successful kalman fits in the event
 	tracks->push_back( kalfit.stealTrack() );
@@ -383,7 +376,7 @@ class TrkPatRec : public art::EDProducer
     if(findkal)_cutflow->Fill(4.0);
 // add a dummy entry in case there are no peaks
     if(_diag > 0 && _tpeaks.size() == 0)
-      fillFitDiag(-1,dummydef,dummyhfit,dummydef,dummykfit,dummydef,dummykfit);
+      fillFitDiag(-1,dummyhfit,dummykfit,dummykfit);
 // put the tracks into the event
     art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
     _payloadSaver.put(*tracks, tracksID, event);
@@ -480,8 +473,7 @@ class TrkPatRec : public art::EDProducer
     unsigned nstrs = _strawhits->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       if(_tflags[istr].veryLoose()){
-	StrawHit const& sh = _strawhits->at(istr);
-	double time = sh.time();
+	double time = correctedTime(istr);
 	double phi = _shpos[istr].phi();
 // include buffer around phi to account for wrapping
 	tpsp.Fill(time,phi);
@@ -517,13 +509,12 @@ class TrkPatRec : public art::EDProducer
 	std::vector<double> prho;
         for(size_t istr=0; istr<nstrs;++istr){
 	  if(_tflags[istr].veryLoose()){
-	    StrawHit const& sh = _strawhits->at(istr);
 	    double phi = _shpos[istr].phi();
 // phi wrapping is handled in plot overlap
-	    if(fabs(sh.time()-xp) < _max2ddt &&
+	    if(fabs(correctedTime(istr)-xp) < _max2ddt &&
 		fabs(phi - yp) < _maxdp){
 	      tpeak._trkptrs.push_back(istr);
-	      ptime.push_back(sh.time());
+	      ptime.push_back(correctedTime(istr));
 	      pphi.push_back(phi);
 	      prho.push_back(_shpos[istr].perp());
 	    }
@@ -547,7 +538,7 @@ class TrkPatRec : public art::EDProducer
 	    double rhov =_shpos[ihi->_index].perp();
 	    rho += rhov;
 	    srho += pow(rhov-rmed,2);
-	    stime += pow(tmed-sh.time(),2);
+	    stime += pow(tmed-correctedTime(ihi->_index),2);
 	    sphi += pow(pmed-_shpos[ihi->_index].phi(),2);
 	  }
 	  stime /= tpeak._trkptrs.size();
@@ -679,8 +670,7 @@ class TrkPatRec : public art::EDProducer
     unsigned nstrs = _strawhits->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       if(_tflags[istr].tight()&&!_tflags[istr].delta()){
-	StrawHit const& sh = _strawhits->at(istr);
-	double time = sh.time();
+	double time = correctedTime(istr);
         timespec.Fill(time);
       }
     }
@@ -699,8 +689,7 @@ class TrkPatRec : public art::EDProducer
 // record hits in time with each peak, and accept them if they have a minimum # of hits
         for(unsigned istr=0; istr<nstrs;++istr){
 	  if(_tflags[istr].tight()&&!_tflags[istr].delta()){
-	    StrawHit const& sh = _strawhits->at(istr);
-	    if(fabs(sh.time()-xp) < _maxdt)tpeak._trkptrs.push_back(istr);
+	    if(fabs(correctedTime(istr)-xp) < _maxdt)tpeak._trkptrs.push_back(istr);
 	  }
 	}
 	if(tpeak._trkptrs.size() > _minnhits)_tpeaks.push_back(tpeak);
@@ -709,6 +698,18 @@ class TrkPatRec : public art::EDProducer
 // sort the peaks so that the largest comes first
     std::sort(_tpeaks.begin(),_tpeaks.end(),greater<TrkTimePeak>());
   }
+  
+  double 
+  TrkPatRec::correctedTime(size_t istr) const {
+// correct the strawhit time for the z-dependence of the propagation time.  This depends on the pitch and
+// particle assumption, FIXME!!!
+//    static const double slope(0.0048);
+    static const double slope(0.0);
+    StrawHit const& sh = _strawhits->at(istr);
+    double tcorr = sh.time()-slope*_shpos[istr].z();
+    return tcorr;
+  }
+
 
   void
   TrkPatRec::filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec){
@@ -758,7 +759,7 @@ class TrkPatRec : public art::EDProducer
   }
 
   void
-  TrkPatRec::findMissingHits(TrkKalFit& kalfit,std::vector<hitIndex>& misshits) {
+  TrkPatRec::findMissingHits(KalFitResult& kalfit,std::vector<hitIndex>& misshits) {
     const Tracker& tracker = getTrackerOrThrow();
     //  Trajectory info
     Hep3Vector tdir;
@@ -768,7 +769,7 @@ class TrkPatRec : public art::EDProducer
     for(unsigned istr=0; istr<nstrs;++istr){
       if(_tflags[istr].veryLoose()){
 	StrawHit const& sh = _strawhits->at(istr);
-	if(fabs(sh.time()-kalfit._t0.t0()) < _maxdtmiss) {
+	if(fabs(correctedTime(istr)-kalfit._krep->t0()._t0) < _maxdtmiss) {
       // make sure we haven't already used this hit
 	  std::vector<TrkStrawHit*>::iterator ifnd = find_if(kalfit._hits.begin(),kalfit._hits.end(),FindTrkStrawHit(sh));
 	  if(ifnd == kalfit._hits.end()){
@@ -802,6 +803,7 @@ class TrkPatRec : public art::EDProducer
     _shdiag->Branch("shpos",&_shp,"x/F:y/F:z/F");
     _shdiag->Branch("edep",&_edep,"edep/F");
     _shdiag->Branch("time",&_time,"time/F");
+    _shdiag->Branch("corrtime",&_corrtime,"corrtime/F");
     _shdiag->Branch("device",&_device,"device/I");
     _shdiag->Branch("sector",&_sector,"sector/I");
     _shdiag->Branch("layer",&_layer,"layer/I");
@@ -824,7 +826,6 @@ class TrkPatRec : public art::EDProducer
     _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
     _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
     _shdiag->Branch("mctime",&_mctime,"mctime/F");
-    _shdiag->Branch("time",&_time,"time/F");
     _shdiag->Branch("vloose",&_vloose,"vloose/I");
     _shdiag->Branch("loose",&_loose,"loose/I");
     _shdiag->Branch("tight",&_tight,"tight/I");
@@ -857,7 +858,6 @@ class TrkPatRec : public art::EDProducer
     trkdiag->Branch("herr",&_hparerr,"hd0err/F:hp0err/F:homerr/F:hz0err/F:htderr/F");
     trkdiag->Branch("spar",&_spar,"sd0/F:sp0/F:som/F:sz0/F:std/F");
     trkdiag->Branch("serr",&_sparerr,"sd0err/F:sp0err/F:somerr/F:sz0err/F:stderr/F");
-    trkdiag->Branch("st00",&_st00,"st00/F");
     trkdiag->Branch("st0",&_st0,"st0/F");
     trkdiag->Branch("snhits",&_snhits,"snhits/I");
     trkdiag->Branch("sndof",&_sndof,"sndof/I");
@@ -927,6 +927,7 @@ class TrkPatRec : public art::EDProducer
       _shp = _shpos[istr];
       _edep = sh.energyDep();
       _time = sh.time();
+      _corrtime = correctedTime(istr);
      // find proximity for different radii
       double dmin(0.0);
 //      findProximity(_shpos,istr,50.0,_n50,dmin);
@@ -1061,8 +1062,7 @@ class TrkPatRec : public art::EDProducer
 
     unsigned nstrs = _strawhits->size();
     for(unsigned istr=0; istr<nstrs;++istr){
-      StrawHit const& sh = _strawhits->at(istr);
-      double time = sh.time();
+      double time = correctedTime(istr);
       double rad = _shpos[istr].perp();
       double phi = _shpos[istr].phi();
       bool conversion(false);
@@ -1115,8 +1115,8 @@ class TrkPatRec : public art::EDProducer
   }
 
   void
-  TrkPatRec::fillFitDiag(int ipeak,TrkDef const& helixdef,TrkHelix const& helixfit,
-  TrkDef const& seeddef, TrkKalFit const& seedfit, TrkDef const& kaldef, TrkKalFit const& kalfit) {
+  TrkPatRec::fillFitDiag(int ipeak,HelixFitResult const& helixfit,
+  KalFitResult const& seedfit, KalFitResult const& kalfit) {
 // convenience numbers
     static const double pi(M_PI);
     static const double twopi(2*pi);
@@ -1151,7 +1151,7 @@ class TrkPatRec : public art::EDProducer
     if(helixfit._fit.success()){
       HepVector hpar;
       HepVector hparerr;
-      _hfit.helixParams(helixdef,helixfit,hpar,hparerr);
+      _hfit.helixParams(helixfit,hpar,hparerr);
       _hpar = helixpar(hpar);
       _hparerr = helixpar(hparerr);
       _hcx = helixfit._center.x(); _hcy = helixfit._center.y(); _hr = helixfit._radius;
@@ -1159,13 +1159,12 @@ class TrkPatRec : public art::EDProducer
     }
 // seed fit information
     if(seedfit._fit.success()){
-      _snhits = seeddef.strawHitIndices().size();
+      _snhits = seedfit._tdef.strawHitIndices().size();
       _snactive = seedfit._krep->nActive();
       _sniter = seedfit._krep->iterations();
       _sndof = seedfit._krep->nDof();
       _schisq = seedfit._krep->chisq();
-      _st00 = seedfit._t00.t0();
-      _st0 = seedfit._t0.t0();
+      _st0 = seedfit._krep->t0()._t0;
       _snweediter = seedfit._nweediter;
       double loclen;
       const TrkSimpTraj* ltraj = seedfit._krep->localTrajectory(0.0,loclen);
@@ -1194,7 +1193,7 @@ class TrkPatRec : public art::EDProducer
     for(std::vector<TrkStrawHit*>::const_iterator ish=kalfit._hits.begin();ish!=kalfit._hits.end();++ish){
       if((*ish)->usability()==3)++_nadd;
     }
-// fill kalman fit info
+// fill kalman fit info.  This needs to be last, as it calls TTree::Fill().
     _kfitmc.kalDiag(kalfit._krep);
   }
   
@@ -1205,6 +1204,7 @@ class TrkPatRec : public art::EDProducer
     const StrawHit& sh = _strawhits->at(ish);
     shinfo._pos = _shpos[ish];
     shinfo._time = sh.time();
+    shinfo._corrtime = correctedTime(ish);
     shinfo._edep = sh.energyDep();
     const Straw& straw = tracker.getStraw( sh.strawIndex() );
     shinfo._device = straw.id().getDevice();

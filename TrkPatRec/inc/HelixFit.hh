@@ -1,12 +1,12 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: TrkHelixFit.hh,v 1.8 2012/08/06 16:56:38 brownd Exp $
+// $Id: HelixFit.hh,v 1.1 2012/08/31 22:39:55 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/06 16:56:38 $
+// $Date: 2012/08/31 22:39:55 $
 //
-#ifndef TrkHelixFit_HH
-#define TrkHelixFit_HH
+#ifndef HelixFit_HH
+#define HelixFit_HH
 
 // framework
 #include "fhiclcpp/ParameterSet.h"
@@ -15,7 +15,7 @@
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
-// TrkHelixFit objects
+// HelixFit objects
 #include "KalmanTests/inc/TrkDef.hh"
 // BaBar
 #include "TrkBase/TrkErrCode.hh"
@@ -25,7 +25,8 @@
 namespace mu2e 
 {
 // output struct
-  struct TrkHelix {
+  struct HelixFitResult {
+    TrkDef _tdef; // must copy by value as references can't be re-assigned
 // fit status
     TrkErrCode _fit; // error code from last fit
 // circle parameters; the z center is ignored.
@@ -34,7 +35,8 @@ namespace mu2e
 // Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), fz0 is the phi value of the particle where it goes through z=0
 // note that dfdz has a physical ambiguity in q*zdir.
     double _dfdz, _fz0;
-    TrkHelix() : _fit(TrkErrCode::fail),_radius(-1.0),_dfdz(0.0),_fz0(0.0) {}
+    HelixFitResult(TrkDef const& tdef) : _tdef(tdef),  _fit(TrkErrCode::fail),_radius(-1.0),_dfdz(0.0),_fz0(0.0) {}
+    HelixFitResult& operator =(HelixFitResult const& other);
  };
   
 // utility struct
@@ -73,25 +75,25 @@ namespace mu2e
       _nc = _no = _ni = 0; }
   };
   
-  class TrkHelixFit
+  class HelixFit
   {
   public:
 // parameter set should be passed in on construction
-    explicit TrkHelixFit(fhicl::ParameterSet const&);
-    virtual ~TrkHelixFit();
+    explicit HelixFit(fhicl::ParameterSet const&);
+    virtual ~HelixFit();
 // main function: given a track definition, find the helix parameters
-    bool findHelix(TrkDef const& mytrk,TrkHelix& myfit);
+    bool findHelix(HelixFitResult& myfit);
 // convert to BaBar helix parameters.  Also return an error estimate
-    void helixParams (TrkDef const& mytrk, TrkHelix const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const;
+    void helixParams (HelixFitResult const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const;
   protected:
 // utlity functions
-    bool findXY(std::vector<XYZP>& xyzp,TrkHelix& myhel);
-    bool findZ(std::vector<XYZP>& xyzp,TrkHelix& myhel);
-    bool initCircle(std::vector<XYZP> const& xyzp,TrkHelix& myhel);
+    bool findXY(std::vector<XYZP>& xyzp,HelixFitResult& myhel);
+    bool findZ(std::vector<XYZP>& xyzp,HelixFitResult& myhel);
+    bool initCircle(std::vector<XYZP> const& xyzp,HelixFitResult& myhel);
     void fillXYZP(TrkDef const& mytrk, std::vector<XYZP>& xyzp);
 // diagnostics
-    void plotXY(TrkDef const& mytrk, std::vector<XYZP>const& xyzp,TrkHelix const& myhel) const;
-    void plotZ(TrkDef const& mytrk, std::vector<XYZP> const& xyzp,TrkHelix const& myhel) const;
+    void plotXY(TrkDef const& mytrk, std::vector<XYZP>const& xyzp,HelixFitResult const& myhel) const;
+    void plotZ(TrkDef const& mytrk, std::vector<XYZP> const& xyzp,HelixFitResult const& myhel) const;
 // find the Absolute Geometric Error.  Returns the median radius as well.
     bool findCenterAGE(std::vector<XYZP> const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights=false);
     void findAGE(std::vector<XYZP> const& xyzp, Hep3Vector const& center,double& rmed, double& age,bool useweights=false);
