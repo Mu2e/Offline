@@ -640,6 +640,73 @@ void DataInterface::fillGeometry()
 
   }
 
+//active CRV Shields
+
+  mu2e::GeomHandle<mu2e::CosmicRayShield> CosmicRayShieldGeomHandle;
+  if(CosmicRayShieldGeomHandle->hasActiveShield())
+  {
+    std::map<std::string,mu2e::CRSScintillatorShield> const& shields = CosmicRayShieldGeomHandle->getCRSScintillatorShields();
+    mu2e::CRSScintillatorBarDetail const& barDetail = CosmicRayShieldGeomHandle->getCRSScintillatorBarDetail();
+
+    double dx=barDetail.getHalfLengths()[0];
+    double dy=barDetail.getHalfLengths()[1];
+    double dz=barDetail.getHalfLengths()[2];
+
+    for(std::map<std::string,mu2e::CRSScintillatorShield>::const_iterator ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
+    {
+      mu2e::CRSScintillatorShield const& shield = ishield->second;
+      std::string shieldName = ishield->first;
+
+      CLHEP::HepRotationX RX(shield.getGlobalRotationAngles()[0]);
+      CLHEP::HepRotationY RY(shield.getGlobalRotationAngles()[1]);
+      CLHEP::HepRotationZ RZ(shield.getGlobalRotationAngles()[2]);
+
+      CLHEP::HepRotation shieldRotation(RX*RY*RZ);
+      double psi  =shieldRotation.getPhi();  //need to check why psi and phi is reversed
+      double theta=shieldRotation.getTheta();
+      double phi  =shieldRotation.getPsi();
+
+      int nModules = shield.nModules();
+      for (int im = 0; im < nModules; ++im) 
+      {
+        mu2e::CRSScintillatorModule const & module = shield.getModule(im);
+
+        int nLayers = module.nLayers();
+        for (int il = 0; il < nLayers; ++il) 
+        {
+          mu2e::CRSScintillatorLayer const & layer = module.getLayer(il);
+
+          int nBars = layer.nBars();
+          for (int ib = 0; ib < nBars; ++ib)  
+          {
+            mu2e::CRSScintillatorBar const & bar = layer.getBar(ib);
+            CLHEP::Hep3Vector barOffset = bar.getGlobalOffset();
+            double x=barOffset.x() +_xOffset;
+            double y=barOffset.y();
+            double z=barOffset.z() +_zOffset;
+
+            char c[200];
+            boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+            sprintf(c,"CRV Scintillator %s %i %i %i",shieldName.c_str(),im,il,ib);
+            info->setName(c);
+            info->setText(0,c);
+            sprintf(c,"Dimension  ?x: %.f mm, ?y: %.f mm, ?z: %.f mm",2.0*dx/CLHEP::mm,2.0*dy/CLHEP::mm,2.0*dz/CLHEP::mm);
+            info->setText(1,c);
+            sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm);
+            info->setText(2,c);
+            sprintf(c,"Rotation phi: %.f °, theta: %.f °, psi: %.f °",phi/CLHEP::deg,theta/CLHEP::deg,psi/CLHEP::deg);
+            info->setText(3,c);
+
+            boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  phi,theta,psi, NAN,5,
+                                                   _geometrymanager, _topvolume, _mainframe, info, false));
+            _components.push_back(shape);
+            _crvscintillatorbars.push_back(shape);
+          }
+        }
+      }
+    }
+  }
+
 //   if(geom->hasElement<mu2e::CosmicRayShield>())
 //   {
 //     mu2e::GeomHandle<mu2e::CosmicRayShield> crs;
@@ -721,6 +788,19 @@ void DataInterface::makeOtherStructuresVisible(bool visible)
   {
     (*structure)->setDefaultVisibility(visible);
     (*structure)->start();
+  }
+
+  //tracks and straws don't have to be pushed into the foreground if the structure is removed
+  if(visible) toForeground();
+}
+
+void DataInterface::makeCrvScintillatorBarsVisible(bool visible)
+{
+  std::vector<boost::shared_ptr<Cube> >::const_iterator crvbars;
+  for(crvbars=_crvscintillatorbars.begin(); crvbars!=_crvscintillatorbars.end(); crvbars++)
+  {
+    (*crvbars)->setDefaultVisibility(visible);
+    (*crvbars)->start();
   }
 
   //tracks and straws don't have to be pushed into the foreground if the structure is removed
@@ -1523,6 +1603,7 @@ void DataInterface::removeAllComponents()
   _driftradii.clear();
   _supportstructures.clear();
   _otherstructures.clear();
+  _crvscintillatorbars.clear();
   _mbsstructures.clear();
   delete _geometrymanager;
   _geometrymanager=NULL;

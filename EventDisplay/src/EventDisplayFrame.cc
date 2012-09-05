@@ -120,7 +120,12 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(_supportStructuresButton, lh1);
   _supportStructuresButton->Associate(this);
 
-  _otherStructuresButton = new TGCheckButton(_subFrame,"Show Toy DS, CR Steel Shield",37);
+  _crvScintillatorBarsButton = new TGCheckButton(_subFrame,"Show CRV Scintillator Bars",36);
+  _crvScintillatorBarsButton->SetState(kButtonUp);
+  _subFrame->AddFrame(_crvScintillatorBarsButton, lh1);
+  _crvScintillatorBarsButton->Associate(this);
+
+  _otherStructuresButton = new TGCheckButton(_subFrame,"Show Toy DS",37);
   _otherStructuresButton->SetState(kButtonUp);
   _subFrame->AddFrame(_otherStructuresButton, lh1);
   _otherStructuresButton->Associate(this);
@@ -966,6 +971,19 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            else
                            {
                              _dataInterface->makeSupportStructuresVisible(false);
+                           }
+                           drawEverything();
+                         }
+                         if(param1==36)
+                         {
+                           _mainPad->cd();
+                           if(_crvScintillatorBarsButton->GetState()==kButtonDown)
+                           {
+                             _dataInterface->makeCrvScintillatorBarsVisible(true);
+                           }
+                           else
+                           {
+                             _dataInterface->makeCrvScintillatorBarsVisible(false);
                            }
                            drawEverything();
                          }

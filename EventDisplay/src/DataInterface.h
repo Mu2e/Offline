@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.27 2012/05/15 20:14:25 ehrlich Exp $
+// $Id: DataInterface.h,v 1.28 2012/09/05 02:18:57 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/05/15 20:14:25 $
+// $Date: 2012/09/05 02:18:57 $
 //
 // Original author Ralf Ehrlich
 //
@@ -71,6 +71,7 @@ class DataInterface
   std::vector<boost::shared_ptr<Track> >        _tracks;
   std::vector<boost::shared_ptr<VirtualShape> > _supportstructures;
   std::vector<boost::shared_ptr<VirtualShape> > _otherstructures;
+  std::vector<boost::shared_ptr<Cube> >         _crvscintillatorbars;
   std::vector<boost::shared_ptr<VirtualShape> > _mbsstructures;
   double            _xOffset, _zOffset, _zOffsetDS;
   timeminmax        _hitsTimeMinmax, _tracksTimeMinmax;
@@ -119,6 +120,7 @@ class DataInterface
   void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector);
   void makeSupportStructuresVisible(bool visible);
   void makeOtherStructuresVisible(bool visible);
+  void makeCrvScintillatorBarsVisible(bool visible);
   void makeStrawsVisibleBeforeStart(bool visible);
   void makeCrystalsVisibleBeforeStart(bool visible);
   void makeMuonBeamStopStructuresVisible(bool visible);
