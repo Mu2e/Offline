@@ -207,9 +207,6 @@ double extMonFNAL.dn.distanceToMagnet = 300;
 vector<double> extMonFNAL.dn.sensor_zoffset = {-300., -290.,   0.};
 vector<double> extMonFNAL.dn.sensor_xoffset = { 0.,      0.,   0.};
 vector<double> extMonFNAL.dn.sensor_yoffset = { 0.,      0.,  0. };
-vector<double> extMonFNAL.dn.sensor_halfdx =  { 20.,    20.,  20.};
-vector<double> extMonFNAL.dn.sensor_halfdy =  { 20.,    20.,  20.};
-vector<double> extMonFNAL.dn.sensor_halfdz =  { 0.100, 0.100, 0.100};
 vector<double> extMonFNAL.dn.readout_halfdz = { 0.075, 0.075, 0.075};
 
 //----------------------------------------------------------------
