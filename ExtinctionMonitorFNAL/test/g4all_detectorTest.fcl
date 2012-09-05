@@ -61,7 +61,7 @@ physics : {
             inputInstanceName : ""
         }
         emfprintraw: {
-            module_type: EMFDetPrintRaw
+            module_type: EMFDetPrintRawHits
             inputModuleLabel  : "pixelDigitization"
             inputInstanceName : ""
         }

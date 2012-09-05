@@ -11,9 +11,9 @@
 
 namespace mu2e {
 
-  class EMFDetPrintRaw : public GenericCollectionPrinter<ExtMonFNALRawHitCollection> {
+  class EMFDetPrintRawHits : public GenericCollectionPrinter<ExtMonFNALRawHitCollection> {
   public:
-    explicit EMFDetPrintRaw(const fhicl::ParameterSet& pset)
+    explicit EMFDetPrintRawHits(const fhicl::ParameterSet& pset)
       : GenericCollectionPrinter(pset)
     {}
 
@@ -21,4 +21,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::EMFDetPrintRaw);
+DEFINE_ART_MODULE(mu2e::EMFDetPrintRawHits);
