@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCIMaker.cc,v 1.6 2012/09/05 00:44:59 youzy Exp $
+// $Id: ExtMonUCIMaker.cc,v 1.7 2012/09/05 01:01:17 youzy Exp $
 // $Author: youzy $
-// $Date: 2012/09/05 00:44:59 $
+// $Date: 2012/09/05 01:01:17 $
 
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIMaker.hh"
 
@@ -117,7 +117,7 @@ namespace mu2e {
         //cout << "pos2 " << mag._position2 << endl;
 
         mag._psi = _det->_magPsi[iMag];
-        cout << "psi " << mag._psi << endl;
+        //cout << "psi " << mag._psi << endl;
 
         mag._origin = 0.5*(mag._position1 + mag._position2);
         mag._originLocal = _det->mu2eToExtMonPoint(mag._origin);
