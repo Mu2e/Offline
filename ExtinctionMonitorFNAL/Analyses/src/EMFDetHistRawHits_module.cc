@@ -13,7 +13,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALClusterCollection.hh"
+#include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 #include "ExtinctionMonitorFNAL/Analyses/inc/EMFRawHitHistograms.hh"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
