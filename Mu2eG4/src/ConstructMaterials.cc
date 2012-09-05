@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.31 2012/06/24 05:06:13 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/06/24 05:06:13 $
+// $Id: ConstructMaterials.cc,v 1.32 2012/09/05 22:41:22 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/09/05 22:41:22 $
 //
 // Original author Rob Kutschke
 //
@@ -91,7 +91,46 @@ namespace mu2e {
     vector<string> materialsToLoad;
     config.getVectorString("mu2e.materials",materialsToLoad);
 
-    CheckedG4String mat = isNeeded(materialsToLoad, "ShieldingConcrete");
+    CheckedG4String mat = isNeeded(materialsToLoad, "HeavyConcrete");
+    if ( mat.doit ) {
+      G4Material* HeavyConcrete = new G4Material(mat.name, 3.295*g/cm3, 17);
+      G4Element* eH  = getElementOrThrow("H");
+      G4Element* eB  = getElementOrThrow("B");
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eO  = getElementOrThrow("O");
+      G4Element* eF  = getElementOrThrow("F");
+      G4Element* eNa = getElementOrThrow("Na");
+      G4Element* eMg = getElementOrThrow("Mg");
+      G4Element* eAl = getElementOrThrow("Al");
+      G4Element* eSi = getElementOrThrow("Si");
+      G4Element* eP  = getElementOrThrow("P");
+      G4Element* eS  = getElementOrThrow("S");
+      G4Element* eK  = getElementOrThrow("K");
+      G4Element* eCa = getElementOrThrow("Ca");
+      G4Element* eTi = getElementOrThrow("Ti");
+      G4Element* eMn = getElementOrThrow("Mn");
+      G4Element* eFe = getElementOrThrow("Fe");
+      G4Element* eSr = getElementOrThrow("Sr");
+      HeavyConcrete->AddElement( eH , 0.01048482); //Hydrogen
+      HeavyConcrete->AddElement( eB , 0.00943758); //Boron
+      HeavyConcrete->AddElement( eC , 0.0129742);  //Carbon
+      HeavyConcrete->AddElement( eO , 0.27953541); //Oxygen
+      HeavyConcrete->AddElement( eF , 1.5175E-4);  //Fluorine
+      HeavyConcrete->AddElement( eNa, 3.7014E-4);  //Sodium
+      HeavyConcrete->AddElement( eMg, 0.08298213); //Magnesium
+      HeavyConcrete->AddElement( eAl, 0.02769028); //Aluminum
+      HeavyConcrete->AddElement( eSi, 0.06317253); //Silicon
+      HeavyConcrete->AddElement( eP , 0.00176963); //Phosphorus
+      HeavyConcrete->AddElement( eS , 5.8275E-4);  //Sulfur
+      HeavyConcrete->AddElement( eK , 4.2024E-4);  //Potassium
+      HeavyConcrete->AddElement( eCa, 0.03227609); //Calcium
+      HeavyConcrete->AddElement( eTi, 5.457E-5);   //Titanium
+      HeavyConcrete->AddElement( eMn, 0.00321757); //Manganese
+      HeavyConcrete->AddElement( eFe, 0.47423935); //Iron
+      HeavyConcrete->AddElement( eSr, 6.4097E-4);  //Strontium
+    }
+
+    mat = isNeeded(materialsToLoad, "ShieldingConcrete");
     if ( mat.doit ) {
       //
       // Concrete is 2.00 for fraction, but shielding concrete has reinforcing Iron bars:

@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.164 2012/08/30 21:59:26 ehrlich Exp $
+// $Id: geom_01.txt,v 1.165 2012/09/05 22:41:23 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/08/30 21:59:26 $
+// $Date: 2012/09/05 22:41:23 $
 //
 // Original author Rob Kutschke
 //
@@ -106,7 +106,7 @@ double g4.yaboveDirtYmin = 0.;
 
 // Load other materials defined specifically for Mu2e.
 vector<string> mu2e.materials =
-  { "ShieldingConcrete", "IsoButane", "StrawGas",
+  { "HeavyConcrete", "ShieldingConcrete", "IsoButane", "StrawGas",
     "Kapton", "Scintillator", "WAGVacuum", "DSVacuum", "MBOverburden",
     "ITGasHe_90Isob_10", "ITGasHe_90CF4_10", "ITGasMix",
     "CarbonFiber", "PolypropyleneFoam", "CFoam", "CFoam_332", "CFoam_166",
@@ -176,6 +176,7 @@ double hall.ceilingThick = 914.4; // 3', docdb-472v5 p16 (section "E")
 double hall.wallThick    = 300.;
 double hall.wallExtMonUCIThick  = 600.;
 string hall.wallMaterialName = "G4_CONCRETE";
+string hall.ceilingMaterialName = "HeavyConcrete";
 string hall.insideMaterialName = "G4_AIR";
 
 bool   hall.formalBoxVisible        = false;
