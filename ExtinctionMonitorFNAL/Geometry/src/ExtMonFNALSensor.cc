@@ -24,8 +24,8 @@ namespace mu2e {
     ExtMonFNALChipId cid(sid, icx, icy);
 
     // Assume no gaps between chips
-    const double chipx0 = (icx - 1)*chip_.nColumns()*chip_.xPitch();
-    const double chipy0 = (icy - 1)*chip_.nRows()*chip_.yPitch();
+    const double chipx0 = (icx - 1.)*chip_.nColumns()*chip_.xPitch();
+    const double chipy0 = (icy - 1.)*chip_.nRows()*chip_.yPitch();
 
     // Zero based pixel column and row numbers for the offline identifier
     const int ix = std::floor((xSensor - chipx0)/chip_.xPitch());
