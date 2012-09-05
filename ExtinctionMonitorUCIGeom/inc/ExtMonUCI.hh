@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCI.hh,v 1.9 2012/03/01 00:41:26 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/01 00:41:26 $
+// $Id: ExtMonUCI.hh,v 1.10 2012/09/05 00:44:59 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/09/05 00:44:59 $
 
 #ifndef EXTMONUCI_HH
 #define EXTMONUCI_HH
@@ -115,6 +115,7 @@ namespace mu2e {
       std::vector<double> _magInnerHalfLengths;
       std::vector<double> _magPosition1;
       std::vector<double> _magPosition2;
+      std::vector<double> _magPsi;
       std::vector<ExtMonMag> _mags;
 
       // Tofs

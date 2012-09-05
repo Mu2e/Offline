@@ -68,6 +68,7 @@ vector<double> extmon_uci.magPosition1 = {3839.0, 1407.0, -16529.0,
                                           3826.0, 1529.0, -19729.0};
 vector<double> extmon_uci.magPosition2 = {3834.0, 1503.0, -17829.0,
                                           3864.0, 1543.0, -20779.0};
+vector<double> extmon_uci.magPsi = {0.0, 0.0};
 
 bool   extmon_uci.magVisible          = true;
 bool   extmon_uci.magSolid            = false;

@@ -68,6 +68,7 @@ vector<double> extmon_uci.magPosition1 = {3898.0,  717.0, -16529.0,   // Mag1 sh
                                           3886.0,  616.0, -19729.0};  // Mag2 shift x=-12.5
 vector<double> extmon_uci.magPosition2 = {3898.0,  728.0, -17829.0,   // Mag1 shift y=19
                                           3926.0,  557.0, -20779.0};  // Mag2 shift x=-12.5
+vector<double> extmon_uci.magPsi = {0.0, 0.0};
 
 bool   extmon_uci.magVisible          = true;
 bool   extmon_uci.magSolid            = false;

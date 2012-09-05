@@ -1,13 +1,15 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCIMaker.cc,v 1.5 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: ExtMonUCIMaker.cc,v 1.6 2012/09/05 00:44:59 youzy Exp $
+// $Author: youzy $
+// $Date: 2012/09/05 00:44:59 $
 
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIMaker.hh"
 
 #include "cetlib/exception.h"
+
+#include <cmath>
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
@@ -42,7 +44,7 @@ namespace mu2e {
       config.getVectorDouble("extmon_uci.magInnerHalfLengths", _det->_magInnerHalfLengths, _det->_nMags*3);
       config.getVectorDouble("extmon_uci.magPosition1", _det->_magPosition1, _det->_nMags*3);
       config.getVectorDouble("extmon_uci.magPosition2", _det->_magPosition2, _det->_nMags*3);
-
+      config.getVectorDouble("extmon_uci.magPsi", _det->_magPsi, _det->_nMags);
       MakeMags();
 
       _det->_nTofStations = config.getInt("extmon_uci.nTofStations");
@@ -114,6 +116,9 @@ namespace mu2e {
         //cout << "pos1 " << mag._position1 << endl;
         //cout << "pos2 " << mag._position2 << endl;
 
+        mag._psi = _det->_magPsi[iMag];
+        cout << "psi " << mag._psi << endl;
+
         mag._origin = 0.5*(mag._position1 + mag._position2);
         mag._originLocal = _det->mu2eToExtMonPoint(mag._origin);
         //cout << "origin " << mag._origin << endl;
@@ -127,6 +132,7 @@ namespace mu2e {
         const CLHEP::Hep3Vector newX = newY.cross(newZ);
         mag._rotation = CLHEP::HepRotation::IDENTITY;
         mag._rotation.rotateAxes( newX, newY, newZ );
+        mag._rotation.rotate(mag._psi, newZ);
         mag._rotation.invert();
         //mag._rotation.print(cout);
 

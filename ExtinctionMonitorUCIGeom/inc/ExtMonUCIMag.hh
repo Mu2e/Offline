@@ -1,9 +1,9 @@
 //
 // Hold information about one Magnet in Extinction Monitor.
 //
-// $Id: ExtMonUCIMag.hh,v 1.2 2011/12/28 00:25:05 youzy Exp $
+// $Id: ExtMonUCIMag.hh,v 1.3 2012/09/05 00:44:59 youzy Exp $
 // $Author: youzy $
-// $Date: 2011/12/28 00:25:05 $
+// $Date: 2012/09/05 00:44:59 $
 
 #ifndef ExtMonUCIMag_hh
 #define ExtMonUCIMag_hh
@@ -36,6 +36,7 @@ namespace mu2e {
 
       const int& getId() const { return _id;}
 
+      const double& psi() const { return _psi; }
       const CLHEP::Hep3Vector&  origin()      const { return _origin; }
       const CLHEP::Hep3Vector&  originLocal() const { return _originLocal; }
       const CLHEP::HepRotation& rotation()    const { return _rotation; }
@@ -49,6 +50,7 @@ namespace mu2e {
 
       CLHEP::Hep3Vector _position1;
       CLHEP::Hep3Vector _position2;
+      double _psi;
 
       CLHEP::Hep3Vector   _origin;
       CLHEP::Hep3Vector   _originLocal;
