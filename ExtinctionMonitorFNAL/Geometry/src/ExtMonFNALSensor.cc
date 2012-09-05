@@ -43,8 +43,8 @@ namespace mu2e {
   CLHEP::Hep2Vector ExtMonFNALSensor::sensorCoordinates(const ExtMonFNALPixelId& id) const
   {
     // Assume no gaps between chips
-    double chipx0 = (id.chip().chipCol() - 1)*chip_.nColumns()*chip_.xPitch();
-    double chipy0 = (id.chip().chipRow() - 1)*chip_.nRows()*chip_.yPitch();
+    double chipx0 = (id.chip().chipCol() - 1.)*chip_.nColumns()*chip_.xPitch();
+    double chipy0 = (id.chip().chipRow() - 1.)*chip_.nRows()*chip_.yPitch();
 
     // Add 0.5 to get pixel center in the 0-based numbering convention
     const double xSensor = chipx0 + chip_.xPitch()*(id.col() + 0.5);
