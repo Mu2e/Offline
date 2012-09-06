@@ -1,9 +1,9 @@
 //
 // Define a track; this provides the transfer between pat. rec. and fitting
 //
-// $Id: TrkDef.hh,v 1.14 2012/08/31 22:39:00 brownd Exp $
+// $Id: TrkDef.hh,v 1.15 2012/09/06 19:59:56 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/31 22:39:00 $
+// $Date: 2012/09/06 19:59:56 $
 //
 // Original author David Brown, LBNL
 //
@@ -32,6 +32,7 @@ namespace mu2e
     hitIndex() : _index(0),_ambig(0) {}
     hitIndex(size_t index,int ambig=0) : _index(index),_ambig(ambig) {}
     hitIndex& operator = (size_t index) { _index = index; return *this; }
+    bool operator == (hitIndex const& other) const { return _index == other._index; }
   };
   
   class TrkDef {
