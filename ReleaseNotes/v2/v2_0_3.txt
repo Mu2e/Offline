@@ -1,0 +1,28 @@
+  $Id: v2_0_3.txt,v 1.1 2012/09/06 21:42:15 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/09/06 21:42:15 $
+
+           Release notes for Mu2e Offline software, v2_0_3
+
+2) Sep 6, 2012 brownd
+   Update diagnostics only
+     KalmanTests/inc/TrkDef.hh
+     Offline/TrkPatRec/src/TrkPatRec_module.cc
+
+1) Sep 6, 2012 kutschke
+   Some of the methods in:
+      RecoDataProducts/inc/CaloCluster.hh
+      RecoDataProducts/src/CaloCluster.cc
+   required information from the geometry service.  This caused a linkage loop.
+   These functions were removed from this class and put into a new class:
+
+       CaloCluster/inc/CaloClusterTools.hh
+       CaloCluster/src/CaloClusterTools.cc
+
+   The following classes were updated to use the new CaloClusterTools class.
+
+      CaloCluster/inc/CaloClusterUtilities.hh
+      CaloCluster/src/CaloClusterCogCorrFunc_module.cc
+      CaloCluster/src/CaloClusterPileUp_module.cc
+      TrackCaloMatching/src/CaloMatching_module.cc
+      TrackCaloMatching/src/ReadCaloMatching_module.cc
