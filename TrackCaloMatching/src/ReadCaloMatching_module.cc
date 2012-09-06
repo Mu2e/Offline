@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.4 2012/07/23 17:52:27 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Id: ReadCaloMatching_module.cc,v 1.5 2012/09/06 19:59:15 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/09/06 19:59:15 $
 //
 // Original author G. Pezzullo
 //
@@ -61,6 +61,7 @@
 #include "TrackCaloMatching/inc/CaloVolumeType.hh"
 #include "TrackCaloMatching/inc/CaloSurface.hh"
 #include "CaloCluster/inc/CaloClusterer.hh"
+#include "CaloCluster/inc/CaloClusterTools.hh"
 #include "TrackCaloMatching/inc/Calorimeter4VanesGeom.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
@@ -1274,19 +1275,20 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                                         "tmpPosVaneFrameErr = "<< tmpPosVaneFrameErr<<" [mm]"<<endl;
                 }
 
+                CaloClusterTools cluTool(clu);
                 cogVaneFrame            =  clu.cog3Vector();//clu.cog3Vector() ;
-                tmpCluCryMaxEdepRow     = clu.cryEnergydepMaxRow();
-                tmpCluCryMaxEdepColumn  = clu.cryEnergydepMaxColumn();
+                tmpCluCryMaxEdepRow     = cluTool.cryEnergydepMaxRow();
+                tmpCluCryMaxEdepColumn  = cluTool.cryEnergydepMaxColumn();
                 tmpCluTime              = clu.time();
                 tmpCOGv                 = cogVaneFrame.y();
                 tmpCOGw                 = cogVaneFrame.z();
                 tmpCOGvErr              = clu.cog3VectorError().y();
                 tmpCOGwErr              = clu.cog3VectorError().z();
-                tmpWsize                = clu.wSize();
+                tmpWsize                = cluTool.wSize();
                 //tmpCluEnergy            = clu.energyDep();
                 _clE = clu.energyDep();
                 tmpCluEnergy = (double)_clE;
-                _clEErr = clu.energyDepErr();//clusterEnergyErr(_clE);
+                _clEErr = cluTool.energyDepErr();//clusterEnergyErr(_clE);
                 //                tmpCluEnergyErr = clusterEnergyErr(_clE);
                 if(_diagLevel > 2){
                         cout<<" tmpPv = "<< tmpPv <<
@@ -1350,7 +1352,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 _clCryEnergyMaxColumn = tmpCluCryMaxEdepColumn;
 
                 _clT = clu.time();
-                _clTErr = clu.timeErr();
+                _clTErr = cluTool.timeErr();
 
                 sigmaE2 = cet::sum_of_squares((float)tmpEnergyErr, _clEErr);
                 sigmaV2 = cet::sum_of_squares(_recoPvErr, (float)tmpCOGvErr);
@@ -1411,8 +1413,8 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
 
                 _clVsize = tmpClVmax - tmpClVmin + 1.;
 
-                _clShowerDir = clu.showerDir();
-                _clErrShowerDir = clu.errShowerDir();
+                _clShowerDir = cluTool.showerDir();
+                _clErrShowerDir = cluTool.errShowerDir();
 
                 chiQ = chiSquare(tmpPv, tmpPw, tmpCOGv, tmpCOGw, sigmaV2, sigmaW2, tmpPtime, tmpCluTime, sigmaT2, tmpEnergy, tmpCluEnergy, sigmaE2);
 

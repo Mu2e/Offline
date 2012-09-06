@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.11 2012/07/10 00:02:19 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.12 2012/09/06 19:59:15 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/09/06 19:59:15 $
 //
 // Original author G. Pezzullo
 //
@@ -29,7 +29,7 @@
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-//#include "CaloCluster/inc/CaloClusterUtilities.hh"
+#include "CaloCluster/inc/CaloClusterTools.hh"
 #include "CaloCluster/inc/CaloClusterer.hh"
 //#include "CaloCluster/inc/CaloClusterFinder.hh"
 //#include "CaloCluster/inc/ClosestCaloClusterFinder.hh"
@@ -890,9 +890,10 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                                                 elecMap[iVane][trackId.asUint()]._gencosth  = -1e6;
                                                                 elecMap[iVane][trackId.asUint()]._genphi    = -1e6;
                                                         }
+                                                        CaloClusterTools cluTool(clu);
                                                         elecMap[iVane][trackId.asUint()]._cluEnergy                  = clu.energyDep();
                                                         elecMap[iVane][trackId.asUint()]._cluTime                    = clu.time();
-                                                        elecMap[iVane][trackId.asUint()]._fastCryTime                = clu.timeFasterCrystal();
+                                                        elecMap[iVane][trackId.asUint()]._fastCryTime                = cluTool.timeFasterCrystal();
                                                         elecMap[iVane][trackId.asUint()]._cluSize                    = clu.size();
                                                         elecMap[iVane][trackId.asUint()]._cryEnergyDep               = hit.energyDep();
                                                         elecMap[iVane][trackId.asUint()]._cryEnergyDepTotal          = hit.energyDepTotal();
@@ -1036,6 +1037,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 }
 
                                 _clShowerDir    =  ite->second[trkVec[it2]]._clusterMap._showerDir;
+
                                 _clErrShowerDir = ite->second[trkVec[it2]]._clusterMap._errShowerDir;
 
                                 _seedIsGoodTrk  = 0.0;

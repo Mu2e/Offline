@@ -1,9 +1,9 @@
 //
 // Visualization of pile up on the calorimeter clusters
 //
-// $Id: CaloClusterPileUp_module.cc,v 1.1 2012/07/10 00:02:19 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
+// $Id: CaloClusterPileUp_module.cc,v 1.2 2012/09/06 19:59:15 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/09/06 19:59:15 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -40,6 +40,7 @@
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "CaloCluster/inc/CaloClusterer.hh"
+#include "CaloCluster/inc/CaloClusterTools.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
@@ -564,8 +565,9 @@ void CaloClusterPileUp::doCalorimeter(art::Event const& evt, bool skip){
                         iVane = clu.vaneId();
                         _clVane = iVane;
 
-                        _clCryEnergyMaxRow = clu.cryEnergydepMaxRow(),
-                                        _clCryEnergyMaxColumn = clu.cryEnergydepMaxColumn();
+                        CaloClusterTools cluTool(clu);
+                        _clCryEnergyMaxRow = cluTool.cryEnergydepMaxRow(),
+                          _clCryEnergyMaxColumn = cluTool.cryEnergydepMaxColumn();
                         CaloCrystalHitPtrVector caloClusterHits = clu.caloCrystalHitsPtrVector();
 
                         if(eDepClu >= _EnergyClusterCut){

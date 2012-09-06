@@ -1,9 +1,9 @@
 //
 // General utilities for the calorimeter's studies
 //
-// $Id: CaloClusterUtilities.hh,v 1.4 2012/07/10 00:02:20 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:20 $
+// $Id: CaloClusterUtilities.hh,v 1.5 2012/09/06 19:59:15 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/09/06 19:59:15 $
 //
 // Original author G. Pezzullo & G. Tassielli & G. Onorato
 //
@@ -17,6 +17,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CaloCluster/inc/CaloClusterTools.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -759,12 +760,12 @@ struct ClusterMap{
                 _vaneId(cluster.vaneId()),
                 _cluCogRow(cluster.cogRow()),
                 _cluCogColumn(cluster.cogColumn()),
-                _cryEnergydepMaxRow(cluster.cryEnergydepMaxRow()),
-                _cryEnergydepMaxColumn(cluster.cryEnergydepMaxColumn()),
+                _cryEnergydepMaxRow(CaloClusterTools(cluster).cryEnergydepMaxRow()),
+                _cryEnergydepMaxColumn(CaloClusterTools(cluster).cryEnergydepMaxColumn()),
                 _cluCOG(cluster.cog3Vector()),
                 _time(cluster.time()),
-                _showerDir(cluster.showerDir()),
-                _errShowerDir(cluster.errShowerDir()){
+                _showerDir(CaloClusterTools(cluster).showerDir()),
+                _errShowerDir(CaloClusterTools(cluster).errShowerDir()){
                 GeomHandle<Calorimeter> cg;
                 for( CaloCrystalHitPtrVector::const_iterator itCD = cluster.caloCrystalHitsPtrVector().begin(); itCD != cluster.caloCrystalHitsPtrVector().end(); ++itCD){
                         std::vector<art::Ptr<CaloHit> > const& ROIds = (*itCD)->readouts();

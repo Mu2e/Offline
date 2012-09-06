@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.4 2012/07/23 17:52:27 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Id: CaloMatching_module.cc,v 1.5 2012/09/06 19:59:15 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/09/06 19:59:15 $
 //
 // Original author G. Pezzullo
 //
@@ -49,6 +49,7 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "CaloCluster/inc/CaloClusterer.hh"
+#include "CaloCluster/inc/CaloClusterTools.hh"
 
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
@@ -821,19 +822,20 @@ void CaloMatching::doMatching(art::Event & evt, bool skip){
                                 cout<<" indexVecCluster at "<<j<<" step"<<endl;
                         }
                         CaloCluster  clu = (*caloClusters).at(indexVecCluster[j]);
+                        CaloClusterTools cluTool(clu);
 
-                        cogVaneFrame                    =  clu.cog3Vector();//caloClusters->at(indexVecCluster[j]).cog3Vector() ;
-                        tmpCluCryMaxEdepRow             = caloClusters->at(indexVecCluster[j]).cryEnergydepMaxRow();
-                        tmpCluCryMaxEdepColumn          = caloClusters->at(indexVecCluster[j]).cryEnergydepMaxColumn();
+                        cogVaneFrame                    = clu.cog3Vector();//caloClusters->at(indexVecCluster[j]).cog3Vector() ;
+                        tmpCluCryMaxEdepRow             = cluTool.cryEnergydepMaxRow();
+                        tmpCluCryMaxEdepColumn          = cluTool.cryEnergydepMaxColumn();
                         tmpCluTime                      = caloClusters->at(indexVecCluster[j]).time();
                         tmpCOGv                         = cogVaneFrame.y();
                         tmpCOGw                         = cogVaneFrame.z();
                         tmpCOGvErr                      = caloClusters->at(indexVecCluster[j]).cog3VectorError().y();
                         tmpCOGwErr                      = caloClusters->at(indexVecCluster[j]).cog3VectorError().z();
-                        tmpWsize                        = caloClusters->at(indexVecCluster[j]).wSize();
+                        tmpWsize                        = cluTool.wSize();
                         tmpCluEnergy                    = caloClusters->at(indexVecCluster[j]).energyDep();
-                        tmpCluEnergyErr                 = caloClusters->at(indexVecCluster[j]).energyDepErr();//clusterEnergyErr(tmpCluEnergy);
-                        tmpCluTimeErr                   = clu.timeErr();
+                        tmpCluEnergyErr                 = cluTool.energyDepErr();//clusterEnergyErr(tmpCluEnergy);
+                        tmpCluTimeErr                   = cluTool.timeErr();
 
                         _clE[j]                         = tmpCluEnergy;
                         _clEErr[j]                      = tmpCluEnergyErr;
@@ -844,13 +846,13 @@ void CaloMatching::doMatching(art::Event & evt, bool skip){
 
                         _clCOGrow[j]                    =  clu.cogRow();
                         _clCOGcolumn[j]                 =  clu.cogColumn();
-                        _clShowerDir[j]                 = clu.showerDir();
-                        _clErrShowerDir[j]              =  clu.errShowerDir();
+                        _clShowerDir[j]                 =  cluTool.showerDir();
+                        _clErrShowerDir[j]              =  cluTool.errShowerDir();
                         _clCryEnergyMaxRow[j]           =  tmpCluCryMaxEdepRow;
                         _clCryEnergyMaxColumn[j]        =  tmpCluCryMaxEdepColumn;
 
-                        _clWsize[j]                     =  clu.wSize();
-                        _clVsize[j]                     =  clu.vSize();
+                        _clWsize[j]                     =  cluTool.wSize();
+                        _clVsize[j]                     =  cluTool.vSize();
 
 
                         if(_diagLevel > 2){
