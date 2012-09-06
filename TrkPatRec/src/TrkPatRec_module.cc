@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.37 2012/08/31 22:39:55 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.38 2012/09/06 20:00:17 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/31 22:39:55 $
+// $Date: 2012/09/06 20:00:17 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -167,7 +167,7 @@ class TrkPatRec : public art::EDProducer
     Float_t _mctime;
     Int_t _vloose, _loose, _tight, _delta;
     Int_t _device, _sector, _layer, _straw;
-    Int_t _ntpeak, _nshtpeak;
+    Int_t _ishpeak, _ntpeak, _nshtpeak;
     Float_t _shtpeak;
     Float_t _shmct0, _shmcmom, _shmctd;
 // fit tuple variables
@@ -703,8 +703,8 @@ class TrkPatRec : public art::EDProducer
   TrkPatRec::correctedTime(size_t istr) const {
 // correct the strawhit time for the z-dependence of the propagation time.  This depends on the pitch and
 // particle assumption, FIXME!!!
-//    static const double slope(0.0048);
-    static const double slope(0.0);
+    static const double slope(0.0048);
+//    static const double slope(0.0);
     StrawHit const& sh = _strawhits->at(istr);
     double tcorr = sh.time()-slope*_shpos[istr].z();
     return tcorr;
@@ -808,6 +808,7 @@ class TrkPatRec : public art::EDProducer
     _shdiag->Branch("sector",&_sector,"sector/I");
     _shdiag->Branch("layer",&_layer,"layer/I");
     _shdiag->Branch("straw",&_straw,"straw/I");
+    _shdiag->Branch("ishpeak",&_ishpeak,"ishpeak/I");
     _shdiag->Branch("ntpeak",&_ntpeak,"ntpeak/I");
     _shdiag->Branch("tpeak",&_shtpeak,"tpeak/F");
     _shdiag->Branch("nshtpeak",&_nshtpeak,"nshtpeak/I");
@@ -993,19 +994,21 @@ class TrkPatRec : public art::EDProducer
       _ntpeak = _tpeaks.size();
       _nshtpeak = 0;
       _shtpeak = -1.0;
-      int ibest(-1);
-      double dt(1.0e16);
+      _ishpeak = -1;
+      hitIndex myindex(istr);
       if(_shmcmom >0){
 	for(unsigned ipeak=0;ipeak<_tpeaks.size();++ipeak){
-	  if(fabs(_shmct0-_tpeaks[ipeak]._tpeak)<dt){
-	    ibest = ipeak;
-	    dt = fabs(_shmct0-_tpeaks[ipeak]._tpeak);
+	  std::vector<hitIndex>::iterator ifind =
+	    std::find(_tpeaks[ipeak]._trkptrs.begin(),_tpeaks[ipeak]._trkptrs.end(),myindex);
+	  if(ifind != _tpeaks[ipeak]._trkptrs.end()){
+	    _ishpeak = ipeak;
+	    break;
 	  }
 	}
       }
-      if(ibest>=0){
-	_nshtpeak = _tpeaks[ibest]._trkptrs.size();
-	_shtpeak = _tpeaks[ibest]._tpeak;
+      if(_ishpeak>=0){
+	_nshtpeak = _tpeaks[_ishpeak]._trkptrs.size();
+	_shtpeak = _tpeaks[_ishpeak]._tpeak;
       }
       _shdiag->Fill();
     }
