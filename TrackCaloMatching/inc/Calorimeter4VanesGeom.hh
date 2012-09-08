@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.4 2012/08/31 22:34:53 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/08/31 22:34:53 $
+// $Id: Calorimeter4VanesGeom.hh,v 1.5 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -57,7 +57,7 @@
 #include "KalmanTests/inc/KalRepCollection.hh"
 
 //calorimeter includes
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -107,7 +107,7 @@ class Calorimeter4VanesGeom {
 public :
         //Construct from a transform.
         Calorimeter4VanesGeom(){
-                GeomHandle<Calorimeter> cg;
+                GeomHandle<VaneCalorimeter> cg;
                 art::ServiceHandle<GeometryService> geom;
                 _norm.setX(0.0);
                 _norm.setY(1.0);

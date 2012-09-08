@@ -2,9 +2,9 @@
 // An EDAnalyzer module that serves as a first introduction to Mu2e software.
 // Make a few histograms about tracker and calorimeter information found in the event.
 //
-// $Id: ReadBack0_module.cc,v 1.4 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: ReadBack0_module.cc,v 1.5 2012/09/08 02:24:24 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:24 $
 //
 // Original author Rob Kutschke
 //
@@ -26,7 +26,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 
 // Root includes.
 #include "TH1F.h"
@@ -122,13 +122,16 @@ namespace mu2e {
 
   void ReadBack0::doCalorimeter(const art::Event& event) {
 
+    art::ServiceHandle<GeometryService> geom;
+    if( ! geom->hasElement<VaneCalorimeter>() ) return;
+
     // Get handle to calorimeter hit collection.
     art::Handle<CaloHitCollection> caloHitsHandle;
     event.getByLabel("g4run",caloHitsHandle);
     CaloHitCollection const& caloHits = *caloHitsHandle;
 
     // Get handle to the calorimeter geometry.
-    GeomHandle<Calorimeter> calGeom;
+    GeomHandle<VaneCalorimeter> calGeom;
 
     double totalEdep = 0;
     set<int> hit_crystals;

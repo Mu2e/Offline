@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.145 2012/08/24 15:06:59 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/24 15:06:59 $
+// $Id: Mu2eWorld.cc,v 1.146 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author Rob Kutschke
 //
@@ -75,6 +75,8 @@
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
@@ -85,7 +87,8 @@
 #include "Mu2eG4/inc/constructDummyTracker.hh"
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
-#include "Mu2eG4/inc/constructCalorimeter.hh"
+#include "Mu2eG4/inc/constructVaneCalorimeter.hh"
+#include "Mu2eG4/inc/constructDiskCalorimeter.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
@@ -558,15 +561,17 @@ namespace mu2e {
   // Construct calorimeter if needed.
   void Mu2eWorld::constructCal(){
 
-    if ( ! _config->getBool("hasCalorimeter",false) ) return;
-
-    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
-
-    double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
-
-    constructCalorimeter( detSolDownstreamVacInfo,
-                          -z0DSdown,
-                          *_config );
+    if ( _config->getBool("hasVaneCalorimeter",false) ) {
+       VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
+       double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
+       constructVaneCalorimeter( detSolDownstreamVacInfo,-z0DSdown,*_config );
+    }
+        
+    if ( _config->getBool("hasDiskCalorimeter",false) ) {
+       VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
+       double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
+       constructDiskCalorimeter( detSolDownstreamVacInfo,-z0DSdown,*_config );
+    }
   }
 
 

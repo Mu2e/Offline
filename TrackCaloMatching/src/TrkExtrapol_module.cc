@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.4 2012/08/31 22:34:53 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/08/31 22:34:53 $
+// $Id: TrkExtrapol_module.cc,v 1.5 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author G. Pezzullo
 //
@@ -192,8 +192,8 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
 
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
-        if(! geom->hasElement<Calorimeter>() ) return;
-        GeomHandle<Calorimeter> cg;
+        if(! geom->hasElement<VaneCalorimeter>() ) return;
+        GeomHandle<VaneCalorimeter> cg;
 
         Calorimeter4VanesGeom *CaloVanes = new Calorimeter4VanesGeom();
 

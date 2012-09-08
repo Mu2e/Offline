@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.12 2012/09/06 19:59:15 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/09/06 19:59:15 $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.13 2012/09/08 02:24:24 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:24 $
 //
 // Original author G. Pezzullo
 //
@@ -25,7 +25,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 //calorimeter packages
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -702,8 +702,8 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
 
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
-        if(! geom->hasElement<Calorimeter>() ) return;
-        GeomHandle<Calorimeter> cg;
+        if(! geom->hasElement<VaneCalorimeter>() ) return;
+        GeomHandle<VaneCalorimeter> cg;
 
         // Get handles to calorimeter collections
         art::Handle<CaloHitCollection> caloHits;

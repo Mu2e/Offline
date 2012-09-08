@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_sort_functors_hh
 #define CalorimeterGeom_sort_functors_hh
 //
-// $Id: sort_functors.hh,v 1.3 2012/07/17 22:04:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/17 22:04:27 $
+// $Id: sort_functors.hh,v 1.4 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author KLG
 //
@@ -13,83 +13,79 @@
 namespace mu2e {
 
   // utility functor to sort hits by time
+  template <typename HitT>  class lessByTime {
 
-  template <typename HitT>
-  class lessByTime {
+    public:
 
-  public:
-
-    bool operator() (HitT const & a, HitT const & b) const {
-      return ( a.time() < b.time() );
-    }
+      bool operator() (HitT const & a, HitT const & b) const {
+	return ( a.time() < b.time() );
+      }
 
   };
+
 
   // utility functor to sort hits by id and time
+  template <typename HitT> class lessByIdAndTime {
 
-  template <typename HitT>
-  class lessByIdAndTime {
+     public:
 
-  public:
-
-    bool operator() (HitT const & a, HitT const & b) const {
-      return (a.id() < b.id() ||
-              (a.id() == b.id() &&
-               a.time() < b.time()
-               )
-              );
-    }
+       bool operator() (HitT const & a, HitT const & b) const {
+	 return (a.id() < b.id() ||
+        	 (a.id() == b.id() &&
+        	  a.time() < b.time()
+        	  )
+        	 );
+       }
 
   };
+
 
   // utility functor to sort hits by crystal id and time
+  template <typename HitT> class lessByCIdAndTime {
 
-  template <typename HitT>
-  class lessByCIdAndTime {
-
-  public:
+     public:
 
 
-    explicit lessByCIdAndTime(Calorimeter const & cal): _cal(cal) {}
+       explicit lessByCIdAndTime(Calorimeter const & cal): _cal(0) {}
 
-    bool operator() (HitT const & a, HitT const & b) const {
+       bool operator() (HitT const & a, HitT const & b) const {
+	  return ( _cal.getCrystalByRO(a.id()) < _cal.getCrystalByRO(b.id()) ||
+        	  (_cal.getCrystalByRO(a.id()) == _cal.getCrystalByRO(b.id()) &&
+                   a.time() < b.time()
+                   )
+        	  );
+       }
 
-      return ( _cal.getCrystalByRO(a.id()) < _cal.getCrystalByRO(b.id()) ||
-               (_cal.getCrystalByRO(a.id()) == _cal.getCrystalByRO(b.id()) &&
-                a.time() < b.time()
-                )
-               );
-    }
 
-  private:
+     private:
 
-    Calorimeter const & _cal;
+       Calorimeter const & _cal;
 
   };
 
-  template <typename HitT>
-  class lessByCIdAndTimeByPointer {
 
-  public:
+  // utility functor to sort hits by crystal id and time
+  template <typename HitT> class lessByCIdAndTimeByPointer {
 
+     public:
 
-    explicit lessByCIdAndTimeByPointer( Calorimeter const & cal): _cal(cal) {}
+       explicit lessByCIdAndTimeByPointer(Calorimeter const * cal): _cal(cal) {}
 
-    bool operator() (HitT const * a, HitT const * b) const {
+       bool operator() (HitT const * a, HitT const * b) const {
 
-      return (  _cal.getCrystalByRO(a->id()) <  _cal.getCrystalByRO(b->id()) ||
-              ( _cal.getCrystalByRO(a->id()) == _cal.getCrystalByRO(b->id()) &&
-                a->time() < b->time()
-              )
-             );
-    }
+	   return (  _cal->getCrystalByRO(a->id()) <  _cal->getCrystalByRO(b->id()) ||
+        	   ( _cal->getCrystalByRO(a->id()) == _cal->getCrystalByRO(b->id()) &&
+                     a->time() < b->time()
+        	   )
+        	  );		     
+       }
 
-  private:
+     private:
 
-    Calorimeter const & _cal;
+       Calorimeter const * _cal;
 
   };
 
 }
 
-#endif /* CalorimeterGeom_sort_functors_hh */
+#endif /* Mu2eUtilities_sort_functors_hh */

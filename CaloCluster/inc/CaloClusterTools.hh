@@ -4,9 +4,9 @@
 //
 // Tools for CaloCluster objects
 //
-// $Id: CaloClusterTools.hh,v 1.1 2012/09/06 19:58:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/09/06 19:58:05 $
+// $Id: CaloClusterTools.hh,v 1.2 2012/09/08 02:24:24 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:24 $
 //
 // Original author G. Pezzullo, A. Luca' & G. Tassielli
 //
@@ -16,7 +16,7 @@
 namespace mu2e {
 
   // Forward reference.
-  class Calorimeter;
+  class VaneCalorimeter;
 
   class CaloClusterTools{
 
@@ -25,7 +25,7 @@ namespace mu2e {
     CaloCluster const& _cluster;
 
     // The geometry information.
-    Calorimeter const& _calorimeter;
+    VaneCalorimeter const& _calorimeter;
 
   public:
     CaloClusterTools(CaloCluster const &clu);

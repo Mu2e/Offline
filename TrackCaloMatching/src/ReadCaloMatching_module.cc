@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.5 2012/09/06 19:59:15 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/09/06 19:59:15 $
+// $Id: ReadCaloMatching_module.cc,v 1.6 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author G. Pezzullo
 //
@@ -53,7 +53,7 @@
 
 
 //calorimeter includes
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -116,7 +116,7 @@ using cet::sum_of_squares;
 namespace mu2e {
 
 float thetaWimpact(const CLHEP::Hep3Vector& mom, int vaneId){
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         Vane const &vane = cg->getVane(vaneId);
         CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*mom.unit();
 
@@ -126,7 +126,7 @@ float thetaWimpact(const CLHEP::Hep3Vector& mom, int vaneId){
         return thW;
 }
 float thetaVimpact(const CLHEP::Hep3Vector& mom, int vaneId){//(FIXME)
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         Vane const &vane = cg->getVane(vaneId);
         CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*mom.unit();
 
@@ -547,8 +547,8 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
 
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
-        if(! geom->hasElement<Calorimeter>() ) return;
-        GeomHandle<Calorimeter> cg;
+        if(! geom->hasElement<VaneCalorimeter>() ) return;
+        GeomHandle<VaneCalorimeter> cg;
 
         // Get handles to calorimeter collections
         art::Handle<CaloHitCollection> caloHits;

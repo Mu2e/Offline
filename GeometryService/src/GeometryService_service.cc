@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.38 2012/08/24 15:06:59 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/24 15:06:59 $
+// $Id: GeometryService_service.cc,v 1.39 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author Rob Kutschke
 //
@@ -54,7 +54,10 @@
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "ITrackerGeom/inc/ITrackerMaker.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/CalorimeterMaker.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeterMaker.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeterMaker.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldConfigMaker.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
@@ -111,6 +114,21 @@ namespace mu2e {
 
       DetectorPtr ptr(d.release());
       _detectors[typeid(DET).name()] = ptr;
+  }
+
+  template <typename DETALIAS, typename DET> 
+  void GeometryService::addDetectorAliasToBaseClass(std::auto_ptr<DET> d)
+  {
+
+	std::string OriginalName = typeid(DET).name();
+	DetMap::iterator it(_detectors.find(OriginalName));
+
+	if(it==_detectors.end())
+          throw cet::exception("GEOM")
+            << "Can not alias an inexistant detector, detector " << OriginalName << "\n";
+
+	std::string detectorName= typeid(DETALIAS).name() ;
+	_detectors[detectorName] = it->second;
   }
 
   void
@@ -198,10 +216,18 @@ namespace mu2e {
       addDetector( ttm.getTTrackerPtr() );
     }
 
-    if(_config->getBool("hasCalorimeter",false)){
-      CalorimeterMaker calorm( *_config, beamline.solenoidOffset() );
+    if(_config->getBool("hasVaneCalorimeter",false)){
+      VaneCalorimeterMaker calorm( *_config, beamline.solenoidOffset() );
       addDetector( calorm.getCalorimeterPtr() );
+      addDetectorAliasToBaseClass<Calorimeter>( calorm.getCalorimeterPtr() );  //add an alias to detector list
     }
+
+    if(_config->getBool("hasDiskCalorimeter",false)){
+      DiskCalorimeterMaker calorm( *_config, beamline.solenoidOffset() );
+      addDetector( calorm.getCalorimeterPtr() );
+      addDetectorAliasToBaseClass<Calorimeter>( calorm.getCalorimeterPtr() );  //add an alias to detector list
+    }
+
 
     if(_config->getBool("hasCosmicRayShield",false)){
       CosmicRayShieldMaker crs( *_config, beamline.solenoidOffset() );
@@ -281,8 +307,8 @@ namespace mu2e {
   void GeometryService::checkCalorimeterConfig(){
     int nCalorimeters(0);
     string allCalorimeters;
-    if ( _config->getBool("hasCalorimeter",false) ) {
-      allCalorimeters += " Calorimeter";
+    if ( _config->getBool("hasVaneCalorimeter",false) ) {
+      allCalorimeters += " VaneCalorimeter";
       ++nCalorimeters;
     }
     if ( _config->getBool("hasDiskCalorimeter",false) ) {

@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.cc,v 1.2 2012/08/31 22:34:53 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/08/31 22:34:53 $
+// $Id: Calorimeter4VanesGeom.cc,v 1.3 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -16,7 +16,7 @@
 namespace mu2e{
 
 CaloVolumeElem* Calorimeter4VanesGeom::vane(int& i){
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         Vane vane = cg->getVane(i);
 
         CaloVolumeType *caloVane = new CaloVolumeType("caloVane", 0);

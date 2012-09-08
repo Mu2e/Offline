@@ -31,7 +31,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 
 //calorimeter packages
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -197,8 +197,8 @@ MakeCaloCluster::produce(art::Event& evt) {
 
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
-        if(! geom->hasElement<Calorimeter>() ) return;
-        GeomHandle<Calorimeter> cg;
+        if(! geom->hasElement<VaneCalorimeter>() ) return;
+        GeomHandle<VaneCalorimeter> cg;
 
         // Get handles to calorimeter collections
         art::Handle<CaloHitCollection> caloHits;

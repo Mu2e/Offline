@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: Vane.hh,v 1.8 2011/05/22 20:52:07 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/22 20:52:07 $
+// $Id: Vane.hh,v 1.9 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author R, Bernstein and Rob Kutschke
 //
@@ -23,8 +23,8 @@ namespace mu2e {
 
     class Vane{
 
-      friend class Calorimeter;
-      friend class CalorimeterMaker;
+      friend class VaneCalorimeter;
+      friend class VaneCalorimeterMaker;
 
     public:
 
@@ -38,9 +38,9 @@ namespace mu2e {
       int id() const { return _id;}
 
       // Get position in the global Mu2e frame
-      CLHEP::Hep3Vector const& getOrigin() const { return _origin; }
+      CLHEP::Hep3Vector const& getOrigin() const      { return _origin; }
       CLHEP::Hep3Vector const& getOriginLocal() const { return _originLocal; }
-      CLHEP::Hep3Vector const& getSize() const { return _size; }
+      CLHEP::Hep3Vector const& getSize() const        { return _size; }
       CLHEP::HepRotation * getRotation() const {
         return const_cast<CLHEP::HepRotation *>(&_rotation);
       }

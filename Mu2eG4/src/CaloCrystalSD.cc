@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for CaloCrystal Detectors
 //
-// $Id: CaloCrystalSD.cc,v 1.19 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: CaloCrystalSD.cc,v 1.20 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author Ivan Logashenko
 //
@@ -54,10 +54,20 @@ namespace mu2e {
     const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
 
     // Get crystal ID
-    G4int copyNo = touchableHandle->GetCopyNumber(2);
+    G4int copyNo = touchableHandle->GetCopyNumber(0);
 
     G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
     ProcessCode endCode(_processInfo->findAndCount(pname));
+
+   // Originally the hit position was saved in local crystal frame.
+    // Not it is saved in Mu2e frame, hence the following code is
+    // commented out.
+    // Calculate enerdy deposition position along the crystal
+     G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
+     G4AffineTransform        toWorld = toLocal.Inverse();
+     G4ThreeVector posWorld = aStep->GetPreStepPoint()->GetPosition();
+     G4ThreeVector posLocal = toLocal.TransformPoint(posWorld);
+
 
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.

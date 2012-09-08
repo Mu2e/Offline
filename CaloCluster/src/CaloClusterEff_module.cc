@@ -1,9 +1,9 @@
 //
 // module for the calculation of the efficiency Vs energy cluster cut and other distributions related to the efficiency
 //
-// $Id: CaloClusterEff_module.cc,v 1.5 2012/07/10 00:02:19 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
+// $Id: CaloClusterEff_module.cc,v 1.6 2012/09/08 02:24:24 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:24 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -36,7 +36,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 //calorimeter packages
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -316,7 +316,7 @@ void CaloClusterEff::analyze(art::Event const & evt ) {
         CaloClusterer c;
 
         art::ServiceHandle<GeometryService> geom;
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
 
         if (ncalls == 1) {
 
@@ -427,8 +427,8 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
 
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
-        if(! geom->hasElement<Calorimeter>() ) return;
-        GeomHandle<Calorimeter> cg;
+        if(! geom->hasElement<VaneCalorimeter>() ) return;
+        GeomHandle<VaneCalorimeter> cg;
 
         // Get handles to calorimeter collections
         art::Handle<CaloHitCollection> caloHits;

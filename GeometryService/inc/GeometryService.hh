@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.17 2012/07/27 19:42:31 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/27 19:42:31 $
+// $Id: GeometryService.hh,v 1.18 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author Rob Kutschke
 //
@@ -134,6 +134,7 @@ private:
 
     // Don't need to expose definition of private template in header
     template <typename DET> void addDetector(std::auto_ptr<DET> d);
+    template <typename DETALIAS, typename DET> void addDetectorAliasToBaseClass(std::auto_ptr<DET> d);
 
     // Some information that is provided through the GeometryService
     // should only be used inside GEANT jobs.  The following method is

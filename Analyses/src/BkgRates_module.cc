@@ -1,15 +1,15 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.34 2012/06/20 20:57:29 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/06/20 20:57:29 $
+// $Id: BkgRates_module.cc,v 1.35 2012/09/08 02:24:24 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:24 $
 //
 // Original author Gianni Onorato
 //
 
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -731,8 +731,8 @@ namespace mu2e {
 
     //Get handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;
-    if( ! geom->hasElement<Calorimeter>() ) return;
-    GeomHandle<Calorimeter> cg;
+    if( ! geom->hasElement<VaneCalorimeter>() ) return;
+    GeomHandle<VaneCalorimeter> cg;
     double CrSize = cg->crystalHalfSize();
     double CrLength = cg->crystalHalfLength();
     double CrVolume = 8*(CrSize*CrSize*CrLength);

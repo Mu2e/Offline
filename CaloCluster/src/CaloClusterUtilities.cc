@@ -1,15 +1,15 @@
 //
 // General utilities for the calorimeter's studies
 //
-// $Id: CaloClusterUtilities.cc,v 1.5 2012/07/10 00:02:19 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
+// $Id: CaloClusterUtilities.cc,v 1.6 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author G. Pezzullo & G. Tassielli & G. Onorato
 //
 
 #include "CaloCluster/inc/CaloClusterUtilities.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "CLHEP/Vector/Rotation.h"
@@ -30,7 +30,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 
 //-----------------------------------------
@@ -54,7 +54,7 @@ MCCaloUtilities::~MCCaloUtilities()
 void MCCaloUtilities::printOutCaloInfo() {
 
         art::ServiceHandle<GeometryService> geom;
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
 
         double Hsize = cg->crystalHalfSize();
         double Hleng = cg->crystalHalfLength();
@@ -114,7 +114,7 @@ void MCCaloUtilities::setTrackAndRO(const art::Event & event,
 
         _localRO = RO;
         art::ServiceHandle<GeometryService> geom;
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         _localCrystal  = cg->getCrystalByRO(_localRO);
         _localVane = cg->getVaneByRO(_localRO);
 
@@ -158,7 +158,7 @@ int MCCaloUtilities::localVane() {
 int MCCaloUtilities::getStartingVane(CLHEP::Hep3Vector origin) {
 
         art::ServiceHandle<GeometryService> geom;
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
 
         for (size_t i=0; i<cg->nVane(); ++i) {
 
@@ -192,7 +192,7 @@ std::string & TOUpper(std::string &in) {
 
 
 double cry(double val){
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         double size = 2.0*cg->crystalHalfSize();//[mm]
         int index = (int) (val / size);
         double result =  val - index*size;
@@ -200,13 +200,13 @@ double cry(double val){
         return result;
 }
 double indexToCoor(double ind){
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         double res = ind*2.0*cg->crystalHalfSize();
         res += cg->crystalHalfSize();
         return res;
 }
 double indexToCoor(int ind){
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         double res = (double)(ind*2.0*cg->crystalHalfSize());
         res += cg->crystalHalfSize();
         return res;
@@ -215,7 +215,7 @@ double indexToCoor(int ind){
 //the following method set as the cog of the Cluster the cog which has only the w coordinate
 //corrected using the information of the position of the most energetic crystal
 void w_correction_0(double& clCOGw,double& clCOGwErr, int& clCryEnergyMaxColumn){
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         double x = clCOGw - indexToCoor(clCryEnergyMaxColumn), xErr = clCOGwErr;
         xErr -= (cg->crystalHalfSize()/sqrt(12.0));
 
@@ -241,7 +241,7 @@ void w_correction_0(double& clCOGw,double& clCOGwErr, int& clCryEnergyMaxColumn)
 }
 
 void v_correction_0( float& extrapolThetaV,  double& clCOGv,  double& clCOGvErr){// the first argument is in [deg]
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         double val = 0.0, valErr = 0.0;
         double x = extrapolThetaV;
         if(x > 100.)  x = 100.;
@@ -266,7 +266,7 @@ void v_correction_0( float& extrapolThetaV,  double& clCOGv,  double& clCOGvErr)
 }
 
 void v_correction_0( double& extrapolThetaV,  double& clCOGv,  double& clCOGvErr){// the first argument is in [deg]
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         double val = 0.0, valErr = 0.0;
         double x = extrapolThetaV;
         if(x > 100.)  x = 100.;
@@ -291,7 +291,7 @@ void v_correction_0( double& extrapolThetaV,  double& clCOGv,  double& clCOGvErr
 }
 
 void w_correction_1(double& clCOGw,double& clCOGwErr, int& wSize){
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         double p[10] = {-36.49, 34.92, -16.15, 3.546, -0.1358, -0.06925, 0.006722, 0.001008, -0.0001886, 8.151e-6};
         double spo = 0.0;
         if(wSize < 1.0) wSize = 1.0;
@@ -315,7 +315,7 @@ void w_correction_1(double& clCOGw,double& clCOGwErr, int& wSize){
 }
 
 void v_correction_1(int& clCryEnergyMaxRow,  double& clCOGv,  double& clCOGvErr){
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         double val = 0.0, valErr = 0.0;
         double x = clCOGv - indexToCoor(clCryEnergyMaxRow);
         if(x > 100.)  x = 100.;
@@ -344,8 +344,8 @@ void v_correction_1(int& clCryEnergyMaxRow,  double& clCOGv,  double& clCOGvErr)
 void cog_correction_0(CaloCluster &cluster){
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
-        if(! geom->hasElement<Calorimeter>() ) return;
-        GeomHandle<Calorimeter> cg;
+        if(! geom->hasElement<VaneCalorimeter>() ) return;
+        GeomHandle<VaneCalorimeter> cg;
         CLHEP::Hep3Vector res(1., 1., 1.);
 
         CLHEP::Hep3Vector  resError(1e-1, 1e-1, 1e-1);
@@ -397,8 +397,8 @@ void cog_correction_0(CaloCluster &cluster){
 void cog(CaloCluster &cluster){
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
-        if(! geom->hasElement<Calorimeter>() ) return;
-        GeomHandle<Calorimeter> cg;
+        if(! geom->hasElement<VaneCalorimeter>() ) return;
+        GeomHandle<VaneCalorimeter> cg;
         CLHEP::Hep3Vector res(1., 1., 1.);
 
         CLHEP::Hep3Vector  resError(1e-1, 1e-1, 1e-1);
@@ -467,7 +467,7 @@ void cog(CaloCluster &cluster){
 void cog_depth(CaloCluster &cluster, double depth, ClusterMap &clusterMap){
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         CLHEP::Hep3Vector res(1., 1., 1.);
 
         CLHEP::Hep3Vector  resError(1e-1, 1e-1, 1e-1);
@@ -564,7 +564,7 @@ void LOGcogMap(CaloCluster &cluster, double w, double depth, ClusterMap &cluster
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
 
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         CLHEP::Hep3Vector res, resError;
 
         //get crystal's geometric information
@@ -649,7 +649,7 @@ CLHEP::Hep3Vector LOGcog(CaloCluster &cluster, double w, double depth){
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
 
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         CLHEP::Hep3Vector res, resError;
 
         //get crystal's geometrical information

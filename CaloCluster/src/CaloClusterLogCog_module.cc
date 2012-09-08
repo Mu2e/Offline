@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloClusterLogCog_module.cc,v 1.3 2012/07/10 00:02:19 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
+// $Id: CaloClusterLogCog_module.cc,v 1.4 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -25,7 +25,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 //calorimeter packages
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -535,8 +535,8 @@ void CaloClusterLogCog::doCalorimeter(art::Event const& evt, bool skip){
 
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
-        if(! geom->hasElement<Calorimeter>() ) return;
-        GeomHandle<Calorimeter> cg;
+        if(! geom->hasElement<VaneCalorimeter>() ) return;
+        GeomHandle<VaneCalorimeter> cg;
 
         // Get handles to calorimeter collections
         art::Handle<CaloHitCollection> caloHits;

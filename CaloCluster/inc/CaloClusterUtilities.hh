@@ -1,9 +1,9 @@
 //
 // General utilities for the calorimeter's studies
 //
-// $Id: CaloClusterUtilities.hh,v 1.5 2012/09/06 19:59:15 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/09/06 19:59:15 $
+// $Id: CaloClusterUtilities.hh,v 1.6 2012/09/08 02:24:24 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:24 $
 //
 // Original author G. Pezzullo & G. Tassielli & G. Onorato
 //
@@ -16,7 +16,7 @@
 //Mu2e includes
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CaloCluster/inc/CaloClusterTools.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -766,7 +766,7 @@ struct ClusterMap{
                 _time(cluster.time()),
                 _showerDir(CaloClusterTools(cluster).showerDir()),
                 _errShowerDir(CaloClusterTools(cluster).errShowerDir()){
-                GeomHandle<Calorimeter> cg;
+                GeomHandle<VaneCalorimeter> cg;
                 for( CaloCrystalHitPtrVector::const_iterator itCD = cluster.caloCrystalHitsPtrVector().begin(); itCD != cluster.caloCrystalHitsPtrVector().end(); ++itCD){
                         std::vector<art::Ptr<CaloHit> > const& ROIds = (*itCD)->readouts();
                         CaloHit const& thehit = *ROIds.at(0);
@@ -784,14 +784,14 @@ struct ClusterMap{
         //Setting
         void   setUcog(double newU){_cluCOG.setX(newU);}
         void   setVcog(double newV){
-                GeomHandle<Calorimeter> cg;
+                GeomHandle<VaneCalorimeter> cg;
                 _cluCOG.setY(newV);
                 int tmpRow=0;
                 tmpRow = (int)(newV/cg->crystalHalfSize());
                 _cluCogRow = tmpRow;
         }
         void   setWcog(double newW){
-                GeomHandle<Calorimeter> cg;
+                GeomHandle<VaneCalorimeter> cg;
                 _cluCOG.setZ(newW);
                 int tmpColumn=0;
                 tmpColumn = (int)(newW/cg->crystalHalfSize());

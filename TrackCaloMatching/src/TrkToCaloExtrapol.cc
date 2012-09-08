@@ -1,7 +1,7 @@
 //
-// $Id: TrkToCaloExtrapol.cc,v 1.3 2012/08/31 22:34:53 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/08/31 22:34:53 $
+// $Id: TrkToCaloExtrapol.cc,v 1.4 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author G. Pezzullo
 //
@@ -12,7 +12,7 @@
 // Mu2e includes
 #include "TrackCaloMatching/inc/TrkToCaloExtrapol.hh"
 #include "CalorimeterGeom/inc/Vane.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BaBar/BaBar.hh"
@@ -55,7 +55,8 @@ double TrkToCaloExtrapol::t0() const{
 }
 
 double TrkToCaloExtrapol::pathLenghtEntranceErr() const{
-        GeomHandle<Calorimeter> cg;
+
+	GeomHandle<VaneCalorimeter> cg;
 
         double errTanDip2 = ( (*_trk.get())->helix(_pathLengthEntrance).covariance() )(5, 5);
         double TanDip = (*_trk.get())->helix(_pathLengthEntrance).tanDip();

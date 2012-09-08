@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadExtrapol_module.cc,v 1.5 2012/08/31 22:34:53 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/08/31 22:34:53 $
+// $Id: ReadExtrapol_module.cc,v 1.6 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author G. Pezzullo
 //
@@ -115,7 +115,10 @@ using cet::sum_of_squares;
 
 namespace mu2e {
 double thetaWimpact(const CLHEP::Hep3Vector& mom, int vaneId){
-        GeomHandle<Calorimeter> cg;
+        
+	art::ServiceHandle<GeometryService> geom;
+	if(! geom->hasElement<VaneCalorimeter>() ) return 0;
+	GeomHandle<VaneCalorimeter> cg;
         Vane const &vane = cg->getVane(vaneId);
         CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*mom.unit();
         if(std::fabs(dirMom_rotated.getX() ) < 1e-10){
@@ -131,7 +134,9 @@ double thetaWimpact(const CLHEP::Hep3Vector& mom, int vaneId){
         return thW;
 }
 double thetaVimpact(const CLHEP::Hep3Vector& mom, int vaneId){//(FIXME)
-        GeomHandle<Calorimeter> cg;
+	art::ServiceHandle<GeometryService> geom;
+	if(! geom->hasElement<VaneCalorimeter>() ) return 0;
+        GeomHandle<VaneCalorimeter> cg;
         Vane const &vane = cg->getVane(vaneId);
         CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*mom.unit();
         if(std::fabs(dirMom_rotated.getX() ) < 1e-10){
@@ -484,8 +489,8 @@ void ReadExtrapol::doExtrapolation(art::Event const& evt, bool skip){
 
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
-        if(! geom->hasElement<Calorimeter>() ) return;
-        GeomHandle<Calorimeter> cg;
+        if(! geom->hasElement<VaneCalorimeter>() ) return;
+        GeomHandle<VaneCalorimeter> cg;
 
         // Get handles to calorimeter collections
         art::Handle<CaloHitCollection> caloHits;

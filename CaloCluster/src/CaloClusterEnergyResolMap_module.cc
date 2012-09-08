@@ -1,9 +1,9 @@
 //
 // Visualization of the energy resolution  on the rows and on the columns
 //
-// $Id: CaloClusterEnergyResolMap_module.cc,v 1.10 2012/07/10 00:02:20 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:20 $
+// $Id: CaloClusterEnergyResolMap_module.cc,v 1.11 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -35,7 +35,7 @@
 #include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
 
 //calorimeter packages
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -462,7 +462,7 @@ void CaloClusterEnergyResolMap::analyze(art::Event const & evt ) {
         CaloClusterer c;
 
         art::ServiceHandle<GeometryService> geom;
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         if (ncalls == 1) {
 
                 art::ServiceHandle<art::TFileService> tfs;
@@ -597,7 +597,7 @@ double logNormale(double *x, double *par){
 
 void CaloClusterEnergyResolMap::endJob() {
         art::ServiceHandle<GeometryService> geom;
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         const int n = cg->nCrystalR();
 
         float x[n] ;
@@ -709,8 +709,8 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
-        if(! geom->hasElement<Calorimeter>() ) return;
-        GeomHandle<Calorimeter> cg;
+        if(! geom->hasElement<VaneCalorimeter>() ) return;
+        GeomHandle<VaneCalorimeter> cg;
 
         // Get handles to calorimeter collections
         art::Handle<CaloHitCollection> caloHits;

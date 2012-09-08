@@ -256,7 +256,7 @@ namespace mu2e {
     // Get calorimeter geometry description
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
-    double length     = cal.crystalHalfLength();
+    //double length     = cal.crystalHalfLength();
     double nonUniform = cal.getNonuniformity();
     double timeGap    = cal.getTimeGap();
     double addEdep    = cal.getElectronEdep();
@@ -295,8 +295,9 @@ namespace mu2e {
         CLHEP::Hep3Vector const& pos = h.position();
         // Hit position in local crystal frame
         CLHEP::Hep3Vector posLocal = cal.toCrystalFrame(roid,pos);
-        // Calculate correction for edep
-        double edep_corr = edep * (1.0+(posLocal.z()/length)*nonUniform/2.0);
+        // Calculate correction for edep  //nothing yet, so will defer that to later work
+        //double edep_corr = edep * (1.0+(posLocal.z()/length)*nonUniform/2.0);
+        double edep_corr = edep;
 
         ro_hits.push_back(ROHit(*i,edep,edep_corr,ROHit::crystal,h.time()));
 
@@ -418,6 +419,12 @@ namespace mu2e {
 
   } // end makeCalorimeterHits
 
+
+
+
+
+
+
   // Fill the hitmap using the readout id as the map key.
   void MakeCaloReadoutHits::fillMapByReadoutId( int nro,
                                                 HitMap& hitmap,
@@ -453,6 +460,11 @@ namespace mu2e {
   }  // end fillMapByReadoutId
 
 
+ 
+ 
+ 
+ 
+ 
   // Fill the hitmap using the crystal id as the map key.
   void MakeCaloReadoutHits::fillMapByCrystalId( HitMap& hitmap,
 
@@ -471,6 +483,11 @@ namespace mu2e {
 
   } // end fillMapByCrystalId
 
+ 
+ 
+ 
+ 
+ 
   void MakeCaloReadoutHits::printDataProductInfo( HandleVector const& crystalStepsHandles,
                                                   HandleVector const& readoutStepsHandles ){
     mf::LogInfo log(_messageCategory);

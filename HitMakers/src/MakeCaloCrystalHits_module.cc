@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_module.cc,v 1.10 2012/03/01 01:20:11 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/01 01:20:11 $
+// $Id: MakeCaloCrystalHits_module.cc,v 1.11 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author KLG
 //
@@ -189,7 +189,7 @@ namespace mu2e {
       caloHitsSorted.push_back( &(*i));
     }
     sort ( caloHitsSorted.begin(), caloHitsSorted.end(),
-           lessByCIdAndTimeByPointer<CaloHit>(cal) );
+           lessByCIdAndTimeByPointer<CaloHit>(&cal) );
 
     if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
       cout << __func__ << ": Total number of hit RO Sorted = " << caloHitsSorted.size() << endl;

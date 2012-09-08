@@ -3,6 +3,7 @@
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/Rotation.h"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Cube.h"
@@ -502,9 +503,9 @@ void DataInterface::fillGeometry()
     _supportstructures.push_back(shape);
   }
 
-  if(geom->hasElement<mu2e::Calorimeter>())
+  if(geom->hasElement<mu2e::VaneCalorimeter>())
   {
-    mu2e::GeomHandle<mu2e::Calorimeter> calo;
+    mu2e::GeomHandle<mu2e::VaneCalorimeter> calo;
     unsigned int n=calo->nVane();
     for(unsigned int i=0; i<n; i++)
     {
@@ -1194,9 +1195,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
   const mu2e::CaloHitCollection *calohits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloHitCollection>();
   art::ServiceHandle<mu2e::GeometryService> geoservice;
-  if(calohits!=NULL && geoservice->hasElement<mu2e::Calorimeter>())
+  if(calohits!=NULL && geoservice->hasElement<mu2e::VaneCalorimeter>())
   {
-    mu2e::GeomHandle<mu2e::Calorimeter> calo;
+    mu2e::GeomHandle<mu2e::VaneCalorimeter> calo;
     _numberCrystalHits=calohits->size();  //this is not accurate since the return value gives the RO hits
     std::vector<mu2e::CaloHit>::const_iterator iter;
     for(iter=calohits->begin(); iter!=calohits->end(); iter++)

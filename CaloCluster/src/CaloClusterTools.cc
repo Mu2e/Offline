@@ -1,7 +1,7 @@
 //
-// $Id: CaloClusterTools.cc,v 1.1 2012/09/06 19:58:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/09/06 19:58:05 $
+// $Id: CaloClusterTools.cc,v 1.2 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author G. Pezzullo, A. Luca' & G. Tassielli
 //
@@ -11,7 +11,7 @@
 
 // Mu2e includes
 #include "CaloCluster/inc/CaloClusterTools.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include <cmath>
 
@@ -42,7 +42,7 @@ namespace mu2e {
 
   CaloClusterTools::CaloClusterTools(CaloCluster const &clu):
     _cluster(clu),
-    _calorimeter(*GeomHandle<Calorimeter>()){
+    _calorimeter(*GeomHandle<VaneCalorimeter>()){
   }
 
   double CaloClusterTools::timeFasterCrystal() const{

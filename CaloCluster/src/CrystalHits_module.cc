@@ -1,14 +1,14 @@
 //
-// $Id: CrystalHits_module.cc,v 1.1 2012/07/10 00:02:19 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
+// $Id: CrystalHits_module.cc,v 1.2 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 //Original author Giovanni Onoratto
 
 // Mu2e includes.
 #include "CaloCluster/inc/CaloClusterUtilities.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -232,7 +232,7 @@ void CrystalHits::analyze(art::Event const& evt ) {
         art::Handle<GenParticleCollection> genParticles;
         evt.getByLabel(_generatorModuleLabel, genParticles);
 
-        GeomHandle<Calorimeter> cg;
+        GeomHandle<VaneCalorimeter> cg;
         if (!( caloHits.isValid())) {
                 return;
         }

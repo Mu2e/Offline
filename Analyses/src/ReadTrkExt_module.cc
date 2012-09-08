@@ -3,9 +3,9 @@
 //  All in Detector (=Tracker) coordinate. Points other than tracker coordinates are properly transformed. 
 //  B field basically requires mu2e coordinate
 //
-//  $Id: ReadTrkExt_module.cc,v 1.3 2012/08/31 22:36:33 brownd Exp $
-//  $Author: brownd $
-//  $Date: 2012/08/31 22:36:33 $
+//  $Id: ReadTrkExt_module.cc,v 1.4 2012/09/08 02:24:24 echenard Exp $
+//  $Author: echenard $
+//  $Date: 2012/09/08 02:24:24 $
 //
 //  Original author MyeongJae Lee
 //
@@ -35,7 +35,7 @@ using namespace CLHEP;
 
 #include "KalmanTests/inc/KalRepCollection.hh"
 #include "TrkBase/TrkHotList.hh"
-#include "TrkBase/HelixParams.hh"
+//#include "TrkBase/HelixParams.hh"
 #include "TrkBase/TrkHitOnTrk.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
@@ -369,12 +369,13 @@ namespace mu2e {
       _trkx[i] = p.x();
       _trky[i] = p.y();
       _trkz[i] = p.z();
-      HelixParams par = krep.helix(fltlen);
-      _trkd0[i] = par.d0();
-      _trkz0[i] = par.z0();
-      _trkphi[i] = par.phi0();
-      _trkomega[i] = par.omega();
-      _trktanDip[i] = par.tanDip();
+//      HelixParams par = krep.helix(fltlen);
+      _trkd0[i] = 0;//par.d0();
+      _trkz0[i] = 0;//par.z0();
+      _trkphi[i] = 0;//par.phi0();
+      _trkomega[i] = 0;//par.omega();
+      _trktanDip[i] = 0;//par.tanDip();
+ 
       _trkp[i] = krep.momentum(fltlen).mag();
       _trkpx[i] = krep.momentum(fltlen).x();
       _trkpy[i] = krep.momentum(fltlen).y();

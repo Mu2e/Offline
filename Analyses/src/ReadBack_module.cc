@@ -1,15 +1,15 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.18 2012/07/02 14:51:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/02 14:51:05 $
+// $Id: ReadBack_module.cc,v 1.19 2012/09/08 02:24:24 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:24 $
 //
 // Original author Rob Kutschke
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "ConditionsService/inc/unknownPDGIdName.hh"

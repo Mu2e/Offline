@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter
 
-$Id: FilterEmptyEvents_module.cc,v 1.8 2012/01/08 17:51:23 kutschke Exp $
-$Author: kutschke $
-$Date: 2012/01/08 17:51:23 $
+$Id: FilterEmptyEvents_module.cc,v 1.9 2012/09/08 02:24:24 echenard Exp $
+$Author: echenard $
+$Date: 2012/09/08 02:24:24 $
 
 Original author Giovanni Onorato
 
@@ -29,7 +29,7 @@ Original author Giovanni Onorato
 #include "art/Framework/Principal/Handle.h"
 //#include <boost/shared_ptr.hpp>
 #include "fhiclcpp/ParameterSet.h"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -109,7 +109,7 @@ namespace mu2e {
 
     //Get handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;
-    if( geom->hasElement<Calorimeter>() ) {
+    if( geom->hasElement<VaneCalorimeter>() ) {
 
       // Get handles to calorimeter collections
       art::Handle<CaloHitCollection> caloHits;

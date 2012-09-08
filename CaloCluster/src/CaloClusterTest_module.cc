@@ -1,9 +1,9 @@
 //
 // Visualization of the clusters on each vane with the relative distributions of time, energy and size
 //
-// $Id: CaloClusterTest_module.cc,v 1.3 2012/03/19 19:35:41 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/03/19 19:35:41 $
+// $Id: CaloClusterTest_module.cc,v 1.4 2012/09/08 02:24:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -49,7 +49,7 @@
 #include "art/Framework/Principal/Provenance.h"
 
 //other includes
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
@@ -212,8 +212,8 @@ void CaloClusterTest::doCalorimeter(art::Event const& evt, bool skip){
 
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
-        if(! geom->hasElement<Calorimeter>() ) return;
-        GeomHandle<Calorimeter> cg;
+        if(! geom->hasElement<VaneCalorimeter>() ) return;
+        GeomHandle<VaneCalorimeter> cg;
 
 
         // Get handles to calorimeter collections

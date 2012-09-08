@@ -1,15 +1,15 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple_module.cc,v 1.7 2012/03/02 17:16:22 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/02 17:16:22 $
+// $Id: CosmicTuple_module.cc,v 1.8 2012/09/08 02:24:24 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/09/08 02:24:24 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -174,8 +174,8 @@ namespace mu2e {
     map<int,int> hit_apds;
 
     art::ServiceHandle<GeometryService> geom;
-    if( ! geom->hasElement<Calorimeter>() ) return pass;
-    GeomHandle<Calorimeter> cg;
+    if( ! geom->hasElement<VaneCalorimeter>() ) return pass;
+    GeomHandle<VaneCalorimeter> cg;
 
       // Fill some histograms
       _hEventsize->Fill(simParticles->size());
