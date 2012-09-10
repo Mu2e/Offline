@@ -3,9 +3,9 @@
 //
 // Pure virtual base class that will used by both LTracker or TTracker.
 //
-// $Id: Tracker.hh,v 1.6 2012/02/24 20:55:48 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/24 20:55:48 $
+// $Id: Tracker.hh,v 1.7 2012/09/10 14:53:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/09/10 14:53:04 $
 //
 // Original author Rob Kutschke
 //
@@ -22,7 +22,7 @@ namespace mu2e {
 
   public:
     // No constructor on purpose.
-    ~Tracker();
+    virtual ~Tracker(){}
 
     // Compiler generated copy and assignment constructors
     // should be OK.
