@@ -1,9 +1,9 @@
 //
 //  Study energy desposited in straws 
 //
-// $Id: StrawEnergy_module.cc,v 1.2 2012/09/11 19:54:31 brownd Exp $
+// $Id: StrawEnergy_module.cc,v 1.3 2012/09/11 21:46:41 brownd Exp $
 // $Author: 
-// $Date: 2012/09/11 19:54:31 $
+// $Date: 2012/09/11 21:46:41 $
 //
 // Original author David Brown
 //
@@ -138,7 +138,7 @@ namespace mu2e {
 	_mcpspos = primary->startPosition();
 	mcpos = primary->startPosition();
 	double mass = pdt->particle(primary->pdgId()).ref().mass();
-	_mcpke = sqrt(primary->startMomentum().mag2()+mass*mass)-mass;
+	_mcpke = primary->startMomentum().e()-mass;
 	_mcptime = primary->startGlobalTime();
       } else {
 	_mcppdg = 0;
