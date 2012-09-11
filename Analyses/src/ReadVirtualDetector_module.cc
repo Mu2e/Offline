@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.12 2012/06/21 19:51:38 logash Exp $
-//  $Author: logash $
-//  $Date: 2012/06/21 19:51:38 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.13 2012/09/11 19:53:47 brownd Exp $
+//  $Author: brownd $
+//  $Date: 2012/09/11 19:53:47 $
 //
 // Original author Ivan Logashenko
 //
@@ -11,6 +11,8 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
@@ -212,11 +214,11 @@ namespace mu2e {
     _ntvd = tfs->make<TNtuple>( "ntvd", "Virtual Detectors ntuple",
                                 "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
                                 "xl:yl:zl:pxl:pyl:pzl:gtime:"
-                                "g4bl_weight:g4bl_time:run");
+                                "g4bl_weight:g4bl_time:run:ke");
 
     _nttvd = tfs->make<TNtuple>( "nttvd", "Time Virtual Detectors ntuple",
                                  "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
-                                 "gtime:code:g4bl_weight:g4bl_time:run");
+                                 "gtime:code:g4bl_weight:g4bl_time:run:ke");
 
     // Have to use TTree here, because one cannot use more than 100 variables in TNtuple
 
@@ -316,6 +318,7 @@ namespace mu2e {
 
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;
+    GlobalConstantsHandle<ParticleDataTable> pdt;
 
     // Ask the event to give us a "handle" to the requested hits.
     art::Handle<StepPointMCCollection> hits;
@@ -371,13 +374,15 @@ namespace mu2e {
       // Get track info
       key_type trackId = hit.trackId();
       int pdgId = 0;
+      double mass(0.0);
       if ( haveSimPart ){
         if( !simParticles->has(trackId) ) {
           pdgId = 0;
         } else {
           SimParticle const& sim = simParticles->at(trackId);
           pdgId = sim.pdgId();
-        }
+      	  mass = pdt->particle(pdgId).ref().mass();
+	}
       }
 
       // Fill the ntuple.
@@ -399,7 +404,9 @@ namespace mu2e {
       nt[15] = lmom.y();
       nt[16] = lmom.z();
       nt[17] = hit.properTime();
-      nt[20] = event.id().run(); 
+      nt[20] = event.id().run();
+  // compute kinetic energy: this is what Geant cuts on
+      nt[21] = sqrt(mom.mag2()+mass*mass)-mass;
 
       _ntvd->Fill(nt);
       if ( _nAnalyzed < _maxPrint){
@@ -446,12 +453,14 @@ namespace mu2e {
       // Get track info
       key_type trackId = hit.trackId();
       int pdgId = 0;
+      double mass(0.0);
       if ( haveSimPart ){
         if( !simParticles->has(trackId) ) {
           pdgId = 0;
         } else {
           SimParticle const& sim = simParticles->at(trackId);
           pdgId = sim.pdgId();
+	  mass = pdt->particle(pdgId).ref().mass();
         }
       }
 
@@ -470,6 +479,7 @@ namespace mu2e {
       nt[11] = hit.properTime();
       nt[12] = hit.endProcessCode();
       nt[15] = event.id().run();
+      nt[16] = sqrt(mom.mag2()+mass*mass)-mass;
 
       _nttvd->Fill(nt);
 
