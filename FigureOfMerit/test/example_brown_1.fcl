@@ -2,8 +2,8 @@ outputFile:  "example_brown_1.out"
 
 Root:
 {
-  rootFile : example_brown_1.root
-  cintFile : example_brown_1.cint
+  rootFile : "example_brown_1.root"
+  cintFile : "example_brown_1.cint"
 }
 
 trackerCuts: 

@@ -4,8 +4,8 @@ outputFile:  "example_brown_2.out"
 
 Root:
 {
-  rootFile : example_brown_2.root
-  cintFile : example_brown_2.cint
+  rootFile : "example_brown_2.root"
+  cintFile : "example_brown_2.cint"
 }
 
 

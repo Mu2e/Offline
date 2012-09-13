@@ -17,6 +17,12 @@
 outputFile:  "example_bernstein_2.out"
 #outputFile:  "cerr"
 
+Root:
+{
+  rootFile: "example_bernstein_2.root"
+  cintFile: "example_bernstein_2.cint"
+}
+
 trackerCuts: 
 {
 # cuts B
