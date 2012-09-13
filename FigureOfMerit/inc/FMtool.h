@@ -51,7 +51,7 @@ public:
           std::string const & bname, 
           double backgroundCountNormalization, 
           std::vector<double> & background);
-  void   applyFofM() const;
+  void   applyFofM();
   FofM::Summary applyFofM( 
                     size_t tCutNumber,  double lowestPoint,
                     double endingPoint, std::string & table,
@@ -115,6 +115,8 @@ private:
   template<typename T> void recordFcl(std::string const & name, T const & val) const {
     os << "                        " << name << " : " << val << "\n";
   }
+
+  void bottomLine ( std::string const & description, double value );
 
   void makeDIOreferenceTF1(int tracksExtracted, double DIOflatGenerationWindowLo);
 
@@ -222,7 +224,11 @@ private:
   splines::Spline<1> RPCtimeProbability;
   double stoppedPionsPerPOT;
   double extinction;
-  
+
+  // "bottom line" information
+  std::ostringstream botMenu;
+  std::ostringstream botLine;  
+
   // Root graphics 
   struct RootGraphics
   {

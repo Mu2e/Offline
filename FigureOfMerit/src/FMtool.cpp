@@ -1262,7 +1262,7 @@ void FMtool::makeDIOreferenceTF1(int tracksExtracted, double DIOflatGenerationWi
 }
 
 
-void FMtool::applyFofM() const
+void FMtool::applyFofM() 
 {
   //
   // Use the FofM class to calculate quantities of interest,
@@ -1345,6 +1345,10 @@ void FMtool::applyFofM() const
        << "  " << summaries[tCutNumber].figureOfMerit;
     if (tCutNumber == best_tCutNumber) {
       os << " ** ";
+      bottomLine("time cut",  tCuts[tCutNumber]); 
+      bottomLine("lower momentum cut", summaries[tCutNumber].pCutLo);     
+      bottomLine("upper momentum cut", summaries[tCutNumber].pCutHi);     
+      bottomLine("Feldman/Cousins 90% sensitivity", summaries[tCutNumber].CL90sensitivity);   
     } else {
       os << "    ";
     }
@@ -1378,6 +1382,9 @@ void FMtool::applyFofM() const
     os << table << "\n--------------------------------------- \n\n";
   }
   
+  os << botMenu.str() << "\n";
+  os << botLine.str() << "\n";
+
   os << "\n--------------------------------------- \n\n";
   
 }  // applyFofM()
@@ -1539,7 +1546,7 @@ FMtool::applyFofM( size_t tCutNumber,
        << "  from the DIO background.  In that case, low statistics at the tail of the DIO \n"
        << "  spectrum can result in the highest-momentum well-reconstructed DIO being alone\n"
        << "  in a bin, with zero bins to either side.  The cubic spline representing this \n"
-       << "  then goes slightly below zero just to the high side of that bin-center point.\n"
+       << "  then goes slightly below zero just to the highHIGH side of that bin-center point.\n"
        << "  This dip can easily be the optimal momentum cut found by the automated \n"
        << "  optimizer.\n"
        << "  The effect can be an artifact of eliminating too many of the actual causes of \n"
@@ -1624,6 +1631,12 @@ void FMtool::DIOstatisticsWarningFixedLowCut
      << "Sensitivity calculations based on so few tracks are deemed "
      << "untrustworthy.\n\n";
 }
+
+void FMtool::bottomLine (std::string const & description, double value) 
+{
+  botMenu << description << "\n";
+  botLine << value << "  ";
+} 
 
 std::vector<double> FMtool::RPCtimeProbabilityVector() const {
   // returns the integrated (to t=1000) probability for 
