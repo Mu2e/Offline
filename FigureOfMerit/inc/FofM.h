@@ -339,6 +339,7 @@ public:
   explicit CzarneckiDIOspectrumFunction(double strength); 
   double operator() (double p) const;  
   double integrated (double p) const;  // integral from p to endpoint   
+  double operator() (double *p, double*) const {return operator()(*p);}  
 private:
   double multiplier;
   double alpha_5;

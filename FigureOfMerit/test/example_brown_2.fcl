@@ -2,6 +2,13 @@
 # Alternatively, output to a file...
 outputFile:  "example_brown_2.out"
 
+Root:
+{
+  rootFile : example_brown_2.root
+  cintFile : example_brown_2.cint
+}
+
+
 trackerCuts: 
 {
 # cuts C

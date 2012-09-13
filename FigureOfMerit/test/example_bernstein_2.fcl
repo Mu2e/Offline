@@ -15,6 +15,7 @@
 # efficiency smaller.
 
 outputFile:  "example_bernstein_2.out"
+#outputFile:  "cerr"
 
 trackerCuts: 
 {

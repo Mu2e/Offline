@@ -1,4 +1,4 @@
-#Example to analyse the following files:
+#Example to analyze the following files:
 #
 # Hodges CE file made from .1M generated conversion electrons stopped in a 
 # with a 49-foil target; Hodges DIO file, also based on .1M (which is way too
@@ -11,6 +11,12 @@
 # DIO spectrum, in particular, up by about 800 KeV.
 
 outputFile:  "example_hodges_49foil.out"
+
+Root:
+{
+  rootFile : "example_hodges_49foil.root"
+  cintFile : "example_hodges_49foil.cint"
+}
 
 trackerCuts: 
 {
@@ -104,6 +110,7 @@ verbosity:
   spectra               : false
   backgroundSplines     : false 
   detailedCutTrace      : true
+  detailedTrace         : true
   allTables             : false 
 }
 

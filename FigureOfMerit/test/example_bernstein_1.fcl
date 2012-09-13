@@ -16,6 +16,12 @@
 
 outputFile:  "example_bernstein_1.out"
 
+Root: 
+{
+rootFile : "example_bernstein_1.root"
+cintFile : "example_bernstein_1.cint"
+}
+
 trackerCuts: 
 {
 # cuts B
@@ -81,6 +87,12 @@ extinction                       : 1.0e-10
 #  FC90 sensitivity versus smoothed Punzi sensitivity
 meritFunction: FCsensitivity
 
+binning:
+{
+  nBins       : 120
+  nSplineBins : 100
+}
+
 # Control of verbosity:
 
 verbosity:  
@@ -97,7 +109,7 @@ verbosity:
   backgroundSplines     : false 
   allTables             : false 
   detailedCutTrace      : true
-  detailedTrace         : false
+  detailedTrace         : true
 }
 
 # ------------------------------------------------------------

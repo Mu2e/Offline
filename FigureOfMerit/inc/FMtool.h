@@ -6,17 +6,18 @@
 // FMtool_H.h
 //
 // Tool to use FofM class for calculations based on data from simulations.
-// sense of the Cousins/Feldman paper 
 //
 // ----------------------------------------------------------------------
 
 #include <vector>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 // Root includes.
 #include "TFile.h"
 #include "TH1F.h"
+#include "TF1.h"
 #include "TNtuple.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -37,6 +38,7 @@ public:
   FMtool (fhicl::ParameterSet const & p, std::ostream & o);
   void   analyze();
   void   setRootGraphics();
+  void   establishHistograms();
   void   setFilterLevels();
   void   setCanonicals();
   double obtainCEdata();
@@ -59,6 +61,12 @@ public:
 private:
   class NthHighest;
   class RootGraphics;
+
+  enum {
+        CEfitmom
+      , DIOfitmom
+      , RPCfitmom
+  } SpectrumType;
     
   void decideVerbosity();
   void extractFitmom 
@@ -76,11 +84,19 @@ private:
     TTree* tracks;
   };
   TTreeAccessor accessTTree (std::string const & fileName) const;
+  void accumulateCutStatistics( int fitstatus, int nactive,  double fitcon,
+				double fitmomerr, double t0err, double fitmom, 
+			        int & nfitstatus,  int & nnactive, 
+			        int & nfitcon, int & nfitmomerr, 
+				int & nt0err, int & nfitmom ) const; 
+  void outputCutSequence 
+    ( int treeEntries,int nfitstatus,int nnactive,
+      int nfitcon, int nfitmomerr, int nt0err, int nfitmom ) const; 
   void countMcmom ( TTree * tracks, 
                         double & count103, double & count104, bool use_diowt);
   void countMcmom ( std::vector<std::string> const & listOfFileNames, 
                         double & count103, double & count104, bool use_diowt);
-
+ 
   std::vector<double> RPCtimeProbabilityVector() const;
   splines::Spline<1> RPCtimeProbabilitySpline()  const;
 
@@ -88,6 +104,20 @@ private:
                 (double computedLowCut, size_t tCutNumber) const;
   void DIOstatisticsWarningFixedLowCut
                 (double fixedLowCut, size_t tCutNumber) const;
+
+  static std::vector<double> rebin(std::vector<double> const & x, unsigned int n, 
+				   double a, double b);
+  void closeRootFiles();
+
+  void recordFclGroup(std::string const & name) const {
+    os << "                    " << name << "\n";
+  }
+  template<typename T> void recordFcl(std::string const & name, T const & val) const {
+    os << "                        " << name << " : " << val << "\n";
+  }
+
+  void makeDIOreferenceTF1(int tracksExtracted, double DIOflatGenerationWindowLo);
+
 public:
   // hard-coded verbosity flags
 
@@ -142,7 +172,8 @@ private:
   double topOfLastBin; 
   unsigned int nBins;
   double binSize;
-
+  unsigned int nSplineBins;
+  
   // Experiment quantities
   double protonsOnTarget;  
   double stoppedMuonsPerPOT;
@@ -199,10 +230,23 @@ private:
     std::string rootFile;
     std::string cintFile;
     TFile* rootfp;
-    std::string cint; 
-    RootGraphics() : enabled(false) {}
+    TTree* tree;
+    TBranch* branch;
+    std::ostringstream cint; 
+    TH1F* hDIOspectrum;
+    TH1F* hDIOspectrumX;
+    TF1*  fDIOreference;
+    RootGraphics() 
+      : enabled(false)
+      , rootfp(0)
+      , tree(0)
+      , branch(0)
+      , hDIOspectrum(0)
+      , hDIOspectrumX(0)
+      , fDIOreference(0)
+    {}
     ~RootGraphics() { if (enabled) delete rootfp; }
-    bool write() const;
+    bool write_cint_file() const;   
   }; 
 
   RootGraphics rg;
