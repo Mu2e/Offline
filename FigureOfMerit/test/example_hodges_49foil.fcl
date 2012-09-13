@@ -64,12 +64,12 @@ DIOgenerationLowerLimit: 100.0
 liveGateFraction      : 0.47 
 # Because the DIO's were generated with minimum mct0 of 700
 #alsoReadWithNoT0cut   : true  
-minimumMeaningfulDIOtail : 5
+minimumMeaningfulDIOtail : 0
 # Explanation:  Based on some background files, the automated optimization
 # chooses a momentum cut window.  If there are too few tracks in the files,
 # sometimes this will push the cut up so far that there are few samples in
 # the background distribution above the cut.  By default, FMtool wants to see
-# 10 or more samples above that cut; this reduces that demand to 5.
+# 5 or more samples above that cut; this wipes out that demand.
 }
 
 # Bernsteins's mixed-tag RPC data

@@ -104,6 +104,8 @@ private:
                 (double computedLowCut, size_t tCutNumber) const;
   void DIOstatisticsWarningFixedLowCut
                 (double fixedLowCut, size_t tCutNumber) const;
+  void DIOnegativeExplanation 
+                (double fixedLowCut, size_t tCutNumber, double newFixedLowCut) const;
 
   static std::vector<double> rebin(std::vector<double> const & x, unsigned int n, 
 				   double a, double b);
@@ -212,13 +214,15 @@ private:
     , vals(n,top) {}
     NthHighest () : n(0) , m(0) {}
     void add (double p);
-    double value () const {return (m>0 ? vals[0] : 0.0);}
+    double value () const {return (m>0 ? vals[0] : top);}
+    int howManyHigher(double p) const;
   private:
     int n;
     int m;
     double top;
     std::vector<double> vals;
   };
+  std::vector<NthHighest> highPs;
     
   // time window shapes
   splines::Spline<1> RPCtimeProbability;

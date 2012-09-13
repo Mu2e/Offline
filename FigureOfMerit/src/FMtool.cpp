@@ -515,7 +515,7 @@ double FMtool::obtainDIOdata(bool & use_diowt)
     }
   }
   //std::cerr << "### 5\n";
-  minimumMeaningfulDIOtail = DIOpset.get<int>("minimumMeaningfulDIOtail",10); 
+  minimumMeaningfulDIOtail = DIOpset.get<int>("minimumMeaningfulDIOtail",5); 
 
   bool alsoReadWithNoT0cut = DIOpset.get<bool>("alsoReadWithNoT0cut",false);
   if (alsoReadWithNoT0cut) {
@@ -785,7 +785,6 @@ void FMtool::extractFitmom
   if (OUTPUT_fileNames) {
     os << "extracting fitmom from a chain of files \n";
   }
-  std::vector<NthHighest> highPs;
   size_t nt = tCuts.size();
   if (dio) {
     for (size_t i = 0; i < nt; ++i) {
@@ -1248,6 +1247,18 @@ void FMtool::NthHighest::add(double p)
 #endif
 }
 
+int FMtool::NthHighest::howManyHigher(double p) const 
+{
+  if (n== 0) return 0;
+  // The following is inefficient by a factor of at least 2 but that is moot in this context 
+  double k = 0;
+  size_t vs = vals.size();
+  for (size_t i = 0; i < vs; ++i) {
+    if (vals[i] > p) ++k;
+  }
+  return k;
+}
+
 void FMtool::makeDIOreferenceTF1(int tracksExtracted, double DIOflatGenerationWindowLo)
 {
   if (!rg.enabled) return;
@@ -1536,22 +1547,24 @@ FMtool::applyFofM( size_t tCutNumber,
   double dioN = dioSpline.integrate(lowCut, highCut) * protonsOnTarget;
   double rpcN = rpcSpline.integrate(lowCut, highCut) * protonsOnTarget;
 
+  if (dioN < 0) {
+    double splineBinSize = (topOfLastBin-lowestBin)/nSplineBins;
+    double keyBinLeftSide = std::floor((lowCut - lowestBin)/splineBinSize); 
+    // double midSplineBinOffset = (topOfLastBin - lowestBin)/(2.0*nSplineBins);
+    // Perhaps I should be  adding midSplineBinOffset.  But this works.
+    double newFixedLowCut = lowestBin + keyBinLeftSide*splineBinSize;
+    DIOnegativeExplanation ( lowCut, tCutNumber, newFixedLowCut );
+    t = figureOfMeritCalculator.tables_fixed_cuts 
+                        (maximumSignalCount, newFixedLowCut, highCut, os, summary);
+    lowCut = newFixedLowCut;
+    ceN  = ceSpline.integrate(lowCut, highCut) * protonsOnTarget * 1.0e-16;
+    dioN = dioSpline.integrate(lowCut, highCut) * protonsOnTarget;
+    rpcN = rpcSpline.integrate(lowCut, highCut) * protonsOnTarget;
+  }
   os << "\n In momentum range " << lowCut << " -- " << highCut << " There are: \n"
      << dioN << " DIO \n"
      << rpcN << " RPC \n"
      << ceN  << " CE at a branching ratio of 1.0e-16 \n";
-  if (dioN < 0) {
-    os <<"Note: The apparent small **negative** number of DIO's is caused by the following:\n"
-       << "  Very clean DIO and CE reconstruction can allow complete separation of signal \n"
-       << "  from the DIO background.  In that case, low statistics at the tail of the DIO \n"
-       << "  spectrum can result in the highest-momentum well-reconstructed DIO being alone\n"
-       << "  in a bin, with zero bins to either side.  The cubic spline representing this \n"
-       << "  then goes slightly below zero just to the highHIGH side of that bin-center point.\n"
-       << "  This dip can easily be the optimal momentum cut found by the automated \n"
-       << "  optimizer.\n"
-       << "  The effect can be an artifact of eliminating too many of the actual causes of \n"
-       << "  momentum uncertainty (for example, no proton absorber *and* no noise mix).\n"; 
-  } 
   table = t;
    
   return summary;
@@ -1607,7 +1620,8 @@ void FMtool::DIOstatisticsWarning
   os << "Explanation: \n"
      << "The automated momentum cut optimizer selected a lower p limit of "
      << computedLowCut << ".\n"
-     << "However, there are fewer than " << minimumMeaningfulDIOtail 
+     << "However, there are " << highPs[tCutNumber].howManyHigher(computedLowCut) 
+     << " < " << minimumMeaningfulDIOtail 
      << " DIO tracks that pass that momentum cut.\n"
      << "Sensitivity calculations based on so few tracks are deemed "
      << "untrustworthy.\n"
@@ -1626,11 +1640,29 @@ void FMtool::DIOstatisticsWarningFixedLowCut
      << tCuts[tCutNumber] << "\n";
   os << "Explanation: \n"
      << "A lower p limit of " << fixedLowCut << " was specified.\n"
-     << "There are fewer than " << minimumMeaningfulDIOtail 
+     << "There are " << highPs[tCutNumber].howManyHigher(fixedLowCut) 
+     << " < " << minimumMeaningfulDIOtail 
      << " DIO tracks that pass that momentum cut.\n"
      << "Sensitivity calculations based on so few tracks are deemed "
      << "untrustworthy.\n\n";
 }
+
+void FMtool::DIOnegativeExplanation
+(double computedLowCut, size_t tCutNumber, double newFixedLowCut) const
+{
+  os << "Note - the original automated optimization has suggested a lower p cut of "
+     << computedLowCut << ".\n"
+     << "  This is higher than the bin center for the highest momentum DIO in the data set.\n"
+     << "  This situation be an artifact of eliminating too many of the actual causes of \n"
+     << "  momentum uncertainty (for example, no proton absorber *and* no noise mix), \n"
+     << "  and can result in a fictitious negative integral of the spline representing the \n"
+     << "  the DIO part of the background.  \n"
+     << "  We will deal with this by moving the low p cut down to a fixed cut at "
+     << newFixedLowCut << "\n"
+     << "  which is the center of the last bin containing non-zero DIO counts \n"
+     << "  (the high cut stays as orignally determined). \n"; 
+}
+
 
 void FMtool::bottomLine (std::string const & description, double value) 
 {
