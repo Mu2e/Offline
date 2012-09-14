@@ -1,6 +1,6 @@
-  $Id: v2_0_5.txt,v 1.3 2012/09/14 19:06:51 kutschke Exp $
+  $Id: v2_0_5.txt,v 1.4 2012/09/14 20:03:42 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/09/14 19:06:51 $
+  $Date: 2012/09/14 20:03:42 $
 
  Still under construction
 
@@ -8,8 +8,8 @@
 
 2)  September 14, 2012 kutschke
     Add proper dependencies to the link lists in:
-      MCDataProducts/src/SConscript
-      RecoDataProducts/src/SConscript
+       MCDataProducts/src/SConscript
+       RecoDataProducts/src/SConscript
 
 1)  September 14, 2012 ehrlich
     Changed the #include directives in EventDisplay from "myfile.h" to "EventDisplay/src/myfile.h"
