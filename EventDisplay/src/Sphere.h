@@ -1,9 +1,9 @@
 //
 // Class for all non-static (i.e. time-dependent) sphere structures, e.g. drift radii. The structure is displayed via EventDisplayPolyLine3D (inherited from ROOT's TPolyLine3D) lines which allows the user to right-click the structure and get a contect menu.
 //
-// $Id: Sphere.h,v 1.2 2011/09/08 03:54:45 ehrlich Exp $
+// $Id: Sphere.h,v 1.3 2012/09/14 17:17:34 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/08 03:54:45 $
+// $Date: 2012/09/14 17:17:34 $
 //
 // Original author Ralf Ehrlich
 //
@@ -11,8 +11,8 @@
 #ifndef EventDisplay_src_Sphere_h
 #define EventDisplay_src_Sphere_h
 
-#include "VirtualShape.h"
-#include "dict_classes/EventDisplayPolyLine3D.h"
+#include "EventDisplay/src/VirtualShape.h"
+#include "EventDisplay/src/dict_classes/EventDisplayPolyLine3D.h"
 #include <TMath.h>
 #include <iostream>
 #include <map>

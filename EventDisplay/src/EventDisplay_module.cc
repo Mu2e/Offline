@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.20 2012/07/23 17:52:27 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Id: EventDisplay_module.cc,v 1.21 2012/09/14 17:17:34 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/09/14 17:17:34 $
 //
 
 #include <iostream>
@@ -22,8 +22,8 @@
 #include "TApplication.h"
 #include "TGMsgBox.h"
 
-#include "EventDisplayFrame.h"
-#include "RootFileManager.h"
+#include "EventDisplay/src/EventDisplayFrame.h"
+#include "EventDisplay/src/RootFileManager.h"
 
 #ifdef BABARINSTALLED
 using namespace CLHEP;

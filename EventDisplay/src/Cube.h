@@ -1,9 +1,9 @@
 //
 // Class for all cube structures, e.g. vanes, crystals. The structure is displayed via EventDisplayGeoVolumeBox (inherited from TGeoVolume) which holds a TGeoBox. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class).
 //
-// $Id: Cube.h,v 1.9 2011/09/08 03:54:44 ehrlich Exp $
+// $Id: Cube.h,v 1.10 2012/09/14 17:17:34 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/08 03:54:44 $
+// $Date: 2012/09/14 17:17:34 $
 //
 // Original author Ralf Ehrlich
 //
@@ -11,11 +11,11 @@
 #ifndef EventDisplay_src_Cube_h
 #define EventDisplay_src_Cube_h
 
-#include "dict_classes/EventDisplayGeoVolumeBox.h"
-#include "dict_classes/EventDisplayPolyLine3D.h"
+#include "EventDisplay/src/VirtualShape.h"
+#include "EventDisplay/src/dict_classes/EventDisplayGeoVolumeBox.h"
+#include "EventDisplay/src/dict_classes/EventDisplayPolyLine3D.h"
 #include <TPad.h>
 #include <TMath.h>
-#include "VirtualShape.h"
 #include <iostream>
 #include <vector>
 

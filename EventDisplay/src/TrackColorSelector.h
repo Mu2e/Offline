@@ -1,9 +1,9 @@
 //
 // Class assigns colors to tracks, depending on the number of track groups selected.
 //
-// $Id: TrackColorSelector.h,v 1.1 2011/08/14 06:31:19 ehrlich Exp $
+// $Id: TrackColorSelector.h,v 1.2 2012/09/14 17:17:34 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/08/14 06:31:19 $
+// $Date: 2012/09/14 17:17:34 $
 //
 // Original author Ralf Ehrlich
 //
@@ -11,8 +11,8 @@
 #ifndef EventDisplay_src_TrackColorSelector_h
 #define EventDisplay_src_TrackColorSelector_h
 
-#include "ContentSelector.h"
-#include "Track.h"
+#include "EventDisplay/src/ContentSelector.h"
+#include "EventDisplay/src/Track.h"
 #include <TText.h>
 #include <TPolyLine.h>
 

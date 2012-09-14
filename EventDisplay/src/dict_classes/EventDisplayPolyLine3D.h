@@ -1,9 +1,9 @@
 //
 // Class which displays 3D lines (used e.g. by Track, Cyliner class, etc.). It is inherited from ROOT's TPolyLine3D and the ComponentInfo class which stores specific information for this track. The context menu is overwritten with a menu item allowing the user to display information for this track.
 //
-// $Id: EventDisplayPolyLine3D.h,v 1.4 2011/09/08 03:54:45 ehrlich Exp $
+// $Id: EventDisplayPolyLine3D.h,v 1.5 2012/09/14 17:17:34 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/08 03:54:45 $
+// $Date: 2012/09/14 17:17:34 $
 //
 // Original author Ralf Ehrlich
 //
@@ -12,9 +12,9 @@
 #define EventDisplay_src_dict_classes_EventDisplayPolyLine3D_h
 
 #include <TPolyLine3D.h>
-#include "../EventDisplayFrame.h"
-#include "ComponentInfoContainer.h"
-#include "HistDraw.h"
+#include "EventDisplay/src/EventDisplayFrame.h"
+#include "EventDisplay/src/dict_classes/ComponentInfoContainer.h"
+#include "EventDisplay/src/dict_classes/HistDraw.h"
 #include <TClass.h>
 #include <TClassMenuItem.h>
 

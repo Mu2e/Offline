@@ -20,17 +20,17 @@
 #include <TTimer.h>
 #include <TView3D.h>
 
-#include "TrackColorSelector.h"
-#include "ContentSelector.h"
-#include "SaveDialogManager.h"
-#include "RootFileManager.h"
-#include "DataInterface.h"
-#include "EventDisplayFrame.h"
-#include "SetupDialog.h"
-#include "dict_classes/EventDisplayViewSetup.h"
-#include "dict_classes/ComponentInfoContainer.h"
-#include "dict_classes/HistDraw.h"
-#include "VirtualShape.h"
+#include "EventDisplay/src/TrackColorSelector.h"
+#include "EventDisplay/src/ContentSelector.h"
+#include "EventDisplay/src/SaveDialogManager.h"
+#include "EventDisplay/src/RootFileManager.h"
+#include "EventDisplay/src/DataInterface.h"
+#include "EventDisplay/src/EventDisplayFrame.h"
+#include "EventDisplay/src/SetupDialog.h"
+#include "EventDisplay/src/VirtualShape.h"
+#include "EventDisplay/src/dict_classes/EventDisplayViewSetup.h"
+#include "EventDisplay/src/dict_classes/ComponentInfoContainer.h"
+#include "EventDisplay/src/dict_classes/HistDraw.h"
 
 #include "TGGC.h"
 #include "TGFont.h"

@@ -1,4 +1,4 @@
-#include "ContentSelector.h"
+#include "EventDisplay/src/ContentSelector.h"
 
 namespace mu2e_eventdisplay
 {

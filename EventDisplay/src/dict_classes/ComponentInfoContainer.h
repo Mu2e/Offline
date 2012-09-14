@@ -1,9 +1,9 @@
 //
 // Container class for component info objects.
 //
-// $Id: ComponentInfoContainer.h,v 1.1 2011/09/08 03:54:45 ehrlich Exp $
+// $Id: ComponentInfoContainer.h,v 1.2 2012/09/14 17:17:34 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2011/09/08 03:54:45 $
+// $Date: 2012/09/14 17:17:34 $
 //
 // Original author Ralf Ehrlich
 //
@@ -12,7 +12,7 @@
 #define EventDisplay_src_dict_classes_ComponentInfoContainer_h
 
 
-#include "ComponentInfo.h"
+#include "EventDisplay/src/dict_classes/ComponentInfo.h"
 #ifndef __CINT__
 #include "boost/shared_ptr.hpp"
 #endif

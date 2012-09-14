@@ -1,4 +1,4 @@
-#include "TrackColorSelector.h"
+#include "EventDisplay/src/TrackColorSelector.h"
 
 namespace mu2e_eventdisplay
 {
