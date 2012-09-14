@@ -1,32 +1,37 @@
-  $Id: v2_0_5.txt,v 1.2 2012/09/14 17:27:43 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2012/09/14 17:27:43 $
+  $Id: v2_0_5.txt,v 1.3 2012/09/14 19:06:51 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/09/14 19:06:51 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_5
 
+2)  September 14, 2012 kutschke
+    Add proper dependencies to the link lists in:
+      MCDataProducts/src/SConscript
+      RecoDataProducts/src/SConscript
+
 1)  September 14, 2012 ehrlich
     Changed the #include directives in EventDisplay from "myfile.h" to "EventDisplay/src/myfile.h"
     Modified Files:
-      EventDisplay/src/ContentSelector.cc 
-      EventDisplay/src/Cube.h 
-      EventDisplay/src/Cylinder.h 
-      EventDisplay/src/DataInterface.cc 
-      EventDisplay/src/DataInterface.h 
-      EventDisplay/src/EventDisplayFrame.cc 
-      EventDisplay/src/EventDisplay_module.cc 
-      EventDisplay/src/RootDictMakeFile 
-      EventDisplay/src/SetupDialog.h 
-      EventDisplay/src/Sphere.h 
-      EventDisplay/src/Straw.h 
-      EventDisplay/src/Track.h 
-      EventDisplay/src/TrackColorSelector.cc 
-      EventDisplay/src/TrackColorSelector.h 
-      EventDisplay/src/VirtualShape.h 
-      EventDisplay/src/dict_classes/ComponentInfoContainer.h 
-      EventDisplay/src/dict_classes/EventDisplayGeoVolumeBox.h 
-      EventDisplay/src/dict_classes/EventDisplayGeoVolumeTube.h 
-      EventDisplay/src/dict_classes/EventDisplayPolyLine3D.h 
-      EventDisplay/src/dict_classes/HistDraw.h 
+      EventDisplay/src/ContentSelector.cc
+      EventDisplay/src/Cube.h
+      EventDisplay/src/Cylinder.h
+      EventDisplay/src/DataInterface.cc
+      EventDisplay/src/DataInterface.h
+      EventDisplay/src/EventDisplayFrame.cc
+      EventDisplay/src/EventDisplay_module.cc
+      EventDisplay/src/RootDictMakeFile
+      EventDisplay/src/SetupDialog.h
+      EventDisplay/src/Sphere.h
+      EventDisplay/src/Straw.h
+      EventDisplay/src/Track.h
+      EventDisplay/src/TrackColorSelector.cc
+      EventDisplay/src/TrackColorSelector.h
+      EventDisplay/src/VirtualShape.h
+      EventDisplay/src/dict_classes/ComponentInfoContainer.h
+      EventDisplay/src/dict_classes/EventDisplayGeoVolumeBox.h
+      EventDisplay/src/dict_classes/EventDisplayGeoVolumeTube.h
+      EventDisplay/src/dict_classes/EventDisplayPolyLine3D.h
+      EventDisplay/src/dict_classes/HistDraw.h
 
