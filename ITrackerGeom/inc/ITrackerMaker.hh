@@ -87,6 +87,21 @@ private:
   std::vector<double> _fwShellsThicknesses;
   std::vector<double> _swShellsThicknesses;
 
+  //Guard Wire dimensions and materials composition
+  int _nInGuardWires;
+  int _nOutGuardWires;
+  double _inGuardRad;
+  double _outGuardRad;
+
+  double _inGWireDiameter;
+  double _outGWireDiameter;
+  // Names of the materials of the wires.
+  std::vector<std::string> _inGwMaterialsName;
+  std::vector<std::string> _outGwMaterialsName;
+
+  std::vector<double> _inGwShellsThicknesses;
+  std::vector<double> _outGwShellsThicknesses;
+
   //Walls descriptions
   std::multimap<Wall::Walltype,Wall* > _walls;
 
