@@ -5,7 +5,7 @@ bool hasITracker      = true;
 
 string itracker.extFile          =    "";   //"ITrackerGeom/ITrackerGeom.gdml";
 string itracker.extWireFile      =    "";   //"ITrackerGeom/ITrackerWireData.root";
-double itracker.r0               =  365.008173333;   //To be consistent check that is = nSWire*cellDimension/2pi -cellDimension/2 -InnerWall_thickness -fieldWireDiameter -1.0e-2 -1.0e-3  // Lengths in mm
+double itracker.r0               =  363.995673333; //365.008173333;   //To be consistent check that is = nSWire*cellDimension/2pi -cellDimension/2 -InnerWall_thickness -fieldWireDiameter -1.0e-2 -1.0e-3  // Lengths in mm
 double itracker.z0               =10200.0;
 double itracker.zHalfLength      = 1150.0;   //1300.0;
 double itracker.rOut             =  730.00;//720.0;   //must be greater than the radius of the outer most filed wire +fieldWireDiameter +OuterWall_thickness or +elctContWallThick if it is present
@@ -49,11 +49,27 @@ vector<string> itracker.senseWireMaterials = { "G4_W", "G4_Au" };
 //vector<string> itracker.senseWireMaterials = { "WAGVacuum", "WAGVacuum" };
 vector<double> itracker.senseWireShellsThicknesses = { 0.0097, 0.0003 };
 
+// Innermost Guard Field wires description
+int    itracker.nInGuardWireShells =    2;
+vector<string> itracker.inGuardWireMaterials = { "G4_Al", "G4_Au" };
+//vector<string> itracker.inGuardWireMaterials = { "WAGVacuum", "WAGVacuum" };
+vector<double> itracker.inGuardWireShellsThicknesses = { 0.0197, 0.0003 };
+int    itracker.nInGuardWires    =     -1; //number of innermost guard wires per stereo direction, if <0 equal to the number of Field Wires, if =0 no guard wires 
+double itracker.inGuardRad       =  375.0; //365.008173333;
+
+// Outermost Guard Field wires description
+int    itracker.nOutGuardWireShells =   2;
+vector<string> itracker.outGuardWireMaterials = { "G4_Al", "G4_Au" };
+//vector<string> itracker.outGuardWireMaterials = { "WAGVacuum", "WAGVacuum" };
+vector<double> itracker.outGuardWireShellsThicknesses = { 0.0197, 0.0003 };
+int    itracker.nOutGuardWires    =    -1; //number of outermost guard wires per stereo direction, if <0 equal to the number of Field Wires, if =0 no guard wires 
+double itracker.outGuardRad       = 690.0; //365.008173333;
+
 // Inner Wall description
-int    itracker.nInnerWallShells =      4;
-vector<string> itracker.innerWallMaterials = { "CarbonFiber", "CFoam_166", "CarbonFiber", "ITGasHe_90Isob_10" };
-//vector<string> itracker.innerWallMaterials = { "WAGVacuum", "WAGVacuum", "WAGVacuum", "ITGasHe_90Isob_10" };
-vector<double> itracker.innerWallShellsThicknesses = { 0.120, 4.760, 0.120, 10.000 };
+int    itracker.nInnerWallShells =      6;
+vector<string> itracker.innerWallMaterials = { "CarbonFiber", "CFoam_166", "CarbonFiber", "Kapton", "G4_Cu", "ITGasHe_90Isob_10" };
+//vector<string> itracker.innerWallMaterials = { "WAGVacuum", "WAGVacuum", "WAGVacuum", "WAGVacuum", "WAGVacuum", "ITGasHe_90Isob_10" };
+vector<double> itracker.innerWallShellsThicknesses = { 0.120, 5.760, 0.120, 0.012, 0.0005, 10.000 };
 
 // Outer Wall description
 int    itracker.nOuterWallShells =      4;
@@ -61,22 +77,22 @@ vector<string> itracker.outerWallMaterials = { "G4_Cu" , "CarbonFiber", "CFoam_3
 vector<double> itracker.outerWallShellsThicknesses = { 0.018, 2.500, 10.000, 2.500 };
 
 // End Cap description
-int    itracker.nEndCapWallShells =     5;
+int    itracker.nEndCapWallShells =     7;
 int    itracker.structShellsAreLast = 1;  //Which shells of the endcap wall shells vector are the structural ones
-vector<string> itracker.endcapWallMaterials = { "ITGasHe_90Isob_10", "ITGasHe_90Isob_10", "ITGasHe_90Isob_10", "ITGasHe_90Isob_10", "CarbonFiber" }; //the first 3 volumes are used to contain the wires supports and cables 
-vector<double> itracker.endcapWallShellsThicknesses = { 5.000, 10.000, 100.000, 35.000, 0.240 };
+vector<string> itracker.endcapWallMaterials = { "ITGasHe_90Isob_10", "ITGasHe_90Isob_10", "ITGasHe_90Isob_10", "ITGasHe_90Isob_10", "G4_Cu", "Kapton", "CarbonFiber" }; //the first 3 volumes are used to contain the wires supports and cables 
+vector<double> itracker.endcapWallShellsThicknesses = { 5.000, 10.000, 100.000, 34.9875, 0.0005, 0.012, 0.240 };
 
 // o'ring for End Cap Inner Wall junction description
 string itracker.oringMaterial = "CarbonFiber"; 
 double itracker.oringWidth  = 15.000;
-double itracker.oringHeight = 10.000;
+double itracker.oringHeight =  6.000;
 
 bool   itracker.detailedWireSupport = true;
 
 // Spider Web support
 string itracker.spdWebSpokeMaterial = "CarbonFiber"; 
 int    itracker.spdWebSpokesNumber = 24; 
-double itracker.spdWebBaseWidth = 10.000;
+double itracker.spdWebBaseWidth = 5.000;
 double itracker.spdWebBaseThickness = 5.000;
 bool   itracker.useSimplefiedSpoke = true;
 double itracker.simplefiedSpokeWidth = 2.645;
@@ -133,7 +149,7 @@ vector<string> itracker.hvCableMaterials = { "G4_Cu", "G4_TEFLON" };
 vector<double> itracker.hvCableShellsThicknesses = { 0.250, 0.500 };
 
 // electronics Container
-double  itracker.elctContRmax = 800.000; 
+double  itracker.elctContRmax = 820.000; 
 double  itracker.elctContWallThick = 10.000; 
 string  itracker.elctContWallMat = "CarbonFiber";
 string  itracker.elctContFillMat = "ITGasHe_90Isob_10";
