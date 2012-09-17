@@ -85,7 +85,7 @@ vector<double> itracker.endcapWallShellsThicknesses = { 5.000, 10.000, 100.000, 
 // o'ring for End Cap Inner Wall junction description
 string itracker.oringMaterial = "CarbonFiber"; 
 double itracker.oringWidth  = 15.000;
-double itracker.oringHeight =  6.000;
+double itracker.oringHeight =  6.0125; //6.000 the 12.5um are need to compensate the metallized Kapton film of the inner wall
 
 bool   itracker.detailedWireSupport = true;
 
