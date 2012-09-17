@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.33 2012/09/17 15:28:04 tassiell Exp $
+// $Id: ConstructMaterials.cc,v 1.34 2012/09/17 16:53:46 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/09/17 15:28:04 $
+// $Date: 2012/09/17 16:53:46 $
 //
 // Original author Rob Kutschke
 //
@@ -624,9 +624,11 @@ namespace mu2e {
       G4double fractionHe  = 75.0*perCent;
 
       density = fractionHe*densityHe + (1.0-fractionHe)*densityIsoB;
+      pressure = 0.4*bar;
+      density *= pressure/1*atmosphere;
 
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
-                                           kStateGas, temperature= 293.15*kelvin, pressure= 0.4*bar);
+                                           kStateGas, temperature= 293.15*kelvin, pressure);
 
       G4Element* He = getElementOrThrow("He");
       G4Element* C  = getElementOrThrow("C");
