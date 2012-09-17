@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: kalmanFitv2_module.cc,v 1.1 2012/08/22 17:30:37 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2012/08/22 17:30:37 $
+// $Id: kalmanFitv2_module.cc,v 1.2 2012/09/17 14:44:30 ignatov Exp $
+// $Author: ignatov $ 
+// $Date: 2012/09/17 14:44:30 $
 //
 
 #include <iostream>
@@ -45,7 +45,7 @@
 #include "TrkBase/TrkHotListFull.hh"
 #include "TrkBase/TrkHelixUtils.hh"
 #include "TrkBase/TrkPoca.hh"
-#include "TrkBase/TrkExchangePar.hh"
+#include "TrkBase/HelixParams.hh"
 #include "TrajGeom/TrkLineTraj.hh"
 #include "DchGeom/DchDetector.hh"
 #include "BaBar/ErrLog.hh"
@@ -135,7 +135,7 @@ namespace mu2e
     CLHEP::Hep3Vector gen_mom;
 
     // Pointers to histograms, ntuples, TGraphs.
-    void FillHistos(TrkDef& trkdef,TrkKalFit& myfit); 
+    void FillHistos(KalFitResult& myfit); 
 
     int nbadfit;
     TH2D *hpull;
@@ -148,12 +148,15 @@ namespace mu2e
     TH1D *hnhits;
     TH1D *hnhitstotal;
     TH1D *hnturns;
-    TH1D *heloss;
+    TH1D *heloss,*helossIWall,*helossIWallNorm;
+    TH1D *hdtheta,*hdthetaturn,*hdthetaIWall,*hdthetaIWallNorm;
+    TH1D *hlenturn;
+    TH1D *hdedx,*hdedxturn;
     TH1D *hdistres;
     TH1D *htargeteloss;
     TTree *treefit;
-    TrkExchangePar startpar;
-    TrkExchangePar recopar;
+    HelixParams startpar;
+    HelixParams recopar;
 
 
 
@@ -219,14 +222,27 @@ namespace mu2e
     hnhitstotal=tfs->make<TH1D>("hnhitstotal",";total number of hits",500,0,500);
     hnturns    =tfs->make<TH1D>("hnturns",";number of turns",10,0,10);
     heloss     =tfs->make<TH1D>("heloss",";E loss from first to last cell, MeV",10000,0,10);
+    helossIWall=tfs->make<TH1D>("helossIWall",";E loss on inner wall, MeV",10000,0,10);
+    helossIWallNorm=tfs->make<TH1D>("helossIWallNorm",";E loss on inner wall normilized to perp, MeV",10000,0,10);
+
+    hdedx      =tfs->make<TH1D>("hdedx",";dEdX , MeV/cm",500000,0,10);
+    hdedxturn  =tfs->make<TH1D>("hdedxturn",";dEdX for full turn, MeV/cm",500000,0,10);
+
+    hdtheta     = tfs->make<TH1D>("hdtheta",";dtheta, rad/#sqrt{cm}",500000,-5e-2,5e-2);
+    hdthetaturn = tfs->make<TH1D>("hdthetaturn",";dtheta for full turn, rad/#sqrt{cm}",500000,-5e-2,5e-2);
+    hdthetaIWall= tfs->make<TH1D>("hdthetaIWall",";dtheta on inner wall, rad",100000,-1.,1.);
+    hdthetaIWallNorm= tfs->make<TH1D>("hdthetaIWallNorm",";dtheta on inner wall normilized to perp as square, rad",100000,-1.,1.);
+
+    hlenturn = tfs->make<TH1D>("hlenturn",";turn length, cm",1000,0.,500.);
+
     hdistres   =tfs->make<TH1D>("hdistres",";hit dist resol, mm",10000,-10,10);
     htargeteloss     =tfs->make<TH1D>("htargeteloss",";E loss at target, MeV",10000,0,10);
 
     treefit=tfs->make<TTree>("trfit","track fit params");
-    treefit->Branch("startpar","TrkExchangePar",&startpar);
-    treefit->Branch("recopar","TrkExchangePar",&recopar);
-    treefit->Branch("fitinfo",&recoinfo,"fit/I:chi2/F:chi2out/F:nhits/I:nhitstot/I:nturn/I:momin/F:momout/F:fitmom/F:fitmomerr/F:t0/F:t0fit/F:errt0/F");
-    treefit->Branch("eventinfo",&eventinfo,"elosstgt/F:ntgt/I");
+    //treefit->Branch("startpar","HelixParams",&startpar);
+    //treefit->Branch("recopar","HelixParams",&recopar);
+    //treefit->Branch("fitinfo",&recoinfo,"fit/I:chi2/F:chi2out/F:nhits/I:nhitstot/I:nturn/I:momin/F:momout/F:fitmom/F:fitmomerr/F:t0/F:t0fit/F:errt0/F");
+    //treefit->Branch("eventinfo",&eventinfo,"elosstgt/F:ntgt/I");
 
     
   }
@@ -257,12 +273,13 @@ namespace mu2e
 
     if(!FillMCInfo(event)) return;
 
-    TrkDef trkdef(cellhits.product(), strawhits,seed,TrkParticle(),TrkFitDirection(),time0,0.0);
+    TrkDef trkdef(cellhits.product(), strawhits,seed,TrkParticle(),TrkFitDirection());
+    trkdef.setT0(TrkT0(time0,0.0));
 
     _kfit._flt0=s0;
     _kfit._hitflt=hitflt;
-    TrkKalFit myfit;
-    _kfit.makeTrack(trkdef,myfit);
+    KalFitResult myfit(trkdef);
+    _kfit.makeTrack(myfit);
 
     if(myfit._fit.success()){
      TrkHotList* hots = myfit._krep->hotList();
@@ -270,7 +287,7 @@ namespace mu2e
      std::cout<<"active hits "<<hots->nActive()<<" nhit "<<hots->nHit()<<std::endl;
       std::vector<hitIndex> strawhitsinactive;
       
-      _kfit.reActivateHitsbyTurn(trkdef,myfit);
+      _kfit.reActivateHitsbyTurn(myfit);
       
       std::cout<<"Re:active hits "<<hots->nActive()<<" nhit "<<hots->nHit()<<std::endl;
     }
@@ -293,7 +310,7 @@ namespace mu2e
       event.put(recomom,"test");
     }
 
-    FillHistos(trkdef,myfit);
+    FillHistos(myfit);
 
     
   }
@@ -306,8 +323,8 @@ namespace mu2e
     //const Tracker& tracker = getTrackerOrThrow();
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
 
-    startpar=TrkExchangePar(CLHEP::HepVector(5,0),CLHEP::HepSymMatrix(5,1));
-    recopar=TrkExchangePar(CLHEP::HepVector(5,0),CLHEP::HepSymMatrix(5,1));
+    startpar=HelixParams(CLHEP::HepVector(5,0),CLHEP::HepSymMatrix(5,1));
+    recopar=HelixParams(CLHEP::HepVector(5,0),CLHEP::HepSymMatrix(5,1));
     eventinfo.clear();
 
     art::Handle<GenParticleCollection> genParticles;
@@ -408,7 +425,7 @@ namespace mu2e
     dummy(1,1)=1.; dummy(2,2)=0.1*0.1;dummy(3,3)=1e-2*1e-2;
     dummy(4,4)=1.; dummy(5,5)=0.1*0.1;
     seed=HelixTraj(startPar,dummy);
-    startpar=startPar;
+    startpar=HelixParams(startPar,dummy);
     double dt0atz0=seed.zFlight(0.0)/Constants::c;
     if(_debugLvl>1) {
       std::cout<<"s0 "<<s0<<" time0 "<<time0<<std::endl;
@@ -438,7 +455,17 @@ namespace mu2e
     std::sort(sorthits.begin(),sorthits.end());
     //sorted array
     double cosphidirprev=0.;
+    double thetadirprev=0;
+    double mmprev=0;
+    double llprev=-1;
+    double thetadirprevturn=0;
+    double mmprevturn=0;
+    double llprevturn=-1;
     int nhitstotal=0,nhitsperturn=0,nturn=1,nadd=0;
+    int prevstep=-1;
+
+    bool printevent=false;
+    bool usehits=true;
 
     for(unsigned int i=0;i<nn;++i){
       int istr=sorthits[i].second;
@@ -446,28 +473,65 @@ namespace mu2e
 	if(stepmc.trackId().asInt()==1){
 	  double mm=stepmc.momentum().mag();
 	  double phidir=stepmc.momentum().phi()-stepmc.position().phi();
+	  double thetadir=stepmc.momentum().theta();
 	  double cosphidir=cos(phidir);
+	  double dist=cellmchits->at(istr).driftDistance();
+	  double time=stepmc.time();
+	  double ll=(time-time0)*Constants::c;
 
 	  if((_oneturn&&cosphidirprev<0&&cosphidir>0)){
-	    break;
+	    usehits=false;
 	  }
 
-	  if(cosphidirprev<0&&cosphidir>0){
-	    hnhits->Fill(nhitsperturn);
-	    nhitsperturn=0;
-	    nturn++;
+	  if(prevstep>=0&&cosphidirprev<0&&cosphidir>0){
+	    if(mm>90){
+	      helossIWall->Fill(mmprev-mm);
+	      double perpnorm=(fabs(cosphidir)*sin(thetadir)+fabs(cosphidirprev)*sin(thetadirprev))/2;
+	      helossIWallNorm->Fill((mmprev-mm)*perpnorm);
+	      hdthetaIWall->Fill(thetadir-thetadirprev);
+	      hdthetaIWallNorm->Fill((thetadir-thetadirprev)*sqrt(perpnorm));
+
+	      if(nhitsperturn>2){
+		hdedxturn->Fill((mmprevturn-mmprev)/((llprev-llprevturn)/cm));	  
+		hdthetaturn->Fill((thetadirprev-thetadirprevturn)/sqrt((llprev-llprevturn)/cm));
+		hlenturn->Fill((llprev-llprevturn)/cm);
+	      }
+	    }
+
+	    if(usehits){
+	      hnhits->Fill(nhitsperturn);
+	      nhitsperturn=0;
+	      nturn++;
+	    }	    
+	    thetadirprevturn=thetadir;
+	    llprevturn=ll;
+	    mmprevturn=mm;
 	  }
+
+	  if(prevstep>=0&&mm>90&&fabs((ll-llprev)/cm)<10){
+	    hdedx->Fill((mmprev-mm)/((ll-llprev)/cm));	  
+	    hdtheta->Fill((thetadir-thetadirprev)/sqrt((ll-llprev)/cm));
+	  }
+	  cosphidirprev=cosphidir;
+	  thetadirprev=thetadir;
+	  llprev=ll;
+	  mmprev=mm;
+	  if(prevstep<0){
+	    thetadirprevturn=thetadir;
+	    llprevturn=ll;
+	    mmprevturn=mm;
+	  }
+	  prevstep=i;
 
 	  //	  std::cout<<nhitstotal<<" "<<_oneturn<<" "<<cosphidirprev<<" "<<cosphidir<<std::endl;
-	  if(mm<mommin) mommin=mm;
-	  nhitsperturn++;
-	  nhitstotal++;
-	  nadd++;
-	  strawhits.push_back(hitIndex(istr));
-	  hitflt.push_back(sorthits[i].first);
-	  
-	  cosphidirprev=cosphidir;
-	  
+	  if(usehits){
+	    if(mm<mommin) mommin=mm;
+	    nhitsperturn++;
+	    nhitstotal++;
+	    nadd++;
+	    strawhits.push_back(hitIndex(istr,dist<0?1:-1));
+	    hitflt.push_back(sorthits[i].first);
+	  }
 	}
     }
     hnhits->Fill(nhitsperturn);
@@ -479,6 +543,7 @@ namespace mu2e
       int istr=sorthits[ii].second;
       const mu2e::StepPointMC& stepmc=*cellptr->at(istr).at(0);
       double time=stepmc.time();
+      double mm=stepmc.momentum().mag();
       double ll=(time-time0)*Constants::c;
       double dist=cellmchits->at(istr).driftDistance();
       unsigned int dcell_id=cellhits->at(istr).strawIndex().asUint();
@@ -488,10 +553,10 @@ namespace mu2e
 
       int layer=itwp->GetSuperLayer();//dcell_id/10000;
       int cell=itwp->GetWire();//dcell_id%10000;
-      if(_debugLvl>1)
+      if(_debugLvl>1||printevent)
 	std::cout<<iev<<" "<<istr<<" lay,side,cell "<<layer<<" "<<itwp->isUpStream()<<" "<<cell
 		 <<" time "<<time<<" hittime "<<sh.time()<<" dist "<<dist
-		 <<" flt "<<ll<<" id "<<stepmc.trackId().asInt()
+		 <<" flt "<<ll<<" id "<<stepmc.trackId().asInt()<<" eloss "<<mom0-mm
 		 <<" xyz "<<stepmc.position().x()<<" "<<stepmc.position().y()<<" "<<stepmc.position().z()<<std::endl;
 
       T2D t2d;
@@ -514,7 +579,7 @@ namespace mu2e
   }
 
   
-  void kalmanFitv2::FillHistos(TrkDef& trkdef,TrkKalFit& myfit){
+  void kalmanFitv2::FillHistos(KalFitResult& myfit){
 
     KalRep *kalrep = myfit._krep;
     TrkErrCode err= myfit._fit;
@@ -525,6 +590,22 @@ namespace mu2e
       treefit->Fill();
       //      delete kalrep;
       return;
+    }
+    if(_debugLvl>1){
+      const TrkHotList* hots = kalrep->hotList();
+      for(TrkHotList::hot_iterator ihot=hots->begin();ihot != hots->end();++ihot){
+	const TrkStrawHit* hit = dynamic_cast<const TrkStrawHit*>(ihot.get());
+	if(hit != 0){
+	  double resid=-1000,residerr=-1000;
+	  hit->resid(resid,residerr,true);
+	  static HepPoint origin(0.0,0.0,0.0);
+	  CLHEP::Hep3Vector hpos = hit->hitTraj()->position(hit->hitLen())-origin;
+	  cout<<"hitleng "<<hit->hitLen()<<" active "<<hit->isActive()<<" usable "<<hit->usability()
+	      <<" ambig "<<hit->ambig()<<" resid "<<resid<<" residErr "<<residerr
+	      <<" driftR "<<hit->driftRadius()<<" driftRErr "<<hit->driftRadiusErr()
+	      <<" xyz "<<hpos<<" hitindex "<<hit->strawHit().strawIndex().asUint()<<endl;
+	}
+      }
     }
     
     if(_debugLvl>2){
@@ -540,11 +621,11 @@ namespace mu2e
       // seed.printAll(std::cout);
       cout<<"true t0 helix apprx at z=0 "<<recoinfo.t0
 	  <<" t0 at first hit "<<time0<<" fitted at z=0 of helix niters "<<myfit._nt0iter
-	  <<" t0 "<<myfit._t00._t0<<" +- "<<myfit._t00._t0err
-	  <<" at end "<<myfit._t0._t0<<" +- "<<myfit._t0._t0err<<endl;
+	  <<" t0 "<<myfit._tdef.t0()._t0<<" +- "<<myfit._tdef.t0()._t0err
+	  <<" at end "<<kalrep->t0()._t0<<" +- "<<kalrep->t0()._t0err<<endl;
     }
-    recoinfo.t0fit=myfit._t0._t0;
-    recoinfo.errt0=myfit._t0._t0err;
+    recoinfo.t0fit=kalrep->t0()._t0;
+    recoinfo.errt0=kalrep->t0()._t0err;
 
     double Bval = _kfit.bField()->bFieldNominal();
 
@@ -575,7 +656,7 @@ namespace mu2e
     double fltlenbeam=0.;
     if(recpoca.status().success())
       fltlenbeam = recpoca.flt1();
-    TrkExchangePar recobeam = kalrep->helix(fltlenbeam);
+    HelixParams recobeam = kalrep->helix(fltlenbeam);
     HepVector recoparams_beam = recobeam.params();
     HepSymMatrix recocovar_beam = recobeam.covariance();
     double momem_beam=Constants::c*1.0e-3*Bval/recoparams_beam[2]*sqrt(1.+recoparams_beam[4]*recoparams_beam[4]);

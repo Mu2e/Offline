@@ -1,9 +1,9 @@
 <!--  -->
-<!--  $Author: tassiell $ -->
-<!--  $Date: 2012/08/22 17:30:38 $   -->
+<!--  $Author: ignatov $ -->
+<!--  $Date: 2012/09/17 14:44:30 $   -->
 <!--  -->
 
 <lcgdict>
- <class name="TrkExchangePar"/>
-<!-- <class name="art::Wrapper<TrkExchangePar>"/> -->
+ <class name="HelixParams"/>
+<!-- <class name="art::Wrapper<HelixParams>"/> -->
 </lcgdict>

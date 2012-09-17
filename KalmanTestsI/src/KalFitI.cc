@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFitI.cc,v 1.1 2012/08/22 17:30:37 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2012/08/22 17:30:37 $
+// $Id: KalFitI.cc,v 1.2 2012/09/17 14:44:30 ignatov Exp $
+// $Author: ignatov $ 
+// $Date: 2012/09/17 14:44:30 $
 //
 
 // the following has to come before other BaBar includes
@@ -151,21 +151,31 @@ namespace mu2e
     }
   }
 
-  void KalFitI::makeTrack(TrkDef& mytrk,TrkKalFit& myfit) {
-    myfit._fit = TrkErrCode(TrkErrCode::fail);
+  void KalFitI::makeTrack(KalFitResult& kres) {
+    kres._fit = TrkErrCode(TrkErrCode::fail);
 // test if fitable
-    if(fitable(mytrk)){
-// create the hits. This also initializes T0
-      makeHits(mytrk,myfit);
+    if(fitable(kres._tdef)){
+// first, find t0
+      double flt0 = kres._tdef.helix().zFlight(0.0);
+      TrkT0 t0;
+      if(_t0strategy != external)
+	initT0(kres._tdef, t0);
+      else{
+	t0 = kres._tdef.t0();
+	t0._t0+=(flt0-_flt0)/CLHEP::c_light;
+      }
+
+// create the hits
+      makeHits(kres,t0);
 // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
       std::vector<DetIntersection> detinter;
       TrkHotListFull* hotlist = new TrkHotListFull();
-      for(std::vector<TrkStrawHit*>::iterator ihit=myfit._hits.begin();ihit!=myfit._hits.end();ihit++){
+      for(std::vector<TrkStrawHit*>::iterator ihit=kres._hits.begin();ihit!=kres._hits.end();ihit++){
         TrkStrawHit* trkhit = *ihit;
 	hotlist->append(trkhit);
       }
 
-      HelixTraj*  seed=mytrk.helix().clone();
+      HelixTraj*  seed=kres._tdef.helix().clone();
       //find material intersection before fitting
       double helixturn=2*TMath::Pi()/seed->omega()/seed->cosDip();
       hotlist->sort();
@@ -185,114 +195,116 @@ namespace mu2e
 
       
 // create Kalman rep
-      if(mytrk.traj() != 0)
-        myfit._krep = new KalRep(mytrk.traj(), hotlist, detinter,  *_kalcon, mytrk.particle());
-      else
-	myfit._krep = new KalRep(mytrk.helix(), hotlist, detinter, *_kalcon, mytrk.particle());
-      assert(myfit._krep != 0);
-      myfit._krep->setT0(myfit._t0);
-
+      kres._krep = new KalRep(kres._tdef.helix(), hotlist, detinter, *_kalcon, kres._tdef.particle());
+      assert(kres._krep != 0);
+      kres._krep->setT0(t0,flt0);
       if(_debug>5) {
 	std::cout<<"print kalrep"<<std::endl;
-	myfit._krep->printAll(std::cout);
+	kres._krep->printAll(std::cout);
       }
 // now fit
-      fitTrack(myfit);
-      //      if(_removefailed)myfit.removeFailed();
+      fitTrack(kres);
+      //      if(_removefailed)kres.removeFailed();
     }
   }
 
-  void KalFitI::addHits(TrkDef& mytrk,TrkKalFit& myfit, std::vector<hitIndex> indices,bool active) {
+  void KalFitI::addHits(KalFitResult& kres, std::vector<hitIndex> indices,bool active) {
+    TrkDef const& tdef = kres._tdef;
 // there must be a valid Kalman fit to add hits to
-    if(myfit._krep != 0 && myfit._fit.success()){
-      mytrk.setTraj(&myfit._krep->pieceTraj());
+    if(kres._krep != 0 && kres._fit.success()){
       const Tracker& tracker = getTrackerOrThrow();
       const mu2e::ITracker &itracker = static_cast<const mu2e::ITracker&>( tracker );    
       CellGeometryHandle *itwp = itracker.getCellGeometryHandle();
 // setup to estimate initial flightlength
       Hep3Vector tdir;
       HepPoint tpos;
-      double flt0 = findZFltlen(myfit,0.0);
-      myfit._krep->referenceTraj()->getInfo(0.0,tpos,tdir);
+      double flt0 = findZFltlen(kres,0.0);
+      kres._krep->referenceTraj()->getInfo(0.0,tpos,tdir);
       for(unsigned iind=0;iind<indices.size(); ++iind){
 	size_t istraw = indices[iind]._index;
-	const StrawHit& strawhit(mytrk.strawHitCollection()->at(istraw));
+	const StrawHit& strawhit(kres._tdef.strawHitCollection()->at(istraw));
 	itwp->SelectCellDet(strawhit.strawIndex().asUint());
 	double zmid=itwp->GetCellCenter().z();
 	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 	// estimate  initial flightlength
-	double hflt = _exacthitturn?(flt0+_hitflt[iind]):findZFltlen(myfit,zmid);
+	double hflt = _exacthitturn?(flt0+_hitflt[iind]):findZFltlen(kres,zmid);
+
+	double mom = kres._krep->momentum(hflt).mag();
+	double vflt = tdef.particle().beta(mom)*CLHEP::c_light;
+
+	TrkT0 hitt0=kres._krep->t0();
+	hitt0._t0 += (hflt-flt0)/vflt;
+	
 	// create the hit object
-//	TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,myfit._t0,flt0,hflt,_herr,_maxdriftpull);
-        TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,myfit._t0,flt0,hflt,_herr.back(),_maxdriftpull);
+        TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_herr.back(),_maxdriftpull);
 	assert(trkhit != 0);
 	if(indices[iind]._ambig != 0)trkhit->setAmbig(indices[iind]._ambig);
-	fixHitTurn(mytrk,trkhit);
+	fixHitTurn(kres,trkhit);
 	// flag the added hit
 	trkhit->setUsability(3);
 	trkhit->setActivity(active);
 // add the hit to the track and the fit
-	myfit._krep->addHot(trkhit);
-	myfit._hits.push_back(trkhit);
+	kres._krep->addHot(trkhit);
+	kres._hits.push_back(trkhit);
       }
 // refit the track
-      myfit._krep->resetFit();
-      fitTrack(myfit);
+      kres._krep->resetFit();
+      fitTrack(kres);
     }
   }
 
-  void KalFitI::addHitsUnique(TrkDef& mytrk,TrkKalFit& myfit, std::vector<hitIndex> indices,bool active) {
+  void KalFitI::addHitsUnique(KalFitResult& kres, std::vector<hitIndex> indices,bool active) {
     std::vector<hitIndex> missed;
     for(unsigned iind=0;iind<indices.size(); ++iind){
       size_t istraw = indices[iind]._index;
-      const StrawHit& strawhit(mytrk.strawHitCollection()->at(istraw));
-      std::vector<TrkStrawHit*>::iterator ifnd = find_if(myfit._hits.begin(),myfit._hits.end(),FindTrkStrawHit(strawhit));
-      if(ifnd == myfit._hits.end()){
+      const StrawHit& strawhit(kres._tdef.strawHitCollection()->at(istraw));
+      std::vector<TrkStrawHit*>::iterator ifnd = find_if(kres._hits.begin(),kres._hits.end(),FindTrkStrawHit(strawhit));
+      if(ifnd == kres._hits.end()){
 	missed.push_back(istraw);
       }
     }
-    addHits(mytrk,myfit,missed,active);
+    addHits(kres,missed,active);
   }
 
-  void KalFitI::fitTrack(TrkKalFit& myfit){
+  void KalFitI::fitTrack(KalFitResult& kres){
     // loop over external hit errors
     for(size_t iherr=0;iherr < _herr.size(); ++iherr){
       // update the external hit errors.  This isn't strictly necessary on the 1st iteration.
-      for(std::vector<TrkStrawHit*>::iterator itsh = myfit._hits.begin(); itsh != myfit._hits.end(); ++itsh){
+      for(std::vector<TrkStrawHit*>::iterator itsh = kres._hits.begin(); itsh != kres._hits.end(); ++itsh){
         (*itsh)->setExtErr(_herr[iherr]);
       }
 
 
     // fit the track
-    myfit._fit = TrkErrCode::succeed;
-    _ambigresolver[iherr]->resolveTrk(myfit);
-    myfit.fit();
-    std::cout<<"chi2 "<<myfit._krep->chisquared(trkIn)<<" t0 "<<myfit._t0.t0()<<" ndof "<<myfit._krep->nDof()<<std::endl;
+    kres._fit = TrkErrCode::succeed;
+    _ambigresolver[iherr]->resolveTrk(kres);
+    kres.fit();
+    std::cout<<"chi2 "<<kres._krep->chisquared(trkIn)<<" t0 "<<kres._krep->t0().t0()<<" ndof "<<kres._krep->nDof()<<std::endl;
     // update t0, and propagate it to the hits
     double oldt0(-1e8);
-    myfit._nt0iter = 0;
+    kres._nt0iter = 0;
     unsigned niter(0);
     bool changed=true;
-    while(changed && myfit._fit.success() && niter < _kalcon->maxIterations()){
+    while(changed && kres._fit.success() && niter < _kalcon->maxIterations()){
       changed = false;
-      if(_updatet0 && myfit._nt0iter < _kalcon->maxIterations() && updateT0(myfit) && fabs(myfit._t0.t0()-oldt0) > _t0tol  ){
-	oldt0 = myfit._t0.t0();
-        _ambigresolver[iherr]->resolveTrk(myfit);
-	myfit._krep->resetFit();
-	myfit.fit();
-	std::cout<<"chi2 "<<myfit._krep->chisquared(trkIn)<<" t0 "<<myfit._t0.t0()<<" ndof "<<myfit._krep->nDof()<<std::endl;
-	myfit._nt0iter++;
+      if(_updatet0 && kres._nt0iter < _kalcon->maxIterations() && updateT0(kres) && fabs(kres._krep->t0()._t0-oldt0) > _t0tol  ){
+	oldt0 = kres._krep->t0()._t0;
+        _ambigresolver[iherr]->resolveTrk(kres);
+	kres._krep->resetFit();
+	kres.fit();
+	std::cout<<"chi2 "<<kres._krep->chisquared(trkIn)<<" t0 "<<kres._krep->t0()._t0<<" ndof "<<kres._krep->nDof()<<std::endl;
+	kres._nt0iter++;
 	changed = true;
       }
       // drop outlyers
       if(_weedhits){
-	myfit._nweediter = 0;
-	changed |= weedHits(myfit);
-	std::cout<<"afterweedchi2 "<<myfit._krep->chisquared(trkIn)<<" t0 "<<myfit._t0.t0()<<" ndof "<<myfit._krep->nDof()<<std::endl;
+	kres._nweediter = 0;
+	changed |= weedHits(kres);
+	std::cout<<"afterweedchi2 "<<kres._krep->chisquared(trkIn)<<" t0 "<<kres._krep->t0()._t0<<" ndof "<<kres._krep->nDof()<<std::endl;
       }
       niter++;
     }
-    if(myfit._krep != 0) myfit._krep->addHistory(myfit._fit,"KalFitI");
+    if(kres._krep != 0) kres._krep->addHistory(kres._fit,"KalFitI");
 
     }//close loop on _herr
 
@@ -308,7 +320,7 @@ namespace mu2e
   KalFitI::initT0(TrkDef const& mytrk,TrkT0& t00) {
 // depending on the strategy, either compute T0 from the hits, or take it from the existing defintion directly
     if(_t0strategy == external){
-      t00 = mytrk.trkT0();
+      t00 = mytrk.t0();
     } else {
 // make an array of all the hit times, correcting for propagation delay
       const Tracker& tracker = getTrackerOrThrow();
@@ -357,48 +369,47 @@ namespace mu2e
   }
   
   void
-  KalFitI::makeHits(TrkDef const& mytrk, TrkKalFit& myfit) {
-// first, find t0.  This can come from the hits or from the track definition
-    TrkT0 t00;
-    initT0(mytrk,t00);
+  KalFitI::makeHits(KalFitResult& kres,TrkT0 const& t0) {
     const Tracker& tracker = getTrackerOrThrow();
     const mu2e::ITracker &itracker = static_cast<const mu2e::ITracker&>( tracker );    
     CellGeometryHandle *itwp = itracker.getCellGeometryHandle();
 
-    unsigned nind = mytrk.strawHitIndices().size();
-    double flt0 = mytrk.helix().zFlight(0.0);
-    if(_t0strategy == external){
-      t00._t0+=(flt0-_flt0)/CLHEP::c_light;
-    }
-    myfit._t0 = t00;
-    myfit._t00 = t00;
-    
+    TrkDef const& tdef = kres._tdef;
+// compute the propagaion velocity
+    double flt0 = tdef.helix().zFlight(0.0);
+    double mom = TrkMomCalculator::vecMom(tdef.helix(),*bField(),flt0).mag();
+    double vflt = tdef.particle().beta(mom)*CLHEP::c_light;
+
+    unsigned nind = tdef.strawHitIndices().size();
+
     for(unsigned iind=0;iind<nind;iind++){
-      size_t istraw = mytrk.strawHitIndices()[iind]._index;
-      const StrawHit& strawhit(mytrk.strawHitCollection()->at(istraw));
+      size_t istraw = kres._tdef.strawHitIndices()[iind]._index;
+      const StrawHit& strawhit(kres._tdef.strawHitCollection()->at(istraw));
       itwp->SelectCellDet(strawhit.strawIndex().asUint());
       double zmid=itwp->GetCellCenter().z();
       const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 
       //estimate track length
-      double fltlen = _exacthitturn?(_flt0+_hitflt[iind]):mytrk.helix().zFlight(zmid);
+      double fltlen = _exacthitturn?(_flt0+_hitflt[iind]):kres._tdef.helix().zFlight(zmid);
+    // estimate arrival time at the wire
+      TrkT0 hitt0(t0);
+      hitt0._t0 += (fltlen-flt0)/vflt;
     // create the hit object
-//      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,t00,flt0,fltlen,_herr,_maxdriftpull);
-      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,t00,flt0,fltlen,_herr.front(),_maxdriftpull);
+      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_herr.front(),_maxdriftpull);
       assert(trkhit != 0);
-      if(mytrk.strawHitIndices()[iind]._ambig != 0)trkhit->setAmbig(mytrk.strawHitIndices()[iind]._ambig);
+      if(kres._tdef.strawHitIndices()[iind]._ambig != 0)trkhit->setAmbig(kres._tdef.strawHitIndices()[iind]._ambig);
     // refine the flightlength, as otherwise hits in the same plane are at exactly the same flt, which can cause problems
-      fixHitTurn(mytrk,trkhit);
-      myfit._hits.push_back(trkhit);
+      fixHitTurn(kres,trkhit);
+      kres._hits.push_back(trkhit);
     }
  // sort the hits by flightlength
-    std::sort(myfit._hits.begin(),myfit._hits.end(),fltlencomp(mytrk.fitdir().fitDirection()));
-    //std::sort(myfit._hits.begin(),myfit._hits.end(),fltlencomp());
+    std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef.fitdir().fitDirection()));
+    //std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp());
   }
   
-  bool KalFitI::fixHitTurn(const TrkDef& mytrk,TrkStrawHit* trkhit){
-    const TrkDifTraj* dtraj = &mytrk.helix();
-    if(mytrk.traj() != 0)dtraj = mytrk.traj();
+  bool KalFitI::fixHitTurn(KalFitResult& kres,TrkStrawHit* trkhit){
+    const TrkDifTraj* dtraj = &kres._tdef.helix();
+    if(kres._krep)dtraj = &kres._krep->traj();
     
     //    const TrkDifTraj* dtraj = (mytrk.traj() != 0)?mytrk.traj():(&mytrk.helix());
     TrkErrCode pstat = trkhit->updatePoca(dtraj);
@@ -413,7 +424,7 @@ namespace mu2e
       double zmid=itwp->GetCellCenter().z();
       double dz=fabs(itwp->GetCellDirection().z()*itwp->GetCellHalfLength());
 
-      const HelixTraj& seed=mytrk.helix();
+      const HelixTraj& seed=kres._tdef.helix();
       double helixzturn=fabs(2*TMath::Pi()/seed.omega()*seed.tanDip());
       double helixturn=helixzturn/seed.sinDip();
       double doca=fabs(trkhit->poca()->doca());
@@ -465,26 +476,26 @@ namespace mu2e
   }
   
   bool
-  KalFitI::updateT0(TrkKalFit& myfit){
+  KalFitI::updateT0(KalFitResult& kres){
     bool retval(false);
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
 // need to have a valid fit
-    if(myfit._krep->fitValid()){
+    if(kres._krep->fitValid()){
 // find the global fltlen associated with z=0.  This should be a piectraj function, FIXME!!!
-      double flt0 = findZFltlen(myfit,0.0);
+      double flt0 = findZFltlen(kres,0.0);
 // find hits
       std::vector<double> hitst0; // store t0, to allow outlyer removal
       double t0sum(0.0);
       double t0sum2(0.0);
-      for(std::vector<TrkStrawHit*>::iterator ihit= myfit._hits.begin();ihit != myfit._hits.end(); ihit++){
+      for(std::vector<TrkStrawHit*>::iterator ihit= kres._hits.begin();ihit != kres._hits.end(); ihit++){
         TrkStrawHit* hit = *ihit;
         if(hit->isActive() && hit->poca()!= 0 && hit->poca()->status().success()){
 // copy the seed
-          static TrkSimpTraj* straj = myfit._krep->seed()->clone();
+          static TrkSimpTraj* straj = kres._krep->seed()->clone();
 // find the hit site in the rep
-          const KalHit* hitsite = myfit._krep->findHotSite(hit);
+          const KalHit* hitsite = kres._krep->findHotSite(hit);
 // set helix to the local parameters EXCLUDING THIS HIT
-          if(hitsite != 0 && myfit._krep->smoothedTraj(hitsite,straj)){
+          if(hitsite != 0 && kres._krep->smoothedTraj(hitsite,straj)){
             TrkPoca poca(*straj,hit->fltLen(),*(hit->hitTraj()),hit->hitLen());
             if(poca.status().success()){
 	      double rad = hit->straw().getRadius();
@@ -500,7 +511,7 @@ namespace mu2e
 		double tdrift = hit->time() - tflt - eprop;
 // t0 = Time difference between the drift time and the DOCA time.  sign of DOCA is irrelevant here.
                 double hitt0 = tdrift - doca/_vdrift;
-		//		std::cout<<"t0fit "<<hitt0-myfit._t00.t0()<<" "<<doca<<std::endl;
+		//		std::cout<<"t0fit "<<hitt0-t0.t0()<<" "<<doca<<std::endl;
                 hitst0.push_back(hitt0);
 		t0sum += hitt0;
 		t0sum2 += hitt0*hitt0;
@@ -555,12 +566,13 @@ namespace mu2e
 	  }
 	}
 // reset t0
-//	t0err=0;
-        myfit._t0.setT0(t0,t0err);
-	if(myfit._krep != 0)myfit._krep->setT0(myfit._t0);
+	TrkT0 tt0(t0,t0err);
+	if(kres._krep != 0)kres._krep->setT0(tt0,flt0);
 // reset all the hit times
-        for(std::vector<TrkStrawHit*>::iterator ihit= myfit._hits.begin();ihit != myfit._hits.end(); ihit++){
-          (*ihit)->updateT0(myfit._t0,flt0);
+        for(std::vector<TrkStrawHit*>::iterator ihit= kres._hits.begin();ihit != kres._hits.end(); ihit++){
+	  TrkT0 tt0(t0,t0err);
+	  tt0._t0+=((*ihit)->fltLen()-flt0)/CLHEP::c_light;
+          (*ihit)->updateHitT0(tt0);
         }
         retval = true;
       }
@@ -569,13 +581,13 @@ namespace mu2e
   }
 
   bool
-  KalFitI::weedHits(TrkKalFit& myfit) {
+  KalFitI::weedHits(KalFitResult& kres) {
     // Loop over HoTs and find HoT with largest contribution to chi2.  If this value
     // is greater than some cut value, deactivate that HoT and reFit
     bool retval(false);
     double worst = -1.;
     TrkHitOnTrk* worstHot = 0;
-    TrkHotList* hots = myfit._krep->hotList();
+    TrkHotList* hots = kres._krep->hotList();
     for (TrkHotList::nc_hot_iterator iHot = hots->begin(); iHot != hots->end(); ++iHot) {
       if (iHot->isActive()) {
         double resid, residErr;
@@ -592,25 +604,25 @@ namespace mu2e
       retval = true;
       worstHot->setActivity(false);
       worstHot->setUsability(1);
-      myfit.fit();
-      myfit._krep->addHistory(myfit._fit, "HitWeed");
+      kres.fit();
+      kres._krep->addHistory(kres._fit, "HitWeed");
       // Recursively iterate
-      myfit._nweediter++;
-      if (myfit._fit.success() && myfit._nweediter < _maxweed ) {
-        retval |= weedHits(myfit);
+      kres._nweediter++;
+      if (kres._fit.success() && kres._nweediter < _maxweed ) {
+        retval |= weedHits(kres);
       }
     }
     return retval;
   }
 
   bool
-  KalFitI::unweedHits(TrkKalFit& myfit) {
+  KalFitI::unweedHits(KalFitResult& kres) {
     // Loop over HoTs and find HoT with largest contribution to chi2.  If this value
     // is greater than some cut value, deactivate that HoT and reFit
     bool retval(false);
     double worst = 1.e12;
     TrkHitOnTrk* worstHot = 0;
-    TrkHotList* hots = myfit._krep->hotList();
+    TrkHotList* hots = kres._krep->hotList();
     for (TrkHotList::nc_hot_iterator iHot = hots->begin(); iHot != hots->end(); ++iHot) {
       if (!iHot->isActive()) {
         double resid, residErr;
@@ -632,12 +644,12 @@ namespace mu2e
       retval = true;
       worstHot->setActivity(true);
       worstHot->setUsability(3);
-      myfit.fit();
-      myfit._krep->addHistory(myfit._fit, "HitUnWeed");
+      kres.fit();
+      kres._krep->addHistory(kres._fit, "HitUnWeed");
       // Recursively iterate
-      myfit._nweediter++;
-      if (myfit._fit.success() && myfit._nweediter < _maxweed ) {
-        retval |= unweedHits(myfit);
+      kres._nweediter++;
+      if (kres._fit.success() && kres._nweediter < _maxweed ) {
+        retval |= unweedHits(kres);
       }
     }
     return retval;
@@ -654,53 +666,52 @@ namespace mu2e
     return _bfield;
   }
 
-  double KalFitI::findZFltlen(const TrkKalFit& myfit,double zval) {
+  double KalFitI::findZFltlen(KalFitResult& kres,double zval) {
     double loclen;
-    double zflt = zval/myfit._krep->traj().direction(0.0).z();
+    double zflt = zval/kres._krep->traj().direction(0.0).z();
     double dz(10.0);
     unsigned niter = 0;
     while(fabs(dz) > 1.0 && niter < _kalcon->maxIterations() ) {
-      const HelixTraj* helix = dynamic_cast<const HelixTraj*>(myfit._krep->localTrajectory(zflt,loclen));
+      const HelixTraj* helix = dynamic_cast<const HelixTraj*>(kres._krep->localTrajectory(zflt,loclen));
       zflt += helix->zFlight(0.0)-loclen;
-      dz = myfit._krep->traj().position(zflt).z();
+      dz = kres._krep->traj().position(zflt).z();
       niter++;
     }
     return zflt;
   }
 
-  void KalFitI::reActivateHitsbyChi2(TrkDef& /*mytrk*/,TrkKalFit& myfit){
+  void KalFitI::reActivateHitsbyChi2(KalFitResult& kres){
     unsigned niter=0;
     bool changed=true;
-    while(changed && myfit._fit.success() && niter < _kalcon->maxIterations()){
+    while(changed && kres._fit.success() && niter < _kalcon->maxIterations()){
       changed = false;
       // re add by chi2
       if(_weedhits){
-	myfit._nweediter = 0;
-	changed |= unweedHits(myfit);
-	std::cout<<"afterunweedchi2 "<<myfit._krep->chisquared(trkIn)<<" t0 "<<myfit._t0.t0()<<" ndof "<<myfit._krep->nDof()<<std::endl;
+	kres._nweediter = 0;
+	changed |= unweedHits(kres);
+	std::cout<<"afterunweedchi2 "<<kres._krep->chisquared(trkIn)<<" t0 "<<kres._krep->t0()._t0<<" ndof "<<kres._krep->nDof()<<std::endl;
       }
       niter++;
     }
   }
 
-  void KalFitI::reActivateHitsbyTurn(TrkDef& mytrk,TrkKalFit& myfit){
-    double midflt = 0.5*(myfit._krep->lowFitRange() + myfit._krep->hiFitRange());
+  void KalFitI::reActivateHitsbyTurn(KalFitResult& kres){
+    double midflt = 0.5*(kres._krep->lowFitRange() + kres._krep->hiFitRange());
     double locflt;
-    const HelixTraj* shelix = dynamic_cast<const HelixTraj*>(myfit._krep->localTrajectory(midflt,locflt));
-    mytrk.setHelix(*shelix);
-    mytrk.setTraj(&myfit._krep->pieceTraj());
+    // const HelixTraj* shelix = dynamic_cast<const HelixTraj*>(kres._krep->localTrajectory(midflt,locflt));
+    // kres._tdef.setHelix(*shelix);
     int nfixed=0;
-    for(std::vector<TrkStrawHit*>::iterator ihit=myfit._hits.begin();ihit!=myfit._hits.end();ihit++){
+    for(std::vector<TrkStrawHit*>::iterator ihit=kres._hits.begin();ihit!=kres._hits.end();ihit++){
       TrkStrawHit* trkhit = *ihit;
       if (!trkhit->isActive()) {
-	if(fixHitTurn(mytrk,trkhit))
+	if(fixHitTurn(kres,trkhit))
 	  nfixed++;
       }
     }
     std::cout<<"number of fixed hits by turn "<<nfixed<<std::endl;
     if(nfixed){
-      myfit._krep->resetFit();
-      fitTrack(myfit);
+      kres._krep->resetFit();
+      fitTrack(kres);
     }
   }
 

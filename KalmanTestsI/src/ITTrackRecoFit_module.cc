@@ -1,9 +1,9 @@
 //
 // Fit of the reconstructed tracks for the ITracker
 //
-// $Id: ITTrackRecoFit_module.cc,v 1.1 2012/08/22 17:30:37 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/08/22 17:30:37 $
+// $Id: ITTrackRecoFit_module.cc,v 1.2 2012/09/17 14:44:30 ignatov Exp $
+// $Author: ignatov $
+// $Date: 2012/09/17 14:44:30 $
 //
 // Original author F. Ignatov and G. Tassielli
 //
@@ -88,7 +88,7 @@
 //#include "TrkPatRec/inc/TrkHelixFit.hh"
 //#include "TrkBase/TrkPoca.hh"
 //#include "TrkPatRec/src/TrkPatRec_module.cc"
-#include "TrkBase/TrkExchangePar.hh"
+#include "TrkBase/HelixParams.hh"
 #include "TrkPatRec/inc/TrkPatRec.hh"
 #include "TrkBase/TrkHelixUtils.hh"
 #include "TrkBase/TrkPoca.hh"
@@ -207,7 +207,7 @@ namespace mu2e {
     CLHEP::Hep3Vector gen_mom;
 
     // Pointers to histograms, ntuples, TGraphs.
-    void FillHistos(TrkDef& trkdef,TrkKalFit& myfit); 
+    void FillHistos(KalFitResult& kres); 
 
     int nbadfit;
     TH2D *hpull;
@@ -224,8 +224,8 @@ namespace mu2e {
     TH1D *hdistres;
     TH1D *htargeteloss;
     TTree *treefit;
-    TrkExchangePar startpar;
-    TrkExchangePar recopar;
+    HelixParams startpar;
+    HelixParams recopar;
 
 
 
@@ -306,8 +306,8 @@ namespace mu2e {
     htargeteloss     =tfs->make<TH1D>("htargeteloss",";E loss at target, MeV",10000,0,10);
 
     treefit=tfs->make<TTree>("trfit","track fit params");
-    treefit->Branch("startpar","TrkExchangePar",&startpar);
-    treefit->Branch("recopar","TrkExchangePar",&recopar);
+    treefit->Branch("startpar","HelixParams",&startpar);
+    treefit->Branch("recopar","HelixParams",&recopar);
     treefit->Branch("fitinfo",&recoinfo,"fit/I:chi2/F:chi2out/F:nhits/I:nhitstot/I:nturn/I:momin/F:momout/F:fitmom/F:fitmomerr/F:t0/F:t0fit/F:errt0/F");
     treefit->Branch("eventinfo",&eventinfo,"elosstgt/F:ntgt/I");
 
@@ -385,34 +385,34 @@ namespace mu2e {
       HelixVal2HelixTraj(iTrkSeed._fullTrkSeed,seed);
       TrkDef seeddef(hits,goodhits);
       seeddef.setHelix(seed);
-      seeddef.setTrkT0(iTrkSeed._t0,iTrkSeed._errt0);
-      TrkKalFit seedfit;
+      seeddef.setT0(TrkT0(iTrkSeed._t0,iTrkSeed._errt0));
+      KalFitResult seedfit(seeddef);
       seeddef.setIndices(goodhits);
-      _kfit.makeTrack(seeddef,seedfit);
+      _kfit.makeTrack(seedfit);
       if(seedfit._fit.success()){
 	TrkHotList* hots = seedfit._krep->hotList();
 	std::cout<<"active hits "<<hots->nActive()<<" nhit "<<hots->nHit()<<std::endl;
 	std::vector<hitIndex> strawhitsinactive;
       
-	_kfit.reActivateHitsbyTurn(seeddef,seedfit);
+	_kfit.reActivateHitsbyTurn(seedfit);
       
 	std::cout<<"ReTurn:active hits "<<hots->nActive()<<" nhit "<<hots->nHit()<<std::endl;
       
-	_kfit.reActivateHitsbyChi2(seeddef,seedfit);
+	_kfit.reActivateHitsbyChi2(seedfit);
       
 	std::cout<<"ReChi2:active hits "<<hots->nActive()<<" nhit "<<hots->nHit()<<std::endl;
       
-	_kfit.addHitsUnique(seeddef,seedfit,tpeakhits,false);
+	_kfit.addHitsUnique(seedfit,tpeakhits,false);
       
 	std::cout<<"ReAddT:active hits "<<hots->nActive()<<" nhit "<<hots->nHit()<<std::endl;
 
-	_kfit.reActivateHitsbyChi2(seeddef,seedfit);
+	_kfit.reActivateHitsbyChi2(seedfit);
       
 	std::cout<<"ReAddChi2:active hits "<<hots->nActive()<<" nhit "<<hots->nHit()<<std::endl;
       
       
       }
-      FillHistos(seeddef,seedfit);
+      FillHistos(seedfit);
 
       KalRep *kalrep = seedfit._krep;
       TrkErrCode err= seedfit._fit;
@@ -424,11 +424,11 @@ namespace mu2e {
 	  //      std::cout<<"hello err="<<err<<std::endl;
 	  seed.printAll(std::cout);
 	  std::cout<<"fitted at begin of helix iters "<<seedfit._nt0iter
-		   <<" t0 "<<seedfit._t00._t0<<" +- "<<seedfit._t00._t0err
-		   <<" at end "<<seedfit._t0._t0<<" +- "<<seedfit._t0._t0err<<std::endl;
+		   <<" t0 "<<seeddef.t0()._t0<<" +- "<<seeddef.t0()._t0err
+		   <<" at end "<<kalrep->t0()._t0<<" +- "<<kalrep->t0()._t0err<<std::endl;
 	}
 	double fltlen=kalrep->firstHit()->globalLength();
-	TrkExchangePar recopar = kalrep->helix(fltlen);
+	HelixParams recopar = kalrep->helix(fltlen);
 	HepVector recoparams = recopar.params();
 	HepSymMatrix recocovar = recopar.covariance();
 	double Bval = _kfit.bField()->bFieldNominal();
@@ -452,8 +452,8 @@ namespace mu2e {
     //const Tracker& tracker = getTrackerOrThrow();
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
 
-    startpar=TrkExchangePar(CLHEP::HepVector(5,0),CLHEP::HepSymMatrix(5,1));
-    recopar=TrkExchangePar(CLHEP::HepVector(5,0),CLHEP::HepSymMatrix(5,1));
+    startpar=HelixParams(CLHEP::HepVector(5,0),CLHEP::HepSymMatrix(5,1));
+    recopar=HelixParams(CLHEP::HepVector(5,0),CLHEP::HepSymMatrix(5,1));
     eventinfo.clear();
 
     art::Handle<GenParticleCollection> genParticles;
@@ -554,7 +554,7 @@ namespace mu2e {
     dummy(1,1)=1.; dummy(2,2)=0.1*0.1;dummy(3,3)=1e-2*1e-2;
     dummy(4,4)=1.; dummy(5,5)=0.1*0.1;
     seed=HelixTraj(startPar,dummy);
-    startpar=startPar;
+    startpar=HelixParams(startPar,dummy);
     double dt0atz0=seed.zFlight(0.0)/Constants::c;
     if(_debugLvl>1) {
       std::cout<<"s0 "<<s0<<" time0 "<<time0<<std::endl;
@@ -660,12 +660,12 @@ namespace mu2e {
   }
 
   
-  void ITTrackRecoFit::FillHistos(TrkDef& trkdef,TrkKalFit& myfit){
+  void ITTrackRecoFit::FillHistos(KalFitResult& kres){
 
-    KalRep *kalrep = myfit._krep;
-    TrkErrCode err= myfit._fit;
+    KalRep *kalrep = kres._krep;
+    TrkErrCode err= kres._fit;
 
-    recoinfo.nhits=myfit._krep?myfit._krep->hotList()->nActive():-1;
+    recoinfo.nhits=kres._krep?kres._krep->hotList()->nActive():-1;
 
     if(!err.success()) {
       treefit->Fill();
@@ -685,12 +685,12 @@ namespace mu2e {
       //      cout<<"hello err="<<err<<endl;
       // seed.printAll(std::cout);
       cout<<"true t0 helix apprx at z=0 "<<recoinfo.t0
-	  <<" t0 at first hit "<<time0<<" fitted at z=0 of helix niters "<<myfit._nt0iter
-	  <<" t0 "<<myfit._t00._t0<<" +- "<<myfit._t00._t0err
-	  <<" at end "<<myfit._t0._t0<<" +- "<<myfit._t0._t0err<<endl;
+	  <<" t0 at first hit "<<time0<<" fitted at z=0 of helix niters "<<kres._nt0iter
+	  <<" t0 "<<kres._tdef.t0()._t0<<" +- "<<kres._tdef.t0()._t0err
+	  <<" at end "<<kalrep->t0()._t0<<" +- "<<kalrep->t0()._t0err<<endl;
     }
-    recoinfo.t0fit=myfit._t0._t0;
-    recoinfo.errt0=myfit._t0._t0err;
+    recoinfo.t0fit=kalrep->t0()._t0;
+    recoinfo.errt0=kalrep->t0()._t0err;
 
     double Bval = _kfit.bField()->bFieldNominal();
 
@@ -721,7 +721,7 @@ namespace mu2e {
     double fltlenbeam=0.;
     if(recpoca.status().success())
       fltlenbeam = recpoca.flt1();
-    TrkExchangePar recobeam = kalrep->helix(fltlenbeam);
+    HelixParams recobeam = kalrep->helix(fltlenbeam);
     HepVector recoparams_beam = recobeam.params();
     HepSymMatrix recocovar_beam = recobeam.covariance();
     double momem_beam=Constants::c*1.0e-3*Bval/recoparams_beam[2]*sqrt(1.+recoparams_beam[4]*recoparams_beam[4]);

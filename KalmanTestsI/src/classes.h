@@ -3,10 +3,10 @@
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/Matrix.h"
 using namespace CLHEP;
-#include "TrkBase/TrkExchangePar.hh"
+#include "TrkBase/HelixParams.hh"
 
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/Matrix.h"
 
 
-//template class art::Wrapper<TrkExchangePar>;
+//template class art::Wrapper<HelixParams>;

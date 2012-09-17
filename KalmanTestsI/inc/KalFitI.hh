@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFitI.hh,v 1.1 2012/08/22 17:30:37 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2012/08/22 17:30:37 $
+// $Id: KalFitI.hh,v 1.2 2012/09/17 14:44:30 ignatov Exp $
+// $Author: ignatov $ 
+// $Date: 2012/09/17 14:44:30 $
 //
 #ifndef KalFitI_HH
 #define KalFitI_HH
@@ -21,6 +21,7 @@
 //#include "TrkBase/TrkRecoTrk.hh"
 // KalFitI objects
 #include "KalmanTests/inc/TrkDef.hh"
+#include "KalmanTests/inc/KalFitResult.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/AmbigResolver.hh"
 #include "KalmanTrack/KalContext.hh"
@@ -48,13 +49,13 @@ namespace mu2e
     explicit KalFitI(fhicl::ParameterSet const&);
     virtual ~KalFitI();
 // main function: given a track definition, create a fit object from it
-    void makeTrack(TrkDef& mytrk,TrkKalFit& myfit);
+    void makeTrack(KalFitResult& kdef);
 // add a set of hits to an existing fit
-    void addHits(TrkDef& mytrk,TrkKalFit& myfit,std::vector<hitIndex> indices,bool active=true);
-    void addHitsUnique(TrkDef& mytrk,TrkKalFit& myfit,std::vector<hitIndex> indices,bool active=true);
+    void addHits(KalFitResult& kdef,std::vector<hitIndex> indices,bool active=true);
+    void addHitsUnique(KalFitResult& kdef,std::vector<hitIndex> indices,bool active=true);
 
-    void reActivateHitsbyTurn(TrkDef& mytrk,TrkKalFit& myfit);
-    void reActivateHitsbyChi2(TrkDef& mytrk,TrkKalFit& myfit);
+    void reActivateHitsbyTurn(KalFitResult& kdef);
+    void reActivateHitsbyChi2(KalFitResult& kdef);
 
 // sim helper
     double _flt0;
@@ -94,14 +95,14 @@ namespace mu2e
     std::vector<AmbigResolver*> _ambigresolver;
     // helper functions
     bool fitable(TrkDef const& mytrk);
-    bool updateT0(TrkKalFit& myfit);
-    bool weedHits(TrkKalFit& myfit);
-    bool unweedHits(TrkKalFit& myfit);
-    void fitTrack(TrkKalFit& myfit);
-    void makeHits(TrkDef const& mytrk,TrkKalFit& myfit);
-    bool fixHitTurn(const TrkDef& mytrk,TrkStrawHit* trkhit);
+    bool updateT0(KalFitResult& kdef);
+    bool weedHits(KalFitResult& kdef);
+    bool unweedHits(KalFitResult& kdef);
+    void fitTrack(KalFitResult& kdef);
+    void makeHits(KalFitResult& kdef,TrkT0 const& t0);
+    bool fixHitTurn(KalFitResult& kres,TrkStrawHit* trkhit);
     void initT0(TrkDef const& mytrk,TrkT0& t0);
-    double findZFltlen(const TrkKalFit& myfit,double zval);
+    double findZFltlen(KalFitResult& kdef,double zval);
 // general
     static const double _vlight;
     static const double _vdrift;
