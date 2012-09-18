@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.42 2012/07/02 15:40:43 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/07/02 15:40:43 $
+# $Id: setup.sh,v 1.43 2012/09/18 17:03:58 brownd Exp $
+# $Author: brownd $
+# $Date: 2012/09/18 17:03:58 $
 #
 # Original author Rob Kutschke
 #
@@ -41,7 +41,7 @@ echo "Base release directory is: " $MU2E_BASE_RELEASE
 
 # Remove any test release environment.  TODO: test this and abort.
 export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE/:$MU2E_DATA_PATH/
-echo "MU2E_SEACH_PATH:   "  $MU2E_SEARCH_PATH
+echo "MU2E_SEARCH_PATH:   "  $MU2E_SEARCH_PATH
 
 # Setup the framework and its dependent products
 setup art v1_00_08 -qmu2e:prof
