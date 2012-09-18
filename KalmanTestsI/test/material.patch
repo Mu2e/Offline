@@ -1,0 +1,198 @@
+Index: BaBar/DetectorModel/include/DetMaterial.hh
+===================================================================
+--- BaBar/DetectorModel/include/DetMaterial.hh	(revision 564)
++++ BaBar/DetectorModel/include/DetMaterial.hh	(working copy)
+@@ -73,7 +73,7 @@
+ 	TrkParticle const& tpart) const {
+       return dEdx(mom,type,tpart.mass());	}
+ 
+-    double dEdx(double mom,dedxtype type,double mass) const;
++    double dEdx(double mom,dedxtype type,double mass,double cutE=50.) const;
+     // 'error' on energy loss (or gain)
+     double energyLossRMS(double mom,double pathlen,
+ 	TrkParticle const& tpart) const {
+Index: BaBar/DetectorModel/src/DetMaterial.cc
+===================================================================
+--- BaBar/DetectorModel/src/DetMaterial.cc	(revision 564)
++++ BaBar/DetectorModel/src/DetMaterial.cc	(working copy)
+@@ -32,7 +32,7 @@
+ //  the average material interior to the tracking volume at dip=~30 degrees
+ //
+ 
+-double DetMaterial::_msmom = 15.0*MeV;
++double DetMaterial::_msmom = (13.6-0.5)*MeV;
+ double DetMaterial::_dgev = 0.153536*MeV*cm*cm;
+ double DetMaterial::_minkappa(1.0e-3);
+ double DetMaterial::_scatterfrac(0.9999); // integrate 99.99% percent of the tail by default, this should be larger
+@@ -42,6 +42,9 @@
+ const double twoln10 = 2.0*log(10.);
+ const double betapower = 1.667; // most recent PDG gives beta^-5/3 as dE/dx
+ const int maxnstep = 10; // maximum number of steps through a single material
++const double cutOffEnergy = 5.;//maximum allowed energy loss
++                               //(if particle will loose more - than it will be not reconstructable)
++const double cutOffEnergybyMean=5;// variable cut as cutOffEnergybyMean x MeandEdX on step
+ // should be from a physics class
+ const double DetMaterial::_alpha(1.0/137.036);
+ 
+@@ -102,6 +105,7 @@
+ //
+ double
+ DetMaterial::scatterAngleRMS(double mom, double pathlen,double mass) const {
++  return  highlandSigma(mom,pathlen,mass);
+   if(mom>0.0){
+     double beta = particleBeta(mom,mass);
+ // pdg formulat
+@@ -131,7 +135,7 @@
+ }
+ 
+ double
+-DetMaterial::dEdx(double mom,dedxtype type,double mass) const {
++DetMaterial::dEdx(double mom,dedxtype type,double mass,double cutE) const {
+   if(mom>0.0){
+     double Eexc2 = _eexc*_eexc ;
+   
+@@ -154,14 +158,10 @@
+     Tmax = 2.*electron_mass_c2*bg2
+       /(1.+2.*gamma*RateMass+RateMass*RateMass) ;
+ 
+-    const double cutOffEnergy = 50.;
+-    rcut =  ( cutOffEnergy< Tmax) ? cutOffEnergy/Tmax : 1;
++    rcut =  ( cutE< Tmax) ? cutE/Tmax : 1;
+ 
+     dedx = log(2.*electron_mass_c2*bg2*Tmax/Eexc2);
+-    if(type == loss)
+-      dedx -= 2.*beta2;
+-    else
+-      dedx += log(rcut)-(1.+rcut)*beta2;
++    dedx += log(rcut)-(1.+rcut)*beta2;
+   
+ // density correction 
+     x = log(bg2)/twoln10 ;
+@@ -209,7 +209,11 @@
+ DetMaterial::energyLoss(double mom, double pathlen,double mass) const {
+ // make sure we take positive lengths!
+   pathlen = fabs(pathlen);
+-  double dedx = dEdx(mom,loss,mass);
++  double dedx = dEdx(mom,loss,mass,cutOffEnergy);
++  double cutTail=std::min(fabs(dedx)*cutOffEnergybyMean*pathlen,cutOffEnergy);
++  //  double beta  = particleBeta(mom,mass) ;
++  // double cutTail=_dgev*_density*_za / beta/beta*fabs(pathlen)*exp(0.2);
++  dedx=dEdx(mom,loss,mass,cutTail);
+ // see how far I can step, within tolerance, given this energy loss
+   double maxstep = maxStepdEdx(mom,mass,dedx);
+ // if this is larger than my path, I'm done
+@@ -227,7 +231,7 @@
+       if(newenergy>mass){
+ // compute the new dedx given the new momentum
+         double newmom = particleMomentum(newenergy,mass);
+-        deltae = step*dEdx(newmom,loss,mass);
++        deltae = step*dEdx(newmom,loss,mass,cutTail);
+ // compute the loss in this step
+         eloss += deltae;
+         newenergy += deltae;
+@@ -246,7 +250,11 @@
+ DetMaterial::energyGain(double mom, double pathlen, double mass) const {
+   // make sure we take positive lengths!
+   pathlen = fabs(pathlen);
+-  double dedx = dEdx(mom,loss,mass);
++  double dedx = dEdx(mom,loss,mass,cutOffEnergy);
++  double cutTail=std::min(fabs(dedx)*cutOffEnergybyMean*pathlen,cutOffEnergy);
++  //double beta  = particleBeta(mom,mass) ;
++  //double cutTail=_dgev*_density*_za / beta/beta*fabs(pathlen)*exp(0.2);
++  dedx=dEdx(mom,loss,mass,cutTail);
+ // see how far I can step, within tolerance, given this energy loss
+   double maxstep = maxStepdEdx(mom,mass,dedx);
+ // if this is larger than my path, I'm done
+@@ -264,7 +272,7 @@
+     for(unsigned istep=0;istep<nstep-1;istep++){
+ // compute the new dedx given the new momentum
+       double newmom = particleMomentum(newenergy,mass);
+-      double deltae = -step*dEdx(newmom,loss,mass);
++      double deltae = -step*dEdx(newmom,loss,mass,cutTail);
+       egain += deltae;
+       newenergy += deltae;
+     }
+@@ -278,7 +286,7 @@
+ //
+ double 
+ DetMaterial::energyDeposit(double mom, double pathlen, double mass) const {
+-  double dedx = dEdx(mom,deposit,mass);
++  double dedx = dEdx(mom,deposit,mass,cutOffEnergy);
+   return dedx*fabs(pathlen);
+ }  
+ 
+@@ -292,6 +300,11 @@
+ DetMaterial::energyLossRMS(double mom,double pathlen,double mass) const {
+   double beta = particleBeta(mom,mass);
+   double emax = eloss_emax(mom,mass);
++  
++  //  double dedx = dEdx(mom,loss,mass,cutOffEnergy);
++  //  double cutTail=std::min(fabs(dedx*cutOffEnergybyMean*pathlen),cutOffEnergy);
++  //  if(emax>cutTail) emax=cutTail;
++  if(emax>cutOffEnergy) emax=cutOffEnergy;
+   double xi = eloss_xi(beta,fabs(pathlen));
+   double kappa = xi/emax;
+   double gam = sqrt(1.0-0.5*pow(beta,2));
+@@ -301,13 +314,16 @@
+ // This only really affects electrons
+ // as for heavier particles resolution effects already dominate when we get to
+ // this range.  I'll truncate
+-  if(kappa < _minkappa)kappa = _minkappa;
++// if(kappa < _minkappa)kappa = _minkappa;
+   double elossrms = xi*sqrt(gam/kappa);
+-//  cout << "beta = " << beta
+-//       << " emax = " << emax
+-//       << " xi = " << xi
+-//       << " kappa = " << kappa
+-//       << " elossrms = " << elossrms << endl;
++  // std::cout << "beta = " << beta
++  //      << " emax = " << emax
++  //      << " xi = " << xi
++  //      << " kappa = " << kappa
++  //      << " cut = "<<cutTail
++  //      << " dedx = "<<dedx
++  //      << " pathlen = "<<pathlen
++  // 	    << " elossrms = " << elossrms << std::endl;
+   return elossrms;
+ }
+ 
+@@ -342,11 +358,17 @@
+   os << "Material " << _name << " has properties : " << endl
+   << "  Effective Z = " << _zeff << endl
+   << "  Effective A = " << _aeff << endl
+-  << "  Density (g/cm^3) = " << _density*cm*cm*cm  << endl
+-  << "  Radiation Length (g/cm^2) = " << _radthick*cm*cm << endl
+-  << "  Interaction Length (g/cm^2) = " << _intLength << endl
+-//   << "  Mean Ionization energy (MeV) = " << _meanion << endl
+-  << "  Mean Ionization energy (MeV) = " << _eexc << endl;
++  << "  Density (g/cm^3) = " << _density*cm*cm*cm << endl
++  << "  Radiation Length (g/cm^2) = " << _radthick*cm*cm<< endl
++  << "  Mean Ionization energy (MeV) = " << _eexc << endl
++     << "  density X0 = " << _x0 << " ,X1 = " <<_x1
++     << "  ,delta0 = " << _delta0 <<" ,A = "<<_afactor
++     << "  ,Mpower = "<<_mpower << " ,C = "<<_bigc<<endl
++     << "  shell taul = " << _taul 
++     << " nshells= "<<_shellCorrectionVector->size()<<" (";
++  for(unsigned int i=0;i<_shellCorrectionVector->size();i++) 
++    os<<(*_shellCorrectionVector)[i]<<(i+1<_shellCorrectionVector->size()?",":")");
++  os<<endl;
+ }
+ 
+ double
+@@ -379,8 +401,14 @@
+ double
+ DetMaterial::highlandSigma(double mom,double pathlen, double mass) const {
+   if(mom>0.0){
+-    double radfrac = _invx0*fabs(pathlen);
+-    return _msmom*sqrt(radfrac)/(mom*particleBeta(mom,mass));
++    double radfrac = _density*fabs(pathlen)/_radthick;
++//  The logrithmic term is non-local, and so shouldn't be used.  An effective
++//  term is included in _msmom, see above
++    double deflectrms = _msmom*sqrt(radfrac)/(mom*particleBeta(mom,mass));
++    //    double eloss=energyLoss(mom,pathlen,mass);
++    //    double elossth=fabs(eloss)/mom/sqrt(2.);//sqrt(fabs(eloss)*_eexc)/mom/sqrt(2.);
++    //    deflectrms=sqrt(deflectrms*deflectrms+elossth*elossth);
++    return deflectrms;
+   } else
+     return 1.0;
+ }

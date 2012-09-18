@@ -1,0 +1,3 @@
+Materials_list
+ITInBarrelAuto 0.118114 0 0 1 1 Carbon 0 42.7 0 0 20 1 solid
+ITgasAuto 0.000531394 0 0 6 0.380164 Carbon 0 0.28435 Aluminum 0 0.0682769 Gold 0 0.0924316 Tungsten 0 0.0797587 Hydrogen 0 0.0950182 Helium 0 -10 0 0 20 1 gas
