@@ -1,9 +1,9 @@
 #
 # Macro file for setting up the graphics scene and the verbosity level: "xz" view.
 #
-# $Id: extmon_uci_visxz.mac,v 1.9 2012/08/09 16:59:13 youzy Exp $
+# $Id: extmon_uci_visxz.mac,v 1.10 2012/09/18 22:05:21 youzy Exp $
 # $Author: youzy $
-# $Date: 2012/08/09 16:59:13 $
+# $Date: 2012/09/18 22:05:21 $
 #
 # Original author KLG
 #
@@ -23,7 +23,7 @@
 /vis/scene/add/volume world
 /vis/scene/add/axes      0 -7150 6439.09 3000 mm
 #/vis/viewer/panTo -28 2 
-/vis/viewer/panTo -16 -3
+/vis/viewer/panTo -16 1
 /vis/viewer/zoom 8
 #cut view
 /vis/viewer/set/cutawayMode multiply
