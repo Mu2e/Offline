@@ -16,10 +16,14 @@
 double tdlow(0.57735027);
 double tdhigh(1.0);
 double t0min(720);
-double momlow(103.3);
+double momlow(102.9);
 double momhigh(104.7);
 int minnhits(15);
 size_t icut=2;
+unsigned minnactive[4] = {20,20,25,30};
+double maxt0err[4] = {1.5,1.0,0.9,0.8};
+double maxmomerr[4] = {0.3,0.2,0.18,0.15};
+double minfitcon[4] = {1e-6,1e-4,1e-3,1e-2};
 
 TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
 TCut reco,goodfit,cosmic,rmom,rpitch,livegate;
@@ -27,23 +31,17 @@ TCut tpitch, tt0,tmom,nmch,mcsel;
 
 bool donecuts(false);
 void KalCuts() {
-  ncuts[0] = "nactive>=20";
-  ncuts[1] = "nactive>=20";
-  ncuts[2] = "nactive>=25";
-  ncuts[3] = "nactive>=30";
-  t0cuts[0] = "t0err<2.0";
-  t0cuts[1] = "t0err<1.5";
-  t0cuts[2] = "t0err<1.0";
-  t0cuts[3] = "t0err<0.9";
-  momcuts[0] = "fitmomerr<0.3";
-  momcuts[1] = "fitmomerr<0.2";
-  momcuts[2] = "fitmomerr<0.18";
-  momcuts[3] = "fitmomerr<0.15";
-  fitcuts[0] = "fitcon>1e-6";
-  fitcuts[1] = "fitcon>1e-4";
-  fitcuts[2] = "fitcon>1e-3";
-  fitcuts[3] = "fitcon>1e-2";
-
+  for(size_t ic=0;ic<4;++ic){
+    char cutstring[100];
+    snprintf(cutstring,100,"nactive>=%i",minnactive[ic]);
+    ncuts[ic] = TCut(cutstring);
+    snprintf(cutstring,100,"t0err<%f",maxt0err[ic]);
+    t0cuts[ic] = TCut(cutstring);
+    snprintf(cutstring,100,"fitmomerr<%f",maxmomerr[ic]);
+    momcuts[ic] = TCut(cutstring);
+    snprintf(cutstring,100,"fitcon>%f",minfitcon[ic]);
+    fitcuts[ic] = TCut(cutstring);
+  }
   char ctext[80];
   snprintf(ctext,80,"td>%4.3f&&td<%4.3f",tdlow,tdhigh);
   rpitch = TCut(ctext);
@@ -133,13 +131,13 @@ void KalFitHit (TTree* hits ) {
 //  TH2F* drad = new TH2F("drad","Drift radius;true drift radius (mm);reco drift radius (mm)",
 //      100,-0.3,2.8,100,-0.3,2.8);
   TH1F* rpull = new TH1F("rpull","residual pull",100,-10,10);
-  hits->Project("dres","rdrift-mcrdrift","active");
-  hits->Project("dpull","(rdrift-mcrdrift)/rdrifterr","active");
-  hits->Project("rpull","resid/residerr","active");
+  hits->Project("dres","_rdrift-_mcdist","_active");
+  hits->Project("dpull","(_rdrift-_mcdist)/_rdrifterr","_active");
+  hits->Project("rpull","_resid/_residerr","_active");
   dcan->Clear();
   dcan->Divide(2,2);
   dcan->cd(1);
-  hits->Draw("rdrift:mcrdrift>>drad","active");
+  hits->Draw("_rdrift:_mcdist>>drad","_active");
   dcan->cd(2);
   dres->Fit("gaus");
   dcan->cd(3);
@@ -152,12 +150,12 @@ void KalFitHit (TTree* hits ) {
   TH1F* t0pull = new TH1F("t0pull","hit t0 pull",100,-10,10);
 //  TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
 //      100,500,4000,100,500,4000);
-  hits->Project("t0res","hitt0-mchitt0","active");
-  hits->Project("t0pull","(hitt0-mchitt0)/hitt0err","active");
+  hits->Project("t0res","hitt0-mchitt0","_active");
+  hits->Project("t0pull","(hitt0-mchitt0)/hitt0err","_active");
   tcan->Clear();
   tcan->Divide(2,2);
   tcan->cd(1);
-  hits->Draw("hitt0:mchitt0>>dt0","active");
+  hits->Draw("hitt0:mchitt0>>dt0","_active");
   tcan->cd(2);
   t0res->Fit("gaus");
   tcan->cd(3);
@@ -171,14 +169,14 @@ void KalFitHit (TTree* hits ) {
 //  TH2F* pocatd = new TH2F("pocatd","Hit POCA V;true V (mm);POCA V (mm)",
 //      100,-600,600,100,-600,600);
 
-  hits->Project("tdres","dmid-mcdmid","active");
-  hits->Project("tdpull","(dmid-mcdmid)/dmiderr","active");
+  hits->Project("tdres","dmid-mcdmid","_active");
+  hits->Project("tdpull","(dmid-mcdmid)/dmiderr","_active");
   tdcan->Clear();
   tdcan->Divide(2,2);
   tdcan->cd(1);
-  hits->Draw("dmid:mcdmid>>dtd","active");
+  hits->Draw("dmid:mcdmid>>dtd","_active");
   tdcan->cd(2);
-  hits->Draw("hflt:mcdmid>>pocatd","active");
+  hits->Draw("hflt:mcdmid>>pocatd","_active");
   tdcan->cd(3);
   tdres->Fit("gaus");
   tdcan->cd(4);
@@ -313,7 +311,7 @@ void KalFitAccPlots(TTree* trks) {
   fcan->Divide(2,2);
   fcan->cd(1);
   fitcon->Draw();
-  TLine* fitconcut = new TLine(-4,0.0,-4,fitcon->GetMaximum());
+  TLine* fitconcut = new TLine(log10(minfitcon[icut]),0.0,log10(minfitcon[icut]),fitcon->GetMaximum());
   fitconcut->SetLineColor(kBlack);
   fitconcut->SetLineStyle(2);
   fitconcut->SetLineWidth(2);
@@ -321,7 +319,7 @@ void KalFitAccPlots(TTree* trks) {
 
   fcan->cd(2);
   na->Draw();
-  TLine* nacut = new TLine(20,0.0,20,na->GetMaximum());
+  TLine* nacut = new TLine(minnactive[icut],0.0,minnactive[icut],na->GetMaximum());
   nacut->SetLineColor(kBlack);
   nacut->SetLineStyle(2);
   nacut->SetLineWidth(2);
@@ -329,7 +327,7 @@ void KalFitAccPlots(TTree* trks) {
 
   fcan->cd(3);
   t0err->Draw();
-  TLine* t0errcut = new TLine(1.5,0.0,1.5,t0err->GetMaximum());
+  TLine* t0errcut = new TLine(maxt0err[icut],0.0,maxt0err[icut],t0err->GetMaximum());
   t0errcut->SetLineColor(kBlack);
   t0errcut->SetLineStyle(2);
   t0errcut->SetLineWidth(2);
@@ -337,7 +335,7 @@ void KalFitAccPlots(TTree* trks) {
   
   fcan->cd(4);
   momerr->Draw();
-  TLine* momerrcut = new TLine(0.2,0.0,0.2,momerr->GetMaximum());
+  TLine* momerrcut = new TLine(maxmomerr[icut],0.0,maxmomerr[icut],momerr->GetMaximum());
   momerrcut->SetLineColor(kBlack);
   momerrcut->SetLineStyle(2);
   momerrcut->SetLineWidth(2);
