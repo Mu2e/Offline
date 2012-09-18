@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: kalmanFitv2_module.cc,v 1.2 2012/09/17 14:44:30 ignatov Exp $
+// $Id: kalmanFitv2_module.cc,v 1.3 2012/09/18 08:40:59 ignatov Exp $
 // $Author: ignatov $ 
-// $Date: 2012/09/17 14:44:30 $
+// $Date: 2012/09/18 08:40:59 $
 //
 
 #include <iostream>
@@ -239,10 +239,10 @@ namespace mu2e
     htargeteloss     =tfs->make<TH1D>("htargeteloss",";E loss at target, MeV",10000,0,10);
 
     treefit=tfs->make<TTree>("trfit","track fit params");
-    //treefit->Branch("startpar","HelixParams",&startpar);
-    //treefit->Branch("recopar","HelixParams",&recopar);
-    //treefit->Branch("fitinfo",&recoinfo,"fit/I:chi2/F:chi2out/F:nhits/I:nhitstot/I:nturn/I:momin/F:momout/F:fitmom/F:fitmomerr/F:t0/F:t0fit/F:errt0/F");
-    //treefit->Branch("eventinfo",&eventinfo,"elosstgt/F:ntgt/I");
+    treefit->Branch("startpar","HelixParams",&startpar);
+    treefit->Branch("recopar","HelixParams",&recopar);
+    treefit->Branch("fitinfo",&recoinfo,"fit/I:chi2/F:chi2out/F:nhits/I:nhitstot/I:nturn/I:momin/F:momout/F:fitmom/F:fitmomerr/F:t0/F:t0fit/F:errt0/F");
+    treefit->Branch("eventinfo",&eventinfo,"elosstgt/F:ntgt/I");
 
     
   }

@@ -1,9 +1,14 @@
 <!--  -->
 <!--  $Author: ignatov $ -->
-<!--  $Date: 2012/09/17 14:44:30 $   -->
+<!--  $Date: 2012/09/18 08:40:59 $   -->
 <!--  -->
 
 <lcgdict>
  <class name="HelixParams"/>
+ <class name="DifIndepPar"/>
+ <class name="TrkParams">
+  <field name="_weightInverted" transient="false"/>
+  <field name="_weightMatrix" transient="false"/>
+ </class>
 <!-- <class name="art::Wrapper<HelixParams>"/> -->
 </lcgdict>
