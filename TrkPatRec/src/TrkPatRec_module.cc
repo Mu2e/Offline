@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.38 2012/09/06 20:00:17 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.39 2012/09/19 20:18:23 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/09/06 20:00:17 $
+// $Date: 2012/09/19 20:18:23 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -110,7 +110,7 @@ class TrkPatRec : public art::EDProducer
     double _1dthresh;
     double _tpeakerr;
     // outlier cuts
-    double _maxseeddoca,_maxhelixdoca,_maxadddoca;
+    double _maxseeddoca,_maxhelixdoca,_maxadddoca, _maxaddchi;
     TrkParticle _tpart; // particle type being searched for
     TrkFitDirection _fdir;  // fit direction in search
     // cache of event objects
@@ -242,6 +242,7 @@ class TrkPatRec : public art::EDProducer
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
     _maxhelixdoca(pset.get<double>("MaxHelixDoca",40.0)),
     _maxadddoca(pset.get<double>("MaxAddDoca",2.75)),
+    _maxaddchi(pset.get<double>("MaxAddChi",2.0)),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet())),
@@ -351,10 +352,12 @@ class TrkPatRec : public art::EDProducer
 	  if(kalfit._fit.success()){
 	    findkal = true;
 	    if(_addhits){
+// first, add back the hits on this track
+	      _kfit.unweedHits(kalfit,_maxaddchi);
 	      std::vector<hitIndex> misshits;
 	      findMissingHits(kalfit,misshits);
 	      if(misshits.size() > 0){
-		_kfit.addHits(kalfit,_strawhits,misshits);
+		_kfit.addHits(kalfit,_strawhits,misshits,_maxaddchi);
 	      }
 	    }
 	  }
@@ -510,9 +513,14 @@ class TrkPatRec : public art::EDProducer
         for(size_t istr=0; istr<nstrs;++istr){
 	  if(_tflags[istr].veryLoose()){
 	    double phi = _shpos[istr].phi();
-// phi wrapping is handled in plot overlap
+	    double dphi = phi - yp;
+	    if(dphi > M_PI){
+	      dphi -= 2*M_PI;
+	    } else if(dphi < -M_PI){
+	      dphi += 2*M_PI;
+	    }
 	    if(fabs(correctedTime(istr)-xp) < _max2ddt &&
-		fabs(phi - yp) < _maxdp){
+		fabs(dphi) < _maxdp){
 	      tpeak._trkptrs.push_back(istr);
 	      ptime.push_back(correctedTime(istr));
 	      pphi.push_back(phi);
