@@ -15,13 +15,13 @@ bool primaryProtonGun.do        = false;
 //----------------------------------------------------------------
 bool extMonFNALGun.do        = true;
 
-double extMonFNALGun.coneAngle = 0.020; // rad
+double extMonFNALGun.coneAngle = 0.010; // rad
 int    extMonFNALGun.pdgId = 2212; // -13 is mu+, 2212 is p+, 102 is charged geantino
 
 string  extMonFNALGun.reference = "detector";
-vector<double> extMonFNALGun.offset = {0., 0., +650.};
-vector<double> extMonFNALGun.halfSize = {25., 25., 0.};
-double extMonFNALGun.multiplicity = 40;
+vector<double> extMonFNALGun.offset = {0., 0., +605.};
+vector<double> extMonFNALGun.halfSize = {30., 30., 0.};
+double extMonFNALGun.multiplicity = 145;
 double extMonFNALGun.tmin = -50;
 double extMonFNALGun.tmax = +50;
 
