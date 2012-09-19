@@ -86,10 +86,7 @@ namespace mu2e {
       //----------------------------------------------------------------
       // Spectrometer magnet
 
-      const double upToMagnet = config.getDouble("extMonFNAL.up.distanceToMagnet");
-      const CLHEP::Hep3Vector magnetRefInMu2e = det->up_.m_stackRefPointInMu2e
-        + det->up_.m_stackRotationInMu2e * CLHEP::Hep3Vector(0,0, -upToMagnet);
-
+      const CLHEP::Hep3Vector magnetRefInMu2e = upRefPointInMu2e;
       const double dp = config.getDouble("extMonFNAL.spectrometer.nominalMomentumAdjustment");
       det->spectrometerMagnet_ = ExtMonFNALMagnetMaker::read(config,
                                                              "extMonFNAL.spectrometer.magnet",
@@ -101,10 +98,7 @@ namespace mu2e {
       //----------------------------------------------------------------
       // The downstream stack
 
-      const double dnToMagnet = config.getDouble("extMonFNAL.dn.distanceToMagnet");
-      const CLHEP::Hep3Vector dnRefPointInMu2e = det->spectrometerMagnet_.refPointInMu2e()
-        + det->spectrometerMagnet().outRotationInMu2e() * CLHEP::Hep3Vector(0, 0, -dnToMagnet);
-
+      const CLHEP::Hep3Vector dnRefPointInMu2e = magnetRefInMu2e;
       det->dn_ = readStack(config, "extMonFNAL.dn", dnRefPointInMu2e, det->spectrometerMagnet_.outRotationInMu2e());
 
       //----------------------------------------------------------------

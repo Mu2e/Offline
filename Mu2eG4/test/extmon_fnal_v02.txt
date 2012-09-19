@@ -146,22 +146,18 @@ vector<double> extMonFNAL.sensorHalfSize =  {20.,   20.,   0.100};
 //
 // Location in room: the center is on the continuation of
 // collimator2 center line, the axis is parallel to the line.
-//  Need to specify just one additional parameter.
+// Need to specify just one additional parameter.
 // We use the distance along the collimator2 axis between the
 // wall (inside the room surface) and reference point of the detector.
-
-double extMonFNAL.detectorDistanceToWall = 450;
-
-// The distance between extMonFNAL.up and
-// extMonFNAL.spectrometer.magnet reference points
-// defines position of the magnet.
-double extMonFNAL.up.distanceToMagnet = 300;
+// This is a common reference point for the upstream stack, downstream
+// stack, and the spectrometer magnet.
+double extMonFNAL.detectorDistanceToWall = 750;
 
 // Details of the detector.  All of these vectors should be
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
 
-vector<double> extMonFNAL.up.sensor_zoffset = { 0., +290., +300.};
+vector<double> extMonFNAL.up.sensor_zoffset = { 300., +590., +600.};
 vector<double> extMonFNAL.up.sensor_xoffset = { 0.,    0.,    0.};
 vector<double> extMonFNAL.up.sensor_yoffset = { 0.,    0.,    0.};
 vector<double> extMonFNAL.up.readout_halfdz = {0.075, 0.075, 0.075};
@@ -192,19 +188,16 @@ double extMonFNAL.spectrometer.nominalMomentumAdjustment = 0; // MeV/c
 //================================================================
 // The downstream stack of the sensors.
 //
-// Location in room: the axis goes through the magnet reference point.
-// The angle between the up and down stack axes corresponds to the
-// bend angle in the magnet of a q=+1 particle with the spectrometer
-// nominal momentum.  The distance between magnet and extMonFNAL.dn
-// reference points is
-
-double extMonFNAL.dn.distanceToMagnet = 300;
-
+// Location in room: the reference point of the stack is the same as
+// for the magnet and the upstream stack.  The angle between the up
+// and down stack axes corresponds to the bend angle in the magnet of
+// a q=+1 particle with the spectrometer nominal momentum.
+//
 // Details of the detector.  All of these vectors should be
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
 
-vector<double> extMonFNAL.dn.sensor_zoffset = {-300., -290.,   0.};
+vector<double> extMonFNAL.dn.sensor_zoffset = {-600., -590.,   -300.};
 vector<double> extMonFNAL.dn.sensor_xoffset = { 0.,      0.,   0.};
 vector<double> extMonFNAL.dn.sensor_yoffset = { 0.,      0.,  0. };
 vector<double> extMonFNAL.dn.readout_halfdz = { 0.075, 0.075, 0.075};
@@ -215,7 +208,7 @@ vector<double> extMonFNAL.dn.readout_halfdz = { 0.075, 0.075, 0.075};
 vector<string> extMonFNAL.dn.testMaterial.materials = { "G10", "G4_Cu", "G4_Si", "G4_Al", "Epotek301", "G4_KAPTON", "Polyethylene092", "StainlessSteel", "G4_WATER" };
 
 // If the above vector is not empty the following parameters are required
-double extMonFNAL.dn.testMaterial.distanceToStack = -450; //mm
+double extMonFNAL.dn.testMaterial.distanceToStack = -750; //mm
 double extMonFNAL.dn.testMaterial.halfsize = 40; // mm, transverse
 double extMonFNAL.dn.testMaterial.thickness = 2; // mm
 double extMonFNAL.dn.testMaterial.spacing = 8; // mm, between plates

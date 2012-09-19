@@ -30,7 +30,7 @@ vector<double> extMonFNALGun.halfSize = {25., 25., 0.};
 double extMonFNALGun.multiplicity = -400;
 
 //det: string  extMonFNALGun.reference = "detector";
-//det: vector<double> extMonFNALGun.offset = {0., 0., +350.};
+//det: vector<double> extMonFNALGun.offset = {0., 0., +650.};
 
 // //----------------------------------------------------------------
 // // This is to launch stuff starting in the magnet:

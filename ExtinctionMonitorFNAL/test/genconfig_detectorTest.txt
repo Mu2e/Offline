@@ -19,7 +19,7 @@ double extMonFNALGun.coneAngle = 0.020; // rad
 int    extMonFNALGun.pdgId = 2212; // -13 is mu+, 2212 is p+, 102 is charged geantino
 
 string  extMonFNALGun.reference = "detector";
-vector<double> extMonFNALGun.offset = {0., 0., +350.};
+vector<double> extMonFNALGun.offset = {0., 0., +650.};
 vector<double> extMonFNALGun.halfSize = {25., 25., 0.};
 double extMonFNALGun.multiplicity = 40;
 double extMonFNALGun.tmin = -50;
