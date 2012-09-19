@@ -28,6 +28,8 @@ physics : {
         pixelRawClusterization : @local::pixelRawClusterization
         pixelRecoClusterization : @local::pixelRecoClusterization
         pixelRecoClusterTruthMaking : @local::pixelRecoClusterTruthMaking
+        EMFPatRecSequential : @local::EMFPatRecSequential
+        EMFPatRecSequentialTruthMaking : @local::EMFPatRecSequentialTruthMaking
     }
 
     analyzers: {
@@ -38,10 +40,12 @@ physics : {
             geomModuleLabel : "geom"
             geomInstanceName : ""
         }
-        printRecoClusters: {
-            module_type: EMFDetPrintRecoClusters
-            inputModuleLabel  : "pixelRecoClusterization"
-            inputInstanceName : ""
+        printRecoClusterTruth : {
+            module_type : EMFDetPrintRecoClusterTruth
+            clusterModuleLabel : "" // "pixelRecoClusterization"
+            truthModuleLabel : "pixelRecoClusterTruthMaking"
+            particleModuleLabel : "g4run"
+            cutMinClustersPerParticle : 6
         }
         emfRecoClusters: {
             module_type: EMFDetHistRecoClusters
@@ -50,14 +54,13 @@ physics : {
         }
     }
 
-    tprint : [ pixelRawClusterization,
-               pixelRecoClusterization, pixelRecoClusterTruthMaking
+    tprint : [ pixelRawClusterization
+               , pixelRecoClusterization, pixelRecoClusterTruthMaking
+               , EMFPatRecSequential, EMFPatRecSequentialTruthMaking
              ]
 
-    tprint : [ pixelRawClusterization, pixelRecoClusterization ]
-
-    eprint: [ hitValidation, printRecoClusters, emfRecoClusters ]
-
+    //eprint: [ hitValidation, printRecoClusterTruth, emfRecoClusters ]
+    eprint: [ hitValidation, emfRecoClusters ]
     out : [FullOutput]
 
     trigger_paths  : [tprint]
