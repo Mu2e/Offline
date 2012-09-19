@@ -94,31 +94,33 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
   fitcuts[2] = "fitcon>1e-3";
   fitcuts[3] = "fitcon>1e-2";
 
+  unsigned mu2ecut=2;
 
-  for(unsigned ires=0;ires<4;ires++){
+
+  for(unsigned icut=0;icut<4;icut++){
     char dioname[50];
-    snprintf(dioname,50,"diospec%i",ires);
+    snprintf(dioname,50,"diospec%i",icut);
     char conname[50];
-    snprintf(conname,50,"conspec%i",ires);
+    snprintf(conname,50,"conspec%i",icut);
  
-    diospec[ires] = new TH1F(dioname,"Reconstructed momentum;MeV/c;Events per experiment",nbins,mmin,mmax);
-    diospec[ires]->SetStats(0);
-    diospec[ires]->SetLineColor(kBlue);
-    diospec[ires]->Sumw2();
+    diospec[icut] = new TH1F(dioname,"Reconstructed momentum;MeV/c;Events per experiment",nbins,mmin,mmax);
+    diospec[icut]->SetStats(0);
+    diospec[icut]->SetLineColor(kBlue);
+    diospec[icut]->Sumw2();
 
-    conspec[ires] = new TH1F(conname,"Reconstructed momentum;MeV/c;Events per experiment",nbins,mmin,mmax);
-    conspec[ires]->SetStats(0);
-    conspec[ires]->SetLineColor(kRed);
-    conspec[ires]->Sumw2();
+    conspec[icut] = new TH1F(conname,"Reconstructed momentum;MeV/c;Events per experiment",nbins,mmin,mmax);
+    conspec[icut]->SetStats(0);
+    conspec[icut]->SetLineColor(kRed);
+    conspec[icut]->Sumw2();
 
-    TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
+    TCut quality = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
     TCut final = (reco+pitch+livegate+quality);
 
     dio->Project(dioname,"fitmom","diowt"*final);
-    diospec[ires]->Scale(dioscale);
+    diospec[icut]->Scale(dioscale);
 
     con->Project(conname,"fitmom",final);
-    conspec[ires]->Scale(conscale);
+    conspec[icut]->Scale(conscale);
 
   }
 
@@ -136,24 +138,27 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
   info->AddText(sconprob);
   info->SetBorderSize(0);
 
-// linear scale
-  TCanvas* lincan = new TCanvas("mu2elin","mu2e linear scale",1200,800);
-  lincan->Clear();
-  lincan->Divide(2,2);
-  for(unsigned ires=0;ires<4;ires++){
-    lincan->cd(ires+1);
-    TH1* diocopy = diospec[ires]->DrawCopy();
+// plot results
+  TCanvas* mu2ecan = new TCanvas("mu2e","mu2e result",900,600);
+  mu2ecan->Clear();
+  mu2ecan->Divide(1,1);
+  TCanvas* allcan = new TCanvas("mu2eall","mu2e results",1200,800);
+  allcan->Clear();
+  allcan->Divide(2,2);
+  for(unsigned icut=0;icut<4;icut++){
+    allcan->cd(icut+1);
+    TH1* diocopy = diospec[icut]->DrawCopy();
     diocopy->SetMinimum(-0.2);
     diocopy->SetMaximum(5);
-    conspec[ires]->Draw("same");
+    conspec[icut]->Draw("same");
 
-    int istart = diospec[ires]->FindFixBin(momlow+0.5*mevperbin);
-    int istop = diospec[ires]->FindFixBin(momhigh-0.5*mevperbin);
-//    cout << "Integration low edge " << diospec[ires]->GetBinLowEdge(istart) << " for cut at " << momlow << endl;
-//    cout << "Integration high edge " << diospec[ires]->GetBinLowEdge(istop)+mevperbin << " for cut at " << momhigh << endl;
+    int istart = diospec[icut]->FindFixBin(momlow+0.5*mevperbin);
+    int istop = diospec[icut]->FindFixBin(momhigh-0.5*mevperbin);
+//    cout << "Integration low edge " << diospec[icut]->GetBinLowEdge(istart) << " for cut at " << momlow << endl;
+//    cout << "Integration high edge " << diospec[icut]->GetBinLowEdge(istop)+mevperbin << " for cut at " << momhigh << endl;
     double dint_err, cint_err;
-    double dint = diospec[ires]->IntegralAndError(istart,istop,dint_err);
-    double cint = conspec[ires]->IntegralAndError(istart,istop,cint_err);
+    double dint = diospec[icut]->IntegralAndError(istart,istop,dint_err);
+    double cint = conspec[icut]->IntegralAndError(istart,istop,cint_err);
 
     TPaveText* inttext = new TPaveText(0.5,0.65,0.9,0.8,"NDC");
     char itext[50];
@@ -165,40 +170,57 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
     inttext->AddText(itext);
     inttext->Draw();
 
-
-    TPaveText* lintext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");  
+    TPaveText* cuttext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");  
     char line[40];
     snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
-    lintext->AddText(line);
+    cuttext->AddText(line);
     snprintf(line,80,"t0>%5.1f nsec",t0min);
-    lintext->AddText(line);
-    sprintf(line,"%s",ncuts[ires].GetTitle());
-    lintext->AddText(line);
-    sprintf(line,"%s",t0cuts[ires].GetTitle());
-    lintext->AddText(line);
-    sprintf(line,"%s",momcuts[ires].GetTitle());
-    lintext->AddText(line);
-    sprintf(line,"%s",fitcuts[ires].GetTitle());
-    lintext->AddText(line);
-    lintext->Draw();
+    cuttext->AddText(line);
+    sprintf(line,"%s",ncuts[icut].GetTitle());
+    cuttext->AddText(line);
+    sprintf(line,"%s",t0cuts[icut].GetTitle());
+    cuttext->AddText(line);
+    sprintf(line,"%s",momcuts[icut].GetTitle());
+    cuttext->AddText(line);
+    sprintf(line,"%s",fitcuts[icut].GetTitle());
+    cuttext->AddText(line);
+    cuttext->Draw();
 
-    TLine* momlowl = new TLine(momlow,0.0,momlow,1.5*conspec[ires]->GetBinContent(conspec[ires]->GetMaximumBin()));
+    TLine* momlowl = new TLine(momlow,0.0,momlow,1.5*conspec[icut]->GetBinContent(conspec[icut]->GetMaximumBin()));
     momlowl->SetLineColor(kBlack);
     momlowl->SetLineStyle(2);
     momlowl->SetLineWidth(2);
     momlowl->Draw();
 
-    TLine* momhighl = new TLine(momhigh,0.0,momhigh,1.5*conspec[ires]->GetBinContent(conspec[ires]->GetMaximumBin()));
+    TLine* momhighl = new TLine(momhigh,0.0,momhigh,1.5*conspec[icut]->GetBinContent(conspec[icut]->GetMaximumBin()));
     momhighl->SetLineColor(kBlack);
     momhighl->SetLineStyle(2);
     momhighl->SetLineWidth(2);
     momhighl->Draw();
     leg->Draw();
     info->Draw();
+
+
+    if(icut == mu2ecut){
+      mu2ecan->cd(0);
+      diocopy->Draw();
+      conspec[icut]->Draw("same");
+      inttext->Draw();
+      cuttext->Draw();
+      momlowl->Draw();
+      momhighl->Draw();
+      leg->Draw();
+      info->Draw();
+    }
+
  
+
+
   }
-  lincan->cd(0);
-  lincan->SaveAs("mu2e_lin.png");
+  allcan->cd(0);
+  allcan->SaveAs("mu2e_all.png");
+  mu2ecan->SaveAs("mu2e.png");
+  mu2ecan->SaveAs("mu2e.eps");
 
   TCanvas* dioc = new TCanvas("dio","dio",1200,800);
   dioc->Divide(2,2);
@@ -237,30 +259,30 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
   const char* cutset[4] = {"Cutset A","Cutset B","Cutset C","Cutset D"};
   TLegend* dgenwinleg = new TLegend(.5,.6,.7,.9);
   diogenwin[0] = new TH1F("diogenwin_0","True momentum of DIO in signal box;MeV",100,dmlow,dmhi);
-  for(unsigned ires=0;ires<4;ires++){
+  for(unsigned icut=0;icut<4;icut++){
     char dioname[50];
-    snprintf(dioname,50,"diogenwin%i",ires);
-    diogenwin[ires] = new TH1F(dioname,"True momentum of DIO in signal box;MeV",100,dmlow,dmhi);
-    diogenwin[ires]->SetStats(0);
-//   TH1F* diogood[ires] = new TH1F("diogood","True DIO momentum",100,dmlow,dmhi);
+    snprintf(dioname,50,"diogenwin%i",icut);
+    diogenwin[icut] = new TH1F(dioname,"True momentum of DIO in signal box;MeV",100,dmlow,dmhi);
+    diogenwin[icut]->SetStats(0);
+//   TH1F* diogood[icut] = new TH1F("diogood","True DIO momentum",100,dmlow,dmhi);
 //    dio->Project("diogoodwt","mcmom",goodfit);
 
-    TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
+    TCut quality = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
     TCut final = (reco+pitch+livegate+quality);
     dio->Project(dioname,"mcmom",final+momwin);
-    diogenwin[ires]->SetFillColor(colors[ires]);
-    dgenwinleg->AddEntry(diogenwin[ires],cutset[ires],"f");
-    diogenwin[ires]->Draw(dopt[ires]);
+    diogenwin[icut]->SetFillColor(colors[icut]);
+    dgenwinleg->AddEntry(diogenwin[icut],cutset[icut],"f");
+    diogenwin[icut]->Draw(dopt[icut]);
   }
   dgenwinleg->Draw();
 
   dioc->cd(2);
-  for(unsigned ires=0;ires<4;ires++){
-    diospec[ires]->SetFillColor(colors[ires]);
-    if(ires==0)
-      diospec[ires]->Draw("Hist");
+  for(unsigned icut=0;icut<4;icut++){
+    diospec[icut]->SetFillColor(colors[icut]);
+    if(icut==0)
+      diospec[icut]->Draw("Hist");
     else
-      diospec[ires]->Draw("Histsame");
+      diospec[icut]->Draw("Histsame");
   }
   dgenwinleg->Draw();
   TLine* momlowl = new TLine(momlow,0.0,momlow,1.5*diospec[0]->GetBinContent(diospec[0]->GetMaximumBin()));
