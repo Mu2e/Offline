@@ -21,22 +21,22 @@
 namespace mu2e {
 
   //================================================================
-  class EMFDetPrintTruth : public art::EDAnalyzer {
+  class EMFDetPrintRawHitTruth : public art::EDAnalyzer {
     std::string _inModuleLabel;
     std::string _inInstanceName;
   public:
-    explicit EMFDetPrintTruth(const fhicl::ParameterSet& pset);
+    explicit EMFDetPrintRawHitTruth(const fhicl::ParameterSet& pset);
     virtual void analyze(const art::Event& event);
   };
 
   //================================================================
-  EMFDetPrintTruth::EMFDetPrintTruth(const fhicl::ParameterSet& pset)
+  EMFDetPrintRawHitTruth::EMFDetPrintRawHitTruth(const fhicl::ParameterSet& pset)
     : _inModuleLabel(pset.get<std::string>("inputModuleLabel"))
     , _inInstanceName(pset.get<std::string>("inputInstanceName"))
   {}
 
   //================================================================
-  void EMFDetPrintTruth::analyze(const art::Event& event) {
+  void EMFDetPrintRawHitTruth::analyze(const art::Event& event) {
 
     art::Handle<ExtMonFNALRawHitCollection> ih;
     event.getByLabel(_inModuleLabel, _inInstanceName, ih);
@@ -45,7 +45,7 @@ namespace mu2e {
 
     art::FindManyP<SimParticle,ExtMonFNALHitTruthBits> r2t(ih, event, _inModuleLabel);
 
-    std::cout<<"EMFDetPrintTruth: inModuleLabel = "<<_inModuleLabel<<", inInstanceName = "<<_inInstanceName<<std::endl;
+    std::cout<<"EMFDetPrintRawHitTruth: inModuleLabel = "<<_inModuleLabel<<", inInstanceName = "<<_inInstanceName<<std::endl;
 
     for(ExtMonFNALRawHitCollection::const_iterator i=inputs.begin(); i!=inputs.end(); ++i) {
       std::cout<<"event "<<event.id()<<", hit "<<*i<<std::endl;
@@ -64,4 +64,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::EMFDetPrintTruth);
+DEFINE_ART_MODULE(mu2e::EMFDetPrintRawHitTruth);
