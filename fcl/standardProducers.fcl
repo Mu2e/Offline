@@ -117,6 +117,12 @@ pixelRecoClusterTruthMaking : {
     hitTruthModuleLabel : "pixelDigitization"
 }
 
+pixelPatRecTruthMaking : {
+    module_type : PatRecTruthMaker
+    patRecModuleLabel : "pixelSignalTrackFinding"
+    clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
+}
+
 # Save state of random numbers at the start of each event
 randomsaver:
 {
