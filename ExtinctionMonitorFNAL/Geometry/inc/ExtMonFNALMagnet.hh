@@ -48,6 +48,8 @@ namespace mu2e {
     double trackBendRadius(double momentum) const;
     double trackBendHalfAngle(double momentum) const;
 
+    double nominalBendHalfAngle() const { return trackBendHalfAngle(nominalMomentum()); }
+
     // placement
     const CLHEP::Hep3Vector&  refPointInMu2e() const { return refPointInMu2e_; }
     const CLHEP::HepRotation& inRotationInMu2e()     const { return inRotationInMu2e_; }

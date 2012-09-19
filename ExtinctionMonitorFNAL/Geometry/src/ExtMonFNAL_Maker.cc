@@ -102,6 +102,10 @@ namespace mu2e {
       det->dn_ = readStack(config, "extMonFNAL.dn", dnRefPointInMu2e, det->spectrometerMagnet_.outRotationInMu2e());
 
       //----------------------------------------------------------------
+      det->dn_.planeNumberOffset_ = 0;
+      det->up_.planeNumberOffset_ = det->dn_.nplanes();
+
+      //----------------------------------------------------------------
       if(verbose) {
         std::cout<<"ExtMonFNAL_Maker: UP stack center in Mu2e = "<<det->up_.m_stackRefPointInMu2e<<std::endl;
         std::cout<<"ExtMonFNAL_Maker: UP stackRotationInMu2e = "<<det->up_.m_stackRotationInMu2e<<std::endl;

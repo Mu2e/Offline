@@ -13,6 +13,7 @@ namespace mu2e {
   ExtMonFNALSensorStack::ExtMonFNALSensorStack()
     : distanceToTestMaterials_()
     , m_testMaterialPitch()
+    , planeNumberOffset_()
   {}
 
   //================================================================

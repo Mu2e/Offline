@@ -56,6 +56,11 @@ namespace mu2e {
     CLHEP::Hep3Vector mu2eToStack_momentum(const CLHEP::Hep3Vector& mu2emom) const;
 
     //----------------------------------------------------------------
+    // "global" extmon plane number is obtained by adding the offset to
+    // this stack's plane number
+    unsigned planeNumberOffset() const { return planeNumberOffset_; }
+
+    //----------------------------------------------------------------
   private:
     ExtMonFNALSensorStack();
     friend class ExtMonFNAL::ExtMon;
@@ -89,6 +94,8 @@ namespace mu2e {
 
     // data for coordinate system transformations: inverse of stack rotation
     CLHEP::HepRotation m_coordinateRotationInMu2e;
+
+    unsigned planeNumberOffset_;
   };
 
   //================================================================
