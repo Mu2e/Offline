@@ -71,6 +71,10 @@ outputs: {
   }
 }
 
+// somewhat reduce the amount of "volatile" printouts
+services.message.destinations.log.noTimeStamps : true
+services.message.statistics.noTimeStamps : true
+
 // This tells emacs to view this file in the JavaScript mode.
 // Local Variables:
 // mode:js

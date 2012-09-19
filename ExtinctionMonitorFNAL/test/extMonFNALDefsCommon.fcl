@@ -74,6 +74,10 @@ services.message.destinations.log.categories.ArtReport.reportEvery : 1
 services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 60
 
+// somewhat reduce the amount of "volatile" printouts
+services.message.destinations.log.noTimeStamps : true
+services.message.statistics.noTimeStamps : true
+
 // This tells emacs to view this file in the JavaScript mode.
 // Local Variables:
 // mode:js
