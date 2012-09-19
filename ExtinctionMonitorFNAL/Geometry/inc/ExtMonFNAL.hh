@@ -20,6 +20,9 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
 
 namespace mu2e {
+
+  class ExtMonFNALPixelId;
+
   namespace ExtMonFNAL {
 
     class ExtMonMaker;
@@ -54,13 +57,15 @@ namespace mu2e {
       // The rotation of the ExtMon system w.r.t. Mu2e is "small",
       // that is, the projection of z_em on z_mu2e is positive and
       // similar for x, y.
-      //
-      // In G4 this is the coordinate system of the ExtMonFNAL volume.
 
       CLHEP::Hep3Vector mu2eToExtMon_position(const CLHEP::Hep3Vector& mu2epos) const;
       CLHEP::Hep3Vector mu2eToExtMon_momentum(const CLHEP::Hep3Vector& mu2emom) const;
 
       //----------------------------------------------------------------
+      // Pixel center in the coordinate system of its SensorStack
+
+      CLHEP::Hep3Vector pixelPositionInSensorStack(const ExtMonFNALPixelId& id) const;
+
     private:
       friend class ExtMonMaker;
       ExtMon() {}

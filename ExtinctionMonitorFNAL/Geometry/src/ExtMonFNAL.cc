@@ -31,6 +31,25 @@ namespace mu2e {
     }
 
     //================================================================
+    CLHEP::Hep3Vector ExtMon::pixelPositionInSensorStack(const ExtMonFNALPixelId& id) const {
+      using CLHEP::Hep3Vector;
+
+      const unsigned globalPlane = id.chip().sensor().plane();
+      bool downStack = (globalPlane < dn_.nplanes());
+      const ExtMonFNALSensorStack& stack = downStack ? dn_ : up_;
+      const unsigned stackPlane = downStack ? globalPlane : globalPlane - dn_.nplanes();
+
+      // Position of pixel in the sensor
+      CLHEP::Hep2Vector sxy = sensor_.sensorCoordinates(id);
+
+      // Position of the pixel in the stack
+      Hep3Vector stackPos = stack.sensorOffsetInStack(stackPlane)
+        + Hep3Vector(sxy.x(), sxy.y(), 0);
+
+      return stackPos;
+    }
+
+    //================================================================
 
   } // namespace ExtMonFNAL
 } // namespace mu2e
