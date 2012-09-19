@@ -15,6 +15,7 @@ namespace mu2e {
   //================================================================
   template<class Coll>
   class GenericCollectionPrinter : public art::EDAnalyzer {
+  protected:
     std::string _inModuleLabel;
     std::string _inInstanceName;
 

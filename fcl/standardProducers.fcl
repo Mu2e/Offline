@@ -105,6 +105,12 @@ pixelRawClusterization : {
     geomModuleLabel : "geom"
 }
 
+pixelRecoClusterization : {
+    module_type : ExtMonFNALRecoClusterization
+    inputModuleLabel : "pixelRawClusterization"
+    geomModuleLabel : "geom"
+}
+
 # Save state of random numbers at the start of each event
 randomsaver:
 {

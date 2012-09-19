@@ -27,6 +27,7 @@ services : {
 physics : {
     producers : {
         pixelRawClusterization : @local::pixelRawClusterization
+        pixelRecoClusterization : @local::pixelRecoClusterization
         geomr : { module_type : GeometryRecorder }
     }
 
@@ -43,12 +44,17 @@ physics : {
             inputModuleLabel  : "pixelRawClusterization"
             inputInstanceName : ""
         }
+        printRecoClusters: {
+            module_type: EMFDetPrintRecoClusters
+            inputModuleLabel  : "pixelRecoClusterization"
+            inputInstanceName : ""
+        }
     }
 
-    tprint : [ pixelRawClusterization ]
+    tprint : [ pixelRawClusterization, pixelRecoClusterization ]
     gm  : [ geomr ]
 
-    eprint: [ hitValidation, printRawClusters ]
+    eprint: [ hitValidation, printRawClusters, printRecoClusters ]
 
     out : [FullOutput]
 
