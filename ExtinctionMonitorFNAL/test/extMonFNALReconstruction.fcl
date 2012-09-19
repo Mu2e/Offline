@@ -1,0 +1,69 @@
+// Shoot particles through ExtMonFNAL detector.
+//
+// Andrei Gaponenko, 2011
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+// Give this job a name.
+process_name : extMonFNALReconstruction
+
+source : { module_type : RootInput }
+
+services : {
+    message : @local::default_message
+
+    scheduler: { defaultExceptions : false }
+    TFileService : { fileName : "hists_extMonFNALReconstruction.root" }
+
+    user : {
+        GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_s2EMFTwoGrooves.txt" }
+        ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+        GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    }
+}
+
+physics : {
+    producers : {
+        pixelRawClusterization : @local::pixelRawClusterization
+        geomr : { module_type : GeometryRecorder }
+    }
+
+    analyzers: {
+        hitValidation: {
+            module_type: EMFRawHitsValidator
+            inputModuleLabel : "pixelDigitization"
+            inputInstanceName : ""
+            geomModuleLabel : "geom"
+            geomInstanceName : ""
+        }
+        printRawClusters: {
+            module_type: EMFDetPrintRawClusters
+            inputModuleLabel  : "pixelRawClusterization"
+            inputInstanceName : ""
+        }
+    }
+
+    tprint : [ pixelRawClusterization ]
+    gm  : [ geomr ]
+
+    eprint: [ hitValidation, printRawClusters ]
+
+    out : [FullOutput]
+
+    trigger_paths  : [gm, tprint]
+    end_paths : [eprint, out]
+}
+
+outputs: {
+    FullOutput : {
+        module_type : RootOutput
+        fileName    : "extMonFNALReconstruction.root"
+  }
+}
+
+// This tells emacs to view this file in the JavaScript mode.
+// Local Variables:
+// mode:js
+// End:

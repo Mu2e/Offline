@@ -98,6 +98,13 @@ pixelDigitization : {
     numClustersPerHit : 10
 }
 
+# Form ExtMonFNAL pixel clusters
+pixelRawClusterization : {
+    module_type : ExtMonFNALRawClusterization
+    inputModuleLabel : "pixelDigitization"
+    geomModuleLabel : "geom"
+}
+
 # Save state of random numbers at the start of each event
 randomsaver:
 {
