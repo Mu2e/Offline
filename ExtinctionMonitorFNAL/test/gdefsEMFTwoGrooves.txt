@@ -14,7 +14,7 @@
 // param EMFilter_yaw=0.0317 rad
 //
 
-double extMonFNAL.nominalMomentum = 4200.; // MeV/c
+double extMonFNAL.filter.nominalMomentum = 4200.; // MeV/c
 double extMonFNAL.entranceOffsetX = 325;
 double extMonFNAL.entranceOffsetY = 1250;
 double extMonFNAL.entranceAngleV = 0.1653; //radians
