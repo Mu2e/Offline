@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.17 2012/09/19 03:29:45 gandr Exp $
+// $Id: classes.h,v 1.18 2012/09/19 03:33:39 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/09/19 03:29:45 $
+// $Date: 2012/09/19 03:33:39 $
 //
 // Original author Rob Kutschke
 //
@@ -35,6 +35,8 @@
 #include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawClusterCollection.hh"
+#include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
+#include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
@@ -86,5 +88,9 @@ template class art::PtrVector<mu2e::ExtMonFNALRawHit>;
 template class art::Ptr<mu2e::ExtMonFNALRawCluster>;
 template class std::vector<mu2e::ExtMonFNALRawCluster>;
 template class art::Wrapper<mu2e::ExtMonFNALRawClusterCollection>;
+
+template class std::vector<mu2e::ExtMonFNALRecoCluster>;
+template class std::vector<std::vector<mu2e::ExtMonFNALRecoCluster> >;
+template class art::Wrapper<mu2e::ExtMonFNALRecoClusterCollection>;
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

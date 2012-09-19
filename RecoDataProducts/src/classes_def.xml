@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.19 2012/09/19 03:29:45 gandr Exp $     -->
+<!--  $Id: classes_def.xml,v 1.20 2012/09/19 03:33:39 gandr Exp $     -->
 <!--  $Author: gandr $ -->
-<!--  $Date: 2012/09/19 03:29:45 $   -->
+<!--  $Date: 2012/09/19 03:33:39 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.19 $$Date: 2012/09/19 03:29:45 $"; -->
+<!--  rev="$Revision: 1.20 $$Date: 2012/09/19 03:33:39 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -109,5 +109,11 @@
  <class name="std::vector<mu2e::ExtMonFNALRawCluster>" />
  <class name="mu2e::ExtMonFNALRawClusterCollection" />
  <class name="art::Wrapper<mu2e::ExtMonFNALRawClusterCollection>" />
+
+ <class name="mu2e::ExtMonFNALRecoCluster" />
+ <class name="std::vector<mu2e::ExtMonFNALRecoCluster>" />
+ <class name="std::vector<std::vector<mu2e::ExtMonFNALRecoCluster> >" />
+ <class name="mu2e::ExtMonFNALRecoClusterCollection" />
+ <class name="art::Wrapper<mu2e::ExtMonFNALRecoClusterCollection>" />
 
 </lcgdict>
