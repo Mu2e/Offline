@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.34 2012/08/31 22:39:00 brownd Exp $
+// $Id: KalFit.cc,v 1.35 2012/09/19 20:17:37 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/31 22:39:00 $
+// $Date: 2012/09/19 20:17:37 $
 //
 
 // the following has to come before other BaBar includes
@@ -174,7 +174,7 @@ namespace mu2e
     }
   }
 
-  void KalFit::addHits(KalFitResult& kres,const StrawHitCollection* straws, std::vector<hitIndex> indices) {
+  void KalFit::addHits(KalFitResult& kres,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi) {
 // there must be a valid Kalman fit to add hits to
     if(kres._krep != 0 && kres._fit.success()){
       ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -189,7 +189,7 @@ namespace mu2e
 	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 // estimate  initial flightlength
 	double hflt;
-	bool foundz =TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
+	TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
 // find the bounding sites near this hit, and extrapolate to get the hit t0
 	std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef.fitdir().fitDirection()));
 	findBoundingHits(kres._hits,hflt,ilow,ihigh);
@@ -207,7 +207,10 @@ namespace mu2e
 // create the hit object.  Assume we're at the last iteration over added error
 	TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_herr.back(),_maxdriftpull);
 	assert(trkhit != 0);
-	if(indices[iind]._ambig != 0)trkhit->setAmbig(indices[iind]._ambig);
+// allow the hit to update its own ambiguity for now: eventually we should get the resolver to do this, FIXME!!!
+	trkhit->setAmbigUpdate(true);
+// must be initialy active for KalRep to process correctly
+	trkhit->setActivity(true);
 // flag the added hit
 	trkhit->setUsability(3);
 // add the hit to the track and the fit
@@ -219,7 +222,14 @@ namespace mu2e
 	  kres._krep->addInter(wallinter);	
 	DetIntersection gasinter;
 	if(trkhit->gasElem().reIntersect(reftraj,gasinter))
-	  kres._krep->addInter(gasinter);	
+	  kres._krep->addInter(gasinter);
+// check the raw residual: This call works because the HOT isn't yet processed as part of the fit.
+        double chi = fabs(trkhit->residual()/trkhit->hitRms());
+//if it's outside limits, deactivate the HOT
+	if(chi > maxchi || !trkhit->physicalDrift(maxchi))	
+	  trkhit->setActivity(false);
+// now that we've got the residual, we can turn of auto-ambiguity resolution
+	trkhit->setAmbigUpdate(false);
       }
 // refit the last iteration of the track
       fitIteration(kres,_herr.size()-1);
@@ -330,16 +340,16 @@ namespace mu2e
     // is greater than some cut value, deactivate that HoT and reFit
     bool retval(false);
     double worst = -1.;
-    TrkHitOnTrk* worstHot = 0;
-    TrkHotList* hots = kres._krep->hotList();
-    for (TrkHotList::nc_hot_iterator iHot = hots->begin(); iHot != hots->end(); ++iHot) {
+    TrkStrawHit* worstHot = 0;
+    for (std::vector<TrkStrawHit*>::iterator iter = kres._hits.begin(); iter != kres._hits.end(); ++iter){
+      TrkStrawHit* iHot = *iter;
       if (iHot->isActive()) {
         double resid, residErr;
         if(iHot->resid(resid, residErr, true)){
           double value = fabs(resid/residErr);
           if (value > _maxhitchi && value > worst) {
             worst = value;
-            worstHot = iHot.get();
+            worstHot = iHot;
           }
         }
       }
@@ -347,7 +357,7 @@ namespace mu2e
     if(0 != worstHot){
       retval = true;
       worstHot->setActivity(false);
-      worstHot->setUsability(-5);
+      worstHot->setUsability(5); // positive usability allows hot to be re-enabled later
       kres.fit();
       kres._krep->addHistory(kres._fit, "HitWeed");
       // Recursively iterate
@@ -358,6 +368,43 @@ namespace mu2e
     }
     return retval;
   }
+  
+  bool
+  KalFit::unweedHits(KalFitResult& kres, double maxchi) {
+    // Loop over inactive HoTs and find the one with the smallest contribution to chi2.  If this value
+    // is less than some cut value, reactivate that HoT and reFit
+    bool retval(false);
+    double best = 1.e12;
+    TrkStrawHit* bestHot = 0;
+    for (std::vector<TrkStrawHit*>::iterator iter = kres._hits.begin(); iter != kres._hits.end(); ++iter){
+      TrkStrawHit* iHot = *iter;
+      if (!iHot->isActive()) {
+        double resid, residErr;
+        if(iHot->resid(resid, residErr, true)){
+          double chival = fabs(resid/residErr);
+  // test both for a good chisquared and for the drift radius to be physical
+          if (chival < maxchi && iHot->physicalDrift(maxchi) && chival < best) {
+            best = chival;
+            bestHot = iHot;
+          }
+        }
+      }
+    }
+    if(0 != bestHot){
+      retval = true;
+      bestHot->setActivity(true);
+      bestHot->setUsability(4);
+      kres.fit();
+      kres._krep->addHistory(kres._fit, "HitUnWeed");
+      // Recursively iterate
+      kres._nunweediter++;
+      if (kres._fit.success() && kres._nunweediter < _maxweed  ) {
+        retval |= unweedHits(kres,maxchi);
+      }
+    }
+    return retval;
+  }
+
 
   const BField*
   KalFit::bField() {

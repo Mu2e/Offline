@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.21 2012/08/31 22:39:00 brownd Exp $
+// $Id: TrkStrawHit.cc,v 1.22 2012/09/19 20:17:37 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/31 22:39:00 $
+// $Date: 2012/09/19 20:17:37 $
 //
 // Original author David Brown, LBNL
 //
@@ -134,10 +134,9 @@ namespace mu2e
     _toterr = sqrt(_t2d._rdrifterr*_t2d._rdrifterr + rt0err*rt0err + _exterr*_exterr + _penerr*_penerr);
 // If the hit is wildly away from the track , disable it
     double rstraw = _straw.getRadius(); 
-    if( _t2d._rdrift - rstraw > _maxdriftpull*_toterr ||
-      _t2d._rdrift < -_maxdriftpull*_toterr){
-        setUsability(-10);
-        setActivity(false);
+    if(!physicalDrift(_maxdriftpull)){
+      setUsability(10);
+      setActivity(false);
     } else {
 // otherwise restrict to a physical range
       if (_t2d._rdrift < 0.0){
@@ -148,6 +147,12 @@ namespace mu2e
     }
   }
 
+  bool
+  TrkStrawHit::physicalDrift(double maxchi) const {
+    return _t2d._rdrift < _straw.getRadius() + maxchi*_toterr &&
+      _t2d._rdrift > -maxchi*_toterr;
+  }
+  
   void
   TrkStrawHit::updateSignalTime() {
 // compute the electronics propagation time.  The convention is that the hit time is measured at the
@@ -193,7 +198,8 @@ namespace mu2e
       cout << "TrkStrawHit:: updateMeasurement() failed" << endl;
       setHitResid(999999);
       setHitRms(999999);
-      setUsability(0);
+      setUsability(1);
+      setActivity(false);
     }
     return status;
   }
@@ -226,9 +232,10 @@ namespace mu2e
 // use half-length as maximum length
     wallpath = std::min(wallpath,radius);
 // test for NAN	
-//    if(wallpath != wallpath){
-///      std::cout << "non wall" << std::endl;
-//   }
+    if(wallpath != wallpath){
+      std::cout << "NAN wall" << std::endl;
+      wallpath = thick;
+   }
     return wallpath;
   }
   
@@ -249,9 +256,10 @@ namespace mu2e
 // use half-length as maximum length
     gaspath = std::min(gaspath,hlen);
 //NAN test
-//    if(gaspath != gaspath){
-//      std::cout << "nan gas" << endl;
-//    }
+    if(gaspath != gaspath){
+      std::cout << "NAN gas" << endl;
+      gaspath = 2*radius;
+    }
     return gaspath;
   }
 

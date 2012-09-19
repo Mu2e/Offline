@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.18 2012/08/31 22:39:00 brownd Exp $
+// $Id: TrkStrawHit.hh,v 1.19 2012/09/19 20:17:37 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/31 22:39:00 $
+// $Date: 2012/09/19 20:17:37 $
 //
 // Original author David Brown, LBNL
 //
@@ -89,6 +89,7 @@ namespace mu2e
     void setExtErr(double exterr) { _exterr = exterr; }
 // set the penalty error: this is set when we can't resolve the ambiguity
     void setPenalty(double penerr) { _penerr = penerr; }
+    bool physicalDrift(double maxchi) const;
 // access to associated detector elements
     DetStrawGasElem const& gasElem() const { return _gelem; }
     DetStrawWallElem const& wallElem() const { return _welem; }

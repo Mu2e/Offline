@@ -60,7 +60,8 @@ namespace mu2e {
       DetElem::reIntersect(traj,dinter);
       dinter.pathlen = pflt - 0.01*_strawhit->straw().getRadius();
       Hep3Vector tdir = traj->direction(dinter.pathlen);
-      double dpath = _strawhit->wallPath(pdist,tdir);
+      double dpath = _strawhit->gasPath(pdist,tdir);
+
       dinter.pathrange[0] = dinter.pathlen-dpath;
       dinter.pathrange[1] = dinter.pathlen+dpath;
     }

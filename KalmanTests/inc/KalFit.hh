@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.24 2012/08/31 22:39:00 brownd Exp $
+// $Id: KalFit.hh,v 1.25 2012/09/19 20:17:37 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/31 22:39:00 $
+// $Date: 2012/09/19 20:17:37 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -42,9 +42,11 @@ namespace mu2e
     explicit KalFit(fhicl::ParameterSet const&);
     virtual ~KalFit();
 // main function: given a track definition, create a fit object from it
-    void makeTrack(KalFitResult& kdef);
+    void makeTrack(KalFitResult& kres);
 // add a set of hits to an existing fit
-    void addHits(KalFitResult& kdef,const StrawHitCollection* straws, std::vector<hitIndex> indices);
+    void addHits(KalFitResult& kres,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi);
+// Try to put back inactive hits
+    bool unweedHits(KalFitResult& kres, double maxchi);
   private:
 // Fetch the BField.  this function fetches the field if it's not yet initialized
     const BField* bField();
@@ -77,13 +79,13 @@ namespace mu2e
     double _t0nsig; // # of sigma to include when selecting hits for t0
     // helper functions
     bool fitable(TrkDef const& tdef);
-    bool weedHits(KalFitResult& kdef);
-    void fitTrack(KalFitResult& kdef);
-    void fitIteration(KalFitResult& kdef,size_t iiter);
-    void makeHits(KalFitResult& kdef, TrkT0 const& t0);
-    void makeMaterials(KalFitResult& kdef);
+    bool weedHits(KalFitResult& kres);
+    void fitTrack(KalFitResult& kres);
+    void fitIteration(KalFitResult& kres,size_t iiter);
+    void makeHits(KalFitResult& kres, TrkT0 const& t0);
+    void makeMaterials(KalFitResult& kres);
     void initT0(TrkDef const& tdef, TrkT0& t0);
-    bool updateT0(KalFitResult& kdef);
+    bool updateT0(KalFitResult& kres);
     void updateHitTimes(KalFitResult& kres);
     void findBoundingHits(std::vector<TrkStrawHit*>& hits, double flt0,
 	std::vector<TrkStrawHit*>::reverse_iterator& ilow,
