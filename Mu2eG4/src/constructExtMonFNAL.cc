@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.19 2012/08/28 16:59:35 gandr Exp $
+// $Id: constructExtMonFNAL.cc,v 1.20 2012/09/19 03:39:47 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/28 16:59:35 $
+// $Date: 2012/09/19 03:39:47 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -41,7 +41,6 @@ namespace mu2e {
   void constructExtMonFNALSensorStack(const ExtMonFNALSensor& sensor,
                                       const ExtMonFNALSensorStack& stack,
                                       const std::string& volNameSuffix,
-                                      int   planeNumberingOffset,
                                       VirtualDetectorId::enum_type entranceVD,
                                       const VolumeInfo& parent,
                                       const CLHEP::HepRotation& parentRotationInMu2e,
@@ -77,7 +76,7 @@ namespace mu2e {
       std::ostringstream oss;
       oss<<"EMFSensor"<<volNameSuffix<<iplane;
 
-      AGDEBUG("Constucting "<<oss.str()<<", sensor number "<<iplane + planeNumberingOffset);
+      AGDEBUG("Constucting "<<oss.str()<<", sensor number "<<iplane + stack.planeNumberOffset());
 
       const CLHEP::Hep3Vector sensorCenterInRoom = stackRefPointInRoom + stackRotationInRoom*stack.sensorOffsetInStack(iplane);
 
@@ -87,7 +86,7 @@ namespace mu2e {
                                   stackRotationInRoomInv,
                                   sensorCenterInRoom,
                                   parent,
-                                  iplane + planeNumberingOffset,
+                                  iplane + stack.planeNumberOffset(),
                                   config.getBool("extMonFNAL.sensorPlaneVisible"),
                                   G4Colour::Magenta(),
                                   config.getBool("extMonFNAL.sensorPlaneSolid"),
@@ -337,7 +336,6 @@ namespace mu2e {
     constructExtMonFNALSensorStack(extmon->sensor(),
                                    extmon->dn(),
                                    "Dn",
-                                   0, // plane numbering offset
                                    VirtualDetectorId::EMFDetectorDnEntrance,
                                    roomAir,
                                    emfb->roomRotationInMu2e(),
@@ -346,7 +344,6 @@ namespace mu2e {
     constructExtMonFNALSensorStack(extmon->sensor(),
                                    extmon->up(),
                                    "Up",
-                                   extmon->dn().nplanes(), // plane numbering offset
                                    VirtualDetectorId::EMFDetectorUpEntrance,
                                    roomAir,
                                    emfb->roomRotationInMu2e(),
