@@ -111,6 +111,12 @@ pixelRecoClusterization : {
     geomModuleLabel : "geom"
 }
 
+pixelRecoClusterTruthMaking : {
+    module_type : RecoClusterTruthMaker
+    recoClusterModuleLabel : "pixelRecoClusterization"
+    hitTruthModuleLabel : "pixelDigitization"
+}
+
 EMFPatRecSequential : {
     module_type : EMFPatRecSequential
     inputModuleLabel : "pixelRecoClusterization"
@@ -126,16 +132,31 @@ EMFPatRecSequential : {
     alignmentToleranceY : 0.050 // pixel size
 }
 
-pixelRecoClusterTruthMaking : {
-    module_type : RecoClusterTruthMaker
-    recoClusterModuleLabel : "pixelRecoClusterization"
-    hitTruthModuleLabel : "pixelDigitization"
-}
-
-
 EMFPatRecSequentialTruthMaking : {
     module_type : PatRecTruthMaker
     patRecModuleLabel : "EMFPatRecSequential"
+    clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
+}
+
+EMFPatRecFromTracklets : {
+    module_type : EMFPatRecFromTracklets
+    inputModuleLabel : "pixelRecoClusterization"
+    geomModuleLabel : "geom"
+
+    clusterClockTolerance : 1 // clock cycle
+
+    maxTrackSlope  : 0.1 // 0.025 // signal cut 0.015
+    stackScatterAngleTolerance : 0.005 // scattering 0.5 mrad in 300 um Si + 1 mm Al
+    trackletMatchSlopeXTolerance : 0.005// FIXME: what's reasonable?
+    trackletMatchXTolerance : 1.50 // mm
+    trackletMatchYTolerance : 1.00 // mm
+    alignmentToleranceX : 0.250 // pixel size
+    alignmentToleranceY : 0.050 // pixel size
+}
+
+EMFPatRecFromTrackletsTruthMaking : {
+    module_type : PatRecTruthMaker
+    patRecModuleLabel : "EMFPatRecFromTracklets"
     clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
 }
 

@@ -30,6 +30,8 @@ physics : {
         pixelRecoClusterTruthMaking : @local::pixelRecoClusterTruthMaking
         EMFPatRecSequential : @local::EMFPatRecSequential
         EMFPatRecSequentialTruthMaking : @local::EMFPatRecSequentialTruthMaking
+        EMFPatRecFromTracklets : @local::EMFPatRecFromTracklets
+        EMFPatRecFromTrackletsTruthMaking : @local::EMFPatRecFromTrackletsTruthMaking
     }
 
     analyzers: {
@@ -37,6 +39,17 @@ physics : {
             module_type : EMFDetHistPatRec
             patRecModuleLabel : "EMFPatRecSequential"
             trkTruthModuleLabel : "EMFPatRecSequentialTruthMaking"
+            clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
+            particleModuleLabel : "g4run"
+            geomModuleLabel : "geom"
+
+            cutParticleMinClusters : 6
+            cutParticleMaxAngle : 0.015
+        }
+        EMFPatRecFromTrackletsAnalysis : {
+            module_type : EMFDetHistPatRec
+            patRecModuleLabel : "EMFPatRecFromTracklets"
+            trkTruthModuleLabel : "EMFPatRecFromTrackletsTruthMaking"
             clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
             particleModuleLabel : "g4run"
             geomModuleLabel : "geom"
@@ -68,10 +81,11 @@ physics : {
     tprint : [ pixelRawClusterization
                , pixelRecoClusterization, pixelRecoClusterTruthMaking
                , EMFPatRecSequential, EMFPatRecSequentialTruthMaking
+               , EMFPatRecFromTracklets, EMFPatRecFromTrackletsTruthMaking
              ]
 
     //eprint: [ printRecoClusterTruth ]
-    eprint: [ hitValidation, emfRecoClusters, EMFPatRecSequentialAnalysis ]
+    eprint: [ hitValidation, emfRecoClusters, EMFPatRecSequentialAnalysis, EMFPatRecFromTrackletsAnalysis ]
     out : [FullOutput]
 
     trigger_paths  : [tprint]
