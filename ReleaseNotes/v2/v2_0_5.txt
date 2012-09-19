@@ -1,10 +1,15 @@
-  $Id: v2_0_5.txt,v 1.4 2012/09/14 20:03:42 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2012/09/14 20:03:42 $
+  $Id: v2_0_5.txt,v 1.5 2012/09/19 03:46:06 gandr Exp $
+  $Author: gandr $
+  $Date: 2012/09/19 03:46:06 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_5
+
+3) September 18, 2012 gandr
+   - Define data products and implement ExtMonFNAL cluster reconstruction.
+   - Define data products and implement ExtMonFNAL cluster truth matching.
+   - ExtMonFNAL geometry fixes and enhancements.
 
 2)  September 14, 2012 kutschke
     Add proper dependencies to the link lists in:
