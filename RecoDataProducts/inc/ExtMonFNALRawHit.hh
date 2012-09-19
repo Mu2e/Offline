@@ -3,9 +3,9 @@
 //
 // Unpacked data from the ExtMonFNAL pixel detector.
 //
-// $Id: ExtMonFNALRawHit.hh,v 1.2 2012/09/19 03:29:45 gandr Exp $
+// $Id: ExtMonFNALRawHit.hh,v 1.3 2012/09/19 04:59:00 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/09/19 03:29:45 $
+// $Date: 2012/09/19 04:59:00 $
 //
 // Original author Andrei Gaponenko
 //
@@ -48,6 +48,7 @@ namespace mu2e {
   // current art::PtrVector insists that on defining this operator.
   bool operator<(const ExtMonFNALRawHit&, const ExtMonFNALRawHit&) {
     assert(false);
+    return false;
   }
 #endif/*ENABLE_MU2E_GENREFLEX_HACKS*/
 
