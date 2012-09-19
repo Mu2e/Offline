@@ -39,22 +39,22 @@ physics : {
             geomModuleLabel : "geom"
             geomInstanceName : ""
         }
-        printRawClusters: {
-            module_type: EMFDetPrintRawClusters
-            inputModuleLabel  : "pixelRawClusterization"
-            inputInstanceName : ""
-        }
         printRecoClusters: {
             module_type: EMFDetPrintRecoClusters
             inputModuleLabel  : "pixelRecoClusterization"
             inputInstanceName : ""
+        }
+        emfRecoClusters: {
+            module_type: EMFDetHistRecoClusters
+            inputModuleLabel  : "pixelRecoClusterization"
+            geomModuleLabel  : "geom"
         }
     }
 
     tprint : [ pixelRawClusterization, pixelRecoClusterization ]
     gm  : [ geomr ]
 
-    eprint: [ hitValidation, printRawClusters, printRecoClusters ]
+    eprint: [ hitValidation, printRecoClusters, emfRecoClusters ]
 
     out : [FullOutput]
 
