@@ -87,7 +87,8 @@ physics : {
     tprint : [ generate, g4run, pixelDigitization ]
     gm  : [ geom ]
 
-    eprint: [ emfprintsim, emfSimHits, emfprinttruth, hitValidation, emfRawHits ]
+    //eprint: [ emfprintsim, emfSimHits, emfprinttruth, hitValidation, emfRawHits ]
+    eprint: [ hitValidation, emfSimHits, emfRawHits ]
     out : [ FullOutput ]
 
     trigger_paths  : [gm, tprint]
