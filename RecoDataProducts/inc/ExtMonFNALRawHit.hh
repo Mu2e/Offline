@@ -3,14 +3,15 @@
 //
 // Unpacked data from the ExtMonFNAL pixel detector.
 //
-// $Id: ExtMonFNALRawHit.hh,v 1.1 2012/08/23 23:41:35 gandr Exp $
+// $Id: ExtMonFNALRawHit.hh,v 1.2 2012/09/19 03:29:45 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/23 23:41:35 $
+// $Date: 2012/09/19 03:29:45 $
 //
 // Original author Andrei Gaponenko
 //
 
 #include <ostream>
+#include <cassert>
 
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
 
@@ -41,6 +42,14 @@ namespace mu2e {
   };
 
   std::ostream& operator<<(std::ostream& os, const ExtMonFNALRawHit& hit);
+
+#ifdef ENABLE_MU2E_GENREFLEX_HACKS
+  // FIXME: Hits can't be compared, but the combination of genreflex and
+  // current art::PtrVector insists that on defining this operator.
+  bool operator<(const ExtMonFNALRawHit&, const ExtMonFNALRawHit&) {
+    assert(false);
+  }
+#endif/*ENABLE_MU2E_GENREFLEX_HACKS*/
 
 } // namespace mu2e
 

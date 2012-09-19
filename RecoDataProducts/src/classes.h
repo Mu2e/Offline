@@ -1,12 +1,14 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.16 2012/08/23 23:41:35 gandr Exp $
+// $Id: classes.h,v 1.17 2012/09/19 03:29:45 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/23 23:41:35 $
+// $Date: 2012/09/19 03:29:45 $
 //
 // Original author Rob Kutschke
 //
+
+#define ENABLE_MU2E_GENREFLEX_HACKS
 
 #include <vector>
 
@@ -31,6 +33,8 @@
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
+#include "RecoDataProducts/inc/ExtMonFNALRawClusterCollection.hh"
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
@@ -75,3 +79,12 @@ template class art::Wrapper<mu2e::TrkExtTrajCollection>;
 
 template class std::vector<mu2e::ExtMonFNALRawHit>;
 template class art::Wrapper<mu2e::ExtMonFNALRawHitCollection>;
+
+template class art::Ptr<mu2e::ExtMonFNALRawHit>;
+template class art::PtrVector<mu2e::ExtMonFNALRawHit>;
+
+template class art::Ptr<mu2e::ExtMonFNALRawCluster>;
+template class std::vector<mu2e::ExtMonFNALRawCluster>;
+template class art::Wrapper<mu2e::ExtMonFNALRawClusterCollection>;
+
+#undef ENABLE_MU2E_GENREFLEX_HACKS
