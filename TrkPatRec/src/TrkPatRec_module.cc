@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.39 2012/09/19 20:18:23 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.40 2012/09/19 21:27:39 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/09/19 20:18:23 $
+// $Date: 2012/09/19 21:27:39 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -242,7 +242,7 @@ class TrkPatRec : public art::EDProducer
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
     _maxhelixdoca(pset.get<double>("MaxHelixDoca",40.0)),
     _maxadddoca(pset.get<double>("MaxAddDoca",2.75)),
-    _maxaddchi(pset.get<double>("MaxAddChi",2.0)),
+    _maxaddchi(pset.get<double>("MaxAddChi",5.0)),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet())),
