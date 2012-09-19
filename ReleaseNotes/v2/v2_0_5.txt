@@ -1,10 +1,17 @@
-  $Id: v2_0_5.txt,v 1.5 2012/09/19 03:46:06 gandr Exp $
+  $Id: v2_0_5.txt,v 1.6 2012/09/19 04:02:22 gandr Exp $
   $Author: gandr $
-  $Date: 2012/09/19 03:46:06 $
+  $Date: 2012/09/19 04:02:22 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_5
+
+4) September 18, 2012 gandr
+   - Data products for ExtMonFNAL track finding.
+   - Implement "sequential" track finding algorithm.
+   - Implement "tracklets" track finding algorithm.
+   - Truth matching for PatRec.
+   - Analyzer module for PatRec.
 
 3) September 18, 2012 gandr
    - Define data products and implement ExtMonFNAL cluster reconstruction.
