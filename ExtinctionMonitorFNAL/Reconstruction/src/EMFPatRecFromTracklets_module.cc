@@ -6,9 +6,9 @@
 // momentum and extrapolated donwstream where the consistency with the
 // donwstream tracklet is checked.
 //
-// $Id: EMFPatRecFromTracklets_module.cc,v 1.1 2012/09/19 03:58:00 gandr Exp $
+// $Id: EMFPatRecFromTracklets_module.cc,v 1.2 2012/09/19 03:58:29 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/09/19 03:58:00 $
+// $Date: 2012/09/19 03:58:29 $
 //
 // Original author Andrei Gaponenko
 //
@@ -49,6 +49,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
+#include "ExtinctionMonitorFNAL/Reconstruction/inc/PixelRecoUtils.hh"
 
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -111,12 +112,23 @@ namespace mu2e {
         , alignmentToleranceX_(pset.get<double>("alignmentToleranceX"))
         , alignmentToleranceY_(pset.get<double>("alignmentToleranceY"))
 
-        , hTrackletMultiplicity_(0)
-        , hTrackletMatchXY_(0)
-        , hTrackletMatchSlopeX_(0)
+        , hTrackletMultiplicity_()
+        , hTrackletMatchXY_()
+        , hTrackletMatchSlopeX_()
+        , hClusterAddXY_()
+        , hClusterAddXXMax_()
+        , hClusterAddYYMax_()
+        , hClockDiffTrackletSeedClusters_()
+        , hClockDiffClusterTracklet_()
+
+        , singleParticleMode_(pset.get<bool>("singleParticleMode", false))
      {
         produces<ExtMonFNALTrkParamCollection>();
         produces<ExtMonFNALPatRecTrackAssns>();
+
+        if(singleParticleMode_) {
+          std::cout<<"EMFPatRecFromTracklets: working in the single particle mode"<<std::endl;
+        }
       }
 
       virtual void produce(art::Event& evt);
@@ -157,6 +169,14 @@ namespace mu2e {
       std::vector<TH2D*> hClusterAddXY_;
       std::vector<TH2D*> hClusterAddXXMax_;
       std::vector<TH2D*> hClusterAddYYMax_;
+      TH1D *hClockDiffTrackletSeedClusters_;
+      TH1D *hClockDiffClusterTracklet_;
+
+      //----------------------------------------------------------------
+      // debugging and tuning aid
+      bool singleParticleMode_;
+
+      bool acceptSingleParticleEvent(const art::Event& event);
 
       //----------------------------------------------------------------
       Tracklets formTracklets(const ExtMonFNALSensorStack& stack,
@@ -250,6 +270,9 @@ namespace mu2e {
         hClusterAddYYMax_[plane] = tfs->make<TH2D>(yyname.str().c_str(), yytitle.str().c_str(), 100, 0., 5., 200, -5., 5.);
         hClusterAddYYMax_[plane]->SetOption("colz");
       }
+
+      hClockDiffTrackletSeedClusters_ = tfs->make<TH1D>("clockDiffTrackletSeedClusters", "Tracklet seed cluster time diff", 120, -30.5, 89.5);
+      hClockDiffClusterTracklet_ = tfs->make<TH1D>("clockDiffClusterTracklet", "Cluster - tracklet time clock", 120, -30.5, 89.5);
     }
 
     //================================================================
@@ -260,7 +283,9 @@ namespace mu2e {
       std::auto_ptr<ExtMonFNALTrkParamCollection> params(new ExtMonFNALTrkParamCollection);
       std::auto_ptr<ExtMonFNALPatRecTrackAssns> tracks(new ExtMonFNALPatRecTrackAssns);
 
-      findTracks(event, &*tracks, &*params, clusters);
+      if(!singleParticleMode_ || acceptSingleParticleEvent(event)) {
+        findTracks(event, &*tracks, &*params, clusters);
+      }
 
       event.put(params);
       event.put(tracks);
@@ -364,6 +389,8 @@ namespace mu2e {
 
         for(unsigned i2 = 0; i2 < pc2.size(); ++i2) {
           art::Ptr<ExtMonFNALRecoCluster> c2(coll, coll->globalIndex(plane2, i2));
+
+          hClockDiffTrackletSeedClusters_->Fill(c2->clock() - c1->clock());
 
           if( (std::abs(c1->clock() - c2->clock()) <= clusterClockTolerance_) &&
               (std::abs(c1->position().x() - c2->position().x()) < dxmax) &&
@@ -498,9 +525,15 @@ namespace mu2e {
 
     //================================================================
     bool EMFPatRecFromTracklets::inTime(const Tracklet& tl, const ExtMonFNALRecoCluster& cl) {
+      const int dtFirst = cl.clock() - tl.firstCluster->clock();
+      const int dtLast  = cl.clock() - tl.lastCluster->clock();
+
+      hClockDiffClusterTracklet_->Fill(dtFirst);
+      hClockDiffClusterTracklet_->Fill(dtLast);
+
       return
-        (std::abs(cl.clock() - tl.firstCluster->clock()) <= clusterClockTolerance_) &&
-        (std::abs(cl.clock() - tl.lastCluster->clock()) <= clusterClockTolerance_);
+        (std::abs(dtFirst) <= clusterClockTolerance_) &&
+        (std::abs(dtLast) <= clusterClockTolerance_);
     }
 
     //================================================================
@@ -518,6 +551,13 @@ namespace mu2e {
         outAssns->addSingle(tl.middleClusters[i], trackPar);
       }
       outAssns->addSingle(tl.lastCluster, trackPar);
+    }
+
+    //================================================================
+    bool EMFPatRecFromTracklets::acceptSingleParticleEvent(const art::Event& event) {
+      art::Handle<ExtMonFNALRecoClusterCollection> coll;
+      event.getByLabel(inputModuleLabel_, inputInstanceName_, coll);
+      return perfectSingleParticleEvent(*coll, extmon_->nplanes());
     }
 
     //================================================================
