@@ -205,7 +205,8 @@ vector<double> extMonFNAL.dn.readout_halfdz = { 0.075, 0.075, 0.075};
 //----------------------------------------------------------------
 // Place test materials behind the detector for MARS activation studies.
 
-vector<string> extMonFNAL.dn.testMaterial.materials = { "G10", "G4_Cu", "G4_Si", "G4_Al", "Epotek301", "G4_KAPTON", "Polyethylene092", "StainlessSteel", "G4_WATER" };
+//vector<string> extMonFNAL.dn.testMaterial.materials = { "G10", "G4_Cu", "G4_Si", "G4_Al", "Epotek301", "G4_KAPTON", "Polyethylene092", "StainlessSteel", "G4_WATER" };
+vector<string> extMonFNAL.dn.testMaterial.materials = {};
 
 // If the above vector is not empty the following parameters are required
 double extMonFNAL.dn.testMaterial.distanceToStack = -750; //mm
