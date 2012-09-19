@@ -33,6 +33,17 @@ physics : {
     }
 
     analyzers: {
+        EMFPatRecSequentialAnalysis : {
+            module_type : EMFDetHistPatRec
+            patRecModuleLabel : "EMFPatRecSequential"
+            trkTruthModuleLabel : "EMFPatRecSequentialTruthMaking"
+            clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
+            particleModuleLabel : "g4run"
+            geomModuleLabel : "geom"
+
+            cutParticleMinClusters : 6
+            cutParticleMaxAngle : 0.015
+        }
         hitValidation: {
             module_type: EMFRawHitsValidator
             inputModuleLabel : "pixelDigitization"
@@ -59,8 +70,8 @@ physics : {
                , EMFPatRecSequential, EMFPatRecSequentialTruthMaking
              ]
 
-    //eprint: [ hitValidation, printRecoClusterTruth, emfRecoClusters ]
-    eprint: [ hitValidation, emfRecoClusters ]
+    //eprint: [ printRecoClusterTruth ]
+    eprint: [ hitValidation, emfRecoClusters, EMFPatRecSequentialAnalysis ]
     out : [FullOutput]
 
     trigger_paths  : [tprint]
