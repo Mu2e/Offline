@@ -114,6 +114,10 @@ namespace mu2e {
 
         std::cout<<"ExtMonFNAL_Maker: magnet ref in Mu2e = "<<det->spectrometerMagnet_.refPointInMu2e()<<std::endl;
         std::cout<<"ExtMonFNAL_Maker: magnet center in Mu2e = "<<det->spectrometerMagnet_.geometricCenterInMu2e()<<std::endl;
+
+        std::cout<<"ExtMonFNAL_Maker: magnet half bend angle  = "
+                 <<det->spectrometerMagnet_.trackBendHalfAngle(room.filterMagnet().nominalMomentum() + dp)<<std::endl;
+
         std::cout<<"ExtMonFNAL_Maker: magnet rotation in Mu2e = "<<det->spectrometerMagnet_.magnetRotationInMu2e()<<std::endl;
 
         std::cout<<"ExtMonFNAL_Maker: DN stack center in Mu2e = "<<det->dn_.m_stackRefPointInMu2e<<std::endl;
