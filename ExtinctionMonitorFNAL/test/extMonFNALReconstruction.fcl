@@ -18,7 +18,6 @@ services : {
     TFileService : { fileName : "hists_extMonFNALReconstruction.root" }
 
     user : {
-        GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_s2EMFTwoGrooves.txt" }
         ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
         GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
     }
@@ -29,7 +28,6 @@ physics : {
         pixelRawClusterization : @local::pixelRawClusterization
         pixelRecoClusterization : @local::pixelRecoClusterization
         pixelRecoClusterTruthMaking : @local::pixelRecoClusterTruthMaking
-        geomr : { module_type : GeometryRecorder }
     }
 
     analyzers: {
@@ -56,13 +54,13 @@ physics : {
                pixelRecoClusterization, pixelRecoClusterTruthMaking
              ]
 
-    gm  : [ geomr ]
+    tprint : [ pixelRawClusterization, pixelRecoClusterization ]
 
     eprint: [ hitValidation, printRecoClusters, emfRecoClusters ]
 
     out : [FullOutput]
 
-    trigger_paths  : [gm, tprint]
+    trigger_paths  : [tprint]
     end_paths : [eprint, out]
 }
 
