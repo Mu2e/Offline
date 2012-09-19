@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.14 2012/08/23 23:41:35 gandr Exp $
+// $Id: classes.h,v 1.15 2012/09/19 03:36:13 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/23 23:41:35 $
+// $Date: 2012/09/19 03:36:13 $
 //
 // Original author Rob Kutschke
 //
@@ -46,6 +46,7 @@
 #include "MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
+#include "MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
 
 #include "MCDataProducts/inc/StepFilterMode.hh"
 
@@ -99,3 +100,9 @@ template class std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::ExtMonFNALRa
 template class std::pair<art::Ptr<mu2e::ExtMonFNALRawHit>,art::Ptr<mu2e::SimParticle> >;
 template class art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRawHit,mu2e::ExtMonFNALHitTruthBits> >;
 template class art::Wrapper<art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,mu2e::ExtMonFNALHitTruthBits> >;
+
+template class std::vector<mu2e::ExtMonFNALRecoClusterTruthBits>;
+template class std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::ExtMonFNALRecoCluster> >;
+template class std::pair<art::Ptr<mu2e::ExtMonFNALRecoCluster>,art::Ptr<mu2e::SimParticle> >;
+template class art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,mu2e::ExtMonFNALRecoClusterTruthBits> >;
+template class art::Wrapper<art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,mu2e::ExtMonFNALRecoClusterTruthBits> >;

@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.14 2012/08/23 23:41:35 gandr Exp $     -->
+<!--  $Id: classes_def.xml,v 1.15 2012/09/19 03:36:13 gandr Exp $     -->
 <!--  $Author: gandr $ -->
-<!--  $Date: 2012/08/23 23:41:35 $   -->
+<!--  $Date: 2012/09/19 03:36:13 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.14 $$Date: 2012/08/23 23:41:35 $"; -->
+<!--  rev="$Revision: 1.15 $$Date: 2012/09/19 03:36:13 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -101,4 +101,16 @@
  <class name="art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,mu2e::ExtMonFNALHitTruthBits>" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRawHit,mu2e::ExtMonFNALHitTruthBits> >" />
  <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,mu2e::ExtMonFNALHitTruthBits> >" />
+
+ <class name="mu2e::ExtMonFNALRecoClusterTruthBits" />
+ <class name="std::vector<mu2e::ExtMonFNALRecoClusterTruthBits>" />
+ <class name="std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::ExtMonFNALRecoCluster> >" />
+ <class name="std::pair<art::Ptr<mu2e::ExtMonFNALRecoCluster>,art::Ptr<mu2e::SimParticle> >" />
+ <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,void>" />
+ <class name="art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,void>" />
+ <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,mu2e::ExtMonFNALRecoClusterTruthBits>" />
+ <class name="art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,mu2e::ExtMonFNALRecoClusterTruthBits>" />
+ <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,mu2e::ExtMonFNALRecoClusterTruthBits> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,mu2e::ExtMonFNALRecoClusterTruthBits> >" />
+
 </lcgdict>
