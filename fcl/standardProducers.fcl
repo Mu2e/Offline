@@ -111,6 +111,12 @@ pixelRecoClusterization : {
     geomModuleLabel : "geom"
 }
 
+pixelRecoClusterTruthMaking : {
+    module_type : RecoClusterTruthMaker
+    recoClusterModuleLabel : "pixelRecoClusterization"
+    hitTruthModuleLabel : "pixelDigitization"
+}
+
 # Save state of random numbers at the start of each event
 randomsaver:
 {

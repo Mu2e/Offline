@@ -28,6 +28,7 @@ physics : {
     producers : {
         pixelRawClusterization : @local::pixelRawClusterization
         pixelRecoClusterization : @local::pixelRecoClusterization
+        pixelRecoClusterTruthMaking : @local::pixelRecoClusterTruthMaking
         geomr : { module_type : GeometryRecorder }
     }
 
@@ -51,7 +52,10 @@ physics : {
         }
     }
 
-    tprint : [ pixelRawClusterization, pixelRecoClusterization ]
+    tprint : [ pixelRawClusterization,
+               pixelRecoClusterization, pixelRecoClusterTruthMaking
+             ]
+
     gm  : [ geomr ]
 
     eprint: [ hitValidation, printRecoClusters, emfRecoClusters ]
