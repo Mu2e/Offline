@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.2 2012/08/24 20:19:31 gandr Exp $
+# $Id: SConscript,v 1.3 2012/09/21 16:12:54 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/08/24 20:19:31 $
+# $Date: 2012/09/21 16:12:54 $
 #
 # Original author Rob Kutschke.
 #
@@ -15,8 +15,21 @@ plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=Tru
 non_plugin_cc = Glob('*.cc', strings=True)
 for cc in plugin_cc: non_plugin_cc.remove(cc)
 
-# Construct library name using its path relative to Offline
-local_lib_path = re.sub(r'^.*/Offline/(.*)/src$', r'\1', env.Dir('.').abspath)
+# Construct library name using its path relative to the top 
+# of the source tree (usually "Offline")
+if os.environ.has_key('MU2E_TEST_RELEASE'):
+    srcTop = os.environ['MU2E_TEST_RELEASE']
+else:
+    if os.environ.has_key('MU2E_BASE_RELEASE'):
+        srcTop = os.environ['MU2E_BASE_RELEASE']
+    else:
+        raise Exception("Can not identify top source directory: neither MU2E_TEST_RELEASE nor MU2E_BASE_RELEASE is set")
+    pass
+#
+local_lib_path = re.sub('^'+srcTop+r'/(.*)/src$', r'\1', env.Dir('.').abspath)
+if re.match(r'^/', local_lib_path):
+    raise Exception('Error constructing relative library path: got "'+local_lib_path+'"')
+#
 local_lib_name=re.sub(r'/', r'_', local_lib_path)
 
 my_libs=['CLHEP']  # default if no cc_files
