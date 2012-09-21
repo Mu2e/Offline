@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions.
 //
-// $Id: StackingAction.cc,v 1.24 2012/08/15 04:02:29 ehrlich Exp $
+// $Id: StackingAction.cc,v 1.25 2012/09/21 18:29:31 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/08/15 04:02:29 $
+// $Date: 2012/09/21 18:29:31 $
 //
 // Original author Rob Kutschke
 //
@@ -44,6 +44,9 @@
 #include "G4FieldManager.hh"
 #include "G4Field.hh"
 
+#include "G4Types.hh"
+#include "G4GeometryManager.hh"
+
 using namespace std;
 
 namespace mu2e {
@@ -65,7 +68,6 @@ namespace mu2e {
     _pdgToDrop(),
     _pdgToKeep(),
     _dirtBodyPhysVol(0),
-    _dirtCapPhysVol(0),
     _dirtG4Ymin(0),
     _dirtG4Ymax(0),
     _Bmax(0),
@@ -130,15 +132,14 @@ namespace mu2e {
     _dirtG4Ymin = dirtG4Ymin;
     _dirtG4Ymax = dirtG4Ymax;
 
-//FIXME:  Dirt volumes have changed, there is no "DirtBody" and "DirtCap"
-//FIXME:  Comment this out for now.  That will leave the pointers NULL, which is save
-//FIXME:  for this class.
-//FIXME:  AG 20120413.
-//FIXME:
-//FIXME:
-//FIXME:    // Find the addresses of some physical volumes of interest.  See note 3.
-//FIXME:    _dirtBodyPhysVol = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtBody");
-//FIXME:    _dirtCapPhysVol  = G4PhysicalVolumeStore::GetInstance ()->GetVolume("DirtCap");
+    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("worldDirtBottom"));
+    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("worldDirtNW"));
+    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("worldDirtSW"));
+    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("worldDirtSE"));
+    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("worldDirtNE"));
+    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("HallConcreteFloor"));
+    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("HallConcreteCeiling"));
+    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("HallWalls"));
 
     if( _killPitchToLowToStore ) {
 
@@ -301,10 +302,11 @@ namespace mu2e {
       int pType = pdef->GetPDGEncoding();
 
       // just kill anything electromagnetic in the dirt
-      killit =  ( pvol == _dirtBodyPhysVol &&
+      killit = (std::find(_dirtBodyPhysVol.begin(),_dirtBodyPhysVol.end(), pvol)!=_dirtBodyPhysVol.end() &&
                   (pType == PDGCode::e_minus ||
                    pType == PDGCode::e_plus ||
-                   pType == PDGCode::gamma ) );
+                   pType == PDGCode::gamma)
+               );
 
     } else {
 
@@ -343,12 +345,11 @@ namespace mu2e {
            << endl;
 
       // Check to see if we are in the dirt.
-      if ( pvol == _dirtBodyPhysVol ){
+      if(std::find(_dirtBodyPhysVol.begin(),_dirtBodyPhysVol.end(), pvol)!=_dirtBodyPhysVol.end())
+      {
         string tag = ( ppos.y() >= _dirtG4Ymin && ppos.y() <= _dirtG4Ymax ) ?
           "OK" : "Fail y Check";
         cout << "Cosmic Killer: tag Dirt Body " << tag << endl;
-      } else if ( pvol == _dirtCapPhysVol ) {
-        cout << "Cosmic Killer: tag Dirt Cap" << endl;
       }
 
     }

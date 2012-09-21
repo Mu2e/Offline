@@ -5,9 +5,9 @@
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.16 2012/06/21 19:51:38 logash Exp $
-// $Author: logash $
-// $Date: 2012/06/21 19:51:38 $
+// $Id: StackingAction.hh,v 1.17 2012/09/21 18:29:31 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/09/21 18:29:31 $
 //
 // Original author Rob Kutschke
 //
@@ -82,8 +82,7 @@ namespace mu2e {
     std::vector<int> _pdgToKeep;
 
     // Pointers to some physical volumes of interest.
-    G4VPhysicalVolume * _dirtBodyPhysVol;
-    G4VPhysicalVolume * _dirtCapPhysVol;
+    std::vector<G4VPhysicalVolume*> _dirtBodyPhysVol;
 
     // Y limits of the dirt overburden.
     double _dirtG4Ymin, _dirtG4Ymax;
