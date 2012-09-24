@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.43 2012/09/18 17:03:58 brownd Exp $
-# $Author: brownd $
-# $Date: 2012/09/18 17:03:58 $
+# $Id: setup.sh,v 1.44 2012/09/24 18:56:48 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/09/24 18:56:48 $
 #
 # Original author Rob Kutschke
 #
@@ -36,7 +36,7 @@ if [ "${MU2E_TEST_RELEASE}" != '' ];then
 fi
 
 # Define the directory in which this file lives as the root of a release.
-export MU2E_BASE_RELEASE=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && echo \$PWD`
+export MU2E_BASE_RELEASE=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && /bin/pwd`
 echo "Base release directory is: " $MU2E_BASE_RELEASE
 
 # Remove any test release environment.  TODO: test this and abort.
