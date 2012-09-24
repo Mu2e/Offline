@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.40 2012/09/19 21:27:39 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.41 2012/09/24 18:39:55 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/09/19 21:27:39 $
+// $Date: 2012/09/24 18:39:55 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -32,7 +32,7 @@
 #include "KalmanTests/inc/KalFitMC.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
-#include "TrkPatRec/inc/StrawHitInfo.hh"
+#include "TrkPatRec/inc/DeltaHitInfo.hh"
 #include "TrkPatRec/inc/HelixFit.hh"
 #include "TrkBase/TrkPoca.hh"
 #include "TrkPatRec/inc/TrkPatRec.hh"
@@ -52,10 +52,16 @@
 #include "TTree.h"
 #include "TSpectrum.h"
 #include "TSpectrum2.h"
+#include "TMVA/Reader.h"
 // boost
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/moment.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
+#include <boost/accumulators/statistics/min.hpp>
+#include <boost/accumulators/statistics/max.hpp>
 // C++
 #include <iostream>
 #include <fstream>
@@ -67,8 +73,37 @@ using namespace std;
 
 namespace mu2e 
 {
+// structs for MVAs
+  struct DeltaHitMVA {
+    Float_t _ddphi; // delta-phi
+    Float_t _ddrho; // delta-rho
+    Float_t _ddt;  // delta time
+  };
 
-class TrkPatRec : public art::EDProducer
+  struct DeltaInfo {
+// peak information
+    double _tpeak, _ppeak;
+    double _mindist, _mindt, _mindphi;
+// median information
+    double _tmed, _pmed, _rmed;
+    double _tmean, _pmean, _rmean;
+    double _trms, _prms, _rrms;
+//summary information
+    unsigned _ngoodhits;
+    double _zmin, _zmax, _zgap;
+    unsigned _ismin, _ismax, _ns, _nsmiss;
+    bool _isdelta;
+// information about the hits in the delta
+    std::vector<size_t> _hindex;
+    std::vector<double> _htime;
+    std::vector<double> _hphi;
+    std::vector<double> _hrho;
+    std::vector<double> _hz;
+    std::vector<double> _hgd;
+    std::vector<int> _hflag;
+  };
+
+  class TrkPatRec : public art::EDProducer
   {
   public:
     enum fitType {helixFit=0,seedFit,kalFit};
@@ -99,6 +134,8 @@ class TrkPatRec : public art::EDProducer
     double _fbf,_mindp;
     double _maxzgap,_maxnsmiss;
     double _minrho, _maxrho;
+    std::string _dhittype, _dhitweights;
+    double _dhitmvacut;
     // time spectrum parameters
     unsigned _maxnpeak;
     unsigned _minnhits;
@@ -137,6 +174,9 @@ class TrkPatRec : public art::EDProducer
     void findPositions();
     void preselectHits();
     void filterDeltas();
+    void fillDeltaInfo(TSpectrum2 const& tspec2,std::vector<DeltaInfo>& dinfo);
+    void fillDeltaSummary(DeltaInfo& delta);
+    void fillDeltaDiag(std::vector<DeltaInfo> const& deltas);
     void findTimePeaks();
     void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
     void findMissingHits(KalFitResult& kalfit, std::vector<hitIndex>& indices);
@@ -146,8 +186,8 @@ class TrkPatRec : public art::EDProducer
     void fillFitDiag(int ipeak, HelixFitResult const& helixfit,
 	KalFitResult const& seedfit,KalFitResult const& kalfit);
     void fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const;
-    static double findMedian(std::vector<double> const& vector);
     double correctedTime(size_t istr) const;
+    void initializeReaders();
 // MC tools
     KalFitMC _kfitmc;
 // strawhit tuple variables
@@ -186,6 +226,9 @@ class TrkPatRec : public art::EDProducer
     std::vector<TrkHitFilter> _sfilt, _hfilt;
 // delta removal diagnostics
     TTree* _ddiag;
+    TMVA::Reader* _dhReader; // assign hits to delta peaks
+    DeltaHitMVA _dhmva; // input variables to TMVA for delta hit selection
+    TMVA::Reader* _deltapeaks; // classify delta peaks
     Int_t _ip, _iev;
     Bool_t _isdelta;
     Float_t _pphi, _pt, _prho;
@@ -193,10 +236,12 @@ class TrkPatRec : public art::EDProducer
     Int_t _ns, _smin, _smax, _nsmiss;
     Int_t _nsh, _ndpeak, _ndmax; 
     Int_t _nconv, _ndelta, _ncompt, _ngconv, _nebkg, _nprot;
-    std::vector<StrawHitInfo> _phits;
+    std::vector<DeltaHitInfo> _phits;
     Float_t _dmct0, _dmcmom, _dmctd;
     Float_t _mindist, _mindt, _mindphi;
-    Float_t _tmed, _pmed, _rmed, _stime, _sphi, _srho;
+    Float_t _tmed, _pmed, _rmed;
+    Float_t _tmean, _pmean, _rmean;
+    Float_t _stime, _sphi, _srho;
 // flow diagnostic
     TH1F* _cutflow;
  };
@@ -217,20 +262,23 @@ class TrkPatRec : public art::EDProducer
     _maxdt(pset.get<double>("DtMax",35.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
     _filterdeltas(pset.get<bool>("FilterDeltas",true)),
-    _max2ddt(pset.get<double>("Dt2DMax",40.0)),
-    _maxdp(pset.get<double>("DPhiMax",0.25)),
+    _max2ddt(pset.get<double>("Dt2DMax",75.0)),
+    _maxdp(pset.get<double>("DPhiMax",0.21)),
     _maxndelta(pset.get<unsigned>("MaxNDeltas",200)),
-    _npbins(pset.get<unsigned>("NPhiBins",50)),
-    _ntbins(pset.get<unsigned>("NTimeBins",50)),
-    _nselbins(pset.get<int>("NSelBins",1)),
+    _npbins(pset.get<unsigned>("NPhiBins",100)),
+    _ntbins(pset.get<unsigned>("NTimeBins",80)),
+    _nselbins(pset.get<int>("NSelBins",3)),
     _2dthresh(pset.get<double>("TwoDPeakThreshold",3)),
     _2dsigma(pset.get<double>("TwoDPeakSigma",1.0)),
     _fbf(pset.get<double>("PhiEdgeBuffer",1.1)),
-    _mindp(pset.get<double>("Min2dPeak",8)),
+    _mindp(pset.get<double>("Min2dPeak",5)),
     _maxzgap(pset.get<double>("MaxZGap",0.0)),
     _maxnsmiss(pset.get<double>("MaxNMiss",4)),
     _minrho(pset.get<double>("MinRho",410.0)),
     _maxrho(pset.get<double>("MaxRho",660.0)),
+    _dhittype(pset.get<std::string>("DeltaHitTMVAType","BDT method")),
+    _dhitweights(pset.get<std::string>("DeltaHitTMVAWeights","TrkPatRec/test/deltahits_BDT.weights.xml")),
+    _dhitmvacut(pset.get<double>("DeltaHitMVACut",0.4)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",0)),
     _tmin(pset.get<double>("tmin",0.0)),
@@ -268,6 +316,8 @@ class TrkPatRec : public art::EDProducer
     art::ServiceHandle<art::TFileService> tfs;
     _cutflow=tfs->make<TH1F>("cutflow","Cutflow",10,-0.5,9.5);
     _eventid = 0;
+// initialize the TMVA readers
+    initializeReaders();
   }
 
   void TrkPatRec::beginRun(art::Run& ){}
@@ -410,7 +460,7 @@ class TrkPatRec : public art::EDProducer
     return edep < _edepvl;
   }
 
- bool TrkPatRec::loosehit(double edep, double rho){
+  bool TrkPatRec::loosehit(double edep, double rho){
   // looser cuts for pat. rec.
     return edep < _edepl && rho > _rminl && rho < _rmaxl; 
   }
@@ -466,9 +516,6 @@ class TrkPatRec : public art::EDProducer
 
   void
   TrkPatRec::filterDeltas(){
-// tracker, to get StrawID later
-    const TTracker& tracker = dynamic_cast<const TTracker&>(getTrackerOrThrow());
-    unsigned ndevices = tracker.nDevices();
 // make a 2d plot of phi vs time to isolate the delta rays
     TSpectrum2 tspec2(_maxndelta);
     TH2F tpsp("tpsp","phi time spectrum",_ntbins,_tmin,_tmax,_npbins,-_fbf*M_PI,_fbf*M_PI);
@@ -489,184 +536,24 @@ class TrkPatRec : public art::EDProducer
     double thresh(0.1);
     if(bmax > _2dthresh)thresh = _2dthresh/bmax;
     tspec2.Search(&tpsp,_2dsigma,"nobackgroundnomarkovgoff",thresh);
-    unsigned np = tspec2.GetNPeaks();
-    Float_t *xpeaks = tspec2.GetPositionX();
-    Float_t *ypeaks = tspec2.GetPositionY();
-// Loop over peaks, looking only at those with a minimum peak value.  Integrate an array around the peak
-// to select the hits
-    for (unsigned ip=0; ip<np; ip++) {
-      Float_t xp = xpeaks[ip];
-      Float_t yp = ypeaks[ip];
-      Int_t ixbin =  tpsp.GetXaxis()->FindFixBin(xp);
-      Int_t iybin = tpsp.GetYaxis()->FindFixBin(yp);
-      Int_t ixmin = max(ixbin-_nselbins,(int)1);
-      Int_t ixmax = min(ixbin+_nselbins,(int)_ntbins);
-      Int_t iymin = max(iybin-_nselbins,(int)1);
-      Int_t iymax = min(iybin+_nselbins,(int)_npbins);
-      Double_t npeak = tpsp.Integral(ixmin,ixmax,iymin,iymax);
-      if(npeak >= _mindp){
-// find all the hits near this peak
-	TrkTimePeak tpeak(xp,yp);
-	std::vector<double> ptime;
-	std::vector<double> pphi;
-	std::vector<double> prho;
-        for(size_t istr=0; istr<nstrs;++istr){
-	  if(_tflags[istr].veryLoose()){
-	    double phi = _shpos[istr].phi();
-	    double dphi = phi - yp;
-	    if(dphi > M_PI){
-	      dphi -= 2*M_PI;
-	    } else if(dphi < -M_PI){
-	      dphi += 2*M_PI;
-	    }
-	    if(fabs(correctedTime(istr)-xp) < _max2ddt &&
-		fabs(dphi) < _maxdp){
-	      tpeak._trkptrs.push_back(istr);
-	      ptime.push_back(correctedTime(istr));
-	      pphi.push_back(phi);
-	      prho.push_back(_shpos[istr].perp());
-	    }
-	  }
-	}
-	if(tpeak._trkptrs.size() >= _mindp){
-	  double tmed = findMedian(ptime);
-	  double pmed = findMedian(pphi);
-	  double rmed = findMedian(prho);
-// compute Z information and staion spacing, and the average radial position of the peak
-// also compute the spread WRT the median
-	  std::vector<double> hitz;
-	  std::vector<bool> devices(ndevices,false);
-	  double rho(0.0),srho(0.0);
-	  double stime(0.0), sphi(0.0);
-	  for(std::vector<hitIndex>::const_iterator ihi = tpeak._trkptrs.begin();ihi !=tpeak._trkptrs.end();++ihi){
-	    const StrawHit& sh = _strawhits->at(ihi->_index);
-	    unsigned idevice = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getDeviceId());
-	    hitz.push_back(_shpos[ihi->_index].z());
-	    devices[idevice] = true;
-	    double rhov =_shpos[ihi->_index].perp();
-	    rho += rhov;
-	    srho += pow(rhov-rmed,2);
-	    stime += pow(tmed-correctedTime(ihi->_index),2);
-	    sphi += pow(pmed-_shpos[ihi->_index].phi(),2);
-	  }
-	  stime /= tpeak._trkptrs.size();
-	  sphi /= tpeak._trkptrs.size();
-	  rho /= tpeak._trkptrs.size();
-	  srho /= tpeak._trkptrs.size();
-	  std::sort(hitz.begin(),hitz.end());
-	  double zmin = hitz.front();
-	  double zmax = hitz.back();
-	  // look for gaps in z
-	  double zgap(0.0);
-	  for(unsigned iz=1;iz<hitz.size();++iz){
-	    if(hitz[iz]-hitz[iz-1] > zgap)zgap = hitz[iz]-hitz[iz-1]; 
-	  }
-	  // count 'missing' devices between first and last
-	  unsigned ismin(0);
-	  unsigned ismax(ndevices-1);
-	  unsigned nsmiss(0);
-	  while(!devices[ismin])++ismin;
-	  while(!devices[ismax])--ismax;
-	  unsigned ns(ismax-ismin+1);
-	  for(unsigned is =ismin;is<ismax;++is){
-	    if(!devices[is])++nsmiss;
-	  }
-// look at the distance to the nearest peak.  Use a metric based on the plot range
-	  double mindist2(FLT_MAX);
-	  int jmin(-1);
-	  for (unsigned jp=0; jp<np; jp++) {
-	    if(jp != ip){
-	      Float_t xp2 = xpeaks[jp];
-	      Float_t yp2 = ypeaks[jp];
-	      double dt = xp - xp2;
-// don't need to worry about phi wrapping here, since the plot does that
-	      double dphi = yp-yp2;
-	      double dist2 = pow(dt/(_tmax-_tmin),2) + pow(dphi/(2*_fbf*M_PI),2);
-	      if(dist2 < mindist2){
-		mindist2 = dist2;
-		jmin = jp;
-	      }
-	    }
-	  }
-	  if(jmin >= 0){
-	    _mindist = sqrt(mindist2);
-	    _mindt = fabs(xp - xpeaks[jmin]);
-	    _mindphi = fabs(yp - ypeaks[jmin]);
-	  } else {
-	    _mindist = -1.0;
-	    _mindt = -1.0;
-	    _mindphi = -1.0;
-	  }
-// decide if these hits are deltas: if so, flag them.  This algorithm should be a neural net, FIXME!!!!
-	  bool pdelta = zgap < _maxzgap || nsmiss <= _maxnsmiss || rho > _maxrho || rho < _minrho;
-	  if(pdelta){
-	    for(std::vector<hitIndex>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
-// add selection code on individual hits:  FIXME!!!
-	      _tflags[ip->_index].setDelta();
-	    }
-	  }
-// diagnostics
-	  if(_diag > 1){
-	    _ip = ip;
-	    _isdelta = pdelta;
-	    _nsh = tpeak._trkptrs.size();
-	    _ndpeak = npeak;
-	    _ndmax = tpsp.GetBinContent(ixbin,iybin);
-	    _pphi = yp;
-	    _pt = xp;
-	    _tmed = tmed;
-	    _pmed = pmed;
-	    _rmed = rmed;
-	    _stime = stime;
-	    _sphi = sphi;
-	    _srho = srho;
-	    _prho = rho;
-	    _zmin = zmin;
-	    _zmax = zmax;
-	    _zgap = zgap;
-	    _smin = ismin;
-	    _smax = ismax;
-	    _ns = ns;
-	    _nsmiss = nsmiss;
-	    _nconv = 0;
-	    _nprot = 0;
-	    _ndelta= 0;
-	    _ncompt = 0;
-	    _ngconv = 0;
-	    _nebkg = 0;
-	    _phits.clear();
-	    for(std::vector<hitIndex>::const_iterator ip = tpeak._trkptrs.begin();ip!=tpeak._trkptrs.end();++ip){
-	      StrawHitInfo shinfo;
-	      size_t ish = ip->_index;
-	      fillStrawHitInfo(ish,shinfo);
-	      _phits.push_back(shinfo);
-	      if(shinfo._mcgen == 2)++_nconv;
-	      if(abs(shinfo._mcpdg) == PDGCode::e_minus && shinfo._mcgen <0){
-		_nebkg++;
-		if(shinfo._mcproc == ProcessCode::eIoni ||shinfo._mcproc == ProcessCode::hIoni ){
-		  ++_ndelta;
-		} else if(shinfo._mcproc == ProcessCode::compt){
-		  ++_ncompt;
-		} else if(shinfo._mcproc == ProcessCode::conv){
-		  ++_ngconv;
-		}
-	      }
-	      if(shinfo._mcpdg == 2212)++_nprot;
-	    }
-	    if(_nconv >= 5){
-	      _dmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
-	      _dmcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
-	      _dmctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
-	    } else {
- 	      _dmct0 = -1;
-	      _dmcmom = 0.0;
-	      _dmctd = -100.0;
-	    }
-	    _ddiag->Fill();
+// fill hit information about peaks
+    std::vector<DeltaInfo> dinfo;
+    fillDeltaInfo(tspec2,dinfo);
+// Loop over peaks
+    for(size_t ip=0;ip<dinfo.size();++ip){
+      DeltaInfo& delta = dinfo[ip];
+// if the peak is a delta, flag its hits
+      if(delta._isdelta){
+	for(size_t ih =0;ih <  delta._hindex.size();++ih){
+	  if(delta._hflag[ih]){
+	    _tflags[delta._hindex[ih]].setDelta();
 	  }
 	}
       }
     }
+// diagnostics
+    if(_diag > 1)
+      fillDeltaDiag(dinfo);
   }
   
   void 
@@ -689,7 +576,7 @@ class TrkPatRec : public art::EDProducer
     Float_t *xpeaks = tspec.GetPositionX();
     Float_t *ypeaks = tspec.GetPositionY();
 // Loop over peaks, looking only at those with a minimum peak value
-    for (unsigned ip=0; ip<np; ip++) {
+    for (unsigned ip=0; ip<np; ++ip) {
       Float_t xp = xpeaks[ip];
       Float_t yp = ypeaks[ip];
       TrkTimePeak tpeak(xp,yp);
@@ -717,7 +604,6 @@ class TrkPatRec : public art::EDProducer
     double tcorr = sh.time()-slope*_shpos[istr].z();
     return tcorr;
   }
-
 
   void
   TrkPatRec::filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec){
@@ -910,6 +796,9 @@ class TrkPatRec : public art::EDProducer
     _ddiag->Branch("tmed",&_tmed,"tmed/F");
     _ddiag->Branch("pmed",&_pmed,"pmed/F");
     _ddiag->Branch("rmed",&_rmed,"rmed/F");
+    _ddiag->Branch("tmean",&_tmean,"tmean/F");
+    _ddiag->Branch("pmean",&_pmean,"pmean/F");
+    _ddiag->Branch("rmean",&_rmean,"rmean/F");
     _ddiag->Branch("stime",&_stime,"stime/F");
     _ddiag->Branch("sphi",&_sphi,"sphi/F");
     _ddiag->Branch("srho",&_srho,"srho/F");
@@ -917,7 +806,7 @@ class TrkPatRec : public art::EDProducer
     _ddiag->Branch("mct0",&_dmct0,"mct0/F");
     _ddiag->Branch("mcmom",&_dmcmom,"mcmom/F");
     _ddiag->Branch("mctd",&_dmctd,"mctd/F");
-}
+  }
 
   void
   TrkPatRec::fillStrawDiag() {
@@ -1211,7 +1100,6 @@ class TrkPatRec : public art::EDProducer
   void
   TrkPatRec::fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const {
     const Tracker& tracker = getTrackerOrThrow();
-
     const StrawHit& sh = _strawhits->at(ish);
     shinfo._pos = _shpos[ish];
     shinfo._time = sh.time();
@@ -1238,26 +1126,272 @@ class TrkPatRec : public art::EDProducer
       shinfo._mct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
       shinfo._mcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
       shinfo._mctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
+    }
+  }
+  
+  void
+  TrkPatRec::initializeReaders() {
+// define the hit classifier
+  _dhReader = new TMVA::Reader();
+  _dhReader->AddVariable("ddphi",&_dhmva._ddphi);
+  _dhReader->AddVariable("ddrho",&_dhmva._ddrho);
+  _dhReader->AddVariable("ddt",&_dhmva._ddt);
+  _dhReader->BookMVA(_dhittype,_dhitweights);
 
+// define the peak classifier
+/* 
+  _deltapeak = new TMVA::Reader();
+  _deltapeak->AddVariable("smin",&_fsmin);
+  _deltapeak->AddVariable("smax",&_fsmax);
+  _deltapeak->AddVariable("nsmiss",&_fnsmiss);
+  _deltapeak->AddVariable("zmin",&zmin);
+  _deltapeak->AddVariable("zmax",&zmax);
+  _deltapeak->AddVariable("zgap",&zgap);
+  _deltapeak->AddVariable("nsh",&_fnsh);
+  _deltapeak->AddVariable("mindt", &mindt);
+  _deltapeak->AddVariable("mindphi", &mindphi);
+  _deltapeak->AddVariable("stime", &stime);
+  _deltapeak->AddVariable("sphi",&sphi);
+  _deltapeak->AddVariable("abs(prho)",&_rfold);
+
+// load the constants
+  _deltapeak->BookMVA("MLP method","weights.xml");
+*/
+
+  }
+
+  void
+  TrkPatRec::fillDeltaInfo(TSpectrum2 const& tspec2,std::vector<DeltaInfo>& dinfo) {
+    unsigned np = tspec2.GetNPeaks();
+    Float_t* tpeaks(tspec2.GetPositionX());
+    Float_t* ppeaks(tspec2.GetPositionY());
+    dinfo.reserve(np);
+// loop over peaks and fill delta information
+    for (unsigned ip=0; ip<np; ++ip) {
+      DeltaInfo delta;
+      delta._tpeak = tpeaks[ip]; 
+      delta._ppeak = ppeaks[ip];
+      dinfo.push_back(delta);
+    }
+    // 2nd loop over pairs of peaks
+    for (unsigned ip=0; ip<np; ++ip) {
+    // look at the distance to the nearest peak.  Use a metric based on the plot range
+      double mindist2(FLT_MAX);
+      dinfo[ip]._mindist = -1.0;
+      dinfo[ip]._mindt = -1.0;
+      dinfo[ip]._mindphi = -1.0;
+      for (unsigned jp=0; jp<np; jp++) {
+	if(jp != ip){
+	  Float_t tp = tpeaks[jp];
+	  Float_t pp = ppeaks[jp];
+	  double dt = dinfo[ip]._tpeak - tp;
+	  double dphi = dinfo[ip]._ppeak - pp;
+	  if(dphi > M_PI){
+	    dphi -= 2*M_PI;
+	  } else if(dphi < -M_PI){
+	    dphi += 2*M_PI;
+	  }
+    // normalize distance to the plot dimensions
+	  double dist2 = pow(dt/(_tmax-_tmin),2) + pow(dphi/(2*_fbf*M_PI),2);
+	  if(dist2 < mindist2){
+	    mindist2 = dist2;
+	    dinfo[ip]._mindist = sqrt(mindist2);
+	    dinfo[ip]._mindt = dt;
+	    dinfo[ip]._mindphi = dphi;
+	  }
+	}
+      }
+    }
+    // Loop over all the hits and assign them to peaks
+    unsigned nstrs = _strawhits->size();
+    for(size_t istr=0; istr<nstrs;++istr){
+      // only look at selected hits
+      if(_tflags[istr].veryLoose()){
+	double phi = _shpos[istr].phi();
+	double time = correctedTime(istr);
+// loop over all the peaks
+	for (unsigned ip=0; ip<np; ++ip) {
+	  DeltaInfo& delta = dinfo[ip];
+// select on time first
+	  if(fabs(time-delta._tpeak) < _max2ddt){
+// compute phi, being careful of wrapping
+	    double dphi = phi - delta._ppeak;
+	    if(dphi > M_PI){
+	      dphi -= 2*M_PI;
+	    } else if(dphi < -M_PI){
+	      dphi += 2*M_PI;
+	    }
+// select on phi
+	    if(fabs(dphi) < _maxdp){
+	      delta._hindex.push_back(istr);
+	      delta._htime.push_back(time);
+	      delta._hphi.push_back(dphi+delta._ppeak);
+	      // accumulate other hit information
+	      delta._hrho.push_back(_shpos[istr].perp());
+	      delta._hz.push_back(_shpos[istr].z());
+	    }
+	  }
+	}
+      }
+    }
+// compute summary information for each peak
+    for (unsigned ip=0; ip<np; ip++) {
+      DeltaInfo& delta = dinfo[ip];
+      fillDeltaSummary(delta);
     }
   }
 
-  double
-  TrkPatRec::findMedian(std::vector<double> const& vector) {
+  void
+  TrkPatRec::fillDeltaSummary(DeltaInfo& delta) {
+// tracker, to get StrawID later
+    const TTracker& tracker = dynamic_cast<const TTracker&>(getTrackerOrThrow());
+    unsigned ndevices = tracker.nDevices();
+// median information from all info
     using namespace boost::accumulators;
-    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acc;
-//    accumulator_set<double, stats<tag::median(with_p_square_cumulative_distribution) > >
-//    acc_cdist( p_square_cumulative_distribution_num_cells = 100 );
-    acc = std::for_each( vector.begin(), vector.end(), acc );
-//    acc_cdist = std::for_each( vector.begin(), vector.end(), acc_cdist );
-    double bmed = extract_result<tag::median>(acc);
-//    double bmed_cdist = extract_result<tag::median>(acc_cdist);
+    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > tacc, pacc, racc;
+    tacc = std::for_each( delta._htime.begin(), delta._htime.end(), tacc );
+    pacc = std::for_each( delta._hphi.begin(), delta._hphi.end(), pacc );
+    racc = std::for_each( delta._hrho.begin(), delta._hrho.end(), racc );
+    delta._tmed = extract_result<tag::median>(tacc);
+    delta._pmed = extract_result<tag::median>(pacc);
+    delta._rmed = extract_result<tag::median>(racc);
+    // fill the BDT information about each hit, compared to the medians
+    // also accumulate information about selected hits
+    accumulator_set<double, stats<tag::variance(lazy)> > tacc2,pacc2,racc2;
+    std::vector<bool> devices(ndevices,false);
+    std::vector<double> hz;
+    hz.reserve(delta._hindex.size());
+    for(size_t ih =0;ih < delta._hindex.size();++ih){
+      _dhmva._ddphi = delta._hphi[ih]-delta._pmed;
+      _dhmva._ddrho = delta._hrho[ih]-delta._rmed;
+      _dhmva._ddt = delta._htime[ih]-delta._tmed;
+      double gd = _dhReader->EvaluateMVA(_dhittype);
+      delta._hgd.push_back(gd);
+      if(gd > _dhitmvacut){
+	delta._hflag.push_back(1);
+	tacc2(delta._htime[ih]);
+	pacc2(delta._hphi[ih]);
+	racc2(delta._hrho[ih]);
+	hz.push_back(delta._hz[ih]);
+	const StrawHit& sh = _strawhits->at(delta._hindex[ih]);
+	unsigned idevice = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getDeviceId());
+	devices[idevice] = true;
+      } else {
+	delta._hflag.push_back(0);
+      }
+    }
+// compute the mean and RMS of the selected hits
+    delta._ngoodhits = extract_result<tag::count>(tacc2);
+    if(delta._ngoodhits>0){
+      delta._tmean = extract_result<tag::mean>(tacc2);
+      delta._pmean = extract_result<tag::mean>(pacc2);
+      delta._rmean = extract_result<tag::mean>(racc2);
+      delta._trms = sqrt(extract_result<tag::variance>(tacc2));
+      delta._prms = sqrt(extract_result<tag::variance>(pacc2));
+      delta._rrms = sqrt(extract_result<tag::variance>(racc2));
+      std::sort(hz.begin(),hz.end());
+      delta._zmin = hz.front();
+      delta._zmax = hz.back();
+      // look for gaps in z
+      delta._zgap = 0.0;
+      for(unsigned iz=1;iz<hz.size();++iz){
+	if(hz[iz]-hz[iz-1] > delta._zgap)delta._zgap = hz[iz]-hz[iz-1]; 
+      }
+      // count 'missing' devices between first and last
+      delta._ismin = 0;
+      delta._ismax = ndevices-1;
+      delta._nsmiss = 0;
+      while(!devices[delta._ismin])++delta._ismin;
+      while(!devices[delta._ismax])--delta._ismax;
+      delta._ns = delta._ismax-delta._ismin+1;
+      for(unsigned is =delta._ismin;is<delta._ismax;++is){
+	if(!devices[is])++delta._nsmiss;
+      }
+      // compute final delta selection based on the delta properties
+      delta._isdelta = false;
+      if(delta._ngoodhits >= _mindp){
+	// decide if these hits are deltas: if so, flag them.  This algorithm should be a neural net, FIXME!!!!
+	delta._isdelta = delta._zgap < _maxzgap || delta._nsmiss <= _maxnsmiss || delta._rmean > _maxrho || delta._rmean < _minrho;
+      }
+    } else {
+      delta._isdelta = false;
+    }
+  }
 
-//    std::cout << "my median " << mval << " boost psq med " << bmed << " boost cdist med " << bmed_cdist << endl;
-
-    return bmed;
+  void
+  TrkPatRec::fillDeltaDiag(std::vector<DeltaInfo> const& deltas) {
+    for(size_t ip=0;ip<deltas.size();++ip){
+      DeltaInfo const& delta(deltas[ip]);
+      _ip = ip;
+      _isdelta = delta._isdelta;
+      _nsh = delta._ngoodhits;
+      _ndpeak = delta._hindex.size();
+      _mindt = delta._mindt;
+      _mindphi = delta._mindphi;
+      _mindist = delta._mindist;
+      _pt = delta._tpeak;
+      _pphi = delta._ppeak;
+      _prho =  delta._rmean;
+      _tmed = delta._tmed;
+      _pmed =  delta._pmed;
+      _rmed =  delta._rmed;
+      _tmean = delta._tmean;
+      _pmean =  delta._pmean;
+      _rmean =  delta._rmean;
+      _stime = delta._trms;;
+      _sphi = delta._prms;
+      _srho = delta._rrms;
+      _zmin = delta._zmin;
+      _zmax = delta._zmax;
+      _zgap = delta._zgap;
+      _smin = delta._ismin;
+      _smax = delta._ismax;
+      _ns = delta._ns;
+      _nsmiss = delta._nsmiss;
+  // find MC truth information
+      _nconv = 0;
+      _nprot = 0;
+      _ndelta= 0;
+      _ncompt = 0;
+      _ngconv = 0;
+      _nebkg = 0;
+      _phits.clear();
+      for(size_t ih=0;ih< delta._hindex.size(); ++ih){
+	DeltaHitInfo shinfo;
+	size_t ish = delta._hindex[ih];
+	fillStrawHitInfo(ish,shinfo);
+	// add the BDT hit classifier
+	shinfo._hflag = delta._hflag[ih];
+	shinfo._hgd = delta._hgd[ih];
+	shinfo._dphi = delta._hphi[ih]-delta._pmean;
+	shinfo._dt = delta._htime[ih]-delta._tmean;
+	shinfo._drho = delta._hrho[ih]-delta._rmean;
+	_phits.push_back(shinfo);
+	if(shinfo._mcgen == 2)++_nconv;
+	if(abs(shinfo._mcpdg) == PDGCode::e_minus && shinfo._mcgen <0){
+	  _nebkg++;
+	  if(shinfo._mcproc == ProcessCode::eIoni ||shinfo._mcproc == ProcessCode::hIoni ){
+	    ++_ndelta;
+	} else if(shinfo._mcproc == ProcessCode::compt){
+	  ++_ncompt;
+	} else if(shinfo._mcproc == ProcessCode::conv){
+	  ++_ngconv;
+	}
+      }
+      if(shinfo._mcpdg == 2212)++_nprot;
+      }
+      if(_nconv >= 1){
+	_dmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
+	_dmcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
+	_dmctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
+      } else {
+	_dmct0 = -1;
+	_dmcmom = 0.0;
+	_dmctd = -100.0;
+      }
+      _ddiag->Fill();
+    }
   }
 }
-
 using mu2e::TrkPatRec;
 DEFINE_ART_MODULE(TrkPatRec);
