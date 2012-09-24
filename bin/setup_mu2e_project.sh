@@ -1,8 +1,8 @@
 #! /bin/sh
 #
-# $Id: setup_mu2e_project.sh,v 1.8 2011/05/18 22:26:34 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/18 22:26:34 $
+# $Id: setup_mu2e_project.sh,v 1.9 2012/09/24 19:00:42 gandr Exp $
+# $Author: gandr $
+# $Date: 2012/09/24 19:00:42 $
 #
 # Original author Rob Kutschke
 #
@@ -44,7 +44,7 @@ fi
 # Assume that this file lives one level below the root of he base release.
 # So step up one level of path to define the base release.
 bin_dir=`dirname ${BASH_SOURCE}`
-bin_dir=`cd $bin_dir >/dev/null 2>&1 && echo $PWD`
+bin_dir=`cd $bin_dir >/dev/null 2>&1 && /bin/pwd`
 user_root=`dirname $bin_dir`
 
 add_to_var $user_root/lib    LD_LIBRARY_PATH

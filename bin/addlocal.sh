@@ -1,7 +1,7 @@
 #
 # $Id:
-# $Author: kutschke $
-# $Date: 2011/06/15 22:43:29 $
+# $Author: gandr $
+# $Date: 2012/09/24 19:00:42 $
 #
 # Original author Rob Kutschke
 #
@@ -42,8 +42,8 @@ fi
 # Do the real work.
 # Add the local directory to the search path.
 # The / before the : in FW_SEARCH_PATH is significant.
-export MU2E_TEST_RELEASE=$PWD
-export MU2E_SEARCH_PATH=$PWD/:$MU2E_SEARCH_PATH
+export MU2E_TEST_RELEASE=$(/bin/pwd)
+export MU2E_SEARCH_PATH=$(/bin/pwd)/:$MU2E_SEARCH_PATH
 echo "MU2E_SEARCH_PATH:  " $MU2E_SEARCH_PATH
 
 export FHICL_FILE_PATH=${MU2E_TEST_RELEASE}:${MU2E_TEST_RELEASE}/fcl:${FHICL_FILE_PATH}

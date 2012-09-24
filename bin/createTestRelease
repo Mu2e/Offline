@@ -3,9 +3,9 @@
 # Script to create a test release in the current directory and a
 # matching directory on /mu2e/data to hold output files.
 #
-#  $Id: createTestRelease,v 1.5 2012/08/12 21:31:26 kutschke Exp $
-#  $Author: kutschke $
-#  $Date: 2012/08/12 21:31:26 $
+#  $Id: createTestRelease,v 1.6 2012/09/24 19:00:42 gandr Exp $
+#  $Author: gandr $
+#  $Date: 2012/09/24 19:00:42 $
 #
 # This script resides a base release and it will connect the test release
 # to the base release in which this script resides.  Normally you should
@@ -26,7 +26,7 @@ if [ "${MU2E}" = '' ];then
 fi
 
 # The base release will be the release in which we find this createTestRelease script.
-export candidate_base_release=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && echo \$PWD | sed 's/\/bin//'`
+export candidate_base_release=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && /bin/pwd | sed 's/\/bin//'`
 
 # If a base release is already setup, then it must match the candidate_base_release.
 if [ "${MU2E_BASE_RELEASE}" != '' ];then
