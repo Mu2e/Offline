@@ -1,3 +1,12 @@
+// ITracker superlayer description
+//
+// $Id: SuperLayer.cc,v 1.4 2012/09/25 10:08:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:28 $
+//
+// Original author G. Tassielli
+//
+
 #include "ITrackerGeom/inc/SuperLayer.hh"
 
 #ifndef __CINT__

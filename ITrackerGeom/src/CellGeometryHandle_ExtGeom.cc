@@ -1,3 +1,12 @@
+// interface to manage the geometries of the ITracker cells
+//
+// $Id: CellGeometryHandle_ExtGeom.cc,v 1.4 2012/09/25 10:08:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:28 $
+//
+// Original author G. Tassielli
+//
+
 #include "ITrackerGeom/inc/CellGeometryHandle_ExtGeom.hh"
 
 
@@ -83,6 +92,10 @@ float CellGeometryHandle_ExtGeom::GetCellRad()
         return _iTwire->GetLayerRad();
 }
 
+float CellGeometryHandle_ExtGeom::GetCellInsideRad()
+{
+        return _iTwire->GetLayerRad();
+}
 
 double CellGeometryHandle_ExtGeom::DistFromWireCenter(double *global)
 {

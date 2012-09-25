@@ -57,14 +57,17 @@ public:
 
   boost::shared_ptr<Wire> getWire() const { return  _senseWire; }
 
-  const CLHEP::Hep3Vector& getMidPoint()  const { return _tmpMidPoint;  /*return _senseWire.get()->getMidPoint();*/}
+  const CLHEP::Hep3Vector& getMidPoint()  const;
 
-  const CLHEP::Hep3Vector& getDirection() const { return _tmpDirection; /*return _senseWire.get()->getDirection();*/}
+  const CLHEP::Hep3Vector& getDirection() const;
 
   double getHalfLength() const { return _senseWire.get()->getDetail()->halfLength();}
 
   double getRadius() const { return getDetail()->CirumscribedRadius();}
   double getThickness() const { return 0.;}
+
+  size_t nFWires() const { return _fieldWires.size(); }
+  boost::shared_ptr<Wire> getFWire(int iFw) const;
 //  int hack;
 
 protected:
@@ -77,6 +80,7 @@ protected:
   int _detailIndex;
 
   boost::shared_ptr<Wire> _senseWire;
+  std::vector<boost::shared_ptr<Wire> > _fieldWires;
 
   CLHEP::Hep3Vector _tmpMidPoint;
   CLHEP::Hep3Vector _tmpDirection;

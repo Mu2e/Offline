@@ -1,3 +1,12 @@
+// interface to manage the geometries of the ITracker cells
+//
+// $Id: CellGeometryHandle_v2.cc,v 1.6 2012/09/25 10:08:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:28 $
+//
+// Original author G. Tassielli
+//
+
 #include "ITrackerGeom/inc/CellGeometryHandle_v2.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
@@ -91,7 +100,7 @@ bool  CellGeometryHandle_v2::canIntersectInZ(float &zCorss, float &distWires, in
                 if (pca.s1()<-_cell->getWire()->getDetail()->halfLength() || pca.s1()>_cell->getWire()->getDetail()->halfLength() ) {
                         return false;
                 }
-                zCorss = pca.point1().z();
+                zCorss = pca.point1().z();//0.5*(pca.point1().z()+pca.point2().z());
                 distWires = pca.dca();
         }
         return crossing;

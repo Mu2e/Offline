@@ -1,3 +1,11 @@
+//
+// $Id: SuperLayerInfo.hh,v 1.6 2012/09/25 10:08:29 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:29 $
+//
+// Original author G. Tassielli
+//
+
 #ifndef ITrackerGeom_SuperLayerInfo_hh
 #define ITrackerGeom_SuperLayerInfo_hh
 

@@ -1,3 +1,11 @@
+//
+// $Id: CellId.hh,v 1.6 2012/09/25 10:08:30 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:30 $
+//
+// Original author G. Tassielli
+//
+
 #ifndef ITrackerGeom_CellId_hh
 #define ITrackerGeom_CellId_hh
 

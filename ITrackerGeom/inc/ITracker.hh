@@ -1,3 +1,12 @@
+// ITracker manager class
+//
+// $Id: ITracker.hh,v 1.10 2012/09/25 10:08:30 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:30 $
+//
+// Original author G. Tassielli
+//
+
 #ifndef ITrackerGeom_ITracker_hh
 #define ITrackerGeom_ITracker_hh
 

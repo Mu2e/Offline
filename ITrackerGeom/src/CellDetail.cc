@@ -1,3 +1,12 @@
+// ITracker cells description
+//
+// $Id: CellDetail.cc,v 1.7 2012/09/25 10:08:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:28 $
+//
+// Original author G. Tassielli
+//
+
 #include "ITrackerGeom/inc/CellDetail.hh"
 
 using namespace std;

@@ -1,8 +1,15 @@
+// interface to manage the geometries of the ITracker cells
+//
+// $Id: CellGeometryHandle.cc,v 1.8 2012/09/25 10:08:29 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:29 $
+//
+// Original author G. Tassielli
+//
+
 #include "ITrackerGeom/inc/CellGeometryHandle.hh"
 
 #include "cetlib/pow.h"
-
-using cet::sum_of_squares;
 
 namespace mu2e {
 
@@ -25,6 +32,13 @@ void CellGeometryHandle::Global2Local(double *global, double *local)
 
 }
 
+void CellGeometryHandle::Global2Local(HepGeom::Point3D<double> &global, HepGeom::Point3D<double> &local)
+{
+        tmpGlobal.set(global.x(),global.y(),global.z());
+        tmpLocal=_invmatrx*tmpGlobal;
+        local.set(tmpLocal.x(),tmpLocal.y(),tmpLocal.z());
+}
+
 void CellGeometryHandle::Local2Global(double *local, double *global)
 {
         tmpLocal.set(local[0],local[1],local[2]);
@@ -43,6 +57,13 @@ void CellGeometryHandle::Local2Global(double *local, double *global)
 //                            + local[2]*rot[i][2];
 //        }
 
+}
+
+void CellGeometryHandle::Local2Global(HepGeom::Point3D<double> &local, HepGeom::Point3D<double> &global)
+{
+        tmpLocal.set(local.x(),local.y(),local.z());
+        tmpGlobal=_matrx*tmpLocal;
+        global.set(tmpGlobal.x(),tmpGlobal.y(),tmpGlobal.z());
 }
 
 void CellGeometryHandle::WirePosAtEndcap(float *right, float *left)
@@ -110,6 +131,11 @@ float CellGeometryHandle::GetCellRad()
         return (float) _cell->getDetail()->CirumscribedRadius();
 }
 
+float CellGeometryHandle::GetCellInsideRad()
+{
+        return (float) _cell->getDetail()->InscribedCircleRadius();
+}
+
 const CLHEP::Hep3Vector& CellGeometryHandle::GetWireCenter() const {
         return _cell->getMidPoint();
 }
@@ -156,7 +182,7 @@ double CellGeometryHandle::DistFromWireCenter(double *global)
 {
         tmpGlobal.set(global[0],global[1],global[2]);
         tmpLocal=_invmatrx*tmpGlobal;
-        return sqrt(sum_of_squares(tmpLocal.x(), tmpLocal.y()));
+        return sqrt(cet::sum_of_squares(tmpLocal.x(), tmpLocal.y()));
 }
 
 double CellGeometryHandle::DistFromWire(CLHEP::Hep3Vector &global)
@@ -168,7 +194,7 @@ double CellGeometryHandle::DistFromWireCenter(CLHEP::Hep3Vector &global)
 {
         tmpGlobal.set(global[0],global[1],global[2]);
         tmpLocal=_invmatrx*tmpGlobal;
-        return sqrt(sum_of_squares(tmpLocal.x(), tmpLocal.y()));
+        return sqrt(cet::sum_of_squares(tmpLocal.x(), tmpLocal.y()));
 }
 
 double CellGeometryHandle::DistFromWire(CLHEP::Hep3Vector const &global)
@@ -180,7 +206,7 @@ double CellGeometryHandle::DistFromWireCenter(CLHEP::Hep3Vector const &global)
 {
         tmpGlobal.set(global[0],global[1],global[2]);
         tmpLocal=_invmatrx*tmpGlobal;
-        return sqrt(sum_of_squares(tmpLocal.x(), tmpLocal.y()));
+        return sqrt(cet::sum_of_squares(tmpLocal.x(), tmpLocal.y()));
 }
 
 } // namespace mu2e

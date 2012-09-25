@@ -1,3 +1,12 @@
+// ITracker walls description
+//
+// $Id: Wall.cc,v 1.7 2012/09/25 10:08:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:28 $
+//
+// Original author G. Tassielli
+//
+
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

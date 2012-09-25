@@ -1,3 +1,12 @@
+// interface to manage the geometries of the ITracker cells
+//
+// $Id: CellGeometryHandle_v2.hh,v 1.6 2012/09/25 10:08:30 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:30 $
+//
+// Original author G. Tassielli
+//
+
 #ifndef ITrackerGeom_CellGeometryHandle_v2_hh
 #define ITrackerGeom_CellGeometryHandle_v2_hh
 

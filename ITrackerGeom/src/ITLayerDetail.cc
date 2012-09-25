@@ -1,3 +1,11 @@
+//
+// $Id: ITLayerDetail.cc,v 1.4 2012/09/25 10:08:29 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:29 $
+//
+// Original author G. Tassielli
+//
+
 #include "ITrackerGeom/inc/ITLayerDetail.hh"
 
 using namespace std;

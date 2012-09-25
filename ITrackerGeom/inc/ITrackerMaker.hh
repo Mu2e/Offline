@@ -1,3 +1,12 @@
+// ITracker geometry maker
+//
+// $Id: ITrackerMaker.hh,v 1.11 2012/09/25 10:08:30 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:30 $
+//
+// Original author G. Tassielli
+//
+
 #ifndef ITrackerGeom_ITrackerMaker_hh
 #define ITrackerGeom_ITrackerMaker_hh
 
@@ -35,6 +44,8 @@ private:
   void Build();
   void ITFldWireLocater ( boost::shared_ptr<WireDetail> &wdetail, boost::shared_ptr<ITLayer> &itl/*ITLayer *itl*/, int NofWire, double PosRadius, double Theta, double ThetaOffset, double Stereo, double halfAlpha );
   void ITWireLocater ( boost::shared_ptr<WireDetail> &wdetaill, Wire::Wtype wireType, boost::shared_ptr<ITLayer> &itl/*ITLayer *itl*/, int NofWire, double PosRadius, double Theta, double ThetaOffset, double Stereo, double halfAlpha, int copyNunOffset=0, boost::shared_ptr<CellDetail> *celldetail = NULL );
+
+  void AssignFieldWireToCell();
 
   // Name of external gdml geometry file description.
   std::string _extFile;

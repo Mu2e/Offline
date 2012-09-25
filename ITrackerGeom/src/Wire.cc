@@ -1,9 +1,16 @@
+// ITracker wire description
+//
+// $Id: Wire.cc,v 1.7 2012/09/25 10:08:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:28 $
+//
+// Original author G. Tassielli
+//
+
 #include "ITrackerGeom/inc/Wire.hh"
 #include "CLHEP/Geometry/Vector3D.h"
 
 #ifndef __CINT__
-
-using CLHEP::Hep3Vector;
 
 namespace mu2e {
 

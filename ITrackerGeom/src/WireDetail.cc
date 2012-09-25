@@ -1,3 +1,11 @@
+//
+// $Id: WireDetail.cc,v 1.5 2012/09/25 10:08:29 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:29 $
+//
+// Original author G. Tassielli
+//
+
 #include "ITrackerGeom/inc/WireDetail.hh"
 
 using namespace std;

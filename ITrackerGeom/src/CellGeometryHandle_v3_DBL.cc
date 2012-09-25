@@ -1,3 +1,12 @@
+// interface to manage the geometries of the ITracker cells
+//
+// $Id: CellGeometryHandle_v3_DBL.cc,v 1.3 2012/09/25 10:08:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:08:28 $
+//
+// Original author G. Tassielli
+//
+
 #include "ITrackerGeom/inc/CellGeometryHandle_v3_DBL.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
