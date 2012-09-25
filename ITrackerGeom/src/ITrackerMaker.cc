@@ -1,3 +1,12 @@
+// ITracker geometry maker
+//
+// $Id: ITrackerMaker.cc,v 1.27 2012/09/25 10:05:12 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:05:12 $
+//
+// Original author G. Tassielli
+//
+
 #include "ITrackerGeom/inc/ITrackerMaker.hh"
 
 #include "CLHEP/Vector/RotationY.h"
@@ -993,7 +1002,7 @@ void ITrackerMaker::Build(){
                         //float fwireDist     = _FWireStep;
                         unsigned int nFwire, nFwire1;
                         int nHorizontalFWire;
-                        double cellStaggering;
+                        double cellStaggering=0.0;
                         //bool isCellStaggered;
                         double theta_ring1;
                         float iradius, idelta_radius=0.0;
@@ -1070,8 +1079,8 @@ void ITrackerMaker::Build(){
                                 if (/*isCellStaggered &&*/ (superlayer%2==1)) cellStaggering=theta_ring;
                                 else cellStaggering=0.0;
 
-                                ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0-FWradii,theta_ring1,ringangle,sign_epsilon*epsilon,halfalpha);
-                                ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0+FWradii,theta_ring1,ringangle+theta_ring,-1.0*sign_epsilon*epsilon,halfalpha,nFwire1);
+                                ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0-FWradii,theta_ring1,ringangle+cellStaggering-theta_ring,-1.0*sign_epsilon*epsilon,halfalpha);
+                                ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0+FWradii,theta_ring1,ringangle+cellStaggering,sign_epsilon*epsilon,halfalpha,nFwire1);
 
                                 iradius          = radius_ring_0;
 
@@ -1160,8 +1169,8 @@ void ITrackerMaker::Build(){
                         //nFwire1=nFwire;
                         //nFwire1/=2;
                         //theta_ring1=2.0*theta_ring;
-                        ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0-FWradii,theta_ring1,ringangle,sign_epsilon*epsilon,halfalpha);
-                        ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0+FWradii,theta_ring1,ringangle+theta_ring,-1.0*sign_epsilon*epsilon,halfalpha,nFwire1);
+                        ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0-FWradii,theta_ring1,ringangle+cellStaggering,sign_epsilon*epsilon,halfalpha);
+                        ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0+FWradii,theta_ring1,ringangle+cellStaggering+theta_ring,-1.0*sign_epsilon*epsilon,halfalpha,nFwire1);
                         iring=0;
 
                         //int guarWireLayer = superlayer;
@@ -1268,6 +1277,8 @@ void ITrackerMaker::Build(){
                 for ( walls_it=_walls.begin() ; walls_it != _walls.end(); walls_it++ ) {
                         _ltt->addWall(walls_it->second);
                 }
+
+                AssignFieldWireToCell();
         }
 
 }
@@ -1306,6 +1317,82 @@ void ITrackerMaker::ITWireLocater ( boost::shared_ptr<WireDetail> &wdetail, Wire
                         itl->addFieldWire( new Wire( WireId(&(itl->_id),copyNunOffset+copyNo), wdetail, new HepGeom::Transform3D(iRot * Transform), Stereo, 2.0*halfAlpha, wireType ) );
                 }
         }
+}
+
+void ITrackerMaker::AssignFieldWireToCell() {
+        for (int iSl=0; iSl<_ltt->nSuperLayers(); ++iSl){
+                SuperLayer* sl = _ltt->getSuperLayer(iSl);
+                for (int iLy=0; iLy<sl->nLayers(); ++iLy){
+                        boost::shared_ptr<ITLayer> ly = sl->getLayer(iLy);
+                        if (ly->nCells()>0){
+                                for (int iCel=0; iCel<ly->nCells(); ++iCel) {
+                                        boost::shared_ptr<Cell> cel = ly->getCell(iCel);
+                                        double cellMidRad = cel->getMidPoint().rho();
+                                        double maxWiresDist = cel->getRadius()+0.5;
+                                        double maxWiresDist2 = maxWiresDist * maxWiresDist;
+                                        double cellEpsilob = cel->getWire()->getEpsilon();
+                                        //cout<<"Cell "<<cel->Id()<<" rho "<<cellMidRad<<" rmaxWiresDist "<<maxWiresDist<<" eps "<<cellEpsilob<<endl;
+                                        for (int iLyFw=0; iLyFw<ly->nFieldWires(); ++iLyFw) {
+                                                boost::shared_ptr<Wire> ifw = ly->getFWire(iLyFw);
+                                                if ( cel->getMidPoint().diff2(ifw->getMidPoint())<maxWiresDist2 ) {
+                                                        cel->_fieldWires.push_back(ifw);
+                                                        //cout<<"Select c cell "<<cel->getMidPoint()<<" c fw "<<ifw->getMidPoint()<<" fw eps "<<ifw->getEpsilon()<<endl;
+                                                }
+                                        }
+                                        for (int iLy1=0; iLy1<sl->nLayers(); ++iLy1){
+                                                boost::shared_ptr<ITLayer> ly1 = sl->getLayer(iLy1);
+                                                if ( iLy!=iLy1 && ly1->nFieldWires()>0 ){
+                                                        for (int iLyFw=0; iLyFw<ly1->nFieldWires(); ++iLyFw) {
+                                                                boost::shared_ptr<Wire> ifw = ly1->getFWire(iLyFw);
+                                                                if ( (cellEpsilob*ifw->getEpsilon())>0.0 && cel->getMidPoint().diff2(ifw->getMidPoint())<maxWiresDist2 ) {
+                                                                         cel->_fieldWires.push_back(ifw);
+                                                                         //cout<<"Select c cell "<<cel->getMidPoint()<<" c fw "<<ifw->getMidPoint()<<" fw eps "<<ifw->getEpsilon()<<endl;
+                                                                 }
+                                                         }
+                                                }
+                                        }
+                                        int iSl1=iSl+1;
+                                        if (iSl1<_ltt->nSuperLayers()) {
+                                                SuperLayer* sl1 = _ltt->getSuperLayer(iSl1);
+                                                for (int iLy1=0; iLy1<sl1->nLayers(); ++iLy1){
+                                                        boost::shared_ptr<ITLayer> ly1 = sl1->getLayer(iLy1);
+                                                        double cellLayRadDist = ly1->getDetail()->centerInnerRadiusRing() - cellMidRad;
+                                                        if ( (cellLayRadDist>0 && cellLayRadDist<maxWiresDist) &&
+                                                             ly1->nFieldWires()>0 ){
+                                                                for (int iLyFw=0; iLyFw<ly1->nFieldWires(); ++iLyFw) {
+                                                                         boost::shared_ptr<Wire> ifw = ly1->getFWire(iLyFw);
+                                                                         if ( (cellEpsilob*ifw->getEpsilon())>0.0 && cel->getMidPoint().diff2(ifw->getMidPoint())<maxWiresDist2 ) {
+                                                                                 cel->_fieldWires.push_back(ifw);
+                                                                                 //cout<<"Select c cell "<<cel->getMidPoint()<<" c fw "<<ifw->getMidPoint()<<" fw eps "<<ifw->getEpsilon()<<endl;
+                                                                         }
+                                                                 }
+                                                        }
+                                                }
+                                        }
+                                        iSl1=iSl-1;
+                                        if (iSl1>=0 && iSl1<_ltt->nSuperLayers()) {
+                                                SuperLayer* sl1 = _ltt->getSuperLayer(iSl1);
+                                                for (int iLy1=0; iLy1<sl1->nLayers(); ++iLy1){
+                                                        boost::shared_ptr<ITLayer> ly1 = sl1->getLayer(iLy1);
+                                                        double cellLayRadDist = cellMidRad - ly1->getDetail()->centerInnerRadiusRing();
+                                                        if ( (cellLayRadDist>-maxWiresDist && cellLayRadDist<0) &&
+                                                             ly1->nFieldWires()>0 ){
+                                                                for (int iLyFw=0; iLyFw<ly1->nFieldWires(); ++iLyFw) {
+                                                                         boost::shared_ptr<Wire> ifw = ly1->getFWire(iLyFw);
+                                                                         if ( (cellEpsilob*ifw->getEpsilon())>0.0 && cel->getMidPoint().diff2(ifw->getMidPoint())<maxWiresDist2 ) {
+                                                                                  cel->_fieldWires.push_back(ifw);
+                                                                                  //cout<<"Select c cell "<<cel->getMidPoint()<<" c fw "<<ifw->getMidPoint()<<" fw eps "<<ifw->getEpsilon()<<endl;
+                                                                         }
+                                                                 }
+                                                        }
+                                                }
+                                        }
+                                        //cout<<"cell "<<cel->Id()<<" nField wires "<<cel->nFWires()<<endl;
+                                }
+                        }
+                }
+        }
+        _ltt->getSuperLayersArray();
 }
 
 } // namespace mu2e
