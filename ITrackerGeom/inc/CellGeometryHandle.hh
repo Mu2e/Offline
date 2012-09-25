@@ -1,3 +1,12 @@
+// interface to manage the geometries of the ITracker cells
+//
+// $Id: CellGeometryHandle.hh,v 1.11 2012/09/25 10:06:54 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/09/25 10:06:54 $
+//
+// Original author G. Tassielli
+//
+
 #ifndef ITrackerGeom_CellGeometryHandle_hh
 #define ITrackerGeom_CellGeometryHandle_hh
 
@@ -24,6 +33,8 @@ protected:
         }
 
 public:
+
+        enum FWireSide {noFWCross=-1, bottom, side, top};
 
         virtual ~CellGeometryHandle() {}
 
@@ -61,6 +72,8 @@ public:
         }
         virtual void  Global2Local(double *global, double *local) ;
         virtual void  Local2Global(double *local, double *global) ;
+        virtual void  Global2Local(HepGeom::Point3D<double> &global, HepGeom::Point3D<double> &local) ;
+        virtual void  Local2Global(HepGeom::Point3D<double> &local, HepGeom::Point3D<double> &global) ;
         virtual void  WirePosAtEndcap(float *right, float *left)  ;
         virtual void  WirePosAtZ(float z, float *pos)             ;
         virtual void  WirePosAtLength(float length, float *pos)   ;
@@ -73,6 +86,7 @@ public:
         virtual float GetWireAlfa()                               ;
         virtual float GetWireEpsilon()                            ;
         virtual float GetCellRad()                                ;
+        virtual float GetCellInsideRad()                          ;
         virtual int   GetCellAbsRadID()                           { return _absRadID; }
         virtual const CLHEP::Hep3Vector& GetWireCenter() const    ;
         virtual const CLHEP::Hep3Vector& GetWireDirection() const ;
@@ -90,6 +104,11 @@ public:
         virtual double DistFromWireCenter(CLHEP::Hep3Vector &global)      ;
         virtual double DistFromWire(CLHEP::Hep3Vector const &global)      ;
         virtual double DistFromWireCenter(CLHEP::Hep3Vector const &global);
+
+        virtual double CrossingPathOnFieldWires(CLHEP::Hep3Vector const &point, CLHEP::Hep3Vector const &dir,
+                                                FWireSide &sideFlag, CLHEP::Hep3Vector &fwPca, double tolerance=0.002) const { return 0.0; }
+        virtual double CrossingPathOnSenseWires(CLHEP::Hep3Vector const &point, CLHEP::Hep3Vector const &dir,
+                                                CLHEP::Hep3Vector &swPca, double tolerance=0.002) const { return 0.0; }
 
         virtual boost::shared_ptr<ITLayer> GetITLayer()           { return _itl; }
         virtual boost::shared_ptr<Cell> GetITCell()               { return _cell; }
