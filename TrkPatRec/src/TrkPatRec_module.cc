@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.41 2012/09/24 18:39:55 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.42 2012/09/26 12:52:28 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/09/24 18:39:55 $
+// $Date: 2012/09/26 12:52:28 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -640,7 +640,7 @@ namespace mu2e
 	thfilter._pos = CLHEP::Hep3Vector(tpos.x(),tpos.y(),tpos.z());
 	thfilter._doca = hitpoca.doca();
 	if(_kfitmc.mcData()._mcsteps != 0){
-	  const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(ihit);
+	  const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ihit);
 	  thfilter._mcpdg = mcsum[0]._pdgid;
 	  thfilter._mcgen = mcsum[0]._gid;
 	  thfilter._mcproc = mcsum[0]._pid;
@@ -860,11 +860,11 @@ namespace mu2e
       }
       // summarize the MC truth for this strawhit
       if(_kfitmc.mcData()._mcsteps != 0){
-	const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(istr); 
+	const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
 	_mcnunique = mcsum.size();
 	// compute energy sum
 	_mcedep = 0.0;
-	for(std::vector<TrkSum>::const_iterator isum=mcsum.begin(); isum != mcsum.end(); ++isum){
+	for(std::vector<MCHitSum>::const_iterator isum=mcsum.begin(); isum != mcsum.end(); ++isum){
 	  _mcedep += isum->_esum;
 	}
 	// first entry
@@ -968,7 +968,7 @@ namespace mu2e
       bool conversion(false);
       // summarize the MC truth for this strawhit
       if(_kfitmc.mcData()._mcsteps != 0) {
-	const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(istr); 
+	const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
 	conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
       }
       // fill plots
@@ -1033,7 +1033,7 @@ namespace mu2e
       for(std::vector<hitIndex>::const_iterator istr= tpeak._trkptrs.begin(); istr != tpeak._trkptrs.end(); ++istr){
 	// summarize the MC truth for this strawhit
 	if(_kfitmc.mcData()._mcsteps != 0) {
-	  const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(istr->_index); 
+	  const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr->_index); 
 	  if(mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2)
 	    ++_nmc;
 	}
@@ -1112,7 +1112,7 @@ namespace mu2e
     shinfo._straw = straw.id().getStraw();
 
     if(_kfitmc.mcData()._mcsteps != 0) {
-      const std::vector<TrkSum>& mcsum = _kfitmc.mcHitSummary(ish);
+      const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
       shinfo._mcpdg = mcsum[0]._pdgid;
       shinfo._mcgen = mcsum[0]._gid;
       shinfo._mcproc = mcsum[0]._pid;
