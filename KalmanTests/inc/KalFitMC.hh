@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.23 2012/07/23 22:30:57 brownd Exp $
+// $Id: KalFitMC.hh,v 1.24 2012/09/26 12:52:08 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/07/23 22:30:57 $
+// $Date: 2012/09/26 12:52:08 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -38,7 +38,7 @@ namespace mu2e
  // some convenient typedefs    
   typedef art::Ptr<SimParticle> SPPtr;
 // structs
-  struct TrkSum {
+  struct MCHitSum {
     double _esum;
     unsigned _count;
     art::Ptr<SimParticle> _spp;
@@ -47,8 +47,8 @@ namespace mu2e
     double _time;
     CLHEP::Hep3Vector _pos;
     CLHEP::Hep3Vector _mom;
-    TrkSum() : _esum(0.0),_count(0),_pdgid(0),_gid(0),_time(0.0) {}
-    TrkSum(StepPointMC const& mchit,art::Ptr<SimParticle>& spp) : _esum(mchit.eDep()),_count(1),
+    MCHitSum() : _esum(0.0),_count(0),_pdgid(0),_gid(0),_time(0.0) {}
+    MCHitSum(StepPointMC const& mchit,art::Ptr<SimParticle>& spp) : _esum(mchit.eDep()),_count(1),
     _spp(spp),_pdgid(0),_gid(-1),_pid(-1),
     _time(mchit.time()),
     _pos(mchit.position()),
@@ -60,21 +60,22 @@ namespace mu2e
 	  _gid = spp->genParticle()->generatorId().id();
       }
     }
-    bool operator == (const TrkSum& other) { return _spp == other._spp; }
-    bool operator < (const TrkSum& other) { return _spp < other._spp; }
+    bool operator == (const MCHitSum& other) { return _spp == other._spp; }
+    bool operator < (const MCHitSum& other) { return _spp < other._spp; }
     void append(StepPointMC const& mchit)  {
       double eold = _esum;
       _esum += mchit.eDep();
       _time = _time*eold/_esum + mchit.time()*mchit.eDep()/_esum;
       _pos = _pos*(eold/_esum) + mchit.position()*(mchit.eDep()/_esum);
+      _mom = _mom*(eold/_esum) + mchit.momentum()*(mchit.eDep()/_esum);
       _count++;
     }
 // comparison functor for ordering according to energy
-    struct ecomp : public std::binary_function<TrkSum,TrkSum, bool> {
-      bool operator()(TrkSum const& t1, TrkSum const& t2) { return t1._esum < t2._esum; }
+    struct ecomp : public std::binary_function<MCHitSum,MCHitSum, bool> {
+      bool operator()(MCHitSum const& t1, MCHitSum const& t2) { return t1._esum < t2._esum; }
     };
   };
-  typedef std::vector<TrkSum> MCHitSum;
+  typedef std::vector<MCHitSum> MCHitSumVec;
  // simple structs
   struct threevec {
     Float_t _x,_y,_z;
@@ -168,7 +169,7 @@ namespace mu2e
     TTree* createTrkDiag();
     TTree* createHitDiag();
 // General StrawHit MC functions: these should move to more general class, FIXME!!
-    const MCHitSum& mcHitSummary(size_t ihit) const { return _mchitsums[ihit]; }
+    const MCHitSumVec& mcHitSummary(size_t ihit) const { return _mchitsums[ihit]; }
 // access to MC data
     MCEvtData const& mcData() const { return _mcdata; }
 // access to event-specific MC truth for conversion electron
@@ -176,13 +177,13 @@ namespace mu2e
     double MCMom(TRACKERPOS tpos) const;
     const helixpar& MCHelix(TRACKERPOS tpos) const;
     double MCBrems() const { return _bremsesum; }
-    static void fillMCHitSum(PtrStepPointMCVector const& mcptr,MCHitSum& summary );
+    static void fillMCHitSum(PtrStepPointMCVector const& mcptr,MCHitSumVec& summary );
   private:
 // cache of event data
     MCEvtData _mcdata;
     const StrawHitCollection* _strawhits;
 // cache of hit summary
-   std::vector<MCHitSum> _mchitsums;
+   std::vector<MCHitSumVec> _mchitsums;
 // event data labels
     std::string _mcstrawhitslabel;
     std::string _mcptrlabel;

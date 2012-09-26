@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.35 2012/09/11 19:54:31 brownd Exp $
+// $Id: KalFitMC.cc,v 1.36 2012/09/26 12:52:08 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/09/11 19:54:31 $
+// $Date: 2012/09/26 12:52:08 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -413,7 +413,7 @@ namespace mu2e
 	PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
 	tshinfo._mcn = mcptr.size();
 	if(_mcdata._mcsteps != 0){
-	  std::vector<TrkSum> mcsum;
+	  std::vector<MCHitSum> mcsum;
 	  KalFitMC::fillMCHitSum(mcptr,mcsum);
 	  tshinfo._mcnunique = mcsum.size();
 	  tshinfo._mcppdg = mcsum[0]._pdgid;
@@ -557,7 +557,7 @@ namespace mu2e
     _mchitsums.reserve(nsh);
     for(size_t ish=0;ish<nsh;++ish){
       PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(ish));
-      std::vector<TrkSum> mcsum;
+      std::vector<MCHitSum> mcsum;
       fillMCHitSum(mcptr,mcsum); 
       _mchitsums.push_back(mcsum);
     }
@@ -565,7 +565,7 @@ namespace mu2e
 
 // Summarize an associated set of StepPointMCs from a StrawHit according to their parents.  This assignes
 // daughter contributions to their parents
-  void KalFitMC::fillMCHitSum(PtrStepPointMCVector const& mcptr,std::vector<TrkSum>& summary ){
+  void KalFitMC::fillMCHitSum(PtrStepPointMCVector const& mcptr,std::vector<MCHitSum>& summary ){
 // first, create a map from daughters to mothers
     std::map<SPPtr,SPPtr> mdmap;
     findRelatives(mcptr,mdmap);
@@ -576,16 +576,16 @@ namespace mu2e
 // find it's parent
       art::Ptr<SimParticle> spp = mdmap[sp];
 // create the summary
-      TrkSum tsum(*mcptr[imc],spp);
+      MCHitSum tsum(*mcptr[imc],spp);
 // Add this energy to this particle, or create the entry if this is the first time this particle is seen
-      std::vector<TrkSum>::iterator ifnd = std::find(summary.begin(),summary.end(),tsum);
+      std::vector<MCHitSum>::iterator ifnd = std::find(summary.begin(),summary.end(),tsum);
       if(ifnd == summary.end())
         summary.push_back(tsum);
       else
         ifnd->append(*mcptr[imc]);
     }
 // sort this according to deposited energy
-    std::sort(summary.begin(),summary.end(),TrkSum::ecomp());
+    std::sort(summary.begin(),summary.end(),MCHitSum::ecomp());
   }
 
 // map daughters onto parents within the context of an associated set of StepPointMCs (like from a StrawHit).
@@ -642,7 +642,7 @@ namespace mu2e
     _trkdiag->Branch("fitmom",&_fitmom,"fitmom/F");
     _trkdiag->Branch("fitmomerr",&_fitmomerr,"fitmomerr/F");
     _trkdiag->Branch("seedmom",&_seedmom,"seedmom/F");
-   _trkdiag->Branch("fitpar",&_fitpar,"d0/F:p0/F:om/F:z0/F:td/F");
+    _trkdiag->Branch("fitpar",&_fitpar,"d0/F:p0/F:om/F:z0/F:td/F");
     _trkdiag->Branch("fiterr",&_fiterr,"d0err/F:p0err/F:omerr/F:z0err/F:tderr/F");
 // mc info at production
     _trkdiag->Branch("mccost",&_mccost,"mccost/F");
@@ -738,7 +738,7 @@ namespace mu2e
       if(_strawhits != 0){
 	unsigned nstrs = _strawhits->size();
 	for(unsigned istr=0; istr<nstrs;++istr){
-	  const std::vector<TrkSum>& mcsum = mcHitSummary(istr);
+	  const std::vector<MCHitSum>& mcsum = mcHitSummary(istr);
 	  if(mcsum.size()>0){
 	    bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
 	    if(conversion){

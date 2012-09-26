@@ -1,9 +1,9 @@
 //
 //  Study energy desposited in straws 
 //
-// $Id: StrawEnergy_module.cc,v 1.3 2012/09/11 21:46:41 brownd Exp $
+// $Id: StrawEnergy_module.cc,v 1.4 2012/09/26 12:52:08 brownd Exp $
 // $Author: 
-// $Date: 2012/09/11 21:46:41 $
+// $Date: 2012/09/26 12:52:08 $
 //
 // Original author David Brown
 //
@@ -124,7 +124,7 @@ namespace mu2e {
 // there can be more than 1 StepPointMC for each straw hit
       PtrStepPointMCVector const& mcptr(hits_mcptr->at(ihit));
 // summarize direct MC truth information
-      std::vector<TrkSum> mcsum;
+      std::vector<MCHitSum> mcsum;
       KalFitMC::fillMCHitSum(mcptr,mcsum);
       _mcpdg = mcsum[0]._pdgid;
       _mcgen = mcsum[0]._gid;
