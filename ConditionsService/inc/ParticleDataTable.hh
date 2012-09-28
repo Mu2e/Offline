@@ -3,9 +3,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable
 //
-//   $Id: ParticleDataTable.hh,v 1.11 2012/02/24 20:55:48 gandr Exp $
-//   $Author: gandr $
-//   $Date: 2012/02/24 20:55:48 $
+//   $Id: ParticleDataTable.hh,v 1.12 2012/09/28 22:48:28 genser Exp $
+//   $Author: genser $
+//   $Date: 2012/09/28 22:48:28 $
 //
 //  Original author Rob Kutschke
 //
@@ -75,7 +75,7 @@ namespace mu2e {
     // Accept the compiler supplied destructor.  Copying forbidden - see below.
 
     /// Access particle information via ParticleID or particle name
-    maybe_ref particle( HepPDT::ParticleID ) const;
+    maybe_ref particle( HepPDT::ParticleID const & id ) const ;
     maybe_ref particle( std::string const& name ) const;
 
     // Duplicate accessors with [] syntax.
@@ -118,8 +118,14 @@ namespace mu2e {
     // missing anti-particles.
     std::string _auxillaryFilename;
 
+    // The name of the particle data file based on geant4 nuclei data
+    std::string _geant4PDTFilename;
+
     // Keep track if the units were changed or not.
     bool _unitsChanged;
+
+    // variable controlling the amount of printout
+    int  _verbosityLevel;
 
     // ---  copying; forbidden:
     ParticleDataTable( const HepPDT::ParticleDataTable & orig );
@@ -134,6 +140,9 @@ namespace mu2e {
 
     // Improve masses and lifetimes.
     void improveData();
+
+    // Add geant4 nuclei data
+    void addGeant4Data();
 
   };  // ParticleDataTable
 

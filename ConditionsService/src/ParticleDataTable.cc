@@ -1,9 +1,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable
 //
-//   $Id: ParticleDataTable.cc,v 1.14 2012/07/15 22:06:16 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2012/07/15 22:06:16 $
+//   $Id: ParticleDataTable.cc,v 1.15 2012/09/28 22:48:28 genser Exp $
+//   $Author: genser $
+//   $Date: 2012/09/28 22:48:28 $
 //
 //
 // 1) The Geant4 particle table is a superset of this table.  It includes
@@ -32,6 +32,7 @@
 //
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 
 // Framework include files.
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -77,13 +78,21 @@ namespace mu2e {
 
     _tableFilename = findConfig(config.getString("particleDataTable.filename",
                                                  "ConditionsService/data/particle.tbl"));
-  if( _tableFilename.empty() )
+    if( _tableFilename.empty() )
       throw "ParticleDataTable c'tor: find_file failure!";  // TODO: improve exception
 
-  _auxillaryFilename = findConfig(config.getString("particleDataTable.auxillaryFilename",
-                                                   "ConditionsService/data/mass_width_2008.mc"));
-  if( _auxillaryFilename.empty() )
+    _auxillaryFilename = findConfig(config.getString("particleDataTable.auxillaryFilename",
+                                                     "ConditionsService/data/mass_width_2008.mc"));
+    if( _auxillaryFilename.empty() )
       throw "ParticleDataTable c'tor: find_file failure!";  // TODO: improve exception
+
+    _geant4PDTFilename = findConfig(config.getString("particleDataTable.geant4PDTFilename",
+                                                     "ConditionsService/data/g4nuclei.tbl"));
+    if( _geant4PDTFilename.empty() )
+      throw "ParticleDataTable c'tor: find_file failure!";  // TODO: improve exception
+
+    _verbosityLevel = config.getInt("particleDataTable.verbosityLevel",0);
+
 
     loadTableFromFile();
   }
@@ -112,12 +121,62 @@ namespace mu2e {
     // Make sure masses and widths are in MeV.
     changeUnits();
 
+    // Add geant4 nuclei data assuming the units are MeV already
+    addGeant4Data();
+
   }
 
-  // Accessor by ID that checks that the requested particle exists in the table.
-  ParticleDataTable::maybe_ref ParticleDataTable::particle( ParticleID id ) const{
+  // Accessor by ID that checks that the requested particle exists in
+  // the table and adds nonexistent g4 like nuclei if needed
+
+  ParticleDataTable::maybe_ref ParticleDataTable::particle( ParticleID const & id ) const {
     ParticleData const* p = _pdt.particle(id);
+
+    if (p) return maybe_ref(*p);
+
+    if ( id .pid() <= PDGCode::G4Threshold ){
+      return maybe_ref();
+    }
+
+    // we shall add an entry if the particle id corresponds to an nonexistent nuclei
+    // to do this we remove const'ness from the pdt
+    {
+      HepPDT::TableBuilder  tb(const_cast<HepPDT::ParticleDataTable&>(_pdt));
+
+      HepPDT::TempParticleData& tpd = tb.getParticleData( id );
+
+      // we need to generate the name and all the other data from the id
+
+      int pA = id.A();
+      int pZ = id.Z();
+
+      int exc = id.pid() - 1 - PDGCode::G4Threshold - pZ*10000 - pA*10;
+
+      ostringstream pName; 
+      pName<<"Mu2eGenerated_" << id.pid();
+      tpd.tempParticleName = pName.str();
+
+      if ( _verbosityLevel > -1 ) {
+        cout << __func__ << ": Added nuclei: " << tpd.tempParticleName << endl;
+      }
+
+      tpd.tempCharge = pZ;
+
+      static double protonMass = _pdt.particle(ParticleID(PDGCode::p_plus))->mass().value();
+
+      tpd.tempMass = HepPDT::Measurement( (pA+exc)*protonMass, 0.0);
+
+      // we set the spin/width to 0
+      tpd.tempSpin  = HepPDT::SpinState( 0, 0., 0. );
+      tpd.tempWidth = HepPDT::Measurement( 0., 0. );
+
+      tb.addParticle( tpd );
+      // TableBuilder has to go out of scope...
+    }
+
+    p = _pdt.particle(id);
     return p ? maybe_ref(*p): maybe_ref();
+
   }
 
   // Accessor by name that checks that the requested particle exists in the table.
@@ -236,8 +295,28 @@ namespace mu2e {
 
     }
 
-
-
   } // end improveData
+
+  void ParticleDataTable::addGeant4Data(){
+
+    // adding geant4 nuclei data to the existing table
+    {
+      // Construct the table builder.
+      HepPDT::TableBuilder  tb(_pdt);
+
+      // Build the table from the data file.
+      ifstream in(_geant4PDTFilename.c_str());
+      if ( !in ) {
+        throw cet::exception("FILE")
+          << "Unable to open particle data file: "
+          << _geant4PDTFilename << "\n";
+      }
+
+      HepPDT::addParticleTable( in, tb, true);
+
+    }
+
+  } // end addGeant4Data
+
 
 }  // end namespace mu2e
