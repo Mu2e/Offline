@@ -1,10 +1,19 @@
-  $Id: v2_0_5.txt,v 1.8 2012/09/21 18:32:02 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2012/09/21 18:32:02 $
+  $Id: v2_0_5.txt,v 1.9 2012/09/28 22:49:59 genser Exp $
+  $Author: genser $
+  $Date: 2012/09/28 22:49:59 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_5
+
+7) September 28, 2012 genser
+
+   Extended ParticleDataTable to include a subset of geant4 generated
+   nuclei as well us to generate and add them automatically should
+   they not exist in ParticleDataTable.
+     ConditionsService/data/g4nuclei.tbl
+     ConditionsService/inc/ParticleDataTable.hh
+     ConditionsService/src/ParticleDataTable.cc
 
 6) September 21, 2012 ehrlich
    Fixed the cosmic killer / dirt body issue
