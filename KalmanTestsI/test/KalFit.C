@@ -10,6 +10,8 @@
 #include "TCut.h"
 #include "TMath.h"
 #include "TProfile.h"
+#include <fstream>
+#include <iomanip>
 
 // basic parameters
 
@@ -49,11 +51,11 @@ void KalCuts() {
   fitcuts[3] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-2";
 
   char ctext[80];
-  snprintf(ctext,80,"recopar.paramVec.m[4]>%4.3f&&recopar.paramVec.m[4]<%4.3f",tdlow,tdhigh);
+  snprintf(ctext,80,"recopar.parvec.m[4]>%4.3f&&recopar.parvec.m[4]<%4.3f",tdlow,tdhigh);
   rpitch = TCut(ctext);
   snprintf(ctext,80,"fitinfo.t0fit>%f",t0min);
   livegate = TCut(ctext);
-  snprintf(ctext,80,"startpar.paramVec.m[4]>%4.3f&&startpar.paramVec.m[4]<%4.3f",tdlow-0.02,tdhigh+0.02);
+  snprintf(ctext,80,"startpar.parvec.m[4]>%4.3f&&startpar.parvec.m[4]<%4.3f",tdlow-0.02,tdhigh+0.02);
   tpitch = TCut(ctext);
   snprintf(ctext,80,"fitinfo.t0>%f",t0min);
   tt0 = TCut(ctext);
@@ -65,7 +67,7 @@ void KalCuts() {
 
   reco = TCut("fitinfo.fit>0");
   goodfit = reco+ncuts[icut]+t0cuts[icut]+momcuts[icut]+fitcuts[icut];
-  cosmic = TCut("abs(recopar.paramVec.m[0])<105 && recopar.paramVec.m[0]+2.0/recopar.paramVec.m[2]>460 && recopar.paramVec.m[0]+2.0/recopar.paramVec.m[2]<660");
+  cosmic = TCut("abs(recopar.parvec.m[0])<105 && recopar.parvec.m[0]+2.0/recopar.parvec.m[2]>460 && recopar.parvec.m[0]+2.0/recopar.parvec.m[2]<660");
   snprintf(ctext,80,"fitinfo.fitmom>%f&&fitinfo.fitmom<%f",momlow,momhigh);
   rmom = TCut(ctext);
   donecuts = true;
@@ -550,14 +552,15 @@ void KalFitRes(TTree* trks, int nGenEv=-1, TString fitOpt="L") {
 //  degau->SetParName(6,"ETailLambda");
 //  degau->SetParName(7,"ETailPower");
 
-//  TF1* cball = new TF1("cball",crystalball,-2.0,1.5,7);
-//  cball->SetParName(0,"Norm");
-//  cball->SetParName(1,"x0");
-//  cball->SetParName(2,"sigma");
-//  cball->SetParName(3,"n");
-//  cball->SetParName(4,"alpha");
-//  cball->SetParName(5,"tailfrac");
-//  cball->SetParName(6,"taillambda");
+/*  TF1* cball = new TF1("cball",crystalball,-2.0,1.5,7);
+  cball->SetParName(0,"Norm");
+  cball->SetParName(1,"x0");
+  cball->SetParName(2,"sigma");
+  cball->SetParName(3,"n");
+  cball->SetParName(4,"alpha");
+  cball->SetParName(5,"tailfrac");
+  cball->SetParName(6,"taillambda");
+*/
 
   TF1* dcball = new TF1("dcball",doubleCrystalball,-2.5,2.5,9);
   dcball->SetParName(0,"Norm");
@@ -570,7 +573,7 @@ void KalFitRes(TTree* trks, int nGenEv=-1, TString fitOpt="L") {
   dcball->SetParName(7,"n_{tail}");
   dcball->SetParName(8,"alpha_{tail}");
   dcball->SetNpx(1000);
-
+  
   TH1F* momres[4];
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
   trks->Project("effnorm","fitinfo.momin",mcsel);
@@ -580,6 +583,7 @@ void KalFitRes(TTree* trks, int nGenEv=-1, TString fitOpt="L") {
   rcan->Divide(2,2);
   gStyle->SetOptFit(111111);
   gStyle->SetOptStat("oumr");
+  fstream outfile("Parameters.txt",ios::out);
   for(unsigned ires=0;ires<4;ires++){
     rcan->cd(ires+1);
     gPad->SetLogy();
@@ -604,13 +608,15 @@ void KalFitRes(TTree* trks, int nGenEv=-1, TString fitOpt="L") {
 //    degau->SetParLimits(6,0.1,momres[ires]->GetRMS());
 //    degau->SetParLimits(7,1,3.0);
   
-//    cball->SetParameters(integral,0.0,0.1,1.0,1.0,0.05,0.5);
-//    cball->SetParLimits(5,0.001,0.4);
-//    cball->SetParLimits(6,0.1,momres[ires]->GetRMS());
-//    momres[ires]->Fit("cball","LIR");
+/*    cball->SetParameters(integral,0.0,0.1,1.0,1.0,0.05,0.5);
+    cball->SetParLimits(5,0.001,0.4);
+    cball->SetParLimits(6,0.1,momres[ires]->GetRMS());
+    momres[ires]->Fit("cball", ""); //"LIR");
+    */
+    
 
     dcball->SetParameters(integral,momres[ires]->GetMean(1)*0.5,momres[ires]->GetRMS(1)*0.25,1.0,1.0
-  		  ,0.8,momres[ires]->GetRMS(1),1.0,1.0);
+			  ,0.8,momres[ires]->GetRMS(1),1.0,1.0);
     dcball->SetParLimits(0,1,integral*2);
     dcball->SetParLimits(1,-0.2,0.4);
     dcball->SetParLimits(2,0.03,momres[ires]->GetRMS(1)*0.7);
@@ -624,8 +630,22 @@ void KalFitRes(TTree* trks, int nGenEv=-1, TString fitOpt="L") {
     momres[ires]->Fit("dcball");
     momres[ires]->Fit("dcball");
     momres[ires]->Fit("dcball",fitOpt.Data());
-    //momres[ires]->Fit("dcball","LIR");
+    momres[ires]->Fit("dcball","LIR");
 
+
+
+
+    outfile << "\nCut" << ires+1 << "_2CBall_x0\t" << setprecision(8) << dcball->GetParameter(1);
+    outfile << "\nCut" << ires+1 << "_2CBall_x0_err\t" << setprecision(8) << dcball->GetParError(1); 
+    outfile << "\nCut" << ires+1 << "_2CBall_sigma1\t" << setprecision(8) << dcball->GetParameter(2);
+    outfile << "\nCut" << ires+1 << "_2CBall_sigma1_err\t" << setprecision(8) << dcball->GetParError(2);
+    outfile << "\nCut" << ires+1 << "_2CBall_frac\t" << setprecision(8) << dcball->GetParameter(5);
+    outfile << "\nCut" << ires+1 << "_2CBall_frac_err\t" << setprecision(8) << dcball->GetParError(5);
+    outfile << "\nCut" << ires+1 << "_2CBall_sigmatail\t" << setprecision(8) << dcball->GetParameter(6);
+    outfile << "\nCut" << ires+1 << "_2CBall_sigmatail_err\t" << setprecision(8) << dcball->GetParError(6) << endl;
+    
+   
+    /*
     double covMat[9][9];
     gMinuit->mnemat(&covMat[0][0],9);
     double corrF = covMat[2][6]/(sqrt(covMat[2][2]*covMat[6][6]));
@@ -637,7 +657,7 @@ void KalFitRes(TTree* trks, int nGenEv=-1, TString fitOpt="L") {
     int intLastBin  = 1 + (int)(((dcball->GetParameter(1)+3.0*meanSigma) - momres[ires]->GetXaxis()->GetXmin() )/momres[ires]->GetBinWidth(1));
 
     float nEvtIn3sigma = momres[ires]->Integral(intFirstBin,intLastBin);
-
+    */
 
     TLine* zero = new TLine(0.0,0.0,0.0,momres[ires]->GetBinContent(momres[ires]->GetMaximumBin()));
     zero->SetLineStyle(2);
@@ -685,6 +705,8 @@ void KalFitRes(TTree* trks, int nGenEv=-1, TString fitOpt="L") {
     }
  
   }
+
+  outfile.close();
   rcan->cd(0);
 }
 
