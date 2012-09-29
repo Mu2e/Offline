@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.42 2012/09/26 12:52:28 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.43 2012/09/29 18:30:07 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/09/26 12:52:28 $
+// $Date: 2012/09/29 18:30:07 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -80,6 +80,13 @@ namespace mu2e
     Float_t _ddt;  // delta time
   };
 
+  struct DeltaPeakMVA {
+    Float_t _rfold;
+    Float_t _zmin, _zmax, _zgap;
+    Float_t _sphi;
+    Float_t _nsmiss, _nsh;
+  };
+
   struct DeltaInfo {
 // peak information
     double _tpeak, _ppeak;
@@ -92,7 +99,8 @@ namespace mu2e
     unsigned _ngoodhits;
     double _zmin, _zmax, _zgap;
     unsigned _ismin, _ismax, _ns, _nsmiss;
-    bool _isdelta;
+    bool _isdelta, _oldisdelta;
+    double _pmvaout;
 // information about the hits in the delta
     std::vector<size_t> _hindex;
     std::vector<double> _htime;
@@ -135,7 +143,8 @@ namespace mu2e
     double _maxzgap,_maxnsmiss;
     double _minrho, _maxrho;
     std::string _dhittype, _dhitweights;
-    double _dhitmvacut;
+    std::string _dpeaktype, _dpeakweights;
+    double _dhitmvacut, _dpeakmvacut;
     // time spectrum parameters
     unsigned _maxnpeak;
     unsigned _minnhits;
@@ -226,11 +235,12 @@ namespace mu2e
     std::vector<TrkHitFilter> _sfilt, _hfilt;
 // delta removal diagnostics
     TTree* _ddiag;
-    TMVA::Reader* _dhReader; // assign hits to delta peaks
+    TMVA::Reader *_dhReader; // assign hits to delta peaks
     DeltaHitMVA _dhmva; // input variables to TMVA for delta hit selection
-    TMVA::Reader* _deltapeaks; // classify delta peaks
+    DeltaPeakMVA _dpmva;
+    TMVA::Reader* _dpReader; // classify delta peaks
     Int_t _ip, _iev;
-    Bool_t _isdelta;
+    Bool_t _isdelta, _oldisdelta;
     Float_t _pphi, _pt, _prho;
     Float_t _zmin, _zmax, _zgap;
     Int_t _ns, _smin, _smax, _nsmiss;
@@ -242,6 +252,7 @@ namespace mu2e
     Float_t _tmed, _pmed, _rmed;
     Float_t _tmean, _pmean, _rmean;
     Float_t _stime, _sphi, _srho;
+    Float_t _pmvaout;
 // flow diagnostic
     TH1F* _cutflow;
  };
@@ -278,7 +289,10 @@ namespace mu2e
     _maxrho(pset.get<double>("MaxRho",660.0)),
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","BDT method")),
     _dhitweights(pset.get<std::string>("DeltaHitTMVAWeights","TrkPatRec/test/deltahits_BDT.weights.xml")),
+    _dpeaktype(pset.get<std::string>("DeltaPeakTMVAType","BDT method")),
+    _dpeakweights(pset.get<std::string>("DeltaPeakTMVAWeights","TrkPatRec/test/deltapeak_BDT.weights.xml")),
     _dhitmvacut(pset.get<double>("DeltaHitMVACut",0.4)),
+    _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.1)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",0)),
     _tmin(pset.get<double>("tmin",0.0)),
@@ -771,6 +785,7 @@ namespace mu2e
     _ddiag->Branch("iev",&_iev,"iev/I");
     _ddiag->Branch("ip",&_ip,"ip/I");
     _ddiag->Branch("isdelta",&_isdelta,"isdelta/B");
+    _ddiag->Branch("oldisdelta",&_oldisdelta,"oldisdelta/B");
     _ddiag->Branch("nsh",&_nsh,"nsh/I");
     _ddiag->Branch("ndpeak",&_ndpeak,"ndpeak/I");
     _ddiag->Branch("ndmax",&_ndmax,"ndmax/I");
@@ -806,6 +821,7 @@ namespace mu2e
     _ddiag->Branch("mct0",&_dmct0,"mct0/F");
     _ddiag->Branch("mcmom",&_dmcmom,"mcmom/F");
     _ddiag->Branch("mctd",&_dmctd,"mctd/F");
+    _ddiag->Branch("pmvaout",&_pmvaout,"pmvaout/F");
   }
 
   void
@@ -1139,24 +1155,16 @@ namespace mu2e
   _dhReader->BookMVA(_dhittype,_dhitweights);
 
 // define the peak classifier
-/* 
-  _deltapeak = new TMVA::Reader();
-  _deltapeak->AddVariable("smin",&_fsmin);
-  _deltapeak->AddVariable("smax",&_fsmax);
-  _deltapeak->AddVariable("nsmiss",&_fnsmiss);
-  _deltapeak->AddVariable("zmin",&zmin);
-  _deltapeak->AddVariable("zmax",&zmax);
-  _deltapeak->AddVariable("zgap",&zgap);
-  _deltapeak->AddVariable("nsh",&_fnsh);
-  _deltapeak->AddVariable("mindt", &mindt);
-  _deltapeak->AddVariable("mindphi", &mindphi);
-  _deltapeak->AddVariable("stime", &stime);
-  _deltapeak->AddVariable("sphi",&sphi);
-  _deltapeak->AddVariable("abs(prho)",&_rfold);
-
+  _dpReader = new TMVA::Reader();
+  _dpReader->AddVariable("rfold",&_dpmva._rfold);
+  _dpReader->AddVariable("zmin",&_dpmva._zmin);
+  _dpReader->AddVariable("zmax",&_dpmva._zmax);
+  _dpReader->AddVariable("zgap",&_dpmva._zgap);
+  _dpReader->AddVariable("nsmiss",&_dpmva._nsmiss);
+  _dpReader->AddVariable("nsh",&_dpmva._nsh);
+  _dpReader->AddVariable("sphi",&_dpmva._sphi);
 // load the constants
-  _deltapeak->BookMVA("MLP method","weights.xml");
-*/
+  _dpReader->BookMVA(_dpeaktype,_dpeakweights);
 
   }
 
@@ -1308,10 +1316,22 @@ namespace mu2e
 	if(!devices[is])++delta._nsmiss;
       }
       // compute final delta selection based on the delta properties
+      delta._oldisdelta = false;
       delta._isdelta = false;
       if(delta._ngoodhits >= _mindp){
 	// decide if these hits are deltas: if so, flag them.  This algorithm should be a neural net, FIXME!!!!
-	delta._isdelta = delta._zgap < _maxzgap || delta._nsmiss <= _maxnsmiss || delta._rmean > _maxrho || delta._rmean < _minrho;
+	delta._oldisdelta = delta._zgap < _maxzgap || delta._nsmiss <= _maxnsmiss || delta._rmean > _maxrho || delta._rmean < _minrho;
+	
+	_dpmva._rfold = fabs(delta._rmean-535);
+	_dpmva._zmin = delta._zmin;
+	_dpmva._zmax = delta._zmax;
+	_dpmva._zgap = delta._zgap;
+	_dpmva._nsmiss = delta._nsmiss;
+	_dpmva._nsh = delta._ns;
+	_dpmva._sphi = delta._prms;
+	
+	delta._pmvaout = _dpReader->EvaluateMVA(_dpeaktype);
+	delta._isdelta = delta._pmvaout > _dpeakmvacut;
       }
     } else {
       delta._isdelta = false;
@@ -1324,6 +1344,7 @@ namespace mu2e
       DeltaInfo const& delta(deltas[ip]);
       _ip = ip;
       _isdelta = delta._isdelta;
+      _oldisdelta = delta._oldisdelta;
       _nsh = delta._ngoodhits;
       _ndpeak = delta._hindex.size();
       _mindt = delta._mindt;
@@ -1348,6 +1369,7 @@ namespace mu2e
       _smax = delta._ismax;
       _ns = delta._ns;
       _nsmiss = delta._nsmiss;
+      _pmvaout = delta._pmvaout;
   // find MC truth information
       _nconv = 0;
       _nprot = 0;
