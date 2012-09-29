@@ -5,7 +5,7 @@ bool hasITracker      = true;
 
 string itracker.extFile          =    "";   //"ITrackerGeom/ITrackerGeom.gdml";
 string itracker.extWireFile      =    "";   //"ITrackerGeom/ITrackerWireData.root";
-double itracker.r0               =  363.995673333;   //To be consistent check that is = nSWire*cellDimension/2pi -cellDimension/2 -InnerWall_thickness -fieldWireDiameter -1.0e-2 -1.0e-3  // Lengths in mm
+double itracker.r0               =  364.995673333;   //To be consistent check that is = nSWire*cellDimension/2pi -cellDimension/2 -InnerWall_thickness -fieldWireDiameter -1.0e-2 -1.0e-3  // Lengths in mm
 double itracker.z0               =10200.0;
 double itracker.zHalfLength      = 1150.0;   //1300.0;
 double itracker.rOut             =  730.00;//720.0;   //must be greater than the radius of the outer most filed wire +fieldWireDiameter +OuterWall_thickness or +elctContWallThick if it is present
@@ -67,9 +67,9 @@ double itracker.outGuardRad       = 690.0; //365.008173333;
 
 // Inner Wall description
 int    itracker.nInnerWallShells =      6;
-vector<string> itracker.innerWallMaterials = { "CarbonFiber", "CFoam_080", "CarbonFiber", "Kapton", "G4_Cu", "ITGasHe_75Isob_25_400mbar" };
+vector<string> itracker.innerWallMaterials = { "CarbonFiber", "CFoam", "CarbonFiber", "Kapton", "G4_Cu", "ITGasHe_75Isob_25_400mbar" };
 //vector<string> itracker.innerWallMaterials = { "WAGVacuum", "WAGVacuum", "WAGVacuum", "WAGVacuum", "WAGVacuum", "ITGasHe_75Isob_25_400mbar" };
-vector<double> itracker.innerWallShellsThicknesses = { 0.080, 5.840, 0.080, 0.012, 0.0005, 10.000 };
+vector<double> itracker.innerWallShellsThicknesses = { 0.076, 4.848, 0.076, 0.012, 0.0005, 10.000 };
 
 // Outer Wall description
 int    itracker.nOuterWallShells =      4;
@@ -85,7 +85,7 @@ vector<double> itracker.endcapWallShellsThicknesses = { 5.000, 10.000, 100.000, 
 // o'ring for End Cap Inner Wall junction description
 string itracker.oringMaterial = "CarbonFiber"; 
 double itracker.oringWidth  = 15.000;
-double itracker.oringHeight =  6.0125; //6.000 the 12.5um are need to compensate the metallized Kapton film of the inner wall
+double itracker.oringHeight =  5.0125; //5.000 the 12.5um are need to compensate the metallized Kapton film of the inner wall
 
 bool   itracker.detailedWireSupport = true;
 
