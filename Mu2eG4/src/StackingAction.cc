@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions.
 //
-// $Id: StackingAction.cc,v 1.25 2012/09/21 18:29:31 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/09/21 18:29:31 $
+// $Id: StackingAction.cc,v 1.26 2012/09/29 04:54:47 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/09/29 04:54:47 $
 //
 // Original author Rob Kutschke
 //
@@ -223,13 +223,13 @@ namespace mu2e {
 
     // See Note 1) in the header file.
     if ( _killLowKineticEnergy ){
-      if ( trk->GetKineticEnergy() < _eKineMin ) {
+      if ( trk->GetKineticEnergy() <= _eKineMin ) {
         return fKill;
       }
       int pdg(trk->GetDefinition()->GetPDGEncoding());
       for( size_t i=0; i<_killLowKineticEnergyPDG.size(); ++i ) {
         if( _killLowKineticEnergyPDG[i] == pdg ) {
-          if( trk->GetKineticEnergy() < _eKineMinPDG[i] ) return fKill;
+          if( trk->GetKineticEnergy() <= _eKineMinPDG[i] ) return fKill;
           else break;
         }
       }

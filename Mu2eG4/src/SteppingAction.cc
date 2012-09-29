@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.31 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: SteppingAction.cc,v 1.32 2012/09/29 04:54:47 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/09/29 04:54:47 $
 //
 // Original author Rob Kutschke
 //
@@ -312,7 +312,7 @@ namespace mu2e {
   // Kill tracks that drop below the kinetic energy cut.
   // It might be smarter to program G4 to do this itself?
   bool SteppingAction::killLowEKine ( const G4Track* trk ){
-    if ( trk->GetKineticEnergy() < _eKineMin ){
+    if ( trk->GetKineticEnergy() <= _eKineMin ){
       if ( _killerVerbose ){
         cout << "Killed track: low energy. " << trk->GetTrackID() << endl;
       }
@@ -322,8 +322,13 @@ namespace mu2e {
     int pdg(trk->GetDefinition()->GetPDGEncoding());
     for( size_t i=0; i<_killLowKineticEnergyPDG.size(); ++i ) {
       if( _killLowKineticEnergyPDG[i] == pdg ) {
-        if( trk->GetKineticEnergy() < _eKineMinPDG[i] ) return true;
-        else return false;
+        if( trk->GetKineticEnergy() <= _eKineMinPDG[i] ){
+					if ( _killerVerbose ){
+						cout << "Killed track PDG " << pdg << " : low energy. " << trk->GetTrackID() << endl;
+					}
+					return true;
+				}
+				break;
       }
     }
 
