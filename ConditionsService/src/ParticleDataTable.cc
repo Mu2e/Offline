@@ -1,9 +1,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable
 //
-//   $Id: ParticleDataTable.cc,v 1.15 2012/09/28 22:48:28 genser Exp $
+//   $Id: ParticleDataTable.cc,v 1.16 2012/10/01 20:33:10 genser Exp $
 //   $Author: genser $
-//   $Date: 2012/09/28 22:48:28 $
+//   $Date: 2012/10/01 20:33:10 $
 //
 //
 // 1) The Geant4 particle table is a superset of this table.  It includes
@@ -139,9 +139,8 @@ namespace mu2e {
     }
 
     // we shall add an entry if the particle id corresponds to an nonexistent nuclei
-    // to do this we remove const'ness from the pdt
     {
-      HepPDT::TableBuilder  tb(const_cast<HepPDT::ParticleDataTable&>(_pdt));
+      HepPDT::TableBuilder  tb(_pdt);
 
       HepPDT::TempParticleData& tpd = tb.getParticleData( id );
 
