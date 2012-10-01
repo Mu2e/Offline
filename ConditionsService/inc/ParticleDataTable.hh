@@ -3,9 +3,9 @@
 //
 // Mu2e wrapper around HepPDT::ParticleDataTable
 //
-//   $Id: ParticleDataTable.hh,v 1.12 2012/09/28 22:48:28 genser Exp $
+//   $Id: ParticleDataTable.hh,v 1.13 2012/10/01 20:31:12 genser Exp $
 //   $Author: genser $
-//   $Date: 2012/09/28 22:48:28 $
+//   $Date: 2012/10/01 20:31:12 $
 //
 //  Original author Rob Kutschke
 //
@@ -108,7 +108,8 @@ namespace mu2e {
   private:
 
     // The actual particle data table.
-    HepPDT::ParticleDataTable _pdt;
+    // we shall add an entry if the particle id corresponds to a nonexistent nuclei
+    mutable HepPDT::ParticleDataTable _pdt;
 
     // The name of the file from which the data was loaded.
     std::string _tableFilename;
