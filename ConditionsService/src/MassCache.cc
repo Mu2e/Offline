@@ -32,21 +32,13 @@ namespace mu2e {
     }
 
     // The particle id was not in the map, so figure out its mass.
-    lastMass_ = ( id <= PDGCode::G4Threshold ) ? getMassFromPDT(id) : ionHack(id);
+    lastMass_ = getMassFromPDT(id);
 
     // Insert the mass into the cache.
     result.first->second = lastMass_;
 
     return lastMass_;
 
-  }
-
-  // At present we do not have all G4 ion species in the PDT.
-  // This code makes something up as a "good enough" answer.
-  // Just call them all Argon for now.
-  double MassCache::ionHack( id_type ){
-    double massArgon(40);
-    return massArgon*CLHEP::proton_mass_c2;
   }
 
   // Get the mass from the particle data table

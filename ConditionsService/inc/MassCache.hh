@@ -4,9 +4,9 @@
 // Cache values of masses by PDG Id to reduce expensive
 // lookups in the particle data table.
 //
-// $Id: MassCache.hh,v 1.1 2012/03/21 00:32:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/21 00:32:43 $
+// $Id: MassCache.hh,v 1.2 2012/10/01 18:19:29 genser Exp $
+// $Author: genser $
+// $Date: 2012/10/01 18:19:29 $
 //
 // Original author Rob Kutschke
 //
@@ -43,7 +43,6 @@ namespace mu2e {
     id_type  lastId_;
 
     // Helper functions./
-    double ionHack        ( id_type id );
     double getMassFromPDT ( id_type id );
 
   };
