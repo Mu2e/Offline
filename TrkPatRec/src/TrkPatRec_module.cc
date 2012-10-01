@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.43 2012/09/29 18:30:07 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.44 2012/10/01 17:23:38 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/09/29 18:30:07 $
+// $Date: 2012/10/01 17:23:38 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -17,6 +17,7 @@
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -288,9 +289,7 @@ namespace mu2e
     _minrho(pset.get<double>("MinRho",410.0)),
     _maxrho(pset.get<double>("MaxRho",660.0)),
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","BDT method")),
-    _dhitweights(pset.get<std::string>("DeltaHitTMVAWeights","TrkPatRec/test/deltahits_BDT.weights.xml")),
     _dpeaktype(pset.get<std::string>("DeltaPeakTMVAType","BDT method")),
-    _dpeakweights(pset.get<std::string>("DeltaPeakTMVAWeights","TrkPatRec/test/deltapeak_BDT.weights.xml")),
     _dhitmvacut(pset.get<double>("DeltaHitMVACut",0.4)),
     _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.1)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
@@ -319,6 +318,12 @@ namespace mu2e
     produces<KalRepPayloadCollection>();
 // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
+// location-independent files
+		ConfigFileLookupPolicy configFile;
+    std::string dhitweights = pset.get<std::string>("DeltaHitTMVAWeights","TrkPatRec/test/deltahits_BDT.weights.xml");
+    std::string dpeakweights = pset.get<std::string>("DeltaPeakTMVAWeights","TrkPatRec/test/deltapeak_BDT.weights.xml");
+		_dhitweights = configFile(dhitweights);
+    _dpeakweights = configFile(dpeakweights);
   }
 
   TrkPatRec::~TrkPatRec(){}
