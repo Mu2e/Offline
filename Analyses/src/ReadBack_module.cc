@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.19 2012/09/08 02:24:24 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:24 $
+// $Id: ReadBack_module.cc,v 1.20 2012/10/01 22:09:56 genser Exp $
+// $Author: genser $
+// $Date: 2012/10/01 22:09:56 $
 //
 // Original author Rob Kutschke
 //
@@ -12,7 +12,6 @@
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
-#include "ConditionsService/inc/unknownPDGIdName.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -832,9 +831,7 @@ namespace mu2e {
 
           // Name of this particle type.
           ParticleDataTable::maybe_ref particle = pdt->particle(pdgId);
-          string pname = particle ?
-            particle.ref().name() :
-            unknownPDGIdName(pdgId);
+          string pname = particle.ref().name();
 
           // Information about generated particle.
           GenParticle const& gen = *sim.genParticle();
