@@ -1,3 +1,8 @@
+//
+//   $Id: MassCache.cc,v 1.4 2012/10/01 20:29:41 genser Exp $
+//   $Author: genser $
+//   $Date: 2012/10/01 20:29:41 $
+//
 #include "ConditionsService/inc/MassCache.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
@@ -44,7 +49,6 @@ namespace mu2e {
   // Get the mass from the particle data table
   double MassCache::getMassFromPDT( id_type id ){
 
-    // The PDT is read once at the start of the job and is never modified after that.
     static ParticleDataTable const& pdt = *GlobalConstantsHandle<ParticleDataTable>();
 
     // Look up the answer in the particle data table.
