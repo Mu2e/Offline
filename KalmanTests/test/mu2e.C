@@ -36,7 +36,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
   double ndecay = nstopped*decayfrac;
   double ncap = nstopped*capfrac;
   double conprob(1e-15);
-  double momlow(103.3);
+  double momlow(102.9);
   double momhigh(104.7);
   double trueconvmom(104.973);
 
