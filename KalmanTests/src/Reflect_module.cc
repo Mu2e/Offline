@@ -2,9 +2,9 @@
 // Look for particles coming from the calorimeter and reflecting back in the
 // magnetic mirror
 //
-// $Id: Reflect_module.cc,v 1.1 2012/09/26 12:52:08 brownd Exp $
+// $Id: Reflect_module.cc,v 1.2 2012/10/02 04:52:12 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/09/26 12:52:08 $
+// $Date: 2012/10/02 04:52:12 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -13,6 +13,9 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
 // services
+#include "BFieldGeom/inc/BFieldConfig.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -61,6 +64,15 @@ namespace mu2e {
     Float_t _entflt; // flight length at entrance
   };
 
+  struct MCTrkInfo {
+    Int_t _pdgid;
+    Float_t _time;
+    Float_t _mom;
+    threevec _pos;
+    helixpar _mcpar;
+    MCTrkInfo() : _pdgid(0), _time(0.0),_mom(0.0) {}
+  };
+
   class Reflect : public art::EDAnalyzer {
   public:
 
@@ -95,12 +107,15 @@ namespace mu2e {
     threevec _upos, _dpos, _updir, _dpdir;
     Float_t _utent, _dtent, _utenterr, _dtenterr;
     Float_t _uentf, _dentf;
+    MCTrkInfo _umcinfo,_dmcinfo;
 // create tree
     void createTree();
 // fill tree
     void fillTree(FitInfo const& uinfo, FitInfo const& dinfo);
 // fill fit information
     void fillFitInfo(const KalRep* krep,FitInfo& fitinfo) const;
+// MC information
+    void fillMCTrkInfo(MCStepItr const& imcs, MCTrkInfo& trkinfo) const;
     // Function to pair upstream and downstream fits
     bool reflection(FitInfo const& uinfo, FitInfo const& dinfo) const;
     void getEntranceZ();
@@ -153,14 +168,18 @@ namespace mu2e {
   void Reflect::analyze(const art::Event& event) {
     if(_eventid==0)getEntranceZ();
     _eventid++;
+// get MC info
+    bool hasmc = _kfitmc.findMCData(event);
 // loop over particle type
     for(size_t ie=0;ie<_udname.size();++ie){
       art::Handle<KalRepCollection> utrksHandle;
       event.getByLabel(_umname[ie],_udname[ie],utrksHandle);
+      if(!utrksHandle.isValid())continue;
       KalRepCollection const& utrks = *utrksHandle;
       // now downstream
       art::Handle<KalRepCollection> dtrksHandle;
       event.getByLabel(_dmname[ie],_ddname[ie],dtrksHandle);
+      if(!dtrksHandle.isValid())continue;
       KalRepCollection const& dtrks = *dtrksHandle;
 // loop over pairs, and see if any match.
       for ( size_t iue=0; iue < utrks.size(); ++iue ){
@@ -176,10 +195,28 @@ namespace mu2e {
 	      if(reflection(uinfo,dinfo)){
 // fill the branches with this info
 		fillTree(uinfo,dinfo);
-// get generic MC information using the upstream fit.  This should eventually
-// be specialized to get the MC truth for the particle when it enters and exits
-// the tracker, FIXME!!!!!
-		_kfitmc.kalDiag(ukrep);
+		_umcinfo = _dmcinfo = MCTrkInfo();
+// get MC info for the upstream and downstream tracks
+		if(hasmc){
+		  std::vector<MCHitSum> umcinfo, dmcinfo;
+		  _kfitmc.findMCTrk(ukrep,umcinfo);
+		  _kfitmc.findMCTrk(dkrep,dmcinfo);
+// use these to find the points where the true particle enters the tracker
+		  if(umcinfo.size() > 0 && dmcinfo.size() > 0 && 
+		    umcinfo[0] == dmcinfo[0]){
+		    std::vector<MCStepItr> steps;
+		    _kfitmc.findMCSteps(_kfitmc.mcData()._mcvdsteps,umcinfo[0]._spp->id(),_kfitmc.VDids(KalFitMC::trackerEnt),steps);
+		    if(steps.size() == 2){
+// These are sorted by time: first should be upstream, second down
+		      fillMCTrkInfo(steps[0],_umcinfo);
+		      fillMCTrkInfo(steps[1],_dmcinfo);
+		    } else
+		      std::cout << "Didn't find 2 steps" << std::endl;
+		  } else
+		    std::cout << "MC info doesn't match " << std::endl;
+		} else
+		  std::cout << "No MC info " << std::endl;
+		_reflect->Fill();
 	      }
 	    }
 	  }
@@ -261,9 +298,9 @@ namespace mu2e {
 
   void
   Reflect::createTree() {
-  // create the tree
-    _reflect    = _kfitmc.createTrkDiag();
-// create the additional branches
+    art::ServiceHandle<art::TFileService> tfs;
+    _reflect=tfs->make<TTree>("reflect","reflection diagnostics");
+// create the branches
     _reflect->Branch("eventid",&_eventid,"eventid/I");
     // upstream information
     _reflect->Branch("upart",&_upart,"upart/I");
@@ -282,6 +319,7 @@ namespace mu2e {
     _reflect->Branch("utent",&_utent,"utent/F");
     _reflect->Branch("utenterr",&_utenterr,"utenterr/F");
     _reflect->Branch("uentf",&_uentf,"uentf/F");
+    _reflect->Branch("umcinfo",&_umcinfo,"umcpdgid/I:umctime/F:umcmom/F:umcx/F:umcy/F:umcz/F:umcd0/F:umcp0/F:umcom/F:umcz0/F:umctd/F");
     // downstream information
     _reflect->Branch("dpart",&_dpart,"dpart/I");
     _reflect->Branch("dfitstat",&_dfitstat,"dfitstat/I");
@@ -300,6 +338,7 @@ namespace mu2e {
     _reflect->Branch("dtent",&_dtent,"dtent/F");
     _reflect->Branch("dtenterr",&_dtenterr,"dtenterr/F");
     _reflect->Branch("dentf",&_dentf,"dentf/F");
+    _reflect->Branch("dmcinfo",&_dmcinfo,"dmcpdgid/I:dmctime/F:dmcmom/F:dmcx/F:dmcy/F:dmcz/F:dmcd0/F:dmcp0/F:dmcom/F:dmcz0/F:dmctd/F");
   }
 
   void
@@ -338,6 +377,30 @@ namespace mu2e {
     _dtenterr = dinfo._tenterr;
     _dentf = dinfo._entflt;
   }
+
+
+  void
+  Reflect::fillMCTrkInfo(MCStepItr const& imcs, MCTrkInfo& einfo) const {
+    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GeomHandle<DetectorSystem> det;
+    GeomHandle<BFieldConfig> bfconf;
+
+    einfo._time = imcs->time();
+    einfo._pdgid = imcs->simParticle()->pdgId(); 
+    double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
+    CLHEP::Hep3Vector mom = imcs->momentum();
+    einfo._mom = mom.mag();
+    // need to transform into the tracker coordinate system
+    CLHEP::Hep3Vector pos = det->toDetector(imcs->position());
+    HepPoint ppos =(pos.x(),pos.y(),pos.z());
+    einfo._pos = pos;
+    double hflt(0.0);
+    HepVector parvec(5,0);
+    TrkHelixUtils::helixFromMom( parvec, hflt,ppos,
+	mom,charge,bfconf->getDSUniformValue().z());
+    einfo._mcpar = helixpar(parvec);
+  }
+
 
 }  // end namespace md2e
 

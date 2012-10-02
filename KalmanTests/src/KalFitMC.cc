@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.36 2012/09/26 12:52:08 brownd Exp $
+// $Id: KalFitMC.cc,v 1.37 2012/10/02 04:52:12 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/09/26 12:52:08 $
+// $Date: 2012/10/02 04:52:12 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -272,75 +272,101 @@ namespace mu2e
   }
   
   void
+  KalFitMC::fillHitsVector(const KalRep* krep,std::vector<const TrkStrawHit*> & hits) {
+    hits.clear();
+    if(krep != 0) {
+  // extract the hits from the kalrep and perform diagnstics
+      const TrkHotList* hots = krep->hotList();
+      hits.reserve(hots->nHit());
+      for(TrkHotList::hot_iterator ihot=hots->begin();ihot != hots->end();++ihot){
+	const TrkStrawHit* hit = dynamic_cast<const TrkStrawHit*>(ihot.get());
+	if(hit != 0)hits.push_back(hit);
+      }
+      std::sort(hits.begin(),hits.end(),devicecomp());
+    }
+  }
+
+  void
   KalFitMC::kalDiag(const KalRep* krep) {
     if(krep != 0) {
-     if(_trkdiag == 0)createTrkDiag();
+      if(_trkdiag == 0)createTrkDiag();
 // no information on iterations either!
-     _nt0iter = _nweediter = -1;
-     if(_diag > 1){
+	_nt0iter = _nweediter = -1;
+	if(_diag > 1){
   // extract the hits from the kalrep and perform diagnstics
-       std::vector<const TrkStrawHit*> hits;
-       const TrkHotList* hots = krep->hotList();
-       hits.reserve(hots->nHit());
-       for(TrkHotList::hot_iterator ihot=hots->begin();ihot != hots->end();++ihot){
-	 const TrkStrawHit* hit = dynamic_cast<const TrkStrawHit*>(ihot.get());
-	 if(hit != 0)hits.push_back(hit);
-       }
-       std::sort(hits.begin(),hits.end(),devicecomp());
-       hitsDiag(hits);
-     }
-     if(krep->fitCurrent()){
-       _t0 = krep->t0().t0();
-       _t0err = krep->t0().t0Err();
-       _fitstatus = krep->fitStatus().success();
-       _nhits = krep->hotList()->nHit();
-       _niter = krep->iterations();
-       _ndof = krep->nDof();
-       _nactive = krep->nActive();
-       _chisq = krep->chisq();
-       _fitcon = krep->chisqConsistency().significanceLevel();
-       _radlen = krep->radiationFraction();
-       _nsites = krep->siteList().size();
-       _firstflt = krep->firstHit()->globalLength();
-       _lastflt = krep->lastHit()->globalLength();
-       // get the fit at the first hit
-       const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>(krep->firstHit()->kalHit()->hitOnTrack());
-       double fltlen = firsthit->fltLen() - 10;
-       double loclen(0.0);
-       const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
-       _fitpar = helixpar(ltraj->parameters()->parameter());
-       _fiterr = helixpar(ltraj->parameters()->covariance());
-       CLHEP::Hep3Vector fitmom = krep->momentum(fltlen);
-       BbrVectorErr momerr = krep->momentumErr(fltlen);
-       _fitmom = fitmom.mag();
-       Hep3Vector momdir = fitmom.unit();
-       HepVector momvec(3);
-       for(int icor=0;icor<3;icor++)
-	 momvec[icor] = momdir[icor];
-       _fitmomerr = sqrt(momerr.covMatrix().similarity(momvec));
-       CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->bField(),0.0);
-       _seedmom = seedmom.mag();
-     } else {
-       _fitstatus = -krep->fitStatus().failure();
-       _nhits = -1;
-       _fitmom = -1.0;
-       _seedmom = -1.0;
-     }
+	  std::vector<const TrkStrawHit*> hits;
+	  fillHitsVector(krep,hits);	
+	  hitsDiag(hits);
+	}
+	if(krep->fitCurrent()){
+	  _t0 = krep->t0().t0();
+	  _t0err = krep->t0().t0Err();
+	  _fitstatus = krep->fitStatus().success();
+	  _nhits = krep->hotList()->nHit();
+	  _niter = krep->iterations();
+	  _ndof = krep->nDof();
+	  _nactive = krep->nActive();
+	  _chisq = krep->chisq();
+	  _fitcon = krep->chisqConsistency().significanceLevel();
+	  _radlen = krep->radiationFraction();
+	  _nsites = krep->siteList().size();
+	  _firstflt = krep->firstHit()->globalLength();
+	  _lastflt = krep->lastHit()->globalLength();
+	  // get the fit at the first hit
+	  const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>(krep->firstHit()->kalHit()->hitOnTrack());
+	  double fltlen = firsthit->fltLen() - 10;
+	  double loclen(0.0);
+	  const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
+	  _fitpar = helixpar(ltraj->parameters()->parameter());
+	  _fiterr = helixpar(ltraj->parameters()->covariance());
+	  CLHEP::Hep3Vector fitmom = krep->momentum(fltlen);
+	  BbrVectorErr momerr = krep->momentumErr(fltlen);
+	  _fitmom = fitmom.mag();
+	  Hep3Vector momdir = fitmom.unit();
+	  HepVector momvec(3);
+	  for(int icor=0;icor<3;icor++)
+	    momvec[icor] = momdir[icor];
+	  _fitmomerr = sqrt(momerr.covMatrix().similarity(momvec));
+	  CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->bField(),0.0);
+	  _seedmom = seedmom.mag();
+	} else {
+	  _fitstatus = -krep->fitStatus().failure();
+	  _nhits = -1;
+	  _fitmom = -1.0;
+	  _seedmom = -1.0;
+	}
     } else {
       _fitstatus = -1000;
     }
     _trkdiag->Fill(); 
   }
 
+
+  void
+  KalFitMC::findMCTrk(const KalRep* krep, std::vector<MCHitSum>& mcinfo) {
+    mcinfo.clear();
+// get the straw hits from the track
+    std::vector<const TrkStrawHit*> hits;
+    fillHitsVector(krep,hits);	
+// loop over the hits and find the associated steppoints
+    for(size_t itsh=0;itsh<hits.size();++itsh){
+      const TrkStrawHit* tsh = hits[itsh];
+      PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
+      if(_mcdata._mcsteps != 0){
+	fillMCHitSum(mcptr,mcinfo);
+      }
+    }
+  }
+
   void KalFitMC::hitsDiag(std::vector<const TrkStrawHit*> const& hits) {
     _tshinfo.clear();
     _tainfo.clear();
     _ncactive = 0;
-// find the arcs
+    // find the arcs
     std::vector<TrkArc> arcs;
     findArcs(hits,arcs);
     _narcs = arcs.size();
-// loop over arcs
+    // loop over arcs
     for(size_t iarc=0;iarc < arcs.size(); ++iarc){
       TrkArcInfo tainfo;
       TrkArc const& arc = arcs[iarc];
@@ -414,7 +440,7 @@ namespace mu2e
 	tshinfo._mcn = mcptr.size();
 	if(_mcdata._mcsteps != 0){
 	  std::vector<MCHitSum> mcsum;
-	  KalFitMC::fillMCHitSum(mcptr,mcsum);
+	  fillMCHitSum(mcptr,mcsum);
 	  tshinfo._mcnunique = mcsum.size();
 	  tshinfo._mcppdg = mcsum[0]._pdgid;
 	  tshinfo._mcpgen = mcsum[0]._gid;
@@ -750,6 +776,16 @@ namespace mu2e
       return true;
     }
     return false;
+  }
+  std::vector<int>const& KalFitMC::VDids(TRACKERPOS tpos) const {
+    switch(tpos) {
+      case trackerEnt: default:
+	return _entvids;
+      case trackerMid:
+	return _midvids;
+      case trackerExit:
+	return _xitvids;
+    }
   }
   double KalFitMC::MCT0(TRACKERPOS tpos) const {
     switch(tpos) {

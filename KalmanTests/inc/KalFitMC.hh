@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.24 2012/09/26 12:52:08 brownd Exp $
+// $Id: KalFitMC.hh,v 1.25 2012/10/02 04:52:12 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/09/26 12:52:08 $
+// $Date: 2012/10/02 04:52:12 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -72,7 +72,7 @@ namespace mu2e
     }
 // comparison functor for ordering according to energy
     struct ecomp : public std::binary_function<MCHitSum,MCHitSum, bool> {
-      bool operator()(MCHitSum const& t1, MCHitSum const& t2) { return t1._esum < t2._esum; }
+      bool operator()(MCHitSum const& t1, MCHitSum const& t2) { return t1._esum > t2._esum; }
     };
   };
   typedef std::vector<MCHitSum> MCHitSumVec;
@@ -165,6 +165,8 @@ namespace mu2e
     void hitsDiag(std::vector<const TrkStrawHit*> const& hits);
     void mcTrkInfo();
     void hitDiag(const TrkStrawHit* strawhit);
+// find associated sim particles to a track
+    void findMCTrk(const KalRep* krep, std::vector<MCHitSum>& mcinfo);
 // allow creating the trees
     TTree* createTrkDiag();
     TTree* createHitDiag();
@@ -172,9 +174,12 @@ namespace mu2e
     const MCHitSumVec& mcHitSummary(size_t ihit) const { return _mchitsums[ihit]; }
 // access to MC data
     MCEvtData const& mcData() const { return _mcdata; }
+    void findMCSteps(StepPointMCCollection const* mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids,
+	std::vector<MCStepItr>& steps);
 // access to event-specific MC truth for conversion electron
     double MCT0(TRACKERPOS tpos) const;
     double MCMom(TRACKERPOS tpos) const;
+    std::vector<int> const& VDids(TRACKERPOS tpos) const;
     const helixpar& MCHelix(TRACKERPOS tpos) const;
     double MCBrems() const { return _bremsesum; }
     static void fillMCHitSum(PtrStepPointMCVector const& mcptr,MCHitSumVec& summary );
@@ -191,10 +196,9 @@ namespace mu2e
     std::string _simpartslabel;
     std::string _strawhitslabel;
 // helper functions
-    void findMCSteps(StepPointMCCollection const* mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids,
-	std::vector<MCStepItr>& steps);
     static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
     void fillMCHitSummary();
+    void fillHitsVector(const KalRep* krep,std::vector<const TrkStrawHit*>& hits);
     void findArcs(std::vector<const TrkStrawHit*> const& straws, std::vector<TrkArc>&  arcs) const;
     static int findArc(size_t itsh,std::vector<TrkArc>& arcs );
 // config parameters
