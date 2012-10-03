@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.167 2012/09/17 15:34:42 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/09/17 15:34:42 $
+// $Id: geom_01.txt,v 1.168 2012/10/03 08:20:23 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/10/03 08:20:23 $
 //
 // Original author Rob Kutschke
 //
@@ -398,7 +398,7 @@ double calorimeter.crystalWrapperHalfThickness             = 0.1 ;
 
 string calorimeter.crystalReadoutMaterial                  = "G4_Si";
 double calorimeter.crystalReadoutHalfTrans                 = 5.;
-double calorimeter.crystalReadoutHalfThickness             = 1;
+double calorimeter.crystalReadoutHalfThickness             = 0.1;
 int    calorimeter.crystalReadoutChannelCount              = 2; // APDs per crystal
 
 double calorimeter.crystalNonUniformity  = 0.0; // -2 to 2
