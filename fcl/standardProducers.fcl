@@ -23,6 +23,13 @@ makeSH :
   g4ModuleLabel        : g4run
   diagLevel            : 0
   maxFullPrint         : 0
+  deadStrawList        : {
+    verbosity   : 0
+    deadDevices : [ ]
+    deadSectors : [ ]
+    deadLayers  : [ ]
+    deadStraws  : [ ]
+  }
 }
 
 
