@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructDiskCalorimeter.cc,v 1.1 2012/09/08 02:24:25 echenard Exp $
+// $Id: constructDiskCalorimeter.cc,v 1.2 2012/10/03 08:18:41 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/10/03 08:18:41 $
 //
 // Original author Ivan Logashenko
 //
@@ -211,7 +211,8 @@ namespace mu2e {
     for (unsigned int idisk=0;idisk<nDisks;++idisk){
 
         G4ThreeVector pdisk = cal.getDisk(idisk).getOrigin();
-	G4ThreeVector pos = G4ThreeVector(pdisk.x(),pdisk.y(), pdisk.z()+zOffset);
+	double hack = 600;
+	G4ThreeVector pos = G4ThreeVector(pdisk.x(),pdisk.y(), pdisk.z()+zOffset-hack);
 
 	ostringstream discname1;      discname1<<"DiskCalorimeter_" <<idisk;
 	ostringstream discname2;      discname2<<"DiskInner_" <<idisk;
