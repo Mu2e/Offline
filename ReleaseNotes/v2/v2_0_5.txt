@@ -1,10 +1,48 @@
-  $Id: v2_0_5.txt,v 1.11 2012/10/01 22:12:25 genser Exp $
-  $Author: genser $
-  $Date: 2012/10/01 22:12:25 $
+  $Id: v2_0_5.txt,v 1.12 2012/10/03 06:58:15 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/10/03 06:58:15 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_5
+
+10) October 03, 2012 kutschke
+    A first pass at a dead straw list.  This is only seen inside MakeStrawHits.
+    It should migrate to the conditions code.  This dead straw list is
+    configured from the fcl ParameterSet of the MakeStrawHits module.
+    The default is that all wires are alive.
+
+    New files:
+      HitMakers/inc/DeadStrawList.hh
+      HitMakers/src/DeadStrawList.cc
+
+    Modified files:
+      HitMakers/src/MakeStrawHit_module.cc
+      fcl/standardProducers.fcl
+
+    The ParameterSet for MakeStrawHits has a new parameter that is itself
+    a parameter set.  The example below marks some straws as dead; one may
+    mark entire devices,sectors or layers dead. Or one make address individual
+    straws.
+
+     deadList  : {
+       verbosity   : 1
+       deadDevices : [ 0, 1 ]
+       deadSectors : [ "10_0",   "10_1" ]
+       deadLayers  : [ "11_0_1", "11_1_0" ]
+       deadStraws  : [ "12_0_0_0" ]
+     }
+
+    The notation: "1_2_3_4" means: device 1, sector 2, layer 3, straw 4; that
+    is, these are the elements of a StrawId.
+
+9) October 03, 2012 kutschke
+   Added a new function that splits a string into a vector of strings,
+   by specifying a delimiter between sections.
+     Mu2eUtilities/inc/splitLine.hh
+     Mu2eUtilities/src/splitLine.cc
+   This is used by 10).
+
 
 8) October 01, 2012 genser
 
