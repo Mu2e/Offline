@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.18 2012/08/22 22:21:11 genser Exp $
-// $Author: genser $
-// $Date: 2012/08/22 22:21:11 $
+// $Id: MakeStrawHit_module.cc,v 1.19 2012/10/03 06:42:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/10/03 06:42:03 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -29,6 +29,7 @@
 
 #include "MCDataProducts/inc/StepPointMCStrawHit.hh"
 #include "HitMakers/inc/formStepPointMCStrawHit.hh"
+#include "HitMakers/inc/DeadStrawList.hh"
 
 // art includes.
 #include "art/Persistency/Common/Ptr.h"
@@ -63,38 +64,11 @@ namespace mu2e {
   class MakeStrawHit : public art::EDProducer {
 
   public:
-    explicit MakeStrawHit(fhicl::ParameterSet const& pset) :
-
-      // Parameters
-      _diagLevel(pset.get<int>("diagLevel",0)),
-      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
-      _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-      _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
-      _minimumAmplitude(pset.get<double>("minimumAmplitude",0.0001)), // mV
-      _addCrossTalkHits(pset.get<bool>("addCrossTalkHits",false)),
-      _minimumLength(pset.get<double>("minimumLength",0.01)),   // mm
-      _minimumTimeGap(pset.get<double>("minimumTimeGap",100.0)),// ns
-      _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
-      _enableFlightTimeCorrection(pset.get<bool>("flightTimeCorrection",false)),
-
-      // Random number distributions
-      _gaussian( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
-
-      _messageCategory("HITS"),
-
-      // Control some information messages.
-      _firstEvent(true){
-
-      // Tell the framework what we make.
-      produces<StrawHitCollection>();
-      produces<StrawHitMCTruthCollection>();
-      produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
-
-    }
-
-    virtual ~MakeStrawHit() { }
+    explicit MakeStrawHit(fhicl::ParameterSet const& pset);
+    // Accept compiler written d'tor.
 
     virtual void beginJob();
+    virtual void beginRun( art::Run& run );
 
     void produce( art::Event& e);
 
@@ -129,11 +103,53 @@ namespace mu2e {
     // Give some informationation messages only on the first event.
     bool _firstEvent;
 
+    // List of dead straws as a parameter set; needed at beginRun time.
+    fhicl::ParameterSet _deadStraws;
+
+    // Access the live/dead status of the straw.
+    DeadStrawList _strawStatus;
+
     void fillHitMap ( art::Event const& event, StrawStepPointMap& hitmap );
 
   };
 
+  MakeStrawHit::MakeStrawHit(fhicl::ParameterSet const& pset) :
+
+    // Parameters
+    _diagLevel(pset.get<int>("diagLevel",0)),
+    _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+    _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)), // MeV
+    _minimumAmplitude(pset.get<double>("minimumAmplitude",0.0001)), // mV
+    _addCrossTalkHits(pset.get<bool>("addCrossTalkHits",false)),
+    _minimumLength(pset.get<double>("minimumLength",0.01)),   // mm
+    _minimumTimeGap(pset.get<double>("minimumTimeGap",100.0)),// ns
+    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+    _enableFlightTimeCorrection(pset.get<bool>("flightTimeCorrection",false)),
+
+    // Random number distributions
+    _gaussian( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
+
+    _messageCategory("HITS"),
+
+    // Control some information messages.
+    _firstEvent(true),
+
+    _deadStraws(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet())),
+    _strawStatus(_deadStraws) {
+
+    // Tell the framework what we make.
+    produces<StrawHitCollection>();
+    produces<StrawHitMCTruthCollection>();
+    produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
+
+  }
+
   void MakeStrawHit::beginJob(){
+  }
+
+  void MakeStrawHit::beginRun( art::Run& run ){
+    _strawStatus.reset(_deadStraws);
   }
 
 
@@ -175,9 +191,12 @@ namespace mu2e {
 
         StepPointMC const& step(*j);
         if( step.totalEDep()<_minimumEnergy ) continue; // Skip steps with very low energy deposition
-        StrawIndex const & straw_id = step.strawIndex();
+
+        // Skip dead straws.
+        if ( _strawStatus.isDead(step.strawIndex()) ) continue;
 
         // The main event for this method.
+        StrawIndex const & straw_id = step.strawIndex();
         hitmap[straw_id].push_back( art::Ptr<StepPointMC>(handle,index) );
       }
     }
