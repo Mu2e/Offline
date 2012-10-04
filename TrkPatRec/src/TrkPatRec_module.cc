@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.44 2012/10/01 17:23:38 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.45 2012/10/04 15:27:57 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/10/01 17:23:38 $
+// $Date: 2012/10/04 15:27:57 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -145,7 +145,7 @@ namespace mu2e
     double _minrho, _maxrho;
     std::string _dhittype, _dhitweights;
     std::string _dpeaktype, _dpeakweights;
-    double _dhitmvacut, _dpeakmvacut;
+    double _dhitmvaprecut, _dhitmvapostcut, _dpeakmvacut;
     // time spectrum parameters
     unsigned _maxnpeak;
     unsigned _minnhits;
@@ -290,7 +290,8 @@ namespace mu2e
     _maxrho(pset.get<double>("MaxRho",660.0)),
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","BDT method")),
     _dpeaktype(pset.get<std::string>("DeltaPeakTMVAType","BDT method")),
-    _dhitmvacut(pset.get<double>("DeltaHitMVACut",0.4)),
+    _dhitmvaprecut(pset.get<double>("DeltaHitMVAPreCut",0.4)),
+    _dhitmvapostcut(pset.get<double>("DeltaHitMVAPostCut",0.4)),
     _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.1)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",0)),
@@ -1280,8 +1281,7 @@ namespace mu2e
       _dhmva._ddt = delta._htime[ih]-delta._tmed;
       double gd = _dhReader->EvaluateMVA(_dhittype);
       delta._hgd.push_back(gd);
-      if(gd > _dhitmvacut){
-	delta._hflag.push_back(1);
+      if(gd > _dhitmvaprecut){
 	tacc2(delta._htime[ih]);
 	pacc2(delta._hphi[ih]);
 	racc2(delta._hrho[ih]);
@@ -1289,6 +1289,9 @@ namespace mu2e
 	const StrawHit& sh = _strawhits->at(delta._hindex[ih]);
 	unsigned idevice = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getDeviceId());
 	devices[idevice] = true;
+      }
+      if(gd > _dhitmvapostcut){
+	delta._hflag.push_back(1);
       } else {
 	delta._hflag.push_back(0);
       }
