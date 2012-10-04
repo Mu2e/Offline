@@ -10,6 +10,7 @@
 #include "TCut.h"
 #include "TMath.h"
 #include "TProfile.h"
+#include "TDirectory.h"
 
 // basic parameters
 
@@ -506,6 +507,7 @@ void KalFitRes(TTree* trks) {
   cball->SetParName(6,"taillambda");
 
   TH1F* momres[4];
+  TF1*  fitmomres[4];
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
   trks->Project("effnorm","mcentmom",mcsel);
  
@@ -518,7 +520,9 @@ void KalFitRes(TTree* trks) {
     rcan->cd(ires+1);
     gPad->SetLogy();
     char mname[50];
+    char fitname[50];
     snprintf(mname,50,"momres%i",ires);
+    snprintf(fitname,50,"fitmomres%i",ires);
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",251,-2.5,2.5);
 //  momres[ires]->SetStats(0);
     TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
@@ -543,6 +547,9 @@ void KalFitRes(TTree* trks) {
     cball->SetParLimits(6,0.1,momres[ires]->GetRMS());
 
     momres[ires]->Fit("cball","LIR");
+    fitmomres[ires] = new TF1(*cball);
+    fitmomres[ires]->SetName(fitname);
+    gDirectory->Append(fitmomres[ires]);
 
     TLine* zero = new TLine(0.0,0.0,0.0,momres[ires]->GetBinContent(momres[ires]->GetMaximumBin()));
     zero->SetLineStyle(2);
