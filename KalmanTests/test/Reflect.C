@@ -92,7 +92,7 @@ void init() {
   cball->SetParName(5,"tailfrac");
   cball->SetParName(6,"taillambda");
 
-  diffcball = new TF1("diffcball",crystalball,-5.0,1.,7);
+  diffcball = new TF1("diffcball",crystalball,-7.0,0.,7);
   diffcball->SetParName(0,"Norm");
   diffcball->SetParName(1,"x0");
   diffcball->SetParName(2,"sigma");
@@ -115,8 +115,8 @@ void momfit(TTree* ref) {
   gPad->SetLogy();
   TH1F* umomres = new TH1F("umomres","Upstream momentum resolution;MeV",251,momlo,momhi);
   ref->Project("umomres","umcmom-umom",ugood+goodmc);
-  double uint = umomres->GetEntries()*umomres->GetBinWidth(1);
-  cball->SetParameters(uint,0.0,0.1,3.0,0.8,0.02,0.3);
+  double uintegral = 3*umomres->GetEntries()*umomres->GetBinWidth(1);
+  cball->SetParameters(uintegral,0.0,0.1,3.0,0.8,0.02,0.3);
   cball->SetParLimits(5,0.001,0.4);
   cball->SetParLimits(6,0.1,umomres->GetRMS());
   umomres->Fit("cball","LIR");
@@ -125,7 +125,7 @@ void momfit(TTree* ref) {
   gPad->SetLogy();
   TH1F* dmomres = new TH1F("dmomres","Downstream momentum resolution;MeV",251,momlo,momhi);
   ref->Project("dmomres","dmom-dmcmom",dgood+goodmc);
-  double dint = dmomres->GetEntries()*dmomres->GetBinWidth(1);
+  double dint = 3*dmomres->GetEntries()*dmomres->GetBinWidth(1);
   cball->SetParameters(dint,0.0,0.1,3.0,0.8,0.02,0.3);
   cball->SetParLimits(5,0.001,0.4);
   cball->SetParLimits(6,0.1,dmomres->GetRMS());
@@ -135,8 +135,8 @@ void momfit(TTree* ref) {
   gPad->SetLogy();
   TH1F* umomresd = new TH1F("umomresd","Upstream momentum resolution, d0 cut;MeV",251,momlo,momhi);
   ref->Project("umomresd","umcmom-umom",ugood+goodmc+ud0);
-  double uintd = umomresd->GetEntries()*umomresd->GetBinWidth(1);
-  cball->SetParameters(uintd,0.0,0.1,3.0,0.8,0.02,0.3);
+  double uintegrald = 3*umomresd->GetEntries()*umomresd->GetBinWidth(1);
+  cball->SetParameters(uintegrald,0.0,0.1,3.0,0.8,0.02,0.3);
   cball->SetParLimits(5,0.001,0.4);
   cball->SetParLimits(6,0.1,umomresd->GetRMS());
   umomresd->Fit("cball","LIR");
@@ -145,7 +145,7 @@ void momfit(TTree* ref) {
   gPad->SetLogy();
   TH1F* dmomresd = new TH1F("dmomresd","Downstream momentum resolution, d0 cut;MeV",251,momlo,momhi);
   ref->Project("dmomresd","dmom-dmcmom",dgood+goodmc+dd0);
-  double dintd = dmomresd->GetEntries()*dmomresd->GetBinWidth(1);
+  double dintd = 3*dmomresd->GetEntries()*dmomresd->GetBinWidth(1);
   cball->SetParameters(dintd,0.0,0.1,3.0,0.8,0.02,0.3);
   cball->SetParLimits(5,0.001,0.4);
   cball->SetParLimits(6,0.1,dmomresd->GetRMS());
@@ -172,7 +172,7 @@ void diffres(TTree* ref) {
   dcan->cd(1);
   gPad->SetLogy();
   double difint = momdiff->GetEntries()*momdiff->GetBinWidth(1);
-  diffcball->SetParameters(difint,0.0,0.1,10.0,1.0,0.05,0.5);
+  diffcball->SetParameters(difint,-1.0,0.4,10.0,1.0,0.01,0.5);
   diffcball->SetParLimits(5,0.000,0.4);
   diffcball->SetParLimits(6,0.01,momdiff->GetRMS());
   momdiff->Fit("diffcball","LIR");
@@ -180,7 +180,7 @@ void diffres(TTree* ref) {
   dcan->cd(2);
   gPad->SetLogy();
   double mcdifint = mcmomdiff->GetEntries()*mcmomdiff->GetBinWidth(1);
-  diffcball->SetParameters(mcdifint,0.0,0.1,10.0,1.0,0.05,0.5);
+  diffcball->SetParameters(mcdifint,-1.0,0.4,10.0,1.0,0.01,0.5);
   diffcball->SetParLimits(5,0.00,0.4);
   diffcball->SetParLimits(6,0.01,mcmomdiff->GetRMS());
   mcmomdiff->Fit("diffcball","LIR");
@@ -188,7 +188,7 @@ void diffres(TTree* ref) {
   dcan->cd(3);
   gPad->SetLogy();
   double ddifint = dmomdiff->GetEntries()*dmomdiff->GetBinWidth(1);
-  diffcball->SetParameters(ddifint,0.0,0.1,10.0,1.0,0.05,0.5);
+  diffcball->SetParameters(ddifint,-1.0,0.28,3.5,0.65,0.01,0.5);
   diffcball->SetParLimits(5,0.00,0.4);
   diffcball->SetParLimits(6,0.01,dmomdiff->GetRMS());
   dmomdiff->Fit("diffcball","LIR");
@@ -196,7 +196,7 @@ void diffres(TTree* ref) {
   dcan->cd(4);
   gPad->SetLogy();
   double dmcdifint = dmcmomdiff->GetEntries()*dmcmomdiff->GetBinWidth(1);
-  diffcball->SetParameters(dmcdifint,0.0,0.1,10.0,1.0,0.05,0.5);
+  diffcball->SetParameters(dmcdifint,-1.0,0.25,3.5,0.65,0.01,0.5);
   diffcball->SetParLimits(5,0.00,0.4);
   diffcball->SetParLimits(6,0.01,dmcmomdiff->GetRMS());
   dmcmomdiff->Fit("diffcball","LIR");

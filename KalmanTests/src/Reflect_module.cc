@@ -2,9 +2,9 @@
 // Look for particles coming from the calorimeter and reflecting back in the
 // magnetic mirror
 //
-// $Id: Reflect_module.cc,v 1.2 2012/10/02 04:52:12 brownd Exp $
+// $Id: Reflect_module.cc,v 1.3 2012/10/04 15:28:50 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/10/02 04:52:12 $
+// $Date: 2012/10/04 15:28:50 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -124,7 +124,7 @@ namespace mu2e {
   Reflect::Reflect(fhicl::ParameterSet const& pset):
     _fitterPrefix(pset.get<string>("fitterPrefix","TPR")),
     _ipart(pset.get<int>("ParticleCode",11)),
-    _mindmom(pset.get<double>("MinDeltaMom",0.0)),
+    _mindmom(pset.get<double>("MinDeltaMom",-10.0)),
     _maxdmom(pset.get<double>("MaxDeltaMom",10.0)),
     _maxdtd(pset.get<double>("MaxDeltaTanDip",0.25)),
     _maxdp0(pset.get<double>("MaxDeltaPhi0",0.25)),
