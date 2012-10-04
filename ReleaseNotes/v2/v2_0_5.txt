@@ -1,10 +1,16 @@
-  $Id: v2_0_5.txt,v 1.12 2012/10/03 06:58:15 kutschke Exp $
+  $Id: v2_0_5.txt,v 1.13 2012/10/04 01:30:10 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/10/03 06:58:15 $
+  $Date: 2012/10/04 01:30:10 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_5
+
+11) October 03, 2012 kutschke
+    KalmanTests/test/KalFit.C
+    After each fit to a momentum resolution plot, make a copy of the associated
+    TF1 so that it is available in the ROOT working directory.  The TF1 can
+    be accessed from the root prompt after the macro has completed.
 
 10) October 03, 2012 kutschke
     A first pass at a dead straw list.  This is only seen inside MakeStrawHits.
