@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.27 2012/08/24 15:06:58 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/24 15:06:58 $
+// $Id: CosmicDYB.cc,v 1.28 2012/10/06 17:46:08 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/10/06 17:46:08 $
 //
 // Original author Yury Kolomensky
 //
@@ -97,6 +97,7 @@ namespace mu2e {
 
     // Control of histograms.
   , _doHistograms( config.getBool("cosmicDYB.doHistograms", true) )
+  , _verbose( config.getInt("cosmicDYB.verbose", 0) )
 
     // end of configurable parameters
 
@@ -142,6 +143,10 @@ namespace mu2e {
 
     else if(refPointChoice == "ExtMonFNAL") {
       _choice = EXTMONFNAL;
+    }
+
+    else if(refPointChoice == "Calorimeter") {
+      _choice = CALO;
     }
 
     else {
@@ -243,6 +248,12 @@ namespace mu2e {
                                               env->ymax() + _y0,
                                               extMonFNAL->detectorCenterInMu2e().z());
       break;
+    case CALO:
+    // distance from tracker to calo center is hardcoded, FIXME!!!!!
+      cosmicReferencePointInMu2e =  Hep3Vector(detsys->getOrigin().x(),
+                                         env->ymax() + _y0,
+                                         detsys->getOrigin().z() + 2500.);
+      break;
     default:
       throw cet::exception("Configuration")
         << "Should never occur: unknown CosmicDYB.refPointChoice"
@@ -254,7 +265,7 @@ namespace mu2e {
       {
         _checkedProductionPlane=true;
 
-        std::cout<<"CosmicDYB: cosmicReferencePointInMu2e = "<<cosmicReferencePointInMu2e<<std::endl;
+        if(_verbose>0)std::cout<<"CosmicDYB: cosmicReferencePointInMu2e = "<<cosmicReferencePointInMu2e<<std::endl;
 
         art::ServiceHandle<GeometryService> geom;
 
@@ -271,7 +282,7 @@ namespace mu2e {
           double marginYMin = halfLengths[1] + (cosmicReferencePointInMu2e.y()+_y0 + mu2eOrigin.y());
           double marginYMax = halfLengths[1] - (cosmicReferencePointInMu2e.y()+_y0 + mu2eOrigin.y());
 
-          std::cout<<std::endl<<"distances from the edges of the cosmic ray production plane to the borders of the world volume:"<<std::endl
+          if(_verbose>0)std::cout<<std::endl<<"distances from the edges of the cosmic ray production plane to the borders of the world volume:"<<std::endl
                    <<"in negative x direction: "<<marginXMin<<std::endl
                    <<"in positive x direction: "<<marginXMax<<std::endl
                    <<"in negative y direction: "<<marginYMin<<std::endl
@@ -379,7 +390,7 @@ namespace mu2e {
 
     if(distance<=_filterDistance) return true;
 
-    std::cout<<"generated muon removed since it is too far away from the detector axis."<<std::endl;
+    if(_verbose>1)std::cout<<"generated muon removed since it is too far away from the detector axis."<<std::endl;
     return false;
   }
 }

@@ -3,9 +3,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.hh,v 1.10 2012/08/15 04:05:00 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/08/15 04:05:00 $
+// $Id: CosmicDYB.hh,v 1.11 2012/10/06 17:46:08 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/10/06 17:46:08 $
 //
 // Original author Yury Kolomensky
 //
@@ -66,6 +66,8 @@ namespace mu2e {
 
     // Do we make the histograms.
     bool _doHistograms;
+    // verbose output
+    int _verbose;
 
     // end of configurable parameters
 
@@ -89,7 +91,7 @@ namespace mu2e {
     bool _checkedProductionPlane;
     void checkCosmicRayProductionPlane(double margin, std::string name);
 
-    enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL};
+    enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL, CALO};
     RefPointChoice _choice;
 
     // Checks whether the distance of closest approach to the detector axis is larger than the cutoff value
