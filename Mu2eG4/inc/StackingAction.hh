@@ -5,9 +5,9 @@
 // If Mu2e needs many different user stacking actions, they
 // should be called from this class.
 //
-// $Id: StackingAction.hh,v 1.17 2012/09/21 18:29:31 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/09/21 18:29:31 $
+// $Id: StackingAction.hh,v 1.18 2012/10/06 17:46:21 brownd Exp $
+// $Author: brownd $
+// $Date: 2012/10/06 17:46:21 $
 //
 // Original author Rob Kutschke
 //
@@ -57,7 +57,7 @@ namespace mu2e {
 
     // Do we run the cosmic killer?
     bool _doCosmicKiller;
-    int  _killLevel;
+    int  _killLevel, _verbose;
     double _cosmicpcut;
     double _yaboveDirtYmin;
 

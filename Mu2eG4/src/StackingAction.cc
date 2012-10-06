@@ -1,9 +1,9 @@
 //
 // Steering routine for user stacking actions.
 //
-// $Id: StackingAction.cc,v 1.26 2012/09/29 04:54:47 brownd Exp $
+// $Id: StackingAction.cc,v 1.27 2012/10/06 17:46:21 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/09/29 04:54:47 $
+// $Date: 2012/10/06 17:46:21 $
 //
 // Original author Rob Kutschke
 //
@@ -56,6 +56,7 @@ namespace mu2e {
     _nevents(0),
     _doCosmicKiller(false),
     _killLevel(0),
+    _verbose(0),
     _cosmicpcut(0),
     _yaboveDirtYmin(0),
     _primaryOnly(false),
@@ -76,6 +77,7 @@ namespace mu2e {
     // Get control info from run time configuration.
     _doCosmicKiller       = config.getBool  ("g4.doCosmicKiller",   _doCosmicKiller );
     _killLevel            = config.getInt   ("g4.cosmicKillLevel",  _killLevel      );
+    _verbose            = config.getInt   ("g4.cosmicVerbose",  _verbose      );
     _cosmicpcut           = config.getDouble("g4.cosmicPcut",       _cosmicpcut     );
     _yaboveDirtYmin       = config.getDouble("g4.yaboveDirtYmin",   _yaboveDirtYmin );
     _primaryOnly          = config.getBool  ("g4.stackPrimaryOnly", _primaryOnly    );
@@ -109,13 +111,13 @@ namespace mu2e {
         << "\n";
     }
 
-    if( _pdgToDrop.size()>0 ) {
+    if( _verbose>0 && _pdgToDrop.size()>0 ) {
       cout << "Drop these particles in the StackingAction: ";
       for( size_t i=0; i<_pdgToDrop.size(); ++i ) cout << _pdgToDrop[i] << ",";
       cout << endl;
     }
 
-    if( _pdgToKeep.size()>0 ) {
+    if( _verbose>0 && _pdgToKeep.size()>0 ) {
       cout << "Keep these particles in the StackingAction: ";
       for( size_t i=0; i<_pdgToKeep.size(); ++i ) cout << _pdgToKeep[i] << ",";
       cout << endl;
@@ -158,7 +160,7 @@ namespace mu2e {
 
       G4VPhysicalVolume* p1 = n->LocateGlobalPointAndSetup(G4ThreeVector(point[0],point[1],point[2]));
 
-      cout << "StakingAction: get max field in " << p1->GetName() << endl;
+      if(_verbose>0)  cout << "StakingAction: get max field in " << p1->GetName() << endl;
       G4FieldManager *fmv = p1->GetLogicalVolume()->GetFieldManager();
       if( ! fmv ) fmv=_globalFM;
 
@@ -166,7 +168,7 @@ namespace mu2e {
 
       _Bmax = sqrt(Bfield[0]*Bfield[0]+Bfield[1]*Bfield[1]+Bfield[2]*Bfield[2]);
 
-      cout << "X=("
+      if(_verbose>0)cout << "X=("
            << point[0]/CLHEP::mm << ", "
            << point[1]/CLHEP::mm << ", "
            << point[2]/CLHEP::mm << ") "
@@ -322,7 +324,7 @@ namespace mu2e {
     }
 
     // Printout about the decision.
-    if ( _nevents < 20 ) {
+    if ( _verbose>0 && _nevents < 20 ) {
 
       // See note 4.
       G4String volName = (pvol !=0) ? pvol->GetName(): "Unknown Volume";
