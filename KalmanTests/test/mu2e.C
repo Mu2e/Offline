@@ -28,7 +28,7 @@ Double_t DIOCZ(Double_t *x, Double_t *par) {
   return norm*(a5*pow(delta,5) + a6*pow(delta,6) + a7*pow(delta,7) + a8*pow(delta,8));
 }
 
-void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,bool weightdio=true) {
+void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,double momlow,double momhigh,bool weightdio=true,const char* suffix=".png") {
 // diogenrange is the momentum range over which the DIO events were generated
   double nstopped(7.56e17);
   double capfrac(0.609); 
@@ -36,11 +36,11 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
   double ndecay = nstopped*decayfrac;
   double ncap = nstopped*capfrac;
   double conprob(1e-15);
-  double momlow(102.9);
-  double momhigh(104.7);
+//  double momlow(103.3);
+//  double momhigh(104.7);
   double trueconvmom(104.973);
 
-  unsigned nbins(100);
+  unsigned nbins(150);
   double mmin(101);
   double mmax(106);
   double mevperbin = (mmax-mmin)/nbins;
@@ -148,8 +148,8 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
   for(unsigned icut=0;icut<4;icut++){
     allcan->cd(icut+1);
     TH1* diocopy = diospec[icut]->DrawCopy();
-    diocopy->SetMinimum(-0.2);
-    diocopy->SetMaximum(5);
+    diocopy->SetMinimum(-100/nbins);
+    diocopy->SetMaximum(400/nbins);
     conspec[icut]->Draw("same");
 
     int istart = diospec[icut]->FindFixBin(momlow+0.5*mevperbin);
@@ -212,15 +212,11 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
       leg->Draw();
       info->Draw();
     }
-
- 
-
-
   }
   allcan->cd(0);
-  allcan->SaveAs("mu2e_all.png");
-  mu2ecan->SaveAs("mu2e.png");
-  mu2ecan->SaveAs("mu2e.eps");
+  std::string ssuf(suffix);
+  allcan->SaveAs((std::string("mu2e_all")+ssuf).c_str());
+  mu2ecan->SaveAs((std::string("mu2e")+ssuf).c_str());
 
   TCanvas* dioc = new TCanvas("dio","dio",1200,800);
   dioc->Divide(2,2);
@@ -297,6 +293,6 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,b
   momhighl->SetLineWidth(2);
   momhighl->Draw();
 
-  dioc->SaveAs("diocan.png");
+  dioc->SaveAs((std::string("diocan")+ssuf).c_str());
 
 }
