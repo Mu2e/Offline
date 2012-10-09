@@ -2,9 +2,9 @@
 // Look for particles coming from the calorimeter and reflecting back in the
 // magnetic mirror
 //
-// $Id: Reflect_module.cc,v 1.3 2012/10/04 15:28:50 brownd Exp $
+// $Id: Reflect_module.cc,v 1.4 2012/10/09 15:33:08 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/10/04 15:28:50 $
+// $Date: 2012/10/09 15:33:08 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -108,7 +108,12 @@ namespace mu2e {
     Float_t _utent, _dtent, _utenterr, _dtenterr;
     Float_t _uentf, _dentf;
     MCTrkInfo _umcinfo,_dmcinfo;
-// create tree
+    Float_t _et0;
+    threevec _emom, _epos;
+    Float_t _pt0;
+    Int_t _ppdg;
+    threevec _ppos, _pmom, _pppos;
+// create 
     void createTree();
 // fill tree
     void fillTree(FitInfo const& uinfo, FitInfo const& dinfo);
@@ -116,6 +121,7 @@ namespace mu2e {
     void fillFitInfo(const KalRep* krep,FitInfo& fitinfo) const;
 // MC information
     void fillMCTrkInfo(MCStepItr const& imcs, MCTrkInfo& trkinfo) const;
+    void fillParentInfo(art::Ptr<SimParticle> sp); 
     // Function to pair upstream and downstream fits
     bool reflection(FitInfo const& uinfo, FitInfo const& dinfo) const;
     void getEntranceZ();
@@ -210,6 +216,8 @@ namespace mu2e {
 // These are sorted by time: first should be upstream, second down
 		      fillMCTrkInfo(steps[0],_umcinfo);
 		      fillMCTrkInfo(steps[1],_dmcinfo);
+// fill info about the electron origin and the parent of this electron (IE the cosmic muon)
+		      fillParentInfo(umcinfo[0]._spp);
 		    } else
 		      std::cout << "Didn't find 2 steps" << std::endl;
 		  } else
@@ -339,6 +347,15 @@ namespace mu2e {
     _reflect->Branch("dtenterr",&_dtenterr,"dtenterr/F");
     _reflect->Branch("dentf",&_dentf,"dentf/F");
     _reflect->Branch("dmcinfo",&_dmcinfo,"dmcpdgid/I:dmctime/F:dmcmom/F:dmcx/F:dmcy/F:dmcz/F:dmcd0/F:dmcp0/F:dmcom/F:dmcz0/F:dmctd/F");
+    // general information about production electron and muon
+    _reflect->Branch("emom",&_emom,"emx/F:emy/F:emz/F");
+    _reflect->Branch("et0",&_et0,"et0/F");
+    _reflect->Branch("epos",&_epos,"ex/F:ey/F:ez/F");
+    _reflect->Branch("ppdg",&_ppdg,"ppdg/I");
+    _reflect->Branch("pt0",&_pt0,"pt0/F");
+    _reflect->Branch("ppos",&_ppos,"px/F:py/F:pz/F");
+    _reflect->Branch("pmom",&_pmom,"pmx/F:pmy/F:pmz/F");
+    _reflect->Branch("pppos",&_pppos,"ppx/F:ppy/F:ppz/F");
   }
 
   void
@@ -401,6 +418,30 @@ namespace mu2e {
     einfo._mcpar = helixpar(parvec);
   }
 
+  void
+  Reflect::fillParentInfo(art::Ptr<SimParticle> sp) {
+    GeomHandle<DetectorSystem> det;
+    if(!sp.isNull()){
+      _emom = sp->startMomentum().vect();
+      _et0 = sp->startGlobalTime();
+      _epos = det->toDetector(sp->startPosition());
+// find the ultimate parent info
+      art::Ptr<SimParticle> parsp = sp;
+      while(!parsp->parent().isNull()){
+	parsp = parsp->parent();
+      }
+      _ppdg = parsp->pdgId();
+      CLHEP::Hep3Vector ppos = det->toDetector(parsp->startPosition());
+      _ppos = ppos;
+      _pt0 = sp->startGlobalTime();
+      CLHEP::Hep3Vector pmom = parsp->startMomentum().vect();
+      _pmom = pmom;
+// project position into y=0 plane
+      double flen = -ppos.y()/pmom.y();
+      CLHEP::Hep3Vector planepos = ppos + flen*pmom;
+      _pppos = planepos;
+    }
+  }
 
 }  // end namespace md2e
 
