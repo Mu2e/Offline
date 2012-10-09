@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter
 
-$Id: FilterEmptyEvents_module.cc,v 1.9 2012/09/08 02:24:24 echenard Exp $
-$Author: echenard $
-$Date: 2012/09/08 02:24:24 $
+$Id: FilterEmptyEvents_module.cc,v 1.10 2012/10/09 16:10:34 brownd Exp $
+$Author: brownd $
+$Date: 2012/10/09 16:10:34 $
 
 Original author Giovanni Onorato
 
@@ -53,7 +53,9 @@ namespace mu2e {
       _keepTrackOrCalo(pset.get<int>("keepTrackOrCalo",1)),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
       _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
-      _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker"))
+      _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
+      _minTHits(pset.get<unsigned>("MinTrackerHits",0)),
+      _minCHits(pset.get<unsigned>("MinCaloHit",0))
     {
     }
     virtual ~FilterEmptyEvents() {
@@ -71,6 +73,7 @@ namespace mu2e {
     string _generatorModuleLabel;
     string _makerModuleLabel;
     string _caloReadoutModuleLabel;
+    unsigned _minTHits, _minCHits;
 
     bool _hasTHits;
     bool _hasCHits;
@@ -95,7 +98,7 @@ namespace mu2e {
     e.getByLabel(_makerModuleLabel,pdataHandle);
     StrawHitCollection const* hits = pdataHandle.product();
 
-    _hasTHits = (hits->size()>0);
+    _hasTHits = (hits->size()>_minTHits);
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
@@ -103,7 +106,7 @@ namespace mu2e {
 
     if (!_hasTHits) {
       if (_diagLevel > 0) {
-        cout << "Event " << e.id().event() << " has no hits in the tracker" << endl;
+        cout << "Filtered Event " << e.id().event() << " has " << hits->size() << " hits in the tracker," << endl;
       }
     }
 
@@ -116,11 +119,11 @@ namespace mu2e {
       e.getByLabel(_caloReadoutModuleLabel, caloHits);
 
       //Set a boolean true if there are calorimeter hits
-      _hasCHits = (caloHits.isValid() && (caloHits->size() > 0));
+      _hasCHits = (caloHits.isValid() && (caloHits->size() > _minCHits));
 
       if (!_hasCHits) {
         if (_diagLevel > 0) {
-          cout << "Event " << e.id().event() << " has no hits in the calorimeter" << endl;
+          cout << "Filtered Event " << e.id().event() << " has " << caloHits->size() << " hits in the calorimeter" << endl;
         }
       }
     } else {
