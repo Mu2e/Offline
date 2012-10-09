@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.37 2012/10/02 04:52:12 brownd Exp $
+// $Id: KalFitMC.cc,v 1.38 2012/10/09 15:32:31 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/10/02 04:52:12 $
+// $Date: 2012/10/09 15:32:31 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -288,6 +288,9 @@ namespace mu2e
 
   void
   KalFitMC::kalDiag(const KalRep* krep) {
+    GeomHandle<VirtualDetector> vdg;
+    GeomHandle<DetectorSystem> det;
+
     if(krep != 0) {
       if(_trkdiag == 0)createTrkDiag();
 // no information on iterations either!
@@ -313,14 +316,18 @@ namespace mu2e
 	  _firstflt = krep->firstHit()->globalLength();
 	  _lastflt = krep->lastHit()->globalLength();
 	  // get the fit at the first hit
-	  const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>(krep->firstHit()->kalHit()->hitOnTrack());
-	  double fltlen = firsthit->fltLen() - 10;
+	  CLHEP::Hep3Vector entpos = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA));
+	  double zent = entpos.z();
+	  double firsthitfltlen = krep->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+	  double lasthitfltlen = krep->lastHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+	  double entlen = std::min(firsthitfltlen,lasthitfltlen);
+	  TrkHelixUtils::findZFltlen(krep->traj(),zent,entlen,0.1); 
 	  double loclen(0.0);
-	  const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
+	  const TrkSimpTraj* ltraj = krep->localTrajectory(entlen,loclen);
 	  _fitpar = helixpar(ltraj->parameters()->parameter());
 	  _fiterr = helixpar(ltraj->parameters()->covariance());
-	  CLHEP::Hep3Vector fitmom = krep->momentum(fltlen);
-	  BbrVectorErr momerr = krep->momentumErr(fltlen);
+	  CLHEP::Hep3Vector fitmom = krep->momentum(entlen);
+	  BbrVectorErr momerr = krep->momentumErr(entlen);
 	  _fitmom = fitmom.mag();
 	  Hep3Vector momdir = fitmom.unit();
 	  HepVector momvec(3);
