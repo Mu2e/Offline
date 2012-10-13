@@ -92,11 +92,7 @@ void init() {
   cball->SetParName(5,"tailfrac");
   cball->SetParName(6,"taillambda");
 
-<<<<<<< Reflect.C
   diffcball = new TF1("diffcball",crystalball,-5.0,2.,7);
-=======
-  diffcball = new TF1("diffcball",crystalball,-7.0,0.,7);
->>>>>>> 1.2
   diffcball->SetParName(0,"Norm");
   diffcball->SetParName(1,"x0");
   diffcball->SetParName(2,"sigma");
@@ -119,13 +115,8 @@ void momfit(TTree* ref) {
   gPad->SetLogy();
   TH1F* umomres = new TH1F("umomres","Upstream momentum resolution;MeV",251,momlo,momhi);
   ref->Project("umomres","umcmom-umom",ugood+goodmc);
-<<<<<<< Reflect.C
   double uint = 2*umomres->GetEntries()*umomres->GetBinWidth(1);
   cball->SetParameters(uint,0.0,0.1,3.0,0.8,0.02,0.3);
-=======
-  double uintegral = 3*umomres->GetEntries()*umomres->GetBinWidth(1);
-  cball->SetParameters(uintegral,0.0,0.1,3.0,0.8,0.02,0.3);
->>>>>>> 1.2
   cball->SetParLimits(5,0.001,0.4);
   cball->SetParLimits(6,0.1,umomres->GetRMS());
   umomres->Fit("cball","LIR");
@@ -134,11 +125,7 @@ void momfit(TTree* ref) {
   gPad->SetLogy();
   TH1F* dmomres = new TH1F("dmomres","Downstream momentum resolution;MeV",251,momlo,momhi);
   ref->Project("dmomres","dmom-dmcmom",dgood+goodmc);
-<<<<<<< Reflect.C
   double dint = 2*dmomres->GetEntries()*dmomres->GetBinWidth(1);
-=======
-  double dint = 3*dmomres->GetEntries()*dmomres->GetBinWidth(1);
->>>>>>> 1.2
   cball->SetParameters(dint,0.0,0.1,3.0,0.8,0.02,0.3);
   cball->SetParLimits(5,0.001,0.4);
   cball->SetParLimits(6,0.1,dmomres->GetRMS());
@@ -148,13 +135,8 @@ void momfit(TTree* ref) {
   gPad->SetLogy();
   TH1F* umomresd = new TH1F("umomresd","Upstream momentum resolution, d0 cut;MeV",251,momlo,momhi);
   ref->Project("umomresd","umcmom-umom",ugood+goodmc+ud0);
-<<<<<<< Reflect.C
   double uintd = 2*umomresd->GetEntries()*umomresd->GetBinWidth(1);
   cball->SetParameters(uintd,0.0,0.1,3.0,0.8,0.02,0.3);
-=======
-  double uintegrald = 3*umomresd->GetEntries()*umomresd->GetBinWidth(1);
-  cball->SetParameters(uintegrald,0.0,0.1,3.0,0.8,0.02,0.3);
->>>>>>> 1.2
   cball->SetParLimits(5,0.001,0.4);
   cball->SetParLimits(6,0.1,umomresd->GetRMS());
   umomresd->Fit("cball","LIR");
@@ -163,11 +145,7 @@ void momfit(TTree* ref) {
   gPad->SetLogy();
   TH1F* dmomresd = new TH1F("dmomresd","Downstream momentum resolution, d0 cut;MeV",251,momlo,momhi);
   ref->Project("dmomresd","dmom-dmcmom",dgood+goodmc+dd0);
-<<<<<<< Reflect.C
   double dintd = 2*dmomresd->GetEntries()*dmomresd->GetBinWidth(1);
-=======
-  double dintd = 3*dmomresd->GetEntries()*dmomresd->GetBinWidth(1);
->>>>>>> 1.2
   cball->SetParameters(dintd,0.0,0.1,3.0,0.8,0.02,0.3);
   cball->SetParLimits(5,0.001,0.4);
   cball->SetParLimits(6,0.1,dmomresd->GetRMS());
