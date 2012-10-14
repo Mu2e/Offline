@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter
 
-$Id: FilterEmptyEvents_module.cc,v 1.10 2012/10/09 16:10:34 brownd Exp $
+$Id: FilterEmptyEvents_module.cc,v 1.11 2012/10/14 15:57:32 brownd Exp $
 $Author: brownd $
-$Date: 2012/10/09 16:10:34 $
+$Date: 2012/10/14 15:57:32 $
 
 Original author Giovanni Onorato
 
@@ -30,6 +30,7 @@ Original author Giovanni Onorato
 //#include <boost/shared_ptr.hpp>
 #include "fhiclcpp/ParameterSet.h"
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -55,7 +56,7 @@ namespace mu2e {
       _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
       _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
       _minTHits(pset.get<unsigned>("MinTrackerHits",0)),
-      _minCHits(pset.get<unsigned>("MinCaloHit",0))
+      _minCHits(pset.get<unsigned>("MinCaloHits",0))
     {
     }
     virtual ~FilterEmptyEvents() {
@@ -112,7 +113,7 @@ namespace mu2e {
 
     //Get handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;
-    if( geom->hasElement<VaneCalorimeter>() ) {
+    if( geom->hasElement<VaneCalorimeter>()  || geom->hasElement<DiskCalorimeter>()) {
 
       // Get handles to calorimeter collections
       art::Handle<CaloHitCollection> caloHits;
@@ -129,7 +130,7 @@ namespace mu2e {
     } else {
       //Set a boolean false if there is no Calorimeter
       _hasCHits = false;
-      cout << "No calorimeter in the geometry" << endl;
+//      cout << "No calorimeter in the geometry" << endl;
     }
 
     if (_keepTrackOrCalo == 1) {
