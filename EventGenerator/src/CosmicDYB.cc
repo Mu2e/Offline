@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.28 2012/10/06 17:46:08 brownd Exp $
+// $Id: CosmicDYB.cc,v 1.29 2012/10/15 00:44:01 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/10/06 17:46:08 $
+// $Date: 2012/10/15 00:44:01 $
 //
 // Original author Yury Kolomensky
 //
@@ -240,18 +240,18 @@ namespace mu2e {
     switch (_choice){
     case TRACKER:
       cosmicReferencePointInMu2e =  Hep3Vector(detsys->getOrigin().x(),
-                                         env->ymax() + _y0,
+                                         _y0,
                                          detsys->getOrigin().z());
       break;
     case EXTMONFNAL:
       cosmicReferencePointInMu2e = Hep3Vector(extMonFNAL->detectorCenterInMu2e().x(),
-                                              env->ymax() + _y0,
+                                              _y0,
                                               extMonFNAL->detectorCenterInMu2e().z());
       break;
     case CALO:
     // distance from tracker to calo center is hardcoded, FIXME!!!!!
       cosmicReferencePointInMu2e =  Hep3Vector(detsys->getOrigin().x(),
-                                         env->ymax() + _y0,
+                                         _y0,
                                          detsys->getOrigin().z() + 2500.);
       break;
     default:
@@ -279,8 +279,8 @@ namespace mu2e {
           double marginZMin = halfLengths[2] + (cosmicReferencePointInMu2e.z()-_dz + mu2eOrigin.z());
           double marginXMax = halfLengths[0] - (cosmicReferencePointInMu2e.x()+_dx + mu2eOrigin.x());
           double marginZMax = halfLengths[2] - (cosmicReferencePointInMu2e.z()+_dz + mu2eOrigin.z());
-          double marginYMin = halfLengths[1] + (cosmicReferencePointInMu2e.y()+_y0 + mu2eOrigin.y());
-          double marginYMax = halfLengths[1] - (cosmicReferencePointInMu2e.y()+_y0 + mu2eOrigin.y());
+          double marginYMin = halfLengths[1] + (cosmicReferencePointInMu2e.y()+env->ymax() + mu2eOrigin.y());
+          double marginYMax = halfLengths[1] - (cosmicReferencePointInMu2e.y()+env->ymax() + mu2eOrigin.y());
 
           if(_verbose>0)std::cout<<std::endl<<"distances from the edges of the cosmic ray production plane to the borders of the world volume:"<<std::endl
                    <<"in negative x direction: "<<marginXMin<<std::endl
@@ -336,12 +336,23 @@ namespace mu2e {
 
       CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), E);
 
-      // Position in a reference plane that is just above the ground.
+      // Position in reference plane
       double x = (1.-2.*_randFlat.fire())*_dx;
-      double y = _y0;
+      double y = 0.0;
       double z = (1.-2.*_randFlat.fire())*_dz;
       CLHEP::Hep3Vector pos( x, y, z );
-      CLHEP::Hep3Vector posInMu2eCoordinates=pos + cosmicReferencePointInMu2e;
+      CLHEP::Hep3Vector refposInMu2eCoordinates=pos + cosmicReferencePointInMu2e;
+
+// move this to a position just above the ground
+      double ymax = env->ymax();
+      CLHEP::Hep3Vector momdir= mom.vect().unit();
+      double scale = (ymax-refposInMu2eCoordinates.y())/momdir.y();
+      CLHEP::Hep3Vector shift = scale*momdir;
+      CLHEP::Hep3Vector posInMu2eCoordinates = refposInMu2eCoordinates + shift;
+      if(_verbose > 1){
+	cout << "position in reference plane = " << refposInMu2eCoordinates << endl;
+	cout << "position at origin = " << posInMu2eCoordinates << endl;
+      }
 
       double time = _tmin + _dt*_randFlat.fire();
 
@@ -377,6 +388,22 @@ namespace mu2e {
 
   bool CosmicDYB::filterGeneratedMuons(CLHEP::Hep3Vector const &posInMu2eCoordinates, CLHEP::HepLorentzVector const &direction)
   {
+
+    art::ServiceHandle<GeometryService> geom;
+
+    if(geom->hasElement<WorldG4>()) {
+
+      GeomHandle<WorldG4>  worldGeom;
+      Hep3Vector const& mu2eOrigin = worldGeom->mu2eOriginInWorld();
+      std::vector<double> const& halfLengths = worldGeom->halfLengths();
+      Hep3Vector diff = posInMu2eCoordinates-mu2eOrigin;
+      static const double margin(10.0); // 10mm margin
+      if(halfLengths[0] - fabs(diff.x()) < margin ||
+	  halfLengths[1] - fabs(diff.y()) < margin ||
+	  halfLengths[2] - fabs(diff.z()) < margin) return false;
+    }
+
+
     if(_filterDistance==0) return true;  //don't apply filter
 
     CLHEP::Hep3Vector const& detectorSystemOriginInMu2eCoordinates = GeomHandle<DetectorSystem>()->getOrigin();
