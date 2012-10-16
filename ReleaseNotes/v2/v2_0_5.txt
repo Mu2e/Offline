@@ -1,10 +1,17 @@
-  $Id: v2_0_5.txt,v 1.14 2012/10/15 00:47:05 brownd Exp $
-  $Author: brownd $
-  $Date: 2012/10/15 00:47:05 $
+  $Id: v2_0_5.txt,v 1.15 2012/10/16 02:54:48 ehrlich Exp $
+  $Author: ehrlich $
+  $Date: 2012/10/16 02:54:48 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_5
+
+13) October 15, 2012 ehrlich
+    Added additional concrete shields on the upstream end
+    Modified Files:
+        Mu2eG4/test/geom_01.txt 
+        CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh 
+        CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc 
 
 12) October 14, 2012 brownd
     Modified CosmicDYB generator to put the reference plane at a

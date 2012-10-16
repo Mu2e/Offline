@@ -3,9 +3,9 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.11 2012/08/30 04:06:56 ehrlich Exp $
+// $Id: CosmicRayShieldMaker.hh,v 1.12 2012/10/16 02:52:12 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/08/30 04:06:56 $
+// $Date: 2012/10/16 02:52:12 $
 //
 // Original author KLG
 //
@@ -66,6 +66,7 @@ private:
   double _HallSteelHalfTShieldLength;
   double _HallSteelHalfTSRShieldLength;
   double _HallSteelHalfTSLShieldLength;
+  double _HallSteelHalfTSTShieldLength;
   double _HallSteelHoleRadius;
 
   CLHEP::Hep3Vector _HallSteelOffset; // aka CRPassiveShield offset
@@ -75,6 +76,7 @@ private:
   CLHEP::Hep3Vector _HallSteelDShieldCenter;
   CLHEP::Hep3Vector _HallSteelTSRShieldCenter;
   CLHEP::Hep3Vector _HallSteelTSLShieldCenter;
+  CLHEP::Hep3Vector _HallSteelTSTShieldCenter;
 
   std::string _HallSteelMaterialName;
 

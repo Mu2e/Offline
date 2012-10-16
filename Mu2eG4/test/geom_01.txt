@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.168 2012/10/03 08:20:23 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/10/03 08:20:23 $
+// $Id: geom_01.txt,v 1.169 2012/10/16 02:52:12 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2012/10/16 02:52:12 $
 //
 // Original author Rob Kutschke
 //
@@ -424,18 +424,20 @@ bool crs.hasActiveShield      = true;
 // Dimensions of steel, assuming constant thickness all around, and square shape.
 vector<double> fluxcrv.HallSteelOffset  = {-3904.,0.0,0.0}; // mm
 double fluxcrv.HallSteelHalfThick =  228.6;   // mm
-double fluxcrv.HallSteelHalfSideShieldHeight = 2260.7;  // mm
+double fluxcrv.HallSteelHalfSideShieldHeight = 2260.7;   // mm
 double fluxcrv.HallSteelHalfRShieldLength    = 9601.0;   // mm
-double fluxcrv.HallSteelHalfLShieldLength    = 7827.5;   // mm
-double fluxcrv.HallSteelHalfTShieldLength    = 7543.0;   // mm
-double fluxcrv.HallSteelHalfTSRShieldLength  = 2743.0;   // mm
+double fluxcrv.HallSteelHalfLShieldLength    = 7827.5;   // mm  
+double fluxcrv.HallSteelHalfTShieldLength    =10058.2;   // mm  //as long as the entire detector (unlike doc-db 1378)
+double fluxcrv.HallSteelHalfTSRShieldLength  = 2921.7;   // mm  //as long as the TSL shield (unlike doc-db 1378)
 double fluxcrv.HallSteelHalfTSLShieldLength  =  914.5;   // mm
+double fluxcrv.HallSteelHalfTSTShieldLength  =  914.5;   // mm  //doesn't exist in doc-db 1378
 vector<double> fluxcrv.HallSteelRShieldCenter  = {-1778.6,  -667.3,  7818.1}; // mm
 vector<double> fluxcrv.HallSteelLShieldCenter  = { 1778.6,  -667.3,  9591.6}; // mm
-vector<double> fluxcrv.HallSteelTShieldCenter  = {    0.0,  1822.0,   9876.1}; // mm
+vector<double> fluxcrv.HallSteelTShieldCenter  = {    0.0,  1822.0,  7818.1}; // mm
 vector<double> fluxcrv.HallSteelDShieldCenter  = {    0.0,  -667.3, 17647.7}; // mm
-vector<double> fluxcrv.HallSteelTSRShieldCenter= {  735.8,  -667.3, -2011.5}; // mm
+vector<double> fluxcrv.HallSteelTSRShieldCenter= {  914.5,  -667.3, -2011.5}; // mm
 vector<double> fluxcrv.HallSteelTSLShieldCenter= { 2921.7,  -667.3,  2011.5}; // mm 
+vector<double> fluxcrv.HallSteelTSTShieldCenter= { 2921.7,  1822.0,     0.0}; // mm 
 
 string fluxcrv.HallSteelMaterialName = "G4_CONCRETE";
 double fluxcrv.HallSteelHoleRadius   = 850;

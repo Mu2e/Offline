@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.21 2012/08/30 04:06:56 ehrlich Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.22 2012/10/16 02:52:12 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/08/30 04:06:56 $
+// $Date: 2012/10/16 02:52:12 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -88,6 +88,7 @@ namespace mu2e {
       _HallSteelHalfTShieldLength   = _config.getDouble("fluxcrv.HallSteelHalfTShieldLength");
       _HallSteelHalfTSRShieldLength = _config.getDouble("fluxcrv.HallSteelHalfTSRShieldLength");
       _HallSteelHalfTSLShieldLength = _config.getDouble("fluxcrv.HallSteelHalfTSLShieldLength");
+      _HallSteelHalfTSTShieldLength = _config.getDouble("fluxcrv.HallSteelHalfTSTShieldLength");
       _HallSteelMaterialName    = _config.getString("fluxcrv.HallSteelMaterialName");
       _HallSteelHoleRadius      = _config.getDouble("fluxcrv.HallSteelHoleRadius");
       _HallSteelOffset          = _config.getHep3Vector("fluxcrv.HallSteelOffset");
@@ -97,6 +98,7 @@ namespace mu2e {
       _HallSteelDShieldCenter   = _config.getHep3Vector("fluxcrv.HallSteelDShieldCenter");
       _HallSteelTSRShieldCenter = _config.getHep3Vector("fluxcrv.HallSteelTSRShieldCenter");
       _HallSteelTSLShieldCenter = _config.getHep3Vector("fluxcrv.HallSteelTSLShieldCenter");
+      _HallSteelTSTShieldCenter = _config.getHep3Vector("fluxcrv.HallSteelTSTShieldCenter");
     }
 
     _scintillatorLayersPerModule  = _config.getInt("crs.scintillatorLayersPerModule");
@@ -912,6 +914,7 @@ namespace mu2e {
     // first make the steel (fluxreturn)
 
     double HallSteelDSShieldHalfWidth=(_HallSteelLShieldCenter.x()-_HallSteelRShieldCenter.x())*0.5+_HallSteelHalfThick;
+    double HallSteelTSTShieldHalfWidth=(_HallSteelTSLShieldCenter.z()-_HallSteelTSRShieldCenter.z())*0.5+_HallSteelHalfThick;
 
     double CRSSteelRShieldDims[3] ={_HallSteelHalfThick,_HallSteelHalfSideShieldHeight,_HallSteelHalfRShieldLength};
     double CRSSteelLShieldDims[3] ={_HallSteelHalfThick,_HallSteelHalfSideShieldHeight,_HallSteelHalfLShieldLength};
@@ -919,6 +922,7 @@ namespace mu2e {
     double CRSSteelDShieldDims[3] ={HallSteelDSShieldHalfWidth,_HallSteelHalfSideShieldHeight,_HallSteelHalfThick};
     double CRSSteelTSRShieldDims[3] ={_HallSteelHalfTSRShieldLength,_HallSteelHalfSideShieldHeight,_HallSteelHalfThick};
     double CRSSteelTSLShieldDims[3] ={_HallSteelHalfTSLShieldLength,_HallSteelHalfSideShieldHeight,_HallSteelHalfThick};
+    double CRSSteelTSTShieldDims[3] ={_HallSteelHalfTSTShieldLength,_HallSteelHalfThick,HallSteelTSTShieldHalfWidth};
 
     // finaly create the steel shield objects (we invent/assign their names here...)
 
@@ -944,6 +948,9 @@ namespace mu2e {
 
     name = "CRSSteelTSLShield";
     _crs->_steelShields[name] = CRSSteelShield(name,0,_HallSteelTSLShieldCenter + _HallSteelOffset,CRSSteelTSLShieldDims);
+
+    name = "CRSSteelTSTShield";
+    _crs->_steelShields[name] = CRSSteelShield(name,0,_HallSteelTSTShieldCenter + _HallSteelOffset,CRSSteelTSTShieldDims);
   }
 
 } // namespace mu2e
