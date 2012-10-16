@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.17 2012/08/31 22:39:00 brownd Exp $
+// $Id: KalFitTest_module.cc,v 1.18 2012/10/16 21:59:18 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/08/31 22:39:00 $
+// $Date: 2012/10/16 21:59:18 $
 //
 
 // framework
@@ -74,6 +74,8 @@ namespace mu2e
     bool findData(art::Event& e);
     // MC tools
     KalFitMC _kfitmc;
+    // product name
+    std::string _iname;
 // 
   };
   
@@ -85,7 +87,11 @@ namespace mu2e
     _kfit(pset.get<fhicl::ParameterSet>("KalFit")),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC"))
   {
-    produces<KalRepCollection>();
+    TrkFitDirection fdir(TrkFitDirection::downstream);
+    TrkParticle tpart(TrkParticle::e_minus);
+    _iname = fdir.name() + tpart.name();
+
+    produces<KalRepCollection>(_iname);
   }
 
   KalFitTest::~KalFitTest(){}
@@ -135,7 +141,7 @@ namespace mu2e
       // If fit is successful, pass ownership of the track to the event.
       if(kdef._krep != 0)tracks->push_back( kdef.stealTrack() );
     }
-    event.put(tracks);
+    event.put(tracks,_iname);
   }
 
   void KalFitTest::endJob()

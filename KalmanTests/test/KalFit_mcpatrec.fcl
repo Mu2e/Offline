@@ -1,8 +1,8 @@
 # Configuration file for KalFit01
 #
-# $Id: KalFit_mcpatrec.fcl,v 1.4 2012/04/17 00:02:24 brownd Exp $
+# $Id: KalFit_mcpatrec.fcl,v 1.5 2012/10/16 21:59:18 brownd Exp $
 # $Author: brownd $
-# $Date: 2012/04/17 00:02:24 $
+# $Date: 2012/10/16 21:59:18 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -15,7 +15,7 @@ process_name : KalFit01
 source :
 {
   module_type : EmptyEvent
-  maxEvents : 10000
+  maxEvents : 1000
 }
 
 services :
@@ -65,10 +65,19 @@ physics :
         KalFit : 
         {
 	  hiterr : [ 0.0 ]
-        }
+	  ambiguityStrategy : [ 0 ]
+	  t0Tolerance : [ 0.1 ]
+	  RemoveFailedFits : false
+	  weedhits : false
+	  initT0 : false
+	  updateT0 : false
+	  Neutralize : false
+      }
     # MC truth finder, analyzer configuration
         KalFitMC : 
         {
+	  mcAmbiguity : true
+	  pureHits : true
         }        
     }
   }
@@ -78,9 +87,11 @@ physics :
     {
       module_type    : ReadKalFits
       fitterModuleLabel : KalFitTest
+      diagLevel : 2
 # MC truth finder, analyzer configuration
         KalFitMC : 
         {
+	  diagLevel : 2
         }        
  
     }
@@ -101,6 +112,3 @@ physics.producers.makeSH.maxFullPrint : 2
 source.firstRun                            :  1 
 services.user.SeedService.baseSeed         :  1
 services.user.SeedService.maxUniqueEngines :  20
-physics.producers.KalFitTest.KalFit.RemoveFailedFits : false
-physics.producers.KalFitTest.KalFitMC.pureHits : false
-#
