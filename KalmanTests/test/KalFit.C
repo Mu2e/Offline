@@ -115,7 +115,7 @@ Double_t crystalball (Double_t *x, Double_t *par) {
     double g = par[0]*TMath::Gaus(x[0], par[1], par[2]);
 //    double g2 = par[5]*par[0]*TMath::Gaus(x[0], par[1], par[6]);
 //    return g1+g2;
-    double e = par[0]*par[5]*exp(-(x[0]-par[1])/par[6])/par[6];
+    double e = par[0]*par[5]*(x[0]-par[1])*exp(-(x[0]-par[1])/par[6])/(par[6]*par[6]);
     return g+e;
   }
   else {
