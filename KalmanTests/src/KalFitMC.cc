@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.38 2012/10/09 15:32:31 brownd Exp $
+// $Id: KalFitMC.cc,v 1.39 2012/10/17 21:31:21 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/10/09 15:32:31 $
+// $Date: 2012/10/17 21:31:21 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -111,7 +111,7 @@ namespace mu2e
     if(mcsteps != 0){
       // Loop over the step points, and find the one corresponding to the given detector
       for( MCStepItr imcs =mcsteps->begin();imcs!= mcsteps->end();imcs++){
-	if( imcs->trackId() == trkid && std::find(vids.begin(),vids.end(),imcs->volumeId()) != vids.end()){
+	if(vids.size() == 0 ||  (imcs->trackId() == trkid && std::find(vids.begin(),vids.end(),imcs->volumeId()) != vids.end())){
 	  steps.push_back(imcs);
 	}
       }
@@ -293,55 +293,60 @@ namespace mu2e
 
     if(krep != 0) {
       if(_trkdiag == 0)createTrkDiag();
+// find the associated MC partcle
+      std::vector<MCHitSum> kmcinfo;
+      findMCTrk(krep,kmcinfo);
+// mc track patermeter info for the particle which generated most of the hits
+      if(kmcinfo.size()>0 )
+        mcTrkInfo(kmcinfo[0]._spp);
 // no information on iterations either!
-	_nt0iter = _nweediter = -1;
-	if(_diag > 1){
-  // extract the hits from the kalrep and perform diagnstics
-	  std::vector<const TrkStrawHit*> hits;
-	  fillHitsVector(krep,hits);	
-	  hitsDiag(hits);
-	}
-	if(krep->fitCurrent()){
-	  _t0 = krep->t0().t0();
-	  _t0err = krep->t0().t0Err();
-	  _fitstatus = krep->fitStatus().success();
-	  _nhits = krep->hotList()->nHit();
-	  _niter = krep->iterations();
-	  _ndof = krep->nDof();
-	  _nactive = krep->nActive();
-	  _chisq = krep->chisq();
-	  _fitcon = krep->chisqConsistency().significanceLevel();
-	  _radlen = krep->radiationFraction();
-	  _nsites = krep->siteList().size();
-	  _firstflt = krep->firstHit()->globalLength();
-	  _lastflt = krep->lastHit()->globalLength();
-	  // get the fit at the first hit
-	  CLHEP::Hep3Vector entpos = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA));
-	  double zent = entpos.z();
-	  double firsthitfltlen = krep->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
-	  double lasthitfltlen = krep->lastHit()->kalHit()->hitOnTrack()->fltLen() - 10;
-	  double entlen = std::min(firsthitfltlen,lasthitfltlen);
-	  TrkHelixUtils::findZFltlen(krep->traj(),zent,entlen,0.1); 
-	  double loclen(0.0);
-	  const TrkSimpTraj* ltraj = krep->localTrajectory(entlen,loclen);
-	  _fitpar = helixpar(ltraj->parameters()->parameter());
-	  _fiterr = helixpar(ltraj->parameters()->covariance());
-	  CLHEP::Hep3Vector fitmom = krep->momentum(entlen);
-	  BbrVectorErr momerr = krep->momentumErr(entlen);
-	  _fitmom = fitmom.mag();
-	  Hep3Vector momdir = fitmom.unit();
-	  HepVector momvec(3);
-	  for(int icor=0;icor<3;icor++)
-	    momvec[icor] = momdir[icor];
-	  _fitmomerr = sqrt(momerr.covMatrix().similarity(momvec));
-	  CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->bField(),0.0);
-	  _seedmom = seedmom.mag();
-	} else {
-	  _fitstatus = -krep->fitStatus().failure();
-	  _nhits = -1;
-	  _fitmom = -1.0;
-	  _seedmom = -1.0;
-	}
+      _nt0iter = _nweediter = -1;
+      if(_diag > 1){
+	std::vector<const TrkStrawHit*> hits;
+	fillHitsVector(krep,hits);	
+	hitsDiag(hits);
+      }
+      if(krep->fitCurrent()){
+	_t0 = krep->t0().t0();
+	_t0err = krep->t0().t0Err();
+	_fitstatus = krep->fitStatus().success();
+	_nhits = krep->hotList()->nHit();
+	_niter = krep->iterations();
+	_ndof = krep->nDof();
+	_nactive = krep->nActive();
+	_chisq = krep->chisq();
+	_fitcon = krep->chisqConsistency().significanceLevel();
+	_radlen = krep->radiationFraction();
+	_nsites = krep->siteList().size();
+	_firstflt = krep->firstHit()->globalLength();
+	_lastflt = krep->lastHit()->globalLength();
+	// get the fit at the first hit
+	CLHEP::Hep3Vector entpos = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA));
+	double zent = entpos.z();
+	double firsthitfltlen = krep->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+	double lasthitfltlen = krep->lastHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+	double entlen = std::min(firsthitfltlen,lasthitfltlen);
+	TrkHelixUtils::findZFltlen(krep->traj(),zent,entlen,0.1); 
+	double loclen(0.0);
+	const TrkSimpTraj* ltraj = krep->localTrajectory(entlen,loclen);
+	_fitpar = helixpar(ltraj->parameters()->parameter());
+	_fiterr = helixpar(ltraj->parameters()->covariance());
+	CLHEP::Hep3Vector fitmom = krep->momentum(entlen);
+	BbrVectorErr momerr = krep->momentumErr(entlen);
+	_fitmom = fitmom.mag();
+	Hep3Vector momdir = fitmom.unit();
+	HepVector momvec(3);
+	for(int icor=0;icor<3;icor++)
+	  momvec[icor] = momdir[icor];
+	_fitmomerr = sqrt(momerr.covMatrix().similarity(momvec));
+	CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->bField(),0.0);
+	_seedmom = seedmom.mag();
+      } else {
+	_fitstatus = -krep->fitStatus().failure();
+	_nhits = -1;
+	_fitmom = -1.0;
+	_seedmom = -1.0;
+      }
     } else {
       _fitstatus = -1000;
     }
@@ -479,97 +484,33 @@ namespace mu2e
     }
   }
 
-  void KalFitMC::mcTrkInfo() {
-    GeomHandle<BFieldConfig> bfconf;
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-// find the mc info at the entrance to the detector
-    std::vector<MCStepItr> steps;
+  void KalFitMC::mcTrkInfo(art::Ptr<SimParticle> spp) {
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
+// find the mc info at the entrance to the detector
+    fillMCTrkInfo(spp,_mcinfo);
+    // find MC info at tracker
+    cet::map_vector_key trkid = spp->id();
+    std::vector<MCStepItr> entsteps,midsteps,xitsteps;
+    findMCSteps(_mcdata._mcvdsteps,trkid,_entvids,entsteps);
+    if(entsteps.size() > 0 && vdg->exist(entsteps[0]->volumeId()))
+      fillMCTrkInfo(entsteps.front(),_mcentinfo);
+    findMCSteps(_mcdata._mcvdsteps,trkid,_midvids,midsteps);
+    if(midsteps.size() > 0 && vdg->exist(midsteps[0]->volumeId()))
+      fillMCTrkInfo(midsteps.front(),_mcmidinfo);
+    findMCSteps(_mcdata._mcvdsteps,trkid,_xitvids,xitsteps);
+    if(xitsteps.size() > 0 && vdg->exist(xitsteps[0]->volumeId()))
+      fillMCTrkInfo(xitsteps.front(),_mcxitinfo);
+// find MC info about brems in the tracker
 // should get these numbers from a service, FIXME!!!!
     static double _trkminz(-1501.0);
     static double _trkmaxz(1501.0);
-    cet::map_vector_key trkid(1); // conversion electron
-    findMCSteps(_mcdata._mcvdsteps,trkid,_entvids,steps);
-    if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())){
-    // take the first point; hopefully this is the entrance!
-      MCStepItr imcs = steps[0];
-      CLHEP::Hep3Vector mcmom = imcs->momentum();
-      CLHEP::Hep3Vector mcpos = det->toDetector(imcs->position());
-      double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
-  // initial length estimate defines convention for flightlength, z0
-      double mclen(0.0);
-      HepVector mcpar(5,0);
-      TrkHelixUtils::helixFromMom( mcpar, mclen,
-        HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
-        mcmom,charge,bfconf->getDSUniformValue().z());
-      _mcentmom = imcs->momentum().mag();
-      _mcentpar = helixpar(mcpar);
-      _mcentt0 = imcs->time();
-    } else {
-      _mcentmom = -1;
-      _mcentt0 = 0.0;
-    }
-
-// mc at midpoint of detector
-    findMCSteps(_mcdata._mcvdsteps,trkid,_midvids,steps);
-    if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())){
-// take the first point; hopefully this is the entrance!
-      MCStepItr imcs = steps[0];
-      CLHEP::Hep3Vector mcmom = imcs->momentum();
-      CLHEP::Hep3Vector mcpos = det->toDetector(imcs->position());
-      double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
-// initial length estimate defines convention for flightlength, z0
-      double mclen(0.0);
-      HepVector mcpar(5,0);
-      TrkHelixUtils::helixFromMom( mcpar, mclen,
-        HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
-        mcmom,charge,bfconf->getDSUniformValue().z());
-      _mcmidmom = imcs->momentum().mag();
-      _mcmidpar = helixpar(mcpar);
-      _mcmidt0 = imcs->time();
-    } else {
-      _mcmidmom = -1;
-      _mcmidt0 = 0.0;
-    }
-
-// mc at exit of detector
-    findMCSteps(_mcdata._mcvdsteps,trkid,_xitvids,steps);
-    if(steps.size() > 0 && vdg->exist(steps[0]->volumeId())){
-// take the first point; hopefully this is the entrance!
-      MCStepItr imcs = steps[0];
-      CLHEP::Hep3Vector mcmom = imcs->momentum();
-      CLHEP::Hep3Vector mcpos = det->toDetector(imcs->position());
-      double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
-// initial length estimate defines convention for flightlength, z0
-      double mclen(0.0);
-      HepVector mcpar(5,0);
-      TrkHelixUtils::helixFromMom( mcpar, mclen,
-        HepPoint(mcpos.x(),mcpos.y(),mcpos.z()),
-        mcmom,charge,bfconf->getDSUniformValue().z());
-      _mcxitmom = imcs->momentum().mag();
-      _mcxitpar = helixpar(mcpar);
-      _mcxitt0 = imcs->time();
-    } else {
-      _mcxitmom = -1;
-      _mcxitt0 = 0.0;
-    }
-// find MC info about brems in the tracker
     _bremsesum = 0.0;
     _bremsemax = 0.0;
     _bremsz = _trkminz;
-    bool parent(false);
     for ( SimParticleCollection::const_iterator isp = _mcdata._simparts->begin();
 	isp != _mcdata._simparts->end(); ++isp ){
       SimParticle const& sp = isp->second;
-// find info of conversion at production
-      if(!parent && sp.id() == trkid){
-	_mcmom = sp.startMomentum().vect().mag();
-	_mccost = sp.startMomentum().vect().cosTheta();
-	_mct0 = sp.startGlobalTime();
-	_mcpos = det->toDetector(sp.startPosition());
-	parent = true;
-      }
 // find photons with parent = the conversion electron created by brems
       if(sp.parent() != 0 && sp.parent()->id() == trkid && sp.pdgId() == PDGCode::gamma  && sp.creationCode() == ProcessCode::eBrem){
 	CLHEP::Hep3Vector pos = det->toDetector(sp.startPosition());
@@ -634,11 +575,11 @@ namespace mu2e
     // loop over the steps again, trying to map particles to their parents
     for( size_t imc=0; imc< mcptr.size(); ++imc ) {
       art::Ptr<SimParticle> spp = mcptr[imc]->simParticle();		  
-      if(mdmap[spp] == spp){
+      if(mdmap[spp] == spp && !spp.isNull()){
     // move up through the genealogy till we find the highest-rank parent directly contributing
     // to this strawhit
         art::Ptr<SimParticle> sppp = spp->parent();
-        while(sppp){
+        while(!sppp.isNull()){
           std::map<SPPtr,SPPtr>::iterator ifnd = mdmap.find(sppp);
           if(ifnd != mdmap.end())
     // repoint this particle to its highest-level contributing parent
@@ -677,21 +618,11 @@ namespace mu2e
     _trkdiag->Branch("seedmom",&_seedmom,"seedmom/F");
     _trkdiag->Branch("fitpar",&_fitpar,"d0/F:p0/F:om/F:z0/F:td/F");
     _trkdiag->Branch("fiterr",&_fiterr,"d0err/F:p0err/F:omerr/F:z0err/F:tderr/F");
-// mc info at production
-    _trkdiag->Branch("mccost",&_mccost,"mccost/F");
-    _trkdiag->Branch("mct0",&_mct0,"mct0/F");
-    _trkdiag->Branch("mcmom",&_mcmom,"mcmom/F");
-    _trkdiag->Branch("mcpos",&_mcpos,"mcx/F:mcy/F:mcz/F");
-// mc info at tracker entrance and midplane
-    _trkdiag->Branch("mcentpar",&_mcentpar,"mcentd0/F:mcentp0/F:mcentom/F:mcentz0/F:mcenttd/F");
-    _trkdiag->Branch("mcentt0",&_mcentt0,"mcentt0/F");
-    _trkdiag->Branch("mcentmom",&_mcentmom,"mcentmom/F");
-    _trkdiag->Branch("mcmidpar",&_mcmidpar,"mcmidd0/F:mcmidp0/F:mcmidom/F:mcmidz0/F:mcmidtd/F");
-    _trkdiag->Branch("mcmidt0",&_mcmidt0,"mcmidt0/F");
-    _trkdiag->Branch("mcmidmom",&_mcmidmom,"mcmidmom/F");
-    _trkdiag->Branch("mcxitpar",&_mcxitpar,"mcxitd0/F:mcxitp0/F:mcxitom/F:mcxitz0/F:mcxittd/F");
-    _trkdiag->Branch("mcxitt0",&_mcxitt0,"mcxitt0/F");
-    _trkdiag->Branch("mcmxitmom",&_mcxitmom,"mcxitmom/F");
+// mc info at production and several spots in the tracker
+    _trkdiag->Branch("mcinfo",&_mcinfo,"mcpdgid/I:mct0/F:mcmom/F:mcx/F:mcy/F:mcz/F:mcd0/F:mcp0/F:mcom/F:mcz0/F:mctd/F");
+    _trkdiag->Branch("mcentinfo",&_mcentinfo,"mcentpdgid/I:mcentt0/F:mcentmom/F:mcentx/F:mcenty/F:mcentz/F:mcentd0/F:mcentp0/F:mcentom/F:mcentz0/F:mcenttd/F");
+    _trkdiag->Branch("mcmidinfo",&_mcmidinfo,"mcmidpdgid/I:mcmidt0/F:mcmidmom/F:mcmidx/F:mcmidy/F:mcmidz/F:mcmidd0/F:mcmidp0/F:mcmidom/F:mcmidz0/F:mcmidtd/F");
+    _trkdiag->Branch("mcxitinfo",&_mcxitinfo,"mcxitpdgid/I:mcxitt0/F:mcxitmom/F:mcxitx/F:mcxity/F:mcxitz/F:mcxitd0/F:mcxitp0/F:mcxitom/F:mcxitz0/F:mcxittd/F");
 // info about energy loss in the tracker
     _trkdiag->Branch("bremsesum",&_bremsesum,"bremsesum/F");
     _trkdiag->Branch("bremsemax",&_bremsemax,"bremsemax/F");
@@ -757,11 +688,9 @@ namespace mu2e
     art::Handle<SimParticleCollection> simParticlesHandle;
     if(evt.getByLabel(_simpartslabel,simParticlesHandle))
       _mcdata._simparts = simParticlesHandle.product();
-    if( _mcdata.good()){
-// mc track patermeter info
-      mcTrkInfo();
 // fill hit summary
-      fillMCHitSummary();
+    fillMCHitSummary();
+    if( _mcdata.good()) {
 // count # of conversion straw hits
       _strawhits = 0;
       _nchits = 0;
@@ -794,34 +723,35 @@ namespace mu2e
 	return _xitvids;
     }
   }
+
   double KalFitMC::MCT0(TRACKERPOS tpos) const {
     switch(tpos) {
       case trackerEnt: default:
-	return _mcentt0;
+	return _mcentinfo._time;
       case trackerMid:
-	return _mcmidt0;
+	return _mcmidinfo._time;
       case trackerExit:
-	return _mcxitt0;
+	return _mcxitinfo._time;
     }
   }
   double KalFitMC::MCMom(TRACKERPOS tpos) const {
     switch(tpos) {
       case trackerEnt: default:
-	return _mcentmom;
+	return _mcentinfo._mom;
       case trackerMid:
-	return _mcmidmom;
+	return _mcmidinfo._mom;
       case trackerExit:
-	return _mcxitmom;
+	return _mcxitinfo._mom;
     }
   }
   const helixpar& KalFitMC::MCHelix(TRACKERPOS tpos) const {
     switch(tpos) {
       case trackerEnt: default:
-	return _mcentpar;
+	return _mcentinfo._hpar;
       case trackerMid:
-	return _mcmidpar;
+	return _mcmidinfo._hpar;
       case trackerExit:
-	return _mcxitpar;
+	return _mcxitinfo._hpar;
     }
   }
 
@@ -865,5 +795,50 @@ namespace mu2e
     }
     return -1;
   }
+
+  void
+  KalFitMC::fillMCTrkInfo(MCStepItr const& imcs, MCTrkInfo& einfo) const {
+    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GeomHandle<DetectorSystem> det;
+    GeomHandle<BFieldConfig> bfconf;
+
+    einfo._time = imcs->time();
+    einfo._pdgid = imcs->simParticle()->pdgId(); 
+    double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
+    CLHEP::Hep3Vector mom = imcs->momentum();
+    einfo._mom = mom.mag();
+    // need to transform into the tracker coordinate system
+    CLHEP::Hep3Vector pos = det->toDetector(imcs->position());
+    HepPoint ppos =(pos.x(),pos.y(),pos.z());
+    einfo._pos = pos;
+    double hflt(0.0);
+    HepVector parvec(5,0);
+    TrkHelixUtils::helixFromMom( parvec, hflt,ppos,
+	mom,charge,bfconf->getDSUniformValue().z());
+    einfo._hpar = helixpar(parvec);
+  }
+
+  void
+  KalFitMC::fillMCTrkInfo(art::Ptr<SimParticle> spp, MCTrkInfo& einfo) const {
+    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GeomHandle<DetectorSystem> det;
+    GeomHandle<BFieldConfig> bfconf;
+
+    einfo._time = spp->startGlobalTime();
+    einfo._pdgid = spp->pdgId();
+    double charge = pdt->particle(spp->pdgId()).ref().charge();
+    CLHEP::Hep3Vector mom = spp->startMomentum();
+    einfo._mom = mom.mag();
+    // need to transform into the tracker coordinate system
+    CLHEP::Hep3Vector pos = det->toDetector(spp->startPosition());
+    HepPoint ppos =(pos.x(),pos.y(),pos.z());
+    einfo._pos = pos;
+    double hflt(0.0);
+    HepVector parvec(5,0);
+    TrkHelixUtils::helixFromMom( parvec, hflt,ppos,
+	mom,charge,bfconf->getDSUniformValue().z());
+    einfo._hpar = helixpar(parvec);
+  }
+
 
 }

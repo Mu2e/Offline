@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.14 2012/08/08 20:19:55 brownd Exp $
+// $Id: ReadKalFits_module.cc,v 1.15 2012/10/17 21:31:21 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/08/08 20:19:55 $
+// $Date: 2012/10/17 21:31:21 $
 //
 // Original author Rob Kutschke
 //
@@ -129,7 +129,7 @@ namespace mu2e {
     _eventid++;
     _kfitmc.findMCData(event);
     // DIO spectrum weight; use the generated momenum magnitude
-    double ee = _kfitmc._mcmom;
+    double ee = _kfitmc._mcinfo._mom;
     _diowt = 1.0;
     if(_weight)
       _diowt = DIOspectrum(ee);

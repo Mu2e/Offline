@@ -2,9 +2,9 @@
 // Look for particles coming from the calorimeter and reflecting back in the
 // magnetic mirror
 //
-// $Id: Reflect_module.cc,v 1.4 2012/10/09 15:33:08 brownd Exp $
+// $Id: Reflect_module.cc,v 1.5 2012/10/17 21:31:21 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/10/09 15:33:08 $
+// $Date: 2012/10/17 21:31:21 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -64,15 +64,6 @@ namespace mu2e {
     Float_t _entflt; // flight length at entrance
   };
 
-  struct MCTrkInfo {
-    Int_t _pdgid;
-    Float_t _time;
-    Float_t _mom;
-    threevec _pos;
-    helixpar _mcpar;
-    MCTrkInfo() : _pdgid(0), _time(0.0),_mom(0.0) {}
-  };
-
   class Reflect : public art::EDAnalyzer {
   public:
 
@@ -119,8 +110,6 @@ namespace mu2e {
     void fillTree(FitInfo const& uinfo, FitInfo const& dinfo);
 // fill fit information
     void fillFitInfo(const KalRep* krep,FitInfo& fitinfo) const;
-// MC information
-    void fillMCTrkInfo(MCStepItr const& imcs, MCTrkInfo& trkinfo) const;
     void fillParentInfo(art::Ptr<SimParticle> sp); 
     // Function to pair upstream and downstream fits
     bool reflection(FitInfo const& uinfo, FitInfo const& dinfo) const;
@@ -214,8 +203,8 @@ namespace mu2e {
 		    _kfitmc.findMCSteps(_kfitmc.mcData()._mcvdsteps,umcinfo[0]._spp->id(),_kfitmc.VDids(KalFitMC::trackerEnt),steps);
 		    if(steps.size() == 2){
 // These are sorted by time: first should be upstream, second down
-		      fillMCTrkInfo(steps[0],_umcinfo);
-		      fillMCTrkInfo(steps[1],_dmcinfo);
+		      _kfitmc.fillMCTrkInfo(steps[0],_umcinfo);
+		      _kfitmc.fillMCTrkInfo(steps[1],_dmcinfo);
 // fill info about the electron origin and the parent of this electron (IE the cosmic muon)
 		      fillParentInfo(umcinfo[0]._spp);
 		    } else
@@ -393,29 +382,6 @@ namespace mu2e {
     _dtent = dinfo._tent;
     _dtenterr = dinfo._tenterr;
     _dentf = dinfo._entflt;
-  }
-
-
-  void
-  Reflect::fillMCTrkInfo(MCStepItr const& imcs, MCTrkInfo& einfo) const {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-    GeomHandle<DetectorSystem> det;
-    GeomHandle<BFieldConfig> bfconf;
-
-    einfo._time = imcs->time();
-    einfo._pdgid = imcs->simParticle()->pdgId(); 
-    double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
-    CLHEP::Hep3Vector mom = imcs->momentum();
-    einfo._mom = mom.mag();
-    // need to transform into the tracker coordinate system
-    CLHEP::Hep3Vector pos = det->toDetector(imcs->position());
-    HepPoint ppos =(pos.x(),pos.y(),pos.z());
-    einfo._pos = pos;
-    double hflt(0.0);
-    HepVector parvec(5,0);
-    TrkHelixUtils::helixFromMom( parvec, hflt,ppos,
-	mom,charge,bfconf->getDSUniformValue().z());
-    einfo._mcpar = helixpar(parvec);
   }
 
   void

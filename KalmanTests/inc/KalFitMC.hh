@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.25 2012/10/02 04:52:12 brownd Exp $
+// $Id: KalFitMC.hh,v 1.26 2012/10/17 21:31:20 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/10/02 04:52:12 $
+// $Date: 2012/10/17 21:31:20 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -109,6 +109,15 @@ namespace mu2e
     ClassDef(TrkStrawHitInfo,1)
   };
 
+  struct MCTrkInfo {
+    Int_t _pdgid;
+    Float_t _time;
+    Float_t _mom;
+    threevec _pos;
+    helixpar _hpar;
+    MCTrkInfo() : _pdgid(0), _time(0.0),_mom(0.0) {}
+  };
+
   struct MCEvtData {
     MCEvtData(const StrawHitMCTruthCollection* mcstrawhits,
       const PtrStepPointMCVectorCollection* mchitptr,
@@ -163,7 +172,7 @@ namespace mu2e
 // diagnostic comparison of reconstructed tracks with MC truth
     void kalDiag(const KalRep* krep);
     void hitsDiag(std::vector<const TrkStrawHit*> const& hits);
-    void mcTrkInfo();
+    void mcTrkInfo(art::Ptr<SimParticle> spp);
     void hitDiag(const TrkStrawHit* strawhit);
 // find associated sim particles to a track
     void findMCTrk(const KalRep* krep, std::vector<MCHitSum>& mcinfo);
@@ -183,6 +192,9 @@ namespace mu2e
     const helixpar& MCHelix(TRACKERPOS tpos) const;
     double MCBrems() const { return _bremsesum; }
     static void fillMCHitSum(PtrStepPointMCVector const& mcptr,MCHitSumVec& summary );
+// MC info about a track
+    void fillMCTrkInfo(MCStepItr const& imcs, MCTrkInfo& trkinfo) const;
+    void fillMCTrkInfo(art::Ptr<SimParticle> spp, MCTrkInfo& einfo) const;
   private:
 // cache of event data
     MCEvtData _mcdata;
@@ -223,10 +235,10 @@ namespace mu2e
     Float_t _t00err;
     Float_t _t0;
     Float_t _t0err;
-    Float_t _mct0;
-    Float_t _mcentt0;
-    Float_t _mcmidt0;
-    Float_t _mcxitt0;
+    MCTrkInfo _mcinfo;
+    MCTrkInfo _mcentinfo;
+    MCTrkInfo _mcmidinfo;
+    MCTrkInfo _mcxitinfo;
     Int_t _nhits;
     Int_t _ndof;
     Int_t _niter;
@@ -243,18 +255,9 @@ namespace mu2e
     Float_t _fitmomerr;
     Float_t _firstflt, _lastflt;
     Int_t _nsites;
-    Float_t _mcmom;
-    Float_t _mccost;
-    threevec _mcpos;
-    Float_t _mcentmom;
-    Float_t _mcmidmom;
-    Float_t _mcxitmom;
     Float_t _seedmom;
     helixpar _fitpar;
     helixpar _fiterr;
-    helixpar _mcentpar;
-    helixpar _mcmidpar;
-    helixpar _mcxitpar;
     Float_t _bremsesum;
     Float_t _bremsemax;
     Float_t _bremsz;
