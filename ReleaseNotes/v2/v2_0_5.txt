@@ -1,17 +1,22 @@
-  $Id: v2_0_5.txt,v 1.15 2012/10/16 02:54:48 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2012/10/16 02:54:48 $
+  $Id: v2_0_5.txt,v 1.16 2012/10/20 23:11:42 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/10/20 23:11:42 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_5
 
+14) October 20, 2012 kutschke
+    Added two new modules to do simple self consistency checks.
+     Analyses/src/DiskCal00_module.cc
+     Analyses/src/SimParticleCheck00_module.cc
+
 13) October 15, 2012 ehrlich
     Added additional concrete shields on the upstream end
     Modified Files:
-        Mu2eG4/test/geom_01.txt 
-        CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh 
-        CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc 
+        Mu2eG4/test/geom_01.txt
+        CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh
+        CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc
 
 12) October 14, 2012 brownd
     Modified CosmicDYB generator to put the reference plane at a
@@ -20,7 +25,7 @@
     Modified EmptyEventFilter to allow specifying how many hits in the tracker
     and/or calorimeter are required, and to allow using the disk calorimeter.
     Reduced default verbosity in both the cosmic generator and empty filter.
-    
+
 11) October 03, 2012 kutschke
     KalmanTests/test/KalFit.C
     After each fit to a momentum resolution plot, make a copy of the associated
@@ -86,7 +91,7 @@
    Fixed the cosmic killer / dirt body issue
    Modified Files:
      Mu2eG4/src/StackingAction.cc
-     Mu2eG4/inc/StackingAction.hh 
+     Mu2eG4/inc/StackingAction.hh
 
 5) September 18,2012 brownd
    - Protect against NAN in POCA calculation (BaBar code)
