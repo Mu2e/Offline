@@ -12,8 +12,8 @@
 #include "TProfile.h"
 
 
-TCut utd,dtd,umom,dmom, umomerr, dmomerr,ut0err,dt0err,unact,dnact,ureco,dreco,ugood,dgood,goodpair,goodmc;
-TCut ud0,dd0;
+TCut utd,dtd,umom,dmom, umomerr, dmomerr,ut0err,dt0err,unact,dnact,ureco,dreco,ugood,dgood,goodpair,goodmc,ufitc,dfitc;
+TCut ud0low,dd0low,ud0hi,dd0hi;
 TF1* cball;
 TF1* diffcball;
 
@@ -36,7 +36,7 @@ Double_t crystalball (Double_t *x, Double_t *par) {
     double g = par[0]*TMath::Gaus(x[0], par[1], par[2]);
 //    double g2 = par[5]*par[0]*TMath::Gaus(x[0], par[1], par[6]);
 //    return g1+g2;
-    double e = par[0]*par[5]*exp(-(x[0]-par[1])/par[6])/par[6];
+    double e = par[0]*par[5]*(x[0]-par[1])*exp(-(x[0]-par[1])/par[6])/(par[6]*par[6]);
     return g+e;
   }
   else {
@@ -55,8 +55,8 @@ void init() {
   snprintf(ctext,80,"dtd>%4.3f&&dtd<%4.3f",tdlow,tdhigh);
   dtd = TCut(ctext);
 
-  double momlow(80);
-  double momhigh(120);
+  double momlow(95);
+  double momhigh(115);
   snprintf(ctext,80,"umom>%4.3f&&umom<%4.3f",momlow,momhigh);
   umom = TCut(ctext);
   snprintf(ctext,80,"dmom>%4.3f&&dmom<%4.3f",momlow,momhigh);
@@ -74,14 +74,19 @@ void init() {
   ureco = TCut("ufitstat>0");
   dreco = TCut("dfitstat>0");
 
-  ugood = ureco+unact+umomerr+ut0err+umom+utd;
-  dgood = dreco+dnact+dmomerr+dt0err+dmom+dtd;
+  ufitc = TCut("ufitcon>1e-3");
+  dfitc = TCut("dfitcon>1e-3");
+
+  ugood = ureco+unact+umomerr+ut0err+umom+utd+ufitc;
+  dgood = dreco+dnact+dmomerr+dt0err+dmom+dtd+dfitc;
 
   goodpair = ugood+dgood;
   goodmc = TCut("umcmom>0.0&&dmcmom>0.0");
 
-  ud0 = TCut("ud0>100");
-  dd0 = TCut("dd0>100");
+  ud0low = TCut("ud0<100");
+  dd0low = TCut("dd0<100");
+  ud0hi = TCut("ud0>100");
+  dd0hi = TCut("dd0>100");
 
   cball = new TF1("cball",crystalball,-2.0,2.0,7);
   cball->SetParName(0,"Norm");
@@ -104,7 +109,7 @@ void init() {
 }
 
 
-void momfit(TTree* ref) {
+void momres(TTree* ref) {
   TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
   rcan->Clear();
   rcan->Divide(2,2);
@@ -114,9 +119,9 @@ void momfit(TTree* ref) {
   rcan->cd(1);
   gPad->SetLogy();
   TH1F* umomres = new TH1F("umomres","Upstream momentum resolution;MeV",251,momlo,momhi);
-  ref->Project("umomres","umcmom-umom",ugood+goodmc);
-  double uint = 2*umomres->GetEntries()*umomres->GetBinWidth(1);
-  cball->SetParameters(uint,0.0,0.1,3.0,0.8,0.02,0.3);
+  ref->Project("umomres","umcmom-umom",ugood+goodmc+ud0low);
+  double upint = 2*umomres->GetEntries()*umomres->GetBinWidth(1);
+  cball->SetParameters(upint,0.0,0.1,3.0,0.8,0.02,0.3);
   cball->SetParLimits(5,0.001,0.4);
   cball->SetParLimits(6,0.1,umomres->GetRMS());
   umomres->Fit("cball","LIR");
@@ -124,7 +129,7 @@ void momfit(TTree* ref) {
   rcan->cd(2);
   gPad->SetLogy();
   TH1F* dmomres = new TH1F("dmomres","Downstream momentum resolution;MeV",251,momlo,momhi);
-  ref->Project("dmomres","dmom-dmcmom",dgood+goodmc);
+  ref->Project("dmomres","dmom-dmcmom",dgood+goodmc+dd0low);
   double dint = 2*dmomres->GetEntries()*dmomres->GetBinWidth(1);
   cball->SetParameters(dint,0.0,0.1,3.0,0.8,0.02,0.3);
   cball->SetParLimits(5,0.001,0.4);
@@ -134,9 +139,9 @@ void momfit(TTree* ref) {
   rcan->cd(3);
   gPad->SetLogy();
   TH1F* umomresd = new TH1F("umomresd","Upstream momentum resolution, d0 cut;MeV",251,momlo,momhi);
-  ref->Project("umomresd","umcmom-umom",ugood+goodmc+ud0);
-  double uintd = 2*umomresd->GetEntries()*umomresd->GetBinWidth(1);
-  cball->SetParameters(uintd,0.0,0.1,3.0,0.8,0.02,0.3);
+  ref->Project("umomresd","umcmom-umom",ugood+goodmc+ud0hi);
+  double upintd = 2*umomresd->GetEntries()*umomresd->GetBinWidth(1);
+  cball->SetParameters(upintd,0.0,0.1,3.0,0.8,0.02,0.3);
   cball->SetParLimits(5,0.001,0.4);
   cball->SetParLimits(6,0.1,umomresd->GetRMS());
   umomresd->Fit("cball","LIR");
@@ -144,7 +149,7 @@ void momfit(TTree* ref) {
   rcan->cd(4);
   gPad->SetLogy();
   TH1F* dmomresd = new TH1F("dmomresd","Downstream momentum resolution, d0 cut;MeV",251,momlo,momhi);
-  ref->Project("dmomresd","dmom-dmcmom",dgood+goodmc+dd0);
+  ref->Project("dmomresd","dmom-dmcmom",dgood+goodmc+dd0hi);
   double dintd = 2*dmomresd->GetEntries()*dmomresd->GetBinWidth(1);
   cball->SetParameters(dintd,0.0,0.1,3.0,0.8,0.02,0.3);
   cball->SetParLimits(5,0.001,0.4);
@@ -159,11 +164,11 @@ void diffres(TTree* ref) {
   TH1F* dmomdiff = new TH1F("dmomdiff","Reco Downstream - Upstream momentum, d0 cut",251,difflo,diffhi);
   TH1F* dmcmomdiff = new TH1F("dmcmomdiff","True Downstream - Upstream momentum, d0 cut",251,difflo,diffhi);
 
-  ref->Project("momdiff","dmom-umom",ugood+dgood+goodmc);
-  ref->Project("mcmomdiff","dmcmom-umcmom",ugood+dgood+goodmc);
+  ref->Project("momdiff","dmom-umom",ugood+dgood+goodmc+ud0low+dd0low);
+  ref->Project("mcmomdiff","dmcmom-umcmom",ugood+dgood+goodmc+ud0low+dd0low);
 
-  ref->Project("dmomdiff","dmom-umom",ugood+dgood+goodmc+ud0+dd0);
-  ref->Project("dmcmomdiff","dmcmom-umcmom",ugood+dgood+goodmc+ud0+dd0);
+  ref->Project("dmomdiff","dmom-umom",ugood+dgood+goodmc+ud0hi+dd0hi);
+  ref->Project("dmcmomdiff","dmcmom-umcmom",ugood+dgood+goodmc+ud0hi+dd0hi);
 
   TCanvas* dcan = new TCanvas("dcan","Momentum Difference",1200,800);
   dcan->Clear();
