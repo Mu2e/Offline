@@ -1,8 +1,9 @@
 //
+// Check self consistency of all SimParticleCollections in the event.
 //
-// $Id: SimParticleCheck00_module.cc,v 1.1 2012/10/20 23:09:40 kutschke Exp $
+// $Id: SimParticleCheck00_module.cc,v 1.2 2012/10/20 23:14:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/10/20 23:09:40 $
+// $Date: 2012/10/20 23:14:04 $
 //
 // Original author Rob Kutschke
 //
@@ -86,6 +87,7 @@ namespace mu2e {
 
     _hNCollections->Fill(allSims.size());
 
+    // See if any children are created before the parent!
     for ( HandleVector::const_iterator i=allSims.begin(), e=allSims.end(); i != e; ++i ){
       const SimParticleCollection& sims(**i);
       nSims += sims.size();
