@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.15 2012/10/17 21:31:21 brownd Exp $
+// $Id: ReadKalFits_module.cc,v 1.16 2012/10/21 00:38:21 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/10/17 21:31:21 $
+// $Date: 2012/10/21 00:38:21 $
 //
 // Original author Rob Kutschke
 //
@@ -70,6 +70,8 @@ namespace mu2e {
     // Control level of printout.
     int _verbosity;
     int _maxPrint;
+    // whether or not to include MC info for empty events
+    bool _processEmpty;
 
     // Histograms
     TH1F* _hNTracks;
@@ -95,6 +97,7 @@ namespace mu2e {
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
     _verbosity(pset.get<int>("verbosity",0)),
     _maxPrint(pset.get<int>("maxPrint",0)),
+    _processEmpty(pset.get<bool>("processEmpty",true)),
     _hNTracks(0),
     _hfitCL(0),
     _hChisq(0),
@@ -187,7 +190,7 @@ namespace mu2e {
 
     }
 // if there are no tracks, enter dummies
-    if(trks.size() == 0){
+    if(trks.size() == 0 && _processEmpty){
       _kfitmc.kalDiag(0);
     }
   }
