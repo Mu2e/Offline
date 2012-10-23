@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.35 2012/09/19 20:17:37 brownd Exp $
+// $Id: KalFit.cc,v 1.36 2012/10/23 20:38:51 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/09/19 20:17:37 $
+// $Date: 2012/10/23 20:38:51 $
 //
 
 // the following has to come before other BaBar includes
@@ -77,7 +77,7 @@ namespace mu2e
 //    _ambigflip(pset.get<bool>("ambigflip",false)),
     _weedhits(pset.get<bool>("weedhits",true)),
     _removefailed(pset.get<bool>("RemoveFailedFits",true)),
-    _maxhitchi(pset.get<double>("maxhitchi",5.0)),
+    _maxhitchi(pset.get<double>("maxhitchi",4.0)),
     _maxiter(pset.get<unsigned>("maxiter",10)),
     _mingap(pset.get<double>("mingap",0.1)),
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
