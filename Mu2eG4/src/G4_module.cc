@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.57 2012/08/23 23:36:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/23 23:36:14 $
+// $Id: G4_module.cc,v 1.58 2012/10/23 21:02:21 genser Exp $
+// $Author: genser $
+// $Date: 2012/10/23 21:02:21 $
 //
 // Original author Rob Kutschke
 //
@@ -74,6 +74,7 @@
 #include "G4Run.hh"
 #include "G4Timer.hh"
 #include "G4VUserPhysicsList.hh"
+#include "G4RunManagerKernel.hh"
 #include "G4SDManager.hh"
 
 // ROOT includes
@@ -124,6 +125,7 @@ namespace mu2e {
     G4UImanager  *_UI;
     std::auto_ptr<G4VisManager> _visManager;
     int _rmvlevel;
+    int _tmvlevel;
     int _checkFieldMap;
 
     // Name of a macro file for visualization.
@@ -165,6 +167,7 @@ namespace mu2e {
     _UI(0),
     _visManager(0),
     _rmvlevel(pSet.get<int>("diagLevel",0)),
+    _tmvlevel(pSet.get<int>("trackingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
     _visMacro(pSet.get<std::string>("visMacro","")),
     _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel")),
@@ -242,8 +245,10 @@ namespace mu2e {
     _steppingAction->beginRun( _processInfo, worldGeom->mu2eOriginInWorld() );
     _stackingAction->beginRun( worldGeom->dirtG4Ymin(), worldGeom->dirtG4Ymax() );
 
-    // A few more things that only need to be done only once per job, not once per run, but which need to be
-    // done after the call to BeamOnBeginRun.
+    // A few more things that only need to be done only once per job,
+    // not once per run, but which need to be done after the call to
+    // BeamOnBeginRun.
+
     if ( ncalls == 1 ) {
 
       _steppingAction->finishConstruction();
@@ -298,6 +303,13 @@ namespace mu2e {
 
     _trackingAction = new TrackingAction(config,_steppingAction);
     _runManager->SetUserAction(_trackingAction);
+
+    // setting tracking/stepping verbosity level; tracking manager
+    // sets stepping verbosity level as well; 
+
+    G4RunManagerKernel const * rmk = G4RunManagerKernel::GetRunManagerKernel();
+    G4TrackingManager* tm  = rmk->GetTrackingManager();
+    tm->SetVerboseLevel(_tmvlevel);
 
     // Initialize G4 for this run.
     _runManager->Initialize();
