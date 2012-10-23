@@ -1,10 +1,22 @@
-  $Id: v2_0_5.txt,v 1.16 2012/10/20 23:11:42 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2012/10/20 23:11:42 $
+  $Id: v2_0_5.txt,v 1.17 2012/10/23 00:25:08 mjlee Exp $
+  $Author: mjlee $
+  $Date: 2012/10/23 00:25:08 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_5
+
+15) October 22, 2012 mjlee
+    Modification on TrkExt module and related parts to cooperate
+    multiple instances for particle type and fit direction.
+    Modified files :
+      Analysis/ReadTrkExt_module.cc
+      RecoDataProducts/TrkExtTraj.hh
+      RecoDataProducts/TrkExtTraj.cc
+      RecoDataProducts/classes.h
+      RecoDataProducts/classes_def.xml
+      TrkExt/TrkExt_module.cc
+      TrkExt/test/TrkExt.fcl
 
 14) October 20, 2012 kutschke
     Added two new modules to do simple self consistency checks.

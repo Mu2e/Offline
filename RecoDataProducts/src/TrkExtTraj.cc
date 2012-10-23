@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtTraj.cc,v 1.1 2012/08/04 00:16:02 mjlee Exp $
+//  $Id: TrkExtTraj.cc,v 1.2 2012/10/23 00:25:07 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:16:02 $
+//  $Date: 2012/10/23 00:25:07 $
 //
 //  Original author MyeongJae Lee
 //
@@ -10,11 +10,13 @@
 
 #include "RecoDataProducts/inc/TrkExtTraj.hh"
 #include "RecoDataProducts/inc/TrkExtTrajPoint.hh"
+#include <utility>
 
 using namespace std;
 
 namespace mu2e {
 
+  // Constructors
   TrkExtTraj::TrkExtTraj() {
     _pt.clear();
     _pahitidx.clear();
@@ -37,6 +39,7 @@ namespace mu2e {
     _sthitidx = dt._sthitidx;
   }
 
+  // operator overloading
   TrkExtTraj & TrkExtTraj::operator= (const TrkExtTraj & dt) {
     _pt = dt._pt;
     _ret = dt._ret;
@@ -56,6 +59,7 @@ namespace mu2e {
     return _pt[i];
   }
 
+  //vector-like accessor
   void TrkExtTraj::push_back (const TrkExtTrajPoint & trajPoint) {
     _pt.push_back(trajPoint);
   }
@@ -65,6 +69,70 @@ namespace mu2e {
     _pahitidx.clear();
     _sthitidx.clear();
   }
+
+  // PA/ST related
+  void TrkExtTraj::makePASTHitTable () {
+    _ptidx_pa.clear();
+    _ptidx_st.clear();
+    _deltap_pa.clear();
+    _deltap_st.clear();
+    unsigned int ret = 0, first, second;
+    double esum = 0;
+    if (_pahitidx.size() >0) {
+      for (unsigned int i = 0 ; i < _pahitidx.size() ; ++i) {
+        ret = findPASTHit(_pahitidx[i].first, ret);
+        first = ret;
+        ret = findPASTHit(_pahitidx[i].second, ret+1);
+        second = ret;
+        _ptidx_pa.push_back(make_pair(first, second));
+        esum = 0;
+        if (second > first) esum = _pt[second].momentum().mag() - _pt[first].momentum().mag();
+        _deltap_pa.push_back(esum);
+      }
+    }
+    if (_sthitidx.size() >0) {
+      for (unsigned int i = 0 ; i < _sthitidx.size() ; ++i) {
+        ret = findPASTHit(_sthitidx[i].first, ret);
+        first = ret;
+        ret = findPASTHit(_sthitidx[i].second, ret+1);
+        second = ret;
+        _ptidx_st.push_back(make_pair(first, second));
+        esum = 0;
+        if (second > first) esum = _pt[second].momentum().mag() - _pt[first].momentum().mag();
+        _deltap_st.push_back(esum);
+      }
+    }
+  }
+
+  unsigned int TrkExtTraj::findPASTHit (unsigned int idx, unsigned int start) {
+    int iidx = (int)idx;
+    for (unsigned int i = start ; i < _pt.size() ; ++i) {
+      if (_pt[i].trajPointId() == iidx) return i;
+    }
+    for (unsigned int i = 0 ; i < start ; ++i) {
+      if (_pt[i].trajPointId() == iidx) return i;
+    }
+    cout <<  "TrkExtTraj Error: Cannor find matching entry " << idx << " PA/ST data now invalid." << endl;
+    return 0;
+  }
+
+  double TrkExtTraj::getDeltapPA () {
+    double esum = 0;
+    for (unsigned int i  = 0 ; i < _deltap_pa.size() ; ++i) {
+      esum += _deltap_pa[i];
+    }
+    return esum;
+  }
+
+  double TrkExtTraj::getDeltapST () {
+    double esum = 0;
+    for (unsigned int i  = 0 ; i < _deltap_st.size() ; ++i) {
+      esum += _deltap_st[i];
+    }
+    return esum;
+  }
+
+
 
 
 

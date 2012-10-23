@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.19 2012/09/19 03:54:19 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/09/19 03:54:19 $
+// $Id: classes.h,v 1.20 2012/10/23 00:25:07 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/10/23 00:25:07 $
 //
 // Original author Rob Kutschke
 //
@@ -62,7 +62,7 @@ template class art::Ptr<mu2e::TrkExtTrajPoint>;
 template class std::vector<mu2e::TrkExtTrajPoint>;
 template class art::Ptr<mu2e::TrkExtTraj>;
 template class std::vector<mu2e::TrkExtTraj>;
-
+template class std::vector<std::pair<unsigned int, unsigned int> >;
 
 template class art::Wrapper<mu2e::StrawHitCollection>;
 template class art::Wrapper<mu2e::StrawClusterCollection>;

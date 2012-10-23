@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkExt.fcl,v 1.2 2012/08/04 01:05:03 mjlee Exp $
+# $Id: TrkExt.fcl,v 1.3 2012/10/23 00:25:08 mjlee Exp $
 # $Author: mjlee $
-# $Date: 2012/08/04 01:05:03 $
+# $Date: 2012/10/23 00:25:08 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -51,12 +51,18 @@ physics :
 
     # Form StrawHits (SH).
     makeSH : @local::makeSH
-    TrkPatRec : @local::TrkPatRec
+    tprDem : @local::TrkPatRecDownstreameMinus
+    tprDep : @local::TrkPatRecDownstreamePlus
+    tprUem : @local::TrkPatRecUpstreameMinus
+    tprUep : @local::TrkPatRecUpstreamePlus
+
 
     trkext :
     {
       module_type : TrkExt
-      fitterModuleLabel : TrkPatRec
+      fitterModuleLabelArray : ["tprDem", "tprDep", "tprUem", "tprUep"]
+      fitparticleArray : [11, -11, 11, -11]
+      fitdirectionArray : [0, 0, 1, 1]
       g4ModuleLabel : g4run
       makerModuleLabel : makeSH 
       maxMomentum : 104.9599
@@ -72,6 +78,7 @@ physics :
       debugLevel : 1
     }
 
+
    }
 
  
@@ -81,8 +88,10 @@ physics :
     backRec : 
     {
       module_type : ReadTrkExt
-      fitterModuleLabel : TrkPatRec
       trkextModuleLabel : trkext
+      fitterModuleLabelArray : ["tprDem", "tprDep", "tprUem", "tprUep"]
+      fitparticleArray : [11, -11, 11, -11]
+      fitdirectionArray : [0, 0, 1, 1]
       g4ModuleLabel : g4run
       makerModuleLabel : makeSH 
       mcFlag : true
@@ -107,10 +116,9 @@ physics :
   }
 
 
-  p1 : [generate , g4run, makeSH, TrkPatRec, trkext]
+  p1 : [generate, g4run, makeSH, tprUem, tprUep, tprDem, tprDep, trkext]
   e1 : [backRec]
-# To see the event display and to write out data file, use following line
-# e1 : [backRec, ReadKalFits, eventdisplay, outfile]
+  e2 : [backRec, ReadKalFits, eventdisplay, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]

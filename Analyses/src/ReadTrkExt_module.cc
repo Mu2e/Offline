@@ -3,9 +3,9 @@
 //  All in Detector (=Tracker) coordinate. Points other than tracker coordinates are properly transformed. 
 //  B field basically requires mu2e coordinate
 //
-//  $Id: ReadTrkExt_module.cc,v 1.4 2012/09/08 02:24:24 echenard Exp $
-//  $Author: echenard $
-//  $Date: 2012/09/08 02:24:24 $
+//  $Id: ReadTrkExt_module.cc,v 1.5 2012/10/23 00:25:07 mjlee Exp $
+//  $Author: mjlee $
+//  $Date: 2012/10/23 00:25:07 $
 //
 //  Original author MyeongJae Lee
 //
@@ -37,6 +37,7 @@ using namespace CLHEP;
 #include "TrkBase/TrkHotList.hh"
 //#include "TrkBase/HelixParams.hh"
 #include "TrkBase/TrkHitOnTrk.hh"
+#include "TrkBase/TrkParticle.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -50,11 +51,10 @@ using namespace CLHEP;
 #include "MCDataProducts/inc/PointTrajectory.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
-#include "KalmanTests/inc/TrkFitDirection.hh"
-#include "TrkBase/TrkParticle.hh"
 
 #include "TrkExt/inc/TrkExtMCHits.hh"
 #include "TrkExt/inc/TrkExtDetectors.hh"
+#include "TrkExt/inc/TrkExtInstanceName.hh"
 #include "RecoDataProducts/inc/TrkExtTrajPoint.hh"
 #include "RecoDataProducts/inc/TrkExtTraj.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
@@ -83,7 +83,10 @@ namespace mu2e {
 
   private:
 
-    std::string _fitterModuleLabel;
+    std::vector<std::string> _fitterModuleLabelArray;
+    std::vector<int> _fitparticleArray;
+    std::vector<int> _fitdirectionArray;
+
     std::string _trkextModuleLabel;
     std::string _g4ModuleLabel;
     std::string _makerModuleLabel;
@@ -96,18 +99,18 @@ namespace mu2e {
     bool _flagPatRec;
     bool _flagHits;
 
-    string _trkPatRecInstanceName;
+    TrkExtInstanceName _trkPatRecInstanceName;
 
     TTree * _hTrk;
 
-    int _evtid, _trkid, _nhits, _nhots, _ntrks, _nsim, _nback, _nfwrd, _npahits, _npaclust, _nbackpaclust, _nbackstclust, _exitcode;
+    int _evtid, _hepid, _updown, _trkid, _nhits, _nhots, _ntrks, _nsim, _nback, _nfwrd, _npahits, _npaclust, _nbackpaclust, _nbackstclust, _exitcode;
     float _hotx[MAXNHOT], _hoty[MAXNHOT], _hotz[MAXNHOT], _hott0[MAXNHOT];
     float _trkl0, _trkl1, _trkl[MAXNTRK], _trkx[MAXNTRK], _trky[MAXNTRK], _trkz[MAXNTRK];
     float _trkd0[MAXNTRK], _trkz0[MAXNTRK], _trkphi[MAXNTRK], _trkomega[MAXNTRK], _trktanDip[MAXNTRK];
     float _trkpx[MAXNTRK], _trkpy[MAXNTRK], _trkpz[MAXNTRK], _trkp[MAXNTRK];
     float _simx[MAXNSIM], _simy[MAXNSIM], _simz[MAXNSIM], _simp0, _simt0;
     float _vdx[5], _vdy[5], _vdz[5], _vdpx[5], _vdpy[5], _vdpz[5], _vdp[5];
-    float _back_x[MAXNBACK], _back_y[MAXNBACK], _back_z[MAXNBACK], _back_px[MAXNBACK], _back_py[MAXNBACK], _back_pz[MAXNBACK], _back_p[MAXNBACK], _back_rho[MAXNBACK], _back_s, _back_t;
+    float _back_x[MAXNBACK], _back_y[MAXNBACK], _back_z[MAXNBACK], _back_px[MAXNBACK], _back_py[MAXNBACK], _back_pz[MAXNBACK], _back_p[MAXNBACK], _back_rho[MAXNBACK], _back_s[MAXNBACK], _back_t[MAXNBACK];
     float _back_ex[MAXNBACK], _back_ey[MAXNBACK], _back_ez[MAXNBACK], _back_epx[MAXNBACK], _back_epy[MAXNBACK], _back_epz[MAXNBACK], _back_ep[MAXNBACK], _back_er[MAXNBACK]; 
     int _back_vid[MAXNBACK];
     float _back_paclust_z[MAXNPAHITS], _back_paclust_dp[MAXNPAHITS], _back_paclust_dptot;
@@ -129,7 +132,9 @@ namespace mu2e {
   };
 
   ReadTrkExt::ReadTrkExt(fhicl::ParameterSet const& pset):
-    _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
+    _fitterModuleLabelArray(pset.get<std::vector<std::string> >("fitterModuleLabelArray")),
+    _fitparticleArray(pset.get<std::vector<int> >("fitparticleArray")),
+    _fitdirectionArray(pset.get<std::vector<int> >("fitdirectionArray")),
     _trkextModuleLabel(pset.get<string>("trkextModuleLabel")),
     _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
     _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
@@ -144,6 +149,25 @@ namespace mu2e {
     _ntrks = 0;
     _nsim = 0;
     _nback = 0;
+
+    if (   _fitterModuleLabelArray.size() <=0 
+        || _fitparticleArray.size() <= 0  
+        || _fitdirectionArray.size() <=0        
+        || _fitterModuleLabelArray.size() != _fitparticleArray.size()
+        || _fitterModuleLabelArray.size() != _fitdirectionArray.size()
+        || _fitdirectionArray.size() != _fitparticleArray.size() ) { 
+      throw cet::exception("RANGE") 
+        << "ReadTrkExt : Error in fitterModuleNameArray, fitparticleArray, or fitdirectionArray. They are not given properly or never given.";
+    }
+
+    for (unsigned int i = 0 ; i <_fitterModuleLabelArray.size() ; ++i) {
+      _trkPatRecInstanceName.construct(
+          (TrkParticle::type)(_fitparticleArray[i]),
+          _fitdirectionArray[i],      
+          _fitterModuleLabelArray[i]);
+      cout << "ReadTrkExt : module=" << _trkPatRecInstanceName.fitterName(i) << ", instance=" << _trkPatRecInstanceName.name(i) << " created" << endl;
+    }
+
     switch (_debugLevel) {
       case 1:
         _flagPAHits = false;
@@ -165,8 +189,6 @@ namespace mu2e {
         _flagHits = false;
     }
 
-    _trkPatRecInstanceName = TrkFitDirection(TrkFitDirection::downstream).name() + TrkParticle(TrkParticle::e_minus).name();
-
   }
 
   void ReadTrkExt::beginJob(){
@@ -175,6 +197,8 @@ namespace mu2e {
     // _hTrk
     _hTrk = tfs->make<TTree>("hTrk", "Track and recon info");
     _hTrk->Branch("evtid", &_evtid, "evtid/I");
+    _hTrk->Branch("hepid", &_hepid, "hepid/I");
+    _hTrk->Branch("updown", &_updown, "updown/I");
     _hTrk->Branch("trkid", &_trkid, "trkid/I");
     _hTrk->Branch("nhits", &_nhits, "nhits/I");
     _hTrk->Branch("nhots", &_nhots, "nhots/I");
@@ -220,8 +244,8 @@ namespace mu2e {
     _hTrk->Branch("back_epz", _back_epz, "back_epz[nback]/F");
     _hTrk->Branch("back_ep", _back_ep, "back_ep[nback]/F");
     _hTrk->Branch("back_er", _back_er, "back_er[nback]/F");
-    _hTrk->Branch("back_s", &_back_s, "back_s/F");
-    _hTrk->Branch("back_t", &_back_t, "back_t/F");
+    _hTrk->Branch("back_s", &_back_s, "back_s[nback]/F");
+    _hTrk->Branch("back_t", &_back_t, "back_t[nback]/F");
     _hTrk->Branch("back_vid", _back_vid, "back_vid[nback]/I");
     _hTrk->Branch("nbackpaclust", &_nbackpaclust, "nbackpaclust/I");
     _hTrk->Branch("back_paclust_z", _back_paclust_z, "back_paclust_z[nbackpaclust]/F"); 
@@ -291,45 +315,61 @@ namespace mu2e {
 
 
     art::Handle<KalRepCollection> trksHandle;
-    event.getByLabel(_fitterModuleLabel, _trkPatRecInstanceName, trksHandle);
-    KalRepCollection const& trks = *trksHandle;
-
     art::Handle<TrkExtTrajCollection> trkextHandle;
-    event.getByLabel(_trkextModuleLabel, trkextHandle);
-    TrkExtTrajCollection const & trkexts = *trkextHandle;
 
+    for (unsigned int instanceIter = 0 ; instanceIter < _trkPatRecInstanceName.size() ; ++instanceIter) {
+      TrkExtInstanceNameEntry & instance = _trkPatRecInstanceName.get(instanceIter);
+      if (instance.updown) _updown = 1;
+      else _updown = 0;
+      _hepid = instance.hepid;
 
-    for ( size_t i=0; i< trks.size(); ++i ){
-      _trkid = i;
-      KalRep const & trk = *(trks.at(i));
-      TrkHotList const* hots  = trk.hotList();
-      TrkExtTraj const& trkext = trkexts[i];
+      event.getByLabel(instance.fitterName, instance.name, trksHandle);
+      event.getByLabel(_trkextModuleLabel, instance.name, trkextHandle);
 
-      _nhits = _nhots = hots->nHit();
-      _ntrks = MAXNTRK;
-      _nsim = 0;
-      
-
-      if (_nhits >(signed int) MAXNHOT || _nhots > (signed int) MAXNHOT ) {
-        cerr << "ReadTrkExt_module: Too many hits or hots (" <<_nhits << ", " << _nhots <<  ") per track " << _trkid << " in event " << _evtid <<". Ignored.\n";
-        continue;
+      bool trkvalidity = trksHandle.isValid();
+      bool extvalidity = trkextHandle.isValid();
+      if (!trkvalidity && !extvalidity) { continue; }
+      else if (trkvalidity && extvalidity) {;}
+      else {
+        cerr << "ReadTrkExt : strange recon status : trk " << (trkvalidity?"valid":"not valid") << ", ext " <<(extvalidity?"valid":"not valid") << endl;
+        _hTrk->Fill();
+        return;
       }
-
-      readHits (event, hots) ;
-
-      readTrkPatRec (trk);
-
-      vector <TrkExtTrajPoint> pahits;
-      vector <TrkExtTrajPoint> sthits;
-      doExtDataBooking (trkext, pahits, sthits);
-      doPAHitBooking (pahits); 
-      doSTHitBooking (sthits); 
-
-      _hTrk->Fill();
-      
-
-    }  // end of trks loop
-
+  
+      KalRepCollection const& trks = *trksHandle;
+      TrkExtTrajCollection const & trkexts = *trkextHandle;
+  
+      for ( size_t i=0; i< trks.size(); ++i ){
+        _trkid = i;
+        KalRep const & trk = *(trks.at(i));
+        TrkHotList const* hots  = trk.hotList();
+        TrkExtTraj const& trkext = trkexts[i];
+  
+        _nhits = _nhots = hots->nHit();
+        _ntrks = MAXNTRK;
+        _nsim = 0;
+        
+  
+        if (_nhits >(signed int) MAXNHOT || _nhots > (signed int) MAXNHOT ) {
+          cerr << "ReadTrkExt_module: Too many hits or hots (" <<_nhits << ", " << _nhots <<  ") per track " << _trkid << " in event " << _evtid <<". Ignored.\n";
+          continue;
+        }
+  
+        readHits (event, hots) ;
+  
+        readTrkPatRec (trk);
+  
+        vector <TrkExtTrajPoint> pahits;
+        vector <TrkExtTrajPoint> sthits;
+        doExtDataBooking (trkext, pahits, sthits);
+        doPAHitBooking (pahits); 
+        doSTHitBooking (sthits); 
+  
+        _hTrk->Fill();
+        
+  
+      }  // end of trks loop
+    } // end of instanceName
   }
 
 
@@ -579,6 +619,8 @@ namespace mu2e {
       _back_ep[i] = safeSqrt( hit.covpxpx()*px*px + hit.covpypy()*py*py + hit.covpzpz()*pz*pz + 2.*px*py*hit.covpxpy() + 2.*py*pz*hit.covpypz() + 2.*pz*px*hit.covpxpz() ) / p;
       _back_er[i] = safeSqrt( hit.covxx()*x*x + hit.covyy()*y*y + 2.*x*y*hit.covxy() ) / rho;
       _back_vid[i] = hit.volumeId();
+      _back_t[i] = hit.flightTime();
+      _back_s[i] = hit.flightLength();
 
       if (_back_vid[i] == TrkExtDetectorList::ProtonAbsorber) pahits.push_back(hit);
       else if (i>0 && _back_vid[i-1] == TrkExtDetectorList::ProtonAbsorber) pahits.push_back(hit);
@@ -589,14 +631,10 @@ namespace mu2e {
       else {;}
     }
     if (traj.size() <=0) {
-      _back_s = 0;
-      _back_t = 0;
       _exitcode = traj.exitCode();
       _nback = 0;
     }
     else {
-      _back_s = traj.flightLength();
-      _back_t = traj.flightTime();
       _exitcode = traj.exitCode();
       _nback = int(i);
     }
