@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.45 2012/10/04 15:27:57 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.46 2012/10/23 20:39:47 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/10/04 15:27:57 $
+// $Date: 2012/10/23 20:39:47 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -290,7 +290,7 @@ namespace mu2e
     _maxrho(pset.get<double>("MaxRho",660.0)),
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","BDT method")),
     _dpeaktype(pset.get<std::string>("DeltaPeakTMVAType","BDT method")),
-    _dhitmvaprecut(pset.get<double>("DeltaHitMVAPreCut",0.4)),
+    _dhitmvaprecut(pset.get<double>("DeltaHitMVAPreCut",0.1)),
     _dhitmvapostcut(pset.get<double>("DeltaHitMVAPostCut",0.4)),
     _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.1)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
@@ -304,7 +304,7 @@ namespace mu2e
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
     _maxhelixdoca(pset.get<double>("MaxHelixDoca",40.0)),
     _maxadddoca(pset.get<double>("MaxAddDoca",2.75)),
-    _maxaddchi(pset.get<double>("MaxAddChi",5.0)),
+    _maxaddchi(pset.get<double>("MaxAddChi",4.0)),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet())),
