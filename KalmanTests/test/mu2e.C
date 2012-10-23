@@ -218,7 +218,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,d
   allcan->SaveAs((std::string("mu2e_all")+ssuf).c_str());
   mu2ecan->SaveAs((std::string("mu2e")+ssuf).c_str());
 
-  TCanvas* dioc = new TCanvas("dio","dio",1200,800);
+  TCanvas* dioc = new TCanvas("dioc","dio",1200,800);
   dioc->Divide(2,2);
 
   Double_t dmhi = trueconvmom;
@@ -233,6 +233,36 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,d
   diogen->SetLineColor(kRed);
   diowt->SetStats(0);
   diogen->SetStats(0);
+
+
+  Int_t colors[4] = {kRed,kBlue,kGreen,kBlack};
+  TH1F* diogenwin[4] = {0,0,0,0};
+  TH1F* diodiffwin[4] = {0,0,0,0};
+  const char* dopt[4] = {"","same","same","same"};
+  const char* cutset[4] = {"Cutset A","Cutset B","Cutset C","Cutset D"};
+  TLegend* dgenwinleg = new TLegend(.5,.6,.7,.9);
+  for(unsigned icut=0;icut<4;icut++){
+    char diogenname[50], diodiffname[50];
+    snprintf(diogenname,50,"diogenwin%i",icut);
+    diogenwin[icut] = new TH1F(diogenname,"True momentum of DIO in signal box;MeV",100,dmlow,dmhi);
+    diogenwin[icut]->SetStats(0);
+
+    snprintf(diodiffname,50,"diodiffwin%i",icut);
+    diodiffwin[icut] = new TH1F(diodiffname,"Reco - true momentum of DIO in signal box;MeV",100,-1,2);
+    diodiffwin[icut]->SetStats(0);
+//   TH1F* diogood[icut] = new TH1F("diogood","True DIO momentum",100,dmlow,dmhi);
+//    dio->Project("diogoodwt","mcmom",goodfit);
+
+    TCut quality = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
+    TCut final = (reco+pitch+livegate+quality);
+    dio->Project(diogenname,"mcentmom","diowt"*(final+momwin));
+    diogenwin[icut]->SetFillColor(colors[icut]);
+    dio->Project(diodiffname,"fitmom-mcentmom","diowt"*(final+momwin));
+    diodiffwin[icut]->SetFillColor(colors[icut]);
+    dgenwinleg->AddEntry(diogenwin[icut],cutset[icut],"f");
+  }
+
+
   dioc->cd(1);
   gPad->SetLogy();
 // dead-reconing on spectrum, accounting for bins
@@ -246,31 +276,6 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,d
   dioleg->AddEntry(diowt,"Weighted","l");
   dioleg->AddEntry(diocz_f,"Czarnecki etal","l");
   dioleg->Draw();
-
-  dioc->cd(3);
-//  gPad->SetLogy();
-  Int_t colors[4] = {kRed,kBlue,kGreen,kBlack};
-  TH1F* diogenwin[4] = {0,0,0,0};
-  const char* dopt[4] = {"","same","same","same"};
-  const char* cutset[4] = {"Cutset A","Cutset B","Cutset C","Cutset D"};
-  TLegend* dgenwinleg = new TLegend(.5,.6,.7,.9);
-  diogenwin[0] = new TH1F("diogenwin_0","True momentum of DIO in signal box;MeV",100,dmlow,dmhi);
-  for(unsigned icut=0;icut<4;icut++){
-    char dioname[50];
-    snprintf(dioname,50,"diogenwin%i",icut);
-    diogenwin[icut] = new TH1F(dioname,"True momentum of DIO in signal box;MeV",100,dmlow,dmhi);
-    diogenwin[icut]->SetStats(0);
-//   TH1F* diogood[icut] = new TH1F("diogood","True DIO momentum",100,dmlow,dmhi);
-//    dio->Project("diogoodwt","mcmom",goodfit);
-
-    TCut quality = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
-    TCut final = (reco+pitch+livegate+quality);
-    dio->Project(dioname,"mcmom",final+momwin);
-    diogenwin[icut]->SetFillColor(colors[icut]);
-    dgenwinleg->AddEntry(diogenwin[icut],cutset[icut],"f");
-    diogenwin[icut]->Draw(dopt[icut]);
-  }
-  dgenwinleg->Draw();
 
   dioc->cd(2);
   for(unsigned icut=0;icut<4;icut++){
@@ -293,6 +298,48 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,d
   momhighl->SetLineWidth(2);
   momhighl->Draw();
 
+  dioc->cd(3);
+  gPad->SetLogy();
+  for(unsigned icut=0;icut<4;icut++){
+   diogenwin[icut]->Draw(dopt[icut]);
+  }
+  dgenwinleg->Draw();
+
+  dioc->cd(4);
+  gPad->SetLogy();
+  for(unsigned icut=0;icut<4;icut++){
+   diodiffwin[icut]->Draw(dopt[icut]);
+  }
+
   dioc->SaveAs((std::string("diocan")+ssuf).c_str());
 
+  TCanvas* diores = new TCanvas("diores","DIO result",800,600);
+  gPad->SetLogy();
+  diodiffwin[mu2ecut]->Draw();
+  double split = 0.35;
+  TLine* td = new TLine(split,0.0,split,diodiffwin[mu2ecut]->GetMaximum());
+  td->SetLineColor(kBlack);
+  td->SetLineStyle(2);
+  td->SetLineWidth(2);
+  td->Draw();
+ 
+  int istart = diodiffwin[mu2ecut]->FindFixBin(split);
+  double core = diodiffwin[mu2ecut]->Integral(0,istart);
+  double tail = diodiffwin[mu2ecut]->Integral(istart+1,100);
+  double total = core+tail;
+  core /= total;
+  tail /= total;
+  core *= 100;
+  tail *= 100;
+  cout <<"core = " << core << " tail = " << tail << endl;
+  diores->SaveAs("diores.png");
+  char ccore[30], ctail[30];
+  snprintf(ccore,30,"%4.1f%%",core);
+  snprintf(ctail,30,"%4.1f%%",tail);
+  TText* tcore = new TText(0.2,0.4,ccore);
+  TText* ttail = new TText(0.6,0.4,ctail);
+  tcore->SetNDC();
+  ttail->SetNDC();
+  tcore->Draw();
+  ttail->Draw();
 }
