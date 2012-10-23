@@ -14,6 +14,8 @@ g4run :
 {
   module_type          : G4
   generatorModuleLabel : generate
+  diagLevel            : 0
+  trackingVerbosityLevel : 0
 }
 
 # Form StrawHits (SH).
