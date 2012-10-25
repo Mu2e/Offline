@@ -2,9 +2,9 @@
 // Define a minimal physics list.
 // Just transportation; used for debugging geometry.
 //
-// $Id: MinimalPhysicsList.cc,v 1.4 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: MinimalPhysicsList.cc,v 1.5 2012/10/25 20:23:58 genser Exp $
+// $Author: genser $
+// $Date: 2012/10/25 20:23:58 $
 //
 // Original author Rob Kutschke
 //
@@ -36,6 +36,7 @@ namespace mu2e {
     G4Gamma::GammaDefinition();
     G4Proton::Definition();
     G4AntiProton::Definition();
+    G4GenericIon::GenericIonDefinition();
 
   }
 
