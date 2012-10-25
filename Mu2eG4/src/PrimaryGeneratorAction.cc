@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.41 2012/10/25 20:24:25 genser Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.42 2012/10/25 22:46:17 genser Exp $
 // $Author: genser $
-// $Date: 2012/10/25 20:24:25 $
+// $Date: 2012/10/25 22:46:17 $
 //
 // Original author Rob Kutschke
 //
@@ -45,6 +45,7 @@
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
+#include "MCDataProducts/inc/PDGCode.hh"
 
 // ROOT includes
 #include "TH1D.h"
@@ -159,7 +160,13 @@ namespace mu2e {
         cout << __func__ << " genpart.pdgId()   : " <<pPdgId << endl;
       }
 
-      if (pPdgId>1000000000) {
+      static bool const firstTime = false; // set to true to generate all nuclei ground states
+      if (firstTime) {
+        G4ParticleTable::GetParticleTable()->GetIonTable()->CreateAllIon();
+        firstTime = false;
+      }
+
+      if (pPdgId>PDGCode::G4Threshold) {
 
         G4int ZZ,AA,LL,JJ; 
         G4double EE;
