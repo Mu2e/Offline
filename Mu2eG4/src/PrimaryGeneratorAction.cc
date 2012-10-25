@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.40 2012/08/14 19:56:19 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/14 19:56:19 $
+// $Id: PrimaryGeneratorAction.cc,v 1.41 2012/10/25 20:24:25 genser Exp $
+// $Author: genser $
+// $Date: 2012/10/25 20:24:25 $
 //
 // Original author Rob Kutschke
 //
@@ -22,12 +22,14 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 // G4 Includes
 #include "G4Event.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleGun.hh"
 #include "G4ParticleTable.hh"
+#include "G4IonTable.hh"
 #include "Randomize.hh"
 #include "globals.hh"
 
@@ -150,16 +152,71 @@ namespace mu2e {
       // Create a new vertex
       G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart.time());
 
+      G4int pPdgId = genpart.pdgId();
+
+      static int const verbosityLevel = 0; // local debugging variable
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " genpart.pdgId()   : " <<pPdgId << endl;
+      }
+
+      if (pPdgId>1000000000) {
+
+        G4int ZZ,AA,LL,JJ; 
+        G4double EE;
+
+        int exc = pPdgId%10;
+
+        // subtract exc to get Z,A,...
+
+        bool retCode = G4IonTable::GetNucleusByEncoding(pPdgId-exc,ZZ,AA,LL,EE,JJ);
+
+        // if g4 complains about no GenericIon we need to abort and add it in the physics list...
+
+        if ( verbosityLevel > 0) {
+          cout << __func__ << " will set up nucleus pPdgId,Z,A,L,E,J, exc: " 
+               << pPdgId 
+               << ", " << ZZ << ", " << AA << ", " << LL << ", " << EE << ", " << JJ
+               << ", " << exc << ", " << retCode
+               << endl;
+        } 
+
+        G4ParticleDefinition const * pDef;
+
+        if (exc==0) {
+
+          // a ground state
+
+          pDef = G4ParticleTable::GetParticleTable()->GetIon(ZZ,AA,LL,0.0);
+          // looks like spin is ignored and should never be non zero...
+
+        } else {
+
+          // an excited state; we will fudge it by adding 1keV
+          pDef = G4ParticleTable::GetParticleTable()->GetIon(ZZ,AA,LL,0.001);
+
+        }
+
+        if ( verbosityLevel > 0) {
+          cout << __func__ << " will set up : " 
+               << pDef->GetParticleName() 
+               << " with id: " << pDef->GetPDGEncoding() 
+               << endl;
+        }
+        // the ids should be the same
+        if ( pPdgId != pDef->GetPDGEncoding() ) {
+
+          throw cet::exception("GENE")
+            << "Problem creating "<<pPdgId << "\n";
+        }
+
+      }
+
       G4PrimaryParticle* particle =
-        new G4PrimaryParticle(genpart.pdgId(),
+        new G4PrimaryParticle(pPdgId,
                               momentum.x(),
                               momentum.y(),
                               momentum.z(),
                               genpart.momentum().e() );
-
-      // Set the charge.  Do I really need to do this?
-      G4ParticleDefinition const* g4id = particle->GetG4code();
-      particle->SetCharge( g4id->GetPDGCharge()*eplus );
 
       // Add the particle to the event.
       vertex->SetPrimary( particle );
