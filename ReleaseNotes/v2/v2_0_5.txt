@@ -1,6 +1,6 @@
-  $Id: v2_0_5.txt,v 1.20 2012/10/25 20:33:47 mjlee Exp $
-  $Author: mjlee $
-  $Date: 2012/10/25 20:33:47 $
+  $Id: v2_0_5.txt,v 1.21 2012/10/25 22:49:30 genser Exp $
+  $Author: genser $
+  $Date: 2012/10/25 22:49:30 $
 
  Still under construction
 
@@ -21,9 +21,11 @@
 
 17) October 25, 2012 genser
 
-    Enabled processing of exotic ions
+    Enabled processing of exotic nuclei
      Mu2eG4/src/PrimaryGeneratorAction.cc
      Mu2eG4/src/MinimalPhysicsList.cc
+    Added all ground states known to G4
+     ConditionsService/data/g4nuclei.tbl
 
 16) October 23, 2012 genser
 
