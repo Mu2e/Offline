@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.42 2012/10/25 22:46:17 genser Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.43 2012/10/25 22:51:30 genser Exp $
 // $Author: genser $
-// $Date: 2012/10/25 22:46:17 $
+// $Date: 2012/10/25 22:51:30 $
 //
 // Original author Rob Kutschke
 //
@@ -160,11 +160,11 @@ namespace mu2e {
         cout << __func__ << " genpart.pdgId()   : " <<pPdgId << endl;
       }
 
-      static bool const firstTime = false; // set to true to generate all nuclei ground states
-      if (firstTime) {
-        G4ParticleTable::GetParticleTable()->GetIonTable()->CreateAllIon();
-        firstTime = false;
-      }
+//       static bool firstTime = true; // uncomment generate all nuclei ground states
+//       if (firstTime) {
+//         G4ParticleTable::GetParticleTable()->GetIonTable()->CreateAllIon();
+//         firstTime = false;
+//       }
 
       if (pPdgId>PDGCode::G4Threshold) {
 
