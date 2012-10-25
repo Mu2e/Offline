@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.29 2012/09/14 17:17:34 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/09/14 17:17:34 $
+// $Id: DataInterface.h,v 1.30 2012/10/25 20:33:09 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/10/25 20:33:09 $
 //
 // Original author Ralf Ehrlich
 //
@@ -32,6 +32,7 @@ class Track;
 class Straw;
 class Cube;
 class Cylinder;
+class Cone;
 class ComponentInfo;
 class ContentSelector;
 class EventDisplayFrame;
@@ -73,6 +74,7 @@ class DataInterface
   std::vector<boost::shared_ptr<VirtualShape> > _otherstructures;
   std::vector<boost::shared_ptr<Cube> >         _crvscintillatorbars;
   std::vector<boost::shared_ptr<VirtualShape> > _mbsstructures;
+  std::vector<boost::shared_ptr<Cone> > _mecostylepastructures;
   double            _xOffset, _zOffset, _zOffsetDS;
   timeminmax        _hitsTimeMinmax, _tracksTimeMinmax;
   spaceminmax       _trackerMinmax, _targetMinmax, _calorimeterMinmax, _tracksMinmax;
@@ -124,6 +126,7 @@ class DataInterface
   void makeStrawsVisibleBeforeStart(bool visible);
   void makeCrystalsVisibleBeforeStart(bool visible);
   void makeMuonBeamStopStructuresVisible(bool visible);
+  void makeMecoStyleProtonAbsorberVisible(bool visible);
   void useHitColors(bool hitcolors, bool whitebackground);
   void useTrackColors(boost::shared_ptr<ContentSelector> const &contentSelector, bool trackcolors, bool whitebackground);
   void setTrackFilter(unsigned int minPoints, double minTime, double maxTime, double minMomentum,

@@ -8,6 +8,7 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "EventDisplay/src/Cube.h"
 #include "EventDisplay/src/Cylinder.h"
+#include "EventDisplay/src/Cone.h"
 #include "EventDisplay/src/EventDisplayFrame.h"
 #include "EventDisplay/src/FilterDialog.h"
 #include "EventDisplay/src/Straw.h"
@@ -621,7 +622,6 @@ void DataInterface::fillGeometry()
     mbsz[1] = mbsstartz + mbslen[0]*2. + mbslen[1];
     mbsz[2] = mbsstartz +mbstotallen - mbslen[2];
     for (unsigned int i = 0 ; i <3 ; ++i) {
-    //for (unsigned int i = 2 ; i <3 ; ++i) {
       boost::shared_ptr<ComponentInfo> infoMBS(new ComponentInfo());
       sprintf(c,"MBS %d", i);
       infoMBS->setName(c);
@@ -638,7 +638,42 @@ void DataInterface::fillGeometry()
       _components.push_back(shapeMBS);
       _mbsstructures.push_back(shapeMBS);
     }
+  }
 
+  //MecoStyleProtonAbsorber 
+  if(config.getBool("hasProtonAbsorber", false)) {
+    if (!config.getBool("protonabsorber.isHelical", false)) {
+      char c[200];
+      double inr[2], outr[2], thickness, halflength, z;
+      outr[0] = config.getDouble("protonabsorber.OutRadius0");
+      outr[1] = config.getDouble("protonabsorber.OutRadius1");
+      thickness = config.getDouble("protonabsorber.thickness");
+      inr[0] = outr[0] - thickness;
+      inr[1] = outr[1] - thickness;
+      halflength = config.getDouble("protonabsorber.halfLength");
+      mu2e::GeomHandle<mu2e::Target> target;
+      double stoppingtargetlength=target->cylinderLength();
+      double stoppingtargetz=target->cylinderCenter();
+      z = (stoppingtargetz +_zOffsetDS) + stoppingtargetlength*0.5 + halflength;
+
+      boost::shared_ptr<ComponentInfo> infoMecoStylePA(new ComponentInfo());
+      sprintf(c,"MECOStyleProtonAbsorber");
+      infoMecoStylePA->setName(c);
+      infoMecoStylePA->setText(0,c);
+      sprintf(c,"Inner Radius1 %.f mm  Outer Radius1 %.f mm",inr[0]/CLHEP::mm,outr[0]/CLHEP::mm);
+      infoMecoStylePA->setText(1,c);
+      sprintf(c,"Inner Radius2 %.f mm  Outer Radius2 %.f mm",inr[1]/CLHEP::mm,outr[1]/CLHEP::mm);
+      infoMecoStylePA->setText(2,c);
+      sprintf(c,"Length %.f mm",2.0*halflength/CLHEP::mm);
+      infoMecoStylePA->setText(3,c);
+      sprintf(c,"Center at x: 0 mm, y: 0 mm, z: %.f mm",z/CLHEP::mm);
+      infoMecoStylePA->setText(4,c);
+      boost::shared_ptr<Cone> shapePA(new Cone(0,0,z, 0,0,0,
+                                                halflength, inr[0], outr[0], inr[1], outr[1],
+                                                NAN, _geometrymanager, _topvolume, _mainframe, infoMecoStylePA, false));
+      _components.push_back(shapePA);
+      _mecostylepastructures.push_back(shapePA);
+    }
   }
 
 //active CRV Shields
@@ -760,6 +795,19 @@ void DataInterface::makeMuonBeamStopStructuresVisible(bool visible)
 {
   std::vector<boost::shared_ptr<VirtualShape> >::const_iterator structure;
   for(structure=_mbsstructures.begin(); structure!=_mbsstructures.end(); structure++)
+  {
+    (*structure)->setDefaultVisibility(visible);
+    (*structure)->start();
+  }
+
+  //tracks and straws don't have to be pushed into the foreground if the structure is removed
+  if(visible) toForeground();
+}
+
+void DataInterface::makeMecoStyleProtonAbsorberVisible(bool visible)
+{
+  std::vector<boost::shared_ptr<Cone> >::const_iterator structure;
+  for(structure=_mecostylepastructures.begin(); structure!=_mecostylepastructures.end(); structure++)
   {
     (*structure)->setDefaultVisibility(visible);
     (*structure)->start();
@@ -1606,6 +1654,7 @@ void DataInterface::removeAllComponents()
   _otherstructures.clear();
   _crvscintillatorbars.clear();
   _mbsstructures.clear();
+  _mecostylepastructures.clear();
   delete _geometrymanager;
   _geometrymanager=NULL;
 

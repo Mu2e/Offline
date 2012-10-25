@@ -135,6 +135,11 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(_muonBeamStopStructuresButton, lh1);
   _muonBeamStopStructuresButton->Associate(this);
 
+  _mecoStyleProtonAbsorberButton = new TGCheckButton(_subFrame, "Show Conical PA", 39);
+  _mecoStyleProtonAbsorberButton->SetState(kButtonUp);
+  _subFrame->AddFrame(_mecoStyleProtonAbsorberButton, lh1);
+  _mecoStyleProtonAbsorberButton->Associate(this);
+
   TGHorizontalFrame *subFrameView   = new TGHorizontalFrame(_subFrame,300,15);
   TGTextButton *endViewButton       = new TGTextButton(subFrameView, "____  End View", 70, buttoncontext);
   TGTextButton *sideViewButton      = new TGTextButton(subFrameView, "____  Side View", 71, buttoncontext);
@@ -268,9 +273,12 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _maxXField = new TGTextEntry(zoomFrame2, new TGTextBuffer, 1504);
   _maxYField = new TGTextEntry(zoomFrame2, new TGTextBuffer, 1505);
   _maxZField = new TGTextEntry(zoomFrame2, new TGTextBuffer, 1506);
-  _phiField   = new TGNumberEntry(angleFrame, 180., 3, 1601, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0, 360);
-  _thetaField   = new TGNumberEntry(angleFrame, 60., 3, 1602, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0, 360);
-  _psiField   = new TGNumberEntry(angleFrame, 90., 3, 1603, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0, 360);
+  //_phiField   = new TGNumberEntry(angleFrame, 180., 3, 1601, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0, 360);
+  //_thetaField   = new TGNumberEntry(angleFrame, 60., 3, 1602, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0, 360);
+  //_psiField   = new TGNumberEntry(angleFrame, 90., 3, 1603, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, 0, 360);
+  _phiField   = new TGNumberEntry(angleFrame, 180., 3, 1601, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, -360, 640);
+  _thetaField   = new TGNumberEntry(angleFrame, 60., 3, 1602, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, -360, 640);
+  _psiField   = new TGNumberEntry(angleFrame, 90., 3, 1603, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, -360, 640);
   _perspectiveButton = new TGRadioButton(perspectiveFrame, "perspective", 1700);
   _parallelButton    = new TGRadioButton(perspectiveFrame, "parallel", 1701);
   _zoomInButton      = new TGTextButton(zoomFrame3, "ZoomIn", 1507);
@@ -741,6 +749,7 @@ void EventDisplayFrame::CloseWindow()
 
 Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param2)
 {
+  char c[100];
   switch (GET_MSG(msg))
   {
     case kC_TEXTENTRY:
@@ -752,6 +761,37 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
             double phi = _phiField->GetNumber();
             double theta = _thetaField->GetNumber();
             double psi = _psiField->GetNumber();
+            while (phi>360) {
+              phi-=360;
+              sprintf(c,"%.0f",phi); 
+              _phiField->SetText(c);
+            }
+            while (phi<0) {
+              phi+=360;
+              sprintf(c,"%.0f",phi); 
+              _phiField->SetText(c);
+            }
+            while (theta>360) {
+              theta-=360;
+              sprintf(c,"%.0f",theta); 
+              _thetaField->SetText(c);
+            }
+            while (theta<0) {
+              theta+=360;
+              sprintf(c,"%.0f",theta); 
+              _thetaField->SetText(c);
+            }
+            while (psi>360) {
+              psi-=360;
+              sprintf(c,"%.0f",psi); 
+              _psiField->SetText(c);
+            }
+            while (psi<0) {
+              psi+=360;
+              sprintf(c,"%.0f",psi); 
+              _psiField->SetText(c);
+            }
+
             int irep=0;
             _mainPad->GetView()->SetView(phi,theta,psi,irep);
             _mainPad->SetPhi(-90-phi);
@@ -1010,6 +1050,19 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            else 
                            {
                              _dataInterface->makeMuonBeamStopStructuresVisible(false);
+                           }
+                           drawEverything();
+                         }
+                         if(param1 == 39) 
+                         {
+                           _mainPad->cd();
+                           if(_mecoStyleProtonAbsorberButton->GetState() == kButtonDown) 
+                           {
+                             _dataInterface->makeMecoStyleProtonAbsorberVisible(true);
+                           }
+                           else 
+                           {
+                             _dataInterface->makeMecoStyleProtonAbsorberVisible(false);
                            }
                            drawEverything();
                          }
