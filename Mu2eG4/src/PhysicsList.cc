@@ -5,9 +5,9 @@
 //    with cvs tag: version 1.12 2008/09/22 16:41:20 maire
 //
 //
-// $Id: PhysicsList.cc,v 1.11 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: PhysicsList.cc,v 1.12 2012/10/26 17:27:14 genser Exp $
+// $Author: genser $
+// $Date: 2012/10/26 17:27:14 $
 //
 // Original author Rob Kutschke
 //
@@ -146,10 +146,19 @@ namespace mu2e{
 
     G4Neutron::NeutronDefinition();
     G4AntiNeutron::AntiNeutronDefinition();
+
+
   }
 
   void PhysicsList::ConstructAllOthers(){
     // A place holder for nuclei, ions etc.
+
+    G4Deuteron::Deuteron();
+    G4Triton::Triton();
+    G4He3::He3();
+    G4Alpha::Alpha();
+    G4GenericIon::GenericIonDefinition();
+
   }
 
 
