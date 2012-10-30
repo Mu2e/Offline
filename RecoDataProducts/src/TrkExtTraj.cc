@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtTraj.cc,v 1.2 2012/10/23 00:25:07 mjlee Exp $
+//  $Id: TrkExtTraj.cc,v 1.3 2012/10/30 22:05:27 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/10/23 00:25:07 $
+//  $Date: 2012/10/30 22:05:27 $
 //
 //  Original author MyeongJae Lee
 //
@@ -116,7 +116,7 @@ namespace mu2e {
     return 0;
   }
 
-  double TrkExtTraj::getDeltapPA () {
+  double TrkExtTraj::getDeltapPA () const{
     double esum = 0;
     for (unsigned int i  = 0 ; i < _deltap_pa.size() ; ++i) {
       esum += _deltap_pa[i];
@@ -124,7 +124,7 @@ namespace mu2e {
     return esum;
   }
 
-  double TrkExtTraj::getDeltapST () {
+  double TrkExtTraj::getDeltapST () const {
     double esum = 0;
     for (unsigned int i  = 0 ; i < _deltap_st.size() ; ++i) {
       esum += _deltap_st[i];

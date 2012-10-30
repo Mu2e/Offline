@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtTraj.hh,v 1.2 2012/10/23 00:25:07 mjlee Exp $
+//  $Id: TrkExtTraj.hh,v 1.3 2012/10/30 22:05:27 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/10/23 00:25:07 $
+//  $Date: 2012/10/30 22:05:27 $
 //
 //  Original author MyeongJae Lee
 //
@@ -59,8 +59,8 @@ namespace mu2e {
     TrkExtTrajPoint & getSTHit (unsigned int i) { return _pt[_ptidx_st[i].first]; }
     double getDeltapPA (unsigned int i) const { return _deltap_pa[i]; }
     double getDeltapST (unsigned int i) const { return _deltap_st[i]; }
-    double getDeltapPA (void) ;
-    double getDeltapST (void) ;
+    double getDeltapPA (void) const ;
+    double getDeltapST (void) const ;
 
 
   private:
