@@ -4,9 +4,9 @@
 //  B field basically requires mu2e coordinate
 //  G4 uses G4World coordinate
 //
-//  $Id: TrkExt_module.cc,v 1.3 2012/10/23 00:25:08 mjlee Exp $
+//  $Id: TrkExt_module.cc,v 1.4 2012/10/30 22:45:18 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/10/23 00:25:08 $
+//  $Date: 2012/10/30 22:45:18 $
 //
 //  Original author MyeongJae Lee
 //
@@ -152,6 +152,7 @@ namespace mu2e {
 
     double _dummyStoppingTarget_halfLength;
     double _dummyStoppingTarget_z0;
+    double _pa_HalfLength;
 
     void readTrkPatRec(KalRep const & trk, 
                       Hep3Vector * xstart, Hep3Vector * pstart, 
@@ -204,6 +205,7 @@ namespace mu2e {
 
     _dummyStoppingTarget_halfLength = pset.get<double>("dummyStoppingTarget.halfLength", 400.);
     _dummyStoppingTarget_z0 = pset.get<double>("dummyStoppingTarget.z0", 5900.);
+    _pa_HalfLength = pset.get<double>("protonabsorber.halfLength", 1250.);
 
     if (   _fitterModuleLabelArray.size() <=0 
         || _fitparticleArray.size() <= 0 
@@ -376,7 +378,7 @@ namespace mu2e {
       }
 
       KalRepCollection const& trks = *trksHandle;
-      cerr << "TrkExt : " << trks.size() << " obj for " << instance.name << " of event " << _evtid << endl;
+      if (trks.size() >0) cerr << "TrkExt : " << trks.size() << " obj for " << instance.name << " of event " << _evtid << endl;
   
   
       for ( size_t i=0; i< trks.size(); ++i ){
@@ -438,13 +440,13 @@ namespace mu2e {
     if (!updown) { // downstream particle
       if(p.z() >=0) return false;
       Hep3Vector xx = x+_origin;
-      if(xx.z() > _dummyStoppingTarget_z0+_dummyStoppingTarget_halfLength) return true;
+      if(xx.z() > _dummyStoppingTarget_z0+_dummyStoppingTarget_halfLength+2.*_pa_HalfLength) return true;
       return false;
     }
     else {
       if(p.z() <=0) return false;
       Hep3Vector xx = x+_origin;
-      if(xx.z() > _dummyStoppingTarget_z0+_dummyStoppingTarget_halfLength) return true;
+      if(xx.z() > _dummyStoppingTarget_z0+_dummyStoppingTarget_halfLength+2.*_pa_HalfLength) return true;
       return false;
     }
     return false;
