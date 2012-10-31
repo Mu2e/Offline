@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.46 2012/10/23 20:39:47 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.47 2012/10/31 16:24:13 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/10/23 20:39:47 $
+// $Date: 2012/10/31 16:24:13 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -135,7 +135,7 @@ namespace mu2e
     double _rmaxt, _rmaxl;
     double _maxdt, _maxdtmiss;
   // delta-ray removal parameters
-    bool _filterdeltas;
+    bool _filterdeltas, _rfold, _dhfilter;
     double _max2ddt,_maxdp;
     unsigned _maxndelta, _npbins, _ntbins;
     int _nselbins;
@@ -274,6 +274,8 @@ namespace mu2e
     _maxdt(pset.get<double>("DtMax",35.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
     _filterdeltas(pset.get<bool>("FilterDeltas",true)),
+    _rfold(pset.get<bool>("FoldRadius",true)),
+    _dhfilter(pset.get<bool>("FilterDeltaHits",true)),
     _max2ddt(pset.get<double>("Dt2DMax",75.0)),
     _maxdp(pset.get<double>("DPhiMax",0.21)),
     _maxndelta(pset.get<unsigned>("MaxNDeltas",200)),
@@ -542,7 +544,7 @@ namespace mu2e
     double dbf = (_fbf-1.0)*M_PI;
     unsigned nstrs = _strawhits->size();
     for(unsigned istr=0; istr<nstrs;++istr){
-      if(_tflags[istr].veryLoose()){
+      if( (!_dhfilter) || _tflags[istr].veryLoose()){
 	double time = correctedTime(istr);
 	double phi = _shpos[istr].phi();
 // include buffer around phi to account for wrapping
@@ -1220,7 +1222,7 @@ namespace mu2e
     unsigned nstrs = _strawhits->size();
     for(size_t istr=0; istr<nstrs;++istr){
       // only look at selected hits
-      if(_tflags[istr].veryLoose()){
+      if((!_dhfilter) || _tflags[istr].veryLoose()){
 	double phi = _shpos[istr].phi();
 	double time = correctedTime(istr);
 // loop over all the peaks
@@ -1330,7 +1332,10 @@ namespace mu2e
 	// decide if these hits are deltas: if so, flag them.  This algorithm should be a neural net, FIXME!!!!
 	delta._oldisdelta = delta._zgap < _maxzgap || delta._nsmiss <= _maxnsmiss || delta._rmean > _maxrho || delta._rmean < _minrho;
 	
-	_dpmva._rfold = fabs(delta._rmean-535);
+	if(_rfold)
+	  _dpmva._rfold = fabs(delta._rmean-535);
+	else
+	  _dpmva._rfold = delta._rmean;
 	_dpmva._zmin = delta._zmin;
 	_dpmva._zmax = delta._zmax;
 	_dpmva._zgap = delta._zgap;
