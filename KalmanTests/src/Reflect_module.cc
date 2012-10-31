@@ -2,9 +2,9 @@
 // Look for particles coming from the calorimeter and reflecting back in the
 // magnetic mirror
 //
-// $Id: Reflect_module.cc,v 1.5 2012/10/17 21:31:21 brownd Exp $
+// $Id: Reflect_module.cc,v 1.6 2012/10/31 16:19:29 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/10/17 21:31:21 $
+// $Date: 2012/10/31 16:19:29 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -24,6 +24,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 // data
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 // ROOT incldues
 #include "TTree.h"
 #include "TH1F.h"
@@ -77,6 +78,7 @@ namespace mu2e {
 
     // Module label of the module that performed the fits.
     std::string _fitterPrefix;
+    std::string _extModName;
     std::vector<std::string> _udname, _umname; // upstream particle data product names
     std::vector<std::string> _ddname, _dmname; // downstream particle data product names
     int _ipart; // particle PDG code
@@ -84,6 +86,7 @@ namespace mu2e {
     double _maxdp0, _mindt0, _maxdt0;
     double _zent; // z position of the entrance of the tracker
     unsigned _eventid;
+    bool _extrapolate;
     // diagnostic of Kalman fit
     KalFitMC _kfitmc;
     // TTree for studying reflecting fits
@@ -104,6 +107,8 @@ namespace mu2e {
     Float_t _pt0;
     Int_t _ppdg;
     threevec _ppos, _pmom, _pppos;
+    Int_t _uextnpa,_dextnpa,_uextnst,_dextnst;
+    Float_t _uextdppa,_dextdppa,_uextdpst,_dextdpst;
 // create 
     void createTree();
 // fill tree
@@ -118,6 +123,8 @@ namespace mu2e {
 
   Reflect::Reflect(fhicl::ParameterSet const& pset):
     _fitterPrefix(pset.get<string>("fitterPrefix","TPR")),
+    _extrapolate(pset.get<bool>("Extrapolate",true)),
+    _extModName(pset.get<string>("ExtrapolationModuleName","TrkExt")),
     _ipart(pset.get<int>("ParticleCode",11)),
     _mindmom(pset.get<double>("MinDeltaMom",-10.0)),
     _maxdmom(pset.get<double>("MaxDeltaMom",10.0)),
@@ -167,6 +174,9 @@ namespace mu2e {
     bool hasmc = _kfitmc.findMCData(event);
 // loop over particle type
     for(size_t ie=0;ie<_udname.size();++ie){
+      TrkExtTrajCollection const* uext(0);
+      TrkExtTrajCollection const* dext(0);
+ 
       art::Handle<KalRepCollection> utrksHandle;
       event.getByLabel(_umname[ie],_udname[ie],utrksHandle);
       if(!utrksHandle.isValid())continue;
@@ -176,6 +186,18 @@ namespace mu2e {
       event.getByLabel(_dmname[ie],_ddname[ie],dtrksHandle);
       if(!dtrksHandle.isValid())continue;
       KalRepCollection const& dtrks = *dtrksHandle;
+// if we're including extrapolation information, find it in the event
+      if(_extrapolate){
+	art::Handle<TrkExtTrajCollection> utrkextHandle;
+	event.getByLabel(_extModName,_udname[ie],utrkextHandle);
+	art::Handle<TrkExtTrajCollection> dtrkextHandle;
+	event.getByLabel(_extModName,_ddname[ie],dtrkextHandle);
+	// look for extrapolation information
+	if(utrkextHandle.isValid() && dtrkextHandle.isValid()){
+	  uext = &*utrkextHandle;
+	  dext = &*dtrkextHandle;
+	}
+      }
 // loop over pairs, and see if any match.
       for ( size_t iue=0; iue < utrks.size(); ++iue ){
 	KalRep const* ukrep = utrks[iue];
@@ -205,6 +227,18 @@ namespace mu2e {
 // These are sorted by time: first should be upstream, second down
 		      _kfitmc.fillMCTrkInfo(steps[0],_umcinfo);
 		      _kfitmc.fillMCTrkInfo(steps[1],_dmcinfo);
+		      if(_extrapolate && uext != 0 && dext != 0){
+		        TrkExtTraj const& utrkext = (*uext)[iue];
+		        TrkExtTraj const& dtrkext = (*dext)[ide];
+			_uextnpa = utrkext.getNPAHits(); 
+			_dextnpa = dtrkext.getNPAHits(); 
+			_uextnst = utrkext.getNSTHits(); 
+			_dextnst = dtrkext.getNSTHits(); 
+			_uextdppa = utrkext.getDeltapPA(); 
+			_dextdppa = dtrkext.getDeltapPA(); 
+			_uextdpst = utrkext.getDeltapST(); 
+			_dextdpst = dtrkext.getDeltapST(); 
+		      } 
 // fill info about the electron origin and the parent of this electron (IE the cosmic muon)
 		      fillParentInfo(umcinfo[0]._spp);
 		    } else
@@ -345,6 +379,16 @@ namespace mu2e {
     _reflect->Branch("ppos",&_ppos,"px/F:py/F:pz/F");
     _reflect->Branch("pmom",&_pmom,"pmx/F:pmy/F:pmz/F");
     _reflect->Branch("pppos",&_pppos,"ppx/F:ppy/F:ppz/F");
+    if(_extrapolate){
+      _reflect->Branch("uextnPA",&_uextnpa,"uextnpa/I");
+      _reflect->Branch("dextnPA",&_dextnpa,"dextnpa/I");
+      _reflect->Branch("uextnST",&_uextnst,"uextnst/I");
+      _reflect->Branch("dextnST",&_dextnst,"dextnst/I");
+      _reflect->Branch("uextdpPA",&_uextdppa,"uextdppa/F");
+      _reflect->Branch("dextdpPA",&_dextdppa,"dextdppa/F");
+      _reflect->Branch("uextdpST",&_uextdpst,"uextdpst/F");
+      _reflect->Branch("dextdpST",&_dextdpst,"dextdpst/F");
+    }
   }
 
   void
