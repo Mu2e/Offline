@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtTraj.cc,v 1.3 2012/10/30 22:05:27 mjlee Exp $
+//  $Id: TrkExtTraj.cc,v 1.4 2012/10/31 19:06:40 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/10/30 22:05:27 $
+//  $Date: 2012/10/31 19:06:40 $
 //
 //  Original author MyeongJae Lee
 //
@@ -21,6 +21,10 @@ namespace mu2e {
     _pt.clear();
     _pahitidx.clear();
     _sthitidx.clear();
+    _ptidx_pa.clear();
+    _ptidx_st.clear();
+    _deltap_pa.clear();
+    _deltap_st.clear();
     _ret = -1;
   }
 
@@ -29,6 +33,10 @@ namespace mu2e {
     _pt.push_back(trajPoint);
     _pahitidx.clear();
     _sthitidx.clear();
+    _ptidx_pa.clear();
+    _ptidx_st.clear();
+    _deltap_pa.clear();
+    _deltap_st.clear();
     _ret = -1;
   }
 
@@ -37,6 +45,10 @@ namespace mu2e {
     _ret = dt._ret;
     _pahitidx = dt._pahitidx;
     _sthitidx = dt._sthitidx;
+    _ptidx_pa = dt._ptidx_pa;
+    _ptidx_st = dt._ptidx_st;;
+    _deltap_pa = dt._deltap_pa;
+    _deltap_st = dt._deltap_st;
   }
 
   // operator overloading
@@ -45,6 +57,10 @@ namespace mu2e {
     _ret = dt._ret;
     _pahitidx = dt._pahitidx;
     _sthitidx = dt._sthitidx;
+    _ptidx_pa = dt._ptidx_pa;
+    _ptidx_st = dt._ptidx_st;;
+    _deltap_pa = dt._deltap_pa;
+    _deltap_st = dt._deltap_st;
     return (*this);
   }
 
@@ -68,6 +84,10 @@ namespace mu2e {
     _pt.clear();
     _pahitidx.clear();
     _sthitidx.clear();
+    _ptidx_pa.clear();
+    _ptidx_st.clear();
+    _deltap_pa.clear();
+    _deltap_st.clear();
   }
 
   // PA/ST related
@@ -88,6 +108,7 @@ namespace mu2e {
         esum = 0;
         if (second > first) esum = _pt[second].momentum().mag() - _pt[first].momentum().mag();
         _deltap_pa.push_back(esum);
+        cout << "first " << first << " second " << second << " esum " << esum << endl;
       }
     }
     if (_sthitidx.size() >0) {
@@ -100,8 +121,11 @@ namespace mu2e {
         esum = 0;
         if (second > first) esum = _pt[second].momentum().mag() - _pt[first].momentum().mag();
         _deltap_st.push_back(esum);
+        cout << "first " << first << " second " << second << " esum " << esum << endl;
       }
     }
+    cout << "iTrkExtTraj: dpPA = " << getDeltapPA() << ", dpST = " << getDeltapST() << endl;
+
   }
 
   unsigned int TrkExtTraj::findPASTHit (unsigned int idx, unsigned int start) {
