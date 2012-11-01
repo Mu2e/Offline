@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.9 2012/11/01 23:40:55 gandr Exp $
+// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.10 2012/11/01 23:40:59 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:40:55 $
+// $Date: 2012/11/01 23:40:59 $
 //
 // Create particle flux in the ExtMonFNAL room by randomizing
 // kinematic of input particles read from a file.
@@ -332,11 +332,17 @@ namespace mu2e {
       const double sigmaz = (pp.srcType == SourceFront)||(pp.srcType == SourceBack)||(pp.srcType == SourceSignal) ?
         0 : rr.sigmaz;
 
+      // We want to randomize particle using flat distribution in a
+      // range.  The previous step computed RMS sigma; reinterpret it
+      // as a width of the flat distribution.  The choices here are
+      // arbitrary. Use the customary factor:
+      const double sigmaScaleFactor = sqrt(12.);
+
       Hep3Vector posDump(pp.dumpx, pp.dumpy, pp.dumpz);
       do{
-        posDump.setX(pp.dumpx + sigmax * randGauss_.fire());
-        posDump.setY(pp.dumpy + sigmay * randGauss_.fire());
-        posDump.setZ(pp.dumpz + sigmaz * randGauss_.fire());
+        posDump.setX(pp.dumpx + sigmax * sigmaScaleFactor * (randFlat_.fire() - 0.5));
+        posDump.setY(pp.dumpy + sigmay * sigmaScaleFactor * (randFlat_.fire() - 0.5));
+        posDump.setZ(pp.dumpz + sigmaz * sigmaScaleFactor * (randFlat_.fire() - 0.5));
       } while(!inRange(SourceType(pp.srcType), posDump, srcGeom_, *dump_, *extmon_));
 
       const Hep3Vector posMu2e(dump_->beamDumpToMu2e_position(posDump));
