@@ -1,6 +1,6 @@
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.1 2012/11/01 23:34:59 gandr Exp $
+// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.2 2012/11/01 23:35:10 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:34:59 $
+// $Date: 2012/11/01 23:35:10 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -328,6 +328,8 @@ namespace mu2e {
         return p - &particles_[0];
       }
 
+      bool isAccepted(const InputParticle& particle);
+
       // inputs arranged by [VirtualDetectorId][ParticleType][particleIndex]
       typedef std::vector<const InputParticle*> RandomizationGroup;
       typedef std::vector<std::vector<RandomizationGroup> > GroupedInputs;
@@ -635,6 +637,34 @@ namespace mu2e {
     }
 
     //================================================================
+    bool EMFBoxFluxAnalyzer::isAccepted(const InputParticle& particle) {
+      if(cutMinTime_ < particle.time) {
+
+        // Don't need to record particles exiting the box.
+        // Check the momentum direction
+
+        const CLHEP::Hep3Vector momExtMon = extmon_->mu2eToExtMon_momentum(particle.momMu2e);
+
+        switch(particle.vd.id()) {
+
+        case VirtualDetectorId::EMFBoxFront: return momExtMon.z() < 0;
+        case VirtualDetectorId::EMFBoxBack:  return momExtMon.z() > 0;
+
+        case VirtualDetectorId::EMFBoxSW: return momExtMon.x() > 0;
+        case VirtualDetectorId::EMFBoxNE: return momExtMon.x() < 0;
+
+        case VirtualDetectorId::EMFBoxBottom: return momExtMon.y() > 0;
+        case VirtualDetectorId::EMFBoxTop:    return momExtMon.y() < 0;
+
+        default: assert(false);
+        } // switch()
+
+      }// cut time
+
+      return false;
+    }
+
+    //================================================================
     void EMFBoxFluxAnalyzer::analyze(const art::Event& event) {
 
       art::Handle<StepPointMCCollection> hitsh;
@@ -675,7 +705,7 @@ namespace mu2e {
 
               InputParticle particle(*extmon_, vid, hit, info);
               histInputs_.fill(particle);
-              if(cutMinTime_ < hit.time()) {
+              if(isAccepted(particle)) {
                 particles_.push_back(particle);
               }
             }
