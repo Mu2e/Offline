@@ -95,6 +95,9 @@ namespace mu2e {
                                                              room.filterMagnet().nominalMomentum() + dp
                                                              );
 
+      det->dnToExtMonCoordinateRotation_ =
+        CLHEP::HepRotationX( -2 * det->spectrometerMagnet_.nominalBendHalfAngle());
+
       //----------------------------------------------------------------
       // The downstream stack
 

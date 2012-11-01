@@ -9,6 +9,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
+#include "CLHEP/Vector/RotationX.h"
 
 #include "art/Persistency/Common/Wrapper.h"
 
@@ -65,10 +66,20 @@ namespace mu2e {
       CLHEP::Hep3Vector extMonToMu2e_momentum(const CLHEP::Hep3Vector& mom) const;
 
       //----------------------------------------------------------------
+      CLHEP::Hep3Vector upStackToExtMon_position(const CLHEP::Hep3Vector& uppos) const {
+        return uppos;
+      }
+      CLHEP::Hep3Vector dnStackToExtMon_position(const CLHEP::Hep3Vector& dnpos) const {
+        return dnToExtMonCoordinateRotation_ * dnpos;
+      }
+      CLHEP::Hep3Vector stackToExtMon_position(const CLHEP::Hep3Vector& pos) const {
+        return (pos.z() < 0) ? dnStackToExtMon_position(pos) : upStackToExtMon_position(pos);
+      }
+
+      //----------------------------------------------------------------
       // Pixel center in the coordinate system of its SensorStack
 
       CLHEP::Hep3Vector pixelPositionInSensorStack(const ExtMonFNALPixelId& id) const;
-
 
       //----------------------------------------------------------------
       // Redundant convenience accessors
@@ -92,6 +103,7 @@ namespace mu2e {
       ExtMonFNALSensorStack up_;
       ExtMonFNALSensorStack dn_;
       ExtMonFNALMagnet spectrometerMagnet_;
+      CLHEP::HepRotationX dnToExtMonCoordinateRotation_;
     };
 
     //================================================================
