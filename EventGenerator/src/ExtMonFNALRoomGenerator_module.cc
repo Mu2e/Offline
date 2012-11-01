@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.2 2012/11/01 23:33:21 gandr Exp $
+// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.3 2012/11/01 23:35:36 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:33:21 $
+// $Date: 2012/11/01 23:35:36 $
 //
 // Create particle flux in the ExtMonFNAL room by randomizing
 // kinematic of input particles read from a file.
@@ -795,19 +795,19 @@ namespace mu2e {
       res.rSigmaFromVariance = sqrt(2*sinThetaVariance/(4-M_PI));
       res.rSigmaML = sqrt(sumSin2Theta/(2*n));
 
-      res.sigmax = sqrt(tmp[0][0]);
-      res.sigmay = sqrt(tmp[1][1]);
-      res.sigmaz = sqrt(tmp[2][2]);
+      res.sigmax = sqrt(res.vpos[0][0]);
+      res.sigmay = sqrt(res.vpos[1][1]);
+      res.sigmaz = sqrt(res.vpos[2][2]);
 
       switch(particle->srcType) {
       case SourceFront: case SourceBack: case SourceSignal:
-        res.correlationCoefficient = tmp[0][1]/(res.sigmax*res.sigmay);
+        res.correlationCoefficient = res.vpos[0][1]/(res.sigmax*res.sigmay);
         break;
       case SourceSouthWest: case SourceNorthEast:
-        res.correlationCoefficient = tmp[2][1]/(res.sigmaz*res.sigmay);
+        res.correlationCoefficient = res.vpos[2][1]/(res.sigmaz*res.sigmay);
         break;
       case SourceFloor: case SourceCeiling:
-        res.correlationCoefficient = tmp[0][2]/(res.sigmax*res.sigmaz);
+        res.correlationCoefficient = res.vpos[0][2]/(res.sigmax*res.sigmaz);
         break;
       default: assert(false);
       }
