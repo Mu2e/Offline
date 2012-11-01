@@ -1,13 +1,13 @@
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
-#include "ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1.fcl"
+#include "ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1All.fcl"
 
 process_name: FromEMFMARSFileWeighted
 
 source: {
     module_type: FromEMFMARSFileWeighted
-    fileNames: @local::mars3w1rand1
+    fileNames: @local::mars3w1randAll
 
     runNumber          : 55
     firstSubRunNumber  : 0
@@ -21,7 +21,7 @@ services: {
 
     scheduler: { defaultExceptions : false }
 
-    TFileService : { fileName : "ntEMFRoomWeighted.root" }
+    TFileService : { fileName : "ntEMFRoomWeightedAll.root" }
 
     user : {
         GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
@@ -39,22 +39,23 @@ physics: {
 
             srcGeom : {
                 zFront   : -7200
+                zBack    : -10200
                 yFloor   : +1750
                 yCeiling : +4493
                 xSW      : -1762
                 xNE      : +2814
-                zBack    : -10200
 
-                sourcePositionTolerance : 2
+                srcPositionTolerance : 2 // mm off the plane
                 signalHalfdx : 40
                 signalHalfdy : 40
             }
+
         }
     }
 
     eout : [outfile]
     edump : [ dumper ]
-    end_paths : [ eout, edump ]
+    end_paths : [ edump ]
 }
 
 outputs: {
