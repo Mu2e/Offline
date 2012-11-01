@@ -55,6 +55,9 @@ namespace mu2e {
     CLHEP::Hep3Vector mu2eToStack_position(const CLHEP::Hep3Vector& mu2epos) const;
     CLHEP::Hep3Vector mu2eToStack_momentum(const CLHEP::Hep3Vector& mu2emom) const;
 
+    CLHEP::Hep3Vector stackToMu2e_position(const CLHEP::Hep3Vector& pos) const;
+    CLHEP::Hep3Vector stackToMu2e_momentum(const CLHEP::Hep3Vector& mom) const;
+
     //----------------------------------------------------------------
     // "global" extmon plane number is obtained by adding the offset to
     // this stack's plane number

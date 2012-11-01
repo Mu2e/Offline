@@ -31,6 +31,16 @@ namespace mu2e {
     }
 
     //================================================================
+    CLHEP::Hep3Vector ExtMon::extMonToMu2e_position(const CLHEP::Hep3Vector& pos) const {
+      return up_.stackToMu2e_position(pos);
+    }
+
+    //================================================================
+    CLHEP::Hep3Vector ExtMon::extMonToMu2e_momentum(const CLHEP::Hep3Vector& mom) const {
+      return up_.stackToMu2e_momentum(mom);
+    }
+
+    //================================================================
     CLHEP::Hep3Vector ExtMon::pixelPositionInSensorStack(const ExtMonFNALPixelId& id) const {
       using CLHEP::Hep3Vector;
 

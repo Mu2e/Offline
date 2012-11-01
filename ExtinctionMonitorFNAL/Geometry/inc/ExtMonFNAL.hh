@@ -61,6 +61,9 @@ namespace mu2e {
       CLHEP::Hep3Vector mu2eToExtMon_position(const CLHEP::Hep3Vector& mu2epos) const;
       CLHEP::Hep3Vector mu2eToExtMon_momentum(const CLHEP::Hep3Vector& mu2emom) const;
 
+      CLHEP::Hep3Vector extMonToMu2e_position(const CLHEP::Hep3Vector& pos) const;
+      CLHEP::Hep3Vector extMonToMu2e_momentum(const CLHEP::Hep3Vector& mom) const;
+
       //----------------------------------------------------------------
       // Pixel center in the coordinate system of its SensorStack
 

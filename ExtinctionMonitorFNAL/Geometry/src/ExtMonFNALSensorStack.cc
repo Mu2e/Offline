@@ -41,5 +41,19 @@ namespace mu2e {
   }
 
   //================================================================
+  CLHEP::Hep3Vector ExtMonFNALSensorStack::stackToMu2e_position(const CLHEP::Hep3Vector& pos) const {
+    const CLHEP::Hep3Vector rel = m_stackRotationInMu2e * pos;
+    const CLHEP::Hep3Vector mu2epos(rel + m_stackRefPointInMu2e);
+    AGDEBUG("POS: mu2e = "<<mu2epos<<", rel = "<<rel<<", res = "<<res);
+    return mu2epos;
+  }
+
+  //================================================================
+  CLHEP::Hep3Vector ExtMonFNALSensorStack::stackToMu2e_momentum(const CLHEP::Hep3Vector& mom) const {
+    const CLHEP::Hep3Vector res = m_stackRotationInMu2e * mom;
+    return res;
+  }
+
+  //================================================================
 
 } // namespace mu2e
