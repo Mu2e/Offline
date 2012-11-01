@@ -32,24 +32,11 @@ physics : {
         pixelRawClusterization : @local::pixelRawClusterization
         pixelRecoClusterization : @local::pixelRecoClusterization
         pixelRecoClusterTruthMaking : @local::pixelRecoClusterTruthMaking
-        EMFPatRecSequential : @local::EMFPatRecSequential
-        EMFPatRecSequentialTruthMaking : @local::EMFPatRecSequentialTruthMaking
         EMFPatRecFromTracklets : @local::EMFPatRecFromTracklets
         EMFPatRecFromTrackletsTruthMaking : @local::EMFPatRecFromTrackletsTruthMaking
     }
 
     analyzers: {
-        EMFPatRecSequentialAnalysis : {
-            module_type : EMFDetHistPatRec
-            patRecModuleLabel : "EMFPatRecSequential"
-            trkTruthModuleLabel : "EMFPatRecSequentialTruthMaking"
-            clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
-            particleModuleLabel : @local::simParticleModuleLabel
-            geomModuleLabel : @local::geomModuleLabel
-
-            cutParticleMinClusters : 6
-            cutParticleMaxAngle : 0.015
-        }
         EMFPatRecFromTrackletsAnalysis : {
             module_type : EMFDetHistPatRec
             patRecModuleLabel : "EMFPatRecFromTracklets"
@@ -99,14 +86,12 @@ physics : {
 
     tprint : [ pixelRawClusterization
                , pixelRecoClusterization, pixelRecoClusterTruthMaking
-               //, EMFPatRecSequential, EMFPatRecSequentialTruthMaking
                , EMFPatRecFromTracklets, EMFPatRecFromTrackletsTruthMaking
              ]
 
     //eprint: [ printRecoClusterTruth ]
     eprint: [ hitValidation, emfRecoClusters,
               emfRawHits,
-              //EMFPatRecSequentialAnalysis,
               EMFPatRecFromTrackletsAnalysis ]
 
     out : [FullOutput]
@@ -126,7 +111,6 @@ outputs: {
 // Adjust settings to process filtered data
 physics.producers.pixelRawClusterization.geomModuleLabel : @local::geomModuleLabel
 physics.producers.pixelRecoClusterization.geomModuleLabel : @local::geomModuleLabel
-physics.producers.EMFPatRecSequential.geomModuleLabel : @local::geomModuleLabel
 physics.producers.EMFPatRecFromTracklets.geomModuleLabel : @local::geomModuleLabel
 
 physics.producers.pixelRecoClusterTruthMaking.hitTruthModuleLabel : @local::hitTruthModuleLabel
