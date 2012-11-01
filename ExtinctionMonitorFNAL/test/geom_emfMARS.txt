@@ -198,18 +198,12 @@ int g4.steppingActionMaxSteps = 1000000;
 int g4.stepsSizeLimit = 100000;
 int g4.particlesSizeLimit = 1000000;
 
+bool   extMonFNAL.filter.vd.enabled = false;
+bool   extMonFNAL.detector.vd.enabled = false;
+
 // bool g4SteppingAction.killerVerbose = true;
 //vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance", "VirtualDetector_Coll1_In" };
-
-vector<string> g4SteppingAction.killInTheseVolumes = {
-  "PSShield",
-  "VirtualDetector_EMFC1Entrance",
-  "VirtualDetector_Coll1_In",
-  "ProtonBeamDumpCore",
-  "HallConcreteFloor",
-  "HallConcreteCeiling",
-  "HallWalls"
-};
+vector<string> g4SteppingAction.killInTheseVolumes = {};
 
 // // Uncomment to enable debug printout on a per event or per track basis.
 // vector<int> g4.steppingActionEventList = { 0, 1, 2, 3, 4, 5 };
