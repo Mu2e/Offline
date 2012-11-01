@@ -55,7 +55,11 @@ physics : {
             geomModuleLabel : "geom"
 
             cutParticleMinClusters : 6
-            cutParticleMaxAngle : 0.015
+            cutHitXmax : 15 // mm
+            cutHitYmax : 15 // mm
+
+            cutMinCommonClusters : 6
+
         }
         hitValidation: {
             module_type: EMFRawHitsValidator

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <set>
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -27,12 +28,19 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ExtinctionMonitorFNAL/Reconstruction/inc/PixelRecoUtils.hh"
+#include "ExtinctionMonitorFNAL/Analyses/inc/EMFPatRecEffHistograms.hh"
+
+#include "ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
 
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "TH1D.h"
 #include "TH2D.h"
+
+
+#define AGDEBUG(stuff) do { std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<", func "<<__func__<<": "<<stuff<<std::endl; } while(0)
+//#define AGDEBUG(stuff)
 
 namespace mu2e {
   namespace ExtMonFNAL {
@@ -51,16 +59,29 @@ namespace mu2e {
       std::string geomModuleLabel_; // emtpy to take info from Run
       std::string geomInstanceName_;
 
-      unsigned cutParticleMinClusters_;
-      double cutParticleMaxAngle_;
+      unsigned cutParticleMinClusters_; //
+
+      // signal particle coordinates at first and last plane must be within the limits
+      double cutHitXmax_;
+      double cutHitYmax_;
 
       const ExtMonFNAL::ExtMon *extmon_;
+      TrackExtrapolator extrapolator_;
 
-      TH2D *hMultiplicityAll_;
+      //----------------
       TH2D *hMultiplicitySignal_;
-
       TH2D *hCommonClusters_;
+      EMFPatRecEffHistograms effPhysics_;
+      EMFPatRecEffHistograms effSoftware_;
 
+      bool signalParticlePhysics(const SimParticle& particle);
+      bool inAcceptance(const ExtMonFNALTrkParam& par);
+
+      bool signalParticleSofware(const art::FindMany<ExtMonFNALRecoCluster,ExtMonFNALRecoClusterTruthBits>& clusterFinder,
+                                 unsigned iParticle);
+
+      //----------------------------------------------------------------
+      // cuts tuning: single particle mode
       bool singleParticleMode_;
       std::string clusterModuleLabel_; // used only in single particle mode
       std::string clusterInstanceName_; // used only in single particle mode
@@ -88,13 +109,17 @@ namespace mu2e {
 
         // Signal particle cuts
       , cutParticleMinClusters_(pset.get<unsigned>("cutParticleMinClusters"))
-      , cutParticleMaxAngle_(pset.get<double>("cutParticleMaxAngle"))
+
+      , cutHitXmax_(pset.get<double>("cutHitXmax"))
+      , cutHitYmax_(pset.get<double>("cutHitYmax"))
 
       , extmon_()
+      , extrapolator_(extmon_)
 
-      , hMultiplicityAll_()
       , hMultiplicitySignal_()
       , hCommonClusters_()
+      , effPhysics_(pset.get<unsigned>("cutMinCommonClusters"))
+      , effSoftware_(pset.get<unsigned>("cutMinCommonClusters"))
 
       , singleParticleMode_(pset.get<bool>("singleParticleMode", false))
       , clusterModuleLabel_(singleParticleMode_ ? pset.get<std::string>("singleParticleClusterModuleLabel") : "")
@@ -117,16 +142,10 @@ namespace mu2e {
         extmon_ = &*emf;
       }
 
+      extrapolator_ = TrackExtrapolator(extmon_);
+
       //----------------------------------------------------------------
       art::ServiceHandle<art::TFileService> tfs;
-
-      hMultiplicityAll_ = tfs->make<TH2D>("multiplicityAll", "Num PatRec tracks vs num SimParticles with hits",
-                                          200, -0.5, 199.5, 200, -0.5, 199.5);
-
-      hMultiplicityAll_->SetOption("colz");
-      hMultiplicityAll_->GetXaxis()->SetTitle("num particles");
-      hMultiplicityAll_->GetYaxis()->SetTitle("num PatRec tracks");
-
 
       hMultiplicitySignal_ = tfs->make<TH2D>("multiplicitySignal", "Num PatRec tracks vs num signal SimParticles",
                                              200, -0.5, 199.5, 200, -0.5, 199.5);
@@ -142,6 +161,9 @@ namespace mu2e {
       hCommonClusters_->SetOption("colz");
       hCommonClusters_->GetXaxis()->SetTitle("particle clusters");
       hCommonClusters_->GetYaxis()->SetTitle("common clusters");
+
+      effPhysics_.book(*extmon_, "effPhysics");
+      effSoftware_.book(*extmon_, "effSoftware");
     }
 
     //================================================================
@@ -168,43 +190,115 @@ namespace mu2e {
       art::FindMany<ExtMonFNALRecoCluster,ExtMonFNALRecoClusterTruthBits>
         clusterFinder(particles, event, art::InputTag(clusterTruthModuleLabel_, clusterTruthInstanceName_));
 
-      unsigned numParticlesWithHits(0), numSignalParticles(0);
+      // different denominator definitions
+      std::set<unsigned> signalPhysics;
+      std::set<unsigned> signalSW;
+
       for(unsigned ip=0; ip<particles.size(); ++ip) {
+        if(signalParticlePhysics(*particles[ip])) {
+          signalPhysics.insert(ip);
 
-        const unsigned numClustersOnParticle = clusterFinder.at(ip).size();
-
-        if(numClustersOnParticle > 0) {
-          ++numParticlesWithHits;
-        }
-
-        if(numClustersOnParticle >= cutParticleMinClusters_) {
-
-          const CLHEP::Hep3Vector mom = extmon_->mu2eToExtMon_momentum(particles[ip]->startMomentum());
-
-          if( (-mom).theta() < cutParticleMaxAngle_) {
-
-            ++numSignalParticles;
-
+          //----------------
+          if(true) { // fill an extra histogam
             const std::vector<const ExtMonFNALTrkMatchInfo*>& matchInfo = trackFinder.data(ip);
-
             // Figure out the best match
-            unsigned maxCommonClusters(0);
+            unsigned maxCommonClusters(0), numClustersOnParticle(0);
             for(unsigned itrack = 0; itrack < matchInfo.size(); ++itrack) {
-              maxCommonClusters = std::max(maxCommonClusters, matchInfo[itrack]->nCommonClusters());
+              if(maxCommonClusters < matchInfo[itrack]->nCommonClusters()) {
+                maxCommonClusters =  matchInfo[itrack]->nCommonClusters();
+                numClustersOnParticle = matchInfo[itrack]->nParticleClusters();
+              }
             }
-
             hCommonClusters_->Fill(numClustersOnParticle, maxCommonClusters);
           }
-        }
-      }
+
+          //----------------
+          if(signalParticleSofware(clusterFinder, ip)) {
+            signalSW.insert(ip);
+          }
+
+        } // if(physics)
+      } // for(ip)
 
       art::Handle<ExtMonFNALTrkParamCollection> tracks;
       event.getByLabel(patRecModuleLabel_, patRecInstanceName_, tracks);
+      hMultiplicitySignal_->Fill(signalPhysics.size(), tracks->size());
 
-      hMultiplicityAll_->Fill(numParticlesWithHits, tracks->size());
-      hMultiplicitySignal_->Fill(numSignalParticles, tracks->size());
+      //----------------------------------------------------------------
+      EMFPatRecEffHistograms::Fillable phys =
+        effPhysics_.fillable(particles,
+                             event,
+                             art::InputTag(trkTruthModuleLabel_, trkTruthInstanceName_),
+                             signalPhysics.size());
+
+      for(std::set<unsigned>::const_iterator i=signalPhysics.begin(); i != signalPhysics.end(); ++i) {
+        phys.fill(*i);
+      }
+
+      //----------------------------------------------------------------
+      EMFPatRecEffHistograms::Fillable sw =
+        effSoftware_.fillable(particles,
+                              event,
+                              art::InputTag(trkTruthModuleLabel_, trkTruthInstanceName_),
+                              // Use the same X axis for both physics and SW plots
+                              signalPhysics.size());
+
+      for(std::set<unsigned>::const_iterator i=signalSW.begin(); i != signalSW.end(); ++i) {
+        sw.fill(*i);
+      }
 
     } // analyze()
+
+    //================================================================
+    bool EMFDetHistPatRec::signalParticlePhysics(const SimParticle& particle) {
+      bool res = false;
+
+      const CLHEP::Hep3Vector& startPos = extmon_->mu2eToExtMon_position(particle.startPosition());
+      const CLHEP::Hep3Vector& startMom = extmon_->mu2eToExtMon_momentum(particle.startMomentum());
+
+      // Make sure tha particle starts at a place where it can go through the whole detector
+      if(extmon_->up().sensor_zoffset().back() < startPos.z()) {
+
+        const double rTrack = extmon_->spectrometerMagnet().trackBendRadius(startMom.mag());
+        ExtMonFNALTrkParam mcpar;
+        mcpar.setz0(startPos.z());
+        mcpar.setposx(startPos.x());
+        mcpar.setposy(startPos.y());
+        mcpar.setslopex(startMom.x()/startMom.z());
+        mcpar.setslopey(startMom.y()/startMom.z());
+        mcpar.setrinv(1./rTrack);
+
+        res =  extrapolator_.extrapolateToPlane(extmon_->nplanes()-1, &mcpar) &&
+          inAcceptance(mcpar) &&
+          extrapolator_.extrapolateToPlane(0, &mcpar) &&
+          inAcceptance(mcpar)
+          ;
+      }
+
+      return res;
+    }
+
+    //================================================================
+    bool EMFDetHistPatRec::inAcceptance(const ExtMonFNALTrkParam& par) {
+      return
+        (std::abs(par.posx()) < cutHitXmax_) &&
+        (std::abs(par.posy()) < cutHitYmax_);
+    }
+
+
+    //================================================================
+    bool EMFDetHistPatRec::signalParticleSofware(const art::FindMany<ExtMonFNALRecoCluster,ExtMonFNALRecoClusterTruthBits>& clusterFinder,
+                                                 unsigned iParticle)
+    {
+      std::set<unsigned> hitPlanes;
+      typedef std::vector<const ExtMonFNALRecoCluster*> Clusters;
+      const Clusters& clusters = clusterFinder.at(iParticle);
+      for(Clusters::const_iterator i=clusters.begin(); i!=clusters.end(); ++i) {
+        hitPlanes.insert( (*i)->plane());
+      }
+      return hitPlanes.size() == extmon_->nplanes();
+    }
+
 
     //================================================================
     bool EMFDetHistPatRec::acceptSingleParticleEvent(const art::Event& event) {
