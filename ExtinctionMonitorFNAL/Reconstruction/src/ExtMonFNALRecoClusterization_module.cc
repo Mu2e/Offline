@@ -1,8 +1,8 @@
 // Compute calibrated pixel clusters from raw ones.
 //
-// $Id: ExtMonFNALRecoClusterization_module.cc,v 1.1 2012/09/19 03:34:42 gandr Exp $
+// $Id: ExtMonFNALRecoClusterization_module.cc,v 1.2 2012/11/01 23:30:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/09/19 03:34:42 $
+// $Date: 2012/11/01 23:30:27 $
 //
 // Original author Andrei Gaponenko
 //
@@ -130,17 +130,15 @@ namespace mu2e {
   //================================================================
   struct CmpPixelX {
     bool operator()(const art::Ptr<ExtMonFNALRawHit>& a, const art::Ptr<ExtMonFNALRawHit>& b) {
-      // At the moment we only cluster pixels on the same chip
-      assert(a->pixelId().chip() == b->pixelId().chip());
-      return a->pixelId().col() < b->pixelId().col();
+      return (a->pixelId().chip().chipCol() < b->pixelId().chip().chipCol()) ||
+        (a->pixelId().chip().chipCol() == b->pixelId().chip().chipCol())&&(a->pixelId().col() < b->pixelId().col());
     }
   };
 
   struct CmpPixelY {
     bool operator()(const art::Ptr<ExtMonFNALRawHit>& a, const art::Ptr<ExtMonFNALRawHit>& b) {
-      // At the moment we only cluster pixels on the same chip
-      assert(a->pixelId().chip() == b->pixelId().chip());
-      return a->pixelId().row() < b->pixelId().row();
+      return (a->pixelId().chip().chipRow() < b->pixelId().chip().chipRow()) ||
+        (a->pixelId().chip().chipRow() == b->pixelId().chip().chipRow())&&(a->pixelId().row() < b->pixelId().row());
     }
   };
 
@@ -156,8 +154,15 @@ namespace mu2e {
     Iter pymin = std::min_element(raw->hits().begin(), raw->hits().end(), CmpPixelY() );
     assert(pymin != raw->hits().end());
 
-    const int xWidth = (*pxmax)->pixelId().col() - (*pxmin)->pixelId().col() + 1;
-    const int yWidth = (*pymax)->pixelId().row() - (*pymin)->pixelId().row() + 1;
+    const int xWidth =
+      extmon_->chip().nColumns() * ((*pxmax)->pixelId().chip().chipCol() -
+                                    (*pxmin)->pixelId().chip().chipCol())
+      + (*pxmax)->pixelId().col() - (*pxmin)->pixelId().col() + 1;
+
+    const int yWidth =
+      extmon_->chip().nRows() * ((*pymax)->pixelId().chip().chipRow() -
+                                 (*pymin)->pixelId().chip().chipRow())
+      + (*pymax)->pixelId().row() - (*pymin)->pixelId().row() + 1;
 
     double sumw(0), sumClock(0);
     CLHEP::Hep3Vector sumPos;
