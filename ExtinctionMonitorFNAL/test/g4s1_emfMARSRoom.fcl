@@ -1,0 +1,74 @@
+#include "ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1_rand1.fcl"
+#include "ExtinctionMonitorFNAL/test/extMonFNALDefsCommon.fcl"
+
+source : {
+    module_type : EmptyEvent
+    maxEvents : 5
+}
+
+physics.producers.generate : {
+    module_type: ExtMonFNALRoomGenerator
+    verbosityLevel : 1
+
+    inputFiles : @local::mars3w1rand1
+
+    numReadProtonsPerEvent : 0 // take them all
+    fracAcceptedProtons : 0.75 // scale 40M MARS protons to 30M p/bunch
+
+    geomModuleLabel : ""
+
+    zFront   : -7200
+    zBack    : -10200
+    yFloor   : +1750
+    yCeiling : +4493
+    xSW      : -1762
+    xNE      : +2814
+
+    srcPositionTolerance : 2 // mm off the plane
+    signalHalfdx : 40
+    signalHalfdy : 40
+
+    numNeighbors : 5
+    minSourceGroupStatistics : 10
+
+    doHistograms : true
+}
+
+physics.producers.g4run.generatorModuleLabel : "generate"
+physics.producers.geom: { module_type : GeometryRecorder }
+
+physics.filters.fvdBox: @local::filterModule
+physics.filters.fvdBox.acceptedVids: [40, 41, 42, 43, 44, 45]
+
+physics.gm : [geom]
+physics.trigFilter : [ randomsaver, generate, g4run, fvdBox ]
+
+//----------------------------------------------------------------
+process_name : g4s1EMFMARSRoom
+
+services.Timing : {}
+
+services.user.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_s1EMFMARSRoom.txt"
+
+services.TFileService.fileName : "hg4s1EMFMARSRoom.root"
+//outputs.outVDFiltered.fileName : "vdg4s1EMFMARSRoomTooSmall.root"
+
+outputs.outFull : { module_type : RootOutput
+                    fileName: "vdg4s1EMFMARSRoomAll.root"
+                  }
+
+outputs.outMARSFiltered : { module_type : RootOutput
+                            fileName: "vdg4s1EMFMARSRoom.root"
+                            outputCommands:   [ "keep *_fvd*_*_*", "keep *_fromVD*_*_*", "keep *_randomsaver_*_*", "keep *_geom*_*_*" ]
+                  }
+
+physics.marsOutputs : [ outFull, outMARSFiltered ]
+physics.end_paths : [marsOutputs]
+
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
+
+// This tells emacs to view this file in the JavaScript mode.
+// Local Variables:
+// mode:js
+// End:
