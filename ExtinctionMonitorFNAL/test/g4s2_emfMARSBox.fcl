@@ -8,9 +8,7 @@ source : {
 
 physics.producers.generate : {
     module_type: ExtMonFNALBoxGenerator
-    verbosityLevel : 5
-
-    inputFiles : ["data/test/20121018-a-analyzers/t000-n004800/histEMFBoxFluxAnalyzer.root"]
+    verbosityLevel : 1
 
     numPrimaryProtonsPerMicrobunch : 30000000
 
@@ -50,10 +48,12 @@ physics.producers.generate : {
     //t000: cutMuonTimeMin : 0
     //t000: primaryProtonHitEfficiency : .00004905007099999999
     //t000: primaryProtonStopEfficiency : .00000037014274305555
+    //t000: inputFiles : ["data/test/20121018-a-analyzers/t000-n004800/histEMFBoxFluxAnalyzer.root"]
 
     cutMuonTimeMin : 120
     primaryProtonHitEfficiency : .00001993430349652777
     primaryProtonStopEfficiency : .00000018507137152777
+    inputFiles : ["data/test/20121018-a-analyzers/t120-n004800/histEMFBoxFluxAnalyzer.root"]
 
     // don't throw partiles outside of the original VD box
     keepInBox : [ 100, 200, 650. ]
@@ -63,32 +63,24 @@ physics.producers.generate : {
     geomModuleLabel : ""
 }
 
-//tmp:physics.filters.pixHitFilter : {
-//tmp:    module_type: EMFPixelHitsFilter
-//tmp:    rawHitsModuleLabel: pixelDigitization
-//tmp:    simParticlesModuleLabel : g4run
-//tmp:    cutMinHits: 1
-//tmp:}
-//tmp:
-//tmp:physics.producers.SimParticleMARSAssnsMaker : {
-//tmp:    module_type: SimParticleMARSAssnsMaker
-//tmp:    simParticlesModuleLabel: pixHitFilter
-//tmp:    marsInfoModuleLabel : generate
-//tmp:}
-//tmp:
-//tmp:physics.analyzers.emfprinttruth: {
-//tmp:    module_type: EMFDetPrintRawHitTruth
-//tmp:    hitsModuleLabel  : "pixelDigitization"
-//tmp:    truthModuleLabel : "pixHitFilter"
-//tmp:}
-//tmp:physics.print : [emfprinttruth]
+physics.filters.pixHitFilter : {
+    module_type: EMFPixelSimFilter
+    simHitsModuleLabel: g4run
+    simParticlesModuleLabel : g4run
+    cutMinPlanes: 1
+}
+
+physics.producers.SimParticleMARSAssnsMaker : {
+    module_type: SimParticleMARSAssnsMaker
+    simParticlesModuleLabel: pixHitFilter
+    marsInfoModuleLabel : generate
+}
 
 physics.producers.g4run.generatorModuleLabel : "generate"
 physics.producers.geoms2: { module_type : GeometryRecorder }
 physics.gm : [geoms2]
 
-//tmp:physics.trigFilter : [ generate, g4run, pixelDigitization, pixHitFilter, SimParticleMARSAssnsMaker ]
-physics.trigFilter : [ generate, g4run ]
+physics.trigFilter : [ generate, g4run, pixHitFilter, SimParticleMARSAssnsMaker ]
 
 //----------------------------------------------------------------
 process_name : g4s2EMFMARSBox
@@ -100,7 +92,7 @@ services.TFileService.fileName : "hg4s2EMFMARSBox.root"
 
 outputs.outFiltered : { module_type : RootOutput
                         SelectEvents: { SelectEvents: [trigFilter] }
-                        outputCommands:   [ "keep *_pixHitFilter*_*_*", "keep *_SimParticleMARSAssnsMaker_*_*", "keep mu2e::ExtMonFNALRawHits_pixelDigitization_*_*", "keep *_geom*_*_*" ]
+                        outputCommands:   [ "keep *_*Filter*_*_*", "keep *_SimParticleMARSAssnsMaker_*_*", "keep *_geom*_*_*" ]
                         fileName: "vdg4s2EMFMARSBoxFiltered.root"
                       }
 
@@ -108,8 +100,7 @@ outputs.outFull : { module_type : RootOutput
                     fileName: "vdg4s2EMFMARSBoxAll.root"
                   }
 
-physics.marsOutputs : [ outFull ]
-//physics.end_paths : [marsOutputs, print]
+physics.marsOutputs : [ outFiltered ]
 physics.end_paths : [marsOutputs]
 
 services.user.SeedService.baseSeed         :  0
