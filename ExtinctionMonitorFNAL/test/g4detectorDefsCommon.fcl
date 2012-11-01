@@ -33,7 +33,7 @@ physics : {
             pdgId     : 2212 // 2212 is p+, -13 is mu+
             reference : "detector"
             offset   : [ 0, 0, +650 ]
-            halfSize : [ 15, 15, 0 ]
+            halfSize : [ 30, 30, 0 ]
             tmin     : 0
             tmax     : 150
         }
