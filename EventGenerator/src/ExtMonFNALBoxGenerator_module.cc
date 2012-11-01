@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.2 2012/11/01 23:35:28 gandr Exp $
+// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.3 2012/11/01 23:41:46 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:35:28 $
+// $Date: 2012/11/01 23:41:46 $
 //
 // Create particle flux in the ExtMonFNAL box by randomizing
 // kinematic of input particles read from a file.
@@ -68,11 +68,16 @@ namespace mu2e {
       struct InputHit {
         IO::EMFBoxHit particle;
         double energy;
-        MARSInfo info;
+        MARSInfo minfo;
+        IO::G4JobInfo g4s1info;
         IO::ParticleRandomization pr;
 
-        InputHit(const IO::EMFBoxHit& p, double e, const MARSInfo& mi, const IO::ParticleRandomization& rr)
-          : particle(p), energy(e), info(mi), pr(rr)
+        InputHit(const IO::EMFBoxHit& p,
+                 double e,
+                 const MARSInfo& mi,
+                 const IO::G4JobInfo& gi,
+                 const IO::ParticleRandomization& rr)
+          : particle(p), energy(e), minfo(mi), g4s1info(gi), pr(rr)
         {}
       };
 
@@ -81,8 +86,11 @@ namespace mu2e {
       //================================================================
       struct InputStop {
         IO::StoppedMuon muon;
-        MARSInfo info;
-        InputStop(const IO::StoppedMuon& m, const MARSInfo& i) : muon(m), info(i) {}
+        MARSInfo minfo;
+        IO::G4JobInfo g4s1info;
+        InputStop(const IO::StoppedMuon& m, const MARSInfo& i, const IO::G4JobInfo& g4s1)
+          : muon(m), minfo(i), g4s1info(g4s1)
+        {}
       };
 
       typedef std::vector<InputStop> InputStops;
@@ -274,8 +282,12 @@ namespace mu2e {
       bhit->SetAddress(&particle);
 
       MARSInfo minfo;
-      TBranch *binf = nt->GetBranch("minfo");
-      binf->SetAddress(&minfo);
+      TBranch *bminf = nt->GetBranch("minfo");
+      bminf->SetAddress(&minfo);
+
+      IO::G4JobInfo g4s1info;
+      TBranch *bginf = nt->GetBranch("g4s1info");
+      bginf->SetAddress(&g4s1info);
 
       IO::ParticleRandomization pr;
       TBranch *brand = nt->GetBranch("randomization");
@@ -283,7 +295,8 @@ namespace mu2e {
 
       for(Long64_t i=0; i<nTreeEntries; ++i) {
         bhit->GetEntry(i);
-        binf->GetEntry(i);
+        bminf->GetEntry(i);
+        bginf->GetEntry(i);
         brand->GetEntry(i);
 
         const double mass = mc_.mass(PDGCode::type(particle.pdgId));
@@ -293,7 +306,7 @@ namespace mu2e {
                                    std::pow(particle.mu2epz, 2)
                                    );
 
-        vdhits_.push_back(InputHit(particle, energy, minfo, pr));
+        vdhits_.push_back(InputHit(particle, energy, minfo, g4s1info, pr));
       }
     }
 
@@ -318,13 +331,18 @@ namespace mu2e {
       bmu->SetAddress(&mu);
 
       MARSInfo minfo;
-      TBranch *binf = nt->GetBranch("minfo");
-      binf->SetAddress(&minfo);
+      TBranch *bminf = nt->GetBranch("minfo");
+      bminf->SetAddress(&minfo);
+
+      IO::G4JobInfo g4s1info;
+      TBranch *bginf = nt->GetBranch("g4s1info");
+      bginf->SetAddress(&g4s1info);
 
       for(Long64_t i=0; i<nTreeEntries; ++i) {
         bmu->GetEntry(i);
-        binf->GetEntry(i);
-        mustops_.push_back(InputStop(mu, minfo));
+        bminf->GetEntry(i);
+        bginf->GetEntry(i);
+        mustops_.push_back(InputStop(mu, minfo, g4s1info));
       }
     }
 
@@ -368,11 +386,11 @@ namespace mu2e {
         static const double tauMuPlus = 2197.; //ns, free muon
 
         const double tau = (ms.muon.pdgId > 0) ? tauMuMinus : tauMuPlus;
-        const double weight = exp((generatedMuonTime - cutTimeMin_)/tau) * ms.info.weight();
+        const double weight = exp((generatedMuonTime - cutTimeMin_)/tau) * ms.minfo.weight();
 
         if(randFlat_.fire() * weightMax_ <= weight) {
           output->push_back(createOutputMuon(generatedMuonTime, ms));
-          info->push_back(ms.info);
+          info->push_back(ms.minfo);
           assns->addSingle(art::Ptr<GenParticle>(particlesPID, output->size()-1, particlesGetter),
                            art::Ptr<MARSInfo>(marsPID, info->size()-1, marsGetter));
         }
@@ -396,7 +414,7 @@ namespace mu2e {
       for(unsigned count=0; count < microbunchVDHitsChunkSize_; ++count) {
         const InputHit& hit = vdhits_[nextVDHit_];
 
-        const bool acceptHitWeight(randFlat_.fire() * weightMax_ <= hit.info.weight());
+        const bool acceptHitWeight(randFlat_.fire() * weightMax_ <= hit.minfo.weight());
         if(acceptHitWeight) {
 
           const double randomizedTime =
@@ -405,7 +423,7 @@ namespace mu2e {
 
           if((cutTimeMin_ < randomizedTime) && (randomizedTime < cutTimeMax_)) {
             output->push_back(createOutputParticle(randomizedTime, hit));
-            info->push_back(hit.info);
+            info->push_back(hit.minfo);
             assns->addSingle(art::Ptr<GenParticle>(particlesPID, output->size()-1, particlesGetter),
                              art::Ptr<MARSInfo>(marsPID, info->size()-1, marsGetter));
           }
