@@ -17,9 +17,6 @@ vector<string> g4SteppingAction.killInTheseVolumes = {
 };
 //bool g4SteppingAction.killerVerbose = true;
 
-// Constrain everything to a single microbunch
-double g4.steppingActionMaxGlobalTime = 1700; //ns
-
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++
