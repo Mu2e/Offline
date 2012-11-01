@@ -67,8 +67,8 @@ physics : {
         }
         emfprinttruth: {
             module_type: EMFDetPrintRawHitTruth
-            inputModuleLabel  : "pixelDigitization"
-            inputInstanceName : ""
+            hitsModuleLabel  : "pixelDigitization"
+            truthModuleLabel : "pixelDigitization"
         }
         hitValidation: {
             module_type: EMFRawHitsValidator
