@@ -10,8 +10,8 @@ PatRecAnalysis: {
     clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
 
     cutParticleMinClusters : 6
-    cutHitXmax : 15 // mm
-    cutHitYmax : 15 // mm
+    cutHitXmax : 16.5 // mm
+    cutHitYmax : 16.5 // mm
 
     cutMinCommonClusters : 6
 }
