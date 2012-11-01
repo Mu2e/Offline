@@ -1,9 +1,9 @@
 // Read in a set of particles hitting ExtMonFNAL VD box (from g4s1 room jobs)
 // compute randomization parameters, and write out as an ntuple.
 //
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.9 2012/11/01 23:41:26 gandr Exp $
+// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.10 2012/11/01 23:41:38 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:41:26 $
+// $Date: 2012/11/01 23:41:38 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -83,6 +83,9 @@ namespace mu2e {
       const double deBuncherPeriod = 1694.;
 
       //================================================================
+      using IO::ParticleRandomization;
+
+      //================================================================
       struct InputParticle {
         CLHEP::Hep3Vector posExtMon;
         CLHEP::Hep3Vector momMu2e;
@@ -92,19 +95,26 @@ namespace mu2e {
         VirtualDetectorId vd;
         ParticleType      origParticleType;
 
-        MARSInfo info;
+        ParticleRandomization pr;
+        MARSInfo minfo;
+        IO::G4JobInfo g4s1info;
 
         InputParticle(const ExtMon& extmon,
                       VirtualDetectorId vid,
                       const StepPointMC& hit,
-                      const MARSInfo& inf)
+                      const MARSInfo& inf,
+                      const IO::G4JobInfo& g4s1i)
           : posExtMon(extmon.mu2eToExtMon_position(hit.position()))
           , momMu2e(hit.momentum())
           , time(hit.time())
           , pdgId(hit.simParticle()->pdgId())
           , vd(vid)
           , origParticleType(classifyParticleType(pdgId))
-          , info(inf)
+
+          , pr()
+
+          , minfo(inf)
+          , g4s1info(g4s1i)
         {}
 
       };
@@ -126,9 +136,14 @@ namespace mu2e {
         {}
       };
 
-      //================================================================
-      using IO::ParticleRandomization;
-      typedef std::vector<ParticleRandomization> ParticleRandomizations;
+      //----------------
+      struct ProtonSort {
+        bool operator()(const InputParticle& a, const InputParticle& b) {
+          // Can use this because of no partly correlated particles in single g4s1 event
+          CmpProtonId cm;
+          return cm(a.minfo,b.minfo);
+        }
+      };
 
       //================================================================
       class HistRandomization {
@@ -292,10 +307,6 @@ namespace mu2e {
       unsigned minSourceGroupStatistics_;
 
       InputParticles particles_;
-      ParticleRandomizations pr_; // Index synced with particles_
-      InputParticles::size_type numInputProtons_;
-      InputParticles::size_type nextParticle_;
-
       InputParticles::size_type indexInParticles(const InputParticle *p) {
         return p - &particles_[0];
       }
@@ -496,8 +507,6 @@ namespace mu2e {
       static MetricZX mzx; // gcc 4.6.1 does not like "static const" here
       static const Metric *dist[] = { &mxy, &myz, &mzx };
 
-      pr_.resize(particles_.size());
-
       for(unsigned st = 0; st < NUM_SOURCES; ++st) {
 
         for(unsigned pt = 0; pt < NUM_PARTICLE_TYPES; ++pt) {
@@ -539,8 +548,8 @@ namespace mu2e {
 
             for(unsigned i=0; i<group.size(); ++i) {
               InputParticles::size_type ip = indexInParticles(group[i]);
-              pr_[ip] = computeParticleRandomization(group[i], neighbors[i]);
-              fillRandomizationHistograms(vdFromSrcNum(st), ParticleType(pt), pr_[ip]);
+              particles_[ip].pr = computeParticleRandomization(group[i], neighbors[i]);
+              fillRandomizationHistograms(vdFromSrcNum(st), ParticleType(pt), particles_[ip].pr);
             }
 
           } // !group.empty()
@@ -689,9 +698,12 @@ namespace mu2e {
                 mFinder(vsp, event,
                         art::InputTag(marsInfoModuleLabel_, marsInfoInstanceName_));
 
-              const MARSInfo info = mFinder.at(0).ref();
+              const MARSInfo minfo = mFinder.at(0).ref();
 
-              InputParticle inparticle(*extmon_, vid, hit, info);
+              InputParticle inparticle(*extmon_, vid, hit, minfo,
+                                       IO::G4JobInfo(event.id().run(), event.id().subRun(), event.id().event())
+                                       );
+
               TransientParticle particle(inparticle, particleBeta(inparticle), cutMinTime_);
               histInputs_.fill(particle);
               if(isAccepted(particle)) {
@@ -741,30 +753,55 @@ namespace mu2e {
 
       IO::EMFBoxHit particle;
       IO::MARSInfo minfo;
+      IO::G4JobInfo g4s1info;
       ParticleRandomization pr;
 
       TTree *nt = tfs->make<TTree>("vdhits", "VD hits and randomization parameters");
       nt->Branch("particle", &particle, particle.branchDescription());
-      nt->Branch("minfo", &minfo, minfo.branchDescription());
       nt->Branch("randomization", &pr, pr.branchDescription());
+      nt->Branch("minfo", &minfo, minfo.branchDescription());
+      nt->Branch("g4s1info", &g4s1info, g4s1info.branchDescription());
 
-      for(unsigned i=0; i<particles_.size(); ++i) {
-        particle.emx = particles_[i].posExtMon.x();
-        particle.emy = particles_[i].posExtMon.y();
-        particle.emz = particles_[i].posExtMon.z();
-        particle.mu2epx = particles_[i].momMu2e.x();
-        particle.mu2epy = particles_[i].momMu2e.y();
-        particle.mu2epz = particles_[i].momMu2e.z();
-        particle.time = particles_[i].time;
-        particle.pdgId = particles_[i].pdgId;
-        particle.vdId = particles_[i].vd.id();
+      // Sort by proton
+      ProtonSort ps;
+      std::sort(particles_.begin(), particles_.end(), ps);
 
-        minfo.info = particles_[i].info;
+      // Write out and count protons in the process
+      unsigned numProtons = 0;
+      if(!particles_.empty()) {
 
-        pr = pr_[i];
+        MARSInfo current = particles_[0].minfo;
+        ++numProtons;
 
-        nt->Fill();
-      }
+        for(unsigned i=0; i<particles_.size(); ++i) {
+          particle.emx = particles_[i].posExtMon.x();
+          particle.emy = particles_[i].posExtMon.y();
+          particle.emz = particles_[i].posExtMon.z();
+          particle.mu2epx = particles_[i].momMu2e.x();
+          particle.mu2epy = particles_[i].momMu2e.y();
+          particle.mu2epz = particles_[i].momMu2e.z();
+          particle.time = particles_[i].time;
+          particle.pdgId = particles_[i].pdgId;
+          particle.vdId = particles_[i].vd.id();
+
+          pr = particles_[i].pr;
+
+          minfo.info = particles_[i].minfo;
+
+          g4s1info = particles_[i].g4s1info;
+
+          nt->Fill();
+
+          if(!sameProtonAndSimPath(current, particles_[i].minfo)) {
+            current = particles_[i].minfo;
+            ++numProtons;
+          }
+        } // for(particle)
+      } // !empty
+
+      std::cout<<"EMFBoxFluxAnalyzer: numProtons = "<<numProtons
+               <<" for "<<particles_.size()<<" stored hits"
+               <<std::endl;
     }
 
     //================================================================

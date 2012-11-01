@@ -1,6 +1,6 @@
-// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.5 2012/11/01 23:41:32 gandr Exp $
+// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.6 2012/11/01 23:41:38 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:41:32 $
+// $Date: 2012/11/01 23:41:38 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -78,6 +78,22 @@ namespace mu2e {
         return res;
       }
 
+      //----------------------------------------------------------------
+      struct BufferEntry {
+        StoppedMuon sm;
+        MARSInfo  minfo;
+        BufferEntry(const StoppedMuon& s, const MARSInfo& m)
+          : sm(s), minfo(m)
+        {}
+      };
+      struct ProtonSort {
+        bool operator()(const BufferEntry& a, const BufferEntry& b) {
+          // Can use this because of no partly correlated particles in single g4s1 event
+          CmpProtonId cm;
+          return cm(a.minfo,b.minfo);
+        }
+      };
+
     } // namespace {}
 
     //================================================================
@@ -98,7 +114,10 @@ namespace mu2e {
 
       StoppedMuon sm_;
       IO::MARSInfo minfo_;
+      IO::G4JobInfo g4s1info_;
       TTree *nt_;
+
+      unsigned numProtons_;
 
       bool isAccepted(const StoppedMuon& sm);
 
@@ -107,6 +126,7 @@ namespace mu2e {
       virtual void analyze(const art::Event& event);
       virtual void beginJob();
       virtual void beginRun(const art::Run& run);
+      virtual void endJob();
     };
 
     //================================================================
@@ -125,6 +145,8 @@ namespace mu2e {
 
       , extmon_()
       , nt_()
+
+      , numProtons_(0)
     {}
 
     //================================================================
@@ -133,6 +155,12 @@ namespace mu2e {
       nt_ = tfs->make<TTree>( "sm", "Stopped muons ntuple");
       nt_->Branch("particle", &sm_, sm_.branchDescription());
       nt_->Branch("minfo", &minfo_, minfo_.branchDescription());
+      nt_->Branch("g4s1info", &g4s1info_, g4s1info_.branchDescription());
+    }
+
+    //================================================================
+    void EMFBoxMuonAnalyzer::endJob() {
+      std::cout<<"EMFBoxMuonAnalyzer: numProtons = "<<numProtons_<<std::endl;
     }
 
     //================================================================
@@ -147,13 +175,17 @@ namespace mu2e {
         extmon_ = &*extmon;
       }
     }
-
     //================================================================
     void EMFBoxMuonAnalyzer::analyze(const art::Event& event) {
 
       art::Handle<SimParticleCollection> ih;
       event.getByLabel(particlesModuleLabel_, particlesInstanceName_, ih);
       const SimParticleCollection& particles(*ih);
+
+      // We want to make sure particles from a single proton are written
+      // out as a contiguous chunck.  Need to accumulate all inputs from
+      // one event, sort by proton, then write out in order.
+      std::vector<BufferEntry> buf;
 
       for(SimParticleCollection::const_iterator i=particles.begin(); i!=particles.end(); ++i) {
         const SimParticle& sp = i->second;
@@ -182,13 +214,44 @@ namespace mu2e {
 
               minfo_.info = mFinder.at(0).ref();
 
-              // write
-              nt_->Fill();
-            }
+              // will write this out
+              buf.push_back(BufferEntry(sm_, minfo_.info));
+            } // isAccepted()
 
           }
         }
       } // for()
+
+      //----------------
+      // Got all the muons in the buffer.  Need to sort by proton.
+      ProtonSort ps;
+      std::sort(buf.begin(), buf.end(), ps);
+
+      // write out, and count protons in the process
+      if(!buf.empty()) {
+
+        MARSInfo current = buf[0].minfo;
+        ++numProtons_;
+
+        for(unsigned i=0; i<buf.size(); ++i) {
+
+          sm_ = buf[i].sm;
+
+          minfo_.info = buf[i].minfo;
+
+          g4s1info_.run = event.id().run();
+          g4s1info_.subrun = event.id().subRun();
+          g4s1info_.event = event.id().event();
+
+          nt_->Fill();
+
+          if(!sameProtonAndSimPath(current, buf[i].minfo)) {
+            current = buf[i].minfo;
+            ++numProtons_;
+          }
+        }
+      }
+
     } // analyze()
 
     //================================================================

@@ -101,6 +101,29 @@ namespace mu2e {
       };
 
       //================================================================
+      struct G4JobInfo {
+        unsigned run;
+        unsigned subrun;
+        unsigned event;
+        G4JobInfo() : run(), subrun(), event() {}
+        G4JobInfo(unsigned r, unsigned s, unsigned e) : run(r), subrun(s), event(e) {}
+
+        static const char *branchDescription() {
+          return "run/i:subrun/i:event/i";
+        }
+      };
+
+      // a "less than" comparison
+      struct CmpG4JobInfo {
+        bool operator()(const G4JobInfo& a, const G4JobInfo& b) const {
+          return
+            (a.run < b.run) || ((a.run == b.run) &&
+                                ((a.subrun < b.subrun) || ((a.subrun == b.subrun) &&
+                                                           (a.event < b.event))));
+        }
+      };
+
+      //================================================================
 
     } // IO
   } // ExtMonFNAL
