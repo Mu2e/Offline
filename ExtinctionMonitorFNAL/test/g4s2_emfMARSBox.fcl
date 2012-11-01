@@ -48,6 +48,12 @@ physics.filters.pixHitFilter : {
     cutMinHits: 1
 }
 
+physics.producers.SimParticleMARSAssnsMaker : {
+    module_type: SimParticleMARSAssnsMaker
+    simParticlesModuleLabel: pixHitFilter
+    marsInfoModuleLabel : generate
+}
+
 physics.analyzers.emfprinttruth: {
     module_type: EMFDetPrintRawHitTruth
     hitsModuleLabel  : "pixelDigitization"
@@ -59,7 +65,7 @@ physics.producers.g4run.generatorModuleLabel : "generate"
 physics.producers.geoms2: { module_type : GeometryRecorder }
 physics.gm : [geoms2]
 
-physics.trigFilter : [ generate, g4run, pixelDigitization, pixHitFilter ]
+physics.trigFilter : [ generate, g4run, pixelDigitization, pixHitFilter, SimParticleMARSAssnsMaker ]
 
 //----------------------------------------------------------------
 process_name : g4s2EMFMARSBox
@@ -71,7 +77,7 @@ services.TFileService.fileName : "hg4s2EMFMARSBox.root"
 
 outputs.outFiltered : { module_type : RootOutput
                         SelectEvents: { SelectEvents: [trigFilter] }
-                        outputCommands:   [ "keep *_pixHitFilter*_*_*", "keep mu2e::ExtMonFNALRawHits_pixelDigitization_*_*", "keep *_geom*_*_*" ]
+                        outputCommands:   [ "keep *_pixHitFilter*_*_*", "keep *_SimParticleMARSAssnsMaker_*_*", "keep mu2e::ExtMonFNALRawHits_pixelDigitization_*_*", "keep *_geom*_*_*" ]
                         fileName: "vdg4s2EMFMARSBoxFiltered.root"
                       }
 
