@@ -62,10 +62,9 @@ namespace mu2e {
         }
         const ExtMonFNALTrkMatchInfo& bestMatch = *matchInfo[ibest];
         parent_->hcommon_->Fill(bestMatch.nCommonClusters());
-        if(bestMatch.nCommonClusters() <= parent_->cutMinCommonClusters_) {
-          // This particle was reconstructed correctly
-          parent_->effMultiplicity_->Fill(true, multiplicity_);
-        }
+
+        bool recoOK = (parent_->cutMinCommonClusters_ <= bestMatch.nCommonClusters() );
+        parent_->effMultiplicity_->Fill(recoOK, multiplicity_);
 
       }
       else {
