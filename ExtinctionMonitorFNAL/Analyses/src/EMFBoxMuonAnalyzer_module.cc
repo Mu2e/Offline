@@ -1,6 +1,6 @@
-// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.6 2012/11/01 23:41:38 gandr Exp $
+// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.7 2012/11/01 23:41:42 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:41:38 $
+// $Date: 2012/11/01 23:41:42 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -117,7 +117,9 @@ namespace mu2e {
       IO::G4JobInfo g4s1info_;
       TTree *nt_;
 
-      unsigned numProtons_;
+      unsigned numMuonStops_;
+      unsigned numProtonPaths_;
+      std::set<MARSInfo, CmpProtonId> uniqProtons_;
 
       bool isAccepted(const StoppedMuon& sm);
 
@@ -146,7 +148,8 @@ namespace mu2e {
       , extmon_()
       , nt_()
 
-      , numProtons_(0)
+      , numMuonStops_(0)
+      , numProtonPaths_(0)
     {}
 
     //================================================================
@@ -160,7 +163,10 @@ namespace mu2e {
 
     //================================================================
     void EMFBoxMuonAnalyzer::endJob() {
-      std::cout<<"EMFBoxMuonAnalyzer: numProtons = "<<numProtons_<<std::endl;
+      std::cout<<"EMFBoxMuonAnalyzer: numProtonPaths = "<<numProtonPaths_
+               <<", numUniqProtons = "<<uniqProtons_.size()
+               <<", numMuonStops = "<<numMuonStops_
+               <<std::endl;
     }
 
     //================================================================
@@ -228,10 +234,12 @@ namespace mu2e {
       std::sort(buf.begin(), buf.end(), ps);
 
       // write out, and count protons in the process
+      numMuonStops_ += buf.size();
       if(!buf.empty()) {
 
         MARSInfo current = buf[0].minfo;
-        ++numProtons_;
+        ++numProtonPaths_;
+        uniqProtons_.insert(current);
 
         for(unsigned i=0; i<buf.size(); ++i) {
 
@@ -247,7 +255,8 @@ namespace mu2e {
 
           if(!sameProtonAndSimPath(current, buf[i].minfo)) {
             current = buf[i].minfo;
-            ++numProtons_;
+            ++numProtonPaths_;
+            uniqProtons_.insert(current);
           }
         }
       }

@@ -1,9 +1,9 @@
 // Read in a set of particles hitting ExtMonFNAL VD box (from g4s1 room jobs)
 // compute randomization parameters, and write out as an ntuple.
 //
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.10 2012/11/01 23:41:38 gandr Exp $
+// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.11 2012/11/01 23:41:42 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:41:38 $
+// $Date: 2012/11/01 23:41:42 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -303,6 +303,7 @@ namespace mu2e {
       double   cutMinTime_;
       double   cutLengthScale_;
 
+      bool noKNN_;
       unsigned numNeighbors_;
       unsigned minSourceGroupStatistics_;
 
@@ -360,22 +361,26 @@ namespace mu2e {
       , cutMinTime_(pset.get<double>("cutMinTime"))
       , cutLengthScale_(pset.get<double>("cutLengthScale"))
 
-      , numNeighbors_(pset.get<unsigned>("numNeighbors"))
-      , minSourceGroupStatistics_(pset.get<unsigned>("minSourceGroupStatistics"))
+      , noKNN_(pset.get<bool>("noKNN", false))
+      , numNeighbors_(noKNN_ ? pset.get<unsigned>("numNeighbors", 0) : pset.get<unsigned>("numNeighbors"))
+      , minSourceGroupStatistics_(noKNN_ ? pset.get<unsigned>("minSourceGroupStatistics", 0) : pset.get<unsigned>("minSourceGroupStatistics"))
 
       , grouped_(NUM_SOURCES, std::vector<RandomizationGroup>(NUM_PARTICLE_TYPES))
     {
-      if(minSourceGroupStatistics_ < numNeighbors_) {
-        throw cet::exception("BADCONFIG")
-          <<"Error: minSourceGroupStatistics ("<<minSourceGroupStatistics_<<") < numNeighbors ("<<numNeighbors_<<")";
-      }
+      if(!noKNN_) {
+        if(minSourceGroupStatistics_ < numNeighbors_) {
+          throw cet::exception("BADCONFIG")
+            <<"Error: minSourceGroupStatistics ("<<minSourceGroupStatistics_<<") < numNeighbors ("<<numNeighbors_<<")";
+        }
 
-      if(numNeighbors_ < 2) {
-        throw cet::exception("BADCONFIG")
-          <<"Error: numNeighbors="<<numNeighbors_<<", should be > 1";
-      }
+        if(numNeighbors_ < 2) {
+          throw cet::exception("BADCONFIG")
+            <<"Error: numNeighbors="<<numNeighbors_<<", should be > 1";
+        }
 
-      std::cout<<"cutLengthScale/c = "<<(cutLengthScale_ / CLHEP::c_light)<<" ns, cutMinTime = "<<cutMinTime_<<std::endl;
+        std::cout<<"cutLengthScale/c = "<<(cutLengthScale_ / CLHEP::c_light)<<" ns"
+                 <<", cutMinTime = "<<cutMinTime_<<std::endl;
+      }
     }
 
     //================================================================
@@ -456,11 +461,20 @@ namespace mu2e {
           if(!grouped_[st][pt].empty() &&
              (grouped_[st][pt].size() < minSourceGroupStatistics_)) {
 
-            throw cet::exception("BADINPUTS")
-              <<"Error: failed to regroup particles on source plane = "<<st
-              <<" to satisfy minSourceGroupStatistics="<<minSourceGroupStatistics_
-              <<": achieved stat="<<grouped_[st][pt].size()
-              <<"\n";
+            if(!noKNN_) {
+              throw cet::exception("BADINPUTS")
+                <<"Error: failed to regroup particles on source plane = "<<st
+                <<" to satisfy minSourceGroupStatistics="<<minSourceGroupStatistics_
+                <<": achieved stat="<<grouped_[st][pt].size()
+                <<"\n";
+            }
+            else {
+              std::cout<<"EMFBoxFluxAnalyzer: WARNING: "
+                       <<"failed to regroup particles on source plane = "<<st
+                       <<" to satisfy minSourceGroupStatistics="<<minSourceGroupStatistics_
+                       <<": achieved stat="<<grouped_[st][pt].size()
+                       <<std::endl;
+            }
           }
         }
 
@@ -741,7 +755,12 @@ namespace mu2e {
         printSrcGroups();
       }
 
-      computeParticleRandomizations();
+      if(!noKNN_) {
+        computeParticleRandomizations();
+      }
+      else {
+        std::cout<<"EMFBoxFluxAnalyzer: NOT computing particle randomizations per user request."<<std::endl;
+      }
 
       writeParticleNtuple();
     }
@@ -758,7 +777,9 @@ namespace mu2e {
 
       TTree *nt = tfs->make<TTree>("vdhits", "VD hits and randomization parameters");
       nt->Branch("particle", &particle, particle.branchDescription());
-      nt->Branch("randomization", &pr, pr.branchDescription());
+      if(!noKNN_) {
+        nt->Branch("randomization", &pr, pr.branchDescription());
+      }
       nt->Branch("minfo", &minfo, minfo.branchDescription());
       nt->Branch("g4s1info", &g4s1info, g4s1info.branchDescription());
 
@@ -767,11 +788,13 @@ namespace mu2e {
       std::sort(particles_.begin(), particles_.end(), ps);
 
       // Write out and count protons in the process
-      unsigned numProtons = 0;
+      unsigned numProtonPaths = 0;
+      std::set<MARSInfo, CmpProtonId> uniqProtons;
       if(!particles_.empty()) {
 
         MARSInfo current = particles_[0].minfo;
-        ++numProtons;
+        ++numProtonPaths;
+        uniqProtons.insert(current);
 
         for(unsigned i=0; i<particles_.size(); ++i) {
           particle.emx = particles_[i].posExtMon.x();
@@ -794,12 +817,14 @@ namespace mu2e {
 
           if(!sameProtonAndSimPath(current, particles_[i].minfo)) {
             current = particles_[i].minfo;
-            ++numProtons;
+            ++numProtonPaths;
+            uniqProtons.insert(current);
           }
         } // for(particle)
       } // !empty
 
-      std::cout<<"EMFBoxFluxAnalyzer: numProtons = "<<numProtons
+      std::cout<<"EMFBoxFluxAnalyzer: numProtonPaths = "<<numProtonPaths
+               <<", numUniqProtons = "<<uniqProtons.size()
                <<" for "<<particles_.size()<<" stored hits"
                <<std::endl;
     }
