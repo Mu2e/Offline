@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.8 2012/11/01 23:39:34 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.9 2012/11/01 23:39:38 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:39:34 $
+// $Date: 2012/11/01 23:39:38 $
 //
 // Original author Andrei Gaponenko
 //
@@ -52,7 +52,10 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ExtMonFNALConditions.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
 #include "SeedService/inc/SeedService.hh"
+
 
 namespace mu2e {
   namespace ExtMonFNAL {
@@ -153,6 +156,8 @@ namespace mu2e {
 
       PixelNoise noise_;
 
+      std::vector<double> planeTOFCorrection_;
+
       void collectIonization(PixelChargeCollection *pixcharges,
                              const ExtMonFNALSimHitCollection& simhits);
 
@@ -185,9 +190,8 @@ namespace mu2e {
                         const ExtMonFNALPixelId& pix,
                         PixelChargeHistory& ch);
 
-      // FIXME: correct for time of flight here
-      int timeStamp(double time) const {
-        return (time - condExtMon_->t0())/condExtMon_->clockTick();
+      int timeStamp(unsigned iplane, double time) const {
+        return (time - condExtMon_->t0() - planeTOFCorrection_[iplane])/condExtMon_->clockTick();
       }
 
     };
@@ -202,6 +206,23 @@ namespace mu2e {
       else {
         GeomHandle<ExtMon> emf;
         extMon_ = &*emf;
+      }
+
+      { // Got geometry. Compute per-plane time of flight correction to T0.
+        const double p = extMon_->spectrometerMagnet().nominalMomentum();
+
+        GlobalConstantsHandle<ParticleDataTable> pdt;
+        ParticleDataTable::maybe_ref protonInfo = pdt->particle(2212);
+        const double m = protonInfo.ref().mass();
+        const double pm2 = std::pow(p/m, 2);
+        const double beta = sqrt(pm2/(1.+pm2));
+        const double v = beta * CLHEP::c_light;
+
+        planeTOFCorrection_.resize(extMon_->nplanes());
+        for(unsigned i=0; i<extMon_->nplanes(); ++i) {
+          const CLHEP::Hep3Vector pos = extMon_->sensorCenterInExtMon(i);
+          planeTOFCorrection_[i] = -pos.z()/v;
+        }
       }
 
       ConditionsHandle<ExtMonFNALConditions> cond("ignored");
@@ -350,6 +371,10 @@ namespace mu2e {
       // ending up at t=-delta<0 do not produce output hits, but may
       // eat up other hits with t>0, whose effect is instead in
       // modifying ToT of the twin hit t=deBuncherPeriod-delta.)
+      //
+      // Larger margins are safe (for correctnes), but inefficient.
+      // maxToT + max time of flight correction should be enough.
+
 
       PixelChargeHistory& in(*inout);
       PixelChargeHistory out;
@@ -400,6 +425,7 @@ namespace mu2e {
                                           PixelChargeHistory& ch)
     {
       PixelToTCircuit cap(discriminatorThreshold_, qCalib_, totCalib_, condExtMon_->clockTick());
+      const unsigned iplane = pix.chip().sensor().plane();
 
       double t = ch.top().time;
 
@@ -413,7 +439,7 @@ namespace mu2e {
         //----------------------------------------------------------------
         if(cap.high()) { // Found LE
 
-          const int roStartTime = timeStamp(t);
+          const int roStartTime = timeStamp(iplane, t);
 
           // add to the set of SimParticles
           typedef std::map<art::Ptr<SimParticle>, double> ChargeMap;
@@ -425,7 +451,7 @@ namespace mu2e {
           //----------------------------------------------------------------
           // Merge charges that go in the same hit
 
-          while(!ch.empty() && (timeStamp(ch.top().time) <= timeStamp(t + cap.computeTrailingEdge()))) {
+          while(!ch.empty() && (timeStamp(iplane, ch.top().time) <= timeStamp(iplane, t + cap.computeTrailingEdge()))) {
 
             cap.wait(ch.top().time - t);
             t = ch.top().time;
@@ -439,7 +465,7 @@ namespace mu2e {
           //----------------------------------------------------------------
           // Figure out ToT
 
-          const int roEndTime = timeStamp(t + cap.computeTrailingEdge());
+          const int roEndTime = timeStamp(iplane, t + cap.computeTrailingEdge());
 
           // Limit dinamic range of readout ToT
           const int roToT = std::min(maxToT_, roEndTime - roStartTime);

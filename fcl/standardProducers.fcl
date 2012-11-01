@@ -132,7 +132,7 @@ EMFPatRecFromTracklets : {
     geomModuleLabel : "geom"
 
     // clock tolerance used for both cluster association and tracklet match
-    clusterClockTolerance : 1 // clock cycle
+    clusterClockTolerance : 0 // clock cycle
 
     // cut on two-cluster tracklet seeds
     maxTrackSlope  : 0.1 // 0.025 // signal cut 0.015
