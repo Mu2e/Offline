@@ -21,6 +21,7 @@ namespace mu2e {
     , perPlaneClusterMultiplicity_()
     , perClusterHitMultiplicity_()
     , clusterClock_()
+    , clusterWidth_()
     , clusterPosition_()
   {}
 
@@ -61,6 +62,11 @@ namespace mu2e {
     clusterClock_->GetXaxis()->SetTitle("clock");
     clusterClock_->GetYaxis()->SetTitle("plane number");
 
+    clusterWidth_   = tfdir.make<TH2D>("clusterWidth", "Y vs X cluster width", 5, 0.5, 5.5, 5, 0.5, 5.5);
+    clusterWidth_->SetOption("colz");
+    clusterWidth_->GetXaxis()->SetTitle("xWidth, pixels");
+    clusterWidth_->GetYaxis()->SetTitle("yWidth, pixels");
+
     // Bin cluster position histograms according to pixel size
     const unsigned nx = extmon.sensor().nxChips() * extmon.chip().nColumns();
     const double   lx = nx * extmon.chip().xPitch();
@@ -96,6 +102,7 @@ namespace mu2e {
 
         perClusterHitMultiplicity_->Fill(pc[i].raw()->hits().size(), plane);
         clusterClock_->Fill(pc[i].clock(), plane);
+        clusterWidth_->Fill(pc[i].yWidth(), pc[i].xWidth());
         CLHEP::Hep3Vector stackPos(pc[i].position());
         clusterPosition_[plane]->Fill(stackPos.x(), stackPos.y());
 

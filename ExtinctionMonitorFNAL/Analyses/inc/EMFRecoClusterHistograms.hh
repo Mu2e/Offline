@@ -1,9 +1,9 @@
 #ifndef ExtinctionMonitorFNAL_Analyses_EMFRecoClusterHistograms_hh
 #define ExtinctionMonitorFNAL_Analyses_EMFRecoClusterHistograms_hh
 //
-// $Id: EMFRecoClusterHistograms.hh,v 1.1 2012/09/19 03:35:30 gandr Exp $
+// $Id: EMFRecoClusterHistograms.hh,v 1.2 2012/11/01 23:27:06 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/09/19 03:35:30 $
+// $Date: 2012/11/01 23:27:06 $
 //
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 //
@@ -45,6 +45,8 @@ namespace mu2e {
     TH2D* perPlaneClusterMultiplicity_;
     TH2D* perClusterHitMultiplicity_;
     TH2D* clusterClock_;
+
+    TH2D* clusterWidth_;
 
     // per sensor
     std::vector<TH2D*> clusterPosition_;
