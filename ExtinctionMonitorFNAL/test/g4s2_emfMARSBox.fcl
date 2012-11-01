@@ -8,30 +8,52 @@ source : {
 
 physics.producers.generate : {
     module_type: ExtMonFNALBoxGenerator
-    verbosityLevel : 1
+    verbosityLevel : 5
 
-    // The 20121002a-EMFBoxFluxAnalyzer set corresponds to
-    // 500(p/evt)*60(evts/job)*2999(jobs) MARS-passed protons on target
-    //
-    // MARS efficiency is (19382 / 40M), and microbunch is 30M protons
-    // So the dateset represents (500*60*2999)/(19382 * 3/4) = 6189 microbunches
-    // and the scaling factor is 1/6189.
-    // For the whole dataset we'd have
-    //
-    //      microbunchScaling : 0.00016157
-    //
-    // But too much memory is needed to hold all the inputs
-    // (grid jobs grew >4GB), so ExtinctionMonitorFNAL/test/20121004-grid-config/
-    // contains config files to process pieces of the s1 dataset.
-    //
-    // inputFiles : ["data/test/20121018-a-analyzers/t000-n004800/histEMFBoxFluxAnalyzer.root"]
-    // microbunchScaling : 0.0243
+    inputFiles : ["data/test/20121018-a-analyzers/t000-n004800/histEMFBoxFluxAnalyzer.root"]
 
-    weightMax : 2
+    numPrimaryProtonsPerMicrobunch : 30000000
 
-    bunchTimeHalfWidth : 100
-    cutTimeMin : 120
-    cutTimeMax : 1664 // 1694 + 70 - 100
+    // Rejection by simulation stage:
+    //
+    // marss1: 40M protons in => X out, stageEff = X/40M
+    //
+    // marss2: X * 3 proton*paths inputs => 58450 proton*path outputs, stageEff=58450/(3*X)
+    //
+    //    Total MARS eff = eff(s1)*eff(s2) = 58450/(3*40M) = .00048708333333333333
+    //
+    // Measure efficiencies on the whole whole 20121017-a-s1 data set: 1000 files
+    // of 120 events of 500 protons.
+    //
+    //----------------------------------------------------------------
+    // For cutTimeMin=0:
+    //
+    // hits proton eff(t000) = 6042096/(500 * 120 * 1000) = .10070160000000000000 g4s1
+    // stops proton eff(t000) = 45595/(500 * 120 * 1000)  = .00075991666666666666 g4s1
+    //
+    // Multiplying with total MARS:
+    //
+    // final hits eff(t000) = .00004905007099999999
+    // final stops eff(t000) = .00000037014274305555
+    //----------------------------------------------------------------
+    // For cutTimeMin=120:
+    //
+    // hits proton eff(t120) = 4911103/(500 * 120 * 1000) = .04092585833333333333
+    // stops proton eff(t120) = 45595/(500 * 120 * 1000)  = .00037995833333333333
+    //
+    // Multiplying with total MARS:
+    //
+    // final hits eff(t120) = .00001993430349652777
+    // final stops eff(t120) = .00000018507137152777
+    //----------------------------------------------------------------
+
+    //t000: cutMuonTimeMin : 0
+    //t000: primaryProtonHitEfficiency : .00004905007099999999
+    //t000: primaryProtonStopEfficiency : .00000037014274305555
+
+    cutMuonTimeMin : 120
+    primaryProtonHitEfficiency : .00001993430349652777
+    primaryProtonStopEfficiency : .00000018507137152777
 
     // don't throw partiles outside of the original VD box
     keepInBox : [ 100, 200, 650. ]

@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.3 2012/11/01 23:41:46 gandr Exp $
+// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.4 2012/11/01 23:41:58 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:41:46 $
+// $Date: 2012/11/01 23:41:58 $
 //
 // Create particle flux in the ExtMonFNAL box by randomizing
 // kinematic of input particles read from a file.
@@ -22,6 +22,7 @@
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
+#include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -96,54 +97,63 @@ namespace mu2e {
       typedef std::vector<InputStop> InputStops;
 
       //================================================================
+      typedef std::set<MARSInfo, CmpProtonId> UniqProtons;
+
+      //================================================================
     } // namespace {}
 
     class ExtMonFNALBoxGenerator : public art::EDProducer {
+      typedef std::vector<unsigned> InputProtons;
+
       int verbosityLevel_;
       std::string geomModuleLabel_;
       std::string geomInstanceName_;
 
       std::vector<std::string> inputFiles_;
 
-      double microbunchScaling_; // the fraction of all inputs to be used to generate a microbunch
+      unsigned numPrimaryProtonsPerMicrobunch_;
+      double   primaryProtonHitEfficiency_;
+      double   primaryProtonStopEfficiency_;
 
-      // w==1 particles are accepted wiht 1/weightMax_ probability
-      // w>max weights are truncated
-      double weightMax_;
-
-      unsigned microbunchVDHitsChunkSize_; // computed from inputs size and the two numbers above
-      unsigned nextVDHit_; // index
-
-      unsigned microbunchStoppedMuonsChunkSize_;
-      unsigned nextStoppedMuon_;
-
-      double bunchTimeHalfWidth_;
-      double cutTimeMin_;
-      double cutTimeMax_;
+      double cutMuonTimeMin_;
       std::vector<double> keepInBox_;
+
+      unsigned failCountLimit_;
+
+      // Max MARS weigh limits for accept/reject, computed from inputs
+      double hitsWeightMax_;
+      double stopsWeightMax_;
 
       art::RandomNumberGenerator::base_engine_t& eng_;
       CLHEP::RandFlat randFlat_;
       CLHEP::RandGaussQ randGauss_;
+      CLHEP::RandPoissonQ randPoisson_;
 
-      double deBuncherPeriod_;
       const ExtMon *extmon_;
 
       MassCache mc_;
 
-      InputHits vdhits_;
+      InputHits  vdhits_;
+      InputProtons hitProtons_;  // for each proton*simpath in vdhits, index of its first particle in vdhits_
+
       InputStops mustops_;
+      InputProtons stopProtons_;  // for each proton*simpath in mustops, index of its first particle in vdhits_
 
       void loadInputFiles();
 
       void addVDHits(TFile* infile);
+      void assembleHitProtons();
+      void computeHitsWeightMax();
+
       void addStoppedMuons(TFile* infile);
+      void assembleStopProtons();
+      void computeStopsWeightMax();
 
       void generateFromVDHits(const art::Event& event,
                               GenParticleCollection *output,
                               MARSInfoCollection *info,
                               GenParticleMARSAssns *assns);
-      GenParticle createOutputParticle(double randomizedTime, const InputHit& hit);
+      GenParticle createOutputParticle(const InputHit& hit);
       bool inRange(int vdId, const CLHEP::Hep3Vector& posExtMon);
 
       void generateFromStoppedMuons(const art::Event& event,
@@ -166,23 +176,24 @@ namespace mu2e {
       , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
 
       , inputFiles_(pset.get<std::vector<std::string> >("inputFiles"))
-      , microbunchScaling_(pset.get<double>("microbunchScaling"))
-      , weightMax_(pset.get<double>("weightMax"))
-      , microbunchVDHitsChunkSize_()
-      , nextVDHit_()
-      , microbunchStoppedMuonsChunkSize_()
-      , nextStoppedMuon_()
 
-      , bunchTimeHalfWidth_(pset.get<double>("bunchTimeHalfWidth"))
-      , cutTimeMin_(pset.get<double>("cutTimeMin"))
-      , cutTimeMax_(pset.get<double>("cutTimeMax"))
+      , numPrimaryProtonsPerMicrobunch_(pset.get<unsigned>("numPrimaryProtonsPerMicrobunch"))
+      , primaryProtonHitEfficiency_(pset.get<double>("primaryProtonHitEfficiency"))
+      , primaryProtonStopEfficiency_(pset.get<double>("primaryProtonStopEfficiency"))
+
+      , cutMuonTimeMin_(pset.get<double>("cutMuonTimeMin"))
       , keepInBox_(pset.get<std::vector<double> >("keepInBox"))
+
+      , failCountLimit_(pset.get<unsigned>("failCountLimit", 1000))
+
+      , hitsWeightMax_(0)
+      , stopsWeightMax_(0)
 
       , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
       , randFlat_(eng_)
       , randGauss_(eng_)
+      , randPoisson_(eng_)
 
-      , deBuncherPeriod_()
       , extmon_()
     {
       produces<mu2e::GenParticleCollection>();
@@ -192,18 +203,16 @@ namespace mu2e {
       if(inputFiles_.empty()) {
         throw cet::exception("BADCONFIG")<<"Error: no inputFiles";
       }
-
+      if(verbosityLevel_ > 0) {
+        std::cout<<"ExtMonFNALBoxGenerator: numPrimaryProtonsPerMicrobunch = "<<numPrimaryProtonsPerMicrobunch_
+                 <<", will use "<<numPrimaryProtonsPerMicrobunch_ * primaryProtonHitEfficiency_<<" \"hit\" protons "
+                 <<" and "<<numPrimaryProtonsPerMicrobunch_*primaryProtonStopEfficiency_<<" \"stop\" protons"
+                 <<std::endl;
+      }
     }
 
     //================================================================
     void ExtMonFNALBoxGenerator::beginRun(art::Run& run) {
-      ConditionsHandle<AcceleratorParams> ch("ignored");
-      deBuncherPeriod_ = ch->deBuncherPeriod;
-
-      if(verbosityLevel_ > 0) {
-        std::cout<<"ExtMonFNALBoxGenerator: using deBuncherPeriod = "<<deBuncherPeriod_<<std::endl;
-      }
-
       if(!geomModuleLabel_.empty()) {
         art::Handle<ExtMon> extmon;
         run.getByLabel(geomModuleLabel_, geomInstanceName_, extmon);
@@ -220,27 +229,21 @@ namespace mu2e {
 
       //----------------------------------------------------------------
       loadInputFiles();
-
-      microbunchVDHitsChunkSize_ = vdhits_.size() * microbunchScaling_ * weightMax_;
-      microbunchStoppedMuonsChunkSize_ = mustops_.size() * microbunchScaling_ * weightMax_;
+      assembleHitProtons();
+      assembleStopProtons();
+      computeHitsWeightMax();
+      computeStopsWeightMax();
 
       if(verbosityLevel_ > 0) {
         std::cout<<"ExtMonFNALBoxGenerator inputs: num hits = "<<vdhits_.size()
+                 <<", hitProtons = "<<hitProtons_.size()
                  <<", num stopped muons = "<<mustops_.size()
+                 <<", stopProtons = "<<stopProtons_.size()
+                 <<", hitsWeightMax = "<<hitsWeightMax_
+                 <<", stopsWeightMax = "<<stopsWeightMax_
                  <<std::endl;
 
-        std::cout<<"ExtMonFNALBoxGenerator: microbunchVDHitsChunkSize = "<<microbunchVDHitsChunkSize_
-                 <<", microbunchStoppedMuonsChunkSize = "<<microbunchStoppedMuonsChunkSize_
-                 <<std::endl;
       }
-
-      if(microbunchVDHitsChunkSize_ < 1) {
-        throw cet::exception("BADCONFIG")<<"ERROR: Computed microbunchVDHitsChunkSize < 1! Increase weightMax?\n";
-      }
-      if(microbunchStoppedMuonsChunkSize_ < 1) {
-        throw cet::exception("BADCONFIG")<<"ERROR: Computed microbunchStoppedMuonsChunkSize_ < 1! Increase weightMax?\n";
-      }
-
     }
 
     //================================================================
@@ -311,6 +314,38 @@ namespace mu2e {
     }
 
     //================================================================
+    void ExtMonFNALBoxGenerator::assembleHitProtons() {
+      // We can simply look at contiguous particles here
+      // because particles from one proton are contiguous in
+      // the MARS outputs, and this is preserved by generator
+      // and analyzer/dumper up in the chain.
+
+      hitProtons_.push_back(0);
+      MARSInfo mcurrent = vdhits_[0].minfo;
+      IO::G4JobInfo gcurrent = vdhits_[0].g4s1info;
+      for(unsigned i=1; i < vdhits_.size(); ++i) {
+        if(! (sameProtonAndSimPath(vdhits_[i].minfo, mcurrent) &&
+              (gcurrent == vdhits_[i].g4s1info)
+              )
+           )
+          {
+            hitProtons_.push_back(i);
+            mcurrent = vdhits_[i].minfo;
+            gcurrent = vdhits_[i].g4s1info;
+          }
+      }
+    }
+
+    //================================================================
+    void ExtMonFNALBoxGenerator::computeHitsWeightMax() {
+      for(InputHits::const_iterator i=vdhits_.begin(); i!=vdhits_.end(); ++i) {
+        if(hitsWeightMax_ < i->minfo.weight()) {
+          hitsWeightMax_ = i->minfo.weight();
+        }
+      }
+    }
+
+    //================================================================
     void ExtMonFNALBoxGenerator::addStoppedMuons(TFile* infile) {
       const std::string treeName("StoppedMuons/sm");
 
@@ -347,6 +382,38 @@ namespace mu2e {
     }
 
     //================================================================
+    void ExtMonFNALBoxGenerator::assembleStopProtons() {
+      // We can simply look at contiguous particles here
+      // because particles from one proton are contiguous in
+      // the MARS outputs, and this is preserved by generator
+      // and analyzer/dumper up in the chain.
+
+      stopProtons_.push_back(0);
+      MARSInfo mcurrent = mustops_[0].minfo;
+      IO::G4JobInfo gcurrent = mustops_[0].g4s1info;
+      for(unsigned i=1; i < mustops_.size(); ++i) {
+        if(! (sameProtonAndSimPath(mustops_[i].minfo, mcurrent) &&
+              (gcurrent == mustops_[i].g4s1info)
+              )
+           )
+          {
+            stopProtons_.push_back(i);
+            mcurrent = mustops_[i].minfo;
+            gcurrent = mustops_[i].g4s1info;
+          }
+      }
+    }
+
+    //================================================================
+    void ExtMonFNALBoxGenerator::computeStopsWeightMax() {
+      for(InputStops::const_iterator i=mustops_.begin(); i!=mustops_.end(); ++i) {
+        if(stopsWeightMax_ < i->minfo.weight()) {
+          stopsWeightMax_ = i->minfo.weight();
+        }
+      }
+    }
+
+    //================================================================
     void ExtMonFNALBoxGenerator::produce(art::Event& event) {
 
       std::auto_ptr<GenParticleCollection> output(new GenParticleCollection);
@@ -373,31 +440,59 @@ namespace mu2e {
       const art::ProductID marsPID = getProductID<MARSInfoCollection>(event);
       const art::EDProductGetter *marsGetter = event.productGetter(marsPID);
 
-      for(unsigned count=0; count < microbunchStoppedMuonsChunkSize_; ++count) {
-        const InputStop& ms = mustops_[nextStoppedMuon_];
-
-        const double randomizedStopTime =
-          fmod(ms.muon.time, deBuncherPeriod_)
-          + (2*randFlat_.fire() - 1.)*bunchTimeHalfWidth_;
-
-        const double generatedMuonTime = std::max(randomizedStopTime, cutTimeMin_);
-
-        static const double tauMuMinus = 864.; //ns, Al is conservative for Fe
-        static const double tauMuPlus = 2197.; //ns, free muon
-
-        const double tau = (ms.muon.pdgId > 0) ? tauMuMinus : tauMuPlus;
-        const double weight = exp((generatedMuonTime - cutTimeMin_)/tau) * ms.minfo.weight();
-
-        if(randFlat_.fire() * weightMax_ <= weight) {
-          output->push_back(createOutputMuon(generatedMuonTime, ms));
-          info->push_back(ms.minfo);
-          assns->addSingle(art::Ptr<GenParticle>(particlesPID, output->size()-1, particlesGetter),
-                           art::Ptr<MARSInfo>(marsPID, info->size()-1, marsGetter));
-        }
-
-        ++nextStoppedMuon_ %= mustops_.size();
+      const int numStopProtons = randPoisson_.fire(numPrimaryProtonsPerMicrobunch_ * primaryProtonStopEfficiency_);
+      if(verbosityLevel_ > 1) {
+        std::cout<<"Generating stopped muons for "<<numStopProtons<<" input protons in this event."<<std::endl;
       }
-    }
+
+      UniqProtons seen;
+      unsigned failcount = 0;
+      int count = 0;
+
+      while(count < numStopProtons) {
+
+        const unsigned iproton = randFlat_.fireInt(stopProtons_.size());
+
+        // NB: cases when different particles from one proton have different
+        // weights are not well defined.  Use the weight for the first
+        // particle corresponding to the proton
+        const bool acceptStopWeight(randFlat_.fire() * stopsWeightMax_ <= mustops_[stopProtons_[iproton]].minfo.weight());
+        if(acceptStopWeight) {
+
+          // Don't put partly correlated particles in one event
+          if(seen.insert(mustops_[stopProtons_[iproton]].minfo).second) {
+            ++count;  // count protons *before* applying muon decay weight
+            failcount = 0;
+
+            const unsigned start = stopProtons_[iproton];
+            const unsigned end = (1 + iproton == stopProtons_.size()) ?
+              mustops_.size() : stopProtons_[1+iproton];
+
+            for(unsigned istop = start; istop < end; ++istop) {
+              const InputStop& mustop = mustops_[istop];
+
+              const double generatedMuonTime = std::max(mustop.muon.time, cutMuonTimeMin_);
+              static const double tauMuPlus = 2197.; //ns, free muon
+              const double decayWeight = exp((generatedMuonTime - cutMuonTimeMin_)/tauMuPlus);
+
+              if(randFlat_.fire() <= decayWeight) {
+                output->push_back(createOutputMuon(generatedMuonTime, mustop));
+                info->push_back(mustop.minfo);
+                assns->addSingle(art::Ptr<GenParticle>(particlesPID, output->size()-1, particlesGetter),
+                                 art::Ptr<MARSInfo>(marsPID, info->size()-1, marsGetter));
+
+              }
+            } // for(muons from this proton)
+          }
+          else {
+            if(++failcount > failCountLimit_) {
+              throw cet::exception("BADINPUTS")<<"Error: failed to find an uncorrelated particle after "
+                                               <<failCountLimit_<<" trials\n";
+            }
+          } // else-skip correlated
+        } // acceptStopWeight
+      } // while(count)
+    }// generateFromStoppedMuons()
 
     //================================================================
     void ExtMonFNALBoxGenerator::generateFromVDHits(const art::Event& event,
@@ -411,30 +506,56 @@ namespace mu2e {
       const art::ProductID marsPID = getProductID<MARSInfoCollection>(event);
       const art::EDProductGetter *marsGetter = event.productGetter(marsPID);
 
-      for(unsigned count=0; count < microbunchVDHitsChunkSize_; ++count) {
-        const InputHit& hit = vdhits_[nextVDHit_];
+      const int numHitProtons = randPoisson_.fire(numPrimaryProtonsPerMicrobunch_ * primaryProtonHitEfficiency_);
+      if(verbosityLevel_ > 1) {
+        std::cout<<"Generating box particles for "<<numHitProtons<<" input protons in this event."<<std::endl;
+      }
 
-        const bool acceptHitWeight(randFlat_.fire() * weightMax_ <= hit.minfo.weight());
+      UniqProtons seen;
+      unsigned failcount = 0;
+      int count = 0;
+
+      while(count < numHitProtons) {
+
+        const unsigned iproton = randFlat_.fireInt(hitProtons_.size());
+
+        // NB: cases when different particles from one proton have different
+        // weights are not well defined.  Use the weight for the first
+        // particle corresponding to the proton
+        const bool acceptHitWeight(randFlat_.fire() * hitsWeightMax_ <= vdhits_[hitProtons_[iproton]].minfo.weight());
         if(acceptHitWeight) {
 
-          const double randomizedTime =
-            fmod(hit.particle.time, deBuncherPeriod_)
-            + (2*randFlat_.fire() - 1.)*bunchTimeHalfWidth_;
+          // Don't put partly correlated particles in one event
+          if(seen.insert(vdhits_[hitProtons_[iproton]].minfo).second) {
+            ++count;
+            failcount = 0;
 
-          if((cutTimeMin_ < randomizedTime) && (randomizedTime < cutTimeMax_)) {
-            output->push_back(createOutputParticle(randomizedTime, hit));
-            info->push_back(hit.minfo);
-            assns->addSingle(art::Ptr<GenParticle>(particlesPID, output->size()-1, particlesGetter),
-                             art::Ptr<MARSInfo>(marsPID, info->size()-1, marsGetter));
+            const unsigned start = hitProtons_[iproton];
+            const unsigned end = (1 + iproton == hitProtons_.size()) ?
+              vdhits_.size() : hitProtons_[1+iproton];
+
+            for(unsigned ihit = start; ihit < end; ++ihit) {
+              const InputHit& hit = vdhits_[ihit];
+              output->push_back(createOutputParticle(hit));
+              info->push_back(hit.minfo);
+              assns->addSingle(art::Ptr<GenParticle>(particlesPID, output->size()-1, particlesGetter),
+                               art::Ptr<MARSInfo>(marsPID, info->size()-1, marsGetter));
+
+            }
           }
+          else {
+            if(++failcount > failCountLimit_) {
+              throw cet::exception("BADINPUTS")<<"Error: failed to find an uncorrelated particle after "
+                                               <<failCountLimit_<<" trials\n";
+            }
+          } // else-skip correlated
 
-        }
-        ++nextVDHit_ %= vdhits_.size();
-      }
-    }
+        } // acceptHitWeight
+      } // while(count)
+    } // generateFromVDHits()
 
     //================================================================
-    GenParticle ExtMonFNALBoxGenerator::createOutputParticle(double randomizedTime, const InputHit& hit) {
+    GenParticle ExtMonFNALBoxGenerator::createOutputParticle(const InputHit& hit) {
       using CLHEP::Hep3Vector;
 
       Hep3Vector posExtMon(hit.particle.emx, hit.particle.emy, hit.particle.emz);
@@ -483,7 +604,7 @@ namespace mu2e {
                          GenId::MARS,
                          posMu2e,
                          momMu2e,
-                         randomizedTime);
+                         hit.particle.time);
     }
 
     //================================================================
