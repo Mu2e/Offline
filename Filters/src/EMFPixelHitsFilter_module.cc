@@ -1,6 +1,6 @@
-// $Id: EMFPixelHitsFilter_module.cc,v 1.1 2012/11/01 23:35:45 gandr Exp $
+// $Id: EMFPixelHitsFilter_module.cc,v 1.2 2012/11/01 23:36:31 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:35:45 $
+// $Date: 2012/11/01 23:36:31 $
 //
 // Andrei Gaponenko, 2012
 
@@ -23,6 +23,7 @@
 #include "MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
 
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
+#include "Mu2eUtilities/inc/SimParticleParentGetter.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {
@@ -82,6 +83,8 @@ namespace mu2e {
       event.getByLabel(rawHitsModuleLabel_, hitsh);
       const ExtMonFNALRawHitCollection& hits(*hitsh);
 
+      SimParticleParentGetter pg(event);
+
       const bool passed = (cutMinHits_ <= hits.size());
       if(passed) {
 
@@ -96,8 +99,17 @@ namespace mu2e {
 
           const std::vector<art::Ptr<SimParticle> >& particles = particleFinder.at(i);
 
-          std::copy(particles.begin(), particles.end(),
-                    std::inserter(particlesWithHits, particlesWithHits.begin()));
+          for(unsigned ip=0; ip<particles.size(); ++ip) {
+
+            art::Ptr<SimParticle> particle(particles[ip]);
+
+            // Also get all the parents
+            do {
+              particlesWithHits.insert(particle);
+              particle = pg.parent(particle);
+            } while(particle);
+
+          }
         }
 
         art::Handle<SimParticleCollection> inparts;
