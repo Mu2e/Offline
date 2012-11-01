@@ -6,8 +6,8 @@ process_name : detectorSingleProtons
 
 physics.producers.generate.inputfile : "ExtinctionMonitorFNAL/test/genconfig_singleProtons.txt"
 
-outputs.FullOutput.fileName    : "dataSingleProtons.root"
-services.TFileService.fileName : "histSingleProtons.root"
+outputs.FullOutput.fileName    : "dataG4SingleProtons.root"
+services.TFileService.fileName : "histG4SingleProtons.root"
 
 // This tells emacs to view this file in the JavaScript mode.
 // Local Variables:

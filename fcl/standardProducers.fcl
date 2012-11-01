@@ -87,6 +87,8 @@ pixelDigitization : {
     inputModuleLabel : "g4run"
     inputInstanceName : ""
 
+    geomModuleLabel : "geom"
+
     // Hardware feature of FE-I4
     maxToT : 13
 
