@@ -4,7 +4,7 @@
 
 process_name : detectorMicrobunch
 
-physics.producers.generate.inputfile : "ExtinctionMonitorFNAL/test/genconfig_microbunch.txt"
+physics.producers.generate.multiplicity: 145
 
 outputs.FullOutput.fileName    : "dataMicrobunch.root"
 services.TFileService.fileName : "histMicrobunch.root"

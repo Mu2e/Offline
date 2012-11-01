@@ -15,6 +15,7 @@
 
 namespace mu2e {
 
+  //================================================================
   ExtMonFNALGun::ExtMonFNALGun(art::Run const&, const SimpleConfig& config)
     : GeneratorBase()
     , m_gun(
@@ -38,7 +39,37 @@ namespace mu2e {
             config.getBool("extMonFNALGun.verbose",false)
             )
   {
-    const std::string ref = config.getString("extMonFNALGun.reference");
+    initGeom(config.getString("extMonFNALGun.reference"));
+  }
+
+  //================================================================
+  ExtMonFNALGun::ExtMonFNALGun(const fhicl::ParameterSet& pset)
+    : GeneratorBase()
+    , m_gun(
+            pset.get<double>("multiplicity"),
+            PDGCode::type(pset.get<int>("pdgId")),
+
+            pset.get<double>("pmin", GeomHandle<ExtMonFNALBuilding>()->filterMagnet().nominalMomentum()),
+            pset.get<double>("pmax", GeomHandle<ExtMonFNALBuilding>()->filterMagnet().nominalMomentum()),
+
+            RandomUnitSphereParams(-1., -cos(pset.get<double>("coneAngle")), 0., 2*M_PI),
+
+            pset.get<double>("tmin", 0.),
+            pset.get<double>("tmax", 0.),
+
+            h3v(pset.get<std::vector<double> >("offset")),
+            h3v(pset.get<std::vector<double> >("halfSize")),
+
+            (pset.get<bool>("doHistograms", true) ? "ExtMonFNALGun" : ""),
+
+            pset.get<bool>("verbose",false)
+            )
+  {
+    initGeom(pset.get<std::string>("reference"));
+  }
+
+  //================================================================
+  void ExtMonFNALGun::initGeom(const std::string& ref) {
     if(ref == "filter") {
       m_rotation = GeomHandle<ExtMonFNALBuilding>()->collimator1RotationInMu2e();
       m_translation = GeomHandle<ExtMonFNALBuilding>()->filterEntranceInMu2e();
@@ -55,6 +86,21 @@ namespace mu2e {
     }
   }
 
+  //================================================================
+  CLHEP::Hep3Vector ExtMonFNALGun::h3v(const std::vector<double>& v) {
+    CLHEP::Hep3Vector res;
+    if(!v.empty()) {
+      if(v.size() != 3) {
+        throw cet::exception("BADCONFIG")
+          <<"Error converting to CLHEP::Hep3Vector: input size="<<v.size()
+          <<", must be 3\n";
+      }
+      res = CLHEP::Hep3Vector(v[0], v[1], v[2]);
+    }
+    return res;
+  }
+
+  //================================================================
   void ExtMonFNALGun::generate( GenParticleCollection& outParts) {
     GenParticleCollection localParts;
     m_gun.generate(localParts);
@@ -64,6 +110,7 @@ namespace mu2e {
     }
   }
 
+  //================================================================
   GenParticle ExtMonFNALGun::transform(const GenParticle& in) const {
     return GenParticle(in.pdgId(),
                        GenId::extMonFNALGun,
@@ -73,4 +120,5 @@ namespace mu2e {
                        );
   }
 
+  //================================================================
 } // namespace mu2e
