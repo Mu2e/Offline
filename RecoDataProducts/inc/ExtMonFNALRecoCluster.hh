@@ -2,9 +2,9 @@
 // corrections applied.  The coordinates of a cluster are given in the
 // respective SensorStack system.
 //
-// $Id: ExtMonFNALRecoCluster.hh,v 1.1 2012/09/19 03:33:39 gandr Exp $
+// $Id: ExtMonFNALRecoCluster.hh,v 1.2 2012/11/01 23:37:21 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/09/19 03:33:39 $
+// $Date: 2012/11/01 23:37:21 $
 //
 // Original author Andrei Gaponenko
 //
@@ -25,6 +25,7 @@ namespace mu2e {
   class ExtMonFNALRecoCluster {
   public:
 
+    // Int the spectrometer numbering (global)
     unsigned int plane() const { return plane_; }
 
     // in SensorStack coordinates of the cluster plane
