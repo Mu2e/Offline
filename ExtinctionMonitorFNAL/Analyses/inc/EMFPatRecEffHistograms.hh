@@ -64,7 +64,8 @@ namespace mu2e {
         {}
 
         // Arg is an index in the particles collection given to the ctr.
-        void fill(unsigned denominatorParticleIndex);
+        // Returns true for "efficient", false for inefficiencies
+        bool fill(unsigned denominatorParticleIndex);
       };
 
       Fillable fillable(const std::vector<art::Ptr<SimParticle> >& particles,

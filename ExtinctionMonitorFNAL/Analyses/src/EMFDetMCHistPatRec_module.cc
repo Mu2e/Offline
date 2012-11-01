@@ -87,6 +87,7 @@ namespace mu2e {
       std::string clusterModuleLabel_; // used only in single particle mode
       std::string clusterInstanceName_; // used only in single particle mode
       bool printEventsWithFakes_;
+      bool printInefficiencies_;
       bool acceptSingleParticleEvent(const art::Event& event);
 
     public:
@@ -128,13 +129,12 @@ namespace mu2e {
       , clusterModuleLabel_(singleParticleMode_ ? pset.get<std::string>("singleParticleClusterModuleLabel") : "")
       , clusterInstanceName_(pset.get<std::string>("singleParticleClusterInstanceName", ""))
       , printEventsWithFakes_(pset.get<bool>("printEventsWithFakes", false))
+      , printInefficiencies_(pset.get<bool>("printInefficiencies", false))
     {
-      if(singleParticleMode_) {
-        std::cout<<"EMFDetMCHistPatRec: working in the single particle mode"<<std::endl;
-      }
-      if(printEventsWithFakes_) {
-        std::cout<<"EMFDetMCHistPatRec: will print events flagged by EMFPatRecFakeHistograms"<<std::endl;
-      }
+      std::cout<<"EMFDetMCHistPatRec: working in the singleParticleMode = "<<singleParticleMode_
+               <<", printEventsWithFakes = "<<printEventsWithFakes_
+               <<", printInefficiencies = "<<printInefficiencies_
+               <<std::endl;
     }
 
     //================================================================
@@ -255,7 +255,17 @@ namespace mu2e {
                               signalPhysics.size());
 
       for(std::set<unsigned>::const_iterator i=signalSW.begin(); i != signalSW.end(); ++i) {
-        sw.fill(*i);
+        if(!sw.fill(*i)) {
+          if(printInefficiencies_) {
+            std::cout<<"Event "<<event.id()
+                     <<" got inefficiency: particle id = "
+                     <<particles[*i]->id()
+                     <<", pdgId = "<<particles[*i]->pdgId()
+                     <<", startPos = "<<particles[*i]->startPosition()
+                     <<", startMom = "<<particles[*i]->startMomentum()
+                     <<std::endl;
+          }
+        }
       }
 
       //----------------------------------------------------------------

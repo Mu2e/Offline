@@ -47,11 +47,11 @@ namespace mu2e {
     } // end EMFPatRecEffHistograms::book()
 
     //================================================================
-    void EMFPatRecEffHistograms::Fillable::fill(unsigned denominatorParticleIndex) {
+    bool EMFPatRecEffHistograms::Fillable::fill(unsigned denominatorParticleIndex) {
+      bool recoOK = false;
 
       // Find all matches
       const std::vector<const ExtMonFNALTrkMatchInfo*>& matchInfo = trackFinder_.data(denominatorParticleIndex);
-
       if(!matchInfo.empty()) {
         // select best match
         unsigned ibest = 0;
@@ -62,15 +62,15 @@ namespace mu2e {
         }
         const ExtMonFNALTrkMatchInfo& bestMatch = *matchInfo[ibest];
         parent_->hcommon_->Fill(bestMatch.nCommonClusters());
-
-        bool recoOK = (parent_->cutMinCommonClusters_ <= bestMatch.nCommonClusters() );
-        parent_->effMultiplicity_->Fill(recoOK, multiplicity_);
-
+        recoOK = (parent_->cutMinCommonClusters_ <= bestMatch.nCommonClusters() );
       }
       else {
         parent_->hcommon_->Fill(0);
-        parent_->effMultiplicity_->Fill(false, multiplicity_);
       }
+
+      parent_->effMultiplicity_->Fill(recoOK, multiplicity_);
+
+      return recoOK;
 
     } // fill()
 
