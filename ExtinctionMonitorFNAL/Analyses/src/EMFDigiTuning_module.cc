@@ -176,6 +176,7 @@ namespace mu2e {
         hitToT_->Fill((*i)->tot());
         hitTimes.push_back((*i)->clock());
       }
+      std::sort(hitTimes.begin(), hitTimes.end());
       for(unsigned i=1; i<hitTimes.size(); ++i) {
         hitClockDiff_->Fill(hitTimes[i]-hitTimes[0]);
       }
