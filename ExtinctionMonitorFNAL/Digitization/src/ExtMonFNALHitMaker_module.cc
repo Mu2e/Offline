@@ -1,8 +1,8 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.5 2012/11/01 23:37:51 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.6 2012/11/01 23:37:55 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:37:51 $
+// $Date: 2012/11/01 23:37:55 $
 //
 // Original author Andrei Gaponenko
 //
@@ -65,7 +65,7 @@ namespace mu2e {
         : time(t), charge(c), particle(p)
       {}
 
-      // We accumulated deposits in a priority_queu, and want earlier times
+      // We accumulated deposits in a priority_queue, and want earlier times
       // to come out first.  Thus the inverted less-than definition:
       bool operator<(const PixelTimedChargeDeposit& b) const {
         return b.time < this->time;
