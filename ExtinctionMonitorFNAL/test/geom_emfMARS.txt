@@ -190,10 +190,13 @@ double hall.insideZExtMonUCIWall = -17200;  // to the corner of dump shielding
 vector<double> extMonFNAL.roomInsideX = { -1750, -1750, -3731, -3731, -1750, -1750, +2822, +2822, +3584, +3584, +2822, +2822 };
 vector<double> extMonFNAL.roomInsideZ = {     0, -2928, -2928, -7422, -7422, -9200, -9200, -4200, -4200,  -796,  -796,     0 };
 
+//double g4.minRangeCut = 1.;            // mm
+bool g4.killLowEKine = true;
+double g4.eKineMin = 0.1; // MeV: range of 0.1 MeV electron in Al is < 100 um
 
-//int g4.steppingActionMaxSteps = 100000;
-//int g4.stepsSizeLimit = 10000;
-int g4.particlesSizeLimit = 100000;
+int g4.steppingActionMaxSteps = 1000000;
+int g4.stepsSizeLimit = 100000;
+int g4.particlesSizeLimit = 1000000;
 
 // bool g4SteppingAction.killerVerbose = true;
 //vector<string> g4SteppingAction.killInTheseVolumes = { "VirtualDetector_EMFC1Entrance", "VirtualDetector_Coll1_In" };
@@ -207,10 +210,6 @@ vector<string> g4SteppingAction.killInTheseVolumes = {
   "HallConcreteCeiling",
   "HallWalls"
 };
-
-double g4.minRangeCut = 1.;            // mm
-bool g4.killLowEKine = true;
-double g4.eKineMin = 100.; // MeV
 
 // // Uncomment to enable debug printout on a per event or per track basis.
 // vector<int> g4.steppingActionEventList = { 0, 1, 2, 3, 4, 5 };
