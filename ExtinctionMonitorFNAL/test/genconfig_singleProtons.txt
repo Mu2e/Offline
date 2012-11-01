@@ -22,8 +22,8 @@ string  extMonFNALGun.reference = "detector";
 vector<double> extMonFNALGun.offset = {0., 0., +650.};
 vector<double> extMonFNALGun.halfSize = {15., 15., 0.};
 double extMonFNALGun.multiplicity = -1;
-double extMonFNALGun.tmin = -50;
-double extMonFNALGun.tmax = +50;
+double extMonFNALGun.tmin = 0;
+double extMonFNALGun.tmax = 100;
 
 //----------------------------------------------------------------
 // This tells emacs to view this file in c++ mode.

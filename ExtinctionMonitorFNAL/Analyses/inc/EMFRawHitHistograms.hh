@@ -1,9 +1,9 @@
 #ifndef ExtinctionMonitorFNAL_Analyses_EMFRawHitHistograms_hh
 #define ExtinctionMonitorFNAL_Analyses_EMFRawHitHistograms_hh
 //
-// $Id: EMFRawHitHistograms.hh,v 1.2 2012/11/01 23:36:19 gandr Exp $
+// $Id: EMFRawHitHistograms.hh,v 1.3 2012/11/01 23:39:34 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:36:19 $
+// $Date: 2012/11/01 23:39:34 $
 //
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 //
@@ -42,9 +42,6 @@ namespace mu2e {
     void fill(const ExtMonFNALRawHitCollection& clusters);
 
   private:
-    bool foldTimeToMicrobunch_;
-    int numMicrobunchTicks_;
-
     TH1D* hitClock_;
     TH1D* hitToT_;
 

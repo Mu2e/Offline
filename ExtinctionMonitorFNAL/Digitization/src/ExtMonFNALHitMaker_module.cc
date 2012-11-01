@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.7 2012/11/01 23:39:30 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.8 2012/11/01 23:39:34 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:39:30 $
+// $Date: 2012/11/01 23:39:34 $
 //
 // Original author Andrei Gaponenko
 //
@@ -51,6 +51,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ExtMonFNALConditions.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
 #include "SeedService/inc/SeedService.hh"
 
 namespace mu2e {
@@ -102,11 +103,12 @@ namespace mu2e {
         , gaussian_(eng_)
 
         , extMon_(0)
-        , cond_(0)
+        , condExtMon_(0)
+        , condAcc_(0)
 
         , noise_(eng_,
                  &extMon_,/*Geometry not available at module ctr, store the address of the ptr */
-                 &cond_, /*similar for Conditions*/
+                 &condExtMon_, /*similar for Conditions*/
                  pset.get<double>("pixelNoisePerBC"))
       {
         produces<ExtMonFNALRawHitCollection>();
@@ -144,7 +146,8 @@ namespace mu2e {
       // current Mu2e infrastructure does not allow the use of a Handle
       // as a class member.
       const ExtMon *extMon_;
-      const ExtMonFNALConditions *cond_;
+      const ExtMonFNALConditions *condExtMon_;
+      const AcceleratorParams *condAcc_;
 
       SiliconProperties siProps_;
 
@@ -164,6 +167,9 @@ namespace mu2e {
                      double y_ro,
                      const art::Ptr<SimParticle>& particle);
 
+      void foldHitTimes(PixelChargeCollection *inout);
+      void foldHitTimes(PixelChargeHistory *inout);
+
       // The input pixcharges collection gets eaten by this call
       void discriminate(ExtMonFNALRawHitCollection *outhits,
                         ExtMonFNALHitTruthAssn *outtruth,
@@ -181,7 +187,7 @@ namespace mu2e {
 
       // FIXME: correct for time of flight here
       int timeStamp(double time) const {
-        return (time - cond_->t0())/cond_->clockTick();
+        return (time - condExtMon_->t0())/condExtMon_->clockTick();
       }
 
     };
@@ -199,7 +205,10 @@ namespace mu2e {
       }
 
       ConditionsHandle<ExtMonFNALConditions> cond("ignored");
-      cond_ = &*cond;
+      condExtMon_ = &*cond;
+
+      ConditionsHandle<AcceleratorParams> condAcc("ignored");
+      condAcc_ = &*condAcc;
 
       const double sensorThickness = 2*extMon_->sensor().halfSize()[2];
 
@@ -232,6 +241,10 @@ namespace mu2e {
       // instead of doing the whole detector in one go.  Would be an extra loop here.
       PixelChargeCollection pixcharges;
       collectIonization(&pixcharges, simhits);
+
+      // Brings all times onto a microbunch + margins on both sides.
+      // Hits near microbunch boundaries are duplicated.
+      foldHitTimes(&pixcharges);
 
       const art::ProductID hitsPID = getProductID<ExtMonFNALRawHitCollection>(event);
       const art::EDProductGetter *hitsGetter = event.productGetter(hitsPID);
@@ -318,6 +331,55 @@ namespace mu2e {
     }
 
     //================================================================
+    void ExtMonFNALHitMaker::foldHitTimes(PixelChargeCollection* inout) {
+      for(PixelChargeCollection::iterator i=inout->begin(); i!=inout->end(); ++i) {
+        foldHitTimes(&i->second);
+      }
+    }
+
+    //================================================================
+    void ExtMonFNALHitMaker::foldHitTimes(PixelChargeHistory* inout) {
+      // Here we bring hits from (-infty, +infty) to
+      // (-margin, deBuncherPeriod + margin)
+      //
+      // Margins on both sides make sure hits near both of the
+      // microbunch boundaries are modeled correctly.  Hits in +-
+      // margin within a boundary are duplicated, then one of them is
+      // cut off after discrimination in the final "time folding"
+      // step, which is truncation of discrete hit times.  (Hits
+      // ending up at t=-delta<0 do not produce output hits, but may
+      // eat up other hits with t>0, whose effect is instead in
+      // modifying ToT of the twin hit t=deBuncherPeriod-delta.)
+
+      PixelChargeHistory& in(*inout);
+      PixelChargeHistory out;
+
+      const double period = condAcc_->deBuncherPeriod;
+      const double margin = maxToT_ * condExtMon_->clockTick();
+
+      while(!in.empty()) {
+        PixelTimedChargeDeposit dep = in.top();
+        // A hit on [0, period]
+        dep.time = remainder(dep.time - period/2, period) + period/2;
+        out.push(dep);
+
+        // duplicate hits near the boundaries
+        if(dep.time < margin) {
+          dep.time = dep.time + period;
+          out.push(dep);
+        }
+        else if(period - dep.time < margin) {
+          dep.time = dep.time - period;
+          out.push(dep);
+        }
+
+        in.pop();
+      }
+
+      *inout = out;
+    }
+
+    //================================================================
     void ExtMonFNALHitMaker::discriminate(ExtMonFNALRawHitCollection *outhits,
                                           ExtMonFNALHitTruthAssn *outtruth,
                                           art::ProductID hitsPID,
@@ -337,7 +399,7 @@ namespace mu2e {
                                           const ExtMonFNALPixelId& pix,
                                           PixelChargeHistory& ch)
     {
-      PixelToTCircuit cap(discriminatorThreshold_, qCalib_, totCalib_, cond_->clockTick());
+      PixelToTCircuit cap(discriminatorThreshold_, qCalib_, totCalib_, condExtMon_->clockTick());
 
       double t = ch.top().time;
 
@@ -384,20 +446,27 @@ namespace mu2e {
 
           //----------------------------------------------------------------
           // Record the hit
+          //
+          // For the proper time folding we should truncate here to
+          // one microbunch, which compensates for hit duplication in
+          // analogue time folding.
 
-          outhits->push_back(ExtMonFNALRawHit(pix, roStartTime, roToT));
+          if((0 <= roStartTime) && (roStartTime < condExtMon_->numClockTicksPerDebuncherPeriod())) {
 
-          // Record hit truth
-          for(ChargeMap::const_iterator t = parts.begin(); t != parts.end(); ++t) {
+            outhits->push_back(ExtMonFNALRawHit(pix, roStartTime, roToT));
 
-            outtruth->addSingle(t->first,
+            // Record hit truth
+            for(ChargeMap::const_iterator t = parts.begin(); t != parts.end(); ++t) {
 
-                                art::Ptr<ExtMonFNALRawHit>(hitsPID,
-                                                           outhits->size()-1,
-                                                           hitsGetter),
+              outtruth->addSingle(t->first,
 
-                                ExtMonFNALHitTruthBits(t->second)
-                                );
+                                  art::Ptr<ExtMonFNALRawHit>(hitsPID,
+                                                             outhits->size()-1,
+                                                             hitsGetter),
+
+                                  ExtMonFNALHitTruthBits(t->second)
+                                  );
+            }
           }
 
         }

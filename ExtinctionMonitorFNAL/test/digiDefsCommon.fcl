@@ -48,7 +48,6 @@ physics : {
             inputModuleLabel  : "pixelDigitization"
             inputInstanceName : ""
             geomModuleLabel : "geom"
-            foldTimeToMicrobunch : false
         }
     }
 
