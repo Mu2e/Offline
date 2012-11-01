@@ -40,9 +40,10 @@ namespace mu2e {
   //================================================================
   EMFDetHistRawHits::EMFDetHistRawHits(const fhicl::ParameterSet& pset)
     : inputModuleLabel_(pset.get<std::string>("inputModuleLabel"))
-    , inputInstanceName_(pset.get<std::string>("inputInstanceName"))
+    , inputInstanceName_(pset.get<std::string>("inputInstanceName", ""))
     , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
     , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
+    , hh_(pset)
   {}
 
   //================================================================

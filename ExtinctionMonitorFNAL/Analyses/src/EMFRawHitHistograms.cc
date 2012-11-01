@@ -4,6 +4,9 @@
 
 #include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
+#include "ConditionsService/inc/ExtMonFNALConditions.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
@@ -14,11 +17,14 @@
 #include "TH2D.h"
 
 #include <sstream>
+#include <cmath>
 
 namespace mu2e {
 
-  EMFRawHitHistograms::EMFRawHitHistograms()
-    : hitClock_()
+  EMFRawHitHistograms::EMFRawHitHistograms(const fhicl::ParameterSet& pset)
+    : foldTimeToMicrobunch_(pset.get<bool>("foldTimeToMicrobunch"))
+    , numMicrobunchTicks_()
+    , hitClock_()
     , hitToT_()
   {}
 
@@ -33,6 +39,12 @@ namespace mu2e {
 
   // Book the histograms.
   void EMFRawHitHistograms::book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir) {
+
+    if(foldTimeToMicrobunch_) {
+      ConditionsHandle<ExtMonFNALConditions> condEMF("ignored");
+      ConditionsHandle<AcceleratorParams> condAcc("ignored");
+      numMicrobunchTicks_ = rint(condAcc->deBuncherPeriod/condEMF->clockTick());
+    }
 
     hitClock_ = tfdir.make<TH1D>("hitClock", "Hit clock, all hits", 100, -20.5, 79.5);
     hitToT_ =   tfdir.make<TH1D>("hitToT", "Hit time over threshold, all hits", 16, -0.5, 15.5);
@@ -65,6 +77,8 @@ namespace mu2e {
   void EMFRawHitHistograms::fill(const ExtMonFNALRawHitCollection& hits){
 
     for(ExtMonFNALRawHitCollection::const_iterator hit = hits.begin(); hit != hits.end(); ++hit) {
+
+      int clk = foldTimeToMicrobunch_ ? (hit->clock() % numMicrobunchTicks_): hit->clock();
       hitClock_->Fill(hit->clock());
       hitToT_->Fill(hit->tot());
       const ExtMonFNALPixelId& pix = hit->pixelId();

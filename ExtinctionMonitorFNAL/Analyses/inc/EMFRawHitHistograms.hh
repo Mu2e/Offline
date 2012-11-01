@@ -1,9 +1,9 @@
 #ifndef ExtinctionMonitorFNAL_Analyses_EMFRawHitHistograms_hh
 #define ExtinctionMonitorFNAL_Analyses_EMFRawHitHistograms_hh
 //
-// $Id: EMFRawHitHistograms.hh,v 1.1 2012/09/05 03:49:45 gandr Exp $
+// $Id: EMFRawHitHistograms.hh,v 1.2 2012/11/01 23:36:19 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/09/05 03:49:45 $
+// $Date: 2012/11/01 23:36:19 $
 //
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 //
@@ -12,6 +12,7 @@
 #include <map>
 
 #include "boost/noncopyable.hpp"
+#include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
@@ -28,7 +29,7 @@ namespace mu2e {
   class EMFRawHitHistograms :  private boost::noncopyable {
   public:
 
-    EMFRawHitHistograms();
+    explicit EMFRawHitHistograms(const fhicl::ParameterSet& pset);
 
     // Book histograms in the subdirectory, given by the relativePath; that path is
     // relative to the root TFileDirectory for the current module.
@@ -41,6 +42,8 @@ namespace mu2e {
     void fill(const ExtMonFNALRawHitCollection& clusters);
 
   private:
+    bool foldTimeToMicrobunch_;
+    int numMicrobunchTicks_;
 
     TH1D* hitClock_;
     TH1D* hitToT_;
