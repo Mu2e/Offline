@@ -37,7 +37,7 @@
 
 #include "TH1D.h"
 #include "TH2D.h"
-
+#include "TProfile.h"
 
 #define AGDEBUG(stuff) do { std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<", func "<<__func__<<": "<<stuff<<std::endl; } while(0)
 //#define AGDEBUG(stuff)
@@ -71,6 +71,11 @@ namespace mu2e {
       //----------------
       TH2D *hMultiplicitySignal_;
       TH2D *hCommonClusters_;
+
+      TProfile *hRecoTruthRatio_;
+      TProfile *hTruthRecoRatio_;
+      TH2D * hRecoVsTruth_;
+
       EMFPatRecEffHistograms effPhysics_;
       EMFPatRecEffHistograms effSoftware_;
       EMFPatRecFakeHistograms fakes_;
@@ -89,6 +94,8 @@ namespace mu2e {
       bool printEventsWithFakes_;
       bool printInefficiencies_;
       bool acceptSingleParticleEvent(const art::Event& event);
+
+      void fillRTR(const art::Event& event);
 
     public:
       explicit EMFDetMCHistPatRec(const fhicl::ParameterSet& pset);
@@ -121,9 +128,13 @@ namespace mu2e {
 
       , hMultiplicitySignal_()
       , hCommonClusters_()
+      , hRecoTruthRatio_()
+      , hTruthRecoRatio_()
+      , hRecoVsTruth_()
       , effPhysics_(pset.get<unsigned>("cutMinCommonClusters"))
       , effSoftware_(pset.get<unsigned>("cutMinCommonClusters"))
       , fakes_(pset.get<unsigned>("cutMinCommonClusters"))
+
 
       , singleParticleMode_(pset.get<bool>("singleParticleMode", false))
       , clusterModuleLabel_(singleParticleMode_ ? pset.get<std::string>("singleParticleClusterModuleLabel") : "")
@@ -157,7 +168,7 @@ namespace mu2e {
         art::ServiceHandle<art::TFileService> tfs;
 
         hMultiplicitySignal_ = tfs->make<TH2D>("multiplicitySignal", "Num PatRec tracks vs num signal SimParticles",
-                                               200, -0.5, 199.5, 200, -0.5, 199.5);
+                                               500, -0.5, 499.5, 500, -0.5, 499.5);
 
         hMultiplicitySignal_->SetOption("colz");
         hMultiplicitySignal_->GetXaxis()->SetTitle("num signal particles");
@@ -171,6 +182,12 @@ namespace mu2e {
         hCommonClusters_->GetXaxis()->SetTitle("particle clusters");
         hCommonClusters_->GetYaxis()->SetTitle("common clusters");
 
+        hRecoTruthRatio_ = tfs->make<TProfile>("rtr", "nReco/nTruth vs nTruth", 500, 0.5, 500.5);
+        hTruthRecoRatio_ = tfs->make<TProfile>("trt", "nTruth/nReco vs nReco",  500, 0.5, 500.5);
+
+        hRecoVsTruth_ =  tfs->make<TH2D>("recoVsTruth", "nReco vs nTruth", 500, 0.5, 500.5, 500, 0.5, 500.5);
+        hRecoVsTruth_->SetOption("colz");
+
         effPhysics_.book(*extmon_, "effPhysics");
         effSoftware_.book(*extmon_, "effSoftware");
         fakes_.book(*extmon_, "fakes");
@@ -179,6 +196,8 @@ namespace mu2e {
 
     //================================================================
     void EMFDetMCHistPatRec::analyze(const art::Event& event) {
+
+      fillRTR(event);
 
       if(singleParticleMode_ && !acceptSingleParticleEvent(event)) {
         return;
@@ -345,6 +364,37 @@ namespace mu2e {
       return perfectSingleParticleEvent(*coll, extmon_->nplanes());
     }
 
+
+    //================================================================
+    void EMFDetMCHistPatRec::fillRTR(const art::Event& event) {
+
+      // Count the number of primaries
+      int nPrimaries(0);
+      art::Handle<SimParticleCollection> mch;
+      event.getByLabel(particleModuleLabel_, particleInstanceName_, mch);
+      for(SimParticleCollection::const_iterator i=mch->begin(), iend = mch->end(); i != iend; ++i) {
+        if(i->second.genParticle()) {
+          ++nPrimaries;
+        }
+      }
+
+      // Get the number of tracks
+      art::Handle<ExtMonFNALTrkFitCollection> tracks;
+      event.getByLabel(patRecModuleLabel_, patRecInstanceName_, tracks);
+      const int nTracks = tracks->size();
+
+      // Fill the histos
+      hRecoVsTruth_->Fill(nPrimaries, nTracks);
+
+      if(nPrimaries > 0) {
+        hRecoTruthRatio_->Fill(nPrimaries, double(nTracks)/double(nPrimaries));
+      }
+
+      if(nTracks>0) {
+        hTruthRecoRatio_->Fill(nTracks, double(nPrimaries)/double(nTracks));
+      }
+
+    } // fillRTR()
 
     //================================================================
   } // namespace ExtMonFNAL
