@@ -86,6 +86,7 @@ namespace mu2e {
       bool singleParticleMode_;
       std::string clusterModuleLabel_; // used only in single particle mode
       std::string clusterInstanceName_; // used only in single particle mode
+      bool printEventsWithFakes_;
       bool acceptSingleParticleEvent(const art::Event& event);
 
     public:
@@ -126,9 +127,13 @@ namespace mu2e {
       , singleParticleMode_(pset.get<bool>("singleParticleMode", false))
       , clusterModuleLabel_(singleParticleMode_ ? pset.get<std::string>("singleParticleClusterModuleLabel") : "")
       , clusterInstanceName_(pset.get<std::string>("singleParticleClusterInstanceName", ""))
+      , printEventsWithFakes_(pset.get<bool>("printEventsWithFakes", false))
     {
       if(singleParticleMode_) {
         std::cout<<"EMFDetMCHistPatRec: working in the single particle mode"<<std::endl;
+      }
+      if(printEventsWithFakes_) {
+        std::cout<<"EMFDetMCHistPatRec: will print events flagged by EMFPatRecFakeHistograms"<<std::endl;
       }
     }
 
@@ -262,9 +267,12 @@ namespace mu2e {
                         signalPhysics.size());
 
       for(unsigned i=0; i < tracks->size(); ++i) {
-        fk.fill(i);
+        if(fk.fill(i)) {
+          if(printEventsWithFakes_) {
+            std::cout<<"EMFPatRecFakeHistograms flagged event "<<event.id()<<std::endl;
+          }
+        }
       }
-
     } // analyze()
 
     //================================================================

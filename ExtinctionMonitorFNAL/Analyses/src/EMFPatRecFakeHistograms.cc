@@ -62,7 +62,7 @@ namespace mu2e {
     } // end EMFPatRecFakeHistograms::book()
 
     //================================================================
-    void EMFPatRecFakeHistograms::Fillable::fill(unsigned denominatorTrackIndex) {
+    int EMFPatRecFakeHistograms::Fillable::fill(unsigned denominatorTrackIndex) {
 
       // Find all matches
       const std::vector<const SimParticle*>& particles = particleFinder_.at(denominatorTrackIndex);
@@ -83,6 +83,8 @@ namespace mu2e {
 
       parent_->fracFakes_->Fill(!goodMatchFound, multiplicity_);
       parent_->fracDups_->Fill(duplicateTrack, multiplicity_);
+
+      return !goodMatchFound;
 
     } // fill()
 

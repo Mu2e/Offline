@@ -64,7 +64,8 @@ namespace mu2e {
           , multiplicity_(multiplicity)
         {}
 
-        void fill(unsigned denominatorTrackIndex);
+        // see .cc file for the meaning of the return value
+        int fill(unsigned denominatorTrackIndex);
       };
 
       Fillable fillable(const art::Handle<ExtMonFNALTrkFitCollection>& tracks,
