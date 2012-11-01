@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.13 2012/08/03 00:32:10 gandr Exp $
+// $Id: VirtualDetectorId.hh,v 1.14 2012/11/01 23:33:54 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/03 00:32:10 $
+// $Date: 2012/11/01 23:33:54 $
 //
 // Original author Rob Kutschke
 //
@@ -55,6 +55,8 @@ namespace mu2e {
       EMFDetectorUpEntrance, EMFDetectorUpExit,               // 35,36
       Coll5_OutSurf,                                          // 37       Surround the outer cyl. surface of collimator in TS5
       EMFDetectorDnEntrance, EMFDetectorDnExit,               // 38,39
+      EMFBoxFront, EMFBoxSW, EMFBoxBottom,                    // 40, 41, 42
+      EMFBoxBack, EMFBoxNE, EMFBoxTop,                        // 43, 44, 45
       lastEnum
     };
 
@@ -79,7 +81,9 @@ namespace mu2e {
       "ProtonBeamDumpCoreFace",                                    \
       "EMFDetectorUpEntrance", "EMFDetectorUpExit",                \
       "Coll5_OutSurf",                                             \
-      "EMFDetectorDnEntrance", "EMFDetectorDnExit"
+      "EMFDetectorDnEntrance", "EMFDetectorDnExit",                \
+      "EMFBoxFront", "EMFBoxSW", "EMFBoxBottom",                   \
+      "EMFBoxBack", "EMFBoxNE", "EMFBoxTop"
 
   public:
 

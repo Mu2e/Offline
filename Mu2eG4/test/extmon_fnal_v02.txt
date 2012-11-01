@@ -237,6 +237,13 @@ bool   extMonFNAL.detector.vd.enabled = true;
 double extMonFNAL.detector.vd.halfdx = 100; // transverse size
 double extMonFNAL.detector.vd.halfdy = 100; // transverse size
 
+// A set of 6 planar VDs that enclose ExtMonFNAL.
+// The "box" is rotated to be parallel to the ExtMon system axes.
+// The size needs to be large enough to avoid volume overlaps with
+// the spectrometer magnet and sensor planes.
+bool   extMonFNAL.box.vd.enabled = false;
+vector<double> extMonFNAL.box.vd.halfSize = {100, 200, 650.};
+
 //----------------------------------------------------------------
 string         extMonFNAL.room.materialName  = "G4_AIR";
 string         extMonFNAL.room.wall.materialName  = "ShieldingConcrete";

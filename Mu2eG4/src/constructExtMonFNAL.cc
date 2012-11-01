@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.21 2012/11/01 23:33:39 gandr Exp $
+// $Id: constructExtMonFNAL.cc,v 1.22 2012/11/01 23:33:54 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:33:39 $
+// $Date: 2012/11/01 23:33:54 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -174,7 +174,7 @@ namespace mu2e {
 
 
     //----------------------------------------------------------------
-    // VD block
+    // detector VD block
 
     if(true) {
 
@@ -243,7 +243,7 @@ namespace mu2e {
           vdInfo.logical->SetSensitiveDetector(vdSD);
         }
       } // for(vdId-1)
-    } // VD block
+    } // detector VD block
 
   }
 
@@ -318,6 +318,115 @@ namespace mu2e {
   }
 
   //================================================================
+  void addBoxVDPlane(int vdId,
+                     const std::vector<double> box,
+                     const CLHEP::Hep3Vector& vdOffset,
+                     const ExtMonFNAL::ExtMon& extmon,
+                     const CLHEP::HepRotation& parentRotationInMu2e,
+                     const VolumeInfo& parent,
+                     const SimpleConfig& config)
+  {
+    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
+    const bool placePV             = true;
+
+    bool vdIsVisible         = config.getBool("vd.visible");
+    bool vdIsSolid           = config.getBool("vd.solid");
+    int const nSurfaceCheckPoints = 100000; // for a more thorrow check due to the vd shape
+
+    MaterialFinder materialFinder(config);
+    G4Material* vacuumMaterial     = materialFinder.get("toyDS.insideMaterialName");
+
+    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+
+    //----------------------------------------------------------------
+    // finishNesting() uses the backwards interpretation of rotations
+    //
+    // vdRotationInRoom = roomRotationInMu2e.inverse() * vdRotationInMu2e
+    // We need the inverse: detRotInMu2e.inv() * roomRotationInMu2e
+
+    CLHEP::HepRotation *vdRotationInParentInv =
+      reg.add(extmon.detectorRotationInMu2e().inverse()*parentRotationInMu2e);
+
+    const CLHEP::HepRotation vdRotationInParent(vdRotationInParentInv->inverse());
+
+    const CLHEP::Hep3Vector vdRefPointInMu2e = extmon.detectorCenterInMu2e() +
+      extmon.detectorRotationInMu2e() * vdOffset;
+
+    const CLHEP::Hep3Vector vdRefPointInParent =
+      parentRotationInMu2e.inverse() * (vdRefPointInMu2e - parent.centerInMu2e());
+
+
+    const VolumeInfo boxFront = nestBox(VirtualDetector::volumeName(vdId),
+                                        box,
+                                        vacuumMaterial,
+                                        vdRotationInParentInv,
+                                        vdRefPointInParent,
+                                        parent,
+                                        vdId,
+                                        vdIsVisible,
+                                        G4Colour::Red(),
+                                        vdIsSolid,
+                                        forceAuxEdgeVisible,
+                                        placePV,
+                                        false
+                                        );
+
+    // vd are very thin, a more thorough check is needed
+    doSurfaceCheck && boxFront.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+    G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
+
+    boxFront.logical->SetSensitiveDetector(vdSD);
+
+  }
+
+  //================================================================
+  void constructExtMonFNALBoxVirtualDetectors(const ExtMonFNAL::ExtMon& extmon,
+                                              const VolumeInfo& parent,
+                                              const CLHEP::HepRotation& parentRotationInMu2e,
+                                              const SimpleConfig& config
+                                              )
+  {
+    if(config.getBool("extMonFNAL.box.vd.enabled", false)) {
+
+      std::vector<double> outerHalfSize;
+      config.getVectorDouble("extMonFNAL.box.vd.halfSize", outerHalfSize, 3);
+
+      GeomHandle<VirtualDetector> vdg;
+
+      std::vector<double> boxXY(3);  // Front and back VDs cover the edges of others, thus +2*vdg->getHalfLength()
+      boxXY[0] = outerHalfSize[0] + 2*vdg->getHalfLength();
+      boxXY[1] = outerHalfSize[1] + 2*vdg->getHalfLength();
+      boxXY[2] = vdg->getHalfLength();
+
+      std::vector<double> boxYZ(3);
+      boxYZ[0] = vdg->getHalfLength();
+      boxYZ[1] = outerHalfSize[1];
+      boxYZ[2] = outerHalfSize[2];
+
+      std::vector<double> boxZX(3);
+      boxZX[0] = outerHalfSize[0];
+      boxZX[1] = vdg->getHalfLength();
+      boxZX[2] = outerHalfSize[2];
+
+      const CLHEP::Hep3Vector xyOffset(0, 0, outerHalfSize[2] + vdg->getHalfLength());
+      const CLHEP::Hep3Vector yzOffset(outerHalfSize[0] + vdg->getHalfLength(), 0, 0);
+      const CLHEP::Hep3Vector zxOffset(0, outerHalfSize[1] + vdg->getHalfLength(), 0);
+
+      addBoxVDPlane(VirtualDetectorId::EMFBoxFront, boxXY,  xyOffset, extmon, parentRotationInMu2e, parent, config);
+      addBoxVDPlane(VirtualDetectorId::EMFBoxBack,  boxXY, -xyOffset, extmon, parentRotationInMu2e, parent, config);
+
+      addBoxVDPlane(VirtualDetectorId::EMFBoxNE, boxYZ,  yzOffset, extmon, parentRotationInMu2e, parent, config);
+      addBoxVDPlane(VirtualDetectorId::EMFBoxSW, boxYZ, -yzOffset, extmon, parentRotationInMu2e, parent, config);
+
+      addBoxVDPlane(VirtualDetectorId::EMFBoxTop,     boxZX,  zxOffset, extmon, parentRotationInMu2e, parent, config);
+      addBoxVDPlane(VirtualDetectorId::EMFBoxBottom,  boxZX, -zxOffset, extmon, parentRotationInMu2e, parent, config);
+    }
+  }
+
+  //================================================================
   void constructExtMonFNAL(const VolumeInfo& collimator1Parent,
                            const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
                            const VolumeInfo& mainParent,
@@ -355,8 +464,14 @@ namespace mu2e {
                               emfb->roomRotationInMu2e(),
                               config);
 
-
+    // EMFC2* VDs
     constructExtMonFNALVirtualDetectors(roomAir, emfb->roomRotationInMu2e(), config);
+
+    // enclose whole ExtMon magnet+sensors in a set of VDs
+    constructExtMonFNALBoxVirtualDetectors(*extmon,
+                                           roomAir,
+                                           emfb->roomRotationInMu2e(),
+                                           config);
 
   } // constructExtMonFNAL()
 } // namespace mu2e
