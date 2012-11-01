@@ -3,6 +3,8 @@
 #ifndef MCDataProducts_inc_MARSInfo_hh
 #define MCDataProducts_inc_MARSInfo_hh
 
+#include <ostream>
+
 namespace mu2e {
 
   class MARSInfo {
@@ -32,6 +34,7 @@ namespace mu2e {
     int subRunNumber_;
   };
 
+  std::ostream& operator<<(std::ostream& os, const MARSInfo& mi);
 }
 
 #endif/*MCDataProducts_inc_MARSInfo_hh*/
