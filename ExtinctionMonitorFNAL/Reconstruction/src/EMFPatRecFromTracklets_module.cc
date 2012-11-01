@@ -6,14 +6,15 @@
 // momentum and extrapolated donwstream where the consistency with the
 // donwstream tracklet is checked.
 //
-// $Id: EMFPatRecFromTracklets_module.cc,v 1.4 2012/11/01 23:36:46 gandr Exp $
+// $Id: EMFPatRecFromTracklets_module.cc,v 1.5 2012/11/01 23:37:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:36:46 $
+// $Date: 2012/11/01 23:37:09 $
 //
 // Original author Andrei Gaponenko
 //
 
 
+#include "ExtinctionMonitorFNAL/Reconstruction/inc/Tracklet.hh"
 #include <string>
 #include <iostream>
 #include <cmath>
@@ -64,30 +65,6 @@
 
 namespace mu2e {
   namespace ExtMonFNAL {
-
-    //================================================================
-    struct Tracklet {
-
-      art::Ptr<ExtMonFNALRecoCluster> firstCluster;
-      art::Ptr<ExtMonFNALRecoCluster> lastCluster;
-
-      std::vector<art::Ptr<ExtMonFNALRecoCluster> > middleClusters;
-
-      Tracklet(const art::Ptr<ExtMonFNALRecoCluster>& fc,
-               const art::Ptr<ExtMonFNALRecoCluster>& lc)
-        : firstCluster(fc)
-        , lastCluster(lc)
-      {}
-    };
-
-    typedef std::list<Tracklet> Tracklets;
-
-    std::ostream& operator<<(std::ostream& os, const Tracklet& tl) {
-      return os<<"Tracklet(fc="<<tl.firstCluster
-               <<", lc="<<tl.lastCluster
-               <<", nmiddle="<<tl.middleClusters.size()
-               <<" )";
-    }
 
     //================================================================
     class HistTracklet : private boost::noncopyable {
