@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.15 2012/08/23 23:41:35 gandr Exp $
+// $Id: classes.h,v 1.16 2012/11/01 23:38:25 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/23 23:41:35 $
+// $Date: 2012/11/01 23:38:25 $
 //
 // Original author Rob Kutschke
 //
@@ -22,6 +22,9 @@
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
+#include "CLHEP/Vector/RotationX.h"
+#include "CLHEP/Vector/RotationY.h"
+#include "CLHEP/Vector/RotationZ.h"
 #include "CLHEP/Vector/EulerAngles.h"
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/Matrix.h"
