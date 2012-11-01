@@ -47,7 +47,7 @@ namespace mu2e {
   namespace ExtMonFNAL {
 
     //================================================================
-    class EMFDetHistPatRec : public art::EDAnalyzer {
+    class EMFDetMCHistPatRec : public art::EDAnalyzer {
       std::string patRecModuleLabel_;
       std::string patRecInstanceName_;
       std::string trkTruthModuleLabel_;
@@ -90,13 +90,13 @@ namespace mu2e {
       bool acceptSingleParticleEvent(const art::Event& event);
 
     public:
-      explicit EMFDetHistPatRec(const fhicl::ParameterSet& pset);
+      explicit EMFDetMCHistPatRec(const fhicl::ParameterSet& pset);
       virtual void beginRun(const art::Run& run);
       virtual void analyze(const art::Event& event);
     };
 
     //================================================================
-    EMFDetHistPatRec::EMFDetHistPatRec(const fhicl::ParameterSet& pset)
+    EMFDetMCHistPatRec::EMFDetMCHistPatRec(const fhicl::ParameterSet& pset)
       : patRecModuleLabel_(pset.get<std::string>("patRecModuleLabel"))
       , patRecInstanceName_(pset.get<std::string>("patRecInstanceName", ""))
       , trkTruthModuleLabel_(pset.get<std::string>("trkTruthModuleLabel"))
@@ -129,12 +129,12 @@ namespace mu2e {
       , clusterInstanceName_(pset.get<std::string>("singleParticleClusterInstanceName", ""))
     {
       if(singleParticleMode_) {
-        std::cout<<"EMFDetHistPatRec: working in the single particle mode"<<std::endl;
+        std::cout<<"EMFDetMCHistPatRec: working in the single particle mode"<<std::endl;
       }
     }
 
     //================================================================
-    void EMFDetHistPatRec::beginRun(const art::Run& run) {
+    void EMFDetMCHistPatRec::beginRun(const art::Run& run) {
       // This is a workaround for geometry not being available at beginJob()
       if(!extmon_) {
         if(!geomModuleLabel_.empty()) {
@@ -174,7 +174,7 @@ namespace mu2e {
     }
 
     //================================================================
-    void EMFDetHistPatRec::analyze(const art::Event& event) {
+    void EMFDetMCHistPatRec::analyze(const art::Event& event) {
 
       if(singleParticleMode_ && !acceptSingleParticleEvent(event)) {
         return;
@@ -269,7 +269,7 @@ namespace mu2e {
     } // analyze()
 
     //================================================================
-    bool EMFDetHistPatRec::signalParticlePhysics(const SimParticle& particle) {
+    bool EMFDetMCHistPatRec::signalParticlePhysics(const SimParticle& particle) {
       bool res = false;
 
       const CLHEP::Hep3Vector& startPos = extmon_->mu2eToExtMon_position(particle.startPosition());
@@ -298,7 +298,7 @@ namespace mu2e {
     }
 
     //================================================================
-    bool EMFDetHistPatRec::inAcceptance(const ExtMonFNALTrkParam& par) {
+    bool EMFDetMCHistPatRec::inAcceptance(const ExtMonFNALTrkParam& par) {
       return
         (std::abs(par.posx()) < cutHitXmax_) &&
         (std::abs(par.posy()) < cutHitYmax_);
@@ -306,8 +306,8 @@ namespace mu2e {
 
 
     //================================================================
-    bool EMFDetHistPatRec::signalParticleSofware(const art::FindMany<ExtMonFNALRecoCluster,ExtMonFNALRecoClusterTruthBits>& clusterFinder,
-                                                 unsigned iParticle)
+    bool EMFDetMCHistPatRec::signalParticleSofware(const art::FindMany<ExtMonFNALRecoCluster,ExtMonFNALRecoClusterTruthBits>& clusterFinder,
+                                                   unsigned iParticle)
     {
       std::set<unsigned> hitPlanes;
       typedef std::vector<const ExtMonFNALRecoCluster*> Clusters;
@@ -320,7 +320,7 @@ namespace mu2e {
 
 
     //================================================================
-    bool EMFDetHistPatRec::acceptSingleParticleEvent(const art::Event& event) {
+    bool EMFDetMCHistPatRec::acceptSingleParticleEvent(const art::Event& event) {
       art::Handle<ExtMonFNALRecoClusterCollection> coll;
       event.getByLabel(clusterModuleLabel_, clusterInstanceName_, coll);
       return perfectSingleParticleEvent(*coll, extmon_->nplanes());
@@ -331,4 +331,4 @@ namespace mu2e {
   } // namespace ExtMonFNAL
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFDetHistPatRec);
+DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFDetMCHistPatRec);
