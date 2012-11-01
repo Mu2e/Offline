@@ -19,6 +19,18 @@ physics.producers.pixelDigitization.protonPulse : {
     pulseHalfWidth : 75
 }
 
+// global time corresponding to the starting edge of time bin 0
+// Prompt signal from protons at t=0 arrives at ~72 ns.
+// Because of the +-75 ns pulse shape smearing, move that to
+physics.producers.pixelDigitization.t0 : -3 // ns
+
+// End of prompt + 50 ns is 150 + 50 = 200 ns.
+// Blank out this period because of incomplete data from the previous stage.
+physics.producers.pixelDigitization.cutClock : {
+    min : 0
+    max : 7
+}
+
 physics.analyzers.emfSimHits.inputModuleLabel : "pixHitFilter"
 physics.analyzers.emfSimHits.geomModuleLabel : "geoms2"
 physics.analyzers.emfRawHits.geomModuleLabel : "geoms2"

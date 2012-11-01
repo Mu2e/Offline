@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.12 2012/11/01 23:43:13 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.13 2012/11/01 23:44:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:43:13 $
+// $Date: 2012/11/01 23:44:48 $
 //
 // Original author Andrei Gaponenko
 //
@@ -95,6 +95,10 @@ namespace mu2e {
                  &extMon_,/*Geometry not available at module ctr, store the address of the ptr */
                  &condExtMon_, /*similar for Conditions*/
                  pset.get<double>("pixelNoisePerBC"))
+
+        , cutClockEnabled_(false)
+        , cutClockMin_()
+        , cutClockMax_()
       {
         produces<ExtMonFNALRawHitCollection>();
         produces<ExtMonFNALHitTruthAssn>();
@@ -102,6 +106,16 @@ namespace mu2e {
         if(nclusters_ < 2) {
           throw cet::exception("CONFIG")
             <<"ExtMonFNALHitMaker: the numClustersPerHit FHICL parameter should be greater than 1\n";
+        }
+
+        fhicl::ParameterSet cutClockPset;
+        cutClockEnabled_ = pset.get_if_present("cutClock", cutClockPset);
+        if(cutClockEnabled_) {
+          cutClockMin_ = cutClockPset.get<int>("min");
+          cutClockMax_ = cutClockPset.get<int>("max");
+          std::cout<<"ExtMonFNALHitMaker: cutClock requested. Hits with clocks in ["
+                   <<cutClockMin_<<", "<<cutClockMax_
+                   <<"] will not be written out."<<std::endl;
         }
       }
 
@@ -182,6 +196,18 @@ namespace mu2e {
         return (time - t0_ - planeTOFCorrection_[iplane])/condExtMon_->clockTick();
       }
 
+      //----------------
+      // The cut on hit clock could be done by an external module or a consumer.
+      // It is here for convenience.
+
+      bool cutClockEnabled_;
+      int cutClockMin_;
+      int cutClockMax_;
+      bool cutClockPassed(int clock) {
+        return ! ((cutClockMin_ <= clock)&&(clock <= cutClockMax_));
+      }
+
+      //----------------
     };
 
     //================================================================
@@ -468,21 +494,24 @@ namespace mu2e {
 
           if((0 <= roStartTime) && (roStartTime < condExtMon_->numClockTicksPerDebuncherPeriod())) {
 
-            outhits->push_back(ExtMonFNALRawHit(pix, roStartTime, roToT));
+            if(!cutClockEnabled_ || cutClockPassed(roStartTime)) {
+              outhits->push_back(ExtMonFNALRawHit(pix, roStartTime, roToT));
 
-            // Record hit truth
-            for(ChargeMap::const_iterator t = parts.begin(); t != parts.end(); ++t) {
+              // Record hit truth
+              for(ChargeMap::const_iterator t = parts.begin(); t != parts.end(); ++t) {
 
-              outtruth->addSingle(t->first,
+                outtruth->addSingle(t->first,
 
-                                  art::Ptr<ExtMonFNALRawHit>(hitsPID,
-                                                             outhits->size()-1,
-                                                             hitsGetter),
+                                    art::Ptr<ExtMonFNALRawHit>(hitsPID,
+                                                               outhits->size()-1,
+                                                               hitsGetter),
 
-                                  ExtMonFNALHitTruthBits(t->second)
-                                  );
-            }
-          }
+                                    ExtMonFNALHitTruthBits(t->second)
+                                    );
+              } // for()
+
+            } // cutClock
+          } // truncation to debuncher period
 
         }
         //----------------------------------------------------------------
