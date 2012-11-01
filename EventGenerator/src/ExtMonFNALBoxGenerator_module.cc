@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.5 2012/11/01 23:42:02 gandr Exp $
+// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.6 2012/11/01 23:42:06 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:42:02 $
+// $Date: 2012/11/01 23:42:06 $
 //
 // Create particle flux in the ExtMonFNAL box by randomizing
 // kinematic of input particles read from a file.
@@ -21,7 +21,6 @@
 
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
@@ -128,7 +127,6 @@ namespace mu2e {
 
       art::RandomNumberGenerator::base_engine_t& eng_;
       CLHEP::RandFlat randFlat_;
-      CLHEP::RandGaussQ randGauss_;
       CLHEP::RandPoissonQ randPoisson_;
 
       const ExtMon *extmon_;
@@ -194,7 +192,6 @@ namespace mu2e {
 
       , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
       , randFlat_(eng_)
-      , randGauss_(eng_)
       , randPoisson_(eng_)
 
       , extmon_()
@@ -561,21 +558,27 @@ namespace mu2e {
     GenParticle ExtMonFNALBoxGenerator::createOutputParticle(const InputHit& hit) {
       using CLHEP::Hep3Vector;
 
+      // We want to randomize particle using flat distribution in a
+      // range.  The previous step computed RMS sigma; reinterpret it
+      // as a width of the flat distribution.  The choices here are
+      // arbitrary. Use the customary factor:
+      const double sigmaScaleFactor = sqrt(12.);
+
       Hep3Vector posExtMon(hit.particle.emx, hit.particle.emy, hit.particle.emz);
       do {
         if((hit.particle.vdId != VirtualDetectorId::EMFBoxSW) &&
            (hit.particle.vdId != VirtualDetectorId::EMFBoxNE)) {
-          posExtMon.setX(hit.particle.emx +  hit.pr.sigmax * randGauss_.fire());
+          posExtMon.setX(hit.particle.emx +  hit.pr.sigmax * sigmaScaleFactor * (randFlat_.fire() - 0.5));
         }
 
         if((hit.particle.vdId != VirtualDetectorId::EMFBoxBottom)&&
            (hit.particle.vdId != VirtualDetectorId::EMFBoxTop)) {
-          posExtMon.setY(hit.particle.emy + hit.pr.sigmay * randGauss_.fire());
+          posExtMon.setY(hit.particle.emy + hit.pr.sigmay * sigmaScaleFactor * (randFlat_.fire() - 0.5));
         }
 
         if((hit.particle.vdId != VirtualDetectorId::EMFBoxFront)&&
            (hit.particle.vdId != VirtualDetectorId::EMFBoxBack)) {
-          posExtMon.setZ(hit.particle.emz + hit.pr.sigmaz * randGauss_.fire());
+          posExtMon.setZ(hit.particle.emz + hit.pr.sigmaz * sigmaScaleFactor * (randFlat_.fire() - 0.5));
         }
       } while(!inRange(hit.particle.vdId, posExtMon));
 
