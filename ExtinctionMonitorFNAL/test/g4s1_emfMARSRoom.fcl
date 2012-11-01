@@ -17,16 +17,18 @@ physics.producers.generate : {
 
     geomModuleLabel : ""
 
-    zFront   : -7200
-    zBack    : -10200
-    yFloor   : +1750
-    yCeiling : +4493
-    xSW      : -1762
-    xNE      : +2814
+    srcGeom : {
+        zFront   : -7200
+        zBack    : -10200
+        yFloor   : +1750
+        yCeiling : +4493
+        xSW      : -1762
+        xNE      : +2814
 
-    srcPositionTolerance : 2 // mm off the plane
-    signalHalfdx : 40
-    signalHalfdy : 40
+        srcPositionTolerance : 2 // mm off the plane
+        signalHalfdx : 40
+        signalHalfdy : 40
+    }
 
     numNeighbors : 5
     minSourceGroupStatistics : 10

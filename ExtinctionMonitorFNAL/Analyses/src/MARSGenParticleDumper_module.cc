@@ -37,6 +37,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
+#include "ExtinctionMonitorFNAL/Utilities/inc/EMFRandomizationSourceDefs.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
 #include "TDirectory.h"
@@ -49,23 +50,11 @@
 namespace mu2e {
   namespace ExtMonFNAL {
 
+    using namespace Randomization;
+
     //================================================================
     namespace {
 
-      // src % 3 == 0: don't smear dumpz
-      // src % 3 == 1: don't smear dumpx
-      // src % 3 == 2: don't smear dumpy
-      enum SourcePlane {
-        SourceFront = 0,
-        SourceSouthWest,
-        SourceFloor,
-        SourceBack,
-        SourceNorthEast,
-        SourceCeiling,
-        NUM_SOURCES
-      };
-
-      //================================================================
       struct Triple {
         float x;
         float y;
@@ -115,11 +104,11 @@ namespace mu2e {
       };
 
       //================================================================
-      Direction computeSrcDirection(SourcePlane srcPlane, const CLHEP::Hep3Vector& momDump) {
+      Direction computeSrcDirection(SourceType srcPlane, const CLHEP::Hep3Vector& momDump) {
         CLHEP::HepRotation rot;
 
         switch(srcPlane) { // rotate momDump to get its z parallel to the inside normal
-        case SourceFront : rot.rotateY(M_PI) ; break;
+        case SourceFront: case SourceSignal : rot.rotateY(M_PI) ; break;
         case SourceBack  : /*do nothing*/ break;
 
         case SourceFloor : rot.rotateX(+M_PI/2.) ; break;
@@ -128,8 +117,7 @@ namespace mu2e {
         case SourceSouthWest : rot.rotateY(-M_PI/2.); break;
         case SourceNorthEast : rot.rotateY(+M_PI/2.); break;
         default:
-          // throw cet::exception("BADINPUTS")<<" computeSrcDirection: unknown srcPlane "<<srcPlane<<"\n"
-          ;
+          throw cet::exception("BADINPUTS")<<" computeSrcDirection: unknown srcPlane "<<srcPlane<<"\n";
         }
 
         const CLHEP::Hep3Vector localMom(rot * momDump);
@@ -166,15 +154,12 @@ namespace mu2e {
       const ProtonBeamDump *dump_;
       const ExtMon *extmon_;
 
+      SourcePlaneGeom srcGeom_;
+
       // Members needed to write the ntuple
       TTree *nt_;
 
       GPRecord gpnt_;
-
-      SourcePlane classifySource(const CLHEP::Hep3Vector& dumpPos);
-      std::vector<double> srcPlanePos_;
-      double srcPosTolerance_;
-
 
     public:
       explicit MARSGenParticleDumper(const fhicl::ParameterSet& pset);
@@ -190,17 +175,9 @@ namespace mu2e {
       , inputInstanceName_(pset.get<std::string>("inputInstanceName"))
       , dump_(0)
       , extmon_(0)
+      , srcGeom_(pset.get<fhicl::ParameterSet>("srcGeom"))
       , nt_(0)
-      , srcPlanePos_(std::vector<double>(NUM_SOURCES))
-      , srcPosTolerance_(pset.get<double>("sourcePositionTolerance"))
-    {
-      srcPlanePos_[SourceFront] = pset.get<double>("zFront");
-      srcPlanePos_[SourceSouthWest] = pset.get<double>("xSW");
-      srcPlanePos_[SourceFloor] = pset.get<double>("yFloor");
-      srcPlanePos_[SourceBack] = pset.get<double>("zBack");
-      srcPlanePos_[SourceNorthEast] = pset.get<double>("xNE");
-      srcPlanePos_[SourceCeiling] = pset.get<double>("yCeiling");
-    }
+    {}
 
     //================================================================
     void MARSGenParticleDumper::beginJob() {
@@ -264,8 +241,7 @@ namespace mu2e {
         gpnt_.particleIndex = i;
         gpnt_.weight = info.weight();
 
-        const CLHEP::Hep3Vector posDump = dump_->mu2eToBeamDump_position(particles[i].position());
-        SourcePlane srcPlane = classifySource(posDump);
+        SourceType srcPlane = classifySource(particles[i].position(), srcGeom_, *dump_, *extmon_);
 
         gpnt_.srcPlane = srcPlane;
         gpnt_.pdgId = particles[i].pdgId();
@@ -273,7 +249,7 @@ namespace mu2e {
         gpnt_.time = particles[i].time();;
 
         gpnt_.posExtMon = extmon_->mu2eToExtMon_position(particles[i].position());
-        gpnt_.posDump = posDump;
+        gpnt_.posDump = dump_->mu2eToBeamDump_position(particles[i].position());
         gpnt_.posMu2e = particles[i].position();
 
         const CLHEP::Hep3Vector momDump(dump_->mu2eToBeamDump_momentum(particles[i].momentum()));
@@ -289,24 +265,6 @@ namespace mu2e {
 
       } // for()
     } // analyze(event)
-
-    //================================================================
-    SourcePlane MARSGenParticleDumper::classifySource(const CLHEP::Hep3Vector& posDump) {
-      // The order of iteration affects the result only for corner cases, where
-      // classification is ambiguous.
-      for(int i=0; i<NUM_SOURCES; ++i) {
-        double coord(0.);
-        switch(i%3) {
-        case 0: coord = posDump.z(); break;
-        case 1: coord = posDump.x(); break;
-        case 2: coord = posDump.y(); break;
-        }
-        if(std::abs(coord - srcPlanePos_[i]) < srcPosTolerance_) {
-          return SourcePlane(i);
-        }
-      }
-      return NUM_SOURCES;
-    }
 
     //================================================================
 

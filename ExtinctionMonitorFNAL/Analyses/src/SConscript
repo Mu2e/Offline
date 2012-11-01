@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.5 2012/09/21 16:12:54 gandr Exp $
+# $Id: SConscript,v 1.6 2012/11/01 23:40:36 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/09/21 16:12:54 $
+# $Date: 2012/11/01 23:40:36 $
 #
 # Original author Rob Kutschke.
 #
@@ -38,15 +38,18 @@ if re.match(r'^/', local_lib_path):
 #
 local_lib_name=re.sub(r'/', r'_', local_lib_path)
 
-my_libs=['CLHEP']  # default if no cc_files
+my_libs=[ 
+    'ExtinctionMonitorFNAL_Utilities', 
+    'Mu2eInterfaces',
+    'Mu2eUtilities',
+    'ConfigTools',
+    'ProtonBeamDumpGeom',
+    'CLHEP'
+    ]
+
 if non_plugin_cc:
     env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ 'Mu2eInterfaces',
-                             'Mu2eUtilities',
-                             'ConfigTools',
-                             'ProtonBeamDumpGeom',
-                             'CLHEP'
-                             ],
+                      LIBS=[ my_libs ],
                       )
     my_libs=[local_lib_name, 'CLHEP']
     pass

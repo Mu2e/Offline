@@ -37,15 +37,18 @@ physics: {
             inputInstanceName  : ""
             geomModuleLabel : ""
 
+            srcGeom : {
+                zFront   : -7200
+                yFloor   : +1750
+                yCeiling : +4493
+                xSW      : -1762
+                xNE      : +2814
+                zBack    : -10200
 
-            zFront   : -7200
-            yFloor   : +1750
-            yCeiling : +4493
-            xSW      : -1762
-            xNE      : +2814
-            zBack    : -10200
-
-            sourcePositionTolerance : 2.
+                sourcePositionTolerance : 2
+                signalHalfdx : 40
+                signalHalfdy : 40
+            }
         }
     }
 

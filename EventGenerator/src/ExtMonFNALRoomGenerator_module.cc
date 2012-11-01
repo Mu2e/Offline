@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.6 2012/11/01 23:40:24 gandr Exp $
+// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.7 2012/11/01 23:40:36 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:40:24 $
+// $Date: 2012/11/01 23:40:36 $
 //
 // Create particle flux in the ExtMonFNAL room by randomizing
 // kinematic of input particles read from a file.
@@ -45,6 +45,7 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
 #include "ExtinctionMonitorFNAL/Utilities/inc/EMFRandomizationParticleDefs.hh"
+#include "ExtinctionMonitorFNAL/Utilities/inc/EMFRandomizationSourceDefs.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/MassCache.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
@@ -70,54 +71,6 @@ namespace mu2e {
     using namespace Randomization;
 
     namespace {
-      //================================================================
-      // src % 3 == 0: don't smear dumpz
-      // src % 3 == 1: don't smear dumpx
-      // src % 3 == 2: don't smear dumpy
-      enum SourceType {
-        SourceFront = 0,
-        SourceSouthWest,
-        SourceFloor,
-        SourceBack,
-        SourceNorthEast,
-        SourceCeiling,
-
-        SourceSignal, // SourceFront particles which are also signal candidates
-
-        NUM_SOURCES
-      };
-
-      //================================================================
-      // These are in beam dump coordinates
-      // The numbers are used to
-      //
-      //    1) assign input MARS particles to a source plane
-      //    2) establish boundaries which (non-signal) smearing should not cross
-
-      struct SourcePlaneGeom {
-        double zFront;
-        double xSW;
-        double yFloor;
-        double zBack;
-        double xNE;
-        double yCeiling;
-        SourcePlaneGeom(double x1, double x2, double y1, double y2, double z1, double z2)
-          : zFront(z1), xSW(x1), yFloor(y1), zBack(z2), xNE(x2), yCeiling(y2)
-        {}
-      };
-
-      std::ostream& operator<<(std::ostream&os, const SourcePlaneGeom& gm) {
-        return
-          os<<"SourcePlaneGeom(zFront="<<gm.zFront
-            <<", xSW="<<gm.xSW
-            <<", zBack="<<gm.zBack
-            <<", yFloor="<<gm.yFloor
-            <<", xNE="<<gm.xNE
-            <<", yCeiling="<<gm.yCeiling
-            <<" )"
-          ;
-      }
-
       //================================================================
       struct InputParticle {
         PDGCode::type pdgId;
@@ -260,9 +213,6 @@ namespace mu2e {
       const ProtonBeamDump *dump_;
       const ExtMon *extmon_;
       SourcePlaneGeom srcGeom_;
-      double srcPosTolerance_;
-      double signalHalfdx_;
-      double signalHalfdy_;
 
       unsigned numNeighbors_;
       unsigned minSourceGroupStatistics_;
@@ -292,9 +242,6 @@ namespace mu2e {
       // loadInputFiles() because pointers into initial particles_ are
       // invalidated when more particles are loaded.
       void initGroups();
-
-      SourceType classifySource(const CLHEP::Hep3Vector& posDump, const CLHEP::Hep3Vector& posMu2e);
-      bool isSignal(const CLHEP::Hep3Vector& posMu2e);
 
       void printSrcGroups();
       void mergeLowStatisticSrcGroups();
@@ -335,19 +282,7 @@ namespace mu2e {
       , dump_()
       , extmon_()
 
-      , srcGeom_(pset.get<double>("xSW"),
-                 pset.get<double>("xNE"),
-                 pset.get<double>("yFloor"),
-                 pset.get<double>("yCeiling"),
-                 pset.get<double>("zFront"),
-                 pset.get<double>("zBack")
-                 )
-
-      , srcPosTolerance_(pset.get<double>("srcPositionTolerance"))
-
-        // Signal box in ExtMon coordinates is [-dx, +dx]*[-dy,+dy]
-      , signalHalfdx_(pset.get<double>("signalHalfdx"))
-      , signalHalfdy_(pset.get<double>("signalHalfdy"))
+      , srcGeom_(pset.get<fhicl::ParameterSet>("srcGeom"))
 
       , numNeighbors_(pset.get<unsigned>("numNeighbors"))
       , minSourceGroupStatistics_(pset.get<unsigned>("minSourceGroupStatistics"))
@@ -369,21 +304,6 @@ namespace mu2e {
         throw cet::exception("BADCONFIG")
           <<"Error: got fracAcceptedProtons_ = "<<fracAcceptedProtons_
           <<".  The parameter must be in (0,1]\n";
-      }
-
-      if(srcGeom_.xSW >= srcGeom_.xNE) {
-        throw cet::exception("BADCONFIG")
-          <<"Error: srcGeom_.xSW ("<<srcGeom_.xSW<<") >= srcGeom_.xNE ("<<srcGeom_.xNE<<")";
-      }
-
-      if(srcGeom_.yFloor >= srcGeom_.yCeiling) {
-        throw cet::exception("BADCONFIG")
-          <<"Error: srcGeom_.yFloor ("<<srcGeom_.yFloor<<") >= srcGeom_.yCeiling ("<<srcGeom_.yCeiling<<")";
-      }
-
-      if(srcGeom_.zBack >= srcGeom_.zFront) {
-        throw cet::exception("BADCONFIG")
-          <<"Error: srcGeom_.zBack ("<<srcGeom_.zBack<<") >= srcGeom_.zFront ("<<srcGeom_.zFront<<")";
       }
 
       if(minSourceGroupStatistics_ < numNeighbors_) {
@@ -532,7 +452,7 @@ namespace mu2e {
           part.posDump = dump_->mu2eToBeamDump_position(posMu2e);
           part.time = cnv_.marsToMu2eTime(mp.tof);
           part.info = MARSInfo(mp.weight, mp.protonNumber, marsSubRunNumber, marsRunNumber);
-          part.srcType = classifySource(part.posDump, posMu2e);
+          part.srcType = classifySource(posMu2e, srcGeom_, *dump_, *extmon_);
 
           if(part.info.protonNumber() != currentProtonNumber) {
             currentProtonNumber = part.info.protonNumber();
@@ -555,41 +475,6 @@ namespace mu2e {
         grouped_[st][pt].push_back(&part);
         AGDEBUG("grouped_[st][pt].back() index="<<indexInParticles(grouped_[st][pt].back()));
       }
-    }
-
-    //================================================================
-    SourceType ExtMonFNALRoomGenerator::classifySource(const CLHEP::Hep3Vector& posDump,
-                                                       const CLHEP::Hep3Vector& posMu2e)
-    {
-      // The order of the tests affects the result only for corner
-      // cases, where classification is ambiguous.
-
-      if(std::abs(posDump.z() - srcGeom_.zFront) < srcPosTolerance_) {
-        // check for Signal
-        if(isSignal(posMu2e)) {
-          return SourceSignal;
-        }
-        return SourceFront;
-      }
-
-      if(std::abs(posDump.x() - srcGeom_.xSW) < srcPosTolerance_) return SourceSouthWest;
-      if(std::abs(posDump.y() - srcGeom_.yFloor) < srcPosTolerance_) return SourceFloor;
-      if(std::abs(posDump.x() - srcGeom_.xNE) < srcPosTolerance_) return SourceNorthEast;
-      if(std::abs(posDump.y() - srcGeom_.yCeiling) < srcPosTolerance_) return SourceCeiling;
-
-      if(std::abs(posDump.z() - srcGeom_.zBack) < srcPosTolerance_) return SourceBack;
-
-      throw cet::exception("BADINPUTS")
-        <<"Error: failed to assign input posDump = "<<posDump<<" to an input source plane\n";
-      //return NUM_SOURCES;
-    }
-
-    //================================================================
-    bool ExtMonFNALRoomGenerator::isSignal(const CLHEP::Hep3Vector& posMu2e) {
-      const CLHEP::Hep3Vector posExtMon = extmon_->mu2eToExtMon_position(posMu2e);
-      return
-        (std::abs(posExtMon.x()) < signalHalfdx_)&&
-        (std::abs(posExtMon.y()) < signalHalfdy_);
     }
 
    //================================================================
@@ -894,9 +779,7 @@ namespace mu2e {
         CLHEP::Hep3Vector posExtMon =
           extmon_->mu2eToExtMon_position(dump_->beamDumpToMu2e_position(posDump));
 
-        return
-          (std::abs(posExtMon.x()) <= signalHalfdx_) &&
-          (std::abs(posExtMon.y()) <= signalHalfdy_);
+        return isSignal(posExtMon, srcGeom_);
       }
       } // switch(st)
     } // inRange()
