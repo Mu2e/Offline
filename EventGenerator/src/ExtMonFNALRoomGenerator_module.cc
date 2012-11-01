@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.1 2012/11/01 23:32:51 gandr Exp $
+// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.2 2012/11/01 23:33:21 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:32:51 $
+// $Date: 2012/11/01 23:33:21 $
 //
 // Create particle flux in the ExtMonFNAL room by randomizing
 // kinematic of input particles read from a file.
@@ -722,9 +722,9 @@ namespace mu2e {
     };
 
     void ExtMonFNALRoomGenerator::computeParticleRandomizations() {
-      static const MetricXY mxy;
-      static const MetricYZ myz;
-      static const MetricZX mzx;
+      static MetricXY mxy; // gcc 4.6.1 does not like "static const" here
+      static MetricYZ myz; // gcc 4.6.1 does not like "static const" here
+      static MetricZX mzx; // gcc 4.6.1 does not like "static const" here
       static const Metric *dist[] = { &mxy, &myz, &mzx };
 
       pr_.resize(particles_.size());
