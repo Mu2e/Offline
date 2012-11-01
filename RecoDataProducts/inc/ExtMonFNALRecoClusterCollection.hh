@@ -1,8 +1,8 @@
 // Reco clusters grouped by plane.
 //
-// $Id: ExtMonFNALRecoClusterCollection.hh,v 1.1 2012/09/19 03:33:39 gandr Exp $
+// $Id: ExtMonFNALRecoClusterCollection.hh,v 1.2 2012/11/01 23:43:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/09/19 03:33:39 $
+// $Date: 2012/11/01 23:43:48 $
 //
 // Original author Andrei Gaponenko
 //
@@ -30,6 +30,7 @@ namespace mu2e {
       unsigned plane_;
     public:
       unsigned int size() const { return parent_->planes_[plane_].size(); }
+      bool empty() const { return !size(); }
       const ExtMonFNALRecoCluster& operator[](unsigned int i) const {
         return parent_->storage_[ parent_->planes_[plane_][i] ];
       }
