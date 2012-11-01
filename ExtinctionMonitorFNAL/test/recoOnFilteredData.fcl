@@ -8,7 +8,7 @@ services.TFileService.fileName : "histRecoOnFilteredData.root"
 
 singleParticleMode : false
 geomModuleLabel : "geoms2" //
-rawHitsModuleLabel : "pixHitFilter" // or "pixelDigitization"
+rawHitsModuleLabel : "pixelDigitization"
 simParticleModuleLabel : "pixHitFilter" // or "g4run"
 
 physics.producers.pixelRawClusterization.geomModuleLabel : @local::geomModuleLabel
