@@ -56,6 +56,8 @@ namespace mu2e {
       TEfficiency *sensorEffVsCurrent_;
       TEfficiency *sensorEffVsNumClusters_;
 
+      TEfficiency *sensorIneffMap_;
+
       TH1 *numRawHits_;
       TH1 *hitToT_;
       TH1 *hitClockDiff_; // (ti - tfirst) for numRawHits>1
@@ -85,6 +87,9 @@ namespace mu2e {
       , sensorEffVsThreshold_(tfs_->make<TEfficiency>("sensorEffVsTh", "Sensor efficiency vs threshold", 20, 250., 10250.))
       , sensorEffVsCurrent_(tfs_->make<TEfficiency>("sensorEffVsI", "Sensor efficiency vs log2(current/1000)", 15, -0.5, 14.5))
       , sensorEffVsNumClusters_(tfs_->make<TEfficiency>("sensorEffVsNc", "Sensor efficiency vs log2(numDigiClusters)", 15, -0.5, 14.5))
+
+      , sensorIneffMap_(tfs_->make<TEfficiency>("sensorIneffMap", "Sensor inefficiency: log2(current/1000) vs threshold",
+                                                20, 250., 10250., 15, -0.5, 14.5))
 
       , numRawHits_(tfs_->make<TH1D>("numRawHits", "num raw hits", 40, -0.5, 39.5))
       , hitToT_(tfs_->make<TH1D>("hitToT", "hit ToT", 15, -0.5, 14.5))
@@ -154,11 +159,13 @@ namespace mu2e {
         const int totCalib = digiConfig.get<int>("totCalib");
         const double k = (qCalib - threshold)/(totCalib);
         //std::cout<<"EMFDigiTuning: got digi config."<<" discriminatorThreshold = "<<discriminatorThreshold<<std::endl;
+        const double logI = log2(k/1000.);
 
         const bool eff = !hits.empty();
         sensorEffVsThreshold_->Fill(eff, threshold);
-        sensorEffVsCurrent_->Fill(eff, log2(k/1000.));
+        sensorEffVsCurrent_->Fill(eff, logI);
         sensorEffVsNumClusters_->Fill(eff, log2(digiConfig.get<int>("numClustersPerHit")));
+        sensorIneffMap_->Fill(!eff, threshold, logI);
       }
 
       //----------------
