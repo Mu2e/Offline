@@ -293,7 +293,9 @@ namespace mu2e {
       const CLHEP::Hep3Vector& startMom = extmon_->mu2eToExtMon_momentum(particle.startMomentum());
 
       // Make sure tha particle starts at a place where it can go through the whole detector
-      if(extmon_->up().sensor_zoffset().back() < startPos.z()) {
+      if((extmon_->up().sensor_zoffset().back() < startPos.z()) &&
+         (startMom.z() < -1.) // <= FIXME: zero pz problematic for extrapolation
+         ) {
 
         const double rTrack = extmon_->spectrometerMagnet().trackBendRadius(startMom.mag());
         ExtMonFNALTrkParam mcpar;
