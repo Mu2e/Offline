@@ -1,8 +1,8 @@
 // Reco clusters grouped by plane.
 //
-// $Id: ExtMonFNALRecoClusterCollection.hh,v 1.2 2012/11/01 23:43:48 gandr Exp $
+// $Id: ExtMonFNALRecoClusterCollection.hh,v 1.3 2012/11/01 23:44:32 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:43:48 $
+// $Date: 2012/11/01 23:44:32 $
 //
 // Original author Andrei Gaponenko
 //
@@ -76,5 +76,13 @@ namespace mu2e {
   };
 
 } // namespace mu2e
+
+//----------------
+// This specialization is needed to support read-back of art::Ptr<ExtMonFNALRecoCluster>
+namespace art {
+  template<> struct has_setPtr<mu2e::ExtMonFNALRecoClusterCollection> { static const bool value = true; };
+}
+
+//----------------
 
 #endif /* RecoDataProducts_ExtMonFNALRecoClusterCollection_hh */
