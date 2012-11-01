@@ -79,7 +79,7 @@ namespace mu2e {
     for(ExtMonFNALRawHitCollection::const_iterator hit = hits.begin(); hit != hits.end(); ++hit) {
 
       int clk = foldTimeToMicrobunch_ ? (hit->clock() % numMicrobunchTicks_): hit->clock();
-      hitClock_->Fill(hit->clock());
+      hitClock_->Fill(clk);
       hitToT_->Fill(hit->tot());
       const ExtMonFNALPixelId& pix = hit->pixelId();
       chipOccupancy_[pix.chip()]->Fill(pix.col(), pix.row());
