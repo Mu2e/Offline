@@ -1,6 +1,8 @@
 #ifndef ExtinctionMonitorFNAL_Utilities_inc_EMFBoxIO_hh
 #define ExtinctionMonitorFNAL_Utilities_inc_EMFBoxIO_hh
 
+#include "MCDataProducts/inc/MARSInfo.hh"
+
 namespace mu2e {
   namespace ExtMonFNAL {
     namespace IO {
@@ -69,6 +71,15 @@ namespace mu2e {
         }
       };
 
+      //================================================================
+      struct MARSInfo {
+        mu2e::MARSInfo info;
+        static const char *branchDescription() {
+          return "weight/D:protonNumber/I:subRunNumber/I:runNumber/I";
+        }
+      };
+
+      //================================================================
 
     } // IO
   } // ExtMonFNAL

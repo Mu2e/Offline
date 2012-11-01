@@ -1,6 +1,6 @@
-// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.2 2012/11/01 23:35:32 gandr Exp $
+// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.3 2012/11/01 23:39:53 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:35:32 $
+// $Date: 2012/11/01 23:39:53 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -85,7 +85,7 @@ namespace mu2e {
       const ExtMon *extmon_;
 
       StoppedMuon sm_;
-      MARSInfo minfo_;
+      IO::MARSInfo minfo_;
       TTree *nt_;
 
       bool isAccepted(const StoppedMuon& sm);
@@ -119,8 +119,8 @@ namespace mu2e {
     void EMFBoxMuonAnalyzer::beginJob() {
       art::ServiceHandle<art::TFileService> tfs;
       nt_ = tfs->make<TTree>( "sm", "Stopped muons ntuple");
-      nt_->Branch("particle", &sm_, IO::StoppedMuon::branchDescription());
-      nt_->Branch("minfo", &minfo_, "weight/D:protonNumber/I:subRunNumber/I");
+      nt_->Branch("particle", &sm_, sm_.branchDescription());
+      nt_->Branch("minfo", &minfo_, minfo_.branchDescription());
     }
 
     //================================================================
@@ -173,7 +173,7 @@ namespace mu2e {
                 throw cet::exception("BADINPUTS")<<"ERROR: no GenParticle for SimParticle "
                                                  <<sp.id()<<" in event "<<event.id()<<"\n";
               }
-              minfo_ = mFinder.at(gen.key()).ref();
+              minfo_.info = mFinder.at(gen.key()).ref();
 
               // write
               nt_->Fill();

@@ -1,6 +1,6 @@
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.4 2012/11/01 23:39:49 gandr Exp $
+// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.5 2012/11/01 23:39:53 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:39:49 $
+// $Date: 2012/11/01 23:39:53 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -731,13 +731,13 @@ namespace mu2e {
       art::ServiceHandle<art::TFileService> tfs;
 
       IO::EMFBoxHit particle;
-      MARSInfo minfo;
+      IO::MARSInfo minfo;
       ParticleRandomization pr;
 
       TTree *nt = tfs->make<TTree>("vdhits", "VD hits and randomization parameters");
-      nt->Branch("particle", &particle, IO::EMFBoxHit::branchDescription());
-      nt->Branch("minfo", &minfo, "weight/D:protonNumber/I:subRunNumber/I:runNumber/I");
-      nt->Branch("randomization", &pr, IO::ParticleRandomization::branchDescription());
+      nt->Branch("particle", &particle, particle.branchDescription());
+      nt->Branch("minfo", &minfo, minfo.branchDescription());
+      nt->Branch("randomization", &pr, pr.branchDescription());
 
       for(unsigned i=0; i<particles_.size(); ++i) {
         particle.emx = particles_[i].posExtMon.x();
@@ -750,7 +750,7 @@ namespace mu2e {
         particle.pdgId = particles_[i].pdgId;
         particle.vdId = particles_[i].vd.id();
 
-        minfo = particles_[i].info;
+        minfo.info = particles_[i].info;
 
         pr = pr_[i];
 
