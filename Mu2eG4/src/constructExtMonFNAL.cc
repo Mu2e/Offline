@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.20 2012/09/19 03:39:47 gandr Exp $
+// $Id: constructExtMonFNAL.cc,v 1.21 2012/11/01 23:33:39 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/09/19 03:39:47 $
+// $Date: 2012/11/01 23:33:39 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -218,8 +218,8 @@ namespace mu2e {
                                 );
 
           std::vector<double> hlen(3);
-          hlen[0] = config.getDouble("extMonFNAL.vd.halfdx");
-          hlen[1] = config.getDouble("extMonFNAL.vd.halfdy");
+          hlen[0] = config.getDouble("extMonFNAL.detector.vd.halfdx");
+          hlen[1] = config.getDouble("extMonFNAL.detector.vd.halfdy");
           hlen[2] = vdg->getHalfLength();
 
           VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),

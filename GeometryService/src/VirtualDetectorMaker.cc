@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.10 2012/08/24 15:06:59 gandr Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.11 2012/11/01 23:33:39 gandr Exp $
 // $Author: gandr $
 //
 
@@ -216,7 +216,7 @@ namespace mu2e {
 
       }
 
-      if(geom->hasElement<ExtMonFNALBuilding>()) {
+      if(geom->hasElement<ExtMonFNALBuilding>() && c.getBool("extMonFNAL.channel.vd.enabled", false)) {
         CLHEP::Hep3Vector vzero;
 
         // This detector will be placed on the face of beam dump
@@ -334,7 +334,10 @@ namespace mu2e {
         vd->addVirtualDetector(VirtualDetectorId::ProtonBeamDumpCoreFace, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
       }
 
-      if(geom->hasElement<ExtMonFNAL::ExtMon>() && c.getBool("extMonFNAL.vd.enabled", false)) {
+      if(c.hasName("extMonFNAL.vd.enabled")) {
+        throw cet::exception("BADCONFIG")<<"Error: geometry parameter extMonFNAL.vd.enabled is obsolete and should not be used.\n";
+      }
+      if(geom->hasElement<ExtMonFNAL::ExtMon>() && c.getBool("extMonFNAL.detector.vd.enabled", false)) {
         vd->addVirtualDetector(VirtualDetectorId::EMFDetectorUpEntrance, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
         vd->addVirtualDetector(VirtualDetectorId::EMFDetectorUpExit, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
         vd->addVirtualDetector(VirtualDetectorId::EMFDetectorDnEntrance, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
