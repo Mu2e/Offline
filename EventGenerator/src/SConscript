@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.23 2012/08/24 20:19:31 gandr Exp $
+# $Id: SConscript,v 1.24 2012/11/01 23:32:51 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/08/24 20:19:31 $
+# $Date: 2012/11/01 23:32:51 $
 #
 # Original author Rob Kutschke.
 #
@@ -32,6 +32,7 @@ if cc_and_f:
                              'ExtinctionMonitorFNAL_Geometry',
                              'SeedService_service',
                              'Mu2eUtilities',
+                             'Sources', # FIXME: utils should not be in Sources
                              'ConfigTools',
                              'MCDataProducts',
                              'CLHEP',
