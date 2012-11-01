@@ -10,9 +10,23 @@ physics.producers.generate : {
     module_type: ExtMonFNALBoxGenerator
     verbosityLevel : 1
 
-    inputFiles : ["data/sum200files.root"]
+    // The 20121002a-EMFBoxFluxAnalyzer set corresponds to
+    // 500(p/evt)*60(evts/job)*2999(jobs) MARS-passed protons on target
+    //
+    // MARS efficiency is (19382 / 40M), and microbunch is 30M protons
+    // So the dateset represents (500*60*2999)/(19382 * 3/4) = 6189 microbunches
+    // and the scaling factor is 1/6189.
+    // For the whole dataset we'd have
+    //
+    //      microbunchScaling : 0.00016157
+    //
+    // But too much memory is needed to hold all the inputs
+    // (grid jobs grew >4GB), so ExtinctionMonitorFNAL/test/20121004-grid-config/
+    // contains config files to process pieces of the s1 dataset.
 
-    microbunchScaling : 0.0243
+    //test: inputFiles : ["data/sum200files.root"]
+    //test: microbunchScaling : 0.0243
+
     weightMax : 2
 
     bunchTimeHalfWidth : 100

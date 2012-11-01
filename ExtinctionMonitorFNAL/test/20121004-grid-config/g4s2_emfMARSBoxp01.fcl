@@ -1,0 +1,15 @@
+#include "ExtinctionMonitorFNAL/test/g4s2_emfMARSBox.fcl"
+
+physics.producers.generate.microbunchScaling : 0.0016157
+
+physics.producers.generate.inputFiles : [
+        "20121002a-EMFBoxFluxAnalyzer/good/00003/histEMFBoxFluxAnalyzer.root",
+        "20121002a-EMFBoxFluxAnalyzer/good/00004/histEMFBoxFluxAnalyzer.root",
+        "20121002a-EMFBoxFluxAnalyzer/good/00005/histEMFBoxFluxAnalyzer.root"
+    ]
+
+
+// This tells emacs to view this file in the JavaScript mode.
+// Local Variables:
+// mode:js
+// End:
