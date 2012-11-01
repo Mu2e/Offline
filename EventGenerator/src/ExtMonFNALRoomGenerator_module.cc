@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.4 2012/11/01 23:39:49 gandr Exp $
+// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.5 2012/11/01 23:40:14 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:39:49 $
+// $Date: 2012/11/01 23:40:14 $
 //
 // Create particle flux in the ExtMonFNAL room by randomizing
 // kinematic of input particles read from a file.
@@ -43,6 +43,7 @@
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/MassCache.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
@@ -301,7 +302,6 @@ namespace mu2e {
 
 
       ParticleType classifyParticleType(PDGCode::type pdgId);
-      double getCharge(PDGCode::type pdgId);
 
       void printSrcGroups();
       void mergeLowStatisticSrcGroups();
@@ -622,24 +622,6 @@ namespace mu2e {
       else {
         return OTHER_NEUTRAL;
       }
-    }
-
-    //================================================================
-    double ExtMonFNALRoomGenerator::getCharge(PDGCode::type pdgId) {
-      ParticleDataTable::maybe_ref info = pdt_->particle(pdgId);
-
-      // Particles unknown to PDT are ions
-      // Default ion charge:
-      int charge(1); // deuterium
-
-      if(!info.isValid()) {
-        std::cout<<"ExtMonFNALRoomGenerator: no valid PDG info for pdgId = "<<pdgId<<", using charge = "<<charge<<std::endl;
-      }
-      else {
-        charge = info.ref().charge();
-      }
-
-      return charge;
     }
 
     //================================================================

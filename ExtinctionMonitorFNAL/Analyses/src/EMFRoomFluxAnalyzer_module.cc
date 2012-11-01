@@ -1,8 +1,8 @@
 // Precompute particle randomization from MARS inputs for g4s1 ExtMonFNALRoom jobs.
 //
-// $Id: EMFRoomFluxAnalyzer_module.cc,v 1.1 2012/11/01 23:39:59 gandr Exp $
+// $Id: EMFRoomFluxAnalyzer_module.cc,v 1.2 2012/11/01 23:40:14 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:39:59 $
+// $Date: 2012/11/01 23:40:14 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -56,6 +56,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
+#include "ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
 
 #include "TTree.h"
 
@@ -156,25 +157,6 @@ namespace mu2e {
       //================================================================
       using IO::ParticleRandomization;
       typedef std::vector<ParticleRandomization> ParticleRandomizations;
-
-      //================================================================
-      double getCharge(PDGCode::type pdgId) {
-        static GlobalConstantsHandle<ParticleDataTable> pdt_;
-        ParticleDataTable::maybe_ref info = pdt_->particle(pdgId);
-
-        // Particles unknown to PDT are ions
-        // Default ion charge:
-        int charge(1); // deuterium
-
-        if(!info.isValid()) {
-          std::cout<<"getCharge(): no valid PDG info for pdgId = "<<pdgId<<", using charge = "<<charge<<std::endl;
-        }
-        else {
-          charge = info.ref().charge();
-        }
-
-        return charge;
-      }
 
       //================================================================
       ParticleType classifyParticleType(PDGCode::type pdgId) {

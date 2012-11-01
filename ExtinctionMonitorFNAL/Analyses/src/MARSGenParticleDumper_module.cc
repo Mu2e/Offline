@@ -36,6 +36,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
 #include "TDirectory.h"
@@ -148,27 +149,6 @@ namespace mu2e {
         res.theta = acos(localMom.z()/localMom.mag());
         res.phi = atan2(localMom.y(), localMom.x());
         return res;
-      }
-
-      //================================================================
-      int getCharge(PDGCode::type pdgId) {
-        // unlike generic conditions, MC particle data
-        // should not change run-to-run, so static is safe
-        // use static for efficiency
-        static GlobalConstantsHandle<ParticleDataTable> pdt;
-
-        ParticleDataTable::maybe_ref info = pdt->particle(pdgId);
-
-        int charge(999);
-
-        if(!info.isValid()) {
-          std::cout<<"AG: warning: no valid PDG info for pdgId = "<<pdgId<<" using charge = "<<charge<<std::endl;
-        }
-        else {
-          charge = info.ref().charge();
-        }
-
-        return charge;
       }
 
     } // namespace {}

@@ -1,6 +1,6 @@
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.5 2012/11/01 23:39:53 gandr Exp $
+// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.6 2012/11/01 23:40:14 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:39:53 $
+// $Date: 2012/11/01 23:40:14 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -53,6 +53,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
+#include "ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -79,25 +80,6 @@ namespace mu2e {
         NEUTRON, GAMMA, OTHER_NEUTRAL,
         NUM_PARTICLE_TYPES
       };
-
-      //================================================================
-      double getCharge(PDGCode::type pdgId) {
-        static GlobalConstantsHandle<ParticleDataTable> pdt_;
-        ParticleDataTable::maybe_ref info = pdt_->particle(pdgId);
-
-        // Particles unknown to PDT are ions
-        // Default ion charge:
-        int charge(1); // deuterium
-
-        if(!info.isValid()) {
-          std::cout<<"getCharge(): no valid PDG info for pdgId = "<<pdgId<<", using charge = "<<charge<<std::endl;
-        }
-        else {
-          charge = info.ref().charge();
-        }
-
-        return charge;
-      }
 
       //================================================================
       ParticleType classifyParticleType(PDGCode::type pdgId) {
