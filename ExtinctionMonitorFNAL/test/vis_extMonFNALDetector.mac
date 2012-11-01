@@ -1,0 +1,57 @@
+# Macro file for setting up the graphics scene to work with
+# ExtMonFNAL.  Follows the example in vis45.mac
+
+/control/verbose 0
+/run/verbose 0
+
+/vis/disable
+/vis/open OGLIX 1600x800-0+0
+/vis/viewer/set/background white ! ! 0.01
+
+/vis/viewer/set/projection orthogonal
+
+# absolute pan
+#/vis/viewer/panTo 0.0 0.0
+# absolute zoom:
+#/vis/viewer/zoomTo 1.0
+/vis/scene/create
+/vis/scene/add/volume ProtonBeamDumpShielding
+/vis/scene/add/trajectories
+/vis/sceneHandler/attach
+/vis/scene/endOfEventAction refresh
+
+# ExtMonFNAL detector
+#/vis/viewer/set/viewpointThetaPhi 103.78 0
+#/vis/viewer/panTo 26.6 3.2 m
+#/vis/viewer/zoomTo 100
+
+# # Perfectly aligned side view: ExtMonFNAL detector in MARS 3w1 files
+# /vis/viewer/set/viewpointThetaPhi 98.875 0
+# /vis/viewer/panTo 27.1 3.25 m
+# /vis/viewer/zoomTo 100
+
+# "Misaligned" side view to make Si sensors thicker. MARS 3w1 files
+/vis/viewer/set/viewpointThetaPhi 101 0
+/vis/viewer/panTo 26.95 3.25 m
+/vis/viewer/zoomTo 100
+
+# # "3D" view: ExtMonFNAL detector in MARS 3w1 files - world box and dirt visible
+# /vis/viewer/set/viewpointThetaPhi 140 60
+# /vis/viewer/panTo 10 -11.6 m
+# /vis/viewer/zoomTo 80
+
+# # "3D" view: ExtMonFNAL detector in MARS 3w1 files - world box and dirt invisible
+# /vis/viewer/set/viewpointThetaPhi 140 60
+# /vis/viewer/panTo 7 -10.6 m
+# /vis/viewer/zoomTo 50
+
+#/vis/viewer/set/viewpointThetaPhi 101.9637 0
+#/vis/viewer/panTo 26.8 3.1 m
+#/vis/viewer/zoomTo 100
+
+
+
+################################################################
+/vis/enable 
+
+# Do NOT issue the /run/beamon command

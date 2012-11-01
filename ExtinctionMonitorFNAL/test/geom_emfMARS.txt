@@ -116,6 +116,52 @@ bool   extMonFNAL.detector.vd.enabled = false;
 bool   extMonFNAL.box.vd.enabled = true;
 
 //----------------------------------------------------------------
+// From geom_01_LowDetailGraphics
+
+bool toyDS.visible           = false;
+bool crs.vetoVisible         = false;
+bool protonabsorber.visible  = false;
+bool neutronabsorber.visible = false;
+bool mbs.visible             = false;
+
+bool ttracker.envelopeVisible       = false;
+bool ttracker.deviceEnvelopeVisible = false;
+bool ttracker.supportVisible        = false;
+
+// More tweaks
+
+bool extMonFNAL.room.wall.visible   = false;
+bool extMonFNAL.room.ceiling.visible   = false;
+bool extMonFNAL.room.floor.visible   = false;
+
+bool extMonFNAL.collimator2.shielding.visible = false;
+
+bool   protonBeamDump.dirtVisible = false;
+bool   protonBeamDump.shieldingVisible = false;
+bool   protonBeamDump.mouthVisible = false;
+bool   protonBeamDump.neutronCaveVisible = false;
+
+bool extMonFNAL.collimator2.alignmentHole.visible = false;
+bool extMonFNAL.collimator2.alignmentHole.solid = false;
+bool extMonFNAL.collimator2.alignmentPlug.visible = true;
+bool extMonFNAL.collimator2.alignmentPlug.solid = false;
+bool extMonFNAL.collimator2.channel.visible = true;
+bool extMonFNAL.collimator2.channel.solid = false;
+
+bool hall.formalBoxVisible        = false;
+bool hall.floorVisible            = false;
+bool hall.ceilingVisible          = false;
+bool hall.wallsVisible            = false;
+
+
+//// Making world & dirt invisible shifts the coordinate system in G4 visualization.
+//
+// bool world.boxVisible             = false;
+// bool world.dirt.visible           = false;
+
+bool vd.visible              = true;
+
+//----------------------------------------------------------------
 int PSShield.verbosityLevel = 1;
 int protonBeamDump.verbosityLevel = 1;
 int extMonFNAL.verbosityLevel = 1;
