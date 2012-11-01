@@ -1,6 +1,6 @@
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.2 2012/11/01 23:35:10 gandr Exp $
+// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.3 2012/11/01 23:35:32 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:35:10 $
+// $Date: 2012/11/01 23:35:32 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -51,6 +51,8 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+
+#include "ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -156,29 +158,7 @@ namespace mu2e {
       }
 
       //================================================================
-      struct ParticleRandomization {
-        // We have some redundant data here for convenience of
-        // studying the randomization approach
-
-        double sigmax;
-        double sigmay;
-        double sigmaz;
-        double correlationCoefficient;  // between the two coordinates relevant for the source plane
-
-        // "Gaussian" distribution of neighbor directions (nx', ny')
-        // w.r.t this direction leads to Rayleigh distribution of
-        // r = sin(theta'):  pdf ~ r/sigma^2 exp(-r^2/(2*sigma^2))
-        //
-        // ML estimate of sigma is sqrt(\sum_1^N x^2_i /(2N))
-
-        double rSigmaML;
-
-        ParticleRandomization()
-          : sigmax(), sigmay(), sigmaz(), correlationCoefficient()
-          , rSigmaML()
-        {}
-      };
-
+      using IO::ParticleRandomization;
       typedef std::vector<ParticleRandomization> ParticleRandomizations;
 
       //================================================================
@@ -750,28 +730,14 @@ namespace mu2e {
     void EMFBoxFluxAnalyzer::writeParticleNtuple() {
       art::ServiceHandle<art::TFileService> tfs;
 
-      struct IOParticle {
-        double emx;
-        double emy;
-        double emz;
-        double mu2epx;
-        double mu2epy;
-        double mu2epz;
-        double time;
-        int pdgId;
-        int vdId;
-
-        IOParticle() : emx(), emy(), emz(), mu2epx(), mu2epy(), mu2epz(), time(), pdgId(), vdId() {}
-      };
-
-      IOParticle particle;
+      IO::EMFBoxHit particle;
       MARSInfo minfo;
       ParticleRandomization pr;
 
       TTree *nt = tfs->make<TTree>("vdhits", "VD hits and randomization parameters");
-      nt->Branch("particle", &particle, "emx/D:emy/D:emz/D:mu2epx/D:mu2epy/D:mu2epz/D:time/D:pdgId/I:vdId/I");
+      nt->Branch("particle", &particle, IO::EMFBoxHit::branchDescription());
       nt->Branch("minfo", &minfo, "weight/D:protonNumber/I:subRunNumber/I");
-      nt->Branch("randomization", &pr, "sigmax/D:sigmay/D:sigmaz/D:correlationCoefficient/D:rSigmaML/D");
+      nt->Branch("randomization", &pr, IO::ParticleRandomization::branchDescription());
 
       for(unsigned i=0; i<particles_.size(); ++i) {
         particle.emx = particles_[i].posExtMon.x();

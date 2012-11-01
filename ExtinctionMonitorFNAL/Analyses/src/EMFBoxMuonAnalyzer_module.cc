@@ -1,6 +1,6 @@
-// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.1 2012/11/01 23:35:06 gandr Exp $
+// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.2 2012/11/01 23:35:32 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:35:06 $
+// $Date: 2012/11/01 23:35:32 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -31,6 +31,8 @@
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 
+#include "ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
+
 #include "TH1.h"
 #include "TH2.h"
 #include "TTree.h"
@@ -41,37 +43,28 @@
 namespace mu2e {
   namespace ExtMonFNAL {
 
+    using IO::StoppedMuon;
+
     namespace {
-      struct StoppedMuon {
-        double emx;
-        double emy;
-        double emz;
-        double time;
-        double endek;
 
-        int pdgId;
+      StoppedMuon makeStoppedMuon(const ExtMon& extmon, const SimParticle& sp) {
 
-        unsigned endG4Status;
-        unsigned stoppingCode;
+        StoppedMuon res;
 
-        StoppedMuon() : emx(), emy(), emz(), time(), endek(), pdgId(), endG4Status(), stoppingCode() {}
+        const CLHEP::Hep3Vector pos = extmon.mu2eToExtMon_position(sp.endPosition());
+        res.emx = pos.x();
+        res.emy = pos.y();
+        res.emz = pos.z();
 
-        StoppedMuon(const ExtMon& extmon, const SimParticle& sp)
-          : emx()
-          , emy()
-          , emz()
-          , time(sp.endGlobalTime())
-          , endek(sp.endMomentum().e() - sp.endMomentum().m())
-          , pdgId(sp.pdgId())
-          , endG4Status(sp.endG4Status())
-          , stoppingCode(sp.stoppingCode().id())
-        {
-          const CLHEP::Hep3Vector pos = extmon.mu2eToExtMon_position(sp.endPosition());
-          emx = pos.x();
-          emy = pos.y();
-          emz = pos.z();
-        }
-      };
+        res.time = sp.endGlobalTime();
+        res.endek = sp.endMomentum().e() - sp.endMomentum().m();
+        res.pdgId = sp.pdgId();
+
+        res.endG4Status = sp.endG4Status();
+        res.stoppingCode = sp.stoppingCode().id();
+
+        return res;
+      }
 
     } // namespace {}
 
@@ -126,7 +119,7 @@ namespace mu2e {
     void EMFBoxMuonAnalyzer::beginJob() {
       art::ServiceHandle<art::TFileService> tfs;
       nt_ = tfs->make<TTree>( "sm", "Stopped muons ntuple");
-      nt_->Branch("particle", &sm_, "emx/D:emy/D:emz/D:time/D:endek/D:pdgId/I:endG4Status/i:stoppingCode/i");
+      nt_->Branch("particle", &sm_, IO::StoppedMuon::branchDescription());
       nt_->Branch("minfo", &minfo_, "weight/D:protonNumber/I:subRunNumber/I");
     }
 
@@ -162,7 +155,7 @@ namespace mu2e {
           if(eKine < cutEKineAtStop_) {
 
             // compute particle kinematics
-            sm_ = StoppedMuon(*extmon_, sp);
+            sm_ = makeStoppedMuon(*extmon_, sp);
 
             // Only record stops in the vicinity of ExtMonFNAL
             if(isAccepted(sm_)) {
