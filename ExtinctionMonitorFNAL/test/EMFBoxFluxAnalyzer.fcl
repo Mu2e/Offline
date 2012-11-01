@@ -32,7 +32,7 @@ physics: {
 
             cutMinTime : 120.
             numNeighbors : 5
-            minSourceGroupStatistics : 0
+            minSourceGroupStatistics : 10
         }
 
 
