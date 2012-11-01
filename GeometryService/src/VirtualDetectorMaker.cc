@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.12 2012/11/01 23:33:54 gandr Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.13 2012/11/01 23:37:03 gandr Exp $
 // $Author: gandr $
 //
 
@@ -216,7 +216,7 @@ namespace mu2e {
 
       }
 
-      if(geom->hasElement<ExtMonFNALBuilding>() && c.getBool("extMonFNAL.channel.vd.enabled", false)) {
+      if(geom->hasElement<ExtMonFNALBuilding>() && c.getBool("extMonFNAL.filter.vd.enabled", false)) {
         CLHEP::Hep3Vector vzero;
 
         // This detector will be placed on the face of beam dump
