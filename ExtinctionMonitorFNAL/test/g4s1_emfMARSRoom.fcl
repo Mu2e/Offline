@@ -1,4 +1,4 @@
-#include "ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1_rand1.fcl"
+#include "ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1.fcl"
 #include "ExtinctionMonitorFNAL/test/extMonFNALDefsCommon.fcl"
 
 source : {
