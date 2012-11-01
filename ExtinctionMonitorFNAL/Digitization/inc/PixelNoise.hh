@@ -1,4 +1,5 @@
 // Add random noise hits with the specified probability.
+// Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
 // Andrei Gaponenko, 2012
 
@@ -12,6 +13,9 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 namespace mu2e {
+
+  class ExtMonFNALConditions;
+
   namespace ExtMonFNAL {
 
     class ExtMon;
@@ -21,9 +25,8 @@ namespace mu2e {
 
       PixelNoise(art::RandomNumberGenerator::base_engine_t& rng,
                  const ExtMon **em,
-                 double noisePerPixelPerBC,
-                 int clockMin,
-                 int clockMax);
+                 const ExtMonFNALConditions **cond,
+                 double noisePerPixelPerBC);
 
       // Adds noise hits to the collection.  Noise hits can be
       // identified by the lack of associated truth.  No need to have a
@@ -34,9 +37,8 @@ namespace mu2e {
       CLHEP::RandPoissonQ poisson_;
       CLHEP::RandFlat flat_;
       const ExtMon **extmon_;
+      const ExtMonFNALConditions **cond_;
       double noisePerPixelPerBC_;
-      int clockMin_;
-      int clockMax_;
     };
 
   } // namespace ExtMonFNAL

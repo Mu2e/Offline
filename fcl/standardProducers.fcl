@@ -102,8 +102,6 @@ pixelDigitization : {
     totCalib : 6
 
     pixelNoisePerBC : 1.e-10
-    noiseClockMin : -2 // about -50 ns
-    noiseClockMax : 65 // 1694 ns == 68 clock ticks
 
     // Arbitrary, but must be sane
     numClustersPerHit : 10

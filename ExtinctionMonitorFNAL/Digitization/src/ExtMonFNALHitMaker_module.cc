@@ -1,8 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
+// Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.6 2012/11/01 23:37:55 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.7 2012/11/01 23:39:30 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:37:55 $
+// $Date: 2012/11/01 23:39:30 $
 //
 // Original author Andrei Gaponenko
 //
@@ -104,11 +105,9 @@ namespace mu2e {
         , cond_(0)
 
         , noise_(eng_,
-                 &extMon_,/*ugly workaroud  for Geometry not available at module ctr*/
-                 pset.get<double>("pixelNoisePerBC"),
-                 pset.get<int>("noiseClockMin"),
-                 pset.get<int>("noiseClockMax"))
-
+                 &extMon_,/*Geometry not available at module ctr, store the address of the ptr */
+                 &cond_, /*similar for Conditions*/
+                 pset.get<double>("pixelNoisePerBC"))
       {
         produces<ExtMonFNALRawHitCollection>();
         produces<ExtMonFNALHitTruthAssn>();
@@ -180,6 +179,7 @@ namespace mu2e {
                         const ExtMonFNALPixelId& pix,
                         PixelChargeHistory& ch);
 
+      // FIXME: correct for time of flight here
       int timeStamp(double time) const {
         return (time - cond_->t0())/cond_->clockTick();
       }
@@ -211,6 +211,11 @@ namespace mu2e {
                <<"  electronHolePairsPerEnergy = "<<siProps_.electronHolePairsPerEnergy()
                <<", electronDriftMobility = "<<siProps_.electronDriftMobility()
                <<", electronDiffusionConstant = "<<siProps_.electronDiffusionConstant()
+               <<std::endl;
+
+      std::cout<<"ExtMonFNALHitMaker:"
+               <<"  numClockTicksPerDebuncherPeriod = "<<cond->numClockTicksPerDebuncherPeriod()
+               <<", clockTick = "<<cond->clockTick()
                <<std::endl;
     }
 
@@ -281,8 +286,11 @@ namespace mu2e {
         const double clusterCharge = meanClusterCharge +
           gaussian_.shoot() * std::sqrt(siProps_.fanoFactor() * meanClusterCharge);
 
-        if(clusterCharge > 0) {
+        if(clusterCharge > 0) { // FIXME: should we allow negative fluctuations?
+
           // Record the contributions
+
+          // FIXME: Can add a SimParticle-specific offset to time to apply proton pulse shape here.
 
           // While current flow starts at the ionization time, most of the pulse comes
           // from the pixel vicinity.  Roughly account for this by adding driftTime.

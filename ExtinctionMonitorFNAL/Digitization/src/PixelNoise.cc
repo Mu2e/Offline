@@ -20,6 +20,7 @@
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "ConditionsService/inc/ExtMonFNALConditions.hh"
 
 //#define AGDEBUG(stuff) do { std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<", func "<<__func__<<": "<<stuff<<std::endl; } while(0)
 #define AGDEBUG(stuff)
@@ -64,24 +65,14 @@ namespace mu2e {
     //================================================================
     PixelNoise::PixelNoise(art::RandomNumberGenerator::base_engine_t& rng,
                            const ExtMon **em,
-                           double noisePerPixelPerBC,
-                           int clockMin,
-                           int clockMax)
+                           const ExtMonFNALConditions **cond,
+                           double noisePerPixelPerBC)
       : poisson_(rng)
       , flat_(rng)
       , extmon_(em)
+      , cond_(cond)
       , noisePerPixelPerBC_(noisePerPixelPerBC)
-      , clockMin_(clockMin)
-      , clockMax_(clockMax)
-    {
-
-      AGDEBUG("clockMin = "<<clockMin_<<", clockMax = "<<clockMax_<<", noise = "<<noisePerPixelPerBC_);
-
-      if(clockMax_ < clockMin_) {
-        throw cet::exception("CONFIG")<<" PixelNoise: clockMin < clockMax is not allowed\n";
-      }
-    }
-
+    {}
 
     //================================================================
     void PixelNoise::add(ExtMonFNALRawHitCollection *hits) {
@@ -89,10 +80,7 @@ namespace mu2e {
                                       (**extmon_).sensor(),
                                       (**extmon_).chip());
 
-      AGDEBUG("Input hits size = "<<hits->size());
-      AGDEBUG("clockMin = "<<clockMin_<<", clockMax = "<<clockMax_<<", noise = "<<noisePerPixelPerBC_<<", input hits size = "<<hits->size());
-
-      const int numBCs = 1 + clockMax_ - clockMin_;
+      const int numBCs = (**cond_).numClockTicksPerDebuncherPeriod();
 
       const double meanNoise = conv.totalNumberOfPixels() * numBCs * noisePerPixelPerBC_;
 
