@@ -145,42 +145,6 @@ bool extMonFNAL.collimator2.channel.visible = true;
 bool extMonFNAL.collimator2.channel.solid = false;
 
 //================================================================
-// Detector location in room: the center is on the continuation of
-// collimator2 center line.  Need to specify just one additional parameter.
-// We use the distance along the collimator2 axis between the
-// wall (inside the room surface) and reference point of the detector.
-double extMonFNAL.detectorDistanceToWall = 1000;
-
-// Details of the detector.  All of these vectors should be
-// of the same size: one entry per detector plane.
-// The coordinates are relative to the detector box volume.
-
-vector<double> extMonFNAL.sensor_zoffset = {-300., -280., -50., +0, +220, +300.};
-vector<double> extMonFNAL.sensor_xoffset = {0., 0., 0., 0., 0., 0.};
-vector<double> extMonFNAL.sensor_yoffset = {0., 0., 0., 0., 0., 0. };
-
-vector<double> extMonFNAL.sensor_halfdx =  { 20., 20., 20., 20., 20., 20.};
-vector<double> extMonFNAL.sensor_halfdy =  { 20., 20., 20., 20., 20., 20.};
-vector<double> extMonFNAL.sensor_halfdz =  { 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
-vector<double> extMonFNAL.readout_halfdz = { 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
-
-// These are detector VDs (not filter ones)
-//
-// Notes:
-//
-//    - We want to be able to look at hits in an area larger than the
-//      exact sensor size, so VD transverse dimensions are additional
-//      parameters.
-//
-//    - Because GeometryService objects are supposed to contain only
-//      "physical" parameters and VDs are virtual G4-only objects,
-//      these sizes are not a part of the ExtMonFNAL object.
-//
-bool   extMonFNAL.vd.enabled = true;
-double extMonFNAL.vd.halfdx = 100; // transverse size
-double extMonFNAL.vd.halfdy = 100; // transverse size
-
-//----------------------------------------------------------------
 string         extMonFNAL.room.materialName  = "G4_AIR";
 string         extMonFNAL.room.wall.materialName  = "ShieldingConcrete";
 
