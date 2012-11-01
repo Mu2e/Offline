@@ -61,11 +61,13 @@ namespace mu2e {
 
   //================================================================
   PixelNoise::PixelNoise(art::RandomNumberGenerator::base_engine_t& rng,
+                         const ExtMonFNAL::ExtMon **em,
                          double noisePerPixelPerBC,
                          int clockMin,
                          int clockMax)
     : poisson_(rng)
     , flat_(rng)
+    , extmon_(em)
     , noisePerPixelPerBC_(noisePerPixelPerBC)
     , clockMin_(clockMin)
     , clockMax_(clockMax)
@@ -81,10 +83,9 @@ namespace mu2e {
 
   //================================================================
   void PixelNoise::add(ExtMonFNALRawHitCollection *hits) {
-    GeomHandle<ExtMonFNAL::ExtMon> extmon;
-    ExtMonFNALPixelIdConverter conv(extmon->up().nplanes() + extmon->dn().nplanes(),
-                                    extmon->sensor(),
-                                    extmon->chip());
+    ExtMonFNALPixelIdConverter conv((**extmon_).nplanes(),
+                                    (**extmon_).sensor(),
+                                    (**extmon_).chip());
 
     AGDEBUG("Input hits size = "<<hits->size());
     AGDEBUG("clockMin = "<<clockMin_<<", clockMax = "<<clockMax_<<", noise = "<<noisePerPixelPerBC_<<", input hits size = "<<hits->size());

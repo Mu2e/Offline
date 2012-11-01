@@ -1,8 +1,8 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.3 2012/11/01 23:31:19 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.4 2012/11/01 23:37:47 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:31:19 $
+// $Date: 2012/11/01 23:37:47 $
 //
 // Original author Andrei Gaponenko
 //
@@ -87,6 +87,8 @@ namespace mu2e {
     explicit ExtMonFNALHitMaker(fhicl::ParameterSet const& pset)
       : inputModuleLabel_(pset.get<std::string>("inputModuleLabel"))
       , inputInstanceName_(pset.get<std::string>("inputInstanceName"))
+      , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
+      , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
       , nclusters_(pset.get<unsigned>("numClustersPerHit"))
       , maxToT_(pset.get<unsigned>("maxToT"))
       , discriminatorThreshold_(pset.get<double>("discriminatorThreshold"))
@@ -97,13 +99,15 @@ namespace mu2e {
 
       , gaussian_(eng_)
 
+      , extMon_(0)
+      , cond_(0)
+
       , noise_(eng_,
+               &extMon_,/*ugly workaroud  for Geometry not available at module ctr*/
                pset.get<double>("pixelNoisePerBC"),
                pset.get<int>("noiseClockMin"),
                pset.get<int>("noiseClockMax"))
 
-      , extMon_(0)
-      , cond_(0)
     {
       produces<ExtMonFNALRawHitCollection>();
       produces<ExtMonFNALHitTruthAssn>();
@@ -120,6 +124,8 @@ namespace mu2e {
   private:
     std::string inputModuleLabel_;
     std::string inputInstanceName_;
+    std::string geomModuleLabel_;
+    std::string geomInstanceName_;
 
     // The number of charge clusters per one simhit
     unsigned nclusters_;
@@ -134,15 +140,15 @@ namespace mu2e {
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandGaussQ gaussian_;
 
-    SiliconProperties siProps_;
-
-    PixelNoise noise_;
-
     // Non-owning pointers to the geometry and conditions objects. The
     // current Mu2e infrastructure does not allow the use of a Handle
     // as a class member.
     const ExtMonFNAL::ExtMon *extMon_;
     const ExtMonFNALConditions *cond_;
+
+    SiliconProperties siProps_;
+
+    PixelNoise noise_;
 
     void collectIonization(PixelChargeCollection *pixcharges,
                            const ExtMonFNALSimHitCollection& simhits);
@@ -181,13 +187,20 @@ namespace mu2e {
 
   //================================================================
   void ExtMonFNALHitMaker::beginRun(art::Run& run) {
-    GeomHandle<ExtMonFNAL::ExtMon> emf;
-    extMon_ = &*emf;
+    if(!geomModuleLabel_.empty()) {
+      art::Handle<ExtMonFNAL::ExtMon> emf;
+      run.getByLabel(geomModuleLabel_, geomInstanceName_, emf);
+      extMon_ = &*emf;
+    }
+    else {
+      GeomHandle<ExtMonFNAL::ExtMon> emf;
+      extMon_ = &*emf;
+    }
 
     ConditionsHandle<ExtMonFNALConditions> cond("ignored");
     cond_ = &*cond;
 
-    const double sensorThickness = 2*emf->sensor().halfSize()[2];
+    const double sensorThickness = 2*extMon_->sensor().halfSize()[2];
 
     const double electricField = std::abs(cond->biasVoltage())/sensorThickness;
 

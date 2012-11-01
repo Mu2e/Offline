@@ -12,11 +12,13 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 namespace mu2e {
+  namespace ExtMonFNAL { class ExtMon; }
 
   class PixelNoise {
   public:
 
     PixelNoise(art::RandomNumberGenerator::base_engine_t& rng,
+               const ExtMonFNAL::ExtMon **em,/*ugly workaroud  for Geometry not available at module ctr*/
                double noisePerPixelPerBC,
                int clockMin,
                int clockMax);
@@ -29,6 +31,7 @@ namespace mu2e {
   private:
     CLHEP::RandPoissonQ poisson_;
     CLHEP::RandFlat flat_;
+    const ExtMonFNAL::ExtMon **extmon_;
     double noisePerPixelPerBC_;
     int clockMin_;
     int clockMax_;
