@@ -1,8 +1,8 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.2 2012/08/28 05:05:52 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.3 2012/11/01 23:31:19 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/28 05:05:52 $
+// $Date: 2012/11/01 23:31:19 $
 //
 // Original author Andrei Gaponenko
 //
@@ -260,8 +260,8 @@ namespace mu2e {
       const double diffusionSigma = std::sqrt(2.*siProps_.electronDiffusionConstant() * driftTime);
 
       // Readout positions
-      const double x_ro = pos.x() + diffusionSigma * gaussian_.shoot();
-      const double y_ro = pos.y() + diffusionSigma * gaussian_.shoot();
+      const double x_ro = pos.x() + diffusionSigma * gaussian_.fire();
+      const double y_ro = pos.y() + diffusionSigma * gaussian_.fire();
 
       // Charge fluctuations
       const double clusterCharge = meanClusterCharge +
