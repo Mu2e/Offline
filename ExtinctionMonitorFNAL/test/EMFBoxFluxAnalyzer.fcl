@@ -30,7 +30,9 @@ physics: {
             marsInfoModuleLabel : "SimParticleMARSAssnsMaker"
             geomModuleLabel  : "geoms1"
 
-            cutMinTime : 120.
+            cutMinTime : 120 // ns
+            cutLengthScale : 1500 //mm
+
             numNeighbors : 5
             minSourceGroupStatistics : 10
         }

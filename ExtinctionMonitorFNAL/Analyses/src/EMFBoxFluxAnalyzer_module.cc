@@ -1,6 +1,9 @@
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.8 2012/11/01 23:41:17 gandr Exp $
+// Read in a set of particles hitting ExtMonFNAL VD box (from g4s1 room jobs)
+// compute randomization parameters, and write out as an ntuple.
+//
+// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.9 2012/11/01 23:41:26 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:41:17 $
+// $Date: 2012/11/01 23:41:26 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -51,6 +54,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "ConditionsService/inc/MassCache.hh"
 
 #include "ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
 #include "ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
@@ -111,6 +115,17 @@ namespace mu2e {
         return os<<"Particle(posExtMon="<<part.posExtMon<<", momMu2e="<<part.momMu2e<<")";
       }
 
+      // a quick hack to add transient-only TOF
+      struct TransientParticle : public InputParticle {
+        double beta;
+        double dtbeta;
+        TransientParticle(const InputParticle& p, double b, double cutMinTime)
+          : InputParticle(p)
+          , beta(b)
+          , dtbeta(beta * (p.time - cutMinTime))
+        {}
+      };
+
       //================================================================
       using IO::ParticleRandomization;
       typedef std::vector<ParticleRandomization> ParticleRandomizations;
@@ -159,54 +174,74 @@ namespace mu2e {
       class HistInputs {
         TH1* histInputTimesEarly_;
         TH1* histInputTimesBunch_;
+        TH1* histInputBeta_;
+        TH1* histInputLogBeta_;
+        TH1* histInputBetadt_;
+        void init(const std::string& dirname);
       public:
+        HistInputs(const std::string& dirname);
         HistInputs(VirtualDetectorId st, ParticleType pt);
-        void fill(const InputParticle& particle);
+        void fill(const TransientParticle& particle);
       };
+
+      HistInputs::HistInputs(const std::string& dirname) {
+        init(dirname);
+      }
 
       HistInputs::HistInputs(VirtualDetectorId st, ParticleType pt)
         : histInputTimesEarly_(), histInputTimesBunch_()
+        , histInputBeta_(), histInputLogBeta_()
+        , histInputBetadt_()
       {
         art::ServiceHandle<art::TFileService> tfs;
         art::TFileDirectory tftop = tfs->mkdir("inputs");
 
         std::ostringstream os;
         os<<st.name()<<"_pt"<<pt;
-        art::TFileDirectory tfdir = tftop.mkdir(os.str());
-
-        histInputTimesEarly_ = tfdir.make<TH1D>("hitTimesEarly", "Input hit time", 250, 0., 250.);
-        histInputTimesBunch_ = tfdir.make<TH1D>("hitTimesBunch", "Input hit time MOD deBuncherPeriod", 170, 0., deBuncherPeriod);
+        init(os.str());
       }
 
-      void HistInputs::fill(const InputParticle& particle) {
+      void HistInputs::init(const std::string& subdir) {
+        art::ServiceHandle<art::TFileService> tfs;
+        art::TFileDirectory tftop = tfs->mkdir("inputs");
+        art::TFileDirectory tfdir = tftop.mkdir(subdir);
+
+        histInputTimesEarly_ = tfdir.make<TH1D>("hitTimesEarly", "Input hit time", 500, 0., 500.);
+        histInputTimesBunch_ = tfdir.make<TH1D>("hitTimesBunch", "Input hit time MOD deBuncherPeriod", 170, 0., deBuncherPeriod);
+
+        histInputBeta_ = tfdir.make<TH1D>("hitBeta", "Particle v/c", 500, 0., 1.);
+        histInputLogBeta_ = tfdir.make<TH1D>("hitLogBeta", "Particle log10(v/c)", 600, -12., 0.);
+        histInputBetadt_ = tfdir.make<TH1D>("hitBetadt", "beta*(t-tcut)", 1000, -500., 500.);
+      }
+
+      void HistInputs::fill(const TransientParticle& particle) {
         histInputTimesEarly_->Fill(particle.time);
         histInputTimesBunch_->Fill(fmod(particle.time, deBuncherPeriod));
+
+        histInputBeta_->Fill(particle.beta);
+        histInputLogBeta_->Fill(log10(particle.beta));
+
+        histInputBetadt_->Fill(particle.dtbeta);
       }
 
       //----------------------------------------------------------------
       class HistInputsCollection {
+        HistInputs total_;
         std::vector<std::vector<HistInputs> > hists_;
-        TH1 *histTotalInputTimesEarly_;
-        TH1 *histTotalInputTimesBunch_;
       public:
         HistInputsCollection();
-        void fill(const InputParticle& particle) {
-          histTotalInputTimesEarly_->Fill(particle.time);
-          histTotalInputTimesBunch_->Fill(fmod(particle.time, deBuncherPeriod));
+        void fill(const TransientParticle& particle) {
+          total_.fill(particle);
           hists_.at(sourceNumber(particle.vd)).at(particle.origParticleType).fill(particle);
         }
       };
 
       HistInputsCollection::HistInputsCollection()
-        : hists_(std::vector<std::vector<HistInputs> >(NUM_SOURCES))
-        , histTotalInputTimesEarly_()
-        , histTotalInputTimesBunch_()
+        : total_("total")
+        , hists_(std::vector<std::vector<HistInputs> >(NUM_SOURCES))
       {
         art::ServiceHandle<art::TFileService> tfs;
         art::TFileDirectory tftop = tfs->mkdir("inputs");
-
-        histTotalInputTimesEarly_ = tftop.make<TH1D>("hitTotalTimesEarly", "Input hit time", 250, 0., 250.);
-        histTotalInputTimesBunch_ = tftop.make<TH1D>("hitTotalTimesBunch", "Input hit time MOD deBuncherPeriod", 170, 0., deBuncherPeriod);
 
         for(unsigned st=0; st<NUM_SOURCES; ++st) {
           for(unsigned pt=0; pt<NUM_PARTICLE_TYPES; ++pt) {
@@ -248,8 +283,11 @@ namespace mu2e {
       std::string geomInstanceName_;
 
       const ExtMon *extmon_;
+      MassCache mc_;
 
       double   cutMinTime_;
+      double   cutLengthScale_;
+
       unsigned numNeighbors_;
       unsigned minSourceGroupStatistics_;
 
@@ -262,7 +300,8 @@ namespace mu2e {
         return p - &particles_[0];
       }
 
-      bool isAccepted(const InputParticle& particle);
+      double particleBeta(const InputParticle& particle);
+      bool isAccepted(const TransientParticle& particle);
 
       // inputs arranged by [VirtualDetectorId][ParticleType][particleIndex]
       typedef std::vector<const InputParticle*> RandomizationGroup;
@@ -308,6 +347,8 @@ namespace mu2e {
       , extmon_()
 
       , cutMinTime_(pset.get<double>("cutMinTime"))
+      , cutLengthScale_(pset.get<double>("cutLengthScale"))
+
       , numNeighbors_(pset.get<unsigned>("numNeighbors"))
       , minSourceGroupStatistics_(pset.get<unsigned>("minSourceGroupStatistics"))
 
@@ -322,6 +363,8 @@ namespace mu2e {
         throw cet::exception("BADCONFIG")
           <<"Error: numNeighbors="<<numNeighbors_<<", should be > 1";
       }
+
+      std::cout<<"cutLengthScale/c = "<<(cutLengthScale_ / CLHEP::c_light)<<" ns, cutMinTime = "<<cutMinTime_<<std::endl;
     }
 
     //================================================================
@@ -571,8 +614,21 @@ namespace mu2e {
     }
 
     //================================================================
-    bool EMFBoxFluxAnalyzer::isAccepted(const InputParticle& particle) {
-      if(cutMinTime_ < particle.time) {
+    double EMFBoxFluxAnalyzer::particleBeta(const InputParticle& particle) {
+      double beta = 1;
+      const double mass = mc_.mass(particle.pdgId);
+      if(mass > 0.) {
+        const double pm2 = particle.momMu2e.mag2()/std::pow(mass, 2);
+        beta = sqrt(pm2/(1.+pm2));
+      }
+      return beta;
+    }
+
+    //================================================================
+    bool EMFBoxFluxAnalyzer::isAccepted(const TransientParticle& particle) {
+
+      //  beta*(t - tcut) + L/c > 0:
+      if(particle.dtbeta + cutLengthScale_/CLHEP::c_light > 0) {
 
         // Don't need to record particles exiting the box.
         // Check the momentum direction
@@ -635,7 +691,8 @@ namespace mu2e {
 
               const MARSInfo info = mFinder.at(0).ref();
 
-              InputParticle particle(*extmon_, vid, hit, info);
+              InputParticle inparticle(*extmon_, vid, hit, info);
+              TransientParticle particle(inparticle, particleBeta(inparticle), cutMinTime_);
               histInputs_.fill(particle);
               if(isAccepted(particle)) {
                 particles_.push_back(particle);
