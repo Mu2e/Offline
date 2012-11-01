@@ -26,6 +26,25 @@ namespace mu2e {
       };
 
       //================================================================
+      struct EMFRoomHit {
+        double dumpx;
+        double dumpy;
+        double dumpz;
+        double mu2epx;
+        double mu2epy;
+        double mu2epz;
+        double time;
+        int pdgId;
+        int srcType;
+
+        EMFRoomHit() : dumpx(), dumpy(), dumpz(), mu2epx(), mu2epy(), mu2epz(), time(), pdgId(), srcType() {}
+
+        static const char *branchDescription() {
+          return "dumpx/D:dumpy/D:dumpz/D:mu2epx/D:mu2epy/D:mu2epz/D:time/D:pdgId/I:srcType/I";
+        }
+      };
+
+      //================================================================
       struct ParticleRandomization {
 
         double sigmax;
