@@ -164,6 +164,19 @@ EMFPatRecFromTrackletsTruthMaking : {
     clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
 }
 
+EMFTrackClusterArbiter: {
+    module_type: EMFTrackClusterArbiter
+    tracksModuleLabel  : "EMFPatRecFromTracklets"
+    clustersModuleLabel  : "pixelRecoClusterization"
+    cutMaxSharedClustersOnTrack : 0
+}
+
+EMFTrackClusterArbiterTruthMaking: {
+    module_type : PatRecTruthMaker
+    patRecModuleLabel : "EMFTrackClusterArbiter"
+    clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
+}
+
 # Save state of random numbers at the start of each event
 randomsaver:
 {

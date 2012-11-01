@@ -4,6 +4,20 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
+//================================================================
+PatRecAnalysis: {
+    module_type : EMFDetMCHistPatRec
+    clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
+
+    cutParticleMinClusters : 6
+    cutHitXmax : 15 // mm
+    cutHitYmax : 15 // mm
+
+    cutMinCommonClusters : 6
+}
+
+//================================================================
+
 source : { module_type : RootInput }
 
 services : {
@@ -23,6 +37,8 @@ physics : {
         pixelRecoClusterTruthMaking : @local::pixelRecoClusterTruthMaking
         EMFPatRecFromTracklets : @local::EMFPatRecFromTracklets
         EMFPatRecFromTrackletsTruthMaking : @local::EMFPatRecFromTrackletsTruthMaking
+        EMFTrackClusterArbiter: @local::EMFTrackClusterArbiter
+        EMFTrackClusterArbiterTruthMaking: @local::EMFTrackClusterArbiterTruthMaking
     }
 
     analyzers: {
@@ -34,26 +50,23 @@ physics : {
             module_type: EMFDetHistPatRec
             patRecModuleLabel  : "EMFPatRecFromTracklets"
         }
-        EMFPatRecFromTrackletsAnalysis : {
-            module_type : EMFDetMCHistPatRec
-            patRecModuleLabel : "EMFPatRecFromTracklets"
-            trkTruthModuleLabel : "EMFPatRecFromTrackletsTruthMaking"
-            clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
-
-            cutParticleMinClusters : 6
-            cutHitXmax : 15 // mm
-            cutHitYmax : 15 // mm
-
-            cutMinCommonClusters : 6
+        emfPatArb: {
+            module_type: EMFDetHistPatRec
+            patRecModuleLabel  : "EMFTrackClusterArbiter"
         }
+        emfPatRecAnalysis: @local::PatRecAnalysis
+        emfPatArbAnalysis: @local::PatRecAnalysis
     }
 
     makers : [ pixelRawClusterization
                , pixelRecoClusterization, pixelRecoClusterTruthMaking
                , EMFPatRecFromTracklets, EMFPatRecFromTrackletsTruthMaking
+               , EMFTrackClusterArbiter, EMFTrackClusterArbiterTruthMaking
              ]
 
-    diagnostic: [ emfRecoClusters, emfPatRec, EMFPatRecFromTrackletsAnalysis ]
+    diagnostic: [ emfRecoClusters, emfPatRec, emfPatArb
+                  , emfPatRecAnalysis, emfPatArbAnalysis
+                ]
 
     out : [FullOutput]
 
@@ -62,12 +75,12 @@ physics : {
     //end_paths : [diagnostic, out]
 }
 
-outputs: {
-    FullOutput : {
-        module_type : RootOutput
-        fileName    : "extMonFNALSingleParticleReconstruction.root"
-  }
-}
+outputs: { FullOutput : { module_type : RootOutput } }
+
+physics.analyzers.emfPatRecAnalysis.patRecModuleLabel : "EMFPatRecFromTracklets"
+physics.analyzers.emfPatRecAnalysis.trkTruthModuleLabel : "EMFPatRecFromTrackletsTruthMaking"
+physics.analyzers.emfPatArbAnalysis.patRecModuleLabel : "EMFTrackClusterArbiter"
+physics.analyzers.emfPatArbAnalysis.trkTruthModuleLabel : "EMFTrackClusterArbiterTruthMaking"
 
 // somewhat reduce the amount of "volatile" printouts
 services.message.destinations.log.noTimeStamps : true
