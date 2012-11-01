@@ -41,6 +41,13 @@ namespace mu2e {
     }
 
     //================================================================
+    CLHEP::Hep3Vector ExtMon::sensorCenterInExtMon(unsigned iplane) const {
+      return (iplane < dn_.nplanes())?
+        dnStackToExtMon_position(dn_.sensorOffsetInStack(iplane)) :
+        up_.sensorOffsetInStack(iplane - dn_.nplanes());
+    }
+
+    //================================================================
     CLHEP::Hep3Vector ExtMon::pixelPositionInSensorStack(const ExtMonFNALPixelId& id) const {
       using CLHEP::Hep3Vector;
 

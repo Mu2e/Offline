@@ -85,6 +85,8 @@ namespace mu2e {
       // Redundant convenience accessors
       unsigned int nplanes() const { return dn_.nplanes() + up_.nplanes(); }
 
+      CLHEP::Hep3Vector sensorCenterInExtMon(unsigned iplane) const;
+
       bool sameSensorStack(unsigned plane1, unsigned plane2) {
         bool dn1 = (plane1 < dn_.nplanes());
         bool dn2 = (plane2 < dn_.nplanes());
