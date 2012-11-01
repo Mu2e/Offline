@@ -49,6 +49,27 @@ namespace mu2e {
         }
       };
 
+      //================================================================
+      struct StoppedMuon {
+        double emx;
+        double emy;
+        double emz;
+        double time;
+        double endek;
+
+        int pdgId;
+
+        unsigned endG4Status;
+        unsigned stoppingCode;
+
+        StoppedMuon() : emx(), emy(), emz(), time(), endek(), pdgId(), endG4Status(), stoppingCode() {}
+
+        static const char *branchDescription() {
+          return "emx/D:emy/D:emz/D:time/D:endek/D:pdgId/I:endG4Status/i:stoppingCode/i";
+        }
+      };
+
+
     } // IO
   } // ExtMonFNAL
 } // mu2e

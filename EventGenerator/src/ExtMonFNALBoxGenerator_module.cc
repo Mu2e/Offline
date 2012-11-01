@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.1 2012/11/01 23:35:24 gandr Exp $
+// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.2 2012/11/01 23:35:28 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:35:24 $
+// $Date: 2012/11/01 23:35:28 $
 //
 // Create particle flux in the ExtMonFNAL box by randomizing
 // kinematic of input particles read from a file.
@@ -79,6 +79,15 @@ namespace mu2e {
       typedef std::vector<InputHit> InputHits;
 
       //================================================================
+      struct InputStop {
+        IO::StoppedMuon muon;
+        MARSInfo info;
+        InputStop(const IO::StoppedMuon& m, const MARSInfo& i) : muon(m), info(i) {}
+      };
+
+      typedef std::vector<InputStop> InputStops;
+
+      //================================================================
     } // namespace {}
 
     class ExtMonFNALBoxGenerator : public art::EDProducer {
@@ -97,6 +106,9 @@ namespace mu2e {
       unsigned microbunchVDHitsChunkSize_; // computed from inputs size and the two numbers above
       unsigned nextVDHit_; // index
 
+      unsigned microbunchStoppedMuonsChunkSize_;
+      unsigned nextStoppedMuon_;
+
       double bunchTimeHalfWidth_;
       double cutTimeMin_;
       double cutTimeMax_;
@@ -112,13 +124,26 @@ namespace mu2e {
       MassCache mc_;
 
       InputHits vdhits_;
+      InputStops mustops_;
 
       void loadInputFiles();
+
       void addVDHits(TFile* infile);
       void addStoppedMuons(TFile* infile);
 
+      void generateFromVDHits(const art::Event& event,
+                              GenParticleCollection *output,
+                              MARSInfoCollection *info,
+                              GenParticleMARSAssns *assns);
       GenParticle createOutputParticle(double randomizedTime, const InputHit& hit);
       bool inRange(int vdId, const CLHEP::Hep3Vector& posExtMon);
+
+      void generateFromStoppedMuons(const art::Event& event,
+                                    GenParticleCollection *output,
+                                    MARSInfoCollection *info,
+                                    GenParticleMARSAssns *assns);
+
+      GenParticle createOutputMuon(double muonTime, const InputStop& ms);
 
     public:
       explicit ExtMonFNALBoxGenerator(const fhicl::ParameterSet& pset);
@@ -137,6 +162,8 @@ namespace mu2e {
       , weightMax_(pset.get<double>("weightMax"))
       , microbunchVDHitsChunkSize_()
       , nextVDHit_()
+      , microbunchStoppedMuonsChunkSize_()
+      , nextStoppedMuon_()
 
       , bunchTimeHalfWidth_(pset.get<double>("bunchTimeHalfWidth"))
       , cutTimeMin_(pset.get<double>("cutTimeMin"))
@@ -187,14 +214,23 @@ namespace mu2e {
       loadInputFiles();
 
       microbunchVDHitsChunkSize_ = vdhits_.size() * microbunchScaling_ * weightMax_;
+      microbunchStoppedMuonsChunkSize_ = mustops_.size() * microbunchScaling_ * weightMax_;
 
       if(verbosityLevel_ > 0) {
-        std::cout<<"ExtMonFNALBoxGenerator: input hits size = "<<vdhits_.size()<<std::endl;
-        std::cout<<"ExtMonFNALBoxGenerator: microbunchVDHitsChunkSize = "<<microbunchVDHitsChunkSize_<<std::endl;
+        std::cout<<"ExtMonFNALBoxGenerator inputs: num hits = "<<vdhits_.size()
+                 <<", num stopped muons = "<<mustops_.size()
+                 <<std::endl;
+
+        std::cout<<"ExtMonFNALBoxGenerator: microbunchVDHitsChunkSize = "<<microbunchVDHitsChunkSize_
+                 <<", microbunchStoppedMuonsChunkSize = "<<microbunchStoppedMuonsChunkSize_
+                 <<std::endl;
       }
 
       if(microbunchVDHitsChunkSize_ < 1) {
         throw cet::exception("BADCONFIG")<<"ERROR: Computed microbunchVDHitsChunkSize < 1! Increase weightMax?\n";
+      }
+      if(microbunchStoppedMuonsChunkSize_ < 1) {
+        throw cet::exception("BADCONFIG")<<"ERROR: Computed microbunchStoppedMuonsChunkSize_ < 1! Increase weightMax?\n";
       }
 
     }
@@ -212,7 +248,7 @@ namespace mu2e {
 
         TFile *infile = tfs->make<TFile>(resolvedFileName.c_str(), "READ");
         addVDHits(infile);
-        //addStoppedMuons(infile);
+        addStoppedMuons(infile);
 
       } // for(files)
     } // loadInputFiles()
@@ -230,7 +266,7 @@ namespace mu2e {
 
       const Long64_t nTreeEntries = nt->GetEntries();
       if(verbosityLevel_>0) {
-        std::cout<<"ExtMonFNALBoxGenerator: nTreeEntries = "<<nTreeEntries<<std::endl;
+        std::cout<<"ExtMonFNALBoxGenerator: nTreeEntries for VD hits = "<<nTreeEntries<<std::endl;
       }
 
       IO::EMFBoxHit particle;
@@ -262,11 +298,94 @@ namespace mu2e {
     }
 
     //================================================================
+    void ExtMonFNALBoxGenerator::addStoppedMuons(TFile* infile) {
+      const std::string treeName("StoppedMuons/sm");
+
+      TTree *nt = dynamic_cast<TTree*>(infile->Get(treeName.c_str()));
+      if(!nt) {
+        throw cet::exception("BADINPUT")<<"Could not get tree \""<<treeName
+                                        <<"\" from file \""<<infile->GetName()
+                                        <<"\"\n";
+      }
+
+      const Long64_t nTreeEntries = nt->GetEntries();
+      if(verbosityLevel_>0) {
+        std::cout<<"ExtMonFNALBoxGenerator: nTreeEntries for stopped muons = "<<nTreeEntries<<std::endl;
+      }
+
+      IO::StoppedMuon mu;
+      TBranch *bmu = nt->GetBranch("particle");
+      bmu->SetAddress(&mu);
+
+      MARSInfo minfo;
+      TBranch *binf = nt->GetBranch("minfo");
+      binf->SetAddress(&minfo);
+
+      for(Long64_t i=0; i<nTreeEntries; ++i) {
+        bmu->GetEntry(i);
+        binf->GetEntry(i);
+        mustops_.push_back(InputStop(mu, minfo));
+      }
+    }
+
+    //================================================================
     void ExtMonFNALBoxGenerator::produce(art::Event& event) {
 
       std::auto_ptr<GenParticleCollection> output(new GenParticleCollection);
       std::auto_ptr<MARSInfoCollection> info(new MARSInfoCollection());
       std::auto_ptr<GenParticleMARSAssns> assns(new GenParticleMARSAssns());
+
+      generateFromVDHits(event, output.get(), info.get(), assns.get());
+      generateFromStoppedMuons(event, output.get(), info.get(), assns.get());
+
+      event.put(output);
+      event.put(info);
+      event.put(assns);
+    }
+
+    //================================================================
+    void ExtMonFNALBoxGenerator::generateFromStoppedMuons(const art::Event& event,
+                                                          GenParticleCollection *output,
+                                                          MARSInfoCollection *info,
+                                                          GenParticleMARSAssns *assns) {
+
+      const art::ProductID particlesPID = getProductID<GenParticleCollection>(event);
+      const art::EDProductGetter *particlesGetter = event.productGetter(particlesPID);
+
+      const art::ProductID marsPID = getProductID<MARSInfoCollection>(event);
+      const art::EDProductGetter *marsGetter = event.productGetter(marsPID);
+
+      for(unsigned count=0; count < microbunchStoppedMuonsChunkSize_; ++count) {
+        const InputStop& ms = mustops_[nextStoppedMuon_];
+
+        const double randomizedStopTime =
+          fmod(ms.muon.time, deBuncherPeriod_)
+          + (2*randFlat_.fire() - 1.)*bunchTimeHalfWidth_;
+
+        const double generatedMuonTime = std::max(randomizedStopTime, cutTimeMin_);
+
+        static const double tauMuMinus = 864.; //ns, Al is conservative for Fe
+        static const double tauMuPlus = 2197.; //ns, free muon
+
+        const double tau = (ms.muon.pdgId > 0) ? tauMuMinus : tauMuPlus;
+        const double weight = exp((generatedMuonTime - cutTimeMin_)/tau) * ms.info.weight();
+
+        if(randFlat_.fire() * weightMax_ <= weight) {
+          output->push_back(createOutputMuon(generatedMuonTime, ms));
+          info->push_back(ms.info);
+          assns->addSingle(art::Ptr<GenParticle>(particlesPID, output->size()-1, particlesGetter),
+                           art::Ptr<MARSInfo>(marsPID, info->size()-1, marsGetter));
+        }
+
+        ++nextStoppedMuon_ %= mustops_.size();
+      }
+    }
+
+    //================================================================
+    void ExtMonFNALBoxGenerator::generateFromVDHits(const art::Event& event,
+                                                    GenParticleCollection *output,
+                                                    MARSInfoCollection *info,
+                                                    GenParticleMARSAssns *assns) {
 
       const art::ProductID particlesPID = getProductID<GenParticleCollection>(event);
       const art::EDProductGetter *particlesGetter = event.productGetter(particlesPID);
@@ -286,7 +405,7 @@ namespace mu2e {
 
           if((cutTimeMin_ < randomizedTime) && (randomizedTime < cutTimeMax_)) {
             output->push_back(createOutputParticle(randomizedTime, hit));
-            info->push_back(vdhits_[nextVDHit_].info);
+            info->push_back(hit.info);
             assns->addSingle(art::Ptr<GenParticle>(particlesPID, output->size()-1, particlesGetter),
                              art::Ptr<MARSInfo>(marsPID, info->size()-1, marsGetter));
           }
@@ -294,10 +413,6 @@ namespace mu2e {
         }
         ++nextVDHit_ %= vdhits_.size();
       }
-
-      event.put(output);
-      event.put(info);
-      event.put(assns);
     }
 
     //================================================================
@@ -377,6 +492,23 @@ namespace mu2e {
       assert(false);
       return false;
     } // inRange()
+
+    //================================================================
+    GenParticle ExtMonFNALBoxGenerator::createOutputMuon(double muonTime, const InputStop& ms) {
+      using CLHEP::Hep3Vector;
+
+      Hep3Vector posExtMon(ms.muon.emx, ms.muon.emy, ms.muon.emz);
+      const Hep3Vector posMu2e(extmon_->extMonToMu2e_position(posExtMon));
+
+      static const double muonMass = mc_.mass(PDGCode::type(13));
+      const CLHEP::HepLorentzVector momMu2e(Hep3Vector(), muonMass);
+
+      return GenParticle(PDGCode::type(ms.muon.pdgId),
+                         GenId::MARS,
+                         posMu2e,
+                         momMu2e,
+                         muonTime);
+    }
 
     //================================================================
 
