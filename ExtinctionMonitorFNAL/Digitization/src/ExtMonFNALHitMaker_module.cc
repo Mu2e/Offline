@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.13 2012/11/01 23:44:48 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.14 2012/11/01 23:44:52 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:44:48 $
+// $Date: 2012/11/01 23:44:52 $
 //
 // Original author Andrei Gaponenko
 //
@@ -108,6 +108,12 @@ namespace mu2e {
             <<"ExtMonFNALHitMaker: the numClustersPerHit FHICL parameter should be greater than 1\n";
         }
 
+        std::cout<<"ExtMonFNALHitMaker: discriminatorThreshold = "<<discriminatorThreshold_
+                 <<", qCalib = "<<qCalib_<<", totCalib = "<<totCalib_
+                 <<std::endl;
+
+        std::cout<<"ExtMonFNALHitMaker: t0 = "<<t0_<<", nclusters = "<<nclusters_<<std::endl;
+
         fhicl::ParameterSet cutClockPset;
         cutClockEnabled_ = pset.get_if_present("cutClock", cutClockPset);
         if(cutClockEnabled_) {
@@ -117,6 +123,10 @@ namespace mu2e {
                    <<cutClockMin_<<", "<<cutClockMax_
                    <<"] will not be written out."<<std::endl;
         }
+        else {
+          std::cout<<"ExtMonFNALHitMaker: cutClock disabled"<<std::endl;
+        }
+
       }
 
       virtual void produce(art::Event& evt);
