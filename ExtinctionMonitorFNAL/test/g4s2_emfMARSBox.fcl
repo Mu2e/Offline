@@ -23,9 +23,9 @@ physics.producers.generate : {
     // But too much memory is needed to hold all the inputs
     // (grid jobs grew >4GB), so ExtinctionMonitorFNAL/test/20121004-grid-config/
     // contains config files to process pieces of the s1 dataset.
-
-    //test: inputFiles : ["data/sum200files.root"]
-    //test: microbunchScaling : 0.0243
+    //
+    // inputFiles : ["data/test/20121018-a-analyzers/t000-n004800/histEMFBoxFluxAnalyzer.root"]
+    // microbunchScaling : 0.0243
 
     weightMax : 2
 
@@ -39,33 +39,32 @@ physics.producers.generate : {
     geomModuleLabel : ""
 }
 
-physics.producers.pixelDigitization : @local::pixelDigitization
-
-physics.filters.pixHitFilter : {
-    module_type: EMFPixelHitsFilter
-    rawHitsModuleLabel: pixelDigitization
-    simParticlesModuleLabel : g4run
-    cutMinHits: 1
-}
-
-physics.producers.SimParticleMARSAssnsMaker : {
-    module_type: SimParticleMARSAssnsMaker
-    simParticlesModuleLabel: pixHitFilter
-    marsInfoModuleLabel : generate
-}
-
-physics.analyzers.emfprinttruth: {
-    module_type: EMFDetPrintRawHitTruth
-    hitsModuleLabel  : "pixelDigitization"
-    truthModuleLabel : "pixHitFilter"
-}
-physics.print : [emfprinttruth]
+//tmp:physics.filters.pixHitFilter : {
+//tmp:    module_type: EMFPixelHitsFilter
+//tmp:    rawHitsModuleLabel: pixelDigitization
+//tmp:    simParticlesModuleLabel : g4run
+//tmp:    cutMinHits: 1
+//tmp:}
+//tmp:
+//tmp:physics.producers.SimParticleMARSAssnsMaker : {
+//tmp:    module_type: SimParticleMARSAssnsMaker
+//tmp:    simParticlesModuleLabel: pixHitFilter
+//tmp:    marsInfoModuleLabel : generate
+//tmp:}
+//tmp:
+//tmp:physics.analyzers.emfprinttruth: {
+//tmp:    module_type: EMFDetPrintRawHitTruth
+//tmp:    hitsModuleLabel  : "pixelDigitization"
+//tmp:    truthModuleLabel : "pixHitFilter"
+//tmp:}
+//tmp:physics.print : [emfprinttruth]
 
 physics.producers.g4run.generatorModuleLabel : "generate"
 physics.producers.geoms2: { module_type : GeometryRecorder }
 physics.gm : [geoms2]
 
-physics.trigFilter : [ generate, g4run, pixelDigitization, pixHitFilter, SimParticleMARSAssnsMaker ]
+//tmp:physics.trigFilter : [ generate, g4run, pixelDigitization, pixHitFilter, SimParticleMARSAssnsMaker ]
+physics.trigFilter : [ generate, g4run ]
 
 //----------------------------------------------------------------
 process_name : g4s2EMFMARSBox
@@ -81,7 +80,11 @@ outputs.outFiltered : { module_type : RootOutput
                         fileName: "vdg4s2EMFMARSBoxFiltered.root"
                       }
 
-physics.marsOutputs : [ outFiltered ]
+outputs.outFull : { module_type : RootOutput
+                    fileName: "vdg4s2EMFMARSBoxAll.root"
+                  }
+
+physics.marsOutputs : [ outFull ]
 //physics.end_paths : [marsOutputs, print]
 physics.end_paths : [marsOutputs]
 
