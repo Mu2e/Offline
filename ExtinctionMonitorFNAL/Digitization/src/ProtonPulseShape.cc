@@ -16,6 +16,7 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Utilities/InputTag.h"
+#include "art/Framework/Core/FindOne.h"
 
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/MARSInfo.hh"
@@ -37,22 +38,14 @@ namespace mu2e {
       , flat_(rng)
       , pulseHalfWidth_(pset.get<double>("pulseHalfWidth"))
       , messagePrinted_(false)
-    {
-      if(!marsMode_) {
-        throw cet::exception("NOTIMPLEMENTED")
-          <<"ExtMonFNAL pixel digitization: ProtonPulseShape marsMode=false not imlemented\n";
-      }
-    }
+    {}
 
     //================================================================
     void ProtonPulseShape::apply(PixelChargeCollection *inout, const art::Event& event) {
       tmm_.clear();
+      tgm_.clear();
 
       SimParticleParentGetter pg(event);
-
-      art::Handle<SimParticleCollection> simh;
-      event.getByLabel(marsInfoModuleLabel_, marsInfoInstanceName_, simh);
-      art::FindOne<MARSInfo> mif(simh, event, art::InputTag(marsInfoModuleLabel_, marsInfoInstanceName_));
 
       if(!messagePrinted_) {
         messagePrinted_ = true;
@@ -61,22 +54,21 @@ namespace mu2e {
       }
 
       for(PixelChargeCollection::iterator i=inout->begin(); i!=inout->end(); ++i) {
-        apply(&i->second, pg, mif);
+        apply(&i->second, pg, event);
       }
     }
 
     //================================================================
     void ProtonPulseShape::apply(PixelChargeHistory *inout,
                                  const SimParticleParentGetter& pg,
-                                 const art::FindOne<MARSInfo>& mif
-                                 ) {
+                                 const art::Event& event) {
 
       PixelChargeHistory& in(*inout);
       PixelChargeHistory out;
       while(!in.empty()) {
         PixelTimedChargeDeposit dep = in.top();
 
-        dep.time += getTimeShiftForPrimary(dep.particle, pg, mif);
+        dep.time += getTimeShiftForPrimary(dep.particle, pg, event);
 
         out.push(dep);
         in.pop();
@@ -88,48 +80,72 @@ namespace mu2e {
     //================================================================
     double ProtonPulseShape::getTimeShiftForPrimary(const art::Ptr<SimParticle>& particle,
                                                     const SimParticleParentGetter& pg,
-                                                    const art::FindOne<MARSInfo>& mif
+                                                    const art::Event& event
                                                     ) {
       double dt=0;
 
-      PrimaryMARSId id= getPrimaryMARSId(particle, pg, mif);
+      art::Ptr<SimParticle> g4primary = getG4Primary(particle, pg);
+      if(marsMode_) {
+        ProtonPathMARSId id= getPrimaryMARSId(g4primary, event);
+        TimeMapMARS::const_iterator it = tmm_.find(id);
+        if(it == tmm_.end()) {
+          // new primary. generate its offset
+          dt = pulseHalfWidth_ * (2*flat_.fire() - 1);
+          tmm_.insert(std::make_pair(id, dt));
+        }
+        else {
+          dt = it->second;
+        }
+      } //----------------
+      else { // Not marsMode_
 
-      TimeMapMARS::const_iterator it = tmm_.find(id);
-      if(it == tmm_.end()) {
-        // new primary. generate its offset
-        dt = pulseHalfWidth_ * (2*flat_.fire() - 1);
-        tmm_.insert(std::make_pair(id, dt));
-        AGDEBUG("new primary: dt = "<<dt);
-      }
-      else {
-        dt = it->second;
-        AGDEBUG("existing primary: dt = "<<dt);
+        TimeMapG4::const_iterator it = tgm_.find(g4primary);
+        if(it == tgm_.end()) {
+          // new primary. generate its offset
+          dt = pulseHalfWidth_ * (2*flat_.fire() - 1);
+          tgm_.insert(std::make_pair(g4primary, dt));
+        }
+        else {
+          dt = it->second;
+        }
       }
 
       return dt;
     }
 
     //================================================================
-    ProtonPulseShape::PrimaryMARSId ProtonPulseShape::getPrimaryMARSId(const art::Ptr<SimParticle>& p,
-                                                                       const SimParticleParentGetter& pg,
-                                                                       const art::FindOne<MARSInfo>& mif
-                                                                       ) {
-
+    art::Ptr<SimParticle>
+    ProtonPulseShape::getG4Primary(const art::Ptr<SimParticle>& p, const SimParticleParentGetter& pg) {
       art::Ptr<SimParticle> current(p);
       art::Ptr<SimParticle> next(pg.parent(current));
-
-      AGDEBUG("primary sim="<<current->id()<<", pdgId="<<current->pdgId());
       while(next) {
         current = next;
         next = pg.parent(current);
       }
-      AGDEBUG("primary sim="<<current->id()<<", pdgId="<<current->pdgId());
+      return current;
+    }
 
-      MARSInfo info = mif.at(current.key()).ref();
+    //================================================================
+    ProtonPulseShape::ProtonPathMARSId
+    ProtonPulseShape::getPrimaryMARSId(const art::Ptr<SimParticle>& g4primary, const art::Event& event) {
 
-      return PrimaryMARSId(info.runNumber(), info.subRunNumber(), info.protonNumber());
+      std::vector<art::Ptr<SimParticle> > particles;
+      particles.push_back(g4primary);
+
+      AGDEBUG("here");
+      art::FindOne<MARSInfo> mif(particles, event, art::InputTag(marsInfoModuleLabel_, marsInfoInstanceName_));
+      AGDEBUG("here");
+      MARSInfo minfo = mif.at(0).ref();
+      AGDEBUG("here");
+
+      // FIXME: need to save g4s1info. But g4s2 jobs guarantee no
+      // partly correlated particles in one event, so ignoring
+      // g4s1info here should be OK.
+      IO::G4JobInfo g4s1info;
+
+      return ProtonPathMARSId(minfo, g4s1info);
     }
 
     //================================================================
   } // namespace ExtMonFNAL
-} // namespace mu2e
+} // namespace mu2

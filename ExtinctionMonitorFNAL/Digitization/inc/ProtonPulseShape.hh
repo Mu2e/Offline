@@ -12,9 +12,10 @@
 #include "CLHEP/Random/RandFlat.h"
 
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include "art/Framework/Core/FindOne.h"
 
 #include "ExtinctionMonitorFNAL/Digitization/inc/PixelCharge.hh"
+#include "MCDataProducts/inc/MARSInfo.hh"
+#include "ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
 
 namespace fhicl { class ParameterSet; }
 namespace art   { class Event; }
@@ -29,21 +30,9 @@ namespace mu2e {
 
     class ProtonPulseShape {
 
-      struct PrimaryMARSId {
-        int run;
-        int subrun;
-        int proton;
-        bool operator<(const PrimaryMARSId& b) const {
-          return
-            (run < b.run) || ((run==b.run) &&
-                              ((subrun < b.subrun) || ((subrun == b.subrun)
-                                                       &&(proton < b.proton))));
-        }
-
-        PrimaryMARSId(int r, int s, int p) : run(r), subrun(s), proton(p) {}
-      };
-
-      typedef std::map<PrimaryMARSId, double> TimeMapMARS;
+      bool marsMode_;
+      std::string marsInfoModuleLabel_;
+      std::string marsInfoInstanceName_;
 
       // For pure G4 jobs hit times should be randomized based on the
       // "most primary" SimParticle (corresponding to a GenParticle)
@@ -51,27 +40,41 @@ namespace mu2e {
       // different GenParticles may correspond to the same primary
       // proton, so we need to go back to that proton.
 
-      bool marsMode_;
-      std::string marsInfoModuleLabel_;
-      std::string marsInfoInstanceName_;
+      struct ProtonPathMARSId {
+        MARSInfo minfo;
+        IO::G4JobInfo g4s1info;
+        ProtonPathMARSId(const MARSInfo& m, const IO::G4JobInfo& g) : minfo(m), g4s1info(g) {}
+      };
+
+      struct ProtonPathSort {
+        bool operator()(const ProtonPathMARSId& a, const ProtonPathMARSId& b) {
+          CmpProtonIdAndSimPath cm;
+          IO::CmpG4JobInfo cg;
+          return cm(a.minfo,b.minfo) || (!cm(b.minfo, a.minfo) &&
+                                         cg(a.g4s1info, b.g4s1info));
+        }
+      };
+
+      typedef std::map<ProtonPathMARSId, double, ProtonPathSort> TimeMapMARS;
+      TimeMapMARS tmm_;
+
+      typedef std::map<art::Ptr<SimParticle>, double> TimeMapG4;
+      TimeMapG4 tgm_;
 
       CLHEP::RandFlat flat_;
       double pulseHalfWidth_;
       bool messagePrinted_;
 
-      TimeMapMARS tmm_;
-
-      void apply(PixelChargeHistory *inout,
-                 const SimParticleParentGetter& pg,
-                 const art::FindOne<MARSInfo>& mif);
+      void apply(PixelChargeHistory *inout, const SimParticleParentGetter& pg, const art::Event& event);
 
       double getTimeShiftForPrimary(const art::Ptr<SimParticle>& particle,
                                     const SimParticleParentGetter& pg,
-                                    const art::FindOne<MARSInfo>& mif);
+                                    const art::Event& event);
 
-      PrimaryMARSId getPrimaryMARSId(const art::Ptr<SimParticle>& particle,
-                                     const SimParticleParentGetter& pg,
-                                     const art::FindOne<MARSInfo>& mif);
+      art::Ptr<SimParticle> getG4Primary(const art::Ptr<SimParticle>& particle,
+                                         const SimParticleParentGetter& pg);
+
+      ProtonPathMARSId getPrimaryMARSId(const art::Ptr<SimParticle>& particle, const art::Event& event);
 
     public:
 
