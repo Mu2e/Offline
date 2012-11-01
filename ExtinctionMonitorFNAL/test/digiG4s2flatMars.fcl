@@ -16,7 +16,7 @@ physics.producers.pixelDigitization.applyProtonPulseShape : true
 physics.producers.pixelDigitization.protonPulse : {
     marsMode : true
     marsInfoModuleLabel : "SimParticleMARSAssnsMaker"
-    pulseHalfWidth : 100
+    pulseHalfWidth : 75
 }
 
 physics.analyzers.emfSimHits.inputModuleLabel : "pixHitFilter"
