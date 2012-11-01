@@ -1,9 +1,9 @@
 // Fast search for tracks in a narrow range of angles around ExtMonFNAL axis.
 // The algorithm requires that track has hits on all pixel planes.
 //
-// $Id: EMFPatRecSequential_module.cc,v 1.1 2012/09/19 03:57:10 gandr Exp $
+// $Id: EMFPatRecSequential_module.cc,v 1.2 2012/11/01 23:36:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/09/19 03:57:10 $
+// $Date: 2012/11/01 23:36:27 $
 //
 // Original author Andrei Gaponenko
 //
@@ -239,35 +239,38 @@ namespace mu2e {
 
     //================================================================
     void EMFPatRecSequential::beginRun(art::Run& run) {
-      if(!geomModuleLabel_.empty()) {
-        if(verbosityLevel_ > 0) {
-          std::cout<<"EMFPatRecSequential: using recorded geometry: "
-                   <<"("<<geomModuleLabel_<<", "<<geomInstanceName_<<")"
-                   <<std::endl;
+      // This is a workaround for geometry not being available at beginJob()
+      if(!extmon_) {
+        if(!geomModuleLabel_.empty()) {
+          if(verbosityLevel_ > 0) {
+            std::cout<<"EMFPatRecSequential: using recorded geometry: "
+                     <<"("<<geomModuleLabel_<<", "<<geomInstanceName_<<")"
+                     <<std::endl;
+          }
+          art::Handle<ExtMonFNAL::ExtMon> emf;
+          run.getByLabel(geomModuleLabel_, geomInstanceName_, emf);
+          extmon_ = &*emf;
+          extrapolator_ = TrackExtrapolator(extmon_);
         }
-        art::Handle<ExtMonFNAL::ExtMon> emf;
-        run.getByLabel(geomModuleLabel_, geomInstanceName_, emf);
-        extmon_ = &*emf;
-        extrapolator_ = TrackExtrapolator(extmon_);
-      }
-      else {
-        if(verbosityLevel_ > 0) {
-          std::cout<<"EMFPatRecSequential: using GeometryService"<<std::endl;
+        else {
+          if(verbosityLevel_ > 0) {
+            std::cout<<"EMFPatRecSequential: using GeometryService"<<std::endl;
+          }
+          GeomHandle<ExtMonFNAL::ExtMon> emf;
+          extmon_ = &*emf;
+          extrapolator_ = TrackExtrapolator(extmon_);
         }
-        GeomHandle<ExtMonFNAL::ExtMon> emf;
-        extmon_ = &*emf;
-        extrapolator_ = TrackExtrapolator(extmon_);
+
+        //----------------
+        const unsigned nplanes = extmon_->up().nplanes() + extmon_->dn().nplanes();
+        art::ServiceHandle<art::TFileService> tfs;
+        hSeedMultiplicity_ = tfs->make<TH2D>("seedMultiplicity", "Plane vs track seed multiplicity at the plane",
+                                             200, -0.5, 999.5, nplanes, -0.5, nplanes-0.5);
+
+        hSeedMultiplicity_->SetOption("colz");
+        hSeedMultiplicity_->GetXaxis()->SetTitle("track seed multiplicity");
+        hSeedMultiplicity_->GetYaxis()->SetTitle("plane number");
       }
-
-      //----------------
-      const unsigned nplanes = extmon_->up().nplanes() + extmon_->dn().nplanes();
-      art::ServiceHandle<art::TFileService> tfs;
-      hSeedMultiplicity_ = tfs->make<TH2D>("seedMultiplicity", "Plane vs track seed multiplicity at the plane",
-                                           200, -0.5, 999.5, nplanes, -0.5, nplanes-0.5);
-
-      hSeedMultiplicity_->SetOption("colz");
-      hSeedMultiplicity_->GetXaxis()->SetTitle("track seed multiplicity");
-      hSeedMultiplicity_->GetYaxis()->SetTitle("plane number");
     }
 
     //================================================================

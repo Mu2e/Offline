@@ -127,7 +127,8 @@ namespace mu2e {
         case SourceSouthWest : rot.rotateY(-M_PI/2.); break;
         case SourceNorthEast : rot.rotateY(+M_PI/2.); break;
         default:
-          throw cet::exception("BADINPUTS")<<" computeSrcDirection: unknown srcPlane "<<srcPlane<<"\n";
+          // throw cet::exception("BADINPUTS")<<" computeSrcDirection: unknown srcPlane "<<srcPlane<<"\n"
+          ;
         }
 
         const CLHEP::Hep3Vector localMom(rot * momDump);

@@ -135,39 +135,42 @@ namespace mu2e {
 
     //================================================================
     void EMFDetHistPatRec::beginRun(const art::Run& run) {
-      if(!geomModuleLabel_.empty()) {
-        art::Handle<ExtMonFNAL::ExtMon> emf;
-        run.getByLabel(geomModuleLabel_, geomInstanceName_, emf);
-        extmon_ = &*emf;
+      // This is a workaround for geometry not being available at beginJob()
+      if(!extmon_) {
+        if(!geomModuleLabel_.empty()) {
+          art::Handle<ExtMonFNAL::ExtMon> emf;
+          run.getByLabel(geomModuleLabel_, geomInstanceName_, emf);
+          extmon_ = &*emf;
+        }
+        else {
+          GeomHandle<ExtMonFNAL::ExtMon> emf;
+          extmon_ = &*emf;
+        }
+
+        extrapolator_ = TrackExtrapolator(extmon_);
+
+        //----------------------------------------------------------------
+        art::ServiceHandle<art::TFileService> tfs;
+
+        hMultiplicitySignal_ = tfs->make<TH2D>("multiplicitySignal", "Num PatRec tracks vs num signal SimParticles",
+                                               200, -0.5, 199.5, 200, -0.5, 199.5);
+
+        hMultiplicitySignal_->SetOption("colz");
+        hMultiplicitySignal_->GetXaxis()->SetTitle("num signal particles");
+        hMultiplicitySignal_->GetYaxis()->SetTitle("num PatRec tracks");
+
+
+        hCommonClusters_ = tfs->make<TH2D>("commonClusters", "Track&SimParticle vs SimParticle clusters for best track",
+                                           10, -0.5, 9.5, 10, -0.5, 9.5);
+
+        hCommonClusters_->SetOption("colz");
+        hCommonClusters_->GetXaxis()->SetTitle("particle clusters");
+        hCommonClusters_->GetYaxis()->SetTitle("common clusters");
+
+        effPhysics_.book(*extmon_, "effPhysics");
+        effSoftware_.book(*extmon_, "effSoftware");
+        fakes_.book(*extmon_, "fakes");
       }
-      else {
-        GeomHandle<ExtMonFNAL::ExtMon> emf;
-        extmon_ = &*emf;
-      }
-
-      extrapolator_ = TrackExtrapolator(extmon_);
-
-      //----------------------------------------------------------------
-      art::ServiceHandle<art::TFileService> tfs;
-
-      hMultiplicitySignal_ = tfs->make<TH2D>("multiplicitySignal", "Num PatRec tracks vs num signal SimParticles",
-                                             200, -0.5, 199.5, 200, -0.5, 199.5);
-
-      hMultiplicitySignal_->SetOption("colz");
-      hMultiplicitySignal_->GetXaxis()->SetTitle("num signal particles");
-      hMultiplicitySignal_->GetYaxis()->SetTitle("num PatRec tracks");
-
-
-      hCommonClusters_ = tfs->make<TH2D>("commonClusters", "Track&SimParticle vs SimParticle clusters for best track",
-                                         10, -0.5, 9.5, 10, -0.5, 9.5);
-
-      hCommonClusters_->SetOption("colz");
-      hCommonClusters_->GetXaxis()->SetTitle("particle clusters");
-      hCommonClusters_->GetYaxis()->SetTitle("common clusters");
-
-      effPhysics_.book(*extmon_, "effPhysics");
-      effSoftware_.book(*extmon_, "effSoftware");
-      fakes_.book(*extmon_, "fakes");
     }
 
     //================================================================

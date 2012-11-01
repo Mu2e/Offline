@@ -26,6 +26,8 @@ namespace mu2e {
     std::string _inModuleLabel;
     std::string _inInstanceName;
 
+    // This is a workaround for geometry not being available at beginJob()
+    bool booked_;
     EMFSimHitHistograms ch_;
 
   public:
@@ -38,12 +40,17 @@ namespace mu2e {
   EMFDetHistSimHits::EMFDetHistSimHits(const fhicl::ParameterSet& pset)
     : _inModuleLabel(pset.get<std::string>("inputModuleLabel"))
     , _inInstanceName(pset.get<std::string>("inputInstanceName"))
+    , booked_(false)
   {}
 
   //================================================================
   void EMFDetHistSimHits::beginRun(const art::Run&) {
-    GeomHandle<ExtMonFNAL::ExtMon> extmon;
-    ch_.book(*extmon);
+    // This is a workaround for geometry not being available at beginJob()
+    if(!booked_) {
+      booked_ = true;
+      GeomHandle<ExtMonFNAL::ExtMon> extmon;
+      ch_.book(*extmon);
+    }
   }
 
   //================================================================

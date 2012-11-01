@@ -29,6 +29,8 @@ namespace mu2e {
     std::string geomModuleLabel_;
     std::string geomInstanceName_;
 
+    // This is a workaround for geometry not being available at beginJob()
+    bool booked_;
     EMFRawHitHistograms hh_;
 
   public:
@@ -43,21 +45,25 @@ namespace mu2e {
     , inputInstanceName_(pset.get<std::string>("inputInstanceName", ""))
     , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
     , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
+    , booked_(false)
     , hh_(pset)
   {}
 
   //================================================================
   void EMFDetHistRawHits::beginRun(const art::Run& run) {
-    if(!geomModuleLabel_.empty()) {
-      art::Handle<ExtMonFNAL::ExtMon> extmon;
-      run.getByLabel(geomModuleLabel_, geomInstanceName_, extmon);
-      hh_.book(*extmon);
+    // This is a workaround for geometry not being available at beginJob()
+    if(!booked_) {
+      booked_ = true;
+      if(!geomModuleLabel_.empty()) {
+        art::Handle<ExtMonFNAL::ExtMon> extmon;
+        run.getByLabel(geomModuleLabel_, geomInstanceName_, extmon);
+        hh_.book(*extmon);
+      }
+      else {
+        GeomHandle<ExtMonFNAL::ExtMon> extmon;
+        hh_.book(*extmon);
+      }
     }
-    else {
-      GeomHandle<ExtMonFNAL::ExtMon> extmon;
-      hh_.book(*extmon);
-    }
-
   }
 
   //================================================================

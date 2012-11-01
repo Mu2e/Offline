@@ -6,9 +6,9 @@
 // momentum and extrapolated donwstream where the consistency with the
 // donwstream tracklet is checked.
 //
-// $Id: EMFPatRecFromTracklets_module.cc,v 1.2 2012/09/19 03:58:29 gandr Exp $
+// $Id: EMFPatRecFromTracklets_module.cc,v 1.3 2012/11/01 23:36:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/09/19 03:58:29 $
+// $Date: 2012/11/01 23:36:27 $
 //
 // Original author Andrei Gaponenko
 //
@@ -212,67 +212,72 @@ namespace mu2e {
 
     //================================================================
     void EMFPatRecFromTracklets::beginRun(art::Run& run) {
-      if(!geomModuleLabel_.empty()) {
-        if(verbosityLevel_ > 0) {
-          std::cout<<"EMFPatRecFromTracklets: using recorded geometry: "
-                   <<"("<<geomModuleLabel_<<", "<<geomInstanceName_<<")"
-                   <<std::endl;
+      // This is a workaround for geometry not being available at beginJob()
+      if(!extmon_) {
+
+        if(!geomModuleLabel_.empty()) {
+          if(verbosityLevel_ > 0) {
+            std::cout<<"EMFPatRecFromTracklets: using recorded geometry: "
+                     <<"("<<geomModuleLabel_<<", "<<geomInstanceName_<<")"
+                     <<std::endl;
+          }
+          art::Handle<ExtMonFNAL::ExtMon> emf;
+          run.getByLabel(geomModuleLabel_, geomInstanceName_, emf);
+          extmon_ = &*emf;
+          extrapolator_ = TrackExtrapolator(extmon_);
         }
-        art::Handle<ExtMonFNAL::ExtMon> emf;
-        run.getByLabel(geomModuleLabel_, geomInstanceName_, emf);
-        extmon_ = &*emf;
-        extrapolator_ = TrackExtrapolator(extmon_);
-      }
-      else {
-        if(verbosityLevel_ > 0) {
-          std::cout<<"EMFPatRecFromTracklets: using GeometryService"<<std::endl;
+        else {
+          if(verbosityLevel_ > 0) {
+            std::cout<<"EMFPatRecFromTracklets: using GeometryService"<<std::endl;
+          }
+          GeomHandle<ExtMonFNAL::ExtMon> emf;
+          extmon_ = &*emf;
+          extrapolator_ = TrackExtrapolator(extmon_);
         }
-        GeomHandle<ExtMonFNAL::ExtMon> emf;
-        extmon_ = &*emf;
-        extrapolator_ = TrackExtrapolator(extmon_);
+
+        //----------------
+        art::ServiceHandle<art::TFileService> tfs;
+        hTrackletMultiplicity_ = tfs->make<TH2D>("trackletMultiplicity", "Tracklet multiplicity down- vs upstream",
+                                                 200, -0.5, 199.5, 200, -0.5, 199.5);
+        hTrackletMultiplicity_->SetOption("colz");
+
+        hTrackletMatchXY_ = tfs->make<TH2D>("trackletMatchXY", "Tracklet match (extrapolation - cluster) xy",
+                                            200, -5., 5., 200, -5., 5.);
+
+        hTrackletMatchXY_->SetOption("colz");
+
+        hTrackletMatchSlopeX_ = tfs->make<TH1D>("trackletMatchSlopeX", "Tracklet match dslopex", 200, -15.e-3, 15.e-3);
+
+        hClusterAddXY_.resize(extmon_->nplanes());
+        hClusterAddXXMax_.resize(extmon_->nplanes());
+        hClusterAddYYMax_.resize(extmon_->nplanes());
+        for(unsigned plane=0; plane < extmon_->nplanes(); ++plane) {
+          std::ostringstream xyname;
+          xyname<<"clusterAddXY"<<plane;
+          std::ostringstream xytitle;
+          xytitle<<"dy/dymax vs dx/dxmax for plane "<<plane;
+          hClusterAddXY_[plane] = tfs->make<TH2D>(xyname.str().c_str(), xytitle.str().c_str(), 200, -5., 5., 200, -5., 5.);
+          hClusterAddXY_[plane]->SetOption("colz");
+
+          std::ostringstream xxname;
+          xxname<<"clusterAddXXMax"<<plane;
+          std::ostringstream xxtitle;
+          xxtitle<<"dx vs dxmax for "<<plane;
+          hClusterAddXXMax_[plane] = tfs->make<TH2D>(xxname.str().c_str(), xxtitle.str().c_str(), 100, 0., 5., 200, -5., 5.);
+          hClusterAddXXMax_[plane]->SetOption("colz");
+
+          std::ostringstream yyname;
+          yyname<<"clusterAddYYMax"<<plane;
+          std::ostringstream yytitle;
+          yytitle<<"dy vs dymax for "<<plane;
+          hClusterAddYYMax_[plane] = tfs->make<TH2D>(yyname.str().c_str(), yytitle.str().c_str(), 100, 0., 5., 200, -5., 5.);
+          hClusterAddYYMax_[plane]->SetOption("colz");
+        }
+
+        hClockDiffTrackletSeedClusters_ = tfs->make<TH1D>("clockDiffTrackletSeedClusters", "Tracklet seed cluster time diff", 120, -30.5, 89.5);
+        hClockDiffClusterTracklet_ = tfs->make<TH1D>("clockDiffClusterTracklet", "Cluster - tracklet time clock", 120, -30.5, 89.5);
+
       }
-
-      //----------------
-      art::ServiceHandle<art::TFileService> tfs;
-      hTrackletMultiplicity_ = tfs->make<TH2D>("trackletMultiplicity", "Tracklet multiplicity down- vs upstream",
-                                               200, -0.5, 199.5, 200, -0.5, 199.5);
-      hTrackletMultiplicity_->SetOption("colz");
-
-      hTrackletMatchXY_ = tfs->make<TH2D>("trackletMatchXY", "Tracklet match (extrapolation - cluster) xy",
-                                          200, -5., 5., 200, -5., 5.);
-
-      hTrackletMatchXY_->SetOption("colz");
-
-      hTrackletMatchSlopeX_ = tfs->make<TH1D>("trackletMatchSlopeX", "Tracklet match dslopex", 200, -15.e-3, 15.e-3);
-
-      hClusterAddXY_.resize(extmon_->nplanes());
-      hClusterAddXXMax_.resize(extmon_->nplanes());
-      hClusterAddYYMax_.resize(extmon_->nplanes());
-      for(unsigned plane=0; plane < extmon_->nplanes(); ++plane) {
-        std::ostringstream xyname;
-        xyname<<"clusterAddXY"<<plane;
-        std::ostringstream xytitle;
-        xytitle<<"dy/dymax vs dx/dxmax for plane "<<plane;
-        hClusterAddXY_[plane] = tfs->make<TH2D>(xyname.str().c_str(), xytitle.str().c_str(), 200, -5., 5., 200, -5., 5.);
-        hClusterAddXY_[plane]->SetOption("colz");
-
-        std::ostringstream xxname;
-        xxname<<"clusterAddXXMax"<<plane;
-        std::ostringstream xxtitle;
-        xxtitle<<"dx vs dxmax for "<<plane;
-        hClusterAddXXMax_[plane] = tfs->make<TH2D>(xxname.str().c_str(), xxtitle.str().c_str(), 100, 0., 5., 200, -5., 5.);
-        hClusterAddXXMax_[plane]->SetOption("colz");
-
-        std::ostringstream yyname;
-        yyname<<"clusterAddYYMax"<<plane;
-        std::ostringstream yytitle;
-        yytitle<<"dy vs dymax for "<<plane;
-        hClusterAddYYMax_[plane] = tfs->make<TH2D>(yyname.str().c_str(), yytitle.str().c_str(), 100, 0., 5., 200, -5., 5.);
-        hClusterAddYYMax_[plane]->SetOption("colz");
-      }
-
-      hClockDiffTrackletSeedClusters_ = tfs->make<TH1D>("clockDiffTrackletSeedClusters", "Tracklet seed cluster time diff", 120, -30.5, 89.5);
-      hClockDiffClusterTracklet_ = tfs->make<TH1D>("clockDiffClusterTracklet", "Cluster - tracklet time clock", 120, -30.5, 89.5);
     }
 
     //================================================================

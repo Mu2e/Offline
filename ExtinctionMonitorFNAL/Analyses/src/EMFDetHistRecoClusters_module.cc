@@ -29,6 +29,8 @@ namespace mu2e {
     std::string geomModuleLabel_;
     std::string geomInstanceName_;
 
+    // This is a workaround for geometry not being available at beginJob()
+    bool booked_;
     EMFRecoClusterHistograms ch_;
 
   public:
@@ -43,18 +45,23 @@ namespace mu2e {
     , inInstanceName_(pset.get<std::string>("inputInstanceName", ""))
     , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
     , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
+    , booked_(false)
   {}
 
   //================================================================
   void EMFDetHistRecoClusters::beginRun(const art::Run& run) {
-    if(!geomModuleLabel_.empty()) {
-      art::Handle<ExtMonFNAL::ExtMon> emf;
-      run.getByLabel(geomModuleLabel_, geomInstanceName_, emf);
-      ch_.book(*emf);
-    }
-    else {
-      GeomHandle<ExtMonFNAL::ExtMon> emf;
-      ch_.book(*emf);
+    // This is a workaround for geometry not being available at beginJob()
+    if(!booked_) {
+      booked_ = true;
+      if(!geomModuleLabel_.empty()) {
+        art::Handle<ExtMonFNAL::ExtMon> emf;
+        run.getByLabel(geomModuleLabel_, geomInstanceName_, emf);
+        ch_.book(*emf);
+      }
+      else {
+        GeomHandle<ExtMonFNAL::ExtMon> emf;
+        ch_.book(*emf);
+      }
     }
   }
 
