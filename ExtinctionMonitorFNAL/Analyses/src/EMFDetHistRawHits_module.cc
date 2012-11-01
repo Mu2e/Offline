@@ -10,6 +10,7 @@
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
@@ -23,8 +24,10 @@ namespace mu2e {
 
   //================================================================
   class EMFDetHistRawHits : public art::EDAnalyzer {
-    std::string _inModuleLabel;
-    std::string _inInstanceName;
+    std::string inputModuleLabel_;
+    std::string inputInstanceName_;
+    std::string geomModuleLabel_;
+    std::string geomInstanceName_;
 
     EMFRawHitHistograms hh_;
 
@@ -36,20 +39,30 @@ namespace mu2e {
 
   //================================================================
   EMFDetHistRawHits::EMFDetHistRawHits(const fhicl::ParameterSet& pset)
-    : _inModuleLabel(pset.get<std::string>("inputModuleLabel"))
-    , _inInstanceName(pset.get<std::string>("inputInstanceName"))
+    : inputModuleLabel_(pset.get<std::string>("inputModuleLabel"))
+    , inputInstanceName_(pset.get<std::string>("inputInstanceName"))
+    , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
+    , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
   {}
 
   //================================================================
-  void EMFDetHistRawHits::beginRun(const art::Run&) {
-    GeomHandle<ExtMonFNAL::ExtMon> extmon;
-    hh_.book(*extmon);
+  void EMFDetHistRawHits::beginRun(const art::Run& run) {
+    if(!geomModuleLabel_.empty()) {
+      art::Handle<ExtMonFNAL::ExtMon> extmon;
+      run.getByLabel(geomModuleLabel_, geomInstanceName_, extmon);
+      hh_.book(*extmon);
+    }
+    else {
+      GeomHandle<ExtMonFNAL::ExtMon> extmon;
+      hh_.book(*extmon);
+    }
+
   }
 
   //================================================================
   void EMFDetHistRawHits::analyze(const art::Event& event) {
     art::Handle<ExtMonFNALRawHitCollection> ih;
-    event.getByLabel(_inModuleLabel, _inInstanceName, ih);
+    event.getByLabel(inputModuleLabel_, inputInstanceName_, ih);
     hh_.fill(*ih);
   }
 
