@@ -1,8 +1,8 @@
 // Precompute particle randomization from MARS inputs for g4s1 ExtMonFNALRoom jobs.
 //
-// $Id: EMFRoomFluxAnalyzer_module.cc,v 1.4 2012/11/01 23:40:36 gandr Exp $
+// $Id: EMFRoomFluxAnalyzer_module.cc,v 1.5 2012/11/01 23:40:42 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:40:36 $
+// $Date: 2012/11/01 23:40:42 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -192,19 +192,15 @@ namespace mu2e {
 
       , grouped_(NUM_SOURCES, std::vector<RandomizationGroup>(NUM_PARTICLE_TYPES))
     {
-      if(minSourceGroupStatistics_ < numNeighbors_) {
-        throw cet::exception("BADCONFIG")
-          <<"Error: minSourceGroupStatistics ("<<minSourceGroupStatistics_<<") < numNeighbors ("<<numNeighbors_<<")";
+      if(minSourceGroupStatistics_ < 1 + numNeighbors_) {
+        std::cout<<"WARNING: EMFRoomFluxAnalyzer: "
+                 <<"minSourceGroupStatistics ("<<minSourceGroupStatistics_
+                 <<") < 1 + numNeighbors (1 + "<<numNeighbors_<<")\n";
       }
 
-      if(numNeighbors_ < 2) {
+      if(numNeighbors_ < 1) {
         throw cet::exception("BADCONFIG")
-          <<"Error: numNeighbors="<<numNeighbors_<<", should be > 1";
-      }
-
-      if(minSourceGroupStatistics_ < numNeighbors_) {
-        throw cet::exception("BADCONFIG")
-          <<"Error: minSourceGroupStatistics ("<<minSourceGroupStatistics_<<") < numNeighbors ("<<numNeighbors_<<")";
+          <<"Error: numNeighbors="<<numNeighbors_<<", should be > 0";
       }
     }
 

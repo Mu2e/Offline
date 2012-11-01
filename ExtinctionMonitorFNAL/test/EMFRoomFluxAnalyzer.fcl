@@ -7,13 +7,14 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 #include "ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1.fcl"
+#include "ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1All.fcl"
 
 process_name: EMFRoomFluxAnalyzer
 
 source: {
     module_type: FromEMFMARSFileWeighted
-    fileNames: @local::mars3w1rand1
-    runNumber : 1 // corresponding to the randN set
+    fileNames: @local::mars3w1randAll
+    runNumber : 1 // starting with rand1 set. Run number is incremented when needed.
 }
 
 services: {
@@ -50,7 +51,7 @@ physics: {
             }
 
             numNeighbors : 5
-            minSourceGroupStatistics : 10
+            minSourceGroupStatistics : 2
         }
     }
 
