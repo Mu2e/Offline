@@ -45,7 +45,7 @@ namespace mu2e {
     void EMFPatRecFakeHistograms::book(const ExtMon& extmon, art::TFileDirectory& tfdir) {
 
       fracDups_ = tfdir.make<TEfficiency>("fracDups", "Fraction of duplicates vs multiplicity;signal multiplicity",
-                                                 40, 0.5, 200.5);
+                                          500, 0.5, 500.5);
 
       fracDups_->SetStatisticOption(TEfficiency::kFNormal);
 
@@ -55,7 +55,7 @@ namespace mu2e {
 //FIXME:      fracInteractions_->SetStatisticOption(TEfficiency::kFNormal);
 
       fracFakes_ = tfdir.make<TEfficiency>("fracFakes", "Fraction of fake tracks vs multiplicity;signal multiplicity",
-                                                 40, 0.5, 200.5);
+                                           500, 0.5, 500.5);
 
       fracFakes_->SetStatisticOption(TEfficiency::kFNormal);
 

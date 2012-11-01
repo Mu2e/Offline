@@ -40,7 +40,7 @@ namespace mu2e {
       hcommon_ = tfdir.make<TH1D>("ncommon", "Num common clusters for best match", 7, -0.5, 6.5);
 
       effMultiplicity_ = tfdir.make<TEfficiency>("effMultiplicity", "Eff vs multiplicity;signal multiplicity;#epsilon",
-                                                 40, 0.5, 200.5);
+                                                 500, 0.5, 500.5);
 
       effMultiplicity_->SetStatisticOption(TEfficiency::kFNormal);
 
