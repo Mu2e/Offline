@@ -205,7 +205,7 @@ namespace mu2e {
 
         const unsigned nj = currentLine_.protonNumber;
         particles->push_back(cnv_.marsToMu2eParticle(currentLine_));
-        info->push_back(MARSInfo(currentLine_.weight, currentLine_.protonNumber, currentSubRunNumber_));
+        info->push_back(MARSInfo(currentLine_.weight, currentLine_.protonNumber, currentSubRunNumber_, runNumber_));
         assns->addSingle(art::Ptr<GenParticle>(particlesPID, particles->size()-1, particlesGetter),
                          art::Ptr<MARSInfo>(infoPID, info->size()-1, infoGetter)
                          );
@@ -213,7 +213,7 @@ namespace mu2e {
         while(readMARSLine(currentFile_, currentLine_)) {
           if(currentLine_.protonNumber == nj) {
             particles->push_back(cnv_.marsToMu2eParticle(currentLine_));
-            info->push_back(MARSInfo(currentLine_.weight, currentLine_.protonNumber, currentSubRunNumber_));
+            info->push_back(MARSInfo(currentLine_.weight, currentLine_.protonNumber, currentSubRunNumber_, runNumber_));
             assns->addSingle(art::Ptr<GenParticle>(particlesPID, particles->size()-1, particlesGetter),
                              art::Ptr<MARSInfo>(infoPID, info->size()-1, infoGetter)
                              );

@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.3 2012/11/01 23:35:36 gandr Exp $
+// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.4 2012/11/01 23:39:49 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:35:36 $
+// $Date: 2012/11/01 23:39:49 $
 //
 // Create particle flux in the ExtMonFNAL room by randomizing
 // kinematic of input particles read from a file.
@@ -516,6 +516,7 @@ namespace mu2e {
         }
 
         const int marsSubRunNumber = 0;
+        const int marsRunNumber = 99;
 
         std::ifstream infile(resolvedFileName.c_str());
         MARSParticle mp;
@@ -537,7 +538,7 @@ namespace mu2e {
           const CLHEP::Hep3Vector posMu2e(cnv_.marsToMu2ePosition(mp.x, mp.y, mp.z));
           part.posDump = dump_->mu2eToBeamDump_position(posMu2e);
           part.time = cnv_.marsToMu2eTime(mp.tof);
-          part.info = MARSInfo(mp.weight, mp.protonNumber, marsSubRunNumber);
+          part.info = MARSInfo(mp.weight, mp.protonNumber, marsSubRunNumber, marsRunNumber);
           part.srcType = classifySource(part.posDump, posMu2e);
 
           if(part.info.protonNumber() != currentProtonNumber) {

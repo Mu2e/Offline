@@ -23,15 +23,19 @@ namespace mu2e {
     // same protons and are not statistically independent.
     int subRunNumber() const { return subRunNumber_; }
 
-    MARSInfo(double w, int nj, int sr) : weight_(w), protonNumber_(nj), subRunNumber_(sr) {}
+    // to distinguish rand1 from rand2 etc.
+    int runNumber() const { return runNumber_; }
+
+    MARSInfo(double w, int nj, int sr, int rn) : weight_(w), protonNumber_(nj), subRunNumber_(sr), runNumber_(rn) {}
 
     // defautl ctr required by ROOT persistency
-    MARSInfo() : weight_(), protonNumber_(), subRunNumber_() {}
+    MARSInfo() : weight_(), protonNumber_(), subRunNumber_(), runNumber_() {}
 
   private:
     double weight_;
     int protonNumber_;
     int subRunNumber_;
+    int runNumber_;
   };
 
   std::ostream& operator<<(std::ostream& os, const MARSInfo& mi);

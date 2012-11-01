@@ -278,7 +278,7 @@ namespace mu2e {
 
         const MARSInfo& info = marsInfoFinder.at(i).ref();
 
-        gpnt_.run = event.id().run();
+        gpnt_.run = info.runNumber();
         gpnt_.marsSubRun = info.subRunNumber();
         gpnt_.protonNumber =  info.protonNumber();
         gpnt_.particleIndex = i;

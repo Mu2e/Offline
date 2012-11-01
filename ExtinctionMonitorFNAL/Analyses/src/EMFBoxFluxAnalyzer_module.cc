@@ -1,6 +1,6 @@
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.3 2012/11/01 23:35:32 gandr Exp $
+// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.4 2012/11/01 23:39:49 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:35:32 $
+// $Date: 2012/11/01 23:39:49 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -736,7 +736,7 @@ namespace mu2e {
 
       TTree *nt = tfs->make<TTree>("vdhits", "VD hits and randomization parameters");
       nt->Branch("particle", &particle, IO::EMFBoxHit::branchDescription());
-      nt->Branch("minfo", &minfo, "weight/D:protonNumber/I:subRunNumber/I");
+      nt->Branch("minfo", &minfo, "weight/D:protonNumber/I:subRunNumber/I:runNumber/I");
       nt->Branch("randomization", &pr, IO::ParticleRandomization::branchDescription());
 
       for(unsigned i=0; i<particles_.size(); ++i) {

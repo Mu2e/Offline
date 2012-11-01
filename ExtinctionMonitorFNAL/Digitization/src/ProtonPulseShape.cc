@@ -127,7 +127,7 @@ namespace mu2e {
 
       MARSInfo info = mif.at(current.key()).ref();
 
-      return PrimaryMARSId(0, info.subRunNumber(), info.protonNumber());
+      return PrimaryMARSId(info.runNumber(), info.subRunNumber(), info.protonNumber());
     }
 
     //================================================================
