@@ -6,9 +6,9 @@
 // momentum and extrapolated donwstream where the consistency with the
 // donwstream tracklet is checked.
 //
-// $Id: EMFPatRecFromTracklets_module.cc,v 1.6 2012/11/01 23:38:45 gandr Exp $
+// $Id: EMFPatRecFromTracklets_module.cc,v 1.7 2012/11/01 23:39:22 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:38:45 $
+// $Date: 2012/11/01 23:39:22 $
 //
 // Original author Andrei Gaponenko
 //
@@ -448,11 +448,7 @@ namespace mu2e {
             Genfun::CumulativeChiSquare pf(quality.ndf());
             const double prob = 1. - pf(quality.chi2());
             if(cutMinTrackProb_ <= prob) { // Accept the track
-              tracks->push_back(ExtMonFNALTrkFit());
-              tracks->back().pars = trkpar;
-              tracks->back().clusters = clusters;
-              tracks->back().quality = quality;
-              tracks->back().residuals = residuals;
+              tracks->push_back(ExtMonFNALTrkFit(trkpar, quality, clusters, residuals));
             } // if(fit quality)
 
           } // if(inTime and slope match)

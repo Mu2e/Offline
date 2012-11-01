@@ -1,8 +1,8 @@
 // Associate truth to track finding output.
 //
-// $Id: PatRecTruthMaker_module.cc,v 1.2 2012/11/01 23:38:49 gandr Exp $
+// $Id: PatRecTruthMaker_module.cc,v 1.3 2012/11/01 23:39:22 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:38:49 $
+// $Date: 2012/11/01 23:39:22 $
 //
 // Original author Andrei Gaponenko
 //
@@ -96,7 +96,7 @@ namespace mu2e {
           outTruth->addSingle(cc.particles[iparticle],
                               art::Ptr<ExtMonFNALTrkFit>(htracks, itrack),
                               ExtMonFNALTrkMatchInfo(cc.nCommonClusters[iparticle],
-                                                     tracks[itrack].clusters.size(),
+                                                     tracks[itrack].clusters().size(),
                                                      nParticleClusters)
                               );
         }
@@ -111,7 +111,7 @@ namespace mu2e {
                                         const ExtMonFNALTrkFit& track)
     {
       art::FindManyP<SimParticle,ExtMonFNALRecoClusterTruthBits>
-        simParticleFinder(track.clusters,
+        simParticleFinder(track.clusters(),
                           event,
                           art::InputTag(clusterTruthModuleLabel_, clusterTruthInstanceName_));
 
@@ -119,14 +119,13 @@ namespace mu2e {
       typedef std::map<art::Ptr<SimParticle>, unsigned> TrackParticleMap;
       TrackParticleMap pm;
 
-      for(unsigned icluster = 0; icluster < track.clusters.size(); ++icluster) {
+      for(unsigned icluster = 0; icluster < track.clusters().size(); ++icluster) {
 
         const std::vector<art::Ptr<SimParticle> >& particles = simParticleFinder.at(icluster);
 
         for(unsigned ip=0; ip<particles.size(); ++ip) {
           pm[particles[ip]] += 1;
         }
-
 
       }
 

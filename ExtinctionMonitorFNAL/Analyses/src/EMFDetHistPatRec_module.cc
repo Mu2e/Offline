@@ -113,10 +113,10 @@ namespace mu2e {
 
       for(unsigned i=0; i<tracks.size(); ++i) {
 
-        hChi2_->Fill(tracks[i].quality.chi2());
+        hChi2_->Fill(tracks[i].quality().chi2());
 
-        Genfun::CumulativeChiSquare pf(tracks[i].quality.ndf());
-        const double prob = 1. - pf(tracks[i].quality.chi2());
+        Genfun::CumulativeChiSquare pf(tracks[i].quality().ndf());
+        const double prob = 1. - pf(tracks[i].quality().chi2());
         hProb_->Fill(prob);
 
       } // for(i)
