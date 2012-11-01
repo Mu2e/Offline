@@ -1,6 +1,6 @@
-// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.4 2012/11/01 23:41:17 gandr Exp $
+// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.5 2012/11/01 23:41:32 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:41:17 $
+// $Date: 2012/11/01 23:41:32 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -62,6 +62,18 @@ namespace mu2e {
 
         res.endG4Status = sp.endG4Status();
         res.stoppingCode = sp.stoppingCode().id();
+
+        const ExtMonFNALSensorStack& stack = (pos.z() < 0) ? extmon.dn() : extmon.up();
+        const CLHEP::Hep3Vector stackPos = stack.mu2eToStack_position(sp.endPosition());
+
+        // Note: we don't cut on the z position.  A muon stopped
+        // within the "sensor size" from the axis will be smeared
+        // in the transverse direction, even if it stopped in air
+        // instead of silicon.
+        res.stoppedInSensor =
+          (std::abs(stackPos.x()) < extmon.sensor().halfSize()[0]) &&
+          (std::abs(stackPos.y()) < extmon.sensor().halfSize()[1])
+          ;
 
         return res;
       }

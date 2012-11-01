@@ -83,10 +83,12 @@ namespace mu2e {
         unsigned endG4Status;
         unsigned stoppingCode;
 
-        StoppedMuon() : emx(), emy(), emz(), time(), endek(), pdgId(), endG4Status(), stoppingCode() {}
+        int stoppedInSensor; // would bool be OK for ROOT?
+
+        StoppedMuon() : emx(), emy(), emz(), time(), endek(), pdgId(), endG4Status(), stoppingCode(), stoppedInSensor() {}
 
         static const char *branchDescription() {
-          return "emx/D:emy/D:emz/D:time/D:endek/D:pdgId/I:endG4Status/i:stoppingCode/i";
+          return "emx/D:emy/D:emz/D:time/D:endek/D:pdgId/I:endG4Status/i:stoppingCode/i:stoppedInSensor/I";
         }
       };
 
