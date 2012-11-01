@@ -25,25 +25,44 @@ physics.producers.generate : {
     geomModuleLabel : ""
 }
 
+physics.producers.pixelDigitization : @local::pixelDigitization
+
+physics.filters.pixHitFilter : {
+    module_type: EMFPixelHitsFilter
+    rawHitsModuleLabel: pixelDigitization
+    simParticlesModuleLabel : g4run
+    cutMinHits: 1
+}
+
+physics.analyzers.emfprinttruth: {
+    module_type: EMFDetPrintRawHitTruth
+    hitsModuleLabel  : "pixelDigitization"
+    truthModuleLabel : "pixHitFilter"
+}
+physics.print : [emfprinttruth]
+
 physics.producers.g4run.generatorModuleLabel : "generate"
 physics.producers.geoms2: { module_type : GeometryRecorder }
 physics.gm : [geoms2]
 
-physics.trigFilter : [ randomsaver, generate, g4run ]
+physics.trigFilter : [ generate, g4run, pixelDigitization, pixHitFilter ]
 
 //----------------------------------------------------------------
 process_name : g4s2EMFMARSBox
-
-services.Timing : {}
+//services.Timing : {}
 
 services.user.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_s2EMFMARSRoom.txt"
 
 services.TFileService.fileName : "hg4s2EMFMARSBox.root"
-outputs.outFull : { module_type : RootOutput
-                    fileName: "vdg4s2EMFMARSBox.root"
-                  }
 
-physics.marsOutputs : [ outFull ]
+outputs.outFiltered : { module_type : RootOutput
+                        SelectEvents: { SelectEvents: [trigFilter] }
+                        outputCommands:   [ "keep *_pixHitFilter*_*_*", "keep mu2e::ExtMonFNALRawHits_pixelDigitization_*_*", "keep *_geom*_*_*" ]
+                        fileName: "vdg4s2EMFMARSBoxFiltered.root"
+                      }
+
+physics.marsOutputs : [ outFiltered ]
+//physics.end_paths : [marsOutputs, print]
 physics.end_paths : [marsOutputs]
 
 services.user.SeedService.baseSeed         :  0
