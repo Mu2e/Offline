@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.8 2012/11/01 23:40:48 gandr Exp $
+// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.9 2012/11/01 23:40:55 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:40:48 $
+// $Date: 2012/11/01 23:40:55 $
 //
 // Create particle flux in the ExtMonFNAL room by randomizing
 // kinematic of input particles read from a file.
@@ -84,6 +84,7 @@ namespace mu2e {
       std::vector<std::string> inputFiles_;
 
       unsigned numProtonsPerEvent_;
+      unsigned failCountLimit_;
       bool randomizeMomentumDirection_;
 
       // Fire flat random and pick the protons from the whole input array.
@@ -129,6 +130,7 @@ namespace mu2e {
       , inputFiles_(pset.get<std::vector<std::string> >("inputFiles"))
 
       , numProtonsPerEvent_(pset.get<unsigned>("numProtonsPerEvent"))
+      , failCountLimit_(pset.get<unsigned>("failCountLimit", 1000))
       , randomizeMomentumDirection_(pset.get<bool>("randomizeMomentumDirection"))
 
       , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
@@ -277,6 +279,7 @@ namespace mu2e {
       UniqProtons seen;
 
       // Process requested number of protons
+      unsigned failcount = 0;
       unsigned count = 0;
       while(count < numProtonsPerEvent_) {
 
@@ -284,8 +287,8 @@ namespace mu2e {
 
         // Don't put partly correlated particles in one event
         if(seen.insert(particles_[protonStart_[iproton]].info).second) {
-
           ++count;
+          failcount = 0;
 
           const unsigned start = protonStart_[iproton];
           const unsigned end = (1 + iproton == protonStart_.size()) ?
@@ -298,6 +301,13 @@ namespace mu2e {
                              art::Ptr<MARSInfo>(marsPID, info->size()-1, marsGetter));
           }
         }
+        else {
+          if(++failcount > failCountLimit_) {
+            throw cet::exception("BADINPUTS")<<"Error: failed to find an uncorrelated particle after "
+                                             <<failCountLimit_<<" trials\n";
+          }
+        }
+
       } // while(doing requested number of protons)
 
       event.put(output);
