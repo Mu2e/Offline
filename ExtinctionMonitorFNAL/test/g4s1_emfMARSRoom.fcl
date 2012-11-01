@@ -12,8 +12,8 @@ physics.producers.generate : {
 
     inputFiles : @local::mars3w1rand1
 
-    numReadProtonsPerEvent : 0 // take them all
-    fracAcceptedProtons : 0.75 // scale 40M MARS protons to 30M p/bunch
+    numReadProtonsPerEvent : 500
+    fracAcceptedProtons : 1
 
     geomModuleLabel : ""
 
