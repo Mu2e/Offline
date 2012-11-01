@@ -45,8 +45,8 @@ physics : {
         }
         emfSimHits: {
             module_type: EMFDetHistSimHits
-            inputModuleLabel  : "pixelDigitization"
-            geomModuleLabel  : "geoms"
+            inputModuleLabel  : "g4run"
+            geomModuleLabel  : "geom"
         }
         emfRawHits: {
             module_type: EMFDetHistRawHits

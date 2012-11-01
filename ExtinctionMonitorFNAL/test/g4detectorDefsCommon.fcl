@@ -45,7 +45,7 @@ physics : {
         emfSimHits: {
             module_type: EMFDetHistSimHits
             inputModuleLabel  : "g4run"
-            inputInstanceName : ""
+            geomModuleLabel  : ""
         }
     }
 

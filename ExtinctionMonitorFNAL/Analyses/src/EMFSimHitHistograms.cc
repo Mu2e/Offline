@@ -28,10 +28,16 @@ namespace mu2e {
 
   // Book the histograms.
   void EMFSimHitHistograms::book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir) {
-
-
     // assumes one sensor per plane
-    const unsigned nsensors = extmon.up().nplanes() + extmon.dn().nplanes();
+    const unsigned nsensors = extmon.nplanes();
+
+    hitTimes_ = tfdir.make<TH2D>("hitTimes", "Sensor plane vs hit time",
+                                 400, -0.5, 399.5, /* ns resolution */
+                                 nsensors, -0.5, nsensors-0.5
+                                 );
+
+    hitTimes_->SetOption("colz");
+
     for(unsigned sensor = 0; sensor < nsensors; ++sensor) {
       ExtMonFNALSensorId sid(sensor);
       std::ostringstream osname;
@@ -52,6 +58,7 @@ namespace mu2e {
 
   void EMFSimHitHistograms::fill(const ExtMonFNALSimHitCollection& coll) {
     for(ExtMonFNALSimHitCollection::const_iterator i = coll.begin(); i != coll.end(); ++i) {
+      hitTimes_->Fill(i->startTime(), i->sensorId().plane());
       hitPosition_[i->sensorId()]->Fill(i->localStartPosition().x(), i->localStartPosition().y());
     }
   } // end EMFSimHitHistograms::fill()
