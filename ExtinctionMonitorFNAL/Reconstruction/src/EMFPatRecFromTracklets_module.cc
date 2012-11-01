@@ -6,9 +6,9 @@
 // momentum and extrapolated donwstream where the consistency with the
 // donwstream tracklet is checked.
 //
-// $Id: EMFPatRecFromTracklets_module.cc,v 1.3 2012/11/01 23:36:27 gandr Exp $
+// $Id: EMFPatRecFromTracklets_module.cc,v 1.4 2012/11/01 23:36:46 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:36:27 $
+// $Date: 2012/11/01 23:36:46 $
 //
 // Original author Andrei Gaponenko
 //
@@ -22,6 +22,8 @@
 #include <algorithm>
 #include <limits>
 #include <cassert>
+
+#include "boost/noncopyable.hpp"
 
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -85,6 +87,131 @@ namespace mu2e {
                <<", lc="<<tl.lastCluster
                <<", nmiddle="<<tl.middleClusters.size()
                <<" )";
+    }
+
+    //================================================================
+    class HistTracklet : private boost::noncopyable {
+    public:
+      // Book histograms in the subdirectory, given by the relativePath; that path is
+      // relative to the root TFileDirectory for the current module.
+      // The default is to use the current module's TFileDirectory
+      void book(const ExtMon& extmon, const std::string& relativePath="");
+
+      // Book histograms in the specified TFileDirectory.
+      void book(const ExtMon& extmon, art::TFileDirectory& tfdir);
+
+      void fill(const Tracklet& tl);
+      void fill(const Tracklets& tls);
+
+    private:
+      TH1D* hclock_;
+      TH2D* hPosBegin_;
+      TH2D* hPosEnd_;
+      TH2D* hSlopes_;
+    };
+
+    // Book histograms in the subdirectory, given by the relativePath; that path is
+    // relative to the root TFileDirectory for the current module.
+    void HistTracklet::book(const ExtMonFNAL::ExtMon& extmon, const std::string& relativePath)
+    {
+      art::ServiceHandle<art::TFileService> tfs;
+      art::TFileDirectory tfdir = relativePath.empty() ? *tfs : tfs->mkdir(relativePath.c_str());
+      book (extmon, tfdir);
+    }
+
+    // Book the histograms.
+    void HistTracklet::book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir) {
+
+      hclock_ = tfdir.make<TH1D>("clock", "Tracklet clock", 100, -20.5, 79.5);
+
+      hPosBegin_ = tfdir.make<TH2D>("posBegin", "Tracklet start position",
+                                    400, -extmon.sensor().halfSize()[0], +extmon.sensor().halfSize()[0],
+                                    400, -extmon.sensor().halfSize()[1], +extmon.sensor().halfSize()[1]
+                                    );
+      hPosBegin_->SetOption("colz");
+
+      hPosEnd_ = tfdir.make<TH2D>("posEnd", "Tracklet end position",
+                                  400, -extmon.sensor().halfSize()[0], +extmon.sensor().halfSize()[0],
+                                  400, -extmon.sensor().halfSize()[1], +extmon.sensor().halfSize()[1]
+                                  );
+      hPosEnd_->SetOption("colz");
+
+      hSlopes_ = tfdir.make<TH2D>("slopes", "Tracklet slope Y vs X", 300, -0.15, +0.15, 300, -0.15, +0.15);
+      hSlopes_->SetOption("colz");
+
+    } // end HistTracklet::book()
+
+    void HistTracklet::fill(const Tracklet& tl) {
+      hclock_->Fill(0.5*(tl.firstCluster->clock() + tl.lastCluster->clock()));
+      hPosBegin_->Fill(tl.firstCluster->position().x(), tl.firstCluster->position().y());
+      hPosEnd_->Fill(tl.lastCluster->position().x(), tl.lastCluster->position().y());
+
+      const CLHEP::Hep3Vector dir(tl.lastCluster->position() - tl.firstCluster->position());
+      hSlopes_->Fill(dir.x()/dir.z(), dir.y()/dir.z());
+
+    } // end HistTracklet::fill()
+
+    void HistTracklet::fill(const Tracklets& tls) {
+      for(Tracklets::const_iterator i=tls.begin(); i!=tls.end(); ++i) {
+        fill(*i);
+      }
+    }
+
+    //================================================================
+    class HistTrkMatch : private boost::noncopyable {
+    public:
+      // Book histograms in the subdirectory, given by the relativePath; that path is
+      // relative to the root TFileDirectory for the current module.
+      // The default is to use the current module's TFileDirectory
+      void book(const ExtMon& extmon, const std::string& relativePath="");
+
+      // Book histograms in the specified TFileDirectory.
+      void book(const ExtMon& extmon, art::TFileDirectory& tfdir);
+
+      void fill(const Tracklet& up, const Tracklet& dn);
+      void fill(const Tracklets& ups, const Tracklets& dns);
+
+    private:
+      TH2D* hclockMatch_;
+      TH1D* hslopexMatch_;
+    };
+
+    // Book histograms in the subdirectory, given by the relativePath; that path is
+    // relative to the root TFileDirectory for the current module.
+    void HistTrkMatch::book(const ExtMonFNAL::ExtMon& extmon, const std::string& relativePath)
+    {
+      art::ServiceHandle<art::TFileService> tfs;
+      art::TFileDirectory tfdir = relativePath.empty() ? *tfs : tfs->mkdir(relativePath.c_str());
+      book (extmon, tfdir);
+    }
+
+    // Book the histograms.
+    void HistTrkMatch::book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir) {
+
+      hclockMatch_ = tfdir.make<TH2D>("clockMatch", "Tracklet clock dn vs up",
+                                      100, -20.5, 79.5, 100, -20.5, 79.5);
+      hclockMatch_->SetOption("colz");
+
+      hslopexMatch_ = tfdir.make<TH1D>("slopexMatch", "Tracklet slope X dn vs up", 300, -0.015, +0.015);
+
+    } // end HistTrkMatch::book()
+
+    void HistTrkMatch::fill(const Tracklet& up, const Tracklet& dn) {
+
+      hclockMatch_->Fill(0.5*(up.firstCluster->clock() + up.lastCluster->clock()),
+                         0.5*(dn.firstCluster->clock() + dn.lastCluster->clock()));
+
+      const CLHEP::Hep3Vector diru(up.lastCluster->position() - up.firstCluster->position());
+      const CLHEP::Hep3Vector dird(dn.lastCluster->position() - dn.firstCluster->position());
+      hslopexMatch_->Fill(dird.x()/dird.z() - diru.x()/diru.z());
+    } // end HistTrkMatch::fill()
+
+    void HistTrkMatch::fill(const Tracklets& ups, const Tracklets& dns) {
+      for(Tracklets::const_iterator u=ups.begin(); u!=ups.end(); ++u) {
+        for(Tracklets::const_iterator d=dns.begin(); d!=dns.end(); ++d) {
+          fill(*u, *d);
+        }
+      }
     }
 
     //================================================================
@@ -163,6 +290,10 @@ namespace mu2e {
       double alignmentToleranceY_;
 
       //----------------------------------------------------------------
+      HistTracklet htup_;
+      HistTracklet htdn_;
+      HistTrkMatch hudm_;
+
       TH2D *hTrackletMultiplicity_;
       TH2D *hTrackletMatchXY_;
       TH1D *hTrackletMatchSlopeX_;
@@ -236,6 +367,10 @@ namespace mu2e {
         }
 
         //----------------
+        htup_.book(*extmon_, "TrackletsUp");
+        htdn_.book(*extmon_, "TrackletsDn");
+        hudm_.book(*extmon_, "TrackletsMatch");
+
         art::ServiceHandle<art::TFileService> tfs;
         hTrackletMultiplicity_ = tfs->make<TH2D>("trackletMultiplicity", "Tracklet multiplicity down- vs upstream",
                                                  200, -0.5, 199.5, 200, -0.5, 199.5);
@@ -305,6 +440,9 @@ namespace mu2e {
       Tracklets tup = formTracklets(extmon_->up(), coll);
       Tracklets tdn = formTracklets(extmon_->dn(), coll);
       hTrackletMultiplicity_->Fill(tdn.size(), tup.size());
+      htup_.fill(tup);
+      htdn_.fill(tdn);
+      hudm_.fill(tup, tdn);
 
       // merge compatible tracklet pairs into tracks
       const double nominalBendHalfAngle = extmon_->spectrometerMagnet().nominalBendHalfAngle();
