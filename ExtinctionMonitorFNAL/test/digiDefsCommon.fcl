@@ -43,6 +43,11 @@ physics : {
             geomModuleLabel : "geom"
             geomInstanceName : ""
         }
+        emfSimHits: {
+            module_type: EMFDetHistSimHits
+            inputModuleLabel  : "pixelDigitization"
+            geomModuleLabel  : "geoms"
+        }
         emfRawHits: {
             module_type: EMFDetHistRawHits
             inputModuleLabel  : "pixelDigitization"
@@ -54,7 +59,7 @@ physics : {
     tprint : [ pixelDigitization ]
 
     //eprint: [ vdprint, emfSimHits, emfprinttruth, hitValidation, emfRawHits ]
-    eprint: [ hitValidation, emfRawHits ]
+    eprint: [ hitValidation, emfSimHits, emfRawHits ]
     out : [ FullOutput ]
 
     trigger_paths  : [tprint]

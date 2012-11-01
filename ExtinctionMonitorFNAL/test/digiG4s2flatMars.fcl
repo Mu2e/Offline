@@ -19,10 +19,10 @@ physics.producers.pixelDigitization.protonPulse : {
     pulseHalfWidth : 100
 }
 
-physics.analyzers.hitValidation.geomModuleLabel : "geoms2"
+physics.analyzers.emfSimHits.inputModuleLabel : "pixHitFilter"
+physics.analyzers.emfSimHits.geomModuleLabel : "geoms2"
 physics.analyzers.emfRawHits.geomModuleLabel : "geoms2"
-
-physics.eprint: [ hitValidation, emfRawHits ]
+physics.analyzers.hitValidation.geomModuleLabel : "geoms2"
 
 // This tells emacs to view this file in the JavaScript mode.
 // Local Variables:

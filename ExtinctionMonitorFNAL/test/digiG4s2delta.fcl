@@ -11,12 +11,12 @@ services.TFileService.fileName : "histDigiDelta.root"
 
 physics.producers.pixelDigitization.geomModuleLabel : "geoms2"
 physics.producers.pixelDigitization.inputModuleLabel : "pixHitFilter"
-
 physics.producers.pixelDigitization.applyProtonPulseShape : false
-physics.analyzers.hitValidation.geomModuleLabel : "geoms2"
-physics.analyzers.emfRawHits.geomModuleLabel : "geoms2"
 
-physics.eprint: [ hitValidation, emfRawHits ]
+physics.analyzers.emfSimHits.inputModuleLabel : "pixHitFilter"
+physics.analyzers.emfSimHits.geomModuleLabel : "geoms2"
+physics.analyzers.emfRawHits.geomModuleLabel : "geoms2"
+physics.analyzers.hitValidation.geomModuleLabel : "geoms2"
 
 // This tells emacs to view this file in the JavaScript mode.
 // Local Variables:
