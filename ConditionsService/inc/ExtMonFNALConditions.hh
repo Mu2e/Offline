@@ -1,9 +1,9 @@
 #ifndef ConditionsService_ExtMonFNALConditions_hh
 #define ConditionsService_ExtMonFNALConditions_hh
 //
-// $Id: ExtMonFNALConditions.hh,v 1.2 2012/11/01 23:39:26 gandr Exp $
+// $Id: ExtMonFNALConditions.hh,v 1.3 2012/11/01 23:42:52 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:39:26 $
+// $Date: 2012/11/01 23:42:52 $
 //
 // Original author Andrei Gaponenko
 //
@@ -26,8 +26,6 @@ namespace mu2e
     // Time bin width, ns
     double clockTick() const { return clockTick_; }
 
-    double t0() const { return t0_; }
-
     // absolute (K)
     double temperature() const { return temperature_; }
 
@@ -36,7 +34,6 @@ namespace mu2e
   private:
     int numClockTicksPerDebuncherPeriod_;
     double clockTick_;
-    double t0_;
 
     double temperature_;
     double biasVoltage_;

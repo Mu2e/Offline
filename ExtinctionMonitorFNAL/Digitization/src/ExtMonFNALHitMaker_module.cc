@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.10 2012/11/01 23:39:45 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.11 2012/11/01 23:42:52 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:39:45 $
+// $Date: 2012/11/01 23:42:52 $
 //
 // Original author Andrei Gaponenko
 //
@@ -71,6 +71,7 @@ namespace mu2e {
         , inputInstanceName_(pset.get<std::string>("inputInstanceName"))
         , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
         , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
+        , t0_(pset.get<double>("t0"))
         , nclusters_(pset.get<unsigned>("numClustersPerHit"))
         , maxToT_(pset.get<unsigned>("maxToT"))
         , discriminatorThreshold_(pset.get<double>("discriminatorThreshold"))
@@ -112,6 +113,9 @@ namespace mu2e {
       std::string inputInstanceName_;
       std::string geomModuleLabel_;
       std::string geomInstanceName_;
+
+      // global time corresponding to the starting edge of time bin 0
+      double t0_;
 
       // The number of charge clusters per one simhit
       unsigned nclusters_;
@@ -175,7 +179,7 @@ namespace mu2e {
                         PixelChargeHistory& ch);
 
       int timeStamp(unsigned iplane, double time) const {
-        return (time - condExtMon_->t0() - planeTOFCorrection_[iplane])/condExtMon_->clockTick();
+        return (time - t0_ - planeTOFCorrection_[iplane])/condExtMon_->clockTick();
       }
 
     };

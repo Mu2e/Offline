@@ -14,7 +14,6 @@ namespace mu2e {
                                              const SimpleConfig& config)
     : numClockTicksPerDebuncherPeriod_(config.getInt("extMonFNAL.numClockTicksPerDebuncherPeriod"))
     , clockTick_(accp.deBuncherPeriod/numClockTicksPerDebuncherPeriod_)
-    , t0_(config.getDouble("extMonFNAL.t0")*CLHEP::ns)
     , temperature_(config.getDouble("extMonFNAL.temperature")*CLHEP::kelvin)
     , biasVoltage_(config.getDouble("extMonFNAL.biasVoltage")*CLHEP::volt)
   {

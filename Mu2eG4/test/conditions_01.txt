@@ -1,9 +1,9 @@
 //
 // Input file for the prototype conditions system.
 //
-// $Id: conditions_01.txt,v 1.13 2012/11/01 23:39:26 gandr Exp $
+// $Id: conditions_01.txt,v 1.14 2012/11/01 23:42:52 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:39:26 $
+// $Date: 2012/11/01 23:42:52 $
 //
 
 // Times in ns
@@ -34,7 +34,6 @@ double Crosstalk = 0.02;
 
 // ExtMonFNAL clock timing.  1694/68 = 24.9118
 int extMonFNAL.numClockTicksPerDebuncherPeriod = 68;
-double extMonFNAL.t0 = 0;  // global time corresponding to the starting edge of time bin 0
 
 double extMonFNAL.temperature = 273; // Kelvin
 double extMonFNAL.biasVoltage = -150; // Volts

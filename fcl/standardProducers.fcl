@@ -89,6 +89,9 @@ pixelDigitization : {
 
     geomModuleLabel : "geom"
 
+    // global time corresponding to the starting edge of time bin 0
+    t0 : 0
+
     // Hardware feature of FE-I4
     maxToT : 13
 
