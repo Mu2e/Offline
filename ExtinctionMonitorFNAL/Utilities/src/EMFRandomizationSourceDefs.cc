@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <cassert>
 
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -99,6 +100,42 @@ namespace mu2e {
           (std::abs(posExtMon.x()) < srcGeom.signalHalfdx) &&
           (std::abs(posExtMon.y()) < srcGeom.signalHalfdy);
       }
+
+      //================================================================
+      bool inRange(SourceType st,
+                   const CLHEP::Hep3Vector& posDump,
+                   const SourcePlaneGeom& srcGeom,
+                   const ProtonBeamDump& dump,
+                   const ExtMon& extmon)
+      {
+        switch(st) {
+
+        default: assert(false);
+
+        case SourceFront: case SourceBack:
+          return
+            (srcGeom.xSW <= posDump.x()) && (posDump.x() <= srcGeom.xNE) &&
+            (srcGeom.yFloor <= posDump.y()) && (posDump.y() <= srcGeom.yCeiling);
+
+        case SourceSouthWest: case SourceNorthEast:
+          return
+            (srcGeom.zBack <= posDump.z()) && (posDump.z() <= srcGeom.zFront) &&
+            (srcGeom.yFloor <= posDump.y()) && (posDump.y() <= srcGeom.yCeiling);
+
+        case SourceFloor: case SourceCeiling:
+          return
+            (srcGeom.xSW <= posDump.x()) && (posDump.x() <= srcGeom.xNE) &&
+            (srcGeom.zBack <= posDump.z()) && (posDump.z() <= srcGeom.zFront);
+
+        case SourceSignal: {
+          const CLHEP::Hep3Vector posExtMon =
+            extmon.mu2eToExtMon_position(dump.beamDumpToMu2e_position(posDump));
+
+          return isSignal(posExtMon, srcGeom);
+        }
+        } // switch(st)
+
+      } // inRange()
 
       //================================================================
     } // namespace Randomization

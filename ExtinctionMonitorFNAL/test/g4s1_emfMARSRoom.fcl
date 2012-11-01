@@ -10,10 +10,11 @@ physics.producers.generate : {
     module_type: ExtMonFNALRoomGenerator
     verbosityLevel : 1
 
-    inputFiles : @local::mars3w1rand1
+    inputFiles : [ "data/run/20121017-a-EMFRoomFluxAnalyzer/EMFRoomFluxAnalyzer.root" ]
 
-    numReadProtonsPerEvent : 500
-    fracAcceptedProtons : 1
+    numProtonsPerEvent : 500
+
+    randomizeMomentumDirection : false
 
     geomModuleLabel : ""
 
@@ -29,11 +30,6 @@ physics.producers.generate : {
         signalHalfdx : 40
         signalHalfdy : 40
     }
-
-    numNeighbors : 5
-    minSourceGroupStatistics : 10
-
-    doHistograms : true
 }
 
 physics.producers.g4run.generatorModuleLabel : "generate"

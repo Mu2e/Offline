@@ -71,6 +71,14 @@ namespace mu2e {
 
       bool isSignal(const CLHEP::Hep3Vector& posExtMon, const SourcePlaneGeom& srcGeom);
 
+      // This one is used to make sure a particle on a source plane
+      // stays there after randomization - only the 2D in-plane position is checked.
+      bool inRange(SourceType st,
+                   const CLHEP::Hep3Vector& posDump,
+                   const SourcePlaneGeom& srcGeom,
+                   const ProtonBeamDump& dump,
+                   const ExtMon& extmon);
+
       //================================================================
     }
   }

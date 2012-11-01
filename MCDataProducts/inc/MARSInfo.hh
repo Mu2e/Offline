@@ -38,6 +38,29 @@ namespace mu2e {
     int runNumber_;
   };
 
+  inline bool sameProtonAndSimPath(const MARSInfo& a, const MARSInfo& b) {
+    return
+      (a.protonNumber() == b.protonNumber())&&
+      (a.subRunNumber()==b.subRunNumber())&&
+      (a.runNumber()==b.runNumber());
+  }
+
+  bool partlyCorrelated(const MARSInfo& a, const MARSInfo& b) {
+    return
+      (a.protonNumber() == b.protonNumber())&&
+      (a.subRunNumber()==b.subRunNumber())&&
+      (a.runNumber()!=b.runNumber());
+  }
+
+  // "less than" comparison that treats correlated protons as equivalent
+  struct CmpProtonId {
+    bool operator()(const MARSInfo& a, const MARSInfo& b) const {
+      return
+        (a.subRunNumber() < b.subRunNumber()) || ((a.subRunNumber() == b.subRunNumber()) &&
+                                                  (a.protonNumber() < b.protonNumber()));
+    }
+  };
+
   std::ostream& operator<<(std::ostream& os, const MARSInfo& mi);
 }
 
