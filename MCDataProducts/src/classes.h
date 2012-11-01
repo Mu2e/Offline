@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.18 2012/11/01 23:36:42 gandr Exp $
+// $Id: classes.h,v 1.19 2012/11/01 23:38:49 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:36:42 $
+// $Date: 2012/11/01 23:38:49 $
 //
 // Original author Rob Kutschke
 //
@@ -125,7 +125,7 @@ template class art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoClu
 template class art::Wrapper<art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,mu2e::ExtMonFNALRecoClusterTruthBits> >;
 
 template class std::vector<mu2e::ExtMonFNALTrkMatchInfo>;
-template class std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::ExtMonFNALTrkParam> >;
-template class std::pair<art::Ptr<mu2e::ExtMonFNALTrkParam>,art::Ptr<mu2e::SimParticle> >;
-template class art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkParam,mu2e::ExtMonFNALTrkMatchInfo> >;
-template class art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkParam,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo> >;
+template class std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::ExtMonFNALTrkFit> >;
+template class std::pair<art::Ptr<mu2e::ExtMonFNALTrkFit>,art::Ptr<mu2e::SimParticle> >;
+template class art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,mu2e::ExtMonFNALTrkMatchInfo> >;
+template class art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo> >;

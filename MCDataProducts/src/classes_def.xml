@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.18 2012/11/01 23:36:42 gandr Exp $     -->
+<!--  $Id: classes_def.xml,v 1.19 2012/11/01 23:38:49 gandr Exp $     -->
 <!--  $Author: gandr $ -->
-<!--  $Date: 2012/11/01 23:36:42 $   -->
+<!--  $Date: 2012/11/01 23:38:49 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.18 $$Date: 2012/11/01 23:36:42 $"; -->
+<!--  rev="$Revision: 1.19 $$Date: 2012/11/01 23:38:49 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -129,13 +129,13 @@
  <class name="mu2e::ExtMonFNALPatRecTruthAssns" />
  <class name="mu2e::ExtMonFNALTrkMatchInfo" />
  <class name="std::vector<mu2e::ExtMonFNALTrkMatchInfo>" />
- <class name="std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::ExtMonFNALTrkParam> >" />
- <class name="std::pair<art::Ptr<mu2e::ExtMonFNALTrkParam>,art::Ptr<mu2e::SimParticle> >" />
- <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkParam,void>" />
- <class name="art::Assns<mu2e::ExtMonFNALTrkParam,mu2e::SimParticle,void>" />
- <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkParam,mu2e::ExtMonFNALTrkMatchInfo>" />
- <class name="art::Assns<mu2e::ExtMonFNALTrkParam,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo>" />
- <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkParam,mu2e::ExtMonFNALTrkMatchInfo> >" />
- <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkParam,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo> >" />
+ <class name="std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::ExtMonFNALTrkFit> >" />
+ <class name="std::pair<art::Ptr<mu2e::ExtMonFNALTrkFit>,art::Ptr<mu2e::SimParticle> >" />
+ <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,void>" />
+ <class name="art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,void>" />
+ <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,mu2e::ExtMonFNALTrkMatchInfo>" />
+ <class name="art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo>" />
+ <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,mu2e::ExtMonFNALTrkMatchInfo> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo> >" />
 
 </lcgdict>
