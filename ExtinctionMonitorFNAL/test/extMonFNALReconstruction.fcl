@@ -80,12 +80,15 @@ physics : {
 
     tprint : [ pixelRawClusterization
                , pixelRecoClusterization, pixelRecoClusterTruthMaking
-               , EMFPatRecSequential, EMFPatRecSequentialTruthMaking
+               //, EMFPatRecSequential, EMFPatRecSequentialTruthMaking
                , EMFPatRecFromTracklets, EMFPatRecFromTrackletsTruthMaking
              ]
 
     //eprint: [ printRecoClusterTruth ]
-    eprint: [ hitValidation, emfRecoClusters, EMFPatRecSequentialAnalysis, EMFPatRecFromTrackletsAnalysis ]
+    eprint: [ hitValidation, emfRecoClusters,
+              //EMFPatRecSequentialAnalysis,
+              EMFPatRecFromTrackletsAnalysis ]
+
     out : [FullOutput]
 
     trigger_paths  : [tprint]
