@@ -6,9 +6,9 @@
 // momentum and extrapolated donwstream where the consistency with the
 // donwstream tracklet is checked.
 //
-// $Id: EMFPatRecFromTracklets_module.cc,v 1.5 2012/11/01 23:37:09 gandr Exp $
+// $Id: EMFPatRecFromTracklets_module.cc,v 1.6 2012/11/01 23:38:45 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:37:09 $
+// $Date: 2012/11/01 23:38:45 $
 //
 // Original author Andrei Gaponenko
 //
@@ -29,6 +29,7 @@
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "CLHEP/GenericFunctions/CumulativeChiSquare.hh"
 
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -40,19 +41,21 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Persistency/Common/Ptr.h"
-#include "art/Persistency/Common/Assns.h"
 
 #include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkParamCollection.hh"
-#include "RecoDataProducts/inc/ExtMonFNALPatRecTrackAssns.hh"
-
+#include "RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
 #include "ExtinctionMonitorFNAL/Reconstruction/inc/PixelRecoUtils.hh"
+#include "ExtinctionMonitorFNAL/Reconstruction/inc/ClusterOnTrackPrecisionTool.hh"
+#include "ExtinctionMonitorFNAL/Reconstruction/inc/LinearRegression.hh"
 
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -203,6 +206,7 @@ namespace mu2e {
         , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
         , extmon_(0)
         , extrapolator_(extmon_)
+        , lr_()
 
         , clusterClockTolerance_(pset.get<unsigned>("clusterClockTolerance"))
         , slopexmax_(pset.get<double>("maxTrackSlope"))
@@ -210,14 +214,13 @@ namespace mu2e {
         , stackScatterAngleTolerance_(pset.get<double>("stackScatterAngleTolerance"))
 
         , trackletMatchSlopeXTolerance_(pset.get<double>("trackletMatchSlopeXTolerance"))
-        , trackletMatchXTolerance_(pset.get<double>("trackletMatchXTolerance"))
-        , trackletMatchYTolerance_(pset.get<double>("trackletMatchYTolerance"))
 
         , alignmentToleranceX_(pset.get<double>("alignmentToleranceX"))
         , alignmentToleranceY_(pset.get<double>("alignmentToleranceY"))
+        , thetaScatterOnePlane_(pset.get<double>("thetaScatterOnePlane"))
+        , cutMinTrackProb_(pset.get<double>("cutMinTrackProb"))
 
         , hTrackletMultiplicity_()
-        , hTrackletMatchXY_()
         , hTrackletMatchSlopeX_()
         , hClusterAddXY_()
         , hClusterAddXXMax_()
@@ -226,9 +229,8 @@ namespace mu2e {
         , hClockDiffClusterTracklet_()
 
         , singleParticleMode_(pset.get<bool>("singleParticleMode", false))
-     {
-        produces<ExtMonFNALTrkParamCollection>();
-        produces<ExtMonFNALPatRecTrackAssns>();
+      {
+        produces<ExtMonFNALTrkFitCollection>();
 
         if(singleParticleMode_) {
           std::cout<<"EMFPatRecFromTracklets: working in the single particle mode"<<std::endl;
@@ -250,6 +252,8 @@ namespace mu2e {
       // member.
       const ExtMon *extmon_;
       TrackExtrapolator extrapolator_;
+      ClusterOnTrackPrecisionTool clTool_;
+      LinearRegression lr_;
 
       //----------------------------------------------------------------
       // Track search parameters
@@ -261,10 +265,10 @@ namespace mu2e {
       double slopeymax_;
       double stackScatterAngleTolerance_;
       double trackletMatchSlopeXTolerance_;
-      double trackletMatchXTolerance_;
-      double trackletMatchYTolerance_;
       double alignmentToleranceX_;
       double alignmentToleranceY_;
+      double thetaScatterOnePlane_;
+      double cutMinTrackProb_;
 
       //----------------------------------------------------------------
       HistTracklet htup_;
@@ -272,7 +276,6 @@ namespace mu2e {
       HistTrkMatch hudm_;
 
       TH2D *hTrackletMultiplicity_;
-      TH2D *hTrackletMatchXY_;
       TH1D *hTrackletMatchSlopeX_;
       std::vector<TH2D*> hClusterAddXY_;
       std::vector<TH2D*> hClusterAddXXMax_;
@@ -291,8 +294,7 @@ namespace mu2e {
                               const art::Handle<ExtMonFNALRecoClusterCollection>& clusters);
 
       void findTracks(art::Event& event,
-                      ExtMonFNALPatRecTrackAssns *tracks,
-                      ExtMonFNALTrkParamCollection *params,
+                      ExtMonFNALTrkFitCollection *tracks,
                       const art::Handle<ExtMonFNALRecoClusterCollection>& clusters);
 
       void addPlaneClusters(Tracklets* seeds,
@@ -303,19 +305,20 @@ namespace mu2e {
                             unsigned anchorPlane2
                             );
 
-      void recordTrackClusters(ExtMonFNALPatRecTrackAssns *outAssns,
-                               const art::Ptr<ExtMonFNALTrkParam>& trackPar,
-                               const Tracklet& tl);
-
       Tracklet createTracklet(const Tracklet& orig, const art::Ptr<ExtMonFNALRecoCluster>& cl);
 
       void modifyInPlace(Tracklet *inout, const art::Ptr<ExtMonFNALRecoCluster>& cl);
 
-      double yangle(const Tracklet& tl);
       double slopex(const Tracklet& tl);
 
       bool inTime(const Tracklet& tl, const ExtMonFNALRecoCluster& cl);
       bool inTime(const Tracklet& tl1, const Tracklet& tl2);
+
+      void addToClusters(std::vector<art::Ptr<ExtMonFNALRecoCluster> > *clusters, const Tracklet& tl);
+
+      ExtMonFNALTrkFitQuality evaluateFit(std::vector<ExtMonFNALTrkClusterResiduals> *residuals,
+                                          const ExtMonFNALTrkParam& pars,
+                                          const std::vector<art::Ptr<ExtMonFNALRecoCluster> >& clusters);
     };
 
     //================================================================
@@ -333,6 +336,8 @@ namespace mu2e {
           run.getByLabel(geomModuleLabel_, geomInstanceName_, emf);
           extmon_ = &*emf;
           extrapolator_ = TrackExtrapolator(extmon_);
+          clTool_ = ClusterOnTrackPrecisionTool(*extmon_, thetaScatterOnePlane_);
+          lr_ = LinearRegression(extmon_, clTool_);
         }
         else {
           if(verbosityLevel_ > 0) {
@@ -341,7 +346,13 @@ namespace mu2e {
           GeomHandle<ExtMonFNAL::ExtMon> emf;
           extmon_ = &*emf;
           extrapolator_ = TrackExtrapolator(extmon_);
+          clTool_ = ClusterOnTrackPrecisionTool(*extmon_, thetaScatterOnePlane_);
+          lr_ = LinearRegression(extmon_, clTool_);
         }
+
+        std::cout<<"EMFPatRecFromTracklets: spectrometer nominalMomentum = "
+                 <<extmon_->spectrometerMagnet().nominalMomentum()
+                 <<std::endl;
 
         //----------------
         htup_.book(*extmon_, "TrackletsUp");
@@ -352,11 +363,6 @@ namespace mu2e {
         hTrackletMultiplicity_ = tfs->make<TH2D>("trackletMultiplicity", "Tracklet multiplicity down- vs upstream",
                                                  200, -0.5, 199.5, 200, -0.5, 199.5);
         hTrackletMultiplicity_->SetOption("colz");
-
-        hTrackletMatchXY_ = tfs->make<TH2D>("trackletMatchXY", "Tracklet match (extrapolation - cluster) xy",
-                                            200, -5., 5., 200, -5., 5.);
-
-        hTrackletMatchXY_->SetOption("colz");
 
         hTrackletMatchSlopeX_ = tfs->make<TH1D>("trackletMatchSlopeX", "Tracklet match dslopex", 200, -15.e-3, 15.e-3);
 
@@ -397,21 +403,18 @@ namespace mu2e {
       art::Handle<ExtMonFNALRecoClusterCollection> clusters;
       event.getByLabel(inputModuleLabel_, inputInstanceName_, clusters);
 
-      std::auto_ptr<ExtMonFNALTrkParamCollection> params(new ExtMonFNALTrkParamCollection);
-      std::auto_ptr<ExtMonFNALPatRecTrackAssns> tracks(new ExtMonFNALPatRecTrackAssns);
+      std::auto_ptr<ExtMonFNALTrkFitCollection> tracks(new ExtMonFNALTrkFitCollection);
 
       if(!singleParticleMode_ || acceptSingleParticleEvent(event)) {
-        findTracks(event, &*tracks, &*params, clusters);
+        findTracks(event, &*tracks, clusters);
       }
 
-      event.put(params);
       event.put(tracks);
     }
 
     //================================================================
     void EMFPatRecFromTracklets::findTracks(art::Event& event,
-                                            ExtMonFNALPatRecTrackAssns *tracks,
-                                            ExtMonFNALTrkParamCollection *params,
+                                            ExtMonFNALTrkFitCollection *tracks,
                                             const art::Handle<ExtMonFNALRecoClusterCollection>& coll)
     {
       Tracklets tup = formTracklets(extmon_->up(), coll);
@@ -422,8 +425,6 @@ namespace mu2e {
       hudm_.fill(tup, tdn);
 
       // merge compatible tracklet pairs into tracks
-      const double nominalBendHalfAngle = extmon_->spectrometerMagnet().nominalBendHalfAngle();
-      const double twoOverL(1./extmon_->spectrometerMagnet().outerHalfSize()[2]);
       for(Tracklets::const_iterator iup = tup.begin(); iup != tup.end(); ++iup) {
         for(Tracklets::const_iterator idn = tdn.begin(); idn != tdn.end(); ++idn) {
 
@@ -431,55 +432,30 @@ namespace mu2e {
           hTrackletMatchSlopeX_->Fill(dslopex);
 
           if(inTime(*iup, *idn) && (std::abs(dslopex) < trackletMatchSlopeXTolerance_)) {
-            const double halfBend = 0.5*(yangle(*idn) - yangle(*iup)) + nominalBendHalfAngle;
-            const double rinv = twoOverL * sin(halfBend);
-            const CLHEP::Hep3Vector& startPos = iup->firstCluster->position();
-            const CLHEP::Hep3Vector startDir(iup->lastCluster->position() - iup->firstCluster->position());
-            ExtMonFNALTrkParam testpar;
-            testpar.setz0(startPos.z());
-            testpar.setposx(startPos.x());
-            testpar.setposy(startPos.y());
-            testpar.setslopex(startDir.x()/startDir.z());
-            testpar.setslopey(startDir.y()/startDir.z());
-            testpar.setrinv(rinv);
 
-            const ExtMonFNALRecoCluster& targetCluster = *idn->lastCluster;
-            if(extrapolator_.extrapolateToPlane(targetCluster.plane(), &testpar)) {
-              AGDEBUG("targetCluster = "<<targetCluster<<", extrapolation result = "<<testpar);
+            // Compute track parameter estimates
+            ExtMonFNALTrkParam trkpar = lr_.estimatePars(*iup, *idn);
 
-              const double missx = testpar.posx() - targetCluster.position().x();
-              const double missy = testpar.posy() - targetCluster.position().y();
-              hTrackletMatchXY_->Fill(missx, missy);
+            // Compute fit quality and residuals
+            std::vector<art::Ptr<ExtMonFNALRecoCluster> > clusters;
+            addToClusters(&clusters, *idn);
+            addToClusters(&clusters, *iup);
 
-              if((std::abs(missx) < trackletMatchXTolerance_) && (std::abs(missy) < trackletMatchYTolerance_)) {
-                // Accept the tracklet pair.
-                // Will store track parameter estimate at the signal particle entrance - that is, the last
-                // plane of the upstream stack.
+            std::vector<ExtMonFNALTrkClusterResiduals> residuals;
+            ExtMonFNALTrkFitQuality quality =
+              evaluateFit(&residuals, trkpar, clusters);
 
-                const CLHEP::Hep3Vector& trackPos(iup->lastCluster->position());
-                const CLHEP::Hep3Vector& trackDir(startDir);
-                ExtMonFNALTrkParam trackPar;
-                trackPar.setz0(trackPos.z());
-                trackPar.setposx(trackPos.x());
-                trackPar.setposy(trackPos.y());
-                trackPar.setslopex(trackDir.x()/trackDir.z());
-                trackPar.setslopey(trackDir.y()/trackDir.z());
-                trackPar.setrinv(testpar.rinv());
+            Genfun::CumulativeChiSquare pf(quality.ndf());
+            const double prob = 1. - pf(quality.chi2());
+            if(cutMinTrackProb_ <= prob) { // Accept the track
+              tracks->push_back(ExtMonFNALTrkFit());
+              tracks->back().pars = trkpar;
+              tracks->back().clusters = clusters;
+              tracks->back().quality = quality;
+              tracks->back().residuals = residuals;
+            } // if(fit quality)
 
-                // Add to the output collection
-                params->push_back(trackPar);
-
-                // Ptr to the newly added track parameters
-                const art::ProductID paramsPID = getProductID<ExtMonFNALTrkParamCollection>(event);
-                const art::EDProductGetter *paramsGetter = event.productGetter(paramsPID);
-                art::Ptr<ExtMonFNALTrkParam> ppar(paramsPID, params->size()-1, paramsGetter);
-
-                // Associate clusters to the track
-                recordTrackClusters(tracks, ppar, *idn);
-                recordTrackClusters(tracks, ppar, *iup);
-              }
-            }
-          }
+          } // if(inTime and slope match)
         }
       }
 
@@ -632,12 +608,6 @@ namespace mu2e {
     }
 
     //================================================================
-    double EMFPatRecFromTracklets::yangle(const Tracklet& tl) {
-      const CLHEP::Hep3Vector dir(tl.lastCluster->position() - tl.firstCluster->position());
-      return atan(dir.y()/dir.z());
-    }
-
-    //================================================================
     double EMFPatRecFromTracklets::slopex(const Tracklet& tl) {
       const CLHEP::Hep3Vector dir(tl.lastCluster->position() - tl.firstCluster->position());
       return dir.x()/dir.z();
@@ -662,23 +632,60 @@ namespace mu2e {
     }
 
     //================================================================
-    void EMFPatRecFromTracklets::recordTrackClusters(ExtMonFNALPatRecTrackAssns *outAssns,
-                                                     const art::Ptr<ExtMonFNALTrkParam>& trackPar,
-                                                     const Tracklet& tl)
-    {
-      outAssns->addSingle(tl.firstCluster, trackPar);
-      for(unsigned i=0; i<tl.middleClusters.size(); ++i) {
-        outAssns->addSingle(tl.middleClusters[i], trackPar);
-      }
-      outAssns->addSingle(tl.lastCluster, trackPar);
-    }
-
-    //================================================================
     bool EMFPatRecFromTracklets::acceptSingleParticleEvent(const art::Event& event) {
       art::Handle<ExtMonFNALRecoClusterCollection> coll;
       event.getByLabel(inputModuleLabel_, inputInstanceName_, coll);
       return perfectSingleParticleEvent(*coll, extmon_->nplanes());
     }
+
+    //================================================================
+    void EMFPatRecFromTracklets::
+    addToClusters(std::vector<art::Ptr<ExtMonFNALRecoCluster> > *clusters, const Tracklet& tl) {
+      clusters->push_back(tl.firstCluster);
+      for(unsigned i=0; i<tl.middleClusters.size(); ++i) {
+        clusters->push_back(tl.middleClusters[i]);
+      }
+      clusters->push_back(tl.lastCluster);
+    }
+
+    //================================================================
+    ExtMonFNALTrkFitQuality EMFPatRecFromTracklets::
+    evaluateFit(std::vector<ExtMonFNALTrkClusterResiduals> *residuals,
+                const ExtMonFNALTrkParam& pars,
+                const std::vector<art::Ptr<ExtMonFNALRecoCluster> >& clusters) {
+
+      residuals->resize(clusters.size());
+      double chi2(0);
+
+      ExtMonFNALTrkParam tmp(pars); // updated on each loop iteration
+
+      for(int i=clusters.size()-1; i>=0; --i) {
+
+        const ExtMonFNALRecoCluster& cl(*clusters[i]);
+        if(extrapolator_.extrapolateToPlane(cl.plane(), &tmp)) {
+          const double dx = cl.position().x() - tmp.posx();
+          const double dy = cl.position().y() - tmp.posy();
+
+          const ClusterOnTrackPrecision cp = clTool_.clusterPrecision(cl);
+          const double ux = dx/sqrt(cp.sigma2x);
+          const double uy = dy/sqrt(cp.sigma2y);
+
+          (*residuals)[i] = ExtMonFNALTrkClusterResiduals(dx, ux, dy, uy);
+
+          chi2 += ux*ux + uy*uy;
+        }
+        else {
+          throw cet::exception("RECO")<<"EMFPatRecFromTracklets::evaluateFit(): error in track extrapolation\n";
+        }
+
+      } // for(clusters)
+
+      // Each cluster is two measurements.
+      const int ndf = 2*clusters.size() - 5;
+
+      return ExtMonFNALTrkFitQuality(ndf, chi2);
+
+    } //evaluateFit()
 
     //================================================================
 

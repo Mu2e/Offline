@@ -1,0 +1,136 @@
+// Shoot particles through ExtMonFNAL detector.
+//
+// Andrei Gaponenko, 2011
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+// Give this job a name.
+process_name : extMonFNALSingleParticleReconstruction
+
+singleParticleMode : true
+geomModuleLabel : "geom" // "geoms2"
+hitTruthModuleLabel : "pixelDigitization" // "pixHitFilter" or "pixelDigitization"
+simParticleModuleLabel : "g4run" // "pixHitFilter" or "g4run"
+
+source : { module_type : RootInput }
+
+services : {
+    message : @local::default_message
+
+    scheduler: { defaultExceptions : false }
+    TFileService : { fileName : "hists_extMonFNALSingleParticleReconstruction.root" }
+
+    user : {
+        ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+        GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    }
+}
+
+physics : {
+    producers : {
+        pixelRawClusterization : @local::pixelRawClusterization
+        pixelRecoClusterization : @local::pixelRecoClusterization
+        pixelRecoClusterTruthMaking : @local::pixelRecoClusterTruthMaking
+        EMFPatRecFromTracklets : @local::EMFPatRecFromTracklets
+        EMFPatRecFromTrackletsTruthMaking : @local::EMFPatRecFromTrackletsTruthMaking
+    }
+
+    analyzers: {
+        EMFPatRecFromTrackletsAnalysis : {
+            module_type : EMFDetMCHistPatRec
+            patRecModuleLabel : "EMFPatRecFromTracklets"
+            trkTruthModuleLabel : "EMFPatRecFromTrackletsTruthMaking"
+            clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
+            particleModuleLabel : @local::simParticleModuleLabel
+            geomModuleLabel : @local::geomModuleLabel
+
+            cutParticleMinClusters : 6
+            cutHitXmax : 15 // mm
+            cutHitYmax : 15 // mm
+
+            cutMinCommonClusters : 6
+
+        }
+        hitValidation: {
+            module_type: EMFRawHitsValidator
+            inputModuleLabel : "pixelDigitization"
+            inputInstanceName : ""
+            geomModuleLabel : @local::geomModuleLabel
+            geomInstanceName : ""
+        }
+        printRecoClusterTruth : {
+            module_type : EMFDetPrintRecoClusterTruth
+            clusterModuleLabel : "" // "pixelRecoClusterization"
+            truthModuleLabel : "pixelRecoClusterTruthMaking"
+            particleModuleLabel : @local::simParticleModuleLabel
+            cutMinClustersPerParticle : 6
+        }
+        emfSimHits: { // NB: sim hits not in the filtered data
+            module_type: EMFDetHistSimHits
+            inputModuleLabel  : "g4run"
+            inputInstanceName : ""
+        }
+        emfRawHits: {
+            module_type: EMFDetHistRawHits
+            inputModuleLabel  : "pixelDigitization"
+            geomModuleLabel : @local::geomModuleLabel
+            foldTimeToMicrobunch : false
+        }
+        emfPatRec: {
+            module_type: EMFDetHistPatRec
+            patRecModuleLabel  : "EMFPatRecFromTracklets"
+            geomModuleLabel : @local::geomModuleLabel
+        }
+        emfRecoClusters: {
+            module_type: EMFDetHistRecoClusters
+            inputModuleLabel  : "pixelRecoClusterization"
+            geomModuleLabel  : @local::geomModuleLabel
+        }
+    }
+
+    tprint : [ pixelRawClusterization
+               , pixelRecoClusterization, pixelRecoClusterTruthMaking
+               , EMFPatRecFromTracklets, EMFPatRecFromTrackletsTruthMaking
+             ]
+
+    //eprint: [ printRecoClusterTruth ]
+    eprint: [ hitValidation, emfRecoClusters,
+              emfRawHits, emfPatRec
+              , EMFPatRecFromTrackletsAnalysis
+            ]
+
+    out : [FullOutput]
+
+    trigger_paths  : [tprint]
+    end_paths : [eprint]
+    //end_paths : [eprint, out]
+}
+
+outputs: {
+    FullOutput : {
+        module_type : RootOutput
+        fileName    : "extMonFNALSingleParticleReconstruction.root"
+  }
+}
+
+// Adjust settings to process filtered data
+physics.producers.pixelRawClusterization.geomModuleLabel : @local::geomModuleLabel
+physics.producers.pixelRecoClusterization.geomModuleLabel : @local::geomModuleLabel
+physics.producers.EMFPatRecFromTracklets.geomModuleLabel : @local::geomModuleLabel
+
+physics.producers.pixelRecoClusterTruthMaking.hitTruthModuleLabel : @local::hitTruthModuleLabel
+
+// somewhat reduce the amount of "volatile" printouts
+services.message.destinations.log.noTimeStamps : true
+services.message.statistics.noTimeStamps : true
+
+physics.producers.EMFPatRecFromTracklets.singleParticleMode : @local::singleParticleMode
+physics.analyzers.EMFPatRecFromTrackletsAnalysis.singleParticleMode : @local::singleParticleMode
+physics.analyzers.EMFPatRecFromTrackletsAnalysis.singleParticleClusterModuleLabel : pixelRecoClusterization
+
+// This tells emacs to view this file in the JavaScript mode.
+// Local Variables:
+// mode:js
+// End:

@@ -133,15 +133,26 @@ EMFPatRecFromTracklets : {
     inputModuleLabel : "pixelRecoClusterization"
     geomModuleLabel : "geom"
 
+    // clock tolerance used for both cluster association and tracklet match
     clusterClockTolerance : 1 // clock cycle
 
+    // cut on two-cluster tracklet seeds
     maxTrackSlope  : 0.1 // 0.025 // signal cut 0.015
-    stackScatterAngleTolerance : 0.005 // scattering 0.5 mrad in 300 um Si + 1 mm Al
-    trackletMatchSlopeXTolerance : 0.005// FIXME: what's reasonable?
-    trackletMatchXTolerance : 1.50 // mm
-    trackletMatchYTolerance : 1.00 // mm
+
+    // these 3 pars control association of middle clusters to a tracklet
     alignmentToleranceX : 0.250 // pixel size
     alignmentToleranceY : 0.050 // pixel size
+    stackScatterAngleTolerance : 0.005 // scattering 0.5 mrad in 300 um Si + 1 mm Al
+
+    // tracklet match cut
+    trackletMatchSlopeXTolerance : 0.005// FIXME: what's reasonable?
+
+    // This is used to increase errors on hits for downstream planes
+    // Radiation length of 300 um silicon X/X0 = 0.00321
+    // For beta*c*p = 3000 MeV, theta0 = 0.20 mrad
+    thetaScatterOnePlane : 0.0002
+
+    cutMinTrackProb : 1.e-3
 }
 
 EMFPatRecFromTrackletsTruthMaking : {
