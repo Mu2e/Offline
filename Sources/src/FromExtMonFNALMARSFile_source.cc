@@ -1,3 +1,5 @@
+// Transfer MARS outputs into framework unweighting the particles.
+//
 // Original author: Andrei Gaponenko, 2012
 
 #include <iostream>

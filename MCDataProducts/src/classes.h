@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.16 2012/09/19 03:54:42 gandr Exp $
+// $Id: classes.h,v 1.17 2012/11/01 23:31:59 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/09/19 03:54:42 $
+// $Date: 2012/11/01 23:31:59 $
 //
 // Original author Rob Kutschke
 //
@@ -49,6 +49,9 @@
 #include "MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
 #include "MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
 #include "MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
+#include "MCDataProducts/inc/MARSInfo.hh"
+#include "MCDataProducts/inc/MARSInfoCollection.hh"
+#include "MCDataProducts/inc/GenParticleMARSAssns.hh"
 
 #include "MCDataProducts/inc/StepFilterMode.hh"
 
@@ -92,10 +95,16 @@ namespace {
   struct Instantiations {
     mu2e::GenParticleSPMHistory gpspmh;
     mu2e::GenSimParticleLink gspl;
+    mu2e::GenParticleMARSAssns gpwa;
   };
 }
 template class art::Wrapper<mu2e::GenParticleSPMHistory>;
 template class art::Wrapper<mu2e::GenSimParticleLink>;
+
+template class std::pair<art::Ptr<mu2e::GenParticle>, art::Ptr<mu2e::MARSInfo> >;
+template class std::pair<art::Ptr<mu2e::MARSInfo>, art::Ptr<mu2e::GenParticle> >;
+template class art::Wrapper<mu2e::MARSInfoCollection>;
+template class art::Wrapper<mu2e::GenParticleMARSAssns>;
 
 template class std::vector<mu2e::ExtMonFNALHitTruthBits>;
 template class std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::ExtMonFNALRawHit> >;
