@@ -373,7 +373,7 @@ namespace mu2e {
       art::Handle<SimParticleCollection> mch;
       event.getByLabel(particleModuleLabel_, particleInstanceName_, mch);
       for(SimParticleCollection::const_iterator i=mch->begin(), iend = mch->end(); i != iend; ++i) {
-        if(i->second.genParticle()) {
+        if(!i->second.genParticle().isNull()) {
           ++nPrimaries;
         }
       }
