@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.20 2012/10/23 00:25:07 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/10/23 00:25:07 $
+// $Id: classes.h,v 1.21 2012/11/01 23:38:21 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/11/01 23:38:21 $
 //
 // Original author Rob Kutschke
 //
@@ -41,6 +41,10 @@
 #include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkParamCollection.hh"
 #include "RecoDataProducts/inc/ExtMonFNALPatRecTrackAssns.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
@@ -108,5 +112,9 @@ template class art::Assns<mu2e::ExtMonFNALRecoCluster, mu2e::ExtMonFNALTrkParam,
 template class art::Assns<mu2e::ExtMonFNALTrkParam, mu2e::ExtMonFNALRecoCluster, void>;
 template class art::Wrapper<art::Assns<mu2e::ExtMonFNALRecoCluster, mu2e::ExtMonFNALTrkParam, void> >;
 template class art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkParam, mu2e::ExtMonFNALRecoCluster, void> >;
+
+template class std::vector<mu2e::ExtMonFNALTrkClusterResiduals>;
+template class std::vector<mu2e::ExtMonFNALTrkFit>;
+template class art::Wrapper<mu2e::ExtMonFNALTrkFitCollection>;
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS
