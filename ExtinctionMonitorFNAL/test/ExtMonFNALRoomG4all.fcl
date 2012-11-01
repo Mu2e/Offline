@@ -1,0 +1,517 @@
+// Randomize input MARS particles and simulate them all the way to produce ExtMonFNAL SD hits.
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+process_name: ExtMonFNALRoomG4all
+
+source: {
+    module_type: EmptyEvent
+    maxEvents: 5
+}
+
+services: {
+    //message : @local::mf_production
+    message: @local::default_message
+    scheduler: { defaultExceptions : false }
+    TFileService          : { fileName : "histExtMonFNALRoomG4all.root" }
+    RandomNumberGenerator : { }
+
+    user: {
+        ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+        GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+        GeometryService   : { inputFile : "ExtinctionMonitorFNAL/test/geom_emfMARS.txt" }
+        SeedService       : @local::automaticSeeds
+        G4Helper               : { }
+    }
+}
+
+physics: {
+    producers: {
+        ExtMonFNALRoomGenerator: {
+            module_type: ExtMonFNALRoomGenerator
+            verbosityLevel : 1
+
+            inputFiles : []
+
+            numReadProtonsPerEvent : 0 // take them all
+            fracAcceptedProtons : 0.75 // scale 40M MARS protons to 30M p/bunch
+
+            geomModuleLabel : ""
+
+            zFront   : -7200
+            zBack    : -10200
+            yFloor   : +1750
+            yCeiling : +4493
+            xSW      : -1762
+            xNE      : +2814
+
+            srcPositionTolerance : 2 // mm off the plane
+            signalHalfdx : 40
+            signalHalfdy : 40
+
+            numNeighbors : 5
+            minSourceGroupStatistics : 10
+
+            doHistograms : true
+        }
+
+        g4run : @local::g4run
+        geom: { module_type : GeometryRecorder }
+    }
+
+    analyzers: {
+        dumper: {
+            module_type: MARSGenParticleDumper
+            inputModuleLabel   : "ExtMonFNALRoomGenerator"
+            inputInstanceName  : ""
+            geomModuleLabel : ""
+
+
+            zFront   : -7200
+            yFloor   : +1750
+            yCeiling : +4493
+            xSW      : -1762
+            xNE      : +2814
+            zBack    : -10200
+
+            sourcePositionTolerance : 2.
+        }
+
+        emfprintsim: {
+            module_type: EMFDetPrintSim
+            inputModuleLabel  : "g4run"
+            inputInstanceName : ""
+        }
+        emfSimHits: {
+            module_type: EMFDetHistSimHits
+            inputModuleLabel  : "g4run"
+            inputInstanceName : ""
+        }
+    }
+
+    t1: [ExtMonFNALRoomGenerator, g4run, geom]
+    eout: [outfile]
+    edump : [ dumper ]
+    eprint : [ emfprintsim ]
+    ehist : [ emfSimHits ]
+    trigger_paths: [t1]
+    end_paths: [eout, edump, eprint, ehist]
+}
+
+outputs: {
+    outfile: {
+    module_type    : RootOutput
+    fileName       : "ExtMonFNALRoomG4all.root"
+  }
+}
+
+physics.producers.g4run.generatorModuleLabel : "ExtMonFNALRoomGenerator"
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
+
+physics.producers.ExtMonFNALRoomGenerator.inputFiles : [
+'mars/valexakh/monfnal3w1/andr-uc/rand1/000_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/001_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/002_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/003_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/004_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/005_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/006_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/007_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/008_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/009_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/010_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/011_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/012_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/013_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/014_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/015_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/016_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/017_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/018_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/019_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/020_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/021_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/022_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/023_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/024_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/025_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/026_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/027_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/028_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/029_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/030_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/031_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/032_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/033_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/034_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/035_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/036_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/037_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/038_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/039_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/040_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/041_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/042_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/043_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/044_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/045_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/046_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/047_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/048_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/049_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/050_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/051_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/052_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/053_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/054_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/055_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/056_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/057_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/058_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/059_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/060_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/061_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/062_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/063_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/064_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/065_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/066_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/067_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/068_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/069_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/070_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/071_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/072_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/073_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/074_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/075_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/076_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/077_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/078_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/079_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/080_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/081_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/082_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/083_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/084_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/085_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/086_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/087_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/088_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/089_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/090_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/091_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/092_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/093_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/094_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/095_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/096_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/097_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/098_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/099_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/100_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/101_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/102_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/103_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/104_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/105_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/106_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/107_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/108_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/109_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/110_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/111_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/112_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/113_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/114_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/115_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/116_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/117_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/118_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/119_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/120_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/121_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/122_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/123_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/124_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/125_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/126_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/127_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/128_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/129_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/130_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/131_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/132_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/133_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/134_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/135_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/136_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/137_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/138_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/139_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/140_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/141_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/142_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/143_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/144_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/145_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/146_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/147_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/148_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/149_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/150_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/151_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/152_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/153_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/154_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/155_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/156_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/157_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/158_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/159_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/160_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/161_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/162_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/163_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/164_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/165_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/166_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/167_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/168_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/169_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/170_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/171_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/172_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/173_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/174_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/175_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/176_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/177_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/178_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/179_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/180_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/181_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/182_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/183_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/184_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/185_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/186_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/187_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/188_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/189_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/190_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/191_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/192_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/193_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/194_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/195_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/196_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/197_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/198_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/199_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/200_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/201_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/202_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/203_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/204_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/205_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/206_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/207_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/208_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/209_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/210_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/211_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/212_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/213_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/214_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/215_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/216_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/217_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/218_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/219_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/220_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/221_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/222_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/223_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/224_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/225_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/226_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/227_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/228_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/229_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/230_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/231_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/232_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/233_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/234_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/235_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/236_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/237_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/238_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/239_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/240_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/241_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/242_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/243_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/244_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/245_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/246_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/247_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/248_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/249_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/250_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/251_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/252_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/253_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/254_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/255_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/256_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/257_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/258_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/259_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/260_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/261_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/262_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/263_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/264_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/265_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/266_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/267_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/268_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/269_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/270_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/271_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/272_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/273_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/274_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/275_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/276_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/277_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/278_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/279_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/280_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/281_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/282_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/283_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/284_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/285_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/286_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/287_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/288_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/289_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/290_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/291_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/292_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/293_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/294_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/295_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/296_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/297_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/298_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/299_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/300_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/301_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/302_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/303_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/304_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/305_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/306_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/307_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/308_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/309_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/310_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/311_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/312_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/313_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/314_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/315_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/316_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/317_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/318_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/319_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/320_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/321_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/322_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/323_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/324_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/325_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/326_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/327_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/328_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/329_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/330_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/331_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/332_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/333_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/334_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/335_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/336_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/337_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/338_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/339_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/340_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/341_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/342_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/343_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/344_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/345_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/346_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/347_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/348_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/349_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/350_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/351_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/352_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/353_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/354_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/355_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/356_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/357_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/358_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/359_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/360_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/361_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/362_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/363_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/364_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/365_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/366_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/367_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/368_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/369_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/370_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/371_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/372_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/373_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/374_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/375_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/376_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/377_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/378_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/379_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/380_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/381_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/382_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/383_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/384_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/385_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/386_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/387_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/388_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/389_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/390_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/391_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/392_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/393_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/394_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/395_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/396_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/397_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/398_fort.86',
+'mars/valexakh/monfnal3w1/andr-uc/rand1/399_fort.86'
+]

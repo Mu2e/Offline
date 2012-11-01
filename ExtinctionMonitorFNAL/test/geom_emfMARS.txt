@@ -4,7 +4,7 @@
 
 // Full geometry for running ExtMonFNAL studies.
 
-#include "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
+#include "Mu2eG4/test/geom_01.txt"
 
 //################################################################
 // Copy of Mu2eG4/test/extmon_fnal_v02.txt
