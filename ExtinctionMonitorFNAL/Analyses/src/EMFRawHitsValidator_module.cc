@@ -68,6 +68,10 @@ namespace mu2e {
 
     const ExtMonFNALRawHitCollection& inputs(*ih);
 
+    typedef std::set<int> HitBins;
+    typedef std::map<ExtMonFNALPixelId, HitBins> HitMap;
+    HitMap hm;
+
     for(ExtMonFNALRawHitCollection::const_iterator i=inputs.begin(); i!=inputs.end(); ++i) {
       ++numSeenHits_;
 
@@ -92,9 +96,18 @@ namespace mu2e {
       }
 
       ++numPassedHits_;
-    }
 
-  }
+      for(int timeBin = i->clock(); timeBin <= i->clock() + int(i->tot()); ++timeBin) {
+        if(!hm[i->pixelId()].insert(timeBin).second) {
+          throw cet::exception("BUG")
+            <<"event "<<event.id()
+            <<" Overlapping hits on pixel "<<i->pixelId()
+            <<" at clock = "<<timeBin
+            <<"\n";
+        }
+      } // for(time bins)
+    } // for(hits)
+  } // analyze()
 
   //================================================================
   void EMFRawHitsValidator::endJob() {
