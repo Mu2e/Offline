@@ -15,7 +15,7 @@ bool primaryProtonGun.do        = false;
 //----------------------------------------------------------------
 bool extMonFNALGun.do        = true;
 
-double extMonFNALGun.coneAngle = 0.010; // rad
+double extMonFNALGun.coneAngle = 0.005; // rad
 int    extMonFNALGun.pdgId = 2212; // -13 is mu+, 2212 is p+, 102 is charged geantino
 
 string  extMonFNALGun.reference = "detector";
