@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.4 2012/11/01 23:41:58 gandr Exp $
+// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.5 2012/11/01 23:42:02 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:41:58 $
+// $Date: 2012/11/01 23:42:02 $
 //
 // Create particle flux in the ExtMonFNAL box by randomizing
 // kinematic of input particles read from a file.
@@ -118,6 +118,8 @@ namespace mu2e {
       double cutMuonTimeMin_;
       std::vector<double> keepInBox_;
 
+      bool randomizeMomentumDirection_;
+
       unsigned failCountLimit_;
 
       // Max MARS weigh limits for accept/reject, computed from inputs
@@ -184,6 +186,7 @@ namespace mu2e {
       , cutMuonTimeMin_(pset.get<double>("cutMuonTimeMin"))
       , keepInBox_(pset.get<std::vector<double> >("keepInBox"))
 
+      , randomizeMomentumDirection_(pset.get<bool>("randomizeMomentumDirection"))
       , failCountLimit_(pset.get<unsigned>("failCountLimit", 1000))
 
       , hitsWeightMax_(0)
@@ -578,25 +581,25 @@ namespace mu2e {
 
       const Hep3Vector posMu2e(extmon_->extMonToMu2e_position(posExtMon));
 
-
-      // Draw dtheta from the Rayleigh distribution
-      const double dtheta = hit.pr.rSigmaML * sqrt(-2*log(randFlat_.fire()));
-      const double dphi = 2*M_PI*randFlat_.fire();
-
+      // Randomize the momentum direction if requested.
       const Hep3Vector orig(hit.particle.mu2epx, hit.particle.mu2epy, hit.particle.mu2epz);
-
-      // Find a vector that is not collinear with the original particle direction
-      const Hep3Vector n1 = (std::abs(orig.x()) < std::abs(orig.y())) ?
-        ((std::abs(orig.x()) < std::abs(orig.z())) ? Hep3Vector(1,0,0) : Hep3Vector(0,0,1)) :
-        ((std::abs(orig.x()) < std::abs(orig.y())) ? Hep3Vector(1,0,0) : Hep3Vector(0,1,0));
-
-      // Construct a vector perpendicular to the original momentum
-      const Hep3Vector perp = orig.cross(n1);
-
-      // Randomize the original direction
       Hep3Vector randomized3mom(orig);
-      randomized3mom.rotate(perp, dtheta);
-      randomized3mom.rotate(orig, dphi);
+      if(randomizeMomentumDirection_) {
+        // Draw dtheta from the Rayleigh distribution
+        const double dtheta = hit.pr.rSigmaML * sqrt(-2*log(randFlat_.fire()));
+        const double dphi = 2*M_PI*randFlat_.fire();
+
+        // Find a vector that is not collinear with the original particle direction
+        const Hep3Vector n1 = (std::abs(orig.x()) < std::abs(orig.y())) ?
+          ((std::abs(orig.x()) < std::abs(orig.z())) ? Hep3Vector(1,0,0) : Hep3Vector(0,0,1)) :
+          ((std::abs(orig.x()) < std::abs(orig.y())) ? Hep3Vector(1,0,0) : Hep3Vector(0,1,0));
+
+        // Construct a vector perpendicular to the original momentum
+        const Hep3Vector perp = orig.cross(n1);
+
+        randomized3mom.rotate(perp, dtheta);
+        randomized3mom.rotate(orig, dphi);
+      }
 
       const CLHEP::HepLorentzVector momMu2e(randomized3mom, hit.energy);
 

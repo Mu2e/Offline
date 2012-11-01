@@ -58,6 +58,8 @@ physics.producers.generate : {
     // don't throw partiles outside of the original VD box
     keepInBox : [ 100, 200, 650. ]
 
+    randomizeMomentumDirection : false
+
     geomModuleLabel : ""
 }
 
