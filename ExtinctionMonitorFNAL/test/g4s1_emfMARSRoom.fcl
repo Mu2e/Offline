@@ -10,7 +10,7 @@ physics.producers.generate : {
     module_type: ExtMonFNALRoomGenerator
     verbosityLevel : 1
 
-    inputFiles : [ "data/run/20121017-a-EMFRoomFluxAnalyzer/EMFRoomFluxAnalyzer.root" ]
+    inputFiles : [ "inputs/20121017-a-EMFRoomFluxAnalyzer/EMFRoomFluxAnalyzer.root" ]
 
     numProtonsPerEvent : 500
 
