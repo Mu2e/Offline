@@ -1,0 +1,15 @@
+// Andrei Gaponenko, 2012
+
+#include "ExtinctionMonitorFNAL/test/g4detectorDefsCommon.fcl"
+
+process_name : detectorSingleProtons
+
+physics.producers.generate.inputfile : "ExtinctionMonitorFNAL/test/genconfig_singleProtons.txt"
+
+outputs.FullOutput.fileName    : "dataSingleProtons.root"
+services.TFileService.fileName : "histSingleProtons.root"
+
+// This tells emacs to view this file in the JavaScript mode.
+// Local Variables:
+// mode:js
+// End:

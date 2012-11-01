@@ -1,0 +1,15 @@
+// Andrei Gaponenko, 2012
+
+#include "ExtinctionMonitorFNAL/test/g4detectorDefsCommon.fcl"
+
+process_name : detectorMicrobunch
+
+physics.producers.generate.inputfile : "ExtinctionMonitorFNAL/test/genconfig_microbunch.txt"
+
+outputs.FullOutput.fileName    : "dataMicrobunch.root"
+services.TFileService.fileName : "histMicrobunch.root"
+
+// This tells emacs to view this file in the JavaScript mode.
+// Local Variables:
+// mode:js
+// End:

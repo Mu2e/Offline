@@ -1,13 +1,8 @@
-// Shoot particles through ExtMonFNAL detector.
-//
-// Andrei Gaponenko, 2011
+// Andrei Gaponenko, 2012
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
-
-// Give this job a name.
-process_name : channelTest
 
 source : {
     module_type : EmptyEvent
@@ -18,7 +13,7 @@ services : {
     message : @local::default_message
 
     scheduler: { defaultExceptions : false }
-    TFileService : { fileName : "g4hists_detectorTest.root" }
+    TFileService : {}
     RandomNumberGenerator : {}
 
     user : {
@@ -32,18 +27,11 @@ services : {
 
 physics : {
     producers : {
-        generate : {
-            module_type   : EventGenerator
-            inputfile     : "ExtinctionMonitorFNAL/test/genconfig_detectorTest.txt"
-        }
-
+        generate : { module_type   : EventGenerator }
         g4run : @local::g4run
-
         pixelDigitization : @local::pixelDigitization
-
         geom : { module_type : GeometryRecorder }
     }
-
     analyzers: {
         vdprint: {
             module_type: EMFCPrint
@@ -68,7 +56,7 @@ physics : {
         emfprinttruth: {
             module_type: EMFDetPrintRawHitTruth
             hitsModuleLabel  : "pixelDigitization"
-            truthModuleLabel : "pixelDigitization"
+            truthModuleLabel  : "pixelDigitization"
         }
         hitValidation: {
             module_type: EMFRawHitsValidator
@@ -81,26 +69,23 @@ physics : {
             module_type: EMFDetHistRawHits
             inputModuleLabel  : "pixelDigitization"
             inputInstanceName : ""
+            geomModuleLabel : ""
+            foldTimeToMicrobunch : false
         }
     }
 
     tprint : [ generate, g4run, pixelDigitization ]
     gm  : [ geom ]
 
-    //eprint: [ emfprintsim, emfSimHits, emfprinttruth, hitValidation, emfRawHits ]
+    //eprint: [ vdprint, emfprintsim, emfSimHits, emfprinttruth, hitValidation, emfRawHits ]
     eprint: [ hitValidation, emfSimHits, emfRawHits ]
     out : [ FullOutput ]
 
     trigger_paths  : [gm, tprint]
-    end_paths : [ eprint, out ]
+    end_paths : [ out, eprint ]
 }
 
-outputs: {
-    FullOutput : {
-        module_type : RootOutput
-        fileName    : "detectorTest.root"
-  }
-}
+outputs: { FullOutput : { module_type : RootOutput } }
 
 //----------------------------------------------------------------
 services.user.SeedService.baseSeed         :  0
