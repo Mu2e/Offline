@@ -31,7 +31,7 @@ services: {
 physics: {
     analyzers: {
         dumper: {
-            module_type: WeightedGenParticleDumper
+            module_type: MARSGenParticleDumper
             inputModuleLabel   : "FromEMFMARSFileWeighted"
             inputInstanceName  : ""
             geomModuleLabel : ""
@@ -50,7 +50,7 @@ physics: {
 
     eout : [outfile]
     edump : [ dumper ]
-    end_paths : [ eout ]
+    end_paths : [ eout, edump ]
 }
 
 outputs: {
