@@ -17,7 +17,6 @@
 
 #include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
-#include "RecoDataProducts/inc/ExtMonFNALPatRecTrackAssns.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 
 #include "MCDataProducts/inc/SimParticle.hh"

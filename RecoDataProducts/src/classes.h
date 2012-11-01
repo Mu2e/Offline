@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.21 2012/11/01 23:38:21 gandr Exp $
+// $Id: classes.h,v 1.22 2012/11/01 23:38:59 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:38:21 $
+// $Date: 2012/11/01 23:38:59 $
 //
 // Original author Rob Kutschke
 //
@@ -39,8 +39,6 @@
 #include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 
 #include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkParamCollection.hh"
-#include "RecoDataProducts/inc/ExtMonFNALPatRecTrackAssns.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
@@ -102,16 +100,11 @@ template class std::vector<std::vector<mu2e::ExtMonFNALRecoCluster> >;
 template class art::Wrapper<mu2e::ExtMonFNALRecoClusterCollection>;
 
 template class std::vector<mu2e::ExtMonFNALTrkParam>;
-template class art::Wrapper<mu2e::ExtMonFNALTrkParamCollection>;
 
 template class art::Ptr<mu2e::ExtMonFNALRecoCluster>;
 template class art::Ptr<mu2e::ExtMonFNALTrkParam>;
 template class std::pair<art::Ptr<mu2e::ExtMonFNALRecoCluster>, art::Ptr<mu2e::ExtMonFNALTrkParam> >;
 template class std::pair<art::Ptr<mu2e::ExtMonFNALTrkParam>, art::Ptr<mu2e::ExtMonFNALRecoCluster> >;
-template class art::Assns<mu2e::ExtMonFNALRecoCluster, mu2e::ExtMonFNALTrkParam, void>;
-template class art::Assns<mu2e::ExtMonFNALTrkParam, mu2e::ExtMonFNALRecoCluster, void>;
-template class art::Wrapper<art::Assns<mu2e::ExtMonFNALRecoCluster, mu2e::ExtMonFNALTrkParam, void> >;
-template class art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkParam, mu2e::ExtMonFNALRecoCluster, void> >;
 
 template class std::vector<mu2e::ExtMonFNALTrkClusterResiduals>;
 template class std::vector<mu2e::ExtMonFNALTrkFit>;
