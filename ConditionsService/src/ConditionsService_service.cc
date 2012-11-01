@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.9 2012/08/23 23:41:52 gandr Exp $
+// $Id: ConditionsService_service.cc,v 1.10 2012/11/01 23:39:26 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/23 23:41:52 $
+// $Date: 2012/11/01 23:39:26 $
 //
 // Original author Rob Kutschke
 //
@@ -80,10 +80,12 @@ namespace mu2e {
     checkConsistency();
 
     // Can we break the coupling to the entities?
-    addEntity( std::auto_ptr<AcceleratorParams>  ( new AcceleratorParams  (_config)) );
+    std::auto_ptr<AcceleratorParams>  acctmp(new AcceleratorParams(_config));
+    const AcceleratorParams& accp = *acctmp;
+    addEntity( acctmp );
     addEntity( std::auto_ptr<DAQParams>          ( new DAQParams          (_config)) );
     addEntity( std::auto_ptr<TrackerCalibrations>( new TrackerCalibrations(_config)) );
-    addEntity( std::auto_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(_config)) );
+    addEntity( std::auto_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config)) );
   }
 
   // Check that the configuration is self consistent.
