@@ -96,18 +96,18 @@ pixelDigitization : {
     maxToT : 13
 
     // threshold in units of electron charge
-    discriminatorThreshold : 3750
+    discriminatorThreshold : 3000
 
     // ToT calibration injected charge
-    qCalib : 20000
+    qCalib : 19000
 
     // ToT calibration target
-    totCalib : 6
+    totCalib : 1
 
     pixelNoisePerBC : 6.e-10 // 1e-10 electronics + 5e-10 radioactivity
 
     // Arbitrary, but must be sane
-    numClustersPerHit : 10
+    numClustersPerHit : 128
 
     applyProtonPulseShape : false
 }
