@@ -112,7 +112,8 @@ physics : {
     out : [FullOutput]
 
     trigger_paths  : [tprint]
-    end_paths : [eprint, out]
+    end_paths : [eprint]
+    //end_paths : [eprint, out]
 }
 
 outputs: {
