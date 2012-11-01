@@ -1,12 +1,13 @@
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
+#include "ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1.fcl"
 
 process_name: FromEMFMARSFileWeighted
 
 source: {
     module_type: FromEMFMARSFileWeighted
-    fileNames: [ "/data/mu2e/extmon/mars/valexakh/monfnal3w1/andr-test/398_fort.86", "/data/mu2e/extmon/mars/valexakh/monfnal3w1/andr-test/399_fort.86" ]
+    fileNames: @local::mars3w1rand1
 
     runNumber          : 55
     firstSubRunNumber  : 0
