@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.11 2012/11/01 23:42:52 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.12 2012/11/01 23:43:13 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:42:52 $
+// $Date: 2012/11/01 23:43:13 $
 //
 // Original author Andrei Gaponenko
 //
@@ -290,33 +290,30 @@ namespace mu2e {
       const CLHEP::Hep3Vector step = (1./(nclusters_-1)) * (hit.localEndPosition() - hit.localStartPosition());
       const double tstep = (1./(nclusters_-1)) * (hit.endTime() - hit.startTime());
 
-      // charge in electrons
-      const double meanClusterCharge = (1./nclusters_) * hit.ionizingEnergyDeposit() * siProps_.electronHolePairsPerEnergy();
+      // Average deposited charge in electrons
+      const double meanTotalCharge = hit.ionizingEnergyDeposit() * siProps_.electronHolePairsPerEnergy();
 
-      for(unsigned icluster=0; icluster<nclusters_; ++icluster) {
-        const CLHEP::Hep3Vector pos = icluster*step + hit.localStartPosition();
+      // Charge fluctuations
+      const double totalCharge = meanTotalCharge +
+        gaussian_.shoot() * std::sqrt(siProps_.fanoFactor() * meanTotalCharge);
 
-        // The readout side is at z_local = -(sensor half thickness)
-        // Floating point rounding can give negative values here, protect with max()
-        const double driftDistance = std::max(0., pos.z() + sensorHalfThickness);
+      const double clusterCharge = totalCharge/nclusters_;
 
-        const double driftTime = driftDistance/driftSpeed;
+      if(clusterCharge > 0) { // there are occasional energy deposits corresponding to < 1 pair, which can fluctuate to <0
+        for(unsigned icluster=0; icluster<nclusters_; ++icluster) {
+          const CLHEP::Hep3Vector pos = icluster*step + hit.localStartPosition();
 
-        const double diffusionSigma = std::sqrt(2.*siProps_.electronDiffusionConstant() * driftTime);
+          // The readout side is at z_local = -(sensor half thickness)
+          // Floating point rounding can give negative values here, protect with max()
+          const double driftDistance = std::max(0., pos.z() + sensorHalfThickness);
 
-        // Readout positions
-        const double x_ro = pos.x() + diffusionSigma * gaussian_.fire();
-        const double y_ro = pos.y() + diffusionSigma * gaussian_.fire();
+          const double driftTime = driftDistance/driftSpeed;
 
-        // Charge fluctuations
-        const double clusterCharge = meanClusterCharge +
-          gaussian_.shoot() * std::sqrt(siProps_.fanoFactor() * meanClusterCharge);
+          const double diffusionSigma = std::sqrt(2.*siProps_.electronDiffusionConstant() * driftTime);
 
-        if(clusterCharge > 0) { // FIXME: should we allow negative fluctuations?
-
-          // Record the contributions
-
-          // FIXME: Can add a SimParticle-specific offset to time to apply proton pulse shape here.
+          // Readout positions
+          const double x_ro = pos.x() + diffusionSigma * gaussian_.fire();
+          const double y_ro = pos.y() + diffusionSigma * gaussian_.fire();
 
           // While current flow starts at the ionization time, most of the pulse comes
           // from the pixel vicinity.  Roughly account for this by adding driftTime.
