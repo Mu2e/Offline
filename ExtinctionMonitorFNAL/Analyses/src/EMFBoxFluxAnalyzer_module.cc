@@ -1,6 +1,6 @@
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.7 2012/11/01 23:40:24 gandr Exp $
+// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.8 2012/11/01 23:41:17 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:40:24 $
+// $Date: 2012/11/01 23:41:17 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -241,8 +241,8 @@ namespace mu2e {
       std::string hitsModuleLabel_;
       std::string hitsInstanceName_;
 
-      std::string generatorModuleLabel_;
-      std::string generatorInstanceName_;
+      std::string marsInfoModuleLabel_;
+      std::string marsInfoInstanceName_;
 
       std::string geomModuleLabel_;
       std::string geomInstanceName_;
@@ -299,8 +299,8 @@ namespace mu2e {
       , hitsModuleLabel_(pset.get<std::string>("hitsModuleLabel"))
       , hitsInstanceName_(pset.get<std::string>("hitsInstanceName", ""))
 
-      , generatorModuleLabel_(pset.get<std::string>("generatorModuleLabel"))
-      , generatorInstanceName_(pset.get<std::string>("generatorInstanceName", ""))
+      , marsInfoModuleLabel_(pset.get<std::string>("marsInfoModuleLabel"))
+      , marsInfoInstanceName_(pset.get<std::string>("marsInfoInstanceName", ""))
 
       , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
       , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
@@ -605,11 +605,6 @@ namespace mu2e {
       event.getByLabel(hitsModuleLabel_, hitsInstanceName_, hitsh);
       const StepPointMCCollection& hits(*hitsh);
 
-      art::Handle<GenParticleCollection> genh;
-      event.getByLabel(generatorModuleLabel_, generatorInstanceName_, genh);
-      art::FindOne<MARSInfo>
-        mFinder(genh, event, art::InputTag(generatorModuleLabel_, generatorInstanceName_));
-
       for(unsigned i=0; i<hits.size(); ++i) {
 
         const StepPointMC& hit = hits[i];
@@ -629,13 +624,16 @@ namespace mu2e {
               while(top->parent()) {
                 top = top->parent();
               }
-              art::Ptr<GenParticle> gen = top->genParticle();
-              if(!gen) {
-                throw cet::exception("BADINPUTS")<<"ERROR: no GenParticle for hit "
-                                                 <<hit<<" in event "<<event.id()<<"\n";
-              }
 
-              MARSInfo info = mFinder.at(gen.key()).ref();
+              // Found primary SimParticle.  It should have associated MARSInfo
+              std::vector<art::Ptr<SimParticle> > vsp;
+              vsp.push_back(top);
+
+              art::FindOne<MARSInfo>
+                mFinder(vsp, event,
+                        art::InputTag(marsInfoModuleLabel_, marsInfoInstanceName_));
+
+              const MARSInfo info = mFinder.at(0).ref();
 
               InputParticle particle(*extmon_, vid, hit, info);
               histInputs_.fill(particle);

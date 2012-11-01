@@ -26,26 +26,20 @@ physics: {
             module_type: EMFBoxFluxAnalyzer
             verbosityLevel : 2
 
-            hitsModuleLabel : "g4run"
-            hitsInstanceName : "virtualdetector"
-
-            generatorModuleLabel : "generate"
-            generatorInstanceName : ""
-
+            hitsModuleLabel : "EMFBoxHitsFilter"
+            marsInfoModuleLabel : "SimParticleMARSAssnsMaker"
             geomModuleLabel  : "geoms1"
 
             cutMinTime : 120.
             numNeighbors : 5
-            minSourceGroupStatistics : 10
+            minSourceGroupStatistics : 0
         }
 
 
         StoppedMuons: {
             module_type: EMFBoxMuonAnalyzer
-            g4ModuleLabel : g4run
-            g4InstanceName : ""
-            generatorModuleLabel : "generate"
-            generatorInstanceName : ""
+            particlesModuleLabel : "EMFBoxHitsFilter"
+            marsInfoModuleLabel :  "SimParticleMARSAssnsMaker"
             geomModuleLabel : "geoms1"
 
             cutEKineAtStop : 0.1

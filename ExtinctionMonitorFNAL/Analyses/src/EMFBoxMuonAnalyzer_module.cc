@@ -1,6 +1,6 @@
-// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.3 2012/11/01 23:39:53 gandr Exp $
+// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.4 2012/11/01 23:41:17 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:39:53 $
+// $Date: 2012/11/01 23:41:17 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -70,11 +70,11 @@ namespace mu2e {
 
     //================================================================
     class EMFBoxMuonAnalyzer : public art::EDAnalyzer {
-      std::string g4ModuleLabel_;
-      std::string g4InstanceName_;
+      std::string particlesModuleLabel_;
+      std::string particlesInstanceName_;
 
-      std::string generatorModuleLabel_;
-      std::string generatorInstanceName_;
+      std::string marsInfoModuleLabel_;
+      std::string marsInfoInstanceName_;
 
       std::string geomModuleLabel_;
       std::string geomInstanceName_;
@@ -99,11 +99,11 @@ namespace mu2e {
 
     //================================================================
     EMFBoxMuonAnalyzer::EMFBoxMuonAnalyzer(const fhicl::ParameterSet& pset)
-      : g4ModuleLabel_(pset.get<std::string>("g4ModuleLabel"))
-      , g4InstanceName_(pset.get<std::string>("g4InstanceName", ""))
+      : particlesModuleLabel_(pset.get<std::string>("particlesModuleLabel"))
+      , particlesInstanceName_(pset.get<std::string>("particlesInstanceName", ""))
 
-      , generatorModuleLabel_(pset.get<std::string>("generatorModuleLabel"))
-      , generatorInstanceName_(pset.get<std::string>("generatorInstanceName", ""))
+      , marsInfoModuleLabel_(pset.get<std::string>("marsInfoModuleLabel"))
+      , marsInfoInstanceName_(pset.get<std::string>("marsInfoInstanceName", ""))
 
       , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
       , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
@@ -140,13 +140,8 @@ namespace mu2e {
     void EMFBoxMuonAnalyzer::analyze(const art::Event& event) {
 
       art::Handle<SimParticleCollection> ih;
-      event.getByLabel(g4ModuleLabel_, g4InstanceName_, ih);
+      event.getByLabel(particlesModuleLabel_, particlesInstanceName_, ih);
       const SimParticleCollection& particles(*ih);
-
-      art::Handle<GenParticleCollection> genh;
-      event.getByLabel(generatorModuleLabel_, generatorInstanceName_, genh);
-      art::FindOne<MARSInfo>
-        mFinder(genh, event, art::InputTag(generatorModuleLabel_, generatorInstanceName_));
 
       for(SimParticleCollection::const_iterator i=particles.begin(); i!=particles.end(); ++i) {
         const SimParticle& sp = i->second;
@@ -160,20 +155,20 @@ namespace mu2e {
             // Only record stops in the vicinity of ExtMonFNAL
             if(isAccepted(sm_)) {
 
-              // compute MARS data
-              art::Ptr<GenParticle> gen = sp.genParticle();
-              if(sp.parent()) {
-                art::Ptr<SimParticle> top(sp.parent());
-                while(top->parent()) {
-                  top = top->parent();
-                }
-                gen = top->genParticle();
+              art::Ptr<SimParticle> top(ih, i->first.asUint());
+              while(top->parent()) {
+                top = top->parent();
               }
-              if(!gen) {
-                throw cet::exception("BADINPUTS")<<"ERROR: no GenParticle for SimParticle "
-                                                 <<sp.id()<<" in event "<<event.id()<<"\n";
-              }
-              minfo_.info = mFinder.at(gen.key()).ref();
+
+              // Found primary SimParticle.  It should have associated MARSInfo
+              std::vector<art::Ptr<SimParticle> > vsp;
+              vsp.push_back(top);
+
+              art::FindOne<MARSInfo>
+                mFinder(vsp, event,
+                        art::InputTag(marsInfoModuleLabel_, marsInfoInstanceName_));
+
+              minfo_.info = mFinder.at(0).ref();
 
               // write
               nt_->Fill();
