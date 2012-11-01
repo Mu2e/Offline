@@ -29,6 +29,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ExtinctionMonitorFNAL/Reconstruction/inc/PixelRecoUtils.hh"
 #include "ExtinctionMonitorFNAL/Analyses/inc/EMFPatRecEffHistograms.hh"
+#include "ExtinctionMonitorFNAL/Analyses/inc/EMFPatRecFakeHistograms.hh"
 
 #include "ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
 
@@ -73,6 +74,7 @@ namespace mu2e {
       TH2D *hCommonClusters_;
       EMFPatRecEffHistograms effPhysics_;
       EMFPatRecEffHistograms effSoftware_;
+      EMFPatRecFakeHistograms fakes_;
 
       bool signalParticlePhysics(const SimParticle& particle);
       bool inAcceptance(const ExtMonFNALTrkParam& par);
@@ -120,6 +122,7 @@ namespace mu2e {
       , hCommonClusters_()
       , effPhysics_(pset.get<unsigned>("cutMinCommonClusters"))
       , effSoftware_(pset.get<unsigned>("cutMinCommonClusters"))
+      , fakes_(pset.get<unsigned>("cutMinCommonClusters"))
 
       , singleParticleMode_(pset.get<bool>("singleParticleMode", false))
       , clusterModuleLabel_(singleParticleMode_ ? pset.get<std::string>("singleParticleClusterModuleLabel") : "")
@@ -164,6 +167,7 @@ namespace mu2e {
 
       effPhysics_.book(*extmon_, "effPhysics");
       effSoftware_.book(*extmon_, "effSoftware");
+      fakes_.book(*extmon_, "fakes");
     }
 
     //================================================================
@@ -245,6 +249,18 @@ namespace mu2e {
 
       for(std::set<unsigned>::const_iterator i=signalSW.begin(); i != signalSW.end(); ++i) {
         sw.fill(*i);
+      }
+
+      //----------------------------------------------------------------
+      EMFPatRecFakeHistograms::Fillable fk =
+        fakes_.fillable(tracks,
+                        event,
+                        art::InputTag(trkTruthModuleLabel_, trkTruthInstanceName_),
+                        // Use the same X axis for both physics and SW plots
+                        signalPhysics.size());
+
+      for(unsigned i=0; i < tracks->size(); ++i) {
+        fk.fill(i);
       }
 
     } // analyze()

@@ -20,6 +20,7 @@ namespace mu2e {
 
     EMFPatRecEffHistograms::EMFPatRecEffHistograms(unsigned cutMinCommonClusters)
       : cutMinCommonClusters_(cutMinCommonClusters)
+      , extmon_()
       , hcommon_()
       , effMultiplicity_()
     {}
