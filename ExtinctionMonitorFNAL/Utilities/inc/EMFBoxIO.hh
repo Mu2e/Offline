@@ -123,6 +123,10 @@ namespace mu2e {
         }
       };
 
+      bool operator==(const G4JobInfo& a, const G4JobInfo& b) {
+        return (a.event == b.event) && (a.subrun == b.subrun) && (a.run == b.run);
+      }
+
       //================================================================
 
     } // IO

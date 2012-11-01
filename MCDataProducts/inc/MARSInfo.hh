@@ -61,6 +61,16 @@ namespace mu2e {
     }
   };
 
+  // "less than" comparison to distinguish different proton*simulationPath results
+  struct CmpProtonIdAndSimPath {
+    bool operator()(const MARSInfo& a, const MARSInfo& b) const {
+      return
+        (a.runNumber() < b.runNumber()) || ((a.runNumber() == b.runNumber()) &&
+                                            ((a.subRunNumber() < b.subRunNumber()) || ((a.subRunNumber() == b.subRunNumber()) &&
+                                                                                       (a.protonNumber() < b.protonNumber()))));
+    }
+  };
+
   std::ostream& operator<<(std::ostream& os, const MARSInfo& mi);
 }
 

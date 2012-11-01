@@ -1,6 +1,6 @@
-// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.7 2012/11/01 23:41:42 gandr Exp $
+// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.8 2012/11/01 23:41:54 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:41:42 $
+// $Date: 2012/11/01 23:41:54 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -88,8 +88,9 @@ namespace mu2e {
       };
       struct ProtonSort {
         bool operator()(const BufferEntry& a, const BufferEntry& b) {
-          // Can use this because of no partly correlated particles in single g4s1 event
-          CmpProtonId cm;
+          // We don't have to look at g4s1info because this module
+          // processes one event at a time.
+          CmpProtonIdAndSimPath cm;
           return cm(a.minfo,b.minfo);
         }
       };

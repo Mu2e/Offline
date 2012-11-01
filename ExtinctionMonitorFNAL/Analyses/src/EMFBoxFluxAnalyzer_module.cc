@@ -1,9 +1,9 @@
 // Read in a set of particles hitting ExtMonFNAL VD box (from g4s1 room jobs)
 // compute randomization parameters, and write out as an ntuple.
 //
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.11 2012/11/01 23:41:42 gandr Exp $
+// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.12 2012/11/01 23:41:54 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:41:42 $
+// $Date: 2012/11/01 23:41:54 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -137,11 +137,15 @@ namespace mu2e {
       };
 
       //----------------
-      struct ProtonSort {
+      // Here we operate on an ensemble of g4s1 events
+      // so need to look at identifiers from all the steps,
+      // from MARS protonNumber to g4s1 run number.
+      struct ProtonPathSort {
         bool operator()(const InputParticle& a, const InputParticle& b) {
-          // Can use this because of no partly correlated particles in single g4s1 event
-          CmpProtonId cm;
-          return cm(a.minfo,b.minfo);
+          CmpProtonIdAndSimPath cm;
+          IO::CmpG4JobInfo cg;
+          return cm(a.minfo,b.minfo) || (!cm(b.minfo, a.minfo) &&
+                                         cg(a.g4s1info, b.g4s1info));
         }
       };
 
@@ -784,7 +788,7 @@ namespace mu2e {
       nt->Branch("g4s1info", &g4s1info, g4s1info.branchDescription());
 
       // Sort by proton
-      ProtonSort ps;
+      ProtonPathSort ps;
       std::sort(particles_.begin(), particles_.end(), ps);
 
       // Write out and count protons in the process
@@ -792,9 +796,10 @@ namespace mu2e {
       std::set<MARSInfo, CmpProtonId> uniqProtons;
       if(!particles_.empty()) {
 
-        MARSInfo current = particles_[0].minfo;
+        MARSInfo mcurrent = particles_[0].minfo;
+        IO::G4JobInfo gcurrent = particles_[0].g4s1info;
         ++numProtonPaths;
-        uniqProtons.insert(current);
+        uniqProtons.insert(mcurrent);
 
         for(unsigned i=0; i<particles_.size(); ++i) {
           particle.emx = particles_[i].posExtMon.x();
@@ -815,11 +820,16 @@ namespace mu2e {
 
           nt->Fill();
 
-          if(!sameProtonAndSimPath(current, particles_[i].minfo)) {
-            current = particles_[i].minfo;
-            ++numProtonPaths;
-            uniqProtons.insert(current);
-          }
+          if(! (sameProtonAndSimPath(mcurrent, particles_[i].minfo) &&
+                (gcurrent == particles_[i].g4s1info)
+                )
+             )
+            {
+              mcurrent = particles_[i].minfo;
+              gcurrent = particles_[i].g4s1info;
+              ++numProtonPaths;
+              uniqProtons.insert(mcurrent);
+            }
         } // for(particle)
       } // !empty
 
