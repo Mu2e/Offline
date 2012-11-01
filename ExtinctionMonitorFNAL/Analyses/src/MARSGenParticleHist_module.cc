@@ -50,6 +50,7 @@ namespace mu2e {
       // Output histograms
       TH2* hzx_;
       TH2* hxy_;
+      TH2* hyz_;
 
     public:
       explicit MARSGenParticleHist(const fhicl::ParameterSet& pset);
@@ -66,6 +67,7 @@ namespace mu2e {
       , dump_(0)
       , hzx_()
       , hxy_()
+      , hyz_()
     {}
 
     //================================================================
@@ -73,6 +75,7 @@ namespace mu2e {
       art::ServiceHandle<art::TFileService> tfs;
       hzx_ = tfs->make<TH2D>("dumpzx", "dump x vs z", 40, -10400., -7000., 40, -2200., 3200.);
       hxy_ = tfs->make<TH2D>("dumpxy", "dump y vs x", 40, -2200., 3200., 40, 1500., 4700.);
+      hyz_ = tfs->make<TH2D>("dumpyz", "dump y vs z",  40, -10400., -7000., 40, 1500., 4700.);
     }
 
     //================================================================
@@ -102,6 +105,7 @@ namespace mu2e {
         CLHEP::Hep3Vector posDump = dump_->mu2eToBeamDump_position(particles[i].position());
         hzx_->Fill(posDump.z(), posDump.x());
         hxy_->Fill(posDump.x(), posDump.y());
+        hyz_->Fill(posDump.z(), posDump.y());
 
       } // for()
     } // analyze(event)
