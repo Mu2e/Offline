@@ -3,14 +3,6 @@
 // bool g4SteppingAction.killerVerbose = true;
 vector<string> g4SteppingAction.killInTheseVolumes = {};
 
-//      "VirtualDetector_EMFBoxFront",
-//      "VirtualDetector_EMFBoxSW",
-//      "VirtualDetector_EMFBoxBottom",
-//      "VirtualDetector_EMFBoxBack",
-//      "VirtualDetector_EMFBoxNE",
-//      "VirtualDetector_EMFBoxTop"
-//
-
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++
