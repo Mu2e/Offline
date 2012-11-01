@@ -1,6 +1,6 @@
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.6 2012/11/01 23:40:14 gandr Exp $
+// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.7 2012/11/01 23:40:24 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:40:14 $
+// $Date: 2012/11/01 23:40:24 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -54,6 +54,8 @@
 
 #include "ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
 #include "ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
+#include "ExtinctionMonitorFNAL/Utilities/inc/EMFRandomizationParticleDefs.hh"
+
 
 #include "TH1.h"
 #include "TH2.h"
@@ -67,44 +69,14 @@ namespace mu2e {
 
     namespace {
 
+      using namespace Randomization;
+
       unsigned const NUM_SOURCES = VirtualDetectorId::EMFBoxTop - VirtualDetectorId::EMFBoxFront + 1;
       unsigned sourceNumber(VirtualDetectorId vid) { return vid.id() - VirtualDetectorId::EMFBoxFront; }
       VirtualDetectorId vdFromSrcNum(unsigned st)  { return VirtualDetectorId(st + VirtualDetectorId::EMFBoxFront); }
 
       // FIXME: this number is known to ConditionsService, which is not available at beginJob()
       const double deBuncherPeriod = 1694.;
-
-      //================================================================
-      enum ParticleType {
-        ELECTRON, MUON, PROTON, OTHER_CHARGED,
-        NEUTRON, GAMMA, OTHER_NEUTRAL,
-        NUM_PARTICLE_TYPES
-      };
-
-      //================================================================
-      ParticleType classifyParticleType(PDGCode::type pdgId) {
-        if(std::abs(pdgId)==11) {
-          return ELECTRON;
-        }
-        if(std::abs(pdgId)==13) {
-          return MUON;
-        }
-        if(pdgId==2212) {
-          return PROTON;
-        }
-        else if(pdgId == 2112) {
-          return NEUTRON;
-        }
-        else if(pdgId == 22) {
-          return GAMMA;
-        }
-        else if(std::abs(getCharge(pdgId)) > 0.5) {
-          return OTHER_CHARGED;
-        }
-        else {
-          return OTHER_NEUTRAL;
-        }
-      }
 
       //================================================================
       struct InputParticle {

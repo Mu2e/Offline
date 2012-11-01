@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.5 2012/11/01 23:40:14 gandr Exp $
+// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.6 2012/11/01 23:40:24 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:40:14 $
+// $Date: 2012/11/01 23:40:24 $
 //
 // Create particle flux in the ExtMonFNAL room by randomizing
 // kinematic of input particles read from a file.
@@ -44,6 +44,7 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
+#include "ExtinctionMonitorFNAL/Utilities/inc/EMFRandomizationParticleDefs.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/MassCache.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
@@ -65,6 +66,8 @@
 
 namespace mu2e {
   namespace ExtMonFNAL {
+
+    using namespace Randomization;
 
     namespace {
       //================================================================
@@ -114,13 +117,6 @@ namespace mu2e {
             <<" )"
           ;
       }
-
-      //================================================================
-      enum ParticleType {
-        ELECTRON, MUON, PROTON, OTHER_CHARGED,
-        NEUTRON, GAMMA, OTHER_NEUTRAL,
-        NUM_PARTICLE_TYPES
-      };
 
       //================================================================
       struct InputParticle {
@@ -299,9 +295,6 @@ namespace mu2e {
 
       SourceType classifySource(const CLHEP::Hep3Vector& posDump, const CLHEP::Hep3Vector& posMu2e);
       bool isSignal(const CLHEP::Hep3Vector& posMu2e);
-
-
-      ParticleType classifyParticleType(PDGCode::type pdgId);
 
       void printSrcGroups();
       void mergeLowStatisticSrcGroups();
@@ -599,32 +592,7 @@ namespace mu2e {
         (std::abs(posExtMon.y()) < signalHalfdy_);
     }
 
-    //================================================================
-    ParticleType ExtMonFNALRoomGenerator::classifyParticleType(PDGCode::type pdgId) {
-      if(std::abs(pdgId)==11) {
-        return ELECTRON;
-      }
-      if(std::abs(pdgId)==13) {
-        return MUON;
-      }
-      if(pdgId==2212) {
-        return PROTON;
-      }
-      else if(pdgId == 2112) {
-        return NEUTRON;
-      }
-      else if(pdgId == 22) {
-        return GAMMA;
-      }
-      else if(std::abs(getCharge(pdgId)) > 0.5) {
-        return OTHER_CHARGED;
-      }
-      else {
-        return OTHER_NEUTRAL;
-      }
-    }
-
-    //================================================================
+   //================================================================
     void ExtMonFNALRoomGenerator::mergeLowStatisticSrcGroups() {
       for(unsigned st = 0; st < NUM_SOURCES; ++st) {
 

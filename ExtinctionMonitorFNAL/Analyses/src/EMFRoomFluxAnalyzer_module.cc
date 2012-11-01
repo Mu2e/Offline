@@ -1,8 +1,8 @@
 // Precompute particle randomization from MARS inputs for g4s1 ExtMonFNALRoom jobs.
 //
-// $Id: EMFRoomFluxAnalyzer_module.cc,v 1.2 2012/11/01 23:40:14 gandr Exp $
+// $Id: EMFRoomFluxAnalyzer_module.cc,v 1.3 2012/11/01 23:40:24 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:40:14 $
+// $Date: 2012/11/01 23:40:24 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -57,6 +57,7 @@
 
 #include "ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
 #include "ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
+#include "ExtinctionMonitorFNAL/Utilities/inc/EMFRandomizationParticleDefs.hh"
 
 #include "TTree.h"
 
@@ -65,6 +66,8 @@
 
 namespace mu2e {
   namespace ExtMonFNAL {
+
+    using namespace Randomization;
 
     namespace {
 
@@ -117,13 +120,6 @@ namespace mu2e {
       }
 
       //================================================================
-      enum ParticleType {
-        ELECTRON, MUON, PROTON, OTHER_CHARGED,
-        NEUTRON, GAMMA, OTHER_NEUTRAL,
-        NUM_PARTICLE_TYPES
-      };
-
-      //================================================================
       struct InputParticle {
         CLHEP::Hep3Vector posDump;
         CLHEP::HepLorentzVector momMu2e;
@@ -152,35 +148,6 @@ namespace mu2e {
 
       std::ostream& operator<<(std::ostream& os, const InputParticle& part) {
         return os<<"Particle(posDump="<<part.posDump<<", momMu2e="<<part.momMu2e<<")";
-      }
-
-      //================================================================
-      using IO::ParticleRandomization;
-      typedef std::vector<ParticleRandomization> ParticleRandomizations;
-
-      //================================================================
-      ParticleType classifyParticleType(PDGCode::type pdgId) {
-        if(std::abs(pdgId)==11) {
-          return ELECTRON;
-        }
-        if(std::abs(pdgId)==13) {
-          return MUON;
-        }
-        if(pdgId==2212) {
-          return PROTON;
-        }
-        else if(pdgId == 2112) {
-          return NEUTRON;
-        }
-        else if(pdgId == 22) {
-          return GAMMA;
-        }
-        else if(std::abs(getCharge(pdgId)) > 0.5) {
-          return OTHER_CHARGED;
-        }
-        else {
-          return OTHER_NEUTRAL;
-        }
       }
 
       //================================================================
