@@ -20,28 +20,11 @@ namespace mu2e {
   namespace ExtMonFNAL {
 
     //================================================================
-    LinearRegression::LinearRegression(const ExtMon *extmon, double thetaScatterOnePlane)
+    LinearRegression::LinearRegression(const ExtMon *extmon, const ClusterOnTrackPrecisionTool& clTool)
       : extmon_(extmon)
-      , scatterSigma2(extmon->nplanes())
+      , clTool_(clTool)
       , zStart_(extmon->up().sensor_zoffset().back())
-    {
-      // We estimate pars at the end of the upstream stack. The scatter
-      // there is zero by definition.  Each plane introduces a kink
-      // with the given thetaScatterOnePlane RMS, which is multiplied by
-      // the distance to the next plane to get scattering effect on position.
-      // The effect is cumulative (quadratic sum).
-
-      double current_z = extmon_->sensorCenterInExtMon(extmon_->nplanes()-1).z();
-      scatterSigma2[extmon_->nplanes()-1] = 0;
-      for(int i= extmon_->nplanes()-2; i>=0; --i) {
-        const double new_z = extmon_->sensorCenterInExtMon(i).z();
-        const double dz = new_z - current_z;
-        current_z = new_z;
-        const double segmentScatter2 = std::pow(thetaScatterOnePlane * dz, 2);
-        scatterSigma2[i] = segmentScatter2 + scatterSigma2[i+1];
-      }
-    }
-
+    {}
 
     //================================================================
     void LinearRegression::addCluster(LinearRegressionData *eqs, const ExtMonFNALRecoCluster& cl) {
@@ -51,37 +34,38 @@ namespace mu2e {
       const CLHEP::Hep3Vector hitpos = extmon_->stackToExtMon_position(cl.position());
       const double di =  hitpos.z() - zStart_;
 
+      const ClusterOnTrackPrecision cp = clTool_.clusterPrecision(cl);
+
       const bool dn = (hitpos.z() < 0.);
 
+      //----------------
+      // ZX projection
       {
-        const double cls2x = cl.xWidth() * extmon_->chip().xPitch() / sqrt(12.);
-        const double sigma2x = cls2x + scatterSigma2[cl.plane()];
-        eqs->zxA[0][0] += 1/sigma2x;
-        eqs->zxA[0][1] += di/sigma2x;
-        eqs->zxA[1][1] += di*di/sigma2x;
+        eqs->zxA[0][0] += 1/cp.sigma2x;
+        eqs->zxA[0][1] += di/cp.sigma2x;
+        eqs->zxA[1][1] += di*di/cp.sigma2x;
 
-        eqs->zxRHS[0]  += hitpos.x()/sigma2x;
-        eqs->zxRHS[1]  += hitpos.x()*di/sigma2x;
+        eqs->zxRHS[0]  += hitpos.x()/cp.sigma2x;
+        eqs->zxRHS[1]  += hitpos.x()*di/cp.sigma2x;
       }
 
+      //----------------
+      // YZ projection
       {
-        const double cls2y = cl.yWidth() * extmon_->chip().yPitch() / sqrt(12.);
-        const double sigma2y = cls2y + scatterSigma2[cl.plane()];
-
-        eqs->yzA[0][0] += 1/sigma2y;
-        eqs->yzA[0][1] += di/sigma2y;
-        eqs->yzA[1][1] += di*di/sigma2y;
+        eqs->yzA[0][0] += 1/cp.sigma2y;
+        eqs->yzA[0][1] += di/cp.sigma2y;
+        eqs->yzA[1][1] += di*di/cp.sigma2y;
 
         if(dn) {
-          eqs->yzA[0][2] += (di - D)/sigma2y;
-          eqs->yzA[1][2] += di*(di - D)/sigma2y;
-          eqs->yzA[2][2] += (di - D)*(di - D)/sigma2y;
+          eqs->yzA[0][2] += (di - D)/cp.sigma2y;
+          eqs->yzA[1][2] += di*(di - D)/cp.sigma2y;
+          eqs->yzA[2][2] += (di - D)*(di - D)/cp.sigma2y;
         }
 
-        eqs->yzRHS[0]  += hitpos.y()/sigma2y;
-        eqs->yzRHS[1]  += hitpos.y()*di/sigma2y;
+        eqs->yzRHS[0]  += hitpos.y()/cp.sigma2y;
+        eqs->yzRHS[1]  += hitpos.y()*di/cp.sigma2y;
         if(dn) {
-          eqs->yzRHS[2]  += hitpos.y()*(di - D)/sigma2y;
+          eqs->yzRHS[2]  += hitpos.y()*(di - D)/cp.sigma2y;
         }
       }
     }

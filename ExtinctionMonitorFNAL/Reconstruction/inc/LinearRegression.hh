@@ -12,6 +12,8 @@
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Matrix/Vector.h"
 
+#include "ExtinctionMonitorFNAL/Reconstruction/inc/ClusterOnTrackPrecisionTool.hh"
+
 namespace mu2e {
 
   class ExtMonFNALRecoCluster;
@@ -29,7 +31,7 @@ namespace mu2e {
 
       // Ownership is not passed. The geometry object must be kept available while this
       // the regression object is in use.
-      explicit LinearRegression(const ExtMon *detectorGeom, double thetaScatterOnePlane);
+      explicit LinearRegression(const ExtMon* extmon, const ClusterOnTrackPrecisionTool& clTool);
 
       // In mu2e software geometry is not accessible at module construction.
       // Provide default ctr so that modules don't have to deal with pointers to us.
@@ -40,7 +42,7 @@ namespace mu2e {
       // NB: We can't pre-compute inverted matrices because sigma
       // depends on the cluster size.
       const ExtMon *extmon_;
-      std::vector<double> scatterSigma2;
+      ClusterOnTrackPrecisionTool clTool_;
       double zStart_;  // the coordinate where we want to measure track parameters
 
       struct LinearRegressionData {
