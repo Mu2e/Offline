@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.6 2012/11/01 23:40:36 gandr Exp $
+# $Id: SConscript,v 1.7 2012/11/01 23:44:28 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/11/01 23:40:36 $
+# $Date: 2012/11/01 23:44:28 $
 #
 # Original author Rob Kutschke.
 #
@@ -39,6 +39,7 @@ if re.match(r'^/', local_lib_path):
 local_lib_name=re.sub(r'/', r'_', local_lib_path)
 
 my_libs=[ 
+    'ExtinctionMonitorFNAL_Reconstruction', 
     'ExtinctionMonitorFNAL_Utilities', 
     'Mu2eInterfaces',
     'Mu2eUtilities',
