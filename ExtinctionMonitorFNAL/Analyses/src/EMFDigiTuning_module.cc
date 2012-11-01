@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/ParameterSetRegistry.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
@@ -51,7 +52,9 @@ namespace mu2e {
       // an artifact of booking in initialization
       art::TFileService *tfs_;
 
-      TEfficiency *sensorEff_;
+      TEfficiency *sensorEffVsThreshold_;
+      TEfficiency *sensorEffVsCurrent_;
+      TEfficiency *sensorEffVsNumClusters_;
 
       TH1 *numRawHits_;
       TH1 *hitToT_;
@@ -66,7 +69,6 @@ namespace mu2e {
       explicit EMFDigiTuning(const fhicl::ParameterSet& pset);
       virtual void beginRun(const art::Run& run);
       virtual void analyze(const art::Event& event);
-      virtual void endJob();
     };
 
     //================================================================
@@ -80,8 +82,9 @@ namespace mu2e {
 
       , tfs_(&*art::ServiceHandle<art::TFileService>())
 
-        // We use only one bin, but ROOT screws up when drawing 1-bin efficiency
-      , sensorEff_(tfs_->make<TEfficiency>("effSensor", "Sensor efficiency", 2, -0.5, 1.5))
+      , sensorEffVsThreshold_(tfs_->make<TEfficiency>("sensorEffVsTh", "Sensor efficiency vs threshold", 20, 250., 10250.))
+      , sensorEffVsCurrent_(tfs_->make<TEfficiency>("sensorEffVsI", "Sensor efficiency vs log2(current/1000)", 15, -0.5, 14.5))
+      , sensorEffVsNumClusters_(tfs_->make<TEfficiency>("sensorEffVsNc", "Sensor efficiency vs log2(numDigiClusters)", 15, -0.5, 14.5))
 
       , numRawHits_(tfs_->make<TH1D>("numRawHits", "num raw hits", 40, -0.5, 39.5))
       , hitToT_(tfs_->make<TH1D>("hitToT", "hit ToT", 15, -0.5, 14.5))
@@ -132,8 +135,33 @@ namespace mu2e {
       }
 
       //----------------
-      sensorEff_->Fill(!hits.empty(), 0.);
+      // Data points for the "scan" plots
 
+      {
+        //// this needs new art:
+        //const fhicl::ParameterSet& digipset(hitsh.provenance()->parameterSet());
+
+        if(hitsh.provenance()->psetIDs().size() != 1) {
+          throw cet::exception("BADINPUTS")
+            <<"Raw hits provenance: more than on psetIDs"
+            <<" --- did you forget to change name in the writer configuration?\n";
+        }
+        const fhicl::ParameterSet& digiConfig =
+          fhicl::ParameterSetRegistry::get(*hitsh.provenance()->psetIDs().begin());
+
+        const double threshold = digiConfig.get<double>("discriminatorThreshold");
+        const double qCalib = digiConfig.get<double>("qCalib");
+        const int totCalib = digiConfig.get<int>("totCalib");
+        const double k = (qCalib - threshold)/(totCalib);
+        //std::cout<<"EMFDigiTuning: got digi config."<<" discriminatorThreshold = "<<discriminatorThreshold<<std::endl;
+
+        const bool eff = !hits.empty();
+        sensorEffVsThreshold_->Fill(eff, threshold);
+        sensorEffVsCurrent_->Fill(eff, log2(k/1000.));
+        sensorEffVsNumClusters_->Fill(eff, log2(digiConfig.get<int>("numClustersPerHit")));
+      }
+
+      //----------------
       numRawHits_->Fill(hits.size());
 
       std::vector<int> hitTimes;
@@ -153,11 +181,6 @@ namespace mu2e {
         clusterNy_->Fill(cl.yWidth());
       }
       //----------------
-    }
-
-    //================================================================
-    void EMFDigiTuning::endJob() {
-      std::cout<<"EMFDigiTuning: sensor efficiency = "<<sensorEff_->GetEfficiency(1)<<std::endl;
     }
 
     //================================================================
