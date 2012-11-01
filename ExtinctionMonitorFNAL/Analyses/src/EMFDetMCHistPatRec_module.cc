@@ -15,8 +15,8 @@
 #include "art/Framework/Core/FindMany.h"
 #include "art/Utilities/InputTag.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkParamCollection.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 #include "RecoDataProducts/inc/ExtMonFNALPatRecTrackAssns.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 
@@ -191,7 +191,7 @@ namespace mu2e {
         particles.push_back(art::Ptr<SimParticle>(ih, i->first.asUint()));
       }
 
-      art::FindMany<ExtMonFNALTrkParam,ExtMonFNALTrkMatchInfo>
+      art::FindMany<ExtMonFNALTrkFit,ExtMonFNALTrkMatchInfo>
         trackFinder(particles, event, art::InputTag(trkTruthModuleLabel_, trkTruthInstanceName_));
 
       art::FindMany<ExtMonFNALRecoCluster,ExtMonFNALRecoClusterTruthBits>
@@ -227,7 +227,7 @@ namespace mu2e {
         } // if(physics)
       } // for(ip)
 
-      art::Handle<ExtMonFNALTrkParamCollection> tracks;
+      art::Handle<ExtMonFNALTrkFitCollection> tracks;
       event.getByLabel(patRecModuleLabel_, patRecInstanceName_, tracks);
       hMultiplicitySignal_->Fill(signalPhysics.size(), tracks->size());
 

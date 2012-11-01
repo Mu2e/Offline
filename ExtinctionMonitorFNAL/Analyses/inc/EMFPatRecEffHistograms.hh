@@ -13,8 +13,8 @@
 
 #include "boost/noncopyable.hpp"
 
-#include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkParamCollection.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
 
 class TH1D;
@@ -49,7 +49,7 @@ namespace mu2e {
       // instead of creating one per fill call.
       class Fillable {
         EMFPatRecEffHistograms *parent_;
-        art::FindMany<ExtMonFNALTrkParam,ExtMonFNALTrkMatchInfo> trackFinder_;
+        art::FindMany<ExtMonFNALTrkFit,ExtMonFNALTrkMatchInfo> trackFinder_;
         unsigned multiplicity_; // per-event variable
       public:
 

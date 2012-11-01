@@ -13,8 +13,8 @@
 
 #include "boost/noncopyable.hpp"
 
-#include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkParamCollection.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
+#include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
 
 class TH1D;
@@ -55,7 +55,7 @@ namespace mu2e {
       public:
 
         Fillable(EMFPatRecFakeHistograms *parent,
-                 const art::Handle<ExtMonFNALTrkParamCollection>& tracks,
+                 const art::Handle<ExtMonFNALTrkFitCollection>& tracks,
                  const art::Event& event,
                  const art::InputTag& trkTruthTag,
                  unsigned multiplicity)
@@ -67,7 +67,7 @@ namespace mu2e {
         void fill(unsigned denominatorTrackIndex);
       };
 
-      Fillable fillable(const art::Handle<ExtMonFNALTrkParamCollection>& tracks,
+      Fillable fillable(const art::Handle<ExtMonFNALTrkFitCollection>& tracks,
                         const art::Event& event,
                         const art::InputTag& trkTruthTag,
                         unsigned multiplicity)  {
