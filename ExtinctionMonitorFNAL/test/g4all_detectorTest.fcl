@@ -22,7 +22,7 @@ services : {
     RandomNumberGenerator : {}
 
     user : {
-        GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_s2EMFTwoGrooves.txt" }
+        GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_detectorTest.txt" }
         ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
         GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
         SeedService       : @local::automaticSeeds
