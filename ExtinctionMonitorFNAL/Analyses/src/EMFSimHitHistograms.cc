@@ -38,6 +38,9 @@ namespace mu2e {
 
     hitTimes_->SetOption("colz");
 
+    energyDeposit_ = tfdir.make<TH1D>("eion", "Ionizing energy deposit", 150, 0., 0.150);
+    energyDeposit_->GetXaxis()->SetTitle("energy [MeV]");
+
     for(unsigned sensor = 0; sensor < nsensors; ++sensor) {
       ExtMonFNALSensorId sid(sensor);
       std::ostringstream osname;
@@ -59,6 +62,7 @@ namespace mu2e {
   void EMFSimHitHistograms::fill(const ExtMonFNALSimHitCollection& coll) {
     for(ExtMonFNALSimHitCollection::const_iterator i = coll.begin(); i != coll.end(); ++i) {
       hitTimes_->Fill(i->startTime(), i->sensorId().plane());
+      energyDeposit_->Fill(i->ionizingEnergyDeposit());
       hitPosition_[i->sensorId()]->Fill(i->localStartPosition().x(), i->localStartPosition().y());
     }
   } // end EMFSimHitHistograms::fill()

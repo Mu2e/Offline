@@ -1,9 +1,9 @@
 #ifndef ExtinctionMonitorFNAL_Analyses_EMFSimHitHistograms_hh
 #define ExtinctionMonitorFNAL_Analyses_EMFSimHitHistograms_hh
 //
-// $Id: EMFSimHitHistograms.hh,v 1.2 2012/11/01 23:43:00 gandr Exp $
+// $Id: EMFSimHitHistograms.hh,v 1.3 2012/11/01 23:43:17 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:43:00 $
+// $Date: 2012/11/01 23:43:17 $
 //
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 //
@@ -28,7 +28,7 @@ namespace mu2e {
   class EMFSimHitHistograms :  private boost::noncopyable {
   public:
 
-    EMFSimHitHistograms() : hitTimes_() {}
+    EMFSimHitHistograms() : hitTimes_(), energyDeposit_() {}
 
     // Book histograms in the subdirectory, given by the relativePath; that path is
     // relative to the root TFileDirectory for the current module.
@@ -42,6 +42,7 @@ namespace mu2e {
 
   private:
     TH2D *hitTimes_;
+    TH1D *energyDeposit_;
     std::map<ExtMonFNALSensorId, TH2D*> hitPosition_;
   };
 
