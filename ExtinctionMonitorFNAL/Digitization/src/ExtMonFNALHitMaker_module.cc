@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.9 2012/11/01 23:39:38 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.10 2012/11/01 23:39:45 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:39:38 $
+// $Date: 2012/11/01 23:39:45 $
 //
 // Original author Andrei Gaponenko
 //
@@ -47,6 +47,8 @@
 #include "ExtinctionMonitorFNAL/Digitization/inc/SiliconProperties.hh"
 #include "ExtinctionMonitorFNAL/Digitization/inc/PixelToTCircuit.hh"
 #include "ExtinctionMonitorFNAL/Digitization/inc/PixelNoise.hh"
+#include "ExtinctionMonitorFNAL/Digitization/inc/PixelCharge.hh"
+#include "ExtinctionMonitorFNAL/Digitization/inc/ProtonPulseShape.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -59,32 +61,6 @@
 
 namespace mu2e {
   namespace ExtMonFNAL {
-
-    //================================================================
-    struct PixelTimedChargeDeposit {
-      double time;
-      double charge;
-      art::Ptr<SimParticle> particle;
-
-      PixelTimedChargeDeposit(double t, double c, const art::Ptr<SimParticle>& p)
-        : time(t), charge(c), particle(p)
-      {}
-
-      // We accumulated deposits in a priority_queue, and want earlier times
-      // to come out first.  Thus the inverted less-than definition:
-      bool operator<(const PixelTimedChargeDeposit& b) const {
-        return b.time < this->time;
-      }
-    };
-
-    std::ostream& operator<<(std::ostream& os, const PixelTimedChargeDeposit& dep) {
-      return os<<"PTD("<<dep.time<<", "<<dep.charge<<", "<<dep.particle<<")";
-    }
-
-    // Queue ordered by time
-    class PixelChargeHistory : public std::priority_queue<PixelTimedChargeDeposit> {};
-
-    class PixelChargeCollection : public std::map<ExtMonFNALPixelId,PixelChargeHistory> {};
 
     //================================================================
     class ExtMonFNALHitMaker : public art::EDProducer {
@@ -108,6 +84,11 @@ namespace mu2e {
         , extMon_(0)
         , condExtMon_(0)
         , condAcc_(0)
+
+        , applyProtonPulseShape_(pset.get<bool>("applyProtonPulseShape"))
+        , protonPulse_(applyProtonPulseShape_ ?
+                       new ProtonPulseShape(pset.get<fhicl::ParameterSet>("protonPulse"), eng_) :
+                       0)
 
         , noise_(eng_,
                  &extMon_,/*Geometry not available at module ctr, store the address of the ptr */
@@ -153,6 +134,9 @@ namespace mu2e {
       const AcceleratorParams *condAcc_;
 
       SiliconProperties siProps_;
+
+      bool  applyProtonPulseShape_;
+      std::auto_ptr<ProtonPulseShape> protonPulse_;
 
       PixelNoise noise_;
 
@@ -262,6 +246,10 @@ namespace mu2e {
       // instead of doing the whole detector in one go.  Would be an extra loop here.
       PixelChargeCollection pixcharges;
       collectIonization(&pixcharges, simhits);
+
+      if(applyProtonPulseShape_) {
+        protonPulse_->apply(&pixcharges, event);
+      }
 
       // Brings all times onto a microbunch + margins on both sides.
       // Hits near microbunch boundaries are duplicated.

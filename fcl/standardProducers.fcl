@@ -105,6 +105,8 @@ pixelDigitization : {
 
     // Arbitrary, but must be sane
     numClustersPerHit : 10
+
+    applyProtonPulseShape : false
 }
 
 # Form ExtMonFNAL pixel clusters
