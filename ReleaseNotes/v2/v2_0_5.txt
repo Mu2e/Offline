@@ -1,10 +1,20 @@
-  $Id: v2_0_5.txt,v 1.22 2012/10/26 17:28:19 genser Exp $
+  $Id: v2_0_5.txt,v 1.23 2012/11/06 18:14:01 genser Exp $
   $Author: genser $
-  $Date: 2012/10/26 17:28:19 $
+  $Date: 2012/11/06 18:14:01 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_5
+
+19) November 6, 2012 genser
+
+    Added 
+      setup_g4952.sh 
+      which sets up geant4 9.5.p02 and other new products e.g. art, clhep
+    
+    Modified 
+      MCDataProducts/inc/ProcessCode.hh 
+      to include processes used by FTFP_BERT and Shielding physics lists
 
 18) October 25, 2012 mjlee
 
