@@ -1,19 +1,17 @@
-  $Id: v2_0_5.txt,v 1.23 2012/11/06 18:14:01 genser Exp $
-  $Author: genser $
-  $Date: 2012/11/06 18:14:01 $
+  $Id: v2_0_5.txt,v 1.24 2012/11/14 20:20:21 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2012/11/14 20:20:21 $
 
- Still under construction
-
-           Release notes for Mu2e Offline software, v2_0_5
+     Release notes for Mu2e Offline software, v2_0_5
 
 19) November 6, 2012 genser
 
-    Added 
-      setup_g4952.sh 
+    Added
+      setup_g4952.sh
       which sets up geant4 9.5.p02 and other new products e.g. art, clhep
-    
-    Modified 
-      MCDataProducts/inc/ProcessCode.hh 
+
+    Modified
+      MCDataProducts/inc/ProcessCode.hh
       to include processes used by FTFP_BERT and Shielding physics lists
 
 18) October 25, 2012 mjlee
@@ -40,7 +38,7 @@
 
 16) October 23, 2012 genser
 
-    Added an option to set G4TrackingManager verbosity level 
+    Added an option to set G4TrackingManager verbosity level
     (trackingVerbosityLevel):
       Mu2eG4/src/G4_module.cc
       fcl/standardProducers.fcl
