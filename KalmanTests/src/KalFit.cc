@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.36 2012/10/23 20:38:51 brownd Exp $
+// $Id: KalFit.cc,v 1.37 2012/11/15 22:05:29 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/10/23 20:38:51 $
+// $Date: 2012/11/15 22:05:29 $
 //
 
 // the following has to come before other BaBar includes
@@ -13,6 +13,7 @@
 #include "KalmanTests/inc/PocaAmbigResolver.hh"
 #include "KalmanTests/inc/HitAmbigResolver.hh"
 #include "KalmanTests/inc/FixedAmbigResolver.hh"
+#include "KalmanTests/inc/BaBarMu2eField.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -70,72 +71,78 @@ namespace mu2e
     TrkFitDirection::FitDirection _fdir;
   };
 // construct from a parameter set  
-  KalFit::KalFit(fhicl::ParameterSet const& pset) : _bfield(0),
+  KalFit::KalFit(fhicl::ParameterSet const& pset) :
+// KalFit parameters
     _debug(pset.get<int>("debugLevel",0)),
-    _fieldcorr(pset.get<bool>("fieldCorrections",false)),
-    _material(pset.get<bool>("material",true)),
-//    _ambigflip(pset.get<bool>("ambigflip",false)),
     _weedhits(pset.get<bool>("weedhits",true)),
     _removefailed(pset.get<bool>("RemoveFailedFits",true)),
     _maxhitchi(pset.get<double>("maxhitchi",4.0)),
-    _maxiter(pset.get<unsigned>("maxiter",10)),
-    _mingap(pset.get<double>("mingap",0.1)),
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
-    _minndof(pset.get<unsigned>("minNDOF",10)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
     _herr(pset.get< vector<double> >("hiterr")),
-    _ssmear(pset.get<double>("seedsmear",1e6)),
     _maxdriftpull(pset.get<double>("maxDriftPull",10)),
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
+// t0 parameters
     _initt0(pset.get<bool>("initT0",true)),
     _updatet0(pset.get<bool>("updateT0",true)),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _mint0doca(pset.get<double>("minT0DOCA",-0.2)),
-    _t0nsig(pset.get<double>("t0window",2.5))
+    _t0nsig(pset.get<double>("t0window",2.5)),
+    _bfield(0)
   {
-//      _herr.push_back( pset.get< double >("hiterr") );
-  // make sure we have at least one entry for additional errors
-      if(_herr.size() <= 0) throw cet::exception("RECO")<<"mu2e::KalFit: no hit errors specified" << endl;
-      if(_herr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
-      if(_herr.size() != _t0tol.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
-      _kalcon = new KalContext;
-      _kalcon->setBendSites(_fieldcorr);
-      _kalcon->setMaterialSites(_material);
-    // depending on the ambiguity strategy, either allow or not the hit to change it itself
-      _kalcon->setMaxIterations(_maxiter);
-      _kalcon->setMinGap(_mingap); // minimum separation between sites when creating trajectory pieces
-      // these are currently fixed, they should be set as parameters and re-optimized FIXME!!!!
-      _kalcon->setMaxIntersections(0);
-      _kalcon->setMaxDMom(10);
-      _kalcon->setSmearFactor(_ssmear);
-      _kalcon->setMinDOF(_minndof,TrkEnums::bothView);
-      _kalcon->setMinDOF(_minndof,TrkEnums::xyView);
-      _kalcon->setMinDOF(0,TrkEnums::zView);
-      _kalcon->setIntersectionTolerance(100);
-      _kalcon->setMaxMomDiff(1.0); // 1 MeV
-      _kalcon->setTrajBuffer(0.01); // 10um
-// construct the ambiguity resolvers
-      for(size_t iambig=0;iambig<_ambigstrategy.size();++iambig){
-	switch (_ambigstrategy[iambig] ){
-	  case fixedambig: default:
-	    _ambigresolver.push_back(new FixedAmbigResolver(pset));
-	    break;
-	  case hitambig:
-	    _ambigresolver.push_back(new HitAmbigResolver(pset));
-	    break;
-	  case panelambig:
-	    _ambigresolver.push_back(new PanelAmbigResolver(pset));
-	    break;
-	  case pocaambig:
-	    _ambigresolver.push_back(new PocaAmbigResolver(pset));
-	    break;
-	}
+// set KalContext parameters
+    _disttol = pset.get<double>("IterationTolerance",0.1);
+    _intertol = pset.get<double>("IntersectionTolerance",100.0);
+    _maxiter = pset.get<long>("MaxIterations",10);
+    _maxinter = pset.get<long>("MaxIntersections",0);
+    _matcorr = pset.get<bool>("materialCorrection",true);
+    _fieldcorr = pset.get<bool>("fieldCorrection",false);
+    _smearfactor = pset.get<double>("SeedSmear",1.0e6);
+    _sitethresh = pset.get<double>("SiteMomThreshold",0.2);
+    _momthresh = pset.get<double>("MomThreshold",10.0);
+    _mingap = pset.get<double>("mingap",0.1);
+    _minfltlen = pset.get<double>("MinFltLen",0.1);
+    _minmom = pset.get<double>("MinMom",10.0);
+    _fltepsilon = pset.get<double>("FltEpsilon",0.001);
+    _divergeflt = pset.get<double>("DivergeFlt",1.0e3);
+    _mindot = pset.get<double>("MinDot",0.0);
+    _maxmomdiff = pset.get<double>("MaxMomDiff",0.5);
+    _momfac = pset.get<double>("MomFactor",0.0);
+    _maxpardif[0] = _maxpardif[1] = pset.get<double>("MaxParameterDifference",1.0);
+    // DOF counting subdivision is illogical, FIXME!!!!
+    _mindof[0] = _mindof[2] = pset.get<double>("MinNDOF",10);
+    _mindof[1] = 0;
+    _bintconfig._maxRange = pset.get<double>("BFieldIntMaxRange",1.0e5); // 100 m
+    _bintconfig._intTolerance = pset.get<double>("BFieldIntTol",0.001); // 1 KeV
+    _bintconfig._intPathMin = pset.get<double>("BFieldIntMin",5.0); // 5 mm
+    _bintconfig._divTolerance = pset.get<double>("BFieldIntDivTol",0.01); // 10 KeV
+    _bintconfig._divPathMin = pset.get<double>("BFieldIntDivMin",10.0); // 10 mm
+    _bintconfig._divStepCeiling = pset.get<double>("BFieldIntDivMax",100.0); // 100 mm
+    // make sure we have at least one entry for additional errors
+    if(_herr.size() <= 0) throw cet::exception("RECO")<<"mu2e::KalFit: no hit errors specified" << endl;
+    if(_herr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
+    if(_herr.size() != _t0tol.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
+    // construct the ambiguity resolvers
+    for(size_t iambig=0;iambig<_ambigstrategy.size();++iambig){
+      switch (_ambigstrategy[iambig] ){
+	case fixedambig: default:
+	  _ambigresolver.push_back(new FixedAmbigResolver(pset));
+	  break;
+	case hitambig:
+	  _ambigresolver.push_back(new HitAmbigResolver(pset));
+	  break;
+	case panelambig:
+	  _ambigresolver.push_back(new PanelAmbigResolver(pset));
+	  break;
+	case pocaambig:
+	  _ambigresolver.push_back(new PocaAmbigResolver(pset));
+	  break;
       }
     }
+  }
 
   KalFit::~KalFit(){
-    delete _kalcon;
     for(size_t iambig=0;iambig<_ambigresolver.size();++iambig){
       delete _ambigresolver[iambig];
     }
@@ -161,9 +168,9 @@ namespace mu2e
 	hotlist->append(trkhit);
       }
 // Find the wall and gas material description objects for these hits
-      if(_material)makeMaterials(kres);
+      if(_matcorr)makeMaterials(kres);
 // create Kalman rep
-      kres._krep = new KalRep(kres._tdef.helix(), hotlist, kres._detinter, *_kalcon, kres._tdef.particle());
+      kres._krep = new KalRep(kres._tdef.helix(), hotlist, kres._detinter, *this, kres._tdef.particle());
       assert(kres._krep != 0);
 // initialize krep t0; eventually, this should be in the constructor, FIXME!!!
       double flt0 = kres._tdef.helix().zFlight(0.0);
@@ -257,7 +264,7 @@ namespace mu2e
     unsigned niter(0);
     bool changed(true);
     kres._fit = TrkErrCode::succeed;
-    while(kres._fit.success() && changed && niter < _kalcon->maxIterations()){
+    while(kres._fit.success() && changed && niter < maxIterations()){
       changed = false;
       _ambigresolver[iherr]->resolveTrk(kres);
       kres._krep->resetFit();
@@ -288,7 +295,7 @@ namespace mu2e
     TrkDef const& tdef = kres._tdef;
 // compute the propagaion velocity
     double flt0 = tdef.helix().zFlight(0.0);
-    double mom = TrkMomCalculator::vecMom(tdef.helix(),*bField(),flt0).mag();
+    double mom = TrkMomCalculator::vecMom(tdef.helix(),bField(),flt0).mag();
     double vflt = tdef.particle().beta(mom)*CLHEP::c_light;
     unsigned nind = tdef.strawHitIndices().size();
     for(unsigned iind=0;iind<nind;iind++){
@@ -405,17 +412,29 @@ namespace mu2e
     return retval;
   }
 
-
-  const BField*
-  KalFit::bField() {
+  BField const&
+  KalFit::bField() const {
     if(_bfield == 0){
-// create a wrapper around the mu2e nominal DS field
       GeomHandle<BFieldConfig> bfconf;
-      _bfield=new BFieldFixed(bfconf->getDSUniformValue());
-      assert(_bfield != 0);
+      if(_fieldcorr){
+// create a wrapper around the mu2e field 
+	_bfield = new BaBarMu2eField();	
+      } else {
+// create a fixed field using the nominal value
+	GeomHandle<BFieldConfig> bfconf;
+	_bfield=new BFieldFixed(bfconf->getDSUniformValue());
+	assert(_bfield != 0);
+      }
     }
-    return _bfield;
+    return *_bfield;
   }
+   
+  const TrkVolume* 
+  KalFit::trkVolume(trkDirection trkdir) const {
+    //FIXME!!!!
+    return 0;
+  }
+
   void
   KalFit::initT0(TrkDef const& tdef, TrkT0& t0) {
     using namespace boost::accumulators;
@@ -429,7 +448,7 @@ namespace mu2e
     double t0flt = tdef.helix().zFlight(0.0);
     // estimate the momentum at that point using the helix parameters.  This is
     // assumed constant for this crude estimate
-    double mom = TrkMomCalculator::vecMom(tdef.helix(),*bField(),t0flt).mag();
+    double mom = TrkMomCalculator::vecMom(tdef.helix(),bField(),t0flt).mag();
     // compute the particle velocity
     double vflt = tdef.particle().beta(mom)*CLHEP::c_light;
     // for crude estimates, we only need 1 d2t function

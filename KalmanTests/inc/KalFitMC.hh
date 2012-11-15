@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.26 2012/10/17 21:31:20 brownd Exp $
+// $Id: KalFitMC.hh,v 1.27 2012/11/15 22:05:29 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/10/17 21:31:20 $
+// $Date: 2012/11/15 22:05:29 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -99,8 +99,6 @@ namespace mu2e
     Float_t _doca, _exerr, _penerr, _t0err;
     Float_t _ht, _tddist, _tdderr, _hlen;
     Int_t _ambig;
-    Int_t _iarc, _iarchit;
-    Float_t _architlen, _gaplow, _gaphi;
     Int_t _mcn, _mcnunique, _mcppdg, _mcpgen, _mcpproc;
     Int_t _mcpdg, _mcgen, _mcproc;
     Float_t _mcht, _mcdist, _mclen;
@@ -172,6 +170,7 @@ namespace mu2e
 // diagnostic comparison of reconstructed tracks with MC truth
     void kalDiag(const KalRep* krep);
     void hitsDiag(std::vector<const TrkStrawHit*> const& hits);
+    void arcsDiag(std::vector<const TrkStrawHit*> const& hits);
     void mcTrkInfo(art::Ptr<SimParticle> spp);
     void hitDiag(const TrkStrawHit* strawhit);
 // find associated sim particles to a track

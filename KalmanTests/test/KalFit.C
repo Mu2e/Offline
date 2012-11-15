@@ -542,7 +542,7 @@ void KalFitRes(TTree* trks) {
 //    degau->SetParLimits(6,0.1,momres[ires]->GetRMS());
 //    degau->SetParLimits(7,1,3.0);
   
-    cball->SetParameters(integral,0.0,0.1,1.0,1.0,0.05,0.5);
+    cball->SetParameters(integral,momres[ires]->GetMean(),momres[ires]->GetRMS(),1.0,1.0,0.05,0.5);
     cball->SetParLimits(5,0.001,0.4);
     cball->SetParLimits(6,0.1,momres[ires]->GetRMS());
 

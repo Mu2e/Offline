@@ -2,9 +2,9 @@
 // Look for particles coming from the calorimeter and reflecting back in the
 // magnetic mirror
 //
-// $Id: Reflect_module.cc,v 1.6 2012/10/31 16:19:29 brownd Exp $
+// $Id: Reflect_module.cc,v 1.7 2012/11/15 22:05:29 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/10/31 16:19:29 $
+// $Date: 2012/11/15 22:05:29 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -123,7 +123,6 @@ namespace mu2e {
 
   Reflect::Reflect(fhicl::ParameterSet const& pset):
     _fitterPrefix(pset.get<string>("fitterPrefix","TPR")),
-    _extrapolate(pset.get<bool>("Extrapolate",true)),
     _extModName(pset.get<string>("ExtrapolationModuleName","TrkExt")),
     _ipart(pset.get<int>("ParticleCode",11)),
     _mindmom(pset.get<double>("MinDeltaMom",-10.0)),
@@ -132,6 +131,7 @@ namespace mu2e {
     _maxdp0(pset.get<double>("MaxDeltaPhi0",0.25)),
     _mindt0(pset.get<double>("MinDeltaT0",-50)),
     _maxdt0(pset.get<double>("MaxDeltaT0",-110)),
+    _extrapolate(pset.get<bool>("Extrapolate",true)),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
     _reflect(0)
   {

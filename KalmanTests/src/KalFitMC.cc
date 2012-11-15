@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.39 2012/10/17 21:31:21 brownd Exp $
+// $Id: KalFitMC.cc,v 1.40 2012/11/15 22:05:29 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/10/17 21:31:21 $
+// $Date: 2012/11/15 22:05:29 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -305,6 +305,8 @@ namespace mu2e
 	std::vector<const TrkStrawHit*> hits;
 	fillHitsVector(krep,hits);	
 	hitsDiag(hits);
+	if(_diag > 2)
+	  arcsDiag(hits);
       }
       if(krep->fitCurrent()){
 	_t0 = krep->t0().t0();
@@ -339,7 +341,7 @@ namespace mu2e
 	for(int icor=0;icor<3;icor++)
 	  momvec[icor] = momdir[icor];
 	_fitmomerr = sqrt(momerr.covMatrix().similarity(momvec));
-	CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->bField(),0.0);
+	CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->kalContext().bField(),0.0);
 	_seedmom = seedmom.mag();
       } else {
 	_fitstatus = -krep->fitStatus().failure();
@@ -369,11 +371,9 @@ namespace mu2e
       }
     }
   }
-
-  void KalFitMC::hitsDiag(std::vector<const TrkStrawHit*> const& hits) {
-    _tshinfo.clear();
+  
+  void KalFitMC::arcsDiag(std::vector<const TrkStrawHit*> const& hits) {
     _tainfo.clear();
-    _ncactive = 0;
     // find the arcs
     std::vector<TrkArc> arcs;
     findArcs(hits,arcs);
@@ -388,6 +388,11 @@ namespace mu2e
       tainfo._arcactivelen = hits[arc._endactive]->fltLen() - hits[arc._beginactive]->fltLen();
       _tainfo.push_back(tainfo);
     }
+  }
+
+  void KalFitMC::hitsDiag(std::vector<const TrkStrawHit*> const& hits) {
+    _tshinfo.clear();
+    _ncactive = 0;
  // loop over hits
     for(size_t itsh=0;itsh<hits.size();++itsh){
       const TrkStrawHit* tsh = hits[itsh];
@@ -426,27 +431,6 @@ namespace mu2e
 	tshinfo._exerr = tsh->extErr();
 	tshinfo._penerr = tsh->penaltyErr();
 	tshinfo._t0err = tsh->t0Err();
-// arc information
-	int iarc = findArc(itsh,arcs);
-	tshinfo._iarc = iarc;
-	if(iarc >= 0){
-	  TrkArc const& arc = arcs[iarc];
-	  tshinfo._iarchit = itsh-arc._begin;
-	  tshinfo._architlen = tsh->fltLen() - hits[arc._beginactive]->fltLen();
-	  if(itsh > arc._begin)
-	    tshinfo._gaplow = tsh->fltLen() - hits[itsh-1]->fltLen();
-	  else
-	    tshinfo._gaplow = -1;
-	  if(itsh < arc._end)
-	    tshinfo._gaphi = hits[itsh+1]->fltLen()-tsh->fltLen();
-	  else
-	    tshinfo._gaphi = -1;
-	} else {
-	  tshinfo._iarchit = -1;
-	  tshinfo._architlen = -1;
-	  tshinfo._gaplow = -1;
-	  tshinfo._gaphi = -1;
-	}
 	// MC information	
 	PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
 	tshinfo._mcn = mcptr.size();
@@ -628,8 +612,10 @@ namespace mu2e
     _trkdiag->Branch("bremsemax",&_bremsemax,"bremsemax/F");
     _trkdiag->Branch("bremsz",&_bremsz,"bremsz/F");
 // track hit and arc info    
-    _trkdiag->Branch("tainfo",&_tainfo);
-    _trkdiag->Branch("tshinfo",&_tshinfo);
+    if(_diag > 1)
+      _trkdiag->Branch("tshinfo",&_tshinfo);
+    if(_diag > 2)
+      _trkdiag->Branch("tainfo",&_tainfo);
     return _trkdiag;
   }
 
