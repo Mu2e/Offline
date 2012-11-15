@@ -192,7 +192,7 @@ TrkPatRec :
         SeedFit :
         {
                 maxiter                                 : 3
-                material                                : false
+                materialCorrection                      : false
                 seedsmear       			: 10000
                 maxhitchi                               : 5.0
                 hiterr                                  : [ 5.0, 1.44 ]
@@ -204,7 +204,7 @@ TrkPatRec :
 # Kalman fit configuration for the final track fit
         KalFit :
         {
-                material                                : true
+                materialCorrection                      : true
 		mingap					: 1.0
 		hiterr 					: [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
 		ambiguityStrategy    			: [ 0, 0, 2, 2, 2, 2, 2, 2, 2 ]
