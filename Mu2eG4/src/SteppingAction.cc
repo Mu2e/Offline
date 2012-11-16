@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.32 2012/09/29 04:54:47 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/09/29 04:54:47 $
+// $Id: SteppingAction.cc,v 1.33 2012/11/16 23:48:43 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/16 23:48:43 $
 //
 // Original author Rob Kutschke
 //
@@ -142,12 +142,12 @@ namespace mu2e {
   }
 
   // A helper function to manage the printout.
-  void printit( G4String const& s,
-                G4int id,
-                G4ThreeVector const& pos,
-                G4ThreeVector const& mom,
-                double localTime,
-                double globalTime ){
+  void SteppingAction::printit( G4String const& s,
+                                G4int id,
+                                G4ThreeVector const& pos,
+                                G4ThreeVector const& mom,
+                                double localTime,
+                                double globalTime ){
 
     // It is easier to line up printout in columns with printf than with cout.
     printf ( "%-8s %4d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %13.4f %13.4f\n",

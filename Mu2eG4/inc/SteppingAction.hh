@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.20 2012/03/21 23:35:26 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/21 23:35:26 $
+// $Id: SteppingAction.hh,v 1.21 2012/11/16 23:44:47 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/16 23:44:47 $
 //
 // Original author Rob Kutschke
 //
@@ -69,6 +69,14 @@ namespace mu2e {
     void setZRef( G4double zref){
       _zref=zref;
     }
+
+    // A helper function to manage the printout.
+    static void printit( G4String const& s,
+                         G4int id,
+                         G4ThreeVector const& pos,
+                         G4ThreeVector const& mom,
+                         double localTime,
+                         double globalTime );
 
   private:
 
