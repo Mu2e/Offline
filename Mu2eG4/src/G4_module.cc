@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.58 2012/10/23 21:02:21 genser Exp $
+// $Id: G4_module.cc,v 1.59 2012/11/16 23:49:39 genser Exp $
 // $Author: genser $
-// $Date: 2012/10/23 21:02:21 $
+// $Date: 2012/11/16 23:49:39 $
 //
 // Original author Rob Kutschke
 //
@@ -278,7 +278,7 @@ namespace mu2e {
 
     // Create user actions and register them with G4.
 
-    WorldMaker* allMu2e    = new WorldMaker();
+    WorldMaker<Mu2eWorld>* allMu2e    = new WorldMaker<Mu2eWorld>();
 
     _runManager->SetVerboseLevel(_rmvlevel);
 
