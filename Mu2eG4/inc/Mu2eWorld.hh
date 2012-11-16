@@ -2,10 +2,11 @@
 #define Mu2eG4_Mu2eWorld_hh
 //
 // Construct the Mu2e G4 world and serve information about that world.
+// Note that the class inherits from Mu2eUniverse now
 //
-// $Id: Mu2eWorld.hh,v 1.41 2012/03/30 15:13:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 15:13:35 $
+// $Id: Mu2eWorld.hh,v 1.42 2012/11/16 23:44:29 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/16 23:44:29 $
 //
 // Original author Rob Kutschke
 //
@@ -34,6 +35,7 @@ class G4Mag_UsualEqRhs;
 class G4UserLimits;
 
 // Mu2e includes
+#include "Mu2eG4/inc/Mu2eUniverse.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
 #include "G4Helper/inc/G4Helper.hh"
@@ -51,7 +53,7 @@ namespace mu2e {
   // Forward references within mu2e namespace.
   class SimpleConfig;
 
-  class Mu2eWorld {
+  class Mu2eWorld : public Mu2eUniverse {
   public:
 
     Mu2eWorld();
@@ -78,21 +80,10 @@ namespace mu2e {
 
     void instantiateSensitiveDetectors();
 
-    // Utility functions.
-    void setUnits( std::vector<double>& V, G4double unit );
-
-    // Stash a pointer to the config object so that all methods can get at it easily.
-    SimpleConfig const* _config;
-
     // Field managers for the different regions of magnetic field.
     // These have a lifetime equal to that of the G4 geometry.
     std::auto_ptr<FieldMgr> _dsUniform;
     std::auto_ptr<FieldMgr> _dsGradient;
-
-    // Access to the G4HelperService.
-    G4Helper * _helper;
-
-    int  _verbosityLevel;
 
   };
 
