@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.43 2012/10/25 22:51:30 genser Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.44 2012/11/16 23:48:32 genser Exp $
 // $Author: genser $
-// $Date: 2012/10/25 22:51:30 $
+// $Date: 2012/11/16 23:48:32 $
 //
 // Original author Rob Kutschke
 //
@@ -34,6 +34,7 @@
 #include "globals.hh"
 
 // Mu2e includes
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/DetectorConstruction.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
@@ -89,16 +90,29 @@ namespace mu2e {
   //
   void PrimaryGeneratorAction::fromEvent(G4Event* event){
 
-    GeomHandle<WorldG4>  worldGeom;
+    // those should really be references; but because of the "if" they are not...
 
-    // Get the offsets to map from generator world to G4 world.
-    G4ThreeVector const& mu2eOrigin                  = worldGeom->mu2eOriginInWorld();
-    G4ThreeVector const& relicMECOOrigin             = GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() +  mu2eOrigin;
+    G4ThreeVector mu2eOrigin;
+    G4ThreeVector relicMECOOrigin;
 
-    GeomHandle<ProductionTarget> protonTarget;
-    G4RotationMatrix const& primaryProtonGunRotation = protonTarget->protonBeamRotation();
-    G4ThreeVector const& primaryProtonGunOrigin      = mu2eOrigin + protonTarget->position()
-      + primaryProtonGunRotation*CLHEP::Hep3Vector(0., 0., protonTarget->halfLength());
+    G4RotationMatrix primaryProtonGunRotation;
+    G4ThreeVector primaryProtonGunOrigin;      
+
+    SimpleConfig const & _config = (*(art::ServiceHandle<GeometryService>())).config();
+
+    // check if this is standard mu2e configuration; not all generators may work if it is not
+    if (_config.getBool("mu2e.standardDetector",true)) {
+
+      GeomHandle<WorldG4>  worldGeom;
+      // Get the offsets to map from generator world to G4 world.
+      mu2eOrigin      = worldGeom->mu2eOriginInWorld();
+      relicMECOOrigin = GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() +  mu2eOrigin;
+      GeomHandle<ProductionTarget> protonTarget;
+      primaryProtonGunRotation = protonTarget->protonBeamRotation();
+      primaryProtonGunOrigin   = mu2eOrigin + protonTarget->position() +
+        primaryProtonGunRotation*CLHEP::Hep3Vector(0., 0., protonTarget->halfLength());
+
+    }
 
     // Get generated particles from the event.
     art::Handle<GenParticleCollection> handle;
