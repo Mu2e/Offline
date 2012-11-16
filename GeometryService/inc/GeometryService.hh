@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.18 2012/09/08 02:24:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Id: GeometryService.hh,v 1.19 2012/11/16 23:30:51 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/16 23:30:51 $
 //
 // Original author Rob Kutschke
 //
@@ -35,6 +35,7 @@ namespace mu2e {
 // Forward declarations
   class Target;
   class G4;
+  class Mu2eG4Study;
 
   class GeometryService {
 public:
@@ -140,6 +141,7 @@ private:
     // should only be used inside GEANT jobs.  The following method is
     // used by G4 to make this info available.
     friend class G4;
+    friend class Mu2eG4Study;
     void addWorldG4();
 
   };
