@@ -1,9 +1,9 @@
 //
 // Information about physics processes.
 //
-// $Id: PhysicsProcessInfo.cc,v 1.5 2012/03/22 20:22:21 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/22 20:22:21 $
+// $Id: PhysicsProcessInfo.cc,v 1.6 2012/11/16 20:17:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/11/16 20:17:14 $
 //
 // Original author Rob Kutschke
 //
@@ -128,11 +128,8 @@ namespace mu2e{
     }
 
     // Protect against overflowing the counters on very long jobs.
-    static const int bigNumber(1000000000);
-    static int counter(0);
-    if ( counter < bigNumber ){
-      ++counter;
-      ++(i->second.count);
+    if(i->second.count < std::numeric_limits<size_t>::max()) {
+      ++i->second.count;
     }
 
     return i->second.code;
