@@ -20,6 +20,17 @@ namespace mu2e {
 
     const int diagLevel = c.getInt("world.verbosityLevel", 0);
 
+    // This is where we want mu2eOriginInWorld
+    const CLHEP::Hep3Vector requestedWorldCenterInMu2e( -c.getHep3Vector("world.mu2eOriginInWorld"));
+    
+    // Tentative position of the origin of the mu2e coordinate system
+    res->_mu2eOriginInWorld = requestedWorldCenterInMu2e;
+
+    // we finish with that if this is not a statdard mu2e setup
+    if (!c.getBool("mu2e.standardDetector",true)) {
+      return res;
+    }
+
     // The WorldG4Maker is special among geometry makers:
     // it is guaranteed it will be called after all other detector objects
     // are available in geometry service, therefore it can access their data.
@@ -40,9 +51,7 @@ namespace mu2e {
                                               (prelimWorldZminInMu2e + prelimWorldZmaxInMu2e)/2
                                               );
 
-    // This is where we want it
-    const CLHEP::Hep3Vector requestedWorldCenterInMu2e( -c.getHep3Vector("world.mu2eOriginInWorld"));
-    // the shifts we need to correct for
+    // the requestedWorldCenterInMu2e shifts we need to correct for
     const double dx(requestedWorldCenterInMu2e[0] - prelimWorldCenterInMu2e[0]);
     const double dy(requestedWorldCenterInMu2e[1] - prelimWorldCenterInMu2e[1]);
     const double dz(requestedWorldCenterInMu2e[2] - prelimWorldCenterInMu2e[2]);
