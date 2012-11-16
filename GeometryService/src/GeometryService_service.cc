@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.39 2012/09/08 02:24:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Id: GeometryService_service.cc,v 1.40 2012/11/16 23:37:49 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/16 23:37:49 $
 //
 // Original author Rob Kutschke
 //
@@ -148,6 +148,13 @@ namespace mu2e {
 
     // Print final state of file after all substitutions.
     if ( _printConfig      ){ _config->print(cout, "Geom: ");       }
+
+    // decide if this is standard Mu2e detector or something else ...
+
+    if (!_config->getBool("mu2e.standardDetector",true)) {
+      cout  << "Non standard mu2e configuration, assuming it is intentional" << endl;
+      return;
+    }
 
     // Throw if the configuration is not self consistent.
     checkConfig();
