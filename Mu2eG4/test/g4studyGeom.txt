@@ -1,0 +1,89 @@
+//
+// config file to perform Geant4 studies using the Mu2e framework infrastructure
+//
+
+// $Id: g4studyGeom.txt,v 1.1 2012/11/16 23:43:21 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/16 23:43:21 $
+//
+// Original author K. Genser
+//
+
+// Units are mm, MeV
+
+
+// Change the name.
+string detector.name           = "g4study";
+
+// Indicate if this is "standard" mu2e experimental setup (when set to
+// true, which is the default) using typical mu2e detector components
+// or a study environment (when set to false)
+
+bool           mu2e.standardDetector = false;
+vector<string> mu2e.materials = {"WAGVacuum"};
+int            mu2e.studyEnvVersion      = 1;
+
+vector<double> world.mu2eOriginInWorld = { 0., 0., 0.}; // mm
+
+int world.verbosityLevel = 2;
+
+// Use a decent physics list
+string g4.physicsListName      = "FTFP_BERT";
+
+// make the volume mesh visible
+bool g4.forceAuxEdgeVisible    = true;
+
+// do not check for overlaps
+bool g4.doSurfaceCheck         = false;
+
+bool g4.printElements          = true;
+
+bool g4.printMaterials         = true;
+
+bool g4.printPhysicsProcessSummary = false;
+
+// maximum allowed number of steps per event
+int  g4.steppingActionMaxSteps = 0;
+
+double g4.steppingActionMaxGlobalTime = 0.0;
+
+// times for time virtual detector
+
+vector<double> g4.steppingActionTimeVD = {0.01};
+
+vector<string> g4SteppingAction.killInTheseVolumes = {};
+
+// the "World Box"; should we keep the world name (not studyWorld?)
+
+// a very "thin" vacuum
+string world.materialName      = "WAGVacuum";
+
+// make the world boundaries invisible
+bool   world.boxVisible         = false;
+// make the volume transparent
+bool   world.boxSolid           = false;
+
+double world.halfLength         = 10.0;
+double world.outerLayerThickness = 0.001;// world "outer layer" to force a step point
+
+int    world.verbosityLevel     = 1;
+
+// the target (a tube)
+
+bool           tube.visible = true;
+bool           tube.solid   = false;
+
+// fixme: may need to use pure isotopes
+string         tube.wallMaterialName = "G4_C";
+
+double         tube.rIn        = 0.0;
+double         tube.rOut       = 0.001;
+double         tube.halfLength = 3.0;
+
+vector<double> tube.centerInWorld = {0., 0., 0.};
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
