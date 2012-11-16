@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.146 2012/09/08 02:24:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Id: Mu2eWorld.cc,v 1.147 2012/11/16 23:48:11 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/16 23:48:11 $
 //
 // Original author Rob Kutschke
 //
@@ -132,10 +132,8 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eWorld::Mu2eWorld():
-    _helper(0)
-  {
-  }
+  Mu2eWorld::Mu2eWorld()
+  {}
 
   Mu2eWorld::~Mu2eWorld(){
 
@@ -144,29 +142,8 @@ namespace mu2e {
 
   }
 
-  // A helper function for debugging.  Print a subset of the physical volume store.
-  void printPhys() {
-    G4PhysicalVolumeStore* pstore = G4PhysicalVolumeStore::GetInstance();
-    int n(0);
-    for ( std::vector<G4VPhysicalVolume*>::const_iterator i=pstore->begin(); i!=pstore->end(); i++){
-      cout << "Physical Volume: "
-           << setw(5) << n++
-           << (*i)->GetName()
-           << endl;
-      if ( n > 25 ) break;
-    }
-
-  }
-
-
   // This is the callback called by G4 via G4VPhysicalVolume* WorldMaker::Construct()
   G4VPhysicalVolume * Mu2eWorld::construct(){
-
-    _helper = &(*(art::ServiceHandle<G4Helper>()));
-
-    // Get access to the master geometry system and its run time config.
-    art::ServiceHandle<GeometryService> geom;
-    _config = &(geom->config());
 
     // Construct all of the Mu2e world, hall, detectors, beamline ...
     return constructWorld();
@@ -176,12 +153,11 @@ namespace mu2e {
   G4VPhysicalVolume * Mu2eWorld::constructWorld(){
 
     _verbosityLevel = _config->getInt("world.verbosityLevel", 0);
-    art::ServiceHandle<GeometryService> geom;
 
     // If you play with the order of these calls, you may break things.
     GeomHandle<WorldG4> worldGeom;
     G4ThreeVector tmp =    GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() + worldGeom->mu2eOriginInWorld()
-      - G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0));
+      - G4ThreeVector(0.0,0.0,12000.-_config->getDouble("itracker.z0",0.0));
 
     if ( _config->getBool("hasITracker",false) ) {
       ITGasLayerSD::setMu2eDetCenterInWorld(
@@ -210,7 +186,7 @@ namespace mu2e {
 
     constructProtonBeamDump(hallInfo, *_config);
 
-    constructDS(hallInfo, _config);
+    constructDS(hallInfo, *_config);
     constructTS(hallInfo, *_config);
     constructPS(hallInfo, *_config);
     constructPSEnclosure(hallInfo, *_config);
@@ -224,7 +200,7 @@ namespace mu2e {
     constructCal();
     constructMagnetYoke();
 
-    if ( geom->hasElement<CosmicRayShield>() ) {
+    if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
 
       GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
       if(CosmicRayShieldGeomHandle->hasPassiveShield()) constructSteel(hallInfo,_config);
@@ -268,14 +244,6 @@ namespace mu2e {
     }
 
     return worldVInfo.physical;
-  }
-
-  // Convert to base units for all of the items in the vector.
-  void Mu2eWorld::setUnits( vector<double>& V, G4double unit ){
-    for ( vector<double>::iterator b=V.begin(), e=V.end();
-          b!=e; ++b){
-      *b *= unit;
-    }
   }
 
   // Choose the selected tracker and build it.
@@ -613,7 +581,7 @@ namespace mu2e {
       new Mu2eSensitiveDetector(    SensitiveDetectorName::VirtualDetector(), *_config);
     SDman->AddNewDetector(vdSD);
 
-    if (  geom->hasElement<Calorimeter>() ) {
+    if (   const_cast<GeometryService&>(_geom).hasElement<Calorimeter>() ) {
       CaloCrystalSD* ccSD     =
         new CaloCrystalSD(          SensitiveDetectorName::CaloCrystal(),     *_config);
       SDman->AddNewDetector(ccSD);
