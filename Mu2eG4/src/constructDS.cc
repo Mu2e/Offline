@@ -1,9 +1,9 @@
 //
 // Free function to create  DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.7 2011/06/09 19:56:13 genser Exp $
+// $Id: constructDS.cc,v 1.8 2012/11/16 23:49:19 genser Exp $
 // $Author: genser $
-// $Date: 2011/06/09 19:56:13 $
+// $Date: 2012/11/16 23:49:19 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -38,15 +38,15 @@ using namespace std;
 namespace mu2e {
 
   void constructDS( const VolumeInfo& parent,
-                    SimpleConfig const * const _config
+                    SimpleConfig const & _config
                     ){
 
-    int const verbosityLevel = _config->getInt("toyDS.verbosityLevel",0);
+    int const verbosityLevel = _config.getInt("toyDS.verbosityLevel",0);
 
     // Extract information from the config file.
-    TubsParams detSolCoilParams( _config->getDouble("toyDS.rIn"),
-                                 _config->getDouble("toyDS.rOut"),
-                                 _config->getDouble("toyDS.halfLength"));
+    TubsParams detSolCoilParams( _config.getDouble("toyDS.rIn"),
+                                 _config.getDouble("toyDS.rOut"),
+                                 _config.getDouble("toyDS.halfLength"));
 
     GeomHandle<Beamline> beamg;
     double solenoidOffset = beamg->solenoidOffset();
@@ -54,11 +54,11 @@ namespace mu2e {
     double rCryo          = beamg->getTS().outerRadius();
     double ts5HalfLength  = beamg->getTS().getTS5().getHalfLength();
 
-    double dsCoilZ0          = _config->getDouble("toyDS.z0");
-    double ds1HalfLength     = _config->getDouble("toyDS1.halfLength");
-    double ds2HalfLength     = _config->getDouble("toyDS2.halfLength");
-    double ds3HalfLength     = _config->getDouble("toyDS3.halfLength");
-    double dsFrontHalfLength = _config->getDouble("toyDS.frontHalfLength");
+    double dsCoilZ0          = _config.getDouble("toyDS.z0");
+    double ds1HalfLength     = _config.getDouble("toyDS1.halfLength");
+    double ds2HalfLength     = _config.getDouble("toyDS2.halfLength");
+    double ds3HalfLength     = _config.getDouble("toyDS3.halfLength");
+    double dsFrontHalfLength = _config.getDouble("toyDS.frontHalfLength");
 
     // All Vacuum volumes fit inside the DS coil+cryostat package.
     // DS1 surrounds ts5.
@@ -94,9 +94,9 @@ namespace mu2e {
 
     double BSTSHLength = ds3HalfLength + addedLength;
     double BSTSZ       = ds3OriginalZ0 + addedLength;
-    if ( _config->getBool("hasMBS",false) ) {
-      BSTSHLength = _config->getDouble("mbs.BSTSHLength");
-      BSTSZ       = _config->getDouble("mbs.BSTSZ");
+    if ( _config.getBool("hasMBS",false) ) {
+      BSTSHLength = _config.getDouble("mbs.BSTSHLength");
+      BSTSZ       = _config.getDouble("mbs.BSTSZ");
     }
 
     ds3HalfLength = ( -ds2Z0 - ds2HalfLength + BSTSZ + BSTSHLength)*0.5;
@@ -112,8 +112,8 @@ namespace mu2e {
                              detSolCoilParams.innerRadius(),
                              ds3HalfLength);
 
-    double SPBSOuterRadius   = _config->getBool("hasMBS",false) ?
-      _config->getDouble("mbs.SPBSOuterRadius") : 0.;
+    double SPBSOuterRadius   = _config.getBool("hasMBS",false) ?
+      _config.getDouble("mbs.SPBSOuterRadius") : 0.;
     TubsParams ds3VacSubtrParams( SPBSOuterRadius,
                                   detSolCoilParams.innerRadius(),
                                   ds3SubtrHalfLength);
@@ -144,16 +144,16 @@ namespace mu2e {
         ds3SubtrZ0 - zhl << ", " << ds3SubtrZ0 + zhl << endl;
     }
 
-    MaterialFinder materialFinder(*_config);
+    MaterialFinder materialFinder(_config);
     G4Material* detSolCoilMaterial = materialFinder.get("toyDS.materialName");
     G4Material* vacuumMaterial     = materialFinder.get("toyDS.insideMaterialName");
 
     // Single volume representing the DS coils + cryostat in an average way.
 
-    bool toyDSVisible        = _config->getBool("toyDS.visible",true);
-    bool toyDSSolid          = _config->getBool("toyDS.solid",true);
-    bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool toyDSVisible        = _config.getBool("toyDS.visible",true);
+    bool toyDSSolid          = _config.getBool("toyDS.solid",true);
+    bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
+    bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
 
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();

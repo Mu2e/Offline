@@ -3,9 +3,9 @@
 //
 // Free function to create the Detector Solenoid
 //
-// $Id: constructDS.hh,v 1.3 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
+// $Id: constructDS.hh,v 1.4 2012/11/16 23:45:24 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/16 23:45:24 $
 //
 // Original author KLG
 //
@@ -16,7 +16,7 @@ namespace mu2e {
   class SimpleConfig;
 
   void constructDS(VolumeInfo   const & parent,
-                   SimpleConfig const * const _config
+                   SimpleConfig const & _config
                    );
 
 }
