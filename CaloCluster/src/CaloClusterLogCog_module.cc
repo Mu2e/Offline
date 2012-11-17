@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloClusterLogCog_module.cc,v 1.4 2012/09/08 02:24:25 echenard Exp $
+// $Id: CaloClusterLogCog_module.cc,v 1.5 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -813,7 +813,7 @@ void CaloClusterLogCog::doCalorimeter(art::Event const& evt, bool skip){
                                                 CLHEP::Hep3Vector dirMom = ite->second[trkVecTot[it2]]._impMom3Vec.unit();
 
                                                 Vane const &vane = cg->getVane(ite->first);
-                                                CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
+                                                CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*dirMom;
                                                 _seedPpu[it2] = dirMom_rotated.x()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
                                                 _seedPpv[it2] = dirMom_rotated.y()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
                                                 _seedPpw[it2] = dirMom_rotated.z()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
@@ -961,7 +961,7 @@ void CaloClusterLogCog::doCalorimeter(art::Event const& evt, bool skip){
                         //                                                CLHEP::Hep3Vector dirMom = ite->second[trkVec[it]]._impMom3Vec.unit();
                         //
                         //                                                Vane const &vane = cg->getVane(ite->first);
-                        //                                                CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
+                        //                                                CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*dirMom;
                         //
                         //                                                LinePointPCA lppca(vaneFrame,dirMom_rotated,  ite->second[trkVec[it]]._cluCog);
                         //

@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.5 2012/09/08 02:24:25 echenard Exp $
+// $Id: Calorimeter4VanesGeom.hh,v 1.6 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -119,8 +119,8 @@ public :
                 _vaneHalfThickness = _dU + _dAPD;
                 _solenoidOffSetX = geom->config().getDouble("mu2e.solenoidOffset");//3904.;//[mm]
                 _solenoidOffSetZ = -geom->config().getDouble("mu2e.detectorSystemZ0");//-10200.;
-                _innerRadius = cg->innerRaidus();
-                _outherRadius = cg->outherRadius();
+                _innerRadius = cg->getVane(0).innerRadius();
+                _outherRadius = cg->getVane(0).outerRadius();
                 _ZfrontFaceCalo = cg->getOrigin().z() + _solenoidOffSetZ - (cg->nCrystalZ() + 1.0)*cg->crystalHalfSize();
                 _ZbackFaceCalo = cg->getOrigin().z() + _solenoidOffSetZ + (cg->nCrystalZ() + 1.0)*cg->crystalHalfSize();
                 _nVanes = cg->nVane();

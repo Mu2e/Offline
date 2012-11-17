@@ -1,9 +1,9 @@
 //
 // Visualization of pile up on the calorimeter clusters
 //
-// $Id: CaloClusterPileUp_module.cc,v 1.3 2012/09/08 02:24:25 echenard Exp $
+// $Id: CaloClusterPileUp_module.cc,v 1.4 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -826,7 +826,7 @@ void CaloClusterPileUp::doCalorimeter(art::Event const& evt, bool skip){
                                                 _clSeedPp[j]           = it->second.energy;
 
                                                 Vane const &vane = cg->getVane(tmpVane);
-                                                CLHEP::Hep3Vector Mom_rotated = *(vane.getRotation())*(it->second.momentum);
+                                                CLHEP::Hep3Vector Mom_rotated = vane.getRotation()*(it->second.momentum);
                                                 _clSeedPpu[j]          = Mom_rotated.x();
                                                 _clSeedPpv[j]          = Mom_rotated.y();
                                                 _clSeedPpw[j]          = Mom_rotated.z();

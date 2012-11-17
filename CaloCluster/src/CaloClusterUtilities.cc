@@ -1,9 +1,9 @@
 //
 // General utilities for the calorimeter's studies
 //
-// $Id: CaloClusterUtilities.cc,v 1.6 2012/09/08 02:24:25 echenard Exp $
+// $Id: CaloClusterUtilities.cc,v 1.7 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author G. Pezzullo & G. Tassielli & G. Onorato
 //
@@ -70,8 +70,8 @@ void MCCaloUtilities::printOutCaloInfo() {
                 cout << "Vane " << i << " : "
                                 << "\nOrigin: " << thevane.getOrigin()
                                 << "\nLocal origin: " << thevane.getOriginLocal()
-                                << "\nSize: " << thevane.getSize()
-                                << "\nRotation: " << *(thevane.getRotation()) << endl;
+                                << "\nSize: " << thevane.size()
+                                << "\nRotation: " << thevane.getRotation() << endl;
 
         }
 
@@ -163,7 +163,7 @@ int MCCaloUtilities::getStartingVane(CLHEP::Hep3Vector origin) {
         for (size_t i=0; i<cg->nVane(); ++i) {
 
                 Vane const & vane = cg->getVane(i);
-                CLHEP::Hep3Vector rsize = *(vane.getRotation()) * vane.getSize();
+                CLHEP::Hep3Vector rsize = vane.getRotation() * vane.size();
                 CLHEP::Hep3Vector vaneOr = vane.getOrigin();
 
 

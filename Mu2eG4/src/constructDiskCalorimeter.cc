@@ -1,9 +1,6 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructDiskCalorimeter.cc,v 1.2 2012/10/03 08:18:41 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/10/03 08:18:41 $
 //
 // Original author Ivan Logashenko
 //
@@ -34,6 +31,7 @@
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
+#include "CalorimeterGeom/inc/Crystal.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 
@@ -96,7 +94,7 @@ namespace mu2e {
     G4double ROHalfThickness       = cal.roHalfThickness();
     G4double ROHalfTrans           = cal.roHalfSize();
 
-    G4double crystalHexsize        = cal.crysHexsize();
+    G4double crystalHexsize        = cal.crysHalfTrans();
     G4double crystalDepth          = cal.crysDepth();
 
     G4double wrapThickness         = cal.wrapperThickness();
@@ -106,15 +104,12 @@ namespace mu2e {
     G4double shellThickness        = cal.shellThickness();
     G4double shellHexsize          = wrapHexsize + shellThickness;
     G4double shellDepth            = wrapDepth; //+ 2.0*shellThickness; for a crystal shell surrounding the z faces
-    G4double diskDepth             = shellDepth + 2.0*cal.getDiskThickness();
 
     
     // calculate z positions (x,y depend on the crystal)
     G4double crystalZPos           = wrapThickness;
     G4double ROZPos                = wrapThickness+crystalDepth+ROHalfThickness;
     G4double wrapZPos              = (shellDepth-wrapDepth)/2.0;
-
-
 
 
 
@@ -198,6 +193,7 @@ namespace mu2e {
 
 
 
+    G4ThreeVector pcalo = cal.getOrigin();
 
     //-- Construct disks: diskInner contains the crystals, and is inside diskBox
 
@@ -210,20 +206,20 @@ namespace mu2e {
     
     for (unsigned int idisk=0;idisk<nDisks;++idisk){
 
-        G4ThreeVector pdisk = cal.getDisk(idisk).getOrigin();
-	double hack = 600;
-	G4ThreeVector pos = G4ThreeVector(pdisk.x(),pdisk.y(), pdisk.z()+zOffset-hack);
+        G4ThreeVector pdisk = cal.getDisk(idisk).getOriginLocal();
+double hack = 600;	
+	G4ThreeVector pos = G4ThreeVector(pdisk.x(),pdisk.y(), pcalo.z()+pdisk.z()+zOffset-hack);
 
 	ostringstream discname1;      discname1<<"DiskCalorimeter_" <<idisk;
 	ostringstream discname2;      discname2<<"DiskInner_" <<idisk;
 
+	double radiusIn   = cal.getDisk(idisk).innerRadius();
+	double radiusOut  = cal.getDisk(idisk).outerRadius();
+	double diskDepth  = shellDepth + 2.0*cal.getDisk(idisk).thickness();
 
-	double radiusIn   = cal.getDisk(idisk).getRin();
-	double radiusOut  = cal.getDisk(idisk).getRout();
-	
-	double diskpar1[5] = {radiusIn-cal.getDiskThickness(),radiusOut+cal.getDiskThickness(), diskDepth/2.0, 0, 2*pi};
+	double diskpar1[5] = {radiusIn-cal.getDisk(idisk).thickness(),radiusOut+cal.getDisk(idisk).thickness(), diskDepth/2.0, 0, 2*pi};
 	double diskpar2[5] = {radiusIn,radiusOut, shellDepth/2.0, 0, 2*pi};
-       
+
 
 	diskBoxInfo[idisk] = nestTubs(discname1.str(),
                               diskpar1,
@@ -266,7 +262,7 @@ namespace mu2e {
 
 
 	// -- then fill the inner disk with crystals
-	G4int nCrystalInThisDisk = cal.getDisk(idisk).getCrystalMap().nCrystals();			
+	G4int nCrystalInThisDisk = cal.getDisk(idisk).nCrystals();			
 	for(int ic=0; ic <nCrystalInThisDisk; ++ic){
 
 	      G4int id       = crystalIdOffset+ic;
@@ -284,18 +280,19 @@ namespace mu2e {
 	      G4LogicalVolume *thisWrapLog = new G4LogicalVolume(crystalWrap, wrapMaterial, "WrapLog");
 	      thisWrapLog->SetVisAttributes(G4VisAttributes::Invisible);
 
+              //position of shell in the disk
+	      //contrary to rectangles, z position of hexagon is their base, not their center in Geant 4!!	      
+              CLHEP::Hep3Vector crystalPosition = cal.getDisk(idisk).getCrystal(ic).position();
+              double x = crystalPosition.x();
+              double y = crystalPosition.y();
+              double z = -shellDepth/2.0; 	      
 
-              //position of shell in the disk	      
-	      CLHEP::Hep2Vector xy = cal.getDisk(idisk).getCrystalMap().getCrystalPos(ic).XY();
-	      double z = -shellDepth/2.0; //polyhedra has z=0 at its base, so must place it 
-
-	      
               // place a shell only if it has non-zero thickness, or place the wrapper directly
               if (shellThickness > 0.001) {
-	           new G4PVPlacement(0,G4ThreeVector(xy.x(),xy.y(),z),thisShellLog,"CrysShellPV",diskInnerInfo[idisk].logical,0,id,doSurfaceCheck);   
+	           new G4PVPlacement(0,G4ThreeVector(x,y,z),thisShellLog,"CrysShellPV",diskInnerInfo[idisk].logical,0,id,doSurfaceCheck);   
                    new G4PVPlacement(0,G4ThreeVector(0.0,0.0,wrapZPos),thisWrapLog,"CrysWrapPV",thisShellLog,0,id,doSurfaceCheck);
               } else {
-	           new G4PVPlacement(0,G4ThreeVector(xy.x(),xy.y(),z),thisWrapLog,"CrysWrapPV",diskInnerInfo[idisk].logical,0,id,doSurfaceCheck);   	      
+	           new G4PVPlacement(0,G4ThreeVector(x,y,z),thisWrapLog,"CrysWrapPV",diskInnerInfo[idisk].logical,0,id,doSurfaceCheck);   	      
 	      }
 
 	      // -- place crystal inside warp

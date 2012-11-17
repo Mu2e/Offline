@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.6 2012/09/08 02:24:25 echenard Exp $
+// $Id: ReadCaloMatching_module.cc,v 1.7 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author G. Pezzullo
 //
@@ -118,7 +118,7 @@ namespace mu2e {
 float thetaWimpact(const CLHEP::Hep3Vector& mom, int vaneId){
         GeomHandle<VaneCalorimeter> cg;
         Vane const &vane = cg->getVane(vaneId);
-        CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*mom.unit();
+        CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*mom.unit();
 
         float thW = 0.0;
         thW = std::atan(-1.0*dirMom_rotated.getZ() / dirMom_rotated.getX() ) ;
@@ -128,7 +128,7 @@ float thetaWimpact(const CLHEP::Hep3Vector& mom, int vaneId){
 float thetaVimpact(const CLHEP::Hep3Vector& mom, int vaneId){//(FIXME)
         GeomHandle<VaneCalorimeter> cg;
         Vane const &vane = cg->getVane(vaneId);
-        CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*mom.unit();
+        CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*mom.unit();
 
         float thV = 0.0;
         thV = std::atan(dirMom_rotated.getY() / dirMom_rotated.getX() ) ;
@@ -1063,7 +1063,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                                 }
                                 size_t ind = 0;
                                 Vane const &vane1 = cg->getVane(tmpVane );
-                                momentumRotUnit = *(vane1.getRotation())*(caloMap[(unsigned int)clustersTrkId[i]].impMom3Vec(ind).unit());
+                                momentumRotUnit = vane1.getRotation()*(caloMap[(unsigned int)clustersTrkId[i]].impMom3Vec(ind).unit());
 
                                 thetaW = std::atan(-1.0*momentumRotUnit.getZ() / momentumRotUnit.getX() ) ;
                                 _seedThetaW = thetaW*Constants::radToDegrees;
@@ -1164,7 +1164,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 if(_diagLevel > 2){
                         cout<<"momemntum trk : "<<trkToCaloExtrapol.momentum()<<endl;
                 }
-                momentumRotUnit = *(vane.getRotation())*(trkToCaloExtrapol.momentum().unit());
+                momentumRotUnit = vane.getRotation()*(trkToCaloExtrapol.momentum().unit());
                 if(_diagLevel > 2){
                         cout<<"momemntum trk : "<<trkToCaloExtrapol.momentum()<<endl;
                 }
@@ -1216,8 +1216,8 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 Hep3Vector Vaxes(0.0, 1.0, 0.0), Waxes(0.0, 0.0, 1.0);
 
                 //move these axes into the Mu2e general frame
-                Vaxes = *(vane.getRotation())*(Vaxes);
-                Waxes = *(vane.getRotation())*(Waxes);
+                Vaxes = vane.getRotation()*(Vaxes);
+                Waxes = vane.getRotation()*(Waxes);
                 //Vaxes = cg->fromVaneFrame(tmpVane, Vaxes);
                 //Waxes = cg->fromVaneFrame(tmpVane, Waxes);
                 double scaleErrW = 1.0/fabs( cos(thetaW) );
@@ -1252,7 +1252,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 //                tmpErrPos = sqrt(trkToCaloExtrapol.entrancePositionErr().covMatrix().similarity(momvec));
                 //                tmpPosVaneFrameErr.setZ(tmpErrPos);//trjExtrapols->at(i).entrancePositionErr().z());
                 //
-                //                CLHEP::Hep3Vector tmpPerr = *(vane.getRotation())*tmpPosVaneFrameErr;//cg->toVaneFrame(tmpVane, tmpPosVaneFrameErr);
+                //                CLHEP::Hep3Vector tmpPerr = vane.getRotation()*tmpPosVaneFrameErr;//cg->toVaneFrame(tmpVane, tmpPosVaneFrameErr);
                 _recoPuErr = 0.0;// fabs(tmpPerr.x());
                 // _recoPvErr = fabs(tmpPerr.y());
                 //_recoPwErr = fabs(tmpPerr.z());

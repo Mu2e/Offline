@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructVaneCalorimeter.cc,v 1.1 2012/09/08 02:24:25 echenard Exp $
+// $Id: constructVaneCalorimeter.cc,v 1.2 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author Ivan Logashenko
 //
@@ -27,6 +27,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/Vane.hh"
+#include "CalorimeterGeom/inc/Crystal.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 
@@ -76,9 +77,8 @@ namespace mu2e {
     G4ThreeVector pcalo = cal.getOrigin();
 
     G4int nRO                   = cal.nROPerCrystal();
-    G4int ncrys                 = cal.nCrystalPerVane();
-    G4int ncrysR                = cal.nCrystalR();
-    G4int ncrysZ                = cal.nCrystalZ();
+    //G4int ncrysR                = cal.nCrystalR();
+    //G4int ncrysZ                = cal.nCrystalZ();
 
     G4double crystalSize        = cal.crystalHalfSize();
     G4double crystalLength      = cal.crystalHalfLength();
@@ -86,7 +86,6 @@ namespace mu2e {
     G4double wrapLength         = crystalLength + cal.wrapperThickness() + cal.roHalfThickness();
     G4double shellSize          = wrapSize   + cal.shellThickness();
     G4double shellLength        = wrapLength;
-    G4double step               = shellSize;
 
 
 
@@ -95,8 +94,6 @@ namespace mu2e {
     G4Box *crystalWrap  = new G4Box("CrystalWrap",wrapLength,wrapSize,wrapSize);
     G4Box *crystal      = new G4Box("Crystal",crystalLength,crystalSize,crystalSize);
     G4Box *crystalRO    = new G4Box("CrystalRO",cal.roHalfThickness(),cal.roHalfSize(),cal.roHalfSize() );
-
-
 
 
     //-- Definition of a few logical volumes    
@@ -150,13 +147,13 @@ namespace mu2e {
 	 G4ThreeVector pvane = cal.getVane(iv).getOriginLocal();
 	 G4ThreeVector pos   = G4ThreeVector(pvane.x(), pvane.y(), pcalo.z()+zOffset);
 
-	 const CLHEP::Hep3Vector & size = cal.getVane(iv).getSize();
+	 const CLHEP::Hep3Vector & size = cal.getVane(iv).size();
 	 double dim[3] = { size.x(), size.y(), size.z() };
 
 	 vaneInfo[iv] = nestBox(name.str(),
                                dim,
                                fillMaterial,
-                               cal.getVane(iv).getRotation(),
+                               &cal.getVane(iv).getRotation(),
                                pos,
                                mother,
                                iv,
@@ -189,7 +186,7 @@ namespace mu2e {
 
 
          //-- place crystals inside vanes
-
+         G4int ncrys                 = cal.getVane(iv).nCrystals();
 	 for( int ic=0; ic<ncrys; ++ic ) {
 
              // IDs
@@ -211,10 +208,12 @@ namespace mu2e {
 
 
              // Position - first run along Z, then along Y, both times in positive direction
-             double x = 0.0;
-             double y = step*(2*(ic/ncrysZ)-ncrysR+1);
-             double z = step*(2*(ic%ncrysZ)-ncrysZ+1);
-
+             //this is the position of the wrapper, so the x must be zero, not crystalPosition.x()
+	     CLHEP::Hep3Vector crystalPosition = cal.getVane(iv).getCrystal(ic).position();
+             double x = 0;
+             double y = crystalPosition.y();
+             double z = crystalPosition.z();
+	     
 
              // place a shell only if it has non-zero thickness, or place the wrapper directly
              if (cal.shellThickness()  > 0.001) {

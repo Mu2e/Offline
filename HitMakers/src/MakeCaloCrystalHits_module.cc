@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_module.cc,v 1.11 2012/09/08 02:24:25 echenard Exp $
+// $Id: MakeCaloCrystalHits_module.cc,v 1.12 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author KLG
 //
@@ -36,8 +36,11 @@
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 
+
+
 using namespace std;
 using art::Event;
+
 
 namespace mu2e {
 
@@ -64,257 +67,230 @@ namespace mu2e {
     }
     virtual ~MakeCaloCrystalHits() { }
 
-    virtual void beginJob();
 
+    virtual void beginJob();
     void produce( art::Event& e);
 
   private:
 
-    // Diagnostics level.
     int _diagLevel;
-
-    // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
 
-    // Parameters
     double _minimumEnergy;  // minimum energy in the RO to count it
-
     double _maximumEnergy;  // energy of a saturated RO
-
     double _minimumTimeGap; // to merge the hits
 
     string _g4ModuleLabel;  // Name of the module that made the input hits.
-
     string _caloReadoutModuleLabel; // Name of the module that made the calo hits.
 
-    // A category for the error logger.
     const std::string _messageCategory;
 
-    void fixEnergy(CaloCrystalHitCollection::value_type & caloCrystalHit,
-                   int tnro, double electronEdep);
+    void makeCrystalHits(CaloCrystalHitCollection& caloCrystalHits, art::Handle<CaloHitCollection>& caloHitsHandle) ;
+    void fixEnergy(CaloCrystalHit& caloCrystalHit, int tnro, double electronEdep);
 
   };
 
-  void MakeCaloCrystalHits::beginJob(){
-  }
 
-  void MakeCaloCrystalHits::fixEnergy(CaloCrystalHitCollection::value_type & caloCrystalHit,
-                                      int tnro, double electronEdep) {
+  
 
-    int nridu = caloCrystalHit.numberOfROIdsUsed();
-
-    if ( _diagLevel > 0 ) {
-      cout << __func__ << ": fixing energy: " << caloCrystalHit.energyDep()
-           << ", used roids: " << nridu
-           << ", energyDepT: " << caloCrystalHit.energyDepTotal() << endl;
-    }
-
-    if (nridu > 0 && nridu < tnro ) {
-      caloCrystalHit.setEnergyDep(caloCrystalHit.energyDep()/
-                                  double(nridu)*double(tnro));
-    }
-
-    // fix only if all ro are saturated
-    if (nridu == 0 && caloCrystalHit.energyDepTotal()/tnro >= electronEdep) {
-      caloCrystalHit.setEnergyDep(caloCrystalHit.energyDepTotal());
-    }
+  void MakeCaloCrystalHits::beginJob(){}
 
 
 
-    if ( _diagLevel > 0 ) {
-      cout << __func__ << ": fixed  energy: " <<  caloCrystalHit.energyDep()
-           << ", used roids: " << nridu
-           << ", energyDepT: " << caloCrystalHit.energyDepTotal() << endl;
-    }
-
-    return;
-
-  }
 
   void MakeCaloCrystalHits::produce(art::Event& event) {
 
-    // Source of the info
-    art::Handle<CaloHitCollection> caloHits;
-    // A container to hold the output hits.
-    auto_ptr<CaloCrystalHitCollection> caloCrystalHits(new CaloCrystalHitCollection);
 
-    if ( _diagLevel > 0 ) cout << __func__ << ": begin" << endl;
+     if ( _diagLevel > 0 ) cout << __func__ << ": begin" << endl;
 
-    static int ncalls(0);
-    ++ncalls;
+     static int ncalls(0);
+     ++ncalls;
 
-    // Get handles to calorimeter (RO aka APD) collection
+     // Check that calorimeter geometry description exists
+     art::ServiceHandle<GeometryService> geom;    
+     if( !(geom->hasElement<Calorimeter>()) ) return;
 
-    event.getByLabel(_caloReadoutModuleLabel, caloHits);
-    bool haveCalo = caloHits.isValid();
 
-    if ( _diagLevel > -1 && !haveCalo) cout << __func__ << ": No CaloHits" << endl;
+     //Get handles to calorimeter RO (aka APD) collection
+     art::Handle<CaloHitCollection> caloHitsHandle;
+     event.getByLabel(_caloReadoutModuleLabel, caloHitsHandle);
+     if ( !caloHitsHandle.isValid()) return;
+     
+    //Create a new CaloCrystalHit collection and fill it
+     auto_ptr<CaloCrystalHitCollection> caloCrystalHits(new CaloCrystalHitCollection);
+     makeCrystalHits(*caloCrystalHits,caloHitsHandle);
 
-    if( !haveCalo) return;
 
-    if (caloHits->size()<=0) {
-      if ( _diagLevel > 0 ) cout << __func__ << ": 0 CaloHits" << endl;
-      // Add the empty hit collection to the event
-      event.put(caloCrystalHits);
-      return;
-    }
 
-    // Get calorimeter geometry description
-    art::ServiceHandle<GeometryService> geom;
-    if( ! geom->hasElement<Calorimeter>() ) {
-      throw cet::exception("GEOM")
-        << "Expected calorimeter, but found none";
-    }
-    Calorimeter const & cal = *(GeomHandle<Calorimeter>());
+     if ( _diagLevel > 0 ) {
+        for (std::vector<CaloCrystalHit>::iterator i = (*caloCrystalHits).begin(); i != (*caloCrystalHits).end(); ++i) 
+          std::cout<<"I have produced the CaloCrystalHit "<<(*i)<<std::endl;
+        cout << __func__ << ": caloCrystalHits.size() "<< caloCrystalHits->size() << endl;
+        cout << __func__ << ": ncalls " << ncalls << endl;
+        cout << __func__ << ": end" << endl;
+     }
 
-    int nro = cal.nROPerCrystal();
-    double electronEdep = cal.getElectronEdep();
+     event.put(caloCrystalHits);
 
-    if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-      _diagLevel > 0 &&
-        cout << __func__ << ": Total number of hit RO = " << caloHits->size() << endl;
-      for( size_t i=0; i<caloHits->size(); ++i ) {
-        _diagLevel > 0 &&
-          cout << __func__ << ": " << (*caloHits)[i]
-               << " CrystalId: " << cal.getCrystalByRO((*caloHits)[i].id()) << endl;
-      }
-    }
+       
+     return;
+   
+  }
 
-    // Sort hits by crystal id ( not readout id! ) and time
-    // Need one level of indirection since objects in the event are const.
-    std::vector<CaloHit const*> caloHitsSorted;
-    caloHitsSorted.reserve(caloHits->size());
-    for ( CaloHitCollection::const_iterator i=caloHits->begin();
-          i!=caloHits->end(); ++i ){
-      caloHitsSorted.push_back( &(*i));
-    }
-    sort ( caloHitsSorted.begin(), caloHitsSorted.end(),
-           lessByCIdAndTimeByPointer<CaloHit>(&cal) );
 
-    if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
-      cout << __func__ << ": Total number of hit RO Sorted = " << caloHitsSorted.size() << endl;
-      for(std::vector<CaloHit const*>::const_iterator i = caloHitsSorted.begin();
-          i != caloHitsSorted.end(); ++i) {
-        cout << __func__ << ": ";
-        CaloHit const* hit = *i;
-        hit->print(cout,false);
-        cout << " CrystalId: " << cal.getCrystalByRO(hit->id()) << endl;
-      }
-    }
 
-    // generate the CaloCrystalHits
-    // collect same crystal id/time hits
 
-    // we will use all the hits, but the energyDep will be collected only for the good ones
+
+  void MakeCaloCrystalHits::makeCrystalHits(CaloCrystalHitCollection& caloCrystalHits,
+                                            art::Handle<CaloHitCollection>& caloHitsHandle) {
+
+    CaloHitCollection const& caloHits(*caloHitsHandle);
+    if (caloHits.size()<=0) return;
+
+     
+     
+     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
+     int nro                 = cal.nROPerCrystal();
+     double electronEdep     = cal.getElectronEdep();
+
+
+     if ( _diagLevel > 2 ) {
+       cout << __func__ << ": Total number of hit RO = " << caloHits.size() << endl;
+       for( size_t i=0; i<caloHits.size(); ++i ) 
+           cout << __func__ << ": " << caloHits[i]
+        	<< " Ro ID: " << caloHits[i].id() 
+        	<< " CrystalId: " << cal.getCrystalByRO(caloHits[i].id()) << endl;
+     }
+
+
+
+     // Sort hits by crystal id ( not readout id! ) and time
+     // Need one level of indirection since objects in the event are const.
+     std::vector<CaloHit const*> caloHitsSorted;
+     caloHitsSorted.reserve(caloHits.size());
+     for ( CaloHitCollection::const_iterator i=caloHits.begin(); i!=caloHits.end(); ++i )
+       caloHitsSorted.push_back( &(*i));
+
+     sort ( caloHitsSorted.begin(), caloHitsSorted.end(), lessByCIdAndTimeByPointer<CaloHit>(&cal) );
+
+
+
+
+    // generate the CaloCrystalHits. First,
+    // add all RO hits of the same crystal / time together (must clearly improve to deal with pileup)
+    // if energy between energy_min and energy_max (i.e. adding signal from APDs)
     // energyDepTotal will include all the energy
 
-    // the energy has to be between min and maximum
 
-    CaloHit const* base = &caloHits->front();
-    CaloHitCollection::value_type const & hit0 = **caloHitsSorted.begin();
-    _diagLevel > 0 && cout << __func__ << ": Original RO hit:  " << hit0 <<endl;
+    CaloHit const* base = &caloHits.front();
+    CaloHit const& hit0 = **caloHitsSorted.begin();
 
-    CaloCrystalHitCollection::value_type caloCrystalHit;
-
+    CaloCrystalHit caloCrystalHit;
     if ( hit0.energyDep()>= _minimumEnergy && hit0.energyDep() < _maximumEnergy ) {
-      size_t idx = ( &hit0 - base );
-      caloCrystalHit.assign(cal.getCrystalByRO(hit0.id()), hit0, art::Ptr<CaloHit>(caloHits,idx));
+       size_t idx = ( &hit0 - base );
+       caloCrystalHit.assign(cal.getCrystalByRO(hit0.id()), hit0, art::Ptr<CaloHit>(caloHitsHandle,idx));
     } else {
-      caloCrystalHit.assignEnergyToTot(cal.getCrystalByRO(hit0.id()),hit0);
+       caloCrystalHit.assignEnergyToTot(cal.getCrystalByRO(hit0.id()),hit0);
     }
 
-    _diagLevel > 0 && cout << __func__ << ": As in CaloCrystalHit: "
-                           << caloCrystalHit << endl;
-
-    for( std::vector<CaloHit const *>::const_iterator i = caloHitsSorted.begin()+1;
-         i != caloHitsSorted.end(); ++i) {
-
-      CaloHitCollection::value_type const & hit = **i;
-
-      _diagLevel > 0 && cout << __func__ << ": Original RO hit: " << hit << endl;
-
-      int cid = cal.getCrystalByRO(hit.id());
-
-      _diagLevel > 0 &&
-        cout << __func__ << ": old, new cid:  " << caloCrystalHit.id() << ", " << cid << endl;
-      _diagLevel > 0 &&
-        cout << __func__ << ": old, new time: " << caloCrystalHit.time() << ", " << hit.time() << endl;
-
-      _diagLevel > 0 &&
-        cout << __func__ << ": time difference, gap: "
-             << (hit.time() - caloCrystalHit.time()) << ", "
-             << _minimumTimeGap << endl;
-
-      if (caloCrystalHit.id() == cid &&
-          (( hit.time() - caloCrystalHit.time()) < _minimumTimeGap) ) {
-
-        // here we decide if the hit is "good"
-
-        if ( hit.energyDep()>= _minimumEnergy && hit.energyDep() < _maximumEnergy ) {
-          size_t idx = ( &hit - base );
-          caloCrystalHit.add( hit, art::Ptr<CaloHit>(caloHits,idx));
-
-        } else {
-
-          caloCrystalHit.addEnergyToTot( hit);
-
-        }
-
-        _diagLevel > 0 && cout << __func__ << ": Added to the hit:  " << caloCrystalHit << endl;
-
-      } else {
 
 
-        fixEnergy(caloCrystalHit,nro,electronEdep);
+    for( std::vector<CaloHit const *>::const_iterator i = caloHitsSorted.begin()+1; i != caloHitsSorted.end(); ++i) {
 
-        if (caloCrystalHit.energyDep()>0.0) {
-          _diagLevel > 0 && cout << __func__ << ": Inserting old hit: " << caloCrystalHit << endl;
-          (*caloCrystalHits).push_back(caloCrystalHit);
-        }
+	CaloHit const& hit = **i;
+	int cid = cal.getCrystalByRO(hit.id());
 
-        // this resets the caloCrystalHit and sets its id and puts one hit in
+	if (_diagLevel) {
+           cout << __func__ << ": Original RO hit: " << hit << endl;
+           cout << __func__ << ": old, new cid:  " << caloCrystalHit.id() << ", " << cid << endl;
+           cout << __func__ << ": old, new time: " << caloCrystalHit.time() << ", " << hit.time() << endl;
+           cout << __func__ << ": time difference, gap: " << (hit.time() - caloCrystalHit.time()) << ", "<< _minimumTimeGap << endl;
+	}
 
-        if ( hit.energyDep()>= _minimumEnergy && hit.energyDep() < _maximumEnergy ) {
-          size_t idx = ( &hit - base );
-          caloCrystalHit.assign(cid, hit, art::Ptr<CaloHit>(caloHits,idx));
+	if (caloCrystalHit.id() == cid && (( hit.time() - caloCrystalHit.time()) < _minimumTimeGap) ) {
 
-        } else {
+             if ( hit.energyDep()>= _minimumEnergy && hit.energyDep() < _maximumEnergy ) {
+               size_t idx = ( &hit - base );
+               caloCrystalHit.add( hit, art::Ptr<CaloHit>(caloHitsHandle,idx));
+             } else {
+               caloCrystalHit.addEnergyToTot(hit);
+             }
+             if (_diagLevel) cout << __func__ << ": Added to the hit:  " << caloCrystalHit << endl;
 
-          caloCrystalHit.assignEnergyToTot( cid, hit);
 
-        }
-        _diagLevel > 0 && cout << __func__ << ": Created new hit:   " << caloCrystalHit << endl;
+	} else {
 
-      } // end of outer if/else testing on same crystal and small delta time.
 
-    } // end loop pver caloHitsSorted
+             if (caloCrystalHit.energyDep()>0.0) {
+               if (_diagLevel) cout << __func__ << ": Inserting old hit: " << caloCrystalHit << endl;
+               caloCrystalHits.push_back(caloCrystalHit);
+             }
 
-    if (_diagLevel > 1) {
-      cout << __func__ << ": roIds of last old hit:";
-      cout << " size: " << caloCrystalHit.readouts().size();
-      for( size_t i=0; i<caloCrystalHit.readouts().size(); ++i) {
-        cout  << " " << i << ": " << caloCrystalHit.readouts()[i];
-      }
-      cout << endl;
+             // this resets the caloCrystalHit and sets its id and puts one hit in
+             if ( hit.energyDep()>= _minimumEnergy && hit.energyDep() < _maximumEnergy ) {
+               size_t idx = ( &hit - base );
+               caloCrystalHit.assign(cid, hit, art::Ptr<CaloHit>(caloHitsHandle,idx));
+             } else {
+               caloCrystalHit.assignEnergyToTot( cid, hit);
+             }
+             if (_diagLevel) cout << __func__ << ": Created new hit:   " << caloCrystalHit << endl;
+
+	}
+
     }
-
-    fixEnergy(caloCrystalHit,nro,electronEdep);
 
     if (caloCrystalHit.energyDep()>0.0) {
-      _diagLevel > 0 && cout << __func__ << ": Inserting last old hit: " << caloCrystalHit << endl;
-      (*caloCrystalHits).push_back(caloCrystalHit);
+      if (_diagLevel) cout << __func__ << ": Inserting last old hit: " << caloCrystalHit << endl;
+      caloCrystalHits.push_back(caloCrystalHit);
     }
 
-    if ( _diagLevel > 0 ) cout << __func__ << ": (*caloCrystalHits).size() "
-                               << (*caloCrystalHits).size() << endl;
 
-    event.put(caloCrystalHits);
 
-    if ( _diagLevel > 0 ) cout << __func__ << ": ncalls " << ncalls << endl;
-    if ( _diagLevel > 0 ) cout << __func__ << ": end" << endl;
-    return;
 
-  } // end of ::produce
+    //Each CaloCrystalHit has the sum of the signal APD, must rescale for the total ebergy
+    for (std::vector<CaloCrystalHit>::iterator i = caloCrystalHits.begin(); i != caloCrystalHits.end(); ++i) 
+      fixEnergy(*i,nro,electronEdep);
+
+
+  } 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  void MakeCaloCrystalHits::fixEnergy(CaloCrystalHit& caloCrystalHit, int tnro, double electronEdep) {
+
+      int nridu = caloCrystalHit.numberOfROIdsUsed();
+
+      if ( _diagLevel > 0 ) 
+	cout << __func__ << ": fixing energy: " << caloCrystalHit.energyDep()
+             << ", used roids: " << nridu << ", energyDepT: " << caloCrystalHit.energyDepTotal() << endl;
+
+      caloCrystalHit.setEnergyDep(caloCrystalHit.energyDep()/double(nridu));
+      caloCrystalHit.setEnergyDepTotal(caloCrystalHit.energyDepTotal()-float(nridu-1)*caloCrystalHit.energyDep());
+
+      // fix only if all ro are saturated
+      if (nridu == 0 && caloCrystalHit.energyDepTotal()/tnro >= electronEdep) {
+	caloCrystalHit.setEnergyDep(caloCrystalHit.energyDepTotal());
+      }
+
+      if ( _diagLevel > 0 ) {
+	cout << __func__ << ": fixed  energy: " <<  caloCrystalHit.energyDep()
+             << ", used roids: " << nridu
+             << ", energyDepT: " << caloCrystalHit.energyDepTotal() << endl;
+      }
+
+      return;
+
+  }
+
 
 }
 

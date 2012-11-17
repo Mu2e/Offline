@@ -1,9 +1,9 @@
 //
 // Visualization of the energy resolution  on the rows and on the columns
 //
-// $Id: CaloClusterEnergyResolMap_module.cc,v 1.11 2012/09/08 02:24:25 echenard Exp $
+// $Id: CaloClusterEnergyResolMap_module.cc,v 1.12 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -1020,7 +1020,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                 _clSeedPpy[j]          = it->second.momentum.y();
                                                 _clSeedPpz[j]          = it->second.momentum.z();
                                                 Vane const &vane = cg->getVane(tmpVane);
-                                                CLHEP::Hep3Vector Mom_rotated = *(vane.getRotation())*(it->second.momentum);
+                                                CLHEP::Hep3Vector Mom_rotated = vane.getRotation()*(it->second.momentum);
                                                 _clSeedPpu[j]          = Mom_rotated.x();
                                                 _clSeedPpv[j]          = Mom_rotated.y();
                                                 _clSeedPpw[j]          = Mom_rotated.z();
@@ -1153,7 +1153,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
                                 Vane const &vane = cg->getVane(ite->first);
                                 CLHEP::Hep3Vector dirMom = ite->second[trkVecTot[it2]]._impMom3Vec.unit();
-                                CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
+                                CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*dirMom;
                                 _hTHistMomRecDotVaneNorm->Fill(acos(-1.0*dirMom_rotated.getX())*180./TMath::Pi() );
 
                                 if(ite->first == 0 ){
@@ -1224,7 +1224,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                 CLHEP::Hep3Vector dirMom = ite->second[trkVecTot[it2]]._impMom3Vec;//.unit();
 
                                 Vane const &vane = cg->getVane(ite->first);
-                                dirMom = *(vane.getRotation())*dirMom;
+                                dirMom = vane.getRotation()*dirMom;
 
                                 _hTHistMomDotVaneNorm->Fill(acos(-1.0*dirMom.getX() / dirMom.mag() )*180./TMath::Pi() );
                                 _hTHistThetaW->Fill(std::atan(-1.0*dirMom.getZ() / dirMom.getX() )*180./TMath::Pi() );

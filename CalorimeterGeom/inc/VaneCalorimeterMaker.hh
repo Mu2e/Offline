@@ -1,12 +1,11 @@
 #ifndef CalorimeterGeom_CalorimeterMaker_hh
 #define CalorimeterGeom_VaneCalorimeterMaker_hh
-// $Id: VaneCalorimeterMaker.hh,v 1.1 2012/09/08 02:24:25 echenard Exp $
+// $Id: VaneCalorimeterMaker.hh,v 1.2 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 
 // original authors Julie Managan and Robert Bernstein
 
-//
 // C++ includes
 #include <iomanip>
 #include <memory>
@@ -15,17 +14,18 @@
 #include <vector>
 #include <string>
 
-//
 //Mu2e includes
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/Vane.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
-//
-// other includes
+// CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 
+
+
 namespace mu2e{
+
 
   class SimpleConfig;
 

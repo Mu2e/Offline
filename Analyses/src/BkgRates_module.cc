@@ -1,15 +1,15 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.35 2012/09/08 02:24:24 echenard Exp $
+// $Id: BkgRates_module.cc,v 1.36 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:24 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author Gianni Onorato
 //
 
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -723,6 +723,14 @@ namespace mu2e {
 
   } // end of doITracker
 
+
+
+
+
+
+
+
+
   void BkgRates::doCalorimeter(art::Event const& evt, bool skip) {
 
     if (skip) return;
@@ -731,19 +739,16 @@ namespace mu2e {
 
     //Get handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;
-    if( ! geom->hasElement<VaneCalorimeter>() ) return;
-    GeomHandle<VaneCalorimeter> cg;
-    double CrSize = cg->crystalHalfSize();
-    double CrLength = cg->crystalHalfLength();
-    double CrVolume = 8*(CrSize*CrSize*CrLength);
-    double CrMass = CrDensity*CrVolume;
+    if( ! geom->hasElement<Calorimeter>() ) return;
 
-    //    cout << CrSize << '\t' << CrLength << '\t' << CrVolume
-    //     << '\t' << CrDensity << '\t' << CrMass << endl;
+    GeomHandle<Calorimeter> cg;    
+    double CrMass  = CrDensity*cg->crystalVolume();
+
 
     // Get handles to calorimeter collections
     art::Handle<CaloHitCollection> caloHits;
     art::Handle<CaloCrystalHitCollection>  caloCrystalHits;
+
     // Get the persistent data about pointers to StepPointMCs
     art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
     //    art::Handle<StepPointMCCollection> steps;
@@ -753,15 +758,13 @@ namespace mu2e {
     evt.getByLabel(_caloReadoutModuleLabel, caloHits);
     evt.getByLabel(_caloCrystalModuleLabel, caloCrystalHits);
 
-    PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
-    if (!( caloHits.isValid())) {
-      return;
-    }
 
-    if (!caloCrystalHits.isValid()) {
-      cout << "NO CaloCrystalHits" << endl;
-      return;
-    }
+    PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
+    if ( !caloHits.isValid() ) return;
+    
+
+    if (!caloCrystalHits.isValid()) {cout << "NO CaloCrystalHits" << endl; return;}
+
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genParticles;
@@ -773,6 +776,7 @@ namespace mu2e {
     // Handle to information about G4 physical volumes.
     art::Handle<PhysicalVolumeInfoCollection> volumes;
     evt.getRun().getByLabel(_g4ModuleLabel, volumes);
+
 
     // Some files might not have the SimParticle and volume information.
     bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
@@ -788,7 +792,7 @@ namespace mu2e {
       CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
       if (hit.energyDep() < _minimumEnergyCalo) continue;
       
-      std::vector<art::Ptr<CaloHit> > const & ROIds  = hit.readouts();
+      std::vector<art::Ptr<CaloHit> > const& ROIds  = hit.readouts();
       
       //      cout << "Event " << evt.id().event() << ". In the caloCrystalHits there are " << ROIds.size() << " RO associated" << endl;
       
@@ -806,27 +810,30 @@ namespace mu2e {
       
       CLHEP::Hep3Vector firstHitPos(0,0,0);
       CLHEP::Hep3Vector cryFrame(0,0,0);
-      
-      
+          
       size_t collectionPosition = ROIds.at(0).key();
       CaloHit const & thehit = *ROIds.at(0);
-      
-      CLHEP::Hep3Vector cryCenter =  cg->getCrystalOriginByRO(thehit.id());
-      int vane = cg->getVaneByRO(thehit.id());
+
+      int crystalId = cg->getCrystalByRO(thehit.id());
+      CLHEP::Hep3Vector cryCenter =  cg->getCrystalOrigin(crystalId);
+      int sectionId = cg->getCaloSectionId(crystalId);
+
+
+
       cntpArray[idx++] = evt.id().event();
       cntpArray[idx++] = evt.run();
       cntpArray[idx++] = hit.time();
       cntpArray[idx++] = hit.energyDep();
       double dose = hit.energyDep() / CrMass / (CLHEP::joule/CLHEP::kg);
       cntpArray[idx++] = dose;
-      cntpArray[idx++] = cg->getCrystalByRO(thehit.id());
-      cntpArray[idx++] = vane;
+      cntpArray[idx++] = crystalId;
+      cntpArray[idx++] = sectionId;
       cntpArray[idx++] = cryCenter.getX() + 3904.;  //value used to shift in tracker coordinate system
       cntpArray[idx++] = cryCenter.getY();
       cntpArray[idx++] = cryCenter.getZ() - 10200;  //value used to shift in tracker coordinate system
       
-      PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
-      
+
+      PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));      
       StepPointMC const& mchit = *mcptr[0];
       
       
@@ -862,7 +869,7 @@ namespace mu2e {
 	cntpArray[idx++] = sim.endGlobalTime(); 
 
 	firstHitPos = mchit.position();
-	cryFrame = cg->toCrystalFrame(thehit.id(), firstHitPos);
+        cryFrame = cg->toCrystalFrame(crystalId, firstHitPos);
 	cntpArray[idx++] = cryFrame.x();
 	cntpArray[idx++] = cryFrame.y();
 	cntpArray[idx++] = cryFrame.z();                        
@@ -944,6 +951,12 @@ namespace mu2e {
       _cNtup->Fill(cntpArray);
     }
   } // end of doCalorimeter
+  
+  
+  
+  
+  
+  
   
   void BkgRates::doStoppingTarget(const art::Event& event) {
 

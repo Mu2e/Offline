@@ -1,9 +1,9 @@
 #ifndef RecoDataProducts_CaloCrystalHit_hh
 #define RecoDataProducts_CaloCrystalHit_hh
 
-// $Id: CaloCrystalHit.hh,v 1.3 2011/06/07 23:01:53 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/07 23:01:53 $
+// $Id: CaloCrystalHit.hh,v 1.4 2012/11/17 00:06:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author KLG
 
@@ -60,6 +60,7 @@ namespace mu2e {
     void assignEnergyToTot(int crystalId, CaloHit const & hit);
 
     void setEnergyDep(double energy);
+    void setEnergyDepTotal(double energy);
 
   private:
 

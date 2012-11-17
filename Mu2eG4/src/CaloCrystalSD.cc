@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for CaloCrystal Detectors
 //
-// $Id: CaloCrystalSD.cc,v 1.20 2012/09/08 02:24:25 echenard Exp $
+// $Id: CaloCrystalSD.cc,v 1.21 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author Ivan Logashenko
 //
@@ -64,10 +64,9 @@ namespace mu2e {
     // commented out.
     // Calculate enerdy deposition position along the crystal
      G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
-     G4AffineTransform        toWorld = toLocal.Inverse();
+     //G4AffineTransform        toWorld = toLocal.Inverse();
      G4ThreeVector posWorld = aStep->GetPreStepPoint()->GetPosition();
      G4ThreeVector posLocal = toLocal.TransformPoint(posWorld);
-
 
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.

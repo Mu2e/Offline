@@ -2,107 +2,113 @@
 // Geometry and identifier info about the VaneCalorimeter.
 //
 //
-// $Id: VaneCalorimeter.cc,v 1.1 2012/09/08 02:24:25 echenard Exp $
+// $Id: VaneCalorimeter.cc,v 1.2 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
+//C++ includes
+#include <algorithm>
 
+//mu2e includes
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 
-using namespace std;
 
 
 namespace mu2e {
 
-  //
-  // Convert coordinates from Mu2e frame to local frame of crystal, identified by roid
-  //
-  CLHEP::Hep3Vector VaneCalorimeter::toCrystalFrame(int roid, CLHEP::Hep3Vector const& pos) const 
-  {
-  
-    int vaneid = getVaneByRO(roid);
-    const Vane & vane = getVane(vaneid);
 
-    double crystalUnitWidth = _crystalHW + _wrapperThickness + _shellThickness;
+    CLHEP::Hep3Vector VaneCalorimeter::toCrystalFrame(int CrystalId, CLHEP::Hep3Vector const& pos) const 
+    {   
+	const Vane& vane = getVane( getCaloSectionId(CrystalId) );
+	int ic           = getLocalCrystalId(CrystalId);
 
-    CLHEP::Hep3Vector vlocal(_roHalfThickness,
-                             (2*getCrystalRByRO(roid)-_nCrystalR+1)*crystalUnitWidth,
-                             (2*getCrystalZByRO(roid)-_nCrystalZ+1)*crystalUnitWidth );
+	CLHEP::Hep3Vector crysLocalPos = vane.getCrystal(ic).position();
 
-    return *(vane.getRotation())*(pos-vane.getOrigin())-vlocal;
-  }
+	//if you want to coordinates w.r.t the front face of the crystal, uncomment next two lines
+	//CLHEP::Hep3Vector shift(-_crystalHL,0,0);
+	//crysLocalPos += shift;
 
-  //---------------------------------------------------------
-  //
-  // Convert coordinates from Mu2e frame to local frame of the vane, identified by vaneid
-  //
+	return (vane.getRotation())*(pos-vane.getOrigin())-crysLocalPos;  
+    }
 
-  CLHEP::Hep3Vector VaneCalorimeter::toVaneFrame(int vaneid, CLHEP::Hep3Vector const& pos) const 
-  {
-          const Vane & vane = getVane(vaneid);
-          double crystalUnitWidth  = _crystalHW + _wrapperThickness + _shellThickness;
-          double crystalUnitLength = _crystalHL + _wrapperThickness;
+    CLHEP::Hep3Vector VaneCalorimeter::toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const 
+    {   
+	const Vane& vane = getVane(sectionId);
+	return (vane.getRotation())*(pos-vane.getOrigin());
+    }
 
-          CLHEP::Hep3Vector vlocal(_roHalfThickness - crystalUnitLength,
-                          (_nCrystalR )*crystalUnitWidth,
-                          (_nCrystalZ )*crystalUnitWidth );
+    CLHEP::Hep3Vector VaneCalorimeter::fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const 
+    {   
+	const Vane& vane = getVane(sectionId);
+	return vane.getOrigin() + vane.getInverseRotation()*pos;
+    }
 
-          return *(vane.getRotation())*(pos-vane.getOrigin())+vlocal;
-  }
+    CLHEP::Hep3Vector VaneCalorimeter::getCrystalAxis(int CrystalId) const 
+    {
+	const Vane& vane = getVane( getCaloSectionId(CrystalId) );
+	CLHEP::Hep3Vector vlocal(1,0,0);
+	return vane.getInverseRotation()*vlocal;
+    }
 
-  CLHEP::Hep3Vector VaneCalorimeter::fromVaneFrame(int vaneid, CLHEP::Hep3Vector const& pos) const 
-  {
-            const Vane & vane = getVane(vaneid);
+    CLHEP::Hep3Vector VaneCalorimeter::getCrystalOrigin(int CrystalId) const 
+    {          
+       const Vane& vane = getVane( getCaloSectionId(CrystalId) );
+       int ic           = getLocalCrystalId(CrystalId);
 
-            double crystalUnitWidth  = _crystalHW + _wrapperThickness + _shellThickness;
-            double crystalUnitLength = _crystalHL + _wrapperThickness;
+       CLHEP::Hep3Vector crysLocalPos = vane.getCrystal(ic).position();
 
-            CLHEP::Hep3Vector vlocal(_roHalfThickness - crystalUnitLength,
-                            (_nCrystalR )*crystalUnitWidth,
-                            (_nCrystalZ )*crystalUnitWidth );
+       //if you want to coordinates w.r.t the front face of the crystal, uncomment next two lines
+       //CLHEP::Hep3Vector shift(-_crystalHL,0,0);
+       //crysLocalPos += shift;
 
-            return (vane.getRotation()->inverse())*(pos-vlocal) + vane.getOrigin();
+       return vane.getOrigin() + vane.getInverseRotation()*crysLocalPos; 
+    }
+        
+    CLHEP::Hep3Vector VaneCalorimeter::getLocalCrystalOrigin(int CrystalId) const 
+    {          
+       const Vane& vane = getVane( getCaloSectionId(CrystalId) );
+       int ic           = getLocalCrystalId(CrystalId);
+
+       CLHEP::Hep3Vector crysLocalPos = vane.getCrystal(ic).position();
+
+       //if you want to coordinates w.r.t the front face of the crystal, uncomment next two lines
+       //CLHEP::Hep3Vector shift(-_crystalHL,0,0);
+       //crysLocalPos += shift;
+
+       return crysLocalPos; 
     }
 
 
 
-  //---------------------------------------------------------
-  //
-  // Get crystal origin (center) in Mu2e coordinates
-  //
-  CLHEP::Hep3Vector VaneCalorimeter::getCrystalOriginByRO(int roid) const 
-  {
+    std::vector<int> VaneCalorimeter::getNeighbors(int CrystalId, int level) const 
+    {
 
-    int vaneid = getVaneByRO(roid);
-    const Vane & vane = getVane(vaneid);
+	int iv = getCaloSectionId(CrystalId);
+	int ic = getLocalCrystalId(CrystalId);
 
-    double crystalUnitWidth  = _crystalHW + _wrapperThickness + _shellThickness;
+	int offset = iv*getVane(0).nCrystals();
 
-    // Crystal center in vane coordinates
-    CLHEP::Hep3Vector vlocal(_roHalfThickness,
-                             (2*getCrystalRByRO(roid)-_nCrystalR+1)*crystalUnitWidth,
-                             (2*getCrystalZByRO(roid)-_nCrystalZ+1)*crystalUnitWidth );
-
-    return vane.getOrigin() + (vane.getRotation()->inverse())*vlocal;
-  }
-
-  //
-  // Get crystal axis in Mu2e coordinates - direction from front of
-  // the crystal to readout side
-  //
-  CLHEP::Hep3Vector VaneCalorimeter::getCrystalAxisByRO(int roid) const 
-  {
-
-    int vaneid = getVaneByRO(roid);
-    const Vane & vane = getVane(vaneid);
-
-    // Crystal axis in vane coordinates
-    CLHEP::Hep3Vector vlocal(1,0,0);
-
-    return (vane.getRotation()->inverse())*vlocal;
-  }
+	std::vector<int> list = getVane(iv).getNeighbors(ic,level);
+	transform(list.begin(), list.end(), list.begin(),bind2nd(std::plus<int>(), offset));  
+	return list;
+    }
 
 
-} // namespace mu2e
+
+}
+
+/*
+    CLHEP::Hep3Vector VaneCalorimeter::toSectionFrame(int crystalId, CLHEP::Hep3Vector const& pos) const 
+    {   
+	const Vane& vane = getVane( getCaloSectionId(CrystalId) );
+	return (vane.getRotation())*(pos-vane.getOrigin());
+    }
+
+    CLHEP::Hep3Vector VaneCalorimeter::fromSectionFrame(int crystalId, CLHEP::Hep3Vector const& pos) const 
+    {   
+	const Vane& vane = getVane( getCaloSectionId(CrystalId) );
+	return vane.getOrigin() + vane.getInverseRotation()*pos;
+    }
+*/

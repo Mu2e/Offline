@@ -11,18 +11,21 @@
 // for definition of geometry
 
 // Original author B. Echenard
-//
 
+
+//C++ includes
 #include <vector>
-#include "CLHEP/Vector/ThreeVector.h"
 
-//
 // Mu2e includes
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/Disk.hh"
+#include "Calorimeter.hh"
+#include "Disk.hh"
+
+//CLHEP includes
+#include "CLHEP/Vector/ThreeVector.h"
 
 
 namespace mu2e {
+
 
     class DiskCalorimeter: public Calorimeter{
 
@@ -31,20 +34,46 @@ namespace mu2e {
 
        public:
 
-	 DiskCalorimeter();
-	 ~DiskCalorimeter() {}
+
+         DiskCalorimeter()  {}
+         ~DiskCalorimeter() {}
+
 
 	 unsigned int nDisks(void) const        {return _nDisks;}
 	 Disk const& getDisk(int i) const       {return _disks.at(i);}
-	 double getDiskSeparation(int i) const  {return _diskSeparation[i];}
-	 double getDiskThickness(void) const    {return _diskThickness;}
+	 double getDiskSeparation(int i) const  {return _diskSeparation.at(i);}
 
-	 unsigned int nRO(void) const;
          unsigned int nROPerCrystal(void) const {return _nROPerCrystal;}
+         double crystalVolume(void) const       {return 3.4641016*_crystalHalfTrans*_crystalHalfTrans*_crystalDepth;}
+         unsigned int nRO(void) const;
+         unsigned int nCrystal(void) const;
+
+
+         int getCaloSectionId(int crystalId) const;
+         int getLocalCrystalId(int crystalId) const;
+
+         //conversion of crystal <-> readout id, 
+	 //readout_id = crystal_id*nRoPerCrystal ... crystal_id*nRoPerCrystal + nRoPerCrystal-1		 
+	 int getCrystalByRO(int roid) const     {return (roid/_nROPerCrystal);}
+	 int getROBaseByCrystal(int crystalId) const   {return (crystalId*_nROPerCrystal);}
+	 
+         std::vector<int> getNeighbors(int crystalId, int level=1) const; 
+
+
+	 CLHEP::Hep3Vector const& getOrigin(void) const  {return _origin;}
+
+	 CLHEP::Hep3Vector getCrystalOrigin(int crystalId) const;
+	 CLHEP::Hep3Vector getLocalCrystalOrigin(int crystalId) const;
+         CLHEP::Hep3Vector getCrystalAxis(int crystalId) const ;
+	 CLHEP::Hep3Vector toCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos) const ;
+	 CLHEP::Hep3Vector toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const ;
+	 CLHEP::Hep3Vector fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const ;
+
+
 	 double roHalfThickness(void) const     {return _readOutHalfThickness;}
 	 double roHalfSize(void) const          {return _readOutHalfSize;}
 
-	 double crysHexsize(void) const         {return _crystalHexsize;}
+	 double crysHalfTrans(void) const       {return _crystalHalfTrans;}
 	 double crysDepth(void) const           {return _crystalDepth;}
          double wrapperThickness(void) const    {return _wrapperThickness; }
 	 double shellThickness(void) const      {return _shellThickness;}
@@ -55,40 +84,28 @@ namespace mu2e {
 	 double getElectronEmin(void) const     {return _electronEmin; }
 
 
-	 CLHEP::Hep3Vector const& getOrigin(void) const  {return _origin;}
 
 
-	 CLHEP::Hep3Vector toCrystalFrame(int roid, CLHEP::Hep3Vector const& pos) const ;
-	 CLHEP::Hep3Vector getCrystalOriginById(int id) const;
-	 CLHEP::Hep3Vector toDiskFrame(int idisk, CLHEP::Hep3Vector const& pos) const ;
-	 CLHEP::Hep3Vector fromDiskFrame(int idisk, CLHEP::Hep3Vector const& pos) const;   
          	 
-         //conversion of crystal <-> readout id, 
-	 //readout_id = crystal_id*nRoPerCrystal ... crystal_id*nRoPerCrystal + nRoPerCrystal-1		 
-	 int getCrystalByRO(int roid) const   {return (roid/_nROPerCrystal);}
-	 int getROBaseByCrystal(int id) const {return (id*_nROPerCrystal);}
-	 int getDiskId(int id) const;
-         int getCrystalIdInMap(int id) const;
+ 	 	 
 
 
-	 
-	 	 
 
        protected:
 
 	  unsigned int _nDisks;
-	  double _diskThickness;          
+	  double       _diskThickness;          
 	  std::vector<double> _diskInnerRadius;
 	  std::vector<double> _diskOuterRadius;
 	  std::vector<double> _diskSeparation;
-	  std::vector<double> _diskRotAngle;  //rotation w.r.t z-axi
+	  std::vector<double> _diskRotAngle;  
 
 
-	  unsigned int  _nROPerCrystal;
+	  unsigned int _nROPerCrystal;
 	  double _readOutHalfThickness;
 	  double _readOutHalfSize;
 
-	  double _crystalHexsize;
+	  double _crystalHalfTrans;
 	  double _crystalDepth;
 	  double _wrapperThickness;
 	  double _shellThickness;
@@ -104,8 +121,6 @@ namespace mu2e {
 
      };
 
-    
-
-} //namespace mu2e
+}    
 
 #endif /* CalorimeterGeom_DiskCalorimeter_hh */

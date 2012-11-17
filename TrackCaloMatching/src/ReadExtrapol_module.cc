@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadExtrapol_module.cc,v 1.6 2012/09/08 02:24:25 echenard Exp $
+// $Id: ReadExtrapol_module.cc,v 1.7 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author G. Pezzullo
 //
@@ -120,7 +120,7 @@ double thetaWimpact(const CLHEP::Hep3Vector& mom, int vaneId){
 	if(! geom->hasElement<VaneCalorimeter>() ) return 0;
 	GeomHandle<VaneCalorimeter> cg;
         Vane const &vane = cg->getVane(vaneId);
-        CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*mom.unit();
+        CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*mom.unit();
         if(std::fabs(dirMom_rotated.getX() ) < 1e-10){
                 if(dirMom_rotated.getZ()>0.0) {
                         return 90.0;
@@ -138,7 +138,7 @@ double thetaVimpact(const CLHEP::Hep3Vector& mom, int vaneId){//(FIXME)
 	if(! geom->hasElement<VaneCalorimeter>() ) return 0;
         GeomHandle<VaneCalorimeter> cg;
         Vane const &vane = cg->getVane(vaneId);
-        CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*mom.unit();
+        CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*mom.unit();
         if(std::fabs(dirMom_rotated.getX() ) < 1e-10){
                 if(dirMom_rotated.getY()>0.0) {
                         return 90.0;
@@ -1025,7 +1025,7 @@ void ReadExtrapol::doExtrapolation(art::Event const& evt, bool skip){
                                                 _seedQC = 0;
                                         }
                                         Vane const &vane = cg->getVane(tmpVane );
-                                        Hep3Vector momentumRotUnit = *(vane.getRotation())*(it->second.impMom3Vec( CaloPointInVane.at(j) ).unit());
+                                        Hep3Vector momentumRotUnit = vane.getRotation()*(it->second.impMom3Vec( CaloPointInVane.at(j) ).unit());
 
                                         thetaWimpact = std::atan(-1.0*momentumRotUnit.getZ() / momentumRotUnit.getX() ) ;
                                         _seedThetaW = thetaWimpact*Constants::radToDegrees;
@@ -1062,7 +1062,7 @@ void ReadExtrapol::doExtrapolation(art::Event const& evt, bool skip){
                                         tmpEnergyErr = sqrt(recoMap[tmpTrkId].impMom3VecErr(RecoPointInVane.at(tmpIndex)).covMatrix().similarity(momvec));
 
 
-                                        momentumRotUnit = *(vane.getRotation())*(recoMap[tmpTrkId].impMom3Vec(RecoPointInVane.at(tmpIndex)).unit());
+                                        momentumRotUnit = vane.getRotation()*(recoMap[tmpTrkId].impMom3Vec(RecoPointInVane.at(tmpIndex)).unit());
                                         thetaWimpact = std::atan(-1.0*momentumRotUnit.getZ() / momentumRotUnit.getX() ) ;
                                         _recoThetaW = thetaWimpact*Constants::radToDegrees;
 
@@ -1103,8 +1103,8 @@ void ReadExtrapol::doExtrapolation(art::Event const& evt, bool skip){
                                         Hep3Vector Vaxes(0.0, 1.0, 0.0), Waxes(0.0, 0.0, 1.0);
 
                                         //move these axes into the Mu2e general frame
-                                        Vaxes = *(vane.getRotation())*(Vaxes);
-                                        Waxes = *(vane.getRotation())*(Waxes);
+                                        Vaxes = vane.getRotation()*(Vaxes);
+                                        Waxes = vane.getRotation()*(Waxes);
 
                                         double scaleErrW = 1.0/fabs( cos(thetaWimpact) );
                                         double scaleErrV = 1.0/fabs( cos(thetaVimpact) );
@@ -1123,7 +1123,7 @@ void ReadExtrapol::doExtrapolation(art::Event const& evt, bool skip){
                                         _recoPwErr = tmpErrPos*scaleErrW;
 
 
-                                        CLHEP::Hep3Vector tmpPerr = *(vane.getRotation())*tmpPosVaneFrameErr;//cg->toVaneFrame(tmpVane, tmpPosVaneFrameErr);
+                                        CLHEP::Hep3Vector tmpPerr = vane.getRotation()*tmpPosVaneFrameErr;//cg->toVaneFrame(tmpVane, tmpPosVaneFrameErr);
                                         _recoPuErr = fabs(tmpPerr.x());
 
                                         if(_diagLevel>2){
@@ -1153,7 +1153,7 @@ void ReadExtrapol::doExtrapolation(art::Event const& evt, bool skip){
                                         tmpErrPos = sqrt(recoMap[tmpTrkId].impMom3VecErr(RecoPointInVane.at(tmpIndex)).covMatrix().similarity(momvec));
                                         tmpPosVaneFrameErr.setZ(tmpErrPos);
 
-                                        tmpPerr = *(vane.getRotation())*tmpPosVaneFrameErr;
+                                        tmpPerr = vane.getRotation()*tmpPosVaneFrameErr;
                                         _recoPpuErr = tmpPerr.x();
                                         _recoPpvErr = tmpPerr.y();
                                         _recoPpwErr = tmpPerr.z();
@@ -1403,7 +1403,7 @@ void ReadExtrapol::doExtrapolation(art::Event const& evt, bool skip){
                                         _seedQC = 0;
                                 }
                                 Vane const &vane = cg->getVane(tmpVane );
-                                Hep3Vector momentumRotUnit = *(vane.getRotation())*(caloMap[tmpTrkId].impMom3Vec( i ).unit());
+                                Hep3Vector momentumRotUnit = vane.getRotation()*(caloMap[tmpTrkId].impMom3Vec( i ).unit());
 
                                 thetaWimpact = std::atan(-1.0*momentumRotUnit.getZ() / momentumRotUnit.getX() ) ;
                                 _seedThetaW = thetaWimpact*Constants::radToDegrees;

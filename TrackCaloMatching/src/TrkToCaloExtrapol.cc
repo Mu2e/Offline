@@ -1,7 +1,7 @@
 //
-// $Id: TrkToCaloExtrapol.cc,v 1.4 2012/09/08 02:24:25 echenard Exp $
+// $Id: TrkToCaloExtrapol.cc,v 1.5 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author G. Pezzullo
 //
@@ -70,9 +70,9 @@ double TrkToCaloExtrapol::pathLenghtEntranceErr() const{
 
         Vane const &vane = cg->getVane(_vaneId);
         Hep3Vector Waxes(0.0, 0.0, 1.0);
-        Waxes = *(vane.getRotation())*(Waxes);
+        Waxes = vane.getRotation()*(Waxes);
 
-        Hep3Vector momentumRotUnit = *(vane.getRotation())*TrkToCaloExtrapol::momentum().unit();
+        Hep3Vector momentumRotUnit = vane.getRotation()*TrkToCaloExtrapol::momentum().unit();
         double thetaW = std::atan(-1.0*momentumRotUnit.getZ() / momentumRotUnit.getX() ) ;
 
         double scaleErrW = 1.0/fabs( cos(thetaW) );

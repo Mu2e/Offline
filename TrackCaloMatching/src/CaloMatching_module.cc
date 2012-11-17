@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.6 2012/09/08 02:24:25 echenard Exp $
+// $Id: CaloMatching_module.cc,v 1.7 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author G. Pezzullo
 //
@@ -96,7 +96,7 @@ namespace mu2e {
 double thetaWimpact(const CLHEP::Hep3Vector& mom, int vaneId){
         GeomHandle<VaneCalorimeter> cg;
         Vane const &vane = cg->getVane(vaneId);
-        CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*mom.unit();
+        CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*mom.unit();
         if(std::fabs(dirMom_rotated.getX() ) < 1e-10){
                 if(dirMom_rotated.getZ()>0.0) {
                         return 90.0;
@@ -112,7 +112,7 @@ double thetaWimpact(const CLHEP::Hep3Vector& mom, int vaneId){
 double thetaVimpact(const CLHEP::Hep3Vector& mom, int vaneId){//(FIXME)
         GeomHandle<VaneCalorimeter> cg;
         Vane const &vane = cg->getVane(vaneId);
-        CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*mom.unit();
+        CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*mom.unit();
         if(std::fabs(dirMom_rotated.getX() ) < 1e-10){
                 if(dirMom_rotated.getY()>0.0) {
                         return 90.0;
@@ -754,8 +754,8 @@ void CaloMatching::doMatching(art::Event & evt, bool skip){
                 //move these axes into the Mu2e general frame
                 Vane const &vane = cg->getVane(tmpVane );
 
-                Vaxes = *(vane.getRotation())*(Vaxes);
-                Waxes = *(vane.getRotation())*(Waxes);
+                Vaxes = vane.getRotation()*(Vaxes);
+                Waxes = vane.getRotation()*(Waxes);
 
                 //Vaxes = cg->fromVaneFrame(tmpVane, Vaxes);
                 //Waxes = cg->fromVaneFrame(tmpVane, Waxes);

@@ -1,9 +1,9 @@
 //
 // CaloCrystalHit to be created based on CaloHit's
 //
-// $Id: CaloCrystalHit.cc,v 1.2 2011/06/07 21:32:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/07 21:32:22 $
+// $Id: CaloCrystalHit.cc,v 1.3 2012/11/17 00:06:25 echenard Exp $
+// $Author: echenard $
+// $Date: 2012/11/17 00:06:25 $
 //
 
 // C++ includes
@@ -69,6 +69,13 @@ namespace mu2e {
   void CaloCrystalHit::setEnergyDep(double energy) {
 
       _energyDep = energy;
+
+    return;
+
+  }
+  void CaloCrystalHit::setEnergyDepTotal(double energy) {
+
+      _energyDepTotal = energy;
 
     return;
 

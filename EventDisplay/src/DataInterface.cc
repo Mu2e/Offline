@@ -515,12 +515,12 @@ void DataInterface::fillGeometry()
       double y=v.getOrigin().y();
       double z=v.getOrigin().z()+_zOffset;
       int    id=v.id();
-      double sx=v.getSize().x();
-      double sy=v.getSize().y();
-      double sz=v.getSize().z();
-      double phi=v.getRotation()->phi();
-      double theta=v.getRotation()->theta();
-      double psi=v.getRotation()->psi();
+      double sx=v.size().x();
+      double sy=v.size().y();
+      double sz=v.size().z();
+      double phi=v.getRotation().phi();
+      double theta=v.getRotation().theta();
+      double psi=v.getRotation().psi();
 
       findBoundaryP(_calorimeterMinmax, x+sx, y+sy, z+sz);
       findBoundaryP(_calorimeterMinmax, x-sx, y-sy, z-sz);
@@ -556,12 +556,12 @@ void DataInterface::fillGeometry()
       double x=v.getOrigin().x()+_xOffset;
       double y=v.getOrigin().y();
       double z=v.getOrigin().z()+_zOffset;
-      double theta=v.getRotation()->theta();
-      double phi=v.getRotation()->phi();
-      double psi=v.getRotation()->psi();
-      double sx=v.getSize().x();
-      double sy=v.getSize().y();
-      double sz=v.getSize().z();
+      double theta=v.getRotation().theta();
+      double phi=v.getRotation().phi();
+      double psi=v.getRotation().psi();
+      double sx=v.size().x();
+      double sy=v.size().y();
+      double sz=v.size().z();
 
       //Start with an unrotated vane centered at (0,0,0).
       //Before the rotation, the vector from the center of the vane

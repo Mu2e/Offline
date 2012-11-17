@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.cc,v 1.3 2012/09/08 02:24:25 echenard Exp $
+// $Id: Calorimeter4VanesGeom.cc,v 1.4 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -140,9 +140,9 @@ CaloVolumeElem* Calorimeter4VanesGeom::vane(int& i){
         const HepRotation rot(normal, 0.0);
         const HepTranslation tras(tmp_vec);
 
-        const Hep3Vector axes(vane.getRotation()->getAxis());
+        const Hep3Vector axes(vane.getRotation().getAxis());
 
-        //double delta = vane.getRotation()->getDelta() - Constants::pi*0.5;
+        //double delta = vane.getRotation().getDelta() - Constants::pi*0.5;
         double delta = Constants::pi*0.5*i;
         const HepRotation rot2(normal, delta );
 

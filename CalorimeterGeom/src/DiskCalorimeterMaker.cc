@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: DiskCalorimeterMaker.cc,v 1.1 2012/09/08 02:24:25 echenard Exp $
+// $Id: DiskCalorimeterMaker.cc,v 1.2 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Date: 2012/11/17 00:06:25 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -16,11 +16,11 @@
 #include "CalorimeterGeom/inc/DiskCalorimeterMaker.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CalorimeterGeom/inc/HexPositionMap.hh"
+
 // Framework include files
 #include "cetlib/exception.h"
+#include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 
-//
 // other includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/RotationX.h"
@@ -35,6 +35,7 @@
 
 namespace mu2e{
 
+
   DiskCalorimeterMaker::DiskCalorimeterMaker( SimpleConfig const& config, double solenoidOffset)
   {
 
@@ -48,7 +49,7 @@ namespace mu2e{
         config.getVectorDouble("calorimeter.diskSeparation",_calo->_diskSeparation,_calo->_nDisks);
 
 
-	_calo->_crystalHexsize        = config.getDouble("calorimeter.crystalHexsize");
+	_calo->_crystalHalfTrans      = config.getDouble("calorimeter.crystalHalfTrans");
 	_calo->_crystalDepth          = 2.0*config.getDouble("calorimeter.crystalHalfLong");  //half length in config file...       
 	_calo->_wrapperThickness      = config.getDouble("calorimeter.crystalWrapperThickness",0.0); 
 	_calo->_shellThickness        = config.getDouble("calorimeter.crystalShellThickness",0.0);
@@ -71,7 +72,7 @@ namespace mu2e{
         //in construct calorimeter, the calo is placed at center.x(),center.y(),center.z()-zOffset
 	//zoffset is the position of toyDS3 in Mu2e coordinates. //this is set in geom_01.txt
 	
-        _calo->_origin = CLHEP::Hep3Vector(center.x(),center.y(),center.z());
+        _calo->_origin = CLHEP::Hep3Vector(center.x()-solenoidOffset,center.y(),center.z());
 
 	//make sure above information is consistent
 	CheckIt();
@@ -87,35 +88,36 @@ namespace mu2e{
 
 
  
- 
   void DiskCalorimeterMaker::MakeDisks(void)
   {
 
-      double crystalFullRadius = _calo->_crystalHexsize + _calo->_wrapperThickness + _calo->_shellThickness;
-
-
+      double crystalFullWidth = _calo->_crystalHalfTrans + _calo->_wrapperThickness + _calo->_shellThickness;
+      CLHEP::Hep3Vector crystalShift(0,0,-_calo->_readOutHalfThickness);
 
       for (unsigned int idisk=0; idisk<_calo->_nDisks; ++idisk)
       {			 
 	 
-	 CLHEP::HepRotation Rmat(CLHEP::HepRotation::IDENTITY);
-	 Rmat.rotateZ(_calo->_diskRotAngle[idisk]);
+	 double dR1    = _calo->_diskInnerRadius[idisk] - _calo->_diskThickness;
+	 double dR2    = _calo->_diskOuterRadius[idisk] + _calo->_diskThickness;
+	 double dZ     = _calo->_crystalDepth + 2.0*_calo->_readOutHalfThickness + 2.0*_calo->_diskThickness;
 	 
-	 std::cout<<_calo->_diskInnerRadius[idisk]<<std::endl;
-	 _calo->_disks.push_back(Disk(_calo->_diskInnerRadius[idisk],_calo->_diskOuterRadius[idisk],_calo->_diskThickness,2.0*crystalFullRadius,idisk));
+         
+
+
+	 _calo->_disks.push_back(Disk(idisk,_calo->_diskInnerRadius[idisk],_calo->_diskOuterRadius[idisk],_calo->_diskThickness,2.0*crystalFullWidth, crystalShift));
 	 Disk &thisDisk = _calo->_disks.back();
 	 	 
-         thisDisk.setOrigin(CLHEP::Hep3Vector(_calo->_origin.x(), _calo->_origin.y(), _calo->_origin.z()+_calo->_diskSeparation[idisk]));
-         thisDisk.setRotation(Rmat);
+         thisDisk.setSize(        CLHEP::Hep3Vector(dR1,dR2,dZ) );
+         thisDisk.setOrigin(      CLHEP::Hep3Vector(_calo->_origin.x(), _calo->_origin.y(), _calo->_origin.z()+_calo->_diskSeparation[idisk]) );
+         thisDisk.setOriginLocal( CLHEP::Hep3Vector(0,0,_calo->_diskSeparation[idisk]) );
+         thisDisk.setRotation(    (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationZ(_calo->_diskRotAngle[idisk]) );
 	 	 
-	if ( verbosityLevel > 0) std::cout<<"Constructed Disk "<<thisDisk.id()<<":  Rin="<<thisDisk.getRin()<<"  Rout="<<thisDisk.getRout()
+  	 if ( verbosityLevel > 0) std::cout<<"Constructed Disk "<<thisDisk.id()<<":  Rin="<<thisDisk.innerRadius()<<"  Rout="<<thisDisk.outerRadius()
         	  <<" X="<<thisDisk.getOrigin().x()
         	  <<" Y="<<thisDisk.getOrigin().y()
         	  <<" Z="<<thisDisk.getOrigin().z()
-		  <<"  with "<<thisDisk.getCrystalMap().nCrystals()<<" crystals"<<std::endl;
-
- 
-      }
+		  <<"  with "<<thisDisk.nCrystals()<<" crystals"<<std::endl;
+         }
 
   }
 
@@ -130,11 +132,11 @@ namespace mu2e{
 
       // Check size of readouts      
       if( _calo->_nROPerCrystal==1 ) {
-        if(  _calo->_readOutHalfSize > _calo->_crystalHexsize ) 
+        if(  _calo->_readOutHalfSize > _calo->_crystalHalfTrans ) 
           {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutHalfTrans > calorimeter.crystalHexsize.\n";}
         
       } else {
-        if( _calo->_readOutHalfSize > 0.5*_calo->_crystalHexsize) 
+        if( _calo->_readOutHalfSize > 0.5*_calo->_crystalHalfTrans) 
           {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutHalfTrans > 0.5*calorimeter.crystalHalfTrans.\n";}
       }
       

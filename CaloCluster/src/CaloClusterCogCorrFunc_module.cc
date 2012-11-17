@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.13 2012/09/08 02:24:24 echenard Exp $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.14 2012/11/17 00:06:25 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/09/08 02:24:24 $
+// $Date: 2012/11/17 00:06:25 $
 //
 // Original author G. Pezzullo
 //
@@ -1099,7 +1099,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                         cout << "dirMomX = "<< dirMom.getX()<<", dirMomY = "<< dirMom.getY()<<", dirMomZ = "<<dirMom.getZ() <<endl;
                                 }
                                 Vane const &vane = cg->getVane(ite->first);
-                                CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
+                                CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*dirMom;
                                 _seedPpu = dirMom_rotated.x()*ite->second[trkVec[it2]]._impMom3Vec.mag();
                                 _seedPpv = dirMom_rotated.y()*ite->second[trkVec[it2]]._impMom3Vec.mag();
                                 _seedPpw = dirMom_rotated.z()*ite->second[trkVec[it2]]._impMom3Vec.mag();
@@ -1362,7 +1362,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
         //                                cout << "dirMomX = "<< dirMom.getX()<<", dirMomY = "<< dirMom.getY()<<", dirMomZ = "<<dirMom.getZ() <<endl;
         //                        }
         //                        Vane const &vane = cg->getVane(ite->first);
-        //                        CLHEP::Hep3Vector dirMom_rotated = *(vane.getRotation())*dirMom;
+        //                        CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*dirMom;
         //                        _seedPpu = dirMom_rotated.x()*ite->second[trkVec[it2]]._impMom3Vec.mag();
         //                        _seedPpv = dirMom_rotated.y()*ite->second[trkVec[it2]]._impMom3Vec.mag();
         //                        _seedPpw = dirMom_rotated.z()*ite->second[trkVec[it2]]._impMom3Vec.mag();

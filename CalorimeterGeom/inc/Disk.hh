@@ -9,57 +9,52 @@
 
 // C++ includes
 #include <vector>
-#include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/Rotation.h"
 
 // Mu2e includes
-#include "CalorimeterGeom/inc/HexPositionMap.hh"
+#include "CalorimeterGeom/inc/CaloSection.hh"
+#include "CalorimeterGeom/inc/HexMap.hh"
+#include "CalorimeterGeom/inc/Crystal.hh"
 
+//CLHEP includess
+#include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 
 namespace mu2e {
 
 
-   class Disk{
+    class Disk : public CaloSection {
 
 
-      public:
+       public:
+
+	  Disk(int id, double rin, double rout, double thickness, double cellSize, CLHEP::Hep3Vector crystalOffset); 
+
+          double innerRadius(void) const           {return _radiusIn;}
+          double outerRadius(void) const           {return _radiusOut;}
+          double thickness(void) const             {return _thickness;}
+
+          std::vector<int> getNeighbors(int crystalId, int level=1) const; 
+          double EstimateEmptySpace(void);
 
 
-	 Disk(double rin, double rout, double thick, double cellSize, int id=-1) : 
-	 _radiusIn(rin),_radiusOut(rout),_thickness(thick),_cellSize(cellSize),_id(id),_origin(),
-	 _rotation(),_crystalMap(cellSize, rin, rout)
-	 {            
-	 }
 
-	 int    id(void) const                                 {return _id;}
-	 double getRin(void) const                             {return _radiusIn;}
-	 double getRout(void) const                            {return _radiusOut;}
-    
-	 CLHEP::Hep3Vector const& getOrigin(void) const        {return _origin;}
-	 CLHEP::HepRotation const& getRotation(void) const     {return _rotation;}
-	 void setOrigin(const CLHEP::Hep3Vector& orig)         {_origin   = orig;}
-	 void setRotation(const CLHEP::HepRotation& rot)       {_rotation = rot;}
-         
-	 HexPositionMap const& getCrystalMap(void) const       {return _crystalMap;} 
-         
+       private:
 
-      private:
+	  double               _radiusIn;
+	  double               _radiusOut;
+          double               _thickness;
+	  double               _cellSize;
+	 
+          HexMap               _HexMap;
+          std::vector<int>     _mapToCrystal;
+	  std::vector<int>     _CrystalToMap;
 
-	 double _radiusIn;
-	 double _radiusOut;
-	 double _thickness;
-	 double _cellSize;
-	 int    _id;
-
-	 CLHEP::Hep3Vector  _origin;
-	 CLHEP::HepRotation _rotation;
-  
-	 HexPositionMap _crystalMap;
-  };
-
-
-} //namespace mu2e
-
+          void   fillCrystals(void);
+          bool   isInsideDisk(double x, double y) const;
+	  double calcDistToSide(CLHEP::Hep2Vector& a, CLHEP::Hep2Vector& b) const;
+          std::vector<int> findNeighbors(int crystalId, int level=1) const; 
+    };
+}
 
 #endif /* CalorimeterGeom_Disk_hh */

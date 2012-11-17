@@ -6,122 +6,139 @@
 
 // C++ includes
 #include <iostream>
-#include <cmath>
-#include "CLHEP/Vector/Rotation.h"
-#include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/TwoVector.h"
+#include <algorithm>
 
 // Mu2e includes
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CalorimeterGeom/inc/HexPositionMap.hh"
-#include "CalorimeterGeom/inc/HexPosition.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 
-
+//other includes
+#include "CLHEP/Vector/Rotation.h"
+#include "CLHEP/Vector/TwoVector.h"
 
 
 namespace mu2e {
 
-   DiskCalorimeter::DiskCalorimeter()
-   {
-   }
 
 
+    CLHEP::Hep3Vector DiskCalorimeter::toCrystalFrame(int CrystalId, CLHEP::Hep3Vector const& pos) const 
+    {   
 
-   //get total number of readouts
-   unsigned int DiskCalorimeter::nRO(void) const 
-   {
-      unsigned total(0);
-      for (unsigned int i=0;i<_nDisks;++i) total += _disks[i].getCrystalMap().nCrystals();
-      return total*_nROPerCrystal;
-   }
-
-
-   int DiskCalorimeter::getDiskId(int id) const
-   {     
-     for (unsigned int i=0;i<_nDisks;++i) {
-       if (id < _disks[i].getCrystalMap().nCrystals()) return i;
-       id -= _disks[i].getCrystalMap().nCrystals();
-     }
-     return _nDisks;
-   }
-
-   int DiskCalorimeter::getCrystalIdInMap(int id) const
-   {     
-     for (unsigned int i=0;i<_nDisks;++i) {
-       if (id < _disks[i].getCrystalMap().nCrystals()) return id;
-       id -= _disks[i].getCrystalMap().nCrystals();
-     }
-     return id;
-   }
-
-
-
-   // Get crystal origin (center) in Mu2e coordinates
-   CLHEP::Hep3Vector DiskCalorimeter::getCrystalOriginById(int id) const 
-   {
-       int idisk = getDiskId(id);
-       int ic    = getCrystalIdInMap(id);
-
-              
-       // Crystal center in disk coordinates
-       CLHEP::Hep2Vector xypos = _disks[idisk].getCrystalMap().getCrystalPos(ic).XY();
-       CLHEP::Hep3Vector plocal(xypos.x(),xypos.y(),-1.0*_readOutHalfThickness);
- 
- 
-        //must apply the hack to get into Mu2e coordinates
-       CLHEP::Hep3Vector  hack(-3904,0,0);
-       CLHEP::Hep3Vector diskOrig = _disks[idisk].getOrigin()+hack;
-      
-       return diskOrig + (_disks[idisk].getRotation().inverse())*plocal; 
-   }
-
-
-
-
-   // Convert coordinates from Mu2e frame to local frame of crystal (taken as center of crystal), identified by id
-   CLHEP::Hep3Vector DiskCalorimeter::toCrystalFrame(int roid, CLHEP::Hep3Vector const& pos) const 
-   {   
-
-       int id    = getCrystalByRO(roid);       
-       int idisk = getDiskId(id);
-       int ic    = getCrystalIdInMap(id);
+       const Disk& disk = getDisk( getCaloSectionId(CrystalId) );
+       int ic           = getLocalCrystalId(CrystalId);
        
-       // Crystal center in disk coordinates
-       CLHEP::Hep2Vector xypos = _disks[idisk].getCrystalMap().getCrystalPos(ic).XY();
-       CLHEP::Hep3Vector plocal(xypos.x(),xypos.y(),-1.0*_readOutHalfThickness);
-       
-       //if you want to coordinates w.r.t the front face of the crystal, use
-       //CLHEP::Hep3Vector plocal(xy.first,xy.second,-1.0*_readOutHalfThickness-_crystalDepth/2.0);
-        
-       
-       //must apply the hack to get into Mu2e coordinates
-       CLHEP::Hep3Vector  hack(-3904,0,0);
-       CLHEP::Hep3Vector diskOrig = _disks[idisk].getOrigin()+hack;
+       CLHEP::Hep3Vector crysLocalPos = disk.getCrystal(ic).position();
 
+       //if you want to coordinates w.r.t the front face of the crystal, uncomment next two lines
+       CLHEP::Hep3Vector shift(0,0,-_crystalDepth/2.0);
+       crysLocalPos += shift;
+               
+       return (disk.getRotation())*(pos-disk.getOrigin())-crysLocalPos;  
+    }
 
-       return (_disks[idisk].getRotation())*(pos-diskOrig)-plocal;  
-   }
+    CLHEP::Hep3Vector DiskCalorimeter::toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const 
+    {   
+       const Disk& disk = getDisk(sectionId);
+       return (disk.getRotation())*(pos-disk.getOrigin());
+    }
 
+    CLHEP::Hep3Vector DiskCalorimeter::fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const 
+    {   
+        const Disk& disk = getDisk(sectionId);
+        return disk.getInverseRotation()*pos + disk.getOrigin();
+    }
 
-
-
-   CLHEP::Hep3Vector DiskCalorimeter::toDiskFrame(int idisk, CLHEP::Hep3Vector const& pos) const 
-   {   
-       CLHEP::Hep3Vector  hack(-3904,0,0);
-       CLHEP::Hep3Vector diskOrig = _disks[idisk].getOrigin()+hack;
-       return (_disks[idisk].getRotation())*(pos-diskOrig);
-   }
-
-   CLHEP::Hep3Vector DiskCalorimeter::fromDiskFrame(int idisk, CLHEP::Hep3Vector const& pos) const 
-   {   
-       CLHEP::Hep3Vector  hack(-3904,0,0);
-       CLHEP::Hep3Vector diskOrig = _disks[idisk].getOrigin()+hack;
+    CLHEP::Hep3Vector DiskCalorimeter::getCrystalOrigin(int CrystalId) const 
+    {          
+       const Disk& disk = getDisk( getCaloSectionId(CrystalId) );
+       int ic           = getLocalCrystalId(CrystalId);
              
-       return diskOrig + (_disks[idisk].getRotation().inverse())*pos;
-   }
+       CLHEP::Hep3Vector crysLocalPos = disk.getCrystal(ic).position(); 
+       //if you want to coordinates w.r.t the front face of the crystal, uncomment next two lines
+       CLHEP::Hep3Vector shift(0,0,-_crystalDepth/2.0);
+       crysLocalPos += shift;
+                  
+       return disk.getOrigin() + disk.getInverseRotation()*crysLocalPos; 
+    }
+
+    CLHEP::Hep3Vector DiskCalorimeter::getLocalCrystalOrigin(int CrystalId) const 
+    {          
+       const Disk& disk = getDisk( getCaloSectionId(CrystalId) );
+       int ic           = getLocalCrystalId(CrystalId);
+             
+       CLHEP::Hep3Vector crysLocalPos = disk.getCrystal(ic).position(); 
+       //if you want to coordinates w.r.t the front face of the crystal, uncomment next two lines
+       //CLHEP::Hep3Vector shift(0,0,-_crystalDepth/2.0);
+       //crysLocalPos += shift;
+                  
+       return crysLocalPos; 
+    }
+
+    CLHEP::Hep3Vector DiskCalorimeter::getCrystalAxis(int CrystalId) const 
+    {
+       const Disk& disk = getDisk( getCaloSectionId(CrystalId) );
+       CLHEP::Hep3Vector vlocal(0,0,1);
+       return disk.getInverseRotation()*vlocal;
+    }
 
 
 
 
-} // namespace mu2e
+
+    std::vector<int> DiskCalorimeter::getNeighbors(int crystalId, int level)  const
+    {
+
+       int iv = getCaloSectionId(crystalId);
+       int ic = getLocalCrystalId(crystalId);
+       
+       int offset(0);
+       for (int i=0;i<iv;++i) offset +=getDisk(i).nCrystals();
+              
+       std::vector<int> list = getDisk(iv).getNeighbors(ic,level);
+       transform(list.begin(), list.end(), list.begin(),bind2nd(std::plus<int>(), offset));  
+
+       return list;
+    }
+
+
+
+    //get total number of readouts
+    unsigned int DiskCalorimeter::nRO(void) const 
+    {
+       unsigned total(0);
+       for (unsigned int i=0;i<_nDisks;++i) total += getDisk(i).nCrystals();
+       return total*_nROPerCrystal;
+    }
+
+    unsigned int DiskCalorimeter::nCrystal(void) const 
+    {
+       unsigned total(0);
+       for (unsigned int i=0;i<_nDisks;++i) total += getDisk(i).nCrystals();
+       return total;
+    }
+    
+    
+    int DiskCalorimeter::getCaloSectionId(int crystalId) const
+    {          
+      for (unsigned int i=0;i<_nDisks;++i) {
+        if (crystalId < getDisk(i).nCrystals()) return i;
+        crystalId -= getDisk(i).nCrystals();
+      }
+      return _nDisks;
+    }
+    
+    
+    int DiskCalorimeter::getLocalCrystalId(int crystalId) const
+    {     
+      for (unsigned int i=0;i<_nDisks;++i) {
+        if (crystalId < getDisk(i).nCrystals()) return crystalId;
+        crystalId -= getDisk(i).nCrystals();
+      }
+      return crystalId;
+    }
+
+
+
+
+
+}
