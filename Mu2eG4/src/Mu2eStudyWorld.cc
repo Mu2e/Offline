@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eStudyWorld.cc,v 1.1 2012/11/16 23:55:17 genser Exp $
+// $Id: Mu2eStudyWorld.cc,v 1.2 2012/11/19 20:44:00 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/16 23:55:17 $
+// $Date: 2012/11/19 20:44:00 $
 //
 // Original author Rob Kutschke
 //
@@ -121,20 +121,21 @@ namespace mu2e {
 
     // Now box almost filling up the world to force a step at the world boundary
 
-    VolumeInfo boxInTheWorldVInfo(nestBox("BoxInTheWorld", 
-                                  worldBoundaries,
-                                  worldMaterial, 
-                                  0, 
-                                  G4ThreeVector(),
-                                  worldVInfo,
-                                  0, 
-                                  worldBoxVisible, 
-                                  G4Colour::Cyan(), 
-                                  worldBoxSolid,
-                                  forceAuxEdgeVisible, 
-                                  placePV, 
-                                  doSurfaceCheck));
+    vector<double> boxInWorldBoundaries(3,worldHalfLength);
 
+    VolumeInfo boxInTheWorldVInfo(nestBox("BoxInTheWorld", 
+                                          boxInWorldBoundaries,
+                                          worldMaterial, 
+                                          0, 
+                                          G4ThreeVector(),
+                                          worldVInfo,
+                                          0, 
+                                          worldBoxVisible, 
+                                          G4Colour::Cyan(), 
+                                          worldBoxSolid,
+                                          forceAuxEdgeVisible, 
+                                          placePV, 
+                                          doSurfaceCheck));
 
     const int seVer = _config->getInt("mu2e.studyEnvVersion",0);
 
