@@ -1,9 +1,9 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructNeutronAbsorber.cc,v 1.7 2012/05/23 18:44:25 genser Exp $
+// $Id: constructNeutronAbsorber.cc,v 1.8 2012/11/19 23:03:49 genser Exp $
 // $Author: genser $
-// $Date: 2012/05/23 18:44:25 $
+// $Date: 2012/11/19 23:03:49 $
 //
 // Original author KLG
 //
@@ -41,9 +41,9 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructNeutronAbsorber(SimpleConfig const * const _config){
+  void constructNeutronAbsorber(SimpleConfig const & _config){
 
-    int const verbosityLevel = _config->getInt("neutronabsorber.verbosityLevel",0);
+    int const verbosityLevel = _config.getInt("neutronabsorber.verbosityLevel",0);
 
     // the absorber is split into two major pieces internal & external (wrt to the coil)
 
@@ -54,31 +54,31 @@ namespace mu2e {
 
     // Extract information from the config file.
 
-    string NAMaterialName      = _config->getString("neutronabsorber.materialName");
-    // string NADopantElementName = _config->getString("neutronabsorber.dopantElementName");
-    // double NAMaterialDensity   = _config->getDouble("neutronabsorber.materialDensity");
-    // double NADopantFraction    = _config->getDouble("neutronabsorber.dopantFraction");
-    double NAIOuterRadius      = _config->getDouble("neutronabsorber.internalOuterRadius");
+    string NAMaterialName      = _config.getString("neutronabsorber.materialName");
+    // string NADopantElementName = _config.getString("neutronabsorber.dopantElementName");
+    // double NAMaterialDensity   = _config.getDouble("neutronabsorber.materialDensity");
+    // double NADopantFraction    = _config.getDouble("neutronabsorber.dopantFraction");
+    double NAIOuterRadius      = _config.getDouble("neutronabsorber.internalOuterRadius");
     // increasing inner radius
-    double NAIInnerRadius0     = _config->getDouble("neutronabsorber.internalInnerRadius0");
-    double NAIInnerRadius1     = _config->getDouble("neutronabsorber.internalInnerRadius1");
-    double NAIInnerRadius2     = _config->getDouble("neutronabsorber.internalInnerRadius2");
-    double NAIHalfLengthZ01    = _config->getDouble("neutronabsorber.internalHalfLengthZ01");
-    double NAIHalfLengthZ02    = _config->getDouble("neutronabsorber.internalHalfLengthZ02");
-    double NAIZ01              = _config->getDouble("neutronabsorber.internalZ01");
-    double NAEHalfLengthZ      = _config->getDouble("neutronabsorber.externalHalfLengthZ");
-    double NAEHalfLengthXY     = _config->getDouble("neutronabsorber.externalHalfLengthXY");
-    double NAEHalfThickness    = _config->getDouble("neutronabsorber.externalHalfThickness");
-    double NAEZ0               = _config->getDouble("neutronabsorber.externalZ0");
+    double NAIInnerRadius0     = _config.getDouble("neutronabsorber.internalInnerRadius0");
+    double NAIInnerRadius1     = _config.getDouble("neutronabsorber.internalInnerRadius1");
+    double NAIInnerRadius2     = _config.getDouble("neutronabsorber.internalInnerRadius2");
+    double NAIHalfLengthZ01    = _config.getDouble("neutronabsorber.internalHalfLengthZ01");
+    double NAIHalfLengthZ02    = _config.getDouble("neutronabsorber.internalHalfLengthZ02");
+    double NAIZ01              = _config.getDouble("neutronabsorber.internalZ01");
+    double NAEHalfLengthZ      = _config.getDouble("neutronabsorber.externalHalfLengthZ");
+    double NAEHalfLengthXY     = _config.getDouble("neutronabsorber.externalHalfLengthXY");
+    double NAEHalfThickness    = _config.getDouble("neutronabsorber.externalHalfThickness");
+    double NAEZ0               = _config.getDouble("neutronabsorber.externalZ0");
 
-    bool hasExternalPart       = _config->getBool("neutronabsorber.hasExternalPart");
-    bool hasInternalPart       = _config->getBool("neutronabsorber.hasInternalPart");
+    bool hasExternalPart       = _config.getBool("neutronabsorber.hasExternalPart");
+    bool hasInternalPart       = _config.getBool("neutronabsorber.hasInternalPart");
 
-    bool NAVisible             = _config->getBool("neutronabsorber.visible");
-    bool NASolid               = _config->getBool("neutronabsorber.solid");
+    bool NAVisible             = _config.getBool("neutronabsorber.visible");
+    bool NASolid               = _config.getBool("neutronabsorber.solid");
 
-    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
 

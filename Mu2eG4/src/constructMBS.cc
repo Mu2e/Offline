@@ -1,9 +1,9 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.11 2012/08/09 22:22:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/08/09 22:22:25 $
+// $Id: constructMBS.cc,v 1.12 2012/11/19 23:03:49 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/19 23:03:49 $
 //
 // Original author KLG
 //
@@ -49,7 +49,7 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructMBS(SimpleConfig const * const _config){
+  void constructMBS(SimpleConfig const & _config){
 
     // BSTS is the main support tube; the other z positions are dependent upon it
 
@@ -61,12 +61,12 @@ namespace mu2e {
     Tube const & pBSBSParams = *mbsgh.getBSBSPtr();
     Tube const & pCLV2Params = *mbsgh.getCLV2Ptr();
 
-    bool const MBSisVisible        = _config->getBool("mbs.visible",true);
-    bool const MBSisSolid          = _config->getBool("mbs.solid", false);
-    int  const verbosityLevel      = _config->getInt("mbs.verbosityLevel", 0);
+    bool const MBSisVisible        = _config.getBool("mbs.visible",true);
+    bool const MBSisSolid          = _config.getBool("mbs.solid", false);
+    int  const verbosityLevel      = _config.getInt("mbs.verbosityLevel", 0);
 
-    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
     // Access to the G4HelperService.
@@ -110,7 +110,7 @@ namespace mu2e {
     TubsParams MBSMotherParams ( 0,
 				  BSTSOuterRadius,
 				  BSTSHLength);
-    G4Material* vacuumMaterial     = findMaterialOrThrow(_config->getString("toyDS.insideMaterialName"));
+    G4Material* vacuumMaterial     = findMaterialOrThrow(_config.getString("toyDS.insideMaterialName"));
     */
 
     /*
@@ -301,25 +301,25 @@ namespace mu2e {
 
     // the hollow disk aka CryoSeal
 
-    bool const hasCryoSeal = _config->getBool("mbs.hasCryoSeal", true);
+    bool const hasCryoSeal = _config.getBool("mbs.hasCryoSeal", true);
 
     if (hasCryoSeal) {
 
-      double const CryoSealInnerRadius = _config->getDouble("mbs.CryoSealInnerRadius");
-      double const CryoSealOuterRadius = _config->getDouble("mbs.CryoSealOuterRadius");
-      double const CryoSealHLength     = _config->getDouble("mbs.CryoSealHLength");
+      double const CryoSealInnerRadius = _config.getDouble("mbs.CryoSealInnerRadius");
+      double const CryoSealOuterRadius = _config.getDouble("mbs.CryoSealOuterRadius");
+      double const CryoSealHLength     = _config.getDouble("mbs.CryoSealHLength");
 
       TubsParams CryoSealParams ( CryoSealInnerRadius,
                                   CryoSealOuterRadius,
                                   CryoSealHLength);
 
-      double CryoSealZ           = _config->getDouble("mbs.CryoSealZ");
+      double CryoSealZ           = _config.getDouble("mbs.CryoSealZ");
 
       CLHEP::Hep3Vector CryoSealOffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,CryoSealZ);
 
       CLHEP::Hep3Vector CryoSealOffset = CryoSealOffsetInMu2e - hallInfo.centerInMu2e();
 
-      string const CryoSealMaterialName  = _config->getString("mbs.CryoSealMaterialName");
+      string const CryoSealMaterialName  = _config.getString("mbs.CryoSealMaterialName");
 
       VolumeInfo CryoSealInfo  = nestTubs("DSCryoSeal",
                                           CryoSealParams,
@@ -346,21 +346,21 @@ namespace mu2e {
 
     }
 
-    bool const hasEndPlug = _config->getBool("mbs.hasEndPlug", true);
+    bool const hasEndPlug = _config.getBool("mbs.hasEndPlug", true);
 
     // now the endplug itself, the hollow part first
 
     if (hasEndPlug) {
 
-      double const EndPlugTubeInnerRadius = _config->getDouble("mbs.EndPlugTubeInnerRadius");
-      double const EndPlugTubeOuterRadius = _config->getDouble("mbs.EndPlugTubeOuterRadius");
-      double const EndPlugTubeHLength     = _config->getDouble("mbs.EndPlugTubeHLength");
+      double const EndPlugTubeInnerRadius = _config.getDouble("mbs.EndPlugTubeInnerRadius");
+      double const EndPlugTubeOuterRadius = _config.getDouble("mbs.EndPlugTubeOuterRadius");
+      double const EndPlugTubeHLength     = _config.getDouble("mbs.EndPlugTubeHLength");
 
       TubsParams EndPlugTubeParams ( EndPlugTubeInnerRadius,
                                      EndPlugTubeOuterRadius,
                                      EndPlugTubeHLength );
 
-      double const EndPlugTubeZ           = _config->getDouble("mbs.EndPlugTubeZ");
+      double const EndPlugTubeZ           = _config.getDouble("mbs.EndPlugTubeZ");
 
       if ( verbosityLevel > 0) {
 
@@ -376,7 +376,7 @@ namespace mu2e {
 
       CLHEP::Hep3Vector EndPlugTubeOffset = EndPlugTubeOffsetInMu2e - hallInfo.centerInMu2e();
 
-      string const EndPlugTubeMaterialName  = _config->getString("mbs.EndPlugMaterialName");
+      string const EndPlugTubeMaterialName  = _config.getString("mbs.EndPlugMaterialName");
 
       VolumeInfo EndPlugTubeInfo  = nestTubs("DSEndPlugTube",
                                              EndPlugTubeParams,
@@ -403,9 +403,9 @@ namespace mu2e {
 
       // the end plug end disk
 
-      double const EndPlugDiskInnerRadius  = _config->getDouble("mbs.EndPlugDiskInnerRadius");
-      double const EndPlugDiskOuterRadius  = _config->getDouble("mbs.EndPlugDiskOuterRadius");
-      double const EndPlugDiskHLength      = _config->getDouble("mbs.EndPlugDiskHLength");
+      double const EndPlugDiskInnerRadius  = _config.getDouble("mbs.EndPlugDiskInnerRadius");
+      double const EndPlugDiskOuterRadius  = _config.getDouble("mbs.EndPlugDiskOuterRadius");
+      double const EndPlugDiskHLength      = _config.getDouble("mbs.EndPlugDiskHLength");
 
       TubsParams EndPlugDiskParams ( EndPlugDiskInnerRadius,
                                      EndPlugDiskOuterRadius,
@@ -423,7 +423,7 @@ namespace mu2e {
 
       CLHEP::Hep3Vector EndPlugDiskOffset  = EndPlugDiskOffsetInMu2e - hallInfo.centerInMu2e();
 
-      string const EndPlugDiskMaterialName = _config->getString("mbs.EndPlugMaterialName");
+      string const EndPlugDiskMaterialName = _config.getString("mbs.EndPlugMaterialName");
 
       VolumeInfo EndPlugDiskInfo  = nestTubs("DSEndPlugDisk",
                                              EndPlugDiskParams,

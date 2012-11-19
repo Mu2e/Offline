@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.147 2012/11/16 23:48:11 genser Exp $
+// $Id: Mu2eWorld.cc,v 1.148 2012/11/19 23:03:49 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/16 23:48:11 $
+// $Date: 2012/11/19 23:03:49 $
 //
 // Original author Rob Kutschke
 //
@@ -144,7 +144,6 @@ namespace mu2e {
 
   // This is the callback called by G4 via G4VPhysicalVolume* WorldMaker::Construct()
   G4VPhysicalVolume * Mu2eWorld::construct(){
-
     // Construct all of the Mu2e world, hall, detectors, beamline ...
     return constructWorld();
   }
@@ -152,31 +151,33 @@ namespace mu2e {
   // Construct all of the Mu2e world, hall, detectors, beamline ...
   G4VPhysicalVolume * Mu2eWorld::constructWorld(){
 
-    _verbosityLevel = _config->getInt("world.verbosityLevel", 0);
+    _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
 
     // If you play with the order of these calls, you may break things.
     GeomHandle<WorldG4> worldGeom;
-    G4ThreeVector tmp =    GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() + worldGeom->mu2eOriginInWorld()
-      - G4ThreeVector(0.0,0.0,12000.-_config->getDouble("itracker.z0",0.0));
+    G4ThreeVector tmp = GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() 
+      + worldGeom->mu2eOriginInWorld()
+      - G4ThreeVector(0.0,0.0,12000.-_config.getDouble("itracker.z0",0.0));
 
-    if ( _config->getBool("hasITracker",false) ) {
-      ITGasLayerSD::setMu2eDetCenterInWorld(
-                                            GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() + worldGeom->mu2eOriginInWorld()
-                                            - G4ThreeVector(0.0,0.0,12000-_config->getDouble("itracker.z0",0.0)) );
+    if ( _config.getBool("hasITracker",false) ) {
+      ITGasLayerSD::setMu2eDetCenterInWorld(GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() 
+                                            + worldGeom->mu2eOriginInWorld()
+                                            - G4ThreeVector(0.0,0.0,12000.
+                                                            -_config.getDouble("itracker.z0",0.0)) );
     }
 
     instantiateSensitiveDetectors();
 
-    VolumeInfo worldVInfo = constructWorldVolume(*_config);
+    VolumeInfo worldVInfo = constructWorldVolume(_config);
 
     if ( _verbosityLevel > 0) {
       cout << __func__ << " worldVInfo.centerInParent : " <<  worldVInfo.centerInParent << endl;
       cout << __func__ << " worldVInfo.centerInWorld  : " <<  worldVInfo.centerInWorld  << endl;
     }
 
-    constructDirt(worldVInfo, *_config);
+    constructDirt(worldVInfo, _config);
 
-    VolumeInfo hallInfo  = constructHall(worldVInfo, *_config);
+    VolumeInfo hallInfo  = constructHall(worldVInfo, _config);
 
     if ( _verbosityLevel > 0) {
       cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;
@@ -184,12 +185,12 @@ namespace mu2e {
       cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
     }
 
-    constructProtonBeamDump(hallInfo, *_config);
+    constructProtonBeamDump(hallInfo, _config);
 
-    constructDS(hallInfo, *_config);
-    constructTS(hallInfo, *_config);
-    constructPS(hallInfo, *_config);
-    constructPSEnclosure(hallInfo, *_config);
+    constructDS(hallInfo, _config);
+    constructTS(hallInfo, _config);
+    constructPS(hallInfo, _config);
+    constructPSEnclosure(hallInfo, _config);
 
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();
@@ -207,21 +208,21 @@ namespace mu2e {
       if(CosmicRayShieldGeomHandle->hasActiveShield()) constructCRV(hallInfo,_config);
     }
 
-    if ( _config->getBool("hasNeutronAbsorber",false) ) {
+    if ( _config.getBool("hasNeutronAbsorber",false) ) {
       constructNeutronAbsorber(_config);
     }
 
-    if ( _config->getBool("hasMBS",false) ) {
+    if ( _config.getBool("hasMBS",false) ) {
       constructMBS(_config);
     }
 
-    if ( _config->getBool("hasExtMonUCI",false) ) {
-      constructExtMonUCI(hallInfo, *_config);
+    if ( _config.getBool("hasExtMonUCI",false) ) {
+      constructExtMonUCI(hallInfo, _config);
     }
 
-    constructVirtualDetectors(*_config); // beware of the placement order of this function
+    constructVirtualDetectors(_config); // beware of the placement order of this function
 
-    constructVisualizationRegions(worldVInfo, *_config);
+    constructVisualizationRegions(worldVInfo, _config);
 
     if ( _verbosityLevel > 0) {
       mf::LogInfo log("GEOM");
@@ -232,13 +233,13 @@ namespace mu2e {
     // Create magnetic fields and managers only after all volumes have been defined.
     constructBFieldAndManagers();
     constructStepLimiters();
-    if ( _config->getBool("hasITracker",false) ) {
+    if ( _config.getBool("hasITracker",false) ) {
             constructITStepLimiters();
     }
 
     // Write out mu2e geometry into a gdml file.
-    if ( _config->getBool("writeGDML",false) ) {
-      string gdmlFileName = _config->getString("GDMLFileName","mu2e.gdml");
+    if ( _config.getBool("writeGDML",false) ) {
+      string gdmlFileName = _config.getString("GDMLFileName","mu2e.gdml");
       G4GDMLParser parser;
       parser.Write(gdmlFileName, worldVInfo.logical);
     }
@@ -257,24 +258,24 @@ namespace mu2e {
 
     // Construct one of the trackers.
     VolumeInfo trackerInfo;
-    if( _config->getBool("hasLTracker",false) ){
-      int ver = _config->getInt("LTrackerVersion",3);
+    if( _config.getBool("hasLTracker",false) ){
+      int ver = _config.getInt("LTrackerVersion",3);
       //cout << "LTracker version: " << ver << "\n";
       if ( ver == 3 ){
-        trackerInfo = constructLTrackerv3( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
+        trackerInfo = constructLTrackerv3( detSolDownstreamVacInfo.logical, z0DSdown, _config );
       }
-    } else if ( _config->getBool("hasITracker",false) ) {
+    } else if ( _config.getBool("hasITracker",false) ) {
       trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, z0DSdown );
       // Hack alert: These belong in constructTracker
       trackerInfo.name = "TrackerMother"; // this belongs to construct..., some of them do it now
       _helper->addVolInfo(trackerInfo);
-    } else if ( _config->getBool("hasTTracker",false) ) {
-      int ver = _config->getInt("TTrackerVersion",3);
+    } else if ( _config.getBool("hasTTracker",false) ) {
+      int ver = _config.getInt("TTrackerVersion",3);
       if ( ver == 3 ){
-        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, z0DSdown, *_config );
+        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, z0DSdown, _config );
       }
     } else {
-      trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, *_config );
+      trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, _config );
     }
 
     if ( _verbosityLevel > 0) {
@@ -292,7 +293,7 @@ namespace mu2e {
   VolumeInfo Mu2eWorld::constructTarget(){
 
     // The target is built inside this volume.
-    VolumeInfo const & detSolUpstreamVacInfo   = ( _config->getBool("isDumbbell",false) ) ? _helper->locateVolInfo("ToyDS3Vacuum") : _helper->locateVolInfo("ToyDS2Vacuum");//ToyDS3Vacuum to move the targets
+    VolumeInfo const & detSolUpstreamVacInfo   = ( _config.getBool("isDumbbell",false) ) ? _helper->locateVolInfo("ToyDS3Vacuum") : _helper->locateVolInfo("ToyDS2Vacuum");//ToyDS3Vacuum to move the targets
 
     if ( _verbosityLevel > 0) {
       cout << "detSolUpstreamVacInfo.centerInWorld.z()=" << detSolUpstreamVacInfo.centerInWorld.z() << endl;
@@ -300,14 +301,14 @@ namespace mu2e {
     }
 
     // Buid the stopping target
-    VolumeInfo targetInfo = ( _config->getBool("hasTarget",false) ) ?
+    VolumeInfo targetInfo = ( _config.getBool("hasTarget",false) ) ?
 
       constructStoppingTarget( detSolUpstreamVacInfo,
-                               *_config )
+                               _config )
       :
 
       constructDummyStoppingTarget( detSolUpstreamVacInfo,
-                                    *_config );
+                                    _config );
     return targetInfo;
 
   } // end Mu2eWorld::constructTarget
@@ -335,7 +336,7 @@ namespace mu2e {
     bool needDSUniform = (bfconf->dsFieldForm() == BFieldConfig::dsModelSplit || bfconf->dsFieldForm() == BFieldConfig::dsModelUniform );
     bool needDSGradient = false;
 
-    string stepper = _config->getString("g4.stepper","G4SimpleRunge");
+    string stepper = _config.getString("g4.stepper","G4SimpleRunge");
 
     // Create field manager for the uniform DS field.
     if (needDSUniform) {
@@ -391,7 +392,7 @@ namespace mu2e {
         if ( _verbosityLevel > 0 ) cout << "Use uniform field in DS3" << endl;
       }
       /*
-      if( _config->getBool("hasMBS",false) ) {
+      if( _config.getBool("hasMBS",false) ) {
         VolumeInfo const & MBSMotherInfo = _helper->locateVolInfo("MBSMother");
         G4LogicalVolume* mbsMother = MBSMotherInfo.logical;
         mbsMother->SetFieldManager(0,true);
@@ -432,7 +433,7 @@ namespace mu2e {
   void Mu2eWorld::constructStepLimiters(){
 
     // Maximum step length, in mm.
-    double maxStep = _config->getDouble("bfield.maxStep", 20.);
+    double maxStep = _config.getDouble("bfield.maxStep", 20.);
 
     G4LogicalVolume* ds2Vacuum      = _helper->locateVolInfo("ToyDS2Vacuum").logical;
     G4LogicalVolume* ds3Vacuum      = _helper->locateVolInfo("ToyDS3Vacuum").logical;
@@ -475,7 +476,7 @@ namespace mu2e {
     // visually validate geometry of the filter channel
     G4LogicalVolume* emfcMagnetAperture = _helper->locateVolInfo("ExtMonFNALfilterMagnetAperture").logical;
     if(emfcMagnetAperture) {
-      const double maxStepLength = _config->getDouble("extMonFNAL.maxG4StepLength", 0)*CLHEP::millimeter;
+      const double maxStepLength = _config.getDouble("extMonFNAL.maxG4StepLength", 0)*CLHEP::millimeter;
       if(maxStepLength > 0) {
         std::cout<<"Adding step limiter for ExtMonFNALFilterMagnet: maxStepLength = "<<maxStepLength<<std::endl;
         G4UserLimits* emfcStepLimit = reg.add(G4UserLimits(maxStepLength));
@@ -488,13 +489,13 @@ namespace mu2e {
 
   void Mu2eWorld::constructITStepLimiters(){
 
-    bool physicalStep =  _config->getBool("itracker.usePhysicalStep",false);
+    bool physicalStep =  _config.getBool("itracker.usePhysicalStep",false);
     // Maximum step length, in mm.
     double maxStep = 10.0;
     if (physicalStep){
             maxStep = 10.0/12.0;
     }else {
-            maxStep = _config->getDouble("itracker.freePath", 0.5);
+            maxStep = _config.getDouble("itracker.freePath", 0.5);
     }
     G4LogicalVolume* tracker        = _helper->locateVolInfo("TrackerMother").logical;
 
@@ -529,16 +530,16 @@ namespace mu2e {
   // Construct calorimeter if needed.
   void Mu2eWorld::constructCal(){
 
-    if ( _config->getBool("hasVaneCalorimeter",false) ) {
+    if ( _config.getBool("hasVaneCalorimeter",false) ) {
        VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
        double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
-       constructVaneCalorimeter( detSolDownstreamVacInfo,-z0DSdown,*_config );
+       constructVaneCalorimeter( detSolDownstreamVacInfo,-z0DSdown,_config );
     }
         
-    if ( _config->getBool("hasDiskCalorimeter",false) ) {
+    if ( _config.getBool("hasDiskCalorimeter",false) ) {
        VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
        double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
-       constructDiskCalorimeter( detSolDownstreamVacInfo,-z0DSdown,*_config );
+       constructDiskCalorimeter( detSolDownstreamVacInfo,-z0DSdown,_config );
     }
   }
 
@@ -557,60 +558,60 @@ namespace mu2e {
 
     // G4 takes ownership and will delete the detectors at the job end
 
-    if ( _config->getBool("hasITracker",false) ) {
+    if ( _config.getBool("hasITracker",false) ) {
       GeomHandle<ITracker> itracker;
       ITGasLayerSD* itrackerSD=0x0;
       if ( itracker->geomType()==ITracker::Hexagonal )
-        itrackerSD = new ITGasLayerSD_Hexagonal(SensitiveDetectorName::TrackerGas(), *_config);
+        itrackerSD = new ITGasLayerSD_Hexagonal(SensitiveDetectorName::TrackerGas(), _config);
       else if ( itracker->geomType()==ITracker::Square )
-        itrackerSD = new ITGasLayerSD_Square(   SensitiveDetectorName::TrackerGas(), *_config);
+        itrackerSD = new ITGasLayerSD_Square(   SensitiveDetectorName::TrackerGas(), _config);
 
       SDman->AddNewDetector(itrackerSD);
     }
     else {
       StrawSD* strawSD      =
-        new StrawSD(                SensitiveDetectorName::TrackerGas(),  *_config);
+        new StrawSD(                SensitiveDetectorName::TrackerGas(),  _config);
       SDman->AddNewDetector(strawSD);
 
       TTrackerDeviceSupportSD* ttdsSD =
-        new TTrackerDeviceSupportSD(SensitiveDetectorName::TTrackerDeviceSupport(), *_config);
+        new TTrackerDeviceSupportSD(SensitiveDetectorName::TTrackerDeviceSupport(), _config);
       SDman->AddNewDetector(ttdsSD);
     }
 
     Mu2eSensitiveDetector* vdSD =
-      new Mu2eSensitiveDetector(    SensitiveDetectorName::VirtualDetector(), *_config);
+      new Mu2eSensitiveDetector(    SensitiveDetectorName::VirtualDetector(), _config);
     SDman->AddNewDetector(vdSD);
 
     if (   const_cast<GeometryService&>(_geom).hasElement<Calorimeter>() ) {
       CaloCrystalSD* ccSD     =
-        new CaloCrystalSD(          SensitiveDetectorName::CaloCrystal(),     *_config);
+        new CaloCrystalSD(          SensitiveDetectorName::CaloCrystal(),     _config);
       SDman->AddNewDetector(ccSD);
 
       CaloReadoutSD* crSD     =
-        new CaloReadoutSD(          SensitiveDetectorName::CaloReadout(),     *_config);
+        new CaloReadoutSD(          SensitiveDetectorName::CaloReadout(),     _config);
       SDman->AddNewDetector(crSD);
     }
 
-    SDman->AddNewDetector(new ExtMonFNALPixelSD(*_config));
+    SDman->AddNewDetector(new ExtMonFNALPixelSD(_config));
 
     ExtMonUCITofSD* emuTofSD =
-      new ExtMonUCITofSD(           SensitiveDetectorName::ExtMonUCITof(),  *_config);
+      new ExtMonUCITofSD(           SensitiveDetectorName::ExtMonUCITof(),  _config);
     SDman->AddNewDetector(emuTofSD);
 
     Mu2eSensitiveDetector* stSD =
-      new Mu2eSensitiveDetector(    SensitiveDetectorName::StoppingTarget(),  *_config);
+      new Mu2eSensitiveDetector(    SensitiveDetectorName::StoppingTarget(),  _config);
     SDman->AddNewDetector(stSD);
 
     Mu2eSensitiveDetector* sbSD =
-      new Mu2eSensitiveDetector(    SensitiveDetectorName::CRSScintillatorBar(), *_config);
+      new Mu2eSensitiveDetector(    SensitiveDetectorName::CRSScintillatorBar(), _config);
     SDman->AddNewDetector(sbSD);
 
     Mu2eSensitiveDetector* paSD =
-      new Mu2eSensitiveDetector(    SensitiveDetectorName::ProtonAbsorber(),  *_config);
+      new Mu2eSensitiveDetector(    SensitiveDetectorName::ProtonAbsorber(),  _config);
     SDman->AddNewDetector(paSD);
 
     Mu2eSensitiveDetector* psVacuumSD =
-      new Mu2eSensitiveDetector(    SensitiveDetectorName::PSVacuum(),  *_config);
+      new Mu2eSensitiveDetector(    SensitiveDetectorName::PSVacuum(),  _config);
     SDman->AddNewDetector(psVacuumSD);
 
   } // instantiateSensitiveDetectors

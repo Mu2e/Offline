@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.15 2012/08/09 22:22:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/08/09 22:22:25 $
+// $Id: constructProtonAbsorber.cc,v 1.16 2012/11/19 23:03:49 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/19 23:03:49 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -42,12 +42,12 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructProtonAbsorber( SimpleConfig const * const _config
+  void constructProtonAbsorber( SimpleConfig const & _config
                                 ){
 
-        if( !_config->getBool("hasProtonAbsorber", true) ) return;
+        if( !_config.getBool("hasProtonAbsorber", true) ) return;
 
-        int  const verbosityLevel           = _config->getInt("protonabsorber.verbosityLevel", 0);
+        int  const verbosityLevel           = _config.getInt("protonabsorber.verbosityLevel", 0);
 
         G4VSensitiveDetector *paSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector (SensitiveDetectorName::ProtonAbsorber());
 
@@ -57,48 +57,48 @@ namespace mu2e {
         VolumeInfo const & parent1Info  = _helper->locateVolInfo("ToyDS2Vacuum");
         VolumeInfo const & parent2Info  = _helper->locateVolInfo("ToyDS3Vacuum");
 
-        if ( _config->getBool("protonabsorber.isHelical", false) ) {
-                MaterialFinder materialFinder(*_config);
+        if ( _config.getBool("protonabsorber.isHelical", false) ) {
+                MaterialFinder materialFinder(_config);
                 G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
-                double ds2HalfLen = _config->getDouble("toyDS2.halfLength");
-                double helHalfPabsLength = _config->getDouble("protonabsorber.halfLength");
+                double ds2HalfLen = _config.getDouble("toyDS2.halfLength");
+                double helHalfPabsLength = _config.getDouble("protonabsorber.halfLength");
                 double helPabsLength = 2.0*helHalfPabsLength;
                 double lengthScaleFact = 130.0/274.0; //I don't know why but in the implementation of the absorber the length is divided into 130 steps of Z and that there is a cycle over 274 number of Z steps. ????? //FIXME
-                double helPabsThickness = _config->getDouble("protonabsorber.thickness");
-                //double numOfTurns = _config->getDouble("protonabsorber.NumOfTurns");
+                double helPabsThickness = _config.getDouble("protonabsorber.thickness");
+                //double numOfTurns = _config.getDouble("protonabsorber.NumOfTurns");
                 double innerRadii[3], outerRasii[3], innerPhis[3], outerPhis[3];
-                innerRadii[0] = _config->getDouble("protonabsorber.InnerRadius_0");
-                innerRadii[1] = _config->getDouble("protonabsorber.InnerRadius_1");
-                innerRadii[2] = _config->getDouble("protonabsorber.InnerRadius_2");
+                innerRadii[0] = _config.getDouble("protonabsorber.InnerRadius_0");
+                innerRadii[1] = _config.getDouble("protonabsorber.InnerRadius_1");
+                innerRadii[2] = _config.getDouble("protonabsorber.InnerRadius_2");
 
-                outerRasii[0] = _config->getDouble("protonabsorber.OuterRadius_0");
-                outerRasii[1] = _config->getDouble("protonabsorber.OuterRadius_1");
-                outerRasii[2] = _config->getDouble("protonabsorber.OuterRadius_2");
+                outerRasii[0] = _config.getDouble("protonabsorber.OuterRadius_0");
+                outerRasii[1] = _config.getDouble("protonabsorber.OuterRadius_1");
+                outerRasii[2] = _config.getDouble("protonabsorber.OuterRadius_2");
 
-                innerPhis[0] = _config->getDouble("protonabsorber.phiInner_0");
-                innerPhis[1] = _config->getDouble("protonabsorber.phiInner_1");
-                innerPhis[2] = _config->getDouble("protonabsorber.phiInner_2");
+                innerPhis[0] = _config.getDouble("protonabsorber.phiInner_0");
+                innerPhis[1] = _config.getDouble("protonabsorber.phiInner_1");
+                innerPhis[2] = _config.getDouble("protonabsorber.phiInner_2");
 
-                outerPhis[0] = _config->getDouble("protonabsorber.phiOuter_0");
-                outerPhis[1] = _config->getDouble("protonabsorber.phiOuter_1");
-                outerPhis[2] = _config->getDouble("protonabsorber.phiOuter_2");
+                outerPhis[0] = _config.getDouble("protonabsorber.phiOuter_0");
+                outerPhis[1] = _config.getDouble("protonabsorber.phiOuter_1");
+                outerPhis[2] = _config.getDouble("protonabsorber.phiOuter_2");
 
-                bool addSD   = _config->getBool("protonabsorber.saveStepPnts",false);
+                bool addSD   = _config.getBool("protonabsorber.saveStepPnts",false);
 
                 HelicalProtonAbsorber* hpabs = new HelicalProtonAbsorber( ds2HalfLen-helPabsLength,
                                 helPabsLength*lengthScaleFact,/*ScaleFact is a trick FIXME */
                                 innerRadii, outerRasii, innerPhis, outerPhis,
                                 helPabsThickness, /*numOfTurns,*/
-                                _config->getInt("protonabsorber.NumOfVanes"), pabsMaterial, parent1Info.logical, (addSD) ? paSD : 0x0 );
+                                _config.getInt("protonabsorber.NumOfVanes"), pabsMaterial, parent1Info.logical, (addSD) ? paSD : 0x0 );
 
-                if ( _config->getBool("g4.doSurfaceCheck",false) ) {
+                if ( _config.getBool("g4.doSurfaceCheck",false) ) {
                         hpabs->checkOverlaps( 1000000, 0.001, true );
                 }
 
-                if ( _config->getBool("protonabsorber.visible",true) ) {
+                if ( _config.getBool("protonabsorber.visible",true) ) {
                         AntiLeakRegistry & reg = _helper->antiLeakRegistry();
-                        hpabs->SetVisibility( _config->getBool("protonabsorber.solid",true),
-                                        _config->getBool("g4.forceAuxEdgeVisible",false),
+                        hpabs->SetVisibility( _config.getBool("protonabsorber.solid",true),
+                                        _config.getBool("g4.forceAuxEdgeVisible",false),
                                         G4Color::Green(), reg);
                 }
 
@@ -107,10 +107,10 @@ namespace mu2e {
         } else {
 
                 // smaller and larger outer radii
-                double pabs1rOut0   = _config->getDouble("protonabsorber.OutRadius0");
-                double pabs2rOut1   = _config->getDouble("protonabsorber.OutRadius1");
-                double pabsZHalfLen = _config->getDouble("protonabsorber.halfLength");
-                double thick        = _config->getDouble("protonabsorber.thickness");
+                double pabs1rOut0   = _config.getDouble("protonabsorber.OutRadius0");
+                double pabs2rOut1   = _config.getDouble("protonabsorber.OutRadius1");
+                double pabsZHalfLen = _config.getDouble("protonabsorber.halfLength");
+                double thick        = _config.getDouble("protonabsorber.thickness");
 
                 // adding virtual detector before and after target
                 double vdHL = 0.;
@@ -128,7 +128,7 @@ namespace mu2e {
                 double pabs1rIn0  = pabs1rOut0 - thick;
                 double pabs2rIn1  = pabs2rOut1 - thick;
 
-                MaterialFinder materialFinder(*_config);
+                MaterialFinder materialFinder(_config);
                 G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
 
 
@@ -136,20 +136,20 @@ namespace mu2e {
 
                 // the target info should be gotten from the geometry service... not as done here
 
-                vector<double> targetRadius;  _config->getVectorDouble("target.radii", targetRadius);
+                vector<double> targetRadius;  _config.getVectorDouble("target.radii", targetRadius);
 
                 double numoftf = (targetRadius.size()-1.0)*0.5;
 
-                double foilwid=_config->getDouble("target.deltaZ");
+                double foilwid=_config.getDouble("target.deltaZ");
 
                 // we add space for the virtual detector here
                 double taglen =(foilwid*numoftf) + 5.0 + 2.*vdHL; // what/why is 5.0 hardcoded here?
 
-                double z0valt =_config->getDouble("target.z0");
+                double z0valt =_config.getDouble("target.z0");
                 double tagoff =z0valt - z0DSup + 12000.0;
 
                 double targetEnd = tagoff + taglen;
-                double ds2HalfLen = _config->getDouble("toyDS2.halfLength");
+                double ds2HalfLen = _config.getDouble("toyDS2.halfLength");
                 double pabs1len = ds2HalfLen - targetEnd;
                 G4ThreeVector  pabs1Offset(0.0, 0.0, (pabs1len*0.5) + targetEnd);
 
@@ -171,7 +171,7 @@ namespace mu2e {
 
                 G4Tubs const * parent1solid0 = static_cast<G4Tubs*>(parent1Info.solid);
                 G4Tubs const * parent2solid0 = static_cast<G4Tubs*>(parent2Info.solid->GetConstituentSolid(0));
-                double ds3HalfLen = _config->getDouble("toyDS3.halfLength");
+                double ds3HalfLen = _config.getDouble("toyDS3.halfLength");
 
                 if ( verbosityLevel > 0) {
                         cout << __func__ <<
@@ -217,11 +217,11 @@ namespace mu2e {
                 // proton absorber in DS2
                 double pabs1Param[7] = { pabs1rIn0, pabs1rOut0, pabs1rIn1, pabs1rOut1, pabs1len*0.5,
                                 0.0, 360.0*CLHEP::degree };
-                bool pabsIsVisible = _config->getBool("protonabsorber.visible",true);
-                bool pabsIsSolid   = _config->getBool("protonabsorber.solid",true);
+                bool pabsIsVisible = _config.getBool("protonabsorber.visible",true);
+                bool pabsIsSolid   = _config.getBool("protonabsorber.solid",true);
 
-                bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-                bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+                bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
+                bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
                 bool const placePV       = true;
 
                 if ( verbosityLevel > 0 ) {

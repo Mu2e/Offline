@@ -3,9 +3,9 @@
 //
 // (Pure virtual) Umbrela for the the Mu2e G4 world classes 
 //
-// $Id: Mu2eUniverse.hh,v 1.1 2012/11/16 23:25:32 genser Exp $
+// $Id: Mu2eUniverse.hh,v 1.2 2012/11/19 23:03:24 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/16 23:25:32 $
+// $Date: 2012/11/19 23:03:24 $
 //
 // Original author K. Genser to generalize Mu2eWorld
 //
@@ -55,7 +55,7 @@ namespace mu2e {
     GeometryService const & _geom;
 
     // Stash a pointer to the config object so that all methods can get at it easily.
-    SimpleConfig const * _config; // make it ref?? (some functions need to change before it...
+    SimpleConfig const & _config; // make it ref?? (some functions need to change before it...
 
     // Access to the G4HelperService.
     G4Helper * _helper;

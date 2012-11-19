@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.13 2012/06/07 04:55:00 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/06/07 04:55:00 $
+// $Id: constructCRV.cc,v 1.14 2012/11/19 23:03:49 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/19 23:03:49 $
 //
 // Original author KLG
 //
@@ -44,8 +44,8 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructCRV( const VolumeInfo& parent,
-                     SimpleConfig const * const _config
+  void constructCRV( VolumeInfo const & parent,
+                     SimpleConfig const &  _config
                      ){
 
     // get the CRS parameters from the geometry service and place the veto elements
@@ -56,13 +56,13 @@ namespace mu2e {
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
-    bool scintillatorShieldVisible = _config->getBool("crs.vetoVisible",true);
-    bool scintillatorShieldSolid   = _config->getBool("crs.vetoSolid",false);
+    bool scintillatorShieldVisible = _config.getBool("crs.vetoVisible",true);
+    bool scintillatorShieldSolid   = _config.getBool("crs.vetoSolid",false);
 
-    int verbosityLevel = _config->getInt("crs.verbosityLevel",0);
+    int verbosityLevel = _config.getInt("crs.verbosityLevel",0);
 
-    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
 
     std::map<std::string,CRSScintillatorShield> const & shields =
       CosmicRayShieldGeomHandle->getCRSScintillatorShields();

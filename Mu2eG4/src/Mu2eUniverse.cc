@@ -1,9 +1,9 @@
 //
 // Umbrela for the the Mu2e G4 world classes
 //
-// $Id: Mu2eUniverse.cc,v 1.1 2012/11/16 23:47:53 genser Exp $
+// $Id: Mu2eUniverse.cc,v 1.2 2012/11/19 23:03:49 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/16 23:47:53 $
+// $Date: 2012/11/19 23:03:49 $
 //
 // Original author Rob Kutschke
 //
@@ -31,9 +31,9 @@ namespace mu2e {
 
   Mu2eUniverse::Mu2eUniverse():
     _geom(*(art::ServiceHandle<GeometryService>())),
-    _config(&((*(art::ServiceHandle<GeometryService>())).config())), 
+    _config(_geom.config()), 
     _helper(&(*(art::ServiceHandle<G4Helper>())))
-  {} // can we use _geom in subsequent initializers???
+  {} // beware of the order of initialization/declarations
 
   Mu2eUniverse::~Mu2eUniverse(){
   }

@@ -3,9 +3,9 @@
 //
 // Free function to construct Proton Absorber
 //
-// $Id: constructProtonAbsorber.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
+// $Id: constructProtonAbsorber.hh,v 1.3 2012/11/19 23:03:24 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/19 23:03:24 $
 //
 // Original author KLG
 //
@@ -17,7 +17,7 @@ namespace mu2e {
 
   class SimpleConfig;
 
-  void constructProtonAbsorber(SimpleConfig const * const _config
+  void constructProtonAbsorber(SimpleConfig const & _config
                                );
 
 }

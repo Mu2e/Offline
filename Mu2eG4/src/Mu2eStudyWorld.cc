@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eStudyWorld.cc,v 1.3 2012/11/19 20:54:48 genser Exp $
+// $Id: Mu2eStudyWorld.cc,v 1.4 2012/11/19 23:03:49 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/19 20:54:48 $
+// $Date: 2012/11/19 23:03:49 $
 //
 // Original author K. Genser based on Mu2eWorld
 //
@@ -83,26 +83,26 @@ namespace mu2e {
 
     // Construct all of the world
 
-    _verbosityLevel = _config->getInt("world.verbosityLevel", 0);
+    _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
 
     // we will only use very few elements of the geometry service;
     // mainly its config (SimpleConfig) part and the origin which is
     // used by VolumeInfo and related fuctions/classes
 
-    MaterialFinder materialFinder(*_config);
+    MaterialFinder materialFinder(_config);
 
     // Dimensions and material of the world.
     G4Material* worldMaterial = materialFinder.get("world.materialName");
 
-    const bool worldBoxVisible = _config->getBool("world.boxVisible");
-    const bool worldBoxSolid   = _config->getBool("world.boxSolid");
+    const bool worldBoxVisible = _config.getBool("world.boxVisible");
+    const bool worldBoxSolid   = _config.getBool("world.boxSolid");
 
-    const bool doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck");
-    const bool forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible");
+    const bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck");
+    const bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible");
     const bool placePV             = true;
 
-    G4double worldHalfLength       = _config->getDouble("world.halfLength");
-    G4double outerLayerThickness   = _config->getDouble("world.outerLayerThickness");
+    G4double worldHalfLength       = _config.getDouble("world.halfLength");
+    G4double outerLayerThickness   = _config.getDouble("world.outerLayerThickness");
 
     vector<double> worldBoundaries(3,worldHalfLength+outerLayerThickness);
 
@@ -139,10 +139,10 @@ namespace mu2e {
                                           placePV, 
                                           doSurfaceCheck));
 
-    const int seVer = _config->getInt("mu2e.studyEnvVersion",0);
+    const int seVer = _config.getInt("mu2e.studyEnvVersion",0);
 
     if ( seVer == 1 ) {
-      constructStudyEnv_v001(boxInTheWorldVInfo, *_config);
+      constructStudyEnv_v001(boxInTheWorldVInfo, _config);
     } else {
       throw cet::exception("CONFIG")
         << __func__ << ": unknown study environment: " << seVer << "\n";
@@ -170,7 +170,7 @@ namespace mu2e {
   void Mu2eStudyWorld::constructStepLimiters(){
 
     // Maximum step length, in mm.
-    // double maxStep = _config->getDouble("bfield.maxStep", 20.);
+    // double maxStep = _config.getDouble("bfield.maxStep", 20.);
 
     // We may make separate G4UserLimits objects per logical volume but we choose not to.
     // _stepLimits.push_back( G4UserLimits(maxStep) );

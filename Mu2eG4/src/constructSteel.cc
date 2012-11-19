@@ -1,9 +1,9 @@
 //
 // Free function to create Hall Steel
 //
-// $Id: constructSteel.cc,v 1.12 2012/06/07 04:55:00 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/06/07 04:55:00 $
+// $Id: constructSteel.cc,v 1.13 2012/11/19 23:03:49 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/19 23:03:49 $
 //
 // Original author KLG based on Mu2eWorld constructSteel
 //
@@ -37,8 +37,8 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructSteel( const VolumeInfo& parent,
-                       SimpleConfig const * const _config
+  void constructSteel( VolumeInfo const & parent,
+                       SimpleConfig const &_config
                        ){
 
     // get the CRS parameters from the geometry service and place the steel boxes
@@ -47,17 +47,17 @@ namespace mu2e {
 
     if(!CosmicRayShieldGeomHandle->hasPassiveShield()) return;
 
-    int const verbosityLevel = _config->getInt("crs.verbosityLevel",0);
+    int const verbosityLevel = _config.getInt("crs.verbosityLevel",0);
 
-    MaterialFinder materialFinder(*_config);
+    MaterialFinder materialFinder(_config);
 
     G4Material* CRSSteelShieldMaterial = materialFinder.get("fluxcrv.HallSteelMaterialName");
 
-    bool CRSSteelShieldVisible = _config->getBool("fluxcrv.visible",true);
-    bool CRSSteelShieldSolid   = _config->getBool("fluxcrv.solid",false);
+    bool CRSSteelShieldVisible = _config.getBool("fluxcrv.visible",true);
+    bool CRSSteelShieldSolid   = _config.getBool("fluxcrv.solid",false);
 
-    bool const forceAuxEdgeVisible = _config->getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config->getBool("g4.doSurfaceCheck",false);
+    bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
     std::map<std::string,CRSSteelShield> const & shields =
