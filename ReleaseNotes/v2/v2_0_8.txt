@@ -1,7 +1,27 @@
-  $Id: v2_0_8.txt,v 1.1 2012/11/19 21:11:46 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2012/11/19 21:11:46 $
+  $Id: v2_0_8.txt,v 1.2 2012/11/19 23:08:50 genser Exp $
+  $Author: genser $
+  $Date: 2012/11/19 23:08:50 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_8
+
+1) November 19, 2012 genser
+
+   Replaced SimpleConfig* with SimpleConfig&
+
+      Mu2eG4/inc/Mu2eUniverse.hh
+      Mu2eG4/inc/constructCRV.hh
+      Mu2eG4/inc/constructMBS.hh
+      Mu2eG4/inc/constructNeutronAbsorber.hh
+      Mu2eG4/inc/constructProtonAbsorber.hh
+      Mu2eG4/inc/constructSteel.hh
+      Mu2eG4/src/Mu2eStudyWorld.cc
+      Mu2eG4/src/Mu2eUniverse.cc
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/constructCRV.cc
+      Mu2eG4/src/constructMBS.cc
+      Mu2eG4/src/constructNeutronAbsorber.cc
+      Mu2eG4/src/constructProtonAbsorber.cc
+      Mu2eG4/src/constructSteel.cc
+
