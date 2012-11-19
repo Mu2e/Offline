@@ -1,11 +1,11 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eStudyWorld.cc,v 1.2 2012/11/19 20:44:00 genser Exp $
+// $Id: Mu2eStudyWorld.cc,v 1.3 2012/11/19 20:54:48 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/19 20:44:00 $
+// $Date: 2012/11/19 20:54:48 $
 //
-// Original author Rob Kutschke
+// Original author K. Genser based on Mu2eWorld
 //
 //  Heirarchy is:
 //  0      World (vaccum?)
@@ -78,15 +78,16 @@ namespace mu2e {
 
   }
 
-  // This is the callback called by G4 via G4VPhysicalVolume* WorldMaker::Construct()
+  // This is the callback called by G4
   G4VPhysicalVolume * Mu2eStudyWorld::construct(){
 
     // Construct all of the world
 
     _verbosityLevel = _config->getInt("world.verbosityLevel", 0);
 
-    // we will only use very few elements of the geometry service; mainly its config (SimpleConfig) part
-    // and the origin which is used by VolumeInfo and related fuctions/classes
+    // we will only use very few elements of the geometry service;
+    // mainly its config (SimpleConfig) part and the origin which is
+    // used by VolumeInfo and related fuctions/classes
 
     MaterialFinder materialFinder(*_config);
 
@@ -119,7 +120,8 @@ namespace mu2e {
                                   placePV, 
                                   false)); // do not surface check this one
 
-    // Now box almost filling up the world to force a step at the world boundary
+    // Now box almost filling up the world to force a step close to
+    // the world boundary
 
     vector<double> boxInWorldBoundaries(3,worldHalfLength);
 
@@ -156,7 +158,6 @@ namespace mu2e {
 
     return worldVInfo.physical;
   }
-
 
   // Adding a step limiter is a two step process.
   // 1) In the physics list constructor add a G4StepLimiter to the list of discrete
