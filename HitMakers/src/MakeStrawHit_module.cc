@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.19 2012/10/03 06:42:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/10/03 06:42:03 $
+// $Id: MakeStrawHit_module.cc,v 1.20 2012/11/20 21:16:06 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/20 21:16:06 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -456,7 +456,7 @@ namespace mu2e {
       double digi_t2     = spmcStrawHit._t2;
       double digi_edep   = spmcStrawHit._edep;
       double digi_driftTNonSm = spmcStrawHit._driftTimeNonSm;
-      double digi_driftT = spmcStrawHit._driftTime;
+      // will use it some day double digi_driftT = spmcStrawHit._driftTime;
       // the straw which defined digi_toMid is the same one which defined t1
       double digi_toMid  = spmcStrawHit._distanceToMid;
       double digi_dca    = spmcStrawHit._dca;
@@ -584,7 +584,7 @@ namespace mu2e {
           digi_t2     = spmcStrawHit._t2;
           digi_edep   = spmcStrawHit._edep;
           digi_driftTNonSm = spmcStrawHit._driftTimeNonSm;
-          digi_driftT = spmcStrawHit._driftTime;
+          // will use it some day digi_driftT = spmcStrawHit._driftTime;
           digi_toMid  = spmcStrawHit._distanceToMid;
           digi_dca    = spmcStrawHit._dca;
           digi_t1i    = spmci;
