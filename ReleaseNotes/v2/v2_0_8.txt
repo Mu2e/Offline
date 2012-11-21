@@ -1,10 +1,20 @@
-  $Id: v2_0_8.txt,v 1.2 2012/11/19 23:08:50 genser Exp $
+  $Id: v2_0_8.txt,v 1.3 2012/11/21 22:02:32 genser Exp $
   $Author: genser $
-  $Date: 2012/11/19 23:08:50 $
+  $Date: 2012/11/21 22:02:32 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_8
+
+2) November 21, 2012 genser
+
+   Small enhacements corrections to the g4study related code:
+
+      Analyses/src/Mu2eG4StudyReadBack_module.cc
+      ConditionsService/data/g4nuclei.tbl
+      Mu2eG4/src/Mu2eStudyWorld.cc
+      Mu2eG4/test/g4studyGeom.txt
+      Mu2eG4/test/g4studyParticleGun.txt
 
 1) November 19, 2012 genser
 
