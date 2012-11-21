@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for calorimetric readout
 //
-// $Id: CaloReadoutSD.cc,v 1.18 2012/11/20 23:02:09 echenard Exp $
+// $Id: CaloReadoutSD.cc,v 1.19 2012/11/21 00:24:26 echenard Exp $
 // $Author: echenard $
-// $Date: 2012/11/20 23:02:09 $
+// $Date: 2012/11/21 00:24:26 $
 //
 // Original author Ivan Logashenko
 //
@@ -81,7 +81,7 @@ namespace mu2e {
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.
 
-      push_back(StepPointMC(art::Ptr<SimParticle>
+      _collection->push_back(StepPointMC(art::Ptr<SimParticle>
                             ( *_simID,
                               aStep->GetTrack()->GetTrackID(),
                               _event->productGetter(*_simID) ),
