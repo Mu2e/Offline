@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eStudyWorld.cc,v 1.4 2012/11/19 23:03:49 genser Exp $
+// $Id: Mu2eStudyWorld.cc,v 1.5 2012/11/21 21:55:51 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/19 23:03:49 $
+// $Date: 2012/11/21 21:55:51 $
 //
 // Original author K. Genser based on Mu2eWorld
 //
@@ -150,9 +150,9 @@ namespace mu2e {
 
     if ( _verbosityLevel > 0) {
       cout << __func__ << " world half dimensions     : " 
-           << worldBoundaries[0]
-           << worldBoundaries[1]
-           << worldBoundaries[2]
+           << worldBoundaries[0] << ", "
+           << worldBoundaries[1] << ", "
+           << worldBoundaries[2] << ", "
            << endl;
     }
 
