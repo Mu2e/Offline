@@ -1,9 +1,9 @@
 //
 // Plugin to read/analyze g4study output
 //
-//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.1 2012/11/17 00:00:39 genser Exp $
+//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.2 2012/11/21 21:55:07 genser Exp $
 //  $Author: genser $
-//  $Date: 2012/11/17 00:00:39 $
+//  $Date: 2012/11/21 21:55:07 $
 //
 // Original author KLG somewhat based on vd read back
 //
@@ -230,6 +230,48 @@ namespace mu2e {
     ++_nAnalyzed;
 
     GlobalConstantsHandle<ParticleDataTable> pdt;
+    ParticleDataTable const & pdt_ = *pdt;
+
+    // print the pdt content
+
+    static bool oneTime = true;
+
+    if (oneTime) {
+
+      oneTime = false;
+
+      art::ServiceHandle<GeometryService> geom;
+      SimpleConfig const& config  = geom->config();
+      if (config.getBool("mu2e.printParticleDataTable",false)) {
+
+        cout << __func__ 
+             << " pdt size : "
+             << pdt_.size() 
+             << endl;
+      
+        for ( ParticleDataTable::const_iterator pdti=pdt_.begin(), e=pdt_.end(); 
+              pdti!=e; ++pdti ) {
+      
+          cout << __func__ 
+               << " pdt particle : "
+               << pdti->first.pid()  
+               << ", name: "          
+               << pdt_.particle(pdti->first.pid()).ref().name()
+               << ", PDTname: "          
+               << pdt_.particle(pdti->first.pid()).ref().PDTname()
+               << ", "
+               << pdt_.particle(pdti->first.pid()).ref().mass()
+               << ", "
+               << pdt_.particle(pdti->first.pid()).ref().totalWidth()
+               << ", "
+               << pdt_.particle(pdti->first.pid()).ref().lifetime()
+               << endl;
+
+        }
+
+      }
+
+    } // end of oneTime
 
     // Ask the event to give us a "handle" to the requested points.
     art::Handle<StepPointMCCollection> points;
@@ -268,7 +310,7 @@ namespace mu2e {
         } else {
           SimParticle const& sim = simParticles->at(trackId);
           pdgId = sim.pdgId();
-      	  mass = pdt->particle(pdgId).ref().mass();
+      	  mass = pdt_.particle(pdgId).ref().mass();
 	}
       }
 
@@ -292,7 +334,7 @@ namespace mu2e {
       nt[16] = lmom.z();
       nt[17] = point.properTime();
       nt[20] = event.id().run();
-  // compute kinetic energy: this is what Geant cuts on
+      // compute kinetic energy: this is what Geant cuts on
       nt[21] = sqrt(mom.mag2()+mass*mass)-mass;
 
       _ntstepper->Fill(nt);
@@ -301,7 +343,9 @@ namespace mu2e {
              << event.id().run()   << " | "
              << event.id().event() << " | "
              << point.volumeId()   << " | "
-             << pdgId              << " , "  << pdt->particle(pdgId).ref().PDTname() << " | "
+             << pdgId              << " , name: "  
+             << pdt_.particle(pdgId).ref().name() << " , PDTname: "
+             << pdt_.particle(pdgId).ref().PDTname() << " | "
              << point.time()       << " "
              << lpos               << " "
              << mom.mag()
@@ -338,7 +382,7 @@ namespace mu2e {
         } else {
           SimParticle const& sim = simParticles->at(trackId);
           pdgId = sim.pdgId();
-	  mass = pdt->particle(pdgId).ref().mass();
+	  mass = pdt_.particle(pdgId).ref().mass();
         }
       }
 
@@ -366,7 +410,7 @@ namespace mu2e {
              << event.id().run()   << " | "
              << event.id().event() << " | "
              << hit.volumeId()     << " | "
-             << pdgId              << " , "  << pdt->particle(pdgId).ref().PDTname() << " | "
+             << pdgId              << " , "  << pdt_.particle(pdgId).ref().PDTname() << " | "
              << hit.time()         << " "
              << pos                << " "
              << mom.mag()
