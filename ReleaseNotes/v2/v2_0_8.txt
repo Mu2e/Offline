@@ -1,10 +1,21 @@
-  $Id: v2_0_8.txt,v 1.3 2012/11/21 22:02:32 genser Exp $
-  $Author: genser $
-  $Date: 2012/11/21 22:02:32 $
+  $Id: v2_0_8.txt,v 1.4 2012/11/21 23:20:10 mjlee Exp $
+  $Author: mjlee $
+  $Date: 2012/11/21 23:20:10 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_8
+
+3) November 21, 2012 mjlee
+
+   One can modify the size of conical proton absorber. Updated are :
+     
+     Mu2eG4/src/constructProtonAbsorber.cc
+     Mu2eG4/src/constructVirtualDetectors.cc
+     Mu2eG4/test/protonAbsorber_conical.txt
+     MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorberMaker.hh
+     MECOStyleProtonAbsorberGeom/src/MECOStyleProtonAbsorberMaker.cc
+
 
 2) November 21, 2012 genser
 

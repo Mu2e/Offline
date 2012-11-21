@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.16 2012/11/19 23:03:49 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/19 23:03:49 $
+// $Id: constructProtonAbsorber.cc,v 1.17 2012/11/21 23:20:10 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/11/21 23:20:10 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -27,6 +27,7 @@
 #include "Mu2eG4/inc/nestCons.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/HelicalProtonAbsorber.hh"
+#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -104,7 +105,7 @@ namespace mu2e {
 
                 delete hpabs;
 
-        } else {
+        } else if (! _config.getBool("protonabsorber.isShorterCone", false) ) {
 
                 // smaller and larger outer radii
                 double pabs1rOut0   = _config.getDouble("protonabsorber.OutRadius0");
@@ -299,8 +300,149 @@ namespace mu2e {
 
                 }
 
-        }
+        } else {
 
-}
+                GeomHandle<MECOStyleProtonAbsorber> pabs;
+
+                double ds2zcenter   = parent1Info.centerInMu2e().z();
+                double ds3zcenter   = parent2Info.centerInMu2e().z();
+
+                G4Tubs const * parent1solid0 = static_cast<G4Tubs*>(parent1Info.solid);
+                G4Tubs const * parent2solid0 = static_cast<G4Tubs*>(parent2Info.solid->GetConstituentSolid(0));
+
+                if ( verbosityLevel > 0) {
+                  cout << __func__ <<
+                    " ds2zcenter               : " << ds2zcenter << endl;
+                  cout << __func__ <<
+                    " ds3zcenter               : " << ds3zcenter << endl;
+                }
+                //G4Material* pabsMaterial =  findMaterialOrThrow(pabs->fillMaterial());
+                MaterialFinder materialFinder(_config);
+                G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
+
+                if ( verbosityLevel > 0) {
+                  double theZ  = parent1Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
+                  double theHL = parent1solid0->GetZHalfLength();
+                  cout << __func__ << " " << parent1Info.name << " Z offset in Mu2e    : " <<
+                    theZ << endl;
+                  cout << __func__ << " " << parent1Info.name << " Z extent in Mu2e    : " <<
+                    theZ - theHL << ", " << theZ + theHL << endl;
+                }
+
+                if ( verbosityLevel > 0) {
+                  double theZ  = parent2Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
+                  double theHL = parent2solid0->GetZHalfLength();
+                  cout << __func__ << " " << parent2Info.name << " Z offset in Mu2e    : " <<
+                    theZ << endl;
+                  cout << __func__ << " " << parent2Info.name << " Z extent in Mu2e    : " <<
+                    theZ - theHL << ", " << theZ + theHL << endl;
+                }
+
+                double pabs1ZOffset = CLHEP::mm * pabs->part(0).center().z() - ds2zcenter;
+                double pabs2ZOffset = CLHEP::mm * pabs->part(1).center().z() - ds3zcenter;
+
+                G4ThreeVector pabs1Offset(0.0, 0.0, pabs1ZOffset);
+                G4ThreeVector pabs2Offset(0.0, 0.0, pabs2ZOffset);
+
+                // proton absorber in DS2
+                double pabs1rIn0  = pabs->part(0).innerRadiusAtStart();
+                double pabs1rOut0 = pabs->part(0).outerRadiusAtStart();
+                double pabs1rIn1  = pabs->part(0).innerRadiusAtEnd();
+                double pabs1rOut1 = pabs->part(0).outerRadiusAtEnd();
+                double pabs1len   = pabs->part(0).halfLength() *2.;
+
+                double pabs1Param[7] = { pabs1rIn0, pabs1rOut0, pabs1rIn1, pabs1rOut1, pabs1len*0.5,
+                                          0.0, 360.0*CLHEP::degree };
+                bool pabsIsVisible = _config.getBool("protonabsorber.visible",true);
+                bool pabsIsSolid   = _config.getBool("protonabsorber.solid",true);
+
+                bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
+                bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
+                bool const placePV       = true;
+
+                VolumeInfo protonabs1Info = nestCons( "protonabs1",
+                                                      pabs1Param,
+                                                      pabsMaterial,
+                                                      0,
+                                                      pabs1Offset,
+                                                      parent1Info,
+                                                      0,
+                                                      pabsIsVisible,
+                                                      G4Color::White(),
+                                                      pabsIsSolid,
+                                                      forceAuxEdgeVisible,
+                                                      placePV,
+                                                      doSurfaceCheck
+                                                      );
+                protonabs1Info.logical->SetSensitiveDetector (paSD);
+
+                if ( verbosityLevel > 0) {
+                  double pzhl   = static_cast<G4Cons*>(protonabs1Info.solid)->GetZHalfLength();
+                  double pabs1Z = protonabs1Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
+                  cout << __func__ << " protonabs1 Z offset in Mu2e    : " <<
+                    pabs1Z << endl;
+                  cout << __func__ << " protonabs1 Z extent in Mu2e    : " <<
+                    pabs1Z - pzhl  << ", " <<  pabs1Z + pzhl  << endl;
+                }
+
+
+                // proton absorber in DS3
+                double pabs2rIn0  = pabs->part(1).innerRadiusAtStart();
+                double pabs2rOut0 = pabs->part(1).outerRadiusAtStart();
+                double pabs2rIn1  = pabs->part(1).innerRadiusAtEnd();
+                double pabs2rOut1 = pabs->part(1).outerRadiusAtEnd();
+                double pabs2len   = pabs->part(1).halfLength() * 2.;
+
+                double pabs2Param[7] = { pabs2rIn0, pabs2rOut0, pabs2rIn1, pabs2rOut1, pabs2len*0.5,
+                                         0.0, 360.0*CLHEP::degree };
+
+                VolumeInfo protonabs2Info = nestCons( "protonabs2",
+                                                      pabs2Param,
+                                                      pabsMaterial,
+                                                      0,
+                                                      pabs2Offset,
+                                                      parent2Info,
+                                                      0,
+                                                      pabsIsVisible,
+                                                      G4Color::Yellow(),
+                                                      pabsIsSolid,
+                                                      forceAuxEdgeVisible,
+                                                      placePV,
+                                                      doSurfaceCheck
+                                                      );
+                protonabs2Info.logical->SetSensitiveDetector (paSD);
+
+                mf::LogInfo log("GEOM");
+                log << "Constructing Proton Absorber -- \n";
+                log << "Proton Abs Offset in DS2:  " << pabs1Offset <<"\n";
+                log << "rIn,  rOut (-z): "<< pabs1rIn0 <<"  "<< pabs1rOut0<<"  ";
+                log << "rIn,  rOut (+z): "<< pabs1rIn1 <<"  "<< pabs1rOut1<<"  ";
+                log << "halflength: "<< pabs1len*0.5 <<"\n";
+                log << "Proton Abs Offset in DS3:  " << pabs2Offset <<"\n";
+                log << "rIn,  rOut (-z): "<< pabs2rIn0 <<"  "<< pabs2rOut0<<"  ";
+                log << "rIn,  rOut (+z): "<< pabs2rIn1 <<"  "<< pabs2rOut1<<"  ";
+                log << "halflength: "<< pabs2len*0.5 <<"\n";
+
+
+                if ( verbosityLevel > 0) {
+                  double pzhl   = static_cast<G4Cons*>(protonabs2Info.solid)->GetZHalfLength();
+                  double pabs2Z = protonabs2Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
+                  cout << __func__ << " " << protonabs2Info.name << " Z offset in Mu2e    : " <<
+                    pabs2Z << endl;
+                  cout << __func__ << " " << protonabs2Info.name << " Z extent in Mu2e    : " <<
+                    pabs2Z - pzhl  << ", " <<  pabs2Z + pzhl  << endl;
+
+                  // we also check how the offsets are handled
+
+                  cout << __func__ << " " << protonabs2Info.name << " local input offset in G4                  : " <<
+                    pabs2Offset << endl;
+                  cout << __func__ << " " << protonabs2Info.name << " local GetTranslation()       offset in G4 : " <<
+                    protonabs2Info.physical->GetTranslation() << endl; // const &
+
+                }
+
+        }
+  }
+
 
 }

@@ -2,15 +2,19 @@
 // Construct and return MECOStyleProtonAbsorber
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.3 2012/08/09 22:20:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/08/09 22:20:16 $
+// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.4 2012/11/21 23:20:10 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/11/21 23:20:10 $
 //
 // Original author MyeongJae Lee
 //
 // All in mu2e coordinate system, except target.z0 which is given by old Detector coordinate system. (-3904, 0, 12000)
-// Geometry is based on old construcProtonAbsorber codes.
-// distFromTargetEnd value is prepared for forward compatibility. Do not use now.
+//
+// To modify the size of MECO-style (conical) proton absorber, use :
+// bool protonabsorber.isShorterCone = true;
+// and modify protonabsorber.halfLength and protonabsorber.distFromTargetEnd
+// Modifing the radii protobabsorber.OutRaduis[0,1] is not recommanded. 
+//
 
 #include <iostream>
 #include <iomanip>
@@ -34,14 +38,18 @@ namespace mu2e {
   // from arguments.
   MECOStyleProtonAbsorberMaker::MECOStyleProtonAbsorberMaker( SimpleConfig const& _config)
   {
-
     BuildIt (_config);
 
-    int verbosity(_config.getInt("protonabsorber.verbosity",0));
+    int verbosity(_config.getInt("protonabsorber.verbosityLevel",0));
     if ( verbosity > 0 ) PrintConfig();
   }
 
   void MECOStyleProtonAbsorberMaker::BuildIt ( SimpleConfig const& _config)
+  {
+    Build(_config);
+  }
+
+  void MECOStyleProtonAbsorberMaker::Build ( SimpleConfig const& _config) 
   {
 
     //////////////////////////////////////
@@ -49,14 +57,17 @@ namespace mu2e {
     //////////////////////////////////////
 
     // geometry and material
+    // not recommended to modify following variables 
     double r1out0        = _config.getDouble("protonabsorber.OutRadius0", 335.2);
     double r2out1        = _config.getDouble("protonabsorber.OutRadius1", 380.0);
-    double pabsZHalfLen      = _config.getDouble("protonabsorber.halfLength", 1250.0);
+    // new variable for the length of PA region 
+    double pabsZHalfLen  = _config.getDouble("protonabsorber.halfLength", 1250.0);
     double thick             = _config.getDouble("protonabsorber.thickness", 0.5);
-    double distFromTargetEnd = 0.;
-    // double distFromTargetEnd = _config.getDouble("protonabsorber.distFromTargetEnd", 0);
+    double distFromTargetEnd = _config.getDouble("protonabsorber.distFromTargetEnd", 0);
+    // region for PA 
+    const double pabsRegionLength = 2500.;
     std::string materialName = _config.getString("protonabsorber.materialName", "Polyethylene092");
-    if (distFromTargetEnd > pabsZHalfLen *2. || distFromTargetEnd <0) {
+    if (distFromTargetEnd > pabsRegionLength || distFromTargetEnd <0) {
       std::cerr <<"MECOStyleProtonAbsorberMaker: Wrong value for distFromTargetEnd. Set to 0" << std::endl;
       distFromTargetEnd = 0;
     }
@@ -98,10 +109,10 @@ namespace mu2e {
     double taghalflen =(foilwid*numoftf) + 5.0 + 2.*vdHL; // what/why is 5.0 hardcoded here?
 
     // target offset in mu2e coordinate
-    double tagoff =z0valt + 12000.0;
+    double tagoff =z0valt + 12000.0; 
 
     // z of target end in mu2e coordinate
-    double targetEnd = tagoff + taghalflen;
+    double targetEnd = tagoff + taghalflen; 
 
     // distance from target end to ds2-ds3 boundary
     double targetEndToDS2End = ds2HalfLength + (z0DSup - targetEnd);
@@ -111,7 +122,7 @@ namespace mu2e {
     //////////////////////////////////////
     // Decide which pabs will be turned on
     //////////////////////////////////////
-
+ 
     bool pabs1 = true;
     bool pabs2 = true;
 
@@ -136,10 +147,6 @@ namespace mu2e {
     // Half length
     //////////////
 
-    // old style codes for pabs1/2 half length
-    // double pabs1halflen = (ds2HalfLength + (z0DSup - targetEnd))*0.5;
-    // double pabs2halflen  = pabsZHalfLen - pabs1halflen;
-
     double pabs1halflen = 0, pabs2halflen = 0;
     if (pabs1) {
       pabs1halflen = (targetEndToDS2End - distFromTargetEnd)*0.5;
@@ -153,12 +160,8 @@ namespace mu2e {
     // Offset
     /////////
 
-    // old style for pabs1/2 offset
-    // double pabs1ZOffset = targetEnd + pabs1halflen ;
-    // double pabs2ZOffset = targetEnd + pabs1halflen * 2. + pabs2halflen;
-
     double pabs1ZOffset = targetEnd + 0.01;
-    double pabs2ZOffset = targetEnd + targetEndToDS2End + 0.01;
+    double pabs2ZOffset = targetEnd + targetEndToDS2End + 0.01; 
     if (pabs1) {
       pabs1ZOffset = targetEnd + distFromTargetEnd + pabs1halflen;
     }
@@ -175,25 +178,18 @@ namespace mu2e {
     // Radius
     /////////
 
-    // old style codes
-    // interpolating the outer radius of the DS2 part
-    // double r1out1 = ((r2out1 - r1out0)*(pabs1halflen/pabsZHalfLen)) + r1out0;
-    // double r1in1  = r1out1 - thick;
-    // double r1in0  = r1out0 - thick;
-    // double r2in1  = r2out1 - thick;
-
     double pabs1rIn0 = 0, pabs1rIn1 = 0, pabs1rOut0 = 0, pabs1rOut1 = 0;
     double pabs2rIn0 = 0, pabs2rIn1 = 0, pabs2rOut0 = 0, pabs2rOut1 = 0;
 
     if (pabs1) {
-      pabs1rOut0 = (r2out1 - r1out0)/(pabsZHalfLen*2.)*(pabs1ZOffset-pabs1halflen-targetEnd) + r1out0;
-      pabs1rOut1 = (r2out1 - r1out0)/(pabsZHalfLen*2.)*(pabs1ZOffset+pabs1halflen-targetEnd) + r1out0;
+      pabs1rOut0 = (r2out1 - r1out0)/pabsRegionLength*(pabs1ZOffset-pabs1halflen-targetEnd) + r1out0;
+      pabs1rOut1 = (r2out1 - r1out0)/pabsRegionLength*(pabs1ZOffset+pabs1halflen-targetEnd) + r1out0;
       pabs1rIn0  = pabs1rOut0 - thick;
       pabs1rIn1  = pabs1rOut1 - thick;
     }
     if (pabs2) {
-      pabs2rOut0 = (r2out1 - r1out0)/(pabsZHalfLen*2.)*(pabs2ZOffset-pabs2halflen-targetEnd) + r1out0;
-      pabs2rOut1 = (r2out1 - r1out0)/(pabsZHalfLen*2.)*(pabs2ZOffset+pabs2halflen-targetEnd) + r1out0;
+      pabs2rOut0 = (r2out1 - r1out0)/pabsRegionLength*(pabs2ZOffset-pabs2halflen-targetEnd) + r1out0;
+      pabs2rOut1 = (r2out1 - r1out0)/pabsRegionLength*(pabs2ZOffset+pabs2halflen-targetEnd) + r1out0;
       pabs2rIn0  = pabs2rOut0 - thick;
       pabs2rIn1  = pabs2rOut1 - thick;
     }
@@ -222,6 +218,7 @@ namespace mu2e {
 
 
   }
+
 
   void MECOStyleProtonAbsorberMaker::PrintConfig ( ) {
 

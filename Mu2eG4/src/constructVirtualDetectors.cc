@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.40 2012/06/06 19:29:30 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/06 19:29:30 $
+// $Id: constructVirtualDetectors.cc,v 1.41 2012/11/21 23:20:10 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2012/11/21 23:20:10 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -348,7 +348,9 @@ namespace mu2e {
     // of the ttracker (in the proton absorber region); check if
     // ttracker exist is done in VirtualDetectorMaker
 
-    if ( _config.getBool("hasProtonAbsorber",false) && !_config.getBool("protonabsorber.isHelical", false) ) {
+    if (    _config.getBool("hasProtonAbsorber",false) 
+        && !_config.getBool("protonabsorber.isHelical", false) 
+        && !_config.getBool("protonabsorber.isShorterCone", false)) {
 
       vdId = VirtualDetectorId::TT_FrontHollow;
       if( vdg->exist(vdId) ) {

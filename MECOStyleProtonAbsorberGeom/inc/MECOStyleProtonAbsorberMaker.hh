@@ -4,9 +4,9 @@
 // Construct and return an MECOStyleProtonAbsorber.
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.hh,v 1.1 2012/05/10 23:40:59 mjlee Exp $
+// $Id: MECOStyleProtonAbsorberMaker.hh,v 1.2 2012/11/21 23:20:10 mjlee Exp $
 // $Author: mjlee $
-// $Date: 2012/05/10 23:40:59 $
+// $Date: 2012/11/21 23:20:10 $
 //
 // Original author MyeongJae Lee
 //
@@ -37,6 +37,8 @@ public:
   std::auto_ptr<MECOStyleProtonAbsorber> getMECOStyleProtonAbsorberPtr() { return _pabs; }
 
 private:
+
+  void Build (SimpleConfig const & _config);
 
   // pointer to the Mu2E Geometry MECOStyleProtonAbsorber being made
   std::auto_ptr<MECOStyleProtonAbsorber> _pabs;
