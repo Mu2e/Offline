@@ -2,9 +2,9 @@
 // config file to perform Geant4 studies using the Mu2e framework infrastructure
 //
 
-// $Id: g4studyGeom.txt,v 1.1 2012/11/16 23:43:21 genser Exp $
+// $Id: g4studyGeom.txt,v 1.2 2012/11/21 21:56:06 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/16 23:43:21 $
+// $Date: 2012/11/21 21:56:06 $
 //
 // Original author K. Genser
 //
@@ -20,12 +20,12 @@ string detector.name           = "g4study";
 // or a study environment (when set to false)
 
 bool           mu2e.standardDetector = false;
+
+
 vector<string> mu2e.materials = {"WAGVacuum"};
 int            mu2e.studyEnvVersion      = 1;
+bool           mu2e.printParticleDataTable = true;
 
-vector<double> world.mu2eOriginInWorld = { 0., 0., 0.}; // mm
-
-int world.verbosityLevel = 2;
 
 // Use a decent physics list
 string g4.physicsListName      = "FTFP_BERT";
@@ -53,7 +53,11 @@ vector<double> g4.steppingActionTimeVD = {0.01};
 
 vector<string> g4SteppingAction.killInTheseVolumes = {};
 
-// the "World Box"; should we keep the world name (not studyWorld?)
+// the "World Box"
+
+vector<double> world.mu2eOriginInWorld = { 0., 0., 0.}; // mm
+
+int world.verbosityLevel = 2;
 
 // a very "thin" vacuum
 string world.materialName      = "WAGVacuum";
