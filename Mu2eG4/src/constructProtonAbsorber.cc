@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.17 2012/11/21 23:20:10 mjlee Exp $
+// $Id: constructProtonAbsorber.cc,v 1.18 2012/11/24 08:39:58 mjlee Exp $
 // $Author: mjlee $
-// $Date: 2012/11/21 23:20:10 $
+// $Date: 2012/11/24 08:39:58 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -59,6 +59,7 @@ namespace mu2e {
         VolumeInfo const & parent2Info  = _helper->locateVolInfo("ToyDS3Vacuum");
 
         if ( _config.getBool("protonabsorber.isHelical", false) ) {
+                if ( verbosityLevel > 0) cout << __func__ << " : Proton Absorber is Helical type" << endl;
                 MaterialFinder materialFinder(_config);
                 G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
                 double ds2HalfLen = _config.getDouble("toyDS2.halfLength");
@@ -106,6 +107,8 @@ namespace mu2e {
                 delete hpabs;
 
         } else if (! _config.getBool("protonabsorber.isShorterCone", false) ) {
+                
+                if ( verbosityLevel > 0) cout << __func__ << " : Proton Absorber is MECO-style Conical type" << endl;
 
                 // smaller and larger outer radii
                 double pabs1rOut0   = _config.getDouble("protonabsorber.OutRadius0");
@@ -301,6 +304,7 @@ namespace mu2e {
                 }
 
         } else {
+                if ( verbosityLevel > 0) cout << __func__ << " : Proton Absorber is modified Conical type" << endl;
 
                 GeomHandle<MECOStyleProtonAbsorber> pabs;
 
