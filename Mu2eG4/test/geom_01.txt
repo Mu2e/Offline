@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.169 2012/10/16 02:52:12 ehrlich Exp $
+// $Id: geom_01.txt,v 1.170 2012/11/26 07:48:49 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/10/16 02:52:12 $
+// $Date: 2012/11/26 07:48:49 $
 //
 // Original author Rob Kutschke
 //
@@ -482,7 +482,8 @@ vector<double> crs.shieldT_Offset  =  { 2170.4,    0.0,     0.0};
 vector<double> crs.shieldD_Offset  =  {10942.9,    0.0, -1571.2};
 vector<double> crs.shieldTSR_Offset = {10594.9, -280.0,   904.5};
 vector<double> crs.shieldTSL_Offset = {-6054.1,  280.0,  2860.5};
-vector<double> crs.shieldTST_Offset = { 2170.4, 8324.5, -3020.5};
+// vector<double> crs.shieldTST_Offset = { 2170.4, 8324.5, -3020.5};
+vector<double> crs.shieldTST_Offset = { 2170.4, 8324.5, -3000.5};
 
 bool   crs.vetoVisible    = true;
 bool   crs.vetoSolid      = true;
