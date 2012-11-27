@@ -1,10 +1,20 @@
-  $Id: v2_0_8.txt,v 1.4 2012/11/21 23:20:10 mjlee Exp $
-  $Author: mjlee $
-  $Date: 2012/11/21 23:20:10 $
+  $Id: v2_0_8.txt,v 1.5 2012/11/27 23:27:47 genser Exp $
+  $Author: genser $
+  $Date: 2012/11/27 23:27:47 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_0_8
+
+4) November 27, 2012 genser
+
+   Several improvements of the g4study related code:
+
+      Offline/Analyses/src/Mu2eG4StudyReadBack_module.cc
+      Offline/Mu2eG4/src/Mu2eStudyWorld.cc
+      Offline/Mu2eG4/src/constructStudyEnv_v001.cc
+      Offline/Mu2eG4/test/g4studyGeom.txt
+
 
 3) November 21, 2012 mjlee
 
@@ -19,7 +29,7 @@
 
 2) November 21, 2012 genser
 
-   Small enhacements corrections to the g4study related code:
+   Small enhacements and corrections to the g4study related code:
 
       Analyses/src/Mu2eG4StudyReadBack_module.cc
       ConditionsService/data/g4nuclei.tbl
