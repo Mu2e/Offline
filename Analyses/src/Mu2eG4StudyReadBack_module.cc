@@ -1,9 +1,9 @@
 //
 // Plugin to read/analyze g4study output
 //
-//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.2 2012/11/21 21:55:07 genser Exp $
+//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.3 2012/11/27 02:42:49 genser Exp $
 //  $Author: genser $
-//  $Date: 2012/11/21 21:55:07 $
+//  $Date: 2012/11/27 02:42:49 $
 //
 // Original author KLG somewhat based on vd read back
 //
@@ -167,7 +167,6 @@ namespace mu2e {
     _nttvd = tfs->make<TNtuple>( "nttvd", "Time Virtual Detectors ntuple",
                                  "evt:trk:sid:pdg:time:x:y:z:px:py:pz:gtime:code:run:ke");
     //                            0   1   2   3   4    5 6 7 8  9  10 11    12   13  14
-    // Have to use TTree here, because one cannot use more than 100 variables in TNtuple
 
     _ntpart = tfs->make<TTree>("ntpart", "Particles ntuple");
 
@@ -297,9 +296,6 @@ namespace mu2e {
       const CLHEP::Hep3Vector& pos = point.position();
       const CLHEP::Hep3Vector& mom = point.momentum();
 
-      CLHEP::Hep3Vector lpos = pos;// fixme
-      CLHEP::Hep3Vector lmom = mom;
-
       // Get track info
       key_type trackId = point.trackId();
       int pdgId = 0;
@@ -326,16 +322,11 @@ namespace mu2e {
       nt[8]  = mom.x();
       nt[9]  = mom.y();
       nt[10] = mom.z();
-      nt[11] = lpos.x();
-      nt[12] = lpos.y();
-      nt[13] = lpos.z();
-      nt[14] = lmom.x();
-      nt[15] = lmom.y();
-      nt[16] = lmom.z();
-      nt[17] = point.properTime();
-      nt[20] = event.id().run();
+      nt[11] = point.properTime();
+      nt[12] = point.endProcessCode();
+      nt[13] = event.id().run();
       // compute kinetic energy: this is what Geant cuts on
-      nt[21] = sqrt(mom.mag2()+mass*mass)-mass;
+      nt[14] = sqrt(mom.mag2()+mass*mass)-mass;
 
       _ntstepper->Fill(nt);
       if ( _nAnalyzed < _maxPrint){
@@ -347,7 +338,7 @@ namespace mu2e {
              << pdt_.particle(pdgId).ref().name() << " , PDTname: "
              << pdt_.particle(pdgId).ref().PDTname() << " | "
              << point.time()       << " "
-             << lpos               << " "
+             << pos                << " "
              << mom.mag()
              << endl;
 
@@ -410,14 +401,14 @@ namespace mu2e {
              << event.id().run()   << " | "
              << event.id().event() << " | "
              << hit.volumeId()     << " | "
-             << pdgId              << " , "  << pdt_.particle(pdgId).ref().PDTname() << " | "
+             << pdgId              << " , name: "  
+             << pdt_.particle(pdgId).ref().name() << " , PDTname: "
+             << pdt_.particle(pdgId).ref().PDTname() << " | "
              << hit.time()         << " "
              << pos                << " "
              << mom.mag()
              << endl;
-
       }
-
     } // end loop over hits.
 
     // Fill tracks ntuple
