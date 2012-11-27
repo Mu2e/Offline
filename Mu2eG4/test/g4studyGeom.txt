@@ -2,9 +2,9 @@
 // config file to perform Geant4 studies using the Mu2e framework infrastructure
 //
 
-// $Id: g4studyGeom.txt,v 1.3 2012/11/21 22:03:44 genser Exp $
+// $Id: g4studyGeom.txt,v 1.4 2012/11/27 23:01:52 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/21 22:03:44 $
+// $Date: 2012/11/27 23:01:52 $
 //
 // Original author K. Genser
 //
@@ -83,6 +83,9 @@ string         tube.wallMaterialName = "G4_C";
 double         tube.rIn        = 0.0;
 double         tube.rOut       = 0.001;
 double         tube.halfLength = 3.0;
+
+int            tube.copyNumber = 2; // non 0 for volume tracking purposes
+                                    // 0 & 1 are World and an auxiliary volume
 
 vector<double> tube.centerInWorld = {0., 0., 0.};
 
