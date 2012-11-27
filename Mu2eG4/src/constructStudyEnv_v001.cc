@@ -1,9 +1,9 @@
 //
 // Free function to create a geant4 test environment geometry
 //
-// $Id: constructStudyEnv_v001.cc,v 1.1 2012/11/16 23:54:10 genser Exp $
+// $Id: constructStudyEnv_v001.cc,v 1.2 2012/11/27 23:01:34 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/16 23:54:10 $
+// $Date: 2012/11/27 23:01:34 $
 //
 // Original author KLG 
 //
@@ -57,10 +57,12 @@ namespace mu2e {
     VolumeInfo tubeVInfo(nestTubs( "Tube",
                                    tubeParams,
                                    tubeMaterial,
-                                   0,
+                                   0, // no rotation
                                    tubeCenterInWorld,
                                    parentVInfo,
-                                   0,
+                                   _config.getInt("tube.copyNumber",2), 
+                                   // we assign a non 0 copy nuber for
+                                   // volume tracking purposes
                                    tubeVisible,
                                    G4Colour::Yellow(),
                                    tubeSolid,

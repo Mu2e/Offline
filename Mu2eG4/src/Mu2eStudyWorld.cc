@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eStudyWorld.cc,v 1.5 2012/11/21 21:55:51 genser Exp $
+// $Id: Mu2eStudyWorld.cc,v 1.6 2012/11/27 23:01:20 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/21 21:55:51 $
+// $Date: 2012/11/27 23:01:20 $
 //
 // Original author K. Genser based on Mu2eWorld
 //
@@ -106,13 +106,14 @@ namespace mu2e {
 
     vector<double> worldBoundaries(3,worldHalfLength+outerLayerThickness);
 
+    // the canonical World volume
     VolumeInfo worldVInfo(nestBox("World", 
                                   worldBoundaries,
                                   worldMaterial, 
                                   0, 
                                   G4ThreeVector(),
-                                  0,
-                                  0, 
+                                  0, // no parent
+                                  0, // we assign this volume copy number 0
                                   worldBoxVisible, 
                                   G4Colour::Cyan(), 
                                   worldBoxSolid,
@@ -128,10 +129,10 @@ namespace mu2e {
     VolumeInfo boxInTheWorldVInfo(nestBox("BoxInTheWorld", 
                                           boxInWorldBoundaries,
                                           worldMaterial, 
-                                          0, 
+                                          0, // no rotation
                                           G4ThreeVector(),
                                           worldVInfo,
-                                          0, 
+                                          1, // we assign this volume copy number 1
                                           worldBoxVisible, 
                                           G4Colour::Cyan(), 
                                           worldBoxSolid,
