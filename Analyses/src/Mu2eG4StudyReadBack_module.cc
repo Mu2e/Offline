@@ -1,9 +1,9 @@
 //
 // Plugin to read/analyze g4study output
 //
-//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.3 2012/11/27 02:42:49 genser Exp $
+//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.4 2012/11/27 23:00:59 genser Exp $
 //  $Author: genser $
-//  $Date: 2012/11/27 02:42:49 $
+//  $Date: 2012/11/27 23:00:59 $
 //
 // Original author KLG somewhat based on vd read back
 //
@@ -39,8 +39,6 @@ using CLHEP::Hep3Vector;
 using CLHEP::keV;
 
 namespace mu2e {
-
-  const unsigned int nvdet = VirtualDetectorId::lastEnum;
 
   typedef struct {
 
@@ -127,11 +125,12 @@ namespace mu2e {
     NtPartData ntp; // Buffer to fill particles ntuple
 
     // Pointers to the physical volumes we are interested in
-    // -- stopping target
     map<int,int> vid_stop;
+    // we look at all of them for now
 
     // List of particles of interest for the particles ntuple
-    set<int> pdg_save;
+    //    set<int> pdg_save;
+    // we save them all for now
 
     // Label of the generator.
     std::string _generatorModuleLabel;
@@ -160,9 +159,8 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
 
     _ntstepper = tfs->make<TNtuple>( "ntstepper", "stepper ntuple",
-                                "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
-                                "xl:yl:zl:pxl:pyl:pzl:gtime:"
-                                "run:ke");
+                                     "evt:trk:sid:pdg:time:x:y:z:px:py:pz:gtime:code:run:ke");
+    //                                0   1   2   3   4    5 6 7 8  9  10 11    12   13  14
 
     _nttvd = tfs->make<TNtuple>( "nttvd", "Time Virtual Detectors ntuple",
                                  "evt:trk:sid:pdg:time:x:y:z:px:py:pz:gtime:code:run:ke");
@@ -212,12 +210,13 @@ namespace mu2e {
 
       // fixme get it from the config file
 
+      // register all volumes
       for ( size_t i=0; i<physVolumes->size(); ++i ) {
-        if( (*physVolumes)[i].name() == "BoxInTheWorld" ) {
-          vid_stop[i] = (*physVolumes)[i].copyNo();
-          cout << "Mu2eG4StudyReadBack: register volume " << i << " = "
-               << (*physVolumes)[i].name() << " " << (*physVolumes)[i].copyNo() << endl;
-        }
+        // if( (*physVolumes)[i].name() == "BoxInTheWorld" ) {
+        vid_stop[i] = (*physVolumes)[i].copyNo();
+        cout << "Mu2eG4StudyReadBack: register volume " << i << " = "
+             << (*physVolumes)[i].name() << " " << (*physVolumes)[i].copyNo() << endl;
+        //}
       }
 
     }
@@ -412,7 +411,9 @@ namespace mu2e {
     } // end loop over hits.
 
     // Fill tracks ntuple
-    if( haveSimPart && pdg_save.size()>0 ) {
+    // with all sim partciles
+    //    if( haveSimPart && pdg_save.size()>0 ) {
+    if( haveSimPart ) {
 
       // Go through SimParticle container and analyze one particle at a time
       for ( SimParticleCollection::const_iterator isp=simParticles->begin();
@@ -420,7 +421,8 @@ namespace mu2e {
         SimParticle const& sim = isp->second;
 
         // If particle PDG ID is not in the list - skip it
-        if( pdg_save.find(sim.pdgId()) == pdg_save.end() ) continue;
+        // if( pdg_save.find(sim.pdgId()) == pdg_save.end() ) continue;
+        // we save them all for now
 
         // Save SimParticle header info
         ntp.run = event.id().run();      // run_id
@@ -454,7 +456,7 @@ namespace mu2e {
         ntp.p = mom_start.mag();
         ntp.code = sim.creationCode();
 
-        // Check id of the volume there particle dies
+        // Check id of the volume where the particle died
         if( sim.endDefined() ) {
           if( vid_stop.find(sim.endVolumeIndex()) != vid_stop.end() ) {
             ntp.isstop = true;
