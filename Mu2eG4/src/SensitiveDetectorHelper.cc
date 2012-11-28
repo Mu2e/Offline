@@ -1,9 +1,9 @@
 //
 // A helper class manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.cc,v 1.1 2012/06/09 20:03:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/09 20:03:25 $
+// $Id: SensitiveDetectorHelper.cc,v 1.2 2012/11/28 23:03:27 genser Exp $
+// $Author: genser $
+// $Date: 2012/11/28 23:03:27 $
 //
 // Original author Rob Kutschke
 //
@@ -51,6 +51,8 @@ namespace mu2e {
     std::vector<StepInstanceName> const& allSD(StepInstanceName::allValues());
     for ( std::vector<StepInstanceName>::const_iterator i=allSD.begin();
           i != allSD.end(); ++i ){
+      // stepper does not have a sensitive detector associated with it...
+      if (*i == StepInstanceName::stepper) continue;
       StepInstanceName::enum_type id(*i);
       if ( id != StepInstanceName::unknown && id !=StepInstanceName::timeVD ){
         stepInstances_[id] = StepInstance(id);
@@ -66,7 +68,8 @@ namespace mu2e {
     for ( InstanceMap::iterator i=stepInstances_.begin();
             i != stepInstances_.end(); ++i ){
       StepInstance& step(i->second);
-      step.sensitiveDetector = static_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.name().c_str()));
+      step.sensitiveDetector = 
+        static_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.name().c_str()));
     }
   }
 
