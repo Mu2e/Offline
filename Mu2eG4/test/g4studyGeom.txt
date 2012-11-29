@@ -2,9 +2,9 @@
 // config file to perform Geant4 studies using the Mu2e framework infrastructure
 //
 
-// $Id: g4studyGeom.txt,v 1.4 2012/11/27 23:01:52 genser Exp $
+// $Id: g4studyGeom.txt,v 1.5 2012/11/29 23:24:13 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/27 23:01:52 $
+// $Date: 2012/11/29 23:24:13 $
 //
 // Original author K. Genser
 //
@@ -36,41 +36,58 @@ bool g4.forceAuxEdgeVisible    = true;
 // do not check for overlaps
 bool g4.doSurfaceCheck         = false;
 
+// print g4 element table
 bool g4.printElements          = true;
 
+// print g4 material table
 bool g4.printMaterials         = true;
 
-bool g4.printPhysicsProcessSummary = false;
+// print g4 processe summary (using a mu2e utility class)
+bool g4.printPhysicsProcessSummary = true;
 
-// maximum allowed number of steps per event
+// maximum allowed number of steps per track per event; 0 is unlimited
 int  g4.steppingActionMaxSteps = 0;
 
+
+// maximum global time per track per event; 0 is unlimited
 double g4.steppingActionMaxGlobalTime = 0.0;
 
-// times for time virtual detector
+// times for time virtual detector when particle steps are recorded
+// when the time threshold is crossed in a step
 
 vector<double> g4.steppingActionTimeVD = {0.01};
 
+// list of volumes when tracks are kiled on entry
 vector<string> g4SteppingAction.killInTheseVolumes = {};
+
+// enable killing of low energy particles
+bool   g4.killLowEKine = false;
+
+// global kinetic energy cut (MeV)
+double g4.eKineMin     = 1000000.0;
+
+// a more selective kinetic energy cut depending on the pdg code
+vector<int>    g4.killLowEKinePDG = {};
+vector<double> g4.eKineMinPDG     = {};
 
 // the "World Box"
 
+// an artifact of using the mu2e framwork elements, needs to be set to { 0., 0., 0.}
 vector<double> world.mu2eOriginInWorld = { 0., 0., 0.}; // mm
 
-int world.verbosityLevel = 2;
+// verbosity flag pertaining to the world construction
+int world.verbosityLevel         = 2;
 
 // a very "thin" vacuum
-string world.materialName      = "WAGVacuum";
+string world.materialName        = "WAGVacuum";
 
 // make the world boundaries invisible
-bool   world.boxVisible         = false;
+bool   world.boxVisible          = false;
 // make the volume transparent
-bool   world.boxSolid           = false;
+bool   world.boxSolid            = false;
 
-double world.halfLength         = 10.0;
-double world.outerLayerThickness = 0.001;// world "outer layer" to force a step point
-
-int    world.verbosityLevel     = 1;
+double world.halfLength          = 10.0;
+double world.outerLayerThickness = 0.001;// the world "outer layer" to force a step point
 
 // the target (a tube)
 
@@ -87,6 +104,7 @@ double         tube.halfLength = 3.0;
 int            tube.copyNumber = 2; // non 0 for volume tracking purposes
                                     // 0 & 1 are World and an auxiliary volume
 
+// tube position in the world
 vector<double> tube.centerInWorld = {0., 0., 0.};
 
 //
