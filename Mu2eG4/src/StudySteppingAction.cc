@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: StudySteppingAction.cc,v 1.1 2012/11/16 23:53:14 genser Exp $
+// $Id: StudySteppingAction.cc,v 1.2 2012/11/29 23:23:47 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/16 23:53:14 $
+// $Date: 2012/11/29 23:23:47 $
 //
 // Original author Rob Kutschke
 //
@@ -345,7 +345,7 @@ namespace mu2e {
     return false;
   }
 
-  // Kill tracks that enter the hall air.
+  // Kill tracks that enter the selected volumes
   bool StudySteppingAction::killInTheseVolumes( const G4Track* trk ){
 
     KillerVolumesCache::const_iterator p = _killerVolumes.find(trk->GetVolume());
