@@ -1,9 +1,9 @@
 //
 // A plugin to show how to use interactive ROOT with the framework.
 //
-// $Id: InteractiveRoot_module.cc,v 1.6 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: InteractiveRoot_module.cc,v 1.7 2012/12/03 15:55:07 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/12/03 15:55:07 $
 //
 // Original author Rob Kutschke
 //
@@ -47,6 +47,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <unistd.h>
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -177,9 +178,9 @@ namespace mu2e {
       _canvas->Modified();
       _canvas->Update();
 
-      cerr << "Double click in the Canvas " << _moduleLabel << " to continue:" ;
-      _canvas->WaitPrimitive();
-      cerr << endl;
+      cerr << "Sleeping 5 seconds for you to have a look at the canvas: "
+           << _moduleLabel << endl;
+      sleep(5);
 
     }
 
