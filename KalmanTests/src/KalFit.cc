@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.37 2012/11/15 22:05:29 brownd Exp $
+// $Id: KalFit.cc,v 1.38 2012/12/03 22:09:28 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/11/15 22:05:29 $
+// $Date: 2012/12/03 22:09:28 $
 //
 
 // the following has to come before other BaBar includes
@@ -146,6 +146,7 @@ namespace mu2e
     for(size_t iambig=0;iambig<_ambigresolver.size();++iambig){
       delete _ambigresolver[iambig];
     }
+    delete _bfield;
   }
 
   void KalFit::makeTrack(KalFitResult& kres) {
