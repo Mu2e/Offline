@@ -68,7 +68,7 @@ physics :
 
 
 
-  p1 : [generate, g4run, makeDcH, kalmanFit, trckRjctByTime, trackMiniIReco, trackRecoFit]
+  p1 : [generate, g4run, makeDcH, trckRjctByTime, trackMiniIReco, trackRecoFit]
   e1 : [outfile]
 
 
@@ -100,19 +100,11 @@ physics.producers.makeDcH.diagLevel : 0
 //physics.producers.makeDcH.maxFullPrint : 5
 //physics.producers.makeDcH.minimumEnergy : -1
 
-//physics.producers.kalmanFit.debuglevel : 1
-physics.producers.kalmanFit.materialdb : ""
-physics.producers.kalmanFit.doEndCapExtrapol : true
-physics.producers.kalmanFit.fitparticle : 11
-physics.producers.kalmanFit.fitdirection : 0 
-//physics.producers.kalmanFit.KalFit.fieldCorrection : true
-//physics.producers.kalmanFit.KalFit.BFieldIntDivTol : 0.1
-//physics.producers.kalmanFit.KalFit.BFieldIntTol : 0.001
-
 //add proton rejection
 physics.producers.trckRjctByTime.protonRejecEff        : 1.00
 physics.producers.trckRjctByTime.pulseCut              : 0.0015
 
+//final reconstruction
 physics.producers.trackRecoFit.materialdb : ""
 physics.producers.trackRecoFit.doEndCapExtrapol : true
 physics.producers.trackRecoFit.maxfltdif                               : 10
