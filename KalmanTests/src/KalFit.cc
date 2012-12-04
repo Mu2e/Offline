@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.38 2012/12/03 22:09:28 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/12/03 22:09:28 $
+// $Id: KalFit.cc,v 1.39 2012/12/04 00:51:26 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2012/12/04 00:51:26 $
 //
 
 // the following has to come before other BaBar includes
@@ -75,20 +75,21 @@ namespace mu2e
 // KalFit parameters
     _debug(pset.get<int>("debugLevel",0)),
     _weedhits(pset.get<bool>("weedhits",true)),
-    _removefailed(pset.get<bool>("RemoveFailedFits",true)),
     _maxhitchi(pset.get<double>("maxhitchi",4.0)),
-    _minnstraws(pset.get<unsigned>("minnstraws",15)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
     _herr(pset.get< vector<double> >("hiterr")),
     _maxdriftpull(pset.get<double>("maxDriftPull",10)),
-    _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
-// t0 parameters
+    // t0 parameters
     _initt0(pset.get<bool>("initT0",true)),
     _updatet0(pset.get<bool>("updateT0",true)),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _mint0doca(pset.get<double>("minT0DOCA",-0.2)),
     _t0nsig(pset.get<double>("t0window",2.5)),
+    //
+    _removefailed(pset.get<bool>("RemoveFailedFits",true)),
+    _minnstraws(pset.get<unsigned>("minnstraws",15)),
+    _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
     _bfield(0)
   {
 // set KalContext parameters

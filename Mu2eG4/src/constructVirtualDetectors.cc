@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.41 2012/11/21 23:20:10 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/11/21 23:20:10 $
+// $Id: constructVirtualDetectors.cc,v 1.42 2012/12/04 00:51:26 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/12/04 00:51:26 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -262,6 +262,8 @@ namespace mu2e {
           vd.logical->SetSensitiveDetector(vdSD);
         }
     }
+
+    if ( _config.getBool("hasTTracker",false) ) {
 
     // placing virtual detectors in the middle of the ttracker
 
@@ -763,6 +765,146 @@ namespace mu2e {
       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
+
+    }
+
+  } else if ( _config.getBool("hasITracker",false) && _config.getBool("itracker.VirtualDetect",false) ) {
+
+            VolumeInfo const & trckrParent = _helper->locateVolInfo("TrackerMother");
+
+            double tModInRd = ((G4Tubs *)trckrParent.solid)->GetInnerRadius();
+            double tModOtRd = ((G4Tubs *)trckrParent.solid)->GetOuterRadius();
+            double tModDz   = ((G4Tubs *)trckrParent.solid)->GetDz();
+
+
+            vdId = VirtualDetectorId::IT_VD_InSurf;
+            if( vdg->exist(vdId) ) {
+
+              if ( verbosityLevel > 0) {
+                cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+              }
+
+              // the radius of tracker mother
+              double irvd = tModInRd; //envelopeParams.innerRadius();
+              double vdZ  = vdg->getGlobal(vdId).z();
+
+              if ( verbosityLevel > 0) {
+                cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+                  " z, r : " << vdZ << ", " << irvd << endl;
+              }
+
+              VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+
+              G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+
+              // the detector is on the inner surface of the tracker envelope
+              // it is thin cylinder, NOT a thin disk
+              TubsParams  vdParamsITrackerInSurf(irvd-2.*vdHalfLength,irvd,tModDz);
+
+              VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                           vdParamsITrackerInSurf,
+                                           vacuumMaterial,
+                                           0,
+                                           vdLocalOffset,
+                                           parent,
+                                           vdId,
+                                           vdIsVisible,
+                                           G4Color::Red(),
+                                           vdIsSolid,
+                                           forceAuxEdgeVisible,
+                                           placePV,
+                                           false);
+              // vd are very thin, a more thorough check is needed
+              doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+              vdInfo.logical->SetSensitiveDetector(vdSD);
+            }
+
+            vdId = VirtualDetectorId::IT_VD_EndCap_Front;
+            if( vdg->exist(vdId) ) {
+
+              if ( verbosityLevel > 0) {
+                cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+              }
+
+              // the radius of tracker mother
+              double irvd = tModInRd; //envelopeParams.innerRadius();
+              double vdZ  = vdg->getGlobal(vdId).z();
+
+              if ( verbosityLevel > 0) {
+                cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+                  " z, r : " << vdZ << ", " << irvd << endl;
+              }
+
+              VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+
+              G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();// -G4ThreeVector(0.0,0.0,-(tModDz+vdHalfLength));
+
+              // the detector is on the inner surface of the tracker envelope
+              // it is thin cylinder, NOT a thin disk
+              TubsParams  vdParamsITrackerInSurf(tModInRd,tModOtRd,vdHalfLength);
+
+              VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                           vdParamsITrackerInSurf,
+                                           vacuumMaterial,
+                                           0,
+                                           vdLocalOffset,
+                                           parent,
+                                           vdId,
+                                           vdIsVisible,
+                                           G4Color::Red(),
+                                           vdIsSolid,
+                                           forceAuxEdgeVisible,
+                                           placePV,
+                                           false);
+              // vd are very thin, a more thorough check is needed
+              doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+              vdInfo.logical->SetSensitiveDetector(vdSD);
+            }
+
+            vdId = VirtualDetectorId::IT_VD_EndCap_Back;
+            if( vdg->exist(vdId) ) {
+
+              if ( verbosityLevel > 0) {
+                cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+              }
+
+              // the radius of tracker mother
+              double irvd = tModInRd; //envelopeParams.innerRadius();
+              double vdZ  = vdg->getGlobal(vdId).z();
+
+              if ( verbosityLevel > 0) {
+                cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+                  " z, r : " << vdZ << ", " << irvd << endl;
+              }
+
+              VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+
+              G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();// -G4ThreeVector(0.0,0.0,(tModDz+vdHalfLength));
+
+              // the detector is on the inner surface of the tracker envelope
+              // it is thin cylinder, NOT a thin disk
+              TubsParams  vdParamsITrackerInSurf(tModInRd,tModOtRd,vdHalfLength);
+
+              VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                           vdParamsITrackerInSurf,
+                                           vacuumMaterial,
+                                           0,
+                                           vdLocalOffset,
+                                           parent,
+                                           vdId,
+                                           vdIsVisible,
+                                           G4Color::Red(),
+                                           vdIsSolid,
+                                           forceAuxEdgeVisible,
+                                           placePV,
+                                           false);
+              // vd are very thin, a more thorough check is needed
+              doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+              vdInfo.logical->SetSensitiveDetector(vdSD);
+            }
 
     }
 

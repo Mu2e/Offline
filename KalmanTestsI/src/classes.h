@@ -11,5 +11,9 @@ using namespace CLHEP;
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/Matrix.h"
 
+#include "KalmanTestsI/inc/kalFitDataOuts.hh"
+
 
 //template class art::Wrapper<HelixParams>;
+template class std::vector<mu2e::HitInfo>;
+template class std::vector<mu2e::TrkCellHitInfo>;

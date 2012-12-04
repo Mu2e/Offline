@@ -1,6 +1,6 @@
 <!--  -->
-<!--  $Author: ignatov $ -->
-<!--  $Date: 2012/09/18 08:40:59 $   -->
+<!--  $Author: tassiell $ -->
+<!--  $Date: 2012/12/04 00:51:27 $   -->
 <!--  -->
 
 <lcgdict>
@@ -11,4 +11,8 @@
   <field name="_weightMatrix" transient="false"/>
  </class>
 <!-- <class name="art::Wrapper<HelixParams>"/> -->
+    <class name="mu2e::HitInfo" />
+    <class name="std::vector<mu2e::HitInfo>" />
+    <class name="mu2e::TrkCellHitInfo" />
+    <class name="std::vector<mu2e::TrkCellHitInfo>" />
 </lcgdict>

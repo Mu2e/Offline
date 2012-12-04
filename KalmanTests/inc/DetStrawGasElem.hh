@@ -9,6 +9,8 @@
 #define DetStrawGasElem_hh
 
 #include "DetectorModel/DetElem.hh"
+#include <string>
+
 namespace mu2e {
   class TrkStrawHit;
   class DetStrawHitType;
@@ -16,14 +18,14 @@ namespace mu2e {
   class DetStrawGasElem : public DetElem {
   public:
 // construct from a TrkStrawHit
-    DetStrawGasElem(DetStrawHitType*, TrkStrawHit* strawhit);
+    DetStrawGasElem(DetStrawHitType*, TrkStrawHit* strawhit, std::string name="DetStrawGasElem");
     virtual ~DetStrawGasElem();
 // DetElem interface
     virtual int intersect(const Trajectory*,DetIntersection&) const{ return 0; }
     virtual bool reIntersect(const Trajectory* traj,DetIntersection& dinter) const;
   protected:
     virtual HepPoint coordToPoint( const TypeCoord* aCoord ) const { return HepPoint(0.0,0.0,0.0); }
-  private:
+//  private:
     mutable TrkStrawHit* _strawhit;
   };
 }

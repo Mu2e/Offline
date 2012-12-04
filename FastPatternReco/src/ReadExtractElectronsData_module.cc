@@ -1,9 +1,9 @@
 //
 // example of a module to read Data of the Electrons tracks that came from the targets
 //
-// $Id: ReadExtractElectronsData_module.cc,v 1.5 2012/05/15 07:48:33 tassiell Exp $
+// $Id: ReadExtractElectronsData_module.cc,v 1.6 2012/12/04 00:51:27 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/15 07:48:33 $
+// $Date: 2012/12/04 00:51:27 $
 //
 // Original author G. Tassielli
 //
@@ -125,8 +125,8 @@ namespace mu2e {
     TProfile *_hNhitOverlapByPNoConvElEv_nh;
 
     TTree    *_dataConvEl;
-    unsigned int  runID, eventID, convElGoodNHit, convElTotNHit, convElNLoop;
-    float         el_Start_px, el_Start_py, el_Start_pz, el_AtTracker_px, el_AtTracker_py, el_AtTracker_pz;
+    unsigned int  runID, eventID, convElGoodNHit, convElTotNHit, convElNLoop, el_AtTracker_LID;
+    float         el_Start_px, el_Start_py, el_Start_pz, el_AtTracker_px, el_AtTracker_py, el_AtTracker_pz, el_AtTracker_rad, el_AtTracker_z;
     float         convElFHitTime/*, convElStartTime*/;
     float         signalTimeCoin[1000], lastSignalTimeCoin[1000];
 
@@ -203,6 +203,9 @@ namespace mu2e {
     _dataConvEl->Branch("ConvEl_Tracker_px",&el_AtTracker_px,"el_AtTracker_px/F");
     _dataConvEl->Branch("ConvEl_Tracker_py",&el_AtTracker_py,"el_AtTracker_py/F");
     _dataConvEl->Branch("ConvEl_Tracker_pz",&el_AtTracker_pz,"el_AtTracker_pz/F");
+    _dataConvEl->Branch("ConvEl_Tracker_layerID",&el_AtTracker_LID,"el_AtTracker_LID/i");
+    _dataConvEl->Branch("ConvEl_Tracker_rad",&el_AtTracker_rad,"el_AtTracker_rad/F");
+    _dataConvEl->Branch("ConvEl_Tracker_z",&el_AtTracker_z,"el_AtTracker_z/F");
     _dataConvEl->Branch("ConvEl_FrstHit_Time",&convElFHitTime,"convElFHitTime/F");
     //_dataConvEl->Branch("ConvEl_Start_Time",&convElStartTime,"convElStartTime/F");
     _dataConvEl->Branch("ConvEl_Frst_Time_Coinc",signalTimeCoin,"signalTimeCoin[convElTotNHit]/F");
@@ -278,6 +281,10 @@ namespace mu2e {
                     el_AtTracker_py=hdil._hitMomentum[1];
                     el_AtTracker_pz=hdil._hitMomentum[2];
                     convElFHitTime=hdil._mcHitTime;
+                    el_AtTracker_rad = sqrt(hdil._hitPoint.getX()*hdil._hitPoint.getX()+hdil._hitPoint.getY()*hdil._hitPoint.getY());
+                    el_AtTracker_z = hdil._hitPoint.getZ();
+                    el_AtTracker_LID = 0;
+
 
                     for ( unsigned int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
                             GenElHitData& genElhit = iEltrk.getHit((int)iElHit);

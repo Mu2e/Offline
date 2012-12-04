@@ -18,8 +18,8 @@
 
 namespace mu2e {
 //
-  DetStrawWallElem::DetStrawWallElem(DetStrawHitType* stype,TrkStrawHit* strawhit) :
-  DetElem(stype, "DetStrawWallElem",strawhit->straw().index().asInt()),_strawhit(strawhit) {}
+  DetStrawWallElem::DetStrawWallElem(DetStrawHitType* stype,TrkStrawHit* strawhit, std::string name) :
+  DetElem(stype, name.c_str(),strawhit->straw().index().asInt()),_strawhit(strawhit) {}
   
   DetStrawWallElem::~DetStrawWallElem(){}
 

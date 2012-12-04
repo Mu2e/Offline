@@ -42,10 +42,22 @@ makeDcH :
   g4ModuleLabel        : g4run
   diagLevel            : 0
   maxFullPrint         : 0
+  minimumEnergy        : 0.00004
   nzHittingZone        : 1
   zZoneLimits          : [ 0 ]
   zZoneActive          : [ true ]
   zZoneMinLiveTime     : [ 0.0 ]
+}
+
+# Form DCHHits turning off some cells (DcH).
+makeDcHWTOff :
+{
+  module_type          : MakeCellsWithTurningOff
+  g4ModuleLabel        : g4run
+  diagLevel            : 1
+  maxFullPrint         : 0
+  minimumEnergy        : 0.00004
+  makerModuleLabel     : makeDcH
 }
 
 # Form CaloHits (APD hits)

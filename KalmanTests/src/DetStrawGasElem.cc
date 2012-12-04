@@ -17,8 +17,8 @@
 #include <iostream>
 
 namespace mu2e {
-  DetStrawGasElem::DetStrawGasElem(DetStrawHitType* stype, TrkStrawHit* strawhit) :
-    DetElem(stype,"DetStrawGasElem",strawhit->straw().index().asInt()),_strawhit(strawhit) {}
+  DetStrawGasElem::DetStrawGasElem(DetStrawHitType* stype, TrkStrawHit* strawhit, std::string name) :
+    DetElem(stype,name.c_str(),strawhit->straw().index().asInt()),_strawhit(strawhit) {}
   
   DetStrawGasElem::~DetStrawGasElem(){}
 

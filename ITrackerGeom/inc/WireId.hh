@@ -1,7 +1,7 @@
 //
-// $Id: WireId.hh,v 1.6 2012/09/25 10:08:29 tassiell Exp $
+// $Id: WireId.hh,v 1.7 2012/12/04 00:51:28 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/09/25 10:08:29 $
+// $Date: 2012/12/04 00:51:28 $
 //
 // Original author G. Tassielli
 //
@@ -47,6 +47,13 @@ public:
 
   int getWire() const{
     return _n;
+  }
+
+  int getUId() const{
+	int wUid = ((_lid->getSuperLayer()+1)*100000)+((_lid->getLayer()+1)*1000);
+	wUid*=10;
+	wUid+=_n;
+    return wUid;
   }
 
   bool operator==(const WireId w) const{

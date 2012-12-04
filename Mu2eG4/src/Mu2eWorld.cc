@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.148 2012/11/19 23:03:49 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/19 23:03:49 $
+// $Id: Mu2eWorld.cc,v 1.149 2012/12/04 00:51:26 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/12/04 00:51:26 $
 //
 // Original author Rob Kutschke
 //
@@ -58,6 +58,7 @@
 #include "Mu2eG4/inc/ExtMonUCITofSD.hh"
 #include "Mu2eG4/inc/ITGasLayerSD_Hexagonal.hh"
 #include "Mu2eG4/inc/ITGasLayerSD_Square.hh"
+#include "Mu2eG4/inc/TrackerWireSD.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/TTrackerDeviceSupportSD.hh"
@@ -155,15 +156,17 @@ namespace mu2e {
 
     // If you play with the order of these calls, you may break things.
     GeomHandle<WorldG4> worldGeom;
-    G4ThreeVector tmp = GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() 
+    G4ThreeVector tmpTrackercenter = GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() 
       + worldGeom->mu2eOriginInWorld()
       - G4ThreeVector(0.0,0.0,12000.-_config.getDouble("itracker.z0",0.0));
 
     if ( _config.getBool("hasITracker",false) ) {
-      ITGasLayerSD::setMu2eDetCenterInWorld(GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() 
-                                            + worldGeom->mu2eOriginInWorld()
-                                            - G4ThreeVector(0.0,0.0,12000.
-                                                            -_config.getDouble("itracker.z0",0.0)) );
+      ITGasLayerSD::setMu2eDetCenterInWorld( tmpTrackercenter );
+
+      if (_config.getBool("itracker.ActiveWiresSD",false)) {
+        TrackerWireSD::setMu2eDetCenterInWorld( tmpTrackercenter );
+      }
+
     }
 
     instantiateSensitiveDetectors();
@@ -567,6 +570,11 @@ namespace mu2e {
         itrackerSD = new ITGasLayerSD_Square(   SensitiveDetectorName::TrackerGas(), _config);
 
       SDman->AddNewDetector(itrackerSD);
+      if (_config.getBool("itracker.ActiveWiresSD",false)) {
+        SDman->AddNewDetector(new TrackerWireSD(    SensitiveDetectorName::TrackerSWires(),  _config));
+        SDman->AddNewDetector(new TrackerWireSD(    SensitiveDetectorName::ITrackerFWires(),  _config));
+      }
+
     }
     else {
       StrawSD* strawSD      =

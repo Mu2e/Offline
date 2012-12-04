@@ -39,6 +39,8 @@ using cet::pow;
 
 namespace mu2e {
 
+bool checkOverlap, detailedCheck;
+
 VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zOff ){
 
         // Master geometry for the ITracker.
@@ -53,6 +55,9 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
 
         double z0    = CLHEP::mm * itracker->z0();
         G4ThreeVector trackerOffset(0.,0.,z0-zOff);
+
+        checkOverlap = config.getBool("g4.doSurfaceCheck",false);
+        detailedCheck = checkOverlap&&config.getBool("itracker.doDetailedSurfCheck",false);
 
         /*      if ( itracker->rOut() >= ((G4Tubs *)mother->GetSolid())->GetOuterRadius() )
           throw cet::exception("GEOM") <<"The ITracker doesn't fit inside the DS, please check the external radius of the ITracker\n"
@@ -233,7 +238,8 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                         "oringInnerWallVol",  // its name
                                         trackerInfo.logical,  // its mother  volume
                                         false,                // no boolean operations
-                                        0);                   // copy number
+                                        0,                    // copy number
+                                        detailedCheck);
                         oringInnWallPos_R->GetCopyNo(); //just to remove the warning during compiling
                         G4VPhysicalVolume *oringInnWallPos_L = new G4PVPlacement(0,
                                         G4ThreeVector(0,0,-oringCenter),
@@ -241,7 +247,8 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                         "oringInnerWallVol",  // its name
                                         trackerInfo.logical,  // its mother  volume
                                         false,                // no boolean operations
-                                        1);                   // copy number
+                                        1,                    // copy number
+                                        detailedCheck);
                         oringInnWallPos_L->GetCopyNo(); //just to remove the warning during compiling
                 } else {
                         trackerInfo.solid = new G4Tubs("Itracker", itracker->r0()-0.001,travkVolRmax,itracker->maxEndCapDim(),0.0,360.0*CLHEP::degree);
@@ -276,7 +283,8 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                         iwall->getName(),                // its name
                                         trackerInfo.logical,             // its mother  volume
                                         false,                           // no boolean operations
-                                        0);                              // copy number
+                                        0,                               // copy number
+                                        checkOverlap);
                         //if (iwall->getType() == Wall::outer) outerWallInnerRadius = iwall->getRmin();
                 }
                 if (itracker->endcapType() == ITracker::Plane ) {
@@ -310,7 +318,8 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                                                         tVolName,                 // its name
                                                                         extraInnerWallVol,        // its mother  volume
                                                                         false,                    // no boolean operations
-                                                                        0);                       // copy number
+                                                                        0,                        // copy number
+                                                                        detailedCheck);
                                                         extraInnerWallShellPos->GetCopyNo(); //just to remove the warning during compiling
 
                                                         iExtWallShellRmax = iExtWallShellRmin;
@@ -324,18 +333,20 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                         G4VPhysicalVolume *extraInnerWallPos_R = new G4PVPlacement(0,
                                         G4ThreeVector(0,0,extraInnWallCenter),
                                         extraInnerWallVol,        // its logical volume
-                                        "extraInnerWallVol",      // its name
+                                        "extraInnerWallVol_R",      // its name
                                         trackerInfo.logical,      // its mother  volume
                                         false,                    // no boolean operations
-                                        0);                       // copy number
+                                        0,                        // copy number
+                                        checkOverlap);
                         extraInnerWallPos_R->GetCopyNo(); //just to remove the warning during compiling
                         G4VPhysicalVolume *extraInnerWallPos_L = new G4PVPlacement(0,
                                         G4ThreeVector(0,0,-extraInnWallCenter),
                                         extraInnerWallVol,        // its logical volume
-                                        "extraInnerWallVol",      // its name
+                                        "extraInnerWallVol_L",      // its name
                                         trackerInfo.logical,      // its mother  volume
                                         false,                    // no boolean operations
-                                        1);                       // copy number
+                                        1,                        // copy number
+                                        checkOverlap);
                         extraInnerWallPos_L->GetCopyNo(); //just to remove the warning during compiling
 
                 }
@@ -358,8 +369,9 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                         elctContWallUpStVol,     // its logical volume
                                         "elctContWallUpStVol",   // its name
                                         elctContVol,             // its mother  volume
-                                        false,                    // no boolean operations
-                                        0);                       // copy number
+                                        false,                   // no boolean operations
+                                        0,                       // copy number
+                                        detailedCheck);
                         elctContWallUpStPos->GetCopyNo(); //just to remove the warning during compiling
 
                         G4VSolid* elctContWallDwnStShape = new G4Tubs("elctContWallDwnSt", outerWallInnerRadius,outerWallInnerRadiusWithElec,elctContWallThick,0.0,360.0*CLHEP::degree);
@@ -369,8 +381,9 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                         elctContWallDwnStVol,    // its logical volume
                                         "elctContWallDwnStVol",  // its name
                                         elctContVol,             // its mother  volume
-                                        false,                    // no boolean operations
-                                        0);                       // copy number
+                                        false,                   // no boolean operations
+                                        0,                       // copy number
+                                        detailedCheck);
                         elctContWallDwnStPos->GetCopyNo(); //just to remove the warning during compiling
 
                         double elctContWallBottLeng = elctContLength-2.0*elctContWallThick;
@@ -382,8 +395,9 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                         elctContWallBottVol,     // its logical volume
                                         "elctContWallBottVol",   // its name
                                         elctContVol,             // its mother  volume
-                                        false,                    // no boolean operations
-                                        0);                       // copy number
+                                        false,                   // no boolean operations
+                                        0,                       // copy number
+                                        detailedCheck);
                         elctContWallBottPos->GetCopyNo(); //just to remove the warning during compiling
 
                         double elctContHeight = outerWallInnerRadiusWithElec-elctContWallBottRmax;
@@ -408,7 +422,8 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                                 "electCardVol",   // its name
                                                 elctContVol,      // its mother  volume
                                                 false,            // no boolean operations
-                                                iElCard);         // copy number
+                                                iElCard,          // copy number
+                                                detailedCheck);
                                 electCardPos->GetCopyNo(); //just to remove the warning during compiling
                         }
 
@@ -418,18 +433,20 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                         G4ThreeVector(0,0,itracker->maxEndCapDim()-elctContLength),
                                         elctContVol,             // its logical volume
                                         "elctContVol",           // its name
-                                        trackerInfo.logical,      // its mother  volume
-                                        false,                    // no boolean operations
-                                        0);                       // copy number
+                                        trackerInfo.logical,     // its mother  volume
+                                        false,                   // no boolean operations
+                                        0,                       // copy number
+                                        detailedCheck);
                         elctContPos_R->GetCopyNo(); //just to remove the warning during compiling
 
                         G4VPhysicalVolume *elctContPos_L = new G4PVPlacement(0,
                                         G4ThreeVector(0,0,-(itracker->maxEndCapDim()-elctContLength)),
                                         elctContVol,             // its logical volume
                                         "elctContVol",           // its name
-                                        trackerInfo.logical,      // its mother  volume
-                                        false,                    // no boolean operations
-                                        1);                       // copy number
+                                        trackerInfo.logical,     // its mother  volume
+                                        false,                   // no boolean operations
+                                        1,                       // copy number
+                                        detailedCheck);
                         elctContPos_L->GetCopyNo(); //just to remove the warning during compiling
 
 
@@ -442,12 +459,12 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                         "leftFillGasVol",         // its name
                                         trackerInfo.logical,      // its mother  volume
                                         false,                    // no boolean operations
-                                        0);                       // copy number
+                                        0,                        // copy number
+                                        detailedCheck);
                         leftFillGasPos->GetCopyNo(); //just to remove the warning during compiling
+                }
 
-               }
-
-
+                bool activeWireSD = config.getBool("itracker.ActiveWiresSD",false);
                 for (int iSl = 0; iSl < itracker->nSuperLayers(); iSl++){
 
                         SuperLayer *SLayer = itracker->getSuperLayer(iSl);
@@ -500,7 +517,8 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                                 vol,                     // its name
                                                 trackerInfo.logical,     // its mother  volume
                                                 false,                   // no boolean operations
-                                                0);                      // copy number
+                                                0,                       // copy number
+                                                checkOverlap);
 
                                 if (ily->getLayerType() != ITLayer::undefined) {
 //                                        ITGasLayerSD* glSD;
@@ -513,36 +531,50 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
 
                                 }
 
+                                VolumeInfo tmpFieldWireInfo;
                                 for ( int iFw=0; iFw < ily->nFieldWires(); iFw++){
-                                        sprintf(vol_name_FD,"tubeFD_%d_%d",superlayer,iring);
                                         VolumeInfo FieldWireInfo;
                                         boost::shared_ptr<Wire> iwire = ily->getFWire(iFw);
                                         boost::shared_ptr<WireDetail> wdet = iwire->getDetail();
-                                        FieldWireInfo = buildWire(wdet->outerRadius(),wdet->halfLength(),shape_name_FD,vol_name_FD,wdet->materialNames(),wdet->shellsThicknesses());
-                                        sprintf(wire_name,"%s_%i",vol_name_FD,iwire->Id().getWire());
-                                        FieldWireInfo.logical->SetVisAttributes(visAttFw);
+                                        if (iFw==0) {
+                                                sprintf(vol_name_FD,"tubeFD_%d_%d",superlayer,iring);
+                                                tmpFieldWireInfo = buildWire(wdet->outerRadius(),wdet->halfLength(),shape_name_FD,vol_name_FD,wdet->materialNames(),wdet->shellsThicknesses(),activeWireSD);
+                                                tmpFieldWireInfo.logical->SetVisAttributes(visAttFw);
+                                        }
+                                        FieldWireInfo.solid = tmpFieldWireInfo.solid;
+                                        FieldWireInfo.logical = tmpFieldWireInfo.logical;
+                                        sprintf(wire_name,"%s_%i",vol_name_FD,iwire->Id().getUId());
+                                        FieldWireInfo.name = wire_name;
                                         FieldWireInfo.physical = new G4PVPlacement(iwire->get3DTransfrom(),
                                                         FieldWireInfo.logical,         // its logical volume
                                                         wire_name,                     // its name
                                                         LayerInfo.logical,             // its mother  volume
                                                         false,                         // no boolean operations
-                                                        iwire->Id().getWire());        // copy number
+                                                        iwire->Id().getUId(),          // copy number
+                                                        detailedCheck);
                                 }
 
+                                VolumeInfo tmpSenseWireInfo;
                                 for ( int iSw=0; iSw < ily->nCells(); iSw++){
-                                        sprintf(vol_name_SD,"tubeSD_%d_%d",superlayer,iring);
                                         VolumeInfo SenseWireInfo;
                                         boost::shared_ptr<Wire> iwire = ily->getCell(iSw)->getWire();
                                         boost::shared_ptr<WireDetail> wdet = iwire->getDetail();
-                                        SenseWireInfo = buildWire(wdet->outerRadius(),wdet->halfLength(),shape_name_SD,vol_name_SD,wdet->materialNames(),wdet->shellsThicknesses());
-                                        sprintf(wire_name,"%s_%i",vol_name_SD,iwire->Id().getWire());
-                                        SenseWireInfo.logical->SetVisAttributes(visAttSw);
+                                        if (iSw==0) {
+                                                sprintf(vol_name_SD,"tubeSD_%d_%d",superlayer,iring);
+                                                tmpSenseWireInfo = buildWire(wdet->outerRadius(),wdet->halfLength(),shape_name_SD,vol_name_SD,wdet->materialNames(),wdet->shellsThicknesses(),activeWireSD,true);
+                                                tmpSenseWireInfo.logical->SetVisAttributes(visAttSw);
+                                        }
+                                        SenseWireInfo.solid = tmpSenseWireInfo.solid;
+                                        SenseWireInfo.logical = tmpSenseWireInfo.logical;
+                                        sprintf(wire_name,"%s_%i",vol_name_SD,iwire->Id().getUId());
+                                        SenseWireInfo.name = wire_name;
                                         SenseWireInfo.physical = new G4PVPlacement(iwire->get3DTransfrom(),
                                                         SenseWireInfo.logical,         // its logical volume
                                                         wire_name,                     // its name
                                                         LayerInfo.logical,             // its mother  volume
                                                         false,                         // no boolean operations
-                                                        iwire->Id().getWire());        // copy number
+                                                        iwire->Id().getUId(),          // copy number
+                                                        detailedCheck);
                                 }
 
                         }
@@ -558,9 +590,9 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
                                 trackerName,
                                 mother,
                                 0,
-                                0);
+                                0,
+                                checkOverlap);
 
-                bool checkOverlap = config.getBool("g4.doSurfaceCheck",false);
                 if ( checkOverlap ) { cout<<"IT Overlap Checking "<<trackerInfo.physical->CheckOverlaps(100000,0.0001,true)<<endl; }
         }
 
@@ -568,7 +600,7 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
 
 }
 
-VolumeInfo ITrackerBuilder::buildWire(float radius, float length, char *shapeName, char *volName, const std::vector<std::string> &materialName, const std::vector<double> &thicknesses){
+VolumeInfo ITrackerBuilder::buildWire(float radius, float length, char *shapeName, char *volName, const std::vector<std::string> &materialName, const std::vector<double> &thicknesses, bool activeWireSD, bool isSense){
 
         VolumeInfo wire;
         wire.solid = new G4Tubs(shapeName,0.0,radius,length,0.0,360.0*CLHEP::degree);
@@ -591,6 +623,14 @@ VolumeInfo ITrackerBuilder::buildWire(float radius, float length, char *shapeNam
                         oldRadius=iRadius;
 
                         G4LogicalVolume *tlogicWire = new G4LogicalVolume(tswire,findMaterialOrThrow(materialName.at(ishell).c_str()),tVolName,0,0,0);
+                        if (activeWireSD) {
+                                if (isSense) {
+                                        tlogicWire->SetSensitiveDetector( G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::TrackerSWires()) );
+                                } else {
+                                        tlogicWire->SetSensitiveDetector( G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::ITrackerFWires()) );
+                                }
+                        }
+
                         G4VPhysicalVolume *tphysWire = new G4PVPlacement(0,
                                         G4ThreeVector(0,0,0),
                                         tlogicWire,       // its logical volume
@@ -600,7 +640,6 @@ VolumeInfo ITrackerBuilder::buildWire(float radius, float length, char *shapeNam
                                         0);               // copy number
                         tphysWire->GetCopyNo(); //just to remove the warning during compiling
                 }
-
         }
         return wire;
 }
@@ -611,6 +650,8 @@ VolumeInfo ITrackerBuilder::buildWall(Wall *wall, ITracker::EnCapType endcapType
         SimpleConfig const& config  = geom->config();
         bool hasDetailedSupport = config.getBool("itracker.detailedWireSupport",false);
 
+        int skipSub(-1);
+
         VolumeInfo wallInfo;
         char volName[50], shapeName[50];
         sprintf(volName,"vol_%s",wall->getName().c_str());
@@ -618,7 +659,18 @@ VolumeInfo ITrackerBuilder::buildWall(Wall *wall, ITracker::EnCapType endcapType
         if (wall->getType()==Wall::endcap && endcapType == ITracker::Spherical ) {
                 wallInfo.solid = new G4Sphere( shapeName,wall->getRmin(),wall->getRmax(),wall->getSPhi(),wall->getDPhi(),wall->getSTheta(),wall->getDTheta() );
         } else {
-                wallInfo.solid = new G4Tubs( shapeName,wall->getRmin(),wall->getRmax(),wall->getDz(),wall->getSPhi(),wall->getDPhi() );
+                double rMax(wall->getRmax());
+                if (wall->getType()==Wall::inner) {
+                        int nSub=wall->getNShells();
+                        for (int ishell=0; ishell<nSub; ishell++){
+                                G4String iWallShellMat = wall->getMaterialsName()->at(ishell);
+                                if ( iWallShellMat.contains("ITGas") ) {
+                                        rMax-=wall->getThicknesses()->at(ishell);
+                                        skipSub=ishell;
+                                }
+                        }
+                }
+                wallInfo.solid = new G4Tubs( shapeName,wall->getRmin(),rMax,wall->getDz(),wall->getSPhi(),wall->getDPhi() );
         }
         int nSub=wall->getNShells();
         if (nSub==1){
@@ -633,6 +685,7 @@ VolumeInfo ITrackerBuilder::buildWall(Wall *wall, ITracker::EnCapType endcapType
                 double iHalfThickness=0.0;
                 double spdWebBaseExcess=0.0;
                 for (int ishell=0; ishell<nSub; ishell++){
+                        if (ishell==skipSub) { continue; }
                         sprintf(tShapeName,"%s_sub%i",shapeName,ishell);
                         sprintf(tVolName,"%s_sub%i",volName,ishell);
                         iRadius+=wall->getThicknesses()->at(ishell);
@@ -678,7 +731,8 @@ VolumeInfo ITrackerBuilder::buildWall(Wall *wall, ITracker::EnCapType endcapType
                                         tVolName,         // its name
                                         wallInfo.logical, // its mother  volume
                                         false,            // no boolean operations
-                                        0);               // copy number
+                                        0,                // copy number
+                                        detailedCheck);
                         tphyswall->GetCopyNo(); //just to remove the warning during compiling
                         iZpos+=iHalfThickness;
                 }
@@ -720,7 +774,8 @@ double ITrackerBuilder::constructSpiderWeb(G4LogicalVolume* localMother, SimpleC
                                                tVolName,         // its name
                                                localMother,      // its mother  volume
                                                false,            // no boolean operations
-                                               0);               // copy number
+                                               0,                // copy number
+                                               detailedCheck);
         spdWebBasePos->GetCopyNo(); //just to remove the warning during compiling
 
         sprintf(tShapeName,"spdWebSpoke");
@@ -749,7 +804,8 @@ double ITrackerBuilder::constructSpiderWeb(G4LogicalVolume* localMother, SimpleC
                                 tVolName,         // its name
                                 localMother,      // its mother  volume
                                 false,            // no boolean operations
-                                iSpokes);         // copy number
+                                iSpokes,          // copy number
+                                detailedCheck);
                 spdWebSpokePos->GetCopyNo(); //just to remove the warning during compiling
         }
 
@@ -910,11 +966,12 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                 G4LogicalVolume*   brdFldDwnVol = new G4LogicalVolume(brdFldDwnShape,FwBoardMat,tVolName,0,0,0);
                                 G4VPhysicalVolume *brdFldDwnPos = new G4PVPlacement(0,
                                                 fwRelPos,
-                                                brdFldDwnVol,      // its logical volume
+                                                brdFldDwnVol,     // its logical volume
                                                 tVolName,         // its name
                                                 anchorVol,        // its mother  volume
                                                 false,            // no boolean operations
-                                                0);               // copy number
+                                                0,                // copy number
+                                                detailedCheck);
                                 brdFldDwnPos->GetCopyNo(); //just to remove the warning during compiling
 
                                 sprintf(tShapeName,"brdFldUpS%dR%d%s",superlayer,iring,endCapSide.c_str());
@@ -923,11 +980,12 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                 G4LogicalVolume*   brdFldUpVol = new G4LogicalVolume(brdFldUpShape,FwBoardMat,tVolName,0,0,0);
                                 G4VPhysicalVolume *brdFldUpPos = new G4PVPlacement(0,
                                                 fwRelPos,
-                                                brdFldUpVol,       // its logical volume
+                                                brdFldUpVol,      // its logical volume
                                                 tVolName,         // its name
                                                 anchorVol,        // its mother  volume
                                                 false,            // no boolean operations
-                                                0);               // copy number
+                                                0,                // copy number
+                                                detailedCheck);
                                 brdFldUpPos->GetCopyNo(); //just to remove the warning during compiling
 
                                 sprintf(tShapeName,"brdSncS%dR%d%s",superlayer,iring,endCapSide.c_str());
@@ -936,11 +994,12 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                 G4LogicalVolume*   brdSncVol = new G4LogicalVolume(brdSncShape,SwBoardMat,tVolName,0,0,0);
                                 G4VPhysicalVolume *brdSncPos = new G4PVPlacement(0,
                                                 swRelPos,
-                                                brdSncVol,         // its logical volume
+                                                brdSncVol,        // its logical volume
                                                 tVolName,         // its name
                                                 anchorVol,        // its mother  volume
                                                 false,            // no boolean operations
-                                                0);               // copy number
+                                                0,                // copy number
+                                                detailedCheck);
                                 brdSncPos->GetCopyNo(); //just to remove the warning during compiling
                                 //------------- end wires boards -------------
 
@@ -964,7 +1023,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                 tVolName,         // its name
                                                 spacerDwnVol,     // its mother  volume
                                                 false,            // no boolean operations
-                                                0);               // copy number
+                                                0,                // copy number
+                                                detailedCheck);
                                 spacerDwnBotPos->GetCopyNo(); //just to remove the warning during compiling
 
                                 sprintf(tShapeName,"spacerDwnTopS%dR%d%s",superlayer,iring,endCapSide.c_str());
@@ -977,7 +1037,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                 tVolName,         // its name
                                                 spacerDwnVol,     // its mother  volume
                                                 false,            // no boolean operations
-                                                0);               // copy number
+                                                0,                // copy number
+                                                detailedCheck);
                                 spacerDwnTopPos->GetCopyNo(); //just to remove the warning during compiling
 
                                 sprintf(tShapeName,"spacerDwnSpokeS%dR%d%s",superlayer,iring,endCapSide.c_str());
@@ -990,7 +1051,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                         tVolName,           // its name
                                                         spacerDwnVol,       // its mother  volume
                                                         false,              // no boolean operations
-                                                        iSpSpoke);          // copy number
+                                                        iSpSpoke,           // copy number
+                                                        detailedCheck);
                                         spacerDwnSpokePos->GetCopyNo(); //just to remove the warning during compiling
                                 }
 
@@ -1000,7 +1062,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                 spacerVolName,    // its name
                                                 anchorVol,        // its mother  volume
                                                 false,            // no boolean operations
-                                                0);               // copy number
+                                                0,                // copy number
+                                                detailedCheck);
                                 spacerDwnPos->GetCopyNo(); //just to remove the warning during compiling
                                 //end down spacers
 
@@ -1023,7 +1086,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                 tVolName,         // its name
                                                 spacerUpVol,      // its mother  volume
                                                 false,            // no boolean operations
-                                                0);               // copy number
+                                                0,                // copy number
+                                                detailedCheck);
                                 spacerUpBotPos->GetCopyNo(); //just to remove the warning during compiling
 
                                 sprintf(tShapeName,"spacerUpTopS%dR%d%s",superlayer,iring,endCapSide.c_str());
@@ -1036,7 +1100,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                 tVolName,         // its name
                                                 spacerUpVol,      // its mother  volume
                                                 false,            // no boolean operations
-                                                0);               // copy number
+                                                0,                // copy number
+                                                detailedCheck);
                                 spacerUpTopPos->GetCopyNo(); //just to remove the warning during compiling
 
                                 sprintf(tShapeName,"spacerUpSpokeS%dR%d%s",superlayer,iring,endCapSide.c_str());
@@ -1049,7 +1114,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                         tVolName,           // its name
                                                         spacerUpVol,        // its mother  volume
                                                         false,              // no boolean operations
-                                                        iSpSpoke);          // copy number
+                                                        iSpSpoke,           // copy number
+                                                        detailedCheck);
                                         spacerUpSpokePos->GetCopyNo(); //just to remove the warning during compiling
                                 }
 
@@ -1059,7 +1125,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                 spacerVolName,    // its name
                                                 anchorVol,        // its mother  volume
                                                 false,            // no boolean operations
-                                                0);               // copy number
+                                                0,                // copy number
+                                                detailedCheck);
                                 spacerUpPos->GetCopyNo(); //just to remove the warning during compiling
                                 //end up spacers
                                 //------------- end spacers -------------
@@ -1087,7 +1154,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                         tVolName,           // its name
                                                         componContTermVol,  // its mother  volume
                                                         false,              // no boolean operations
-                                                        iNcell);            // copy number
+                                                        iNcell,             // copy number
+                                                        detailedCheck);
                                         hvCapPos->GetCopyNo(); //just to remove the warning during compiling
                                 }
 
@@ -1105,7 +1173,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                         tVolName,           // its name
                                                         componContTermVol,  // its mother  volume
                                                         false,              // no boolean operations
-                                                        iNcell);            // copy number
+                                                        iNcell,             // copy number
+                                                        detailedCheck);
                                         termResPos->GetCopyNo(); //just to remove the warning during compiling
                                 }
                                 //end Term Resistance
@@ -1116,7 +1185,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                 componContVolName, // its name
                                                 anchorVol,         // its mother  volume
                                                 false,             // no boolean operations
-                                                0);                // copy number
+                                                0,                 // copy number
+                                                detailedCheck);
                                 componContTermPos->GetCopyNo(); //just to remove the warning during compiling
                                 //------------- end Term components -------------
 
@@ -1137,11 +1207,12 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                         G4LogicalVolume*   hvResVol = new G4LogicalVolume(hvResShape,hvResMat,tVolName,0,0,0);
                                         for (int iNcell=0; iNcell<nCellPerLayer; ++iNcell){
                                                 G4VPhysicalVolume *hvResPos = new G4PVPlacement( HepGeom::RotateZ3D( (((double)iNcell)+0.5)*compStepAngle ),
-                                                                hvResVol,         // its logical volume
+                                                                hvResVol,           // its logical volume
                                                                 tVolName,           // its name
                                                                 componContTermVol,  // its mother  volume
                                                                 false,              // no boolean operations
-                                                                iNcell);            // copy number
+                                                                iNcell,             // copy number
+                                                                detailedCheck);
                                                 hvResPos->GetCopyNo(); //just to remove the warning during compiling
                                         }
 
@@ -1151,7 +1222,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                         componContVolName, // its name
                                                         anchorVol,         // its mother  volume
                                                         false,             // no boolean operations
-                                                        0);                // copy number
+                                                        0,                 // copy number
+                                                        detailedCheck);
                                         componContTermPos->GetCopyNo(); //just to remove the warning during compiling
                                 }
                                 //------------- end HV Resistance components -------------
@@ -1162,7 +1234,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                 ancrVolName,      // its name
                                                 localMother,      // its mother  volume
                                                 false,            // no boolean operations
-                                                0);               // copy number
+                                                0,                // copy number
+                                                detailedCheck);
                                 anchorPos->GetCopyNo(); //just to remove the warning during compiling
 
                         }
@@ -1190,7 +1263,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                                        tVolName,         // its name
                                                        localMother,      // its mother  volume
                                                        false,            // no boolean operations
-                                                       0);               // copy number
+                                                       0,                // copy number
+                                                       detailedCheck);
                 spdWebBasePos->GetCopyNo(); //just to remove the warning during compiling
         }
 
@@ -1206,11 +1280,12 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
         G4LogicalVolume*   brdFldUpVol = new G4LogicalVolume(brdFldUpShape,FwBoardMat,tVolName,0,0,0);
         G4VPhysicalVolume *brdFldUpPos = new G4PVPlacement(0,
                         fwRelPos,
-                        brdFldUpVol,       // its logical volume
+                        brdFldUpVol,      // its logical volume
                         tVolName,         // its name
                         anchorVol,        // its mother  volume
                         false,            // no boolean operations
-                        0);               // copy number
+                        0,                // copy number
+                        detailedCheck);
         brdFldUpPos->GetCopyNo(); //just to remove the warning during compiling
 
         //start down spacers
@@ -1232,7 +1307,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                         tVolName,         // its name
                         spacerDwnVol,     // its mother  volume
                         false,            // no boolean operations
-                        0);               // copy number
+                        0,                // copy number
+                        detailedCheck);
         spacerDwnBotPos->GetCopyNo(); //just to remove the warning during compiling
 
         sprintf(tShapeName,"spacerDwnTopS%dR%d",0,-1);
@@ -1245,7 +1321,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                         tVolName,         // its name
                         spacerDwnVol,     // its mother  volume
                         false,            // no boolean operations
-                        0);               // copy number
+                        0,                // copy number
+                        detailedCheck);
         spacerDwnTopPos->GetCopyNo(); //just to remove the warning during compiling
 
         sprintf(tShapeName,"spacerDwnSpokeS%dR%d",0,-1);
@@ -1258,7 +1335,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                 tVolName,           // its name
                                 spacerDwnVol,       // its mother  volume
                                 false,              // no boolean operations
-                                iSpSpoke);          // copy number
+                                iSpSpoke,           // copy number
+                                detailedCheck);
                 spacerDwnSpokePos->GetCopyNo(); //just to remove the warning during compiling
         }
 
@@ -1268,7 +1346,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                         spacerVolName,    // its name
                         anchorVol,        // its mother  volume
                         false,            // no boolean operations
-                        0);               // copy number
+                        0,                // copy number
+                        detailedCheck);
         spacerDwnPos->GetCopyNo(); //just to remove the warning during compiling
         //end down spacers
 
@@ -1278,7 +1357,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                         ancrVolName,      // its name
                         localMother,      // its mother  volume
                         false,            // no boolean operations
-                        0);               // copy number
+                        0,                // copy number
+                        detailedCheck);
         anchorPos->GetCopyNo(); //just to remove the warning during compiling
        //------------- end starting spacer and guard field wires -------------
 
@@ -1297,11 +1377,12 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
         G4LogicalVolume*   brdFldDwnVol = new G4LogicalVolume(brdFldDwnShape,FwBoardMat,tVolName,0,0,0);
         G4VPhysicalVolume *brdFldDwnPos = new G4PVPlacement(0,
                         fwRelPos,
-                        brdFldDwnVol,      // its logical volume
+                        brdFldDwnVol,     // its logical volume
                         tVolName,         // its name
                         anchorVolUp,      // its mother  volume
                         false,            // no boolean operations
-                        0);               // copy number
+                        0,                // copy number
+                        detailedCheck);
         brdFldDwnPos->GetCopyNo(); //just to remove the warning during compiling
 
         //start up spacer
@@ -1323,7 +1404,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                         tVolName,         // its name
                         spacerUpVol,      // its mother  volume
                         false,            // no boolean operations
-                        0);               // copy number
+                        0,                // copy number
+                        detailedCheck);
         spacerUpBotPos->GetCopyNo(); //just to remove the warning during compiling
 
         sprintf(tShapeName,"spacerUpTopS%dR%d",itracker->nSuperLayers(),-1);
@@ -1336,7 +1418,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                         tVolName,         // its name
                         spacerUpVol,      // its mother  volume
                         false,            // no boolean operations
-                        0);               // copy number
+                        0,                // copy number
+                        detailedCheck);
         spacerUpTopPos->GetCopyNo(); //just to remove the warning during compiling
 
         sprintf(tShapeName,"spacerUpSpokeS%dR%d",itracker->nSuperLayers(),-1);
@@ -1349,7 +1432,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                                 tVolName,           // its name
                                 spacerUpVol,        // its mother  volume
                                 false,              // no boolean operations
-                                iSpSpoke);          // copy number
+                                iSpSpoke,           // copy number
+                                detailedCheck);
                 spacerUpSpokePos->GetCopyNo(); //just to remove the warning during compiling
         }
 
@@ -1359,7 +1443,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                         spacerVolName,    // its name
                         anchorVolUp,      // its mother  volume
                         false,            // no boolean operations
-                        0);               // copy number
+                        0,                // copy number
+                        detailedCheck);
         spacerUpPos->GetCopyNo(); //just to remove the warning during compiling
         //end up spacer
 
@@ -1369,7 +1454,8 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
                         ancrVolName,      // its name
                         localMother,      // its mother  volume
                         false,            // no boolean operations
-                        0);               // copy number
+                        0,                // copy number
+                        detailedCheck);
         anchorPosUp->GetCopyNo(); //just to remove the warning during compiling
         //------------- end finishing spacer and guard field wires -------------
 
@@ -1384,7 +1470,24 @@ void ITrackerBuilder::constructWireAnchoring(G4LogicalVolume* localMother, Simpl
 void ITrackerBuilder::constructSignalCables(G4LogicalVolume* localMother, SimpleConfig const& config) {
         GeomHandle<ITracker> itracker;
 
-        bool isDownStream = localMother->GetName().contains("_R");
+        double cableFractionOnREP = config.getDouble("itracker.cableFractionOnREP",0.0);
+        if (cableFractionOnREP>1.0) { cableFractionOnREP=1.0; }
+
+        bool isUpStream = localMother->GetName().contains("_L");
+        std::string sideName;
+        bool locateCables(false);
+        int NSlayerToSkip=0;
+        if (isUpStream) {
+                sideName="_L";
+                if (cableFractionOnREP>0) {
+                        locateCables = true;
+                        NSlayerToSkip=(int) 1.0/cableFractionOnREP-1;
+                }
+        }
+        else {
+                sideName="_R";
+                locateCables = true;
+        }
 
         double minR, maxR;
         char tShapeName[50], tVolName[50];
@@ -1403,7 +1506,7 @@ void ITrackerBuilder::constructSignalCables(G4LogicalVolume* localMother, Simple
         double cableWirePitch = config.getDouble("itracker.cableWirePitch");
         double cableWireRadius = 0.5*cableWireDiameter;
 
-        double totalCableThickness = 2.0*cableDielThickness+cableWireDiameter;
+        double totalCableThickness = /*2.0**/cableDielThickness+cableWireDiameter;
         double ncellLayers = itracker->nSuperLayers()*itracker->nRing();
 
         if ( (totalCableThickness*(ncellLayers+1)*0.5)>motherDz ) { throw cet::exception("GEOM") <<"The Signal Cables exceed its mother volume dim\n"; }
@@ -1412,11 +1515,12 @@ void ITrackerBuilder::constructSignalCables(G4LogicalVolume* localMother, Simple
 
         int nWirePerCable = (int)((cableDielWidth+0.001)/cableWirePitch);
 
-        if (isDownStream) {
+        if (locateCables) {
 
+                int countSkippedLayer=-1;
 
-                sprintf(tShapeName,"cableCont");
-                sprintf(tVolName,"cableContVol");
+                sprintf(tShapeName,"cableCont%s",sideName.c_str());
+                sprintf(tVolName,"cableContVol%s",sideName.c_str());
                 double cableAngle = cableDielWidth/minR;
                 G4VSolid* cableContShape = new G4Tubs(tShapeName, minR,maxR,motherDz,-0.5*cableAngle,cableAngle);
                 G4LogicalVolume*   cableContVol = new G4LogicalVolume(cableContShape,motherMat,tVolName,0,0,0);
@@ -1440,6 +1544,14 @@ void ITrackerBuilder::constructSignalCables(G4LogicalVolume* localMother, Simple
                                 superlayer = ily->Id().getSuperLayer();
                                 iring = ily->Id().getLayer();
                                 if (ily->nCells()>0) {
+
+                                        ++countSkippedLayer;
+                                        if (isUpStream && countSkippedLayer>0&&countSkippedLayer<=NSlayerToSkip) {
+                                                ++icellLayer;
+                                                if (countSkippedLayer==NSlayerToSkip) { countSkippedLayer=-1; }
+                                                continue;
+                                        }
+
                                         layerRmin = ily->getDetail()->centerInnerRadiusRing();
                                         tmpZincr = ily->getDetail()->halfLength()*std::tan(ily->getDetail()->stereoAngleInnerRing());
                                         layerRmin = std::sqrt( layerRmin*layerRmin + tmpZincr*tmpZincr);
@@ -1451,8 +1563,8 @@ void ITrackerBuilder::constructSignalCables(G4LogicalVolume* localMother, Simple
                                         swR = (layerRmax+layerRmin)*0.5;
 
 
-                                        sprintf(tShapeName,"signCableInsulS%dR%d",superlayer,iring);
-                                        sprintf(tVolName,"signCableInsulVolS%dR%d",superlayer,iring);
+                                        sprintf(tShapeName,"signCableInsulS%dR%d%s",superlayer,iring,sideName.c_str());
+                                        sprintf(tVolName,"signCableInsulVolS%dR%d%s",superlayer,iring,sideName.c_str());
                                         calbeHalfHeight = 0.5*(maxRCable-swR);
                                         G4VSolid* signCableInsulShape = new G4Box(tShapeName, cableDielWidth, cableDielThickness, calbeHalfHeight);
                                         G4LogicalVolume*   signCableInsulVol = new G4LogicalVolume(signCableInsulShape,cableDielMat,tVolName,0,0,0);
@@ -1464,11 +1576,12 @@ void ITrackerBuilder::constructSignalCables(G4LogicalVolume* localMother, Simple
                                                         tVolName,           // its name
                                                         cableContVol,       // its mother  volume
                                                         false,              // no boolean operations
-                                                        0);                 // copy number
+                                                        0,                  // copy number
+                                                        detailedCheck);
                                         signCableInsulPos->GetCopyNo(); //just to remove the warning during compiling
 
-                                        sprintf(tShapeName,"signCableWireS%dR%d",superlayer,iring);
-                                        sprintf(tVolName,"signCableWireVolS%dR%d",superlayer,iring);
+                                        sprintf(tShapeName,"signCableWireS%dR%d%s",superlayer,iring,sideName.c_str());
+                                        sprintf(tVolName,"signCableWireVolS%dR%d%s",superlayer,iring,sideName.c_str());
                                         G4VSolid* signCableWireShape = new G4Tubs(tShapeName, 0.0, cableWireRadius, calbeHalfHeight, 0.0, 360*CLHEP::degree);
                                         G4LogicalVolume*   signCableWireVol = new G4LogicalVolume(signCableWireShape,cableWireMat,tVolName,0,0,0);
                                         HepGeom::Transform3D baseCableWirePos( HepGeom::TranslateZ3D(cableDielThickness+cableWireRadius)*baseCablePos );
@@ -1481,15 +1594,16 @@ void ITrackerBuilder::constructSignalCables(G4LogicalVolume* localMother, Simple
                                                                 tVolName,           // its name
                                                                 cableContVol,       // its mother  volume
                                                                 false,              // no boolean operations
-                                                                iWirePerCable);     // copy number
+                                                                iWirePerCable,      // copy number
+                                                                detailedCheck);
                                                 signCableWirePos->GetCopyNo(); //just to remove the warning during compiling
                                                 iWireRelPos+=cableWirePitch;
                                         }
 
                                         calbeHalfOrzLeng = 0.5*(motherDz+cableZmin);
                                         if (calbeHalfOrzLeng>0.0) {
-                                                sprintf(tShapeName,"signCableInsulOrznS%dR%d",superlayer,iring);
-                                                sprintf(tVolName,"signCableInsulOrznVolS%dR%d",superlayer,iring);
+                                                sprintf(tShapeName,"signCableInsulOrznS%dR%d%s",superlayer,iring,sideName.c_str());
+                                                sprintf(tVolName,"signCableInsulOrznVolS%dR%d%s",superlayer,iring,sideName.c_str());
                                                 G4VSolid* signCableInsulOrznShape = new G4Box(tShapeName, cableDielWidth, cableDielThickness, calbeHalfOrzLeng);
                                                 G4LogicalVolume*   signCableInsulOrznVol = new G4LogicalVolume(signCableInsulOrznShape,cableDielMat,tVolName,0,0,0);
                                                 HepGeom::Transform3D baseCablePosOrz ( HepGeom::TranslateX3D(swR+cableDielThickness) * HepGeom::TranslateZ3D(-motherDz+calbeHalfOrzLeng) * HepGeom::RotateZ3D( 90*CLHEP::degree ) );
@@ -1499,11 +1613,12 @@ void ITrackerBuilder::constructSignalCables(G4LogicalVolume* localMother, Simple
                                                                 tVolName,           // its name
                                                                 cableContVol,       // its mother  volume
                                                                 false,              // no boolean operations
-                                                                0);                 // copy number
+                                                                0,                  // copy number
+                                                                detailedCheck);
                                                 signCableInsulOrznPos->GetCopyNo(); //just to remove the warning during compiling
 
-                                                sprintf(tShapeName,"signCableWireOrznS%dR%d",superlayer,iring);
-                                                sprintf(tVolName,"signCableWireOrznVolS%dR%d",superlayer,iring);
+                                                sprintf(tShapeName,"signCableWireOrznS%dR%d%s",superlayer,iring,sideName.c_str());
+                                                sprintf(tVolName,"signCableWireOrznVolS%dR%d%s",superlayer,iring,sideName.c_str());
                                                 G4VSolid* signCableWireOrznShape = new G4Tubs(tShapeName, 0.0, cableWireRadius, calbeHalfOrzLeng, 0.0, 360*CLHEP::degree);
                                                 G4LogicalVolume*   signCableWireOrznVol = new G4LogicalVolume(signCableWireOrznShape,cableWireMat,tVolName,0,0,0);
                                                 HepGeom::Transform3D baseCableWirePosOrz( HepGeom::TranslateX3D(-(cableDielThickness+cableWireRadius))*baseCablePosOrz );
@@ -1517,7 +1632,8 @@ void ITrackerBuilder::constructSignalCables(G4LogicalVolume* localMother, Simple
                                                                         tVolName,              // its name
                                                                         cableContVol,          // its mother  volume
                                                                         false,                 // no boolean operations
-                                                                        iWirePerCable);        // copy number
+                                                                        iWirePerCable,         // copy number
+                                                                        detailedCheck);
                                                         signCableWireOrznPos->GetCopyNo(); //just to remove the warning during compiling
                                                         iWireRelPos+=cableWirePitch;
                                                 }
@@ -1533,7 +1649,7 @@ void ITrackerBuilder::constructSignalCables(G4LogicalVolume* localMother, Simple
 
                 //---------- positioning cables pack for each sector ----------
                 int spdWebSpokesNumber = config.getInt("itracker.spdWebSpokesNumber");
-                HepGeom::Transform3D baseSpokePos ();
+                //HepGeom::Transform3D baseSpokePos ();
                 double spokeAngleStep = CLHEP::twopi/((double)spdWebSpokesNumber);
                 for (int iSpokes=0; iSpokes<spdWebSpokesNumber; ++iSpokes) {
                         G4VPhysicalVolume *cableContPos = new G4PVPlacement(
@@ -1542,7 +1658,8 @@ void ITrackerBuilder::constructSignalCables(G4LogicalVolume* localMother, Simple
                                         tVolName,             // its name
                                         localMother,          // its mother  volume
                                         false,                // no boolean operations
-                                        iSpokes);             // copy number
+                                        iSpokes,              // copy number
+                                        detailedCheck);
                         cableContPos->GetCopyNo(); //just to remove the warning during compiling
                 }
 
@@ -1639,7 +1756,8 @@ void ITrackerBuilder::constructHvCables(G4LogicalVolume* localMother, SimpleConf
                                                                 tVolName,           // its name
                                                                 hvCableContVol,     // its mother  volume
                                                                 false,              // no boolean operations
-                                                                0);                 // copy number
+                                                                0,                  // copy number
+                                                                detailedCheck);
                                                 hvCableShellPos->GetCopyNo(); //just to remove the warning during compiling
 
                                                 calbeHalfOrzLeng = 0.5*(motherDz+cableZmin);
@@ -1655,7 +1773,8 @@ void ITrackerBuilder::constructHvCables(G4LogicalVolume* localMother, SimpleConf
                                                                         tVolName,             // its name
                                                                         hvCableContVol,       // its mother  volume
                                                                         false,                // no boolean operations
-                                                                        0);                   // copy number
+                                                                        0,                    // copy number
+                                                                        detailedCheck);
                                                         hvCableShellOrznPos->GetCopyNo(); //just to remove the warning during compiling
                                                 }
 
@@ -1681,7 +1800,8 @@ void ITrackerBuilder::constructHvCables(G4LogicalVolume* localMother, SimpleConf
                                         tVolName,              // its name
                                         localMother,           // its mother  volume
                                         false,                 // no boolean operations
-                                        iSpokes);             // copy number
+                                        iSpokes,               // copy number
+                                        detailedCheck);
                         hvCableContPos->GetCopyNo(); //just to remove the warning during compiling
                 }
 

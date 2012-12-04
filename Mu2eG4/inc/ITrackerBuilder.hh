@@ -21,7 +21,7 @@ namespace mu2e {
   public:
     static VolumeInfo constructTracker( G4LogicalVolume* mother, double zOff );
   private:
-    static VolumeInfo buildWire(float radius, float length, char *shapeName, char *volName, const std::vector<std::string> &materialName, const std::vector<double> &thicknesses);
+    static VolumeInfo buildWire(float radius, float length, char *shapeName, char *volName, const std::vector<std::string> &materialName, const std::vector<double> &thicknesses, bool activeWireSD=false, bool isSense=false);
     static VolumeInfo buildWall(Wall *wall, ITracker::EnCapType endcapType);
     static double constructSpiderWeb(G4LogicalVolume* localMother, SimpleConfig const& config);
     static void   constructWireAnchoring(G4LogicalVolume* localMother, SimpleConfig const& config, double spdWebBaseExcess=0.0);

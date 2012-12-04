@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.14 2012/11/01 23:33:54 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:33:54 $
+// $Id: VirtualDetectorId.hh,v 1.15 2012/12/04 00:51:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/12/04 00:51:28 $
 //
 // Original author Rob Kutschke
 //
@@ -57,6 +57,8 @@ namespace mu2e {
       EMFDetectorDnEntrance, EMFDetectorDnExit,               // 38,39
       EMFBoxFront, EMFBoxSW, EMFBoxBottom,                    // 40, 41, 42
       EMFBoxBack, EMFBoxNE, EMFBoxTop,                        // 43, 44, 45
+      IT_VD_EndCap_Front,  IT_VD_EndCap_Back,                 // 46, 47:  Front and Back parts of the tracker
+      IT_VD_InSurf,                                           // 48:      external and internal surface of the ITracker envelope
       lastEnum
     };
 
@@ -83,7 +85,9 @@ namespace mu2e {
       "Coll5_OutSurf",                                             \
       "EMFDetectorDnEntrance", "EMFDetectorDnExit",                \
       "EMFBoxFront", "EMFBoxSW", "EMFBoxBottom",                   \
-      "EMFBoxBack", "EMFBoxNE", "EMFBoxTop"
+      "EMFBoxBack", "EMFBoxNE", "EMFBoxTop",                       \
+      "IT_VD_EndCap_Front",     "IT_VD_EndCap_Back",               \
+      "IT_VD_InSurf"
 
   public:
 
@@ -118,15 +122,15 @@ namespace mu2e {
     }
 
     bool isTrackerMid() const {
-      return ( _id == TT_Mid || _id == TT_MidInner );
+      return ( _id == TT_Mid || _id == TT_MidInner || _id == IT_VD_InSurf );
     }
 
     bool isTrackerFront() const {
-      return ( _id == TT_FrontHollow || _id == TT_FrontPA );
+      return ( _id == TT_FrontHollow || _id == TT_FrontPA || _id == IT_VD_EndCap_Front );
     }
 
     bool isTrackerBack() const {
-      return ( _id == TT_Back );
+      return ( _id == TT_Back || _id == IT_VD_EndCap_Back );
     }
 
     // ROOT requires a default c'tor.

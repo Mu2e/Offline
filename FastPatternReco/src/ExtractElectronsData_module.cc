@@ -1,9 +1,9 @@
 //
 // module that extract Data of the Electrons tracks that came from the targets and put temporary inside the event
 //
-// $Id: ExtractElectronsData_module.cc,v 1.8 2012/04/25 14:48:10 tassiell Exp $
+// $Id: ExtractElectronsData_module.cc,v 1.9 2012/12/04 00:51:27 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/04/25 14:48:10 $
+// $Date: 2012/12/04 00:51:27 $
 //
 // Original author G. Tassielli
 //
@@ -120,6 +120,8 @@ private:
         // Label of the generator.
         std::string _generatorModuleLabel;
 
+        int _debugLvl;
+
         //    // Number of events to accumulate between prompts.
         //    int _nAccumulate;
 
@@ -144,7 +146,8 @@ ExtractElectronsData::ExtractElectronsData(fhicl::ParameterSet const& pset) :
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _makerModuleLabel(pset.get<string>("makerModuleLabel")),
-      _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate"))
+      _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
+      _debugLvl(pset.get<int>("diagLevel",0))
      /*,
     _fakeCanvas(0),
 
@@ -372,21 +375,23 @@ void ExtractElectronsData::produce(art::Event & event ) {
         genEltrk_it = genEltrk->begin();
         //genElDraws->ExpandCreateFast( nGenEl );
         while ( genEltrk_it != genEltrk->end() ){
-                cout<<"Generated el at "<<genEltrk_it->getTrkVertex()<<" of "<<genEltrk_it->getTrkLrntzVec()<<endl;
-                cout<<"Is the conversion el? "<<genEltrk_it->isConversionEl()<<endl;
                 genEltrk_it->sort();
                 genEltrk_it->FindNTurns();
-                cout<<"First hit in tracker of gen el at "<<genEltrk_it->getHit(0)._hitPoint<<" of "<<genEltrk_it->getHit(0)._hitMomentum<<endl;
                 VisibleGenElTrack &iEltrk = const_cast<VisibleGenElTrack &>(*genEltrk_it);
                 unsigned short &nloops = iEltrk.getNumOfLoops();
-                cout<<"N loops "<<nloops<<endl;
+
+                if (_debugLvl>0) {
+                        cout<<"Generated el at "<<genEltrk_it->getTrkVertex()<<" of "<<genEltrk_it->getTrkLrntzVec()<<endl;
+                        cout<<"Is the conversion el? "<<genEltrk_it->isConversionEl()<<endl;
+                        cout<<"First hit in tracker of gen el at "<<genEltrk_it->getFirstHit()._hitPoint<<" of "<<genEltrk_it->getFirstHit()._hitMomentum<<endl;
+                        cout<<"N loops "<<nloops<<endl;
+                }
 
                 for ( unsigned int ilp=0; ilp<nloops; ilp++ ){
                         GenElHitData& hdil = iEltrk.getithLoopHit(ilp);
                         ptMeV = sqrt( pow(hdil._hitMomentum[0],2) + pow(hdil._hitMomentum[1],2) );
                         rho   = ptMeV/(B*0.3);
                         double helStep = CLHEP::twopi*rho*hdil._hitMomentum[2]/ptMeV;
-                        cout<<ilp<<" -th loop: p_t "<<ptMeV<<" rho mm "<<rho<<" P mm "<<helStep<<endl;
                         CirCenter.set(hdil._hitPoint.getX(),hdil._hitPoint.getY(),hdil._hitPoint.getZ());
                         radDir.setX(hdil._hitMomentum.getX());
                         radDir.setY(hdil._hitMomentum.getY());
@@ -397,8 +402,11 @@ void ExtractElectronsData::produce(art::Event & event ) {
                         //if (radDir.phi()>0) phi0=radDir.phi()-CLHEP::pi;
                         //else phi0=radDir.phi()+CLHEP::pi;
                         phi0=atan2( -radDir.y(), -radDir.x() );
-                        cout<<"radDir "<<radDir<<endl;
-                        cout<<" Hit Pos "<<hdil._hitPoint<<" Circ center "<<CirCenter<<" phi0 "<< phi0/*/CLHEP::deg*/<<" phi0 at z(-1500) "<< phi0 - CLHEP::twopi*(hdil._hitPoint.getZ()+1500.0)/helStep <<endl;
+                        if (_debugLvl>1) {
+                                cout<<ilp<<" -th loop: p_t "<<ptMeV<<" rho mm "<<rho<<" P mm "<<helStep<<endl;
+                                cout<<"radDir "<<radDir<<endl;
+                                cout<<" Hit Pos "<<hdil._hitPoint<<" Circ center "<<CirCenter<<" phi0 "<< phi0/*/CLHEP::deg*/<<" phi0 at z(-1500) "<< phi0 - CLHEP::twopi*(hdil._hitPoint.getZ()+1500.0)/helStep <<endl;
+                        }
 
                 }
 //                cout<<"Hits of the el track: "<<iEltrk.getNumOfHit() <<" List of hit(Id):"<<endl;

@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.35 2012/09/17 17:00:50 tassiell Exp $
+// $Id: ConstructMaterials.cc,v 1.36 2012/12/04 00:51:26 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/09/17 17:00:50 $
+// $Date: 2012/12/04 00:51:26 $
 //
 // Original author Rob Kutschke
 //
@@ -708,16 +708,46 @@ namespace mu2e {
       GasMix->AddElement(C , 0.0827);
     }
 
-    mat = isNeeded(materialsToLoad, "CarbonFiber");
+    mat = isNeeded(materialsToLoad, "ITGasVacuum");
+    if ( mat.doit ){
+            //
+            // This is the lowest density vacuum allowed by G4.
+            G4double density     = universe_mean_density;
+            G4double pressure    = 3.e-18*pascal;
+            G4double temperature = 2.73*kelvin;
+
+            // G4 takes ownership of this object and manages its lifetime.
+            new G4Material( mat.name, 1., 1.01 *g/mole,
+                            density, kStateGas, temperature, pressure);
+    }
+
+    mat = isNeeded(materialsToLoad, "CarbonFiber_resin");
     if ( mat.doit ){
       G4double density;
       G4int nel;
-      G4Material* CarbonFiber =
-        new G4Material(mat.name, density = 1.384*g/cm3, nel=1);
-      G4Element* C  = getElementOrThrow("C");
-      CarbonFiber->AddElement(C, 100.0*perCent );
+      G4Material* CFresin =
+        new G4Material(mat.name, density = 1.1*g/cm3, nel=3);
+      G4int natoms;
+      CFresin->AddElement(getElementOrThrow("H"),natoms=5);
+      CFresin->AddElement(getElementOrThrow("C"),natoms=5);
+      CFresin->AddElement(getElementOrThrow("O"),natoms=2);
     }
-    
+
+    mat = isNeeded(materialsToLoad, "CarbonFiber");
+    if ( mat.doit ){
+      G4double density, fiberFrac=46.0*perCent;
+      G4int nel, natoms;
+      G4Material* CFresin = findMaterialOrThrow("CarbonFiber_resin");
+      G4Material* CFibers = new G4Material("CFibers",density = 1.8*g/cm3,nel=1);
+      CFibers->AddElement(getElementOrThrow("C"),natoms=1);
+
+      density = fiberFrac*CFibers->GetDensity()+(1.0-fiberFrac)*CFresin->GetDensity();
+      G4Material* CarbonFiber =
+        new G4Material(mat.name, density /*= 1.384*g/cm3*/, nel=2);
+      CarbonFiber->AddMaterial(CFibers, fiberFrac );
+      CarbonFiber->AddMaterial(CFresin, (1.0-fiberFrac) );
+    }
+
     mat = isNeeded(materialsToLoad, "Lyso_01");  /// Alessandra
     if ( mat.doit ){
       G4double density;
@@ -799,6 +829,14 @@ namespace mu2e {
       G4Material *CFoam = new G4Material(mat.name, density = 0.030*g/cm3, nel=1);
       G4Element* C  = getElementOrThrow("C");
       CFoam->AddElement(C, 100.0*perCent );
+    }
+
+    mat = isNeeded(materialsToLoad, "KptFoam_030");
+    if ( mat.doit ){
+      G4double density;
+      G4int nel;
+      G4Material *KptFoam = new G4Material(mat.name, density = 0.030*g/cm3, nel=1);
+      KptFoam->AddMaterial(findMaterialOrThrow("G4_KAPTON"), 100.0*perCent );
     }
 
     mat = isNeeded(materialsToLoad, "ZirconiumHydridePolyethylene");

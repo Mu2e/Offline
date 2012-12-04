@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.18 2012/05/24 05:44:44 tassiell Exp $
+// $Id: MakeDriftCellHit_module.cc,v 1.19 2012/12/04 00:51:28 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/24 05:44:44 $
+// $Date: 2012/12/04 00:51:28 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -38,7 +38,9 @@
 
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "ConditionsService/inc/TrackerCalibrationsI.hh"
+//#include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
 
 // Other includes.
 #include "CLHEP/Random/RandGaussQ.h"
@@ -67,10 +69,11 @@ namespace mu2e {
     double _driftTime;
     double _distanceToMid;
     double _t1;
+    double _t2;
 
-    StepHit( art::Ptr<StepPointMC> const& ptr, double edep, double dca, double driftT, double toMid, double t1):
+    StepHit( art::Ptr<StepPointMC> const& ptr, double edep, double dca, double driftT, double toMid, double t1, double t2=0):
       _ptr(ptr), _edep(edep), _dca(dca), _driftTime(driftT),
-      _distanceToMid(toMid), _t1(t1) { }
+      _distanceToMid(toMid), _t1(t1), _t2(t2) { }
 
     // This operator is overloaded in order to time-sort the hits
     bool operator <(const StepHit& b) const { return (_t1 < b._t1); }
@@ -97,6 +100,8 @@ namespace mu2e {
       _zZoneLimits(pset.get< vector<double> >("zZoneLimits")),
       _zZoneActive(pset.get< vector<bool> >("zZoneActive")),
       _zZoneMinLiveTime(pset.get< vector<double> >("zZoneMinLiveTime")),
+      _useDeltaT(pset.get<bool>("useDeltaT",false)),
+      _mapCellDTtype(pset.get<int>("mapCellDTtype",0)),
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
 
       // Random number distributions
@@ -148,6 +153,8 @@ namespace mu2e {
     std::vector<double> _zZoneLimits;
     std::vector<bool>   _zZoneActive;
     std::vector<double> _zZoneMinLiveTime;
+    bool   _useDeltaT;
+    int    _mapCellDTtype;
     string _g4ModuleLabel;  // Name of the module that made these hits.
 
     // Random number distributions
@@ -206,7 +213,7 @@ namespace mu2e {
             j != je; ++j, ++index){
 
         StepPointMC const& step(*j);
-        if( step.totalEDep()<_minimumEnergy ) continue; // Skip steps with very low energy deposition
+        if( step.ionizingEdep()<_minimumEnergy ) continue; // Skip steps with very low energy deposition
         StrawIndex straw_id = step.strawIndex();
 
         // The main event for this method.
@@ -225,6 +232,18 @@ namespace mu2e {
     static int ncalls(0);
     ++ncalls;
 
+    if (ncalls==1) {
+            art::ServiceHandle<GeometryService> geom;
+            SimpleConfig const& config  = geom->config();
+            double cableFractionOnREP = config.getDouble("itracker.cableFractionOnREP",0.0);
+            if (_useDeltaT) {
+                    if (cableFractionOnREP==0.0) {throw cet::exception("HIT-GEOM") <<"Illegal use of Time Division without Signal Cables inside the Front(Rear) End Plate, check the geometry configuration!\n";}
+                    if (_mapCellDTtype==0 && cableFractionOnREP<1.0) {throw cet::exception("HIT-GEOM") <<"Mismatch between the number of channel that are using the Time Division and the number of Signal Cables inside the Front(Rear) End Plate, check the geometry configuration!\n";}
+            } else {
+                    if (cableFractionOnREP>0.0) {throw cet::exception("HIT-GEOM") <<"Mismatch between the number of channel that are using the Time Division (0) and the number of Signal Cables inside the Front(Rear) End Plate, check the geometry configuration!\n";}
+            }
+    }
+
     // Get a reference to one of the I trackers.
     // Throw exception if not successful.
     //const Tracker& tracker = getTrackerOrThrow();
@@ -235,6 +254,7 @@ namespace mu2e {
 
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     const double signalVelocity = tcal->SignalVelocity(StrawIndex(0));//231.;//299.792458; // mm/ns
+    ConditionsHandle<AcceleratorParams> accPar("ignored");
 
     // A container to hold the output hits.
     auto_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
@@ -297,7 +317,7 @@ namespace mu2e {
       itwp->SelectCellDet(dcell_id.asUint());
       CLHEP::Hep3Vector const& mid   = itwp->GetCellCenter();
       CLHEP::Hep3Vector const& w     = itwp->GetCellDirection();
-      double strawHalfLength         = itwp->GetCellHalfLength();
+      double cellHalfLength         = itwp->GetCellHalfLength();
 
 //      StrawIndex dcell_id = idcell->first;
 //      itracker->getCellGeometryHandle()->SelectCellDet(dcell_id.asUint());
@@ -329,7 +349,7 @@ namespace mu2e {
         CLHEP::Hep3Vector  const& mom = hit.momentum();
         double length  = hit.stepLength();
         double edep    = hit.totalEDep();
-        double hitTime = hit.time();
+        double hitTime = std::fmod(hit.time(),accPar->deBuncherPeriod);
 
         bool skip_hit;
         //cout<<"hit Z "<<pos.getZ()<<" time "<<hitTime<<endl;
@@ -418,20 +438,32 @@ namespace mu2e {
           }
             */
         } // drift distance calculation
+        if ( hit_dca > itwp->GetCellRad() ) { hit_dca = itwp->GetCellRad(); }
 
         // Calculate signal time. It is Geant4 time + signal propagation time
         // t1 is signal time at positive end (along w vector),
-        // (Not used for ITracker) t2 - at negative end (opposite to w vector)
+        // (option for ITracker) t2 - at negative end (opposite to w vector)
 
         D2T d2t;
         tcal->DistanceToTime(dcell_id,hit_dca,mom,d2t);
 	tdrifterr=d2t._tdrifterr;
         double driftTime = fabs(d2t._tdrift);
         double distanceToMiddle = (hit_pca-mid).dot(w);
-        double hit_t1 = hitTime + driftTime + (strawHalfLength-distanceToMiddle)/signalVelocity;
-        //double hit_t2 = -9999.9;//t0 + hitTime + driftTime + (strawHalfLength+distanceToMiddle)/signalVelocity;
-
-        dcell_hits.push_back(StepHit(ihits.at(i),edep,hit_dca*(sign>0?1.:-1.),driftTime,distanceToMiddle,hit_t1));
+        double hit_t1 = hitTime + driftTime + (cellHalfLength-distanceToMiddle)/signalVelocity;
+        double hit_t2 = -9999.9;
+        if (_useDeltaT) {
+                bool doHitDT(false);
+                if (_mapCellDTtype==0) doHitDT = true;
+                else if ( (_mapCellDTtype==1 && ((itwp->GetSuperLayer()%2==0 && itwp->GetWire()%2==0) || (itwp->GetSuperLayer()%2==1 && itwp->GetWire()%2==1)) ) ) {
+                        doHitDT = true;
+                }
+                if ( doHitDT ) {
+                        hit_t2 = hitTime + driftTime + (cellHalfLength+distanceToMiddle)/signalVelocity;
+                }
+                dcell_hits.push_back(StepHit(ihits.at(i),edep,hit_dca*(sign>0?1.:-1.),driftTime,distanceToMiddle,hit_t1,hit_t2));
+        } else {
+                dcell_hits.push_back(StepHit(ihits.at(i),edep,hit_dca*(sign>0?1.:-1.),driftTime,distanceToMiddle,hit_t1));
+        }
 
       } // loop over hits
 
@@ -447,9 +479,9 @@ namespace mu2e {
                << " DCA=" << dcell_hits[i]._dca
                << " driftT=" << dcell_hits[i]._driftTime
                << " distToMid=" << dcell_hits[i]._distanceToMid
-               << " t1=" << dcell_hits[i]._t1
-               /*<< " t2=" << dcell_hits[i]._t2*/
-               << " edep=" << dcell_hits[i]._edep
+               << " t1=" << dcell_hits[i]._t1;
+          if (_useDeltaT) { cout<< " t2=" << dcell_hits[i]._t2;}
+          cout << " edep=" << dcell_hits[i]._edep
                << endl;
         }
       }
@@ -458,13 +490,17 @@ namespace mu2e {
 
       if( dcell_hits.size()<1 ) continue; // This should never be needed. Added for safety.
 
-      double digi_time   = dcell_hits[0]._t1+_gaussian.fire(0.,tdrifterr);
-      double digi_t2     = 0.0;//dcell_hits[0]._t2;
+      double digi_time   = dcell_hits[0]._t1;//+_gaussian.fire(0.,tdrifterr);
+      double digi_t2     = 0.0;
+      if (_useDeltaT) {
+              digi_t2    =  dcell_hits[0]._t2;
+      }
       double digi_edep   = dcell_hits[0]._edep;
       double digi_driftT = dcell_hits[0]._driftTime;
       double digi_toMid  = dcell_hits[0]._distanceToMid;
       double digi_dca    = dcell_hits[0]._dca;
       double deltadigitime;
+      double distSigma;
 
       PtrStepPointMCVector mcptr;
       //mcptr.push_back( art::Ptr<StepPointMC>( points, dcell_hits[0]._hit_id ) );
@@ -474,30 +510,46 @@ namespace mu2e {
       for( size_t i=1; i<dcell_hits.size(); i++ ) {
         if( (dcell_hits[i]._t1-dcell_hits[i-1]._t1) > _minimumTimeGap ) {
           // The is bit time gap - save current data as a hit...
-          strawHits->push_back(StrawHit(/*StrawIndex(*/dcell_id/*)*/,digi_time,digi_t2/*digi_t2-digi_time*/,digi_edep));
+          if (_useDeltaT) {
+                  if (digi_t2>-9999) {
+                          distSigma = tcal->TimeDivisionResolution(dcell_id, (cellHalfLength-digi_toMid)/(2.*cellHalfLength) );
+                          deltadigitime = (digi_t2-digi_time)+_gaussian.fire(0.,2.*distSigma/signalVelocity);
+                  } else {
+                          deltadigitime = -9999.9;
+                  }
+          } else {
+                  deltadigitime = -9999.9;//0.0;
+          }
+          strawHits->push_back(StrawHit(dcell_id,digi_time+_gaussian.fire(0.,tdrifterr),deltadigitime,digi_edep));
           truthHits->push_back(StrawHitMCTruth(digi_driftT,digi_dca,digi_toMid));
           mcptrHits->push_back(mcptr);
           // ...and create new hit
           mcptr.clear();
-          //mcptr.push_back( art::Ptr<StepPointMC>(points, dcell_hits[i]._hit_id));
           mcptr.push_back( dcell_hits[i]._ptr);
           digi_time   = dcell_hits[i]._t1;
-          //digi_t2     = dcell_hits[i]._t2;
+          digi_t2     = dcell_hits[i]._t2;
           digi_edep   = dcell_hits[i]._edep;
           digi_driftT = dcell_hits[i]._driftTime;
           digi_toMid  = dcell_hits[i]._distanceToMid;
           digi_dca    = dcell_hits[i]._dca;
         } else {
           // Append existing hit
-          //if( digi_t2 > dcell_hits[i]._t2 ) digi_t2 = dcell_hits[i]._t2;
+          if( _useDeltaT && digi_t2 > dcell_hits[i]._t2 ) digi_t2 = dcell_hits[i]._t2;
           digi_edep += dcell_hits[i]._edep;
-          //mcptr.push_back( art::Ptr<StepPointMC>(points, dcell_hits[i]._hit_id));
           mcptr.push_back( dcell_hits[i]._ptr );
         }
       }
-      //deltadigitime=(digi_t2-digi_time)+_gaussian.fire(0.,_distSigma/_timetodist);
-      deltadigitime=0.0;
-      strawHits->push_back(StrawHit(/*StrawIndex(*/dcell_id/*)*/,digi_time,deltadigitime/*deltadigitime*/,digi_edep));
+      if (_useDeltaT) {
+              if (digi_t2>-9999) {
+                      distSigma = tcal->TimeDivisionResolution(dcell_id, (cellHalfLength-digi_toMid)/(2.*cellHalfLength) );
+                      deltadigitime = (digi_t2-digi_time)+_gaussian.fire(0.,2.*distSigma/signalVelocity);
+              } else {
+                      deltadigitime = -9999.9;
+              }
+      } else {
+              deltadigitime = -9999.9;//0.0;
+      }
+      strawHits->push_back(StrawHit(dcell_id,digi_time+_gaussian.fire(0.,tdrifterr),deltadigitime,digi_edep));
       truthHits->push_back(StrawHitMCTruth(digi_driftT,digi_dca,digi_toMid));
       mcptrHits->push_back(mcptr);
 
@@ -507,9 +559,9 @@ namespace mu2e {
       cout << "MakeDriftCellHit: Total number of hit cells = " << strawHits->size() << endl;
       for( size_t i=0; i<strawHits->size(); ++i ) {
         cout << "MakeDriftCellHit: Cell #" << (*strawHits)[i].strawIndex()
-             << " time="  << (*strawHits)[i].time()
-             /*<< " dt="    << (*strawHits)[i].dt()*/
-             << " edep="  << (*strawHits)[i].energyDep()
+             << " time="  << (*strawHits)[i].time();
+             if (_useDeltaT) { cout<< " dt="    << (*strawHits)[i].dt();}
+        cout << " edep="  << (*strawHits)[i].energyDep()
              << " nsteps="<< (*mcptrHits)[i].size()
              << endl;
       }

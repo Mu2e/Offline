@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.13 2012/11/01 23:37:03 gandr Exp $
-// $Author: gandr $
+// $Id: VirtualDetectorMaker.cc,v 1.14 2012/12/04 00:51:28 tassiell Exp $
+// $Author: tassiell $
 //
 
 #include <iostream>
@@ -25,6 +25,7 @@
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 
 using namespace std;
@@ -213,6 +214,26 @@ namespace mu2e {
 
         vd->addVirtualDetector( VirtualDetectorId::TT_InSurf,
                                  ttOffset, 0, vdTTOutSurfOffset);
+
+      } else if (c.getBool("hasITracker",false) && c.getBool("itracker.VirtualDetect",false)) {
+              ITracker const & itracker = *(GeomHandle<ITracker>());
+              Hep3Vector itOffset(-solenoidOffset,0.,itracker.z0());
+              Hep3Vector vdITInSurfOffset(0.,0.,0.);
+
+              vd->addVirtualDetector( VirtualDetectorId::IT_VD_InSurf,
+                                       itOffset, 0, vdITInSurfOffset);
+
+              Hep3Vector vdITFrontOffset(0.,
+                                         0.,
+                                         -itracker.maxEndCapDim()-vdHL);
+              vd->addVirtualDetector( VirtualDetectorId::IT_VD_EndCap_Front,
+                                       itOffset, 0, vdITFrontOffset);
+
+              Hep3Vector vdITBackOffset(0.,
+                                        0.,
+                                        itracker.maxEndCapDim()+vdHL);
+             vd->addVirtualDetector( VirtualDetectorId::IT_VD_EndCap_Back,
+                                       itOffset, 0, vdITBackOffset);
 
       }
 

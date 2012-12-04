@@ -1,8 +1,8 @@
 // ITracker geometry maker
 //
-// $Id: ITrackerMaker.cc,v 1.27 2012/09/25 10:05:12 tassiell Exp $
+// $Id: ITrackerMaker.cc,v 1.28 2012/12/04 00:51:28 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/09/25 10:05:12 $
+// $Date: 2012/12/04 00:51:28 $
 //
 // Original author G. Tassielli
 //
@@ -280,6 +280,7 @@ void ITrackerMaker::Build(){
 
                 double secure           = 1.0e-2;                        //Extra volume layer thickness to avoid wire illegal overlap
                 double capGasLayer      = 1.0e-3;                        //Thickness of the closing inner gas layer, its is less enough just to be different from 0
+                double extShiftFW       = 1.55e-3;                       //Extra distance between Field wire with opposite sign to avoid overlaps
 
                 //char wshape[30], gshape[30], wvol[30], gvol[30], shape_name_FD[30], shape_name_SD[30], vol_name_FD[30], vol_name_SD[30];
 
@@ -365,7 +366,17 @@ void ITrackerMaker::Build(){
 
                 _sprlr[0].addLayer(new ITLayer());
                 itl = _sprlr[0]._layers.back();
-                itl->_detail.reset( new ITLayerDetail(inner_radius+envelop_Inner_thickness,radius_ringOut_0,0.0,epsilonOut,zlength,_fillMaterial) );
+
+                double fakeLayerInIWthick(-0.0001);
+                int nSub = tmpInnerWall->getNShells();
+                for (int ishell=0; ishell<nSub; ishell++){
+                        std::string iWallShellMat = tmpInnerWall->getMaterialsName()->at(ishell);
+                        if ( iWallShellMat.find("ITGas")!=std::string::npos ) {
+                                fakeLayerInIWthick+=tmpInnerWall->getThicknesses()->at(ishell);
+                        }
+                }
+
+                itl->_detail.reset( new ITLayerDetail(inner_radius+envelop_Inner_thickness-fakeLayerInIWthick,radius_ringOut_0,0.0,epsilonOut,zlength,_fillMaterial) );
                 //itl->_id._sid=&(_sprlr[0]._id);
                 //itl->_id._id=-1;
                 itl->_id = ITLayerId(&_sprlr[0]._id, -1);
@@ -1080,7 +1091,7 @@ void ITrackerMaker::Build(){
                                 else cellStaggering=0.0;
 
                                 ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0-FWradii,theta_ring1,ringangle+cellStaggering-theta_ring,-1.0*sign_epsilon*epsilon,halfalpha);
-                                ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0+FWradii,theta_ring1,ringangle+cellStaggering,sign_epsilon*epsilon,halfalpha,nFwire1);
+                                ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0+FWradii+extShiftFW,theta_ring1,ringangle+cellStaggering,sign_epsilon*epsilon,halfalpha,nFwire1);
 
                                 iradius          = radius_ring_0;
 
@@ -1170,7 +1181,7 @@ void ITrackerMaker::Build(){
                         //nFwire1/=2;
                         //theta_ring1=2.0*theta_ring;
                         ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0-FWradii,theta_ring1,ringangle+cellStaggering,sign_epsilon*epsilon,halfalpha);
-                        ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0+FWradii,theta_ring1,ringangle+cellStaggering+theta_ring,-1.0*sign_epsilon*epsilon,halfalpha,nFwire1);
+                        ITWireLocater(fw,Wire::field,itl,nFwire1,radius_ring_0+FWradii+extShiftFW,theta_ring1,ringangle+cellStaggering+theta_ring,-1.0*sign_epsilon*epsilon,halfalpha,nFwire1);
                         iring=0;
 
                         //int guarWireLayer = superlayer;
@@ -1199,7 +1210,7 @@ void ITrackerMaker::Build(){
 
                                 boost::shared_ptr<WireDetail> inGw( new WireDetail(_inGwShellsThicknesses,_inGwMaterialsName,zlength) );
                                 ITWireLocater(inGw,Wire::field,itl,_nInGuardWires/2,_inGuardRad-GWradii,theta_ring1,ringangle,epsilonInGwRing,halfalpha);
-                                ITWireLocater(inGw,Wire::field,itl,_nInGuardWires/2,_inGuardRad+GWradii,theta_ring1,ringangle+theta_ring,-1.0*epsilonInGwRing,halfalpha,_nInGuardWires/2);
+                                ITWireLocater(inGw,Wire::field,itl,_nInGuardWires/2,_inGuardRad+GWradii+extShiftFW,theta_ring1,ringangle+theta_ring,-1.0*epsilonInGwRing,halfalpha,_nInGuardWires/2);
                         }
                         /*if (_nOutGuardWires!=0) {
                                 ++guarWireLayer;
@@ -1245,7 +1256,7 @@ void ITrackerMaker::Build(){
 
                 _sprlr[superlayer].addLayer(new ITLayer());
                 itl = _sprlr[superlayer]._layers.back();
-                itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,outer_radius-envelop_Outer_thickness,epsilonOut,0.0,halfLength,_fillMaterial) );
+                itl->_detail.reset( new ITLayerDetail(radius_ringIn_0,outer_radius-envelop_Outer_thickness-0.0001,epsilonOut,0.0,halfLength,_fillMaterial) );
                 itl->_id = ITLayerId(&_sprlr[superlayer]._id, ++iring);
                 if (_nOutGuardWires!=0) {
                         if (_notExtVoxel) voxelizationFactor = 1.0/((float)_nOutGuardWires);
@@ -1256,7 +1267,7 @@ void ITrackerMaker::Build(){
 
                         boost::shared_ptr<WireDetail> outGw( new WireDetail(_outGwShellsThicknesses,_outGwMaterialsName,zlengthOutGwRing) );
                         ITWireLocater(outGw,Wire::field,itl,_nOutGuardWires/2,_outGuardRad-GWradii,thetaOutGwRing,ringangleOutGwRing,epsilonOutGwRing,halfalphaOutGwRing);
-                        ITWireLocater(outGw,Wire::field,itl,_nOutGuardWires/2,_outGuardRad+GWradii,thetaOutGwRing,ringangleOutGwRing_1,-1.0*epsilonOutGwRing,halfalphaOutGwRing,_nOutGuardWires/2);
+                        ITWireLocater(outGw,Wire::field,itl,_nOutGuardWires/2,_outGuardRad+GWradii+extShiftFW,thetaOutGwRing,ringangleOutGwRing_1,-1.0*epsilonOutGwRing,halfalphaOutGwRing,_nOutGuardWires/2);
                 }
 
                 _ltt->_sprlr.reset(_sprlr);

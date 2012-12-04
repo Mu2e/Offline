@@ -1,9 +1,9 @@
 //
 // Defines sensitive detector for a typicaly numbered volume using mu2e reference frame
 //
-// $Id: Mu2eSensitiveDetector.cc,v 1.2 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: Mu2eSensitiveDetector.cc,v 1.3 2012/12/04 00:51:26 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/12/04 00:51:26 $
 //
 // Original author KLG
 //
@@ -80,6 +80,11 @@ namespace mu2e {
       return false;
     }
 
+    if ( _debugList.inList() )  {
+            G4cout<<"edep "<<aStep->GetTotalEnergyDeposit()<<" nidep "<<aStep->GetNonIonizingEnergyDeposit()<<" step "<<aStep->GetStepLength()<<G4endl;
+            G4cout<<"Step vol name "<<aStep->GetTrack()->GetVolume()->GetName()<<G4endl;
+    }
+
     // Which process caused this step to end?
     G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
     ProcessCode endCode(_processInfo->findAndCount(pname));
@@ -148,6 +153,5 @@ namespace mu2e {
     return;
 
   }
-
 
 } //namespace mu2e

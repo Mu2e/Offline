@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.14 2012/08/31 22:37:06 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/08/31 22:37:06 $
+// $Id: TrackerCalibrations.hh,v 1.15 2012/12/04 00:51:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/12/04 00:51:28 $
 //
 // Original author Vadim Rusu
 //
@@ -71,10 +71,10 @@ namespace mu2e
     void DistanceToTime(StrawIndex strawIndex,double rdrift, CLHEP::Hep3Vector const& tdir, D2T& d2t) const;
 
     // time difference calibration
-    double TimeDiffToDistance(StrawIndex strawIndex, double deltaT) const;
+    virtual double TimeDiffToDistance(StrawIndex strawIndex, double deltaT) const;
     // information about a hit's position and time.  This uses time difference to compute
     // the position along the wire
-    void StrawHitInfo(StrawHit const& strawhit,
+    virtual void StrawHitInfo(StrawHit const& strawhit,
       CLHEP::Hep3Vector& pos, double& time,double& tdres, double& timeres) const;
 
     void EnergyToAmplitude(StrawIndex strawIndex, double edep, E2A& e2a) const;
@@ -82,7 +82,7 @@ namespace mu2e
 
     double CrossTalk(StrawIndex strawIndex0, StrawIndex strawIndexN) const;
 
-  private:
+  protected:
 
     // We want to discourage multi-phase construction.
     TrackerCalibrations ();

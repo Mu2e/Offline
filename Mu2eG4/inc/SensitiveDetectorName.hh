@@ -3,9 +3,9 @@
 // Define names of Sensitive Detectors; revised to forward the names of the
 // StepInstanceName names.
 //
-// $Id: SensitiveDetectorName.hh,v 1.14 2012/08/23 23:36:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/23 23:36:14 $
+// $Id: SensitiveDetectorName.hh,v 1.15 2012/12/04 00:51:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/12/04 00:51:28 $
 //
 // Original author KLG
 
@@ -61,6 +61,15 @@ namespace mu2e {
     static char const * PSVacuum() {
       return StepInstanceName::name(StepInstanceName::PSVacuum).c_str();
     }
+
+    static char const * TrackerSWires(){
+      return StepInstanceName::name(StepInstanceName::trackerSWires).c_str();
+    }
+
+    static char const * ITrackerFWires(){
+      return StepInstanceName::name(StepInstanceName::itrackerFWires).c_str();
+    }
+
 
   };
 

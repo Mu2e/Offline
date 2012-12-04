@@ -1,8 +1,8 @@
 //
 //
-//  $Id: ITGasLayerSD_Square.cc,v 1.13 2012/06/04 23:46:23 tassiell Exp $
+//  $Id: ITGasLayerSD_Square.cc,v 1.14 2012/12/04 00:51:26 tassiell Exp $
 //  $Author: tassiell $
-//  $Date: 2012/06/04 23:46:23 $
+//  $Date: 2012/12/04 00:51:26 $
 //
 //
 #include "Mu2eG4/inc/ITGasLayerSD_Square.hh"
@@ -41,11 +41,11 @@ namespace mu2e {
           G4double edep  = aStep->GetTotalEnergyDeposit();
           G4double nidep = aStep->GetNonIonizingEnergyDeposit();
           G4double step  = aStep->GetStepLength();
-          G4double idep  = edep-nidep;
+          //G4double idep  = edep-nidep;
 
           if ( _debugList.inList() )  cout<<"edep "<<edep<<" nidep "<<nidep<<" step "<<step<<endl;
           // I am not sure why we get these cases but we do.  Skip them.
-          if ( (edep == 0. || idep == 0.)/*&& step == 0.*/ ) {
+          if ( (edep == 0. /*|| idep == 0.*/)/*&& step == 0.*/ ) {
                   if ( _debugList.inList() )  cout<<"Skipped"<<endl;
                   return false;
           }
@@ -210,7 +210,7 @@ namespace mu2e {
                  // The point's coordinates are saved in the mu2e coordinate system.
                  _collection->push_back( StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _event->productGetter(*_simID) ),
                                                       det,
-                                                      idep,/*edep,*/
+                                                      /*idep,*/edep,
                                                       aStep->GetNonIonizingEnergyDeposit(),
                                                       aStep->GetPreStepPoint()->GetGlobalTime(),
                                                       aStep->GetPreStepPoint()->GetProperTime(),

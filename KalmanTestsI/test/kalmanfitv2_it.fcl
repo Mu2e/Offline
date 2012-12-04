@@ -8,13 +8,15 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: kalmanfitv2_it.fcl,v 1.1 2012/08/22 17:30:37 tassiell Exp $
+# $Id: kalmanfitv2_it.fcl,v 1.2 2012/12/04 00:51:27 tassiell Exp $
 # $Author: tassiell $
-# $Date: 2012/08/22 17:30:37 $
+# $Date: 2012/12/04 00:51:27 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
+
+#include "TrkPatRecI/test/trackerModules.fcl"
 
 # Give this job a name.
 process_name : KALMANFit
@@ -86,41 +88,15 @@ physics : {
     # Save state of the random number engines.
     randomsaver : @local::randomsaver
 
-    kalmanFit:
-    {
-       module_type : kalmanFitv2
-#       module_type : kalmanFitIET
-       cutdp : 100.5
-       oneturn : 0
-       debuglevel : 0
-# Kalman fit configuration for the final track fit
-        KalFit :
-        {
-                maxiter                                 : 10
-                debugLevel                      : 0
-                material                                : true
-                hiterr                                  : [ 0.0 ]
-#                hiterr                                  : 0.0
-                seedsmear                               : 1000000
-                maxhitchi                               : 3.0
-                mingap                                  : 1.0
-                weedhits                                : false
-		exacthitturn : true
-                ambiguityStrategy                       : [ 1 ]
-		t0strategy : 0 
-		updateT0 : false
-#		t0window : 2.5
-        }
-
-    }
+    kalmanFit            : @local::kalmanFit
  
   }
 
   analyzers: {
 
-    EveDisplay   : { module_type : EveDisplay }    
-    buildDchGeom : { module_type : buildDchGeom }
-    GeomExport   : { module_type : GeomExport }
+    #EveDisplay   : { module_type : EveDisplay }    
+    #buildDchGeom : { module_type : buildDchGeom }
+    #GeomExport   : { module_type : GeomExport }
   }
 
   # Random saver is currently broken.
@@ -150,20 +126,19 @@ outputs: {
 services.user.SeedService.baseSeed         :  0
 services.user.SeedService.maxUniqueEngines :  20
 
-//physics.producers.generate.inputfile : "Mu2eG4/test/genconfig_02_2011.txt"
 physics.producers.generate.inputfile : "Mu2eG4/test/genconfig_example.txt"
-physics.producers.G4.diagLevel : 10
+physics.producers.G4.diagLevel : 0
 physics.producers.makeDcH.diagLevel : 0
-physics.producers.makeDcH.maxFullPrint : 5
-physics.producers.makeDcH.minimumEnergy : -1
-physics.producers.CaloReadoutHitsMaker.diagLevel : 0
-physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
-physics.producers.CaloCrystalHitsMaker.diagLevel : 0
-physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
+//physics.producers.makeDcH.maxFullPrint : 5
+//physics.producers.makeDcH.minimumEnergy : -1
+//physics.producers.makeDcH.useDeltaT : true
+//physics.producers.makeDcH.mapCellDTtype : 0
 
-#physics.producers.g4run.visMacro             : "Mu2eG4/test/vistrace.mac"
-
-#physics.producers.kalmanFit.cutdp : 100.5
-physics.producers.kalmanFit.oneturn : 0
-physics.producers.kalmanFit.debuglevel : 1
-#physics.producers.makeDcH.driftSigma : 0
+#physics.producers.kalmanFit.debuglevel : 1
+#physics.producers.kalmanFit.materialdb : "KalmanTestsI/test/material_v42.txt"
+physics.producers.kalmanFit.doEndCapExtrapol : true
+physics.producers.kalmanFit.fitparticle : 11
+physics.producers.kalmanFit.fitdirection : 0 
+//physics.producers.kalmanFit.KalFit.fieldCorrection : true
+//physics.producers.kalmanFit.KalFit.BFieldIntDivTol : 0.1
+//physics.producers.kalmanFit.KalFit.BFieldIntTol : 0.001

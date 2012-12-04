@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+#
+#
+# $Id: SConscript,v 1.1 2012/12/04 00:51:27 tassiell Exp $
+# $Author: tassiell $
+# $Date: 2012/12/04 00:51:27 $
+#
+# Original author Rob Kutschke.
+#
+
+import os.path, re
+Import('env')
+
+# Construct library name using its path relative to Offline
+local_lib_path = re.sub(r'^.*/Offline/(.*)/src$', r'\1', env.Dir('.').abspath)
+local_lib_name='miniilc'
+
+env.DictionarySource(['#/tmp/src/%s/%s_dict.cpp'%(local_lib_path,local_lib_name),
+                      '#/tmp/src/%s/%s_map.cpp'%(local_lib_path,local_lib_name)],
+                     ['classes.h','classes_def.xml'],
+                      parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ])
+
+rootlibs = [ 'Reflex','Core','Geom','EG']
+my_libs=[]  # default if no cc_files
+cc_files = Glob('*.cxx',strings=True)
+if cc_files:
+    env.SharedLibrary('#/lib/'+local_lib_name, cc_files,
+                      LIBS=[ rootlibs,
+                             '%s_dict'%(local_lib_name,)
+                             ],
+                      parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
+                      )
+
+env.SharedLibrary('#/lib/%s_dict'%(local_lib_name,),
+                  '#/tmp/src/%s/%s_dict.cpp'%(local_lib_path,local_lib_name),
+                  LIBS=my_libs,
+                  parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
+)
+env.SharedLibrary('#/lib/%s_map'%(local_lib_name,),
+                  '#/tmp/src/%s/%s_map.cpp'%(local_lib_path,local_lib_name),LIBS=[],
+                  parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
+)
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:

@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.10 2012/11/01 23:39:26 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:39:26 $
+// $Id: ConditionsService_service.cc,v 1.11 2012/12/04 00:51:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/12/04 00:51:28 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,7 @@
 // Would like to break the coupling to these.
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "ConditionsService/inc/TrackerCalibrationsI.hh"
 #include "ConditionsService/inc/ExtMonFNALConditions.hh"
 
 using namespace std;
@@ -84,7 +84,11 @@ namespace mu2e {
     const AcceleratorParams& accp = *acctmp;
     addEntity( acctmp );
     addEntity( std::auto_ptr<DAQParams>          ( new DAQParams          (_config)) );
-    addEntity( std::auto_ptr<TrackerCalibrations>( new TrackerCalibrations(_config)) );
+    if (_config.getBool("isITrackerCond",false)) {
+            addEntity( std::auto_ptr<TrackerCalibrations>( new TrackerCalibrationsI(_config)) );
+    } else {
+            addEntity( std::auto_ptr<TrackerCalibrations>( new TrackerCalibrations(_config)) );
+    }
     addEntity( std::auto_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config)) );
   }
 

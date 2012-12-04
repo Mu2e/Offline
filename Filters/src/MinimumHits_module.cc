@@ -1,8 +1,8 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: MinimumHits_module.cc,v 1.10 2012/07/21 02:26:26 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/21 02:26:26 $
+// $Id: MinimumHits_module.cc,v 1.11 2012/12/04 00:51:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/12/04 00:51:28 $
 //
 // Contact person Rob Kutschke.
 //
@@ -55,6 +55,8 @@ namespace mu2e {
     // Which data product collections do we want to look at.
     StepFilterMode mode_;
 
+    int nminsteps_;
+
     // Module label of the g4 module that made the generated particles
     std::string generatorModuleLabel_;
 
@@ -100,6 +102,7 @@ namespace mu2e {
 
   MinimumHits::MinimumHits(fhicl::ParameterSet const& pset):
     mode_(StepFilterMode(pset.get<string>("mode"))),
+    nminsteps_(pset.get<int>("hitsmin",0)),
     generatorModuleLabel_(pset.get<string>("generatorModuleLabel")),
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel")),
     strawHitMakerLabel_(pset.get<string>("strawHitMakerLabel")),
@@ -175,7 +178,7 @@ namespace mu2e {
       break;
 
     case StepFilterMode::trackerOnly      :
-      fail=trkSteps.empty();
+      fail=trkSteps.size()<(size_t)nminsteps_+1;
       break;
 
     case StepFilterMode::calorimeterOnly  :

@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.14 2012/08/31 22:35:54 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/08/31 22:35:54 $
+// $Id: ITTrackReco_module.cc,v 1.15 2012/12/04 00:51:27 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2012/12/04 00:51:27 $
 //
 // Original author G. Tassielli
 //
@@ -718,7 +718,7 @@ void ITTrackReco::produce(art::Event & event ) {
         _hExecTime->Fill( (float)(stopClock-startClock)/((float) CLOCKS_PER_SEC ) );
         cout<<"-------- N clok to analyze 1 ev by ITTrackReco "<<stopClock-startClock<<" @ "<<CLOCKS_PER_SEC<<endl;
 
-        /*if (_doDisplay) {
+        if (_doDisplay) {
             cerr << "Double click in the canvas_Fake to continue:" ;
             _fakeCanvas->cd();
             TLatex *printEvN = new TLatex(0.15,0.4,Form("Current Event: %d",event.id().event()));
@@ -730,7 +730,7 @@ void ITTrackReco::produce(art::Event & event ) {
             cerr << endl;
             delete printEvN;
             //_peaksCanvHistos->Delete();
-    }*/
+        }
 
         //    _hPkStDistTrs->Delete();
         ////    _hPkStDistanceTrs->Delete();

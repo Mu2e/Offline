@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.19 2012/09/19 20:17:37 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/09/19 20:17:37 $
+// $Id: TrkStrawHit.hh,v 1.20 2012/12/04 00:51:26 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2012/12/04 00:51:26 $
 //
 // Original author David Brown, LBNL
 //
@@ -99,9 +99,9 @@ namespace mu2e
   protected:
     TrkStrawHit(const TrkStrawHit& other, TrkRep* rep);
     virtual TrkErrCode updateMeasurement(const TrkDifTraj* traj);
-    void updateDrift();
-    void updateSignalTime();
-  private:
+    virtual void updateDrift();
+    virtual void updateSignalTime();
+  //private:
     const StrawHit& _strawhit;
     const Straw& _straw;
     unsigned _istraw;
