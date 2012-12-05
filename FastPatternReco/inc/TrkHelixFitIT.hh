@@ -4,9 +4,9 @@
 //
 // class derived by TrkPatRec/inc/TrkHelixFit.hh to work with the ITracker
 //
-// $Id: TrkHelixFitIT.hh,v 1.4 2012/08/31 22:35:54 brownd Exp $
+// $Id: TrkHelixFitIT.hh,v 1.5 2012/12/05 18:49:00 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/08/31 22:35:54 $
+// $Date: 2012/12/05 18:49:00 $
 //
 // Original author G. Tassielli
 //
@@ -44,7 +44,7 @@ public:
 
         virtual ~TrkHelixFitIT(){}
         // main function: given a track definition, find the helix parameters
-        bool findHelix(  HelixFitResult& myfit, std::vector<XYZP> &xyzp );
+//        bool findHelix(  HelixFitResult& myfit, std::vector<XYZP> &xyzp );
         //CellGeometryHandle *_itwp;
 
 private:
