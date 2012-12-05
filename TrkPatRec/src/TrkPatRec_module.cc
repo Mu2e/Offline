@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.47 2012/10/31 16:24:13 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.48 2012/12/05 18:48:20 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/10/31 16:24:13 $
+// $Date: 2012/12/05 18:48:20 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -264,12 +264,12 @@ namespace mu2e
     _printfreq(pset.get<int>("printFrequency",101)),
     _addhits(pset.get<bool>("addhits",true)),
     _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
-    _edept(pset.get<double>("EDep_tight",0.0045)),
-    _edepl(pset.get<double>("EDep_loose",0.005)),
+    _edept(pset.get<double>("EDep_tight",0.007)),
+    _edepl(pset.get<double>("EDep_loose",0.007)),
     _edepvl(pset.get<double>("EDep_veryloose",0.008)),
-    _rmint(pset.get<double>("RMin_tight",420.0)),
-    _rminl(pset.get<double>("RMin_loose",390.0)),
-    _rmaxt(pset.get<double>("RMax_tight",630.0)),
+    _rmint(pset.get<double>("RMin_tight",400.0)),
+    _rminl(pset.get<double>("RMin_loose",380.0)),
+    _rmaxt(pset.get<double>("RMax_tight",650.0)),
     _rmaxl(pset.get<double>("RMax_loose",650.0)),
     _maxdt(pset.get<double>("DtMax",35.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
@@ -345,7 +345,7 @@ namespace mu2e
   void TrkPatRec::beginRun(art::Run& ){}
 
   void TrkPatRec::produce(art::Event& event ) {
-    ++_eventid;
+    _eventid = event.event();
     _cutflow->Fill(0.0);
 // create output
     auto_ptr<KalRepCollection> tracks(new KalRepCollection );
