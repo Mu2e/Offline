@@ -1,3 +1,17 @@
+#include "TH1F.h"
+#include "TF1.h"
+#include "TTree.h"
+#include "TLegend.h"
+#include "TPad.h"
+#include "TPaveText.h"
+#include "TCanvas.h"
+#include "TH2F.h"
+#include "TStyle.h"
+#include "TCut.h"
+#include "TMath.h"
+#include "TProfile.h"
+#include "TDirectory.h"
+
 Double_t splitgaus(Double_t *x, Double_t *par) {
   Double_t retval;
   Double_t core;
@@ -88,9 +102,9 @@ void KalTest (TTree* trk) {
     gStyle->SetOptFit(111111);
 
   TCanvas* ccanxy = new TCanvas("ccanxy","Circle Fit",1200,800);
-  TH2F* cx = new TH2F("cx","Circle X center;MC true (mm);Fit (mm)",50,-400,400,50,-400,400);
-  TH2F* cy = new TH2F("cy","Circle Y center;MC true (mm);Fit (mm)",50,-400,400,50,-400,400);
-  TH2F* cr = new TH2F("cr","Circle radius;MC true (mm);Fit (mm)",50,180,350,50,180,350);
+  TH2F* cx = new TH2F("cx","Circle X center;MC true (mm);Fit (mm)",100,-400,400,100,-400,400);
+  TH2F* cy = new TH2F("cy","Circle Y center;MC true (mm);Fit (mm)",100,-400,400,100,-400,400);
+  TH2F* cr = new TH2F("cr","Circle radius;MC true (mm);Fit (mm)",100,180,350,100,180,350);
   TH1F* cxr = new TH1F("cxr","X center resolution;mm",100,-200,200);
   TH1F* cyr = new TH1F("cyr","Y center resolution;mm",100,-200,200);
   TH1F* crr = new TH1F("crr","Radius resolution;mm",100,-200,200);
@@ -119,8 +133,8 @@ void KalTest (TTree* trk) {
   
   TCanvas* ccanrz = new TCanvas("ccanrz","RZ parameters",1200,800);
   
-  TH2F* dfdz = new TH2F("dfdz","Helix pitch (d#phi/dZ);MC true (radians/mm);helix fit (radians/mm)",50,0.0035,0.0065,50,0.0035,0.0065);
-  TH2F* fz0 = new TH2F("fz0","Heliz #phi intercept;MC true (radians); helix fit (radians)",50,-1,12,50,-1,12.);
+  TH2F* dfdz = new TH2F("dfdz","Helix pitch (d#phi/dZ);MC true (radians/mm);helix fit (radians/mm)",100,0.0035,0.0065,100,0.0035,0.0065);
+  TH2F* fz0 = new TH2F("fz0","Heliz #phi intercept;MC true (radians); helix fit (radians)",100,-3.5,3.5,100,-3.5,3.5);
   TH1F* dfdzr = new TH1F("dfdzr","d#phi/dZ resolution;radians/mm",100,-0.0005,0.0005);
   TH1F* fz0r = new TH1F("fz0r","#phi intercept resolution;radians",100,-0.4,0.4);
   trk->Project("dfdzr","hdfdz-mcdfdz",helix);
@@ -213,7 +227,6 @@ void AntiMomRes(TTree* trk) {
   TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&abs(tpeak-mcmidt0-28)<30");
   TCut tsel = mcsel +TCut("kalfail==0");
 // selection cuts
-  TCut cuts[4];
 
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
   trk->Project("effnorm","mcentmom",mcsel);
@@ -246,10 +259,6 @@ void AntiMomRes(TTree* trk) {
   fitcuts[1] = "fitcon<1e-4";
   fitcuts[2] = "fitcon<1e-3";
   fitcuts[3] = "fitcon<1e-2";
-
-
-
-  const char* labels[4] = {"A","B","C","D"};
 
   amcan->Clear();
   amcan->Divide(2,2);
@@ -299,8 +308,6 @@ void MomRes(TTree* trk) {
   TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&abs(tpeak-mcmidt0-28)<30");
   TCut tsel = mcsel +TCut("kalfail==0");
 // selection cuts
-  TCut cuts[4];
-
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
   trk->Project("effnorm","mcentmom",mcsel);
   
@@ -332,10 +339,6 @@ void MomRes(TTree* trk) {
   fitcuts[1] = "fitcon>1e-4";
   fitcuts[2] = "fitcon>1e-3";
   fitcuts[3] = "fitcon>1e-2";
-
-
-
-  const char* labels[4] = {"A","B","C","D"};
 
   mcan->Clear();
   mcan->Divide(2,2);
