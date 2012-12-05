@@ -1,9 +1,9 @@
 //
 // Simple accessor to Kalman fit
 //
-// $Id: KalFitResult.hh,v 1.3 2012/12/04 00:51:26 tassiell Exp $
+// $Id: KalFitResult.hh,v 1.4 2012/12/05 21:14:14 tassiell Exp $
 // $Author: tassiell $ 
-// $Date: 2012/12/04 00:51:26 $
+// $Date: 2012/12/05 21:14:14 $
 //
 #ifndef KalFitResult_HH
 #define KalFitResult_HH
@@ -23,7 +23,7 @@ namespace mu2e
   struct KalFitResult {
 // must initialize with a TrkDef
     KalFitResult(TrkDef const& tdef) : _tdef(tdef) ,_krep(0), _fit(TrkErrCode::fail), _nt0iter(0), _nweediter(0), _nunweediter(0), _ninter(0) {}
-    ~KalFitResult() { if (_krep!=0 ) delete _krep;}
+    ~KalFitResult() { delete _krep;}
     void removeFailed() { if(_fit.failure())deleteTrack(); }
     void fit() { if(_fit.success()) _fit = _krep->fit(); }
     void deleteTrack();
