@@ -19,7 +19,7 @@ double tdhigh(1.0);
 double t0min(720);
 double momlow(103.4);
 double momhigh(104.7);
-int minnhits(15);
+int minnhits(20);
 size_t icut=2;
 unsigned minnactive[4] = {20,20,25,30};
 double maxt0err[4] = {1.5,1.0,0.9,0.8};
@@ -541,8 +541,8 @@ void KalFitRes(TTree* trks) {
 //    degau->SetParLimits(5,0.12,2*momres[ires]->GetRMS());
 //    degau->SetParLimits(6,0.1,momres[ires]->GetRMS());
 //    degau->SetParLimits(7,1,3.0);
-  
-    cball->SetParameters(integral,momres[ires]->GetMean(),momres[ires]->GetRMS(),1.0,1.0,0.05,0.5);
+    cout << "Integral = " << integral << " mean = " << momres[ires]->GetMean() << " rms = " << momres[ires]->GetRMS() << endl;
+    cball->SetParameters(3*integral,momres[ires]->GetMean()+0.07,0.3*momres[ires]->GetRMS(),3.0,1.0,0.02,0.2);
     cball->SetParLimits(5,0.001,0.4);
     cball->SetParLimits(6,0.1,momres[ires]->GetRMS());
 
