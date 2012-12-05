@@ -1,62 +1,77 @@
-void PlotHelices(TDirectory* tdir,unsigned nmax=20, unsigned nps=3){
+#include "TDirectory.h"
+#include "TCanvas.h"
+#include "TStyle.h"
+#include "TArc.h"
+#include "TH2F.h"
+#include <iostream>
+
+void PlotHelices(TDirectory* tdir,unsigned nmax=20, unsigned nps=3,const char* name=0){
   gStyle->SetOptStat(0);
-  unsigned ican(0);
+  int ican(-1);
   unsigned iplot(0);
+  char gxyname[100];
+  char bxyname[100];
+  char sxyname[100];
+  char bsxyname[100];
+  char gfzname[100];
+  char bfzname[100];
+  char sfzname[100];
+  char bsfzname[100];
   TCanvas* cans[50];
-  unsigned nplots(0);
-  unsigned ntest(0);
-  while( nplots < nmax) {
-    ++ntest;
-    bool first(true);
-    char cname[20];
-    snprintf(cname,20,"helixcan%i",ican);
-    cans[ican] = new TCanvas(cname,"Straw Hit Positions",800,600);
-    cans[ican]->Clear();
-    cans[ican]->Divide(nps,2);
-    char gxyname[100];
-    char bxyname[100];
-    char gfzname[100];
-    char bfzname[100];
-    for(unsigned ievt=0;ievt<1000;++ievt){
-      unsigned jplot = 10*ievt;
+  for(size_t ievt=0;ievt<1000;++ievt){
+    for(size_t itrk=0;itrk<10;++itrk){
+      unsigned jplot = 10*ievt + itrk;
       snprintf(gxyname,100,"gshxy%i",jplot);
       snprintf(bxyname,100,"bshxy%i",jplot);
+      snprintf(sxyname,100,"sshxy%i",jplot);
+      snprintf(bsxyname,100,"bsshxy%i",jplot);
       snprintf(gfzname,100,"gshphiz%i",jplot);
       snprintf(bfzname,100,"bshphiz%i",jplot);
-      TH1F* gshxy = tdir->Get(gxyname);
-      TH1F* bshxy = tdir->Get(bxyname);
-      TH1F* gshfz = tdir->Get(gfzname);
-      TH1F* bshfz= tdir->Get(bfzname);
-      if(gshxy != 0 && bshxy != 0) {
-	++nplots;
-        gshxy->SetStats(0);
-        gshxy->GetXaxis()->SetTitle("mm");
-        gshxy->GetYaxis()->SetTitle("mm");        
-        gshfz->SetStats(0);
-        gshfz->GetXaxis()->SetTitle("mm");
-        gshfz->GetYaxis()->SetTitle("radians");
-        if(iplot >= nps){
-	  iplot = 0;
+      snprintf(sfzname,100,"sshphiz%i",jplot);
+      snprintf(bsfzname,100,"bsshphiz%i",jplot);
+      TH2F* gshxy = (TH2F*)tdir->Get(gxyname);
+      TH2F* bshxy = (TH2F*)tdir->Get(bxyname);
+      TH2F* sshxy = (TH2F*)tdir->Get(sxyname);
+      TH2F* bsshxy = (TH2F*)tdir->Get(bsxyname);
+      TH2F* gshfz = (TH2F*)tdir->Get(gfzname);
+      TH2F* bshfz = (TH2F*)tdir->Get(bfzname);
+      TH2F* sshfz = (TH2F*)tdir->Get(sfzname);
+      TH2F* bsshfz = (TH2F*)tdir->Get(bsfzname);
+      if(gshxy != 0 && gshfz != 0) {
+	div_t divide = div(iplot,nps);
+	//      std::cout << "divide " << iplot << " by " << nps << " gives  quot " << divide.quot << " rem " << divide.rem << std::endl;
+	if(divide.rem == 0){
 	  ++ican;
-	  snprintf(cname,20,"helixcan%i",ican);
-	  cans[ican] = new TCanvas(cname,"Straw Hit Positions",800,600);
+	  char cname[50];
+	  snprintf(cname,20,"can_%i",ican);
+	  cans[ican] = new TCanvas(cname,cname,800,600);
 	  cans[ican]->Clear();
 	  cans[ican]->Divide(nps,2);
-	} 
-        cans[ican]->cd(iplot+1);
-        gshxy->Draw();
-        bshxy->Draw("same");
-	if(gshfz != 0 && bshfz != 0){
-	  cans[ican]->cd(iplot+nps+1);
-	  gshfz->Draw();        
-	  bshfz->Draw("same");
 	}
+	gshxy->SetStats(0);
+	cans[ican]->cd(divide.rem+1);
+	gshxy->Draw();
+	if(bshxy != 0)bshxy->Draw("same");
+	if(sshxy != 0)sshxy->Draw("same");
+	if(bsshxy != 0)bsshxy->Draw("same");
+	cans[ican]->cd(divide.rem+nps+1);
+	gshfz->SetStats(0);
+	gshfz->Draw();        
+	if(bshfz != 0)bshfz->Draw("same");
+	if(sshfz != 0)sshfz->Draw("same");
+	if(bsshfz != 0)bsshfz->Draw("same");
 	++iplot;
+	if(iplot > nmax)break;
       }
+      if(iplot > nmax)break;
     }
-    char fname[50];
-    snprintf(fname,20,"shpos%i.png",ican);
-    cans[ican]->SaveAs(fname);
-    ican++;
+    if(iplot > nmax)break;
+  }
+  if(name != 0){
+    char fname[100];
+    for(size_t jcan=0;jcan<=ican;jcan++){
+      snprintf(fname,100,"%s_%s.png",name,cans[jcan]->GetTitle());
+      cans[jcan]->SaveAs(fname);
+    }
   }
 }
