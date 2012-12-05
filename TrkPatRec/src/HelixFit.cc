@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.cc,v 1.2 2012/12/05 18:48:20 brownd Exp $
+// $Id: HelixFit.cc,v 1.3 2012/12/05 22:16:23 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/05 18:48:20 $
+// $Date: 2012/12/05 22:16:23 $
 //
 //
 // the following has to come before other BaBar includes
@@ -56,7 +56,7 @@ namespace mu2e
     Hep3Vector dp = _h2->_pos - _h1->_pos;
     _d1 = invdet*(-_h2->_wdir.y()*dp.x() + _h2->_wdir.x()*dp.y());
     _d2 = invdet*(-_h1->_wdir.y()*dp.x() + _h1->_wdir.x()*dp.y());
-    _pos = _h1->_pos + _d1*_h1->_wdir;
+    _pos = 0.5*(_h1->_pos + _d1*_h1->_wdir +_h2->_pos + _d2*_h2->_wdir);
     _phi = _pos.phi();
     _perr = 0.5*(_h1->_serr + _h2->_serr);
     setUse(true,good);
