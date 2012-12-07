@@ -579,7 +579,7 @@ void KalFitRes(TTree* trks) {
     rtext->AddText(line);
     sprintf(line,"%s",fitcuts[ires].GetTitle());
     rtext->AddText(line);
-    sprintf(line,"Eff=%3.2f",keff);
+    sprintf(line,"Eff=%4.3f",keff);
     rtext->AddText(line);
     rtext->Draw();
  
