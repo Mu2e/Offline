@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.48 2012/12/05 18:48:20 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.49 2012/12/07 20:58:08 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/05 18:48:20 $
+// $Date: 2012/12/07 20:58:08 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -271,7 +271,7 @@ namespace mu2e
     _rminl(pset.get<double>("RMin_loose",380.0)),
     _rmaxt(pset.get<double>("RMax_tight",650.0)),
     _rmaxl(pset.get<double>("RMax_loose",650.0)),
-    _maxdt(pset.get<double>("DtMax",35.0)),
+    _maxdt(pset.get<double>("DtMax",40.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
     _filterdeltas(pset.get<bool>("FilterDeltas",true)),
     _rfold(pset.get<bool>("FoldRadius",true)),
