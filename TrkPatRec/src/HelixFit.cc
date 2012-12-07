@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.cc,v 1.3 2012/12/05 22:16:23 brownd Exp $
+// $Id: HelixFit.cc,v 1.4 2012/12/07 00:52:52 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/05 22:16:23 $
+// $Date: 2012/12/07 00:52:52 $
 //
 //
 // the following has to come before other BaBar includes
@@ -50,7 +50,9 @@ namespace mu2e
   struct zcomp : public std::binary_function<XYZP*,XYZP*,bool> {
     bool operator()(XYZP* const& p1, XYZP* const& p2) { return p1->_pos.z() < p2->_pos.z(); }
   };
-  
+ 
+  double StereoXYZP::_sfactor(1.0);
+
   StereoXYZP::StereoXYZP(HitXYZP& h1,HitXYZP& h2) :  _h1(&h1),_h2(&h2){
     double invdet = 1.0/(-_h1->_wdir.x()*_h2->_wdir.y() + _h1->_wdir.y()*_h2->_wdir.x());
     Hep3Vector dp = _h2->_pos - _h1->_pos;
@@ -58,22 +60,34 @@ namespace mu2e
     _d2 = invdet*(-_h1->_wdir.y()*dp.x() + _h1->_wdir.x()*dp.y());
     _pos = 0.5*(_h1->_pos + _d1*_h1->_wdir +_h2->_pos + _d2*_h2->_wdir);
     _phi = _pos.phi();
-    _perr = 0.5*(_h1->_serr + _h2->_serr);
+    _dz = fabs(_h2->_pos.z()-_h1->_pos.z());
+    // sign the wire direction to point radially outwards
+    CLHEP::Hep3Vector w1 = copysign(1.0,_h1->_wdir.dot(_pos))*_h1->_wdir;
+    CLHEP::Hep3Vector w2 = copysign(1.0,_h2->_wdir.dot(_pos))*_h2->_wdir;
+    // compute the radial and azimuthal projections, assuming a
+    // worst-case pitch of 45 degrees
+    double cosf = w1.dot(w2);
+    static const double invsqrt12(1.0/sqrt(12));
+    _rerr = _sfactor*invsqrt12*_dz*sqrt(0.5*(1.0+cosf));
+    _ferr = _sfactor*invsqrt12*_dz*sqrt(0.5*(1.0-cosf));
     setUse(true,good);
     setUse(true,stereopoint);
   }
 
   void
   StereoXYZP::rinfo(CLHEP::Hep3Vector const& center,VALERR& rad) const {
-    rad._val = CLHEP::Hep3Vector(_pos - center).perp();
-    rad._err = _perr;
+    CLHEP::Hep3Vector rvec = (_pos - center).perpPart();
+    rad._val = rvec.mag();
+    double alpha = rvec.angle(_pos.perpPart());
+    rad._err = _rerr*fabs(cos(alpha))+_ferr*fabs(sin(alpha));
   }
 
   void
   StereoXYZP::finfo(CLHEP::Hep3Vector const& center,VALERR& phi) const {
-    CLHEP::Hep3Vector rvec = _pos-center;
+    CLHEP::Hep3Vector rvec = (_pos-center).perpPart();
     phi._val = rvec.phi();
-    phi._err = _perr/rvec.perp();
+    double alpha = rvec.angle(_pos.perpPart());
+    phi._err = (_ferr*fabs(cos(alpha)+_rerr*fabs(sin(alpha))))/rvec.perp();
   }
 
   void
@@ -205,8 +219,8 @@ namespace mu2e
     _lstep(pset.get<double>("lstep",0.2)),
     _minlambda(pset.get<double>("minlambda",0.01)),
     _maxniter(pset.get<unsigned>("maxniter",50)),
-    _nsigma(pset.get<double>("nsigma",10.0)),
-    _nssigma(pset.get<double>("nssigma",5.0)),
+    _nsigma(pset.get<double>("nsigma",15.0)),
+    _nssigma(pset.get<double>("nssigma",3.0)),
     _minzsep(pset.get<double>("minzsep",50.0)),
     _maxzsep(pset.get<double>("maxzsep",500.0)),
     _maxdz(pset.get<double>("maxdz",35.0)),
@@ -223,14 +237,18 @@ namespace mu2e
     _tdmax(pset.get<double>("maxAbsTanDip",2.0)),
     _rcmin(pset.get<double>("rcmin",200.0)),
     _rcmax(pset.get<double>("rcmax",350.0)),
+    _sfactor(pset.get<double>("stereoFactor",1.0)),
     _forcep(pset.get<bool>("forceP",false)),
-    _useweights(pset.get<bool>("useWeights",false)),
+    _xyweights(pset.get<bool>("xyWeights",true)),
+    _zweights(pset.get<bool>("zWeights",false)),
     _filter(pset.get<bool>("filter",true)),
     _plotall(pset.get<bool>("plotall",false)),
     _usetarget(pset.get<bool>("usetarget",true)),
     _allstereo(pset.get<bool>("allstereo",true)),
     _bz(0.0),_sdist(0),_spull(0)
-  {}
+  {
+    StereoXYZP::_sfactor = _sfactor;
+  }
 
   HelixFit::~HelixFit()
   {}
@@ -319,7 +337,7 @@ namespace mu2e
     bool changed(true);
     unsigned niter(0);
     while(niter < _maxniter && changed){
-      findCenterAGE(xyzp,center,rmed,age,_useweights);
+      findCenterAGE(xyzp,center,rmed,age,_xyweights);
       if(_filter)
 	filterXY(xyzp,center,rmed,changed);
       else
@@ -518,7 +536,7 @@ namespace mu2e
 	    double dphi = deltaPhi(finfo[iphi]._phi._val,finfo[jphi]._phi._val);
 	    double slope = dphi/dz;
 //	    if(slope > _smin && slope < _smax){ 
-	      double wt = _useweights ? fabs(dz)/(finfo[iphi]._phi._err+finfo[jphi]._phi._err) : 1.0;
+	      double wt = _zweights ? dz/(finfo[iphi]._phi._err+finfo[jphi]._phi._err) : 1.0;
 	      accf(slope,weight=wt);
 //	      acctest(slope);
 //	    }
@@ -549,7 +567,7 @@ namespace mu2e
 // refine this using the median
 //      accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > acci;
 //      for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
-//	double wt = _useweights ? 1.0/finfo[iphi]._phi._err : 1.0;
+//	double wt = _zweight ? 1.0/finfo[iphi]._phi._err : 1.0;
 //	double phiex = fz0 + finfo[iphi]._z*dfdz;
 //	double dphi = deltaPhi(phiex,finfo[iphi]._phi._val);
 //	acci(dphi, weight=wt);
@@ -583,7 +601,8 @@ namespace mu2e
 	      if(!_filter || fabs(dphi-dphiex) < _nsigma*ferr){
 		double slope = dphi/dz;
 //		if(slope > _smin && slope < _smax){ 
-		  double wt = _useweights ? dz/ferr : 1.0;
+// limit the weight so as not to count more than 1 loop
+		  double wt = _zweights ? std::min(dz,_maxzsep)/ferr : 1.0;
 		  accf2(slope,weight=wt);
 //		  acctest2(slope);
 //		}
@@ -598,7 +617,7 @@ namespace mu2e
 	for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
 	  double phiex = fz0+finfo[iphi]._z*dfdz;
 	  if(!_filter || fabs(finfo[iphi]._phi._val-phiex) < _nsigma*finfo[iphi]._phi._err){
-	    double wt = _useweights ? 1.0/finfo[iphi]._phi._err : 1.0;
+	    double wt = _zweights ? 1.0/finfo[iphi]._phi._err : 1.0;
 	    acci2(finfo[iphi]._phi._val - finfo[iphi]._z*dfdz, weight=wt);
 	  }
 	}
@@ -787,8 +806,9 @@ namespace mu2e
 	  if(xyzp[jxy].use() || _allstereo ){
 	    HitXYZP& p1 = xyzp[ixy];
 	    HitXYZP& p2 = xyzp[jxy];
-	    // ignore nearly parallel wires or hits in different stations
-	    if(fabs(p1._wdir.dot(p2._wdir)) < _maxdot && fabs(p1._pos.z()-p2._pos.z()) < _maxdz ) {
+	    // ignore nearly parallel wires or hits in different stations or hits in the same plane
+	    double dz = fabs(p1._pos.z()-p2._pos.z());  
+	    if(fabs(p1._wdir.dot(p2._wdir)) < _maxdot && dz > 0.0 && dz < _maxdz ) {
 	      StereoXYZP sp(p1,p2);
 	      // find the 2-d intersection between these lints
 	      double rho = sp._pos.perp();

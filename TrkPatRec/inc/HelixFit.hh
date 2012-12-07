@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.hh,v 1.2 2012/12/05 18:48:21 brownd Exp $
+// $Id: HelixFit.hh,v 1.3 2012/12/07 00:52:52 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/05 18:48:21 $
+// $Date: 2012/12/07 00:52:52 $
 //
 #ifndef HelixFit_HH
 #define HelixFit_HH
@@ -98,12 +98,14 @@ namespace mu2e
     HitXYZP* _h1;
     HitXYZP* _h2;
     double _d1, _d2;
-    double _perr; // pixel size, assumed constant for now
+    double _dz; // z separation of input hits
+    double _rerr,_ferr; // size of position in radial, azimuthal directions
     virtual void rinfo(CLHEP::Hep3Vector const& center, VALERR& rad) const;
     virtual void finfo(CLHEP::Hep3Vector const& center, VALERR& phi) const;
 // override setting use flag to keep bookkeepping right.
     virtual void setUse(bool use,useBit ibit=good);
     virtual bool use(useBit ibit=good) const;
+    static double _sfactor;
   };
 
 // container struct to keep data coherent
@@ -178,8 +180,9 @@ namespace mu2e
     double _pmin, _pmax; // range of total momentum
     double _tdmin, _tdmax; // range of abs(tan(dip)
     double _rcmin,_rcmax; // maximum transverse radius of circle
+    double _sfactor; // stereo hit error factor
     bool _forcep; // force the p/pt to be in range (true), or exclude fits outside that range (false)
-    bool _useweights; // weight points by estimated errors 
+    bool _xyweights,_zweights; // weight points by estimated errors 
     bool _filter; // filter hits
     bool _plotall; // plot also failed fits
     bool _usetarget; // constrain to target when initializing
