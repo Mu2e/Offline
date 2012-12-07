@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.31 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: TrackingAction.cc,v 1.32 2012/12/07 23:01:07 genser Exp $
+// $Author: genser $
+// $Date: 2012/12/07 23:01:07 $
 //
 // Original author Rob Kutschke
 //
@@ -40,11 +40,11 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
 
-
 // G4 includes
 #include "globals.hh"
 #include "G4RunManager.hh"
 #include "G4EventManager.hh"
+#include "G4ParticleTable.hh"
 
 using namespace std;
 
@@ -402,7 +402,84 @@ namespace mu2e {
     // Otherwise, G4 killed this track.
     G4VProcess const* process = track->GetStep()->GetPostStepPoint()->GetProcessDefinedStep();
 
-    return process->GetProcessName();
+    if (process) {
+      return process->GetProcessName();
+    } else {
+
+      { // forcing mf own scope to prevent output interleaving; 
+        // does not seem to work anyway
+        mf::LogWarning("G4")
+        << "ProcessDefinedStep NotSpecified for " 
+        << track->GetParticleDefinition()->GetParticleName()
+        << endl;
+      }
+
+      static bool printItOnce = true;
+      
+      if (printItOnce) {
+
+        printItOnce = false;
+
+        G4VProcess const* process = track->GetStep()->GetPreStepPoint()->GetProcessDefinedStep();
+        G4String pname = (process) ? process->GetProcessName() : "NotSpecified";
+
+        cout << __func__ << " ProcessDefinedStep NotSpecified for " 
+             << track->GetParticleDefinition()->GetParticleName()
+             << ", PostStepPoint StepStatus: "
+             << track->GetStep()->GetPostStepPoint()->GetStepStatus()
+             << ", PreStepPoint  StepStatus: "
+             << track->GetStep()->GetPreStepPoint()->GetStepStatus()
+             << ", PreStepPoint ProcessDefinedStep: "
+             << pname
+             << endl;
+
+        int id       = track->GetTrackID();
+        int parentId = track->GetParentID();
+
+        cout << __func__ << " Track info:" 
+             << " ID: " 
+             << id
+             << ", ParentID: "
+             << parentId
+             << ", CurrentStepNumber: "
+             << track->GetCurrentStepNumber()
+             << ", TrackStatus: "
+             << track->GetTrackStatus()
+             << ", TrackCreationCode: "
+             << findCreationCode(track)
+             << endl;
+
+
+        if ( parentId != 0 ){
+          map_type::iterator i(_transientMap.find(key_type(parentId)));
+          if ( i == _transientMap.end() ){
+            throw cet::exception("RANGE")
+              << "Could not find parent SimParticle in findStoppingProcess.  id: "
+              << id
+              << "\n";
+          }
+
+          int pdgId = i->second.pdgId();
+          cout << __func__ << " Parent info:" 
+               << " ID: " 
+               << parentId
+               << ", PDGiD: "
+               << pdgId
+               << ", name: "
+               << G4ParticleTable::GetParticleTable()->FindParticle(pdgId)->GetParticleName()
+               << ", endG4Status: "
+               << i->second.endG4Status()
+               << ", stoppingCode: "
+               << i->second.stoppingCode()
+               << endl;
+
+        }
+
+      }
+
+      return G4String("NotSpecified");
+    }
+
   }
 
   //Retrieve kinetic energy at the beginnig of the last step from UserTrackInfo
