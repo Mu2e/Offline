@@ -7,9 +7,9 @@
 // that the particle is a primary particle and other enum entries to
 // indicate that a particle was killed in one of the user actions written by G4.
 //
-// $Id: ProcessCode.hh,v 1.8 2012/11/06 18:06:42 genser Exp $
+// $Id: ProcessCode.hh,v 1.9 2012/12/07 23:00:14 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/06 18:06:42 $
+// $Date: 2012/12/07 23:00:14 $
 //
 // Original author Rob Kutschke
 //
@@ -62,6 +62,7 @@ namespace mu2e {
       MuAtomDecay,            Rayl,                    ionInelastic,        He3Inelastic,
       alphaInelastic,         AntiHe3InelasticProcess, AntiAlphaInelasticProcess, AntiDeuteronInelastic,
       dInelastic,             tInelastic,              RadioactiveDecay,    CHIPS_Inelastic,
+      NotSpecified,
       lastEnum,
 
       // An alias for backward compatibility
@@ -89,7 +90,8 @@ namespace mu2e {
     "nuclearStopping",        "mu2eMaxGlobalTime",       "TNuclearCapture",     "muMinusAtomicCapture",      \
     "MuAtomDecay",            "Rayl",                    "ionInelastic",        "He3Inelastic",              \
     "alphaInelastic",         "AntiHe3InelasticProcess", "AntiAlphaInelasticProcess", "AntiDeuteronInelastic", \
-    "dInelastic",             "tInelastic",              "RadioactiveDecay",    "CHIPS_Inelastic"
+    "dInelastic",             "tInelastic",              "RadioactiveDecay",    "CHIPS_Inelastic",           \
+    "NotSpecified"
 
   public:
 
