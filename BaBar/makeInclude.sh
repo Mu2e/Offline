@@ -7,8 +7,21 @@
 cd BaBar
 if [ -e include ]
  then
+  if [ ! -e include/Dch ]
+   then
+    cd include
+    Dchlist="DchGeom DchGeomBase"
+    for file in ${Dchlist}
+     do
+      if [ ! -e ${file} ]
+       then
+        ln -s ../Dch/${file}/include ${file}
+      fi
+    done
+    cd ..
+  fi
   cd ..
-  exit
+  return 0
 fi
 
 mkdir include
@@ -23,7 +36,7 @@ do
   fi
 done
 
-Dchlist="DchCalib DchData DchGeom DchGeomBase"
+Dchlist="DchGeom DchGeomBase"
 for file in ${Dchlist}
 do
   if [ ! -e ${file} ]
@@ -42,4 +55,5 @@ if [ ! -e PDT ]
   ln -s  ../BaBar/include PDT
 fi
 
+cd ..
 cd ..

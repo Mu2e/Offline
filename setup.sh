@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.48 2012/11/16 00:20:39 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/11/16 00:20:39 $
+# $Id: setup.sh,v 1.49 2012/12/07 20:52:55 tassiell Exp $
+# $Author: tassiell $
+# $Date: 2012/12/07 20:52:55 $
 #
 # Original author Rob Kutschke
 #
@@ -72,7 +72,7 @@ source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
 # Check out the BaBar code.
 # First build the symlink directory.  Then checkout the code.
 if [  -f "./BaBar/makeInclude.sh" ]; then
-  ./BaBar/makeInclude.sh
+  source ./BaBar/makeInclude.sh
   if [ ! -f "BaBar/BaBar/include/BaBar.hh" ]; then
    echo "Checking out the BaBar Kalman Filter code."
    ./BaBar/checkout.sh
