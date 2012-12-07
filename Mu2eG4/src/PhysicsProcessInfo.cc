@@ -1,9 +1,9 @@
 //
 // Information about physics processes.
 //
-// $Id: PhysicsProcessInfo.cc,v 1.6 2012/11/16 20:17:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/16 20:17:14 $
+// $Id: PhysicsProcessInfo.cc,v 1.7 2012/12/07 23:00:45 genser Exp $
+// $Author: genser $
+// $Date: 2012/12/07 23:00:45 $
 //
 // Original author Rob Kutschke
 //
@@ -65,7 +65,7 @@ namespace mu2e{
       G4String               particleName = particle->GetParticleName();
 
       // Loop over all processes.
-      for( G4int j=0; j<pmanager->GetProcessListLength(); j++ ) {
+      for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
 
         G4VProcess const* proc = (*pVector)[j];
         G4String const& name  = proc->GetProcessName();
@@ -97,6 +97,28 @@ namespace mu2e{
       } // end loop over processes
     }   // end loop over particle table
 
+    // we will artificially attach "NotSpecified" process to Unspecified particle
+    // fixme factorize the code
+
+    G4String pname = G4String("NotSpecified");
+    _longestName = (pname.size() > _longestName) ? pname.size() : _longestName;
+
+    ProcessCode pcode = ProcessCode::findByName(pname);
+    if ( pcode.id() == ProcessCode::unknown ){
+      ++nUnknownProcesses;
+      cout << "Physics process named: " << pname
+           << " is not known to the ProcessCode enum."
+           << endl;
+    }
+
+    pair<map_type::iterator,bool> result = 
+      _allProcesses.insert(std::make_pair(pname,ProcInfo(pname,pcode)));
+    map_type::iterator resultFirst = result.first;
+
+    // Add Unspecified to the particleNames vector
+    ProcInfo& pinfo = resultFirst ->second;
+    pinfo.particleNames.push_back(G4String("Unspecified"));
+
     if (nUnknownProcesses > 0 ){
       throw cet::exception("RANGE")
         << "There was one or more phyics processes that are not in the ProcessCode enum.\n"
@@ -115,6 +137,7 @@ namespace mu2e{
 
   void PhysicsProcessInfo::endRun(){
     printSummary(cout);
+    //    printAll(cout);
   }
 
   // This can possibly be sped up considerably by checking frequently occuring names first.
@@ -140,6 +163,7 @@ namespace mu2e{
        << _allProcesses.size() << " "
        << endl;
 
+    int tcsum(0);
     for ( map_type::const_iterator i=_allProcesses.begin();
           i != _allProcesses.end(); ++i ){
       ProcInfo const& oi        = i->second;
@@ -151,7 +175,15 @@ namespace mu2e{
         os << " " << oi.particleNames[i];
       }
       os << endl;
+      tcsum += oi.count;
     }
+
+    os << "Total count: "
+       << setw(_longestName) << " "
+       << "   "
+       << tcsum
+       << endl;
+
   }
 
 
@@ -160,6 +192,7 @@ namespace mu2e{
        << _allProcesses.size() << " "
        << endl;
 
+    int tcsum(0);
     for ( map_type::const_iterator i=_allProcesses.begin();
           i != _allProcesses.end(); ++i ){
       ProcInfo const& oi        = i->second;
@@ -168,10 +201,15 @@ namespace mu2e{
          << setw(4)            << oi.code.id() << " "
          << oi.count
          << endl;
-
+      tcsum += oi.count;
     }
+
+    os << "Total count: "
+       << setw(_longestName) << " "
+       << "   "
+       << tcsum
+       << endl;
+
   }
-
-
 
 }  // end namespace mu2e
