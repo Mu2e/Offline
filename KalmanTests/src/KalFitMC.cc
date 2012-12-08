@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.40 2012/11/15 22:05:29 brownd Exp $
+// $Id: KalFitMC.cc,v 1.41 2012/12/08 07:17:58 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/11/15 22:05:29 $
+// $Date: 2012/12/08 07:17:58 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -287,7 +287,7 @@ namespace mu2e
   }
 
   void
-  KalFitMC::kalDiag(const KalRep* krep) {
+  KalFitMC::kalDiag(const KalRep* krep,bool fill) {
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
 
@@ -297,8 +297,16 @@ namespace mu2e
       std::vector<MCHitSum> kmcinfo;
       findMCTrk(krep,kmcinfo);
 // mc track patermeter info for the particle which generated most of the hits
-      if(kmcinfo.size()>0 )
+      if(kmcinfo.size()>0 ){
         mcTrkInfo(kmcinfo[0]._spp);
+	_mcgenid = kmcinfo[0]._spp->genParticle()->generatorId().id();
+	_mcpdgid = kmcinfo[0]._spp->pdgId();
+	_mcproc = kmcinfo[0]._spp->creationCode();
+      } else {
+	_mcpdgid = 0;
+	_mcgenid = -1;
+	_mcproc = -1;
+      }
 // no information on iterations either!
       _nt0iter = _nweediter = -1;
       if(_diag > 1){
@@ -352,7 +360,7 @@ namespace mu2e
     } else {
       _fitstatus = -1000;
     }
-    _trkdiag->Fill(); 
+    if(fill)_trkdiag->Fill(); 
   }
 
 
@@ -602,6 +610,10 @@ namespace mu2e
     _trkdiag->Branch("seedmom",&_seedmom,"seedmom/F");
     _trkdiag->Branch("fitpar",&_fitpar,"d0/F:p0/F:om/F:z0/F:td/F");
     _trkdiag->Branch("fiterr",&_fiterr,"d0err/F:p0err/F:omerr/F:z0err/F:tderr/F");
+// basic MC info
+    _trkdiag->Branch("mcpdgid",&_mcpdgid,"mcpdgid/I");
+    _trkdiag->Branch("mcgenid",&_mcgenid,"mcgenid/I");
+    _trkdiag->Branch("mcproc",&_mcproc,"mcproc/I");
 // mc info at production and several spots in the tracker
     _trkdiag->Branch("mcinfo",&_mcinfo,"mcpdgid/I:mct0/F:mcmom/F:mcx/F:mcy/F:mcz/F:mcd0/F:mcp0/F:mcom/F:mcz0/F:mctd/F");
     _trkdiag->Branch("mcentinfo",&_mcentinfo,"mcentpdgid/I:mcentt0/F:mcentmom/F:mcentx/F:mcenty/F:mcentz/F:mcentd0/F:mcentp0/F:mcentom/F:mcentz0/F:mcenttd/F");

@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.27 2012/11/15 22:05:29 brownd Exp $
+// $Id: KalFitMC.hh,v 1.28 2012/12/08 07:17:58 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/11/15 22:05:29 $
+// $Date: 2012/12/08 07:17:58 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -168,7 +168,7 @@ namespace mu2e
 // create a track definition object based on MC true particle
     bool trkFromMC(cet::map_vector_key const& trkid, TrkDef& mytrk);
 // diagnostic comparison of reconstructed tracks with MC truth
-    void kalDiag(const KalRep* krep);
+    void kalDiag(const KalRep* krep,bool fill=true);
     void hitsDiag(std::vector<const TrkStrawHit*> const& hits);
     void arcsDiag(std::vector<const TrkStrawHit*> const& hits);
     void mcTrkInfo(art::Ptr<SimParticle> spp);
@@ -234,6 +234,7 @@ namespace mu2e
     Float_t _t00err;
     Float_t _t0;
     Float_t _t0err;
+    Int_t _mcpdgid, _mcgenid, _mcproc;
     MCTrkInfo _mcinfo;
     MCTrkInfo _mcentinfo;
     MCTrkInfo _mcmidinfo;

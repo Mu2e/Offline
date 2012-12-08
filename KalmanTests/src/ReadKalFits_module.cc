@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.16 2012/10/21 00:38:21 brownd Exp $
+// $Id: ReadKalFits_module.cc,v 1.17 2012/12/08 07:17:58 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/10/21 00:38:21 $
+// $Date: 2012/12/08 07:17:58 $
 //
 // Original author Rob Kutschke
 //
@@ -131,11 +131,6 @@ namespace mu2e {
 
     _eventid++;
     _kfitmc.findMCData(event);
-    // DIO spectrum weight; use the generated momenum magnitude
-    double ee = _kfitmc._mcinfo._mom;
-    _diowt = 1.0;
-    if(_weight)
-      _diowt = DIOspectrum(ee);
     // Get handle to calorimeter hit collection.
     art::Handle<KalRepCollection> trksHandle;
     event.getByLabel(_fitterModuleLabel,_iname,trksHandle);
@@ -152,7 +147,13 @@ namespace mu2e {
       KalRep const* krep = trks[i];
       if ( !krep ) continue;
 
-      _kfitmc.kalDiag(krep);
+      _kfitmc.kalDiag(krep,false);
+      // DIO spectrum weight; use the generated momenum magnitude
+      double ee = _kfitmc._mcinfo._mom;
+      _diowt = 1.0;
+      if(_weight)
+	_diowt = DIOspectrum(ee);
+      _kfitmc._trkdiag->Fill();
 
       // For some quantities you require the concrete representation, not
       // just the base class.
