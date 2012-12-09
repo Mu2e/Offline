@@ -18,7 +18,7 @@ double tdlow(0.57735027);
 double tdhigh(1.0);
 double t0min(720);
 double momlow(103.4);
-double momhigh(104.7);
+double momhigh(104.8);
 int minnhits(20);
 size_t icut=2;
 unsigned minnactive[4] = {20,20,25,30};
