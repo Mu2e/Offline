@@ -75,19 +75,21 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,d
   TCut livegate(ctext);
   snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
   TCut momwin(ctext);
+  TCut cosmic = TCut("d0<105&&d0>-80 && d0+2/om>450 && d0+2/om<680");
+ 
 // cuts for different tightness of selection
   TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
-  ncuts[0] = "nactive>=20";
-  ncuts[1] = "nactive>=20";
-  ncuts[2] = "nactive>=25";
-  ncuts[3] = "nactive>=30";
-  t0cuts[0] = "t0err<2";
-  t0cuts[1] = "t0err<1.5";
-  t0cuts[2] = "t0err<1.0";
-  t0cuts[3] = "t0err<0.9";
+  ncuts[0] = "nactive>=20&&nhits-nactive<=15";
+  ncuts[1] = "nactive>=20&&nhits-nactive<=8";
+  ncuts[2] = "nactive>=25&&nhits-nactive<=8";
+  ncuts[3] = "nactive>=30&&nhits-nactive<=8";
+  t0cuts[0] = "t0err<1.0";
+  t0cuts[1] = "t0err<0.9";
+  t0cuts[2] = "t0err<0.8";
+  t0cuts[3] = "t0err<0.7";
   momcuts[0] = "fitmomerr<0.3";
-  momcuts[1] = "fitmomerr<0.2";
-  momcuts[2] = "fitmomerr<0.18";
+  momcuts[1] = "fitmomerr<0.25";
+  momcuts[2] = "fitmomerr<0.20";
   momcuts[3] = "fitmomerr<0.15";
   fitcuts[0] = "fitcon>1e-6";
   fitcuts[1] = "fitcon>1e-4";
@@ -114,7 +116,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,d
     conspec[icut]->Sumw2();
 
     TCut quality = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
-    TCut final = (reco+pitch+livegate+quality);
+    TCut final = (reco+pitch+livegate+quality+cosmic);
 
     dio->Project(dioname,"fitmom","diowt"*final);
     diospec[icut]->Scale(dioscale);

@@ -523,7 +523,7 @@ void KalFitRes(TTree* trks) {
     char fitname[50];
     snprintf(mname,50,"momres%i",ires);
     snprintf(fitname,50,"fitmomres%i",ires);
-    momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",251,-2.5,2.5);
+    momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",251,-4,4);
 //  momres[ires]->SetStats(0);
     TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
     TCut final = (reco+quality+mcsel);

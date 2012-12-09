@@ -16,6 +16,9 @@ TCut utd,dtd,umom,dmom, umomerr, dmomerr,ut0err,dt0err,unact,dnact,ureco,dreco,u
 TCut ud0low,dd0low,ud0hi,dd0hi;
 TF1* cball;
 TF1* diffcball;
+TF1* truecball;
+
+bool isinit(false);
 
 double momlo(-4.0);
 double momhi(4.0);
@@ -105,11 +108,24 @@ void init() {
   diffcball->SetParName(4,"alpha");
   diffcball->SetParName(5,"tailfrac");
   diffcball->SetParName(6,"taillambda");
+ 
+  truecball = new TF1("truecball",crystalball,-5.0,2.,7);
+  truecball->SetParName(0,"Norm");
+  truecball->SetParName(1,"x0");
+  truecball->SetParName(2,"sigma");
+  truecball->SetParName(3,"n");
+  truecball->SetParName(4,"alpha");
+  truecball->SetParName(5,"tailfrac");
+  truecball->SetParName(6,"taillambda");
+  truecball->FixParameter(5,0.0);
+  truecball->FixParameter(6,0.2);
 
+  isinit = true;
 }
 
 
 void momres(TTree* ref) {
+  if(!isinit)init();
   TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
   rcan->Clear();
   rcan->Divide(2,2);
@@ -159,16 +175,19 @@ void momres(TTree* ref) {
 }
 
 void diffres(TTree* ref) {
+  if(!isinit)init();
   TH1F* momdiff = new TH1F("momdiff","Reco Downstream - Upstream momentum",251,difflo,diffhi);
   TH1F* mcmomdiff = new TH1F("mcmomdiff","True Downstream - Upstream momentum",251,difflo,diffhi);
   TH1F* dmomdiff = new TH1F("dmomdiff","Reco Downstream - Upstream momentum, d0 cut",251,difflo,diffhi);
   TH1F* dmcmomdiff = new TH1F("dmcmomdiff","True Downstream - Upstream momentum, d0 cut",251,difflo,diffhi);
 
+  TCut notarget("abs(ud0>100)||(abs(uz0>200)&&utd>-.7)");
+
   ref->Project("momdiff","dmom-umom",ugood+dgood+goodmc+ud0low+dd0low);
   ref->Project("mcmomdiff","dmcmom-umcmom",ugood+dgood+goodmc+ud0low+dd0low);
 
-  ref->Project("dmomdiff","dmom-umom",ugood+dgood+goodmc+ud0hi+dd0hi);
-  ref->Project("dmcmomdiff","dmcmom-umcmom",ugood+dgood+goodmc+ud0hi+dd0hi);
+  ref->Project("dmomdiff","dmom-umom",ugood+dgood+goodmc+notarget);
+  ref->Project("dmcmomdiff","dmcmom-umcmom",ugood+dgood+goodmc+notarget);
 
   TCanvas* dcan = new TCanvas("dcan","Momentum Difference",1200,800);
   dcan->Clear();
@@ -177,7 +196,9 @@ void diffres(TTree* ref) {
   dcan->cd(1);
   gPad->SetLogy();
   double difint = momdiff->GetEntries()*momdiff->GetBinWidth(1);
-  diffcball->SetParameters(difint,-1.0,0.4,10.0,1.0,0.01,0.5);
+  double mean = momdiff->GetMean();
+  double rms = momdiff->GetRMS();
+  diffcball->SetParameters(difint,mean,0.4,10.0,1.0,0.01,0.5);
   diffcball->SetParLimits(5,0.000,0.4);
   diffcball->SetParLimits(6,0.01,momdiff->GetRMS());
   momdiff->Fit("diffcball","LIR");
@@ -185,15 +206,15 @@ void diffres(TTree* ref) {
   dcan->cd(2);
   gPad->SetLogy();
   double mcdifint = mcmomdiff->GetEntries()*mcmomdiff->GetBinWidth(1);
-  diffcball->SetParameters(mcdifint,-1.0,0.4,10.0,1.0,0.01,0.5);
-  diffcball->SetParLimits(5,0.00,0.4);
-  diffcball->SetParLimits(6,0.01,mcmomdiff->GetRMS());
-  mcmomdiff->Fit("diffcball","LIR");
+  mean = mcmomdiff->GetMean();
+  truecball->SetParameters(mcdifint,mean,0.4,10.0,1.0,0.0,0.5);
+  mcmomdiff->Fit("truecball","LIR");
 
   dcan->cd(3);
   gPad->SetLogy();
   double ddifint = dmomdiff->GetEntries()*dmomdiff->GetBinWidth(1);
-  diffcball->SetParameters(ddifint,-1.0,0.28,3.5,0.65,0.01,0.5);
+  mean = dmomdiff->GetMean();
+  diffcball->SetParameters(ddifint,mean,0.28,3.5,0.65,0.01,0.5);
   diffcball->SetParLimits(5,0.00,0.4);
   diffcball->SetParLimits(6,0.01,dmomdiff->GetRMS());
   dmomdiff->Fit("diffcball","LIR");
@@ -201,9 +222,8 @@ void diffres(TTree* ref) {
   dcan->cd(4);
   gPad->SetLogy();
   double dmcdifint = dmcmomdiff->GetEntries()*dmcmomdiff->GetBinWidth(1);
-  diffcball->SetParameters(dmcdifint,-1.0,0.25,3.5,0.65,0.01,0.5);
-  diffcball->SetParLimits(5,0.00,0.4);
-  diffcball->SetParLimits(6,0.01,dmcmomdiff->GetRMS());
-  dmcmomdiff->Fit("diffcball","LIR");
+  mean = dmomdiff->GetMean();
+  truecball->SetParameters(dmcdifint,mean,0.25,3.5,0.65,0.01,0.5);
+  dmcmomdiff->Fit("truecball","LIR");
 
 }
