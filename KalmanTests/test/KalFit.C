@@ -22,8 +22,9 @@ double momhigh(104.7);
 int minnhits(20);
 size_t icut=2;
 unsigned minnactive[4] = {20,20,25,30};
-double maxt0err[4] = {1.5,1.0,0.9,0.8};
-double maxmomerr[4] = {0.3,0.2,0.18,0.15};
+unsigned minndif[4] = { 15,8,8,8};
+double maxt0err[4] = {1.0,0.9,0.8,0.7};
+double maxmomerr[4] = {0.3,0.25,0.2,0.15};
 double minfitcon[4] = {1e-6,1e-4,1e-3,1e-2};
 
 TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
@@ -34,7 +35,7 @@ bool donecuts(false);
 void KalCuts() {
   for(size_t ic=0;ic<4;++ic){
     char cutstring[100];
-    snprintf(cutstring,100,"nactive>=%i",minnactive[ic]);
+    snprintf(cutstring,100,"nactive>=%i&&nhits-nactive<=%i",minnactive[ic],minndif[ic]);
     ncuts[ic] = TCut(cutstring);
     snprintf(cutstring,100,"t0err<%f",maxt0err[ic]);
     t0cuts[ic] = TCut(cutstring);
@@ -60,7 +61,7 @@ void KalCuts() {
 
   reco = TCut("fitstatus>0");
   goodfit = reco+ncuts[icut]+t0cuts[icut]+momcuts[icut]+fitcuts[icut];
-  cosmic = TCut("abs(d0)<105 && d0+2/om>460 && d0+2/om<660");
+  cosmic = TCut("abs(d0)<105 && d0+2/om>450 && d0+2/om<680");
   snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
   rmom = TCut(ctext);
   donecuts = true;
