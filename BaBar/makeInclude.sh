@@ -7,7 +7,7 @@
 cd BaBar
 if [ -e include ]
  then
-  if [ ! -e include/Dch ]
+  if [ ! -e include/DchGeom ]
    then
     cd include
     Dchlist="DchGeom DchGeomBase"
