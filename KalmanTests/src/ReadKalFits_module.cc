@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.17 2012/12/08 07:17:58 brownd Exp $
+// $Id: ReadKalFits_module.cc,v 1.18 2012/12/11 23:42:54 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/12/08 07:17:58 $
+// $Date: 2012/12/11 23:42:54 $
 //
 // Original author Rob Kutschke
 //
@@ -192,7 +192,12 @@ namespace mu2e {
     }
 // if there are no tracks, enter dummies
     if(trks.size() == 0 && _processEmpty){
-      _kfitmc.kalDiag(0);
+      _kfitmc.kalDiag(0,false);
+      double ee = _kfitmc._mcinfo._mom;
+      _diowt = 1.0;
+      if(_weight)
+	_diowt = DIOspectrum(ee);
+      _kfitmc._trkdiag->Fill();
     }
   }
 

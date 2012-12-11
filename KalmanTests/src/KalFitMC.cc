@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.41 2012/12/08 07:17:58 brownd Exp $
+// $Id: KalFitMC.cc,v 1.42 2012/12/11 23:42:54 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/08 07:17:58 $
+// $Date: 2012/12/11 23:42:54 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -297,11 +297,12 @@ namespace mu2e
       std::vector<MCHitSum> kmcinfo;
       findMCTrk(krep,kmcinfo);
 // mc track patermeter info for the particle which generated most of the hits
-      if(kmcinfo.size()>0 ){
-        mcTrkInfo(kmcinfo[0]._spp);
-	_mcgenid = kmcinfo[0]._spp->genParticle()->generatorId().id();
-	_mcpdgid = kmcinfo[0]._spp->pdgId();
-	_mcproc = kmcinfo[0]._spp->creationCode();
+      if(kmcinfo.size()>0 && kmcinfo[0]._spp.isNonnull() ){
+	SimParticle const& sp = *(kmcinfo[0]._spp);
+        mcTrkInfo(sp);
+	_mcgenid = sp.genParticle()->generatorId().id();
+	_mcpdgid = sp.pdgId();
+	_mcproc = sp.creationCode();
       } else {
 	_mcpdgid = 0;
 	_mcgenid = -1;
@@ -359,6 +360,25 @@ namespace mu2e
       }
     } else {
       _fitstatus = -1000;
+      _nhits = -1;
+      _fitmom = -1.0;
+      _seedmom = -1.0;
+      _mcpdgid = 0;
+      _mcgenid = -1;
+      _mcproc = -1;
+// use the primary particle (if it exists)
+      static cet::map_vector_key trkid(1);
+      for ( SimParticleCollection::const_iterator isp = _mcdata._simparts->begin();
+	isp != _mcdata._simparts->end(); ++isp ){
+	if(isp->second.id() == trkid){
+	  SimParticle const& sp = isp->second;
+	  _mcgenid = sp.genParticle()->generatorId().id();
+	  _mcpdgid = sp.pdgId();
+	  _mcproc = sp.creationCode();
+	  fillMCTrkInfo(sp,_mcinfo);
+	  break;
+	}
+      }
     }
     if(fill)_trkdiag->Fill(); 
   }
@@ -476,13 +496,13 @@ namespace mu2e
     }
   }
 
-  void KalFitMC::mcTrkInfo(art::Ptr<SimParticle> spp) {
+  void KalFitMC::mcTrkInfo(SimParticle const&  sp) {
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
 // find the mc info at the entrance to the detector
-    fillMCTrkInfo(spp,_mcinfo);
+    fillMCTrkInfo(sp,_mcinfo);
     // find MC info at tracker
-    cet::map_vector_key trkid = spp->id();
+    cet::map_vector_key trkid = sp.id();
     std::vector<MCStepItr> entsteps,midsteps,xitsteps;
     findMCSteps(_mcdata._mcvdsteps,trkid,_entvids,entsteps);
     if(entsteps.size() > 0 && vdg->exist(entsteps[0]->volumeId()))
@@ -817,18 +837,18 @@ namespace mu2e
   }
 
   void
-  KalFitMC::fillMCTrkInfo(art::Ptr<SimParticle> spp, MCTrkInfo& einfo) const {
+  KalFitMC::fillMCTrkInfo(SimParticle const& sp, MCTrkInfo& einfo) const {
     GlobalConstantsHandle<ParticleDataTable> pdt;
     GeomHandle<DetectorSystem> det;
     GeomHandle<BFieldConfig> bfconf;
 
-    einfo._time = spp->startGlobalTime();
-    einfo._pdgid = spp->pdgId();
-    double charge = pdt->particle(spp->pdgId()).ref().charge();
-    CLHEP::Hep3Vector mom = spp->startMomentum();
+    einfo._time = sp.startGlobalTime();
+    einfo._pdgid = sp.pdgId();
+    double charge = pdt->particle(sp.pdgId()).ref().charge();
+    CLHEP::Hep3Vector mom = sp.startMomentum();
     einfo._mom = mom.mag();
     // need to transform into the tracker coordinate system
-    CLHEP::Hep3Vector pos = det->toDetector(spp->startPosition());
+    CLHEP::Hep3Vector pos = det->toDetector(sp.startPosition());
     HepPoint ppos =(pos.x(),pos.y(),pos.z());
     einfo._pos = pos;
     double hflt(0.0);

@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.28 2012/12/08 07:17:58 brownd Exp $
+// $Id: KalFitMC.hh,v 1.29 2012/12/11 23:42:54 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/08 07:17:58 $
+// $Date: 2012/12/11 23:42:54 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -171,7 +171,7 @@ namespace mu2e
     void kalDiag(const KalRep* krep,bool fill=true);
     void hitsDiag(std::vector<const TrkStrawHit*> const& hits);
     void arcsDiag(std::vector<const TrkStrawHit*> const& hits);
-    void mcTrkInfo(art::Ptr<SimParticle> spp);
+    void mcTrkInfo(SimParticle const& sp);
     void hitDiag(const TrkStrawHit* strawhit);
 // find associated sim particles to a track
     void findMCTrk(const KalRep* krep, std::vector<MCHitSum>& mcinfo);
@@ -193,7 +193,7 @@ namespace mu2e
     static void fillMCHitSum(PtrStepPointMCVector const& mcptr,MCHitSumVec& summary );
 // MC info about a track
     void fillMCTrkInfo(MCStepItr const& imcs, MCTrkInfo& trkinfo) const;
-    void fillMCTrkInfo(art::Ptr<SimParticle> spp, MCTrkInfo& einfo) const;
+    void fillMCTrkInfo(SimParticle const& sp, MCTrkInfo& einfo) const;
   private:
 // cache of event data
     MCEvtData _mcdata;
