@@ -305,7 +305,7 @@ neutronMixer: {
    wrapFiles           : true
 
    // Parameters for the MixDetail class
-   mean                :  71.0
+   mean                :  56.8
    genModuleLabel      : generate
    g4ModuleLabel       : g4run
    stepInstanceNames   : @local::stepInstanceNames
