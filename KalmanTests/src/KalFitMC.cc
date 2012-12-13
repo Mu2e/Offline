@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.42 2012/12/11 23:42:54 brownd Exp $
+// $Id: KalFitMC.cc,v 1.43 2012/12/13 21:13:58 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/11 23:42:54 $
+// $Date: 2012/12/13 21:13:58 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -297,10 +297,13 @@ namespace mu2e
       std::vector<MCHitSum> kmcinfo;
       findMCTrk(krep,kmcinfo);
 // mc track patermeter info for the particle which generated most of the hits
-      if(kmcinfo.size()>0 && kmcinfo[0]._spp.isNonnull() ){
+      if(kmcinfo.size()>0 ){
 	SimParticle const& sp = *(kmcinfo[0]._spp);
-        mcTrkInfo(sp);
-	_mcgenid = sp.genParticle()->generatorId().id();
+	mcTrkInfo(sp);
+	if( sp.genParticle().isNonnull())
+	  _mcgenid = sp.genParticle()->generatorId().id();
+	else
+	  _mcgenid = 0;
 	_mcpdgid = sp.pdgId();
 	_mcproc = sp.creationCode();
       } else {
