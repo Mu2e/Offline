@@ -1,9 +1,9 @@
 //
 // Information about physics processes.
 //
-// $Id: PhysicsProcessInfo.cc,v 1.7 2012/12/07 23:00:45 genser Exp $
+// $Id: PhysicsProcessInfo.cc,v 1.8 2012/12/13 23:57:58 genser Exp $
 // $Author: genser $
-// $Date: 2012/12/07 23:00:45 $
+// $Date: 2012/12/13 23:57:58 $
 //
 // Original author Rob Kutschke
 //
@@ -132,12 +132,13 @@ namespace mu2e{
       G4String name = code.name();
       _allProcesses.insert(std::make_pair(name,ProcInfo(code.name(),code) ));
     }
+    // printAll(cout);
 
   } // PhysicsProcessInfo::beginRun
 
   void PhysicsProcessInfo::endRun(){
     printSummary(cout);
-    //    printAll(cout);
+    // printAll(cout);
   }
 
   // This can possibly be sped up considerably by checking frequently occuring names first.
@@ -169,8 +170,8 @@ namespace mu2e{
       ProcInfo const& oi        = i->second;
       os << "Process: "
          << setw(_longestName) << oi.procName << " "
-         << oi.code            << " "
-         << oi.count;
+         << setw(4)  << oi.code.id()       << " "
+         << setw(10) << oi.count;
       for ( size_t i=0; i<oi.particleNames.size(); ++i){
         os << " " << oi.particleNames[i];
       }
@@ -180,8 +181,8 @@ namespace mu2e{
 
     os << "Total count: "
        << setw(_longestName) << " "
-       << "   "
-       << tcsum
+       << "  "
+       << setw(10) << tcsum
        << endl;
 
   }
@@ -199,15 +200,15 @@ namespace mu2e{
       os << "Process: "
          << setw(_longestName) << oi.procName  << " "
          << setw(4)            << oi.code.id() << " "
-         << oi.count
+         << setw(10)           << oi.count
          << endl;
       tcsum += oi.count;
     }
 
     os << "Total count: "
        << setw(_longestName) << " "
-       << "   "
-       << tcsum
+       << "  "
+       << setw(10) << tcsum
        << endl;
 
   }
