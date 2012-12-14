@@ -1,7 +1,7 @@
 #
-# $Id: setup_g4952.sh,v 1.1 2012/11/06 17:59:02 genser Exp $
+# $Id: setup_g4952.sh,v 1.2 2012/12/14 20:19:45 genser Exp $
 # $Author: genser $
-# $Date: 2012/11/06 17:59:02 $
+# $Date: 2012/12/14 20:19:45 $
 #
 # Original author Rob Kutschke
 #
@@ -74,13 +74,13 @@ source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
 # Check out the BaBar code.
 # First build the symlink directory.  Then checkout the code.
 if [  -f "./BaBar/makeInclude.sh" ]; then
-  ./BaBar/makeInclude.sh
-  if [ ! -f "BaBar/BaBar/include/BaBar.hh" ]; then
-   echo "Checking out the BaBar Kalman Filter code."
-   ./BaBar/checkout.sh
-  else
-   echo "BaBar Kalman filter code already present. Not checking it out."
-  fi
+    source ./BaBar/makeInclude.sh
+    if [ ! -f "BaBar/BaBar/include/BaBar.hh" ]; then
+        echo "Checking out the BaBar Kalman Filter code."
+        source ./BaBar/checkout.sh
+    else
+        echo "BaBar Kalman filter code already present. Not checking it out."
+    fi
 fi
 
 # A hack that we hope can go away soon.
