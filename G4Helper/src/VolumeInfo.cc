@@ -3,9 +3,9 @@
 // The center information is not fully general: it does not know about rotations
 // and is useful only for the top few levels of the detector.
 //
-// $Id: VolumeInfo.cc,v 1.3 2011/11/03 16:28:44 gandr Exp $
+// $Id: VolumeInfo.cc,v 1.4 2012/12/14 21:28:32 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/03 16:28:44 $
+// $Date: 2012/12/14 21:28:32 $
 //
 // Original author Rob Kutschke
 //
@@ -33,7 +33,12 @@ namespace mu2e {
     // initialization happes on the first access (after geometry svc
     // is available) and not during the library loading, which would
     // be too early.
-    static CLHEP::Hep3Vector _origin(GeomHandle<WorldG4>()->mu2eOriginInWorld());
+
+    // WorldG4 may not be available in a "study" geometry, check before using.
+    static art::ServiceHandle<GeometryService> sg;
+    static CLHEP::Hep3Vector _origin(sg->hasElement<WorldG4>() ?
+                                     GeomHandle<WorldG4>()->mu2eOriginInWorld()
+                                     : CLHEP::Hep3Vector(0,0,0));
     return _origin;
   }
 
