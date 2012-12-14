@@ -1,6 +1,6 @@
-  $Id: v2_1_0.txt,v 1.4 2012/12/14 00:01:46 genser Exp $
+  $Id: v2_1_0.txt,v 1.5 2012/12/14 00:44:34 genser Exp $
   $Author: genser $
-  $Date: 2012/12/14 00:01:46 $
+  $Date: 2012/12/14 00:44:34 $
 
  Still under construction
 
@@ -8,7 +8,8 @@
 
 3) December 13, 2012 genser
 
-   Added new processes: hFritiofCaptureAtRest hBertiniCaptureAtRest
+   Added new processes: hFritiofCaptureAtRest, hBertiniCaptureAtRest,
+   AntiTritonInelasticProcess
        MCDataProducts/inc/ProcessCode.hh
    Changed summary printout
        Mu2eG4/src/PhysicsProcessInfo.cc
