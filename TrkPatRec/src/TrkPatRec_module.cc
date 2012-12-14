@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.49 2012/12/07 20:58:08 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.50 2012/12/14 15:23:01 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/07 20:58:08 $
+// $Date: 2012/12/14 15:23:01 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -555,7 +555,7 @@ namespace mu2e
     }
 // search for peaks.  Convert to an absolute threshold instead of a relative threshold
     Double_t bmax = tpsp.GetMaximum();
-    double thresh(0.1);
+    double thresh(0.99);
     if(bmax > _2dthresh)thresh = _2dthresh/bmax;
     tspec2.Search(&tpsp,_2dsigma,"nobackgroundnomarkovgoff",thresh);
 // fill hit information about peaks
@@ -592,7 +592,7 @@ namespace mu2e
       }
     }
     Double_t mb = timespec.GetMaximum();
-    double thresh(0.1);
+    double thresh(0.99);
     if(mb > _1dthresh) thresh = _1dthresh/mb;
     unsigned np = tspec.Search(&timespec,1,"nobackgroundnomarkovgoff",thresh);
     Float_t *xpeaks = tspec.GetPositionX();
