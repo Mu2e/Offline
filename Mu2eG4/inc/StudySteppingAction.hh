@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: StudySteppingAction.hh,v 1.1 2012/11/16 23:29:16 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/16 23:29:16 $
+// $Id: StudySteppingAction.hh,v 1.2 2012/12/17 16:59:30 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/12/17 16:59:30 $
 //
 // Original author Rob Kutschke
 //
@@ -140,6 +140,7 @@ namespace mu2e {
     // Limit maximum size of the steps collections
     int _stepperStepPointCollectionSizeLimit;
     int _stepperStepPointCollectionCurrentSize;
+    bool _saveSteps;
 
     // Information about the SimParticleCollection, needed to instantiate art::Ptr.
     art::ProductID const*  _simID;

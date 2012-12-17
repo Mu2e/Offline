@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: StudySteppingAction.cc,v 1.2 2012/11/29 23:23:47 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/29 23:23:47 $
+// $Id: StudySteppingAction.cc,v 1.3 2012/12/17 16:59:30 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/12/17 16:59:30 $
 //
 // Original author Rob Kutschke
 //
@@ -60,6 +60,7 @@ namespace mu2e {
     _stepperStepPointCollection(0),
     _stepperStepPointCollectionSizeLimit(config.getInt("g4.steppingActionStepsSizeLimit",0)),
     _stepperStepPointCollectionCurrentSize(0),
+    _saveSteps(config.getBool("g4.steppingActionSaveSteps", true)),
 
     _simID(0),
     _event(0) {
@@ -210,8 +211,11 @@ namespace mu2e {
         addTimeVDHit(step,i+1);
       }
     }
-    // Save the step point
-    addStepPoint(step);
+
+    if(_saveSteps) {
+      // Save the step point
+      addStepPoint(step);
+    }
 
     // Have we reached maximum allowed number of steps per track?
     if( _maxSteps>0 && _nSteps>_maxSteps ) {
