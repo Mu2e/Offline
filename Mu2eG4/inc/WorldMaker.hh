@@ -3,9 +3,9 @@
 //
 // The Mu2e version of G4VUserDetectorConstruction.
 //
-// $Id: WorldMaker.hh,v 1.5 2012/11/16 23:45:06 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/16 23:45:06 $
+// $Id: WorldMaker.hh,v 1.6 2012/12/17 16:56:30 gandr Exp $
+// $Author: gandr $
+// $Date: 2012/12/17 16:56:30 $
 //
 // Original author Rob Kutschke
 //
@@ -17,6 +17,8 @@
 
 //#include <string>
 #include <memory>
+
+#include "boost/noncopyable.hpp"
 
 // Mu2e includes
 #include "Mu2eG4/inc/ConstructMaterials.hh"
@@ -33,13 +35,17 @@
 
 namespace mu2e {
 
-  template <typename T> class WorldMaker : public G4VUserDetectorConstruction
+  template <typename WorldType, typename MaterialsType=ConstructMaterials>
+  class WorldMaker : public G4VUserDetectorConstruction,
+                     private boost::noncopyable
   {
   public:
 
-    WorldMaker():
-      _materials(),
-      _world(){
+    explicit WorldMaker(std::auto_ptr<WorldType> pw = std::auto_ptr<WorldType>(new WorldType()),
+                        std::auto_ptr<MaterialsType> pm = std::auto_ptr<MaterialsType>(new ConstructMaterials())) :
+      _materials(pm),
+      _world(pw)
+    {
     }
     ~WorldMaker(){}
 
@@ -49,25 +55,18 @@ namespace mu2e {
       // Clean old geometry, if any
       Clean();
 
-      _materials = std::auto_ptr<ConstructMaterials>(new ConstructMaterials());
-      _world     = std::auto_ptr<T>(new T());
-
       _materials->construct();
 
       return _world ->construct();
     }
 
     // Accessors.
-    T const* getWorld()     { return _world.get(); }
+    WorldType const* getWorld()     { return _world.get(); }
 
   private:
 
-
     // Clean old geometry, if any.
     void Clean(){
-
-      _materials.release();
-      _world.release();
 
       G4GeometryManager::GetInstance()->OpenGeometry();
       G4PhysicalVolumeStore::GetInstance()->Clean();
@@ -76,11 +75,10 @@ namespace mu2e {
 
     }
 
-    std::auto_ptr<ConstructMaterials> _materials;
-    std::auto_ptr<T>                  _world;
+    std::auto_ptr<MaterialsType> _materials;
+    std::auto_ptr<WorldType>     _world;
 
   };
 
 } // end namespace mu2e
 #endif /* Mu2eG4_WorldMaker_hh */
-
