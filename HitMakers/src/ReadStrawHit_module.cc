@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.14 2012/08/22 22:21:32 genser Exp $
+// $Id: ReadStrawHit_module.cc,v 1.15 2012/12/19 22:32:55 genser Exp $
 // $Author: genser $
-// $Date: 2012/08/22 22:21:32 $
+// $Date: 2012/12/19 22:32:55 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by KLG
@@ -147,7 +147,7 @@ namespace mu2e {
     _hHitDeltaTime = tfs->make<TH1F>( "hHitDeltaTime", "Hit Delta Time (ns)", 80, -20.0, 20. );
     //    _hHitAmplitude = tfs->make<TH1F>( "hHitAmplitude", "Hit Amplitudes (uV)",  100, 0., 100. );
     _hHitEnergy    = tfs->make<TH1F>( "hHitEnergy",    "Hit Energy (keV)", 100, 0., 100. );
-    _hNHits        = tfs->make<TH1F>( "hNHits",        "Number of straw hits", 500, 0., 10000. );
+    _hNHits        = tfs->make<TH1F>( "hNHits",        "Number of straw hits", 500, 0., 500. );
     _hNHitsPerWire = tfs->make<TH1F>( "hNHitsPerWire", "Number of hits per straw", 10, 0., 10. );
     _hDriftTime    = tfs->make<TH1F>( "hDriftTime",    "Drift time, ns", 100, 0., 100. );
     _hDriftDistance= tfs->make<TH1F>( "hDriftDistance","Drift Distance, mm", 100, 0., 3. );
@@ -335,10 +335,10 @@ namespace mu2e {
       _hDriftDistance->Fill(truth.driftDistance());
       _hDistanceToMid->Fill(truth.distanceToMid());
 
-      float nt[18];
       const CLHEP::Hep3Vector smidp  = str.getMidPoint();
       const CLHEP::Hep3Vector sdir   = str.getDirection();
       // Fill the ntuple:
+      float nt[_ntup->GetNvar()];
       nt[0]  = evt.id().event();
       nt[1]  = lid.getLayer();
       nt[2]  = did;
@@ -358,6 +358,7 @@ namespace mu2e {
       nt[16] = truth.distanceToMid();
       nt[17] = id;
       _ntup->Fill(nt);
+
       // Calculate number of hits per wire
       ++nhperwire[hit.strawIndex()];
 
