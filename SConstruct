@@ -2,9 +2,9 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.39 2012/08/24 20:19:31 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/08/24 20:19:31 $
+# $Id: SConstruct,v 1.40 2012/12/19 22:15:16 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2012/12/19 22:15:16 $
 #
 # Original author Rob Kutschke.
 #
@@ -148,9 +148,10 @@ if not os.environ.has_key('SPLINES_DIR'):
         ss.remove('FigureOfMerit/src/SConscript')
 
 # If the Dch part of BaBar package is not present, skip building KalmanTestsI.
-if not(os.path.exists('BaBar/Dch')):	 
-    ss.remove('KalmanTestsI/src/SConscript')
-    print 'Dch part of the BaBar package is absent. Will not build KalmanTestsI.'
+if os.path.exists('BaBar'):
+    if not(os.path.exists('BaBar/Dch')):
+        ss.remove('KalmanTestsI/src/SConscript')
+        print 'Dch part of the BaBar package is absent. Will not build KalmanTestsI.'
 
 # Tell scons to operate on all of the SConscript files found in the previous steps.
 env.SConscript(ss)
