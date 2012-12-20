@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: StudySteppingAction.cc,v 1.3 2012/12/17 16:59:30 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/12/17 16:59:30 $
+// $Id: StudySteppingAction.cc,v 1.4 2012/12/20 17:46:46 genser Exp $
+// $Author: genser $
+// $Date: 2012/12/20 17:46:46 $
 //
 // Original author Rob Kutschke
 //
@@ -17,6 +17,7 @@
 #include "cetlib/exception.h"
 
 // Mu2e includes
+#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/StudySteppingAction.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
@@ -337,12 +338,14 @@ namespace mu2e {
     for( size_t i=0; i<_killLowKineticEnergyPDG.size(); ++i ) {
       if( _killLowKineticEnergyPDG[i] == pdg ) {
         if( trk->GetKineticEnergy() <= _eKineMinPDG[i] ){
-					if ( _killerVerbose ){
-						cout << "Killed track PDG " << pdg << " : low energy. " << trk->GetTrackID() << endl;
-					}
-					return true;
-				}
-				break;
+          if ( _killerVerbose ){
+            cout << "Killed track PDG " 
+                 << pdg << " : low energy. " 
+                 << trk->GetTrackID() << endl;
+          }
+          return true;
+        }
+        break;
       }
     }
 
@@ -431,7 +434,7 @@ namespace mu2e {
     }
 
     // Which process caused this step to end?
-    G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    G4String pname = Mu2eG4UserHelpers::findStoppingProcessName(aStep->GetTrack());
     ProcessCode endCode(_processInfo->findAndCount(pname));
 
     // The point's coordinates are saved in the mu2e coordinate system.
@@ -469,7 +472,7 @@ namespace mu2e {
     }
 
     // Which process caused this step to end?
-    G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    G4String pname = Mu2eG4UserHelpers::findStoppingProcessName(aStep->GetTrack());
     ProcessCode endCode(_processInfo->findAndCount(pname));
 
     // The point's coordinates are saved in the mu2e coordinate system.
