@@ -5,14 +5,15 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: StudyTrackingAction.hh,v 1.1 2012/11/16 23:29:35 genser Exp $
+// $Id: StudyTrackingAction.hh,v 1.2 2012/12/20 17:33:46 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/16 23:29:35 $
+// $Date: 2012/12/20 17:33:46 $
 //
 // Original author Rob Kutschke
 //
 
 #include "CLHEP/Vector/ThreeVector.h"
+
 #include "G4UserTrackingAction.hh"
 
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -68,13 +69,9 @@ namespace mu2e {
     // Clean up at end of run.
     void endRun();
 
-    // Check consistency of mother-daughter pointers.
-    bool checkCrossReferences( bool doPrint, bool doThrow);
-
     // Accessors for status information.
     int             nG4Tracks() const { return _currentSize;}
     bool overflowSimParticles() const { return _overflowSimParticles; }
-
 
   private:
 
@@ -99,9 +96,6 @@ namespace mu2e {
     // during the operation of G4.  This is not persistent.
     map_type _transientMap;
 
-    // Debug printout.
-    void printInfo(const G4Track* trk, const std::string& text, bool isEnd=false);
-
     // Limit maximum size of the steps collection
     int _sizeLimit;
     int _currentSize;
@@ -123,18 +117,8 @@ namespace mu2e {
     // Non-owning pointer to the event; needed for some Ptr stuff.
     art::Event const * _event;
 
-    // Control the saving of trajectories.
-    // The first method does the big picture bookkeeping.
-    // The second method decides yes/no for storing the trajectory of one track.
-    void controlTrajectorySaving( const G4Track* trk);
-    bool saveThisTrajectory( const G4Track* trk );
-
     // Some helper functions.
     void insertOrThrow(std::pair<int,SimParticle> const& value);
-    G4String findStoppingProcess(G4Track const* track);
-    double getPreLastStepKE(G4Track const* trk);
-    int  getNSteps(G4Track const* trk);  
-    ProcessCode findCreationCode(G4Track const* track);
 
   };
 
