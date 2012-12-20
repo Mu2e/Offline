@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.32 2012/12/07 23:01:07 genser Exp $
+// $Id: TrackingAction.cc,v 1.33 2012/12/20 18:24:25 genser Exp $
 // $Author: genser $
-// $Date: 2012/12/07 23:01:07 $
+// $Date: 2012/12/20 18:24:25 $
 //
 // Original author Rob Kutschke
 //
@@ -28,6 +28,7 @@
 #include <iostream>
 
 // Mu2e includes
+#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
@@ -44,7 +45,6 @@
 #include "globals.hh"
 #include "G4RunManager.hh"
 #include "G4EventManager.hh"
-#include "G4ParticleTable.hh"
 
 using namespace std;
 
@@ -90,7 +90,7 @@ namespace mu2e {
 
     // saveSimParticle must be called before controlTrajectorySaving.
     saveSimParticleStart(trk);
-    controlTrajectorySaving(trk);
+    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize);
 
     // Create a user trackinformation object and attach it to the track.
     // Need to cast away const-ness to do this.
@@ -100,7 +100,7 @@ namespace mu2e {
     _steppingAction->BeginOfTrack();
 
     if ( !_debugList.inList() ) return;
-    printInfo( trk, "Start new Track: ");
+    Mu2eG4UserHelpers::printTrackInfo( trk, "Start new Track: ", _transientMap, _timer, _mu2eOrigin);
 
     _timer.reset();
     _timer.start();
@@ -116,7 +116,7 @@ namespace mu2e {
     _steppingAction->EndOfTrack();
 
     if ( !_debugList.inList() ) return;
-    printInfo( trk, "End Track:       ", true);
+    Mu2eG4UserHelpers::printTrackInfo( trk, "End Track:       ",  _transientMap, _timer, _mu2eOrigin, true);
 
   }
 
@@ -132,9 +132,9 @@ namespace mu2e {
   }
 
   void TrackingAction::endEvent(SimParticleCollection& persistentSims ){
+    Mu2eG4UserHelpers::checkCrossReferences(true,false,_transientMap);
     persistentSims.insert( _transientMap.begin(), _transientMap.end() );
     _transientMap.clear();
-    checkCrossReferences(true,false);
     if ( !_debugList.inList() ) return;
   }
 
@@ -171,7 +171,7 @@ namespace mu2e {
     }
 
     // Find the physics process that created this track.
-    ProcessCode creationCode = findCreationCode(trk);
+    ProcessCode creationCode = Mu2eG4UserHelpers::findCreationCode(trk);
 
     // Track should not yet be in the map.  Add a debug clause to skip this test?
     if ( _transientMap.find(kid) != _transientMap.end() ){
@@ -227,15 +227,15 @@ namespace mu2e {
     }
 
     // Reason why tracking stopped, decay, range out, etc.
-    G4String pname  = findStoppingProcess(trk);
+    G4String pname  = Mu2eG4UserHelpers::findStoppingProcessName(trk);
     ProcessCode stoppingCode(_processInfo->findAndCount(pname));
 
     //Get kinetic energy at the begin of the last step
-    double preLastStepKE = getPreLastStepKE(trk);
+    double preLastStepKE = Mu2eG4UserHelpers::getPreLastStepKE(trk);
 
 
     //Get number od steps the track is made of
-    int nSteps = getNSteps(trk);
+    int nSteps = Mu2eG4UserHelpers::getNSteps(trk);
 
     // Add info about the end of the track.  Throw if SimParticle not already there.
     i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,
@@ -250,269 +250,5 @@ namespace mu2e {
                           );
 
   }
-
-  // Enable/disable storing of trajectories based on several considerations
-  void TrackingAction::controlTrajectorySaving( const G4Track* trk){
-
-    // Do not add the trajectory if the corresponding SimParticle is missing.
-    if( _sizeLimit>0 && _currentSize>_sizeLimit ) return;
-
-    bool keep = saveThisTrajectory(trk);
-    G4TrackingManager* trkmgr = G4EventManager::GetEventManager()->GetTrackingManager();
-    if ( keep ) {
-      trkmgr->SetStoreTrajectory(true);
-    } else{
-      trkmgr->SetStoreTrajectory(false);
-    }
-  }
-
-  // The per track decision on whether or not to store trajectories.
-  bool TrackingAction::saveThisTrajectory( const G4Track* trk ){
-
-    // This is a guess at what might be useful.  Feel free to improve it.
-    // We might want to change the momentum cut depending on which volume
-    // the track starts in.
-    CLHEP::Hep3Vector const& mom = trk->GetMomentum();
-    bool keep = ( mom.mag() > 50.*CLHEP::MeV );
-
-    return keep;
-  }
-
-
-  void TrackingAction::printInfo(const G4Track* trk, const string& text, bool isEnd ){
-
-    const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent();
-
-    // Get some properties of the tracks.
-    G4VPhysicalVolume* pvol = trk->GetVolume();
-    G4String volName = (pvol !=0) ?
-      pvol->GetName(): "Unknown Volume";
-
-    G4ParticleDefinition* pdef = trk->GetDefinition();
-    G4String partName = (pdef !=0) ?
-      pdef->GetParticleName() : "Unknown Particle";
-
-    int id       = trk->GetTrackID();
-    int parentId = trk->GetParentID();
-
-    cout << text
-         << setw(5) << event->GetEventID()  << " "
-         << setw(4) << id                   << " "
-         << setw(4) << parentId             << " "
-         << setw(8) << partName             << " | "
-         << trk->GetPosition()-_mu2eOrigin  << " "
-         << trk->GetMomentum()              << " "
-         << trk->GetKineticEnergy()         << " "
-         << volName                         << " ";
-
-    if ( isEnd ){
-      cout << trk->GetProperTime() <<  " | ";
-      map_type::iterator i(_transientMap.find(key_type(id)));
-      if ( i != _transientMap.end() ){
-        SimParticle const& particle = i->second;
-        cout << particle.startGlobalTime() <<  " ";
-      } else {
-        cout << -1. <<  " ";
-      }
-
-      cout << trk->GetGlobalTime() << " | ";
-      cout << _timer.cpuTime() << " "
-           << _timer.realTime()
-           << endl;
-    }
-
-    cout << endl;
-
-  }
-
-  bool TrackingAction::checkCrossReferences( bool doPrint, bool doThrow ){
-
-    // Start by assuming we are ok; any error will turn this to false.
-    bool ok(true);
-
-    // Loop over all simulated particles.
-    for ( map_type::const_iterator i=_transientMap.begin();
-          i!=_transientMap.end(); ++i ){
-
-      // The next particle to look at.
-      SimParticle const& sim = i->second;
-
-      // Check that daughters point to the mother.
-      std::vector<key_type> const& dau = sim.daughterIds();
-      for ( size_t j=0; j<dau.size(); ++j ){
-        key_type parentId = _transientMap[(key_type(dau[j]))].parentId();
-        if ( parentId != sim.id() ){
-
-          // Daughter does not point back to the parent.
-          ok = false;
-          if ( doPrint ){
-            mf::LogError("G4")
-              << "TrackingAction::checkCrossReferences: daughter does not point back to mother.\n";
-          }
-          if ( doThrow ){
-            throw cet::exception("MU2EG4")
-              << "TrackingAction::checkCrossReferences: daughter does not point back to mother.\n";
-          }
-        }
-      }
-
-      // Check that this particle is in the list of its parent's daughters.
-      if ( sim.hasParent() ){
-        key_type parentId = sim.parentId();
-
-        // Find all daughters of this particle's mother.
-        std::vector<key_type> const& mdau = _transientMap[parentId].daughterIds();
-        bool inList(false);
-        for ( size_t j=0; j<mdau.size(); ++j ){
-          if ( key_type(mdau[j]) == sim.id() ){
-            inList = true;
-            break;
-          }
-        }
-        if ( !inList ){
-          ok = false;
-          if ( doPrint ){
-            mf::LogError("G4")
-              << "TrackingAction::checkCrossReferences: daughter is not found amoung mother's daughters.\n";
-          }
-          if ( doThrow ){
-            throw cet::exception("MU2EG4")
-              << "TrackingAction::checkCrossReferences: daughter is not found amoung mother's daughters.\n";
-          }
-        }
-      }
-
-    }
-
-    return ok;
-
-  }
-
-  // Find the name of the process that stopped this track.
-  G4String TrackingAction::findStoppingProcess( G4Track const* track){
-
-    // First check to see if Mu2e code killed this track.
-    G4VUserTrackInformation* info = track->GetUserInformation();
-    UserTrackInformation const* tinfo   = (UserTrackInformation*)info;
-
-    if ( tinfo->isForced() ){
-      return tinfo->code().name();
-    }
-
-    // Otherwise, G4 killed this track.
-    G4VProcess const* process = track->GetStep()->GetPostStepPoint()->GetProcessDefinedStep();
-
-    if (process) {
-      return process->GetProcessName();
-    } else {
-
-      { // forcing mf own scope to prevent output interleaving; 
-        // does not seem to work anyway
-        mf::LogWarning("G4")
-        << "ProcessDefinedStep NotSpecified for " 
-        << track->GetParticleDefinition()->GetParticleName()
-        << endl;
-      }
-
-      static bool printItOnce = true;
-      
-      if (printItOnce) {
-
-        printItOnce = false;
-
-        G4VProcess const* process = track->GetStep()->GetPreStepPoint()->GetProcessDefinedStep();
-        G4String pname = (process) ? process->GetProcessName() : "NotSpecified";
-
-        cout << __func__ << " ProcessDefinedStep NotSpecified for " 
-             << track->GetParticleDefinition()->GetParticleName()
-             << ", PostStepPoint StepStatus: "
-             << track->GetStep()->GetPostStepPoint()->GetStepStatus()
-             << ", PreStepPoint  StepStatus: "
-             << track->GetStep()->GetPreStepPoint()->GetStepStatus()
-             << ", PreStepPoint ProcessDefinedStep: "
-             << pname
-             << endl;
-
-        int id       = track->GetTrackID();
-        int parentId = track->GetParentID();
-
-        cout << __func__ << " Track info:" 
-             << " ID: " 
-             << id
-             << ", ParentID: "
-             << parentId
-             << ", CurrentStepNumber: "
-             << track->GetCurrentStepNumber()
-             << ", TrackStatus: "
-             << track->GetTrackStatus()
-             << ", TrackCreationCode: "
-             << findCreationCode(track)
-             << endl;
-
-
-        if ( parentId != 0 ){
-          map_type::iterator i(_transientMap.find(key_type(parentId)));
-          if ( i == _transientMap.end() ){
-            throw cet::exception("RANGE")
-              << "Could not find parent SimParticle in findStoppingProcess.  id: "
-              << id
-              << "\n";
-          }
-
-          int pdgId = i->second.pdgId();
-          cout << __func__ << " Parent info:" 
-               << " ID: " 
-               << parentId
-               << ", PDGiD: "
-               << pdgId
-               << ", name: "
-               << G4ParticleTable::GetParticleTable()->FindParticle(pdgId)->GetParticleName()
-               << ", endG4Status: "
-               << i->second.endG4Status()
-               << ", stoppingCode: "
-               << i->second.stoppingCode()
-               << endl;
-
-        }
-
-      }
-
-      return G4String("NotSpecified");
-    }
-
-  }
-
-  //Retrieve kinetic energy at the beginnig of the last step from UserTrackInfo
-  double TrackingAction::getPreLastStepKE( G4Track const* trk ) {
-
-    G4VUserTrackInformation* info = trk->GetUserInformation();
-    UserTrackInformation const* tinfo   = (UserTrackInformation*)info;
-    return tinfo->preLastStepKE();
-
-  }
-
-  // Get the number of G4 steps the track is made of
-  int TrackingAction::getNSteps( G4Track const* trk ) {
-
-    G4VUserTrackInformation* info = trk->GetUserInformation();
-    UserTrackInformation const* tinfo   = (UserTrackInformation*)info;
-    return tinfo->nSteps();
-
-  }
-
-  // Find the name of the code for the process that created this track.
-  ProcessCode TrackingAction::findCreationCode( G4Track const* trk){
-    G4VProcess const* process = trk->GetCreatorProcess();
-
-    // If there is no creator process, then the G4Track was created by PrimaryGenerator action.
-    if ( process == 0 ){
-      return ProcessCode::mu2ePrimary;
-    }
-
-    // Extract the name from the process and look up the code.
-    string name = process->GetProcessName();
-    return ProcessCode::findByName(name);
-  }
-
 
 } // end namespace mu2e
