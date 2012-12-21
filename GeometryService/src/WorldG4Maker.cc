@@ -23,14 +23,6 @@ namespace mu2e {
     // This is where we want mu2eOriginInWorld
     const CLHEP::Hep3Vector requestedWorldCenterInMu2e( -c.getHep3Vector("world.mu2eOriginInWorld"));
     
-    // Tentative position of the origin of the mu2e coordinate system
-    res->_mu2eOriginInWorld = requestedWorldCenterInMu2e;
-
-    // we finish with that if this is not a statdard mu2e setup
-    if (!c.getBool("mu2e.standardDetector",true)) {
-      return res;
-    }
-
     // The WorldG4Maker is special among geometry makers:
     // it is guaranteed it will be called after all other detector objects
     // are available in geometry service, therefore it can access their data.
