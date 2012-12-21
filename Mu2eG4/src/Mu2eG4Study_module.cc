@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // ******Meant for Geant4 Studies not for Mu2e Simulations**********
 //
-// $Id: Mu2eG4Study_module.cc,v 1.1 2012/11/16 23:55:39 genser Exp $
+// $Id: Mu2eG4Study_module.cc,v 1.2 2012/12/21 21:39:11 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/16 23:55:39 $
+// $Date: 2012/12/21 21:39:11 $
 //
 // Original author K. Genser, based on Rob's G4_module
 //
@@ -68,6 +68,7 @@
 #include "G4Timer.hh"
 #include "G4VUserPhysicsList.hh"
 #include "G4SDManager.hh"
+#include "G4ThreeVector.hh"
 
 // ROOT includes
 #include "TNtuple.h"
@@ -234,10 +235,14 @@ namespace mu2e {
     auto_ptr<PhysicalVolumeInfoCollection> volumes(new PhysicalVolumeInfoCollection(vinfo));
     run.put(volumes);
 
+    //  we are working in the system with the origin set to
+    //  0.,0.,0. and do not use geometry service for that
+
+    G4ThreeVector const zeroVector(0.0,0.0,0.0);
+
     // Some of the user actions have beginRun methods.
-    GeomHandle<WorldG4>  worldGeom;
-     _trackingAction->beginRun( _physVolHelper, _processInfo, worldGeom->mu2eOriginInWorld() );
-     _steppingAction->beginRun( _processInfo, worldGeom->mu2eOriginInWorld() );
+    _trackingAction->beginRun( _physVolHelper, _processInfo, zeroVector);
+    _steppingAction->beginRun( _processInfo, zeroVector);
 
     // fixme may need to revisit the above User Action Clases
 
@@ -258,12 +263,11 @@ namespace mu2e {
 
   void Mu2eG4Study::initializeG4( GeometryService& geom, art::Run const& run ){
 
+    // we use GeometryService for SimpleConfig only now
+    // there is still the dependence on the geometry service itself
+    // via Mu2eUniverse and VolumeInfo
+
     SimpleConfig const& config = geom.config();
-
-    // this is the mu2e setup in the geometry service which is forced to be minimal
-    // if mu2e.standardDetector is set to false in the config file
-
-    geom.addWorldG4(); 
 
     if ( _rmvlevel > 0 ) {
       mf::LogInfo logInfo("GEOM");
