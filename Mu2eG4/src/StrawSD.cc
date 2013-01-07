@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.37 2012/07/15 22:06:17 kutschke Exp $
+// $Id: StrawSD.cc,v 1.38 2013/01/07 04:05:00 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Date: 2013/01/07 04:05:00 $
 //
 // Original author Rob Kutschke
 //
@@ -48,7 +48,8 @@ namespace mu2e {
     Mu2eSensitiveDetector(name,config),
     _nStrawsPerDevice(0),
     _nStrawsPerSector(0),
-    _TrackerVersion(0)
+    _TrackerVersion(0),
+    _supportModel()
   {
 
     art::ServiceHandle<GeometryService> geom;
@@ -70,6 +71,7 @@ namespace mu2e {
       _nStrawsPerDevice = device.nSectors() * _nStrawsPerSector;
 
       _TrackerVersion = config.getInt("TTrackerVersion",3);
+      _supportModel   = ttracker->getSupportModel();
 
       if ( _TrackerVersion != 3) {
         throw cet::exception("StrawSD")
@@ -136,9 +138,9 @@ namespace mu2e {
     //    static G4ThreeVector detectorOrigin( -3904., -7350., 6200.);
     static G4ThreeVector detectorOrigin = GetTrackerOrigin(touchableHandle);
 
-//     cout << "Debugging detectorOrigin   " << detectorOrigin  << endl;
-//     cout << "Debugging det name         " << touchableHandle->GetVolume(2)->GetName() << endl;
-//     cout << "Debugging det G4 origin    " << cdo  << endl;
+    //     cout << "Debugging detectorOrigin   " << detectorOrigin  << endl;
+    //     cout << "Debugging det name         " << touchableHandle->GetVolume(2)->GetName() << endl;
+    //     cout << "Debugging det G4 origin    " << cdo  << endl;
 
     // Position at start of step point, in world system and in
     // a system in which the center of the tracking detector is the origin.
@@ -149,61 +151,66 @@ namespace mu2e {
 
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
-//     G4int en = event->GetEventID();
-//     G4int ti = aStep->GetTrack()->GetTrackID();
-//     G4int cn = touchableHandle->GetCopyNumber();
-//     G4int rn = touchableHandle->GetReplicaNumber();
+    //     G4int en = event->GetEventID();
+    //     G4int ti = aStep->GetTrack()->GetTrackID();
+    //     G4int cn = touchableHandle->GetCopyNumber();
+    //     G4int rn = touchableHandle->GetReplicaNumber();
 
-//     G4TouchableHistory* theTouchable =
-//       (G4TouchableHistory*)( aStep->GetPreStepPoint()->GetTouchable() );
+    //     G4TouchableHistory* theTouchable =
+    //       (G4TouchableHistory*)( aStep->GetPreStepPoint()->GetTouchable() );
 
-//     cout << "Debugging history depth " <<
-//       setw(4) << theTouchable->GetHistoryDepth() << endl;
+    //     cout << "Debugging history depth " <<
+    //       setw(4) << theTouchable->GetHistoryDepth() << endl;
 
-//     cout << "Debugging replica 0 1 2 " <<
-//       setw(4) << theTouchable->GetReplicaNumber(0) <<
-//       setw(4) << theTouchable->GetReplicaNumber(1) <<
-//       setw(4) << theTouchable->GetReplicaNumber(2) << endl;
+    //     cout << "Debugging replica 0 1 2 " <<
+    //       setw(4) << theTouchable->GetReplicaNumber(0) <<
+    //       setw(4) << theTouchable->GetReplicaNumber(1) <<
+    //       setw(4) << theTouchable->GetReplicaNumber(2) << endl;
 
-//     cout << "Debugging replica 0 1 2 3 4" <<
-//       setw(4) << touchableHandle->GetReplicaNumber(0) <<
-//       setw(4) << touchableHandle->GetReplicaNumber(1) <<
-//       setw(4) << touchableHandle->GetReplicaNumber(2) <<
-//       setw(4) << touchableHandle->GetReplicaNumber(3) <<
-//       setw(4) << touchableHandle->GetReplicaNumber(4) << endl;
+    //     cout << "Debugging replica 0 1 2 3 4" <<
+    //       setw(4) << touchableHandle->GetReplicaNumber(0) <<
+    //       setw(4) << touchableHandle->GetReplicaNumber(1) <<
+    //       setw(4) << touchableHandle->GetReplicaNumber(2) <<
+    //       setw(4) << touchableHandle->GetReplicaNumber(3) <<
+    //       setw(4) << touchableHandle->GetReplicaNumber(4) << endl;
 
-//     cout << "Debugging PV Name Mother Name" <<
-//       theTouchable->GetVolume(0)->GetName() << " " <<
-//       theTouchable->GetVolume(1)->GetName() << " " <<
-//       theTouchable->GetVolume(2)->GetName() << " " <<
-//       theTouchable->GetVolume(3)->GetName() << " " <<
-//       theTouchable->GetVolume(4)->GetName() << endl;
+    //     cout << "Debugging PV Name Mother Name" <<
+    //       theTouchable->GetVolume(0)->GetName() << " " <<
+    //       theTouchable->GetVolume(1)->GetName() << " " <<
+    //       theTouchable->GetVolume(2)->GetName() << " " <<
+    //       theTouchable->GetVolume(3)->GetName() << " " <<
+    //       theTouchable->GetVolume(4)->GetName() << endl;
 
-//     cout << "Debugging PV Name Mother Name" <<
-//       touchableHandle->GetVolume(0)->GetName() << " " <<
-//       touchableHandle->GetVolume(1)->GetName() << " " <<
-//       touchableHandle->GetVolume(2)->GetName() << " " <<
-//       touchableHandle->GetVolume(3)->GetName() << " " <<
-//       touchableHandle->GetVolume(4)->GetName() << endl;
+    //     cout << "Debugging PV Name Mother Name" <<
+    //       touchableHandle->GetVolume(0)->GetName() << " " <<
+    //       touchableHandle->GetVolume(1)->GetName() << " " <<
+    //       touchableHandle->GetVolume(2)->GetName() << " " <<
+    //       touchableHandle->GetVolume(3)->GetName() << " " <<
+    //       touchableHandle->GetVolume(4)->GetName() << endl;
 
-//     cout << "Debugging hit info event track copyn replican: " <<
-//       setw(4) << en << " " <<
-//       setw(4) << ti << " " <<
-//       setw(4) << cn << " " <<
-//       setw(4) << rn << endl;
+    //     cout << "Debugging hit info event track copyn replican: " <<
+    //       setw(4) << en << " " <<
+    //       setw(4) << ti << " " <<
+    //       setw(4) << cn << " " <<
+    //       setw(4) << rn << endl;
 
     // getting the sector/device number
 
     G4int sdcn = 0;
-
     if ( _TrackerVersion == 3) {
+      //       cout << "Debugging _nStrawsPerDevice " << _nStrawsPerDevice << endl;
+      //       cout << "Debugging _nStrawsPerSector " << _nStrawsPerSector << endl;
 
-//       cout << "Debugging _nStrawsPerDevice " << _nStrawsPerDevice << endl;
-//       cout << "Debugging _nStrawsPerSector " << _nStrawsPerSector << endl;
+      if ( _supportModel == SupportModel::simple ){
+        sdcn = touchableHandle->GetCopyNumber(1) +
+          _nStrawsPerSector*(touchableHandle->GetReplicaNumber(2)) +
+          _nStrawsPerDevice*(touchableHandle->GetReplicaNumber(3));
+      } else {
+        sdcn = touchableHandle->GetCopyNumber(0) +
+          _nStrawsPerSector*(touchableHandle->GetReplicaNumber(1)) +
+          _nStrawsPerDevice*(touchableHandle->GetReplicaNumber(2));
 
-      sdcn = touchableHandle->GetCopyNumber(1) +
-        _nStrawsPerSector*(touchableHandle->GetReplicaNumber(2)) +
-        _nStrawsPerDevice*(touchableHandle->GetReplicaNumber(3));
+      }
 
     } else {
 
@@ -274,13 +281,13 @@ namespace mu2e {
 
 
     /*
-      // Works for both TTracker and LTracker.
+    // Works for both TTracker and LTracker.
     printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %10.7f %10.7f\n",
-             eventNo,  _collection->size(), copy,
-             aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
-             prePosTracker.x(), prePosTracker.y(), prePosTracker.z(),
-             preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(),
-             prePosLocal.perp(),  postPosLocal.perp()  );
+    eventNo,  _collection->size(), copy,
+    aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
+    prePosTracker.x(), prePosTracker.y(), prePosTracker.z(),
+    preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(),
+    prePosLocal.perp(),  postPosLocal.perp()  );
     fflush(stdout);
     */
 
@@ -340,25 +347,25 @@ namespace mu2e {
       double s = w.dot(prePosTracker-mid);
       CLHEP::Hep3Vector point = prePosTracker - (mid + s*w);
 
-//      this works with transporOnly.py
-//      StrawDetail const& strawDetail = straw.getDetail();
-//       if (pca.dca()>strawDetail.outerRadius() || abs(point.mag()-strawDetail.outerRadius())>1.e-6 ) {
+      //      this works with transporOnly.py
+      //      StrawDetail const& strawDetail = straw.getDetail();
+      //       if (pca.dca()>strawDetail.outerRadius() || abs(point.mag()-strawDetail.outerRadius())>1.e-6 ) {
 
-//         cerr << "*** Bad hit?: eid "
-//              << event->GetEventID()    << ", cs "
-//              << _collection->GetSize() << " tid "
-//              << newHit->trackId()      << " vid "
-//              << newHit->volumeId()     << " "
-//              << straw.id()         << " | "
-//              << pca.dca()          << " "
-//              << prePosTracker      << " "
-//              << preMomWorld        << " "
-//              << point.mag()        << " "
-//              << newHit->eDep()     << " "
-//              << s                  << " | "
-//              << mid
-//              << endl;
-//       }
+      //         cerr << "*** Bad hit?: eid "
+      //              << event->GetEventID()    << ", cs "
+      //              << _collection->GetSize() << " tid "
+      //              << newHit->trackId()      << " vid "
+      //              << newHit->volumeId()     << " "
+      //              << straw.id()         << " | "
+      //              << pca.dca()          << " "
+      //              << prePosTracker      << " "
+      //              << preMomWorld        << " "
+      //              << point.mag()        << " "
+      //              << newHit->eDep()     << " "
+      //              << s                  << " | "
+      //              << mid
+      //              << endl;
+      //       }
 
     }
 
@@ -384,6 +391,9 @@ namespace mu2e {
     art::ServiceHandle<GeometryService> geom;
     if ( geom->hasElement<TTracker>() ) {
       td =_TrackerVersion +1;
+      if ( _supportModel == SupportModel::detailedv0 ){
+        td = 3;
+      }
     }
 
     //    cout << "Debugging: tracker depth/version: " << td << "/" << _TrackerVersion << endl;
@@ -396,19 +406,19 @@ namespace mu2e {
 
       if (dd>=td) cdo += touchableHandle->GetVolume(dd)->GetTranslation();
 
-//       cout << "Debugging: det depth name copy#: " << dd << " " <<
-//         touchableHandle->GetVolume(dd)->GetName() << " " <<
-//         touchableHandle->GetVolume(dd)->GetCopyNo() << endl;
+      //       cout << "Debugging: det depth name copy#: " << dd << " " <<
+      //         touchableHandle->GetVolume(dd)->GetName() << " " <<
+      //         touchableHandle->GetVolume(dd)->GetCopyNo() << endl;
 
-//       G4LogicalVolume* lvp = touchableHandle->GetVolume(dd)->GetLogicalVolume();
-//       G4int nd = lvp->GetNoDaughters();
-//       for (G4int d = 0;d!=nd; ++d) {
-//         cout << "Debugging: daughter: " << lvp->GetDaughter(d)->GetName() << " " <<
-//           lvp->GetDaughter(d)->GetCopyNo() << endl;
-//       }
+      //       G4LogicalVolume* lvp = touchableHandle->GetVolume(dd)->GetLogicalVolume();
+      //       G4int nd = lvp->GetNoDaughters();
+      //       for (G4int d = 0;d!=nd; ++d) {
+      //         cout << "Debugging: daughter: " << lvp->GetDaughter(d)->GetName() << " " <<
+      //           lvp->GetDaughter(d)->GetCopyNo() << endl;
+      //       }
 
-//       cout << "Debugging det origin: " << touchableHandle->GetVolume(dd)->GetTranslation() <<
-//         " " << cdo << endl;
+      //       cout << "Debugging det origin: " << touchableHandle->GetVolume(dd)->GetTranslation() <<
+      //         " " << cdo << endl;
 
     }
 

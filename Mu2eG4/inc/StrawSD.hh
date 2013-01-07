@@ -3,9 +3,9 @@
 //
 // Define a sensitive detector for Straws.
 //
-// $Id: StrawSD.hh,v 1.15 2012/05/29 22:56:59 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/29 22:56:59 $
+// $Id: StrawSD.hh,v 1.16 2013/01/07 04:05:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/01/07 04:05:00 $
 //
 // Original author Rob Kutschke
 //
@@ -14,6 +14,7 @@
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "TTrackerGeom/inc/SupportModel.hh"
 
 // Art includes
 #include "art/Persistency/Provenance/ProductID.h"
@@ -38,6 +39,8 @@ namespace mu2e {
     int _nStrawsPerDevice;
     int _nStrawsPerSector;
     int _TrackerVersion;
+
+    SupportModel _supportModel;
 
   };
 
