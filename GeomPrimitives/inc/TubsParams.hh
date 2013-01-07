@@ -4,9 +4,9 @@
 //
 // The parameters of a TUBS
 //
-// $Id: TubsParams.hh,v 1.2 2012/08/20 14:57:56 greenc Exp $
-// $Author: greenc $
-// $Date: 2012/08/20 14:57:56 $
+// $Id: TubsParams.hh,v 1.3 2013/01/07 03:57:40 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/01/07 03:57:40 $
 //
 // Original author Rob Kutschke
 //
@@ -22,6 +22,16 @@ namespace mu2e {
   class TubsParams{
 
   public:
+
+    TubsParams():
+      data_()
+    {
+      data_[0] = 0.;
+      data_[1] = 0.;
+      data_[2] = 0.;
+      data_[3] = 0.;
+      data_[4] = 0.;
+    }
 
     TubsParams( double innerRadius,
                 double outerRadius,
