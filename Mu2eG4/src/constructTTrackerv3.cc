@@ -1,19 +1,37 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.27 2013/01/07 04:03:45 kutschke Exp $
+// $Id: constructTTrackerv3.cc,v 1.28 2013/01/07 15:31:38 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/01/07 04:03:45 $
+// $Date: 2013/01/07 15:31:38 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
 // Notes
-
+//
+// 1)  The v3 in this function name says that this is the third way we
+//     have implemented a single TTracker design in G4.  It does not refer
+//     to alternate designs of the TTracker.
+//
 //     This version makes logical mother volumes per device and per
 //     sector and places sectors in device and straws in sector
 //     It has only one sector/device logical volume placed several times
-//     This versoin has a negligeable construction time and a much smaler memory footprint
-
+//     This version has a negligeable construction time and a much smaler memory footprint
+//
+// 2) This function can build the TTracker designs described in:
+//      Mu2eG4/test/ttracker_meco.txt - The MECO design, uniform plane spacing
+//      Mu2eG4/test/ttracker_v0.txt   - The first Aseet version, pairs of planes form stations
+//                                      but one layer of straws per panel
+//      Mu2eG4/test/ttracker_v1.txt   - v0 but with with two layers of straws per panel
+//      Mu2eG4/test/ttracker_v2.txt   - Adjust spacings to match Mu2e-doc-888-v2.
+//
+// 3) This function does not know how to build the TTracker described in:
+//       Mu2eG4/test/ttracker_v3.txt - Detail support model and detailed layering of straws
+//    This geometry can be detected by the method by
+//
+//      if ( ttracker.getSupportModel() == SupportModel::detailedv0 ) ....
+//
+//    If this geometry is detected, this function call through to constructTTrackerv3Detailed.cc
 
 // C++ includes
 #include <iomanip>

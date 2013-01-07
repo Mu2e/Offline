@@ -2,10 +2,12 @@
 // Free function to construct the TTracker version that:
 //  - Uses version v3 of the G4 model
 //  - Uses the support model SupportModel::detailedv0.
+//  - See comments at the top of constructTTrackerv3.cc for additional details
+//    of the meaning of version numbers.
 //
-// $Id: constructTTrackerv3Detailed.cc,v 1.1 2013/01/07 04:04:21 kutschke Exp $
+// $Id: constructTTrackerv3Detailed.cc,v 1.2 2013/01/07 15:31:38 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/01/07 04:04:21 $
+// $Date: 2013/01/07 15:31:38 $
 //
 // Contact person Rob Kutschke,
 //   - Based on constructTTrackerv3 by KLG
