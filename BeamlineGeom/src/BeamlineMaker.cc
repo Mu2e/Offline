@@ -2,9 +2,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.9 2012/07/15 22:06:16 kutschke Exp $
+// $Id: BeamlineMaker.cc,v 1.10 2013/01/07 04:12:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:16 $
+// $Date: 2013/01/07 04:12:08 $
 //
 // Original author Peter Shanahan
 //
@@ -72,9 +72,12 @@ namespace mu2e {
     beamline->_ts._ts1.set(ts1HalfLength,
                             CLHEP::Hep3Vector(solenoidOffset,0.0,ts1zOffset),
                             0 );
+
+    // FIXME: I am pretty sure that this leaks the Rotation matrix
     beamline->_ts._ts3.set(ts3HalfLength,
                             CLHEP::Hep3Vector(0.0,0.0,0.0),
                             new CLHEP::HepRotation(CLHEP::HepRotationY(90.0*CLHEP::degree)) );
+
     beamline->_ts._ts5.set(ts5HalfLength,
                             CLHEP::Hep3Vector(-solenoidOffset,0.0,ts5zOffset),
                             0 );
