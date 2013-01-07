@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.26 2012/06/08 22:32:18 kutschke Exp $
+// $Id: constructTTrackerv3.cc,v 1.27 2013/01/07 04:03:45 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/06/08 22:32:18 $
+// $Date: 2013/01/07 04:03:45 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -56,6 +56,14 @@ namespace mu2e{
                                   double zOff,
                                   SimpleConfig const& config ){
 
+    // Master geometry for the TTracker.
+    TTracker const & ttracker = *(GeomHandle<TTracker>());
+
+    // The more detailed version has its own function.
+    if ( ttracker.getSupportModel() == SupportModel::detailedv0 ) {
+      return constructTTrackerv3Detailed(mother, zOff, config);
+    }
+
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
@@ -70,11 +78,9 @@ namespace mu2e{
 
     G4ThreeVector const zeroVector(0.0,0.0,0.0);
 
-    // Master geometry for the TTracker.
-    TTracker const & ttracker = *(GeomHandle<TTracker>());
 
-    // Make the envelope volume that holds the full tracker.
-    TubsParams envelopeParams = ttracker.getTrackerEnvelopeParams();
+    // Make the envelope volume that holds the tracker devices - not the end rings and staves.
+    TubsParams envelopeParams = ttracker.getInnerTrackerEnvelopeParams();
 
     static int const newPrecision = 8;
     static int const newWidth = 14;
