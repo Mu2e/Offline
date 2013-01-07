@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.14 2011/11/05 04:06:03 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/11/05 04:06:03 $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.15 2013/01/07 04:10:53 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/01/07 04:10:53 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -785,7 +785,7 @@ namespace mu2e {
 
   void TTrackerGeomIntRootPlots::drawEnvelopesSupport(bool dolabels){
 
-    TubsParams envelopeParams = _ttracker->getTrackerEnvelopeParams();
+    TubsParams envelopeParams = _ttracker->getInnerTrackerEnvelopeParams();
 
     Support supportParams = _ttracker->getSupportParams();
 

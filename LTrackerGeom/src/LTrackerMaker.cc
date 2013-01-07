@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.20 2012/07/17 22:04:27 kutschke Exp $
+// $Id: LTrackerMaker.cc,v 1.21 2013/01/07 04:10:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/17 22:04:27 $
+// $Date: 2013/01/07 04:10:53 $
 //
 // Original author Rob Kutschke
 //
@@ -244,9 +244,9 @@ namespace mu2e {
   void LTrackerMaker::MakeDetails(){
 
     _ltt->_strawDetail.push_back(
-                                 StrawDetail( 0,  _strawMaterialNames0, _strawRadius, _strawThick, _strawHalfLength, _rwire) );
+                                 StrawDetail( 0,  _strawMaterialNames0, _strawRadius, _strawThick, _strawHalfLength, _strawHalfLength, _rwire) );
     _ltt->_strawDetail.push_back(
-                                 StrawDetail( 1, _strawMaterialNames1, _strawRadius, _strawThick, _strawHalfLength, _rwire) );
+                                 StrawDetail( 1, _strawMaterialNames1, _strawRadius, _strawThick, _strawHalfLength, _strawHalfLength, _rwire) );
   }
 
   void LTrackerMaker::MakeSides(){

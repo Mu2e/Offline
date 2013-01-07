@@ -1,9 +1,9 @@
 //
 // this is a old version, visualization and embedded implementation of the bck rejection algorithm
 //
-// $Id: TTDisplayData_module.cc,v 1.8 2012/02/08 16:51:17 kutschke Exp $
+// $Id: TTDisplayData_module.cc,v 1.9 2013/01/07 04:10:53 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/02/08 16:51:17 $
+// $Date: 2013/01/07 04:10:53 $
 //
 // Original author G. Tassielli
 //
@@ -711,7 +711,7 @@ namespace mu2e {
 
     int nDevice = ttr.nDevices();
     double deviceHalfLength = ttr.getDeviceEnvelopeParams().zHalfLength();
-    double rIn  = ttr.getTrackerEnvelopeParams().innerRadius(); //380.00;
+    double rIn  = ttr.getInnerTrackerEnvelopeParams().innerRadius(); //380.00;
     double rOut = ttr.getSupportParams().innerRadius(); //700.00;
     rIn/=CLHEP::cm;
     rOut/=CLHEP::cm;

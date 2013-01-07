@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.42 2012/12/04 00:51:26 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:26 $
+// $Id: constructVirtualDetectors.cc,v 1.43 2013/01/07 04:10:53 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/01/07 04:10:53 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -279,8 +279,8 @@ namespace mu2e {
 
       // the radius of tracker mother
       TTracker const & ttracker = *(GeomHandle<TTracker>());
-      double orvd = ttracker.getTrackerEnvelopeParams().outerRadius();
-      double irvd = ttracker.getTrackerEnvelopeParams().innerRadius();
+      double orvd = ttracker.getInnerTrackerEnvelopeParams().outerRadius();
+      double irvd = ttracker.getInnerTrackerEnvelopeParams().innerRadius();
 
       if ( verbosityLevel > 0) {
         double zvd = vdg->getGlobal(vdId).z();
@@ -368,7 +368,7 @@ namespace mu2e {
 
         // the radius of tracker mother
         TTracker const & ttracker = *(GeomHandle<TTracker>());
-        double orvd = ttracker.getTrackerEnvelopeParams().outerRadius();
+        double orvd = ttracker.getInnerTrackerEnvelopeParams().outerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 
         if ( verbosityLevel > 0) {
@@ -598,7 +598,7 @@ namespace mu2e {
 
         // the radius of tracker mother
         TTracker const & ttracker = *(GeomHandle<TTracker>());
-        double orvd = ttracker.getTrackerEnvelopeParams().outerRadius();
+        double orvd = ttracker.getInnerTrackerEnvelopeParams().outerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 
         if ( verbosityLevel > 0) {
@@ -642,7 +642,7 @@ namespace mu2e {
       }
       // the radius of tracker mother
       TTracker const & ttracker = *(GeomHandle<TTracker>());
-      double orvd = ttracker.getTrackerEnvelopeParams().outerRadius();
+      double orvd = ttracker.getInnerTrackerEnvelopeParams().outerRadius();
       double vdZ  = vdg->getGlobal(vdId).z();
 
       if ( verbosityLevel > 0) {
@@ -685,7 +685,7 @@ namespace mu2e {
 
       // the radius of tracker mother
       TTracker const & ttracker = *(GeomHandle<TTracker>());
-      TubsParams const envelopeParams = ttracker.getTrackerEnvelopeParams();
+      TubsParams const envelopeParams = ttracker.getInnerTrackerEnvelopeParams();
       double orvd = envelopeParams.outerRadius();
       double vdZ  = vdg->getGlobal(vdId).z();
 
@@ -731,7 +731,7 @@ namespace mu2e {
 
       // the radius of tracker mother
       TTracker const & ttracker = *(GeomHandle<TTracker>());
-      TubsParams const envelopeParams = ttracker.getTrackerEnvelopeParams();
+      TubsParams const envelopeParams = ttracker.getInnerTrackerEnvelopeParams();
       double irvd = envelopeParams.innerRadius();
       double vdZ  = vdg->getGlobal(vdId).z();
 

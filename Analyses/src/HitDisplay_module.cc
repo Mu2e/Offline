@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.14 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: HitDisplay_module.cc,v 1.15 2013/01/07 04:10:53 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/01/07 04:10:53 $
 //
 // Original author Rob Kutschke.
 //
@@ -173,7 +173,7 @@ namespace mu2e {
     GeomHandle<TTracker> ttracker;
 
     // Geometry of tracker envelope.
-    TubsParams envelope(ttracker->getTrackerEnvelopeParams());
+    TubsParams envelope(ttracker->getInnerTrackerEnvelopeParams());
 
     // Tracker calibration object.
     ConditionsHandle<TrackerCalibrations> trackCal("ignored");

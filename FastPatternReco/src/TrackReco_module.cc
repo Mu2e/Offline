@@ -1,9 +1,9 @@
 //
 // identification and track parameter extraction modules
 //
-// $Id: TrackReco_module.cc,v 1.3 2012/01/30 20:14:37 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/01/30 20:14:37 $
+// $Id: TrackReco_module.cc,v 1.4 2013/01/07 04:10:53 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/01/07 04:10:53 $
 //
 // Original author G. Tassielli
 //
@@ -610,9 +610,9 @@ namespace mu2e {
     //const Tracker& tracker = getTrackerOrThrow();
     //const TTracker &ttr = static_cast<const TTracker&>( tracker );
 
-    //int nbinRho=floor( (ttr.getTrackerEnvelopeParams().outerRadius()-ttr.getTrackerEnvelopeParams().innerRadius())/ttr.strawRadius()*sqrt(12.0)+0.5 );
+    //int nbinRho=floor( (ttr.getInnerTrackerEnvelopeParams().outerRadius()-ttr.getInnerTrackerEnvelopeParams().innerRadius())/ttr.strawRadius()*sqrt(12.0)+0.5 );
     int nbinRho=floor( 410.0/40.0*sqrt(12.0)+0.5 );
-    //_hRhoPhi0_DeltaRay      = tfs->make<TH2F>( "hRhoPhi0_DeltaRay",   "Rho vs Phi0 for low radius DeltaRay", 200, 0, CLHEP::twopi, nbinRho, ttr.getTrackerEnvelopeParams().innerRadius(), ttr.getTrackerEnvelopeParams().outerRadius() );
+    //_hRhoPhi0_DeltaRay      = tfs->make<TH2F>( "hRhoPhi0_DeltaRay",   "Rho vs Phi0 for low radius DeltaRay", 200, 0, CLHEP::twopi, nbinRho, ttr.getInnerTrackerEnvelopeParams().innerRadius(), ttr.getInnerTrackerEnvelopeParams().outerRadius() );
     _nBinPhi0_DR=floor( CLHEP::twopi/0.1*sqrt(12.0)+0.5 );
     _hRhoPhi0_DeltaRay      = tfs->make<TH2F>( "hRhoPhi0_DeltaRay",   "Rho vs Phi0 for low radius DeltaRay", _nBinPhi0_DR, 0, CLHEP::twopi, nbinRho, 390.0, 800.0 );
     _iXPhi0_DR = new double[_nBinPhi0_DR];

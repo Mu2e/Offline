@@ -236,7 +236,7 @@ void DataInterface::fillGeometry()
 //Support Structure
     double innerRadius=ttracker->getSupportParams().innerRadius();
     double outerRadius=ttracker->getSupportParams().outerRadius();
-    double zHalfLength=ttracker->getTrackerEnvelopeParams().zHalfLength();
+    double zHalfLength=ttracker->getInnerTrackerEnvelopeParams().zHalfLength();
     findBoundaryP(_trackerMinmax, outerRadius, outerRadius, zHalfLength);
     findBoundaryP(_trackerMinmax, -outerRadius, -outerRadius, -zHalfLength);
 
@@ -258,9 +258,9 @@ void DataInterface::fillGeometry()
     _supportstructures.push_back(shape);
 
 //Envelope
-    innerRadius=ttracker->getTrackerEnvelopeParams().innerRadius();
-    outerRadius=ttracker->getTrackerEnvelopeParams().outerRadius();
-    zHalfLength=ttracker->getTrackerEnvelopeParams().zHalfLength();
+    innerRadius=ttracker->getInnerTrackerEnvelopeParams().innerRadius();
+    outerRadius=ttracker->getInnerTrackerEnvelopeParams().outerRadius();
+    zHalfLength=ttracker->getInnerTrackerEnvelopeParams().zHalfLength();
 
     boost::shared_ptr<ComponentInfo> infoEnvelope(new ComponentInfo());
     sprintf(c,"TTracker Envelope");
@@ -406,7 +406,7 @@ void DataInterface::fillGeometry()
 //Support Structure
     double innerRadius=itracker.getSupportParams().innerRadius();
     double outerRadius=itracker.getSupportParams().outerRadius();
-    double zHalfLength=itracker.getTrackerEnvelopeParams().zHalfLength();
+    double zHalfLength=itracker.getInnerTrackerEnvelopeParams().zHalfLength();
     findBoundaryP(_trackerMinmax, outerRadius, outerRadius, zHalfLength);
     findBoundaryP(_trackerMinmax, -outerRadius, -outerRadius, -zHalfLength);
 
@@ -428,8 +428,8 @@ void DataInterface::fillGeometry()
     _supportstructures.push_back(shape);
 */
 //Envelope
-    double innerRadius=itracker.r0();//getTrackerEnvelopeParams().innerRadius();
-    double outerRadius=itracker.rOut();//getTrackerEnvelopeParams().outerRadius();
+    double innerRadius=itracker.r0();//getInnerTrackerEnvelopeParams().innerRadius();
+    double outerRadius=itracker.rOut();//getInnerTrackerEnvelopeParams().outerRadius();
     double zHalfLength=itracker.maxEndCapDim();
 
     char c[200];

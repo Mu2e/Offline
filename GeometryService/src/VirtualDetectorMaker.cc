@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.14 2012/12/04 00:51:28 tassiell Exp $
-// $Author: tassiell $
+// $Id: VirtualDetectorMaker.cc,v 1.15 2013/01/07 04:10:53 kutschke Exp $
+// $Author: kutschke $
 //
 
 #include <iostream>
@@ -168,7 +168,7 @@ namespace mu2e {
 
         Hep3Vector vdTTFrontOffset(0.,
                                    0.,
-                                   -ttracker.getTrackerEnvelopeParams().zHalfLength()-vdHL);
+                                   -ttracker.getInnerTrackerEnvelopeParams().zHalfLength()-vdHL);
 
         // VD TT_FrontHollow is placed outside the ttracker mother
         // volume in front of the ttracker "outside" of the proton
@@ -197,7 +197,7 @@ namespace mu2e {
 
         Hep3Vector vdTTBackOffset(0.,
                                   0.,
-                                  ttracker.getTrackerEnvelopeParams().zHalfLength()+vdHL);
+                                  ttracker.getInnerTrackerEnvelopeParams().zHalfLength()+vdHL);
 
         vd->addVirtualDetector( VirtualDetectorId::TT_Back,
                                  ttOffset,
