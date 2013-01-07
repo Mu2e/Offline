@@ -1,11 +1,34 @@
-  $Id: v2_1_1.txt,v 1.1 2013/01/07 04:14:00 kutschke Exp $
+  $Id: v2_1_1.txt,v 1.2 2013/01/07 21:33:45 kutschke Exp $
   $Author: kutschke $
-  $Date: 2013/01/07 04:14:00 $
+  $Date: 2013/01/07 21:33:45 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_1_1
 
+4) January 7, 2013 kutschke
+   TTrackerGeom/src/TTrackerMaker.cc
+    - Filter out StepPointMCs that have a POCA that is outside of the active length of the
+      wire.
+    - The default active length of the wire is defined as follows: find the segment of
+      the wire that is fully outside of the support rings - then the outermost 10 mm is
+      not active.
+
+3) January 7, 2013 kutschke
+   Mu2eG4/test/ttracker_v3.txt
+     The geometry description of the TTracker with:
+        - Support structure modelled as in Mu2e-doc-888-v5
+        - Metal layers on straws and gold plating on wires
+
+   To use this version do one of:
+     a) edit geom_01.txt, comment out #include ttracker_v2.txt and replace it with
+        and include of ttracker_v3.txt
+     b) Make a new geometry file with two lines
+        #include "Mu2eG4/test/geom_01.txt"
+        #include "Mu2eG4/test/ttracker_v3.txt"
+
+   There remains one todo item: the staves are solid Al; that is, the cutout for the services
+   has not been implemented.
 
 2) January 6, 2013 kutschke
    Added two major options to the TTracker.
