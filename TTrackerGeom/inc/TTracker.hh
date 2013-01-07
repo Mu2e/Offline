@@ -5,9 +5,9 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.12 2012/03/30 15:13:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 15:13:35 $
+// $Id: TTracker.hh,v 1.13 2013/01/07 04:01:16 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/01/07 04:01:16 $
 //
 // Original author Rob Kutschke
 //
@@ -17,6 +17,8 @@
 
 #include "TTrackerGeom/inc/Manifold.hh"
 #include "TTrackerGeom/inc/Support.hh"
+#include "TTrackerGeom/inc/SupportModel.hh"
+#include "TTrackerGeom/inc/SupportStructure.hh"
 
 #include "TrackerGeom/inc/Device.hh"
 #include "TrackerGeom/inc/SectorId.hh"
@@ -125,19 +127,29 @@ namespace mu2e {
       return _strawDetails;
     }
 
+    SupportModel getSupportModel() const{
+      return _supportModel;
+    }
+
     const Support& getSupportParams () const{
       return _supportParams;
+    }
+
+    const SupportStructure& getSupportStructure() const{
+      return _supportStructure;
     }
 
     const std::vector<double>& getManifoldHalfLengths () const{
       return _manifoldHalfLengths;
     }
 
-    // Shape parameters of an envelop holding one device.
-    TubsParams getDeviceEnvelopeParams() const;
+    TubsParams getDeviceEnvelopeParams() const{
+      return _deviceEnvelopeParams;
+    }
 
-    TubsParams getTrackerEnvelopeParams() const;
-
+    const TubsParams& getInnerTrackerEnvelopeParams() const{
+      return _innerTrackerEnvelopeParams;
+    }
 
 #ifndef __CINT__
 
@@ -186,6 +198,7 @@ namespace mu2e {
     // Outer radius of a logical volume that will just contain the entire tracker.
     double _rOut;
 
+    // All envelope volumes are made of this.
     std::string _envelopeMaterial;
 
     // Detailed info about each type of straw.
@@ -194,19 +207,34 @@ namespace mu2e {
     // An TTracker is made of two devices, sides and vanes.
     std::vector<Device> _devices;
 
-    // An alternative viewpoint:  
+    // An alternative viewpoint:
     // A TTracker is made of a collection of Stations.
     std::vector<Station> _stations;
 
     // There will be pointers to the objects in this container.
     std::deque<Straw>  _allStraws;
 
+    // Deprecated: part of the ancient MECO TTracker design.  A few vestiges not yet removed.
     std::vector<Manifold> _allManifolds;
 
-    // All supports are the same shape.
+    // The envelope that holds all of the devices in the tracker, including the device supports.
+    TubsParams _innerTrackerEnvelopeParams;
+
+    // The envelope that holds all of the pieces in one device, including supports.
+    TubsParams _deviceEnvelopeParams;
+
+    // Which level of detail is present in the model of the support structure?
+    SupportModel _supportModel;
+
+    // All supports are the same shape; only relevant for _supportModel=="simple"
     Support _supportParams;
 
+    // A more detailed model of the supports; again each plane has identical supports.
+    // only relevant for _supportModel == "detailedv0".
+    SupportStructure _supportStructure;
+
     // All manifolds are the same shape.
+    // Deprecated: these will go away soon.
     std::vector<double> _manifoldHalfLengths;
 
     // Inner radius of inside edge of innermost straw.
