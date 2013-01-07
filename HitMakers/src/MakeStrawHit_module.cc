@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.20 2012/11/20 21:16:06 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/20 21:16:06 $
+// $Id: MakeStrawHit_module.cc,v 1.21 2013/01/07 17:54:28 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/01/07 17:54:28 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -30,6 +30,7 @@
 #include "MCDataProducts/inc/StepPointMCStrawHit.hh"
 #include "HitMakers/inc/formStepPointMCStrawHit.hh"
 #include "HitMakers/inc/DeadStrawList.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 // art includes.
 #include "art/Persistency/Common/Ptr.h"
@@ -156,6 +157,8 @@ namespace mu2e {
   // Find StepPointMCs in the event and use them to fill the hit map.
   void MakeStrawHit::fillHitMap ( art::Event const& event, StrawStepPointMap& hitmap){
 
+    const Tracker& tracker = getTrackerOrThrow();
+
     // This selector will select only data products with the given instance name.
     art::ProductInstanceNameSelector selector("tracker");
 
@@ -194,6 +197,13 @@ namespace mu2e {
 
         // Skip dead straws.
         if ( _strawStatus.isDead(step.strawIndex()) ) continue;
+
+        // Skip steps that occur in the deadened region near the end of each wire.
+        Straw const& straw = tracker.getStraw(step.strawIndex());
+        TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(), step.position(), step.momentum().unit() );
+        double zcut = pca.s1()/straw.getDetail().activeHalfLength();
+        if ( std::abs(zcut)>1.0 ) continue;
+
 
         // The main event for this method.
         StrawIndex const & straw_id = step.strawIndex();
