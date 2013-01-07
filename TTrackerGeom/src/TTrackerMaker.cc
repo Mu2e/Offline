@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.42 2013/01/07 04:01:16 kutschke Exp $
+// $Id: TTrackerMaker.cc,v 1.43 2013/01/07 17:55:24 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/01/07 04:01:16 $
+// $Date: 2013/01/07 17:55:24 $
 //
 // Original author Rob Kutschke
 //
@@ -128,7 +128,7 @@ namespace mu2e {
       _channelMaterial          = config.getString( "ttrackerSupport.channel.material"           );
       _electronicsSpaceMaterial = config.getString( "ttrackerSupport.electronicsSpace.material"  );
 
-      _passivationMargin        =  config.getDouble("ttracker.passsivationMargin")*CLHEP::mm;
+      _passivationMargin        =  config.getDouble("ttracker.passivationMargin")*CLHEP::mm;
 
       _wallOuterMetalThickness  = config.getDouble("ttracker.straw.wallOuterMetal.thickness")*CLHEP::mm;
       _wallInnerMetal1Thickness = config.getDouble("ttracker.straw.wallInnerMetal1.thickness")*CLHEP::mm;
