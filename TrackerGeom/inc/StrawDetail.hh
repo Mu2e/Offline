@@ -7,9 +7,9 @@
 // straws in the LTracker and for different lengths of straws in the TTracker.
 //
 //
-// $Id: StrawDetail.hh,v 1.8 2012/03/30 15:13:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 15:13:35 $
+// $Id: StrawDetail.hh,v 1.9 2013/01/07 03:59:37 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/01/07 03:59:37 $
 //
 // Original author Rob Kutschke
 //
@@ -23,6 +23,8 @@ namespace mu2e {
 
   class StrawDetail{
 
+    friend class TTrackerMaker;
+
   public:
     StrawDetail():
       _id(-1),
@@ -30,6 +32,7 @@ namespace mu2e {
       _radius(-1.),
       _thickness(-1.),
       _halfLength(-1.),
+      _activeHalfLength(-1.),
       _rwire(-1.)
     {}
 
@@ -37,7 +40,8 @@ namespace mu2e {
                  std::vector<std::string> const& materialNames,
                  double radius,
                  double thickness,
-                 double length,
+                 double halfLength,
+                 double activehalfLength,
                  double rwire
                  );
 
@@ -46,16 +50,19 @@ namespace mu2e {
 
     int Id() const { return  _id; }
 
-    double outerRadius()   const { return _radius;}
-    double innerRadius()   const { return _radius-_thickness;}
-    double wireRadius()    const { return _rwire; }
-    double thickness()     const { return _thickness; }
-    double length()        const { return _halfLength*2.0; }
-    double halfLength()    const { return _halfLength; }
+    double outerRadius()     const { return _radius;}
+    double innerRadius()     const { return _radius-_thickness;}
+    double wireRadius()      const { return _rwire; }
+    double thickness()       const { return _thickness; }
+    double length()          const { return _halfLength*2.0; }
+    double halfLength()      const { return _halfLength; }
+    double activeHalfLength() const { return _activeHalfLength; }
+    double activeLength()     const { return _activeHalfLength*2.0; }
 
     std::string const& wallMaterialName() const{ return _materialNames[0]; }
     std::string const&  gasMaterialName() const{ return _materialNames[1]; }
     std::string const& wireMaterialName() const{ return _materialNames[2]; }
+
 
     // Return G4TUBS parameters outer volume for this straw, includes
     // wire, gas and straw materials.
@@ -76,6 +83,26 @@ namespace mu2e {
 
     std::string name( std::string const& base ) const;
 
+    // The next two groups are defined only for SupportModel::detailedv0
+    TubsParams wallMother()      const;
+    TubsParams wallOuterMetal()  const;
+    TubsParams wallCore()        const;
+    TubsParams wallInnerMetal1() const;
+    TubsParams wallInnerMetal2() const;
+    TubsParams wireMother()      const;
+    TubsParams wireCore()        const;
+    TubsParams wirePlate()       const;
+
+    std::string const& wallMotherMaterialName()      const{ return  wallMaterialName();  }
+    std::string const& wallOuterMetalMaterialName()  const{ return _outerMetalMaterial;  }
+    std::string const& wallCoreMaterialName()        const{ return  wallMaterialName();  }
+    std::string const& wallInnerMetal1MaterialName() const{ return _innerMetal1Material; }
+    std::string const& wallInnerMetal2MaterialName() const{ return _innerMetal2Material; }
+    std::string const& wireMotherMaterialName()      const{ return  wireMaterialName();  }
+    std::string const& wireCoreMaterialName()        const{ return  wireMaterialName();  }
+    std::string const& wirePlateMaterialName()       const{ return _wirePlateMaterial;   }
+
+
   private:
 
     // Identifier for this type of straw.
@@ -85,10 +112,21 @@ namespace mu2e {
     // straw material, gas volume, wire
     std::vector<std::string> _materialNames;
 
-    double _radius;
-    double _thickness;
-    double _halfLength;
-    double _rwire;
+    double _radius;            // Outer radius of straw, gas
+    double _thickness;         // Thickness of the straw material
+    double _halfLength;        // Physical length of the straw
+    double _activeHalfLength;  // This may be shorter than the physical length if the ends are deadened.
+    double _rwire;             // Radius of the wire, including plating
+
+    // These are defined only for SupportModel::detailedv0
+    double _outerMetalThickness;  // Outer metal coating on the straw
+    double _innerMetal1Thickness; // Metal coating immediately on the inside of the straw.
+    double _innerMetal2Thickness; // Metal coating on the inside of Metal1
+    double _wirePlateThickness;   // Plating on the wire.
+    std::string _outerMetalMaterial;  // Outer metal coating on the straw
+    std::string _innerMetal1Material; // Metal coating immediately on the inside of the straw.
+    std::string _innerMetal2Material; // Metal coating on the inside of Metal1
+    std::string _wirePlateMaterial;   // Plating on the wire.
 
   };
 
