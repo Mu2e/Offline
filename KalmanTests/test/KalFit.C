@@ -21,11 +21,11 @@ double momlow(103.4);
 double momhigh(104.8);
 int minnhits(20);
 size_t icut=2;
-unsigned minnactive[4] = {20,20,25,30};
-unsigned minndif[4] = { 15,8,8,8};
-double maxt0err[4] = {1.0,0.9,0.8,0.7};
-double maxmomerr[4] = {0.3,0.25,0.2,0.15};
-double minfitcon[4] = {1e-6,1e-4,1e-3,1e-2};
+unsigned minnactive[4] = {20,22,25,30};
+unsigned minndif[4] = { 15,12,10,8};
+double maxt0err[4] = {1.5,0.95,0.9,0.8};
+double maxmomerr[4] = {0.3,0.3,0.3,0.2};
+double minfitcon[4] = {1e-6,2e-3,1e-3,1e-2};
 
 TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
 TCut reco,goodfit,cosmic,rmom,rpitch,livegate;
@@ -112,17 +112,18 @@ Double_t crystalball (Double_t *x, Double_t *par) {
   // par[5] : fraction of exponential tail
   // par[6] : tail exponential lambda
 
-  if ( (x[0]- par[1])/fabs(par[2]) > -1.*par[4]) {
+  double dx = x[0]-par[1];
+  if ( dx/fabs(par[2]) > -1.*par[4]) {
     double g = par[0]*TMath::Gaus(x[0], par[1], par[2]);
 //    double g2 = par[5]*par[0]*TMath::Gaus(x[0], par[1], par[6]);
 //    return g1+g2;
-    double e = par[0]*par[5]*(x[0]-par[1])*exp(-(x[0]-par[1])/par[6])/(par[6]*par[6]);
+    double e = par[0]*par[5]*dx*exp(-(dx)/par[6])/(par[6]*par[6]);
     return g+e;
   }
   else {
     double A = pow(par[3]/fabs(par[4]), par[3])*exp(-0.5*par[4]*par[4]);
     double B = par[3]/fabs(par[4]) - fabs(par[4]);
-    return par[0]*A*pow(B-(x[0]-par[1])/fabs(par[2]), -1.*par[3]);
+    return par[0]*A*pow(B-dx/fabs(par[2]), -1.*par[3]);
   }
 }
 

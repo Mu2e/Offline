@@ -40,7 +40,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,d
 //  double momhigh(104.7);
   double trueconvmom(104.973);
 
-  unsigned nbins(150);
+  unsigned nbins(151);
   double mmin(101);
   double mmax(106);
   double mevperbin = (mmax-mmin)/nbins;
@@ -80,19 +80,19 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,d
 // cuts for different tightness of selection
   TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
   ncuts[0] = "nactive>=20&&nhits-nactive<=15";
-  ncuts[1] = "nactive>=20&&nhits-nactive<=8";
-  ncuts[2] = "nactive>=25&&nhits-nactive<=8";
+  ncuts[1] = "nactive>=22&&nhits-nactive<=12";
+  ncuts[2] = "nactive>=25&&nhits-nactive<=10";
   ncuts[3] = "nactive>=30&&nhits-nactive<=8";
-  t0cuts[0] = "t0err<1.0";
-  t0cuts[1] = "t0err<0.9";
-  t0cuts[2] = "t0err<0.8";
-  t0cuts[3] = "t0err<0.7";
+  t0cuts[0] = "t0err<1.5";
+  t0cuts[1] = "t0err<0.95";
+  t0cuts[2] = "t0err<0.9";
+  t0cuts[3] = "t0err<0.8";
   momcuts[0] = "fitmomerr<0.3";
-  momcuts[1] = "fitmomerr<0.25";
-  momcuts[2] = "fitmomerr<0.20";
-  momcuts[3] = "fitmomerr<0.15";
+  momcuts[1] = "fitmomerr<0.3";
+  momcuts[2] = "fitmomerr<0.3";
+  momcuts[3] = "fitmomerr<0.2";
   fitcuts[0] = "fitcon>1e-6";
-  fitcuts[1] = "fitcon>1e-4";
+  fitcuts[1] = "fitcon>2e-3";
   fitcuts[2] = "fitcon>1e-3";
   fitcuts[3] = "fitcon>1e-2";
 
@@ -219,6 +219,8 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,d
   std::string ssuf(suffix);
   allcan->SaveAs((std::string("mu2e_all")+ssuf).c_str());
   mu2ecan->SaveAs((std::string("mu2e")+ssuf).c_str());
+
+  return;
 
   TCanvas* dioc = new TCanvas("dioc","dio",1200,800);
   dioc->Divide(2,2);
