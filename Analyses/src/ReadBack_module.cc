@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.20 2012/10/01 22:09:56 genser Exp $
-// $Author: genser $
-// $Date: 2012/10/01 22:09:56 $
+// $Id: ReadBack_module.cc,v 1.21 2013/01/19 17:28:41 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/01/19 17:28:41 $
 //
 // Original author Rob Kutschke
 //
@@ -30,6 +30,7 @@
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
@@ -154,6 +155,10 @@ namespace mu2e {
     TH1F* _hTargetNfoils;
     TH2F* _hTargetNfoils2D;
 
+    TH1F* _hNPointTrajectories;
+    TH1F* _hNPointsPerTrajectory;
+    TH1F* _hNPointsPerTrajectoryLog;
+
     TNtuple* _ntup;
     TGraph*  _xyHits;
 
@@ -170,13 +175,14 @@ namespace mu2e {
 
     int _nBadG4Status;
 
-    // Do the work specific to one of the trackers.
-    void doLTracker(const art::Event& event);
-    void doITracker(const art::Event& event);
-    void doCalorimeter(const art::Event& event);
-    void doStoppingTarget(const art::Event& event);
-    void doCRV(const art::Event& event);
-    void doExtMonUCI(const art::Event& event);
+    // Examine various parts of the event.
+    void doLTracker         ( const art::Event& event );
+    void doITracker         ( const art::Event& event );
+    void doCalorimeter      ( const art::Event& event );
+    void doStoppingTarget   ( const art::Event& event );
+    void doCRV              ( const art::Event& event );
+    void doExtMonUCI        ( const art::Event& event );
+    void doPointTrajectories( const art::Event& event );
 
     // A helper function.
     int countHitNeighbours( Straw const& straw,
@@ -231,6 +237,9 @@ namespace mu2e {
     _hTargetPathLength(0),
     _hTargetNfoils(0),
     _hTargetNfoils2D(0),
+    _hNPointTrajectories(0),
+    _hNPointsPerTrajectory(0),
+    _hNPointsPerTrajectoryLog(0),
     _ntup(0),
     _xyHits(0),
     _xyHitCount(0),
@@ -323,9 +332,14 @@ namespace mu2e {
                                         "Number of stopping target foils vs foil of origin",
                                         20, 0., 20., 20, 0, 20. );
 
+    // Histograms for the PointTrajectory Collection
+    _hNPointTrajectories      = tfs->make<TH1F>( "hNPointTrajectories",      "Number of PointTrajectories stored",      50,  0.,  50. );
+    _hNPointsPerTrajectory    = tfs->make<TH1F>( "hNPointsPerTrajectory",    "Number of Points Per Trajectory",        100,  0., 200. );
+    _hNPointsPerTrajectoryLog = tfs->make<TH1F>( "hNPointsPerTrajectoryLog", "Log10(Number of Points Per Trajectory)", 120, -1.,   5. );
+
     // Create tracker ntuple.
     _ntup = tfs->make<TNtuple>( "ntup", "Hit ntuple",
-                                          "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step:hwz");
+                                "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step:hwz");
 
     // Create a TGraph;
     // - Syntax to set name and title is weird; that's just root.
@@ -341,15 +355,15 @@ namespace mu2e {
 
     // Create CRV ntuple.
     _ntupCRV = tfs->make<TNtuple>( "ntupCRV", "CRV Hit ntuple",
-                                          "evt:trk:bid:hx:hy:hz:bx:by:bz:dx:dy:dz:lx:ly:lz:time:shld:mod:lay:pdgId:genId:edep:p:step");
+                                   "evt:trk:bid:hx:hy:hz:bx:by:bz:dx:dy:dz:lx:ly:lz:time:shld:mod:lay:pdgId:genId:edep:p:step");
 
     // ExtMonUCI Tof ntuple.
     _ntupExtMonUCITof = tfs->make<TNtuple>( "ntupExtMonUCITof", "Extinction Monitor UCI Tof Hits",
-                                   "run:evt:stId:segId:t:edep:x:y:z");
-    
+                                            "run:evt:stId:segId:t:edep:x:y:z");
+
     _ntupExtMonUCITofMC = tfs->make<TNtuple>( "ntupExtMonUCITofMC", "Extinction Monitor UCI Tof Hits MC Truth",
-                                   "run:evt:stId:segId:t:edep:trk:pdgId:x:y:z:px:py:pz:vx:vy:vz:vpx:vpy:vpz:vt:primary:otrk:opdgId:ox:oy:oz:opx:opy:opz:ot");
-    
+                                              "run:evt:stId:segId:t:edep:trk:pdgId:x:y:z:px:py:pz:vx:vy:vz:vpx:vpy:vpz:vt:primary:otrk:opdgId:ox:oy:oz:opx:opy:opz:ot");
+
   }
 
   void ReadBack::analyze(const art::Event& event) {
@@ -398,6 +412,8 @@ namespace mu2e {
     if(geom->hasElement<ExtMonUCI::ExtMon>() ) {
       doExtMonUCI(event);
     }
+
+    doPointTrajectories( event );
 
   }
 
@@ -705,23 +721,23 @@ namespace mu2e {
 
       StrawDetail const& strawDetail = straw.getDetail();
 
-//       // remove this for production, intended for transportOnly.py
-//       if (pca.dca()>strawDetail.innerRadius() || abs(point.mag()- strawDetail.innerRadius())>1.e-6 ) {
+      //       // remove this for production, intended for transportOnly.py
+      //       if (pca.dca()>strawDetail.innerRadius() || abs(point.mag()- strawDetail.innerRadius())>1.e-6 ) {
 
-//         cerr << "*** Bad hit?: "
-//              << event.id().event() << " "
-//              << i                  << " "
-//              << trackId            << "   "
-//              << hit.volumeId()     << " "
-//              << straw.id()         << " | "
-//              << pca.dca()          << " "
-//              << pos                << " "
-//              << mom                << " "
-//              << point.mag()        << " "
-//              << hit.eDep()         << " "
-//              << s
-//              << endl;
-//       }
+      //         cerr << "*** Bad hit?: "
+      //              << event.id().event() << " "
+      //              << i                  << " "
+      //              << trackId            << "   "
+      //              << hit.volumeId()     << " "
+      //              << straw.id()         << " | "
+      //              << pca.dca()          << " "
+      //              << pos                << " "
+      //              << mom                << " "
+      //              << point.mag()        << " "
+      //              << hit.eDep()         << " "
+      //              << s
+      //              << endl;
+      //       }
 
       // Default values for these, in case information is not available.
       int pdgId(0);
@@ -931,24 +947,24 @@ namespace mu2e {
 
       itwp->SelectCellDet(hit.volumeId());
       //Get the cell information.
-          boost::shared_ptr<mu2e::Cell> cell = itwp->GetITCell();
-          //Cell const& cell = itwp->GetITCell();
-          CLHEP::Hep3Vector mid = cell->getMidPoint();
-          CLHEP::Hep3Vector w   = cell->getDirection();
+      boost::shared_ptr<mu2e::Cell> cell = itwp->GetITCell();
+      //Cell const& cell = itwp->GetITCell();
+      CLHEP::Hep3Vector mid = cell->getMidPoint();
+      CLHEP::Hep3Vector w   = cell->getDirection();
 
       // Count how many nearest neighbours are also hit.
       //    int nNeighbours = countHitNeighbours( cell, hits );
 
       // Compute an estimate of the drift distance.
-         TwoLinePCA pca( mid, w, pos, mom);
+      TwoLinePCA pca( mid, w, pos, mom);
 
       // Check that the radius of the reference point in the local
       // coordinates of the cell.  Should be 2.5 mm.
-          double s = w.dot(pos-mid);
-          CLHEP::Hep3Vector point = pos - (mid + s*w);
+      double s = w.dot(pos-mid);
+      CLHEP::Hep3Vector point = pos - (mid + s*w);
 
-          // The simulated particle that made this hit.
-          SimParticleCollection::key_type trackId(hit.trackId());
+      // The simulated particle that made this hit.
+      SimParticleCollection::key_type trackId(hit.trackId());
 
       // I don't understand the distribution of the time variable.
       // I want it to be the time from the start of the spill.
@@ -1249,15 +1265,15 @@ namespace mu2e {
 
         SimParticle const& sim = simParticles->at(trackId);
 
-          // PDG Particle Id of the sim particle that made this hit.
-          pdgId = sim.pdgId();
+        // PDG Particle Id of the sim particle that made this hit.
+        pdgId = sim.pdgId();
 
-          // If this is a generated particle, which generator did it come from?
-          // This default constructs to "unknown".
-          if ( sim.fromGenerator() ){
-            GenParticle const& gen = *sim.genParticle();
-            genId = gen.generatorId();
-          }
+        // If this is a generated particle, which generator did it come from?
+        // This default constructs to "unknown".
+        if ( sim.fromGenerator() ){
+          GenParticle const& gen = *sim.genParticle();
+          genId = gen.generatorId();
+        }
 
       }
 
@@ -1330,21 +1346,21 @@ namespace mu2e {
     art::Handle<ExtMonUCITofHitMCTruthCollection> tofMC;
     event.getByLabel(_extMonUCIModuleLabel,tofHits);
     event.getByLabel(_extMonUCIModuleLabel,tofMC);
-          
+
     // Find pointers to the original G4 steps
     art::Handle<PtrStepPointMCVectorCollection> tofMCPtr;
     event.getByLabel(_extMonUCIModuleLabel,tofMCPtr);
-      
+
     bool haveExtMonUCITof = ( tofHits.isValid() && tofMC.isValid() );
-      
+
     if( ! haveExtMonUCITof) return;
-      
+
     //art::ServiceHandle<GeometryService> geom;
     //if( ! geom->hasElement<Calorimeter>() ) return;
     //GeomHandle<Calorimeter> cg;
 
-    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){    
-      cout << "EVENT " << event.id().run() << " subRunID " << event.id().subRun() << " event " << event.id().event() << endl; 
+    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
+      cout << "EVENT " << event.id().run() << " subRunID " << event.id().subRun() << " event " << event.id().event() << endl;
       cout << " time " << event.time().value() << endl;
     }
 
@@ -1353,19 +1369,19 @@ namespace mu2e {
         ExtMonUCITofHit const & hit = (*tofHits).at(i);
         cout << "Readback: ExtMonUCITofHit " << hit << endl;
       }
-    } 
-      
+    }
+
     if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
       for ( size_t i=0; i<tofMC->size(); ++i ) {
         ExtMonUCITofHitMCTruth const & hit = (*tofMC).at(i);
         cout << "Readback: ExtMonUCITofHitMCTruth " << hit << endl;
       }
-    } 
-      
-      
+    }
+
+
     // ntuple buffer.
     float nt[_ntupExtMonUCITof->GetNvar()];
-      
+
     // Loop over all hits.
     for ( size_t i=0; i<tofHits->size(); ++i ){
 
@@ -1376,27 +1392,27 @@ namespace mu2e {
       nt[ 0] = event.id().run();
       nt[ 1] = event.id().event();
       nt[ 2] = hit.stationId();
-      nt[ 3] = hit.segmentId();    
+      nt[ 3] = hit.segmentId();
       nt[ 4] = hit.time();
-      nt[ 5] = hit.energyDep();       
+      nt[ 5] = hit.energyDep();
       CLHEP::Hep3Vector const &  mid = extMonUCI->tof(hit.stationId(), hit.segmentId())->origin();
       nt[ 6] = mid.x();
       nt[ 7] = mid.y();
       nt[ 8] = mid.z();
-             
-      _ntupExtMonUCITof->Fill(nt); 
-             
-    }        
-            
-    // ntuple buffer.              
+
+      _ntupExtMonUCITof->Fill(nt);
+
+    }
+
+    // ntuple buffer.
     float ntmc[_ntupExtMonUCITofMC->GetNvar()];
-             
+
     // Loop over all hits.
     for ( size_t i=0; i<tofMC->size(); ++i ){
 
       // Alias, used for readability.
       const ExtMonUCITofHitMCTruth& hit = (*tofMC)[i];
-  
+
       // Fill the ntuple.
       ntmc[ 0] = event.id().run();
       ntmc[ 1] = event.id().event();
@@ -1435,6 +1451,26 @@ namespace mu2e {
     }
 
   } // end of doExtMonUCI
+
+  void ReadBack::doPointTrajectories ( const art::Event& event ){
+
+    art::Handle<PointTrajectoryCollection> trajsHandle;
+    event.getByLabel(_g4ModuleLabel,trajsHandle);
+    PointTrajectoryCollection const& trajs(*trajsHandle);
+
+    _hNPointTrajectories->Fill( trajs.size() );
+
+    for ( PointTrajectoryCollection::const_iterator i=trajs.begin();
+          i != trajs.end(); ++i ){
+      const PointTrajectory& traj(i->second);
+
+      _hNPointsPerTrajectory->Fill( traj.size() );
+
+      double logSize = ( traj.size() == 0 ) ? -1 : log10(traj.size());
+      _hNPointsPerTrajectoryLog->Fill( logSize );
+    }
+
+  }
 
 }  // end namespace mu2e
 
