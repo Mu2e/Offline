@@ -2,9 +2,9 @@
 // A collection of Geant4 user helper functions
 // initially extracted from the TrackingAction
 //
-// $Id: Mu2eG4UserHelpers.cc,v 1.1 2012/12/19 23:37:13 genser Exp $
-// $Author: genser $
-// $Date: 2012/12/19 23:37:13 $
+// $Id: Mu2eG4UserHelpers.cc,v 1.2 2013/01/19 00:11:28 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/01/19 00:11:28 $
 //
 // Original author K. L. Genser based on Rob's TrackingAction
 //
@@ -40,11 +40,10 @@ namespace mu2e {
 
     // Enable/disable storing of trajectories based on several considerations
     void controlTrajectorySaving(G4Track const* trk, int _sizeLimit, int _currentSize){
-
       // Do not add the trajectory if the corresponding SimParticle is missing.
       //    if( _sizeLimit>0 && _currentSize>_sizeLimit ) return;
 
-      bool keep =  _sizeLimit>0 && _currentSize>_sizeLimit && saveThisTrajectory(trk);
+      bool keep =  _sizeLimit>0 && (_currentSize<_sizeLimit) && saveThisTrajectory(trk);
       G4TrackingManager* trkmgr = G4EventManager::GetEventManager()->GetTrackingManager();
       if ( keep ) {
         trkmgr->SetStoreTrajectory(true);
@@ -61,7 +60,7 @@ namespace mu2e {
       // We might want to change the momentum cut depending on which volume
       // the track starts in.
       CLHEP::Hep3Vector const& mom = trk->GetMomentum();
-      bool keep = ( mom.mag() > 50.*CLHEP::MeV ); // fixme get it from config and make it static 
+      bool keep = ( mom.mag() > 50.*CLHEP::MeV ); // fixme get it from config and make it static
 
       return keep;
     }
@@ -116,16 +115,16 @@ namespace mu2e {
         return process->GetProcessName();
       } else {
 
-        { // forcing mf own scope to prevent output interleaving; 
+        { // forcing mf own scope to prevent output interleaving;
           // does not seem to work anyway
           mf::LogWarning("G4")
-            << "ProcessDefinedStep NotSpecified for " 
+            << "ProcessDefinedStep NotSpecified for "
             << trk->GetParticleDefinition()->GetParticleName()
             << endl;
         }
 
         static bool printItOnce = true;
-      
+
         if (printItOnce) {
 
           // printItOnce = false;
@@ -133,7 +132,7 @@ namespace mu2e {
           G4VProcess const* process = trk->GetStep()->GetPreStepPoint()->GetProcessDefinedStep();
           G4String pname = (process) ? process->GetProcessName() : "NotSpecified";
 
-          cout << __func__ << " ProcessDefinedStep NotSpecified for " 
+          cout << __func__ << " ProcessDefinedStep NotSpecified for "
                << trk->GetParticleDefinition()->GetParticleName()
                << ", PostStepPoint StepStatus: "
                << trk->GetStep()->GetPostStepPoint()->GetStepStatus()
@@ -146,8 +145,8 @@ namespace mu2e {
           int id       = trk->GetTrackID();
           int parentId = trk->GetParentID();
 
-          cout << __func__ << " Track info:" 
-               << " ID: " 
+          cout << __func__ << " Track info:"
+               << " ID: "
                << id
                << ", ParentID: "
                << parentId
@@ -172,8 +171,8 @@ namespace mu2e {
           //           }
 
           //           int pdgId = i->second.pdgId();
-          //           cout << __func__ << " Parent info:" 
-          //                << " ID: " 
+          //           cout << __func__ << " Parent info:"
+          //                << " ID: "
           //                << parentId
           //                << ", PDGiD: "
           //                << pdgId
@@ -265,7 +264,7 @@ namespace mu2e {
           key_type parentId;
 
           map_type::const_iterator fdi = _transientMap.find(*j);
-          bool daugterFound = fdi !=_transientMap.end(); 
+          bool daugterFound = fdi !=_transientMap.end();
           if (daugterFound) {
             parentId = (fdi->second).parentId();
           }
@@ -292,7 +291,7 @@ namespace mu2e {
 
           map_type::const_iterator fpi = _transientMap.find(parentId);
           bool parentFound = fpi != _transientMap.end();
-        
+
           if ( !parentFound ){
             ok = false;
             if ( doPrint ){
