@@ -2,9 +2,9 @@
 // A collection of Geant4 user helper functions
 // initially extracted from the TrackingAction
 //
-// $Id: Mu2eG4UserHelpers.cc,v 1.2 2013/01/19 00:11:28 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/01/19 00:11:28 $
+// $Id: Mu2eG4UserHelpers.cc,v 1.3 2013/01/22 19:58:25 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2013/01/22 19:58:25 $
 //
 // Original author K. L. Genser based on Rob's TrackingAction
 //
@@ -39,11 +39,11 @@ namespace mu2e {
   namespace Mu2eG4UserHelpers {
 
     // Enable/disable storing of trajectories based on several considerations
-    void controlTrajectorySaving(G4Track const* trk, int _sizeLimit, int _currentSize){
+    void controlTrajectorySaving(G4Track const* trk, int _sizeLimit, int _currentSize, double _pointTrajectoryMomentumCut){
       // Do not add the trajectory if the corresponding SimParticle is missing.
       //    if( _sizeLimit>0 && _currentSize>_sizeLimit ) return;
 
-      bool keep =  _sizeLimit>0 && (_currentSize<_sizeLimit) && saveThisTrajectory(trk);
+      bool keep =  _sizeLimit>0 && (_currentSize<_sizeLimit) && saveThisTrajectory(trk, _pointTrajectoryMomentumCut);
       G4TrackingManager* trkmgr = G4EventManager::GetEventManager()->GetTrackingManager();
       if ( keep ) {
         trkmgr->SetStoreTrajectory(true);
@@ -54,13 +54,13 @@ namespace mu2e {
     }
 
     // The per track decision on whether or not to store trajectories.
-    bool saveThisTrajectory(G4Track const* trk){
+    bool saveThisTrajectory(G4Track const* trk, double _pointTrajectoryMomentumCut){
 
       // This is a guess at what might be useful.  Feel free to improve it.
       // We might want to change the momentum cut depending on which volume
       // the track starts in.
       CLHEP::Hep3Vector const& mom = trk->GetMomentum();
-      bool keep = ( mom.mag() > 50.*CLHEP::MeV ); // fixme get it from config and make it static
+      bool keep = ( mom.mag() > _pointTrajectoryMomentumCut*CLHEP::MeV ); 
 
       return keep;
     }

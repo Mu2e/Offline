@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.172 2013/01/11 21:48:42 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/01/11 21:48:42 $
+// $Id: geom_01.txt,v 1.173 2013/01/22 19:58:25 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2013/01/22 19:58:25 $
 //
 // Original author Rob Kutschke
 //
@@ -49,6 +49,7 @@ string GDMLFileName     = "mu2e.gdml";
 int g4.steppingActionMaxSteps = 10000;
 int g4.stepsSizeLimit = 10000;
 int g4.particlesSizeLimit = 10000;
+double g4.pointTrajectoryMomentumCut = 50.;
 
 // If the following number is not zero, G4 will kill all particles alive
 // at that time.

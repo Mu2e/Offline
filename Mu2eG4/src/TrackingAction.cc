@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.33 2012/12/20 18:24:25 genser Exp $
-// $Author: genser $
-// $Date: 2012/12/20 18:24:25 $
+// $Id: TrackingAction.cc,v 1.34 2013/01/22 19:58:25 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2013/01/22 19:58:25 $
 //
 // Original author Rob Kutschke
 //
@@ -58,6 +58,7 @@ namespace mu2e {
     _sizeLimit(config.getInt("g4.particlesSizeLimit",0)),
     _currentSize(0),
     _overflowSimParticles(false),
+    _pointTrajectoryMomentumCut(config.getDouble("g4.pointTrajectoryMomentumCut", 50)),
     _steppingAction(steppingAction),
     _processInfo(0){
 
@@ -90,7 +91,7 @@ namespace mu2e {
 
     // saveSimParticle must be called before controlTrajectorySaving.
     saveSimParticleStart(trk);
-    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize);
+    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize, _pointTrajectoryMomentumCut);
 
     // Create a user trackinformation object and attach it to the track.
     // Need to cast away const-ness to do this.

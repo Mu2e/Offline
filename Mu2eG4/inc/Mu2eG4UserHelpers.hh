@@ -3,9 +3,9 @@
 //
 // A collection of Geant4 user helper functions
 // initially extracted from the TrackingAction
-// $Id: Mu2eG4UserHelpers.hh,v 1.2 2012/12/20 17:27:42 genser Exp $
-// $Author: genser $
-// $Date: 2012/12/20 17:27:42 $
+// $Id: Mu2eG4UserHelpers.hh,v 1.3 2013/01/22 19:58:25 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2013/01/22 19:58:25 $
 //
 // Original author KLG based on Rob's TrackingAction
 //
@@ -58,8 +58,8 @@ namespace mu2e {
     // Control the saving of trajectories.
     // The first method does the big picture bookkeeping.
     // The second method decides yes/no for storing the trajectory of one track.
-    void controlTrajectorySaving(G4Track const* trk, int _sizeLimit, int _currentSize);
-    bool saveThisTrajectory( const G4Track* trk );
+    void controlTrajectorySaving(G4Track const* trk, int _sizeLimit, int _currentSize, double _pointTrajectoryMomentumCut = 50.);
+    bool saveThisTrajectory( const G4Track* trk, double _pointTrajectoryMomentumCut );
 
   }
 
