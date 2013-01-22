@@ -3,9 +3,9 @@
 //
 // A collection of Geant4 user helper functions
 // initially extracted from the TrackingAction
-// $Id: Mu2eG4UserHelpers.hh,v 1.3 2013/01/22 19:58:25 mjlee Exp $
+// $Id: Mu2eG4UserHelpers.hh,v 1.4 2013/01/22 21:42:06 mjlee Exp $
 // $Author: mjlee $
-// $Date: 2013/01/22 19:58:25 $
+// $Date: 2013/01/22 21:42:06 $
 //
 // Original author KLG based on Rob's TrackingAction
 //
@@ -39,13 +39,13 @@ namespace mu2e {
     typedef std::map<key_type,mapped_type>     map_type;
 
     // Check consistency of mother-daughter pointers.
-    bool checkCrossReferences( bool doPrint, bool doThrow, map_type const& _transientMap);
+    bool checkCrossReferences( bool doPrint, bool doThrow, map_type const& transientMap);
 
     // Debug printout.
     void printTrackInfo(G4Track const* trk, std::string const& text,
-                        map_type const& _transientMap,
-                        art::CPUTimer const& _timer,
-                        CLHEP::Hep3Vector const& _mu2eOrigin,
+                        map_type const& transientMap,
+                        art::CPUTimer const& timer,
+                        CLHEP::Hep3Vector const& mu2eOrigin,
                         bool isEnd=false);
 
     G4String findStoppingProcessName(G4Track const* trk);
@@ -58,8 +58,8 @@ namespace mu2e {
     // Control the saving of trajectories.
     // The first method does the big picture bookkeeping.
     // The second method decides yes/no for storing the trajectory of one track.
-    void controlTrajectorySaving(G4Track const* trk, int _sizeLimit, int _currentSize, double _pointTrajectoryMomentumCut = 50.);
-    bool saveThisTrajectory( const G4Track* trk, double _pointTrajectoryMomentumCut );
+    void controlTrajectorySaving(G4Track const* trk, int sizeLimit, int currentSize, double pointTrajectoryMomentumCut = 50.);
+    bool saveThisTrajectory( const G4Track* trk, double pointTrajectoryMomentumCut );
 
   }
 

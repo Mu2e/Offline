@@ -2,9 +2,9 @@
 // A collection of Geant4 user helper functions
 // initially extracted from the TrackingAction
 //
-// $Id: Mu2eG4UserHelpers.cc,v 1.3 2013/01/22 19:58:25 mjlee Exp $
+// $Id: Mu2eG4UserHelpers.cc,v 1.4 2013/01/22 21:42:06 mjlee Exp $
 // $Author: mjlee $
-// $Date: 2013/01/22 19:58:25 $
+// $Date: 2013/01/22 21:42:06 $
 //
 // Original author K. L. Genser based on Rob's TrackingAction
 //
@@ -39,11 +39,11 @@ namespace mu2e {
   namespace Mu2eG4UserHelpers {
 
     // Enable/disable storing of trajectories based on several considerations
-    void controlTrajectorySaving(G4Track const* trk, int _sizeLimit, int _currentSize, double _pointTrajectoryMomentumCut){
+    void controlTrajectorySaving(G4Track const* trk, int sizeLimit, int currentSize, double pointTrajectoryMomentumCut){
       // Do not add the trajectory if the corresponding SimParticle is missing.
-      //    if( _sizeLimit>0 && _currentSize>_sizeLimit ) return;
+      //    if( sizeLimit>0 && currentSize>sizeLimit ) return;
 
-      bool keep =  _sizeLimit>0 && (_currentSize<_sizeLimit) && saveThisTrajectory(trk, _pointTrajectoryMomentumCut);
+      bool keep =  sizeLimit>0 && (currentSize<sizeLimit) && saveThisTrajectory(trk, pointTrajectoryMomentumCut);
       G4TrackingManager* trkmgr = G4EventManager::GetEventManager()->GetTrackingManager();
       if ( keep ) {
         trkmgr->SetStoreTrajectory(true);
@@ -54,13 +54,13 @@ namespace mu2e {
     }
 
     // The per track decision on whether or not to store trajectories.
-    bool saveThisTrajectory(G4Track const* trk, double _pointTrajectoryMomentumCut){
+    bool saveThisTrajectory(G4Track const* trk, double pointTrajectoryMomentumCut){
 
       // This is a guess at what might be useful.  Feel free to improve it.
       // We might want to change the momentum cut depending on which volume
       // the track starts in.
       CLHEP::Hep3Vector const& mom = trk->GetMomentum();
-      bool keep = ( mom.mag() > _pointTrajectoryMomentumCut*CLHEP::MeV ); 
+      bool keep = ( mom.mag() > pointTrajectoryMomentumCut ); 
 
       return keep;
     }
@@ -162,8 +162,8 @@ namespace mu2e {
           // and would require passing a lot of data around
 
           //         if ( parentId != 0 ){
-          //           map_type::iterator i(_transientMap.find(key_type(parentId)));
-          //           if ( i == _transientMap.end() ){
+          //           map_type::iterator i(transientMap.find(key_type(parentId)));
+          //           if ( i == transientMap.end() ){
           //             throw cet::exception("RANGE")
           //               << "Could not find parent SimParticle in findStoppingProcess.  id: "
           //               << id
@@ -192,9 +192,9 @@ namespace mu2e {
     }
 
     void printTrackInfo(G4Track const* trk, std::string const& text,
-                        map_type const& _transientMap,
-                        art::CPUTimer const& _timer,
-                        CLHEP::Hep3Vector const& _mu2eOrigin,
+                        map_type const& transientMap,
+                        art::CPUTimer const& timer,
+                        CLHEP::Hep3Vector const& mu2eOrigin,
                         bool isEnd) {
 
       const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent();
@@ -216,15 +216,15 @@ namespace mu2e {
            << setw(4) << id                    << " "
            << setw(4) << parentId              << " "
            << setw(8) << partName              << " | "
-           << trk->GetPosition()-_mu2eOrigin   << " "
+           << trk->GetPosition()-mu2eOrigin   << " "
            << trk->GetMomentum()               << " "
            << trk->GetKineticEnergy()          << " "
            << volName                          << " ";
 
       if ( isEnd ){
         cout << trk->GetProperTime() <<  " | ";
-        map_type::const_iterator i(_transientMap.find(key_type(id)));
-        if ( i != _transientMap.end() ){
+        map_type::const_iterator i(transientMap.find(key_type(id)));
+        if ( i != transientMap.end() ){
           SimParticle const& particle = i->second;
           cout << particle.startGlobalTime() <<  " ";
         } else {
@@ -232,8 +232,8 @@ namespace mu2e {
         }
 
         cout << trk->GetGlobalTime() << " | ";
-        cout << _timer.cpuTime() << " "
-             << _timer.realTime()
+        cout << timer.cpuTime() << " "
+             << timer.realTime()
              << endl;
       }
 
@@ -241,14 +241,14 @@ namespace mu2e {
 
     }
 
-    bool checkCrossReferences( bool doPrint, bool doThrow, map_type const& _transientMap ){
+    bool checkCrossReferences( bool doPrint, bool doThrow, map_type const& transientMap ){
 
       // Start by assuming we are ok; any error will turn this to false.
       bool ok(true);
 
       // Loop over all simulated particles.
-      for ( map_type::const_iterator i=_transientMap.begin();
-            i!=_transientMap.end(); ++i ){
+      for ( map_type::const_iterator i=transientMap.begin();
+            i!=transientMap.end(); ++i ){
 
         // The next particle to look at.
         SimParticle const& sim = i->second;
@@ -263,8 +263,8 @@ namespace mu2e {
 
           key_type parentId;
 
-          map_type::const_iterator fdi = _transientMap.find(*j);
-          bool daugterFound = fdi !=_transientMap.end();
+          map_type::const_iterator fdi = transientMap.find(*j);
+          bool daugterFound = fdi !=transientMap.end();
           if (daugterFound) {
             parentId = (fdi->second).parentId();
           }
@@ -289,8 +289,8 @@ namespace mu2e {
         if ( sim.hasParent() ){
           key_type parentId = sim.parentId();
 
-          map_type::const_iterator fpi = _transientMap.find(parentId);
-          bool parentFound = fpi != _transientMap.end();
+          map_type::const_iterator fpi = transientMap.find(parentId);
+          bool parentFound = fpi != transientMap.end();
 
           if ( !parentFound ){
             ok = false;
