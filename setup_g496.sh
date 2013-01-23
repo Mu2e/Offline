@@ -1,7 +1,7 @@
 #
-# $Id: setup_g496.sh,v 1.1 2012/12/14 20:10:17 genser Exp $
+# $Id: setup_g496.sh,v 1.2 2013/01/23 21:46:15 genser Exp $
 # $Author: genser $
-# $Date: 2012/12/14 20:10:17 $
+# $Date: 2013/01/23 21:46:15 $
 #
 # Contact Person K. Genser
 #
@@ -13,6 +13,13 @@ if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
     echo "You should be sourcing this file, not executing it."
     exit 1
 fi
+
+echo "This version of geant4 i.e.: v4_9_6, has known problems"
+echo "a fix is expected in early 2013"
+echo "If you decide to edit this script and use it anyway, proceed at your own risk"
+echo "exiting"
+
+return 1
 
 if [ "${MU2E}" = '' ];then
     echo "The environment variable MU2E is not set."
