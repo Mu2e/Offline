@@ -1,7 +1,7 @@
 #
-# $Id: setup_g4951.sh,v 1.5 2012/12/14 20:11:20 genser Exp $
+# $Id: setup_g4951.sh,v 1.6 2013/01/23 21:44:58 genser Exp $
 # $Author: genser $
-# $Date: 2012/12/14 20:11:20 $
+# $Date: 2013/01/23 21:44:58 $
 #
 # Original author Rob Kutschke
 #
@@ -15,7 +15,7 @@ if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
 fi
 
 echo "This version of geant4 i.e.: v4_9_5_p01, has known problems"
-echo "v4_9_5_p02 or 4_9_6 are suggested replacement versions"
+echo "v4_9_5_p02 is a suggested replacement version as of December 2012"
 echo "If you decide to edit this script and use it anyway, proceed at your own risk"
 echo "exiting"
 
@@ -55,7 +55,18 @@ echo "MU2E_SEACH_PATH:   "  $MU2E_SEARCH_PATH
 setup art v1_00_11 -qmu2e:prof
 
 # Geant4 and its cross-section files.
-setup geant4 v4_9_5_p01 -qgcc46:prof
+#setup geant4 v4_9_5_p01 -qgcc46:prof
+
+# main geant4 setup file:
+#source /mu2e/app/users/genser/geant4work/g4.9.5.p01_mu2e_head/modified/geant4.9.5.p01/share/Geant4-9.5.1/geant4make/geant4make.sh 
+
+source /mu2e/app/users/genser/geant4work/g4.9.5.p01_mu2e_head/unmodifieddebug/geant4.9.5.p01/share/Geant4-9.5.1/geant4make/geant4make.sh 
+# if the above usets XERCES_C_INC etc...
+setup xerces_c v3_1_1 -q gcc46:prof
+#source /mu2e/app/users/genser/geant4work/g4.9.5.p01_mu2e_head/modified/geant4.9.5.p01/bin/geant4.sh
+#source /mu2e/app/users/genser/geant4work/g4.9.5.p01_mu2e_head/unmodifieddebug/geant4.9.5.p01/bin/geant4.sh
+# ups geant4 sets this variable, so we do it as well:
+export GEANT4_VERSION=v4_9_5_p01
 
 setup g4abla      v3_0
 setup g4emlow     v6_23
@@ -93,4 +104,5 @@ fi
 
 # A hack that we hope can go away soon.
 export G4LIBDIR=$G4LIB/$G4SYSTEM
-G4INCLUDE=${G4INCLUDE}/Geant4
+#the line below is needed for ups geant4
+#G4INCLUDE=${G4INCLUDE}/Geant4
