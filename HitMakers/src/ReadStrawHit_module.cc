@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.15 2012/12/19 22:32:55 genser Exp $
+// $Id: ReadStrawHit_module.cc,v 1.16 2013/01/24 22:21:04 genser Exp $
 // $Author: genser $
-// $Date: 2012/12/19 22:32:55 $
+// $Date: 2013/01/24 22:21:04 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by KLG
@@ -83,6 +83,7 @@ namespace mu2e {
       _hNG4Steps(0),
       _hG4StepLength(0),
       _hG4StepEdep(0),
+      _hG4StepRelTimes(0),
       _ntup(0),
       _detntup(0)
     {
@@ -126,6 +127,7 @@ namespace mu2e {
     TH1F* _hNG4Steps;
     TH1F* _hG4StepLength;
     TH1F* _hG4StepEdep;
+    TH1F* _hG4StepRelTimes;
     TNtuple* _ntup;
     TNtuple* _detntup;
 
@@ -155,6 +157,8 @@ namespace mu2e {
     _hNG4Steps     = tfs->make<TH1F>( "hNG4Steps",     "Number of G4Steps per hit", 100, 0., 100. );
     _hG4StepLength = tfs->make<TH1F>( "hG4StepLength", "Length of G4Steps, mm", 100, 0., 10. );
     _hG4StepEdep   = tfs->make<TH1F>( "hG4StepEdep",   "Energy deposition of G4Steps, keV", 100, 0., 10. );
+    _hG4StepRelTimes = tfs->make<TH1F>( "hG4StepRelTimes", "Hit Relative Times of G4Steps, ns", 100, 0., 100.);
+
     _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple",
                                          "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid:id");
     _detntup          = tfs->make<TNtuple>( "detntup", "Straw ntuple",
@@ -278,6 +282,8 @@ namespace mu2e {
       for( size_t j=0; j<mcptr.size(); ++j ) {
         StepPointMC const& mchit = *mcptr.at(j);
         _hG4StepLength->Fill(mchit.stepLength());
+        _hG4StepRelTimes->Fill(fabs(mchit.time()-hit.time()));
+        // step time rel to the formed hit time; FIXME fabs should not be needed
         if (mchit.strawIndex()!=si) {
           // FIXME: it is an approximation; We plot the "crosstalk
           // edep" which is in principle calculated using amplitudes
