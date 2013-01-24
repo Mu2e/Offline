@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.21 2013/01/19 17:28:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/01/19 17:28:41 $
+// $Id: ReadBack_module.cc,v 1.22 2013/01/24 22:41:52 genser Exp $
+// $Author: genser $
+// $Date: 2013/01/24 22:41:52 $
 //
 // Original author Rob Kutschke
 //
@@ -259,16 +259,16 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
 
     // Create some 1D histograms.
-    _hRadius       = tfs->make<TH1F>( "hRadius",       "Radius of Hits;(mm)",     100,  0., 1000. );
+    _hRadius       = tfs->make<TH1F>( "hRadius",  "Radius of StepPoint Locations;(mm)",     500,  300.,  800. );
     _hEnergyDep    = tfs->make<TH1F>( "hEnergyDep",    "Energy Deposited;(keV)",  100,  0.,   10. );
     _hTime         = tfs->make<TH1F>( "hTime",         "Pulse Height;(ns)",       100,  0., 2000. );
-    _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "Hits per Event",          100,  0.,  300. );
+    _hMultiplicity = tfs->make<TH1F>( "hMultiplicity", "StepPoints per Event",         300,  0.,  300. );
     _hDriftDist    = tfs->make<TH1F>( "hDriftDist", "Crude Drift Distance;(mm)",  100,  0.,   3.  );
     _hDriftDistW   = tfs->make<TH1F>( "hDriftDistW", "Normalized Crude Drift Distance", 150,  0., 1.5 );
 
-    _hxHit         = tfs->make<TH1F>( "hxHit",  "X of Hit;(mm)",                  100, -1000., 1000. );
-    _hyHit         = tfs->make<TH1F>( "hyHit",  "Y of Hit;(mm)",                  100, -1000., 1000. );
-    _hzHit         = tfs->make<TH1F>( "hzHit",  "Z of Hit;(mm)",                  100, -1400., 1400. );
+    _hxHit         = tfs->make<TH1F>( "hxHit",  "X of StepPoint;(mm)",                  1600, -800., 800. );
+    _hyHit         = tfs->make<TH1F>( "hyHit",  "Y of StepPoint;(mm)",                  1600, -800., 800. );
+    _hzHit         = tfs->make<TH1F>( "hzHit",  "Z of StepPoint;(mm)",                  3000, -1500., 1500. );
 
     _hHitNeighbours    = tfs->make<TH1F>( "hHitNeighbours",  "Number of hit neighbours",
                                           10, 0., 10. );
