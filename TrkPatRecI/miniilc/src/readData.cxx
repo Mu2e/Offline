@@ -43,15 +43,15 @@ TObjArray *mu2eHits2ilc(const vector<mu2e::StrawHit> *shits,const vector<mu2e::S
 
     if (useZCoordinate) {
             mu2e::ConditionsHandle<mu2e::TrackerCalibrations> tcal("ignored");
-            double wtime, wtime_err, tddist_err, z_err;
-            CLHEP::Hep3Vector wpos;
-            tcal->StrawHitInfo((*shits)[i],wpos,wtime,tddist_err,wtime_err);
-            dhit->SetZ(wpos.z()*0.1); //in cm
             const mu2e::Tracker& tracker = mu2e::getTrackerOrThrow();
+	    mu2e::Straw const& straw= tracker.getStraw((*shits)[i].strawIndex());
+	    mu2e::SHInfo shinfo;
+            tcal->StrawHitInfo(straw,(*shits)[i],shinfo);
+            dhit->SetZ(shinfo._pos.z()*0.1); //in cm
             const mu2e::ITracker &itracker = static_cast<const mu2e::ITracker&>( tracker );
             mu2e::CellGeometryHandle *_itwp = itracker.getCellGeometryHandle();
             _itwp->SelectCellDet(id);
-            z_err = tddist_err*cos(_itwp->GetWireEpsilon())*0.1; //in cm
+            double z_err = shinfo._tdres*cos(_itwp->GetWireEpsilon())*0.1; //in cm
             dhit->SetSigmaZ2(z_err*z_err);
     }
 

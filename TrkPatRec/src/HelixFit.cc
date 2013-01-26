@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.cc,v 1.4 2012/12/07 00:52:52 brownd Exp $
+// $Id: HelixFit.cc,v 1.5 2013/01/26 18:17:13 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/07 00:52:52 $
+// $Date: 2013/01/26 18:17:13 $
 //
 //
 // the following has to come before other BaBar includes
@@ -788,11 +788,10 @@ namespace mu2e
     for(std::vector<hitIndex>::const_iterator istr=mytrk.strawHitIndices().begin();
 	istr != mytrk.strawHitIndices().end(); ++istr){
       StrawHit const& sh = mytrk.strawHitCollection()->at(istr->_index);
-      CLHEP::Hep3Vector wpos;
-      double wtime,wtimeres,tdres;
-      tcal->StrawHitInfo(sh,wpos,wtime,tdres,wtimeres);
-      const Straw& straw = tracker.getStraw(sh.strawIndex());
-      xyzp.push_back(HitXYZP(istr->_index,wpos,straw.getDirection(),tdres,_sfac*straw.getRadius()));
+      Straw const& straw= tracker.getStraw(sh.strawIndex());
+      SHInfo shinfo;
+      tcal->StrawHitInfo(straw,sh,shinfo);
+      xyzp.push_back(HitXYZP(istr->_index,shinfo._pos,straw.getDirection(),shinfo._tdres,_sfac*straw.getRadius()));
     } 
   }
 

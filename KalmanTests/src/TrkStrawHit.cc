@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.22 2012/09/19 20:17:37 brownd Exp $
+// $Id: TrkStrawHit.cc,v 1.23 2013/01/26 18:19:58 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/09/19 20:17:37 $
+// $Date: 2013/01/26 18:19:58 $
 //
 // Original author David Brown, LBNL
 //
@@ -54,11 +54,12 @@ namespace mu2e
   {
 // is there an efficiency issue fetching the calibration object for every hit???
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    double wtime, wtime_err;
-    tcal->StrawHitInfo(strawhit,_wpos,wtime,_tddist_err,wtime_err);
+    SHInfo shinfo;
+    tcal->StrawHitInfo(straw,strawhit,shinfo);
+    _wpos = shinfo._pos;
+    _tddist = shinfo._tddist;
+    _tddist_err = shinfo._tdres;
     CLHEP::Hep3Vector const& wiredir = _straw.getDirection();
-// get time division and drift information for this straw hit relative to the wire center
-    _tddist = tcal->TimeDiffToDistance(_straw.index(),_strawhit.dt());
     CLHEP::Hep3Vector const& mid = _straw.getMidPoint();
 // the hit trajectory is defined as a line segment directed along the wire direction starting from the wire center
     _hittraj = new TrkLineTraj(HepPoint(mid.x(),mid.y(),mid.z()),wiredir,_tddist-_tddist_err,_tddist+_tddist_err);
