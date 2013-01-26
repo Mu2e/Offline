@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.15 2012/12/04 00:51:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Id: TrackerCalibrations.hh,v 1.16 2013/01/26 18:16:38 brownd Exp $
+// $Author: brownd $
+// $Date: 2013/01/26 18:16:38 $
 //
 // Original author Vadim Rusu
 //
@@ -22,7 +22,7 @@ namespace mu2e
 {
   class SimpleConfig;
   class StrawHit;
-
+  class Straw;
 // simple struct to hold output of timeToDistance function
   struct T2D {
     double _rdrift;
@@ -53,6 +53,15 @@ namespace mu2e
     A2E() : _edep(0.0),_edeperr(1.0) {}
   };
 
+// simple strict to hold straw hit position info
+  struct SHInfo {
+    CLHEP::Hep3Vector _pos;
+    double _tddist;
+    double _time;
+    double _tdres;
+    double _timeres;
+  };
+
   struct TrackerCalibrations: virtual public ConditionsEntity{
 
 
@@ -74,9 +83,7 @@ namespace mu2e
     virtual double TimeDiffToDistance(StrawIndex strawIndex, double deltaT) const;
     // information about a hit's position and time.  This uses time difference to compute
     // the position along the wire
-    virtual void StrawHitInfo(StrawHit const& strawhit,
-      CLHEP::Hep3Vector& pos, double& time,double& tdres, double& timeres) const;
-
+    virtual void StrawHitInfo(Straw const& straw, StrawHit const& strawhit, SHInfo& shinfo) const;
     void EnergyToAmplitude(StrawIndex strawIndex, double edep, E2A& e2a) const;
     void AmplitudeToEnergy(StrawIndex strawIndex, double ampl, A2E& a2e) const;
 

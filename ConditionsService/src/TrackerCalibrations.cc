@@ -1,9 +1,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.12 2012/08/31 22:37:06 brownd Exp $
+// $Id: TrackerCalibrations.cc,v 1.13 2013/01/26 18:16:38 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/08/31 22:37:06 $
+// $Date: 2013/01/26 18:16:38 $
 //
 
 // Mu2e include files
@@ -73,24 +73,22 @@ namespace mu2e {
     return 0.5 * SignalVelocity(strawIndex) * deltaT;
   }
 
-  void TrackerCalibrations::StrawHitInfo(StrawHit const& strawhit,
-    CLHEP::Hep3Vector& pos, double& time,double& tdres, double& timeres) const {
-    const Tracker& tracker = getTrackerOrThrow();
-    const Straw& straw = tracker.getStraw(strawhit.strawIndex());
-// compute the position as being on the wire the distance specified by time division.  Note this can
+  void TrackerCalibrations::StrawHitInfo(Straw const& straw, StrawHit const& strawhit, SHInfo&
+  shinfo) const {
+   // compute the position as being on the wire the distance specified by time division.  Note this can
 // be beyond the physical wire!
     double vwire = SignalVelocity(strawhit.strawIndex());
-    double tddist = TimeDiffToDistance(strawhit.strawIndex(),strawhit.dt());
-    pos = straw.getMidPoint() + tddist*straw.getDirection();
+    shinfo._tddist = TimeDiffToDistance(strawhit.strawIndex(),strawhit.dt());
+    shinfo._pos = straw.getMidPoint() + shinfo._tddist*straw.getDirection();
 // this time represents when the particle passed by the wire.
     double shlen = straw.getHalfLength();
-    time = strawhit.time() - (shlen-tddist)/vwire;
-// the error matrix is defined with x along the wire, y in the mu2e Z direction, and y perpendicular
-// error along the wire is given by the time division
-    tdres = TimeDivisionResolution(straw.index(),0.5*(shlen-tddist)/shlen);
+    shinfo._time = strawhit.time() - (shlen-shinfo._tddist)/vwire;
+// Position error along the wire is given by the time division
+    shinfo._tdres = TimeDivisionResolution(straw.index(),0.5*(shlen-shinfo._tddist)/shlen);
 // time resolution is due to intrinsic timing resolution and time difference resolution
-    timeres = tdres/vwire;
+    shinfo._timeres = shinfo._tdres/vwire;
   }
+
 
   double TrackerCalibrations::CrossTalk(StrawIndex strawIndex0, StrawIndex strawIndexN) const {
     // FIXME oversimplfied model
