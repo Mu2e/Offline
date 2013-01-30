@@ -1,9 +1,9 @@
 //
 // Root c++ function to test MakeStrawHit_module
 // 
-// $Id: strawHitsO.C,v 1.1 2013/01/30 01:13:44 genser Exp $
+// $Id: strawHitsO.C,v 1.2 2013/01/30 17:45:33 genser Exp $
 // $Author: genser $
-// $Date: 2013/01/30 01:13:44 $
+// $Date: 2013/01/30 17:45:33 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //
@@ -87,11 +87,11 @@ void strawHitsO()
 //   fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g496 FTFP_BERT_HP","NDC"));
 
   file.push_back(new TFile("g4test_03.g4942.qgspberthp.20130129144528.root"));
-  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4942 FTFP_BERT_HP","NDC"));
+  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4942 QGSP_BERT_HP","NDC"));
   fileText.push_back("g4942");
 
   file.push_back(new TFile("g4test_03.g4952.qgspberthp.20130129144405.root"));
-  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4952 FTFP_BERT_HP","NDC"));
+  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4952 QGSP_BERT_HP","NDC"));
   fileText.push_back("g4952");
 
   const int nfiles = file.size();
@@ -304,7 +304,6 @@ void strawHitsO()
       // FIXME need to copy the hist to not to draw stats here...
        delete _histograms_copy[ii];
        _histograms_copy[ii] = static_cast<TH1F*>(((*_histograms[jj])[ii])->Clone());
-       //       _histograms_copy[ii] = (TH1F*)((*_histograms[jj])[ii])->Clone();
       
       histtmpSuffix.str("");
       histtmpSuffix.width(3);
@@ -314,10 +313,8 @@ void strawHitsO()
       (_histograms_copy[ii])->SetName(histtmpName);
       (_histograms_copy[ii])->SetStats(kFALSE);
       if (ii==0) {
-        //((*_histograms[jj])[ii])->Draw("H9");
         (_histograms_copy[ii])->Draw("H9");
       } else {
-        //((*_histograms[jj])[ii])->Draw("H9SAME");
         (_histograms_copy[ii])->Draw("H9SAME");
          leg->Draw("9SAME");
       }
@@ -348,7 +345,75 @@ void strawHitsO()
 
   }
 
-  // a plot (scatterplot) based on the ntuple
+  // a plot based on the ntuples (hist)
+
+  canvas->cd(0);
+  canvas->Clear();
+  canvas->Divide(2,2);
+
+  for (int ii=0; ii!=nfiles; ++ii) {
+    canvas->cd(ii+1);
+    histIdos.str("");
+    histIdos << ii+1;
+    TString htmpname = "hitR"+histIdos.str();
+    TString drawInputString("sqrt(hity*hity+hitx*hitx)>>"+htmpname+"(500,300.,800.)");
+
+    cout << 2 << " " << ii << " Drawing " << ((*_ntuples[0])[ii])->GetTitle() 
+         << ", " << fileLabel[ii]->GetLabel() << ", " << drawInputString
+         << ", " << fileText[ii]
+         <<endl;
+    ((*_ntuples[1])[ii])->Draw(drawInputString ,"","");
+    delete _histograms_copy[ii];
+    (static_cast<TH1F*>(gDirectory->Get(htmpname)))->SetLineColor(ii+1);
+    _histograms_copy[ii] = static_cast<TH1F*>((gDirectory->Get(htmpname))->Clone());
+    histtmpSuffix.str("");
+    histtmpSuffix.width(3);
+    histtmpSuffix.fill('0');
+    histtmpSuffix << ii;
+    histtmpName = "hcopy_"+histtmpSuffix.str();
+    _histograms_copy[ii]->SetName(histtmpName);
+    _histograms_copy[ii]->SetLineColor(ii+1);
+    _histograms_copy[ii]->SetStats(kFALSE);
+    fileLabel[ii]->Draw("SAME");
+  }
+
+  canvas->cd(nfiles+1);
+  for (int ii=0; ii!=nfiles; ++ii) {
+    cout << 3 << " " << ii << " Drawing " << (_histograms_copy[ii])->GetTitle() 
+         << ", " << fileLabel[ii]->GetLabel()
+         << ", " << fileText[ii]
+         <<endl;
+      if (ii==0) {
+        (_histograms_copy[ii])->Draw("H9");
+      } else {
+        (_histograms_copy[ii])->Draw("H9SAME");
+         leg->Draw("9SAME");
+      }
+      if (ii==nfiles-1) {
+         leg->Draw("9SAME");
+      }
+  }
+
+  // Flush page to screen
+  canvas->Update();
+
+  // Uncomment this line to save this canvas as a png file (slow)
+  canvasSuffix.str("");
+  canvasSuffix.width(3);
+  canvasSuffix.fill('0');
+  canvasSuffix << ++canvasCounter;
+
+  canvas->Print( basename + "_" + canvasSuffix.str() + ".png" );
+
+  // Add this canvas to the pdf file.
+  canvas->Print(pdffile);
+
+  // Prompt and wait for response before continuing.
+  cerr << "Double click in the last active pad to continue: " ;
+  gPad->WaitPrimitive();
+  cerr << endl;
+
+  // a plot (scatterplot) based on the ntuples
 
   canvas->cd(0);
   canvas->Clear();
@@ -382,48 +447,6 @@ void strawHitsO()
     ((*_ntuples[1])[ii])->Draw( "hitx:hity","","PSAME");
 
     fileLabel[ii]->Draw("9SAME");
-  }
-
-  // Flush page to screen
-  canvas->Update();
-
-  // Uncomment this line to save this canvas as a png file (slow)
-  canvasSuffix.str("");
-  canvasSuffix.width(3);
-  canvasSuffix.fill('0');
-  canvasSuffix << ++canvasCounter;
-
-  canvas->Print( basename + "_" + canvasSuffix.str() + ".png" );
-
-  // Add this canvas to the pdf file.
-  canvas->Print(pdffile);
-
-  // Prompt and wait for response before continuing.
-  cerr << "Double click in the last active pad to continue: " ;
-  gPad->WaitPrimitive();
-  cerr << endl;
-
-  // another ntuple plot (hist)
-
-  canvas->cd(0);
-  canvas->Clear();
-  canvas->Divide(2,2);
-
-  for (int ii=0; ii!=nfiles; ++ii) {
-    canvas->cd(ii+1);
-    histIdos.str("");
-    histIdos << ii+1;
-    TString htmpname = "mhg"+histIdos.str();
-    TString drawInputString("sqrt(hity*hity+hitx*hitx)>>"+htmpname+"(500,300.,800.)");
-
-    cout << 2 << " " << ii << " Drawing " << ((*_ntuples[0])[ii])->GetTitle() 
-         << ", " << fileLabel[ii]->GetLabel() << ", " << drawInputString
-         << ", " << fileText[ii]
-         <<endl;
-    ((*_ntuples[1])[ii])->Draw(drawInputString ,"","");
-    TH1F *h = (TH1F*)gDirectory->Get(htmpname);
-    h->SetLineColor(ii+1);
-    fileLabel[ii]->Draw("SAME");
   }
 
   // Flush page to screen
