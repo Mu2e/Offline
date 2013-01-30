@@ -4,7 +4,7 @@
 // simple reconstruction of 2 straw hits in different views giving 3-d information from stereo 
 //
 // $Author: brownd $
-// $Date: 2013/01/26 18:18:44 $
+// $Date: 2013/01/30 20:03:35 $
 //
 // Original author David Brown
 //
@@ -38,6 +38,8 @@ namespace mu2e {
       float dt() const { return _dt; } // signed t2 -t1
       float wdist1() const { return _wd1; }
       float wdist2() const { return _wd2; }
+      size_t hitIndex1() const { return _hind1; }
+      size_t hitIndex2() const { return _hind2; }
     private:
       size_t _hind1, _hind2; // indices into the straw hit container for the 2 hits making up this stereo hit
       CLHEP::Hep3Vector _pos; // position in tracker coordinates
