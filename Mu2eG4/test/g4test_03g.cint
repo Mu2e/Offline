@@ -1,9 +1,9 @@
 //
 // Root script to display some of the plots made by ReadBack_module.cc & ReadStrawHit_module.cc
 // 
-// $Id: g4test_03g.cint,v 1.1 2013/01/24 21:30:11 genser Exp $
+// $Id: g4test_03g.cint,v 1.2 2013/01/30 01:19:08 genser Exp $
 // $Author: genser $
-// $Date: 2013/01/24 21:30:11 $
+// $Date: 2013/01/30 01:19:08 $
 // 
 // Original author Rob Kutschke, extednd by K. Genser for ReadStrawHit_module.cc
 //
@@ -40,7 +40,30 @@
   // number of Entries, Mean, Rms, Underflows, Overflows
   gStyle->SetOptStat("emruo");
 
-  TString basename("g4test_03");
+  //  TString basename("g4test_03");
+
+  //  TString basename("g4test_03.g4942.20121218172847");
+  //  TString basename("g4test_03.g496.ftfpberthp.20130118135451");
+  //  TString basename("g4test_03.g496.ftfpberthp.20130122123126");
+  //  TString basename("g4test_03.20130122180852"); // conv electrons only; FTFP_BERT_HP
+  //  TString basename("g4test_03.20130122181547"); // conv electrons only; FTFP_BERT
+  //  TString basename("g4test_03.20130122182040"); // conv electrons only; Minimal
+  //  TString basename("g4test_03.g496.qgspberthpceo.20130125111647");
+  //  TString basename("g4test_03.g4942.qgspberthpceo.20130125111733");
+  //  TString basename("g4test_03.g4952.qgspberthpceo.20130125113139");
+  //  TString basename("g4test_03.g496.qgspberthp.20130125141902");
+  //  TString basename("g4test_03.g4952.qgspberthp.20130125141334");
+  //  TString basename("g4test_03.g4942.qgspberthp.20130125141930");
+  //  TString basename("g4test_03.g496.qgspberthp.20130128133359");
+  //  TString basename("g4test_03.g4942.qgspberthp.20130128150204");
+  //  TString basename("g4test_03.g4952.qgspberthp.20130128150555");
+  //  TString basename("g4test_03.g496.qgspberthp.20130128151256");
+  //  TString basename("g4test_03.g496.qgspberthp.20130129141944");
+
+  TString basename("g4test_03.g4952.qgspberthp.20130129142509");
+  // TString basename("g4test_03.g4942.qgspberthp.20130129142340");
+
+
   // Open the input file that contains histograms and ntuples
   // made by ReadBack.cc
   TFile* file = new TFile( basename + ".root");
@@ -70,8 +93,9 @@
   TH1F* hG4StepEdep;     file->GetObject("readStrawHits/hG4StepEdep",    hG4StepEdep);
   TH1F* hG4StepRelTimes; file->GetObject("readStrawHits/hG4StepRelTimes",hG4StepRelTimes);
 
-  // Get a pointer to the ntuple.
-  TNtuple* nt; file->GetObject("checkhits/ntup",nt);
+  // Get  pointers to the ntuples
+  TNtuple* nt;  file->GetObject("checkhits/ntup",nt);
+  TNtuple* snt; file->GetObject("readStrawHits/ntup",snt);
 
   // Open a new canvas on the screen.
   // The last two arguments are the size of the window.
@@ -86,10 +110,10 @@
   // Draw some histograms, one per pad.
   // cd(n): move to graphics pad number "n".
   // "H9": draw outline histogram ("H") in high resolution mode (9)
-  canvas->cd(1); hMultiplicity->Draw("H9");
+  canvas->cd(1); gPad->SetLogy(1); hMultiplicity->Draw("H9");
   canvas->cd(2); hHitNeighbours->Draw("H9");
-  canvas->cd(3); hEnergyDep->Draw("H9");
-  canvas->cd(4); hStepLength->Draw("H9");
+  canvas->cd(3); gPad->SetLogy(1); hEnergyDep->Draw("H9");
+  canvas->cd(4); gPad->SetLogy(1); hStepLength->Draw("H9");
 
   // Flush page to screen
   canvas->Update();
@@ -133,9 +157,9 @@
   canvas->Divide(2,2);
 
   canvas->cd(1); hHitDeltaTime->Draw("H9");
-  canvas->cd(2); hHitEnergy->Draw("H9");
-  canvas->cd(3); hNHits->Draw("H9");
-  canvas->cd(4); hNHitsPerWire->Draw("H9");
+  canvas->cd(2); gPad->SetLogy(1); hHitEnergy->Draw("H9");
+  canvas->cd(3); gPad->SetLogy(1); hNHits->Draw("H9");
+  canvas->cd(4); gPad->SetLogy(1); hNHitsPerWire->Draw("H9");
 
   // Flush page to screen
   canvas->Update();
@@ -153,10 +177,10 @@
 
   canvas->Divide(2,2);
 
-  canvas->cd(1); hNG4Steps->Draw("H9");
-  canvas->cd(2); hG4StepLength->Draw("H9");
-  canvas->cd(3); hG4StepEdep->Draw("H9");
-  canvas->cd(4); hG4StepRelTimes->Draw("H9");
+  canvas->cd(1); gPad->SetLogy(1); hNG4Steps->Draw("H9");
+  canvas->cd(2); gPad->SetLogy(1); hG4StepLength->Draw("H9");
+  canvas->cd(3); gPad->SetLogy(1); hG4StepEdep->Draw("H9");
+  canvas->cd(4); gPad->SetLogy(1); hG4StepRelTimes->Draw("H9");
 
   // Flush page to screen
   canvas->Update();
@@ -168,21 +192,40 @@
   gPad->WaitPrimitive();
   cerr << endl;
 
+  // we specify the histogram names and bin info explicitly
+
   // Clear canvas in preparation for next page
   canvas->cd(0);
   canvas->Clear();
 
   canvas->Divide(2,2);
 
-  // we may want to affect the fXaxis here to make sure all the hist
-  // have the same horizontal scale TH1F* htemp
+  canvas->cd(1); nt->Draw( "sqrt(hy*hy+hx*hx)>>mhg1(500,300.,800.)","","");
+  canvas->cd(2); nt->Draw( "sqrt(hy*hy+hx*hx)>>mhg2(500,300.,800.)","genId==2","");
+  canvas->cd(3); nt->Draw( "sqrt(hy*hy+hx*hx)>>mhg3(500,300.,800.)","genId==0","");
+  canvas->cd(4); nt->Draw( "sqrt(hy*hy+hx*hx)>>mhg4(500,300.,800.)","genId!=0","");
+  // canvas->cd(5); nt->Draw( "sqrt(hy*hy+hx*hx)>>mh5(500,300.,800.)","genId==12","");
+  // canvas->cd(6); nt->Draw( "sqrt(hy*hy+hx*hx)>>mh6(500,300.,800.)","genId==20","");
 
-  canvas->cd(1); nt->Draw( "sqrt(hy*hy+hx*hx)","","");
-  canvas->cd(2); nt->Draw( "sqrt(hy*hy+hx*hx)","genId==2","");
-  canvas->cd(3); nt->Draw( "sqrt(hy*hy+hx*hx)","genId==0","");
-  canvas->cd(4); nt->Draw( "sqrt(hy*hy+hx*hx)","genId!=0","");
-  //  canvas->cd(5); nt->Draw( "sqrt(hy*hy+hx*hx)","genId==12","");
-  //  canvas->cd(6); nt->Draw( "sqrt(hy*hy+hx*hx)","genId==20","");
+  // Flush page to screen
+  canvas->Update();
+
+  // Add this canvas to the postscript file.
+  canvas->Print(psfile);
+
+  // Uncomment this line to save this canvas as a jpg file.
+  // canvas->Print( basename + "_2.jpg" );
+
+  // Prompt and wait for response before continuing.
+  cerr << "Double click in the last active pad to continue: " ;
+  gPad->WaitPrimitive();
+  cerr << endl;
+
+  // Clear canvas in preparation for next page
+  canvas->cd(0);
+  canvas->Clear();
+
+  canvas->cd(1); snt->Draw( "sqrt(hity*hity+hitx*hitx)>>msh1(500,300.,800.)","","");
 
   // Flush page to screen
   canvas->Update();
@@ -204,13 +247,14 @@
 
   canvas->Divide(2,2);
 
-  // we may want to affect the fXaxis here to make sure all the hist
-  // have the same horizontal scale TH1F* htemp
-
-  canvas->cd(1); nt->Draw( "sqrt(hy*hy+hx*hx)","","");
-  canvas->cd(2); nt->Draw( "sqrt(hy*hy+hx*hx)","trk==1","");
-  canvas->cd(3); nt->Draw( "sqrt(hy*hy+hx*hx)","trk!=1","");
-  canvas->cd(4); nt->Draw( "sqrt(hy*hy+hx*hx)","trk!=1&&abs(pdgId)<100","");
+  canvas->cd(1); nt->Draw( "sqrt(hy*hy+hx*hx)>>mhs1(500,300.,800.)","","");
+  //  mh1->SetTitle("sqrt(hy*hy+hx*hx)");
+  canvas->cd(2); nt->Draw( "sqrt(hy*hy+hx*hx)>>mhs2(500,300.,800.)","trk==1","");
+  //  mh2->SetTitle("sqrt(hy*hy+hx*hx),trk==1");
+  canvas->cd(3); nt->Draw( "sqrt(hy*hy+hx*hx)>>mhs3(500,300.,800.)","trk!=1","");
+  //  mh3->SetTitle("sqrt(hy*hy+hx*hx),trk!=1");
+  canvas->cd(4); nt->Draw( "sqrt(hy*hy+hx*hx)>>mhs4(500,300.,800.)","trk!=1&&abs(pdgId)<100","");
+  //  mh4->SetTitle("sqrt(hy*hy+hx*hx),trk!=1&&abs(pdgId)<100");
 
   // Flush page to screen
   canvas->Update();
@@ -255,6 +299,29 @@
 
   // Draw a y vs x scatter plot of the hit positions.
   TH1F* frame = canvas->DrawFrame(-800., -800., 800., 800.);
+  frame->SetTitle("StrawHit y vs. x (mm)");
+  snt->Draw( "hitx:hity","","PSAME");
+
+  // Flush page to screen
+  canvas->Update();
+
+  // Add this canvas to the postscript file.
+  canvas->Print(psfile);
+
+  // Uncomment this line to save this canvas as a jpg file.
+  // canvas->Print( basename + "_2.jpg" );
+
+  // Prompt and wait for response before continuing.
+  cerr << "Double click in the last active pad to continue: " ;
+  gPad->WaitPrimitive();
+  cerr << endl;
+
+  // Clear canvas in preparation for next page
+  canvas->cd(0);
+  canvas->Clear();
+
+  // Draw a y vs x scatter plot of the hit positions.
+  TH1F* frame = canvas->DrawFrame(-800., -800., 800., 800.);
   frame->SetTitle("StepPoint y vs. x (mm) genId==2");
   nt->Draw( "hx:hy","genId==2","PSAME");
 
@@ -272,78 +339,78 @@
   gPad->WaitPrimitive();
   cerr << endl;
 
-  // Clear canvas in preparation for next page
-  canvas->cd(0);
-  canvas->Clear();
+//   // Clear canvas in preparation for next page
+//   canvas->cd(0);
+//   canvas->Clear();
 
-  // Draw a y vs x scatter plot of the hit positions.
-  TH1F* frame = canvas->DrawFrame(-800., -800., 800., 800.);
-  frame->SetTitle("StepPoint y vs. x (mm) edep==0.");
-  nt->Draw( "hx:hy","edep==0.","PSAME");
+//   // Draw a y vs x scatter plot of the hit positions.
+//   TH1F* frame = canvas->DrawFrame(-800., -800., 800., 800.);
+//   frame->SetTitle("StepPoint y vs. x (mm) edep==0.");
+//   nt->Draw( "hx:hy","edep==0.","PSAME");
 
-  // this works for simple histograms, not ntuple TGraphs ("scatterplots")
-  // TPaveStats *pave = (TPaveStats*)nt->GetListOfFunctions()->FindObject("stats");
-  // pave->SetOptStat(1111111);
+//   // this works for simple histograms, not ntuple TGraphs ("scatterplots")
+//   // TPaveStats *pave = (TPaveStats*)nt->GetListOfFunctions()->FindObject("stats");
+//   // pave->SetOptStat(1111111);
 
-  // Flush page to screen
-  canvas->Update();
+//   // Flush page to screen
+//   canvas->Update();
 
-  // Add this canvas to the postscript file.
-  canvas->Print(psfile);
+//   // Add this canvas to the postscript file.
+//   canvas->Print(psfile);
 
-  // Uncomment this line to save this canvas as a jpg file.
-  // canvas->Print( basename + "_2.jpg" );
+//   // Uncomment this line to save this canvas as a jpg file.
+//   // canvas->Print( basename + "_2.jpg" );
 
-  // Prompt and wait for response before continuing.
-  cerr << "Double click in the last active pad to continue: " ;
-  gPad->WaitPrimitive();
-  cerr << endl;
+//   // Prompt and wait for response before continuing.
+//   cerr << "Double click in the last active pad to continue: " ;
+//   gPad->WaitPrimitive();
+//   cerr << endl;
 
-  // Clear canvas in preparation for next page
-  canvas->cd(0);
-  canvas->Clear();
+//   // Clear canvas in preparation for next page
+//   canvas->cd(0);
+//   canvas->Clear();
 
-  // Draw a y vs x scatter plot of the hit positions.
-  TH1F* frame = canvas->DrawFrame(-800., -800., 800., 800.);
-  frame->SetTitle("StepPoint y vs. x (mm) abs(pdgId)<100");
-  nt->Draw( "hx:hy","abs(pdgId)<100","PSAME");
+//   // Draw a y vs x scatter plot of the hit positions.
+//   TH1F* frame = canvas->DrawFrame(-800., -800., 800., 800.);
+//   frame->SetTitle("StepPoint y vs. x (mm) abs(pdgId)<100");
+//   nt->Draw( "hx:hy","abs(pdgId)<100","PSAME");
 
-  // Flush page to screen
-  canvas->Update();
+//   // Flush page to screen
+//   canvas->Update();
 
-  // Add this canvas to the postscript file.
-  canvas->Print(psfile);
+//   // Add this canvas to the postscript file.
+//   canvas->Print(psfile);
 
-  // Uncomment this line to save this canvas as a jpg file.
-  // canvas->Print( basename + "_2.jpg" );
+//   // Uncomment this line to save this canvas as a jpg file.
+//   // canvas->Print( basename + "_2.jpg" );
 
-  // Prompt and wait for response before continuing.
-  cerr << "Double click in the last active pad to continue: " ;
-  gPad->WaitPrimitive();
-  cerr << endl;
+//   // Prompt and wait for response before continuing.
+//   cerr << "Double click in the last active pad to continue: " ;
+//   gPad->WaitPrimitive();
+//   cerr << endl;
 
-  // Clear canvas in preparation for next page
-  canvas->cd(0);
-  canvas->Clear();
+//   // Clear canvas in preparation for next page
+//   canvas->cd(0);
+//   canvas->Clear();
 
-  // Draw a y vs x scatter plot of the hit positions.
-  TH1F* frame = canvas->DrawFrame(-800., -800., 800., 800.);
-  frame->SetTitle("StepPoint y vs. x (mm) abs(pdgId)>100");
-  nt->Draw( "hx:hy","abs(pdgId)>100","PSAME");
+//   // Draw a y vs x scatter plot of the hit positions.
+//   TH1F* frame = canvas->DrawFrame(-800., -800., 800., 800.);
+//   frame->SetTitle("StepPoint y vs. x (mm) abs(pdgId)>100");
+//   nt->Draw( "hx:hy","abs(pdgId)>100","PSAME");
 
-  // Flush page to screen
-  canvas->Update();
+//   // Flush page to screen
+//   canvas->Update();
 
-  // Add this canvas to the postscript file.
-  canvas->Print(psfile);
+//   // Add this canvas to the postscript file.
+//   canvas->Print(psfile);
 
-  // Uncomment this line to save this canvas as a jpg file.
-  // canvas->Print( basename + "_2.jpg" );
+//   // Uncomment this line to save this canvas as a jpg file.
+//   // canvas->Print( basename + "_2.jpg" );
 
-  // Prompt and wait for response before continuing.
-  cerr << "Double click in the last active pad to continue: " ;
-  gPad->WaitPrimitive();
-  cerr << endl;
+//   // Prompt and wait for response before continuing.
+//   cerr << "Double click in the last active pad to continue: " ;
+//   gPad->WaitPrimitive();
+//   cerr << endl;
 
   // Clear canvas in preparation for page 3.
   canvas->cd(0);
