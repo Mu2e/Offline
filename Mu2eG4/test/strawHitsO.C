@@ -1,9 +1,9 @@
 //
 // Root c++ function to test MakeStrawHit_module
 // 
-// $Id: strawHitsO.C,v 1.2 2013/01/30 17:45:33 genser Exp $
+// $Id: strawHitsO.C,v 1.3 2013/01/30 23:55:22 genser Exp $
 // $Author: genser $
-// $Date: 2013/01/30 17:45:33 $
+// $Date: 2013/01/30 23:55:22 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //
@@ -279,7 +279,10 @@ void strawHitsO()
            << ", " << fileLabel[ii]->GetLabel() 
            << ", " << fileText[ii]
            <<endl;
-      ((*_histograms[jj])[ii])->SetLineColor(ii+1);
+      if (ii==0) 
+        {((*_histograms[jj])[ii])->SetLineColor(602); }
+      else 
+        {((*_histograms[jj])[ii])->SetLineColor(ii+1);}
       gStyle->SetOptStat("neMRuo");
       
       // collecting legend info
@@ -299,8 +302,11 @@ void strawHitsO()
            << ", " << fileLabel[ii]->GetLabel() 
            << ", " << fileText[ii]
            <<endl;
-      ((*_histograms[jj])[ii])->SetLineColor(ii+1);
-      
+      if (ii==0) 
+        {((*_histograms[jj])[ii])->SetLineColor(602); }
+      else 
+        {((*_histograms[jj])[ii])->SetLineColor(ii+1);}
+            
       // FIXME need to copy the hist to not to draw stats here...
        delete _histograms_copy[ii];
        _histograms_copy[ii] = static_cast<TH1F*>(((*_histograms[jj])[ii])->Clone());
@@ -313,9 +319,9 @@ void strawHitsO()
       (_histograms_copy[ii])->SetName(histtmpName);
       (_histograms_copy[ii])->SetStats(kFALSE);
       if (ii==0) {
-        (_histograms_copy[ii])->Draw("H9");
+        (_histograms_copy[ii])->Draw("H9E");
       } else {
-        (_histograms_copy[ii])->Draw("H9SAME");
+        (_histograms_copy[ii])->Draw("H9ESAME");
          leg->Draw("9SAME");
       }
       if (ii==nfiles-1) {
@@ -364,7 +370,10 @@ void strawHitsO()
          <<endl;
     ((*_ntuples[1])[ii])->Draw(drawInputString ,"","");
     delete _histograms_copy[ii];
-    (static_cast<TH1F*>(gDirectory->Get(htmpname)))->SetLineColor(ii+1);
+    if (ii==0) 
+      { (static_cast<TH1F*>(gDirectory->Get(htmpname)))->SetLineColor(602); }
+    else
+      { (static_cast<TH1F*>(gDirectory->Get(htmpname)))->SetLineColor(ii+1); }
     _histograms_copy[ii] = static_cast<TH1F*>((gDirectory->Get(htmpname))->Clone());
     histtmpSuffix.str("");
     histtmpSuffix.width(3);
@@ -372,7 +381,7 @@ void strawHitsO()
     histtmpSuffix << ii;
     histtmpName = "hcopy_"+histtmpSuffix.str();
     _histograms_copy[ii]->SetName(histtmpName);
-    _histograms_copy[ii]->SetLineColor(ii+1);
+    //    _histograms_copy[ii]->SetLineColor(ii+1);
     _histograms_copy[ii]->SetStats(kFALSE);
     fileLabel[ii]->Draw("SAME");
   }
@@ -384,9 +393,9 @@ void strawHitsO()
          << ", " << fileText[ii]
          <<endl;
       if (ii==0) {
-        (_histograms_copy[ii])->Draw("H9");
+        (_histograms_copy[ii])->Draw("H9E");
       } else {
-        (_histograms_copy[ii])->Draw("H9SAME");
+        (_histograms_copy[ii])->Draw("H9ESAME");
          leg->Draw("9SAME");
       }
       if (ii==nfiles-1) {
