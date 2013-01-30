@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.16 2013/01/24 22:21:04 genser Exp $
+// $Id: ReadStrawHit_module.cc,v 1.17 2013/01/30 01:21:00 genser Exp $
 // $Author: genser $
-// $Date: 2013/01/24 22:21:04 $
+// $Date: 2013/01/30 01:21:00 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by KLG
@@ -157,10 +157,10 @@ namespace mu2e {
     _hNG4Steps     = tfs->make<TH1F>( "hNG4Steps",     "Number of G4Steps per hit", 100, 0., 100. );
     _hG4StepLength = tfs->make<TH1F>( "hG4StepLength", "Length of G4Steps, mm", 100, 0., 10. );
     _hG4StepEdep   = tfs->make<TH1F>( "hG4StepEdep",   "Energy deposition of G4Steps, keV", 100, 0., 10. );
-    _hG4StepRelTimes = tfs->make<TH1F>( "hG4StepRelTimes", "Hit Relative Times of G4Steps, ns", 100, 0., 100.);
+    _hG4StepRelTimes = tfs->make<TH1F>( "hG4StepRelTimes", "Hit Relative Times of G4Steps, ns", 100, -100., 100.);
 
     _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple",
-                                         "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid:id");
+                                         "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid:id:hitx:hity:hitz");
     _detntup          = tfs->make<TNtuple>( "detntup", "Straw ntuple",
                                             "id:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz");
   }
@@ -282,7 +282,8 @@ namespace mu2e {
       for( size_t j=0; j<mcptr.size(); ++j ) {
         StepPointMC const& mchit = *mcptr.at(j);
         _hG4StepLength->Fill(mchit.stepLength());
-        _hG4StepRelTimes->Fill(fabs(mchit.time()-hit.time()));
+        //        _hG4StepRelTimes->Fill(fabs(mchit.time()-hit.time()));
+        _hG4StepRelTimes->Fill((mchit.time()-hit.time()));
         // step time rel to the formed hit time; FIXME fabs should not be needed
         if (mchit.strawIndex()!=si) {
           // FIXME: it is an approximation; We plot the "crosstalk
@@ -343,6 +344,13 @@ namespace mu2e {
 
       const CLHEP::Hep3Vector smidp  = str.getMidPoint();
       const CLHEP::Hep3Vector sdir   = str.getDirection();
+
+      // calculate the hit position
+      SHInfo strawHitInfo;
+      trackerCalibrations->StrawHitInfo(str, hit, strawHitInfo);
+
+      // we may also need the truth hit position, do we need another function?
+
       // Fill the ntuple:
       float nt[_ntup->GetNvar()];
       nt[0]  = evt.id().event();
@@ -363,6 +371,10 @@ namespace mu2e {
       nt[15] = truth.driftDistance();
       nt[16] = truth.distanceToMid();
       nt[17] = id;
+      nt[18] = strawHitInfo._pos.getX();
+      nt[19] = strawHitInfo._pos.getY();
+      nt[20] = strawHitInfo._pos.getZ();
+
       _ntup->Fill(nt);
 
       // Calculate number of hits per wire
