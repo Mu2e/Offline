@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.50 2012/12/14 15:23:01 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.51 2013/01/30 20:04:52 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/14 15:23:01 $
+// $Date: 2013/01/30 20:04:52 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -20,6 +20,7 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
@@ -129,6 +130,7 @@ namespace mu2e
     bool _addhits;
     // event object labels
     std::string _strawhitslabel;
+    std::string _stereohitslabel;
     // cut variables
     double _edept, _edepl, _edepvl;
     double _rmint, _rminl;
@@ -162,6 +164,7 @@ namespace mu2e
     TrkFitDirection _fdir;  // fit direction in search
     // cache of event objects
     const StrawHitCollection* _strawhits;
+    const StereoHitCollection* _stereohits;
    // Kalman fitters.  Seed fit has a special configuration
     KalFit _seedfit, _kfit;
   // robust helix fitter
@@ -204,6 +207,8 @@ namespace mu2e
     TTree* _shdiag;
     Int_t _eventid;
     threevec _shp;
+    threevec _stp;
+    Int_t _stereoh;
     Float_t _edep;
     Float_t _time, _corrtime;
     Float_t _dmin;
@@ -264,6 +269,7 @@ namespace mu2e
     _printfreq(pset.get<int>("printFrequency",101)),
     _addhits(pset.get<bool>("addhits",true)),
     _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
+    _stereohitslabel(pset.get<std::string>("stereoHitsLabel","MakeStereoHits")),
     _edept(pset.get<double>("EDep_tight",0.007)),
     _edepl(pset.get<double>("EDep_loose",0.007)),
     _edepvl(pset.get<double>("EDep_veryloose",0.008)),
@@ -467,9 +473,13 @@ namespace mu2e
 // find the input data objects 
   bool TrkPatRec::findData(const art::Event& evt){
     _strawhits = 0;
+    _stereohits = 0;
     art::Handle<mu2e::StrawHitCollection> strawhitsH;
     if(evt.getByLabel(_strawhitslabel,strawhitsH))
       _strawhits = strawhitsH.product();
+    art::Handle<mu2e::StereoHitCollection> stereohitsH;
+    if(evt.getByLabel(_stereohitslabel,stereohitsH))
+      _stereohits = stereohitsH.product();
     return _strawhits != 0;
   }
 
@@ -717,6 +727,8 @@ namespace mu2e
     _shdiag=tfs->make<TTree>("shdiag","strawhit diagnostics");
     _shdiag->Branch("eventid",&_eventid,"eventid/I");
     _shdiag->Branch("shpos",&_shp,"x/F:y/F:z/F");
+    _shdiag->Branch("stpos",&_stp,"x/F:y/F:z/F");
+    _shdiag->Branch("stereoh",&_stereoh,"stereoh/I");
     _shdiag->Branch("edep",&_edep,"edep/F");
     _shdiag->Branch("time",&_time,"time/F");
     _shdiag->Branch("corrtime",&_corrtime,"corrtime/F");
@@ -847,6 +859,21 @@ namespace mu2e
       _straw = straw.id().getStraw();
 
       _shp = _shpos[istr];
+// look for stereo information
+      _stp = _shp;
+      _stereoh = false;
+      if(_stereohits != 0){
+	size_t nst = _stereohits->size();
+	for(size_t ist=0;ist<nst;++ist){
+	  StereoHit const& sth = (*_stereohits)[ist];
+	  if(sth.hitIndex1() == istr || sth.hitIndex2() == istr){
+	    _stereoh = true;
+	    _stp = sth.pos();
+	    break;
+	  }
+	}
+      }
+
       _edep = sh.energyDep();
       _time = sh.time();
       _corrtime = correctedTime(istr);
