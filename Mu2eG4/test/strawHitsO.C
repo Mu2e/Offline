@@ -1,24 +1,25 @@
 //
 // Root c++ function to test MakeStrawHit_module
 // 
-// $Id: strawHitsO.C,v 1.3 2013/01/30 23:55:22 genser Exp $
+// $Id: strawHitsO.C,v 1.4 2013/01/31 17:21:50 genser Exp $
 // $Author: genser $
-// $Date: 2013/01/30 23:55:22 $
+// $Date: 2013/01/31 17:21:50 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //
-// 1) Retrieve histograms and ntuples from the file that was created
-//    by mixExample01.fcl
+// 1) Retrieve histograms and ntuples from the files that was created
+//    by g4test_03.fcl
 //
 // 2) Draw the histograms to the screen (called a canvas).
 //
 // 3) Split a canvas into multiple pads and draw a different histogram
 //    in each pad.
 //
-// 4) Save the canvas in a format suitable for printing ( postscript )
+// 4) Save the canvas in a format suitable for printing ( pdf/postscript )
 //    or in a format suitable for inclusion in other documents
 //    ( png, jpg, gif ).
 //
+// 5) overlay histograms, run Kolmogorov test on them
 
 // run it in root e.g. like .x strawHits.C++ (or .x strawHits.C++g)
 
@@ -58,9 +59,13 @@ void strawHitsO()
   gStyle->SetOptStat("emruo");
   // gStyle->SetOptStat(kFALSE);
 
-  // Base name of input file and of all plot files.
-  TString basename("steps_strawHits_g4942_g4952");
+  // flag controlling the pause after each canvas 
+  //  bool const interactive = true;
+  bool const interactive = false;
 
+  // flag controlling creation of the png files
+  //  bool const createpng = true;
+  bool const createpng = false;
 
   TString histtmpName;
   ostringstream histtmpSuffix;
@@ -72,19 +77,19 @@ void strawHitsO()
 
   std::vector<TFile*>  file;
   std::vector<TPaveLabel*> fileLabel;
-  std::vector<char *> fileText;
+  std::vector<TString> fileText;
 
-//   file.push_back(new TFile("g4test_03.g496.ftfpberthp.20121219140908.root"));
-//   fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g496 FTFP_BERT_HP 5000","NDC"));
+  //   file.push_back(new TFile("g4test_03.g496.ftfpberthp.20121219140908.root"));
+  //   fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g496 FTFP_BERT_HP 5000","NDC"));
 
-//   file.push_back(new TFile("g4test_03.g4952.20121217183217.root"));
-//   fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4952 QGSP_BERT_HP","NDC"));
+  //   file.push_back(new TFile("g4test_03.g4952.20121217183217.root"));
+  //   fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4952 QGSP_BERT_HP","NDC"));
 
-//   file.push_back(new TFile("g4test_03.g496.20121217182923.root"));
-//   fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g496 QGSP_BERT_HP","NDC"));
+  //   file.push_back(new TFile("g4test_03.g496.20121217182923.root"));
+  //   fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g496 QGSP_BERT_HP","NDC"));
 
-//   file.push_back(new TFile("g4test_03.g496.ftfpberthp.20121218124143.root"));
-//   fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g496 FTFP_BERT_HP","NDC"));
+  //   file.push_back(new TFile("g4test_03.g496.ftfpberthp.20121218124143.root"));
+  //   fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g496 FTFP_BERT_HP","NDC"));
 
   file.push_back(new TFile("g4test_03.g4942.qgspberthp.20130129144528.root"));
   fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4942 QGSP_BERT_HP","NDC"));
@@ -94,15 +99,20 @@ void strawHitsO()
   fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4952 QGSP_BERT_HP","NDC"));
   fileText.push_back("g4952");
 
+  // Base name of input file and of all plot files.
+  TString basename("steps_strawHits");
+
   const int nfiles = file.size();
 
   for (int ii=0; ii!=nfiles; ++ii) {
     fileLabel[ii]->SetBorderSize(0);
     fileLabel[ii]->SetFillColor(0);
+    fileLabel[ii]->SetTextColor(602);
+    basename = basename + "_" + fileText[ii];
   }
 
   // Name of the output pdf file.
-  // Postscript is the only graphics format for which root supports multi-page output files.
+  // Pdf/Postscript is the only graphics format for which root supports multi-page output files.
   TString pdffile( basename + ".pdf");
 
 
@@ -130,10 +140,6 @@ void strawHitsO()
 
   std::vector<TNtuple*>  _nt(nfiles);   
   std::vector<TNtuple*> _snt(nfiles);   
-
-  // Get  pointers to the ntuples
-  //  TNtuple* _nt;  file->GetObject("checkhits/ntup",nt);
-  //  TNtuple* _snt; file->GetObject("readStrawHits/ntup",snt);
 
   TH1F*    _tmp = 0;
   TNtuple* _tmpnt = 0;
@@ -307,9 +313,8 @@ void strawHitsO()
       else 
         {((*_histograms[jj])[ii])->SetLineColor(ii+1);}
             
-      // FIXME need to copy the hist to not to draw stats here...
-       delete _histograms_copy[ii];
-       _histograms_copy[ii] = static_cast<TH1F*>(((*_histograms[jj])[ii])->Clone());
+      delete _histograms_copy[ii];
+      _histograms_copy[ii] = static_cast<TH1F*>(((*_histograms[jj])[ii])->Clone());
       
       histtmpSuffix.str("");
       histtmpSuffix.width(3);
@@ -322,10 +327,10 @@ void strawHitsO()
         (_histograms_copy[ii])->Draw("H9E");
       } else {
         (_histograms_copy[ii])->Draw("H9ESAME");
-         leg->Draw("9SAME");
+        (_histograms_copy[ii])->KolmogorovTest((_histograms_copy[ii-1]),"UNOD");
       }
       if (ii==nfiles-1) {
-         leg->Draw("9SAME");
+        leg->Draw("9SAME");
       }
 
     }
@@ -333,21 +338,25 @@ void strawHitsO()
     // Flush page to screen
     canvas->Update();
 
-    // Uncomment this line to save this canvas as a png file (slow)
+    // save the canvas to a png file if requested
     canvasSuffix.str("");
     canvasSuffix.width(3);
     canvasSuffix.fill('0');
     canvasSuffix << ++canvasCounter;
 
-    canvas->Print( basename + "_" + canvasSuffix.str() + ".png" );
+    if (createpng) {
+      canvas->Print( basename + "_" + canvasSuffix.str() + ".png" );
+    }
     
     // Add this canvas to the pdf file.
     canvas->Print(pdffile);
 
-    // Prompt and wait for response before continuing.
-    cerr << "Double click in the last active pad to continue: " ;
-    gPad->WaitPrimitive();
-    cerr << endl;
+    if (interactive) {
+      // Prompt and wait for response before continuing.
+      cerr << "Double click in the last active pad to continue: " ;
+      gPad->WaitPrimitive();
+      cerr << endl;
+    }
 
   }
 
@@ -364,7 +373,7 @@ void strawHitsO()
     TString htmpname = "hitR"+histIdos.str();
     TString drawInputString("sqrt(hity*hity+hitx*hitx)>>"+htmpname+"(500,300.,800.)");
 
-    cout << 2 << " " << ii << " Drawing " << ((*_ntuples[0])[ii])->GetTitle() 
+    cout << 0 << " " << ii << " Drawing " << ((*_ntuples[0])[ii])->GetTitle() 
          << ", " << fileLabel[ii]->GetLabel() << ", " << drawInputString
          << ", " << fileText[ii]
          <<endl;
@@ -381,46 +390,48 @@ void strawHitsO()
     histtmpSuffix << ii;
     histtmpName = "hcopy_"+histtmpSuffix.str();
     _histograms_copy[ii]->SetName(histtmpName);
-    //    _histograms_copy[ii]->SetLineColor(ii+1);
     _histograms_copy[ii]->SetStats(kFALSE);
     fileLabel[ii]->Draw("SAME");
   }
 
   canvas->cd(nfiles+1);
   for (int ii=0; ii!=nfiles; ++ii) {
-    cout << 3 << " " << ii << " Drawing " << (_histograms_copy[ii])->GetTitle() 
+    cout << 1 << " " << ii << " Drawing " << (_histograms_copy[ii])->GetTitle() 
          << ", " << fileLabel[ii]->GetLabel()
          << ", " << fileText[ii]
          <<endl;
-      if (ii==0) {
-        (_histograms_copy[ii])->Draw("H9E");
-      } else {
-        (_histograms_copy[ii])->Draw("H9ESAME");
-         leg->Draw("9SAME");
-      }
-      if (ii==nfiles-1) {
-         leg->Draw("9SAME");
-      }
+    if (ii==0) {
+      (_histograms_copy[ii])->Draw("H9E");
+    } else {
+      (_histograms_copy[ii])->Draw("H9ESAME");
+      (_histograms_copy[ii])->KolmogorovTest((_histograms_copy[ii-1]),"UNOD");
+    }
+    if (ii==nfiles-1) {
+      leg->Draw("9SAME");
+    }
   }
 
   // Flush page to screen
   canvas->Update();
 
-  // Uncomment this line to save this canvas as a png file (slow)
   canvasSuffix.str("");
   canvasSuffix.width(3);
   canvasSuffix.fill('0');
   canvasSuffix << ++canvasCounter;
 
-  canvas->Print( basename + "_" + canvasSuffix.str() + ".png" );
+  if (createpng) {
+    canvas->Print( basename + "_" + canvasSuffix.str() + ".png" );
+  }
 
   // Add this canvas to the pdf file.
   canvas->Print(pdffile);
 
-  // Prompt and wait for response before continuing.
-  cerr << "Double click in the last active pad to continue: " ;
-  gPad->WaitPrimitive();
-  cerr << endl;
+  if (interactive) {
+    // Prompt and wait for response before continuing.
+    cerr << "Double click in the last active pad to continue: " ;
+    gPad->WaitPrimitive();
+    cerr << endl;
+  }
 
   // a plot (scatterplot) based on the ntuples
 
@@ -428,17 +439,13 @@ void strawHitsO()
   canvas->Clear();
   canvas->Divide(2,2);
 
-  // Draw some histograms, one per pad.
-  // cd(n): move to graphics pad number "n".
-  // "H9": draw outline histogram ("H") in high resolution mode (9)
-    
   for (int ii=0; ii!=nfiles; ++ii) {
-    canvas->cd(ii+1);
-    cout << 0 << " " << ii << " Drawing " << ((*_ntuples[0])[ii])->GetTitle() 
+    TPad* pad = static_cast<TPad*>(canvas->cd(ii+1));
+    cout << 2 << " " << ii << " Drawing " << ((*_ntuples[0])[ii])->GetTitle() 
          << ", " << fileLabel[ii]->GetLabel() 
          << ", " << fileText[ii]
          <<endl;
-    TH1F* frame = canvas->DrawFrame(-800., -800., 800., 800.);
+    TH1F* frame = pad->DrawFrame(-800., -800., 800., 800.);
     frame->SetTitle("StepPoint y vs. x (mm)");
     ((*_ntuples[0])[ii])->Draw( "hx:hy","","PSAME");
 
@@ -446,36 +453,34 @@ void strawHitsO()
   }
 
   for (int ii=0; ii!=nfiles; ++ii) {
-    canvas->cd(ii+3);
-    cout << 1 << " " << ii << " Drawing " << ((*_ntuples[0])[ii])->GetTitle() 
+    TPad* pad = static_cast<TPad*>(canvas->cd(ii+nfiles+1));
+    cout << 3 << " " << ii << " Drawing " << ((*_ntuples[0])[ii])->GetTitle() 
          << ", " << fileLabel[ii]->GetLabel() 
          << ", " << fileText[ii]
          <<endl;
-    TH1F* frame = canvas->DrawFrame(-800., -800., 800., 800.);
+    TH1F* frame = pad->DrawFrame(-800., -800., 800., 800.);
     frame->SetTitle("StrawHit y vs. x (mm)");
     ((*_ntuples[1])[ii])->Draw( "hitx:hity","","PSAME");
-
     fileLabel[ii]->Draw("9SAME");
   }
 
   // Flush page to screen
   canvas->Update();
 
-  // Uncomment this line to save this canvas as a png file (slow)
   canvasSuffix.str("");
   canvasSuffix.width(3);
   canvasSuffix.fill('0');
   canvasSuffix << ++canvasCounter;
 
-  canvas->Print( basename + "_" + canvasSuffix.str() + ".png" );
+  if (createpng) {
+    canvas->Print( basename + "_" + canvasSuffix.str() + ".png" );
+  }
 
   // Add this canvas to the pdf file.
   canvas->Print(pdffile);
 
-  // Prompt and wait for response before continuing.
-  cerr << "Double click in the last active pad to continue: " ;
-  gPad->WaitPrimitive();
-  cerr << endl;
+  cout << "Closing " << pdffile
+         <<endl;
 
   // Close the pdf file.
   canvas->Print(pdffile+"]");
