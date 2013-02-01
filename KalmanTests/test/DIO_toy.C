@@ -93,9 +93,9 @@ Dio_toy(unsigned ntrials,double corefactor=1.0,double ratefactor=1.0,double lamb
   cball->FixParameter(4,0.3836);
   cball->FixParameter(5,0.003*ratefactor);
   cball->FixParameter(6,0.3259*lambdafactor);
-  TH1D* rawdio = new TH1D("rawdio","DIO e^{-} momentum at decay;P_{decay} (MeV);N #mu2e",nbins,plotlow,plothi);
-  TH1D* momres = new TH1D("momres","Reco e^{-} momentum resolution function;P_{reco}-P_{decay} (MeV)",nbins,-10,6);
-  TH1D* recodio = new TH1D("recodio","Reco resolution smeared DIO e^{-} momentum;P_{reco} (MeV);N #mu2e",nbins,plotlow,plothi);
+  TH1D* rawdio = new TH1D("rawdio","DIO e^{-} momentum at decay;P_{decay} (MeV/c);N #mu2e",nbins,plotlow,plothi);
+  TH1D* momres = new TH1D("momres","Reco e^{-} momentum resolution function;P_{reco}-P_{decay} (MeV/c)",nbins,-10,6);
+  TH1D* recodio = new TH1D("recodio","Reco resolution smeared DIO e^{-} momentum;P_{reco} (MeV/c);N #mu2e",nbins,plotlow,plothi);
   recodio->Sumw2();
   rawdio->SetStats(0);
   recodio->SetStats(0);
