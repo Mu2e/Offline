@@ -1,7 +1,7 @@
 #
-# $Id: setup_g4951.sh,v 1.6 2013/01/23 21:44:58 genser Exp $
+# $Id: setup_g4951.sh,v 1.7 2013/02/07 22:48:40 genser Exp $
 # $Author: genser $
-# $Date: 2013/01/23 21:44:58 $
+# $Date: 2013/02/07 22:48:40 $
 #
 # Original author Rob Kutschke
 #
@@ -55,17 +55,11 @@ echo "MU2E_SEACH_PATH:   "  $MU2E_SEARCH_PATH
 setup art v1_00_11 -qmu2e:prof
 
 # Geant4 and its cross-section files.
-#setup geant4 v4_9_5_p01 -qgcc46:prof
+setup geant4 v4_9_5_p01 -qgcc46:prof
 
-# main geant4 setup file:
-#source /mu2e/app/users/genser/geant4work/g4.9.5.p01_mu2e_head/modified/geant4.9.5.p01/share/Geant4-9.5.1/geant4make/geant4make.sh 
-
-source /mu2e/app/users/genser/geant4work/g4.9.5.p01_mu2e_head/unmodifieddebug/geant4.9.5.p01/share/Geant4-9.5.1/geant4make/geant4make.sh 
 # if the above usets XERCES_C_INC etc...
 setup xerces_c v3_1_1 -q gcc46:prof
-#source /mu2e/app/users/genser/geant4work/g4.9.5.p01_mu2e_head/modified/geant4.9.5.p01/bin/geant4.sh
-#source /mu2e/app/users/genser/geant4work/g4.9.5.p01_mu2e_head/unmodifieddebug/geant4.9.5.p01/bin/geant4.sh
-# ups geant4 sets this variable, so we do it as well:
+
 export GEANT4_VERSION=v4_9_5_p01
 
 setup g4abla      v3_0
@@ -105,4 +99,4 @@ fi
 # A hack that we hope can go away soon.
 export G4LIBDIR=$G4LIB/$G4SYSTEM
 #the line below is needed for ups geant4
-#G4INCLUDE=${G4INCLUDE}/Geant4
+G4INCLUDE=${G4INCLUDE}/Geant4
