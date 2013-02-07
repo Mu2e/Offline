@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtDetectors.cc,v 1.1 2012/08/04 00:22:09 mjlee Exp $
+//  $Id: TrkExtDetectors.cc,v 1.2 2013/02/07 02:09:47 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:22:09 $
+//  $Date: 2013/02/07 02:09:47 $
 //
 //  Original author MyeongJae Lee
 //
@@ -49,7 +49,7 @@ namespace mu2e {
 
 
     
-  Hep3Vector  TrkExtDetectors::intersection (Hep3Vector & x1, Hep3Vector & x2) {
+  Hep3Vector  TrkExtDetectors::intersection (const Hep3Vector & x1, const Hep3Vector & x2) {
     TrkExtDetectorList::Enum f1, f2;
     Hep3Vector xstart = x1;
     Hep3Vector xstop = x2;
@@ -82,7 +82,7 @@ namespace mu2e {
     return xstop;
   }
 
-  double TrkExtDetectors::mostProbableEnergyLoss (Hep3Vector& p, double ds, TrkExtDetectorList::Enum volid) {
+  double TrkExtDetectors::mostProbableEnergyLoss (const Hep3Vector& p, double ds, TrkExtDetectorList::Enum volid) {
     switch (volid) {
       case TrkExtDetectorList::ProtonAbsorber:
         return _pa.mostProbableEnergyLoss(p, ds);
@@ -97,7 +97,7 @@ namespace mu2e {
   }
 
 
-  double TrkExtDetectors::meanEnergyLoss (Hep3Vector& p, double ds, TrkExtDetectorList::Enum volid) {
+  double TrkExtDetectors::meanEnergyLoss (const Hep3Vector& p, double ds, TrkExtDetectorList::Enum volid) {
     switch (volid) {
       case TrkExtDetectorList::ProtonAbsorber:
         return _pa.meanEnergyLoss(p, ds);
@@ -111,7 +111,7 @@ namespace mu2e {
     return 0;
   }
 
-  double TrkExtDetectors::scatteringAngle (CLHEP::Hep3Vector& p, double ds, TrkExtDetectorList::Enum volid) {
+  double TrkExtDetectors::scatteringAngle (const CLHEP::Hep3Vector& p, double ds, TrkExtDetectorList::Enum volid) {
     switch (volid) {
       case TrkExtDetectorList::ProtonAbsorber:
         return _pa.scatteringAngle(p, ds);

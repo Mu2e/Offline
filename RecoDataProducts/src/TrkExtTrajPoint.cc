@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtTrajPoint.cc,v 1.1 2012/08/04 00:16:02 mjlee Exp $
+//  $Id: TrkExtTrajPoint.cc,v 1.2 2013/02/07 02:09:47 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:16:02 $
+//  $Date: 2013/02/07 02:09:47 $
 //
 //  Original author MyeongJae Lee
 //
@@ -10,11 +10,11 @@
 // C++ includes.
 #include <iostream>
 #include <string>
-#include <stdexcept>
+//#include <stdexcept>
 #include <sstream>
 
 // Framework includes.
-
+#include "cetlib/exception.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Matrix.h"
 #include "RecoDataProducts/inc/TrkExtTrajPoint.hh"
@@ -49,9 +49,7 @@ namespace mu2e {
     _ft(ft)
   {
     if (cov.num_row() !=6 ||cov.num_col() !=6) {
-      std::ostringstream os;
-      os << "TrkExtTrajPoint Error: invalid dimension for cov matrix" << endl;
-      throw std::invalid_argument(os.str());
+      throw cet::exception("ARGUMENT") << "TrkExtTrajPoint Error: invalid dimension for cov matrix" << endl;
     }
     else {
       _cov = cov;
@@ -103,7 +101,15 @@ namespace mu2e {
     _cov = c;
   }
 
+  CLHEP::Hep3Vector TrkExtTrajPoint::positionError () {
+    Hep3Vector error(ex(), ey(), ez());
+    return error;
+  }
 
+  CLHEP::Hep3Vector TrkExtTrajPoint::momentumError () {
+    Hep3Vector error(epx(), epy(), epz());
+    return error;
+  }
 
 
 } // end namespace mu2e

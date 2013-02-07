@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtTrajPoint.hh,v 1.1 2012/08/04 00:16:02 mjlee Exp $
+//  $Id: TrkExtTrajPoint.hh,v 1.2 2013/02/07 02:09:47 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:16:02 $
+//  $Date: 2013/02/07 02:09:47 $
 //
 //  Original author MyeongJae Lee
 //
@@ -21,6 +21,7 @@ namespace mu2e {
   class TrkExtTrajPoint {
 
   public:
+
     TrkExtTrajPoint() ;
     TrkExtTrajPoint(int id, CLHEP::Hep3Vector & x, CLHEP::Hep3Vector & p, CLHEP::HepMatrix & cov, int volid, double fl, double ft) ;
     TrkExtTrajPoint(int id, CLHEP::HepVector & r, int volid, double fl, double ft);
@@ -28,15 +29,19 @@ namespace mu2e {
     TrkExtTrajPoint (const TrkExtTrajPoint & dt);
     TrkExtTrajPoint & operator = (const TrkExtTrajPoint & dt);
 
-    CLHEP::Hep3Vector & position () { return _x; }
-    CLHEP::Hep3Vector & momentum () { return _p; }
-    CLHEP::HepMatrix & covariance () { return _cov; }
+    CLHEP::Hep3Vector const & position () const { return _x; }
+    CLHEP::Hep3Vector const & momentum () const { return _p; }
+    CLHEP::HepMatrix const & covariance () const { return _cov; }
+    CLHEP::Hep3Vector positionError () ;
+    CLHEP::Hep3Vector momentumError () ;
     double x() const { return _x.x(); }
     double y() const { return _x.y(); }
     double z() const { return _x.z(); }
+    double rho() const { return _x.rho(); }
     double px() const { return _p.x(); }
     double py() const { return _p.y(); }
     double pz() const { return _p.z(); }
+    double p() const { return _p.mag(); }
     double ex() const { return safeSqrt(_cov[0][0]); }
     double ey() const { return safeSqrt(_cov[1][1]); }
     double ez() const { return safeSqrt(_cov[2][2]); }
@@ -64,6 +69,9 @@ namespace mu2e {
     void setCovariance(CLHEP::HepMatrix & c) ;
     void setTrajPointId(int i) { _trajPtId = i; }
     void scaleMomentum(double sf) { _p *= sf; }
+
+  private:
+    void calculateHelixParameter();
 
   private:
     CLHEP::Hep3Vector _x;

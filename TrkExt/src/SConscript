@@ -3,9 +3,9 @@
 #
 # Script to bulid the files found in this directory.
 #
-# $Id: SConscript,v 1.2 2012/08/24 20:19:32 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/08/24 20:19:32 $
+# $Id: SConscript,v 1.3 2013/02/07 02:09:47 mjlee Exp $
+# $Author: mjlee $
+# $Date: 2013/02/07 02:09:47 $
 #
 # Original author Rob Kutschke.
 #
@@ -69,7 +69,7 @@ ff=os.path.dirname(dd)   # THIS
 #env.DictionarySource(['#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
 #                      '#/tmp/src/%s/%s_map.cpp'%(dd,ff)],
 #                     ['classes.h','classes_def.xml'])
-
+#
 #env.SharedLibrary('#/lib/%s_dict'%(ff,),
 #                  '#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
 #                  LIBS=libs)

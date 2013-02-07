@@ -1,9 +1,9 @@
 //
 // Material description for TrkExt
 //
-//  $Id: TrkExtMaterial.hh,v 1.1 2012/08/04 00:22:09 mjlee Exp $
+//  $Id: TrkExtMaterial.hh,v 1.2 2013/02/07 02:09:47 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:22:09 $
+//  $Date: 2013/02/07 02:09:47 $
 //
 //  Original author MyeongJae Lee
 //
@@ -25,9 +25,9 @@ namespace mu2e {
     TrkExtMaterial(std::string n) ;
     ~TrkExtMaterial() { }
 
-    double meanEnergyLoss (CLHEP::Hep3Vector& p, double ds) ;
-    double mostProbableEnergyLoss (CLHEP::Hep3Vector& p, double ds) ;
-    double scatteringAngle (CLHEP::Hep3Vector& p, double ds) ;
+    double meanEnergyLoss (const CLHEP::Hep3Vector& p, double ds) ;
+    double mostProbableEnergyLoss (const CLHEP::Hep3Vector& p, double ds) ;
+    double scatteringAngle (const CLHEP::Hep3Vector& p, double ds) ;
     std::string name () { return _name; }
 
   private:

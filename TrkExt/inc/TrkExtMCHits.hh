@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtMCHits.hh,v 1.1 2012/08/04 00:22:10 mjlee Exp $
+//  $Id: TrkExtMCHits.hh,v 1.2 2013/02/07 02:09:47 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:22:10 $
+//  $Date: 2013/02/07 02:09:47 $
 //
 //  Original author MyeongJae Lee
 //
@@ -15,7 +15,9 @@
 
 // Framework includes.
 #include "art/Framework/Principal/Event.h"
+#include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/SimParticle.hh"
 
 
 namespace mu2e {
@@ -24,22 +26,28 @@ namespace mu2e {
 
   public:
     TrkExtMCHits() ;
-    TrkExtMCHits(std::string g4ModuleLabel, std::string instanceName, double ethi = 50., double dist = 3.) ;
+    TrkExtMCHits(const art::Event& event, std::string g4ModuleLabel, std::string instanceName, cet::map_vector_key simid, double distcut = 1.) ;
     ~TrkExtMCHits() ;
 
-    unsigned int readMCHits (const art::Event& event);
-    std::vector<StepPointMCCollection> & getClusters() {return _hitcol;}
-    int getNClusters() {return _hitcol.size();}
-    int getNHits() {return _nhits;}
-    void setEnergyThreshold (double e) { _eth = ((e>0)?e:0.);}
-    void setClusterHitDistance (double d) { _dist = ((d>0)?d:1.);}
+    const std::vector<StepPointMCCollection> & getClusters() const {return _hitcol;}
+    unsigned int getNClusters() const {return _hitcol.size();}
+    const StepPointMCCollection & getCluster(unsigned int clust) const {return _hitcol[clust]; }
+    unsigned int getNHit (unsigned int clust) const { return _hitcol[clust].size(); }
+    const StepPointMC & getHit (unsigned int clust, unsigned int hit) const { return (_hitcol[clust])[hit]; }
+    CLHEP::Hep3Vector momentum (unsigned int clust) const ;
+    CLHEP::Hep3Vector position (unsigned int clust) const ;
+    double time (unsigned int clust) const;
+    double deltap (unsigned int clust) const;
+
+  private:
+    double interpolate3 (double z, double x1, double x2, double x3, double y1, double y2, double y3) const; 
+    double interpolate2 (double z, double x1, double x2, double y1, double y2) const ;
 
   private:
     std::string _g4ModuleLabel;
     std::string _instanceName;
     std::vector<StepPointMCCollection> _hitcol;
-    int _nhits;
-    double _eth, _dist;
+    double _distcut;
 
 
   };

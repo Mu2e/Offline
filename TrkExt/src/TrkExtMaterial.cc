@@ -1,10 +1,12 @@
 //
-//  $Id: TrkExtMaterial.cc,v 1.1 2012/08/04 00:22:09 mjlee Exp $
+//  $Id: TrkExtMaterial.cc,v 1.2 2013/02/07 02:09:47 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:22:09 $
+//  $Date: 2013/02/07 02:09:47 $
 //
 //  Original author MyeongJae Lee
 //
+// Note : here we define various parameters which are used in material effect calculation.
+// The algorithm should be updated to a more rubust algorithm: TODO
 //
 
 // C++ includes.
@@ -113,13 +115,13 @@ namespace mu2e {
   }
 
 
-  double TrkExtMaterial::meanEnergyLoss (Hep3Vector& p, double ds) {
+  double TrkExtMaterial::meanEnergyLoss (const Hep3Vector& p, double ds) {
     double ke = safeSqrt(p.mag2() + _mec22) - _mec2;
     return _rho * (_dpsp[0] + _dpsp[1]*ke + _dpsp[2]*ke*ke) * 0.1 * ds;
     return 0;
   }
 
-  double TrkExtMaterial::mostProbableEnergyLoss (Hep3Vector & p, double ds) {
+  double TrkExtMaterial::mostProbableEnergyLoss (const Hep3Vector & p, double ds) {
     if (_matid == Vac || _matid == Undefined) return 0;
     double mom = p.mag() - 104.;
     double thick = log10(fabs(ds));
@@ -127,7 +129,7 @@ namespace mu2e {
     return de;
   }
 
-  double TrkExtMaterial::scatteringAngle (CLHEP::Hep3Vector& p, double ds) {
+  double TrkExtMaterial::scatteringAngle (const CLHEP::Hep3Vector& p, double ds) {
     double fabsds = fabs(ds);
     if (fabsds <=0) return 0;
     return _thpar[0] * safeSqrt(fabsds) / p.mag() * (_thpar[1] + _thpar[2] * log10(fabsds)) ; 

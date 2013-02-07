@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtShape.cc,v 1.1 2012/08/04 00:22:09 mjlee Exp $
+//  $Id: TrkExtShape.cc,v 1.2 2013/02/07 02:09:47 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:22:09 $
+//  $Date: 2013/02/07 02:09:47 $
 //
 //  Original author MyeongJae Lee
 //
@@ -30,7 +30,7 @@ namespace mu2e {
     _limit(boundaryLimit)
   {  }
 
-  Hep3Vector  TrkExtShape::intersection (Hep3Vector & x1, Hep3Vector & x2) {
+  Hep3Vector  TrkExtShape::intersection (const Hep3Vector & x1, const Hep3Vector & x2) {
     cout << "TrkExtShape called" << endl;
     bool f1, f2;
     Hep3Vector xstart = x1;

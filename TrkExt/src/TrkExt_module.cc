@@ -1,12 +1,13 @@
 //
 //  Track Extrapolation module.
-//  All in Detector (=Tracker) coordinate. Points other than tracker coordinates are properly transformed. 
+//  All in Detector coordinate. Points other than tracker coordinates are properly transformed. 
 //  B field basically requires mu2e coordinate
 //  G4 uses G4World coordinate
+//  See the note at TrkExtTraj.hh for the meaning of point information, especially when volume changing. 
 //
-//  $Id: TrkExt_module.cc,v 1.5 2012/11/24 09:03:06 mjlee Exp $
+//  $Id: TrkExt_module.cc,v 1.6 2013/02/07 02:09:47 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/11/24 09:03:06 $
+//  $Date: 2013/02/07 02:09:47 $
 //
 //  Original author MyeongJae Lee
 //
@@ -72,7 +73,7 @@ namespace mu2e {
   // Other constants
   const double VELOCITY_OF_LIGHT = 2.99792458e8; 
   const int MAXSIM = 5000;
-  const int MAXNBACK = 5000;
+  const int MAXNBACK = 10000;
   const double RUNGE_KUTTA_KQ = 1.e-9*VELOCITY_OF_LIGHT; //k = 2.99e-1, q = 1. Actual charge is multiplied in runtime. 
 
 
@@ -162,9 +163,10 @@ namespace mu2e {
     void readTrkPatRec(KalRep const & trk, 
                       Hep3Vector * xstart, Hep3Vector * pstart, 
                       Hep3Vector * xstop, Hep3Vector * pstop, 
-                      HepMatrix * covstart, HepMatrix * covstop) ;
+                      HepMatrix * covstart, HepMatrix * covstop,
+                      double * timestart, double * timestop) ;
     bool readVD (const art::Event& event, TrkHotList const * hits) ;
-    int doExtrapolation (Hep3Vector x, Hep3Vector p, HepMatrix cov, bool direction, double mass2, int charge) ;
+    int doExtrapolation (Hep3Vector x, Hep3Vector p, double t, HepMatrix cov, bool direction, TrkExtInstanceNameEntry & instance) ;
 
     HepVector _runge_kutta_newpar_5th (HepVector r0, double ds, bool mode, int charge) ;
     HepVector _runge_kutta_newpar_f (HepVector r, Hep3Vector B, int charge) ;
@@ -172,12 +174,13 @@ namespace mu2e {
     TrkExtTrajPoint calculateNextPosition(TrkExtTrajPoint r00, double ds, double mass2, int charge);
 
     Hep3Vector getBField (Hep3Vector& x) ; // in Detector coordinate
+    Hep3Vector getBField (const Hep3Vector& x) ; // in Detector coordinate
     Hep3Vector getBField (HepVector& r) ; // in Detector coordinate
-    Hep3Vector getBFieldWithGradient( Hep3Vector & x, 
+    Hep3Vector getBFieldWithGradient( const Hep3Vector & x, 
                                       double & bxx, double & bxy, double & bxz, 
                                       double & byx, double & byy, double & byz, 
                                       double & bzx, double & bzy, double & bzz);
-    bool checkOutofReflectionLimit (bool updown, Hep3Vector & x, Hep3Vector & p); // in Detector coordinate
+    bool checkOutofReflectionLimit (bool updown, const Hep3Vector & x, const Hep3Vector & p); // in Detector coordinate
     HepMatrix getCovarianceTransport(TrkExtTrajPoint & r0, double ds, double deltapp, int charge);
     HepMatrix getCovarianceMultipleScattering(TrkExtTrajPoint & r0, double ds);
 
@@ -345,6 +348,9 @@ namespace mu2e {
     }
     _hNtracks = tfs->make<TNtuple>("hNtracks", "Extrapolation statistics", "hepid:dir:ntrk");
 
+
+    //TODO : warn if uniform B-field. 
+
   }
 
   void TrkExt::beginRun(art::Run & run){
@@ -410,7 +416,8 @@ namespace mu2e {
         Hep3Vector xstart, pstart, xstop, pstop;
         HepMatrix covstart(6,6,0);
         HepMatrix covstop(6,6,0);
-        readTrkPatRec (trk, &xstart, &pstart, &xstop, &pstop, &covstart, &covstop);
+        double tstart, tstop;
+        readTrkPatRec (trk, &xstart, &pstart, &xstop, &pstop, &covstart, &covstop, &tstart, &tstop);
   
         if (_verbosity>=2) cout << "Track extrapolation at " << _evtid << ", track " << _trkid << endl;
   
@@ -433,9 +440,9 @@ namespace mu2e {
   
         int nsteps;
         //upstream ptl extrapolates  time-forward to stopping target
-        if (instance.updown) nsteps = doExtrapolation (xstop, pstop, covstop, true, instance.mass2, instance.charge); 
+        if (instance.updown) nsteps = doExtrapolation (xstop, pstop, tstop, covstop, true, instance); 
         //downstream ptl extrapolates  time-backward to stopping target
-        else                 nsteps = doExtrapolation (xstart, pstart, covstart, false, instance.mass2, instance.charge); 
+        else                 nsteps = doExtrapolation (xstart, pstart, tstart, covstart, false, instance); 
         if (_flagDiagnostics) {
           _hExitCode[instanceIter]->Fill(_traj.exitCode());
           _hNSteps[instanceIter]->Fill(nsteps);
@@ -460,7 +467,7 @@ namespace mu2e {
 
 ////////// Utility functions ///////////
 
-  bool TrkExt::checkOutofReflectionLimit(bool updown, Hep3Vector & x, Hep3Vector & p) {
+  bool TrkExt::checkOutofReflectionLimit(bool updown, const Hep3Vector & x, const Hep3Vector & p) {
     if (!updown) { // downstream particle
       if(p.z() >=0) return false;
       Hep3Vector xx = x+_origin;
@@ -490,14 +497,23 @@ namespace mu2e {
     }
     return b;
   }
+  
+  Hep3Vector TrkExt::getBField (const Hep3Vector& x) { 
+    Hep3Vector xx = x + _origin;
+    Hep3Vector b = _bfMgr->getBField(xx);
+    if (b.mag() >10) {
+      if (_verbosity>=0) cout << "TrkExt: Crazy bfield : (" << b.x() << ", " << b.y() << ", " << b.z() << ") at (" << xx.x() << ", " << xx.y() << ", " << xx.z() << ")" << endl;
+    }
+    return b;
+  }
 
   Hep3Vector TrkExt::getBField (HepVector& r) {
     Hep3Vector x(r[0], r[1], r[2]);
     return getBField(x);
   }
+  
 
-
-  Hep3Vector TrkExt::getBFieldWithGradient( Hep3Vector & x, 
+  Hep3Vector TrkExt::getBFieldWithGradient( const Hep3Vector & x, 
                                       double & bxx, double & bxy, double & bxz, 
                                       double & byx, double & byy, double & byz, 
                                       double & bzx, double & bzy, double & bzz) {
@@ -683,14 +699,16 @@ namespace mu2e {
 
 /////////// Read TrkPatRec //////////////
 
-  void TrkExt::readTrkPatRec(KalRep const & krep, Hep3Vector * xstart, Hep3Vector * pstart, Hep3Vector * xstop, Hep3Vector * pstop, HepMatrix * covstart, HepMatrix * covstop) {
+  void TrkExt::readTrkPatRec(KalRep const & krep, Hep3Vector * xstart, Hep3Vector * pstart, Hep3Vector * xstop, Hep3Vector * pstop, HepMatrix * covstart, HepMatrix * covstop, double * timestart, double * timestop) {
 
     double _trkl0 = krep.startValidRange();
     double _trkl1 = krep.endValidRange();
     HepPoint xstart_ = krep.position(_trkl0);
     Hep3Vector pstart_ = krep.momentum(_trkl0);
+    double tstart_ = krep.arrivalTime(_trkl0);
     HepPoint xstop_ = krep.position(_trkl1);
     Hep3Vector pstop_ = krep.momentum(_trkl1);
+    double tstop_ = krep.arrivalTime(_trkl1);
     HepSymMatrix xxcov0(3,0);
     HepSymMatrix xxcov1(3,0);
     HepSymMatrix ppcov0(3,0);
@@ -759,6 +777,8 @@ namespace mu2e {
     pstop->set(pstop_.x(), pstop_.y(), pstop_.z()); 
     *covstart = covstart_;
     *covstop  = covstop_;
+    *timestart = tstart_;
+    *timestop = tstop_;
     //see TrkMomCalculator::calcCurvAllCovs at BaBar/TrkBase/src/TrkMomCalculator.cc 
     return;
   }
@@ -766,11 +786,13 @@ namespace mu2e {
 //
 ///////// Track extrapolation ////////////
 
-  int TrkExt::doExtrapolation (Hep3Vector xx, Hep3Vector pp, HepMatrix ccov, bool direction, double mass2, int charge) {
+  int TrkExt::doExtrapolation (Hep3Vector xx, Hep3Vector pp, double tt, HepMatrix ccov, bool direction, TrkExtInstanceNameEntry & instance) {
     if (ccov.num_row() != 6 || ccov.num_col() != 6) {
       if (_verbosity>=0) cout << "TrkExt Warning : cannot use cov matrix." <<endl;
     }
 
+    double mass2 = instance.mass2;
+    int charge = instance.charge;
     double stepSign = 1.;
     if (direction) stepSign = 1.;  // for upstream, extrapolates to forward
     else stepSign = -1.;  // for downstrem, extrapolates to backward
@@ -793,7 +815,7 @@ namespace mu2e {
 
     // Initialize TrajPoints
     //HepMatrix cov_init(6,6, 0);
-    TrkExtTrajPoint r0 (0, xx, pp, ccov, TrkExtDetectorList::Enum(prevolumeid), 0, 0); // initial data
+    TrkExtTrajPoint r0 (0, xx, pp, ccov, TrkExtDetectorList::Enum(prevolumeid), 0, tt); 
     TrkExtTrajPoint r1; // end data
 
     // Extrapolation stepping start
@@ -924,7 +946,8 @@ namespace mu2e {
       else if (   fabs(dds) > _recordingStep 
                || r0.volumeId() != r1.volumeId()
                || r0.volumeId() == TrkExtDetectorList::ProtonAbsorber
-               || r0.volumeId() == TrkExtDetectorList::StoppingTarget   ) 
+               || r0.volumeId() == TrkExtDetectorList::StoppingTarget   
+               || r0.pz() * r1.pz() <=0 ) 
         exitcode = TrkExtExitCode::WriteData;
       else                                                                
         exitcode = TrkExtExitCode::DoNotExit;
@@ -947,6 +970,7 @@ namespace mu2e {
 
     // book track-wide variable 
     _traj.setExitCode(exitcode);
+    _traj.setHepid(instance.hepid);
     _traj.makePASTHitTable();
     return nsteps;
   }
@@ -955,7 +979,7 @@ namespace mu2e {
 ///////// Covariance ////////////
 
   HepMatrix TrkExt::getCovarianceTransport(TrkExtTrajPoint & r0, double ds, double deltapp, int charge) {
-    HepMatrix & E = r0.covariance();
+    const HepMatrix & E = r0.covariance();
     HepMatrix Ep(6,6,0);
     if (E.num_row() !=6 || E.num_col() !=6) {
       if (_verbosity>=0) cout << "TrkExt Warning : cannot calculate covariance" << endl;

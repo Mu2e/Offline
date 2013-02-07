@@ -1,12 +1,14 @@
 //
 // Instance name information for TrkExt data product 
 //
-//  $Id: TrkExtInstanceName.hh,v 1.1 2012/10/23 16:26:40 mjlee Exp $
+//  $Id: TrkExtInstanceName.hh,v 1.2 2013/02/07 02:09:47 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/10/23 16:26:40 $
+//  $Date: 2013/02/07 02:09:47 $
 //
 //  Original author MyeongJae Lee
 //
+// Definition of updown : 0 for downstream (target->tracker->calorimeter) and 1 for upstream (calorimeter->tracker->target). 
+// This definition is kept for all track direction definition, for example, the index of VDHitInfo class in TrkExtDiag.hh
 //
 #ifndef TrkExtInstanceName_HH
 #define TrkExtInstanceName_HH
@@ -18,7 +20,8 @@
 namespace mu2e {
 
   namespace TrkExtParticleMass {
-    // Mass of particles. Need to change to read from condition service. However the accuracy is no good for some particles (electron)
+    // Mass of particles. 
+    // TODO : Need to change to read from condition service. However the accuracy is no good for some particles (electron)
     const double MASS_ELECTRON = 0.510998910;
     const double MASS_MUON = 105.658367;
     const double MASS_PION = 139.57018;
@@ -57,7 +60,6 @@ namespace mu2e {
     void addTrack(unsigned int i) { _entries[i].ntrk += 1; }
     unsigned int ntrk (unsigned int i) const { return _entries[i].ntrk; }
 
-//    void constructAll() ;
     void construct (TrkParticle::type _hepid, bool _up_down, std::string _fitterName) ;
 
   private:

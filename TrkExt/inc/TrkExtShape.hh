@@ -1,9 +1,9 @@
 //
 // Shape description for TrkExt
 //
-//  $Id: TrkExtShape.hh,v 1.1 2012/08/04 00:22:10 mjlee Exp $
+//  $Id: TrkExtShape.hh,v 1.2 2013/02/07 02:09:47 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:22:10 $
+//  $Date: 2013/02/07 02:09:47 $
 //
 //  Original author MyeongJae Lee
 //
@@ -23,7 +23,7 @@ namespace mu2e {
 
     virtual bool contains (CLHEP::Hep3Vector& p)  =0 ;
     virtual void initialize (void)  =0 ;
-    CLHEP::Hep3Vector  intersection (CLHEP::Hep3Vector & x1, CLHEP::Hep3Vector & x2) ; 
+    CLHEP::Hep3Vector  intersection (const CLHEP::Hep3Vector & x1, const CLHEP::Hep3Vector & x2) ; 
 
   protected:
 

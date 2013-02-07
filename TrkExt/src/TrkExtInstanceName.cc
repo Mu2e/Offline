@@ -1,10 +1,19 @@
 //
-//  $Id: TrkExtInstanceName.cc,v 1.1 2012/10/23 16:26:40 mjlee Exp $
+//  $Id: TrkExtInstanceName.cc,v 1.2 2013/02/07 02:09:47 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/10/23 16:26:40 $
+//  $Date: 2013/02/07 02:09:47 $
 //
 //  Original author MyeongJae Lee
 //
+// Note : See the included file for particle/direction definitions. 
+//
+// In TrkParticle :
+// eMinus, ePlus, muMinus, muPlus, piMunis, piPlus, KMilus, KPlus
+// are defined.
+// In TrkFitDirection: 
+// Upstream=1, Downstream=0
+// are assigned. 
+// instance = fdir.name() + tpart.name()
 //
 
 // C++ includes.
@@ -18,11 +27,6 @@
 #include "KalmanTests/inc/TrkFitDirection.hh"
 #include "TrkBase/TrkParticle.hh"
 
-// In TrkParticle :
-// eMinus, ePlus, muMinus, muPlus, piMunis, piPlus, KMilus, KPlus
-// In TrkFitDirection: 
-// Upstream=1, Downstream=0
-// instance = fdir.name() + tpart.name()
 
 using namespace std;
 
@@ -85,28 +89,7 @@ namespace mu2e {
   TrkExtInstanceName::TrkExtInstanceName () {
     _entries.clear();
   }
-/*
-  void TrkExtInstanceName::constructAll() {
-
-    TrkParticle::type fitPtl[8] = {
-      TrkParticle::e_minus,
-      TrkParticle::e_plus,
-      TrkParticle::mu_minus,
-      TrkParticle::mu_plus,
-      TrkParticle::pi_minus,
-      TrkParticle::pi_plus,
-      TrkParticle::anti_p_minus,
-      TrkParticle::p_plus
-    };
-
-    for (int j = 0 ; j <8 ; ++j) {
-      TrkExtInstanceNameEntry tmp1 (fitPtl[j], true);
-      _entries.push_back(tmp1);
-      TrkExtInstanceNameEntry tmp2 (fitPtl[j], false);
-      _entries.push_back(tmp2);
-    }
-  }
-*/
+  
   void TrkExtInstanceName::construct (TrkParticle::type _hepid, bool _up_down, string _fitterName) 
   {
     TrkExtInstanceNameEntry tmp1 (_hepid, _up_down, _fitterName);
