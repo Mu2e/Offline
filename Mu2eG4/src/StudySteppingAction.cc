@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: StudySteppingAction.cc,v 1.4 2012/12/20 17:46:46 genser Exp $
+// $Id: StudySteppingAction.cc,v 1.5 2013/02/07 17:55:25 genser Exp $
 // $Author: genser $
-// $Date: 2012/12/20 17:46:46 $
+// $Date: 2013/02/07 17:55:25 $
 //
 // Original author Rob Kutschke
 //
@@ -434,7 +434,7 @@ namespace mu2e {
     }
 
     // Which process caused this step to end?
-    G4String pname = Mu2eG4UserHelpers::findStoppingProcessName(aStep->GetTrack());
+    G4String pname = Mu2eG4UserHelpers::findStepStoppingProcessName(aStep);
     ProcessCode endCode(_processInfo->findAndCount(pname));
 
     // The point's coordinates are saved in the mu2e coordinate system.
@@ -472,7 +472,7 @@ namespace mu2e {
     }
 
     // Which process caused this step to end?
-    G4String pname = Mu2eG4UserHelpers::findStoppingProcessName(aStep->GetTrack());
+    G4String pname = Mu2eG4UserHelpers::findStepStoppingProcessName(aStep);
     ProcessCode endCode(_processInfo->findAndCount(pname));
 
     // The point's coordinates are saved in the mu2e coordinate system.
