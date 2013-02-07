@@ -1,8 +1,8 @@
 //
 //
-//  $Id: ITGasLayerSD.cc,v 1.14 2012/06/04 23:46:23 tassiell Exp $
-//  $Author: tassiell $
-//  $Date: 2012/06/04 23:46:23 $
+//  $Id: ITGasLayerSD.cc,v 1.15 2013/02/07 17:56:03 genser Exp $
+//  $Author: genser $
+//  $Date: 2013/02/07 17:56:03 $
 //
 //
 
@@ -12,6 +12,8 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/ITGasLayerSD.hh"
+#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
+
 #include "G4ThreeVector.hh"
 
 using namespace std;

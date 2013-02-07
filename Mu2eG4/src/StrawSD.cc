@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.38 2013/01/07 04:05:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/01/07 04:05:00 $
+// $Id: StrawSD.cc,v 1.39 2013/02/07 17:56:03 genser Exp $
+// $Author: genser $
+// $Date: 2013/02/07 17:56:03 $
 //
 // Original author Rob Kutschke
 //
@@ -18,6 +18,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/StrawSD.hh"
+#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
@@ -119,8 +120,8 @@ namespace mu2e {
 
       // I am not sure why we get these cases but we do.  Skip them.
       if ( step == 0. ) {
-        //G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-        //ProcessCode endCode(_processInfo->findAndCount(pname));
+        //ProcessCode endCode(_processInfo->
+        //                    findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
         //cout << "Weird: " << endCode << endl;
         return false;
       }
@@ -223,8 +224,9 @@ namespace mu2e {
 
     // We add the hit object to the framework strawHit collection created in produce
 
-    G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-    ProcessCode endCode(_processInfo->findAndCount(pname));
+    // Which process caused this step to end?
+    ProcessCode endCode(_processInfo->
+                        findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
     _collection->push_back( StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _event->productGetter(*_simID) ),
                                         sdcn,

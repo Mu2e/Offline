@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for CaloCrystal Detectors
 //
-// $Id: CaloCrystalSD.cc,v 1.21 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: CaloCrystalSD.cc,v 1.22 2013/02/07 17:56:03 genser Exp $
+// $Author: genser $
+// $Date: 2013/02/07 17:56:03 $
 //
 // Original author Ivan Logashenko
 //
@@ -16,6 +16,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
+#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/WorldG4.hh"
@@ -56,10 +57,10 @@ namespace mu2e {
     // Get crystal ID
     G4int copyNo = touchableHandle->GetCopyNumber(0);
 
-    G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-    ProcessCode endCode(_processInfo->findAndCount(pname));
+    ProcessCode endCode(_processInfo->
+                        findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
-   // Originally the hit position was saved in local crystal frame.
+    // Originally the hit position was saved in local crystal frame.
     // Not it is saved in Mu2e frame, hence the following code is
     // commented out.
     // Calculate enerdy deposition position along the crystal

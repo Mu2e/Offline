@@ -1,9 +1,9 @@
 //
 // Defines sensitive detector for a typicaly numbered volume using mu2e reference frame
 //
-// $Id: Mu2eSensitiveDetector.cc,v 1.3 2012/12/04 00:51:26 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:26 $
+// $Id: Mu2eSensitiveDetector.cc,v 1.4 2013/02/07 17:56:03 genser Exp $
+// $Author: genser $
+// $Date: 2013/02/07 17:56:03 $
 //
 // Original author KLG
 //
@@ -16,6 +16,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -81,13 +82,16 @@ namespace mu2e {
     }
 
     if ( _debugList.inList() )  {
-            G4cout<<"edep "<<aStep->GetTotalEnergyDeposit()<<" nidep "<<aStep->GetNonIonizingEnergyDeposit()<<" step "<<aStep->GetStepLength()<<G4endl;
+            G4cout<<"edep "<<aStep->GetTotalEnergyDeposit()
+                  <<" nidep "<<aStep->GetNonIonizingEnergyDeposit()
+                  <<" step "<<aStep->GetStepLength()<<G4endl;
             G4cout<<"Step vol name "<<aStep->GetTrack()->GetVolume()->GetName()<<G4endl;
     }
 
+
     // Which process caused this step to end?
-    G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-    ProcessCode endCode(_processInfo->findAndCount(pname));
+    ProcessCode endCode(_processInfo->
+                        findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.

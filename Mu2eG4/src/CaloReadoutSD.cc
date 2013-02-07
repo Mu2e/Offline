@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for calorimetric readout
 //
-// $Id: CaloReadoutSD.cc,v 1.19 2012/11/21 00:24:26 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/21 00:24:26 $
+// $Id: CaloReadoutSD.cc,v 1.20 2013/02/07 17:56:03 genser Exp $
+// $Author: genser $
+// $Date: 2013/02/07 17:56:03 $
 //
 // Original author Ivan Logashenko
 //
@@ -16,6 +16,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
+#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -75,8 +76,8 @@ namespace mu2e {
     // int idro = touchableHandle->GetCopyNumber(0) + touchableHandle->GetCopyNumber(1)*_nro;
 
     // Which process caused this step to end?
-    G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-    ProcessCode endCode(_processInfo->findAndCount(pname));
+    ProcessCode endCode(_processInfo->
+                        findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.

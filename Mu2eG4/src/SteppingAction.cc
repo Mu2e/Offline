@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.33 2012/11/16 23:48:43 genser Exp $
+// $Id: SteppingAction.cc,v 1.34 2013/02/07 17:56:03 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/16 23:48:43 $
+// $Date: 2013/02/07 17:56:03 $
 //
 // Original author Rob Kutschke
 //
@@ -18,6 +18,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/SteppingAction.hh"
+#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
@@ -414,8 +415,8 @@ namespace mu2e {
     }
 
     // Which process caused this step to end?
-    G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-    ProcessCode endCode(_processInfo->findAndCount(pname));
+    ProcessCode endCode(_processInfo->
+                        findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
     // The point's coordinates are saved in the mu2e coordinate system.
     _collection->

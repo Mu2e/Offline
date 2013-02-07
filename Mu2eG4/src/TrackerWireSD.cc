@@ -1,8 +1,8 @@
 //
 //
-//  $Id: TrackerWireSD.cc,v 1.2 2012/12/04 00:51:26 tassiell Exp $
-//  $Author: tassiell $
-//  $Date: 2012/12/04 00:51:26 $
+//  $Id: TrackerWireSD.cc,v 1.3 2013/02/07 17:56:03 genser Exp $
+//  $Author: genser $
+//  $Date: 2013/02/07 17:56:03 $
 //
 //
 
@@ -12,6 +12,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/TrackerWireSD.hh"
+#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 
 // G4 includes
@@ -69,8 +70,8 @@ namespace mu2e {
           }
 
           // Which process caused this step to end?
-          G4String const& pname  = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-          ProcessCode endCode(_processInfo->findAndCount(pname));
+          ProcessCode endCode(_processInfo->
+                              findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
           // Add the hit to the framework collection.
           // The point's coordinates are saved in the mu2e coordinate system.
