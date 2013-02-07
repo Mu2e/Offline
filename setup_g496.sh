@@ -1,7 +1,7 @@
 #
-# $Id: setup_g496.sh,v 1.2 2013/01/23 21:46:15 genser Exp $
+# $Id: setup_g496.sh,v 1.3 2013/02/07 21:04:22 genser Exp $
 # $Author: genser $
-# $Date: 2013/01/23 21:46:15 $
+# $Date: 2013/02/07 21:04:22 $
 #
 # Contact Person K. Genser
 #
@@ -15,7 +15,7 @@ if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
 fi
 
 echo "This version of geant4 i.e.: v4_9_6, has known problems"
-echo "a fix is expected in early 2013"
+echo "Please use v4_9_6_p01 instead"
 echo "If you decide to edit this script and use it anyway, proceed at your own risk"
 echo "exiting"
 
