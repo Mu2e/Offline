@@ -2,9 +2,9 @@
 // A collection of Geant4 user helper functions
 // initially extracted from the TrackingAction
 //
-// $Id: Mu2eG4UserHelpers.cc,v 1.4 2013/01/22 21:42:06 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2013/01/22 21:42:06 $
+// $Id: Mu2eG4UserHelpers.cc,v 1.5 2013/02/07 17:54:23 genser Exp $
+// $Author: genser $
+// $Date: 2013/02/07 17:54:23 $
 //
 // Original author K. L. Genser based on Rob's TrackingAction
 //
@@ -39,7 +39,7 @@ namespace mu2e {
   namespace Mu2eG4UserHelpers {
 
     // Enable/disable storing of trajectories based on several considerations
-    void controlTrajectorySaving(G4Track const* trk, int sizeLimit, int currentSize, double pointTrajectoryMomentumCut){
+    void controlTrajectorySaving(G4Track const* const trk, int sizeLimit, int currentSize, double pointTrajectoryMomentumCut){
       // Do not add the trajectory if the corresponding SimParticle is missing.
       //    if( sizeLimit>0 && currentSize>sizeLimit ) return;
 
@@ -54,7 +54,7 @@ namespace mu2e {
     }
 
     // The per track decision on whether or not to store trajectories.
-    bool saveThisTrajectory(G4Track const* trk, double pointTrajectoryMomentumCut){
+    bool saveThisTrajectory(G4Track const* const trk, double pointTrajectoryMomentumCut){
 
       // This is a guess at what might be useful.  Feel free to improve it.
       // We might want to change the momentum cut depending on which volume
@@ -66,7 +66,7 @@ namespace mu2e {
     }
 
     //Retrieve kinetic energy at the beginnig of the last step from UserTrackInfo
-    double getPreLastStepKE(G4Track const* trk) {
+    double getPreLastStepKE(G4Track const* const trk) {
 
       G4VUserTrackInformation* info = trk->GetUserInformation();
       UserTrackInformation const* tinfo   = dynamic_cast<UserTrackInformation*>(info);
@@ -75,7 +75,7 @@ namespace mu2e {
     }
 
     // Get the number of G4 steps the track is made of
-    int getNSteps(G4Track const* trk) {
+    int getNSteps(G4Track const* const trk) {
 
       G4VUserTrackInformation* info = trk->GetUserInformation();
       UserTrackInformation const* tinfo   = dynamic_cast<UserTrackInformation*>(info);
@@ -84,7 +84,7 @@ namespace mu2e {
     }
 
     // Find the name of the code for the process that created this track.
-    ProcessCode findCreationCode(G4Track const* trk){
+    ProcessCode findCreationCode(G4Track const* const trk){
       G4VProcess const* process = trk->GetCreatorProcess();
 
       // If there is no creator process, then the G4Track was created by PrimaryGenerator action.
@@ -93,12 +93,13 @@ namespace mu2e {
       }
 
       // Extract the name from the process and look up the code.
-      string name = process->GetProcessName(); // may need to protect it
+      string name = process->GetProcessName();
       return ProcessCode::findByName(name);
     }
 
     // Find the name of the process that stopped this track.
-    G4String findStoppingProcessName(G4Track const* trk){
+    // G4String const & findTrackStoppingProcessName(G4Track const* const trk){
+    G4String findTrackStoppingProcessName(G4Track const* const trk){
 
       // First check to see if Mu2e code killed this track.
       G4VUserTrackInformation* info = trk->GetUserInformation();
@@ -109,89 +110,109 @@ namespace mu2e {
       }
 
       // Otherwise, G4 killed this track.
-      G4VProcess const* process = trk->GetStep()->GetPostStepPoint()->GetProcessDefinedStep();
+      return findStepStoppingProcessName(trk->GetStep());
+
+    }
+
+    // Find the name of the process that defined the step
+    // G4String const & findStepStoppingProcessName(G4Step const* const aStep){
+    G4String findStepStoppingProcessName(G4Step const* const aStep){
+
+      G4VProcess const* process = aStep->GetPostStepPoint()->GetProcessDefinedStep();
 
       if (process) {
+
         return process->GetProcessName();
+
       } else {
-
-        { // forcing mf own scope to prevent output interleaving;
-          // does not seem to work anyway
-          mf::LogWarning("G4")
-            << "ProcessDefinedStep NotSpecified for "
-            << trk->GetParticleDefinition()->GetParticleName()
-            << endl;
-        }
-
         static bool printItOnce = true;
-
         if (printItOnce) {
-
-          // printItOnce = false;
-
-          G4VProcess const* process = trk->GetStep()->GetPreStepPoint()->GetProcessDefinedStep();
-          G4String pname = (process) ? process->GetProcessName() : "NotSpecified";
-
-          cout << __func__ << " ProcessDefinedStep NotSpecified for "
-               << trk->GetParticleDefinition()->GetParticleName()
-               << ", PostStepPoint StepStatus: "
-               << trk->GetStep()->GetPostStepPoint()->GetStepStatus()
-               << ", PreStepPoint  StepStatus: "
-               << trk->GetStep()->GetPreStepPoint()->GetStepStatus()
-               << ", PreStepPoint ProcessDefinedStep: "
-               << pname
-               << endl;
-
-          int id       = trk->GetTrackID();
-          int parentId = trk->GetParentID();
-
-          cout << __func__ << " Track info:"
-               << " ID: "
-               << id
-               << ", ParentID: "
-               << parentId
-               << ", CurrentStepNumber: "
-               << trk->GetCurrentStepNumber()
-               << ", TrackStatus: "
-               << trk->GetTrackStatus()
-               << ", TrackCreationCode: "
-               << findCreationCode(trk)
-               << endl;
-
-          // the code commented out below is looking into the event past
-          // and would require passing a lot of data around
-
-          //         if ( parentId != 0 ){
-          //           map_type::iterator i(transientMap.find(key_type(parentId)));
-          //           if ( i == transientMap.end() ){
-          //             throw cet::exception("RANGE")
-          //               << "Could not find parent SimParticle in findStoppingProcess.  id: "
-          //               << id
-          //               << "\n";
-          //           }
-
-          //           int pdgId = i->second.pdgId();
-          //           cout << __func__ << " Parent info:"
-          //                << " ID: "
-          //                << parentId
-          //                << ", PDGiD: "
-          //                << pdgId
-          //                << ", name: "
-          //                << G4ParticleTable::GetParticleTable()->FindParticle(pdgId)->GetParticleName()
-          //                << ", endG4Status: "
-          //                << i->second.endG4Status()
-          //                << ", stoppingCode: "
-          //                << i->second.stoppingCode()
-          //                << endl;
-
+          printItOnce = false;
+          printProcessNotSpecifiedWarning(aStep->GetTrack());
         }
+        static bool printItOnce2 = true;
+        if (printItOnce2 && !printItOnce) {
+          printItOnce2 = false;
+          cout << __func__ << " The above message will not be repeated " << endl;
+        }
+        //        static const G4String pname = G4String("NotSpecified");
+        return G4String("NotSpecified");
 
       }
 
-      return G4String("NotSpecified");
     }
 
-    void printTrackInfo(G4Track const* trk, std::string const& text,
+    void printProcessNotSpecifiedWarning(G4Track const * const trk) {
+
+      { // forcing mf own scope to prevent output interleaving;
+        // does not seem to work anyway
+        mf::LogWarning("G4")
+          << "ProcessDefinedStep NotSpecified for "
+          << trk->GetParticleDefinition()->GetParticleName()
+          << endl;
+      }
+
+      G4VProcess const* process = trk->GetStep()->GetPreStepPoint()->GetProcessDefinedStep();
+      G4String const& pname  = (process) ? process->GetProcessName() : "NotSpecified";
+
+      cout << " ProcessDefinedStep NotSpecified for "
+           << trk->GetParticleDefinition()->GetParticleName()
+           << ", PostStepPoint StepStatus: "
+           << trk->GetStep()->GetPostStepPoint()->GetStepStatus()
+           << ", PreStepPoint  StepStatus: "
+           << trk->GetStep()->GetPreStepPoint()->GetStepStatus()
+           << ", PreStepPoint ProcessDefinedStep: "
+           << pname
+           << endl;
+
+      int id       = trk->GetTrackID();
+      int parentId = trk->GetParentID();
+
+      cout << " Track info:"
+           << " ID: "
+           << id
+           << ", ParentID: "
+           << parentId
+           << ", CurrentStepNumber: "
+           << trk->GetCurrentStepNumber()
+           << ", TrackStatus: "
+           << trk->GetTrackStatus()
+           << ", TrackCreationCode: "
+           << findCreationCode(trk)
+           << endl;
+
+
+      // the code commented out below is looking into the event past
+      // and would require passing a lot of data around
+
+      //         if ( parentId != 0 ){
+      //           map_type::iterator i(transientMap.find(key_type(parentId)));
+      //           if ( i == transientMap.end() ){
+      //             throw cet::exception("RANGE")
+      //               << "Could not find parent SimParticle in findStoppingProcess.  id: "
+      //               << id
+      //               << "\n";
+      //           }
+
+      //           int pdgId = i->second.pdgId();
+      //           cout << __func__ << " Parent info:"
+      //                << " ID: "
+      //                << parentId
+      //                << ", PDGiD: "
+      //                << pdgId
+      //                << ", name: "
+      //                << G4ParticleTable::GetParticleTable()->FindParticle(pdgId)->GetParticleName()
+      //                << ", endG4Status: "
+      //                << i->second.endG4Status()
+      //                << ", stoppingCode: "
+      //                << i->second.stoppingCode()
+      //                << endl;
+
+      return;
+
+    }
+
+    void printTrackInfo(G4Track const* const trk, std::string const& text,
                         map_type const& transientMap,
                         art::CPUTimer const& timer,
                         CLHEP::Hep3Vector const& mu2eOrigin,
