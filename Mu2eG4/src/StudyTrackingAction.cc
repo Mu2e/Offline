@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: StudyTrackingAction.cc,v 1.3 2013/01/22 19:58:25 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2013/01/22 19:58:25 $
+// $Id: StudyTrackingAction.cc,v 1.4 2013/02/07 17:55:01 genser Exp $
+// $Author: genser $
+// $Date: 2013/02/07 17:55:01 $
 //
 // Original author Rob Kutschke
 //
@@ -229,7 +229,7 @@ namespace mu2e {
     }
 
     // Reason why tracking stopped, decay, range out, etc.
-    G4String pname  = Mu2eG4UserHelpers::findStoppingProcessName(trk);
+    G4String pname  = Mu2eG4UserHelpers::findTrackStoppingProcessName(trk);
     ProcessCode stoppingCode(_processInfo->findAndCount(pname));
 
     //Get kinetic energy at the begin of the last step
