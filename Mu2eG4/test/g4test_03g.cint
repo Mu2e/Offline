@@ -1,9 +1,9 @@
 //
 // Root script to display some of the plots made by ReadBack_module.cc & ReadStrawHit_module.cc
 // 
-// $Id: g4test_03g.cint,v 1.2 2013/01/30 01:19:08 genser Exp $
+// $Id: g4test_03g.cint,v 1.3 2013/02/07 22:44:01 genser Exp $
 // $Author: genser $
-// $Date: 2013/01/30 01:19:08 $
+// $Date: 2013/02/07 22:44:01 $
 // 
 // Original author Rob Kutschke, extednd by K. Genser for ReadStrawHit_module.cc
 //
@@ -40,29 +40,7 @@
   // number of Entries, Mean, Rms, Underflows, Overflows
   gStyle->SetOptStat("emruo");
 
-  //  TString basename("g4test_03");
-
-  //  TString basename("g4test_03.g4942.20121218172847");
-  //  TString basename("g4test_03.g496.ftfpberthp.20130118135451");
-  //  TString basename("g4test_03.g496.ftfpberthp.20130122123126");
-  //  TString basename("g4test_03.20130122180852"); // conv electrons only; FTFP_BERT_HP
-  //  TString basename("g4test_03.20130122181547"); // conv electrons only; FTFP_BERT
-  //  TString basename("g4test_03.20130122182040"); // conv electrons only; Minimal
-  //  TString basename("g4test_03.g496.qgspberthpceo.20130125111647");
-  //  TString basename("g4test_03.g4942.qgspberthpceo.20130125111733");
-  //  TString basename("g4test_03.g4952.qgspberthpceo.20130125113139");
-  //  TString basename("g4test_03.g496.qgspberthp.20130125141902");
-  //  TString basename("g4test_03.g4952.qgspberthp.20130125141334");
-  //  TString basename("g4test_03.g4942.qgspberthp.20130125141930");
-  //  TString basename("g4test_03.g496.qgspberthp.20130128133359");
-  //  TString basename("g4test_03.g4942.qgspberthp.20130128150204");
-  //  TString basename("g4test_03.g4952.qgspberthp.20130128150555");
-  //  TString basename("g4test_03.g496.qgspberthp.20130128151256");
-  //  TString basename("g4test_03.g496.qgspberthp.20130129141944");
-
-  TString basename("g4test_03.g4952.qgspberthp.20130129142509");
-  // TString basename("g4test_03.g4942.qgspberthp.20130129142340");
-
+  TString basename("g4test_03");
 
   // Open the input file that contains histograms and ntuples
   // made by ReadBack.cc
