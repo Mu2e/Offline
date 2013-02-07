@@ -217,10 +217,14 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   conscan->Draw("ALP");
   dioscan->Draw("same");
   info->Draw();
+  leg->Draw();
   scancan->SaveAs((string("mu2e_scan")+ssuf).c_str());
 
 // some numerical values
   vector<double> dioshift,conshift,dioshift_err,conshift_err,shift,shift_err;
+  vector<double> fdioshift,fconshift,fdioshift_err,fconshift_err;
+  double diocent = diospec[icut]->Integral(istart,istop);
+  double concent = conspec[icut]->Integral(istart,istop);
   for(int ires=-15;ires<=15;++ires){
     double ddioint_err,dconint_err;
     double ddioint,dconint;
@@ -237,25 +241,45 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
     conshift.push_back(dconint);
     dioshift_err.push_back(ddioint_err);
     conshift_err.push_back(dconint_err);
+    fdioshift.push_back(ddioint/diocent);
+    fconshift.push_back(dconint/concent);
+    fdioshift_err.push_back(ddioint_err/diocent);
+    fconshift_err.push_back(dconint_err/concent);
 //    cout << "For lower-bound shift of " << ires*mevperbin << " MeV/c DIO integral change = " << ddioint
 //      << " , conversion integral change = " << dconint << endl;
   }
   TGraphErrors* dioscan2 = new TGraphErrors(shift.size(),&shift[0],&dioshift[0],&shift_err[0],&dioshift_err[0]);
   TGraphErrors* conscan2 = new TGraphErrors(shift.size(),&shift[0],&conshift[0],&shift_err[0],&conshift_err[0]);
+  TGraphErrors* fdioscan2 = new TGraphErrors(shift.size(),&shift[0],&fdioshift[0],&shift_err[0],&fdioshift_err[0]);
+  TGraphErrors* fconscan2 = new TGraphErrors(shift.size(),&shift[0],&fconshift[0],&shift_err[0],&fconshift_err[0]);
   dioscan2->SetLineColor(kBlue);
   conscan2->SetLineColor(kRed);
   dioscan2->SetMarkerColor(kBlue);
   conscan2->SetMarkerColor(kRed);
   conscan2->SetMaximum(0.2);
   conscan2->SetMinimum(-0.2);
-  dioscan2->SetTitle("DIO Integral Change vs Integral Lower Boundary Change;#Delta P (MeV/c);#Delta I");
-  conscan2->SetTitle("Conversion Integral Change vs Lower Boundary Change;#Delta P (MeV/c);#Delta I");
+  fdioscan2->SetLineColor(kBlue);
+  fconscan2->SetLineColor(kRed);
+  fdioscan2->SetMarkerColor(kBlue);
+  fconscan2->SetMarkerColor(kRed);
+  fconscan2->SetMaximum(0.5);
+  fconscan2->SetMinimum(-0.5);
+  dioscan2->SetTitle("Integral Change vs Integral Lower Boundary Change;#Delta P (MeV/c);#Delta I");
+  conscan2->SetTitle("Integral Change vs Lower Boundary Change;#Delta P (MeV/c);#Delta I");
+  fdioscan2->SetTitle("Fractional Integral Change vs Integral Lower Boundary Change;#Delta P (MeV/c);#Delta I/I");
+  fconscan2->SetTitle("Fractional Integral Change vs Lower Boundary Change;#Delta P (MeV/c);#Delta I/I");
   TCanvas* scancan2 = new TCanvas("scan2","Scan of lower threshold",800,800);
-  scancan2->Divide(1,1);
+  scancan2->Divide(1,2);
   scancan2->cd(1);
   conscan2->Draw("ALP");
   dioscan2->Draw("same");
   info->Draw();
+  leg->Draw();
+  scancan2->cd(2);
+  fconscan2->Draw("ALP");
+  fdioscan2->Draw("same");
+  info->Draw();
+  leg->Draw();
   scancan2->SaveAs((string("mu2e_scan2")+ssuf).c_str());
 }
 
