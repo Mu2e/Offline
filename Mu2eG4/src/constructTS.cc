@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.9 2012/06/05 16:20:02 genser Exp $
+// $Id: constructTS.cc,v 1.10 2013/02/08 21:13:52 genser Exp $
 // $Author: genser $
-// $Date: 2012/06/05 16:20:02 $
+// $Date: 2013/02/08 21:13:52 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -500,8 +500,6 @@ namespace mu2e {
     }
 
     // the most outer part (with Virtual Detectors on the outer surfaces of the Coll5)
-
-    collVisible = true;
 
     Tube coll5Param(coll5MaterialName,
                     coll5OffsetInMu2e,
