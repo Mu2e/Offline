@@ -15,8 +15,8 @@
 
 // Track Hit diagonstics
 
-void TrkHitDiag(TDirectory& tdir,std::vector<TObject*> plots) {
-  TTree* trks = tdir.Get("trkdiag");
+void TrkHitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
+  TTree* trks = (TTree*)(tdir->Get("trkdiag"));
 
   TH1F* dres = new TH1F("dres","Drift radius resolution;mm",100,-1,1);
   TH1F* dpull = new TH1F("dpull","Drift radius pull",100,-10,10);
@@ -35,8 +35,8 @@ void TrkHitDiag(TDirectory& tdir,std::vector<TObject*> plots) {
   TH1F* t0pull = new TH1F("t0pull","hit t0 pull",100,-10,10);
   plots.push_back(t0res);
   plots.push_back(t0pull);
-  trks->Project("t0res","hitt0-mchitt0","_active");
-  trks->Project("t0pull","(hitt0-mchitt0)/hitt0err","_active");
+  trks->Project("t0res","_ht-_mcht","_active");
+  trks->Project("t0pull","(_ht-_mcht)/_t0err","_active");
   t0res->Fit("gaus","Q0");
   t0pull->Fit("gaus","Q0");
 
@@ -44,8 +44,8 @@ void TrkHitDiag(TDirectory& tdir,std::vector<TObject*> plots) {
   TH1F* tdivpull = new TH1F("tdivpull","#Deltat V pull",100,-10,10);
   plots.push_back(tdivres);
   plots.push_back(tdivpull);
-  trks->Project("tdivres","dmid-mcdmid","_active");
-  trks->Project("tdivpull","(dmid-mcdmid)/dmiderr","_active");
+  trks->Project("tdivres","_tddist-_mcdist","_active");
+  trks->Project("tdivpull","(_tddist-_mcdist)/_tdderr","_active");
   tdivres->Fit("gaus","Q0");
   tdivpull->Fit("gaus","Q0");
 
