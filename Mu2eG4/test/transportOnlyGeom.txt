@@ -2,9 +2,9 @@
 // Standard geometry with physics turned off.
 // We need to put the control of physics elsewhere.
 //
-// $Id: transportOnlyGeom.txt,v 1.12 2012/08/03 00:31:56 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/03 00:31:56 $
+// $Id: transportOnlyGeom.txt,v 1.13 2013/02/08 22:13:54 genser Exp $
+// $Author: genser $
+// $Date: 2013/02/08 22:13:54 $
 //
 // Original author Rob Kutschke
 
@@ -33,6 +33,8 @@ bool coll.visible = false;
 
 bool crs.vetoVisible = false;
 
+//// config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.visible"),
+//Mu2eG4/test/extmon_fnal_v02.txt
 bool extMonFNAL.collimator1.alignmentHole.visible = false;
 bool extMonFNAL.collimator1.alignmentPlug.visible = false;
 bool extMonFNAL.collimator1.channel.visible = false;
@@ -40,14 +42,17 @@ bool extMonFNAL.collimator2.alignmentHole.visible = false;
 bool extMonFNAL.collimator2.alignmentPlug.visible = false;
 bool extMonFNAL.collimator2.channel.visible = false;
 bool extMonFNAL.collimator2.shielding.visible = false;
-bool extMonFNAL.detectorBoxVisible   = false;
-bool extMonFNAL.detectorPlaneVisible   = false;
 bool extMonFNAL.filter.magnet.aperture.visible = false;
 bool extMonFNAL.filter.magnet.iron.visible = false;
+bool extMonFNAL.readoutPlaneVisible   = false;
 bool extMonFNAL.room.ceiling.visible   = false;
 bool extMonFNAL.room.floor.visible   = false;
 bool extMonFNAL.room.visible   = false;
 bool extMonFNAL.room.wall.visible   = false;
+bool extMonFNAL.sensorPlaneVisible   = false;
+bool extMonFNAL.spectrometer.magnet.aperture.visible = false;
+bool extMonFNAL.spectrometer.magnet.iron.visible = false;
+bool extMonFNAL.testMaterial.visible = false;
 
 bool extmon_uci.abs1Visible       = false;
 bool extmon_uci.calVisible        = false;
@@ -90,11 +95,11 @@ bool toyDS.visible = false;
 
 bool toyTS.visible = false;
 
-bool ttracker.deviceEnvelopeVisible = false;
+bool ttracker.deviceEnvelopeVisible = true;
 bool ttracker.envelopeVisible =  false;
-bool ttracker.sectorEnvelopeVisible = false;
+bool ttracker.sectorEnvelopeVisible = true;
 bool ttracker.strawVisible =  false;
-bool ttracker.supportVisible = false;
+bool ttracker.supportVisible = true;
 
 bool vd.visible = false;
 
