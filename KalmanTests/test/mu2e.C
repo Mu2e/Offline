@@ -35,7 +35,7 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,d
   double decayfrac = 1.0 - capfrac;
   double ndecay = nstopped*decayfrac;
   double ncap = nstopped*capfrac;
-  double conprob(1e-15);
+  double conprob(1e-16);
 //  double momlow(103.3);
 //  double momhigh(104.7);
   double trueconvmom(104.973);
@@ -150,8 +150,8 @@ void mu2e(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,d
   for(unsigned icut=0;icut<4;icut++){
     allcan->cd(icut+1);
     TH1* diocopy = diospec[icut]->DrawCopy();
-    diocopy->SetMinimum(-100/nbins);
-    diocopy->SetMaximum(400/nbins);
+    diocopy->SetMinimum(-3.0/nbins);
+    diocopy->SetMaximum(60.0/nbins);
     conspec[icut]->Draw("same");
 
     int istart = diospec[icut]->FindFixBin(momlow+0.5*mevperbin);
