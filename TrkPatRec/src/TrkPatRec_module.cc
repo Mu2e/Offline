@@ -1,7 +1,7 @@
 //
-// $Id: TrkPatRec_module.cc,v 1.51 2013/01/30 20:04:52 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.52 2013/02/11 15:16:10 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/01/30 20:04:52 $
+// $Date: 2013/02/11 15:16:10 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -217,6 +217,7 @@ namespace mu2e
     Int_t _mcnunique,_mcnmax;
     Int_t _mcpdg,_mcgen,_mcproc;
     threevec _mcshp;
+    Float_t _mcshlen;
     Float_t _mcedep,_mcemax;
     Float_t _pdist,_pperp,_pmom;
     Float_t _mctime;
@@ -746,6 +747,7 @@ namespace mu2e
     _shdiag->Branch("n150",&_n150,"n150/I");
     _shdiag->Branch("n200",&_n200,"n200/I");
     _shdiag->Branch("mcshpos",&_mcshp,"x/F:y/F:z/F");
+    _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
     _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
     _shdiag->Branch("mcemax",&_mcemax,"mcemax/F");
     _shdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/I");
@@ -926,6 +928,7 @@ namespace mu2e
 	_mcproc = mcsum[0]._pid;
 	_mctime = mcsum[0]._time;
 	_mcshp = mcsum[0]._pos;
+	_mcshlen = (mcsum[0]._pos-straw.getMidPoint()).dot(straw.getDirection());
 	bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
 	if(conversion){
 	  ++_nchit;
