@@ -17,6 +17,10 @@
 
 void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
   TTree* trks = (TTree*)(tdir->Get("trkdiag"));
+  if(trks == 0){
+    std::cout << "TrkFitDig: trkdiag TTree not found!" << std::endl;
+    return;
+  }
 // setup cuts
 
   double tdlow(0.57735027);
@@ -24,7 +28,7 @@ void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
   double t0min(720);
   double momlow(103.4);
   double momhigh(104.8);
-  unsigned minnhits(20);
+  unsigned minnhits(0);
   unsigned minnactive(25);
   unsigned maxndif(10);
   double maxt0err(0.9);
@@ -125,7 +129,7 @@ void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
   trks->Project("d0pull","(d0-mcentd0)/d0err",goodmc+goodfit);
   trks->Project("p0pull","(p0-mcentp0)/p0err",goodmc+goodfit);
   trks->Project("ompull","(om-mcentom)/omerr",goodmc+goodfit);
-  trks->Project("z0pull","(z0-mcmidz0)/z0err",goodmc+goodfit);
+  trks->Project("z0pull","(z0-mcentz0)/z0err",goodmc+goodfit);
   trks->Project("tdpull","(td-mcenttd)/tderr",goodmc+goodfit);
   d0pull->Fit("gaus","Q0");
   p0pull->Fit("gaus","Q0");
