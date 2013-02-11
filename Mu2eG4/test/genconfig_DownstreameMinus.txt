@@ -1,0 +1,36 @@
+//
+//  Configure the generator to produce single particles
+//
+
+// $Id: genconfig_DownstreameMinus.txt,v 1.1 2013/02/11 14:48:58 genser Exp $
+// $Author: genser $
+// $Date: 2013/02/11 14:48:58 $
+
+bool particleGun.do      = true;
+
+// PDG code for electron
+int particleGun.id = 11;
+
+// start particles at the target center (mu2e coordinates)
+vector<double> particleGun.point = { -3904., 0., 5871 };
+
+// Particles will be made uniformly in a box, centered on the above point.
+// Half sides of the box are in mm.
+vector<double> particleGun._halfLength = { 100., 100., 1500. };
+
+// start particles going forwards
+double         particleGun.czmin = 0.3;
+double         particleGun.czmax = 0.8;
+
+// Momentum range around conversion
+double         particleGun.pmin  = 90.;
+double         particleGun.pmax  = 120.;
+
+// time is irrelevant for this study
+double         particleGun.tmin  = 800.;
+double         particleGun.tmax  = 900.;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
