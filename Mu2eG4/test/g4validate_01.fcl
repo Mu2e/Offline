@@ -6,9 +6,9 @@
 #  - Form Hits from StepPointMC objects
 #  - reconstruct electron tracks
 #
-# $Id: g4validate_01.fcl,v 1.1 2013/02/11 14:48:31 genser Exp $
+# $Id: g4validate_01.fcl,v 1.2 2013/02/11 21:12:24 genser Exp $
 # $Author: genser $
-# $Date: 2013/02/11 14:48:31 $
+# $Date: 2013/02/11 21:12:24 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -20,7 +20,7 @@ process_name : G4Validate03
 # Start form an empty source
 source : {
   module_type : EmptyEvent
-  maxEvents : 20000
+  maxEvents : 2000
 }
 
 services : {
@@ -104,7 +104,6 @@ physics : {
 
 }
 
-physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_DownstreameMinus.txt"
 # needed to fill the diagnostic histograms
 physics.analyzers.RKFDownstreameMinus.KalFitMC.diaglLevel : 2
 
