@@ -6,27 +6,27 @@
 #  - Form Hits from StepPointMC objects
 #  - reconstruct electron tracks
 #
-# $Id: g4validate_01.fcl,v 1.2 2013/02/11 21:12:24 genser Exp $
+# $Id: g4validate_01.fcl,v 1.3 2013/02/12 14:26:27 genser Exp $
 # $Author: genser $
-# $Date: 2013/02/11 21:12:24 $
+# $Date: 2013/02/12 14:26:27 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
 # Give this job a name.
-process_name : G4Validate03
+process_name : G4Validate01
 
 # Start form an empty source
 source : {
   module_type : EmptyEvent
-  maxEvents : 2000
+  maxEvents : 20000
 }
 
 services : {
 
   message               : @local::default_message
-  TFileService          : { fileName : "g4validate_03.root" }
+  TFileService          : { fileName : "g4validate_01.root" }
   RandomNumberGenerator : { }
 
   user : {
