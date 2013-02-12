@@ -1,10 +1,17 @@
-  $Id: v2_1_2.txt,v 1.9 2013/02/12 22:31:18 genser Exp $
+  $Id: v2_1_2.txt,v 1.10 2013/02/12 22:38:44 genser Exp $
   $Author: genser $
-  $Date: 2013/02/12 22:31:18 $
+  $Date: 2013/02/12 22:38:44 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_1_2
+
+10) February 12, 2013 genser
+
+    Maintaning setup_g49... scripts:
+
+    Removed setup_g451.sh, setup_g496.sh after removal of the Geant4 versions
+
 
 9) February 12, 2013 genser
   
