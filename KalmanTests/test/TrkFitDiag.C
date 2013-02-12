@@ -12,10 +12,15 @@
 #include "TProfile.h"
 #include "TDirectory.h"
 #include <vector>
+#include <iostream>
 
 // Track Fit diagonstics
 
 void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
+  if(tdir == 0){
+    std::cout<<"TDirectory not found" << std::endl;
+    return;
+  }
   TTree* trks = (TTree*)(tdir->Get("trkdiag"));
   if(trks == 0){
     std::cout << "TrkFitDig: trkdiag TTree not found!" << std::endl;
@@ -65,7 +70,6 @@ void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
   goodfit = reco+nacut+t0errcut+momerrcut+fitconcut;
 
   //cout << "cuts done " << endl;
-
 
   TH1F* fitstatus = new TH1F("fitstatus","Kalman fit status",11,-5.5,5.5);
   TH1F* chisq = new TH1F("chisq","Chisq/NDof",100,0,10);
@@ -131,11 +135,11 @@ void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
   trks->Project("ompull","(om-mcentom)/omerr",goodmc+goodfit);
   trks->Project("z0pull","(z0-mcentz0)/z0err",goodmc+goodfit);
   trks->Project("tdpull","(td-mcenttd)/tderr",goodmc+goodfit);
-  d0pull->Fit("gaus","Q0");
-  p0pull->Fit("gaus","Q0");
-  ompull->Fit("gaus","Q0");
-  z0pull->Fit("gaus","Q0");
-  tdpull->Fit("gaus","Q0");
+//  d0pull->Fit("gaus","Q0");
+//  p0pull->Fit("gaus","Q0");
+//  ompull->Fit("gaus","Q0");
+//  z0pull->Fit("gaus","Q0");
+//  tdpull->Fit("gaus","Q0");
 
   TH1F* fitmom = new TH1F("fitmom","Track fit momentum at tracker entrance;fit momentum (MeV)",100,90,107);
   TH1F* mcmom = new TH1F("mcmom","True CE momentum at tracker entrance;CE momentum (MeV)",100,90,107);
@@ -152,7 +156,7 @@ void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
   trks->Project("momerr","fitmomerr",goodmc+goodfit);
   trks->Project("mres","fitmom-mcentmom",goodmc+goodfit);
   trks->Project("mpull","(fitmom-mcentmom)/fitmomerr",goodmc+goodfit);
-  mpull->Fit("gaus","Q0");
+//  mpull->Fit("gaus","Q0");
 
   unsigned nbins(10);
   double bmax = nbins-0.5;

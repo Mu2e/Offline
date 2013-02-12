@@ -3,8 +3,12 @@
 #include <vector>
 #include "TCanvas.h"
 #include <iostream>
+#include <TROOT.h>
+#include <TStyle.h>
 
 void TestDiag(std::vector<TObject*> plots,unsigned nrows=2,unsigned ncols=2) {
+  gROOT->SetStyle("Plain");
+  gStyle->SetOptStat("emruo");
   unsigned ican(0);
   unsigned npads = nrows+ncols;
   TCanvas* can(0);
