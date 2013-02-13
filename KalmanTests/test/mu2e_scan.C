@@ -168,7 +168,7 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   info->Draw();
 
   // plot results
-  TCanvas* mu2ecan = new TCanvas("mu2e","mu2e result",900,600);
+  TCanvas* mu2ecan = new TCanvas("mu2e_result","mu2e result",900,600);
   mu2ecan->Clear();
   mu2ecan->Divide(1,1);
   mu2ecan->cd(0);
@@ -183,7 +183,7 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   leg->Draw();
   info->Draw();
   string ssuf(suffix);
-  mu2ecan->SaveAs((string("mu2e")+ssuf).c_str());
+  mu2ecan->SaveAs((string("mu2e_finebins")+ssuf).c_str());
 
   vector<Double_t> diox,dioy,dioxerr,dioyerr;
   vector<Double_t> conx,cony,conxerr,conyerr;
