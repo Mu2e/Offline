@@ -1,12 +1,12 @@
 // simple script to test diagnostics
-#include "TObject.h"
+#include "TH1.h"
 #include <vector>
 #include "TCanvas.h"
 #include <iostream>
 #include <TROOT.h>
 #include <TStyle.h>
 
-void TestDiag(std::vector<TObject*> plots,unsigned nrows=2,unsigned ncols=2) {
+void TestDiag(std::vector<TH1*>& plots,unsigned nrows=2,unsigned ncols=2) {
   gROOT->SetStyle("Plain");
   gStyle->SetOptStat("emruo");
   unsigned ican(0);

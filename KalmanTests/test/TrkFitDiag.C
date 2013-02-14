@@ -1,3 +1,10 @@
+//
+// $Id: TrkFitDiag.C,v 1.5 2013/02/14 22:22:07 genser Exp $
+// $Author: genser $
+// $Date: 2013/02/14 22:22:07 $
+//
+//
+#include "TH1.h"
 #include "TH1F.h"
 #include "TF1.h"
 #include "TTree.h"
@@ -11,21 +18,28 @@
 #include "TMath.h"
 #include "TProfile.h"
 #include "TDirectory.h"
+#include "TFile.h"
 #include <vector>
 #include <iostream>
 
 // Track Fit diagonstics
 
-void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
+void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
+
+  TString tdirn("RKFDownstreameMinus");
+  TDirectory* tdir = static_cast<TDirectory*>(tfile->Get(tdirn));
   if(tdir == 0){
-    std::cout<<"TrkFitDiag: TDirectory not found" << std::endl;
+    std::cout << "TrkFitDiag: TDirectory " << tdirn << " not found" << std::endl;
     return;
   }
-  TTree* trks = (TTree*)(tdir->Get("trkdiag"));
+
+  TString ttreen("trkdiag");
+  TTree* trks = static_cast<TTree*>((tdir->Get(ttreen)));
   if(trks == 0){
-    std::cout << "TrkFitDig: trkdiag TTree not found!" << std::endl;
+    std::cout << "TrkFitDiag: " << ttreen << " TTree not found!" << std::endl;
     return;
   }
+
 // setup cuts
 
   double tdlow(0.57735027);
@@ -80,6 +94,9 @@ void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
   TH1F* nh = new TH1F("nh","Fit N hits;N hits",101,-0.5,100.5);
   TH1F* na = new TH1F("na","Fit N active hits;N hits",101,-0.5,100.5);
   TH1F* nmc = new TH1F("nmc","N CE hits;N hits",101,-0.5,100.5);
+
+  //  cout << "first plots booked " << endl;
+
   plots.push_back(fitstatus);
   plots.push_back(chisq);
   plots.push_back(fitcon);
@@ -89,6 +106,9 @@ void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
   plots.push_back(nh);
   plots.push_back(na);
   plots.push_back(nmc);
+
+  //  cout << "first plots pushed " << endl;
+
   trks->Project("fitstatus","fitstatus");
   trks->Project("chisq","chisq/ndof");
   trks->Project("fitcon","fitcon",goodmc);
@@ -99,7 +119,7 @@ void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
   trks->Project("na","nactive",goodmc);
   trks->Project("nmc","nchits");
 
-  //cout << "first plots done" << endl;
+  //  cout << "first plots done" << endl;
 
   TH1F* d0 = new TH1F("d0","Track fit d_{0};d_{0} (mm)",100,-150,150);
   TH1F* p0 = new TH1F("p0","Track Fit #phi_{0};#phi_{0}",100,-3.15,3.15);

@@ -1,22 +1,43 @@
-#include "TH1F.h"
+//
+// $Id: TrkHitDiag.C,v 1.3 2013/02/14 22:19:12 genser Exp $
+// $Author: genser $
+// $Date: 2013/02/14 22:19:12 $
+//
+//
+#include "TCanvas.h"
+#include "TCut.h"
+#include "TDirectory.h"
+#include "TFile.h"
 #include "TF1.h"
-#include "TTree.h"
+#include "TH1.h"
+#include "TH1F.h"
+#include "TH2F.h"
 #include "TLegend.h"
+#include "TMath.h"
 #include "TPad.h"
 #include "TPaveText.h"
-#include "TCanvas.h"
-#include "TH2F.h"
-#include "TStyle.h"
-#include "TCut.h"
-#include "TMath.h"
 #include "TProfile.h"
-#include "TDirectory.h"
+#include "TStyle.h"
+#include "TTree.h"
 #include <vector>
 
 // Track Hit diagonstics
 
-void TrkHitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
-  TTree* trks = (TTree*)(tdir->Get("trkdiag"));
+void TrkHitDiag(TFile* tfile,std::vector<TH1*>& plots) {
+
+  TString tdirn("RKFDownstreameMinus");
+  TDirectory* tdir = static_cast<TDirectory*>(tfile->Get(tdirn));
+  if(tdir == 0){
+    std::cout << "TrkFitDiag: TDirectory " << tdirn << " not found" << std::endl;
+    return;
+  }
+
+  TString ttreen("trkdiag");
+  TTree* trks = static_cast<TTree*>((tdir->Get(ttreen)));
+  if(trks == 0){
+    std::cout << "TrkFitDiag: " << ttreen << " TTree not found!" << std::endl;
+    return;
+  }
 
   TH1F* dres = new TH1F("dres","Drift radius resolution;mm",100,-1,1);
   TH1F* dpull = new TH1F("dpull","Drift radius pull",100,-10,10);
