@@ -1,9 +1,9 @@
 //
 // Root c++ function to compare tracking plots specified by another macro
 // 
-// $Id: g4validate_01.C,v 1.1 2013/02/14 00:21:52 genser Exp $
+// $Id: g4validate_01.C,v 1.2 2013/02/14 16:44:03 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/14 00:21:52 $
+// $Date: 2013/02/14 16:44:03 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //
@@ -73,8 +73,8 @@ void g4validate_01()
   //  bool const createpng = true;
   bool const createpng = false;
 
-  TString histtmpName;
-  ostringstream histtmpSuffix;
+  TString histTmpName;
+  ostringstream histTmpSuffix;
   ostringstream canvasSuffix;
   ostringstream histIdos;
 
@@ -113,9 +113,9 @@ void g4validate_01()
   // Pdf/Postscript is the only graphics format for which root supports multi-page output files.
   TString pdffile( basename + ".pdf");
 
-  std::vector<std::vector<TH1F*> > histograms(nfiles);
+  std::vector<std::vector<TH1*> > histograms(nfiles);
 
-  std::vector<TH1F*> histograms_copy(nfiles);
+  std::vector<TH1*> histograms_copy(nfiles);
 
   unsigned nhistograms(0);
 
@@ -137,6 +137,20 @@ void g4validate_01()
              << " is different from initial " << nhistograms << endl;
       }
 
+    }
+
+    // rename/append a file related suffix to the histograms so that
+    // each has a unique name (not the title)
+
+    for (unsigned jj=0; jj!=nhistograms; ++jj) {
+
+      histTmpSuffix.str("");
+      histTmpSuffix << "_";
+      histTmpSuffix.width(1); // we assume the number of files is <9
+      histTmpSuffix << ii+1;
+      histTmpName = histograms[ii][jj]->GetName()+histTmpSuffix.str();
+      histograms[ii][jj]->SetName(histTmpName);
+    
     }
 
   }
@@ -224,14 +238,14 @@ void g4validate_01()
         {(histograms[ii][jj])->SetLineColor(ii+1);}
             
       delete histograms_copy[ii];
-      histograms_copy[ii] = static_cast<TH1F*>((histograms[ii][jj])->Clone());
+      histograms_copy[ii] = static_cast<TH1*>((histograms[ii][jj])->Clone());
       
-      histtmpSuffix.str("");
-      histtmpSuffix.width(3);
-      histtmpSuffix.fill('0');
-      histtmpSuffix << ii;
-      histtmpName = "hcopy_"+histtmpSuffix.str();
-      histograms_copy[ii]->SetName(histtmpName);
+      histTmpSuffix.str("");
+      histTmpSuffix.width(3);
+      histTmpSuffix.fill('0');
+      histTmpSuffix << ii;
+      histTmpName = "hcopy_"+histTmpSuffix.str();
+      histograms_copy[ii]->SetName(histTmpName);
       histograms_copy[ii]->SetStats(kFALSE);
       histograms_copy[ii]->SetMaximum(vscalemax);
       if (ii==0) {
