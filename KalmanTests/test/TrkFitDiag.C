@@ -18,7 +18,7 @@
 
 void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
   if(tdir == 0){
-    std::cout<<"TDirectory not found" << std::endl;
+    std::cout<<"TrkFitDiag: TDirectory not found" << std::endl;
     return;
   }
   TTree* trks = (TTree*)(tdir->Get("trkdiag"));
@@ -103,7 +103,7 @@ void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
 
   TH1F* d0 = new TH1F("d0","Track fit d_{0};d_{0} (mm)",100,-150,150);
   TH1F* p0 = new TH1F("p0","Track Fit #phi_{0};#phi_{0}",100,-3.15,3.15);
-  TH1F* om = new TH1F("om","Track Fit #omega;#omega (mm^{-1})",100,-0.005,0.005);
+  TH1F* om = new TH1F("om","Track Fit #omega;#omega (mm^{-1})",100,-0.006,0.006);
   TH1F* z0 = new TH1F("z0","Track Fit z_{0};z_{0} (mm)",100,-1000,1000);
   TH1F* td = new TH1F("td","Track Fit tan(#lambda);tan(#lambda)",100,0.5,1.5);
   TH1F* rmax = new TH1F("rmax","Track fit rmax;d_{0}+2/#omega (mm)",100,300,900);
@@ -160,15 +160,15 @@ void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
 
   unsigned nbins(10);
   double bmax = nbins-0.5;
-  TH1F* acc = new TH1F("acc","CE Acceptance;;cummulative acceptance",nbins,-0.5,bmax);
-  TH1F* racc = new TH1F("racc","CE Acceptance;;relative acceptance",nbins,-0.5,bmax);
+  TH1F* acc = new TH1F("acc","Cummulative Acceptance;;cummulative acceptance",nbins,-0.5,bmax);
+  TH1F* racc = new TH1F("racc","Relative Acceptance;;relative acceptance",nbins,-0.5,bmax);
   plots.push_back(acc);
   plots.push_back(racc);
   unsigned ibin(1);
-  acc->GetXaxis()->SetBinLabel(ibin++,"All CE");
-  acc->GetXaxis()->SetBinLabel(ibin++,">=20 CE SH");
-  acc->GetXaxis()->SetBinLabel(ibin++,"CE p>100 MeV/c");
-  acc->GetXaxis()->SetBinLabel(ibin++,"CE pitch");
+  acc->GetXaxis()->SetBinLabel(ibin++,"All");
+  acc->GetXaxis()->SetBinLabel(ibin++,">=20 SH");
+  acc->GetXaxis()->SetBinLabel(ibin++,"p>100 MeV/c");
+  acc->GetXaxis()->SetBinLabel(ibin++,"pitch");
   acc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
   acc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
   acc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
@@ -177,10 +177,10 @@ void TrkFitDiag(TDirectory* tdir,std::vector<TObject*>& plots) {
   acc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
 
   ibin = 1;
-  racc->GetXaxis()->SetBinLabel(ibin++,"All CE");
-  racc->GetXaxis()->SetBinLabel(ibin++,">=20 CE SH");
-  racc->GetXaxis()->SetBinLabel(ibin++,"CE p>100 MeV/c");
-  racc->GetXaxis()->SetBinLabel(ibin++,"CE pitch");
+  racc->GetXaxis()->SetBinLabel(ibin++,"All");
+  racc->GetXaxis()->SetBinLabel(ibin++,">=20 SH");
+  racc->GetXaxis()->SetBinLabel(ibin++,"p>100 MeV/c");
+  racc->GetXaxis()->SetBinLabel(ibin++,"pitch");
   racc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
   racc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
   racc->GetXaxis()->SetBinLabel(ibin++,"Livegate");

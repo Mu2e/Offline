@@ -10,7 +10,7 @@ void TestDiag(std::vector<TObject*> plots,unsigned nrows=2,unsigned ncols=2) {
   gROOT->SetStyle("Plain");
   gStyle->SetOptStat("emruo");
   unsigned ican(0);
-  unsigned npads = nrows+ncols;
+  unsigned npads = nrows*ncols;
   TCanvas* can(0);
   unsigned ipad = npads+1;
   for(unsigned iplot=0;iplot<plots.size();++iplot){
