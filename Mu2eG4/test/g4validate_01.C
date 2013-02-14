@@ -1,9 +1,9 @@
 //
 // Root c++ function to compare tracking plots specified by another macro
 // 
-// $Id: g4validate_01.C,v 1.3 2013/02/14 18:02:12 genser Exp $
+// $Id: g4validate_01.C,v 1.4 2013/02/14 22:33:55 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/14 18:02:12 $
+// $Date: 2013/02/14 22:33:55 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //
@@ -50,6 +50,7 @@
 #include <sstream>
 
 #include "KalmanTests/test/TrkFitDiag.C"
+//#include "KalmanTests/test/TrkHitDiag.C"
 
 void g4validate_01()
 {
@@ -120,9 +121,10 @@ void g4validate_01()
 
   for (unsigned ff=0; ff!=nfiles; ++ff) {
 
-    // we fetch histograms from a file
+    // we fetch histograms from files
 
     TrkFitDiag(files[ff],histograms[ff]);
+//    TrkHitDiag(files[ff],histograms[ff]);
 
     if ( ff==0 ) {
 
@@ -146,7 +148,7 @@ void g4validate_01()
 
       histTmpSuffix.str("");
       histTmpSuffix << "_";
-      histTmpSuffix.width(1); // we assume the number of files is <9
+      histTmpSuffix.width(1); // we assume the number of files is <9 (or 4 actually)
       histTmpSuffix << ff+1;
       histTmpName = histograms[ff][hh]->GetName()+histTmpSuffix.str();
       histograms[ff][hh]->SetName(histTmpName);
