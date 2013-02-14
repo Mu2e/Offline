@@ -1,17 +1,20 @@
-  $Id: v2_1_2.txt,v 1.11 2013/02/14 22:40:06 genser Exp $
+  $Id: v2_1_2.txt,v 1.12 2013/02/14 22:42:17 genser Exp $
   $Author: genser $
-  $Date: 2013/02/14 22:40:06 $
+  $Date: 2013/02/14 22:42:17 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_1_2
 
-12) February 14, 2013 genser
+11) February 14, 2013 genser
 
     Added 
      Mu2eG4/test/g4validate_01.C
     to be used with Mu2eG4/test/g4validate_01.fcl (it uses
-    KalmanTests/test/TrkFitDiag.C)
+    KalmanTests/test/TrkFitDiag.C) Modified the interface of
+     KalmanTests/test/TrkFitDiag.C
+     KalmanTests/test/TrkHitDiag.C
+     KalmanTests/test/TestDiag.C
 
 10) February 12, 2013 genser
 
