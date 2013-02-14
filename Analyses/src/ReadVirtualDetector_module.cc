@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.13 2012/09/11 19:53:47 brownd Exp $
-//  $Author: brownd $
-//  $Date: 2012/09/11 19:53:47 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.14 2013/02/14 22:44:05 logash Exp $
+//  $Author: logash $
+//  $Date: 2013/02/14 22:44:05 $
 //
 // Original author Ivan Logashenko
 //
@@ -43,6 +43,7 @@ using CLHEP::keV;
 namespace mu2e {
 
   const unsigned int nvdet = VirtualDetectorId::lastEnum;
+  const unsigned int ntvdet = 20; // maximum number of time VD
 
   typedef struct {
 
@@ -100,6 +101,19 @@ namespace mu2e {
     Float_t ylvd[nvdet];
     Float_t zlvd[nvdet];
 
+    Int_t ntvd;
+    Bool_t istvd[ntvdet];
+    Float_t ttvd[ntvdet];
+    Float_t gttvd[ntvdet];
+    Float_t xtvd[ntvdet];
+    Float_t ytvd[ntvdet];
+    Float_t ztvd[ntvdet];
+    Float_t pxtvd[ntvdet];
+    Float_t pytvd[ntvdet];
+    Float_t pztvd[ntvdet];
+    Float_t ptvd[ntvdet];
+    Int_t codetvd[ntvdet];
+
   } NtPartData;
 
   class ReadVirtualDetector : public art::EDAnalyzer {
@@ -128,6 +142,16 @@ namespace mu2e {
         for( size_t i=0; i<pdg_ids.size(); ++i ) {
           pdg_save.insert(pdg_ids[i]);
           cout << pdg_ids[i] << ", ";
+        }
+        cout << endl;
+      }
+
+      Vint const & tvd_drop_ids = pset.get<Vint>("tvdDropPDG", Vint());
+      if( tvd_drop_ids.size()>0 ) {
+        cout << "ReadVirtualDetector: drop following particle types from time VD ntuple: ";
+        for( size_t i=0; i<tvd_drop_ids.size(); ++i ) {
+          tvd_drop_pdg.insert(tvd_drop_ids[i]);
+          cout << tvd_drop_ids[i] << ", ";
         }
         cout << endl;
       }
@@ -177,6 +201,9 @@ namespace mu2e {
 
     // List of particles of interest for the particles ntuple
     set<int> pdg_save;
+
+    // List of particles to drop from time VD
+    set<int> tvd_drop_pdg;
 
     // List of virtual detectors to be saved
     set<int> vd_save;
@@ -273,6 +300,7 @@ namespace mu2e {
     _ntpart->Branch("parent_py",  &ntp.parent_py,  "parent_py/F");
     _ntpart->Branch("parent_pz",  &ntp.parent_pz,  "parent_pz/F");
     _ntpart->Branch("parent_p",   &ntp.parent_p,   "parent_p/F");
+
     _ntpart->Branch("nvd",        &ntp.nvd,        "nvd/I");
     _ntpart->Branch("isvd",        ntp.isvd,       "isvd[nvd]/O");
     _ntpart->Branch("tvd",         ntp.tvd,        "tvd[nvd]/F");
@@ -287,6 +315,19 @@ namespace mu2e {
     _ntpart->Branch("xlvd",        ntp.xlvd,       "xlvd[nvd]/F");
     _ntpart->Branch("ylvd",        ntp.ylvd,       "ylvd[nvd]/F");
     _ntpart->Branch("zlvd",        ntp.zlvd,       "zlvd[nvd]/F");
+
+    _ntpart->Branch("ntvd",       &ntp.ntvd,       "ntvd/I");
+    _ntpart->Branch("istvd",       ntp.istvd,      "istvd[ntvd]/O");
+    _ntpart->Branch("ttvd",        ntp.ttvd,       "ttvd[ntvd]/F");
+    _ntpart->Branch("gttvd",       ntp.gttvd,      "gttvd[ntvd]/F");
+    _ntpart->Branch("xtvd",        ntp.xtvd,       "xtvd[ntvd]/F");
+    _ntpart->Branch("ytvd",        ntp.ytvd,       "ytvd[ntvd]/F");
+    _ntpart->Branch("ztvd",        ntp.ztvd,       "ztvd[ntvd]/F");
+    _ntpart->Branch("pxtvd",       ntp.pxtvd,      "pxtvd[ntvd]/F");
+    _ntpart->Branch("pytvd",       ntp.pytvd,      "pytvd[ntvd]/F");
+    _ntpart->Branch("pztvd",       ntp.pztvd,      "pztvd[ntvd]/F");
+    _ntpart->Branch("ptvd",        ntp.ptvd,       "ptvd[ntvd]/F");
+    _ntpart->Branch("codetvd",     ntp.codetvd,    "codetvd[ntvd]/I");
 
   }
 
@@ -463,6 +504,8 @@ namespace mu2e {
 	  mass = pdt->particle(pdgId).ref().mass();
         }
       }
+
+      if( tvd_drop_pdg.size()>0 && tvd_drop_pdg.find(pdgId)!=tvd_drop_pdg.end() ) continue;
 
       // Fill the ntuple.
       nt[0]  = event.id().event();
@@ -665,6 +708,57 @@ namespace mu2e {
           ntp.zlvd[id-1] = lpos.z();
 
         } // end loop over hits.
+
+        // Clear up time VD data
+	ntp.ntvd = ntvdet;
+        for ( size_t i=0; i<ntvdet; ++i ) {
+          ntp.istvd[i]=false;
+          ntp.ttvd[i]=0;
+          ntp.gttvd[i]=0;
+          ntp.xtvd[i]=0;
+          ntp.ytvd[i]=0;
+          ntp.ztvd[i]=0;
+          ntp.pxtvd[i]=0;
+          ntp.pytvd[i]=0;
+          ntp.pztvd[i]=0;
+          ntp.ptvd[i]=0;
+	  ntp.codetvd[i]=0;
+        }
+
+        // Loop over all virtual detectors and fill corresponding data
+	if( thits.isValid() ) for ( size_t i=0; i<thits->size(); ++i ){
+
+          // Alias, used for readability.
+          const StepPointMC& hit = (*thits)[i];
+
+          // Only use hits associated with current particle
+          key_type trackId = hit.trackId();
+          if( trackId != isp->first ) continue;
+
+          // Get the hit information.
+
+          unsigned int id = hit.volumeId();
+
+          if( id<=0 || id>ntvdet || ntp.istvd[id-1] ) continue;
+
+          const CLHEP::Hep3Vector& pos = hit.position();
+          const CLHEP::Hep3Vector& mom = hit.momentum();
+
+          ntp.istvd[id-1] = true;
+          ntp.ttvd[id-1]  = hit.time();
+          ntp.gttvd[id-1] = gtime_parent+hit.properTime();
+          ntp.xtvd[id-1]  = pos.x();
+          ntp.ytvd[id-1]  = pos.y();
+          ntp.ztvd[id-1]  = pos.z();
+          ntp.pxtvd[id-1] = mom.x();
+          ntp.pytvd[id-1] = mom.y();
+          ntp.pztvd[id-1] = mom.z();
+          ntp.ptvd[id-1]  = mom.mag();
+	  ntp.codetvd[id-1] = hit.endProcessCode();
+
+        } // end loop over hits.
+
+	//--------------------
 
         // Keep only stopped particles
         if( _stopped_only && !ntp.isstop ) continue;

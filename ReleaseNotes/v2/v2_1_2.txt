@@ -1,10 +1,17 @@
-  $Id: v2_1_2.txt,v 1.12 2013/02/14 22:42:17 genser Exp $
-  $Author: genser $
-  $Date: 2013/02/14 22:42:17 $
+  $Id: v2_1_2.txt,v 1.13 2013/02/14 22:44:05 logash Exp $
+  $Author: logash $
+  $Date: 2013/02/14 22:44:05 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_1_2
+
+12) February 14, 2013 logash
+
+    Minor change in Analyses/src/ReadVirtualDetector_module.cc:
+    - added information about time virtual detectors to particles ntuple.
+
+    This can be useful in beamline studies when analysing late particles.
 
 11) February 14, 2013 genser
 
