@@ -7,9 +7,9 @@
 // that the particle is a primary particle and other enum entries to
 // indicate that a particle was killed in one of the user actions written by G4.
 //
-// $Id: ProcessCode.hh,v 1.11 2012/12/14 00:44:12 genser Exp $
+// $Id: ProcessCode.hh,v 1.12 2013/02/20 22:38:55 genser Exp $
 // $Author: genser $
-// $Date: 2012/12/14 00:44:12 $
+// $Date: 2013/02/20 22:38:55 $
 //
 // Original author Rob Kutschke
 //
@@ -62,7 +62,14 @@ namespace mu2e {
       MuAtomDecay,            Rayl,                    ionInelastic,        He3Inelastic,
       alphaInelastic,         AntiHe3InelasticProcess, AntiAlphaInelasticProcess, AntiDeuteronInelastic,
       dInelastic,             tInelastic,              RadioactiveDecay,    CHIPS_Inelastic,
-      NotSpecified,           hFritiofCaptureAtRest,    hBertiniCaptureAtRest, AntiTritonInelasticProcess,
+      NotSpecified,           hFritiofCaptureAtRest,   hBertiniCaptureAtRest, AntiTritonInelasticProcess,
+      anti_He3Inelastic,      anti_alphaInelastic,     anti_deuteronInelastic, anti_lambdaInelastic,
+      anti_neutronInelastic,  anti_omega_MinusInelastic, anti_protonInelastic, anti_sigma_PlusInelastic,
+      anti_sigma_MinusInelastic, anti_tritonInelastic, anti_xi_MinusInelastic, anti_xi0Inelastic,
+      kaon_PlusInelastic,     kaon_MinusInelastic,     kaon0LInelastic,     kaon0SInelastic,
+      lambdaInelastic,        neutronInelastic,        omega_MinusInelastic, pi_PlusInelastic,
+      pi_MinusInelastic,      protonInelastic,         sigma_PlusInelastic, sigma_MinusInelastic,
+      sigma0Inelastic,        xi_MinusInelastic,       xi0Inelastic,
       lastEnum,
 
       // An alias for backward compatibility
@@ -91,7 +98,14 @@ namespace mu2e {
     "MuAtomDecay",            "Rayl",                    "ionInelastic",        "He3Inelastic",              \
     "alphaInelastic",         "AntiHe3InelasticProcess", "AntiAlphaInelasticProcess", "AntiDeuteronInelastic", \
     "dInelastic",             "tInelastic",              "RadioactiveDecay",    "CHIPS_Inelastic",           \
-    "NotSpecified",           "hFritiofCaptureAtRest",   "hBertiniCaptureAtRest", "AntiTritonInelasticProcess"
+    "NotSpecified",           "hFritiofCaptureAtRest",   "hBertiniCaptureAtRest", "AntiTritonInelasticProcess", \
+    "anti_He3Inelastic",      "anti_alphaInelastic",     "anti_deuteronInelastic", "anti_lambdaInelastic", \
+    "anti_neutronInelastic",  "anti_omega-Inelastic",    "anti_protonInelastic",   "anti_sigma+Inelastic", \
+    "anti_sigma-Inelastic",   "anti_tritonInelastic",    "anti_xi-Inelastic",      "anti_xi0Inelastic", \
+    "kaon+Inelastic",         "kaon-Inelastic",          "kaon0LInelastic",        "kaon0SInelastic", \
+    "lambdaInelastic",        "neutronInelastic",        "omega-Inelastic",        "pi+Inelastic", \
+    "pi-Inelastic",           "protonInelastic",         "sigma+Inelastic",        "sigma-Inelastic", \
+    "sigma0Inelastic",        "xi-Inelastic",            "xi0Inelastic"
 
   public:
 
