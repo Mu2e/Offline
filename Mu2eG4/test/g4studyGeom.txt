@@ -2,9 +2,9 @@
 // config file to perform Geant4 studies using the Mu2e framework infrastructure
 //
 
-// $Id: g4studyGeom.txt,v 1.5 2012/11/29 23:24:13 genser Exp $
+// $Id: g4studyGeom.txt,v 1.6 2013/02/20 00:15:50 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/29 23:24:13 $
+// $Date: 2013/02/20 00:15:50 $
 //
 // Original author K. Genser
 //
@@ -21,11 +21,13 @@ string detector.name           = "g4study";
 
 bool           mu2e.standardDetector = false;
 
+// which version of the target
+
+int            mu2e.studyEnvVersion      = 1;
 
 vector<string> mu2e.materials = {"WAGVacuum"};
-int            mu2e.studyEnvVersion      = 1;
-bool           mu2e.printParticleDataTable = false;
 
+bool           mu2e.printParticleDataTable = false;
 
 // Use a decent physics list
 string g4.physicsListName      = "FTFP_BERT";
@@ -48,11 +50,13 @@ bool g4.printPhysicsProcessSummary = true;
 // maximum allowed number of steps per track per event; 0 is unlimited
 int  g4.steppingActionMaxSteps = 0;
 
+// threshold to store trajectories
+double g4.pointTrajectoryMomentumCut = 0.;
 
 // maximum global time per track per event; 0 is unlimited
 double g4.steppingActionMaxGlobalTime = 0.0;
 
-// times for time virtual detector when particle steps are recorded
+// times for the time virtual detector when particle steps are recorded
 // when the time threshold is crossed in a step
 
 vector<double> g4.steppingActionTimeVD = {0.01};
@@ -82,7 +86,7 @@ int world.verbosityLevel         = 2;
 string world.materialName        = "WAGVacuum";
 
 // make the world boundaries invisible
-bool   world.boxVisible          = false;
+bool   world.boxVisible          = true;
 // make the volume transparent
 bool   world.boxSolid            = false;
 
@@ -95,7 +99,7 @@ bool           tube.visible = true;
 bool           tube.solid   = false;
 
 // fixme: may need to use pure isotopes
-string         tube.wallMaterialName = "G4_C";
+string         tube.wallMaterialName = "G4_W";
 
 double         tube.rIn        = 0.0;
 double         tube.rOut       = 0.001;
