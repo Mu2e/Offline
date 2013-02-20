@@ -2,9 +2,9 @@
 // A collection of Geant4 user helper functions
 // initially extracted from the TrackingAction
 //
-// $Id: Mu2eG4UserHelpers.cc,v 1.5 2013/02/07 17:54:23 genser Exp $
+// $Id: Mu2eG4UserHelpers.cc,v 1.6 2013/02/20 21:57:56 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/07 17:54:23 $
+// $Date: 2013/02/20 21:57:56 $
 //
 // Original author K. L. Genser based on Rob's TrackingAction
 //
@@ -39,17 +39,16 @@ namespace mu2e {
   namespace Mu2eG4UserHelpers {
 
     // Enable/disable storing of trajectories based on several considerations
-    void controlTrajectorySaving(G4Track const* const trk, int sizeLimit, int currentSize, double pointTrajectoryMomentumCut){
-      // Do not add the trajectory if the corresponding SimParticle is missing.
-      //    if( sizeLimit>0 && currentSize>sizeLimit ) return;
+    void controlTrajectorySaving(G4Track const* const trk, int sizeLimit, int currentSize, 
+                                 double pointTrajectoryMomentumCut){
 
-      bool keep =  sizeLimit>0 && (currentSize<sizeLimit) && saveThisTrajectory(trk, pointTrajectoryMomentumCut);
+      // Do not add the trajectory if the corresponding SimParticle is missing or if it fails momentum cut
+
+      bool keep = ( sizeLimit<=0 || currentSize<sizeLimit ) && 
+        saveThisTrajectory(trk, pointTrajectoryMomentumCut);
+
       G4TrackingManager* trkmgr = G4EventManager::GetEventManager()->GetTrackingManager();
-      if ( keep ) {
-        trkmgr->SetStoreTrajectory(true);
-      } else{
-        trkmgr->SetStoreTrajectory(false);
-      }
+      trkmgr->SetStoreTrajectory(keep);
 
     }
 
@@ -60,9 +59,8 @@ namespace mu2e {
       // We might want to change the momentum cut depending on which volume
       // the track starts in.
       CLHEP::Hep3Vector const& mom = trk->GetMomentum();
-      bool keep = ( mom.mag() > pointTrajectoryMomentumCut ); 
+      return ( mom.mag() > pointTrajectoryMomentumCut ); 
 
-      return keep;
     }
 
     //Retrieve kinetic energy at the beginnig of the last step from UserTrackInfo
