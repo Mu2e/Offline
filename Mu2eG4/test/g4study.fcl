@@ -2,9 +2,9 @@
 # fcl config file to perform Geant4 studies using the Mu2e framework infrastructure and simple geometry
 #
 #
-# $Id: g4study.fcl,v 1.1 2012/11/16 23:43:09 genser Exp $
+# $Id: g4study.fcl,v 1.2 2013/02/20 00:15:32 genser Exp $
 # $Author: genser $
-# $Date: 2012/11/16 23:43:09 $
+# $Date: 2013/02/20 00:15:32 $
 #
 # Original author K. Genser
 #
@@ -59,6 +59,7 @@ physics : {
 #      visMacro             : "Mu2eG4/test/visxz.mac"
 #      visMacro             : "Mu2eG4/test/visyz.mac"
 #      visMacro             : "Mu2eG4/test/vis45.mac"
+#      visMacro             : "Mu2eG4/test/vis4530.mac"
 #      visMacro             : "Mu2eG4/test/visTree.mac"
     }
 
