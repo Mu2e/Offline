@@ -1,9 +1,9 @@
 //
 // Plugin to read/analyze g4study output
 //
-//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.4 2012/11/27 23:00:59 genser Exp $
+//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.5 2013/02/20 00:16:38 genser Exp $
 //  $Author: genser $
-//  $Date: 2012/11/27 23:00:59 $
+//  $Date: 2013/02/20 00:16:38 $
 //
 // Original author KLG somewhat based on vd read back
 //
@@ -333,6 +333,7 @@ namespace mu2e {
              << event.id().run()   << " | "
              << event.id().event() << " | "
              << point.volumeId()   << " | "
+             << point.trackId().asInt() << " | "
              << pdgId              << " , name: "  
              << pdt_.particle(pdgId).ref().name() << " , PDTname: "
              << pdt_.particle(pdgId).ref().PDTname() << " | "
@@ -400,6 +401,7 @@ namespace mu2e {
              << event.id().run()   << " | "
              << event.id().event() << " | "
              << hit.volumeId()     << " | "
+             << hit.trackId().asInt() << " | "
              << pdgId              << " , name: "  
              << pdt_.particle(pdgId).ref().name() << " , PDTname: "
              << pdt_.particle(pdgId).ref().PDTname() << " | "
