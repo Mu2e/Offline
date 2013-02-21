@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.14 2012/11/01 23:44:52 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.15 2013/02/21 22:19:47 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:44:52 $
+// $Date: 2013/02/21 22:19:47 $
 //
 // Original author Andrei Gaponenko
 //
@@ -13,6 +13,7 @@
 #include <memory>
 #include <queue>
 #include <iostream>
+#include <iomanip>
 
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandGaussQ.h"
@@ -62,6 +63,23 @@
 namespace mu2e {
   namespace ExtMonFNAL {
 
+    struct VerilogHit {
+      int pixelAddress;
+      double twalk;
+      double tot;
+      VerilogHit(int p, double tw, double width) : pixelAddress(p), twalk(tw), tot(width) {}
+    };
+
+    struct VerilogHitAddrCmp {
+      bool operator()(const VerilogHit& a, const VerilogHit& b) {
+        return a.pixelAddress < b.pixelAddress;
+      }
+    };
+
+    typedef std::vector<VerilogHit>  VerilogHitCollection;
+    // BX => hits
+    typedef std::map<int, VerilogHitCollection>  VerilogHitMap;
+
     //================================================================
     class ExtMonFNALHitMaker : public art::EDProducer {
 
@@ -99,6 +117,11 @@ namespace mu2e {
         , cutClockEnabled_(false)
         , cutClockMin_()
         , cutClockMax_()
+
+        , chipSimInputsMode_(false)
+        , chipSimFile_(0)
+        , chipSimChipId_()
+        , chipSimProtonPulseNumber_()
       {
         produces<ExtMonFNALRawHitCollection>();
         produces<ExtMonFNALHitTruthAssn>();
@@ -114,6 +137,7 @@ namespace mu2e {
 
         std::cout<<"ExtMonFNALHitMaker: t0 = "<<t0_<<", nclusters = "<<nclusters_<<std::endl;
 
+        //----------------------------------------------------------------
         fhicl::ParameterSet cutClockPset;
         cutClockEnabled_ = pset.get_if_present("cutClock", cutClockPset);
         if(cutClockEnabled_) {
@@ -127,6 +151,20 @@ namespace mu2e {
           std::cout<<"ExtMonFNALHitMaker: cutClock disabled"<<std::endl;
         }
 
+        //----------------------------------------------------------------
+        fhicl::ParameterSet chipSimPset;
+        chipSimInputsMode_ = pset.get_if_present("chipSimInputs", chipSimPset);
+        if(chipSimInputsMode_) {
+          const std::string chipFileName(chipSimPset.get<std::string>("fileName"));
+          chipSimFile_.reset(new std::ofstream(chipFileName.c_str()));
+          
+          chipSimChipId_ = ExtMonFNALChipId(ExtMonFNALSensorId(chipSimPset.get<int>("sensor")),
+                                            chipSimPset.get<unsigned>("chipCol"),
+                                            chipSimPset.get<unsigned>("chipRow")
+                                            );
+
+          std::cout<<"ExtMonFNALHitMaker: writing out Verilog inputs to file "<<chipFileName<<std::endl;
+        }
       }
 
       virtual void produce(art::Event& evt);
@@ -202,8 +240,16 @@ namespace mu2e {
                         const ExtMonFNALPixelId& pix,
                         PixelChargeHistory& ch);
 
-      int timeStamp(unsigned iplane, double time) const {
-        return (time - t0_ - planeTOFCorrection_[iplane])/condExtMon_->clockTick();
+      double hitTime_ns(unsigned iplane, double time) const {
+        return (time - t0_ - planeTOFCorrection_[iplane]);
+      }
+
+      int timeStamp(double time_ns) const {
+        return time_ns/condExtMon_->clockTick();
+      }
+
+      int timeStamp(int iplane, double time) const {
+        return timeStamp(hitTime_ns(iplane, time));
       }
 
       //----------------
@@ -216,6 +262,17 @@ namespace mu2e {
       bool cutClockPassed(int clock) {
         return ! ((cutClockMin_ <= clock)&&(clock <= cutClockMax_));
       }
+
+      //----------------
+      // Write out a text file to be used as an input for the Verilog simulation
+      bool chipSimInputsMode_;
+      std::auto_ptr<std::ostream> chipSimFile_;
+      ExtMonFNALChipId chipSimChipId_; // write out info for this single chip
+      int chipSimProtonPulseNumber_;
+      VerilogHitMap vlhm_;
+
+      void addVerilogHit(const ExtMonFNALPixelId& pix, double tstart, double tend);
+      void writeOutVerilogHits();
 
       //----------------
     };
@@ -282,6 +339,8 @@ namespace mu2e {
       event.getByLabel(inputModuleLabel_, inputInstanceName_, ih);
       const ExtMonFNALSimHitCollection& simhits(*ih);
 
+      chipSimProtonPulseNumber_ = event.event();
+
       // N.B.: to reduce memory footprint we can digitize one readout chip at a time
       // instead of doing the whole detector in one go.  Would be an extra loop here.
       PixelChargeCollection pixcharges;
@@ -298,6 +357,11 @@ namespace mu2e {
       const art::ProductID hitsPID = getProductID<ExtMonFNALRawHitCollection>(event);
       const art::EDProductGetter *hitsGetter = event.productGetter(hitsPID);
       discriminate(&*outHits, &*outTruth, hitsPID, hitsGetter, pixcharges);
+
+      if(chipSimInputsMode_) {
+        writeOutVerilogHits();
+        vlhm_.clear();
+      }
 
       noise_.add(&*outHits);
 
@@ -464,7 +528,8 @@ namespace mu2e {
         //----------------------------------------------------------------
         if(cap.high()) { // Found LE
 
-          const int roStartTime = timeStamp(iplane, t);
+          const double hitStart_ns = hitTime_ns(iplane, t);
+          const int roStartTime = timeStamp(hitStart_ns);
 
           // add to the set of SimParticles
           typedef std::map<art::Ptr<SimParticle>, double> ChargeMap;
@@ -490,7 +555,11 @@ namespace mu2e {
           //----------------------------------------------------------------
           // Figure out ToT
 
-          const int roEndTime = timeStamp(iplane, t + cap.computeTrailingEdge());
+          // NB: for chip sim we could have stopped the above loop
+          // earlier.  However let's keep it as is to reduce effects
+          // of the artificial "sawtooth" charge collection shape.
+          const double hitEnd_ns = hitTime_ns(iplane, t + cap.computeTrailingEdge());
+          const int roEndTime = timeStamp(hitEnd_ns);
 
           // Limit dinamic range of readout ToT
           const int roToT = std::min(maxToT_, roEndTime - roStartTime);
@@ -503,6 +572,10 @@ namespace mu2e {
           // analogue time folding.
 
           if((0 <= roStartTime) && (roStartTime < condExtMon_->numClockTicksPerDebuncherPeriod())) {
+
+            if(chipSimInputsMode_) {
+              addVerilogHit(pix, hitStart_ns, hitEnd_ns);
+            }
 
             if(!cutClockEnabled_ || cutClockPassed(roStartTime)) {
               outhits->push_back(ExtMonFNALRawHit(pix, roStartTime, roToT));
@@ -531,6 +604,45 @@ namespace mu2e {
       } // while(!empty)
 
     } // discriminate(pixel)
+
+
+    //================================================================
+    void ExtMonFNALHitMaker::addVerilogHit(const ExtMonFNALPixelId& pix, double tstart, double tend) {
+      if(pix.chip() == chipSimChipId_) {
+        const int bx = timeStamp(tstart) +
+          condExtMon_->numClockTicksPerDebuncherPeriod() * chipSimProtonPulseNumber_;
+
+        const double twalk = tstart - timeStamp(tstart) * condExtMon_->clockTick();
+
+        const double tot = tend - tstart;
+
+        const int pixelAddress = 336 * pix.col() + pix.row();
+
+        vlhm_[bx].push_back(VerilogHit(pixelAddress, twalk, tot));
+      }
+    }
+
+    //================================================================
+    void ExtMonFNALHitMaker::writeOutVerilogHits() {
+      for(VerilogHitMap::const_iterator ibx = vlhm_.begin(); ibx != vlhm_.end(); ++ibx) {
+        *chipSimFile_ <<"BX "<<ibx->first<<std::endl;
+
+        //NB: here we make a copy 
+        VerilogHitCollection coll(ibx->second);
+
+        std::sort(coll.begin(), coll.end(), VerilogHitAddrCmp());
+        for(VerilogHitCollection::const_iterator i = coll.begin(); i != coll.end(); ++i) {
+          *chipSimFile_<<i->pixelAddress
+                       <<"\t"
+                       <<std::fixed<<std::setprecision(0)
+                       <<i->twalk
+                       <<"\t"<<i->tot
+                       <<std::endl;
+        }
+      }
+    }
+
+    //================================================================
 
   } // end namespace ExtMonFNAL
 } // end namespace mu2e

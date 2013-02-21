@@ -1,0 +1,25 @@
+// Andrei Gaponenko, 2012
+
+#include "ExtinctionMonitorFNAL/test/digiDefsCommon.fcl"
+
+process_name : digiG4forChipSim
+
+services.TFileService.fileName : "histDigiG4forChipSim.root"
+physics.eprint: [ hitValidation, emfSimHits, emfRawHits, emfprintraw ]
+
+// Don't write out framework data file
+physics.end_paths : [eprint]
+
+physics.producers.pixelDigitization.totCalib : 6
+physics.producers.pixelDigitization.chipSimInputs : {
+   fileName : "hits.txt"
+	sensor : 3
+	chipCol : 0
+	chipRow : 0
+}
+
+
+// This tells emacs to view this file in the JavaScript mode.
+// Local Variables:
+// mode:js
+// End:
