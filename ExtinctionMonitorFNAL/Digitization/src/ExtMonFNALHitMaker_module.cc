@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.15 2013/02/21 22:19:47 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.16 2013/02/22 23:55:19 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/02/21 22:19:47 $
+// $Date: 2013/02/22 23:55:19 $
 //
 // Original author Andrei Gaponenko
 //
@@ -624,20 +624,29 @@ namespace mu2e {
 
     //================================================================
     void ExtMonFNALHitMaker::writeOutVerilogHits() {
-      for(VerilogHitMap::const_iterator ibx = vlhm_.begin(); ibx != vlhm_.end(); ++ibx) {
-        *chipSimFile_ <<"BX "<<ibx->first<<std::endl;
 
-        //NB: here we make a copy 
-        VerilogHitCollection coll(ibx->second);
+      // The OVM input script wants to have a line for each clock tick
+      // Therefore we do a fixed-size loop here and write out a lot of emtpy events.
+      for(int localClock = 0; localClock < condExtMon_->numClockTicksPerDebuncherPeriod(); ++localClock) {
 
-        std::sort(coll.begin(), coll.end(), VerilogHitAddrCmp());
-        for(VerilogHitCollection::const_iterator i = coll.begin(); i != coll.end(); ++i) {
-          *chipSimFile_<<i->pixelAddress
-                       <<"\t"
-                       <<std::fixed<<std::setprecision(0)
-                       <<i->twalk
-                       <<"\t"<<i->tot
-                       <<std::endl;
+        const int ibx =  localClock + condExtMon_->numClockTicksPerDebuncherPeriod() * chipSimProtonPulseNumber_;
+
+        *chipSimFile_ <<"BX "<<ibx<<std::endl;
+
+        VerilogHitMap::const_iterator pd = vlhm_.find(ibx);
+        if(pd != vlhm_.end()) {
+
+          //NB: here we make a copy to apply non-const sort
+          VerilogHitCollection coll(pd->second);
+          std::sort(coll.begin(), coll.end(), VerilogHitAddrCmp());
+          for(VerilogHitCollection::const_iterator i = coll.begin(); i != coll.end(); ++i) {
+            *chipSimFile_<<i->pixelAddress
+                         <<"\t"
+                         <<std::fixed<<std::setprecision(0)
+                         <<i->twalk
+                         <<"\t"<<i->tot
+                         <<std::endl;
+          }
         }
       }
     }
