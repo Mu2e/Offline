@@ -1,9 +1,9 @@
 //
 // Plugin to read/analyze g4study output
 //
-//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.5 2013/02/20 00:16:38 genser Exp $
+//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.6 2013/02/23 01:08:09 genser Exp $
 //  $Author: genser $
-//  $Date: 2013/02/20 00:16:38 $
+//  $Date: 2013/02/23 01:08:09 $
 //
 // Original author KLG somewhat based on vd read back
 //
@@ -35,9 +35,6 @@
 
 using namespace std;
 
-using CLHEP::Hep3Vector;
-using CLHEP::keV;
-
 namespace mu2e {
 
   typedef struct {
@@ -64,6 +61,14 @@ namespace mu2e {
     Float_t xstop;
     Float_t ystop;
     Float_t zstop;
+    Float_t pxstop;
+    Float_t pystop;
+    Float_t pzstop;
+    Float_t pstop;
+    Float_t pxprestop;
+    Float_t pyprestop;
+    Float_t pzprestop;
+    Float_t pprestop;
     Int_t codestop;
 
     Int_t parent_id;
@@ -88,7 +93,7 @@ namespace mu2e {
       _tvdStepPoints(pset.get<string>("tvdStepPoints","timeVD")),
       _nAnalyzed(0),
       _maxPrint(pset.get<int>("maxPrint",0)),
-      _nttvd(0), _ntpart(0),
+      _nttvd(0), _tpart(0),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
       _timeCut(pset.get<double>("timeCut",0.0)),
@@ -119,10 +124,10 @@ namespace mu2e {
 
     TNtuple* _ntstepper;
     TNtuple* _nttvd;
-    TTree* _ntpart;
+    TTree*   _tpart;
 
     float *nt; // Need this buffer to fill TTree ntvd
-    NtPartData ntp; // Buffer to fill particles ntuple
+    NtPartData ttp; // Buffer to fill particle tree
 
     // Pointers to the physical volumes we are interested in
     map<int,int> vid_stop;
@@ -166,38 +171,46 @@ namespace mu2e {
                                  "evt:trk:sid:pdg:time:x:y:z:px:py:pz:gtime:code:run:ke");
     //                            0   1   2   3   4    5 6 7 8  9  10 11    12   13  14
 
-    _ntpart = tfs->make<TTree>("ntpart", "Particles ntuple");
+    _tpart = tfs->make<TTree>("tpart", "Particle tree");
 
-    _ntpart->Branch("run",        &ntp.run,        "run/I");
-    _ntpart->Branch("evt",        &ntp.evt,        "evt/I");
-    _ntpart->Branch("trk",        &ntp.trk,        "trk/I");
-    _ntpart->Branch("pdg",        &ntp.pdg,        "pdg/I");
-    _ntpart->Branch("time",       &ntp.time,       "time/F");
-    _ntpart->Branch("gtime",      &ntp.gtime,      "gtime/F");
-    _ntpart->Branch("x",          &ntp.x,          "x/F");
-    _ntpart->Branch("y",          &ntp.y,          "y/F");
-    _ntpart->Branch("z",          &ntp.z,          "z/F");
-    _ntpart->Branch("px",         &ntp.px,         "px/F");
-    _ntpart->Branch("py",         &ntp.py,         "py/F");
-    _ntpart->Branch("pz",         &ntp.pz,         "pz/F");
-    _ntpart->Branch("p",          &ntp.p,          "p/F");
-    _ntpart->Branch("code",       &ntp.code,       "code/I");
-    _ntpart->Branch("isstop",     &ntp.isstop,     "isstop/O");
-    _ntpart->Branch("tstop",      &ntp.tstop,      "tstop/F");
-    _ntpart->Branch("gtstop",     &ntp.gtstop,     "gtstop/F");
-    _ntpart->Branch("xstop",      &ntp.xstop,      "xstop/F");
-    _ntpart->Branch("ystop",      &ntp.ystop,      "ystop/F");
-    _ntpart->Branch("zstop",      &ntp.zstop,      "zstop/F");
-    _ntpart->Branch("codestop",   &ntp.codestop,   "codestop/I");
-    _ntpart->Branch("parent_id",  &ntp.parent_id,  "parent_id/I");
-    _ntpart->Branch("parent_pdg", &ntp.parent_pdg, "parent_pdg/I");
-    _ntpart->Branch("parent_x",   &ntp.parent_x,   "parent_x/F");
-    _ntpart->Branch("parent_y",   &ntp.parent_y,   "parent_y/F");
-    _ntpart->Branch("parent_z",   &ntp.parent_z,   "parent_z/F");
-    _ntpart->Branch("parent_px",  &ntp.parent_px,  "parent_px/F");
-    _ntpart->Branch("parent_py",  &ntp.parent_py,  "parent_py/F");
-    _ntpart->Branch("parent_pz",  &ntp.parent_pz,  "parent_pz/F");
-    _ntpart->Branch("parent_p",   &ntp.parent_p,   "parent_p/F");
+    _tpart->Branch("run",        &ttp.run,        "run/I");
+    _tpart->Branch("evt",        &ttp.evt,        "evt/I");
+    _tpart->Branch("trk",        &ttp.trk,        "trk/I");
+    _tpart->Branch("pdg",        &ttp.pdg,        "pdg/I");
+    _tpart->Branch("time",       &ttp.time,       "time/F");
+    _tpart->Branch("gtime",      &ttp.gtime,      "gtime/F");
+    _tpart->Branch("x",          &ttp.x,          "x/F");
+    _tpart->Branch("y",          &ttp.y,          "y/F");
+    _tpart->Branch("z",          &ttp.z,          "z/F");
+    _tpart->Branch("px",         &ttp.px,         "px/F");
+    _tpart->Branch("py",         &ttp.py,         "py/F");
+    _tpart->Branch("pz",         &ttp.pz,         "pz/F");
+    _tpart->Branch("p",          &ttp.p,          "p/F");
+    _tpart->Branch("code",       &ttp.code,       "code/I");
+    _tpart->Branch("isstop",     &ttp.isstop,     "isstop/O");
+    _tpart->Branch("tstop",      &ttp.tstop,      "tstop/F");
+    _tpart->Branch("gtstop",     &ttp.gtstop,     "gtstop/F");
+    _tpart->Branch("xstop",      &ttp.xstop,      "xstop/F");
+    _tpart->Branch("ystop",      &ttp.ystop,      "ystop/F");
+    _tpart->Branch("zstop",      &ttp.zstop,      "zstop/F");
+    _tpart->Branch("pxprestop",  &ttp.pxprestop,  "pxprestop/F");
+    _tpart->Branch("pyprestop",  &ttp.pyprestop,  "pyprestop/F");
+    _tpart->Branch("pzprestop",  &ttp.pzprestop,  "pzprestop/F");
+    _tpart->Branch("pprestop",   &ttp.pprestop,   "pprestop/F");
+    _tpart->Branch("pxstop",     &ttp.pxstop,     "pxstop/F");
+    _tpart->Branch("pystop",     &ttp.pystop,     "pystop/F");
+    _tpart->Branch("pzstop",     &ttp.pzstop,     "pzstop/F");
+    _tpart->Branch("pstop",      &ttp.pstop,      "pstop/F");
+    _tpart->Branch("codestop",   &ttp.codestop,   "codestop/I");
+    _tpart->Branch("parent_id",  &ttp.parent_id,  "parent_id/I");
+    _tpart->Branch("parent_pdg", &ttp.parent_pdg, "parent_pdg/I");
+    _tpart->Branch("parent_x",   &ttp.parent_x,   "parent_x/F");
+    _tpart->Branch("parent_y",   &ttp.parent_y,   "parent_y/F");
+    _tpart->Branch("parent_z",   &ttp.parent_z,   "parent_z/F");
+    _tpart->Branch("parent_px",  &ttp.parent_px,  "parent_px/F");
+    _tpart->Branch("parent_py",  &ttp.parent_py,  "parent_py/F");
+    _tpart->Branch("parent_pz",  &ttp.parent_pz,  "parent_pz/F");
+    _tpart->Branch("parent_p",   &ttp.parent_p,   "parent_p/F");
 
   }
 
@@ -282,18 +295,17 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel, simParticles);
     bool haveSimPart = simParticles.isValid();
     if ( haveSimPart ) haveSimPart = !(simParticles->empty());
-
-
+    
     // Loop over all stepper points.
     if( points.isValid() ) for ( size_t i=0; i<points->size(); ++i ){
 
       // Alias, used for readability.
-      const StepPointMC& point = (*points)[i];
+      StepPointMC const& point = (*points)[i];
 
       // Get the point information.
 
-      const CLHEP::Hep3Vector& pos = point.position();
-      const CLHEP::Hep3Vector& mom = point.momentum();
+      CLHEP::Hep3Vector const& pos = point.position();
+      CLHEP::Hep3Vector const& mom = point.momentum();
 
       // Get track info
       key_type trackId = point.trackId();
@@ -354,14 +366,14 @@ namespace mu2e {
     if( thits.isValid() ) for ( size_t i=0; i<thits->size(); ++i ){
 
       // Alias, used for readability.
-      const StepPointMC& hit = (*thits)[i];
+      StepPointMC const& hit = (*thits)[i];
 
       // Get the hit information.
 
       int id = hit.volumeId();
 
-      const CLHEP::Hep3Vector& pos = hit.position();
-      const CLHEP::Hep3Vector& mom = hit.momentum();
+      CLHEP::Hep3Vector const& pos = hit.position();
+      CLHEP::Hep3Vector const& mom = hit.momentum();
 
       // Get track info
       key_type trackId = hit.trackId();
@@ -412,7 +424,7 @@ namespace mu2e {
       }
     } // end loop over hits.
 
-    // Fill tracks ntuple
+    // Fill tracks tree
     // with all sim partciles
     //    if( haveSimPart && pdg_save.size()>0 ) {
     if( haveSimPart ) {
@@ -427,10 +439,10 @@ namespace mu2e {
         // we save them all for now
 
         // Save SimParticle header info
-        ntp.run = event.id().run();      // run_id
-        ntp.evt = event.id().event();    // event_id
-        ntp.trk = sim.id().asInt();      // track_id
-        ntp.pdg = sim.pdgId();           // PDG id
+        ttp.run = event.id().run();      // run_id
+        ttp.evt = event.id().event();    // event_id
+        ttp.trk = sim.id().asInt();      // track_id
+        ttp.pdg = sim.pdgId();           // PDG id
 
 	// Calculate parent proper time
 	double gtime_parent = 0.0;
@@ -438,87 +450,120 @@ namespace mu2e {
 	  SimParticle const* sim_parent = &sim;
 	  while( sim_parent && sim_parent->hasParent() ) {
 	    sim_parent = simParticles->getOrNull(sim_parent->parentId());
-	    if( sim_parent && sim_parent->pdgId()==ntp.pdg && sim.endDefined() ) {
+	    if( sim_parent && sim_parent->pdgId()==ttp.pdg && sim.endDefined() ) {
 	      gtime_parent += sim_parent->endProperTime();
 	    }
 	  }
 	}
 
         // Save SimParticle other info
-        ntp.time = sim.startGlobalTime(); // start time
-        ntp.gtime = gtime_parent+sim.startProperTime(); // start time
+        ttp.time = sim.startGlobalTime(); // start time
+        ttp.gtime = gtime_parent+sim.startProperTime(); // start time
         CLHEP::Hep3Vector const & pos_start = sim.startPosition();
         CLHEP::Hep3Vector const & mom_start = sim.startMomentum();
-        ntp.x = pos_start.x();
-        ntp.y = pos_start.y();
-        ntp.z = pos_start.z();
-        ntp.px = mom_start.x();
-        ntp.py = mom_start.y();
-        ntp.pz = mom_start.z();
-        ntp.p = mom_start.mag();
-        ntp.code = sim.creationCode();
+        ttp.x = pos_start.x();
+        ttp.y = pos_start.y();
+        ttp.z = pos_start.z();
+        ttp.px = mom_start.x();
+        ttp.py = mom_start.y();
+        ttp.pz = mom_start.z();
+        ttp.p  = mom_start.mag();
+        ttp.code = sim.creationCode();
 
         // Check id of the volume where the particle died
         if( sim.endDefined() ) {
-          if( vid_stop.find(sim.endVolumeIndex()) != vid_stop.end() ) {
-            ntp.isstop = true;
-          } else {
-            ntp.isstop = false;
-          }
-          ntp.tstop = sim.endGlobalTime();
-          ntp.gtstop = gtime_parent+sim.endProperTime();
+
+          ttp.isstop = ( vid_stop.find(sim.endVolumeIndex()) != vid_stop.end() );
+          ttp.tstop = sim.endGlobalTime();
+          ttp.gtstop = gtime_parent+sim.endProperTime();
           CLHEP::Hep3Vector const & pos_end = sim.endPosition();
-          ntp.xstop = pos_end.x();
-          ntp.ystop = pos_end.y();
-          ntp.zstop = pos_end.z();
-          ntp.codestop = sim.stoppingCode();
+          CLHEP::Hep3Vector const & mom_end = sim.endMomentum();
+
+          ttp.xstop  = pos_end.x();
+          ttp.ystop  = pos_end.y();
+          ttp.zstop  = pos_end.z();
+
+          // calculation of the prestep info is more involved...
+          // assume the step points are sorted by time by construction, get the last one
+          size_t thei(-1);
+          size_t trackiid = sim.id().asInt();     
+          for ( size_t i=points->size()-1; i!=0; --i ){
+            if ( trackiid == ((*points)[i]).trackId().asInt() ) {
+              thei = i;
+              break;
+            }
+          }
+          // we may need to protect this
+          CLHEP::Hep3Vector const& mom_preend = (*points)[thei].momentum();
+
+          ttp.pxprestop = mom_preend.x();
+          ttp.pyprestop = mom_preend.y();
+          ttp.pzprestop = mom_preend.z();
+          ttp.pprestop  = mom_preend.mag();
+
+          ttp.pxstop = mom_end.x();
+          ttp.pystop = mom_end.y();
+          ttp.pzstop = mom_end.z();
+          ttp.pstop  = mom_end.mag();
+          ttp.codestop = sim.stoppingCode();
         } else {
-          ntp.isstop = false;
-          ntp.tstop = 0;
-          ntp.gtstop = 0;
-          ntp.xstop = 0;
-          ntp.ystop = 0;
-          ntp.zstop = 0;
-          ntp.codestop = 0;
+          ttp.isstop = false;
+          ttp.tstop  = 0.0;
+          ttp.gtstop = 0.0;
+          ttp.xstop  = 0.0;
+          ttp.ystop  = 0.0;
+          ttp.zstop  = 0.0;
+
+          ttp.pxprestop = 0.0;
+          ttp.pyprestop = 0.0;
+          ttp.pzprestop = 0.0;
+          ttp.pprestop  = 0.0;
+
+          ttp.pxstop    = 0.0;
+          ttp.pystop    = 0.0;
+          ttp.pzstop    = 0.0;
+          ttp.pstop     = 0.0;
+
+          ttp.codestop = 0;
         }
 
         // Parent info
         SimParticle const* sim_parent = 0;
         if( sim.hasParent() ) {
-          ntp.parent_id = sim.parentId().asInt();
+          ttp.parent_id = sim.parentId().asInt();
           sim_parent = simParticles->getOrNull(sim.parentId());
         } else {
-          ntp.parent_id = -1;
+          ttp.parent_id = -1;
         }
         if( sim_parent ) {
-          ntp.parent_pdg = sim_parent->pdgId();
+          ttp.parent_pdg = sim_parent->pdgId();
           CLHEP::Hep3Vector const & pos_parent = sim_parent->startPosition();
           CLHEP::Hep3Vector const & mom_parent = sim_parent->startMomentum();
-          ntp.parent_x = pos_parent.x();
-          ntp.parent_y = pos_parent.y();
-          ntp.parent_z = pos_parent.z();
-          ntp.parent_px = mom_parent.x();
-          ntp.parent_py = mom_parent.y();
-          ntp.parent_pz = mom_parent.z();
-          ntp.parent_p = mom_parent.mag();
+          ttp.parent_x = pos_parent.x();
+          ttp.parent_y = pos_parent.y();
+          ttp.parent_z = pos_parent.z();
+          ttp.parent_px = mom_parent.x();
+          ttp.parent_py = mom_parent.y();
+          ttp.parent_pz = mom_parent.z();
+          ttp.parent_p  = mom_parent.mag();
         } else {
-          ntp.parent_pdg = 0;
-          ntp.parent_x = 0;
-          ntp.parent_y = 0;
-          ntp.parent_z = 0;
-          ntp.parent_px = 0;
-          ntp.parent_py = 0;
-          ntp.parent_pz = 0;
-          ntp.parent_p = 0;
+          ttp.parent_pdg = 0;
+          ttp.parent_x = 0;
+          ttp.parent_y = 0;
+          ttp.parent_z = 0;
+          ttp.parent_px = 0;
+          ttp.parent_py = 0;
+          ttp.parent_pz = 0;
+          ttp.parent_p = 0;
         }
 
         // Keep only stopped particles
-        if( _stopped_only && !ntp.isstop ) continue;
+        if( _stopped_only && !ttp.isstop ) continue;
 
         // Keep only those particles, which die late enough
-        if( _timeCut>0.1 && ntp.tstop<_timeCut ) continue;
+        if( _timeCut>0.0 && ttp.tstop<_timeCut ) continue;
 
-        _ntpart->Fill();
+        _tpart->Fill();
 
       }
     }
