@@ -2,9 +2,9 @@
 // config file to perform Geant4 studies using the Mu2e framework infrastructure
 //
 
-// $Id: g4studyGeom.txt,v 1.6 2013/02/20 00:15:50 genser Exp $
+// $Id: g4studyGeom.txt,v 1.7 2013/02/23 01:10:07 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/20 00:15:50 $
+// $Date: 2013/02/23 01:10:07 $
 //
 // Original author K. Genser
 //
@@ -30,7 +30,7 @@ vector<string> mu2e.materials = {"WAGVacuum"};
 bool           mu2e.printParticleDataTable = false;
 
 // Use a decent physics list
-string g4.physicsListName      = "FTFP_BERT";
+string g4.physicsListName      = "QBBC";
 
 // make the volume mesh visible
 bool g4.forceAuxEdgeVisible    = true;
@@ -73,6 +73,15 @@ double g4.eKineMin     = 1000000.0;
 // a more selective kinetic energy cut depending on the pdg code
 vector<int>    g4.killLowEKinePDG = {};
 vector<double> g4.eKineMinPDG     = {};
+
+// event track debug list
+vector<int> g4.trackingActionEventList = {};
+
+// event track step debug list
+vector<int> g4.steppingActionEventList = {};
+// empty track list means all if the event list is not empty
+vector<int> g4.steppingActionTrackList = {};
+
 
 // the "World Box"
 
