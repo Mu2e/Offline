@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: StudySteppingAction.cc,v 1.5 2013/02/07 17:55:25 genser Exp $
+// $Id: StudySteppingAction.cc,v 1.6 2013/02/23 01:08:37 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/07 17:55:25 $
+// $Date: 2013/02/23 01:08:37 $
 //
 // Original author Rob Kutschke
 //
@@ -103,27 +103,6 @@ namespace mu2e {
     vector<int> tmp2;
     config.getVectorInt( "g4.steppingActionTrackList", tmp2, vector<int>() );
     _debugTrackList.add(tmp2);
-
-    //config.getVectorInt( "g4.steppingActionEventList", _debugEventList, vector<int>() );
-    //config.getVectorInt( "g4.steppingActionTrackList", _debugTrackList, vector<int>() );
-    // Get list of events for which to make debug printout.
-    /*
-    string key("g4.steppingActionEventList");
-    if ( config.hasName(key) ){
-      vector<int> list;
-      config.getVectorInt(key,list);
-      _debugEventList.add(list);
-    }
-
-    // Get list of tracks (within the above events) for which to make debug printout.
-    // If empty list, then make printout for all tracks.
-    string key2("g4.steppingActionTrackList");
-    if ( config.hasName(key2) ){
-      vector<int> list;
-      config.getVectorInt(key2,list);
-      _debugTrackList.add(list);
-    }
-    */
 
     // Get maximum allowed number of steps per event
     _maxSteps = config.getInt("g4.steppingActionMaxSteps", 0);
