@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: StudyTrackingAction.cc,v 1.4 2013/02/07 17:55:01 genser Exp $
+// $Id: StudyTrackingAction.cc,v 1.5 2013/02/23 01:09:24 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/07 17:55:01 $
+// $Date: 2013/02/23 01:09:24 $
 //
 // Original author Rob Kutschke
 //
@@ -59,7 +59,7 @@ namespace mu2e {
     _sizeLimit(config.getInt("g4.particlesSizeLimit",0)),
     _currentSize(0),
     _overflowSimParticles(false),
-    _pointTrajectoryMomentumCut(config.getDouble("g4.pointTrajectoryMomentumCut", 50.)),
+    _pointTrajectoryMomentumCut(config.getDouble("g4.pointTrajectoryMomentumCut", 0.)),
     _steppingAction(steppingAction),
     _processInfo(0){
 
