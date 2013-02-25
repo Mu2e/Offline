@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.43 2012/12/13 21:13:58 brownd Exp $
+// $Id: KalFitMC.cc,v 1.44 2013/02/25 18:36:29 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/13 21:13:58 $
+// $Date: 2013/02/25 18:36:29 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -676,7 +676,6 @@ namespace mu2e
     _hitdiag->Branch("pdist",&_pdist,"pdist/F");
     _hitdiag->Branch("pperp",&_pperp,"pperp/F");
     _hitdiag->Branch("pmom",&_pmom,"pmom/F");
-
     _hitdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/i");
     _hitdiag->Branch("mchpos",&_mchpos,"x/F:y/F:z/F");
     _hitdiag->Branch("mcrdrift",&_mcrdrift,"mcrdrift/F");
@@ -830,7 +829,7 @@ namespace mu2e
     einfo._mom = mom.mag();
     // need to transform into the tracker coordinate system
     CLHEP::Hep3Vector pos = det->toDetector(imcs->position());
-    HepPoint ppos =(pos.x(),pos.y(),pos.z());
+    HepPoint ppos(pos.x(),pos.y(),pos.z());
     einfo._pos = pos;
     double hflt(0.0);
     HepVector parvec(5,0);
