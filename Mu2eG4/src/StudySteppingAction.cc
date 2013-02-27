@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: StudySteppingAction.cc,v 1.6 2013/02/23 01:08:37 genser Exp $
+// $Id: StudySteppingAction.cc,v 1.7 2013/02/27 03:49:59 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/23 01:08:37 $
+// $Date: 2013/02/27 03:49:59 $
 //
 // Original author Rob Kutschke
 //
@@ -297,6 +297,9 @@ namespace mu2e {
 
     cout << "Pre  Volume and copy: " << preVolume  << " " << preCopy  << endl;
     cout << "Post Volume and copy: " << postVolume << " " << postCopy << endl;
+
+    G4String pname = Mu2eG4UserHelpers::findStepStoppingProcessName(step);
+    cout << "Process which defined step: " << pname << " " << ProcessCode::findByName(pname) << endl; 
 
     printf ( "\n");
     fflush(stdout);
