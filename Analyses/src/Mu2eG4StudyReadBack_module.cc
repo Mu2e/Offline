@@ -1,9 +1,9 @@
 //
 // Plugin to read/analyze g4study output
 //
-//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.6 2013/02/23 01:08:09 genser Exp $
+//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.7 2013/02/27 03:47:25 genser Exp $
 //  $Author: genser $
-//  $Date: 2013/02/23 01:08:09 $
+//  $Date: 2013/02/27 03:47:25 $
 //
 // Original author KLG somewhat based on vd read back
 //
@@ -42,6 +42,7 @@ namespace mu2e {
     Int_t run;
     Int_t evt;
     Int_t trk;
+    Int_t endvol;
 
     Int_t pdg;
     Float_t time;
@@ -176,6 +177,7 @@ namespace mu2e {
     _tpart->Branch("run",        &ttp.run,        "run/I");
     _tpart->Branch("evt",        &ttp.evt,        "evt/I");
     _tpart->Branch("trk",        &ttp.trk,        "trk/I");
+    _tpart->Branch("endvol",     &ttp.endvol,     "endvol/I");
     _tpart->Branch("pdg",        &ttp.pdg,        "pdg/I");
     _tpart->Branch("time",       &ttp.time,       "time/F");
     _tpart->Branch("gtime",      &ttp.gtime,      "gtime/F");
@@ -442,6 +444,8 @@ namespace mu2e {
         ttp.run = event.id().run();      // run_id
         ttp.evt = event.id().event();    // event_id
         ttp.trk = sim.id().asInt();      // track_id
+        ttp.endvol = sim.endVolumeIndex();  // track last volume
+
         ttp.pdg = sim.pdgId();           // PDG id
 
 	// Calculate parent proper time
