@@ -1,9 +1,9 @@
 //
 // Free function to create a geant4 test environment geometry
 //
-// $Id: constructStudyEnv_v001.cc,v 1.2 2012/11/27 23:01:34 genser Exp $
+// $Id: constructStudyEnv_v001.cc,v 1.3 2013/02/27 03:49:40 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/27 23:01:34 $
+// $Date: 2013/02/27 03:49:40 $
 //
 // Original author KLG 
 //
@@ -54,6 +54,8 @@ namespace mu2e {
 
     const G4ThreeVector tubeCenterInWorld(_config.getHep3Vector("tube.centerInWorld"));
 
+    G4Colour  orange  (.75, .55, .0);
+
     VolumeInfo tubeVInfo(nestTubs( "Tube",
                                    tubeParams,
                                    tubeMaterial,
@@ -64,7 +66,7 @@ namespace mu2e {
                                    // we assign a non 0 copy nuber for
                                    // volume tracking purposes
                                    tubeVisible,
-                                   G4Colour::Yellow(),
+                                   orange,
                                    tubeSolid,
                                    forceAuxEdgeVisible,
                                    placePV,
