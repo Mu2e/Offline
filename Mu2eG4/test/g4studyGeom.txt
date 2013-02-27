@@ -2,9 +2,9 @@
 // config file to perform Geant4 studies using the Mu2e framework infrastructure
 //
 
-// $Id: g4studyGeom.txt,v 1.7 2013/02/23 01:10:07 genser Exp $
+// $Id: g4studyGeom.txt,v 1.8 2013/02/27 03:50:28 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/23 01:10:07 $
+// $Date: 2013/02/27 03:50:28 $
 //
 // Original author K. Genser
 //
@@ -21,7 +21,7 @@ string detector.name           = "g4study";
 
 bool           mu2e.standardDetector = false;
 
-// which version of the target
+// version of the target geometry configuration
 
 int            mu2e.studyEnvVersion      = 1;
 
@@ -30,7 +30,7 @@ vector<string> mu2e.materials = {"WAGVacuum"};
 bool           mu2e.printParticleDataTable = false;
 
 // Use a decent physics list
-string g4.physicsListName      = "QBBC";
+string g4.physicsListName      = "QGSP_BERT";
 
 // make the volume mesh visible
 bool g4.forceAuxEdgeVisible    = true;
@@ -78,15 +78,11 @@ vector<double> g4.eKineMinPDG     = {};
 vector<int> g4.trackingActionEventList = {};
 
 // event track step debug list
-vector<int> g4.steppingActionEventList = {};
+vector<int> g4.steppingActionEventList = {1,2,3,4,5};
 // empty track list means all if the event list is not empty
 vector<int> g4.steppingActionTrackList = {};
 
-
 // the "World Box"
-
-// an artifact of using the mu2e framwork elements, needs to be set to { 0., 0., 0.}
-vector<double> world.mu2eOriginInWorld = { 0., 0., 0.}; // mm
 
 // verbosity flag pertaining to the world construction
 int world.verbosityLevel         = 2;
@@ -102,7 +98,7 @@ bool   world.boxSolid            = false;
 double world.halfLength          = 10.0;
 double world.outerLayerThickness = 0.001;// the world "outer layer" to force a step point
 
-// the target (a tube)
+// the target (a tube) for mu2e.studyEnvVersion == 1
 
 bool           tube.visible = true;
 bool           tube.solid   = false;
@@ -115,10 +111,28 @@ double         tube.rOut       = 0.001;
 double         tube.halfLength = 3.0;
 
 int            tube.copyNumber = 2; // non 0 for volume tracking purposes
-                                    // 0 & 1 are World and an auxiliary volume
+                                    // 0 & 1 are World and an auxiliary 
+                                    // volume almost filling up the world
 
 // tube position in the world
 vector<double> tube.centerInWorld = {0., 0., 0.};
+
+// another target (a plane/box) for mu2e.studyEnvVersion == 2
+
+bool           box.visible = true;
+bool           box.solid   = false;
+
+// fixme: may need to use pure isotopes
+string         box.wallMaterialName = "G4_W";
+
+vector<double> box.halfLengths = {1., 1., 0.0005};
+
+int            box.copyNumber = 2; // non 0 for volume tracking purposes
+                                   // 0 & 1 are World and an auxiliary 
+                                   // volume almost filling up the world
+
+// box position in the world
+vector<double> box.centerInWorld = {0., 0., 0.};
 
 //
 // This tells emacs to view this file in c++ mode.
