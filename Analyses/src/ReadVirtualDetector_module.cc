@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.14 2013/02/14 22:44:05 logash Exp $
+//  $Id: ReadVirtualDetector_module.cc,v 1.15 2013/02/28 22:35:07 logash Exp $
 //  $Author: logash $
-//  $Date: 2013/02/14 22:44:05 $
+//  $Date: 2013/02/28 22:35:07 $
 //
 // Original author Ivan Logashenko
 //
@@ -70,6 +70,10 @@ namespace mu2e {
     Float_t ystop;
     Float_t zstop;
     Int_t codestop;
+    Float_t pxstop;
+    Float_t pystop;
+    Float_t pzstop;
+    Float_t pstop;
 
     Int_t g4bl_evt;
     Int_t g4bl_trk;
@@ -85,6 +89,12 @@ namespace mu2e {
     Float_t parent_py;
     Float_t parent_pz;
     Float_t parent_p;
+    Float_t parent_pxstop;
+    Float_t parent_pystop;
+    Float_t parent_pzstop;
+    Float_t parent_pstop;
+    Int_t parent_code;
+    Float_t parent_lastke;
 
     Int_t nvd;
     Bool_t isvd[nvdet];
@@ -287,6 +297,10 @@ namespace mu2e {
     _ntpart->Branch("ystop",      &ntp.ystop,      "ystop/F");
     _ntpart->Branch("zstop",      &ntp.zstop,      "zstop/F");
     _ntpart->Branch("codestop",   &ntp.codestop,   "codestop/I");
+    _ntpart->Branch("pxstop",     &ntp.pxstop,     "pxstop/F");
+    _ntpart->Branch("pystop",     &ntp.pystop,     "pystop/F");
+    _ntpart->Branch("pzstop",     &ntp.pzstop,     "pzstop/F");
+    _ntpart->Branch("pstop",      &ntp.pstop,      "pstop/F");
     _ntpart->Branch("g4bl_evt",   &ntp.g4bl_evt,   "g4bl_evt/I");
     _ntpart->Branch("g4bl_trk",   &ntp.g4bl_trk,   "g4bl_trk/I");
     _ntpart->Branch("g4bl_weight",&ntp.g4bl_weight,"g4bl_weight/F");
@@ -300,6 +314,12 @@ namespace mu2e {
     _ntpart->Branch("parent_py",  &ntp.parent_py,  "parent_py/F");
     _ntpart->Branch("parent_pz",  &ntp.parent_pz,  "parent_pz/F");
     _ntpart->Branch("parent_p",   &ntp.parent_p,   "parent_p/F");
+    _ntpart->Branch("parent_pxstop",&ntp.parent_pxstop,"parent_pxstop/F");
+    _ntpart->Branch("parent_pystop",&ntp.parent_pystop,"parent_pystop/F");
+    _ntpart->Branch("parent_pzstop",&ntp.parent_pzstop,"parent_pzstop/F");
+    _ntpart->Branch("parent_pstop", &ntp.parent_pstop, "parent_pstop/F");
+    _ntpart->Branch("parent_code",  &ntp.parent_code,  "parent_code/I");
+    _ntpart->Branch("parent_lastke",&ntp.parent_lastke,"parent_lastke/F");
 
     _ntpart->Branch("nvd",        &ntp.nvd,        "nvd/I");
     _ntpart->Branch("isvd",        ntp.isvd,       "isvd[nvd]/O");
@@ -598,6 +618,11 @@ namespace mu2e {
           ntp.ystop = pos_end.y();
           ntp.zstop = pos_end.z();
           ntp.codestop = sim.stoppingCode();
+          CLHEP::Hep3Vector const & mom_end = sim.endMomentum();
+          ntp.pxstop = mom_end.x();
+          ntp.pystop = mom_end.y();
+          ntp.pzstop = mom_end.z();
+	  ntp.pstop  = mom_end.mag();
         } else {
           ntp.isstop = false;
           ntp.tstop = 0;
@@ -606,6 +631,10 @@ namespace mu2e {
           ntp.ystop = 0;
           ntp.zstop = 0;
           ntp.codestop = 0;
+          ntp.pxstop = 0;
+          ntp.pystop = 0;
+          ntp.pzstop = 0;
+	  ntp.pstop  = 0;
         }
 
         if( haveG4BL ) {
@@ -640,6 +669,13 @@ namespace mu2e {
           ntp.parent_py = mom_parent.y();
           ntp.parent_pz = mom_parent.z();
           ntp.parent_p = mom_parent.mag();
+          CLHEP::Hep3Vector const & endmom_parent = sim_parent->endMomentum();
+          ntp.parent_pxstop = endmom_parent.x();
+          ntp.parent_pystop = endmom_parent.y();
+          ntp.parent_pzstop = endmom_parent.z();
+          ntp.parent_pstop = endmom_parent.mag();
+          ntp.parent_code = sim_parent->stoppingCode();
+	  ntp.parent_lastke = sim_parent->preLastStepKineticEnergy();
         } else {
           ntp.parent_pdg = 0;
           ntp.parent_x = 0;
@@ -649,6 +685,12 @@ namespace mu2e {
           ntp.parent_py = 0;
           ntp.parent_pz = 0;
           ntp.parent_p = 0;
+          ntp.parent_pxstop = 0;
+          ntp.parent_pystop = 0;
+          ntp.parent_pzstop = 0;
+          ntp.parent_pstop = 0;
+          ntp.parent_code = 0;
+	  ntp.parent_lastke = 0;
         }
 
         // Clear up VD data
