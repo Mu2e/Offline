@@ -1,10 +1,17 @@
-  $Id: v2_1_2.txt,v 1.17 2013/02/27 03:52:09 genser Exp $
-  $Author: genser $
-  $Date: 2013/02/27 03:52:09 $
+  $Id: v2_1_2.txt,v 1.18 2013/02/28 18:09:24 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2013/02/28 18:09:24 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_1_2
+
+17) February 28, 2013 kutschke
+    GeneralUtilities/inc/BitMap.hh
+     - Converted it so that the value of the enums are bit numbers, not
+       bit masks.
+     - Removed all methods that take a mask_type as an argument, in
+       favor of operators that take a bit_type.
 
 16) February 22, 2013 genser
 
