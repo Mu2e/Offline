@@ -1,8 +1,8 @@
 //
 //
-// $Id: SortedStepPoints.cc,v 1.4 2011/05/24 20:03:31 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/24 20:03:31 $
+// $Id: SortedStepPoints.cc,v 1.5 2013/02/28 20:26:13 murat Exp $
+// $Author: murat $
+// $Date: 2013/02/28 20:26:13 $
 //
 // Original author Rob Kutschke
 //
@@ -33,26 +33,26 @@ namespace mu2e {
       double z = step.position().z();
       zmin = ( z < zmin ) ? z : zmin;
       zmax = ( z > zmax ) ? z : zmax;
-      cout << "Adding: " << z << endl;
+//       cout << "Adding: " << z << endl;
       steps_.push_back( &step );
     }
 
     // Middle of the z range of the track.
     double zmid = (zmin + zmax)/2.;
-    cout << "Mid: "
-         << trackId_ << " "
-         << steps_.size() << " "
-         << allSteps.size() << " "
-         << zmin << " "
-         << zmax << " "
-         << zmid
-         << endl;
+//     cout << "Mid: "
+//          << trackId_ << " "
+//          << steps_.size() << " "
+//          << allSteps.size() << " "
+//          << zmin << " "
+//          << zmax << " "
+//          << zmid
+//          << endl;
 
     for ( int i=0;i<5; ++i ){
-      cout << "Step check: "
-           << i << " "
-           << steps_[i]
-           << endl;
+//       cout << "Step check: "
+//            << i << " "
+//            << steps_[i]
+//            << endl;
     }
 
 
@@ -66,20 +66,20 @@ namespace mu2e {
       if ( d < dmin ){
         dmin = d;
         midByZ_ = step;
-        cout << "             Mark" <<endl;
+	//        cout << "             Mark" <<endl;
       }
-      cout << "Test: "
-           << step->position().z() << " "
-           << step << " "
-           << d << " "
-           << dmin
-           << endl;
+//       cout << "Test: "
+//            << step->position().z() << " "
+//            << step << " "
+//            << d << " "
+//            << dmin
+//            << endl;
 
     }
-    cout << "Answer: "
-         << midByZ_->position().z() << " "
-         << midByZ_->position().z()-dmin << " "
-         << endl;
+//     cout << "Answer: "
+//          << midByZ_->position().z() << " "
+//          << midByZ_->position().z()-dmin << " "
+//          << endl;
   }
 
 }
