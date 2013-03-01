@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.10 2013/02/08 21:13:52 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/08 21:13:52 $
+// $Id: constructTS.cc,v 1.11 2013/03/01 00:13:35 logash Exp $
+// $Author: logash $
+// $Date: 2013/03/01 00:13:35 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -11,7 +11,7 @@
 // Construct the TS.  Parent volume is the air inside of the hall.
 
 // C++ includes
-//#include <iostream>
+#include <iostream>
 
 // Framework includes
 #include "cetlib/exception.h"
@@ -38,6 +38,8 @@
 #include "G4Color.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
+#include "G4Trd.hh"
+//#include "G4CutTubs.hh"
 #include "G4IntersectionSolid.hh"
 #include "G4SubtractionSolid.hh"
 
@@ -664,6 +666,76 @@ namespace mu2e {
                                                 );
     }
 
+    // Add muon degrader to the center of TS5
+    // Degrader is made of several layers. 
+    // Each layer is intersection of cylinder and trapezoid.
+    
+    bool addDegrader  = _config.getBool("muondegrader.build",false);
+    vector<double> degraderR, degraderDZB, degraderDZT, degraderPhi;
+    _config.getVectorDouble("muondegrader.R", degraderR, vector<double>() );
+    _config.getVectorDouble("muondegrader.DZB", degraderDZB, vector<double>() );
+    _config.getVectorDouble("muondegrader.DZT", degraderDZT, vector<double>() );
+    _config.getVectorDouble("muondegrader.Phi", degraderPhi, vector<double>() );
+
+    if( degraderR.size()!=degraderDZB.size() || degraderR.size()!=degraderDZT.size() ||
+	degraderR.size()!=degraderPhi.size() ) {
+      cout << __func__ << " Warning: MuonDegrader is not build - dimensions don't match." << endl;
+      addDegrader = false;
+    }
+
+    if( addDegrader ) {
+
+      G4Material* degraderMaterial  = materialFinder.get("muondegrader.materialName");
+      
+      for( unsigned int i=0; i<degraderR.size(); ++i ) {
+	
+	VolumeInfo degraderInfo;
+	
+	ostringstream dname;  dname << "MuonDegrader" << i;
+	degraderInfo.name = dname.str();
+
+	ostringstream dsname1;  dsname1 << "MuonDegrader_disk" << i;
+	ostringstream dsname2;  dsname2 << "MuonDegrader_trd" << i;
+
+	double R1 = degraderR[i];
+	double R2 = ( i<=0 ) ? coll5InnerRadius : degraderR[i-1];
+	G4Tubs *degrader_disk = new G4Tubs(dsname1.str(),R1,R2,
+					   degraderDZB[i]/2.0,
+					   (1.5-degraderPhi[i])*CLHEP::pi, 
+					   degraderPhi[i]*CLHEP::twopi);
+
+	G4Trd *degrader_trd = new G4Trd(dsname2.str(),
+					coll5InnerRadius,coll5InnerRadius,
+					degraderDZT[i]/2.0,degraderDZB[i]/2.0,
+					R2/2);
+	
+	G4RotationMatrix* degRot = reg.add(G4RotationMatrix());
+	degRot->rotateX(-90.0*CLHEP::degree);
+	G4ThreeVector degTrans(0.0,-R2/2,0.0);
+
+	degraderInfo.solid = new G4IntersectionSolid(degraderInfo.name,
+						     degrader_disk,
+						     degrader_trd,
+						     degRot,
+						     degTrans);
+
+	finishNesting(degraderInfo,
+		      degraderMaterial,
+		      0,
+		      coll5Param.originInMu2e() - ts5VacInfo.centerInMu2e(),
+		      ts5VacInfo.logical,
+		      0,
+		      collVisible,
+		      G4Color::Blue(),
+		      collSolid,
+		      forceAuxEdgeVisible,
+		      placePV,
+		      doSurfaceCheck
+		      );
+      }
+
+    }
+    
   } // end Mu2eWorld::constructTS
 
 }

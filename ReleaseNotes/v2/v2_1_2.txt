@@ -1,10 +1,20 @@
-  $Id: v2_1_2.txt,v 1.19 2013/02/28 22:35:07 logash Exp $
+  $Id: v2_1_2.txt,v 1.20 2013/03/01 00:13:35 logash Exp $
   $Author: logash $
-  $Date: 2013/02/28 22:35:07 $
+  $Date: 2013/03/01 00:13:35 $
 
  Still under construction
 
            Release notes for Mu2e Offline software, v2_1_2
+
+19) February 28, 2012 logash
+
+    Added muon degrader inside collimator 5, as described in doc-db 2749-v1.
+
+    Mu2eG4/src/ConstructMaterials.cc: added very low density polyethylene and Be
+    Mu2eG4/src/constructTS.cc: added code to construct the degrader
+    Mu2eG4/test/geom_01.txt: added degrader configuration.
+
+    By default the degrader is not build.
 
 18) February 28, 2012 logash
 

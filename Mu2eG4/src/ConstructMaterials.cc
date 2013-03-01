@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.36 2012/12/04 00:51:26 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:26 $
+// $Id: ConstructMaterials.cc,v 1.37 2013/03/01 00:13:35 logash Exp $
+// $Author: logash $
+// $Date: 2013/03/01 00:13:35 $
 //
 // Original author Rob Kutschke
 //
@@ -181,6 +181,28 @@ namespace mu2e {
       G4Material* mH  = findMaterialOrThrow("G4_H");
       Polyethylene0956->AddMaterial( mH, 0.143711);
       Polyethylene0956->AddMaterial( mC, 0.856289);
+    }
+
+    // Not real, very thin Polyethylene
+    mat = isNeeded(materialsToLoad, "Polyethylene0010");
+    if ( mat.doit ){
+      G4Material* Polyethylene0010 =
+        new G4Material( mat.name, 0.010*g/cm3, 2);
+      G4Material* mC  = findMaterialOrThrow("G4_C");
+      G4Material* mH  = findMaterialOrThrow("G4_H");
+      Polyethylene0010->AddMaterial( mH, 0.143711);
+      Polyethylene0010->AddMaterial( mC, 0.856289);
+    }
+
+    // Not real, very thin Polyethylene
+    mat = isNeeded(materialsToLoad, "Polyethylene0020");
+    if ( mat.doit ){
+      G4Material* Polyethylene0020 =
+        new G4Material( mat.name, 0.020*g/cm3, 2);
+      G4Material* mC  = findMaterialOrThrow("G4_C");
+      G4Material* mH  = findMaterialOrThrow("G4_H");
+      Polyethylene0020->AddMaterial( mH, 0.143711);
+      Polyethylene0020->AddMaterial( mC, 0.856289);
     }
 
     //   note that G4 has:
@@ -793,6 +815,15 @@ namespace mu2e {
       G4Element* C  = getElementOrThrow("C");
       Polypropylene->AddElement(H, 3 );
       Polypropylene->AddElement(C, 1 );
+    }
+
+    mat = isNeeded(materialsToLoad, "BeFoam_018");
+    if ( mat.doit ){
+      G4double density;
+      G4int nel;
+      G4Material *BeFoam_018 = new G4Material(mat.name, density = 0.018*g/cm3, nel=1);
+      G4Element* Be  = getElementOrThrow("Be");
+      BeFoam_018->AddElement(Be, 100.0*perCent );
     }
 
     mat = isNeeded(materialsToLoad, "CFoam_332");

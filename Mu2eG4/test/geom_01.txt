@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.174 2013/02/07 23:04:21 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/07 23:04:21 $
+// $Id: geom_01.txt,v 1.175 2013/03/01 00:13:35 logash Exp $
+// $Author: logash $
+// $Date: 2013/03/01 00:13:35 $
 //
 // Original author Rob Kutschke
 //
@@ -119,7 +119,8 @@ vector<string> mu2e.materials =
     "Polyethylene092Li075d106", "Polyethylene092", "StainlessSteel", "Lyso_01",
     "A95083", "NbTi", "NbTiCu", "AL999Ni001", "C_19_H_20_O_4", "C_10_H_18_O_4",
     "C_9_H_22_N_2", "Epotek301", "G10", "SCCableInsulation", "SCCable",
-    "ZirconiumHydridePolyethylene", "EGlass", "G10_FR4"
+    "ZirconiumHydridePolyethylene", "EGlass", "G10_FR4",
+    "Polyethylene0020"
 };
 
 // Control printout of element and material lists.
@@ -275,6 +276,14 @@ double coll5.innerRadius   = 128.0; // not to exceed midRadius1
 string coll5.materialName = "G4_Cu";
 string coll5.absorberMaterialName = "Polyethylene092";
 
+// Muon degrader
+
+bool muondegrader.build = false;
+string muondegrader.materialName = "Polyethylene0020";
+vector<double> muondegrader.R = {100,80,60};
+vector<double> muondegrader.DZB = {500.0,300.0,100.0};
+vector<double> muondegrader.DZT = { 50.0, 30.0, 10.0};
+vector<double> muondegrader.Phi = {0.5,0.2,0.2};
 
 // Virtual detectors
 
