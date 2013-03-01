@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.11 2013/03/01 00:13:35 logash Exp $
+// $Id: constructTS.cc,v 1.12 2013/03/01 21:58:26 logash Exp $
 // $Author: logash $
-// $Date: 2013/03/01 00:13:35 $
+// $Date: 2013/03/01 21:58:26 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -352,7 +352,14 @@ namespace mu2e {
                   doSurfaceCheck);
 
     // Place Pbar absorber between Coll31 and Coll32
+    // Pbar absorber is made of two pieces:
+    //  -- vacuum wall, which covers the whole inner part of TS3
+    //     it is controlled by pbar.* parameters
+    //  -- wedge, which starts near center and extends upward
+    //     it is controlled by pbarwedge.* parameters
 
+    // -- vacuum wall
+    
     double pbarHalfLength     = _config.getDouble("pbar.halfLength");
     G4Material* pbarMaterial  = materialFinder.get("pbar.materialName");
     double pbarParams[5]  = { 0.0,   rVac, pbarHalfLength, 0.0, CLHEP::twopi };
@@ -371,6 +378,59 @@ namespace mu2e {
                                     placePV,
                                     doSurfaceCheck
                                     );
+
+    // -- pbar wedge
+    
+    bool addPbarWedge    = _config.getBool("pbarwedge.build",false);
+    double pbarWedge_y0  = _config.getDouble("pbarwedge.y0",0);
+    double pbarWedge_y1  = _config.getDouble("pbarwedge.y1",rVac-1);
+    double pbarWedge_dz0 = _config.getDouble("pbarwedge.dz0",0.001);
+    double pbarWedge_dz1 = _config.getDouble("pbarwedge.dz1",0.001);
+
+    if( addPbarWedge ) {
+
+      VolumeInfo pbarWedgeInfo;
+      
+      pbarWedgeInfo.name = "PbarAbsWedge";
+
+      double pbarWedge_dz = ( pbarWedge_dz0<pbarWedge_dz1 ) ? pbarWedge_dz1 : pbarWedge_dz0;
+      double pbarWedge_h = pbarWedge_y1 - pbarWedge_y0;
+      
+      double pbarWedge_dy = (pbarWedge_y1 + pbarWedge_y0)/2.;
+      
+      G4Tubs *pbarWedge_disk = new G4Tubs("PbarAbsWedge_disk",
+					  0,rVac,pbarWedge_dz/2.,0,CLHEP::twopi);
+
+      G4Trd *pbarWedge_trd = new G4Trd("PbarAbsWedge_trd",
+				       rVac,rVac,
+				       pbarWedge_dz0/2.,pbarWedge_dz1/2.,
+				       pbarWedge_h/2.);
+      
+      G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
+      pbarWedgeRot->rotateX(90.0*CLHEP::degree);
+      G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_dy,0.0);
+      
+      pbarWedgeInfo.solid = new G4IntersectionSolid(pbarWedgeInfo.name,
+						    pbarWedge_disk,
+						    pbarWedge_trd,
+						    pbarWedgeRot,
+						    pbarWedgeTrans);
+      
+      finishNesting(pbarWedgeInfo,
+		    pbarMaterial,
+		    0,
+		    G4ThreeVector(0.,0.,pbarWedge_dz/2+pbarHalfLength),
+		    ts3VacInfo.logical,
+		    0,
+		    collVisible,
+		    G4Color::Yellow(),
+		    collSolid,
+		    forceAuxEdgeVisible,
+		    placePV,
+		    doSurfaceCheck
+		    );
+
+    }
 
     // Build TS4.
 
