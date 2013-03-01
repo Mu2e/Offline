@@ -1,16 +1,16 @@
-  $Id: v2_1_2.txt,v 1.23 2013/03/01 22:57:35 kutschke Exp $
+  $Id: v2_1_2.txt,v 1.24 2013/03/01 22:58:56 kutschke Exp $
   $Author: kutschke $
-  $Date: 2013/03/01 22:57:35 $
+  $Date: 2013/03/01 22:58:56 $
 
            Release notes for Mu2e Offline software, v2_1_2
 
 21) March 1, 2013 logash
 
     Changed the pbar geometry according to docdb 2121.
-    The pbar absorber is now made of two pieces: the vacuum wall, 
-    which is a foil in the middle of TS3; and the wedge (switchable), 
-    which is narrow near bottom of the collimator 3 hole and become 
-    thicker with y. The new configuration parameters in the geometry 
+    The pbar absorber is now made of two pieces: the vacuum wall,
+    which is a foil in the middle of TS3; and the wedge (switchable),
+    which is narrow near bottom of the collimator 3 hole and become
+    thicker with y. The new configuration parameters in the geometry
     file:
        bool pbarwedge.build = false;
        double pbarwedge.y0  = -10.;
@@ -18,8 +18,8 @@
        double pbarwedge.dz0 = 0.001;
        double pbarwedge.dz1 = 1.1;
 
-    By default, the old geometry in used: 0.180 mm, foil only. 
-    In order to switch to the new geometry, change the following 
+    By default, the old geometry in used: 0.180 mm, foil only.
+    In order to switch to the new geometry, change the following
     two lines in geom_01.txt:
        double pbar.halfLength = 60.0e-3;
        bool pbarwedge.build = true;
@@ -74,7 +74,7 @@
 
 15) February 22, 2013 genser
 
-    Evolved g4study 
+    Evolved g4study
       Analyses/src/Mu2eG4StudyReadBack_module.cc
       Mu2eG4/src/StudySteppingAction.cc
       Mu2eG4/src/StudyTrackingAction.cc
@@ -99,7 +99,7 @@
 
 11) February 14, 2013 genser
 
-    Added 
+    Added
      Mu2eG4/test/g4validate_01.C
     to be used with Mu2eG4/test/g4validate_01.fcl (it uses
     KalmanTests/test/TrkFitDiag.C) Modified the interface of
@@ -115,7 +115,7 @@
 
 
 9) February 12, 2013 genser
-  
+
    Added and fcl file and a root macro for analyzing tracker hits and
    track fits based on Dave's code
 
@@ -200,13 +200,13 @@
 
    Maintaning setup_g49... scripts:
 
-   Deprecating setup_g496.sh due to a problem with multiple scatering in a magnetic field 
+   Deprecating setup_g496.sh due to a problem with multiple scatering in a magnetic field
    Updating warning in: setup_g4951.sh
 
 
 1) January 22, 2013 mjlee
    Hard-coded momentum cut for storing PointTrajectory at
-    controlTrajectorySaving and saveThisTrajectory has moved to 
+    controlTrajectorySaving and saveThisTrajectory has moved to
     SimpleConfig. Modified :
       Mu2eG4/inc/Mu2eG4UserHelpers.hh
       Mu2eG4/inc/StudyTrackingAction.hh
@@ -214,4 +214,4 @@
       Mu2eG4/src/Mu2eG4UserHelpers.cc
       Mu2eG4/src/StudyTrackingAction.cc
       Mu2eG4/src/TrackingAction.cc
-      Mu2eG4/test/geom_01.txt 
+      Mu2eG4/test/geom_01.txt
