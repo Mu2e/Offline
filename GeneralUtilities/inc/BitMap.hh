@@ -3,24 +3,28 @@
 //
 // Template used to instantiate the bit map classes.
 //
-//   $Id: BitMap.hh,v 1.2 2013/02/28 18:07:34 kutschke Exp $
+//   $Id: BitMap.hh,v 1.3 2013/03/01 01:22:15 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2013/02/28 18:07:34 $
+//   $Date: 2013/03/01 01:22:15 $
 //
 // The user must supply a detail class with the following requirements:
 //
 //   1) The detail class must contain an enum named bit_type.
 //      The values of the enums are bit numbers on the domain [0,31].
 //
-//   2) The detail class must contain two static functions:
+//   2) The detail class must provide a typedef, named mask_type that specifices
+//      the data type of the bitmap member datum.
+//
+//   3) The detail class must contain two static functions:
 //       static std::string const& typeName();
-//       static std::map<mu2e::BitMap_mask_type,std::string> const& bitNames();
+//       static std::map<mask_type,std::string> const& bitNames();
 //
 //      The first function returns one string that holds the name of the type, usually the same name as the .hh file.
 //      The template uses it decorating some printed output.
 //
 //      The second function returns an std::map that implements the cross reference between each mask_type value and
-//      its string representation. Note that this is NOT a cross-reference between bit names and their string representations.
+//      its string representation. Note that this is NOT a cross-reference between bit names and their
+//      string representations.
 //
 // Notes:
 //
@@ -61,6 +65,7 @@
 //    It is possible to create an invalid value by casting an arbitrary int into a bit_type.
 //
 
+#include "GeneralUtilities/inc/toHex.hh"
 
 #include <string>
 #include <vector>
@@ -72,17 +77,13 @@
 
 namespace mu2e {
 
-  // This type should be used by the Detail classes as the first template parameter of
-  // the type returned by their bitNames method.
-  typedef unsigned BitMap_mask_type;
-
   template < class DETAIL > class BitMap : public DETAIL {
 
   public:
 
 
-    typedef typename DETAIL::bit_type  bit_type;
-    typedef          BitMap_mask_type  mask_type;
+    typedef typename DETAIL::bit_type       bit_type;
+    typedef typename DETAIL::mask_type      mask_type;
     typedef std::map<mask_type,std::string> map_type;
 
     explicit BitMap():_value(empty_value()){}
@@ -135,7 +136,7 @@ namespace mu2e {
     // By design there is no merge method taking an argument of built-in integral type.
 
     // Accessors.
-    mask_type value() const { return _value;}
+    std::string hex() const { return toHex(static_cast<unsigned>(_value)); }
 
     bool empty() const{
       return (_value == static_cast<mask_type>(0) );
@@ -176,10 +177,6 @@ namespace mu2e {
     }
 
     // Implicit conversion versions of the accessors.
-    operator mask_type ()const{
-      return _value;
-    }
-
     operator std::string() const{
       return stringRep();
     }
@@ -209,7 +206,7 @@ namespace mu2e {
       return true;
     }
 
-    // Tne number of defined bits.
+    // The number of defined bits.
     static size_t size(){ return DETAIL::bitNames().size(); }
 
     // Access the translation map.
@@ -281,9 +278,10 @@ namespace mu2e {
   std::ostream& operator<<(std::ostream& ost,
                            const BitMap<DETAIL> & value ){
 
-    std::string validity = BitMap<DETAIL>::isValid(value) ? "" : "Invalid value: undefined bits have been set:  ";
+    std::string validity = value.isValid() ? "" :
+      "Invalid value: undefined bits have been set: The known bits are: ";
     ost << "( "
-        << value.value() << ": "
+        << value.hex() << " : "
         << validity
         << value.stringRep()
         << " )";
