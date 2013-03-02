@@ -3,9 +3,9 @@
 //
 // Template used to instantiate the bit map classes.
 //
-//   $Id: BitMap.hh,v 1.3 2013/03/01 01:22:15 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2013/03/01 01:22:15 $
+//   $Id: BitMap.hh,v 1.4 2013/03/02 20:24:33 brownd Exp $
+//   $Author: brownd $
+//   $Date: 2013/03/02 20:24:33 $
 //
 // The user must supply a detail class with the following requirements:
 //
@@ -44,7 +44,7 @@
 // 2) By design there is no operator<( BitMap const& ) since that would be ambiguous for comparison
 //    by id or by string representation. Instead there are two free functions, lessByValue and lessByStringRep.
 //
-// 3) By design there are no overloads of merge or hasProperties that take an argument that is of built-in
+// 3) By design there are no overloads of merge or hasAllProperties that take an argument that is of built-in
 //    integral type.  This is needed for as a safety feature - see note 4 for an example.
 //    The are also no overloads that take an argument of mask_type, to prevent people from hand constructing
 //    illegal masks and using them.
@@ -53,11 +53,11 @@
 //       BitMap m;
 //       m.merge(DETAIL::property1|DETAIL::property2);
 //    or
-//       m.hasProperties(DETAIL::property1|DETAIL::property2);
+//       m.hasAllProperties(DETAIL::property1|DETAIL::property2);
 //
 //    These will give erroneous results since it is meaningful to OR objects of mask_type but not of bit_type.
 //    These examples will not compile because result of the OR operation is a object of type int and there are
-//    no overloads of merge or hasProperties that take an int.
+//    no overloads of merge or hasAllProperties that take an int.
 //
 // 5) The code enforces the following notion of validity.  A value is valid if all of bits that are set in the
 //    value correspond to bits that are defined by the bitNames method of the Detail class.  It is the responsibility
@@ -129,6 +129,14 @@ namespace mu2e {
       _value = static_cast<mask_type>( _value | arg._value);
     }
 
+    void clear( bit_type bitNumber) {
+      _value = static_cast<mask_type>(_value & ~(1<<bitNumber) );
+    }
+
+    void clear( BitMap arg) {
+      _value = static_cast<mask_type>(_value & ~arg._value);
+    }
+
     void reset(){
       _value = empty_value();
     }
@@ -147,12 +155,20 @@ namespace mu2e {
       return isValid(_value);
     }
 
-    bool hasProperties( bit_type arg) const {
-      return hasProperties(BitMap(arg));
+    bool hasAllProperties( bit_type arg) const {
+      return hasAllProperties(BitMap(arg));
     }
 
-    bool hasProperties( BitMap arg) const {
+    bool hasAllProperties( BitMap arg) const {
       return (_value & arg._value ) == arg._value;
+    }
+
+    bool hasAnyProperty( BitMap arg) const {
+      return (_value & arg._value ) != 0;
+    }
+
+    bool hasAnyProperty( bit_type arg) const {
+      return hasAnyProperty(BitMap(arg));
     }
 
     // Form a string representation of the bitmap.
@@ -167,7 +183,7 @@ namespace mu2e {
       map_type const& bitNames = DETAIL::bitNames();
       for ( typename map_type::const_iterator i=bitNames.begin(), e=bitNames.end();
             i != e; ++i ){
-        if ( hasPropertiesByMask(i->first) ) {
+        if ( hasAllPropertiesByMask(i->first) ) {
           if ( properties.size() > 0 ) properties += " ";
           properties += i->second;
         }
@@ -233,7 +249,7 @@ namespace mu2e {
       return static_cast<mask_type>(0);
     }
 
-    bool hasPropertiesByMask( mask_type mask) const {
+    bool hasAllPropertiesByMask( mask_type mask) const {
       return (_value & mask ) == mask;
     }
 
