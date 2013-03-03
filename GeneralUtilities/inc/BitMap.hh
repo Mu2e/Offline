@@ -4,9 +4,9 @@
 //
 // Template used to instantiate the bit map classes.
 //
-//   $Id: BitMap.hh,v 1.5 2013/03/03 17:55:43 kutschke Exp $
+//   $Id: BitMap.hh,v 1.6 2013/03/03 18:06:03 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2013/03/03 17:55:43 $
+//   $Date: 2013/03/03 18:06:03 $
 //
 // The user must supply a detail class with the following requirements:
 //
@@ -249,7 +249,7 @@ namespace mu2e {
         // Need the temporary in case mask_type is char; we want it to be treated as an unsigned.
         unsigned long tmp(i->second);
 
-        ost << std::setw(10) << tmp << " " << i->first << std::endl;
+        ost << std::setw(10) << toHex(tmp) << " " << i->first << std::endl;
       }
     }
 
