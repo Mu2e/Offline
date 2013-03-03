@@ -1,23 +1,29 @@
+
 #ifndef GeneralUtilities_BitMap_hh
 #define GeneralUtilities_BitMap_hh
 //
 // Template used to instantiate the bit map classes.
 //
-//   $Id: BitMap.hh,v 1.4 2013/03/02 20:24:33 brownd Exp $
-//   $Author: brownd $
-//   $Date: 2013/03/02 20:24:33 $
+//   $Id: BitMap.hh,v 1.5 2013/03/03 17:55:43 kutschke Exp $
+//   $Author: kutschke $
+//   $Date: 2013/03/03 17:55:43 $
 //
 // The user must supply a detail class with the following requirements:
 //
 //   1) The detail class must contain an enum named bit_type.
-//      The values of the enums are bit numbers on the domain [0,31].
+//      The legal values of the enums are bit numbers that fit inside the mask_type, defined next.
 //
 //   2) The detail class must provide a typedef, named mask_type that specifices
 //      the data type of the bitmap member datum.
 //
-//   3) The detail class must contain two static functions:
+//      If mask_type is char, then legal bit values are on the domain [0,7].
+//      If mask_type is unsigned short, then legal bit values are on the domain [0,15].
+//      And so on.  This has been tested for mask_type up to unsigned long (64 bits).
+//
+//   3) The detail class must contain three static functions:
 //       static std::string const& typeName();
-//       static std::map<mask_type,std::string> const& bitNames();
+//       static std::map<std::string,mask_type> const& bitNames();
+//       static mask_type bit_to_mask ( bit_type c );
 //
 //      The first function returns one string that holds the name of the type, usually the same name as the .hh file.
 //      The template uses it decorating some printed output.
@@ -25,6 +31,8 @@
 //      The second function returns an std::map that implements the cross reference between each mask_type value and
 //      its string representation. Note that this is NOT a cross-reference between bit names and their
 //      string representations.
+//
+//      The third function converts a bit_type to the corresponding mask_type.
 //
 // Notes:
 //
@@ -44,20 +52,21 @@
 // 2) By design there is no operator<( BitMap const& ) since that would be ambiguous for comparison
 //    by id or by string representation. Instead there are two free functions, lessByValue and lessByStringRep.
 //
-// 3) By design there are no overloads of merge or hasAllProperties that take an argument that is of built-in
-//    integral type.  This is needed for as a safety feature - see note 4 for an example.
+// 3) By design there are no overloads of merge, clear, hasAllProperties or hasAnyProperties that take an argument
+//    that is of built-in integral type.  This is needed for as a safety feature - see note 4 for an example.
 //    The are also no overloads that take an argument of mask_type, to prevent people from hand constructing
 //    illegal masks and using them.
 //
-// 4) Consider the following:
+// 4) Consider the following pieces of wrong code:
+//
 //       BitMap m;
 //       m.merge(DETAIL::property1|DETAIL::property2);
 //    or
 //       m.hasAllProperties(DETAIL::property1|DETAIL::property2);
 //
-//    These will give erroneous results since it is meaningful to OR objects of mask_type but not of bit_type.
-//    These examples will not compile because result of the OR operation is a object of type int and there are
-//    no overloads of merge or hasAllProperties that take an int.
+//    These will give erroneous results since it is not meaningful to OR objects of bit_type.  It is only legal to
+//    OR objects of mask_type. These examples will not compile because result of the OR operation is a object of
+//    type int and there are no overloads of merge, etc that take an int.
 //
 // 5) The code enforces the following notion of validity.  A value is valid if all of bits that are set in the
 //    value correspond to bits that are defined by the bitNames method of the Detail class.  It is the responsibility
@@ -81,15 +90,14 @@ namespace mu2e {
 
   public:
 
-
     typedef typename DETAIL::bit_type       bit_type;
     typedef typename DETAIL::mask_type      mask_type;
-    typedef std::map<mask_type,std::string> map_type;
+    typedef std::map<std::string,mask_type> map_type;
 
     explicit BitMap():_value(empty_value()){}
 
     // Explicit or not? See note 1
-    BitMap( bit_type value): _value(1<<value) {}
+    BitMap( bit_type value): _value(DETAIL::bit_to_mask(value)) {}
 
     // Constructor from a vector of bit names; must match the names used in the detail class.
     explicit BitMap( std::vector<std::string> const& names ):_value(empty_value()){
@@ -116,13 +124,13 @@ namespace mu2e {
 
     // Additional assignment operator. See note 1.
     BitMap& operator=( bit_type c){
-      _value = 1<<c;
+      _value = DETAIL::bit_to_mask(c);
       return *this;
     }
 
     // Two merge methods; see notes 3 and 4.
     void merge( bit_type bitNumber){
-      _value = static_cast<mask_type>( _value | (1<<bitNumber) );
+      _value = static_cast<mask_type>( _value | DETAIL::bit_to_mask(bitNumber) );
     }
 
     void merge( BitMap arg){
@@ -130,7 +138,7 @@ namespace mu2e {
     }
 
     void clear( bit_type bitNumber) {
-      _value = static_cast<mask_type>(_value & ~(1<<bitNumber) );
+      _value = static_cast<mask_type>(_value & ~bit_to_mask(bitNumber) );
     }
 
     void clear( BitMap arg) {
@@ -183,9 +191,9 @@ namespace mu2e {
       map_type const& bitNames = DETAIL::bitNames();
       for ( typename map_type::const_iterator i=bitNames.begin(), e=bitNames.end();
             i != e; ++i ){
-        if ( hasAllPropertiesByMask(i->first) ) {
+        if ( hasAllPropertiesByMask(i->second) ) {
           if ( properties.size() > 0 ) properties += " ";
-          properties += i->second;
+          properties += i->first;
         }
       }
       return properties;
@@ -205,6 +213,10 @@ namespace mu2e {
 
     bool operator==( BitMap arg) const{
       return ( _value == arg._value );
+    }
+
+    bool lessByValue( BitMap arg ) const{
+      return ( _value < arg._value );
     }
 
     // A value is invalid if any bits not defined in the detail class are set.
@@ -233,10 +245,13 @@ namespace mu2e {
       ost << "Defined mask values for " << DETAIL::typeName() << std::endl;
       for ( typename map_type::const_iterator i=bitNames().begin(), e=bitNames().end();
             i != e; ++i ){
-        ost << std::setw(10) << i->first << " " << i->second << std::endl;
+
+        // Need the temporary in case mask_type is char; we want it to be treated as an unsigned.
+        unsigned long tmp(i->second);
+
+        ost << std::setw(10) << tmp << " " << i->first << std::endl;
       }
     }
-
 
   private:
 
@@ -255,23 +270,14 @@ namespace mu2e {
 
     mask_type findMaskByNameOrThrow( std::string const& name ){
 
-      typename map_type::const_iterator j = findMaskByName(name);
+      typename map_type::const_iterator j = bitNames().find(name);
       if ( j == bitNames().end() ){
         std::ostringstream os;
         os << DETAIL::typeName() << " invalid mask name : " << name;
         throw std::out_of_range( os.str() );
       }
-      return j->first;
+      return j->second;
 
-    }
-
-    typename map_type::const_iterator findMaskByName( std::string const& name ){
-
-      for ( typename map_type::const_iterator j=bitNames().begin();
-            j !=bitNames().end(); ++j ) {
-        if ( j->second == name ) return j;
-      }
-      return bitNames().end();
     }
 
     // Compute a mask in which all bits defined in the detail class are set.
@@ -281,9 +287,8 @@ namespace mu2e {
       map_type const& bitNames = DETAIL::bitNames();
       for ( typename map_type::const_iterator i=bitNames.begin(), e=bitNames.end();
             i != e; ++i ){
-          tmp = tmp | i->first;
+          tmp = tmp | i->second;
       }
-
       return tmp;
     }
 
@@ -307,7 +312,7 @@ namespace mu2e {
   template < class DETAIL >
   inline
   bool lessByValue( BitMap<DETAIL> const& rhs, BitMap<DETAIL> const& lhs ){
-    return ( rhs.value() < lhs.value() );
+    return ( rhs.lessByValue(lhs) );
   }
 
   template < class DETAIL >
