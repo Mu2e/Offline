@@ -4,9 +4,9 @@
 //
 // Template used to instantiate the bit map classes.
 //
-//   $Id: BitMap.hh,v 1.6 2013/03/03 18:06:03 kutschke Exp $
+//   $Id: BitMap.hh,v 1.7 2013/03/03 18:39:57 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2013/03/03 18:06:03 $
+//   $Date: 2013/03/03 18:39:57 $
 //
 // The user must supply a detail class with the following requirements:
 //
@@ -152,7 +152,7 @@ namespace mu2e {
     // By design there is no merge method taking an argument of built-in integral type.
 
     // Accessors.
-    std::string hex() const { return toHex(static_cast<unsigned>(_value)); }
+    std::string hex() const { return toHex(static_cast<unsigned long>(_value)); }
 
     bool empty() const{
       return (_value == static_cast<mask_type>(0) );
@@ -220,9 +220,9 @@ namespace mu2e {
     }
 
     // A value is invalid if any bits not defined in the detail class are set.
-    static bool isValid( int value ){
+    static bool isValid( int arg ){
       static mask_type illegalBits = ~legalBits();
-      return ( (value & illegalBits) == 0);
+      return ( (arg & illegalBits) == 0);
     }
 
     static bool isValidOrThrow(int value){
