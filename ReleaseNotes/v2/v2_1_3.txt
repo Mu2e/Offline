@@ -1,6 +1,6 @@
-  $Id: v2_1_3.txt,v 1.2 2013/03/03 18:06:49 kutschke Exp $
+  $Id: v2_1_3.txt,v 1.3 2013/03/03 18:09:27 kutschke Exp $
   $Author: kutschke $
-  $Date: 2013/03/03 18:06:49 $
+  $Date: 2013/03/03 18:09:27 $
 
  Still under construction
 
@@ -14,6 +14,10 @@
          - no longer need findMaskByName method.
      - Add lessByValue in-class method; out of class method was broken.
      - Change format of printAll method to use hex
+
+    GeneralUtilities/inc/toHex.hh
+    GeneralUtilities/src/toHex.cc
+      - Add version for long and unsigned long
 
     RecoDataProducts/inc/StrawHitFlag.hh
     RecoDataProducts/src/StrawHitFlag.cc
