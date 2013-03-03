@@ -3,9 +3,9 @@
 //
 // Class to describe flag bits used for straw hits
 // 
-// $Id: StrawHitFlag.hh,v 1.1 2013/03/02 20:48:10 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/03/02 20:48:10 $
+// $Id: StrawHitFlag.hh,v 1.2 2013/03/03 17:56:25 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/03 17:56:25 $
 //
 // Original author David Brown
 //
@@ -30,9 +30,10 @@ namespace mu2e {
     static std::string trackBitName(unsigned itrk);
     // functions needed for the BitMap template
     static std::string const& typeName();
-    static std::map<mask_type,std::string> const& bitNames();
+    static std::map<std::string,mask_type> const& bitNames();
 // maximum track Id I can flag
     static unsigned _maxTrkId;
+    static mask_type bit_to_mask( bit_type b){ return 1<<b; }
   };
   typedef BitMap<StrawHitFlagDetail> StrawHitFlag;
 

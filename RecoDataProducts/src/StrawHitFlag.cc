@@ -1,9 +1,9 @@
 //
 // Class to describe flag bits used for straw hits
-// 
-// $Id: StrawHitFlag.cc,v 1.1 2013/03/02 20:48:18 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/03/02 20:48:18 $
+//
+// $Id: StrawHitFlag.cc,v 1.2 2013/03/03 17:56:25 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/03 17:56:25 $
 //
 // Original author David Brown
 //
@@ -21,18 +21,18 @@ namespace mu2e {
     return type;
   }
 
-  std::map<StrawHitFlagDetail::mask_type,std::string> const& StrawHitFlagDetail::bitNames() {
-    static std::map<mask_type,std::string> bitnames;
+  std::map<std::string,StrawHitFlagDetail::mask_type> const& StrawHitFlagDetail::bitNames() {
+    static std::map<std::string,mask_type> bitnames;
     if(bitnames.size()==0){
-      bitnames[1<<stereo] = std::string("Stereo");
-      bitnames[1<<energysel] = std::string("EnergySelection");
-      bitnames[1<<radsel] = std::string("RadiusSelection");
-      bitnames[1<<delta] = std::string("DeltaRay");
-      bitnames[1<<isolated] = std::string("Isolated");
-      bitnames[1<<outlier] = std::string("Outlier");
-      bitnames[1<<calosel] = std::string("CalorimeterSelection");
+      bitnames[std::string("Stereo")]               = bit_to_mask(stereo);
+      bitnames[std::string("EnergySelection")]      = bit_to_mask(energysel);
+      bitnames[std::string("RadiusSelection")]      = bit_to_mask(radsel);
+      bitnames[std::string("DeltaRay")]             = bit_to_mask(delta);
+      bitnames[std::string("Isolated")]             = bit_to_mask(isolated);
+      bitnames[std::string("Outlier")]              = bit_to_mask(outlier);
+      bitnames[std::string("CalorimeterSelection")] = bit_to_mask(calosel);
       for(unsigned itrk=0;itrk<=_maxTrkId;++itrk){
-	bitnames[1<<trackBit(itrk)] = trackBitName(itrk);
+	bitnames[trackBitName(itrk)] = bit_to_mask(trackBit(itrk));
       }
     }
     return bitnames;
