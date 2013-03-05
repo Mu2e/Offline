@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.15 2013/01/07 04:10:53 kutschke Exp $
-// $Author: kutschke $
+// $Id: VirtualDetectorMaker.cc,v 1.16 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
 //
 
 #include <iostream>
@@ -27,6 +27,9 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
+
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 using namespace std;
 using namespace CLHEP;
@@ -380,7 +383,155 @@ namespace mu2e {
       vd->addVirtualDetector( VirtualDetectorId::Coll5_OutSurf,
                                ts5pos, ts5rot, coll5pos);
 
+      //placing virtual detector around the calorimeter vanes
+      
+      if (c.getBool("hasVaneCalorimeter",true)){
+	GeomHandle<VaneCalorimeter> cg;
+	
+	int vdIdFront = VirtualDetectorId::EMC_0_FrontIn;
+	int vdIdEdge = VirtualDetectorId::EMC_0_EdgeIn;
+	int vdIdSurf = VirtualDetectorId::EMC_0_SurfIn;	      
 
+	const Hep3Vector FrontOffsetOut(0.0, 0.0, (cg->vane(0).size().z() + vdHL) );
+	const Hep3Vector FrontOffsetIn(0.0, 0.0,  -(cg->vane(0).size().z() + vdHL) );
+
+	const Hep3Vector EdgeOffsetOut(0.0,  (cg->vane(0).size().y() + vdHL), 0.0);
+	const Hep3Vector EdgeOffsetIn(0.0,  -(cg->vane(0).size().y() + vdHL), 0.0);
+	
+	const Hep3Vector ROplaneOffsetOut( -(cg->vane(0).size().x() + vdHL), 0.0, 0.0);
+	const Hep3Vector ROplaneOffsetIn( (cg->vane(0).size().x() + vdHL), 0.0, 0.0);
+
+	for(int i=0; i<cg->nVane(); ++i){
+	    Hep3Vector FrontOffsetInRot(0.0, 0.0, 0.0);
+	    FrontOffsetInRot = (cg->vane(i).rotation().inverse())*FrontOffsetIn;
+	   //  cout<<"vane origin ("<<i<<") = "<<cg->vane(i).origin() <<endl;
+// 	    cout<<"vdIdFront = "<<vdIdFront<<endl;	  
+// 	    cout<<" FrontOffsetInRot = "<<FrontOffsetInRot<<endl;
+	  
+	    vd->addVirtualDetector( vdIdFront,
+				    cg->vane(i).origin(),
+				    0,
+				    FrontOffsetInRot);
+	    ++vdIdFront;
+
+	    Hep3Vector FrontOffsetOutRot(0.0, 0.0, 0.0);
+	    FrontOffsetOutRot = (cg->vane(i).rotation().inverse())*FrontOffsetOut;
+	  
+	    // cout<<"vdIdFront = "<<vdIdFront<<endl;
+	    // cout<<" FrontOffsetOutRot = "<<FrontOffsetOutRot<<endl;
+	    
+
+	    vd->addVirtualDetector( vdIdFront,
+				    cg->vane(i).origin(),
+				    0,
+				    FrontOffsetOutRot);
+	    ++vdIdFront;
+	
+	    Hep3Vector EdgeOffsetInRot(0.0, 0.0, 0.0);
+	    EdgeOffsetInRot = (cg->vane(i).rotation().inverse())*EdgeOffsetIn;
+// 	    cout<<"vane origin ("<<i<<") = "<<cg->vane(i).origin() <<endl;
+// 	    cout<<"vdIdEdge = "<<vdIdEdge<<endl;	  
+// 	    cout<<" EdgeOffsetInRot = "<<EdgeOffsetInRot<<endl;
+	  
+	    vd->addVirtualDetector( vdIdEdge,
+				    cg->vane(i).origin(),
+				    0,
+				    EdgeOffsetInRot);
+	    ++vdIdEdge;
+
+	    Hep3Vector EdgeOffsetOutRot(0.0, 0.0, 0.0);
+	    EdgeOffsetOutRot = (cg->vane(i).rotation().inverse())*EdgeOffsetOut;
+	  
+	 //    cout<<"vdIdEdge = "<<vdIdEdge<<endl;
+// 	    cout<<" EdgeOffsetOutRot = "<<EdgeOffsetOutRot<<endl;
+	    
+
+	    vd->addVirtualDetector( vdIdEdge,
+				    cg->vane(i).origin(),
+				    0,
+				    EdgeOffsetOutRot);
+	    ++vdIdEdge;
+	
+	   
+
+	    Hep3Vector ROplaneOffsetInRot(0.0, 0.0, 0.0);
+	    ROplaneOffsetInRot = (cg->vane(i).rotation().inverse())*ROplaneOffsetIn;
+	  //   cout<<"//---------------------------------------//"<<endl
+// 		<<"//---------------------------------------//"<<endl
+// 		<<"//---------------------------------------//"<<endl;
+// 	    cout<<"vdIdSurf = "<<vdIdSurf<<endl;
+// 	    cout<<" ROplaneOffsetInRot = "<<ROplaneOffsetInRot<<endl;
+	    
+	    vd->addVirtualDetector( vdIdSurf,
+				    cg->vane(i).origin(),
+				    0,
+				    ROplaneOffsetInRot);
+	    ++vdIdSurf;
+	    
+	    Hep3Vector ROplaneOffsetOutRot(0.0, 0.0, 0.0);
+	    ROplaneOffsetOutRot = (cg->vane(i).rotation().inverse())*ROplaneOffsetOut;
+	  //   cout<<"vdIdSurf = "<<vdIdSurf<<endl;	   
+// 	    cout<<" ROplaneOffsetOutRot = "<<ROplaneOffsetOutRot<<endl;
+
+	    vd->addVirtualDetector( vdIdSurf,
+				    cg->vane(i).origin(),
+				    0,
+				    ROplaneOffsetOutRot);
+	    ++vdIdSurf;
+	  }
+	    
+      }
+      
+      if (c.getBool("hasDiskCalorimeter",true)){
+	GeomHandle<DiskCalorimeter> cg;
+	
+	int vdIdSurf = VirtualDetectorId::EMC_Disk_0_SurfIn;
+	int vdIdEdge = VirtualDetectorId::EMC_Disk_0_EdgeIn;
+
+	Hep3Vector EdgeOffset(0.0, 0.0, 0.0);
+	const Hep3Vector OffsetOut(0.0, 0.0, (cg->disk(0).size().z() + vdHL) );
+	const Hep3Vector OffsetIn(0.0, 0.0,  -(cg->disk(0).size().z() + vdHL) );
+	
+	for(size_t i=0; i<cg->nDisks(); ++i){
+	 
+	 
+	
+// 	  cout<<"disk origin ("<<i<<") = "<<cg->disk(i).origin() <<endl;
+// 	  cout<<"vdIdSurf = "<<vdIdSurf<<endl;	  
+	  
+	  vd->addVirtualDetector( vdIdSurf,
+				  cg->disk(i).origin(),
+				  0,
+				  OffsetIn);
+	  ++vdIdSurf;
+
+	  // cout<<"vdIdSurf = "<<vdIdSurf<<endl;	  
+	 
+	  vd->addVirtualDetector( vdIdSurf,
+				  cg->disk(i).origin(),
+				  0,
+				  OffsetOut);
+	  ++vdIdSurf;
+	
+	//   cout<<"disk origin ("<<i<<") = "<<cg->disk(i).origin() <<endl;
+// 	  cout<<"vdIdEdge = "<<vdIdEdge<<endl;	  
+	  
+	  vd->addVirtualDetector( vdIdEdge,
+				  cg->disk(i).origin(),
+				  0,
+				  EdgeOffset);
+	  ++vdIdEdge;
+
+	  //	  cout<<"vdIdEdge = "<<vdIdEdge<<endl;
+
+	  vd->addVirtualDetector( vdIdEdge,
+				  cg->disk(i).origin(),
+				  0,
+				  EdgeOffset);
+	  ++vdIdEdge;
+	}
+	    
+      }
     } // if(hasVirtualDetector)
 
     return vd;

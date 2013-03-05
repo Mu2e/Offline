@@ -1,39 +1,20 @@
 //
 // General utilities for the calorimeter's studies
 //
-// $Id: CaloClusterUtilities.cc,v 1.7 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: CaloClusterUtilities.cc,v 1.8 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author G. Pezzullo & G. Tassielli & G. Onorato
 //
 
 #include "CaloCluster/inc/CaloClusterUtilities.hh"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
-#include "CLHEP/Vector/ThreeVector.h"
-
-#include "CLHEP/Vector/Rotation.h"
 #include "BaBar/BaBar/include/Constants.hh"
-//-----------------------------------------
+
 // C++ includes
 #include<iostream>
 
-// Framework includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Utilities/Exception.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Run.h"
 
-// Mu2e includes
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
-#include "MCDataProducts/inc/StatusG4.hh"
-
-//-----------------------------------------
 using namespace std;
 
 namespace mu2e {
@@ -66,12 +47,12 @@ void MCCaloUtilities::printOutCaloInfo() {
 
         for (int i=0; i<4; ++i) {
 
-                Vane const& thevane = cg->getVane(i);
+                Vane const& thevane = cg->vane(i);
                 cout << "Vane " << i << " : "
-                                << "\nOrigin: " << thevane.getOrigin()
-                                << "\nLocal origin: " << thevane.getOriginLocal()
+                                << "\nOrigin: " << thevane.origin()
+                                << "\nLocal origin: " << thevane.originLocal()
                                 << "\nSize: " << thevane.size()
-                                << "\nRotation: " << thevane.getRotation() << endl;
+                                << "\nRotation: " << (thevane.rotation()) << endl;
 
         }
 
@@ -79,15 +60,15 @@ void MCCaloUtilities::printOutCaloInfo() {
 
         for (int j=0; j< nRO/2; ++j) {
 
-                int thevane = cg->getVaneByRO(2*j);
+                int thevane = cg->vaneByRO(2*j);
 
-                cout << "Crystal n. " << cg->getCrystalByRO(2*j);
+                cout << "Crystal n. " << cg->crystalByRO(2*j);
                 cout << "\tVane " << thevane;
 
 
-                CLHEP::Hep3Vector cntr = cg->getCrystalOriginByRO(2*j);
-                CLHEP::Hep3Vector Xaxis = cg->getCrystalAxisByRO(2*j);
-                CLHEP::Hep3Vector Yaxis = cg->getCrystalAxisByRO(2*j).orthogonal();
+                CLHEP::Hep3Vector cntr = cg->crystalOriginByRO(2*j);
+                CLHEP::Hep3Vector Xaxis = cg->crystalAxisByRO(2*j);
+                CLHEP::Hep3Vector Yaxis = cg->crystalAxisByRO(2*j).orthogonal();
                 CLHEP::Hep3Vector Zaxis(0,0,1);
 
                 cout << "\tcenter " << cntr
@@ -114,9 +95,10 @@ void MCCaloUtilities::setTrackAndRO(const art::Event & event,
 
         _localRO = RO;
         art::ServiceHandle<GeometryService> geom;
+
         GeomHandle<VaneCalorimeter> cg;
-        _localCrystal  = cg->getCrystalByRO(_localRO);
-        _localVane = cg->getVaneByRO(_localRO);
+        _localCrystal  = cg->crystalByRO(_localRO);
+        _localVane = cg->vaneByRO(_localRO);
 
         art::Handle<SimParticleCollection> simParticles;
         event.getByLabel(_g4ModuleLabel, simParticles);
@@ -162,9 +144,9 @@ int MCCaloUtilities::getStartingVane(CLHEP::Hep3Vector origin) {
 
         for (size_t i=0; i<cg->nVane(); ++i) {
 
-                Vane const & vane = cg->getVane(i);
-                CLHEP::Hep3Vector rsize = vane.getRotation() * vane.size();
-                CLHEP::Hep3Vector vaneOr = vane.getOrigin();
+                Vane const & vane = cg->vane(i);
+                CLHEP::Hep3Vector rsize = (vane.rotation()) * vane.size();
+                CLHEP::Hep3Vector vaneOr = vane.origin();
 
 
                 if (fabs(origin.getZ() - vaneOr.getZ()) <= fabs(rsize.getZ())) {
@@ -269,23 +251,33 @@ void v_correction_0( double& extrapolThetaV,  double& clCOGv,  double& clCOGvErr
         GeomHandle<VaneCalorimeter> cg;
         double val = 0.0, valErr = 0.0;
         double x = extrapolThetaV;
-        if(x > 100.)  x = 100.;
-        if(x < -100.) x = -100.;
+        if(x > 60.)  x = 60.;
+        if(x < -80.) x = -80.;
 
-        const int d = 5;
+        const int d = 5
+                        , de = 10;
 
         double p[d] = {0.9204, 0.4834, -0.0003745, -4.387e-5, -4.722e-7};
+
+        double pe[de] = {6.926, -0.003834, 0.0005851, 1.217e-5, -1.422e-7, -2.188e-8, -1.26e-10, 6.477e-12, 8.272e-14, 2.32e-16 };
 
         for(int j=0; j<d; ++j){
                 val += p[j]*pow(x, j);
         }
 
-        for(int j=1; j<d; ++j){
-                valErr += j*p[j]*pow(clCOGvErr, j-1);
+        for(int j=0; j<de; ++j){
+                valErr += pe[j]*pow(x, j);
         }
-        valErr += (cg->crystalHalfSize()/sqrt(12.0));
+
+        //valErr += (cg->crystalHalfSize()/sqrt(12.0));
+        valErr *= valErr;
+        valErr += clCOGvErr*clCOGvErr;
+        valErr = std::sqrt(valErr);
+
         val += clCOGv;
+
         clCOGv = val;
+
         clCOGvErr = valErr;
 
 }
@@ -365,8 +357,8 @@ void cog_correction_0(CaloCluster &cluster){
                 //now I take the first crystal of the cluster as a point of reference for calculating the cog
 
                 //Get Z and R from readout
-                double tZ = cg->getCrystalZByRO(thehit.id());
-                double tR = cg->getCrystalRByRO(thehit.id());
+                double tZ = cg->crystalZByRO(thehit.id());
+                double tR = cg->crystalRByRO(thehit.id());
 
                 Z += tZ;
                 RQ += pow(tR, 2);
@@ -420,13 +412,13 @@ void cog(CaloCluster &cluster){
                 CaloHit const& thehit = *ROIds.at(0);
                 //now I take the first crystal of the cluster as a point of reference for calculating the cog
                 if(isfirstCrystal){
-                        res = cg->getCrystalOriginByRO(thehit.id());
+                        res = cg->crystalOriginByRO(thehit.id());
                         isfirstCrystal = false;
                 }
 
                 //Get Z and R from readout
-                double tZ = cg->getCrystalZByRO(thehit.id());
-                double tR = cg->getCrystalRByRO(thehit.id());
+                double tZ = cg->crystalZByRO(thehit.id());
+                double tR = cg->crystalRByRO(thehit.id());
 
                 tZ *=(*itCD)->energyDep();
                 tR*=(*itCD)->energyDep();
@@ -489,16 +481,16 @@ void cog_depth(CaloCluster &cluster, double depth, ClusterMap &clusterMap){
                 CaloHit const& thehit = *ROIds.at(0);
                 //now I take the first crystal of the cluster as a point of reference for calculating the cog
                 if(isfirstCrystal){
-                        res = cg->getCrystalOriginByRO(thehit.id());
+                        res = cg->crystalOriginByRO(thehit.id());
                         isfirstCrystal = false;
-                        int vane = cg->getVaneByRO(thehit.id());
+                        int vane = cg->vaneByRO(thehit.id());
                         clusterMap._vaneId = vane;
 
                 }
 
                //Get Z and R from readout
-                double tZ = cg->getCrystalZByRO(thehit.id());
-                double tR = cg->getCrystalRByRO(thehit.id());
+                double tZ = cg->crystalZByRO(thehit.id());
+                double tR = cg->crystalRByRO(thehit.id());
 
                 V += tR;
                 W += tZ;
@@ -508,6 +500,7 @@ void cog_depth(CaloCluster &cluster, double depth, ClusterMap &clusterMap){
                 clusterMap._rowVec.push_back(tR);
                 clusterMap._columnVec.push_back(tZ);
                 clusterMap._cryEdepVec.push_back((*itCD)->energyDep());
+                clusterMap._timeVec.push_back((*itCD)->time());
 
                 clusterMap._COGrowVec.push_back(tR);
                 clusterMap._COGcolumnVec.push_back(tZ);
@@ -594,15 +587,15 @@ void LOGcogMap(CaloCluster &cluster, double w, double depth, ClusterMap &cluster
 
                 //now I take the first crystal of the cluster as a point of reference for calculating the cog
                 if(isfirstCrystal){
-                        res = cg->getCrystalOriginByRO(thehit.id());
+                        res = cg->crystalOriginByRO(thehit.id());
                         isfirstCrystal = false;
-                        int vane = cg->getVaneByRO(thehit.id());
+                        int vane = cg->vaneByRO(thehit.id());
                         clusterMap._vaneId = vane;
                 }
 
                 //Get Z and R from readout
-                double tZ = cg->getCrystalZByRO(thehit.id());
-                double tR = cg->getCrystalRByRO(thehit.id());
+                double tZ = cg->crystalZByRO(thehit.id());
+                double tR = cg->crystalRByRO(thehit.id());
 
                 clusterMap._rowVec.push_back(tR);
                 clusterMap._columnVec.push_back(tZ);
@@ -677,14 +670,14 @@ CLHEP::Hep3Vector LOGcog(CaloCluster &cluster, double w, double depth){
 
                 //now I take the first crystal of the cluster as a point of reference for calculating the cog
                 if(isfirstCrystal){
-                        res = cg->getCrystalOriginByRO(thehit.id());
+                        res = cg->crystalOriginByRO(thehit.id());
                         isfirstCrystal = false;
 
                 }
 
                 //Get Z and R from readout
-                double tZ = cg->getCrystalZByRO(thehit.id());
-                double tR = cg->getCrystalRByRO(thehit.id());
+                double tZ = cg->crystalZByRO(thehit.id());
+                double tR = cg->crystalRByRO(thehit.id());
 
                 //Multiply Z and R for thhe crystal's energy, which is the weight we use in that algorithm
                 weight = offSet + TMath::Log((*itCD)->energyDep()/sumEi);
@@ -713,5 +706,19 @@ CLHEP::Hep3Vector LOGcog(CaloCluster &cluster, double w, double depth){
 
         return res;
 }
+
+std::vector<int> vecRoId(CaloCluster &cluster){
+
+    std::vector<int> vec;
+      
+     for( CaloCrystalHitPtrVector::const_iterator itCD = cluster.caloCrystalHitsPtrVector().begin(); itCD != cluster.caloCrystalHitsPtrVector().end(); ++itCD){
+                std::vector<art::Ptr<CaloHit> > const& ROIds = (*itCD)->readouts();
+                CaloHit const& thehit = *ROIds.at(0);
+
+		vec.push_back(thehit.id());
+     }
+     
+     return vec;
+  }
 
 }

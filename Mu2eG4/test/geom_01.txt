@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.176 2013/03/01 21:58:26 logash Exp $
-// $Author: logash $
-// $Date: 2013/03/01 21:58:26 $
+// $Id: geom_01.txt,v 1.177 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author Rob Kutschke
 //
@@ -46,10 +46,11 @@ string GDMLFileName     = "mu2e.gdml";
 
 // Some G4 controls which does not allow it to consume all the memory
 // or to spend all the time tracking one bad particle
-int g4.steppingActionMaxSteps = 10000;
-int g4.stepsSizeLimit = 10000;
-int g4.particlesSizeLimit = 10000;
+int g4.steppingActionMaxSteps = 10000000;
+int g4.stepsSizeLimit = 10000000;
+int g4.particlesSizeLimit = 10000000;
 double g4.pointTrajectoryMomentumCut = 50.;
+
 
 // If the following number is not zero, G4 will kill all particles alive
 // at that time.
@@ -98,7 +99,7 @@ int    g4.PiENuPolicyVerbosity = 0;
 vector<int> g4.noDecay = {};
 
 // Choose a PhysicsList and set related parameters.
-string g4.physicsListName = "QGSP_BERT_HP";
+string g4.physicsListName = "QGSP_BERT";//_HP";
 double g4.minRangeCut     = 0.01;            // mm
 
 bool g4.printPhysicsProcessSummary = false;
@@ -415,6 +416,11 @@ vector<double> calorimeter.diskSeparation    = {0.,800.};   //mm  separation w.r
 double calorimeter.diskCaseThickness         = 0 ;  // mm
 
 string calorimeter.crystalMaterial                         = "Lyso_01"; //"G4_PbWO4";
+string calorimeter.shieldMaterial                          = "G4_Pb"; 
+string calorimeter.neutronAbsorberMaterial                 = "Polyethylene092Li075d106";
+
+double calorimeter.shieldHalfThickness                     = .0;//0.
+double calorimeter.neutronAbsorberHalfThickness            = .0;//0.
 
 string calorimeter.crystalWrapper                          = "Polyethylene092";
 double calorimeter.crystalWrapperHalfThickness             = 0.1 ;
@@ -431,11 +437,24 @@ double calorimeter.electronDepositionAPD = 1000.0; // MeV
 double calorimeter.electronMinEnergyAPD  = 0.1;    // MeV
 
 // Control display and debug printout.
-bool calorimeter.vaneBoxVisible = true;
-bool calorimeter.vaneBoxSolid   = true;
-bool calorimeter.crystalVisible = false;
-bool calorimeter.crystalSolid   = true;
-int  calorimeter.verbosityLevel = 0;
+
+bool calorimeter.calorimeterBoxVisible  = true;
+bool calorimeter.calorimeterBoxSolid    = true;
+bool calorimeter.vaneBoxVisible         = true;
+bool calorimeter.vaneBoxSolid           = true;
+bool calorimeter.absorberBoxVisible     = true;
+bool calorimeter.absorberBoxSolid       = true;
+bool calorimeter.shieldVisible          = false;
+bool calorimeter.shieldSolid            = false;//true;
+//gianipez
+bool calorimeter.isNeutronAbsorberVisible = false;
+bool calorimeter.isNeutronAbsorberSolid   = false;
+//--------
+bool calorimeter.crystalVisible         = false;
+bool calorimeter.crystalSolid           = true;
+
+int  calorimeter.verbosityLevel = 1;
+
 
 // Cosmic Ray Sheld consist of the two components
 // for now the are in the two sections: the fluxcrv and the crs itself

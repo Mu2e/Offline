@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position on the electrons on the calorimeter
 //
-// $Id: CaloClusterCog_module.cc,v 1.9 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: CaloClusterCog_module.cc,v 1.10 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -690,7 +690,7 @@ void CaloClusterCog::doCalorimeter(art::Event const& evt, bool skip){
 
                                                 CLHEP::Hep3Vector cryFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
 
-                                                if( (cg->getCrystalRByRO(thehit.id()) != ( _rowToCanc - 1 ) && cg->getCrystalZByRO(thehit.id()) != ( _columnToCanc - 1 ) ) ){
+                                                if( (cg->crystalRByRO(thehit.id()) != ( _rowToCanc - 1 ) && cg->crystalZByRO(thehit.id()) != ( _columnToCanc - 1 ) ) ){
 
                                                         if(elecMap[iVane][trackId.asUint()]._impTime > mchit.time() ){
                                                                 elecMap[iVane][trackId.asUint()]._cluEnergy = clu.energyDep();
@@ -704,8 +704,8 @@ void CaloClusterCog::doCalorimeter(art::Event const& evt, bool skip){
                                                                 elecMap[iVane][trackId.asUint()]._impPos = mchit.position();
                                                                 elecMap[iVane][trackId.asUint()]._impPosCryFrame = cryFrame;
                                                                 elecMap[iVane][trackId.asUint()]._vane = iVane;
-                                                                elecMap[iVane][trackId.asUint()]._row = cg->getCrystalRByRO(thehit.id());
-                                                                elecMap[iVane][trackId.asUint()]._colum = cg->getCrystalZByRO(thehit.id());
+                                                                elecMap[iVane][trackId.asUint()]._row = cg->crystalRByRO(thehit.id());
+                                                                elecMap[iVane][trackId.asUint()]._colum = cg->crystalZByRO(thehit.id());
                                                                 elecMap[iVane][trackId.asUint()]._impMom3Vec = mchit.momentum();
                                                                 elecMap[iVane][trackId.asUint()]._impPdgId = sim.pdgId();
                                                                 elecMap[iVane][trackId.asUint()]._impIsGen = sim.fromGenerator();
@@ -839,8 +839,8 @@ void CaloClusterCog::doCalorimeter(art::Event const& evt, bool skip){
                                                 cout<<"posU = "<<vaneFrame.getX()<<", posV = "<<vaneFrame.getY()<<", posW = "<< vaneFrame.getZ()<<endl;
                                                 cout << "dirMomX = "<< dirMom.getX()<<", dirMomY = "<< dirMom.getY()<<", dirMomZ = "<<dirMom.getZ() <<endl;
                                         }
-                                        Vane const &vane = cg->getVane(ite->first);
-                                        CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*dirMom;
+                                        Vane const &vane = cg->vane(ite->first);
+                                        CLHEP::Hep3Vector dirMom_rotated = (vane.rotation())*dirMom;
                                         _seedPpu = dirMom_rotated.x()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
                                         _seedPpv = dirMom_rotated.y()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
                                         _seedPpw = dirMom_rotated.z()*ite->second[trkVecTot[it2]]._impMom3Vec.mag();
@@ -985,8 +985,8 @@ void CaloClusterCog::doCalorimeter(art::Event const& evt, bool skip){
 
                                         CLHEP::Hep3Vector dirMom = ite->second[trkVec[it]]._impMom3Vec.unit();
 
-                                        Vane const &vane = cg->getVane(ite->first);
-                                        CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*dirMom;
+                                        Vane const &vane = cg->vane(ite->first);
+                                        CLHEP::Hep3Vector dirMom_rotated = (vane.rotation())*dirMom;
 
                                         LinePointPCA lppca(vaneFrame,dirMom_rotated,  ite->second[trkVec[it]]._cluCog);
 

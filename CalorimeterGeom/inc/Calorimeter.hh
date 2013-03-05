@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.21 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: Calorimeter.hh,v 1.22 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -34,15 +34,15 @@ namespace mu2e {
 
 
 	  // coordinate position and transformation
-	  virtual CLHEP::Hep3Vector const& getOrigin(void) const = 0; 
+	  virtual CLHEP::Hep3Vector const& origin(void) const = 0; 
 	  
 	  virtual CLHEP::Hep3Vector toCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos) const = 0;
 	  virtual CLHEP::Hep3Vector toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const = 0;
 	  virtual CLHEP::Hep3Vector fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const = 0;
 
-          virtual CLHEP::Hep3Vector getCrystalOrigin(int crystalId) const =0;
-	  virtual CLHEP::Hep3Vector getLocalCrystalOrigin(int crystalId) const = 0;
-          virtual std::vector<int>  getNeighbors(int crystalId, int level=1) const = 0;
+      virtual CLHEP::Hep3Vector crystalOrigin(int crystalId) const =0;
+	  virtual CLHEP::Hep3Vector localCrystalOrigin(int crystalId) const = 0;
+      virtual std::vector<int>  neighbors(int crystalId, int level=1) const = 0;
 
 
 	  //crystal / readout section
@@ -50,14 +50,19 @@ namespace mu2e {
 	  virtual unsigned int nCrystal(void) const  = 0;
 	  virtual unsigned int nRO(void) const  = 0;
 	  virtual double       crystalVolume(void) const = 0;
+      virtual double       crystalHalfLength(void) const = 0;
 
 	  //crystal - readout id
-	  virtual int getCrystalByRO(int roid) const = 0;
-	  virtual int getROBaseByCrystal(int id) const = 0;
-	  virtual int getCaloSectionId(int crystalId) const = 0;
+	  virtual int crystalByRO(int roid) const = 0;
+	  virtual int ROBaseByCrystal(int id) const = 0;
+	  virtual int caloSectionId(int crystalId) const = 0;
 
+	  //calorimeter envelope
+	  virtual double       envelopeRmin(void) const = 0;
+	  virtual double       envelopeRmax(void) const = 0;
+	  virtual double       envelopeHalfLength(void) const = 0;
 
-//bunch of accessors that will go away in later, keep them now to compile the code
+	  //bunch of accessors that will go away in later, keep them now to compile the code
 
 	  //crystal characteristics      
 	  virtual double getNonuniformity() const = 0;
@@ -70,7 +75,6 @@ namespace mu2e {
 	  //wrapper characteristics
 	  virtual double wrapperThickness() const = 0;
 
- 
     };
 
 }

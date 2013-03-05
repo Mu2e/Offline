@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloVolumeElem.cc,v 1.1 2012/07/10 00:02:19 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
+// $Id: CaloVolumeElem.cc,v 1.2 2013/03/05 20:33:26 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:26 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -44,7 +44,12 @@ void CaloVolumeElem::createCache(){
                         tran *= *( thisSurface->transform() );
 
                         thisSurface->printAll(std::cout);
+			
+			//gianipez debugging
+			thisSurface->print(std::cout);
+			//--
 
+			
                         //*( (*sides())[side]->transform() ) = tran;
                         *( (*_sides)[side]->transform() ) = tran;
                 }

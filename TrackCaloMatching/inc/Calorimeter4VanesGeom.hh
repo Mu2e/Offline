@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.6 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: Calorimeter4VanesGeom.hh,v 1.7 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -112,36 +112,41 @@ public :
                 _norm.setX(0.0);
                 _norm.setY(1.0);
                 _norm.setZ(0.0);
-                _dR = cg->nCrystalR()*cg->crystalHalfSize();
-                _dZ = cg->nCrystalZ()*cg->crystalHalfSize();
-                _dU = cg->crystalHalfLength();
+                _dR = (cg->crystalHalfSize() + cg->wrapperThickness() + cg->shellThickness() ) * cg->nCrystalR();//*0.5;
+                _dZ = (cg->crystalHalfSize() + cg->wrapperThickness() + cg->shellThickness() ) * cg->nCrystalZ();//*0.5;
+                _dU = (cg->crystalHalfLength() + cg->wrapperThickness() ) ;
                 _dAPD = cg->roHalfThickness();
                 _vaneHalfThickness = _dU + _dAPD;
                 _solenoidOffSetX = geom->config().getDouble("mu2e.solenoidOffset");//3904.;//[mm]
                 _solenoidOffSetZ = -geom->config().getDouble("mu2e.detectorSystemZ0");//-10200.;
-                _innerRadius = cg->getVane(0).innerRadius();
-                _outherRadius = cg->getVane(0).outerRadius();
-                _ZfrontFaceCalo = cg->getOrigin().z() + _solenoidOffSetZ - (cg->nCrystalZ() + 1.0)*cg->crystalHalfSize();
-                _ZbackFaceCalo = cg->getOrigin().z() + _solenoidOffSetZ + (cg->nCrystalZ() + 1.0)*cg->crystalHalfSize();
+                _innerRadius = cg->innerRaidus();
+                _outherRadius = cg->outherRadius();
+                _ZfrontFaceCalo = cg->origin().z() + _solenoidOffSetZ - _dZ;//(cg->nCrystalZ() + 1.0)*cg->crystalHalfSize();
+                _ZbackFaceCalo = cg->origin().z() + _solenoidOffSetZ + _dZ;//(cg->nCrystalZ() + 1.0)*cg->crystalHalfSize();
                 _nVanes = cg->nVane();
         }
 
 
         //Destructor
-        ~Calorimeter4VanesGeom ();
+        ~Calorimeter4VanesGeom (){}
 
         CLHEP::Hep3Vector const& norm(){return _norm;}
 
         int nVanes() const{ return _nVanes;}
 
+        //Half value of the radial dimension of the vane
         double dR() const{ return _dR;}
 
+        //Half of the longitudinal dimension of the vane
         double dZ() const{ return _dZ;}
 
+        //Half value of the crystal+wrapping+shell dimension
         double dU() const{ return _dU;}
 
+        //Half value of the read-out device thickness
         double dAPD() const{ return _dAPD;}
 
+        //Half value of the vane thickness
         double vaneHalfThickness() const{ return _vaneHalfThickness;}
 
         double solenoidOffSetX() const{ return _solenoidOffSetX;}
@@ -168,7 +173,22 @@ public :
         void caloExtrapol(TrkRep const* trep,double& lowrange, double& highrange, HelixTraj &trkHel, int &res0, DetIntersection &intersec0, Length *pathLengths);
 
         void minimumPathLength(Length *length, int& vane, double& lowrange, double& highrange);
-
+        
+  void print(void){
+    std::cout<<"Calorimeter 4 vanes info : "<<std::endl
+	     <<"dR = "<< _dR<<std::endl
+	     <<"dZ = "<< _dZ<<std::endl
+	     <<"dU = "<< _dU<<std::endl
+	     <<"dAPD = "<< _dAPD<<std::endl
+	     <<"vaneHalfThickness = "<< _vaneHalfThickness<<std::endl
+	     <<"solenoidOffSetX  = "<< _solenoidOffSetX<<std::endl
+	     <<"solenoidOffSetZ  = "<< _solenoidOffSetZ<<std::endl
+	     <<" innerRadius = "<< _innerRadius<<std::endl
+	     <<"outherRadius = "<< _outherRadius<<std::endl
+	     <<" ZfrontFaceCalo = "<< _ZfrontFaceCalo<<std::endl
+	     <<"ZbackFaceCalo = "<<_ZbackFaceCalo<<std::endl
+	     <<"nVanes  = "<<_nVanes<<std::endl;
+  }
 private :
         Hep3Vector _norm;
         double _dR;

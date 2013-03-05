@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.36 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: BkgRates_module.cc,v 1.37 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author Gianni Onorato
 //
@@ -741,7 +741,7 @@ namespace mu2e {
     art::ServiceHandle<GeometryService> geom;
     if( ! geom->hasElement<Calorimeter>() ) return;
 
-    GeomHandle<Calorimeter> cg;    
+    GeomHandle<Calorimeter> cg;
     double CrMass  = CrDensity*cg->crystalVolume();
 
 
@@ -814,9 +814,9 @@ namespace mu2e {
       size_t collectionPosition = ROIds.at(0).key();
       CaloHit const & thehit = *ROIds.at(0);
 
-      int crystalId = cg->getCrystalByRO(thehit.id());
-      CLHEP::Hep3Vector cryCenter =  cg->getCrystalOrigin(crystalId);
-      int sectionId = cg->getCaloSectionId(crystalId);
+      int crystalId = cg->crystalByRO(thehit.id());
+      CLHEP::Hep3Vector cryCenter =  cg->crystalOrigin(crystalId);
+      int sectionId = cg->caloSectionId(crystalId);
 
 
 

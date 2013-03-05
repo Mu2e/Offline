@@ -1,7 +1,7 @@
 //
-// $Id: TrkToCaloExtrapol.cc,v 1.5 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: TrkToCaloExtrapol.cc,v 1.6 2013/03/05 20:33:26 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:26 $
 //
 // Original author G. Pezzullo
 //
@@ -15,9 +15,13 @@
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "BaBar/BaBar.hh"
-#include "TrkBase/HelixParams.hh"
-#include "TrkBase/HelixTraj.hh"
+
+
+
+// #include "BaBar/BaBar.hh"
+// #include "TrkBase/HelixParams.hh"
+// #include "TrkBase/HelixTraj.hh"
+
 
 using namespace std;
 
@@ -51,10 +55,30 @@ double TrkToCaloExtrapol::pathLengthEntrance() const{
 }
 
 double TrkToCaloExtrapol::t0() const{
-        return (*_trk.get())->t0().t0();
+
+  const KalRep* kalrepc = dynamic_cast<const KalRep*>( ((*_trk.get()) ));//->getRep(PdtPid::electron)) );
+  //KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
+
+  const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( kalrepc->firstHit()->kalHit()->hitOnTrack() );
+  double fltlen = firsthit->fltLen();
+  
+  //        return ((*_trk.get())->getRep(PdtPid::electron))->arrivalTime(fltlen);
+  return (*_trk.get())->arrivalTime(fltlen);
+  //return ((*_trk.get())->getRep(PdtPid::electron))->trackT0();
+  
+  //return (*_trk.get())->t0().t0();
 }
 
 double TrkToCaloExtrapol::pathLenghtEntranceErr() const{
+
+        // double errTanDip2 = ( ((*_trk.get())->getRep(PdtPid::electron))->helix(_pathLengthEntrance).covariance() )(5, 5);
+        // double TanDip = ((*_trk.get())->getRep(PdtPid::electron))->helix(_pathLengthEntrance).tanDip();
+        // HelixTraj trkHel(((*_trk.get())->getRep(PdtPid::electron))->helix(_pathLengthEntrance).params(),
+        //                 ((*_trk.get())->getRep(PdtPid::electron))->helix(_pathLengthEntrance).covariance());
+//        double z0 = trkHel.z0()
+//                                        , z = _pathLengthEntrance*trkHel.sinDip() + z0;
+//        std::cout<<"z0 = "<< z0<<
+//                        ", z_pathLenght = "<< z<<std::endl;
 
 	GeomHandle<VaneCalorimeter> cg;
 
@@ -64,15 +88,14 @@ double TrkToCaloExtrapol::pathLenghtEntranceErr() const{
                         (*_trk.get())->helix(_pathLengthEntrance).covariance());
         double z0 = trkHel.z0()
                                         , z = _pathLengthEntrance*trkHel.sinDip() + z0;
-        std::cout<<"z0 = "<< z0<<
-                        ", z_pathLenght = "<< z<<std::endl;
+        // std::cout<<"z0 = "<< z0<<
+        //                ", z_pathLenght = "<< z<<std::endl;
 
-
-        Vane const &vane = cg->getVane(_vaneId);
+        Vane const &v = cg->vane(_vaneId);
         Hep3Vector Waxes(0.0, 0.0, 1.0);
-        Waxes = vane.getRotation()*(Waxes);
+        Waxes = (v.rotation())*(Waxes);
 
-        Hep3Vector momentumRotUnit = vane.getRotation()*TrkToCaloExtrapol::momentum().unit();
+        Hep3Vector momentumRotUnit = (v.rotation())*TrkToCaloExtrapol::momentum().unit();
         double thetaW = std::atan(-1.0*momentumRotUnit.getZ() / momentumRotUnit.getX() ) ;
 
         double scaleErrW = 1.0/fabs( cos(thetaW) );
@@ -85,13 +108,13 @@ double TrkToCaloExtrapol::pathLenghtEntranceErr() const{
         double tmpErrPos = sqrt(TrkToCaloExtrapol::entrancePositionErr().covMatrix().similarity(momvec));
 
         double sigmaZ2 = tmpErrPos*scaleErrW;
-        std::cout<<"sigmaZ = "<< sigmaZ2<<std::endl;
+        //std::cout<<"sigmaZ = "<< sigmaZ2<<std::endl;
         sigmaZ2 *= sigmaZ2;
 
         double res = 0.0;
         double TanDip2 = TanDip*TanDip;
         res += sigmaZ2*(1.0 + TanDip2)/(TanDip2);
-        std::cout<<"sigmaS2_z = "<< res << std::endl;
+//        std::cout<<"sigmaS2_z = "<< res << std::endl;
 
 //        double argo = z - z0;
 //        argo /= TanDip;
@@ -102,7 +125,7 @@ double TrkToCaloExtrapol::pathLenghtEntranceErr() const{
 
 
         argo = errTanDip2*argo*argo;
-        std::cout<<"sigmaS2_tanD = "<< argo << std::endl;
+        //std::cout<<"sigmaS2_tanD = "<< argo << std::endl;
         res += argo;
         return sqrt(res);
 }
@@ -111,16 +134,48 @@ double    TrkToCaloExtrapol::t0Err() const{
         return (*_trk.get())->t0().t0Err();
 }
 
+double TrkToCaloExtrapol::tOrigin() const{
+        return (*_trk.get())->arrivalTime(0.0);
+}
+
+double   TrkToCaloExtrapol::tOriginErr() const{//FIXME
+  return (*_trk.get())->t0().t0Err();
+}
+
+
 Hep3Vector TrkToCaloExtrapol::t0Momentum() const{
-        return (*_trk.get())->momentum(0.0);
+
+        const KalRep* kalrepc = dynamic_cast<const KalRep*>( ((*_trk.get()) ));//->getRep(PdtPid::electron)) );
+        //KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
+
+        const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( kalrepc->firstHit()->kalHit()->hitOnTrack() );
+        double fltlen = firsthit->fltLen();
+        //std::cout<<" TrkToCaloExtrapol-> fltlen = "<<fltlen<<std::endl;
+
+        return (*_trk.get())->momentum(fltlen);
+        //return (*_trk.get())->momentum(0.0);
 }
 
 BbrVectorErr TrkToCaloExtrapol::t0MomentumErr() const{
-        return (*_trk.get())->momentumErr(0.0);
+
+        const KalRep* kalrepc = dynamic_cast<const KalRep*>( ((*_trk.get()) ));//->getRep(PdtPid::electron)) );
+        //KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
+
+        const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( kalrepc->firstHit()->kalHit()->hitOnTrack() );
+
+        double fltlen = firsthit->fltLen();
+
+        return (*_trk.get())->momentumErr(fltlen);
+
+        //return (*_trk.get())->momentumErr(0.0);
 }
 
 double TrkToCaloExtrapol::pathLengthExit() const{
         return _pathLengthExit;
+}
+
+double TrkToCaloExtrapol::fitConsistency() const{
+        return (*_trk.get())->chisqConsistency().consistency();
 }
 
 HepPoint TrkToCaloExtrapol::entrancePosition() const{

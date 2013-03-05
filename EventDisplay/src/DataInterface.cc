@@ -1,4 +1,10 @@
 #define USETRAJECTORY
+//
+// $Id: DataInterface.cc,v 1.58 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
+//
+
 #include "DataInterface.h"
 
 #include "CLHEP/Vector/LorentzVector.h"
@@ -510,17 +516,17 @@ void DataInterface::fillGeometry()
     unsigned int n=calo->nVane();
     for(unsigned int i=0; i<n; i++)
     {
-      const mu2e::Vane &v=calo->getVane(i);
-      double x=v.getOrigin().x()+_xOffset;
-      double y=v.getOrigin().y();
-      double z=v.getOrigin().z()+_zOffset;
+      const mu2e::Vane &v=calo->vane(i);
+      double x=v.origin().x()+_xOffset;
+      double y=v.origin().y();
+      double z=v.origin().z()+_zOffset;
       int    id=v.id();
       double sx=v.size().x();
       double sy=v.size().y();
       double sz=v.size().z();
-      double phi=v.getRotation().phi();
-      double theta=v.getRotation().theta();
-      double psi=v.getRotation().psi();
+      double phi=v.rotation().phi();
+      double theta=v.rotation().theta();
+      double psi=v.rotation().psi();
 
       findBoundaryP(_calorimeterMinmax, x+sx, y+sy, z+sz);
       findBoundaryP(_calorimeterMinmax, x-sx, y-sy, z-sz);
@@ -546,19 +552,19 @@ void DataInterface::fillGeometry()
     unsigned int nro=calo->nRO();
     for(unsigned int i=0; i<nro; i+=roPerCrystal)
     {
-      int vaneid=calo->getVaneByRO(i);
-      int crystalid=calo->getCrystalByRO(i);
-      int rPos=calo->getCrystalRByRO(i);
-      int zPos=calo->getCrystalZByRO(i);
+      int vaneid=calo->vaneByRO(i);
+      int crystalid=calo->crystalByRO(i);
+      int rPos=calo->crystalRByRO(i);
+      int zPos=calo->crystalZByRO(i);
       double crystalHalfSize=calo->crystalHalfSize();
 
-      const mu2e::Vane &v=calo->getVane(vaneid);
-      double x=v.getOrigin().x()+_xOffset;
-      double y=v.getOrigin().y();
-      double z=v.getOrigin().z()+_zOffset;
-      double theta=v.getRotation().theta();
-      double phi=v.getRotation().phi();
-      double psi=v.getRotation().psi();
+      const mu2e::Vane &v=calo->vane(vaneid);
+      double x=v.origin().x()+_xOffset;
+      double y=v.origin().y();
+      double z=v.origin().z()+_zOffset;
+      double theta=v.rotation().theta();
+      double phi=v.rotation().phi();
+      double psi=v.rotation().psi();
       double sx=v.size().x();
       double sy=v.size().y();
       double sz=v.size().z();
@@ -1252,7 +1258,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     {
       const mu2e::CaloHit& calohit = *iter;
       int roid = calohit.id();
-      int crystalid=calo->getCrystalByRO(roid);
+      int crystalid=calo->crystalByRO(roid);
       double time = calohit.time();
       double energy = calohit.energyDep();
       std::map<int,boost::shared_ptr<Cube> >::iterator crystal=_crystals.find(crystalid);

@@ -1,9 +1,9 @@
 //
 // Visualization of pile up on the calorimeter clusters
 //
-// $Id: CaloClusterPileUp_module.cc,v 1.4 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: CaloClusterPileUp_module.cc,v 1.5 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -18,6 +18,10 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
+
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
+
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
@@ -37,15 +41,16 @@
 //calorimeter packages
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+//#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "CaloCluster/inc/CaloClusterer.hh"
-#include "CaloCluster/inc/CaloClusterTools.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
+#include "CaloCluster/inc/CaloClusterUtilities.hh"
+//#include "CaloCluster/inc/CaloClusterer.hh"
+
+//#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
+//#include "CaloCluster/inc/CaloClusterTools.hh"
 
 // Other includes.
-#include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "cetlib/exception.h"
 #include "BaBar/BaBar/include/Constants.hh"
@@ -322,21 +327,6 @@ bool findTrkId(std::vector<unsigned int> vec, unsigned int t){
 void CaloClusterPileUp::beginJob( ) {
 
         cout << "start CaloClusterEnergyResolMap..."<<endl;
-
-
-        // If needed, create the ROOT interactive environment. See note 1.
-        if ( !gApplication ){
-                int    tmp_argc(0);
-                char** tmp_argv(0);
-                _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
-        }
-
-        gStyle->SetPalette(1);
-        gROOT->SetStyle("Plain");
-
-        _directory = gDirectory;
-
-
 }
 
 void CaloClusterPileUp::analyze(art::Event const & evt ) {
@@ -344,7 +334,7 @@ void CaloClusterPileUp::analyze(art::Event const & evt ) {
         ++_nAnalyzed;
         ++ncalls;
 
-        CaloClusterer c;
+        //CaloClusterer c;
 
         art::ServiceHandle<GeometryService> geom;
         GeomHandle<VaneCalorimeter> cg;
@@ -418,6 +408,8 @@ void CaloClusterPileUp::doCalorimeter(art::Event const& evt, bool skip){
 
         cout << "Event number : " << evt.id().event()<<
                         ", CaloClusterPileUp: begin" << endl;
+
+        GlobalConstantsHandle<ParticleDataTable> pdt;
 
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
@@ -549,11 +541,12 @@ void CaloClusterPileUp::doCalorimeter(art::Event const& evt, bool skip){
                         _evt = evt.id().event();
 
                         CaloCluster const& clu = (*caloClusters).at(icl);
+			CaloClusterTools cluTool(clu);
 
                         _clNo = icl;
                         _clE  = clu.energyDep();
 
-                        _clT  = clu.time();
+                        _clT  = cluTool.timeFasterCrystal();//time();
 
                         _clCOGu = clu.cog3Vector().x();
                         _clCOGv = clu.cog3Vector().y();
@@ -565,7 +558,7 @@ void CaloClusterPileUp::doCalorimeter(art::Event const& evt, bool skip){
                         iVane = clu.vaneId();
                         _clVane = iVane;
 
-                        CaloClusterTools cluTool(clu);
+                       
                         _clCryEnergyMaxRow = cluTool.cryEnergydepMaxRow(),
                           _clCryEnergyMaxColumn = cluTool.cryEnergydepMaxColumn();
                         CaloCrystalHitPtrVector caloClusterHits = clu.caloCrystalHitsPtrVector();
@@ -578,7 +571,8 @@ void CaloClusterPileUp::doCalorimeter(art::Event const& evt, bool skip){
 
                                 std::map<unsigned int, unsigned int> seedMap, signalMap;
                                 CryMap cryMap;
-
+				int totGen = 0;
+				
                                 for(size_t i=0; i<caloClusterHits.size(); ++i){
 
                                         if ( _diagLevel < 0 ){
@@ -645,22 +639,22 @@ void CaloClusterPileUp::doCalorimeter(art::Event const& evt, bool skip){
                                                 if(_diagLevel < 0){
                                                         cout<<"Conditon yes"<<endl;
                                                 }
+						
 
-                                                if(sim.genParticle().isNull()){
-                                                        if(_diagLevel < 0){
-                                                                cout<<"----> sim.genParticle().isNull()"<<endl;
-                                                        }
-                                                        continue;
-                                                }
-                                                GenParticle const& gen = *sim.genParticle();
-                                                if(_diagLevel < 0){
-                                                        cout<<"gen stored..."<<endl;
-                                                }
-                                                GenId genId = gen.generatorId();
-                                                if(_diagLevel < 0){
-                                                        cout<<"genId stored..."<<endl;
-                                                }
+						double mass = 0.0;
+						double trackKine = 0.0;
+						if (!( sim.madeInG4()) ){
+						
+                                                const HepPDT::ParticleData& data = pdt->particle(sim.pdgId() ).ref();
+                                                mass = data.mass().value();
 
+                                                //add non-linearity effect
+                                                trackKine = std::sqrt(mchit.momentum().mag2() + std::pow(mass, 2) ) - mass;
+						}else{
+						  if(_diagLevel < 0){
+						    cout<<"ATTENTION :: !( sim.madeInG4())..."<<endl;
+						  }
+						}
                                                 if(cryMap.find(mchit.trackId().asInt() )==cryMap.end() ){
                                                         if(_diagLevel < 0){
                                                                 cout<<"Add new particle to cryMap..."<<endl;
@@ -669,53 +663,74 @@ void CaloClusterPileUp::doCalorimeter(art::Event const& evt, bool skip){
                                                         cryMap[mchit.trackId().asInt()].totEnergyDep = mchit.totalEDep();
                                                         cryMap[mchit.trackId().asInt()].pdgId        = sim.pdgId();
                                                         cryMap[mchit.trackId().asInt()].isGen        = sim.fromGenerator();
+							if(sim.fromGenerator()==1){
+							  ++totGen;
+							}
                                                         cryMap[mchit.trackId().asInt()].position     = mchit.position();
                                                         cryMap[mchit.trackId().asInt()].momentum     = mchit.momentum();
-                                                        cryMap[mchit.trackId().asInt()].energy       =  std::sqrt(std::pow(mchit.momentum().mag(), 2) + std::pow(gen.momentum().m(), 2) ) - gen.momentum().m();
+                                                        cryMap[mchit.trackId().asInt()].energy       = trackKine;// std::sqrt(std::pow(mchit.momentum().mag(), 2) + std::pow(gen.momentum().m(), 2) ) - gen.momentum().m();
                                                         crystalFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
                                                         cryMap[mchit.trackId().asInt()].cryPosition  = crystalFrame;
                                                         cryMap[mchit.trackId().asInt()].vane         = iVane;
                                                         cryMap[mchit.trackId().asInt()].qualityCuts  = qualityCollection.find(mchit.trackId().asInt());
 
 
-                                                        if(_diagLevel < 0){
-                                                                string name = genId.name();
-                                                                cout<< name.c_str()<<endl;
-                                                        }
 
-                                                        if(genId==GenId::conversionGun){
-                                                                isConv = 1;
+                                                        if(sim.genParticle().isNonnull()){
+
+                                                                GenParticle const& gen = *sim.genParticle();
+                                                                if(_diagLevel < 0){
+                                                                        cout<<"gen stored..."<<endl;
+                                                                }
+                                                                GenId genId = gen.generatorId();
+                                                                if(_diagLevel < 0){
+                                                                        cout<<"genId stored..."<<endl;
+                                                                }
+
+                                                                if(_diagLevel < 0){
+                                                                        string name = genId.name();
+                                                                        cout<< name.c_str()<<endl;
+                                                                }
+                                                                if(genId==GenId::conversionGun){
+                                                                        isConv = 1;
+                                                                }
+
+
+                                                                if(genId.isDio()){
+                                                                        isDIO = 1;
+                                                                }
+
+                                                                if(genId==GenId::pionCapture){
+                                                                        isPionCapture = 1;
+                                                                }
+
+                                                                if(genId==GenId::PiCaptureCombined){
+                                                                        isPionCaptureComb = 1;
+                                                                }
+
+                                                                if(genId==GenId::muonCapture){
+                                                                        isMuonCapture = 1;
+                                                                }
+
+                                                                if(genId==GenId::muonCapture){
+                                                                        isMuonDecayInFlight = 1;
+                                                                }
+
+                                                                if(genId==GenId::muonCapture){
+                                                                        isEPlusfromStoppedPi = 1;
+                                                                }
                                                         }
                                                         cryMap[mchit.trackId().asInt()].isSignal     = isConv;
-
-                                                        if(genId.isDio()){
-                                                                isDIO = 1;
-                                                        }
                                                         cryMap[mchit.trackId().asInt()].isDIO     = isDIO;
 
-                                                        if(genId==GenId::pionCapture){
-                                                                isPionCapture = 1;
-                                                        }
                                                         cryMap[mchit.trackId().asInt()].isPionCapture    = isPionCapture;
 
-                                                        if(genId==GenId::PiCaptureCombined){
-                                                                isPionCaptureComb = 1;
-                                                        }
                                                         cryMap[mchit.trackId().asInt()].isPionCaptureComb     = isPionCaptureComb;
 
-                                                        if(genId==GenId::muonCapture){
-                                                                isMuonCapture = 1;
-                                                        }
                                                         cryMap[mchit.trackId().asInt()].isMuonCapture     = isMuonCapture;
 
-                                                        if(genId==GenId::muonCapture){
-                                                                isMuonDecayInFlight = 1;
-                                                        }
                                                         cryMap[mchit.trackId().asInt()].isMuonDecayInFlight    = isMuonDecayInFlight;
 
-                                                        if(genId==GenId::muonCapture){
-                                                                isEPlusfromStoppedPi = 1;
-                                                        }
                                                         cryMap[mchit.trackId().asInt()].isEPlusfromStoppedPi    = isEPlusfromStoppedPi;
                                                 }else if(mchit.time() < cryMap[mchit.trackId().asInt()].time ){
                                                         if(_diagLevel < 0){
@@ -727,51 +742,67 @@ void CaloClusterPileUp::doCalorimeter(art::Event const& evt, bool skip){
                                                         cryMap[mchit.trackId().asInt()].isGen        = sim.fromGenerator();
                                                         cryMap[mchit.trackId().asInt()].position     = mchit.position();
                                                         cryMap[mchit.trackId().asInt()].momentum     = mchit.momentum();
-                                                        cryMap[mchit.trackId().asInt()].energy       = std::sqrt(std::pow(mchit.momentum().mag(), 2) + std::pow(gen.momentum().m(), 2) ) - gen.momentum().m();
+                                                        cryMap[mchit.trackId().asInt()].energy       = trackKine;//std::sqrt(std::pow(mchit.momentum().mag(), 2) + std::pow(gen.momentum().m(), 2) ) - gen.momentum().m();
 
                                                         crystalFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
 
                                                         cryMap[mchit.trackId().asInt()].cryPosition  = crystalFrame;
                                                         cryMap[mchit.trackId().asInt()].vane         = iVane;//cg->getVaneByRO(thehit.id());
 
-                                                        if(_diagLevel < 0){
-                                                                string name = genId.name();
-                                                                cout<< "GenId = "<< name.c_str()<<endl;
-                                                        }
+                                                        if(sim.genParticle().isNonnull())  {
 
-                                                        if(genId==GenId::conversionGun){
-                                                                isConv = 1;
+                                                                GenParticle const& gen = *sim.genParticle();
+                                                                if(_diagLevel < 0){
+                                                                        cout<<"gen stored..."<<endl;
+                                                                }
+                                                                GenId genId = gen.generatorId();
+                                                                if(_diagLevel < 0){
+                                                                        cout<<"genId stored..."<<endl;
+                                                                }
+
+                                                                if(_diagLevel < 0){
+                                                                        string name = genId.name();
+                                                                        cout<< "GenId = "<< name.c_str()<<endl;
+                                                                }
+
+                                                                if(genId==GenId::conversionGun){
+                                                                        isConv = 1;
+                                                                }
+
+
+                                                                if(genId.isDio()){
+                                                                        isDIO = 1;
+                                                                }
+
+
+                                                                if(genId==GenId::pionCapture){
+                                                                        isPionCapture = 1;
+                                                                }
+
+
+                                                                if(genId==GenId::PiCaptureCombined){
+                                                                        isPionCaptureComb = 1;
+                                                                }
+
+
+                                                                if(genId==GenId::muonCapture){
+                                                                        isMuonCapture = 1;
+                                                                }
+
+                                                                if(genId==GenId::muonCapture){
+                                                                        isMuonDecayInFlight = 1;
+                                                                }
+
+                                                                if(genId==GenId::muonCapture){
+                                                                        isEPlusfromStoppedPi = 1;
+                                                                }
                                                         }
                                                         cryMap[mchit.trackId().asInt()].isSignal     = isConv;
-
-                                                        if(genId.isDio()){
-                                                                isDIO = 1;
-                                                        }
                                                         cryMap[mchit.trackId().asInt()].isDIO     = isDIO;
-
-                                                        if(genId==GenId::pionCapture){
-                                                                isPionCapture = 1;
-                                                        }
                                                         cryMap[mchit.trackId().asInt()].isPionCapture    = isPionCapture;
-
-                                                        if(genId==GenId::PiCaptureCombined){
-                                                                isPionCaptureComb = 1;
-                                                        }
                                                         cryMap[mchit.trackId().asInt()].isPionCaptureComb   = isPionCaptureComb;
-
-                                                        if(genId==GenId::muonCapture){
-                                                                isMuonCapture = 1;
-                                                        }
                                                         cryMap[mchit.trackId().asInt()].isMuonCapture     = isMuonCapture;
-
-                                                        if(genId==GenId::muonCapture){
-                                                                isMuonDecayInFlight = 1;
-                                                        }
                                                         cryMap[mchit.trackId().asInt()].isMuonDecayInFlight    = isMuonDecayInFlight;
-
-                                                        if(genId==GenId::muonCapture){
-                                                                isEPlusfromStoppedPi = 1;
-                                                        }
                                                         cryMap[mchit.trackId().asInt()].isEPlusfromStoppedPi    = isEPlusfromStoppedPi;
                                                 }
 
@@ -783,7 +814,7 @@ void CaloClusterPileUp::doCalorimeter(art::Event const& evt, bool skip){
 
                                 }//end loop for(caloClusterHits.size())
 
-                                _clSeeds = cryMap.size();
+                                _clSeeds = totGen;//cryMap.size();
 
                                 if(_clSeeds > 0){
                                         int j=0, tmpVane=-1;
@@ -825,8 +856,8 @@ void CaloClusterPileUp::doCalorimeter(art::Event const& evt, bool skip){
                                                 _clSeedE[j]            = it->second.momentum.mag();
                                                 _clSeedPp[j]           = it->second.energy;
 
-                                                Vane const &vane = cg->getVane(tmpVane);
-                                                CLHEP::Hep3Vector Mom_rotated = vane.getRotation()*(it->second.momentum);
+                                                Vane const &vane = cg->vane(tmpVane);
+                                                CLHEP::Hep3Vector Mom_rotated = (vane.rotation())*(it->second.momentum);
                                                 _clSeedPpu[j]          = Mom_rotated.x();
                                                 _clSeedPpv[j]          = Mom_rotated.y();
                                                 _clSeedPpw[j]          = Mom_rotated.z();

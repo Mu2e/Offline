@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.22 2013/01/24 22:41:52 genser Exp $
-// $Author: genser $
-// $Date: 2013/01/24 22:41:52 $
+// $Id: ReadBack_module.cc,v 1.23 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author Rob Kutschke
 //
@@ -452,7 +452,7 @@ namespace mu2e {
       simEdep += caloMC->at(i).energyDep();
 
       int roid = caloHits->at(i).id();
-      int cid = cg->getCrystalByRO(roid);
+      int cid = cg->crystalByRO(roid);
       hit_crystals[cid] = 1;
     }
 

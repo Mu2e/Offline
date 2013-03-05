@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.14 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.15 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author G. Pezzullo
 //
@@ -34,7 +34,7 @@
 //#include "CaloCluster/inc/CaloClusterFinder.hh"
 //#include "CaloCluster/inc/ClosestCaloClusterFinder.hh"
 
-#include "RecoDataProducts/inc/CaloCluster.hh"
+//#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
 
@@ -86,6 +86,18 @@ using namespace std;
 
 namespace mu2e {
 
+struct simData{
+        double entranceEnergy, exitEnergy;
+        double cosTheta, cosPitch, lcosPitch, entranceTime, exitTime;
+        size_t nHits;
+        int isQC;
+        simData(){};
+};
+
+typedef std::map<unsigned int, simData> SimMap;
+
+
+
 struct electronData{
         double _gentime;
         double _genx;
@@ -112,6 +124,7 @@ struct electronData{
         CLHEP::Hep3Vector _impMom3Vec;
         int _impPdgId;
         int _impIsGen;
+  int _impIsConv;
         ClusterMap _clusterMap;
 
         bool operator<( const electronData other) const{
@@ -135,6 +148,7 @@ struct electronData{
                 _impMom3Vec =other._impMom3Vec;
                 _impPdgId  = other._impPdgId;
                 _impIsGen  = other._impIsGen;
+		_impIsConv = other._impIsConv;
                 _clusterMap = other._clusterMap;
 
 
@@ -142,7 +156,8 @@ struct electronData{
         }
         electronData():
                 _impTime(1e10),
-                _impEnergy(0.0){
+		_impEnergy(0.0),
+		_impIsConv(0){
         }
 };
 
@@ -275,13 +290,21 @@ private:
 
 
         Int_t _seedId,
+	  _mcNHits,
         _clSize,
         _seedPdgId ,
         _seedIsGen,
+	  _seedIsConv,
         _clVane,
         _clCogCrySize;
 
         Float_t _evt,
+	  _mcTrkEntrE,
+	  _mcTrkExitE,
+	  _mcTrkEntrT0,
+	  _mcTrkExitT0,
+	  _mcCosTh,
+	  _mcCosPitch,
         _clE ,
         _clT ,
         _clCOGx ,
@@ -296,6 +319,7 @@ private:
         _clColumns[10000],
         _clCogRows[10000],
         _clCogColumns[10000],
+        _clCryTimes[10000],
         _clShowerDir,
         _clErrShowerDir,
         _clCryEnergyMaxRow,
@@ -550,22 +574,22 @@ double cogWcorrFunc(double x){
 
 
 void CaloClusterCogCorrFunc::beginJob( ) {
-
-        cout << "start CaloClusterCogCorrFunc..."<<endl;
-
-        CaloManager = auto_ptr<MCCaloUtilities>(new MCCaloUtilities());
+  //if( evt.id().event() %1000 ==0){
+  //cout << "start CaloClusterCogCorrFunc..."<<endl;
+	//}
+        //CaloManager = auto_ptr<MCCaloUtilities>(new MCCaloUtilities());
 
         // If needed, create the ROOT interactive environment. See note 1.
-        if ( !gApplication ){
-                int    tmp_argc(0);
-                char** tmp_argv(0);
-                _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
-        }
+        //if ( !gApplication ){
+  //      int    tmp_argc(0);
+  //            char** tmp_argv(0);
+  //            _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+  //    }
 
-        gStyle->SetPalette(1);
-        gROOT->SetStyle("Plain");
+  //        gStyle->SetPalette(1);
+  //    gROOT->SetStyle("Plain");
 
-        _directory = gDirectory;
+  //    _directory = gDirectory;
 
 
 }
@@ -607,6 +631,13 @@ void CaloClusterCogCorrFunc::analyze(art::Event const & evt ) {
                 _Ntup        = tfs->make<TTree>("ClusterTrj", "Cluster trajectory info");
 
                 _Ntup->Branch("evt", &_evt , "evt/F");
+		_Ntup->Branch("mcNHits",     &_mcNHits , "mcNHits/I");
+                _Ntup->Branch("mcTrkEntrE",     &_mcTrkEntrE , "mcTrkEntrE/F");
+                _Ntup->Branch("mcTrkExitE",     &_mcTrkExitE , "mcTrkExitE/F");
+                _Ntup->Branch("mcTrkEntrT0",     &_mcTrkEntrT0 , "mcTrkEntrT0/F");
+                _Ntup->Branch("mcTrkExitT0",     &_mcTrkExitT0 , "mcTrkExitT0/F");
+                _Ntup->Branch("mcCosTh",     &_mcCosTh , "mcCosTh/F");
+                _Ntup->Branch("mcCosPitch",     &_mcCosPitch , "mcCosPitch/F");
                 _Ntup->Branch("clVane",    &_clVane , "clVane/I");
                 _Ntup->Branch("clE",        &_clE , "clE/F");
                 _Ntup->Branch("clT",        &_clT , "clT/F");
@@ -625,6 +656,7 @@ void CaloClusterCogCorrFunc::analyze(art::Event const & evt ) {
                 _Ntup->Branch("clColumns[clSize]",_clColumns , "clColumns[clSize]/F");
                 _Ntup->Branch("clCogRows[clCogCrySize]",_clCogRows , "clCogRows[clCogCrySize]/F");
                 _Ntup->Branch("clCogColumns[clCogCrySize]",_clCogColumns , "clCogColumns[clCogCrySize]/F");
+                _Ntup->Branch("clCryTimes[clSize]",_clCryTimes , "clCryTimes[clSize]/F");
 
 
                 _Ntup->Branch("clShowerDir", &_clShowerDir , "clShowerDir/F");
@@ -671,6 +703,7 @@ void CaloClusterCogCorrFunc::analyze(art::Event const & evt ) {
                 _Ntup->Branch("seedPpRotPhi",  &_seedPpRotPhi , "seedPpRotPhi/F");
                 _Ntup->Branch("seedPdgId",  &_seedPdgId , "seedPdgId/I");
                 _Ntup->Branch("seedIsGen",  &_seedIsGen , "seedIsGen/I");
+                _Ntup->Branch("seedIsConv",  &_seedIsConv , "seedIsConv/I");
                 _Ntup->Branch("seedThetaW", &_seedThetaW , "seedThetaW/F");
                 _Ntup->Branch("seedThetaV", &_seedThetaV , "seedThetaV/F");
                 _Ntup->Branch("seedDeltaW", &_seedDeltaW , "seedDeltaW/F");
@@ -697,9 +730,9 @@ void CaloClusterCogCorrFunc::endJob() {
 
 void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
 
-
+  	if( evt.id().event() %1000 ==0){
         /*if ( _diagLevel > 0 )*/ cout << "CaloClusterCogCorrFunc: analyze() begin" << endl;
-
+	}
         //Get handle to calorimeter
         art::ServiceHandle<GeometryService> geom;
         if(! geom->hasElement<VaneCalorimeter>() ) return;
@@ -749,11 +782,43 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
         int NtrkCut =0;
         int NtrkTot = 0;
 
+
+	SimMap simMap;
         //mapping &counting the electrons with quality cuts in the TRK
         for ( genEltrk_it = genEltrks->begin(); genEltrk_it!= genEltrks->end(); ++genEltrk_it ){
                 ++NtrkTot;
                 VisibleGenElTrack &iEltrk = const_cast<VisibleGenElTrack &>(*genEltrk_it);
                 GenElHitData& hdil = iEltrk.getithLoopHit(0);
+		GenElHitData& ldil = iEltrk.getHit((int)(iEltrk.getNumOfHit() - 1) );
+
+                double cosTheta = iEltrk.getTrkLrntzVec().cosTheta() ;
+                double cosPitch = hdil._hitMomentum.cosTheta();
+                double lcosPitch = ldil._hitMomentum.cosTheta();
+
+                if(_diagLevel>2){
+                        cout << "cosThetafirst = "<<cosPitch <<", "<<"costhetaLast = "<<lcosPitch<<endl;
+                        cout<< "ldil._hitMomentum.mag() = "<<ldil._hitMomentum.mag()<<"hdil._hitMomentum.mag() = "<< hdil._hitMomentum.mag()<<endl;
+                }
+
+		bool condition = true;
+		simData sData;
+                sData.nHits = iEltrk.getNumOfHit() ;
+                sData.cosTheta = cosTheta ;
+                sData.cosPitch = cosPitch;
+                sData.lcosPitch = lcosPitch;
+                sData.entranceEnergy = hdil._hitMomentum.mag();
+                sData.exitEnergy = ldil._hitMomentum.mag();
+                sData.isQC = 0;
+                sData.entranceTime = hdil._mcHitTime;
+                sData.exitTime = ldil._mcHitTime;
+	
+                //the following condition are the same used by Dave Brown for TTracker studies
+                condition &= ( iEltrk.getNumOfHit() >= 20 );
+                condition &= ( hdil._hitMomentum.mag() >= trkMomCut );
+                condition &= ( cosTheta >= -0.5 );
+                condition &= ( cosTheta <=  0.5 );
+                condition &= ( cosPitch > 0.5 );
+                condition &= ( cosPitch < 0.70710678118655 );// 1 / sqrt(2)
 
                 if(!findTrkId(tmpVTot, iEltrk.getTrkID().asUint() ) ){
 
@@ -763,33 +828,24 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
 
                 }
 
-                if (iEltrk.getNumOfHit()>=20){
+		//                if (iEltrk.getNumOfHit()>=20){
+		  
 
 
-
-                        if(hdil._hitMomentum.mag() >= trkMomCut){
-                                NtrkCut++;// # of electrons at the entrance of the TRK which have trkMomCut MeV of kinetic energy and which will light at least 20 straws
-                                if(!findTrkId(tmpV, iEltrk.getTrkID().asUint() ) ){
-
-                                        //cout<<"faccio il puschback in tmpV..."<<endl;
-                                        tmpV.push_back( iEltrk.getTrkID().asUint() );
-                                        //cout<<"--------> puschback in tmpV eseguito..."<<endl;
-
-                                }
-
-                                //                                for(unsigned int b=1; b <=(unsigned int) _hTHistEff->GetNbinsX(); ++b){
-                                //
-                                //                                        if (hdil._hitMomentum.mag() >= (_hTHistEff->GetXaxis()->GetBinCenter(b) -  0.5*_hTHistEff->GetXaxis()->GetBinWidth(b) )){
-                                //                                               // NGoodElec[b-1]++;
-                                //                                                if ( iEltrk.isConversionEl() ) {
-                                //                                                     //   NGoodConvEl[b-1]++;
-                                //                                                }
-                                //                                        }
-                                //
-                                //                                }
-                        }
-
-                }
+		  //                        if(hdil._hitMomentum.mag() >= trkMomCut){
+		NtrkCut++;// # of electrons at the entrance of the TRK which have trkMomCut MeV of kinetic energy and which will light at least 20 straws
+		if( condition ){
+		  sData.isQC = 1;
+		  if(!findTrkId(tmpV, iEltrk.getTrkID().asUint() ) ){
+		    //cout<<"faccio il puschback in tmpV..."<<endl;
+		    tmpV.push_back( iEltrk.getTrkID().asUint() );
+		    //cout<<"--------> puschback in tmpV eseguito..."<<endl;
+		    
+		  }
+		}		
+				//                        }
+		simMap[iEltrk.getTrkID().asUint()] =  sData ;
+			//  }
 
         }//end TRK mapping
         //cout <<"NtrkCut = " <<NtrkCut<<endl;
@@ -819,14 +875,14 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                         CaloClusterCollection::iterator tmpCluster = caloClustersPointer->end();
                         tmpCluster--;
 
-                        if(_diagLevel <0) cout<<"calculating cog()..."<<endl;
+                        if(_diagLevel >0) cout<<"calculating cog()..."<<endl;
                         //CLHEP::Hep3Vector cogDepth = cog_depth(*tmpCluster,_hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) );//- 0.5*_hTHistDeltaURec->GetXaxis()->GetBinWidth(bin) );
                         //CLHEP::Hep3Vector cogDepth = LOGcog(*tmpCluster, _CogOffSet, _hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) );//- 0.5*_hTHistDeltaURec->GetXaxis()->GetBinWidth(bin) );
                         ClusterMap clusterMap;
                         //LOGcogMap( *tmpCluster, _CogOffSet, _hTHistDeltaURec->GetXaxis()->GetBinCenter(bin) , clusterMap );
                         cog_depth( *tmpCluster, _Depth , clusterMap );
                         CLHEP::Hep3Vector cogDepth = clusterMap._cluCOG;
-                        if(_diagLevel <0) cout<<"cog() calculated!!"<<endl;
+                        if(_diagLevel >0) cout<<"cog() calculated!!"<<endl;
                         iVane = clu.vaneId();
 
                         CaloCrystalHitPtrVector caloClusterHits = clu.caloCrystalHitsPtrVector();
@@ -839,7 +895,8 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
 
                                 CaloHit const& thehit = *ROIds.at(0);
                                 size_t collectionPosition = ROIds.at(0).key();
-
+				int crystalId = cg->crystalByRO(thehit.id());
+				
                                 PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));
                                 if(mcptr.size() <=0) continue;
 
@@ -856,9 +913,9 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                         SimParticle const& sim = *(simParticles->getOrNull(mchit.trackId()));
 
 
-                                        CLHEP::Hep3Vector cryFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
+                                        CLHEP::Hep3Vector cryFrame = cg->toCrystalFrame(crystalId, mchit.position());
 
-                                        if( (cg->getCrystalRByRO(thehit.id()) != ( _rowToCanc - 1 ) && cg->getCrystalZByRO(thehit.id()) != ( _columnToCanc - 1 ) ) ){
+                                        if( (cg->crystalRByRO(thehit.id()) != ( _rowToCanc - 1 ) && cg->crystalZByRO(thehit.id()) != ( _columnToCanc - 1 ) ) ){
 
                                                 if(elecMap[iVane][trackId.asUint()]._impTime > mchit.time() ){
                                                         if(sim.fromGenerator() ){
@@ -903,11 +960,18 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                                         elecMap[iVane][trackId.asUint()]._impPos                     = mchit.position();
                                                         elecMap[iVane][trackId.asUint()]._impPosCryFrame             = cryFrame;
                                                         elecMap[iVane][trackId.asUint()]._vane                       = iVane;
-                                                        elecMap[iVane][trackId.asUint()]._row                        = cg->getCrystalRByRO(thehit.id());
-                                                        elecMap[iVane][trackId.asUint()]._colum                      = cg->getCrystalZByRO(thehit.id());
+                                                        elecMap[iVane][trackId.asUint()]._row                        = cg->crystalRByRO(thehit.id());
+                                                        elecMap[iVane][trackId.asUint()]._colum                      = cg->crystalZByRO(thehit.id());
                                                         elecMap[iVane][trackId.asUint()]._impMom3Vec                 = mchit.momentum();
                                                         elecMap[iVane][trackId.asUint()]._impPdgId                   = sim.pdgId();
                                                         elecMap[iVane][trackId.asUint()]._impIsGen                   = sim.fromGenerator();
+							if(sim.fromGenerator() ){
+							  GenParticle const& gen = *sim.genParticle();
+							  GenId genId = gen.generatorId();
+							  if(genId==GenId::conversionGun){
+							    elecMap[iVane][trackId.asUint()]._impIsConv        =  1;
+							  }
+							}
                                                         elecMap[iVane][trackId.asUint()]._clusterMap._cluSize        = clusterMap._cluSize      ;
                                                         elecMap[iVane][trackId.asUint()]._clusterMap._COGcrySize     = clusterMap._COGcrySize   ;
                                                         elecMap[iVane][trackId.asUint()]._clusterMap._cluSize        = clusterMap._cluSize      ;
@@ -920,11 +984,12 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                                         elecMap[iVane][trackId.asUint()]._clusterMap._cryEdepVec     = clusterMap._cryEdepVec  ;
                                                         elecMap[iVane][trackId.asUint()]._clusterMap._COGrowVec      = clusterMap._COGrowVec    ;
                                                         elecMap[iVane][trackId.asUint()]._clusterMap._COGcolumnVec   = clusterMap._COGcolumnVec ;
+                                                        elecMap[iVane][trackId.asUint()]._clusterMap._timeVec         = clusterMap._timeVec       ;
                                                         elecMap[iVane][trackId.asUint()]._clusterMap._showerDir      = clusterMap._showerDir ;
                                                         elecMap[iVane][trackId.asUint()]._clusterMap._errShowerDir   = clusterMap._errShowerDir;
 
 
-                                                        if(_diagLevel < 0){
+                                                        if(_diagLevel > 0){
                                                                 cout<< "###################"<<endl;
                                                                 cout<< "idVande = "<< iVane<<endl;
                                                                 cout << "cluU = "<<elecMap[iVane][trackId.asUint()]._impPos.getX()<<endl;
@@ -963,12 +1028,20 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 _evt                  = evt.id().event();
                                 _seedPdgId            = 0;
                                 _seedIsGen            = 0;
+				_seedIsConv           = 0;
                                 _clCryEnergyMaxRow    = 0.0;
                                 _clCryEnergyMaxColumn = 0.0;
+				_mcCosPitch     = 0.0;
+				_mcCosTh        = 0.0;
+				_mcNHits        = 0;
+				_mcTrkEntrE     = 0.0;
+				_mcTrkExitE     = 0.0;
+				_mcTrkEntrT0    = 0.0;
+				_mcTrkExitT0    = 0.0;
 
                                 _clVane = ite->second[trkVec[it2]]._vane;
                                 _clE    = ite->second[trkVec[it2]]._cluEnergy;
-                                _clT    = ite->second[trkVec[it2]]._cluTime;
+                                _clT    = ite->second[trkVec[it2]]._fastCryTime;//_cluTime;
                                 _clSize = ite->second[trkVec[it2]]._cluSize;
                                 _clCOGu = ite->second[trkVec[it2]]._cluCog.x();
                                 _clCOGv = ite->second[trkVec[it2]]._cluCog.y();
@@ -1009,7 +1082,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
 
                                         _clColumns[i]      = ite->second[trkVec[it2]]._clusterMap._columnVec[i];
 
-
+					_clCryTimes[i]     = ite->second[trkVec[it2]]._clusterMap._timeVec[i];
 
                                         if(_clColumns[i] < tmpClWmin) {
                                                 tmpClWmin = _clColumns[i];
@@ -1043,6 +1116,16 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 _seedIsGoodTrk  = 0.0;
                                 _seedNGoodTrkPerEvent = tmpV.size();
 
+				  if(simMap.find((unsigned int)trkVec[it2]) != simMap.end() ){
+				    SimMap::iterator it = simMap.find((unsigned int)trkVec[it2]);
+				    _mcCosPitch     = it->second.cosPitch;
+				    _mcCosTh        = it->second.cosTheta;
+				    _mcNHits        = it->second.nHits;
+				    _mcTrkEntrE     = it->second.entranceEnergy;
+				    _mcTrkExitE     = it->second.exitEnergy;
+				    _mcTrkEntrT0    = it->second.entranceTime;
+				    _mcTrkExitT0    = it->second.exitTime;
+				  }
                                 _seedGenp = ite->second[trkVec[it2]]._genp;
                                 _seedGene = ite->second[trkVec[it2]]._gene;
                                 _seedGenx = ite->second[trkVec[it2]]._genx;
@@ -1068,6 +1151,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
 
                                 _seedPdgId = ite->second[trkVec[it2]]._impPdgId;
                                 _seedIsGen = ite->second[trkVec[it2]]._impIsGen;
+                                _seedIsConv = ite->second[trkVec[it2]]._impIsConv;
                                 //                                        cout << "delta X = " << ite->second[trkVec[it2]]._impPos.getX() - ite->second[trkVec[it2]]._cluCog.getX()<<endl;
                                 //                                        cout << "delta Y = " << ite->second[trkVec[it2]]._impPos.getY() - ite->second[trkVec[it2]]._cluCog.getY()<<endl;
                                 //                                        cout << "delta Z = " << ite->second[trkVec[it2]]._impPos.getZ() - ite->second[trkVec[it2]]._cluCog.getZ()<<endl;
@@ -1080,7 +1164,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 _seedPw = vaneFrame.z();
 
                                 CLHEP::Hep3Vector dirMom = ite->second[trkVec[it2]]._impMom3Vec.unit();
-                                if(_diagLevel < 1){
+                                if(_diagLevel > 1){
                                         if(cry(ite->second[trkVec[it2]]._cluCog.y()) ==15.0 || cry( ite->second[trkVec[it2]]._cluCog.z() ) ==15.0 ){
                                                 cout<<"ecco il mukkio...."<<endl;
                                                 cout<<"cogDepth.v() = " <<cry(ite->second[trkVec[it2]]._cluCog.y())<<", cogDepth.w() = "<< cry( ite->second[trkVec[it2]]._cluCog.z() )<<", cogDepth.u() = "<<cry( ite->second[trkVec[it2]]._cluCog.x() )<<endl;
@@ -1098,15 +1182,15 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                         cout<<"posU = "<<vaneFrame.getX()<<", posV = "<<vaneFrame.getY()<<", posW = "<< vaneFrame.getZ()<<endl;
                                         cout << "dirMomX = "<< dirMom.getX()<<", dirMomY = "<< dirMom.getY()<<", dirMomZ = "<<dirMom.getZ() <<endl;
                                 }
-                                Vane const &vane = cg->getVane(ite->first);
-                                CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*dirMom;
+                                Vane const &van = cg->vane(ite->first);
+                                CLHEP::Hep3Vector const dirMom_rotated = (van.rotation())*dirMom;
                                 _seedPpu = dirMom_rotated.x()*ite->second[trkVec[it2]]._impMom3Vec.mag();
                                 _seedPpv = dirMom_rotated.y()*ite->second[trkVec[it2]]._impMom3Vec.mag();
                                 _seedPpw = dirMom_rotated.z()*ite->second[trkVec[it2]]._impMom3Vec.mag();
                                 _seedPpRotCosTh = dirMom_rotated.cosTheta()*180./TMath::Pi();
                                 _seedPpRotPhi = dirMom_rotated.phi()*180./TMath::Pi();
 
-                                if(_diagLevel < 0){
+                                if(_diagLevel > 0){
                                         cout<<"after rotation..."<<endl;
                                         cout << "dirMomU = "<< dirMom_rotated.getX()<<", dirMomV = "<< dirMom_rotated.getY()<<", dirMomW = "<<dirMom_rotated.getZ() <<endl;
                                         cout<<"cog coordinates... on vane ref!"<<endl;
@@ -1138,7 +1222,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
                                 _hTHistRecDistanceToCog->Fill(  distanceToCog);
                                 _hTHistRecImpactParam->Fill(  impactParam);
                                 _hTHistMomRecDotVaneNorm->Fill(  asin(impactParam / distanceToCog)*180./TMath::Pi());
-                                if(_diagLevel < 0){
+                                if(_diagLevel > 0){
                                         cout<<"------------------------------------------------------"<<endl;
                                         cout<< "dcaV_U = "<<dcaV.getX()<< ", dcaV_V = "<<dcaV.getY()<<", dcaV_W = "<<dcaV.getZ()<<endl;
                                         cout << "impactParam = "<< impactParam<<endl;
@@ -1158,7 +1242,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
 
 
                                 //}
-                                //CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, vane.getOrigin() );
+                                //CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, van.getOrigin() );
                                 double thetaWimpact = std::atan(-1.0*dirMom_rotated.getZ() / dirMom_rotated.getX() ) ;
                                 _seedThetaW = thetaWimpact*180./TMath::Pi();
 
@@ -1343,7 +1427,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
         //                        _seedPw = vaneFrame.z();
         //
         //                        CLHEP::Hep3Vector dirMom =it->second._impMom3Vec.unit();
-        //                        if(_diagLevel < 1){
+        //                        if(_diagLevel > 1){
         //                                if(cry(ite->second[trkVec[it2]]._cluCog.y()) ==15.0 || cry(it->second._cluCog.z() ) ==15.0 ){
         //                                        cout<<"ecco il mukkio...."<<endl;
         //                                        cout<<"cogDepth.v() = " <<cry(ite->second[trkVec[it2]]._cluCog.y())<<", cogDepth.w() = "<< cry(it->second._cluCog.z() )<<", cogDepth.u() = "<<cry(it->second._cluCog.x() )<<endl;
@@ -1362,14 +1446,14 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
         //                                cout << "dirMomX = "<< dirMom.getX()<<", dirMomY = "<< dirMom.getY()<<", dirMomZ = "<<dirMom.getZ() <<endl;
         //                        }
         //                        Vane const &vane = cg->getVane(ite->first);
-        //                        CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*dirMom;
+        //                        CLHEP::Hep3Vector dirMom_rotated = *(van.getRotation())*dirMom;
         //                        _seedPpu = dirMom_rotated.x()*ite->second[trkVec[it2]]._impMom3Vec.mag();
         //                        _seedPpv = dirMom_rotated.y()*ite->second[trkVec[it2]]._impMom3Vec.mag();
         //                        _seedPpw = dirMom_rotated.z()*ite->second[trkVec[it2]]._impMom3Vec.mag();
         //                        _seedPpRotCosTh = dirMom_rotated.cosTheta()*180./TMath::Pi();
         //                        _seedPpRotPhi = dirMom_rotated.phi()*180./TMath::Pi();
         //                        cout<<"-------4--------"<<endl;
-        //                        if(_diagLevel < 0){
+        //                        if(_diagLevel > 0){
         //                                cout<<"after rotation..."<<endl;
         //                                cout << "dirMomU = "<< dirMom_rotated.getX()<<", dirMomV = "<< dirMom_rotated.getY()<<", dirMomW = "<<dirMom_rotated.getZ() <<endl;
         //                                cout<<"cog coordinates... on vane ref!"<<endl;
@@ -1401,7 +1485,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
         //                        _hTHistRecDistanceToCog->Fill(  distanceToCog);
         //                        _hTHistRecImpactParam->Fill(  impactParam);
         //                        _hTHistMomRecDotVaneNorm->Fill(  asin(impactParam / distanceToCog)*180./TMath::Pi());
-        //                        if(_diagLevel < 0){
+        //                        if(_diagLevel > 0){
         //                                cout<<"------------------------------------------------------"<<endl;
         //                                cout<< "dcaV_U = "<<dcaV.getX()<< ", dcaV_V = "<<dcaV.getY()<<", dcaV_W = "<<dcaV.getZ()<<endl;
         //                                cout << "impactParam = "<< impactParam<<endl;
@@ -1421,7 +1505,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
         //
         //
         //                        //}
-        //                        //CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, vane.getOrigin() );
+        //                        //CLHEP::Hep3Vector vaneFrame = cg->toVaneFrame(ite->first, van.getOrigin() );
         //                        double thetaWimpact = std::atan(-1.0*dirMom_rotated.getZ() / dirMom_rotated.getX() ) ;
         //                        _seedThetaW = thetaWimpact*180./TMath::Pi();
         //
@@ -1485,8 +1569,9 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
 
 
         // }//end for(_hTHistEff->GetNbinsX())
-        cout << "Event "<<evt.id().event()<<" CaloClusterCogCorrFunc done..."<<endl;
-
+	if( evt.id().event() %1000 ==0){
+	  cout << "Event "<<evt.id().event()<<" CaloClusterCogCorrFunc done..."<<endl;
+	}
 }
 
 }

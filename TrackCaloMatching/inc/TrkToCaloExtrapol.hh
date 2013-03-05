@@ -1,9 +1,9 @@
 //
 // container for the info of the extrapolated trajectory on the calorimeter
 //
-// $Id: TrkToCaloExtrapol.hh,v 1.4 2012/08/31 22:34:53 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/08/31 22:34:53 $
+// $Id: TrkToCaloExtrapol.hh,v 1.5 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author G. Pezzullo
 //
@@ -25,6 +25,13 @@
 
 //tracker includes
 #include "KalmanTrack/KalRep.hh"
+
+#include "KalmanTrack/KalHit.hh"
+
+#include "BaBar/BaBar.hh"
+#include "TrkBase/HelixParams.hh"
+#include "TrkBase/HelixTraj.hh"
+#include "KalmanTests/inc/TrkStrawHit.hh"
 
 // C++ includes
 #include <vector>
@@ -66,8 +73,11 @@ public:
         double                              pathLengthEntrance() const;
         double                           pathLenghtEntranceErr() const;
         double                                  pathLengthExit() const;
+        double                                  fitConsistency() const;
         double                                              t0() const;
         double                                           t0Err() const;
+        double                                              tOrigin() const;
+  double                                           tOriginErr() const;
         Hep3Vector                                  t0Momentum() const;
         BbrVectorErr                             t0MomentumErr() const;
         HepPoint                              entrancePosition() const;

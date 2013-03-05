@@ -1,9 +1,9 @@
 //
 // Make a Vane Calorimeter.
 //
-// $Id: VaneCalorimeterMaker.cc,v 1.2 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: VaneCalorimeterMaker.cc,v 1.3 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -58,6 +58,11 @@ namespace mu2e{
 	_calo->_nCrystalZ            = config.getInt   ("calorimeter.nCrystalZSlices");
 	_calo->_rMin                 = config.getDouble("calorimeter.rInscribed");
 
+
+
+	_calo->_shieldHalfThickness  = config.getDouble("calorimeter.shieldHalfThickness");
+	_calo->_neutronAbsorberHalfThickness  = config.getDouble("calorimeter.neutronAbsorberHalfThickness");
+
 	_calo->_wrapperThickness     = config.getDouble("calorimeter.crystalWrapperThickness",0.0);
 	_calo->_shellThickness       = config.getDouble("calorimeter.crystalShellThickness",0.0);
 
@@ -75,7 +80,7 @@ namespace mu2e{
 	_calo->_lysoLightYield       = config.getDouble("calorimeter.lysoLightYield", 2000.0);
 	_calo->_apdQuantumEff        = config.getDouble("calorimeter.quantumEffAPD", 0.68);
 	_calo->_lightCollectEffAPD   = config.getDouble("calorimeter.lightCollectEffAPD", 0.11);
-
+	_calo->_rMax                 = _calo->_rMin + 2.0*(_calo->_crystalHW + _calo->_wrapperThickness + _calo->_shellThickness) * _calo->_nCrystalR;
 
 	CLHEP::Hep3Vector center = config.getHep3Vector("calorimeter.calorimeterCenter");
 	_calo->_origin = CLHEP::Hep3Vector(-solenoidOffset,0,center.z());

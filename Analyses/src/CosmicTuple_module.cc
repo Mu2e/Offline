@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple_module.cc,v 1.8 2012/09/08 02:24:24 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:24 $
+// $Id: CosmicTuple_module.cc,v 1.9 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
@@ -324,7 +324,7 @@ namespace mu2e {
         for ( size_t i=0; i<apdhits->size(); ++i ) {
           const StepPointMC & apdhit = apdhits->at(i);
           int apdid = apdhit.volumeId();
-          int cida  = cg->getCrystalByRO(apdid);
+          int cida  = cg->crystalByRO(apdid);
           hit_apds[cida] =1;
         }
       }

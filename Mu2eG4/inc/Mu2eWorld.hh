@@ -4,9 +4,9 @@
 // Construct the Mu2e G4 world and serve information about that world.
 // Note that the class inherits from Mu2eUniverse now
 //
-// $Id: Mu2eWorld.hh,v 1.42 2012/11/16 23:44:29 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/16 23:44:29 $
+// $Id: Mu2eWorld.hh,v 1.43 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author Rob Kutschke
 //
@@ -72,7 +72,7 @@ namespace mu2e {
     // Break the big task into many smaller ones.
     VolumeInfo constructTracker();
     VolumeInfo constructTarget();
-    void constructCal();
+    VolumeInfo constructCal();
     void constructMagnetYoke();
     void constructBFieldAndManagers();
     void constructStepLimiters();

@@ -5,6 +5,12 @@
 // then must check effciency
 // then must redo everything to include splitting
 // and finally get a beer for all these trouble
+//
+// $Id: MakeCaloCluster_module.cc,v 1.7 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
+//
+
 /*
  * MakeCaloCluster_module.cc
  *
@@ -264,7 +270,7 @@ class MakeCaloCluster : public art::EDProducer {
 		CaloCrystalHit const* hit = *il;
 		totalEnergy += hit->energyDep();
 		averageTime += hit->time();
-		if (isection==-1) isection = cal.getCaloSectionId(hit->id());
+		if (isection==-1) isection = cal.caloSectionId(hit->id());
                 
 		size_t idx = ( hit - caloCrystalHitBase );
 		caloCrystalHitPtrVector.push_back( art::Ptr<CaloCrystalHit>(caloCrystalHitsHandle,idx) );
@@ -307,7 +313,7 @@ class MakeCaloCluster : public art::EDProducer {
 
        while (!crystalToVisit.empty()) {
 
-	    std::vector<int> neighbors = cal.getNeighbors(crystalToVisit.front()->id());
+	    std::vector<int> neighbors = cal.neighbors(crystalToVisit.front()->id());
 	    crystalToVisit.pop();
 
 	    for (unsigned int iv=0;iv<neighbors.size();++iv)
@@ -375,7 +381,7 @@ class MakeCaloCluster : public art::EDProducer {
        for (std::list<CaloCrystalHit const*>::const_iterator it = cluster.begin(); it != cluster.end(); ++it)
        {        
 	 double energy = (*it)->energyDep();
-	 CLHEP::Hep3Vector crystalPos = cal.getCrystalOrigin((*it)->id());
+	 CLHEP::Hep3Vector crystalPos = cal.crystalOrigin((*it)->id());
 
 	 if (energy > 1e-6) {
              double weight = 1;

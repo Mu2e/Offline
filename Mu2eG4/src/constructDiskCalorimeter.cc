@@ -55,13 +55,16 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructDiskCalorimeter( VolumeInfo const &  mother,
+  VolumeInfo constructDiskCalorimeter( VolumeInfo const &  mother,
                                  double              zOffset,
                                  SimpleConfig const& config ){
 
 
 
     //-- Read parameters from config file
+	bool const isCalorimeterVisible    = config.getBool("calorimeter.calorimeterVisible",true);
+	bool const isCalorimeterSolid      = config.getBool("calorimeter.calorimeterSolid",true);
+
     int const verbosityLevel        = config.getInt("calorimeter.verbosityLevel",0);
     bool const isDiskBoxVisible     = config.getBool("calorimeter.vaneBoxVisible",true);
     bool const isDiskBoxSolid       = config.getBool("calorimeter.vaneBoxSolid",true);
@@ -90,12 +93,54 @@ namespace mu2e {
         
     DiskCalorimeter const & cal    = *(GeomHandle<DiskCalorimeter>());
 
+       double rIn                           = cal.envelopeRmin();
+       double rOut                          = cal.envelopeRmax();
+       double halfLength                    = cal.envelopeHalfLength();
+
+       double hack = 600;
+       double maxHalfSep = cal.diskSeparation(cal.nDisks()-1)/2;
+
+        //  Make the mother volume for the calorimeter.
+        G4ThreeVector pcalo = cal.origin();
+        G4ThreeVector pos   = G4ThreeVector(0, 0, pcalo.z()+zOffset - (hack-maxHalfSep) );
+        verbosityLevel > 0 &&
+    	      cout << "Calorimeter  position Origin local: ("
+                   << pos.x() << "," << pos.y() << "," << pos.z()
+                   << ")" << endl;
+
+
+        TubsParams caloParams( rIn, rOut, halfLength, 0., CLHEP::twopi);
+
+        VolumeInfo calorimeterInfo = nestTubs( "CalorimeterMother",
+                                          caloParams,
+                                          fillMaterial,
+                                          0,
+                                          pos,
+                                          mother,
+                                          0,
+                                          isCalorimeterVisible,
+                                          G4Colour::Blue(),
+                                          isCalorimeterSolid,
+                                          forceAuxEdgeVisible,
+                                          placePV,
+                                          doSurfaceCheck
+                                          );
+    	 if ( verbosityLevel > 0) {
+    	     double zhl         = static_cast<G4Box*>(calorimeterInfo.solid)->GetZHalfLength();
+    	     CLHEP::Hep3Vector const & CalorimeterOffsetInMu2e = calorimeterInfo.centerInMu2e();
+    	     double CalorimeterOffsetInMu2eZ = CalorimeterOffsetInMu2e[CLHEP::Hep3Vector::Z];
+    	     cout << __func__ << " Calorimeter mother center in Mu2e   : " << CalorimeterOffsetInMu2e << endl;
+    	     cout << __func__ << " Calorimeter mother Z extent in Mu2e    : " <<
+             CalorimeterOffsetInMu2eZ - zhl << ", " << CalorimeterOffsetInMu2eZ + zhl << endl;
+    	 }
+
+
     G4int    nRO                   = cal.nROPerCrystal();
     G4double ROHalfThickness       = cal.roHalfThickness();
     G4double ROHalfTrans           = cal.roHalfSize();
 
     G4double crystalHexsize        = cal.crysHalfTrans();
-    G4double crystalDepth          = cal.crysDepth();
+    G4double crystalDepth          = cal.crystalHalfLength();
 
     G4double wrapThickness         = cal.wrapperThickness();
     G4double wrapHexsize           = crystalHexsize + wrapThickness;
@@ -184,17 +229,6 @@ namespace mu2e {
 
 
 
-
-
-
-
-
-
-
-
-
-    G4ThreeVector pcalo = cal.getOrigin();
-
     //-- Construct disks: diskInner contains the crystals, and is inside diskBox
 
     const unsigned int nDisks = cal.nDisks();
@@ -206,27 +240,27 @@ namespace mu2e {
     
     for (unsigned int idisk=0;idisk<nDisks;++idisk){
 
-        G4ThreeVector pdisk = cal.getDisk(idisk).getOriginLocal();
-double hack = 600;	
-	G4ThreeVector pos = G4ThreeVector(pdisk.x(),pdisk.y(), pcalo.z()+pdisk.z()+zOffset-hack);
+    G4ThreeVector pdisk = cal.disk(idisk).originLocal(); 
+
+	G4ThreeVector posDisk = G4ThreeVector(pdisk.x(),pdisk.y(), pdisk.z()- maxHalfSep);
 
 	ostringstream discname1;      discname1<<"DiskCalorimeter_" <<idisk;
 	ostringstream discname2;      discname2<<"DiskInner_" <<idisk;
 
-	double radiusIn   = cal.getDisk(idisk).innerRadius();
-	double radiusOut  = cal.getDisk(idisk).outerRadius();
-	double diskDepth  = shellDepth + 2.0*cal.getDisk(idisk).thickness();
+	double radiusIn   = cal.disk(idisk).innerRadius();
+	double radiusOut  = cal.disk(idisk).outerRadius();
+	double diskDepth  = shellDepth + 2.0*cal.disk(idisk).thickness();
 
-	double diskpar1[5] = {radiusIn-cal.getDisk(idisk).thickness(),radiusOut+cal.getDisk(idisk).thickness(), diskDepth/2.0, 0, 2*pi};
+	double diskpar1[5] = {radiusIn-cal.disk(idisk).thickness(),radiusOut+cal.disk(idisk).thickness(), diskDepth/2.0, 0, 2*pi};
 	double diskpar2[5] = {radiusIn,radiusOut, shellDepth/2.0, 0, 2*pi};
 
 
 	diskBoxInfo[idisk] = nestTubs(discname1.str(),
                               diskpar1,
                               diskMaterial,
-                              &cal.getDisk(idisk).getRotation(),
-                              pos,
-                              mother,
+                              &cal.disk(idisk).rotation(),
+                              posDisk,
+                              calorimeterInfo,
                               idisk,
                               isDiskBoxVisible,
                               G4Colour::Yellow(),
@@ -262,11 +296,11 @@ double hack = 600;
 
 
 	// -- then fill the inner disk with crystals
-	G4int nCrystalInThisDisk = cal.getDisk(idisk).nCrystals();			
+	G4int nCrystalInThisDisk = cal.disk(idisk).nCrystals();			
 	for(int ic=0; ic <nCrystalInThisDisk; ++ic){
 
 	      G4int id       = crystalIdOffset+ic;
-	      G4int roidBase = cal.getROBaseByCrystal(id);
+	      G4int roidBase = cal.ROBaseByCrystal(id);
 
 
 	      // Have to define a shell / wrapper logical volume for each crystal 
@@ -282,7 +316,7 @@ double hack = 600;
 
               //position of shell in the disk
 	      //contrary to rectangles, z position of hexagon is their base, not their center in Geant 4!!	      
-              CLHEP::Hep3Vector crystalPosition = cal.getDisk(idisk).getCrystal(ic).position();
+              CLHEP::Hep3Vector crystalPosition = cal.disk(idisk).crystal(ic).position();
               double x = crystalPosition.x();
               double y = crystalPosition.y();
               double z = -shellDepth/2.0; 	      
@@ -322,9 +356,9 @@ double hack = 600;
 
      }//end loop over disks
 
-
-  
+    return calorimeterInfo;
 
   }//end of disk calo construction
+
 
 } // end namespace mu2e

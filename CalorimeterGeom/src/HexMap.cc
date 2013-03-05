@@ -1,3 +1,7 @@
+// $Id: HexMap.cc,v 1.2 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
+//
 // Hexagon position map generator: 
 //   tesselate a plane with hexagons starting at the center of the plane
 //
@@ -60,16 +64,16 @@ namespace mu2e {
 
 
 
-      CLHEP::Hep2Vector HexMap::getXYPosition(int index) const
+      CLHEP::Hep2Vector HexMap::xyPosition(int index0) const
       {        
-         HexLK lk = getLK(index);
-         double x = (lk._l+lk._k)*sqrt(3.0)/2.0;
-         double y = (lk._l-lk._k)/2.0;
+         HexLK lk0 = lk(index0);
+         double x = (lk0._l+lk0._k)*sqrt(3.0)/2.0;
+         double y = (lk0._l-lk0._k)/2.0;
          return CLHEP::Hep2Vector(x,y);
       }
   
 
-      int HexMap::getIndexFromXY(double x0, double y0) const
+      int HexMap::indexFromXY(double x0, double y0) const
       {        
          int l0 = int( x0/sqrt(3.0)+y0+0.5 );
          int k0 = int( x0/sqrt(3.0)-y0+0.5 );
@@ -86,29 +90,29 @@ namespace mu2e {
            }	 
 	 }
 	 
-	 HexLK lk(lf,kf);	 
-	 return getIndex(lk);
+	 HexLK lk0(lf,kf);
+	 return index(lk0);
       }
 
 
 
-      std::vector<int> HexMap::getNeighbors(int index, int level)  const
+      std::vector<int> HexMap::neighbors(int index0, int level)  const
       {	 
-	 std::vector<int> neighbors;
-	 neighbors.reserve(100);
+	 std::vector<int> neighbors0;
+	 neighbors0.reserve(100);
 
-         HexLK init = getLK(index);
-	 HexLK lk(init._l + level, init._k - level);	 
+         HexLK init = lk(index0);
+	 HexLK lk0(init._l + level, init._k - level);
 
          for (unsigned int i=0;i<_step.size();++i){       
 	     for (int iseg=0;iseg<level;++iseg){	  
 
-		lk += _step[i];
-		neighbors.push_back(getIndex(lk));	     
+		lk0 += _step[i];
+		neighbors0.push_back(index(lk0));
 	     }
 	 }
 	 
-         return neighbors;
+         return neighbors0;
       }
 
 
@@ -117,7 +121,7 @@ namespace mu2e {
 
      
 
-      HexLK HexMap::getLK(int index) const
+      HexLK HexMap::lk(int index) const
       {
          
 	 if (index==0) return HexLK(0,0);
@@ -138,33 +142,33 @@ namespace mu2e {
       } 
 
 
-      int HexMap::getIndex(HexLK& lk) const 
+      int HexMap::index(HexLK& lk0) const
       {
-         if (lk._l==0 && lk._k==0) return 0;
+         if (lk0._l==0 && lk0._k==0) return 0;
 	 
-	 int nring = getRing(lk);
+	 int nring = ring(lk0);
 	 int pos = (nring>0) ? 1+3*nring*(nring-1): 0;
 
 	 //find segment along the ring
 	 int segment(0);	 
-	 if ( std::abs(lk._l+lk._k) == nring && lk._k!=0) segment += 1;  
-	 if ( std::abs(lk._k) == nring && lk._l!=0)        segment += 2; 
-	 if ( (lk._l+lk._k) <=0 && lk._k<nring)           segment += 3; 
+	 if ( std::abs(lk0._l+lk0._k) == nring && lk0._k!=0) segment += 1;
+	 if ( std::abs(lk0._k) == nring && lk0._l!=0)        segment += 2;
+	 if ( (lk0._l+lk0._k) <=0 && lk0._k<nring)           segment += 3;
 	 pos += segment*nring;
 	 
 	 //add position le long du segment	 
-	 if (segment==0 || segment==3)  pos += nring - std::abs(lk._k)-1;
-	 if (segment==1 || segment==4)  pos += nring - std::abs(lk._l)-1;
-	 if (segment==2 || segment==5)  pos += std::abs(lk._l)-1;
+	 if (segment==0 || segment==3)  pos += nring - std::abs(lk0._k)-1;
+	 if (segment==1 || segment==4)  pos += nring - std::abs(lk0._l)-1;
+	 if (segment==2 || segment==5)  pos += std::abs(lk0._l)-1;
 	
 	 return pos;      
       }
            
-      int HexMap::getRing(HexLK& lk) const 
+      int HexMap::ring(HexLK& lk0) const
       {         
-	  if (lk._l*lk._k > 0) return std::abs(lk._l+lk._k);
-	  if ( std::abs(lk._l) > std::abs(lk._k) ) return std::abs(lk._l);
-	  return std::abs(lk._k);
+	  if (lk0._l*lk0._k > 0) return std::abs(lk0._l+lk0._k);
+	  if ( std::abs(lk0._l) > std::abs(lk0._k) ) return std::abs(lk0._l);
+	  return std::abs(lk0._k);
       }
 
 
@@ -173,7 +177,7 @@ namespace mu2e {
 
      /*
      // This function illustrates how the map is generated, storing each lk values in a vector
-     // In this version, getIndex gives the index in the _position vector given lk values, eliminating
+     // In this version, index gives the index in the _position vector given lk values, eliminating
      // the need for this vector
      void HexMap::generate(int nring)
       { 

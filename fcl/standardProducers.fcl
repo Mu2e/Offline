@@ -65,6 +65,8 @@ CaloReadoutHitsMaker :
 {
   module_type          : MakeCaloReadoutHits
   diagLevel            : 0
+  caloLRUcorrection    : 0
+  caloNonLinCorrection : 0
   maxFullPrint         : 0
   g4ModuleLabel        : g4run
 }
@@ -72,14 +74,35 @@ CaloReadoutHitsMaker :
 # Form CaloCrystalHits (reconstruct crystals from APDs)
 CaloCrystalHitsMaker :
 {
-  module_type          : MakeCaloCrystalHits
-  diagLevel            : 0
-  maxFullPrint         : 0
-  g4ModuleLabel        : g4run
-  minimumEnergy        : 0.0
-  maximumEnergy        : 1000.0
-  minimumTimeGap       : 100.0
+  module_type          			: MakeCaloCrystalHits
+  diagLevel            			: 0
+  caloChargeProductionEffects       	: 0
+  caloROnoiseEffect    			: 0
+  maxFullPrint         			: 0
+  g4ModuleLabel        			: g4run
+  minimumEnergy       			: 0.0
+  maximumEnergy       			: 1000.0
+  minimumTimeGap       			: 100.0
 }
+
+# Form EMC clusters 
+makeCaloCluster:
+{
+  module_type           : MakeCaloCluster
+  diagLevel             : 0
+  generatorModuleLabel   : generate
+  caloCrystalModuleLabel : CaloCrystalHitsMaker
+  g4ModuleLabel          : g4run
+  caloClusterAlgorithm   : closest
+  caloClusterSeeding     : energy
+  deltaTime              : 10.0 #ns
+  nCryPerCrystal         : 1
+  EnoiseCut              : 0.00 #MeV
+  ExpandCut		 : 1.0
+  EminCluster		 : 0.0
+  maxFullPrint           : 201
+}
+
 
 # Form ExtMonUCITofHits (extmonUCI Tof Hits)
 ExtMonUCITofHitsMaker :
@@ -199,7 +222,7 @@ randomsaver:
 TrkPatRec :
 {
         module_type                             : TrkPatRec
-
+	includeCaloInfo				: 0
 # Kalman fit configuration for the helix seed fit
         SeedFit :
         {

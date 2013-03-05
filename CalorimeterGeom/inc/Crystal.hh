@@ -1,6 +1,8 @@
 #ifndef CalorimeterGeom_Crystal_hh
 #define CalorimeterGeom_Crystal_hh
-
+// $Id: Crystal.hh,v 1.12 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Hold information about position of a hexagonal cell
 //
@@ -27,7 +29,7 @@ namespace mu2e {
            int id(void) const                                       {return _id;}
            CLHEP::Hep3Vector const& position(void) const            {return _position;}
 
-           std::vector<int> const& getNearestNeighbours(void) const {return _neighbours;}
+           std::vector<int> const& nearestNeighbours(void) const {return _neighbours;}
            void setNearestNeighbours(std::vector<int> list)         {_neighbours = list;}
  
 

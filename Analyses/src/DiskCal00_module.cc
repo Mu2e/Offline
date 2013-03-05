@@ -1,9 +1,9 @@
 //
 // Check self consistency of hits in the Disk Calorimeter.
 //
-// $Id: DiskCal00_module.cc,v 1.3 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: DiskCal00_module.cc,v 1.4 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author Rob Kutschke
 //
@@ -279,11 +279,11 @@ namespace mu2e {
     cout << "Number of disks:    " << cal.nDisks()      << endl;
     cout << "Number of Readouts: " << cal.nRO() << " "  << cal.nROPerCrystal() << " " << cal.nRO()/cal.nROPerCrystal() << endl;
     cout << "Hex side size:      " << 2.0*cal.crysHalfTrans() << endl;
-    cout << "Depth:              " << cal.crysDepth()   << endl;
-    cout << "Origin:             " << cal.getOrigin()      << endl;
+    cout << "Depth:              " << cal.crystalHalfLength()   << endl;
+    cout << "Origin:             " << cal.origin()      << endl;
     for ( unsigned int i=0; i<cal.nDisks(); ++i){
-      Disk const& disk = cal.getDisk(i);
-      cout << "Disk: " << i << " " << "origin: " << disk.getOrigin() << endl;
+      Disk const& disk = cal.disk(i);
+      cout << "Disk: " << i << " " << "origin: " << disk.origin() << endl;
     }
   }
 

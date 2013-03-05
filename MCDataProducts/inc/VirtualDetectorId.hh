@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.15 2012/12/04 00:51:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Id: VirtualDetectorId.hh,v 1.16 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author Rob Kutschke
 //
@@ -59,35 +59,59 @@ namespace mu2e {
       EMFBoxBack, EMFBoxNE, EMFBoxTop,                        // 43, 44, 45
       IT_VD_EndCap_Front,  IT_VD_EndCap_Back,                 // 46, 47:  Front and Back parts of the tracker
       IT_VD_InSurf,                                           // 48:      external and internal surface of the ITracker envelope
+      //the following virtual detectors are related to the vane calorimeter:
+      //the first number after EMC_ is the vane id, according to the convention used in the calorimeter geom
+      //Front indicates the vane planes which are in the x-y plane: 
+      // (-) FrontIn is the one nearest to the Tracker, FrontOut is the one nearest to the beam-stop
+      //Edge indicates the vane planes in the y-z plane:
+      //(-) EdgeIn is the one nearest to the beam line, EdgeOut is the one far away
+      //Surf indicates the vane planes in the x-z plane
+      //(-) SurfIn is the one in the opposite side of the vane RO, SurfOut is the one in the vane RO plane
+      EMC_0_FrontIn, EMC_0_FrontOut, EMC_1_FrontIn, EMC_1_FrontOut, // 49, 50, 51, 52
+      EMC_2_FrontIn, EMC_2_FrontOut, EMC_3_FrontIn, EMC_3_FrontOut,// 53, 54, 55, 56
+      EMC_0_EdgeIn, EMC_0_EdgeOut, EMC_1_EdgeIn, EMC_1_EdgeOut, // 57, 58, 59, 60
+      EMC_2_EdgeIn, EMC_2_EdgeOut, EMC_3_EdgeIn, EMC_3_EdgeOut, // 61, 62, 63, 64 
+      EMC_0_SurfIn, EMC_0_SurfOut, EMC_1_SurfIn, EMC_1_SurfOut, // 65, 66, 67, 68
+      EMC_2_SurfIn, EMC_2_SurfOut, EMC_3_SurfIn, EMC_3_SurfOut, // 69, 70, 71, 72
+      EMC_Disk_0_SurfIn, EMC_Disk_0_SurfOut, EMC_Disk_1_SurfIn, EMC_Disk_1_SurfOut,// 73, 74, 75, 76
+      EMC_Disk_0_EdgeIn, EMC_Disk_0_EdgeOut, EMC_Disk_1_EdgeIn, EMC_Disk_1_EdgeOut,// 77, 78, 79,80
       lastEnum
     };
 
     // Keep this in sync with the enum. Used in VirtualDetectorId.cc
-#define VIRTUALDETECTORID_NAMES \
-      "unknown", \
-      "Coll1_In",       "Coll1_Out",                               \
-      "Coll31_In",      "Coll31_Out",  "Coll32_In", "Coll32_Out",  \
-      "Coll5_In",       "Coll5_Out",                               \
-      "ST_In",          "ST_Out",                                  \
-      "TT_Mid",         "TT_MidInner",                             \
-      "TT_FrontHollow", "TT_FrontPA",                              \
-      "TT_Back",                                                   \
-      "EMFC1Entrance", "EMFC1Exit", "EMFC2Entrance", "EMFC2Exit",  \
-      "PS_FrontExit",                                              \
-      "EMIEntrance1",                                              \
-      "TT_OutSurf", "TT_InSurf",                                   \
-      "EMIEntrance2",                                              \
-      "EMIC0Entrance", "EMIC0Exit", "EMIC1Entrance", "EMIC1Exit",  \
-      "EMIC2Entrance", "EMIC2Exit", "EMIC3Entrance", "EMIC3Exit",  \
-      "ExtMonCommonPlane",                                         \
-      "ProtonBeamDumpCoreFace",                                    \
-      "EMFDetectorUpEntrance", "EMFDetectorUpExit",                \
-      "Coll5_OutSurf",                                             \
-      "EMFDetectorDnEntrance", "EMFDetectorDnExit",                \
-      "EMFBoxFront", "EMFBoxSW", "EMFBoxBottom",                   \
-      "EMFBoxBack", "EMFBoxNE", "EMFBoxTop",                       \
-      "IT_VD_EndCap_Front",     "IT_VD_EndCap_Back",               \
-      "IT_VD_InSurf"
+#define VIRTUALDETECTORID_NAMES						\
+    "unknown",								\
+      "Coll1_In",       "Coll1_Out",					\
+      "Coll31_In",      "Coll31_Out",  "Coll32_In", "Coll32_Out",	\
+      "Coll5_In",       "Coll5_Out",					\
+      "ST_In",          "ST_Out",					\
+      "TT_Mid",         "TT_MidInner",					\
+      "TT_FrontHollow", "TT_FrontPA",					\
+      "TT_Back",							\
+      "EMFC1Entrance", "EMFC1Exit", "EMFC2Entrance", "EMFC2Exit",	\
+      "PS_FrontExit",							\
+      "EMIEntrance1",							\
+      "TT_OutSurf", "TT_InSurf",					\
+      "EMIEntrance2",							\
+      "EMIC0Entrance", "EMIC0Exit", "EMIC1Entrance", "EMIC1Exit",	\
+      "EMIC2Entrance", "EMIC2Exit", "EMIC3Entrance", "EMIC3Exit",	\
+      "ExtMonCommonPlane",						\
+      "ProtonBeamDumpCoreFace",						\
+      "EMFDetectorUpEntrance", "EMFDetectorUpExit",			\
+      "Coll5_OutSurf",							\
+      "EMFDetectorDnEntrance", "EMFDetectorDnExit",			\
+      "EMFBoxFront", "EMFBoxSW", "EMFBoxBottom",			\
+      "EMFBoxBack", "EMFBoxNE", "EMFBoxTop",				\
+      "IT_VD_EndCap_Front",     "IT_VD_EndCap_Back",			\
+      "IT_VD_InSurf",							\
+      "EMC_0_FrontIn", "EMC_0_FrontOut", "EMC_1_FrontIn", "EMC_1_FrontOut", \
+      "EMC_2_FrontIn", "EMC_2_FrontOut", "EMC_3_FrontIn", "EMC_3_FrontOut", \
+      "EMC_0_EdgeIn", "EMC_0_EdgeOut", "EMC_1_EdgeIn", "EMC_1_EdgeOut", \
+      "EMC_2_EdgeIn", "EMC_2_EdgeOut", "EMC_3_EdgeIn", "EMC_3_EdgeOut", \
+      "EMC_0_SurfIn", "EMC_0_SurfOut", "EMC_1_SurfIn", "EMC_1_SurfOut", \
+      "EMC_2_SurfIn", "EMC_2_SurfOut", "EMC_3_SurfIn", "EMC_3_SurfOut", \
+      "EMC_Disk_0_SurfIn", "EMC_Disk_0_SurfOut","EMC_Disk_1_SurfIn", "EMC_Disk_1_SurfOut", \
+      "EMC_Disk_0_EdgeIn", "EMC_Disk_0_EdgeOut","EMC_Disk_1_EdgeIn", "EMC_Disk_1_EdgeOut",
 
   public:
 
@@ -133,6 +157,31 @@ namespace mu2e {
       return ( _id == TT_Back || _id == IT_VD_EndCap_Back );
     }
 
+    bool isVaneCalorimeter0() const{
+      return (_id == EMC_0_FrontIn || _id == EMC_0_FrontOut || _id == EMC_0_EdgeIn || 
+	      _id == EMC_0_EdgeOut || _id == EMC_0_SurfIn   || _id == EMC_0_SurfOut);
+    }
+    bool isVaneCalorimeter1() const{
+      return (_id == EMC_1_FrontIn || _id == EMC_1_FrontOut || _id == EMC_1_EdgeIn || 
+	      _id == EMC_1_EdgeOut || _id == EMC_1_SurfIn   || _id == EMC_1_SurfOut );
+    }
+    bool isVaneCalorimeter2() const{
+      return ( _id == EMC_2_FrontIn || _id == EMC_2_FrontOut || _id == EMC_2_EdgeIn || 
+	       _id == EMC_2_EdgeOut || _id == EMC_2_SurfIn   || _id == EMC_2_SurfOut);
+    }
+    bool isVaneCalorimeter3() const{
+      return ( _id == EMC_3_FrontIn || _id == EMC_3_FrontOut || _id == EMC_3_EdgeIn || 
+	       _id == EMC_3_EdgeOut || _id == EMC_3_SurfIn   || _id == EMC_3_SurfOut);
+    }
+    
+    bool isDiskCalorimeter0() const{
+      return (_id == EMC_Disk_0_SurfIn || _id == EMC_Disk_0_SurfOut || _id == EMC_Disk_0_EdgeIn || _id == EMC_Disk_0_EdgeOut);
+    }
+    
+    bool isDiskCalorimeter1() const{
+      return ( _id == EMC_Disk_1_SurfIn || _id == EMC_Disk_1_SurfOut || _id == EMC_Disk_1_EdgeIn || _id == EMC_Disk_1_EdgeOut);
+    }
+    
     // ROOT requires a default c'tor.
     VirtualDetectorId():
       _id(unknown){

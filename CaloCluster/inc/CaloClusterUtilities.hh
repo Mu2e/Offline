@@ -1,9 +1,9 @@
 //
 // General utilities for the calorimeter's studies
 //
-// $Id: CaloClusterUtilities.hh,v 1.6 2012/09/08 02:24:24 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:24 $
+// $Id: CaloClusterUtilities.hh,v 1.7 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author G. Pezzullo & G. Tassielli & G. Onorato
 //
@@ -176,9 +176,10 @@ struct DistVector{
 struct trkIdVector{
         std::vector<unsigned int> _vec;
 
-        void push_back(unsigned int id){
-                _vec.push_back(id);
+        void push_back(int id){
+                _vec.push_back((unsigned int)id);
         }
+
         size_t size(){
                 return _vec.size();
         }
@@ -223,13 +224,21 @@ struct trkIdVector{
                 }
                 return *this;
         }
-        trkIdVector(){};
+        trkIdVector(){}
+
+        void print(std::ostream& os) const{
+                os << "trkIdVector print out :"<<std::endl;
+                for(size_t i=0; i<_vec.size(); ++i){
+                        os << "vec("<<i<<") = "<<_vec.at(i)<<std::endl;
+                }
+        }
 
 };
 
 struct elecData{
-        int _vaneId;
+  int _vaneId, _isConv, _pdgId, _isGen;
         double _impTime, _impTimeErr;
+        double _genTime, _genTimeErr;
         int _index;
         CLHEP::Hep3Vector _impPos;
         BbrPointErr _impPosErr;
@@ -241,6 +250,8 @@ struct elecData{
         double _t0Err;
         CLHEP::Hep3Vector _t0Momentum;
         BbrVectorErr _t0MomentumErr;
+        CLHEP::HepLorentzVector _genMom;
+        double _fitConsistency;
 
         bool operator<( const elecData other) const{
                 return ( _impTime< other._impTime);
@@ -252,9 +263,14 @@ struct elecData{
 
         bool operator==( const elecData other) const{
                 if( _vaneId == other._vaneId &&
+		    _isConv == other._isConv &&
+		    _pdgId == other._pdgId &&
+		    _isGen == other._isGen &&
                                 _index   == other._index &&
                                 _impTime == other._impTime &&
                                 _impTimeErr == other._impTimeErr &&
+		    _genTime == other._genTime &&
+                                _genTimeErr == other._genTimeErr &&
                                 _impPos == other._impPos &&
                                 _impPosErr == other._impPosErr &&
                                 _impMom3Vec == other._impMom3Vec &&
@@ -264,7 +280,9 @@ struct elecData{
                                 _pathLenght == other._pathLenght &&
                                 _pathLenghtErr == other._pathLenghtErr &&
                                 _t0Err == other._t0Err &&
-                                _t0 == other._t0 ){
+                                _t0 == other._t0 &&
+                                _genMom == other._genMom &&
+                                _fitConsistency== other._fitConsistency){
                         return true;
                 }else {
                         return false;
@@ -272,10 +290,15 @@ struct elecData{
         }
         elecData & operator=(const elecData& other) {
                 _vaneId         = other._vaneId;
+		_isConv         = other._isConv;
+		_pdgId         = other._pdgId;
+		_isGen         = other._isGen;
                 _index          = other._index;
                 _impTime        = other._impTime;
                 _impTimeErr     = other._impTimeErr;
-                _impPos         = other._impPos;
+		_genTime        = other._genTime;
+                _genTimeErr     = other._genTimeErr;
+		_impPos         = other._impPos;
                 _impPosErr      = other._impPosErr;
                 _impMom3Vec     = other._impMom3Vec;
                 _impMom3VecErr  = other._impMom3VecErr;
@@ -285,24 +308,38 @@ struct elecData{
                 _pathLenghtErr  = other._pathLenghtErr;
                 _t0             = other._t0;
                 _t0Err             = other._t0Err;
+                _genMom             = other._genMom;
+                _fitConsistency    = other._fitConsistency;
 
                 return *this;
         }
         elecData():
+	  _isConv(0),
+	  _pdgId(0),
+	  _isGen(0),
                 _impTime(1e10),
                 _impTimeErr(0.0),
+	  _genTime(0.0),
+	  _genTimeErr(0.0),
                 _index(0),
                 _pathLenght(0.0),
                 _t0(0.0),
                 _pathLenghtErr(0.0),
-                _t0Err(0.0){
+                _t0Err(0.0),
+                _fitConsistency(0.0){
         }
 
         void print(std::ostream& os) const{
                 os << "vaneId = "<<_vaneId <<
+		  ", isConv = "<< _isConv <<
+		  ", pdgId = "<< _pdgId <<
+		  ", isGen = "<< _isGen <<
+		  
                                 ", index = "<<_index <<
                                 ", impTime = "<<_impTime << " [ns]"<<
                                 ", impTimeErr = "<<_impTimeErr << " [ns]"<<
+		  ",genTime = "<<_genTime << " [ns]"<<
+                                ", genTimeErr = "<<_genTimeErr << " [ns]"<<
                                 ", impPos = "<<_impPos << " [mm]"<<
                                 ", pathLength = "<<_pathLenght << " [mm]"<<
                                 ", pathLengthErr = "<<_pathLenghtErr << " [mm]"<<
@@ -313,7 +350,10 @@ struct elecData{
                                 ", impPosErr = "<<_impPosErr << " [mm]"<< std::endl;
                 os << "impMom3Vec = "<<_impMom3Vec << " [MeV]"<<
                                 ", impMom3VecErr = "<<_impMom3VecErr << " [MeV]"<<
-                                ", energy = "<<_impMom3Vec.mag() << " [MeV]"<< std::endl;
+                                ", energy = "<<_impMom3Vec.mag() << " [MeV]"<<
+                                ", generation energy = "<<_genMom.e() << " [MeV]"<<
+                                ", fitConsistency = "<<_fitConsistency <<std::endl;
+
         }
 };
 
@@ -416,6 +456,9 @@ struct elecDataVector{
                 return (this->_vec.at(n));
         }
         int                         vaneId(size_t &n)const{return _vec.at(n)._vaneId;}
+        int                         isConv(size_t &n)const{return _vec.at(n)._isConv;}
+        int                         pdgId(size_t &n)const{return _vec.at(n)._pdgId;}
+        int                         isGen(size_t &n)const{return _vec.at(n)._isGen;}
         int                        index(size_t &n)const{return _vec.at(n)._index;}
         double                     impTime(size_t &n)const{return _vec.at(n)._impTime;}
         double                        impTimeErr(size_t &n)const{return _vec.at(n)._impTimeErr;}
@@ -437,7 +480,10 @@ struct elecDataVector{
         elecData &at(unsigned int &n){
                 return (this->_vec.at(n));
         }
-        int                          vaneId(unsigned int &n)const{return _vec.at(n)._vaneId;}
+  int                          vaneId(unsigned int &n)const{return _vec.at(n)._vaneId;}
+  int                          isConv(unsigned int &n)const{return _vec.at(n)._isConv;}
+  int                         isGen(unsigned int &n)const{return _vec.at(n)._isGen;}
+        int                         pdgId(unsigned int &n)const{return _vec.at(n)._pdgId;}
         int                            index(unsigned int &n)const{return _vec.at(n)._index;}
         double                        impTime(unsigned int &n)const{return _vec.at(n)._impTime;}
         double                        impTimeErr(unsigned int &n)const{return _vec.at(n)._impTimeErr;}
@@ -662,6 +708,7 @@ struct ClusterMap{
         std::vector<double> _cryEdepVec;
         std::vector<double> _COGrowVec;
         std::vector<double> _COGcolumnVec;
+        std::vector<double> _timeVec;
         int _vaneId;
         int _cluCogRow;
         int _cluCogColumn;
@@ -700,6 +747,9 @@ struct ClusterMap{
                 for(size_t i=0; i<_rowVec.size(); ++i){
                         os<< "COGcolumnVec["<<i<<"] = "<<_COGcolumnVec[i]<<std::endl;
                 }
+		for(size_t i=0; i<_rowVec.size(); ++i){
+                        os<< "timeVec["<<i<<"] = "<<_timeVec[i]<<std::endl;
+                }
         }
 
         bool operator==( const ClusterMap other) const{
@@ -715,6 +765,7 @@ struct ClusterMap{
                                 _cryEdepVec             == other._cryEdepVec &&
                                 _COGrowVec              == other._COGcolumnVec &&
                                 _COGcolumnVec           == other._COGcolumnVec &&
+		                _timeVec                == other._timeVec &&
                                 _showerDir              == other._showerDir &&
                                 _errShowerDir           == other._errShowerDir &&
                                 _cryEnergydepMaxRow     == other._cryEnergydepMaxRow &&
@@ -737,6 +788,7 @@ struct ClusterMap{
                 _cryEdepVec             = other._cryEdepVec;
                 _COGrowVec              = other._COGcolumnVec;
                 _COGcolumnVec           = other._COGcolumnVec;
+		_timeVec                = other._timeVec;
                 _showerDir              = other._showerDir;
                 _errShowerDir           = other._errShowerDir;
                 _cryEnergydepMaxRow     = other._cryEnergydepMaxRow;
@@ -760,8 +812,8 @@ struct ClusterMap{
                 _vaneId(cluster.vaneId()),
                 _cluCogRow(cluster.cogRow()),
                 _cluCogColumn(cluster.cogColumn()),
-                _cryEnergydepMaxRow(CaloClusterTools(cluster).cryEnergydepMaxRow()),
-                _cryEnergydepMaxColumn(CaloClusterTools(cluster).cryEnergydepMaxColumn()),
+                _cryEnergydepMaxRow(CaloClusterTools(cluster).cryEnergydepMaxRow() ),
+                _cryEnergydepMaxColumn(CaloClusterTools(cluster).cryEnergydepMaxColumn() ),
                 _cluCOG(cluster.cog3Vector()),
                 _time(cluster.time()),
                 _showerDir(CaloClusterTools(cluster).showerDir()),
@@ -771,13 +823,14 @@ struct ClusterMap{
                         std::vector<art::Ptr<CaloHit> > const& ROIds = (*itCD)->readouts();
                         CaloHit const& thehit = *ROIds.at(0);
                         int roid = thehit.id();
-                        int tmpRow = cg->getCrystalRByRO( roid) ;
-                        int tmpColumn = cg->getCrystalZByRO(roid) ;
+                        int tmpRow = cg->crystalRByRO( roid) ;
+                        int tmpColumn = cg->crystalZByRO(roid) ;
                         _rowVec.push_back(tmpRow);
                         _columnVec.push_back(tmpColumn);
                         _cryEdepVec.push_back((*itCD)->energyDep());
                         _COGrowVec.push_back(tmpRow);
                         _COGcolumnVec.push_back(tmpColumn);
+                        _timeVec.push_back((*itCD)->time());
                 }
         }
 
@@ -1013,6 +1066,8 @@ void cog_depth(CaloCluster &cluster, double depth, ClusterMap &clusterMap);
 CLHEP::Hep3Vector LOGcog(CaloCluster &cluster, double w, double depth);
 
 void LOGcogMap(CaloCluster &cluster, double w, double depth, ClusterMap &clusterMap );
+
+ 
 
 }
 

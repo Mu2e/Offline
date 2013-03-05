@@ -1,8 +1,8 @@
 #ifndef CalorimeterGeom_CalorimeterMaker_hh
 #define CalorimeterGeom_CalorimeterMaker_hh
-// $Id: CalorimeterMaker.hh,v 1.15 2012/07/15 22:06:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:16 $
+// $Id: CalorimeterMaker.hh,v 1.16 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -45,7 +45,7 @@ namespace mu2e{
 
       // Accessor and auto_ptr to calorimeter needed by GeometryService.
       std::auto_ptr<Calorimeter> _calo;
-      std::auto_ptr<Calorimeter> getCalorimeterPtr() { return _calo; }
+      std::auto_ptr<Calorimeter> calorimeterPtr() { return _calo; }
 
     private:
 

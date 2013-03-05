@@ -1,4 +1,8 @@
 //
+// $Id: Vane.cc,v 1.2 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
+//
 // Hold information about position of a hexagonal cell
 //
 // Original author B Echenard - P. Ongmongkolkul
@@ -52,9 +56,9 @@ namespace mu2e {
 
       }
 
-      std::vector<int> Vane::getNeighbors(int crystalId, int level) const
+      std::vector<int> Vane::neighbors(int crystalId, int level) const
       {
-          if (level==1) return _crystalList.at(crystalId).getNearestNeighbours();
+          if (level==1) return _crystalList.at(crystalId).nearestNeighbours();
           return findNeighbors(crystalId,level);
       }
 

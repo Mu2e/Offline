@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.43 2013/01/07 04:10:53 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/01/07 04:10:53 $
+// $Id: constructVirtualDetectors.cc,v 1.44 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -36,6 +36,9 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 #include "G4Helper/inc/AntiLeakRegistry.hh"
+
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 // G4 includes
 
@@ -265,646 +268,646 @@ namespace mu2e {
 
     if ( _config.getBool("hasTTracker",false) ) {
 
-    // placing virtual detectors in the middle of the ttracker
+      // placing virtual detectors in the middle of the ttracker
 
-    // check if ttracker exists and if the number of devices
-    // ttracker.numDevices is even is done in VirtualDetectorMaker
+      // check if ttracker exists and if the number of devices
+      // ttracker.numDevices is even is done in VirtualDetectorMaker
 
-    vdId = VirtualDetectorId::TT_Mid;
-    if( vdg->exist(vdId) ) {
-      
-      if ( verbosityLevel > 0) {
-        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-      }
-
-      // the radius of tracker mother
-      TTracker const & ttracker = *(GeomHandle<TTracker>());
-      double orvd = ttracker.getInnerTrackerEnvelopeParams().outerRadius();
-      double irvd = ttracker.getInnerTrackerEnvelopeParams().innerRadius();
-
-      if ( verbosityLevel > 0) {
-        double zvd = vdg->getGlobal(vdId).z();
-        cout << __func__  << " " << VirtualDetector::volumeName(vdId) <<
-          " z, r : " << zvd << ", " << irvd << " " << orvd << endl;
-      }
-
-      TubsParams vdParamsTTracker(irvd,orvd,vdHalfLength);
-
-      VolumeInfo const & parent = _helper->locateVolInfo("TrackerMother");
-
-      VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                vdParamsTTracker, vacuumMaterial, 0,
-                                vdg->getLocal(vdId),
-                                parent,
-                                vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
-                                forceAuxEdgeVisible,
-                                placePV,
-                                false);
-      // vd are very thin, a more thorough check is needed
-      doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-      vd.logical->SetSensitiveDetector(vdSD);
-
-      vdId = VirtualDetectorId::TT_MidInner;
+      vdId = VirtualDetectorId::TT_Mid;
       if( vdg->exist(vdId) ) {
+      
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	}
 
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
+	// the radius of tracker mother
+	TTracker const & ttracker = *(GeomHandle<TTracker>());
+	double orvd = ttracker.getInnerTrackerEnvelopeParams().outerRadius();
+	double irvd = ttracker.getInnerTrackerEnvelopeParams().innerRadius();
 
-        // VD TT_MidInner is placed inside the ttracker at the same z position as
-        // VD TT_Mid but from radius 0 to the inner radius of the ttracker
-        // mother volume. However, its mother volume is ToyDS3Vacuum
-        // which has a different offset. We will use the global offset
-        // here (!) as DS is not in the geometry service yet
+	if ( verbosityLevel > 0) {
+	  double zvd = vdg->getGlobal(vdId).z();
+	  cout << __func__  << " " << VirtualDetector::volumeName(vdId) <<
+	    " z, r : " << zvd << ", " << irvd << " " << orvd << endl;
+	}
 
-        // we need to take into account the "overlap" with the TT_InSurf
+	TubsParams vdParamsTTracker(irvd,orvd,vdHalfLength);
 
-        TubsParams vdParamsTTrackerInner(0.,irvd-2.*vdHalfLength,vdHalfLength);
+	VolumeInfo const & parent = _helper->locateVolInfo("TrackerMother");
 
-        VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
+				  vdParamsTTracker, vacuumMaterial, 0,
+				  vdg->getLocal(vdId),
+				  parent,
+				  vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
+				  forceAuxEdgeVisible,
+				  placePV,
+				  false);
+	// vd are very thin, a more thorough check is needed
+	doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	vd.logical->SetSensitiveDetector(vdSD);
 
-        G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+	vdId = VirtualDetectorId::TT_MidInner;
+	if( vdg->exist(vdId) ) {
 
-        if ( verbosityLevel > 0) {
-          double zvd = vdg->getGlobal(vdId).z();
-          cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-            " z, r : " << zvd  << ", " << irvd << endl;
-        }
+	  if ( verbosityLevel > 0) {
+	    cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	  }
 
-        VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                  vdParamsTTrackerInner, vacuumMaterial, 0,
-                                  vdLocalOffset,
-                                  parent,
-                                  vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
-                                  forceAuxEdgeVisible,
-                                  placePV,
-                                  false);
-        // vd are very thin, a more thorough check is needed
-        doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-        vd.logical->SetSensitiveDetector(vdSD);
+	  // VD TT_MidInner is placed inside the ttracker at the same z position as
+	  // VD TT_Mid but from radius 0 to the inner radius of the ttracker
+	  // mother volume. However, its mother volume is ToyDS3Vacuum
+	  // which has a different offset. We will use the global offset
+	  // here (!) as DS is not in the geometry service yet
+
+	  // we need to take into account the "overlap" with the TT_InSurf
+
+	  TubsParams vdParamsTTrackerInner(0.,irvd-2.*vdHalfLength,vdHalfLength);
+
+	  VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+
+	  if ( verbosityLevel > 0) {
+	    double zvd = vdg->getGlobal(vdId).z();
+	    cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+	      " z, r : " << zvd  << ", " << irvd << endl;
+	  }
+
+	  VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
+				    vdParamsTTrackerInner, vacuumMaterial, 0,
+				    vdLocalOffset,
+				    parent,
+				    vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
+				    forceAuxEdgeVisible,
+				    placePV,
+				    false);
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	  vd.logical->SetSensitiveDetector(vdSD);
+	}
+
       }
 
-    }
+      // placing virtual detectors TT_FrontHollow, TT_FrontPA in front
+      // of the ttracker (in the proton absorber region); check if
+      // ttracker exist is done in VirtualDetectorMaker
 
-    // placing virtual detectors TT_FrontHollow, TT_FrontPA in front
-    // of the ttracker (in the proton absorber region); check if
-    // ttracker exist is done in VirtualDetectorMaker
+      if (    _config.getBool("hasProtonAbsorber",false) 
+	      && !_config.getBool("protonabsorber.isHelical", false) 
+	      && !_config.getBool("protonabsorber.isShorterCone", false)) {
 
-    if (    _config.getBool("hasProtonAbsorber",false) 
-        && !_config.getBool("protonabsorber.isHelical", false) 
-        && !_config.getBool("protonabsorber.isShorterCone", false)) {
+	vdId = VirtualDetectorId::TT_FrontHollow;
+	if( vdg->exist(vdId) ) {
 
-      vdId = VirtualDetectorId::TT_FrontHollow;
-      if( vdg->exist(vdId) ) {
+	  if ( verbosityLevel > 0) {
+	    cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	  }
+	  if ( !_config.getBool("hasProtonAbsorber",false) ) {
+	    throw cet::exception("GEOM")
+	      << "This virtual detector " << VirtualDetectorId(vdId).name()
+	      << " can only be placed if proton absorber is present\n";
+	  }
 
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
-        if ( !_config.getBool("hasProtonAbsorber",false) ) {
-          throw cet::exception("GEOM")
-            << "This virtual detector " << VirtualDetectorId(vdId).name()
-            << " can only be placed if proton absorber is present\n";
-        }
+	  // the radius of tracker mother
+	  TTracker const & ttracker = *(GeomHandle<TTracker>());
+	  double orvd = ttracker.getInnerTrackerEnvelopeParams().outerRadius();
+	  double vdZ  = vdg->getGlobal(vdId).z();
 
-        // the radius of tracker mother
-        TTracker const & ttracker = *(GeomHandle<TTracker>());
-        double orvd = ttracker.getInnerTrackerEnvelopeParams().outerRadius();
-        double vdZ  = vdg->getGlobal(vdId).z();
+	  if ( verbosityLevel > 0) {
+	    cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+	      " z, r : " << vdZ << ", " << orvd << endl;
+	  }
 
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-            " z, r : " << vdZ << ", " << orvd << endl;
-        }
+	  // we will create an subtraction solid 
+	  // (we will "subtract" protonAbsorber) 
+	  // and place it (the subtraction solid) in ToyDS3Vacuum
 
-        // we will create an subtraction solid 
-        // (we will "subtract" protonAbsorber) 
-        // and place it (the subtraction solid) in ToyDS3Vacuum
-
-        VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	  VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
       
-        G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+	
+	  VolumeInfo vdFullInfo;
+	  vdFullInfo.name = VirtualDetector::volumeName(vdId) + "_FULL";
 
-        VolumeInfo vdFullInfo;
-        vdFullInfo.name = VirtualDetector::volumeName(vdId) + "_FULL";
+	  TubsParams  vdParamsTTrackerFrontFull(0.,orvd,vdHalfLength);
 
-        TubsParams  vdParamsTTrackerFrontFull(0.,orvd,vdHalfLength);
+	  vdFullInfo.solid = new G4Tubs(vdFullInfo.name,
+					vdParamsTTrackerFrontFull.innerRadius(),
+					vdParamsTTrackerFrontFull.outerRadius(),
+					vdParamsTTrackerFrontFull.zHalfLength(),
+					vdParamsTTrackerFrontFull.phi0(),
+					vdParamsTTrackerFrontFull.phiMax());
 
-        vdFullInfo.solid = new G4Tubs(vdFullInfo.name,
-                                      vdParamsTTrackerFrontFull.innerRadius(),
-                                      vdParamsTTrackerFrontFull.outerRadius(),
-                                      vdParamsTTrackerFrontFull.zHalfLength(),
-                                      vdParamsTTrackerFrontFull.phi0(),
-                                      vdParamsTTrackerFrontFull.phiMax());
+	  if ( verbosityLevel > 0) {
+	    cout << __func__ << " constructing " <<  vdFullInfo.name << endl;
+	  }
 
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " <<  vdFullInfo.name << endl;
-        }
+	  VolumeInfo const & protonabs2Info = _helper->locateVolInfo("protonabs2");
 
-        VolumeInfo const & protonabs2Info = _helper->locateVolInfo("protonabs2");
+	  VolumeInfo vdHollowInfo;
+	  if ( verbosityLevel > 0) {
+	    cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	  }
+	  vdHollowInfo.name = VirtualDetector::volumeName(vdId);
 
-        VolumeInfo vdHollowInfo;
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
-        vdHollowInfo.name = VirtualDetector::volumeName(vdId);
+	  // we need to make sure that the vd z is within protonabs2 z 
+	  // in addition the outomatic check if vd is inside ds3Vac is done by G4 itself
 
-        // we need to make sure that the vd z is within protonabs2 z 
-        // in addition the outomatic check if vd is inside ds3Vac is done by G4 itself
+	  double pabs2Z = protonabs2Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
+	  double pzhl   = static_cast<G4Cons*>(protonabs2Info.solid)->GetZHalfLength();
 
-        double pabs2Z = protonabs2Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
-        double pzhl   = static_cast<G4Cons*>(protonabs2Info.solid)->GetZHalfLength();
+	  if (verbosityLevel >0) {
+	    cout << __func__ << " " << protonabs2Info.name << " Z offset in Mu2e    : " <<
+	      pabs2Z << endl;
+	    cout << __func__ << " " << protonabs2Info.name << " Z extent in Mu2e    : " <<
+	      pabs2Z - pzhl  << ", " <<  pabs2Z + pzhl  << endl;
+	    cout << __func__ << " " << vdFullInfo.name     << " Z offset in Mu2e    : " <<
+	      vdZ << endl;      
+	    cout << __func__ << " " << vdFullInfo.name     << " Z extent in Mu2e    : " <<
+	      vdZ - vdHalfLength << ", " << vdZ + vdHalfLength << endl;
+	  }
 
-        if (verbosityLevel >0) {
-          cout << __func__ << " " << protonabs2Info.name << " Z offset in Mu2e    : " <<
-            pabs2Z << endl;
-          cout << __func__ << " " << protonabs2Info.name << " Z extent in Mu2e    : " <<
-            pabs2Z - pzhl  << ", " <<  pabs2Z + pzhl  << endl;
-          cout << __func__ << " " << vdFullInfo.name     << " Z offset in Mu2e    : " <<
-            vdZ << endl;      
-          cout << __func__ << " " << vdFullInfo.name     << " Z extent in Mu2e    : " <<
-            vdZ - vdHalfLength << ", " << vdZ + vdHalfLength << endl;
-        }
+	  if ( (pabs2Z+pzhl-vdZ-vdHalfLength)<0.0) {
+	    throw cet::exception("GEOM")
+	      << "Incorrect positioning of " 
+	      << protonabs2Info.name 
+	      << " and " 
+	      << vdFullInfo.name
+	      <<"\n";
+	  }
 
-        if ( (pabs2Z+pzhl-vdZ-vdHalfLength)<0.0) {
-          throw cet::exception("GEOM")
-            << "Incorrect positioning of " 
-            << protonabs2Info.name 
-            << " and " 
-            << vdFullInfo.name
-            <<"\n";
-        }
+	  // need to find the relative offset of vd & protonAbsorber; 
+	  // we will use the global offsets; they are (in Mu2e)
+	  // vdg->getGlobal(vdId)
+	  // protonabs2Info.centerInMu2e()
+	  // only global offsets can be used for vdet TT_FrontHollow, TT_FrontPA
 
-        // need to find the relative offset of vd & protonAbsorber; 
-        // we will use the global offsets; they are (in Mu2e)
-        // vdg->getGlobal(vdId)
-        // protonabs2Info.centerInMu2e()
-        // only global offsets can be used for vdet TT_FrontHollow, TT_FrontPA
+	  if ( verbosityLevel > 0) {
+	    cout << __func__ << " constructing " <<  vdHollowInfo.name << " name check " << endl;
+	  }
 
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " <<  vdHollowInfo.name << " name check " << endl;
-        }
+	  vdHollowInfo.solid = new G4SubtractionSolid(vdHollowInfo.name,
+						      vdFullInfo.solid, 
+						      protonabs2Info.solid,
+						      0,
+						      protonabs2Info.centerInMu2e()-
+						      vdg->getGlobal(vdId));
 
-        vdHollowInfo.solid = new G4SubtractionSolid(vdHollowInfo.name,
-                                                    vdFullInfo.solid, 
-                                                    protonabs2Info.solid,
-                                                    0,
-                                                    protonabs2Info.centerInMu2e()-
-                                                    vdg->getGlobal(vdId));
-
-        vdHollowInfo.centerInParent = vdLocalOffset;
-        vdHollowInfo.centerInWorld  = vdHollowInfo.centerInParent + parent.centerInWorld;
+	  vdHollowInfo.centerInParent = vdLocalOffset;
+	  vdHollowInfo.centerInWorld  = vdHollowInfo.centerInParent + parent.centerInWorld;
  
-        finishNesting(vdHollowInfo,
-                      vacuumMaterial,
-                      0,
-                      vdLocalOffset,
-                      parent.logical,
-                      vdId,
-                      vdIsVisible,
-                      G4Color::Red(), 
-                      vdIsSolid,
-                      forceAuxEdgeVisible,
-                      placePV,
-                      false);
-        // vd are very thin, a more thorough check is needed
-        doSurfaceCheck && vdHollowInfo.physical->
-          CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	  finishNesting(vdHollowInfo,
+			vacuumMaterial,
+			0,
+			vdLocalOffset,
+			parent.logical,
+			vdId,
+			vdIsVisible,
+			G4Color::Red(), 
+			vdIsSolid,
+			forceAuxEdgeVisible,
+			placePV,
+			false);
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vdHollowInfo.physical->
+	    CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-        if ( verbosityLevel > 0) {
+	  if ( verbosityLevel > 0) {
 
-          // both protonabs2 & vd are placed in ToyDS3Vacuum, do they have proper local offsets?
+	    // both protonabs2 & vd are placed in ToyDS3Vacuum, do they have proper local offsets?
 
-          double theZ  = vdHollowInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
-          double theHL = static_cast<G4Tubs*>(vdFullInfo.solid)->GetZHalfLength();
-          cout << __func__ << " " << vdHollowInfo.name << 
-            " Z offset in Mu2e    : " <<
-            theZ << endl;
-          cout << __func__ << " " << vdHollowInfo.name << 
-            " Z extent in Mu2e    : " <<
-            theZ - theHL << ", " << theZ + theHL << endl;
+	    double theZ  = vdHollowInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
+	    double theHL = static_cast<G4Tubs*>(vdFullInfo.solid)->GetZHalfLength();
+	    cout << __func__ << " " << vdHollowInfo.name << 
+	      " Z offset in Mu2e    : " <<
+	      theZ << endl;
+	    cout << __func__ << " " << vdHollowInfo.name << 
+	      " Z extent in Mu2e    : " <<
+	      theZ - theHL << ", " << theZ + theHL << endl;
 
-          cout << __func__ << " " << vdHollowInfo.name << 
-            " local input offset in G4                  : " <<
-            vdLocalOffset << endl;
-          cout << __func__ << " " << vdHollowInfo.name << 
-            " local GetTranslation()       offset in G4 : " <<
-            vdHollowInfo.physical->GetTranslation() << endl;
+	    cout << __func__ << " " << vdHollowInfo.name << 
+	      " local input offset in G4                  : " <<
+	      vdLocalOffset << endl;
+	    cout << __func__ << " " << vdHollowInfo.name << 
+	      " local GetTranslation()       offset in G4 : " <<
+	      vdHollowInfo.physical->GetTranslation() << endl;
 
-          cout << __func__ << " " << protonabs2Info.name << 
-            " local GetTranslation()              offset in G4 : " <<
-            protonabs2Info.physical->GetTranslation() << endl;
+	    cout << __func__ << " " << protonabs2Info.name << 
+	      " local GetTranslation()              offset in G4 : " <<
+	      protonabs2Info.physical->GetTranslation() << endl;
 
-          cout << __func__ << " " << protonabs2Info.name << " " << vdHollowInfo.name <<
-            " local GetTranslation() offset diff in G4 : " << 
-            vdHollowInfo.physical->GetTranslation() - protonabs2Info.physical->GetTranslation() << 
-            endl;
-          cout << __func__ << 
-            " protonabs2Info.centerInMu2e() - vdg->getGlobal(vdId) offset           : " <<
-            protonabs2Info.centerInMu2e()-vdg->getGlobal(vdId) << endl;
-        }
+	    cout << __func__ << " " << protonabs2Info.name << " " << vdHollowInfo.name <<
+	      " local GetTranslation() offset diff in G4 : " << 
+	      vdHollowInfo.physical->GetTranslation() - protonabs2Info.physical->GetTranslation() << 
+	      endl;
+	    cout << __func__ << 
+	      " protonabs2Info.centerInMu2e() - vdg->getGlobal(vdId) offset           : " <<
+	      protonabs2Info.centerInMu2e()-vdg->getGlobal(vdId) << endl;
+	  }
 
-        vdHollowInfo.logical->SetSensitiveDetector(vdSD);
+	  vdHollowInfo.logical->SetSensitiveDetector(vdSD);
 
-        //  now the complementary solid, it has to be placed in protonabs2
+	  //  now the complementary solid, it has to be placed in protonabs2
 
-        vdId = VirtualDetectorId::TT_FrontPA;
-        if (vdg->exist(vdId)) {
-          if ( verbosityLevel > 0) {
-            cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-          }
-          VolumeInfo vdIntersectionInfo;
-          vdIntersectionInfo.name = VirtualDetector::volumeName(vdId);
+	  vdId = VirtualDetectorId::TT_FrontPA;
+	  if (vdg->exist(vdId)) {
+	    if ( verbosityLevel > 0) {
+	      cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	    }
+	    VolumeInfo vdIntersectionInfo;
+	    vdIntersectionInfo.name = VirtualDetector::volumeName(vdId);
 
-          vdIntersectionInfo.solid = new G4IntersectionSolid(vdIntersectionInfo.name + "_INT",
-                                                             vdFullInfo.solid, 
-                                                             protonabs2Info.solid,
-                                                             0,
-                                                             protonabs2Info.centerInMu2e()-
-                                                             vdg->getGlobal(vdId));
+	    vdIntersectionInfo.solid = new G4IntersectionSolid(vdIntersectionInfo.name + "_INT",
+							       vdFullInfo.solid, 
+							       protonabs2Info.solid,
+							       0,
+							       protonabs2Info.centerInMu2e()-
+							       vdg->getGlobal(vdId));
 
-          VolumeInfo const & parent = _helper->locateVolInfo("protonabs2");
-          vdLocalOffset = vdg->getGlobal(vdId)-protonabs2Info.centerInMu2e();
+	    VolumeInfo const & parent = _helper->locateVolInfo("protonabs2");
+	    vdLocalOffset = vdg->getGlobal(vdId)-protonabs2Info.centerInMu2e();
 
-          vdIntersectionInfo.centerInParent = vdLocalOffset;
-          vdIntersectionInfo.centerInWorld  = vdIntersectionInfo.centerInParent + 
-            parent.centerInWorld;
+	    vdIntersectionInfo.centerInParent = vdLocalOffset;
+	    vdIntersectionInfo.centerInWorld  = vdIntersectionInfo.centerInParent + 
+	      parent.centerInWorld;
  
-          finishNesting(vdIntersectionInfo,
-                        vacuumMaterial,
-                        0,
-                        vdLocalOffset,
-                        parent.logical,
-                        vdId,
-                        vdIsVisible,
-                        G4Color::Red(), 
-                        vdIsSolid,
-                        forceAuxEdgeVisible,
-                        placePV,
-                        false);
-          // vd are very thin, a more thorough check is needed
-          doSurfaceCheck && vdIntersectionInfo.physical->
-            CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	    finishNesting(vdIntersectionInfo,
+			  vacuumMaterial,
+			  0,
+			  vdLocalOffset,
+			  parent.logical,
+			  vdId,
+			  vdIsVisible,
+			  G4Color::Red(), 
+			  vdIsSolid,
+			  forceAuxEdgeVisible,
+			  placePV,
+			  false);
+	    // vd are very thin, a more thorough check is needed
+	    doSurfaceCheck && vdIntersectionInfo.physical->
+	      CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-          if ( verbosityLevel > 0) {
+	    if ( verbosityLevel > 0) {
 
-            // vd is placed in protonabs2
+	      // vd is placed in protonabs2
 
-            double theZ  = vdIntersectionInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
-            double theHL = static_cast<G4Tubs*>(vdFullInfo.solid)->GetZHalfLength();
-            cout << __func__ << " " << vdIntersectionInfo.name << 
-              " Z offset in Mu2e    : " <<
-              theZ << endl;
-            cout << __func__ << " " << vdIntersectionInfo.name << 
-              " Z extent in Mu2e    : " <<
-              theZ - theHL << ", " << theZ + theHL << endl;
+	      double theZ  = vdIntersectionInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
+	      double theHL = static_cast<G4Tubs*>(vdFullInfo.solid)->GetZHalfLength();
+	      cout << __func__ << " " << vdIntersectionInfo.name << 
+		" Z offset in Mu2e    : " <<
+		theZ << endl;
+	      cout << __func__ << " " << vdIntersectionInfo.name << 
+		" Z extent in Mu2e    : " <<
+		theZ - theHL << ", " << theZ + theHL << endl;
 
-            cout << __func__ << " " << vdIntersectionInfo.name << 
-              " local input offset in G4                  : " <<
-              vdLocalOffset << endl;
-            cout << __func__ << " " << vdIntersectionInfo.name << 
-              " local GetTranslation()       offset in G4 : " <<
-              vdIntersectionInfo.physical->GetTranslation() << endl;
+	      cout << __func__ << " " << vdIntersectionInfo.name << 
+		" local input offset in G4                  : " <<
+		vdLocalOffset << endl;
+	      cout << __func__ << " " << vdIntersectionInfo.name << 
+		" local GetTranslation()       offset in G4 : " <<
+		vdIntersectionInfo.physical->GetTranslation() << endl;
 
-            cout << __func__ << " " << protonabs2Info.name << 
-              " local GetTranslation()              offset in G4 : " <<
-              protonabs2Info.physical->GetTranslation() << endl;
+	      cout << __func__ << " " << protonabs2Info.name << 
+		" local GetTranslation()              offset in G4 : " <<
+		protonabs2Info.physical->GetTranslation() << endl;
 
-            cout << __func__ << " " << protonabs2Info.name << " " << vdIntersectionInfo.name <<
-              " local GetTranslation() offset diff in G4 : " << 
-              vdIntersectionInfo.physical->GetTranslation() - 
-              protonabs2Info.physical->GetTranslation() << endl;
-            cout << __func__ << 
-              " protonabs2Info.centerInMu2e() - vdg->getGlobal(vdId) offset           : " <<
-              protonabs2Info.centerInMu2e()-vdg->getGlobal(vdId) << endl;
-          }
+	      cout << __func__ << " " << protonabs2Info.name << " " << vdIntersectionInfo.name <<
+		" local GetTranslation() offset diff in G4 : " << 
+		vdIntersectionInfo.physical->GetTranslation() - 
+		protonabs2Info.physical->GetTranslation() << endl;
+	      cout << __func__ << 
+		" protonabs2Info.centerInMu2e() - vdg->getGlobal(vdId) offset           : " <<
+		protonabs2Info.centerInMu2e()-vdg->getGlobal(vdId) << endl;
+	    }
 
 
-          vdIntersectionInfo.logical->SetSensitiveDetector(vdSD);
+	    vdIntersectionInfo.logical->SetSensitiveDetector(vdSD);
 
-        }
+	  }
+	}
       }
-    }
-    else {
+      else {
 
-      // if there is no proton absorber only one simple vd is placed
-      // the hollow part of the name may not be quite right here...
+	// if there is no proton absorber only one simple vd is placed
+	// the hollow part of the name may not be quite right here...
 
-      vdId = VirtualDetectorId::TT_FrontHollow;
+	vdId = VirtualDetectorId::TT_FrontHollow;
+	if( vdg->exist(vdId) ) {
+
+	  if ( verbosityLevel > 0) {
+	    cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	  }
+
+	  // the radius of tracker mother
+	  TTracker const & ttracker = *(GeomHandle<TTracker>());
+	  double orvd = ttracker.getInnerTrackerEnvelopeParams().outerRadius();
+	  double vdZ  = vdg->getGlobal(vdId).z();
+
+	  if ( verbosityLevel > 0) {
+	    cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+	      " z, r : " << vdZ << ", " << orvd << endl;
+	  }
+
+	  VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+      
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+
+	  TubsParams  vdParamsTTrackerFrontFull(0.,orvd,vdHalfLength);
+
+	  VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId), 
+				       vdParamsTTrackerFrontFull, 
+				       vacuumMaterial, 
+				       0,
+				       vdLocalOffset,
+				       parent,
+				       vdId, 
+				       vdIsVisible,
+				       G4Color::Red(), 
+				       vdIsSolid,
+				       forceAuxEdgeVisible,
+				       placePV,
+				       false);
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+	  vdInfo.logical->SetSensitiveDetector(vdSD);
+
+	}   
+
+      }
+
+      vdId = VirtualDetectorId::TT_Back;
       if( vdg->exist(vdId) ) {
 
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	}
+	// the radius of tracker mother
+	TTracker const & ttracker = *(GeomHandle<TTracker>());
+	double orvd = ttracker.getInnerTrackerEnvelopeParams().outerRadius();
+	double vdZ  = vdg->getGlobal(vdId).z();
 
-        // the radius of tracker mother
-        TTracker const & ttracker = *(GeomHandle<TTracker>());
-        double orvd = ttracker.getInnerTrackerEnvelopeParams().outerRadius();
-        double vdZ  = vdg->getGlobal(vdId).z();
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+	    " z, r : " << vdZ << ", " << orvd << endl;
+	}
 
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-            " z, r : " << vdZ << ", " << orvd << endl;
-        }
-
-        VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
       
-        G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+	G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
-        TubsParams  vdParamsTTrackerFrontFull(0.,orvd,vdHalfLength);
+	TubsParams  vdParamsTTrackerBackFull(0.,orvd,vdHalfLength);
 
-        VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId), 
-                                     vdParamsTTrackerFrontFull, 
-                                     vacuumMaterial, 
-                                     0,
-                                     vdLocalOffset,
-                                     parent,
-                                     vdId, 
-                                     vdIsVisible,
-                                     G4Color::Red(), 
-                                     vdIsSolid,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     false);
-        // vd are very thin, a more thorough check is needed
-        doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId), 
+				     vdParamsTTrackerBackFull, 
+				     vacuumMaterial, 
+				     0,
+				     vdLocalOffset,
+				     parent,
+				     vdId, 
+				     vdIsVisible,
+				     G4Color::Red(), 
+				     vdIsSolid,
+				     forceAuxEdgeVisible,
+				     placePV,
+				     false);
+	// vd are very thin, a more thorough check is needed
+	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-        vdInfo.logical->SetSensitiveDetector(vdSD);
+	vdInfo.logical->SetSensitiveDetector(vdSD);
 
-      }   
-
-    }
-
-    vdId = VirtualDetectorId::TT_Back;
-    if( vdg->exist(vdId) ) {
-
-      if ( verbosityLevel > 0) {
-        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-      }
-      // the radius of tracker mother
-      TTracker const & ttracker = *(GeomHandle<TTracker>());
-      double orvd = ttracker.getInnerTrackerEnvelopeParams().outerRadius();
-      double vdZ  = vdg->getGlobal(vdId).z();
-
-      if ( verbosityLevel > 0) {
-        cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-          " z, r : " << vdZ << ", " << orvd << endl;
       }
 
-      VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+      vdId = VirtualDetectorId::TT_OutSurf;
+      if( vdg->exist(vdId) ) {
+
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	}
+
+	// the radius of tracker mother
+	TTracker const & ttracker = *(GeomHandle<TTracker>());
+	TubsParams const envelopeParams = ttracker.getInnerTrackerEnvelopeParams();
+	double orvd = envelopeParams.outerRadius();
+	double vdZ  = vdg->getGlobal(vdId).z();
+
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+	    " z, r : " << vdZ << ", " << orvd << endl;
+	}
+
+	VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
       
-      G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+	G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
-      TubsParams  vdParamsTTrackerBackFull(0.,orvd,vdHalfLength);
+	// the detector is on the outer surface of the ttracker envelope
+	// it is thin cylinder, NOT a thin disk
+	TubsParams  vdParamsTTrackerOutSurf(orvd,orvd+2.*vdHalfLength,envelopeParams.zHalfLength());
 
-      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId), 
-                                   vdParamsTTrackerBackFull, 
-                                   vacuumMaterial, 
-                                   0,
-                                   vdLocalOffset,
-                                   parent,
-                                   vdId, 
-                                   vdIsVisible,
-                                   G4Color::Red(), 
-                                   vdIsSolid,
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   false);
-      // vd are very thin, a more thorough check is needed
-      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId), 
+				     vdParamsTTrackerOutSurf, 
+				     vacuumMaterial, 
+				     0,
+				     vdLocalOffset,
+				     parent,
+				     vdId, 
+				     vdIsVisible,
+				     G4Color::Red(), 
+				     vdIsSolid,
+				     forceAuxEdgeVisible,
+				     placePV,
+				     false);
+	// vd are very thin, a more thorough check is needed
+	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
+	vdInfo.logical->SetSensitiveDetector(vdSD);
 
-    }
-
-    vdId = VirtualDetectorId::TT_OutSurf;
-    if( vdg->exist(vdId) ) {
-
-      if ( verbosityLevel > 0) {
-        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
       }
 
-      // the radius of tracker mother
-      TTracker const & ttracker = *(GeomHandle<TTracker>());
-      TubsParams const envelopeParams = ttracker.getInnerTrackerEnvelopeParams();
-      double orvd = envelopeParams.outerRadius();
-      double vdZ  = vdg->getGlobal(vdId).z();
+      vdId = VirtualDetectorId::TT_InSurf;
+      if( vdg->exist(vdId) ) {
 
-      if ( verbosityLevel > 0) {
-        cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-          " z, r : " << vdZ << ", " << orvd << endl;
-      }
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	}
 
-      VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	// the radius of tracker mother
+	TTracker const & ttracker = *(GeomHandle<TTracker>());
+	TubsParams const envelopeParams = ttracker.getInnerTrackerEnvelopeParams();
+	double irvd = envelopeParams.innerRadius();
+	double vdZ  = vdg->getGlobal(vdId).z();
+
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+	    " z, r : " << vdZ << ", " << irvd << endl;
+	}
+
+	VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
       
-      G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+	G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
-      // the detector is on the outer surface of the ttracker envelope
-      // it is thin cylinder, NOT a thin disk
-      TubsParams  vdParamsTTrackerOutSurf(orvd,orvd+2.*vdHalfLength,envelopeParams.zHalfLength());
+	// the detector is on the inner surface of the ttracker envelope
+	// it is thin cylinder, NOT a thin disk
+	TubsParams  vdParamsTTrackerInSurf(irvd-2.*vdHalfLength,irvd,envelopeParams.zHalfLength());
 
-      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId), 
-                                   vdParamsTTrackerOutSurf, 
-                                   vacuumMaterial, 
-                                   0,
-                                   vdLocalOffset,
-                                   parent,
-                                   vdId, 
-                                   vdIsVisible,
-                                   G4Color::Red(), 
-                                   vdIsSolid,
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   false);
-      // vd are very thin, a more thorough check is needed
-      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId), 
+				     vdParamsTTrackerInSurf, 
+				     vacuumMaterial, 
+				     0,
+				     vdLocalOffset,
+				     parent,
+				     vdId, 
+				     vdIsVisible,
+				     G4Color::Red(), 
+				     vdIsSolid,
+				     forceAuxEdgeVisible,
+				     placePV,
+				     false);
+	// vd are very thin, a more thorough check is needed
+	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
+	vdInfo.logical->SetSensitiveDetector(vdSD);
 
-    }
-
-    vdId = VirtualDetectorId::TT_InSurf;
-    if( vdg->exist(vdId) ) {
-
-      if ( verbosityLevel > 0) {
-        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
       }
 
-      // the radius of tracker mother
-      TTracker const & ttracker = *(GeomHandle<TTracker>());
-      TubsParams const envelopeParams = ttracker.getInnerTrackerEnvelopeParams();
-      double irvd = envelopeParams.innerRadius();
-      double vdZ  = vdg->getGlobal(vdId).z();
+    } else if ( _config.getBool("hasITracker",false) && _config.getBool("itracker.VirtualDetect",false) ) {
 
-      if ( verbosityLevel > 0) {
-        cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-          " z, r : " << vdZ << ", " << irvd << endl;
+      VolumeInfo const & trckrParent = _helper->locateVolInfo("TrackerMother");
+
+      double tModInRd = ((G4Tubs *)trckrParent.solid)->GetInnerRadius();
+      double tModOtRd = ((G4Tubs *)trckrParent.solid)->GetOuterRadius();
+      double tModDz   = ((G4Tubs *)trckrParent.solid)->GetDz();
+
+
+      vdId = VirtualDetectorId::IT_VD_InSurf;
+      if( vdg->exist(vdId) ) {
+
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	}
+
+	// the radius of tracker mother
+	double irvd = tModInRd; //envelopeParams.innerRadius();
+	double vdZ  = vdg->getGlobal(vdId).z();
+
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+	    " z, r : " << vdZ << ", " << irvd << endl;
+	}
+
+	VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+
+	G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+
+	// the detector is on the inner surface of the tracker envelope
+	// it is thin cylinder, NOT a thin disk
+	TubsParams  vdParamsITrackerInSurf(irvd-2.*vdHalfLength,irvd,tModDz);
+
+	VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+				     vdParamsITrackerInSurf,
+				     vacuumMaterial,
+				     0,
+				     vdLocalOffset,
+				     parent,
+				     vdId,
+				     vdIsVisible,
+				     G4Color::Red(),
+				     vdIsSolid,
+				     forceAuxEdgeVisible,
+				     placePV,
+				     false);
+	// vd are very thin, a more thorough check is needed
+	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+	vdInfo.logical->SetSensitiveDetector(vdSD);
       }
 
-      VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
-      
-      G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+      vdId = VirtualDetectorId::IT_VD_EndCap_Front;
+      if( vdg->exist(vdId) ) {
 
-      // the detector is on the inner surface of the ttracker envelope
-      // it is thin cylinder, NOT a thin disk
-      TubsParams  vdParamsTTrackerInSurf(irvd-2.*vdHalfLength,irvd,envelopeParams.zHalfLength());
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	}
 
-      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId), 
-                                   vdParamsTTrackerInSurf, 
-                                   vacuumMaterial, 
-                                   0,
-                                   vdLocalOffset,
-                                   parent,
-                                   vdId, 
-                                   vdIsVisible,
-                                   G4Color::Red(), 
-                                   vdIsSolid,
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   false);
-      // vd are very thin, a more thorough check is needed
-      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	// the radius of tracker mother
+	double irvd = tModInRd; //envelopeParams.innerRadius();
+	double vdZ  = vdg->getGlobal(vdId).z();
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+	    " z, r : " << vdZ << ", " << irvd << endl;
+	}
 
-    }
+	VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
 
-  } else if ( _config.getBool("hasITracker",false) && _config.getBool("itracker.VirtualDetect",false) ) {
+	G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();// -G4ThreeVector(0.0,0.0,-(tModDz+vdHalfLength));
 
-            VolumeInfo const & trckrParent = _helper->locateVolInfo("TrackerMother");
+	// the detector is on the inner surface of the tracker envelope
+	// it is thin cylinder, NOT a thin disk
+	TubsParams  vdParamsITrackerInSurf(tModInRd,tModOtRd,vdHalfLength);
 
-            double tModInRd = ((G4Tubs *)trckrParent.solid)->GetInnerRadius();
-            double tModOtRd = ((G4Tubs *)trckrParent.solid)->GetOuterRadius();
-            double tModDz   = ((G4Tubs *)trckrParent.solid)->GetDz();
+	VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+				     vdParamsITrackerInSurf,
+				     vacuumMaterial,
+				     0,
+				     vdLocalOffset,
+				     parent,
+				     vdId,
+				     vdIsVisible,
+				     G4Color::Red(),
+				     vdIsSolid,
+				     forceAuxEdgeVisible,
+				     placePV,
+				     false);
+	// vd are very thin, a more thorough check is needed
+	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
+	vdInfo.logical->SetSensitiveDetector(vdSD);
+      }
 
-            vdId = VirtualDetectorId::IT_VD_InSurf;
-            if( vdg->exist(vdId) ) {
+      vdId = VirtualDetectorId::IT_VD_EndCap_Back;
+      if( vdg->exist(vdId) ) {
 
-              if ( verbosityLevel > 0) {
-                cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-              }
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	}
 
-              // the radius of tracker mother
-              double irvd = tModInRd; //envelopeParams.innerRadius();
-              double vdZ  = vdg->getGlobal(vdId).z();
+	// the radius of tracker mother
+	double irvd = tModInRd; //envelopeParams.innerRadius();
+	double vdZ  = vdg->getGlobal(vdId).z();
 
-              if ( verbosityLevel > 0) {
-                cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-                  " z, r : " << vdZ << ", " << irvd << endl;
-              }
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+	    " z, r : " << vdZ << ", " << irvd << endl;
+	}
 
-              VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
 
-              G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+	G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();// -G4ThreeVector(0.0,0.0,(tModDz+vdHalfLength));
 
-              // the detector is on the inner surface of the tracker envelope
-              // it is thin cylinder, NOT a thin disk
-              TubsParams  vdParamsITrackerInSurf(irvd-2.*vdHalfLength,irvd,tModDz);
+	// the detector is on the inner surface of the tracker envelope
+	// it is thin cylinder, NOT a thin disk
+	TubsParams  vdParamsITrackerInSurf(tModInRd,tModOtRd,vdHalfLength);
 
-              VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                           vdParamsITrackerInSurf,
-                                           vacuumMaterial,
-                                           0,
-                                           vdLocalOffset,
-                                           parent,
-                                           vdId,
-                                           vdIsVisible,
-                                           G4Color::Red(),
-                                           vdIsSolid,
-                                           forceAuxEdgeVisible,
-                                           placePV,
-                                           false);
-              // vd are very thin, a more thorough check is needed
-              doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+				     vdParamsITrackerInSurf,
+				     vacuumMaterial,
+				     0,
+				     vdLocalOffset,
+				     parent,
+				     vdId,
+				     vdIsVisible,
+				     G4Color::Red(),
+				     vdIsSolid,
+				     forceAuxEdgeVisible,
+				     placePV,
+				     false);
+	// vd are very thin, a more thorough check is needed
+	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-              vdInfo.logical->SetSensitiveDetector(vdSD);
-            }
-
-            vdId = VirtualDetectorId::IT_VD_EndCap_Front;
-            if( vdg->exist(vdId) ) {
-
-              if ( verbosityLevel > 0) {
-                cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-              }
-
-              // the radius of tracker mother
-              double irvd = tModInRd; //envelopeParams.innerRadius();
-              double vdZ  = vdg->getGlobal(vdId).z();
-
-              if ( verbosityLevel > 0) {
-                cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-                  " z, r : " << vdZ << ", " << irvd << endl;
-              }
-
-              VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
-
-              G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();// -G4ThreeVector(0.0,0.0,-(tModDz+vdHalfLength));
-
-              // the detector is on the inner surface of the tracker envelope
-              // it is thin cylinder, NOT a thin disk
-              TubsParams  vdParamsITrackerInSurf(tModInRd,tModOtRd,vdHalfLength);
-
-              VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                           vdParamsITrackerInSurf,
-                                           vacuumMaterial,
-                                           0,
-                                           vdLocalOffset,
-                                           parent,
-                                           vdId,
-                                           vdIsVisible,
-                                           G4Color::Red(),
-                                           vdIsSolid,
-                                           forceAuxEdgeVisible,
-                                           placePV,
-                                           false);
-              // vd are very thin, a more thorough check is needed
-              doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-
-              vdInfo.logical->SetSensitiveDetector(vdSD);
-            }
-
-            vdId = VirtualDetectorId::IT_VD_EndCap_Back;
-            if( vdg->exist(vdId) ) {
-
-              if ( verbosityLevel > 0) {
-                cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-              }
-
-              // the radius of tracker mother
-              double irvd = tModInRd; //envelopeParams.innerRadius();
-              double vdZ  = vdg->getGlobal(vdId).z();
-
-              if ( verbosityLevel > 0) {
-                cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-                  " z, r : " << vdZ << ", " << irvd << endl;
-              }
-
-              VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
-
-              G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();// -G4ThreeVector(0.0,0.0,(tModDz+vdHalfLength));
-
-              // the detector is on the inner surface of the tracker envelope
-              // it is thin cylinder, NOT a thin disk
-              TubsParams  vdParamsITrackerInSurf(tModInRd,tModOtRd,vdHalfLength);
-
-              VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                           vdParamsITrackerInSurf,
-                                           vacuumMaterial,
-                                           0,
-                                           vdLocalOffset,
-                                           parent,
-                                           vdId,
-                                           vdIsVisible,
-                                           G4Color::Red(),
-                                           vdIsSolid,
-                                           forceAuxEdgeVisible,
-                                           placePV,
-                                           false);
-              // vd are very thin, a more thorough check is needed
-              doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-
-              vdInfo.logical->SetSensitiveDetector(vdSD);
-            }
+	vdInfo.logical->SetSensitiveDetector(vdSD);
+      }
 
     }
 
@@ -1202,6 +1205,537 @@ namespace mu2e {
     }
 
     // ExtMonFNAL detector VDs - created in constructExtMonFNAL()
+ 
+    // placing virtual detector around the calorimeter vanes
+    if ( _config.getBool("hasVaneCalorimeter",true) ) {
+      int vdIdFront = VirtualDetectorId::EMC_0_FrontIn;
+      int vdIdEdge = VirtualDetectorId::EMC_0_EdgeIn;
+      int vdIdSurf = VirtualDetectorId::EMC_0_SurfIn;
+	
+      GeomHandle<VaneCalorimeter> cg;
+      //CLHEP::Hep3Vector vSize( vdg->getHalfLength(), cg->vane(0).size().y(), cg->vane(0).size().z());
+	
+      for (int iVane = 0; iVane < cg->nVane(); iVane++) {
+	if( vdg->exist(vdIdFront) ){
+	  VolumeInfo const & parent = _helper->locateVolInfo("CalorimeterMother");
+	    
+	  CLHEP::Hep3Vector vSize(cg->vane(0).size().x(), cg->vane(0).size().y(), vdg->getHalfLength());
+	  vSize = cg->vane(iVane).rotation().inverse()*vSize;
+	    
+	  std::vector<double> hlen(3);
+	  hlen[0] = std::fabs( vSize.x() );
+	  hlen[1] = std::fabs(  vSize.y() );
+	  hlen[2] = std::fabs( vSize.z() );
+
+	  if ( verbosityLevel > 0) {
+	    cout<<"//--- constructVritualDetectors.cc ------//"<<endl
+		<<"//-------- FrontIn------//"<<endl
+		<<"//---------------------------------------//"<<endl;
+	     
+
+	    for(size_t i=0; i<hlen.size(); ++i){
+	      cout<<" hlen.at("<<i<<") = "<< hlen.at(i)<<endl;
+	    }
+	    cout<<"//---------------------------------------//"<<endl;
+	
+	    cout<<" vdg->getGlobal("<<vdIdFront<<") = "<<  vdg->getGlobal(vdIdFront)<<endl
+		<<"parent.centerInMu2e() = "<<parent.centerInMu2e()<<endl;
+	  }
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdIdFront) - parent.centerInMu2e();
+	  if ( verbosityLevel > 0) {
+	    cout<<"vdLocalOffset = "<<vdLocalOffset<<endl
+		<<"vdId = "<< vdIdFront<<endl;
+	  }
+
+	  VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdIdFront),
+				      hlen,
+				      vacuumMaterial,
+				      0,
+				      vdLocalOffset,//vdg->getLocal(vdIdFront),
+				      parent,
+				      vdIdFront,
+				      vdIsVisible,
+				      G4Color::Red(),
+				      vdIsSolid,
+				      forceAuxEdgeVisible,
+				      placePV,
+				      false
+				      );
+
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+	  vdInfo.logical->SetSensitiveDetector(vdSD);
+
+	  vdIdFront++;
+        
+	}
+
+	if( vdg->exist(vdIdFront) ){
+	  VolumeInfo const & parent = _helper->locateVolInfo("CalorimeterMother");
+	    
+	  CLHEP::Hep3Vector vSize(cg->vane(0).size().x(), cg->vane(0).size().y(), vdg->getHalfLength());
+	  vSize = cg->vane(iVane).rotation().inverse()*vSize;
+	    
+	  std::vector<double> hlen(3);
+	  hlen[0] = std::fabs( vSize.x() );
+	  hlen[1] = std::fabs(  vSize.y() );
+	  hlen[2] = std::fabs( vSize.z() );
+
+	  if ( verbosityLevel > 0) {
+	    cout<<"//--- constructVritualDetectors.cc ------//"<<endl
+		<<"//-------- FrontOut------//"<<endl
+		<<"//---------------------------------------//"<<endl;
+	      
+	    for(size_t i=0; i<hlen.size(); ++i){
+	      cout<<" hlen.at("<<i<<") = "<< hlen.at(i)<<endl;
+	    }
+	    cout<<"//---------------------------------------//"<<endl;
+	
+	    cout<<" vdg->getGlobal("<<vdIdFront<<") = "<<  vdg->getGlobal(vdIdFront)<<endl
+		<<"parent.centerInMu2e() = "<<parent.centerInMu2e()<<endl;
+	  }
+
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdIdFront) - parent.centerInMu2e();
+
+	  if ( verbosityLevel > 0) {
+	    cout<<"vdLocalOffset = "<<vdLocalOffset<<endl
+		<<"vdId = "<< vdIdFront<<endl;
+	  }
+
+	  VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdIdFront),
+				      hlen,
+				      vacuumMaterial,
+				      0,
+				      vdLocalOffset,//vdg->getLocal(vdIdFront),
+				      parent,
+				      vdIdFront,
+				      vdIsVisible,
+				      G4Color::Red(),
+				      vdIsSolid,
+				      forceAuxEdgeVisible,
+				      placePV,
+				      false
+				      );
+
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+	  vdInfo.logical->SetSensitiveDetector(vdSD);
+
+	  vdIdFront++;
+        
+	}
+
+	if( vdg->exist(vdIdEdge) ){
+	  VolumeInfo const & parent = _helper->locateVolInfo("CalorimeterMother");
+	    
+	  CLHEP::Hep3Vector vSize(cg->vane(0).size().x(), vdg->getHalfLength(), cg->vane(0).size().z());
+	  vSize = cg->vane(iVane).rotation().inverse()*vSize;
+	    
+	  std::vector<double> hlen(3);
+	  hlen[0] = std::fabs( vSize.x() );
+	  hlen[1] = std::fabs(  vSize.y() );
+	  hlen[2] = std::fabs( vSize.z() );
+
+
+	  if ( verbosityLevel > 0) {
+	    cout<<"//--- constructVritualDetectors.cc ------//"<<endl
+		<<"//-------- EdgeIn------//"<<endl
+		<<"//---------------------------------------//"<<endl;
+	      
+	    for(size_t i=0; i<hlen.size(); ++i){
+	      cout<<" hlen.at("<<i<<") = "<< hlen.at(i)<<endl;
+	    }
+	    cout<<"//---------------------------------------//"<<endl;
+	
+	    cout<<" vdg->getGlobal("<<vdIdEdge<<") = "<<  vdg->getGlobal(vdIdEdge)<<endl
+		<<"parent.centerInMu2e() = "<<parent.centerInMu2e()<<endl;
+	  }
+
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdIdEdge) - parent.centerInMu2e();
+
+	  if ( verbosityLevel > 0) {
+	    cout<<"vdLocalOffset = "<<vdLocalOffset<<endl
+		<<"vdId = "<< vdIdEdge<<endl;
+	  }
+
+	  VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdIdEdge),
+				      hlen,
+				      vacuumMaterial,
+				      0,
+				      vdLocalOffset,//vdg->getLocal(vdIdEdge),
+				      parent,
+				      vdIdEdge,
+				      vdIsVisible,
+				      G4Color::Red(),
+				      vdIsSolid,
+				      forceAuxEdgeVisible,
+				      placePV,
+				      false
+				      );
+
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+	  vdInfo.logical->SetSensitiveDetector(vdSD);
+
+	  vdIdEdge++;
+        
+	}
+
+	if( vdg->exist(vdIdEdge) ){
+	  VolumeInfo const & parent = _helper->locateVolInfo("CalorimeterMother");
+	    
+	  CLHEP::Hep3Vector vSize(cg->vane(0).size().x(), vdg->getHalfLength(), cg->vane(0).size().z());
+	  vSize = cg->vane(iVane).rotation().inverse()*vSize;
+	    
+	  std::vector<double> hlen(3);
+	  hlen[0] = std::fabs( vSize.x() );
+	  hlen[1] = std::fabs(  vSize.y() );
+	  hlen[2] = std::fabs( vSize.z() );
+	    
+	  if ( verbosityLevel > 0) {
+	    cout<<"//--- constructVritualDetectors.cc ------//"<<endl
+		<<"//-------- EdgeOut------//"<<endl
+		<<"//---------------------------------------//"<<endl;
+	      
+	    for(size_t i=0; i<hlen.size(); ++i){
+	      cout<<" hlen.at("<<i<<") = "<< hlen.at(i)<<endl;
+	    }
+	    cout<<"//---------------------------------------//"<<endl;
+	
+	    cout<<" vdg->getGlobal("<<vdIdEdge<<") = "<<  vdg->getGlobal(vdIdEdge)<<endl
+		<<"parent.centerInMu2e() = "<<parent.centerInMu2e()<<endl;
+	  }
+
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdIdEdge) - parent.centerInMu2e();
+
+	  if ( verbosityLevel > 0) {
+	    cout<<"vdLocalOffset = "<<vdLocalOffset<<endl
+		<<"vdId = "<< vdIdEdge<<endl;
+	  }
+
+	  VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdIdEdge),
+				      hlen,
+				      vacuumMaterial,
+				      0,
+				      vdLocalOffset,//vdg->getLocal(vdIdEdge),
+				      parent,
+				      vdIdEdge,
+				      vdIsVisible,
+				      G4Color::Red(),
+				      vdIsSolid,
+				      forceAuxEdgeVisible,
+				      placePV,
+				      false
+				      );
+
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+	  vdInfo.logical->SetSensitiveDetector(vdSD);
+
+	  vdIdEdge++;
+        
+	}
+
+
+	if( vdg->exist(vdIdSurf) ) {
+	  VolumeInfo const & parent = _helper->locateVolInfo("CalorimeterMother");
+	    
+	  CLHEP::Hep3Vector vSize( vdg->getHalfLength(), cg->vane(0).size().y()+2.0*vdg->getHalfLength(), cg->vane(0).size().z()+2.0*vdg->getHalfLength());
+	  vSize = cg->vane(iVane).rotation()*vSize;
+	    
+	  std::vector<double> hlen(3);
+	  hlen[0] = std::fabs( vSize.x() );
+	  hlen[1] = std::fabs(  vSize.y() );
+	  hlen[2] = std::fabs( vSize.z() );
+	    
+	  if ( verbosityLevel > 0) {
+	    cout<<"//--- constructVritualDetectors.cc ------//"<<endl
+		<<"//-------- planeSurfIn------//"<<endl
+		<<"//---------------------------------------//"<<endl;
+	      
+	    for(size_t i=0; i<hlen.size(); ++i){
+	      cout<<" hlen.at("<<i<<") = "<< hlen.at(i)<<endl;
+	    }
+	    cout<<"//---------------------------------------//"<<endl;
+	
+	    cout<<" vdg->getGlobal("<<vdIdSurf<<") = "<<  vdg->getGlobal(vdIdSurf)<<endl
+		<<"parent.centerInMu2e() = "<<parent.centerInMu2e()<<endl;
+	  }
+
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdIdSurf) - parent.centerInMu2e();
+	  if ( verbosityLevel > 0) {
+	    cout<<"vdLocalOffset = "<<vdLocalOffset<<endl
+		<<"vdId = "<< vdIdSurf<<endl;
+	  }
+
+	  VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdIdSurf),
+				      hlen,
+				      vacuumMaterial,
+				      0,
+				      vdLocalOffset,//vdg->getLocal(vdIdSurf),
+				      parent,
+				      vdIdSurf,
+				      vdIsVisible,
+				      G4Color::Red(),
+				      vdIsSolid,
+				      forceAuxEdgeVisible,
+				      placePV,
+				      false
+				      );
+
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+	  vdInfo.logical->SetSensitiveDetector(vdSD);
+
+	  vdIdSurf++;
+        
+	}
+	  
+	if( vdg->exist(vdIdSurf) ) {
+	  VolumeInfo const & parent = _helper->locateVolInfo("CalorimeterMother");
+	    
+	  CLHEP::Hep3Vector vSize( vdg->getHalfLength(), cg->vane(0).size().y()+2.0*vdg->getHalfLength(), cg->vane(0).size().z()+2.0*vdg->getHalfLength());
+	  vSize = cg->vane(iVane).rotation()*vSize;
+	    
+	  std::vector<double> hlen(3);
+	  hlen[0] = std::fabs( vSize.x() );
+	  hlen[1] = std::fabs(  vSize.y() );
+	  hlen[2] = std::fabs( vSize.z() );
+	  if ( verbosityLevel > 0) {
+	    cout<<"//--- constructVritualDetectors.cc ------//"<<endl
+		<<"//-------- planeSurfOut------//"<<endl
+		<<"//---------------------------------------//"<<endl;
+	    	      
+	    for(size_t i=0; i<hlen.size(); ++i){
+	      cout<<" hlen.at("<<i<<") = "<< hlen.at(i)<<endl;
+	    }
+	
+	    cout<<" vdg->getGlobal("<<vdIdSurf<<") = "<<  vdg->getGlobal(vdIdSurf)<<endl
+		<<"parent.centerInMu2e() = "<<parent.centerInMu2e()<<endl;
+	  }
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdIdSurf) - parent.centerInMu2e();
+	  
+	  if ( verbosityLevel > 0) {
+	    cout<<"vdLocalOffset = "<<vdLocalOffset<<endl
+		<<"vdId = "<< vdIdSurf<<endl;
+	  }
+
+	  VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdIdSurf),
+				      hlen,
+				      vacuumMaterial,
+				      0,
+				      vdLocalOffset,//vdg->getLocal(vdIdSurf),
+				      parent,
+				      vdIdSurf,
+				      vdIsVisible,
+				      G4Color::Red(),
+				      vdIsSolid,
+				      forceAuxEdgeVisible,
+				      placePV,
+				      false
+				      );
+
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+	  vdInfo.logical->SetSensitiveDetector(vdSD);
+
+	  vdIdSurf++;
+        
+	}
+
+      }// end loop on vanes
+	
+    }//hasVaneCalorimeter
+
+
+    if ( _config.getBool("hasDiskCalorimeter",true) ) {
+      int vdIdEdge = VirtualDetectorId::EMC_Disk_0_EdgeIn;
+      int vdIdSurf = VirtualDetectorId::EMC_Disk_0_SurfIn;
+
+
+      GeomHandle<DiskCalorimeter> cg;
+      //CLHEP::Hep3Vector vSize( vdg->getHalfLength(), cg->disk(0).size().y(), cg->disk(0).size().z());
+	
+      for (size_t iDisk = 0; iDisk < cg->nDisks(); iDisk++) {
+	if( vdg->exist(vdIdSurf) ){
+	  VolumeInfo const & parent = _helper->locateVolInfo("CalorimeterMother");
+	  if ( verbosityLevel > 0) {
+	    cout<<"//---------------------------------------//"<<endl;
+	
+	    cout<<" vdg->getGlobal("<<vdIdSurf<<") = "<<  vdg->getGlobal(vdIdSurf)<<endl
+		<<"parent.centerInMu2e() = "<<parent.centerInMu2e()<<endl;
+	  }
+
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdIdSurf) - parent.centerInMu2e();
+	  if ( verbosityLevel > 0) {
+	    cout<<"vdLocalOffset = "<<vdLocalOffset<<endl
+		<<"vdId = "<< vdIdSurf<<endl;
+	  }
+
+	  TubsParams  vdParamsDiskCaloSurfIn(cg->disk(iDisk).innerRadius(),cg->disk(iDisk).outerRadius(),vdg->getHalfLength());
+	  
+	  VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdSurf), 
+				       vdParamsDiskCaloSurfIn,
+				       vacuumMaterial, 
+				       0,
+				       vdLocalOffset,
+				       parent,
+				       vdIdSurf, 
+				       vdIsVisible,
+				       G4Color::Red(), 
+				       vdIsSolid,
+				       forceAuxEdgeVisible,
+				       placePV,
+				       false);
+
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+	  vdInfo.logical->SetSensitiveDetector(vdSD);
+
+	  vdIdSurf++;
+        
+	}
+
+
+	if( vdg->exist(vdIdSurf) ){
+	  VolumeInfo const & parent = _helper->locateVolInfo("CalorimeterMother");
+	  if ( verbosityLevel > 0) {    
+	    cout<<"//---------------------------------------//"<<endl;
+	
+	    cout<<" vdg->getGlobal("<<vdIdSurf<<") = "<<  vdg->getGlobal(vdIdSurf)<<endl
+		<<"parent.centerInMu2e() = "<<parent.centerInMu2e()<<endl;
+	  }
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdIdSurf) - parent.centerInMu2e();
+
+	  if ( verbosityLevel > 0) {
+	    cout<<"vdLocalOffset = "<<vdLocalOffset<<endl
+		<<"vdId = "<< vdIdSurf<<endl;
+	  }
+
+	  TubsParams  vdParamsDiskCaloSurfIn(cg->disk(iDisk).innerRadius(),cg->disk(iDisk).outerRadius(),vdg->getHalfLength());
+	  
+
+
+	  VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdSurf), 
+				       vdParamsDiskCaloSurfIn,
+				       vacuumMaterial, 
+				       0,
+				       vdLocalOffset,
+				       parent,
+				       vdIdSurf, 
+				       vdIsVisible,
+				       G4Color::Red(), 
+				       vdIsSolid,
+				       forceAuxEdgeVisible,
+				       placePV,
+				       false);
+
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+	  vdInfo.logical->SetSensitiveDetector(vdSD);
+
+	  vdIdSurf++;
+        
+	}
+
+	if( vdg->exist(vdIdEdge) ){
+	  VolumeInfo const & parent = _helper->locateVolInfo("CalorimeterMother");
+	  if ( verbosityLevel > 0) {   
+	    cout<<"//---------------------------------------//"<<endl;
+	
+	    cout<<" vdg->getGlobal("<<vdIdEdge<<") = "<<  vdg->getGlobal(vdIdEdge)<<endl
+		<<"parent.centerInMu2e() = "<<parent.centerInMu2e()<<endl;
+	  }
+
+
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdIdEdge) - parent.centerInMu2e();
+
+	  if ( verbosityLevel > 0) {
+	    cout<<"vdLocalOffset = "<<vdLocalOffset<<endl
+		<<"vdId = "<< vdIdEdge<<endl;
+	  }
+
+	  TubsParams  vdParamsDiskCaloEdgeIn(cg->disk(iDisk).innerRadius() - 2.0*vdg->getHalfLength(),cg->disk(iDisk).innerRadius(), cg->disk(iDisk).size().z() + 2.0*vdg->getHalfLength());
+	  
+	  VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdEdge), 
+				       vdParamsDiskCaloEdgeIn,
+				       vacuumMaterial, 
+				       0,
+				       vdLocalOffset,
+				       parent,
+				       vdIdEdge, 
+				       vdIsVisible,
+				       G4Color::Red(), 
+				       vdIsSolid,
+				       forceAuxEdgeVisible,
+				       placePV,
+				       false);
+
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	  
+	  vdInfo.logical->SetSensitiveDetector(vdSD);
+
+	  vdIdEdge++;
+        
+	}
+
+
+	if( vdg->exist(vdIdEdge) ){
+	  VolumeInfo const & parent = _helper->locateVolInfo("CalorimeterMother");
+	  if ( verbosityLevel > 0) {
+	    cout<<"//---------------------------------------//"<<endl;
+	
+	    cout<<" vdg->getGlobal("<<vdIdEdge<<") = "<<  vdg->getGlobal(vdIdEdge)<<endl
+		<<"parent.centerInMu2e() = "<<parent.centerInMu2e()<<endl;
+	  }
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdIdEdge) - parent.centerInMu2e();
+	  if ( verbosityLevel > 0) {
+	    cout<<"vdLocalOffset = "<<vdLocalOffset<<endl
+		<<"vdId = "<< vdIdEdge<<endl;
+	  }
+	  TubsParams  vdParamsDiskCaloEdgeIn(cg->disk(iDisk).outerRadius(),cg->disk(iDisk).outerRadius()+ 2.0*vdg->getHalfLength(), cg->disk(iDisk).size().z() + 2.0*vdg->getHalfLength());
+	  
+	  VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdEdge), 
+				       vdParamsDiskCaloEdgeIn,
+				       vacuumMaterial, 
+				       0,
+				       vdLocalOffset,
+				       parent,
+				       vdIdEdge, 
+				       vdIsVisible,
+				       G4Color::Red(), 
+				       vdIsSolid,
+				       forceAuxEdgeVisible,
+				       placePV,
+				       false);
+
+	  // vd are very thin, a more thorough check is needed
+	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+
+	  vdInfo.logical->SetSensitiveDetector(vdSD);
+
+	  vdIdEdge++;
+        
+	}
+
+
+      }// end loop on disks
+
+      // by gianipez
+      doSurfaceCheck=false;
+      
+    }//hasDiskCalorimeter
 
   } // constructVirtualDetectors()
 }
+
+

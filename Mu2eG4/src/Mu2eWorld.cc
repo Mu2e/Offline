@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.149 2012/12/04 00:51:26 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:26 $
+// $Id: Mu2eWorld.cc,v 1.150 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author Rob Kutschke
 //
@@ -200,8 +200,9 @@ namespace mu2e {
 
     constructProtonAbsorber(_config);
 
-    // These are just placeholders for now - and might be misnamed.
-    constructCal();
+    VolumeInfo calorimeterInfo    = constructCal();
+
+    // This is just placeholder for now - and might be misnamed.
     constructMagnetYoke();
 
     if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
@@ -531,20 +532,27 @@ namespace mu2e {
 
 
   // Construct calorimeter if needed.
-  void Mu2eWorld::constructCal(){
+  VolumeInfo Mu2eWorld::constructCal(){
 
-    if ( _config.getBool("hasVaneCalorimeter",false) ) {
-       VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
-       double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
-       constructVaneCalorimeter( detSolDownstreamVacInfo,-z0DSdown,_config );
+	// The calorimeter is built inside this volume.
+	VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
+
+	// z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
+	double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
+
+	// Construct one of the calorimeters.
+	VolumeInfo calorimeterInfo;
+	if ( _config.getBool("hasVaneCalorimeter",false) ) {
+       calorimeterInfo = constructVaneCalorimeter( detSolDownstreamVacInfo,-z0DSdown,_config );
     }
-        
     if ( _config.getBool("hasDiskCalorimeter",false) ) {
-       VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
-       double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
-       constructDiskCalorimeter( detSolDownstreamVacInfo,-z0DSdown,_config );
+       calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,-z0DSdown,_config );
     }
-  }
+
+    return calorimeterInfo;
+
+  } // end Mu2eWorld::constructCal
+
 
 
   // A place holder for now.

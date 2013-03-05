@@ -1,9 +1,9 @@
 //
 // Input file for the prototype conditions system.
 //
-// $Id: conditions_01.txt,v 1.14 2012/11/01 23:42:52 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:42:52 $
+// $Id: conditions_01.txt,v 1.15 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 
 // Times in ns
@@ -37,6 +37,35 @@ int extMonFNAL.numClockTicksPerDebuncherPeriod = 68;
 
 double extMonFNAL.temperature = 273; // Kelvin
 double extMonFNAL.biasVoltage = -150; // Volts
+
+
+//Calorimeter calibration information
+
+// Longitudinal non-uniformity response, see Mu2e doc ... 
+double CrystalNonUniformity_0 = 0.45;//% / cm
+double CrystalNonUniformityErr_0 = 0.0;//% / cm
+
+//non-linearity parameters, see Mu2e doc ...
+double CrystalNonLinearity_0 = 10.35;
+double CrystalNonLinearity_0Err = 0.0;
+ 
+double CrystalNonLinearity_1 = 0.9919;
+double CrystalNonLinearity_1Err = 0.0;
+
+double CrystalNonLinearity_2 = 0.01812;
+double CrystalNonLinearity_2Err = 0.0;
+
+double CrystalNonLinearity_3 = 0.06654;
+double CrystalNonLinearity_3Err = 0.0;
+
+//APD photo-statistic number
+double ROphotostatistic = 1660.0;//p.e / MeV
+double ROphotostatisticErr = 224.0;//p.e / MeV
+double ROfanoFactor = 1.3;
+
+//value of the sigma used to do the Gaussian smearing due to the electronic noise
+double ReadOutElectronicNoise      = 0.03;//MeV
+double ReadOutElectronicNoiseSigma = 0.015;//MeV
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

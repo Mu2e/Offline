@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_sort_functors_hh
 #define CalorimeterGeom_sort_functors_hh
 //
-// $Id: sort_functors.hh,v 1.4 2012/09/08 02:24:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Id: sort_functors.hh,v 1.5 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author KLG
 //
@@ -49,8 +49,8 @@ namespace mu2e {
        explicit lessByCIdAndTime(Calorimeter const & cal): _cal(0) {}
 
        bool operator() (HitT const & a, HitT const & b) const {
-	  return ( _cal.getCrystalByRO(a.id()) < _cal.getCrystalByRO(b.id()) ||
-        	  (_cal.getCrystalByRO(a.id()) == _cal.getCrystalByRO(b.id()) &&
+	  return ( _cal.crystalByRO(a.id()) < _cal.crystalByRO(b.id()) ||
+        	  (_cal.crystalByRO(a.id()) == _cal.crystalByRO(b.id()) &&
                    a.time() < b.time()
                    )
         	  );
@@ -73,8 +73,8 @@ namespace mu2e {
 
        bool operator() (HitT const * a, HitT const * b) const {
 
-	   return (  _cal->getCrystalByRO(a->id()) <  _cal->getCrystalByRO(b->id()) ||
-        	   ( _cal->getCrystalByRO(a->id()) == _cal->getCrystalByRO(b->id()) &&
+	   return (  _cal->crystalByRO(a->id()) <  _cal->crystalByRO(b->id()) ||
+        	   ( _cal->crystalByRO(a->id()) == _cal->crystalByRO(b->id()) &&
                      a->time() < b->time()
         	   )
         	  );		     

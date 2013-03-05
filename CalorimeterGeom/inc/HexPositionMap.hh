@@ -1,6 +1,9 @@
 #ifndef CalorimeterGeom_HexPositionMap_hh
 #define CalorimeterGeom_HexPositionMap_hh
-
+//
+// $Id: HexPositionMap.hh,v 1.2 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Hexagonal map generator for disks
 //
@@ -29,10 +32,10 @@ namespace mu2e {
 
 
 	 int nCrystals(void) const                       {return _positions.size();}
-	 HexPosition const& getCrystalPos(int idx) const {return _positions.at(idx);}  
+	 HexPosition const& crystalPos(int idx) const {return _positions.at(idx);}
 
 	 int  findIdFromPosition(double x, double y) const;
-	 std::vector<int> getNeighbors(unsigned int id, unsigned int level = 1) const;
+	 std::vector<int> neighbors(unsigned int id, unsigned int level = 1) const;
 
 
        private:
@@ -45,7 +48,7 @@ namespace mu2e {
 	 double                            _radiusOut;
 
 	 void generate(void);    
-	 int  getId(int l, int k) const;
+	 int  id(int l, int k) const;
      };
 
 

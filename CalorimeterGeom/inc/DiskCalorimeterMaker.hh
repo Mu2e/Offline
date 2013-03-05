@@ -1,6 +1,10 @@
 #ifndef CalorimeterGeom_DiskCalorimeterMaker_hh
 #define CalorimeterGeom_DiskCalorimeterMaker_hh
-
+//
+// $Id: DiskCalorimeterMaker.hh,v 1.2 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
+//
 // original authors B. Echenard
 
 //
@@ -35,7 +39,7 @@ namespace mu2e{
 
       // Accessor and auto_ptr to calorimeter needed by GeometryService.
       std::auto_ptr<DiskCalorimeter> _calo;
-      std::auto_ptr<DiskCalorimeter> getCalorimeterPtr() { return _calo; }
+      std::auto_ptr<DiskCalorimeter> calorimeterPtr() { return _calo; }
 
     private:
 

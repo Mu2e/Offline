@@ -51,7 +51,7 @@ namespace mu2e {
             int nCrystal(0);
  	    for (int i=0;i<nHexagons;++i) {
 
-                CLHEP::Hep2Vector xy = _HexMap.getXYPosition(i);
+                CLHEP::Hep2Vector xy = _HexMap.xyPosition(i);
 
  	        if ( !isInsideDisk(_cellSize*xy.x(),_cellSize*xy.y()) ) {_mapToCrystal.push_back(-1); continue;}
 
@@ -109,9 +109,9 @@ namespace mu2e {
 
 
 
-      std::vector<int> Disk::getNeighbors(int crystalId, int level) const
+      std::vector<int> Disk::neighbors(int crystalId, int level) const
       {
-	   if (level==1) return _crystalList.at(crystalId).getNearestNeighbours();
+	   if (level==1) return _crystalList.at(crystalId).nearestNeighbours();
 	   return findNeighbors(crystalId,level);
       }
       
@@ -121,7 +121,7 @@ namespace mu2e {
 	   std::vector<int> list; 
 	   list.reserve(20);
 
-	   std::vector<int> temp( _HexMap.getNeighbors(_CrystalToMap[crystalId],level) );
+	   std::vector<int> temp( _HexMap.neighbors(_CrystalToMap[crystalId],level) );
 	   for (unsigned int i=0;i<temp.size();++i) {
 	     if (_mapToCrystal[temp[i]] >-1) list.push_back(_mapToCrystal[temp[i]]);
 	   }
@@ -137,7 +137,7 @@ namespace mu2e {
 
               double y0 = (x<_radiusIn) ? sqrt(_radiusIn*_radiusIn-x*x) : 0;
 	      for (double y=y0;y<=y0+5*_cellSize;y+=dy){
-		 int mapIdx = _HexMap.getIndexFromXY(x/_cellSize,y/_cellSize);
+		 int mapIdx = _HexMap.indexFromXY(x/_cellSize,y/_cellSize);
 		 int iCry   = _mapToCrystal[mapIdx];
 		 if (iCry==-1) sum+=dx*dy;		 
 	      }  

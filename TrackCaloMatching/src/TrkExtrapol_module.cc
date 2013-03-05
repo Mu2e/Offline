@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.5 2012/09/08 02:24:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Id: TrkExtrapol_module.cc,v 1.6 2013/03/05 20:33:26 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:26 $
 //
 // Original author G. Pezzullo
 //
@@ -114,10 +114,13 @@ using namespace std;
 
 namespace mu2e {
 
+
 class TrkExtrapol : public art::EDProducer {
 public:
         explicit TrkExtrapol(fhicl::ParameterSet const& pset):
         _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
+	_tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
+	_fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
         _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC")),
         _diagLevel(pset.get<int>("diagLevel",0)),
         _maxNumberStoresPoints(pset.get<int>("maxNumberStoresPoints",2)),
@@ -125,15 +128,26 @@ public:
         _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
         _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
         _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel", "CaloCrystalHitsMaker")),
+        CaloVanes(0),
         _application(0),
         _directory(0),
-        _firstEvent(true){
-                // Tell the framework what we make.
-                produces<TrkToCaloExtrapolCollection>();
-        }
+        _firstEvent(true),
+	_trkdiag(0){
+	  // Tell the framework what we make.
+	  produces<TrkToCaloExtrapolCollection>();
+	  
+	  // construct the data product instance name
+	  _iname = _fdir.name() + _tpart.name();
+	}
+  
         virtual ~TrkExtrapol() {
+                if(CaloVanes != 0){
+                        delete CaloVanes;
+                }
         }
-        void beginJob() {}
+        void beginJob(){
+
+        }
         void endJob() {}
 
         void produce(art::Event & e );
@@ -143,6 +157,13 @@ private:
         void doExtrapolation(art::Event & evt, bool skip);
         // Module label of the module that performed the fits.
         std::string _fitterModuleLabel;
+        
+        TrkParticle _tpart;
+        
+        TrkFitDirection _fdir;
+    
+        std::string _iname;
+        
         // diagnostic of Kalman fit
         KalFitMC _kfitmc;
 
@@ -165,6 +186,8 @@ private:
 
         std::auto_ptr<MCCaloUtilities> CaloManager;
 
+        Calorimeter4VanesGeom *CaloVanes;// = new Calorimeter4VanesGeom();
+
         bool _skipEvent;
 
         // The job needs exactly one instance of TApplication.  See note 1.
@@ -174,11 +197,21 @@ private:
         TDirectory* _directory;
         bool _firstEvent;
 
+        TTree* _trkdiag;
+
 
 };
 
 void TrkExtrapol::produce(art::Event & evt ) {
-
+        if(_firstEvent){
+                CaloVanes =  new Calorimeter4VanesGeom();
+		
+		if(_diagLevel>0){
+		  CaloVanes->print();
+		}
+		
+                _firstEvent = false;
+        }
         doExtrapolation(evt, _skipEvent);
 
 } // end of analyze
@@ -186,6 +219,10 @@ void TrkExtrapol::produce(art::Event & evt ) {
 
 void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
 
+        if(_diagLevel>2){
+	  cout<<endl<<"Event Number : "<< evt.event()<< endl;
+	  cout<<"\n start TrkExtrapol..."<<endl;
+        }
         //create output
         auto_ptr<TrkToCaloExtrapolCollection> extrapolatedTracks(new TrkToCaloExtrapolCollection );
         TrkToCaloExtrapolCollection tmpExtrapolatedTracks;
@@ -195,16 +232,12 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
         if(! geom->hasElement<VaneCalorimeter>() ) return;
         GeomHandle<VaneCalorimeter> cg;
 
-        Calorimeter4VanesGeom *CaloVanes = new Calorimeter4VanesGeom();
-
         art::Handle<KalRepCollection> trksHandle;
-        evt.getByLabel(_fitterModuleLabel,trksHandle);
+        evt.getByLabel(_fitterModuleLabel,_iname,trksHandle);
         KalRepCollection const& trks = *trksHandle;
 
         if(_diagLevel>2){
-                cout<<endl<<"Event Number : "<< evt.event()<< endl;
-                cout<<"\n start TrkExtrapol..."<<endl;
-                cout<<"trks.size() = "<< trks.size() <<endl;
+	  cout<<"trks.size() = "<< trks.size() <<endl;
         }
 
         double circleRadius = 0.0, centerCircleX=0.0, centerCircleY = 0.0, angle = 0.0;
@@ -231,7 +264,7 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
                 double lowrange = trkHel.zFlight(/*1740*/CaloVanes->ZfrontFaceCalo() ), highrange = trkHel.zFlight(/*3500*/ CaloVanes->ZbackFaceCalo() );
 
                 DetIntersection intersec0;
-                if(_diagLevel>2){
+		if(_diagLevel>2){
 
                         cout<<endl<<"Event Number : "<< evt.event()<< endl;
                         cout<<"------ trk number : "<<i<<" ------"<<endl;
@@ -251,41 +284,43 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
                 const int nVanes = cg->nVane();
                 Length length[nVanes];
                 CaloVanes->caloExtrapol(_diagLevel, (int)evt.event(),trep, lowrange, highrange, trkHel,  res0, intersec0, length);
-
-                cout<<"Event Number : "<< evt.event()<< endl;
-                //}
+		if(_diagLevel>2){
+		  cout<<"Event Number : "<< evt.event()<< endl;
+                }
                 if(res0 != 1){
-
+		  if(_diagLevel>2){
                         cout<< "ALLERT, intersection not found"<<endl;
-
+		  }
                 }else{
                         //if( _maxNumberStoresPoints>1){
-                                for(int jVane=0; jVane <nVanes; ++jVane){
+                        for(int jVane=0; jVane <nVanes; ++jVane){
 
-                                        for(Length::iterator it = length[jVane].begin(); it != length[jVane].end(); ++it){
+                                for(Length::iterator it = length[jVane].begin(); it != length[jVane].end(); ++it){
 
-                                                lowrange = it->first;
-                                                highrange = it->second;
+                                        lowrange = it->first;
+                                        highrange = it->second;
 
-                                                KalRepPtr tmpRecTrk(trksHandle, i);
-                                                tmpExtrapolatedTracks.push_back(
-                                                                TrkToCaloExtrapol( jVane,tmpRecTrk,lowrange, highrange)
-                                                );
+                                        KalRepPtr/*TrkRecoTrkPtr*/ tmpRecTrk(trksHandle, i);
+                                        tmpExtrapolatedTracks.push_back(
+                                                        TrkToCaloExtrapol( jVane,tmpRecTrk,lowrange, highrange)
+                                        );
 
-                                                cout<< "Intersection found..."<<endl;
-                                                //if(evt.event()%10==0){
-                                                if(_diagLevel>2){
-                                                        cout<<"vane intersected = "<< jVane <<
-                                                                        ", entrance pathLength = "<<lowrange<<
-                                                                        ", exit pathLength = "<<highrange<<endl;
-                                                        cout<<"point of traj at entrance : "<<traj.position(lowrange)<<endl;
-                                                        cout<<"errPoint of traj at entrance : "<<trep->positionErr(lowrange)<<endl;
-                                                        cout<<"point of traj at the exit : "<<traj.position(highrange)<<endl;
-                                                        cout<<"errPoint of traj at the exit : "<<trep->positionErr(highrange)<<endl;
-                                                }
+                                        
+                                        //if(evt.event()%10==0){
+                                        if(_diagLevel>2){
+					  cout<< "Intersection found..."<<endl;
+					  cout<<"vane intersected = "<< jVane <<
+					    ", entrance pathLength = "<<lowrange<<
+					    ", exit pathLength = "<<highrange<<endl;
+					  cout<<"point of traj at entrance : "<<traj.position(lowrange)<<endl;
+					  cout<<"errPoint of traj at entrance : "<<trep->positionErr(lowrange)<<endl;
+					  cout<<"point of traj at the exit : "<<traj.position(highrange)<<endl;
+					  cout<<"errPoint of traj at the exit : "<<trep->positionErr(highrange)<<endl;
+                                        }
 
-                                        }//end loop on pathLengths[]
-                                }//end loop on vanes
+
+                                }//end loop on pathLengths[]
+                        }//end loop on vanes
 
                 }
                 std::sort(tmpExtrapolatedTracks.begin(), tmpExtrapolatedTracks.end());

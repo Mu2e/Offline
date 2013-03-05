@@ -1,3 +1,8 @@
+//
+// $Id: HexPositionMap.cc,v 1.2 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
+//
 // Hexagon position map generator, tesselate a disk with hexagons
 // Basis vector, k and l, defined as  
 // l = up right
@@ -93,10 +98,10 @@ namespace mu2e {
         	cp.first  += _step[istep].first;
         	cp.second += _step[istep].second;
 
-        	int thisId = getId(cp.first,cp.second);
+        	int thisId = id(cp.first,cp.second);
 		HexPosition thisPos(cp.first,cp.second,_hexsize);
 		
-		if (thisPos.getDistMin()<_radiusIn || thisPos.getDistMax()>_radiusOut) continue;
+		if (thisPos.distMin()<_radiusIn || thisPos.distMax()>_radiusOut) continue;
 		
 		_positions.push_back(thisPos);
         	_lkToIdx[thisId] = _positions.size()-1;
@@ -114,14 +119,14 @@ namespace mu2e {
       // get neighbours for or crystal, include only crystals in the disk
       // level indicate how many rings around the crystal to consider: 
       // 1=immediate surrounding, 2 = next-to-immediate,...  (see top picture)      
-      std::vector<int> HexPositionMap::getNeighbors(unsigned int id, unsigned int level) const
+      std::vector<int> HexPositionMap::neighbors(unsigned int id0, unsigned int level) const
       {
-	 std::vector<int> neighbors;
-	 neighbors.reserve(100);
+	 std::vector<int> neighbors0;
+	 neighbors0.reserve(100);
 
-	 if (level < 0 || id > _positions.size()) return neighbors;
+	 if (level < 0 || id0 > _positions.size()) return neighbors0;
 
-	 std::pair<int,int> lkPosition(_positions[id].getl()+level,_positions[id].getk()-level);
+	 std::pair<int,int> lkPosition(_positions[id0].l()+level,_positions[id0].k()-level);
 	 for (unsigned int i=0;i<_step.size();++i)
 	 {       
 	     for (unsigned int iseg=0;iseg<level;++iseg)
@@ -129,13 +134,13 @@ namespace mu2e {
 		lkPosition.first  += _step[i].first;
 		lkPosition.second += _step[i].second;
 
-		std::map<int,int>::const_iterator it = _lkToIdx.find(getId(lkPosition.first,lkPosition.second));
+		std::map<int,int>::const_iterator it = _lkToIdx.find(id(lkPosition.first,lkPosition.second));
 		if (it == _lkToIdx.end()) continue; //take only neighbours inside the disk
-		neighbors.push_back(it->second);
+		neighbors0.push_back(it->second);
 	     }
 	 }
 
-	 return neighbors;
+	 return neighbors0;
       }
 
       
@@ -151,14 +156,14 @@ namespace mu2e {
 	  int l = (ld > 0) ? int(ld+0.5) : int(ld-0.5);
 	  int k = (kd > 0) ? int(kd+0.5) : int(kd-0.5);
 
-	  std::map<int,int>::const_iterator it = _lkToIdx.find(getId(l,k));
+	  std::map<int,int>::const_iterator it = _lkToIdx.find(id(l,k));
 	  if (it != _lkToIdx.end()) return it->second-1;
 	  return -1;
 
       }
       
       
-      int HexPositionMap::getId(int l, int k) const
+      int HexPositionMap::id(int l, int k) const
       {
 	 int id = 100*std::abs(l)+std::abs(k);
 	 if (k<0) id +=10000;

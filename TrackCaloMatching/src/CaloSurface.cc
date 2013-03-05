@@ -1,7 +1,7 @@
 //
-// $Id: CaloSurface.cc,v 1.1 2012/07/10 00:02:19 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
+// $Id: CaloSurface.cc,v 1.2 2013/03/05 20:33:26 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:26 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -215,6 +215,15 @@ int CaloSurface::surfacePoint(const HepPoint& thePoint, SurfacePoint& uv, double
         if(fabs(uv[0]) <= _HalfSide1 && fabs(uv[1]) <= _HalfSide2 && fabs( theLocalPoint.y() ) < tol ){
                 res = 0;
         }
+	
+// 	  std::cout<<"///////////////////////////"<<std::endl
+// 		   <<"CaloSurface.cc"<<endl 
+// 		   <<"ees = "<<res<<std::endl
+// 		   <<"thePoint = "<<thePoint<<std::endl
+// 		   <<"theLocalPoint = "<<theLocalPoint<<std::endl
+// 		   <<"HalfSide1 = "<<_HalfSide1<<endl
+// 		   <<"HalfSide2 = "<<_HalfSide2<<endl
+// 		   <<"///////////////////////////"<<std::endl;
 
         return res;
 }

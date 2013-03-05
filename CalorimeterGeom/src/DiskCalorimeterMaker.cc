@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: DiskCalorimeterMaker.cc,v 1.2 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: DiskCalorimeterMaker.cc,v 1.3 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -47,7 +47,6 @@ namespace mu2e{
         config.getVectorDouble("calorimeter.diskOuterRadius",_calo->_diskOuterRadius,_calo->_nDisks);
         config.getVectorDouble("calorimeter.diskRotationAngle",_calo->_diskRotAngle,_calo->_nDisks);
         config.getVectorDouble("calorimeter.diskSeparation",_calo->_diskSeparation,_calo->_nDisks);
-
 
 	_calo->_crystalHalfTrans      = config.getDouble("calorimeter.crystalHalfTrans");
 	_calo->_crystalDepth          = 2.0*config.getDouble("calorimeter.crystalHalfLong");  //half length in config file...       
@@ -113,9 +112,9 @@ namespace mu2e{
          thisDisk.setRotation(    (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationZ(_calo->_diskRotAngle[idisk]) );
 	 	 
   	 if ( verbosityLevel > 0) std::cout<<"Constructed Disk "<<thisDisk.id()<<":  Rin="<<thisDisk.innerRadius()<<"  Rout="<<thisDisk.outerRadius()
-        	  <<" X="<<thisDisk.getOrigin().x()
-        	  <<" Y="<<thisDisk.getOrigin().y()
-        	  <<" Z="<<thisDisk.getOrigin().z()
+        	  <<" X="<<thisDisk.origin().x()
+        	  <<" Y="<<thisDisk.origin().y()
+        	  <<" Z="<<thisDisk.origin().z()
 		  <<"  with "<<thisDisk.nCrystals()<<" crystals"<<std::endl;
          }
 

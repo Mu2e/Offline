@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.40 2012/11/16 23:37:49 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/16 23:37:49 $
+// $Id: GeometryService_service.cc,v 1.41 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author Rob Kutschke
 //
@@ -225,14 +225,14 @@ namespace mu2e {
 
     if(_config->getBool("hasVaneCalorimeter",false)){
       VaneCalorimeterMaker calorm( *_config, beamline.solenoidOffset() );
-      addDetector( calorm.getCalorimeterPtr() );
-      addDetectorAliasToBaseClass<Calorimeter>( calorm.getCalorimeterPtr() );  //add an alias to detector list
+      addDetector( calorm.calorimeterPtr() );
+      addDetectorAliasToBaseClass<Calorimeter>( calorm.calorimeterPtr() );  //add an alias to detector list
     }
 
     if(_config->getBool("hasDiskCalorimeter",false)){
       DiskCalorimeterMaker calorm( *_config, beamline.solenoidOffset() );
-      addDetector( calorm.getCalorimeterPtr() );
-      addDetectorAliasToBaseClass<Calorimeter>( calorm.getCalorimeterPtr() );  //add an alias to detector list
+      addDetector( calorm.calorimeterPtr() );
+      addDetectorAliasToBaseClass<Calorimeter>( calorm.calorimeterPtr() );  //add an alias to detector list
     }
 
 

@@ -1,9 +1,11 @@
 //
 // module for the calculation of the efficiency Vs energy cluster cut and other distributions related to the efficiency
 //
-// $Id: CaloClusterEff_module.cc,v 1.6 2012/09/08 02:24:24 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:24 $
+
+// $Id: CaloClusterEff_module.cc,v 1.7 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
+
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -147,6 +149,8 @@ public:
         _hTHistEffTrk(0),
         _hTHistGlobalEff(0),
         _hTHistGlobalEffNorm(0),
+        _hTHistNumeratorGEN(0),
+        _hTHistDenominatorGEN(0),
         _hTHistGlobalEffTot(0),
         _hTHistDeltaEnergy(0),
         _hTHistDeltaEnergyRec(0),
@@ -222,6 +226,8 @@ private:
         TH2D* _hTHistEffTrk;
         TH1D* _hTHistGlobalEff;
         TH1D* _hTHistGlobalEffNorm;
+        TH1D* _hTHistNumeratorGEN;
+        TH1D* _hTHistDenominatorGEN;
         TH1D* _hTHistGlobalEffTot;
         TH2D* _hTHistDeltaEnergy;
         TH2D* _hTHistDeltaEnergyRec;
@@ -328,24 +334,27 @@ void CaloClusterEff::analyze(art::Event const & evt ) {
                 art::TFileDirectory clusterInfo = tfs->mkdir("ClusterInfo");
 
 
-                _hTHistEff           = tfs->make<TH2D>( "CaloEff", "CaloEff;EnergyLowCut [MeV];N_{rec} / N_{imp}", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 100, 0., 6.);
-                _hTHistEffTrk        = tfs->make<TH2D>( "CaloEffTrk", "CaloEffTrk;EnergyLowCut [MeV];N_{rec} / N_{imp}", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 100, 0., 2.);
-                _hTHistGlobalEff     = tfs->make<TH1D>( "CaloGlobalEffTrk", "CaloGlobalEffTrk;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.);
-                _hTHistGlobalEffNorm = tfs->make<TH1D>( "CaloGlobalEffTrkNorm", "CaloGlobalEffTrkNorm;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.);
-                _hTHistGlobalEffTot  = tfs->make<TH1D>( "CaloGlobalEffTrkTot", "CaloGlobalEffTrkTot;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.);
+                _hTHistEff           = tfs->make<TH2D>( "CaloEff", "CaloEff;EnergyLowCut [MeV];N_{rec} / N_{imp}", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., 100, 0., 6.);
+                _hTHistEffTrk        = tfs->make<TH2D>( "CaloEffTrk", "CaloEffTrk;EnergyLowCut [MeV];N_{rec} / N_{imp}", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., 100, 0., 2.);
+                _hTHistGlobalEff     = tfs->make<TH1D>( "CaloGlobalEffTrk", "CaloGlobalEffTrk;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110.);
+                _hTHistGlobalEffNorm = tfs->make<TH1D>( "CaloGlobalEffTrkNorm", "CaloGlobalEffTrkNorm;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110.);
+                _hTHistGlobalEffTot  = tfs->make<TH1D>( "CaloGlobalEffTrkTot", "CaloGlobalEffTrkTot;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110.);
 
-                _hTHistDeltaEnergy     = clusterInfo.make<TH2D>( "DeltaEnergy", "DeltaEnergy;EnergyLowCut [MeV];Eseed-Eclu [MeV]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 100, -20., 110.);
-                _hTHistDeltaEnergyRec  = clusterInfo.make<TH2D>( "DeltaEnergyRec", "DeltaEnergyRec;EnergyLowCut [MeV];Eseed-Eclu [MeV]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 100, -20., 110.);
+		_hTHistNumeratorGEN = tfs->make<TH1D>( "NumeratorGlobalEffNorm", "NumeratorGlobalEffNorm;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110.);
+		_hTHistDenominatorGEN = tfs->make<TH1D>( "DenominatorGlobalEffNorm", "DenominatorGlobalEffNorm;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110.);
+		
+                _hTHistDeltaEnergy     = clusterInfo.make<TH2D>( "DeltaEnergy", "DeltaEnergy;EnergyLowCut [MeV];Eseed-Eclu [MeV]", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., 100, -20., 110.);
+                _hTHistDeltaEnergyRec  = clusterInfo.make<TH2D>( "DeltaEnergyRec", "DeltaEnergyRec;EnergyLowCut [MeV];Eseed-Eclu [MeV]", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., 100, -20., 110.);
 
-                _hTHistGlobalEffRec    = tfs->make<TH1D>( "CaloGlobalEffRec", "CaloGlobalEffRec;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.);
+                _hTHistGlobalEffRec    = tfs->make<TH1D>( "CaloGlobalEffRec", "CaloGlobalEffRec;EnergyLowCut [MeV];#epsilon", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110.);
 
 
-                _hTHistDeltaXquality   = cog.make<TH2D>( "DeltaXquality", "DeltaXquality;EnergyLowCut [MeV];Xseed-Xclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
-                _hTHistDeltaXRec       = cog.make<TH2D>( "DeltaXRec", "DeltaXRec;EnergyLowCut [MeV];Xseed-Xclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
-                _hTHistDeltaYquality   = cog.make<TH2D>( "DeltaYquality", "DeltaYquality;EnergyLowCut [MeV];Yseed-Yclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
-                _hTHistDeltaYRec       = cog.make<TH2D>( "DeltaYRec", "DeltaYRec;EnergyLowCut [MeV];Yseed-Yclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
-                _hTHistDeltaZquality   = cog.make<TH2D>( "DeltaZquality", "DeltaZquality;EnergyLowCut [MeV];Zseed-Zclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
-                _hTHistDeltaZRec       = cog.make<TH2D>( "DeltaZRec", "DeltaZRec;EnergyLowCut [MeV];Zseed-Zclu [mm]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+                _hTHistDeltaXquality   = cog.make<TH2D>( "DeltaXquality", "DeltaXquality;EnergyLowCut [MeV];Xseed-Xclu [mm]", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+                _hTHistDeltaXRec       = cog.make<TH2D>( "DeltaXRec", "DeltaXRec;EnergyLowCut [MeV];Xseed-Xclu [mm]", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+                _hTHistDeltaYquality   = cog.make<TH2D>( "DeltaYquality", "DeltaYquality;EnergyLowCut [MeV];Yseed-Yclu [mm]", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+                _hTHistDeltaYRec       = cog.make<TH2D>( "DeltaYRec", "DeltaYRec;EnergyLowCut [MeV];Yseed-Yclu [mm]", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+                _hTHistDeltaZquality   = cog.make<TH2D>( "DeltaZquality", "DeltaZquality;EnergyLowCut [MeV];Zseed-Zclu [mm]", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., 200, -100., 100.);
+                _hTHistDeltaZRec       = cog.make<TH2D>( "DeltaZRec", "DeltaZRec;EnergyLowCut [MeV];Zseed-Zclu [mm]", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., 200, -100., 100.);
 
                 _hTHistDeltaPmag       = trkInfo.make<TH1D>( "TrkDeltaPmag", "TrkDeltaPmag;deltaP/Pfirst [%];entries", 2000 , 0., 0.01);
                 _hTHistDeltaPitch      = trkInfo.make<TH1D>( "TrkDeltaPitch","TrkDeltaPitch;deltaPitch/pitchFirst [%];entries", 2000 , 0., 0.01);
@@ -353,15 +362,15 @@ void CaloClusterEff::analyze(art::Event const & evt ) {
                 _hTHistDeltaPfirst     = trkInfo.make<TH1D>( "TrkPfirst", "momFirst; momentum [MeV];entries", 2000 , 50., 110.0);
                 _hTHistDeltaPlast      = trkInfo.make<TH1D>( "TrkPlast","momLast ; momentum [MeV];entries", 2000 , 50., 110.0);
 
-                _hTHistEnergyClu       = clusterInfo.make<TH2D>( "EnergyClu", "EnergyClu; E_{cluster}^{cut};Energy_{cluster} [MeV]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 450 , 0., 150.0);
-                _hTHistEnergyCluRec    = clusterInfo.make<TH2D>( "EnergyCluRec","EnergyCluRec ; E_{cluster}^{cut}; Energy_{cluster} [MeV]", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., 450 ,0., 150.0);
+                _hTHistEnergyClu       = clusterInfo.make<TH2D>( "EnergyClu", "EnergyClu; E_{cluster}^{cut};Energy_{cluster} [MeV]", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., 450 , 0., 150.0);
+                _hTHistEnergyCluRec    = clusterInfo.make<TH2D>( "EnergyCluRec","EnergyCluRec ; E_{cluster}^{cut}; Energy_{cluster} [MeV]", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., 450 ,0., 150.0);
 
 
-                _hTHistDistrRow        = seedInfo.make<TH2D>( "DistrRow", "DistrRow; E_{cluster}^{cut};row index", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., cg->nCrystalR() , 0., cg->nCrystalR() );
-                _hTHistDistrColumn     = seedInfo.make<TH2D>( "DistrColumn","DistrColumn ; E_{cluster}^{cut}; column index", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.,cg->nCrystalZ() ,0., cg->nCrystalZ() );
+                _hTHistDistrRow        = seedInfo.make<TH2D>( "DistrRow", "DistrRow; E_{cluster}^{cut};row index", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., cg->nCrystalR() , 0., cg->nCrystalR() );
+                _hTHistDistrColumn     = seedInfo.make<TH2D>( "DistrColumn","DistrColumn ; E_{cluster}^{cut}; column index", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110.,cg->nCrystalZ() ,0., cg->nCrystalZ() );
 
-                _hTHistDistrRecRow     = seedInfo.make<TH2D>( "DistrRecRow", "DistrRecRow; E_{cluster}^{cut};row index", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110., cg->nCrystalR() , 0., cg->nCrystalR() );
-                _hTHistDistrRecColumn  = seedInfo.make<TH2D>( "DistrRecColumn","DistrRecColumn ; E_{cluster}^{cut}; column index", TMath::Nint((110.-_EnergyClusterCut)/2.0), _EnergyClusterCut, 110.,cg->nCrystalZ() ,0., cg->nCrystalZ() );
+                _hTHistDistrRecRow     = seedInfo.make<TH2D>( "DistrRecRow", "DistrRecRow; E_{cluster}^{cut};row index", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110., cg->nCrystalR() , 0., cg->nCrystalR() );
+                _hTHistDistrRecColumn  = seedInfo.make<TH2D>( "DistrRecColumn","DistrRecColumn ; E_{cluster}^{cut}; column index", TMath::Nint((110.-_EnergyClusterCut)*2.0), _EnergyClusterCut, 110.,cg->nCrystalZ() ,0., cg->nCrystalZ() );
 
 
                 globalNtrkCut = 0.0;
@@ -392,6 +401,8 @@ void CaloClusterEff::endJob() {
                 _hTHistGlobalEff->SetBinError(b, TMath::Sqrt(tmpEff*fabs(1.0-tmpEff) / globalNtrkCut ));
 
 
+		_hTHistNumeratorGEN->SetBinContent(b, globalCaloCut[b-1] );
+		_hTHistDenominatorGEN->SetBinContent(b,  globalNtrkCut);
                 double tmpEff2 = globalCaloCut[b-1] / globalNtrkCut;
                 _hTHistGlobalEffNorm->SetBinContent(b,  tmpEff2);
                 _hTHistGlobalEffNorm->SetBinError(b, TMath::Sqrt(tmpEff2*fabs(1.0-tmpEff2) / globalNtrkCut ));
@@ -620,7 +631,7 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
 
                                                         CLHEP::Hep3Vector cryFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
 
-                                                        if( (cg->getCrystalRByRO(thehit.id()) != ( _rowToCanc - 1.0 ) && cg->getCrystalZByRO(thehit.id()) != ( _columnToCanc - 1.0 ) ) ){
+                                                        if( (cg->crystalRByRO(thehit.id()) != ( _rowToCanc - 1.0 ) && cg->crystalZByRO(thehit.id()) != ( _columnToCanc - 1.0 ) ) ){
                                                                 if(elecMap[iVane][trackId.asUint()]._impTime > mchit.time() ){
                                                                         elecMap[iVane][trackId.asUint()]._cluEnergy = clu.energyDep();
                                                                         elecMap[iVane][trackId.asUint()]._cluTime = clu.time();
@@ -629,9 +640,9 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
                                                                         elecMap[iVane][trackId.asUint()]._cluCog = clu.cog3Vector();
                                                                         elecMap[iVane][trackId.asUint()]._impPos = mchit.position();
                                                                         elecMap[iVane][trackId.asUint()]._impPosCryFrame = cryFrame;
-                                                                        elecMap[iVane][trackId.asUint()]._row    = cg->getCrystalRByRO(thehit.id() );
-                                                                        elecMap[iVane][trackId.asUint()]._column    = cg->getCrystalZByRO(thehit.id() );
-                                                                        elecMap[iVane][trackId.asUint()]._cryOrigin  = cg->getCrystalOriginByRO( thehit.id() );
+                                                                        elecMap[iVane][trackId.asUint()]._row    = cg->crystalRByRO(thehit.id() );
+                                                                        elecMap[iVane][trackId.asUint()]._column    = cg->crystalZByRO(thehit.id() );
+                                                                        elecMap[iVane][trackId.asUint()]._cryOrigin  = cg->crystalOriginByRO( thehit.id() );
 
                                                                         //                                                                cout<< "###################"<<endl;
                                                                         //                                                                cout<< "idVande = "<< iVane<<endl;
@@ -874,7 +885,10 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
 
 
         }
-        cout << "Event "<<evt.id().event()<<" CaloClusterEff done..."<<endl;
+	
+	if(evt.id().event() %100 == 0){
+	  cout << "Event "<<evt.id().event()<<" CaloClusterEff done..."<<endl;
+	}
 
 }
 

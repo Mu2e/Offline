@@ -1,12 +1,13 @@
 //
-// $Id: ClusterParticleTrajectory_module.cc,v 1.3 2012/09/08 02:24:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Id: ClusterParticleTrajectory_module.cc,v 1.4 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 //Original author Giovanni Onoratto
 
 // Mu2e includes.
 #include "CaloCluster/inc/CaloClusterUtilities.hh"
+#include "CaloCluster/inc/CaloClusterTools.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -122,6 +123,11 @@ namespace mu2e {
         _clCOGx,
         _clCOGy,
         _clCOGz,
+      _clCryEmaxRow,
+      _clCryEmaxColumn,
+      _clSize,
+      _cryRow,
+      _cryColumn,
         _cryEdep,
         _cryEdepTot,
         _cryT;
@@ -172,6 +178,12 @@ namespace mu2e {
       _Ntup->Branch("clCOGx",&_clCOGx , "clCOGx/F");
       _Ntup->Branch("clCOGy",&_clCOGy , "clCOGy/F");
       _Ntup->Branch("clCOGz",&_clCOGz , "clCOGz/F");
+      _Ntup->Branch("clCryEmaxRow",&_clCryEmaxRow , "clCryEmaxRow/F");
+      _Ntup->Branch("clCryEmaxColumn",&_clCryEmaxColumn , "clCryEmaxColumn/F");
+      _Ntup->Branch("cryRow",&_cryRow , "cryRow/F");
+      _Ntup->Branch("cryColumn",&_cryColumn , "cryColumn/F");
+      _Ntup->Branch("clSize",&_clSize , "clSize/F");
+
       _Ntup->Branch("nCryCl",&_nCryCl , "nCryCl/I");
       _Ntup->Branch("cryId", &_cryId, "cryId/I");
       _Ntup->Branch("vane",&_vane , "vane/I");
@@ -223,6 +235,7 @@ namespace mu2e {
     for (size_t i = 0; i < caloClusters->size() ; ++i ) {
 
       CaloCluster const& cl = caloClusters->at(i);
+      CaloClusterTools cluTool(cl);
 
       _clNo = i;
       _clE = cl.energyDep();
@@ -230,6 +243,9 @@ namespace mu2e {
       _clCOGx = cl.cog3Vector().x();
       _clCOGy = cl.cog3Vector().y();
       _clCOGz = cl.cog3Vector().z();
+      _clCryEmaxRow = cluTool.cryEnergydepMaxRow() ;
+      _clCryEmaxColumn = cluTool.cryEnergydepMaxColumn() ;
+      _clSize = cl.size();
       _nCryCl = cl.size();
 
       CaloCrystalHitPtrVector CryPtrVec = cl.caloCrystalHitsPtrVector();
@@ -244,8 +260,10 @@ namespace mu2e {
 
         CaloHit const & RO = *(cry.readouts().at(0));
 
-        _cryId = cg->getCrystalByRO(RO.id());
-        _vane = cg->getVaneByRO(RO.id());
+        _cryId = cg->crystalByRO(RO.id());
+        _vane = cg->vaneByRO(RO.id());
+	_cryRow = cg->crystalRByRO(RO.id()) ;
+	_cryColumn = cg->crystalZByRO(RO.id());
 
         PtrStepPointMCVector const & mcptr(mcptrHandle->at(cry.readouts().at(0).key()));
 

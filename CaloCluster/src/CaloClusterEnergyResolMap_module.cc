@@ -1,9 +1,9 @@
 //
 // Visualization of the energy resolution  on the rows and on the columns
 //
-// $Id: CaloClusterEnergyResolMap_module.cc,v 1.12 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: CaloClusterEnergyResolMap_module.cc,v 1.13 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -942,9 +942,9 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
                                                 CLHEP::Hep3Vector cryFrame = cg->toCrystalFrame(thehit.id(), mchit.position());
 
-                                                if( (cg->getCrystalRByRO(thehit.id()) !=(_rowToCanc - 1) && cg->getCrystalZByRO(thehit.id()) != (_columnToCanc-1) ) ){
-                                                        unsigned int row = cg->getCrystalRByRO(thehit.id() );
-                                                        unsigned int column = cg->getCrystalZByRO(thehit.id() );
+                                                if( (cg->crystalRByRO(thehit.id()) !=(_rowToCanc - 1) && cg->crystalZByRO(thehit.id()) != (_columnToCanc-1) ) ){
+                                                        unsigned int row = cg->crystalRByRO(thehit.id() );
+                                                        unsigned int column = cg->crystalZByRO(thehit.id() );
 
                                                         if(elecMap[iVane][trackId.asUint()]._impTime > mchit.time() ){
                                                                 bool search = false, searchSignal = false;
@@ -974,7 +974,7 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                                 elecMap[iVane][trackId.asUint()]._impPosCryFrame = cryFrame;
                                                                 elecMap[iVane][trackId.asUint()]._row    = row;
                                                                 elecMap[iVane][trackId.asUint()]._column = column;
-                                                                elecMap[iVane][trackId.asUint()]._cryOrigin  = cg->getCrystalOriginByRO( thehit.id() );
+                                                                elecMap[iVane][trackId.asUint()]._cryOrigin  = cg->crystalOriginByRO( thehit.id() );
                                                                 elecMap[iVane][trackId.asUint()]._impMom3Vec = mchit.momentum();
                                                                 elecMap[iVane][trackId.asUint()]._cryTime = CryTime;
                                                                 if(_diagLevel < 0){
@@ -1019,8 +1019,8 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                                 _clSeedPpx[j]          = it->second.momentum.x();
                                                 _clSeedPpy[j]          = it->second.momentum.y();
                                                 _clSeedPpz[j]          = it->second.momentum.z();
-                                                Vane const &vane = cg->getVane(tmpVane);
-                                                CLHEP::Hep3Vector Mom_rotated = vane.getRotation()*(it->second.momentum);
+                                                Vane const &vane = cg->vane(tmpVane);
+                                                CLHEP::Hep3Vector Mom_rotated = (vane.rotation())*(it->second.momentum);
                                                 _clSeedPpu[j]          = Mom_rotated.x();
                                                 _clSeedPpv[j]          = Mom_rotated.y();
                                                 _clSeedPpw[j]          = Mom_rotated.z();
@@ -1151,9 +1151,9 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
                                 _hTHistThetaZRec->Fill(ite->second[trkVecTot[it2]]._impMom3Vec.getTheta()*180./TMath::Pi());
                                 _hTHistPhiRec->Fill(ite->second[trkVecTot[it2]]._impMom3Vec.getPhi()*180./TMath::Pi());
 
-                                Vane const &vane = cg->getVane(ite->first);
+                                Vane const &vane = cg->vane(ite->first);
                                 CLHEP::Hep3Vector dirMom = ite->second[trkVecTot[it2]]._impMom3Vec.unit();
-                                CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*dirMom;
+                                CLHEP::Hep3Vector dirMom_rotated = (vane.rotation())*dirMom;
                                 _hTHistMomRecDotVaneNorm->Fill(acos(-1.0*dirMom_rotated.getX())*180./TMath::Pi() );
 
                                 if(ite->first == 0 ){
@@ -1223,8 +1223,8 @@ void CaloClusterEnergyResolMap::doCalorimeter(art::Event const& evt, bool skip){
 
                                 CLHEP::Hep3Vector dirMom = ite->second[trkVecTot[it2]]._impMom3Vec;//.unit();
 
-                                Vane const &vane = cg->getVane(ite->first);
-                                dirMom = vane.getRotation()*dirMom;
+                                Vane const &vane = cg->vane(ite->first);
+                                dirMom = (vane.rotation())*dirMom;
 
                                 _hTHistMomDotVaneNorm->Fill(acos(-1.0*dirMom.getX() / dirMom.mag() )*180./TMath::Pi() );
                                 _hTHistThetaW->Fill(std::atan(-1.0*dirMom.getZ() / dirMom.getX() )*180./TMath::Pi() );

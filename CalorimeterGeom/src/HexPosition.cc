@@ -1,4 +1,8 @@
 //
+// $Id: HexPosition.cc,v 1.2 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
+//
 // Hold information about position of a hexagonal cell
 //
 // Original author B Echenard - P. Ongmongkolkul
@@ -74,7 +78,7 @@ namespace mu2e {
      }
 
 
-     int HexPosition::getRingNo(void) const
+     int HexPosition::ringNo(void) const
      {
 	if (_l*_k>0) return std::abs(_l+_k); 
 	return std::max(std::abs(_l),std::abs(_k));

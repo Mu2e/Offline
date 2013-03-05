@@ -1,9 +1,9 @@
 //
 // Visualization of the clusters on each vane with the relative distributions of time, energy and size
 //
-// $Id: CaloClusterTest_module.cc,v 1.4 2012/09/08 02:24:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:25 $
+// $Id: CaloClusterTest_module.cc,v 1.5 2013/03/05 20:33:25 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -331,8 +331,8 @@ void CaloClusterTest::doCalorimeter(art::Event const& evt, bool skip){
                                 std::vector<art::Ptr<CaloHit> > const& ROIdsClu = hitClu.readouts();
                                 CaloHit const& thehitClu = *ROIdsClu.at(0);
 
-                                cryZ = cg->getCrystalZByRO(thehitClu.id());//get z-coordinate (from 0 to nCryZ-1)
-                                cryR = cg->getCrystalRByRO(thehitClu.id());//get r-coordinate (from 0 to nCryR-1)
+                                cryZ = cg->crystalZByRO(thehitClu.id());//get z-coordinate (from 0 to nCryZ-1)
+                                cryR = cg->crystalRByRO(thehitClu.id());//get r-coordinate (from 0 to nCryR-1)
 
                                 (*itMap)->Fill(cryZ, cryR);
                                 (*itE)->Fill(eDepCry);
@@ -388,9 +388,9 @@ void CaloClusterTest::doCalorimeter(art::Event const& evt, bool skip){
                         if(hit.energyDep() < _minimumEnergy) continue;
 
                         CaloHit const& thehit = *ROIds.at(0);
-                        int idVane = cg->getVaneByRO(thehit.id());
-                        int cryZ = cg->getCrystalZByRO(thehit.id());//get z-coordinate (from 0 to nCryZ-1)
-                        int cryR = cg->getCrystalRByRO(thehit.id());//get r-coordinate (from 0 to nCryR-1)
+                        int idVane = cg->vaneByRO(thehit.id());
+                        int cryZ = cg->crystalZByRO(thehit.id());//get z-coordinate (from 0 to nCryZ-1)
+                        int cryR = cg->crystalRByRO(thehit.id());//get r-coordinate (from 0 to nCryR-1)
                         double edep    = hit.energyDepTotal();
                         double Time = hit.time();
                         vecVaneMap.at(idVane)->Fill(cryZ, cryR);

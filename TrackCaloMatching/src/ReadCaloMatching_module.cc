@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.7 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: ReadCaloMatching_module.cc,v 1.8 2013/03/05 20:33:26 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:26 $
 //
 // Original author G. Pezzullo
 //
@@ -24,8 +24,8 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 //tracker includes
-#include "TrkBase/TrkRep.hh"
-#include "KalmanTrack/KalRep.hh"
+//#include "TrkBase/TrkRep.hh"
+//#include "KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -116,9 +116,10 @@ using cet::sum_of_squares;
 namespace mu2e {
 
 float thetaWimpact(const CLHEP::Hep3Vector& mom, int vaneId){
+
         GeomHandle<VaneCalorimeter> cg;
-        Vane const &vane = cg->getVane(vaneId);
-        CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*mom.unit();
+        Vane const &vane = cg->vane(vaneId);
+        CLHEP::Hep3Vector dirMom_rotated = (vane.rotation())*mom.unit();
 
         float thW = 0.0;
         thW = std::atan(-1.0*dirMom_rotated.getZ() / dirMom_rotated.getX() ) ;
@@ -126,9 +127,10 @@ float thetaWimpact(const CLHEP::Hep3Vector& mom, int vaneId){
         return thW;
 }
 float thetaVimpact(const CLHEP::Hep3Vector& mom, int vaneId){//(FIXME)
+
         GeomHandle<VaneCalorimeter> cg;
-        Vane const &vane = cg->getVane(vaneId);
-        CLHEP::Hep3Vector dirMom_rotated = vane.getRotation()*mom.unit();
+        Vane const &vane = cg->vane(vaneId);
+        CLHEP::Hep3Vector dirMom_rotated = (vane.rotation())*mom.unit();
 
         float thV = 0.0;
         thV = std::atan(dirMom_rotated.getY() / dirMom_rotated.getX() ) ;
@@ -154,6 +156,16 @@ float thetaVimpactErr(float& y, float& dy, float& x, float& dx){
         return res;
 }
 
+struct simData{
+        double entranceEnergy, exitEnergy;
+        double cosTheta, cosPitch, lcosPitch, entranceTime, exitTime;
+        size_t nHits;
+        int isQC;
+        simData(){};
+};
+
+typedef std::map<unsigned int, simData> SimMap;
+
 static int ncalls(0);
 
 class ReadCaloMatching : public art::EDAnalyzer {
@@ -161,7 +173,6 @@ public:
         explicit ReadCaloMatching(fhicl::ParameterSet const& pset):
         _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
         _diagLevel(pset.get<int>("diagLevel",0)),
-        _qualityCuts(pset.get<int>("qualityCuts",2)),
         _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
         _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
         _makerModuleLabel(pset.get<std::string>("makerModuleLabel", "makeSH")),
@@ -199,9 +210,6 @@ private:
 
         // Diagnostic level
         int _diagLevel;
-
-        //Select trks with Dave quality cuts
-        int _qualityCuts;
 
         // Label of the generator.
         std::string _generatorModuleLabel;
@@ -257,9 +265,18 @@ private:
         _clSize,
         _seedPdgId ,
         _seedIsGen,
-        _clVane;
+	  _seedIsConv,
+        _clVane,
+        _mcNHits;
 
         Float_t _evt,//event Id
+        _mcTrkEntrE,
+        _mcTrkExitE,
+        _mcTrkEntrT0,
+        _mcTrkExitT0,
+        _mcCosTh,
+        _mcCosPitch,
+        _recoFitCons,
         _clE ,
         _clEErr,
         _clT ,
@@ -302,7 +319,7 @@ private:
         _seedPw ,
         _seedThetaW,//MC impact impact angle projected to the plane identified by the vectors U, W (local vane frame) [deg]
         _seedThetaV,//MC impact angle projected to the plane identified by the vectors U, V (local vane frame) [deg]
-
+	
         _recoPx ,//reconstructed impact particle coordinates in the Mu2e general frame [mm]
         _recoPy ,
         _recoPz ,
@@ -314,8 +331,16 @@ private:
         _recoPpwErr ,
         _recoE ,//reconstructed impact kinetic energy [MeV]
         _recoEErr,
+	  _recoTrkEntrE,
+	  _recoTrkExitE,
         _recoTime,//reconstructed impact impact time [ns]
-        _recoTimeErr,
+	  _recoTimeErr,
+	  _recoT0TrkEntr,
+        _recoT0TrkEntrErr, 
+	_recoT0TrkExit,
+        _recoT0TrkExitErr,
+	  _recoTorigin,
+	  _recoToriginErr,
         _recoPpx ,//reconstructed impact momentum components in the Mu2e general frame [MeV]
         _recoPpy ,
         _recoPpz ,
@@ -329,6 +354,25 @@ private:
         _recoThetaWErr,
         _recoThetaV,//reconstructed impact impact angle projected to the plane identified by the vectors U, V (local vane frame) [deg]
         _recoThetaVErr,
+        _recoPathLenght,
+        _recoPathLenghtErr,
+        _recoEt0,
+        _recoEt0Err,
+	_recoExitPathLenght,
+	_recoEntrPathLenght,
+	  _recoTrkEntrPpx,  
+	  _recoTrkEntrPpy,  
+	  _recoTrkEntrPpz,  
+	  _recoTrkEntrPx,  
+	  _recoTrkEntrPy,  
+	  _recoTrkEntrPz,  
+	  _recoTrkExitPpx,  
+	  _recoTrkExitPpy,  
+	  _recoTrkExitPpz,  
+	  _recoTrkExitPx,  
+	  _recoTrkExitPy,  
+	  _recoTrkExitPz,  
+
         _pseudoChiSquare,
         _timeChiSquare,
         _energyChiSquare,
@@ -342,12 +386,12 @@ double ReadCaloMatching::chiSquare(double& exV, double& exW, double& clV, double
                 double& exEnergy, double& clEnergy, double& sigmaE2){
 
         double res = 0.0;
-        _posVChiSquare = pow(exV -clV, 2)/sigmaV2;
-        _posWChiSquare = pow(exW -clW, 2)/sigmaW2;
-        _timeChiSquare = pow(extrT -clT, 2)/sigmaT2;
-        _energyChiSquare = pow(exEnergy -clEnergy, 2)/sigmaE2;
+        _posVChiSquare = pow(2.35*(exV -clV), 2)/sigmaV2;
+        _posWChiSquare = pow(2.35*(exW -clW), 2)/sigmaW2;
+        _timeChiSquare = pow(2.35*(extrT -clT), 2)/sigmaT2;
+        _energyChiSquare = pow(2.35*(exEnergy -clEnergy), 2)/sigmaE2;
 
-        res = _posVChiSquare + _posWChiSquare + _energyChiSquare + _timeChiSquare;
+        res = _posVChiSquare + _posWChiSquare /*+ _energyChiSquare */+ _timeChiSquare;
         return res;
 }
 
@@ -427,21 +471,7 @@ bool findKalRep(art::Handle<TrkToCaloExtrapolCollection> &trkToCaloCollection, K
 
 
 void ReadCaloMatching::beginJob( ) {
-
         cout << "start ReadCaloMatching..."<<endl;
-
-        if ( !gApplication ){
-                int    tmp_argc(0);
-                char** tmp_argv(0);
-                _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
-        }
-
-        gStyle->SetPalette(1);
-        gROOT->SetStyle("Plain");
-
-        _directory = gDirectory;
-
-
 }
 
 
@@ -457,7 +487,18 @@ void ReadCaloMatching::analyze(art::Event const& evt ) {
 
                 _Ntup->Branch("evt", &_evt , "evt/F");
                 _Ntup->Branch("match",     &_match , "match/I");
+                _Ntup->Branch("mcNHits",     &_mcNHits , "mcNHits/I");
+                _Ntup->Branch("mcTrkEntrE",     &_mcTrkEntrE , "mcTrkEntrE/F");
+                _Ntup->Branch("mcTrkExitE",     &_mcTrkExitE , "mcTrkExitE/F");
+                _Ntup->Branch("mcTrkEntrT0",     &_mcTrkEntrT0 , "mcTrkEntrT0/F");
+                _Ntup->Branch("mcTrkExitT0",     &_mcTrkExitT0 , "mcTrkExitT0/F");
+                _Ntup->Branch("mcCosTh",     &_mcCosTh , "mcCosTh/F");
+                _Ntup->Branch("mcCosPitch",     &_mcCosPitch , "mcCosPitch/F");
+                _Ntup->Branch("recoFitCons",     &_recoFitCons , "recoFitCons/F");
                 _Ntup->Branch("seedQC",     &_seedQC , "seedQC/I");
+		_Ntup->Branch("seedIsConv",     &_seedIsConv , "seedIsConv/I");
+		_Ntup->Branch("seedPdgId",     &_seedPdgId , "seedPdgId/I");
+		_Ntup->Branch("seedIsGen",     &_seedIsGen , "seedIsGen/I");
                 _Ntup->Branch("seedPx",     &_seedPx , "seedPx/F");
                 _Ntup->Branch("seedPy",     &_seedPy , "seedPy/F");
                 _Ntup->Branch("seedPz",     &_seedPz , "seedPz/F");
@@ -506,11 +547,23 @@ void ReadCaloMatching::analyze(art::Event const& evt ) {
 
                 _Ntup->Branch("recoTrkId",     &_recoTrkId , "recoTrkId/I");
                 _Ntup->Branch("recoIndex",     &_recoIndex , "recoIndex/I");
+                _Ntup->Branch("recoT0TrkEntr",      &_recoT0TrkEntr , "recoT0TrkEntr/F");
+                _Ntup->Branch("recoT0TrkEntrErr",   &_recoT0TrkEntrErr , "recoT0TrkEntrErr/F");
+                _Ntup->Branch("recoT0TrkExit",      &_recoT0TrkExit , "recoT0TrkExit/F");
+                _Ntup->Branch("recoT0TrkExitErr",   &_recoT0TrkExitErr , "recoT0TrkExitErr/F");
+
+                _Ntup->Branch("recoTorigin",     &_recoTorigin , "recoTorigin/F");
+                _Ntup->Branch("recoToriginErr",     &_recoToriginErr , "recoToriginErr/F");
+
                 _Ntup->Branch("recoPx",     &_recoPx , "recoPx/F");
                 _Ntup->Branch("recoPy",     &_recoPy , "recoPy/F");
                 _Ntup->Branch("recoPz",     &_recoPz , "recoPz/F");
                 _Ntup->Branch("recoE",      &_recoE , "recoE/F");
                 _Ntup->Branch("recoEErr",   &_recoEErr , "recoEErr/F");
+                _Ntup->Branch("recoTrkEntrE", &_recoTrkEntrE , "recoTrkEntrE/F");
+                _Ntup->Branch("recoTrkExitE", &_recoTrkExitE , "recoTrkExitE/F");
+                _Ntup->Branch("recoEt0",      &_recoEt0 , "recoEt0/F");
+                _Ntup->Branch("recoEt0Err",   &_recoEt0Err , "recoEt0Err/F");
                 _Ntup->Branch("recoTime",   &_recoTime , "recoTime/F");
                 _Ntup->Branch("recoTimeErr",   &_recoTimeErr , "recoTimeErr/F");
                 _Ntup->Branch("recoPpx",    &_recoPpx , "recoPpx/F");
@@ -528,7 +581,23 @@ void ReadCaloMatching::analyze(art::Event const& evt ) {
                 _Ntup->Branch("recoThetaW", &_recoThetaW , "recoThetaW/F");
                 _Ntup->Branch("recoThetaV", &_recoThetaV , "recoThetaV/F");
                 _Ntup->Branch("recoThetaWErr", &_recoThetaWErr , "recoThetaWErr/F");
-                _Ntup->Branch("recoThetaVErr", &_recoThetaVErr , "recoThetaVErr/F");
+                _Ntup->Branch("recoThetaVErr", &_recoThetaVErr , "recoThetaVErr/F");   
+		_Ntup->Branch("recoEntrPathLenght", &_recoEntrPathLenght , "recoEntrPathLenght/F");
+                _Ntup->Branch("recoExitPathLenght", &_recoExitPathLenght , "recoExitPathLenght/F");
+                _Ntup->Branch("recoPathLenght", &_recoPathLenght , "recoPathLenght/F");
+                _Ntup->Branch("recoPathLenghtErr", &_recoPathLenghtErr , "recoPathLenghtErr/F");
+		_Ntup->Branch("recoTrkEntrPpx", &_recoTrkEntrPpx , "recoTrkEntrPpx/F");
+		_Ntup->Branch("recoTrkEntrPpy", &_recoTrkEntrPpy , "recoTrkEntrPpy/F");
+		_Ntup->Branch("recoTrkEntrPpz", &_recoTrkEntrPpz , "recoTrkEntrPpz/F");
+		_Ntup->Branch("recoTrkExitPx", &_recoTrkExitPx , "recoTrkExitPx/F");
+		_Ntup->Branch("recoTrkExitPy", &_recoTrkExitPy , "recoTrkExitPy/F");
+		_Ntup->Branch("recoTrkExitPz", &_recoTrkExitPz , "recoTrkExitPz/F");
+		_Ntup->Branch("recoTrkExitPpx", &_recoTrkExitPpx , "recoTrkExitPpx/F");
+		_Ntup->Branch("recoTrkExitPpy", &_recoTrkExitPpy , "recoTrkExitPpy/F");
+		_Ntup->Branch("recoTrkExitPpz", &_recoTrkExitPpz , "recoTrkExitPpz/F");
+		_Ntup->Branch("recoTrkExitPx", &_recoTrkExitPx , "recoTrkExitPx/F");
+		_Ntup->Branch("recoTrkExitPy", &_recoTrkExitPy , "recoTrkExitPy/F");
+		_Ntup->Branch("recoTrkExitPz", &_recoTrkExitPz , "recoTrkExitPz/F");
 
                 _Ntup->Branch("pseudoChiSquare",  &_pseudoChiSquare , "pseudoChiSquare/F");
                 _Ntup->Branch("timeChiSquare",    &_timeChiSquare , "timeChiSquare/F");
@@ -609,7 +678,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
         }
 
         trkIdVector QCvec;
-
+        SimMap simMap;
 
         double trkMomCut = 100.0;//MeV
         int NtrkCut =0;
@@ -635,6 +704,18 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 }
 
                 bool condition = true;
+                simData sData;
+                sData.nHits = iEltrk.getNumOfHit() ;
+                sData.cosTheta = cosTheta ;
+                sData.cosPitch = cosPitch;
+                sData.lcosPitch = lcosPitch;
+                sData.entranceEnergy = hdil._hitMomentum.mag();
+                sData.exitEnergy = ldil._hitMomentum.mag();
+                sData.isQC = 0;
+                sData.entranceTime = hdil._mcHitTime;
+                sData.exitTime = ldil._mcHitTime;
+		
+
                 //the following condition are the same used by Dave Brown for TTracker studies
                 condition &= ( iEltrk.getNumOfHit() >= 20 );
                 condition &= ( hdil._hitMomentum.mag() >= trkMomCut );
@@ -643,7 +724,10 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 condition &= ( cosPitch > 0.5 );
                 condition &= ( cosPitch < 0.70710678118655 );// 1 / sqrt(2)
 
+
+
                 if( condition ){
+                        sData.isQC = 1;
                         NtrkCut++;// # of electrons at the entrance of the TRK which have trkMomCut MeV of kinetic energy and which will light at least 20 straws
                         if( !QCvec.find(iEltrk.getTrkID().asUint()) ){
                                 if(_diagLevel>2){
@@ -655,6 +739,9 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
 
 
                 }//end if(condition)
+
+                simMap[iEltrk.getTrkID().asUint()] =  sData ;
+
         }//end loop TRK mapping
         if (NtrkTot==0) return;
 
@@ -771,8 +858,11 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 }
                 tmpElec._vaneId        = trjExtrapols->at(i).vaneId();
                 tmpElec._index         = count;
+                tmpElec._fitConsistency= trjExtrapols->at(i).fitConsistency();
                 tmpElec._impTime       = trjExtrapols->at(i).time();
                 tmpElec._impTimeErr    = trjExtrapols->at(i).timeErr();
+                tmpElec._genTime       = trjExtrapols->at(i).tOrigin();
+                tmpElec._genTimeErr    = trjExtrapols->at(i).tOriginErr();
                 tmpElec._impMom3Vec    = trjExtrapols->at(i).momentum();
                 tmpElec._impMom3VecErr = trjExtrapols->at(i).momentumErr();
                 tmpElec._impPos        = Hep3Vector(trjExtrapols->at(i).entrancePosition().x(), trjExtrapols->at(i).entrancePosition().y(), trjExtrapols->at(i).entrancePosition().z());
@@ -815,7 +905,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                         }
 
 
-                        iVane = cg->getVaneByRO(thehit.id());
+                        iVane = cg->vaneByRO(thehit.id());
 
                         size_t nHitsPerCrystal = mcptr.size();
 
@@ -833,13 +923,25 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
 
                                 if(sim.fromGenerator() ){
                                         if(tmpElec._impTime > mchit.time() ){
+                                                if(sim.genParticle().isNonnull()){
+                                                        GenParticle const& gen = *sim.genParticle();
+                                                        tmpElec._genMom = gen.momentum();
+                                                }
                                                 foundGen               = true;
                                                 trkId                  = trackId.asUint();
                                                 tmpElec._vaneId        = iVane;
-                                                tmpElec._impTime       = mchit.time();
+						tmpElec._pdgId         = sim.pdgId();
+						tmpElec._isGen         = sim.fromGenerator();
+						tmpElec._impTime       = mchit.time();
                                                 tmpElec._impMom3Vec    = mchit.momentum();
                                                 tmpElec._impPos        = mchit.position();
-
+						if(sim.fromGenerator() ){
+						  GenParticle const& gen = *sim.genParticle();
+						  GenId genId = gen.generatorId();
+						  if(genId==GenId::conversionGun){
+						    tmpElec._isConv        =  1;
+						  }
+						}
                                         }//end  if(caloMap[trackId.asUint()][iVane]._impTime > mchit.time() ){
 
                                 }else{//end if(sim.fromGenerator)
@@ -1001,7 +1103,14 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 _seedPw =  0.0;
                 _seedThetaW =  0.0;
                 _seedThetaV =  0.0;
+		_seedIsConv = 0;
+		_seedPdgId = 0;
+		_seedIsGen = 0;
 
+		_recoTorigin = 0.0,
+		  _recoToriginErr = 0.0,
+		_recoT0TrkEntr = 0.0;
+		_recoT0TrkEntrErr = 0.0;
                 _recoTrkId = 0;
                 _recoPx =  0.0;
                 _recoPy =  0.0;
@@ -1029,6 +1138,19 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 _recoThetaWErr =  0.0;
                 _recoThetaV =  0.0;
                 _recoThetaVErr =  0.0;
+                _recoFitCons = 0.0;
+                _recoEt0 = 0.0;
+                _recoEt0Err = 0.0;
+                _recoPathLenght = 0.0;
+                _recoPathLenghtErr = 0.0;
+
+                _mcCosPitch     = 0.0;
+                _mcCosTh        = 0.0;
+                _mcNHits        = 0;
+                _mcTrkEntrE     = 0.0;
+                _mcTrkExitE     = 0.0;
+                _mcTrkEntrT0    = 0.0;
+                _mcTrkExitT0    = 0.0;
                 //end
 
                 CaloCluster const& clu = *( (*trjCaloMatchings).at(i).second.get());
@@ -1051,6 +1173,19 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
 
                 tmpVane = clu.vaneId();
 
+
+                if(simMap.find((unsigned int)trjsTrkId[i]) != simMap.end() ){
+                        SimMap::iterator it = simMap.find((unsigned int)trjsTrkId[i]);
+                        _mcCosPitch     = it->second.cosPitch;
+                        _mcCosTh        = it->second.cosTheta;
+                        _mcNHits        = it->second.nHits;
+                        _mcTrkEntrE     = it->second.entranceEnergy;
+                        _mcTrkExitE     = it->second.exitEnergy;
+                        _mcTrkEntrT0    = it->second.entranceTime;
+                        _mcTrkExitT0    = it->second.exitTime;
+
+                }
+
                 if(caloMap.size() != 0){
                         if(_diagLevel > 2){
                                 cout<<"caloMap.size() = "<<caloMap.size()<<
@@ -1062,8 +1197,8 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                                         cout<<"found trkId in caloMap!!"<< endl;
                                 }
                                 size_t ind = 0;
-                                Vane const &vane1 = cg->getVane(tmpVane );
-                                momentumRotUnit = vane1.getRotation()*(caloMap[(unsigned int)clustersTrkId[i]].impMom3Vec(ind).unit());
+                                Vane const &vane1 = cg->vane(tmpVane );
+                                momentumRotUnit = (vane1.rotation())*(caloMap[(unsigned int)clustersTrkId[i]].impMom3Vec(ind).unit());
 
                                 thetaW = std::atan(-1.0*momentumRotUnit.getZ() / momentumRotUnit.getX() ) ;
                                 _seedThetaW = thetaW*Constants::radToDegrees;
@@ -1074,6 +1209,10 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
 
                                 _seedTime = caloMap[(unsigned int)clustersTrkId[i]].impTime(ind);
                                 _seedE    = caloMap[(unsigned int)clustersTrkId[i]].impMom3Vec(ind).mag();
+
+                                _seedIsConv = caloMap[(unsigned int)clustersTrkId[i]].isConv(ind);
+                                _seedPdgId = caloMap[(unsigned int)clustersTrkId[i]].pdgId(ind);
+                                _seedIsGen = caloMap[(unsigned int)clustersTrkId[i]].isGen(ind);
                                 if(_diagLevel > 2){
                                         cout<<"found trkId in caloMap!! step 1"<< endl;
                                 }
@@ -1150,8 +1289,19 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 tmpEnergy = trkToCaloExtrapol.momentum().mag();
                 _recoE = tmpEnergy;
 
+                _recoEt0 = trkToCaloExtrapol.t0Momentum().mag();
+
+                _recoFitCons = trkToCaloExtrapol.fitConsistency();
+
                 Hep3Vector momdir;
                 HepVector momvec(3);
+                momdir = trkToCaloExtrapol.t0Momentum().unit();
+                for(int icor=0;icor<3;icor++){
+                        momvec[icor] = momdir[icor];
+                }
+                tmpEnergyErr = sqrt(trkToCaloExtrapol.momentumErr().covMatrix().similarity(momvec));
+                _recoEt0Err = tmpEnergyErr;
+
                 momdir = trkToCaloExtrapol.momentum().unit();
                 for(int icor=0;icor<3;icor++){
                         momvec[icor] = momdir[icor];
@@ -1160,11 +1310,13 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 _recoEErr = tmpEnergyErr;
 
 
-                Vane const &vane = cg->getVane(tmpVane );
+
+
+                Vane const &vane = cg->vane(tmpVane );
                 if(_diagLevel > 2){
                         cout<<"momemntum trk : "<<trkToCaloExtrapol.momentum()<<endl;
                 }
-                momentumRotUnit = vane.getRotation()*(trkToCaloExtrapol.momentum().unit());
+                momentumRotUnit = (vane.rotation())*(trkToCaloExtrapol.momentum().unit());
                 if(_diagLevel > 2){
                         cout<<"momemntum trk : "<<trkToCaloExtrapol.momentum()<<endl;
                 }
@@ -1178,10 +1330,49 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 //_recoThetaW = thetaWimpact(trkToCaloExtrapol.momentum(), trkToCaloExtrapol.vaneId());
 
                 tmpPtime = trkToCaloExtrapol.time();
+		
+		_recoTorigin = trkToCaloExtrapol.tOrigin();
+		_recoToriginErr = trkToCaloExtrapol.tOriginErr();
+
                 tmpPtimeErr = trk->t0().t0Err();
 
-                _recoTime = tmpPtime;
+		
+                const TrkStrawHit* lasthit = dynamic_cast<const TrkStrawHit*>( trk->lastHit()->kalHit()->hitOnTrack() );
+                double fltlen = lasthit->fltLen();
+                _recoExitPathLenght = fltlen;
+		_recoTrkExitPpx = trk->momentum(fltlen).x();
+		_recoTrkExitPpy = trk->momentum(fltlen).y();
+		_recoTrkExitPpz = trk->momentum(fltlen).z();
+		_recoTrkExitE   = trk->momentum(fltlen).mag();
+
+		_recoTrkExitPx = trk->position(fltlen).x();
+		_recoTrkExitPy = trk->position(fltlen).y();
+		_recoTrkExitPz = trk->position(fltlen).z();
+		
+		_recoT0TrkExit = trk->arrivalTime(fltlen);
+		_recoT0TrkExitErr = trk->t0().t0Err();
+		
+		const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( trk->firstHit()->kalHit()->hitOnTrack() );
+                fltlen = firsthit->fltLen();
+		_recoTrkEntrPpx = trk->momentum(fltlen).x();
+		_recoTrkEntrPpy = trk->momentum(fltlen).y();
+		_recoTrkEntrPpz = trk->momentum(fltlen).z();
+		_recoTrkEntrE   = trk->momentum(fltlen).mag();
+
+		_recoTrkEntrPx = trk->position(fltlen).x();
+		_recoTrkEntrPy = trk->position(fltlen).y();
+		_recoTrkEntrPz = trk->position(fltlen).z();
+
+		_recoEntrPathLenght = fltlen;
+
+		_recoT0TrkEntr = trk->arrivalTime(fltlen);// trkToCaloExtrapol.t0();
+		_recoT0TrkEntrErr = trk->t0().t0Err();// trkToCaloExtrapol.t0Err();
+
+		_recoTime = tmpPtime;
                 _recoTimeErr = tmpPtimeErr;
+
+                _recoPathLenght = trkToCaloExtrapol.pathLengthEntrance();
+                _recoPathLenghtErr = trkToCaloExtrapol.pathLenghtEntranceErr();
 
                 if(_diagLevel > 2){
                         cout<<"tmpVane = "<<tmpVane<<endl;
@@ -1208,6 +1399,8 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 _recoPz = tmpPosVaneFrame.z();
 
                 vaneFrame = cg->toVaneFrame(tmpVane, tmpPosVaneFrame);
+		tmpPv           = vaneFrame.y();
+		tmpPw           = vaneFrame.z();
                 _recoPu = vaneFrame.x();
                 _recoPv = vaneFrame.y();
                 _recoPw = vaneFrame.z();
@@ -1216,8 +1409,8 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 Hep3Vector Vaxes(0.0, 1.0, 0.0), Waxes(0.0, 0.0, 1.0);
 
                 //move these axes into the Mu2e general frame
-                Vaxes = vane.getRotation()*(Vaxes);
-                Waxes = vane.getRotation()*(Waxes);
+                Vaxes = (vane.rotation())*(Vaxes);
+                Waxes = (vane.rotation())*(Waxes);
                 //Vaxes = cg->fromVaneFrame(tmpVane, Vaxes);
                 //Waxes = cg->fromVaneFrame(tmpVane, Waxes);
                 double scaleErrW = 1.0/fabs( cos(thetaW) );
@@ -1252,7 +1445,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 //                tmpErrPos = sqrt(trkToCaloExtrapol.entrancePositionErr().covMatrix().similarity(momvec));
                 //                tmpPosVaneFrameErr.setZ(tmpErrPos);//trjExtrapols->at(i).entrancePositionErr().z());
                 //
-                //                CLHEP::Hep3Vector tmpPerr = vane.getRotation()*tmpPosVaneFrameErr;//cg->toVaneFrame(tmpVane, tmpPosVaneFrameErr);
+                //                CLHEP::Hep3Vector tmpPerr = *(vane.rotation())*tmpPosVaneFrameErr;//cg->toVaneFrame(tmpVane, tmpPosVaneFrameErr);
                 _recoPuErr = 0.0;// fabs(tmpPerr.x());
                 // _recoPvErr = fabs(tmpPerr.y());
                 //_recoPwErr = fabs(tmpPerr.z());
@@ -1273,10 +1466,12 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 if(_diagLevel > 2){
                         cout<<"Tracker frame: tmpPosVaneFrame = "<<tmpPosVaneFrame<<" [mm]"<<
                                         "tmpPosVaneFrameErr = "<< tmpPosVaneFrameErr<<" [mm]"<<endl;
+			cout<<"Track moemntum = "<< tmpPerr <<endl;
                 }
 
                 CaloClusterTools cluTool(clu);
-                cogVaneFrame            =  clu.cog3Vector();//clu.cog3Vector() ;
+                cogVaneFrame            = clu.cog3Vector();
+		cogVaneFrame            = cg->toVaneFrame(tmpVane, cogVaneFrame);
                 tmpCluCryMaxEdepRow     = cluTool.cryEnergydepMaxRow();
                 tmpCluCryMaxEdepColumn  = cluTool.cryEnergydepMaxColumn();
                 tmpCluTime              = clu.time();
@@ -1284,7 +1479,11 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 tmpCOGw                 = cogVaneFrame.z();
                 tmpCOGvErr              = clu.cog3VectorError().y();
                 tmpCOGwErr              = clu.cog3VectorError().z();
+
+		_clVane = clu.vaneId();
+
                 tmpWsize                = cluTool.wSize();
+
                 //tmpCluEnergy            = clu.energyDep();
                 _clE = clu.energyDep();
                 tmpCluEnergy = (double)_clE;
@@ -1354,10 +1553,10 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 _clT = clu.time();
                 _clTErr = cluTool.timeErr();
 
-                sigmaE2 = cet::sum_of_squares((float)tmpEnergyErr, _clEErr);
-                sigmaV2 = cet::sum_of_squares(_recoPvErr, (float)tmpCOGvErr);
-                sigmaW2 = cet::sum_of_squares(_recoPwErr, (float)tmpCOGwErr);
-                sigmaT2 = cet::sum_of_squares((float)tmpPtimeErr, _clTErr);
+                sigmaE2 = std::pow(7.2, 2);//cet::sum_of_squares((float)tmpEnergyErr, _clEErr);
+                sigmaV2 = std::pow(44.33, 2);//cet::sum_of_squares(_recoPvErr, (float)tmpCOGvErr);
+                sigmaW2 = std::pow(22.17, 2);//cet::sum_of_squares(_recoPwErr, (float)tmpCOGwErr);
+                sigmaT2 = std::pow(3.4, 2);//cet::sum_of_squares((float)tmpPtimeErr, _clTErr);
 
                 if(_diagLevel > 2){
                         cout<<"after doing other corrections..."<<endl;
@@ -1389,7 +1588,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                                 _clCryMaxEdep = _cryEdep[i];
                         }
 
-                        _clRows[i] = cg->getCrystalRByRO(thehit.id());
+                        _clRows[i] = cg->crystalRByRO(thehit.id());
 
                         if(_clRows[i] < tmpClVmin) {
                                 tmpClVmin = _clRows[i];
@@ -1398,7 +1597,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                                 tmpClVmax = _clRows[i];
                         }
 
-                        _clColumns[i] =cg->getCrystalZByRO(thehit.id());
+                        _clColumns[i] =cg->crystalZByRO(thehit.id());
 
                         if(_clColumns[i] < tmpClWmin) {
                                 tmpClWmin = _clColumns[i];
@@ -1416,14 +1615,17 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 _clShowerDir = cluTool.showerDir();
                 _clErrShowerDir = cluTool.errShowerDir();
 
-                chiQ = chiSquare(tmpPv, tmpPw, tmpCOGv, tmpCOGw, sigmaV2, sigmaW2, tmpPtime, tmpCluTime, sigmaT2, tmpEnergy, tmpCluEnergy, sigmaE2);
+                chiQ = chiSquare(tmpPv, tmpPw, tmpCOGv, tmpCOGw,
+                                sigmaV2, sigmaW2, tmpPtime, tmpCluTime,
+                                sigmaT2, tmpEnergy, tmpCluEnergy, sigmaE2);
 
                 _pseudoChiSquare = chiQ;
 
                 _Ntup->Fill();
         }
-
-        cout << "Event "<<evt.id().event()<<" ReadCaloMatching done..."<<endl;
+	if(evt.id().event() %1000 ==0 ){
+	  cout << "Event "<<evt.id().event()<<" ReadCaloMatching done..."<<endl;
+	}
 }
 
 

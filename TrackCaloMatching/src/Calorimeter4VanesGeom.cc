@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.cc,v 1.4 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: Calorimeter4VanesGeom.cc,v 1.5 2013/03/05 20:33:26 aluca Exp $
+// $Author: aluca $
+// $Date: 2013/03/05 20:33:26 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -16,8 +16,9 @@
 namespace mu2e{
 
 CaloVolumeElem* Calorimeter4VanesGeom::vane(int& i){
+
         GeomHandle<VaneCalorimeter> cg;
-        Vane vane = cg->getVane(i);
+        Vane vane = cg->vane(i);
 
         CaloVolumeType *caloVane = new CaloVolumeType("caloVane", 0);
 
@@ -126,7 +127,7 @@ CaloVolumeElem* Calorimeter4VanesGeom::vane(int& i){
         caloVane->AddSideCorner( new SurfacePoint(_dR, -_vaneHalfThickness) , idFace_5);
         caloVane->AddSideCorner( new SurfacePoint(-_dR, -_vaneHalfThickness), idFace_5);
 
-        Hep3Vector tmp_vec = vane.getOrigin();
+        Hep3Vector tmp_vec = vane.origin();
         double b0 = tmp_vec.getX() + _solenoidOffSetX;
         double c0 = tmp_vec.getZ() + _solenoidOffSetZ;
         tmp_vec.setZ(c0);
@@ -140,9 +141,9 @@ CaloVolumeElem* Calorimeter4VanesGeom::vane(int& i){
         const HepRotation rot(normal, 0.0);
         const HepTranslation tras(tmp_vec);
 
-        const Hep3Vector axes(vane.getRotation().getAxis());
+        const Hep3Vector axes(vane.rotation().getAxis());
 
-        //double delta = vane.getRotation().getDelta() - Constants::pi*0.5;
+        //double delta = vane.getRotation()->getDelta() - Constants::pi*0.5;
         double delta = Constants::pi*0.5*i;
         const HepRotation rot2(normal, delta );
 
@@ -242,21 +243,21 @@ void Calorimeter4VanesGeom::caloExtrapol(int& diagLevel,int evtNumber, TrkRep co
                 entr[jVane] = 0.0;
                 ex[jVane] = 0.0;
         }
-        int nAngleSteps = 500;
+        int nAngleSteps = 5000;//500;
 
         double pathStepSize = Constants::twoPi / (double) nAngleSteps;
-        nAngleSteps *= 2.0;
+        nAngleSteps *= 6.0;
 
         pathStepSize *= circleRadius/fabs(trkHel.cosDip());
 
         if(diagLevel>2){
-                cout<< "circle radius = "<< circleRadius<<
-                                ", pathStepSize = "<<pathStepSize<<endl;
+                cout<<"circle radius = "<< circleRadius<<endl
+		    <<", pathStepSize = "<<pathStepSize<<endl;
         }
 
         double tmpRange = startLowrange;
         int resT = -1;
-        Length tmpPathLengths[nVanes];
+        Length tmpPathLengths[nVanes],tmpPathLengthsPre[nVanes];
 
         for(int iStep = 0; iStep< nAngleSteps; ++iStep){
                 for(int jVane=0; jVane<nVanes; ++jVane){
@@ -267,11 +268,12 @@ void Calorimeter4VanesGeom::caloExtrapol(int& diagLevel,int evtNumber, TrkRep co
 
                         if(behindVane(traj.position(tmpRange), jVane) ){
                                 if(!isInside[jVane]){
-                                        if(diagLevel>4){
+                                        if(diagLevel>0){
                                                 cout<<"Event Number : "<< evtNumber<< endl;
                                                 cout<<" vane "<<jVane<<
                                                                 "isInside : true"<<
-                                                                "pathLength entrance = "<<tmpRange<<endl;
+                                                                "pathLength entrance = "<<tmpRange<<endl
+						    <<"position entrance = "<<traj.position(tmpRange)<<endl;
                                         }
                                         isInside[jVane] = true;
                                         entr[jVane] = tmpRange - pathStepSize;
@@ -279,24 +281,117 @@ void Calorimeter4VanesGeom::caloExtrapol(int& diagLevel,int evtNumber, TrkRep co
                                 }
                         }else if(isInside[jVane]){
                                 ex[jVane] = tmpRange + pathStepSize;
-                                if(diagLevel>4){
-                                        cout<<"Event Number : "<< evtNumber<< endl;
-                                        cout<<" vane "<<jVane<<
-                                                        "isInside : true"<<
-                                                        "hasExit : true"<<
-                                                        "pathLength entrance = "<<entr[jVane]<<
-                                                        "pathLength exit = "<<tmpRange<<endl;
+                                if(diagLevel>0){
+				  cout<<"Event Number : "<< evtNumber<< endl
+				      <<" vane "<<jVane
+				      <<"isInside : true"
+				      <<"hasExit : true"
+				      <<"pathLength entrance = "<<entr[jVane]<<endl
+				      <<", position entrance = "<<traj.position(entr[jVane])<<endl
+				      <<"pathLength exit = "<<tmpRange<<endl
+				      <<" position exit = "<<traj.position(ex[jVane])<<endl;			    
                                 }
                                 isInside[jVane] = false;
-                                tmpPathLengths[jVane].push_back(std::pair<double, double>(entr[jVane], ex[jVane]) );
+                                tmpPathLengthsPre[jVane].push_back(std::pair<double, double>(entr[jVane], ex[jVane]) );
+
+				//added by gianipez to make it faster...
+				break;
+				//--------
                         }
 
                 }
                 tmpRange += pathStepSize;
-        }
+                if(traj.position(tmpRange).z() > 2.0*_ZbackFaceCalo) break;// the factor 2.0 is added by gianipez
+         }
+
         if(diagLevel>2){
                 cout<<"end search behindVane(), position is : "<<traj.position(tmpRange)<<endl;
         }
+
+	double maxRange(0.0);
+	// pathStepSize = Constants::pi / 2.0 / double(nAngleSteps);
+        // pathStepSize *= circleRadius/fabs(trkHel.cosDip());
+	int counts=0;
+	for(int i=0;i<nVanes;++i){
+	  isInside[i]=false;
+	}
+	// int vaneId=-1;
+	//new search added by gianipez to search a closer point of impact 
+	if(diagLevel>2){
+	  cout<<"///////////////////////////////////"<<endl
+	      <<"   Labor lime check starts...  "<<endl
+	      <<"///////////////////////////////////"<<endl;
+	}
+
+	for(int vaneId=0; vaneId<nVanes; ++vaneId){
+	  for(Length::iterator it=tmpPathLengthsPre[vaneId].begin(); it!=tmpPathLengthsPre[vaneId].end(); ++it){
+	    counts = 0;
+	    tmpRange = it->first;
+	    maxRange = it->second; 
+	    pathStepSize = (it->second - it->first) / double(nAngleSteps);
+	    
+	    if(diagLevel>2){
+	      cout<<"vaneId = "<<vaneId<<endl
+		  <<"tmpRange = "<<it->first<<endl
+		  <<"maxRange = "<<it->second<<endl
+		  <<"pathStepSize = "<<pathStepSize<<endl;
+	    }
+	    
+	    while(tmpRange<=maxRange && counts<=nAngleSteps){
+	      ++counts;
+	      tmpRange+=pathStepSize;
+	      // for(int iStep = 0; iStep< nAngleSteps; ++iStep){
+	      //  for(int vaneId=0; vaneId<nVanes; ++vaneId){
+	      if(diagLevel>4){
+		cout<<"Labor lime:: tmpRange = "<< tmpRange<<
+		  "Labor lime::trj.position(tmpRange) = "<<traj.position(tmpRange)<<endl;
+	      }
+
+	      if(behindVane(traj.position(tmpRange), vaneId) ){
+		if(!isInside[vaneId]){
+		  if(diagLevel>0){
+		    cout<<"Labor lime::Event Number : "<< evtNumber<< endl
+			<<" vane "<<vaneId
+			<<"isInside : true"<<endl
+			<<"pathLength entrance = "<<tmpRange<<endl
+			<<"position entrance = "<<traj.position(tmpRange)<<endl;
+		  }
+		  isInside[vaneId] = true;
+		  entr[vaneId] = tmpRange - pathStepSize;
+
+		}
+	      }else if(isInside[vaneId]){
+		ex[vaneId] = tmpRange + pathStepSize;
+		if(diagLevel>0){
+		  cout<<"Labor lime::Event Number : "<< evtNumber<< endl;
+		  cout<<" vane "<<vaneId
+		      <<" isInside : true"
+		      <<" hasExit : true"
+		      <<" pathLength entrance = "<<entr[vaneId]<<endl
+		      <<" position entrance = "<<traj.position(entr[vaneId])<<endl
+		      <<" pathLength exit = "<<tmpRange<<endl
+		      <<" position exit = "<<traj.position(ex[vaneId])<<endl;
+		}
+		isInside[vaneId] = false;
+		tmpPathLengths[vaneId].push_back(std::pair<double, double>(entr[vaneId], ex[vaneId]) );
+		break;
+	      }
+
+	      //}
+	      tmpRange += pathStepSize;
+	      //if(traj.position(tmpRange).z() > _ZbackFaceCalo) break;
+	      //}	
+	
+	    }//end while()
+
+	  }
+	}
+	//--------------------------------------------------------------
+
+
+
+
+
 
         //        size_t distIterators = 0;
         //        int vaneMinPathLength = -1;
@@ -319,6 +414,15 @@ void Calorimeter4VanesGeom::caloExtrapol(int& diagLevel,int evtNumber, TrkRep co
 
         bool isFirst = false;
         //        if(maxNumberExtrPoints>1){
+// 	pathStepSize = Constants::pi / (double) nAngleSteps;
+// 	pathStepSize *= circleRadius/fabs(trkHel.cosDip());
+// 	pathStepSize *= 10.;
+
+// 	double rangeStep = pathStepSize;
+// 	int counter=0,counterLimit=int(2.0*_dU/pathStepSize);
+// 	if(diagLevel>2){
+// 	  cout<<"rangeStepSize = "<<rangeStep<<endl;
+// 	}
 
         for(int jVane=0; jVane<nVanes; ++jVane){
                 isFirst = false;
@@ -330,10 +434,11 @@ void Calorimeter4VanesGeom::caloExtrapol(int& diagLevel,int evtNumber, TrkRep co
                                 cout<<"vane = "<< jVane <<
                                                 ", lowrange = "<<lowrange<<
                                                 ", highrange = "<<highrange<<endl;
-                                cout<<"point of traj at lowrange : "<<traj.position(lowrange)<<endl;
-                                cout<<"point of traj at highrange : "<<traj.position(highrange)<<endl;
-                                cout<<"fltLMin = "<<kalrep->startValidRange()<<
-                                                ", fltLMax = "<<kalrep->endValidRange()<<endl;
+                                cout<<"point of traj at lowrange : "<<traj.position(lowrange)<<endl
+				    <<"point of traj at highrange : "<<traj.position(highrange)<<endl
+				    <<"pathStepSize = "<<pathStepSize<<endl
+				    <<"fltLMin = "<<kalrep->startValidRange()<<endl
+				    <<"fltLMax = "<<kalrep->endValidRange()<<endl;
                         }
 
                         if(kalrep->extendThrough(lowrange).success() != 1) continue;
@@ -352,6 +457,35 @@ void Calorimeter4VanesGeom::caloExtrapol(int& diagLevel,int evtNumber, TrkRep co
                         DetIntersection tmp3( vane(jVane), &traj, lowrange, lowrange, highrange );
                         intersec0 = tmp3;
                         resT =  vane(jVane)->intersect(&traj, intersec0);
+
+			//	counter=0;
+			
+		// 	while(resT != 1 && counter != counterLimit){
+// 			  ++counter;
+// 			  lowrange -= rangeStep;
+// 			  highrange += rangeStep;
+// 			  DetIntersection tmp3( vane(jVane), &traj, lowrange, lowrange, highrange );
+// 			  intersec0 = tmp3;
+// 			  resT =  vane(jVane)->intersect(&traj, intersec0); 
+// 			  if(diagLevel>2 && resT==1){
+// 			    cout<<"counter = "<<counter<<endl
+// 				<<"intersection = "<<resT<<endl
+// 				<<"lowrange = "<<lowrange<<endl
+// 				<<"point of traj at lowrange : "<<traj.position(lowrange)<<endl
+// 				<<"highrange = "<<highrange<<endl
+// 				<<"point of traj at highrange : "<<traj.position(highrange)<<endl;
+// 			  }
+			//	}
+
+			if(diagLevel>2 && resT==0){
+			    cout<<"intersection = "<<resT<<endl
+				<<"lowrange = "<<lowrange<<endl
+				<<"point of traj at lowrange : "<<traj.position(lowrange)<<endl
+				<<"highrange = "<<highrange<<endl
+				<<"point of traj at highrange : "<<traj.position(highrange)<<endl;
+			  }
+
+
                         if(resT == 1){
                                 pathLengths[jVane].push_back(std::pair<double, double>(intersec0.pathrange[0], intersec0.pathrange[1]) );
                         }
@@ -545,7 +679,7 @@ void Calorimeter4VanesGeom::caloExtrapol(TrkRep const* trep,double& lowrange, do
 
 
 void Calorimeter4VanesGeom::minimumPathLength(Length *length, int& vane, double& lowrange, double& highrange){
-
+  
         const int nVanes = _nVanes;
         Length::iterator it = length[0].begin();
         lowrange = it->first;
