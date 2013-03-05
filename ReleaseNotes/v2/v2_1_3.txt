@@ -1,8 +1,6 @@
-  $Id: v2_1_3.txt,v 1.4 2013/03/05 20:38:57 aluca Exp $
-  $Author: aluca $
-  $Date: 2013/03/05 20:38:57 $
-
- Still under construction
+  $Id: v2_1_3.txt,v 1.5 2013/03/05 21:09:21 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2013/03/05 21:09:21 $
 
            Release notes for Mu2e Offline software, v2_1_3
 
