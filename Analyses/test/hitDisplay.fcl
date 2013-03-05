@@ -1,7 +1,7 @@
 #
-# $Id: hitDisplay.fcl,v 1.5 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
+# $Id: hitDisplay.fcl,v 1.6 2013/03/05 02:15:51 murat Exp $
+# $Author: murat $
+# $Date: 2013/03/05 02:15:51 $
 #
 # Original author Rob Kutschke
 
@@ -16,7 +16,7 @@ source :
 {
   module_type : RootInput
   fileNames : ["data_03.root"]
-  maxEvents : 5
+  maxEvents : -1
 }
 
 services :
@@ -27,25 +27,21 @@ services :
   # Load the standard message logger configuration:
   # Threshold=Info (from using mf_interactive). 
   # Limit of 5 per category; then exponential backoff.
-  message.destinations.log.default.limit : 5
+#  message.destinations.log.default.limit : 5
     
     
-  TFileService :
-  {
-    fileName      : "hitDisplay.root"
+  TFileService : {
+    fileName   : "hitDisplay.root"
   }
 
   RandomNumberGenerator : { }
 
-  user :
-  {
-    GeometryService :
-    {
+  user : {
+    GeometryService : {
       inputFile : "Mu2eG4/test/geom_01.txt"
     }
 
-    ConditionsService :
-    {
+    ConditionsService : {
       conditionsfile : "Mu2eG4/test/conditions_01.txt"
     }
 
@@ -54,17 +50,36 @@ services :
 
 } # close of services block
 
-physics :
-{
-  producers:
-  {
+physics : {
+# sequence: e-, e+, mu-, mu+
+  producers : {
+    trkPatRec1 : @local::TrkPatRecDownstreameMinus
+    trkPatRec2 : @local::TrkPatRecUpstreamePlus
+    trkPatRec3 : @local::TrkPatRecDownstreammuMinus
+    trkPatRec4 : @local::TrkPatRecUpstreammuPlus
   }
 
-  analyzers:
-  {
+  analyzers: {
     # Look at the hits from G4.
-    hitDisplay:
-    {
+
+    makeCaloCluster: {
+      module_type           : MakeCaloCluster
+      diagLevel             : 0
+      generatorModuleLabel   : generate
+      caloCrystalModuleLabel : CaloCrystalHitsMaker
+      g4ModuleLabel          : g4run
+      #caloReadoutModuleLabel: CaloReadoutHitsMaker
+      caloClusterAlgorithm   : closest
+      caloClusterSeeding     : energy
+#     caloClusterSeeding    : time
+      deltaTime              : 10.0 #ns
+      nCryPerCrystal         : 1
+      EnoiseCut              : 0.00 #MeV
+      EclusterCut            : 0.00 #MeV  
+      maxFullPrint           : 201
+    }
+
+    hitDisplay: {
       module_type          : HitDisplay
       generatorModuleLabel : generate
       g4ModuleLabel        : g4run
@@ -73,11 +88,16 @@ physics :
       minEnergyDep         : 0.0001
       minHits              : 5
       doDisplay            : true
-      clickToAdvance       : false
+#      clickToAdvance       : false
+      clickToAdvance       : true
+      printHits            : true
+      timeWindow           : 100000.
+#      timeWindow           : 50.
     }
   }
 
-  p1 : []
+#  p1 : [makeCaloCluster, trkPatRec1, trkPatRec2, trkPatRec3, trkPatRec4]
+  p1 : [makeCaloCluster, trkPatRec1, trkPatRec2]
   e1 : [hitDisplay]
 
 
