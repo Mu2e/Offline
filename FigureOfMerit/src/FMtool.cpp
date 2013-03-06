@@ -146,7 +146,7 @@ void FMtool::setFilterLevels()
   sc_factor = double(stoppedMuonsThisRun)/double(stoppedMuonsDef);  //this facor is obtained w.r.t. def value
   stoppedMuonsPerPOTold = 0.0016;  // I have seen .00215; new  number is .0016
   stoppedMuonsPerPOT = stoppedMuonsPerPOTold*sc_factor;
-  std::cout<<"     scale factor: "<<sc_factor<<"   "<<stoppedMuonsPerPOT<<endl;
+  //std::cout<<"     scale factor: "<<sc_factor<<"   "<<stoppedMuonsPerPOT<<endl;
   capturedMuonsPerStoppedMuon = 0.609; // DocDB 48 - I have seen .59
   RPCperStoppedPion = 0.021;     // DocDB 1087
   stoppedPionsPerPOT = 1.53e-6;
