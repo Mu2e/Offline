@@ -987,14 +987,25 @@ void FMtool::countMcmom
 {
   tracks->SetBranchStyle(0);
   tracks->SetBranchStatus("*",0);
-  tracks->SetBranchStatus("mcmom",1);
-  tracks->SetBranchStatus("diowt",1);  
-  float mcmom;     tracks->SetBranchAddress("mcmom"    , &mcmom);    
-  float diowt;     tracks->SetBranchAddress("diowt"    , &diowt);
+
+  float mcmom; 
+  if(tracks->GetBranch("mcmom")){
+    tracks->SetBranchStatus("mcmom",1);  
+    tracks->SetBranchAddress("mcmom" , &mcmom); 
+  }  
+  else {
+    tracks->SetBranchStatus("mcinfo",1);
+    //MCTrkInfo mcinfo;   
+    tracks->SetBranchAddress("mcinfo", &mcinfo);
+  }
+  
+  float diowt;  tracks->SetBranchStatus("diowt",1);  tracks->SetBranchAddress("diowt", &diowt);
+
   int treeEntries = tracks->GetEntries();
   CzarneckiDIOspectrumFunction cz(1.0);
   for (int i = 0; i < treeEntries; ++i) {
     int bytesRead = tracks->GetEntry(i);
+    if(tracks->GetBranch("mcinfo"))mcmom=mcinfo._mom;
     if (bytesRead == 0) break;
     if  (  (mcmom >= 102.5) && (mcmom < 103.5) ) {
         count103 += 1.0;    

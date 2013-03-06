@@ -244,6 +244,19 @@ private:
   //public:
   //float val0; 
 
+  typedef struct {Float_t _d0, _p0, _om, _z0, _td;} helixpar;
+  helixpar        fitpar;
+  typedef struct {Float_t _x, _y, _z;} threevec;
+  typedef struct {
+    Int_t _pdgid;
+    Float_t _time;
+    Float_t _mom;
+    threevec _pos;
+    helixpar _hpar; } MCTrkInfo;
+  MCTrkInfo       mcinfo;
+
+
+
   // Root graphics 
   struct RootGraphics
   {
