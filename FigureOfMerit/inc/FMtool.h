@@ -21,6 +21,8 @@
 #include "TNtuple.h"
 #include "TChain.h"
 #include "TTree.h"
+#include "TVectorD.h"
+#include "TVectorT.h"
 
 // mu2e includes
 #include "splines/Spline.h"
@@ -180,12 +182,18 @@ private:
   
   // Experiment quantities
   double protonsOnTarget;  
+  double stoppedMuonsPerPOTold;
   double stoppedMuonsPerPOT;
   double capturedMuonsPerStoppedMuon;
   double cadence;  // inverse frequency, nsec
   double liveGateFraction;
   double RPCperStoppedPion;
     
+  int stoppedMuonsDef;
+  int stoppedMuonsThisRun;
+  double sc_factor;
+
+
   // Spectra
   std::vector< std::vector<double> > sigEfficiency;
   std::vector< std::vector<double> > DIObackground;
@@ -233,6 +241,9 @@ private:
   std::ostringstream botMenu;
   std::ostringstream botLine;  
 
+  //public:
+  //float val0; 
+
   // Root graphics 
   struct RootGraphics
   {
@@ -243,9 +254,28 @@ private:
     TTree* tree;
     TBranch* branch;
     std::ostringstream cint; 
+
+    static const int nvalv = 20;    float valv[nvalv];
+    static const int nmomv = 5;     float momv[nmomv];
+
+    static const int nhist = 3;  
+    TH1F *h_fitmomCE[nhist];
+    TH1F *h_fitmomDIO[nhist]; 
+    TH1F *hQ_fitmomCE[nhist];
+    TH1F *hQ_fitmomDIO[nhist];
+
+
+    TH1F* hCEspectrum;
+    TH1F* hCEspectrumX;
     TH1F* hDIOspectrum;
     TH1F* hDIOspectrumX;
+
     TF1*  fDIOreference;
+
+
+
+
+
     RootGraphics() 
       : enabled(false)
       , rootfp(0)

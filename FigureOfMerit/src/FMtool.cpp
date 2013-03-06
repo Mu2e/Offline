@@ -1,3 +1,4 @@
+
 // FMtool.cpp
  
 #include "FigureOfMerit/inc/FMtool.h"
@@ -89,7 +90,6 @@ void FMtool::setFilterLevels()
   maximum_t0err     = cuts.get<float>("maximum_t0err"); 
   maximum_fitmomerr = cuts.get<float>("maximum_fitmomerr"); 
   minimum_fitcon    = cuts.get<float>("minimum_fitcon"); 
-  
   tCuts = pset.get< std::vector<double> >("t0cuts");
 
   recordFclGroup("trackerCuts");
@@ -97,6 +97,7 @@ void FMtool::setFilterLevels()
   recordFcl("maximum_t0err    ",maximum_t0err);
   recordFcl("maximum_fitmomerr",maximum_fitmomerr);
   recordFcl("minimum_fitcon   ",minimum_fitcon);
+
   for (size_t i = 0; i < tCuts.size(); ++i) {
     recordFcl("tCuts          ",tCuts[i]);
   }
@@ -117,25 +118,35 @@ void FMtool::setFilterLevels()
   ParameterSet binningPset = pset.get<ParameterSet>("binning",ParameterSet());
   double lowestBinDefault = 102.5;  
   double topOfLastBinDefault = 106.0;  
+  stoppedMuonsDef = 143107;
+  stoppedMuonsThisRun = 143107;
+  sc_factor = 1.0;
   int nBinsDefault = 350;
   lowestBin    = binningPset.get<double>("lowestBin",   lowestBinDefault);
   topOfLastBin = binningPset.get<double>("topOfLastBin",topOfLastBinDefault);
   nBins        = binningPset.get<int>   ("nBins",       nBinsDefault);
   nSplineBins  = binningPset.get<int>   ("nSplineBins", nBins);
-  
+  stoppedMuonsDef  = binningPset.get<int>   ("stoppedMuonsDef", stoppedMuonsDef);
+  stoppedMuonsThisRun  = binningPset.get<int>   ("stoppedMuonsThisRun", stoppedMuonsThisRun);
+
   binSize = (topOfLastBin - lowestBin)/nBins;
   recordFclGroup("binning");
   recordFcl("lowestBin   ", lowestBin);
   recordFcl("topOfLastBin", topOfLastBin);
   recordFcl("nBins       ", nBins);
   recordFcl("nSplineBins ", nSplineBins);
-  
+  recordFcl("stoppedMuonsDef ", stoppedMuonsDef);
+  recordFcl("stoppedMuonsThisRun ", stoppedMuonsThisRun);  
+
   // Experiment quantities
     // TODO -- obtain these normalization-related constants from some sort of 
     // database or conditions service. 
   protonsOnTarget = 3.6e20;  
   cadence = 1694;  // nsec after start of proton pulse
-  stoppedMuonsPerPOT = 0.0016;  // I have seen .00215; new  number is .0016
+  sc_factor = double(stoppedMuonsThisRun)/double(stoppedMuonsDef);  //this facor is obtained w.r.t. def value
+  stoppedMuonsPerPOTold = 0.0016;  // I have seen .00215; new  number is .0016
+  stoppedMuonsPerPOT = stoppedMuonsPerPOTold*sc_factor;
+  std::cout<<"     scale factor: "<<sc_factor<<"   "<<stoppedMuonsPerPOT<<endl;
   capturedMuonsPerStoppedMuon = 0.609; // DocDB 48 - I have seen .59
   RPCperStoppedPion = 0.021;     // DocDB 1087
   stoppedPionsPerPOT = 1.53e-6;
@@ -143,10 +154,15 @@ void FMtool::setFilterLevels()
   recordFclGroup("physics (hardwired)");
   recordFcl("protonsOnTarget   ", protonsOnTarget);
   recordFcl("cadence           ", cadence);
-  recordFcl("stoppedMuonsPerPOT", stoppedMuonsPerPOT);
   recordFcl("RPCperStoppedPion ", RPCperStoppedPion);
-  recordFcl("stoppedPionsPerPOT", stoppedPionsPerPOT);
-  
+  recordFcl("stoppedPionsPerPOT ", stoppedPionsPerPOT);
+  recordFcl("stoppedMuonsPerPOT without scale factor",  stoppedMuonsPerPOTold);
+  recordFcl("stoppedMuons default case (expected num 143107 for 17 foils)",  stoppedMuonsDef);
+  recordFcl("stoppedMuons for this job",  stoppedMuonsThisRun);
+  recordFcl("scale factor (stoppedMuonsDef/ThisRun) multipied to stoppedMuonsPerPOT", sc_factor);
+  recordFcl("used stoppedMuonsPerPOT for default case: ", stoppedMuonsPerPOTold);
+  recordFcl("used stoppedMuonsPerPOT for this run: ", stoppedMuonsPerPOT);
+
   // control of table size and returned vectors from FofM
   maximumSignalCount = 25;
  
@@ -163,7 +179,23 @@ void FMtool::setRootGraphics()
     std::string cintFileDefault = rg.rootFile + ".cint"; 
     rg.cintFile = pset.get<std::string>("Root.cintFile",cintFileDefault);
     rg.rootfp = new TFile (rg.rootFile.c_str(),"RECREATE","FMtool generated ROOT file");
-                                                                    // hsimple.cxx line 19
+    rg.tree = new TTree("treeout","for stored values");
+    int ivalv = 0;
+    rg.tree->Branch("timeCut", &rg.valv[ivalv], "timeCut/F");    ++ivalv; 
+    rg.tree->Branch("momWLow", &rg.valv[ivalv], "momWLow/F");    ++ivalv; 
+    rg.tree->Branch("momWHig", &rg.valv[ivalv], "momWHig/F");    ++ivalv; 
+    rg.tree->Branch("90PCL",   &rg.valv[ivalv], "90PCL/F");      ++ivalv; 
+    rg.tree->Branch("minMeaningfullDIOtail",   &rg.valv[ivalv], "minMeaningfullDIOtail/F");      ++ivalv; 
+    rg.tree->Branch("canonicalRangeLo",   &rg.valv[ivalv], "canonicalRangeLo/F");      ++ivalv; 
+    rg.tree->Branch("canonicalRangeHi",   &rg.valv[ivalv], "canonicalRangeHi/F");      ++ivalv; 
+    rg.tree->Branch("lowestBin",   &rg.valv[ivalv], "lowestBin/F");      ++ivalv; 
+    rg.tree->Branch("topOfLastBin",   &rg.valv[ivalv], "topOfLastBin/F");      ++ivalv; 
+    rg.tree->Branch("stoppedMuonsDef",   &rg.valv[ivalv], "stoppedMuonsDef/F");      ++ivalv; 
+    rg.tree->Branch("stoppedMuonsThisRun",   &rg.valv[ivalv], "stoppedMuonsThisRun/F");      ++ivalv; 
+    rg.tree->Branch("sc_factor",   &rg.valv[ivalv], "sc_factor/F");      ++ivalv; 
+    rg.tree->Branch("stoppedMuonsPerPOTold",   &rg.valv[ivalv], "stoppedMuonsPerPOTold/F");      ++ivalv; 
+    rg.tree->Branch("stoppedMuonsPerPOT",   &rg.valv[ivalv], "stoppedMuonsPerPOT/F");      ++ivalv; 
+                                                                 
     if (rg.rootfp->IsZombie()) {
       os << "Failed to properly open the root output file " 
                 << rg.rootFile << "\n";
@@ -192,13 +224,44 @@ void FMtool::setRootGraphics()
 void FMtool::establishHistograms() 
 {
   if (rg.enabled) {
-     rg.hDIOspectrum = new TH1F("DIOfitmom", "DIO fitted momentum", 
-    			        nBins, lowestBin, topOfLastBin);
-     rg.cint <<  "// Established histogram DIOfitmom -  DIO tracks passing cuts \n"
-             <<  "//                                    within the binning area \n";
-     rg.hDIOspectrumX = new TH1F("DIOfitmomX", "DIO fitted momentum", 100, 96.0, 106.0);
-     rg.cint <<  "// Established histogram DIOfitmomX - DIO tracks passing cuts \n"
-             <<  "//                                    with p from 96 to 106 MeV \n";
+
+    Long_t nn=0;   const int nhist = rg.nhist;
+    double xmin[nhist], xmax[nhist], nsiz[nhist];  int nbins[nhist]; TString htil;    TString Hnn;  
+
+    for(int i=0; i<nhist; ++i){
+      rg.h_fitmomCE[i]=NULL;          rg.h_fitmomDIO[i]=NULL;
+      rg.hQ_fitmomCE[i]=NULL;         rg.hQ_fitmomDIO[i]=NULL;
+    }
+    
+    int ibin=0;
+    nsiz[ibin]=0.5;   xmin[ibin]=-1.0;   xmax[ibin]=149.0;    ++ibin;
+    nsiz[ibin]=0.1;   xmin[ibin]=96.0;   xmax[ibin]=106.0;    ++ibin;      
+    nsiz[ibin]=0.05;   xmin[ibin]=103.0;   xmax[ibin]=106.0;  ++ibin;
+
+    if(ibin!=nhist)cout<<"Error in defining hist "<<ibin<<"   "<<nhist<<endl;
+    
+    for(int i=0; i<nhist; ++i)nbins[i] = int ( TMath::Abs(xmax[i]-xmin[i])/nsiz[i]);
+    
+    for(int i=0; i<nhist; ++i){
+      nn=i;  
+      //cout<<i<<" --> Hist    xmin/max/nbins "<<xmin[i]<<"  "<<xmax[i]<<"   "<<nbins[i]<<endl;
+      Hnn="h_fitmomCE"; htil="CE fitmom";  Hnn=Hnn+nn;  rg.h_fitmomCE[i]=new TH1F(Hnn, htil, nbins[i], xmin[i], xmax[i]);
+      Hnn="h_fitmomDIO"; htil="DIO fitmom";  Hnn=Hnn+nn;  rg.h_fitmomDIO[i]=new TH1F(Hnn, htil, nbins[i], xmin[i], xmax[i]);
+      Hnn="hQ_fitmomCE"; htil="CE fitmom, Trk Qual";  Hnn=Hnn+nn;  rg.hQ_fitmomCE[i]=new TH1F(Hnn, htil, nbins[i], xmin[i], xmax[i]);
+      Hnn="hQ_fitmomDIO"; htil="DIO fitmom, Trk Qual";  Hnn=Hnn+nn;  rg.hQ_fitmomDIO[i]=new TH1F(Hnn, htil, nbins[i], xmin[i], xmax[i]);
+   }
+
+    rg.hCEspectrum = new TH1F("CEfitmomX", "CE fitted momentum", 100, 96.0, 106.0);
+    rg.hCEspectrumX = new TH1F("CEfitmom", "CE fitted momentum", nBins, lowestBin, topOfLastBin);
+
+    rg.hDIOspectrum = new TH1F("DIOfitmomX", "DIO fitted momentum", 100, 96.0, 106.0);
+    rg.hDIOspectrumX = new TH1F("DIOfitmom", "DIO fitted momentum", nBins, lowestBin, topOfLastBin);
+
+     //rg.cint <<  "// Established histogram DIOfitmom -  DIO tracks passing cuts \n"
+     //        <<  "//                                    within the binning area \n";
+     //rg.hDIOspectrumX = new TH1F("DIOfitmomX", "DIO fitted momentum", 100, 96.0, 106.0);
+     //rg.cint <<  "// Established histogram DIOfitmomX - DIO tracks passing cuts \n"
+     //        <<  "//                                    with p from 96 to 106 MeV \n";
   }
 } // establishHistograms
 
@@ -218,11 +281,15 @@ bool FMtool::RootGraphics::write_cint_file() const
 void FMtool::closeRootFiles() 
 {
   if (rg.enabled) {  
+
+    //rg.valsD.Write("valsD");  
+
     //std::cerr << "### closeRootFiles entered \n"; 
     if (OUTPUT_detailedTrace)  os << "### closeRootFiles entered \n";
     rg.write_cint_file();
     //std::cerr << "### write_cint_file returned \n"; 
     if (OUTPUT_detailedTrace)  os << "### write_cint_file returned \n";
+    rg.rootfp->cd();   
     rg.rootfp->Write();                                 
     rg.rootfp->Close();  
   }
@@ -267,6 +334,8 @@ double FMtool::obtainCEdata()
     sigEfficiency[tCutNumber].resize(nBins);
   }
   extractFitmom ( CEfileList, sigEfficiency );
+
+  extractFitmom ( CEfileList, sigEfficiency, false, false, true ); 
 
   if (OUTPUT_dataProperties) {
     os << "CE's based on " << numberOfGeneratedMuonConversions 
@@ -693,35 +762,42 @@ void FMtool::extractFitmom
       accumulateCutStatistics(  fitstatus,  nactive,  fitcon,  fitmomerr,  t0err, fitmom, 
 			       nfitstatus, nnactive, nfitcon, nfitmomerr, nt0err, nfitmom );
     }
-    if  (    (fitstatus == 1)     // track quality cuts 
-          && (nactive   >= minimum_nactive)
-          && (t0err     <= maximum_t0err)
-          && (fitmomerr <= maximum_fitmomerr)
-          && (fitcon    >= minimum_fitcon) 
-          && (fitmom    < 120.0) // deals with any really screwy tracks    
-        ) 
-    {
+
+    if  ( (fitstatus == 1) ){   //fitstatus should be 1 for all the acceptable tracks
+
       bool inBins = (fitmom >= lowestBin && fitmom < topOfLastBin);
-      if (dio && apply_timeCuts) {
-        // fill the DIO fitmom histograms -- 
-	// we require apply_timeCuts to avoid double-counting
-	// if the fcl file asks for also not t-cuts.
-	if (use_diowt) {
-	  if (rg.enabled) {
-	    rg.hDIOspectrumX->Fill(fitmom, diowt);
-	    if (inBins) rg.hDIOspectrum->Fill(fitmom, diowt);
-          }
-         } else {
-	  if (rg.enabled) {
-	    rg.hDIOspectrumX->Fill(fitmom, 1.0);
-	    if (inBins) rg.hDIOspectrum->Fill(fitmom, 1.0);
-          }
-        }
+      bool minQcuts = false;
+      
+      if  ( (nactive   >= minimum_nactive) && (t0err     <= maximum_t0err)
+	    && (fitmomerr <= maximum_fitmomerr)  && (fitcon    >= minimum_fitcon) 
+	    && (fitmom    < 120.0) )minQcuts=true; 
+      
+      
+      if(apply_timeCuts){//apply_time cut
+	if(rg.enabled){ //if rg enabled
+	  const int nhist = rg.nhist;
+	  if (dio) {
+	    if (use_diowt) { rg.hDIOspectrum->Fill(fitmom, diowt);   if(inBins)rg.hDIOspectrumX->Fill(fitmom, diowt);
+	      for(int jj=0; jj<nhist; ++jj)rg.h_fitmomDIO[jj]->Fill(fitmom, diowt);
+	      if(minQcuts)for(int jj=0; jj<nhist; ++jj)rg.hQ_fitmomDIO[jj]->Fill(fitmom, diowt); //fill hist with minQ cuts
+	    } 
+	    else {           rg.hDIOspectrum->Fill(fitmom, 1.0);	  rg.hDIOspectrumX->Fill(fitmom, 1.0);  
+	      for(int jj=0; jj<nhist; ++jj)rg.h_fitmomDIO[jj]->Fill(fitmom, 1.0);
+	      if(minQcuts)for(int jj=0; jj<nhist; ++jj)rg.hQ_fitmomDIO[jj]->Fill(fitmom, 1.0); //fill hist with minQ cuts
+	    }
+	  } //use dio
+	  else {             rg.hCEspectrum->Fill(fitmom, 1.0);       rg.hCEspectrumX->Fill(fitmom, 1.0); 
+	    for(int jj=0; jj<nhist; ++jj)rg.h_fitmomCE[jj]->Fill(fitmom, 1.0);
+	    if(minQcuts)for(int jj=0; jj<nhist; ++jj)rg.hQ_fitmomCE[jj]->Fill(fitmom, 1.0); //fill hist with minQ cuts
+	  }
+	}
       }
+
+      if(!minQcuts)continue;
       for (size_t t = 0; t < nt; ++t) {
-        if ( (!apply_timeCuts) || (t0 >= tCuts[t]) ) {   // found a good track!
-          ++tracksExtracted;
-          double p = fitmom;
+	if ( (!apply_timeCuts) || (t0 >= tCuts[t]) ) {   // found a good track!
+	  ++tracksExtracted;
+	  double p = fitmom;
           if (inBins) { // p in range to be binned
             unsigned int binNumber = (p-lowestBin)/binSize;
             if (binNumber >= nBins) binNumber = nBins-1;
@@ -735,13 +811,13 @@ void FMtool::extractFitmom
               counts[t][binNumber] += 1.0; // everything has equal weight
             }
             // #define RPCDIAGNOSTIC
-            #ifdef  RPCDIAGNOSTIC
+#ifdef  RPCDIAGNOSTIC
             if ( fitmom >= canonicalRangeLo && fitmom <= canonicalRangeHi ) {
               if (!apply_timeCuts) {
                 std::cout << p << "  " << t0 << "\n";
               }
             }                 
-            #endif           
+#endif           
             ++nBinnedTracks[t];
             ++tracksBinned;
             if (dio) highPs[t].add(p);
@@ -1360,6 +1436,24 @@ void FMtool::applyFofM()
       bottomLine("lower momentum cut", summaries[tCutNumber].pCutLo);     
       bottomLine("upper momentum cut", summaries[tCutNumber].pCutHi);     
       bottomLine("Feldman/Cousins 90% sensitivity", summaries[tCutNumber].CL90sensitivity);   
+      if(rg.enabled){
+	int ivalv = 0;
+	rg.valv[ivalv] = tCuts[tCutNumber];              ++ivalv;
+	rg.valv[ivalv] = summaries[tCutNumber].pCutLo;   ++ivalv;
+	rg.valv[ivalv] = summaries[tCutNumber].pCutHi;   ++ivalv;
+	rg.valv[ivalv] = summaries[tCutNumber].CL90sensitivity;   ++ivalv;
+	rg.valv[ivalv] = minimumMeaningfulDIOtail;   ++ivalv;
+	rg.valv[ivalv] = canonicalRangeLo;   ++ivalv;
+	rg.valv[ivalv] = canonicalRangeHi;   ++ivalv;
+	rg.valv[ivalv] = lowestBin;   ++ivalv;
+	rg.valv[ivalv] = topOfLastBin;   ++ivalv;
+	rg.valv[ivalv] = stoppedMuonsDef;   ++ivalv;
+	rg.valv[ivalv] = stoppedMuonsThisRun;   ++ivalv;
+	rg.valv[ivalv] = sc_factor;   ++ivalv;
+	rg.valv[ivalv] = stoppedMuonsPerPOTold;   ++ivalv;
+	rg.valv[ivalv] = stoppedMuonsPerPOT;   ++ivalv;
+	rg.tree->Fill();
+      }
     } else {
       os << "    ";
     }
