@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.177 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: geom_01.txt,v 1.178 2013/03/07 20:45:28 sarra Exp $
+// $Author: sarra $
+// $Date: 2013/03/07 20:45:28 $
 //
 // Original author Rob Kutschke
 //
@@ -46,9 +46,9 @@ string GDMLFileName     = "mu2e.gdml";
 
 // Some G4 controls which does not allow it to consume all the memory
 // or to spend all the time tracking one bad particle
-int g4.steppingActionMaxSteps = 10000000;
-int g4.stepsSizeLimit = 10000000;
-int g4.particlesSizeLimit = 10000000;
+int g4.steppingActionMaxSteps = 10000;
+int g4.stepsSizeLimit = 10000;
+int g4.particlesSizeLimit = 10000;
 double g4.pointTrajectoryMomentumCut = 50.;
 
 
@@ -99,7 +99,7 @@ int    g4.PiENuPolicyVerbosity = 0;
 vector<int> g4.noDecay = {};
 
 // Choose a PhysicsList and set related parameters.
-string g4.physicsListName = "QGSP_BERT";//_HP";
+string g4.physicsListName = "QGSP_BERT_HP";
 double g4.minRangeCut     = 0.01;            // mm
 
 bool g4.printPhysicsProcessSummary = false;
@@ -453,7 +453,7 @@ bool calorimeter.isNeutronAbsorberSolid   = false;
 bool calorimeter.crystalVisible         = false;
 bool calorimeter.crystalSolid           = true;
 
-int  calorimeter.verbosityLevel = 1;
+int  calorimeter.verbosityLevel = 0;
 
 
 // Cosmic Ray Sheld consist of the two components
