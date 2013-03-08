@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.23 2013/01/26 18:18:44 brownd Exp $
+// $Id: classes.h,v 1.24 2013/03/08 04:29:49 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/01/26 18:18:44 $
+// $Date: 2013/03/08 04:29:49 $
 //
 // Original author Rob Kutschke
 //
@@ -17,7 +17,8 @@
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
-#include "RecoDataProducts/inc/DFlagCollection.hh"
+#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -55,8 +56,10 @@ template class art::Ptr<mu2e::StrawHit>;
 template class std::vector<art::Ptr<mu2e::StrawHit> >;
 template class art::Ptr<mu2e::StereoHit>;
 template class std::vector<art::Ptr<mu2e::StereoHit> >;
-template class art::Ptr<mu2e::DFlag>;
-template class std::vector<art::Ptr<mu2e::DFlag> >;
+template class art::Ptr<mu2e::StrawHitPosition>;
+template class std::vector<art::Ptr<mu2e::StrawHitPosition> >;
+template class art::Ptr<mu2e::StrawHitFlag>;
+template class std::vector<art::Ptr<mu2e::StrawHitFlag> >;
 template class art::Ptr<mu2e::TrackerHitTimeCluster>;
 template class std::vector<art::Ptr<mu2e::TrackerHitTimeCluster> >;
 template class std::multimap<unsigned long int, art::Ptr<mu2e::StrawHit> >;
@@ -74,7 +77,8 @@ template class std::vector<std::pair<unsigned int, unsigned int> >;
 
 template class art::Wrapper<mu2e::StrawHitCollection>;
 template class art::Wrapper<mu2e::StereoHitCollection>;
-template class art::Wrapper<mu2e::DFlagCollection>;
+template class art::Wrapper<mu2e::StrawHitPositionCollection>;
+template class art::Wrapper<mu2e::StrawHitFlagCollection>;
 template class art::Wrapper<mu2e::StrawClusterCollection>;
 template class art::Wrapper<mu2e::CaloHitCollection>;
 template class art::Wrapper<mu2e::CaloCrystalHitCollection>;

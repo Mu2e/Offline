@@ -1,9 +1,9 @@
 //
 // Class to describe flag bits used for straw hits
 //
-// $Id: StrawHitFlag.cc,v 1.2 2013/03/03 17:56:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/03 17:56:25 $
+// $Id: StrawHitFlag.cc,v 1.3 2013/03/08 04:29:49 brownd Exp $
+// $Author: brownd $
+// $Date: 2013/03/08 04:29:49 $
 //
 // Original author David Brown
 //
@@ -30,6 +30,7 @@ namespace mu2e {
       bitnames[std::string("DeltaRay")]             = bit_to_mask(delta);
       bitnames[std::string("Isolated")]             = bit_to_mask(isolated);
       bitnames[std::string("Outlier")]              = bit_to_mask(outlier);
+      bitnames[std::string("OtherBackground")]      = bit_to_mask(other);
       bitnames[std::string("CalorimeterSelection")] = bit_to_mask(calosel);
       for(unsigned itrk=0;itrk<=_maxTrkId;++itrk){
 	bitnames[trackBitName(itrk)] = bit_to_mask(trackBit(itrk));

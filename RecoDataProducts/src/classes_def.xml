@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.25 2013/01/26 18:18:44 brownd Exp $     -->
+<!--  $Id: classes_def.xml,v 1.26 2013/03/08 04:29:49 brownd Exp $     -->
 <!--  $Author: brownd $ -->
-<!--  $Date: 2013/01/26 18:18:44 $   -->
+<!--  $Date: 2013/03/08 04:29:49 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.25 $$Date: 2013/01/26 18:18:44 $"; -->
+<!--  rev="$Revision: 1.26 $$Date: 2013/03/08 04:29:49 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -20,8 +20,11 @@
  <class name="mu2e::StrawHitCollection"/>
  <class name="mu2e::StereoHit"/>
  <class name="mu2e::StereoHitCollection"/>
- <class name="mu2e::DFlag"/>
- <class name="mu2e::DFlagCollection"/>
+ <class name="mu2e::StrawHitPosition"/>
+ <class name="mu2e::StrawHitPositionCollection"/>
+ <class name="mu2e::StrawHitFlag"/>
+ <class name="mu2e::StrawHitFlagDetail"/>
+ <class name="mu2e::StrawHitFlagCollection"/>
  <class name="mu2e::StrawCluster"/>
  <class name="mu2e::StrawClusterCollection"/>
  <class name="mu2e::CaloHit"/>
@@ -74,8 +77,10 @@
  <class name="std::vector<art::Ptr<mu2e::StrawHit> >"/>
  <class name="art::Ptr<mu2e::StereoHit>"/>
  <class name="std::vector<art::Ptr<mu2e::StereoHit> >"/>
- <class name="art::Ptr<mu2e::DFlag>"/>
- <class name="std::vector<art::Ptr<mu2e::DFlag> >"/>
+ <class name="art::Ptr<mu2e::StrawHitPosition>"/>
+ <class name="std::vector<art::Ptr<mu2e::StrawHitPosition> >"/>
+ <class name="art::Ptr<mu2e::StrawHitFlag>"/>
+ <class name="std::vector<art::Ptr<mu2e::StrawHitFlag> >"/>
  <class name="art::Ptr<mu2e::TrackerHitTimeCluster>"/>
  <class name="std::vector<art::Ptr<mu2e::TrackerHitTimeCluster> >"/>
  <class name="std::multimap<unsigned long int, art::Ptr<mu2e::StrawHit> >"/>
@@ -89,7 +94,8 @@
 
  <class name="art::Wrapper<mu2e::StrawHitCollection>"/>
  <class name="art::Wrapper<mu2e::StereoHitCollection>"/>
- <class name="art::Wrapper<mu2e::DFlagCollection>"/>
+ <class name="art::Wrapper<mu2e::StrawHitPositionCollection>"/>
+ <class name="art::Wrapper<mu2e::StrawHitFlagCollection>"/>
  <class name="art::Wrapper<mu2e::StrawClusterCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitCollection>"/>
  <class name="art::Wrapper<mu2e::CaloCrystalHitCollection>"/>
