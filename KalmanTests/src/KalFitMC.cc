@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.44 2013/02/25 18:36:29 brownd Exp $
+// $Id: KalFitMC.cc,v 1.45 2013/03/08 04:34:04 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/02/25 18:36:29 $
+// $Date: 2013/03/08 04:34:04 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -860,5 +860,37 @@ namespace mu2e
     einfo._hpar = helixpar(parvec);
   }
 
+  KalFitMC::relation KalFitMC::relationship(art::Ptr<SimParticle> const& sppi,art::Ptr<SimParticle> const& sppj) {
+    if(sppi.isNull() || sppj.isNull()) return none;
+    if(sppi == sppj)return same;
+    art::Ptr<SimParticle> pi = sppi->parent();
+    art::Ptr<SimParticle> pj = sppj->parent();
+    if(pi.isNonnull() && pi == sppj)return daughter;
+    if(pj.isNonnull() && pj == sppi)return mother;
+    if(pi.isNonnull() && pj.isNonnull() && pi == pj)return sibling;
+    std::vector<art::Ptr<SimParticle> > pvi, pvj;
+    while(pi.isNonnull()){
+      pvi.push_back(pi);
+      pi = pi->parent();
+    }
+    while(pj.isNonnull()){
+      pvj.push_back(pj);
+      pj = pj->parent();
+    }
+    std::vector<art::Ptr<SimParticle> >::iterator ifnd;
+    ifnd = std::find(pvi.begin(),pvi.end(),sppj);
+    if(ifnd != pvi.end())return udaughter;
+    ifnd = std::find(pvj.begin(),pvj.end(),sppi);
+    if(ifnd != pvj.end())return umother;
+    for(size_t ii=0;ii<pvj.size();++ii){
+      ifnd = std::find(pvi.begin(),pvi.end(),pvj[ii]);
+      if(ifnd != pvi.end())return usibling;
+    }
+    for(size_t ii=0;ii<pvi.size();++ii){
+      ifnd = std::find(pvj.begin(),pvj.end(),pvi[ii]);
+      if(ifnd != pvj.end())return usibling;
+    }
+    return none;
+  }
 
 }

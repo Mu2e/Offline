@@ -1,9 +1,9 @@
 //
 // Define a track; this provides the transfer between pat. rec. and fitting
 //
-// $Id: TrkDef.hh,v 1.15 2012/09/06 19:59:56 brownd Exp $
+// $Id: TrkDef.hh,v 1.16 2013/03/08 04:34:04 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/09/06 19:59:56 $
+// $Date: 2013/03/08 04:34:04 $
 //
 // Original author David Brown, LBNL
 //
@@ -66,7 +66,7 @@ namespace mu2e
     void setTrackId(unsigned trkid) { _trkid = trkid; }
     TrkT0 const& t0() const { return _t0; }
     void setT0( TrkT0 const& t0) { _t0 = t0; }
-  private:
+  protected:
     unsigned _eventid;
     unsigned _trkid;
     const StrawHitCollection* _straws; // straw hit collection

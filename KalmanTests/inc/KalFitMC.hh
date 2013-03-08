@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.29 2012/12/11 23:42:54 brownd Exp $
+// $Id: KalFitMC.hh,v 1.30 2013/03/08 04:34:04 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/11 23:42:54 $
+// $Date: 2013/03/08 04:34:04 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -161,6 +161,7 @@ namespace mu2e
   class KalFitMC {
   public:
     enum TRACKERPOS {trackerEnt=0,trackerMid, trackerExit};
+    enum relation {none=-1,same,daughter,mother,sibling,udaughter,umother,usibling};
     explicit KalFitMC(fhicl::ParameterSet const&);
     virtual ~KalFitMC();
 // find MC data in the event.  This must be called each event, before the other functions
@@ -194,6 +195,8 @@ namespace mu2e
 // MC info about a track
     void fillMCTrkInfo(MCStepItr const& imcs, MCTrkInfo& trkinfo) const;
     void fillMCTrkInfo(SimParticle const& sp, MCTrkInfo& einfo) const;
+    static relation relationship(art::Ptr<SimParticle> const& sppi,art::Ptr<SimParticle> const& sppj);
+
   private:
 // cache of event data
     MCEvtData _mcdata;
