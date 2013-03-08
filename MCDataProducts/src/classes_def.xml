@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.19 2012/11/01 23:38:49 gandr Exp $     -->
-<!--  $Author: gandr $ -->
-<!--  $Date: 2012/11/01 23:38:49 $   -->
+<!--  $Id: classes_def.xml,v 1.20 2013/03/08 01:22:32 echenard Exp $     -->
+<!--  $Author: echenard $ -->
+<!--  $Date: 2013/03/08 01:22:32 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.19 $$Date: 2012/11/01 23:38:49 $"; -->
+<!--  rev="$Revision: 1.20 $$Date: 2013/03/08 01:22:32 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -34,6 +34,8 @@
  <class name="mu2e::CaloHitMCTruthCollection"/>
  <class name="mu2e::CaloCrystalOnlyHit"/>
  <class name="mu2e::CaloCrystalOnlyHitCollection"/>
+ <class name="mu2e::CaloHitSimPartMC"/>
+ <class name="mu2e::CaloHitSimPartMCCollection"/>
  <class name="mu2e::ExtMonUCITofHitMCTruth"/>
  <class name="mu2e::ExtMonUCITofHitMCTruthCollection"/>
  <class name="mu2e::SimParticle"/>
@@ -71,6 +73,7 @@
  <class name="art::Wrapper<mu2e::G4BeamlineInfoCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitMCTruthCollection>"/>
  <class name="art::Wrapper<mu2e::CaloCrystalOnlyHitCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloHitSimPartMCCollection>"/>
  <class name="art::Wrapper<mu2e::ExtMonUCITofHitMCTruthCollection>"/>
  <class name="art::Wrapper<mu2e::PointTrajectoryCollection>"/>
  <class name="art::Wrapper<mu2e::StatusG4>"/>

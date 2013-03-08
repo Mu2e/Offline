@@ -1,8 +1,8 @@
 #ifndef CalorimeterGeom_CaloSection_hh
 #define CalorimeterGeom_CaloSection_hh
-// $Id: CaloSection.hh,v 1.2 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: CaloSection.hh,v 1.3 2013/03/08 01:22:31 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:31 $
 //
 //
 // Hold information about a CaloCaloSection in the calorimter.
@@ -35,20 +35,22 @@ namespace mu2e {
             _crystalShift(crystalShift), _crystalList() 
          {} 
 
-	 int id(void) const                                       {return _id;}
-         int nCrystals(void) const                                {return _crystalList.size();}
-         Crystal const& crystal(int i) const                   {return _crystalList.at(i);}
+	 int id() const                                           {return _id;}
+         int nCrystals() const                                    {return _crystalList.size();}
+         Crystal const& crystal(int i) const                      {return _crystalList.at(i);}
 
-	 CLHEP::Hep3Vector  const& origin(void) const          {return _origin;}
-         CLHEP::Hep3Vector  const& originLocal(void) const     {return _originLocal; }
-	 CLHEP::HepRotation const& rotation(void) const        {return _rotation;}
-	 CLHEP::HepRotation const& inverseRotation(void) const {return _rotationInverse;}
-         CLHEP::Hep3Vector  const& size(void) const               {return _size; }
+	 CLHEP::Hep3Vector  const& origin() const                 {return _origin;}
+         CLHEP::Hep3Vector  const& originLocal() const            {return _originLocal; }
+	 CLHEP::HepRotation const& rotation() const               {return _rotation;}
+	 CLHEP::HepRotation const& inverseRotation() const        {return _rotationInverse;}
+         CLHEP::Hep3Vector  const& size() const                   {return _size; }
 
          void setOrigin(const CLHEP::Hep3Vector& orig)            {_origin = orig;}
          void setOriginLocal(const CLHEP::Hep3Vector& orig)       {_originLocal = orig;}
          void setRotation(const CLHEP::HepRotation& rot)          {_rotation = rot; _rotationInverse=rot.inverse();}
          void setSize(const CLHEP::Hep3Vector& size)              {_size = size;}
+
+
 
       protected:
 

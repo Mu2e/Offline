@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_HexMapTest_hh
 #define CalorimeterGeom_HexMapTest_hh
 //
-// $Id: HexMap.hh,v 1.2 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: HexMap.hh,v 1.3 2013/03/08 01:22:31 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:31 $
 //
 
 //C++ includes
@@ -22,7 +22,8 @@ namespace mu2e {
            HexLK(int l, int k) : _l(l),_k(k) {}
          
            void operator += (HexLK x) {_l+=x._l;_k+=x._k;}
-           int _l; int _k;                    
+           int _l; 
+	   int _k;                    
 
     };
 
@@ -36,20 +37,18 @@ namespace mu2e {
 
 	  HexMap();
 
-	  std::vector<int> neighbors(int index0, int level=1) const;
-	  CLHEP::Hep2Vector xyPosition(int index0) const;
-          int indexFromXY(double x, double y) const;
+	  CLHEP::Hep2Vector xyPosition(int thisIndex) const;
+          int               indexFromXY(double x, double y) const;
+	  std::vector<int>  neighbors(int thisIndex, int level=1) const;
 
 
 	private:
 
+	  HexLK lk(int index)    const;
+	  int   index(HexLK& lk) const;
+	  int   ring(HexLK& lk)  const;
+
 	  std::vector<HexLK>  _step;
-
-	  HexLK lk(int index0) const;
-	  int index(HexLK& lk) const;
-	  int ring(HexLK& lk) const;
-
-
     };
 
 }

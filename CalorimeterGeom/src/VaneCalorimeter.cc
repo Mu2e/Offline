@@ -2,9 +2,9 @@
 // Geometry and identifier info about the VaneCalorimeter.
 //
 //
-// $Id: VaneCalorimeter.cc,v 1.3 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: VaneCalorimeter.cc,v 1.4 2013/03/08 01:22:31 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:31 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -91,6 +91,47 @@ namespace mu2e {
 
        return crysLocalPos; 
     }
+
+
+
+    bool VaneCalorimeter::isInsideVane(int ivane, CLHEP::Hep3Vector const& pos) const 
+    {   
+       CLHEP::Hep3Vector posInSection = toSectionFrame(ivane, pos);
+       
+       double xlim = _crystalHL + _wrapperThickness + _roHalfThickness + 0.5;
+       double ylim = _nCrystalR*(_crystalHW+_wrapperThickness+_shellThickness) + 0.5;   
+       double zlim = _nCrystalZ*(_crystalHW+_wrapperThickness+_shellThickness) + 0.5;   
+       
+       if (posInSection.x() < -xlim || posInSection.x() > xlim ) return false;      
+       if (posInSection.y() < -ylim || posInSection.y() > ylim ) return false;      
+       if (posInSection.z() < -zlim || posInSection.z() > zlim ) return false;      
+
+       return true;
+    }
+
+    int VaneCalorimeter::crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const 
+    {   
+
+       int offset(0);
+       for (int ivane=0;ivane<_nVane;++ivane) {
+          if ( isInsideVane(ivane,pos) ) {
+                CLHEP::Hep3Vector posInSection = toSectionFrame(ivane, pos);
+                return offset + vane(ivane).idxFromPosition(posInSection.y(),posInSection.z());
+  	  }
+          offset +=vane(ivane).nCrystals();
+       }       	  
+       return -1;
+    }
+
+
+
+    bool VaneCalorimeter::isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const 
+    {   
+       for (int ivane=0;ivane<_nVane;++ivane) if (isInsideVane(ivane,pos)) return true;
+       return false;    
+    }
+
+
 
 
 

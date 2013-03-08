@@ -1,24 +1,21 @@
 //
 // Make a Calorimeter.
 //
-// $Id: DiskCalorimeterMaker.cc,v 1.3 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: DiskCalorimeterMaker.cc,v 1.4 2013/03/08 01:22:31 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:31 $
 
 // original authors Julie Managan and Robert Bernstein
 
-//
+
 // C++ includes
 #include <math.h>
 
-//
 // Mu2e includes
+#include "cetlib/exception.h"
 #include "CalorimeterGeom/inc/DiskCalorimeterMaker.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-
-// Framework include files
-#include "cetlib/exception.h"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 
 // other includes
@@ -41,12 +38,12 @@ namespace mu2e{
 
         _calo = std::auto_ptr<DiskCalorimeter>(new DiskCalorimeter());
 
-	_calo->_nDisks                = config.getInt("calorimeter.numberOfDisks");      
+	_calo->_nDisk                 = config.getInt("calorimeter.numberOfDisks");      
 	_calo->_diskThickness         = config.getDouble("calorimeter.diskCaseThickness");
-        config.getVectorDouble("calorimeter.diskInnerRadius",_calo->_diskInnerRadius,_calo->_nDisks);
-        config.getVectorDouble("calorimeter.diskOuterRadius",_calo->_diskOuterRadius,_calo->_nDisks);
-        config.getVectorDouble("calorimeter.diskRotationAngle",_calo->_diskRotAngle,_calo->_nDisks);
-        config.getVectorDouble("calorimeter.diskSeparation",_calo->_diskSeparation,_calo->_nDisks);
+        config.getVectorDouble("calorimeter.diskInnerRadius",  _calo->_diskInnerRadius, _calo->_nDisk);
+        config.getVectorDouble("calorimeter.diskOuterRadius",  _calo->_diskOuterRadius, _calo->_nDisk);
+        config.getVectorDouble("calorimeter.diskRotationAngle",_calo->_diskRotAngle,    _calo->_nDisk);
+        config.getVectorDouble("calorimeter.diskSeparation",   _calo->_diskSeparation,  _calo->_nDisk);
 
 	_calo->_crystalHalfTrans      = config.getDouble("calorimeter.crystalHalfTrans");
 	_calo->_crystalDepth          = 2.0*config.getDouble("calorimeter.crystalHalfLong");  //half length in config file...       
@@ -93,16 +90,13 @@ namespace mu2e{
       double crystalFullWidth = _calo->_crystalHalfTrans + _calo->_wrapperThickness + _calo->_shellThickness;
       CLHEP::Hep3Vector crystalShift(0,0,-_calo->_readOutHalfThickness);
 
-      for (unsigned int idisk=0; idisk<_calo->_nDisks; ++idisk)
+      for (unsigned int idisk=0; idisk<_calo->_nDisk; ++idisk)
       {			 
 	 
 	 double dR1    = _calo->_diskInnerRadius[idisk] - _calo->_diskThickness;
 	 double dR2    = _calo->_diskOuterRadius[idisk] + _calo->_diskThickness;
 	 double dZ     = _calo->_crystalDepth + 2.0*_calo->_readOutHalfThickness + 2.0*_calo->_diskThickness;
 	 
-         
-
-
 	 _calo->_disks.push_back(Disk(idisk,_calo->_diskInnerRadius[idisk],_calo->_diskOuterRadius[idisk],_calo->_diskThickness,2.0*crystalFullWidth, crystalShift));
 	 Disk &thisDisk = _calo->_disks.back();
 	 	 
@@ -125,7 +119,6 @@ namespace mu2e{
   void DiskCalorimeterMaker::CheckIt(void)
   {
 
-
       if( ! (_calo->_nROPerCrystal ==1 || _calo->_nROPerCrystal ==2 || _calo->_nROPerCrystal ==4) ) 
         {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutChannelCount can only be 1,2 or 4.\n";}      
 
@@ -139,12 +132,10 @@ namespace mu2e{
           {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutHalfTrans > 0.5*calorimeter.crystalHalfTrans.\n";}
       }
       
-      for (unsigned int i=0;i<_calo->_nDisks;++i) {
+      for (unsigned int i=0;i<_calo->_nDisk;++i) {
         if (_calo->_diskInnerRadius[i] > _calo->_diskOuterRadius[i]) 
             {throw cet::exception("DiskCaloGeom") << "calorimeter.diskInnerRadius > calorimeter.diskOuterRadius for index="<<i<<".\n";} 
       }  
-
-
   }
 
 

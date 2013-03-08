@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.44 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: constructVirtualDetectors.cc,v 1.45 2013/03/08 01:22:32 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:32 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -1562,7 +1562,7 @@ namespace mu2e {
       GeomHandle<DiskCalorimeter> cg;
       //CLHEP::Hep3Vector vSize( vdg->getHalfLength(), cg->disk(0).size().y(), cg->disk(0).size().z());
 	
-      for (size_t iDisk = 0; iDisk < cg->nDisks(); iDisk++) {
+      for (size_t iDisk = 0; iDisk < cg->nDisk(); iDisk++) {
 	if( vdg->exist(vdIdSurf) ){
 	  VolumeInfo const & parent = _helper->locateVolInfo("CalorimeterMother");
 	  if ( verbosityLevel > 0) {

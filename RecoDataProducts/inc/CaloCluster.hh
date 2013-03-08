@@ -3,9 +3,9 @@
 //
 // Calorimeter's data cluster container
 //
-// $Id: CaloCluster.hh,v 1.5 2012/09/06 19:58:26 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/09/06 19:58:26 $
+// $Id: CaloCluster.hh,v 1.6 2013/03/08 01:22:32 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:32 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -36,6 +36,8 @@ namespace mu2e {
     CLHEP::Hep3Vector                     _cog3Vector; // center of gravity of the cluster in the localVaneFrame
     CLHEP::Hep3Vector                _cog3VectorError;
     CaloCrystalHitPtrVector _caloCrystalHitsPtrVector;
+    double                                  _distance; // distance with the main cluster
+    int                              _parentClusterId; // distance with the main cluster
 
   public:
     CaloCluster():
@@ -43,7 +45,9 @@ namespace mu2e {
       _time(0.),
       _cogRow(0),
       _cogColumn(0),
-      _energyDep(0.){
+      _energyDep(0.),
+      _distance(0.),
+      _parentClusterId(-1){
     }
 
     CaloCluster(int iVane):
@@ -51,7 +55,9 @@ namespace mu2e {
       _time(0.),
       _cogRow(0),
       _cogColumn(0),
-      _energyDep(0.){
+      _energyDep(0.),
+      _distance(0.),
+      _parentClusterId(-1){
     }
 
     CaloCluster(int                               iVane,
@@ -61,7 +67,9 @@ namespace mu2e {
       _vaneId(iVane),
       _time(time),
       _energyDep(energy),
-      _caloCrystalHitsPtrVector(caloCrystalHits){
+      _caloCrystalHitsPtrVector(caloCrystalHits),
+      _distance(0.),
+      _parentClusterId(-1){
     }
 
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
@@ -78,6 +86,8 @@ namespace mu2e {
     CLHEP::Hep3Vector const&                cog3VectorError() const{return _cog3VectorError;} // FIXME:  Should be 3x3 matrix.
     CaloCrystalHitPtrVector const& caloCrystalHitsPtrVector() const{return _caloCrystalHitsPtrVector;}
     size_t                                             size() const{return _caloCrystalHitsPtrVector.size();}
+    double                                         distance() const{return _distance;}
+    int                                               daddy() const{return _parentClusterId;} //Who's your daddy?
 
     //Setting parameters
     void SetVaneId (int vane) {
@@ -106,6 +116,14 @@ namespace mu2e {
 
     void SetCog3VectorError ( CLHEP::Hep3Vector cog3VectorErr) {
       _cog3VectorError = cog3VectorErr;
+    }
+
+    void SetDistance ( double dist) {
+      _distance = dist;
+    }
+
+    void SetParentId ( int id) {
+      _parentClusterId = id;
     }
 
   };

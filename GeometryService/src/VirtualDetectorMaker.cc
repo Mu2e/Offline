@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.16 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
+// $Id: VirtualDetectorMaker.cc,v 1.17 2013/03/08 01:22:31 echenard Exp $
+// $Author: echenard $
 //
 
 #include <iostream>
@@ -492,7 +492,7 @@ namespace mu2e {
 	const Hep3Vector OffsetOut(0.0, 0.0, (cg->disk(0).size().z() + vdHL) );
 	const Hep3Vector OffsetIn(0.0, 0.0,  -(cg->disk(0).size().z() + vdHL) );
 	
-	for(size_t i=0; i<cg->nDisks(); ++i){
+	for(size_t i=0; i<cg->nDisk(); ++i){
 	 
 	 
 	

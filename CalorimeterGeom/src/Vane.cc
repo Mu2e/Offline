@@ -1,7 +1,7 @@
 //
-// $Id: Vane.cc,v 1.2 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: Vane.cc,v 1.3 2013/03/08 01:22:31 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:31 $
 //
 // Hold information about position of a hexagonal cell
 //
@@ -45,7 +45,6 @@ namespace mu2e {
               double z = (2*(i%_nCrystalZ) - _nCrystalZ+1)*_cellSize;
               CLHEP::Hep3Vector pos(0,y,z);
               pos += _crystalShift;  //see note 
-
               _crystalList.push_back( Crystal(i,pos) );
           }
 
@@ -63,10 +62,10 @@ namespace mu2e {
       }
 
 
-
-
-
-
+      int Vane::idxFromPosition(double y, double z) const 
+      {        
+	return  int(y/2.0/_cellSize+0.5*_nCrystalR)*_nCrystalZ + int(z/2.0/_cellSize + 0.5*_nCrystalZ);
+      }
 
 
 

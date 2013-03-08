@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for CaloCrystal Detectors
 //
-// $Id: CaloCrystalSD.cc,v 1.22 2013/02/07 17:56:03 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/07 17:56:03 $
+// $Id: CaloCrystalSD.cc,v 1.23 2013/03/08 01:22:32 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:32 $
 //
 // Original author Ivan Logashenko
 //
@@ -57,8 +57,7 @@ namespace mu2e {
     // Get crystal ID
     G4int copyNo = touchableHandle->GetCopyNumber(0);
 
-    ProcessCode endCode(_processInfo->
-                        findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
+    ProcessCode endCode(_processInfo->findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
     // Originally the hit position was saved in local crystal frame.
     // Not it is saved in Mu2e frame, hence the following code is

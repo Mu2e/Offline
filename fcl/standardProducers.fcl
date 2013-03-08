@@ -65,8 +65,8 @@ CaloReadoutHitsMaker :
 {
   module_type          : MakeCaloReadoutHits
   diagLevel            : 0
-  caloLRUcorrection    : 0
-  caloNonLinCorrection : 0
+  caloLRUcorrection    : false
+  caloNonLinCorrection : false
   maxFullPrint         : 0
   g4ModuleLabel        : g4run
 }
@@ -76,8 +76,8 @@ CaloCrystalHitsMaker :
 {
   module_type          			: MakeCaloCrystalHits
   diagLevel            			: 0
-  caloChargeProductionEffects       	: 0
-  caloROnoiseEffect    			: 0
+  caloChargeProductionEffects       	: false
+  caloROnoiseEffect    			: false
   maxFullPrint         			: 0
   g4ModuleLabel        			: g4run
   minimumEnergy       			: 0.0

@@ -98,7 +98,7 @@ namespace mu2e {
        double halfLength                    = cal.envelopeHalfLength();
 
        double hack = 600;
-       double maxHalfSep = cal.diskSeparation(cal.nDisks()-1)/2;
+       double maxHalfSep = cal.diskSeparation(cal.nDisk()-1)/2;
 
         //  Make the mother volume for the calorimeter.
         G4ThreeVector pcalo = cal.origin();
@@ -231,7 +231,7 @@ namespace mu2e {
 
     //-- Construct disks: diskInner contains the crystals, and is inside diskBox
 
-    const unsigned int nDisks = cal.nDisks();
+    const unsigned int nDisks = cal.nDisk();
     VolumeInfo diskBoxInfo[nDisks];
     VolumeInfo diskInnerInfo[nDisks];
 
@@ -301,7 +301,6 @@ namespace mu2e {
 
 	      G4int id       = crystalIdOffset+ic;
 	      G4int roidBase = cal.ROBaseByCrystal(id);
-
 
 	      // Have to define a shell / wrapper logical volume for each crystal 
 	      // to get correct index in CrystalCaloSD

@@ -1,9 +1,9 @@
 //
 // Make a Vane Calorimeter.
 //
-// $Id: VaneCalorimeterMaker.cc,v 1.3 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: VaneCalorimeterMaker.cc,v 1.4 2013/03/08 01:22:31 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:31 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -57,6 +57,7 @@ namespace mu2e{
 	_calo->_nCrystalR            = config.getInt   ("calorimeter.nCrystalRSlices");
 	_calo->_nCrystalZ            = config.getInt   ("calorimeter.nCrystalZSlices");
 	_calo->_rMin                 = config.getDouble("calorimeter.rInscribed");
+	_calo->_rMax                 = _calo->_rMin+_calo->_nCrystalR*_calo->_crystalHW *2.0;
 
 
 

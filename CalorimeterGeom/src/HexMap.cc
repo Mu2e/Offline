@@ -1,6 +1,6 @@
-// $Id: HexMap.cc,v 1.2 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: HexMap.cc,v 1.3 2013/03/08 01:22:31 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:31 $
 //
 // Hexagon position map generator: 
 //   tesselate a plane with hexagons starting at the center of the plane
@@ -50,6 +50,7 @@
 
 namespace mu2e {
 
+
       HexMap::HexMap(void) : _step() 
       {
          _step.push_back( HexLK( 0, 1) ); //down right
@@ -64,12 +65,12 @@ namespace mu2e {
 
 
 
-      CLHEP::Hep2Vector HexMap::xyPosition(int index0) const
+      CLHEP::Hep2Vector HexMap::xyPosition(int thisIndex) const
       {        
-         HexLK lk0 = lk(index0);
-         double x = (lk0._l+lk0._k)*sqrt(3.0)/2.0;
-         double y = (lk0._l-lk0._k)/2.0;
-         return CLHEP::Hep2Vector(x,y);
+         HexLK thislk = lk(thisIndex);
+         double x = (thislk._l+thislk._k)*sqrt(3.0)/2.0;
+         double y = (thislk._l-thislk._k)/2.0;
+	 return CLHEP::Hep2Vector(x,y);
       }
   
 
@@ -81,54 +82,50 @@ namespace mu2e {
          int lf(l0-3),kf(k0-3);
 	 double dist0(100);
 	 
-	 for (int l=l0-3;l<l0+4;++l){
-	   for (int k=k0-3;k<k0+4;++k){
+	 for (int l=l0-3;l<l0+4;++l)
+	 {
+	   for (int k=k0-3;k<k0+4;++k)
+	   {
 	      double dx    = (l+k)*sqrt(3.0)/2.0 - x0;
               double dy    = (l-k)/2.0 - y0;
 	      double dist = sqrt(dx*dx+dy*dy);
 	      if (dist < dist0) {dist0=dist;lf=l;kf=k;}	 
            }	 
 	 }
-	 
-	 HexLK lk0(lf,kf);
-	 return index(lk0);
+
+	 HexLK lk(lf,kf);	 
+	 return index(lk);
       }
 
 
-
-      std::vector<int> HexMap::neighbors(int index0, int level)  const
+      std::vector<int> HexMap::neighbors(int thisIndex, int level)  const
       {	 
-	 std::vector<int> neighbors0;
-	 neighbors0.reserve(100);
+	 std::vector<int> thisNeighbour;
+	 thisNeighbour.reserve(100);
 
-         HexLK init = lk(index0);
-	 HexLK lk0(init._l + level, init._k - level);
+         HexLK init = lk(thisIndex);
+	 HexLK lk(init._l + level, init._k - level);
 
-         for (unsigned int i=0;i<_step.size();++i){       
-	     for (int iseg=0;iseg<level;++iseg){	  
-
-		lk0 += _step[i];
-		neighbors0.push_back(index(lk0));
+         for (unsigned int i=0;i<_step.size();++i)
+	 {       	     
+	     for (int iseg=0;iseg<level;++iseg)
+	     {	  
+		lk += _step[i];
+		thisNeighbour.push_back( index(lk) );
 	     }
 	 }
 	 
-         return neighbors0;
+         return thisNeighbour;
       }
 
 
+      HexLK HexMap::lk(int thisIndex) const
+      {         
+	 if (thisIndex==0) return HexLK(0,0);
 
-
-
-     
-
-      HexLK HexMap::lk(int index) const
-      {
-         
-	 if (index==0) return HexLK(0,0);
-
-	 int nRing = int(0.5+sqrt(0.25+(float(index)-1.0)/3.0));
-         int nSeg  = (index -1 -3*nRing*(nRing-1))/nRing;
-         int nPos  = (index -1 -3*nRing*(nRing-1))%nRing;
+	 int nRing = int(0.5+sqrt(0.25+(float(thisIndex)-1.0)/3.0));
+         int nSeg  = (thisIndex -1 -3*nRing*(nRing-1))/nRing;
+         int nPos  = (thisIndex -1 -3*nRing*(nRing-1))%nRing;
 	 
 	 int l = nRing+(nPos+1)*_step[nSeg]._l;
 	 int k = -nRing+(nPos+1)*_step[nSeg]._k;
@@ -142,36 +139,35 @@ namespace mu2e {
       } 
 
 
-      int HexMap::index(HexLK& lk0) const
+      int HexMap::index(HexLK& thislk) const
       {
-         if (lk0._l==0 && lk0._k==0) return 0;
+         if (thislk._l==0 && thislk._k==0) return 0;
 	 
-	 int nring = ring(lk0);
+	 int nring = ring(thislk);
 	 int pos = (nring>0) ? 1+3*nring*(nring-1): 0;
 
 	 //find segment along the ring
 	 int segment(0);	 
-	 if ( std::abs(lk0._l+lk0._k) == nring && lk0._k!=0) segment += 1;
-	 if ( std::abs(lk0._k) == nring && lk0._l!=0)        segment += 2;
-	 if ( (lk0._l+lk0._k) <=0 && lk0._k<nring)           segment += 3;
+	 if ( std::abs(thislk._l+thislk._k) == nring && thislk._k!=0) segment += 1;
+	 if ( std::abs(thislk._k) == nring && thislk._l!=0)           segment += 2;
+	 if ( (thislk._l+thislk._k) <=0 && thislk._k<nring)           segment += 3;
 	 pos += segment*nring;
 	 
 	 //add position le long du segment	 
-	 if (segment==0 || segment==3)  pos += nring - std::abs(lk0._k)-1;
-	 if (segment==1 || segment==4)  pos += nring - std::abs(lk0._l)-1;
-	 if (segment==2 || segment==5)  pos += std::abs(lk0._l)-1;
+	 if (segment==0 || segment==3)  pos += nring - std::abs(thislk._k)-1;
+	 if (segment==1 || segment==4)  pos += nring - std::abs(thislk._l)-1;
+	 if (segment==2 || segment==5)  pos += std::abs(thislk._l)-1;
 	
 	 return pos;      
       }
            
-      int HexMap::ring(HexLK& lk0) const
+
+      int HexMap::ring(HexLK& thislk) const
       {         
-	  if (lk0._l*lk0._k > 0) return std::abs(lk0._l+lk0._k);
-	  if ( std::abs(lk0._l) > std::abs(lk0._k) ) return std::abs(lk0._l);
-	  return std::abs(lk0._k);
+	  if (thislk._l*thislk._k > 0)                     return std::abs(thislk._l+thislk._k);
+	  if ( std::abs(thislk._l) > std::abs(thislk._k) ) return std::abs(thislk._l);
+	  return std::abs(thislk._k);
       }
-
-
 
 
 

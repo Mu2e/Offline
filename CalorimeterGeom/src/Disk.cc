@@ -5,7 +5,7 @@
 //
 
 //Notes: HexMap tesselates a plane with hexagons, we need a ring
-// _mapToCrystal and _CrystalToMap get the crystal number conversion 
+// _mapToCrystal and _crystalToMap get the crystal number conversion 
 // between the map and the ring (crystal number = position in crystalList)
 //
 // CrystalShift indicates the shift of the crystal center from the center of 
@@ -31,7 +31,7 @@ namespace mu2e {
       Disk::Disk(int id, double rin, double rout, double thickness, double cellSize, CLHEP::Hep3Vector crystalShift) : 
         CaloSection(id, crystalShift),
 	_radiusIn(rin), _radiusOut(rout), _thickness(thickness), _cellSize(cellSize), 
-        _HexMap(),_mapToCrystal(),_CrystalToMap()
+        _hexMap(),_mapToCrystal(),_crystalToMap()
       { 
         fillCrystals(); 
       }
@@ -46,16 +46,16 @@ namespace mu2e {
 	    int nHexagons = 1 + 3*nRings*(nRings-1);
 
 	    _mapToCrystal.reserve(nHexagons);
-	    _CrystalToMap.reserve(nHexagons);
+	    _crystalToMap.reserve(nHexagons);
 
             int nCrystal(0);
  	    for (int i=0;i<nHexagons;++i) {
 
-                CLHEP::Hep2Vector xy = _HexMap.xyPosition(i);
+                CLHEP::Hep2Vector xy = _hexMap.xyPosition(i);
 
  	        if ( !isInsideDisk(_cellSize*xy.x(),_cellSize*xy.y()) ) {_mapToCrystal.push_back(-1); continue;}
 
-                _CrystalToMap.push_back(i);
+                _crystalToMap.push_back(i);
      	        _mapToCrystal.push_back(nCrystal);
 
                 CLHEP::Hep3Vector pos(_cellSize*xy.x(),_cellSize*xy.y(),0);
@@ -103,7 +103,11 @@ namespace mu2e {
           return (a+t*(b-a)).mag();
       }
 
-
+      int Disk::idxFromPosition(double x, double y) const 
+      {
+        int mapIdx = _hexMap.indexFromXY(x/_cellSize,y/_cellSize);
+        return _mapToCrystal[mapIdx];
+      }
 
 
 
@@ -121,7 +125,7 @@ namespace mu2e {
 	   std::vector<int> list; 
 	   list.reserve(20);
 
-	   std::vector<int> temp( _HexMap.neighbors(_CrystalToMap[crystalId],level) );
+	   std::vector<int> temp( _hexMap.neighbors(_crystalToMap[crystalId],level) );
 	   for (unsigned int i=0;i<temp.size();++i) {
 	     if (_mapToCrystal[temp[i]] >-1) list.push_back(_mapToCrystal[temp[i]]);
 	   }
@@ -130,14 +134,14 @@ namespace mu2e {
       }
 
 
-      double Disk::EstimateEmptySpace(void)
+      double Disk::estimateEmptySpace(void) const
       {
 	    double sum(0),dx(0.02),dy(0.02);
 	    for (double x=0;x<=1.5*_radiusIn;x+=dx){
 
               double y0 = (x<_radiusIn) ? sqrt(_radiusIn*_radiusIn-x*x) : 0;
 	      for (double y=y0;y<=y0+5*_cellSize;y+=dy){
-		 int mapIdx = _HexMap.indexFromXY(x/_cellSize,y/_cellSize);
+		 int mapIdx = _hexMap.indexFromXY(x/_cellSize,y/_cellSize);
 		 int iCry   = _mapToCrystal[mapIdx];
 		 if (iCry==-1) sum+=dx*dy;		 
 	      }  

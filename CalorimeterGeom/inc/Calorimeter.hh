@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.22 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: Calorimeter.hh,v 1.23 2013/03/08 01:22:31 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:31 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -34,23 +34,27 @@ namespace mu2e {
 
 
 	  // coordinate position and transformation
-	  virtual CLHEP::Hep3Vector const& origin(void) const = 0; 
+	  virtual CLHEP::Hep3Vector const& origin() const = 0; 
 	  
 	  virtual CLHEP::Hep3Vector toCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos) const = 0;
 	  virtual CLHEP::Hep3Vector toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const = 0;
 	  virtual CLHEP::Hep3Vector fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const = 0;
 
-      virtual CLHEP::Hep3Vector crystalOrigin(int crystalId) const =0;
+          virtual CLHEP::Hep3Vector crystalOrigin(int crystalId) const =0;
 	  virtual CLHEP::Hep3Vector localCrystalOrigin(int crystalId) const = 0;
-      virtual std::vector<int>  neighbors(int crystalId, int level=1) const = 0;
+          virtual std::vector<int>  neighbors(int crystalId, int level=1) const = 0;
+
+	  virtual bool isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const =0  ;
+	  virtual int  crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const =0;
 
 
 	  //crystal / readout section
-	  virtual unsigned int nROPerCrystal(void) const = 0;
-	  virtual unsigned int nCrystal(void) const  = 0;
-	  virtual unsigned int nRO(void) const  = 0;
-	  virtual double       crystalVolume(void) const = 0;
-      virtual double       crystalHalfLength(void) const = 0;
+	  virtual unsigned int nROPerCrystal() const = 0;
+	  virtual unsigned int nCrystal() const  = 0;
+	  virtual unsigned int nRO() const  = 0;
+	  virtual double       crystalVolume() const = 0;
+          virtual double       crystalHalfLength() const = 0;
+
 
 	  //crystal - readout id
 	  virtual int crystalByRO(int roid) const = 0;
@@ -58,9 +62,9 @@ namespace mu2e {
 	  virtual int caloSectionId(int crystalId) const = 0;
 
 	  //calorimeter envelope
-	  virtual double       envelopeRmin(void) const = 0;
-	  virtual double       envelopeRmax(void) const = 0;
-	  virtual double       envelopeHalfLength(void) const = 0;
+	  virtual double       envelopeRmin() const = 0;
+	  virtual double       envelopeRmax() const = 0;
+	  virtual double       envelopeHalfLength() const = 0;
 
 	  //bunch of accessors that will go away in later, keep them now to compile the code
 

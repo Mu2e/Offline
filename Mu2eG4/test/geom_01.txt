@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.178 2013/03/07 20:45:28 sarra Exp $
-// $Author: sarra $
-// $Date: 2013/03/07 20:45:28 $
+// $Id: geom_01.txt,v 1.179 2013/03/08 01:22:32 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:32 $
 //
 // Original author Rob Kutschke
 //
@@ -15,8 +15,8 @@ bool hasHall            = true;
 bool hasTarget          = true;
 bool hasProtonAbsorber  = true;
 bool hasNeutronAbsorber = true; // note the two subcomponents, see neutronabsorber section below;
-bool hasVaneCalorimeter = true;
-bool hasDiskCalorimeter = false;
+bool hasVaneCalorimeter = false;
+bool hasDiskCalorimeter = true;
 bool hasBFieldManager   = true;
 bool hasBeamline        = true;
 bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now;
@@ -395,18 +395,18 @@ vector<double> target.yCos  =
 
 // Crystal calorimeter
 
-vector<double> calorimeter.calorimeterCenter               = {0.,0.,12700.};   // G4BL: 20729-7929=12800.
-double calorimeter.rInscribed                              = 360.;
+vector<double> calorimeter.calorimeterCenter               = {0.,0.,12700.};   
 string calorimeter.calorimeterFillMaterial                 = "DSVacuum";
 string calorimeter.calorimeterDiskMaterial                 = "DSVacuum";
 
 int    calorimeter.numberOfVanes    =  4;
 int    calorimeter.nCrystalRSlices  =  11;
 int    calorimeter.nCrystalZSlices  =  44;
+double calorimeter.rInscribed       = 360.;
 
 double calorimeter.crystalHalfLong  = 55.01;
-double calorimeter.crystalHalfTrans = 15.;
-double calorimeter.crystalHexsize  =  15.;    //mm  for hexagonal crystals - half distance across flats of hex crystal
+double calorimeter.crystalHalfTrans = 15.0;
+double calorimeter.crystalHexsize   = 15.0;    //mm  for hexagonal crystals - half distance across flats of hex crystal
 
 int    calorimeter.numberOfDisks        =  2;
 vector<double> calorimeter.diskInnerRadius   = {360.,360.}; //mm
@@ -423,38 +423,32 @@ double calorimeter.shieldHalfThickness                     = .0;//0.
 double calorimeter.neutronAbsorberHalfThickness            = .0;//0.
 
 string calorimeter.crystalWrapper                          = "Polyethylene092";
-double calorimeter.crystalWrapperHalfThickness             = 0.1 ;
+double calorimeter.crystalWrapperThickness                 = 0.01 ;
 
 string calorimeter.crystalReadoutMaterial                  = "G4_Si";
-double calorimeter.crystalReadoutHalfTrans                 = 5.;
-double calorimeter.crystalReadoutHalfThickness             = 0.1;
+double calorimeter.crystalReadoutHalfTrans                 = 5;
+double calorimeter.crystalReadoutHalfThickness             = 1;
 int    calorimeter.crystalReadoutChannelCount              = 2; // APDs per crystal
 
 double calorimeter.crystalNonUniformity  = 0.0; // -2 to 2
                                                 // (A(ro)-A(front))/A(middle)
-double calorimeter.timeGap               = 100.0;  // ns
+double calorimeter.timeGap               = 30.0;  // ns
 double calorimeter.electronDepositionAPD = 1000.0; // MeV
 double calorimeter.electronMinEnergyAPD  = 0.1;    // MeV
 
 // Control display and debug printout.
-
-bool calorimeter.calorimeterBoxVisible  = true;
-bool calorimeter.calorimeterBoxSolid    = true;
-bool calorimeter.vaneBoxVisible         = true;
-bool calorimeter.vaneBoxSolid           = true;
+bool calorimeter.vaneBoxVisible = true;
+bool calorimeter.vaneBoxSolid   = true;
+bool calorimeter.crystalVisible = false;
+bool calorimeter.crystalSolid   = true;
 bool calorimeter.absorberBoxVisible     = true;
 bool calorimeter.absorberBoxSolid       = true;
 bool calorimeter.shieldVisible          = false;
 bool calorimeter.shieldSolid            = false;//true;
-//gianipez
 bool calorimeter.isNeutronAbsorberVisible = false;
 bool calorimeter.isNeutronAbsorberSolid   = false;
-//--------
-bool calorimeter.crystalVisible         = false;
-bool calorimeter.crystalSolid           = true;
 
 int  calorimeter.verbosityLevel = 0;
-
 
 // Cosmic Ray Sheld consist of the two components
 // for now the are in the two sections: the fluxcrv and the crs itself

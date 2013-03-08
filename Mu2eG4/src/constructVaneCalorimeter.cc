@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructVaneCalorimeter.cc,v 1.3 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: constructVaneCalorimeter.cc,v 1.4 2013/03/08 01:22:32 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/03/08 01:22:32 $
 //
 // Original author Ivan Logashenko
 //
@@ -80,7 +80,7 @@ namespace mu2e {
 
     bool const forceAuxEdgeVisible       = config.getBool("g4.forceAuxEdgeVisible",false);
     G4bool const doSurfaceCheck          = config.getBool("g4.doSurfaceCheck",false);
-    bool const placePV        = true;
+    bool const placePV                   = true;
 
 
 
