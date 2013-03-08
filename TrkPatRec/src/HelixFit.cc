@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.cc,v 1.5 2013/01/26 18:17:13 brownd Exp $
+// $Id: HelixFit.cc,v 1.6 2013/03/08 04:33:26 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/01/26 18:17:13 $
+// $Date: 2013/03/08 04:33:26 $
 //
 //
 // the following has to come before other BaBar includes
@@ -38,115 +38,82 @@
 #include "TF1.h"
 #include "TList.h"
 #include "TArc.h"
+// C++
+#include <vector>
+#include <string>
 
 namespace mu2e 
 {
+// statics
+  double XYZP::_efac(1.0);
+  StrawHitFlag XYZP::_useflag;
 // comparison functor for ordering points
   struct radcomp : public std::binary_function<VALERR, VALERR, bool> {
     bool operator()(VALERR const& r1, VALERR const& r2) { return r1._val < r2._val; }
   };
 
   // comparison functor for sorting by z
-  struct zcomp : public std::binary_function<XYZP*,XYZP*,bool> {
-    bool operator()(XYZP* const& p1, XYZP* const& p2) { return p1->_pos.z() < p2->_pos.z(); }
+  struct zcomp : public std::binary_function<XYZP,XYZP,bool> {
+    bool operator()(XYZP const& p1, XYZP const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
- 
-  double StereoXYZP::_sfactor(1.0);
 
-  StereoXYZP::StereoXYZP(HitXYZP& h1,HitXYZP& h2) :  _h1(&h1),_h2(&h2){
-    double invdet = 1.0/(-_h1->_wdir.x()*_h2->_wdir.y() + _h1->_wdir.y()*_h2->_wdir.x());
-    Hep3Vector dp = _h2->_pos - _h1->_pos;
-    _d1 = invdet*(-_h2->_wdir.y()*dp.x() + _h2->_wdir.x()*dp.y());
-    _d2 = invdet*(-_h1->_wdir.y()*dp.x() + _h1->_wdir.x()*dp.y());
-    _pos = 0.5*(_h1->_pos + _d1*_h1->_wdir +_h2->_pos + _d2*_h2->_wdir);
-    _phi = _pos.phi();
-    _dz = fabs(_h2->_pos.z()-_h1->_pos.z());
-    // sign the wire direction to point radially outwards
-    CLHEP::Hep3Vector w1 = copysign(1.0,_h1->_wdir.dot(_pos))*_h1->_wdir;
-    CLHEP::Hep3Vector w2 = copysign(1.0,_h2->_wdir.dot(_pos))*_h2->_wdir;
-    // compute the radial and azimuthal projections, assuming a
-    // worst-case pitch of 45 degrees
-    double cosf = w1.dot(w2);
-    static const double invsqrt12(1.0/sqrt(12));
-    _rerr = _sfactor*invsqrt12*_dz*sqrt(0.5*(1.0+cosf));
-    _ferr = _sfactor*invsqrt12*_dz*sqrt(0.5*(1.0-cosf));
-    setUse(true,good);
-    setUse(true,stereopoint);
+  XYZP::XYZP(size_t index,StrawHit const& sh, StrawHitPosition const& shp,Straw const& straw) :
+    _ind(index), _pos(shp.pos()), _phi(shp.pos().phi()), _flag(shp.flag()), _wdir(straw.getDirection()),
+    _perr(_efac*shp.posRes(StrawHitPosition::phi)),_rerr(_efac*shp.posRes(StrawHitPosition::rho))
+  {
+    static const CLHEP::Hep3Vector _zdir(0.0,0.0,1.0);
+    _sdir = _zdir.cross(_wdir);
   }
 
   void
-  StereoXYZP::rinfo(CLHEP::Hep3Vector const& center,VALERR& rad) const {
-    CLHEP::Hep3Vector rvec = (_pos - center).perpPart();
-    rad._val = rvec.mag();
-    double alpha = rvec.angle(_pos.perpPart());
-    rad._err = _rerr*fabs(cos(alpha))+_ferr*fabs(sin(alpha));
-  }
-
-  void
-  StereoXYZP::finfo(CLHEP::Hep3Vector const& center,VALERR& phi) const {
-    CLHEP::Hep3Vector rvec = (_pos-center).perpPart();
-    phi._val = rvec.phi();
-    double alpha = rvec.angle(_pos.perpPart());
-    phi._err = (_ferr*fabs(cos(alpha)+_rerr*fabs(sin(alpha))))/rvec.perp();
-  }
-
-  void
-  StereoXYZP::setUse(bool use,useBit ibit) {
-    XYZP::setUse(use,ibit);
-    if(ibit==good){
-      _h1->setUse(use,stereohit);
-      _h2->setUse(use,stereohit);
-    }
-  }
-  bool 
-  StereoXYZP::use(useBit ibit) const {
-   if(ibit == good)
-    return XYZP::use() && !(XYZP::use(outlier));
-  else
-    return XYZP::use(ibit);// require this NOT be an outlier
-  }
-
-  void
-  HitXYZP::rinfo(CLHEP::Hep3Vector const& center,VALERR& rad) const {
+  XYZP::rinfo(CLHEP::Hep3Vector const& center,VALERR& rad) const {
 //    static const double onethird(1.0/3.0);
 //    static const double invsqrt12(1./sqrt(12.0));
 // average the 1-sigma radii to account for non-linear errors
     double rvec = CLHEP::Hep3Vector(_pos - center).perp();
-    double rvec1 = CLHEP::Hep3Vector(_pos +_werr*_wdir - center).perp();
-    double rvec2 = CLHEP::Hep3Vector(_pos -_werr*_wdir - center).perp();
 //    rad._val = onethird*(rvec+rvec1+rvec2);
     rad._val = rvec;
-    rad._err = std::max(std::max(fabs(rvec1-rvec),fabs(rvec2-rvec)),_serr);
+    rad._err = _rerr;
+    
   }
 
   void
-  HitXYZP::finfo(CLHEP::Hep3Vector const& center,VALERR& phi) const {
+  XYZP::finfo(CLHEP::Hep3Vector const& center,VALERR& phi) const {
 //    static const double onethird(1.0/3.0);
 //    static const double invsqrt12(1./sqrt(12.0));
 // average the 1-sigma radii to account for non-linear errors
-    double rvec = CLHEP::Hep3Vector(_pos - center).perp();
     double phi0 = CLHEP::Hep3Vector(_pos - center).phi();
-    double phi1 = CLHEP::Hep3Vector(_pos +_werr*_wdir - center).phi();
-    double phi2 = CLHEP::Hep3Vector(_pos -_werr*_wdir - center).phi();
 //    rad._val = onethird*(rvec+rvec1+rvec2);
     phi._val = phi0;
-    phi._err = std::max(std::max(fabs(phi1-phi0),fabs(phi2-phi0)),_serr/rvec);
+    phi._err = _perr; 
   }
 
   bool 
-  HitXYZP::use(useBit ibit) const {
-   if(ibit == good)
-    return XYZP::use() && !XYZP::use(outlier) && !XYZP::use(stereohit);
-  else
-    return XYZP::use(ibit);// require this NOT be an outlier
+  XYZP::use() const { 
+    return !_flag.hasAnyProperty(_useflag);
   }
 
+  bool 
+  XYZP::stereo() const {
+    return _flag.hasAllProperties(StrawHitFlagDetail::stereo);
+  }
 
+  void XYZP::setUse(bool use) {
+    if(!use)
+      _flag.merge(StrawHitFlag::other);
+    else
+      _flag.clear(StrawHitFlag::other);
+  }
+
+  void
+  XYZP::setOutlier(){
+    _flag.merge(StrawHitFlag::outlier);
+  }
 
   HelixFitResult& 
-  HelixFitResult::operator =(HelixFitResult const& other) {
+    HelixFitResult::operator =(HelixFitResult const& other) {
     if(this != &other){
-      _tdef = other._tdef;
+      _hdef = other._hdef;
       _fit = other._fit;
       _center = other._center;
       _radius = other._radius;
@@ -156,23 +123,9 @@ namespace mu2e
     return *this;
   }
   
-  XYZPVector::XYZPVector(std::vector<HitXYZP> const& hits) : _hxyzp(hits) {
-    _xyzp.reserve(_hxyzp.size());
-    for(size_t ih=0;ih<_hxyzp.size();++ih)
-      _xyzp.push_back(&_hxyzp[ih]);
-  }
-
-  XYZPVector::XYZPVector(std::vector<HitXYZP> const& hits,std::vector<StereoXYZP> const& shits) : _hxyzp(hits), _sxyzp(shits) {
-    _xyzp.reserve(_hxyzp.size()+_sxyzp.size());
-    for(size_t ih=0;ih<_hxyzp.size();++ih)
-      _xyzp.push_back(&_hxyzp[ih]);
-    for(size_t is=0;is<_sxyzp.size();++is)
-      _xyzp.push_back(&_sxyzp[is]);
-  }
-
   void
   HelixFit::helixParams(HelixFitResult const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const {
-    TrkDef const& mytrk = helix._tdef;
+    HelixDef const& mytrk = helix._hdef;
     static const double pi(M_PI);
 //    static const double twopi(2*pi);
     static const double halfpi(pi/2.0);
@@ -214,7 +167,6 @@ namespace mu2e
     _debug(pset.get<int>("debugLevel",0)),
     _mindelta(pset.get<double>("minDelta",5000.0)),
     _minnhit(pset.get<unsigned>("minNHit",10)),
-    _minnstereo(pset.get<unsigned>("minnStereo",0)),
     _lambda0(pset.get<double>("lambda0",1.0)),
     _lstep(pset.get<double>("lstep",0.2)),
     _minlambda(pset.get<double>("minlambda",0.01)),
@@ -226,7 +178,7 @@ namespace mu2e
     _maxdz(pset.get<double>("maxdz",35.0)),
     _maxdot(pset.get<double>("maxdot",0.9)),
     _rbias(pset.get<double>("radialBias",0.0)),
-    _sfac(pset.get<double>("strawSizeFactor",1.0)),
+    _efac(pset.get<double>("ErrorFactor",1.0)),
     _rhomin(pset.get<double>("rhomin",350.0)),
     _rhomax(pset.get<double>("rhomax",780.0)),
     _mindist(pset.get<double>("mindist",50.0)),
@@ -237,17 +189,19 @@ namespace mu2e
     _tdmax(pset.get<double>("maxAbsTanDip",2.0)),
     _rcmin(pset.get<double>("rcmin",200.0)),
     _rcmax(pset.get<double>("rcmax",350.0)),
-    _sfactor(pset.get<double>("stereoFactor",1.0)),
     _forcep(pset.get<bool>("forceP",false)),
-    _xyweights(pset.get<bool>("xyWeights",true)),
+    _xyweights(pset.get<bool>("xyWeights",false)),
     _zweights(pset.get<bool>("zWeights",false)),
     _filter(pset.get<bool>("filter",true)),
     _plotall(pset.get<bool>("plotall",false)),
     _usetarget(pset.get<bool>("usetarget",true)),
-    _allstereo(pset.get<bool>("allstereo",true)),
-    _bz(0.0),_sdist(0),_spull(0)
+    _bz(0.0)
   {
-    StereoXYZP::_sfactor = _sfactor;
+    XYZP::_efac = _efac;
+    std::vector<std::string> bitnames;
+    bitnames.push_back("Outlier");
+    bitnames.push_back("OtherBackground");
+    XYZP::_useflag = StrawHitFlag(bitnames);
   }
 
   HelixFit::~HelixFit()
@@ -270,7 +224,7 @@ namespace mu2e
 
   bool
   HelixFit::findHelix(HelixFitResult& myhel) {
-    TrkDef const& mytrk = myhel._tdef;
+    HelixDef const& mytrk = myhel._hdef;
 //  compute the allowed range in radius for this fit
     double pb = fabs((CLHEP::c_light*1e-3)/(bz()*mytrk.particle().charge()));
     _rmin = _pmin/(pb*sqrt(1.0+_tdmax*_tdmax));
@@ -285,18 +239,14 @@ namespace mu2e
       _smin = -1.0/(_rmin*_tdmin);
     }
 // loop over hits, and store the points
-    std::vector<HitXYZP> hxyzp;
-    fillHitXYZP(mytrk,hxyzp);
-    // find the stereo pairs for these
-    std::vector<StereoXYZP> sxyzp;
-    findStereoPairs(hxyzp,sxyzp);
-    XYZPVector xyzp(hxyzp,sxyzp);
+    XYZPVector  xyzp;
+    fillXYZP(mytrk,xyzp);
 // call down
     bool retval = findHelix(xyzp,myhel);
     if((retval || _plotall) && _diag>1){
       // fill graphs for display if requested
-      plotXY(mytrk,xyzp._hxyzp,xyzp._sxyzp,myhel);
-      plotZ(mytrk,xyzp._hxyzp,xyzp._sxyzp,myhel);
+      plotXY(mytrk,xyzp,myhel);
+      plotZ(mytrk,xyzp,myhel);
     }
     return retval;
   }
@@ -305,15 +255,15 @@ namespace mu2e
   HelixFit::findHelix(XYZPVector& xyzp,HelixFitResult& myhel) {
     bool retval(false);
 // filter by geometry
-    if(_filter)filterDist(xyzp._xyzp);
-    if(xyzp._hxyzp.size() >= _minnhit && xyzp._sxyzp.size() >= _minnstereo){
+    if(_filter)filterDist(xyzp);
+    if(xyzp.size() >= _minnhit){
       // initialize the circle parameters
-      if(initCircle(xyzp._xyzp,myhel)){
+      if(initCircle(xyzp,myhel)){
 	// solve for the circle parameters
-	retval = findXY(xyzp._xyzp,myhel);
+	retval = findXY(xyzp,myhel);
 	// extend those into the z direction
 	if(retval){
-	  retval = findZ(xyzp._xyzp,myhel);
+	  retval = findZ(xyzp,myhel);
 	  // set the success
 	  if(retval){
 	    myhel._fit = TrkErrCode(TrkErrCode::succeed);
@@ -327,9 +277,9 @@ namespace mu2e
       myhel._fit = TrkErrCode(TrkErrCode::fail,1); // insufficient hits
     return retval;
   }
-  
+ 
   bool
-  HelixFit::findXY(std::vector<XYZP*>& xyzp,HelixFitResult& myhel) {
+  HelixFit::findXY(XYZPVector& xyzp,HelixFitResult& myhel) {
     double rmed, age;
     Hep3Vector center = myhel._center;
 //    findCenterAGE(xyzp,center,rmed,age,false);
@@ -350,16 +300,10 @@ namespace mu2e
   }
 
   void
-  HelixFit::plotXY(TrkDef const& mytrk, std::vector<HitXYZP> const& hxyzp,
-    std::vector<StereoXYZP> const& sxyzp,
+  HelixFit::plotXY(HelixDef const& mytrk, XYZPVector const& xyzp,
     HelixFitResult const& myhel) const {
     unsigned igraph = 10*mytrk.eventId()+mytrk.trackId();
     art::ServiceHandle<art::TFileService> tfs;
-    if(_sdist == 0){
-      _sdist = tfs->make<TH1F>("sdist","Selected Stereo distance",100,-500,500);
-      _spull = tfs->make<TH1F>("spull","Selected Stereo pull",100,-10,10);
-    }
-    //      TGraph* graph = tfs->make<TGraph>(hxyzp.size());
     char gname[100];
     snprintf(gname,100,"gshxy%i",igraph);
     char bname[100];
@@ -382,23 +326,20 @@ namespace mu2e
     s->SetMarkerColor(kGreen);
     bs->SetMarkerStyle(26);
     bs->SetMarkerColor(kYellow);
-    for(unsigned ihp=0;ihp<hxyzp.size();++ihp){
-      if(hxyzp[ihp].use())
-	g->Fill(hxyzp[ihp]._pos.x()-myhel._center.x(),hxyzp[ihp]._pos.y()-myhel._center.y());
-      else
-	b->Fill(hxyzp[ihp]._pos.x()-myhel._center.x(),hxyzp[ihp]._pos.y()-myhel._center.y());
+    for(unsigned ihp=0;ihp<xyzp.size();++ihp){
+      if(xyzp[ihp].stereo()){
+	if(xyzp[ihp].use())
+	  s->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+	else
+	  bs->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+      } else {
+	if(xyzp[ihp].use())
+	  g->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+	else
+	  b->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+      }
     }
-    for(size_t isp=0;isp<sxyzp.size();++isp){
-      _sdist->Fill(sxyzp[isp]._d1);
-      _sdist->Fill(sxyzp[isp]._d2);
-      _spull->Fill(sxyzp[isp]._d1/sxyzp[isp]._h1->_werr);
-      _spull->Fill(sxyzp[isp]._d2/sxyzp[isp]._h2->_werr);
-      if(sxyzp[isp].use())
-	s->Fill(sxyzp[isp]._pos.x()-myhel._center.x(),sxyzp[isp]._pos.y()-myhel._center.y());
-      else 
-	bs->Fill(sxyzp[isp]._pos.x()-myhel._center.x(),sxyzp[isp]._pos.y()-myhel._center.y());
-    }
-    
+
     TArc* fitarc = new TArc(0.0,0.0,myhel._radius);
     fitarc->SetLineColor(kRed);
     fitarc->SetLineWidth(2);
@@ -420,7 +361,7 @@ namespace mu2e
   }
 
   bool
-  HelixFit::findCenterAGE(std::vector<XYZP*> const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights) {
+  HelixFit::findCenterAGE(XYZPVector const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights) {
 // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs"
 // initialize step
     double lambda = _lambda0;
@@ -488,7 +429,7 @@ namespace mu2e
   }
   
   bool
-  HelixFit::findZ(std::vector<XYZP*>& xyzp,HelixFitResult& myhel) {
+  HelixFit::findZ(XYZPVector& xyzp,HelixFitResult& myhel) {
     using namespace boost::accumulators;
 // sort points by z
     std::sort(xyzp.begin(),xyzp.end(),zcomp());
@@ -496,34 +437,13 @@ namespace mu2e
     std::vector<FZ> finfo;
     finfo.reserve(xyzp.size());
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
-      if(xyzp[ixyzp]->use()){
+      if(xyzp[ixyzp].use()){
 	FZ fz;
-	xyzp[ixyzp]->finfo(myhel._center,fz._phi);
-	fz._z = xyzp[ixyzp]->_pos.z();
+	xyzp[ixyzp].finfo(myhel._center,fz._phi);
+	fz._z = xyzp[ixyzp]._pos.z();
 	finfo.push_back(fz);
       }
     }
-// look for residual delta rays
-//    art::ServiceHandle<art::TFileService> tfs;
-//    static unsigned igraph(0);
-//    ++igraph;
-//    char gname[100];
-//    snprintf(gname,100,"zphi%i",igraph);
-//    TH1F* g = tfs->make<TH1F>(gname,"findZ phi",50,-1.1*pi,1.1*pi);
-//    for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
-//      double dphi = deltaPhi(0.0,finfo[iphi]._phi._val);
-//      g->Fill(dphi);
-//      if((pi-dphi)/pi<0.1)g->Fill(dphi-twopi);
-//      if((pi+dphi)/pi<0.1)g->Fill(dphi+twopi);
-//    }
-//    int imax = g->GetMaximumBin();
-//    double maxn = g->GetBinContent(imax);
-//    double fmax = g->GetBinCenter(imax);
-//    double frac = maxn/finfo.size();
-// test
-//    if(frac > _dfrac){
-// mark the hits 
-//    }
 // find the initial slope
     if(finfo.size() > _minnhit){
       // make initial estimate of dfdz using 'nearby' pairs
@@ -629,14 +549,12 @@ namespace mu2e
       myhel._fz0 = fz0;
       // fix the phi for the hit points
       for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
-	double phiex = myhel._fz0 + xyzp[ixyzp]->_pos.z()*myhel._dfdz;
+	double phiex = myhel._fz0 + xyzp[ixyzp]._pos.z()*myhel._dfdz;
 	FZ fz;
-	xyzp[ixyzp]->finfo(myhel._center,fz._phi);
+	xyzp[ixyzp].finfo(myhel._center,fz._phi);
 	int nloop = (int)rint((phiex - fz._phi._val)/twopi);
-	xyzp[ixyzp]->_phi = fz._phi._val + nloop*twopi;
-	if(_filter && fabs(xyzp[ixyzp]->_phi-phiex)> _nsigma*fz._phi._err){
-	  xyzp[ixyzp]->setUse(false);
-	}
+	xyzp[ixyzp]._phi = fz._phi._val + nloop*twopi;
+	if(_filter && fabs(xyzp[ixyzp]._phi-phiex)> _nsigma*fz._phi._err) xyzp[ixyzp].setOutlier();
       }
       return true;
     } else
@@ -644,7 +562,7 @@ namespace mu2e
   }
 
   void
-  HelixFit::plotZ(TrkDef const& mytrk, std::vector<HitXYZP> const& hxyzp, std::vector<StereoXYZP> const& spair, HelixFitResult const& myhel) const {
+  HelixFit::plotZ(HelixDef const& mytrk, XYZPVector const& xyzp, HelixFitResult const& myhel) const {
     unsigned igraph = 10*mytrk.eventId()+mytrk.trackId();
     art::ServiceHandle<art::TFileService> tfs;
     char gname[100];
@@ -669,24 +587,19 @@ namespace mu2e
     s->SetMarkerColor(kGreen);
     bs->SetMarkerStyle(26);
     bs->SetMarkerColor(kYellow);
-    for(unsigned ih=0;ih<hxyzp.size();++ih){
-      //        graph->SetPoint(ih,hxyzp[ih]._pos.x()-myhel._center.x(),hxyzp[ih]._pos.y()-myhel._center.y());
-      if(hxyzp[ih].use())
-	g->Fill(hxyzp[ih]._pos.z(),hxyzp[ih]._phi);
-      else
-	b->Fill(hxyzp[ih]._pos.z(),hxyzp[ih]._phi);
+    for(unsigned ih=0;ih<xyzp.size();++ih){
+      if(xyzp[ih].stereo()){
+	if(xyzp[ih].use())
+	  s->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	else
+	  bs->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+      } else {
+	if(xyzp[ih].use())
+	  g->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	else
+	  b->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+      }
     }
-    for(size_t isp=0;isp<spair.size();++isp){
-      //      double phi = atan2(spair[isp]._pos.y()-myhel._center.y(),spair[isp]._pos.x()-myhel._center.x());
-      //      double phiex = myhel._fz0 + spair[isp]._pos.z()*myhel._dfdz;
-      //      int nloop = (int)rint((phiex-phi)/twopi);
-      //      phi += nloop*twopi;
-      if(spair[isp].use())
-	s->Fill(spair[isp]._pos.z(),spair[isp]._phi);
-      else 
-	bs->Fill(spair[isp]._pos.z(),spair[isp]._phi);
-    }
-
     TF1* line = new TF1("line","[0]+[1]*x",-1500,1500);
     line->SetParameter(0,myhel._fz0);
     line->SetParameter(1,myhel._dfdz);
@@ -696,7 +609,7 @@ namespace mu2e
   }
 
   bool
-  HelixFit::initCircle(std::vector<XYZP*> const& xyzp,HelixFitResult& myhel) {
+  HelixFit::initCircle(XYZPVector const& xyzp,HelixFitResult& myhel) {
     bool retval(false);
     static const double mind2 = _mindist*_mindist;
     using namespace boost::accumulators;
@@ -707,8 +620,8 @@ namespace mu2e
     std::vector<CLHEP::Hep3Vector> pos;
     pos.reserve(xyzp.size());
     for(size_t ixyzp=0; ixyzp < nxyzp; ++ixyzp){
-      if(xyzp[ixyzp]->use()){
-	pos.push_back(xyzp[ixyzp]->_pos);
+      if(xyzp[ixyzp].use()){
+	pos.push_back(xyzp[ixyzp]._pos);
       }
     }
     // I should randomly pick entries if there are too many, FIXME
@@ -761,14 +674,6 @@ namespace mu2e
       double rho = extract_result<tag::median>(accr);
       myhel._center = CLHEP::Hep3Vector(centx,centy,0.0);
       myhel._radius = rho;
-      // use the center to estimate the radius
-      //      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accr;
-      //      for(unsigned ixyzp=0; ixyzp<nxyzp; ++ixyzp){
-      //	if(xyzp[ixyzp]->use()&&(xyzp[ixyzp]->use(XYZP::stereopoint)||!_stereoinit))
-      //	  accr((pos(ip) - myhel._center).perpPart().mag());
-      //      }
-      //      myhel._radius = extract_result<tag::median>(accr);
-      // restrict the range
       if(_forcep){
 	myhel._radius = std::max(std::min(myhel._radius,_rmax),_rmin);
 	retval = true;
@@ -779,54 +684,34 @@ namespace mu2e
     return retval;
   }
 
-  void
-  HelixFit::fillHitXYZP(TrkDef const& mytrk, std::vector<HitXYZP>& xyzp) {
-    // calibration and tracker 
+  void HelixFit::fillXYZP(HelixDef const& mytrk, XYZPVector& xyzp) {
     const Tracker& tracker = getTrackerOrThrow();
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    if(mytrk.strawHitPositionCollection() != 0){
     // loop over straw hits, and store their positions
-    for(std::vector<hitIndex>::const_iterator istr=mytrk.strawHitIndices().begin();
-	istr != mytrk.strawHitIndices().end(); ++istr){
-      StrawHit const& sh = mytrk.strawHitCollection()->at(istr->_index);
-      Straw const& straw= tracker.getStraw(sh.strawIndex());
-      SHInfo shinfo;
-      tcal->StrawHitInfo(straw,sh,shinfo);
-      xyzp.push_back(HitXYZP(istr->_index,shinfo._pos,straw.getDirection(),shinfo._tdres,_sfac*straw.getRadius()));
-    } 
-  }
-
-  void
-  HelixFit::findStereoPairs(std::vector<HitXYZP>& xyzp, std::vector<StereoXYZP>& pairs) {
-    size_t nxy = xyzp.size();
-    for(size_t ixy=0;ixy<nxy;++ixy){
-      if(xyzp[ixy].use()){
-	for(size_t jxy=ixy+1;jxy<nxy;++jxy){
-	  // don't reuse hits already part of a stereo pair, unless requested	  
-	  if(xyzp[jxy].use() || _allstereo ){
-	    HitXYZP& p1 = xyzp[ixy];
-	    HitXYZP& p2 = xyzp[jxy];
-	    // ignore nearly parallel wires or hits in different stations or hits in the same plane
-	    double dz = fabs(p1._pos.z()-p2._pos.z());  
-	    if(fabs(p1._wdir.dot(p2._wdir)) < _maxdot && dz > 0.0 && dz < _maxdz ) {
-	      StereoXYZP sp(p1,p2);
-	      // find the 2-d intersection between these lints
-	      double rho = sp._pos.perp();
-	      // if pair within TD limits and the physical detector, record
-	      if(fabs(sp._d1) < _nssigma*p1._werr && fabs(sp._d2) < _nssigma*p2._werr &&
-		  rho > _rhomin && rho < _rhomax){
-		sp.setUse(true);
-		pairs.push_back(sp);
-		break;
-	      }
-	    }
-	  }
-	}
+      for(std::vector<hitIndex>::const_iterator istr=mytrk.strawHitIndices().begin();
+	  istr != mytrk.strawHitIndices().end(); ++istr){
+	StrawHit const& sh = mytrk.strawHitCollection()->at(istr->_index);
+	Straw const& straw= tracker.getStraw(sh.strawIndex());
+	StrawHitPosition const& shp = mytrk.strawHitPositionCollection()->at(istr->_index);
+	XYZP pos(istr->_index,sh,shp,straw);
+	xyzp.push_back(pos);
       } 
+    } else {
+      static const double twoinvsqrt12(2.0/sqrt(12.0));
+      ConditionsHandle<TrackerCalibrations> tcal("ignored");
+      for(std::vector<hitIndex>::const_iterator istr=mytrk.strawHitIndices().begin();
+	  istr != mytrk.strawHitIndices().end(); ++istr){
+	StrawHit const& sh = mytrk.strawHitCollection()->at(istr->_index);
+	Straw const& straw= tracker.getStraw(sh.strawIndex());
+	SHInfo shinfo;
+	tcal->StrawHitInfo(straw,sh,shinfo);
+	xyzp.push_back(XYZP(istr->_index,shinfo._pos,straw.getDirection(),shinfo._tdres,twoinvsqrt12*straw.getRadius()));
+      }
     }
   }
 
   void
-  HelixFit::findAGE(std::vector<XYZP*> const& xyzp, Hep3Vector const& center,double& rmed, double& age,bool useweights) {
+  HelixFit::findAGE(XYZPVector const& xyzp, Hep3Vector const& center,double& rmed, double& age,bool useweights) {
     using namespace boost::accumulators;
     // protection against empty data
     if(xyzp.size() == 0)return;
@@ -835,10 +720,10 @@ namespace mu2e
     unsigned nxyzp = xyzp.size();
     double wtot(0.0);
     for(unsigned ixyzp=0; ixyzp < nxyzp; ++ixyzp){
-      if(xyzp[ixyzp]->use()){
+      if(xyzp[ixyzp].use()){
 	// find radial information for this point
 	VALERR rad;
-	xyzp[ixyzp]->rinfo(center,rad);
+	xyzp[ixyzp].rinfo(center,rad);
 	radii.push_back(rad);
 	// compute the normalization too
 	wtot += useweights ? 1.0/rad._err : 1.0;
@@ -865,21 +750,21 @@ namespace mu2e
   }
 
   void
-  HelixFit::fillSums(std::vector<XYZP*> const& xyzp, Hep3Vector const& center,double rmed,SUMS& sums,bool useweights) {
+  HelixFit::fillSums(XYZPVector const& xyzp, Hep3Vector const& center,double rmed,SUMS& sums,bool useweights) {
     // initialize sums
     sums.clear();
     // compute the transverse sums
     double wtot(0.0);
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
-      if(xyzp[ixyzp]->use()){
+      if(xyzp[ixyzp].use()){
 	// find radial information for this point
 	VALERR rad;
-	xyzp[ixyzp]->rinfo(center,rad);
+	xyzp[ixyzp].rinfo(center,rad);
 	double wt = useweights ? 1.0/rad._err : 1.0;
 	wtot += wt;
 	// now x,y projections
-	double pcos = (xyzp[ixyzp]->_pos.x()-center.x())/rad._val;
-	double psin = (xyzp[ixyzp]->_pos.y()-center.y())/rad._val;
+	double pcos = (xyzp[ixyzp]._pos.x()-center.x())/rad._val;
+	double psin = (xyzp[ixyzp]._pos.y()-center.y())/rad._val;
 	// 3 conditions: either the radius is inside the median, outside the median, or 'on' the median.  We define 'on'
 	// in terms of the error
 	if(fabs(rad._val -rmed) < rad._err ){
@@ -908,7 +793,7 @@ namespace mu2e
   }
 
   void
-  HelixFit::filterDist(std::vector<XYZP*>& xyzp) {
+  HelixFit::filterDist(XYZPVector& xyzp) {
     using namespace boost::accumulators;
     static const double pi(M_PI);
     static const double twopi(2*pi);
@@ -917,48 +802,49 @@ namespace mu2e
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx;
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accy;
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
-      if(xyzp[ixyzp]->use()){
-	accx(xyzp[ixyzp]->_pos.x());
-	accy(xyzp[ixyzp]->_pos.y());
+      if(xyzp[ixyzp].use()){
+	accx(xyzp[ixyzp]._pos.x());
+	accy(xyzp[ixyzp]._pos.y());
       }
     }
     double mx = extract_result<tag::median>(accx);
     double my = extract_result<tag::median>(accy);
     double mphi = atan2(my,mx);
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
-      if(xyzp[ixyzp]->use()){
-	double dphi = xyzp[ixyzp]->_phi - mphi;
+      if(xyzp[ixyzp].use()){
+	double dphi = xyzp[ixyzp]._phi - mphi;
 	if(fabs(dphi) > pi){
 	  if(dphi > 0)
-	    xyzp[ixyzp]->_phi -= twopi;
+	    xyzp[ixyzp]._phi -= twopi;
 	  else
-	    xyzp[ixyzp]->_phi += twopi;
+	    xyzp[ixyzp]._phi += twopi;
 	}
       }
     }
     // now cut
     CLHEP::Hep3Vector mh(mx,my,0.0);
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
-      double dist = sqrt(xyzp[ixyzp]->_pos.perpPart().diff2(mh));
-      if(dist > _maxdist){
-	xyzp[ixyzp]->setUse(false);
-	xyzp[ixyzp]->setUse(true,XYZP::outlier);
-      }
+      double dist = sqrt(xyzp[ixyzp]._pos.perpPart().diff2(mh));
+      if(dist > _maxdist)xyzp[ixyzp].setOutlier();
     }
   }
 
   void
-   HelixFit::filterXY(std::vector<XYZP*>& xyzp, Hep3Vector const& center,double rmed,bool& changed) {
-     changed = false;
-     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
-       VALERR rad;
-       xyzp[ixyzp]->rinfo(center,rad);
-       bool use = fabs(rad._val -rmed) < _nsigma*rad._err;
-       bool olduse = xyzp[ixyzp]->use();
-       xyzp[ixyzp]->setUse(use);
-       changed |= olduse != xyzp[ixyzp]->use();
-     }
-   }
+  HelixFit::filterXY(XYZPVector& xyzp, Hep3Vector const& center,double rmed,bool& changed) {
+    static StrawHitFlag other(StrawHitFlag::other);
+    changed = false;
+    for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
+      VALERR rad;
+      xyzp[ixyzp].rinfo(center,rad);
+      bool olduse = xyzp[ixyzp].use();
+  // update the flag each iteration, until we've converged
+      if(fabs(rad._val -rmed) > _nsigma*rad._err)
+	xyzp[ixyzp]._flag.merge(other);
+      else
+	xyzp[ixyzp]._flag.clear(other);
+      changed |= olduse != xyzp[ixyzp].use();
+    }
+  }
 
   double
   HelixFit::deltaPhi(double phi1, double phi2){

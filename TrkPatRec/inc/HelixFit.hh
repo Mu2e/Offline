@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.hh,v 1.3 2012/12/07 00:52:52 brownd Exp $
+// $Id: HelixFit.hh,v 1.4 2013/03/08 04:33:26 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2012/12/07 00:52:52 $
+// $Date: 2013/03/08 04:33:26 $
 //
 #ifndef HelixFit_HH
 #define HelixFit_HH
@@ -11,7 +11,9 @@
 // framework
 #include "fhiclcpp/ParameterSet.h"
 // data
+#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -27,9 +29,21 @@ class TH1F;
 
 namespace mu2e 
 {
+
+// add the StrawHitPosition collection to TrkDef
+  class HelixDef : public TrkDef {
+    public:
+      HelixDef(TrkDef const& tdef) : TrkDef(tdef), _shpos(0) {}
+      HelixDef(const StrawHitCollection* strawcollection,const StrawHitPositionCollection* shposcollection, const std::vector<hitIndex>& strawhits,
+      TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream) : TrkDef(strawcollection,strawhits,tpart,fdir), _shpos(shposcollection) {}
+      HelixDef() {}
+      const StrawHitPositionCollection* strawHitPositionCollection() const { return _shpos; }
+    private:
+      const StrawHitPositionCollection* _shpos;
+  };
 // output struct
   struct HelixFitResult {
-    TrkDef _tdef; // must copy by value as references can't be re-assigned
+    HelixDef _hdef; // must copy by value as references can't be re-assigned
 // fit status
     TrkErrCode _fit; // error code from last fit
 // circle parameters; the z center is ignored.
@@ -38,10 +52,11 @@ namespace mu2e
 // Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), fz0 is the phi value of the particle where it goes through z=0
 // note that dfdz has a physical ambiguity in q*zdir.
     double _dfdz, _fz0;
-    HelixFitResult(TrkDef const& tdef) : _tdef(tdef),  _fit(TrkErrCode::fail),_radius(-1.0),_dfdz(0.0),_fz0(0.0) {}
+    HelixFitResult(TrkDef const& tdef) : _hdef(tdef),  _fit(TrkErrCode::fail),_radius(-1.0),_dfdz(0.0),_fz0(0.0) {}
+    HelixFitResult(HelixDef const& hdef) : _hdef(hdef),  _fit(TrkErrCode::fail),_radius(-1.0),_dfdz(0.0),_fz0(0.0) {}
     HelixFitResult& operator =(HelixFitResult const& other);
  };
-  
+
 // utility struct; value plus error
   struct VALERR {
     double _val;
@@ -54,70 +69,39 @@ namespace mu2e
 
 // utility struct
   struct XYZP {
-    enum useBit{good=0,stereohit=1,stereopoint=2,outlier=3};
+// straw hit index
+    size_t _ind;
 // position
     CLHEP::Hep3Vector _pos;
 // ambiguity-resolved phi angle
     double _phi;
-// use flag
-    unsigned _use;
-// subhits
-    std::vector<XYZP*> _subhits;
-// initialize some variables on construction
-    XYZP():_phi(0.0),_use(1<<good){}
-    XYZP(CLHEP::Hep3Vector const& pos) : _pos(pos),_phi(pos.phi()),_use(1<<good) {} 
-// radial position information
-    virtual void rinfo(CLHEP::Hep3Vector const& center, VALERR& rad) const = 0;
-    virtual void finfo(CLHEP::Hep3Vector const& center, VALERR& phi) const = 0;
-    virtual void setUse(bool use,useBit ibit=good) { if(use) _use |= (1<<ibit); else _use &= !(1<<ibit); }
-    virtual bool use(useBit ibit=good) const {return (_use&(1<<ibit)) == (1<<ibit); }
-  };
-// struct for hits
-  struct HitXYZP : public XYZP {
-// straw hit index
-    size_t _ind;
+// flag
+    StrawHitFlag _flag;
 // wire direction
     CLHEP::Hep3Vector _wdir;
 // straw radial direction, perp to Z and wire direction
     CLHEP::Hep3Vector _sdir;
 // errors are asymmetric; along the wire is given by time division, perp to the wire by the straw size/sqrt(12)
-    double _werr, _serr;
-// constructor
-    HitXYZP(size_t ind,CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir, double werr, double serr) :
-    XYZP(pos),_ind(ind),_wdir(wdir),_sdir(wdir.y(),-wdir.x(),0.0),_werr(werr),_serr(serr) {}
-// compute radius and radial error, given the circle center
+    double _perr,_rerr;
+// initialize some variables on construction
+    XYZP():_phi(0.0){}
+    XYZP(size_t index,StrawHit const& sh, StrawHitPosition const& shp,Straw const& straw);
+    XYZP(size_t ind,CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir, double werr, double serr) :
+      _ind(ind),_pos(pos),_phi(_pos.phi()),_wdir(wdir),_sdir(wdir.y(),-wdir.x(),0.0),_perr(_efac*werr),_rerr(_efac*serr) {}
+ 
+// radial position information
     virtual void rinfo(CLHEP::Hep3Vector const& center, VALERR& rad) const;
     virtual void finfo(CLHEP::Hep3Vector const& center, VALERR& phi) const;
-    virtual bool use(useBit ibit=good) const;
+    bool use() const;
+    bool stereo() const;
+    void setOutlier();
+    void setUse(bool use);
+    static double _efac;
+// flag bits to define use
+    static StrawHitFlag _useflag;
   };
 
-// struct for stereo pair  
-  struct StereoXYZP : public XYZP {
-    StereoXYZP(HitXYZP& h1,HitXYZP& h2);
-    StereoXYZP(); // needed for std::vector
-    HitXYZP* _h1;
-    HitXYZP* _h2;
-    double _d1, _d2;
-    double _dz; // z separation of input hits
-    double _rerr,_ferr; // size of position in radial, azimuthal directions
-    virtual void rinfo(CLHEP::Hep3Vector const& center, VALERR& rad) const;
-    virtual void finfo(CLHEP::Hep3Vector const& center, VALERR& phi) const;
-// override setting use flag to keep bookkeepping right.
-    virtual void setUse(bool use,useBit ibit=good);
-    virtual bool use(useBit ibit=good) const;
-    static double _sfactor;
-  };
-
-// container struct to keep data coherent
-  struct XYZPVector {
-    std::vector<HitXYZP> _hxyzp;
-    std::vector<StereoXYZP> _sxyzp;
-    std::vector<XYZP*> _xyzp; // note: these objects are owned by the vectors above!!!
-// insure consistency on construction
-    XYZPVector(std::vector<HitXYZP> const& hits);
-    XYZPVector(std::vector<HitXYZP> const& hits,std::vector<StereoXYZP> const& shits);
-  };
-
+  typedef std::vector<XYZP> XYZPVector;
 // struct to hold AGE sums
   struct SUMS {
 // weighted (s)ums of (c)osine and (s)in for points on (c)ircumference, (o)utside the median radius, or (i)nside the median radius
@@ -142,25 +126,24 @@ namespace mu2e
     void helixParams (HelixFitResult const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const;
   protected:
 // utlity functions
-    bool findXY(std::vector<XYZP*>& xyzp,HelixFitResult& myhel);
-    bool findZ(std::vector<XYZP*>& xyzp,HelixFitResult& myhel);
-    bool initCircle(std::vector<XYZP*> const& xyzp,HelixFitResult& myhel);
+    bool findXY(XYZPVector& xyzp,HelixFitResult& myhel);
+    bool findZ(XYZPVector& xyzp,HelixFitResult& myhel);
+    bool initCircle(XYZPVector const& xyzp,HelixFitResult& myhel);
   private:
-    void fillHitXYZP(TrkDef const& mytrk, std::vector<HitXYZP>& xyzp);
-    void findStereoPairs(std::vector<HitXYZP>& xyzp, std::vector<StereoXYZP>& spairs);
+    void fillXYZP(HelixDef const& mytrk, XYZPVector& xyzp);
 // cached bfield accessor
     double bz() const;
 // utility function to resolve phi wrapping    
     static double deltaPhi(double phi1, double phi2);
 // diagnostics
-    void plotXY(TrkDef const& mytrk, std::vector<HitXYZP>const& xyzp, std::vector<StereoXYZP> const& pairs, HelixFitResult const& myhel) const;
-    void plotZ(TrkDef const& mytrk, std::vector<HitXYZP> const& xyzp, std::vector<StereoXYZP> const& pairs, HelixFitResult const& myhel) const;
+    void plotXY(HelixDef const& mytrk, XYZPVector const& xyzp, HelixFitResult const& myhel) const;
+    void plotZ(HelixDef const& mytrk, XYZPVector const& xyzp, HelixFitResult const& myhel) const;
 // find the Absolute Geometric Error.  Returns the median radius as well.
-    bool findCenterAGE(std::vector<XYZP*> const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights=false);
-    void findAGE(std::vector<XYZP*> const& xyzp, Hep3Vector const& center,double& rmed, double& age,bool useweights=false);
-    void fillSums(std::vector<XYZP*> const& xyzp, Hep3Vector const& center,double rmed,SUMS& sums,bool useweights=false);
-    void filterXY(std::vector<XYZP*>& xyzp, Hep3Vector const& center,double rmed,bool& changed);
-    void filterDist(std::vector<XYZP*>& xyzp);
+    bool findCenterAGE(XYZPVector const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights=false);
+    void findAGE(XYZPVector const& xyzp, Hep3Vector const& center,double& rmed, double& age,bool useweights=false);
+    void fillSums(XYZPVector const& xyzp, Hep3Vector const& center,double rmed,SUMS& sums,bool useweights=false);
+    void filterXY(XYZPVector& xyzp, Hep3Vector const& center,double rmed,bool& changed);
+    void filterDist(XYZPVector& xyzp);
 // configuration parameters
     int _diag,_debug;
     double _mindelta; // minimum slope difference to use a triple in circle center initialization
@@ -173,7 +156,7 @@ namespace mu2e
     double _minzsep, _maxzsep; // Z separation of points for pitch estimate
     double _maxdz, _maxdot; // stereo selection parameters
     double _rbias;  // robust fit parameter bias
-    double _sfac; // error factor  straw position perp to wire direction
+    double _efac; // error factor
     double _rhomin, _rhomax; // crude cuts on tranvservse radius for stereo hits
     double _mindist; // minimum distance between points used in circle initialization
     double _maxdist; // maximum distance in hits
@@ -191,7 +174,6 @@ namespace mu2e
 // cached value of radius and pitch sign: these depend on the particle type
 // and direction
     double _rmin, _rmax, _smin, _smax, _dfdzsign;
-    mutable TH1F *_sdist, *_spull;
   };
 }
 #endif
