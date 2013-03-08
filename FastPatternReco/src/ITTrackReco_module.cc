@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.16 2012/12/05 18:49:00 brownd Exp $
+// $Id: ITTrackReco_module.cc,v 1.17 2013/03/08 04:34:58 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/12/05 18:49:00 $
+// $Date: 2013/03/08 04:34:58 $
 //
 // Original author G. Tassielli
 //
@@ -117,7 +117,7 @@ using namespace std;
 
 namespace mu2e {
 
-//typedef std::map<std::vector<HitXYZP>::iterator, std::pair<size_t, size_t> > RbstFitPntsLpsPntsRel;
+//typedef std::map<std::vector<XYZP>::iterator, std::pair<size_t, size_t> > RbstFitPntsLpsPntsRel;
 typedef std::map<size_t, std::pair<size_t, size_t> > RbstFitPntsLpsPntsRel;
 
 
@@ -280,8 +280,8 @@ private:
         inline bool findWireCross(int crossCellId1, int crossCellId2, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, hitsInClsID::const_iterator &clHitsIDs_it,  closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, hitsInClsID::const_iterator &lowRadClHitsIDs_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints);
         bool  iteratMaxMinWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints);
         bool  iteratMinMaxWireCross(closClinRadLay &radCls_1v, closClinRadLay &radCls_2v, closClinRadLay::iterator &radCls_1v_it, closClstcol::iterator &closCls_it, closClinRadLay::iterator &radCls_2v_it, closClstcol::iterator &lowRadClosCls_it, int matchZdir, float prevZVal, CellGeometryHandle *itwp, points3D &potLoopPoints);
-        int   findZclusters( std::vector<HitXYZP> &xyzp, float zdim=20.0, float zPeakSigma=4.0, float zPeakThr=0.01, TH1F *zHist=0x0 );
-        int   findZclusters( HelixTraj &trkhelixe, std::vector<HitXYZP> &xyzp, std::vector< std::vector<size_t> > &pntIdsLoops/*, std::vector<TrkHelix> &helixeFitLoops, std::vector<HelixTraj> &trkhelixeLoops*/);
+        int   findZclusters( std::vector<XYZP> &xyzp, float zdim=20.0, float zPeakSigma=4.0, float zPeakThr=0.01, TH1F *zHist=0x0 );
+        int   findZclusters( HelixTraj &trkhelixe, std::vector<XYZP> &xyzp, std::vector< std::vector<size_t> > &pntIdsLoops/*, std::vector<TrkHelix> &helixeFitLoops, std::vector<HelixTraj> &trkhelixeLoops*/);
 
         void  searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls_Min, auto_ptr<TrackSeedCollection> &seeds,
                         CellGeometryHandle *itwp, std::vector<TrkTimePeak> &tpeaks, size_t &ipeak, art::Handle<TrackerHitTimeClusterCollection> &tclustHandle, art::Handle<StrawHitCollection> &pdataHandle
@@ -1272,7 +1272,7 @@ bool ITTrackReco::iteratMinMaxWireCross(closClinRadLay &radCls_1v, closClinRadLa
         return newFoundWrCross;
 }
 
-int   ITTrackReco::findZclusters( std::vector<HitXYZP> &xyzp, float zdim, float zPeakSigma, float zPeakThr, TH1F *zHist ) {
+int   ITTrackReco::findZclusters( std::vector<XYZP> &xyzp, float zdim, float zPeakSigma, float zPeakThr, TH1F *zHist ) {
 
         int nBins;
         TH1F *tmpZhist;
@@ -1286,7 +1286,7 @@ int   ITTrackReco::findZclusters( std::vector<HitXYZP> &xyzp, float zdim, float 
         //cout<<"ZMin "<<_minZ<<" Zmax "<<_maxZ<<" nBins "<<nBins<<endl;
         std::multimap <int, size_t> hitBinsrel;
         size_t kHit=0;
-        for (std::vector<HitXYZP>::iterator xyzp_it=xyzp.begin(); xyzp_it!=xyzp.end(); ++xyzp_it) {
+        for (std::vector<XYZP>::iterator xyzp_it=xyzp.begin(); xyzp_it!=xyzp.end(); ++xyzp_it) {
                 hitBinsrel.insert ( std::pair<int,size_t> (tmpZhist->Fill(xyzp_it->_pos.z()), kHit) );
                 ++kHit;
         }
@@ -1317,11 +1317,11 @@ int   ITTrackReco::findZclusters( std::vector<HitXYZP> &xyzp, float zdim, float 
         return nfound;
 }
 
-int   ITTrackReco::findZclusters( HelixTraj &trkhelixe, std::vector<HitXYZP> &xyzp, std::vector< std::vector<size_t> > &pntIdsLoops/*, std::vector<TrkHelix> &helixeFitLoops, std::vector<HelixTraj> &trkhelixeLoops*/) {
+int   ITTrackReco::findZclusters( HelixTraj &trkhelixe, std::vector<XYZP> &xyzp, std::vector< std::vector<size_t> > &pntIdsLoops/*, std::vector<TrkHelix> &helixeFitLoops, std::vector<HelixTraj> &trkhelixeLoops*/) {
 
         size_t lHit=0;
         listZHitIdrels pntsOdered;
-        for (std::vector<HitXYZP>::iterator xyzp_it = xyzp.begin(); xyzp_it != xyzp.end(); ++xyzp_it) {
+        for (std::vector<XYZP>::iterator xyzp_it = xyzp.begin(); xyzp_it != xyzp.end(); ++xyzp_it) {
                 pntsOdered.push_back( make_pair(xyzp_it->_pos.z(),lHit) );
                 ++lHit;
         }
@@ -2179,10 +2179,10 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
         std::map<size_t, std::vector<HelixTraj> > trkhelixesLoops;
         std::map<size_t,  std::vector< std::vector<size_t> > > helixezPntIdsLoops;
         RbstFitPntsLpsPntsRel xyzpLoopRel;
-        std::vector<HitXYZP> xyzp;
-        std::vector<HitXYZP> xyzpSel;
+        std::vector<XYZP> xyzp;
+        std::vector<XYZP> xyzpSel;
         std::vector<std::pair<size_t,size_t> > sel_AllxyzPntsRel;
-        std::vector<HitXYZP> xyzpRej;
+        std::vector<XYZP> xyzpRej;
         std::vector<std::pair<size_t,size_t> > rej_AllxyzPntsRel;
 
         //TH1F tmpZhist ("tmpZhist","tmpZhist", TMath::Nint( fabs(_maxZ-_minZ)/40.0 ), _minZ,_maxZ);
@@ -2194,9 +2194,9 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
                         iPntInLoop=0;
                         for (points3D::iterator loopPoints_it = potLoops_it->begin(); loopPoints_it != potLoops_it->end(); ++loopPoints_it) {
                                 itwp->SelectCell(loopPoints_it->getRadLayID(),loopPoints_it->getInLayerCellID(), _hitsInUpstream);
-                                xyzp.push_back(HitXYZP( loopPoints_it->getInEventHitID(),
+                                xyzp.push_back(XYZP( loopPoints_it->getInEventHitID(),
 				loopPoints_it->_pos, itwp->GetCellDirection(), loopPoints_it->_sigmaz,loopPoints_it->_sigmax)); //sigmax=sigmay=sigmaR
-                                //std::vector<HitXYZP>::iterator lastPoint = xyzp.end();
+                                //std::vector<XYZP>::iterator lastPoint = xyzp.end();
                                 //--lastPoint;
                                 //xyzpLoopRel.insert( RbstFitPntsLpsPntsRel::value_type ( lastPoint,
                                 xyzpLoopRel.insert( RbstFitPntsLpsPntsRel::value_type ( xyzp.size()-1,
@@ -2218,17 +2218,17 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
                 if(isfitted){
                         cout<<"Using Robust Fit, Circle Found with center "<<helixfit._center<<" and Rad "<<helixfit._radius<<endl;
                         for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
-                                HitXYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
-                                if ( tmpXYZP._use ) {
+                                XYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
+                                if ( tmpXYZP.use() ) {
                                         double tmpDist = fabs( sqrt( pow(tmpXYZP._pos.x()-helixfit._center.x(),2) +
                                                         pow(tmpXYZP._pos.y()-helixfit._center.y(),2) ) -
                                                         helixfit._radius );
-                                        if ( tmpDist<3.0*tmpXYZP._serr ) {
+                                        if ( tmpDist<3.0*tmpXYZP._rerr ) {
                                                 selectedPnts.push_back( potLoops.at(xyzpLoopRel_it->second.first).at(xyzpLoopRel_it->second.second) );
                                                 xyzpSel.push_back(tmpXYZP);
                                                 sel_AllxyzPntsRel.push_back( std::pair<size_t,size_t> (xyzpSel.size()-1, xyzpLoopRel_it->first) );
                                         } else {
-                                                tmpXYZP._use = false;
+                                                tmpXYZP.setUse(false);
                                                 xyzpRej.push_back(tmpXYZP);
                                                 rej_AllxyzPntsRel.push_back( std::pair<size_t,size_t> (xyzpRej.size()-1, xyzpLoopRel_it->first) );
                                         }
@@ -2260,7 +2260,7 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
                         bool isLoopFitted;
                         for ( size_t iTrkLoop=0; iTrkLoop<helixezPntIdsLoops[iTrackFound].size(); ++iTrkLoop ) {
                                 std::vector<size_t> &loopPntIds = helixezPntIdsLoops[iTrackFound].at(iTrkLoop);
-                                std::vector<HitXYZP> xyzpLoop;
+                                std::vector<XYZP> xyzpLoop;
                                 for (std::vector<size_t>::iterator loopPntIds_it = loopPntIds.begin(); loopPntIds_it != loopPntIds.end(); ++loopPntIds_it) {
                                         xyzpLoop.push_back( xyzpSel.at(*loopPntIds_it) );
                                 }
@@ -2392,13 +2392,13 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
         }
 
         /*
-        for (std::vector<HitXYZP>::iterator xyzp_it = xyzp.begin(); xyzp_it != xyzp.end(); ++xyzp_it ) {
-                cout<<" xyzp "<<xyzp_it->_pos<<" serr "<<xyzp_it->_serr<<" use "<<xyzp_it->_use<<endl;
+        for (std::vector<XYZP>::iterator xyzp_it = xyzp.begin(); xyzp_it != xyzp.end(); ++xyzp_it ) {
+                cout<<" xyzp "<<xyzp_it->_pos<<" serr "<<xyzp_it->_rerr<<" use "<<xyzp_it->use()<<endl;
         }
         cout<<"-----------------------------------------"<<endl;
         for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
-                //cout<<" xyzp "<<xyzpLoopRel_it->first->_pos<<" serr "<<xyzpLoopRel_it->first->_serr<<" use "<<xyzpLoopRel_it->first->_use<<endl;
-                cout<<" xyzp "<<xyzp.at(xyzpLoopRel_it->first)._pos<<" serr "<<xyzp.at(xyzpLoopRel_it->first)._serr<<" use "<<xyzp.at(xyzpLoopRel_it->first)._use<<endl;
+                //cout<<" xyzp "<<xyzpLoopRel_it->first->_pos<<" serr "<<xyzpLoopRel_it->first->_rerr<<" use "<<xyzpLoopRel_it->first->use()<<endl;
+                cout<<" xyzp "<<xyzp.at(xyzpLoopRel_it->first)._pos<<" serr "<<xyzp.at(xyzpLoopRel_it->first)._rerr<<" use "<<xyzp.at(xyzpLoopRel_it->first).use()<<endl;
         }
         */
 
@@ -2766,12 +2766,12 @@ void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls
 
                 if(helixesfit.size()>0)
                         for (RbstFitPntsLpsPntsRel::iterator xyzpLoopRel_it = xyzpLoopRel.begin(); xyzpLoopRel_it != xyzpLoopRel.end(); ++xyzpLoopRel_it ) {
-                                HitXYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
-                                if ( tmpXYZP._use ) {
+                                XYZP &tmpXYZP = xyzp.at(xyzpLoopRel_it->first);
+                                if ( tmpXYZP.use() ) {
                                         double tmpDist = fabs( sqrt( pow(tmpXYZP._pos.x()-helixesfit.back()._center.x(),2) +
                                                         pow(tmpXYZP._pos.y()-helixesfit.back()._center.y(),2) ) -
                                                         helixesfit.back()._radius );
-                                        if ( tmpDist<3.0*tmpXYZP._serr ) {
+                                        if ( tmpDist<3.0*tmpXYZP._rerr ) {
                                                 ((TEllipse *) drawPotCircPnts3D.at(xyzpLoopRel_it->second.first)->At(xyzpLoopRel_it->second.second))->Draw("same");
                                         }
                                 }
