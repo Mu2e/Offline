@@ -217,6 +217,22 @@ randomsaver:
 {
   module_type          : RandomNumberSaver
 }
+# pattern recognition precursors
+MakeStereoHits : {
+  module_type : MakeStereoHits
+}
+FlagStrawHits  : {
+  module_type : FlagStrawHits
+  maximumRadius : [680,600]
+}
+FlagBkgHits : {
+  module_type : FlagBkgHits
+  ClusterStrawHits  : 
+  {
+    BackgroundMask : []
+    SignalMask : ["EnergySelection"]
+  }
+}
 
 # pattern reconition protype
 TrkPatRec :
@@ -249,6 +265,10 @@ TrkPatRec :
 		ZeroDriftPenalty 			: 0.05
 		Neutralize 				: true
 	}
+	TimeSelectionBits : ["EnergySelection","RadiusSelection"]
+	HelixFitSelectionBits : ["EnergySelection","RadiusSelection"]
+	KalmanFitSelectionBits : []
+	BackgroundSelectionBits : ["DeltaRay","Isolated"]
 } # end TrkPatRec
 # variants of TrkPatRec for specific particle species and directions. These constitute the 'standard' fits
 # in future we need names instead of values for the particle type
