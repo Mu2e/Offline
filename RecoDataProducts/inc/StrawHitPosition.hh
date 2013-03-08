@@ -3,9 +3,9 @@
 //
 // Class to describe derived information from a StrawHit, in particular pos().
 // 
-// $Id: StrawHitPosition.hh,v 1.1 2013/03/08 04:29:49 brownd Exp $
+// $Id: StrawHitPosition.hh,v 1.2 2013/03/08 19:13:27 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/03/08 04:29:49 $
+// $Date: 2013/03/08 19:13:27 $
 //
 // Original author David Brown
 //
@@ -28,7 +28,7 @@ namespace mu2e {
 // construct from another hit, optionally with additional flag bits (these will be ORed with the existing bits
       StrawHitPosition(StrawHitPosition const& pos,StrawHitFlag const& orflag=_nullflag);
 // construct from a stereo hit
-      StrawHitPosition(StereoHit const& sthit);
+      StrawHitPosition(StereoHit const& sthit,size_t index);
 // null constructor for root
       StrawHitPosition();
       virtual ~StrawHitPosition();
@@ -36,11 +36,13 @@ namespace mu2e {
       enum edir {phi=0,rho=1};
 // accessors
       CLHEP::Hep3Vector const& pos() const { return _pos; }
+      float wireDist() const { return _wdist; }
       float posRes(edir dir) const { return dir==phi ? _pres : _rres; }
       float chisq() const { return _chisq; }
       StrawHitFlag const& flag() const { return _flag; }
     private:
       CLHEP::Hep3Vector _pos; // pos() of the hit
+      float _wdist; // distance along the wire
       float _pres; // pos resolution along phi
       float _rres; // pos resolution perpendicular to the Z axis
       float _chisq; // self-consistency chisquared

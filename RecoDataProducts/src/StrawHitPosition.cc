@@ -1,9 +1,9 @@
 //
 // Class to describe derived information from a StrawHit, in particular position.
 // 
-// $Id: StrawHitPosition.cc,v 1.1 2013/03/08 04:29:49 brownd Exp $
+// $Id: StrawHitPosition.cc,v 1.2 2013/03/08 19:13:27 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/03/08 04:29:49 $
+// $Date: 2013/03/08 19:13:27 $
 //
 // Original author David Brown
 //
@@ -22,6 +22,7 @@ namespace mu2e {
     Straw const& straw = tracker.getStraw(hit.strawIndex());
     tcal->StrawHitInfo(straw,hit,shinfo);
     _pos = shinfo._pos;
+    _wdist = shinfo._tddist;
     CLHEP::Hep3Vector rhat = _pos.perpPart().unit();
     CLHEP::Hep3Vector phat(-rhat.y(),rhat.x(),0.0);
     double sres = 2*_invsqrt12*straw.getRadius();
@@ -34,14 +35,15 @@ namespace mu2e {
   }
 
   StrawHitPosition::StrawHitPosition(StrawHitPosition const& shpos,StrawHitFlag const& orflag) :
-    _pos(shpos._pos),_pres(shpos._pres),_rres(shpos._rres),_chisq(shpos._chisq),_flag(shpos._flag)
+    _pos(shpos._pos),_wdist(shpos._wdist),_pres(shpos._pres),_rres(shpos._rres),_chisq(shpos._chisq),_flag(shpos._flag)
   {
     _flag.merge(orflag);
   }
 
-  StrawHitPosition::StrawHitPosition(StereoHit const& sthit ) :
+  StrawHitPosition::StrawHitPosition(StereoHit const& sthit, size_t index) :
     _pos(sthit.pos()),_pres(_invsqrt12*sthit.dist()),_rres(_invsqrt12*sthit.dist()),_chisq(sthit.chisq()),_flag(StrawHitFlagDetail::stereo)
   {
+    _wdist = (index==sthit.hitIndex1())? sthit.wdist1() : sthit.wdist2();
   }
 
   StrawHitPosition::StrawHitPosition() :_pres(-1.0),_rres(-1.0),_chisq(-1.0) {}
