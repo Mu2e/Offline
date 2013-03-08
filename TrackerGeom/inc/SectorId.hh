@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: SectorId.hh,v 1.8 2012/05/14 19:20:45 brownd Exp $
+// $Id: SectorId.hh,v 1.9 2013/03/08 04:31:45 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/05/14 19:20:45 $
+// $Date: 2013/03/08 04:31:45 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,9 @@ namespace mu2e {
   class SectorId{
 
   public:
+// qualify how close 2 sectors are by their Z separation.  This needs to be a logical
+// separation, in case there are alignment constants applied
+    enum isep{same=0,device,station1,station2,station3,apart};
 
     SectorId():
       _did(-1),
@@ -63,6 +66,8 @@ namespace mu2e {
     bool operator < (SectorId const& rhs) const {
       return _did < rhs._did || (_did == rhs._did && _sector < rhs._sector);
     }
+
+    isep separation(SectorId const& other) const;
 
     friend std::ostream& operator<<(std::ostream& ost,
                                     const SectorId& s ){
