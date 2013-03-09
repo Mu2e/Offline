@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.1 2013/03/08 04:33:26 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.2 2013/03/09 01:06:58 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/08 04:33:26 $
+// $Date: 2013/03/09 01:06:58 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -144,7 +144,6 @@ namespace mu2e
       void fillDeltaDiag(std::vector<DeltaInfo> const& deltas);
       void findPrimary(DeltaInfo const& delta,art::Ptr<SimParticle>& pptr) const;
 // correct the time for propagation through the tracker, given the Z component of beta
-      double correctedTime(double time,CLHEP::Hep3Vector const& pos) const { return time-pos.z()/(_bz*CLHEP::c_light); }
       double deltaPhi(double phi1,double phi2) const;
       void initializeReaders();
       bool findData(const art::Event& evt);
@@ -310,7 +309,7 @@ namespace mu2e
 	  size_t ish =cluster.hits()[ich]._index; 
 	  StrawHit const& sh = _shcol->at(ish);
 	  StrawHitPosition const& shp = _shpcol->at(ish);
-	  double ct = correctedTime(sh.time(),shp.pos());
+	  double ct = sh.time();
 	  double phi = dp._ppeak+deltaPhi(shp.pos().phi(),dp._ppeak);
 	  double rho = shp.pos().perp();
 	  double dphi = deltaPhi(phi,dp._ppeak);
@@ -483,7 +482,6 @@ namespace mu2e
     StrawHitFlag const& shflag = _bkgfcol->at(ish);
     shinfo._pos = shp.pos();
     shinfo._time = sh.time();
-    shinfo._corrtime = correctedTime(sh.time(),shp.pos());
     shinfo._rho = shp.pos().perp();
     shinfo._pres = shp.posRes(StrawHitPosition::phi);
     shinfo._rres = shp.posRes(StrawHitPosition::rho);

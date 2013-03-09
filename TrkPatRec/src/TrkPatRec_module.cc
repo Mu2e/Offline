@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.53 2013/03/08 04:33:26 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.54 2013/03/09 01:06:58 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/08 04:33:26 $
+// $Date: 2013/03/09 01:06:58 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -104,7 +104,7 @@ namespace mu2e
       std::string _dtspecpar;
       StrawHitFlag _tsel, _hsel, _ksel;
       StrawHitFlag _bkgsel;
-      double _maxdt, _maxdtmiss;
+      double _maxedep, _maxdt, _maxdtmiss;
       double _fbf;
       // time spectrum parameters
       unsigned _maxnpeak;
@@ -115,7 +115,6 @@ namespace mu2e
       unsigned _nbins;
       double _ymin;
       double _1dthresh;
-      double _tpeakerr;
       // outlier cuts
       double _maxseeddoca,_maxhelixdoca,_maxadddoca, _maxaddchi;
       TrkParticle _tpart; // particle type being searched for
@@ -123,6 +122,7 @@ namespace mu2e
       // cache of event objects
       const StrawHitCollection* _shcol;
       const StrawHitFlagCollection* _shfcol;
+      StrawHitFlagCollection* _flags;
       const StrawHitPositionCollection* _shpcol;
       // Kalman fitters.  Seed fit has a special configuration
       KalFit _seedfit, _kfit;
@@ -144,7 +144,6 @@ namespace mu2e
       void fillFitDiag(int ipeak, HelixFitResult const& helixfit,
 	  KalFitResult const& seedfit,KalFitResult const& kalfit);
       void fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const;
-      double correctedTime(size_t istr) const;
 
       void initializeReaders();
       // MC tools
@@ -154,7 +153,7 @@ namespace mu2e
       Int_t _eventid;
       threevec _shp;
       Float_t _edep;
-      Float_t _time, _corrtime, _rho;
+      Float_t _time, _rho;
       Int_t _nmcsteps;
       Int_t _mcnunique,_mcnmax;
       Int_t _mcpdg,_mcgen,_mcproc;
@@ -201,6 +200,7 @@ namespace mu2e
     _hsel(pset.get<std::vector<std::string> >("HelixFitSelectionBits")),
     _ksel(pset.get<std::vector<std::string> >("KalmanFitSelectionBits")),
     _bkgsel(pset.get<std::vector<std::string> >("BackgroundSelectionBits")),
+    _maxedep(pset.get<double>("MaxStrawEDep",0.007)),
     _maxdt(pset.get<double>("DtMax",40.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
     _fbf(pset.get<double>("PhiEdgeBuffer",1.1)),
@@ -211,7 +211,6 @@ namespace mu2e
     _tbin(pset.get<double>("tbin",20.0)),
     _ymin(pset.get<double>("ymin",5)),
     _1dthresh(pset.get<double>("OneDPeakThreshold",5.0)),
-    _tpeakerr(pset.get<double>("timepeakerr",-8.0)),
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
     _maxhelixdoca(pset.get<double>("MaxHelixDoca",40.0)),
     _maxadddoca(pset.get<double>("MaxAddDoca",2.75)),
@@ -228,6 +227,7 @@ namespace mu2e
     _iname = _fdir.name() + _tpart.name();
     produces<KalRepCollection>(_iname);
     produces<KalRepPayloadCollection>();
+    produces<StrawHitFlagCollection>(_iname);
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
     // location-independent files
@@ -258,6 +258,15 @@ namespace mu2e
     if(!findData(event)){
       cout << "No straw hits found " << endl;
       return;
+    }
+    // copy in the existing flags
+    _flags = new StrawHitFlagCollection(*_shfcol);
+    auto_ptr<StrawHitFlagCollection> flags(_flags );
+    // tighten the energy cut
+    static StrawHitFlag esel(StrawHitFlagDetail::energysel);
+    for(size_t ish=0;ish<_flags->size();++ish){
+      if(_shcol->at(ish).energyDep() > _maxedep && _flags->at(ish).hasAllProperties(esel))
+	_flags->at(ish).clear(esel);
     }
     // find mc truth if we're making diagnostics
     if(_diag > 0){
@@ -336,6 +345,13 @@ namespace mu2e
       if(_diag > 0)
 	fillFitDiag(ipeak,helixfit,seedfit,kalfit);
       if(kalfit._fit.success()){
+	// flag the hits used in this track.  This should use the track id, FIXME!!! (in the BaBar code)
+	if(ipeak<16){
+	  for(size_t ihit=0;ihit<kalfit._hits.size();++ihit){
+	    const TrkStrawHit* tsh = kalfit._hits[ihit];
+	    if(tsh->isActive())_flags->at(tsh->index()).merge(StrawHitFlagDetail::trackBit(ipeak));
+	  }
+	}
 	// save successful kalman fits in the event
 	tracks->push_back( kalfit.stealTrack() );
       } else
@@ -353,6 +369,7 @@ namespace mu2e
     art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
     _payloadSaver.put(*tracks, tracksID, event);
     event.put(tracks,_iname);
+    event.put(flags,_iname);
   }
 
   void TrkPatRec::endJob(){
@@ -385,8 +402,8 @@ namespace mu2e
     // loop over straws hits and fill time spectrum plot for tight hits
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
-      if(_shfcol->at(istr).hasAllProperties(_tsel) && !_shfcol->at(istr).hasAnyProperty(_bkgsel)){
-	double time = correctedTime(istr);
+      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
+	double time = _shcol->at(istr).time();
 	timespec.Fill(time);
       }
     }
@@ -404,8 +421,8 @@ namespace mu2e
       if(yp > _ymin){
 	// record hits in time with each peak, and accept them if they have a minimum # of hits
 	for(unsigned istr=0; istr<nstrs;++istr){
-	  if(_shfcol->at(istr).hasAllProperties(_hsel) && !_shfcol->at(istr).hasAnyProperty(_bkgsel)){
-	    double time = correctedTime(istr);
+	  if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
+	    double time = _shcol->at(istr).time();
 	    if(fabs(time-xp) < _maxdt)tpeak._trkptrs.push_back(istr);
 	  }
 	}
@@ -414,15 +431,6 @@ namespace mu2e
     }
     // sort the peaks so that the largest comes first
     std::sort(_tpeaks.begin(),_tpeaks.end(),greater<TrkTimePeak>());
-  }
-
-  double TrkPatRec::correctedTime(size_t istr) const {
-    // correct the strawhit time for the z-dependence of the propagation time.  This depends on the pitch and
-    // particle assumption, FIXME!!!
-    static const double slope(0.0048);
-    //    static const double slope(0.0);
-    double tcorr = _shcol->at(istr).time()-slope*_shpcol->at(istr).pos().z();
-    return tcorr;
   }
 
   void TrkPatRec::filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec){
@@ -479,9 +487,9 @@ namespace mu2e
     kalfit._krep->pieceTraj().getInfo(0.0,tpos,tdir);
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
-      if(_shfcol->at(istr).hasAllProperties(_ksel)&& !_shfcol->at(istr).hasAnyProperty(_bkgsel)){
+      if(_flags->at(istr).hasAllProperties(_ksel)&& !_flags->at(istr).hasAnyProperty(_bkgsel)){
 	StrawHit const& sh = _shcol->at(istr);
-	if(fabs(correctedTime(istr)-kalfit._krep->t0()._t0) < _maxdtmiss) {
+	if(fabs(_shcol->at(istr).time()-kalfit._krep->t0()._t0) < _maxdtmiss) {
 	  // make sure we haven't already used this hit
 	  std::vector<TrkStrawHit*>::iterator ifnd = find_if(kalfit._hits.begin(),kalfit._hits.end(),FindTrkStrawHit(sh));
 	  if(ifnd == kalfit._hits.end()){
@@ -514,7 +522,6 @@ namespace mu2e
     _shdiag->Branch("shpos",&_shp,"x/F:y/F:z/F");
     _shdiag->Branch("edep",&_edep,"edep/F");
     _shdiag->Branch("time",&_time,"time/F");
-    _shdiag->Branch("corrtime",&_corrtime,"corrtime/F");
     _shdiag->Branch("rho",&_rho,"rho/F");
     _shdiag->Branch("device",&_device,"device/I");
     _shdiag->Branch("sector",&_sector,"sector/I");
@@ -603,7 +610,6 @@ namespace mu2e
       _stereo = shp.flag().hasAllProperties(StrawHitFlagDetail::stereo);
       _edep = sh.energyDep();
       _time = sh.time();
-      _corrtime = correctedTime(istr);
       _rho = shp.pos().perp();
       // find proximity for different radii
       double esum(0.0);
@@ -654,10 +660,10 @@ namespace mu2e
 	  ++_nchit;
 	}
       }
-      _esel = _shfcol->at(istr).hasAllProperties(StrawHitFlagDetail::energysel);
-      _rsel = _shfcol->at(istr).hasAllProperties(StrawHitFlagDetail::radsel);
-      _stereo = _shfcol->at(istr).hasAllProperties(StrawHitFlagDetail::stereo);
-      _delta = _shfcol->at(istr).hasAllProperties(StrawHitFlagDetail::delta);
+      _esel = _flags->at(istr).hasAllProperties(StrawHitFlagDetail::energysel);
+      _rsel = _flags->at(istr).hasAllProperties(StrawHitFlagDetail::radsel);
+      _stereo = _flags->at(istr).hasAllProperties(StrawHitFlagDetail::stereo);
+      _delta = _flags->at(istr).hasAllProperties(StrawHitFlagDetail::delta);
       _shpres = _shpcol->at(istr).posRes(StrawHitPosition::phi);
       _shrres = _shpcol->at(istr).posRes(StrawHitPosition::rho);
       _shchisq = _shpcol->at(istr).chisq();
@@ -715,7 +721,7 @@ namespace mu2e
 
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
-      double time = correctedTime(istr);
+      double time = _shcol->at(istr).time();
       bool conversion(false);
       // summarize the MC truth for this strawhit
       if(_kfitmc.mcData()._mcsteps != 0) {
@@ -724,13 +730,13 @@ namespace mu2e
       }
       // fill plots
       rtsp->Fill(time);
-      if(_shfcol->at(istr).hasAllProperties(_tsel)){
+      if(_flags->at(istr).hasAllProperties(_tsel)){
 	ttsp->Fill(time);
       }
-      if(_shfcol->at(istr).hasAllProperties(_tsel) && !_shfcol->at(istr).hasAnyProperty(_bkgsel)){
+      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
 	tdtsp->Fill(time);
       }
-      if(_shfcol->at(istr).hasAllProperties(_ksel) && !_shfcol->at(istr).hasAnyProperty(_bkgsel)){
+      if(_flags->at(istr).hasAllProperties(_ksel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
 	ltsp->Fill(time);
       }
       if(conversion){
@@ -834,7 +840,6 @@ namespace mu2e
     StrawHitPosition const& shp = _shpcol->at(ish);
     shinfo._pos = shp.pos();
     shinfo._time = sh.time();
-    shinfo._corrtime = correctedTime(ish);
     shinfo._rho = shp.pos().perp();
     shinfo._pres = shp.posRes(StrawHitPosition::phi);
     shinfo._rres = shp.posRes(StrawHitPosition::rho);
