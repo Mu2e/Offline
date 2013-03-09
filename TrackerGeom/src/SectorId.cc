@@ -6,13 +6,16 @@ namespace mu2e {
     isep retval=apart;
     // same station
     if(other.getDeviceId()/2 == getDeviceId()/2){
+      int plane1 = getSector()%2;
+      int plane2 = other.getSector()%2;
+      int dp = plane2 - plane1;
       if(other.getDeviceId() == getDeviceId()){
-	retval = device;
+	if(dp == 0)
+	  retval = same;
+	else
+	  retval = device;
       } else {
 	int dd = other.getDeviceId() - getDeviceId();
-	int plane1 = getSector()%2;
-	int plane2 = other.getSector()%2;
-	int dp = plane2 - plane1;
 	if(dp == 0)
 	  retval = station2;
 	else if(dd*dp>0)
