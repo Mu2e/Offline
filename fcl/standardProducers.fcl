@@ -223,7 +223,7 @@ MakeStereoHits : {
 }
 FlagStrawHits  : {
   module_type : FlagStrawHits
-  maximumRadius : [680,600]
+  maximumRadius : [680,640]
 }
 FlagBkgHits : {
   module_type : FlagBkgHits
