@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: ClusterStrawHits.cc,v 1.1 2013/03/08 04:33:26 brownd Exp $
+// $Id: ClusterStrawHits.cc,v 1.2 2013/03/09 01:06:10 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/08 04:33:26 $
+// $Date: 2013/03/09 01:06:10 $
 //
 //
 #include "TrkPatRec/inc/ClusterStrawHits.hh"
@@ -150,18 +150,39 @@ namespace mu2e
     if( dt < 2*_dt){
       bool stereo = hit._flag.hasAllProperties(stflag);
       double psig2 = stereo ? _srms2 : _nsrms2;
-      double dperp = (cluster.pos()-hit._pos).perp();
-      retval = sqrt(pow(std::max(0.0,dperp-_dd),2)/psig2 + pow(std::max(0.0,dt-_dt),2)/_trms2);
+      if(_mode == hitcluster){
+	double dperp = (cluster.pos()-hit._pos).perp();
+	retval = sqrt(pow(std::max(0.0,dperp-_dd),2)/psig2 + pow(std::max(0.0,dt-_dt),2)/_trms2);
+      } else  {
+// loop over all hits in the cluster, and determine the distance to the closests one
+	double mindp2(FLT_MAX);
+	for(size_t ih=0;ih<cluster.hits().size();++ih){
+	  double dp2 = (cluster.hits()[ih]._pos-hit._pos).perp();
+	  if(dp2 < mindp2)mindp2 = dp2;
+	}
+	retval = sqrt(pow(std::max(0.0,sqrt(mindp2)-_dd),2)/psig2 + pow(std::max(0.0,dt-_dt),2)/_trms2);
+      }
     }
     return retval;
-  } 
+  }
 
   double ClusterStrawHits::distance(StrawHitCluster const& c1, StrawHitCluster const& c2) const {
     double retval = _dlarge;
     double dt = fabs(c1.time()-c2.time());
     if( dt < 2*_dt){
-      double dperp = (c1.pos()-c2.pos()).perp();
-      retval = sqrt(pow(std::max(0.0,dperp-_dd),2)/_srms2 + pow(std::max(0.0,dt-_dt),2)/_trms2);
+      if(_mode == hitcluster) {
+	double dperp = (c1.pos()-c2.pos()).perp();
+	retval = sqrt(pow(std::max(0.0,dperp-_dd),2)/_srms2 + pow(std::max(0.0,dt-_dt),2)/_trms2);
+      } else {
+	double mindp2(FLT_MAX);
+	for(size_t ih=0;ih<c1.hits().size();++ih){
+	  for(size_t jh=0;jh<c2.hits().size();++jh){
+	    double dp2 = (c1.hits()[ih]._pos-c2.hits()[jh]._pos).perp();
+	    if(dp2 < mindp2)mindp2 = dp2;
+	  }
+	}
+	retval = sqrt(pow(std::max(0.0,sqrt(mindp2)-_dd),2)/_srms2 + pow(std::max(0.0,dt-_dt),2)/_trms2);
+      }
     }
     return retval;
   } 
