@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.2 2013/03/09 01:06:58 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.3 2013/03/10 16:19:23 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/09 01:06:58 $
+// $Date: 2013/03/10 16:19:23 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -88,6 +88,15 @@ namespace mu2e
   };
 
   struct DeltaInfo {
+    DeltaInfo() : _tpeak(0.0), _ppeak(0.0), _rpeak(0.0),
+      _tmed(0.0), _pmed(0.0),_rmed(0.0),
+      _tmean(0.0), _pmean(0.0), _rmean(0.0),
+      _trms(0.0), _prms(0.0),_rrms(0.0),
+      _nbox(0),_nwide(0),_ncore(0),
+      _zmin(0.0),_zmax(0.0),_zgap(0.0),
+      _ismin(-1),_ismax(-1),_ns(-1),_nsmiss(-1),
+      _idmin(-1),_idmax(-1),_nd(-1),_ndmiss(-1),
+      _isdelta(false),_pmvaout(-100.0){}
         // peak information
     double _tpeak, _ppeak, _rpeak;
     // median information
@@ -298,38 +307,36 @@ namespace mu2e
   void FlagBkgHits::fillDeltaInfo(std::list<StrawHitCluster> const& clusters,std::vector<DeltaInfo>& dinfo){
     for (std::list<StrawHitCluster>::const_iterator icl=clusters.begin();icl!=clusters.end();++icl){
       StrawHitCluster const& cluster = *icl;
-      if(cluster.hits().size() >= _mindp){
-	DeltaInfo dp;
-	dp._tpeak = dp._tmed = cluster.time();
-	dp._ppeak = dp._pmed = cluster.pos().phi();
-	dp._rpeak = dp._rmed = cluster.pos().perp();
-	accumulator_set<double, stats<tag::variance(lazy)> > tacc,pacc,racc;
-	// find precise peak position
-	for(size_t ich=0;ich<cluster.hits().size();++ich){
-	  size_t ish =cluster.hits()[ich]._index; 
-	  StrawHit const& sh = _shcol->at(ish);
-	  StrawHitPosition const& shp = _shpcol->at(ish);
-	  double ct = sh.time();
-	  double phi = dp._ppeak+deltaPhi(shp.pos().phi(),dp._ppeak);
-	  double rho = shp.pos().perp();
-	  double dphi = deltaPhi(phi,dp._ppeak);
-	  _dhmva._dphi = dphi;
-	  _dhmva._drho = rho - dp._rmed;
-	  _dhmva._dt = ct - dp._tmed;
-	  _dhmva._stereo = shp.flag().hasAllProperties(_stmask);
-	  _dhmva._rho = rho;
-	  double gd = _dhReader->EvaluateMVA(_dhittype);
-	  int iflag(0);
-	  if(gd > _gdcore)
-	    iflag = 2;
-	  else if(gd > _gdcut)
-	    iflag = 1;
-	  DeltaHitInfo dhinfo(ish,ct,phi,rho,shp.pos().z(),gd,iflag);
-	  dp._dhinfo.push_back(dhinfo);
-	}
-	fillDeltaSummary(dp);
-	dinfo.push_back(dp);
+      DeltaInfo dp;
+      dp._tpeak = dp._tmed = cluster.time();
+      dp._ppeak = dp._pmed = cluster.pos().phi();
+      dp._rpeak = dp._rmed = cluster.pos().perp();
+      accumulator_set<double, stats<tag::variance(lazy)> > tacc,pacc,racc;
+      // find precise peak position
+      for(size_t ich=0;ich<cluster.hits().size();++ich){
+	size_t ish =cluster.hits()[ich]._index; 
+	StrawHit const& sh = _shcol->at(ish);
+	StrawHitPosition const& shp = _shpcol->at(ish);
+	double ct = sh.time();
+	double phi = dp._ppeak+deltaPhi(shp.pos().phi(),dp._ppeak);
+	double rho = shp.pos().perp();
+	double dphi = deltaPhi(phi,dp._ppeak);
+	_dhmva._dphi = dphi;
+	_dhmva._drho = rho - dp._rmed;
+	_dhmva._dt = ct - dp._tmed;
+	_dhmva._stereo = shp.flag().hasAllProperties(_stmask);
+	_dhmva._rho = rho;
+	double gd = _dhReader->EvaluateMVA(_dhittype);
+	int iflag(0);
+	if(gd > _gdcore)
+	  iflag = 2;
+	else if(gd > _gdcut)
+	  iflag = 1;
+	DeltaHitInfo dhinfo(ish,ct,phi,rho,shp.pos().z(),gd,iflag);
+	dp._dhinfo.push_back(dhinfo);
       }
+      fillDeltaSummary(dp);
+      dinfo.push_back(dp);
     }
   }
   
@@ -363,7 +370,7 @@ namespace mu2e
 	if(dhinfo._hgd > _gdcore)++delta._ncore;
       }
     }
-    if(extract_result<tag::count>(tacc2) > _mindp){
+    if(extract_result<tag::count>(tacc2) > 0){
       delta._tmean = extract_result<tag::mean>(tacc2);
       delta._pmean = extract_result<tag::mean>(pacc2);
       delta._rmean = extract_result<tag::mean>(racc2);
@@ -410,10 +417,8 @@ namespace mu2e
       _dpmva._nhalo = delta._nwide-delta._ncore;
 
       delta._pmvaout = _dpReader->EvaluateMVA(_dpeaktype);
-      delta._isdelta = delta._pmvaout > _dpeakmvacut;
-    } else {
-      delta._isdelta = false;
-    }
+      delta._isdelta = delta._nwide >= _mindp && delta._pmvaout > _dpeakmvacut;
+    } 
   }
 
  double FlagBkgHits::deltaPhi(double phi1,double phi2) const {
