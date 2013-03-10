@@ -59,7 +59,7 @@ void KalCuts() {
   mcsel = nmch+tmom+tpitch;
 //  mcsel = nmch+tmom;
 
-  reco = TCut("fitstatus>0");
+  reco = TCut("fitstatus>0&&fitmom>102");
   goodfit = reco+ncuts[icut]+t0cuts[icut]+momcuts[icut]+fitcuts[icut];
   cosmic = TCut("abs(d0)<105 && d0+2/om>450 && d0+2/om<680");
   snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
@@ -528,7 +528,7 @@ void KalFitRes(TTree* trks) {
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",251,-4,4);
 //  momres[ires]->SetStats(0);
     TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
-    TCut final = (reco+quality+mcsel);
+    TCut final = reco+quality;
     trks->Project(mname,"fitmom-mcentmom",final);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
 //    sgau->SetParameters(integral,0.0,0.5*momres[ires]->GetRMS(),0.5*momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
