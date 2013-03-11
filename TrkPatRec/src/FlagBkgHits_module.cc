@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.3 2013/03/10 16:19:23 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.4 2013/03/11 04:22:45 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/10 16:19:23 $
+// $Date: 2013/03/11 04:22:45 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -311,7 +311,6 @@ namespace mu2e
       dp._tpeak = dp._tmed = cluster.time();
       dp._ppeak = dp._pmed = cluster.pos().phi();
       dp._rpeak = dp._rmed = cluster.pos().perp();
-      accumulator_set<double, stats<tag::variance(lazy)> > tacc,pacc,racc;
       // find precise peak position
       for(size_t ich=0;ich<cluster.hits().size();++ich){
 	size_t ish =cluster.hits()[ich]._index; 
@@ -347,7 +346,7 @@ namespace mu2e
     unsigned nstations = ndevices/2;
     // fill the BDT information about each hit, compared to the medians
     // also accumulate information about selected hits
-    accumulator_set<double, stats<tag::variance(lazy)> > tacc2,pacc2,racc2;
+    accumulator_set<double, stats<tag::mean,tag::variance(lazy)> > tacc,pacc,racc;
     std::vector<bool> devices(ndevices,false);
     std::vector<bool> stations(nstations,false);
     std::vector<double> hz;
@@ -357,9 +356,9 @@ namespace mu2e
     for(size_t ih =0;ih < delta._dhinfo.size();++ih){
       DeltaHitInfo& dhinfo = delta._dhinfo[ih];
       if(dhinfo._hgd > _gdcut){
-	tacc2(dhinfo._htime);
-	pacc2(dhinfo._hphi);
-	racc2(dhinfo._hrho);
+	tacc(dhinfo._htime);
+	pacc(dhinfo._hphi);
+	racc(dhinfo._hrho);
 	const StrawHit& sh = _shcol->at(dhinfo._hindex);
 	unsigned idevice = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getDeviceId());
 	unsigned istation = idevice/2;
@@ -370,13 +369,16 @@ namespace mu2e
 	if(dhinfo._hgd > _gdcore)++delta._ncore;
       }
     }
-    if(extract_result<tag::count>(tacc2) > 0){
-      delta._tmean = extract_result<tag::mean>(tacc2);
-      delta._pmean = extract_result<tag::mean>(pacc2);
-      delta._rmean = extract_result<tag::mean>(racc2);
-      delta._trms = sqrt(extract_result<tag::variance>(tacc2));
-      delta._prms = sqrt(extract_result<tag::variance>(pacc2));
-      delta._rrms = sqrt(extract_result<tag::variance>(racc2));
+    if(extract_result<tag::count>(tacc) > 0){
+      delta._tmean = extract_result<tag::mean>(tacc);
+      delta._pmean = extract_result<tag::mean>(pacc);
+      delta._rmean = extract_result<tag::mean>(racc);
+      delta._trms = extract_result<tag::variance>(tacc);
+      delta._prms = extract_result<tag::variance>(pacc);
+      delta._rrms = extract_result<tag::variance>(racc);
+      delta._trms = (delta._trms>0.0) ? sqrt(delta._trms) : 0.0;
+      delta._prms = (delta._prms>0.0) ? sqrt(delta._prms) : 0.0;
+      delta._rrms = (delta._rrms>0.0) ? sqrt(delta._rrms) : 0.0;
       std::sort(hz.begin(),hz.end());
       delta._zmin = hz.front();
       delta._zmax = hz.back();
