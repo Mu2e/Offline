@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.30 2013/03/08 04:34:04 brownd Exp $
+// $Id: KalFitMC.hh,v 1.31 2013/03/11 23:17:44 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/08 04:34:04 $
+// $Date: 2013/03/11 23:17:44 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -98,6 +98,7 @@ namespace mu2e
     Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
     Float_t _doca, _exerr, _penerr, _t0err;
     Float_t _ht, _tddist, _tdderr, _hlen;
+    Float_t _edep, _dx;
     Int_t _ambig;
     Int_t _mcn, _mcnunique, _mcppdg, _mcpgen, _mcpproc;
     Int_t _mcpdg, _mcgen, _mcproc;
@@ -175,7 +176,7 @@ namespace mu2e
     void mcTrkInfo(SimParticle const& sp);
     void hitDiag(const TrkStrawHit* strawhit);
 // find associated sim particles to a track
-    void findMCTrk(const KalRep* krep, std::vector<MCHitSum>& mcinfo);
+    void findMCTrk(const KalRep* krep,art::Ptr<SimParticle>& spp);
 // allow creating the trees
     TTree* createTrkDiag();
     TTree* createHitDiag();

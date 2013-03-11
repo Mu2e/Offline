@@ -1,8 +1,8 @@
 //_p// compare 2 particle fits of the same track
 //
-// $Id: CompareFits_module.cc,v 1.1 2013/02/01 21:28:46 brownd Exp $
+// $Id: CompareFits_module.cc,v 1.2 2013/03/11 23:17:44 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/02/01 21:28:46 $
+// $Date: 2013/03/11 23:17:44 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -182,14 +182,14 @@ namespace mu2e {
 	      _pmcinfo = _smcinfo = MCTrkInfo();
 	      // get MC info for the upstream and downstream tracks
 	      if(hasmc){
-		std::vector<MCHitSum> pmcinfo, smcinfo;
+		art::Ptr<SimParticle> pmcinfo, smcinfo;
 		_kfitmc.findMCTrk(pkrep,pmcinfo);
 		_kfitmc.findMCTrk(skrep,smcinfo);
 		// use these to find the points where the true particle enters the tracker
-		if(pmcinfo.size() > 0 && smcinfo.size() > 0 && 
-		    pmcinfo[0] == smcinfo[0]){
+		if(pmcinfo.isNonnull() && smcinfo.isNonnull() && 
+		    pmcinfo == smcinfo){
 		  std::vector<MCStepItr> steps;
-		  _kfitmc.findMCSteps(_kfitmc.mcData()._mcvdsteps,pmcinfo[0]._spp->id(),_kfitmc.VDids(KalFitMC::trackerEnt),steps);
+		  _kfitmc.findMCSteps(_kfitmc.mcData()._mcvdsteps,pmcinfo->id(),_kfitmc.VDids(KalFitMC::trackerEnt),steps);
 		  if(steps.size() == 2){
 		    // These are sorted by time: first should be upstream, second down
 		    _kfitmc.fillMCTrkInfo(steps[0],_pmcinfo);

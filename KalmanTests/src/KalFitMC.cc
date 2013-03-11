@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.45 2013/03/08 04:34:04 brownd Exp $
+// $Id: KalFitMC.cc,v 1.46 2013/03/11 23:17:44 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/08 04:34:04 $
+// $Date: 2013/03/11 23:17:44 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -71,6 +71,15 @@ namespace mu2e
       else
 	return(x->straw().id().getDevice() < y->straw().id().getDevice());
     }
+  };
+
+  struct spcount {
+    spcount() : _count(0) {}
+    spcount(art::Ptr<SimParticle> const& spp) : _spp(spp), _count(1) {}
+    void append(art::Ptr<SimParticle> const& sp) { if(sp == _spp)++_count; }
+    bool operator ==(art::Ptr<SimParticle> const& sp) const { return _spp == sp; }
+    art::Ptr<SimParticle> _spp;
+    unsigned _count;
   };
 
 
@@ -294,11 +303,11 @@ namespace mu2e
     if(krep != 0) {
       if(_trkdiag == 0)createTrkDiag();
 // find the associated MC partcle
-      std::vector<MCHitSum> kmcinfo;
-      findMCTrk(krep,kmcinfo);
+      art::Ptr<SimParticle> spp;
+      findMCTrk(krep,spp);
 // mc track patermeter info for the particle which generated most of the hits
-      if(kmcinfo.size()>0 ){
-	SimParticle const& sp = *(kmcinfo[0]._spp);
+      if(spp.isNonnull() ){
+	SimParticle const& sp = *spp;
 	mcTrkInfo(sp);
 	if( sp.genParticle().isNonnull())
 	  _mcgenid = sp.genParticle()->generatorId().id();
@@ -388,8 +397,9 @@ namespace mu2e
 
 
   void
-  KalFitMC::findMCTrk(const KalRep* krep, std::vector<MCHitSum>& mcinfo) {
-    mcinfo.clear();
+  KalFitMC::findMCTrk(const KalRep* krep,art::Ptr<SimParticle>& spp) {
+// find the SimParticle which contributed most of the hits
+   std::vector<spcount> sct;
 // get the straw hits from the track
     std::vector<const TrkStrawHit*> hits;
     fillHitsVector(krep,hits);	
@@ -397,8 +407,25 @@ namespace mu2e
     for(size_t itsh=0;itsh<hits.size();++itsh){
       const TrkStrawHit* tsh = hits[itsh];
       PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
-      if(_mcdata._mcsteps != 0){
-	fillMCHitSum(mcptr,mcinfo);
+      std::vector<MCHitSum> mcinfo;
+      fillMCHitSum(mcptr,mcinfo);
+      if(mcinfo.size() > 0){
+	bool found(false);
+	for(size_t isp=0;isp<sct.size();++isp){
+	  if(sct[isp] == mcinfo[0]._spp){
+	    sct[isp].append(mcinfo[0]._spp);
+	    found = true;
+	    break;
+	  }
+	}
+	if(!found)sct.push_back(spcount(mcinfo[0]._spp));
+      }
+    }
+    unsigned imax(0);
+    for(size_t isp=0;isp<sct.size();++isp){
+      if(sct[isp]._count>imax){
+	imax = sct[isp]._count;
+	spp = sct[isp]._spp;
       }
     }
   }
@@ -435,6 +462,7 @@ namespace mu2e
 	tshinfo._sector = tsh->straw().id().getSector();
 	tshinfo._layer = tsh->straw().id().getLayer();
 	tshinfo._straw = tsh->straw().id().getStraw();
+	tshinfo._edep = tsh->strawHit().energyDep();
 	static HepPoint origin(0.0,0.0,0.0);
 	CLHEP::Hep3Vector hpos = tsh->hitTraj()->position(tsh->hitLen()) - origin;
 	tshinfo._z = hpos.z();
@@ -449,6 +477,8 @@ namespace mu2e
 	}
 	tshinfo._rdrift = tsh->driftRadius();
 	tshinfo._rdrifterr = tsh->driftRadiusErr();
+	double rstraw = tsh->straw().getRadius();
+	tshinfo._dx = sqrt(std::max(0.0,rstraw*rstraw-tshinfo._rdrift*tshinfo._rdrift));
 	tshinfo._trklen = tsh->fltLen();
 	tshinfo._hlen = tsh->hitLen();
 	tshinfo._ht = tsh->hitT0()._t0;

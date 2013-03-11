@@ -2,9 +2,9 @@
 // Look for particles coming from the calorimeter and reflecting back in the
 // magnetic mirror
 //
-// $Id: Reflect_module.cc,v 1.7 2012/11/15 22:05:29 brownd Exp $
+// $Id: Reflect_module.cc,v 1.8 2013/03/11 23:17:44 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/11/15 22:05:29 $
+// $Date: 2013/03/11 23:17:44 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -215,14 +215,14 @@ namespace mu2e {
 		_umcinfo = _dmcinfo = MCTrkInfo();
 // get MC info for the upstream and downstream tracks
 		if(hasmc){
-		  std::vector<MCHitSum> umcinfo, dmcinfo;
+		  art::Ptr<SimParticle> umcinfo, dmcinfo;
 		  _kfitmc.findMCTrk(ukrep,umcinfo);
 		  _kfitmc.findMCTrk(dkrep,dmcinfo);
 // use these to find the points where the true particle enters the tracker
-		  if(umcinfo.size() > 0 && dmcinfo.size() > 0 && 
-		    umcinfo[0] == dmcinfo[0]){
+		  if(umcinfo.isNonnull() && dmcinfo.isNonnull() && 
+		    umcinfo == dmcinfo){
 		    std::vector<MCStepItr> steps;
-		    _kfitmc.findMCSteps(_kfitmc.mcData()._mcvdsteps,umcinfo[0]._spp->id(),_kfitmc.VDids(KalFitMC::trackerEnt),steps);
+		    _kfitmc.findMCSteps(_kfitmc.mcData()._mcvdsteps,umcinfo->id(),_kfitmc.VDids(KalFitMC::trackerEnt),steps);
 		    if(steps.size() == 2){
 // These are sorted by time: first should be upstream, second down
 		      _kfitmc.fillMCTrkInfo(steps[0],_umcinfo);
@@ -240,7 +240,7 @@ namespace mu2e {
 			_dextdpst = dtrkext.getDeltapST(); 
 		      } 
 // fill info about the electron origin and the parent of this electron (IE the cosmic muon)
-		      fillParentInfo(umcinfo[0]._spp);
+		      fillParentInfo(umcinfo);
 		    } else
 		      std::cout << "Didn't find 2 steps" << std::endl;
 		  } else
