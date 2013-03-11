@@ -1,10 +1,8 @@
 //
 // Filter events whit killed tracks.
-// $Id: SelectEvents_module.cc,v 1.1 2012/12/13 19:43:12 brownd Exp $
+// $Id: SelectEvents_module.cc,v 1.2 2013/03/11 23:18:11 brownd Exp $
 // $Author: brownd $
-// $Date: 2012/12/13 19:43:12 $
-//
-// Contact person G. Tassielli.
+// $Date: 2013/03/11 23:18:11 $
 //
 
 // Mu2e includes.
@@ -39,22 +37,24 @@ namespace mu2e {
   private:
 
     std::vector<unsigned> _events;
-
+    bool _verbose;
   };
 
   SelectEvents::SelectEvents(fhicl::ParameterSet const& pset):
-    _events(pset.get<std::vector<unsigned> >("events")) {
+    _events(pset.get<std::vector<unsigned> >("events")),
+    _verbose(pset.get<bool>("verbose",false)) {
   }
 
   bool SelectEvents::filter(art::Event& event) {
 
     unsigned ievent = event.event();
-    if(std::find(_events.begin(),_events.end(),ievent) != _events.end())
+    if(std::find(_events.begin(),_events.end(),ievent) != _events.end()){
+      if(_verbose) std::cout << "selected event " << ievent << std::endl;
       return true;
-    else
+    } else
       return false;
 
-  } // end of ::analyze.
+  }
 
 }
 
