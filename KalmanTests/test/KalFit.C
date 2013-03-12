@@ -20,12 +20,12 @@ double t0min(720);
 double momlow(103.4);
 double momhigh(104.8);
 int minnhits(20);
-size_t icut=2;
+size_t icut=1;
 unsigned minnactive[4] = {20,22,25,30};
-unsigned minndif[4] = { 15,12,10,8};
+unsigned minndif[4] = { 8,6,4,3};
 double maxt0err[4] = {1.5,0.95,0.9,0.8};
 double maxmomerr[4] = {0.3,0.3,0.3,0.2};
-double minfitcon[4] = {1e-6,2e-3,1e-3,1e-2};
+double minfitcon[4] = {1e-6,2e-3,2e-3,1e-2};
 
 TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
 TCut reco,goodfit,cosmic,rmom,rpitch,livegate;
@@ -59,7 +59,7 @@ void KalCuts() {
   mcsel = nmch+tmom+tpitch;
 //  mcsel = nmch+tmom;
 
-  reco = TCut("fitstatus>0&&fitmom>102");
+  reco = TCut("fitstatus>0");
   goodfit = reco+ncuts[icut]+t0cuts[icut]+momcuts[icut]+fitcuts[icut];
   cosmic = TCut("abs(d0)<105 && d0+2/om>450 && d0+2/om<680");
   snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
@@ -528,7 +528,7 @@ void KalFitRes(TTree* trks) {
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",251,-4,4);
 //  momres[ires]->SetStats(0);
     TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
-    TCut final = reco+quality;
+    TCut final = reco+quality+mcsel;
     trks->Project(mname,"fitmom-mcentmom",final);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
 //    sgau->SetParameters(integral,0.0,0.5*momres[ires]->GetRMS(),0.5*momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
