@@ -1,9 +1,9 @@
 //
 // Object to cluster straw hits, used in background removal and track fitting
 //
-// $Id: ClusterStrawHits.hh,v 1.1 2013/03/08 04:33:26 brownd Exp $
+// $Id: ClusterStrawHits.hh,v 1.2 2013/03/12 14:58:46 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/08 04:33:26 $
+// $Date: 2013/03/12 14:58:46 $
 //
 #ifndef ClusterStrawHits_HH
 #define ClusterStrawHits_HH
@@ -92,6 +92,11 @@ namespace mu2e
 //    boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::mean > > _xacc, _yacc, _tacc;
   };
 
+  struct StrawHitClusterList {
+    unsigned _niter; // number of clustering iterations
+    std::list<StrawHitCluster> _clist; // list of clusters
+    std::vector<int> _cids; // map of which hits go to which clusters (parallel with StrawHitCollection)
+  };
  
   class ClusterStrawHits
   {
@@ -105,15 +110,14 @@ namespace mu2e
      void findClusters(StrawHitCollection const& shcol,
       StrawHitPositionCollection const& shpcol,
       StrawHitFlagCollection const& shfcol,
-      std::list<StrawHitCluster>& clusters,
-      std::vector<int>& clusterids) const;
+      StrawHitClusterList& clusters) const;
   protected:
 // functions to define the distance between a hit and cluster and 2 clusters; this is the variable against which
 // the clustering thresholds are applied
     double distance(StrawHitCluster const&, ClusterHit const&) const;
     double distance(StrawHitCluster const&, StrawHitCluster const&) const;
-    bool mergeClusters(std::list<StrawHitCluster>& clusters) const;
-    bool formClusters(std::vector<ClusterHit> const& chits,std::list<StrawHitCluster>& clusters,std::vector<int>& clusterids,bool update) const;
+    bool mergeClusters(StrawHitClusterList& clusters) const;
+    bool formClusters(std::vector<ClusterHit> const& chits,StrawHitClusterList& clusters) const;
 // utlity functions
   private:
 // configuration parameters
@@ -131,6 +135,7 @@ namespace mu2e
     double _trms2, _srms2, _nsrms2; // squares of rms
     unsigned _maxniter; // maximum number of iterations
     cmode _mode; // clustering mode
+    bool _updatefirst; // update positions continuously on the 1st iteration
     static std::vector<std::string> _nullsvec;
   };
 }

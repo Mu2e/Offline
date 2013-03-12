@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: ClusterStrawHits.cc,v 1.2 2013/03/09 01:06:10 brownd Exp $
+// $Id: ClusterStrawHits.cc,v 1.3 2013/03/12 14:58:46 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/09 01:06:10 $
+// $Date: 2013/03/12 14:58:46 $
 //
 //
 #include "TrkPatRec/inc/ClusterStrawHits.hh"
@@ -132,7 +132,8 @@ namespace mu2e
     _srms(pset.get<double>("StereoRMS",5.0)), //mm: individual hit resolution
     _nsrms(pset.get<double>("NonStereoRMS",25.)), // mmm: twice the individual hit resolution
     _maxniter(pset.get<unsigned>("MaxNIterations",10)),
-    _mode(static_cast<cmode>(pset.get<int>("ClusterMode",hitcluster)))
+    _mode(static_cast<cmode>(pset.get<int>("ClusterMode",hitcluster))),
+    _updatefirst(pset.get<bool>("UpdateFirstIteration",false))
   {
   // compute the squares
     _srms2 = _srms*_srms;
@@ -190,8 +191,7 @@ namespace mu2e
   void ClusterStrawHits::findClusters(StrawHitCollection const& shcol,
       StrawHitPositionCollection const& shpcol,
       StrawHitFlagCollection const& shfcol,
-      std::list<StrawHitCluster>& clusters,
-      std::vector<int>& clusterids) const {
+      StrawHitClusterList& clusters) const {
 // require consistency
     if(shcol.size() != shpcol.size() || shcol.size() != shfcol.size()){
       std::ostringstream os;
@@ -199,9 +199,9 @@ namespace mu2e
       throw std::out_of_range( os.str() );
     }
 // reset
-    clusters.clear();
+    clusters._clist.clear();
     StrawHitCluster::resetId();
-    clusterids = std::vector<int>(shcol.size(),-2);
+    clusters._cids = std::vector<int>(shcol.size(),-2);
     // loop over the straw hits and create ClusterHits
     std::vector<ClusterHit> chits;
     chits.reserve(shcol.size());
@@ -211,33 +211,31 @@ namespace mu2e
       }
     }
 // The 1st hit becomes the first cluster
-    clusters.push_back(StrawHitCluster(chits[0]));
+    clusters._clist.push_back(StrawHitCluster(chits[0]));
+    clusters._cids[chits[0]._index] = clusters._clist.begin()->id();
 // now iterate
     bool changed(true);
-    unsigned niter(0);
-    while (changed && niter < _maxniter){
-// update the positions after each added hit in the first iteration (only)
-//      bool update = niter==0;
-      bool update(false);
+    clusters._niter = 0;
+    while (changed && clusters._niter < _maxniter){
 // update the cluster positions, and record any changes in hit assignments to clusters
-      changed = formClusters(chits,clusters,clusterids,update);
-      ++niter;
+      changed = formClusters(chits,clusters);
+      ++clusters._niter;
     }
   }
 
-  bool ClusterStrawHits::formClusters(std::vector<ClusterHit> const& chits, std::list<StrawHitCluster>& clusters,
-      std::vector<int>& clusterids, bool update) const {
+  bool ClusterStrawHits::formClusters(std::vector<ClusterHit> const& chits, StrawHitClusterList& clusters) const {
     bool changed(false);
+    bool update=_updatefirst && clusters._niter==0;
 // clear out the hits
-    for(std::list<StrawHitCluster>::iterator ic=clusters.begin();ic!=clusters.end();++ic){
+    for(std::list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
       ic->clearHits();
     }
  //loop over clusterhits, seeding clusters or appending hits to them, as appropriate
     for(size_t ich=0;ich<chits.size();++ich){
       ClusterHit const& chit = chits[ich];
       double mindist(FLT_MAX);
-      std::list<StrawHitCluster>::iterator minc = clusters.end();
-      for(std::list<StrawHitCluster>::iterator ic=clusters.begin();ic!=clusters.end();++ic){
+      std::list<StrawHitCluster>::iterator minc = clusters._clist.end();
+      for(std::list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
 	double dist = distance(*ic,chit);
 	if(dist < mindist){
 	  mindist = dist;
@@ -249,20 +247,21 @@ namespace mu2e
 	minc->addHit(chit,update);
       } else if(mindist > _dseed) {
 // seed a new cluster
-	clusters.push_back(StrawHitCluster(chit));
-	minc = --clusters.end();
+	clusters._clist.push_back(StrawHitCluster(chit));
+	minc = --clusters._clist.end();
       }
 // see if the cluster assignment of this hit has changed
-      if(minc != clusters.end()){
-	changed |= clusterids[chit._index] != minc->id();
-	clusterids[chit._index] = minc->id();
+      if(minc != clusters._clist.end()){
+	changed |= clusters._cids[chit._index] != minc->id();
+	clusters._cids[chit._index] = minc->id();
       } else {
-	changed |= clusterids[chit._index] >=0;
-	clusterids[chit._index] = -1;
+// unassigned hit
+	changed |= clusters._cids[chit._index] >=0;
+	clusters._cids[chit._index] = -1;
       }
     }
 // final cluster update
-    for(std::list<StrawHitCluster>::iterator ic=clusters.begin();ic!=clusters.end();++ic){
+    for(std::list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
       ic->updateCache();
     }
 // sort the list
@@ -274,13 +273,13 @@ namespace mu2e
     return changed;
   }
 
-  bool ClusterStrawHits::mergeClusters(std::list<StrawHitCluster>& clusters) const {
+  bool ClusterStrawHits::mergeClusters(StrawHitClusterList& clusters) const {
     bool merged(false);
-    for(std::list<StrawHitCluster>::iterator ic=clusters.begin();ic!=clusters.end();++ic){
+    for(std::list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
       std::list<StrawHitCluster>::iterator jc=ic;jc++;
       double mindist(FLT_MAX);
-      std::list<StrawHitCluster>::iterator imin=clusters.end();
-      for(;jc!=clusters.end();++jc){
+      std::list<StrawHitCluster>::iterator imin=clusters._clist.end();
+      for(;jc!=clusters._clist.end();++jc){
 	double dist = distance(*ic,*jc);
 	if(dist < mindist){
 	  mindist = dist;
@@ -290,7 +289,12 @@ namespace mu2e
       if(mindist < _dmerge){
       // merge the smaller cluster into the bigger
 	ic->merge(*imin);
-	clusters.erase(imin);
+	// reassign the index
+	for(size_t ih=0;ih<imin->hits().size();++ih){
+	  clusters._cids[imin->hits()[ih]._index] = ic->id();
+	}
+	// erase the 2nd cluster
+	clusters._clist.erase(imin);
 	merged = true;
       }
     }

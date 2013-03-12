@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.4 2013/03/11 04:22:45 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.5 2013/03/12 14:58:46 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/11 04:22:45 $
+// $Date: 2013/03/12 14:58:46 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -30,10 +30,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 
 #include "TMath.h"
-#include "TFile.h"
 #include "TH1F.h"
-#include "TH2F.h"
-#include "TH3F.h"
 #include "TTree.h"
 #include "TMVA/Reader.h"
 // boost
@@ -183,8 +180,8 @@ namespace mu2e
       Float_t _tmean, _pmean, _rmean;
       Float_t _stime, _sphi, _srho;
       Float_t _pmvaout;
-      // flow diagnostic
-      TH1F* _cutflow;
+      // histograms
+      TH1F* _niter, *_nclusters;
   };
 
   FlagBkgHits::FlagBkgHits(fhicl::ParameterSet const& pset) :
@@ -195,7 +192,7 @@ namespace mu2e
     _shplabel(pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _shflabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FlagStrawHits")),
     _stmask(StrawHitFlagDetail::stereo),
-    _mindp(pset.get<double>("MinDeltaHits",7)),
+    _mindp(pset.get<double>("MinDeltaHits",6)),
     _maxzgap(pset.get<double>("MaxZGap",0.0)),
     _maxnsmiss(pset.get<double>("MaxNMiss",4)),
     _bz(pset.get<double>("bz",0.8)),
@@ -203,7 +200,7 @@ namespace mu2e
     _dpeaktype(pset.get<std::string>("DeltaPeakTMVAType","BDT method")),
     _gdcut(pset.get<double>("DeltaHitMVACut",0.0)),
     _gdcore(pset.get<double>("DeltaHitMVACoreCut",0.15)),
-    _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.2)),
+    _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.1)),
     _minflag(pset.get<int>("DeltaHitFlag",1)),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
     _clusterer(pset.get<fhicl::ParameterSet>("ClusterStrawHits",fhicl::ParameterSet()))
@@ -258,10 +255,11 @@ namespace mu2e
 // find clusters in time/phi/rho space
     std::vector<DeltaInfo> dinfo;
 // test of new straw hit clustering
-    std::list<StrawHitCluster> clusters;
-    std::vector<int> clusterids;
-    _clusterer.findClusters(*_shcol,*_shpcol,*bkgfcol,clusters,clusterids);
-    fillDeltaInfo(clusters,dinfo);
+    StrawHitClusterList clusters;
+    _clusterer.findClusters(*_shcol,*_shpcol,*bkgfcol,clusters);
+    _niter->Fill(clusters._niter);
+    _nclusters->Fill(clusters._clist.size());
+    fillDeltaInfo(clusters._clist,dinfo);
 // loop over clusters and classify them
     for(size_t ip=0;ip<dinfo.size();++ip){
       DeltaInfo& delta = dinfo[ip];
@@ -435,6 +433,8 @@ namespace mu2e
 
   void FlagBkgHits::createDiagnostics() {
     art::ServiceHandle<art::TFileService> tfs;
+    _niter=tfs->make<TH1F>("niter","N Cluster Iterations",20,-0.5,19.5);
+    _nclusters=tfs->make<TH1F>("nclusters","N Clusters",100,0,200);
    // delta diagnostics
     _ddiag=tfs->make<TTree>("ddiag","delta diagnostics");
     _ddiag->Branch("iev",&_iev,"iev/I");
