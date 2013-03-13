@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.5 2013/03/12 14:58:46 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.6 2013/03/13 18:55:52 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/12 14:58:46 $
+// $Date: 2013/03/13 18:55:52 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -181,7 +181,7 @@ namespace mu2e
       Float_t _stime, _sphi, _srho;
       Float_t _pmvaout;
       // histograms
-      TH1F* _niter, *_nclusters;
+      TH1F* _niter, *_nclusters, *_nchanged;
   };
 
   FlagBkgHits::FlagBkgHits(fhicl::ParameterSet const& pset) :
@@ -258,6 +258,7 @@ namespace mu2e
     StrawHitClusterList clusters;
     _clusterer.findClusters(*_shcol,*_shpcol,*bkgfcol,clusters);
     _niter->Fill(clusters._niter);
+    _nchanged->Fill(clusters._nchanged);
     _nclusters->Fill(clusters._clist.size());
     fillDeltaInfo(clusters._clist,dinfo);
 // loop over clusters and classify them
@@ -434,6 +435,7 @@ namespace mu2e
   void FlagBkgHits::createDiagnostics() {
     art::ServiceHandle<art::TFileService> tfs;
     _niter=tfs->make<TH1F>("niter","N Cluster Iterations",20,-0.5,19.5);
+    _nchanged=tfs->make<TH1F>("nchanged","N Hits changed in last iteration",100,-0.5,99.5);
     _nclusters=tfs->make<TH1F>("nclusters","N Clusters",100,0,200);
    // delta diagnostics
     _ddiag=tfs->make<TTree>("ddiag","delta diagnostics");

@@ -1,51 +1,47 @@
+#include "TTree.h"
+#include "TString.h"
+#include "TCut.h"
+#include "TCanvas.h"
+#include "TLegend.h"
+#include "TH1F.h"
+#include "TH2F.h"
 void Delta(TTree* ddiag, const char* page="rho") {
   TString spage(page);
   TCut con("pgen==2&&nprimary/nbox>0.8");
   TCut bkg("pproc<20&&nprimary/nbox>0.8");
+  TCut cluster("nwide>=50&&nprimary/nbox>0.99");
 
   if(spage == "rho"){
-    TH1F* prhocon = new TH1F("prhocon","Peak #rho;#rho (mm)",100,380,720);
-    TH1F* prhobkg = new TH1F("prhobkg","Peak #rho;#rho (mm)",100,380,720);
-    TH1F* mrhocon = new TH1F("mrhocon","Median #rho;#rho (mm)",100,380,720);
-    TH1F* mrhobkg = new TH1F("mrhobkg","Median #rho;#rho (mm)",100,380,720);
-    prhocon->SetLineColor(kRed);
-    prhobkg->SetLineColor(kBlue);
+    TH1F* mrhocon = new TH1F("mrhocon","Cluster #rho;#rho (mm)",100,330,780);
+    TH1F* mrhobkg = new TH1F("mrhobkg","Cluster #rho;#rho (mm)",100,330,780);
     mrhocon->SetLineColor(kRed);
     mrhobkg->SetLineColor(kBlue);
 
-    prhocon->SetStats(0);
-    prhobkg->SetStats(0);
     mrhocon->SetStats(0);
     mrhobkg->SetStats(0);
 
-    ddiag->Project("prhocon","prho",con);
-    ddiag->Project("prhobkg","prho",bkg);
     ddiag->Project("mrhocon","rmed",con);
     ddiag->Project("mrhobkg","rmed",bkg);
 
-    prhocon->Scale(10);
     mrhocon->Scale(10);
 
-    TLegend* rleg = new TLegend(0.2,0.7,0.8,0.9);
-    rleg->AddEntry(prhobkg,"Background peaks","L");
-    rleg->AddEntry(prhocon,"Conversion peaks (X10)","L");
+    TLegend* rleg = new TLegend(0.2,0.7,0.6,0.9);
+    rleg->AddEntry(mrhobkg,"Background peaks","L");
+    rleg->AddEntry(mrhocon,"Conversion peaks (X10)","L");
 
     TCanvas* rhocan = new TCanvas("rhocan","rhocan",800,600);
-    rhocan->Divide(2,1);
+    rhocan->Divide(1,1);
     rhocan->cd(1);
-    prhobkg->Draw();
-    prhocon->Draw("same");
-    rleg->Draw();
-    rhocan->cd(2);
     mrhobkg->Draw();
     mrhocon->Draw("same");
+    rleg->Draw();
 
   } else if(spage == "spread"){
 
-    TH1F* srhocon = new TH1F("srhocon","Sigma of hit #rho distribution;#sigma #rho (mm)",100,0,50);
-    TH1F* srhobkg = new TH1F("srhobkg","Sigma of hit #rho distribution;#sigma #rho (mm)",100,0,50);
-    TH1F* sphicon = new TH1F("sphicon","Sigma of hit #phi distribution;#sigma #phi",100,0,0.25);
-    TH1F* sphibkg = new TH1F("sphibkg","Sigma of hit #phi distribution;#sigma #phi",100,0,0.25);
+    TH1F* srhocon = new TH1F("srhocon","Sigma of hit #rho distribution;#sigma #rho (mm)",100,0,20);
+    TH1F* srhobkg = new TH1F("srhobkg","Sigma of hit #rho distribution;#sigma #rho (mm)",100,0,20);
+    TH1F* sphicon = new TH1F("sphicon","Sigma of hit #phi distribution;#sigma #phi",100,0,0.15);
+    TH1F* sphibkg = new TH1F("sphibkg","Sigma of hit #phi distribution;#sigma #phi",100,0,0.15);
 
     srhocon->SetLineColor(kRed);
     srhobkg->SetLineColor(kBlue);
@@ -199,8 +195,8 @@ void Delta(TTree* ddiag, const char* page="rho") {
     TH1F* ncorebkg = new TH1F("ncorebkg","ncore",100,0,200);
     TH1F* nwidecon = new TH1F("nwidecon","nwide",100,0,200);
     TH1F* nwidebkg = new TH1F("nwidebkg","nwide",100,0,200);
-    TH1F* cwratiocon = new TH1F("cwratiocon","Ratio core/wide",10,-0.01,1.01);
-    TH1F* cwratiobkg = new TH1F("cwratiobkg","Ratio core/wide",10,-0.01,1.01);
+    TH1F* cwratiocon = new TH1F("cwratiocon","Ratio core/wide",100,-0.01,1.01);
+    TH1F* cwratiobkg = new TH1F("cwratiobkg","Ratio core/wide",100,-0.01,1.01);
 
     ncorecon->SetLineColor(kRed);
     ncorebkg->SetLineColor(kBlue);
@@ -226,7 +222,6 @@ void Delta(TTree* ddiag, const char* page="rho") {
     ncorecon->Scale(10);
     nwidecon->Scale(10);
     cwratiocon->Scale(10);
-    nscon->Scale(10);
 
     TLegend* nhleg = new TLegend(0.2,0.7,0.8,0.9);
     nhleg->AddEntry(ncorebkg,"Background peaks","L");
@@ -244,5 +239,18 @@ void Delta(TTree* ddiag, const char* page="rho") {
     nhcan->cd(3);
     cwratiobkg->Draw();
     cwratiocon->Draw("same");
+  } else if(spage=="size"){
+    TH2F* csize = new TH2F("csize","#delta-ray Cluster Size;#Delta x(mm);#Delta y(mm)",50,-30,30,50,-30,30);
+    TH1F* tsize = new TH1F("tsize","#delta-ray Time Width;#Delta t(nsec)",100,-80,80);
+    csize->SetStats(0);
+    tsize->SetStats(0);
+    ddiag->Project("csize","rmed*sin(pmed)-_mcpos.dy:rmed*cos(pmed)-_mcpos.dx",bkg+cluster);
+    ddiag->Project("tsize","_time-tmed",bkg+cluster);
+    TCanvas* scan = new TCanvas("scan","size",800,400);
+    scan->Divide(2,1);
+    scan->cd(1);
+    csize->Draw("colorz");
+    scan->cd(2);
+    tsize->Draw();
   }
 }

@@ -1,9 +1,9 @@
 //
 // Object to cluster straw hits, used in background removal and track fitting
 //
-// $Id: ClusterStrawHits.hh,v 1.2 2013/03/12 14:58:46 brownd Exp $
+// $Id: ClusterStrawHits.hh,v 1.3 2013/03/13 18:55:51 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/12 14:58:46 $
+// $Date: 2013/03/13 18:55:51 $
 //
 #ifndef ClusterStrawHits_HH
 #define ClusterStrawHits_HH
@@ -94,6 +94,7 @@ namespace mu2e
 
   struct StrawHitClusterList {
     unsigned _niter; // number of clustering iterations
+    unsigned _nchanged; // number of changed hits at last iteration
     std::list<StrawHitCluster> _clist; // list of clusters
     std::vector<int> _cids; // map of which hits go to which clusters (parallel with StrawHitCollection)
   };
@@ -111,13 +112,13 @@ namespace mu2e
       StrawHitPositionCollection const& shpcol,
       StrawHitFlagCollection const& shfcol,
       StrawHitClusterList& clusters) const;
-  protected:
 // functions to define the distance between a hit and cluster and 2 clusters; this is the variable against which
 // the clustering thresholds are applied
     double distance(StrawHitCluster const&, ClusterHit const&) const;
     double distance(StrawHitCluster const&, StrawHitCluster const&) const;
-    bool mergeClusters(StrawHitClusterList& clusters) const;
-    bool formClusters(std::vector<ClusterHit> const& chits,StrawHitClusterList& clusters) const;
+  protected:
+    unsigned mergeClusters(StrawHitClusterList& clusters) const;
+    unsigned formClusters(std::vector<ClusterHit> const& chits,StrawHitClusterList& clusters) const;
 // utlity functions
   private:
 // configuration parameters
@@ -134,6 +135,7 @@ namespace mu2e
     double _srms,_nsrms; // Spatial RMS for stereo, non-stereo hits
     double _trms2, _srms2, _nsrms2; // squares of rms
     unsigned _maxniter; // maximum number of iterations
+    unsigned _maxnchanged; // maximum # of changed hits to consider 'converged'
     cmode _mode; // clustering mode
     bool _updatefirst; // update positions continuously on the 1st iteration
     static std::vector<std::string> _nullsvec;
