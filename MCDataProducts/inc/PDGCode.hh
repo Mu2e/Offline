@@ -6,9 +6,9 @@
 // to the PDG identifier codes for various particles.
 // It has been extended to include a subset of the G4 nuclei codes.
 //
-// $Id: PDGCode.hh,v 1.3 2012/03/29 16:26:18 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/29 16:26:18 $
+// $Id: PDGCode.hh,v 1.4 2013/03/13 19:21:00 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2013/03/13 19:21:00 $
 //
 // This file was initially taken directly from BaBar's pdt/PdtPdg.hh
 //
@@ -120,6 +120,8 @@ namespace mu2e {
         pi_minus = -211 ,
         pi_diffr_plus = 210 ,
         pi_diffr_minus = -210 ,
+	proton = 2212,
+	anti_proton = -2212,
         pi_2S0 = 20111 ,
         pi_2S_plus = 20211 ,
         pi_2S_minus = -20211 ,
