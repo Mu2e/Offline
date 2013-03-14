@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.6 2013/03/13 18:55:52 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.7 2013/03/14 16:15:32 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/13 18:55:52 $
+// $Date: 2013/03/14 16:15:32 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -80,7 +80,7 @@ namespace mu2e
     DeltaHitInfo(size_t hindex,double htime, double hphi, double hrho, double hz,double hgd,int hflag) :
       _hindex(hindex), _htime(htime), _hphi(hphi), _hrho(hrho), _hz(hz), _hgd(hgd),_hflag(hflag) {}
     size_t _hindex;
-    Float_t _htime, _hphi, _hrho, _hz, _hgd;
+    Float_t _htime, _hphi, _hrho, _hz, _hgd, _cdist;
     Int_t _hflag;
   };
 
@@ -331,6 +331,7 @@ namespace mu2e
 	else if(gd > _gdcut)
 	  iflag = 1;
 	DeltaHitInfo dhinfo(ish,ct,phi,rho,shp.pos().z(),gd,iflag);
+	dhinfo._cdist = cluster.hits()[ich]._dist;
 	dp._dhinfo.push_back(dhinfo);
       }
       fillDeltaSummary(dp);
@@ -618,6 +619,7 @@ namespace mu2e
 	}
 	shinfo._hflag = dhinfo._hflag;
 	shinfo._hgd = dhinfo._hgd;
+	shinfo._cdist = dhinfo._cdist;
 	shinfo._dphi = dhinfo._hphi-delta._ppeak;
 	shinfo._dt = dhinfo._htime-delta._tmed;
 	shinfo._drho = dhinfo._hrho-delta._rmed;

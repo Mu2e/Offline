@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: ClusterStrawHits.cc,v 1.4 2013/03/13 18:55:52 brownd Exp $
+// $Id: ClusterStrawHits.cc,v 1.5 2013/03/14 16:15:32 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/13 18:55:52 $
+// $Date: 2013/03/14 16:15:32 $
 //
 //
 #include "TrkPatRec/inc/ClusterStrawHits.hh"
@@ -69,8 +69,9 @@ namespace mu2e
   }
   StrawHitCluster::~StrawHitCluster() {}
   
-  void StrawHitCluster::addHit(ClusterHit const& hit,bool update) {
+  void StrawHitCluster::addHit(ClusterHit const& hit,double dist,bool update) {
     _hits.push_back(hit);
+    _hits.back()._dist = dist;
     accumulate(hit);
     if(update)updateCache();
   }
@@ -245,7 +246,7 @@ namespace mu2e
       }
       if(mindist < _dhit){
 // append this hit to the cluster, and update the cache
-	minc->addHit(chit,update);
+	minc->addHit(chit,mindist,update);
       } else if(mindist > _dseed) {
 // seed a new cluster
 	clusters._clist.push_back(StrawHitCluster(chit));

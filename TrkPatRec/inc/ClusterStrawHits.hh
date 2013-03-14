@@ -1,9 +1,9 @@
 //
 // Object to cluster straw hits, used in background removal and track fitting
 //
-// $Id: ClusterStrawHits.hh,v 1.3 2013/03/13 18:55:51 brownd Exp $
+// $Id: ClusterStrawHits.hh,v 1.4 2013/03/14 16:15:32 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/13 18:55:51 $
+// $Date: 2013/03/14 16:15:32 $
 //
 #ifndef ClusterStrawHits_HH
 #define ClusterStrawHits_HH
@@ -43,6 +43,7 @@ namespace mu2e
     bool operator == (ClusterHit const& other) const { return _index == other._index; }
     CLHEP::Hep3Vector _pos;
     double _time;
+    double _dist;
     StrawHitFlag _flag;
     size_t _index;
   };
@@ -63,7 +64,7 @@ namespace mu2e
     bool operator ==(StrawHitCluster const& other) const { return _id == other._id; }
     bool operator <(StrawHitCluster const& other) const { return _id < other._id; }
 // append a hit, optionally updating the cache
-    void addHit(ClusterHit const&, bool update=false);
+    void addHit(ClusterHit const&, double dist=0.0,bool update=false);
 // clear the hits; this leaves the position information
     void clearHits();
   // merge with another cluster
