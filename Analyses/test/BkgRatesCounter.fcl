@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: BkgRatesCounter.fcl,v 1.16 2012/06/19 16:21:49 onoratog Exp $
-# $Author: onoratog $
-# $Date: 2012/06/19 16:21:49 $
+# $Id: BkgRatesCounter.fcl,v 1.17 2013/03/14 19:22:02 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2013/03/14 19:22:02 $
 #
 # Original author Gianni Onorato.
 
