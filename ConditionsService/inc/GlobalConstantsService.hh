@@ -10,6 +10,7 @@
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
+#include "art/Framework/Services/Registry/ServiceMacros.h"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
@@ -58,4 +59,5 @@ namespace mu2e {
 
 }
 
+DECLARE_ART_SERVICE(mu2e::GlobalConstantsService, LEGACY)
 #endif /* GlobalConstantsService_hh */

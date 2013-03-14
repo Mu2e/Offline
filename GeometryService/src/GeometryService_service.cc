@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.41 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: GeometryService_service.cc,v 1.42 2013/03/14 19:54:49 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:54:49 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,6 @@
 #include <typeinfo>
 
 // Framework include files
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "art/Persistency/Provenance/ModuleDescription.h"
 #include "art/Persistency/Provenance/EventID.h"
 #include "art/Persistency/Provenance/Timestamp.h"

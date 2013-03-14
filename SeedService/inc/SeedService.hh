@@ -3,9 +3,9 @@
 //
 // An art service to assist in the distribution of guaranteed unique seeds to all engines within an art job.
 //
-// $Id: SeedService.hh,v 1.9 2012/03/07 03:55:01 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/07 03:55:01 $
+// $Id: SeedService.hh,v 1.10 2013/03/14 19:54:49 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:54:49 $
 //
 // Contact person Rob Kutschke
 //
@@ -100,6 +100,7 @@
 
 // From art and its tool chain.
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include <string>
@@ -231,4 +232,5 @@ namespace mu2e {
 
 } // namespace mu2e
 
+DECLARE_ART_SERVICE(mu2e::SeedService, LEGACY)
 #endif /* SeedService_SeedService_hh */

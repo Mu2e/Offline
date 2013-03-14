@@ -1,15 +1,14 @@
 //
 // G4Helper plugin.
 //
-// $Id: G4Helper_service.cc,v 1.3 2011/05/18 14:53:21 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 14:53:21 $
+// $Id: G4Helper_service.cc,v 1.4 2013/03/14 19:54:49 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:54:49 $
 //
 // Original author Rob Kutschke
 //
 
 // Framework includes
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 
 // Mu2e includes
 #include "G4Helper/inc/G4Helper.hh"

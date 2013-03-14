@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.19 2012/11/16 23:30:51 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/16 23:30:51 $
+// $Id: GeometryService.hh,v 1.20 2013/03/14 19:54:49 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:54:49 $
 //
 // Original author Rob Kutschke
 //
@@ -20,6 +20,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "cetlib/exception.h"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -148,4 +149,5 @@ private:
 
 }
 
+DECLARE_ART_SERVICE(mu2e::GeometryService, LEGACY)
 #endif /* GeometryService_GeometryService_hh */

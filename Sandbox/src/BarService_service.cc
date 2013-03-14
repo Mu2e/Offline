@@ -2,9 +2,9 @@
 // A test service that prints tracer ouptut. Used to study order of calls when
 // one service uses another service.
 //
-// $Id: BarService_service.cc,v 1.3 2012/08/10 17:48:07 kutschke Exp $
+// $Id: BarService_service.cc,v 1.4 2013/03/14 19:54:49 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/08/10 17:48:07 $
+// $Date: 2013/03/14 19:54:49 $
 //
 // Contact person Rob Kutschke
 //
@@ -49,7 +49,6 @@
 #include "Sandbox/inc/FooService.hh"
 
 // Framework include files
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "art/Persistency/Provenance/RunID.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 

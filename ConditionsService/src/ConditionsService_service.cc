@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.12 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: ConditionsService_service.cc,v 1.13 2013/03/14 19:54:48 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:54:48 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,6 @@
 #include <typeinfo>
 
 // Framework include files
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e include files

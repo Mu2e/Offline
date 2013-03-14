@@ -14,7 +14,6 @@
 #include <cassert>
 
 #include "cetlib/exception.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 

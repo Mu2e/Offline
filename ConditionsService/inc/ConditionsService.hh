@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.17 2012/07/27 19:42:31 kutschke Exp $
+// $Id: ConditionsService.hh,v 1.18 2013/03/14 19:54:48 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/27 19:42:31 $
+// $Date: 2013/03/14 19:54:48 $
 //
 // Original author Rob Kutschke
 //
@@ -26,6 +26,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "cetlib/exception.h"
 
 // Mu2e include files.
@@ -121,4 +122,5 @@ namespace mu2e {
 
 }
 
+DECLARE_ART_SERVICE(mu2e::ConditionsService, LEGACY)
 #endif /* ConditionsService_ConditionsService_hh */

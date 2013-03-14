@@ -3,9 +3,9 @@
 // The XBarSerivce depends on the FooService.  The XBarService is just
 // a copy of the BarService but it comes after Foo in an alphabetic sort.
 //
-// $Id: XBarService_service.cc,v 1.2 2012/07/24 23:13:13 kutschke Exp $
+// $Id: XBarService_service.cc,v 1.3 2013/03/14 19:54:49 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/24 23:13:13 $
+// $Date: 2013/03/14 19:54:49 $
 //
 // Contact person Rob Kutschke
 //
@@ -17,7 +17,6 @@
 #include "Sandbox/inc/FooService.hh"
 
 // Framework include files
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "art/Persistency/Provenance/RunID.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 

@@ -4,9 +4,9 @@
 //
 // A test service that prints tracer ouptut. Used to study order of calls.
 //
-// $Id: BarService.hh,v 1.1 2012/07/24 20:00:28 kutschke Exp $
+// $Id: BarService.hh,v 1.2 2013/03/14 19:54:49 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/24 20:00:28 $
+// $Date: 2013/03/14 19:54:49 $
 //
 // Contact person Rob Kutschke
 //
@@ -16,6 +16,7 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Run.h"
+#include "art/Framework/Services/Registry/ServiceMacros.h"
 
 namespace mu2e {
 
@@ -34,4 +35,5 @@ namespace mu2e {
 
 }
 
+DECLARE_ART_SERVICE(mu2e::BarService, LEGACY)
 #endif /* Sandbox_BarService_hh */

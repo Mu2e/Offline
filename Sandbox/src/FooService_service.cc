@@ -1,9 +1,9 @@
 //
 // A test service that prints tracer ouptut. Used to study order of calls.
 //
-// $Id: FooService_service.cc,v 1.1 2012/07/24 20:00:28 kutschke Exp $
+// $Id: FooService_service.cc,v 1.2 2013/03/14 19:54:49 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/24 20:00:28 $
+// $Date: 2013/03/14 19:54:49 $
 //
 // Contact person Rob Kutschke
 //
@@ -14,7 +14,6 @@
 #include "Sandbox/inc/FooService.hh"
 
 // Framework include files
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "art/Persistency/Provenance/RunID.h"
 
 using namespace std;

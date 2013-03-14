@@ -1,9 +1,9 @@
 //
 // Assist in the distribution of guaranteed unique seeds to all engines within a job.
 //
-// $Id: SeedService_service.cc,v 1.11 2012/03/07 03:55:01 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/07 03:55:01 $
+// $Id: SeedService_service.cc,v 1.12 2013/03/14 19:54:49 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:54:49 $
 //
 // Contact person Rob Kutschke
 //
@@ -20,7 +20,6 @@
 // Art include files
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Persistency/Provenance/ModuleDescription.h"
 #include "art/Persistency/Provenance/EventID.h"

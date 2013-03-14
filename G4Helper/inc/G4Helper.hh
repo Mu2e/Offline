@@ -8,9 +8,9 @@
 // support of G4.  For technical reasons, this cannot be done by making
 // Mu2eG4RunManager a singleton.
 //
-// $Id: G4Helper.hh,v 1.5 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
+// $Id: G4Helper.hh,v 1.6 2013/03/14 19:54:49 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:54:49 $
 //
 // Original author Rob Kutschke
 //
@@ -21,6 +21,7 @@
 
 // Framework include files
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceMacros.h"
 
 // Mu2e includes
 #include "G4Helper/inc/AntiLeakRegistry.hh"
@@ -49,4 +50,5 @@ namespace mu2e {
 
 }
 
+DECLARE_ART_SERVICE(G4Helper, LEGACY)
 #endif /* G4Helper_G4Helper_hh */
