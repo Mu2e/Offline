@@ -318,7 +318,7 @@ namespace mu2e {
 
 /*
     // Ask the event to give us a "handle" to the requested hits.
-    edm::Handle<StepPointMCCollection> hitsHandle;
+    art::Handle<StepPointMCCollection> hitsHandle;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hitsHandle);
     StepPointMCCollection const& hits = *hitsHandle;
 
@@ -409,7 +409,7 @@ namespace mu2e {
     event.getByLabel(_generatorModuleLabel, genParticles);
 
 //    // Handle to information about G4 physical volumes.
-//    edm::Handle<PhysicalVolumeInfoCollection> volumes;
+//    art::Handle<PhysicalVolumeInfoCollection> volumes;
 //    event.getRun().getByType(volumes);
 //
 //    // Some files might not have the SimParticle and volume information.
