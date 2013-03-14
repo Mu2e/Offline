@@ -1,9 +1,9 @@
 // Eliminates some tracks from a track fit collection to satisty a
 // limit on the number of shared clusters on a track.
 //
-// $Id: EMFTrackClusterArbiter_module.cc,v 1.1 2012/11/01 23:43:44 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:43:44 $
+// $Id: EMFTrackClusterArbiter_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author Andrei Gaponenko
 //
@@ -233,7 +233,7 @@ namespace mu2e {
       for(TrkSet::const_iterator i = remainingTracks.begin(); i!=remainingTracks.end(); ++i) {
         outtracks->push_back(**i);
       }
-      event.put(outtracks);
+      event.put(std::move(outtracks));
     }
 
     //================================================================

@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.55 2013/03/14 16:15:06 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2013/03/14 16:15:06 $
+// $Id: TrkPatRec_module.cc,v 1.56 2013/03/14 19:47:46 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2013/03/14 19:47:46 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -373,8 +373,8 @@ namespace mu2e
     // put the tracks into the event
     art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
     _payloadSaver.put(*tracks, tracksID, event);
-    event.put(tracks,_iname);
-    event.put(flags,_iname);
+    event.put(std::move(tracks),_iname);
+    event.put(std::move(flags),_iname);
   }
 
   void TrkPatRec::endJob(){

@@ -124,8 +124,8 @@ namespace mu2e {
 
     }
 
-    event.put(output);
-    event.put(history);
+    event.put(std::move(output));
+    event.put(std::move(history));
   }
 } // namespace mu2e
 

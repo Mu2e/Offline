@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.3 2013/03/08 19:13:50 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/03/08 19:13:50 $
+// $Id: MakeStereoHits_module.cc,v 1.4 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -164,9 +164,9 @@ namespace mu2e {
     }
     if(_writepairs){
       auto_ptr<StereoHitCollection> sthits(new StereoHitCollection(stereohits));
-      event.put(sthits);
+      event.put(std::move(sthits));
     }
-    event.put(shpos);
+    event.put(std::move(shpos));
   } // end MakeStereoHits::produce.
 
 } // end namespace mu2e

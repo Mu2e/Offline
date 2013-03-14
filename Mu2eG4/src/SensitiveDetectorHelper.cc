@@ -1,9 +1,9 @@
 //
 // A helper class manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.cc,v 1.2 2012/11/28 23:03:27 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/28 23:03:27 $
+// $Id: SensitiveDetectorHelper.cc,v 1.3 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author Rob Kutschke
 //
@@ -108,7 +108,7 @@ namespace mu2e {
       auto_ptr<StepPointMCCollection> p(new StepPointMCCollection);
       StepInstance& instance(i->second);
       std::swap( instance.p, *p);
-      event.put(p, instance.stepName.name() );
+      event.put(std::move(p), instance.stepName.name() );
     }
 
   }

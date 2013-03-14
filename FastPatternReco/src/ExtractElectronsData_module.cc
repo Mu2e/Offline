@@ -1,9 +1,9 @@
 //
 // module that extract Data of the Electrons tracks that came from the targets and put temporary inside the event
 //
-// $Id: ExtractElectronsData_module.cc,v 1.9 2012/12/04 00:51:27 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:27 $
+// $Id: ExtractElectronsData_module.cc,v 1.10 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author G. Tassielli
 //
@@ -419,7 +419,7 @@ void ExtractElectronsData::produce(art::Event & event ) {
         }
 
         //cout<<"-----------------------5---------------------"<<endl;
-        event.put(genEltrk);
+        event.put(std::move(genEltrk));
 
 
   } // end produce

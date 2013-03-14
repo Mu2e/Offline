@@ -1,9 +1,9 @@
 //
 // Fit of the reconstructed tracks for the ITracker
 //
-// $Id: ITTrackRecoFit_module.cc,v 1.1 2012/12/04 00:51:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Id: ITTrackRecoFit_module.cc,v 1.2 2013/03/14 19:47:46 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:46 $
 //
 // Original author F. Ignatov and G. Tassielli
 //
@@ -472,7 +472,7 @@ namespace mu2e {
             // put the tracks into the event
             art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
             _payloadSaver.put(*tracks, tracksID, event);
-            event.put(tracks,_iname);
+            event.put(std::move(tracks),_iname);
 } // end produce
 
   

@@ -2,9 +2,9 @@
 // Extract the persistent payload from the transient track objects.
 // and put it into the event.
 //
-// $Id: PayloadSaver.cc,v 1.2 2012/07/23 17:52:27 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Id: PayloadSaver.cc,v 1.3 2013/03/14 19:47:46 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:46 $
 //
 // Contact person Rob Kutschke
 //
@@ -33,7 +33,7 @@ namespace mu2e {
     // Do the hard work here.
     // The ProductId is needed to make the Ptr that lives inside each KalRepPayload.
 
-    event.put(payload);
+    event.put(std::move(payload));
   }
 
 } // namespace mu2e

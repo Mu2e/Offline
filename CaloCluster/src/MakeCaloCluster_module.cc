@@ -6,9 +6,9 @@
 // then must redo everything to include splitting
 // and finally get a beer for all these trouble
 //
-// $Id: MakeCaloCluster_module.cc,v 1.7 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: MakeCaloCluster_module.cc,v 1.8 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 
 /*
@@ -214,7 +214,7 @@ class MakeCaloCluster : public art::EDProducer {
        auto_ptr<CaloClusterCollection> caloClusters(new CaloClusterCollection);
        makeCaloClusters(*caloClusters,caloCrystalHitsHandle);
 
-       event.put(caloClusters, _producerName);
+       event.put(std::move(caloClusters), _producerName);
 
    }
    

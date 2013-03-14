@@ -4,9 +4,9 @@
 //  - as a StatusG4 object that is a top level data product.
 //  - within a MixingSummary object.
 //
-// $Id: SummarizeStatusG4_module.cc,v 1.3 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: SummarizeStatusG4_module.cc,v 1.4 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Contact person Rob Kutschke
 //
@@ -111,7 +111,7 @@ namespace mu2e {
       summaryStatus->add((**i).status());
     }
 
-    event.put(summaryStatus);
+    event.put(std::move(summaryStatus));
     firstEvent = false;
 
   } // end produce

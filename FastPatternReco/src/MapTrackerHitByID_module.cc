@@ -1,9 +1,9 @@
 //
 // map Tracker Hits to be accessed by Cell/Straw ID
 //
-// $Id: MapTrackerHitByID_module.cc,v 1.1 2012/05/15 07:50:01 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/15 07:50:01 $
+// $Id: MapTrackerHitByID_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author G. Tassielli
 //
@@ -119,7 +119,7 @@ void MapTrackerHitByID::produce(art::Event & event ) {
                 trkHits->insert( TrackerHitByID::value_type(tmpId,art::Ptr<mu2e::StrawHit>( pdataHandle, i) ) );
 
         }
-        event.put(trkHits);
+        event.put(std::move(trkHits));
 
 
   } // end produce

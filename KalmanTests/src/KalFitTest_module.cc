@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.18 2012/10/16 21:59:18 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/10/16 21:59:18 $
+// $Id: KalFitTest_module.cc,v 1.19 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2013/03/14 19:47:45 $
 //
 
 // framework
@@ -141,7 +141,7 @@ namespace mu2e
       // If fit is successful, pass ownership of the track to the event.
       if(kdef._krep != 0)tracks->push_back( kdef.stealTrack() );
     }
-    event.put(tracks,_iname);
+    event.put(std::move(tracks),_iname);
   }
 
   void KalFitTest::endJob()

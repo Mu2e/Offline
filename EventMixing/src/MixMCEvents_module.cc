@@ -6,9 +6,9 @@
 // are mixed; mixing of the PointTrajectoryCollections can also be turned on/off with a
 // parameter set variable.
 //
-// $Id: MixMCEvents_module.cc,v 1.10 2012/02/13 20:56:22 kutschke Exp $
+// $Id: MixMCEvents_module.cc,v 1.11 2013/03/14 19:47:45 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/02/13 20:56:22 $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Contact person Rob Kutschke.
 //
@@ -471,7 +471,7 @@ processEventIDs(art::EventIDSequence const &seq) {
 void
 mu2e::MixMCEventsDetail::
 finalizeEvent(art::Event &e) {
-  e.put(summary_);
+  e.put(std::move(summary_));
 }
 
 bool

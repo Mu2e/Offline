@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.59 2012/11/16 23:49:39 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/16 23:49:39 $
+// $Id: G4_module.cc,v 1.60 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author Rob Kutschke
 //
@@ -237,7 +237,7 @@ namespace mu2e {
     // The framework rules requires we make a copy and add the copy.
     const PhysicalVolumeInfoCollection& vinfo = _physVolHelper.persistentInfo();
     auto_ptr<PhysicalVolumeInfoCollection> volumes(new PhysicalVolumeInfoCollection(vinfo));
-    run.put(volumes);
+    run.put(std::move(volumes));
 
     // Some of the user actions have beginRun methods.
     GeomHandle<WorldG4>  worldGeom;
@@ -418,14 +418,14 @@ namespace mu2e {
     _diagnostics.fillPA( _sensitiveDetectorHelper.steps(StepInstanceName::protonabsorber).ref() );
 
     // Add data products to the event.
-    event.put(g4stat);
-    event.put(simParticles);
-    event.put(tvdHits,          _tvdOutputName.name()          );
-    event.put(pointTrajectories);
+    event.put(std::move(g4stat));
+    event.put(std::move(simParticles));
+    event.put(std::move(tvdHits),          _tvdOutputName.name()          );
+    event.put(std::move(pointTrajectories));
     if(_extMonFNALPixelSD) {
-      event.put(extMonFNALHits);
+      event.put(std::move(extMonFNALHits));
     }
-    _sensitiveDetectorHelper.put(event);
+    _sensitiveDetectorHelper.put(std::move(event));
 
     // Pause to see graphics.
     if ( !_visMacro.empty() ){

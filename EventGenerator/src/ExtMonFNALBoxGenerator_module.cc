@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.8 2012/11/01 23:42:25 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:42:25 $
+// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.9 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Create particle flux in the ExtMonFNAL box by randomizing
 // kinematic of input particles read from a file.
@@ -434,9 +434,9 @@ namespace mu2e {
       generateFromVDHits(event, output.get(), info.get(), assns.get());
       generateFromStoppedMuons(event, output.get(), info.get(), assns.get());
 
-      event.put(output);
-      event.put(info);
-      event.put(assns);
+      event.put(std::move(output));
+      event.put(std::move(info));
+      event.put(std::move(assns));
     }
 
     //================================================================

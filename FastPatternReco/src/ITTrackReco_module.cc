@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.17 2013/03/08 04:34:58 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/03/08 04:34:58 $
+// $Id: ITTrackReco_module.cc,v 1.18 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author G. Tassielli
 //
@@ -710,7 +710,7 @@ void ITTrackReco::produce(art::Event & event ) {
         if (notAssociatedHits!=0x0) delete [] notAssociatedHits;
 
 
-        event.put(seeds);
+        event.put(std::move(seeds));
 
         //for (unsigned long i=0; i<1000000; i++) cout<<"lost time "<<endl;
         clock_t stopClock = clock();

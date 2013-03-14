@@ -5,9 +5,9 @@
 //  G4 uses G4World coordinate
 //  See the note at TrkExtTraj.hh for the meaning of point information, especially when volume changing. 
 //
-//  $Id: TrkExt_module.cc,v 1.6 2013/02/07 02:09:47 mjlee Exp $
-//  $Author: mjlee $
-//  $Date: 2013/02/07 02:09:47 $
+//  $Id: TrkExt_module.cc,v 1.7 2013/03/14 19:47:46 kutschke Exp $
+//  $Author: kutschke $
+//  $Date: 2013/03/14 19:47:46 $
 //
 //  Original author MyeongJae Lee
 //
@@ -459,7 +459,7 @@ namespace mu2e {
         trajcol->push_back(_traj);
   
       }  // end of trks loop
-      event.put(trajcol, instance.name.c_str());
+      event.put(std::move(trajcol), instance.name.c_str());
     } // end of instance loop
 
   }

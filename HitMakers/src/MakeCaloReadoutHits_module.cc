@@ -271,12 +271,12 @@ namespace mu2e {
     
     
     // Add the output hit collection to the event
-    event.put(caloHits);
-    event.put(caloMCHits);
-    event.put(caloCrystalMCHits);
-    event.put(caloMCptrHits,"CaloHitMCCrystalPtr");
-    event.put(caloMCroptrHits,"CaloHitMCReadoutPtr");
-    event.put(caloMCSimParts);
+    event.put(std::move(caloHits));
+    event.put(std::move(caloMCHits));
+    event.put(std::move(caloCrystalMCHits));
+    event.put(std::move(caloMCptrHits),"CaloHitMCCrystalPtr");
+    event.put(std::move(caloMCroptrHits),"CaloHitMCReadoutPtr");
+    event.put(std::move(caloMCSimParts));
 
     if ( _diagLevel > 0 ) cout << "MakeCaloReadoutHits: produce() end" << endl;
 

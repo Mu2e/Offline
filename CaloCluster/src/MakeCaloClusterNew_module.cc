@@ -213,7 +213,7 @@ class MakeCaloClusterNew : public art::EDProducer {
        auto_ptr<CaloClusterCollection> caloClusters(new CaloClusterCollection);
        makeCaloClusters(*caloClusters,caloCrystalHitsHandle);
 
-       event.put(caloClusters, _producerName);
+       event.put(std::move(caloClusters), _producerName);
 
    }
    

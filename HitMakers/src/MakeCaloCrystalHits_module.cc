@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_module.cc,v 1.14 2013/03/08 01:22:32 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/03/08 01:22:32 $
+// $Id: MakeCaloCrystalHits_module.cc,v 1.15 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author KLG
 //
@@ -149,7 +149,7 @@ namespace mu2e {
         cout << __func__ << ": end" << endl;
      }
 
-     event.put(caloCrystalHits);
+     event.put(std::move(caloCrystalHits));
 
        
      return;

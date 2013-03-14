@@ -3,9 +3,9 @@
 // Code to produce a vector<SubEvent> from the collection of StrawHits
 // for an event.
 //
-// $Id: SubEventsMaker_module.cc,v 1.4 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: SubEventsMaker_module.cc,v 1.5 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author: Mark Fischler
 //
@@ -139,7 +139,7 @@ namespace mu2e {;
     std::auto_ptr <SubEventCollection> p (new SubEventCollection);
     SubEventCollection & subEvents(*p);
     fillSubEvents(event, trk, subEvents);
-    event.put(p);
+    event.put(std::move(p));
   }
     
   void SubEventsMaker::fillSubEvents( art::Event& event,

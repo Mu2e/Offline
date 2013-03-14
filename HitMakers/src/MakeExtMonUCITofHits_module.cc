@@ -2,9 +2,9 @@
 // An EDProducer Module that reads ExtMonUCITofHit Stepping MC objects and turns them into
 // ExtMonUCITofHit objects, collection
 //
-// $Id: MakeExtMonUCITofHits_module.cc,v 1.7 2012/06/28 22:04:01 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/06/28 22:04:01 $
+// $Id: MakeExtMonUCITofHits_module.cc,v 1.8 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //  
 //  
 
@@ -182,9 +182,9 @@ namespace mu2e {
     }
 
     // Add the output hit collection to the event
-    event.put(tofHits);
-    event.put(tofMCHits);
-    event.put(tofMCptrHits,"ExtMonUCITofHitsMCPtr");
+    event.put(std::move(tofHits));
+    event.put(std::move(tofMCHits));
+    event.put(std::move(tofMCptrHits),"ExtMonUCITofHitsMCPtr");
 
     if ( _diagLevel > 2 ) cout << "MakeExtMonUCITofHits: produce() end" << endl;
 

@@ -1,8 +1,8 @@
 // Compute calibrated pixel clusters from raw ones.
 //
-// $Id: ExtMonFNALRecoClusterization_module.cc,v 1.2 2012/11/01 23:30:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:30:27 $
+// $Id: ExtMonFNALRecoClusterization_module.cc,v 1.3 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author Andrei Gaponenko
 //
@@ -112,7 +112,7 @@ namespace mu2e {
     const art::EDProductGetter *rawGetter = event.productGetter(raw.id());
     computeClusters(&*reco, raw, rawGetter);
 
-    event.put(reco);
+    event.put(std::move(reco));
   }
 
   //================================================================

@@ -51,7 +51,7 @@ namespace mu2e {
 
     cout << "Creating an empty collection ... " << endl;
     auto_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
-    evt.put(genParticles);
+    evt.put(std::move(genParticles));
 
   }
 }

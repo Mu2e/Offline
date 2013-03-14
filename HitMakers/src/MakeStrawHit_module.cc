@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.21 2013/01/07 17:54:28 kutschke Exp $
+// $Id: MakeStrawHit_module.cc,v 1.22 2013/03/14 19:47:45 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/01/07 17:54:28 $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -702,9 +702,9 @@ namespace mu2e {
     assert (strawHits->size()==truthHits->size());
     assert (strawHits->size()==mcptrHits->size());
 
-    event.put(strawHits);
-    event.put(truthHits);
-    event.put(mcptrHits,"StrawHitMCPtr");
+    event.put(std::move(strawHits));
+    event.put(std::move(truthHits));
+    event.put(std::move(mcptrHits),"StrawHitMCPtr");
 
     if ( _diagLevel > 1 ) cout << "MakeStrawHit: produce() end" << endl;
 

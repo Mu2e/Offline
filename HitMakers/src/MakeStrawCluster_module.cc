@@ -1,7 +1,7 @@
 //
-// $Id: MakeStrawCluster_module.cc,v 1.14 2012/03/01 02:40:01 kutschke Exp $
+// $Id: MakeStrawCluster_module.cc,v 1.15 2013/03/14 19:47:45 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/01 02:40:01 $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author Hans Wenzel
 //
@@ -206,7 +206,7 @@ namespace mu2e {
           }// end if not used 
       } // end loop over all strawHits
 
-    evt.put(listofClusterspointer);
+    evt.put(std::move(listofClusterspointer));
 
 
 
@@ -229,7 +229,7 @@ namespace mu2e {
     Cluster = StrawCluster(ptrtoHits);
     listofClusterspointer->push_back(Cluster);
     // Add the output hit collection to the event
-    evt.put(listofClusterspointer);
+    evt.put(std::move(listofClusterspointer));
     */
     if (_diagLevel>2){
       cout << " Nr of Hits:  "<< hits->size()<<endl;
@@ -244,7 +244,7 @@ namespace mu2e {
       //      }
       //  }
       // }
-      //evt.put(listofClusterspointer);
+      //evt.put(std::move(listofClusterspointer));
     }
   } // end of ::produce.
 

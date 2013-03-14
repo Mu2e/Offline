@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_module.cc,v 1.11 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: HoughTest_module.cc,v 1.12 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author R. Bernstein
 //
@@ -663,7 +663,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
       } // end loop over hits.
     } // if using MC hits
 
-    evt.put(HoughResults);
+    evt.put(std::move(HoughResults));
 
   } // end of ::produce.
 

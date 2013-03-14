@@ -130,8 +130,8 @@ namespace mu2e {
     _generator->generate(*genParticles,&(*extraData));
 
     // Put the generated particles into the event.
-    evt.put(genParticles);
-    evt.put(extraData);
+    evt.put(std::move(genParticles));
+    evt.put(std::move(extraData));
 
   }
 

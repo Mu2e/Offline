@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.8 2013/03/05 20:33:26 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:26 $
+// $Id: CaloMatching_module.cc,v 1.9 2013/03/14 19:47:46 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:46 $
 //
 // Original author G. Pezzullo
 //
@@ -1009,7 +1009,7 @@ namespace mu2e {
       }
     }
 
-    evt.put(trackClusterLink);
+    evt.put(std::move(trackClusterLink));
     if(evt.id().event()%1000 == 0){
       cout << "Event "<<evt.id().event()<<" CaloMatching done..."<<endl;
     }

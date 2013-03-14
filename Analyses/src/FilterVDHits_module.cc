@@ -238,7 +238,7 @@ namespace mu2e {
     //----------------------------------------------------------------
 
     AGDEBUG("here");
-    event.put(outparts);
+    event.put(std::move(outparts));
 
     // Update pointers in the hit collection
     AGDEBUG("here");
@@ -261,13 +261,13 @@ namespace mu2e {
       }
       AGDEBUG("here");
 
-      event.put(extrahits, "extraHits");
+      event.put(std::move(extrahits), "extraHits");
     }
 
     //----------------------------------------------------------------
 
     bool nonEmpty = !outhits->empty();
-    event.put(outhits);
+    event.put(std::move(outhits));
 
     return nonEmpty;
   }

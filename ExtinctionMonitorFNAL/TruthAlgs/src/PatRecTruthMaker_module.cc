@@ -1,8 +1,8 @@
 // Associate truth to track finding output.
 //
-// $Id: PatRecTruthMaker_module.cc,v 1.3 2012/11/01 23:39:22 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:39:22 $
+// $Id: PatRecTruthMaker_module.cc,v 1.4 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author Andrei Gaponenko
 //
@@ -102,7 +102,7 @@ namespace mu2e {
         }
       }
 
-      event.put(outTruth);
+      event.put(std::move(outTruth));
     }
 
     //================================================================

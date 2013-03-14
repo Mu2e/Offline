@@ -17,9 +17,9 @@
 // and CaloHits that are in time with the conversion electron, and will keep all
 // particles in the ancestry of any such hit.
 //
-// $Id: HitsInConversionTimeWindow_module.cc,v 1.1 2011/12/16 23:16:51 kutschke Exp $
+// $Id: HitsInConversionTimeWindow_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/12/16 23:16:51 $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Contact person Rob Kutschke.
 //
@@ -368,8 +368,8 @@ namespace mu2e {
       // Check self-consistency.
       checkSimParticleCollection(*newsimTest,true);
 
-      event.put(newsimTest,  instanceNames_.at(i) );
-      event.put(newtraj, instanceNames_.at(i) );
+      event.put(std::move(newsimTest),  instanceNames_.at(i) );
+      event.put(std::move(newtraj), instanceNames_.at(i) );
 
     }
 
@@ -570,9 +570,9 @@ namespace mu2e {
     hNhitsIn_->Fill(newStrawHits->size());
 
     // Add data products to the event.
-    event.put(newStrawHits);
-    event.put(newTruthHits);
-    event.put(newMCptrs,"StrawHitMCPtr");
+    event.put(std::move(newStrawHits));
+    event.put(std::move(newTruthHits));
+    event.put(std::move(newMCptrs),"StrawHitMCPtr");
 
 
   } // end doThreeJobs

@@ -94,7 +94,7 @@ void
 arttest::MixFilterTestDetail::
 finalizeEvent(art::Event &e) {
   e.put(std::auto_ptr<std::string>(new std::string("BlahBlahBlah")));
-  e.put(eIDs_);
+  e.put(std::move(eIDs_));
 
   assert(startEvent_called_);
   assert(processEventIDs_called_);

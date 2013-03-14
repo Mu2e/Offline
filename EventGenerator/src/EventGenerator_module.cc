@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.17 2012/07/27 19:43:01 kutschke Exp $
+  $Id: EventGenerator_module.cc,v 1.18 2013/03/14 19:47:45 kutschke Exp $
   $Author: kutschke $
-  $Date: 2012/07/27 19:43:01 $
+  $Date: 2013/03/14 19:47:45 $
 
   Original author Rob Kutschke
 
@@ -206,7 +206,7 @@ namespace mu2e {
     }
 
     // Put the generated particles into the event.
-    evt.put(genParticles);
+    evt.put(std::move(genParticles));
 
   }
 

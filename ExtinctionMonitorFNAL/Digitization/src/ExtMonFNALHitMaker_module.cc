@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.16 2013/02/22 23:55:19 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/02/22 23:55:19 $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.17 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author Andrei Gaponenko
 //
@@ -365,8 +365,8 @@ namespace mu2e {
 
       noise_.add(&*outHits);
 
-      event.put(outHits);
-      event.put(outTruth);
+      event.put(std::move(outHits));
+      event.put(std::move(outTruth));
     }
 
     //================================================================

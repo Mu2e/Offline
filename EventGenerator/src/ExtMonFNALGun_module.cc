@@ -51,7 +51,7 @@ namespace mu2e {
     void ExtMonFNALGun::produce(art::Event& event) {
       std::auto_ptr<GenParticleCollection> output(new GenParticleCollection);
       gun_->generate(*output);
-      event.put(output);
+      event.put(std::move(output));
     }
 
   } // namespace ExtMonFNAL

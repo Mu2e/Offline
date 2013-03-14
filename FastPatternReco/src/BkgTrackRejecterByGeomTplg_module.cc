@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on geometry considerations
 //
-// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.8 2012/05/23 07:53:06 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/23 07:53:06 $
+// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.9 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author G. Tassielli
 //
@@ -1066,7 +1066,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
     }
 
-    event.put(sscc);
+    event.put(std::move(sscc));
 
     //for (unsigned long i=0; i<1000000; i++) std::cout<<"lost time "<<endl;
     clock_t stopClock = clock();

@@ -1,9 +1,9 @@
 //
 // Patter recognition for the ITracker (based on ILC 4th PR)
 //
-// $Id: ITTrackMiniIReco_module.cc,v 1.1 2012/12/04 00:51:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Id: ITTrackMiniIReco_module.cc,v 1.2 2013/03/14 19:47:46 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:46 $
 //
 
 // C++ includes.
@@ -311,7 +311,7 @@ namespace mu2e {
     }
 
 
-    event.put(outseeds);
+    event.put(std::move(outseeds));
 
     clock_t stopClock = clock();
     if (_doMinPrints) { std::cout<<"-------- N clok to analyze 1 ev by ITTrackMiniIReco "<<stopClock-startClock<<" @ "<<CLOCKS_PER_SEC<<std::endl; }

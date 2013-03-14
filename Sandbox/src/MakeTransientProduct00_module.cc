@@ -1,9 +1,9 @@
 //
 // Test of producing one type of transient data product.
 //
-// $Id: MakeTransientProduct00_module.cc,v 1.5 2012/01/25 22:46:13 kutschke Exp $
+// $Id: MakeTransientProduct00_module.cc,v 1.6 2013/03/14 19:47:46 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/01/25 22:46:13 $
+// $Date: 2013/03/14 19:47:46 $
 //
 // Original author Rob Kutschke
 //
@@ -54,7 +54,7 @@ namespace mu2e {
       p.push_back( hits.at(i) );
     }
 
-    event.put(prod);
+    event.put(std::move(prod));
 
   } // end MakeTransientProduct00::analyze
 

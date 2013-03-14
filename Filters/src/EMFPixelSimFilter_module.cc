@@ -1,6 +1,6 @@
-// $Id: EMFPixelSimFilter_module.cc,v 1.1 2012/11/01 23:42:19 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:42:19 $
+// $Id: EMFPixelSimFilter_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Andrei Gaponenko, 2012
 
@@ -129,8 +129,8 @@ namespace mu2e {
         }
       } // if(passed)
 
-      event.put(outparts);
-      event.put(outhits);
+      event.put(std::move(outparts));
+      event.put(std::move(outhits));
       return passed;
     }
 

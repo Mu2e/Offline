@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.7 2013/03/14 16:15:32 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2013/03/14 16:15:32 $
+// $Id: FlagBkgHits_module.cc,v 1.8 2013/03/14 19:47:46 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2013/03/14 19:47:46 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -280,7 +280,7 @@ namespace mu2e
       fillDeltaDiag(dinfo);
 
     // put the background flag into the event
-    event.put(bkgfcol);
+    event.put(std::move(bkgfcol));
   }
 
   void FlagBkgHits::endJob(){

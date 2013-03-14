@@ -1,8 +1,8 @@
 // Associate SimParticles to MARSInfo in a newly produced compressed MARSInfoCollection.
 //
-// $Id: SimParticleMARSAssnsMaker_module.cc,v 1.1 2012/11/01 23:36:42 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:36:42 $
+// $Id: SimParticleMARSAssnsMaker_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author Andrei Gaponenko
 //
@@ -110,8 +110,8 @@ namespace mu2e {
       }
 
       //----------------
-      event.put(info);
-      event.put(assns);
+      event.put(std::move(info));
+      event.put(std::move(assns));
     }
 
     //================================================================

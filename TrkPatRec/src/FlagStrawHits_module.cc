@@ -2,9 +2,9 @@
 // A module to flag StrawHits for track reconstruction and delta ray 
 // identification
 //
-// $Id: FlagStrawHits_module.cc,v 1.1 2013/03/08 04:33:26 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/03/08 04:33:26 $
+// $Id: FlagStrawHits_module.cc,v 1.2 2013/03/14 19:47:46 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:46 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -103,7 +103,7 @@ namespace mu2e {
 	flag.merge(StrawHitFlagDetail::radsel);
       shfcol->push_back(flag);
     }
-    event.put(shfcol);
+    event.put(std::move(shfcol));
 
   } // end FlagStrawHits::produce.
 } // end namespace mu2e

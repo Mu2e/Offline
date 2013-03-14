@@ -6,9 +6,9 @@
 // momentum and extrapolated donwstream where the consistency with the
 // donwstream tracklet is checked.
 //
-// $Id: EMFPatRecFromTracklets_module.cc,v 1.7 2012/11/01 23:39:22 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:39:22 $
+// $Id: EMFPatRecFromTracklets_module.cc,v 1.8 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author Andrei Gaponenko
 //
@@ -409,7 +409,7 @@ namespace mu2e {
         findTracks(event, &*tracks, clusters);
       }
 
-      event.put(tracks);
+      event.put(std::move(tracks));
     }
 
     //================================================================

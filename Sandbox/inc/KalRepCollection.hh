@@ -5,9 +5,9 @@
 // access to them and manage their lifetimes.  This class is designed to be
 // a transient only data product.
 //
-// $Id: KalRepCollection.hh,v 1.2 2011/06/07 23:01:53 kutschke Exp $
+// $Id: KalRepCollection.hh,v 1.3 2013/03/14 19:47:46 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/07 23:01:53 $
+// $Date: 2013/03/14 19:47:46 $
 //
 // Original author Rob Kutschke
 //
@@ -15,7 +15,7 @@
 // 1) Consider the following fragment of a producer method:
 //    auto_ptr<T> t(new T);
 //    // Fill t.
-//    event.put(t);
+//    event.put(std::move(t));
 //    In side event.put the following happens:
 //       a) Default construct a T owned by the event. Call this object t0.
 //       b) swap the contents of t and t0 using T::swap member function.

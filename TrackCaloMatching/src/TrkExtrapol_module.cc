@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.6 2013/03/05 20:33:26 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:26 $
+// $Id: TrkExtrapol_module.cc,v 1.7 2013/03/14 19:47:46 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:46 $
 //
 // Original author G. Pezzullo
 //
@@ -330,7 +330,7 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
 
         }//end loop on recoTrj
 
-        evt.put(extrapolatedTracks);
+        evt.put(std::move(extrapolatedTracks));
 
 }
 

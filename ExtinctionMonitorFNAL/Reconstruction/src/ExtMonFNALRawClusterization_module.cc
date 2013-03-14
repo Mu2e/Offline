@@ -1,8 +1,8 @@
 // Pixel digitization: create ExtMonFNALRawClusters from raw hits.
 //
-// $Id: ExtMonFNALRawClusterization_module.cc,v 1.1 2012/09/19 03:31:02 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/09/19 03:31:02 $
+// $Id: ExtMonFNALRawClusterization_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author Andrei Gaponenko
 //
@@ -117,7 +117,7 @@ namespace mu2e {
     const art::EDProductGetter *hitsGetter = event.productGetter(hits.id());
     formClusters(&*clusters, hits, hitsGetter);
 
-    event.put(clusters);
+    event.put(std::move(clusters));
   }
 
   //================================================================

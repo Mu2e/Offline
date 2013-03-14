@@ -1,9 +1,9 @@
 // Read a SimParticle collection and create a GenParticleCollection from the end point of the former.
 //
 //
-// $Id: FromSimParticleEndPoint_module.cc,v 1.4 2012/07/17 20:02:12 kutschke Exp $
+// $Id: FromSimParticleEndPoint_module.cc,v 1.5 2013/03/14 19:47:45 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/17 20:02:12 $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author Gianni Onorato
 // 
@@ -267,8 +267,8 @@ namespace mu2e {
       }
     }
     
-    event.put(output);
-    event.put(history);
+    event.put(std::move(output));
+    event.put(std::move(history));
     
   }
 

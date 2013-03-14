@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.10 2012/11/01 23:40:59 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:40:59 $
+// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.11 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Create particle flux in the ExtMonFNAL room by randomizing
 // kinematic of input particles read from a file.
@@ -310,9 +310,9 @@ namespace mu2e {
 
       } // while(doing requested number of protons)
 
-      event.put(output);
-      event.put(info);
-      event.put(assns);
+      event.put(std::move(output));
+      event.put(std::move(info));
+      event.put(std::move(assns));
 
     } // produce()
 

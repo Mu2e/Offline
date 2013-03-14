@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: kalmanFitv2_module.cc,v 1.4 2012/12/04 00:51:27 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2012/12/04 00:51:27 $
+// $Id: kalmanFitv2_module.cc,v 1.5 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2013/03/14 19:47:45 $
 //
 
 #include <iostream>
@@ -271,7 +271,7 @@ namespace mu2e
       }
     
       if (_writeDataOut) {
-        event.put(recomom,"test");
+        event.put(std::move(recomom),"test");
       }
     }
 
@@ -288,7 +288,7 @@ namespace mu2e
             // put the tracks into the event
             art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
             _payloadSaver.put(*tracks, tracksID, event);
-            event.put(tracks,_iname);
+            event.put(std::move(tracks),_iname);
     }
 
   }

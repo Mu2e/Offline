@@ -1,9 +1,9 @@
 //
 // performance a remapping module of the StrawHit in a manner that they can be accessed by Z and Sector IDs
 //
-// $Id: CreateZRotStrawHitMap_module.cc,v 1.3 2012/01/30 19:51:42 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/01/30 19:51:42 $
+// $Id: CreateZRotStrawHitMap_module.cc,v 1.4 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author G. Tassielli
 //
@@ -290,7 +290,7 @@ namespace mu2e {
     }
 
 
-    event.put(zsctmap);
+    event.put(std::move(zsctmap));
 
 //    cerr << "Double click in the canvas_Fake to continue:" ;
 //    _fakeCanvas->cd();

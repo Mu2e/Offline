@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeDriftCellHit_module.cc,v 1.19 2012/12/04 00:51:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Id: MakeDriftCellHit_module.cc,v 1.20 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -568,9 +568,9 @@ namespace mu2e {
     }
 
     // Add the output hit collection to the event
-    event.put(strawHits);
-    event.put(truthHits);
-    event.put(mcptrHits,"StrawHitMCPtr");
+    event.put(std::move(strawHits));
+    event.put(std::move(truthHits));
+    event.put(std::move(mcptrHits),"StrawHitMCPtr");
 
     if ( _diagLevel > 0 ) cout << "MakeDriftCellHit: produce() end" << endl;
 

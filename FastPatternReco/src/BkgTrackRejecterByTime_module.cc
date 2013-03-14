@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on time peak analysis
 //
-// $Id: BkgTrackRejecterByTime_module.cc,v 1.12 2012/12/04 00:51:27 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:27 $
+// $Id: BkgTrackRejecterByTime_module.cc,v 1.13 2013/03/14 19:47:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/14 19:47:45 $
 //
 // Original author G. Tassielli
 //
@@ -671,7 +671,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
             if (_debugLevel>0) { std::cout<<"Upstream part found n time peak "<<nfound<<std::endl; }
     }
 
-    event.put(thcc);
+    event.put(std::move(thcc));
 
     delete [] timepeakPos;
     delete [] timepeakHei;
