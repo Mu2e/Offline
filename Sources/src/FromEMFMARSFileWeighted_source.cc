@@ -17,7 +17,7 @@
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "art/Framework/IO/Sources/ReaderSource.h"
+#include "art/Framework/IO/Sources/Source.h"
 #include "art/Framework/Core/InputSourceMacros.h"
 #include "art/Framework/Core/PrincipalMaker.h"
 #include "art/Persistency/Provenance/Timestamp.h"
@@ -238,5 +238,5 @@ namespace mu2e {
   } // namespace ExtMonFNAL
 } // namespace mu2e
 
-typedef art::ReaderSource<mu2e::ExtMonFNAL::EMFMARSWeightedDetail> FromEMFMARSFileWeighted;
+typedef art::Source<mu2e::ExtMonFNAL::EMFMARSWeightedDetail> FromEMFMARSFileWeighted;
 DEFINE_ART_INPUT_SOURCE(FromEMFMARSFileWeighted);
