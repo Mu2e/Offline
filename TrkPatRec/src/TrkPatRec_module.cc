@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.54 2013/03/09 01:06:58 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.55 2013/03/14 16:15:06 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/09 01:06:58 $
+// $Date: 2013/03/14 16:15:06 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -61,11 +61,7 @@
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/moment.hpp>
-#include <boost/accumulators/statistics/variance.hpp>
-#include <boost/accumulators/statistics/min.hpp>
-#include <boost/accumulators/statistics/max.hpp>
 // C++
 #include <iostream>
 #include <fstream>
@@ -107,6 +103,7 @@ namespace mu2e
       double _maxedep, _maxdt, _maxdtmiss;
       double _fbf;
       // time spectrum parameters
+      bool _findtpeak;
       unsigned _maxnpeak;
       unsigned _minnhits;
       double _tmin;
@@ -136,6 +133,7 @@ namespace mu2e
       // helper functions
       bool findData(const art::Event& e);
       void findTimePeaks();
+      void createTimePeak();
       void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
       void findMissingHits(KalFitResult& kalfit, std::vector<hitIndex>& indices);
       void createDiagnostics();
@@ -204,6 +202,7 @@ namespace mu2e
     _maxdt(pset.get<double>("DtMax",40.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
     _fbf(pset.get<double>("PhiEdgeBuffer",1.1)),
+    _findtpeak(pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",0)),
     _tmin(pset.get<double>("tmin",0.0)),
@@ -275,8 +274,14 @@ namespace mu2e
 	//	return;
       }
     }
-    // find the time peaks in the time spectrum of selected hits
-    findTimePeaks();
+    // find the time peaks in the time spectrum of selected hits.  Otherwise, take all
+    // selected hits as a peak
+    _tpeaks.clear();
+    if(_findtpeak){
+      findTimePeaks();
+    } else {
+      createTimePeak();
+    }
     // fill diagnostics if requested
     if(_diag > 2)fillTimeDiag();
     if(_diag > 1)fillStrawDiag();
@@ -396,7 +401,6 @@ namespace mu2e
   }
 
   void TrkPatRec::findTimePeaks() {
-    _tpeaks.clear();
     TSpectrum tspec(_maxnpeak);
     TH1F timespec("timespec","time spectrum",_nbins,_tmin,_tmax);
     // loop over straws hits and fill time spectrum plot for tight hits
@@ -431,6 +435,30 @@ namespace mu2e
     }
     // sort the peaks so that the largest comes first
     std::sort(_tpeaks.begin(),_tpeaks.end(),greater<TrkTimePeak>());
+  }
+
+  void TrkPatRec::createTimePeak() {
+// find the median time
+    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > tacc;
+    unsigned nstrs = _shcol->size();
+    for(unsigned istr=0; istr<nstrs;++istr){
+      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
+	double time = _shcol->at(istr).time();
+	tacc(time);
+      }
+    }
+    unsigned np = boost::accumulators::extract::count(tacc);  
+    if(np >= _minnhits){
+      double mtime  = median(tacc);
+// create a time peak from the full subset of selected hits
+      TrkTimePeak tpeak(mtime,(double)nstrs);
+      for(unsigned istr=0; istr<nstrs;++istr){
+	if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
+	  tpeak._trkptrs.push_back(istr);
+	}
+      }
+      _tpeaks.push_back(tpeak);
+    }
   }
 
   void TrkPatRec::filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec){
