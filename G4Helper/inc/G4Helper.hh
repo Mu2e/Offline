@@ -8,9 +8,9 @@
 // support of G4.  For technical reasons, this cannot be done by making
 // Mu2eG4RunManager a singleton.
 //
-// $Id: G4Helper.hh,v 1.6 2013/03/14 19:54:49 kutschke Exp $
+// $Id: G4Helper.hh,v 1.7 2013/03/15 18:20:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:54:49 $
+// $Date: 2013/03/15 18:20:22 $
 //
 // Original author Rob Kutschke
 //
@@ -50,5 +50,5 @@ namespace mu2e {
 
 }
 
-DECLARE_ART_SERVICE(G4Helper, LEGACY)
+DECLARE_ART_SERVICE(mu2e::G4Helper, LEGACY)
 #endif /* G4Helper_G4Helper_hh */

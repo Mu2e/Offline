@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.18 2013/03/15 15:52:04 kutschke Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.19 2013/03/15 18:20:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Date: 2013/03/15 18:20:22 $
 //
 // Original author Andrei Gaponenko
 //
@@ -119,7 +119,7 @@ namespace mu2e {
         , cutClockMax_()
 
         , chipSimInputsMode_(false)
-        , chipSimFile_(0)
+        , chipSimFile_(nullptr)
         , chipSimChipId_()
         , chipSimProtonPulseNumber_()
       {

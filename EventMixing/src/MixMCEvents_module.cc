@@ -6,9 +6,9 @@
 // are mixed; mixing of the PointTrajectoryCollections can also be turned on/off with a
 // parameter set variable.
 //
-// $Id: MixMCEvents_module.cc,v 1.12 2013/03/15 15:52:04 kutschke Exp $
+// $Id: MixMCEvents_module.cc,v 1.13 2013/03/15 18:20:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Date: 2013/03/15 18:20:22 $
 //
 // Contact person Rob Kutschke.
 //
@@ -382,7 +382,7 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
   g4ModuleLabel_ (pSet.get<string>("g4ModuleLabel")),
   stepInstances_(chooseStepInstances(pSet)),
   doPointTrajectories_(pSet.get<bool>("doPointTrajectories",true)),
-  poisson_(0),
+  poisson_(nullptr),
   n0_(0),
 
   // Non-run-time configurable
@@ -392,7 +392,7 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
   actual_(0),
   genOffsets_(),
   simOffsets_(),
-  summary_(0){
+  summary_(nullptr){
 
   // Declare new products produced directly by this class.
   helper.produces<mu2e::MixingSummary>();
@@ -519,7 +519,7 @@ mixSimParticles( std::vector< mu2e::SimParticleCollection const *> const &in,
 
     // We have crossed the highwater mark for this input collection;
     // Get infor for the next non-empty input collection.
-    if ( int(i->first.asInt()) >= info.high ){
+    if ( size_t(i->first.asInt()) >= info.high ){
       info = inputMapper.next();
     }
 

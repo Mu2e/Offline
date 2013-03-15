@@ -1,9 +1,9 @@
 //
 // Make a ExtinctionMonitor.
 //
-// $Id: ExtMonUCIMaker.cc,v 1.7 2012/09/05 01:01:17 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/09/05 01:01:17 $
+// $Id: ExtMonUCIMaker.cc,v 1.8 2013/03/15 18:20:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 18:20:22 $
 
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIMaker.hh"
 
@@ -21,7 +21,7 @@ namespace mu2e {
   namespace ExtMonUCI {
 
     ExtMonMaker::ExtMonMaker(const SimpleConfig& config) 
-      : _det(0)
+      : _det(nullptr)
     {
       std::vector<double> envelopeParams;
       std::vector<double> envelopeOrigin;

@@ -38,7 +38,7 @@ namespace mu2e {
 
     ExtMonFNALGun::ExtMonFNALGun(fhicl::ParameterSet const& pset)
       : pset_(pset)
-      , gun_(0)
+      , gun_(nullptr)
     {
       produces<GenParticleCollection>();
       createEngine( art::ServiceHandle<SeedService>()->getSeed() );

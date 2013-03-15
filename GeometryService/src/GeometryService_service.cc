@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.44 2013/03/15 15:59:58 kutschke Exp $
+// $Id: GeometryService_service.cc,v 1.45 2013/03/15 18:20:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:59:58 $
+// $Date: 2013/03/15 18:20:22 $
 //
 // Original author Rob Kutschke
 //
@@ -91,7 +91,7 @@ namespace mu2e {
     _messageOnDefault(     pset.get<bool>        ("messageOnDefault",     false)),
     _configStatsVerbosity( pset.get<int>         ("configStatsVerbosity", 0)),
     _printConfig(          pset.get<bool>        ("printConfig",          false)),
-    _config(0),
+    _config(nullptr),
     _detectors(),
     _run_count()
   {
@@ -165,22 +165,22 @@ namespace mu2e {
 
     std::unique_ptr<Beamline> tmpBeamline(BeamlineMaker::make(*_config));
     const Beamline& beamline = *tmpBeamline.get();
-    addDetector(tmpBeamline);
+    addDetector(std::move(tmpBeamline));
 
     std::unique_ptr<ProductionTarget> tmpProdTgt(ProductionTargetMaker::make(*_config, beamline.solenoidOffset()));
     const ProductionTarget& prodTarget = *tmpProdTgt.get();
-    addDetector(tmpProdTgt);
+    addDetector(std::move(tmpProdTgt));
 
     std::unique_ptr<ProductionSolenoid>
       tmpProductionSolenoid(ProductionSolenoidMaker(*_config, beamline.solenoidOffset()).getProductionSolenoidPtr());
 
     const ProductionSolenoid& ps = *tmpProductionSolenoid.get();
-    addDetector(tmpProductionSolenoid);
+    addDetector(std::move(tmpProductionSolenoid));
 
     std::unique_ptr<PSEnclosure>
       tmpPSE(PSEnclosureMaker::make(*_config, ps.psEndRefPoint()));
     const PSEnclosure& pse = *tmpPSE.get();
-    addDetector(tmpPSE);
+    addDetector(std::move(tmpPSE));
 
     // The Z coordinate of the boundary between PS and TS vacua
     const double vacPS_TS_z = -beamline.getTS().torusRadius() - 2*beamline.getTS().getTS1().getHalfLength();
@@ -190,7 +190,7 @@ namespace mu2e {
 
     std::unique_ptr<BuildingBasics> tmpBasics(BuildingBasicsMaker::make(*_config));
     const BuildingBasics& buildingBasics = *tmpBasics.get();
-    addDetector(tmpBasics);
+    addDetector(std::move(tmpBasics));
 
     const double dumpFrontShieldingYmin = buildingBasics.detectorHallFloorTopY() - buildingBasics.detectorHallFloorThickness();
     const double dumpFrontShieldingYmax = dumpFrontShieldingYmin +
@@ -199,12 +199,12 @@ namespace mu2e {
     std::unique_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config, dumpFrontShieldingYmin, dumpFrontShieldingYmax));
 
     const ProtonBeamDump& dump = *tmpDump.get();
-    addDetector(tmpDump);
+    addDetector(std::move(tmpDump));
 
 
     std::unique_ptr<Mu2eBuilding> tmpbld(Mu2eBuildingMaker::make(*_config, buildingBasics, dump));
     const Mu2eBuilding& building = *tmpbld.get();
-    addDetector(tmpbld);
+    addDetector(std::move(tmpbld));
 
     if(_config->getBool("hasTarget",false)){
       TargetMaker targm( *_config );
@@ -242,7 +242,7 @@ namespace mu2e {
 
     std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, dump));
     const ExtMonFNALBuilding& emfb = *tmpemb.get();
-    addDetector(tmpemb);
+    addDetector(std::move(tmpemb));
     if(_config->getBool("hasExtMonFNAL",false)){
       addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, emfb));
     }
@@ -264,7 +264,7 @@ namespace mu2e {
     if(_config->getBool("hasBFieldManager",false)){
       std::unique_ptr<BFieldConfig> bfc(BFieldConfigMaker(*_config, beamline).getBFieldConfig());
       BFieldManagerMaker bfmgr(*bfc);
-      addDetector(bfc);
+      addDetector(std::move(bfc));
       addDetector(bfmgr.getBFieldManager());
     }
 

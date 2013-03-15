@@ -4,9 +4,9 @@
 //  - as a StatusG4 object that is a top level data product.
 //  - within a MixingSummary object.
 //
-// $Id: SummarizeStatusG4_module.cc,v 1.5 2013/03/15 15:52:04 kutschke Exp $
+// $Id: SummarizeStatusG4_module.cc,v 1.6 2013/03/15 18:20:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Date: 2013/03/15 18:20:22 $
 //
 // Contact person Rob Kutschke
 //
@@ -79,7 +79,7 @@ namespace mu2e {
     unique_ptr<StatusG4> summaryStatus( new StatusG4() );
 
     // Printout on some events.
-    unique_ptr<mf::LogInfo> log(0);
+    unique_ptr<mf::LogInfo> log(nullptr);
     if (  firstEvent || diagLevel_ > 0 ) {
       log = unique_ptr<mf::LogInfo>(new mf::LogInfo("MIXING"));
       (*log) << "Creating Summary of StatusG4 from the following products: \n";

@@ -1,9 +1,9 @@
 //
 //  The first example of a producer.
 //
-//  $Id: HelloProducer_module.cc,v 1.7 2013/03/15 15:52:04 kutschke Exp $
+//  $Id: HelloProducer_module.cc,v 1.8 2013/03/15 18:20:22 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2013/03/15 15:52:04 $
+//  $Date: 2013/03/15 18:20:22 $
 //
 //  Original author Rob Kutschke
 //
@@ -38,7 +38,7 @@ namespace mu2e {
 
   void HelloProducer::produce( art::Event& event){
 
-    unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
+    std::unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
 
     CLHEP::Hep3Vector position(0.,0.,0.);
     CLHEP::HepLorentzVector momentum(50.,0.,0.,50.);
@@ -51,11 +51,10 @@ namespace mu2e {
                                              time)
                             );
 
-    event.put( genParticles );
+    event.put( std::move(genParticles) );
 
   }
 
 } // end namespace mu2e
 
-using mu2e::HelloProducer;
-DEFINE_ART_MODULE(HelloProducer);
+DEFINE_ART_MODULE(mu2e::HelloProducer);

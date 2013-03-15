@@ -1,9 +1,9 @@
 //
 // Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc.
 //
-// $Id: ComponentInfo.h,v 1.12 2013/03/15 16:20:00 kutschke Exp $
+// $Id: ComponentInfo.h,v 1.13 2013/03/15 18:20:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 16:20:00 $
+// $Date: 2013/03/15 18:20:22 $
 //
 // Original author Ralf Ehrlich
 //
@@ -48,7 +48,8 @@ namespace mu2e_eventdisplay
       _name=boost::shared_ptr<std::string>(new std::string);
       for(int i=0; i<5; i++)
       {
-        boost::shared_ptr<TText> newLine(new TText(0.0,0.0,nullptr));
+        char const* tmp = nullptr;
+        boost::shared_ptr<TText> newLine(new TText(0.0,0.0,tmp));
         newLine->SetTextColor(1);
         newLine->SetTextSize(0.07);
         _text.push_back(newLine);
