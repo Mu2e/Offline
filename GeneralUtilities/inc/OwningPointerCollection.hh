@@ -10,9 +10,9 @@
 //
 // The original use is for BaBar tracks.
 //
-// $Id: OwningPointerCollection.hh,v 1.4 2012/07/23 17:52:27 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Id: OwningPointerCollection.hh,v 1.5 2013/03/15 21:14:53 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 21:14:53 $
 //
 // Original author Rob Kutschke
 //
@@ -56,6 +56,22 @@ namespace mu2e {
       }
     }
 
+    OwningPointerCollection( OwningPointerCollection && rhs ):
+      v_(std::move(rhs.v_)){
+      rhs.v_.clear();
+    }
+
+    OwningPointerCollection& operator=( OwningPointerCollection && rhs ){
+      v_ = std::move(rhs.v_);
+      rhs.v_.clear();
+      return *this;
+    }
+
+    // Not copy-copyable or copy-assignable; this is needed to ensure exactly one delete.
+    OwningPointerCollection( OwningPointerCollection const& ) = delete;
+    OwningPointerCollection& operator=( OwningPointerCollection const& ) = delete;
+
+
     // Caller transfers ownership of the pointee to us.
     void push_back( T* t){
       v_.push_back(t);
@@ -96,10 +112,6 @@ namespace mu2e {
     std::vector<T const *> const& getAll(){ return v_; }
 
   private:
-
-    // Not copyable or assignable; this is needed to ensure exactly one delete.
-    OwningPointerCollection( OwningPointerCollection const& );
-    OwningPointerCollection& operator=( OwningPointerCollection const& );
 
     // Owning pointers to the objects.
     std::vector<const T*> v_;
