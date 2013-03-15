@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.20 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2013/03/15 15:52:04 $
+// $Id: KalFitTest_module.cc,v 1.21 2013/03/15 19:03:19 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 19:03:19 $
 //
 
 // framework
@@ -30,7 +30,7 @@
 #include "KalmanTests/inc/KalRepCollection.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
-// root 
+// root
 #include "TMath.h"
 #include "TFile.h"
 #include "TH2D.h"
@@ -46,9 +46,9 @@
 #include <memory>
 
 
-using namespace std; 
+using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
   class KalFitTest : public art::EDProducer
   {
@@ -76,10 +76,10 @@ namespace mu2e
     KalFitMC _kfitmc;
     // product name
     std::string _iname;
-// 
+//
   };
-  
-  KalFitTest::KalFitTest(fhicl::ParameterSet const& pset) : 
+
+  KalFitTest::KalFitTest(fhicl::ParameterSet const& pset) :
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",10)),
@@ -97,14 +97,15 @@ namespace mu2e
   KalFitTest::~KalFitTest(){}
 
   void KalFitTest::beginJob(){
-     if(_diag > 0)
-      TTree* trkdiag = _kfitmc.createTrkDiag();
+    if(_diag > 0){
+       _kfitmc.createTrkDiag();
+    }
   }
 
   void KalFitTest::beginRun(art::Run& ){
   }
 
-  void KalFitTest::produce(art::Event& event ) 
+  void KalFitTest::produce(art::Event& event )
   {
     unique_ptr<KalRepCollection> tracks(new KalRepCollection );
 // event printout
@@ -158,7 +159,7 @@ namespace mu2e
       _strawhits = strawhitsH.product();
     return _strawhits != 0;
   }
-  
+
 }
 
 using mu2e::KalFitTest;

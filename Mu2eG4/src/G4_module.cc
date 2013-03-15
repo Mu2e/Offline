@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.61 2013/03/15 15:52:04 kutschke Exp $
+// $Id: G4_module.cc,v 1.62 2013/03/15 19:03:20 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Date: 2013/03/15 19:03:20 $
 //
 // Original author Rob Kutschke
 //
@@ -155,17 +155,17 @@ namespace mu2e {
   }; // end G4 header
 
   G4::G4(fhicl::ParameterSet const& pSet):
-    _runManager(0),
+    _runManager(nullptr),
     _warnEveryNewRun(pSet.get<bool>("warnEveryNewRun",false)),
     _exportPDTStart(pSet.get<bool>("exportPDTStart",false)),
     _exportPDTEnd(pSet.get<bool>("exportPDTEnd",false)),
-    _genAction(0),
-    _trackingAction(0),
-    _steppingAction(0),
-    _stackingAction(0),
-    _session(0),
-    _UI(0),
-    _visManager(0),
+    _genAction(nullptr),
+    _trackingAction(nullptr),
+    _steppingAction(nullptr),
+    _stackingAction(nullptr),
+    _session(nullptr),
+    _UI(nullptr),
+    _visManager(nullptr),
     _rmvlevel(pSet.get<int>("diagLevel",0)),
     _tmvlevel(pSet.get<int>("trackingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
@@ -425,7 +425,7 @@ namespace mu2e {
     if(_extMonFNALPixelSD) {
       event.put(std::move(extMonFNALHits));
     }
-    _sensitiveDetectorHelper.put(std::move(event));
+    _sensitiveDetectorHelper.put(event);
 
     // Pause to see graphics.
     if ( !_visMacro.empty() ){
