@@ -4,9 +4,9 @@
 //
 // Template used to instantiate the bit map classes.
 //
-//   $Id: BitMap.hh,v 1.7 2013/03/03 18:39:57 kutschke Exp $
+//   $Id: BitMap.hh,v 1.8 2013/03/15 21:15:35 kutschke Exp $
 //   $Author: kutschke $
-//   $Date: 2013/03/03 18:39:57 $
+//   $Date: 2013/03/15 21:15:35 $
 //
 // The user must supply a detail class with the following requirements:
 //
@@ -138,7 +138,7 @@ namespace mu2e {
     }
 
     void clear( bit_type bitNumber) {
-      _value = static_cast<mask_type>(_value & ~bit_to_mask(bitNumber) );
+      _value = static_cast<mask_type>(_value & ~DETAIL::bit_to_mask(bitNumber) );
     }
 
     void clear( BitMap arg) {
