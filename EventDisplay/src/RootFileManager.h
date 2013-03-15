@@ -1,9 +1,9 @@
 //
 // Class which manages a root file which stores a TTree with one branch which hold TObjArrays. These TObjArrays hold all TPolyLines, TPolyLine3Ds, and TTexts of each event.
 //
-// $Id: RootFileManager.h,v 1.3 2011/11/02 04:25:21 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2011/11/02 04:25:21 $
+// $Id: RootFileManager.h,v 1.4 2013/03/15 16:20:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 16:20:00 $
 //
 // Original author Ralf Ehrlich
 //
@@ -47,7 +47,7 @@ class RootFileManager
     _file=boost::shared_ptr<TFile>(new TFile(c,"RECREATE"));
     _directory=gDirectory;
     
-    _objArray = NULL;
+    _objArray = nullptr;
     _tree = boost::shared_ptr<TTree>(new TTree("Tree","Tree"));
     _tree->Branch("Branch","TObjArray",&_objArray);
 

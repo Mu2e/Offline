@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.58 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: DataInterface.cc,v 1.59 2013/03/15 16:20:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 16:20:00 $
 //
 
 #include "DataInterface.h"
@@ -69,7 +69,7 @@ namespace mu2e_eventdisplay
 {
 
 DataInterface::DataInterface(EventDisplayFrame *mainframe):
-              _geometrymanager(NULL),_topvolume(NULL),_mainframe(mainframe),
+              _geometrymanager(nullptr),_topvolume(nullptr),_mainframe(mainframe),
               _showUnhitStraws(false), _showUnhitCrystals(false)
 {
     _minPoints=0;
@@ -178,7 +178,7 @@ void DataInterface::createGeometryManager()
 {
   _geometrymanager = new TGeoManager("GeoManager", "GeoManager");
   _geometrymanager->SetVerboseLevel(0); 
-  _topvolume = _geometrymanager->MakeBox("TopVolume", NULL, 1000, 1000, 1500);
+  _topvolume = _geometrymanager->MakeBox("TopVolume", nullptr, 1000, 1000, 1500);
   _geometrymanager->SetTopVolume(_topvolume);
   _geometrymanager->SetTopVisible(false);
   _geometrymanager->CloseGeometry();
@@ -1041,7 +1041,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   _numberCrystalHits=0;
 
   const mu2e::StepPointMCCollection *steppointMChits=contentSelector->getSelectedHitCollection<mu2e::StepPointMCCollection>();
-  if(steppointMChits!=NULL)
+  if(steppointMChits!=nullptr)
   {
     _numberHits=steppointMChits->size();
     std::vector<mu2e::StepPointMC>::const_iterator iter;
@@ -1081,7 +1081,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   }
 
   const mu2e::StrawHitCollection *strawhits=contentSelector->getSelectedHitCollection<mu2e::StrawHitCollection>();
-  if(strawhits!=NULL)
+  if(strawhits!=nullptr)
   {
     _numberHits=strawhits->size();
     std::vector<mu2e::StrawHit>::const_iterator iter;
@@ -1123,7 +1123,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
 #ifdef BABARINSTALLED
   const mu2e::KalRepCollection *kalRepHits=contentSelector->getSelectedHitCollection<mu2e::KalRepCollection>();
-  if(kalRepHits!=NULL)
+  if(kalRepHits!=nullptr)
   {
     boost::shared_ptr<TGraphErrors> residualGraph(new TGraphErrors());
     residualGraph->SetTitle("Residual Graph");
@@ -1132,7 +1132,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     {
       const KalRep &particle = *kalRepHits->at(i);
       const TrkHotList* hots = particle.hotList();
-      if(hots!=NULL)
+      if(hots!=nullptr)
       {
         _numberHits+=hots->nHit();
         for(TrkHotList::hot_iterator iter=hots->begin(); iter!=hots->end(); iter++)
@@ -1212,7 +1212,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
 
   const mu2e::CaloCrystalHitCollection *calocrystalhits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>();
-  if(calocrystalhits!=NULL)
+  if(calocrystalhits!=nullptr)
   {
     _numberCrystalHits=calocrystalhits->size();
     std::vector<mu2e::CaloCrystalHit>::const_iterator iter;
@@ -1249,7 +1249,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
   const mu2e::CaloHitCollection *calohits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloHitCollection>();
   art::ServiceHandle<mu2e::GeometryService> geoservice;
-  if(calohits!=NULL && geoservice->hasElement<mu2e::VaneCalorimeter>())
+  if(calohits!=nullptr && geoservice->hasElement<mu2e::VaneCalorimeter>())
   {
     mu2e::GeomHandle<mu2e::VaneCalorimeter> calo;
     _numberCrystalHits=calohits->size();  //this is not accurate since the return value gives the RO hits
@@ -1291,7 +1291,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
   unsigned int physicalVolumeEntries=0;
   const mu2e::PhysicalVolumeInfoCollection *physicalVolumes=contentSelector->getPhysicalVolumeInfoCollection();
-  if(physicalVolumes!=NULL)
+  if(physicalVolumes!=nullptr)
   {
     physicalVolumeEntries=physicalVolumes->size();
   }
@@ -1391,7 +1391,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         double hitcount=0;
         double offset=0;
         const TrkHotList* hots=kalrep->hotList();
-        if(hots!=NULL)
+        if(hots!=nullptr)
         {
           boost::shared_ptr<TGraphErrors> residualGraph(new TGraphErrors());
           residualGraph->SetTitle("Residual Graph");
@@ -1518,7 +1518,7 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
 {
 #ifdef USETRAJECTORY
   const mu2e::PointTrajectoryCollection *pointTrajectories=contentSelector->getPointTrajectoryCollection(trackInfo);
-  if(pointTrajectories!=NULL)
+  if(pointTrajectories!=nullptr)
   {
     const mu2e::PointTrajectory* trajectory=pointTrajectories->getOrNull(id);
     if(trajectory)
@@ -1662,7 +1662,7 @@ void DataInterface::removeAllComponents()
   _mbsstructures.clear();
   _mecostylepastructures.clear();
   delete _geometrymanager;
-  _geometrymanager=NULL;
+  _geometrymanager=nullptr;
 
   _mainframe->getHistDrawVector().clear();
 }

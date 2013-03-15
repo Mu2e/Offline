@@ -1,9 +1,9 @@
 //
 // Verbose version of the stepping action.
 //
-// $Id: SteppingVerbose.cc,v 1.3 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: SteppingVerbose.cc,v 1.4 2013/03/15 16:20:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 16:20:00 $
 //
 // Original author Rob Kutschke
 //
@@ -59,7 +59,7 @@ namespace mu2e {
         G4cout << std::setw(10) << "OutOfWorld";
       }
 
-      if(fStep->GetPostStepPoint()->GetProcessDefinedStep() != NULL){
+      if(fStep->GetPostStepPoint()->GetProcessDefinedStep() != nullptr){
         G4cout << "  "
                << std::setw(10) << fStep->GetPostStepPoint()->GetProcessDefinedStep()
           ->GetProcessName();

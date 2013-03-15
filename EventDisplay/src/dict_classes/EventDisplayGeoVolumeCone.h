@@ -1,9 +1,9 @@
 //
 // Class which displays a Cone. It is inherited from ROOT's TGeoVolume and the ComponentInfo class which stores specific information for this support structure. The class' constructure creates a TGeoCone, which is put into the TGeoVolume. The context menu is overwritten with a menu item allowing the user to display information for this support structure.
 //
-// $Id: EventDisplayGeoVolumeCone.h,v 1.1 2012/10/25 20:33:09 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/10/25 20:33:09 $
+// $Id: EventDisplayGeoVolumeCone.h,v 1.2 2013/03/15 16:20:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 16:20:00 $
 //
 // Original author MyeongJae Lee, based on Ralf Ehrlich's EventDisplayGeoVolumeTube.h codes
 //
@@ -37,7 +37,7 @@ class EventDisplayGeoVolumeCone : public TGeoVolume, public ComponentInfoContain
   EventDisplayGeoVolumeCone(double innerRadius1, double outerRadius1, double innerRadius2, double outerRadius2, double halflength, EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info):TGeoVolume(),ComponentInfoContainer(info),_mainframe(mainframe)
   {
     //bare pointer needed since ROOT manages this object
-    TGeoCone *cone=new TGeoCone(NULL, halflength, innerRadius1, outerRadius1, innerRadius2, outerRadius2);
+    TGeoCone *cone=new TGeoCone(nullptr, halflength, innerRadius1, outerRadius1, innerRadius2, outerRadius2);
     SetShape(cone);
     SetNumber(GetGeoManager()->AddVolume(this)); //this is what happens in the base TGeoVolume constructor
   }

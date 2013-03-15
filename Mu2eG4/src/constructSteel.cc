@@ -1,9 +1,9 @@
 //
 // Free function to create Hall Steel
 //
-// $Id: constructSteel.cc,v 1.13 2012/11/19 23:03:49 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/19 23:03:49 $
+// $Id: constructSteel.cc,v 1.14 2013/03/15 16:20:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 16:20:00 $
 //
 // Original author KLG based on Mu2eWorld constructSteel
 //
@@ -113,7 +113,7 @@ namespace mu2e {
         CRSSteelShieldInfo.solid =
           new G4SubtractionSolid(CRSSteelShieldInfo.name,
                                  CRSSteelShieldBox, CRSSteelShieldHoleTubs,
-                                 NULL, shield.getHoleOffset());
+                                 nullptr, shield.getHoleOffset());
 
         finishNesting(CRSSteelShieldInfo,
                       CRSSteelShieldMaterial,

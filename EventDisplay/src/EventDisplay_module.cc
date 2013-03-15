@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.21 2012/09/14 17:17:34 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/09/14 17:17:34 $
+// $Id: EventDisplay_module.cc,v 1.22 2013/03/15 16:20:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 16:20:00 $
 //
 
 #include <iostream>
@@ -119,8 +119,8 @@ namespace mu2e
     }
 
     _firstLoop=false;
-    if(temp_pad) temp_pad->cd(); else gPad=NULL;
-    if(temp_dir) temp_dir->cd(); else gDirectory=NULL;
+    if(temp_pad) temp_pad->cd(); else gPad=nullptr;
+    if(temp_dir) temp_dir->cd(); else gDirectory=nullptr;
 
     if(_frame->isClosed()) 
     {
@@ -164,7 +164,7 @@ namespace mu2e
         {
           KalRep const* particle = kalmantrackCollection->at(i);
           const TrkHotList* hots = particle->hotList();
-          if(hots!=NULL) numberHits+=hots->nHit();
+          if(hots!=nullptr) numberHits+=hots->nHit();
         }
         if(numberHits < _frame->getMinimumHits())
         {

@@ -14,7 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: IlcLog.cxx,v 1.1 2012/12/04 00:51:27 tassiell Exp $ */
+/* $Id: IlcLog.cxx,v 1.2 2013/03/15 16:20:00 kutschke Exp $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -45,7 +45,7 @@
 //ClassImp(IlcLog)
 
 
-IlcLog* IlcLog::fgInstance = NULL;
+IlcLog* IlcLog::fgInstance = nullptr;
 
 Bool_t IlcLog::fgDebugEnabled = kTRUE;
 
@@ -71,8 +71,8 @@ IlcLog::IlcLog() :
   for (Int_t iType = kFatal; iType < kMaxType; iType++) {
     fOutputTypes[iType] = 0;
     fFileNames[iType] = "";
-    fOutputFiles[iType] = NULL;
-    fOutputStreams[iType] = NULL;
+    fOutputFiles[iType] = nullptr;
+    fOutputStreams[iType] = nullptr;
 
     fPrintType[iType] = kTRUE;
     fPrintModule[iType] = kFALSE;
@@ -112,7 +112,7 @@ IlcLog::~IlcLog()
   fflush(stderr);
   fflush(stdout);
 
-  fgInstance = NULL;
+  fgInstance = nullptr;
 }
 
 //_____________________________________________________________________________
@@ -188,7 +188,7 @@ void IlcLog::ReadEnvSettings()
     TString levels = gEnv->GetValue("IlcRoot.IlcLog.ModuleDebugLevel", "");
     char* p = const_cast<char*>(levels.Data());
     while (const char* module = strtok(p, " ")) {
-      p = NULL;
+      p = nullptr;
       char* pos = (char*)index(module, ':');
       if (!pos) continue;
       *(pos++) = '\0';
@@ -203,7 +203,7 @@ void IlcLog::ReadEnvSettings()
     TString levels = gEnv->GetValue("IlcRoot.IlcLog.ClassDebugLevel", "");
     char* p = const_cast<char*>(levels.Data());
     while (const char* className = strtok(p, " ")) {
-      p = NULL;
+      p = nullptr;
       char* pos = (char*)index(className, ':');
       if (!pos) continue;
       *(pos++) = '\0';
@@ -318,7 +318,7 @@ void IlcLog::RootErrorHandler(Int_t level, Bool_t abort,
   case ::kInfo     : level = kInfo; break;
   default          : level = kDebug; break;
   }
-  IlcLog::Message(level, message, "ROOT", NULL, location, NULL, 0);
+  IlcLog::Message(level, message, "ROOT", nullptr, location, nullptr, 0);
 }
 
 
@@ -483,8 +483,8 @@ void IlcLog::SetFileOutput(const char* fileName)
     }
     fgInstance->fOutputTypes[iType] = 2;
     fgInstance->fFileNames[iType] = fileName;
-    fgInstance->fOutputFiles[iType] = NULL;
-    fgInstance->fOutputStreams[iType] = NULL;
+    fgInstance->fOutputFiles[iType] = nullptr;
+    fgInstance->fOutputStreams[iType] = nullptr;
   }
 }
 
@@ -501,8 +501,8 @@ void IlcLog::SetFileOutput(EType_t type, const char* fileName)
   }
   fgInstance->fOutputTypes[type] = 2;
   fgInstance->fFileNames[type] = fileName;
-  fgInstance->fOutputFiles[type] = NULL;
-  fgInstance->fOutputStreams[type] = NULL;
+  fgInstance->fOutputFiles[type] = nullptr;
+  fgInstance->fOutputStreams[type] = nullptr;
 }
 
 //_____________________________________________________________________________
@@ -523,8 +523,8 @@ void IlcLog::CloseFile(Int_t type)
       delete fOutputStreams[type];
     }
   }
-  fOutputFiles[type] = NULL;
-  fOutputStreams[type] = NULL;
+  fOutputFiles[type] = nullptr;
+  fOutputStreams[type] = nullptr;
   fFileNames[type] = "";
   fOutputTypes[type] = 0;
 }
@@ -539,8 +539,8 @@ FILE* IlcLog::GetOutputStream(Int_t type)
   else if (fOutputTypes[type] == 1) return stderr;
   else if (fOutputTypes[type] == 2) {
     if (!fOutputFiles[type]) {
-      FILE* file = NULL;
-      ofstream* stream = NULL;
+      FILE* file = nullptr;
+      ofstream* stream = nullptr;
       if (!fFileNames[type].IsNull()) {
 	for (Int_t iType = kFatal; iType < kMaxType; iType++) {
 	  if ((iType != type) && 
@@ -906,7 +906,7 @@ Int_t IlcLog::RedirectTo(FILE* stream, EType_t type, UInt_t level,
 
   // print information
   if (print) {
-    PrintMessage(type, NULL, module, className, function, file, line);
+    PrintMessage(type, nullptr, module, className, function, file, line);
     fflush(newStream);
   }
 
@@ -957,7 +957,7 @@ ostream& IlcLog::GetStream(EType_t type, UInt_t level,
   Bool_t noOutput = (type + level > GetLogLevel(module, className));
 
   if (!noOutput) {
-    PrintMessage(type, NULL, module, className, function, file, line);
+    PrintMessage(type, nullptr, module, className, function, file, line);
   }
   fflush(GetOutputStream(type));
 

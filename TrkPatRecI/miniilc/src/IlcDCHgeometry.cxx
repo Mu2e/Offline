@@ -14,7 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
-/* $Id: IlcDCHgeometry.cxx,v 1.1 2012/12/04 00:51:27 tassiell Exp $ */ 
+/* $Id: IlcDCHgeometry.cxx,v 1.2 2013/03/15 16:20:00 kutschke Exp $ */ 
  
 /////////////////////////////////////////////////////////////////////////////// 
 //                                                                           // 
@@ -1865,7 +1865,7 @@ IlcDCHgeometry* IlcDCHgeometry::GetGeometry(IlcRunLoader* runLoader)
   if (!runLoader) runLoader = IlcRunLoader::GetRunLoader(); 
   if (!runLoader) { 
     ::Error("IlcDCHgeometry::GetGeometry", "No run loader"); 
-    return NULL; 
+    return nullptr; 
   } 
  
   TDirectory* saveDir = gDirectory; 

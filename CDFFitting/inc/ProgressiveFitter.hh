@@ -48,7 +48,7 @@ public:
   // otherwise.
   virtual bool incorporateNextAction();
 
-  // Return the fit.  Return NULL if no fit has been
+  // Return the fit.  Return nullptr if no fit has been
   // performed.
   virtual const Fit<Measureable> * getFit() const;
 

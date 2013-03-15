@@ -186,7 +186,7 @@ Trajectory::Location * Trajectory::newIntersectionWith(const HepGeom::Plane3D<do
     }
   }
   delete ploc;
-  return NULL;
+  return nullptr;
 }
 
 void Trajectory::Location::print(std::ostream & os) const {

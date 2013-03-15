@@ -1,7 +1,7 @@
 //
-// $Id: TrkExtDiag.cc,v 1.1 2013/02/07 02:09:47 mjlee Exp $
-// $Author: mjlee $ 
-// $Date: 2013/02/07 02:09:47 $
+// $Id: TrkExtDiag.cc,v 1.2 2013/03/15 16:20:00 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2013/03/15 16:20:00 $
 //
 // Functions for reading TrkExt
 //
@@ -393,7 +393,7 @@ namespace mu2e
       if (readflag) break;
       const TrkHitOnTrk * hit  = iter.get();
       const mu2e::TrkStrawHit* trkstrawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hit);
-      if (trkstrawHit == NULL) {
+      if (trkstrawHit == nullptr) {
         cerr << "TrkExtDiag warning : no trkstrawHit" <<endl;
         continue;
       }
@@ -457,7 +457,7 @@ namespace mu2e
       const PointTrajectoryCollection & trajC = *trajHandle;
  
       const PointTrajectory* traj = trajC.getOrNull(simid);
-      if (traj == NULL) {
+      if (traj == nullptr) {
         cerr << "TrkExtDiag warning : traj invalid" << endl;
         continue;
       }

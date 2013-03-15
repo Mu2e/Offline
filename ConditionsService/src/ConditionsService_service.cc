@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.15 2013/03/15 15:59:58 kutschke Exp $
+// $Id: ConditionsService_service.cc,v 1.16 2013/03/15 16:20:00 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:59:58 $
+// $Date: 2013/03/15 16:20:00 $
 //
 // Original author Rob Kutschke
 //
@@ -82,15 +82,15 @@ namespace mu2e {
     // Can we break the coupling to the entities?
     std::unique_ptr<AcceleratorParams>  acctmp(new AcceleratorParams(_config));
     const AcceleratorParams& accp = *acctmp;
-    addEntity( acctmp );
-    addEntity( std::unique_ptr<DAQParams>          ( new DAQParams          (_config)) );
-    addEntity( std::unique_ptr<CalorimeterCalibrations>( new CalorimeterCalibrations(_config)) );
+    addEntity( std::move(acctmp) );
+    addEntity( std::move(std::unique_ptr<DAQParams>          ( new DAQParams          (_config))) );
+    addEntity( std::move(std::unique_ptr<CalorimeterCalibrations>( new CalorimeterCalibrations(_config))) );
     if (_config.getBool("isITrackerCond",false)) {
-            addEntity( std::unique_ptr<TrackerCalibrations>( new TrackerCalibrationsI(_config)) );
+      addEntity( std::move(std::unique_ptr<TrackerCalibrations>( new TrackerCalibrationsI(_config))) );
     } else {
-            addEntity( std::unique_ptr<TrackerCalibrations>( new TrackerCalibrations(_config)) );
+      addEntity( std::move(std::unique_ptr<TrackerCalibrations>( new TrackerCalibrations(_config))) );
     }
-    addEntity( std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config)) );
+    addEntity( std::move(std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config))) );
   }
 
   // Check that the configuration is self consistent.

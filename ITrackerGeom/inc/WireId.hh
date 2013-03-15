@@ -1,7 +1,7 @@
 //
-// $Id: WireId.hh,v 1.7 2012/12/04 00:51:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Id: WireId.hh,v 1.8 2013/03/15 16:20:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 16:20:00 $
 //
 // Original author G. Tassielli
 //
@@ -24,7 +24,7 @@ class WireId{
 public:
 
   WireId():
-    _lid(NULL),
+    _lid(nullptr),
     _n(-1){
   }
 

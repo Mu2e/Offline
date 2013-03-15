@@ -229,8 +229,8 @@ void FMtool::establishHistograms()
     double xmin[nhist], xmax[nhist], nsiz[nhist];  int nbins[nhist]; TString htil;    TString Hnn;  
 
     for(int i=0; i<nhist; ++i){
-      rg.h_fitmomCE[i]=NULL;          rg.h_fitmomDIO[i]=NULL;
-      rg.hQ_fitmomCE[i]=NULL;         rg.hQ_fitmomDIO[i]=NULL;
+      rg.h_fitmomCE[i]=nullptr;          rg.h_fitmomDIO[i]=nullptr;
+      rg.hQ_fitmomCE[i]=nullptr;         rg.hQ_fitmomDIO[i]=nullptr;
     }
     
     int ibin=0;

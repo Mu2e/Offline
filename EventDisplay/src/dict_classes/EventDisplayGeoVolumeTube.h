@@ -1,9 +1,9 @@
 //
 // Class which displays a cylinder (used, e.g. by the Cyliner class). It is inherited from ROOT's TGeoVolume and the ComponentInfo class which stores specific information for this support structure. The class' constructure creates a TGeoTube, which is put into the TGeoVolume. The context menu is overwritten with a menu item allowing the user to display information for this support structure.
 //
-// $Id: EventDisplayGeoVolumeTube.h,v 1.6 2012/09/14 17:17:34 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/09/14 17:17:34 $
+// $Id: EventDisplayGeoVolumeTube.h,v 1.7 2013/03/15 16:20:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 16:20:00 $
 //
 // Original author Ralf Ehrlich
 //
@@ -37,7 +37,7 @@ class EventDisplayGeoVolumeTube : public TGeoVolume, public ComponentInfoContain
   EventDisplayGeoVolumeTube(double innerRadius, double outerRadius, double halflength, EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info):TGeoVolume(),ComponentInfoContainer(info),_mainframe(mainframe)
   {
     //bare pointer needed since ROOT manages this object
-    TGeoTube *tube=new TGeoTube(NULL, innerRadius, outerRadius, halflength);
+    TGeoTube *tube=new TGeoTube(nullptr, innerRadius, outerRadius, halflength);
     SetShape(tube);
     SetNumber(GetGeoManager()->AddVolume(this)); //this is what happens in the base TGeoVolume constructor
   }

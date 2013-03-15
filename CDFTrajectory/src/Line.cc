@@ -200,7 +200,7 @@ Trajectory::Location * Line::newIntersectionWith(const HepGeom::Plane3D<double> 
       delete tmp;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 HepGeom::Vector3D<double> Line::getSecondDerivative(double ) const{

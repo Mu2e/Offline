@@ -1,8 +1,8 @@
 // ITracker wire description
 //
-// $Id: Wire.cc,v 1.7 2012/09/25 10:08:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/09/25 10:08:28 $
+// $Id: Wire.cc,v 1.8 2013/03/15 16:20:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 16:20:00 $
 //
 // Original author G. Tassielli
 //
@@ -49,7 +49,7 @@ Wire::Wire( WireId id,
 
 Wire::~Wire (){
 //        try {
-//                delete *_detail; *_detail=NULL;
+//                delete *_detail; *_detail=nullptr;
 //                delete _pos;
 //        } catch (cet::exception e) {
 //            throw cet::exception("GEOM")

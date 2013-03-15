@@ -1,8 +1,8 @@
 // ITracker geometry maker
 //
-// $Id: ITrackerMaker.hh,v 1.12 2013/03/15 15:52:04 kutschke Exp $
+// $Id: ITrackerMaker.hh,v 1.13 2013/03/15 16:20:00 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Date: 2013/03/15 16:20:00 $
 //
 // Original author G. Tassielli
 //
@@ -43,7 +43,7 @@ private:
 
   void Build();
   void ITFldWireLocater ( boost::shared_ptr<WireDetail> &wdetail, boost::shared_ptr<ITLayer> &itl/*ITLayer *itl*/, int NofWire, double PosRadius, double Theta, double ThetaOffset, double Stereo, double halfAlpha );
-  void ITWireLocater ( boost::shared_ptr<WireDetail> &wdetaill, Wire::Wtype wireType, boost::shared_ptr<ITLayer> &itl/*ITLayer *itl*/, int NofWire, double PosRadius, double Theta, double ThetaOffset, double Stereo, double halfAlpha, int copyNunOffset=0, boost::shared_ptr<CellDetail> *celldetail = NULL );
+  void ITWireLocater ( boost::shared_ptr<WireDetail> &wdetaill, Wire::Wtype wireType, boost::shared_ptr<ITLayer> &itl/*ITLayer *itl*/, int NofWire, double PosRadius, double Theta, double ThetaOffset, double Stereo, double halfAlpha, int copyNunOffset=0, boost::shared_ptr<CellDetail> *celldetail = nullptr );
 
   void AssignFieldWireToCell();
 

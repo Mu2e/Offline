@@ -307,7 +307,7 @@ Trajectory::Location* Helix::newIntersectionWith (const HepGeom::Plane3D<double>
 // See comments below.
 //-------------------------------------------------------------
 //
-//   if (!getSinTheta()) return NULL; // fastest way out of a screwy situation.
+//   if (!getSinTheta()) return nullptr; // fastest way out of a screwy situation.
 //
 //   double alpha0, alpha1, alpha2, deltaAlpha1, deltaAlpha2; //angles measured around center of circle
 //   double PHI0; //global phi coordinate
@@ -444,7 +444,7 @@ Trajectory::Location* Helix::newIntersectionWith (const HepGeom::Plane3D<double>
 //       }
 //     }
 //   }else{
-//     return NULL;
+//     return nullptr;
 //   }
 
 //***************************************************************************
@@ -452,7 +452,7 @@ Trajectory::Location* Helix::newIntersectionWith (const HepGeom::Plane3D<double>
 // copied from Trajectory.cc. It seems has much better quality of projections
 //***************************************************************************
 
-  if (!getSinTheta()) return NULL; // fastest way out of a screwy situation.
+  if (!getSinTheta()) return nullptr; // fastest way out of a screwy situation.
 
   double deltaS=1.0,s=0.0;
   s = fabs(plane.d())/getSinTheta();
@@ -469,7 +469,7 @@ Trajectory::Location* Helix::newIntersectionWith (const HepGeom::Plane3D<double>
     }
   }
   delete ploc;
-  return NULL;
+  return nullptr;
 
 }
 
@@ -537,7 +537,7 @@ Helix::Helix(const HepGeom::Vector3D<double> & MomentumGev,
    _cosPhi0 = 1.0;
    _sinTheta = 1.0;
    _cosTheta = 1.0;
-   _vParameters=NULL;
+   _vParameters=nullptr;
    _centerIsValid=false;
    _m_x=0.0;
    _m_y=0.0;

@@ -17,19 +17,19 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
   TGLBEntry *entry;
 
   entry=_hitBox->FindEntry("StrawHit:makeSH:");
-  if(entry==NULL) entry=_hitBox->FindEntry("StrawHit:makeDcH:");
-  if(entry==NULL) entry=_hitBox->FindEntry("KalRep:TrkPatRec:DownstreameMinus");
-  if(entry!=NULL) _hitBox->Select(entry->EntryId());
+  if(entry==nullptr) entry=_hitBox->FindEntry("StrawHit:makeDcH:");
+  if(entry==nullptr) entry=_hitBox->FindEntry("KalRep:TrkPatRec:DownstreameMinus");
+  if(entry!=nullptr) _hitBox->Select(entry->EntryId());
 
   entry=_caloHitBox->FindEntry("CaloCrystalHit:CaloCrystalHitsMaker:");
-  if(entry!=NULL) _caloHitBox->Select(entry->EntryId());
+  if(entry!=nullptr) _caloHitBox->Select(entry->EntryId());
 
   entry=_trackBox->FindEntry("TrkExtTraj:TrkExt:");
-  if(entry!=NULL) _trackBox->Select(entry->EntryId());
+  if(entry!=nullptr) _trackBox->Select(entry->EntryId());
   entry=_trackBox->FindEntry("KalRep:TrkPatRec:DownstreameMinus");
-  if(entry!=NULL) _trackBox->Select(entry->EntryId());
+  if(entry!=nullptr) _trackBox->Select(entry->EntryId());
   entry=_trackBox->FindEntry("SimParticle:g4run:");
-  if(entry!=NULL) _trackBox->Select(entry->EntryId());
+  if(entry!=nullptr) _trackBox->Select(entry->EntryId());
 }
 
 template<class CollectionType>
@@ -175,7 +175,7 @@ std::vector<ContentSelector::trackInfoStruct> ContentSelector::getSelectedTrackN
   for(int i=0; i<selections.GetSize(); i++)
   {
     TGTextLBEntry *entry=dynamic_cast<TGTextLBEntry*>(selections.At(i));
-    if(entry==NULL) continue;
+    if(entry==nullptr) continue;
     trackInfoStruct t;
     std::vector<entryStruct>::const_iterator iter;
     for(iter=_trackEntries.begin(); iter!=_trackEntries.end(); iter++)
@@ -213,15 +213,15 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
   }
   switch(classID)
   {
-    case 1 : if(typeid(CollectionType)!=typeid(mu2e::StepPointMCCollection)) return(NULL);
-             if(index>=static_cast<int>(_stepPointMCVector.size())) return(NULL);
+    case 1 : if(typeid(CollectionType)!=typeid(mu2e::StepPointMCCollection)) return(nullptr);
+             if(index>=static_cast<int>(_stepPointMCVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_stepPointMCVector[index].product()));
-    case 2 : if(typeid(CollectionType)!=typeid(mu2e::StrawHitCollection)) return(NULL);
-             if(index>=static_cast<int>(_strawHitVector.size())) return(NULL);
+    case 2 : if(typeid(CollectionType)!=typeid(mu2e::StrawHitCollection)) return(nullptr);
+             if(index>=static_cast<int>(_strawHitVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_strawHitVector[index].product()));
 #ifdef BABARINSTALLED
-    case 3 : if(typeid(CollectionType)!=typeid(mu2e::KalRepCollection)) return(NULL);
-             if(index>=static_cast<int>(_hitOnTrackVector.size())) return(NULL);
+    case 3 : if(typeid(CollectionType)!=typeid(mu2e::KalRepCollection)) return(nullptr);
+             if(index>=static_cast<int>(_hitOnTrackVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_hitOnTrackVector[index].product()));
 #endif
 //Note about the use of reinterpret_cast: While it is generally unsafe to use it, in this case it is Ok.
@@ -233,7 +233,7 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
 //In order to satisfy the compiler, an reinterpret_cast is used, while during run time the argument type and the
 //return type of the reinterpret_cast will always be the same, i.e. no "reinterpretation" will happen
   };
-  return(NULL);
+  return(nullptr);
 }
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedHitCollection<mu2e::StepPointMCCollection>() const;
 template const mu2e::StrawHitCollection*    ContentSelector::getSelectedHitCollection<mu2e::StrawHitCollection>() const;
@@ -259,14 +259,14 @@ const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
   }
   switch(classID)
   {
-    case 1 : if(typeid(CollectionType)!=typeid(mu2e::CaloCrystalHitCollection)) return(NULL);
-             if(index>=static_cast<int>(_caloCrystalHitVector.size())) return(NULL);
+    case 1 : if(typeid(CollectionType)!=typeid(mu2e::CaloCrystalHitCollection)) return(nullptr);
+             if(index>=static_cast<int>(_caloCrystalHitVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_caloCrystalHitVector[index].product()));
-    case 2 : if(typeid(CollectionType)!=typeid(mu2e::CaloHitCollection)) return(NULL);
-             if(index>=static_cast<int>(_caloHitVector.size())) return(NULL);
+    case 2 : if(typeid(CollectionType)!=typeid(mu2e::CaloHitCollection)) return(nullptr);
+             if(index>=static_cast<int>(_caloHitVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_caloHitVector[index].product()));
   };
-  return(NULL);
+  return(nullptr);
 }
 template const mu2e::CaloCrystalHitCollection* ContentSelector::getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>() const;
 template const mu2e::CaloHitCollection*    ContentSelector::getSelectedCaloHitCollection<mu2e::CaloHitCollection>() const;
@@ -281,7 +281,7 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
   for(int i=0; i<selections.GetSize(); i++)
   {
     TGTextLBEntry *entry=dynamic_cast<TGTextLBEntry*>(selections.At(i));
-    if(entry==NULL) continue;
+    if(entry==nullptr) continue;
     trackInfoStruct t;
     int classID=0;
     int index=0;
@@ -332,7 +332,7 @@ template std::vector<const mu2e::TrkExtTrajCollection*> ContentSelector::getSele
 const mu2e::PhysicalVolumeInfoCollection* ContentSelector::getPhysicalVolumeInfoCollection() const
 {
   if(_hasPhysicalVolumes) return(_physicalVolumes.product());
-  else return(NULL);
+  else return(nullptr);
 }
 
 const mu2e::PointTrajectoryCollection* ContentSelector::getPointTrajectoryCollection(const trackInfoStruct &t) const
@@ -345,7 +345,7 @@ const mu2e::PointTrajectoryCollection* ContentSelector::getPointTrajectoryCollec
     if(t.moduleLabel==iter->provenance()->moduleLabel() && t.productInstanceName==iter->provenance()->productInstanceName()) 
       return(iter->product());
   }
-  return(NULL);
+  return(nullptr);
 }
 
 }

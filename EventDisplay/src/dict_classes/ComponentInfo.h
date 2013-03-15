@@ -1,9 +1,9 @@
 //
 // Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc.
 //
-// $Id: ComponentInfo.h,v 1.11 2011/09/08 03:54:45 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2011/09/08 03:54:45 $
+// $Id: ComponentInfo.h,v 1.12 2013/03/15 16:20:00 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 16:20:00 $
 //
 // Original author Ralf Ehrlich
 //
@@ -48,7 +48,7 @@ namespace mu2e_eventdisplay
       _name=boost::shared_ptr<std::string>(new std::string);
       for(int i=0; i<5; i++)
       {
-        boost::shared_ptr<TText> newLine(new TText(0.0,0.0,NULL));
+        boost::shared_ptr<TText> newLine(new TText(0.0,0.0,nullptr));
         newLine->SetTextColor(1);
         newLine->SetTextSize(0.07);
         _text.push_back(newLine);
@@ -80,7 +80,7 @@ namespace mu2e_eventdisplay
     {
       if(lineNumber<0 || lineNumber>=_text.size()) return;  //TODO throw exception
       const char *oldLine = _text[lineNumber]->GetTitle();
-      if(oldLine!=NULL)
+      if(oldLine!=nullptr)
       {
         std::ostringstream newLine;
         // No manipulators is equivalent to %g for floating point types, %i for integral.
@@ -104,7 +104,7 @@ namespace mu2e_eventdisplay
       std::vector<boost::shared_ptr<TText> >::const_iterator iter;
       for(iter=_text.begin(); iter!=_text.end(); iter++, i++)
       {
-        if((*iter)->GetTitle()!=NULL) 
+        if((*iter)->GetTitle()!=nullptr) 
         {
           if(strlen((*iter)->GetTitle())>0)
           {
@@ -124,7 +124,7 @@ namespace mu2e_eventdisplay
       std::vector<boost::shared_ptr<TText> >::const_iterator iter;
       for(iter=_text.begin(); iter!=_text.end(); iter++, i++)
       {
-        if((*iter)->GetTitle()!=NULL) 
+        if((*iter)->GetTitle()!=nullptr)
         {
           double x=20.0/width;
           double y=1.0-i*20.0/height;

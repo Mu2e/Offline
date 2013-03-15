@@ -3,7 +3,7 @@
 /* Copyright(c) 2005-2006, ILC Project Experiment, All rights reserved.   *
  * See cxx source for full Copyright notice                               */ 
  
-/* $Id: IlcDCHgeometry.h,v 1.1 2012/12/04 00:51:27 tassiell Exp $ */ 
+/* $Id: IlcDCHgeometry.h,v 1.2 2013/03/15 16:20:00 kutschke Exp $ */ 
  
 /////////////////////////////////////////////////////////////////////////////// 
 //                                                                           // 
@@ -116,7 +116,7 @@ class IlcDCHgeometry : public TNamed /*: public IlcGeometry*/ {
  
  
  
-//  IlcDCHgeometry* GetGeometry(IlcRunLoader* runLoader = NULL); 
+//  IlcDCHgeometry* GetGeometry(IlcRunLoader* runLoader = nullptr); 
    
 //   static Float_t   GetTime0(Int_t p)                        { return fgkTime0[p];    }; 
  

@@ -59,21 +59,21 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _timer=new TTimer();
   _timer->SetObject(this);
   _timeCurrent=NAN;
-  _eventNumberText=NULL;
-  _runNumberText=NULL;
-  _clock=NULL;
+  _eventNumberText=nullptr;
+  _runNumberText=nullptr;
+  _clock=nullptr;
   _isClosed=false;
   _saveAnim=false;
   for(int i=0; i<30; i++)
   {
-    _legendText[i]=NULL;
-    _legendBox[i]=NULL;
+    _legendText[i]=nullptr;
+    _legendBox[i]=nullptr;
   }
   for(int i=0; i<30; i++)
   {
-    _legendParticleGroup[i]=NULL;
-    _legendParticleText[i]=NULL;
-    _legendParticleLine[i]=NULL;
+    _legendParticleGroup[i]=nullptr;
+    _legendParticleText[i]=nullptr;
+    _legendParticleLine[i]=nullptr;
   }
 
   initSetup();
@@ -549,7 +549,7 @@ Bool_t EventDisplayFrame::HandleConfigureNotify(Event_t *event)
 
 void EventDisplayFrame::fillZoomAngleFields()
 {
-  if(_mainPad->GetView()==NULL) return;
+  if(_mainPad->GetView()==nullptr) return;
   char c[100];
   double min[3], max[3];
   _mainPad->GetView()->GetRange(min,max);
@@ -605,7 +605,7 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
 
   char eventInfoText[50];
   sprintf(eventInfoText,"Event #: %i",_eventNumber);
-  if(_eventNumberText==NULL) 
+  if(_eventNumberText==nullptr) 
   {
     _eventNumberText = new TText(0.6,-0.8,eventInfoText);
     _eventNumberText->SetTextColor(5);
@@ -614,7 +614,7 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
   }
   else _eventNumberText->SetTitle(eventInfoText);
   sprintf(eventInfoText,"Run #: %i",_runNumber);
-  if(_runNumberText==NULL)
+  if(_runNumberText==nullptr)
   {
     _runNumberText = new TText(0.6,-0.7,eventInfoText);
     _runNumberText->SetTextColor(5);
@@ -665,8 +665,8 @@ void EventDisplayFrame::updateHitLegend(bool draw)
   {
     delete _legendBox[i];
     delete _legendText[i];
-    _legendBox[i]=NULL;
-    _legendText[i]=NULL;
+    _legendBox[i]=nullptr;
+    _legendText[i]=nullptr;
   }
 
   if(draw)
@@ -702,9 +702,9 @@ void EventDisplayFrame::updateTrackLegend(bool draw)
     delete _legendParticleGroup[i];
     delete _legendParticleLine[i];
     delete _legendParticleText[i];
-    _legendParticleGroup[i]=NULL;
-    _legendParticleLine[i]=NULL;
-    _legendParticleText[i]=NULL;
+    _legendParticleGroup[i]=nullptr;
+    _legendParticleLine[i]=nullptr;
+    _legendParticleText[i]=nullptr;
   }
 
   if(draw)
@@ -1081,7 +1081,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
 void EventDisplayFrame::prepareAnimation()
 {
   _timer->Stop();           //needed if an animation is already running
-  delete _clock; _clock=NULL;
+  delete _clock; _clock=nullptr;
   _mainPad->cd();
   _dataInterface->startComponents();
   _mainPad->Modified();
@@ -1171,8 +1171,8 @@ void EventDisplayFrame::drawSituation()
 void EventDisplayFrame::drawEverything()
 {
   _mainPad->cd();
-  delete _clock; _clock=NULL;
-  if(TAxis3D::GetPadAxis(_mainPad)==NULL) _mainPad->GetView()->ShowAxis();
+  delete _clock; _clock=nullptr;
+  if(TAxis3D::GetPadAxis(_mainPad)==nullptr) _mainPad->GetView()->ShowAxis();
   TAxis3D::GetPadAxis(_mainPad)->SetLabelSize(0.025);
   _mainPad->Modified();
   _mainPad->Update();
