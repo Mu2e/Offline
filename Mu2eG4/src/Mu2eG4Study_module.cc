@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // ******Meant for Geant4 Studies not for Mu2e Simulations**********
 //
-// $Id: Mu2eG4Study_module.cc,v 1.4 2013/03/15 15:52:04 kutschke Exp $
+// $Id: Mu2eG4Study_module.cc,v 1.5 2013/03/15 21:16:33 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Date: 2013/03/15 21:16:33 $
 //
 // Original author K. Genser, based on Rob's G4_module
 //
@@ -150,7 +150,7 @@ namespace mu2e {
   }; // end G4 header
 
   Mu2eG4Study::Mu2eG4Study(fhicl::ParameterSet const& pSet):
-    _runManager(0),
+    _runManager(nullptr),
     _warnEveryNewRun(pSet.get<bool>("warnEveryNewRun",false)),
     _exportPDTStart(pSet.get<bool>("exportPDTStart",false)),
     _exportPDTEnd(pSet.get<bool>("exportPDTEnd",false)),
@@ -159,7 +159,7 @@ namespace mu2e {
     _steppingAction(0),
     _session(0),
     _UI(0),
-    _visManager(0),
+    _visManager(nullptr),
     _rmvlevel(pSet.get<int>("diagLevel",0)),
     _tmvlevel(pSet.get<int>("trackingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("checkFieldMap",0)),

@@ -223,9 +223,9 @@ namespace mu2e {
           }
         }
 
-        art::put_product_in_principal(particles, *outE, myModuleLabel_);
-        art::put_product_in_principal(info, *outE, myModuleLabel_);
-        art::put_product_in_principal(assns, *outE, myModuleLabel_);
+        art::put_product_in_principal(std::move(particles), *outE, myModuleLabel_);
+        art::put_product_in_principal(std::move(info), *outE, myModuleLabel_);
+        art::put_product_in_principal(std::move(assns), *outE, myModuleLabel_);
 
         return true;
 

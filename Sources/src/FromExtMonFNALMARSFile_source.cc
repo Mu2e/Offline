@@ -365,7 +365,7 @@ namespace mu2e {
       }
       he_ = leftovers;
 
-      art::put_product_in_principal(particles, *outE, myModuleLabel_);
+      art::put_product_in_principal(std::move(particles), *outE, myModuleLabel_);
       return true;
 
     } // else - got he_ data
