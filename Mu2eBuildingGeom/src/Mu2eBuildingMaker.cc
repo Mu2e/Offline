@@ -17,11 +17,11 @@
 
 namespace mu2e {
 
-  std::auto_ptr<Mu2eBuilding> Mu2eBuildingMaker::make(const SimpleConfig& c,
+  std::unique_ptr<Mu2eBuilding> Mu2eBuildingMaker::make(const SimpleConfig& c,
                                                       const BuildingBasics& basics,
                                                       const ProtonBeamDump& dump)
   {
-    std::auto_ptr<Mu2eBuilding> b(new Mu2eBuilding(basics));
+    std::unique_ptr<Mu2eBuilding> b(new Mu2eBuilding(basics));
 
     using CLHEP::Hep2Vector;
 

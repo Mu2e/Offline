@@ -124,8 +124,8 @@ namespace mu2e {
   G4BeamlineGenerator::produce(art::Event& evt) {
 
     // Make the collection to hold the output.
-    auto_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
-    auto_ptr<G4BeamlineInfoCollection> extraData(new G4BeamlineInfoCollection);
+    unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
+    unique_ptr<G4BeamlineInfoCollection> extraData(new G4BeamlineInfoCollection);
 
     _generator->generate(*genParticles,&(*extraData));
 

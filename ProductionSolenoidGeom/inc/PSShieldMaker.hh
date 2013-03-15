@@ -3,9 +3,9 @@
 //
 // Class to construct and return PSShield
 //
-// $Id: PSShieldMaker.hh,v 1.3 2012/06/06 19:29:43 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/06 19:29:43 $
+// $Id: PSShieldMaker.hh,v 1.4 2013/03/15 15:52:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Andrei Gaponenko
 //
@@ -24,7 +24,7 @@ namespace mu2e {
 
   public:
 
-    static std::auto_ptr<PSShield> make(const SimpleConfig& config,
+    static std::unique_ptr<PSShield> make(const SimpleConfig& config,
                                         // The HRS is placed on PS axis
                                         const CLHEP::Hep3Vector& psEndRefPoint,
                                         // The z position is relative to the proton target

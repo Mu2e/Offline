@@ -66,8 +66,8 @@ namespace mu2e {
 
   void FromStepPointMCs::produce(art::Event& event) {
 
-    std::auto_ptr<GenParticleCollection> output(new GenParticleCollection);
-    std::auto_ptr<GenParticleSPMHistory> history(new GenParticleSPMHistory);
+    std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
+    std::unique_ptr<GenParticleSPMHistory> history(new GenParticleSPMHistory);
 
     art::ProductID gpc_pid = getProductID<GenParticleCollection>(event);
 

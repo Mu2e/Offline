@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on time peak analysis
 //
-// $Id: BkgTrackRejecterByTime_module.cc,v 1.13 2013/03/14 19:47:45 kutschke Exp $
+// $Id: BkgTrackRejecterByTime_module.cc,v 1.14 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author G. Tassielli
 //
@@ -198,18 +198,18 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
     float timeBinDim;  //ns
 
     // Random number distributions.
-    //std::auto_ptr<CLHEP::RandFlat>    _randFlat;
+    //std::unique_ptr<CLHEP::RandFlat>    _randFlat;
     CLHEP::RandFlat    _randFlat;
 
     void smooth(TH1F *tmpHhitTime, TH1F *tmpHhitClustTime, float integrWindow );
     int  peakFinder(TH1F *tmpHhitTime, TH1F *tmpHhitClustTime, float &sigmaFitted, double *timepeakPos, double *timepeakHei);
-    void extractHitForTimePeak (std::auto_ptr<TrackerHitTimeClusterCollection> &thcc, TH1F *tmpHhitTime, stbrel &timeBin_Straw_rel, int nfound, float integrWindow, float sigmaFitted, double *timepeakPos, double *timepeakHei);
+    void extractHitForTimePeak (std::unique_ptr<TrackerHitTimeClusterCollection> &thcc, TH1F *tmpHhitTime, stbrel &timeBin_Straw_rel, int nfound, float integrWindow, float sigmaFitted, double *timepeakPos, double *timepeakHei);
     int  rndup(float n);
 
     // Some ugly but necessary ROOT related bookkeeping:
 
     // The job needs exactly one instance of TApplication.  See note 1.
-    std::auto_ptr<TApplication> _application;
+    std::unique_ptr<TApplication> _application;
 
     // Save directory from beginJob so that we can go there in endJob. See note 3.
 //    TDirectory* _directory;
@@ -266,7 +266,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
     _randFlat( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) )//,
 
     // Some ugly but necessary ROOT related bookkeeping.
-//    _application(0),
+//    _application(nullptr),
 //    _directory(0)
   {
           if (_nsigmaForTimeSel>0.0) _useSigmaForTimeSel=true;
@@ -332,7 +332,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
 //    if ( !gApplication ){
 //      int    tmp_argc(0);
 //      char** tmp_argv(0);
-//      _application = std::auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+//      _application = std::unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
 //    }
 //
 //    gStyle->SetPalette(1);
@@ -374,7 +374,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
             if ( !gApplication ){
                     int    tmp_argc(0);
                     char** tmp_argv(0);
-                    _application = std::auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+                    _application = std::unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
             }
 
             gStyle->SetPalette(1);
@@ -412,7 +412,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
 //    if (_useProtonRejec) {
 //            // Get the engine associated with this module instance.
 //            art::ServiceHandle<art::RandomNumberGenerator> rng;
-//            _randFlat = std::auto_ptr<CLHEP::RandFlat>  ( new CLHEP::RandFlat( rng->getEngine() ) );
+//            _randFlat = std::unique_ptr<CLHEP::RandFlat>  ( new CLHEP::RandFlat( rng->getEngine() ) );
 //    }
 
   }
@@ -454,7 +454,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
 //    _peakFinder->Clear();
 //    _peaksCanvases->Clear();
 
-    std::auto_ptr<TrackerHitTimeClusterCollection> thcc(new TrackerHitTimeClusterCollection);
+    std::unique_ptr<TrackerHitTimeClusterCollection> thcc(new TrackerHitTimeClusterCollection);
 
     float intTimeWind = 0.0;
     bool isBumbbell = false, isITracker = false;
@@ -959,7 +959,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
           return nfound;
   }
 
-  void BkgTrackRejecterByTime::extractHitForTimePeak (std::auto_ptr<TrackerHitTimeClusterCollection> &thcc, TH1F *tmpHhitTime, stbrel &timeBin_Straw_rel, int nfound, float integrWindow, float sigmaFitted, double *timepeakPos, double *timepeakHei) {
+  void BkgTrackRejecterByTime::extractHitForTimePeak (std::unique_ptr<TrackerHitTimeClusterCollection> &thcc, TH1F *tmpHhitTime, stbrel &timeBin_Straw_rel, int nfound, float integrWindow, float sigmaFitted, double *timepeakPos, double *timepeakHei) {
 
           //Float_t *timepeakPos=_peakFinder->GetPositionX();
           //Float_t *timepeakHei=_peakFinder->GetPositionY();

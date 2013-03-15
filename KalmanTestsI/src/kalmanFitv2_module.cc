@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: kalmanFitv2_module.cc,v 1.5 2013/03/14 19:47:45 kutschke Exp $
+// $Id: kalmanFitv2_module.cc,v 1.6 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 
 #include <iostream>
@@ -230,7 +230,7 @@ namespace mu2e
     if(!_histoOut.FillMCInfo(event,strawhits,seed)) return;
     
     // create output
-    auto_ptr<KalRepCollection> tracks(new KalRepCollection );
+    unique_ptr<KalRepCollection> tracks(new KalRepCollection );
 
     TrkDef trkdef(cellhits.product(),strawhits,seed,_tpart,_fdir);//,TrkParticle(),TrkFitDirection());
     trkdef.setT0(TrkT0(_histoOut.recoinfo.t0,0.0));
@@ -257,7 +257,7 @@ namespace mu2e
     }
 
     if(myfit._fit.success()){
-      auto_ptr<HepVector> recomom(new HepVector(6));
+      unique_ptr<HepVector> recomom(new HepVector(6));
 
       //KalRep *kalrep = myfit._krep;
       double fltlen=myfit._krep->firstHit()->globalLength();

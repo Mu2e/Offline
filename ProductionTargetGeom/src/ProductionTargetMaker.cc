@@ -10,8 +10,8 @@
 
 namespace mu2e {
 
-  std::auto_ptr<ProductionTarget> ProductionTargetMaker::make(const SimpleConfig& c, double solenoidOffset) {
-    return std::auto_ptr<ProductionTarget>
+  std::unique_ptr<ProductionTarget> ProductionTargetMaker::make(const SimpleConfig& c, double solenoidOffset) {
+    return std::unique_ptr<ProductionTarget>
       (new ProductionTarget(c.getDouble("targetPS_rOut"),
                             c.getDouble("targetPS_halfLength"),
                             c.getDouble("targetPS_rotX") * CLHEP::degree,

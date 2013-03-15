@@ -4,9 +4,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.hh,v 1.4 2011/05/20 15:13:24 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 15:13:24 $
+// $Id: TargetMaker.hh,v 1.5 2013/03/15 15:52:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Peter Shanahan
 //
@@ -33,7 +33,7 @@ public:
   const Target& getTarget() const { return *_targ;}
 
   // This is the accessor that will remain.
-  std::auto_ptr<Target> getTargetPtr() { return _targ; }
+  std::unique_ptr<Target> getTargetPtr() { return std::move(_targ); }
 
 private:
 
@@ -44,7 +44,7 @@ private:
   //  SimpleConfig const& _config;
 
   // pointer to the Mu2E Geometry Target being made
-  std::auto_ptr<Target> _targ;
+  std::unique_ptr<Target> _targ;
 
   // variables needed to build the Target.  Read in from config file,
   // data base, etc.  These (and the TargetMaker object itself) only need

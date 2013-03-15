@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.18 2013/03/14 19:54:48 kutschke Exp $
+// $Id: ConditionsService.hh,v 1.19 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:54:48 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Rob Kutschke
 //
@@ -116,7 +116,7 @@ namespace mu2e {
     ConditionsService(ConditionsService const& rhs);
 
     // Don't need to expose definition of private template in header
-    template <typename ENTITY> void addEntity(std::auto_ptr<ENTITY> d);
+    template <typename ENTITY> void addEntity(std::unique_ptr<ENTITY> d);
 
   };
 

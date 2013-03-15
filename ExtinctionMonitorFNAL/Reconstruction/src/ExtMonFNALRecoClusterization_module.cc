@@ -1,8 +1,8 @@
 // Compute calibrated pixel clusters from raw ones.
 //
-// $Id: ExtMonFNALRecoClusterization_module.cc,v 1.3 2013/03/14 19:47:45 kutschke Exp $
+// $Id: ExtMonFNALRecoClusterization_module.cc,v 1.4 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Andrei Gaponenko
 //
@@ -103,7 +103,7 @@ namespace mu2e {
   //================================================================
   void ExtMonFNALRecoClusterization::produce(art::Event& event) {
 
-    std::auto_ptr<ExtMonFNALRecoClusterCollection> reco
+    std::unique_ptr<ExtMonFNALRecoClusterCollection> reco
       (new ExtMonFNALRecoClusterCollection(extmon_->up().nplanes()+extmon_->dn().nplanes()));
 
     art::Handle<ExtMonFNALRawClusterCollection> raw;

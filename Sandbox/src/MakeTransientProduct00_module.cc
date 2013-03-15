@@ -1,9 +1,9 @@
 //
 // Test of producing one type of transient data product.
 //
-// $Id: MakeTransientProduct00_module.cc,v 1.6 2013/03/14 19:47:46 kutschke Exp $
+// $Id: MakeTransientProduct00_module.cc,v 1.7 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:46 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Rob Kutschke
 //
@@ -46,7 +46,7 @@ namespace mu2e {
     event.getByLabel("makeSH",hitsHandle);
     StrawHitCollection const& hits = *hitsHandle;
 
-    auto_ptr<TransientProduct00Collection> prod(new TransientProduct00Collection);
+    unique_ptr<TransientProduct00Collection> prod(new TransientProduct00Collection);
     TransientProduct00Collection& p = *prod;
 
     // The transient product holds pointers to all of the StrawHits

@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.11 2013/03/14 19:47:45 kutschke Exp $
+// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.12 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Create particle flux in the ExtMonFNAL room by randomizing
 // kinematic of input particles read from a file.
@@ -264,9 +264,9 @@ namespace mu2e {
     //================================================================
     void ExtMonFNALRoomGenerator::produce(art::Event& event) {
 
-      std::auto_ptr<GenParticleCollection> output(new GenParticleCollection);
-      std::auto_ptr<MARSInfoCollection> info(new MARSInfoCollection());
-      std::auto_ptr<GenParticleMARSAssns> assns(new GenParticleMARSAssns());
+      std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
+      std::unique_ptr<MARSInfoCollection> info(new MARSInfoCollection());
+      std::unique_ptr<GenParticleMARSAssns> assns(new GenParticleMARSAssns());
 
       const art::ProductID particlesPID = getProductID<GenParticleCollection>(event);
       const art::EDProductGetter *particlesGetter = event.productGetter(particlesPID);

@@ -3,9 +3,9 @@
 
 
 //
-// $Id: ProductionSolenoid.hh,v 1.4 2012/06/06 19:29:30 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/06 19:29:30 $
+// $Id: ProductionSolenoid.hh,v 1.5 2013/03/15 15:52:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author KLG
 //
@@ -49,7 +49,7 @@ namespace mu2e {
     // The class should only be constructed via ProductionSolenoid::ProductionSolenoidMaker.
     ProductionSolenoid(){};
 
-    // hide automatic copy/assignments as not needed (would be incorrect due to auto_ptr anyway)
+    // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
     ProductionSolenoid( ProductionSolenoid const & );
     ProductionSolenoid const & operator= ( ProductionSolenoid const & );
 
@@ -57,20 +57,20 @@ namespace mu2e {
 
     // VacVessel is a set of Tubes; lets try to put all of it here
 
-    std::auto_ptr<Tube> _psVacVesselInnerParams;
-    std::auto_ptr<Tube> _psVacVesselOuterParams;
+    std::unique_ptr<Tube> _psVacVesselInnerParams;
+    std::unique_ptr<Tube> _psVacVesselOuterParams;
 
-    std::auto_ptr<Tube> _psVacVesselEndPlateDParams;
-    std::auto_ptr<Tube> _psVacVesselEndPlateUParams;
+    std::unique_ptr<Tube> _psVacVesselEndPlateDParams;
+    std::unique_ptr<Tube> _psVacVesselEndPlateUParams;
 
     // CoilShell is a Polycone
-    std::auto_ptr<Polycone> _psCoilShellParams;
+    std::unique_ptr<Polycone> _psCoilShellParams;
 
     // Coils are Tubes
 
-    std::auto_ptr<Tube> _psCoil1Params;
-    std::auto_ptr<Tube> _psCoil2Params;
-    std::auto_ptr<Tube> _psCoil3Params;
+    std::unique_ptr<Tube> _psCoil1Params;
+    std::unique_ptr<Tube> _psCoil2Params;
+    std::unique_ptr<Tube> _psCoil3Params;
 
     CLHEP::Hep3Vector   _psEndRefPoint;
   };

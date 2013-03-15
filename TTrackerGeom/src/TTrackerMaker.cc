@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.43 2013/01/07 17:55:24 kutschke Exp $
+// $Id: TTrackerMaker.cc,v 1.44 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/01/07 17:55:24 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Rob Kutschke
 //
@@ -227,7 +227,7 @@ namespace mu2e {
   void TTrackerMaker::buildIt(){
 
     // Make an empty TTracker.
-    _tt = auto_ptr<TTracker>(new TTracker());
+    _tt = unique_ptr<TTracker>(new TTracker());
 
     computeLayerSpacingAndShift();
     computeManifoldEdgeExcessSpace();

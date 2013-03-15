@@ -14,9 +14,9 @@
 namespace mu2e {
 
   //----------------------------------------------------------------
-  std::auto_ptr<WorldG4> WorldG4Maker::make(const SimpleConfig& c) {
+  std::unique_ptr<WorldG4> WorldG4Maker::make(const SimpleConfig& c) {
 
-    std::auto_ptr<WorldG4> res(new WorldG4());
+    std::unique_ptr<WorldG4> res(new WorldG4());
 
     const int diagLevel = c.getInt("world.verbosityLevel", 0);
 

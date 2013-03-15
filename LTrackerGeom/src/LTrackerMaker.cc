@@ -2,9 +2,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.cc,v 1.21 2013/01/07 04:10:53 kutschke Exp $
+// $Id: LTrackerMaker.cc,v 1.22 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/01/07 04:10:53 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Rob Kutschke
 //
@@ -154,7 +154,7 @@ namespace mu2e {
 
     CheckFit();
 
-    _ltt = auto_ptr<LTracker>(new LTracker());
+    _ltt = unique_ptr<LTracker>(new LTracker());
 
     _ltt->_r0         = _r0;
     _ltt->_z0         = _z0;

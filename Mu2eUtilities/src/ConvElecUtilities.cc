@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.cc,v 1.1 2011/07/13 01:42:48 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/07/13 01:42:48 $
+// $Id: ConvElecUtilities.cc,v 1.2 2013/03/15 15:52:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Gianni Onorato
 //
@@ -73,7 +73,7 @@ namespace mu2e {
           //      << _genParticles->at(sim.generatorIndex()).generatorId().name() << endl;
           if (_genParticles->at(sim.generatorIndex()).generatorId() == GenId::conversionGun) {
             _convTrackId = sim.id();
-            _simParticle = auto_ptr<SimParticle>( new SimParticle(sim) );
+            _simParticle = unique_ptr<SimParticle>( new SimParticle(sim) );
             //  cout << n << " and " << _convTrackId << endl;
             _nconv++;
             //  cout << "conv track id is " << _convTrackId << endl;

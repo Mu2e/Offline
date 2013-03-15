@@ -1,6 +1,6 @@
-// $Id: EMFPixelSimFilter_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
+// $Id: EMFPixelSimFilter_module.cc,v 1.3 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Andrei Gaponenko, 2012
 
@@ -75,8 +75,8 @@ namespace mu2e {
 
     //================================================================
     bool EMFPixelSimFilter::filter(art::Event& event) {
-      std::auto_ptr<SimParticleCollection> outparts(new SimParticleCollection());
-      std::auto_ptr<ExtMonFNALSimHitCollection> outhits(new ExtMonFNALSimHitCollection());
+      std::unique_ptr<SimParticleCollection> outparts(new SimParticleCollection());
+      std::unique_ptr<ExtMonFNALSimHitCollection> outhits(new ExtMonFNALSimHitCollection());
 
       std::set<unsigned> hitPlanes;
       SimParticleParentGetter pg(event);

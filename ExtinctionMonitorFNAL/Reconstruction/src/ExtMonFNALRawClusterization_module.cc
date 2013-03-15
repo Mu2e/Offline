@@ -1,8 +1,8 @@
 // Pixel digitization: create ExtMonFNALRawClusters from raw hits.
 //
-// $Id: ExtMonFNALRawClusterization_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
+// $Id: ExtMonFNALRawClusterization_module.cc,v 1.3 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Andrei Gaponenko
 //
@@ -109,7 +109,7 @@ namespace mu2e {
   //================================================================
   void ExtMonFNALRawClusterization::produce(art::Event& event) {
 
-    std::auto_ptr<ExtMonFNALRawClusterCollection> clusters(new ExtMonFNALRawClusterCollection());
+    std::unique_ptr<ExtMonFNALRawClusterCollection> clusters(new ExtMonFNALRawClusterCollection());
 
     art::Handle<ExtMonFNALRawHitCollection> hits;
     event.getByLabel(inputModuleLabel_, inputInstanceName_, hits);

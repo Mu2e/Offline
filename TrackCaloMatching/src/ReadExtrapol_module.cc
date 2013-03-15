@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadExtrapol_module.cc,v 1.8 2013/03/05 20:33:26 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:26 $
+// $Id: ReadExtrapol_module.cc,v 1.9 2013/03/15 15:52:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author G. Pezzullo
 //
@@ -199,7 +199,7 @@ namespace mu2e {
       _extractElectronsData(pset.get<string>("elextractModuleLabel")),
       _trkToCaloExtrapolModuleLabel(pset.get<std::string>("trkToCaloExtrapolModuleLabel", "TrkExtrapol")),
       _Ntup(0),
-      _application(0),
+      _application(nullptr),
       _directory(0){
       // construct the data product instance name
       _iname = _fdir.name() + _tpart.name();
@@ -254,7 +254,7 @@ namespace mu2e {
     TTree* _Ntup;//Ntupla which contains informations about the extrapolation starting from MC
 
     // The job needs exactly one instance of TApplication.  See note 1.
-    auto_ptr<TApplication> _application;
+    unique_ptr<TApplication> _application;
 
     // Save directory from beginJob so that we can go there in endJob. See note 3.
     TDirectory* _directory;

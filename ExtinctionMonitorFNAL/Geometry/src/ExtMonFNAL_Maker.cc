@@ -65,12 +65,12 @@ namespace mu2e {
     }
 
     //================================================================
-    std::auto_ptr<ExtMon> ExtMonMaker::make(const SimpleConfig& config, const ExtMonFNALBuilding& room)
+    std::unique_ptr<ExtMon> ExtMonMaker::make(const SimpleConfig& config, const ExtMonFNALBuilding& room)
     {
       AGDEBUG("ExtMonFNAL make() begin");
       const int verbose = config.getInt("extMonFNAL.verbosityLevel", 0);
 
-      std::auto_ptr<ExtMon> det(new ExtMon());
+      std::unique_ptr<ExtMon> det(new ExtMon());
 
       config.getVectorDouble("extMonFNAL.sensorHalfSize",  det->sensor_.halfSize_, 3);
 

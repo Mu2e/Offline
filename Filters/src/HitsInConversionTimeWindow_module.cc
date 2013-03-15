@@ -17,9 +17,9 @@
 // and CaloHits that are in time with the conversion electron, and will keep all
 // particles in the ancestry of any such hit.
 //
-// $Id: HitsInConversionTimeWindow_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
+// $Id: HitsInConversionTimeWindow_module.cc,v 1.3 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Contact person Rob Kutschke.
 //
@@ -359,8 +359,8 @@ namespace mu2e {
       CompressTrajectoryAdapter trajAdapter(simsInfos.at(i));
 
       // Make a new data products: a compressed list of SimParticles and one of PointTrajectories.
-      auto_ptr<SimParticleCollection> newsimTest( new SimParticleCollection );
-      auto_ptr<PointTrajectoryCollection> newtraj( new PointTrajectoryCollection );
+      unique_ptr<SimParticleCollection> newsimTest( new SimParticleCollection );
+      unique_ptr<PointTrajectoryCollection> newtraj( new PointTrajectoryCollection );
 
       compressSimParticleCollection     ( simsProductId, productGetter, *simHandles.at(i),  simAdapter,  *newsimTest);
       compressPointTrajectoryCollection ( simsProductId, productGetter, *trajHandles.at(i), trajAdapter, *newtraj   );
@@ -530,9 +530,9 @@ namespace mu2e {
     static const int initialSize = 500;
 
     // Create output collections for the StrawHits and their MC truth.
-    auto_ptr<StrawHitCollection>             newStrawHits(new StrawHitCollection);
-    auto_ptr<StrawHitMCTruthCollection>      newTruthHits(new StrawHitMCTruthCollection);
-    auto_ptr<PtrStepPointMCVectorCollection> newMCptrs(new PtrStepPointMCVectorCollection);
+    unique_ptr<StrawHitCollection>             newStrawHits(new StrawHitCollection);
+    unique_ptr<StrawHitMCTruthCollection>      newTruthHits(new StrawHitMCTruthCollection);
+    unique_ptr<PtrStepPointMCVectorCollection> newMCptrs(new PtrStepPointMCVectorCollection);
     newStrawHits->reserve(initialSize);
     newTruthHits->reserve(initialSize);
     newMCptrs->reserve(initialSize);

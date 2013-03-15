@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.17 2013/03/14 19:47:45 kutschke Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.18 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Andrei Gaponenko
 //
@@ -202,7 +202,7 @@ namespace mu2e {
       SiliconProperties siProps_;
 
       bool  applyProtonPulseShape_;
-      std::auto_ptr<ProtonPulseShape> protonPulse_;
+      std::unique_ptr<ProtonPulseShape> protonPulse_;
 
       PixelNoise noise_;
 
@@ -266,7 +266,7 @@ namespace mu2e {
       //----------------
       // Write out a text file to be used as an input for the Verilog simulation
       bool chipSimInputsMode_;
-      std::auto_ptr<std::ostream> chipSimFile_;
+      std::unique_ptr<std::ostream> chipSimFile_;
       ExtMonFNALChipId chipSimChipId_; // write out info for this single chip
       int chipSimProtonPulseNumber_;
       VerilogHitMap vlhm_;
@@ -332,8 +332,8 @@ namespace mu2e {
 
     //================================================================
     void ExtMonFNALHitMaker::produce(art::Event& event) {
-      std::auto_ptr<ExtMonFNALRawHitCollection> outHits(new ExtMonFNALRawHitCollection());
-      std::auto_ptr<ExtMonFNALHitTruthAssn> outTruth(new ExtMonFNALHitTruthAssn());
+      std::unique_ptr<ExtMonFNALRawHitCollection> outHits(new ExtMonFNALRawHitCollection());
+      std::unique_ptr<ExtMonFNALHitTruthAssn> outTruth(new ExtMonFNALHitTruthAssn());
 
       art::Handle<ExtMonFNALSimHitCollection> ih;
       event.getByLabel(inputModuleLabel_, inputInstanceName_, ih);

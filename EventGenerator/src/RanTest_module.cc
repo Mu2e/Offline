@@ -50,7 +50,7 @@ namespace mu2e {
   RanTest::produce(art::Event& evt) {
 
     cout << "Creating an empty collection ... " << endl;
-    auto_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
+    unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
     evt.put(std::move(genParticles));
 
   }

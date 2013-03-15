@@ -1,8 +1,8 @@
 // ITracker geometry maker
 //
-// $Id: ITrackerMaker.cc,v 1.28 2012/12/04 00:51:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Id: ITrackerMaker.cc,v 1.29 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author G. Tassielli
 //
@@ -185,7 +185,7 @@ ITrackerMaker::~ITrackerMaker (){}
 
 void ITrackerMaker::Build(){
 
-        _ltt = auto_ptr<ITracker>(new ITracker());
+        _ltt = unique_ptr<ITracker>(new ITracker());
         _ltt->_isExternal = _isExternal;
 
         if (_isExternal) {

@@ -3,9 +3,9 @@
 //
 // Class to construct and return MBS
 //
-// $Id: MBSMaker.hh,v 1.1 2012/05/18 16:54:22 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/18 16:54:22 $
+// $Id: MBSMaker.hh,v 1.2 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author KLG
 //
@@ -35,15 +35,15 @@ namespace mu2e {
     const MBS& getMBS() const { return *_mbs;}
 
     // This is the accessor that will remain.
-    std::auto_ptr<MBS> getMBSPtr() { return _mbs; }
+    std::unique_ptr<MBS> getMBSPtr() { return std::move(_mbs); }
 
   private:
 
-    // hide automatic copy/assignments as not needed (would be incorrect due to auto_ptr anyway)
+    // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
     MBSMaker( MBSMaker const & );
     MBSMaker const & operator= ( MBSMaker const & );
 
-    std::auto_ptr<MBS> _mbs;
+    std::unique_ptr<MBS> _mbs;
 
     int    _verbosityLevel;
 

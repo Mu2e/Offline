@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.42 2013/03/14 19:54:49 kutschke Exp $
+// $Id: GeometryService_service.cc,v 1.43 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:54:49 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Rob Kutschke
 //
@@ -105,7 +105,7 @@ namespace mu2e {
   // This template can be defined here because this is a private method which is only
   // used by the code below in the same file.
   template <typename DET>
-  void GeometryService::addDetector(std::auto_ptr<DET> d)
+  void GeometryService::addDetector(std::unique_ptr<DET> d)
   {
     if(_detectors.find(typeid(DET).name())!=_detectors.end())
       throw cet::exception("GEOM") << "failed to install detector with type name "
@@ -116,7 +116,7 @@ namespace mu2e {
   }
 
   template <typename DETALIAS, typename DET> 
-  void GeometryService::addDetectorAliasToBaseClass(std::auto_ptr<DET> d)
+  void GeometryService::addDetectorAliasToBaseClass(std::unique_ptr<DET> d)
   {
 
 	std::string OriginalName = typeid(DET).name();
@@ -140,7 +140,7 @@ namespace mu2e {
 
     cout  << "Geometry input file is: " << _inputfile << "\n";
 
-    _config = auto_ptr<SimpleConfig>(new SimpleConfig(_inputfile,
+    _config = unique_ptr<SimpleConfig>(new SimpleConfig(_inputfile,
                                                       _allowReplacement,
                                                       _messageOnReplacement,
                                                       _messageOnDefault ));
@@ -163,21 +163,21 @@ namespace mu2e {
 
     // Make a detector for every component present in the configuration.
 
-    std::auto_ptr<Beamline> tmpBeamline(BeamlineMaker::make(*_config));
+    std::unique_ptr<Beamline> tmpBeamline(BeamlineMaker::make(*_config));
     const Beamline& beamline = *tmpBeamline.get();
     addDetector(tmpBeamline);
 
-    std::auto_ptr<ProductionTarget> tmpProdTgt(ProductionTargetMaker::make(*_config, beamline.solenoidOffset()));
+    std::unique_ptr<ProductionTarget> tmpProdTgt(ProductionTargetMaker::make(*_config, beamline.solenoidOffset()));
     const ProductionTarget& prodTarget = *tmpProdTgt.get();
     addDetector(tmpProdTgt);
 
-    std::auto_ptr<ProductionSolenoid>
+    std::unique_ptr<ProductionSolenoid>
       tmpProductionSolenoid(ProductionSolenoidMaker(*_config, beamline.solenoidOffset()).getProductionSolenoidPtr());
 
     const ProductionSolenoid& ps = *tmpProductionSolenoid.get();
     addDetector(tmpProductionSolenoid);
 
-    std::auto_ptr<PSEnclosure>
+    std::unique_ptr<PSEnclosure>
       tmpPSE(PSEnclosureMaker::make(*_config, ps.psEndRefPoint()));
     const PSEnclosure& pse = *tmpPSE.get();
     addDetector(tmpPSE);
@@ -188,7 +188,7 @@ namespace mu2e {
 
     addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
 
-    std::auto_ptr<BuildingBasics> tmpBasics(BuildingBasicsMaker::make(*_config));
+    std::unique_ptr<BuildingBasics> tmpBasics(BuildingBasicsMaker::make(*_config));
     const BuildingBasics& buildingBasics = *tmpBasics.get();
     addDetector(tmpBasics);
 
@@ -196,13 +196,13 @@ namespace mu2e {
     const double dumpFrontShieldingYmax = dumpFrontShieldingYmin +
       buildingBasics.detectorHallInsideFullHeight() + buildingBasics.detectorHallCeilingThickness();
 
-    std::auto_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config, dumpFrontShieldingYmin, dumpFrontShieldingYmax));
+    std::unique_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config, dumpFrontShieldingYmin, dumpFrontShieldingYmax));
 
     const ProtonBeamDump& dump = *tmpDump.get();
     addDetector(tmpDump);
 
 
-    std::auto_ptr<Mu2eBuilding> tmpbld(Mu2eBuildingMaker::make(*_config, buildingBasics, dump));
+    std::unique_ptr<Mu2eBuilding> tmpbld(Mu2eBuildingMaker::make(*_config, buildingBasics, dump));
     const Mu2eBuilding& building = *tmpbld.get();
     addDetector(tmpbld);
 
@@ -240,7 +240,7 @@ namespace mu2e {
       addDetector( crs.getCosmicRayShieldPtr() );
     }
 
-    std::auto_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, dump));
+    std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, dump));
     const ExtMonFNALBuilding& emfb = *tmpemb.get();
     addDetector(tmpemb);
     if(_config->getBool("hasExtMonFNAL",false)){
@@ -262,7 +262,7 @@ namespace mu2e {
     }
 
     if(_config->getBool("hasBFieldManager",false)){
-      std::auto_ptr<BFieldConfig> bfc(BFieldConfigMaker(*_config, beamline).getBFieldConfig());
+      std::unique_ptr<BFieldConfig> bfc(BFieldConfigMaker(*_config, beamline).getBFieldConfig());
       BFieldManagerMaker bfmgr(*bfc);
       addDetector(bfc);
       addDetector(bfmgr.getBFieldManager());
@@ -273,7 +273,7 @@ namespace mu2e {
       addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
     }
 
-    addDetector(std::auto_ptr<Mu2eEnvelope>(new Mu2eEnvelope(building, dump, emfb)));
+    addDetector(std::unique_ptr<Mu2eEnvelope>(new Mu2eEnvelope(building, dump, emfb)));
 
   } // preBeginRun()
 

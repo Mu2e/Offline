@@ -1,9 +1,9 @@
 //
 //  A module to look at the provenance of a product.
 //
-//  $Id: ViewProvenance_module.cc,v 1.1 2012/06/12 19:51:35 kutschke Exp $
+//  $Id: ViewProvenance_module.cc,v 1.2 2013/03/15 15:52:03 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2012/06/12 19:51:35 $
+//  $Date: 2013/03/15 15:52:03 $
 //
 //  Original author Rob Kutschke
 //
@@ -49,10 +49,11 @@ namespace mu2e {
            << endl;
       cout << "Creator module label: " << prov->moduleLabel() << endl;
       cout << "Parameter set used to configure this module: " << endl;
-      fhicl::ParameterSet const& pset =
-        fhicl::ParameterSetRegistry::get( prov->productDescription().parameterSetID());
-      cout << pset.to_indented_string()
-           << endl;
+      // Fixme: this is broken in art /v1_03_08
+      //fhicl::ParameterSet const& pset =
+      //fhicl::ParameterSetRegistry::get( prov->productDescription().parameterSetID());
+      //cout << pset.to_indented_string()
+      //   << endl;
     } else{
       cout << "This product has no stored provenance ... " << endl;
     }

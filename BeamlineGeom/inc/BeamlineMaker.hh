@@ -4,9 +4,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.hh,v 1.5 2012/03/30 20:37:34 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 20:37:34 $
+// $Id: BeamlineMaker.hh,v 1.6 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Peter Shanahan
 //
@@ -25,7 +25,7 @@ namespace mu2e {
   class BeamlineMaker {
 
   public:
-    static std::auto_ptr<Beamline> make(const SimpleConfig& config);
+    static std::unique_ptr<Beamline> make(const SimpleConfig& config);
 
   private:
     static void BuildBeamline(const SimpleConfig&, Beamline*);

@@ -228,12 +228,12 @@ namespace mu2e {
 
     
     // A container to hold the output hits.
-    auto_ptr<CaloHitCollection>               caloHits         (new CaloHitCollection);
-    auto_ptr<CaloHitMCTruthCollection>        caloMCHits       (new CaloHitMCTruthCollection);
-    auto_ptr<CaloCrystalOnlyHitCollection>    caloCrystalMCHits(new CaloCrystalOnlyHitCollection);
-    auto_ptr<PtrStepPointMCVectorCollection>  caloMCptrHits    (new PtrStepPointMCVectorCollection);
-    auto_ptr<PtrStepPointMCVectorCollection>  caloMCroptrHits  (new PtrStepPointMCVectorCollection);
-    auto_ptr<CaloHitSimPartMCCollection>      caloMCSimParts   (new CaloHitSimPartMCCollection);
+    unique_ptr<CaloHitCollection>               caloHits         (new CaloHitCollection);
+    unique_ptr<CaloHitMCTruthCollection>        caloMCHits       (new CaloHitMCTruthCollection);
+    unique_ptr<CaloCrystalOnlyHitCollection>    caloCrystalMCHits(new CaloCrystalOnlyHitCollection);
+    unique_ptr<PtrStepPointMCVectorCollection>  caloMCptrHits    (new PtrStepPointMCVectorCollection);
+    unique_ptr<PtrStepPointMCVectorCollection>  caloMCroptrHits  (new PtrStepPointMCVectorCollection);
+    unique_ptr<CaloHitSimPartMCCollection>      caloMCSimParts   (new CaloHitSimPartMCCollection);
 
 
     // These selectors will select data products with the given instance name, and ignore

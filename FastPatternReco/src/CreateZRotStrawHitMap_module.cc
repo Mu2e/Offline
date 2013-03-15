@@ -1,9 +1,9 @@
 //
 // performance a remapping module of the StrawHit in a manner that they can be accessed by Z and Sector IDs
 //
-// $Id: CreateZRotStrawHitMap_module.cc,v 1.4 2013/03/14 19:47:45 kutschke Exp $
+// $Id: CreateZRotStrawHitMap_module.cc,v 1.5 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author G. Tassielli
 //
@@ -147,7 +147,7 @@ namespace mu2e {
   void CreateZRotStrawHitMap::produce(art::Event & event ) {
 
 
-    auto_ptr<ZRotStrawHitMapCollection> zsctmap(new ZRotStrawHitMapCollection);
+    unique_ptr<ZRotStrawHitMapCollection> zsctmap(new ZRotStrawHitMapCollection);
 
     const Tracker& tracker = getTrackerOrThrow();
     const TTracker &ttr = static_cast<const TTracker&>( tracker );

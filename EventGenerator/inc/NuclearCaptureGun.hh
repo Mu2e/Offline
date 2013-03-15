@@ -6,9 +6,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.hh,v 1.10 2012/02/20 20:21:09 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/20 20:21:09 $
+// $Id: NuclearCaptureGun.hh,v 1.11 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Gianni Onorato
 
@@ -76,7 +76,7 @@ namespace mu2e {
     int _nToSkip;
 
     // Class object to generate position and time of the particle
-    std::auto_ptr<FoilParticleGenerator> _fGenerator;
+    std::unique_ptr<FoilParticleGenerator> _fGenerator;
 
     double _pMass, _nMass; //Particle masses
 

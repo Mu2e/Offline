@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that runs the HoughTransform L-tracker code
 //
-// $Id: HoughTest_module.cc,v 1.12 2013/03/14 19:47:45 kutschke Exp $
+// $Id: HoughTest_module.cc,v 1.13 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author R. Bernstein
 //
@@ -275,7 +275,7 @@ Double_t houghFitToRadius(Double_t *x, Double_t *par)
     ++_nAnalyzed;
 
     // the product
-    auto_ptr<HoughCircleCollection> HoughResults(new HoughCircleCollection);
+    unique_ptr<HoughCircleCollection> HoughResults(new HoughCircleCollection);
 
 
     // Ask the event to give us a handle to the requested hits.

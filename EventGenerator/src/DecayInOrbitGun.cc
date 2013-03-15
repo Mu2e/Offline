@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.52 2012/07/26 19:01:00 kutschke Exp $
+// $Id: DecayInOrbitGun.cc,v 1.53 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/26 19:01:00 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Rob Kutschke
 //
@@ -158,7 +158,7 @@ namespace mu2e {
       _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, 0., 300. );
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>
+    _fGenerator = unique_ptr<FoilParticleGenerator>
       (new FoilParticleGenerator( getEngine(), _tmin, _tmax,
                                   FoilParticleGenerator::findFoilGenByName(_foilGen),
                                   FoilParticleGenerator::findPosGenByName(_posGen),
@@ -171,7 +171,7 @@ namespace mu2e {
 
     if ( _energySpectrum == "ShankerWanatabe" ||
          _energySpectrum == "Czarnecki" ) {
-      _randEnergy = auto_ptr<ReadDIOSpectrum>(new ReadDIOSpectrum(13, _mumass, _mass, _elow, _ehi, _spectrumResolution, _energySpectrum, getEngine()));
+      _randEnergy = unique_ptr<ReadDIOSpectrum>(new ReadDIOSpectrum(13, _mumass, _mass, _elow, _ehi, _spectrumResolution, _energySpectrum, getEngine()));
     }
   }
 

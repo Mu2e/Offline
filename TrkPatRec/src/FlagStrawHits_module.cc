@@ -2,9 +2,9 @@
 // A module to flag StrawHits for track reconstruction and delta ray 
 // identification
 //
-// $Id: FlagStrawHits_module.cc,v 1.2 2013/03/14 19:47:46 kutschke Exp $
+// $Id: FlagStrawHits_module.cc,v 1.3 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:46 $
+// $Date: 2013/03/15 15:52:05 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -89,7 +89,7 @@ namespace mu2e {
  
     size_t nsh = shpcol->size();
     // create the output collection
-    auto_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection);
+    unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection);
     shfcol->reserve(nsh);
     for(size_t ish=0;ish<nsh;++ish){
       StrawHit const& sh = shcol->at(ish);

@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.21 2012/07/26 19:01:01 kutschke Exp $
+// $Id: NuclearCaptureGun.cc,v 1.22 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/26 19:01:01 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Gianni Onorato
 //
@@ -185,7 +185,7 @@ namespace mu2e {
       _hPhotonPulsedelay   = tfdir.make<TH1D>( "hPhotonpulsedelay",   "Photon delay due to the proton pulse;(ns)", 60, 0., 300. );
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
+    _fGenerator = unique_ptr<FoilParticleGenerator>(new FoilParticleGenerator( getEngine(), _tmin, _tmax,
                                                                              FoilParticleGenerator::muonFileInputFoil,
                                                                              FoilParticleGenerator::muonFileInputPos,
                                                                              FoilParticleGenerator::negExp,

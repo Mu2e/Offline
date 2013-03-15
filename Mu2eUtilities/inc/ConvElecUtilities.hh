@@ -1,7 +1,7 @@
 //
-// $Id: ConvElecUtilities.hh,v 1.4 2012/03/01 19:30:06 kutschke Exp $
+// $Id: ConvElecUtilities.hh,v 1.5 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/01 19:30:06 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Gianni Onorato
 //
@@ -105,7 +105,7 @@ namespace mu2e {
     std::vector<StrawIndex> _convElecStrawIdx;
     key_type _convTrackId;
     size_t _earliestidx, _earliestcry, _earliestvector;
-    std::auto_ptr<SimParticle> _simParticle;
+    std::unique_ptr<SimParticle> _simParticle;
     bool _stepincalo;
     StepPointMC _earliestSPMC;
 

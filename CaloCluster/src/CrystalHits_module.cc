@@ -1,7 +1,7 @@
 //
-// $Id: CrystalHits_module.cc,v 1.3 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: CrystalHits_module.cc,v 1.4 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 //Original author Giovanni Onorato
 
@@ -100,7 +100,7 @@ namespace mu2e {
 
     TTree* _Ntup;
 
-    std::auto_ptr<MCCaloUtilities> CaloManager;
+    std::unique_ptr<MCCaloUtilities> CaloManager;
 
 
     Int_t //_clNo,

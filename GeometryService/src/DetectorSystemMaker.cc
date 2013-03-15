@@ -1,9 +1,9 @@
 //
 // Construct a DetectorSystem object.
 //
-// $Id: DetectorSystemMaker.cc,v 1.3 2012/07/15 22:06:17 kutschke Exp $
+// $Id: DetectorSystemMaker.cc,v 1.4 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,7 @@
 
 namespace mu2e{
 
-  std::auto_ptr<DetectorSystem> DetectorSystemMaker::make(const SimpleConfig& config) {
+  std::unique_ptr<DetectorSystem> DetectorSystemMaker::make(const SimpleConfig& config) {
 
     // The detector system origin, as measured in the Mu2e system, is on the
     // axis of the DS and is at the specified z.
@@ -23,7 +23,7 @@ namespace mu2e{
                                 config.getDouble("mu2e.detectorSystemZ0")
                               );
 
-    return std::auto_ptr<DetectorSystem>(new DetectorSystem(origin));
+    return std::unique_ptr<DetectorSystem>(new DetectorSystem(origin));
   }
 
 }

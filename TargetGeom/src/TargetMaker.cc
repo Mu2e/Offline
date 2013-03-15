@@ -2,9 +2,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.cc,v 1.13 2012/08/09 22:25:52 kutschke Exp $
+// $Id: TargetMaker.cc,v 1.14 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/08/09 22:25:52 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Peter Shanahan
 //
@@ -108,7 +108,7 @@ namespace mu2e {
     // Build the Target Geometry.  This means MU2E internal geometry, not
     // Root, G4, or any other scheme.
 
-    _targ = auto_ptr<Target>(new Target());
+    _targ = unique_ptr<Target>(new Target());
 
     // create the TargetFoils
 

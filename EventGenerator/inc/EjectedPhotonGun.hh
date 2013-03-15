@@ -5,7 +5,7 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.
 //
-// $Id: EjectedPhotonGun.hh,v 1.5 2012/04/20 21:32:25 onoratog Exp $
+// $Id: EjectedPhotonGun.hh,v 1.6 2013/03/15 15:52:03 kutschke Exp $
 // $Author: &
 // $Date: &
 //
@@ -56,7 +56,7 @@ namespace mu2e {
     double _phimax;
 
     // Class object to generate position and time of the particle
-    std::auto_ptr<FoilParticleGenerator> _fGenerator;
+    std::unique_ptr<FoilParticleGenerator> _fGenerator;
 
     double _p; //Particle momentum
 

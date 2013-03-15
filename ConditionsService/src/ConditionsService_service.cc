@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.13 2013/03/14 19:54:48 kutschke Exp $
+// $Id: ConditionsService_service.cc,v 1.14 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:54:48 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Rob Kutschke
 //
@@ -55,7 +55,7 @@ namespace mu2e {
   // This template can be defined here because this is a private method which is only
   // used by the code below in the same file.
   template <typename ENTITY>
-  void ConditionsService::addEntity(std::auto_ptr<ENTITY> d)
+  void ConditionsService::addEntity(std::unique_ptr<ENTITY> d)
   {
     if(_entities.find(typeid(ENTITY).name())!=_entities.end())
       throw cet::exception("GEOM") << "failed to install conditions entity with type name "
@@ -80,17 +80,17 @@ namespace mu2e {
     checkConsistency();
 
     // Can we break the coupling to the entities?
-    std::auto_ptr<AcceleratorParams>  acctmp(new AcceleratorParams(_config));
+    std::unique_ptr<AcceleratorParams>  acctmp(new AcceleratorParams(_config));
     const AcceleratorParams& accp = *acctmp;
     addEntity( acctmp );
-    addEntity( std::auto_ptr<DAQParams>          ( new DAQParams          (_config)) );
-    addEntity( std::auto_ptr<CalorimeterCalibrations>( new CalorimeterCalibrations(_config)) );
+    addEntity( std::unique_ptr<DAQParams>          ( new DAQParams          (_config)) );
+    addEntity( std::unique_ptr<CalorimeterCalibrations>( new CalorimeterCalibrations(_config)) );
     if (_config.getBool("isITrackerCond",false)) {
-            addEntity( std::auto_ptr<TrackerCalibrations>( new TrackerCalibrationsI(_config)) );
+            addEntity( std::unique_ptr<TrackerCalibrations>( new TrackerCalibrationsI(_config)) );
     } else {
-            addEntity( std::auto_ptr<TrackerCalibrations>( new TrackerCalibrations(_config)) );
+            addEntity( std::unique_ptr<TrackerCalibrations>( new TrackerCalibrations(_config)) );
     }
-    addEntity( std::auto_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config)) );
+    addEntity( std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config)) );
   }
 
   // Check that the configuration is self consistent.

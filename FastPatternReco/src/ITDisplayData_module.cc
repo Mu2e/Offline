@@ -140,7 +140,7 @@ namespace mu2e {
     // Some ugly but necessary ROOT related bookkeeping:
 
     // The job needs exactly one instance of TApplication.  See note 1.
-    auto_ptr<TApplication> _application;
+    unique_ptr<TApplication> _application;
 
     // Save directory from beginJob so that we can go there in endJob. See note 3.
     TDirectory* _directory;
@@ -186,7 +186,7 @@ namespace mu2e {
     maxTimeHist(2500.0),
     timeBinDim(10.0),
     // Some ugly but necessary ROOT related bookkeeping.
-    _application(0),
+    _application(nullptr),
     _directory(0){
 
           if (_protonRejecEff>0.0 && _pulseCut>0.0) {
@@ -260,7 +260,7 @@ namespace mu2e {
     if ( !gApplication ){
       int    tmp_argc(0);
       char** tmp_argv(0);
-      _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+      _application = unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
     }
 
     // Create a canvas with a unique name.  See note 2.

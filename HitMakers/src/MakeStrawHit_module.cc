@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.22 2013/03/14 19:47:45 kutschke Exp $
+// $Id: MakeStrawHit_module.cc,v 1.23 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -227,9 +227,9 @@ namespace mu2e {
     const Tracker& tracker = getTrackerOrThrow();
 
     // Containers to hold the output information.
-    auto_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
-    auto_ptr<StrawHitMCTruthCollection>      truthHits(new StrawHitMCTruthCollection);
-    auto_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
+    unique_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
+    unique_ptr<StrawHitMCTruthCollection>      truthHits(new StrawHitMCTruthCollection);
+    unique_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
 
     // Handle to the conditions service
     ConditionsHandle<TrackerCalibrations> trackerCalibrations("ignored");
@@ -390,7 +390,7 @@ namespace mu2e {
            spmci !=e ; ++spmci, ++nn ){
 
         art::Ptr<StepPointMC> const spmcptr = *spmci;
-        std::auto_ptr<StepPointMCStrawHit> const tmpshp = 
+        std::unique_ptr<StepPointMCStrawHit> const tmpshp = 
           formStepPointMCStrawHit(
                                   spmcptr,
                                   straw_id,

@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.56 2013/03/14 19:47:46 kutschke Exp $
+// $Id: TrkPatRec_module.cc,v 1.57 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2013/03/14 19:47:46 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -249,7 +249,7 @@ namespace mu2e
     _eventid = event.event();
     _cutflow->Fill(0.0);
     // create output
-    auto_ptr<KalRepCollection> tracks(new KalRepCollection );
+    unique_ptr<KalRepCollection> tracks(new KalRepCollection );
     // event printout
     _iev=event.id().event();
     if((_iev%_printfreq)==0)cout<<"TrkPatRec: event="<<_iev<<endl;
@@ -260,7 +260,7 @@ namespace mu2e
     }
     // copy in the existing flags
     _flags = new StrawHitFlagCollection(*_shfcol);
-    auto_ptr<StrawHitFlagCollection> flags(_flags );
+    unique_ptr<StrawHitFlagCollection> flags(_flags );
     // tighten the energy cut
     static StrawHitFlag esel(StrawHitFlagDetail::energysel);
     for(size_t ish=0;ish<_flags->size();++ish){

@@ -3,9 +3,9 @@
 //
 // Construct a DetectorSystem object.
 //
-// $Id: DetectorSystemMaker.hh,v 1.5 2012/03/30 19:18:03 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 19:18:03 $
+// $Id: DetectorSystemMaker.hh,v 1.6 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Rob Kutschke
 //
@@ -24,7 +24,7 @@ namespace mu2e {
 
   class DetectorSystemMaker: virtual public Detector{
   public:
-    static std::auto_ptr<DetectorSystem> make(const SimpleConfig&);
+    static std::unique_ptr<DetectorSystem> make(const SimpleConfig&);
   };
 
 } //namespace mu2e

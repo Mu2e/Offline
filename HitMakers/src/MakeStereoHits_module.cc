@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.4 2013/03/14 19:47:45 kutschke Exp $
+// $Id: MakeStereoHits_module.cc,v 1.5 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -100,7 +100,7 @@ namespace mu2e {
     }
     // create a collection of StrawHitPosition, and intialize them using the time division
     size_t nsh = strawhits->size();
-    auto_ptr<StrawHitPositionCollection> shpos(new StrawHitPositionCollection);
+    unique_ptr<StrawHitPositionCollection> shpos(new StrawHitPositionCollection);
     shpos->reserve(2*nsh);
     for(size_t ish=0;ish<nsh;++ish){
       shpos->push_back(StrawHitPosition(strawhits->at(ish),tracker,tcal));
@@ -163,7 +163,7 @@ namespace mu2e {
       if(minsep[ish] < SectorId::apart)shpos->at(ish) = StrawHitPosition(stereohits[ibest[ish]],ish);
     }
     if(_writepairs){
-      auto_ptr<StereoHitCollection> sthits(new StereoHitCollection(stereohits));
+      unique_ptr<StereoHitCollection> sthits(new StereoHitCollection(stereohits));
       event.put(std::move(sthits));
     }
     event.put(std::move(shpos));

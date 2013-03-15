@@ -3,9 +3,9 @@
 // Code to produce a vector<SubEvent> from the collection of StrawHits
 // for an event.
 //
-// $Id: SubEventsMaker_module.cc,v 1.5 2013/03/14 19:47:45 kutschke Exp $
+// $Id: SubEventsMaker_module.cc,v 1.6 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author: Mark Fischler
 //
@@ -136,7 +136,7 @@ namespace mu2e {;
   {
     GeomHandle<TTracker> ttracker;
     TTracker const& trk(*ttracker);
-    std::auto_ptr <SubEventCollection> p (new SubEventCollection);
+    std::unique_ptr <SubEventCollection> p (new SubEventCollection);
     SubEventCollection & subEvents(*p);
     fillSubEvents(event, trk, subEvents);
     event.put(std::move(p));

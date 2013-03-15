@@ -3,9 +3,9 @@
 //
 // Class to construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.hh,v 1.6 2012/06/06 19:29:31 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/06 19:29:31 $
+// $Id: ProductionSolenoidMaker.hh,v 1.7 2013/03/15 15:52:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author KLG
 //
@@ -35,15 +35,15 @@ namespace mu2e {
     const ProductionSolenoid& getProductionSolenoid() const { return *_ps;}
 
     // This is the accessor that will remain.
-    std::auto_ptr<ProductionSolenoid> getProductionSolenoidPtr() { return _ps; }
+    std::unique_ptr<ProductionSolenoid> getProductionSolenoidPtr() { return std::move(_ps); }
 
   private:
 
-    // hide automatic copy/assignments as not needed (would be incorrect due to auto_ptr anyway)
+    // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
     ProductionSolenoidMaker( ProductionSolenoidMaker const & );
     ProductionSolenoidMaker const & operator= ( ProductionSolenoidMaker const & );
 
-    std::auto_ptr<ProductionSolenoid> _ps;
+    std::unique_ptr<ProductionSolenoid> _ps;
 
     int    _verbosityLevel;
 

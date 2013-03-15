@@ -2,9 +2,9 @@
 // Extract the persistent payload from the transient track objects.
 // and put it into the event.
 //
-// $Id: PayloadSaver.cc,v 1.3 2013/03/14 19:47:46 kutschke Exp $
+// $Id: PayloadSaver.cc,v 1.4 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:46 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Contact person Rob Kutschke
 //
@@ -28,7 +28,7 @@ namespace mu2e {
                           art::ProductID const& tracksID,
                           art::Event& event ){
 
-    std::auto_ptr<KalRepPayloadCollection> payload(new KalRepPayloadCollection() );
+    std::unique_ptr<KalRepPayloadCollection> payload(new KalRepPayloadCollection() );
 
     // Do the hard work here.
     // The ProductId is needed to make the Ptr that lives inside each KalRepPayload.

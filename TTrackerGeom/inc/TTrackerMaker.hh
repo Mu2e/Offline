@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.17 2013/01/07 04:01:16 kutschke Exp $
+// $Id: TTrackerMaker.hh,v 1.18 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/01/07 04:01:16 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Rob Kutschke
 //
@@ -37,7 +37,7 @@ namespace mu2e {
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    std::auto_ptr<TTracker> getTTrackerPtr() { return _tt; }
+    std::unique_ptr<TTracker> getTTrackerPtr() { return std::move(_tt); }
 
   private:
 
@@ -133,7 +133,7 @@ namespace mu2e {
     std::vector<double> _sectorZSide;
 
 
-    std::auto_ptr<TTracker> _tt;
+    std::unique_ptr<TTracker> _tt;
 
     // Derived parameters.
 

@@ -177,9 +177,9 @@ namespace mu2e {
       }
       else { // do have more data
 
-        std::auto_ptr<GenParticleCollection> particles(new GenParticleCollection());
-        std::auto_ptr<MARSInfoCollection> info(new MARSInfoCollection());
-        std::auto_ptr<GenParticleMARSAssns> assns(new GenParticleMARSAssns());
+        std::unique_ptr<GenParticleCollection> particles(new GenParticleCollection());
+        std::unique_ptr<MARSInfoCollection> info(new MARSInfoCollection());
+        std::unique_ptr<GenParticleMARSAssns> assns(new GenParticleMARSAssns());
 
         art::Timestamp ts;
 

@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MARS distribution for the kinetic energy of the
 // neutron.
 //
-// $Id: EjectedNeutronGun.hh,v 1.15 2012/04/20 21:32:25 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/20 21:32:25 $
+// $Id: EjectedNeutronGun.hh,v 1.16 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 //
 
@@ -87,7 +87,7 @@ namespace mu2e {
     // end: parameters that can be configured from the config file.
 
     // Class object to generate position and time of the particle
-    std::auto_ptr<FoilParticleGenerator> _fGenerator;
+    std::unique_ptr<FoilParticleGenerator> _fGenerator;
 
     //Particle mass
     double _mass;

@@ -1,7 +1,7 @@
 //
-// $Id: BkgElecUtilities.cc,v 1.1 2011/12/05 17:38:20 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2011/12/05 17:38:20 $
+// $Id: BkgElecUtilities.cc,v 1.2 2013/03/15 15:52:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Gianni Onorato
 //
@@ -73,7 +73,7 @@ namespace mu2e {
           //      << _genParticles->at(sim.generatorIndex()).generatorId().name() << endl;
           if ( _genParticles->at(sim.generatorIndex()).generatorId().id() != GenId::conversionGun){
             _bkgTrackId = sim.id();
-            _simParticle = auto_ptr<SimParticle>( new SimParticle(sim) );
+            _simParticle = unique_ptr<SimParticle>( new SimParticle(sim) );
             //  cout << n << " and " << _bkgTrackId << endl;
             _nbkg++;
             //  cout << "bkg track id is " << _bkgTrackId << endl;

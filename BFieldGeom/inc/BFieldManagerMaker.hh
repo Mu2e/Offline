@@ -3,9 +3,9 @@
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.14 2012/07/15 22:06:16 kutschke Exp $
+// $Id: BFieldManagerMaker.hh,v 1.15 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:16 $
+// $Date: 2013/03/15 15:52:03 $
 //
 
 // Includes from C++
@@ -33,7 +33,7 @@ namespace mu2e {
     explicit BFieldManagerMaker(const BFieldConfig& config);
 
     // Transfer ownership of the BFManager.
-    std::auto_ptr<BFieldManager> getBFieldManager() { return _bfmgr; }
+    std::unique_ptr<BFieldManager> getBFieldManager() { return std::move(_bfmgr); }
 
   private:
 
@@ -41,7 +41,7 @@ namespace mu2e {
     ConfigFileLookupPolicy _resolveFullPath;
 
     // Hold the object while we are creating it. The GeometryService will take ownership.
-    std::auto_ptr<BFieldManager> _bfmgr;
+    std::unique_ptr<BFieldManager> _bfmgr;
 
     void loadG4BL(BFieldManager::MapContainerType *whichMap, const BFieldConfig::FileSequenceType& files, double scaleFactor);
     // Create a new magnetic field map, get information from config file.

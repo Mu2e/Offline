@@ -3,9 +3,9 @@
 
 // Muon Beam Stop Object
 //
-// $Id: MBS.hh,v 1.1 2012/05/18 16:54:22 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/18 16:54:22 $
+// $Id: MBS.hh,v 1.2 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author KLG
 //
@@ -40,17 +40,17 @@ namespace mu2e {
     // The class should only be constructed via MBS::MBSMaker.
     MBS(){};
 
-    // hide automatic copy/assignments as not needed (would be incorrect due to auto_ptr anyway)
+    // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
     MBS( MBS const & );
     MBS const & operator= ( MBS const & );
 
     // several concentric components
 
-    std::auto_ptr<Tube> _pBSTSParams;
-    std::auto_ptr<Tube> _pSPBSParams;
-    std::auto_ptr<Tube> _pBSTCParams;
-    std::auto_ptr<Tube> _pBSBSParams;
-    std::auto_ptr<Tube> _pCLV2Params;
+    std::unique_ptr<Tube> _pBSTSParams;
+    std::unique_ptr<Tube> _pSPBSParams;
+    std::unique_ptr<Tube> _pBSTCParams;
+    std::unique_ptr<Tube> _pBSBSParams;
+    std::unique_ptr<Tube> _pCLV2Params;
 
     CLHEP::Hep3Vector   _originInMu2e;
 

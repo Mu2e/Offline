@@ -1,9 +1,9 @@
 //
 // Patter recognition for the ITracker (based on ILC 4th PR)
 //
-// $Id: ITTrackMiniIReco_module.cc,v 1.2 2013/03/14 19:47:46 kutschke Exp $
+// $Id: ITTrackMiniIReco_module.cc,v 1.3 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:46 $
+// $Date: 2013/03/15 15:52:05 $
 //
 
 // C++ includes.
@@ -130,7 +130,7 @@ namespace mu2e {
     if(!firstEvent){firstEvent=1;beginRun();}
 
     
-    auto_ptr<TrackSeedCollection> outseeds(new TrackSeedCollection);
+    unique_ptr<TrackSeedCollection> outseeds(new TrackSeedCollection);
 
 
     //const Tracker& tracker = getTrackerOrThrow();

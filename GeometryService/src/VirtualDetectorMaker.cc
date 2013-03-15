@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.17 2013/03/08 01:22:31 echenard Exp $
-// $Author: echenard $
+// $Id: VirtualDetectorMaker.cc,v 1.18 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
 //
 
 #include <iostream>
@@ -36,13 +36,13 @@ using namespace CLHEP;
 
 namespace mu2e {
 
-  std::auto_ptr<VirtualDetector> VirtualDetectorMaker::make(const SimpleConfig& c) {
+  std::unique_ptr<VirtualDetector> VirtualDetectorMaker::make(const SimpleConfig& c) {
 
-    auto_ptr<VirtualDetector> vd(new VirtualDetector());
+    unique_ptr<VirtualDetector> vd(new VirtualDetector());
 
     art::ServiceHandle<GeometryService> geom;
 
-    vd = auto_ptr<VirtualDetector>(new VirtualDetector());
+    vd = unique_ptr<VirtualDetector>(new VirtualDetector());
 
     if(c.getBool("hasVirtualDetector",false)) {
 

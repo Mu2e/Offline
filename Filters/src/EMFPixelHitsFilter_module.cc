@@ -1,6 +1,6 @@
-// $Id: EMFPixelHitsFilter_module.cc,v 1.3 2013/03/14 19:47:45 kutschke Exp $
+// $Id: EMFPixelHitsFilter_module.cc,v 1.4 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Andrei Gaponenko, 2012
 
@@ -76,8 +76,8 @@ namespace mu2e {
 
     //================================================================
     bool EMFPixelHitsFilter::filter(art::Event& event) {
-      std::auto_ptr<SimParticleCollection> outparts(new SimParticleCollection());
-      std::auto_ptr<ExtMonFNALHitTruthAssn> outTruth(new ExtMonFNALHitTruthAssn());
+      std::unique_ptr<SimParticleCollection> outparts(new SimParticleCollection());
+      std::unique_ptr<ExtMonFNALHitTruthAssn> outTruth(new ExtMonFNALHitTruthAssn());
 
       art::Handle<ExtMonFNALRawHitCollection> hitsh;
       event.getByLabel(rawHitsModuleLabel_, hitsh);

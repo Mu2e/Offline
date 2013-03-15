@@ -1,9 +1,9 @@
 //
 // identification and track parameter extraction modules
 //
-// $Id: TrackReco_module.cc,v 1.4 2013/01/07 04:10:53 kutschke Exp $
+// $Id: TrackReco_module.cc,v 1.5 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/01/07 04:10:53 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author G. Tassielli
 //
@@ -431,7 +431,7 @@ namespace mu2e {
     // Some ugly but necessary ROOT related bookkeeping:
 
     // The job needs exactly one instance of TApplication.  See note 1.
-    auto_ptr<TApplication> _application;
+    unique_ptr<TApplication> _application;
 
     // Save directory from beginJob so that we can go there in endJob. See note 3.
     TDirectory* _directory;
@@ -516,7 +516,7 @@ namespace mu2e {
 //    _dataEvalBkgRejec(0),
 
     // Some ugly but necessary ROOT related bookkeeping.
-    //_application(0),
+    //_application(nullptr),
     _directory(0){
           runID=eventID=/*evNHit=*/0;
           _minHelStep=CLHEP::twopi*_minMom/CLHEP::GeV*sin(_minLambda)/(0.3*_Bfield);
@@ -544,7 +544,7 @@ namespace mu2e {
             if ( !gApplication ){
                     int    tmp_argc(0);
                     char** tmp_argv(0);
-                    _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+                    _application = unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
             }
 
             gStyle->SetPalette(1);

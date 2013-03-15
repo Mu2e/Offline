@@ -2,9 +2,9 @@
 // An EDProducer Module that reads ExtMonUCITofHit Stepping MC objects and turns them into
 // ExtMonUCITofHit objects, collection
 //
-// $Id: MakeExtMonUCITofHits_module.cc,v 1.8 2013/03/14 19:47:45 kutschke Exp $
+// $Id: MakeExtMonUCITofHits_module.cc,v 1.9 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //  
 //  
 
@@ -154,9 +154,9 @@ namespace mu2e {
     if( ! geom->hasElement<ExtMonUCI::ExtMon>()) return;
 
     // A container to hold the output hits.
-    auto_ptr<ExtMonUCITofHitCollection>        tofHits   (new ExtMonUCITofHitCollection);
-    auto_ptr<ExtMonUCITofHitMCTruthCollection> tofMCHits (new ExtMonUCITofHitMCTruthCollection);
-    auto_ptr<PtrStepPointMCVectorCollection>   tofMCptrHits (new PtrStepPointMCVectorCollection);
+    unique_ptr<ExtMonUCITofHitCollection>        tofHits   (new ExtMonUCITofHitCollection);
+    unique_ptr<ExtMonUCITofHitMCTruthCollection> tofMCHits (new ExtMonUCITofHitMCTruthCollection);
+    unique_ptr<PtrStepPointMCVectorCollection>   tofMCptrHits (new PtrStepPointMCVectorCollection);
 
     // Ask the event to give us a handle to the requested hits.
     art::Handle<StepPointMCCollection> points;

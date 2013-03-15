@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.8 2013/03/05 20:33:26 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:26 $
+// $Id: ReadCaloMatching_module.cc,v 1.9 2013/03/15 15:52:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author G. Pezzullo
 //
@@ -187,7 +187,7 @@ public:
         _trkToCaloExtrapolModuleLabel( pset.get<std::string>("trkToCaloExtrapolModuleLabel", "TrkExtrapol")),
         _trkCaloMatchingModuleLabel( pset.get<std::string>("trkCaloMatchingModuleLabel", "CaloMatching")),
         _Ntup(0),//_trkCaloMatchingModuleLabel
-        _application(0),
+        _application(nullptr),
         _directory(0){
         }
 
@@ -251,7 +251,7 @@ private:
         TTree* _Ntup;//Ntupla which contains informations about the extrapolation starting from MC
 
         // The job needs exactly one instance of TApplication.  See note 1.
-        auto_ptr<TApplication> _application;
+        unique_ptr<TApplication> _application;
 
         // Save directory from beginJob so that we can go there in endJob. See note 3.
         TDirectory* _directory;

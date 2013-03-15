@@ -14,9 +14,9 @@
 
 namespace mu2e {
 
-  std::auto_ptr<BuildingBasics> BuildingBasicsMaker::make(const SimpleConfig& c)
+  std::unique_ptr<BuildingBasics> BuildingBasicsMaker::make(const SimpleConfig& c)
   {
-    std::auto_ptr<BuildingBasics> b(new BuildingBasics());
+    std::unique_ptr<BuildingBasics> b(new BuildingBasics());
 
     b->detectorHallFloorTopY_ = -c.getDouble("mu2e.origin.heightAboveHallFloor");
     b->detectorHallInsideFullHeight_ = c.getDouble("hall.insideFullHeight");

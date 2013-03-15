@@ -9,7 +9,7 @@ namespace mu2e { class WorldG4; }
 namespace mu2e {
   class WorldG4Maker {
   public:
-    static std::auto_ptr<WorldG4> make(const SimpleConfig& config);
+    static std::unique_ptr<WorldG4> make(const SimpleConfig& config);
   };
 }
 

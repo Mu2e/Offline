@@ -348,7 +348,7 @@ namespace mu2e {
 
       AGDEBUG("After run/subrun/event principal creation: run="<<runNumber_<<", subrun="<<currentSubRunNumber_<<", event="<<currentEventNumber_);
 
-      std::auto_ptr<GenParticleCollection> particles(new GenParticleCollection());
+      std::unique_ptr<GenParticleCollection> particles(new GenParticleCollection());
 
       HelperEvent leftovers;
       for(HelperEvent::const_iterator i=he_.begin(); i!=he_.end(); ++i) {

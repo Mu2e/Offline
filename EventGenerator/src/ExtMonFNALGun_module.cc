@@ -28,7 +28,7 @@ namespace mu2e {
       // Geometry is not available at module construction.  This
       // mis-feature of Mu2e software makes it impossible to keep the
       // gun by value, need to use a ptr.
-      std::auto_ptr<mu2e::ExtMonFNALGun> gun_;
+      std::unique_ptr<mu2e::ExtMonFNALGun> gun_;
 
     public:
       explicit ExtMonFNALGun(fhicl::ParameterSet const& pset);
@@ -49,7 +49,7 @@ namespace mu2e {
     }
 
     void ExtMonFNALGun::produce(art::Event& event) {
-      std::auto_ptr<GenParticleCollection> output(new GenParticleCollection);
+      std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
       gun_->generate(*output);
       event.put(std::move(output));
     }

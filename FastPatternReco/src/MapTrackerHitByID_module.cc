@@ -1,9 +1,9 @@
 //
 // map Tracker Hits to be accessed by Cell/Straw ID
 //
-// $Id: MapTrackerHitByID_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
+// $Id: MapTrackerHitByID_module.cc,v 1.3 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author G. Tassielli
 //
@@ -95,7 +95,7 @@ void MapTrackerHitByID::beginJob(){
 //  void MapTrackerHitByID::analyze(art::Event const& event ) {
 void MapTrackerHitByID::produce(art::Event & event ) {
 
-        auto_ptr<TrackerHitByID> trkHits(new TrackerHitByID);
+        unique_ptr<TrackerHitByID> trkHits(new TrackerHitByID);
 
 //        const Tracker& tracker = getTrackerOrThrow();
 //        const TTracker &ttr = static_cast<const TTracker&>( tracker );

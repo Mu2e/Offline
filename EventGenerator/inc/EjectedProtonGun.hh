@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.hh,v 1.20 2012/04/20 21:32:25 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/20 21:32:25 $
+// $Id: EjectedProtonGun.hh,v 1.21 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 //
 
@@ -58,7 +58,7 @@ namespace mu2e {
     int    _nbins;   // number of bins in proton energy pdf
 
     // Class object to generate position and time of the particle
-    std::auto_ptr<FoilParticleGenerator> _fGenerator;
+    std::unique_ptr<FoilParticleGenerator> _fGenerator;
 
     double _mass; //Particle mass
 

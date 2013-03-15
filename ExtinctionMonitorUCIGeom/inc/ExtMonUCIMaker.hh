@@ -1,6 +1,6 @@
-// $Id: ExtMonUCIMaker.hh,v 1.4 2012/02/16 20:25:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/02/16 20:25:46 $
+// $Id: ExtMonUCIMaker.hh,v 1.5 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 
 #ifndef EXTMONUCIMAKER_HH
 #define EXTMONUCIMAKER_HH
@@ -23,8 +23,8 @@ namespace mu2e {
       ExtMonMaker(const SimpleConfig& config);
 
       // interface to GeometryService
-      std::auto_ptr<ExtMon> _det;
-      std::auto_ptr<ExtMon> getDetectorPtr() { return _det; }
+      std::unique_ptr<ExtMon> _det;
+      std::unique_ptr<ExtMon> getDetectorPtr() { return std::move(_det); }
 
     private:
       void MakeCols();

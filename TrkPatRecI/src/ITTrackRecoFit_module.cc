@@ -1,9 +1,9 @@
 //
 // Fit of the reconstructed tracks for the ITracker
 //
-// $Id: ITTrackRecoFit_module.cc,v 1.2 2013/03/14 19:47:46 kutschke Exp $
+// $Id: ITTrackRecoFit_module.cc,v 1.3 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:46 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author F. Ignatov and G. Tassielli
 //
@@ -195,7 +195,7 @@ namespace mu2e {
     // Some ugly but necessary ROOT related bookkeeping:
   
     // The job needs exactly one instance of TApplication.  See note 1.
-    auto_ptr<TApplication> _application;
+    unique_ptr<TApplication> _application;
   
     std::vector<hitIndex> strawhits;
     HelixTraj seed;
@@ -232,7 +232,7 @@ namespace mu2e {
     // ROOT objects that are the main focus of this example.
     _hExecTime(0),
     // Some ugly but necessary ROOT related bookkeeping.
-    _application(0),
+    _application(nullptr),
     seed(TrkParams(HelixTraj::NHLXPRM)),
     _histoOut (_g4ModuleLabel,_generatorModuleLabel,_targetStepPoints,_hitMakerModuleLabel,
                _diagLevel,0,pset.get<string>("vdStepPoints","virtualdetector"),
@@ -298,7 +298,7 @@ namespace mu2e {
             TrackSeedCollection const* tracksSeed = tracksSeedHandle.product();
 
             // create output
-            auto_ptr<KalRepCollection> tracks(new KalRepCollection );
+            unique_ptr<KalRepCollection> tracks(new KalRepCollection );
 
             //clock_t startClock = clock();
 

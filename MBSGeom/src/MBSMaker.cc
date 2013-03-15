@@ -1,9 +1,9 @@
 //
 // Construct and return MBS
 //
-// $Id: MBSMaker.cc,v 1.2 2012/07/15 22:06:17 kutschke Exp $
+// $Id: MBSMaker.cc,v 1.3 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author KLG
 //
@@ -41,7 +41,7 @@ namespace mu2e {
     // if( ! _config.getBool("hasMBS",false) ) return;
 
     // create an empty MBS
-    _mbs = auto_ptr<MBS>(new MBS());
+    _mbs = unique_ptr<MBS>(new MBS());
 
     // access its object through a reference
 
@@ -54,7 +54,7 @@ namespace mu2e {
     CLHEP::Hep3Vector _BSTSOffsetInMu2e  = CLHEP::Hep3Vector(-solenoidOffset,0.,_BSTSZ);
     mbs._originInMu2e = _BSTSOffsetInMu2e;
 
-    mbs._pBSTSParams = std::auto_ptr<Tube>
+    mbs._pBSTSParams = std::unique_ptr<Tube>
       (new Tube(_BSTSMaterialName,
                 _BSTSOffsetInMu2e,
                 _BSTSInnerRadius,
@@ -63,7 +63,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _SPBSOffsetInMu2e  = CLHEP::Hep3Vector(-solenoidOffset,0.,_SPBSZ);
 
-    mbs._pSPBSParams = std::auto_ptr<Tube>
+    mbs._pSPBSParams = std::unique_ptr<Tube>
       (new Tube(_SPBSMaterialName,
                 _SPBSOffsetInMu2e,
                 _SPBSInnerRadius,
@@ -72,7 +72,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _BSTCOffsetInMu2e  = CLHEP::Hep3Vector(-solenoidOffset,0.,_BSTCZ);
 
-    mbs._pBSTCParams = std::auto_ptr<Tube>
+    mbs._pBSTCParams = std::unique_ptr<Tube>
       (new Tube(_BSTCMaterialName,
                 _BSTCOffsetInMu2e,
                 _BSTCInnerRadius,
@@ -81,7 +81,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _BSBSOffsetInMu2e  = CLHEP::Hep3Vector(-solenoidOffset,0.,_BSBSZ);
 
-    mbs._pBSBSParams = std::auto_ptr<Tube>
+    mbs._pBSBSParams = std::unique_ptr<Tube>
       (new Tube(_BSBSMaterialName,
                 _BSBSOffsetInMu2e,
                 _BSBSInnerRadius,
@@ -90,7 +90,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _CLV2OffsetInMu2e  = CLHEP::Hep3Vector(-solenoidOffset,0.,_CLV2Z);
 
-    mbs._pCLV2Params = std::auto_ptr<Tube>
+    mbs._pCLV2Params = std::unique_ptr<Tube>
       (new Tube(_CLV2MaterialName,
                 _CLV2OffsetInMu2e,
                 _CLV2InnerRadius,

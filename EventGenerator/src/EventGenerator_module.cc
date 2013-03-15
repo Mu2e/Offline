@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.18 2013/03/14 19:47:45 kutschke Exp $
+  $Id: EventGenerator_module.cc,v 1.19 2013/03/15 15:52:03 kutschke Exp $
   $Author: kutschke $
-  $Date: 2013/03/14 19:47:45 $
+  $Date: 2013/03/15 15:52:03 $
 
   Original author Rob Kutschke
 
@@ -195,7 +195,7 @@ namespace mu2e {
   EventGenerator::produce(art::Event& evt) {
 
     // Make the collection to hold the output.
-    auto_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
+    unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
 
     // Run all of the registered generators.
     for ( std::vector<GeneratorBasePtr>::const_iterator

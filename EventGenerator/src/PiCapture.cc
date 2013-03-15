@@ -3,9 +3,9 @@
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 // add internal conversion, 11/2011 rhb
 //
-// $Id: PiCapture.cc,v 1.37 2012/07/15 22:06:17 kutschke Exp $
+// $Id: PiCapture.cc,v 1.38 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -130,7 +130,7 @@ namespace mu2e {
     // 24.5 is from Rick Coleman telling me the stopped pi's fall a factor of two over the 17 foils
 
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>
+    _fGenerator = unique_ptr<FoilParticleGenerator>
       (new FoilParticleGenerator( getEngine(), 0, tcycle,
                                   FoilParticleGenerator::findFoilGenByName(_foilGen),
                                   FoilParticleGenerator::findPosGenByName(_posGen),

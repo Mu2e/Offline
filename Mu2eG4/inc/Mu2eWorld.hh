@@ -4,9 +4,9 @@
 // Construct the Mu2e G4 world and serve information about that world.
 // Note that the class inherits from Mu2eUniverse now
 //
-// $Id: Mu2eWorld.hh,v 1.43 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: Mu2eWorld.hh,v 1.44 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Rob Kutschke
 //
@@ -82,8 +82,8 @@ namespace mu2e {
 
     // Field managers for the different regions of magnetic field.
     // These have a lifetime equal to that of the G4 geometry.
-    std::auto_ptr<FieldMgr> _dsUniform;
-    std::auto_ptr<FieldMgr> _dsGradient;
+    std::unique_ptr<FieldMgr> _dsUniform;
+    std::unique_ptr<FieldMgr> _dsGradient;
 
   };
 

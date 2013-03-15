@@ -1,9 +1,9 @@
 //
 // Functions used to build the clusters
 //
-// $Id: CaloClusterer.hh,v 1.2 2012/03/07 18:00:38 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/03/07 18:00:38 $
+// $Id: CaloClusterer.hh,v 1.3 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -37,7 +37,7 @@ class CaloClusterer{
 
 private:
 
-        std::auto_ptr<CaloClusterFinder> _ccf;
+        std::unique_ptr<CaloClusterFinder> _ccf;
         CaloClusterParameters *_param;
 
 public:

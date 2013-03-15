@@ -3,9 +3,9 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.
 // //
-// $Id: EjectedPhotonGun.cc,v 1.12 2012/07/26 19:01:00 kutschke Exp $
+// $Id: EjectedPhotonGun.cc,v 1.13 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/26 19:01:00 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Gianni Onorato
 //
@@ -130,7 +130,7 @@ namespace mu2e {
 
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>
+    _fGenerator = unique_ptr<FoilParticleGenerator>
       (new FoilParticleGenerator( getEngine(), _tmin, _tmax,
                                   FoilParticleGenerator::findFoilGenByName(_foilGen),
                                   FoilParticleGenerator::findPosGenByName(_posGen),

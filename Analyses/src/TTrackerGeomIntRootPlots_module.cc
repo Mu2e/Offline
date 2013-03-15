@@ -1,9 +1,9 @@
 //
 // A plugin to do geometry plots using interactive root within the framework.
 //
-// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.15 2013/01/07 04:10:53 kutschke Exp $
+// $Id: TTrackerGeomIntRootPlots_module.cc,v 1.16 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/01/07 04:10:53 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author KLG based on Rob Kutschke's InteractiveRoot_plugin
 //
@@ -133,7 +133,7 @@ namespace mu2e {
 
     _hdummy(0),
     _canvas(0),
-    _application(0),
+    _application(nullptr),
     _span(0),
     _drawingOrigin(CLHEP::Hep3Vector(0.,0.,0.)),
     _config(0),

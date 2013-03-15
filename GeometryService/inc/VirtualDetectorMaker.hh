@@ -3,8 +3,8 @@
 //
 // Construct and return an VirtualDetector.
 //
-// $Id: VirtualDetectorMaker.hh,v 1.2 2012/03/30 19:18:03 gandr Exp $
-// $Author: gandr $
+// $Id: VirtualDetectorMaker.hh,v 1.3 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
 //
 // Original author Peter Shanahan
 //
@@ -22,7 +22,7 @@ namespace mu2e {
 
   class VirtualDetectorMaker {
   public:
-    static std::auto_ptr<VirtualDetector> make(const SimpleConfig& config);
+    static std::unique_ptr<VirtualDetector> make(const SimpleConfig& config);
   };
 
 }  //namespace mu2e

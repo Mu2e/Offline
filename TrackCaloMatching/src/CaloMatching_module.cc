@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.9 2013/03/14 19:47:46 kutschke Exp $
+// $Id: CaloMatching_module.cc,v 1.10 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:46 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author G. Pezzullo
 //
@@ -355,7 +355,7 @@ namespace mu2e {
       _producerName("Algo"+mu2e::TOUpper(_caloClusterAlgorithm)+"SeededBy"+mu2e::TOUpper(_caloClusterSeeding)),
       _trkToCaloExtrapolModuleLabel(pset.get<std::string>("trkToCaloExtrapolModuleLabel", "TrkExtrapol")),
       _Ntup(0),
-      _application(0),
+      _application(nullptr),
       _directory(0),
       _firstEvent(true),
       _trkdiag(0){
@@ -404,7 +404,7 @@ namespace mu2e {
     // Label of the extrapolated impact points
     std::string _trkToCaloExtrapolModuleLabel;
 
-    std::auto_ptr<MCCaloUtilities> CaloManager;
+    std::unique_ptr<MCCaloUtilities> CaloManager;
 
     bool _skipEvent;
 
@@ -473,7 +473,7 @@ namespace mu2e {
 
 
     // The job needs exactly one instance of TApplication.  See note 1.
-    auto_ptr<TApplication> _application;
+    unique_ptr<TApplication> _application;
 
     // Save directory from beginJob so that we can go there in endJob. See note 3.
     TDirectory* _directory;
@@ -598,7 +598,7 @@ namespace mu2e {
     art::Handle<TrkToCaloExtrapolCollection>  trjExtrapols;
     evt.getByLabel(_trkToCaloExtrapolModuleLabel, trjExtrapols);
 
-    std::auto_ptr<TrackClusterLink> trackClusterLink(new TrackClusterLink);
+    std::unique_ptr<TrackClusterLink> trackClusterLink(new TrackClusterLink);
 
     ClusterMapVector clusterMapVector;
 

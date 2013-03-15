@@ -5,9 +5,9 @@
 // Generate photons from pi- capture on Al nuclei.
 // Based on Ivano Sarra's work described in Mu2e doc 665-v2
 //
-// $Id: PiCapture.hh,v 1.25 2012/07/17 20:02:12 kutschke Exp $
+// $Id: PiCapture.hh,v 1.26 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/17 20:02:12 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Rob Kutschke, P. Shanahan
 //
@@ -71,7 +71,7 @@ namespace mu2e {
 
 
     //Class object to pick up random position and time
-    std::auto_ptr<FoilParticleGenerator> _fGenerator;
+    std::unique_ptr<FoilParticleGenerator> _fGenerator;
 
 
     // Random number distributions

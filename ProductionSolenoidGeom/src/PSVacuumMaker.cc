@@ -1,6 +1,6 @@
-// $Id: PSVacuumMaker.cc,v 1.2 2012/07/15 22:06:18 kutschke Exp $
+// $Id: PSVacuumMaker.cc,v 1.3 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:18 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Andrei Gaponenko
 
@@ -19,7 +19,7 @@
 
 namespace mu2e {
 
-  std::auto_ptr<PSVacuum>  PSVacuumMaker::make(const SimpleConfig& c,
+  std::unique_ptr<PSVacuum>  PSVacuumMaker::make(const SimpleConfig& c,
                                                const ProductionSolenoid& ps,
                                                const PSEnclosure& pse,
                                                double zmax
@@ -32,7 +32,7 @@ namespace mu2e {
                                          ps.psEndRefPoint().y(),
                                          (zmin+zmax)/2);
 
-    return std::auto_ptr<PSVacuum>(new PSVacuum(
+    return std::unique_ptr<PSVacuum>(new PSVacuum(
                                                 Tube(
                                                      c.getString("PS.insideMaterialName"),
                                                      originInMu2e,

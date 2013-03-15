@@ -4,9 +4,9 @@
 // Create a G4FieldManager object. Provide accessors to the field manager
 // and to the parts from which it is made.
 //
-// $Id: FieldMgr.hh,v 1.8 2012/02/21 22:25:02 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/21 22:25:02 $
+// $Id: FieldMgr.hh,v 1.9 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Rob Kutschke
 //
@@ -71,12 +71,12 @@ namespace mu2e {
     G4FieldManager*         manager()     { return _manager.get(); }
 
     // Factory method to construct a manager for a uniform magnetic field.  See Note 8.
-    static std::auto_ptr<FieldMgr> forUniformField(const G4ThreeVector& fieldValue,
+    static std::unique_ptr<FieldMgr> forUniformField(const G4ThreeVector& fieldValue,
                                                    const G4ThreeVector& mu2eOrigin,
                                                    double stepMinimum=1.0e-2*CLHEP::mm);
 
     // Factory method to construct a manager for a gradient magnetic field.
-    static std::auto_ptr<FieldMgr> forGradientField(double fieldValue,
+    static std::unique_ptr<FieldMgr> forGradientField(double fieldValue,
 						   double gradient,
 						   const G4ThreeVector& fieldOrigin,
                                                    double stepMinimum=1.0e-2*CLHEP::mm);
@@ -84,19 +84,19 @@ namespace mu2e {
     // Factory method to construct a manager for a magnetic field described by a Mu2e field map
     // and will a user supplied G4IntegratorStepper.  See Note 8.
     template <class INTEGRATOR>
-    static std::auto_ptr<FieldMgr> forMappedField(const std::string& fieldName,
+    static std::unique_ptr<FieldMgr> forMappedField(const std::string& fieldName,
                                                   const G4ThreeVector& mu2eOrigin,
                                                   double stepMinimum=1.0e-2*CLHEP::mm){
 
-      std::auto_ptr<FieldMgr> mgr(new FieldMgr() );
+      std::unique_ptr<FieldMgr> mgr(new FieldMgr() );
 
-      mgr->_field       = std::auto_ptr<G4MagneticField>        (new Mu2eGlobalField  ( mu2eOrigin) );
-      mgr->_rhs         = std::auto_ptr<G4Mag_UsualEqRhs>       (new G4Mag_UsualEqRhs ( mgr->field()) );
-      mgr->_integrator  = std::auto_ptr<G4MagIntegratorStepper> (new INTEGRATOR       ( mgr->rhs()) );
-      mgr->_chordFinder = std::auto_ptr<G4ChordFinder>          (new G4ChordFinder    ( mgr->field(),
+      mgr->_field       = std::unique_ptr<G4MagneticField>        (new Mu2eGlobalField  ( mu2eOrigin) );
+      mgr->_rhs         = std::unique_ptr<G4Mag_UsualEqRhs>       (new G4Mag_UsualEqRhs ( mgr->field()) );
+      mgr->_integrator  = std::unique_ptr<G4MagIntegratorStepper> (new INTEGRATOR       ( mgr->rhs()) );
+      mgr->_chordFinder = std::unique_ptr<G4ChordFinder>          (new G4ChordFinder    ( mgr->field(),
                                                                                        stepMinimum,
                                                                                        mgr->integrator()) );
-      mgr->_manager     = std::auto_ptr<G4FieldManager>         (new G4FieldManager   ( mgr->field(),
+      mgr->_manager     = std::unique_ptr<G4FieldManager>         (new G4FieldManager   ( mgr->field(),
                                                                                        mgr->chordFinder(),
                                                                                        true ));
       return mgr;
@@ -108,16 +108,16 @@ namespace mu2e {
   private:
 
     // The parts that make up a field manager.
-    std::auto_ptr<G4MagneticField>        _field;
-    std::auto_ptr<G4Mag_EqRhs>            _rhs;
-    std::auto_ptr<G4MagIntegratorStepper> _integrator;
-    std::auto_ptr<G4ChordFinder>          _chordFinder;
-    std::auto_ptr<G4FieldManager>         _manager;
+    std::unique_ptr<G4MagneticField>        _field;
+    std::unique_ptr<G4Mag_EqRhs>            _rhs;
+    std::unique_ptr<G4MagIntegratorStepper> _integrator;
+    std::unique_ptr<G4ChordFinder>          _chordFinder;
+    std::unique_ptr<G4FieldManager>         _manager;
 
     // Only the factory methods should make new instances of this class.
     FieldMgr();
 
-    // This class should never be copied because the auto_ptr obeys move semantics.
+    // This class should never be copied because the unique_ptr obeys move semantics.
     FieldMgr( const FieldMgr& );
     FieldMgr& operator=(const FieldMgr& );
 

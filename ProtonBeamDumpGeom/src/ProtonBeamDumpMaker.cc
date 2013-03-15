@@ -18,12 +18,12 @@
 namespace mu2e {
 
   //================================================================
-  std::auto_ptr<ProtonBeamDump> ProtonBeamDumpMaker::make(const SimpleConfig& c,
+  std::unique_ptr<ProtonBeamDump> ProtonBeamDumpMaker::make(const SimpleConfig& c,
                                                           double frontShieldingYmin,
                                                           double frontShieldingYmax)
   {
 
-    std::auto_ptr<ProtonBeamDump> dump(new ProtonBeamDump());
+    std::unique_ptr<ProtonBeamDump> dump(new ProtonBeamDump());
 
     int verbose = c.getInt("protonBeamDump.verbosityLevel", 0);
 

@@ -1,9 +1,9 @@
 //
 // A helper class manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.cc,v 1.3 2013/03/14 19:47:45 kutschke Exp $
+// $Id: SensitiveDetectorHelper.cc,v 1.4 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Rob Kutschke
 //
@@ -15,9 +15,9 @@
 //    by this class.
 //
 // 2) The embedded class StepIntance needs to be copyable so that it can be put into
-//    the std::vector.  Therefore it cannot contain an auto_ptr to its StepPointMC
+//    the std::vector.  Therefore it cannot contain an unique_ptr to its StepPointMC
 //    collection.  The work around is to hold the collection by value and to use swap
-//    to transfer it into the auto_ptr that will be given to the event.  This is
+//    to transfer it into the unique_ptr that will be given to the event.  This is
 //    a very small CPU time penalty but it saves us from doing any explicit memory management.
 //
 // 3) Todo:
@@ -105,7 +105,7 @@ namespace mu2e {
 
     for ( InstanceMap::iterator i=stepInstances_.begin();
             i != stepInstances_.end(); ++i ){
-      auto_ptr<StepPointMCCollection> p(new StepPointMCCollection);
+      unique_ptr<StepPointMCCollection> p(new StepPointMCCollection);
       StepInstance& instance(i->second);
       std::swap( instance.p, *p);
       event.put(std::move(p), instance.stepName.name() );

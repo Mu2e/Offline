@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.38 2012/07/26 19:01:01 kutschke Exp $
+// $Id: EjectedProtonGun.cc,v 1.39 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/26 19:01:01 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -136,7 +136,7 @@ namespace mu2e {
 
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>
+    _fGenerator = unique_ptr<FoilParticleGenerator>
       (new FoilParticleGenerator( getEngine(), _tmin, _tmax,
                                   FoilParticleGenerator::findFoilGenByName(_foilGen),
                                   FoilParticleGenerator::findPosGenByName(_posGen),

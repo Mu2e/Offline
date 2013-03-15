@@ -1,9 +1,9 @@
 //
 // this is a old version, visualization and embedded implementation of the bck rejection algorithm
 //
-// $Id: TTDisplayData_module.cc,v 1.9 2013/01/07 04:10:53 kutschke Exp $
+// $Id: TTDisplayData_module.cc,v 1.10 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/01/07 04:10:53 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author G. Tassielli
 //
@@ -416,7 +416,7 @@ namespace mu2e {
     float timeBinDim;  //ns
 
     // Random number distributions.
-    //auto_ptr<CLHEP::RandFlat>    _randFlat;
+    //unique_ptr<CLHEP::RandFlat>    _randFlat;
     CLHEP::RandFlat    _randFlat;
 
     void fillVotingArray(TH2I *startDist, TH2I *votingArray, int minPitch=3, int maxPitch=11);
@@ -428,7 +428,7 @@ namespace mu2e {
     // Some ugly but necessary ROOT related bookkeeping:
 
     // The job needs exactly one instance of TApplication.  See note 1.
-    auto_ptr<TApplication> _application;
+    unique_ptr<TApplication> _application;
 
     // Save directory from beginJob so that we can go there in endJob. See note 3.
     TDirectory* _directory;
@@ -488,7 +488,7 @@ namespace mu2e {
     _randFlat( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
 
     // Some ugly but necessary ROOT related bookkeeping.
-    _application(0),
+    _application(nullptr),
     _directory(0){
           if (_sigmaForTimeSel>0.0) _useSigmaForTimeSel=true;
           else _useSigmaForTimeSel=false;
@@ -558,7 +558,7 @@ namespace mu2e {
     if ( !gApplication ){
       int    tmp_argc(0);
       char** tmp_argv(0);
-      _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+      _application = unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
     }
 
     gStyle->SetPalette(1);
@@ -650,7 +650,7 @@ namespace mu2e {
 //    if (_useProtonRejec) {
 //            // Get the engine associated with this module instance.
 //            art::ServiceHandle<art::RandomNumberGenerator> rng;
-//            _randFlat = auto_ptr<CLHEP::RandFlat>  ( new CLHEP::RandFlat( rng->getEngine(""), 0.0, 1.0 ) );
+//            _randFlat = unique_ptr<CLHEP::RandFlat>  ( new CLHEP::RandFlat( rng->getEngine(""), 0.0, 1.0 ) );
 //    }
 
   }

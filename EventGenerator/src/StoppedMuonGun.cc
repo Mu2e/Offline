@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: StoppedMuonGun.cc,v 1.3 2012/07/15 22:06:17 kutschke Exp $
+// $Id: StoppedMuonGun.cc,v 1.4 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author KLG somewhat based on ConversionGun
 //
@@ -100,7 +100,7 @@ namespace mu2e {
     const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
     _mass = mu_data.mass().value();
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>
+    _fGenerator = unique_ptr<FoilParticleGenerator>
       (new FoilParticleGenerator( getEngine(), _tmin, _tmax,
                                   FoilParticleGenerator::findFoilGenByName(_foilGen),
                                   FoilParticleGenerator::findPosGenByName(_posGen),

@@ -5,9 +5,9 @@
 // from pi+ -> e+ nu decay that originate from the positions at
 // which the pions stopped.
 //
-// $Id: EplusFromStoppedPion_module.cc,v 1.10 2013/03/14 19:47:45 kutschke Exp $
+// $Id: EplusFromStoppedPion_module.cc,v 1.11 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Rob Kutschke.
 //
@@ -171,7 +171,7 @@ namespace mu2e {
   void
   EplusFromStoppedPion::produce(art::Event& event) {
 
-    auto_ptr<GenParticleCollection> output(new GenParticleCollection);
+    unique_ptr<GenParticleCollection> output(new GenParticleCollection);
 
     // Get handles to the generated and simulated particles.
     art::Handle<GenParticleCollection> genHandle;

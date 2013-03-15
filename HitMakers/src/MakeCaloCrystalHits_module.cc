@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_module.cc,v 1.15 2013/03/14 19:47:45 kutschke Exp $
+// $Id: MakeCaloCrystalHits_module.cc,v 1.16 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author KLG
 //
@@ -136,7 +136,7 @@ namespace mu2e {
      if ( !caloHitsHandle.isValid()) return;
      
     //Create a new CaloCrystalHit collection and fill it
-     auto_ptr<CaloCrystalHitCollection> caloCrystalHits(new CaloCrystalHitCollection);
+     unique_ptr<CaloCrystalHitCollection> caloCrystalHits(new CaloCrystalHitCollection);
      makeCrystalHits(*caloCrystalHits,caloHitsHandle);
 
 

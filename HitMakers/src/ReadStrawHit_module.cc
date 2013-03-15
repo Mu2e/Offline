@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.17 2013/01/30 01:21:00 genser Exp $
-// $Author: genser $
-// $Date: 2013/01/30 01:21:00 $
+// $Id: ReadStrawHit_module.cc,v 1.18 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by KLG
@@ -310,7 +310,7 @@ namespace mu2e {
         //if we were to recalculate some of the quantities using
         //formStepPointMCStrawHit and the first StepPointMC here is how:
 
-        std::auto_ptr<StepPointMCStrawHit> spmcshp = 
+        std::unique_ptr<StepPointMCStrawHit> spmcshp = 
           formStepPointMCStrawHit(
                                   mcptr.at(0),
                                   si,

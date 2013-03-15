@@ -1,8 +1,8 @@
 #ifndef CalorimeterGeom_CalorimeterMaker_hh
 #define CalorimeterGeom_VaneCalorimeterMaker_hh
-// $Id: VaneCalorimeterMaker.hh,v 1.3 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: VaneCalorimeterMaker.hh,v 1.4 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -41,9 +41,9 @@ namespace mu2e{
       ~VaneCalorimeterMaker();
       
       
-      // Accessor and auto_ptr to VaneCalorimeter needed by GeometryService.
-      std::auto_ptr<VaneCalorimeter> _calo;
-      std::auto_ptr<VaneCalorimeter> calorimeterPtr() { return _calo; }
+      // Accessor and unique_ptr to VaneCalorimeter needed by GeometryService.
+      std::unique_ptr<VaneCalorimeter> _calo;
+      std::unique_ptr<VaneCalorimeter> calorimeterPtr() { return std::move(_calo); }
 
     private:
 

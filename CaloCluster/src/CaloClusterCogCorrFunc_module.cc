@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position
 //
-// $Id: CaloClusterCogCorrFunc_module.cc,v 1.15 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: CaloClusterCogCorrFunc_module.cc,v 1.16 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author G. Pezzullo
 //
@@ -206,7 +206,7 @@ public:
         _Ntup(0),
         _CogOffSet(pset.get<double>("cogOffset",3.)),
         _Depth(pset.get<double>("depth",11.)),
-        _application(0),
+        _application(nullptr),
         _directory(0)
         {
         }
@@ -282,7 +282,7 @@ private:
         double *globalCaloCut;
         double *globalRecCaloCut;
 
-        std::auto_ptr<MCCaloUtilities> CaloManager;
+        std::unique_ptr<MCCaloUtilities> CaloManager;
 
         bool _skipEvent;
 
@@ -376,7 +376,7 @@ private:
 
 
         // The job needs exactly one instance of TApplication.  See note 1.
-        auto_ptr<TApplication> _application;
+        unique_ptr<TApplication> _application;
 
         // Save directory from beginJob so that we can go there in endJob. See note 3.
         TDirectory* _directory;
@@ -577,13 +577,13 @@ void CaloClusterCogCorrFunc::beginJob( ) {
   //if( evt.id().event() %1000 ==0){
   //cout << "start CaloClusterCogCorrFunc..."<<endl;
 	//}
-        //CaloManager = auto_ptr<MCCaloUtilities>(new MCCaloUtilities());
+        //CaloManager = unique_ptr<MCCaloUtilities>(new MCCaloUtilities());
 
         // If needed, create the ROOT interactive environment. See note 1.
         //if ( !gApplication ){
   //      int    tmp_argc(0);
   //            char** tmp_argv(0);
-  //            _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+  //            _application = unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
   //    }
 
   //        gStyle->SetPalette(1);
@@ -769,7 +769,7 @@ void CaloClusterCogCorrFunc::doCalorimeter(art::Event const& evt, bool skip){
         art::Handle<CaloClusterCollection> caloClusters;
         evt.getByLabel(_caloClusterModuleLabel,_producerName, caloClusters );
 
-        auto_ptr<CaloClusterCollection> caloClustersPointer(new CaloClusterCollection);
+        unique_ptr<CaloClusterCollection> caloClustersPointer(new CaloClusterCollection);
 
         art::Handle<VisibleGenElTrackCollection> genEltrksHandle;
         evt.getByLabel(_extractElectronsData,genEltrksHandle);

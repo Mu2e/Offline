@@ -2,9 +2,9 @@
 // Construct and return MECOStyleProtonAbsorber
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.4 2012/11/21 23:20:10 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/11/21 23:20:10 $
+// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.5 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author MyeongJae Lee
 //
@@ -198,7 +198,7 @@ namespace mu2e {
     // Build
     /////////
 
-    _pabs = auto_ptr<MECOStyleProtonAbsorber>(new MECOStyleProtonAbsorber());
+    _pabs = unique_ptr<MECOStyleProtonAbsorber>(new MECOStyleProtonAbsorber());
 
     CLHEP::Hep3Vector pabs1Offset(-1.*solenoidOffset, 0.0, pabs1ZOffset);
     CLHEP::Hep3Vector pabs2Offset(-1.*solenoidOffset, 0.0, pabs2ZOffset);

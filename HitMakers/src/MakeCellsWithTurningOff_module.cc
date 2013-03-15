@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeCellsWithTurningOff_module.cc,v 1.3 2013/03/14 19:47:45 kutschke Exp $
+// $Id: MakeCellsWithTurningOff_module.cc,v 1.4 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author G.F. Tassielli. Class derived by MakeStrawHit
 //
@@ -191,9 +191,9 @@ namespace mu2e {
     PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
 
     // A container to hold the output hits.
-    auto_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
-    auto_ptr<StrawHitMCTruthCollection>      truthHits(new StrawHitMCTruthCollection);
-    auto_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
+    unique_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
+    unique_ptr<StrawHitMCTruthCollection>      truthHits(new StrawHitMCTruthCollection);
+    unique_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
 
     for (size_t i =0; i < hits->size(); ++i) {
       StrawHit const& hit(hits->at(i));

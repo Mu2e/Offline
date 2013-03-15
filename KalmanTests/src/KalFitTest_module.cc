@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.19 2013/03/14 19:47:45 kutschke Exp $
+// $Id: KalFitTest_module.cc,v 1.20 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 
 // framework
@@ -106,7 +106,7 @@ namespace mu2e
 
   void KalFitTest::produce(art::Event& event ) 
   {
-    auto_ptr<KalRepCollection> tracks(new KalRepCollection );
+    unique_ptr<KalRepCollection> tracks(new KalRepCollection );
 // event printout
     int iev=event.id().event();
     if((iev%_printfreq)==0)cout<<"KalFitTest: event="<<iev<<endl;

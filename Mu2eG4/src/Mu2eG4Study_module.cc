@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // ******Meant for Geant4 Studies not for Mu2e Simulations**********
 //
-// $Id: Mu2eG4Study_module.cc,v 1.3 2013/03/14 19:47:45 kutschke Exp $
+// $Id: Mu2eG4Study_module.cc,v 1.4 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author K. Genser, based on Rob's G4_module
 //
@@ -100,7 +100,7 @@ namespace mu2e {
     virtual void endRun(art::Run &);
 
   private:
-    auto_ptr<Mu2eG4RunManager> _runManager;
+    unique_ptr<Mu2eG4RunManager> _runManager;
 
     // Do we issue warnings about multiple runs?
     bool _warnEveryNewRun;
@@ -115,7 +115,7 @@ namespace mu2e {
 
     G4UIsession  *_session;
     G4UImanager  *_UI;
-    std::auto_ptr<G4VisManager> _visManager;
+    std::unique_ptr<G4VisManager> _visManager;
     int _rmvlevel;
     int _tmvlevel;
     int _checkFieldMap;
@@ -199,7 +199,7 @@ namespace mu2e {
 
   // Create an instance of the run manager.
   void Mu2eG4Study::beginJob(){
-    _runManager = auto_ptr<Mu2eG4RunManager>(new Mu2eG4RunManager);
+    _runManager = unique_ptr<Mu2eG4RunManager>(new Mu2eG4RunManager);
   }
 
   void Mu2eG4Study::beginRun( art::Run &run){
@@ -232,7 +232,7 @@ namespace mu2e {
     // Add info about the G4 volumes to the run-data.
     // The framework rules requires we make a copy and add the copy.
     const PhysicalVolumeInfoCollection& vinfo = _physVolHelper.persistentInfo();
-    auto_ptr<PhysicalVolumeInfoCollection> volumes(new PhysicalVolumeInfoCollection(vinfo));
+    unique_ptr<PhysicalVolumeInfoCollection> volumes(new PhysicalVolumeInfoCollection(vinfo));
     run.put(std::move(volumes));
 
     //  we are working in the system with the origin set to
@@ -322,7 +322,7 @@ namespace mu2e {
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
-      _visManager = std::auto_ptr<G4VisManager>(new G4VisExecutive);
+      _visManager = std::unique_ptr<G4VisManager>(new G4VisExecutive);
       _visManager->Initialize();
 
       ConfigFileLookupPolicy visPath;
@@ -348,13 +348,13 @@ namespace mu2e {
     event.getByLabel(_generatorModuleLabel, gensHandle);
 
     // Create empty data products.
-    auto_ptr<SimParticleCollection>   simParticles(new SimParticleCollection);
+    unique_ptr<SimParticleCollection>   simParticles(new SimParticleCollection);
 
-    auto_ptr<StepPointMCCollection> steppingPoints(new StepPointMCCollection);
+    unique_ptr<StepPointMCCollection> steppingPoints(new StepPointMCCollection);
 
-    auto_ptr<StepPointMCCollection>        tvdHits(new StepPointMCCollection);
+    unique_ptr<StepPointMCCollection>        tvdHits(new StepPointMCCollection);
 
-    //    auto_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
+    //    unique_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
 
     // ProductID for the SimParticleCollection.
     art::ProductID simPartId(getProductID<SimParticleCollection>(event));
@@ -387,7 +387,7 @@ namespace mu2e {
 //     if (  _steppingAction->nKilledStepLimit() > 0 ) status =  1;
 //     if (  _trackingAction->overflowSimParticles() ) status = 10;
 
-//     auto_ptr<StatusG4> g4stat(new StatusG4( status,
+//     unique_ptr<StatusG4> g4stat(new StatusG4( status,
 //                                             _trackingAction->nG4Tracks(),
 //                                             _trackingAction->overflowSimParticles(),
 //                                             _steppingAction->nKilledStepLimit(),

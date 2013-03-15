@@ -1,9 +1,9 @@
 // Filters outputs of ExtMonFNAL "room" jobs to select VD hits and
 // stopped muons that should be passed to the next stage "box" jobs.
 //
-// $Id: EMFBoxHitsFilter_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
+// $Id: EMFBoxHitsFilter_module.cc,v 1.3 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Andrei Gaponenko, 2012
 
@@ -126,8 +126,8 @@ namespace mu2e {
     //================================================================
     bool EMFBoxHitsFilter::filter(art::Event& event) {
 
-      std::auto_ptr<StepPointMCCollection> outhits(new StepPointMCCollection());
-      std::auto_ptr<SimParticleCollection> outparts(new SimParticleCollection());
+      std::unique_ptr<StepPointMCCollection> outhits(new StepPointMCCollection());
+      std::unique_ptr<SimParticleCollection> outparts(new SimParticleCollection());
 
       //----------------
       // First, find all stopped muons that we wish to save

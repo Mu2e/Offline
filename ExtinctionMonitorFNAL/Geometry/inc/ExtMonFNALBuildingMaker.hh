@@ -21,7 +21,7 @@ namespace mu2e {
                                                                              const SimpleConfig& c);
 
   public:
-    static std::auto_ptr<ExtMonFNALBuilding> make(const SimpleConfig& config, const ProtonBeamDump& dump);
+    static std::unique_ptr<ExtMonFNALBuilding> make(const SimpleConfig& config, const ProtonBeamDump& dump);
   };
 }
 

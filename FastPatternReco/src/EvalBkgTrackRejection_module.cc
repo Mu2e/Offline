@@ -1,9 +1,9 @@
 //
 // performance evaluation of the Bkg rejection modules
 //
-// $Id: EvalBkgTrackRejection_module.cc,v 1.7 2012/05/15 07:46:58 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/15 07:46:58 $
+// $Id: EvalBkgTrackRejection_module.cc,v 1.8 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author G. Tassielli
 //
@@ -161,7 +161,7 @@ namespace mu2e {
     // Some ugly but necessary ROOT related bookkeeping:
 
     // The job needs exactly one instance of TApplication.  See note 1.
-    //auto_ptr<TApplication> _application;
+    //unique_ptr<TApplication> _application;
 
     // Save directory from beginJob so that we can go there in endJob. See note 3.
     TDirectory* _directory;
@@ -197,7 +197,7 @@ namespace mu2e {
     _dataEvalBkgRejec(0),
 
     // Some ugly but necessary ROOT related bookkeeping.
-    //_application(0),
+    //_application(nullptr),
     _directory(0){
           runID=eventID=evNHit=convElNHit=convElNLoop=0;
           sel_ptMeV=sel_ptMeV_start=sel_ptMeV_end=sel_plMeV=sel_plMeV_start=sel_plMeV_end=convElFHitTime=0.0;
@@ -221,7 +221,7 @@ namespace mu2e {
           //    if ( !gApplication ){
           //      int    tmp_argc(0);
           //      char** tmp_argv(0);
-          //      _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+          //      _application = unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
           //    }
 
           gStyle->SetPalette(1);

@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.7 2013/03/14 19:47:46 kutschke Exp $
+// $Id: TrkExtrapol_module.cc,v 1.8 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:46 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author G. Pezzullo
 //
@@ -129,7 +129,7 @@ public:
         _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
         _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel", "CaloCrystalHitsMaker")),
         CaloVanes(0),
-        _application(0),
+        _application(nullptr),
         _directory(0),
         _firstEvent(true),
 	_trkdiag(0){
@@ -184,14 +184,14 @@ private:
         // Label of the calo crystal hists maker
         std::string _caloCrystalModuleLabel;
 
-        std::auto_ptr<MCCaloUtilities> CaloManager;
+        std::unique_ptr<MCCaloUtilities> CaloManager;
 
         Calorimeter4VanesGeom *CaloVanes;// = new Calorimeter4VanesGeom();
 
         bool _skipEvent;
 
         // The job needs exactly one instance of TApplication.  See note 1.
-        auto_ptr<TApplication> _application;
+        unique_ptr<TApplication> _application;
 
         // Save directory from beginJob so that we can go there in endJob. See note 3.
         TDirectory* _directory;
@@ -224,7 +224,7 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
 	  cout<<"\n start TrkExtrapol..."<<endl;
         }
         //create output
-        auto_ptr<TrkToCaloExtrapolCollection> extrapolatedTracks(new TrkToCaloExtrapolCollection );
+        unique_ptr<TrkToCaloExtrapolCollection> extrapolatedTracks(new TrkToCaloExtrapolCollection );
         TrkToCaloExtrapolCollection tmpExtrapolatedTracks;
 
         //Get handle to calorimeter

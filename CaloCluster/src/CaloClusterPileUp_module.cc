@@ -1,9 +1,9 @@
 //
 // Visualization of pile up on the calorimeter clusters
 //
-// $Id: CaloClusterPileUp_module.cc,v 1.5 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: CaloClusterPileUp_module.cc,v 1.6 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -182,7 +182,7 @@ public:
         _totalrealtime(0),
         _Ntup(0),
         _EnergyClusterCut(pset.get<double>("energyClusterCut",60.)),//MeV
-        _application(0),
+        _application(nullptr),
         _directory(0)
         {
         }
@@ -245,7 +245,7 @@ private:
         bool _skipEvent;
 
         // The job needs exactly one instance of TApplication.  See note 1.
-        auto_ptr<TApplication> _application;
+        unique_ptr<TApplication> _application;
 
         // Save directory from beginJob so that we can go there in endJob. See note 3.
         TDirectory* _directory;

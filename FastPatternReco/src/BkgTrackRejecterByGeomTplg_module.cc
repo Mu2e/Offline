@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on geometry considerations
 //
-// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.9 2013/03/14 19:47:45 kutschke Exp $
+// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.10 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author G. Tassielli
 //
@@ -431,7 +431,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     // Some ugly but necessary ROOT related bookkeeping:
 
     // The job needs exactly one instance of TApplication.  See note 1.
-    auto_ptr<TApplication> _application;
+    unique_ptr<TApplication> _application;
 
     // Save directory from beginJob so that we can go there in endJob. See note 3.
 //    TDirectory* _directory;
@@ -476,7 +476,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     timeBinDim(10.0),
 
     // Some ugly but necessary ROOT related bookkeeping.
-    _application(0)
+    _application(nullptr)
 //    _directory(0)
   {
           std::cout<<"Constructed"<<endl;
@@ -515,7 +515,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
             if ( !gApplication ){
                     int    tmp_argc(0);
                     char** tmp_argv(0);
-                    _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+                    _application = unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
             }
 
             gStyle->SetPalette(1);
@@ -569,8 +569,8 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
     std::vector< std::vector< clssegdr > > clstSegments;
     TF1 clustSegline("clustSegline","pol1", 0.0, 20.0);
 
-    //auto_ptr<SectorStationClusterCollection> sscc(new SectorStationClusterCollection);
-    auto_ptr<SctrSttnClusterGroupCollection> sscc(new SctrSttnClusterGroupCollection);
+    //unique_ptr<SectorStationClusterCollection> sscc(new SectorStationClusterCollection);
+    unique_ptr<SctrSttnClusterGroupCollection> sscc(new SctrSttnClusterGroupCollection);
 
 
     const Tracker& tracker = getTrackerOrThrow();

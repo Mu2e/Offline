@@ -1,9 +1,9 @@
 //
 // Add a TracerProduct to the event and watch what happens.
 //
-// $Id: MakeTracerProduct00_module.cc,v 1.5 2013/03/14 19:47:46 kutschke Exp $
+// $Id: MakeTracerProduct00_module.cc,v 1.6 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:46 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Rob Kutschke
 //
@@ -45,7 +45,7 @@ namespace mu2e {
   void MakeTracerProduct00::produce(art::Event& event) {
 
 
-    auto_ptr<TracerProduct> prod(new TracerProduct(100+event.id().event()));
+    unique_ptr<TracerProduct> prod(new TracerProduct(100+event.id().event()));
     mf::LogVerbatim("Tracing") << "Before put: " << endl;
     event.put(std::move(prod));
     mf::LogVerbatim("Tracing") << "After put: " << endl;

@@ -1,8 +1,8 @@
 // ITracker manager class
 //
-// $Id: ITracker.hh,v 1.10 2012/09/25 10:08:30 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/09/25 10:08:30 $
+// $Id: ITracker.hh,v 1.11 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author G. Tassielli
 //
@@ -120,7 +120,7 @@ protected:
         int _nSDeltaWire;
         int _nRing;
         bool _isDumbbell;
-        std::auto_ptr<double> _zZonesLimits;
+        std::unique_ptr<double> _zZonesLimits;
 
         // Outer radius of a logical volume that will just contain the entire tracker.
         double _rOut;
@@ -151,7 +151,7 @@ protected:
 
         void addWall(Wall *wall);
 
-        std::auto_ptr<CellGeometryHandle> _cellhnd;
+        std::unique_ptr<CellGeometryHandle> _cellhnd;
 
         //std::deque<Straw> fakeStrawDeq;
 

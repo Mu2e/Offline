@@ -43,11 +43,11 @@ namespace mu2e {
   }
 
   //================================================================
-  std::auto_ptr<ExtMonFNALBuilding> ExtMonFNALBuildingMaker::make(const SimpleConfig& c, const ProtonBeamDump& dump) {
+  std::unique_ptr<ExtMonFNALBuilding> ExtMonFNALBuildingMaker::make(const SimpleConfig& c, const ProtonBeamDump& dump) {
     using CLHEP::Hep3Vector;
     using CLHEP::Hep2Vector;
 
-    std::auto_ptr<ExtMonFNALBuilding> emfb(new ExtMonFNALBuilding());
+    std::unique_ptr<ExtMonFNALBuilding> emfb(new ExtMonFNALBuilding());
 
     int verbose = c.getInt("extMonFNAL.verbosityLevel");
 

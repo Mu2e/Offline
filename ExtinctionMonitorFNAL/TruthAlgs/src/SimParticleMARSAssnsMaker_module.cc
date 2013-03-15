@@ -1,8 +1,8 @@
 // Associate SimParticles to MARSInfo in a newly produced compressed MARSInfoCollection.
 //
-// $Id: SimParticleMARSAssnsMaker_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
+// $Id: SimParticleMARSAssnsMaker_module.cc,v 1.3 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Andrei Gaponenko
 //
@@ -64,8 +64,8 @@ namespace mu2e {
     //================================================================
     void SimParticleMARSAssnsMaker::produce(art::Event& event) {
 
-      std::auto_ptr<MARSInfoCollection> info(new MARSInfoCollection());
-      std::auto_ptr<SimParticleMARSAssns> assns(new SimParticleMARSAssns());
+      std::unique_ptr<MARSInfoCollection> info(new MARSInfoCollection());
+      std::unique_ptr<SimParticleMARSAssns> assns(new SimParticleMARSAssns());
 
       const art::ProductID infoPID = getProductID<MARSInfoCollection>(event);
       const art::EDProductGetter *infoGetter = event.productGetter(infoPID);

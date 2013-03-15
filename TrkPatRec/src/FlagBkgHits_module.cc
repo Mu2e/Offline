@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.8 2013/03/14 19:47:46 kutschke Exp $
+// $Id: FlagBkgHits_module.cc,v 1.9 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $ 
-// $Date: 2013/03/14 19:47:46 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -228,7 +228,7 @@ namespace mu2e
 
   void FlagBkgHits::produce(art::Event& event ) {
     // create output
-    auto_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection);
+    unique_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection);
     _bkgfcol = bkgfcol.get();
     // event printout
     _iev=event.id().event();

@@ -1,9 +1,9 @@
 //
 // Add a std::vector<TracerProduct> to the event and watch what happens.
 //
-// $Id: MakeTracerProductCollection_module.cc,v 1.4 2013/03/14 19:47:46 kutschke Exp $
+// $Id: MakeTracerProductCollection_module.cc,v 1.5 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:46 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Rob Kutschke
 //
@@ -45,7 +45,7 @@ namespace mu2e {
   void MakeVectorTracerProduct00::produce(art::Event& event) {
 
     mf::LogVerbatim("Tracing") << "Start produce: ";
-    auto_ptr<TracerProductCollection > prod(new TracerProductCollection );
+    unique_ptr<TracerProductCollection > prod(new TracerProductCollection );
     prod->push_back( new TracerProduct( 100*event.id().event() + 1) );
     prod->push_back( new TracerProduct( 100*event.id().event() + 2) );
 

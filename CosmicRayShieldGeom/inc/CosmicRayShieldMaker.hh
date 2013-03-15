@@ -3,9 +3,9 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.12 2012/10/16 02:52:12 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/10/16 02:52:12 $
+// $Id: CosmicRayShieldMaker.hh,v 1.13 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author KLG
 //
@@ -48,11 +48,11 @@ public:
   const CosmicRayShield& getCosmicRayShield() const { return *_crs;}
 
   // This is the accessor that will remain.
-  std::auto_ptr<CosmicRayShield> getCosmicRayShieldPtr() { return _crs; }
+  std::unique_ptr<CosmicRayShield> getCosmicRayShieldPtr() { return std::move(_crs); }
 
 private:
 
-  std::auto_ptr<CosmicRayShield> _crs;
+  std::unique_ptr<CosmicRayShield> _crs;
 
   int _diagLevel;
 

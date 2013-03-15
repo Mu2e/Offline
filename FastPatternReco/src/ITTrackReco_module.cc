@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition for the ITracker
 //
-// $Id: ITTrackReco_module.cc,v 1.18 2013/03/14 19:47:45 kutschke Exp $
+// $Id: ITTrackReco_module.cc,v 1.19 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author G. Tassielli
 //
@@ -283,7 +283,7 @@ private:
         int   findZclusters( std::vector<XYZP> &xyzp, float zdim=20.0, float zPeakSigma=4.0, float zPeakThr=0.01, TH1F *zHist=0x0 );
         int   findZclusters( HelixTraj &trkhelixe, std::vector<XYZP> &xyzp, std::vector< std::vector<size_t> > &pntIdsLoops/*, std::vector<TrkHelix> &helixeFitLoops, std::vector<HelixTraj> &trkhelixeLoops*/);
 
-        void  searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls_Min, auto_ptr<TrackSeedCollection> &seeds,
+        void  searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls_Min, unique_ptr<TrackSeedCollection> &seeds,
                         CellGeometryHandle *itwp, std::vector<TrkTimePeak> &tpeaks, size_t &ipeak, art::Handle<TrackerHitTimeClusterCollection> &tclustHandle, art::Handle<StrawHitCollection> &pdataHandle
                         , VisibleGenElTrackCollection const* genEltrks
                         );
@@ -291,7 +291,7 @@ private:
         // Some ugly but necessary ROOT related bookkeeping:
 
         // The job needs exactly one instance of TApplication.  See note 1.
-        auto_ptr<TApplication> _application;
+        unique_ptr<TApplication> _application;
 
         // Save directory from beginJob so that we can go there in endJob. See note 3.
         //    TDirectory* _directory;
@@ -348,7 +348,7 @@ ITTrackReco::ITTrackReco(fhicl::ParameterSet const& pset) :
                     notAssociatedHits(0),
 
                     // Some ugly but necessary ROOT related bookkeeping.
-                    _application(0)
+                    _application(nullptr)
 //    _directory(0)
 {
         cout<<"Constructed"<<endl;
@@ -388,7 +388,7 @@ void ITTrackReco::beginJob(){
                 if ( !gApplication ){
                         int    tmp_argc(0);
                         char** tmp_argv(0);
-                        _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+                        _application = unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
                 }
 
                 gStyle->SetPalette(1);
@@ -435,7 +435,7 @@ void ITTrackReco::produce(art::Event & event ) {
         //_peakFinder->Clear();
         //_peaksCanvases->Clear();
 
-        auto_ptr<TrackSeedCollection> seeds(new TrackSeedCollection);
+        unique_ptr<TrackSeedCollection> seeds(new TrackSeedCollection);
 
 
         const Tracker& tracker = getTrackerOrThrow();
@@ -2104,7 +2104,7 @@ void ITTrackReco::printPotCircles( circlesCont &potCircles ) {
 }
 
 
-void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls_Min, auto_ptr<TrackSeedCollection> &seeds,
+void ITTrackReco::searchTracks(closClinRadLay &radCls_Pl, closClinRadLay &radCls_Min, unique_ptr<TrackSeedCollection> &seeds,
                 CellGeometryHandle *itwp, std::vector<TrkTimePeak> &tpeaks, size_t &ipeak, art::Handle<TrackerHitTimeClusterCollection> &tclustHandle, art::Handle<StrawHitCollection> &pdataHandle
                 , VisibleGenElTrackCollection const* genEltrks
                 ) {

@@ -3,9 +3,9 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: formStepPointMCStrawHit.hh,v 1.1 2012/08/22 22:19:01 genser Exp $
-// $Author: genser $
-// $Date: 2012/08/22 22:19:01 $
+// $Id: formStepPointMCStrawHit.hh,v 1.2 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author KLG
 //
@@ -33,7 +33,7 @@
 
 namespace mu2e {
 
-  std::auto_ptr<StepPointMCStrawHit> formStepPointMCStrawHit(
+  std::unique_ptr<StepPointMCStrawHit> formStepPointMCStrawHit(
                      art::Ptr<StepPointMC> const spmcp,
                      StrawIndex const & straw_id,
                      double _minimumLength,

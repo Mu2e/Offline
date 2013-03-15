@@ -4,9 +4,9 @@
 // Construct and return an LTracker.
 //
 //
-// $Id: LTrackerMaker.hh,v 1.8 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
+// $Id: LTrackerMaker.hh,v 1.9 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Rob Kutschke
 //
@@ -51,7 +51,7 @@ namespace mu2e {
     const LTracker& getLTracker() const { return *_ltt;}
 
     // This is the accessor that will remain.
-    std::auto_ptr<LTracker> getLTrackerPtr() { return _ltt; }
+    std::unique_ptr<LTracker> getLTrackerPtr() { return std::move(_ltt); }
 
   private:
 
@@ -125,7 +125,7 @@ namespace mu2e {
     double _cphiHalf;
     double _sphiHalf;
 
-    std::auto_ptr<LTracker> _ltt;
+    std::unique_ptr<LTracker> _ltt;
 
   };
 

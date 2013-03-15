@@ -9,7 +9,7 @@
 
 #include <memory>
 
-// Forward declaration is not sufficient b/c of potential ~auto_ptr in a client code.
+// Forward declaration is not sufficient b/c of potential ~unique_ptr in a client code.
 #include "BFieldGeom/inc/BFieldConfig.hh"
 
 namespace mu2e {
@@ -24,11 +24,11 @@ namespace mu2e {
     explicit BFieldConfigMaker(const SimpleConfig& config, const Beamline& beamg);
 
     // Transfer ownership of the BFManager.
-    std::auto_ptr<BFieldConfig> getBFieldConfig() { return bfconf_; }
+    std::unique_ptr<BFieldConfig> getBFieldConfig() { return std::move(bfconf_); }
 
   private:
     // Hold the object while we are creating it. The GeometryService will take ownership.
-    std::auto_ptr<BFieldConfig> bfconf_;
+    std::unique_ptr<BFieldConfig> bfconf_;
 
     void addGMC(const SimpleConfig& config, BFieldConfig* bfconf, const std::string& configFNKey, const std::string& configDimKey);
   };

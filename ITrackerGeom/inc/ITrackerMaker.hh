@@ -1,8 +1,8 @@
 // ITracker geometry maker
 //
-// $Id: ITrackerMaker.hh,v 1.11 2012/09/25 10:08:30 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/09/25 10:08:30 $
+// $Id: ITrackerMaker.hh,v 1.12 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author G. Tassielli
 //
@@ -37,7 +37,7 @@ public:
   ~ITrackerMaker ();
 
   // This is the accessor that will remain.
-  std::auto_ptr<ITracker> getITrackerPtr() { return _ltt; }
+  std::unique_ptr<ITracker> getITrackerPtr() { return std::move(_ltt); }
 
 private:
 
@@ -119,7 +119,7 @@ private:
   // Center of the tracker.
   CLHEP::Hep3Vector _center;
 
-  std::auto_ptr<ITracker> _ltt;
+  std::unique_ptr<ITracker> _ltt;
 
 };
 

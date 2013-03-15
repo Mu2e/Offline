@@ -210,7 +210,7 @@ class MakeCaloClusterNew : public art::EDProducer {
        if ( !caloCrystalHitsHandle.isValid()) return;
 
       //Create a new CaloCluster collection and fill it
-       auto_ptr<CaloClusterCollection> caloClusters(new CaloClusterCollection);
+       unique_ptr<CaloClusterCollection> caloClusters(new CaloClusterCollection);
        makeCaloClusters(*caloClusters,caloCrystalHitsHandle);
 
        event.put(std::move(caloClusters), _producerName);

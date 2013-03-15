@@ -3,9 +3,9 @@
 //
 // Class to construct and return PSVacuum
 //
-// $Id: PSVacuumMaker.hh,v 1.1 2012/06/06 19:29:30 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/06 19:29:30 $
+// $Id: PSVacuumMaker.hh,v 1.2 2013/03/15 15:52:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Andrei Gaponenko
 //
@@ -26,7 +26,7 @@ namespace mu2e {
   class PSVacuumMaker {
   public:
 
-    static std::auto_ptr<PSVacuum>  make(const SimpleConfig& config,
+    static std::unique_ptr<PSVacuum>  make(const SimpleConfig& config,
                                          const ProductionSolenoid& ps,
                                          const PSEnclosure& pse,
                                          double zmax /*interface to TS*/

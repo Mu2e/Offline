@@ -9,7 +9,7 @@ namespace mu2e { class BuildingBasics; }
 namespace mu2e {
   class BuildingBasicsMaker {
   public:
-    static std::auto_ptr<BuildingBasics> make(const SimpleConfig& config);
+    static std::unique_ptr<BuildingBasics> make(const SimpleConfig& config);
   };
 }
 

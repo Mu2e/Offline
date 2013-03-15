@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.28 2012/04/20 21:32:25 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/20 21:32:25 $
+// $Id: DecayInOrbitGun.hh,v 1.29 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 //
 
@@ -59,8 +59,8 @@ namespace mu2e {
     int    _nbins;
 
     // Class object to generate position and time of the particle
-    std::auto_ptr<FoilParticleGenerator> _fGenerator;
-    std::auto_ptr<ReadDIOSpectrum> _randEnergy;
+    std::unique_ptr<FoilParticleGenerator> _fGenerator;
+    std::unique_ptr<ReadDIOSpectrum> _randEnergy;
 
     // Limits on the generated direction.
     double _czmin;

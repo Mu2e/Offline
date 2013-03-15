@@ -29,7 +29,7 @@ namespace mu2e {
   //================================================================
   class GeometryRecorder : public art::EDProducer {
     template<class DET> void put(art::Run& run) {
-      run.put(std::auto_ptr<DET>(new DET(*GeomHandle<DET>())));
+      run.put(std::unique_ptr<DET>(new DET(*GeomHandle<DET>())));
     }
 
   public:

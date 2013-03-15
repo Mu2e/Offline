@@ -6,9 +6,9 @@
 // are mixed; mixing of the PointTrajectoryCollections can also be turned on/off with a
 // parameter set variable.
 //
-// $Id: MixMCEvents_module.cc,v 1.11 2013/03/14 19:47:45 kutschke Exp $
+// $Id: MixMCEvents_module.cc,v 1.12 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Contact person Rob Kutschke.
 //
@@ -200,7 +200,7 @@ private:
 
   // Only one of the following is meaningful in any instance of this class
   // If mean_ >0 then the poisson distribution is valid; else n0_ is valid.
-  auto_ptr<CLHEP::RandPoissonQ> poisson_;
+  unique_ptr<CLHEP::RandPoissonQ> poisson_;
   int n0_;
 
   // Non-run-time configurable members.
@@ -221,7 +221,7 @@ private:
   std::vector<size_t> simOffsets_;
 
   // New data products that will be added to the event.
-  std::auto_ptr<mu2e::MixingSummary> summary_;
+  std::unique_ptr<mu2e::MixingSummary> summary_;
 
   // Remap all of the art::Ptr objects in one SimParticle.
   void updateSimParticle( mu2e::SimParticle& sim,
@@ -429,7 +429,7 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
     art::RandomNumberGenerator::base_engine_t& engine = art::ServiceHandle<art::RandomNumberGenerator>()->getEngine();
     int dummy(0);
     engine.setSeed( art::ServiceHandle<SeedService>()->getSeed(), dummy );
-    poisson_ = auto_ptr<CLHEP::RandPoissonQ>( new CLHEP::RandPoissonQ(engine, mean_) );
+    poisson_ = unique_ptr<CLHEP::RandPoissonQ>( new CLHEP::RandPoissonQ(engine, mean_) );
   } else{
     n0_ = static_cast<int>(floor(std::abs(mean_)));
   }

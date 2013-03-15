@@ -6,9 +6,9 @@
 // momentum and extrapolated donwstream where the consistency with the
 // donwstream tracklet is checked.
 //
-// $Id: EMFPatRecFromTracklets_module.cc,v 1.8 2013/03/14 19:47:45 kutschke Exp $
+// $Id: EMFPatRecFromTracklets_module.cc,v 1.9 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Andrei Gaponenko
 //
@@ -403,7 +403,7 @@ namespace mu2e {
       art::Handle<ExtMonFNALRecoClusterCollection> clusters;
       event.getByLabel(inputModuleLabel_, inputInstanceName_, clusters);
 
-      std::auto_ptr<ExtMonFNALTrkFitCollection> tracks(new ExtMonFNALTrkFitCollection);
+      std::unique_ptr<ExtMonFNALTrkFitCollection> tracks(new ExtMonFNALTrkFitCollection);
 
       if(!singleParticleMode_ || acceptSingleParticleEvent(event)) {
         findTracks(event, &*tracks, clusters);

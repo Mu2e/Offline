@@ -12,7 +12,7 @@ namespace mu2e {
 
   class Mu2eBuildingMaker {
   public:
-    static std::auto_ptr<Mu2eBuilding> make(const SimpleConfig& config,
+    static std::unique_ptr<Mu2eBuilding> make(const SimpleConfig& config,
                                             const BuildingBasics& basics,
                                             const ProtonBeamDump& dump);
   };

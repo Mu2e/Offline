@@ -1,9 +1,9 @@
 //
 // Free function to form StepPointMCStrawHit's
 //
-// $Id: formStepPointMCStrawHit.cc,v 1.1 2012/08/22 22:19:57 genser Exp $
-// $Author: genser $
-// $Date: 2012/08/22 22:19:57 $
+// $Id: formStepPointMCStrawHit.cc,v 1.2 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author KLG based on Rob's MakeStrawHit_module
 //
@@ -15,7 +15,7 @@
 
 namespace mu2e {
 
-  std::auto_ptr<StepPointMCStrawHit> formStepPointMCStrawHit(
+  std::unique_ptr<StepPointMCStrawHit> formStepPointMCStrawHit(
                                                art::Ptr<StepPointMC> const spmcp,
                                                StrawIndex const & straw_id,
                                                double _minimumLength,
@@ -125,7 +125,7 @@ namespace mu2e {
       (strawHalfLength-distanceToMiddle)/signalVelocity;
     double hit_t2 = hit_t1 + 2.*distanceToMiddle/signalVelocity;
 
-    return std::auto_ptr<mu2e::StepPointMCStrawHit>(
+    return std::unique_ptr<mu2e::StepPointMCStrawHit>(
            new StepPointMCStrawHit(spmcp,
                                    edep,
                                    hit_dca,

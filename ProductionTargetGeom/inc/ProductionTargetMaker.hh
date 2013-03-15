@@ -9,7 +9,7 @@ namespace mu2e { class ProductionTarget; }
 namespace mu2e {
   class ProductionTargetMaker {
   public:
-    static std::auto_ptr<ProductionTarget> make(const SimpleConfig& config, double solenoidOffset);
+    static std::unique_ptr<ProductionTarget> make(const SimpleConfig& config, double solenoidOffset);
   };
 }
 

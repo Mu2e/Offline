@@ -1,8 +1,8 @@
 // Associate truth info to ExtMonFNALRecoClusters.
 //
-// $Id: RecoClusterTruthMaker_module.cc,v 1.2 2013/03/14 19:47:45 kutschke Exp $
+// $Id: RecoClusterTruthMaker_module.cc,v 1.3 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Andrei Gaponenko
 //
@@ -70,7 +70,7 @@ namespace mu2e {
     //================================================================
     void RecoClusterTruthMaker::produce(art::Event& event) {
 
-      std::auto_ptr<ExtMonFNALRecoClusterTruthAssn> outTruth(new ExtMonFNALRecoClusterTruthAssn());
+      std::unique_ptr<ExtMonFNALRecoClusterTruthAssn> outTruth(new ExtMonFNALRecoClusterTruthAssn());
 
       art::Handle<ExtMonFNALRecoClusterCollection> hrecoClusters;
       event.getByLabel(recoClusterModuleLabel_, recoClusterInstanceName_, hrecoClusters);

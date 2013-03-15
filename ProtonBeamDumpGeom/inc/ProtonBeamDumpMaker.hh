@@ -12,7 +12,7 @@ namespace mu2e { class SimpleConfig; }
 namespace mu2e {
   class ProtonBeamDumpMaker {
   public:
-    static std::auto_ptr<ProtonBeamDump> make(const SimpleConfig& config,
+    static std::unique_ptr<ProtonBeamDump> make(const SimpleConfig& config,
                                               double frontShieldingYmin,
                                               double frontShieldingYmax);
   };

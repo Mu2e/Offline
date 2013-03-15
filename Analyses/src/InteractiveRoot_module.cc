@@ -1,9 +1,9 @@
 //
 // A plugin to show how to use interactive ROOT with the framework.
 //
-// $Id: InteractiveRoot_module.cc,v 1.7 2012/12/03 15:55:07 kutschke Exp $
+// $Id: InteractiveRoot_module.cc,v 1.8 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/12/03 15:55:07 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Rob Kutschke
 //
@@ -15,7 +15,7 @@
 //    create the TApplication; which ever module does this must also
 //    delete the TApplication at end of job.  In this module, the test
 //    to see if the TApplication was created relies on the value of gApplication.
-//    The auto_ptr will look after deletion at destructor-time.
+//    The unique_ptr will look after deletion at destructor-time.
 //
 // 2) ROOT requires that TCanvas objects have unique names, even if we create
 //    them in different modules or write them to different TDirectory's. If we
@@ -109,7 +109,7 @@ namespace mu2e {
     // Some ugly but necessary ROOT related bookkeeping:
 
     // The job needs exactly one instance of TApplication.  See note 1.
-    auto_ptr<TApplication> _application;
+    unique_ptr<TApplication> _application;
 
     // Save directory from beginJob so that we can go there in endJob. See note 3.
     TDirectory* _directory;
@@ -129,7 +129,7 @@ namespace mu2e {
     _canvas(0),
 
     // Some ugly but necessary ROOT related bookkeeping.
-    _application(0),
+    _application(nullptr),
     _directory(0){
 
   }
@@ -146,7 +146,7 @@ namespace mu2e {
     if ( !gApplication ){
       int    tmp_argc(0);
       char** tmp_argv(0);
-      _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+      _application = unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
     }
 
     // Create a canvas with a unique name.  See note 2.

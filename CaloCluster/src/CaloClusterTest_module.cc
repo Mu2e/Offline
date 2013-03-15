@@ -1,9 +1,9 @@
 //
 // Visualization of the clusters on each vane with the relative distributions of time, energy and size
 //
-// $Id: CaloClusterTest_module.cc,v 1.5 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: CaloClusterTest_module.cc,v 1.6 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -93,7 +93,7 @@ public:
         _hTCanvasE(0),
         _hTCanvasT(0),
         _fakeCanvas(0),
-        _application(0),
+        _application(nullptr),
         _directory(0)
         {
         }
@@ -150,14 +150,14 @@ private:
         TCanvas* _hTCanvasE;
         TCanvas* _hTCanvasT;
 
-        std::auto_ptr<MCCaloUtilities> CaloManager;
+        std::unique_ptr<MCCaloUtilities> CaloManager;
 
         bool _skipEvent;
 
         TCanvas*      _fakeCanvas;
 
         // The job needs exactly one instance of TApplication.  See note 1.
-        auto_ptr<TApplication> _application;
+        unique_ptr<TApplication> _application;
 
         // Save directory from beginJob so that we can go there in endJob. See note 3.
         TDirectory* _directory;
@@ -172,13 +172,13 @@ private:
 
 void CaloClusterTest::beginJob( ) {
 
-        CaloManager = auto_ptr<MCCaloUtilities>(new MCCaloUtilities());
+        CaloManager = unique_ptr<MCCaloUtilities>(new MCCaloUtilities());
 
         // If needed, create the ROOT interactive environment. See note 1.
         if ( !gApplication ){
           int    tmp_argc(0);
           char** tmp_argv(0);
-          _application = auto_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+          _application = unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
         }
 
         gStyle->SetPalette(1);

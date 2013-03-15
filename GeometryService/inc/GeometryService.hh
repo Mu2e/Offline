@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.20 2013/03/14 19:54:49 kutschke Exp $
+// $Id: GeometryService.hh,v 1.21 2013/03/15 15:52:04 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:54:49 $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Rob Kutschke
 //
@@ -84,7 +84,7 @@ private:
     bool _printConfig;
 
     // The object that parses run-time configuration file.
-    std::auto_ptr<SimpleConfig> _config;
+    std::unique_ptr<SimpleConfig> _config;
 
     // Check the configuration.
     void checkConfig();
@@ -135,8 +135,8 @@ private:
     GeometryService(GeometryService const& rhs);
 
     // Don't need to expose definition of private template in header
-    template <typename DET> void addDetector(std::auto_ptr<DET> d);
-    template <typename DETALIAS, typename DET> void addDetectorAliasToBaseClass(std::auto_ptr<DET> d);
+    template <typename DET> void addDetector(std::unique_ptr<DET> d);
+    template <typename DETALIAS, typename DET> void addDetectorAliasToBaseClass(std::unique_ptr<DET> d);
 
     // Some information that is provided through the GeometryService
     // should only be used inside GEANT jobs.  The following method is

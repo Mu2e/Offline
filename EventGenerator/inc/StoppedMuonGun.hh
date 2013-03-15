@@ -7,9 +7,9 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: StoppedMuonGun.hh,v 1.2 2012/04/20 21:32:25 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/20 21:32:25 $
+// $Id: StoppedMuonGun.hh,v 1.3 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author KLG somewhat based on ConversionGun
 //
@@ -82,7 +82,7 @@ namespace mu2e {
 
 
     // Class object to generate position and time of the particle
-    std::auto_ptr<FoilParticleGenerator> _fGenerator;
+    std::unique_ptr<FoilParticleGenerator> _fGenerator;
 
     //Particle mass
     double _mass;

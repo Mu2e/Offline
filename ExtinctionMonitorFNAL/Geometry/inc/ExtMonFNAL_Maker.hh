@@ -24,7 +24,7 @@ namespace mu2e {
                                              );
 
     public:
-      static std::auto_ptr<ExtMon> make(const SimpleConfig& config, const ExtMonFNALBuilding& room);
+      static std::unique_ptr<ExtMon> make(const SimpleConfig& config, const ExtMonFNALBuilding& room);
     };
   }
 }

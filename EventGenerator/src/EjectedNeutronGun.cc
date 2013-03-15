@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.30 2012/07/26 19:01:00 kutschke Exp $
+// $Id: EjectedNeutronGun.cc,v 1.31 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/26 19:01:00 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -133,7 +133,7 @@ namespace mu2e {
       _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)",      60, 0.,  300. );
     }
 
-    _fGenerator = auto_ptr<FoilParticleGenerator>
+    _fGenerator = unique_ptr<FoilParticleGenerator>
       (new FoilParticleGenerator( getEngine(), _tmin, _tmax,
                                   FoilParticleGenerator::findFoilGenByName(_foilGen),
                                   FoilParticleGenerator::findPosGenByName(_posGen),

@@ -1,9 +1,9 @@
 //
 // Make a Vane Calorimeter.
 //
-// $Id: VaneCalorimeterMaker.cc,v 1.4 2013/03/08 01:22:31 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/03/08 01:22:31 $
+// $Id: VaneCalorimeterMaker.cc,v 1.5 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -49,7 +49,7 @@ namespace mu2e{
     VaneCalorimeterMaker::VaneCalorimeterMaker( SimpleConfig const& config, double solenoidOffset)
     {
 
-	_calo = std::auto_ptr<VaneCalorimeter>(new VaneCalorimeter());
+	_calo = std::unique_ptr<VaneCalorimeter>(new VaneCalorimeter());
 
 	_calo->_nVane                = config.getInt   ("calorimeter.numberOfVanes");
 	_calo->_crystalHW            = config.getDouble("calorimeter.crystalHalfTrans");

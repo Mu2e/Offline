@@ -1,9 +1,9 @@
 //
 // Create a G4FieldManager object.
 //
-// $Id: FieldMgr.cc,v 1.2 2011/06/30 20:27:53 logash Exp $
-// $Author: logash $
-// $Date: 2011/06/30 20:27:53 $
+// $Id: FieldMgr.cc,v 1.3 2013/03/15 15:52:04 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Rob Kutschke
 //
@@ -24,44 +24,44 @@ using namespace std;
 namespace mu2e {
 
   // Factory method to construct a manager for a uniform magnetic field. See notes in header file.
-  std::auto_ptr<FieldMgr> FieldMgr::forUniformField(const G4ThreeVector& fieldValue,
+  std::unique_ptr<FieldMgr> FieldMgr::forUniformField(const G4ThreeVector& fieldValue,
                                                     const G4ThreeVector& mu2eOrigin,
                                                     double stepMinimum ){
 
-    auto_ptr<FieldMgr> mgr(new FieldMgr() );
+    unique_ptr<FieldMgr> mgr(new FieldMgr() );
 
-    mgr->_field       = std::auto_ptr<G4MagneticField>        (new G4UniformMagField   ( fieldValue ));
-    mgr->_rhs         = std::auto_ptr<G4Mag_UsualEqRhs>       (new G4Mag_UsualEqRhs    ( mgr->field()) );
-    mgr->_integrator  = std::auto_ptr<G4MagIntegratorStepper> (new G4ExactHelixStepper ( mgr->rhs()) );
-    mgr->_chordFinder = std::auto_ptr<G4ChordFinder>          (new G4ChordFinder       ( mgr->field(),
+    mgr->_field       = std::unique_ptr<G4MagneticField>        (new G4UniformMagField   ( fieldValue ));
+    mgr->_rhs         = std::unique_ptr<G4Mag_UsualEqRhs>       (new G4Mag_UsualEqRhs    ( mgr->field()) );
+    mgr->_integrator  = std::unique_ptr<G4MagIntegratorStepper> (new G4ExactHelixStepper ( mgr->rhs()) );
+    mgr->_chordFinder = std::unique_ptr<G4ChordFinder>          (new G4ChordFinder       ( mgr->field(),
                                                                                         stepMinimum,
                                                                                         mgr->integrator()) );
-    mgr->_manager     = std::auto_ptr<G4FieldManager>         (new G4FieldManager      ( mgr->field(),
+    mgr->_manager     = std::unique_ptr<G4FieldManager>         (new G4FieldManager      ( mgr->field(),
                                                                                         mgr->chordFinder(),
                                                                                         true ));
     return mgr;
   }
 
   // Factory method to construct a manager for a gradient magnetic field (in DS3). 
-  std::auto_ptr<FieldMgr> FieldMgr::forGradientField(double fieldValue,
+  std::unique_ptr<FieldMgr> FieldMgr::forGradientField(double fieldValue,
 						     double gradient,
 						     const G4ThreeVector& fieldOrigin,
 						     double stepMinimum ){
 
-    auto_ptr<FieldMgr> mgr(new FieldMgr() );
+    unique_ptr<FieldMgr> mgr(new FieldMgr() );
 
-    mgr->_field = std::auto_ptr<G4MagneticField>(new DSGradientField( "DS3Grad",
+    mgr->_field = std::unique_ptr<G4MagneticField>(new DSGradientField( "DS3Grad",
 								      fieldOrigin,
 								      gradient,
 								      fieldValue
 								      )
 						 );
-    mgr->_rhs         = std::auto_ptr<G4Mag_UsualEqRhs>       (new G4Mag_UsualEqRhs    ( mgr->field()) );
-    mgr->_integrator  = std::auto_ptr<G4MagIntegratorStepper> (new G4ExactHelixStepper ( mgr->rhs()) );
-    mgr->_chordFinder = std::auto_ptr<G4ChordFinder>          (new G4ChordFinder       ( mgr->field(),
+    mgr->_rhs         = std::unique_ptr<G4Mag_UsualEqRhs>       (new G4Mag_UsualEqRhs    ( mgr->field()) );
+    mgr->_integrator  = std::unique_ptr<G4MagIntegratorStepper> (new G4ExactHelixStepper ( mgr->rhs()) );
+    mgr->_chordFinder = std::unique_ptr<G4ChordFinder>          (new G4ChordFinder       ( mgr->field(),
                                                                                         stepMinimum,
                                                                                         mgr->integrator()) );
-    mgr->_manager     = std::auto_ptr<G4FieldManager>         (new G4FieldManager      ( mgr->field(),
+    mgr->_manager     = std::unique_ptr<G4FieldManager>         (new G4FieldManager      ( mgr->field(),
                                                                                         mgr->chordFinder(),
                                                                                         true ));
     return mgr;

@@ -1,9 +1,9 @@
 //
 // Construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.cc,v 1.10 2012/07/15 22:06:18 kutschke Exp $
+// $Id: ProductionSolenoidMaker.cc,v 1.11 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/15 22:06:18 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author KLG
 //
@@ -40,7 +40,7 @@ namespace mu2e {
     // if( ! _config.getBool("hasProductionSolenoid",false) ) return;
 
     // create an empty PS
-    _ps = auto_ptr<ProductionSolenoid>(new ProductionSolenoid());
+    _ps = unique_ptr<ProductionSolenoid>(new ProductionSolenoid());
 
     // access its object through a reference
 
@@ -58,14 +58,14 @@ namespace mu2e {
 
     // Build the barrel of the cryostat, the length is the "outer length"
 
-    ps._psVacVesselInnerParams = std::auto_ptr<Tube>
+    ps._psVacVesselInnerParams = std::unique_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
                 psCryoMu2eOffset,
                  _psVacVesselrIn,
                 _psVacVesselrIn +_psVacVesselWallThickness,
                 _psVacVesselHalfLength));
 
-    ps._psVacVesselOuterParams = std::auto_ptr<Tube>
+    ps._psVacVesselOuterParams = std::unique_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
                 psCryoMu2eOffset,
                 _psVacVesselrOut-_psVacVesselWallThickness,
@@ -77,14 +77,14 @@ namespace mu2e {
 
     CLHEP::Hep3Vector endPlateShift(0, 0, _psVacVesselHalfLength-_psVacVesselEndPlateHalfThickness);
 
-    ps._psVacVesselEndPlateDParams = std::auto_ptr<Tube>
+    ps._psVacVesselEndPlateDParams = std::unique_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
                 psCryoMu2eOffset + endPlateShift,
                 _psVacVesselrIn +_psVacVesselWallThickness,
                 _psVacVesselrOut-_psVacVesselWallThickness,
                 _psVacVesselEndPlateHalfThickness));
 
-    ps._psVacVesselEndPlateUParams = std::auto_ptr<Tube>
+    ps._psVacVesselEndPlateUParams = std::unique_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
                 psCryoMu2eOffset - endPlateShift,
                 _psVacVesselrIn +_psVacVesselWallThickness,
@@ -101,7 +101,7 @@ namespace mu2e {
     //aka originInMu2e:
     CLHEP::Hep3Vector psCoilShellMu2eOffset(solenoidOffset, 0, psCoilRefZ);
 
-    ps._psCoilShellParams = std::auto_ptr<Polycone>
+    ps._psCoilShellParams = std::unique_ptr<Polycone>
       (new Polycone(zPlane,
                     rIn,
                     rOut,
@@ -115,7 +115,7 @@ namespace mu2e {
                                         psCoilRefZ + _psCoil1zOffset +
                                         _psCoil1Length*0.5);
 
-    ps._psCoil1Params = std::auto_ptr<Tube>
+    ps._psCoil1Params = std::unique_ptr<Tube>
       (new Tube(_psCoilMaterialName,
                 psCoil1Mu2eOffset,
                 _psCoilrIn, _psCoil1rOut, _psCoil1Length*0.5));
@@ -126,7 +126,7 @@ namespace mu2e {
                                         _psCoil1Length + _psCoil2zGap +
                                         _psCoil2Length*0.5);
 
-    ps._psCoil2Params = std::auto_ptr<Tube>
+    ps._psCoil2Params = std::unique_ptr<Tube>
       (new Tube(_psCoilMaterialName,
                 psCoil2Mu2eOffset,
                 _psCoilrIn, _psCoil2rOut, _psCoil2Length*0.5));
@@ -138,7 +138,7 @@ namespace mu2e {
                                         _psCoil2Length + _psCoil3zGap +
                                         _psCoil3Length*0.5);
 
-    ps._psCoil3Params = std::auto_ptr<Tube>
+    ps._psCoil3Params = std::unique_ptr<Tube>
       (new Tube(_psCoilMaterialName,
                 psCoil3Mu2eOffset,
                 _psCoilrIn, _psCoil3rOut, _psCoil3Length*0.5));

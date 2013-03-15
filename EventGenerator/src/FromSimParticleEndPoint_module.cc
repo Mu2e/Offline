@@ -1,9 +1,9 @@
 // Read a SimParticle collection and create a GenParticleCollection from the end point of the former.
 //
 //
-// $Id: FromSimParticleEndPoint_module.cc,v 1.5 2013/03/14 19:47:45 kutschke Exp $
+// $Id: FromSimParticleEndPoint_module.cc,v 1.6 2013/03/15 15:52:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:47:45 $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author Gianni Onorato
 // 
@@ -171,8 +171,8 @@ namespace mu2e {
   void FromSimParticleEndPoint::produce(art::Event& event) {
 
 
-    std::auto_ptr<GenParticleCollection> output(new GenParticleCollection);
-    std::auto_ptr<GenSimParticleLink> history(new GenSimParticleLink);
+    std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
+    std::unique_ptr<GenSimParticleLink> history(new GenSimParticleLink);
     art::ProductID gpc_pid = (getProductID<GenParticleCollection>(event));
 
     if (_firstevent) {

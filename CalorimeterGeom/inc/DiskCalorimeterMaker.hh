@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_DiskCalorimeterMaker_hh
 #define CalorimeterGeom_DiskCalorimeterMaker_hh
 //
-// $Id: DiskCalorimeterMaker.hh,v 1.2 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: DiskCalorimeterMaker.hh,v 1.3 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 // original authors B. Echenard
 
@@ -37,9 +37,9 @@ namespace mu2e{
        DiskCalorimeterMaker(SimpleConfig const& config, double solenoidOffset);
       ~DiskCalorimeterMaker();
 
-      // Accessor and auto_ptr to calorimeter needed by GeometryService.
-      std::auto_ptr<DiskCalorimeter> _calo;
-      std::auto_ptr<DiskCalorimeter> calorimeterPtr() { return _calo; }
+      // Accessor and unique_ptr to calorimeter needed by GeometryService.
+      std::unique_ptr<DiskCalorimeter> _calo;
+      std::unique_ptr<DiskCalorimeter> calorimeterPtr() { return std::move(_calo); }
 
     private:
 

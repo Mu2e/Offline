@@ -1,7 +1,7 @@
 //
-// $Id: BkgElecUtilities.hh,v 1.2 2012/03/01 19:30:06 kutschke Exp $
+// $Id: BkgElecUtilities.hh,v 1.3 2013/03/15 15:52:05 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/01 19:30:06 $
+// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Gianni Onorato
 //
@@ -105,7 +105,7 @@ namespace mu2e {
     std::vector<StrawIndex> _bkgElecStrawIdx;
     key_type _bkgTrackId;
     size_t _earliestidx, _earliestcry, _earliestvector;
-    std::auto_ptr<SimParticle> _simParticle;
+    std::unique_ptr<SimParticle> _simParticle;
     bool _stepincalo;
     StepPointMC _earliestSPMC;
 

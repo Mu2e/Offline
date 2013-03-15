@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.22 2012/10/16 02:52:12 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/10/16 02:52:12 $
+// $Id: CosmicRayShieldMaker.cc,v 1.23 2013/03/15 15:52:03 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/15 15:52:03 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -45,7 +45,7 @@ namespace mu2e {
   CosmicRayShieldMaker::CosmicRayShieldMaker(SimpleConfig const & _config, double solenoidOffset)
   {
 
-    _crs = auto_ptr<CosmicRayShield>(new CosmicRayShield());
+    _crs = unique_ptr<CosmicRayShield>(new CosmicRayShield());
 
     if( ! _config.getBool("hasCosmicRayShield",false) ) return;
 
