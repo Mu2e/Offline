@@ -3,9 +3,9 @@
 //
 // The Mu2e version of G4VUserDetectorConstruction.
 //
-// $Id: WorldMaker.hh,v 1.7 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: WorldMaker.hh,v 1.8 2013/03/15 20:11:23 russo Exp $
+// $Author: russo $
+// $Date: 2013/03/15 20:11:23 $
 //
 // Original author Rob Kutschke
 //
@@ -43,8 +43,8 @@ namespace mu2e {
 
     explicit WorldMaker(std::unique_ptr<WorldType> pw = std::unique_ptr<WorldType>(new WorldType()),
                         std::unique_ptr<MaterialsType> pm = std::unique_ptr<MaterialsType>(new ConstructMaterials())) :
-      _materials(pm),
-      _world(pw)
+      _materials(std::move(pm)),
+      _world(std::move(pw))
     {
     }
     ~WorldMaker(){}
