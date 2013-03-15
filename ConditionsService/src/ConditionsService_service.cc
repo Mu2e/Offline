@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.14 2013/03/15 15:52:03 kutschke Exp $
+// $Id: ConditionsService_service.cc,v 1.15 2013/03/15 15:59:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Date: 2013/03/15 15:59:58 $
 //
 // Original author Rob Kutschke
 //
@@ -45,8 +45,8 @@ namespace mu2e {
     _entities(),
     _run_count()
   {
-    iRegistry.watchPreBeginRun(this, &ConditionsService::preBeginRun);
-    iRegistry.watchPostEndJob (this, &ConditionsService::postEndJob   );
+    iRegistry.sPreBeginRun.watch(this, &ConditionsService::preBeginRun);
+    iRegistry.sPostEndJob.watch (this, &ConditionsService::postEndJob   );
   }
 
   ConditionsService::~ConditionsService(){

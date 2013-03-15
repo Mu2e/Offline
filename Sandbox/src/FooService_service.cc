@@ -1,9 +1,9 @@
 //
 // A test service that prints tracer ouptut. Used to study order of calls.
 //
-// $Id: FooService_service.cc,v 1.2 2013/03/14 19:54:49 kutschke Exp $
+// $Id: FooService_service.cc,v 1.3 2013/03/15 15:59:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:54:49 $
+// $Date: 2013/03/15 15:59:58 $
 //
 // Contact person Rob Kutschke
 //
@@ -23,7 +23,7 @@ namespace mu2e {
   FooService::FooService(fhicl::ParameterSet const& pset,
                                    art::ActivityRegistry&iRegistry){
     cout << "FooService:: constructor: " << endl;
-    iRegistry.watchPreBeginRun(this, &FooService::preBeginRun);
+    iRegistry.sPreBeginRun.watch(this, &FooService::preBeginRun);
   }
 
   FooService::~FooService(){

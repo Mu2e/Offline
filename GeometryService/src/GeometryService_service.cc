@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.43 2013/03/15 15:52:04 kutschke Exp $
+// $Id: GeometryService_service.cc,v 1.44 2013/03/15 15:59:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Date: 2013/03/15 15:59:58 $
 //
 // Original author Rob Kutschke
 //
@@ -95,8 +95,8 @@ namespace mu2e {
     _detectors(),
     _run_count()
   {
-    iRegistry.watchPreBeginRun(this, &GeometryService::preBeginRun);
-    iRegistry.watchPostEndJob (this, &GeometryService::postEndJob );
+    iRegistry.sPreBeginRun.watch(this, &GeometryService::preBeginRun);
+    iRegistry.sPostEndJob.watch (this, &GeometryService::postEndJob );
   }
 
   GeometryService::~GeometryService(){

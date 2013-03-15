@@ -1,9 +1,9 @@
 //
 // Assist in the distribution of guaranteed unique seeds to all engines within a job.
 //
-// $Id: SeedService_service.cc,v 1.12 2013/03/14 19:54:49 kutschke Exp $
+// $Id: SeedService_service.cc,v 1.13 2013/03/15 15:59:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:54:49 $
+// $Date: 2013/03/15 15:59:59 $
 //
 // Contact person Rob Kutschke
 //
@@ -85,11 +85,11 @@ namespace mu2e {
     }
 
     // Register callbacks.
-    iRegistry.watchPreModuleConstruction  (this, &SeedService::preModuleConstruction  );
-    iRegistry.watchPostModuleConstruction (this, &SeedService::postModuleConstruction );
-    iRegistry.watchPreModuleBeginRun      (this, &SeedService::preModuleBeginRun      );
-    iRegistry.watchPostModuleBeginRun     (this, &SeedService::postModuleBeginRun     );
-    iRegistry.watchPostEndJob             (this, &SeedService::postEndJob             );
+    iRegistry.sPreModuleConstruction.watch  (this, &SeedService::preModuleConstruction  );
+    iRegistry.sPostModuleConstruction.watch (this, &SeedService::postModuleConstruction );
+    iRegistry.sPreModuleBeginRun.watch      (this, &SeedService::preModuleBeginRun      );
+    iRegistry.sPostModuleBeginRun.watch     (this, &SeedService::postModuleBeginRun     );
+    iRegistry.sPostEndJob.watch             (this, &SeedService::postEndJob             );
 
     if ( verbosity_ > 0 ) {
       print(std::cout);

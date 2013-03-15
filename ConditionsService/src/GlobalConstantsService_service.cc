@@ -41,7 +41,7 @@ namespace mu2e {
              )
   {
 
-    iRegistry.watchPostEndJob (this, &GlobalConstantsService::postEndJob );
+    iRegistry.sPostEndJob.watch (this, &GlobalConstantsService::postEndJob );
 
     std::cout <<"GlobalConstantsService input file is: "<< pset.get<std::string>("inputFile") << std::endl;
     if ( pset.get<bool>("printConfig",false) ) {

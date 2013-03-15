@@ -2,9 +2,9 @@
 // A test service that prints tracer ouptut. Used to study order of calls when
 // one service uses another service.
 //
-// $Id: BarService_service.cc,v 1.4 2013/03/14 19:54:49 kutschke Exp $
+// $Id: BarService_service.cc,v 1.5 2013/03/15 15:59:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/14 19:54:49 $
+// $Date: 2013/03/15 15:59:58 $
 //
 // Contact person Rob Kutschke
 //
@@ -69,7 +69,7 @@ namespace mu2e {
     }
 
     // Magic alert: see notes 2 and 3.
-    iRegistry.watchPreBeginRun(this, &BarService::preBeginRun);
+    iRegistry.sPreBeginRun.watch(this, &BarService::preBeginRun);
     cout << "BarService:: done constructor: " << endl;
   }
 
