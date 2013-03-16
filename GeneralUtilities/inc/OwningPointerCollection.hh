@@ -10,9 +10,9 @@
 //
 // The original use is for BaBar tracks.
 //
-// $Id: OwningPointerCollection.hh,v 1.6 2013/03/16 04:28:29 kutschke Exp $
+// $Id: OwningPointerCollection.hh,v 1.7 2013/03/16 23:31:58 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/16 04:28:29 $
+// $Date: 2013/03/16 23:31:58 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,7 @@
 //
 
 #include <vector>
+#include <stdexcept>
 
 namespace mu2e {
 
@@ -70,8 +71,19 @@ namespace mu2e {
     }
 
     // Not copy-copyable or copy-assignable; this is needed to ensure exactly one delete.
-    OwningPointerCollection( OwningPointerCollection const& ) = delete;
-    OwningPointerCollection& operator=( OwningPointerCollection const& ) = delete;
+    //OwningPointerCollection( OwningPointerCollection const& ) = delete;
+    //OwningPointerCollection& operator=( OwningPointerCollection const& ) = delete;
+
+    // For some reason, something in genreflex requires that there to be a copy c'tor!
+    // Until we find and fix that, give it one.
+
+    OwningPointerCollection( OwningPointerCollection const& ){
+      throw std::logic_error("Must never call the copy c'tor of OwningPointerCollection.");
+    }
+
+    OwningPointerCollection& operator=( OwningPointerCollection const& ){
+      throw std::logic_error("Must never call the copy c'tor of OwningPointerCollection.");
+    }
 
 #endif /* GCCXML */
 
