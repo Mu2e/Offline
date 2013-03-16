@@ -10,9 +10,9 @@
 //
 // The original use is for BaBar tracks.
 //
-// $Id: OwningPointerCollection.hh,v 1.5 2013/03/15 21:14:53 kutschke Exp $
+// $Id: OwningPointerCollection.hh,v 1.6 2013/03/16 04:28:29 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 21:14:53 $
+// $Date: 2013/03/16 04:28:29 $
 //
 // Original author Rob Kutschke
 //
@@ -56,6 +56,8 @@ namespace mu2e {
       }
     }
 
+#ifndef __GCCXML__
+
     OwningPointerCollection( OwningPointerCollection && rhs ):
       v_(std::move(rhs.v_)){
       rhs.v_.clear();
@@ -71,6 +73,7 @@ namespace mu2e {
     OwningPointerCollection( OwningPointerCollection const& ) = delete;
     OwningPointerCollection& operator=( OwningPointerCollection const& ) = delete;
 
+#endif /* GCCXML */
 
     // Caller transfers ownership of the pointee to us.
     void push_back( T* t){
