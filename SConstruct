@@ -2,9 +2,9 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.41 2013/03/14 22:58:42 kutschke Exp $
+# $Id: SConstruct,v 1.42 2013/03/16 03:30:18 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2013/03/14 22:58:42 $
+# $Date: 2013/03/16 03:30:18 $
 #
 # Original author Rob Kutschke.
 #
@@ -105,7 +105,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
 
 # Define the rule for building dictionaries.
 genreflex_flags = '--deep --fail_on_warnings --iocomments --capabilities=classes_ids.cc '\
-                + '-D_REENTRANT -DGNU_SOURCE -DGNU_GCC '\
+                + '-D_REENTRANT -DGNU_SOURCE -DGNU_GCC -D__STRICT_ANSI__ '\
                 + '-DPROJECT_NAME="mu2e" -DPROJECT_VERSION="development"'
 aa="if   t1=`expr ${TARGET} : '\(.*\)_dict.cpp'`;then t2=$${t1}_map.cpp; t1=$${t1}_dict.cpp;"\
   +"elif t1=`expr ${TARGET} : '\(.*\)_map.cpp'`;then t2=$${t1}_map.cpp; t1=$${t1}_dict.cpp; fi;"\
