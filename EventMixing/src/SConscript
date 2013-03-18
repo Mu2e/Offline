@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.4 2013/03/18 22:34:35 gandr Exp $
+# $Id: SConscript,v 1.5 2013/03/18 22:48:46 gandr Exp $
 # $Author: gandr $
-# $Date: 2013/03/18 22:34:35 $
+# $Date: 2013/03/18 22:48:46 $
 #
 # Original author Rob Kutschke.
 #
@@ -16,7 +16,7 @@ helper=mu2e_helper();
 
 mainlib = helper.make_plugins ( [ 'mu2e_MCDataProducts',
                                   'mu2e_DataProducts',
-                                  'mu2e_SeedService_service',
+                                  'mu2e_SeedService_SeedService_service',
                                   'art_Framework_IO_ProductMix',
                                   'art_Framework_Core',
                                   'CLHEP' ] )
