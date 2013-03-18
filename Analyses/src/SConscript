@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.17 2013/03/18 18:51:41 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/03/18 18:51:41 $
+# $Id: SConscript,v 1.18 2013/03/18 19:57:09 genser Exp $
+# $Author: genser $
+# $Date: 2013/03/18 19:57:09 $
 #
 # Original author Rob Kutschke.
 #
@@ -13,7 +13,7 @@ Import('env')
 
 Import('mu2e_helper')
 
-helper=mu2e_helper();
+helper=mu2e_helper()
 
 rootlibs = env['ROOTLIBS']
 
