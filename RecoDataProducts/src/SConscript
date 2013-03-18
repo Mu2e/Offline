@@ -1,43 +1,33 @@
 #!/usr/bin/env python
 #
+# Script to build the files found in this directory.
 #
-# $Id: SConscript,v 1.4 2012/09/14 19:05:31 kutschke Exp $
+# $Id: SConscript,v 1.5 2013/03/18 18:49:07 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2012/09/14 19:05:31 $
+# $Date: 2013/03/18 18:49:07 $
 #
 # Original author Rob Kutschke.
 #
 
-import os.path, re
+import os
 Import('env')
+Import('mu2e_helper')
 
-# last two components of the path. Ex: /not/this/but/THIS/AND_THIS
-#                                      "AND_THIS" is usually "src"
-dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
-ff=os.path.dirname(dd)   # THIS
-env.DictionarySource(['#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
-                      '#/tmp/src/%s/%s_map.cpp'%(dd,ff)],
-                     ['classes.h','classes_def.xml'])
+helper=mu2e_helper();
 
-my_lib=[]  # default if no cc_files
-cc_files = Glob('*.cc',strings=True)
-if cc_files:
-    env.SharedLibrary( '#/lib/%s'%(ff,), cc_files,
-                       LIBS=[ 'DataProducts',
-                              'art_Framework_Core',
-                              'art_Utilities',
-                              'art_Framework_Services_Registry',
-                              'Reflex',
-                              'Core',
-                            ],
-        )
-    my_lib=['%s'%(ff,),'CLHEP']
+mainlib = helper.make_mainlib ( [ 'mu2e_DataProducts',
+                                  'art_Framework_Core',
+                                  'art_Utilities',
+                                  'art_Framework_Services_Registry',
+                                  'Reflex',
+                                  'Core',
+                                ] )
 
-env.SharedLibrary('#/lib/%s_dict'%(ff,),
-                  '#/tmp/src/%s/%s_dict.cpp'%(dd,ff),
-                  LIBS=my_lib)
-env.SharedLibrary('#/lib/%s_map'%(ff,),
-                  '#/tmp/src/%s/%s_map.cpp'%(dd,ff))
+helper.make_plugins( [ mainlib,
+                     ] )
+
+helper.make_dict_and_map( [ mainlib,
+                          ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
