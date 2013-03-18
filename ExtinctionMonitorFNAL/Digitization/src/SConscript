@@ -1,54 +1,33 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.4 2012/09/21 16:12:54 gandr Exp $
+# $Id: SConscript,v 1.5 2013/03/18 23:14:04 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/09/21 16:12:54 $
+# $Date: 2013/03/18 23:14:04 $
 #
 # Original author Rob Kutschke.
 #
 
-import os.path, re
+import os
 Import('env')
+Import('mu2e_helper')
 
-plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
-non_plugin_cc = Glob('*.cc', strings=True)
-for cc in plugin_cc: non_plugin_cc.remove(cc)
+helper=mu2e_helper();
 
-# Construct library name using its path relative to the top 
-# of the source tree (usually "Offline")
-if os.environ.has_key('MU2E_TEST_RELEASE'):
-    srcTop = os.environ['MU2E_TEST_RELEASE']
-else:
-    if os.environ.has_key('MU2E_BASE_RELEASE'):
-        srcTop = os.environ['MU2E_BASE_RELEASE']
-    else:
-        raise Exception("Can not identify top source directory: neither MU2E_TEST_RELEASE nor MU2E_BASE_RELEASE is set")
-    pass
-#
-local_lib_path = re.sub('^'+srcTop+r'/(.*)/src$', r'\1', env.Dir('.').abspath)
-if re.match(r'^/', local_lib_path):
-    raise Exception('Error constructing relative library path: got "'+local_lib_path+'"')
-#
-local_lib_name=re.sub(r'/', r'_', local_lib_path)
+mainlib = helper.make_mainlib ( [ 'mu2e_ExtinctionMonitorFNAL_Geometry',
+                                  'mu2e_ExtinctionMonitorFNAL_Utilities',
+                                  'mu2e_Mu2eUtilities',
+                                  'mu2e_MCDataProducts',
+                                  'mu2e_RecoDataProducts',
+                                  'mu2e_DataProducts',
+                                  'mu2e_GeometryService',
+                                  'mu2e_ConditionsService',
+                                  'mu2e_SeedService_SeedService_service',
+                                  'CLHEP' ] )
 
-my_libs=['CLHEP']  # default if no cc_files
-if non_plugin_cc:
-    env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ 'Mu2eInterfaces',
-                             'Mu2eUtilities',
-                             'ConfigTools',
-                             'ProtonBeamDumpGeom',
-                             'CLHEP'
-                             ],
-                      )
-    my_libs=[local_lib_name, 'CLHEP']
-    pass
-
-for cc in plugin_cc:
-    libname='#/lib/'+local_lib_name+'_'+cc[:cc.find('.cc')]
-    env.SharedLibrary( libname, cc, LIBS=[ my_libs ] )
-
+helper.make_plugins( [ mainlib,
+                       'art_Framework_Core',
+                       ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
