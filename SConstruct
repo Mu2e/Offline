@@ -2,9 +2,9 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.45 2013/03/18 22:30:28 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/03/18 22:30:28 $
+# $Id: SConstruct,v 1.46 2013/03/18 23:37:20 genser Exp $
+# $Author: genser $
+# $Date: 2013/03/18 23:37:20 $
 #
 # Original author Rob Kutschke.
 #
@@ -240,7 +240,7 @@ class mu2e_helper:
 #
 #   Make the main library.
 #
-    def make_mainlib( self, userlibs, addfortran=False ):
+    def make_mainlib( self, userlibs, cppf=[], pf=[], addfortran=False ):
         non_plugin_cc = self.non_plugin_cc()
         if addfortran:
             fortran = Glob('*.f', strings=True)
@@ -251,6 +251,8 @@ class mu2e_helper:
             env.SharedLibrary( self.prefixed_libname(),
                                non_plugin_cc,
                                LIBS=[ userlibs ],
+                               CPPFLAGS=cppf,
+                               parse_flags=pf
                               )
             libs = [ self.libname() ]
             pass
@@ -265,13 +267,16 @@ class mu2e_helper:
 #
 #   Make all plugin libraries, excluding _dict and _map; this works if all libraries need the same link list.
 #
-    def make_plugins( self, userlibs, exclude_cc = [] ):
+    def make_plugins( self, userlibs, exclude_cc = [], cppf = [], pf = [] ):
         plugin_cc = self.plugin_cc()
         for cc in exclude_cc: plugin_cc.remove(cc)
         for cc in plugin_cc:
             env.SharedLibrary( self.prefixed_plugin_libname(cc),
                                cc,
-                               LIBS=[ userlibs, ] )
+                               LIBS=[ userlibs ],
+                               CPPFLAGS=cppf,
+                               parse_flags=pf
+                               )
 
 #
 #   Make the dictionary and map plugins.
