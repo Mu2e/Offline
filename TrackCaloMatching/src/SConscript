@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.4 2013/03/18 21:17:56 genser Exp $
+# $Id: SConscript,v 1.5 2013/03/18 23:34:55 genser Exp $
 # $Author: genser $
-# $Date: 2013/03/18 21:17:56 $
+# $Date: 2013/03/18 23:34:55 $
 #
 # Original author Rob Kutschke.
 #
@@ -24,7 +24,7 @@ mainlib = helper.make_mainlib ( [
     babarlibs,
     'mu2e_GeometryService',
     'mu2e_ConditionsService',
-    'mu2e_SeedService_service',
+    'mu2e_SeedService_SeedService_service',
     'mu2e_Mu2eUtilities',
     'mu2e_GeneralUtilities',
     'mu2e_MCDataProducts',
@@ -41,7 +41,7 @@ helper.make_plugins( [
     babarlibs,
     'mu2e_GeometryService',
     'mu2e_ConditionsService',
-    'mu2e_SeedService_service',
+    'mu2e_SeedService_SeedService_service',
     'mu2e_Mu2eUtilities',
     'mu2e_GeneralUtilities',
     'mu2e_MCDataProducts',
