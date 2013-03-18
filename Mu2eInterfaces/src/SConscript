@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.3 2012/08/24 20:19:31 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/08/24 20:19:31 $
+# $Id: SConscript,v 1.4 2013/03/18 19:02:43 genser Exp $
+# $Author: genser $
+# $Date: 2013/03/18 19:02:43 $
 #
 # Original author Rob Kutschke.
 #
@@ -11,34 +11,19 @@
 import os.path, re
 Import('env')
 
-plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
-non_plugin_cc = Glob('*.cc', strings=True)
-for cc in plugin_cc: non_plugin_cc.remove(cc)
 
-# From: /path1/path2/path3/Name/src extract the string Name field.
-dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
-local_lib_name=os.path.dirname(dd)
+Import('mu2e_helper')
 
-my_libs = []
-if non_plugin_cc:
-    env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ ],
-                      )
-    my_libs = [local_lib_name]
-    pass
+helper=mu2e_helper();
+
+mainlib = helper.make_mainlib ( [] )
+
+helper.make_plugins( [ mainlib,
+                       ] )
 
 
-env.DictionarySource(['#/tmp/src/%s/%s_dict.cpp'%(dd,local_lib_name),
-                      '#/tmp/src/%s/%s_map.cpp'%(dd,local_lib_name)],
-                     ['classes.h','classes_def.xml'])
-
-env.SharedLibrary('#/lib/%s_dict'%(local_lib_name,),
-                  '#/tmp/src/%s/%s_dict.cpp'%(dd,local_lib_name),
-                  LIBS=my_libs)
-
-env.SharedLibrary('#/lib/%s_map'%(local_lib_name,),
-                  '#/tmp/src/%s/%s_map.cpp'%(dd,local_lib_name))
-
+helper.make_dict_and_map( [ mainlib,
+                            ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
