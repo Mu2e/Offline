@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.35 2013/03/14 19:57:03 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/03/14 19:57:03 $
+# $Id: SConscript,v 1.36 2013/03/18 23:35:34 genser Exp $
+# $Author: genser $
+# $Date: 2013/03/18 23:35:34 $
 #
 # Original author Rob Kutschke.
 #
 
 import os, re
 Import('env')
+
+Import('mu2e_helper')
+
+helper=mu2e_helper()
 
 #
 # 1) When I rm lib/libG4_plugin.so and then scons, it also rebuilds
@@ -19,6 +23,7 @@ Import('env')
 #
 
 g4inc    = os.environ['G4INCLUDE'] + '/Geant4'
+g4futureinc = '../inc'
 g4libdir = os.environ['G4LIBDIR']
 g4_version = os.environ['GEANT4_VERSION']
 g4_version=g4_version.replace('_','')
@@ -30,7 +35,7 @@ G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
                '-DG4UI_USE',             '-DG4VIS_USE_DAWNFILE',
                '-DG4VIS_USE_HEPREPFILE', '-DG4VIS_USE_RAYTRACER',
                '-DG4VIS_USE_VRMLFILE',   '-DG4VIS_USE_ASCIITREE',
-               '-DG4VIS_USE_GAGTREE',    '-DG4VIS_USE',
+               '-DG4VIS_USE_GAGTREE',    '-DG4VIS_USE'
                '-DG4VERSION='+g4_version
             ]
 
@@ -149,65 +154,50 @@ OPENGL_LIBS = [ 'GLU', 'GL' ]
 # Link libraries needed to build G4 with XERCESC
 XERCESC_LIBS = [ 'xerces-c' ]
 
-plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
-non_plugin_cc = Glob('*.cc', strings=True)
-for cc in plugin_cc: non_plugin_cc.remove(cc)
 
-if non_plugin_cc:
-    # From: /path1/path2/path3/Name/src extract the string Name field.
-    dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
-    local_lib_name=os.path.dirname(dd)
+mainlib = helper.make_mainlib ( [
+    'art_Framework_Core',
+    'art_Framework_Modules_RandomNumberSaver_module',
+    'art_Framework_Services_Optional_TFileService_service',
+    'mu2e_Analyses',
+    'mu2e_GeometryService',
+    'mu2e_ConditionsService',
+    'mu2e_SeedService_SeedService_service',
+    'mu2e_G4Helper_G4Helper_service',
+    'mu2e_Mu2eUtilities',
+    'mu2e_MCDataProducts',
+    'mu2e_GeneralUtilities',
+    G4LIBS,
+    'CLHEP',
+    OPENGL_LIBS,
+    XERCESC_LIBS
+    ],
+                                [  G4CPPFLAGS, G4OGL_CPPFLAGS ],
+                                [ '-L'+g4libdir, '-I'+g4inc, '-I'+g4futureinc ]
+                                )
 
-    env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ 'art_Framework_Core',
-                             'art_Framework_Modules_RandomNumberSaver_module',
-                             'art_Framework_Services_Optional_TFileService_service',
-                             'mucapture',
-                             'Analyses',
-                             'GeometryService',
-                             'ConditionsService',
-                             'SeedService_service',
-                             'G4Helper_service',
-                             'Mu2eUtilities',
-                             'ConfigTools',
-                             'MCDataProducts',
-                             'GeneralUtilities',
-                              G4LIBS,
-                             'CLHEP',
-                              OPENGL_LIBS,
-                              XERCESC_LIBS
-                           ],
-                      CPPFLAGS= [  G4CPPFLAGS, G4OGL_CPPFLAGS ],
-                      parse_flags=[ '-L'+g4libdir, '-I'+g4inc ]
-                      )
-    libs=[ local_lib_name ]
-else:
-    libs=[]
-
-for cc in plugin_cc:
-    libname='#/lib/'+cc[:cc.find('.cc')]
-    env.SharedLibrary( libname, cc,
-                     LIBS=[ 'art_Framework_Core',
-                            'art_Framework_Modules_RandomNumberSaver_module',
-                            'art_Framework_Services_Optional_TFileService_service',
-                            libs,
-                            'Analyses',
-                            'GeometryService',
-                            'ConditionsService',
-                            'SeedService_service',
-                            'G4Helper_service',
-                            'Mu2eUtilities',
-                            'ConfigTools',
-                            'MCDataProducts',
-                            'GeneralUtilities',
-                            G4LIBS,
-                            'CLHEP',
-                            OPENGL_LIBS,
-                            XERCESC_LIBS,
-                            'Tree'
-                          ],
-                     CPPFLAGS= [ G4CPPFLAGS, G4OGL_CPPFLAGS ],
-                     parse_flags=[ '-L'+g4libdir, '-I'+g4inc ]
+helper.make_plugins( [
+    mainlib,
+    'art_Framework_Core',
+    'art_Framework_Modules_RandomNumberSaver_module',
+    'art_Framework_Services_Optional_TFileService_service',
+    'mu2e_Analyses',
+    'mu2e_GeometryService',
+    'mu2e_ConditionsService',
+    'mu2e_SeedService_SeedService_service',
+    'mu2e_G4Helper_G4Helper_service',
+    'mu2e_Mu2eUtilities',
+    'mu2e_MCDataProducts',
+    'mu2e_GeneralUtilities',
+    G4LIBS,
+    'CLHEP',
+    OPENGL_LIBS,
+    XERCESC_LIBS,
+    'Tree'
+    ],
+                     [],
+                     [ G4CPPFLAGS, G4OGL_CPPFLAGS ],
+                     [ '-L'+g4libdir, '-I'+g4inc ]
                      )
 
 # This tells emacs to view this file in python mode.
