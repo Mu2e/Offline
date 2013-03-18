@@ -2,9 +2,9 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.43 2013/03/18 15:43:38 kutschke Exp $
+# $Id: SConstruct,v 1.44 2013/03/18 22:10:07 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2013/03/18 15:43:38 $
+# $Date: 2013/03/18 22:10:07 $
 #
 # Original author Rob Kutschke.
 #
@@ -239,8 +239,12 @@ class mu2e_helper:
 #
 #   Make the main library.
 #
-    def make_mainlib( self, userlibs ):
+    def make_mainlib( self, userlibs, addfortran=False ):
         non_plugin_cc = self.non_plugin_cc()
+        if addfortran:
+            fortran = Glob('*.f', strings=True)
+            non_plugin_cc = [ non_plugin_cc, fortran]
+            pass
         libs = []
         if non_plugin_cc:
             env.SharedLibrary( self.prefixed_libname(),
@@ -250,7 +254,6 @@ class mu2e_helper:
             libs = [ self.libname() ]
             pass
         return libs
-
 #
 #   Make one plugin library ( but does not work for _dict and _map plugins )
 #
