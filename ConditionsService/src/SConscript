@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
-# $Id: SConscript,v 1.12 2012/08/24 20:19:31 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/08/24 20:19:31 $
+# $Id: SConscript,v 1.13 2013/03/18 18:54:27 genser Exp $
+# $Author: genser $
+# $Date: 2013/03/18 18:54:27 $
 #
 # Original author Rob Kutschke.
 #
@@ -10,32 +10,29 @@
 import os.path
 Import('env')
 
-plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
-non_plugin_cc = Glob('*.cc',strings=True)
-for cc in plugin_cc: non_plugin_cc.remove(cc)
 
-libname='#/lib/ConditionsService'
+Import('mu2e_helper')
 
-env._dict["LIBPATH"] += ['#/lib']
-env.SharedLibrary(libname, non_plugin_cc,
-        LIBS=[ 'Mu2eInterfaces',
-               'Mu2eUtilities',
-               'ConfigTools',
-               'HepPDT',
-               'HepPID',
-               'MF_MessageLogger',
-               'art_Framework_Core',
-               'art_Framework_Services_Registry'
-               ],
-        )
+helper=mu2e_helper();
+
+mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
+                                  'art_Framework_Services_Registry',
+                                  'mu2e_Mu2eInterfaces',
+                                  'mu2e_Mu2eUtilities',
+                                  'mu2e_ConfigTools',
+                                  'HepPDT',
+                                  'HepPID',
+                                  'MF_MessageLogger',
+                                  ] )
+
+helper.make_plugins( [ mainlib,
+                       'art_Framework_Core'
+                       ] )
 
 
-libnm=os.path.basename(libname)
-for cc in plugin_cc:
-    libname='#/lib/'+cc[:cc.find('.cc')]
-    env.SharedLibrary( libname, cc, LIBS=[ 'art_Framework_Core',
-                                           libnm,
-                                           ] )
+helper.make_dict_and_map( [ mainlib,
+                            ] )
+
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
