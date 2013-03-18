@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.8 2013/03/18 19:57:09 genser Exp $
-# $Author: genser $
-# $Date: 2013/03/18 19:57:09 $
+# $Id: SConscript,v 1.9 2013/03/18 23:12:49 gandr Exp $
+# $Author: gandr $
+# $Date: 2013/03/18 23:12:49 $
 #
 # Original author Rob Kutschke.
 #
@@ -16,8 +16,8 @@ Import('mu2e_helper')
 helper=mu2e_helper()
 
 mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
-                                  'Mu2eUtilities',
-                                  'ConfigTools',
+                                  'mu2e_Mu2eUtilities',
+                                  'mu2e_ConfigTools',
                                   ] )
 helper.make_plugins( [ mainlib,
                        ] )
