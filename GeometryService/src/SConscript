@@ -1,77 +1,63 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.24 2012/08/24 20:19:31 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/08/24 20:19:31 $
+# $Id: SConscript,v 1.25 2013/03/18 20:38:59 genser Exp $
+# $Author: genser $
+# $Date: 2013/03/18 20:38:59 $
 #
 # Original author Rob Kutschke.
 #
 
-import os.path
+import os, re
+
 Import('env')
 
-plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
-non_plugin_cc = Glob('*.cc',strings=True)
-for cc in plugin_cc: non_plugin_cc.remove(cc)
+Import('mu2e_helper')
 
-local_lib_name='GeometryService'
+helper=mu2e_helper()
 
-env._dict["LIBPATH"] += ['#/lib']
-env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-        LIBS=[ 
-               'BFieldGeom',
-               'ExtinctionMonitorUCIGeom',
-               'ExtinctionMonitorFNAL_Geometry',
-               'CosmicRayShieldGeom',
-               'CalorimeterGeom',
-               'LTrackerGeom',
-               'TTrackerGeom',
-               'ITrackerGeom',
-               'TrackerGeom',
-               'TargetGeom',
-               'Mu2eBuildingGeom',
-               'ProtonBeamDumpGeom',
-               'ProductionTargetGeom',
-               'ProductionSolenoidGeom',
-               'BeamlineGeom',
-               'MECOStyleProtonAbsorberGeom',
-               'MBSGeom',
-               'GeomPrimitives',
-               'Mu2eUtilities',
-               'ConfigTools',
-               'Mu2eInterfaces',
-               'art_Framework_Core',
-               'art_Framework_Services_Registry',
-               'MF_MessageLogger',
-               'fhiclcpp',
-               'art_Utilities',
-               'Core',
-               'Hist',
-               'Tree',
-               'RIO',
-               'Net',
-               'Reflex',
-               'Cintex',
-             ],
-)
+rootlibs = env['ROOTLIBS']
 
-env.DictionarySource(['#/tmp/src/GeometryService/src/%s_dict.cpp'%(local_lib_name),
-                      '#/tmp/src/GeometryService/src/%s_map.cpp'%(local_lib_name)],
-                     ['classes.h','classes_def.xml'])
+mainlib = helper.make_mainlib ( [
+    'art_Framework_Core',
+    'art_Framework_Services_Registry',
+    'art_Utilities',
+    'mu2e_BFieldGeom',
+    'mu2e_ExtinctionMonitorUCIGeom',
+    'mu2e_ExtinctionMonitorFNAL_Geometry',
+    'mu2e_CosmicRayShieldGeom',
+    'mu2e_CalorimeterGeom',
+    'mu2e_LTrackerGeom',
+    'mu2e_TTrackerGeom',
+    'mu2e_ITrackerGeom',
+    'mu2e_TrackerGeom',
+    'mu2e_TargetGeom',
+    'mu2e_Mu2eBuildingGeom',
+    'mu2e_ProtonBeamDumpGeom',
+    'mu2e_ProductionTargetGeom',
+    'mu2e_ProductionSolenoidGeom',
+    'mu2e_BeamlineGeom',
+    'mu2e_MECOStyleProtonAbsorberGeom',
+    'mu2e_MBSGeom',
+    'mu2e_GeomPrimitives',
+    'mu2e_Mu2eUtilities',
+    'mu2e_ConfigTools',
+    'mu2e_Mu2eInterfaces',
+    'MF_MessageLogger',
+    'fhiclcpp',
+    rootlibs
+    ] )
 
-env.SharedLibrary('#/lib/%s_dict'%(local_lib_name,),
-                  '#/tmp/src/GeometryService/src/%s_dict.cpp'%(local_lib_name),
-                  LIBS=[local_lib_name, 'CLHEP'])
-
-env.SharedLibrary('#/lib/%s_map'%(local_lib_name,),
-                  '#/tmp/src/GeometryService/src/%s_map.cpp'%(local_lib_name))
+helper.make_plugins( [
+    mainlib,
+    ] )
 
 
-#================================================================
-for cc in plugin_cc:
-    libname='#/lib/'+cc[:cc.find('.cc')]
-    env.SharedLibrary( libname, cc, LIBS=[ local_lib_name ] )
+helper.make_dict_and_map( [
+    mainlib,
+    'CLHEP'
+    ] )
+
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
