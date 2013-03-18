@@ -2,9 +2,9 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.44 2013/03/18 22:10:07 kutschke Exp $
+# $Id: SConstruct,v 1.45 2013/03/18 22:30:28 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2013/03/18 22:10:07 $
+# $Date: 2013/03/18 22:30:28 $
 #
 # Original author Rob Kutschke.
 #
@@ -62,9 +62,10 @@ else:
     libpath_frag         = [ ]
 
 # The link libraries needed when building the BaBar code.
-babarlibs = [ '_BaBar_KalmanTrack', '_BaBar_DetectorModel',  '_BaBar_TrkBase',    '_BaBar_BField',
-              '_BaBar_TrajGeom',    '_BaBar_BbrGeom',        '_BaBar_difAlgebra', '_BaBar_ProbTools',
-              '_BaBar__BaBar',       '_BaBar_CLHEP',          '_BaBar_MatEnv' ]
+babarlibs = [ 'mu2e_BaBar_KalmanTrack',     'mu2e_BaBar_DetectorModel',      'mu2e_BaBar_TrkBase',    'mu2e_BaBar_BField',
+              'mu2e_BaBar_TrajGeom',        'mu2e_BaBar_BbrGeom',            'mu2e_BaBar_difAlgebra', 'mu2e_BaBar_ProbTools',
+              'mu2e_BaBar_mu2e_BaBar',      'mu2e_BaBar_CLHEP_src_Geometry', 'mu2e_BaBar_MatEnv'
+              'mu2e_BaBar_Dch_DchGeomBase', 'mu2e_BaBar_Dch_DchGeom' ]
 
 # Define scons-local environment - it will be exported later.
 osenv = {}
