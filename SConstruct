@@ -2,18 +2,28 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.42 2013/03/16 03:30:18 kutschke Exp $
+# $Id: SConstruct,v 1.43 2013/03/18 15:43:38 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2013/03/16 03:30:18 $
+# $Date: 2013/03/18 15:43:38 $
 #
 # Original author Rob Kutschke.
 #
-import os
+import os, re, string
 import sys
 
 # Check that the release-specific setup has been run.
 if not os.environ.has_key('MU2E_BASE_RELEASE'):
     sys.exit('You must setup a Mu2e base release before running scons.\nExiting.')
+
+# Tell scons about a new command line option that controls the selection of compiler and linker flags.
+AddOption('--mu2elevel',
+          dest='mu2elevel',
+          type='string',
+          nargs=1,
+          action='store',
+          metavar='DIR',
+          default='prof',
+          help='Select debug build')
 
 # Extract information from the shell environment.
 art_inc       = os.environ['ART_INC']
@@ -52,12 +62,11 @@ else:
     libpath_frag         = [ ]
 
 # The link libraries needed when building the BaBar code.
-babarlibs = [ 'BaBar_KalmanTrack', 'BaBar_DetectorModel',  'BaBar_TrkBase',    'BaBar_BField',
-              'BaBar_TrajGeom',    'BaBar_BbrGeom',        'BaBar_difAlgebra', 'BaBar_ProbTools',
-              'BaBar_BaBar',       'BaBar_CLHEP',          'BaBar_MatEnv' ]
+babarlibs = [ '_BaBar_KalmanTrack', '_BaBar_DetectorModel',  '_BaBar_TrkBase',    '_BaBar_BField',
+              '_BaBar_TrajGeom',    '_BaBar_BbrGeom',        '_BaBar_difAlgebra', '_BaBar_ProbTools',
+              '_BaBar__BaBar',       '_BaBar_CLHEP',          '_BaBar_MatEnv' ]
 
 # Define scons-local environment - it will be exported later.
-
 osenv = {}
 for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',  'ROOTSYS' ]:
     if var in os.environ.keys():
@@ -117,6 +126,15 @@ aa="if   t1=`expr ${TARGET} : '\(.*\)_dict.cpp'`;then t2=$${t1}_map.cpp; t1=$${t
 genreflex = Builder(action=aa)
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
+# Get the flag that controls compiler options. Check that it is legal.
+# There is probably a way to tell AddOption to do this test internally.
+level = GetOption('mu2elevel')
+known_levels = ['prof', 'debug' ]
+if not level in known_levels:
+    print 'Unrecognized value for --mu2elevel ' + level
+    print '   The value must be one of the known levels: '  + str(known_levels)
+    raise Exception('foo')
+
 # Set compile and link flags.
 SetOption('warn', 'no-fortran-cxx-mix')
 env.MergeFlags('-g')
@@ -132,6 +150,12 @@ ff = os.popen('g++ --version'); ll = ff.readline(); ff.close()
 gcc_version = ll[10:13]
 env.gcc_ver=gcc_version.replace('.','')
 
+# This comes from: root-config --cflags --glibs
+# Then guess at the correct location of Spectrum and MLP.
+rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
+             'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
+env.Append( ROOTLIBS = rootlibs );
+
 # Make the modified environment visible to all of the SConscript files
 Export('env')
 
@@ -143,18 +167,130 @@ for root,dirs,files in os.walk('.'):
         pass
     pass
 
-# If the splines package is absent, skip building of the figure of merit tool.
-if not os.environ.has_key('SPLINES_DIR'):
-    if os.path.exists('FigureOfMerit/src/SConscript'):
-        ss.remove('FigureOfMerit/src/SConscript')
+# Define a helper class to construct names of .so libaries. Make an instance of it available to the SConscript files.
+class mu2e_helper:
+    """mu2e_helper: class to produce library names"""
+#   This appears to behave like c++ static member and is initialized at class defintion time.
+    sourceroot =  os.path.abspath('.')
+#
+#   Accesor
+#
+    def base(self):
+        return self.sourceroot
+#
+#   Build the name of the shared library into which non-plugin compiled code will be inserted.
+#   Two versions: with and without the '#/lib' path prefix.
+#
+    def libname(self):
+        relpath = os.path.relpath('.',self.sourceroot)
+        tokens = string.split(relpath,'/')
+        if len(tokens) > 1:
+            if tokens[len(tokens)-1] == 'src':
+                tokens.pop()
+                pass
+            pass
+        return 'mu2e_' + string.join(tokens,'_')
+    def prefixed_libname(self):
+        return '#/lib/' + self.libname()
+#
+#   Build the name of the shared library into which plugin code will be inserted.
+#   Two versions: with and without the '#/lib' path prefix.
+#
+    def plugin_libname(self,sourcename):
+        return self.libname() + '_' + sourcename[:sourcename.find('.cc')]
+    def prefixed_plugin_libname(self,sourcename):
+        return '#/lib/' + self.plugin_libname(sourcename)
+#
+#   Build a list of plugins to be biult.
+#
+    def plugin_cc(self):
+        return Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
+#
+#   Build a list of .cc files that are not plugings; these go into the library named after the directory.
+#
+    def non_plugin_cc(self):
+        tmp = non_plugin_cc = Glob('*.cc', strings=True)
+        for cc in self.plugin_cc(): tmp.remove(cc)
+        return tmp
+#
+#   Names need to build the _dict and _map libraries.
+#
+    def dict_tmp_name(self):
+        relpath = os.path.relpath('.',self.sourceroot)
+        return '#/tmp/src/' + relpath + '/' + self.libname() + '_dict.cpp'
 
-# If the Dch part of BaBar package is not present, skip building KalmanTestsI.
-if os.path.exists('BaBar'):
-    if not(os.path.exists('BaBar/Dch')):
-        ss.remove('KalmanTestsI/src/SConscript')
-        print 'Dch part of the BaBar package is absent. Will not build KalmanTestsI.'
+    def map_tmp_name(self):
+        relpath = os.path.relpath('.',self.sourceroot)
+        return '#/tmp/src/' + relpath + '/' + self.libname() + '_map.cpp'
 
-# Tell scons to operate on all of the SConscript files found in the previous steps.
+    def dict_libname(self):
+        relpath = os.path.relpath('.',self.sourceroot)
+        return self.libname() + '_dict'
+
+    def map_libname(self):
+        relpath = os.path.relpath('.',self.sourceroot)
+        return self.libname() + '_map'
+
+    def prefixed_dict_libname(self):
+        return '#/lib/' + self.dict_libname()
+
+    def prefixed_map_libname(self):
+        return '#/lib/' + self.map_libname()
+#
+#   Make the main library.
+#
+    def make_mainlib( self, userlibs ):
+        non_plugin_cc = self.non_plugin_cc()
+        libs = []
+        if non_plugin_cc:
+            env.SharedLibrary( self.prefixed_libname(),
+                               non_plugin_cc,
+                               LIBS=[ userlibs ],
+                              )
+            libs = [ self.libname() ]
+            pass
+        return libs
+
+#
+#   Make one plugin library ( but does not work for _dict and _map plugins )
+#
+    def make_plugin( self, cc, userlibs ):
+        env.SharedLibrary( self.prefixed_plugin_libname(cc),
+                           cc,
+                           LIBS=[ userlibs, ] )
+#
+#   Make all plugin libraries, excluding _dict and _map; this works if all libraries need the same link list.
+#
+    def make_plugins( self, userlibs, exclude_cc = [] ):
+        plugin_cc = self.plugin_cc()
+        for cc in exclude_cc: plugin_cc.remove(cc)
+        for cc in plugin_cc:
+            env.SharedLibrary( self.prefixed_plugin_libname(cc),
+                               cc,
+                               LIBS=[ userlibs, ] )
+
+#
+#   Make the dictionary and map plugins.
+#
+    def make_dict_and_map( self, userlibs ):
+        if os.path.exists('classes.h'):
+            if os.path.exists('classes_def.xml'):
+                env.DictionarySource([ self.dict_tmp_name(),
+                                       self.map_tmp_name() ],
+                                     [ 'classes.h', 'classes_def.xml'] )
+                env.SharedLibrary( self.prefixed_dict_libname(),
+                                   self.dict_tmp_name(),
+                                   LIBS=[ userlibs ]
+                                   )
+                env.SharedLibrary( self.prefixed_map_libname(),
+                                   self.map_tmp_name()
+                                   )
+
+# Export the class so that it can be used in the SConscript files
+# For reasons I don't understand, this must come before the env.SConscript(ss) line.
+Export('mu2e_helper')
+
+# Tell scons to operate on all of the SConscript files found by walking the directory tree.
 env.SConscript(ss)
 
 # This tells emacs to view this file in python mode.
