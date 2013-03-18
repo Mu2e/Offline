@@ -24,14 +24,14 @@ mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   'mu2e_GeometryService',
                                   'mu2e_ConditionsService',
                                   'mu2e_ExtinctionMonitorFNAL_Geometry',
-                                  'mu2e_SeedService_service',
+                                  'mu2e_SeedService_SeedService_service',
                                   'mu2e_Mu2eUtilities',
                                   'mu2e_ExtinctionMonitorFNAL_Utilities',
                                   'mu2e_Sources',          # FIXME: utils should not be in Sources
                                   'mu2e_ConfigTools',
                                   'mu2e_MCDataProducts',
                                   'CLHEP',
-                                ],
+                                ], [],[],
                                 do_fortran )
 
 helper.make_plugins( [ mainlib,
