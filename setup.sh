@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.50 2013/03/14 19:28:17 kutschke Exp $
+# $Id: setup.sh,v 1.51 2013/03/18 19:58:36 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2013/03/14 19:28:17 $
+# $Date: 2013/03/18 19:58:36 $
 #
 # Original author Rob Kutschke
 #
@@ -44,17 +44,24 @@ export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE/:$MU2E_DATA_PATH/
 echo "MU2E_SEARCH_PATH:   "  $MU2E_SEARCH_PATH
 
 # Setup the framework and its dependent products
-setup art v1_03_08 -qe2:mu2e:prof
+setup art v1_00_08 -qmu2e:prof
 
 # Geant4 and its cross-section files.
-setup geant4 v4_9_6_p01 -qe2:prof
+setup geant4 v4_9_4_p02 -qgcc46:prof
+
+setup g4neutron v3_14
+setup g4emlow v6_19
+setup g4photon v2_1
+setup g4radiative v3_3
+setup g4abla v3_0
 
 # Other libraries we need.
-setup heppdt v3_04_01 -qe2:prof
-setup splines v1_01_03 -qe2:prof
+setup heppdt v3_04_01 -qgcc46:prof
+# Don't setup splines until art v1_00_11 is being used
+#setup splines v1_00_01 -q a7:prof
 
 # The build system.
-setup scons v2_1_0 -qgcc47
+setup scons v1_3_0b -qgcc46
 
 # Search path for fcl files
 export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
@@ -68,7 +75,7 @@ if [  -f "./BaBar/makeInclude.sh" ]; then
   source ./BaBar/makeInclude.sh
   if [ ! -f "BaBar/BaBar/include/BaBar.hh" ]; then
    echo "Checking out the BaBar Kalman Filter code."
-   ./BaBar/checkout.sh
+   ./BaBar/checkout.sh 586
   else
    echo "BaBar Kalman filter code already present. Not checking it out."
   fi
