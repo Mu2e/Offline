@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.53 2013/03/19 06:32:04 kutschke Exp $
+# $Id: setup.sh,v 1.54 2013/03/19 12:37:31 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2013/03/19 06:32:04 $
+# $Date: 2013/03/19 12:37:31 $
 #
 # Original author Rob Kutschke
 #
@@ -68,7 +68,7 @@ if [  -f "./BaBar/makeInclude.sh" ]; then
   source ./BaBar/makeInclude.sh
   if [ ! -f "BaBar/BaBar/include/BaBar.hh" ]; then
    echo "Checking out the BaBar Kalman Filter code."
-   ./BaBar/checkout.sh 598
+   ./BaBar/checkout.sh "-r 598"
   else
    echo "BaBar Kalman filter code already present. Not checking it out."
   fi
