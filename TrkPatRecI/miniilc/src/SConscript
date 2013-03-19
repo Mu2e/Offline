@@ -8,6 +8,15 @@
 #
 # Original author Rob Kutschke.
 #
+# Notes:
+#
+# 1) The classes built by this code are not part of any art data products.  Therefore art does not need to
+#    know about the dictionary information - therefore there is no need for a separate _dict.so.  That information
+#    is still needed but it can be put into the same .so as the main body of the compiled code. If we try
+#    to separate the information into two libraries, there is dependency loop that can't be broken.  This is the
+#    only mu2e code for which this is an issue since the objects defined here are TObjects, while no other Mu2e
+#    classes are TObjects.  The _map file is not needed at all so we won't make it.
+#
 
 import os
 Import('env')
@@ -15,33 +24,23 @@ Import('mu2e_helper')
 
 helper=mu2e_helper();
 
-local_lib_name = helper.libname()
+rootlibs      = env['ROOTLIBS']
+extrarootlibs = [ 'Reflex', 'Geom', 'EG']
 
-localrootlibs = [ 'Reflex','Core','Geom','EG']
-cxx_files = Glob('*.cxx',strings=True)
-
-if cxx_files:
-    env.SharedLibrary( helper.prefixed_libname(),
-                      cxx_files,
-                      LIBS=[ localrootlibs,
-                             ],
-                      parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
-                      )
-
-env.DictionarySource([ helper.dict_tmp_name(), helper.map_tmp_name() ],
+# Only need the _dict file, not the map file.
+env.DictionarySource([ helper.dict_tmp_name() ],
                      ['classes.h','classes_def.xml'],
                       parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ])
 
-env.SharedLibrary( helper.prefixed_dict_libname(),
-                   helper.dict_tmp_name(),
-                   LIBS = [ helper.libname() ],
-                   parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
-)
+# _dict file, plus all cxx sources, must be compiled into the main library.  See note 1.
+source_files = [ Glob('*.cxx',strings=True), helper.dict_tmp_name() ]
 
-env.SharedLibrary( helper.prefixed_map_libname(),
-                   helper.map_tmp_name(),
-                   parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
-)
+if source_files:
+    env.SharedLibrary( helper.prefixed_libname(),
+                       source_files,
+                       LIBS=[ rootlibs, extrarootlibs ],
+                       parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
+                       )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
