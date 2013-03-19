@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.5 2013/03/19 00:05:15 genser Exp $
-# $Author: genser $
-# $Date: 2013/03/19 00:05:15 $
+# $Id: SConscript,v 1.6 2013/03/19 00:52:12 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2013/03/19 00:52:12 $
 #
 # Original author Rob Kutschke.
 #
@@ -26,8 +26,6 @@ mainlib = helper.make_mainlib ( [
     'art_Framework_Core',
     'art_Framework_Services_Optional_TFileService_service',
     babarlibs,
-    'BaBar_DchGeom',
-    'BaBar_DchGeomBase',
     'mu2e_GeometryService',
     'mu2e_ConditionsService',
     'mu2e_Mu2eUtilities',
@@ -45,8 +43,6 @@ helper.make_plugins( [
     'art_Framework_Core',
     'art_Framework_Services_Optional_TFileService_service',
     babarlibs,
-    'BaBar_DchGeom',
-    'BaBar_DchGeomBase',
     'mu2e_GeometryService',
     'mu2e_ConditionsService',
     'mu2e_Mu2eUtilities',
@@ -57,29 +53,9 @@ helper.make_plugins( [
     ], [], [],[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
                      )
 
-
 helper.make_dict_and_map( [
     mainlib,
     ] )
-
-
-if os.environ.has_key('VGM_INSTALL'):
-    vgmpath = os.environ['VGM_INSTALL']
-
-    helper.make_plugin( 'GeomExport_module.cc', [
-        mainlib,
-        'art_Framework_Core',
-        'mu2e_Mu2eUtilities',
-        'mu2e_ConditionsService',
-        'CLHEP',
-        'Tree' ,
-        'BaseVGM','Geant4GM','RootGM','ClhepVGM'
-        ],
-                        [ '-DUSE_VGM' ],
-                        [ '-L'+g4lib, '-I'+g4inc, '-I'+vgmpath+'/include', '-L'+vgmpath+'/lib' ]
-                        )
-
-
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
