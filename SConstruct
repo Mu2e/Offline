@@ -2,9 +2,9 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.46 2013/03/18 23:37:20 genser Exp $
+# $Id: SConstruct,v 1.47 2013/03/19 00:04:55 genser Exp $
 # $Author: genser $
-# $Date: 2013/03/18 23:37:20 $
+# $Date: 2013/03/19 00:04:55 $
 #
 # Original author Rob Kutschke.
 #
@@ -260,10 +260,13 @@ class mu2e_helper:
 #
 #   Make one plugin library ( but does not work for _dict and _map plugins )
 #
-    def make_plugin( self, cc, userlibs ):
+    def make_plugin( self, cc, userlibs, cppf = [], pf = []):
         env.SharedLibrary( self.prefixed_plugin_libname(cc),
                            cc,
-                           LIBS=[ userlibs, ] )
+                           LIBS=[ userlibs, ],
+                           CPPFLAGS=cppf,
+                           parse_flags=pf
+                           )
 #
 #   Make all plugin libraries, excluding _dict and _map; this works if all libraries need the same link list.
 #
