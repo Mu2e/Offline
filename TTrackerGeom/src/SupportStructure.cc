@@ -1,9 +1,9 @@
 //
 // A model for the TTracker supports described in Mu2e-doc-888-v5 (current as of Dec, 2012).
 //
-//  $Id: SupportStructure.cc,v 1.1 2013/01/07 03:56:08 kutschke Exp $
+//  $Id: SupportStructure.cc,v 1.2 2013/03/19 01:13:16 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2013/01/07 03:56:08 $
+//  $Date: 2013/03/19 01:13:16 $
 //
 //  Original author Rob Kutschke
 //
@@ -40,7 +40,7 @@ namespace mu2e {
     ost << "\nEnd Ring Downstream:    " <<  _endRingDownstream     << std::endl;
 
     for ( size_t i=0; i<_staveBody.size(); ++i ){
-      ost << "\mStave body: "
+      ost << "\nStave body: "
           << i << "    "
           << _staveBody[i]
           << std::endl;
