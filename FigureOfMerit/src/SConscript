@@ -1,69 +1,41 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.4 2012/08/24 20:19:31 gandr Exp $
+# $Id: SConscript,v 1.5 2013/03/19 00:47:29 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/08/24 20:19:31 $
+# $Date: 2013/03/19 00:47:29 $
 #
 # Original author Rob Kutschke.
 #
 
-import os, re
+import os
 Import('env')
+Import('mu2e_helper')
+
+helper=mu2e_helper();
 
 splines_inc       = os.environ['SPLINES_INC']
 splines_lib       = os.environ['SPLINES_LIB']
+rootlibs = env['ROOTLIBS']
 
-rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 
-             'Graf3d', 'Gpad', 'Tree', 'TreePlayer',
-             'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
+pflags = ['-I'+splines_inc,  '-L'+splines_lib ]
 
-plugin_cc = Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
-non_plugin_cc = Glob('*.cc', strings=True)
-for cc in plugin_cc: non_plugin_cc.remove(cc)
+mainlib = helper.make_mainlib ( [ 'splines', 'fhiclcpp'], pf=pflags )
 
-if non_plugin_cc:
-    # From: /path1/path2/path3/Name/src extract the string Name field.
-    dd=re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
-    local_lib_name=os.path.dirname(dd)
-
-    env.SharedLibrary('#/lib/'+local_lib_name, non_plugin_cc,
-                      LIBS=[ 'splines',
-                             'fhiclcpp'
-                            ],
-                      parse_flags=[ '-L'+splines_lib, '-I'+splines_inc ]
-                      )
-    libs=[ local_lib_name ]
-else:
-    libs=[]
-
-for cc in plugin_cc:
-    libname='#/lib/'+cc[:cc.find('.cc')]
-    env.SharedLibrary( libname, cc,
-                     LIBS=[ libs,
-                            'splines',
-                            'fhiclcpp'
-                          ],
-                     parse_flags=[ '-L'+splines_lib, '-I'+splines_inc ]
-                     )
-
+helper.make_plugins( [mainlib], pf=pflags )
 
 # This tells scoons to compile and link cpp files 
-#for t in Glob('*.cpp',strings=True):
-#  env.Program('#/tmp/bin/'+t[:t.find('.cpp')], [ t ], LIBS = cLIBS, 
-#                LINKFLAGS=[ll.split(),'-lGeom'] )
 for t in Glob('*.cpp',strings=True):
   env.Program('#/tmp/bin/'+t[:t.find('.cpp')], [ t ], 
-                     LIBS=[ libs,
-                            'splines',
-                            rootlibs,
-                            'fhiclcpp'
-                          ],
-                     parse_flags=[ '-L'+splines_lib, '-I'+splines_inc ]
+              LIBS=[ mainlib,
+                     'splines',
+                     rootlibs,
+                     'fhiclcpp'
+                     ],
+              parse_flags=pflags
                      )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
 # mode:python
 # End:
-
