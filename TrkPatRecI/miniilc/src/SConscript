@@ -1,44 +1,46 @@
 #!/usr/bin/env python
 #
+# Script to build the files found in this directory.
 #
-# $Id: SConscript,v 1.2 2013/03/19 00:20:28 genser Exp $
-# $Author: genser $
-# $Date: 2013/03/19 00:20:28 $
+# $ Id: SConscript,v 1.7 2012/08/24 20:19:31 gandr Exp $
+# $ Author: gandr $
+# $ Date: 2012/08/24 20:19:31 $
 #
 # Original author Rob Kutschke.
 #
 
-import os.path, re
+import os
 Import('env')
+Import('mu2e_helper')
 
-# Construct library name using its path relative to Offline
-local_lib_path = re.sub(r'^.*/Offline/(.*)/src$', r'\1', env.Dir('.').abspath)
-local_lib_name='mu2e_miniilc'
+helper=mu2e_helper();
 
-env.DictionarySource(['#/tmp/src/%s/%s_dict.cpp'%(local_lib_path,local_lib_name),
-                      '#/tmp/src/%s/%s_map.cpp'%(local_lib_path,local_lib_name)],
-                     ['classes.h','classes_def.xml'],
-                      parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ])
+local_lib_name = helper.libname()
 
-rootlibs = [ 'Reflex','Core','Geom','EG']
-my_libs=[]  # default if no cc_files
-cc_files = Glob('*.cxx',strings=True)
-if cc_files:
-    env.SharedLibrary('#/lib/'+local_lib_name, cc_files,
-                      LIBS=[ rootlibs,
-                             '%s_dict'%(local_lib_name,)
+localrootlibs = [ 'Reflex','Core','Geom','EG']
+cxx_files = Glob('*.cxx',strings=True)
+
+if cxx_files:
+    env.SharedLibrary( helper.prefixed_libname(),
+                      cxx_files,
+                      LIBS=[ localrootlibs,
                              ],
                       parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
                       )
 
-env.SharedLibrary('#/lib/%s_dict'%(local_lib_name,),
-                  '#/tmp/src/%s/%s_dict.cpp'%(local_lib_path,local_lib_name),
-                  LIBS=my_libs,
-                  parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
+env.DictionarySource([ helper.dict_tmp_name(), helper.map_tmp_name() ],
+                     ['classes.h','classes_def.xml'],
+                      parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ])
+
+env.SharedLibrary( helper.prefixed_dict_libname(),
+                   helper.dict_tmp_name(),
+                   LIBS = [ helper.libname() ],
+                   parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
 )
-env.SharedLibrary('#/lib/%s_map'%(local_lib_name,),
-                  '#/tmp/src/%s/%s_map.cpp'%(local_lib_path,local_lib_name),LIBS=[],
-                  parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
+
+env.SharedLibrary( helper.prefixed_map_libname(),
+                   helper.map_tmp_name(),
+                   parse_flags=[ '-I#/RecoDataProducts/inc/ -I#/MCDataProducts/inc/' ]
 )
 
 # This tells emacs to view this file in python mode.
