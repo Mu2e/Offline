@@ -1,6 +1,6 @@
 void DeltaHitRes(TTree* ddiag) {
   TCut deltah("_mcgen<0&&abs(_mcpdg)==11");
-  TCut deltap("nsh>10&&nconv==0&&nprimary==nsh");
+  TCut deltap("nwide>50&&nconv==0&&nprimary==nwide");
   TCut stereo("_stereo");
   TCut nstereo("!_stereo");
   TH1F* sdp = new TH1F("sdp","Stereo #Delta#phi;#Delta#phi",100,-0.2,0.2);
