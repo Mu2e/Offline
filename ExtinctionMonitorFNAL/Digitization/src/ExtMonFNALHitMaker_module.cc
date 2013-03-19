@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.19 2013/03/15 18:20:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 18:20:22 $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.20 2013/03/19 22:22:48 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/19 22:22:48 $
 //
 // Original author Andrei Gaponenko
 //
@@ -629,7 +629,7 @@ namespace mu2e {
       // Therefore we do a fixed-size loop here and write out a lot of emtpy events.
       for(int localClock = 0; localClock < condExtMon_->numClockTicksPerDebuncherPeriod(); ++localClock) {
 
-        const int ibx =  localClock + condExtMon_->numClockTicksPerDebuncherPeriod() * chipSimProtonPulseNumber_;
+        const int ibx =  localClock + condExtMon_->numClockTicksPerDebuncherPeriod() * (chipSimProtonPulseNumber_ - 1);
 
         *chipSimFile_ <<"BX "<<ibx<<std::endl;
 
