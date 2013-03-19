@@ -3,9 +3,9 @@
 
 // Muon Beam Stop Object
 //
-// $Id: MBS.hh,v 1.2 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: MBS.hh,v 1.3 2013/03/19 22:05:19 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/19 22:05:19 $
 //
 // Original author KLG
 //
@@ -25,6 +25,7 @@ namespace mu2e {
 
   public:
 
+    // Volume names a per figure 8.29 in the CDR
     Tube const * const getBSTSPtr() const {return _pBSTSParams.get();}
     Tube const * const getSPBSPtr() const {return _pSPBSParams.get();}
     Tube const * const getBSTCPtr() const {return _pBSTCParams.get();}
@@ -32,6 +33,10 @@ namespace mu2e {
     Tube const * const getCLV2Ptr() const {return _pCLV2Params.get();}
 
     CLHEP::Hep3Vector const & originInMu2e() const { return _originInMu2e; };
+
+    // DS3 vacuum volume is minimally extended to contain the following MBS envelope:
+    double getEnvelopeZmax() const { return _pCLV2Params->originInMu2e().z() + _pCLV2Params->zHalfLength(); }
+    double getEnvelopeRmax() const { return _pSPBSParams->outerRadius(); }
 
   private:
 
