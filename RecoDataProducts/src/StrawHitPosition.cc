@@ -1,9 +1,9 @@
 //
 // Class to describe derived information from a StrawHit, in particular position.
 // 
-// $Id: StrawHitPosition.cc,v 1.2 2013/03/08 19:13:27 brownd Exp $
+// $Id: StrawHitPosition.cc,v 1.3 2013/03/19 23:42:17 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/03/08 19:13:27 $
+// $Date: 2013/03/19 23:42:17 $
 //
 // Original author David Brown
 //
@@ -41,7 +41,7 @@ namespace mu2e {
   }
 
   StrawHitPosition::StrawHitPosition(StereoHit const& sthit, size_t index) :
-    _pos(sthit.pos()),_pres(_invsqrt12*sthit.dist()),_rres(_invsqrt12*sthit.dist()),_chisq(sthit.chisq()),_flag(StrawHitFlagDetail::stereo)
+    _pos(sthit.pos()),_pres(_invsqrt12*sthit.dist()),_rres(_invsqrt12*sthit.dist()),_chisq(sthit.chisq()),_flag(StrawHitFlag::stereo)
   {
     _wdist = (index==sthit.hitIndex1())? sthit.wdist1() : sthit.wdist2();
   }
