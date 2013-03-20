@@ -1,10 +1,25 @@
-  $Id: v3_0_1.txt,v 1.3 2013/03/19 23:03:36 kutschke Exp $
+  $Id: v3_0_1.txt,v 1.4 2013/03/20 16:53:29 kutschke Exp $
   $Author: kutschke $
-  $Date: 2013/03/19 23:03:36 $
+  $Date: 2013/03/20 16:53:29 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+3) March 20, 2013 kutschke
+   Add debug level switch to the scons command line.
+   There are two options:
+        --mu2elevel=prof
+        --mu2elevel=debug
+   The default is prof for "profile build."  Others values can be added if
+   desired but I want to keep these two having the same meanings that they
+   have for art:
+
+     prof   -std=c++11 -rdynamic -Wall -fPIC -g -O3 -fno-omit-frame-pointer -DNDEBUG
+     debug: -std=c++11 -rdynamic -Wall -fPIC -g -O0
+
+   The profile build is intended to be used for production - it keeps enough debug symbols
+   to get a traceback but not enough for full debugging.
 
 2) March 19, 2013 kutschke
    Removed setup_g4961.sh setup_g4952.sh
