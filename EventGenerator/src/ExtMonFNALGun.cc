@@ -60,7 +60,7 @@ namespace mu2e {
             h3v(pset.get<std::vector<double> >("offset")),
             h3v(pset.get<std::vector<double> >("halfSize")),
 
-            (pset.get<bool>("doHistograms", true) ? "ExtMonFNALGun" : ""),
+            pset.get<std::string>("histDirName"),
 
             pset.get<bool>("verbose",false)
             )

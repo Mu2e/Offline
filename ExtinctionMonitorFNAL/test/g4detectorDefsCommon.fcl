@@ -11,6 +11,7 @@ defaultGunPars : {
     halfSize : [ 30, 30, 0 ]
     tmin     : 0
     tmax     : 150
+    histDirName : "ExtMonFNALGun"
     multiplicity : nil
 }
 END_PROLOG

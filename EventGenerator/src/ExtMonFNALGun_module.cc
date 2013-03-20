@@ -45,6 +45,7 @@ namespace mu2e {
     void ExtMonFNALGun::beginRun(art::Run&) {
       typedef std::vector<fhicl::ParameterSet> VGPars;
       VGPars vgp(pset_.get<VGPars>("guns"));
+      guns_.reserve(vgp.size());
       for(unsigned i=0; i<vgp.size(); ++i) {
         guns_.emplace_back(vgp[i]);
       }
