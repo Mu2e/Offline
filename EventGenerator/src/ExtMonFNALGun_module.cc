@@ -7,6 +7,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -25,10 +26,8 @@ namespace mu2e {
     class ExtMonFNALGun : public art::EDProducer {
       fhicl::ParameterSet pset_;
 
-      // Geometry is not available at module construction.  This
-      // mis-feature of Mu2e software makes it impossible to keep the
-      // gun by value, need to use a ptr.
-      std::unique_ptr<mu2e::ExtMonFNALGun> gun_;
+      typedef std::vector<mu2e::ExtMonFNALGun> PGuns;
+      PGuns guns_;
 
     public:
       explicit ExtMonFNALGun(fhicl::ParameterSet const& pset);
@@ -38,19 +37,24 @@ namespace mu2e {
 
     ExtMonFNALGun::ExtMonFNALGun(fhicl::ParameterSet const& pset)
       : pset_(pset)
-      , gun_(nullptr)
     {
       produces<GenParticleCollection>();
       createEngine( art::ServiceHandle<SeedService>()->getSeed() );
     }
 
     void ExtMonFNALGun::beginRun(art::Run&) {
-      gun_.reset(new mu2e::ExtMonFNALGun(pset_));
+      typedef std::vector<fhicl::ParameterSet> VGPars;
+      VGPars vgp(pset_.get<VGPars>("guns"));
+      for(unsigned i=0; i<vgp.size(); ++i) {
+        guns_.emplace_back(vgp[i]);
+      }
     }
 
     void ExtMonFNALGun::produce(art::Event& event) {
       std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
-      gun_->generate(*output);
+      for(auto& gun : guns_) {
+        gun.generate(*output);
+      }
       event.put(std::move(output));
     }
 

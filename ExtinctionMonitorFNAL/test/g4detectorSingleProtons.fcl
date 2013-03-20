@@ -4,9 +4,9 @@
 
 process_name : detectorSingleProtons
 
-physics.producers.generate.multiplicity: -1
+physics.producers.generate.guns[0].multiplicity: -1
 // make sure it hits the sensors
-physics.producers.generate.halfSize : [ 15, 15, 0 ]
+physics.producers.generate.guns[0].halfSize : [ 15, 15, 0 ]
 
 outputs.FullOutput.fileName    : "dataG4SingleProtons.root"
 services.TFileService.fileName : "histG4SingleProtons.root"

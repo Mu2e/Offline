@@ -1,8 +1,25 @@
 // Andrei Gaponenko, 2012
 
+
+BEGIN_PROLOG
+// Default gun: in-time protons
+defaultGunPars : {
+    coneAngle : 0.005
+    pdgId     : 2212 // 2212 is p+, -13 is mu+
+    reference : "detector"
+    offset   : [ 0, 0, +650 ]
+    halfSize : [ 30, 30, 0 ]
+    tmin     : 0
+    tmax     : 150
+    multiplicity : nil
+}
+END_PROLOG
+
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
+
+
 
 source : {
     module_type : EmptyEvent
@@ -29,13 +46,7 @@ physics : {
     producers : {
         generate : {
             module_type : ExtMonFNALGun
-            coneAngle : 0.005
-            pdgId     : 2212 // 2212 is p+, -13 is mu+
-            reference : "detector"
-            offset   : [ 0, 0, +650 ]
-            halfSize : [ 30, 30, 0 ]
-            tmin     : 0
-            tmax     : 150
+            guns : [ @local::defaultGunPars ]
         }
 
         g4run : @local::g4run
