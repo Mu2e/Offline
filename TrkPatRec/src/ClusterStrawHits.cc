@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: ClusterStrawHits.cc,v 1.5 2013/03/14 16:15:32 brownd Exp $
+// $Id: ClusterStrawHits.cc,v 1.6 2013/03/20 00:05:56 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/14 16:15:32 $
+// $Date: 2013/03/20 00:05:56 $
 //
 //
 #include "TrkPatRec/inc/ClusterStrawHits.hh"
@@ -213,15 +213,18 @@ namespace mu2e
       }
     }
 // The 1st hit becomes the first cluster
-    clusters._clist.push_back(StrawHitCluster(chits[0]));
-    clusters._cids[chits[0]._index] = clusters._clist.begin()->id();
-// now iterate
     clusters._niter = 0;
     clusters._nchanged = shcol.size();
-    while (clusters._nchanged > _maxnchanged && clusters._niter < _maxniter){
-// update the cluster positions, and record any changes in hit assignments to clusters
-      clusters._nchanged = formClusters(chits,clusters);
-      ++clusters._niter;
+    clusters._nhits = chits.size();
+    if(chits.size() > 0){
+      clusters._clist.push_back(StrawHitCluster(chits[0]));
+      clusters._cids[chits[0]._index] = clusters._clist.begin()->id();
+      // now iterate
+      while (clusters._nchanged > _maxnchanged && clusters._niter < _maxniter){
+	// update the cluster positions, and record any changes in hit assignments to clusters
+	clusters._nchanged = formClusters(chits,clusters);
+	++clusters._niter;
+      }
     }
   }
 

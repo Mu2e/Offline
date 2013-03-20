@@ -1,9 +1,9 @@
 //
 // Object to cluster straw hits, used in background removal and track fitting
 //
-// $Id: ClusterStrawHits.hh,v 1.4 2013/03/14 16:15:32 brownd Exp $
+// $Id: ClusterStrawHits.hh,v 1.5 2013/03/20 00:05:56 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/14 16:15:32 $
+// $Date: 2013/03/20 00:05:56 $
 //
 #ifndef ClusterStrawHits_HH
 #define ClusterStrawHits_HH
@@ -94,6 +94,7 @@ namespace mu2e
   };
 
   struct StrawHitClusterList {
+    unsigned _nhits; // number of hits used as input (after filter)
     unsigned _niter; // number of clustering iterations
     unsigned _nchanged; // number of changed hits at last iteration
     std::list<StrawHitCluster> _clist; // list of clusters

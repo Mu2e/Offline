@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.cc,v 1.6 2013/03/08 04:33:26 brownd Exp $
+// $Id: HelixFit.cc,v 1.7 2013/03/20 00:05:56 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/08 04:33:26 $
+// $Date: 2013/03/20 00:05:56 $
 //
 //
 // the following has to come before other BaBar includes
@@ -95,19 +95,22 @@ namespace mu2e
 
   bool 
   XYZP::stereo() const {
-    return _flag.hasAllProperties(StrawHitFlagDetail::stereo);
+    static StrawHitFlag stereo(StrawHitFlag::stereo);
+    return _flag.hasAllProperties(stereo);
   }
 
   void XYZP::setUse(bool use) {
+    static StrawHitFlag other(StrawHitFlag::other);
     if(!use)
-      _flag.merge(StrawHitFlag::other);
+      _flag.merge(other);
     else
-      _flag.clear(StrawHitFlag::other);
+      _flag.clear(other);
   }
 
   void
   XYZP::setOutlier(){
-    _flag.merge(StrawHitFlag::outlier);
+    static StrawHitFlag outlier(StrawHitFlag::outlier);
+    _flag.merge(outlier);
   }
 
   HelixFitResult& 

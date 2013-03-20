@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.57 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2013/03/15 15:52:05 $
+// $Id: TrkPatRec_module.cc,v 1.58 2013/03/20 00:05:56 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2013/03/20 00:05:56 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -160,7 +160,7 @@ namespace mu2e
       Float_t _mcedep,_mcemax;
       Float_t _pdist,_pperp,_pmom;
       Float_t _mctime;
-      Int_t _esel,_rsel, _delta, _stereo;
+      Int_t _esel,_rsel, _delta, _stereo, _isolated;
       Int_t _device, _sector, _layer, _straw;
       Int_t _ishpeak, _ntpeak, _nshtpeak;
       Float_t _shtpeak;
@@ -574,6 +574,7 @@ namespace mu2e
     _shdiag->Branch("rsel",&_rsel,"rsel/I");
     _shdiag->Branch("delta",&_delta,"delta/I");
     _shdiag->Branch("stereo",&_stereo,"stereo/I");
+    _shdiag->Branch("isolated",&_isolated,"isolated/I");
     _shdiag->Branch("pdist",&_pdist,"pdist/F");
     _shdiag->Branch("pperp",&_pperp,"pperp/F");
     _shdiag->Branch("pmom",&_pmom,"pmom/F");
@@ -691,6 +692,7 @@ namespace mu2e
       _esel = _flags->at(istr).hasAllProperties(StrawHitFlagDetail::energysel);
       _rsel = _flags->at(istr).hasAllProperties(StrawHitFlagDetail::radsel);
       _stereo = _flags->at(istr).hasAllProperties(StrawHitFlagDetail::stereo);
+      _isolated = _flags->at(istr).hasAllProperties(StrawHitFlag::isolated);
       _delta = _flags->at(istr).hasAllProperties(StrawHitFlagDetail::delta);
       _shpres = _shpcol->at(istr).posRes(StrawHitPosition::phi);
       _shrres = _shpcol->at(istr).posRes(StrawHitPosition::rho);

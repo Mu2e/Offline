@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.9 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2013/03/15 15:52:05 $
+// $Id: FlagBkgHits_module.cc,v 1.10 2013/03/20 00:05:56 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2013/03/20 00:05:56 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -131,8 +131,6 @@ namespace mu2e
       StrawHitFlag _stmask;
       // delta-ray removal parameters
       unsigned _mindp;
-      double _maxzgap,_maxnsmiss;
-      double _bz; // average Z beta for deltas
       std::string _dhittype, _dhitweights;
       std::string _dpeaktype, _dpeakweights;
       double _gdcut, _gdcore, _dpeakmvacut;
@@ -181,7 +179,7 @@ namespace mu2e
       Float_t _stime, _sphi, _srho;
       Float_t _pmvaout;
       // histograms
-      TH1F* _niter, *_nclusters, *_nchanged;
+      TH1F* _nhits, *_niter, *_nclusters, *_nchanged;
   };
 
   FlagBkgHits::FlagBkgHits(fhicl::ParameterSet const& pset) :
@@ -192,15 +190,12 @@ namespace mu2e
     _shplabel(pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _shflabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FlagStrawHits")),
     _stmask(StrawHitFlagDetail::stereo),
-    _mindp(pset.get<double>("MinDeltaHits",6)),
-    _maxzgap(pset.get<double>("MaxZGap",0.0)),
-    _maxnsmiss(pset.get<double>("MaxNMiss",4)),
-    _bz(pset.get<double>("bz",0.8)),
+    _mindp(pset.get<unsigned>("MinDeltaHits",6)),
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","BDT method")),
     _dpeaktype(pset.get<std::string>("DeltaPeakTMVAType","BDT method")),
     _gdcut(pset.get<double>("DeltaHitMVACut",0.0)),
     _gdcore(pset.get<double>("DeltaHitMVACoreCut",0.15)),
-    _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.1)),
+    _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.0)),
     _minflag(pset.get<int>("DeltaHitFlag",1)),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
     _clusterer(pset.get<fhicl::ParameterSet>("ClusterStrawHits",fhicl::ParameterSet()))
@@ -219,7 +214,7 @@ namespace mu2e
 
   void FlagBkgHits::beginJob(){
     // create diagnostics if requested
-    if(_diag > 0)createDiagnostics();
+    createDiagnostics();
     // initialize the TMVA readers
     initializeReaders();
   }
@@ -257,6 +252,7 @@ namespace mu2e
 // test of new straw hit clustering
     StrawHitClusterList clusters;
     _clusterer.findClusters(*_shcol,*_shpcol,*bkgfcol,clusters);
+    _nhits->Fill(clusters._nhits);
     _niter->Fill(clusters._niter);
     _nchanged->Fill(clusters._nchanged);
     _nclusters->Fill(clusters._clist.size());
@@ -435,54 +431,57 @@ namespace mu2e
 
   void FlagBkgHits::createDiagnostics() {
     art::ServiceHandle<art::TFileService> tfs;
+    _nhits=tfs->make<TH1F>("nhits","N hits used in Clustering",100,0,5000);
     _niter=tfs->make<TH1F>("niter","N Cluster Iterations",20,-0.5,19.5);
     _nchanged=tfs->make<TH1F>("nchanged","N Hits changed in last iteration",100,-0.5,99.5);
     _nclusters=tfs->make<TH1F>("nclusters","N Clusters",100,0,200);
-   // delta diagnostics
-    _ddiag=tfs->make<TTree>("ddiag","delta diagnostics");
-    _ddiag->Branch("iev",&_iev,"iev/I");
-    _ddiag->Branch("ip",&_ip,"ip/I");
-    _ddiag->Branch("isdelta",&_isdelta,"isdelta/B");
-    _ddiag->Branch("nbox",&_nbox,"nbox/I");
-    _ddiag->Branch("nwide",&_nwide,"nwide/I");
-    _ddiag->Branch("ncore",&_ncore,"nwide/I");
-    _ddiag->Branch("pid",&_pid,"pid/I");
-    _ddiag->Branch("ppdgid",&_ppdgid,"ppdgid/I");
-    _ddiag->Branch("pgen",&_pgen,"pgen/I");
-    _ddiag->Branch("pproc",&_pproc,"pproc/I");
-    _ddiag->Branch("nprimary",&_nprimary,"nprimary/I");
-    _ddiag->Branch("nconv",&_nconv,"nconv/I");
-    _ddiag->Branch("ndelta",&_ndelta,"ndelta/I");
-    _ddiag->Branch("ncompt",&_ncompt,"ncompt/I");
-    _ddiag->Branch("ngconv",&_ngconv,"ngconv/I");
-    _ddiag->Branch("nebkg",&_nebkg,"nebkg/I");
-    _ddiag->Branch("nprot",&_nprot,"nprot/I");
-    _ddiag->Branch("ns",&_ns,"ns/I");
-    _ddiag->Branch("nd",&_nd,"nd/I");
-    _ddiag->Branch("smin",&_smin,"smin/I");
-    _ddiag->Branch("smax",&_smax,"smax/I");
-    _ddiag->Branch("nsmiss",&_nsmiss,"nsmiss/I");
-    _ddiag->Branch("ndmiss",&_ndmiss,"ndmiss/I");
-    _ddiag->Branch("pphi",&_pphi,"pphi/F");
-    _ddiag->Branch("pt",&_pt,"pt/F");
-    _ddiag->Branch("prho",&_prho,"prho/F");
-    _ddiag->Branch("zmin",&_zmin,"zmin/F");
-    _ddiag->Branch("zmax",&_zmax,"zmax/F");
-    _ddiag->Branch("zgap",&_zgap,"zgap/F");
-    _ddiag->Branch("tmed",&_tmed,"tmed/F");
-    _ddiag->Branch("pmed",&_pmed,"pmed/F");
-    _ddiag->Branch("rmed",&_rmed,"rmed/F");
-    _ddiag->Branch("tmean",&_tmean,"tmean/F");
-    _ddiag->Branch("pmean",&_pmean,"pmean/F");
-    _ddiag->Branch("rmean",&_rmean,"rmean/F");
-    _ddiag->Branch("stime",&_stime,"stime/F");
-    _ddiag->Branch("sphi",&_sphi,"sphi/F");
-    _ddiag->Branch("srho",&_srho,"srho/F");
-    _ddiag->Branch("phits",&_phits);
-    _ddiag->Branch("mct0",&_dmct0,"mct0/F");
-    _ddiag->Branch("mcmom",&_dmcmom,"mcmom/F");
-    _ddiag->Branch("mctd",&_dmctd,"mctd/F");
-    _ddiag->Branch("pmvaout",&_pmvaout,"pmvaout/F");
+    if(_diag > 0){
+      // detailed delta diagnostics
+      _ddiag=tfs->make<TTree>("ddiag","delta diagnostics");
+      _ddiag->Branch("iev",&_iev,"iev/I");
+      _ddiag->Branch("ip",&_ip,"ip/I");
+      _ddiag->Branch("isdelta",&_isdelta,"isdelta/B");
+      _ddiag->Branch("nbox",&_nbox,"nbox/I");
+      _ddiag->Branch("nwide",&_nwide,"nwide/I");
+      _ddiag->Branch("ncore",&_ncore,"nwide/I");
+      _ddiag->Branch("pid",&_pid,"pid/I");
+      _ddiag->Branch("ppdgid",&_ppdgid,"ppdgid/I");
+      _ddiag->Branch("pgen",&_pgen,"pgen/I");
+      _ddiag->Branch("pproc",&_pproc,"pproc/I");
+      _ddiag->Branch("nprimary",&_nprimary,"nprimary/I");
+      _ddiag->Branch("nconv",&_nconv,"nconv/I");
+      _ddiag->Branch("ndelta",&_ndelta,"ndelta/I");
+      _ddiag->Branch("ncompt",&_ncompt,"ncompt/I");
+      _ddiag->Branch("ngconv",&_ngconv,"ngconv/I");
+      _ddiag->Branch("nebkg",&_nebkg,"nebkg/I");
+      _ddiag->Branch("nprot",&_nprot,"nprot/I");
+      _ddiag->Branch("ns",&_ns,"ns/I");
+      _ddiag->Branch("nd",&_nd,"nd/I");
+      _ddiag->Branch("smin",&_smin,"smin/I");
+      _ddiag->Branch("smax",&_smax,"smax/I");
+      _ddiag->Branch("nsmiss",&_nsmiss,"nsmiss/I");
+      _ddiag->Branch("ndmiss",&_ndmiss,"ndmiss/I");
+      _ddiag->Branch("pphi",&_pphi,"pphi/F");
+      _ddiag->Branch("pt",&_pt,"pt/F");
+      _ddiag->Branch("prho",&_prho,"prho/F");
+      _ddiag->Branch("zmin",&_zmin,"zmin/F");
+      _ddiag->Branch("zmax",&_zmax,"zmax/F");
+      _ddiag->Branch("zgap",&_zgap,"zgap/F");
+      _ddiag->Branch("tmed",&_tmed,"tmed/F");
+      _ddiag->Branch("pmed",&_pmed,"pmed/F");
+      _ddiag->Branch("rmed",&_rmed,"rmed/F");
+      _ddiag->Branch("tmean",&_tmean,"tmean/F");
+      _ddiag->Branch("pmean",&_pmean,"pmean/F");
+      _ddiag->Branch("rmean",&_rmean,"rmean/F");
+      _ddiag->Branch("stime",&_stime,"stime/F");
+      _ddiag->Branch("sphi",&_sphi,"sphi/F");
+      _ddiag->Branch("srho",&_srho,"srho/F");
+      _ddiag->Branch("phits",&_phits);
+      _ddiag->Branch("mct0",&_dmct0,"mct0/F");
+      _ddiag->Branch("mcmom",&_dmcmom,"mcmom/F");
+      _ddiag->Branch("mctd",&_dmctd,"mctd/F");
+      _ddiag->Branch("pmvaout",&_pmvaout,"pmvaout/F");
+    }
   }
 
   void FlagBkgHits::fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const {
