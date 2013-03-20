@@ -2,9 +2,9 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.48 2013/03/19 00:17:28 kutschke Exp $
+# $Id: SConstruct,v 1.49 2013/03/20 16:53:14 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2013/03/19 00:17:28 $
+# $Date: 2013/03/20 16:53:14 $
 #
 # Original author Rob Kutschke.
 #
@@ -138,13 +138,17 @@ if not level in known_levels:
 
 # Set compile and link flags.
 SetOption('warn', 'no-fortran-cxx-mix')
-env.MergeFlags('-g')
-env.MergeFlags('-O3')
 env.MergeFlags('-std=c++11')
-env.MergeFlags('-fno-omit-frame-pointer')
-env.MergeFlags('-DNDEBUG')
 env.MergeFlags('-rdynamic')
 env.MergeFlags('-Wall')
+env.MergeFlags('-g')
+if level == 'prof':
+    env.MergeFlags('-O3')
+    env.MergeFlags('-fno-omit-frame-pointer')
+    env.MergeFlags('-DNDEBUG')
+
+if level == 'debug':
+    env.MergeFlags('-O0')
 
 # Extract gcc version.  Some libraries have this version embedded in their names.
 ff = os.popen('g++ --version'); ll = ff.readline(); ff.close()
