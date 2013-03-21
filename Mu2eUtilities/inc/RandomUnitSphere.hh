@@ -5,9 +5,9 @@
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 //
-// $Id: RandomUnitSphere.hh,v 1.10 2012/02/03 05:02:43 gandr Exp $
+// $Id: RandomUnitSphere.hh,v 1.11 2013/03/21 20:33:55 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/03 05:02:43 $
+// $Date: 2013/03/21 20:33:55 $
 //
 // Original author Rob Kutschke
 //
@@ -50,7 +50,8 @@ namespace mu2e {
 
     explicit RandomUnitSphere( CLHEP::HepRandomEngine& engine, const RandomUnitSphereParams& par);
 
-    ~RandomUnitSphere(){}
+    // I have inspected RandFlat source and assert that its destructor does not throw
+    ~RandomUnitSphere() noexcept {}
 
     CLHEP::Hep3Vector fire();
 
