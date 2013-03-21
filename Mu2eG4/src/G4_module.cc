@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.62 2013/03/15 19:03:20 kutschke Exp $
+// $Id: G4_module.cc,v 1.63 2013/03/21 00:01:49 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 19:03:20 $
+// $Date: 2013/03/21 00:01:49 $
 //
 // Original author Rob Kutschke
 //
@@ -131,6 +131,10 @@ namespace mu2e {
     // Name of a macro file for visualization.
     string _visMacro;
 
+    // Name of a macro file to be used for controling G4 parameters after
+    // the initialization phase.
+    string _g4Macro;
+
     string _generatorModuleLabel;
 
     // Helps with indexology related to persisting info about G4 volumes.
@@ -170,6 +174,7 @@ namespace mu2e {
     _tmvlevel(pSet.get<int>("trackingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
     _visMacro(pSet.get<std::string>("visMacro","")),
+    _g4Macro(pSet.get<std::string>("g4Macro","")),
     _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel")),
     _physVolHelper(),
     _processInfo(),
@@ -311,12 +316,24 @@ namespace mu2e {
     G4TrackingManager* tm  = rmk->GetTrackingManager();
     tm->SetVerboseLevel(_tmvlevel);
 
+    _UI = G4UImanager::GetUIpointer();
+
+    // Any final G4 interactive commands ...
+    if ( !_g4Macro.empty() ) {
+      G4String command("/control/execute ");
+      ConfigFileLookupPolicy path;
+      command += path(_g4Macro);
+      _UI->ApplyCommand(command);
+
+    }
+
     // Initialize G4 for this run.
     _runManager->Initialize();
 
     // At this point G4 geometry and physics processes have been initialized.
     // So it is safe to modify physics processes and to compute information
     // that is derived from the G4 geometry or physics processes.
+
 
     // Mu2e specific customizations that must be done after the call to Initialize.
     postG4InitializeTasks(config);
@@ -325,7 +342,6 @@ namespace mu2e {
       dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
                                        ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
 
-    _UI = G4UImanager::GetUIpointer();
 
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
