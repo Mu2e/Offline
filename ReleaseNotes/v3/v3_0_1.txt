@@ -1,6 +1,6 @@
-  $Id: v3_0_1.txt,v 1.5 2013/03/21 00:02:08 kutschke Exp $
+  $Id: v3_0_1.txt,v 1.6 2013/03/21 00:09:23 kutschke Exp $
   $Author: kutschke $
-  $Date: 2013/03/21 00:02:08 $
+  $Date: 2013/03/21 00:09:23 $
 
   Still under construction
 
@@ -10,8 +10,9 @@
    In G4_module, look for a parameter set parameter
      physics.producers.g4run.postInitMacro : "filename.mac"
    if it does not exist, do nothing new.  If it does exists, treat the value of the
-   parameter as a file name, find it in FHICL_FILE_PATH and then execute it as a G4 macro.
+   parameter as a file name, find it in MU2E_SEARCH_PATH and then execute it as a G4 macro.
    Do this immediately before the call to _runManager->Initialize().
+   This search path is the same one used ot resolve SimpleConfig files.
 
 3) March 20, 2013 kutschke
    Add debug level switch to the scons command line.
