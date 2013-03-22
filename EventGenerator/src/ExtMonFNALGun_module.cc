@@ -26,7 +26,8 @@ namespace mu2e {
     class ExtMonFNALGun : public art::EDProducer {
       fhicl::ParameterSet pset_;
 
-      typedef std::vector<mu2e::ExtMonFNALGun> PGuns;
+      // ExtMonFNALGun has a non-movable member ParticleGunImpl, thus hold them by pointers
+      typedef std::vector<std::unique_ptr<mu2e::ExtMonFNALGun> > PGuns;
       PGuns guns_;
 
     public:
@@ -46,18 +47,16 @@ namespace mu2e {
       typedef std::vector<fhicl::ParameterSet> VGPars;
       VGPars vgp(pset_.get<VGPars>("guns"));
 
-//FIXME:      guns_.reserve(vgp.size());
-//FIXME:      for(unsigned i=0; i<vgp.size(); ++i) {
-//FIXME:        guns_.emplace_back(vgp[i]);
-//FIXME:      }
-assert(0);
-
+      guns_.reserve(vgp.size());
+      for(unsigned i=0; i<vgp.size(); ++i) {
+        guns_.emplace_back(new mu2e::ExtMonFNALGun(vgp[i]));
+      }
     }
 
     void ExtMonFNALGun::produce(art::Event& event) {
       std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
       for(auto& gun : guns_) {
-        gun.generate(*output);
+        gun->generate(*output);
       }
       event.put(std::move(output));
     }
