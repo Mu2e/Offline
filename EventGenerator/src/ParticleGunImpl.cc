@@ -1,6 +1,6 @@
-// $Id: ParticleGunImpl.cc,v 1.5 2013/03/22 21:45:18 gandr Exp $
+// $Id: ParticleGunImpl.cc,v 1.6 2013/03/22 22:04:54 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/22 21:45:18 $
+// $Date: 2013/03/22 22:04:54 $
 // Original author Robert Kutschke
 // Modified by mjlee. See docdb-2049
 
@@ -370,7 +370,7 @@ namespace mu2e {
 
   void ParticleGunImpl::generate( GenParticleCollection& genParts ){
     if(_verbosityLevel >= 2) {
-      cout<<"ParticleGunImpl::generate(), this="<<this<< endl;
+      std::cout<<"ParticleGunImpl::generate() for mean="<<_mean <<", tmax="<<_tmax<<std::endl;
     }
 
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
