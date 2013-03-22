@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.20 2013/03/19 22:22:48 gandr Exp $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.21 2013/03/22 20:09:33 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/19 22:22:48 $
+// $Date: 2013/03/22 20:09:33 $
 //
 // Original author Andrei Gaponenko
 //
@@ -610,7 +610,7 @@ namespace mu2e {
     void ExtMonFNALHitMaker::addVerilogHit(const ExtMonFNALPixelId& pix, double tstart, double tend) {
       if(pix.chip() == chipSimChipId_) {
         const int bx = timeStamp(tstart) +
-          condExtMon_->numClockTicksPerDebuncherPeriod() * chipSimProtonPulseNumber_;
+          condExtMon_->numClockTicksPerDebuncherPeriod() * (chipSimProtonPulseNumber_ - 1);
 
         const double twalk = tstart - timeStamp(tstart) * condExtMon_->clockTick();
 
