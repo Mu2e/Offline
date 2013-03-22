@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.46 2013/03/11 23:17:44 brownd Exp $
+// $Id: KalFitMC.cc,v 1.47 2013/03/22 23:11:25 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/11 23:17:44 $
+// $Date: 2013/03/22 23:11:25 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -380,15 +380,17 @@ namespace mu2e
       _mcproc = -1;
 // use the primary particle (if it exists)
       static cet::map_vector_key trkid(1);
-      for ( SimParticleCollection::const_iterator isp = _mcdata._simparts->begin();
-	isp != _mcdata._simparts->end(); ++isp ){
-	if(isp->second.id() == trkid){
-	  SimParticle const& sp = isp->second;
-	  _mcgenid = sp.genParticle()->generatorId().id();
-	  _mcpdgid = sp.pdgId();
-	  _mcproc = sp.creationCode();
-	  fillMCTrkInfo(sp,_mcinfo);
-	  break;
+      if(_mcdata._simparts != 0){
+	for ( SimParticleCollection::const_iterator isp = _mcdata._simparts->begin();
+	    isp != _mcdata._simparts->end(); ++isp ){
+	  if(isp->second.id() == trkid){
+	    SimParticle const& sp = isp->second;
+	    _mcgenid = sp.genParticle()->generatorId().id();
+	    _mcpdgid = sp.pdgId();
+	    _mcproc = sp.creationCode();
+	    fillMCTrkInfo(sp,_mcinfo);
+	    break;
+	  }
 	}
       }
     }
