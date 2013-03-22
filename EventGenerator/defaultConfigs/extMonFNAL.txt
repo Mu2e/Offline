@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: extMonFNAL.txt,v 1.3 2012/07/30 17:50:28 gandr Exp $
+// $Id: extMonFNAL.txt,v 1.4 2013/03/22 21:45:18 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/07/30 17:50:28 $
+// $Date: 2013/03/22 21:45:18 $
 //
 // Original author Rob Kutschke
 // added extMonFNALGun process
@@ -46,7 +46,7 @@ vector<double> extMonFNALGun.halfSize = {0., 0., 0.};
 // Control of histograms.
 bool extMonFNALGun.doHistograms = true;
 
-bool extMonFNALGun.verbose = false;
+bool extMonFNALGun.verbosityLevel = 0;
 
 
 // This tells emacs to view this file in c++ mode.

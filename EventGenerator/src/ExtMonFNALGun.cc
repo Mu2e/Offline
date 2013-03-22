@@ -36,7 +36,7 @@ namespace mu2e {
 
             (config.getBool("extMonFNALGun.doHistograms", true) ? "ExtMonFNALGun" : ""),
 
-            config.getBool("extMonFNALGun.verbose",false)
+            config.getInt("extMonFNALGun.verbosityLevel",0)
             )
   {
     initGeom(config.getString("extMonFNALGun.reference"));
@@ -62,7 +62,7 @@ namespace mu2e {
 
             pset.get<std::string>("histDirName"),
 
-            pset.get<bool>("verbose",false)
+            pset.get<int>("verbosityLevel",0)
             )
   {
     initGeom(pset.get<std::string>("reference"));

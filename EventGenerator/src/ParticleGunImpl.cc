@@ -1,6 +1,6 @@
-// $Id: ParticleGunImpl.cc,v 1.4 2012/08/20 21:23:24 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/08/20 21:23:24 $
+// $Id: ParticleGunImpl.cc,v 1.5 2013/03/22 21:45:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/22 21:45:18 $
 // Original author Robert Kutschke
 // Modified by mjlee. See docdb-2049
 
@@ -55,7 +55,7 @@ namespace mu2e {
       const std::string& histoDir,
       bool doNtuples,
 
-      bool verbose)
+      int verbosityLevel)
     : GeneratorBase()
 
     , _mean(meanMultiplicity)
@@ -76,7 +76,7 @@ namespace mu2e {
 
     , _doNtuples(doNtuples)
 
-    , _verbose(verbose)
+    , _verbosityLevel(verbosityLevel)
     , _doHistograms(!histoDir.empty())
     , _histoDir(histoDir)
     , _useDetectorCoordinateSystem(useDetectorCoordinateSystem)
@@ -120,7 +120,7 @@ namespace mu2e {
 
       const std::string& histoDir,
 
-      bool verbose)
+      int verbosityLevel)
     : GeneratorBase()
 
     , _mean(meanMultiplicity)
@@ -140,7 +140,7 @@ namespace mu2e {
     , _throwOnIterationLimit(false)
     , _doNtuples(false)
 
-    , _verbose(verbose)
+    , _verbosityLevel(verbosityLevel)
     , _doHistograms(!histoDir.empty())
     , _histoDir (histoDir)
     , _useDetectorCoordinateSystem (false)
@@ -279,6 +279,10 @@ namespace mu2e {
         _hGenerationNtuple = tfdir.make<TNtuple>("hGenerationNtuple", "Generation info", "x:y:z:t:px:py:pz:p:pdgId");
       }
     }
+
+    if(_verbosityLevel >= 1) {
+      std::cout<<"ParticleGunImpl initialized with mean="<<_mean <<", tmax="<<_tmax<<std::endl;
+    }
   }
 
 
@@ -365,6 +369,9 @@ namespace mu2e {
 
 
   void ParticleGunImpl::generate( GenParticleCollection& genParts ){
+    if(_verbosityLevel >= 2) {
+      cout<<"ParticleGunImpl::generate(), this="<<this<< endl;
+    }
 
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
     if ( _doHistograms ){
@@ -463,7 +470,7 @@ namespace mu2e {
 
       genParts.push_back( GenParticle( _pdgId, GenId::particleGun, pos, p4, time));
 
-      if(_verbose) {
+      if(_verbosityLevel >= 3) {
         cout  << "Generated position: "<< pos << " "
               << p4 << " "
               << p4.vect().mag() << " "

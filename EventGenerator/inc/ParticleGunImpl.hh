@@ -4,9 +4,9 @@
 // Shoots a single particle gun and puts its output into a generated event.
 // This class implements the common code for "particle gun-like" generators.
 //
-// $Id: ParticleGunImpl.hh,v 1.3 2012/08/20 21:23:24 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/08/20 21:23:24 $
+// $Id: ParticleGunImpl.hh,v 1.4 2013/03/22 21:45:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/22 21:45:18 $
 //
 // Original author Rob Kutschke, re-factored for use in multiple generators by Andrei Gaponenko.
 // Introduced new features by mjlee. See docdb-2049
@@ -60,7 +60,7 @@ namespace mu2e {
         const std::string& histoDir,
         bool  doNtuples,
 
-        bool verbose);
+        int verbosityLevel);
 
     // Old style constructor. Kept for backward compatibility.
     ParticleGunImpl(double meanMultiplicity,
@@ -77,7 +77,7 @@ namespace mu2e {
         // empty string "" means don't histogram
         const std::string& histoDir,
 
-        bool verbose);
+        int verbosityLevel);
 
 
 
@@ -159,8 +159,13 @@ namespace mu2e {
     // Enable ntuple of generated particles. Effective only when doHistogram is true.
     bool _doNtuples;
 
-    // enable output
-    bool _verbose;
+    // verbosity levels:
+    //  0 - do not print anything
+    //  1 - print info once per job
+    //  2 - print info once per event
+    //  3 - print info for each generated particle
+    int _verbosityLevel;
+
     // Enable histograms
     bool _doHistograms;
     std::string _histoDir;
