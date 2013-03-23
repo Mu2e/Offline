@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.47 2013/03/22 23:11:25 brownd Exp $
+// $Id: KalFitMC.cc,v 1.48 2013/03/23 16:13:24 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/22 23:11:25 $
+// $Date: 2013/03/23 16:13:24 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -555,19 +555,21 @@ namespace mu2e
     _bremsesum = 0.0;
     _bremsemax = 0.0;
     _bremsz = _trkminz;
-    for ( SimParticleCollection::const_iterator isp = _mcdata._simparts->begin();
-	isp != _mcdata._simparts->end(); ++isp ){
-      SimParticle const& sp = isp->second;
-// find photons with parent = the conversion electron created by brems
-      if(sp.parent() != 0 && sp.parent()->id() == trkid && sp.pdgId() == PDGCode::gamma  && sp.creationCode() == ProcessCode::eBrem){
-	CLHEP::Hep3Vector pos = det->toDetector(sp.startPosition());
-	if(pos.z() > _trkminz && pos.z() < _trkmaxz){
-	  double de = sp.startMomentum().e();
-	  if(de > _bremsemax){
-	    _bremsemax = de;
-	    _bremsz = pos.z();
+    if(_mcdata._simparts != 0){
+      for ( SimParticleCollection::const_iterator isp = _mcdata._simparts->begin();
+	  isp != _mcdata._simparts->end(); ++isp ){
+	SimParticle const& sp = isp->second;
+	// find photons with parent = the conversion electron created by brems
+	if(sp.parent() != 0 && sp.parent()->id() == trkid && sp.pdgId() == PDGCode::gamma  && sp.creationCode() == ProcessCode::eBrem){
+	  CLHEP::Hep3Vector pos = det->toDetector(sp.startPosition());
+	  if(pos.z() > _trkminz && pos.z() < _trkmaxz){
+	    double de = sp.startMomentum().e();
+	    if(de > _bremsemax){
+	      _bremsemax = de;
+	      _bremsz = pos.z();
+	    }
+	    _bremsesum += de;
 	  }
-	  _bremsesum += de;
 	}
       }
     }
