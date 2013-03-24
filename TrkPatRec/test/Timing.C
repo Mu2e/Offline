@@ -17,7 +17,7 @@ void Timing(std::vector<std::string> names ){
   ifstream fs;
   for(size_t iname=0;iname<names.size();++iname){
     std::string title= names[iname]+" timing;seconds;events";
-    histos.push_back(new TH1F(names[iname].c_str(),title.c_str(),100,0,1.0));
+    histos.push_back(new TH1F(names[iname].c_str(),title.c_str(),100,0,0.5));
     std::string file = names[iname]+".dat";
     std::cout << "Opening file " << file << std::endl;
     fs.open(file.c_str());
