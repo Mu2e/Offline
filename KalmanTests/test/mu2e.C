@@ -34,7 +34,7 @@ class mu2e {
   public:
     mu2e(TTree* d, TTree* c, double dgenrange, double nd, double nc,bool weightd=true) : dio(d), con(c),diogenrange(dgenrange),
     ndio(nd),ncon(nc),weightdio(weightd),nbins(151),nstopped(7.56e17),capfrac(0.609),conprob(1e-16),trueconvmom(104.973),
-    tdlow(0.57735027),tdhigh(1.0),mmin(101),mmax(106),t0min(710),rpc(0.05), ap(.166),cmu(0.0833),reco("fitstatus>0")
+    tdlow(0.57735027),tdhigh(1.0),mmin(101),mmax(106),t0min(710),rpc(0.025), ap(.083333),cmu(0.041666),reco("fitstatus>0")
   {
     init();
   }

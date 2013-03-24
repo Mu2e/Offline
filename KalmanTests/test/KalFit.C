@@ -20,7 +20,7 @@ double t0min(720);
 double momlow(103.4);
 double momhigh(104.8);
 int minnhits(20);
-size_t icut=1;
+size_t icut=2;
 unsigned minnactive[4] = {20,22,25,30};
 unsigned minndif[4] = { 8,6,4,3};
 double maxt0err[4] = {1.5,0.95,0.9,0.8};
@@ -464,7 +464,7 @@ void KalFitAcc(TTree* trks) {
   acc->GetYaxis()->SetTitleSize(0.05);
   racc->GetYaxis()->SetTitleSize(0.05);
 
-  gStyle->SetPaintTextFormat("5.4f");
+  gStyle->SetPaintTextFormat("5.3f");
   TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
   acan->Clear();
   acan->Divide(1,2);
