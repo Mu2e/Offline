@@ -118,8 +118,8 @@ namespace mu2e {
     event.getByLabel(_inModuleLabel, _inInstanceName, ih);
     const StepPointMCCollection& inhits(*ih);
 
-    std::auto_ptr<StepPointMCCollection> outhits(new StepPointMCCollection());
-    std::auto_ptr<StepPointMCCollection> extrahits(new StepPointMCCollection());
+    std::unique_ptr<StepPointMCCollection> outhits(new StepPointMCCollection());
+    std::unique_ptr<StepPointMCCollection> extrahits(new StepPointMCCollection());
 
     for(StepPointMCCollection::const_iterator i=inhits.begin(); i!=inhits.end(); ++i) {
 
@@ -167,7 +167,7 @@ namespace mu2e {
 
     // The case when parents are stored is supported by compressSimParticleCollection()
     // otherwise we need to prepare the output SimParticleCollection by hand
-    std::auto_ptr<SimParticleCollection> outparts(new SimParticleCollection());
+    std::unique_ptr<SimParticleCollection> outparts(new SimParticleCollection());
     art::ProductID newProductId(getProductID<SimParticleCollection>(event));
     const art::EDProductGetter *newProductGetter(event.productGetter(newProductId));
     if(!_storeParents) {
@@ -247,7 +247,7 @@ namespace mu2e {
     //----------------------------------------------------------------
 
     AGDEBUG("here");
-    event.put(outparts);
+    event.put(std::move(outparts));
 
     // Update pointers in the hit collection
     AGDEBUG("here");
@@ -270,13 +270,13 @@ namespace mu2e {
       }
       AGDEBUG("here");
 
-      event.put(extrahits, "extraHits");
+      event.put(std::move(extrahits), "extraHits");
     }
 
     //----------------------------------------------------------------
 
     bool nonEmpty = !outhits->empty();
-    event.put(outhits);
+    event.put(std::move(outhits));
 
     return nonEmpty;
   }
