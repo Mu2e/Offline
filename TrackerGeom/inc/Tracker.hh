@@ -1,11 +1,12 @@
 #ifndef TrackerGeom_Tracker_hh
 #define TrackerGeom_Tracker_hh
 //
-// Pure virtual base class that will used by both LTracker or TTracker.
+// Pure virtual base class that is used by the TTracker and was used
+// by the LTracker, which has since been removed.
 //
-// $Id: Tracker.hh,v 1.7 2012/09/10 14:53:04 kutschke Exp $
+// $Id: Tracker.hh,v 1.8 2013/03/26 23:28:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/09/10 14:53:04 $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //

@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.23 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: ReadBack_module.cc,v 1.24 2013/03/26 23:28:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,6 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
-#include "LTrackerGeom/inc/LTracker.hh"
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/ExtMonUCITofHitMCTruthCollection.hh"
@@ -176,7 +175,7 @@ namespace mu2e {
     int _nBadG4Status;
 
     // Examine various parts of the event.
-    void doLTracker         ( const art::Event& event );
+    void doTTracker         ( const art::Event& event );
     void doITracker         ( const art::Event& event );
     void doCalorimeter      ( const art::Event& event );
     void doStoppingTarget   ( const art::Event& event );
@@ -391,8 +390,8 @@ namespace mu2e {
 
     // Call code appropriate for the tracker that is installed in this job.
     art::ServiceHandle<GeometryService> geom;
-    if( geom->hasElement<LTracker>() || geom->hasElement<TTracker>() ){
-      doLTracker(event);
+    if( geom->hasElement<TTracker>() ){
+      doTTracker(event);
     }
     else if ( geom->hasElement<ITracker>() ){
       doITracker(event);
@@ -639,7 +638,7 @@ namespace mu2e {
 
   }
 
-  void ReadBack::doLTracker(const art::Event& event){
+  void ReadBack::doTTracker(const art::Event& event){
 
     // Get a reference to one of the L or T trackers.
     // Throw exception if not successful.
@@ -875,7 +874,7 @@ namespace mu2e {
       }
     }
 
-  } // end doLTracker
+  } // end doTTracker
 
   void ReadBack::doITracker(const art::Event& event){
 

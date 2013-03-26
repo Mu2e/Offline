@@ -8,9 +8,9 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter
 
-$Id: FilterEmptyEvents_module.cc,v 1.11 2012/10/14 15:57:32 brownd Exp $
-$Author: brownd $
-$Date: 2012/10/14 15:57:32 $
+$Id: FilterEmptyEvents_module.cc,v 1.12 2013/03/26 23:28:23 kutschke Exp $
+$Author: kutschke $
+$Date: 2013/03/26 23:28:23 $
 
 Original author Giovanni Onorato
 
@@ -33,12 +33,9 @@ Original author Giovanni Onorato
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-
 
 using namespace std;
 
@@ -88,11 +85,6 @@ namespace mu2e {
            << " It must be 0, 1 or 2. We use 0 for this case "
            << "as default value." << endl;
     }
-
-    // Geometry info for the LTracker.
-    // Get a reference to one of the L or T trackers.
-    // Throw exception if not successful.
-    // const Tracker& tracker = getTrackerOrThrow();
 
     //Get Tracker hits and set a boolean true if there are hits.
     art::Handle<StrawHitCollection> pdataHandle;

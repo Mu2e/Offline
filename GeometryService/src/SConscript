@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.26 2013/03/26 14:46:09 knoepfel Exp $
-# $Author: knoepfel $
-# $Date: 2013/03/26 14:46:09 $
+# $Id: SConscript,v 1.27 2013/03/26 23:28:23 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2013/03/26 23:28:23 $
 #
 # Original author Rob Kutschke.
 #
@@ -27,7 +27,6 @@ mainlib = helper.make_mainlib ( [
     'mu2e_ExtinctionMonitorFNAL_Geometry',
     'mu2e_CosmicRayShieldGeom',
     'mu2e_CalorimeterGeom',
-    'mu2e_LTrackerGeom',
     'mu2e_TTrackerGeom',
     'mu2e_ITrackerGeom',
     'mu2e_TrackerGeom',

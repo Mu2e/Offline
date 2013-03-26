@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: Sector.hh,v 1.13 2012/01/25 20:29:24 kutschke Exp $
+// $Id: Sector.hh,v 1.14 2013/03/26 23:28:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/01/25 20:29:24 $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //
@@ -32,9 +32,7 @@ namespace mu2e {
 
 
     friend class Device;
-    friend class LTracker;
     friend class TTracker;
-    friend class LTrackerMaker;
     friend class TTrackerMaker;
 
   public:

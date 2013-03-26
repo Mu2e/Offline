@@ -4,12 +4,12 @@
 //
 // Dense integer identifier of one straw.
 // Has values 0...(N-1), where N is the number
-// of straws in the system.  This works for both the LTracker
-// and the TTracker.
+// of straws in the system.  This works for both the TTracker;
+// it also worked for the LTracker when we had one.
 //
-// $Id: StrawIndex.hh,v 1.1 2012/03/01 19:29:22 kutschke Exp $
+// $Id: StrawIndex.hh,v 1.2 2013/03/26 23:28:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/01 19:29:22 $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +20,7 @@
 //
 // Most users should never need to access a StrawIndex as an
 // integer or set one from an integer.  If this goes according
-// to plan, only the code that creates the LTracker will need
+// to plan, only the code that creates a Tracker will need
 // to set one from an integer.
 //
 // Added functionallity allowing this class to be used effeciently

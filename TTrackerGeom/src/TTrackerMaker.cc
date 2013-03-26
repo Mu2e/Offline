@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.44 2013/03/15 15:52:05 kutschke Exp $
+// $Id: TTrackerMaker.cc,v 1.45 2013/03/26 23:28:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //
@@ -958,7 +958,7 @@ namespace mu2e {
     // Pad the trapezoid to be slightly larger than it needs to be
     static const double pad = 0.0; // this needs to be in the geom file... if to be non-zero
 
-    // the order is forced by the LTracker and nestTrp/G4Trd and Sector data
+    // the order is forced by the nestTrp/G4Trd and Sector data
 
     _sectorBoxHalfLengths.push_back(0.0); //dummy to be compatible with LTracker
     _sectorBoxHalfLengths.push_back(bx+pad);

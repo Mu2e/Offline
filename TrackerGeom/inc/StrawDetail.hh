@@ -3,13 +3,13 @@
 
 //
 // Class to hold information about the properties of each type of straw.
-// We need different types of straws for the conducting and non-conducting
-// straws in the LTracker and for different lengths of straws in the TTracker.
+// We need different types of straws for the different lengths of
+// straws in the TTracker.
 //
 //
-// $Id: StrawDetail.hh,v 1.9 2013/01/07 03:59:37 kutschke Exp $
+// $Id: StrawDetail.hh,v 1.10 2013/03/26 23:28:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/01/07 03:59:37 $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //

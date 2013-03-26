@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.24 2013/03/08 04:29:49 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/03/08 04:29:49 $
+// $Id: classes.h,v 1.25 2013/03/26 23:28:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,6 @@
 #include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
 #include "RecoDataProducts/inc/KalRepExtensionPayloadCollection.hh"
 #include "RecoDataProducts/inc/ExtMonUCITofHitCollection.hh"
-#include "RecoDataProducts/inc/HoughCircleCollection.hh"
 #include "RecoDataProducts/inc/SubEventCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
 #include "RecoDataProducts/inc/SctrSttnClusterGroupCollection.hh"
@@ -88,7 +87,6 @@ template class art::Wrapper<mu2e::KalRepExtensionPayloadCollection>;
 
 
 template class art::Wrapper<mu2e::ExtMonUCITofHitCollection>;
-template class art::Wrapper<mu2e::HoughCircleCollection>;
 template class art::Wrapper<mu2e::SubEventCollection>;
 template class art::Wrapper<mu2e::TrackerHitTimeClusterCollection>;
 template class art::Wrapper<mu2e::SctrSttnClusterGroupCollection>;

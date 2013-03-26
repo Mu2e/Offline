@@ -3,9 +3,9 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.17 2012/04/18 20:58:22 ignatov Exp $
-// $Author: ignatov $
-// $Date: 2012/04/18 20:58:22 $
+// $Id: Straw.hh,v 1.18 2013/03/26 23:28:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //
@@ -31,9 +31,7 @@ namespace mu2e {
     friend class Layer;
     friend class Sector;
     friend class Device;
-    friend class LTracker;
     friend class TTracker;
-    friend class LTrackerMaker;
     friend class TTrackerMaker;
 
   public:

@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.150 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: Mu2eWorld.cc,v 1.151 2013/03/26 23:28:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //
@@ -83,7 +83,6 @@
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/TransportSolenoid.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
-#include "Mu2eG4/inc/constructLTracker.hh"
 #include "Mu2eG4/inc/constructTTracker.hh"
 #include "Mu2eG4/inc/constructDummyTracker.hh"
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
@@ -262,13 +261,7 @@ namespace mu2e {
 
     // Construct one of the trackers.
     VolumeInfo trackerInfo;
-    if( _config.getBool("hasLTracker",false) ){
-      int ver = _config.getInt("LTrackerVersion",3);
-      //cout << "LTracker version: " << ver << "\n";
-      if ( ver == 3 ){
-        trackerInfo = constructLTrackerv3( detSolDownstreamVacInfo.logical, z0DSdown, _config );
-      }
-    } else if ( _config.getBool("hasITracker",false) ) {
+    if ( _config.getBool("hasITracker",false) ) {
       trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, z0DSdown );
       // Hack alert: These belong in constructTracker
       trackerInfo.name = "TrackerMother"; // this belongs to construct..., some of them do it now

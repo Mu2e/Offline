@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.39 2013/02/07 17:56:03 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/07 17:56:03 $
+// $Id: StrawSD.cc,v 1.40 2013/03/26 23:28:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,6 @@
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "LTrackerGeom/inc/LTracker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -55,9 +54,9 @@ namespace mu2e {
 
     art::ServiceHandle<GeometryService> geom;
 
-    if ( !geom->hasElement<TTracker>() && !geom->hasElement<LTracker>() ) {
+    if ( !geom->hasElement<TTracker>() ) {
       throw cet::exception("GEOM")
-        << "Expected one of L or T Trackers but found neither.\n";
+        << "Expected one of Trackers but did not find it.\n";
     }
 
     if ( geom->hasElement<TTracker>() ) {
@@ -77,20 +76,6 @@ namespace mu2e {
       if ( _TrackerVersion != 3) {
         throw cet::exception("StrawSD")
           << "Expected TTrackerVersion of 3 but found " << _TrackerVersion <<endl;
-        // esp take a look at the detectorOrigin calculation
-      }
-
-    }
-
-    if ( geom->hasElement<LTracker>() ) {
-
-      GeomHandle<LTracker> ltracker;
-
-      _TrackerVersion = config.getInt("LTrackerVersion",3); // also see Mu2eWorld.cc
-
-      if ( _TrackerVersion != 3) {
-        throw cet::exception("StrawSD")
-          << "Expected LTrackerVersion of 3 but found " << _TrackerVersion <<endl;
         // esp take a look at the detectorOrigin calculation
       }
 
@@ -135,8 +120,6 @@ namespace mu2e {
 
     const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
 
-    // Origin of the LTracker.  Need to get this from G4.
-    //    static G4ThreeVector detectorOrigin( -3904., -7350., 6200.);
     static G4ThreeVector detectorOrigin = GetTrackerOrigin(touchableHandle);
 
     //     cout << "Debugging detectorOrigin   " << detectorOrigin  << endl;
@@ -283,7 +266,7 @@ namespace mu2e {
 
 
     /*
-    // Works for both TTracker and LTracker.
+    // Works for both TTracker.
     printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %10.7f %10.7f\n",
     eventNo,  _collection->size(), copy,
     aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
@@ -293,47 +276,9 @@ namespace mu2e {
     fflush(stdout);
     */
 
-    // Reconstruction Geometry for the LTracker.
-    // Need to make this work for the TTracker too.
+    // Reconstruction Geometry for the TTracker.
     art::ServiceHandle<GeometryService> geom;
-    if ( geom->hasElement<LTracker>() ) {
-
-      GeomHandle<LTracker> ltracker;
-      Straw const& straw = ltracker->getStraw( StrawIndex(copy) );
-      G4ThreeVector mid  = straw.getMidPoint();
-      G4ThreeVector w    = straw.getDirection();
-
-      // Point of closest approach of track to wire.
-      // Straight line approximation.
-      TwoLinePCA pca( mid, w, prePosTracker, preMomWorld);
-
-      // Point on the wire that is closest to the step point.
-      LinePointPCA lppca( mid, w, prePosTracker);
-      double ddd = lppca.unit().cosTheta(preMomWorld);
-
-      double ttt = lppca.unit().cosTheta(w);
-
-      printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %6.3f %10.7f | %10.7f %10.7f\n",
-               eventNo,  int(_collection->size()), copy,
-               aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
-               prePosTracker.x(), prePosTracker.y(), prePosTracker.z(),
-               preMomWorld.x(),   preMomWorld.y(),   preMomWorld.z(), ddd, ttt,
-               prePosLocal.perp(),  postPosLocal.perp()  );
-      fflush(stdout);
-
-      // This works.  uvw.perp() is always 2.500000000xxxx or 2.499999999xxxx
-      // Note that uhat and vhat are not the same as the local (xhat, yhat)
-      // from G4.  They differ by a rotation about the local zhat.
-      G4ThreeVector z(0.,0.,1.);
-      G4ThreeVector v = worldZUnit.cross(z).unit();
-      G4ThreeVector u = v.cross(worldZUnit);
-      G4ThreeVector detLocal( prePosTracker-mid);
-      double u0 = detLocal.dot(u);
-      double v0 = detLocal.dot(v);
-      double w0 = detLocal.dot(w);
-      G4ThreeVector uvw(u0, v0, w0);
-
-    } else if ( geom->hasElement<TTracker>() ) {
+    if ( geom->hasElement<TTracker>() ) {
 
       GeomHandle<TTracker> ttracker;
       Straw const& straw = ttracker->getStraw( StrawIndex(copy) );
@@ -385,7 +330,6 @@ namespace mu2e {
 
     // how deep in the hierachy is the tracker a.k.a tracker depth
     // (depends on the tracker version)
-    // for LTracker 1,2,3 it is 3
     // the tracker version is set in the constructor
 
     size_t td = 3;

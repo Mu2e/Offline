@@ -3,9 +3,9 @@
 //
 // Hold information about one Layer in a tracker.
 //
-// $Id: Layer.hh,v 1.11 2011/08/03 18:31:25 mf Exp $
-// $Author: mf $
-// $Date: 2011/08/03 18:31:25 $
+// $Id: Layer.hh,v 1.12 2013/03/26 23:28:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //
@@ -25,9 +25,7 @@ namespace mu2e {
 
     friend class Sector;
     friend class Device;
-    friend class LTracker;
     friend class TTracker;
-    friend class LTrackerMaker;
     friend class TTrackerMaker;
 
   public:

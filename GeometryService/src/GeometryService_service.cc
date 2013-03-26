@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.46 2013/03/26 14:46:09 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/03/26 14:46:09 $
+// $Id: GeometryService_service.cc,v 1.47 2013/03/26 23:28:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //
@@ -48,8 +48,6 @@
 #include "TargetGeom/inc/TargetMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
-#include "LTrackerGeom/inc/LTracker.hh"
-#include "LTrackerGeom/inc/LTrackerMaker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TTrackerGeom/inc/TTrackerMaker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
@@ -216,10 +214,7 @@ namespace mu2e {
       addDetector( targm.getTargetPtr() );
     }
 
-    if(_config->getBool("hasLTracker",false)){
-      LTrackerMaker ltm( *_config );
-      addDetector( ltm.getLTrackerPtr() );
-    } else if (_config->getBool("hasITracker",false)){
+    if (_config->getBool("hasITracker",false)){
       ITrackerMaker itm( *_config );
       addDetector( itm.getITrackerPtr() );
     } else if (_config->getBool("hasTTracker",false)){
@@ -292,10 +287,6 @@ namespace mu2e {
   void GeometryService::checkTrackerConfig(){
     int ntrackers(0);
     string allTrackers;
-    if ( _config->getBool("hasLTracker",false) ) {
-      allTrackers += " LTracker";
-      ++ntrackers;
-    }
     if ( _config->getBool("hasTTracker",false) ) {
       allTrackers += " TTracker";
       ++ntrackers;

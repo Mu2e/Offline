@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.18 2013/03/15 15:52:04 kutschke Exp $
+// $Id: ReadStrawHit_module.cc,v 1.19 2013/03/26 23:28:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by KLG
@@ -185,8 +185,7 @@ namespace mu2e {
     for( int i=0; i<edata.size(); i++ ) cout << *(edata[i]) << endl;
     */
 
-    // Geometry info for the LTracker.
-    // Get a reference to one of the L or T trackers.
+    // Geometry info for the Tracker.
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
 
