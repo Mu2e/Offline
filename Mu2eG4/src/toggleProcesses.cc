@@ -9,9 +9,9 @@
 // muMinusConversionAtRest.do - turns on the at rest G4 process
 // MuonMinusConversionAtRest and turns off MuonMinusCaptureAtRest
 //
-// $Id: toggleProcesses.cc,v 1.8 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: toggleProcesses.cc,v 1.9 2013/03/26 19:39:33 genser Exp $
+// $Author: genser $
+// $Date: 2013/03/26 19:39:33 $
 //
 //-----------------------------------------------------------------------------
 
@@ -89,7 +89,7 @@ namespace mu2e{
 
     G4String pNameToRemove("muMinusCaptureAtRest");
 
-    bool muConversionAtRest = config.getBool( "g4.doMuMinusConversionAtRest", true);
+    bool muConversionAtRest = config.getBool( "g4.doMuMinusConversionAtRest", false);
     bool muAtomicCapture    = config.getBool( "g4.useNewMuMinusAtomicCapture", false);
 
     if ( muAtomicCapture && muConversionAtRest )
