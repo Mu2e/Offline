@@ -10,9 +10,9 @@
 //
 // The original use is for BaBar tracks.
 //
-// $Id: OwningPointerCollection.hh,v 1.7 2013/03/16 23:31:58 kutschke Exp $
+// $Id: OwningPointerCollection.hh,v 1.8 2013/03/26 23:29:52 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/16 23:31:58 $
+// $Date: 2013/03/26 23:29:52 $
 //
 // Original author Rob Kutschke
 //
@@ -59,6 +59,8 @@ namespace mu2e {
 
 #ifndef __GCCXML__
 
+    // GCCXML does not know about move syntax - so hide it.
+
     OwningPointerCollection( OwningPointerCollection && rhs ):
       v_(std::move(rhs.v_)){
       rhs.v_.clear();
@@ -68,21 +70,6 @@ namespace mu2e {
       v_ = std::move(rhs.v_);
       rhs.v_.clear();
       return *this;
-    }
-
-    // Not copy-copyable or copy-assignable; this is needed to ensure exactly one delete.
-    //OwningPointerCollection( OwningPointerCollection const& ) = delete;
-    //OwningPointerCollection& operator=( OwningPointerCollection const& ) = delete;
-
-    // For some reason, something in genreflex requires that there to be a copy c'tor!
-    // Until we find and fix that, give it one.
-
-    OwningPointerCollection( OwningPointerCollection const& ){
-      throw std::logic_error("Must never call the copy c'tor of OwningPointerCollection.");
-    }
-
-    OwningPointerCollection& operator=( OwningPointerCollection const& ){
-      throw std::logic_error("Must never call the copy c'tor of OwningPointerCollection.");
     }
 
 #endif /* GCCXML */
@@ -127,6 +114,11 @@ namespace mu2e {
     std::vector<T const *> const& getAll(){ return v_; }
 
   private:
+
+    // Not copy-copyable or copy-assignable; this is needed to ensure exactly one delete.
+    // GCCXML does not know about =delete so leave these private and unimplemented.
+    OwningPointerCollection( OwningPointerCollection const& );
+    OwningPointerCollection& operator=( OwningPointerCollection const& );
 
     // Owning pointers to the objects.
     std::vector<const T*> v_;
