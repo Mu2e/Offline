@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.179 2013/03/08 01:22:32 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/03/08 01:22:32 $
+// $Id: geom_01.txt,v 1.180 2013/03/26 14:46:09 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/03/26 14:46:09 $
 //
 // Original author Rob Kutschke
 //
@@ -204,22 +204,7 @@ double mu2e.origin.heightAboveHallFloor = 2928.; // 20120221\ Facility\ data\ fo
 double mu2e.solenoidOffset   =  3904.;   // mm
 double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 
-// A toy model of the DS, cyrostats+coils, vacuum
-double toyDS.rIn                = 1000;
-double toyDS.rOut               = 1300;
-double toyDS.halfLength         = 6000.;
-double toyDS.z0                 = 9226.;
-double toyDS1.halfLength        =  150.;
-double toyDS2.halfLength        = 2350.;
-double toyDS3.halfLength        = 3400.5.;
-double toyDS.frontHalfLength    =  150.;
-string toyDS.materialName       = "G4_Al";
-string toyDS.insideMaterialName = "DSVacuum";
-
-int    toyDS.verbosityLevel     = 0;
-bool   toyDS.visible            = true;
-bool   toyDS.solid              = false;
-
+#include "Mu2eG4/test/DetectorSolenoid_v01.txt"
 #include "Mu2eG4/test/ProductionSolenoid_v01.txt"
 #include "Mu2eG4/test/psEnclosure_v01.txt"
 #include "Mu2eG4/test/PSShield_v01.txt"

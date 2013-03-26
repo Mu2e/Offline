@@ -2,9 +2,9 @@
 # Generate a single conversion electron, run it through G4
 # and draw a picture in the (x,y) view.  Do only one event.
 #
-# $Id: g4test_01.fcl,v 1.11 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
+# $Id: g4test_01.fcl,v 1.12 2013/03/26 14:46:09 knoepfel Exp $
+# $Author: knoepfel $
+# $Date: 2013/03/26 14:46:09 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -60,4 +60,4 @@ services.user.SeedService.baseSeed         :  0
 services.user.SeedService.maxUniqueEngines :  20
 
 // Enable G4 graphics with the xy view.
-physics.producers.g4run.visMacro : "Mu2eG4/test/visxy.mac"
+physics.producers.g4run.visMacro : "Mu2eG4/test/visxz.mac"

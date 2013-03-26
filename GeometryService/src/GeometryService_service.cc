@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.45 2013/03/15 18:20:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 18:20:22 $
+// $Id: GeometryService_service.cc,v 1.46 2013/03/26 14:46:09 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/03/26 14:46:09 $
 //
 // Original author Rob Kutschke
 //
@@ -46,6 +46,8 @@
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDumpMaker.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TargetGeom/inc/TargetMaker.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
 #include "LTrackerGeom/inc/LTracker.hh"
 #include "LTrackerGeom/inc/LTrackerMaker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
@@ -205,6 +207,9 @@ namespace mu2e {
     std::unique_ptr<Mu2eBuilding> tmpbld(Mu2eBuildingMaker::make(*_config, buildingBasics, dump));
     const Mu2eBuilding& building = *tmpbld.get();
     addDetector(std::move(tmpbld));
+
+    // beamline info used to position DS
+    addDetector( DetectorSolenoidMaker::make( *_config, beamline ) );
 
     if(_config->getBool("hasTarget",false)){
       TargetMaker targm( *_config );

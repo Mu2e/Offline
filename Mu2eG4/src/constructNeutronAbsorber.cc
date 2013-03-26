@@ -1,9 +1,9 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructNeutronAbsorber.cc,v 1.8 2012/11/19 23:03:49 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/19 23:03:49 $
+// $Id: constructNeutronAbsorber.cc,v 1.9 2013/03/26 14:46:09 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/03/26 14:46:09 $
 //
 // Original author KLG
 //
@@ -33,6 +33,7 @@
 #include "G4Color.hh"
 #include "G4VSolid.hh"
 #include "G4Tubs.hh"
+#include "G4Polycone.hh"
 #include "G4Cons.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4VPhysicalVolume.hh"
@@ -259,15 +260,17 @@ namespace mu2e {
       double ds2HalfLength =
         dynamic_cast<G4Tubs* const>(toyDS2VacuumInfo.solid)->GetZHalfLength();
 
-      double ds3HalfLength =
-        dynamic_cast<G4Tubs* const>(toyDS3VacuumInfo.solid->GetConstituentSolid(0))->GetZHalfLength();
+      const G4PolyconeHistorical* ds3VacParams = 
+        dynamic_cast<G4Polycone* const>(toyDS3VacuumInfo.solid)->GetOriginalParameters();
+      const int nPlanes    = ds3VacParams->Num_z_planes;
+      double ds3FullLength = ds3VacParams->Z_values[nPlanes-1]-ds3VacParams->Z_values[0];
 
       if ( verbosityLevel > 0) {
-        cout << __func__ << " toyDS2VacuumInfo.solid->GetZHalfLength()    : " <<
+        cout << __func__ << " toyDS2VacuumInfo.solid->GetZHalfLength()     : " <<
           ds2HalfLength  << endl;
 
-        cout << __func__ << " toyDS3VacuumInfo.solid->GetZHalfLength()    : " <<
-          ds3HalfLength  << endl;
+        cout << __func__ << " toyDS3VacuumInfo.solid full length (polycone): " <<
+          ds3FullLength  << endl;
 
       }
 
@@ -280,8 +283,8 @@ namespace mu2e {
       double ds2FrontZG    = toyDS2VacuumInfo.centerInMu2e()(2) -
         ds2HalfLength;
 
-      double ds3EndZG      = ds23BoudaryZG +
-        2.*ds3HalfLength;
+      double ds3EndZG      = ds23BoudaryZG + 
+        ds3FullLength;
 
 
       if ( verbosityLevel > 0) {

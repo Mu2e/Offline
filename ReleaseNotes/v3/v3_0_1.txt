@@ -1,10 +1,38 @@
-  $Id: v3_0_1.txt,v 1.7 2013/03/22 21:45:18 gandr Exp $
-  $Author: gandr $
-  $Date: 2013/03/22 21:45:18 $
+  $Id: v3_0_1.txt,v 1.8 2013/03/26 14:46:09 knoepfel Exp $
+  $Author: knoepfel $
+  $Date: 2013/03/26 14:46:09 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+6) March 26, 2013 knoepfel
+   Added new DS geometry class.  Modified geom_01.txt to include new file
+   DetectorSolenoid_01.txt file.  As DS3 vacuum volume is now represented as
+   a G4Polycone object instead of a subtraction solid, other files needed 
+   modification and are listed below.
+   
+   Note that a diff of constructProtonAbsorber.cc between this new version
+   and the previous might show significant discrepancies between files---
+   this is a red herring, as the tab-formatting was just adjusted in the new
+   version...sorry about that.  Only the handling of ToyDS3Vacuum was modified
+   in this file.
+   
+   New:
+     DetectorSolenoidGeom/inc/DetectorSolenoid.hh
+     DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh
+     DetectorSolenoidGeom/src/DetectorSolenoid.cc
+     DetectorSolenoidGeom/src/DetectorSolenoidMaker.hh
+     Mu2eG4/test/DetectorSolenoid_01.txt
+   Modified:
+     GeometryService/src/GeometryService_service.cc
+     GeometryService/src/SConscript
+     Mu2eG4/src/constructDS.cc
+     Mu2eG4/src/constructMBS.cc
+     Mu2eG4/src/constructNeutronAbsorber.cc
+     Mu2eG4/src/constructProtonAbsorber.cc
+     Mu2eG4/test/geom_01.txt
+     ReleaseNotes/v3/v3_0_1.txt
 
 5) March 22, 2013 gandr
    More flexible configuration of debug printouts in ParticleGunImpl

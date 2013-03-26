@@ -1,9 +1,9 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.12 2012/11/19 23:03:49 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/19 23:03:49 $
+// $Id: constructMBS.cc,v 1.13 2013/03/26 14:46:09 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/03/26 14:46:09 $
 //
 // Original author KLG
 //
@@ -41,6 +41,7 @@
 #include "G4Color.hh"
 #include "G4VSolid.hh"
 #include "G4Tubs.hh"
+#include "G4Polycone.hh"
 #include "G4Cons.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4VPhysicalVolume.hh"
@@ -85,12 +86,11 @@ namespace mu2e {
     VolumeInfo const & hallInfo =                _helper->locateVolInfo("HallAir");
 
     if ( verbosityLevel > 0) {
-      double pzhl = static_cast<G4Tubs*>(detSolDownstreamVacInfo.solid->GetConstituentSolid(0))->GetZHalfLength();
       double pZOffset = detSolDownstreamVacInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " ToyDS3Vacuum   Offset in Mu2e    : " <<
-        detSolDownstreamVacInfo.centerInMu2e() << endl;
+      G4PolyconeHistorical* const origParms = static_cast<G4Polycone*>(detSolDownstreamVacInfo.solid)->GetOriginalParameters();
+      int    nPlanes   = origParms->Num_z_planes;
       cout << __func__ << " ToyDS3Vacuum Z extent in Mu2e    : " <<
-        pZOffset - pzhl << ", " << pZOffset + pzhl << endl;
+        origParms->Z_values[0] << ", " << origParms->Z_values[nPlanes-1] << endl;
     }
 
     // BSTS see WBS 5.8 for the naming conventions
