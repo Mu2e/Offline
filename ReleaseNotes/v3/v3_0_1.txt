@@ -1,15 +1,31 @@
-  $Id: v3_0_1.txt,v 1.10 2013/03/26 19:44:39 genser Exp $
-  $Author: genser $
-  $Date: 2013/03/26 19:44:39 $
+  $Id: v3_0_1.txt,v 1.11 2013/03/26 23:38:14 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2013/03/26 23:38:14 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
 
+12) March 26, 2013 kutschke
+    Removed LTrackerGeom and all references to LTracker throughout the code base.
+
+11) March 26, 2013 kutschke
+    Removed the HitCluster class.  This was LTracker specific code that was used as a test bed for early
+    ideas about data products.
+
+10) March 26, 2013 kutschke
+    Removed the directory HoughTransform and the HoughCircle data products in RecoDataProducts.
+    These were relics from early efforts by Bob Bernstein in 2009 or so.
+
+9) March 26, 2013 kutschke
+   GeneralUtilities/inc/OwningPointerCollection.hh
+   The copy c'tor and the copy assignment are back to being private and unimplemented in order
+   to be compatible with genreflex.
+
 8) March 26, 2013 genser
 
    Disabled muConversionAtRest by default (relates to g4.doMuMinusConversionAtRest)
-     Mu2eG4/src/toggleProcesses.cc 
+     Mu2eG4/src/toggleProcesses.cc
 
 7) March 26, 2013 knoepfel
    Address geometrical inconsistencies: DS z-length is now 10750 mm
@@ -25,15 +41,15 @@
 6) March 26, 2013 knoepfel
    Added new DS geometry class.  Modified geom_01.txt to include new file
    DetectorSolenoid_01.txt file.  As DS3 vacuum volume is now represented as
-   a G4Polycone object instead of a subtraction solid, other files needed 
+   a G4Polycone object instead of a subtraction solid, other files needed
    modification and are listed below.
-   
+
    Note that a diff of constructProtonAbsorber.cc between this new version
    and the previous might show significant discrepancies between files---
    this is a red herring, as the tab-formatting was just adjusted in the new
    version...sorry about that.  Only the handling of ToyDS3Vacuum was modified
    in this file.
-   
+
    New:
      DetectorSolenoidGeom/inc/DetectorSolenoid.hh
      DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh
