@@ -8,11 +8,10 @@ A few clarifications:
 1) The migration tools are only present in a checked out version of art; they are
    not present in an installed version of art.
 
-2) A step Chris forgot.  Use <path-to-tools/migration>/fix-services.pl
-
-3) One step was missed.  We needed to fix each service.cc with:
-
-perl -f <path-to-tools>/fix_signals.pl oldfile_service.cc >& newfile_service.cc
+2) Chris missed two steps.
+   a) use <path-to-tools/migration>/fix-services.pl
+   b) foreach *_service.cc :
+      perl -wapi\~ <path-to-tools>/fix-signals.pl file_service.cc
 
 4) Then we had to change by hand the items listed in v3_0_0.txt, item 1).
 
