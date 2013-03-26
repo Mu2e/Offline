@@ -26,16 +26,13 @@ namespace mu2e {
 
     // Position is computed on the fly, relative to the TS torus
     // radius, and the lengths of TS5 and the vacuum volumes
-    // specified0; assumption is made that the front frace is flesh
+    // specified0; assumption is made that the front frace is flush
     // with the edge of the DS
     double dsPosZ      = bl.getTS().torusRadius() +
       2.*bl.getTS().getTS5().getHalfLength() -
       2.*ds->halfLengthDs1()-
       2.*ds->frontHalfLength()+
       ds->halfLength();
-
-    // Different test
-    dsPosZ = c.getDouble("toyDS.z0");
 
     // for x component: +1(-1)*solenoidOffset for PS (DS)
     ds->_position           = CLHEP::Hep3Vector(-bl.solenoidOffset(), 0, dsPosZ );

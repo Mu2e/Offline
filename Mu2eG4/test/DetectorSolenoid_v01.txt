@@ -7,27 +7,30 @@
 //   1 - DS1, a small piece of DS vacuum that surrounds TS5.
 //   2 - DS2, the upstream part of the DS vacuum, that has a graded field.
 //   3 - DS3, the downstream part of the DS vacuum, that may have a uniform field.
-
+//
 // All volumes except 3 are (annular) cylinders; 3 is now a polycone
 // object that has a cylinder that extends beyond the detector
 // solenoid, allowing for the MBS, which extends from inside the
 // solenoid to outside of it.
-
-// NOTE: the size of DS3 is constrained by the placement of DS2
+//
+// NOTE 1: the size of DS3 is constrained by the placement of DS2
 // vacuum volume, the z extent of the DS itself, and the end location
 // of the MBS, outside of the det. solenoid.  Therefore a
 // toyDS3.halfLength parameter is not included below as it is superfluous
 // and could possibly lead to geometrical inconsistencies.
+//
+// NOTE 2: The front face is now designed to be flush with the edge of
+// the DS.
+//
+// NOTE 3: halflength of DS is now consistent with CDR of 10750 mm.
+// Half length of DS1 has been adjusted such that given an assumed
+// rTorus of 2929 mm, and TS5 half-length of 500 mm, the start of the
+// DS is at 3239 mm, consistent with CDR.
 
-// NOTE: the position of the DS is currently independent of the TS.
-// The vacuum volumes, however, are directly tied to it, as can be
-// seen in constructDS.cc.
-
-double toyDS.rIn                = 1000;
-double toyDS.rOut               = 1300;
-double toyDS.halfLength         = 6000.;
-double toyDS.z0                 = 9226.;
-double toyDS1.halfLength        =  150.;
+double toyDS.rIn                = 1000.;
+double toyDS.rOut               = 1300.;
+double toyDS.halfLength         = 5375.;
+double toyDS1.halfLength        =  195.; 
 double toyDS2.halfLength        = 2350.;
 double toyDS.frontHalfLength    =  150.;
 string toyDS.materialName       = "G4_Al";

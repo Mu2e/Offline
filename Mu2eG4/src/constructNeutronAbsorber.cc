@@ -1,9 +1,9 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructNeutronAbsorber.cc,v 1.9 2013/03/26 14:46:09 knoepfel Exp $
+// $Id: constructNeutronAbsorber.cc,v 1.10 2013/03/26 19:27:37 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/03/26 14:46:09 $
+// $Date: 2013/03/26 19:27:37 $
 //
 // Original author KLG
 //
@@ -75,7 +75,7 @@ namespace mu2e {
     bool hasExternalPart       = _config.getBool("neutronabsorber.hasExternalPart");
     bool hasInternalPart       = _config.getBool("neutronabsorber.hasInternalPart");
 
-    bool NAVisible             = _config.getBool("neutronabsorber.visible");
+    bool NAVisible             = _config.getBool("neutronabsorber.visible",false);
     bool NASolid               = _config.getBool("neutronabsorber.solid");
 
     bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
@@ -219,33 +219,47 @@ namespace mu2e {
 
     if (hasInternalPart) {
 
+      
       CLHEP::Hep3Vector NAI1OffsetInMu2e  = CLHEP::Hep3Vector(solenoidOffset,0.,NAIZ01);
+
+      double NAI1FrontZ    = NAIZ01 - NAIHalfLengthZ01;
+      double NAI12BoundaryZ = NAIZ01 + NAIHalfLengthZ01;
 
       if ( verbosityLevel > 0) {
         cout << __func__ << " NAI1OffsetInMu2e                 : " << NAI1OffsetInMu2e << endl;
       }
 
-      double NAIZ02 = NAIZ01 + NAIHalfLengthZ01 + NAIHalfLengthZ02;
+      // Get ToyDS2Vacuum & ToyDS3Vacuum info
+
+      VolumeInfo const & toyDS2VacuumInfo = _helper->locateVolInfo("ToyDS2Vacuum");
+      VolumeInfo const & toyDS3VacuumInfo = _helper->locateVolInfo("ToyDS3Vacuum");
+
+      // halflength of second neutron absorber constrained by z-extent
+      // of ToyDS3Vacuum
+
+      double ds2HalfLength =
+        dynamic_cast<G4Tubs* const>(toyDS2VacuumInfo.solid)->GetZHalfLength();
+
+      const G4PolyconeHistorical* ds3VacParams = 
+        dynamic_cast<G4Polycone* const>(toyDS3VacuumInfo.solid)->GetOriginalParameters();
+      const int nPlanes    = ds3VacParams->Num_z_planes;
+      double ds3FullLength = ds3VacParams->Z_values[nPlanes-1]-ds3VacParams->Z_values[0];
+
+      NAIHalfLengthZ02 = (ds3VacParams->Z_values[1] - NAI12BoundaryZ)*0.5;
+
+      double NAIZ02    = NAIZ01 + NAIHalfLengthZ01 + NAIHalfLengthZ02;
+      double NAI2EndZ  = NAIZ02 + NAIHalfLengthZ02;
 
       if ( verbosityLevel > 0) {
         cout << __func__ << " NAIZ01                           : " << NAIZ01  << endl;
         cout << __func__ << " NAIZ02                           : " << NAIZ02  << endl;
       }
 
-      double NAI1FrontZ    = NAIZ01 - NAIHalfLengthZ01;
-      double NAI12BoundaryZ = NAIZ01 + NAIHalfLengthZ01;
-      double NAI2EndZ      = NAIZ02 + NAIHalfLengthZ02;
-
       if ( verbosityLevel > 0) {
         cout << __func__ << " NAI1FrontZ                       : " << NAI1FrontZ    << endl;
         cout << __func__ << " NAI12BoundaryZ                   : " << NAI12BoundaryZ << endl;
         cout << __func__ << " NAI2EndZ                         : " << NAI2EndZ      << endl;
       }
-
-      // now local offsets in ToyDS2Vacuum & ToyDS3Vacuum
-
-      VolumeInfo const & toyDS2VacuumInfo = _helper->locateVolInfo("ToyDS2Vacuum");
-      VolumeInfo const & toyDS3VacuumInfo = _helper->locateVolInfo("ToyDS3Vacuum");
 
       // the Z offset of the InternalNeutronAbsorber2
 
@@ -256,14 +270,6 @@ namespace mu2e {
 
       // G4VSolid* dsv1s = toyDS2VacuumInfo.solid
       // G4VPhysicalVolume* dsv1p = toyDS2VacuumInfo.physical;
-
-      double ds2HalfLength =
-        dynamic_cast<G4Tubs* const>(toyDS2VacuumInfo.solid)->GetZHalfLength();
-
-      const G4PolyconeHistorical* ds3VacParams = 
-        dynamic_cast<G4Polycone* const>(toyDS3VacuumInfo.solid)->GetOriginalParameters();
-      const int nPlanes    = ds3VacParams->Num_z_planes;
-      double ds3FullLength = ds3VacParams->Z_values[nPlanes-1]-ds3VacParams->Z_values[0];
 
       if ( verbosityLevel > 0) {
         cout << __func__ << " toyDS2VacuumInfo.solid->GetZHalfLength()     : " <<
@@ -283,9 +289,7 @@ namespace mu2e {
       double ds2FrontZG    = toyDS2VacuumInfo.centerInMu2e()(2) -
         ds2HalfLength;
 
-      double ds3EndZG      = ds23BoudaryZG + 
-        ds3FullLength;
-
+      double ds3EndZG      = ds23BoudaryZG + (ds3VacParams->Z_values[1] - ds3VacParams->Z_values[0]);
 
       if ( verbosityLevel > 0) {
         cout << __func__ << " ds2FrontZG                       : " << ds2FrontZG    << endl;
@@ -404,7 +408,6 @@ namespace mu2e {
       TubsParams NAI23Params( NAIInnerRadius2,
                               NAIOuterRadius,
                               NAIHalfLengthZ02-halfDeltaBoundary);
-
 
       VolumeInfo INA22Info  = nestTubs("InternalNeutronAbsorber22",
                                        NAI22Params,

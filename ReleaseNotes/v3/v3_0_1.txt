@@ -1,10 +1,21 @@
-  $Id: v3_0_1.txt,v 1.8 2013/03/26 14:46:09 knoepfel Exp $
+  $Id: v3_0_1.txt,v 1.9 2013/03/26 19:27:37 knoepfel Exp $
   $Author: knoepfel $
-  $Date: 2013/03/26 14:46:09 $
+  $Date: 2013/03/26 19:27:37 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+7) March 26, 2013 knoepfel
+   Address geometrical inconsistencies: DS z-length is now 10750 mm
+   instead of 12000 mm, which was inconsistent with CDR specs.  Z-max
+   of int. neutron absorber constrained to not exceed z-extent of DS.
+
+   Modified files:
+     DetectorSolenoidGeom/src/DetectorSolenoidMaker.cc
+     Mu2eG4/src/constructNeutronAbsorber.cc
+     Mu2eG4/test/DetectorSolenoid_v01.txt
+     ReleaseNotes/v3/v3_0_1.txt
 
 6) March 26, 2013 knoepfel
    Added new DS geometry class.  Modified geom_01.txt to include new file
