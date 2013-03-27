@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.11 2013/03/27 18:37:03 murat Exp $
+// $Id: CaloMatching_module.cc,v 1.12 2013/03/27 21:06:10 murat Exp $
 // $Author: murat $
-// $Date: 2013/03/27 18:37:03 $
+// $Date: 2013/03/27 21:06:10 $
 //
 // Original author G. Pezzullo
 //
@@ -369,7 +369,7 @@ void CaloMatching::doMatching(art::Event & evt, bool skip){
   evt.getByLabel(_trkToCaloExtrapolModuleLabel, trjExtrapols);
   nex = trjExtrapols->size();
 
-  std::auto_ptr<TrackClusterLink> trackClusterLink(new TrackClusterLink);
+  std::unique_ptr<TrackClusterLink> trackClusterLink(new TrackClusterLink);
   
   ClusterMapVector clusterMapVector;
 
@@ -778,7 +778,7 @@ void CaloMatching::doMatching(art::Event & evt, bool skip){
   }
 
  END:;
-  evt.put(trackClusterLink);
+  evt.put(std::move(trackClusterLink));
   cout << "Event "<<evt.id().event()<<" CaloMatching done..."<<endl;
 
 }
