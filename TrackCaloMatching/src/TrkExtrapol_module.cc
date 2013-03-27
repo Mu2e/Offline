@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.8 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
+// $Id: TrkExtrapol_module.cc,v 1.9 2013/03/27 18:37:24 murat Exp $
+// $Author: murat $
+// $Date: 2013/03/27 18:37:24 $
 //
 // Original author G. Pezzullo
 //
@@ -217,121 +217,113 @@ void TrkExtrapol::produce(art::Event & evt ) {
 } // end of analyze
 
 
+//-----------------------------------------------------------------------------
 void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
+  const char* oname = "TrkExtrapol::doExtrapolation";
+  double lowrange, highrange, zmin, zmax;
 
-        if(_diagLevel>2){
-	  cout<<endl<<"Event Number : "<< evt.event()<< endl;
-	  cout<<"\n start TrkExtrapol..."<<endl;
-        }
-        //create output
-        unique_ptr<TrkToCaloExtrapolCollection> extrapolatedTracks(new TrkToCaloExtrapolCollection );
-        TrkToCaloExtrapolCollection tmpExtrapolatedTracks;
+  //create output
+  auto_ptr<TrkToCaloExtrapolCollection> extrapolatedTracks(new TrkToCaloExtrapolCollection );
+  TrkToCaloExtrapolCollection tmpExtrapolatedTracks;
+  
+  //Get handle to calorimeter
+  art::ServiceHandle<GeometryService> geom;
+  if(! geom->hasElement<VaneCalorimeter>() ) return;
+  GeomHandle<VaneCalorimeter> cg;
 
-        //Get handle to calorimeter
-        art::ServiceHandle<GeometryService> geom;
-        if(! geom->hasElement<VaneCalorimeter>() ) return;
-        GeomHandle<VaneCalorimeter> cg;
+  Calorimeter4VanesGeom *CaloVanes = new Calorimeter4VanesGeom();
 
-        art::Handle<KalRepCollection> trksHandle;
-        evt.getByLabel(_fitterModuleLabel,_iname,trksHandle);
-        KalRepCollection const& trks = *trksHandle;
+  art::Handle<KalRepCollection> trksHandle;
+  evt.getByLabel(_fitterModuleLabel,"DownstreameMinus",trksHandle);
+  KalRepCollection const& trks = *trksHandle;
+  
+  if(_diagLevel>2){
+    cout<<endl<<"Event Number : "<< evt.event()<< endl;
+    cout<<"\n start TrkExtrapol..."<<endl;
+    cout<<"trks.size() = "<< trks.size() <<endl;
+  }
 
-        if(_diagLevel>2){
-	  cout<<"trks.size() = "<< trks.size() <<endl;
-        }
+  double circleRadius = 0.0, centerCircleX=0.0, centerCircleY = 0.0, angle = 0.0;
+  int res0 = -1;
 
-        double circleRadius = 0.0, centerCircleX=0.0, centerCircleY = 0.0, angle = 0.0;
-        int res0 = -1;
+  for ( size_t itrk=0; itrk< trks.size(); ++itrk ){
 
-        for ( size_t i=0; i< trks.size(); ++i ){
+    KalRep const* trep = trks[itrk];
+    if ( !trep ) continue;
+    TrkDifTraj const& traj = trep->traj();
+    double pos = 0.0;
+    res0 = -1;
+    
+    double endTrk = trep->endFoundRange();
+					// starting from the end of the tracker!!!FIXME
+    HelixTraj trkHel(trep->helix(endTrk).params(),trep->helix(endTrk).covariance());
 
-                KalRep const* trep = trks[i];
-                if ( !trep ) continue;
-                TrkDifTraj const& traj = trep->traj();
-                double pos = 0.0;
-                res0 = -1;
+    angle = Constants::pi*0.5 + trkHel.phi0();
 
-                double endTrk = trep->endFoundRange();
-                HelixTraj trkHel(trep->helix(endTrk).params(),trep->helix(endTrk).covariance());//starting from the end of he tracker!!!FIXME
+    circleRadius  = 1.0/trkHel.omega();
+    centerCircleX = trkHel.d0() + circleRadius;
+    centerCircleY = centerCircleX*sin(angle);
+    centerCircleX *= cos(angle);
 
-                angle = Constants::pi*0.5 + trkHel.phi0();
+    // 2013-03-22 P.Murat : add 1cm tolerance
+    zmin = CaloVanes->ZfrontFaceCalo()-10.;
+    zmax = CaloVanes->ZbackFaceCalo ()+10.;
+    
+    lowrange  = trkHel.zFlight(zmin);  /*1740*/
+    highrange = trkHel.zFlight(zmax); /*3500*/ 
+    
+    if (_diagLevel>2) {
+      
+      cout<<endl<<"Event Number : "<< evt.event()<< endl;
+      cout<<"------ trk number : "<<itrk<<" ------"<<endl;
+      cout<<"found traj, point of traj at "<<traj.position(pos)<<endl;
+      cout<<"*************** lowRange =  "<< lowrange <<", highRange = "<< highrange << endl;
+      cout<< " is the particle in the 0 quadrant?"<<endl<<
+	", traj.position(lowrange).x() = "<< traj.position(lowrange).x()<<
+	", traj.position(lowrange).y() = "<< traj.position(lowrange).y()<<
+	", traj.position(lowrange).z() = "<< traj.position(lowrange).z()<<endl;
 
-                circleRadius = 1.0/trkHel.omega();
-                centerCircleX = trkHel.d0() + circleRadius;
-                centerCircleY = centerCircleX*sin(angle);
-                centerCircleX *= cos(angle);
+      printf("circle: R = %10.3f X0 = %10.3f  Y0 = %10.3f phi0 = %10.3f\n",
+	     circleRadius,centerCircleX,centerCircleY,angle);
+    }
 
-                double lowrange = trkHel.zFlight(/*1740*/CaloVanes->ZfrontFaceCalo() ), highrange = trkHel.zFlight(/*3500*/ CaloVanes->ZbackFaceCalo() );
+    //    const int nVanes = cg->nVane();
 
-                DetIntersection intersec0;
-		if(_diagLevel>2){
+    Calorimeter4VanesGeom::IntersectData_t  intersection[100];
+    int                                     nint(0);
 
-                        cout<<endl<<"Event Number : "<< evt.event()<< endl;
-                        cout<<"------ trk number : "<<i<<" ------"<<endl;
-                        cout<<"found traj, point of traj at "<<traj.position(pos)<<endl;
-                        cout<<"*************** lowRange =  "<<trkHel.zFlight(1740)<<", highRange = "<<trkHel.zFlight(3500)<<endl;
-                        cout<< " is the particle in the 0 quadrant?"<<endl<<
-                                        ", traj.position(lowrange).x() = "<< traj.position(lowrange).x()<<
-                                        ", traj.position(lowrange).y() = "<< traj.position(lowrange).y()<<
-                                        ", traj.position(lowrange).z() = "<< traj.position(lowrange).z()<<endl;
-                        cout<< ", circleRadius = "<< circleRadius<<
-                                        ", centerCircleX = "<< centerCircleX<<
-                                        ", centerCircleY = "<< centerCircleY<<endl;
+    CaloVanes->caloExtrapol(_diagLevel, (int)evt.event(), 
+			    trep, lowrange, highrange, 
+			    trkHel,  
+			    res0, 
+			    nint,
+			    intersection);
+    
+    if (nint == 0) {
+      printf("%s ERROR: intersection not found, res0 = %i\n",oname,res0);
+    }
 
-                        cout<< " angle phi0 = " << angle<< endl;
-                }
+    for (int i=0; i<nint; i++) {
+      KalRepPtr tmpRecTrk(trksHandle,itrk);
+      tmpExtrapolatedTracks.push_back(
+				      TrkToCaloExtrapol(intersection[i].fVane,
+							tmpRecTrk,
+							intersection[i].fSEntr,
+							intersection[i].fSExit)
+				      );
+    }
 
-                const int nVanes = cg->nVane();
-                Length length[nVanes];
-                CaloVanes->caloExtrapol(_diagLevel, (int)evt.event(),trep, lowrange, highrange, trkHel,  res0, intersec0, length);
-		if(_diagLevel>2){
-		  cout<<"Event Number : "<< evt.event()<< endl;
-                }
-                if(res0 != 1){
-		  if(_diagLevel>2){
-                        cout<< "ALLERT, intersection not found"<<endl;
-		  }
-                }else{
-                        //if( _maxNumberStoresPoints>1){
-                        for(int jVane=0; jVane <nVanes; ++jVane){
+    // P.Murat: why would one need to sort at this point?
 
-                                for(Length::iterator it = length[jVane].begin(); it != length[jVane].end(); ++it){
-
-                                        lowrange = it->first;
-                                        highrange = it->second;
-
-                                        KalRepPtr/*TrkRecoTrkPtr*/ tmpRecTrk(trksHandle, i);
-                                        tmpExtrapolatedTracks.push_back(
-                                                        TrkToCaloExtrapol( jVane,tmpRecTrk,lowrange, highrange)
-                                        );
-
-                                        
-                                        //if(evt.event()%10==0){
-                                        if(_diagLevel>2){
-					  cout<< "Intersection found..."<<endl;
-					  cout<<"vane intersected = "<< jVane <<
-					    ", entrance pathLength = "<<lowrange<<
-					    ", exit pathLength = "<<highrange<<endl;
-					  cout<<"point of traj at entrance : "<<traj.position(lowrange)<<endl;
-					  cout<<"errPoint of traj at entrance : "<<trep->positionErr(lowrange)<<endl;
-					  cout<<"point of traj at the exit : "<<traj.position(highrange)<<endl;
-					  cout<<"errPoint of traj at the exit : "<<trep->positionErr(highrange)<<endl;
-                                        }
-
-
-                                }//end loop on pathLengths[]
-                        }//end loop on vanes
-
-                }
-                std::sort(tmpExtrapolatedTracks.begin(), tmpExtrapolatedTracks.end());
-                for(TrkToCaloExtrapolCollection::iterator it = tmpExtrapolatedTracks.begin(); it != tmpExtrapolatedTracks.end(); ++it){
-                        extrapolatedTracks->push_back(*it);
-                }
-
-        }//end loop on recoTrj
-
-        evt.put(std::move(extrapolatedTracks));
-
+    std::sort(tmpExtrapolatedTracks.begin(), tmpExtrapolatedTracks.end());
+    for(TrkToCaloExtrapolCollection::iterator it = tmpExtrapolatedTracks.begin(); it != tmpExtrapolatedTracks.end(); ++it){
+      extrapolatedTracks->push_back(*it);
+    }
+    
+  }//end loop on recoTrj
+  
+  evt.put(extrapolatedTracks);
+  
 }
 
 }
