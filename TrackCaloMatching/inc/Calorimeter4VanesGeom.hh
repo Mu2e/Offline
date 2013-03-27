@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.7 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: Calorimeter4VanesGeom.hh,v 1.8 2013/03/27 18:38:37 murat Exp $
+// $Author: murat $
+// $Date: 2013/03/27 18:38:37 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -100,11 +100,17 @@ namespace mu2e{
 typedef std::vector<std::pair<double, double> > Length;
 
 
-
-
-
 class Calorimeter4VanesGeom {
 public :
+
+    struct IntersectData_t {
+      int    fVane;
+      int    fRC;			// return code, 0=success, <0: failure, details TBD
+      double fSEntr;
+      double fSExit;
+    };
+
+    
         //Construct from a transform.
         Calorimeter4VanesGeom(){
                 GeomHandle<VaneCalorimeter> cg;
@@ -128,7 +134,7 @@ public :
 
 
         //Destructor
-        ~Calorimeter4VanesGeom (){}
+        ~Calorimeter4VanesGeom ();
 
         CLHEP::Hep3Vector const& norm(){return _norm;}
 
@@ -167,10 +173,23 @@ public :
 
         bool behindVane(HepPoint pos, int& vane);//{
 
-        void caloExtrapol(int& diagLevel,int evtNumber,/*TrkDifTraj const& traj*/ TrkRep const* trep,double& lowrange, double& highrange,
-                        HelixTraj &trkHel, int &res0, DetIntersection &intersec0, Length *pathLengths/*, int& maxNumberExtrapolPoints*/);
+        void caloExtrapol(int&          diagLevel,
+			  int           evtNumber, 
+			  TrkRep const* trep,
+			  double&       lowrange, 
+			  double&       highrange,
+			  HelixTraj     &trkHel, 
+			  int           &res0, 
+			  int&             NIntersections,
+			  IntersectData_t* Intersections);
 
-        void caloExtrapol(TrkRep const* trep,double& lowrange, double& highrange, HelixTraj &trkHel, int &res0, DetIntersection &intersec0, Length *pathLengths);
+        void caloExtrapol(TrkRep const* trep, 
+			  double& lowrange, 
+			  double& highrange, 
+			  HelixTraj &trkHel, 
+			  int &res0, 
+			  DetIntersection &intersec0, 
+			  Length *pathLengths);
 
         void minimumPathLength(Length *length, int& vane, double& lowrange, double& highrange);
         

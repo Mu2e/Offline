@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.cc,v 1.5 2013/03/05 20:33:26 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:26 $
+// $Id: Calorimeter4VanesGeom.cc,v 1.6 2013/03/27 18:37:52 murat Exp $
+// $Author: murat $
+// $Date: 2013/03/27 18:37:52 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -178,408 +178,191 @@ bool Calorimeter4VanesGeom::behindVane(double& posX, double& posY, int& vane){
         }else return false;
 }
 
+//-----------------------------------------------------------------------------
 bool Calorimeter4VanesGeom::behindVane(HepPoint pos, int& vane){
-        if(pos.z()<_ZfrontFaceCalo || pos.z()>_ZbackFaceCalo) return false;
 
-        if(vane == 3){
-                if( fabs( pos.x() ) <= _vaneHalfThickness && pos.y() <= _outherRadius && pos.y() >= _innerRadius){
-                        return true;
-                }else return false;
-        }else if(vane == 2){
+  bool rc(false);
 
-                if( fabs( pos.y() ) <= _vaneHalfThickness && pos.x() <= _outherRadius && pos.x() >= _innerRadius){
-                        return true;
-                }else return false;
-        }else if(vane == 1){
-                if( fabs( pos.x() ) <= _vaneHalfThickness && pos.y() <= -_innerRadius && pos.y() >= -_outherRadius){
-                        return true;
-                }else return false;
-        }else if(vane == 0){
-                if( fabs( pos.y() ) <= _vaneHalfThickness && pos.x() <= -_innerRadius && pos.x() >= -_outherRadius){
-                        return true;
-                }else return false;
-        }else return false;
+  if (pos.z() >= _ZfrontFaceCalo && (pos.z() <= _ZbackFaceCalo)) {
+
+    if (vane == 3) {
+      if (fabs(pos.x()) <= _vaneHalfThickness && pos.y() <= _outherRadius && pos.y() >= _innerRadius) rc = true;
+    }
+    else if (vane == 2) {
+      if (fabs(pos.y()) <= _vaneHalfThickness && pos.x() <= _outherRadius && pos.x() >= _innerRadius) rc = true;
+    } 
+    else if(vane == 1){
+      if (fabs( pos.x() ) <= _vaneHalfThickness && pos.y() <= -_innerRadius && pos.y() >= -_outherRadius) rc = true;
+    }
+    else if (vane == 0) {
+      if (fabs(pos.y() ) <= _vaneHalfThickness && pos.x() <= -_innerRadius && pos.x() >= -_outherRadius) rc = true;
+    } 
+  }
+  return rc;
 }
 
-void Calorimeter4VanesGeom::caloExtrapol(int& diagLevel,int evtNumber, TrkRep const* trep,double& lowrange, double& highrange,
-                HelixTraj &trkHel, int &res0, DetIntersection &intersec0, Length *pathLengths/*, int& maxNumberExtrPoints*/){
-        const KalRep* kalrepc = dynamic_cast<const KalRep*>(trep);
-        KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
-        if(diagLevel>2){
+//-----------------------------------------------------------------------------
+  void Calorimeter4VanesGeom::caloExtrapol(int&             diagLevel,
+					   int              evtNumber, 
+					   TrkRep const*    trep,
+					   double&          lowrange, 
+					   double&          highrange,
+					   HelixTraj        &trkHel, 
+					   int              &res0, 
+					   int&              NIntersections,
+					   IntersectData_t*  Intersection  ) {
 
-                cout<<"start caloExtrapol, lowrange = "<<lowrange<<
-                                ", highrange = "<<highrange<<endl;
-                cout<<"point of traj at lowrange : "<<kalrep->traj().position(lowrange)<<endl;
-                cout<<"point of traj at highrange : "<<kalrep->traj().position(highrange)<<endl;
-                cout<<"fltLMin = "<<kalrep->startValidRange()<<
-                                ", fltLMax = "<<kalrep->endValidRange()<<endl;
-        }
+    static const char* oname = "Calorimeter4VanesGeom::caloExtrapol";
 
-        if(kalrep->extendThrough(lowrange).success() != 1) return;
+    const KalRep* kalrepc = dynamic_cast<const KalRep*>(trep);
+    KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
+    if(diagLevel>2){
 
-        if(diagLevel>2){
-                cout<<", after extention..."<<
-                                ", lowrange = "<<lowrange<<
-                                ", highrange = "<<highrange<<endl;
-                cout<<"point of traj at lowrange : "<<kalrep->traj().position(lowrange)<<endl;
-                cout<<"point of traj at highrange : "<<kalrep->traj().position(highrange)<<endl;
-                cout<<"fltLMin = "<<kalrep->startValidRange()<<
-                                ", fltLMax = "<<kalrep->endValidRange()<<endl;
-        }
+      cout<<"start caloExtrapol, lowrange = "<<lowrange<<
+	", highrange = "<<highrange<<endl;
+      cout<<"point of traj at lowrange : "<<kalrep->traj().position(lowrange)<<endl;
+      cout<<"point of traj at highrange : "<<kalrep->traj().position(highrange)<<endl;
+      cout<<"fltLMin = "<<kalrep->startValidRange()<<
+	", fltLMax = "<<kalrep->endValidRange()<<endl;
+    }
 
-        TrkDifTraj const &traj = kalrep->traj();
+    TrkErrCode rc;
+    rc = kalrep->extendThrough(lowrange);
 
-        double circleRadius = 0.0;//, centerCircleX=0.0, centerCircleY = 0.0, angle = 0.0;
-        double startLowrange = lowrange;//, startHighrange = highrange;
-        circleRadius = 1.0/trkHel.omega();
+    if (rc.success() != 1) {
+      printf(" %s ERROR: could not extend to lowrange = %10.3f, rc = %i, BAIL OUT\n",oname,lowrange,rc.success());
+      return;
+    }
 
-        const int nVanes = _nVanes;
+    if(diagLevel>2){
+      cout<<", after extention..."<<
+	", lowrange = "<<lowrange<<
+	", highrange = "<<highrange<<endl;
+      cout<<"point of traj at lowrange : "<<kalrep->traj().position(lowrange)<<endl;
+      cout<<"point of traj at highrange : "<<kalrep->traj().position(highrange)<<endl;
+      cout<<"fltLMin = "<<kalrep->startValidRange()<<
+	", fltLMax = "<<kalrep->endValidRange()<<endl;
+    }
 
-        double *entr = new double[nVanes];
-        double *ex = new double[nVanes];
-        bool *isInside = new bool[nVanes];
-        for(int jVane=0; jVane<nVanes; ++jVane){
-                isInside[jVane] = false;
-                entr[jVane] = 0.0;
-                ex[jVane] = 0.0;
-        }
-        int nAngleSteps = 5000;//500;
+    TrkDifTraj const &traj = kalrep->traj();
 
-        double pathStepSize = Constants::twoPi / (double) nAngleSteps;
-        nAngleSteps *= 6.0;
+    double circleRadius = 0.0;//, centerCircleX=0.0, centerCircleY = 0.0, angle = 0.0;
+    double startLowrange = lowrange;//, startHighrange = highrange;
+    circleRadius = 1.0/trkHel.omega();
 
-        pathStepSize *= circleRadius/fabs(trkHel.cosDip());
+    const int nVanes = _nVanes;
 
-        if(diagLevel>2){
-                cout<<"circle radius = "<< circleRadius<<endl
-		    <<", pathStepSize = "<<pathStepSize<<endl;
-        }
+    double *entr = new double[nVanes];
+    double *ex = new double[nVanes];
+    bool *isInside = new bool[nVanes];
+    for(int jVane=0; jVane<nVanes; ++jVane){
+      isInside[jVane] = false;
+      entr[jVane] = 0.0;
+      ex[jVane] = 0.0;
+    }
+    int nAngleSteps = 500;
+    
+    double pathStepSize = Constants::twoPi / (double) nAngleSteps;
+    nAngleSteps *= 2.0;
+    
+    pathStepSize *= circleRadius/fabs(trkHel.cosDip());
+    
+    if (diagLevel>2){
+      cout<< "circle radius = "<< circleRadius<<
+	", pathStepSize = "<<pathStepSize<<endl;
+    }
+    
+    double tmpRange = startLowrange;
 
-        double tmpRange = startLowrange;
-        int resT = -1;
-        Length tmpPathLengths[nVanes],tmpPathLengthsPre[nVanes];
-
-        for(int iStep = 0; iStep< nAngleSteps; ++iStep){
-                for(int jVane=0; jVane<nVanes; ++jVane){
-                        if(diagLevel>4){
-                                cout<<" tmpRange = "<< tmpRange<<
-                                                "trj.position(tmpRange) = "<<traj.position(tmpRange)<<endl;
-                        }
-
-                        if(behindVane(traj.position(tmpRange), jVane) ){
-                                if(!isInside[jVane]){
-                                        if(diagLevel>0){
-                                                cout<<"Event Number : "<< evtNumber<< endl;
-                                                cout<<" vane "<<jVane<<
-                                                                "isInside : true"<<
-                                                                "pathLength entrance = "<<tmpRange<<endl
-						    <<"position entrance = "<<traj.position(tmpRange)<<endl;
-                                        }
-                                        isInside[jVane] = true;
-                                        entr[jVane] = tmpRange - pathStepSize;
-
-                                }
-                        }else if(isInside[jVane]){
-                                ex[jVane] = tmpRange + pathStepSize;
-                                if(diagLevel>0){
-				  cout<<"Event Number : "<< evtNumber<< endl
-				      <<" vane "<<jVane
-				      <<"isInside : true"
-				      <<"hasExit : true"
-				      <<"pathLength entrance = "<<entr[jVane]<<endl
-				      <<", position entrance = "<<traj.position(entr[jVane])<<endl
-				      <<"pathLength exit = "<<tmpRange<<endl
-				      <<" position exit = "<<traj.position(ex[jVane])<<endl;			    
-                                }
-                                isInside[jVane] = false;
-                                tmpPathLengthsPre[jVane].push_back(std::pair<double, double>(entr[jVane], ex[jVane]) );
-
-				//added by gianipez to make it faster...
-				break;
-				//--------
-                        }
-
-                }
-                tmpRange += pathStepSize;
-                if(traj.position(tmpRange).z() > 2.0*_ZbackFaceCalo) break;// the factor 2.0 is added by gianipez
-         }
-
-        if(diagLevel>2){
-                cout<<"end search behindVane(), position is : "<<traj.position(tmpRange)<<endl;
-        }
-
-	double maxRange(0.0);
-	// pathStepSize = Constants::pi / 2.0 / double(nAngleSteps);
-        // pathStepSize *= circleRadius/fabs(trkHel.cosDip());
-	int counts=0;
-	for(int i=0;i<nVanes;++i){
-	  isInside[i]=false;
+    NIntersections = 0;
+    
+    for(int iStep = 0; iStep< nAngleSteps; ++iStep){
+      for(int jVane=0; jVane<nVanes; ++jVane){
+	if(diagLevel>4){
+	  cout<<" tmpRange = "<< tmpRange<<
+	    "trj.position(tmpRange) = "<<traj.position(tmpRange)<<endl;
 	}
-	// int vaneId=-1;
-	//new search added by gianipez to search a closer point of impact 
-	if(diagLevel>2){
-	  cout<<"///////////////////////////////////"<<endl
-	      <<"   Labor lime check starts...  "<<endl
-	      <<"///////////////////////////////////"<<endl;
-	}
-
-	for(int vaneId=0; vaneId<nVanes; ++vaneId){
-	  for(Length::iterator it=tmpPathLengthsPre[vaneId].begin(); it!=tmpPathLengthsPre[vaneId].end(); ++it){
-	    counts = 0;
-	    tmpRange = it->first;
-	    maxRange = it->second; 
-	    pathStepSize = (it->second - it->first) / double(nAngleSteps);
-	    
-	    if(diagLevel>2){
-	      cout<<"vaneId = "<<vaneId<<endl
-		  <<"tmpRange = "<<it->first<<endl
-		  <<"maxRange = "<<it->second<<endl
-		  <<"pathStepSize = "<<pathStepSize<<endl;
-	    }
-	    
-	    while(tmpRange<=maxRange && counts<=nAngleSteps){
-	      ++counts;
-	      tmpRange+=pathStepSize;
-	      // for(int iStep = 0; iStep< nAngleSteps; ++iStep){
-	      //  for(int vaneId=0; vaneId<nVanes; ++vaneId){
-	      if(diagLevel>4){
-		cout<<"Labor lime:: tmpRange = "<< tmpRange<<
-		  "Labor lime::trj.position(tmpRange) = "<<traj.position(tmpRange)<<endl;
-	      }
-
-	      if(behindVane(traj.position(tmpRange), vaneId) ){
-		if(!isInside[vaneId]){
-		  if(diagLevel>0){
-		    cout<<"Labor lime::Event Number : "<< evtNumber<< endl
-			<<" vane "<<vaneId
-			<<"isInside : true"<<endl
-			<<"pathLength entrance = "<<tmpRange<<endl
-			<<"position entrance = "<<traj.position(tmpRange)<<endl;
-		  }
-		  isInside[vaneId] = true;
-		  entr[vaneId] = tmpRange - pathStepSize;
-
-		}
-	      }else if(isInside[vaneId]){
-		ex[vaneId] = tmpRange + pathStepSize;
-		if(diagLevel>0){
-		  cout<<"Labor lime::Event Number : "<< evtNumber<< endl;
-		  cout<<" vane "<<vaneId
-		      <<" isInside : true"
-		      <<" hasExit : true"
-		      <<" pathLength entrance = "<<entr[vaneId]<<endl
-		      <<" position entrance = "<<traj.position(entr[vaneId])<<endl
-		      <<" pathLength exit = "<<tmpRange<<endl
-		      <<" position exit = "<<traj.position(ex[vaneId])<<endl;
-		}
-		isInside[vaneId] = false;
-		tmpPathLengths[vaneId].push_back(std::pair<double, double>(entr[vaneId], ex[vaneId]) );
-		break;
-	      }
-
-	      //}
-	      tmpRange += pathStepSize;
-	      //if(traj.position(tmpRange).z() > _ZbackFaceCalo) break;
-	      //}	
 	
-	    }//end while()
+	if(behindVane(traj.position(tmpRange), jVane) ){
+	  if(!isInside[jVane]){
+	    if(diagLevel>4){
+	      cout<<"Event Number : "<< evtNumber<< endl;
+	      cout<<" vane "<<jVane<<
+		"isInside : true"<<
+		"pathLength entrance = "<<tmpRange<<endl;
+	    }
+	    isInside[jVane] = true;
+	    entr[jVane] = tmpRange - pathStepSize;
 
+                                }
+	}else if(isInside[jVane]){
+	  ex[jVane] = tmpRange + pathStepSize;
+	  if(diagLevel>4){
+	    cout<<"Event Number : "<< evtNumber<< endl;
+	    cout<<" vane "<<jVane<<
+	      "isInside : true"<<
+	      "hasExit : true"<<
+	      "pathLength entrance = "<<entr[jVane]<<
+	      "pathLength exit = "<<tmpRange<<endl;
+	  }
+	  isInside[jVane] = false;
+
+	  if (NIntersections < 100) {
+	    Intersection[NIntersections].fVane  = jVane;
+	    Intersection[NIntersections].fRC    = 0;
+	    Intersection[NIntersections].fSEntr = entr[jVane];
+	    Intersection[NIntersections].fSExit = ex  [jVane];
+	    NIntersections++;
+	  }
+	  else {
+	    printf("%s ERROR: NIntersections > 100, TRUNCATE LIST\n",oname);
 	  }
 	}
-	//--------------------------------------------------------------
+      }
+      tmpRange += pathStepSize;
+    }
 
+    if (diagLevel>2) {
+      cout<<"end search behindVane(), position is : "<<traj.position(tmpRange)<<endl;
+    }
 
+    //    int        resT = -1;
+    double     lrange, hrange;
+    TrkErrCode trk_rc;
 
+    for (int i=0; i<NIntersections; i++) {
+      lrange = Intersection[i].fSEntr;
+      //      hrange = Intersection[i].fSEntr;
+      trk_rc = kalrep->extendThrough(lrange);
+      if (trk_rc.success() != 1) { 
+//-----------------------------------------------------------------------------
+// failed to extend 
+//-----------------------------------------------------------------------------
+	Intersection[i].fRC = -1;
+	if (diagLevel>2) {
+	  printf("%s ERROR vane = %2i FAILED to EXTEND TRAJECTORY, rc = %i\n",
+		 oname,Intersection[i].fVane,trk_rc.success());
+	}
+      }
+//       else {
+// 	TrkDifTraj const& traj =  kalrep->traj();
+	
+// 	//	DetIntersection intersec0( vane(Intersection[i].fVane), &traj, lrange, lrange, hrange );
+// 	// turn off the BaBar extrapolation, it seems to be getting confused
+// 	//	resT = 1; // resT =  vane(jVane)->intersect(&traj, intersec0);
+// 	//	if (resT == 1){
+// 	//                          // update path lengths
+// 	// 	  Intersection[i].fSEntr = intersec0.pathrange[0];
+// 	// 	  Intersection[i].fSExit = intersec0.pathrange[1];
+// 	//      }
+//       }
+    }
 
+    delete [] isInside ;
+    delete [] entr ;
+    delete [] ex;
 
-
-        //        size_t distIterators = 0;
-        //        int vaneMinPathLength = -1;
-        //        double minPathLength = 1e10;
-        //        for(int jVane=0; jVane<nVanes; ++jVane){
-        //                for(Length::iterator it = tmpPathLengths[jVane].begin(); it != tmpPathLengths[jVane].end(); ++it){
-        //                        if(it->first < minPathLength){
-        //                                minPathLength = it->first;
-        //                                vaneMinPathLength = jVane;
-        //                                distIterators = std::distance( tmpPathLengths[jVane].begin(), it );
-        //                        }
-        //
-        //                }
-        //        }
-
-
-
-
-
-
-        bool isFirst = false;
-        //        if(maxNumberExtrPoints>1){
-// 	pathStepSize = Constants::pi / (double) nAngleSteps;
-// 	pathStepSize *= circleRadius/fabs(trkHel.cosDip());
-// 	pathStepSize *= 10.;
-
-// 	double rangeStep = pathStepSize;
-// 	int counter=0,counterLimit=int(2.0*_dU/pathStepSize);
-// 	if(diagLevel>2){
-// 	  cout<<"rangeStepSize = "<<rangeStep<<endl;
-// 	}
-
-        for(int jVane=0; jVane<nVanes; ++jVane){
-                isFirst = false;
-                for(Length::iterator it = tmpPathLengths[jVane].begin(); it != tmpPathLengths[jVane].end(); ++it){
-                        lowrange = it->first;
-                        highrange = it->second;
-
-                        if(diagLevel>2){
-                                cout<<"vane = "<< jVane <<
-                                                ", lowrange = "<<lowrange<<
-                                                ", highrange = "<<highrange<<endl;
-                                cout<<"point of traj at lowrange : "<<traj.position(lowrange)<<endl
-				    <<"point of traj at highrange : "<<traj.position(highrange)<<endl
-				    <<"pathStepSize = "<<pathStepSize<<endl
-				    <<"fltLMin = "<<kalrep->startValidRange()<<endl
-				    <<"fltLMax = "<<kalrep->endValidRange()<<endl;
-                        }
-
-                        if(kalrep->extendThrough(lowrange).success() != 1) continue;
-
-                        if(diagLevel>2){
-                                cout<<", after extention..."<<
-                                                ", lowrange = "<<lowrange<<
-                                                ", highrange = "<<highrange<<endl;
-                                cout<<"point of traj at lowrange : "<<traj.position(lowrange)<<endl;
-                                cout<<"point of traj at highrange : "<<traj.position(highrange)<<endl;
-                                cout<<"fltLMin = "<<kalrep->startValidRange()<<
-                                                ", fltLMax = "<<kalrep->endValidRange()<<endl;
-                        }
-                        TrkDifTraj const& traj =  kalrep->traj();
-
-                        DetIntersection tmp3( vane(jVane), &traj, lowrange, lowrange, highrange );
-                        intersec0 = tmp3;
-                        resT =  vane(jVane)->intersect(&traj, intersec0);
-
-			//	counter=0;
-			
-		// 	while(resT != 1 && counter != counterLimit){
-// 			  ++counter;
-// 			  lowrange -= rangeStep;
-// 			  highrange += rangeStep;
-// 			  DetIntersection tmp3( vane(jVane), &traj, lowrange, lowrange, highrange );
-// 			  intersec0 = tmp3;
-// 			  resT =  vane(jVane)->intersect(&traj, intersec0); 
-// 			  if(diagLevel>2 && resT==1){
-// 			    cout<<"counter = "<<counter<<endl
-// 				<<"intersection = "<<resT<<endl
-// 				<<"lowrange = "<<lowrange<<endl
-// 				<<"point of traj at lowrange : "<<traj.position(lowrange)<<endl
-// 				<<"highrange = "<<highrange<<endl
-// 				<<"point of traj at highrange : "<<traj.position(highrange)<<endl;
-// 			  }
-			//	}
-
-			if(diagLevel>2 && resT==0){
-			    cout<<"intersection = "<<resT<<endl
-				<<"lowrange = "<<lowrange<<endl
-				<<"point of traj at lowrange : "<<traj.position(lowrange)<<endl
-				<<"highrange = "<<highrange<<endl
-				<<"point of traj at highrange : "<<traj.position(highrange)<<endl;
-			  }
-
-
-                        if(resT == 1){
-                                pathLengths[jVane].push_back(std::pair<double, double>(intersec0.pathrange[0], intersec0.pathrange[1]) );
-                        }
-                        if(diagLevel>2){
-                                cout<<"Event Number : "<< evtNumber<< endl;
-                                cout<<"Vane = "<< jVane << endl;
-                                cout<<"intersection result0 = "<< resT <<endl;
-                        }
-                        if(resT==1 && diagLevel>2){
-                                cout<<" , intersec0.pathrange[0] = "<< intersec0.pathrange[0] <<
-                                                ", intersec0.pathrange[1] = "<< intersec0.pathrange[1] << endl;
-                                cout<<"point of traj at the entrance : "<<traj.position( intersec0.pathrange[0])<<endl;
-                                cout<<"point of traj at the exit : "<<traj.position( intersec0.pathrange[1])<<endl;
-                        }
-                        if(resT==1 && !isFirst){
-                                isFirst = true;
-                                res0 = resT;
-                                //vane = jVane;
-                                //pathRes[0] = intersec0.pathrange[0];
-                                //pathRes[1] = intersec0.pathrange[1];
-                                if(diagLevel>2){
-                                        cout<<"point of traj at the entrance : "<<traj.position( intersec0.pathrange[0] )<<endl;
-                                        cout<<"point of traj at the exit : "<<traj.position(intersec0.pathrange[1] )<<endl;
-                                }
-                        }
-
-                }
-        }
-        //        }else{
-        //
-        //                lowrange = tmpPathLengths[vaneMinPathLength].at(distIterators).first;
-        //                highrange = tmpPathLengths[vaneMinPathLength].at(distIterators).second;
-        //                if(diagLevel>2){
-        //                        cout<<"vane = "<< vaneMinPathLength <<
-        //                                        ", lowrange = "<<lowrange<<
-        //                                        ", highrange = "<<highrange<<endl;
-        //                        cout<<"point of traj at lowrange : "<<traj.position(lowrange)<<endl;
-        //                        cout<<"point of traj at highrange : "<<traj.position(highrange)<<endl;
-        //                        cout<<"fltLMin = "<<kalrep->startValidRange()<<
-        //                                        ", fltLMax = "<<kalrep->endValidRange()<<endl;
-        //                }
-        //
-        //                if(kalrep->extendThrough(lowrange).success() != 1) {
-        //
-        //                if(diagLevel>2){
-        //                        cout<<", after extention..."<<
-        //                                        ", lowrange = "<<lowrange<<
-        //                                        ", highrange = "<<highrange<<endl;
-        //                        cout<<"point of traj at lowrange : "<<traj.position(lowrange)<<endl;
-        //                        cout<<"point of traj at highrange : "<<traj.position(highrange)<<endl;
-        //                        cout<<"fltLMin = "<<kalrep->startValidRange()<<
-        //                                        ", fltLMax = "<<kalrep->endValidRange()<<endl;
-        //                }
-        //                TrkDifTraj const& traj =  kalrep->traj();
-        //
-        //                DetIntersection tmp3( vane(vaneMinPathLength), &traj, lowrange, lowrange, highrange );
-        //                intersec0 = tmp3;
-        //                resT =  vane(vaneMinPathLength)->intersect(&traj, intersec0);
-        //                if(resT == 1){
-        //                        pathLengths[vaneMinPathLength].push_back(std::pair<double, double>(intersec0.pathrange[0], intersec0.pathrange[1]) );
-        //                }
-        //                if(diagLevel>2){
-        //                        cout<<"Event Number : "<< evtNumber<< endl;
-        //                        cout<<"Vane = "<< vaneMinPathLength << endl;
-        //                        cout<<"intersection result0 = "<< resT <<endl;
-        //                }
-        //                if(resT==1 && diagLevel>2){
-        //                        cout<<" , intersec0.pathrange[0] = "<< intersec0.pathrange[0] <<
-        //                                        ", intersec0.pathrange[1] = "<< intersec0.pathrange[1] << endl;
-        //                        cout<<"point of traj at the entrance : "<<traj.position( intersec0.pathrange[0])<<endl;
-        //                        cout<<"point of traj at the exit : "<<traj.position( intersec0.pathrange[1])<<endl;
-        //                }
-        //                if(resT==1 && !isFirst){
-        //                        isFirst = true;
-        //                        res0 = resT;
-        //                        //vane = jVane;
-        //                        //pathRes[0] = intersec0.pathrange[0];
-        //                        //pathRes[1] = intersec0.pathrange[1];
-        //                        if(diagLevel>2){
-        //                                cout<<"point of traj at the entrance : "<<traj.position( intersec0.pathrange[0] )<<endl;
-        //                                cout<<"point of traj at the exit : "<<traj.position(intersec0.pathrange[1] )<<endl;
-        //                        }
-        //                }
-        //                }
-        //
-        //
-        //        }
-
-        delete [] isInside ;
-        delete [] entr ;
-        delete [] ex;
-
-
-}//end proce_dUre
+  }//end proce_dUre
 
 
 //the following procedure is different from the previous one for two reasons:
