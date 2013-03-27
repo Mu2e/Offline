@@ -1,10 +1,13 @@
-  $Id: v3_0_1.txt,v 1.12 2013/03/27 17:36:38 knoepfel Exp $
-  $Author: knoepfel $
-  $Date: 2013/03/27 17:36:38 $
+  $Id: v3_0_1.txt,v 1.13 2013/03/27 20:43:10 genser Exp $
+  $Author: genser $
+  $Date: 2013/03/27 20:43:10 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+14) March 27, 2013 genser
+    Explicitly added g4.minRangeCut to g4studyGeom.txt
 
 13) March 27, 2013 knoepfel
     Added additional accessors to DetectorSolenoid to remove necessity
