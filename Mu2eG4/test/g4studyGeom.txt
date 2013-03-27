@@ -2,9 +2,9 @@
 // config file to perform Geant4 studies using the Mu2e framework infrastructure
 //
 
-// $Id: g4studyGeom.txt,v 1.9 2013/03/25 20:02:07 genser Exp $
+// $Id: g4studyGeom.txt,v 1.10 2013/03/27 20:27:40 genser Exp $
 // $Author: genser $
-// $Date: 2013/03/25 20:02:07 $
+// $Date: 2013/03/27 20:27:40 $
 //
 // Original author K. Genser
 //
@@ -31,6 +31,9 @@ bool           mu2e.printParticleDataTable = false;
 
 // Use a decent physics list
 string g4.physicsListName      = "QGSP_BERT";
+
+// Use a specific range cut
+double g4.minRangeCut = 0.01; // mm
 
 // Disable mu2e MuMinusConversionAtRest
 bool g4.doMuMinusConversionAtRest = false;
