@@ -121,22 +121,30 @@ namespace mu2e {
     std::unique_ptr<StepPointMCCollection> outhits(new StepPointMCCollection());
     std::unique_ptr<StepPointMCCollection> extrahits(new StepPointMCCollection());
 
+
     for(StepPointMCCollection::const_iterator i=inhits.begin(); i!=inhits.end(); ++i) {
 
       if(std::find(_vids.begin(), _vids.end(), i->volumeId()) != _vids.end()) {
+
+	std::cout << "position = " << i->position().z() << std::endl;
         if ( _positionCut && 
              ( fabs(i->position().x() - _positionCenter[0]) > _positionHalfLength[0] ||
                fabs(i->position().y() - _positionCenter[1]) > _positionHalfLength[1] ||
                fabs(i->position().z() - _positionCenter[2]) > _positionHalfLength[2] ) )
           continue;
-          
+
+	if (i->simParticle()->pdgId() != PDGCode::pi_minus) continue;
         outhits->push_back(*i);
+          
 
         AGDEBUG("here");
         const art::Ptr<SimParticle>& particle = outhits->back().simParticle();
         AGDEBUG("here");
 
        	if (particle->pdgId() != PDGCode::pi_minus) continue;
+
+          AGDEBUG("here: found a piminus!! "<<particle<<" (internal id = "<< particle->id()<< " pdgId = " << particle->pdgId() <<")"<<" for hit "<<*i);
+
 
         if(!particle.get()) {
           throw cet::exception("MISSINGINFO")
@@ -277,6 +285,8 @@ namespace mu2e {
 
     bool nonEmpty = !outhits->empty();
     event.put(std::move(outhits));
+
+    std::cout << " event nonempty? " << nonEmpty << std::endl;
 
     return nonEmpty;
   }
