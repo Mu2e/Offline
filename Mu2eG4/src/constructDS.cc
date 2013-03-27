@@ -1,9 +1,9 @@
 //
 // Free function to create  DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.9 2013/03/26 14:46:09 knoepfel Exp $
+// $Id: constructDS.cc,v 1.10 2013/03/27 17:36:38 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/03/26 14:46:09 $
+// $Date: 2013/03/27 17:36:38 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -67,14 +67,9 @@ namespace mu2e {
     // Compute/set positions of vacuum volumes in Mu2e coordinates.
     // - DS position is fixed by TS torus radius, and half lengths of 
     //   front face, DS1, and TS5
-
-    double rTorus         = beamg->getTS().torusRadius();
-    double ts5HalfLength  = beamg->getTS().getTS5().getHalfLength();
-
-    double dsFrontZ0 = rTorus + 2.*ts5HalfLength - 2.*ds->halfLengthDs1() - ds->frontHalfLength();        
-    //    double dsFrontZ0 = ds->position().z()- 2*ds->halfLengthDs1() - ds->frontHalfLength();
+    double dsFrontZ0 = ds->position().z() - ds->halfLength() + ds->frontHalfLength();
     double ds1Z0     = dsFrontZ0 + ds->frontHalfLength() + ds->halfLengthDs1();
-    double ds2Z0     = ds1Z0 + ds->halfLengthDs1() + ds->halfLengthDs2();
+    double ds2Z0     = ds->zLocDs23Split() - ds->halfLengthDs2();
 
     G4ThreeVector detSolCoilPosition( ds->position().x(), 0., ds->position().z());
     G4ThreeVector    dsFrontPosition( ds->position().x(), 0., dsFrontZ0);
@@ -155,7 +150,7 @@ namespace mu2e {
                                           forceAuxEdgeVisible,
                                           placePV,
                                           doSurfaceCheck
-                                          );
+                                         );
 
     // Polycone geometry allows for MBS to extend beyond solenoid
     // physical boundaries
@@ -165,8 +160,8 @@ namespace mu2e {
     // Define polycone parameters
     vector<double> tmp_zPlanesDs3;
     tmp_zPlanesDs3.push_back( ds2Z0 + ds->halfLengthDs2() );
-    tmp_zPlanesDs3.push_back( ds->position().z() + ds->halfLength() );
-    tmp_zPlanesDs3.push_back( ds->position().z() + ds->halfLength() );
+    tmp_zPlanesDs3.push_back( ds->coilZMax()              );
+    tmp_zPlanesDs3.push_back( ds->coilZMax()              );
     tmp_zPlanesDs3.push_back( mbs->getEnvelopeZmax()      );
 
     vector<double> tmp_rOuterDs3;

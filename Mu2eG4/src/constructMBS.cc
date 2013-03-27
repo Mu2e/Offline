@@ -1,9 +1,9 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.13 2013/03/26 14:46:09 knoepfel Exp $
+// $Id: constructMBS.cc,v 1.14 2013/03/27 17:36:38 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/03/26 14:46:09 $
+// $Date: 2013/03/27 17:36:38 $
 //
 // Original author KLG
 //
@@ -23,7 +23,7 @@
 // Mu2e includes.
 
 #include "Mu2eG4/inc/constructMBS.hh"
-#include "BeamlineGeom/inc/Beamline.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -41,7 +41,6 @@
 #include "G4Color.hh"
 #include "G4VSolid.hh"
 #include "G4Tubs.hh"
-#include "G4Polycone.hh"
 #include "G4Cons.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4VPhysicalVolume.hh"
@@ -73,12 +72,12 @@ namespace mu2e {
     // Access to the G4HelperService.
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
 
-    GeomHandle<Beamline> beamg;
-    double solenoidOffset = -beamg->solenoidOffset();
+    // Fetch DS geometry handle
+    GeomHandle<DetectorSolenoid> ds;
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " verbosityLevel                   : " << verbosityLevel  << endl;
-      cout << __func__ << " solenoidOffset                   : " << solenoidOffset  << endl;
+      cout << __func__ << " solenoidOffset                   : " << ds->position().x()  << endl;
     }
 
      // mother volumes
@@ -86,11 +85,8 @@ namespace mu2e {
     VolumeInfo const & hallInfo =                _helper->locateVolInfo("HallAir");
 
     if ( verbosityLevel > 0) {
-      double pZOffset = detSolDownstreamVacInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
-      G4PolyconeHistorical* const origParms = static_cast<G4Polycone*>(detSolDownstreamVacInfo.solid)->GetOriginalParameters();
-      int    nPlanes   = origParms->Num_z_planes;
-      cout << __func__ << " ToyDS3Vacuum Z extent in Mu2e    : " <<
-        origParms->Z_values[0] << ", " << origParms->Z_values[nPlanes-1] << endl;
+      cout << __func__ << " z-extent of ToyDS3Vacuum portion in DS in Mu2e  : " <<
+        ds->zLocDs23Split() << ", " << ds->coilZMax() << endl;
     }
 
     // BSTS see WBS 5.8 for the naming conventions
@@ -315,7 +311,7 @@ namespace mu2e {
 
       double CryoSealZ           = _config.getDouble("mbs.CryoSealZ");
 
-      CLHEP::Hep3Vector CryoSealOffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,CryoSealZ);
+      CLHEP::Hep3Vector CryoSealOffsetInMu2e = CLHEP::Hep3Vector(ds->position().x(),0.,CryoSealZ);
 
       CLHEP::Hep3Vector CryoSealOffset = CryoSealOffsetInMu2e - hallInfo.centerInMu2e();
 
@@ -372,7 +368,7 @@ namespace mu2e {
 
       }
 
-      CLHEP::Hep3Vector EndPlugTubeOffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,EndPlugTubeZ);
+      CLHEP::Hep3Vector EndPlugTubeOffsetInMu2e = CLHEP::Hep3Vector(ds->position().x(),0.,EndPlugTubeZ);
 
       CLHEP::Hep3Vector EndPlugTubeOffset = EndPlugTubeOffsetInMu2e - hallInfo.centerInMu2e();
 
@@ -419,7 +415,7 @@ namespace mu2e {
 
       }
 
-      CLHEP::Hep3Vector EndPlugDiskOffsetInMu2e = CLHEP::Hep3Vector(solenoidOffset,0.,EndPlugDiskZ);
+      CLHEP::Hep3Vector EndPlugDiskOffsetInMu2e = CLHEP::Hep3Vector(ds->position().x(),0.,EndPlugDiskZ);
 
       CLHEP::Hep3Vector EndPlugDiskOffset  = EndPlugDiskOffsetInMu2e - hallInfo.centerInMu2e();
 

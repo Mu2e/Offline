@@ -41,6 +41,7 @@ namespace mu2e {
     double rIn()  const { return _rIn; }
     double rOut()  const { return _rOut; }
     double halfLength() const { return _halfLength; }
+    double coilZMax() const { return _position[CLHEP::Hep3Vector::Z] + _halfLength; }
 
     // in mu2e coordinates 
     const CLHEP::Hep3Vector& position() const { return _position; }
@@ -50,6 +51,7 @@ namespace mu2e {
     // pieces are placed inside.
     double halfLengthDs1() const { return _ds1HalfLength; }
     double halfLengthDs2() const { return _ds2HalfLength; }
+    double zLocDs23Split() const { return _locationDs23Split; }
 
     // The half-thickness of the front wall of the DS
     double frontHalfLength() const { return _frontHalfLength; }
@@ -72,7 +74,7 @@ namespace mu2e {
     CLHEP::Hep3Vector _position;
     double _ds1HalfLength;
     double _ds2HalfLength;
-    double _ds3HalfLength;
+    double _locationDs23Split;
     double _frontHalfLength;
     std::string _materialName;
     std::string _insideMaterialName;

@@ -1,10 +1,25 @@
-  $Id: v3_0_1.txt,v 1.11 2013/03/26 23:38:14 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2013/03/26 23:38:14 $
+  $Id: v3_0_1.txt,v 1.12 2013/03/27 17:36:38 knoepfel Exp $
+  $Author: knoepfel $
+  $Date: 2013/03/27 17:36:38 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+13) March 27, 2013 knoepfel
+    Added additional accessors to DetectorSolenoid to remove necessity
+    for explicitly referencing G4Polycone type in the construct*.cc
+    files.  Also removed references to Beamline geom. position in
+    several files in favor of the DetectorSolenoid position()
+    accessor (which is based off of Beamline).
+
+    Modified files:
+     DetectorSolenoidGeom/inc/DetectorSolenoid.hh
+     DetectorSolenoidGeom/src/DetectorSolenoidMaker.cc
+     Mu2eG4/src/constructDS.cc
+     Mu2eG4/src/constructMBS.cc
+     Mu2eG4/src/constructNeutronAbsorber.cc
+     Mu2eG4/src/constructProtonAbsorber.cc
 
 12) March 26, 2013 kutschke
     Removed LTrackerGeom and all references to LTracker throughout the code base.

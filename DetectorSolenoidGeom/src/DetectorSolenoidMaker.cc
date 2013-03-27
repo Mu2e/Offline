@@ -19,7 +19,7 @@ namespace mu2e {
     ds->_rIn        = c.getDouble("toyDS.rIn");
     ds->_rOut       = c.getDouble("toyDS.rOut");
     ds->_halfLength = c.getDouble("toyDS.halfLength");
-
+    
     ds->_ds1HalfLength = c.getDouble("toyDS1.halfLength");
     ds->_ds2HalfLength = c.getDouble("toyDS2.halfLength");
     ds->_frontHalfLength = c.getDouble("toyDS.frontHalfLength");
@@ -33,6 +33,10 @@ namespace mu2e {
       2.*ds->halfLengthDs1()-
       2.*ds->frontHalfLength()+
       ds->halfLength();
+
+    ds->_locationDs23Split =  bl.getTS().torusRadius() +
+      2.*bl.getTS().getTS5().getHalfLength() +
+      2.*ds->halfLengthDs2();
 
     // for x component: +1(-1)*solenoidOffset for PS (DS)
     ds->_position           = CLHEP::Hep3Vector(-bl.solenoidOffset(), 0, dsPosZ );

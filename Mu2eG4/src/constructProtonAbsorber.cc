@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.19 2013/03/26 14:46:09 knoepfel Exp $
+// $Id: constructProtonAbsorber.cc,v 1.20 2013/03/27 17:36:38 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/03/26 14:46:09 $
+// $Date: 2013/03/27 17:36:38 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -28,14 +28,13 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/HelicalProtonAbsorber.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 
 // G4 includes
 #include "G4Material.hh"
 #include "G4Color.hh"
 #include "G4Box.hh"
 #include "G4Cons.hh"
-#include "G4Polycone.hh"
-#include "G4Tubs.hh"
 #include "G4BooleanSolid.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4SDManager.hh"
@@ -59,11 +58,14 @@ namespace mu2e {
     VolumeInfo const & parent1Info  = _helper->locateVolInfo("ToyDS2Vacuum");
     VolumeInfo const & parent2Info  = _helper->locateVolInfo("ToyDS3Vacuum");
     
+    // Fetch DS geometry
+    GeomHandle<DetectorSolenoid> ds;
+
     if ( _config.getBool("protonabsorber.isHelical", false) ) {
       if ( verbosityLevel > 0) cout << __func__ << " : Proton Absorber is Helical type" << endl;
       MaterialFinder materialFinder(_config);
       G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
-      double ds2HalfLen = _config.getDouble("toyDS2.halfLength");
+      double ds2HalfLen = ds->halfLengthDs2();
       double helHalfPabsLength = _config.getDouble("protonabsorber.halfLength");
       double helPabsLength = 2.0*helHalfPabsLength;
       double lengthScaleFact = 130.0/274.0; //I don't know why but in the implementation of the absorber the length is divided into 130 steps of Z and that there is a cycle over 274 number of Z steps. ????? //FIXME
@@ -174,11 +176,8 @@ namespace mu2e {
       double pabs1rOut1 = ((pabs2rOut1 - pabs1rOut0)*(pabs1len/(2.0*pabsZHalfLen))) + pabs1rOut0;
       double pabs1rIn1  = pabs1rOut1 - thick;
 
-      G4Tubs     const * parent1solid0 = static_cast<G4Tubs*>(parent1Info.solid);
-      G4Polycone const * parent2solid0 = static_cast<G4Polycone*>(parent2Info.solid);
-
       double pabs2len     = (2.0*pabsZHalfLen) - pabs1len;
-      double pabs2ZOffset = (pabs2len*0.5) +  parent2solid0->GetOriginalParameters()->Z_values[0];
+      double pabs2ZOffset = (pabs2len*0.5) +  ds->zLocDs23Split();
 
       // protonabs2 should touch protonabs1 and both of them should touch the ds2/ds3 boundary
       // it looks like the boolean solid center is in the center of ConstituentSolid(0)
@@ -186,20 +185,15 @@ namespace mu2e {
 
       if ( verbosityLevel > 0) {
         double theZ  = parent1Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
-        double theHL = parent1solid0->GetZHalfLength();
         cout << __func__ << " " << parent1Info.name << " Z offset in Mu2e    : " <<
           theZ << endl;
         cout << __func__ << " " << parent1Info.name << " Z extent in Mu2e    : " <<
-          theZ - theHL << ", " << theZ + theHL << endl;
+          theZ - ds->halfLengthDs2() << ", " << theZ + ds->halfLengthDs2() << endl;
       }
 
       if ( verbosityLevel > 0) {
-        int    nZPlanes    = parent2solid0->GetOriginalParameters()->Num_z_planes;
-        double firstZPlane = parent2solid0->GetOriginalParameters()->Z_values[0];
-        double lastZPlane  = parent2solid0->GetOriginalParameters()->Z_values[nZPlanes-1];
-
         cout << __func__ << " " << parent2Info.name << " Z extent in Mu2e    : " <<
-          firstZPlane << ", " << lastZPlane << endl;
+          ds->zLocDs23Split() << ", " << ds->coilZMax() << endl;
       }
 
       G4ThreeVector pabs2Offset(0.0, 0.0, pabs2ZOffset);
@@ -297,8 +291,6 @@ namespace mu2e {
       double ds2zcenter   = parent1Info.centerInMu2e().z();
       double ds3zcenter   = parent2Info.centerInMu2e().z();
 
-      G4Tubs     const * parent1solid0 = static_cast<G4Tubs*>(parent1Info.solid);
-
       if ( verbosityLevel > 0) {
         cout << __func__ <<
           " ds2zcenter               : " << ds2zcenter << endl;
@@ -311,11 +303,10 @@ namespace mu2e {
 
       if ( verbosityLevel > 0) {
         double theZ  = parent1Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
-        double theHL = parent1solid0->GetZHalfLength();
         cout << __func__ << " " << parent1Info.name << " Z offset in Mu2e    : " <<
           theZ << endl;
         cout << __func__ << " " << parent1Info.name << " Z extent in Mu2e    : " <<
-          theZ - theHL << ", " << theZ + theHL << endl;
+          theZ - ds->halfLengthDs2() << ", " << theZ + ds->halfLengthDs2() << endl;
       }
 
       double pabs1ZOffset = CLHEP::mm * pabs->part(0).center().z() - ds2zcenter;
