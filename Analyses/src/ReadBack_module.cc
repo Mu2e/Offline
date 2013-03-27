@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.24 2013/03/26 23:28:23 kutschke Exp $
+// $Id: ReadBack_module.cc,v 1.25 2013/03/27 17:10:10 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/26 23:28:23 $
+// $Date: 2013/03/27 17:10:10 $
 //
 // Original author Rob Kutschke
 //
@@ -66,11 +66,11 @@ namespace mu2e {
     explicit ReadBack(fhicl::ParameterSet const& pset);
     virtual ~ReadBack() { }
 
-    virtual void beginJob();
-    virtual void endJob();
+    virtual void beginJob() override;
+    virtual void endJob() override;
 
     // This is called for each event.
-    virtual void analyze(const art::Event& e);
+    virtual void analyze(const art::Event& e) override;
 
   private:
 
