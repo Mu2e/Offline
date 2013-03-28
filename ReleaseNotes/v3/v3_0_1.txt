@@ -1,10 +1,30 @@
-  $Id: v3_0_1.txt,v 1.13 2013/03/27 20:43:10 genser Exp $
-  $Author: genser $
-  $Date: 2013/03/27 20:43:10 $
+  $Id: v3_0_1.txt,v 1.14 2013/03/28 13:02:38 knoepfel Exp $
+  $Author: knoepfel $
+  $Date: 2013/03/28 13:02:38 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+15) March 28, 2013 knoepfel
+    InternalNeutronAbsorber geometry object added, plus corresponding
+    constructInternalNeutronAbsorber.* files in Mu2eG4.  This serves
+    mostly as a placeholder until the final int. neutron abs. design
+    is settled upon.  The InternalNeutronAbsorber class assumes that
+    the first section includes concentric annular cylinders, and the
+    second section includes just one annular cylinder that extends to
+    the Z-max of the DS.
+
+    New:
+     InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorber.hh
+     InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorberMaker.hh
+     InternalNeutronAbsorberGeom/src/InternalNeutronAbsorber.cc
+     InternalNeutronAbsorberGeom/src/InternalNeutronAbsorberMaker.cc
+     InternalNeutronAbsorberGeom/src/SConscript
+     Mu2eG4/inc/constructInternalNeutronAbsorber.hh
+     Mu2eG4/src/constructInternalNeutronAbsorber.cc
+    Modified:
+     Mu2eG4/src/constructNeutronAbsorber.cc
 
 14) March 27, 2013 genser
     Explicitly added g4.minRangeCut to g4studyGeom.txt

@@ -1,9 +1,9 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructNeutronAbsorber.cc,v 1.11 2013/03/27 17:36:38 knoepfel Exp $
+// $Id: constructNeutronAbsorber.cc,v 1.12 2013/03/28 13:02:38 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/03/27 17:36:38 $
+// $Date: 2013/03/28 13:02:38 $
 //
 // Original author KLG
 //
@@ -273,11 +273,11 @@ namespace mu2e {
       // what are the offsets of the DS2,3Vacuum in the Mu2e system?
       // the ds2/ds3 boundary in mu2e coordinates
 
-      const double ds2FrontZG    = ds->zLocDs23Split()-2.*ds->halfLengthDs2();
+      const double ds2FrontZG = ds->zLocDs23Split()-2.*ds->halfLengthDs2();
 
       if ( verbosityLevel > 0) {
         cout << __func__ << " ds2FrontZG                       : " << ds2FrontZG    << endl;
-        cout << __func__ << " ds23BoudaryZG                    : " << ds->zLocDs23Split() << endl;
+        cout << __func__ << " ds23BoundaryZG                   : " << ds->zLocDs23Split() << endl;
         cout << __func__ << " ds3EndZG                         : " << ds->coilZMax()      << endl;
       }
 
