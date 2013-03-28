@@ -125,17 +125,14 @@ namespace mu2e {
     for(StepPointMCCollection::const_iterator i=inhits.begin(); i!=inhits.end(); ++i) {
 
       if(std::find(_vids.begin(), _vids.end(), i->volumeId()) != _vids.end()) {
+	std::cout << "particle type " << ((*i).simParticle())->pdgId() << std::endl;
+	if ( ((*i).simParticle())->pdgId() != PDGCode::pi_minus ) continue;
 
-	std::cout << "position = " << i->position().z() << std::endl;
         if ( _positionCut && 
              ( fabs(i->position().x() - _positionCenter[0]) > _positionHalfLength[0] ||
                fabs(i->position().y() - _positionCenter[1]) > _positionHalfLength[1] ||
                fabs(i->position().z() - _positionCenter[2]) > _positionHalfLength[2] ) )
-          continue;
-
-	if (i->simParticle()->pdgId() != PDGCode::pi_minus) continue;
-        outhits->push_back(*i);
-          
+          continue;          
 
         AGDEBUG("here");
         const art::Ptr<SimParticle>& particle = outhits->back().simParticle();
