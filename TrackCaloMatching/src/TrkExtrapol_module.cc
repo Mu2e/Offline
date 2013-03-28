@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.9 2013/03/27 18:37:24 murat Exp $
+// $Id: TrkExtrapol_module.cc,v 1.10 2013/03/28 05:25:49 murat Exp $
 // $Author: murat $
-// $Date: 2013/03/27 18:37:24 $
+// $Date: 2013/03/28 05:25:49 $
 //
 // Original author G. Pezzullo
 //
@@ -223,7 +223,7 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
   double lowrange, highrange, zmin, zmax;
 
   //create output
-  auto_ptr<TrkToCaloExtrapolCollection> extrapolatedTracks(new TrkToCaloExtrapolCollection );
+  unique_ptr<TrkToCaloExtrapolCollection> extrapolatedTracks(new TrkToCaloExtrapolCollection );
   TrkToCaloExtrapolCollection tmpExtrapolatedTracks;
   
   //Get handle to calorimeter
@@ -322,7 +322,7 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
     
   }//end loop on recoTrj
   
-  evt.put(extrapolatedTracks);
+  evt.put(std::move(extrapolatedTracks));
   
 }
 
