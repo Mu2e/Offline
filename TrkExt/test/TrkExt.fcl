@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkExt.fcl,v 1.5 2013/03/29 15:42:37 mjlee Exp $
+# $Id: TrkExt.fcl,v 1.6 2013/03/29 15:51:10 mjlee Exp $
 # $Author: mjlee $
-# $Date: 2013/03/29 15:42:37 $
+# $Date: 2013/03/29 15:51:10 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -57,9 +57,13 @@ physics :
     tprUep : @local::TrkPatRecUpstreamePlus
 
 
+    # extrapolation producer module
+    # all configurations are recommanded to be kept as they are
     trkext :
     {
       module_type : TrkExt
+      # Following three lines are for instances to be processed in the extrapolation
+      # Note that their order should be consistent
       fitterModuleLabelArray : ["tprDem", "tprDep", "tprUem", "tprUep"]
       fitparticleArray : [11, -11, 11, -11]
       fitdirectionArray : [0, 0, 1, 1]
@@ -82,12 +86,14 @@ physics :
    }
 
  
-    # test module for Kalman fit: the 
   analyzers : 
   {
+
+    # analyzer module for extrapolation
     extRec : 
     {
       module_type : ReadTrkExt
+      # for following three lines, see the comments at producer module 
       fitterModuleLabelArray : ["tprDem", "tprDep", "tprUem", "tprUep"]
       fitparticleArray : [11, -11, 11, -11]
       fitdirectionArray : [0, 0, 1, 1]
