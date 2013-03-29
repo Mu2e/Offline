@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.6 2013/03/18 23:35:25 genser Exp $
+# $Id: SConscript,v 1.7 2013/03/29 21:13:04 genser Exp $
 # $Author: genser $
-# $Date: 2013/03/18 23:35:25 $
+# $Date: 2013/03/29 21:13:04 $
 #
 # Original author Rob Kutschke.
 #
@@ -35,7 +35,7 @@ G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
                '-DG4UI_USE',             '-DG4VIS_USE_DAWNFILE',
                '-DG4VIS_USE_HEPREPFILE', '-DG4VIS_USE_RAYTRACER',
                '-DG4VIS_USE_VRMLFILE',   '-DG4VIS_USE_ASCIITREE',
-               '-DG4VIS_USE_GAGTREE',    '-DG4VIS_USE'
+               '-DG4VIS_USE_GAGTREE',    '-DG4VIS_USE',
                '-DG4VERSION='+g4_version
             ]
 
