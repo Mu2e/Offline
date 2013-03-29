@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkExt.fcl,v 1.4 2013/02/07 02:09:48 mjlee Exp $
+# $Id: TrkExt.fcl,v 1.5 2013/03/29 15:42:37 mjlee Exp $
 # $Author: mjlee $
-# $Date: 2013/02/07 02:09:48 $
+# $Date: 2013/03/29 15:42:37 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -65,10 +65,10 @@ physics :
       fitdirectionArray : [0, 0, 1, 1]
       g4ModuleLabel : g4run
       makerModuleLabel : makeSH 
-      maxMomentum : 104.9599
+      maxMomentum : 110.0
       turnOnMaterialEffect : true
       useStoppingPower : false
-      maxNBack : 5000
+      maxNBack : 10000
       extrapolationStep : 0.1
       recordingStep : 5.0
       mcFlag : true
