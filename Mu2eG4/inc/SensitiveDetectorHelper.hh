@@ -3,9 +3,9 @@
 //
 // Some helper functions to manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.hh,v 1.2 2013/03/29 04:35:17 gandr Exp $
+// $Id: SensitiveDetectorHelper.hh,v 1.3 2013/03/29 05:45:03 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Date: 2013/03/29 05:45:03 $
 //
 // Original author Rob Kutschke
 //
@@ -30,6 +30,8 @@ namespace art   { class Event; }
 namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
+
+  class SimpleConfig;
 
   class SensitiveDetectorHelper{
 
@@ -61,20 +63,25 @@ namespace mu2e {
     // Return one of the StepPointMCCollections.
     cet::maybe_ref<StepPointMCCollection> steps( StepInstanceName::enum_type id );
 
+    // create SDs for arbitrary logical volumes as requiested
+    void instantiateLVSDs(const SimpleConfig& config);
+
   private:
 
     // A helper class to hold information about each sensitive detector object.
     struct StepInstance {
       explicit StepInstance(StepInstanceName::enum_type astepName ):
         p(),
-        stepName(StepInstanceName(astepName)),
+        stepName(StepInstanceName(astepName).name()),
         sensitiveDetector(0){
       }
+
+      explicit StepInstance(const std::string &name)  : stepName(name) {}
 
       explicit StepInstance():
         p(),
         stepName(),
-        sensitiveDetector(0){
+        sensitiveDetector(nullptr){
       }
 
       // Accept compiler written d'tor, copy c'tor and assignment operator.
@@ -82,16 +89,18 @@ namespace mu2e {
       // See note 1 in the .cc file for why the collection is not held by pointer.
       // For historical reasons the two names are different; maybe some day we will synchronize them.
       StepPointMCCollection    p;
-      StepInstanceName         stepName;
+      std::string              stepName;
       Mu2eSensitiveDetector *  sensitiveDetector;
 
     };
 
-    // All of the StepPointMC collections, except the timevd.
-    //std::vector<StepInstance> stepInstances_;
+    // Enabled pre-defined StepPointMC collections, except the timevd.
     typedef std::map<StepInstanceName::enum_type,StepInstance> InstanceMap;
     InstanceMap stepInstances_;
 
+    // Logical volumes requested to be sensitive
+    typedef std::map<std::string,StepInstance> LVSDMap;
+    LVSDMap lvsd_;
   };
 
 

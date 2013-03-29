@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.152 2013/03/29 04:35:17 gandr Exp $
+// $Id: Mu2eWorld.cc,v 1.153 2013/03/29 05:45:03 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Date: 2013/03/29 05:45:03 $
 //
 // Original author Rob Kutschke
 //
@@ -217,6 +217,8 @@ namespace mu2e {
     constructVirtualDetectors(_config); // beware of the placement order of this function
 
     constructVisualizationRegions(worldVInfo, _config);
+
+    sdHelper_->instantiateLVSDs(_config);
 
     if ( _verbosityLevel > 0) {
       mf::LogInfo log("GEOM");

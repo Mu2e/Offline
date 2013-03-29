@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.64 2013/03/29 04:35:17 gandr Exp $
+// $Id: G4_module.cc,v 1.65 2013/03/29 05:45:03 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Date: 2013/03/29 05:45:03 $
 //
 // Original author Rob Kutschke
 //
@@ -283,7 +283,7 @@ namespace mu2e {
 
     // Create user actions and register them with G4.
 
-    WorldMaker<Mu2eWorld>* allMu2e    = new WorldMaker<Mu2eWorld>(std::unique_ptr<Mu2eWorld>(new Mu2eWorld(_sensitiveDetectorHelper)));
+    WorldMaker<Mu2eWorld>* allMu2e    = new WorldMaker<Mu2eWorld>(std::unique_ptr<Mu2eWorld>(new Mu2eWorld(&_sensitiveDetectorHelper)));
 
     _runManager->SetVerboseLevel(_rmvlevel);
 

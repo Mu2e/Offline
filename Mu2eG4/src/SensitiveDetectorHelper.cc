@@ -1,9 +1,9 @@
 //
 // A helper class manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.cc,v 1.5 2013/03/29 04:35:17 gandr Exp $
+// $Id: SensitiveDetectorHelper.cc,v 1.6 2013/03/29 05:45:03 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Date: 2013/03/29 05:45:03 $
 //
 // Original author Rob Kutschke
 //
@@ -25,9 +25,11 @@
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "G4Helper/inc/G4Helper.hh"
 
 // From art and its tool chain.
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
 
 // From G4.
@@ -81,6 +83,25 @@ namespace mu2e {
       std::copy(todo.begin(), todo.end(), std::ostream_iterator<std::string>(os, " "));
       throw cet::exception("CONFIG")<<os.str();
     }
+
+    //----------------
+    std::vector<string> lvlist(pset.get<vector<string>>("sensitiveVolumes", {}));
+    for(const auto& name : lvlist) {
+      lvsd_[name] = StepInstance(name);
+    }
+
+    //----------------
+  }
+
+  void SensitiveDetectorHelper::instantiateLVSDs(const SimpleConfig& config){
+    G4SDManager* SDman      = G4SDManager::GetSDMpointer();
+    art::ServiceHandle<G4Helper> helper;
+
+    for(auto& iter : lvsd_) {
+      iter.second.sensitiveDetector = new Mu2eSensitiveDetector(iter.first, config);
+      SDman->AddNewDetector(iter.second.sensitiveDetector);
+      helper->locateVolInfo(iter.first).logical->SetSensitiveDetector(iter.second.sensitiveDetector);
+    }
   }
 
   // Find the sensitive detector objects and attach them to each StepInstance object.
@@ -91,7 +112,7 @@ namespace mu2e {
             i != stepInstances_.end(); ++i ){
       StepInstance& step(i->second);
       step.sensitiveDetector = 
-        dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.name().c_str()));
+        dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str()));
     }
   }
 
@@ -103,6 +124,9 @@ namespace mu2e {
       i->second.p.clear();
     }
 
+    for(auto& i : lvsd_) {
+      i.second.p.clear();
+    }
   }
 
   // Hand each sensitive detector object the StepPointMC collection that it will fill.
@@ -119,6 +143,10 @@ namespace mu2e {
       }
     }
 
+    for(auto& i : lvsd_) {
+      i.second.sensitiveDetector->beforeG4Event(i.second.p, info, simsId, event );
+    }
+
   }
 
   // Put all of the data products into the event.
@@ -130,7 +158,13 @@ namespace mu2e {
       unique_ptr<StepPointMCCollection> p(new StepPointMCCollection);
       StepInstance& instance(i->second);
       std::swap( instance.p, *p);
-      event.put(std::move(p), instance.stepName.name() );
+      event.put(std::move(p), instance.stepName );
+    }
+
+    for (auto& i: lvsd_) {
+      unique_ptr<StepPointMCCollection> p(new StepPointMCCollection);
+      std::swap( i.second.p, *p);
+      event.put(std::move(p), i.second.stepName );
     }
 
   }
@@ -140,8 +174,13 @@ namespace mu2e {
     vector<string> names;
     for ( InstanceMap::const_iterator i=stepInstances_.begin();
             i != stepInstances_.end(); ++i ){
-      names.push_back( i->second.stepName.name() );
+      names.push_back( i->second.stepName );
     }
+
+    for(const auto& i : lvsd_) {
+      names.emplace_back(i.second.stepName);
+    }
+
     return names;
   }
 

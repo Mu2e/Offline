@@ -21,6 +21,9 @@ g4run :
   SDConfig : {  
     enableAllSDs : true  // this will activate all SDs listed in StepInstanceName enum
     // enableSD : [ calorimeter, tracker ] // activate just the explicitly listed SDs
+
+   // // Make arbitrary LogicalVolumes sensitive:
+   // sensitiveVolumes: [ ToyDS3Vacuum ]
  }
 }
 

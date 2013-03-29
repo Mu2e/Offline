@@ -4,9 +4,9 @@
 // Construct the Mu2e G4 world and serve information about that world.
 // Note that the class inherits from Mu2eUniverse now
 //
-// $Id: Mu2eWorld.hh,v 1.45 2013/03/29 04:35:17 gandr Exp $
+// $Id: Mu2eWorld.hh,v 1.46 2013/03/29 05:45:03 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Date: 2013/03/29 05:45:03 $
 //
 // Original author Rob Kutschke
 //
@@ -57,7 +57,7 @@ namespace mu2e {
   class Mu2eWorld : public Mu2eUniverse {
   public:
 
-    explicit Mu2eWorld(const SensitiveDetectorHelper& sdHelper) : sdHelper_(&sdHelper) {}
+    explicit Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/) : sdHelper_(sdHelper) {}
 
     // Construct everything.
     // The non-const return type is eventually required 
@@ -85,7 +85,7 @@ namespace mu2e {
     std::unique_ptr<FieldMgr> _dsUniform;
     std::unique_ptr<FieldMgr> _dsGradient;
 
-    const SensitiveDetectorHelper *sdHelper_; // Non-owning
+    SensitiveDetectorHelper *sdHelper_; // Non-owning
   };
 
 } // end namespace mu2e
