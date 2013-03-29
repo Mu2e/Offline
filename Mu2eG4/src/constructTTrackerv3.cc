@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.28 2013/01/07 15:31:38 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/01/07 15:31:38 $
+// $Id: constructTTrackerv3.cc,v 1.29 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -219,9 +219,9 @@ namespace mu2e{
 
     // Make TTrackerDeviceSupport a sensitive detector for radiation damage studies
 
-    supportInfo.logical->
-      SetSensitiveDetector(G4SDManager::GetSDMpointer()->
-                           FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport()) );
+    G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport());
+    if(sd) supportInfo.logical->SetSensitiveDetector(sd);
 
 
     if (verbosityLevel > 0 ) {
@@ -456,9 +456,9 @@ namespace mu2e{
 
         // Make gas of this straw a sensitive detector.
 
-        strawGasInfo.logical->
-          SetSensitiveDetector(G4SDManager::GetSDMpointer()->
-                               FindSensitiveDetector(SensitiveDetectorName::TrackerGas()) );
+        G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
+          FindSensitiveDetector(SensitiveDetectorName::TrackerGas());
+        if(sd) strawGasInfo.logical->SetSensitiveDetector(sd);
 
       }   // end loop over straws
     }     // end loop over layers

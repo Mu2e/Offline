@@ -526,8 +526,8 @@ VolumeInfo ITrackerBuilder::constructTracker( G4LogicalVolume* mother, double zO
 //                                        else if ( itracker->geomType()==ITracker::Square ) glSD = new ITGasLayerSD( vol );//ITGasLayerSD_v3( vol );
 //                                        SDman->AddNewDetector( glSD );
 //                                        LayerInfo.logical->SetSensitiveDetector( glSD );
-                                          LayerInfo.logical->SetSensitiveDetector(
-                                                          G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::TrackerGas()) );
+                                  G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::TrackerGas());
+                                  if(sd) LayerInfo.logical->SetSensitiveDetector(sd);
 
                                 }
 

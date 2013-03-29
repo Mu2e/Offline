@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.151 2013/03/26 23:28:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/26 23:28:23 $
+// $Id: Mu2eWorld.cc,v 1.152 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author Rob Kutschke
 //
@@ -89,6 +89,7 @@
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
 #include "Mu2eG4/inc/constructVaneCalorimeter.hh"
 #include "Mu2eG4/inc/constructDiskCalorimeter.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
@@ -131,16 +132,6 @@
 using namespace std;
 
 namespace mu2e {
-
-  Mu2eWorld::Mu2eWorld()
-  {}
-
-  Mu2eWorld::~Mu2eWorld(){
-
-    // Do not destruct the solids, logical volumes or physical volumes.
-    // G4 looks after that itself.
-
-  }
 
   // This is the callback called by G4 via G4VPhysicalVolume* WorldMaker::Construct()
   G4VPhysicalVolume * Mu2eWorld::construct(){
@@ -564,64 +555,93 @@ namespace mu2e {
 
     if ( _config.getBool("hasITracker",false) ) {
       GeomHandle<ITracker> itracker;
-      ITGasLayerSD* itrackerSD=0x0;
-      if ( itracker->geomType()==ITracker::Hexagonal )
-        itrackerSD = new ITGasLayerSD_Hexagonal(SensitiveDetectorName::TrackerGas(), _config);
-      else if ( itracker->geomType()==ITracker::Square )
-        itrackerSD = new ITGasLayerSD_Square(   SensitiveDetectorName::TrackerGas(), _config);
 
-      SDman->AddNewDetector(itrackerSD);
+      if(sdHelper_->enabled(StepInstanceName::tracker)) {
+        ITGasLayerSD* itrackerSD=0x0;
+        if ( itracker->geomType()==ITracker::Hexagonal )
+          itrackerSD = new ITGasLayerSD_Hexagonal(SensitiveDetectorName::TrackerGas(), _config);
+        else if ( itracker->geomType()==ITracker::Square )
+          itrackerSD = new ITGasLayerSD_Square(   SensitiveDetectorName::TrackerGas(), _config);
+        SDman->AddNewDetector(itrackerSD);
+      }
+
       if (_config.getBool("itracker.ActiveWiresSD",false)) {
-        SDman->AddNewDetector(new TrackerWireSD(    SensitiveDetectorName::TrackerSWires(),  _config));
-        SDman->AddNewDetector(new TrackerWireSD(    SensitiveDetectorName::ITrackerFWires(),  _config));
+        if(sdHelper_->enabled(StepInstanceName::trackerSWires)) {
+          SDman->AddNewDetector(new TrackerWireSD(    SensitiveDetectorName::TrackerSWires(),  _config));
+        }
+        if(sdHelper_->enabled(StepInstanceName::itrackerFWires)) {
+          SDman->AddNewDetector(new TrackerWireSD(    SensitiveDetectorName::ITrackerFWires(),  _config));
+        }
       }
 
     }
     else {
-      StrawSD* strawSD      =
-        new StrawSD(                SensitiveDetectorName::TrackerGas(),  _config);
-      SDman->AddNewDetector(strawSD);
+      if(sdHelper_->enabled(StepInstanceName::tracker)) {
+        StrawSD* strawSD      =
+          new StrawSD(                SensitiveDetectorName::TrackerGas(),  _config);
+        SDman->AddNewDetector(strawSD);
+      }
 
-      TTrackerDeviceSupportSD* ttdsSD =
-        new TTrackerDeviceSupportSD(SensitiveDetectorName::TTrackerDeviceSupport(), _config);
-      SDman->AddNewDetector(ttdsSD);
+      if(sdHelper_->enabled(StepInstanceName::ttrackerDS)) {
+        TTrackerDeviceSupportSD* ttdsSD =
+          new TTrackerDeviceSupportSD(SensitiveDetectorName::TTrackerDeviceSupport(), _config);
+        SDman->AddNewDetector(ttdsSD);
+      }
     }
-
-    Mu2eSensitiveDetector* vdSD =
-      new Mu2eSensitiveDetector(    SensitiveDetectorName::VirtualDetector(), _config);
-    SDman->AddNewDetector(vdSD);
+    
+    if(sdHelper_->enabled(StepInstanceName::virtualdetector)) {
+      Mu2eSensitiveDetector* vdSD =
+        new Mu2eSensitiveDetector(    SensitiveDetectorName::VirtualDetector(), _config);
+      SDman->AddNewDetector(vdSD);
+    }
 
     if (   const_cast<GeometryService&>(_geom).hasElement<Calorimeter>() ) {
-      CaloCrystalSD* ccSD     =
-        new CaloCrystalSD(          SensitiveDetectorName::CaloCrystal(),     _config);
-      SDman->AddNewDetector(ccSD);
+      if(sdHelper_->enabled(StepInstanceName::calorimeter)) {
+        CaloCrystalSD* ccSD     =
+          new CaloCrystalSD(          SensitiveDetectorName::CaloCrystal(),     _config);
+        SDman->AddNewDetector(ccSD);
+      }
 
-      CaloReadoutSD* crSD     =
-        new CaloReadoutSD(          SensitiveDetectorName::CaloReadout(),     _config);
-      SDman->AddNewDetector(crSD);
+      if(sdHelper_->enabled(StepInstanceName::calorimeterRO)) {
+        CaloReadoutSD* crSD     =
+          new CaloReadoutSD(          SensitiveDetectorName::CaloReadout(),     _config);
+        SDman->AddNewDetector(crSD);
+      }
     }
 
-    SDman->AddNewDetector(new ExtMonFNALPixelSD(_config));
+    if(true) { // this SD does not derive from Mu2eSensitiveDetector as it does not produce StepPointMCCollection
+      SDman->AddNewDetector(new ExtMonFNALPixelSD(_config));
+    }
 
-    ExtMonUCITofSD* emuTofSD =
-      new ExtMonUCITofSD(           SensitiveDetectorName::ExtMonUCITof(),  _config);
-    SDman->AddNewDetector(emuTofSD);
+    if(sdHelper_->enabled(StepInstanceName::ExtMonUCITof)) {
+      ExtMonUCITofSD* emuTofSD =
+        new ExtMonUCITofSD(           SensitiveDetectorName::ExtMonUCITof(),  _config);
+      SDman->AddNewDetector(emuTofSD);
+    }
 
-    Mu2eSensitiveDetector* stSD =
-      new Mu2eSensitiveDetector(    SensitiveDetectorName::StoppingTarget(),  _config);
-    SDman->AddNewDetector(stSD);
+    if(sdHelper_->enabled(StepInstanceName::stoppingtarget)) {
+      Mu2eSensitiveDetector* stSD =
+        new Mu2eSensitiveDetector(    SensitiveDetectorName::StoppingTarget(),  _config);
+      SDman->AddNewDetector(stSD);
+    }
 
-    Mu2eSensitiveDetector* sbSD =
-      new Mu2eSensitiveDetector(    SensitiveDetectorName::CRSScintillatorBar(), _config);
-    SDman->AddNewDetector(sbSD);
+    if(sdHelper_->enabled(StepInstanceName::CRV)) {
+      Mu2eSensitiveDetector* sbSD =
+        new Mu2eSensitiveDetector(    SensitiveDetectorName::CRSScintillatorBar(), _config);
+      SDman->AddNewDetector(sbSD);
+    }
 
-    Mu2eSensitiveDetector* paSD =
-      new Mu2eSensitiveDetector(    SensitiveDetectorName::ProtonAbsorber(),  _config);
-    SDman->AddNewDetector(paSD);
+    if(sdHelper_->enabled(StepInstanceName::protonabsorber)) {
+      Mu2eSensitiveDetector* paSD =
+        new Mu2eSensitiveDetector(    SensitiveDetectorName::ProtonAbsorber(),  _config);
+      SDman->AddNewDetector(paSD);
+    }
 
-    Mu2eSensitiveDetector* psVacuumSD =
-      new Mu2eSensitiveDetector(    SensitiveDetectorName::PSVacuum(),  _config);
-    SDman->AddNewDetector(psVacuumSD);
+    if(sdHelper_->enabled(StepInstanceName::PSVacuum)) {
+      Mu2eSensitiveDetector* psVacuumSD =
+        new Mu2eSensitiveDetector(    SensitiveDetectorName::PSVacuum(),  _config);
+      SDman->AddNewDetector(psVacuumSD);
+    }
 
   } // instantiateSensitiveDetectors
 

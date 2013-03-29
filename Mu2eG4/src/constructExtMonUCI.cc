@@ -1,9 +1,9 @@
 //
 // Construct ExtinctionMonitor UCI.
 //
-// $Id: constructExtMonUCI.cc,v 1.14 2012/08/30 14:24:03 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/08/30 14:24:03 $
+// $Id: constructExtMonUCI.cc,v 1.15 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 
 #include <iostream>
 
@@ -277,7 +277,7 @@ namespace mu2e {
                       nestVerbosity
                      );
 
-        tofInfo[iTof].logical->SetSensitiveDetector(emuSD);
+        if(emuSD) tofInfo[iTof].logical->SetSensitiveDetector(emuSD);
 
       } // end of iTofSeg
     } // end of iTofSta

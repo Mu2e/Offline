@@ -2,9 +2,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.cc,v 1.6 2012/05/07 23:35:57 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/05/07 23:35:57 $
+// $Id: DiagnosticsG4.cc,v 1.7 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author Rob Kutschke
 //
@@ -104,6 +104,42 @@ namespace mu2e {
     if ( status.nKilledStepLimit() > 0 ) { hNKilledStep_->Fill(status.nKilledStepLimit()); }
   }
 
+  void DiagnosticsG4::fill( StatusG4                     const* status,
+                            SimParticleCollection        const* sims,
+                            StepPointMCCollection        const* trkSteps,
+                            StepPointMCCollection        const* calSteps,
+                            StepPointMCCollection        const* calROSteps,
+                            StepPointMCCollection        const* crvSteps,
+                            StepPointMCCollection        const* foilSteps,
+                            StepPointMCCollection        const* vdSteps,
+                            StepPointMCCollection        const* extMonUCITofSteps,
+                            PointTrajectoryCollection    const* trajectories,
+                            PhysicalVolumeInfoCollection const* volInfo ){
+
+    if(status) {
+
+      fillStatus(*status);
+    // Convert times to ms;
+      double cpu = status->cpuTime()*1000.;
+      double real = status->realTime()*1000.;
+
+      hRealTime_    ->Fill(real);
+      hRealTimeWide_->Fill(real);
+      hCPUTime_     ->Fill(cpu);
+      hCPUTimeWide_ ->Fill(cpu);
+    }
+
+    if(trkSteps) hNTrkSteps_->Fill(trkSteps->size());
+    if(calSteps) hNCalSteps_->Fill(calSteps->size());
+    if(calROSteps) hNCalROSteps_->Fill(calROSteps->size());
+    if(crvSteps) hNCRVSteps_->Fill(crvSteps->size());
+    if(foilSteps) hNFoilSteps_->Fill(foilSteps->size());
+    if(vdSteps) hNVDetSteps_->Fill(vdSteps->size());
+    if(extMonUCITofSteps) hNExtMonUCITofSteps_->Fill(extMonUCITofSteps->size());
+    if(trajectories) hNTrajectories_->Fill(trajectories->size());
+    if(volInfo) hNPhysVolumes_->Fill(volInfo->size());
+  }
+  
   void DiagnosticsG4::fill( StatusG4                     const& status,
                             SimParticleCollection        const& sims,
                             StepPointMCCollection        const& trkSteps,
@@ -114,33 +150,17 @@ namespace mu2e {
                             StepPointMCCollection        const& vdSteps,
                             StepPointMCCollection        const& extMonUCITofSteps,
                             PointTrajectoryCollection    const& trajectories,
-                            PhysicalVolumeInfoCollection const& volInfo ){
-
-    fillStatus(status);
-
-    // Convert times to ms;
-    double cpu = status.cpuTime()*1000.;
-    double real = status.realTime()*1000.;
-
-    hRealTime_    ->Fill(real);
-    hRealTimeWide_->Fill(real);
-    hCPUTime_     ->Fill(cpu);
-    hCPUTimeWide_ ->Fill(cpu);
-
-    hNTrkSteps_     ->Fill(trkSteps.size());
-    hNCalSteps_     ->Fill(calSteps.size());
-    hNCalROSteps_   ->Fill(calROSteps.size());
-    hNCRVSteps_     ->Fill(crvSteps.size());
-    hNFoilSteps_    ->Fill(foilSteps.size());
-    hNVDetSteps_    ->Fill(vdSteps.size());
-    hNExtMonUCITofSteps_->Fill(extMonUCITofSteps.size());
-    hNTrajectories_ ->Fill(trajectories.size());
-    hNPhysVolumes_  ->Fill(volInfo.size());
-
+                            PhysicalVolumeInfoCollection const& volInfo )
+  {
+    fill(&status, &sims, &trkSteps, &calSteps, &calROSteps, &crvSteps, &foilSteps, &vdSteps, &extMonUCITofSteps, &trajectories, &volInfo);
   }
 
   void DiagnosticsG4::fillPA ( StepPointMCCollection        const& paSteps) {
     hNPASteps_->Fill(paSteps.size());
+  }
+
+  void DiagnosticsG4::fillPA ( StepPointMCCollection        const* paSteps) {
+    if(paSteps) fillPA(*paSteps);
   }
 
 }  // end namespace mu2e

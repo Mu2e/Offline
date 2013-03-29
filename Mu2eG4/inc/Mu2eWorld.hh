@@ -4,9 +4,9 @@
 // Construct the Mu2e G4 world and serve information about that world.
 // Note that the class inherits from Mu2eUniverse now
 //
-// $Id: Mu2eWorld.hh,v 1.44 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: Mu2eWorld.hh,v 1.45 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author Rob Kutschke
 //
@@ -52,17 +52,17 @@ namespace mu2e {
 
   // Forward references within mu2e namespace.
   class SimpleConfig;
+  class SensitiveDetectorHelper;
 
   class Mu2eWorld : public Mu2eUniverse {
   public:
 
-    Mu2eWorld();
-    ~Mu2eWorld();
+    explicit Mu2eWorld(const SensitiveDetectorHelper& sdHelper) : sdHelper_(&sdHelper) {}
 
     // Construct everything.
     // The non-const return type is eventually required 
     // by G4VUserDetectorConstruction::Construct();
-    G4VPhysicalVolume * construct();
+    virtual G4VPhysicalVolume * construct() override;
 
   private:
 
@@ -85,6 +85,7 @@ namespace mu2e {
     std::unique_ptr<FieldMgr> _dsUniform;
     std::unique_ptr<FieldMgr> _dsGradient;
 
+    const SensitiveDetectorHelper *sdHelper_; // Non-owning
   };
 
 } // end namespace mu2e

@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.20 2013/03/27 17:36:38 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/03/27 17:36:38 $
+// $Id: constructProtonAbsorber.cc,v 1.21 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -235,7 +235,7 @@ namespace mu2e {
                                             placePV,
                                             doSurfaceCheck
                                             );
-      protonabs1Info.logical->SetSensitiveDetector (paSD);
+      if(paSD) protonabs1Info.logical->SetSensitiveDetector (paSD);
 
       if ( verbosityLevel > 0) {
         double pzhl   = static_cast<G4Cons*>(protonabs1Info.solid)->GetZHalfLength();
@@ -265,7 +265,7 @@ namespace mu2e {
                                             placePV,
                                             doSurfaceCheck
                                             );
-      protonabs2Info.logical->SetSensitiveDetector (paSD);
+      if(paSD) protonabs2Info.logical->SetSensitiveDetector (paSD);
       if ( verbosityLevel > 0) {
         double pzhl   = static_cast<G4Cons*>(protonabs2Info.solid)->GetZHalfLength();
         double pabs2Z = protonabs2Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
@@ -345,7 +345,7 @@ namespace mu2e {
                                             placePV,
                                             doSurfaceCheck
                                             );
-      protonabs1Info.logical->SetSensitiveDetector (paSD);
+      if(paSD) protonabs1Info.logical->SetSensitiveDetector (paSD);
 
       if ( verbosityLevel > 0) {
         double pzhl   = static_cast<G4Cons*>(protonabs1Info.solid)->GetZHalfLength();
@@ -381,7 +381,7 @@ namespace mu2e {
                                             placePV,
                                             doSurfaceCheck
                                             );
-      protonabs2Info.logical->SetSensitiveDetector (paSD);
+      if(paSD) protonabs2Info.logical->SetSensitiveDetector (paSD);
 
       mf::LogInfo log("GEOM");
       log << "Constructing Proton Absorber -- \n";

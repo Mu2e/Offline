@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.22 2012/11/01 23:33:54 gandr Exp $
+// $Id: constructExtMonFNAL.cc,v 1.23 2013/03/29 04:35:17 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:33:54 $
+// $Date: 2013/03/29 04:35:17 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -95,7 +95,7 @@ namespace mu2e {
                                   doSurfaceCheck
                                   );
 
-      vplane.logical->SetSensitiveDetector(emSD);
+      if(emSD) vplane.logical->SetSensitiveDetector(emSD);
 
       // install passive readout material, adjacent to each sensor on
       // the downstream side
@@ -240,7 +240,7 @@ namespace mu2e {
           // vd are very thin, a more thorough check is needed
           doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-          vdInfo.logical->SetSensitiveDetector(vdSD);
+          if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
         }
       } // for(vdId-1)
     } // detector VD block
@@ -312,7 +312,7 @@ namespace mu2e {
         // vd are very thin, a more thorough check is needed
         doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-        vdInfo.logical->SetSensitiveDetector(vdSD);
+        if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
       }
     } // for(vdId-2)
   }
@@ -378,7 +378,7 @@ namespace mu2e {
     G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
       FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
 
-    boxFront.logical->SetSensitiveDetector(vdSD);
+    if(vdSD) boxFront.logical->SetSensitiveDetector(vdSD);
 
   }
 

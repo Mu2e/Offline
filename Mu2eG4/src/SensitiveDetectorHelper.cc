@@ -1,9 +1,9 @@
 //
 // A helper class manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.cc,v 1.4 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: SensitiveDetectorHelper.cc,v 1.5 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author Rob Kutschke
 //
@@ -19,11 +19,6 @@
 //    collection.  The work around is to hold the collection by value and to use swap
 //    to transfer it into the unique_ptr that will be given to the event.  This is
 //    a very small CPU time penalty but it saves us from doing any explicit memory management.
-//
-// 3) Todo:
-//    Add a grammar to the pset to select which sensitive detectors to do.
-//    Perhaps implement a keep/drop model as in the IO configuration.
-//    Should also connect this to the code that creates the sensitive detectors.
 //
 
 // From Mu2e.
@@ -47,18 +42,45 @@ namespace mu2e {
   SensitiveDetectorHelper::SensitiveDetectorHelper( fhicl::ParameterSet const& pset ):
     stepInstances_(){
 
-    // Build list of StepInstances to look after.  See note 1.
-    std::vector<StepInstanceName> const& allSD(StepInstanceName::allValues());
-    for ( std::vector<StepInstanceName>::const_iterator i=allSD.begin();
-          i != allSD.end(); ++i ){
-      // stepper does not have a sensitive detector associated with it...
-      if (*i == StepInstanceName::stepper) continue;
-      StepInstanceName::enum_type id(*i);
-      if ( id != StepInstanceName::unknown && id !=StepInstanceName::timeVD ){
-        stepInstances_[id] = StepInstance(id);
+    // Backward compatible defaults
+    bool enableAllSDs = true;
+    std::vector<std::string> enabledSDs;
+
+    if(!pset.is_empty()) {
+      enableAllSDs = pset.get<bool>("enableAllSDs", false);
+      const bool explicitList = pset.get_if_present<std::vector<std::string> >("enableSD", enabledSDs);
+      if(enableAllSDs && explicitList) {
+        throw cet::exception("CONFIG")<<"SensitiveDetectorHelper: enableAllSDs=true conflicts with explicit list enableSD\n";
+      }
+      if(!enableAllSDs && !explicitList) {
+        throw cet::exception("CONFIG")<<"SensitiveDetectorHelper: no SDs are defined.  Either say enableAllSDs:true, or enableSD:[list]\n";
       }
     }
 
+    typedef std::set<std::string> TODO;
+    TODO todo(enabledSDs.begin(), enabledSDs.end());
+
+    // Build list of StepInstances to look after.  See note 1.
+    std::vector<StepInstanceName> const& preDefinedSD(StepInstanceName::allValues());
+    for ( std::vector<StepInstanceName>::const_iterator i=preDefinedSD.begin(); i != preDefinedSD.end(); ++i ){
+      if(enableAllSDs || (todo.find(i->name()) != todo.end())) {
+        todo.erase(i->name());
+
+        // stepper does not have a sensitive detector associated with it...
+        if (*i == StepInstanceName::stepper) continue;
+        StepInstanceName::enum_type id(*i);
+        if ( id != StepInstanceName::unknown && id !=StepInstanceName::timeVD ){
+          stepInstances_[id] = StepInstance(id);
+        }
+      }
+    }
+
+    if(!todo.empty()) {
+      std::ostringstream os;
+      os<<"SensitiveDetectorHelper: the following detectors in the enableSD list are not recognized: ";
+      std::copy(todo.begin(), todo.end(), std::ostream_iterator<std::string>(os, " "));
+      throw cet::exception("CONFIG")<<os.str();
+    }
   }
 
   // Find the sensitive detector objects and attach them to each StepInstance object.
@@ -69,7 +91,7 @@ namespace mu2e {
             i != stepInstances_.end(); ++i ){
       StepInstance& step(i->second);
       step.sensitiveDetector = 
-        static_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.name().c_str()));
+        dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.name().c_str()));
     }
   }
 
@@ -121,6 +143,10 @@ namespace mu2e {
       names.push_back( i->second.stepName.name() );
     }
     return names;
+  }
+
+  bool SensitiveDetectorHelper::enabled(StepInstanceName::enum_type instance) const{
+    return stepInstances_.find(instance) != stepInstances_.end();
   }
 
   // Return one of the StepPointMCCollections.

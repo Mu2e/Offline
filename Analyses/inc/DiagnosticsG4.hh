@@ -4,9 +4,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.hh,v 1.5 2012/05/07 23:35:57 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/05/07 23:35:57 $
+// $Id: DiagnosticsG4.hh,v 1.6 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author Rob Kutschke
 //
@@ -67,8 +67,24 @@ namespace mu2e {
                PointTrajectoryCollection    const& trajectories,
                PhysicalVolumeInfoCollection const& volInfo);
 
+    // nullptr args are allowed
+    void fill( StatusG4                     const* status,
+               SimParticleCollection        const* sims,
+               StepPointMCCollection        const* trkSteps,
+               StepPointMCCollection        const* calSteps,
+               StepPointMCCollection        const* calROSteps,
+               StepPointMCCollection        const* crvSteps,
+               StepPointMCCollection        const* foilSteps,
+               StepPointMCCollection        const* vdSteps,
+               StepPointMCCollection        const* extMonUCITofSteps,
+               PointTrajectoryCollection    const* trajectories,
+               PhysicalVolumeInfoCollection const* volInfo);
+
     // Fill information for PA only
     void fillPA ( StepPointMCCollection        const& paSteps);
+
+    // nullptr arg is allowed
+    void fillPA ( StepPointMCCollection        const* paSteps);
 
   private:
 

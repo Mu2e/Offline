@@ -3,9 +3,9 @@
 //
 // Some helper functions to manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.hh,v 1.1 2012/06/09 20:03:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/09 20:03:25 $
+// $Id: SensitiveDetectorHelper.hh,v 1.2 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author Rob Kutschke
 //
@@ -54,6 +54,9 @@ namespace mu2e {
 
     // Return all of the instances names of the data products to be produced.
     std::vector<std::string> stepInstanceNamesToBeProduced() const;
+
+    // Query the same info
+    bool enabled(StepInstanceName::enum_type instance) const;
 
     // Return one of the StepPointMCCollections.
     cet::maybe_ref<StepPointMCCollection> steps( StepInstanceName::enum_type id );

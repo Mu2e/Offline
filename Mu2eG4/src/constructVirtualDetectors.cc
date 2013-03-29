@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.45 2013/03/08 01:22:32 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/03/08 01:22:32 $
+// $Id: constructVirtualDetectors.cc,v 1.46 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -117,7 +117,7 @@ namespace mu2e {
                                   false);
         // vd are very thin, a more thorough check is needed
         doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-        vd.logical->SetSensitiveDetector(vdSD);
+        if(vdSD) vd.logical->SetSensitiveDetector(vdSD);
       }
 
     // Virtual Detectors Coll31_In, Coll31_Out, Coll32_In, Coll32_Out are placed inside TS3
@@ -139,7 +139,7 @@ namespace mu2e {
                                   false);
         // vd are very thin, a more thorough check is needed
         doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-        vd.logical->SetSensitiveDetector(vdSD);
+        if(vdSD) vd.logical->SetSensitiveDetector(vdSD);
       }
 
     // Virtual Detectors Coll5_In, Coll5_Out are placed inside TS5
@@ -161,7 +161,7 @@ namespace mu2e {
                                   false);
         // vd are very thin, a more thorough check is needed
         doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-        vd.logical->SetSensitiveDetector(vdSD);
+        if(vdSD) vd.logical->SetSensitiveDetector(vdSD);
       }
 
     // Virtual Detectors Coll5_OutSurf surrounds the outer cylindrical surface of collimator in TS5
@@ -195,7 +195,7 @@ namespace mu2e {
                                 false);
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-      vd.logical->SetSensitiveDetector(vdSD);
+      if(vdSD) vd.logical->SetSensitiveDetector(vdSD);
 
     }
 
@@ -262,7 +262,7 @@ namespace mu2e {
           // vd are very thin, a more thorough check is needed
           doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-          vd.logical->SetSensitiveDetector(vdSD);
+          if(vdSD) vd.logical->SetSensitiveDetector(vdSD);
         }
     }
 
@@ -305,7 +305,7 @@ namespace mu2e {
 				  false);
 	// vd are very thin, a more thorough check is needed
 	doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-	vd.logical->SetSensitiveDetector(vdSD);
+	if(vdSD) vd.logical->SetSensitiveDetector(vdSD);
 
 	vdId = VirtualDetectorId::TT_MidInner;
 	if( vdg->exist(vdId) ) {
@@ -344,7 +344,7 @@ namespace mu2e {
 				    false);
 	  // vd are very thin, a more thorough check is needed
 	  doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-	  vd.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vd.logical->SetSensitiveDetector(vdSD);
 	}
 
       }
@@ -506,7 +506,7 @@ namespace mu2e {
 	      protonabs2Info.centerInMu2e()-vdg->getGlobal(vdId) << endl;
 	  }
 
-	  vdHollowInfo.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vdHollowInfo.logical->SetSensitiveDetector(vdSD);
 
 	  //  now the complementary solid, it has to be placed in protonabs2
 
@@ -582,7 +582,7 @@ namespace mu2e {
 	    }
 
 
-	    vdIntersectionInfo.logical->SetSensitiveDetector(vdSD);
+	    if(vdSD) vdIntersectionInfo.logical->SetSensitiveDetector(vdSD);
 
 	  }
 	}
@@ -631,7 +631,7 @@ namespace mu2e {
 	  // vd are very thin, a more thorough check is needed
 	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	  vdInfo.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
 	}   
 
@@ -675,7 +675,7 @@ namespace mu2e {
 	// vd are very thin, a more thorough check is needed
 	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	vdInfo.logical->SetSensitiveDetector(vdSD);
+	if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
       }
 
@@ -721,7 +721,7 @@ namespace mu2e {
 	// vd are very thin, a more thorough check is needed
 	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	vdInfo.logical->SetSensitiveDetector(vdSD);
+	if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
       }
 
@@ -767,7 +767,7 @@ namespace mu2e {
 	// vd are very thin, a more thorough check is needed
 	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	vdInfo.logical->SetSensitiveDetector(vdSD);
+	if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
       }
 
@@ -820,7 +820,7 @@ namespace mu2e {
 	// vd are very thin, a more thorough check is needed
 	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	vdInfo.logical->SetSensitiveDetector(vdSD);
+	if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
       }
 
       vdId = VirtualDetectorId::IT_VD_EndCap_Front;
@@ -863,7 +863,7 @@ namespace mu2e {
 	// vd are very thin, a more thorough check is needed
 	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	vdInfo.logical->SetSensitiveDetector(vdSD);
+	if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
       }
 
       vdId = VirtualDetectorId::IT_VD_EndCap_Back;
@@ -906,7 +906,7 @@ namespace mu2e {
 	// vd are very thin, a more thorough check is needed
 	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	vdInfo.logical->SetSensitiveDetector(vdSD);
+	if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
       }
 
     }
@@ -972,7 +972,7 @@ namespace mu2e {
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
+      if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
 
@@ -1006,7 +1006,7 @@ namespace mu2e {
         // vd are very thin, a more thorough check is needed
         doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-        vdInfo.logical->SetSensitiveDetector(vdSD);
+        if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
       }
 
     // placing virtual detector infront of ExtMonUCI removable shielding
@@ -1042,7 +1042,7 @@ namespace mu2e {
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
+      if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
     // placing virtual detector between ExtMonUCI removable shielding and front shielding
@@ -1074,7 +1074,7 @@ namespace mu2e {
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
+      if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
     // placing virtual detector at the entrance and exit collimator0-3
@@ -1108,7 +1108,7 @@ namespace mu2e {
           // vd are very thin, a more thorough check is needed
           doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-          vdInfo.logical->SetSensitiveDetector(vdSD);
+          if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
           vdId++;
         }
@@ -1162,7 +1162,7 @@ namespace mu2e {
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
+      if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
     // placing virtual detector at the dump core face
@@ -1201,7 +1201,7 @@ namespace mu2e {
       // vd are very thin, a more thorough check is needed
       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
+      if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
     // ExtMonFNAL detector VDs - created in constructExtMonFNAL()
@@ -1265,7 +1265,7 @@ namespace mu2e {
 	  // vd are very thin, a more thorough check is needed
 	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	  vdInfo.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
 	  vdIdFront++;
         
@@ -1321,7 +1321,7 @@ namespace mu2e {
 	  // vd are very thin, a more thorough check is needed
 	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	  vdInfo.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
 	  vdIdFront++;
         
@@ -1378,7 +1378,7 @@ namespace mu2e {
 	  // vd are very thin, a more thorough check is needed
 	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	  vdInfo.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
 	  vdIdEdge++;
         
@@ -1434,7 +1434,7 @@ namespace mu2e {
 	  // vd are very thin, a more thorough check is needed
 	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	  vdInfo.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
 	  vdIdEdge++;
         
@@ -1490,7 +1490,7 @@ namespace mu2e {
 	  // vd are very thin, a more thorough check is needed
 	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	  vdInfo.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
 	  vdIdSurf++;
         
@@ -1543,7 +1543,7 @@ namespace mu2e {
 	  // vd are very thin, a more thorough check is needed
 	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	  vdInfo.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
 	  vdIdSurf++;
         
@@ -1597,7 +1597,7 @@ namespace mu2e {
 	  // vd are very thin, a more thorough check is needed
 	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	  vdInfo.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
 	  vdIdSurf++;
         
@@ -1640,7 +1640,7 @@ namespace mu2e {
 	  // vd are very thin, a more thorough check is needed
 	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	  vdInfo.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
 	  vdIdSurf++;
         
@@ -1682,7 +1682,7 @@ namespace mu2e {
 	  // vd are very thin, a more thorough check is needed
 	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 	  
-	  vdInfo.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
 	  vdIdEdge++;
         
@@ -1721,7 +1721,7 @@ namespace mu2e {
 	  // vd are very thin, a more thorough check is needed
 	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
 
-	  vdInfo.logical->SetSensitiveDetector(vdSD);
+	  if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
 
 	  vdIdEdge++;
         

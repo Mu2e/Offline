@@ -5,9 +5,9 @@
 //  - See comments at the top of constructTTrackerv3.cc for additional details
 //    of the meaning of version numbers.
 //
-// $Id: constructTTrackerv3Detailed.cc,v 1.2 2013/01/07 15:31:38 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/01/07 15:31:38 $
+// $Id: constructTTrackerv3Detailed.cc,v 1.3 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Contact person Rob Kutschke,
 //   - Based on constructTTrackerv3 by KLG
@@ -315,13 +315,14 @@ namespace {
     }
 
     // Pick one of the tubs that represents mocked-up electronics and make it a senstive detector.
+    G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport());
+
     for ( std::deque<VolHelper>::iterator i=vols.begin(), e=vols.end();
           i != e; ++i ){
       PlacedTubs const& part = *i->part;
       if ( part.name().find("TTrackerSupportElecCu") != string::npos ){
-        i->info.logical->
-          SetSensitiveDetector(G4SDManager::GetSDMpointer()->
-                               FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport()) );
+        if(sd) i->info.logical->SetSensitiveDetector(sd);
       }
     }
 
@@ -496,9 +497,9 @@ namespace {
                                          );
 
         // Make the gas volume of this straw a sensitive detector.
-        strawVol.logical->
-          SetSensitiveDetector(G4SDManager::GetSDMpointer()->
-                               FindSensitiveDetector(SensitiveDetectorName::TrackerGas()) );
+        G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
+          FindSensitiveDetector(SensitiveDetectorName::TrackerGas());
+        if(sd) strawVol.logical->SetSensitiveDetector(sd);
 
 
         // Wall has 4 layers; the three metal layers sit inside the plastic layer.

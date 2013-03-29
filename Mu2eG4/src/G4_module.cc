@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.63 2013/03/21 00:01:49 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/21 00:01:49 $
+// $Id: G4_module.cc,v 1.64 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author Rob Kutschke
 //
@@ -179,7 +179,7 @@ namespace mu2e {
     _physVolHelper(),
     _processInfo(),
     _printPhysicsProcessSummary(false),
-    _sensitiveDetectorHelper(pSet),
+    _sensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
     _extMonFNALPixelSD(),
     _tvdOutputName(StepInstanceName::timeVD),
     _diagnostics(){
@@ -283,7 +283,7 @@ namespace mu2e {
 
     // Create user actions and register them with G4.
 
-    WorldMaker<Mu2eWorld>* allMu2e    = new WorldMaker<Mu2eWorld>();
+    WorldMaker<Mu2eWorld>* allMu2e    = new WorldMaker<Mu2eWorld>(std::unique_ptr<Mu2eWorld>(new Mu2eWorld(_sensitiveDetectorHelper)));
 
     _runManager->SetVerboseLevel(_rmvlevel);
 
@@ -420,18 +420,35 @@ namespace mu2e {
                                             timer->GetRealElapsed() )
                               );
 
-    _diagnostics.fill( *g4stat,
-                       *simParticles,
-                       _sensitiveDetectorHelper.steps(StepInstanceName::tracker).ref(),
-                       _sensitiveDetectorHelper.steps(StepInstanceName::calorimeter).ref(),
-                       _sensitiveDetectorHelper.steps(StepInstanceName::calorimeterRO).ref(),
-                       _sensitiveDetectorHelper.steps(StepInstanceName::CRV).ref(),
-                       _sensitiveDetectorHelper.steps(StepInstanceName::stoppingtarget).ref(),
-                       _sensitiveDetectorHelper.steps(StepInstanceName::virtualdetector).ref(),
-                       _sensitiveDetectorHelper.steps(StepInstanceName::ExtMonUCITof).ref(),
-                       *pointTrajectories,
-                       _physVolHelper.persistentInfo() );
-    _diagnostics.fillPA( _sensitiveDetectorHelper.steps(StepInstanceName::protonabsorber).ref() );
+    _diagnostics.fill( &*g4stat,
+                       &*simParticles,
+
+                       _sensitiveDetectorHelper.steps(StepInstanceName::tracker) ?
+                       &_sensitiveDetectorHelper.steps(StepInstanceName::tracker).ref() : nullptr,
+
+                       _sensitiveDetectorHelper.steps(StepInstanceName::calorimeter) ? 
+                       &_sensitiveDetectorHelper.steps(StepInstanceName::calorimeter).ref() : nullptr,
+
+                       _sensitiveDetectorHelper.steps(StepInstanceName::calorimeterRO) ?
+                       &_sensitiveDetectorHelper.steps(StepInstanceName::calorimeterRO).ref() : nullptr,
+
+                       _sensitiveDetectorHelper.steps(StepInstanceName::CRV) ?
+                       &_sensitiveDetectorHelper.steps(StepInstanceName::CRV).ref() : nullptr,
+
+                       _sensitiveDetectorHelper.steps(StepInstanceName::stoppingtarget) ?
+                       &_sensitiveDetectorHelper.steps(StepInstanceName::stoppingtarget).ref() : nullptr,
+
+                       _sensitiveDetectorHelper.steps(StepInstanceName::virtualdetector) ?
+                       &_sensitiveDetectorHelper.steps(StepInstanceName::virtualdetector).ref() : nullptr,
+
+                       _sensitiveDetectorHelper.steps(StepInstanceName::ExtMonUCITof) ?
+                       &_sensitiveDetectorHelper.steps(StepInstanceName::ExtMonUCITof).ref() : nullptr,
+
+                       &*pointTrajectories,
+                       &_physVolHelper.persistentInfo() );
+
+    _diagnostics.fillPA(_sensitiveDetectorHelper.steps(StepInstanceName::protonabsorber) ?
+                        &_sensitiveDetectorHelper.steps(StepInstanceName::protonabsorber).ref() : nullptr );
 
     // Add data products to the event.
     event.put(std::move(g4stat));

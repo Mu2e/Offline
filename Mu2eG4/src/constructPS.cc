@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.17 2012/06/22 18:14:56 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/06/22 18:14:56 $
+// $Id: constructPS.cc,v 1.18 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -309,7 +309,7 @@ namespace mu2e {
     if(psVacuumSensitive) {
       G4VSensitiveDetector* psVacuumSD = G4SDManager::GetSDMpointer()->
         FindSensitiveDetector(SensitiveDetectorName::PSVacuum());
-      psVacuumInfo.logical->SetSensitiveDetector(psVacuumSD);
+      if(psVacuumSD) psVacuumInfo.logical->SetSensitiveDetector(psVacuumSD);
     }
 
     // Build the production target.

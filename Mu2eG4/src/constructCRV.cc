@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.14 2012/11/19 23:03:49 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/19 23:03:49 $
+// $Id: constructCRV.cc,v 1.15 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author KLG
 //
@@ -115,10 +115,9 @@ namespace mu2e {
     }
 
     // Make each scintillatorBar a sensitive detector.
-
-    scintillatorBarLogical->
-      SetSensitiveDetector(G4SDManager::GetSDMpointer()->
-                           FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar()) );
+    G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar());
+    if(sd) scintillatorBarLogical->SetSensitiveDetector(sd);
 
     if (verbosityLevel > 1) {
       G4SDManager::GetSDMpointer()->SetVerboseLevel(verbosityLevel-1);

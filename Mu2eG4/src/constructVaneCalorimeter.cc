@@ -1,9 +1,9 @@
 //
 // Free function to create the calorimeter.
 //
-// $Id: constructVaneCalorimeter.cc,v 1.4 2013/03/08 01:22:32 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/03/08 01:22:32 $
+// $Id: constructVaneCalorimeter.cc,v 1.5 2013/03/29 04:35:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/03/29 04:35:17 $
 //
 // Original author Ivan Logashenko
 //
@@ -182,8 +182,8 @@ namespace mu2e {
     G4VSensitiveDetector* ccSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal());
     G4VSensitiveDetector* crSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadout());
     
-    CrystalLog->SetSensitiveDetector(ccSD);
-    ROLog->SetSensitiveDetector(crSD);
+    if(ccSD) CrystalLog->SetSensitiveDetector(ccSD);
+    if(crSD) ROLog->SetSensitiveDetector(crSD);
 
 
 

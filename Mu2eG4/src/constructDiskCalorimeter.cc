@@ -222,8 +222,8 @@ namespace mu2e {
     G4VSensitiveDetector* ccSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal());
     G4VSensitiveDetector* crSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadout());
     
-    CrystalLog->SetSensitiveDetector(ccSD);
-    ROLog->SetSensitiveDetector(crSD);
+    if(ccSD) CrystalLog->SetSensitiveDetector(ccSD);
+    if(crSD) ROLog->SetSensitiveDetector(crSD);
 
 
 
