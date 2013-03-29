@@ -1,10 +1,15 @@
-  $Id: v3_0_1.txt,v 1.16 2013/03/29 05:45:03 gandr Exp $
-  $Author: gandr $
-  $Date: 2013/03/29 05:45:03 $
+  $Id: v3_0_1.txt,v 1.17 2013/03/29 21:28:22 genser Exp $
+  $Author: genser $
+  $Date: 2013/03/29 21:28:22 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+18) March 29, 2013 genser
+    Changed the default geant4 version to 9.6.p01a (muon capture rate fix)
+    setup.sh
+    fixed typo in mucapture/src/SConscript as per AG suggestion
 
 17) March 29, 2013 gandr
     An arbitrary set of logical volumes can be made sensitive via fcl.
