@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.19 2013/03/26 23:28:23 kutschke Exp $
+// $Id: ReadStrawHit_module.cc,v 1.20 2013/03/31 14:49:15 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/26 23:28:23 $
+// $Date: 2013/03/31 14:49:15 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by KLG
@@ -63,36 +63,11 @@ namespace mu2e {
   //
   class ReadStrawHit : public art::EDAnalyzer {
   public:
-    explicit ReadStrawHit(fhicl::ParameterSet const& pset):
-      _diagLevel(pset.get<int>("diagLevel",0)),
-      _maxFullPrint(pset.get<int>("maxFullPrint",5)),
-      _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-      _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
-      _minimumLength(pset.get<double>("minimumLength",0.01)),   // mm
-      _enableFlightTimeCorrection(pset.get<bool>("flightTimeCorrection",false)),
-      _gaussian( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
-      _hHitTime(0),
-      _hHitDeltaTime(0),
-      _hHitAmplitude(0),
-      _hHitEnergy(0),
-      _hNHits(0),
-      _hNHitsPerWire(0),
-      _hDriftTime(0),
-      _hDriftDistance(0),
-      _hDistanceToMid(0),
-      _hNG4Steps(0),
-      _hG4StepLength(0),
-      _hG4StepEdep(0),
-      _hG4StepRelTimes(0),
-      _ntup(0),
-      _detntup(0)
-    {
-    }
-    virtual ~ReadStrawHit() { }
+    explicit ReadStrawHit(fhicl::ParameterSet const& pset);
 
-    virtual void beginJob();
+    virtual void beginJob() override;
 
-    void analyze( art::Event const& e);
+    void analyze( art::Event const& e) override;
 
   private:
 
@@ -116,10 +91,12 @@ namespace mu2e {
 
     // Some diagnostic histograms.
     TH1F* _hHitTime;
+    TH1F* _hHitTime1;
     TH1F* _hHitDeltaTime;
     TH1F* _hHitAmplitude;
     TH1F* _hHitEnergy;
     TH1F* _hNHits;
+    TH1F* _hNHits1;
     TH1F* _hNHitsPerWire;
     TH1F* _hDriftTime;
     TH1F* _hDriftDistance;
@@ -133,8 +110,34 @@ namespace mu2e {
 
   };
 
-  void ReadStrawHit::beginJob(){
+  ReadStrawHit::ReadStrawHit(fhicl::ParameterSet const& pset):
+    _diagLevel(pset.get<int>("diagLevel",0)),
+    _maxFullPrint(pset.get<int>("maxFullPrint",5)),
+    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+    _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
+    _minimumLength(pset.get<double>("minimumLength",0.01)),   // mm
+    _enableFlightTimeCorrection(pset.get<bool>("flightTimeCorrection",false)),
+    _gaussian( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
+    _hHitTime(0),
+    _hHitTime1(0),
+    _hHitDeltaTime(0),
+    _hHitAmplitude(0),
+    _hHitEnergy(0),
+    _hNHits(0),
+    _hNHits1(0),
+    _hNHitsPerWire(0),
+    _hDriftTime(0),
+    _hDriftDistance(0),
+    _hDistanceToMid(0),
+    _hNG4Steps(0),
+    _hG4StepLength(0),
+    _hG4StepEdep(0),
+    _hG4StepRelTimes(0),
+    _ntup(0),
+    _detntup(0){
+  }
 
+  void ReadStrawHit::beginJob(){
 
     if ( _diagLevel > 0 ) {
       cout << "ReadStrawHit Diaglevel: "
@@ -145,11 +148,13 @@ namespace mu2e {
 
     art::ServiceHandle<art::TFileService> tfs;
 
-    _hHitTime      = tfs->make<TH1F>( "hHitTime",      "Hit Time (ns)", 200, 0., 2000. );
+    _hHitTime      = tfs->make<TH1F>( "hHitTime",      "Hit Time (ns)", 200, 0.,  2000. );
+    _hHitTime1     = tfs->make<TH1F>( "hHitTime1",     "Hit Time (ns)", 200, 0., 20000. );
     _hHitDeltaTime = tfs->make<TH1F>( "hHitDeltaTime", "Hit Delta Time (ns)", 80, -20.0, 20. );
     //    _hHitAmplitude = tfs->make<TH1F>( "hHitAmplitude", "Hit Amplitudes (uV)",  100, 0., 100. );
     _hHitEnergy    = tfs->make<TH1F>( "hHitEnergy",    "Hit Energy (keV)", 100, 0., 100. );
-    _hNHits        = tfs->make<TH1F>( "hNHits",        "Number of straw hits", 500, 0., 500. );
+    _hNHits        = tfs->make<TH1F>( "hNHits",        "Number of straw hits", 500, 0.,  500. );
+    _hNHits1       = tfs->make<TH1F>( "hNHits1",       "Number of straw hits", 200, 0., 4000. );
     _hNHitsPerWire = tfs->make<TH1F>( "hNHitsPerWire", "Number of hits per straw", 10, 0., 10. );
     _hDriftTime    = tfs->make<TH1F>( "hDriftTime",    "Drift time, ns", 100, 0., 100. );
     _hDriftDistance= tfs->make<TH1F>( "hDriftDistance","Drift Distance, mm", 100, 0., 3. );
@@ -252,6 +257,7 @@ namespace mu2e {
     // Fill histograms
 
     _hNHits->Fill(hits.size());
+    _hNHits1->Fill(hits.size());
 
     std::map<StrawIndex,int> nhperwire;
 
@@ -270,7 +276,8 @@ namespace mu2e {
       PtrStepPointMCVector const& mcptr(hits_mcptr.at(i));
 
       // Use data from hits
-      _hHitTime->Fill(hit.time());
+      _hHitTime ->Fill(hit.time());
+      _hHitTime1->Fill(hit.time());
       _hHitDeltaTime->Fill(hit.dt());
       _hHitEnergy->Fill(hit.energyDep()*1000.0);
 
