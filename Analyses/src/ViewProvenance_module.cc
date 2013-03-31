@@ -1,14 +1,15 @@
 //
 //  A module to look at the provenance of a product.
 //
-//  $Id: ViewProvenance_module.cc,v 1.2 2013/03/15 15:52:03 kutschke Exp $
+//  $Id: ViewProvenance_module.cc,v 1.3 2013/03/31 14:48:14 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2013/03/15 15:52:03 $
+//  $Date: 2013/03/31 14:48:14 $
 //
 //  Original author Rob Kutschke
 //
 
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -30,9 +31,11 @@ namespace mu2e {
   public:
     explicit ViewProvenance(fhicl::ParameterSet const& pset){}
 
-    void analyze(const art::Event& event);
+    void analyze(const art::Event& event) override;
 
   private:
+
+    void printProvenance( art::Provenance const& );
 
   };
 
@@ -40,25 +43,37 @@ namespace mu2e {
 
     art::Handle<GenParticleCollection> gensHandle;
     event.getByLabel("generate", gensHandle );
+    printProvenance( *gensHandle.provenance( ) );
 
-    art::Provenance const * prov = gensHandle.provenance( );
-
-    if ( prov->isPresent() ) {
-      cout << "Product name: "
-           << prov->branchName()
-           << endl;
-      cout << "Creator module label: " << prov->moduleLabel() << endl;
-      cout << "Parameter set used to configure this module: " << endl;
-      // Fixme: this is broken in art /v1_03_08
-      //fhicl::ParameterSet const& pset =
-      //fhicl::ParameterSetRegistry::get( prov->productDescription().parameterSetID());
-      //cout << pset.to_indented_string()
-      //   << endl;
-    } else{
-      cout << "This product has no stored provenance ... " << endl;
-    }
+    art::Handle<SimParticleCollection> simsHandle;
+    event.getByLabel("g4run", simsHandle );
+    printProvenance( *simsHandle.provenance( ) );
 
   } // end analyze
+
+  void ViewProvenance::printProvenance( art::Provenance const& prov ) {
+
+    cout << "\nProvenance information for product name: "  << prov.branchName()  << endl;
+    cout << "Creator module label: " << prov.moduleLabel() << endl;
+
+    std::set<fhicl::ParameterSetID> const& ids = prov.productDescription().psetIDs();
+    if ( ids.size() == 1 ){
+      cout << "Parameter set used to configure this module: " << endl;
+    }else{
+      cout << "Parameter sets used to configure this module: " << endl;
+    }
+
+    for ( auto const& id : ids ){
+      if ( ids.size() > 1 ){
+        cout << "\nParameter Set content: " << endl;
+      }
+      cout << "--------------------------------------" << endl;
+      fhicl::ParameterSet const& pset = fhicl::ParameterSetRegistry::get(id);
+      cout << pset.to_indented_string();
+      cout << "--------------------------------------" << endl;
+    }
+
+  }
 
 } // end namespace mu2e
 
