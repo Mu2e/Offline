@@ -1,4 +1,5 @@
 void CDRHits(TTree* hits) {
+  gStyle->SetOptStat(0);
   TCanvas* ecan = new TCanvas("ecan","energy",1200,800);
   TCanvas* rcan = new TCanvas("rcan","radius",1200,800);
     
@@ -15,10 +16,10 @@ void CDRHits(TTree* hits) {
   edelta->SetStats(0);
   ep->SetStats(0);
 
-  TH1F* rconv = new TH1F("rconv","StrawHit Radius;mm",100,360,700);
-  TH1F* rdio = new TH1F("rdio","StrawHit Radius;mm",100,360,700);
-  TH1F* rdelta = new TH1F("rdelta","StrawHit Radius;mm",100,360,700);
-  TH1F* rp = new TH1F("rp","StrawHit Radius;mm",100,360,700);
+  TH1F* rconv = new TH1F("rconv","StrawHit Radius;mm",100,360,780);
+  TH1F* rdio = new TH1F("rdio","StrawHit Radius;mm",100,360,780);
+  TH1F* rdelta = new TH1F("rdelta","StrawHit Radius;mm",100,360,780);
+  TH1F* rp = new TH1F("rp","StrawHit Radius;mm",100,360,780);
   rconv->SetLineColor(kRed);
   rdio->SetLineColor(kGreen);
   rdelta->SetLineColor(kCyan);
@@ -44,68 +45,62 @@ void CDRHits(TTree* hits) {
   leg2->AddEntry(rp,"Protons","l");
 
   ecan->Clear();
-  ecan->Divide(1,2);
+  ecan->Divide(1,1);
   ecan->cd(1);
   gPad->SetLogy();
-  ep->Draw();
+  edelta->Draw();
+  ep->Draw("same");
   econv->Draw("same");
   edio->Draw("same");
-  edelta->Draw("same");
   leg2->Draw();
 
-  ecan->cd(2);  
-  econv->GetXaxis()->SetRangeUser(-0.001,0.015);
-  econv->Draw();
-  ep->Draw("same");
-  edio->Draw("same");
-  edelta->Draw("same");
 
-  TLine* ecut_t = new TLine(0.004,0.0,0.004,econv->GetMaximum());
-  ecut_t->SetLineColor(kBlack);
-  ecut_t->SetLineStyle(2);
-  ecut_t->SetLineWidth(2);
-  TLine* ecut_l = new TLine(0.0055,0.0,0.0055,econv->GetMaximum());
-  ecut_l->SetLineColor(kBlack);
-  ecut_l->SetLineStyle(3);
-  ecut_l->SetLineWidth(2);
-  ecut_t->Draw();
-  ecut_l->Draw();
+//  TLine* ecut_t = new TLine(0.004,0.0,0.004,econv->GetMaximum());
+//  ecut_t->SetLineColor(kBlack);
+//  ecut_t->SetLineStyle(2);
+//  ecut_t->SetLineWidth(2);
+//  TLine* ecut_l = new TLine(0.0055,0.0,0.0055,econv->GetMaximum());
+//  ecut_l->SetLineColor(kBlack);
+//  ecut_l->SetLineStyle(3);
+//  ecut_l->SetLineWidth(2);
+//  ecut_t->Draw();
+//  ecut_l->Draw();
 
-  TLegend* leg3 = new TLegend(0.55,0.7,0.9,0.9);
-  leg3->AddEntry(ecut_t,"Tight cut","l");
-  leg3->AddEntry(ecut_l,"Loose cut","l");
-  leg3->Draw();
+//  TLegend* leg3 = new TLegend(0.55,0.7,0.9,0.9);
+//  leg3->AddEntry(ecut_t,"Tight cut","l");
+//  leg3->AddEntry(ecut_l,"Loose cut","l");
+//  leg3->Draw();
 
   rcan->Clear();
   rcan->Divide(1,1);
   rcan->cd(1);
 
-  rp->Draw();
+  rdelta->Draw();
+  rp->Draw("same");
   rconv->Draw("same");
   rdio->Draw("same");
-  rdelta->Draw("same");
   
-  TLine* rmin_t = new TLine(410,0.0,410,rp->GetMaximum());
-  rmin_t->SetLineColor(kBlack);
-  rmin_t->SetLineStyle(2);
-  rmin_t->SetLineWidth(2);
-  TLine* rmin_l = new TLine(390,0.0,390,rp->GetMaximum());
-  rmin_l->SetLineColor(kBlack);
-  rmin_l->SetLineStyle(3);
-  rmin_l->SetLineWidth(2);
-  
-  TLine* rmax_t = new TLine(630,0.0,630,rp->GetMaximum());
-  rmax_t->SetLineColor(kBlack);
-  rmax_t->SetLineStyle(2);
-  rmax_t->SetLineWidth(2);
-  TLine* rmax_l = new TLine(650,0.0,650,rp->GetMaximum());
-  rmax_l->SetLineColor(kBlack);
-  rmax_l->SetLineStyle(3);
-  rmax_l->SetLineWidth(2);
-  rmin_t->Draw();
-  rmin_l->Draw();
-  rmax_t->Draw();
-  rmax_l->Draw();
+//  TLine* rmin_t = new TLine(410,0.0,410,rp->GetMaximum());
+//  rmin_t->SetLineColor(kBlack);
+//  rmin_t->SetLineStyle(2);
+//  rmin_t->SetLineWidth(2);
+//  TLine* rmin_l = new TLine(390,0.0,390,rp->GetMaximum());
+//  rmin_l->SetLineColor(kBlack);
+//  rmin_l->SetLineStyle(3);
+//  rmin_l->SetLineWidth(2);
+//  
+//  TLine* rmax_t = new TLine(630,0.0,630,rp->GetMaximum());
+//  rmax_t->SetLineColor(kBlack);
+//  rmax_t->SetLineStyle(2);
+//  rmax_t->SetLineWidth(2);
+//  TLine* rmax_l = new TLine(650,0.0,650,rp->GetMaximum());
+//  rmax_l->SetLineColor(kBlack);
+//  rmax_l->SetLineStyle(3);
+//  rmax_l->SetLineWidth(2);
+//  rmin_t->Draw();
+//  rmin_l->Draw();
+//  rmax_t->Draw();
+//  rmax_l->Draw();
   
   leg2->Draw();
   
@@ -229,4 +224,3 @@ CDRT0 (TTree* trkd) {
   t0pull->Fit("gaus");
 
 }
-alias wget="curl -O"
