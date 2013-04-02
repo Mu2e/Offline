@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.59 2013/03/15 16:20:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 16:20:00 $
+// $Id: DataInterface.cc,v 1.60 2013/04/02 03:00:38 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/04/02 03:00:38 $
 //
 
 #include "DataInterface.h"
@@ -12,6 +12,7 @@
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "EventDisplay/src/Cube.h"
 #include "EventDisplay/src/Cylinder.h"
 #include "EventDisplay/src/Cone.h"
@@ -283,29 +284,9 @@ void DataInterface::fillGeometry()
                                                   _geometrymanager, _topvolume, _mainframe, infoEnvelope, true));
     _components.push_back(shapeEnvelope);
     _supportstructures.push_back(shapeEnvelope);
-
-//ToyDS
-    innerRadius=config.getDouble("toyDS.rIn");
-    outerRadius=config.getDouble("toyDS.rOut");
-    zHalfLength=config.getDouble("toyDS.halfLength");
-    double z=config.getDouble("toyDS.z0")+_zOffset;
-
-    boost::shared_ptr<ComponentInfo> infoToyDS(new ComponentInfo());
-    sprintf(c,"Toy DS");
-    infoToyDS->setName(c);
-    infoToyDS->setText(0,c);
-    sprintf(c,"Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm);
-    infoToyDS->setText(1,c);
-    sprintf(c,"Length %.f mm",2.0*zHalfLength/CLHEP::mm);
-    infoToyDS->setText(2,c);
-    sprintf(c,"Center at x: 0 mm, y: 0 mm, z: %.f mm",z/CLHEP::mm);
-    infoToyDS->setText(3,c);
-    boost::shared_ptr<Cylinder> shapeToyDS(new Cylinder(0,0,z, 0,0,0,
-                                               zHalfLength,innerRadius,outerRadius, NAN, 
-                                               _geometrymanager, _topvolume, _mainframe, infoToyDS, false));
-    _components.push_back(shapeToyDS);
-    _otherstructures.push_back(shapeToyDS);
-  } else if(geom->hasElement<mu2e::ITracker>()) {
+  } 
+  else if(geom->hasElement<mu2e::ITracker>()) 
+  {
 //Cells
     //mu2e::GeomHandle<mu2e::ITracker> itracker;
 
@@ -454,14 +435,20 @@ void DataInterface::fillGeometry()
                                                   _geometrymanager, _topvolume, _mainframe, infoEnvelope, true));
     _components.push_back(shapeEnvelope);
     _supportstructures.push_back(shapeEnvelope);
+  }
 
-//ToyDS
-    innerRadius=config.getDouble("toyDS.rIn");
-    outerRadius=config.getDouble("toyDS.rOut");
-    zHalfLength=config.getDouble("toyDS.halfLength");
-    double z=config.getDouble("toyDS.z0")+_zOffset;
+  art::ServiceHandle<mu2e::GeometryService> geoservice;
+  if(geoservice->hasElement<mu2e::DetectorSolenoid>())
+  {
+    mu2e::GeomHandle<mu2e::DetectorSolenoid> ds;
+
+    double innerRadius=ds->rIn(); 
+    double outerRadius=ds->rOut();
+    double zHalfLength=ds->halfLength();
+    double z=ds->position().z()+_zOffset;
 
     boost::shared_ptr<ComponentInfo> infoToyDS(new ComponentInfo());
+    char c[200];
     sprintf(c,"Toy DS");
     infoToyDS->setName(c);
     infoToyDS->setText(0,c);
