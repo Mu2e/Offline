@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtToyDS.cc,v 1.2 2013/04/02 01:36:11 mjlee Exp $
+//  $Id: TrkExtToyDS.cc,v 1.3 2013/04/02 01:45:17 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2013/04/02 01:36:11 $
+//  $Date: 2013/04/02 01:45:17 $
 //
 //  Original author MyeongJae Lee
 //
@@ -49,14 +49,6 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     Hep3Vector origin = det->toMu2e( CLHEP::Hep3Vector(0.,0.,0.) );
 
-    /*
-    art::ServiceHandle<GeometryService> geom;
-    SimpleConfig const * config = &(geom->config());
-
-    rin = config->getDouble("toyDS.rIn");
-    rout = config->getDouble("toyDS.rOut");
-    zmin = config->getDouble("toyDS.z0") - config->getDouble("toyDS.halfLength") - origin.z();
-    zmax = config->getDouble("toyDS.z0") + config->getDouble("toyDS.halfLength") - origin.z();*/
     GeomHandle<DetectorSolenoid> dsgeom;
     rin = dsgeom->rIn();
     rout = dsgeom->rOut();

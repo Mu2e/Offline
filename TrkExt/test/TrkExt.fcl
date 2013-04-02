@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkExt.fcl,v 1.7 2013/04/02 01:36:11 mjlee Exp $
+# $Id: TrkExt.fcl,v 1.8 2013/04/02 01:45:17 mjlee Exp $
 # $Author: mjlee $
-# $Date: 2013/04/02 01:36:11 $
+# $Date: 2013/04/02 01:45:17 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -120,10 +120,10 @@ physics :
       g4ModuleLabel : g4run
     }
 
-    ReadKalFits :
+    readTprDem :
     {
       module_type    : ReadKalFits
-      fitterModuleLabel : TrkPatRec
+      fitterModuleLabel : tprDem
       KalFitMC :
       {
       }
@@ -134,7 +134,7 @@ physics :
 
   p1 : [generate, g4run, makeSH, MakeStereoHits, FlagStrawHits, FlagBkgHits, tprUem, tprUep, tprDem, tprDep, trkext]
   e1 : [extRec]
-  e2 : [extRec, ReadKalFits, eventdisplay, outfile]
+  e2 : [extRec, readTprDem, eventdisplay, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
