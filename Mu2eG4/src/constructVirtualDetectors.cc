@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.46 2013/03/29 04:35:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Id: constructVirtualDetectors.cc,v 1.47 2013/04/02 17:14:50 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/04/02 17:14:50 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -17,6 +17,7 @@
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
 
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -205,7 +206,8 @@ namespace mu2e {
     // inner wall of DS2 minus 5 mm. If neutron absorber is defined, these
     // detectors extend to neutron absorber minus 5 mm.
     if ( !_config.getBool("isDumbbell",false) ){
-      double Ravr = _config.getDouble("toyDS.rIn");
+      GeomHandle<DetectorSolenoid> ds;
+      double Ravr = ds->rIn();
       double deltaR = 0;
       double Z0 = 0;
       double deltaZ = 1.0;

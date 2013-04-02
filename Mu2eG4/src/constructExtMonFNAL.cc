@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.24 2013/04/02 16:09:08 knoepfel Exp $
+// $Id: constructExtMonFNAL.cc,v 1.25 2013/04/02 17:14:50 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/04/02 16:09:08 $
+// $Date: 2013/04/02 17:14:50 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -187,7 +187,7 @@ namespace mu2e {
 
       MaterialFinder materialFinder(config);
       GeomHandle<DetectorSolenoid> ds;
-      G4Material* vacuumMaterial     = materialFinder.get(ds->insideMaterial());
+      G4Material* vacuumMaterial     = findMaterialOrThrow(ds->insideMaterial());
 
       GeomHandle<VirtualDetector> vdg;
 
@@ -265,8 +265,8 @@ namespace mu2e {
 
     int const nSurfaceCheckPoints = 100000; // for a more thorrow check due to the vd shape
 
-    MaterialFinder materialFinder(config);
-    G4Material* vacuumMaterial     = materialFinder.get("toyDS.insideMaterialName");
+    GeomHandle<DetectorSolenoid> ds;
+    G4Material* vacuumMaterial     = findMaterialOrThrow(ds->insideMaterial());
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 
@@ -336,8 +336,8 @@ namespace mu2e {
     bool vdIsSolid           = config.getBool("vd.solid");
     int const nSurfaceCheckPoints = 100000; // for a more thorrow check due to the vd shape
 
-    MaterialFinder materialFinder(config);
-    G4Material* vacuumMaterial     = materialFinder.get("toyDS.insideMaterialName");
+    GeomHandle<DetectorSolenoid> ds;
+    G4Material* vacuumMaterial     = findMaterialOrThrow(ds->insideMaterial());
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 

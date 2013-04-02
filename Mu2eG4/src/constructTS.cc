@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.13 2013/04/02 16:09:08 knoepfel Exp $
+// $Id: constructTS.cc,v 1.14 2013/04/02 17:14:50 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/04/02 16:09:08 $
+// $Date: 2013/04/02 17:14:50 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -109,8 +109,8 @@ namespace mu2e {
     // For how all pieces are made from one of two types of material,
     // vacuum or average coils + cryostat material.
     GeomHandle<DetectorSolenoid> ds;
-    G4Material* vacuumMaterial  = materialFinder.get(ds->insideMaterial());
-    G4Material* cryoMaterial    = materialFinder.get(ds->material());
+    G4Material* vacuumMaterial  = findMaterialOrThrow(ds->insideMaterial());
+    G4Material* cryoMaterial    = findMaterialOrThrow(ds->material());
 
     GeomHandle<VirtualDetector> vdg;
     double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
