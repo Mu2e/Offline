@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtToyDS.cc,v 1.1 2012/08/04 00:22:09 mjlee Exp $
+//  $Id: TrkExtToyDS.cc,v 1.2 2013/04/02 01:36:11 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2012/08/04 00:22:09 $
+//  $Date: 2013/04/02 01:36:11 $
 //
 //  Original author MyeongJae Lee
 //
@@ -18,6 +18,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "TargetGeom/inc/Target.hh"
 #include "TargetGeom/inc/TargetFoil.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -48,13 +49,19 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     Hep3Vector origin = det->toMu2e( CLHEP::Hep3Vector(0.,0.,0.) );
 
+    /*
     art::ServiceHandle<GeometryService> geom;
     SimpleConfig const * config = &(geom->config());
 
     rin = config->getDouble("toyDS.rIn");
     rout = config->getDouble("toyDS.rOut");
     zmin = config->getDouble("toyDS.z0") - config->getDouble("toyDS.halfLength") - origin.z();
-    zmax = config->getDouble("toyDS.z0") + config->getDouble("toyDS.halfLength") - origin.z();
+    zmax = config->getDouble("toyDS.z0") + config->getDouble("toyDS.halfLength") - origin.z();*/
+    GeomHandle<DetectorSolenoid> dsgeom;
+    rin = dsgeom->rIn();
+    rout = dsgeom->rOut();
+    zmin = dsgeom->position().z() - dsgeom->halfLength() - origin.z();
+    zmax = dsgeom->position().z() + dsgeom->halfLength() - origin.z();
 
     cout << "TrkExtToyDS read rin=" << rin << ", rout=" << rout << ", zmin=" << zmin << ", zmax=" << zmax <<endl;
   }

@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadTrkExt_module.cc,v 1.6 2013/02/07 02:09:47 mjlee Exp $
+// $Id: ReadTrkExt_module.cc,v 1.7 2013/04/02 01:36:11 mjlee Exp $
 // $Author: mjlee $
-// $Date: 2013/02/07 02:09:47 $
+// $Date: 2013/04/02 01:36:11 $
 //
 // Original author MyeongJae Lee
 //
@@ -56,8 +56,8 @@ namespace mu2e {
     virtual ~ReadTrkExt() { }
 
     void beginJob();
-    void beginRun(art::Run const& run);
-    void beginSubRun(art::SubRun const & lblock ); 
+    void beginRun(art::Run const& run) override;
+    void beginSubRun(art::SubRun const & lblock ) override; 
     void analyze(const art::Event& e);
 
 

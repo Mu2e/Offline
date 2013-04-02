@@ -1,7 +1,7 @@
 //
-// $Id: TrkExtDiag.cc,v 1.2 2013/03/15 16:20:00 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2013/03/15 16:20:00 $
+// $Id: TrkExtDiag.cc,v 1.3 2013/04/02 01:36:11 mjlee Exp $
+// $Author: mjlee $ 
+// $Date: 2013/04/02 01:36:11 $
 //
 // Functions for reading TrkExt
 //
@@ -258,6 +258,26 @@ namespace mu2e
     double s3s1 = s3-s1;
     return -f1*(s-s2)*(s-s3)/s1s2/s3s1 - f2*(s-s1)*(s-s3)/s1s2/s2s3 - f3*(s-s1)*(s-s2)/s3s1/s2s3;
   }
+
+  double TrkExtDiag::getRadialError (const CLHEP::Hep3Vector & xx, const CLHEP::HepMatrix & cov) {
+    double r = xx.rho();
+    double x = xx.x();
+    double y = xx.y();
+    if (r == 0) r = 0.001;
+    //cout << xx<<endl;
+    //cout << cov<<endl;
+    return sqrt(x*x*cov(1,1)+y*y*cov(2,2)+2.*x*y*cov(1,2))/r;
+  }
+
+  double TrkExtDiag::getMomentumError (const CLHEP::Hep3Vector & p, const CLHEP::HepMatrix & cov) {
+    double pr = p.mag();
+    double px = p.x();
+    double py = p.y();
+    double pz = p.z();
+    if (pr == 0) pr = 0.001;
+    return sqrt(px*px*cov(4,4)+py*py*cov(5,5)+pz*pz*cov(6,6)+2.*px*py*cov(4,5)+2.*py*pz*cov(5,6)+2.*pz*px*cov(4,6))/pr;
+  }
+
   //////////////////////////
   // Main interface function
   //////////////////////////
@@ -784,6 +804,10 @@ namespace mu2e
       _extvdsi.p[index] = vdsihits[i].p();
       const Hep3Vector & pos = vdsihits[i].position();
       const Hep3Vector & mom = vdsihits[i].momentum();
+      const HepMatrix & cov = vdsihits[i].covariance();
+      _extvdsi.er[index] = getRadialError(pos, cov);
+      _extvdsi.ep[index] = getMomentumError(mom, cov);
+      //cout << _extvdsi.er[index] <<", " <<_extvdsi.ep[index] << endl;
       HepVector hpar = getHelixParameters (pos, mom, sign);
       Hep3Vector poserr = vdsihits[i].positionError();
       Hep3Vector momerr = vdsihits[i].momentumError();
@@ -814,6 +838,9 @@ namespace mu2e
       _extvdso.p[index] = vdsohits[i].p();
       const Hep3Vector & pos = vdsohits[i].position();
       const Hep3Vector & mom = vdsohits[i].momentum();
+      const HepMatrix & cov = vdsohits[i].covariance();
+      _extvdso.er[index] = getRadialError(pos, cov);
+      _extvdso.ep[index] = getMomentumError(mom, cov);
       HepVector hpar = getHelixParameters (pos, mom, sign);
       Hep3Vector poserr = vdsohits[i].positionError();
       Hep3Vector momerr = vdsohits[i].momentumError();
@@ -844,6 +871,9 @@ namespace mu2e
       _extvdtf.p[index] = vdtfhits[i].p();
       const Hep3Vector & pos = vdtfhits[i].position();
       const Hep3Vector & mom = vdtfhits[i].momentum();
+      const HepMatrix & cov = vdtfhits[i].covariance();
+      _extvdtf.er[index] = getRadialError(pos, cov);
+      _extvdtf.ep[index] = getMomentumError(mom, cov);
       HepVector hpar = getHelixParameters (pos, mom, sign);
       Hep3Vector poserr = vdtfhits[i].positionError();
       Hep3Vector momerr = vdtfhits[i].momentumError();
@@ -874,6 +904,9 @@ namespace mu2e
       _extvdtm.p[index] = vdtmhits[i].p();
       const Hep3Vector & pos = vdtmhits[i].position();
       const Hep3Vector & mom = vdtmhits[i].momentum();
+      const HepMatrix & cov = vdtmhits[i].covariance();
+      _extvdtm.er[index] = getRadialError(pos, cov);
+      _extvdtm.ep[index] = getMomentumError(mom, cov);
       HepVector hpar = getHelixParameters (pos, mom, sign);
       Hep3Vector poserr = vdtmhits[i].positionError();
       Hep3Vector momerr = vdtmhits[i].momentumError();
@@ -904,6 +937,9 @@ namespace mu2e
       _extvdtb.p[index] = vdtbhits[i].p();
       const Hep3Vector & pos = vdtbhits[i].position();
       const Hep3Vector & mom = vdtbhits[i].momentum();
+      const HepMatrix & cov = vdtbhits[i].covariance();
+      _extvdtb.er[index] = getRadialError(pos, cov);
+      _extvdtb.ep[index] = getMomentumError(mom, cov);
       HepVector hpar = getHelixParameters (pos, mom, sign);
       Hep3Vector poserr = vdtbhits[i].positionError();
       Hep3Vector momerr = vdtbhits[i].momentumError();

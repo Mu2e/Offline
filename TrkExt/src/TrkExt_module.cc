@@ -5,9 +5,9 @@
 //  G4 uses G4World coordinate
 //  See the note at TrkExtTraj.hh for the meaning of point information, especially when volume changing. 
 //
-//  $Id: TrkExt_module.cc,v 1.8 2013/03/15 15:52:05 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2013/03/15 15:52:05 $
+//  $Id: TrkExt_module.cc,v 1.9 2013/04/02 01:36:11 mjlee Exp $
+//  $Author: mjlee $
+//  $Date: 2013/04/02 01:36:11 $
 //
 //  Original author MyeongJae Lee
 //
@@ -96,8 +96,8 @@ namespace mu2e {
     explicit TrkExt(fhicl::ParameterSet const& pset);
     virtual ~TrkExt() { }
     void beginJob();
-    void beginRun(art::Run &run);
-    void beginSubRun(art::SubRun & lblock );
+    void beginRun(art::Run &run) override;
+    void beginSubRun(art::SubRun & lblock ) override;
     virtual void produce(art::Event& event);
     void endJob();
 

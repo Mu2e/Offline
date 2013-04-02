@@ -1,7 +1,7 @@
 //
-// $Id: TrkExtDiag.hh,v 1.1 2013/02/07 02:09:47 mjlee Exp $
+// $Id: TrkExtDiag.hh,v 1.2 2013/04/02 01:36:11 mjlee Exp $
 // $Author: mjlee $ 
-// $Date: 2013/02/07 02:09:47 $
+// $Date: 2013/04/02 01:36:11 $
 //
 // Class for reading TrkExt
 //
@@ -110,7 +110,7 @@ namespace mu2e
     void clear() {
       for (int i = 0 ; i <2 ; ++i) {
         r[i] = p[i] = d0[i] = p0[i] = om[i] = z0[i] = td[i] = 0;
-        ed0[i] = ep0[i] = eom[i] = ez0[i] = etd[i] = 0;
+        er[i] = ep[i] = ed0[i] = ep0[i] = eom[i] = ez0[i] = etd[i] = 0;
         status = 0;
       }
     }
@@ -159,6 +159,8 @@ namespace mu2e
     double findTurnAroundSim (int i, double f1, double f2, double f3);
     double interpolate (double s, double s1, double s2, double s3, double f1, double f2, double f3);
     double interpolate2 (double s, double s1, double s2, double f1, double f2);
+    double getRadialError (const CLHEP::Hep3Vector & x, const CLHEP::HepMatrix & cov);
+    double getMomentumError (const CLHEP::Hep3Vector & p, const CLHEP::HepMatrix & cov);
 
   private:
     // event-wide 

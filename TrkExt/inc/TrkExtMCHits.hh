@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtMCHits.hh,v 1.2 2013/02/07 02:09:47 mjlee Exp $
+//  $Id: TrkExtMCHits.hh,v 1.3 2013/04/02 01:36:11 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2013/02/07 02:09:47 $
+//  $Date: 2013/04/02 01:36:11 $
 //
 //  Original author MyeongJae Lee
 //
@@ -18,7 +18,7 @@
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
-
+#include "cetlib/map_vector.h"
 
 namespace mu2e {
 
