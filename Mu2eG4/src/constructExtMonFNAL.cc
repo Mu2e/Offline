@@ -1,7 +1,7 @@
 //
-// $Id: constructExtMonFNAL.cc,v 1.23 2013/03/29 04:35:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Id: constructExtMonFNAL.cc,v 1.24 2013/04/02 16:09:08 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/04/02 16:09:08 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -27,6 +27,7 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
@@ -185,7 +186,8 @@ namespace mu2e {
       int const nSurfaceCheckPoints = 100000; // for a more thorrow check due to the vd shape
 
       MaterialFinder materialFinder(config);
-      G4Material* vacuumMaterial     = materialFinder.get("toyDS.insideMaterialName");
+      GeomHandle<DetectorSolenoid> ds;
+      G4Material* vacuumMaterial     = materialFinder.get(ds->insideMaterial());
 
       GeomHandle<VirtualDetector> vdg;
 

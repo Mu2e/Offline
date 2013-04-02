@@ -1,9 +1,9 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.14 2013/03/27 17:36:38 knoepfel Exp $
+// $Id: constructMBS.cc,v 1.15 2013/04/02 16:09:08 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/03/27 17:36:38 $
+// $Date: 2013/04/02 16:09:08 $
 //
 // Original author KLG
 //
@@ -101,31 +101,6 @@ namespace mu2e {
     CLHEP::Hep3Vector BSTSOffset =  BSTSOffsetInMu2e - detSolDownstreamVacInfo.centerInMu2e();
 
     // Use BSTS as mother volume for MBS
-
-    /*
-    TubsParams MBSMotherParams ( 0,
-				  BSTSOuterRadius,
-				  BSTSHLength);
-    G4Material* vacuumMaterial     = findMaterialOrThrow(_config.getString("toyDS.insideMaterialName"));
-    */
-
-    /*
-    VolumeInfo MBSMotherInfo  = nestTubs("MBSMother",
-					 MBSMotherParams,
-					 vacuumMaterial,
-					 0,
-					 BSTSOffset,
-					 detSolDownstreamVacInfo,
-					 0,
-					 MBSisVisible,
-					 G4Colour::Gray(),
-					 MBSisSolid,
-					 forceAuxEdgeVisible,
-					 placePV,
-					 doSurfaceCheck
-					 );
-    */
-
     VolumeInfo BSTSInfo  = nestTubs("BSTS",
                                     pBSTSParams.getTubsParams(),
                                     findMaterialOrThrow(pBSTSParams.materialName()),
