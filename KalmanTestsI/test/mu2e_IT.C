@@ -28,7 +28,7 @@ Double_t DIOCZ(Double_t *x, Double_t *par) {
   return norm*(a5*pow(delta,5) + a6*pow(delta,6) + a7*pow(delta,7) + a8*pow(delta,8));
 }
 
-void mu2e_IT(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon, TString addCut="",bool weightdio=true, int useExtapMom=0, double dioeff=1.0, double coneff=1.0, Long64_t NEntries=-1, Long64_t skipentries=0) {
+void mu2e_IT(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon, TString addCut="",bool weightdio=true, int useExtapMom=0, double dioeff=1.0, double coneff=1.0, int momRange=0, double dioExpNum = 0.24, int cutOption=0, double maxPlotScale=5, Long64_t NEntries=-1, Long64_t skipentries=0) {
 
   Long64_t nentries=1000000000;
   if (NEntries>0 && NEntries<1000000000) {nentries = NEntries;}
@@ -42,8 +42,28 @@ void mu2e_IT(TTree* dio, TTree* con, double diogenrange, double ndio, double nco
   double ndecay = nstopped*decayfrac;
   double ncap = nstopped*capfrac;
   double conprob(1e-15);
-  double momlow(103.3);
-  double momhigh(104.7);
+  double momlow(0);
+  double momhigh(0);
+  switch (momRange) {
+  case 2:
+  {
+          momlow=104.0;
+          momhigh=105.0;
+  }
+  break;
+  case 1:
+  {
+          momlow=104.0;
+          momhigh=105.2;
+  }
+  break;
+  default:
+  {
+          momlow=103.3;
+          momhigh=104.7;
+  }
+  break;
+  }
   double trueconvmom(104.973);
 
   unsigned nbins(100);
@@ -104,53 +124,111 @@ void mu2e_IT(TTree* dio, TTree* con, double diogenrange, double ndio, double nco
 
 // cuts for different tightness of selection
   TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
-  ncuts[0] = Form("fitinfo.nhits>=%i",minnhits+10);
-  ncuts[1] = Form("fitinfo.nhits>=%i",minnhits+10);
-  ncuts[2] = Form("fitinfo.nhits>=%i",minnhits+20);
-  ncuts[3] = Form("fitinfo.nhits>=%i",minnhits+20);//+30);
-  t0cuts[0] = "fitinfo.errt0<3";
-  t0cuts[1] = "fitinfo.errt0<2";
-  t0cuts[2] = "fitinfo.errt0<1.2";//1
-  t0cuts[3] = "fitinfo.errt0<1.2";//1
-  momcuts[0] = Form("(%1.2f*fitinfo.fitmomerr)<0.4",momErrScale);
-  momcuts[1] = Form("(%1.2f*fitinfo.fitmomerr)<0.3",momErrScale);
-  momcuts[2] = Form("(%1.2f*fitinfo.fitmomerr)<0.2",momErrScale);
-  momcuts[3] = Form("(%1.2f*fitinfo.fitmomerr)<0.2",momErrScale);
-  //fitcuts[0] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-6";
-  //fitcuts[1] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-4";
-  //fitcuts[2] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-3";
-  //fitcuts[3] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-2";
-  fitcuts[0] = "fitinfo.fitcon>1e-6";//1e-4;
-  fitcuts[1] = "fitinfo.fitcon>1e-5";//1e-3;
-  fitcuts[2] = "fitinfo.fitcon>1e-4";//5e-3;
-  fitcuts[3] = "fitinfo.fitcon>5e-3";//1e-2;
+  switch (cutOption) {
+  case 1:
+  {
+          minnhits=40;
+          ncuts[0] = Form("fitinfo.nhits>=%i",minnhits+0);
+          ncuts[1] = Form("fitinfo.nhits>=%i",minnhits+0);
+          ncuts[2] = Form("fitinfo.nhits>=%i",minnhits+10);
+          ncuts[3] = Form("fitinfo.nhits>=%i",minnhits+20);//+30);
+          t0cuts[0] = "fitinfo.errt0<3";
+          t0cuts[1] = "fitinfo.errt0<2";
+          t0cuts[2] = "fitinfo.errt0<1.2";//1
+          t0cuts[3] = "fitinfo.errt0<1.2";//1
+          momcuts[0] = Form("(%1.2f*fitinfo.fitmomerr)<0.4",momErrScale);
+          momcuts[1] = Form("(%1.2f*fitinfo.fitmomerr)<0.3",momErrScale);
+          momcuts[2] = Form("(%1.2f*fitinfo.fitmomerr)<0.2",momErrScale);
+          momcuts[3] = Form("(%1.2f*fitinfo.fitmomerr)<0.2",momErrScale);
+          //fitcuts[0] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-6";
+          //fitcuts[1] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-4";
+          //fitcuts[2] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-3";
+          //fitcuts[3] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-2";
+          fitcuts[0] = "fitinfo.fitcon>1e-7";//1e-6";//1e-4;
+          fitcuts[1] = "fitinfo.fitcon>1e-6";//1e-5";//1e-3;
+          fitcuts[2] = "fitinfo.fitcon>1e-5";//1e-4";//5e-3;
+          fitcuts[3] = "fitinfo.fitcon>1e-4";//5e-3";//1e-2;
 
-  TCut ncutsText[4], t0cutsText[4], momcutsText[4], fitcutsText[4];
-  ncutsText[0] = Form("nactive>=%i",minnhits+10);
-  ncutsText[1] = Form("nactive>=%i",minnhits+10);
-  ncutsText[2] = Form("nactive>=%i",minnhits+20);
-  ncutsText[3] = Form("nactive>=%i",minnhits+20);//+30);
-  t0cutsText[0] = "t0err<3";
-  t0cutsText[1] = "t0err<2";
-  t0cutsText[2] = "t0err<1.2";//1
-  t0cutsText[3] = "t0err<1.2";//1
-  if (momErrScale>0.99) {
-          momcutsText[0] = "fitmomerr<0.4";
-          momcutsText[1] = "fitmomerr<0.3";
-          momcutsText[2] = "fitmomerr<0.2";
-          momcutsText[3] = "fitmomerr<0.2";
-  } else {
-          momcutsText[0] = Form("(%1.2f*fitmomerr)<0.4",momErrScale);
-          momcutsText[1] = Form("(%1.2f*fitmomerr)<0.3",momErrScale);
-          momcutsText[2] = Form("(%1.2f*fitmomerr)<0.2",momErrScale);
-          momcutsText[3] = Form("(%1.2f*fitmomerr)<0.2",momErrScale);
+          TCut ncutsText[4], t0cutsText[4], momcutsText[4], fitcutsText[4];
+          ncutsText[0] = Form("nactive>=%i",minnhits+0);
+          ncutsText[1] = Form("nactive>=%i",minnhits+0);
+          ncutsText[2] = Form("nactive>=%i",minnhits+10);
+          ncutsText[3] = Form("nactive>=%i",minnhits+20);//+30);
+          t0cutsText[0] = "t0err<3";
+          t0cutsText[1] = "t0err<2";
+          t0cutsText[2] = "t0err<1.2";//1
+          t0cutsText[3] = "t0err<1.2";//1
+          if (momErrScale>0.99) {
+                  momcutsText[0] = "fitmomerr<0.4";
+                  momcutsText[1] = "fitmomerr<0.3";
+                  momcutsText[2] = "fitmomerr<0.2";
+                  momcutsText[3] = "fitmomerr<0.2";
+          } else {
+                  momcutsText[0] = Form("(%1.2f*fitmomerr)<0.4",momErrScale);
+                  momcutsText[1] = Form("(%1.2f*fitmomerr)<0.3",momErrScale);
+                  momcutsText[2] = Form("(%1.2f*fitmomerr)<0.2",momErrScale);
+                  momcutsText[3] = Form("(%1.2f*fitmomerr)<0.2",momErrScale);
+          }
+
+          fitcutsText[0] = "fitcon>1e-7";//1e-6";//1e-4;
+          fitcutsText[1] = "fitcon>1e-6";//1e-5";//1e-3;
+          fitcutsText[2] = "fitcon>1e-5";//1e-4";//5e-3;
+          fitcutsText[3] = "fitcon>1e-4";//5e-3";//1e-2;
+
   }
+          break;
+  default:
+  {
+          ncuts[0] = Form("fitinfo.nhits>=%i",minnhits+10);
+          ncuts[1] = Form("fitinfo.nhits>=%i",minnhits+10);
+          ncuts[2] = Form("fitinfo.nhits>=%i",minnhits+20);
+          ncuts[3] = Form("fitinfo.nhits>=%i",minnhits+20);//+30);
+          t0cuts[0] = "fitinfo.errt0<3";
+          t0cuts[1] = "fitinfo.errt0<2";
+          t0cuts[2] = "fitinfo.errt0<1.2";//1
+          t0cuts[3] = "fitinfo.errt0<1.2";//1
+          momcuts[0] = Form("(%1.2f*fitinfo.fitmomerr)<0.4",momErrScale);
+          momcuts[1] = Form("(%1.2f*fitinfo.fitmomerr)<0.3",momErrScale);
+          momcuts[2] = Form("(%1.2f*fitinfo.fitmomerr)<0.2",momErrScale);
+          momcuts[3] = Form("(%1.2f*fitinfo.fitmomerr)<0.2",momErrScale);
+          //fitcuts[0] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-6";
+          //fitcuts[1] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-4";
+          //fitcuts[2] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-3";
+          //fitcuts[3] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-2";
+          fitcuts[0] = "fitinfo.fitcon>1e-6";//1e-4;
+          fitcuts[1] = "fitinfo.fitcon>1e-5";//1e-3;
+          fitcuts[2] = "fitinfo.fitcon>1e-4";//5e-3;
+          fitcuts[3] = "fitinfo.fitcon>5e-3";//1e-2;
 
-  fitcutsText[0] = "fitcon>1e-6";//1e-4;
-  fitcutsText[1] = "fitcon>1e-5";//1e-3;
-  fitcutsText[2] = "fitcon>1e-4";//5e-3;
-  fitcutsText[3] = "fitcon>5e-3";//1e-2;
+          TCut ncutsText[4], t0cutsText[4], momcutsText[4], fitcutsText[4];
+          ncutsText[0] = Form("nactive>=%i",minnhits+10);
+          ncutsText[1] = Form("nactive>=%i",minnhits+10);
+          ncutsText[2] = Form("nactive>=%i",minnhits+20);
+          ncutsText[3] = Form("nactive>=%i",minnhits+20);//+30);
+          t0cutsText[0] = "t0err<3";
+          t0cutsText[1] = "t0err<2";
+          t0cutsText[2] = "t0err<1.2";//1
+          t0cutsText[3] = "t0err<1.2";//1
+          if (momErrScale>0.99) {
+                  momcutsText[0] = "fitmomerr<0.4";
+                  momcutsText[1] = "fitmomerr<0.3";
+                  momcutsText[2] = "fitmomerr<0.2";
+                  momcutsText[3] = "fitmomerr<0.2";
+          } else {
+                  momcutsText[0] = Form("(%1.2f*fitmomerr)<0.4",momErrScale);
+                  momcutsText[1] = Form("(%1.2f*fitmomerr)<0.3",momErrScale);
+                  momcutsText[2] = Form("(%1.2f*fitmomerr)<0.2",momErrScale);
+                  momcutsText[3] = Form("(%1.2f*fitmomerr)<0.2",momErrScale);
+          }
 
+          fitcutsText[0] = "fitcon>1e-6";//1e-4;
+          fitcutsText[1] = "fitcon>1e-5";//1e-3;
+          fitcutsText[2] = "fitcon>1e-4";//5e-3;
+          fitcutsText[3] = "fitcon>5e-3";//1e-2;
+
+  }
+  break;
+  }
 
   for(unsigned ires=0;ires<4;ires++){
     char dioname[50];
@@ -267,7 +345,7 @@ void mu2e_IT(TTree* dio, TTree* con, double diogenrange, double ndio, double nco
     lincan->cd(ires+1);
     TH1* diocopy = diospec[ires]->DrawCopy();
     diocopy->SetMinimum(-0.2);
-    diocopy->SetMaximum(5);
+    diocopy->SetMaximum(maxPlotScale);
     conspec[ires]->Draw("same");
     if (useExtapMom==2) {
             conspec_1[ires]->Draw("same");
@@ -294,8 +372,8 @@ void mu2e_IT(TTree* dio, TTree* con, double diogenrange, double ndio, double nco
     inttext->AddText(itext);
     inttext->Draw();
 
-    if (plotDiO && dint<0.24) {
-          while (/*(dint-2.0*dint_err)<0.25*/dint<0.24 && istart>1) {
+    if (plotDiO && dint<dioExpNum) {
+          while (/*(dint-2.0*dint_err)<0.25*/dint<dioExpNum && istart>1) {
                 --istart;
                 dint = diospec[ires]->Integral(istart,istop);
           }
@@ -453,7 +531,7 @@ void mu2e_IT(TTree* dio, TTree* con, double diogenrange, double ndio, double nco
     double promotedDIOfrac = nPromtotedDIO/diogenwin[ires]->GetEntries();
     //cout<<"for cut "<<ires<<" momlow = "<<momlowTmp[ires]<<" momhigh = "<<momhighTmp[ires]<<endl;
     //std::cout<<"DIO fraction with gen momentum out of reconstruction window (cut "<<ires<<") = "<<promotedDIOfrac<<std::endl;
-    dgenwinPROMleg->AddEntry(diogenwin[ires],Form("DIO promoted %.2f%%",(promotedDIOfrac*100.0)),"f");
+    dgenwinPROMleg->AddEntry(diogenwin[ires],Form("DIO promoted %.4f%%",(promotedDIOfrac*100.0)),"f");
     //std::cout<<"check : entries = "<<diogenwin[ires]->GetEntries()<<" bin to minp = "<<binmin<<" integral from 1 to minp = "<<nPromtotedDIO<<" % tot integ = "<<diogenwin[ires]->Integral(1,100)/diogenwin[ires]->GetEntries()<<endl;
   }
   dgenwinleg->Draw();

@@ -29,49 +29,100 @@ TCut ncutsText[4], t0cutsText[4], momcutsText[4], fitcutsText[4];
 TCut reco,goodfit,cosmic,rmom,rmomCorr,rpitch,livegate;
 TCut tpitch, tt0,tmom,nmch,mcsel;
 bool donecuts(false);
+TCut onlyFrstSD("fitinfo.iseed==0");
 
 Long64_t nentries = 1000000000;
 
 TCut misrec("recopar.parvec.m[2]>0.0");
 
-void KalCuts(size_t icut=0, double liveTime=-1, int useExtapMom=0, double momCorr=0.0, double momErrScale=1.0/*0.61*/) {
+void KalCuts(size_t icut=0, int cutOption=0, double liveTime=-1, int useExtapMom=0, double momCorr=0.0, double momErrScale=1.0/*0.61*/) {
   if (liveTime>0.) t0min=liveTime;
-  ncutsText[0] = Form("nhits>=%i",minnhits+10);
-  ncutsText[1] = Form("nhits>=%i",minnhits+10);
-  ncutsText[2] = Form("nhits>=%i",minnhits+20);
-  ncutsText[3] = Form("nhits>=%i",minnhits+20);//+30);
-  ncuts[0] = Form("fitinfo.nhits>=%i",minnhits+10);
-  ncuts[1] = Form("fitinfo.nhits>=%i",minnhits+10);
-  ncuts[2] = Form("fitinfo.nhits>=%i",minnhits+20);
-  ncuts[3] = Form("fitinfo.nhits>=%i",minnhits+20);//+30);
-  t0cutsText[0] = "errt0<3";
-  t0cutsText[1] = "errt0<2";
-  t0cutsText[2] = "errt0<1.2";
-  t0cutsText[3] = "errt0<1.2";
-  t0cuts[0] = "fitinfo.errt0<3";
-  t0cuts[1] = "fitinfo.errt0<2";
-  t0cuts[2] = "fitinfo.errt0<1.2";
-  t0cuts[3] = "fitinfo.errt0<1.2";
-  momcutsText[0] = "fitmomerr<0.4";
-  momcutsText[1] = "fitmomerr<0.3";
-  momcutsText[2] = "fitmomerr<0.2";
-  momcutsText[3] = "fitmomerr<0.2";
-  momcuts[0] = Form("%f*fitinfo.fitmomerr<0.4",momErrScale);
-  momcuts[1] = Form("%f*fitinfo.fitmomerr<0.3",momErrScale);
-  momcuts[2] = Form("%f*fitinfo.fitmomerr<0.2",momErrScale);
-  momcuts[3] = Form("%f*fitinfo.fitmomerr<0.2",momErrScale);
-  fitcutsText[0] = "fitcon>1e-6";//1e-7;//1e-3
-  fitcutsText[1] = "fitcon>1e-5";//1e-6;//1e-2
-  fitcutsText[2] = "fitcon>1e-4";//1e-5;//1e-2
-  fitcutsText[3] = "fitcon>5e-3";//1e-4;//2e-2
-//  fitcuts[0] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-6";//1e-3
-//  fitcuts[1] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-4";//1e-2
-//  fitcuts[2] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-3";//1e-2
-//  fitcuts[3] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-2";//2e-2
-  fitcuts[0] = "fitinfo.fitcon>1e-6";//1e-7;//1e-3
-  fitcuts[1] = "fitinfo.fitcon>1e-5";//1e-6;//1e-2
-  fitcuts[2] = "fitinfo.fitcon>1e-4";//1e-5;//1e-2
-  fitcuts[3] = "fitinfo.fitcon>5e-3";//1e-4;//2e-2
+
+  switch (cutOption) {
+  case 1:
+  {
+          minnhits=40;
+          ncutsText[0] = Form("nhits>=%i",minnhits+0);
+          ncutsText[1] = Form("nhits>=%i",minnhits+0);
+          ncutsText[2] = Form("nhits>=%i",minnhits+10);
+          ncutsText[3] = Form("nhits>=%i",minnhits+20);//+30);
+          ncuts[0] = Form("fitinfo.nhits>=%i",minnhits+0);
+          ncuts[1] = Form("fitinfo.nhits>=%i",minnhits+0);
+          ncuts[2] = Form("fitinfo.nhits>=%i",minnhits+10);
+          ncuts[3] = Form("fitinfo.nhits>=%i",minnhits+20);//+30);
+          t0cutsText[0] = "errt0<3";
+          t0cutsText[1] = "errt0<2";
+          t0cutsText[2] = "errt0<1.2";
+          t0cutsText[3] = "errt0<1.2";
+          t0cuts[0] = "fitinfo.errt0<3";
+          t0cuts[1] = "fitinfo.errt0<2";
+          t0cuts[2] = "fitinfo.errt0<1.2";
+          t0cuts[3] = "fitinfo.errt0<1.2";
+          momcutsText[0] = "fitmomerr<0.4";
+          momcutsText[1] = "fitmomerr<0.3";
+          momcutsText[2] = "fitmomerr<0.2";
+          momcutsText[3] = "fitmomerr<0.2";
+          momcuts[0] = Form("%f*fitinfo.fitmomerr<0.4",momErrScale);
+          momcuts[1] = Form("%f*fitinfo.fitmomerr<0.3",momErrScale);
+          momcuts[2] = Form("%f*fitinfo.fitmomerr<0.2",momErrScale);
+          momcuts[3] = Form("%f*fitinfo.fitmomerr<0.2",momErrScale);
+          fitcutsText[0] = "fitcon>1e-7";//1e-6;//1e-3
+          fitcutsText[1] = "fitcon>1e-6";//1e-5;//1e-2
+          fitcutsText[2] = "fitcon>1e-5";//1e-4;//1e-2
+          fitcutsText[3] = "fitcon>1e-4";//5e-3;//2e-2
+          //  fitcuts[0] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-6";//1e-3
+          //  fitcuts[1] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-4";//1e-2
+          //  fitcuts[2] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-3";//1e-2
+          //  fitcuts[3] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-2";//2e-2
+          fitcuts[0] = "fitinfo.fitcon>1e-7";//1e-6;//1e-3
+          fitcuts[1] = "fitinfo.fitcon>1e-6";//1e-5;//1e-2
+          fitcuts[2] = "fitinfo.fitcon>1e-5";//1e-4;//1e-2
+          fitcuts[3] = "fitinfo.fitcon>1e-4";//5e-3;//2e-2
+
+  }
+          break;
+  default:
+  {
+          ncutsText[0] = Form("nhits>=%i",minnhits+10);
+          ncutsText[1] = Form("nhits>=%i",minnhits+10);
+          ncutsText[2] = Form("nhits>=%i",minnhits+20);
+          ncutsText[3] = Form("nhits>=%i",minnhits+20);//+30);
+          ncuts[0] = Form("fitinfo.nhits>=%i",minnhits+10);
+          ncuts[1] = Form("fitinfo.nhits>=%i",minnhits+10);
+          ncuts[2] = Form("fitinfo.nhits>=%i",minnhits+20);
+          ncuts[3] = Form("fitinfo.nhits>=%i",minnhits+20);//+30);
+          t0cutsText[0] = "errt0<3";
+          t0cutsText[1] = "errt0<2";
+          t0cutsText[2] = "errt0<1.2";
+          t0cutsText[3] = "errt0<1.2";
+          t0cuts[0] = "fitinfo.errt0<3";
+          t0cuts[1] = "fitinfo.errt0<2";
+          t0cuts[2] = "fitinfo.errt0<1.2";
+          t0cuts[3] = "fitinfo.errt0<1.2";
+          momcutsText[0] = "fitmomerr<0.4";
+          momcutsText[1] = "fitmomerr<0.3";
+          momcutsText[2] = "fitmomerr<0.2";
+          momcutsText[3] = "fitmomerr<0.2";
+          momcuts[0] = Form("%f*fitinfo.fitmomerr<0.4",momErrScale);
+          momcuts[1] = Form("%f*fitinfo.fitmomerr<0.3",momErrScale);
+          momcuts[2] = Form("%f*fitinfo.fitmomerr<0.2",momErrScale);
+          momcuts[3] = Form("%f*fitinfo.fitmomerr<0.2",momErrScale);
+          fitcutsText[0] = "fitcon>1e-6";//1e-7;//1e-3
+          fitcutsText[1] = "fitcon>1e-5";//1e-6;//1e-2
+          fitcutsText[2] = "fitcon>1e-4";//1e-5;//1e-2
+          fitcutsText[3] = "fitcon>5e-3";//1e-4;//2e-2
+          //  fitcuts[0] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-6";//1e-3
+          //  fitcuts[1] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-4";//1e-2
+          //  fitcuts[2] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-3";//1e-2
+          //  fitcuts[3] = "TMath::Prob(fitinfo.chi2,(fitinfo.nhits-5))>1e-2";//2e-2
+          fitcuts[0] = "fitinfo.fitcon>1e-6";//1e-7;//1e-3
+          fitcuts[1] = "fitinfo.fitcon>1e-5";//1e-6;//1e-2
+          fitcuts[2] = "fitinfo.fitcon>1e-4";//1e-5;//1e-2
+          fitcuts[3] = "fitinfo.fitcon>5e-3";//1e-4;//2e-2
+
+  }
+  break;
+  }
 
   char ctext[80];
   snprintf(ctext,80,"recopar.parvec.m[4]>%4.3f&&recopar.parvec.m[4]<%4.3f",tdlow,tdhigh);
@@ -546,9 +597,9 @@ void KalFitAccPlots(TTree* trks) {
 
 } 
 */
-void KalFitAcc(TTree* trks, int nGenEv=-1, TString addCut="", size_t cutType=0, double liveTime=-1, int useExtapMom=0, double pCorr=0.0, Long64_t NEntries=-1, Long64_t skipentries=0) {
+void KalFitAcc(TTree* trks, int nGenEv=-1, TString addCut="", size_t cutType=0, int cutOption=0, double liveTime=-1, int useExtapMom=0, double pCorr=0.0, Long64_t NEntries=-1, Long64_t skipentries=0) {
 
-  if(!donecuts)KalCuts(cutType,liveTime,useExtapMom,pCorr);
+  if(!donecuts)KalCuts(cutType,cutOption,liveTime,useExtapMom,pCorr);
   TCut addcut(addCut.Data());
   if (NEntries>0 && NEntries<1000000000) {nentries = NEntries;}
 
@@ -585,7 +636,6 @@ void KalFitAcc(TTree* trks, int nGenEv=-1, TString addCut="", size_t cutType=0, 
   
   ibin = 0;
   const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
-  TCut onlyFrstSD("fitinfo.iseed==0");// //sqrt(1+pow(startpar.parvec.m[4],2))/startpar.parvec.m[2]
   trks->Project("acc",binnames[ibin++],onlyFrstSD,"",nentries,skipentries);
   trks->Project("+acc",binnames[ibin++],onlyFrstSD+nmch,"",nentries,skipentries);
   trks->Project("+acc",binnames[ibin++],onlyFrstSD+nmch+tmom,"",nentries,skipentries);
@@ -658,16 +708,15 @@ void KalFitAcc(TTree* trks, int nGenEv=-1, TString addCut="", size_t cutType=0, 
 }
 
 
-void KalPlotMomSpec(TTree* trks, TString addCut="", size_t cutType=0, double scale=1.0, double liveTime=-1, bool useExtapMom=true, double pCorr=0.0, Long64_t NEntries=-1, Long64_t skipentries=0) {
+void KalPlotMomSpec(TTree* trks, TString addCut="", size_t cutType=0, int cutOption=0, double scale=1.0, double liveTime=-1, bool useExtapMom=true, double pCorr=0.0, Long64_t NEntries=-1, Long64_t skipentries=0) {
 
-  if(!donecuts)KalCuts(cutType,liveTime,useExtapMom,pCorr);
+  if(!donecuts)KalCuts(cutType,cutOption,liveTime,useExtapMom,pCorr);
   TCut addcut(addCut.Data());
   if (NEntries>0 && NEntries<1000000000) {nentries = NEntries;}
 
   unsigned nbins(100);
   //double bmax = nbins-0.5;
   TH1F* momspec = new TH1F("momspec","Reconstructed e spectrum;MeV/c;",nbins,101,106);
-  TCut onlyFrstSD("fitinfo.iseed==0");// //sqrt(1+pow(startpar.parvec.m[4],2))/startpar.parvec.m[2]
 
   if (useExtapMom==2) {
           TCut goodMatCorr("(fitinfo.fitmombeam-fitinfo.fitmom)>0&&(fitinfo.fitmombeam-fitinfo.fitmom)<1.0");
@@ -695,9 +744,8 @@ void KalPlotMomSpec(TTree* trks, TString addCut="", size_t cutType=0, double sca
 }
 
 
-void KalFitRes(TTree* trks, int nGenEv=-1, int nCuts=4, TString fitOpt="L", TString addCut="", int fType=2, int useExtapMom=0, Long64_t NEntries=-1, Long64_t skipentries=0) {
-  TCut onlyFrstSD("fitinfo.iseed==0");//
-          if(!donecuts)KalCuts(0,-1,useExtapMom);
+void KalFitRes(TTree* trks, int nGenEv=-1, int nCuts=4, int cutOption=0, TString fitOpt="L", TString addCut="", int fType=2, int useExtapMom=0, Long64_t NEntries=-1, Long64_t skipentries=0) {
+          if(!donecuts)KalCuts(0,cutOption,-1,useExtapMom);
           if (NEntries>0 && NEntries<1000000000) {nentries = NEntries;}
 
           TF1 *fitf;
@@ -957,9 +1005,8 @@ void KalFitRes(TTree* trks, int nGenEv=-1, int nCuts=4, TString fitOpt="L", TStr
 }
 
 
-void KalFitMomPull(TTree* trks, int nGenEv=-1, int nCuts=4, TString fitOpt="L", TString addCut="", int fType=2, int useExtapMom=0, Long64_t NEntries=-1, Long64_t skipentries=0) {
-  TCut onlyFrstSD("fitinfo.iseed==0");//
-          if(!donecuts)KalCuts(0,-1,useExtapMom);
+void KalFitMomPull(TTree* trks, int nGenEv=-1, int nCuts=4, int cutOption=0, TString fitOpt="L", TString addCut="", int fType=2, int useExtapMom=0, Long64_t NEntries=-1, Long64_t skipentries=0) {
+          if(!donecuts)KalCuts(0,cutOption,-1,useExtapMom);
           if (NEntries>0 && NEntries<1000000000) {nentries = NEntries;}
 
           TF1 *fitf;
@@ -1293,9 +1340,8 @@ void KalFitAmbig(TTree* t, int acut=0) {
 
 }*/
 
-void KalFitResid(TTree* t, Long64_t NEntries=-1, Long64_t skipentries=0) {
-  TCut onlyFrstSD("fitinfo.iseed==0");//
-  if(!donecuts)KalCuts(0,-1,false);
+void KalFitResid(TTree* t,int cutOption=0, Long64_t NEntries=-1, Long64_t skipentries=0) {
+  if(!donecuts)KalCuts(0,cutOption,-1,false);
   if (NEntries>0 && NEntries<1000000000) {nentries = NEntries;}
 
   TCut delta("hitinfo._mcproc==17");
