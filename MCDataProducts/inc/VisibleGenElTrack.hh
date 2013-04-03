@@ -3,9 +3,9 @@
 //
 // Data of the Electrons tracks that came from the targets
 //
-// $Id: VisibleGenElTrack.hh,v 1.3 2012/12/04 00:51:28 tassiell Exp $
+// $Id: VisibleGenElTrack.hh,v 1.4 2013/04/03 22:20:05 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Date: 2013/04/03 22:20:05 $
 //
 // Original author G. Tassielli
 //
@@ -47,7 +47,9 @@ public:
         }
         /*VisibleGenElTrack(SimParticlePtr &trkPtr_ ):
                   _trkPtr(trkPtr_),*/
-        VisibleGenElTrack( art::Ptr<SimParticle>::key_type &trkKey_, SimParticleCollection::key_type &trkID_, std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector> genTrackData_ ):
+        VisibleGenElTrack( /*art::ProductID &simPID_,*/ art::RefCore &simRC_, art::Ptr<SimParticle>::key_type &trkKey_, SimParticleCollection::key_type &trkID_, std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector> genTrackData_ ):
+                //_simPID(simPID_),
+                _simRC(simRC_),
                 _trkKey(trkKey_),
                 _trkID(trkID_),
                 _isConversionEl(false),
@@ -93,6 +95,8 @@ public:
         bool& isConversionEl( );
         void setConversionEl();
         //SimParticlePtr const& getSimPart();
+        //art::ProductID& getSimPID();
+        art::RefCore& getSimRC();
         SimParticlePtr::key_type& getTrkKey();
         SimParticleCollection::key_type& getTrkID();
         CLHEP::Hep3Vector getTrkVertex();
@@ -100,6 +104,7 @@ public:
         size_t getNumOfHit();
         GenElHitData& getHit(/*size_t*/art::Ptr<SimParticle>::key_type ih);
         GenElHitData& getHit(int i_hit);
+        GenElHitData& getHitTimeOrder(int i_hit);
         GenElHitData& getFirstHit();
         GenElHitData& getLastHit();
         unsigned short& FindNTurns();
@@ -112,6 +117,8 @@ public:
 
 protected:
         //SimParticlePtr _trkPtr;
+        //art::ProductID _simPID;
+        art::RefCore _simRC;
         SimParticlePtr::key_type _trkKey;
         SimParticleCollection::key_type _trkID;
         std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector> _genTrackData;
@@ -173,6 +180,14 @@ void VisibleGenElTrack::setConversionEl(){
 //       return tmpPtr;
 //}
 
+//art::ProductID& VisibleGenElTrack::getSimPID() {
+//        return _simPID;
+//}
+
+art::RefCore& VisibleGenElTrack::getSimRC() {
+        return _simRC;
+}
+
 SimParticlePtr::key_type& VisibleGenElTrack::getTrkKey(){
         return _trkKey;
 }
@@ -208,6 +223,15 @@ GenElHitData& VisibleGenElTrack::getHit(int i_hit){
                 GenElHitDataCollection::iterator hd_it=_hitDataCollection.begin();
                 for (int i=0; i<i_hit; i++) ++hd_it;
                 return hd_it->second;
+        }
+        else throw cet::exception("RANGE") << "Element "<<i_hit<<" out of size of the HitDataCollection "<<_hitDataCollection.size()<<std::endl;
+}
+
+GenElHitData& VisibleGenElTrack::getHitTimeOrder(int i_hit){
+        if ( ((unsigned int)i_hit)<_hitDataCollection.size() ) {
+                GenElHitDCll_OrderByTime::iterator hd_it=_orederedHitDataColl.begin();
+                for (int i=0; i<i_hit; i++) ++hd_it;
+                return _hitDataCollection[ hd_it->second ];
         }
         else throw cet::exception("RANGE") << "Element "<<i_hit<<" out of size of the HitDataCollection "<<_hitDataCollection.size()<<std::endl;
 }
