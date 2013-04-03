@@ -1,9 +1,9 @@
 //
 // identification and track parameter extraction modules
 //
-// $Id: TrackReco_module.cc,v 1.5 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: TrackReco_module.cc,v 1.6 2013/04/03 22:11:28 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/04/03 22:11:28 $
 //
 // Original author G. Tassielli
 //
@@ -270,13 +270,15 @@ namespace mu2e {
 
     explicit TrackReco(fhicl::ParameterSet const& pset);
     virtual ~TrackReco() {
-            if (_plotCanvas)        delete _plotCanvas;
-            if (_plotCanvas_1)        delete _plotCanvas_1;
-            if (_plotCanvas_Cal)      delete _plotCanvas_Cal;
-            if (_fakeCanvas)        delete _fakeCanvas;
-            delete _iXHelStep;
-            delete blur_coeffX;
-            delete blur_coeffY;
+            if (_plotCanvas)       delete _plotCanvas;
+            if (_plotCanvas_1)     delete _plotCanvas_1;
+            if (_plotCanvas_Cal)   delete _plotCanvas_Cal;
+            if (_fakeCanvas)       delete _fakeCanvas;
+            if (_iXHelStep!=0)     delete [] _iXHelStep;
+            if (_iXHelStep_DR!=0)  delete [] _iXHelStep_DR;
+            if (_iXPhi0_DR!=0)     delete [] _iXPhi0_DR;
+            if (blur_coeffX!=0)    delete [] blur_coeffX;
+            if (blur_coeffY!=0)    delete [] blur_coeffY;
     }
 
     virtual void beginJob();
@@ -452,6 +454,8 @@ namespace mu2e {
 //    _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
     _doDisplay(pset.get<bool>("doDisplay",false)),
     _doCalib(pset.get<bool>("doCalib",false)),
+    blur_coeffX(0),
+    blur_coeffY(0),
 
     _minR(280.0/2.0*CLHEP::mm),
     _maxR(800.0/2.0*CLHEP::mm),
@@ -610,9 +614,9 @@ namespace mu2e {
     //const Tracker& tracker = getTrackerOrThrow();
     //const TTracker &ttr = static_cast<const TTracker&>( tracker );
 
-    //int nbinRho=floor( (ttr.getInnerTrackerEnvelopeParams().outerRadius()-ttr.getInnerTrackerEnvelopeParams().innerRadius())/ttr.strawRadius()*sqrt(12.0)+0.5 );
+    //int nbinRho=floor( (ttr.getTrackerEnvelopeParams().outerRadius()-ttr.getTrackerEnvelopeParams().innerRadius())/ttr.strawRadius()*sqrt(12.0)+0.5 );
     int nbinRho=floor( 410.0/40.0*sqrt(12.0)+0.5 );
-    //_hRhoPhi0_DeltaRay      = tfs->make<TH2F>( "hRhoPhi0_DeltaRay",   "Rho vs Phi0 for low radius DeltaRay", 200, 0, CLHEP::twopi, nbinRho, ttr.getInnerTrackerEnvelopeParams().innerRadius(), ttr.getInnerTrackerEnvelopeParams().outerRadius() );
+    //_hRhoPhi0_DeltaRay      = tfs->make<TH2F>( "hRhoPhi0_DeltaRay",   "Rho vs Phi0 for low radius DeltaRay", 200, 0, CLHEP::twopi, nbinRho, ttr.getTrackerEnvelopeParams().innerRadius(), ttr.getTrackerEnvelopeParams().outerRadius() );
     _nBinPhi0_DR=floor( CLHEP::twopi/0.1*sqrt(12.0)+0.5 );
     _hRhoPhi0_DeltaRay      = tfs->make<TH2F>( "hRhoPhi0_DeltaRay",   "Rho vs Phi0 for low radius DeltaRay", _nBinPhi0_DR, 0, CLHEP::twopi, nbinRho, 390.0, 800.0 );
     _iXPhi0_DR = new double[_nBinPhi0_DR];
@@ -2671,7 +2675,7 @@ namespace mu2e {
                   }
           }
 
-          delete buff;
+          delete [] buff;
           return nOutEntries;
   }
 
@@ -2715,7 +2719,7 @@ namespace mu2e {
                   }
           }
 
-          delete buff;
+          delete [] buff;
           return nOutEntries;
   }
 
@@ -2782,7 +2786,7 @@ namespace mu2e {
                   }
           }
 
-          delete buff;
+          delete [] buff;
           return nOutEntries;
   }
 
@@ -2858,7 +2862,7 @@ namespace mu2e {
                   }
           }
 
-          delete buff;
+          delete [] buff;
 
           return nOutEntries;
   }
@@ -2920,7 +2924,7 @@ namespace mu2e {
                   }
           }
 
-          delete buff;
+          delete [] buff;
 
           return nOutEntries;
   }
@@ -2997,6 +3001,13 @@ namespace mu2e {
                   pm->SetMarkerSize(1.3);
                   inHist->GetListOfFunctions()->Add(pm);
           }
+
+          for (i=0;i<nbinsx;i++) {
+                  delete [] dest[i];
+                  delete [] source[i];
+          }
+          delete [] dest;
+          delete [] source;
 
           return nfound;
 
