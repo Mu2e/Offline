@@ -72,7 +72,8 @@ physics :
       module_type          : ExtractElectronsData
       generatorModuleLabel : generate
       g4ModuleLabel        : g4run
-      makerModuleLabel     : makeDcH
+      makerModuleLabel     : makeSH
+      #makerModuleLabel     : makeDcH
       #trackerStepPoints    : tracker
       #minEnergyDep         : 0.0001
       #minHits              : 5

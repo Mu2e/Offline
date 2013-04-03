@@ -36,7 +36,7 @@ services :
   {
     GeometryService :
     {
-      inputFile : "Mu2eG4/test/geom_01_v42_lght.txt"
+      inputFile : "Mu2eG4/test/geom_01.txt"
     }
 
     ConditionsService :
