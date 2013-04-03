@@ -1,9 +1,9 @@
 //
 // module that extract Data of the Electrons tracks that came from the targets and put temporary inside the event
 //
-// $Id: ExtractElectronsData_module.cc,v 1.11 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: ExtractElectronsData_module.cc,v 1.12 2013/04/03 22:10:07 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/04/03 22:10:07 $
 //
 // Original author G. Tassielli
 //
@@ -317,6 +317,8 @@ void ExtractElectronsData::produce(art::Event & event ) {
                         //SimParticle const& sim = simParticles->at(trackId);
                         art::Ptr<SimParticle> const& simptr = mchit.simParticle();
                         art::Ptr<SimParticle>::key_type simKey(simptr.key());
+                        //art::ProductID simPID (simptr.id());
+                        art::RefCore simRC (simptr.refCore());
                         SimParticle const& sim = *simptr;
                         //cout<<"-----------------------3.1---------------------"<<endl;
 
@@ -346,7 +348,7 @@ void ExtractElectronsData::produce(art::Event & event ) {
                                 genEltrk_it=genEltrk->begin();
                                 for ( ; genEltrk_it!=genEltrk->end(); ++genEltrk_it ){
                                         //if ( genEltrk_it->getTrkID()==trackId ) {
-                                        if ( genEltrk_it->getTrkKey()==simKey && genEltrk_it->getTrkID()==trackId ) {
+                                        if ( /*genEltrk_it->getSimPID()==simPID &&*/ genEltrk_it->getSimRC()==simRC && genEltrk_it->getTrkKey()==simKey && genEltrk_it->getTrkID()==trackId ) {
                                                 genEltrk_it->addHitData( StrawHitPtr( pdataHandle, i), mchittime,overlapped,ovrlpByProton,isFirst,mchit.position(),mchit.momentum()  );
                                                 addTrack=false;
                                                 break;
@@ -354,11 +356,11 @@ void ExtractElectronsData::produce(art::Event & event ) {
                                 }
                                 if (addTrack) {
                                         //genEltrk->push_back( VisibleGenElTrack( trackId, std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>( sim.startPosition(), sim.startMomentum() ) ) );
-                                        genEltrk->push_back( VisibleGenElTrack( simKey, trackId, std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>( sim.startPosition(), sim.startMomentum() ) ) );
+                                        genEltrk->push_back( VisibleGenElTrack( /*simPID,*/ simRC, simKey, trackId, std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>( sim.startPosition(), sim.startMomentum() ) ) );
                                         genEltrk->back().addHitData( StrawHitPtr( pdataHandle, i), mchittime,overlapped,ovrlpByProton,isFirst,mchit.position(),mchit.momentum()  );
                                         //GenParticle const& genp = genParticles->at(sim.generatorIndex());
                                         GenParticle const& genp = *sim.genParticle();
-                                        if ( genp.generatorId()==GenId::conversionGun ) genEltrk->back().setConversionEl();
+                                        if ( genp.generatorId()==GenId::conversionGun ) { genEltrk->back().setConversionEl(); }
                                 }
 
                         }
