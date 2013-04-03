@@ -3,9 +3,9 @@
 //
 // Parameters for I-tracker calibrations.
 //
-// $Id: TrackerCalibrationsI.hh,v 1.2 2012/12/04 00:51:28 tassiell Exp $
+// $Id: TrackerCalibrationsI.hh,v 1.3 2013/04/03 22:08:21 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Date: 2013/04/03 22:08:21 $
 //
 // Original author G. Tassielli
 //
@@ -28,8 +28,7 @@ namespace mu2e
     virtual double TimeDiffToDistance(StrawIndex strawIndex, double deltaT) const;
     // information about a hit's position and time.  This uses time difference to compute
     // the position along the wire
-    virtual void StrawHitInfo(StrawHit const& strawhit,
-      CLHEP::Hep3Vector& pos, double& time,double& tdres, double& timeres) const;
+    virtual void StrawHitInfo(Straw const& straw, StrawHit const& strawhit, SHInfo& shinfo) const;
 
   private:
 

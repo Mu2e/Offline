@@ -1,9 +1,9 @@
 //
 // Fit of the reconstructed tracks for the ITracker
 //
-// $Id: ITTrackRecoFit_module.cc,v 1.3 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
+// $Id: ITTrackRecoFit_module.cc,v 1.4 2013/04/03 22:08:21 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/04/03 22:08:21 $
 //
 // Original author F. Ignatov and G. Tassielli
 //
@@ -381,7 +381,8 @@ namespace mu2e {
               //      TrkT0 t0(iTrkSeed._t0,iTrkSeed._errt0);
               TrkT0 t0(tclust._meanTime-7.32505e+01,7.);//-4.35 forr in wire speed
               if(_t0use==1) t0=TrkT0(_histoOut.recoinfo.t0,0.0);
-              if(_t0use==2) t0=TrkT0(_histoOut.recoinfo.t0,iTrkSeed._errt0);
+              //if(_t0use==2) t0=TrkT0(_histoOut.recoinfo.t0,iTrkSeed._errt0);
+              if(_t0use==2) t0=TrkT0(iTrkSeed._t0,iTrkSeed._errt0);
 
               seeddef.setT0(t0);
 

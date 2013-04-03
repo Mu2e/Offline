@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.27 2012/12/04 00:51:26 tassiell Exp $
+// $Id: KalFit.hh,v 1.28 2013/04/03 22:08:21 tassiell Exp $
 // $Author: tassiell $ 
-// $Date: 2012/12/04 00:51:26 $
+// $Date: 2013/04/03 22:08:21 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
@@ -66,6 +66,9 @@ namespace mu2e
     bool weedHits(KalFitResult& kres);
     void initT0(TrkDef const& tdef, TrkT0& t0);
     bool updateT0(KalFitResult& kres);
+    void fitTrack(KalFitResult& kres);
+    virtual void makeHits(KalFitResult& kres, TrkT0 const& t0);
+    virtual void makeMaterials(KalFitResult& kres);
 
   private:
     double _t0errfac; // fudge factor for the calculated t0 error
@@ -79,10 +82,7 @@ namespace mu2e
     mutable BField* _bfield;
     // helper functions
 
-    virtual void fitTrack(KalFitResult& kres);
     void fitIteration(KalFitResult& kres,size_t iiter);
-    virtual void makeHits(KalFitResult& kres, TrkT0 const& t0);
-    virtual void makeMaterials(KalFitResult& kres);
     void updateHitTimes(KalFitResult& kres);
     void findBoundingHits(std::vector<TrkStrawHit*>& hits, double flt0,
 	std::vector<TrkStrawHit*>::reverse_iterator& ilow,

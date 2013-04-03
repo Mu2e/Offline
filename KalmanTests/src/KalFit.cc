@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.39 2012/12/04 00:51:26 tassiell Exp $
+// $Id: KalFit.cc,v 1.40 2013/04/03 22:08:21 tassiell Exp $
 // $Author: tassiell $ 
-// $Date: 2012/12/04 00:51:26 $
+// $Date: 2013/04/03 22:08:21 $
 //
 
 // the following has to come before other BaBar includes
@@ -284,6 +284,7 @@ namespace mu2e
       }
       niter++;
     }
+    kres._ninter = kres._krep->intersections();
   }
 
   bool

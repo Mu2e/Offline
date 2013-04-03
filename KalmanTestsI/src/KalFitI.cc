@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFitI.cc,v 1.3 2012/12/04 00:51:27 tassiell Exp $
+// $Id: KalFitI.cc,v 1.4 2013/04/03 22:08:21 tassiell Exp $
 // $Author: tassiell $ 
-// $Date: 2012/12/04 00:51:27 $
+// $Date: 2013/04/03 22:08:21 $
 //
 
 // the following has to come before other BaBar includes
@@ -64,25 +64,13 @@ using namespace std;
 
 namespace mu2e 
 {
-// convert speed of light in mm/nsec
-//  const double KalFitI::_vlight = CLHEP::c_light;
-// drift velocity should come from a service FIXME!!!  
-//  const double KalFitI::_vdrift = 0.035; // 50 um/nsec
-// comparison functor for ordering hits
-  /*struct fltlencomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
-          bool operator()(TrkStrawHit* x, TrkStrawHit* y) { return x->fltLen() < y->fltLen(); }
-  };*/
   struct fltlencomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
     fltlencomp(TrkFitDirection::FitDirection fdir=TrkFitDirection::downstream) : _fdir(fdir) {}
-    //fltlencomp(KalFit::fitDirection fdir=KalFit::downstream) : _fdir(fdir) {}
     bool operator()(TrkStrawHit* x, TrkStrawHit* y) {
       return _fdir == TrkFitDirection::downstream ? x->fltLen() < y->fltLen() : y->fltLen() < x->fltLen() ;
-      //return _fdir == KalFit::downstream ? x->fltLen() < y->fltLen() : y->fltLen() < x->fltLen() ;
     }
     TrkFitDirection::FitDirection _fdir;
-    //KalFit::fitDirection _fdir;
   };
-
 
 // construct from a parameter set  
   KalFitI::KalFitI(fhicl::ParameterSet const& pset) : KalFit(pset),
@@ -91,7 +79,6 @@ namespace mu2e
     _maxfltdif(pset.get<double>("maxfltdif",100.0)),
     _maxMatReinter(pset.get<long>("maxMatReinter",0)),
     _maxdist4Addhit(pset.get<double>("maxdist4addhit",1e30)),
-    //_t0strategy((t0Strategy)pset.get<int>("t0strategy",median)),
     _exacthitturn(pset.get<bool>("exacthitturn",false)),
     _momcuttoallowextrpl(pset.get<double>("momcuttoallowextrpl",50))
   {
@@ -102,17 +89,12 @@ namespace mu2e
   }
 
   KalFitI::~KalFitI(){
-    //for(size_t iambig=0;iambig<_ambigresolver.size();++iambig){
-    //  delete _ambigresolver[iambig];
-    //}
   }
 
-  void KalFitI::makeTrack(KalFitResult& kres) {
+  void KalFitI::makeTrack(KalFitResult& kres, double *seddFltRange) {
 
      _intertol = _maxfltdif;
      _maxinter = _maxMatReinter;
-     //_kalcon->setMaxIntersections(_maxMatReinter);
-     //_kalcon->setIntersectionTolerance(_maxfltdif);
 
      kres._fit = TrkErrCode(TrkErrCode::fail);
 // test if fitable
@@ -142,11 +124,18 @@ namespace mu2e
       //double helixturn=2*TMath::Pi()/seed->omega()/seed->cosDip();
       hotlist->sort();
       if (_doMinPrints) { std::cout<<"det length "<<DchDetector::GetInstance()->zlen()*0.5<<std::endl; }
-      double fltz1 = seed->zFlight(-(DchDetector::GetInstance()->zlen()*0.5-5.0)/*0.7*/);
-      double fltz2 = seed->zFlight( (DchDetector::GetInstance()->zlen()*0.5+5.0)/*0.7*/);
 
+      double *range=0;
+      if (seddFltRange==0) {
+              double fltz1 = seed->zFlight(-(DchDetector::GetInstance()->zlen()*0.5-5.0)/*0.7*/);
+              double fltz2 = seed->zFlight( (DchDetector::GetInstance()->zlen()*0.5+5.0)/*0.7*/);
+              range = new double[2];
+              range[0]=fltz1;
+              range[1]=fltz2;
+      } else {
+              range = seddFltRange;
+      }
 
-      double range[2]={fltz1,fltz2};
       // range[0] = hotlist->startFoundRange();
       // range[0] = (range[0]>0?0.:-helixturn);
       // range[1] = hotlist->endFoundRange()+0.001;
@@ -196,16 +185,14 @@ namespace mu2e
 	std::cout<<"print kalrep"<<std::endl;
 	kres._krep->printAll(std::cout);
       }
-      //if(_matcorr){
-      //        kres._krep->setDetMatModel(trkmodel);
-      //}
 // now fit
       fitTrack(kres);
+      if (seddFltRange==0) {
+          delete [] range;
+      }
     }
     _intertol = 100;
     _maxinter = 0;
-    //_kalcon->setMaxIntersections(0);
-    //_kalcon->setIntersectionTolerance(100);
   }
 
   void KalFitI::makeExtrapolOutTrack(KalFitResult& kres) {
@@ -305,63 +292,63 @@ namespace mu2e
     addHits(kres,missed,active);
   }
 
-  void KalFitI::fitTrack(KalFitResult& kres){
-    // loop over external hit errors
-    for(size_t iherr=0;iherr < _herr.size(); ++iherr){
-      // update the external hit errors.  This isn't strictly necessary on the 1st iteration.
-      for(std::vector<TrkStrawHit*>::iterator itsh = kres._hits.begin(); itsh != kres._hits.end(); ++itsh){
-        (*itsh)->setExtErr(_herr[iherr]);
-      }
-
-
-    // fit the track
-    kres._fit = TrkErrCode::succeed;
-    _ambigresolver[iherr]->resolveTrk(kres);
-    kres.fit();
-    if (_doMinPrints) { std::cout<<"chi2 "<<kres._krep->chisquared(trkIn)<<" t0 "<<kres._krep->t0().t0()<<" ndof "<<kres._krep->nDof()<<std::endl; }
-    // update t0, and propagate it to the hits
-    double oldt0(-1e8);
-    kres._nt0iter = 0;
-    unsigned niter(0);
-
-    //kres._ninter = 0;
-    //while (_kalcon->materialSites() && _maxfltdif >
-    //                _kalcon->intersectionTolerance() &&
-    //                kres._ninter < _kalcon->maxIntersections()) {
-    //        kres._krep->reIntersect();
-    //        kres._krep->resetFit();
-    //        kres.fit();
-    //        kres._ninter++;
-
-    bool changed=true;
-    while(changed && kres._fit.success() && niter < /*_kalcon->*/maxIterations()){
-      changed = false;
-      if(_updatet0 && kres._nt0iter < /*_kalcon->*/maxIterations() && updateT0(kres) && fabs(kres._krep->t0()._t0-oldt0) > _t0tol[iherr]  ){
-	oldt0 = kres._krep->t0()._t0;
-        _ambigresolver[iherr]->resolveTrk(kres);
-	kres._krep->resetFit();
-	kres.fit();
-	if (_doMinPrints) { std::cout<<"chi2 "<<kres._krep->chisquared(trkIn)<<" t0 "<<kres._krep->t0()._t0<<" ndof "<<kres._krep->nDof()<<std::endl; }
-	kres._nt0iter++;
-	changed = true;
-      }
-      // drop outlyers
-      if(_weedhits){
-	kres._nweediter = 0;
-	changed |= weedHits(kres);
-	if (_doMinPrints) { std::cout<<"afterweedchi2 "<<kres._krep->chisquared(trkIn)<<" t0 "<<kres._krep->t0()._t0<<" ndof "<<kres._krep->nDof()<<std::endl; }
-      }
-      niter++;
-    }
-
-    kres._ninter = kres._krep->intersections();
-    //}
-
-    if(kres._krep != 0) kres._krep->addHistory(kres._fit,"KalFitI");
-
-    }//close loop on _herr
-
-  }
+//  void KalFitI::fitTrack(KalFitResult& kres){
+//    // loop over external hit errors
+//    for(size_t iherr=0;iherr < _herr.size(); ++iherr){
+//      // update the external hit errors.  This isn't strictly necessary on the 1st iteration.
+//      for(std::vector<TrkStrawHit*>::iterator itsh = kres._hits.begin(); itsh != kres._hits.end(); ++itsh){
+//        (*itsh)->setExtErr(_herr[iherr]);
+//      }
+//
+//
+//    // fit the track
+//    kres._fit = TrkErrCode::succeed;
+//    _ambigresolver[iherr]->resolveTrk(kres);
+//    kres.fit();
+//    if (_doMinPrints) { std::cout<<"chi2 "<<kres._krep->chisquared(trkIn)<<" t0 "<<kres._krep->t0().t0()<<" ndof "<<kres._krep->nDof()<<std::endl; }
+//    // update t0, and propagate it to the hits
+//    double oldt0(-1e8);
+//    kres._nt0iter = 0;
+//    unsigned niter(0);
+//
+//    //kres._ninter = 0;
+//    //while (_kalcon->materialSites() && _maxfltdif >
+//    //                _kalcon->intersectionTolerance() &&
+//    //                kres._ninter < _kalcon->maxIntersections()) {
+//    //        kres._krep->reIntersect();
+//    //        kres._krep->resetFit();
+//    //        kres.fit();
+//    //        kres._ninter++;
+//
+//    bool changed=true;
+//    while(changed && kres._fit.success() && niter < /*_kalcon->*/maxIterations()){
+//      changed = false;
+//      if(_updatet0 && kres._nt0iter < /*_kalcon->*/maxIterations() && updateT0(kres) && fabs(kres._krep->t0()._t0-oldt0) > _t0tol[iherr]  ){
+//	oldt0 = kres._krep->t0()._t0;
+//        _ambigresolver[iherr]->resolveTrk(kres);
+//	kres._krep->resetFit();
+//	kres.fit();
+//	if (_doMinPrints) { std::cout<<"chi2 "<<kres._krep->chisquared(trkIn)<<" t0 "<<kres._krep->t0()._t0<<" ndof "<<kres._krep->nDof()<<std::endl; }
+//	kres._nt0iter++;
+//	changed = true;
+//      }
+//      // drop outlyers
+//      if(_weedhits){
+//	kres._nweediter = 0;
+//	changed |= weedHits(kres);
+//	if (_doMinPrints) { std::cout<<"afterweedchi2 "<<kres._krep->chisquared(trkIn)<<" t0 "<<kres._krep->t0()._t0<<" ndof "<<kres._krep->nDof()<<std::endl; }
+//      }
+//      niter++;
+//    }
+//
+//    kres._ninter = kres._krep->intersections();
+//    //}
+//
+//    if(kres._krep != 0) kres._krep->addHistory(kres._fit,"KalFitI");
+//
+//    }//close loop on _herr
+//
+//  }
 
 //  void
 //  KalFitI::initT0(TrkDef const& mytrk,TrkT0& t00) {
@@ -464,7 +451,6 @@ namespace mu2e
     }
  // sort the hits by flightlength
     std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef.fitdir().fitDirection()));
-    //std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp());
   }
 
   void

@@ -1,9 +1,9 @@
 //
 // Patter recognition for the ITracker (based on ILC 4th PR)
 //
-// $Id: ITTrackMiniIReco_module.cc,v 1.3 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
+// $Id: ITTrackMiniIReco_module.cc,v 1.4 2013/04/03 22:08:21 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/04/03 22:08:21 $
 //
 
 // C++ includes.
@@ -83,6 +83,7 @@ namespace mu2e {
     std::string _moduleLabel;
     std::string _hitmakerModuleLabel;
     std::string _timeRejecterModuleLabel;
+    int _t0use;
     bool _useZCoordinate;
 
     bool _doMinPrints;
@@ -94,6 +95,7 @@ namespace mu2e {
     _moduleLabel(pset.get<std::string>("module_label")),
     _hitmakerModuleLabel(pset.get<std::string>("hitMakerModuleLabel", "makeDcH")),
     _timeRejecterModuleLabel(pset.get<std::string>("tRejecterModuleLabel","trckRjctByTime"))  ,
+    _t0use(pset.get<int>("t0use",0)),
     _useZCoordinate(pset.get<bool>("useZCoordinate",false))
   {
     // Tell the framework what we make.
@@ -219,18 +221,22 @@ namespace mu2e {
 	select.push_back(index);
       }
 
-      if (_doMinPrints) { std::cout<<"seed state "<<gRandom->GetSeed()<<std::endl; }
-      std::sort(select.begin(),select.end());
-      TObjArray *array=mu2eHits2ilc(shits,shitmcs,&select,-10,_useZCoordinate);
-      //TObjArray *array=mu2eHits2ilc(shits,shitmcs,&select,tclust._meanTime-7.32505e+01-4.35,_useZCoordinate);
-      itracker->LoadClusters(array);
-      itracker->Clusters2Tracks();
-
       //fill seed information
       TrackSeed museed;
       museed._relatedTimeCluster=TrackerHitTimeClusterPtr(tclustHandle,ipeak);
-      museed._t0    = tclust._minHitTime+6.59195;
-      museed._errt0 = 5.;//tpeakerr;
+      //museed._t0    = tclust._minHitTime+6.59195;
+      //museed._errt0 = 5.;//tpeakerr;
+      tclust.expectedT0(museed._t0,museed._errt0,1);
+
+      if (_doMinPrints) { std::cout<<"seed state "<<gRandom->GetSeed()<<std::endl; }
+      std::sort(select.begin(),select.end());
+
+      TObjArray *array=0;
+      if (_t0use==0) { array=mu2eHits2ilc(shits,shitmcs,&select,-10,_useZCoordinate); }
+      else { array=mu2eHits2ilc(shits,shitmcs,&select,museed._t0,_useZCoordinate); }
+      //TObjArray *array=mu2eHits2ilc(shits,shitmcs,&select,tclust._meanTime-7.32505e+01-4.35,_useZCoordinate);
+      itracker->LoadClusters(array);
+      itracker->Clusters2Tracks();
 
 
       std::vector<int> usedhits;

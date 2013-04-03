@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFitI.hh,v 1.3 2012/12/04 00:51:26 tassiell Exp $
+// $Id: KalFitI.hh,v 1.4 2013/04/03 22:08:21 tassiell Exp $
 // $Author: tassiell $ 
-// $Date: 2012/12/04 00:51:26 $
+// $Date: 2013/04/03 22:08:21 $
 //
 #ifndef KalFitI_HH
 #define KalFitI_HH
@@ -30,7 +30,7 @@ namespace mu2e
     explicit KalFitI(fhicl::ParameterSet const&);
     virtual ~KalFitI();
 // main function: given a track definition, create a fit object from it
-    virtual void makeTrack(KalFitResult& kdef);
+    virtual void makeTrack(KalFitResult& kdef, double *seddFltRange=0);
     void makeExtrapolOutTrack(KalFitResult& kres);
     virtual const TrkVolume* trkVolume(trkDirection trkdir);
 
@@ -72,7 +72,7 @@ namespace mu2e
     // helper functions
     //virtual bool weedHits(KalFitResult& kdef);
     //virtual bool unweedHits(KalFitResult& kdef);
-    virtual void fitTrack(KalFitResult& kdef);
+    //virtual void fitTrack(KalFitResult& kdef);
     virtual void makeHits(KalFitResult& kdef,TrkT0 const& t0);
 
     virtual void makeMaterials(KalFitResult& kdef);
