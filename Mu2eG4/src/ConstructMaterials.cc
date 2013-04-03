@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.37 2013/03/01 00:13:35 logash Exp $
-// $Author: logash $
-// $Date: 2013/03/01 00:13:35 $
+// $Id: ConstructMaterials.cc,v 1.38 2013/04/03 22:24:16 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/04/03 22:24:16 $
 //
 // Original author Rob Kutschke
 //
@@ -887,6 +887,21 @@ namespace mu2e {
       ZirconiumHydridePolyethylene->AddElement( eZr, 85.0*perCent);
     }
 
+    mat = isNeeded(materialsToLoad, "StrawWallEq");
+    if ( mat.doit ){
+      G4double density, fiberFrac=46.0*perCent;
+      G4int nel;
+      G4Material* strwMl = findMaterialOrThrow("G4_MYLAR");
+      G4Material* strwMet1 = findMaterialOrThrow("G4_Au");
+      G4Material* strwMet2 = findMaterialOrThrow("G4_Al");
+
+      density = 1.4325*g/cm3;
+      G4Material* stWallEq =
+        new G4Material(mat.name, density, nel=3);
+      stWallEq->AddMaterial(strwMl, 96.95e-2 );
+      stWallEq->AddMaterial(strwMet1, 1.80e-2 );
+      stWallEq->AddMaterial(strwMet2, 1.25e-2 );
+    }
 
     // Completed constructing Mu2e specific materials.
 
