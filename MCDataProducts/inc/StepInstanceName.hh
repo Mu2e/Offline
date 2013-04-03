@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for the names of the StepPointMC
 // collections produced inside G4_module.
 //
-// $Id: StepInstanceName.hh,v 1.8 2012/12/04 00:51:28 tassiell Exp $
+// $Id: StepInstanceName.hh,v 1.9 2013/04/03 22:23:31 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Date: 2013/04/03 22:23:31 $
 //
 // Contact person Rob Kutschke
 //
@@ -39,7 +39,7 @@ namespace mu2e {
       unknown,
       tracker,        virtualdetector,   timeVD,         stoppingtarget,   CRV, 
       calorimeter,    calorimeterRO,     ExtMonUCITof,   ttrackerDS,       protonabsorber, 
-      PSVacuum,       stepper,           trackerSWires,  itrackerFWires,
+      PSVacuum,       stepper,           trackerSWires,  itrackerFWires,   trackerWalls,
       lastEnum
     };
 
@@ -48,7 +48,7 @@ namespace mu2e {
       "unknown", \
       "tracker",     "virtualdetector", "timeVD",       "stoppingtarget", "CRV",            \
       "calorimeter", "calorimeterRO",   "ExtMonUCITof", "ttrackerDS",     "protonabsorber", \
-      "PSVacuum",    "stepper",         "trackerSWires","itrackerFWires"
+      "PSVacuum",    "stepper",         "trackerSWires","itrackerFWires", "trackerWalls"
 
   public:
 

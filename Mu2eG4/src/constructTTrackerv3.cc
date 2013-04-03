@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.29 2013/03/29 04:35:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Id: constructTTrackerv3.cc,v 1.30 2013/04/03 22:23:31 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/04/03 22:23:31 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -164,6 +164,8 @@ namespace mu2e{
     bool ttrackerSectorEnvelopeSolid   = config.getBool("ttracker.sectorEnvelopeSolid",true);
     bool ttrackerStrawVisible          = config.getBool("ttracker.strawVisible",false);
     bool ttrackerStrawSolid            = config.getBool("ttracker.strawSolid",true);
+
+    bool ttrackerActiveWr_Wl_SD        = config.getBool("ttracker.ActiveWr_Wl_SD",false);
 
     // construct one logical device (device # 0) with straws inside it
 
@@ -459,6 +461,17 @@ namespace mu2e{
         G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
           FindSensitiveDetector(SensitiveDetectorName::TrackerGas());
         if(sd) strawGasInfo.logical->SetSensitiveDetector(sd);
+
+        if (ttrackerActiveWr_Wl_SD) {
+                G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
+                                FindSensitiveDetector(SensitiveDetectorName::TrackerSWires());
+                if(sd) strawWireInfo.logical->SetSensitiveDetector(sd);
+
+                sd = nullptr;
+                sd = G4SDManager::GetSDMpointer()->
+                                FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
+                if (sd) strawWallInfo.logical->SetSensitiveDetector(sd);
+        }
 
       }   // end loop over straws
     }     // end loop over layers

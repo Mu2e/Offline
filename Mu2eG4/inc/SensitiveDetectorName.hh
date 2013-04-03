@@ -3,9 +3,9 @@
 // Define names of Sensitive Detectors; revised to forward the names of the
 // StepInstanceName names.
 //
-// $Id: SensitiveDetectorName.hh,v 1.15 2012/12/04 00:51:28 tassiell Exp $
+// $Id: SensitiveDetectorName.hh,v 1.16 2013/04/03 22:23:31 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Date: 2013/04/03 22:23:31 $
 //
 // Original author KLG
 
@@ -70,6 +70,9 @@ namespace mu2e {
       return StepInstanceName::name(StepInstanceName::itrackerFWires).c_str();
     }
 
+    static char const * TrackerWalls(){
+      return StepInstanceName::name(StepInstanceName::trackerWalls).c_str();
+    }
 
   };
 

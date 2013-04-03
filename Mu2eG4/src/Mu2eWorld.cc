@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.153 2013/03/29 05:45:03 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/29 05:45:03 $
+// $Id: Mu2eWorld.cc,v 1.154 2013/04/03 22:23:31 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/04/03 22:23:31 $
 //
 // Original author Rob Kutschke
 //
@@ -157,6 +157,10 @@ namespace mu2e {
         TrackerWireSD::setMu2eDetCenterInWorld( tmpTrackercenter );
       }
 
+    } else {
+            if (_config.getBool("ttracker.ActiveWr_Wl_SD",false)) {
+              TrackerWireSD::setMu2eDetCenterInWorld( tmpTrackercenter );
+            }
     }
 
     instantiateSensitiveDetectors();
@@ -595,6 +599,18 @@ namespace mu2e {
       Mu2eSensitiveDetector* vdSD =
         new Mu2eSensitiveDetector(    SensitiveDetectorName::VirtualDetector(), _config);
       SDman->AddNewDetector(vdSD);
+
+      if (_config.getBool("ttracker.ActiveWr_Wl_SD",false)) {
+        if (sdHelper_->enabled(StepInstanceName::trackerSWires)) {
+          TrackerWireSD *ttwsSD = new TrackerWireSD(SensitiveDetectorName::TrackerSWires(),  _config);
+          SDman->AddNewDetector(ttwsSD);
+        }
+        if (sdHelper_->enabled(StepInstanceName::trackerWalls)) {
+          TrackerWireSD *ttwlSD = new TrackerWireSD(SensitiveDetectorName::TrackerWalls(),  _config);
+          SDman->AddNewDetector(ttwlSD);
+        }
+      }
+
     }
 
     if (   const_cast<GeometryService&>(_geom).hasElement<Calorimeter>() ) {

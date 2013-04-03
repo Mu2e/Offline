@@ -5,9 +5,9 @@
 //  - See comments at the top of constructTTrackerv3.cc for additional details
 //    of the meaning of version numbers.
 //
-// $Id: constructTTrackerv3Detailed.cc,v 1.3 2013/03/29 04:35:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Id: constructTTrackerv3Detailed.cc,v 1.4 2013/04/03 22:23:31 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/04/03 22:23:31 $
 //
 // Contact person Rob Kutschke,
 //   - Based on constructTTrackerv3 by KLG
@@ -251,6 +251,8 @@ namespace {
     bool strawLayeringVisible  = config.getBool("ttracker.strawLayeringVisible",false);
     bool strawLayeringSolid    = config.getBool("ttracker.strawLayeringSolid",false);
     bool drawAxes              = config.getBool("ttracker.drawAxes",false);
+
+    bool ttrackerActiveWr_Wl_SD        = config.getBool("ttracker.ActiveWr_Wl_SD",false);
 
     // Internally, all devices are the same.  They differ only in the translation and rotation.
     // Construct one logical device envelope ( using device # 0) but do not place it.
@@ -593,6 +595,24 @@ namespace {
                                            placeIt,
                                            doSurfaceCheck
                                            );
+        if (ttrackerActiveWr_Wl_SD) {
+	        G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
+                                FindSensitiveDetector(SensitiveDetectorName::TrackerSWires());
+                if (sd) {
+                        wireVol.logical->SetSensitiveDetector(sd);
+                        platingVol.logical->SetSensitiveDetector(sd);
+                }
+                
+                sd = nullptr;
+                sd = G4SDManager::GetSDMpointer()->
+                                FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
+                if (sd) {
+                        wallVol.logical->SetSensitiveDetector(sd);
+                        outerMetalVol.logical->SetSensitiveDetector(sd);
+                        innerMetal1Vol.logical->SetSensitiveDetector(sd);
+                        innerMetal2Vol.logical->SetSensitiveDetector(sd);
+                }
+        }
 
         if ( verbosityLevel > 1 ){
           cout << "Detail for: " << straw.id() << " " << detail.Id()            << endl;
