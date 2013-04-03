@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkPatRecTest02.fcl,v 1.7 2012/05/31 17:34:10 brownd Exp $
-# $Author: brownd $
-# $Date: 2012/05/31 17:34:10 $
+# $Id: TrkPatRecTest02.fcl,v 1.8 2013/04/03 22:26:37 tassiell Exp $
+# $Author: tassiell $
+# $Date: 2013/04/03 22:26:37 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -51,7 +51,11 @@ physics :
 
     # Form StrawHits (SH).
     makeSH : @local::makeSH
+    MakeStereoHits : @local::MakeStereoHits
+    FlagStrawHits : @local::FlagStrawHits
+    FlagBkgHits : @local::FlagBkgHits
     TrkPatRec : @local::TrkPatRec
+    tprDem : @local::TrkPatRecDownstreameMinus
    }
  
     # test module for Kalman fit: the 
@@ -60,7 +64,7 @@ physics :
   }
 
 
-  p1 : [generate , g4run, makeSH, TrkPatRec ]
+  p1 : [generate , g4run, makeSH, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec ] #tprDem
   e1 : []
 
   trigger_paths  : [p1]
