@@ -3,7 +3,7 @@
 /* Copyright(c) 2005-2006, ILC Project Experiment, All rights reserved.   *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: IlcTracker.h,v 1.1 2012/12/04 00:51:27 tassiell Exp $ */
+/* $Id: IlcTracker.h,v 1.2 2013/04/03 22:15:29 tassiell Exp $ */
 
 //-------------------------------------------------------------------------
 //                          class IlcTracker
@@ -49,7 +49,7 @@ public:
   // static const IlcMagF *GetFieldMap() {return fgkFieldMap;}
   static Double_t GetBz(Float_t *r); 
   static Double_t GetBz(Double_t *r) {
-    Float_t rr[]={r[0],r[1],r[2]};
+    Float_t rr[3]={(Float_t)r[0],(Float_t)r[1],(Float_t)r[2]};
     return GetBz(rr);
   }
   static Double_t GetBz() {return fgBz;}

@@ -24,7 +24,7 @@
 //-------------------------------------------------------
 
 
-/* $Id: IlcDCHtracker.cxx,v 1.1 2012/12/04 00:51:27 tassiell Exp $ */
+/* $Id: IlcDCHtracker.cxx,v 1.2 2013/04/03 22:15:29 tassiell Exp $ */
 
 #include "Riostream.h"
 #include <TClonesArray.h>
@@ -3967,7 +3967,7 @@ IlcDCHseed *IlcDCHtracker::ReSeed(IlcDCHseed *track, Float_t r0, Float_t r1, Flo
   //
   //
   Double_t  xyz[3][3],eyz[3][3];
-  Int_t     layer[3],iclayer[3];
+  Int_t     layer[3]={0,0,0},iclayer[3]={0,0,0};
   //
   // find track layer position at given ratio of the length
   Int_t index=-1;

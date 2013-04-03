@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on geometry considerations
 //
-// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.10 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.11 2013/04/03 22:15:29 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/04/03 22:15:29 $
 //
 // Original author G. Tassielli
 //
@@ -892,7 +892,7 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
                                 tmpiGeomBinRow = ( ( (nMapXBin+2)*(rwclincl_it->first+1-((rwclincl_it->first>15)?12:0)) ) +1 );
                                 tmpiGeomBin= tmpiGeomBinRow +  rwclincl_it->second->_firstStationID;
                                 ssmpbnstrw_rel_it=ssmap_Bin_Straw_rel.find(tmpiGeomBin);
-                                while ( ssmpbnstrw_rel_it->first<= (tmpiGeomBinRow +  rwclincl_it->second->_lastStationID) ) {
+                                while ( ssmpbnstrw_rel_it->first<= ((unsigned int) tmpiGeomBinRow +  rwclincl_it->second->_lastStationID) ) {
                                         //std::cout<<"I'm storing bin i-th "<<ssmpbnstrw_rel_it->first<<endl;
                                         clugrp._selectedClusters.back()._selectedTrackerHits.push_back( ssmpbnstrw_rel_it->second );
                                         ++ssmpbnstrw_rel_it;

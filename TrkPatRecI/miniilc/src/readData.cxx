@@ -28,8 +28,8 @@ TObjArray *mu2eHits2ilc(const vector<mu2e::StrawHit> *shits,const vector<mu2e::S
     int lab[3]={0,0,0};
     unsigned int id=(*shits)[i].strawIndex().asUint();
     //    cout<<id<<" "<<(id/10000)<<" "<<id%10000<<endl;
-    float hit[5]={0,(*shitmcs)[i].distanceToMid()*0.1+gRandom->Gaus()*1,
-		  0.005*0.005,1.*1.,((*shitmcs)[i].driftDistance()*0.1)+gRandom->Gaus()*0.02};
+    float hit[5]={0,(float)((*shitmcs)[i].distanceToMid()*0.1+gRandom->Gaus()*1),
+		  0.005*0.005,1.*1.,(float)(((*shitmcs)[i].driftDistance()*0.1)+gRandom->Gaus()*0.02)};
     double sigimp2=0.02*0.02;
     if(t0>0){
       hit[4]=((*shits)[i].time()-t0)*0.035/10.;
