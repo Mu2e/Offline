@@ -1,9 +1,9 @@
 //
 // example of a module to read Data of the Electrons tracks that came from the targets
 //
-// $Id: ReadExtractElectronsData_module.cc,v 1.7 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: ReadExtractElectronsData_module.cc,v 1.8 2013/04/03 22:10:25 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/04/03 22:10:25 $
 //
 // Original author G. Tassielli
 //
@@ -127,7 +127,9 @@ namespace mu2e {
     TTree    *_dataConvEl;
     unsigned int  runID, eventID, convElGoodNHit, convElTotNHit, convElNLoop, el_AtTracker_LID;
     float         el_Start_px, el_Start_py, el_Start_pz, el_AtTracker_px, el_AtTracker_py, el_AtTracker_pz, el_AtTracker_rad, el_AtTracker_z;
-    float         convElFHitTime/*, convElStartTime*/;
+    float         el_ExitTracker_px, el_ExitTracker_py, el_ExitTracker_pz, el_ExitTracker_rad, el_ExitTracker_z;
+    float         convElFHitTime/*, convElStartTime*/, convElLstHitTime;
+    double        hitDelaE[1000];
     float         signalTimeCoin[1000], lastSignalTimeCoin[1000];
 
     // End: run time parameters
@@ -207,6 +209,13 @@ namespace mu2e {
     _dataConvEl->Branch("ConvEl_Tracker_rad",&el_AtTracker_rad,"el_AtTracker_rad/F");
     _dataConvEl->Branch("ConvEl_Tracker_z",&el_AtTracker_z,"el_AtTracker_z/F");
     _dataConvEl->Branch("ConvEl_FrstHit_Time",&convElFHitTime,"convElFHitTime/F");
+    _dataConvEl->Branch("ConvEl_ExitTracker_px",&el_ExitTracker_px,"el_ExitTracker_px/F");
+    _dataConvEl->Branch("ConvEl_ExitTracker_py",&el_ExitTracker_py,"el_ExitTracker_py/F");
+    _dataConvEl->Branch("ConvEl_ExitTracker_pz",&el_ExitTracker_pz,"el_ExitTracker_pz/F");
+    _dataConvEl->Branch("ConvEl_ExitTracker_rad",&el_ExitTracker_rad,"el_ExitTracker_rad/F");
+    _dataConvEl->Branch("ConvEl_ExitTracker_z",&el_ExitTracker_z,"el_ExitTracker_z/F");
+    _dataConvEl->Branch("ConvEl_LstHit_Time",&convElLstHitTime,"convElLstHitTime/F");
+    _dataConvEl->Branch("ConvEl_Eloss_btwn_Hits",hitDelaE,"hitDelaE[convElTotNHit]/D");
     //_dataConvEl->Branch("ConvEl_Start_Time",&convElStartTime,"convElStartTime/F");
     _dataConvEl->Branch("ConvEl_Frst_Time_Coinc",signalTimeCoin,"signalTimeCoin[convElTotNHit]/F");
     _dataConvEl->Branch("ConvEl_Last_Time_Coinc",lastSignalTimeCoin,"lastSignalTimeCoin[convElTotNHit]/F");
@@ -276,7 +285,7 @@ namespace mu2e {
                     el_Start_py=iEltrk.getTrkLrntzVec().py();
                     el_Start_pz=iEltrk.getTrkLrntzVec().pz();
                     //convElStartTime=;
-                    GenElHitData& hdil = iEltrk.getHit(0);
+                    GenElHitData& hdil = iEltrk.getFirstHit();//getHit(0);
                     el_AtTracker_px=hdil._hitMomentum[0];
                     el_AtTracker_py=hdil._hitMomentum[1];
                     el_AtTracker_pz=hdil._hitMomentum[2];
@@ -285,9 +294,19 @@ namespace mu2e {
                     el_AtTracker_z = hdil._hitPoint.getZ();
                     el_AtTracker_LID = 0;
 
+                    GenElHitData& hdil_l = iEltrk.getLastHit();//getHit(0);
+                    el_ExitTracker_px=hdil_l._hitMomentum[0];
+                    el_ExitTracker_py=hdil_l._hitMomentum[1];
+                    el_ExitTracker_pz=hdil_l._hitMomentum[2];
+                    convElLstHitTime=hdil_l._mcHitTime;
+                    el_ExitTracker_rad = sqrt(hdil._hitPoint.getX()*hdil_l._hitPoint.getX()+hdil_l._hitPoint.getY()*hdil_l._hitPoint.getY());
+                    el_ExitTracker_z = hdil_l._hitPoint.getZ();
 
+                    double prevE(0.0), currE(0.0);
+                    double pmas2 = iEltrk.getTrkLrntzVec().invariantMass2();
                     for ( unsigned int iElHit=0; iElHit<iEltrk.getNumOfHit(); iElHit++) {
-                            GenElHitData& genElhit = iEltrk.getHit((int)iElHit);
+                            //GenElHitData& genElhit = iEltrk.getHit((int)iElHit);
+                            GenElHitData& genElhit = iEltrk.getHitTimeOrder((int)iElHit);
                             if (genElhit._isFirst) convElGoodNHit++;
                             if (genElhit._isOverlapped) {
                                     convElHitOvrlppd++;
@@ -297,6 +316,13 @@ namespace mu2e {
                                     signalTimeCoin[iElHit]=genElhit._iHit->time()-convElFHitTime;
                                     lastSignalTimeCoin[iElHit]=signalTimeCoin[iElHit]+genElhit._iHit->dt();
                             }
+                            currE = sqrt( genElhit._hitMomentum.mag2() + pmas2 );
+                            if (iElHit!=0) {
+                                    hitDelaE[iElHit]=currE-prevE;
+                            } else {
+                                    hitDelaE[0]=0.0;
+                            }
+                            prevE = currE;
                     }
                     _hNhitOverlapConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppd);
                     _hNhitOverlapByPConvElEv_nh->Fill(iEltrk.getNumOfHit(),convElHitOvrlppdByP);
