@@ -1,9 +1,9 @@
 //
 // performance evaluation of the Pattern Recognition modules
 //
-// $Id: EvalPatternRecognition_module.cc,v 1.3 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: EvalPatternRecognition_module.cc,v 1.4 2013/04/03 22:13:11 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/04/03 22:13:11 $
 //
 // Original author G. Tassielli
 //
@@ -40,21 +40,9 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-//#include "TrackerGeom/inc/Tracker.hh"
-//#include "TrackerGeom/inc/Straw.hh"
-//#include "ITrackerGeom/inc/Cell.hh"
-//#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-//#include "MCDataProducts/inc/GenParticleCollection.hh"
-//#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
-//#include "MCDataProducts/inc/SimParticleCollection.hh"
-//#include "MCDataProducts/inc/StepPointMCCollection.hh"
-//#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-//#include "ITrackerGeom/inc/ITracker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-//#include "FastPatternReco/inc/TTHitPerTrackData.hh"
-//#include "FastPatternReco/inc/GenTrackData.hh"
-//#include "MCDataProducts/inc/GenId.hh"
+#include "ITrackerGeom/inc/ITracker.hh"
 #include "MCDataProducts/inc/VisibleGenElTrack.hh"
 #include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeCluster.hh"
@@ -62,6 +50,9 @@
 #include "RecoDataProducts/inc/SectorStationCluster.hh"
 #include "RecoDataProducts/inc/TrackSeed.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
+// conditions
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/TrackerCalibrationsI.hh"
 
 // Root includes.
 #include "TApplication.h"
@@ -70,21 +61,12 @@
 #include "TMath.h"
 #include "TH1F.h"
 #include "TH2F.h"
-//#include "TClonesArray.h"
-//#include "TObjArray.h"
-//#include "TLine.h"
-//#include "TArrow.h"
-//#include "TEllipse.h"
-//#include "TMarker.h"
-//#include "TBox.h"
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TF1.h"
-//#include "TSpectrum.h"
-//#include "TLatex.h"
 #include "TTree.h"
 
-using namespace std;
+#define invSqrt12 0.2886751345948129
 
 namespace mu2e {
 
@@ -128,6 +110,7 @@ namespace mu2e {
 
     // Label of the module that made the hits.
     std::string _timeRejecterModuleLabel;
+    float _nsigmaForTimeSel;
 
     // Label of the module that made the hits.
     std::string _patternRecoModuleLabel;
@@ -143,6 +126,12 @@ namespace mu2e {
     TH1F*         _hNhitBestTimePeakEv;
     TH2F*         _hLostHitBstTmPkEv;
     TH1F*         _hNoiseHitBstTmPkEv;
+    TH1F*         _hT0resBstTmPkEv;
+    TH1F*         _hT0pullBstTmPkEv;
+    TH1F*         _hT0res1BstTmPkEv;
+    TH1F*         _hT0pull1BstTmPkEv;
+    TH1F*         _hT0resAveBstTmPkEv;
+    TH1F*         _hT0pullAveBstTmPkEv;
 
     bool          _evalPRSel;
     TH1F*         _hNBestSeedInTmPkEv;
@@ -157,6 +146,7 @@ namespace mu2e {
     float         sel_pt, sel_omega, sel_omega_start, sel_omega_end, sel_tanDip, sel_tanDip_start, sel_tanDip_end, convElFHitTime;
     float         sel_d0, sel_phi0, sel_z0;
     int           bestTPcElNHit, bestTPNHit, nPeaksFound;
+    float         bestTPcMinTime, bestTPcMeanTime, bestTPcSigmaTime, bestTPcNominalTimeWdt;
     int           bestSeed_idx, bestSeedcElNHit, bestSeedNHit, nPotentTracks;
     float         bestSeed_omega, bestSeed_tanDip, bestSeed_d0, bestSeed_phi0, bestSeed_z0, bestSeed_T0;
 
@@ -173,13 +163,14 @@ namespace mu2e {
   EvalPatternRecognition::EvalPatternRecognition(fhicl::ParameterSet const& pset) :
 
     // Run time parameters
-    _makerModuleLabel(pset.get<string>("makerModuleLabel")),
-    _extractElectronsData(pset.get<string>("elextractModuleLabel")),
-    _timeRejecterModuleLabel(pset.get<string>("tRejecterModuleLabel","off")),
-    _patternRecoModuleLabel(pset.get<string>("patternRecoModuleLabel","off")),
-//    _moduleLabel(pset.get<string>("module_label")),/*@module_label*/
-//    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
-//    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+    _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
+    _extractElectronsData(pset.get<std::string>("elextractModuleLabel")),
+    _timeRejecterModuleLabel(pset.get<std::string>("tRejecterModuleLabel","off")),
+    _nsigmaForTimeSel(pset.get<float>("nsigmaForTimeSel")),
+    _patternRecoModuleLabel(pset.get<std::string>("patternRecoModuleLabel","off")),
+//    _moduleLabel(pset.get<std::string>("module_label")),/*@module_label*/
+//    _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
+//    _trackerStepPoints(pset.get<std::string>("trackerStepPoints","tracker")),
 //    _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
 
 //    _fakeCanvas(0),
@@ -189,6 +180,12 @@ namespace mu2e {
     _hNhitBestTimePeakEv(0),
     _hLostHitBstTmPkEv(0),
     _hNoiseHitBstTmPkEv(0),
+    _hT0resBstTmPkEv(0),
+    _hT0pullBstTmPkEv(0),
+    _hT0res1BstTmPkEv(0),
+    _hT0pull1BstTmPkEv(0),
+    _hT0resAveBstTmPkEv(0),
+    _hT0pullAveBstTmPkEv(0),
 
     _hNBestSeedInTmPkEv(0),
     _hSGSeedHitInBstTmPkEv(0),
@@ -205,6 +202,7 @@ namespace mu2e {
           sel_omega=sel_omega_start=sel_omega_end=sel_tanDip=sel_tanDip_start=sel_tanDip_end=convElFHitTime=0.0;
           sel_d0=sel_phi0=sel_z0=0.0;
           bestTPcElNHit=bestTPNHit=nPeaksFound=0;
+          bestTPcMinTime=bestTPcMeanTime=bestTPcSigmaTime=bestTPcNominalTimeWdt=0.0;
           bestSeed_idx=-1;
           bestSeedcElNHit=bestSeedNHit=nPotentTracks=0;
           bestSeed_omega=bestSeed_tanDip=bestSeed_d0=bestSeed_phi0=bestSeed_z0=bestSeed_T0=0.0;
@@ -212,12 +210,12 @@ namespace mu2e {
           else { _evalTimeSel=true; }
           if (_patternRecoModuleLabel.compare("off")==0) { _evalPRSel=false; }
           else { _evalPRSel=true; }
-          cout<<"_evalTimeSel "<<_evalTimeSel<<" _evalPRSel "<<_evalPRSel<<endl;
+          std::cout<<"_evalTimeSel "<<_evalTimeSel<<" _evalPRSel "<<_evalPRSel<<std::endl;
  }
 
   void EvalPatternRecognition::beginJob(){
 
-          cout<<"Starting EvalPatternRecognition jos!"<<endl;
+          std::cout<<"Starting EvalPatternRecognition jos!"<<std::endl;
 
           // Get access to the TFile service and save current directory for later use.
           art::ServiceHandle<art::TFileService> tfs;
@@ -240,6 +238,12 @@ namespace mu2e {
                   _hNhitBestTimePeakEv = tfs->make<TH1F>( "hNhitBestTimePeakEv",   "N of hits of the signal electrons track that are found in the best time peak", 111, 49.75, 105.25  );
                   _hLostHitBstTmPkEv   = tfs->make<TH2F>( "hLostHitBstTmPkEv",   "N of lost hits of the signal electrons track that in the best time peak", 111, 49.75, 105.25, 200, 0, 200  );
                   _hNoiseHitBstTmPkEv  = tfs->make<TH1F>( "hNoiseHitBstTmPkEv",   "N of hits of noise present in the the best time peak over signal electrons track hits", 111, 49.75, 105.25  );
+                  _hT0resBstTmPkEv     = tfs->make<TH1F>( "hT0resBstTmPkEv",   "T0 resolution by using the peak time of the best time peak over signal electrons track hits", 400, -40, 40  );
+                  _hT0pullBstTmPkEv    = tfs->make<TH1F>( "hT0pullBstTmPkEv",   "T0 pull by using the peak time of the best time peak over signal electrons track hits", 120, -6, 6  );
+                  _hT0res1BstTmPkEv     = tfs->make<TH1F>( "hT0res1BstTmPkEv",   "T0 resolution by using a correction to the peak time of the best time peak over signal electrons track hits", 400, -40, 40  );
+                  _hT0pull1BstTmPkEv    = tfs->make<TH1F>( "hT0pull1BstTmPkEv",   "T0 pull by using a correction to the peak time of the best time peak over signal electrons track hits", 120, -6, 6  );
+                  _hT0resAveBstTmPkEv     = tfs->make<TH1F>( "hT0resAveBstTmPkEv",   "T0 resolution by averaging the two measure from the best time peak over signal electrons track hits", 400, -40, 40  );
+                  _hT0pullAveBstTmPkEv    = tfs->make<TH1F>( "hT0pullAveBstTmPkEv",   "T0 pull by averaging the two measure from the best time peak over signal electrons track hits", 120, -6, 6  );
 
                   _hNtrackableEv      ->SetXTitle("pt [MeV]");
                   _hNhitTrackableEv   ->SetXTitle("pt [MeV]");
@@ -247,6 +251,12 @@ namespace mu2e {
                   _hNhitBestTimePeakEv->SetXTitle("pt [MeV]");
                   _hLostHitBstTmPkEv  ->SetXTitle("pt [MeV]");
                   _hNoiseHitBstTmPkEv ->SetXTitle("pt [MeV]");
+                  _hT0resBstTmPkEv    ->SetXTitle("ns");
+                  //_hT0pullBstTmPkEv
+                  _hT0res1BstTmPkEv   ->SetXTitle("ns");
+                  //_hT0pull1BstTmPkEv
+                  _hT0resAveBstTmPkEv   ->SetXTitle("ns");
+                  //_hT0pullAveBstTmPkEv
           }
 
           if(_evalPRSel) {
@@ -285,6 +295,10 @@ namespace mu2e {
                   _dataEvalPR->Branch("BestTPcElNHit",&bestTPcElNHit,"bestTPcElNHit/I");
                   _dataEvalPR->Branch("BestTPNHit",&bestTPNHit,"bestTPNHit/I");
                   _dataEvalPR->Branch("TotNPeaksFound",&nPeaksFound,"nPeaksFound/I");
+                  _dataEvalPR->Branch("BestTPcMinTime",&bestTPcMinTime,"bestTPcMinTime/F");
+                  _dataEvalPR->Branch("BestTPcMeanTime",&bestTPcMeanTime,"bestTPcMeanTime/F");
+                  _dataEvalPR->Branch("BestTPcSigmaTime",&bestTPcSigmaTime,"bestTPcSigmaTime/F");
+                  _dataEvalPR->Branch("BestTPcNominalTimeWdt",&bestTPcNominalTimeWdt,"bestTPcNominalTimeWdt/F");
           }
           if (_evalPRSel) {
                   _dataEvalPR->Branch("BestSeed_Idxt",&bestSeed_idx,"bestSeed_idx/I");
@@ -337,9 +351,37 @@ namespace mu2e {
 
     std::vector<mu2e::VisibleGenElTrack>::const_iterator genEltrk_it;
 
-    cout<<"--------------------------- Analysis ---------------------------"<<endl;
-    cout<<"Event: "<<event.id().event()<<endl;
-    cout<<"----------------------------------------------------------------"<<endl;
+    double intTimeWind(0.0);
+    ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    D2T d2t;
+    static CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
+    StrawIndex fakeSInd(0);
+    CellGeometryHandle *itwp=0x0;
+
+    art::ServiceHandle<mu2e::GeometryService> geom;
+    const Tracker& tracker = getTrackerOrThrow();
+    if(geom->hasElement<mu2e::TTracker>()) {
+            const TTracker &ttr = static_cast<const TTracker&>( tracker );
+            tcal->DistanceToTime(fakeSInd,0.5*ttr.strawRadius(),zdir,d2t);
+            intTimeWind = d2t._tdrift;
+    } else if(geom->hasElement<mu2e::ITracker>()) {
+            const ITracker &itr = static_cast<const ITracker&>( tracker );
+            itwp = itr.getCellGeometryHandle();
+            itwp->SelectCell(0,0,0);
+            tcal->DistanceToTime(fakeSInd,0.5*itwp->GetCellInsideRad(),zdir,d2t);
+            intTimeWind += d2t._tdrift;
+            itwp->SelectCell(itr.nSuperLayers()-1,0,0);
+            tcal->DistanceToTime(fakeSInd,0.5*itwp->GetCellInsideRad(),zdir,d2t);
+            intTimeWind += d2t._tdrift;
+            intTimeWind *= 0.5;
+    }
+    intTimeWind = intTimeWind+20;   //to invert the time integration window that was the average max drift time + max TOF of a signal electron
+    intTimeWind*=0.5;
+    //intTimeWind+= 20.0;
+
+    std::cout<<"--------------------------- Analysis ---------------------------"<<std::endl;
+    std::cout<<"Event: "<<event.id().event()<<std::endl;
+    std::cout<<"----------------------------------------------------------------"<<std::endl;
 
     StrawId sid;
     bool goodEvent=false;
@@ -365,21 +407,21 @@ namespace mu2e {
     for ( genEltrk_it = genEltrks->begin(); genEltrk_it!= genEltrks->end(); ++genEltrk_it ){
             VisibleGenElTrack &iEltrk = const_cast<VisibleGenElTrack &>(*genEltrk_it);
             unsigned short &nloops = iEltrk.getNumOfLoops();
-            cout<<"N loops "<<nloops<<endl;
+            std::cout<<"N loops "<<nloops<<std::endl;
             /*for ( unsigned int ilp=0; ilp<nloops; ilp++ ){
                     GenElHitData& hdil = iEltrk.getithLoopHit(ilp);
                     pt = sqrt( pow(hdil._hitMomentum[0],2) + pow(hdil._hitMomentum[1],2) );
                     rho   = pt/(B*0.3);
                     omega = 1.0/rho;
                     //iEltrk.
-                    cout<<ilp<<" -th loop: p_t "<<pt<<" rho mm "<<rho<<endl;
+                    std::cout<<ilp<<" -th loop: p_t "<<pt<<" rho mm "<<rho<<std::endl;
                     CirCenter.set(hdil._hitPoint.getX(),hdil._hitPoint.getY(),hdil._hitPoint.getZ());
                     radDir.setX(hdil._hitMomentum.getX());
                     radDir.setY(hdil._hitMomentum.getY());
                     radDir.rotate( ( (hdil._hitMomentum.getZ()>=0.0) ? 90.0 : -90.0 )*CLHEP::degree ); //only valid for normal direction of CE
                     radDir=radDir.unit();
                     CirCenter=CirCenter+rho*radDir;
-                    cout<<" Hit Pos "<<hdil._hitPoint<<" Circ center "<<CirCenter<<endl;
+                    std::cout<<" Hit Pos "<<hdil._hitPoint<<" Circ center "<<CirCenter<<std::endl;
                     centerDir.set(CirCenter.x(),CirCenter.y());
                     centerDir = centerDir.unit();
                     d0 = CirCenter.rho() - rho;
@@ -395,7 +437,7 @@ namespace mu2e {
 
             if ( iEltrk.isConversionEl() ) {
                     if ( iEltrk.getNumOfHit()>=6 ) {
-                            GenElHitData& hdil = iEltrk.getithLoopHit(0);
+                            GenElHitData& hdil = iEltrk.getFirstHit();//getithLoopHit(0);
                             convElFHitTime = hdil._mcHitTime;
                             if (convElFHitTime>2400.0) goodEvent=false;
                             else {
@@ -411,7 +453,7 @@ namespace mu2e {
                                     radDir.rotate( ( (hdil._hitMomentum.getZ()>=0.0) ? 90.0 : -90.0 )*CLHEP::degree ); //only valid for normal direction of CE
                                     radDir=radDir.unit();
                                     CirCenter=CirCenter+rho*radDir;
-                                    cout<<" Hit Pos "<<hdil._hitPoint<<" Circ center "<<CirCenter<<endl;
+                                    std::cout<<" Hit Pos "<<hdil._hitPoint<<" Circ center "<<CirCenter<<std::endl;
                                     centerDir.set(CirCenter.x(),CirCenter.y());
                                     centerDir = centerDir.unit();
                                     sel_d0 = CirCenter.rho() - rho;
@@ -421,7 +463,7 @@ namespace mu2e {
                                     centerDir.rotate(180.0*CLHEP::degree);
                                     radDir.rotate(180.0*CLHEP::degree);
                                     double phi = centerDir.angle(radDir); //wrong if it will be > pi FIXME
-                                    cout<<"phi first hit "<<phi<<endl;
+                                    std::cout<<"phi first hit "<<phi<<std::endl;
                                     sel_z0 = hdil._hitPoint.getZ();// - rho*phi*sel_tanDip;
 
                                     _hNtrackableEv->Fill(sel_pt);
@@ -443,18 +485,22 @@ namespace mu2e {
                                     _hNhitTrackableEv->Fill(sel_pt,signElGoodHit.size());
                                     //signaLEltrk=&iEltrk;
                             }
+
                     }
+                    //std::cout<<"CE track data:"<<std::endl;
+                    //std::cout<<iEltrk;
             }
-            //cout<<"All track data:"<<endl;
-            //cout<<iEltrk;
+            //std::cout<<"All track data:"<<std::endl;
+            //std::cout<<iEltrk;
 
     }
 
 
     unsigned int elHitFound;
-    std::multimap< unsigned int, size_t, less<unsigned int> > foundElHitInPeak;
-    std::multimap< unsigned int, size_t, less<unsigned int> >::reverse_iterator BestFoundElInPeak_it;
+    std::multimap< unsigned int, size_t, std::less<unsigned int> > foundElHitInPeak;
+    std::multimap< unsigned int, size_t, std::less<unsigned int> >::reverse_iterator BestFoundElInPeak_it;
     std::map<size_t, std::vector<StrawHitPtr> > signElGoodHitsInTmpks;
+    //std::map<size_t, double > signElFHitTimeInTmpks;
 
     //---------------- for time algorithm ----------------
     if (_evalTimeSel) {
@@ -466,7 +512,7 @@ namespace mu2e {
 
                     for (size_t ipeak=0; ipeak<nTimeClusPerEvent; ipeak++) {
                             TrackerHitTimeCluster const&  tclust(tclusts->at(ipeak));
-                            cout<<"\t Hit in peak "<<tclust._selectedTrackerHits.size()<<endl;
+                            std::cout<<"\t Hit in peak "<<tclust._selectedTrackerHits.size()<<std::endl;
 
                             elHitFound=0;
                             std::vector<StrawHitPtr> tmpElHits;
@@ -484,20 +530,21 @@ namespace mu2e {
                                             }
                                     }
 
-                                    //                //                cout<<"\t\t iHit in peak at "<<*iTCHit<<endl;
+                                    //                //                std::cout<<"\t\t iHit in peak at "<<*iTCHit<<std::endl;
                                     //                //StrawHit        const&      hit(hits->at(*iTCHit));
                                     //                StrawHit        const&      hit=*(*iTCHit);
                                     //                StrawIndex si = hit.strawIndex();
                                     //                const Straw & str = tracker.getStraw(si);
                                     //
-                                    //                // cout << "Getting informations about cells" << endl;
+                                    //                // std::cout << "Getting informations about cells" <<std::endl;
                                     //
                                     //                sid = str.id();
                             }
 
                             if ( elHitFound>0 ) {
-                                    foundElHitInPeak.insert( pair<unsigned int, size_t> (elHitFound,ipeak) );
-                                    signElGoodHitsInTmpks.insert( pair< size_t, std::vector<StrawHitPtr> > (ipeak,tmpElHits) );
+                                    foundElHitInPeak.insert( std::pair<unsigned int, size_t> (elHitFound,ipeak) );
+                                    signElGoodHitsInTmpks.insert( std::pair< size_t, std::vector<StrawHitPtr> > (ipeak,tmpElHits) );
+                                    //signElFHitTimeInTmpks.insert( std::pair< size_t, double > (ipeak,) );
                             }
                     }
 
@@ -505,17 +552,39 @@ namespace mu2e {
                             _hNBestTimePeakEv->Fill(sel_pt);
                             BestFoundElInPeak_it=foundElHitInPeak.rbegin();
                             bestTPcElNHit=BestFoundElInPeak_it->first;
-                            bestTPNHit=tclusts->at(BestFoundElInPeak_it->second)._selectedTrackerHits.size();
+                            TrackerHitTimeCluster const&  tclust(tclusts->at(BestFoundElInPeak_it->second));
+                            bestTPNHit=tclust._selectedTrackerHits.size();
                             _hNhitBestTimePeakEv->Fill(sel_pt,bestTPcElNHit);
                             _hLostHitBstTmPkEv->Fill(sel_pt, (signElGoodHit.size() - bestTPcElNHit) );
                             _hNoiseHitBstTmPkEv->Fill(sel_pt, (bestTPNHit - bestTPcElNHit) );
+                            double t0peak, errt0peak, t0res;
+                            tclust.expectedT0(t0peak,errt0peak);
+                            t0res =  t0peak - convElFHitTime;
+                            _hT0resBstTmPkEv->Fill(t0res);
+                            _hT0pullBstTmPkEv->Fill(t0res/errt0peak);
+
+                            tclust.expectedT0(t0peak,errt0peak,1);
+                            t0res =  t0peak - convElFHitTime;
+                            _hT0resAveBstTmPkEv->Fill(t0res);
+                            _hT0pullAveBstTmPkEv->Fill(t0res/errt0peak); //propagated sigma between sigma and 0.6*sigma
+
+                            tclust.expectedT0(t0peak,errt0peak,2);
+                            t0res =  t0peak - convElFHitTime;
+                            _hT0res1BstTmPkEv->Fill(t0res);
+                            _hT0pull1BstTmPkEv->Fill(t0res/errt0peak); //the variance of half gaussian is approximately equal to 0.6*sigma
+
+                            bestTPcMinTime=tclust._minHitTime;
+                            bestTPcMeanTime=tclust._meanTime;
+                            bestTPcSigmaTime=tclust._sigma;
+                            bestTPcNominalTimeWdt=tclust._nominalWidth;
+                            //if (fabs(t0res)>10) std::cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! worng t peak res "<<t0res<<std::endl;
                     }
             }
     }
 
     //---------------- for PR algorithm ----------------
     if (_evalPRSel) {
-            cout<<"N of Ttracker seeds found: "<<tracksSeed->size()<<endl;
+            std::cout<<"N of Ttracker seeds found: "<<tracksSeed->size()<<std::endl;
             nPotentTracks=tracksSeed->size();
 
             TrackSeedCollection::const_iterator tracksSeed_it;
@@ -523,8 +592,8 @@ namespace mu2e {
 
             //_hSGSeedHitInBstTmPkEv
 
-            std::multimap< unsigned int, int, less<unsigned int> > foundElHitSeed;
-            std::multimap< unsigned int, int, less<unsigned int> >::reverse_iterator BestFoundElInSeed_it;
+            std::multimap< unsigned int, int, std::less<unsigned int> > foundElHitSeed;
+            std::multimap< unsigned int, int, std::less<unsigned int> >::reverse_iterator BestFoundElInSeed_it;
             //std::map< int, unsigned int > foundElSeedHit;
             std::map<int, std::vector<StrawHitPtr> > signElGoodHitsInSeeds;
             std::map<int, std::vector<StrawHitPtr> >::iterator sgnElGdHtsInSeeds_it;
@@ -534,7 +603,7 @@ namespace mu2e {
             if (goodEvent && !foundElHitInPeak.empty()) {
 
                     for ( tracksSeed_it=tracksSeed->begin(); tracksSeed_it!=tracksSeed->end(); ++tracksSeed_it ) {
-                            cout<<"i-th seed :"<<iseed<<" : "<<endl<<*tracksSeed_it;
+                            std::cout<<"i-th seed :"<<iseed<<" : "<<std::endl<<*tracksSeed_it;
 
                             elHitFound=0;
                             std::vector<StrawHitPtr> tmpElHits;
@@ -547,7 +616,7 @@ namespace mu2e {
                                             //iHitInSeed++;
                                             for ( std::vector<StrawHitPtr>::iterator iGeTpHit_it=signElGoodHitsInTmpks[BestFoundElInPeak_it->second].begin(); iGeTpHit_it!=signElGoodHitsInTmpks[BestFoundElInPeak_it->second].end(); ++iGeTpHit_it ) {
                                                     //for ( std::vector<StrawHitPtr>::iterator iGoodSelHit_it=signElGoodHit.begin(); iGoodSelHit_it!=signElGoodHit.end(); ++iGoodSelHit_it ) {
-                                                    //cout<<"Check in Cl "<<iSeed<<" i-th hit "<<iHitInSeed<<" with key "<<iSeedHit_it->key()<<" vs "<<iGeTpHit_it->key()/*iGoodSelHit_it->key()*/<<endl;
+                                                    //std::cout<<"Check in Cl "<<iSeed<<" i-th hit "<<iHitInSeed<<" with key "<<iSeedHit_it->key()<<" vs "<<iGeTpHit_it->key()/*iGoodSelHit_it->key()*/<<std::endl;
                                                     if ( iSeedHit_it->key()==iGeTpHit_it->key() ) {
                                                             //if ( iSeedHit_it->key()==iGoodSelHit_it->key() ) {
                                                             elHitFound++;
@@ -558,17 +627,17 @@ namespace mu2e {
                                             }
                                     }
 
-                                    cout<<"Seed elHitFound "<<elHitFound<<endl;
+                                    std::cout<<"Seed elHitFound "<<elHitFound<<std::endl;
                                     if ( elHitFound>0 ) {
-                                            cout<<"------------ el trk found "<<endl;
-                                            foundElHitSeed.insert( pair<unsigned int, int> (elHitFound,iseed) );
+                                            std::cout<<"------------ el trk found "<<std::endl;
+                                            foundElHitSeed.insert( std::pair<unsigned int, int> (elHitFound,iseed) );
                                             sgnElGdHtsInSeeds_it=signElGoodHitsInSeeds.find(iseed);
-                                            //foundElSeedHit.insert( pair<int,unsigned int> (iseed,sSeedTotalHit) );
-                                            if ( sgnElGdHtsInSeeds_it==signElGoodHitsInSeeds.end() ) signElGoodHitsInSeeds.insert( pair< int, std::vector<StrawHitPtr> > (iseed,tmpElHits) );
+                                            //foundElSeedHit.insert( std::pair<int,unsigned int> (iseed,sSeedTotalHit) );
+                                            if ( sgnElGdHtsInSeeds_it==signElGoodHitsInSeeds.end() ) signElGoodHitsInSeeds.insert( std::pair< int, std::vector<StrawHitPtr> > (iseed,tmpElHits) );
                                             else if ( elHitFound>sgnElGdHtsInSeeds_it->second.size() ) {
-                                                    cout<<"------------ removing previous el trk found "<<endl;
+                                                    std::cout<<"------------ removing previous el trk found "<<std::endl;
                                                     signElGoodHitsInSeeds.erase(sgnElGdHtsInSeeds_it);
-                                                    signElGoodHitsInSeeds.insert( pair< int, std::vector<StrawHitPtr> > (iseed,tmpElHits) );
+                                                    signElGoodHitsInSeeds.insert( std::pair< int, std::vector<StrawHitPtr> > (iseed,tmpElHits) );
                                             }
                                     }
                             }
@@ -577,7 +646,7 @@ namespace mu2e {
                     }
                     //bestSeed_omega, bestSeed_tanDip, bestSeed_d0, bestSeed_phi0, bestSeed_z0, bestSeed_T0;
                     if ( !foundElHitSeed.empty() ) {
-                            cout<<"------------ histogramming"<<endl;
+                            std::cout<<"------------ histogramming"<<std::endl;
                             _hNBestSeedInTmPkEv->Fill(sel_pt);
                             BestFoundElInSeed_it=foundElHitSeed.rbegin();
                             bestSeedcElNHit=BestFoundElInSeed_it->first;
@@ -592,11 +661,11 @@ namespace mu2e {
                             bestSeed_z0 = bestSeed.z0();
                             bestSeed_T0 = bestSeed.t0();
 
-                            cout<<"--- convElNHit "<<convElNHit<<" bestTPcElNHit "<<bestTPcElNHit<<" bestSeedcElNHit "<<bestSeedcElNHit<<endl;
-                            //cout<<"---  bestSeedNHit "<<foundElSeedHit.find(BestFoundElInSeed_it->second)->second<<" = "<<bestSeedNHit<<endl;
+                            std::cout<<"--- convElNHit "<<convElNHit<<" bestTPcElNHit "<<bestTPcElNHit<<" bestSeedcElNHit "<<bestSeedcElNHit<<std::endl;
+                            //std::cout<<"---  bestSeedNHit "<<foundElSeedHit.find(BestFoundElInSeed_it->second)->second<<" = "<<bestSeedNHit<<std::endl;
                             _hSGSeedHitInBstTmPkEv->Fill(sel_pt,bestSeedcElNHit);
                             _hLostHitBstSGSeedBstTmPkEv->Fill(sel_pt, (BestFoundElInPeak_it->first - bestSeedcElNHit) );
-                            cout<<"---     !!!!!!!!!  "<<sel_pt<<" - "<<BestFoundElInPeak_it->first<<" - "<<bestSeedcElNHit<<endl;
+                            std::cout<<"---     !!!!!!!!!  "<<sel_pt<<" - "<<BestFoundElInPeak_it->first<<" - "<<bestSeedcElNHit<<std::endl;
                             _hLostHitBstSGSeedEv->Fill(sel_pt, (signElGoodHit.size() - bestSeedcElNHit) );
                             _hNoiseHitBstSGSeedEv->Fill(sel_pt, (bestSeedNHit - bestSeedcElNHit) );
                             _hNLoopResBstSGSeedEv->Fill(sel_pt, (convElNLoop - bestSeed.nLoops() ) );
@@ -617,9 +686,9 @@ namespace mu2e {
 //    cerr << endl;
 //    delete printEvN;
 
-    cout<<"--------------------------- End of Analysis --------------------"<<endl;
-    cout<<"Event: "<<event.id().event()<<endl;
-    cout<<"----------------------------------------------------------------"<<endl;
+    std::cout<<"--------------------------- End of Analysis --------------------"<<std::endl;
+    std::cout<<"Event: "<<event.id().event()<<std::endl;
+    std::cout<<"----------------------------------------------------------------"<<std::endl;
 
 
   } // end analyze
