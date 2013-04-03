@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on time peak analysis
 //
-// $Id: BkgTrackRejecterByTime_module.cc,v 1.14 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: BkgTrackRejecterByTime_module.cc,v 1.15 2013/04/03 22:16:24 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/04/03 22:16:24 $
 //
 // Original author G. Tassielli
 //
@@ -30,6 +30,9 @@
 #include "RecoDataProducts/inc/TrackerHitTimeCluster.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
 #include "SeedService/inc/SeedService.hh"
+// conditions
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/TrackerCalibrationsI.hh"
 
 // From art and its toolchain.
 #include "art/Framework/Core/EDProducer.h"
@@ -82,6 +85,7 @@
 #include <utility>
 #include <limits>
 #include <ctime>
+#include <algorithm>
 
 //using namespace std;
 //using art::Event;
@@ -139,6 +143,9 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
     float _nsigmaForTimeSel;
     bool  _useSigmaForTimeSel;
 
+    // criteria of merging for close peaks
+    float _ratioSharedPnts;
+
     // Use efficincy value to simulate the proton rejection by ADC value
     float _protonRejecEff;
     float _pulseCut;
@@ -156,9 +163,6 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
 
     // Label of the module that made the hits.
     std::string _extractElectronsData;
-
-    // drift vevocity
-    double _driftVelocity;
 
 //    // Number of events to accumulate between prompts.
 //    int _nAccumulate;
@@ -196,6 +200,8 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
     int   ntimeBin;
     float maxTimeHist; //ns
     float timeBinDim;  //ns
+    float halfTimeBinDim;  //ns
+    float quarterTimeBinDim;  //ns
 
     // Random number distributions.
     //std::unique_ptr<CLHEP::RandFlat>    _randFlat;
@@ -204,6 +210,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
     void smooth(TH1F *tmpHhitTime, TH1F *tmpHhitClustTime, float integrWindow );
     int  peakFinder(TH1F *tmpHhitTime, TH1F *tmpHhitClustTime, float &sigmaFitted, double *timepeakPos, double *timepeakHei);
     void extractHitForTimePeak (std::unique_ptr<TrackerHitTimeClusterCollection> &thcc, TH1F *tmpHhitTime, stbrel &timeBin_Straw_rel, int nfound, float integrWindow, float sigmaFitted, double *timepeakPos, double *timepeakHei);
+    bool mergeTimePeak (std::unique_ptr<TrackerHitTimeClusterCollection> &inthcc);
     int  rndup(float n);
 
     // Some ugly but necessary ROOT related bookkeeping:
@@ -224,6 +231,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
     _trackerStepPoints(pset.get<std::string>("trackerStepPoints","tracker")),
     _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
     _nsigmaForTimeSel(pset.get<float>("nsigmaForTimeSel")),
+    _ratioSharedPnts(pset.get<float>("ratioSharedPnts",0.7)),
     _protonRejecEff(pset.get<float>("protonRejecEff",-1.0)),
     _pulseCut(pset.get<float>("pulseCut",-1.0)),
     _ADCSttnPeriod(pset.get<int>("ADCSttnPeriod",0)),
@@ -232,7 +240,6 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
     _debugLevel(pset.get<int>("debugLevel",0)),
     _doDisplay(pset.get<bool>("doDisplay",false)),
     _extractElectronsData(pset.get<std::string>("elextractModuleLabel","")),
-    _driftVelocity(pset.get<double>("driftVelocity",0.05)),   // mm/ns
 
     // ROOT objects that are the main focus of this example.
     _hMCHitDTime(0),
@@ -269,6 +276,8 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
 //    _application(nullptr),
 //    _directory(0)
   {
+          halfTimeBinDim = timeBinDim*0.5;
+          quarterTimeBinDim = timeBinDim*0.25;
           if (_nsigmaForTimeSel>0.0) _useSigmaForTimeSel=true;
           else _useSigmaForTimeSel=false;
 
@@ -402,7 +411,7 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
 
            //_peaksCanvHistos   = new TObjArray();
 
-            _fakeCanvas = new TCanvas("canvas_Fake","double click for next event",300,100);
+            _fakeCanvas = new TCanvas("canvas_Fake","double click for next event",400,100);
 
     }
 
@@ -459,26 +468,38 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
     float intTimeWind = 0.0;
     bool isBumbbell = false, isITracker = false;
     CellGeometryHandle *itwp=0x0;
+    ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    D2T d2t;
+    static CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
+    StrawIndex fakeSInd(0);
 
     art::ServiceHandle<mu2e::GeometryService> geom;
     const Tracker& tracker = getTrackerOrThrow();
     if(geom->hasElement<mu2e::TTracker>()) {
             const TTracker &ttr = static_cast<const TTracker&>( tracker );
             //const std::vector<Device> ttrdev = ttr.getDevices();
-            intTimeWind = ttr.strawRadius();
+            //intTimeWind = ttr.strawRadius();
+            tcal->DistanceToTime(fakeSInd,0.5*ttr.strawRadius(),zdir,d2t);
+            intTimeWind = d2t._tdrift;
     } else if(geom->hasElement<mu2e::ITracker>()) {
             const ITracker &itr = static_cast<const ITracker&>( tracker );
             itwp = itr.getCellGeometryHandle();
             itwp->SelectCell(0,0,0);
-            intTimeWind += itwp->GetCellRad();
+            //intTimeWind += itwp->GetCellRad();
+            //tcal->DistanceToTime(fakeSInd,0.5*itwp->GetCellRad(),zdir,d2t);
+            tcal->DistanceToTime(fakeSInd,0.5*itwp->GetCellInsideRad(),zdir,d2t);
+            intTimeWind += d2t._tdrift;
             itwp->SelectCell(itr.nSuperLayers()-1,0,0);
+            //intTimeWind += itwp->GetCellRad();
+            //tcal->DistanceToTime(fakeSInd,0.5*itwp->GetCellRad(),zdir,d2t);
+            tcal->DistanceToTime(fakeSInd,0.5*itwp->GetCellInsideRad(),zdir,d2t);
             intTimeWind += itwp->GetCellRad();
             intTimeWind *= 0.5;
             isITracker = true;
             isBumbbell = itr.isDumbbell();
     }
 
-    intTimeWind = intTimeWind/_driftVelocity + 20.0;   //max drift time + max TOF of a signal electron
+    intTimeWind = intTimeWind + 20.0;   //average max drift time + max TOF of a signal electron
     stbrel timeBin_Straw_rel;
     stbrel timeBin_Straw_UpStrm_rel;
     int tmpiTimeBin;
@@ -671,15 +692,31 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
             if (_debugLevel>0) { std::cout<<"Upstream part found n time peak "<<nfound<<std::endl; }
     }
 
-    event.put(std::move(thcc));
+    std::sort(thcc->begin(),thcc->end());
 
-    delete [] timepeakPos;
-    delete [] timepeakHei;
+    int iPeak(0);
+    if (_debugLevel>0) {
+            std::cout<<"n Peaks "<<thcc->size()<<std::endl;
+            for (TrackerHitTimeClusterCollection::iterator tpeak_it=thcc->begin(); tpeak_it!=thcc->end(); ++tpeak_it ) {
+                    std::cout<<"iPeak "<<iPeak<<" times: "<<tpeak_it->_minHitTime<<" - "<<tpeak_it->_meanTime<<" - "<<tpeak_it->_maxHitTime<<" n hits "<<tpeak_it->_selectedTrackerHits.size()<<std::endl;
+                    ++iPeak;
+            }
+            std::cout<<"merging"<<std::endl;
+    }
 
-    clock_t stopClock = clock();
-    _hClockCicles->Fill((unsigned long)(stopClock-startClock-clocksForProtonRej));
-    _hExecTime->Fill( (float)(stopClock-startClock-clocksForProtonRej)/((float) CLOCKS_PER_SEC ) );
-    if (_debugLevel>0) { std::cout<<"-------- N clok to analyze 1 ev by BkgTrackRejecterByTime "<<stopClock-startClock-clocksForProtonRej<<" @ "<<CLOCKS_PER_SEC<<std::endl; }
+    int itmegred(0);
+    while(thcc->size()>0 && mergeTimePeak(thcc) && itmegred<20) {
+            ++itmegred;
+    }
+
+    if (_debugLevel>0) {
+            std::cout<<"merged"<<std::endl;
+            iPeak=0;
+            for (TrackerHitTimeClusterCollection::iterator tpeak_it=thcc->begin(); tpeak_it!=thcc->end(); ++tpeak_it ) {
+                    std::cout<<"iPeak "<<iPeak<<" times: "<<tpeak_it->_minHitTime<<" - "<<tpeak_it->_meanTime<<" - "<<tpeak_it->_maxHitTime<<" n hits "<<tpeak_it->_selectedTrackerHits.size()<<std::endl;
+                    ++iPeak;
+            }
+    }
 
     if (_doDisplay) {
 
@@ -719,6 +756,24 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
             _hHitClustTime->Draw();
             _hSelHitClustTime->Draw("same");
 
+            std::vector<TMarker *> finalPeaks;
+            std::vector<TLine *> finalPeaksWdt;
+            iPeak=0;
+            float marekerY(0.0), baseMarkerY(_hHitClustTime->GetMaximum()*0.025);
+            for (TrackerHitTimeClusterCollection::iterator tpeak_it=thcc->begin(); tpeak_it!=thcc->end(); ++tpeak_it ) {
+                    marekerY = baseMarkerY;
+                    if (iPeak%2==0) { marekerY += 3; }
+                    finalPeaks.push_back(new TMarker(tpeak_it->_meanTime, marekerY, 23));
+                    finalPeaks.back()->SetMarkerSize(1.2);
+                    finalPeaks.back()->SetMarkerColor(4);
+                    finalPeaks.back()->Draw();
+                    finalPeaksWdt.push_back(new TLine(tpeak_it->_minHitTime,marekerY,tpeak_it->_maxHitTime,marekerY));
+                    finalPeaksWdt.back()->SetLineColor(4);
+                    finalPeaksWdt.back()->SetLineWidth(1.5);
+                    finalPeaksWdt.back()->Draw();
+                    ++iPeak;
+            }
+
             _canvasPl->Modified();
             _canvasPl->Update();
 
@@ -734,6 +789,11 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
             std::cerr << std::endl;
             delete printEvN;
             //_peaksCanvHistos->Delete();
+
+            for ( size_t iPeak=0; iPeak<finalPeaks.size(); ++iPeak ) {
+                    delete finalPeaks.at(iPeak);
+                    delete finalPeaksWdt.at(iPeak);
+            }
     }
 
 //    _peaksCanvases->Delete();
@@ -742,7 +802,15 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
 
     //-------------------------------------------
 
+    event.put(std::move(thcc));
 
+    delete [] timepeakPos;
+    delete [] timepeakHei;
+
+    clock_t stopClock = clock();
+    _hClockCicles->Fill((unsigned long)(stopClock-startClock-clocksForProtonRej));
+    _hExecTime->Fill( (float)(stopClock-startClock-clocksForProtonRej)/((float) CLOCKS_PER_SEC ) );
+    if (_debugLevel>0) { std::cout<<"-------- N clok to analyze 1 ev by BkgTrackRejecterByTime "<<stopClock-startClock-clocksForProtonRej<<" @ "<<CLOCKS_PER_SEC<<std::endl; }
 
   } // end produce
 
@@ -938,21 +1006,24 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
           delete [] source;
           delete [] dest;
 
-          //    tmpHhitClustTime->Draw();
-          //    if ( noFittingError ) {
-          //            TPolyMarker * pm = new TPolyMarker(nfound, timepeakPos, timepeakHei);
-          //            tmpHhitClustTime->GetListOfFunctions()->Add(pm);
-          //            pm->SetMarkerStyle(23);
-          //            pm->SetMarkerColor(kBlue);
-          //            pm->SetMarkerSize(1);
-          //            tmpHhitClustTime->Draw();
+          //          if (_doDisplay) {
+          //              tmpHhitClustTime->Draw();
+          //              if ( noFittingError ) {
+          //                      TPolyMarker * pm = new TPolyMarker(nfound, timepeakPos, timepeakHei);
+          //                      tmpHhitClustTime->GetListOfFunctions()->Add(pm);
+          //                      pm->SetMarkerStyle(23);
+          //                      pm->SetMarkerColor(kBlue);
+          //                      pm->SetMarkerSize(1);
+          //                      tmpHhitClustTime->Draw();
           //
-          //            tmpPeakFit->SetLineColor(kBlue);
-          //            tmpPeakFit->SetLineStyle(2);
-          //            tmpPeakFit->SetLineWidth(1);
-          //            tmpPeakFit->Draw("SAME L");
-          //    }
-          //    _hSelHitClustTime->Draw("same");
+          //                      tmpPeakFit->SetLineColor(kBlue);
+          //                      tmpPeakFit->SetLineStyle(2);
+          //                      tmpPeakFit->SetLineWidth(1);
+          //                      tmpPeakFit->Draw("SAME L");
+          //              }
+          //              //_hSelHitClustTime->Draw("same");
+          //          }
+          delete tmpPeakFit;
 
           //---------------------------------------- end peak finder -----------------------------
 
@@ -1006,10 +1077,14 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
                   }
 
                   if (_useSigmaForTimeSel){
-                          unsigned int width=rndup(_nsigmaForTimeSel*sigmaFitted);
+                          thcc->back()._sigma = sigmaFitted*timeBinDim;
+                          thcc->back()._nominalWidth = _nsigmaForTimeSel*sigmaFitted;
+                          unsigned int width=rndup(thcc->back()._nominalWidth);
+                          thcc->back()._nominalWidth*=timeBinDim;
                           frstTimeBinInP = timepeakPosId[ipeak]>width ? (timepeakPosId[ipeak] - width) : 0;
                           lastTimeBinInP = timepeakPosId[ipeak] + width;
                  } else {
+                          thcc->back()._nominalWidth = integrWindow;
                           frstTimeBinInP = (timepeakPosId[ipeak] > (((unsigned int) binHalf)+1) ) ? (timepeakPosId[ipeak] - binHalf -1) : 0;
                           lastTimeBinInP = timepeakPosId[ipeak] + binHalf +1;
                   }
@@ -1023,8 +1098,14 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
 //                            ++findFTB;
 //                            stb_it=timeBin_Straw_rel.find(findFTB);
 //                    }
+
                   stbrel::const_iterator stb_it=timeBin_Straw_rel.lower_bound(frstTimeBinInP);
-                  thcc->back()/*at(ipeak)*/._minHitTime=tmpHhitTime->GetBinLowEdge(stb_it->first);//findFTB);
+                  unsigned int findFTB = timeBin_Straw_rel.lower_bound(timepeakPosId[ipeak])->first;
+                  for ( ; findFTB>=stb_it->first; --findFTB) {
+                          if (tmpHhitTime->GetBinContent(findFTB)<1.0) { break; }
+                  }
+                  //thcc->back()/*at(ipeak)*/._minHitTime=tmpHhitTime->GetBinLowEdge(stb_it->first);
+                  thcc->back()/*at(ipeak)*/._minHitTime=tmpHhitTime->GetBinLowEdge(++findFTB)+quarterTimeBinDim;
                   thcc->back()/*at(ipeak)*/._meanTime=timepeakPos[ipeak];
 
                   int hitFoundInPeak=0;
@@ -1067,7 +1148,8 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
                           //ihit=stb_it->second;
                           ++hitFoundInPeak;
 
-                          thcc->back()/*at(ipeak)*/._maxHitTime=tmpHhitTime->GetBinLowEdge(stb_it->first)+timeBinDim;
+                          if (tmpHhitTime->GetBinContent(stb_it->first)<1.0) { break; }
+                          thcc->back()/*at(ipeak)*/._maxHitTime=tmpHhitTime->GetBinLowEdge(stb_it->first)+quarterTimeBinDim;
                           thcc->back()/*at(ipeak)*/._selectedTrackerHits.push_back( stb_it->second );//art::Ptr<StrawHit> ( hits->at(ihit), ihit ) );
 
 //                            StrawHit        const&      hit(hits->at(ihit));
@@ -1219,6 +1301,58 @@ typedef std::multimap<unsigned int, StrawHitPtr, std::less<unsigned int> > stbre
           _hPkSecDist2W->Delete();
           _hPkSecClustDist2W->Delete();
 
+  }
+
+  bool  BkgTrackRejecterByTime::mergeTimePeak (std::unique_ptr<TrackerHitTimeClusterCollection> &inthcc) {
+          TrackerHitTimeClusterCollection::iterator nearTpeak_it;
+          std::vector<TrackerHitTimeClusterCollection::iterator> mergedPeak;
+          //std::vector<size_t> mergedPeakPos;
+          //int iclut1(0), iclust2(0);
+          for (TrackerHitTimeClusterCollection::iterator tpeak_it=inthcc->begin(); tpeak_it<(inthcc->end()-1); ++tpeak_it ) {
+                  nearTpeak_it=tpeak_it;
+                  ++nearTpeak_it;
+                  //iclust2=iclut1+1;
+                  if (tpeak_it->_maxHitTime>nearTpeak_it->_minHitTime) {
+                          size_t frstPeakNHits = tpeak_it->_selectedTrackerHits.size();
+                          size_t scndPeakNHits = nearTpeak_it->_selectedTrackerHits.size();
+                          //size_t maxSize(0);
+                          //maxSize = (frstPeakNHits>scndPeakNHits) ? frstPeakNHits : scndPeakNHits;
+                          std::vector<std::vector<StrawHitPtr>::iterator> commonHitPosScndVec;
+                          for (std::vector<StrawHitPtr>::iterator frstpeakHit_it=tpeak_it->_selectedTrackerHits.begin(); frstpeakHit_it!=tpeak_it->_selectedTrackerHits.end(); ++frstpeakHit_it) {
+                                  for (std::vector<StrawHitPtr>::iterator scndpeakHit_it=nearTpeak_it->_selectedTrackerHits.begin(); scndpeakHit_it!=nearTpeak_it->_selectedTrackerHits.end(); ++scndpeakHit_it) {
+                                          if (frstpeakHit_it->key()==scndpeakHit_it->key()) {
+                                                  commonHitPosScndVec.push_back(scndpeakHit_it);
+                                                  break;
+                                          }
+                                  }
+                          }
+                          //if (commonHitPosScndVec.size() > (maxSize*0.4)) {
+                          if ( commonHitPosScndVec.size() > (frstPeakNHits*_ratioSharedPnts) || commonHitPosScndVec.size() > (scndPeakNHits*_ratioSharedPnts) ) {
+                                  for (std::vector<StrawHitPtr>::iterator scndpeakHit_it=nearTpeak_it->_selectedTrackerHits.begin(); scndpeakHit_it!=nearTpeak_it->_selectedTrackerHits.end(); ++scndpeakHit_it) {
+                                          if (std::find(commonHitPosScndVec.begin(),commonHitPosScndVec.end(),scndpeakHit_it)==commonHitPosScndVec.end()) {
+                                                  tpeak_it->_selectedTrackerHits.push_back(*scndpeakHit_it);
+                                          }
+                                  }
+                                  tpeak_it->_maxHitTime=nearTpeak_it->_maxHitTime;
+                                  tpeak_it->_meanTime *= ((double)frstPeakNHits);
+                                  scndPeakNHits-=commonHitPosScndVec.size();
+                                  tpeak_it->_meanTime += nearTpeak_it->_meanTime * ((double)scndPeakNHits);
+                                  tpeak_it->_meanTime /= ( (double)(frstPeakNHits+scndPeakNHits) );
+                                  mergedPeak.push_back(nearTpeak_it);
+                                  //mergedPeakPos.push_back(iclust2);
+                                  ++tpeak_it;
+                                  //++iclut1;
+                          }
+                  }
+                  //++iclut1;
+          }
+          if (mergedPeak.size()>0) {
+                  for (std::vector<TrackerHitTimeClusterCollection::iterator>::reverse_iterator removepkit_it = mergedPeak.rbegin(); removepkit_it != mergedPeak.rend(); ++removepkit_it){
+                          inthcc->erase(*removepkit_it);
+                  }
+                  return true;
+          }
+          return false;
   }
 
   int BkgTrackRejecterByTime::rndup(float n)//round up a float type and show one decimal place
