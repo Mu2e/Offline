@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.23 2013/01/26 18:19:58 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2013/01/26 18:19:58 $
+// $Id: TrkStrawHit.cc,v 1.24 2013/04/03 22:01:38 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2013/04/03 22:01:38 $
 //
 // Original author David Brown, LBNL
 //
@@ -220,10 +220,11 @@ namespace mu2e
   TrkStrawHit::wallPath(double pdist,Hep3Vector const& tdir) const {
     double thick = straw().getThickness();
     double radius = straw().getRadius();
-    if(pdist>=radius)
-      pdist = 0.96*radius;
-    double wallpath =  (sqrt( (radius+thick+pdist)*(radius+thick-pdist) ) -
-      sqrt( (radius+pdist)*(radius-pdist) ));
+    double inRadius = radius-thick;
+    if(pdist>=inRadius)
+      pdist = 0.96*inRadius;
+    double wallpath =  (sqrt( (radius+pdist)*(radius-pdist) ) -
+      sqrt( (inRadius+pdist)*(inRadius-pdist) ));
   // scale for the other dimension
     double cost = tdir.dot(_straw.getDirection());
     if(fabs(cost)<0.999)
@@ -243,7 +244,9 @@ namespace mu2e
   // compute the pathlength through half the gas , given the drift distance and straw geometry
   double
   TrkStrawHit::gasPath(double pdist,Hep3Vector const& tdir) const {
+    double thick = straw().getThickness();
     double radius = straw().getRadius();
+    radius-=thick;
     double hlen = straw().getHalfLength();
     if(pdist>=radius)
       pdist = 0.96*radius;
