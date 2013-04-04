@@ -1,13 +1,27 @@
-  $Id: v3_0_1.txt,v 1.18 2013/04/02 03:00:38 ehrlich Exp $
-  $Author: ehrlich $
-  $Date: 2013/04/02 03:00:38 $
+  $Id: v3_0_1.txt,v 1.19 2013/04/04 20:17:02 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2013/04/04 20:17:02 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+20) April 4, 2013 kutschke
+    BaBar/status.sh
+      - Add the -u option.  Previously this script only looked for local
+        changes. Now it looks for files that are out of date wrt the repository.
+
+    BaBar/update.sh
+      - Add an option to pass a revision number in as an argument.
+
+    setup.sh
+      - If BaBar code is present, do an svn update with a the required version number.
+        This is done everytime that you source setup.sh and is a little slow.
+        We will learn to check first to see the update is necessary.
+
 19) April 1, 2013 ehrlich
     EventDisplay/src/DataInterface.cc
-    Get the DS information from the DetectorSolenoid class 
+    Get the DS information from the DetectorSolenoid class
     instead of the geometry text file.
 
 18) March 29, 2013 genser
@@ -17,11 +31,11 @@
 
 17) March 29, 2013 gandr
     An arbitrary set of logical volumes can be made sensitive via fcl.
-    
+
 16) March 28, 2013 gandr
     Implement Rob's todo #3 in SensitiveDetectorHelper: make possible to
     selectively enable sensitive detectors via fcl configuration.
-    
+
 15) March 28, 2013 knoepfel
     InternalNeutronAbsorber geometry object added, plus corresponding
     constructInternalNeutronAbsorber.* files in Mu2eG4.  This serves
