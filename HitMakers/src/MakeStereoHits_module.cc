@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.5 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: MakeStereoHits_module.cc,v 1.6 2013/04/04 01:08:51 brownd Exp $
+// $Author: brownd $
+// $Date: 2013/04/04 01:08:51 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -103,7 +103,11 @@ namespace mu2e {
     unique_ptr<StrawHitPositionCollection> shpos(new StrawHitPositionCollection);
     shpos->reserve(2*nsh);
     for(size_t ish=0;ish<nsh;++ish){
-      shpos->push_back(StrawHitPosition(strawhits->at(ish),tracker,tcal));
+      StrawHit const& hit = strawhits->at(ish);
+      Straw const& straw = tracker.getStraw(hit.strawIndex());
+      SHInfo shinfo;
+      tcal->StrawHitInfo(straw,hit,shinfo);
+      shpos->push_back(StrawHitPosition(hit,straw,shinfo));
     }
     // create the stereo hits
     StereoHitCollection stereohits;
