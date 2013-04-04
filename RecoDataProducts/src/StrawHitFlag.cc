@@ -1,9 +1,9 @@
 //
 // Class to describe flag bits used for straw hits
 //
-// $Id: StrawHitFlag.cc,v 1.3 2013/03/08 04:29:49 brownd Exp $
+// $Id: StrawHitFlag.cc,v 1.4 2013/04/04 01:08:20 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/03/08 04:29:49 $
+// $Date: 2013/04/04 01:08:20 $
 //
 // Original author David Brown
 //
@@ -27,6 +27,7 @@ namespace mu2e {
       bitnames[std::string("Stereo")]               = bit_to_mask(stereo);
       bitnames[std::string("EnergySelection")]      = bit_to_mask(energysel);
       bitnames[std::string("RadiusSelection")]      = bit_to_mask(radsel);
+      bitnames[std::string("TimeSelection")]	    = bit_to_mask(timesel);
       bitnames[std::string("DeltaRay")]             = bit_to_mask(delta);
       bitnames[std::string("Isolated")]             = bit_to_mask(isolated);
       bitnames[std::string("Outlier")]              = bit_to_mask(outlier);
