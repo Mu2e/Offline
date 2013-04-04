@@ -2,9 +2,9 @@
 #
 # Check the status of packages of interest
 #
-# $Id: status.sh,v 1.3 2012/08/02 15:10:14 greenc Exp $
-# $Date: 2012/08/02 15:10:14 $
-# $Author: greenc $
+# $Id: status.sh,v 1.4 2013/04/04 19:42:15 kutschke Exp $
+# $Date: 2013/04/04 19:42:15 $
+# $Author: kutschke $
 #
 # Contact person Rob Kutschke
 #
@@ -18,5 +18,5 @@ list="BaBar BbrGeom BField CLHEP DetectorModel KalmanTrack MatEnv ProbTools Traj
 for package in ${list}
 do
   echo "Checking status of: " ${package}
-  svn status BaBar/${package}
+  svn status -u BaBar/${package}
 done
