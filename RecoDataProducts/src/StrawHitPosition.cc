@@ -1,9 +1,9 @@
 //
 // Class to describe derived information from a StrawHit, in particular position.
 // 
-// $Id: StrawHitPosition.cc,v 1.3 2013/03/19 23:42:17 brownd Exp $
+// $Id: StrawHitPosition.cc,v 1.4 2013/04/04 01:08:01 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/03/19 23:42:17 $
+// $Date: 2013/04/04 01:08:01 $
 //
 // Original author David Brown
 //
@@ -16,13 +16,8 @@ namespace mu2e {
   StrawHitFlag StrawHitPosition::_nullflag;
   double StrawHitPosition::_invsqrt12(1.0/sqrt(12.0));
 
-  StrawHitPosition::StrawHitPosition(StrawHit const& hit, Tracker const& tracker, ConditionsHandle<TrackerCalibrations>& tcal, StrawHitFlag const& flag ){
-// get information from conditions service
-    SHInfo shinfo;
-    Straw const& straw = tracker.getStraw(hit.strawIndex());
-    tcal->StrawHitInfo(straw,hit,shinfo);
-    _pos = shinfo._pos;
-    _wdist = shinfo._tddist;
+  StrawHitPosition::StrawHitPosition(StrawHit const& hit,Straw const& straw ,SHInfo const& shinfo, StrawHitFlag const& flag ) : _pos(shinfo._pos),_wdist(shinfo._tddist),
+  _chisq(0.0),_flag(flag) {
     CLHEP::Hep3Vector rhat = _pos.perpPart().unit();
     CLHEP::Hep3Vector phat(-rhat.y(),rhat.x(),0.0);
     double sres = 2*_invsqrt12*straw.getRadius();
@@ -30,8 +25,6 @@ namespace mu2e {
     double rcos = fabs(straw.getDirection().dot(rhat)); 
     _pres = shinfo._tdres*pcos + sres*rcos;
     _rres = sres*pcos + shinfo._tdres*rcos;  
-    _chisq = 0.0;
-    _flag = flag;
   }
 
   StrawHitPosition::StrawHitPosition(StrawHitPosition const& shpos,StrawHitFlag const& orflag) :

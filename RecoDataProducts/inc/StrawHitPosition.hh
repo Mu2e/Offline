@@ -3,9 +3,9 @@
 //
 // Class to describe derived information from a StrawHit, in particular pos().
 //
-// $Id: StrawHitPosition.hh,v 1.3 2013/03/16 23:31:07 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/16 23:31:07 $
+// $Id: StrawHitPosition.hh,v 1.4 2013/04/04 01:08:01 brownd Exp $
+// $Author: brownd $
+// $Date: 2013/04/04 01:08:01 $
 //
 // Original author David Brown
 //
@@ -13,11 +13,7 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
-#ifndef __GCCXML__
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
-#endif /* __GCCXML__ */
+#include "ConditionsService/inc/TrackerCalibrationStructs.hh"
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -27,7 +23,7 @@ namespace mu2e {
     public:
 #ifndef __GCCXML__
 // construct from a straw hit.  Calibration and other information must be provided from outside
-      StrawHitPosition(StrawHit const& hit, Tracker const& tracker, ConditionsHandle<TrackerCalibrations>& tcal, StrawHitFlag const& flag=_nullflag );
+      StrawHitPosition(StrawHit const& hit, Straw const& straw, SHInfo const& shinfo, StrawHitFlag const& flag=_nullflag );
 // construct from another hit, optionally with additional flag bits (these will be ORed with the existing bits
       StrawHitPosition(StrawHitPosition const& pos,StrawHitFlag const& orflag=_nullflag);
 // construct from a stereo hit
