@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.38 2013/04/03 22:24:16 tassiell Exp $
+// $Id: ConstructMaterials.cc,v 1.39 2013/04/04 18:45:21 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2013/04/03 22:24:16 $
+// $Date: 2013/04/04 18:45:21 $
 //
 // Original author Rob Kutschke
 //
@@ -889,7 +889,7 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "StrawWallEq");
     if ( mat.doit ){
-      G4double density, fiberFrac=46.0*perCent;
+      G4double density;
       G4int nel;
       G4Material* strwMl = findMaterialOrThrow("G4_MYLAR");
       G4Material* strwMet1 = findMaterialOrThrow("G4_Au");
