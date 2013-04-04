@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.11 2013/04/04 01:09:21 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.12 2013/04/04 21:18:37 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/04/04 01:09:21 $
+// $Date: 2013/04/04 21:18:37 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -515,8 +515,8 @@ namespace mu2e
       shinfo._mctime = mcsum[0]._time;
       shinfo._mcedep = mcsum[0]._esum;
       shinfo._mct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
-      shinfo._mcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
-      shinfo._mctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
+      shinfo._mcmom = mcsum[0]._mom.mag();
+      shinfo._mctd = mcsum[0]._mom.cosTheta();
     }
   }
 
