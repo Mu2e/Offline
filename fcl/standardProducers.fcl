@@ -239,7 +239,7 @@ FlagBkgHits : {
   ClusterStrawHits  : 
   {
     BackgroundMask : []
-    SignalMask : ["EnergySelection"]
+    SignalMask : ["EnergySelection","TimeSelection"]
   }
 }
 
@@ -274,8 +274,8 @@ TrkPatRec :
 		ZeroDriftPenalty 			: 0.05
 		Neutralize 				: true
 	}
-	TimeSelectionBits : ["EnergySelection","RadiusSelection"]
-	HelixFitSelectionBits : ["EnergySelection","RadiusSelection"]
+	TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
+	HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
 	KalmanFitSelectionBits : []
 	BackgroundSelectionBits : ["DeltaRay","Isolated"]
 } # end TrkPatRec
