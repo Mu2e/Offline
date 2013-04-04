@@ -2,9 +2,9 @@
 // A module to flag StrawHits for track reconstruction and delta ray 
 // identification
 //
-// $Id: FlagStrawHits_module.cc,v 1.3 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
+// $Id: FlagStrawHits_module.cc,v 1.4 2013/04/04 01:09:21 brownd Exp $
+// $Author: brownd $
+// $Date: 2013/04/04 01:09:21 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -54,6 +54,7 @@ namespace mu2e {
     std::string _shpLabel; 
     // Parameters; these are vectors for the number of quality selections
     double _minE, _maxE;  // minimum and maximum charge (units??)
+    double _minT, _maxT; // minimum and maximum hit time
     double _minR;
     std::vector<double> _maxR; // minimum and maximum transverse radius
   };
@@ -64,6 +65,8 @@ namespace mu2e {
     _shpLabel(pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _minE(pset.get<double>("minimumEnergy",0.000)),
     _maxE(pset.get<double>("maximumEnergy",0.012)),
+    _minT(pset.get<double>("minimumTime",300)),
+    _maxT(pset.get<double>("maximumTime",1800)),
     _minR(pset.get<double>("minimumRadius",370.0)),
     _maxR(pset.get<std::vector<double> >("maximumRadius"))
     {
@@ -94,14 +97,16 @@ namespace mu2e {
     for(size_t ish=0;ish<nsh;++ish){
       StrawHit const& sh = shcol->at(ish);
       StrawHitPosition const& shp = shpcol->at(ish);
-      unsigned istereo = shp.flag().hasAllProperties(StrawHitFlagDetail::stereo) ? 0 : 1;
+      unsigned istereo = shp.flag().hasAllProperties(StrawHitFlag::stereo) ? 0 : 1;
       StrawHitFlag flag;
       if(sh.energyDep() > _minE && sh.energyDep() < _maxE)
-	flag.merge(StrawHitFlagDetail::energysel);
+	flag.merge(StrawHitFlag::energysel);
+      if(sh.time() > _minT && sh.time() < _maxT)
+	flag.merge(StrawHitFlag::timesel);
       double rad = shp.pos().perp();
       if(rad > _minR && rad < _maxR[istereo])
-	flag.merge(StrawHitFlagDetail::radsel);
-      shfcol->push_back(flag);
+	flag.merge(StrawHitFlag::radsel);
+       shfcol->push_back(flag);
     }
     event.put(std::move(shfcol));
 

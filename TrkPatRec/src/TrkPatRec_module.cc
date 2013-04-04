@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.58 2013/03/20 00:05:56 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.59 2013/04/04 01:09:21 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/20 00:05:56 $
+// $Date: 2013/04/04 01:09:21 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -160,7 +160,7 @@ namespace mu2e
       Float_t _mcedep,_mcemax;
       Float_t _pdist,_pperp,_pmom;
       Float_t _mctime;
-      Int_t _esel,_rsel, _delta, _stereo, _isolated;
+      Int_t _esel,_rsel, _timesel,  _delta, _stereo, _isolated;
       Int_t _device, _sector, _layer, _straw;
       Int_t _ishpeak, _ntpeak, _nshtpeak;
       Float_t _shtpeak;
@@ -262,7 +262,7 @@ namespace mu2e
     _flags = new StrawHitFlagCollection(*_shfcol);
     unique_ptr<StrawHitFlagCollection> flags(_flags );
     // tighten the energy cut
-    static StrawHitFlag esel(StrawHitFlagDetail::energysel);
+    static StrawHitFlag esel(StrawHitFlag::energysel);
     for(size_t ish=0;ish<_flags->size();++ish){
       if(_shcol->at(ish).energyDep() > _maxedep && _flags->at(ish).hasAllProperties(esel))
 	_flags->at(ish).clear(esel);
@@ -354,7 +354,7 @@ namespace mu2e
 	if(ipeak<16){
 	  for(size_t ihit=0;ihit<kalfit._hits.size();++ihit){
 	    const TrkStrawHit* tsh = kalfit._hits[ihit];
-	    if(tsh->isActive())_flags->at(tsh->index()).merge(StrawHitFlagDetail::trackBit(ipeak));
+	    if(tsh->isActive())_flags->at(tsh->index()).merge(StrawHitFlag::trackBit(ipeak));
 	  }
 	}
 	// save successful kalman fits in the event
@@ -572,6 +572,7 @@ namespace mu2e
     _shdiag->Branch("mctime",&_mctime,"mctime/F");
     _shdiag->Branch("esel",&_esel,"esel/I");
     _shdiag->Branch("rsel",&_rsel,"rsel/I");
+    _shdiag->Branch("tsel",&_timesel,"tsel/I");
     _shdiag->Branch("delta",&_delta,"delta/I");
     _shdiag->Branch("stereo",&_stereo,"stereo/I");
     _shdiag->Branch("isolated",&_isolated,"isolated/I");
@@ -636,7 +637,7 @@ namespace mu2e
       _straw = straw.id().getStraw();
 
       _shp = shp.pos();
-      _stereo = shp.flag().hasAllProperties(StrawHitFlagDetail::stereo);
+      _stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
       _edep = sh.energyDep();
       _time = sh.time();
       _rho = shp.pos().perp();
@@ -689,11 +690,12 @@ namespace mu2e
 	  ++_nchit;
 	}
       }
-      _esel = _flags->at(istr).hasAllProperties(StrawHitFlagDetail::energysel);
-      _rsel = _flags->at(istr).hasAllProperties(StrawHitFlagDetail::radsel);
-      _stereo = _flags->at(istr).hasAllProperties(StrawHitFlagDetail::stereo);
+      _esel = _flags->at(istr).hasAllProperties(StrawHitFlag::energysel);
+      _rsel = _flags->at(istr).hasAllProperties(StrawHitFlag::radsel);
+      _timesel = _flags->at(istr).hasAllProperties(StrawHitFlag::timesel);
+      _stereo = _flags->at(istr).hasAllProperties(StrawHitFlag::stereo);
       _isolated = _flags->at(istr).hasAllProperties(StrawHitFlag::isolated);
-      _delta = _flags->at(istr).hasAllProperties(StrawHitFlagDetail::delta);
+      _delta = _flags->at(istr).hasAllProperties(StrawHitFlag::delta);
       _shpres = _shpcol->at(istr).posRes(StrawHitPosition::phi);
       _shrres = _shpcol->at(istr).posRes(StrawHitPosition::rho);
       _shchisq = _shpcol->at(istr).chisq();

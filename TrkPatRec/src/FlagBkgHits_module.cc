@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.10 2013/03/20 00:05:56 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.11 2013/04/04 01:09:21 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/20 00:05:56 $
+// $Date: 2013/04/04 01:09:21 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -189,7 +189,7 @@ namespace mu2e
     _shlabel(pset.get<std::string>("StrawHitCollectionLabel","makeSH")),
     _shplabel(pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _shflabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FlagStrawHits")),
-    _stmask(StrawHitFlagDetail::stereo),
+    _stmask(StrawHitFlag::stereo),
     _mindp(pset.get<unsigned>("MinDeltaHits",6)),
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","BDT method")),
     _dpeaktype(pset.get<std::string>("DeltaPeakTMVAType","BDT method")),
@@ -266,7 +266,7 @@ namespace mu2e
       if(delta._isdelta){
 	for(size_t ih =0;ih <  delta._dhinfo.size();++ih){
 	  if(delta._dhinfo[ih]._hflag >= _minflag){
-	    bkgfcol->at(delta._dhinfo[ih]._hindex).merge(StrawHitFlagDetail::delta);
+	    bkgfcol->at(delta._dhinfo[ih]._hindex).merge(StrawHitFlag::delta);
 	  }
 	}
       }
