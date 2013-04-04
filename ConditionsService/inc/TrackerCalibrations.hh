@@ -3,9 +3,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.16 2013/01/26 18:16:38 brownd Exp $
+// $Id: TrackerCalibrations.hh,v 1.17 2013/04/04 01:06:42 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/01/26 18:16:38 $
+// $Date: 2013/04/04 01:06:42 $
 //
 // Original author Vadim Rusu
 //
@@ -15,6 +15,7 @@
 
 // Mu2e includes.
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
+#include "ConditionsService/inc/TrackerCalibrationStructs.hh"
 #include "DataProducts/inc/StrawIndex.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -23,45 +24,6 @@ namespace mu2e
   class SimpleConfig;
   class StrawHit;
   class Straw;
-// simple struct to hold output of timeToDistance function
-  struct T2D {
-    double _rdrift;
-    double _rdrifterr;
-    double _vdrift; // local drift velocity at this radius, ie dr/dt(rdrift).
-    T2D() : _rdrift(0.0), _rdrifterr(1.0), _vdrift(0.0) {}
-  };
-
-// simple struct to hold output of distanceToTime function
-  struct D2T {
-    double _tdrift;
-    double _tdrifterr;
-    double _vdrift; // local drift velocity at this radius, ie dr/dt(rdrift).
-    D2T() : _tdrift(0.0),_tdrifterr(1.0), _vdrift(0.0) {}
-  };
-
-// simple struct to hold output of energyToAmplitude function
-  struct E2A {
-    double _ampl;
-    double _amplerr;
-    E2A() : _ampl(0.0), _amplerr(1.0) {}
-  };
-
-// simple struct to hold output of amplitudeToEnergy function
-  struct A2E {
-    double _edep;
-    double _edeperr;
-    A2E() : _edep(0.0),_edeperr(1.0) {}
-  };
-
-// simple strict to hold straw hit position info
-  struct SHInfo {
-    CLHEP::Hep3Vector _pos;
-    double _tddist;
-    double _time;
-    double _tdres;
-    double _timeres;
-  };
-
   struct TrackerCalibrations: virtual public ConditionsEntity{
 
 
