@@ -1,5 +1,6 @@
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
+#include "standardServices.fcl"
 
 # Give this process a name.
 process_name : TrackRecognition
@@ -46,9 +47,11 @@ services :
 
     GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
     
-    #G4Helper : { }
+    G4Helper : { }
     
-  }
+     SeedService            : @local::automaticSeeds
+
+ }
 
 } # close of services block
 
@@ -161,7 +164,7 @@ physics :
 
   #p1 : [skipBadEvents]
   #e1 : [trckRjctByGmTplg]
-  p1 : skipBadEvents,[extractElData,trckRjctByTime,trckRjctByGmTplg,remapStrawHit]
+  p1 : [skipBadEvents,extractElData,trckRjctByTime,trckRjctByGmTplg,remapStrawHit]
   e1 : [trkReco]
 
 
@@ -182,3 +185,7 @@ physics :
 #  }
 #
 #}
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
