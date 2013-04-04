@@ -62,24 +62,25 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
 
   // cuts for different tightness of selection
   TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
-  ncuts[0] = "nactive>=20&&nhits-nactive<=15";
-  ncuts[1] = "nactive>=22&&nhits-nactive<=12";
-  ncuts[2] = "nactive>=25&&nhits-nactive<=10";
-  ncuts[3] = "nactive>=30&&nhits-nactive<=8";
+
+  ncuts[0] = "nactive>=20";
+  ncuts[1] = "nactive>=22";
+  ncuts[2] = "nactive>=25";
+  ncuts[3] = "nactive>=30";
   t0cuts[0] = "t0err<1.5";
   t0cuts[1] = "t0err<0.95";
   t0cuts[2] = "t0err<0.9";
   t0cuts[3] = "t0err<0.8";
   momcuts[0] = "fitmomerr<0.3";
-  momcuts[1] = "fitmomerr<0.3";
-  momcuts[2] = "fitmomerr<0.3";
-  momcuts[3] = "fitmomerr<0.2";
+  momcuts[1] = "fitmomerr<0.28";
+  momcuts[2] = "fitmomerr<0.25";
+  momcuts[3] = "fitmomerr<0.22";
   fitcuts[0] = "fitcon>1e-6";
-  fitcuts[1] = "fitcon>2e-3";
-  fitcuts[2] = "fitcon>1e-3";
+  fitcuts[1] = "fitcon>1e-3";
+  fitcuts[2] = "fitcon>2e-3";
   fitcuts[3] = "fitcon>1e-2";
 
-  unsigned mu2ecut=2;
+    unsigned mu2ecut=2;
   unsigned icut=mu2ecut;
   char dioname[50];
   snprintf(dioname,50,"diospec%i",icut);
@@ -185,10 +186,12 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   string ssuf(suffix);
   mu2ecan->SaveAs((string("mu2e_finebins")+ssuf).c_str());
 
+
+  int nscan(40);
   vector<Double_t> diox,dioy,dioxerr,dioyerr;
   vector<Double_t> conx,cony,conxerr,conyerr;
   double startx = diospec[icut]->GetBinCenter(istart);
-  for(int ibin=-25;ibin<=25;++ibin){
+  for(int ibin=-nscan;ibin<=nscan;++ibin){
     double dints_err, cints_err;
     double dints = diospec[icut]->IntegralAndError(istart+ibin,istop,dints_err);
     double cints = conspec[icut]->IntegralAndError(istart+ibin,istop,cints_err);
@@ -207,8 +210,8 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   conscan->SetLineColor(kRed);
   dioscan->SetMarkerColor(kBlue);
   conscan->SetMarkerColor(kRed);
-  conscan->SetMaximum(0.5);
-  conscan->SetMinimum(-0.5);
+  conscan->SetMaximum(5.0);
+  conscan->SetMinimum(-1.0);
   dioscan->SetTitle("Scan of DIO Integral Lower Boundary;#Delta P (MeV/c);#Delta I");
   conscan->SetTitle("Scan of Conversion Integral Lower Boundary;#Delta P (MeV/c);#Delta I");
   TCanvas* scancan = new TCanvas("scan","Scan of lower threshold",800,800);
@@ -225,7 +228,7 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   vector<double> fdioshift,fconshift,fdioshift_err,fconshift_err;
   double diocent = diospec[icut]->Integral(istart,istop);
   double concent = conspec[icut]->Integral(istart,istop);
-  for(int ires=-15;ires<=15;++ires){
+  for(int ires=-nscan;ires<=nscan;++ires){
     double ddioint_err,dconint_err;
     double ddioint,dconint;
     if(istart+ires<istart){
@@ -256,14 +259,14 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   conscan2->SetLineColor(kRed);
   dioscan2->SetMarkerColor(kBlue);
   conscan2->SetMarkerColor(kRed);
-  conscan2->SetMaximum(0.2);
-  conscan2->SetMinimum(-0.2);
+  conscan2->SetMaximum(0.6);
+  conscan2->SetMinimum(-0.8);
   fdioscan2->SetLineColor(kBlue);
   fconscan2->SetLineColor(kRed);
   fdioscan2->SetMarkerColor(kBlue);
   fconscan2->SetMarkerColor(kRed);
-  fconscan2->SetMaximum(0.5);
-  fconscan2->SetMinimum(-0.5);
+  fconscan2->SetMaximum(3.0);
+  fconscan2->SetMinimum(-1.0);
   dioscan2->SetTitle("Integral Change vs Integral Lower Boundary Change;#Delta P (MeV/c);#Delta I");
   conscan2->SetTitle("Integral Change vs Lower Boundary Change;#Delta P (MeV/c);#Delta I");
   fdioscan2->SetTitle("Fractional Integral Change vs Integral Lower Boundary Change;#Delta P (MeV/c);#Delta I/I");
