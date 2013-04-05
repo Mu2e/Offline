@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eStudyWorld.cc,v 1.7 2013/02/27 03:49:26 genser Exp $
+// $Id: Mu2eStudyWorld.cc,v 1.8 2013/04/05 20:22:45 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/27 03:49:26 $
+// $Date: 2013/04/05 20:22:45 $
 //
 // Original author K. Genser based on Mu2eWorld
 //
@@ -24,6 +24,7 @@
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/constructStudyEnv_v001.hh"
 #include "Mu2eG4/inc/constructStudyEnv_v002.hh"
+#include "Mu2eG4/inc/constructStudyEnv_v003.hh"
 #include "Mu2eG4/inc/Mu2eStudyWorld.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -146,6 +147,8 @@ namespace mu2e {
       constructStudyEnv_v001(boxInTheWorldVInfo, _config);
     } else if ( seVer == 2 ) {
       constructStudyEnv_v002(boxInTheWorldVInfo, _config);
+    } else if ( seVer == 3 ) {
+      constructStudyEnv_v003(boxInTheWorldVInfo, _config);
     } else {
       throw cet::exception("CONFIG")
         << __func__ << ": unknown study environment: " << seVer << "\n";
