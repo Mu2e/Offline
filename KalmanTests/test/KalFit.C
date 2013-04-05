@@ -17,15 +17,14 @@
 double tdlow(0.57735027);
 double tdhigh(1.0);
 double t0min(720);
-double momlow(103.4);
+double momlow(103.35);
 double momhigh(104.8);
 int minnhits(20);
 size_t icut=2;
 unsigned minnactive[4] = {20,22,25,30};
-unsigned minndif[4] = { 8,6,4,3};
 double maxt0err[4] = {1.5,0.95,0.9,0.8};
-double maxmomerr[4] = {0.3,0.3,0.3,0.2};
-double minfitcon[4] = {1e-6,2e-3,2e-3,1e-2};
+double maxmomerr[4] = {0.3,0.328,0.25,0.22};
+double minfitcon[4] = {1e-6,1e-3,2e-3,1e-2};
 
 TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
 TCut reco,goodfit,cosmic,rmom,rpitch,livegate;
@@ -35,7 +34,7 @@ bool donecuts(false);
 void KalCuts() {
   for(size_t ic=0;ic<4;++ic){
     char cutstring[100];
-    snprintf(cutstring,100,"nactive>=%i&&nhits-nactive<=%i",minnactive[ic],minndif[ic]);
+    snprintf(cutstring,100,"nactive>=%i",minnactive[ic]);
     ncuts[ic] = TCut(cutstring);
     snprintf(cutstring,100,"t0err<%f",maxt0err[ic]);
     t0cuts[ic] = TCut(cutstring);
