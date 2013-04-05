@@ -16,6 +16,7 @@ namespace mu2e {
         const SimParticle& p{i.second};
         os<<prefix_
           <<" id = "<<p.id()
+          <<", parent="<<p.parentId()
           <<", pdgId="<<p.pdgId()
           <<", p="<<p.startMomentum()
           <<", start="<<p.startPosition()
