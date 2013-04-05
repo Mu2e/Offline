@@ -1,11 +1,11 @@
 #ifndef Mu2eG4_constructStudyEnv_v001_hh
 #define Mu2eG4_constructStudyEnv_v001_hh
 //
-// Free function to create the Detector Solenoid
+// Free function to create one of the study environment geometries
 //
-// $Id: constructStudyEnv_v001.hh,v 1.1 2012/11/16 23:28:23 genser Exp $
+// $Id: constructStudyEnv_v001.hh,v 1.2 2013/04/05 19:51:34 genser Exp $
 // $Author: genser $
-// $Date: 2012/11/16 23:28:23 $
+// $Date: 2013/04/05 19:51:34 $
 //
 // Original author KLG
 //
