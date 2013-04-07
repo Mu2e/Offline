@@ -1,9 +1,9 @@
 //
 // A test class that makes printout whenever its methods are called.
 //
-// $Id: TracerProduct.cc,v 1.3 2011/06/05 18:54:53 kutschke Exp $
+// $Id: TracerProduct.cc,v 1.4 2013/04/07 19:41:12 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/05 18:54:53 $
+// $Date: 2013/04/07 19:41:12 $
 //
 // Original author Rob Kutschke
 //
@@ -31,9 +31,18 @@ namespace mu2e {
   TracerProduct::TracerProduct( TracerProduct const& rhs):
     val_(-1),
     serial_(count()){
-    mf::LogVerbatim("Tracing") << "TracerProduct copy c'tor: to: " 
+    mf::LogVerbatim("Tracing") << "TracerProduct copy c'tor: to: "
                                << *this  << " from: " << rhs;
     val_=rhs.val_;
+  }
+
+  TracerProduct::TracerProduct( TracerProduct && rhs):
+    val_(-1),
+    serial_(count()){
+    mf::LogVerbatim("Tracing") << "TracerProduct move c'tor: to: "
+                               << *this  << " from: " << rhs;
+    val_=rhs.val_;
+    rhs.val_=-1;
   }
 
   TracerProduct::~TracerProduct(){
@@ -44,6 +53,14 @@ namespace mu2e {
     mf::LogVerbatim("Tracing") << "TracerProduct: operator= : to: "
                                << *this << " from: " << rhs;
     val_ = rhs.val_;
+    return *this;
+  }
+
+  TracerProduct& TracerProduct::operator=( TracerProduct && rhs ){
+    mf::LogVerbatim("Tracing") << "TracerProduct: move operator= : to: "
+                               << *this << " from: " << rhs;
+    val_ = rhs.val_;
+    rhs.val_ = -1;
     return *this;
   }
 
@@ -60,7 +77,7 @@ namespace mu2e {
                                 << *this << " rhs: " << rhs;
     bool answer(val_ < rhs.val_);
     return answer;
-  } 
+  }
 
   void TracerProduct::print( ostream& ost ) const{
     ost << " ( serial number="

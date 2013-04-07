@@ -5,9 +5,9 @@
 // Each object has a "value" as a mock up of its data package plus
 // a unique serial number.
 //
-// $Id: TracerProduct.hh,v 1.4 2011/06/05 18:54:43 kutschke Exp $
+// $Id: TracerProduct.hh,v 1.5 2013/04/07 19:41:12 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2011/06/05 18:54:43 $
+// $Date: 2013/04/07 19:41:12 $
 //
 // Original author Rob Kutschke
 //
@@ -23,9 +23,11 @@ namespace mu2e {
     TracerProduct();
     explicit TracerProduct( int aval );
     TracerProduct( TracerProduct const& );
+    TracerProduct( TracerProduct && );
     ~TracerProduct();
-    
+
     TracerProduct& operator=( TracerProduct const& );
+    TracerProduct& operator=( TracerProduct && );
     bool operator<( const TracerProduct& p );
 
     void swap( TracerProduct& );
@@ -34,13 +36,13 @@ namespace mu2e {
     int serial() const { return serial_; }
 
     void print ( std::ostream& ) const;
-    
+
   private:
 
     int val_;
     int serial_;
 
-    // Maintain a monotonically increasing serial number, starting at 0. 
+    // Maintain a monotonically increasing serial number, starting at 0.
     // When called, return the serial number and increment it.
     static int count();
 
