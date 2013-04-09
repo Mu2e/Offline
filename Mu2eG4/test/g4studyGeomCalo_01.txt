@@ -2,15 +2,16 @@
 // config file to perform Geant4 calorimetric studies using the Mu2e framework infrastructure
 // to be included in g4studyGeom.txt
 
-// $Id: g4studyGeomCalo_01.txt,v 1.1 2013/04/09 23:25:16 genser Exp $
+// $Id: g4studyGeomCalo_01.txt,v 1.2 2013/04/09 23:38:05 genser Exp $
 // $Author: genser $
-// $Date: 2013/04/09 23:25:16 $
+// $Date: 2013/04/09 23:38:05 $
 //
 // Original author K. Genser
 //
 
 // Units are mm, MeV
 
+#include "Mu2eG4/test/g4studyGeom.txt"
 
 // Change the name.
 string detector.name           = "g4studyCalo_01";
