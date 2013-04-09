@@ -2,9 +2,9 @@
 # fcl config file to perform Geant4 studies using the Mu2e framework infrastructure and simple geometry
 #
 #
-# $Id: g4studyCalo_01.fcl,v 1.1 2013/04/09 23:24:17 genser Exp $
+# $Id: g4studyCalo_01.fcl,v 1.2 2013/04/09 23:38:19 genser Exp $
 # $Author: genser $
-# $Date: 2013/04/09 23:24:17 $
+# $Date: 2013/04/09 23:38:19 $
 #
 # Original author K. Genser
 #
@@ -29,7 +29,7 @@ services : {
   RandomNumberGenerator : { }
 
   user : {
-    GeometryService        : { inputFile      : "Mu2eG4/test/g4studyGeom.txt"  }
+    GeometryService        : { inputFile      : "Mu2eG4/test/g4studyGeomCalo_01.txt"  }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
     G4Helper               : { }
