@@ -2,9 +2,9 @@
 // config file to perform Geant4 studies using the Mu2e framework infrastructure
 //
 
-// $Id: g4studyGeom.txt,v 1.10 2013/03/27 20:27:40 genser Exp $
+// $Id: g4studyGeom.txt,v 1.11 2013/04/09 23:33:53 genser Exp $
 // $Author: genser $
-// $Date: 2013/03/27 20:27:40 $
+// $Date: 2013/04/09 23:33:53 $
 //
 // Original author K. Genser
 //
@@ -96,7 +96,7 @@ int world.verbosityLevel         = 2;
 // a very "thin" vacuum
 string world.materialName        = "WAGVacuum";
 
-// make the world boundaries invisible
+// make the world boundaries visible
 bool   world.boxVisible          = true;
 // make the volume transparent
 bool   world.boxSolid            = false;
