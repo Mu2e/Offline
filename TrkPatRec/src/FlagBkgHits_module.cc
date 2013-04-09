@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.12 2013/04/04 21:18:37 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.13 2013/04/09 00:50:21 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/04/04 21:18:37 $
+// $Date: 2013/04/09 00:50:21 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -128,12 +128,14 @@ namespace mu2e
       // event object labels
       std::string _shlabel, _shplabel, _shflabel;
       // straw hit selection masks
-      StrawHitFlag _stmask;
+      StrawHitFlag _stmask, _deltamask, _ismask;
       // delta-ray removal parameters
-      unsigned _mindp;
+      double _bz; // average Z beta for deltas
       std::string _dhittype, _dhitweights;
       std::string _dpeaktype, _dpeakweights;
-      double _gdcut, _gdcore, _dpeakmvacut;
+      double _gdcut, _gdcore;
+      unsigned _mindp;
+      double _dpeakmvacut;
       int _minflag;
 // input collections
       const StrawHitCollection* _shcol;
@@ -190,11 +192,13 @@ namespace mu2e
     _shplabel(pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _shflabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FlagStrawHits")),
     _stmask(StrawHitFlag::stereo),
-    _mindp(pset.get<unsigned>("MinDeltaHits",6)),
+    _deltamask(StrawHitFlag::delta),
+    _ismask(StrawHitFlag::isolated),
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","BDT method")),
     _dpeaktype(pset.get<std::string>("DeltaPeakTMVAType","BDT method")),
     _gdcut(pset.get<double>("DeltaHitMVACut",0.0)),
     _gdcore(pset.get<double>("DeltaHitMVACoreCut",0.15)),
+    _mindp(pset.get<unsigned>("MinDeltaHits",2)),
     _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.0)),
     _minflag(pset.get<int>("DeltaHitFlag",1)),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
@@ -266,15 +270,18 @@ namespace mu2e
       if(delta._isdelta){
 	for(size_t ih =0;ih <  delta._dhinfo.size();++ih){
 	  if(delta._dhinfo[ih]._hflag >= _minflag){
-	    bkgfcol->at(delta._dhinfo[ih]._hindex).merge(StrawHitFlag::delta);
+	    bkgfcol->at(delta._dhinfo[ih]._hindex).merge(_deltamask);
 	  }
 	}
       }
     }
+    // flag the unclustered hits as 'isolated'
+    for(size_t ish=0;ish<nsh;++ish){
+      if(clusters._cids[ish]<0)bkgfcol->at(ish).merge(_ismask);
+    }
     // diagnostics
     if(_diag > 1)
       fillDeltaDiag(dinfo);
-
     // put the background flag into the event
     event.put(std::move(bkgfcol));
   }
@@ -657,7 +664,17 @@ namespace mu2e
       size_t ish = delta._dhinfo[ih]._hindex;
       const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
       art::Ptr<SimParticle> spp = mcsum[0]._spp;
-      if(spp.isNonnull())pp.insert(spp);
+      if(spp.isNonnull()){
+	// if the particle is a conversion and the momentum is really low, don't count it as part
+	// of the parentage
+	if(spp->genParticle().isNonnull() &&
+	    spp->genParticle()->generatorId()== GenId::conversionGun){
+	  if(spp->genParticle()->momentum().vect().mag()-mcsum[0]._mom.mag() < 25.0){
+	    pp.insert(spp);
+	  }
+	} else 
+	  pp.insert(spp);
+      }
     }
     // map these particles back to each other, to compress out particles generated inside the peak 
     std::map<art::Ptr<SimParticle>,art::Ptr<SimParticle> > spmap;
@@ -709,16 +726,12 @@ namespace mu2e
     }
     // find the most likely ultimate parent for this peak.  Also fill general info
     std::map<int,int> mode;
-    for(size_t ih=0;ih< delta._dhinfo.size(); ++ih){
-      size_t ish = delta._dhinfo[ih]._hindex;
-      const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
-      art::Ptr<SimParticle> spp = mcsum[0]._spp;
+    for(std::set<art::Ptr<SimParticle> >::iterator ipp=pp.begin();ipp!=pp.end();++ipp){
+      art::Ptr<SimParticle> spp = *ipp;
       int mcid(-1);
-      if(spp.isNonnull()){
-	// map back to the ultimate parent
-	spp = spmap[spp];
-	mcid = spp->id().asInt();
-      }
+      // map back to the ultimate parent
+      spp = spmap[spp];
+      mcid = spp->id().asInt();
       std::map<int,int>::iterator ifnd = mode.find(mcid);
       if(ifnd != mode.end())
 	++(ifnd->second);
@@ -745,4 +758,6 @@ namespace mu2e
   }
 }
 using mu2e::FlagBkgHits;
+
+
 DEFINE_ART_MODULE(FlagBkgHits);
