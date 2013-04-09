@@ -1,9 +1,9 @@
 //
-// Free function to create a geant4 test environment geometry
+// Free function to create a geant4 "calorimetric" test environment geometry
 //
-// $Id: constructStudyEnv_v003.cc,v 1.1 2013/04/05 20:20:28 genser Exp $
+// $Id: constructStudyEnv_v003.cc,v 1.2 2013/04/09 23:18:45 genser Exp $
 // $Author: genser $
-// $Date: 2013/04/05 20:20:28 $
+// $Date: 2013/04/09 23:18:45 $
 //
 // Original author KLG 
 //
@@ -15,8 +15,8 @@
 
 // Mu2e includes.
 
-#include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/constructStudyEnv_v003.hh"
+#include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -24,53 +24,271 @@
 // G4 includes
 #include "G4ThreeVector.hh"
 #include "G4Material.hh"
-#include "G4Color.hh"
+#include "G4Colour.hh"
 #include "G4Box.hh"
+
+// c++ includes
+#include <sstream>
+#include <iostream>
 
 using namespace std;
 
 namespace mu2e {
 
   void constructStudyEnv_v003( VolumeInfo   const & parentVInfo,
-                               SimpleConfig const & _config
+                               SimpleConfig const & config
                                ){
 
-    const bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible");
-    const bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck");
+    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
     const bool placePV             = true;
 
-    // Extract box information from the config file.
+    // Extract calorimeter information from the config file and construct it
 
-    G4bool boxVisible        = _config.getBool("box.visible",true);
-    G4bool boxSolid          = _config.getBool("box.solid",true);
+    // it will be a set of thin plates (G4Box'es)
 
-    vector<double> boxParams;
-    _config.getVectorDouble( "box.halfLengths", boxParams);
+    G4int  verbosityLevel  = config.getInt("calo.verbosityLevel",-1);
+    G4bool isVisible     = config.getBool("calo.visible",true);
+    G4bool forceSolid      = config.getBool("calo.solid",true);
 
-    MaterialFinder materialFinder(_config);
-    G4Material* boxMaterial = materialFinder.get("box.wallMaterialName");
+    vector<double> tHL;
+    config.getVectorDouble( "calo.transverseHalfLengths", tHL);
 
-    const G4ThreeVector boxCenterInWorld(_config.getHep3Vector("box.centerInWorld"));
+    vector<double> tCInParent;
+    config.getVectorDouble( "calo.transverseCenterInWorld", tCInParent);
 
-    G4Colour  orange  (.75, .55, .0);
+    // front Scintillator (just one layer, we could have used simple variables)
 
-    VolumeInfo boxVInfo(nestBox( "Box",
-                                 boxParams,
-                                 boxMaterial,
-                                 0, // no rotation
-                                 boxCenterInWorld,
-                                 parentVInfo,
-                                 _config.getInt("box.copyNumber",2), 
-                                 // we assign a non 0 copy nuber for
-                                 // volume tracking purposes
-                                 boxVisible,
-                                 orange,
-                                 boxSolid,
-                                 forceAuxEdgeVisible,
-                                 placePV,
-                                 doSurfaceCheck
-                                 ));
+    vector<double> fSHL;
+    config.getVectorDouble( "calo.frontScintLayerHalfLengths",fSHL);
+
+    vector<string> fSMat;
+    config.getVectorString( "calo.frontScintLayerMaterials", fSMat);
+
+    G4Material* fSMaterial = findMaterialOrThrow(fSMat[0]);
+
+    G4int activeVolumeCopyNumber = config.getInt("calo.activeVolumeStartingCopyNumber");
+
+    G4double const fSParams[] = {tHL[0], tHL[1], fSHL[0]};
+
+    G4double fSLCenterInParent = config.getDouble("calo.frontScintStartingLongitPosition");
+
+    G4ThreeVector fSCenterInParent(tCInParent[0],tCInParent[1],fSLCenterInParent+fSHL[0]);
+
+    //    G4Colour  orange  (.75, .55, .0);
+
+    string vName("fS");
+
+    if (verbosityLevel > 0 ) {
+      cout << __func__ << " constructing: " << vName 
+           << " " << "at " << fSCenterInParent
+           << endl;
+    }
+
+    VolumeInfo fsVInfo(nestBox( vName,
+                                fSParams,
+                                fSMaterial,
+                                0x0, // no rotation
+                                fSCenterInParent,
+                                parentVInfo,
+                                activeVolumeCopyNumber++,
+                                // non 0 copy nuber for volume tracking purposes
+                                isVisible,
+                                G4Colour::Yellow(),
+                                forceSolid,
+                                forceAuxEdgeVisible,
+                                placePV,
+                                doSurfaceCheck
+                                ));
+
+    // front module
+
+    vector<double> fMHL;
+    config.getVectorDouble( "calo.frontModuleLayerHalfLengths",fMHL);
+
+    vector<string> fMMat;
+    config.getVectorString( "calo.frontModuleLayerMaterials", fMMat);
+
+    G4int passiveVolumeCopyNumber = config.getInt("calo.passiveVolumeStartingCopyNumber");
+    G4double    fMLCenterInParent = config.getDouble("calo.frontModuleStartingLongitPosition");
+    G4int        fMNumberOfLayers = config.getInt("calo.frontModuleNumberOfLayers");
+
+
+    constructDoubleLayerdModule("fm",
+                                parentVInfo,
+                                tHL,
+                                tCInParent,
+                                fMHL,
+                                fMMat,
+                                fMNumberOfLayers,
+                                verbosityLevel,
+                                fMLCenterInParent,
+                                passiveVolumeCopyNumber,
+                                activeVolumeCopyNumber,
+                                isVisible,
+                                G4Colour::Gray(),
+                                G4Colour::Yellow(),
+                                forceSolid,
+                                forceAuxEdgeVisible,
+                                placePV,
+                                doSurfaceCheck
+                                );
+
+    // rear module
+
+    vector<double> rMHL;
+    config.getVectorDouble( "calo.rearModuleLayerHalfLengths",rMHL);
+
+    vector<string> rMMat;
+    config.getVectorString( "calo.rearModuleLayerMaterials", rMMat);
+
+    // we need to "calculate" the starting copy numbers
+
+    passiveVolumeCopyNumber += fMNumberOfLayers;
+    activeVolumeCopyNumber += fMNumberOfLayers;
+
+    G4double    rMLCenterInParent = config.getDouble("calo.rearModuleStartingLongitPosition");
+    G4int        rMNumberOfLayers = config.getInt("calo.rearModuleNumberOfLayers");
+
+    constructDoubleLayerdModule("rm",
+                                parentVInfo,
+                                tHL,
+                                tCInParent,
+                                rMHL,
+                                rMMat,
+                                rMNumberOfLayers,
+                                verbosityLevel,
+                                rMLCenterInParent,
+                                passiveVolumeCopyNumber,
+                                activeVolumeCopyNumber,
+                                isVisible,
+                                G4Colour::Brown(),
+                                G4Colour::Yellow(),
+                                forceSolid,
+                                forceAuxEdgeVisible,
+                                placePV,
+                                doSurfaceCheck
+                                );
 
   } // constructStudyEnv_v003;
+
+  void constructDoubleLayerdModule(std::string const & mNamePrefix,
+                                      VolumeInfo const & parentVInfo,
+                                      std::vector<double> const & tHL,
+                                      std::vector<double> const & tCInParent,
+                                      vector<double> const & mHL,
+                                      vector<string> const & mMat,
+                                      G4int    mNumberOfLayers,
+                                      G4int    verbosityLevel,
+                                      G4double mLCenterInParent,
+                                      G4int passiveVolumeStartingCopyNumber,
+                                      G4int  activeVolumeStartingCopyNumber,
+                                      bool const isVisible,
+                                      G4Colour const & passiveVolumeColour,
+                                      G4Colour const &  activeVolumeColour,
+                                      bool const forceSolid,
+                                      bool const forceAuxEdgeVisible,
+                                      bool const placePV,
+                                      bool const doSurfaceCheck
+                                      ){ 
+    //
+    //  construct a calorimetric module (could be made to a n-layerd if needed)
+    //  ( P - Passive and A - Active layers)
+
+    G4int passiveVolumeCopyNumber = passiveVolumeStartingCopyNumber;
+    G4int activeVolumeCopyNumber  = activeVolumeStartingCopyNumber;
+
+    G4Material* mPMaterial = findMaterialOrThrow(mMat[0]); // passive
+    G4Material* mAMaterial = findMaterialOrThrow(mMat[1]); // active
+
+    G4double const mPParams[] = {tHL[0], tHL[1], mHL[0]}; // passive
+    G4double const mAParams[] = {tHL[0], tHL[1], mHL[1]}; // active
+
+    // we place all the volumes directly "in" the parent
+
+    ostringstream vsPNumber("");
+    vsPNumber.width(3);
+    vsPNumber.fill('0');
+    string vPName;
+
+    ostringstream vsANumber("");
+    vsANumber.width(3);
+    vsANumber.fill('0');
+    string vAName;
+
+    G4double      mLayerStep  = 2.*(mHL[0]+mHL[1]);
+
+    // we initialize the Z position to be one "step earlier" where it
+    // should eventually be and then add the step to position of the
+    // individual layers
+
+    G4double      mPZCenterInParent = mLCenterInParent + mHL[0] - mLayerStep;
+    G4double      mAZCenterInParent = mLCenterInParent - mHL[1];
+
+    G4ThreeVector mPCenterInParent(tCInParent[0],tCInParent[1],mPZCenterInParent);
+    G4ThreeVector mACenterInParent(tCInParent[0],tCInParent[1],mAZCenterInParent);
+
+    for( G4int nl = 0; nl<mNumberOfLayers; ++nl ) {
+
+      vsPNumber.str("");
+      vsPNumber << passiveVolumeCopyNumber;
+      vPName = mNamePrefix + "PL_" + vsPNumber.str();
+
+      mPZCenterInParent += mLayerStep;
+      mPCenterInParent.setZ(mPZCenterInParent);
+
+      vsANumber.str("");
+      vsANumber << activeVolumeCopyNumber;
+      vAName = mNamePrefix + "AL_" + vsANumber.str();
+
+      mAZCenterInParent += mLayerStep;
+      mACenterInParent.setZ(mAZCenterInParent);
+
+      if (verbosityLevel > 0 ) {
+        cout << __func__ << " constructing: " << vPName 
+             << " " << "at " << mPCenterInParent 
+             << endl;
+        cout << __func__ << " constructing: " << vAName 
+             << " " << "at " << mACenterInParent 
+             << endl;
+      }
+
+      // passive medium
+      VolumeInfo mPVInfo(nestBox( vPName,
+                                   mPParams,
+                                   mPMaterial,
+                                   0x0, // no rotation
+                                   mPCenterInParent,
+                                   parentVInfo,
+                                   passiveVolumeCopyNumber++,
+                                   // non 0 for volume tracking purposes
+                                   isVisible,
+                                   passiveVolumeColour,
+                                   forceSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   doSurfaceCheck
+                                   ));
+
+      // active medium
+      VolumeInfo mAVInfo(nestBox( vAName,
+                                   mAParams,
+                                   mAMaterial,
+                                   0x0, // no rotation
+                                   mACenterInParent,
+                                   parentVInfo,
+                                   activeVolumeCopyNumber++,
+                                   // non 0 for volume tracking purposes
+                                   isVisible,
+                                   activeVolumeColour,
+                                   forceSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   doSurfaceCheck
+                                   ));
+
+    }
+
+  } // constructDoubleLayerdModule
 
 }
