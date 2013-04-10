@@ -1,9 +1,9 @@
 //
 // A test class that makes printout whenever its methods are called.
 //
-// $Id: TracerProduct.cc,v 1.4 2013/04/07 19:41:12 kutschke Exp $
+// $Id: TracerProduct.cc,v 1.5 2013/04/10 14:38:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/04/07 19:41:12 $
+// $Date: 2013/04/10 14:38:03 $
 //
 // Original author Rob Kutschke
 //
@@ -21,6 +21,12 @@ namespace mu2e {
     serial_(count()){
     mf::LogVerbatim("Tracing") << "TracerProduct default c'tor: " << *this;
   }
+
+  TracerProduct::~TracerProduct(){
+    mf::LogVerbatim("Tracing") << "TracerProduct d'tor: " << *this;
+  }
+
+#ifndef __GCCXML__
 
   TracerProduct::TracerProduct( int aval):
     val_(aval),
@@ -45,9 +51,6 @@ namespace mu2e {
     rhs.val_=-1;
   }
 
-  TracerProduct::~TracerProduct(){
-    mf::LogVerbatim("Tracing") << "TracerProduct d'tor: " << *this;
-  }
 
   TracerProduct& TracerProduct::operator=( TracerProduct const& rhs ){
     mf::LogVerbatim("Tracing") << "TracerProduct: operator= : to: "
@@ -90,5 +93,7 @@ namespace mu2e {
     static int c(-1);
     return ++c;
   }
+
+#endif
 
 }  // namespace mu2e

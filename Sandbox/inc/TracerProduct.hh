@@ -5,9 +5,9 @@
 // Each object has a "value" as a mock up of its data package plus
 // a unique serial number.
 //
-// $Id: TracerProduct.hh,v 1.5 2013/04/07 19:41:12 kutschke Exp $
+// $Id: TracerProduct.hh,v 1.6 2013/04/10 14:38:02 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/04/07 19:41:12 $
+// $Date: 2013/04/10 14:38:02 $
 //
 // Original author Rob Kutschke
 //
@@ -21,10 +21,12 @@ namespace mu2e {
   public:
 
     TracerProduct();
+    ~TracerProduct();
+
+#ifndef __GCCXML__
     explicit TracerProduct( int aval );
     TracerProduct( TracerProduct const& );
     TracerProduct( TracerProduct && );
-    ~TracerProduct();
 
     TracerProduct& operator=( TracerProduct const& );
     TracerProduct& operator=( TracerProduct && );
@@ -36,23 +38,28 @@ namespace mu2e {
     int serial() const { return serial_; }
 
     void print ( std::ostream& ) const;
+#endif
 
   private:
 
     int val_;
     int serial_;
 
+#ifndef __GCCXML__
     // Maintain a monotonically increasing serial number, starting at 0.
     // When called, return the serial number and increment it.
     static int count();
+#endif
 
   };
 
+#ifndef __GCCXML__
   inline std::ostream& operator<<( std::ostream& ost,
                                    TracerProduct const& hit){
     hit.print(ost);
     return ost;
   }
+#endif
 
 } // namespace mu2e
 
