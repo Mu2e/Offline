@@ -1,10 +1,16 @@
-  $Id: v3_0_1.txt,v 1.22 2013/04/09 23:44:58 genser Exp $
-  $Author: genser $
-  $Date: 2013/04/09 23:44:58 $
+  $Id: v3_0_1.txt,v 1.23 2013/04/10 14:54:18 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2013/04/10 14:54:18 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+24) April 10, 2013 kutschke
+    Sandbox/src/TracerProduct.cc
+    Sandbox/inc/TracerProduct.hh
+      Need to hide C++11 code from gccxml.
+      As a target of opportunity, hide all but d'tor and default c'tor.
 
 23) April 9, 2013, genser
 
