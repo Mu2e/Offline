@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.15 2013/02/28 22:35:07 logash Exp $
-//  $Author: logash $
-//  $Date: 2013/02/28 22:35:07 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.16 2013/04/10 17:39:39 youzy Exp $
+//  $Author: youzy $
+//  $Date: 2013/04/10 17:39:39 $
 //
 // Original author Ivan Logashenko
 //
@@ -48,6 +48,7 @@ namespace mu2e {
   typedef struct {
 
     Int_t run;
+    Int_t subrun;
     Int_t evt;
     Int_t trk;
 
@@ -251,11 +252,11 @@ namespace mu2e {
     _ntvd = tfs->make<TNtuple>( "ntvd", "Virtual Detectors ntuple",
                                 "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
                                 "xl:yl:zl:pxl:pyl:pzl:gtime:"
-                                "g4bl_weight:g4bl_time:run:ke");
+                                "g4bl_weight:g4bl_time:run:ke:subrun");
 
     _nttvd = tfs->make<TNtuple>( "nttvd", "Time Virtual Detectors ntuple",
                                  "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
-                                 "gtime:code:g4bl_weight:g4bl_time:run:ke");
+                                 "gtime:code:g4bl_weight:g4bl_time:run:ke:subrun");
 
     // Have to use TTree here, because one cannot use more than 100 variables in TNtuple
 
@@ -277,6 +278,7 @@ namespace mu2e {
     */
 
     _ntpart->Branch("run",        &ntp.run,        "run/I");
+    _ntpart->Branch("subrun",     &ntp.subrun,     "subrun/I");
     _ntpart->Branch("evt",        &ntp.evt,        "evt/I");
     _ntpart->Branch("trk",        &ntp.trk,        "trk/I");
     _ntpart->Branch("pdg",        &ntp.pdg,        "pdg/I");
@@ -468,11 +470,13 @@ namespace mu2e {
       nt[20] = event.id().run();
   // compute kinetic energy: this is what Geant cuts on
       nt[21] = sqrt(mom.mag2()+mass*mass)-mass;
+      nt[22] = event.id().subRun();
 
       _ntvd->Fill(nt);
       if ( _nAnalyzed < _maxPrint){
         cout << "VD hit: "
              << event.id().run()   << " | "
+             << event.id().subRun()<< " | "
              << event.id().event() << " | "
              << hit.volumeId()     << " "
              << pdgId              << " | "
@@ -543,12 +547,14 @@ namespace mu2e {
       nt[12] = hit.endProcessCode();
       nt[15] = event.id().run();
       nt[16] = sqrt(mom.mag2()+mass*mass)-mass;
+      nt[17] = event.id().subRun();
 
       _nttvd->Fill(nt);
 
       if ( _nAnalyzed < _maxPrint){
         cout << "TVD hit: "
              << event.id().run()   << " | "
+             << event.id().subRun()<< " | "
              << event.id().event() << " | "
              << hit.volumeId()     << " "
              << pdgId              << " | "
@@ -574,6 +580,7 @@ namespace mu2e {
 
         // Save SimParticle header info
         ntp.run = event.id().run();      // run_id
+        ntp.subrun = event.id().subRun();  // subrun_id
         ntp.evt = event.id().event();    // event_id
         ntp.trk = sim.id().asInt();      // track_id
         ntp.pdg = sim.pdgId();           // PDG id
