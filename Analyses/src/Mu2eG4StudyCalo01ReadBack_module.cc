@@ -1,9 +1,9 @@
 //
 // Plugin to read/analyze g4study output
 //
-//  $Id: Mu2eG4StudyCalo01ReadBack_module.cc,v 1.1 2013/04/09 23:19:26 genser Exp $
+//  $Id: Mu2eG4StudyCalo01ReadBack_module.cc,v 1.2 2013/04/12 20:08:54 genser Exp $
 //  $Author: genser $
-//  $Date: 2013/04/09 23:19:26 $
+//  $Date: 2013/04/12 20:08:54 $
 //
 // Original author KLG based on Mu2eG4StudyReadBack_module
 //
@@ -84,6 +84,34 @@ namespace mu2e {
 
   } NtPartData;
 
+  typedef struct {
+
+    Int_t run;
+    Int_t evt;
+    Int_t trk;
+    Int_t vol;
+
+    Int_t pdg;
+    Float_t time;
+    Float_t gtime;
+    Float_t x;
+    Float_t y;
+    Float_t z;
+    Float_t px;
+    Float_t py;
+    Float_t pz;
+    Float_t p;
+
+    Float_t ke;
+    Float_t tedep;
+    Float_t niedep;
+
+    Int_t endcode;
+
+
+
+  } NtStepData;
+
   class Mu2eG4StudyCalo01ReadBack : public art::EDAnalyzer {
   public:
 
@@ -94,7 +122,7 @@ namespace mu2e {
       _tvdStepPoints(pset.get<string>("tvdStepPoints","timeVD")),
       _nAnalyzed(0),
       _maxPrint(pset.get<int>("maxPrint",0)),
-      _nttvd(0), _tpart(0),
+      _nttvd(0), _tpart(0), _tstep(0),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
       _timeCut(pset.get<double>("timeCut",0.0)),
@@ -126,9 +154,11 @@ namespace mu2e {
     TNtuple* _ntstepper;
     TNtuple* _nttvd;
     TTree*   _tpart;
+    TTree*   _tstep;
 
-    float *nt; // Need this buffer to fill TTree ntvd
-    NtPartData ttp; // Buffer to fill particle tree
+    float *nt; // Ntuple buffer
+    NtPartData ttp;  // Buffer to fill particle tree
+    NtStepData tstp; // Buffer to fill stepper tree
 
     // Pointers to the physical volumes we are interested in
     map<int,int> vid_stop;
@@ -213,6 +243,27 @@ namespace mu2e {
     _tpart->Branch("parent_py",  &ttp.parent_py,  "parent_py/F");
     _tpart->Branch("parent_pz",  &ttp.parent_pz,  "parent_pz/F");
     _tpart->Branch("parent_p",   &ttp.parent_p,   "parent_p/F");
+
+    _tstep = tfs->make<TTree>("tstep", "Stepper tree");
+
+    _tstep->Branch("run",        &tstp.run,        "run/I");
+    _tstep->Branch("evt",        &tstp.evt,        "evt/I");
+    _tstep->Branch("trk",        &tstp.trk,        "trk/I");
+    _tstep->Branch("vol",        &tstp.vol,        "vol/I");
+    _tstep->Branch("pdg",        &tstp.pdg,        "pdg/I");
+    _tstep->Branch("time",       &tstp.time,       "time/F");
+    _tstep->Branch("gtime",      &tstp.gtime,      "gtime/F");
+    _tstep->Branch("x",          &tstp.x,          "x/F");
+    _tstep->Branch("y",          &tstp.y,          "y/F");
+    _tstep->Branch("z",          &tstp.z,          "z/F");
+    _tstep->Branch("px",         &tstp.px,         "px/F");
+    _tstep->Branch("py",         &tstp.py,         "py/F");
+    _tstep->Branch("pz",         &tstp.pz,         "pz/F");
+    _tstep->Branch("p",          &tstp.p,          "p/F");
+    _tstep->Branch("ke",         &tstp.ke,         "ke/F");
+    _tstep->Branch("tedep",      &tstp.tedep,      "tedep/F");
+    _tstep->Branch("niedep",     &tstp.niedep,     "niedep/F");
+    _tstep->Branch("endcode",    &tstp.endcode,    "endcode/I");
 
   }
 
@@ -361,6 +412,30 @@ namespace mu2e {
              << endl;
 
       }
+
+      // Fill the stepper tree (could "reuse" some of the nt/tree calc, or remove one or the other)
+
+      tstp.run    = event.id().run();
+      tstp.evt    = event.id().event();
+      tstp.trk    = trackId.asInt();
+      tstp.vol    = point.volumeId();
+      tstp.pdg    = pdgId;
+      tstp.time   = point.time();
+      tstp.gtime  = point.properTime();
+      tstp.x      = pos.x();
+      tstp.y      = pos.y();
+      tstp.z      = pos.z();  
+      tstp.px     = mom.x(); 
+      tstp.py     = mom.y(); 
+      tstp.pz     = mom.z(); 
+      tstp.p      = mom.mag();
+      tstp.ke     = sqrt(mom.mag2()+mass*mass)-mass;
+      tstp.tedep  = point.totalEDep();
+      tstp.niedep = point.nonIonizingEDep();
+      tstp.endcode= point.endProcessCode();
+
+      _tstep->Fill();
+
 
     } // end loop over points.
 
