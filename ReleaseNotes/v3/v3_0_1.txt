@@ -1,10 +1,15 @@
-  $Id: v3_0_1.txt,v 1.25 2013/04/12 20:14:42 genser Exp $
-  $Author: genser $
-  $Date: 2013/04/12 20:14:42 $
+  $Id: v3_0_1.txt,v 1.26 2013/04/12 22:21:59 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2013/04/12 22:21:59 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+27) April 12, 2013, kutschke
+    Add a canned set of files to run the surface check on g4test_01.txt
+      Mu2eG4/test/geom_SurfaceCheck.txt
+      Mu2eG4/test/surfaceCheck.fcl
 
 26) April 12, 2013, genser
 
@@ -15,7 +20,7 @@
       Mu2eG4/test/g4studyCalo01Selector.h
       Mu2eG4/test/g4studyCalo01helper.cint
       Mu2eG4/test/g4studyGeomCalo_01.txt
-      Mu2eG4/test/g4studyCalo_01.fcl 
+      Mu2eG4/test/g4studyCalo_01.fcl
 
 25) April 10, 2013 kutschke
     The script setup.sh now checks that the version of the BaBaR code that
