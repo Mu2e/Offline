@@ -1,11 +1,14 @@
 #define g4studyCalo01Selector_cxx
 
-// $Id: g4studyCalo01Selector.C,v 1.1 2013/04/12 20:10:16 genser Exp $
+// $Id: g4studyCalo01Selector.C,v 1.2 2013/04/13 22:35:49 genser Exp $
 // $Author: genser $
-// $Date: 2013/04/12 20:10:16 $
+// $Date: 2013/04/13 22:35:49 $
 //
 // Original author K. Genser (of the content after TTree::MakeSelector() was used)
 //
+
+// the macro is NOT meant to be run using PROOF due to the way the
+// TEDS map is handled; see below
 
 // the original tree/selector were generated using
 // TTree*   tstree = 0x0;
@@ -152,7 +155,7 @@ void g4studyCalo01Selector::Begin(TTree * /*tree*/)
    // The tree argument is deprecated (on PROOF 0 is passed).
 
    TString option = GetOption();
-   // resent the counter
+   // reset the counter
    nEvent = -1;
 
 }
@@ -265,9 +268,13 @@ Bool_t g4studyCalo01Selector::Process(Long64_t entry)
 
 void g4studyCalo01Selector::SlaveTerminate()
 {
-   // The SlaveTerminate() function is called after all entries or objects
-   // have been processed. When running with PROOF SlaveTerminate() is called
-   // on each slave server.
+  // The SlaveTerminate() function is called after all entries or objects
+  // have been processed. When running with PROOF SlaveTerminate() is called
+  // on each slave server.
+  // fill the histogram with the collected data for the last event;
+  for ( TEDSCIterator = TEDS.begin(); TEDSCIterator!=TEDS.end(); ++TEDSCIterator ) {
+    h_TEDS_vs_Vol->Fill(TEDSCIterator->first, TEDSCIterator->second);
+  }
 
 }
 
