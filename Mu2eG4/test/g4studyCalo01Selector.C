@@ -1,8 +1,8 @@
 #define g4studyCalo01Selector_cxx
 
-// $Id: g4studyCalo01Selector.C,v 1.2 2013/04/13 22:35:49 genser Exp $
+// $Id: g4studyCalo01Selector.C,v 1.3 2013/04/15 20:00:40 genser Exp $
 // $Author: genser $
-// $Date: 2013/04/13 22:35:49 $
+// $Date: 2013/04/15 20:00:40 $
 //
 // Original author K. Genser (of the content after TTree::MakeSelector() was used)
 //
@@ -64,7 +64,6 @@ ULong_t maxPrintHit = 1;
 
 Long_t nEvent;
 Long_t fEvent;
-bool firstEvent(true); 
 
 vector<TCanvas*> canvases;
 
@@ -155,8 +154,6 @@ void g4studyCalo01Selector::Begin(TTree * /*tree*/)
    // The tree argument is deprecated (on PROOF 0 is passed).
 
    TString option = GetOption();
-   // reset the counter
-   nEvent = -1;
 
 }
 
@@ -167,6 +164,8 @@ void g4studyCalo01Selector::SlaveBegin(TTree * /*tree*/)
    // The tree argument is deprecated (on PROOF 0 is passed).
 
    TString option = GetOption();
+   // reset the counter
+   nEvent = -1;
 
 }
 
@@ -209,6 +208,9 @@ Bool_t g4studyCalo01Selector::Process(Long64_t entry)
          nBinVol, lBinVol, hBinVol,
          nBinTED, lBinTED, hBinTEDS);
 
+    cout << "g4studyCalo01Selector::Process GetEntries() " << fChain->GetEntries() 
+         << endl;
+
   }
 
   b_evt  ->GetEntry(entry);
@@ -224,30 +226,24 @@ Bool_t g4studyCalo01Selector::Process(Long64_t entry)
   }
 
 
-  if (firstEvent) {
-    // recording first event #
-    firstEvent = false;
-    fEvent = evt;
-  }
-
   // histogram per hit in the scintillator layers
   if ( vol < scMaxVol && vol >= scMinVol ) h_TED_vs_Vol->Fill(vol,tedep);
 
-  // creating histogram per volume (using a map)
-
-  if (nEvent != evt && evt != fEvent) {
+  if (nEvent != evt) {
 
     if (debug>2) {
-      cout << "g4studyCalo01Selector::Process evt, nEvent, firstEvent " 
-           << evt << ", "
-           << nEvent << ", "
-           << firstEvent
+      cout << "g4studyCalo01Selector::Process evt, nEvent " 
+           << evt    << ", "
+           << nEvent 
            << endl;
     }
 
     nEvent = evt;
 
     // fill the histogram with the collected data;
+
+    // for the very first event the loop will not be entered as the map is empty
+
     for ( TEDSCIterator = TEDS.begin(); TEDSCIterator!=TEDS.end(); ++TEDSCIterator ) {
         h_TEDS_vs_Vol->Fill(TEDSCIterator->first, TEDSCIterator->second);
     }
