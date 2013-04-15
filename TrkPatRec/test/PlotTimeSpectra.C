@@ -6,7 +6,7 @@
 #include "TH2F.h"
 #include <iostream>
 
-void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, unsigned nps=3, const char* name=0){
+void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* name=0){
   gStyle->SetOptStat(0);
   TCanvas* cans[100];
   TH1F* dummy = new TH1F("dummy","dummy",10,0,1);
@@ -14,7 +14,7 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, unsigned nps=3, const ch
   dummy->SetMarkerColor(kRed);
 //  dummy->SetMarkerSize(1);
   int ican(-1);
-  unsigned iplot(0);
+  int iplot(0);
   bool first(true);
   for(size_t ievt=0;ievt<10000;++ievt){
     char canname[100];

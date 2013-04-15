@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.59 2013/04/04 01:09:21 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.60 2013/04/15 22:30:10 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/04/04 01:09:21 $
+// $Date: 2013/04/15 22:30:10 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -208,8 +208,8 @@ namespace mu2e
     _tmin(pset.get<double>("tmin",0.0)),
     _tmax(pset.get<double>("tmax",2000.0)),
     _tbin(pset.get<double>("tbin",20.0)),
-    _ymin(pset.get<double>("ymin",5)),
-    _1dthresh(pset.get<double>("OneDPeakThreshold",5.0)),
+    _ymin(pset.get<double>("ymin",4)),
+    _1dthresh(pset.get<double>("OneDPeakThreshold",4.0)),
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
     _maxhelixdoca(pset.get<double>("MaxHelixDoca",40.0)),
     _maxadddoca(pset.get<double>("MaxAddDoca",2.75)),
@@ -816,15 +816,13 @@ namespace mu2e
     _seedfail = seedfit._fit.failure();
     _kalfail = kalfit._fit.failure();
     // helix information
-    if(helixfit._fit.success()){
-      HepVector hpar;
-      HepVector hparerr;
-      _hfit.helixParams(helixfit,hpar,hparerr);
-      _hpar = helixpar(hpar);
-      _hparerr = helixpar(hparerr);
-      _hcx = helixfit._center.x(); _hcy = helixfit._center.y(); _hr = helixfit._radius;
-      _hdfdz = helixfit._dfdz; _hfz0 = helixfit._fz0;
-    }
+    HepVector hpar;
+    HepVector hparerr;
+    _hfit.helixParams(helixfit,hpar,hparerr);
+    _hpar = helixpar(hpar);
+    _hparerr = helixpar(hparerr);
+    _hcx = helixfit._center.x(); _hcy = helixfit._center.y(); _hr = helixfit._radius;
+    _hdfdz = helixfit._dfdz; _hfz0 = helixfit._fz0;
     // seed fit information
     if(seedfit._fit.success()){
       _snhits = seedfit._tdef.strawHitIndices().size();
@@ -838,6 +836,14 @@ namespace mu2e
       const TrkSimpTraj* ltraj = seedfit._krep->localTrajectory(0.0,loclen);
       _spar = helixpar(ltraj->parameters()->parameter());
       _sparerr = helixpar(ltraj->parameters()->covariance());
+    } else {
+      _snhits = -1;
+      _snactive = -1;
+      _sniter = -1;
+      _sndof = -1;
+      _schisq = -1.0;
+      _st0 = -1.0;
+      _snweediter = -1;
     }
     // use MC truth to define hits and seed helix
     TrkDef mctrk(_shcol,_tpart,_fdir);

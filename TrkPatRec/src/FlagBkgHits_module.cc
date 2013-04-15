@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.13 2013/04/09 00:50:21 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.14 2013/04/15 22:30:10 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/04/09 00:50:21 $
+// $Date: 2013/04/15 22:30:10 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -194,20 +194,20 @@ namespace mu2e
     _stmask(StrawHitFlag::stereo),
     _deltamask(StrawHitFlag::delta),
     _ismask(StrawHitFlag::isolated),
-    _dhittype(pset.get<std::string>("DeltaHitTMVAType","BDT method")),
-    _dpeaktype(pset.get<std::string>("DeltaPeakTMVAType","BDT method")),
-    _gdcut(pset.get<double>("DeltaHitMVACut",0.0)),
-    _gdcore(pset.get<double>("DeltaHitMVACoreCut",0.15)),
-    _mindp(pset.get<unsigned>("MinDeltaHits",2)),
-    _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.0)),
+    _dhittype(pset.get<std::string>("DeltaHitTMVAType","MLP method")),
+    _dpeaktype(pset.get<std::string>("DeltaPeakTMVAType","MLP method")),
+    _gdcut(pset.get<double>("DeltaHitMVACut",0.7)),
+    _gdcore(pset.get<double>("DeltaHitMVACoreCut",0.85)),
+    _mindp(pset.get<unsigned>("MinDeltaHits",6)),
+    _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.95)),
     _minflag(pset.get<int>("DeltaHitFlag",1)),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
     _clusterer(pset.get<fhicl::ParameterSet>("ClusterStrawHits",fhicl::ParameterSet()))
   {
     // location-independent files
     ConfigFileLookupPolicy configFile;
-    std::string dhitweights = pset.get<std::string>("DeltaHitTMVAWeights","TrkPatRec/test/StereoGDistBDTWeights.xml");
-    std::string dpeakweights = pset.get<std::string>("DeltaPeakTMVAWeights","TrkPatRec/test/StereoPeakBDT.weights.xml");
+    std::string dhitweights = pset.get<std::string>("DeltaHitTMVAWeights","TrkPatRec/test/StereoGDist_MLP.weights.xml");
+    std::string dpeakweights = pset.get<std::string>("DeltaPeakTMVAWeights","TrkPatRec/test/StereoPeak_MLP.weights.xml");
     _dhitweights = configFile(dhitweights);
     _dpeakweights = configFile(dpeakweights);
     produces<StrawHitFlagCollection>();
@@ -280,7 +280,7 @@ namespace mu2e
       if(clusters._cids[ish]<0)bkgfcol->at(ish).merge(_ismask);
     }
     // diagnostics
-    if(_diag > 1)
+    if(_diag > 0)
       fillDeltaDiag(dinfo);
     // put the background flag into the event
     event.put(std::move(bkgfcol));
