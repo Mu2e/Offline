@@ -8,9 +8,9 @@
 #
 # This code only prints warnings; it does not do an update.
 #
-# $Id: checkVersion.sh,v 1.1 2013/04/10 16:01:25 kutschke Exp $
-# $Date: 2013/04/10 16:01:25 $
-# $Author: kutschke $
+# $Id: checkVersion.sh,v 1.2 2013/04/16 23:28:19 gandr Exp $
+# $Date: 2013/04/16 23:28:19 $
+# $Author: gandr $
 #
 # Contact person Rob Kutschke
 #
@@ -61,14 +61,14 @@ fi
 
 checkedOutVersion=`cat $tmpFile | grep "Status against revision:" | awk '{print $4}' `
 
-if [ $checkedOutVersion != $requiredVersion ]; then
+if [ "$checkedOutVersion" != "$requiredVersion" ]; then
   echo "The checked out version of the BaBar code does not match the required version."
   echo "Checked out version: " $checkedOutVersion
   echo "Required version:    " $requiredVersion
   echo "If you need to update the BaBaR code you should: source BaBar/update.sh"
 fi
 
-if [ $checkedOutVersion == $requiredVersion ]; then
+if [ "$checkedOutVersion" == "$requiredVersion" ]; then
   echo "The checked out BaBar code matches the required version: " $requiredVersion
 fi
 
