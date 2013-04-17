@@ -1,7 +1,7 @@
 #
-# $Id: hitDisplay.fcl,v 1.6 2013/03/05 02:15:51 murat Exp $
+# $Id: hitDisplay.fcl,v 1.7 2013/04/17 15:56:54 murat Exp $
 # $Author: murat $
-# $Date: 2013/03/05 02:15:51 $
+# $Date: 2013/04/17 15:56:54 $
 #
 # Original author Rob Kutschke
 
@@ -53,14 +53,15 @@ services :
 physics : {
 # sequence: e-, e+, mu-, mu+
   producers : {
-    trkPatRec1 : @local::TrkPatRecDownstreameMinus
-    trkPatRec2 : @local::TrkPatRecUpstreamePlus
-    trkPatRec3 : @local::TrkPatRecDownstreammuMinus
-    trkPatRec4 : @local::TrkPatRecUpstreammuPlus
-  }
 
-  analyzers: {
-    # Look at the hits from G4.
+    MakeStereoHits : @local::MakeStereoHits
+    FlagStrawHits  : @local::FlagStrawHits
+    FlagBkgHits    : @local::FlagBkgHits
+
+    trkPatRec1     : @local::TrkPatRecDownstreameMinus
+    trkPatRec2     : @local::TrkPatRecUpstreamePlus
+    trkPatRec3     : @local::TrkPatRecDownstreammuMinus
+    trkPatRec4     : @local::TrkPatRecUpstreammuPlus
 
     makeCaloCluster: {
       module_type           : MakeCaloCluster
@@ -78,6 +79,10 @@ physics : {
       EclusterCut            : 0.00 #MeV  
       maxFullPrint           : 201
     }
+  }
+
+  analyzers: {
+    # Look at the hits from G4.
 
     hitDisplay: {
       module_type          : HitDisplay
@@ -97,11 +102,17 @@ physics : {
   }
 
 #  p1 : [makeCaloCluster, trkPatRec1, trkPatRec2, trkPatRec3, trkPatRec4]
+
   p1 : [makeCaloCluster, trkPatRec1, trkPatRec2]
+
+  p2 : [makeCaloCluster, 
+	MakeStereoHits, FlagStrawHits, FlagBkgHits, 
+	trkPatRec1, trkPatRec2]
+
   e1 : [hitDisplay]
 
 
-  trigger_paths  : [p1]
+  trigger_paths  : [p2]
   end_paths      : [e1]
 
 }
