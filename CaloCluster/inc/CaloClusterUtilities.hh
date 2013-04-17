@@ -1,9 +1,9 @@
 //
 // General utilities for the calorimeter's studies
 //
-// $Id: CaloClusterUtilities.hh,v 1.7 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: CaloClusterUtilities.hh,v 1.8 2013/04/17 14:29:31 murat Exp $
+// $Author: murat $
+// $Date: 2013/04/17 14:29:31 $
 //
 // Original author G. Pezzullo & G. Tassielli & G. Onorato
 //
@@ -820,17 +820,26 @@ struct ClusterMap{
                 _errShowerDir(CaloClusterTools(cluster).errShowerDir()){
                 GeomHandle<VaneCalorimeter> cg;
                 for( CaloCrystalHitPtrVector::const_iterator itCD = cluster.caloCrystalHitsPtrVector().begin(); itCD != cluster.caloCrystalHitsPtrVector().end(); ++itCD){
-                        std::vector<art::Ptr<CaloHit> > const& ROIds = (*itCD)->readouts();
-                        CaloHit const& thehit = *ROIds.at(0);
-                        int roid = thehit.id();
-                        int tmpRow = cg->crystalRByRO( roid) ;
-                        int tmpColumn = cg->crystalZByRO(roid) ;
-                        _rowVec.push_back(tmpRow);
-                        _columnVec.push_back(tmpColumn);
-                        _cryEdepVec.push_back((*itCD)->energyDep());
-                        _COGrowVec.push_back(tmpRow);
-                        _COGcolumnVec.push_back(tmpColumn);
-                        _timeVec.push_back((*itCD)->time());
+		  std::vector<art::Ptr<CaloHit> > const& ROIds = (*itCD)->readouts();
+		  if (ROIds.size() <= 0) {
+//-----------------------------------------------------------------------------
+// 2013-04-15 P.Murat: work around some error, diagnosing which seems difficult at this point
+//-----------------------------------------------------------------------------
+		    printf(">>> ERROR in CaloClusterUtilities::ClusterMap(CaloCluster &cluster): empty ROIds, initialization incomplete\n");
+		  }
+		  else {
+
+		    CaloHit const& thehit = *ROIds.at(0);
+		    int roid = thehit.id();
+		    int tmpRow = cg->crystalRByRO( roid) ;
+		    int tmpColumn = cg->crystalZByRO(roid) ;
+		    _rowVec.push_back(tmpRow);
+		    _columnVec.push_back(tmpColumn);
+		    _cryEdepVec.push_back((*itCD)->energyDep());
+		    _COGrowVec.push_back(tmpRow);
+		    _COGcolumnVec.push_back(tmpColumn);
+		    _timeVec.push_back((*itCD)->time());
+		  }
                 }
         }
 

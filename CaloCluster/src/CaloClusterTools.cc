@@ -1,7 +1,7 @@
  //
- // $Id: CaloClusterTools.cc,v 1.3 2013/03/05 20:33:25 aluca Exp $
- // $Author: aluca $
- // $Date: 2013/03/05 20:33:25 $
+ // $Id: CaloClusterTools.cc,v 1.4 2013/04/17 14:29:31 murat Exp $
+ // $Author: murat $
+ // $Date: 2013/04/17 14:29:31 $
  //
  // Original author G. Pezzullo, A. Luca' & G. Tassielli
  //
@@ -122,6 +122,14 @@
      
      for( size_t i=0; i< _cluster.caloCrystalHitsPtrVector().size(); ++i){
        std::vector<art::Ptr<CaloHit> > const& ROIds = (*_cluster.caloCrystalHitsPtrVector().at(i)).readouts();
+       if (ROIds.size() <= 0) {
+//-----------------------------------------------------------------------------
+// 2013-04-15 P.Murat: work around an error, diagnosing which seems difficult at this point
+//-----------------------------------------------------------------------------
+	 printf(">>> ERROR in CaloClusterTools::showerDir: empty ROIds, set showerDir to 1.\n");
+	 return 1.;
+       }
+
        CaloHit const& thehit = *ROIds.at(0);
        
        //Get Z and R from readout
@@ -167,6 +175,14 @@
      
      for( size_t i=0; i< _cluster.caloCrystalHitsPtrVector().size(); ++i){
        std::vector<art::Ptr<CaloHit> > const& ROIds = (*(_cluster.caloCrystalHitsPtrVector().at(i)) ).readouts();
+       if (ROIds.size() <= 0) {
+//-----------------------------------------------------------------------------
+// 2013-04-15 P.Murat: work around an error, diagnosing which seems difficult at this point
+//-----------------------------------------------------------------------------
+	 printf(">>> ERROR in CaloClusterTools::showerDir: empty ROIds, set errShowerDir to 1.\n");
+	 return 1.;
+       }
+
        CaloHit const& thehit = *ROIds.at(0);
        
        //Get Z and R from readout
