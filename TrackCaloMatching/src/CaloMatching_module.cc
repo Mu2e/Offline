@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.12 2013/03/27 21:06:10 murat Exp $
+// $Id: CaloMatching_module.cc,v 1.13 2013/04/17 14:38:31 murat Exp $
 // $Author: murat $
-// $Date: 2013/03/27 21:06:10 $
+// $Date: 2013/04/17 14:38:31 $
 //
 // Original author G. Pezzullo
 //
@@ -445,7 +445,7 @@ void CaloMatching::doMatching(art::Event & evt, bool skip){
     }
   }
 
-  for (size_t iex=0; iex<nex; ++iex){
+  for (int iex=0; iex<nex; ++iex){
     extrk = &trjExtrapols->at(iex);
     krep  = *extrk->trk();
 //-----------------------------------------------------------------------------
@@ -453,8 +453,14 @@ void CaloMatching::doMatching(art::Event & evt, bool skip){
 //-----------------------------------------------------------------------------
     ltrk  = krep-krep0;
     if (ltrk > 100) {
-      printf("%s ERROR: more than 100 tracks, skip the rest\n", oname);
-                                                        goto NEXT_INTERSECTION;
+      printf(">>> ERROR in %s: more than 100 tracks, ltrk = %i, skip the rest\n",
+	     oname,ltrk);
+                                                            goto NEXT_INTERSECTION;
+    }
+    else if (ltrk < 0) {
+      printf(">>> ERROR in %s: ltrk < 0:, ltrk = %i, skip the rest\n", 
+	     oname,ltrk);
+                                                            goto NEXT_INTERSECTION;
     }
 //-----------------------------------------------------------------------------
 // apparently, ntupling stuff mixed in
