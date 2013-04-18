@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.60 2013/04/15 22:30:10 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.61 2013/04/18 23:23:03 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/04/15 22:30:10 $
+// $Date: 2013/04/18 23:23:03 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -155,7 +155,7 @@ namespace mu2e
       Int_t _nmcsteps;
       Int_t _mcnunique,_mcnmax;
       Int_t _mcpdg,_mcgen,_mcproc;
-      threevec _mcshp;
+      threevec _mcshp, _mcop;
       Float_t _mcshlen;
       Float_t _mcedep,_mcemax;
       Float_t _pdist,_pperp,_pmom;
@@ -560,6 +560,7 @@ namespace mu2e
     _shdiag->Branch("tpeak",&_shtpeak,"tpeak/F");
     _shdiag->Branch("nshtpeak",&_nshtpeak,"nshtpeak/I");
     _shdiag->Branch("mcshpos",&_mcshp,"x/F:y/F:z/F");
+    _shdiag->Branch("mcopos",&_mcop,"x/F:y/F:z/F");
     _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
     _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
     _shdiag->Branch("mcemax",&_mcemax,"mcemax/F");
@@ -684,6 +685,7 @@ namespace mu2e
 	_mcproc = mcsum[0]._pid;
 	_mctime = mcsum[0]._time;
 	_mcshp = mcsum[0]._pos;
+	_mcop = det->toDetector(mcsum[0]._spp->startPosition());
 	_mcshlen = (mcsum[0]._pos-straw.getMidPoint()).dot(straw.getDirection());
 	bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
 	if(conversion){
