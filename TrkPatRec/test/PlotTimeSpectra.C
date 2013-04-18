@@ -46,7 +46,9 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
       lh->SetStats(0);
       ch->SetStats(0);
 //
-      rh->SetTitle("Time Spectrum");
+      char title[100];
+      snprintf(title,100,"Time Spectrum event %lu",ievt);
+      rh->SetTitle(title);
       rh->GetXaxis()->SetTitle("nsec");
       rh->GetYaxis()->SetTitle("# hits");
       rh->Draw();
