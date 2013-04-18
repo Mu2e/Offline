@@ -1,10 +1,13 @@
-  $Id: v3_0_1.txt,v 1.26 2013/04/12 22:21:59 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2013/04/12 22:21:59 $
+  $Id: v3_0_1.txt,v 1.27 2013/04/18 23:21:35 brownd Exp $
+  $Author: brownd $
+  $Date: 2013/04/18 23:21:35 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+28) April 16, 2013, brownd
+    Updated the parameters used in the delta-ray removal algorithm
 
 27) April 12, 2013, kutschke
     Add a canned set of files to run the surface check on g4test_01.txt
