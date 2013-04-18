@@ -178,7 +178,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,const char* suffix) {
     diocopy->SetMinimum(-1.0/nbins);
     diocopy->SetMaximum(60.0/nbins);
     conspec[icut]->Draw("same");
-    flat_f[0]->Draw("same");
+    flat_f[icut]->Draw("same");
 
     int istart = diospec[icut]->FindFixBin(momlow+0.5*mevperbin);
     int istop = diospec[icut]->FindFixBin(momhigh-0.5*mevperbin);
@@ -234,6 +234,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,const char* suffix) {
       mu2ecan->cd(0);
       diocopy->Draw();
       conspec[icut]->Draw("same");
+      flat_f[icut]->Draw("same");
       inttext->Draw();
       cuttext->Draw();
       momlowl->Draw();

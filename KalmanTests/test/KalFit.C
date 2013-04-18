@@ -17,7 +17,7 @@
 double tdlow(0.57735027);
 double tdhigh(1.0);
 double t0min(720);
-double momlow(103.35);
+double momlow(103.4);
 double momhigh(104.8);
 int minnhits(20);
 size_t icut=2;
