@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.48 2013/03/23 16:13:24 brownd Exp $
+// $Id: KalFitMC.cc,v 1.49 2013/04/20 15:29:43 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/23 16:13:24 $
+// $Date: 2013/04/20 15:29:43 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -656,6 +656,7 @@ namespace mu2e
     _trkdiag->Branch("ncactive",&_ncactive,"ncactive/I");
     _trkdiag->Branch("narcs",&_narcs,"narcs/I");
     _trkdiag->Branch("nchits",&_nchits,"nchits/I");
+    _trkdiag->Branch("ncgood",&_ncgood,"ncgood/I");
     _trkdiag->Branch("chisq",&_chisq,"chisq/F");
     _trkdiag->Branch("fitcon",&_fitcon,"fitcon/F");
     _trkdiag->Branch("radlen",&_radlen,"radlen/F");
@@ -748,6 +749,7 @@ namespace mu2e
 // count # of conversion straw hits
       _strawhits = 0;
       _nchits = 0;
+      _ncgood = 0;
       art::Handle<mu2e::StrawHitCollection> strawhitsH;
       if(evt.getByLabel(_strawhitslabel,strawhitsH))
 	_strawhits = strawhitsH.product();
@@ -759,6 +761,8 @@ namespace mu2e
 	    bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
 	    if(conversion){
 	      ++_nchits;
+	      if(mcsum[0]._spp->genParticle()->momentum().vect().mag()-mcsum[0]._mom.mag() < 5.0)
+		++_ncgood;
 	    }
 	  }
 	}

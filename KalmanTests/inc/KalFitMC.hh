@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.31 2013/03/11 23:17:44 brownd Exp $
+// $Id: KalFitMC.hh,v 1.32 2013/04/20 15:29:43 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/11 23:17:44 $
+// $Date: 2013/04/20 15:29:43 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -252,6 +252,7 @@ namespace mu2e
     Int_t _ncactive;
     Int_t _narcs;
     Int_t _nchits;
+    Int_t _ncgood;
     Float_t _chisq;
     Float_t _fitcon;
     Float_t _radlen;
