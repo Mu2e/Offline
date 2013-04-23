@@ -118,7 +118,7 @@ Double_t crystalball (Double_t *x, Double_t *par) {
 class mu2e {
   public:
     mu2e(TTree* d, TTree* c, double dgenrange, double nd, double nc,bool weightd=true) : dio(d), con(c),diogenrange(dgenrange),
-    ndio(nd),ncon(nc),weightdio(weightd),nstopped(7.56e17),capfrac(0.609),conprob(1e-16),trueconvmom(104.973),
+    ndio(nd),ncon(nc),weightdio(weightd),nstopped(7.56e17),capfrac(0.609),rmue(1e-16),trueconvmom(104.973),
     tdlow(0.57735027),tdhigh(1.0),t0min(710),rpc(0.025), ap(.083333),cmu(0.041666),reco("fitstatus>0")
   {
     init();
@@ -139,7 +139,7 @@ class mu2e {
     bool weightdio;
     unsigned _nbins;
     double _mmin, _mmax;
-    double nstopped,capfrac,conprob;
+    double nstopped,capfrac,rmue;
     double decayfrac,ndecay,ncap,mevperbin,conscale;
     double trueconvmom,tdlow,tdhigh,t0min;
     double rpc, ap, cmu,flat; // rates per MeV
@@ -155,6 +155,7 @@ class mu2e {
     TH1F* _diospec[4];
     TH1F* _conspec[4];
     TH1D* _recodio;
+    TH1F* _momres;
     TLegend* _leg;
     TPaveText* _info;
 };
@@ -164,7 +165,7 @@ void mu2e::init(){
   decayfrac = 1.0 - capfrac;
   ndecay = nstopped*decayfrac;
   ncap = nstopped*capfrac;
-  conscale = ncap*conprob/ncon;
+  conscale = ncap*rmue/ncon;
   cout << "Conversion scale factor =" << conscale << endl;
   // dio spectrum
   _diocz_f = new TF1("_diocz_f",DIOCZ,95.0,trueconvmom,1);
@@ -227,7 +228,7 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
     snprintf(flatname,50,"flat_f%i",icut);
 
     char dtitle[100];
-    snprintf(dtitle,100,"Reconstructed Momentum;p (MeV/c);N #mu2e/%2.2f MeV/c",mevperbin);
+    snprintf(dtitle,100,"Reconstructed e^{-} Momentum;p (MeV/c);N Events/%2.2f MeV/c",mevperbin);
     _diospec[icut] = new TH1F(dioname,dtitle,_nbins,_mmin,_mmax);
     _diospec[icut]->SetStats(0);
     _diospec[icut]->SetLineColor(kBlue);
@@ -245,7 +246,6 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
 
     con->Project(conname,"fitmom",final[icut]);
     _conspec[icut]->Scale(conscale);
-
     
     _flat_f[icut] = new TF1(flatname,"[0]",_mmin,_mmax);
     _flat_f[icut]->SetLineColor(kGreen);
@@ -264,9 +264,9 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
   snprintf(text,80,"%g stopped muons",nstopped);
   TString snstop(text);
   _info->AddText(snstop);
-  snprintf(text,80,"%g Conversion Rate",conprob);
-  TString sconprob(text);
-  _info->AddText(sconprob);
+  snprintf(text,80,"%g Conversion Rate",rmue);
+  TString srmue(text);
+  _info->AddText(srmue);
   _info->SetBorderSize(0);
 }
 
@@ -339,6 +339,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,const char* suffix) {
     _info->Draw();
     if(icut == mu2ecut){
       mu2ecan->cd(0);
+      gPad->SetLogy();
       _diospec[icut]->Draw();
       _conspec[icut]->Draw("same");
       _flat_f[icut]->Draw("same");
@@ -537,9 +538,9 @@ void mu2e::Read(const char* savename) {
   snprintf(text,80,"%g stopped muons",nstopped);
   TString snstop(text);
   _info->AddText(snstop);
-  snprintf(text,80,"%g Conversion Rate",conprob);
-  TString sconprob(text);
-  _info->AddText(sconprob);
+  snprintf(text,80,"%g Conversion Rate",rmue);
+  TString srmue(text);
+  _info->AddText(srmue);
   _info->SetBorderSize(0);
 //  savefile.Close();
 }
@@ -548,15 +549,17 @@ void mu2e::fitReco(unsigned icut) {
 // fit the acceptance
   gStyle->SetOptFit(1);
   gStyle->SetOptStat(0);
-  TH1F* amomd = new TH1F("amomd","DIO Acceptance vs Momentum;MeV/c",500,_mmin,_mmax);
-  TH1F* amom = new TH1F("amom","DIO Acceptance vs Momentum;MeV/c",500,_mmin,_mmax);
+  TH1F* amomd = new TH1F("amomd","Reco Acceptance vs Momentum;MeV/c",_nbins,_mmin,_mmax);
+  TH1F* amom = new TH1F("amom","Reco Acceptance vs Momentum;MeV/c",_nbins,_mmin,_mmax);
   amom->Sumw2();
   amomd->Sumw2();
 //  char fmomcut[80];
 //  snprintf(fmomcut,80,"fitmom>%5.3f",mcmom);
-  dio->Project("amom","mcmom",final[icut]+TCut("fitmom>mcmom-4.2"));
+  dio->Project("amom","mcmom",final[icut]+TCut("fitmom>mcmom-4.0"));
   dio->Project("amomd","mcmom");
   amom->Divide(amomd);
+  amom->SetMinimum(0.08);
+  amom->SetMaximum(0.18);
   _racc = new TF1("racc",recoacc,_mmin,_mmax,2);
   _racc->SetParName(0,"acc100");
   _racc->SetParName(1,"slope");
@@ -570,10 +573,10 @@ void mu2e::fitReco(unsigned icut) {
   _cball->SetParName(5,"tailfrac");
   _cball->SetParName(6,"taillambda");
 // set parameters according to cutset 'C'
-  _cball->SetParameters(1.0,-0.8262,0.2416,3.551,0.3836,0.003,0.3259);
-  TH1F* momres = new TH1F("momres","momentum resolution;MeV",_nbins,-7,3);
+  _momres = new TH1F("momres","Reco Momentum Resolution;P_{RECO}-P_{Conversion} (MeV/c)",_nbins,-5,1.0);
+//  _momres->Sumw2();
   con->Project("momres","fitmom-mcmom",final[icut]);
- 
+//  _momres->Scale(conscale);
   TCanvas* fcan = new TCanvas("fcan","Fits",1000,800);
   fcan->Clear();
   fcan->Divide(2,1);
@@ -581,11 +584,15 @@ void mu2e::fitReco(unsigned icut) {
   amom->Fit("racc");
   fcan->cd(2);
   gPad->SetLogy();
-  double integral = momres->GetEntries()*momres->GetBinWidth(1);
-  _cball->SetParameters(3*integral,momres->GetMean()+0.07,0.3*momres->GetRMS(),3.0,1.0,0.02,0.2);
-  _cball->SetParLimits(5,0.001,0.4);
-  _cball->SetParLimits(6,0.1,momres->GetRMS());
-  momres->Fit("cball","LIR");
+  double integral = _momres->GetEntries()*_momres->GetBinWidth(1);
+  _cball->SetParameters(integral,_momres->GetMean()+0.07,0.3*_momres->GetRMS(),3.0,1.0,0.001,0.2);
+//  _cball->SetParLimits(5,0.00001,0.01);
+//  _cball->SetParLimits(6,0.1,_momres->GetRMS());
+  _cball->FixParameter(5,0.0);
+  _cball->FixParameter(6,0.1);
+  _momres->Fit(_cball,"0");
+  _momres->Fit(_cball,"L0");
+  _momres->Fit(_cball,"L");
 }
 
 void mu2e::smearDIO(unsigned ntrials,unsigned nres) {
@@ -597,10 +604,23 @@ void mu2e::smearDIO(unsigned ntrials,unsigned nres) {
 // resolution function
 // override GRandom
   gRandom = new TRandom3(324913);
-  TH1F* rawdio = new TH1F("rawdio","Raw DIO e^{-} Momentum;P_{true} (MeV/c);N #mu2e",_nbins,_mmin,_mmax);
+  double mevpb = (_mmax-_mmin)/_nbins;
+  char dtitle[100];
+  snprintf(dtitle,100,"DIO e^{-} Momentum;P_{TRUE} (MeV/c);N Events/%2.2f MeV/c",mevpb);
+  TH1F* rawdio = new TH1F("rawdio",dtitle,_nbins,_mmin,_mmax);
   rawdio->Sumw2();
-  _recodio = new TH1D("recodio","Reco Effects Applied DIO e^{-} Momentum;P_{reco} (MeV/c);N #mu2e",_nbins,_mmin,_mmax);
+  snprintf(dtitle,100,"All Reco Effects Applied DIO e^{-} Momentum;P_{RECO} (MeV/c);N Events/%2.2f MeV/c",mevpb);
+  _recodio = new TH1D("recodio",dtitle,_nbins,_mmin,_mmax);
   _recodio->Sumw2();
+  TH1F* rawcon = new TH1F("rawcon","Raw Conversion e^{-} Momentum;P_{true} (MeV/c);N Events",_nbins,_mmin,_mmax);
+  TH1F* acccon = new TH1F("acccon","Acceptance Applied Conversion e^{-} Momentum;P_{reco} (MeV/c);N Events",_nbins,_mmin,_mmax);
+  TH1F* econ = new TH1F("econ","Acc, #Delta E Applied Conversion e^{-} Momentum;P_{reco} (MeV/c);N Events",_nbins,_mmin,_mmax);
+  rawcon->SetLineColor(kRed);
+  acccon->SetLineColor(kRed);
+  econ->SetLineColor(kRed);
+  rawcon->Fill(trueconvmom,rmue*ncap);
+  acccon->Fill(trueconvmom,rmue*ncap*_racc->Eval(trueconvmom));
+  econ->Fill(trueconvmom+_cball->GetParameter(1),rmue*ncap*_racc->Eval(trueconvmom));
   double genrange = trueconvmom-_mmin+buffer;
   for(unsigned itrial=0;itrial<ntrials;++itrial){
 // make the range bigger than expected, to account for smearing
@@ -669,58 +689,81 @@ void mu2e::smearDIO(unsigned ntrials,unsigned nres) {
   dspece_f->SetLineColor(kGreen);
 
   char ttitle[100];
+  char atitle[100];
+  char etitle[100];
   char rtitle[100];
   char title[100];
-  double mevpb = (_mmax-_mmin)/_nbins;
-  snprintf(ttitle,100,"DIO Momentum Spectrum;P_{TRUE} (MeV/c);N #mu2e/%2.2f MeV/c",mevpb);
-  snprintf(rtitle,100,"DIO Momentum Spectrum;P_{RECO} (MeV/c);N #mu2e/%2.2f MeV/c",mevpb);
-  snprintf(title,100,"DIO Momentum Spectrum;P (MeV/c);N #mu2e/%2.2f MeV/c",mevpb);
+  snprintf(title,100,"DIO Spectrum;P (MeV/c);N Events/%2.2f MeV/c",mevpb);
+  snprintf(ttitle,100,"DIO Spectrum;P_{TRUE} (MeV/c);N Events/%2.2f MeV/c",mevpb);
+  snprintf(atitle,100,"Reco Acceptance Applied DIO Spectrum;P_{TRUE} (MeV/c);N Events/%2.2f MeV/c",mevpb);
+  snprintf(etitle,100,"Reco Acc, #Delta E Applied DIO Spectrum;P_{RECO} (MeV/c);N Events/%2.2f MeV/c",mevpb);
+  snprintf(rtitle,100,"Reco Acc, #Delta E, Resolution Applied DIO Spectrum;P_{RECO} (MeV/c);N Events/%2.2f MeV/c",mevpb);
   TH1F* dspec = new TH1F("dspec",title,_nbins,_mmin,_mmax);
   TH1F* dspect = new TH1F("dspect",ttitle,_nbins,_mmin,_mmax);
-  TH1F* dspeca = new TH1F("dspeca",ttitle,_nbins,_mmin,_mmax);
-  TH1F* dspece = new TH1F("dspece",rtitle,_nbins,_mmin,_mmax);
+  TH1F* dspeca = new TH1F("dspeca",atitle,_nbins,_mmin,_mmax);
+  TH1F* dspece = new TH1F("dspece",etitle,_nbins,_mmin,_mmax);
   TH1F* dspecs = new TH1F("dspecs",rtitle,_nbins,_mmin,_mmax);
   dspec->SetMinimum(1e-3);
-  dspec->SetMaximum(raw_f->Eval(_mmin)*10);
+  dspec->SetMaximum(raw_f->Eval(_mmin)*3);
   dspect->SetMinimum(1e-3);
-  dspect->SetMaximum(raw_f->Eval(_mmin)*5);
+  dspect->SetMaximum(raw_f->Eval(_mmin)*3);
   dspeca->SetMinimum(1e-3);
-  dspeca->SetMaximum(raw_f->Eval(_mmin)*5);
+  dspeca->SetMaximum(raw_f->Eval(_mmin)*3);
   dspece->SetMinimum(1e-3);
-  dspece->SetMaximum(raw_f->Eval(_mmin)*5);
+  dspece->SetMaximum(raw_f->Eval(_mmin)*3);
   dspecs->SetMinimum(1e-3);
-  dspecs->SetMaximum(raw_f->Eval(_mmin)*5);
+  dspecs->SetMaximum(raw_f->Eval(_mmin)*3);
   TCanvas* diocan2 = new TCanvas("diocan2","DIO Spectrum Effects",1000,1000);
   diocan2->Divide(2,2);
   diocan2->cd(1);
   gPad->SetLogy();
   dspect->Draw();
   raw_f->Draw("same");
-  TLegend* tleg = new TLegend(0.3,0.8,0.9,0.9);
+  TLegend* tleg = new TLegend(0.3,0.75,0.9,0.9);
   tleg->AddEntry(raw_f,"Czarnecki etal","L");
+  tleg->AddEntry(rawcon,"Conversion, R_{#mue}=10^{-16}","L");
   tleg->Draw();
+  rawcon->Draw("same");
   diocan2->cd(2);
   gPad->SetLogy();
   dspeca->Draw();
+  acccon->Draw("same");
   dspeca_f->Draw("same");
-  TLegend* aleg = new TLegend(0.3,0.8,0.9,0.9);
-  aleg->AddEntry(dspeca_f,"#times Acc_{Detector}","L");
+  TLegend* aleg = new TLegend(0.3,0.75,0.9,0.9);
+  aleg->AddEntry(dspeca_f,"Czarnecki etal","L");
+  aleg->AddEntry(acccon,"Conversion, R_{#mue}=10^{-16}","L");
   aleg->Draw();
   diocan2->cd(3);
   gPad->SetLogy();
   dspece->Draw();
+  econ->Draw("same");
   dspece_f->Draw("same");
-  TLegend* eleg = new TLegend(0.3,0.8,0.9,0.9);
-  eleg->AddEntry(dspece_f,"- #DeltaE_{Detector}","L");
+  TLegend* eleg = new TLegend(0.3,0.75,0.9,0.9);
+  eleg->AddEntry(dspece_f,"Czarnecki etal","L");
+  eleg->AddEntry(econ,"Conversion, R_{#mue}=10^{-16}","L");
   eleg->Draw();
   diocan2->cd(4);
   gPad->SetLogy();
   dspecs->Draw();
   _reco_f->Draw("same");
-  TLegend* sleg = new TLegend(0.3,0.8,0.9,0.9);
-  sleg->AddEntry(_reco_f,"#otimes #sigma_{Detector}","L");
-  sleg->Draw();
-
+  TF1* reccon = new TF1(*_cball);
+  reccon->SetLineColor(kRed);
+  reccon->SetName("reccon");
+  reccon->SetParameter(1,_cball->GetParameter(1)+trueconvmom);
+// must scale functions
+  double csum = _cball->Integral(-5.0,1.0)/_momres->GetBinWidth(1);
+  cout << "CBall sum = " << csum;
+  double norm = conscale*_cball->GetParameter(0)*_momres->GetBinWidth(1)/dspec->GetBinWidth(1);
+  reccon->SetParameter(0,norm);
+  reccon->SetRange(_mmin,_mmax);
+  cout << "reccon name " << reccon->GetName() << " norm = " << reccon->GetParameter(0) << " shift = " << reccon->GetParameter(1) << endl;
+//  reccon->Draw();
+  reccon->Draw("same");
+  TLegend* rleg = new TLegend(0.3,0.75,0.9,0.9);
+  rleg->AddEntry(_reco_f,"Czarnecki etal","L");
+  rleg->AddEntry(reccon,"Conversion, R_{#mue}=10^{-16}","L");
+  rleg->Draw();
+ 
   TCanvas* diocan3 = new TCanvas("diocan3","DIO Spectrum Effects",600,600);
   diocan3->Divide(1,1);
   diocan3->cd(1);
@@ -732,9 +775,9 @@ void mu2e::smearDIO(unsigned ntrials,unsigned nres) {
   dspeca_f->Draw("same");
   leg->AddEntry(dspeca_f,"#times Acc_{Detector}","L");
   dspece_f->Draw("same");
-  leg->AddEntry(dspece_f,"- #DeltaE_{Detector}","L");
+  leg->AddEntry(dspece_f,"#times Acc_- #DeltaE_{Detector}","L");
   _reco_f->Draw("same");
-  leg->AddEntry(_reco_f,"#otimes #sigma_{Detector}","L");
+  leg->AddEntry(_reco_f,"(#times Acc_- #DeltaE)#otimes #sigma_{Detector}","L");
   leg->Draw();
 
 }
@@ -748,7 +791,7 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
 // override GRandom
   gRandom = new TRandom3(nexp*nexp*7+13);
 
-  double conmean = _conspec[ispec]->Integral()*cprob/conprob;
+  double conmean = _conspec[ispec]->Integral()*cprob/rmue;
   double diomean = _diospec[ispec]->Integral();
   double flatmean = _flat_f[ispec]->Integral(_mmin,_mmax)/mevperbin;
   cout << "conv mean = " << conmean << " dio mean = " << diomean << " flat mean = " << flatmean << endl;
@@ -770,30 +813,32 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
   char conname[50];
   char flatname[50];
   TLegend* leg(0);
-// fit each experiment DIO spectrum
-  TF1* dioexp_f = new TF1("dioexp_f",RECOFITDIO,_mmin,trueconvmom,7);
+// fit each experiment DIO spectrum OUTSIDE THE SIGNAL BOX
+  TF1* dioexp_f = new TF1("dioexp_f",RECOFITDIO,_mmin,momlow-1.0,7);
   dioexp_f->SetLineColor(kBlue);
   for(unsigned ip=0;ip<5;++ip)
     dioexp_f->FixParameter(ip,_reco_f->GetParameter(ip));
   dioexp_f->SetParameter(5,0.0);
   dioexp_f->SetParameter(6,1.0);
 
-  TH1F* ndio_h = new TH1F("ndio_h","N Events in Signal Window",15,-0.5,14.5);
-  TH1F* nobk_h = new TH1F("nobk_h","N Events in Signal Window",15,-0.5,14.5);
-  TH1F* ncon_h = new TH1F("ncon_h","N Events in Signal Window",15,-0.5,14.5);
+  TH1F* ndio_h = new TH1F("ndio_h","N Events in Signal Window;N Events;N Toys",15,-0.5,14.5);
+  TH1F* nobk_h = new TH1F("nobk_h","N Events in Signal Window;N Events;N Toys",15,-0.5,14.5);
+  TH1F* ncon_h = new TH1F("ncon_h","N Events in Signal Window;N Events;N Toys",15,-0.5,14.5);
   ndio_h->SetLineColor(kBlue);
   ncon_h->SetLineColor(kRed);
   nobk_h->SetLineColor(kGreen);
-  TH1F* diofscale = new TH1F("diofscale","DIO Fit Scale",100,0.85,1.15);
-  TH1F* diofshift = new TH1F("diofshift","DIO Fit Shift;#Delta P (MeV/c)",100,-0.15,0.15);
-  TH2F* diofparams = new TH2F("diofparams","DIO Fit Parameters;Scale;Shift (MeV/c)",100,0.85,1.15,100,-0.15,0.15);
-  TH1F* diofint = new TH1F("diofint","DIO Fit Signal Window Integral",100,0,0.4);
-  TH1F* diofint_err = new TH1F("diofint_err","DIO Fit Signal Window Integral Error",100,0,0.08);
-  TH2F* diofcomp = new TH2F("diofcomp","DIO Toy Comparison;N in Signal Window;Fit Integral in Signal Window",5,-0.5,4.5,100,0,0.4);
+  TH1F* diofscale = new TH1F("diofscale","DIO Fit Scale;Scale (dimensionles);N Toys",100,0.85,1.15);
+  TH1F* diofshift = new TH1F("diofshift","DIO Fit Shift;#Delta P (MeV/c);N Toys",100,-0.15,0.15);
+  TH2F* diofparams = new TH2F("diofparams","DIO Fit Parameters;Scale (dimensionless);Shift (MeV/c)",100,0.85,1.15,100,-0.15,0.15);
+  TH1F* diofint = new TH1F("diofint","DIO Fit Signal Window Integral;N Events;N Toys",100,0,0.4);
+  TH1F* diofint_err = new TH1F("diofint_err","DIO Fit Signal Window Integral Error;N Events;N Toys",100,0,0.05);
 
+
+  char etitle[100];
+  snprintf(etitle,100,"Toy Mu2e Experiment;Momentum (MeV/c);Events/%3.3f MeV/c",mevperbin);
   for(unsigned iexp=0;iexp<nexp;++iexp){
     snprintf(conname,50,"conexp%i",iexp);
-    TH1F* conexp_h = new TH1F(conname,"Sample Mu2e Experiment;Momentum (MeV/c);Events",_nbins,_mmin,_mmax);
+    TH1F* conexp_h = new TH1F(conname,etitle,_nbins,_mmin,_mmax);
     conexp_h->SetStats(0);
     conexp_h->SetLineColor(kRed);
     conexp_h->SetFillColor(kRed);
@@ -801,14 +846,15 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
     conexp_h->SetMarkerColor(kRed);
     
     snprintf(dioname,50,"dioexp%i",iexp);
-    TH1F* dioexp_h = new TH1F(dioname,"Sample Mu2e Experiment;Momentum (MeV/c);Events",_nbins,_mmin,_mmax);
+    TH1F* dioexp_h = new TH1F(dioname,etitle,_nbins,_mmin,_mmax);
     dioexp_h->SetStats(0);
     dioexp_h->SetLineColor(kBlue);
-    dioexp_h->SetMarkerStyle(5);
     dioexp_h->SetMarkerColor(kBlue);
+    dioexp_h->SetMinimum(1e-1);
+    dioexp_h->SetMaximum(2.0*dioexp_f->Eval(_mmin));
 
     snprintf(flatname,50,"flatexp%i",iexp);
-    TH1F* flatexp_h = new TH1F(flatname,"Sample Mu2e Experiment;Momentum (MeV/c);Events",_nbins,_mmin,_mmax);
+    TH1F* flatexp_h = new TH1F(flatname,etitle,_nbins,_mmin,_mmax);
     flatexp_h->SetStats(0);
     flatexp_h->SetLineColor(kGreen);
     flatexp_h->SetMarkerStyle(7);
@@ -828,12 +874,12 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
       flatexp_h->Fill(_flat_f[ispec]->GetRandom());
     }
     
-    dioexp_h->Fit("dioexp_f","qL0","P");
+    dioexp_h->Fit("dioexp_f","qLR0","P");
     TF1* ff = dioexp_h->GetFunction("dioexp_f");
     if(ncans > 0){
       if(cans[ican]==0){
 	char ctext[80];
-	snprintf(ctext,80,"expcan%i",ican);
+	snprintf(ctext,80,"expcan_%i",ican);
 	cans[ican] = new TCanvas(ctext,"Simulated events",900,900);
 	cans[ican]->Divide(npave,npave);
 	ipave=1;
@@ -842,8 +888,8 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
       gPad->SetLogy();
       dioexp_h->Draw("H");
       ff->Draw("same");
-      flatexp_h->Draw("sameHP");
-      conexp_h->Draw("sameHP");
+      flatexp_h->Draw("sameP");
+      conexp_h->Draw("sameP");
       momlowl->Draw();
       momhighl->Draw();
     } 
@@ -864,7 +910,6 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
     diofparams->Fill(scale,shift);
     diofint->Fill(dfint);
     diofint_err->Fill(dfint_err);
-    diofcomp->Fill(dint,dfint);
 
     if(ncans > 0){
 
@@ -876,8 +921,8 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
       TString snstop(text);
       inttext->AddText(snstop);
       snprintf(text,80,"R_{#mu e} = %g",cprob);
-      TString sconprob(text);
-      inttext->AddText(sconprob);
+      TString srmue(text);
+      inttext->AddText(srmue);
       inttext->SetBorderSize(1);
       char itext[50];
       snprintf(itext,50,"%3.1f < P < %3.1f MeV/c",momlow,momhigh);
@@ -888,15 +933,19 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
       inttext->AddText(itext);
       snprintf(itext,50,"N Conversion = %2.0f",cint);
       inttext->AddText(itext);
-      snprintf(itext,50,"DIO fit integral = %3.3f #pm %3.3f",dfint,dfint_err);
+      snprintf(itext,50,"DIO Fit Shift = %3.3f #pm %3.3f",ff->GetParameter(5),ff->GetParError(5));
+      inttext->AddText(itext);
+      snprintf(itext,50,"DIO Fit Scale = %3.3f #pm %3.3f",ff->GetParameter(6),ff->GetParError(6));
+      inttext->AddText(itext);
+      snprintf(itext,50,"DIO Fit Integral = %3.3f #pm %3.3f",dfint,dfint_err);
       inttext->AddText(itext);
       inttext->Draw();
 
       if(leg==0){
 	leg = new TLegend(0.15,0.7,0.45,0.9);
 	leg->AddEntry(dioexp_h,"DIO","L");
-	leg->AddEntry(conexp_h,"Conversion","P");
-	leg->AddEntry(flatexp_h,"RPC+AP+cosmic","P");
+	leg->AddEntry(conexp_h,"Conversions","P");
+	leg->AddEntry(flatexp_h,"RPC+AP+Cosmics","P");
       }
       leg->Draw();
       ipave++;
@@ -910,26 +959,24 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
   TCanvas* expcan1 = new TCanvas("expcan1","Toy Experiments",800,800);
   expcan1->Clear();
   expcan1->Divide(2,2);
-  expcan1->cd(2);
+  expcan1->cd(1);
   nobk_h->Draw();
   ncon_h->Draw("same");
   ndio_h->Draw("same");
 
-  TLegend* nleg = new TLegend(0.5,0.7,0.9,0.9);
+  TLegend* nleg = new TLegend(0.2,0.6,0.9,0.9);
   char title[80];
-  snprintf(title,80,"Conversions, <N> = %3.3f",ncon_h->GetMean());
+  snprintf(title,80,"Conversions, <N>=%3.3f",ncon_h->GetMean());
   nleg->AddEntry(ncon_h,title,"L");
-  snprintf(title,80,"DIO, <N> = %3.3f",ndio_h->GetMean());
+  snprintf(title,80,"DIO, <N>=%3.3f",ndio_h->GetMean());
   nleg->AddEntry(ndio_h,title,"L");
-  snprintf(title,80,"RPC, AP, + Cosmics, <N> = %3.3f",nobk_h->GetMean());
+  snprintf(title,80,"RPC+AP+Cosmics, <N>=%3.3f",nobk_h->GetMean());
   nleg->AddEntry(nobk_h,title,"L");
   nleg->Draw();
+  expcan1->cd(2);
+  diofint->Fit("gaus");
   expcan1->cd(3);
-  diofint->Draw();
-  expcan1->cd(1);
-  diofint_err->Draw();
-  expcan1->cd(4);
-  diofcomp->Draw();
+  diofint_err->Fit("gaus");
 
   TCanvas* expcan2 = new TCanvas("expcan2","Toy Experiments",800,800);
   expcan2->Clear();
