@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.59 2013/04/10 16:01:25 kutschke Exp $
+# $Id: setup.sh,v 1.60 2013/04/24 21:03:12 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2013/04/10 16:01:25 $
+# $Date: 2013/04/24 21:03:12 $
 #
 # Original author Rob Kutschke
 #
@@ -44,7 +44,7 @@ export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE/:$MU2E_DATA_PATH/
 echo "MU2E_SEARCH_PATH:   "  $MU2E_SEARCH_PATH
 
 # Setup the framework and its dependent products
-setup art v1_03_08 -qe2:mu2e:prof
+setup art v1_06_00 -qe2:mu2e:prof
 
 # Geant4 and its cross-section files.
 setup geant4 v4_9_6_p01a -qe2:prof
@@ -71,7 +71,12 @@ if [  -f "./BaBar/makeInclude.sh" ]; then
    echo "Checking out the BaBar Kalman Filter code."
    ./BaBar/checkout.sh "-r ${babarversion}"
   else
-    ./BaBar/checkVersion.sh ${babarversion}
+    # Skip check during grid jobs or else they will DOS attack the svn repository.
+    if [ -z "${PROCESS}" ] || [ "${PROCESS}" == 0 ]; then
+      ./BaBar/checkVersion.sh ${babarversion}
+    else
+      echo "Grid job with PROCESS != 0 detected. Skipping version check of BaBar code."
+    fi
   fi
 fi
 
