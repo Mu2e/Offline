@@ -1,6 +1,6 @@
-  $Id: v3_0_1.txt,v 1.28 2013/04/24 19:03:35 kutschke Exp $
+  $Id: v3_0_1.txt,v 1.29 2013/04/24 21:05:12 kutschke Exp $
   $Author: kutschke $
-  $Date: 2013/04/24 19:03:35 $
+  $Date: 2013/04/24 21:05:12 $
 
   Still under construction
 
@@ -11,6 +11,12 @@
     It now checks all packages - it needs to. The test for each package
     is cleaner since it just test the size of the output file for
     zero vs non-zero.
+
+    This check is done only if the setup.sh script is sourced interactively
+    or during a grid job with $PROCESS == 0. The check is skipped for grid
+    jobs with a process number different from 0.  This avoids a DOS attack
+    on the svn server by all of our grid jobs.
+
 
 28) April 16, 2013, brownd
     Updated the parameters used in the delta-ray removal algorithm
