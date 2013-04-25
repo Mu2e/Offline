@@ -1,9 +1,9 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructInternalNeutronAbsorber.cc,v 1.1 2013/03/28 13:02:38 knoepfel Exp $
+// $Id: constructInternalNeutronAbsorber.cc,v 1.2 2013/04/25 18:18:48 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/03/28 13:02:38 $
+// $Date: 2013/04/25 18:18:48 $
 //
 // Original author KLG
 //
@@ -166,32 +166,29 @@ namespace mu2e {
     CLHEP::Hep3Vector NAI1Offset  =  nai->positionAbs1() - toyDS2VacuumInfo.centerInMu2e();
 
     // constructing InternalNeutronAbsorber1 as concentric annular cylinders
-    vector<TubsParams> NAI1Params;
-    vector<VolumeInfo> NAI1VolumeInfo;
     for ( size_t i = 0 ; i < nai->rInAbs1Vec().size() ; i++ ) {
-      if ( i < nai->rInAbs1Vec().size()-1 ) // do inner cylinders
-        NAI1Params.push_back( TubsParams( nai->rInAbs1Vec().at(i), nai->rInAbs1Vec().at(i+1), nai->halfLengthAbs1()) );
-      else                           // do outer cylinder
-        NAI1Params.push_back( TubsParams( nai->rInAbs1Vec().back(), nai->rOut(), nai->halfLengthAbs1() ) );
+      TubsParams tubsparms = ( i < nai->rInAbs1Vec().size()-1 ) ? // do inner cylinders 
+        TubsParams( nai->rInAbs1Vec().at(i), nai->rInAbs1Vec().at(i+1), nai->halfLengthAbs1() ) :
+        TubsParams( nai->rInAbs1Vec().back(), nai->rOut(), nai->halfLengthAbs1() ) ;
         
-      ostringstream detname( "InternalNeutronAbsorber1_");
-      detname << i;
+      ostringstream detname;
+      detname << "InternalNeutronAbsorber1_" << i;
 	  
       G4Material* NAI1Material = findMaterialOrThrow( nai->materialAbs1Vec().at(i) );
-      NAI1VolumeInfo.push_back( nestTubs(detname.str(),
-                                         NAI1Params.back(),
-                                         NAI1Material,
-                                         0,
-                                         NAI1Offset,
-                                         toyDS2VacuumInfo,
-                                         0,
-                                         NAVisible,
-                                         G4Colour::Cyan(),
-                                         NASolid,
-                                         forceAuxEdgeVisible,
-                                         placePV,
-                                         doSurfaceCheck
-                                         ) );
+      nestTubs(detname.str(),
+               tubsparms,
+               NAI1Material,
+               0,
+               NAI1Offset,
+               toyDS2VacuumInfo,
+               0,
+               NAVisible,
+               G4Colour::Cyan(),
+               NASolid,
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck
+               );
 	  
     }
 
@@ -218,21 +215,21 @@ namespace mu2e {
 
     G4Material* NAMaterial = findMaterialOrThrow( nai->materialAbs2() );
 
-    VolumeInfo INA22Info  = nestTubs("InternalNeutronAbsorber22",
-                                     NAI22Params,
-                                     NAMaterial,
-                                     0,
-                                     NAI22Offset,
-                                     toyDS2VacuumInfo,
-                                     0,
-                                     NAVisible,
-                                     G4Colour::Cyan(),
-                                     NASolid,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     doSurfaceCheck
-                                     );
-
+    nestTubs("InternalNeutronAbsorber22",
+             NAI22Params,
+             NAMaterial,
+             0,
+             NAI22Offset,
+             toyDS2VacuumInfo,
+             0,
+             NAVisible,
+             G4Colour::Cyan(),
+             NASolid,
+             forceAuxEdgeVisible,
+             placePV,
+             doSurfaceCheck
+             );
+    
     VolumeInfo INA23Info  = nestTubs("InternalNeutronAbsorber23",
                                      NAI23Params,
                                      NAMaterial,
