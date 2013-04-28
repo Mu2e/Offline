@@ -11,6 +11,7 @@
 #include "TCut.h"
 #include "TPaveText.h"
 #include "TLine.h"
+#include "TArrow.h"
 #include "TRandom3.h"
 #include <iostream>
 #include <math.h>
@@ -126,7 +127,7 @@ class mu2e {
     void init();
 
     void fillmu2e(unsigned nbins=151,double mmin=101.0,double mmax=106.0);
-    void drawmu2e(double momlow,double momhigh,const char* suffix=".png");
+    void drawmu2e(double momlow,double momhigh,bool log,const char* suffix=".png");
     void drawdio(double momlow,double momhigh,const char* suffix=".png");
     void smearDIO(unsigned ntrials=1e5,unsigned nres=1e5);
     void doExperiments(double momlow, double momhigh,double cprob,unsigned ispec,unsigned nexp=18, unsigned npave=0);
@@ -254,14 +255,14 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
     _flat_f[icut]->SetParameter(0,flat*mevperbin*acc);
   }
 
-  _leg = new TLegend(0.7,0.8,0.9,0.9);
+  _leg = new TLegend(0.6,0.7,0.9,0.9);
   _leg->AddEntry(_diospec[0],"DIO","L");
   _leg->AddEntry(_conspec[0],"Conversion","L");
   _leg->AddEntry(_flat_f[0],"RPC+AP+cosmic","L");
 
   _info = new TPaveText(0.4,0.8,0.7,0.9,"NDC");
   char text[80];
-  snprintf(text,80,"%g stopped muons",nstopped);
+  snprintf(text,80,"%g stopped #mu^{-}",nstopped);
   TString snstop(text);
   _info->AddText(snstop);
   snprintf(text,80,"%g Conversion Rate",rmue);
@@ -270,8 +271,7 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
   _info->SetBorderSize(0);
 }
 
-void mu2e::drawmu2e(double momlow, double momhigh,const char* suffix) {
-
+void mu2e::drawmu2e(double momlow, double momhigh,bool logy,const char* suffix) {
   // plot results
   TCanvas* mu2ecan = new TCanvas("mu2e","mu2e result",900,600);
   mu2ecan->Clear();
@@ -280,13 +280,18 @@ void mu2e::drawmu2e(double momlow, double momhigh,const char* suffix) {
   allcan->Clear();
   allcan->Divide(2,2);
   for(unsigned icut=0;icut<4;icut++){
+    double conmax = 1.5*_conspec[icut]->GetBinContent(_conspec[icut]->GetMaximumBin());
     allcan->cd(icut+1);
-    gPad->SetLogy();
-//    TH1* diocopy = _diospec[icut]->DrawCopy();
+    if(logy){
+      gPad->SetLogy();
+    } else {
+      _diospec[icut]->SetMinimum(-0.01);
+      _diospec[icut]->SetMaximum(conmax);
+    }
     _diospec[icut]->Draw();
     _conspec[icut]->Draw("same");
     _flat_f[icut]->Draw("same");
-
+    
     int istart = _diospec[icut]->FindFixBin(momlow+0.5*mevperbin);
     int istop = _diospec[icut]->FindFixBin(momhigh-0.5*mevperbin);
     //    cout << "Integration low edge " << _diospec[icut]->GetBinLowEdge(istart) << " for cut at " << momlow << endl;
@@ -296,16 +301,25 @@ void mu2e::drawmu2e(double momlow, double momhigh,const char* suffix) {
     double cint = _conspec[icut]->IntegralAndError(istart,istop,cint_err);
     double fint = _flat_f[icut]->Integral(momlow,momhigh)/mevperbin;
 
-    TPaveText* inttext = new TPaveText(0.5,0.6,0.9,0.8,"NDC");
+    TPaveText* inttext = new TPaveText(0.1,0.4,0.45,0.9,"NDC");
     char itext[50];
-    snprintf(itext,50,"%4.2f MeV/c < P < %4.2f MeV/c",momlow,momhigh);
+
+    snprintf(itext,50,"%3.2f #times 10^{17} stopped #mu^{-}",nstopped/1e17);
     inttext->AddText(itext);
-    snprintf(itext,50,"DIO integral = %4.2f #pm %4.2f",dint,dint_err);
+    snprintf(itext,50,"R_{#mue} = %2.2f #times 10^{-16}",rmue*1e16);
     inttext->AddText(itext);
-    snprintf(itext,50,"Conv. integral = %4.2f #pm %4.2f",cint,cint_err);
-    inttext->AddText(itext);
-    snprintf(itext,50,"RPC+AP+cosmic integral = %4.2f",fint);
-    inttext->AddText(itext);
+//    inttext->AddLine();
+//    snprintf(itext,50,"%4.2f MeV/c < P < %4.2f MeV/c",momlow,momhigh);
+//    inttext->AddText(itext);
+    snprintf(itext,50,"#int Conversion = %3.2f #pm %3.2f",cint,cint_err);
+    TText* l = inttext->AddText(itext);
+    l->SetTextColor(kRed);
+    snprintf(itext,50,"#int DIO = %3.2f #pm %3.2f",dint,dint_err);
+    l = inttext->AddText(itext);
+    l->SetTextColor(kBlue);
+    snprintf(itext,50,"#int RPC+AP+Cosmic = %3.2f",fint);
+    l = inttext->AddText(itext);
+    l->SetTextColor(kGreen);
     inttext->Draw();
 
     TPaveText* cuttext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");  
@@ -322,33 +336,44 @@ void mu2e::drawmu2e(double momlow, double momhigh,const char* suffix) {
     cuttext->AddText(line);
     sprintf(line,"%s",fitcuts[icut].GetTitle());
     cuttext->AddText(line);
-    cuttext->Draw();
+//    cuttext->Draw();
 
-    TLine* momlowl = new TLine(momlow,0.0,momlow,1.5*_conspec[icut]->GetBinContent(_conspec[icut]->GetMaximumBin()));
+    TLine* momlowl = new TLine(momlow,0.0,momlow,0.8*conmax);
     momlowl->SetLineColor(kBlack);
     momlowl->SetLineStyle(2);
     momlowl->SetLineWidth(2);
     momlowl->Draw();
 
-    TLine* momhighl = new TLine(momhigh,0.0,momhigh,1.5*_conspec[icut]->GetBinContent(_conspec[icut]->GetMaximumBin()));
+    TLine* momhighl = new TLine(momhigh,0.0,momhigh,0.8*conmax);
     momhighl->SetLineColor(kBlack);
     momhighl->SetLineStyle(2);
     momhighl->SetLineWidth(2);
     momhighl->Draw();
-    _leg->Draw();
-    _info->Draw();
+
+    TArrow* sigline = new TArrow(momlow,0.8*conmax,momhigh,0.8*conmax,0.01,"<>");
+    sigline->SetLineWidth(2);
+    sigline->Draw();
+
+    TText* sigwin = new TText(0.5*(momlow+momhigh),0.9*conmax,"Signal Window");
+    sigwin->SetTextAlign(21);
+    sigwin->Draw();
+
+//    _leg->Draw();
+//    _info->Draw();
     if(icut == mu2ecut){
       mu2ecan->cd(0);
-      gPad->SetLogy();
+      if(logy)gPad->SetLogy();
       _diospec[icut]->Draw();
       _conspec[icut]->Draw("same");
       _flat_f[icut]->Draw("same");
       inttext->Draw();
-      cuttext->Draw();
+//      cuttext->Draw();
       momlowl->Draw();
       momhighl->Draw();
-      _leg->Draw();
-      _info->Draw();
+      sigline->Draw();
+      sigwin->Draw();
+//      _leg->Draw();
+//      _info->Draw();
     }
   }
   allcan->cd(0);
@@ -356,7 +381,6 @@ void mu2e::drawmu2e(double momlow, double momhigh,const char* suffix) {
   allcan->SaveAs((std::string("mu2e_all")+ssuf).c_str());
   mu2ecan->SaveAs((std::string("mu2e")+ssuf).c_str());
 }
-
 
 void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   std::string ssuf(suffix);
@@ -533,15 +557,6 @@ void mu2e::Read(const char* savename) {
   _leg->AddEntry(_conspec[0],"Conversion","L");
   _leg->AddEntry(_flat_f[0],"RPC+AP+cosmic","L");
 
-  _info = new TPaveText(0.4,0.8,0.7,0.9,"NDC");
-  char text[80];
-  snprintf(text,80,"%g stopped muons",nstopped);
-  TString snstop(text);
-  _info->AddText(snstop);
-  snprintf(text,80,"%g Conversion Rate",rmue);
-  TString srmue(text);
-  _info->AddText(srmue);
-  _info->SetBorderSize(0);
 //  savefile.Close();
 }
 
@@ -915,7 +930,7 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
 
       cout << "DIO fit shift = " << shift << " scale = " << scale << " inetgral " << dfint << " +- " << dfint_err << endl;
 
-      TPaveText* inttext = new TPaveText(0.5,0.5,0.9,0.9,"NDC");
+      TPaveText* inttext = new TPaveText(0.6,0.5,0.9,0.9,"NDC");
       char text[80];
       snprintf(text,80,"%g stopped muons",nstopped);
       TString snstop(text);
@@ -933,16 +948,16 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
       inttext->AddText(itext);
       snprintf(itext,50,"N Conversion = %2.0f",cint);
       inttext->AddText(itext);
-      snprintf(itext,50,"DIO Fit Shift = %3.3f #pm %3.3f",ff->GetParameter(5),ff->GetParError(5));
-      inttext->AddText(itext);
-      snprintf(itext,50,"DIO Fit Scale = %3.3f #pm %3.3f",ff->GetParameter(6),ff->GetParError(6));
-      inttext->AddText(itext);
-      snprintf(itext,50,"DIO Fit Integral = %3.3f #pm %3.3f",dfint,dfint_err);
-      inttext->AddText(itext);
+//      snprintf(itext,50,"DIO Fit Shift = %3.3f #pm %3.3f",ff->GetParameter(5),ff->GetParError(5));
+//      inttext->AddText(itext);
+//      snprintf(itext,50,"DIO Fit Scale = %3.3f #pm %3.3f",ff->GetParameter(6),ff->GetParError(6));
+//      inttext->AddText(itext);
+//      snprintf(itext,50,"DIO Fit Integral = %3.3f #pm %3.3f",dfint,dfint_err);
+//      inttext->AddText(itext);
       inttext->Draw();
 
       if(leg==0){
-	leg = new TLegend(0.15,0.7,0.45,0.9);
+	leg = new TLegend(0.15,0.7,0.6,0.9);
 	leg->AddEntry(dioexp_h,"DIO","L");
 	leg->AddEntry(conexp_h,"Conversions","P");
 	leg->AddEntry(flatexp_h,"RPC+AP+Cosmics","P");
@@ -981,6 +996,8 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
   TCanvas* expcan2 = new TCanvas("expcan2","Toy Experiments",800,800);
   expcan2->Clear();
   expcan2->Divide(2,2);
+  expcan2->cd(1);
+
   expcan2->cd(2);
   diofscale->Fit("gaus");
   expcan2->cd(3);
