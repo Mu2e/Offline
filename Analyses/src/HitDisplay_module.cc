@@ -2,15 +2,15 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.17 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: HitDisplay_module.cc,v 1.18 2013/04/29 14:28:38 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2013/04/29 14:28:38 $
 //
 // Original author Rob Kutschke.
 //
 // small black triangles: MC truth on the trajectory
-// red hits: hits on a track reconstructed as a downstream-moving conversion electron
-//
+// red hits: hits on a track reconstructed as a downstream-moving conversion electron 
+// 
 
 // C++ includes.
 #include <iostream>
@@ -27,13 +27,18 @@
 // Mu2e includes.
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
+
+#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+
+#include "TTrackerGeom/inc/TTracker.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "Mu2eUtilities/inc/SortedStepPoints.hh"
 #include "Mu2eUtilities/inc/TrackTool.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -45,6 +50,8 @@
 #include "TrkBase/TrkHotList.hh"
 #include "KalmanTrack/KalHit.hh"
 
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
 #include "KalmanTests/inc/TrkStrawHit.hh"
@@ -59,6 +66,7 @@
 #include "TGraph.h"
 #include "TH1F.h"
 #include "TLine.h"
+#include "TBox.h"
 #include "TMarker.h"
 #include "TEllipse.h"
 #include "TText.h"
@@ -73,15 +81,6 @@ using CLHEP::Hep3Vector;
 namespace mu2e {
 
   class HitDisplay : public art::EDAnalyzer {
-  public:
-    explicit HitDisplay(fhicl::ParameterSet const& pset);
-    virtual ~HitDisplay(){}
-
-    void beginJob( );
-    void analyze( art::Event const& e );
-    void printCaloCluster(const CaloCluster* Cl, const char* Opt) ;
-    void printKalRep(const KalRep* Trk, const char* Opt);
-
   private:
 
     // The module label of this instance of this module.
@@ -107,7 +106,7 @@ namespace mu2e {
     bool clickToAdvance_;
     bool printHits_;
 
-    unique_ptr<TApplication> application_;
+    TApplication* application_;
     TDirectory*   directory_;
     TCanvas*      canvas_;
 
@@ -120,8 +119,8 @@ namespace mu2e {
 
     TH1F* _hMissDist;
 
-    TNtuple* _ntTrack;
-    TNtuple* _ntHit;
+    //     TNtuple* _ntTrack;
+    //     TNtuple* _ntHit;
 
     const VaneCalorimeter* fCal;
 
@@ -131,7 +130,20 @@ namespace mu2e {
 
     TMarker*  fMarker;
 
+  public:
+    explicit HitDisplay(fhicl::ParameterSet const& pset);
+    virtual ~HitDisplay();
+
+    void beginJob( );
+    void analyze( art::Event const& e );
+    void printCaloCluster(const CaloCluster* Cl, const char* Opt) ;
+    void printKalRep(const KalRep* Trk, const char* Opt); 
+
   };
+
+  HitDisplay::~HitDisplay() { 
+    delete application_; 
+  }
 
   HitDisplay::HitDisplay(fhicl::ParameterSet const& pset):
     moduleLabel_(pset.get<string>("module_label")),
@@ -145,7 +157,7 @@ namespace mu2e {
     doDisplay_(pset.get<bool>("doDisplay",true)),
     clickToAdvance_(pset.get<bool>("clickToAdvance",false)),
     printHits_(pset.get<bool>("printHits",false)),
-    application_(nullptr),
+    application_(0),
     directory_(0),
     canvas_(0),
     _hnHits(0),
@@ -154,9 +166,7 @@ namespace mu2e {
     _hTime(0),
     _hx(0),
     _hxnorm(0),
-    _hMissDist(0),
-    _ntTrack(0),
-    _ntHit(0)
+    _hMissDist(0)
   {
     fCal = 0;
   }
@@ -176,8 +186,8 @@ namespace mu2e {
     _hx         =  tfs->make<TH1F>( "hx",          "Displacement;(mm)",                100, -1000.,  1000. );
     _hxnorm     =  tfs->make<TH1F>( "hxnorm",      "Displacement;(HalfLength)",        100,    -1.,     1. );
     _hMissDist  =  tfs->make<TH1F>( "hMissDist",   "Distance to wire",                 100,   -50.,    50. );
-    _ntTrack    =  tfs->make<TNtuple>( "ntTrack",  "TrackInfo", "d0gen:d0first" );
-    _ntHit      =  tfs->make<TNtuple>( "ntHit",    "HitInfo",   "dca:z" );
+    //     _ntTrack    =  tfs->make<TNtuple>( "ntTrack",  "TrackInfo", "d0gen:d0first" );
+    //     _ntHit      =  tfs->make<TNtuple>( "ntHit",    "HitInfo",   "dca:z" );
 
     if ( !doDisplay_ ) return;
 
@@ -185,7 +195,7 @@ namespace mu2e {
     if ( !gApplication ){
       int    tmp_argc(0);
       char** tmp_argv(0);
-      application_ = unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+      application_ = new TApplication( "noapplication", &tmp_argc, tmp_argv );
     }
 
     // Create a canvas with a guaranteed unique name; the module label is unique within a job.
@@ -214,7 +224,7 @@ namespace mu2e {
       printf("TrkID  Q   momentum       pt       costh      d0        z0         T0     Nact     chi2 N(dof) FitConsistency\n");
       printf("------------------------------------------------------------------------------------------------\n");
     }
-
+    
     if ((opt == "") || (opt.Index("data") >= 0)) {
       //      Trk->printAll();
       double mom   = Trk->momentum().mag();
@@ -230,83 +240,87 @@ namespace mu2e {
       int    q     = Trk->charge();
 
       printf("%2i %10.3f %10.3f %8.3f %8.3f %10.3f %10.3f %3i %10.3f %3i %10.3f\n",
-             q,mom,pt,costh,d0,z0,t0,nact,chi2,ndof,fit_consistency);
+	     q,mom,pt,costh,d0,z0,t0,nact,chi2,ndof,fit_consistency);
 
       if (opt.Index("hits") >= 0) {
-        //-----------------------------------------------------------------------------
-        // print detailed information about the track hits
-        //-----------------------------------------------------------------------------
-        const TrkHotList* hot_list = Trk->hotList();
+	//-----------------------------------------------------------------------------
+	// print detailed information about the track hits
+	//-----------------------------------------------------------------------------
+	const TrkHotList* hot_list = Trk->hotList();
 
-        printf("---------------------------------------------------------------------------");
-        printf("-------------------------------------------------------------------------------\n");
-        printf(" ih U A     len      rms       x          y          z       HitT     HitDt");
-        printf("  SInd  Dev Sec Lay  N  Iamb     T0    Rdrift     Xs         Ys          Zs        resid\n");
-        printf("---------------------------------------------------------------------------");
-        printf("-------------------------------------------------------------------------------\n");
+	printf("---------------------------------------------------------------------------");
+	printf("-------------------------------------------------------------------------------\n");
+	printf(" ih U A     len      rms       x          y          z       HitT     HitDt");
+	printf("  SInd  Dev Sec Lay  N  Iamb     T0    Rdrift     Xs         Ys          Zs        resid\n");
+	printf("---------------------------------------------------------------------------");
+	printf("-------------------------------------------------------------------------------\n");
 
-        int i = 0;
-        for(TrkHotList::hot_iterator it=hot_list->begin(); it<hot_list->end(); it++) {
-          //      const KalHit* kh = (*it).kalHit();
+	int i = 0;
+ 	for(TrkHotList::hot_iterator it=hot_list->begin(); it<hot_list->end(); it++) {
+	  //	  const KalHit* kh = (*it).kalHit();
 
-          // TrkStrawHit inherits from TrkHitOnTrk
+	  // TrkStrawHit inherits from TrkHitOnTrk
 
-          const TrkStrawHit* hit = (const TrkStrawHit*) &(*it);
+  	  const TrkStrawHit* hit = (const TrkStrawHit*) &(*it);
 
-          const StrawHit* sh = &hit->strawHit();
-          Straw*   straw = (Straw*) &hit->straw();
+	  const StrawHit* sh = &hit->strawHit();
+	  Straw*   straw = (Straw*) &hit->straw();
 
-          double len = hit->fltLen();
+	  double len = hit->fltLen();
 
-          HepPoint  plen = Trk->position(len);
+	  HepPoint  plen = Trk->position(len);
 
-          printf("%3i %1i %1i %10.3f %6.3f %10.3f %10.3f %10.3f %8.3f %7.3f",
-                 ++i,
-                 hit->isUsable(),
-                 hit->isActive(),
-                 len,
-                 hit->hitRms(),
-                 plen.x(),plen.y(),plen.z(),
-                 sh->time(), sh->dt()
-                 );
+	  printf("%3i %1i %1i %10.3f %6.3f %10.3f %10.3f %10.3f %8.3f %7.3f",
+		 ++i,
+		 hit->isUsable(),
+		 hit->isActive(),
+		 len,
+		 hit->hitRms(),
+		 plen.x(),plen.y(),plen.z(),
+		 sh->time(), sh->dt()
+		 );
 
-          Hep3Vector pos;
-          hit->hitPosition(pos);
-          printf("%6i %3i %3i %3i %3i %3i %8.3f %8.3f %10.3f %10.3f %10.3f %10.3f\n",
-                 straw->index().asInt(),
-                 straw->id().getDevice(),
-                 straw->id().getSector(),
-                 straw->id().getLayer(),
-                 straw->id().getStraw(),
-
-                 hit->ambig(),
-                 hit->hitT0().t0(),
-                 hit->driftRadius(),
-                 pos.x(),
-                 pos.y(),
-                 pos.z(),
-                 hit->resid()
-                 );
-          //        trkhit->print(std::cout);
-        }
+	  Hep3Vector pos;
+	  hit->hitPosition(pos);
+	  printf("%6i %3i %3i %3i %3i %3i %8.3f %8.3f %10.3f %10.3f %10.3f %10.3f\n",
+		 straw->index().asInt(), 
+		 straw->id().getDevice(),
+		 straw->id().getSector(),
+		 straw->id().getLayer(),
+		 straw->id().getStraw(),
+		 
+		 hit->ambig(),
+		 hit->hitT0().t0(),
+		 hit->driftRadius(),
+		 pos.x(),
+		 pos.y(),
+		 pos.z(),
+		 hit->resid()
+		 );
+	  //  	  trkhit->print(std::cout);
+ 	}
       }
     }
   }
 
   //-----------------------------------------------------------------------------
-  // Opt:
+  // Opt: 
   // 'banner' : print banner
   //-----------------------------------------------------------------------------
   void HitDisplay::printCaloCluster(const CaloCluster* Cl, const char* Opt) {
-    int row, col;
+    int row, col, ir, iz;
     TString opt = Opt;
+
+    art::ServiceHandle<GeometryService> geom;
+    //if(! geom->hasElement<VaneCalorimeter>() ) return;
+    GeomHandle<Calorimeter> cg;
 
     if ((opt == "") || (opt.Index("banner") >= 0)) {
       printf("-----------------------------------------------------------------------\n");
       printf("VaneID       Time   Row   Col   Energy       X          Y        Z     \n");
       printf("-----------------------------------------------------------------------\n");
     }
-
+    
     if ((opt == "") || (opt.Index("data") >= 0)) {
       row = Cl->cogRow();
       col = Cl->cogColumn();
@@ -314,14 +328,53 @@ namespace mu2e {
       if ((row < 0) || (row > 9999)) row = -9999;
       if ((col < 0) || (col > 9999)) col = -9999;
 
-      printf("%5i  %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f\n",
-             Cl->vaneId(),
-             Cl->time(),
-             row, col,
-             Cl->energyDep(),
-             Cl->cog3Vector().x(),
-             Cl->cog3Vector().y(),
-             Cl->cog3Vector().z() );
+      printf("%6i  %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f\n",
+	     Cl->vaneId(),
+	     Cl->time(),
+	     row, col,
+	     Cl->energyDep(),
+	     Cl->cog3Vector().x(),
+	     Cl->cog3Vector().y(),
+	     Cl->cog3Vector().z() );
+
+      const CaloCrystalHitPtrVector caloClusterHits = Cl->caloCrystalHitsPtrVector();
+
+      int nh = caloClusterHits.size();
+      Hep3Vector pos;
+      //-----------------------------------------------------------------------------
+      // print individual crystals in local vane coordinate system
+      //-----------------------------------------------------------------------------
+      for (int i=0; i<nh; i++) {
+	const CaloCrystalHit* hit = &(*caloClusterHits.at(i));
+	int id = hit->id();
+
+	pos = cg->localCrystalOrigin(id);
+
+	if(geom->hasElement<mu2e::VaneCalorimeter>() ){
+	  GeomHandle<VaneCalorimeter> cgvane;
+	  iz  = cgvane->nCrystalZ();
+	  ir  = cgvane->nCrystalR();
+	}else{
+	  HexMap hmap;
+	  HexLK lk = hmap.lk(id);
+
+	  iz = lk._l;
+	  ir = lk._k;
+	}
+
+	
+	
+	printf("%6i  %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f %10.3f\n",
+	       id,
+	       hit->time(),
+	       iz,ir,
+	       hit->energyDep(),
+	       pos.x(),
+	       pos.y(),
+	       pos.z(),
+	       hit->energyDepTotal()
+	       );
+      }
     }
   }
 
@@ -333,25 +386,27 @@ namespace mu2e {
     // Tracker geometry.
     GeomHandle<TTracker> ttracker;
 
-    if (fCal == 0) {
-      GeomHandle<VaneCalorimeter> cg;
-      fCal = &(*cg);
-    }
+    // if (fCal == 0) {
+//       GeomHandle<VaneCalorimeter> cg;
+//       fCal = &(*cg);
+    // }
 
     TText          t;
     TEllipse*      e;
+    TGraph*        graph (0);
 
     TrackTool      *tt(0), *tg(0), *tmid(0);
     const GenParticle* gen;
-
+ 
     TObjArray      list_of_ellipses;
     int            n_displayed_hits;
     vector<double> xStep,yStep;
 
     CaloCluster*    cl;
-    double xl, yl,  event_time(0);
+    //    int             vane_id;
+    double xl, yl,  event_time;
     const KalRep*   trk;
-    TString         opt;
+    TString         opt; 
 
     printf("[%-30s] RUN: %10i EVENT: %10i\n",name,event.run(),event.event());
 
@@ -392,6 +447,10 @@ namespace mu2e {
     const KalRepCollection*  uep = &(*uepHandle);
     fNTracks[1] = uep->size();
 
+    art::ServiceHandle<mu2e::GeometryService> geom;
+    //if(! geom->hasElement<mu2e::VaneCalorimeter>() ) return;
+    //mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
+
     //     art::Handle<KalRepCollection> dmmHandle;
     //     event.getByLabel("trkPatRec3","DownstreammuMinus", dmmHandle);
     //     const KalRepCollection*  dmm = &(*dmmHandle);
@@ -427,35 +486,71 @@ namespace mu2e {
     SimParticleCollection::key_type key(1);
 
     SimParticleInfo const* info(simsInfo.findOrNull(key));
+    const StepPointMC* firstStep; 
 
     if ( !info ) {
       printf("[%-30s] *** ERROR: SimParticleInfo missing, SKIPPING EVENT: %10i\n",name,event.event());
-      return;
+      firstStep = 0;
+      //      return;
+    }
+    else {
+      firstStep = &info->firstStepPointMCinTracker();
+    }
+    
+    static TLine*  line(0);
+    static TArc*   arc(0);
+    static TArc*   arccalo(0);
+    static TArrow* arrow(0);
+    static TBox*   box(0);
+
+    if (line == 0) {
+      line   = new TLine;
+      arc    = new TArc;
+      arccalo = new TArc;
+      arrow  = new TArrow;
+      box    = new TBox;
+
+      box->SetFillStyle(3002);
+      box->SetFillColor(4);
+      box->SetLineColor(4);
     }
 
-    const StepPointMC* firstStep = &info->firstStepPointMCinTracker();
-
     SortedStepPoints sortedSteps(key,steps);
-
-    //    StepPointMC const& midStep(sortedSteps.middleByZ());
+    
     const StepPointMC* midStep = & sortedSteps.middleByZ();
-
-
+    
     if ((midStep == 0) || (firstStep ==0)) {
-      ios_base::fmtflags oldFlags(cout.flags());
-      cout << "[" << setw(30) << name << "] **** ERROR : HitDisplay_module::analyze : firstStep = "
-           << hex << firstStep << " midstep  " << midStep << ", BAIL OUT" << endl;
-      cout.flags(oldFlags);
-      goto END_OF_ROUTINE;
+      printf("[%-30s] **** ERROR : HitDisplay_module::analyze : firstStep = %08x midstep = %08x, BAIL OUT\n",
+	     name,firstStep, midStep);
+      //      goto END_OF_ROUTINE;
+    }
+
+    Hep3Vector pos1, mom1, pos2, mom2;
+    if (firstStep ) {
+      pos1 = firstStep->position();
+      mom1 = firstStep->momentum();
+    }
+    else {
+      pos1.set(1.,1.,1.);
+      mom1.set(1.,1.,1.);
+    }
+
+    if (midStep) {
+      pos2 = midStep->position();
+      mom2 = midStep->momentum();
+    }
+    else {
+      pos2.set(1.,1.,1.);
+      mom2.set(1.,1.,1.);
     }
 
     // The generated particle.
 
     gen = &gens.at(0);
 
-    tt   = new TrackTool(gen->pdgId(), -1.,firstStep->position(),firstStep->momentum(),1.,Hep3Vector());
+    tt   = new TrackTool(gen->pdgId(), -1.,pos1,mom1,1.,Hep3Vector());
     tg   = new TrackTool(gen->pdgId(), -1.,gen->position()      ,gen->momentum()      ,1.,Hep3Vector());
-    tmid = new TrackTool(gen->pdgId(), -1.,midStep->position()  ,midStep->momentum()  ,1.,Hep3Vector());
+    tmid = new TrackTool(gen->pdgId(), -1.,pos2  ,mom2 ,1.,Hep3Vector());
 
     //   _hnHits->Fill( hits.size() );
 
@@ -468,28 +563,26 @@ namespace mu2e {
       }
     }
 
-    static TLine*  line  = new TLine;
-    static TArc*   arc   = new TArc;
-    static TArrow* arrow = new TArrow;
-
     arc->SetFillStyle(0);
+    arccalo->SetFillStyle(0);
 
     //  DISPLAY:;
 
     if ( doDisplay_ ) {
-
+      
       canvas_->cd(0);
       canvas_->Clear();
-
+      //-----------------------------------------------------------------------------
       // Draw the frame
+      //-----------------------------------------------------------------------------
       double plotLimits(850.);
       canvas_->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
-
+      
       t.SetText(-800.,900.,Form("RUN: %10i EVENT: %10i NTRACKS: %4i NCLUSTERS: %4i",
-                                event.run(),event.event(),fNTracks[0],fNClusters));
+				event.run(),event.event(),fNTracks[0],fNClusters));
       t.SetTextSize(0.02);
       t.Draw();
-
+      
       // Draw the inner and outer arc of the tracker.
       arc->SetLineColor(kBlack);
       arc->DrawArc(0.,0., envelope.outerRadius());
@@ -499,14 +592,67 @@ namespace mu2e {
       arc->SetLineColor(kMagenta);
       arc->DrawArc( tmid->xc(), tmid->yc(), tmid->rho());
       arc->SetLineColor(kRed);
+      //-----------------------------------------------------------------------------
+      // draw vanes or disks
+      //-----------------------------------------------------------------------------
+      int nv(0);// = vc->nVane();
+      if( geom->hasElement<mu2e::VaneCalorimeter>() ){
+	mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
+	nv = vc->nVane();
+      }else if( geom->hasElement<mu2e::DiskCalorimeter>() ){
+	mu2e::GeomHandle<mu2e::DiskCalorimeter> dc;
+	nv = dc->nDisk();
+      }
+      //mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
+      double rmin, rmax, x1,y1,x2,y2;
+      if( geom->hasElement<mu2e::VaneCalorimeter>() ){
+	mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
+	for (int iv=0; iv<nv; iv++) {
+	  const Vane* vane = &vc->vane(iv);
+	  rmin = vane->innerRadius();
+	  rmax = vane->outerRadius();
+	  if(iv == 3) {			// top
+	    x1 = -50;
+	    y1 = rmin;
+	    x2 = 50;
+	    y2 = rmax;
+	  }
+	  else if (iv == 0) { // left
+	    x1 = -rmax;;
+	    y1 = -50;
+	    x2 = -rmin;
+	    y2 = +50;
+	  }
+	  else if (iv == 1) {		// bottom
+	    x1 = -50;
+	    y1 = -rmax;
+	    x2 = +50;
+	    y2 = -rmin;
+	  }
+	  else if (iv == 2) {		// right
+	    x1 = rmin;
+	    y1 = -50;
+	    x2 = rmax;
+	    y2 = +50;
+	  }
+	  box->DrawBox(x1,y1,x2,y2);
+	}
+      }else if( geom->hasElement<mu2e::DiskCalorimeter>() ){
+	
+	mu2e::GeomHandle<mu2e::DiskCalorimeter> dc;
+	// Draw the inner and outer arc of calorimeter
 
+	for (int iv=0; iv<nv; iv++) {
+	  
+	  rmin = dc->disk(iv).innerRadius();
+	  rmax = dc->disk(iv).outerRadius();
+	  arccalo->SetLineColor(kGreen+iv);
+	  arccalo->DrawArc(0.,0., rmax);
+	  arccalo->DrawArc(0.,0., rmin);
+	 
+	}
+      }
     }
-
-    float ntTrack[_ntTrack->GetNvar()];
-    ntTrack[0] = tg->da();
-    ntTrack[1] = tt->da();
-    _ntTrack->Fill(ntTrack);
-
     //-----------------------------------------------------------------------------
     // print reconstructed tracks - all 4 hypotheses for comparison...
     //-----------------------------------------------------------------------------
@@ -519,64 +665,61 @@ namespace mu2e {
     if (fNTracks[0] > 0) {
       printKalRep(0,"banner");
       for (int i=0; i<fNTracks[0]; i++ ) {
-        trk = (*dem)[i];
-        printf(" %2i dem ",i);
-        printKalRep(trk,opt);
+	trk = (*dem)[i];
+	printf(" %2i dem ",i);
+	printKalRep(trk,opt);
       }
-
-      for (int i=0; i<fNTracks[1]; i++ ) {
-        trk = (*uep)[i];
-        printf(" %2i uep ",i);
-        printKalRep(trk,opt);
-      }
-
-      //       for (int i=0; i<fNTracks[2]; i++ ) {
-      //      trk = (*dmm)[i];
-      //      printf(" %2i dmm ",i);
-      //      printKalRep(trk,opt);
-      //       }
-
-      //       for (int i=0; i<fNTracks[3]; i++ ) {
-      //      trk = (*ump)[i];
-      //      printf(" %2i ump ",i);
-      //      printKalRep(trk,opt);
-      //       }
     }
+
+    //       for (int i=0; i<fNTracks[1]; i++ ) {
+    // 	trk = (*uep)[i];
+    // 	printf(" %2i uep ",i);
+    // 	printKalRep(trk,opt);
+    //       }
+
+    int module_color[2] = {kRed, kMagenta};
+    int color;
 
     if (fNClusters > 0) {
       printCaloCluster(0,"banner");
 
       for (int i=0; i<fNClusters; i++) {
-        cl = &fListOfClusters->at(i);
+	cl = &fListOfClusters->at(i);
+	printCaloCluster(cl,opt);
+	// event time defined by the most energetic cluster
+	if (i == 0) {
+	  event_time = cl->time()+15.;
+	}
+	//-----------------------------------------------------------------------------
+	// display only clusters with E > 5 MeV
+	//-----------------------------------------------------------------------------
+	if (cl->energyDep() > 5.) {
+	  // poor-man's translation
+	  //	  vane_id = cl->vaneId();
+	  xl      = cl->cog3Vector().x()+3904.1;
+	  yl      = cl->cog3Vector().y();
 
-        xl = cl->cog3Vector().x()+3904.1;
-        yl = cl->cog3Vector().y();
+	  e = new TEllipse(xl,yl,50.*cl->energyDep()/100.);
+	  e->SetFillStyle(3001);
+	  if( geom->hasElement<mu2e::VaneCalorimeter>() ){
+	    color = 2;
+	  }else if(geom->hasElement<mu2e::DiskCalorimeter>()){
+	    color = module_color[cl->vaneId()];
+	  }
+	  e->SetFillColor(color);
+	  e->SetLineColor(color);
+	  
+	  list_of_ellipses.Add(e);
 
-        printCaloCluster(cl,opt);
-
-        if (i == 0) {
-          event_time = cl->time()+15.;
-        }
-        //-----------------------------------------------------------------------------
-        // display only clusters with E > 5 MeV
-        //-----------------------------------------------------------------------------
-        if (cl->energyDep() > 5.) {
-          e = new TEllipse(xl,yl,50.*cl->energyDep()/100.);
-          e->SetFillColor(2);
-          e->SetLineColor(2);
-          e->SetFillStyle(3001);
-
-          list_of_ellipses.Add(e);
-
-          e->Draw();
-        }
+	  e->Draw();
+	}
       }
     }
 
     // Loop over all straw hits.
     n_displayed_hits = 0;
     for ( size_t ihit=0; ihit<hits.size(); ++ihit ) {
-
+      
       // Data and MC truth for this hit.
       StrawHit        const&   hit(hits.at(ihit));
       //StrawHitMCTruth const& truth(hitsTruth.at(ihit));
@@ -597,8 +740,8 @@ namespace mu2e {
       bool isFromConversion(false);
       for ( size_t j=0; j<mcptr.size(); ++j ){
         StepPointMC const& step = *mcptr.at(j);
-        art::Ptr<SimParticle> const& simptr = step.simParticle();
-        SimParticleCollection::key_type trackId(step.trackId());
+	art::Ptr<SimParticle> const& simptr = step.simParticle();
+	SimParticleCollection::key_type trackId(step.trackId());
         SimParticle const& sim  = *simptr;
         if ( sim.fromGenerator() ){
           GenParticle* gen = (GenParticle*) &(*sim.genParticle());
@@ -614,7 +757,7 @@ namespace mu2e {
       Hep3Vector pos( tt->positionAtZ( mid.z() ) );
       Hep3Vector mom( tt->momentumAtZ( mid.z() ) );
       TwoLinePCA pca( pos, mom.unit(), mid, w );
-      double dca = pca.dca();
+      //      double dca = pca.dca();
 
       Hep3Vector posMid( tmid->positionAtZ( mid.z() ) );
       Hep3Vector momMid( tmid->momentumAtZ( mid.z() ) );
@@ -634,13 +777,13 @@ namespace mu2e {
         << endl;
       */
 
-      if ( isFromConversion ) {
-        float ntHit[_ntHit->GetNvar()];
-        _hMissDist->Fill( dca );
-        ntHit[0] = dca;
-        ntHit[1] = mid.z();
-        _ntHit->Fill(ntHit);
-      }
+      //       if ( isFromConversion ) {
+      //         float ntHit[_ntHit->GetNvar()];
+      //         _hMissDist->Fill( dca );
+      //         ntHit[0] = dca;
+      //         ntHit[1] = mid.z();
+      //         _ntHit->Fill(ntHit);
+      //       }
 
       // Position along wire, from delta t.
       double v     = trackCal->TimeDiffToDistance( straw.index(), hit.dt() );
@@ -660,67 +803,61 @@ namespace mu2e {
 
       if ( doDisplay_  ){
         if ( isFromConversion ) {
-          if (intime) color = kRed;
-          else                                   color = kBlue;
-        }
-        else                                     color = kBlack;
+	  if (intime) color = kRed;
+	  else                                   color = kBlue;
+	}
+	else                                     color = kBlack;
+	
+	if ((isFromConversion) || (intime)) {
+	  line->SetLineColor(color);
+	  line->DrawLine( x1.x(), x1.y(), x2.x(), x2.y() );
 
-        if ((isFromConversion) || (intime)) {
-          line->SetLineColor(color);
-          line->DrawLine( x1.x(), x1.y(), x2.x(), x2.y() );
+	  line->DrawLine(x0.x()+5.*w.y(),x0.y()-5*w.x(),x0.x()-5*w.y(),x0.y()+5*w.x());
 
-          line->DrawLine(x0.x()+5.*w.y(),x0.y()-5*w.x(),x0.x()-5*w.y(),x0.y()+5*w.x());
-
-          n_displayed_hits++;
-        }
+	  n_displayed_hits++;
+	}
       }
     }
 
-
-    if ( doDisplay_  ){
-
+    if (doDisplay_) {
+      //-----------------------------------------------------------------------------
       // Draw the generated hits.
-      TGraph graph( xStep.size(), &xStep[0], &yStep[0]);
-      graph.SetMarkerStyle(kOpenTriangleUp);
-      graph.SetMarkerSize(0.5);
-      graph.Draw("PSAME");
+      //-----------------------------------------------------------------------------
+      if (xStep.size() <= 0) {
+      }
+      else {
+	graph = new TGraph( xStep.size(), &xStep[0], &yStep[0]);
+	graph->SetMarkerStyle(kOpenTriangleUp);
+	graph->SetMarkerSize(0.5);
+	graph->Draw("PSAME");
+      }
 
-      // Draw the first point on the track.
-      double xf1 = firstStep->position().x();
-      double yf1 = firstStep->position().y();
+      //-----------------------------------------------------------------------------
+      // red marker and arrow: first point on the track.
+      //-----------------------------------------------------------------------------
+      double xf1 = pos1.x();
+      double yf1 = pos1.y();
       TGraph genPoint( 1, &xf1, &yf1 );
-      //      cout << "Size: " << genPoint.GetMarkerSize() << endl;
       genPoint.SetMarkerColor(kRed);
-      genPoint.SetMarkerSize(1.5);
+      genPoint.SetMarkerSize(1.0);
       genPoint.SetMarkerStyle(kFullCircle);
       genPoint.Draw("PSAME");
-
-      CLHEP::Hep3Vector const& v(firstStep->momentum());
+      
       double arrowLength(200.);
-      double xf2 = xf1 + arrowLength*v.x()/v.perp();
-      double yf2 = yf1 + arrowLength*v.y()/v.perp();
+      double xf2 = xf1 + arrowLength*mom1.x()/mom1.perp();
+      double yf2 = yf1 + arrowLength*mom1.y()/mom1.perp();
       arrow->SetLineColor(kRed);
       arrow->DrawArrow( xf1, yf1, xf2, yf2, 0.01, ">");
-
+      
       double d0x  = tt->d0x();
       double d0y  = tt->d0y();
       double d0x2 =  tt->d0x() + arrowLength*tt->u0();
       double d0y2 =  tt->d0y() + arrowLength*tt->v0();
-
-      //       double dot = tt->d0x()*tt->u0() + tt->d0y()*tt->v0();
-
-      //       cout << "D0x etc: "
-      //            << d0x << " "
-      //            << d0y << " "
-      //            << tt->u0() << " "
-      //            << tt->v0() << " "
-      //            << dot
-      //            << endl;
-
+      
       arrow->SetLineColor(kBlue);
       arrow->DrawArrow(d0x, d0y, d0x2, d0y2, 0.01, ">");
       //-----------------------------------------------------------------------------
-      // Plot origin.
+      // blue cross - origin.
       //-----------------------------------------------------------------------------
       double xo = 0.;
       double yo = 0.;
@@ -729,17 +866,15 @@ namespace mu2e {
       genPointo.SetMarkerSize(2.5);
       genPointo.SetMarkerStyle(kPlus);
       genPointo.Draw("PSAME");
-
-
+      
       canvas_->Modified();
       canvas_->Update();
-
+      
       printf("N(hits) = %5i, N(displayed hits): %5i\n",(int) hits.size(),n_displayed_hits);
       printf("number of clusters      : %5i\n",fNClusters);
-
-
+      
       char junk(0);
-
+      
       if ( clickToAdvance_ ) {
         cerr << "Double click in the Canvas " << moduleLabel_ << " to continue:" ;
         gPad->WaitPrimitive();
@@ -750,27 +885,22 @@ namespace mu2e {
       }
       cerr << endl;
     }
-
-    //     cout << "TubsParams: "
-    //          << envelope.innerRadius() << " "
-    //          << envelope.outerRadius() << " "
-    //          << envelope.zHalfLength() << " "
-    //          << endl;
-
-  END_OF_ROUTINE:;
+    //    END_OF_ROUTINE:;
     //-----------------------------------------------------------------------------
     // memory cleanup
     //-----------------------------------------------------------------------------
     list_of_ellipses.Delete();
-
+    
     if (tt) {
       delete tt;
       delete tg;
       delete tmid;
     }
 
+    if (graph) delete graph;
+    
   } // end of ::analyze.
-
+    
 }
 
 using mu2e::HitDisplay;
