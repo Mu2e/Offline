@@ -17,8 +17,8 @@
 double tdlow(0.57735027);
 double tdhigh(1.0);
 double t0min(720);
-double momlow(103.4);
-double momhigh(104.8);
+double momlow(103.35);
+double momhigh(104.75);
 int minnhits(20);
 size_t icut=2;
 unsigned minnactive[4] = {20,22,25,30};
@@ -53,7 +53,7 @@ void KalCuts() {
   snprintf(ctext,80,"mct0>%f",t0min);
   tt0 = TCut(ctext);
   tmom = TCut("mcentmom>100");
-  snprintf(ctext,80,"nchits>=%i",minnhits);
+  snprintf(ctext,80,"ncgood>=%i",minnhits);
   nmch = TCut(ctext);
   mcsel = nmch+tmom+tpitch;
 //  mcsel = nmch+tmom;
@@ -271,7 +271,7 @@ void KalFitAccPlots(TTree* trks) {
 
   TH1F* fitmom = new TH1F("fitmom","Track fit momentum;fit momentum (MeV)",100,98,107);
 
-  trks->Project("nmc","nchits");
+  trks->Project("nmc","ncgood");
   trks->Project("mcmom","mcentmom",nmch);
   
   trks->Project("fitcon","log10(fitcon)",reco+nmch+tmom);
@@ -916,8 +916,8 @@ void KalFitNHits(TTree* t){
   TH1F* ncha = new TH1F("ncha","Number of Conversion Electron Tracker Hits;N hits;N Conversion Tracks",100,-0.5,99.5);
   nch->SetStats(0);
   nch->SetStats(0);
-  t->Project("nch","nchits",tmom+tpitch);
-  t->Project("ncha","nchits",tmom+tpitch+"fitstatus>0");
+  t->Project("nch","ncgood",tmom+tpitch);
+  t->Project("ncha","ncgood",tmom+tpitch+"fitstatus>0");
   nch->SetLineColor(kRed);
   ncha->SetLineColor(kBlue);
   TLegend* leg = new TLegend(0.6,0.7,0.9,0.9);
