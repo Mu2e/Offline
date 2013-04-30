@@ -2,9 +2,9 @@
 // A sandbox for playing with tracks, including transformations to different representations.
 // This is not production code but feel free to look at it.
 //
-// $Id: HitDisplay_module.cc,v 1.18 2013/04/29 14:28:38 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/04/29 14:28:38 $
+// $Id: HitDisplay_module.cc,v 1.19 2013/04/30 20:29:58 murat Exp $
+// $Author: murat $
+// $Date: 2013/04/30 20:29:58 $
 //
 // Original author Rob Kutschke.
 //
@@ -308,6 +308,8 @@ namespace mu2e {
   // 'banner' : print banner
   //-----------------------------------------------------------------------------
   void HitDisplay::printCaloCluster(const CaloCluster* Cl, const char* Opt) {
+    const char oname[] = "HitDisplay::printCaloCluster";
+
     int row, col, ir, iz;
     TString opt = Opt;
 
@@ -356,10 +358,15 @@ namespace mu2e {
 	  ir  = cgvane->nCrystalR();
 	}else{
 	  HexMap hmap;
-	  HexLK lk = hmap.lk(id);
+	  //	  HexLK lk = hmap.lk(id);
 
-	  iz = lk._l;
-	  ir = lk._k;
+	  printf(">>> ERROR in %s: yet to learn how to print the crystal indices in case of disks\n", oname);
+
+// 	  iz = lk._l;
+// 	  ir = lk._k;
+
+ 	  iz = -1;
+	  ir = -1;
 	}
 
 	
@@ -520,7 +527,7 @@ namespace mu2e {
     const StepPointMC* midStep = & sortedSteps.middleByZ();
     
     if ((midStep == 0) || (firstStep ==0)) {
-      printf("[%-30s] **** ERROR : HitDisplay_module::analyze : firstStep = %08x midstep = %08x, BAIL OUT\n",
+      printf("[%-30s] **** ERROR : HitDisplay_module::analyze : firstStep = %8p midstep = %8p, BAIL OUT\n",
 	     name,firstStep, midStep);
       //      goto END_OF_ROUTINE;
     }
