@@ -4,9 +4,9 @@
 //
 // The parameters of a Polycone
 //
-// $Id: Polycone.hh,v 1.4 2012/03/30 16:30:53 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 16:30:53 $
+// $Id: Polycone.hh,v 1.5 2013/04/30 14:56:57 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/04/30 14:56:57 $
 //
 // Original author KLG
 //
@@ -17,6 +17,8 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
+
+#include "GeomPrimitives/inc/PolyconsParams.hh"
 
 namespace mu2e {
 
@@ -42,20 +44,24 @@ namespace mu2e {
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
-    double phi0()           const { return _phiStart; }
-    double phiTotal()       const { return _phiTotal; }
+    double phi0()           const { return _params.phi0(); }
+    double phiTotal()       const { return _params.phiTotal(); }
 
     const std::string& materialName() const { return _materialName; }
 
     const CLHEP::Hep3Vector& originInMu2e() const { return _originInMu2e; }
 
-    const std::vector<double>& zPlanes() const { return _zPlanes; }
-    const std::vector<double>& rInner()  const { return _rInner; }
-    const std::vector<double>& rOuter()  const { return _rOuter; }
+    const std::vector<double>& zPlanes() const { return _params.zPlanes(); }
+    const std::vector<double>& rInner()  const { return _params.rInner(); }
+    const std::vector<double>& rOuter()  const { return _params.rOuter(); }
 
-    unsigned numZPlanes() const { return _zPlanes.size(); }
+    unsigned numZPlanes() const { return _params.numZPlanes(); }
+
+    const PolyconsParams & getPolyconsParams() const { return _params; }
 
   private:
+
+    PolyconsParams      _params;
 
     std::vector<double> _zPlanes;
     std::vector<double> _rInner;

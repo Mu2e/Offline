@@ -1,9 +1,9 @@
 //
 // The parameters of a Polycone
 //
-// $Id: Polycone.cc,v 1.4 2012/03/30 16:30:53 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 16:30:53 $
+// $Id: Polycone.cc,v 1.5 2013/04/30 14:56:57 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/04/30 14:56:57 $
 //
 // Original author KLG
 //
@@ -24,13 +24,13 @@ namespace mu2e {
                      const std::string& materialName,
                      double phiStart,
                      double phiTotal):
-    _zPlanes(zPlanes),
-    _rInner(rInner),
-    _rOuter(rOuter),
+    _params ( zPlanes,
+              rInner,
+              rOuter,
+              phiStart,
+              phiTotal ),
     _originInMu2e(originInMu2e),
-    _materialName(materialName),
-    _phiStart(phiStart),
-    _phiTotal(phiTotal)
+    _materialName(materialName)
   {
     // In our use the polycone shape parameters can come directly from
     // user inputs.  Therefore an assert() check is not appropriate,

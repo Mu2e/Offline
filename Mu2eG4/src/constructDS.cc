@@ -1,9 +1,9 @@
 //
 // Free function to create  DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.10 2013/03/27 17:36:38 knoepfel Exp $
+// $Id: constructDS.cc,v 1.11 2013/04/30 14:56:57 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/03/27 17:36:38 $
+// $Date: 2013/04/30 14:56:57 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -25,10 +25,12 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeomPrimitives/inc/PolyconsParams.hh"
 #include "MBSGeom/inc/MBS.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/constructDS.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestPolycone.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 
 // G4 includes
@@ -174,26 +176,19 @@ namespace mu2e {
 
     vector<double> tmp_rInnerDs3 ( tmp_rOuterDs3.size(), 0. );
 
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-    G4VSolid* ds3VacSolid   = reg.add(new G4Polycone("ToyDS3VacPolycone",
-						     0, 2*M_PI,
-						     tmp_zPlanesDs3.size(),
-						     &tmp_zPlanesDs3[0],
-						     &tmp_rInnerDs3[0],
-						     &tmp_rOuterDs3[0])
-				      );
 
+    PolyconsParams ds3PolyParams( tmp_zPlanesDs3,
+                                  tmp_rInnerDs3,
+                                  tmp_rOuterDs3 );
+    
     CLHEP::Hep3Vector ds3positionInMu2e( ds->position().x(), ds->position().y(), 0.);
-
-    VolumeInfo ds3VacInfo("ToyDS3Vacuum", ds3positionInMu2e - parent.centerInMu2e(),  parent.centerInWorld);
-    ds3VacInfo.solid = ds3VacSolid;
-    ds3VacInfo.solid->SetName( ds3VacInfo.name );
-
-    finishNesting(ds3VacInfo,
+    
+    nestPolycone( "ToyDS3Vacuum",
+                  ds3PolyParams,
                   vacuumMaterial,
                   0,
                   ds3positionInMu2e - parent.centerInMu2e(),
-                  parent.logical,
+                  parent,
                   0,
                   toyDSVisible,
                   G4Colour::Yellow(),
@@ -202,21 +197,6 @@ namespace mu2e {
                   placePV,
                   doSurfaceCheck
                   );
-
-    if ( verbosityLevel > 0) {
-      double pzhl   = static_cast<G4Tubs*>(ds2VacInfo.solid)->GetZHalfLength();
-      double ds2VacZ = ds2VacInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
-      cout << __func__ << 
-	" ds2Vac Z offset in Mu2e           : " << ds2VacZ << endl;
-      cout << __func__ << 
-	" ds2Vac Z extent in Mu2e           : " << ds2VacZ - pzhl  << ", " <<  ds2VacZ + pzhl  << endl;
-      pzhl   = static_cast<G4Tubs*>(ds3VacInfo.solid)->GetZHalfLength();
-      double ds3VacZ = ds3VacInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
-      cout << __func__ << 
-	" ds3Vac Z offset in Mu2e           : " << ds3VacZ << endl;
-      cout << __func__ << 
-	" ds3Vac Z extent in Mu2e           : " << ds3VacZ - pzhl  << ", " <<  ds3VacZ + pzhl  << endl;
-    }
 
   } // end of Mu2eWorld::constructDS;
 

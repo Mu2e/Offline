@@ -3,4 +3,5 @@
  <class name="mu2e::Tube"/>
  <class name="std::vector<mu2e::Tube>"/>
  <class name="mu2e::TubsParams"/>
+ <class name="mu2e::PolyconsParams"/>
 </lcgdict>
