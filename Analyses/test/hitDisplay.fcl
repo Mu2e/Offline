@@ -1,7 +1,7 @@
 #
-# $Id: hitDisplay.fcl,v 1.7 2013/04/17 15:56:54 murat Exp $
+# $Id: hitDisplay.fcl,v 1.8 2013/05/01 17:54:54 murat Exp $
 # $Author: murat $
-# $Date: 2013/04/17 15:56:54 $
+# $Date: 2013/05/01 17:54:54 $
 #
 # Original author Rob Kutschke
 
@@ -64,7 +64,7 @@ physics : {
     trkPatRec4     : @local::TrkPatRecUpstreammuPlus
 
     makeCaloCluster: {
-      module_type           : MakeCaloCluster
+      module_type           : MakeCaloClusterNew
       diagLevel             : 0
       generatorModuleLabel   : generate
       caloCrystalModuleLabel : CaloCrystalHitsMaker
@@ -85,15 +85,20 @@ physics : {
     # Look at the hits from G4.
 
     hitDisplay: {
-      module_type          : HitDisplay
-      generatorModuleLabel : generate
-      g4ModuleLabel        : g4run
-      hitMakerModuleLabel  : makeSH
+      module_type                  : HitDisplay
+
+      generatorModuleLabel         : generate
+      g4ModuleLabel                : g4run
+      strawHitMakerModuleLabel     : makeSH
+      strawHitPosMakerModuleLabel  : MakeStereoHits
+      strawHitFlagMakerModuleLabel : FlagStrawHits
+
+# if set to true, all hits will be displayed unconditionally
+# otherwise, display only hits with right flags
+
+      displayBackgroundHits        : false
       trackerStepPoints    : tracker
-      minEnergyDep         : 0.0001
       minHits              : 5
-      doDisplay            : true
-#      clickToAdvance       : false
       clickToAdvance       : true
       printHits            : true
       timeWindow           : 100000.
