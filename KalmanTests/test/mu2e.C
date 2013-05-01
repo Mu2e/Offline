@@ -301,23 +301,24 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,const char* suffix) 
     double cint = _conspec[icut]->IntegralAndError(istart,istop,cint_err);
     double fint = _flat_f[icut]->Integral(momlow,momhigh)/mevperbin;
 
-    TPaveText* inttext = new TPaveText(0.1,0.4,0.45,0.9,"NDC");
+    TPaveText* inttext = new TPaveText(0.15,0.4,0.45,0.9,"NDC");
     char itext[50];
 
     snprintf(itext,50,"%3.2f #times 10^{17} stopped #mu^{-}",nstopped/1e17);
-    inttext->AddText(itext);
+    TText* l = inttext->AddText(itext);
     snprintf(itext,50,"R_{#mue} = %2.2f #times 10^{-16}",rmue*1e16);
-    inttext->AddText(itext);
+    l = inttext->AddText(itext);
+    l->SetTextColor(kRed);
 //    inttext->AddLine();
 //    snprintf(itext,50,"%4.2f MeV/c < P < %4.2f MeV/c",momlow,momhigh);
 //    inttext->AddText(itext);
-    snprintf(itext,50,"#int Conversion = %3.2f #pm %3.2f",cint,cint_err);
-    TText* l = inttext->AddText(itext);
+    snprintf(itext,50,"#int Conversion = %3.2f #pm %2.2f",cint,cint_err);
+    l = inttext->AddText(itext);
     l->SetTextColor(kRed);
-    snprintf(itext,50,"#int DIO = %3.2f #pm %3.2f",dint,dint_err);
+    snprintf(itext,50,"#int DIO = %3.2f #pm %2.2f",dint,dint_err);
     l = inttext->AddText(itext);
     l->SetTextColor(kBlue);
-    snprintf(itext,50,"#int RPC+AP+Cosmic = %3.2f",fint);
+    snprintf(itext,50,"#int RPC+AP+Cosmic = %2.2f",fint);
     l = inttext->AddText(itext);
     l->SetTextColor(kGreen);
     inttext->Draw();
