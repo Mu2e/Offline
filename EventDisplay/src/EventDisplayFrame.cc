@@ -26,6 +26,7 @@
 #include "EventDisplay/src/RootFileManager.h"
 #include "EventDisplay/src/DataInterface.h"
 #include "EventDisplay/src/EventDisplayFrame.h"
+#include "EventDisplay/src/FilterDialog.h"
 #include "EventDisplay/src/SetupDialog.h"
 #include "EventDisplay/src/VirtualShape.h"
 #include "EventDisplay/src/dict_classes/EventDisplayViewSetup.h"
@@ -141,10 +142,10 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _mecoStyleProtonAbsorberButton->Associate(this);
 
   TGHorizontalFrame *subFrameView   = new TGHorizontalFrame(_subFrame,300,15);
-  TGTextButton *endViewButton       = new TGTextButton(subFrameView, "____  End View", 70, buttoncontext);
-  TGTextButton *sideViewButton      = new TGTextButton(subFrameView, "____  Side View", 71, buttoncontext);
-  TGTextButton *allTracksViewButton = new TGTextButton(subFrameView, "______  All Tracks View", 72, buttoncontext);
-  TGTextButton *resetViewButton     = new TGTextButton(subFrameView, "____  Reset View", 73, buttoncontext);
+  TGTextButton *endViewButton       = new TGTextButton(subFrameView, "___  End View", 70, buttoncontext);
+  TGTextButton *sideViewButton      = new TGTextButton(subFrameView, "___  Side View", 71, buttoncontext);
+  TGTextButton *allTracksViewButton = new TGTextButton(subFrameView, "_____  All Tracks View", 72, buttoncontext);
+  TGTextButton *resetViewButton     = new TGTextButton(subFrameView, "___  Reset View", 73, buttoncontext);
   shrinkButton(endViewButton);
   shrinkButton(sideViewButton);
   shrinkButton(allTracksViewButton);
@@ -189,8 +190,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _timeIntervalField2->SetWidth(50);
 
   TGHorizontalFrame *subFrameTimeWindow = new TGHorizontalFrame(_subFrame,300,15);
-  TGTextButton *allHitsTimeButton       = new TGTextButton(subFrameTimeWindow, "_________  Time Window for all Hits", 80, buttoncontext);
-  TGTextButton *allTracksTimeButton     = new TGTextButton(subFrameTimeWindow, "_________  Time Window for all Tracks", 81, buttoncontext);
+  TGTextButton *allHitsTimeButton       = new TGTextButton(subFrameTimeWindow, "______  Time Window for all Hits", 80, buttoncontext);
+  TGTextButton *allTracksTimeButton     = new TGTextButton(subFrameTimeWindow, "______  Time Window for all Tracks", 81, buttoncontext);
   shrinkButton(allHitsTimeButton);
   shrinkButton(allTracksTimeButton);
   subFrameTimeWindow->AddFrame(allHitsTimeButton, lh1);
@@ -458,14 +459,11 @@ void EventDisplayFrame::shrinkButton(TGTextButton *button)
 void EventDisplayFrame::initSetup()
 {
   _whiteBackground=false;
-  _showUnhitStraws=false;
-  _showUnhitCrystals=false;
   _useHitColors=true;
   _useTrackColors=true;
 }
 
-void EventDisplayFrame::changeSetup(bool whiteBackground, bool showUnhitStraws, bool showUnhitCrystals,
-                         bool useHitColors, bool useTrackColors)
+void EventDisplayFrame::changeSetup(bool whiteBackground, bool useHitColors, bool useTrackColors)
 {
   _mainPad->cd();
   if(_whiteBackground!=whiteBackground)
@@ -475,20 +473,6 @@ void EventDisplayFrame::changeSetup(bool whiteBackground, bool showUnhitStraws, 
     else _mainPad->SetFillColor(1);
     _dataInterface->useHitColors(useHitColors, whiteBackground);
     _dataInterface->useTrackColors(_contentSelector, useTrackColors, whiteBackground);
-  }
-
-  if(_showUnhitStraws!=showUnhitStraws)
-  {
-    _showUnhitStraws=showUnhitStraws;
-    if(showUnhitStraws) _dataInterface->makeStrawsVisibleBeforeStart(true);
-    else _dataInterface->makeStrawsVisibleBeforeStart(false);
-  }
-
-  if(_showUnhitCrystals!=showUnhitCrystals)
-  {
-    _showUnhitCrystals=showUnhitCrystals;
-    if(showUnhitCrystals) _dataInterface->makeCrystalsVisibleBeforeStart(true);
-    else _dataInterface->makeCrystalsVisibleBeforeStart(false);
   }
 
   if(_useHitColors!=useHitColors)
@@ -974,13 +958,12 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          }
                          if(param1==63)
                          {
-                           _dataInterface->filterTracks();
+                           new FilterDialog(gClient->GetRoot(), _dataInterface, _contentSelector);
                            drawEverything();
                          }
                          if(param1==64)
                          {
                            new SetupDialog(gClient->GetRoot(), this, _whiteBackground, 
-                                           _showUnhitStraws, _showUnhitCrystals,
                                            _useHitColors, _useTrackColors);
                          }
                          break;
@@ -1147,7 +1130,7 @@ void EventDisplayFrame::createAnimFile()
 void EventDisplayFrame::drawSituation()
 {
   _mainPad->cd();
-  _dataInterface->updateComponents(_timeCurrent);
+  _dataInterface->updateComponents(_timeCurrent, _contentSelector);
   if(!_clock)
   {
     char timeText[50];
@@ -1176,7 +1159,7 @@ void EventDisplayFrame::drawEverything()
   TAxis3D::GetPadAxis(_mainPad)->SetLabelSize(0.025);
   _mainPad->Modified();
   _mainPad->Update();
-  _dataInterface->updateComponents(NAN);
+  _dataInterface->updateComponents(NAN, _contentSelector);
   _mainPad->Modified();
   _mainPad->Update();
 }

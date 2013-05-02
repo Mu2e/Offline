@@ -1,9 +1,9 @@
 //
 // Class for all static (i.e. time-independent) cone structures. Now only used for MecoStyleProtonAbsorber. The structure is displayed via EventDisplayGeoVolumeCone (inherited from TGeoVolume) which holds a TGeoCone. 
 //
-// $Id: Cone.h,v 1.1 2012/10/25 20:33:09 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/10/25 20:33:09 $
+// $Id: Cone.h,v 1.2 2013/05/02 06:03:41 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/05/02 06:03:41 $
 //
 // Original author MyeongJae Lee, based on Ralf Ehrlich's Tube.h.
 //
@@ -208,41 +208,18 @@ class Cone: public VirtualShape
   void start()
   {
     //std::map<layersegment_struct,line_struct>::iterator iter;
-    std::vector<line_struct>::iterator iter;
-    if(getDefaultVisibility())
+    _volume->SetVisibility(0);
+    if(_notDrawn==false)
     {
-      _volume->SetVisibility(1);
-      _volume->SetLineColor(getDefaultColor());
-      _volume->SetFillColor(getDefaultColor());
-      
-      if(_notDrawn==true)
+      std::vector<line_struct>::iterator iter;
+      for(iter=_lines.begin(); iter!=_lines.end(); iter++)
       {
-        for(iter=_lines.begin(); iter!=_lines.end(); iter++)
-        {
-          //line_struct &l=iter->second;
-          line_struct &l=*iter;
-          l.line->SetLineColor(getDefaultColor());
-          l.line->Draw();
-        }
+        //line_struct &l=iter->second;
+        line_struct &l=*iter;
+        gPad->RecursiveRemove(l.line.get());
       }
-      _notDrawn=false;
-      
     }
-    else
-    {
-      _volume->SetVisibility(0);
-      
-      if(_notDrawn==false)
-      {
-        for(iter=_lines.begin(); iter!=_lines.end(); iter++)
-        {
-          //line_struct &l=iter->second;
-          line_struct &l=*iter;
-          gPad->RecursiveRemove(l.line.get());
-        }
-      }
-      _notDrawn=true;
-    }
+    _notDrawn=true;
   }
 
   void update(double time)
@@ -260,9 +237,32 @@ class Cone: public VirtualShape
       l.line->SetLineColor(getColor());
       if(_notDrawn==true) l.line->Draw();
     }
-    
     _notDrawn=false;
   }
+
+  void makeGeometryVisible(bool visible)
+  {
+    if(visible)
+    {
+      _volume->SetVisibility(1);
+      _volume->SetLineColor(getDefaultColor());
+      _volume->SetFillColor(getDefaultColor());
+      if(_notDrawn==true)
+      {
+        std::vector<line_struct>::iterator iter;
+        for(iter=_lines.begin(); iter!=_lines.end(); iter++)
+        {
+          //line_struct &l=iter->second;
+          line_struct &l=*iter;
+          l.line->SetLineColor(getDefaultColor());
+          l.line->Draw();
+        }
+      }
+      _notDrawn=false;
+    }
+    else start();
+  }
+
 };
 
 }

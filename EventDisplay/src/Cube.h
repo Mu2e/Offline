@@ -1,9 +1,9 @@
 //
 // Class for all cube structures, e.g. vanes, crystals. The structure is displayed via EventDisplayGeoVolumeBox (inherited from TGeoVolume) which holds a TGeoBox. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class).
 //
-// $Id: Cube.h,v 1.10 2012/09/14 17:17:34 ehrlich Exp $
+// $Id: Cube.h,v 1.11 2013/05/02 06:03:41 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/09/14 17:17:34 $
+// $Date: 2013/05/02 06:03:41 $
 //
 // Original author Ralf Ehrlich
 //
@@ -74,16 +74,12 @@ class Cube: public VirtualShape
 
   public:
   Cube(double x, double y, double z, double dx, double dy, double dz,
-           double phi, double theta, double psi,
-           double time, int color,
+           double phi, double theta, double psi, double time,
            const TGeoManager *geomanager, TGeoVolume *topvolume,
-           EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
-           bool defaultVisibility):
+           EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info) : 
            VirtualShape(geomanager, topvolume, mainframe, info, true)
   {
     setStartTime(time);
-    setColor(color);
-    setDefaultVisibility(defaultVisibility);
     _notDrawn=true;
 
     _volume = new EventDisplayGeoVolumeBox(dx, dy, dz, mainframe, _info);
@@ -158,36 +154,17 @@ class Cube: public VirtualShape
 
   void start()
   {
-    std::vector<line_struct>::iterator iter;
-    if(getDefaultVisibility())
+    _volume->SetVisibility(0);
+    if(_notDrawn==false)
     {
-      _volume->SetVisibility(1);
-      _volume->SetLineColor(getDefaultColor());
-      _volume->SetFillColor(getDefaultColor());
-      if(_notDrawn==true)
+      std::vector<line_struct>::iterator iter;
+      for(iter=_lines.begin(); iter!=_lines.end(); iter++)
       {
-        for(iter=_lines.begin(); iter!=_lines.end(); iter++)
-        {
-          line_struct &l=*iter;
-          l.line->SetLineColor(getDefaultColor());
-          l.line->Draw();
-        }
+        line_struct &l=*iter;
+        gPad->RecursiveRemove(l.line.get());
       }
-      _notDrawn=false;
     }
-    else
-    {
-      _volume->SetVisibility(0);
-      if(_notDrawn==false)
-      {
-        for(iter=_lines.begin(); iter!=_lines.end(); iter++)
-        {
-          line_struct &l=*iter;
-          gPad->RecursiveRemove(l.line.get());
-        }
-      }
-      _notDrawn=true;
-    }
+    _notDrawn=true;
   }
 
   void toForeground()
@@ -218,6 +195,28 @@ class Cube: public VirtualShape
       if(_notDrawn) l.line->Draw();
     }
     _notDrawn=false;
+  }
+
+  void makeGeometryVisible(bool visible)
+  {
+    if(visible)
+    {
+      std::vector<line_struct>::iterator iter;
+      _volume->SetVisibility(1);
+      _volume->SetLineColor(getDefaultColor());
+      _volume->SetFillColor(getDefaultColor());
+      if(_notDrawn==true)
+      {
+        for(iter=_lines.begin(); iter!=_lines.end(); iter++)
+        {
+          line_struct &l=*iter;
+          l.line->SetLineColor(getDefaultColor());
+          l.line->Draw();
+        }
+      }
+      _notDrawn=false;
+    }
+    else start();
   }
 };
 

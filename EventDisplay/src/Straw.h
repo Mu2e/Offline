@@ -1,9 +1,9 @@
 //
 // Container class for all detector straws. Straws are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). Straws which are hit are drawn in a particular color which depends on the hit time.
 //
-// $Id: Straw.h,v 1.11 2012/09/14 17:17:34 ehrlich Exp $
+// $Id: Straw.h,v 1.12 2013/05/02 06:03:41 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/09/14 17:17:34 $
+// $Date: 2013/05/02 06:03:41 $
 //
 // Original author Ralf Ehrlich
 //
@@ -29,18 +29,19 @@ class Straw: public VirtualShape
 
   boost::shared_ptr<EventDisplayPolyLine3D> _line;
   bool _notDrawn;
+  int  _hitNumber;
+  bool _invisible;
 
   public:
 
   Straw(double x, double y, double z, double t1,
         double theta, double phi, double halflength,
         const TGeoManager *geomanager, TGeoVolume *topvolume,
-        EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
-        bool defaultVisibility):
+        EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info):
         VirtualShape(geomanager, topvolume, mainframe, info, true)
   {
     setStartTime(t1);
-    setDefaultVisibility(defaultVisibility);
+    _hitNumber=-1;
     _notDrawn=true;
     _line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
     double st=sin(theta);
@@ -66,17 +67,9 @@ class Straw: public VirtualShape
 
   void start()
   {
-    if(getDefaultVisibility())
-    {
-      _line->SetLineColor(getDefaultColor());
-      if(_notDrawn==true) _line->Draw();
-      _notDrawn=false;
-    }
-    else
-    {
-      if(_notDrawn==false) gPad->RecursiveRemove(_line.get());
-      _notDrawn=true;
-    }
+    _invisible=false;
+    if(_notDrawn==false) gPad->RecursiveRemove(_line.get());
+    _notDrawn=true;
   }
 
   void toForeground()
@@ -91,12 +84,35 @@ class Straw: public VirtualShape
   void update(double time)
   {
     if(time<getStartTime() || isnan(getStartTime())) return;
+
+    if(_invisible)
+    {
+      if(_notDrawn==false) gPad->RecursiveRemove(_line.get());
+      _notDrawn=true;
+      return;
+    }
+
     _line->SetLineColor(getColor());
     if(_notDrawn)
     {
       if(_notDrawn==true) _line->Draw();
       _notDrawn=false;
     }
+  }
+ 
+  void setInvisible(bool invisible)
+  {
+    _invisible=invisible; //true, if the flag value is not satisfied for this hit
+  }
+ 
+  void setHitNumber(int hitNumber)
+  {
+    _hitNumber=hitNumber;
+  }
+
+  int getHitNumber()
+  {
+    return _hitNumber;
   }
 
 };

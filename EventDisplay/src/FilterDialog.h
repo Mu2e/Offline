@@ -4,45 +4,63 @@
 #include <TGFrame.h>
 #include <TGLabel.h>
 #include <TGButton.h>
+#include <TGComboBox.h>
 #include <TGTextEntry.h>
 #include "DataInterface.h"
+#include "ContentSelector.h"
 
 namespace mu2e_eventdisplay
 {
 
 class FilterDialog : public TGMainFrame
 {
-  DataInterface *_dataInterface;
+  boost::shared_ptr<DataInterface> _dataInterface;
+  boost::shared_ptr<ContentSelector> _contentSelector;
 
   TGTextEntry   *_textEntry1;
   TGTextEntry   *_textEntry2;
   TGTextEntry   *_textEntry3;
   TGTextEntry   *_textEntry4;
-  TGCheckButton *_checkButton1;
-  TGCheckButton *_checkButton2;
-  TGCheckButton *_checkButton3;
-  TGCheckButton *_checkButton4;
-  TGCheckButton *_checkButton5;
-  TGCheckButton *_checkButton6;
+  TGCheckButton *_checkButton[6];
+  TGCheckButton *_checkButtonFlags[32];
+  TGComboBox    *_hitFlagBox;
 
   FilterDialog();
   FilterDialog(const FilterDialog &);
   FilterDialog& operator=(const FilterDialog &);
 
   public:
-  FilterDialog(const TGWindow* p, DataInterface *dataInterface,
-               unsigned int minPoints, double minTime, double maxTime, double minMomentum,
-               bool showElectrons, bool showMuons, bool showGammas, 
-               bool showNeutrinos, bool showNeutrons, bool showOthers) :
-               TGMainFrame(p, 400, 400), _dataInterface(dataInterface)
+  FilterDialog(const TGWindow* p, 
+               boost::shared_ptr<DataInterface> dataInterface, 
+               boost::shared_ptr<ContentSelector> contentSelector) : 
+               TGMainFrame(p, 500, 700), _dataInterface(dataInterface), _contentSelector(contentSelector)
   {
     SetCleanup(kDeepCleanup);
+
+    unsigned int minPoints=0;
+    double       minTime=NAN;
+    double       maxTime=NAN;
+    double       minMomentum=0;
+    bool showElectrons=true;
+    bool showMuons=true;
+    bool showGammas=true;
+    bool showNeutrinos=true;
+    bool showNeutrons=true;
+    bool showOthers=true;
+    
+    mu2e::StrawHitFlag hitFlagSelection;
+
+    if(_dataInterface) _dataInterface->getFilterValues(minPoints, minTime, maxTime, minMomentum,
+                                                       showElectrons, showMuons, showGammas, 
+                                                       showNeutrinos, showNeutrons, showOthers, 
+                                                       hitFlagSelection);
 
     TGHorizontalFrame *subFrame1  = new TGHorizontalFrame(this,500,20);
     TGHorizontalFrame *subFrame2  = new TGHorizontalFrame(this,500,20);
     TGHorizontalFrame *subFrame3  = new TGHorizontalFrame(this,500,20);
     TGHorizontalFrame *subFrame4  = new TGHorizontalFrame(this,500,20);
     TGHorizontalFrame *subFrame5  = new TGHorizontalFrame(this,500,20);
+    TGHorizontalFrame *subFrame6  = new TGHorizontalFrame(this,500,20);
 
     TGLayoutHints *lh = new TGLayoutHints(kLHintsTop,2,1,2,2);
     AddFrame(subFrame1,  lh);
@@ -86,39 +104,82 @@ class FilterDialog : public TGMainFrame
     sprintf(c,"%e",maxTime);     _textEntry3->SetText(c);
     sprintf(c,"%e",minMomentum); _textEntry4->SetText(c);
 
-    _checkButton1 = new TGCheckButton(this,"Show Electrons",21);
-    _checkButton2 = new TGCheckButton(this,"Show Muons",22);
-    _checkButton3 = new TGCheckButton(this,"Show Gammas",23);
-    _checkButton4 = new TGCheckButton(this,"Show Neutrinos",24);
-    _checkButton5 = new TGCheckButton(this,"Show Neutrons",25);
-    _checkButton6 = new TGCheckButton(this,"Show Other Tracks",26);
+    _checkButton[0] = new TGCheckButton(this,"Show Electrons",21);
+    _checkButton[1] = new TGCheckButton(this,"Show Muons",22);
+    _checkButton[2] = new TGCheckButton(this,"Show Gammas",23);
+    _checkButton[3] = new TGCheckButton(this,"Show Neutrinos",24);
+    _checkButton[4] = new TGCheckButton(this,"Show Neutrons",25);
+    _checkButton[5] = new TGCheckButton(this,"Show Other Tracks",26);
 
-    AddFrame(_checkButton1, lh);
-    AddFrame(_checkButton2, lh);
-    AddFrame(_checkButton3, lh);
-    AddFrame(_checkButton4, lh);
-    AddFrame(_checkButton5, lh);
-    AddFrame(_checkButton6, lh);
+    for(int i=0; i<6; i++)
+    {
+      AddFrame(_checkButton[i], lh);
+      _checkButton[i]->Associate(this);
+    }
 
-    _checkButton1->Associate(this);
-    _checkButton2->Associate(this);
-    _checkButton3->Associate(this);
-    _checkButton4->Associate(this);
-    _checkButton5->Associate(this);
-    _checkButton6->Associate(this);
+    _checkButton[0]->SetState(showElectrons?kButtonDown:kButtonUp);
+    _checkButton[1]->SetState(showMuons?kButtonDown:kButtonUp);
+    _checkButton[2]->SetState(showGammas?kButtonDown:kButtonUp);
+    _checkButton[3]->SetState(showNeutrinos?kButtonDown:kButtonUp);
+    _checkButton[4]->SetState(showNeutrons?kButtonDown:kButtonUp);
+    _checkButton[5]->SetState(showOthers?kButtonDown:kButtonUp);
 
-    _checkButton1->SetState(showElectrons?kButtonDown:kButtonUp);
-    _checkButton2->SetState(showMuons?kButtonDown:kButtonUp);
-    _checkButton3->SetState(showGammas?kButtonDown:kButtonUp);
-    _checkButton4->SetState(showNeutrinos?kButtonDown:kButtonUp);
-    _checkButton5->SetState(showNeutrons?kButtonDown:kButtonUp);
-    _checkButton6->SetState(showOthers?kButtonDown:kButtonUp);
+    AddFrame(subFrame5, lh);
+    TGGroupFrame *hitFlagGroupFrame  = new TGGroupFrame(subFrame5,"Hit Flags");
+    subFrame5->AddFrame(hitFlagGroupFrame); 
+ 
+    _hitFlagBox = new TGComboBox(hitFlagGroupFrame,30);
+    _hitFlagBox->Resize(250,20);
+    _hitFlagBox->Associate(this);
+    hitFlagGroupFrame->AddFrame(_hitFlagBox, lh);
 
-    AddFrame(subFrame5,  lh);
-    TGTextButton *button1 = new TGTextButton(subFrame5, "&Ok", 101);
-    TGTextButton *button2 = new TGTextButton(subFrame5, "&Cancel", 102);
-    subFrame5->AddFrame(button1, lh);
-    subFrame5->AddFrame(button2, lh);
+    if(_contentSelector)
+    {
+      const std::vector<ContentSelector::entryStruct> &hitFlagEntries = _contentSelector->getStrawHitFlagEntries();
+      const std::string &selectedEntry = _contentSelector->getSelectedStrawHitFlagEntry();
+      for(unsigned int i=0; i<hitFlagEntries.size(); i++)
+      {
+        _hitFlagBox->AddEntry(hitFlagEntries[i].entryText.c_str(), hitFlagEntries[i].entryID);
+        if(hitFlagEntries[i].entryText.compare(selectedEntry)==0) _hitFlagBox->Select(hitFlagEntries[i].entryID);
+      }
+      _hitFlagBox->GetListBox()->GetEntry(0)->SetBackgroundColor(0x00FF00);
+    }
+
+
+    TGHorizontalFrame *hitFlagFrame0 = new TGHorizontalFrame(hitFlagGroupFrame,600,500);
+    TGVerticalFrame *hitFlagFrame1 = new TGVerticalFrame(hitFlagFrame0,300,500);
+    TGVerticalFrame *hitFlagFrame2 = new TGVerticalFrame(hitFlagFrame0,300,500);
+    hitFlagGroupFrame->AddFrame(hitFlagFrame0); 
+    hitFlagFrame0->AddFrame(hitFlagFrame1); 
+    hitFlagFrame0->AddFrame(hitFlagFrame2);
+
+    std::string flagnames[16]={"Stereo","EnergySel","RadSel","TimeSel","","",
+                               "Delta","Isolated","Outlier","Other","","",
+                               "CaloSel","","",""};
+    for(int i=0; i<16; i++)
+    {
+      _checkButtonFlags[i] = new TGCheckButton(hitFlagFrame1,flagnames[i].c_str(),1000+i);
+      hitFlagFrame1->AddFrame(_checkButtonFlags[i], lh);
+    }
+    for(int i=16; i<32; i++)
+    {
+      char trackname[10];
+      sprintf(trackname,"Track%i",i-16);
+      _checkButtonFlags[i] = new TGCheckButton(hitFlagFrame2,trackname,1000+i);
+      hitFlagFrame2->AddFrame(_checkButtonFlags[i], lh);
+    }
+    for(int i=0; i<32; i++)
+    {
+      _checkButtonFlags[i]->Associate(this);
+      mu2e::StrawHitFlagDetail::bit_type b=static_cast<mu2e::StrawHitFlagDetail::bit_type>(i);
+      _checkButtonFlags[i]->SetState(hitFlagSelection.hasAnyProperty(b)?kButtonDown:kButtonUp);
+    }
+
+    AddFrame(subFrame6,  lh);
+    TGTextButton *button1 = new TGTextButton(subFrame6, "&Ok", 101);
+    TGTextButton *button2 = new TGTextButton(subFrame6, "&Cancel", 102);
+    subFrame6->AddFrame(button1, lh);
+    subFrame6->AddFrame(button2, lh);
     button1->Associate(this);
     button2->Associate(this);
 
@@ -147,15 +208,31 @@ class FilterDialog : public TGMainFrame
                                             double       minTime      =atof(_textEntry2->GetText());
                                             double       maxTime      =atof(_textEntry3->GetText());
                                             double       minMomentum  =atof(_textEntry4->GetText());
-                                            bool showElectrons=(_checkButton1->GetState()==kButtonDown);
-                                            bool showMuons    =(_checkButton2->GetState()==kButtonDown);
-                                            bool showGammas   =(_checkButton3->GetState()==kButtonDown);
-                                            bool showNeutrinos=(_checkButton4->GetState()==kButtonDown);
-                                            bool showNeutrons =(_checkButton5->GetState()==kButtonDown);
-                                            bool showOthers   =(_checkButton6->GetState()==kButtonDown);
-                                            if(_dataInterface) _dataInterface->setTrackFilter(minPoints, minTime, maxTime, minMomentum,
-                                                                                              showElectrons, showMuons, showGammas, 
-                                                                                              showNeutrinos, showNeutrons, showOthers);
+                                            bool showElectrons=(_checkButton[0]->GetState()==kButtonDown);
+                                            bool showMuons    =(_checkButton[1]->GetState()==kButtonDown);
+                                            bool showGammas   =(_checkButton[2]->GetState()==kButtonDown);
+                                            bool showNeutrinos=(_checkButton[3]->GetState()==kButtonDown);
+                                            bool showNeutrons =(_checkButton[4]->GetState()==kButtonDown);
+                                            bool showOthers   =(_checkButton[5]->GetState()==kButtonDown);
+                                            mu2e::StrawHitFlag hitFlagSetting;
+                                            for(int j=0; j<32; j++)
+                                            {
+                                              mu2e::StrawHitFlagDetail::bit_type b=static_cast<mu2e::StrawHitFlagDetail::bit_type>(j);
+                                              if(_checkButtonFlags[j]->GetState()==kButtonDown) hitFlagSetting.merge(b);
+                                            }
+                                            if(_dataInterface) 
+                                            {
+                                              _dataInterface->setFilterValues(minPoints, minTime, maxTime, minMomentum,
+                                                                              showElectrons, showMuons, showGammas, 
+                                                                              showNeutrinos, showNeutrons, showOthers,
+                                                                              hitFlagSetting);
+                                              TGTextLBEntry *selectedEntry=dynamic_cast<TGTextLBEntry*>(_hitFlagBox->GetSelectedEntry());
+                                              std::string selectedEntryText = selectedEntry->GetText()->GetString();
+                                              if(selectedEntry && _contentSelector)
+                                              {
+                                                _contentSelector->setSelectedStrawHitFlagEntry(selectedEntryText);
+                                              }
+                                            }
                                             CloseWindow();
                                           }
                                           break;

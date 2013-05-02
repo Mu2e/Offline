@@ -30,6 +30,9 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
   if(entry!=nullptr) _trackBox->Select(entry->EntryId());
   entry=_trackBox->FindEntry("SimParticle:g4run:");
   if(entry!=nullptr) _trackBox->Select(entry->EntryId());
+
+  _selectedHitFlagEntry="Nothing Selected";
+  _selectedHitPositionEntry="Nothing Selected";
 }
 
 template<class CollectionType>
@@ -88,6 +91,16 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
     }
     _hitBox->GetListBox()->GetEntry(0)->SetBackgroundColor(0x00FF00);
   }
+
+//Hit Flag Selection
+  _hitFlagEntries.clear();
+  _hitFlagEntries.push_back(nothingSelected);
+  createNewEntries<mu2e::StrawHitFlagCollection>(_strawHitFlagVector, event, "StrawHitFlag", _hitFlagEntries, 1);
+
+//Hit Position Selection
+  _hitPositionEntries.clear();
+  _hitPositionEntries.push_back(nothingSelected);
+  createNewEntries<mu2e::StrawHitPositionCollection>(_strawHitPositionVector, event, "StrawHitPosition", _hitPositionEntries, 1);
 
 //Calo Hit Selection
   newEntries.clear();
@@ -345,6 +358,32 @@ const mu2e::PointTrajectoryCollection* ContentSelector::getPointTrajectoryCollec
     if(t.moduleLabel==iter->provenance()->moduleLabel() && t.productInstanceName==iter->provenance()->productInstanceName()) 
       return(iter->product());
   }
+  return(nullptr);
+}
+
+const mu2e::StrawHitFlagCollection* ContentSelector::getStrawHitFlagCollection() const
+{
+  int classID=0;
+  int index=0;
+  std::vector<entryStruct>::const_iterator iter;
+  for(iter=_hitFlagEntries.begin(); iter!=_hitFlagEntries.end(); iter++)
+  {
+    if(iter->entryText==_selectedHitFlagEntry)
+    {
+      classID=iter->classID;
+      index=iter->vectorPos;
+      break;
+    }
+  }
+  if(classID==1 && index<static_cast<int>(_strawHitFlagVector.size()))
+  {
+    return(_strawHitFlagVector[index].product());
+  }
+  return(nullptr);
+}
+
+const mu2e::StrawHitPositionCollection* ContentSelector::getStrawHitPositionCollection() const
+{
   return(nullptr);
 }
 

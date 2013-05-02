@@ -1,9 +1,9 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.14 2012/08/04 00:14:08 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/08/04 00:14:08 $
+// $Id: ContentSelector.h,v 1.15 2013/05/02 06:03:41 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/05/02 06:03:41 $
 //
 // Original author Ralf Ehrlich
 //
@@ -18,6 +18,8 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include <TGComboBox.h>
@@ -44,6 +46,8 @@ class ContentSelector
 
   std::vector<art::Handle<mu2e::StepPointMCCollection> > _stepPointMCVector;
   std::vector<art::Handle<mu2e::StrawHitCollection> > _strawHitVector;
+  std::vector<art::Handle<mu2e::StrawHitFlagCollection> > _strawHitFlagVector;
+  std::vector<art::Handle<mu2e::StrawHitPositionCollection> > _strawHitPositionVector;
   std::vector<art::Handle<mu2e::CaloCrystalHitCollection> > _caloCrystalHitVector;
   std::vector<art::Handle<mu2e::CaloHitCollection> > _caloHitVector;
   std::vector<art::Handle<mu2e::SimParticleCollection> > _simParticleVector;
@@ -81,6 +85,9 @@ class ContentSelector
     }
   };
   std::vector<entryStruct> _hitEntries, _caloHitEntries, _trackEntries;
+  std::vector<entryStruct> _hitFlagEntries, _hitPositionEntries;
+
+  std::string _selectedHitFlagEntry, _selectedHitPositionEntry;
 
   template<class CollectionType> void createNewEntries(std::vector<art::Handle<CollectionType> > &dataVector,
                                                        const art::Event &event, const std::string &className,
@@ -101,6 +108,20 @@ class ContentSelector
   template<typename CollectionType> std::vector<const CollectionType*> getSelectedTrackCollection(std::vector<trackInfoStruct> &v) const;
   const mu2e::PhysicalVolumeInfoCollection *getPhysicalVolumeInfoCollection() const;
   const mu2e::PointTrajectoryCollection *getPointTrajectoryCollection(const trackInfoStruct &t) const;
+
+  //for filter and setup dialog
+  const std::vector<entryStruct> &getStrawHitFlagEntries() const     {return _hitFlagEntries;}
+  const std::vector<entryStruct> &getStrawHitPositionEntries() const {return _hitPositionEntries;}
+  const std::string getSelectedStrawHitFlagEntry()      {return _selectedHitFlagEntry;}
+  const std::string getSelectedStrawPositionFlagEntry() {return _selectedHitPositionEntry;}
+  void setSelectedStrawHitFlagEntry(std::string selectedHitFlagEntry)
+                                                         {_selectedHitFlagEntry=selectedHitFlagEntry;}
+  void setSelectedStrawHitPositionEntry(std::string selectedHitPositionEntry)
+                                                         {_selectedHitPositionEntry=selectedHitPositionEntry;}
+  const mu2e::StrawHitFlagCollection *getStrawHitFlagCollection() const;
+  const mu2e::StrawHitPositionCollection *getStrawHitPositionCollection() const;
+
+  friend class FilterDialog;
 };
 
 }

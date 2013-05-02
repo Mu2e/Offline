@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.25 2012/10/25 20:33:09 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/10/25 20:33:09 $
+// $Id: EventDisplayFrame.h,v 1.26 2013/05/02 06:03:41 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/05/02 06:03:41 $
 //
 // Original author Ralf Ehrlich
 //
@@ -71,8 +71,7 @@ namespace mu2e_eventdisplay
     void             fillZoomAngleFields();
     void             addHistDraw();
     virtual void     CloseWindow(); //inherited from TGMainFrame
-    void             changeSetup(bool whiteBackground, bool showUnhitStraws, bool showUnhitCrystals,
-                                 bool useHitColors, bool useTrackColors);
+    void             changeSetup(bool whiteBackground, bool useHitColors, bool useTrackColors);
 
     private:
     void initSetup();
@@ -107,7 +106,7 @@ namespace mu2e_eventdisplay
     bool                _saveAnim, _saveAnimRoot;
     int                 _saveAnimCounter;
     std::string         _saveAnimFile;
-    bool                _whiteBackground, _showUnhitStraws, _showUnhitCrystals, _useHitColors, _useTrackColors;
+    bool                _whiteBackground, _useHitColors, _useTrackColors;
 
     //bare pointers needed since ROOT manages these objects
     TGHorizontalFrame   *_mainFrame, *_footLine;

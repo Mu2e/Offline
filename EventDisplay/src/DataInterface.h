@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.30 2012/10/25 20:33:09 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/10/25 20:33:09 $
+// $Id: DataInterface.h,v 1.31 2013/05/02 06:03:41 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/05/02 06:03:41 $
 //
 // Original author Ralf Ehrlich
 //
@@ -14,6 +14,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "EventDisplay/src/ContentSelector.h"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
 #include <TObject.h>
@@ -90,6 +91,7 @@ class DataInterface
   bool _showNeutrinos;
   bool _showNeutrons;
   bool _showOthers;
+  mu2e::StrawHitFlag _hitFlagSetting;
 
   void createGeometryManager();
   void removeAllComponents();
@@ -117,7 +119,7 @@ class DataInterface
   virtual ~DataInterface();
 
   void startComponents();
-  void updateComponents(double time);
+  void updateComponents(double time, boost::shared_ptr<ContentSelector> contentSelector);
   void fillGeometry();
   void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector);
   void makeSupportStructuresVisible(bool visible);
@@ -129,10 +131,14 @@ class DataInterface
   void makeMecoStyleProtonAbsorberVisible(bool visible);
   void useHitColors(bool hitcolors, bool whitebackground);
   void useTrackColors(boost::shared_ptr<ContentSelector> const &contentSelector, bool trackcolors, bool whitebackground);
-  void setTrackFilter(unsigned int minPoints, double minTime, double maxTime, double minMomentum,
-                              bool showElectrons, bool showMuons, bool showGammas, 
-                              bool showNeutrinos, bool showNeutrons, bool showOthers);
-  void filterTracks();
+  void getFilterValues(unsigned int &minPoints, double &minTime, double &maxTime, double &minMomentum,
+                       bool &showElectrons, bool &showMuons, bool &showGammas, 
+                       bool &showNeutrinos, bool &showNeutrons, bool &showOthers,
+                       mu2e::StrawHitFlag &hitFlagSetting);
+  void setFilterValues(unsigned int minPoints, double minTime, double maxTime, double minMomentum,
+                       bool showElectrons, bool showMuons, bool showGammas, 
+                       bool showNeutrinos, bool showNeutrons, bool showOthers,
+                       mu2e::StrawHitFlag hitFlagSetting);
   int getNumberHits() {return _numberHits;}
   int getNumberCrystalHits() {return _numberCrystalHits;}
 

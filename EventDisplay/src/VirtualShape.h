@@ -2,9 +2,9 @@
 // Virtual base class for all shapes.
 // Container class for the geometry object(s) with information on how they are to be displayed and updated for specific times.
 //
-// $Id: VirtualShape.h,v 1.11 2012/09/14 17:17:34 ehrlich Exp $
+// $Id: VirtualShape.h,v 1.12 2013/05/02 06:03:41 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/09/14 17:17:34 $
+// $Date: 2013/05/02 06:03:41 $
 //
 // Original author Ralf Ehrlich
 //
@@ -78,6 +78,7 @@ class VirtualShape : public TObject
 
   virtual void start()=0;
   virtual void update(double time)=0;
+  virtual void makeGeometryVisible(bool visible) {;}
 
   static void rotate(double oldX, double oldY, double oldZ,
                      double &newX, double &newY, double &newZ,

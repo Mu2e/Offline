@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.60 2013/04/02 03:00:38 ehrlich Exp $
+// $Id: DataInterface.cc,v 1.61 2013/05/02 06:03:41 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/04/02 03:00:38 $
+// $Date: 2013/05/02 06:03:41 $
 //
 
 #include "DataInterface.h"
@@ -17,7 +17,6 @@
 #include "EventDisplay/src/Cylinder.h"
 #include "EventDisplay/src/Cone.h"
 #include "EventDisplay/src/EventDisplayFrame.h"
-#include "EventDisplay/src/FilterDialog.h"
 #include "EventDisplay/src/Straw.h"
 #include "EventDisplay/src/Track.h"
 #include "EventDisplay/src/TrackColorSelector.h"
@@ -35,6 +34,7 @@
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "RecoDataProducts/inc/TrkExtTraj.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
@@ -70,8 +70,7 @@ namespace mu2e_eventdisplay
 {
 
 DataInterface::DataInterface(EventDisplayFrame *mainframe):
-              _geometrymanager(nullptr),_topvolume(nullptr),_mainframe(mainframe),
-              _showUnhitStraws(false), _showUnhitCrystals(false)
+              _geometrymanager(nullptr),_topvolume(nullptr),_mainframe(mainframe)
 {
     _minPoints=0;
     _minTime=NAN;
@@ -99,45 +98,48 @@ void DataInterface::startComponents()
   }
 }
 
-void DataInterface::updateComponents(double time)
+void DataInterface::updateComponents(double time, boost::shared_ptr<ContentSelector> contentSelector)
 {
   std::vector<boost::shared_ptr<Track> >::const_iterator track;
   for(track=_tracks.begin(); track!=_tracks.end(); track++)
   {
+    (*track)->setFilter(_minPoints, _minTime, _maxTime, _minMomentum,
+                        _showElectrons, _showMuons, _showGammas, _showNeutrinos, _showNeutrons, _showOthers);
     (*track)->update(time);
   }
-  if(_showUnhitStraws)
+
+  const mu2e::StrawHitFlagCollection *hitFlagCollection=contentSelector->getStrawHitFlagCollection();
+  std::vector<boost::shared_ptr<Straw> >::const_iterator hit; //iterate only over hit straws
+  for(hit=_hits.begin(); hit!=_hits.end(); hit++)
   {
-    std::map<int,boost::shared_ptr<Straw> >::const_iterator straw;  //iterate over all straws
-    for(straw=_straws.begin(); straw!=_straws.end(); straw++)
+    int hitnumber=(*hit)->getHitNumber();
+    if(hitFlagCollection!=nullptr)
     {
-      straw->second->update(time);
+      //flag collection selected --> show only hits which have certain hit flags
+      (*hit)->setInvisible(true);
+      if(hitnumber<static_cast<int>(hitFlagCollection->size()) && hitnumber>=0)
+      {
+        const mu2e::StrawHitFlag& hitFlag = (*hitFlagCollection)[hitnumber];
+        if(hitFlag.hasAnyProperty(_hitFlagSetting))
+        {
+          (*hit)->setInvisible(false);
+        } 
+      }
     }
+    else
+    {
+      //no flag collection selected --> show all hits
+      (*hit)->setInvisible(false);
+    }
+    (*hit)->update(time);
   }
-  else
+
+  std::vector<boost::shared_ptr<Cube> >::const_iterator crystalhit; //iterate only over hit crystals
+  for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
   {
-    std::vector<boost::shared_ptr<Straw> >::const_iterator hit; //iterate only over hit straws
-    for(hit=_hits.begin(); hit!=_hits.end(); hit++)
-    {
-      (*hit)->update(time);
-    }
+    (*crystalhit)->update(time);
   }
-  if(_showUnhitCrystals)
-  {
-    std::map<int,boost::shared_ptr<Cube> >::const_iterator crystal; //iterate over all crystals
-    for(crystal=_crystals.begin(); crystal!=_crystals.end(); crystal++) 
-    {
-      crystal->second->update(time);
-    }
-  }
-  else
-  {
-    std::vector<boost::shared_ptr<Cube> >::const_iterator crystalhit; //iterate only over hit crystals
-    for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
-    {
-      (*crystalhit)->update(time);
-    }
-  }
+  
   std::vector<boost::shared_ptr<Cylinder> >::const_iterator driftradius;
   for(driftradius=_driftradii.begin(); driftradius!=_driftradii.end(); driftradius++)
   {
@@ -145,9 +147,28 @@ void DataInterface::updateComponents(double time)
   }
 }
 
-void DataInterface::setTrackFilter(unsigned int minPoints, double minTime, double maxTime, double minMomentum,
-                                   bool showElectrons, bool showMuons, bool showGammas, 
-                                   bool showNeutrinos, bool showNeutrons, bool showOthers)
+void DataInterface::getFilterValues(unsigned int &minPoints, double &minTime, double &maxTime, double &minMomentum,
+                                    bool &showElectrons, bool &showMuons, bool &showGammas, 
+                                    bool &showNeutrinos, bool &showNeutrons, bool &showOthers,
+                                    mu2e::StrawHitFlag &hitFlagSetting)
+{
+    minPoints=_minPoints;
+    minTime=_minTime;
+    maxTime=_maxTime;
+    minMomentum=_minMomentum;
+    showElectrons=_showElectrons;
+    showMuons=_showMuons;
+    showGammas=_showGammas;
+    showNeutrinos=_showNeutrinos;
+    showNeutrons=_showNeutrons;
+    showOthers=_showOthers;
+    hitFlagSetting=_hitFlagSetting;
+}
+
+void DataInterface::setFilterValues(unsigned int minPoints, double minTime, double maxTime, double minMomentum,
+                                    bool showElectrons, bool showMuons, bool showGammas, 
+                                    bool showNeutrinos, bool showNeutrons, bool showOthers,
+                                    mu2e::StrawHitFlag hitFlagSetting)
 {
     _minPoints=minPoints;
     _minTime=minTime;
@@ -159,20 +180,7 @@ void DataInterface::setTrackFilter(unsigned int minPoints, double minTime, doubl
     _showNeutrinos=showNeutrinos;
     _showNeutrons=showNeutrons;
     _showOthers=showOthers;
-}
-
-void DataInterface::filterTracks()
-{
-  new FilterDialog(gClient->GetRoot(), this,
-                   _minPoints, _minTime, _maxTime, _minMomentum,
-                   _showElectrons, _showMuons, _showGammas, 
-                   _showNeutrinos, _showNeutrons, _showOthers);
-  std::vector<boost::shared_ptr<Track> >::const_iterator track;
-  for(track=_tracks.begin(); track!=_tracks.end(); track++)
-  {
-    (*track)->setFilter(_minPoints, _minTime, _maxTime, _minMomentum,
-                        _showElectrons, _showMuons, _showGammas, _showNeutrinos, _showNeutrons, _showOthers);
-  }
+    _hitFlagSetting=hitFlagSetting;
 }
 
 void DataInterface::createGeometryManager()
@@ -235,7 +243,7 @@ void DataInterface::fillGeometry()
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       info->setName(c);
       info->setText(0,c);
-      boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, info, false));
+      boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, info));
       _components.push_back(shape);
       _straws[index]=shape;
     }
@@ -336,8 +344,8 @@ void DataInterface::fillGeometry()
                                     boost::shared_ptr<ComponentInfo> infoDnS(new ComponentInfo());
                                     infoDnS->setName(c);
                                     infoDnS->setText(0,c);
-                                    //boost::shared_ptr<Straw> shapeDnS(new Straw(wCntPos[0],wCntPos[1],wCntPos[2], NAN, theta, phi, wl, _geometrymanager, _topvolume, _mainframe, infoDnS, false));
-                                    boost::shared_ptr<Straw> shapeDnS(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, infoDnS, false));
+                                    //boost::shared_ptr<Straw> shapeDnS(new Straw(wCntPos[0],wCntPos[1],wCntPos[2], NAN, theta, phi, wl, _geometrymanager, _topvolume, _mainframe, infoDnS));
+                                    boost::shared_ptr<Straw> shapeDnS(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, infoDnS));
                                     _components.push_back(shapeDnS);
                                     _straws[index]=shapeDnS;
 
@@ -361,8 +369,8 @@ void DataInterface::fillGeometry()
                                     boost::shared_ptr<ComponentInfo> infoUpS(new ComponentInfo());
                                     infoUpS->setName(c);
                                     infoUpS->setText(0,c);
-                                    //boost::shared_ptr<Straw> shapeUpS(new Straw(wCntPos[0],wCntPos[1],wCntPos[2], NAN, theta, phi, wl, _geometrymanager, _topvolume, _mainframe, infoUpS, false));
-                                    boost::shared_ptr<Straw> shapeUpS(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, infoUpS, false));
+                                    //boost::shared_ptr<Straw> shapeUpS(new Straw(wCntPos[0],wCntPos[1],wCntPos[2], NAN, theta, phi, wl, _geometrymanager, _topvolume, _mainframe, infoUpS));
+                                    boost::shared_ptr<Straw> shapeUpS(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, infoUpS));
                                     _components.push_back(shapeUpS);
                                     _straws[index]=shapeUpS;
 
@@ -382,7 +390,7 @@ void DataInterface::fillGeometry()
                                     boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
                                     info->setName(c);
                                     info->setText(0,c);
-                                    boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, info, false));
+                                    boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, info));
                                     _components.push_back(shape);
                                     _straws[index]=shape;
                             }
@@ -529,8 +537,8 @@ void DataInterface::fillGeometry()
       info->setText(2,c);
       sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm);
       info->setText(3,c);
-      boost::shared_ptr<Cube> shape(new Cube(x,y,z,  sx,sy,sz,  phi,theta,psi,   NAN,0,
-                                        _geometrymanager, _topvolume, _mainframe, info, true));
+      boost::shared_ptr<Cube> shape(new Cube(x,y,z,  sx,sy,sz,  phi,theta,psi,   NAN,
+                                        _geometrymanager, _topvolume, _mainframe, info));
       _components.push_back(shape);
       _supportstructures.push_back(shape);
     }
@@ -589,8 +597,8 @@ void DataInterface::fillGeometry()
       sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",(x+rotatedX)/CLHEP::mm,(y+rotatedY)/CLHEP::mm,(z+rotatedZ)/CLHEP::mm);
       info->setText(3,c);
       boost::shared_ptr<Cube> shape(new Cube(x+rotatedX,y+rotatedY,z+rotatedZ,  sx,crystalHalfSize,crystalHalfSize,
-                                        phi,theta,psi,  NAN,0,
-                                        _geometrymanager, _topvolume, _mainframe, info, false));
+                                        phi,theta,psi,  NAN,
+                                        _geometrymanager, _topvolume, _mainframe, info));
       _components.push_back(shape);
       _crystals[crystalid]=shape;
     }
@@ -726,8 +734,8 @@ void DataInterface::fillGeometry()
             sprintf(c,"Rotation phi: %.f °, theta: %.f °, psi: %.f °",phi/CLHEP::deg,theta/CLHEP::deg,psi/CLHEP::deg);
             info->setText(3,c);
 
-            boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  phi,theta,psi, NAN,5,
-                                                   _geometrymanager, _topvolume, _mainframe, info, false));
+            boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  phi,theta,psi, NAN,
+                                                   _geometrymanager, _topvolume, _mainframe, info));
             _components.push_back(shape);
             _crvscintillatorbars.push_back(shape);
           }
@@ -766,16 +774,16 @@ void DataInterface::fillGeometry()
 //       double holeRadius=steelshield.getHoleRadius();
 //       if(holeRadius==0)
 //       {
-//         boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0,0,0, NAN,0,
-//                                           _geometrymanager, _topvolume, _mainframe, info, true));
+//         boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0,0,0, NAN,
+//                                           _geometrymanager, _topvolume, _mainframe, info));
 //         _components.push_back(shape);
 //         _otherstructures.push_back(shape);
 //       }
 //       else
 //       {
 // //TODO: This needs to be replaced by a shape with a hole
-//         boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0,0,0, NAN,0,
-//                                           _geometrymanager, _topvolume, _mainframe, info, true));
+//         boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0,0,0, NAN,
+//                                           _geometrymanager, _topvolume, _mainframe, info));
 //         _components.push_back(shape);
 //         _otherstructures.push_back(shape);
 //       }
@@ -789,8 +797,7 @@ void DataInterface::makeMuonBeamStopStructuresVisible(bool visible)
   std::vector<boost::shared_ptr<VirtualShape> >::const_iterator structure;
   for(structure=_mbsstructures.begin(); structure!=_mbsstructures.end(); structure++)
   {
-    (*structure)->setDefaultVisibility(visible);
-    (*structure)->start();
+    (*structure)->makeGeometryVisible(visible);
   }
 
   //tracks and straws don't have to be pushed into the foreground if the structure is removed
@@ -802,8 +809,7 @@ void DataInterface::makeMecoStyleProtonAbsorberVisible(bool visible)
   std::vector<boost::shared_ptr<Cone> >::const_iterator structure;
   for(structure=_mecostylepastructures.begin(); structure!=_mecostylepastructures.end(); structure++)
   {
-    (*structure)->setDefaultVisibility(visible);
-    (*structure)->start();
+    (*structure)->makeGeometryVisible(visible);
   }
 
   //tracks and straws don't have to be pushed into the foreground if the structure is removed
@@ -815,8 +821,7 @@ void DataInterface::makeSupportStructuresVisible(bool visible)
   std::vector<boost::shared_ptr<VirtualShape> >::const_iterator structure;
   for(structure=_supportstructures.begin(); structure!=_supportstructures.end(); structure++)
   {
-    (*structure)->setDefaultVisibility(visible);
-    (*structure)->start();
+    (*structure)->makeGeometryVisible(visible);
   }
 
   //tracks and straws don't have to be pushed into the foreground if the structure is removed
@@ -828,8 +833,7 @@ void DataInterface::makeOtherStructuresVisible(bool visible)
   std::vector<boost::shared_ptr<VirtualShape> >::const_iterator structure;
   for(structure=_otherstructures.begin(); structure!=_otherstructures.end(); structure++)
   {
-    (*structure)->setDefaultVisibility(visible);
-    (*structure)->start();
+    (*structure)->makeGeometryVisible(visible);
   }
 
   //tracks and straws don't have to be pushed into the foreground if the structure is removed
@@ -841,34 +845,11 @@ void DataInterface::makeCrvScintillatorBarsVisible(bool visible)
   std::vector<boost::shared_ptr<Cube> >::const_iterator crvbars;
   for(crvbars=_crvscintillatorbars.begin(); crvbars!=_crvscintillatorbars.end(); crvbars++)
   {
-    (*crvbars)->setDefaultVisibility(visible);
-    (*crvbars)->start();
+    (*crvbars)->makeGeometryVisible(visible);
   }
 
   //tracks and straws don't have to be pushed into the foreground if the structure is removed
   if(visible) toForeground();
-}
-
-void DataInterface::makeStrawsVisibleBeforeStart(bool visible)
-{
-  std::map<int,boost::shared_ptr<Straw> >::const_iterator straw;
-  for(straw=_straws.begin(); straw!=_straws.end(); straw++)
-  {
-    straw->second->setDefaultVisibility(visible);
-    straw->second->start();
-  }
-  _showUnhitStraws=visible;
-}
-
-void DataInterface::makeCrystalsVisibleBeforeStart(bool visible)
-{
-  std::map<int,boost::shared_ptr<Cube> >::const_iterator crystal;
-  for(crystal=_crystals.begin(); crystal!=_crystals.end(); crystal++)
-  {
-    crystal->second->setDefaultVisibility(visible);
-    crystal->second->start();
-  }
-  _showUnhitCrystals=visible;
 }
 
 void DataInterface::toForeground()
@@ -1047,7 +1028,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         {
           findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
           straw->second->setStartTime(time);
-          straw->second->start();
           char c[100];
           sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
           straw->second->getComponentInfo()->setText(1,c);
@@ -1072,7 +1052,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   {
     _numberHits=strawhits->size();
     std::vector<mu2e::StrawHit>::const_iterator iter;
-    for(iter=strawhits->begin(); iter!=strawhits->end(); iter++)
+    int hitnumber=0;
+    for(iter=strawhits->begin(); iter!=strawhits->end(); iter++, hitnumber++)
     {
       const mu2e::StrawHit& hit = *iter;
       int strawindex = hit.strawIndex().asInt();
@@ -1087,7 +1068,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         {
           findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
           straw->second->setStartTime(time);
-          straw->second->start();
+          straw->second->setHitNumber(hitnumber);
           char c[100];
           sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
           straw->second->getComponentInfo()->setText(1,c);
@@ -1106,7 +1087,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       }
     }
   }
-
 
 #ifdef BABARINSTALLED
   const mu2e::KalRepCollection *kalRepHits=contentSelector->getSelectedHitCollection<mu2e::KalRepCollection>();
@@ -1154,7 +1134,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
               {
                 findBoundaryT(_hitsTimeMinmax, hitT0);  //is it Ok to exclude all following hits from the time window?
                 straw->second->setStartTime(hitT0);
-                straw->second->start();
                 char c1[100], c2[100], c3[100];
                 sprintf(c1,"hitT0(s): %gns",hitT0/CLHEP::ns);
                 sprintf(c2,"hit time(s): %gns",time/CLHEP::ns);
@@ -1217,7 +1196,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         {
           findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
           crystal->second->setStartTime(time);
-          crystal->second->start();
           char c[100];
           sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
           crystal->second->getComponentInfo()->setText(1,c);
@@ -1256,7 +1234,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         {
           findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
           crystal->second->setStartTime(time);
-          crystal->second->start();
           char c[100];
           sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
           crystal->second->getComponentInfo()->setText(1,c);
@@ -1618,6 +1595,7 @@ void DataInterface::removeNonGeometryComponents()
   {
     for(int i=1; i<5; i++) (*hit)->getComponentInfo()->removeLine(i);  //keep first line
     (*hit)->getComponentInfo()->getHistVector().clear();
+    (*hit)->setHitNumber(-1);
   }
   std::vector<boost::shared_ptr<Cube> >::const_iterator crystalhit;
   for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
