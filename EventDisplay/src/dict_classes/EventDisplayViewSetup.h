@@ -1,9 +1,9 @@
 //
 // Class which sets up the 3D view of the main pad. It also provides functions that can handle user commands for zuum, rotate, etc.
 //
-// $Id: EventDisplayViewSetup.h,v 1.5 2012/08/16 22:18:25 ehrlich Exp $
+// $Id: EventDisplayViewSetup.h,v 1.6 2013/05/02 20:59:03 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/08/16 22:18:25 $
+// $Date: 2013/05/02 20:59:03 $
 //
 // Original author Ralf Ehrlich
 //
@@ -169,6 +169,8 @@ class EventDisplayViewSetup
     gPad->Modified();
     gPad->Update();
   }
+
+  virtual ~EventDisplayViewSetup() {}   //this is needed by the ROOT dictionary
 
   ClassDef(EventDisplayViewSetup,0);
 };
