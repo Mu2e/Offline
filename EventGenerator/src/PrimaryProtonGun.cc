@@ -3,9 +3,9 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.20 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: PrimaryProtonGun.cc,v 1.21 2013/05/02 19:18:15 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2013/05/02 19:18:15 $
 //
 // Original author Rob Kutschke
 //
@@ -75,6 +75,11 @@ namespace mu2e {
       art::TFileDirectory tfdir = tfs->mkdir( "PrimaryProtonGun" );
       _hmomentum = tfdir.make<TH1D>( "hmomentum", "Primary Proton Momentum, MeV",        10, 7000., 9000.);
       _hKE       = tfdir.make<TH1D>( "hKE",       "Primary Proton Kinetic Energy, MeV", 200, 7000., 9000.);
+      _hposx       = tfdir.make<TH1D>( "hposx",       "Primary Proton Position in X",       100, -5.,   5.);
+      _hposy       = tfdir.make<TH1D>( "hposy",       "Primary Proton Position in Y",       100, -5.,   5.);
+      _hposz       = tfdir.make<TH1D>( "hposz",       "Primary Proton Position in Z",       200,  0., 100.);
+      _hcosTheta   = tfdir.make<TH1D>( "hcosTheta",   "Primary Proton Cos Theta",           100, -1.0,1.0);
+      _htime       = tfdir.make<TH1D>( "htime",       "Primary Proton Time",                200, 0.,200.);
     }
 
   }
@@ -134,6 +139,12 @@ namespace mu2e {
     if ( _doHistograms ){
       _hKE->Fill(ekine);
       _hmomentum->Fill(_p);
+      _htime->Fill(time);
+      _hcosTheta->Fill(mom.cosTheta());
+      _hposx->Fill(pos.x());
+      _hposy->Fill(pos.y());
+      _hposz->Fill(pos.z());
+
     }
 
   }

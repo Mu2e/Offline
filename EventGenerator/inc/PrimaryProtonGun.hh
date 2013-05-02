@@ -3,9 +3,9 @@
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGun.hh,v 1.14 2012/07/03 20:05:53 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/07/03 20:05:53 $
+// $Id: PrimaryProtonGun.hh,v 1.15 2013/05/02 19:18:24 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2013/05/02 19:18:24 $
 //
 //
 // The coordinate system used in this class is:
@@ -95,7 +95,11 @@ namespace mu2e {
     TH1D* _hKE;
     TH1D* _hKEZoom;
     TH1D* _hmomentum;
-
+    TH1D* _hposx;
+    TH1D* _hposy;
+    TH1D* _hposz;
+    TH1D* _hcosTheta;
+    TH1D* _htime;
   };
 
 } // end namespace mu2e,
