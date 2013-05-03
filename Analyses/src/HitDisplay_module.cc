@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // A half-interactive 2D event display. 
 //
-// $Id: HitDisplay_module.cc,v 1.20 2013/05/01 17:54:54 murat Exp $
+// $Id: HitDisplay_module.cc,v 1.21 2013/05/03 03:32:49 murat Exp $
 // $Author: murat $
-// $Date: 2013/05/01 17:54:54 $
+// $Date: 2013/05/03 03:32:49 $
 //
 // Contact person:  Pavel Murat, Gianantonio Pezzulo
 //
@@ -15,6 +15,8 @@
 //                         the timing hit flag check is commented out - I didn't have a MC file
 //                         in hands to check
 //                       : true  - display all hits
+// useStereoHits         : true : displayed hit position errors are defined by the StrawHitPositionCollection
+//                       : false: semi-random assignment (sigr=5mm, sigp = strawTimeDivisionErr/2.)
 //
 // small black triangles: MC truth on the trajectory
 //
@@ -22,6 +24,9 @@
 //             size of the timing window can be redefined via  talk-to (input .fcl file)
 // blue  hits: hits of the conversion electron track, which fall outside the time window
 // black hits: hits produced by anything, but the conversion electron
+//
+// a hit is displayed by a cross with the radial error bar of 5mm and the resolution 
+// along the straw of sigma(time division)/2, to better guide the eye
 //
 // green circles - contour of the disk-based calorimeter
 // clusters on the 1st disk are shown in red, on the second disk - in pink
@@ -121,17 +126,22 @@ namespace mu2e {
     // Cuts used inside SimParticleWithHits:
     //  - drop hits with too little energy deposited.
     //  - drop SimParticles with too few hits.
+
     double             minEnergyDep_;
     double             timeWindow_;
     size_t             minHits_;
-    
-    // Options to control the display
+					// Options to control the display
+
     bool               fDisplayBackgroundHits;
     bool               clickToAdvance_;
     bool               printHits_;
+    int                fUseStereoHits;
+					// hit flag bits which should be ON and OFF
+    mu2e::StrawHitFlag         fGoodHitMask;
+    mu2e::StrawHitFlag         fBadHitMask;
 
-    TApplication*      application_;
-    TCanvas*           canvas_;
+    TApplication*        fApplication;
+    TCanvas*             fCanvas;
 
     const mu2e::Calorimeter*                    fCal;              //
 
@@ -168,30 +178,32 @@ namespace mu2e {
 
 
   HitDisplay::HitDisplay(fhicl::ParameterSet const& pset):
-    moduleLabel_              (pset.get<std::string>("module_label"        )),
-    generatorModuleLabel_     (pset.get<std::string>("generatorModuleLabel")),
-    g4ModuleLabel_            (pset.get<std::string>("g4ModuleLabel"       )),
+    moduleLabel_              (pset.get<std::string>("module_label"                )),
+    generatorModuleLabel_     (pset.get<std::string>("generatorModuleLabel"        )),
+    g4ModuleLabel_            (pset.get<std::string>("g4ModuleLabel"               )),
     fStrawHitMaker            (pset.get<std::string>("strawHitMakerModuleLabel"    )),
     fStrawHitPosMaker         (pset.get<std::string>("strawHitPosMakerModuleLabel" )),
     fStrawHitFlagMaker        (pset.get<std::string>("strawHitFlagMakerModuleLabel")),
-    trackerStepPoints_        (pset.get<std::string>("trackerStepPoints"   )),
-
-    minEnergyDep_             (pset.get<double>     ("minEnergyDep",0      )),
-    timeWindow_               (pset.get<double>     ("timeWindow"  ,1.e6   )),
-    minHits_                  (pset.get<unsigned>   ("minHits"             )),
-    fDisplayBackgroundHits    (pset.get<bool>       ("displayBackgroundHits",false)),
-    clickToAdvance_           (pset.get<bool>       ("clickToAdvance"       ,false)),
-    printHits_                (pset.get<bool>       ("printHits"            ,false)) 
+    trackerStepPoints_        (pset.get<std::string>("trackerStepPoints"           )),
+    minEnergyDep_             (pset.get<double>     ("minEnergyDep",0              )),
+    timeWindow_               (pset.get<double>     ("timeWindow"  ,1.e6           )),
+    minHits_                  (pset.get<unsigned>   ("minHits"                     )),
+    fDisplayBackgroundHits    (pset.get<bool>       ("displayBackgroundHits",false )),
+    clickToAdvance_           (pset.get<bool>       ("clickToAdvance"       ,false )),
+    printHits_                (pset.get<bool>       ("printHits"            ,false )),
+    fUseStereoHits            (pset.get<bool>       ("useStereoHits"        ,false )),
+    fGoodHitMask              (pset.get<std::vector<std::string> >("goodHitMask"   )),
+    fBadHitMask               (pset.get<std::vector<std::string> >("badHitMask"    ))
   {
-    application_ = 0;
-    //    directory_   = 0;
-    canvas_      = 0;
+
+    fApplication = 0;
+    fCanvas      = 0;
     fCal         = 0;
   }
 
 //-----------------------------------------------------------------------------
   HitDisplay::~HitDisplay() { 
-    if (application_) delete application_; 
+    if (fApplication) delete fApplication; 
   }
 
 
@@ -201,14 +213,14 @@ namespace mu2e {
     char** tmp_argv(0);
 
     if (!gApplication) {
-      application_ = new TApplication( "noapplication", &tmp_argc, tmp_argv );
+      fApplication = new TApplication( "HitDisplay_module", &tmp_argc, tmp_argv );
     }
 
     // Create a canvas with a guaranteed unique name; the module label is unique within a job.
     TString name  = "canvas_"     + moduleLabel_;
     TString title = "Canvas for " + moduleLabel_;
 
-    canvas_ = new TCanvas(name,title,800,800);
+    fCanvas = new TCanvas(name,title,800,800);
     fMarker = new TMarker(0,0,20);
     fMarker->SetMarkerSize(0.3);
   }
@@ -321,6 +333,8 @@ namespace mu2e {
     //if(! geom->hasElement<VaneCalorimeter>() ) return;
     GeomHandle<Calorimeter> cg;
 
+    printf("[%s] >>> ERROR : yet to learn how to print the crystal indices in case of disks\n", oname);
+
     if ((opt == "") || (opt.Index("banner") >= 0)) {
       printf("-----------------------------------------------------------------------\n");
       printf("VaneID       Time   Row   Col   Energy       X          Y        Z     \n");
@@ -363,8 +377,6 @@ namespace mu2e {
 	}else{
 	  HexMap hmap;
 	  //	  HexLK lk = hmap.lk(id);
-
-	  printf(">>> ERROR in %s: yet to learn how to print the crystal indices in case of disks\n", oname);
 
 // 	  iz = lk._l;
 // 	  ir = lk._k;
@@ -490,7 +502,7 @@ namespace mu2e {
     double xl, yl,      event_time;
     TString             opt; 
 
-    printf("[%-30s] RUN: %10i EVENT: %10i\n",name,Evt.run(),Evt.event());
+    printf("[%s] RUN: %10i EVENT: %10i\n",name,Evt.run(),Evt.event());
 
     // Geometry of tracker envelope.
     GeomHandle<TTracker> ttHandle;
@@ -522,7 +534,7 @@ namespace mu2e {
     const StepPointMC* firstStep; 
 
     if ( !info ) {
-      printf("[%-30s] *** ERROR: SimParticleInfo missing, SKIPPING EVENT: %10i\n",name,Evt.event());
+      printf("[%s] *** ERROR: SimParticleInfo missing, SKIPPING EVENT: %10i\n",name,Evt.event());
       firstStep = 0;
       //      return;
     }
@@ -553,7 +565,7 @@ namespace mu2e {
     const StepPointMC* midStep = & sortedSteps.middleByZ();
     
     if ((midStep == 0) || (firstStep ==0)) {
-      printf("[%-30s] **** ERROR : HitDisplay_module::analyze : firstStep = %8p midstep = %8p, BAIL OUT\n",
+      printf("[%s] **** ERROR : firstStep = %8p midstep = %8p, BAIL OUT\n",
 	     name,firstStep, midStep);
       //      goto END_OF_ROUTINE;
     }
@@ -597,16 +609,16 @@ namespace mu2e {
 
     //  DISPLAY:;
 
-    canvas_->cd(0);
-    canvas_->Clear();
+    fCanvas->cd(0);
+    fCanvas->Clear();
 //-----------------------------------------------------------------------------
 // Draw the frame
 //-----------------------------------------------------------------------------
     double plotLimits(850.);
-    canvas_->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
+    fCanvas->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
       
-    t.SetText(-800.,900.,Form("RUN: %10i EVENT: %10i NTRACKS: %4i NCLUSTERS: %4i",
-			      Evt.run(),Evt.event(),fNTracks[0],fNClusters));
+    t.SetText(-800.,900.,Form("[%s] RUN: %10i EVENT: %10i NTRACKS: %4i NCLUSTERS: %4i",
+			      name, Evt.run(),Evt.event(),fNTracks[0],fNClusters));
     t.SetTextSize(0.02);
     t.Draw();
       
@@ -682,7 +694,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // print reconstructed tracks - all 4 hypotheses for comparison...
 //-----------------------------------------------------------------------------
-    printf(" [%s] NTRACKS = %4i, NCLUSTERS = %4i\n",name,fNTracks[0],fNClusters);
+    printf("[%s] NTRACKS = %4i, NCLUSTERS = %4i\n",name,fNTracks[0],fNClusters);
     printf("\n");
   
     opt = "data";
@@ -736,40 +748,29 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // Loop over straw hits. If flagBackgroundHits = true, filter them out
 //-----------------------------------------------------------------------------
-    const StrawHit*     hit; 
-    const StrawHitFlag* hit_id_word; 
-    
-    static StrawHitFlag good_bits;
-    
-    good_bits.merge(StrawHitFlagDetail::energysel);
-    good_bits.merge(StrawHitFlagDetail::radsel);
-    //    good_bits.merge(StrawHitFlagDetail::timesel);
-    
-    static StrawHitFlag bad_bits;
-
-    bad_bits.merge(StrawHitFlagDetail::delta);
-    bad_bits.merge(StrawHitFlagDetail::isolated);
-
-    n_displayed_hits = 0;
-
     int                          n_straw_hits, display_hit;
     bool                         isFromConversion;
-    double                       sigv, vnorm, v; 
+    double                       sigv, vnorm, v, sigr; 
+    const StrawHit*              hit; 
+    const StrawHitPosition*      hitpos; 
+    const StrawHitFlag*          hit_id_word; 
     const CLHEP::Hep3Vector      *mid, *w; 
     const Straw*                 straw; 
     const PtrStepPointMCVector*  mcptr;
     CLHEP::Hep3Vector            vx0, vx1, vx2; 
 
-    n_straw_hits  = fStrawHitColl->size();
+    n_displayed_hits = 0;
+    n_straw_hits     = fStrawHitColl->size();
 
     for (int ihit=0; ihit<n_straw_hits; ++ihit ) {
       hit         = &fStrawHitColl->at(ihit);
+      hitpos      = &fStrawHitPosColl->at(ihit);
       hit_id_word = &fStrawHitFlagColl->at(ihit);
 
       display_hit = 1;
       if (fDisplayBackgroundHits == false) {
-	if (! hit_id_word->hasAllProperties(good_bits)) display_hit = 0;
-	if (hit_id_word->hasAnyProperty(bad_bits)     ) display_hit = 0;
+	if (! hit_id_word->hasAllProperties(fGoodHitMask)) display_hit = 0;
+	if (hit_id_word->hasAnyProperty(fBadHitMask)     ) display_hit = 0;
       }
 
       if (display_hit) {
@@ -811,7 +812,20 @@ namespace mu2e {
 	
 	v     = trackCal->TimeDiffToDistance( straw->index(), hit->dt() );
 	vnorm = v/straw->getHalfLength();
-	sigv  = trackCal->TimeDivisionResolution( straw->index(), vnorm )/2.; // P.Murat
+	if (fUseStereoHits) {
+//-----------------------------------------------------------------------------
+// new default, hit position errors come from StrawHitPositionCollection
+//-----------------------------------------------------------------------------
+	  sigv  = hitpos->posRes(StrawHitPosition::phi); 
+	  sigr  = hitpos->posRes(StrawHitPosition::rho); 
+	}
+	else {
+//-----------------------------------------------------------------------------
+// old default, draw semi-random errors
+//-----------------------------------------------------------------------------
+	  sigv  = trackCal->TimeDivisionResolution( straw->index(), vnorm )/2.; // P.Murat
+	  sigr  = 5.; // in mm
+	}
 	
 	vx0 = (*mid) + v   *(*w);
 	vx1 = vx0    + sigv*(*w);
@@ -829,7 +843,7 @@ namespace mu2e {
 	  line->SetLineColor(color);
 	  line->DrawLine( vx1.x(), vx1.y(), vx2.x(), vx2.y() );
 	  
-	  line->DrawLine(vx0.x()+5.*w->y(),vx0.y()-5*w->x(),vx0.x()-5*w->y(),vx0.y()+5*w->x());
+	  line->DrawLine(vx0.x()+sigr*w->y(),vx0.y()-sigr*w->x(),vx0.x()-sigr*w->y(),vx0.y()+sigr*w->x());
 	  n_displayed_hits++;
 	}
       }
@@ -881,8 +895,8 @@ namespace mu2e {
     genPointo.SetMarkerStyle(kPlus);
     genPointo.Draw("PSAME");
     
-    canvas_->Modified();
-    canvas_->Update();
+    fCanvas->Modified();
+    fCanvas->Update();
       
     printf("N(hits) = %5i, N(displayed hits): %5i\n",n_straw_hits,n_displayed_hits);
     printf("number of clusters      : %5i\n",fNClusters);

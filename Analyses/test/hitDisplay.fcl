@@ -1,7 +1,7 @@
 #
-# $Id: hitDisplay.fcl,v 1.8 2013/05/01 17:54:54 murat Exp $
+# $Id: hitDisplay.fcl,v 1.9 2013/05/03 03:32:49 murat Exp $
 # $Author: murat $
-# $Date: 2013/05/01 17:54:54 $
+# $Date: 2013/05/03 03:32:49 $
 #
 # Original author Rob Kutschke
 
@@ -95,13 +95,18 @@ physics : {
 
 # if set to true, all hits will be displayed unconditionally
 # otherwise, display only hits with right flags
-
       displayBackgroundHits        : false
-      trackerStepPoints    : tracker
-      minHits              : 5
-      clickToAdvance       : true
-      printHits            : true
-      timeWindow           : 100000.
+      useStereoHits                : true
+
+#      goodHitMask                 : ["EnergySelection","RadiusSelection","TimeSelection"]
+      goodHitMask                  : ["EnergySelection", "RadiusSelection"]
+      badHitMask                   : ["DeltaRay", "Isolated"]
+
+      trackerStepPoints            : tracker
+      minHits                      : 5
+      clickToAdvance               : true
+      printHits                    : true
+      timeWindow                   : 100000.
 #      timeWindow           : 50.
     }
   }
