@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.154 2013/04/03 22:23:31 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/04/03 22:23:31 $
+// $Id: Mu2eWorld.cc,v 1.155 2013/05/09 23:14:14 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/05/09 23:14:14 $
 //
 // Original author Rob Kutschke
 //
@@ -527,16 +527,13 @@ namespace mu2e {
 	// The calorimeter is built inside this volume.
 	VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
 
-	// z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
-	double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
-
 	// Construct one of the calorimeters.
 	VolumeInfo calorimeterInfo;
 	if ( _config.getBool("hasVaneCalorimeter",false) ) {
-       calorimeterInfo = constructVaneCalorimeter( detSolDownstreamVacInfo,-z0DSdown,_config );
+       calorimeterInfo = constructVaneCalorimeter( detSolDownstreamVacInfo,_config );
     }
     if ( _config.getBool("hasDiskCalorimeter",false) ) {
-       calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,-z0DSdown,_config );
+       calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config );
     }
 
     return calorimeterInfo;

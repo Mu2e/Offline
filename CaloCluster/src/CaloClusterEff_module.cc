@@ -2,9 +2,9 @@
 // module for the calculation of the efficiency Vs energy cluster cut and other distributions related to the efficiency
 //
 
-// $Id: CaloClusterEff_module.cc,v 1.8 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: CaloClusterEff_module.cc,v 1.9 2013/05/09 23:14:14 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/05/09 23:14:14 $
 
 //
 // Original author G. Pezzullo & G. Tassielli
@@ -701,7 +701,7 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
 
                                         //the following lines were used ti verify that I used the correct translations in the file "CaloClustertilities.hh"
                                         //double cryHalfLength = cg->crystalHalfLength();
-                                        //double cryHalfSize = cg->crystalHalfSize();
+                                        //double cryHalfSize = cg->crystalHalfTrans();
                                         //double deltaYc = 0.0, deltaXc = 0.0;
                                         //                                        if( ite->first == 3){
                                         //                                                // = (deltaR )*cryHalfSize*2.;
@@ -800,7 +800,7 @@ void CaloClusterEff::doCalorimeter(art::Event const& evt, bool skip){
 
                                         //cout<<"$$$ yes! the calo works! $$$"<<endl;
                                         //double cryHalfLength = cg->crystalHalfLength();
-                                        //double cryHalfSize = cg->crystalHalfSize();
+                                        //double cryHalfSize = cg->crystalHalfTrans();
                                         //double deltaYc = 0.0, deltaXc = 0.0;
                                         //                                        if( ite->first == 3){
                                         //                                                // = (deltaR )*cryHalfSize*2.;

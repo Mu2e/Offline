@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.61 2013/05/02 06:03:41 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2013/05/02 06:03:41 $
+// $Id: DataInterface.cc,v 1.62 2013/05/09 23:14:14 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/05/09 23:14:14 $
 //
 
 #include "DataInterface.h"
@@ -551,7 +551,7 @@ void DataInterface::fillGeometry()
       int crystalid=calo->crystalByRO(i);
       int rPos=calo->crystalRByRO(i);
       int zPos=calo->crystalZByRO(i);
-      double crystalHalfSize=calo->crystalHalfSize();
+      double crystalHalfTrans=calo->crystalHalfTrans();
 
       const mu2e::Vane &v=calo->vane(vaneid);
       double x=v.origin().x()+_xOffset;
@@ -568,8 +568,8 @@ void DataInterface::fillGeometry()
       //Before the rotation, the vector from the center of the vane
       //to the center of a crystal is (crystalX,crystalY,crystalZ).
       double crystalX=0;
-      double crystalY=-sy+crystalHalfSize*(2.0*rPos+1.0);
-      double crystalZ=-sz+crystalHalfSize*(2.0*zPos+1.0);
+      double crystalY=-sy+crystalHalfTrans*(2.0*rPos+1.0);
+      double crystalZ=-sz+crystalHalfTrans*(2.0*zPos+1.0);
 
       double st=sin(theta);
       double ct=cos(theta);
@@ -590,13 +590,13 @@ void DataInterface::fillGeometry()
       sprintf(c,"Vane %i, Crystal %i",vaneid,crystalid);
       info->setName(c);
       info->setText(0,c);
-      sprintf(c,"Dimension  ?x: %.f mm, ?y: %.f mm, ?z: %.f mm",sx/CLHEP::mm,crystalHalfSize/CLHEP::mm,crystalHalfSize/CLHEP::mm);
+      sprintf(c,"Dimension  ?x: %.f mm, ?y: %.f mm, ?z: %.f mm",sx/CLHEP::mm,crystalHalfTrans/CLHEP::mm,crystalHalfTrans/CLHEP::mm);
       info->setText(1,c);
       sprintf(c,"Rotation phi: %.f °, theta: %.f °, psi: %.f °",phi/CLHEP::deg,theta/CLHEP::deg,psi/CLHEP::deg);
       info->setText(2,c);
       sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",(x+rotatedX)/CLHEP::mm,(y+rotatedY)/CLHEP::mm,(z+rotatedZ)/CLHEP::mm);
       info->setText(3,c);
-      boost::shared_ptr<Cube> shape(new Cube(x+rotatedX,y+rotatedY,z+rotatedZ,  sx,crystalHalfSize,crystalHalfSize,
+      boost::shared_ptr<Cube> shape(new Cube(x+rotatedX,y+rotatedY,z+rotatedZ,  sx,crystalHalfTrans,crystalHalfTrans,
                                         phi,theta,psi,  NAN,
                                         _geometrymanager, _topvolume, _mainframe, info));
       _components.push_back(shape);

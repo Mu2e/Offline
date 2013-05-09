@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_DiskCalorimeterMaker_hh
 #define CalorimeterGeom_DiskCalorimeterMaker_hh
 //
-// $Id: DiskCalorimeterMaker.hh,v 1.3 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: DiskCalorimeterMaker.hh,v 1.4 2013/05/09 23:14:14 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/05/09 23:14:14 $
 //
 // original authors B. Echenard
 
@@ -46,7 +46,7 @@ namespace mu2e{
       void MakeDisks(void);
       void CheckIt(void);
 
-      int verbosityLevel;
+      int _verbosityLevel;
 
     };
 

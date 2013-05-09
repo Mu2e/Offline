@@ -6,200 +6,98 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: VaneCalorimeter.hh,v 1.4 2013/03/08 01:22:31 echenard Exp $
+// $Id: VaneCalorimeter.hh,v 1.5 2013/05/09 23:14:14 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/03/08 01:22:31 $
+// $Date: 2013/05/09 23:14:14 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
 
 //C++ includes
 #include <vector>
+#include <boost/shared_ptr.hpp>
 
 // Mu2e includes
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/BaseCalorimeter.hh"
 #include "CalorimeterGeom/inc/Vane.hh"
-
-// Framework includes
-#include "cetlib/pow.h"
 
 //CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 
 
+using boost::static_pointer_cast;
+using boost::shared_ptr;
+
+
+
 namespace mu2e {
 
-class VaneCalorimeter: public Calorimeter{
+class VaneCalorimeter: public BaseCalorimeter{
 
-        friend class VaneCalorimeterMaker;
-
-
-public:
-
-        VaneCalorimeter(){}
-        ~VaneCalorimeter(){}
-
-        double innerRaidus() const                 { return _rMin; }
-        double outherRadius() const                { return _rMax;}
-
-
-        int nVane() const                     {return _nVane; }
-        Vane const& vane(int i) const         {return _vanes.at(i); }
-
-        int nCrystalR() const                {return _nCrystalR; }
-        int nCrystalZ() const                {return _nCrystalZ; }
-
-        unsigned int nRO() const             {return _nROPerCrystal*_nVane*_nCrystalZ*_nCrystalR; }
-        unsigned int nROPerCrystal() const   {return _nROPerCrystal; }
-        unsigned int nCrystal() const        {return _nVane*_nCrystalZ*_nCrystalR; }
-
-        double crystalHalfSize() const       {return _crystalHW; }
-        double crystalHalfLength() const     {return _crystalHL; }
-        double crystalVolume() const         {return 8*_crystalHW*_crystalHW*_crystalHL;}
-        
-        double shieldHalfThickness() const           {return _shieldHalfThickness;}
-        double neutronAbsorberHalfThickness() const  {return _neutronAbsorberHalfThickness;}
-
-
-        
-
-
-
-
-
-        CLHEP::Hep3Vector const& origin(void) const { return _origin; }
-        CLHEP::Hep3Vector toCrystalFrame(int crystalId,   CLHEP::Hep3Vector const& pos) const; //transform Mu2e -> local coordinates
-        CLHEP::Hep3Vector toSectionFrame(int sectionId,   CLHEP::Hep3Vector const& pos) const;  //transform Mu2e -> local  coordinates
-        CLHEP::Hep3Vector fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const; //transform local -> Mu2e coordinates
-        CLHEP::Hep3Vector crystalOrigin(int crystalId) const;   //crystal center in Mu2e coordinates
-        CLHEP::Hep3Vector localCrystalOrigin(int crystalId) const; //crystal center in vane frame
-        CLHEP::Hep3Vector crystalAxis(int crystalId) const;   //crystal axis (front -> readout) in Mu2e coordinates
       
-        bool isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const ;
-        bool isInsideVane(int ivane, CLHEP::Hep3Vector const& pos) const ;
-        int  crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const ;
+      friend class VaneCalorimeterMaker;
 
 
+      public:
 
-        // Navigating crystal and vane Id's
-        int crystalByRO(int roid) const              {return (roid/_nROPerCrystal); }
-        int ROBaseByCrystal(int crystalId) const     {return (crystalId*_nROPerCrystal);}
-
-        int caloSectionId(int crystalId) const       {return crystalId/(_nCrystalZ*_nCrystalR);}
-        int localCrystalId(int crystalId) const      {return crystalId%(_nCrystalZ*_nCrystalR);}
-
-        std::vector<int> neighbors(int crystalId, int level=1) const;
+          VaneCalorimeter(){}
+          ~VaneCalorimeter(){}
 
 
+          int nVane()                           const  {return _nSections; }
+	  Vane const&  vane(int i)              const  {return static_cast<Vane const&>(section(i));}
+
+                  int    nCrystalR()            const  {return _nCrystalR; }
+                  int    nCrystalZ()            const  {return _nCrystalZ; }
+          virtual double crystalHalfTrans()     const  {return _crystalHW; }
+          virtual double crystalHalfLength()    const  {return _crystalHL; }
+          virtual double crystalVolume()        const  {return 8*_crystalHW*_crystalHW*_crystalHL;}
+
+                  bool             isInsideVane(int ivane, CLHEP::Hep3Vector const& pos) const ;
+          virtual bool             isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const ;        
+	  virtual int              crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const ;
+          virtual std::vector<int> neighbors(int crystalId, int level=1) const;
+
+          double innerRaidus()                  const  {return _rMin;}
+          double outherRadius()                 const  {return _rMax;}
+
+
+        
 
 
 //keep only for backward compatibility, will disappear in the future.
-//should disappear soon
 
-// Crystal ID within a vane (0..Number_of_crystals_in_vane-1)
-int crystalVaneByRO(int roid) const {
-        return (roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR);
-}
+int crystalByRO(int roid) const              {return (roid/_nROPerCrystal); }
+int ROBaseByCrystal(int crystalId) const     {return (crystalId*_nROPerCrystal);}
 
-// Crystal R-coordinate within a vane (0..nCrystalR-1)
-int crystalRByRO(int roid) const {
-        return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))/_nCrystalZ;
-}
+int crystalVaneByRO(int roid) const { return (roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR);}
+int crystalRByRO(int roid) const {return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))/_nCrystalZ;}
+int crystalZByRO(int roid) const {return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))%_nCrystalZ;}
 
-// Crystal Z-coordinate within a vane (0..nCrystalZ-1)
-int crystalZByRO(int roid) const {
-        return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))%_nCrystalZ;
-}
+CLHEP::Hep3Vector crystalOriginByRO(int roid) const { return crystalOrigin(crystalByRO(roid));  }
+int vaneByRO(int roid) const {return roid/(_nCrystalZ*_nCrystalR*_nROPerCrystal);}
+CLHEP::Hep3Vector crystalAxisByRO(int roid) const { return crystalAxis(crystalByRO(roid));  }
 
-        
-	
-	// Get crystal center in Mu2e coordinates
-        CLHEP::Hep3Vector crystalOriginByRO(int roid) const { return crystalOrigin(crystalByRO(roid));  }
-
-        int vaneByRO(int roid) const {
-                return roid/(_nCrystalZ*_nCrystalR*_nROPerCrystal);
-        }
-
-        // Get crystal center in Mu2e coordinates
-        CLHEP::Hep3Vector crystalAxisByRO(int roid) const { return crystalAxis(crystalByRO(roid));  }
-
-
-        CLHEP::Hep3Vector toVaneFrame(int vaneId, CLHEP::Hep3Vector const& pos) const   {return toSectionFrame(vaneId,pos);}
-        CLHEP::Hep3Vector fromVaneFrame(int vaneId, CLHEP::Hep3Vector const& pos) const {return fromSectionFrame(vaneId,pos);}
-
-
-
-        double envelopeRmin() const                  {return _vanes.at(0).innerRadius() - 1.0 ;}
-        double envelopeRmax() const                  {return sqrt(cet::square(_vanes.at(0).outerRadius() + 1.0) + cet::square(_crystalHL) ) + 1.0;}
-        double envelopeHalfLength() const            {return _vanes.at(0).size().z() +2.0*(_shieldHalfThickness + _neutronAbsorberHalfThickness) + 1.0;}
-
-
-        double wrapperThickness() const      {return _wrapperThickness; }
-        double shellThickness() const        {return _shellThickness;}
-        double roHalfSize() const            {return _roHalfTrans; }
-        double roHalfThickness() const       {return _roHalfThickness; }
-
-
-      double getNonuniformity(void) const      {return _nonUniformity; }
-      double getTimeGap(void) const            {return _timeGap; }
-      double getElectronEdep(void) const       {return _electronEdep; }
-      double getElectronEmin(void) const       {return _electronEmin; }
-      
-      double getApdMeanNoise(void) const       {return _apdMeanNoise;}
-      double getApdSigmaNoise(void) const      {return _apdSigmaNoise;}
-      
-      double getLysoLightYield(void) const     {return _lysoLightYield;}
-      double getApdQuantumEff(void) const      {return _apdQuantumEff;}
-      double getAPDCollectEff(void) const      {return _lightCollectEffAPD;}
+CLHEP::Hep3Vector toVaneFrame(int vaneId, CLHEP::Hep3Vector const& pos) const   {return toSectionFrame(vaneId,pos);}
+CLHEP::Hep3Vector fromVaneFrame(int vaneId, CLHEP::Hep3Vector const& pos) const {return fromSectionFrame(vaneId,pos);}
 
 
 
 
+      private:
+
+          int    _nCrystalZ;
+          int    _nCrystalR;
+          double _rMin;
+          double _rMax;
+          double _crystalHL;
+          double _crystalHW;        
+          double _shieldHalfThickness;
+          double _absorberHalfThickness;
 
 
 
-
-
-
-
-
-    protected:
-
-        std::vector<Vane> _vanes;
-        int    _nVane;
-        int    _nCrystalZ;
-        int    _nCrystalR;
-        double _rMin;
-        double _rMax;
-
-        CLHEP::Hep3Vector _origin;
-
-        double _crystalHL;
-        double _crystalHW;
-        
-        double _shieldHalfThickness;
-        double _neutronAbsorberHalfThickness;
-        
-        double _wrapperThickness;
-        double _shellThickness;
-
-        int    _nROPerCrystal;
-        double _roHalfTrans;
-        double _roHalfThickness;
-
-        double _nonUniformity;
-        double _timeGap;
-        double _electronEdep; // energy deposition of charged particle crossing APD
-        double _electronEmin; // minimum energy deposition of charged particle crossing APD
-
-        double _apdMeanNoise; //MeV
-        double _apdSigmaNoise;//MeV
-
-        double _lysoLightYield;
-        double _apdQuantumEff;//quantum efficiency for Hamamatsu S8664-1010 for a radiation wavelenght of 402nm (typical of lyso)
-        double _lightCollectEffAPD;//light collection efficiency for 30 × 30 mm2 area of the crystal efficiency for Hamamatsu S8664-1010
-
-};
+   };
 
 }
 

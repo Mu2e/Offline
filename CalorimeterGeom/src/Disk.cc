@@ -28,10 +28,9 @@
 
 namespace mu2e {
 
-      Disk::Disk(int id, double rin, double rout, double thickness, double cellSize, CLHEP::Hep3Vector crystalShift) : 
-        CaloSection(id, crystalShift),
-	_radiusIn(rin), _radiusOut(rout), _thickness(thickness), _cellSize(cellSize), 
-        _hexMap(),_mapToCrystal(),_crystalToMap()
+      Disk::Disk(int id, double rin, double rout, double cellSize, CLHEP::Hep3Vector crystalShift) : 
+        CaloSection(id, crystalShift),_radiusIn(rin), _radiusOut(rout),
+	_cellSize(cellSize), _hexMap(),_mapToCrystal(),_crystalToMap()
       { 
         fillCrystals(); 
       }

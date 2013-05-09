@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.8 2013/03/27 18:38:37 murat Exp $
-// $Author: murat $
-// $Date: 2013/03/27 18:38:37 $
+// $Id: Calorimeter4VanesGeom.hh,v 1.9 2013/05/09 23:14:14 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/05/09 23:14:14 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -118,8 +118,8 @@ public :
                 _norm.setX(0.0);
                 _norm.setY(1.0);
                 _norm.setZ(0.0);
-                _dR = (cg->crystalHalfSize() + cg->wrapperThickness() + cg->shellThickness() ) * cg->nCrystalR();//*0.5;
-                _dZ = (cg->crystalHalfSize() + cg->wrapperThickness() + cg->shellThickness() ) * cg->nCrystalZ();//*0.5;
+                _dR = (cg->crystalHalfTrans() + cg->wrapperThickness() + cg->shellThickness() ) * cg->nCrystalR();//*0.5;
+                _dZ = (cg->crystalHalfTrans() + cg->wrapperThickness() + cg->shellThickness() ) * cg->nCrystalZ();//*0.5;
                 _dU = (cg->crystalHalfLength() + cg->wrapperThickness() ) ;
                 _dAPD = cg->roHalfThickness();
                 _vaneHalfThickness = _dU + _dAPD;
@@ -127,8 +127,8 @@ public :
                 _solenoidOffSetZ = -geom->config().getDouble("mu2e.detectorSystemZ0");//-10200.;
                 _innerRadius = cg->innerRaidus();
                 _outherRadius = cg->outherRadius();
-                _ZfrontFaceCalo = cg->origin().z() + _solenoidOffSetZ - _dZ;//(cg->nCrystalZ() + 1.0)*cg->crystalHalfSize();
-                _ZbackFaceCalo = cg->origin().z() + _solenoidOffSetZ + _dZ;//(cg->nCrystalZ() + 1.0)*cg->crystalHalfSize();
+                _ZfrontFaceCalo = cg->origin().z() + _solenoidOffSetZ - _dZ;//(cg->nCrystalZ() + 1.0)*cg->crystalHalfTrans();
+                _ZbackFaceCalo = cg->origin().z() + _solenoidOffSetZ + _dZ;//(cg->nCrystalZ() + 1.0)*cg->crystalHalfTrans();
                 _nVanes = cg->nVane();
         }
 

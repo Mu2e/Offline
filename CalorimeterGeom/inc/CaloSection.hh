@@ -1,8 +1,8 @@
 #ifndef CalorimeterGeom_CaloSection_hh
 #define CalorimeterGeom_CaloSection_hh
-// $Id: CaloSection.hh,v 1.3 2013/03/08 01:22:31 echenard Exp $
+// $Id: CaloSection.hh,v 1.4 2013/05/09 23:14:14 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/03/08 01:22:31 $
+// $Date: 2013/05/09 23:14:14 $
 //
 //
 // Hold information about a CaloCaloSection in the calorimter.
@@ -33,7 +33,7 @@ namespace mu2e {
 	 CaloSection(int id, CLHEP::Hep3Vector crystalShift) : 
             _id(id), _origin(), _originLocal(), _rotation(), _size(),
             _crystalShift(crystalShift), _crystalList() 
-         {} 
+         {}
 
 	 int id() const                                           {return _id;}
          int nCrystals() const                                    {return _crystalList.size();}
@@ -53,7 +53,7 @@ namespace mu2e {
 
 
       protected:
-
+	 
 	 int                  _id;
 	 CLHEP::Hep3Vector    _origin;
          CLHEP::Hep3Vector    _originLocal;

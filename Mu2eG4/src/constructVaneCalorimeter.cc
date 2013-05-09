@@ -1,11 +1,12 @@
 //
-// Free function to create the calorimeter.
+// Free function to create the Vane calorimeter.
 //
-// $Id: constructVaneCalorimeter.cc,v 1.5 2013/03/29 04:35:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Id: constructVaneCalorimeter.cc,v 1.6 2013/05/09 23:14:14 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/05/09 23:14:14 $
 //
 // Original author Ivan Logashenko
+// Modified by Bertrand Echenard
 //
 // Notes
 //
@@ -51,12 +52,8 @@ using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructVaneCalorimeter( VolumeInfo const &  mother,
-                                       double zOffset,
-                                       SimpleConfig const& config ){
-
-    // Access to the G4HelperService.
-    G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
+  VolumeInfo constructVaneCalorimeter( VolumeInfo const &  mother,SimpleConfig const& config )
+  {
 
 
     //-- Read parameters from config file
@@ -65,24 +62,24 @@ namespace mu2e {
     int const verbosityLevel             = config.getInt("calorimeter.verbosityLevel",0);
 
 
-    bool const isCalorimeterVisible      = config.getBool("calorimeter.calorimeterVisible",true);
-    bool const isCalorimeterSolid        = config.getBool("calorimeter.calorimeterSolid",true);
+    bool const isCalorimeterVisible      = config.getBool("calorimeter.calorimeterVisible",false);
+    bool const isCalorimeterSolid        = config.getBool("calorimeter.calorimeterSolid",false);
     bool const isVaneBoxVisible          = config.getBool("calorimeter.vaneBoxVisible",true);
     bool const isVaneBoxSolid            = config.getBool("calorimeter.vaneBoxSolid",true);
     bool const isAbsorberBoxVisible      = config.getBool("calorimeter.absorberBoxVisible",true);
     bool const isAbsorberBoxSolid        = config.getBool("calorimeter.absorberBoxSolid",true);
     bool const isCrystalVisible          = config.getBool("calorimeter.crystalVisible",false);
     bool const isCrystalSolid            = config.getBool("calorimeter.crystalSolid",true);
-    bool const isShieldVisible           = config.getBool("calorimeter.shieldVisible",false);
-    bool const isShieldSolid             = config.getBool("calorimeter.shieldSolid",true);
-    bool const isNeutronAbsorberVisible  = config.getBool("calorimeter.neutronAbsorberVisible",false);
-    bool const isNeutronAbsorberSolid    = config.getBool("calorimeter.neutronAbsorberSolid",true);
 
     bool const forceAuxEdgeVisible       = config.getBool("g4.forceAuxEdgeVisible",false);
     G4bool const doSurfaceCheck          = config.getBool("g4.doSurfaceCheck",false);
     bool const placePV                   = true;
 
 
+    //calorimeter mother neveloppe
+    double mother_radius   = config.getDouble("calorimeter.caloMotherRadius",850); 
+    double mother_z0       = config.getDouble("calorimeter.caloMotherZ0",11740); 
+    double mother_z1       = config.getDouble("calorimeter.caloMotherZ1",13910); 
 
 
     //-- A helper class for parsing the config file.
@@ -96,49 +93,48 @@ namespace mu2e {
 
     //-- Get calorimeter handle
     VaneCalorimeter const & cal = *(GeomHandle<VaneCalorimeter>());
-    double rIn                           = cal.envelopeRmin();
-    double rOut                          = cal.envelopeRmax();
-    double halfLength                    = cal.envelopeHalfLength();
+
+
+
+
+
+
+    //-- Construct calorrimeter mother volume
+
+    double mother_zlength  = mother_z1-mother_z0;
+    double mother_zCenter  = (mother_z1+mother_z0)/2.0;
 
     //  Make the mother volume for the calorimeter.
-    G4ThreeVector pcalo = cal.origin();
-    G4ThreeVector pos   = G4ThreeVector(0, 0, pcalo.z()+zOffset);
-    verbosityLevel > 0 &&
-      cout << "Calorimeter  position Origin local: ("
-	   << pos.x() << "," << pos.y() << "," << pos.z()
-	   << ")" << endl;
-	      
+    CLHEP::Hep3Vector const& posDS3  = mother.centerInMu2e();
+    G4ThreeVector posCaloMother      = G4ThreeVector(posDS3.x(), 0, mother_zCenter);
+    G4ThreeVector posCaloMotherInDS  = posCaloMother - posDS3;
 
-    TubsParams caloParams( rIn, rOut, halfLength, 0., CLHEP::twopi);
-
+    TubsParams caloParams(0,mother_radius,mother_zlength/2.0, 0., CLHEP::twopi);
     VolumeInfo calorimeterInfo = nestTubs( "CalorimeterMother",
 					   caloParams,
 					   fillMaterial,
 					   0,
-					   pos,
+					   posCaloMotherInDS,
 					   mother,
 					   0,
-					   isCalorimeterVisible,
+					   true,
 					   G4Colour::Blue(),
 					   isCalorimeterSolid,
 					   forceAuxEdgeVisible,
 					   placePV,
 					   doSurfaceCheck
 					   );
-    if ( verbosityLevel > 0) {
-      double zhl         = static_cast<G4Box*>(calorimeterInfo.solid)->GetZHalfLength();
+    if ( verbosityLevel > 0) 
+    {
+      double zhl         = static_cast<G4Tubs*>(calorimeterInfo.solid)->GetZHalfLength();
       CLHEP::Hep3Vector const & CalorimeterOffsetInMu2e = calorimeterInfo.centerInMu2e();
       double CalorimeterOffsetInMu2eZ = CalorimeterOffsetInMu2e[CLHEP::Hep3Vector::Z];
       cout << __func__ << " Calorimeter mother center in Mu2e   : " << CalorimeterOffsetInMu2e << endl;
-      cout << __func__ << " Calorimeter mother Z extent in Mu2e    : " <<
-	CalorimeterOffsetInMu2eZ - zhl << ", " << CalorimeterOffsetInMu2eZ + zhl << endl;
+      cout << __func__ << " Calorimeter mother Z extent in Mu2e    : " <<CalorimeterOffsetInMu2eZ - zhl << ", " << CalorimeterOffsetInMu2eZ + zhl << endl;
     }
 
     G4int nRO                   = cal.nROPerCrystal();
-    //G4int ncrysR                = cal.nCrystalR();
-    //G4int ncrysZ                = cal.nCrystalZ();
-
-    G4double crystalSize        = cal.crystalHalfSize();
+    G4double crystalSize        = cal.crystalHalfTrans();
     G4double crystalLength      = cal.crystalHalfLength();
     G4double wrapSize           = crystalSize   + cal.wrapperThickness();
     G4double wrapLength         = crystalLength + cal.wrapperThickness() + cal.roHalfThickness();
@@ -162,7 +158,8 @@ namespace mu2e {
     G4LogicalVolume *CrystalLog  = new G4LogicalVolume(crystal, crysMaterial, "CrystalLog");
     G4LogicalVolume *ROLog       = new G4LogicalVolume(crystalRO, readMaterial, "CrystalROLog" );    
 
-    if(!isCrystalVisible) {
+    if(!isCrystalVisible) 
+    {
       CrystalLog->SetVisAttributes(G4VisAttributes::Invisible);
       ROLog->SetVisAttributes(G4VisAttributes::Invisible);
     } else {
@@ -182,8 +179,8 @@ namespace mu2e {
     G4VSensitiveDetector* ccSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal());
     G4VSensitiveDetector* crSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadout());
     
-    if(ccSD) CrystalLog->SetSensitiveDetector(ccSD);
-    if(crSD) ROLog->SetSensitiveDetector(crSD);
+    CrystalLog->SetSensitiveDetector(ccSD);
+    ROLog->SetSensitiveDetector(crSD);
 
 
 
@@ -191,39 +188,42 @@ namespace mu2e {
 
     //-- Build vanes and absorbers
     const int nvane = cal.nVane();
-    const double shieldHalfThickness =  cal.shieldHalfThickness();
-    const double neutronAbsorberHalfThickness = cal.neutronAbsorberHalfThickness();
-    const double absorberHalfThickness =  shieldHalfThickness + neutronAbsorberHalfThickness;
+    const double shieldHalfThickness           = config.getDouble("calorimeter.shieldHalfThickness");
+    const double neutronAbsorberHalfThickness  = config.getDouble("calorimeter.neutronAbsorberHalfThickness");
+    const double absorberHalfThickness         = shieldHalfThickness + neutronAbsorberHalfThickness;
 
 
-    VolumeInfo vaneInfo[nvane];
-    VolumeInfo absorberInfo[nvane];
+    VolumeInfo vaneOutInfo[nvane];
+    VolumeInfo vaneInInfo[nvane];
     VolumeInfo shieldInfo[nvane];
     VolumeInfo neutronAbsorberInfo[nvane];
 
-    for( int iv=0; iv<nvane; ++iv ) {
 
-      ostringstream nameVane;              nameVane             << "CalorimeterVane_"               << iv;
-      ostringstream nameAbsorber;          nameAbsorber         << "CalorimeterAbsorber_"           << iv;
-      ostringstream nameShield;            nameShield        << "CalorimeterShield_"          << iv;
+
+    for( int iv=0; iv<nvane; ++iv ) 
+    {
+
+      ostringstream nameOutVane;           nameOutVane          << "CalorimeterOutVane_"            << iv;
+      ostringstream nameInVane;            nameInVane           << "CalorimeterInVane_"             << iv;
+      ostringstream nameShield;            nameShield           << "CalorimeterShield_"             << iv;
       ostringstream nameNeutronAbsorber;   nameNeutronAbsorber  << "CalorimeterNeutronAbsorber_"    << iv;
+      
+      const CLHEP::Hep3Vector & sizeOut = cal.vane(iv).size();
+      const CLHEP::Hep3Vector & sizeIn  = cal.vane(iv).size() - CLHEP::Hep3Vector(cal.caseThickness(),cal.caseThickness(),cal.caseThickness());
+      
+      double dimOutVane[3]             = {sizeOut.x(), sizeOut.y(), sizeOut.z()};
+      double dimInVane[3]              = {sizeIn.x(),  sizeIn.y(),  sizeIn.z() - absorberHalfThickness};      
+      double dimShield[3]              = {sizeIn.x(),  sizeIn.y(),  shieldHalfThickness};
+      double dimNeutronAbsorber[3]     = {sizeIn.x(),  sizeIn.y(),  neutronAbsorberHalfThickness};
+ 
+      G4ThreeVector posVane            = cal.origin() + cal.vane(iv).originLocal() - posCaloMother;
+      G4ThreeVector posInVane          = G4ThreeVector(0., 0. , absorberHalfThickness);
+      G4ThreeVector posShield          = G4ThreeVector(0., 0., -sizeIn.z() + shieldHalfThickness);
+      G4ThreeVector posNeutronAbsorber = G4ThreeVector(0., 0. ,-sizeIn.z() + 2*shieldHalfThickness + neutronAbsorberHalfThickness);
 
-      const CLHEP::Hep3Vector & size = cal.vane(iv).size();
-      double dimVane[3]                = {size.x(), size.y(), size.z() };
-      double dimAbsorber[3]            = {size.x(), size.y(), absorberHalfThickness };
-      double dimShield[3]              = {size.x(), size.y(), shieldHalfThickness };
-      double dimNeutronAbsorber[3]     = {size.x(), size.y(), neutronAbsorberHalfThickness };
 
-      double shift = 0.03;
-
-      G4ThreeVector pVane              = cal.vane(iv).originLocal();
-      G4ThreeVector posVane            = G4ThreeVector(pVane.x()-pos.x(), pVane.y()-pos.y(), 0.0);
-      G4ThreeVector posAbsorber        = G4ThreeVector(posVane.x(), posVane.y(), posVane.z()-(size.z()+absorberHalfThickness+shift) );
-      G4ThreeVector posShield          = G4ThreeVector(0., 0., absorberHalfThickness - shieldHalfThickness);
-      G4ThreeVector posNeutronAbsorber = G4ThreeVector(0., 0., absorberHalfThickness - 2*shieldHalfThickness - neutronAbsorberHalfThickness);
-
-      vaneInfo[iv]     = nestBox(nameVane.str(),
-				 dimVane,
+      vaneOutInfo[iv]     = nestBox(nameOutVane.str(),
+				 dimOutVane,
 				 fillMaterial,
 				 &cal.vane(iv).rotation(),
 				 posVane,
@@ -236,80 +236,79 @@ namespace mu2e {
 				 placePV,
 				 doSurfaceCheck );
 
-      cout << "Calorimeter Vane position: ("
-	   << posVane.x() << "," << posVane.y() << "," << posVane.z()
-	   << ")" << endl;
 
-     
-      absorberInfo[iv] = nestBox(nameAbsorber.str(),
-				 dimAbsorber,
+      vaneInInfo[iv]     = nestBox(nameInVane.str(),
+				 dimInVane,
 				 fillMaterial,
-				 &cal.vane(iv).rotation(),
-				 posAbsorber,
-				 calorimeterInfo ,
+				 0,
+				 posInVane,
+				 vaneOutInfo[iv],
 				 iv,
-				 isAbsorberBoxVisible,
-				 G4Colour::Red(),
-				 isAbsorberBoxSolid,
+				 isVaneBoxVisible,
+				 G4Colour::Yellow(),
+				 isVaneBoxSolid,
 				 forceAuxEdgeVisible,
 				 placePV,
 				 doSurfaceCheck );
 
-      cout << "Calorimeter Absorber position: ("
-	   << posAbsorber.x() << "," << posAbsorber.y() << "," << posAbsorber.z()
-	   << ")" << endl;
-    
+      if (verbosityLevel) cout << "Calorimeter Vane position: "<<posVane<<endl;
+
       
-      if( shieldHalfThickness > 0.){
+      if( shieldHalfThickness > 0.0)
+      {
 	shieldInfo[iv]    = nestBox(nameShield.str(),
 				    dimShield,
 				    shieldMaterial,
 				    0,
 				    posShield,
-				    absorberInfo[iv] ,
+				    vaneOutInfo[iv] ,
 				    iv,
-				    isShieldVisible,
-				    G4Colour::Green(),
-				    isShieldSolid,
+				    isAbsorberBoxVisible,
+				    G4Colour::Blue(),
+				    isAbsorberBoxSolid,
 				    forceAuxEdgeVisible,
 				    placePV,
 				    doSurfaceCheck );
       }
 
-      if( neutronAbsorberHalfThickness > 0.){
+      if( neutronAbsorberHalfThickness > 0)
+      {
 	neutronAbsorberInfo[iv]    = nestBox(nameNeutronAbsorber.str(),
 					     dimNeutronAbsorber,
 					     neutronAbsorberMaterial,
 					     0,
 					     posNeutronAbsorber,
-					     absorberInfo[iv] ,
+					     vaneOutInfo[iv] ,
 					     iv,
-					     isNeutronAbsorberVisible,
-					     G4Colour::Magenta(),
-					     isNeutronAbsorberSolid,
+					     isAbsorberBoxVisible,
+					     G4Colour::Cyan(),
+					     isAbsorberBoxSolid,
 					     forceAuxEdgeVisible,
 					     placePV,
 					     doSurfaceCheck );
       }
       
-      if ( verbosityLevel > 0 && iv==0) {
-	double zhl         = static_cast<G4Box*>(vaneInfo[0].solid)->GetZHalfLength();
-	CLHEP::Hep3Vector const & CalorimeterVaneOffsetInMu2e = vaneInfo[0].centerInMu2e();
-	double CalorimeterVaneOffsetInMu2eZ = CalorimeterVaneOffsetInMu2e[CLHEP::Hep3Vector::Z];
-	cout << __func__ << " Calorimeter mother center in Mu2e   : " << CalorimeterVaneOffsetInMu2e << endl;
-	cout << __func__ << " CalorimeterVane   center in Mu2e    : " << CalorimeterVaneOffsetInMu2e << endl;
-	cout << __func__ << " CalorimeterVane Z extent in Mu2e    : " <<
-	  CalorimeterVaneOffsetInMu2eZ - zhl << ", " << CalorimeterVaneOffsetInMu2eZ + zhl << endl;
-	cout<< "zHalfLength = "<< zhl <<endl;
-      }
+      if ( verbosityLevel > 0) 
+      {
+	double xhl  = static_cast<G4Box*>(vaneOutInfo[iv].solid)->GetXHalfLength();
+	double yhl  = static_cast<G4Box*>(vaneOutInfo[iv].solid)->GetYHalfLength();
+	double zhl  = static_cast<G4Box*>(vaneOutInfo[iv].solid)->GetZHalfLength();
+	cout << __func__ << " center in Mu2e    : " << vaneOutInfo[iv].centerInMu2e() << endl;
+	cout << __func__ << " X extent in Mu2e  : " <<vaneOutInfo[iv].centerInMu2e().x() - xhl << ", " << vaneOutInfo[iv].centerInMu2e().x() + xhl << endl;
+	cout << __func__ << " Y extent in Mu2e  : " <<vaneOutInfo[iv].centerInMu2e().y() - yhl << ", " << vaneOutInfo[iv].centerInMu2e().y() + yhl << endl;
+	cout << __func__ << " Z extent in Mu2e  : " <<vaneOutInfo[iv].centerInMu2e().z() - zhl << ", " << vaneOutInfo[iv].centerInMu2e().z() + zhl << endl;
 
+
+
+      }
 
 
 
 
       //-- place crystals inside vanes
       G4int ncrys                 = cal.vane(iv).nCrystals();
-      for( int ic=0; ic<ncrys; ++ic ) {
+      for( int ic=0; ic<ncrys; ++ic ) 
+      {
 
 	// IDs
 	G4int id       = iv*ncrys + ic;       // Crystal ID
@@ -319,7 +318,8 @@ namespace mu2e {
 	// Have to define a shell / wrapper logical volume for each crystal 
 	// to get correct index in CrystalCaloSD
 	G4LogicalVolume *thisShellLog(0);
-	if (cal.shellThickness() > 0.001){
+	if (cal.shellThickness() > 0.001)
+	{
 	  thisShellLog = new G4LogicalVolume(crystalShell, fillMaterial, "ShellLog");
 	  thisShellLog->SetVisAttributes(G4VisAttributes::Invisible);
 	}
@@ -338,11 +338,12 @@ namespace mu2e {
 	     
 
 	// place a shell only if it has non-zero thickness, or place the wrapper directly
-	if (cal.shellThickness()  > 0.001) {
-	  new G4PVPlacement(0,G4ThreeVector(x,y,z),thisShellLog,"CrysShellPV",vaneInfo[iv].logical,0,id,doSurfaceCheck);   
+	if (cal.shellThickness()  > 0.001) 
+	{
+	  new G4PVPlacement(0,G4ThreeVector(x,y,z),thisShellLog,"CrysShellPV",vaneInInfo[iv].logical,0,id,doSurfaceCheck);   
 	  new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0.0),thisWrapLog,"CrysWrapPV",thisShellLog,0,id,doSurfaceCheck);
 	} else {
-	  new G4PVPlacement(0,G4ThreeVector(x,y,z),thisWrapLog,"CrysWrapPV",vaneInfo[iv].logical,0,id,doSurfaceCheck);   	      
+	  new G4PVPlacement(0,G4ThreeVector(x,y,z),thisWrapLog,"CrysWrapPV",vaneInInfo[iv].logical,0,id,doSurfaceCheck);   	      
 	}
 
 	// -- place crystal inside warp
@@ -352,13 +353,15 @@ namespace mu2e {
 	if (nRO==1) 
 	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(),0,0),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
 
-	if (nRO==2) { 
-	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(),-0.5*cal.crystalHalfSize(),0.0),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
-	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(), 0.5*cal.crystalHalfSize(),0.0),ROLog,"CrysROPV_1",thisWrapLog,0,roidBase+1,doSurfaceCheck);
+	if (nRO==2) 
+	{ 
+	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(),-0.5*cal.crystalHalfTrans(),0.0),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
+	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(), 0.5*cal.crystalHalfTrans(),0.0),ROLog,"CrysROPV_1",thisWrapLog,0,roidBase+1,doSurfaceCheck);
 	}
 
-	if (nRO==4) { 
-	  G4double cHS = -0.5*cal.crystalHalfSize();
+	if (nRO==4) 
+	{ 
+	  G4double cHS = -0.5*cal.crystalHalfTrans();
 	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(),-cHS,-cHS),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
 	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(),-cHS,cHS), ROLog,"CrysROPV_1",thisWrapLog,0,roidBase+1,doSurfaceCheck);
 	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(), cHS,-cHS),ROLog,"CrysR0PV_2",thisWrapLog,0,roidBase+2,doSurfaceCheck);

@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.180 2013/03/26 14:46:09 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/03/26 14:46:09 $
+// $Id: geom_01.txt,v 1.181 2013/05/09 23:14:14 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/05/09 23:14:14 $
 //
 // Original author Rob Kutschke
 //
@@ -378,62 +378,10 @@ vector<double> target.xCos  =
 vector<double> target.yCos  =
     { 0.};
 
+
 // Crystal calorimeter
+#include "Mu2eG4/test/calorimeter.txt"
 
-vector<double> calorimeter.calorimeterCenter               = {0.,0.,12700.};   
-string calorimeter.calorimeterFillMaterial                 = "DSVacuum";
-string calorimeter.calorimeterDiskMaterial                 = "DSVacuum";
-
-int    calorimeter.numberOfVanes    =  4;
-int    calorimeter.nCrystalRSlices  =  11;
-int    calorimeter.nCrystalZSlices  =  44;
-double calorimeter.rInscribed       = 360.;
-
-double calorimeter.crystalHalfLong  = 55.01;
-double calorimeter.crystalHalfTrans = 15.0;
-double calorimeter.crystalHexsize   = 15.0;    //mm  for hexagonal crystals - half distance across flats of hex crystal
-
-int    calorimeter.numberOfDisks        =  2;
-vector<double> calorimeter.diskInnerRadius   = {360.,360.}; //mm
-vector<double> calorimeter.diskOuterRadius   = {700.,700.}; //mm
-vector<double> calorimeter.diskRotationAngle = {0.,0.};     //rad
-vector<double> calorimeter.diskSeparation    = {0.,800.};   //mm  separation w.r.t first disk
-double calorimeter.diskCaseThickness         = 0 ;  // mm
-
-string calorimeter.crystalMaterial                         = "Lyso_01"; //"G4_PbWO4";
-string calorimeter.shieldMaterial                          = "G4_Pb"; 
-string calorimeter.neutronAbsorberMaterial                 = "Polyethylene092Li075d106";
-
-double calorimeter.shieldHalfThickness                     = .0;//0.
-double calorimeter.neutronAbsorberHalfThickness            = .0;//0.
-
-string calorimeter.crystalWrapper                          = "Polyethylene092";
-double calorimeter.crystalWrapperThickness                 = 0.01 ;
-
-string calorimeter.crystalReadoutMaterial                  = "G4_Si";
-double calorimeter.crystalReadoutHalfTrans                 = 5;
-double calorimeter.crystalReadoutHalfThickness             = 1;
-int    calorimeter.crystalReadoutChannelCount              = 2; // APDs per crystal
-
-double calorimeter.crystalNonUniformity  = 0.0; // -2 to 2
-                                                // (A(ro)-A(front))/A(middle)
-double calorimeter.timeGap               = 30.0;  // ns
-double calorimeter.electronDepositionAPD = 1000.0; // MeV
-double calorimeter.electronMinEnergyAPD  = 0.1;    // MeV
-
-// Control display and debug printout.
-bool calorimeter.vaneBoxVisible = true;
-bool calorimeter.vaneBoxSolid   = true;
-bool calorimeter.crystalVisible = false;
-bool calorimeter.crystalSolid   = true;
-bool calorimeter.absorberBoxVisible     = true;
-bool calorimeter.absorberBoxSolid       = true;
-bool calorimeter.shieldVisible          = false;
-bool calorimeter.shieldSolid            = false;//true;
-bool calorimeter.isNeutronAbsorberVisible = false;
-bool calorimeter.isNeutronAbsorberSolid   = false;
-
-int  calorimeter.verbosityLevel = 0;
 
 // Cosmic Ray Sheld consist of the two components
 // for now the are in the two sections: the fluxcrv and the crs itself

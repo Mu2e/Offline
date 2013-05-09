@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_sort_functors_hh
 #define CalorimeterGeom_sort_functors_hh
 //
-// $Id: sort_functors.hh,v 1.5 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: sort_functors.hh,v 1.6 2013/05/09 23:14:14 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/05/09 23:14:14 $
 //
 // Original author KLG
 //
@@ -17,7 +17,8 @@ namespace mu2e {
 
     public:
 
-      bool operator() (HitT const & a, HitT const & b) const {
+      bool operator() (HitT const & a, HitT const & b) const 
+      {
 	return ( a.time() < b.time() );
       }
 
@@ -29,12 +30,9 @@ namespace mu2e {
 
      public:
 
-       bool operator() (HitT const & a, HitT const & b) const {
-	 return (a.id() < b.id() ||
-        	 (a.id() == b.id() &&
-        	  a.time() < b.time()
-        	  )
-        	 );
+       bool operator() (HitT const & a, HitT const & b) const 
+       {
+	 return (a.id() < b.id() || ( a.id() == b.id() && a.time() < b.time() ) );
        }
 
   };
@@ -48,12 +46,11 @@ namespace mu2e {
 
        explicit lessByCIdAndTime(Calorimeter const & cal): _cal(0) {}
 
-       bool operator() (HitT const & a, HitT const & b) const {
+       bool operator() (HitT const & a, HitT const & b) const 
+       {
 	  return ( _cal.crystalByRO(a.id()) < _cal.crystalByRO(b.id()) ||
         	  (_cal.crystalByRO(a.id()) == _cal.crystalByRO(b.id()) &&
-                   a.time() < b.time()
-                   )
-        	  );
+                   a.time() < b.time() ) );
        }
 
 
@@ -71,13 +68,11 @@ namespace mu2e {
 
        explicit lessByCIdAndTimeByPointer(Calorimeter const * cal): _cal(cal) {}
 
-       bool operator() (HitT const * a, HitT const * b) const {
-
+       bool operator() (HitT const * a, HitT const * b) const 
+       {
 	   return (  _cal->crystalByRO(a->id()) <  _cal->crystalByRO(b->id()) ||
         	   ( _cal->crystalByRO(a->id()) == _cal->crystalByRO(b->id()) &&
-                     a->time() < b->time()
-        	   )
-        	  );		     
+                     a->time() < b->time() ) );		     
        }
 
      private:

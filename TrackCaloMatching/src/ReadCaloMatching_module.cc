@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.9 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
+// $Id: ReadCaloMatching_module.cc,v 1.10 2013/05/09 23:14:14 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/05/09 23:14:14 $
 //
 // Original author G. Pezzullo
 //
@@ -874,7 +874,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 }
 
         }
-        double tollCaloHits = cg->crystalHalfSize()*15.0;
+        double tollCaloHits = cg->crystalHalfTrans()*15.0;
 
         for(size_t i =0; i<trjCaloMatchings->size(); ++i){
 

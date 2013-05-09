@@ -1,14 +1,10 @@
 //
-// Free function to create the calorimeter.
+// Free function to create the Disk calorimeter.
 //
 //
-// Original author Ivan Logashenko
+// Original author Bertrand Echenard
 //
 // Notes
-// 1) The argument zOff is the zlocation of the center of the mother volume,
-//    as mesaured in the mu2e coordinate system.
-// 2) The vanes are placed directly into DS3.  We did not make a mother volume for them.
-//
 //
 //  1. a crystal has readouts at the back, both are surrounded by the wrapping, and the wrapping by a shell
 //  2. by default, the wrapping surrounds the front/back face of the crystal+ro, the shell does not (shell is a casing)
@@ -55,17 +51,15 @@ using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructDiskCalorimeter( VolumeInfo const &  mother,
-                                 double              zOffset,
-                                 SimpleConfig const& config ){
+  VolumeInfo constructDiskCalorimeter( VolumeInfo const &  mother, SimpleConfig const& config )
+  {
 
 
 
     //-- Read parameters from config file
-	bool const isCalorimeterVisible    = config.getBool("calorimeter.calorimeterVisible",true);
-	bool const isCalorimeterSolid      = config.getBool("calorimeter.calorimeterSolid",true);
-
     int const verbosityLevel        = config.getInt("calorimeter.verbosityLevel",0);
+    bool const isCalorimeterVisible = config.getBool("calorimeter.calorimeterVisible",false);
+    bool const isCalorimeterSolid   = config.getBool("calorimeter.calorimeterSolid",false);
     bool const isDiskBoxVisible     = config.getBool("calorimeter.vaneBoxVisible",true);
     bool const isDiskBoxSolid       = config.getBool("calorimeter.vaneBoxSolid",true);
     bool const isCrystalVisible     = config.getBool("calorimeter.crystalVisible",false);
@@ -74,6 +68,10 @@ namespace mu2e {
     G4bool const doSurfaceCheck     = config.getBool("g4.doSurfaceCheck",false);
     bool const placePV              = true;
 
+    //calorimeter mother neveloppe
+    double mother_radius            = config.getDouble("calorimeter.caloMotherRadius",850); 
+    double mother_z0                = config.getDouble("calorimeter.caloMotherZ0",11740); 
+    double mother_z1                = config.getDouble("calorimeter.caloMotherZ1",13910); 
 
 
     //-- A helper class for parsing the config file.
@@ -85,7 +83,7 @@ namespace mu2e {
     G4Material* wrapMaterial = materialFinder.get("calorimeter.crystalWrapper");
     G4Material* readMaterial = materialFinder.get("calorimeter.crystalReadoutMaterial");
     
-    
+
     
     //-- Get all disk /crystal informations here
     //   crystal longitudinal size are defined w.r.t the center of the hexagon (like a radius)
@@ -93,54 +91,12 @@ namespace mu2e {
         
     DiskCalorimeter const & cal    = *(GeomHandle<DiskCalorimeter>());
 
-       double rIn                           = cal.envelopeRmin();
-       double rOut                          = cal.envelopeRmax();
-       double halfLength                    = cal.envelopeHalfLength();
-
-       double hack = 600;
-       double maxHalfSep = cal.diskSeparation(cal.nDisk()-1)/2;
-
-        //  Make the mother volume for the calorimeter.
-        G4ThreeVector pcalo = cal.origin();
-        G4ThreeVector pos   = G4ThreeVector(0, 0, pcalo.z()+zOffset - (hack-maxHalfSep) );
-        verbosityLevel > 0 &&
-    	      cout << "Calorimeter  position Origin local: ("
-                   << pos.x() << "," << pos.y() << "," << pos.z()
-                   << ")" << endl;
-
-
-        TubsParams caloParams( rIn, rOut, halfLength, 0., CLHEP::twopi);
-
-        VolumeInfo calorimeterInfo = nestTubs( "CalorimeterMother",
-                                          caloParams,
-                                          fillMaterial,
-                                          0,
-                                          pos,
-                                          mother,
-                                          0,
-                                          isCalorimeterVisible,
-                                          G4Colour::Blue(),
-                                          isCalorimeterSolid,
-                                          forceAuxEdgeVisible,
-                                          placePV,
-                                          doSurfaceCheck
-                                          );
-    	 if ( verbosityLevel > 0) {
-    	     double zhl         = static_cast<G4Box*>(calorimeterInfo.solid)->GetZHalfLength();
-    	     CLHEP::Hep3Vector const & CalorimeterOffsetInMu2e = calorimeterInfo.centerInMu2e();
-    	     double CalorimeterOffsetInMu2eZ = CalorimeterOffsetInMu2e[CLHEP::Hep3Vector::Z];
-    	     cout << __func__ << " Calorimeter mother center in Mu2e   : " << CalorimeterOffsetInMu2e << endl;
-    	     cout << __func__ << " Calorimeter mother Z extent in Mu2e    : " <<
-             CalorimeterOffsetInMu2eZ - zhl << ", " << CalorimeterOffsetInMu2eZ + zhl << endl;
-    	 }
-
-
     G4int    nRO                   = cal.nROPerCrystal();
     G4double ROHalfThickness       = cal.roHalfThickness();
     G4double ROHalfTrans           = cal.roHalfSize();
 
-    G4double crystalHexsize        = cal.crysHalfTrans();
-    G4double crystalDepth          = cal.crystalHalfLength();
+    G4double crystalHexsize        = cal.crystalHalfTrans();
+    G4double crystalDepth          = 2.0*cal.crystalHalfLength();
 
     G4double wrapThickness         = cal.wrapperThickness();
     G4double wrapHexsize           = crystalHexsize + wrapThickness;
@@ -186,7 +142,7 @@ namespace mu2e {
                                      crystalZplanes,crystalRinner,crystalRouter);
 
     //-- Definition of crystal readouts
-    G4Box *crystalRO              = new G4Box("CrystalRO",ROHalfTrans,ROHalfTrans,ROHalfThickness);
+    G4Box *crystalRO           = new G4Box("CrystalRO",ROHalfTrans,ROHalfTrans,ROHalfThickness);
 
 
 
@@ -222,10 +178,50 @@ namespace mu2e {
     G4VSensitiveDetector* ccSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal());
     G4VSensitiveDetector* crSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadout());
     
-    if(ccSD) CrystalLog->SetSensitiveDetector(ccSD);
-    if(crSD) ROLog->SetSensitiveDetector(crSD);
+    CrystalLog->SetSensitiveDetector(ccSD);
+    ROLog->SetSensitiveDetector(crSD);
 
 
+
+
+
+  
+
+    //-- Construct calorrimeter mother volume
+    
+    double mother_zlength  = mother_z1-mother_z0;
+    double mother_zCenter  = (mother_z1+mother_z0)/2.0;
+
+    //  Make the mother volume for the calorimeter.
+    CLHEP::Hep3Vector const& posDS3  = mother.centerInMu2e();
+    G4ThreeVector posCaloMother      = G4ThreeVector(posDS3.x(), 0, mother_zCenter);
+    G4ThreeVector posCaloMotherInDS  = posCaloMother - posDS3;
+
+
+    TubsParams caloParams(0,mother_radius,mother_zlength/2.0, 0., CLHEP::twopi);
+    VolumeInfo calorimeterInfo = nestTubs( "CalorimeterMother",
+                                      caloParams,
+                                      fillMaterial,
+                                      0,
+                                      posCaloMotherInDS,
+                                      mother,
+                                      0,
+                                      isCalorimeterVisible,
+                                      G4Colour::Blue(),
+                                      isCalorimeterSolid,
+                                      forceAuxEdgeVisible,
+                                      placePV,
+                                      doSurfaceCheck
+                                      );
+
+    if ( verbosityLevel > 0) 
+    {
+	double zhl         = static_cast<G4Tubs*>(calorimeterInfo.solid)->GetZHalfLength();
+	CLHEP::Hep3Vector const & CalorimeterOffsetInMu2e = calorimeterInfo.centerInMu2e();
+	double CalorimeterOffsetInMu2eZ = CalorimeterOffsetInMu2e[CLHEP::Hep3Vector::Z];
+	cout << __func__ << " Calorimeter mother center in Mu2e   : " << CalorimeterOffsetInMu2e << endl;
+	cout << __func__ << " Calorimeter mother Z extent in Mu2e : " << CalorimeterOffsetInMu2eZ - zhl << ", " << CalorimeterOffsetInMu2eZ + zhl << endl;
+    }
 
 
 
@@ -235,25 +231,24 @@ namespace mu2e {
     VolumeInfo diskBoxInfo[nDisks];
     VolumeInfo diskInnerInfo[nDisks];
 
+
     //counter of crystals in disks
     G4int crystalIdOffset(0);
     
-    for (unsigned int idisk=0;idisk<nDisks;++idisk){
+    for (unsigned int idisk=0;idisk<nDisks;++idisk)
+    {
 
-    G4ThreeVector pdisk = cal.disk(idisk).originLocal(); 
-
-	G4ThreeVector posDisk = G4ThreeVector(pdisk.x(),pdisk.y(), pdisk.z()- maxHalfSep);
+        G4ThreeVector posDisk = cal.origin() + cal.disk(idisk).originLocal() - posCaloMother;
 
 	ostringstream discname1;      discname1<<"DiskCalorimeter_" <<idisk;
 	ostringstream discname2;      discname2<<"DiskInner_" <<idisk;
 
 	double radiusIn   = cal.disk(idisk).innerRadius();
 	double radiusOut  = cal.disk(idisk).outerRadius();
-	double diskDepth  = shellDepth + 2.0*cal.disk(idisk).thickness();
+	double diskDepth  = shellDepth + 2.0*cal.caseThickness();
 
-	double diskpar1[5] = {radiusIn-cal.disk(idisk).thickness(),radiusOut+cal.disk(idisk).thickness(), diskDepth/2.0, 0, 2*pi};
+	double diskpar1[5] = {radiusIn-cal.caseThickness(),radiusOut+cal.caseThickness(), diskDepth/2.0, 0, 2*pi};
 	double diskpar2[5] = {radiusIn,radiusOut, shellDepth/2.0, 0, 2*pi};
-
 
 	diskBoxInfo[idisk] = nestTubs(discname1.str(),
                               diskpar1,
@@ -277,27 +272,27 @@ namespace mu2e {
                               diskBoxInfo[idisk],
                               100*idisk,
                               isDiskBoxVisible,
-                              G4Colour::Magenta(),
+                              G4Colour::Yellow(),
                               isDiskBoxSolid,
                               forceAuxEdgeVisible,
                               placePV,
                               doSurfaceCheck );
 			      
 
-	if ( verbosityLevel > 0) {
-	    double zhl         = diskDepth/2.0;
+	if ( verbosityLevel > 0) 
+	{
 	    CLHEP::Hep3Vector const & CalorimeterDiskOffsetInMu2e = diskBoxInfo[idisk].centerInMu2e();
 	    double CalorimeterDiskOffsetInMu2eZ = CalorimeterDiskOffsetInMu2e[CLHEP::Hep3Vector::Z];
-	    cout << __func__ << " CalorimeterDisk center in Mu2e      : " << CalorimeterDiskOffsetInMu2e << endl;
-	    cout << __func__ << " CalorimeterDisk Z extent in Mu2e    : " <<
-            CalorimeterDiskOffsetInMu2eZ - zhl << ", " << CalorimeterDiskOffsetInMu2eZ + zhl << endl;
+	    cout << __func__ << " CalorimeterDisk center in Mu2e    : " << CalorimeterDiskOffsetInMu2e << endl;
+	    cout << __func__ << " CalorimeterDisk Z extent in Mu2e  : " << CalorimeterDiskOffsetInMu2eZ - diskDepth/2.0 << ", " << CalorimeterDiskOffsetInMu2eZ + diskDepth/2.0 << endl;
 	}
 
 
 
 	// -- then fill the inner disk with crystals
 	G4int nCrystalInThisDisk = cal.disk(idisk).nCrystals();			
-	for(int ic=0; ic <nCrystalInThisDisk; ++ic){
+	for(int ic=0; ic <nCrystalInThisDisk; ++ic)
+	{
 
 	      G4int id       = crystalIdOffset+ic;
 	      G4int roidBase = cal.ROBaseByCrystal(id);
@@ -305,7 +300,8 @@ namespace mu2e {
 	      // Have to define a shell / wrapper logical volume for each crystal 
 	      // to get correct index in CrystalCaloSD
 	      G4LogicalVolume *thisShellLog(0);
-	      if (shellThickness > 0.001){
+	      if (shellThickness > 0.001)
+	      {
 		thisShellLog = new G4LogicalVolume(crystalShell, fillMaterial, "ShellLog");
 		thisShellLog->SetVisAttributes(G4VisAttributes::Invisible);
 	      }
@@ -321,10 +317,12 @@ namespace mu2e {
               double z = -shellDepth/2.0; 	      
 
               // place a shell only if it has non-zero thickness, or place the wrapper directly
-              if (shellThickness > 0.001) {
+              if (shellThickness > 0.001)
+	      {
 	           new G4PVPlacement(0,G4ThreeVector(x,y,z),thisShellLog,"CrysShellPV",diskInnerInfo[idisk].logical,0,id,doSurfaceCheck);   
                    new G4PVPlacement(0,G4ThreeVector(0.0,0.0,wrapZPos),thisWrapLog,"CrysWrapPV",thisShellLog,0,id,doSurfaceCheck);
-              } else {
+              } else 
+	      {
 	           new G4PVPlacement(0,G4ThreeVector(x,y,z),thisWrapLog,"CrysWrapPV",diskInnerInfo[idisk].logical,0,id,doSurfaceCheck);   	      
 	      }
 
@@ -336,12 +334,14 @@ namespace mu2e {
 	      if (nRO==1) 
 		new G4PVPlacement(0,G4ThreeVector(0,0,ROZPos),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
 
-	      if (nRO==2) { 
+	      if (nRO==2) 
+	      { 
 		new G4PVPlacement(0,G4ThreeVector(0,-0.5*crystalHexsize,ROZPos),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
         	new G4PVPlacement(0,G4ThreeVector(0, 0.5*crystalHexsize,ROZPos),ROLog,"CrysROPV_1",thisWrapLog,0,roidBase+1,doSurfaceCheck);
               }
 
-	      if (nRO==4) { 
+	      if (nRO==4) 
+	      { 
 		new G4PVPlacement(0,G4ThreeVector(-0.5*crystalHexsize,-0.5*crystalHexsize,ROZPos),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
         	new G4PVPlacement(0,G4ThreeVector(-0.5*crystalHexsize, 0.5*crystalHexsize,ROZPos),ROLog,"CrysROPV_1",thisWrapLog,0,roidBase+1,doSurfaceCheck);
         	new G4PVPlacement(0,G4ThreeVector( 0.5*crystalHexsize,-0.5*crystalHexsize,ROZPos),ROLog,"CrysR0PV_2",thisWrapLog,0,roidBase+2,doSurfaceCheck);
@@ -355,9 +355,10 @@ namespace mu2e {
 
      }//end loop over disks
 
-    return calorimeterInfo;
+
+     return calorimeterInfo;
+
 
   }//end of disk calo construction
-
 
 } // end namespace mu2e
