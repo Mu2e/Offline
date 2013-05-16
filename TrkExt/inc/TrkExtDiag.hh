@@ -1,7 +1,7 @@
 //
-// $Id: TrkExtDiag.hh,v 1.2 2013/04/02 01:36:11 mjlee Exp $
+// $Id: TrkExtDiag.hh,v 1.3 2013/05/16 18:23:39 mjlee Exp $
 // $Author: mjlee $ 
-// $Date: 2013/04/02 01:36:11 $
+// $Date: 2013/05/16 18:23:39 $
 //
 // Class for reading TrkExt
 //
@@ -179,10 +179,11 @@ namespace mu2e
     float _simx[MAXNSIM], _simy[MAXNSIM], _simz[MAXNSIM], _simp0, _simt0;
     // mc - turn around point
     PositionInfo _simtp;
+    int _simtpqual;
     // mc - pa and st
     unsigned int _nmcpa, _nmcst;
-    float _mcpapx[MAXNPA], _mcpapy[MAXNPA], _mcpapz[MAXNPA], _mcpap[MAXNPA], _mcpadp[MAXNPA], _mcpaz[MAXNPA];
-    float _mcstpx[MAXNST], _mcstpy[MAXNST], _mcstpz[MAXNST], _mcstp[MAXNST], _mcstdp[MAXNST], _mcstx[MAXNPA], _mcsty[MAXNPA], _mcstz[MAXNPA], _mcstt[MAXNPA];
+    float _mcpapx[MAXNPA], _mcpapy[MAXNPA], _mcpapz[MAXNPA], _mcpap[MAXNPA], _mcpadp[MAXNPA], _mcpade[MAXNPA], _mcpadei[MAXNPA], _mcpadeni[MAXNPA], _mcpaz[MAXNPA];
+    float _mcstpx[MAXNST], _mcstpy[MAXNST], _mcstpz[MAXNST], _mcstp[MAXNST], _mcstdp[MAXNST], _mcstde[MAXNST], _mcstdei[MAXNST], _mcstdeni[MAXNST], _mcstx[MAXNPA], _mcsty[MAXNPA], _mcstz[MAXNPA], _mcstt[MAXNPA];
     // mc - vd
     VDHitInfo _vdsi;
     VDHitInfo _vdso;

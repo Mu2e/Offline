@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtMCHits.hh,v 1.3 2013/04/02 01:36:11 mjlee Exp $
+//  $Id: TrkExtMCHits.hh,v 1.4 2013/05/16 18:23:39 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2013/04/02 01:36:11 $
+//  $Date: 2013/05/16 18:23:39 $
 //
 //  Original author MyeongJae Lee
 //
@@ -38,6 +38,9 @@ namespace mu2e {
     CLHEP::Hep3Vector position (unsigned int clust) const ;
     double time (unsigned int clust) const;
     double deltap (unsigned int clust) const;
+    double eDep (unsigned int clust) const;
+    double ionizingEdep (unsigned int clust) const;
+    double nonIonizingEdep (unsigned int clust) const;
 
   private:
     double interpolate3 (double z, double x1, double x2, double x3, double y1, double y2, double y3) const; 

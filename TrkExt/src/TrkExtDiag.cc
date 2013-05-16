@@ -1,7 +1,7 @@
 //
-// $Id: TrkExtDiag.cc,v 1.3 2013/04/02 01:36:11 mjlee Exp $
+// $Id: TrkExtDiag.cc,v 1.4 2013/05/16 18:23:39 mjlee Exp $
 // $Author: mjlee $ 
-// $Date: 2013/04/02 01:36:11 $
+// $Date: 2013/05/16 18:23:39 $
 //
 // Functions for reading TrkExt
 //
@@ -97,6 +97,7 @@ namespace mu2e
     _extdiag->Branch ("simt0", &_simt0, "simt0/F");
     //mc - turn around point
     _extdiag->Branch ("simtp", &_simtp, "x/F:y:z");
+    _extdiag->Branch ("simtpqual", &_simtpqual, "simtpqual/I");
     //mc - pa and st
     _extdiag->Branch ("nmcpa", &_nmcpa, "nmcpa/i");
     _extdiag->Branch ("nmcst", &_nmcst, "nmcst/i");
@@ -105,16 +106,22 @@ namespace mu2e
     _extdiag->Branch ("mcpapz", _mcpapz, "mcpapz[nmcpa]/F");
     _extdiag->Branch ("mcpap", _mcpap, "mcpap[nmcpa]/F");
     _extdiag->Branch ("mcpadp", _mcpadp, "mcpadp[nmcpa]/F");
+    _extdiag->Branch ("mcpade", _mcpade, "mcpade[nmcpa]/F");
+    _extdiag->Branch ("mcpadei", _mcpadei, "mcpadei[nmcpa]/F");
+    _extdiag->Branch ("mcpadeni", _mcpadeni, "mcpadeni[nmcpa]/F");
     _extdiag->Branch ("mcpaz", _mcpaz, "mcpaz[nmcpa]/F");
     _extdiag->Branch ("mcstpx", _mcstpx, "mcstpx[nmcst]/F");
     _extdiag->Branch ("mcstpy", _mcstpy, "mcstpy[nmcst]/F");
     _extdiag->Branch ("mcstpz", _mcstpz, "mcstpz[nmcst]/F");
     _extdiag->Branch ("mcstp", _mcstp, "mcstp[nmcst]/F");
     _extdiag->Branch ("mcstdp", _mcstdp, "mcstdp[nmcst]/F");
-    _extdiag->Branch ("mcstx", _mcstx, "mcstx[nmcpa]/F");
-    _extdiag->Branch ("mcsty", _mcsty, "mcsty[nmcpa]/F");
-    _extdiag->Branch ("mcstz", _mcstz, "mcstz[nmcpa]/F");
-    _extdiag->Branch ("mcstt", _mcstt, "mcstt[nmcpa]/F");
+    _extdiag->Branch ("mcstde", _mcstde, "mcstde[nmcst]/F");
+    _extdiag->Branch ("mcstdei", _mcstdei, "mcstdei[nmcst]/F");
+    _extdiag->Branch ("mcstdeni", _mcstdeni, "mcstdeni[nmcst]/F");
+    _extdiag->Branch ("mcstx", _mcstx, "mcstx[nmcst]/F");
+    _extdiag->Branch ("mcsty", _mcsty, "mcsty[nmcst]/F");
+    _extdiag->Branch ("mcstz", _mcstz, "mcstz[nmcst]/F");
+    _extdiag->Branch ("mcstt", _mcstt, "mcstt[nmcst]/F");
     // mc - vd
     _extdiag->Branch ("vdsi", &_vdsi, "x[2]/F:y[2]/F:z[2]/F:px[2]/F:py[2]/F:pz[2]/F:p[2]/F:d0[2]/F:p0[2]/F:om[2]/F:z0[2]/F:td[2]/F:status/i");
     _extdiag->Branch ("vdso", &_vdso, "x[2]/F:y[2]/F:z[2]/F:px[2]/F:py[2]/F:pz[2]/F:p[2]/F:d0[2]/F:p0[2]/F:om[2]/F:z0[2]/F:td[2]/F:status/i");
@@ -409,6 +416,8 @@ namespace mu2e
     unsigned int i, j;
     bool readflag = false;
     unsigned int minsim = 0;
+    _simtp.z = 99999;
+    _simtpqual = -1;
     for (TrkHotList::hot_iterator iter = hot.begin() ; iter != hot.end() ; ++iter) {
       if (readflag) break;
       const TrkHitOnTrk * hit  = iter.get();
@@ -499,13 +508,25 @@ namespace mu2e
         _simy[i] = position.y();
         _simz[i] = position.z() + 1800;
       }
-      _simtp.z = 0;
+      _simtp.z = 99999;
+      _simtpqual = -1;
       
       for (i = 1 ; i < pvec.size()-1 ; ++i) {
         double z1 = pvec[i-1].z();
         double z2 = pvec[i].z();
         double z3 = pvec[i+1].z();
+        if (z2+1800.>0) break;
         if ((z3-z2)*(z1-z2)> 0) {
+          if (i>10 && i+10<pvec.size()) {
+            double z101 = pvec[i-10].z();
+            double z102 = pvec[i].z();
+            double z103 = pvec[i+10].z();
+            if ((z103-z102)*(z101-z102)> 0) _simtpqual = 3;
+            else _simtpqual = 2; 
+          }
+          else {
+            _simtpqual = 1;
+          }
           double ic = findTurnAroundSim (i, z1, z2, z3);
           if (ic>0) {
             double i1 = (double)((int)ic);
@@ -669,6 +690,9 @@ namespace mu2e
         _mcpap[i] = mom.mag();
         _mcpaz[i] = pos.z();
         _mcpadp[i] = mcpa.deltap(i);
+        _mcpade[i] = mcpa.eDep(i);
+        _mcpadei[i] = mcpa.ionizingEdep(i);
+        _mcpadeni[i] = mcpa.nonIonizingEdep(i);
       }
 
       // st
@@ -690,6 +714,9 @@ namespace mu2e
         _mcstz[i] = pos.z();
         _mcstt[i] = mcst.time(i);
         _mcstdp[i] = mcst.deltap(i);
+        _mcstde[i] = mcst.eDep(i);
+        _mcstdei[i] = mcst.ionizingEdep(i);
+        _mcstdeni[i] = mcst.nonIonizingEdep(i);
       }
 
     } // end of hot loop

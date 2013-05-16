@@ -1,8 +1,8 @@
 //
 //
-//  $Id: TrkExtMCHits.cc,v 1.2 2013/02/07 02:09:47 mjlee Exp $
+//  $Id: TrkExtMCHits.cc,v 1.3 2013/05/16 18:23:39 mjlee Exp $
 //  $Author: mjlee $
-//  $Date: 2013/02/07 02:09:47 $
+//  $Date: 2013/05/16 18:23:39 $
 //
 //  Original author MyeongJae Lee
 //
@@ -180,6 +180,33 @@ namespace mu2e {
   double TrkExtMCHits::deltap (unsigned int clust) const {
     const vector<StepPointMC> & cluster = _hitcol[clust];
     return fabs(cluster[0].momentum().mag() - cluster[cluster.size()-1].momentum().mag());
+  }
+
+  double TrkExtMCHits::eDep (unsigned int clust) const {
+    const vector<StepPointMC> & cluster = _hitcol[clust];
+    double eDep = 0;
+    for (unsigned int i = 0 ; i < cluster.size() ; ++i) {
+      eDep += cluster[i].eDep();
+    }
+    return eDep;
+  }
+
+  double TrkExtMCHits::ionizingEdep (unsigned int clust) const {
+    const vector<StepPointMC> & cluster = _hitcol[clust];
+    double eDep = 0;
+    for (unsigned int i = 0 ; i < cluster.size() ; ++i) {
+      eDep += cluster[i].ionizingEdep();
+    }
+    return eDep;
+  }
+
+  double TrkExtMCHits::nonIonizingEdep (unsigned int clust) const {
+    const vector<StepPointMC> & cluster = _hitcol[clust];
+    double eDep = 0;
+    for (unsigned int i = 0 ; i < cluster.size() ; ++i) {
+      eDep += cluster[i].nonIonizingEDep();
+    }
+    return eDep;
   }
 
   double TrkExtMCHits::interpolate3 (double z, double x1, double x2, double x3, double y1, double y2, double y3) const {
