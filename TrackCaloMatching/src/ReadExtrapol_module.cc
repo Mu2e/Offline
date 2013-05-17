@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadExtrapol_module.cc,v 1.10 2013/05/09 23:14:14 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Id: ReadExtrapol_module.cc,v 1.11 2013/05/17 22:17:58 murat Exp $
+// $Author: murat $
+// $Date: 2013/05/17 22:17:58 $
 //
 // Original author G. Pezzullo
 //
@@ -720,7 +720,8 @@ namespace mu2e {
     }
 
     // fill the map of MC tracks
-    double tollCaloHits = cg->crystalHalfTrans()*15.0;
+    // -r 1.10:    double tollCaloHits = cg->crystalHalfTrans()*15.0;
+    double tollCaloHits = cg->crystalHalfSize()*15.0;
 
     for(size_t i=0; i<caloCrystalHits->size(); ++i){
       elecData tmpElec;
@@ -878,7 +879,8 @@ namespace mu2e {
     }
 
     unsigned int tmpVane = 0, tmpTrkId = 0;
-    double toll = 4.0*cg->crystalHalfTrans();
+    // -r 1.10:    double toll = 4.0*cg->crystalHalfTrans();
+    double toll = 4.0*cg->crystalHalfSize();
     if(_diagLevel>2){
       cout<<"caloMap.size() = "<<caloMap.size()<<endl;
     }

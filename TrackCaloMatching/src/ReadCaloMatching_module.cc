@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.10 2013/05/09 23:14:14 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Id: ReadCaloMatching_module.cc,v 1.11 2013/05/17 22:17:58 murat Exp $
+// $Author: murat $
+// $Date: 2013/05/17 22:17:58 $
 //
 // Original author G. Pezzullo
 //
@@ -362,17 +362,19 @@ private:
 	_recoEntrPathLenght,
 	  _recoTrkEntrPpx,  
 	  _recoTrkEntrPpy,  
-	  _recoTrkEntrPpz,  
+	  _recoTrkEntrPpz, 
 	  _recoTrkEntrPx,  
 	  _recoTrkEntrPy,  
-	  _recoTrkEntrPz,  
+	  _recoTrkEntrPz, 
 	  _recoTrkExitPpx,  
 	  _recoTrkExitPpy,  
 	  _recoTrkExitPpz,  
 	  _recoTrkExitPx,  
 	  _recoTrkExitPy,  
 	  _recoTrkExitPz,  
-
+	  _recoTrk0FlightPx,  
+	  _recoTrk0FlightPy,  
+	  _recoTrk0FlightPz,
         _pseudoChiSquare,
         _timeChiSquare,
         _energyChiSquare,
@@ -598,7 +600,10 @@ void ReadCaloMatching::analyze(art::Event const& evt ) {
 		_Ntup->Branch("recoTrkExitPx", &_recoTrkExitPx , "recoTrkExitPx/F");
 		_Ntup->Branch("recoTrkExitPy", &_recoTrkExitPy , "recoTrkExitPy/F");
 		_Ntup->Branch("recoTrkExitPz", &_recoTrkExitPz , "recoTrkExitPz/F");
-
+		_Ntup->Branch("recoTrk0FlightPx", &_recoTrk0FlightPx , "recoTrk0FlightPx/F");
+		_Ntup->Branch("recoTrk0FlightPy", &_recoTrk0FlightPy , "recoTrk0FlightPy/F");
+		_Ntup->Branch("recoTrk0FlightPz", &_recoTrk0FlightPz , "recoTrk0FlightPz/F");
+		
                 _Ntup->Branch("pseudoChiSquare",  &_pseudoChiSquare , "pseudoChiSquare/F");
                 _Ntup->Branch("timeChiSquare",    &_timeChiSquare , "timeChiSquare/F");
                 _Ntup->Branch("energyChiSquare",  &_energyChiSquare , "energyChiSquare/F");
@@ -874,7 +879,11 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
                 }
 
         }
-        double tollCaloHits = cg->crystalHalfTrans()*15.0;
+//-----------------------------------------------------------------------------
+// 2013-05-17 P.Murat: commented the -r 1.10 line , uncomment it in the near future
+//-----------------------------------------------------------------------------
+	//        double tollCaloHits = cg->crystalHalfTrans()*15.0;
+        double tollCaloHits = cg->crystalHalfSize()*15.0;
 
         for(size_t i =0; i<trjCaloMatchings->size(); ++i){
 
@@ -1348,7 +1357,11 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
 		_recoTrkExitPx = trk->position(fltlen).x();
 		_recoTrkExitPy = trk->position(fltlen).y();
 		_recoTrkExitPz = trk->position(fltlen).z();
-		
+
+		_recoTrk0FlightPx = trk->position(0.0).x();
+		_recoTrk0FlightPy = trk->position(0.0).y();
+		_recoTrk0FlightPz = trk->position(0.0).z();
+
 		_recoT0TrkExit = trk->arrivalTime(fltlen);
 		_recoT0TrkExitErr = trk->t0().t0Err();
 		

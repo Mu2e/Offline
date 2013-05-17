@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.10 2013/03/28 05:25:49 murat Exp $
+// $Id: TrkExtrapol_module.cc,v 1.11 2013/05/17 22:17:58 murat Exp $
 // $Author: murat $
-// $Date: 2013/03/28 05:25:49 $
+// $Date: 2013/05/17 22:17:58 $
 //
 // Original author G. Pezzullo
 //
@@ -123,6 +123,7 @@ public:
 	_fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
         _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC")),
         _diagLevel(pset.get<int>("diagLevel",0)),
+        _outPutNtup(pset.get<int>("outPutNtup",0)),
         _maxNumberStoresPoints(pset.get<int>("maxNumberStoresPoints",2)),
         _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
         _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
@@ -145,9 +146,7 @@ public:
                         delete CaloVanes;
                 }
         }
-        void beginJob(){
-
-        }
+  void beginJob();
         void endJob() {}
 
         void produce(art::Event & e );
@@ -169,7 +168,7 @@ private:
 
         // Diagnostic level
         int _diagLevel;
-
+  int _outPutNtup;
         int _maxNumberStoresPoints;
 
         // Label of the generator.
@@ -198,9 +197,67 @@ private:
         bool _firstEvent;
 
         TTree* _trkdiag;
+  
+  Int_t _trkid
+    ,_trkint;
+  Float_t _trksection[1000]
+    , _trkpath[1000]
+    , _trktof[1000]
+    , _trkx[1000]
+    , _trky[1000]
+    , _trkz[1000]
+    , _trkmomx[1000]
+    , _trkmomy[1000]
+    , _trkmomz[1000]
+    , _trkmom[1000];
 
+
+    
+  void filltrkdiag(int itrk, Calorimeter4VanesGeom::IntersectData_t *intersec, int size, KalRep const* kalrep);
 
 };
+
+  void TrkExtrapol::beginJob(){
+    if (_outPutNtup == 1) {
+
+        art::ServiceHandle<art::TFileService> tfs;
+        _trkdiag       = tfs->make<TTree>("trk", "trk extrapolated info");
+	_trkdiag->Branch("trkid", &_trkid  ,"trkid/I");
+	_trkdiag->Branch("trkint", &_trkint  ,"trkint/I");
+	_trkdiag->Branch("trksection[trkint]", _trksection, "trksection[trkint]/F");
+	_trkdiag->Branch("trkpath[trkint]", _trkpath, "trkpath[trkint]/F");
+	_trkdiag->Branch("trktof[trkint]", _trktof, "trktof[trkint]/F");
+	_trkdiag->Branch("trkx[trkint]", _trkx, "trkx[trkint]/F");
+	_trkdiag->Branch("trky[trkint]", _trky, "trky[trkint]/F");
+	_trkdiag->Branch("trkz[trkint]", _trkz, "trkz[trkint]/F");
+	_trkdiag->Branch("trkmomx[trkint]", _trkmomx, "trkmomx[trkint]/F");
+	_trkdiag->Branch("trkmomy[trkint]", _trkmomy, "trkmomy[trkint]/F");
+	_trkdiag->Branch("trkmomz[trkint]", _trkmomz, "trkmomz[trkint]/F");
+	_trkdiag->Branch("trkmom[trkint]", _trkmom, "trkmom[trkint]/F");
+    }
+  }
+
+  void TrkExtrapol::filltrkdiag(int itrk, Calorimeter4VanesGeom::IntersectData_t *intersec, int size, KalRep const* kalrep){
+    _trkid = itrk;
+    double lenght(0.0);    
+    _trkint = size;
+    TrkDifTraj const &traj = kalrep->traj();
+    for(int i=0; i<size; ++i){
+      _trksection[i] = intersec[i].fVane;
+      lenght = intersec[i].fSEntr;
+      _trkpath[i] = lenght;
+      _trktof[i] =  kalrep->arrivalTime(lenght);
+      _trkx[i] = traj.position(lenght).x();
+      _trky[i] = traj.position(lenght).y();
+      _trkz[i] = traj.position(lenght).z();
+      _trkmomx[i] = kalrep->momentum(lenght).x();
+      _trkmomy[i] = kalrep->momentum(lenght).y();
+      _trkmomz[i] = kalrep->momentum(lenght).z();
+      _trkmom[i]  = kalrep->momentum(lenght).mag();
+      
+    }
+    _trkdiag->Fill();
+  }
 
 void TrkExtrapol::produce(art::Event & evt ) {
         if(_firstEvent){
@@ -228,8 +285,6 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
   
   //Get handle to calorimeter
   art::ServiceHandle<GeometryService> geom;
-  if(! geom->hasElement<VaneCalorimeter>() ) return;
-  GeomHandle<VaneCalorimeter> cg;
 
   Calorimeter4VanesGeom *CaloVanes = new Calorimeter4VanesGeom();
 
@@ -303,6 +358,10 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
       printf("%s ERROR: intersection not found, res0 = %i\n",oname,res0);
     }
 
+    if(_outPutNtup ==1){
+      filltrkdiag(int(itrk), intersection, nint, trep);
+    }
+    
     for (int i=0; i<nint; i++) {
       KalRepPtr tmpRecTrk(trksHandle,itrk);
       tmpExtrapolatedTracks.push_back(
