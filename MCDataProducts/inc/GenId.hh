@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.11 2012/08/14 19:56:19 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/14 19:56:19 $
+// $Id: GenId.hh,v 1.12 2013/05/17 19:35:01 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/05/17 19:35:01 $
 //
 // Original author Rob Kutschke
 //
@@ -41,7 +41,7 @@ namespace mu2e {
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi,
       ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC,
       extMonFNALGun, dioE5, fromStepPointMCs, stoppedMuonGun, PiCaptureCombined,
-      MARS,
+      MARS, dioPolAl, dioPolTi, 
       lastEnum
     };
 
@@ -54,7 +54,7 @@ namespace mu2e {
       "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi", \
       "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "internalRPC", \
       "extMonFNALGun", "dioE5", "fromStepPointMCs", "stoppedMuonGun", "PiCaptureCombined", \
-      "MARS"
+      "MARS", "dioPolAl", "dioPolTi"
   public:
 
     // The most important c'tor and accessor methods are first.
@@ -101,7 +101,8 @@ namespace mu2e {
     }
 
     bool isDio() {
-      return (_id == dioCzarnecki || _id == dioShankerWanatabe || _id == dioFlat || _id == dioE5 );
+      return (_id == dioCzarnecki || _id == dioShankerWanatabe || _id == dioFlat  || 
+              _id == dioE5        || _id == dioPolAl           || _id == dioPolTi );
     }
 
     // Accessor for the version.

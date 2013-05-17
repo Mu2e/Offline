@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.29 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: DecayInOrbitGun.hh,v 1.30 2013/05/17 19:35:01 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/05/17 19:35:01 $
 //
 //
 
@@ -57,6 +57,7 @@ namespace mu2e {
     double _elow;
     double _ehi;
     int    _nbins;
+    double _convEnergy;
 
     // Class object to generate position and time of the particle
     std::unique_ptr<FoilParticleGenerator> _fGenerator;
@@ -97,6 +98,9 @@ namespace mu2e {
 
     // Kind of spectrum to be used
     std::string _energySpectrum;
+
+    // Czarnecki parameters
+    const std::vector<double>* _coeff;
 
     // End: parameters that can be configured from the config file.
 

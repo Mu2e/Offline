@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.53 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: DecayInOrbitGun.cc,v 1.54 2013/05/17 19:35:01 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/05/17 19:35:01 $
 //
 // Original author Rob Kutschke
 //
@@ -38,7 +38,16 @@ namespace mu2e {
   // Need a Conditions entity to hold info about conversions:
   // endpoints and lifetimes for different materials etc
   // Grab them from Andrew's minimc package?
-  static const double conversionEnergyAluminum = 104.96;
+
+  // Set constants
+  
+  static const double conversionEnergyAluminum = 104.973;
+  static const double conversionEnergyTitanium = 104.173;
+
+  // Czarnecki coefficients for poly5-8 approximation, valid in region 85 MeV < E_e < endpoint
+  static const vector<double> coeffDef = {1.};
+  static const vector<double> coeffAl  = {8.64340e-17, 1.16874e-17, -1.87828e-19, 9.16327e-20};
+  static const vector<double> coeffTi  = {4.44278e-16, 9.06648e-17, -4.26245e-18, 8.19300e-19};
 
   DecayInOrbitGun::DecayInOrbitGun( art::Run& run, const SimpleConfig& config ):
 
@@ -84,7 +93,6 @@ namespace mu2e {
     _hmudelay(),
     _hpulsedelay()  {
 
-
     //pick up particle mass
     GlobalConstantsHandle<ParticleDataTable> pdt;
     const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
@@ -117,7 +125,6 @@ namespace mu2e {
         << '\n';
     }
 
-
     if (_energySpectrum == "Czarnecki" ) {
       _dioGenId = GenId::dioCzarnecki;
     } else if (_energySpectrum == "ShankerWanatabe" ) {
@@ -125,12 +132,16 @@ namespace mu2e {
     } else  if (_energySpectrum == "flat" ) {
       _dioGenId = GenId::dioFlat;
     } else if (_energySpectrum == "simple" ) {
-      _dioGenId = GenId::dioE5;
-    } else {
+      _dioGenId   = GenId::dioE5;
+    } else if (_energySpectrum == "simplePolAl" ) {
+      _dioGenId   = GenId::dioPolAl;
+    } else if (_energySpectrum == "simplePolTi" ) {
+      _dioGenId   = GenId::dioPolTi;
+    }
+    else {
       throw cet::exception("CONFIG")
         << "Energy spectrum for DIO not allowed\n";
     }
-
 
     // About the ConditionsService:
     // The argument to the constructor is ignored for now.  It will be a
@@ -202,7 +213,9 @@ namespace mu2e {
         e = _randEnergy->fire();
       } else if ( _dioGenId == GenId::dioShankerWanatabe) {
         e = _randEnergy->fire();
-      } else if ( _dioGenId ==  GenId::dioE5 ) {
+      } else if ( _dioGenId ==  GenId::dioE5    || 
+                  _dioGenId ==  GenId::dioPolAl || 
+                  _dioGenId ==  GenId::dioPolTi ) {
         e = _elow + _randSimpleEnergy.fire() * (_ehi - _elow);
       } else if ( _dioGenId == GenId::dioFlat ) {
         e = _randFlatEnergy.fire();
@@ -238,7 +251,13 @@ namespace mu2e {
   // Input energy in MeV
   double DecayInOrbitGun::energySpectrum( double e )
   {
-    return cet::pow<5>(conversionEnergyAluminum - e) ;
+    double p     = 0.;
+    double power = cet::pow<5>(_convEnergy - e);
+    for ( size_t i=0; i < _coeff->size() ; i++ ) {
+      for ( size_t p=0 ; p < i ; p++ ) power *= (_convEnergy-e); 
+      p += _coeff->at(i)*power;
+    }
+    return p;
   }
 
 
@@ -262,6 +281,24 @@ namespace mu2e {
     // Vector to hold the binned representation of the energy spectrum.
     std::vector<double> spectrum;
     spectrum.reserve(_nbins);
+
+    // Set Czarnecki coefficients
+    if        (_energySpectrum == "simplePolAl" ) {
+      _convEnergy = conversionEnergyAluminum; 
+      _coeff      = &coeffAl;
+    } else if (_energySpectrum == "simplePolTi" ) {
+      _convEnergy = conversionEnergyTitanium; 
+      _coeff      = &coeffTi;
+    } else {
+      _convEnergy = conversionEnergyAluminum;
+      _coeff      = &coeffDef;
+    }
+
+    if ( !_coeff ) {
+      throw cet::exception("RANGE")
+        << "Czarnecki coefficients not set!" 
+        << endl;
+    }
 
     for (int ib=0; ib<_nbins; ib++) {
       double x = _elow+(ib+0.5) * dE;
