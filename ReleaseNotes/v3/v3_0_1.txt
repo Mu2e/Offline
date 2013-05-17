@@ -1,11 +1,14 @@
-  $Id: v3_0_1.txt,v 1.32 2013/05/17 19:37:12 knoepfel Exp $
-  $Author: knoepfel $
-  $Date: 2013/05/17 19:37:12 $
+  $Id: v3_0_1.txt,v 1.33 2013/05/17 22:40:55 brownd Exp $
+  $Author: brownd $
+  $Date: 2013/05/17 22:40:55 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
 
+33) May 17 2013, brownd
+    updated default background mixing rates in standardProducers.fcl to
+    correspond to corrected numbers in doc 2351
 32) May 17, 2013, knoepfel
     Added 5th-8th order polynomial approximation for Czarnecki DIO
     spectrum.  Only valid for 85 Mev < E_e < endpoint.  Also updated
