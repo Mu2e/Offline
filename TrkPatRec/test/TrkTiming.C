@@ -4,7 +4,7 @@
   names.push_back("MakeStereoHits");
   names.push_back("FlagStrawHits");
   names.push_back("FlagBkgHits");
-  names.push_back("TrkPatRec");
+  names.push_back("TPRDownstreameMinus");
   Timing(names);
 }
 
