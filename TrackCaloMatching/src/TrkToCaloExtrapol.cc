@@ -1,7 +1,7 @@
 //
-// $Id: TrkToCaloExtrapol.cc,v 1.7 2013/05/17 22:17:58 murat Exp $
+// $Id: TrkToCaloExtrapol.cc,v 1.8 2013/05/18 00:23:25 murat Exp $
 // $Author: murat $
-// $Date: 2013/05/17 22:17:58 $
+// $Date: 2013/05/18 00:23:25 $
 //
 // Original author G. Pezzullo
 //
@@ -43,7 +43,7 @@ namespace mu2e {
   }
 
   double TrkToCaloExtrapol::time() const{
-    return (*_trk.get())->arrialTime(_pathLengthEntrance);
+    return (*_trk.get())->arrivalTime(_pathLengthEntrance);
   }
 
   double   TrkToCaloExtrapol::timeErr() const{//FIXME

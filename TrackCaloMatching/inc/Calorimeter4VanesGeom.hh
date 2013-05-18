@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.9 2013/05/09 23:14:14 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Id: Calorimeter4VanesGeom.hh,v 1.10 2013/05/18 00:23:25 murat Exp $
+// $Author: murat $
+// $Date: 2013/05/18 00:23:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -58,6 +58,7 @@
 
 //calorimeter includes
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -168,6 +169,8 @@ public :
         double ZbackFaceCalo() const{ return _ZbackFaceCalo;}
 
         CaloVolumeElem* vane(int& i);//{
+
+  CLHEP::Hep3Vector fromTrkToMu2eFrame(CLHEP::Hep3Vector  &vec);
 
         bool behindVane(double& posX, double& posY, int& vane);//{
 
