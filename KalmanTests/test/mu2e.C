@@ -16,6 +16,7 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
+#include "TMath.h"
 
 // the following approximation is from Czarnecki etal, 'Muon decay in orbit:spectrum of high-energy electrons',
 // for E>85 MeV
@@ -803,6 +804,8 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
   if(npave > 0)
     ncans = ceil(float(nexp)/npave);
   std::vector<TCanvas*> cans(ncans,0);
+  double avgbkg(0.4);
+  double plevel(3e-7); // 5 sigma
 
 // override GRandom
   gRandom = new TRandom3(nexp*nexp*7+13);
@@ -852,6 +855,7 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
 
   char etitle[100];
   snprintf(etitle,100,"Toy Mu2e Experiment;Momentum (MeV/c);Events/%3.3f MeV/c",mevperbin);
+  int npass(0);
   for(unsigned iexp=0;iexp<nexp;++iexp){
     snprintf(conname,50,"conexp%i",iexp);
     TH1F* conexp_h = new TH1F(conname,etitle,_nbins,_mmin,_mmax);
@@ -913,6 +917,9 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
     double dint = dioexp_h->Integral(istart,istop);
     double cint = conexp_h->Integral(istart,istop);
     double fint = flatexp_h->Integral(istart,istop);
+    double tint = dint+cint+fint;
+    double bkgprob = TMath::PoissonI(tint,avgbkg);
+    if(bkgprob < plevel)++npass;
 
     double shift = ff->GetParameter(5);
     double scale = ff->GetParameter(6);
@@ -1006,4 +1013,6 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
   expcan2->cd(4);
   diofparams->Draw();
 
+  double passfrac = float(npass)/float(nexp);
+  cout << "Pass prob cut " << passfrac << endl;
 }
