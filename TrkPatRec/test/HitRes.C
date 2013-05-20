@@ -5,8 +5,8 @@
 
 
 void HitRes(TTree* shdiag) {
-  TCut stereo("stereo");
-  TCut nstereo("!stereo");
+  TCut stereo("stereo&&mcproc<20");
+  TCut nstereo("(!stereo)&&mcproc<20");
   TH1F* sdp = new TH1F("sdp","Stereo #Delta#phi;#phi_{sh}-#phi_{MC}",100,-0.1,0.1);
   TH1F* ndp = new TH1F("ndp","Non-stereo #Delta#phi;#phi_{sh}-#phi_{MC}",100,-0.4,0.4);
   TH1F* sdrp = new TH1F("sdrp","Stereo #Delta#rho#phi;#rho#phi_{sh}-#rho#phi_{MC}",100,-80.0,80.0);
