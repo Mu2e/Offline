@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.12 2013/05/21 15:38:29 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/05/21 15:38:29 $
+// $Id: TrkExtrapol_module.cc,v 1.13 2013/05/21 21:43:25 murat Exp $
+// $Author: murat $
+// $Date: 2013/05/21 21:43:25 $
 //
 // Original author G. Pezzullo
 //
@@ -324,8 +324,13 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
     zmin = CaloVanes->ZfrontFaceCalo()-10.;
     zmax = CaloVanes->ZbackFaceCalo ()+10.;
     
-    lowrange  = trkHel.zFlight(zmin);  /*1740*/
-    highrange = trkHel.zFlight(zmax); /*3500*/ 
+    if(_fdir.dzdt() == 1.0){
+      lowrange  = trkHel.zFlight(zmin);  /*1740*/
+      highrange = trkHel.zFlight(zmax); /*3500*/ 
+    }else if(_fdir.dzdt() == -1.0 ){
+      lowrange  = trkHel.zFlight(zmax); 
+      highrange = trkHel.zFlight(zmin);
+    }
     
     if (_diagLevel>2) {
       
@@ -348,7 +353,7 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
     int                                     nint(0);
 
     CaloVanes->caloExtrapol(_diagLevel, (int)evt.event(), 
-			    trep, lowrange, highrange, 
+			    _fdir, trep, lowrange, highrange, 
 			    trkHel,  
 			    res0, 
 			    nint,

@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.cc,v 1.8 2013/05/21 16:22:50 murat Exp $
+// $Id: Calorimeter4VanesGeom.cc,v 1.9 2013/05/21 21:43:25 murat Exp $
 // $Author: murat $
-// $Date: 2013/05/21 16:22:50 $
+// $Date: 2013/05/21 21:43:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -213,12 +213,12 @@ namespace mu2e {
     art::ServiceHandle<GeometryService> geom;
     double solenoidOffSetX = geom->config().getDouble("mu2e.solenoidOffset");
     double solenoidOffSetZ = -geom->config().getDouble("mu2e.detectorSystemZ0");
-        CLHEP::Hep3Vector res;
-	
-        res.setX(vec.x() - solenoidOffSetX);
-        res.setZ(vec.z() - solenoidOffSetZ);
-        res.setY(vec.y());
-        return res;
+    CLHEP::Hep3Vector res;
+    
+    res.setX(vec.x() - solenoidOffSetX);
+    res.setZ(vec.z() - solenoidOffSetZ);
+    res.setY(vec.y());
+    return res;
   }
   
   bool Calorimeter4VanesGeom::behindVane(double& posX, double& posY, int& vane){
@@ -268,6 +268,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void Calorimeter4VanesGeom::caloExtrapol(int&             diagLevel,
 					   int              evtNumber, 
+					   TrkFitDirection  fdir,
 					   TrkRep const*    trep,
 					   double&          lowrange, 
 					   double&          highrange,
@@ -313,6 +314,7 @@ namespace mu2e {
 
     double circleRadius = 0.0;//, centerCircleX=0.0, centerCircleY = 0.0, angle = 0.0;
     double startLowrange = lowrange;//, startHighrange = highrange;
+    if(fdir.dzdt() == -1.0) startLowrange = highrange;
     circleRadius = 1.0/trkHel.omega();
 
     const int nVanes = _nVanes;
@@ -343,14 +345,24 @@ namespace mu2e {
     CLHEP::Hep3Vector trjVec;
     HepPoint trjPoint;
     if(geom->hasElement<VaneCalorimeter>()){
+      GeomHandle<VaneCalorimeter> cg;// 05 - 21 - 2013 gianipez
       for(int iStep = 0; iStep< nAngleSteps; ++iStep){
 	for(int jVane=0; jVane<nVanes; ++jVane){
-	  if(diagLevel>4){
-	    cout<<" tmpRange = "<< tmpRange<<
-	      "trj.position(tmpRange) = "<<traj.position(tmpRange)<<endl;
+	  // if(diagLevel>4){
+// 	    cout<<" tmpRange = "<< tmpRange<<
+// 	      ", trj.position(tmpRange) = "<<traj.position(tmpRange)<<endl;
+// 	  }
+	  trjPoint = traj.position(tmpRange);
+	  trjVec.setX(trjPoint.x());// 05 - 21 - 2013 gianipez
+	  trjVec.setY(trjPoint.y());// 05 - 21 - 2013 gianipez
+	  trjVec.setZ(trjPoint.z());// 05 - 21 - 2013 gianipez
+
+	  trjVec = fromTrkToMu2eFrame(trjVec);// 05 - 21 - 2013 gianipez
+	  if(diagLevel > 4){
+	    printf("\nrange = %10.3f\n trj.position(%10.3f, %10.3f, %10.3f)\n"
+		    , tmpRange, trjVec.x(), trjVec.y(), trjVec.z() );
 	  }
-	
-	  if(behindVane(traj.position(tmpRange), jVane) ){
+	  if( cg->isInsideVane(jVane,trjVec ) ){// if(behindVane(traj.position(tmpRange), jVane) ){
 	    if(!isInside[jVane]){
 	      if(diagLevel>4){
 		cout<<"Event Number : "<< evtNumber<< endl;
@@ -359,11 +371,19 @@ namespace mu2e {
 		  "pathLength entrance = "<<tmpRange<<endl;
 	      }
 	      isInside[jVane] = true;
-	      entr[jVane] = tmpRange - pathStepSize;
-
+	      if(fdir.dzdt() == 1.0){
+		entr[jVane] = tmpRange - pathStepSize;
+	      }else if(fdir.dzdt() == -1.0){
+		entr[jVane] = tmpRange + pathStepSize;
+	      }
 	    }
 	  }else if(isInside[jVane]){
-	    ex[jVane] = tmpRange + pathStepSize;
+	    if(fdir.dzdt() == 1.0){
+	      ex[jVane] = tmpRange + pathStepSize;
+	    }else if(fdir.dzdt() == -1.0){
+	      ex[jVane] = tmpRange - pathStepSize;
+	    }
+	    
 	    if(diagLevel>4){
 	      cout<<"Event Number : "<< evtNumber<< endl;
 	      cout<<" vane "<<jVane<<
@@ -386,7 +406,11 @@ namespace mu2e {
 	    }
 	  }
 	}
-	tmpRange += pathStepSize;
+	if(fdir.dzdt() == 1.0){
+	  tmpRange += pathStepSize;
+	}else if(fdir.dzdt() == -1.0){
+	  tmpRange -= pathStepSize;
+	}
       }
     }else if(geom->hasElement<DiskCalorimeter>()){
 
@@ -396,7 +420,7 @@ namespace mu2e {
 	  trjPoint = traj.position(tmpRange);
 	  if(diagLevel>4){
 	    cout<<" tmpRange = "<< tmpRange<<
-	      "trj.position(tmpRange) = "<<trjPoint<<endl;
+	      ", trj.position(tmpRange) = "<<trjPoint<<endl;
 	  }
 	  
 	  trjVec.setX(trjPoint.x());
@@ -414,8 +438,11 @@ namespace mu2e {
 		  "pathLength entrance = "<<tmpRange<<endl;
 	      }
 	      isInside[jVane] = true;
-	      entr[jVane] = tmpRange - pathStepSize;
-
+	      if(fdir.dzdt() == 1.0){
+		entr[jVane] = tmpRange - pathStepSize;
+	      }else if(fdir.dzdt() == -1.0){
+		entr[jVane] = tmpRange + pathStepSize;
+	      }
 	    }
 	  }else if(isInside[jVane]){
 	    ex[jVane] = tmpRange + pathStepSize;
@@ -440,8 +467,12 @@ namespace mu2e {
 	      printf("%s ERROR: NIntersections > 100, TRUNCATE LIST\n",oname);
 	    }
 	  }
+	} 
+	if(fdir.dzdt() == 1.0){
+	  tmpRange += pathStepSize;
+	}else if(fdir.dzdt() == -1.0){
+	  tmpRange -= pathStepSize;
 	}
-	tmpRange += pathStepSize;
       }
     }
 

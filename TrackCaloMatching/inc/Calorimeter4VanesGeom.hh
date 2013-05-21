@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.12 2013/05/21 16:22:50 murat Exp $
+// $Id: Calorimeter4VanesGeom.hh,v 1.13 2013/05/21 21:43:25 murat Exp $
 // $Author: murat $
-// $Date: 2013/05/21 16:22:50 $
+// $Date: 2013/05/21 21:43:25 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -39,6 +39,7 @@
 //tracker includes
 #include "TrkBase/TrkRep.hh"
 #include "KalmanTrack/KalRep.hh"
+#include "KalmanTests/inc/TrkFitDirection.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -157,7 +158,8 @@ public :
         bool behindVane(HepPoint pos, int& vane);//{
 
         void caloExtrapol(int&          diagLevel,
-			  int           evtNumber, 
+			  int           evtNumber,
+			  TrkFitDirection  fdir,
 			  TrkRep const* trep,
 			  double&       lowrange, 
 			  double&       highrange,

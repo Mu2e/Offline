@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.15 2013/05/21 15:38:29 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/05/21 15:38:29 $
+// $Id: CaloMatching_module.cc,v 1.16 2013/05/21 21:43:25 murat Exp $
+// $Author: murat $
+// $Date: 2013/05/21 21:43:25 $
 //
 // Original author G. Pezzullo
 //
@@ -379,11 +379,21 @@ namespace mu2e {
       _Ntup->Branch("recoThetaWErr", &_recoThetaWErr , "recoThetaWErr/F");
       _Ntup->Branch("recoThetaVErr", &_recoThetaVErr , "recoThetaVErr/F");
 
-      _Ntup->Branch("pseudoChiSquare[clCandidates]",  _pseudoChiSquare , "pseudoChiSquare[clCandidates]/F");
-      _Ntup->Branch("timeChiSquare[clCandidates]", _timeChiSquare , "timeChiSquare[clCandidates]/F");
-      _Ntup->Branch("energyChiSquare[clCandidates]", _energyChiSquare , "energyChiSquare[clCandidates]/F");
-      _Ntup->Branch("posVChiSquare[clCandidates]", _posVChiSquare , "posVChiSquare[clCandidates]/F");
-      _Ntup->Branch("posWChiSquare[clCandidates]", _posWChiSquare , "posWChiSquare[clCandidates]/F");
+      _Ntup->Branch("pseudoChiSquare[clCandidates]",
+		    _pseudoChiSquare ,
+		    "pseudoChiSquare[clCandidates]/F");
+      _Ntup->Branch("timeChiSquare[clCandidates]", 
+		    _timeChiSquare ,
+		    "timeChiSquare[clCandidates]/F");
+      _Ntup->Branch("energyChiSquare[clCandidates]", 
+		    _energyChiSquare , 
+		    "energyChiSquare[clCandidates]/F");
+      _Ntup->Branch("posVChiSquare[clCandidates]", 
+		    _posVChiSquare ,
+		    "posVChiSquare[clCandidates]/F");
+      _Ntup->Branch("posWChiSquare[clCandidates]",
+		    _posWChiSquare , 
+		    "posWChiSquare[clCandidates]/F");
     }
   }
 
@@ -510,6 +520,12 @@ namespace mu2e {
       }
     }
 
+//-----------------------------------------------------------------------------
+// 05 - 21 - 2013  gianipez
+// for the moemnt we want to study the matching with the first intersection,
+// so I fixed nex=1
+//-----------------------------------------------------------------------------
+    if(nex>0)    nex=1;
     for (int jex=0; jex<nex; jex++) {
       extrk = &trjExtrapols->at(jex);
       krep  = *extrk->trk();
