@@ -1,14 +1,19 @@
-  $Id: v3_0_1.txt,v 1.33 2013/05/17 22:40:55 brownd Exp $
-  $Author: brownd $
-  $Date: 2013/05/17 22:40:55 $
+  $Id: v3_0_1.txt,v 1.34 2013/05/21 19:10:07 knoepfel Exp $
+  $Author: knoepfel $
+  $Date: 2013/05/21 19:10:07 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
 
+33) May 21, 2013, knoepfel
+    Updated construcTS.cc and geom_01.txt to allow switch 
+    for whether uniform disk or wedge is used for pbar window.
+
 33) May 17 2013, brownd
     updated default background mixing rates in standardProducers.fcl to
     correspond to corrected numbers in doc 2351
+
 32) May 17, 2013, knoepfel
     Added 5th-8th order polynomial approximation for Czarnecki DIO
     spectrum.  Only valid for 85 Mev < E_e < endpoint.  Also updated

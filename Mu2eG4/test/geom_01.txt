@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.181 2013/05/09 23:14:14 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Id: geom_01.txt,v 1.182 2013/05/21 19:10:07 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/05/21 19:10:07 $
 //
 // Original author Rob Kutschke
 //
@@ -219,13 +219,10 @@ bool   toyTS.visible        = true;
 bool   toyTS.solid          = false;
 
 // PBAR Absorber
-
-//double pbar.halfLength = 60.0e-3; // Use this value for the new default
-double pbar.halfLength = 180.0e-3;
+// double pbar.Type = "wedge"; // default is "disk"
+double pbar.halfLength = 180.0e-3; // Use this value for the new default
 string pbar.materialName = "G4_Be";
 
-bool pbarwedge.build = false; 
-//bool pbarwedge.build = true; // Use this for the new default
 double pbarwedge.y0  = -10.;
 double pbarwedge.y1  = 239.; // Do not exceed toyTS.rVac
 double pbarwedge.dz0 = 0.001;// G4 does not like 0
