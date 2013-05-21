@@ -1,29 +1,29 @@
 #
-# $Id: readCaloMatching.fcl,v 1.1 2012/07/10 00:02:19 gianipez Exp $
+# $Id: readCaloMatching.fcl,v 1.2 2013/05/21 15:38:29 gianipez Exp $
 # $Author: gianipez $
-# $Date: 2012/07/10 00:02:19 $
+# $Date: 2013/05/21 15:38:29 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
 # Give this job a name.
-process_name : readCaloMatching
+process_name : DiskCaloMatching
 
 # Start form an empty source
 source :
 {
  module_type : EmptyEvent
- # module_type: RootInput  
-  maxEvents : -1
-  #fileNames :  ["BkgInput.root"]
+  module_type: RootInput  
+ # maxEvents : -1
+  fileNames :  ["BkgInput.root"]
 }
 
 services :
 {
   message : @local::default_message
 
-  TFileService : { fileName : "readCaloMatching.root" }
+  TFileService : { fileName : "readCaloMatching_disk_test.root" }
 
   RandomNumberGenerator : { }
 
@@ -55,7 +55,11 @@ physics :
 
     # Form StrawHits (SH).
     makeSH : @local::makeSH
-
+    
+    MakeStereoHits : @local::MakeStereoHits
+    FlagStrawHits  : @local::FlagStrawHits
+    FlagBkgHits    : @local::FlagBkgHits
+    
     # test module for Kalman fit: the 
     
     # Form CaloHits (APD hits)
@@ -69,7 +73,7 @@ physics :
   makeCaloCluster:
     {
       module_type            : MakeCaloCluster
-      diagLevel              : 1
+      diagLevel              : 0
      generatorModuleLabel   : generate
      caloCrystalModuleLabel  : CaloCrystalHitsMaker
      g4ModuleLabel          : g4run
@@ -85,7 +89,9 @@ physics :
     }
       TrkExtrapol :
     {
-        module_type     : TrkExtrapol
+        module_type       : TrkExtrapol
+        diagLevel         : 0
+	outPutNtup        : 1
         fitterModuleLabel : TrkPatRec
         # MC truth finder, analyzer configuration
         KalFitMC : 
@@ -99,8 +105,8 @@ physics :
     {
         module_type                : CaloMatching
       fitterModuleLabel            : TrkPatRec
-      diagLevel                    : 1
-      outPutNtup                   : 0
+      diagLevel                    : 0
+      outPutNtup                   : 1
       caloClusterModuleLabel       : makeCaloCluster
       caloClusterAlgorithm         : closest
       caloClusterSeeding           : energy
@@ -137,7 +143,15 @@ physics :
 
    
     analyzers : {
-    
+   
+     readfits : {
+      module_type       : ReadKalFits
+      fitterModuleLabel : TrkPatRec
+      WeightEvents      : false
+      KalFitMC          : { }
+      verbosity         : 2
+      maxPrint          : 200
+   }
      checkhitsEff:
     {                              
       module_type                  : ReadCaloMatching
@@ -164,15 +178,27 @@ physics :
         , CaloReadoutHitsMaker
         , CaloCrystalHitsMaker
         , makeCaloCluster
-        , TrkPatRec
-        , TrkExtrapol
-        , CaloMatching
-        , extractElData
-        , skipBadEvents
+       # , TrkPatRec
+       # , TrkExtrapol
+       # , CaloMatching
+       # , extractElData
+       # , skipBadEvents
         ]
-  e1 : [checkhitsEff, outfile]
+  p2 : [MakeStereoHits
+	, FlagStrawHits
+	, FlagBkgHits
+	, TrkPatRec
+        , TrkExtrapol
+        , CaloMatching  
+	#, extractElData
+	]
 
-  trigger_paths  : [p1]
+  e1 : [readfits
+	#,checkhitsEff
+	# outfile
+	]
+
+  trigger_paths  : [p2]
   end_paths      : [e1]
 
 }
@@ -183,7 +209,7 @@ outputs:
   outfile : 
   {
     module_type    : RootOutput
-    fileName       : "data_readExtrapol.root"
+    fileName       : "data_disck_conv.root"
     outputCommands : ['keep *_*_*_*'
                 #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
                 #   , 'drop mu2eSimParticles_*_*_*'
@@ -194,7 +220,7 @@ outputs:
 
 # Override some of the default values.
 #physics.producers.generate.inputfile  : "Scripts/genconfig_Conversion.txt"
-physics.producers.generate.inputfile  : "CaloCluster/test/genconfig_giani.txt"
+physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_01.txt"
 #services.user.GeometryService.inputFile : "Scripts/geom_nohp.txt"
 services.user.GeometryService.inputFile : "Mu2eG4/test/geom_01.txt"
 physics.producers.makeSH.diagLevel    : 0

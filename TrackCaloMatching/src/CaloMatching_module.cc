@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.14 2013/05/17 22:16:10 murat Exp $
-// $Author: murat $
-// $Date: 2013/05/17 22:16:10 $
+// $Id: CaloMatching_module.cc,v 1.15 2013/05/21 15:38:29 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2013/05/21 15:38:29 $
 //
 // Original author G. Pezzullo
 //
@@ -136,6 +136,8 @@ namespace mu2e {
   public:
     explicit CaloMatching(fhicl::ParameterSet const& pset):
       _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
+      _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
+      _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
       _diagLevel(pset.get<int>("diagLevel",0)),
       _outPutNtup(pset.get<int>("outPutNtup",0)),
       _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel", "makeCaloCluster")),
@@ -147,6 +149,7 @@ namespace mu2e {
       _firstEvent(true){
       // Tell the framework what we make.
       produces<TrackClusterLink>();
+      _iname = _fdir.name() + _tpart.name();
     }
     virtual ~CaloMatching() {
     }
@@ -165,7 +168,11 @@ namespace mu2e {
 
     void doMatching(art::Event & evt, bool skip);
     std::string _fitterModuleLabel;
-
+    TrkParticle _tpart;
+    
+    TrkFitDirection _fdir;
+    
+    std::string _iname;
     // Diagnostic level
     int _diagLevel;
 
@@ -397,7 +404,7 @@ namespace mu2e {
     GeomHandle<Calorimeter> cg;
   
     art::Handle<KalRepCollection> trksHandle;
-    evt.getByLabel(_fitterModuleLabel,"DownstreameMinus",trksHandle);
+    evt.getByLabel(_fitterModuleLabel,_iname,trksHandle);
     KalRepCollection const& trks = *trksHandle;
     ntracks = trks.size();
   

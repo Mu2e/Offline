@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.11 2013/05/17 22:17:58 murat Exp $
-// $Author: murat $
-// $Date: 2013/05/17 22:17:58 $
+// $Id: TrkExtrapol_module.cc,v 1.12 2013/05/21 15:38:29 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2013/05/21 15:38:29 $
 //
 // Original author G. Pezzullo
 //
@@ -289,7 +289,7 @@ void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
   Calorimeter4VanesGeom *CaloVanes = new Calorimeter4VanesGeom();
 
   art::Handle<KalRepCollection> trksHandle;
-  evt.getByLabel(_fitterModuleLabel,"DownstreameMinus",trksHandle);
+  evt.getByLabel(_fitterModuleLabel,_iname,trksHandle);
   KalRepCollection const& trks = *trksHandle;
   
   if(_diagLevel>2){

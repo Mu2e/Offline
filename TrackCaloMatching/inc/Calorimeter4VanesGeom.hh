@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.10 2013/05/18 00:23:25 murat Exp $
-// $Author: murat $
-// $Date: 2013/05/18 00:23:25 $
+// $Id: Calorimeter4VanesGeom.hh,v 1.11 2013/05/21 15:38:29 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2013/05/21 15:38:29 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -56,7 +56,7 @@
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
 
-//calorimeter includes
+//calorimeter include
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
@@ -66,7 +66,7 @@
 #include "TrackCaloMatching/inc/CaloVolumeType.hh"
 #include "TrackCaloMatching/inc/CaloSurface.hh"
 #include "CaloCluster/inc/CaloClusterer.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
+//#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
 // Other includes.
@@ -114,23 +114,49 @@ public :
     
         //Construct from a transform.
         Calorimeter4VanesGeom(){
-                GeomHandle<VaneCalorimeter> cg;
+                GeomHandle<Calorimeter> cg;
                 art::ServiceHandle<GeometryService> geom;
                 _norm.setX(0.0);
                 _norm.setY(1.0);
                 _norm.setZ(0.0);
-                _dR = (cg->crystalHalfTrans() + cg->wrapperThickness() + cg->shellThickness() ) * cg->nCrystalR();//*0.5;
-                _dZ = (cg->crystalHalfTrans() + cg->wrapperThickness() + cg->shellThickness() ) * cg->nCrystalZ();//*0.5;
-                _dU = (cg->crystalHalfLength() + cg->wrapperThickness() ) ;
+
+		_dU = (cg->crystalHalfLength() + cg->wrapperThickness() ) ;
                 _dAPD = cg->roHalfThickness();
                 _vaneHalfThickness = _dU + _dAPD;
+		
+		if(geom->hasElement<VaneCalorimeter>()){
+		  GeomHandle<VaneCalorimeter> cgVanes;
+		  _dR = (cgVanes->crystalHalfSize() + cgVanes->wrapperThickness() + cgVanes->shellThickness() ) * cgVanes->nCrystalR();//*0.5;
+		  _dZ = (cgVanes->crystalHalfSize() + cgVanes->wrapperThickness() + cgVanes->shellThickness() ) * cgVanes->nCrystalZ();//*0.5;
+		}else if(geom->hasElement<DiskCalorimeter>()){
+		  _dR = 0.0;
+		  _dZ = 0.0;
+		}
+		
+               
                 _solenoidOffSetX = geom->config().getDouble("mu2e.solenoidOffset");//3904.;//[mm]
                 _solenoidOffSetZ = -geom->config().getDouble("mu2e.detectorSystemZ0");//-10200.;
-                _innerRadius = cg->innerRaidus();
-                _outherRadius = cg->outherRadius();
-                _ZfrontFaceCalo = cg->origin().z() + _solenoidOffSetZ - _dZ;//(cg->nCrystalZ() + 1.0)*cg->crystalHalfTrans();
-                _ZbackFaceCalo = cg->origin().z() + _solenoidOffSetZ + _dZ;//(cg->nCrystalZ() + 1.0)*cg->crystalHalfTrans();
-                _nVanes = cg->nVane();
+                
+                _ZfrontFaceCalo = cg->origin().z() + _solenoidOffSetZ - _dZ;//(cg->nCrystalZ() + 1.0)*cg->crystalHalfSize();
+                _ZbackFaceCalo = cg->origin().z() + _solenoidOffSetZ + _dZ;//(cg->nCrystalZ() + 1.0)*cg->crystalHalfSize(); 
+		
+		if(geom->hasElement<DiskCalorimeter>()){
+		  GeomHandle<DiskCalorimeter> cgDisks;
+		  _ZfrontFaceCalo -= _vaneHalfThickness*2.0 + cgDisks->diskSeparation(1);
+		  _ZbackFaceCalo += cgDisks->diskSeparation(1) + _vaneHalfThickness*2.0 + 10.0;
+		}
+		
+		if(geom->hasElement<VaneCalorimeter>()){ 
+		  GeomHandle<VaneCalorimeter> cg;
+		  _innerRadius = cg->innerRadius();
+		  _outherRadius = cg->outherRadius();
+		  _nVanes = cg->nVane();
+		}else {
+		  GeomHandle<DiskCalorimeter> cg;
+		  _innerRadius = cg->disk(0).innerRadius();
+		  _outherRadius = cg->disk(0).outerRadius();
+		  _nVanes = cg->nDisk();
+		}
         }
 
 
@@ -168,7 +194,9 @@ public :
 
         double ZbackFaceCalo() const{ return _ZbackFaceCalo;}
 
-        CaloVolumeElem* vane(int& i);//{
+        CaloVolumeElem* vane(int& i);
+  
+  CLHEP::Hep3Vector fromTrkToMu2eFrame(CLHEP::Hep3Vector  &vec);
 
   CLHEP::Hep3Vector fromTrkToMu2eFrame(CLHEP::Hep3Vector  &vec);
 
