@@ -1,8 +1,8 @@
 # Read back random number state from an event-data file.
 #
-# $Id: random02.fcl,v 1.1 2013/05/23 16:37:37 kutschke Exp $
+# $Id: random02.fcl,v 1.2 2013/05/23 18:31:28 kutschke Exp $
 # $Author: kutschke $
-# $Id: random02.fcl,v 1.1 2013/05/23 16:37:37 kutschke Exp $
+# $Id: random02.fcl,v 1.2 2013/05/23 18:31:28 kutschke Exp $
 #
 
 #include "minimalMessageService.fcl"
@@ -27,7 +27,6 @@ physics : {
       seed        : -1
     }
   }
-
 
   t1 : [ foo  ]
 
