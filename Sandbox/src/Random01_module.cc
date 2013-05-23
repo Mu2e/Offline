@@ -1,9 +1,9 @@
 //
 // Module used to test the random number servce.
 //
-// $Id: Random01_module.cc,v 1.1 2013/05/23 16:37:37 kutschke Exp $
+// $Id: Random01_module.cc,v 1.2 2013/05/23 18:30:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/05/23 16:37:37 $
+// $Date: 2013/05/23 18:30:59 $
 //
 // Contact person Rob Kutschke
 //
@@ -21,6 +21,7 @@
 #include "CLHEP/Random/RandFlat.h"
 
 #include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -35,6 +36,7 @@ namespace mu2e {
 
   private:
 
+    std::string                                    myLabel_;
     int                                            seed_;
     art::RandomNumberGenerator::base_engine_t&     engine_;
     CLHEP::RandFlat                                flat_;
@@ -43,6 +45,7 @@ namespace mu2e {
   };
 
   Random01::Random01(fhicl::ParameterSet const& pset):
+    myLabel_(pset.get<std::string>("module_label")),
     seed_(pset.get<int>("seed")),
     engine_(createEngine(seed_)),
     flat_(engine_){
@@ -50,6 +53,7 @@ namespace mu2e {
 
   void Random01::produce( art::Event& event ) {
     cout << "Event: "
+         << myLabel_           << " "
          << event.id().event() << " "
          << flat_.fire()
          << endl;
