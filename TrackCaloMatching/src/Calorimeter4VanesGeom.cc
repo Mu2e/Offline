@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.cc,v 1.10 2013/05/23 00:32:19 murat Exp $
+// $Id: Calorimeter4VanesGeom.cc,v 1.11 2013/05/23 01:06:28 murat Exp $
 // $Author: murat $
-// $Date: 2013/05/23 00:32:19 $
+// $Date: 2013/05/23 01:06:28 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -32,8 +32,8 @@ namespace mu2e {
     
     if(geom->hasElement<VaneCalorimeter>()){
       GeomHandle<VaneCalorimeter> cgVanes;
-      _dR = (cgVanes->crystalHalfSize() + cgVanes->wrapperThickness() + cgVanes->shellThickness() ) * cgVanes->nCrystalR();//*0.5;
-      _dZ = (cgVanes->crystalHalfSize() + cgVanes->wrapperThickness() + cgVanes->shellThickness() ) * cgVanes->nCrystalZ();//*0.5;
+      _dR = (cgVanes->crystalHalfTrans()+cgVanes->wrapperThickness() + cgVanes->shellThickness() ) * cgVanes->nCrystalR();//*0.5;
+      _dZ = (cgVanes->crystalHalfTrans()+cgVanes->wrapperThickness() + cgVanes->shellThickness() ) * cgVanes->nCrystalZ();//*0.5;
     }else if(geom->hasElement<DiskCalorimeter>()){
       _dR = 0.0;
       _dZ = 0.0;
