@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.16 2013/05/21 21:43:25 murat Exp $
+// $Id: CaloMatching_module.cc,v 1.17 2013/05/23 00:32:19 murat Exp $
 // $Author: murat $
-// $Date: 2013/05/21 21:43:25 $
+// $Date: 2013/05/23 00:32:19 $
 //
 // Original author G. Pezzullo
 //
@@ -119,16 +119,15 @@ namespace mu2e {
     return thV;
   }
 
-  CLHEP::Hep3Vector fromTrkToMu2eFrame(CLHEP::Hep3Vector  &vec){
+
+  void fromTrkToMu2eFrame(CLHEP::Hep3Vector  &vec, CLHEP::Hep3Vector  &res){
     art::ServiceHandle<GeometryService> geom;
     double solenoidOffSetX = geom->config().getDouble("mu2e.solenoidOffset");
     double solenoidOffSetZ = -geom->config().getDouble("mu2e.detectorSystemZ0");
-    CLHEP::Hep3Vector res;
 
     res.setX(vec.x() - solenoidOffSetX);
     res.setZ(vec.z() - solenoidOffSetZ);
     res.setY(vec.y());
-    return res;
   }
 
 
@@ -139,6 +138,7 @@ namespace mu2e {
       _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
       _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
       _diagLevel(pset.get<int>("diagLevel",0)),
+      _deltaTimeTollerance(pset.get<double>("deltaTimeTollerance", 50.0)),
       _outPutNtup(pset.get<int>("outPutNtup",0)),
       _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel", "makeCaloCluster")),
       _caloClusterAlgorithm(pset.get<std::string>("caloClusterAlgorithm", "closest")),
@@ -152,6 +152,7 @@ namespace mu2e {
       _iname = _fdir.name() + _tpart.name();
     }
     virtual ~CaloMatching() {
+      delete _cluTool;
     }
 
     void beginJob();
@@ -176,6 +177,12 @@ namespace mu2e {
     // Diagnostic level
     int _diagLevel;
 
+    double _emcEnergyThreshold = 10.0;
+    // this is a threshold on the time difference between impact time 
+    // of the reco-trk and the EMC.This might help the case of mismatching
+    // caused by cosmics
+    double _deltaTimeTollerance;
+    
     //Ntupla for detailed information about the matching
     int _outPutNtup;
 
@@ -258,7 +265,7 @@ namespace mu2e {
 
 
     bool _firstEvent;
-
+    CaloClusterTools *_cluTool;
 
   };
 
@@ -525,7 +532,7 @@ namespace mu2e {
 // for the moemnt we want to study the matching with the first intersection,
 // so I fixed nex=1
 //-----------------------------------------------------------------------------
-    if(nex>0)    nex=1;
+    
     for (int jex=0; jex<nex; jex++) {
       extrk = &trjExtrapols->at(jex);
       krep  = *extrk->trk();
@@ -598,7 +605,7 @@ namespace mu2e {
       tmpPosVaneFrame.setY(krep->position(0.0).y());
       tmpPosVaneFrame.setZ(krep->position(0.0).z());
     
-      tmpPosVaneFrame = fromTrkToMu2eFrame(tmpPosVaneFrame);
+      fromTrkToMu2eFrame(tmpPosVaneFrame,tmpPosVaneFrame);
     
       _reco0Flightx = tmpPosVaneFrame.x();
       _reco0Flighty = tmpPosVaneFrame.y();
@@ -622,7 +629,7 @@ namespace mu2e {
 	  "tmpPosVaneFrameErr = "<< tmpPosVaneFrameErr<<" [mm]"<<endl;
       }
 
-      tmpPosVaneFrame = fromTrkToMu2eFrame(tmpPosVaneFrame);
+      fromTrkToMu2eFrame(tmpPosVaneFrame, tmpPosVaneFrame);
 	  
       if(_diagLevel > 2){
 	cout<<"Mu2e general frame: tmpPosVaneFrame = "<<tmpPosVaneFrame<<" [mm]"<<endl;
@@ -700,8 +707,11 @@ namespace mu2e {
 	// why it is 'indexVecCluster[j]' and not just 'j' ?
 	//-----------------------------------------------------------------------------
 	cl  = &(*caloClusters).at(icl);
+	_cluTool = new CaloClusterTools(*cl);
 
 	if (cl->vaneId() != tmpVane)    goto NEXT_CLUSTER;
+	if (cl->energyDep() < _emcEnergyThreshold)    goto NEXT_CLUSTER;
+	if (std::fabs(_cluTool->timeFasterCrystal() - _recoTime ) > _deltaTimeTollerance)    goto NEXT_CLUSTER;
 	//-----------------------------------------------------------------------------
 	// 2013-03-24 P.Murat: cluster center of gravity is determined in the GLOBAL 
 	//                     coordinate system, 
