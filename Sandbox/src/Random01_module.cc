@@ -1,9 +1,9 @@
 //
 // Module used to test the random number servce.
 //
-// $Id: Random01_module.cc,v 1.2 2013/05/23 18:30:59 kutschke Exp $
+// $Id: Random01_module.cc,v 1.3 2013/05/23 19:15:56 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/05/23 18:30:59 $
+// $Date: 2013/05/23 19:15:56 $
 //
 // Contact person Rob Kutschke
 //
@@ -17,6 +17,8 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "CLHEP/Random/RandFlat.h"
 
@@ -52,11 +54,11 @@ namespace mu2e {
   }
 
   void Random01::produce( art::Event& event ) {
-    cout << "Event: "
-         << myLabel_           << " "
-         << event.id().event() << " "
-         << flat_.fire()
-         << endl;
+    mf::LogVerbatim("TEST") << "Event: "
+                            << myLabel_           << " "
+                            << event.id().event() << " "
+                            << flat_.fire()
+                            << endl;
   }
 }  // end namespace mu2e
 
