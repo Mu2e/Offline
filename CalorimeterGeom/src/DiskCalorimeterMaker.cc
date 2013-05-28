@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: DiskCalorimeterMaker.cc,v 1.6 2013/05/09 23:14:14 echenard Exp $
+// $Id: DiskCalorimeterMaker.cc,v 1.7 2013/05/28 22:11:24 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Date: 2013/05/28 22:11:24 $
 
 // original authors Julie Managan and Robert Bernstein
 // quite a few changes by Bertrand Echenarrd
@@ -70,6 +70,8 @@ namespace mu2e{
 	_calo->_nROPerCrystal         = config.getInt("calorimeter.crystalReadoutChannelCount");
 	_calo->_roHalfTrans           = config.getDouble("calorimeter.crystalReadoutHalfTrans");
 	_calo->_roHalfThickness       = config.getDouble("calorimeter.crystalReadoutHalfThickness");
+        _calo->_pipeRadius            = config.getDouble("calorimeter.pipeRadius",5); 
+        _calo->_pipeThickness         = config.getDouble("calorimeter.pipeThickness",0.25); 
 
 	_calo->_nonUniformity         = config.getDouble("calorimeter.crystalNonUniformity",0.0);
 	_calo->_timeGap               = config.getDouble("calorimeter.timeGap",100.0);
@@ -86,23 +88,22 @@ namespace mu2e{
 
      
 
-
 	//THE CALORIMETER ORIGIN IS TAKEN AS THE POINT CLOSEST TO THE TRACKER IN MU2E COORDINATES
         double xOrigin                = -config.getDouble("mu2e.solenoidOffset");
         double zOrigin                = config.getDouble("calorimeter.calorimeterZOrigin",11740);
 	_calo->_origin                = CLHEP::Hep3Vector(xOrigin,0,zOrigin);
      
      
-	//COORDINATE OF VOLUME CONTAINING THE CRYSTALS ONLY (NO READOUT,..) W.R.T OUTSIDE DISK VOLUME
-	// outside disk volume = volume ___originLocal vector____ points to, i.e outermost disk volume 
-        _calo->_crystalShift = CLHEP::Hep3Vector(0,0,-_calo->_crystalHalfLength);
-       
+	//COORDINATE OF CENTER OF VOLUME CONTAINING THE CRYSTALS ONLY (NO READOUT,..) W.R.T CENTER OF OUTMOST DISK VOLUME
+	// outmost disk volume = volume ___originLocal vector____ points to, i.e outermost disk volume 
+        _calo->_crystalShift = CLHEP::Hep3Vector(0,0, _calo->_pipeRadius -_calo->_crystalHalfLength);
+   
+          
 	//make sure above information is consistent
 	CheckIt();
 
 	// Create vanes
 	MakeDisks();
-
 
   }
 
@@ -113,7 +114,7 @@ namespace mu2e{
   void DiskCalorimeterMaker::MakeDisks(void)
   {
 
-      double diskHalfZLength    = _calo->_crystalHalfLength + _calo->_roHalfThickness + _calo->_wrapperThickness + _calo->_caseThickness;
+      double diskHalfZLength    = _calo->_crystalHalfLength + _calo->_roHalfThickness + _calo->_wrapperThickness + _calo->_caseThickness + _calo->_pipeRadius;
       double crystalCellRadius  = _calo->_crystalHalfTrans + _calo->_wrapperThickness + _calo->_shellThickness;      
       CLHEP::Hep3Vector crystalShiftInDisk(0,0,-_calo->_roHalfThickness);
       
@@ -169,14 +170,14 @@ namespace mu2e{
 
       }  
       
-      double diskLength   = 2.0*( _calo->_crystalHalfLength + _calo->_roHalfThickness + _calo->_wrapperThickness + _calo->_caseThickness);
+      double diskLength   = 2.0*( _calo->_crystalHalfLength + _calo->_roHalfThickness + _calo->_wrapperThickness + _calo->_caseThickness + _calo->_pipeRadius);
       double calozEnd     = _calo->_origin.z() + diskLength + _calo->_diskSeparation[_calo->_nSections-1]; 
       double calozBegin   = _calo->_origin.z();
 
-      if (calozBegin < _calo->_enveloppeZ0 || calozBegin > _calo->_enveloppeZ1) 
-          {throw cet::exception("DiskCaloGeom") << "calorimeter.calorimeterZOrigin   outside calorimeter mother.\n";}  
-      if (calozEnd   > _calo->_enveloppeZ1)                       
-          {throw cet::exception("DiskCaloGeom") << "calorimeter z-coordinate extends outside calorimeter mother.\n";}  
+      if (calozBegin < (_calo->_enveloppeZ0-0.1) || calozBegin > _calo->_enveloppeZ1) 
+          {throw cet::exception("DiskCaloGeom") << "calorimeter.calorimeterZOrigin   outside calorimeter mother (need 1mm margin for virtual detectors).\n";}  
+      if (calozEnd   > (_calo->_enveloppeZ1-0.1))                       
+          {throw cet::exception("DiskCaloGeom") << "calorimeter z-coordinate extends outside calorimeter mother (need 1mm margin for virtual detectors).\n";}  
 
   }
 

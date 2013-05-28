@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.24 2013/05/09 23:14:14 echenard Exp $
+// $Id: Calorimeter.hh,v 1.25 2013/05/28 22:11:24 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Date: 2013/05/28 22:11:24 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -40,26 +40,30 @@ namespace mu2e {
 	  virtual CLHEP::Hep3Vector        fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const = 0;
           virtual CLHEP::Hep3Vector        crystalOrigin(int crystalId) const =0;
 	  virtual CLHEP::Hep3Vector        localCrystalOrigin(int crystalId) const = 0;
+	  virtual bool                     isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const =0  ;
+	  virtual double                   crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const = 0;
 	  
-          virtual std::vector<int>  neighbors(int crystalId, int level=1) const = 0;
-	  
-	  virtual bool isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const =0  ;
+
+          // crystal neighbours, indexing 
+          virtual std::vector<int>  neighbors(int crystalId, int level=1) const = 0;	  
 	  virtual int  crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const =0;
 
 
-	  //crystal / readout section
+	  // crystal / readout section
 	  virtual unsigned int nROPerCrystal() const = 0;
 	  virtual unsigned int nCrystal() const  = 0;
 	  virtual unsigned int nRO() const  = 0;
 
 
-	  //crystal - readout id
+	  // crystal - readout id
 	  virtual int caloSectionId(int crystalId) const = 0;
 	  virtual int crystalByRO(int roid) const = 0;
 	  virtual int ROBaseByCrystal(int id) const = 0;
 
-	  //crystal characteristics      
+	  // crystal characteristics      
 	  virtual double crystalVolume() const = 0;
+
+
 
 
           //a few accessors we keep for convenience

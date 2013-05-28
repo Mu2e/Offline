@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: VaneCalorimeter.hh,v 1.6 2013/05/21 16:18:00 murat Exp $
-// $Author: murat $
-// $Date: 2013/05/21 16:18:00 $
+// $Id: VaneCalorimeter.hh,v 1.7 2013/05/28 22:11:24 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/05/28 22:11:24 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -57,6 +57,7 @@ class VaneCalorimeter: public BaseCalorimeter{
           virtual bool             isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const ;        
 	  virtual int              crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const ;
           virtual std::vector<int> neighbors(int crystalId, int level=1) const;
+          virtual double           crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const; 
 
           double innerRadius ()                 const  {return _rMin;}
           double outherRadius()                 const  {return _rMax;}

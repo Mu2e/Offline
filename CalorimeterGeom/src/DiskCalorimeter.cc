@@ -75,7 +75,11 @@ namespace mu2e {
 
 
 
-
+   double DiskCalorimeter::crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const
+   {   
+	CLHEP::Hep3Vector posInSection = toCrystalFrame(crystalId, pos);
+	return posInSection.z();
+   }
 
 
 

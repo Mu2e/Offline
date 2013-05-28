@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_DiskCalorimeter_hh
 #define CalorimeterGeom_DiskCalorimeter_hh
 //
-// $Id: DiskCalorimeter.hh,v 1.5 2013/05/09 23:14:14 echenard Exp $
+// $Id: DiskCalorimeter.hh,v 1.6 2013/05/28 22:11:24 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Date: 2013/05/28 22:11:24 $
 //
 // Hold all geometry and identifier information about
 // a Disk Calorimeter. In order to insulate this class from
@@ -59,6 +59,7 @@ namespace mu2e {
 	  virtual bool             isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const ;       	 	 
 	  virtual int              crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const ;
           virtual std::vector<int> neighbors(int crystalId, int level=1) const; 
+          virtual double           crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const; 
 
 
 

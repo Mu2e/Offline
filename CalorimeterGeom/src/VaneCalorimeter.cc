@@ -2,9 +2,9 @@
 // Geometry and identifier info about the VaneCalorimeter.
 //
 //
-// $Id: VaneCalorimeter.cc,v 1.5 2013/05/09 23:14:14 echenard Exp $
+// $Id: VaneCalorimeter.cc,v 1.6 2013/05/28 22:11:24 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Date: 2013/05/28 22:11:24 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -70,5 +70,13 @@ namespace mu2e {
 	transform(list.begin(), list.end(), list.begin(),bind2nd(std::plus<int>(), offset));  
 	return list;
     }
+
+
+   double VaneCalorimeter::crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const
+   {   
+	CLHEP::Hep3Vector posInSection = toCrystalFrame(crystalId, pos);
+	return posInSection.x();
+   }
+
 
 }

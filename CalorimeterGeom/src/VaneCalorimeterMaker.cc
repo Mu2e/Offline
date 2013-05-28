@@ -1,9 +1,9 @@
 //
 // Make a Vane Calorimeter.
 //
-// $Id: VaneCalorimeterMaker.cc,v 1.6 2013/05/09 23:14:14 echenard Exp $
+// $Id: VaneCalorimeterMaker.cc,v 1.7 2013/05/28 22:11:24 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Date: 2013/05/28 22:11:24 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -99,7 +99,7 @@ namespace mu2e{
 
 	//COORDINATE OF VOLUME CONTAINING THE CRYSTALS ONLY (NO READOUT,..) W.R.T OUTSIDE VANE VOLUME
 	double absorberHalfLength =  _calo->_shieldHalfThickness + _calo->_absorberHalfThickness;
-        _calo->_crystalShift = CLHEP::Hep3Vector(_calo->_crystalHL, 0 ,absorberHalfLength);
+        _calo->_crystalShift = CLHEP::Hep3Vector(-_calo->_crystalHL, 0 ,absorberHalfLength);
         
 
 	//THE CALORIMETER ORIGIN IS TAKEN AS THE POINT CLOSEST TO THE TRACKER IN MU2E COORDINATES
@@ -134,7 +134,7 @@ namespace mu2e{
 	  double caloHalfLength     =  (_calo->_crystalHW + _calo->_wrapperThickness + _calo->_shellThickness)*_calo->_nCrystalZ;
           
 	  double crystalCellRadius = _calo->_crystalHW + _calo->_wrapperThickness + _calo->_shellThickness;
-          CLHEP::Hep3Vector crystalShift(_calo->_roHalfThickness,0,0);
+          CLHEP::Hep3Vector crystalShift(-_calo->_roHalfThickness,0,0);
 
 	  double dX     =  _calo->_crystalHL + _calo->_wrapperThickness + _calo->_roHalfThickness + _calo->_caseThickness;
 	  double dR     = (_calo->_crystalHW + _calo->_wrapperThickness + _calo->_shellThickness) * _calo->_nCrystalR + _calo->_caseThickness;
@@ -153,7 +153,7 @@ namespace mu2e{
 	     CLHEP::Hep3Vector localOrigin(radius*cos(phi),radius*sin(phi),absorberHalfLength+caloHalfLength+_calo->_caseThickness);
 
              thisVane->setSize(        CLHEP::Hep3Vector(dX,dR,dZ) );
-             thisVane->setRotation(    (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationZ(-CLHEP::pi/2 - i*dphi) );
+             thisVane->setRotation(    (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationZ(CLHEP::pi/2 - i*dphi) );
              thisVane->setOriginLocal( localOrigin );
              thisVane->setOrigin(      localOrigin + _calo->origin() );
 	  }
@@ -172,8 +172,6 @@ namespace mu2e{
            double calozBegin = _calo->_origin.z();
            double calozEnd   = _calo->_origin.z() + 2*dZ;
 	   
-	   std::cout<<dZ<<" "<<calozEnd<<" "<<(_calo->_crystalHW + _calo->_wrapperThickness + _calo->_shellThickness)<<std::endl;
-
 	   if ( (_calo->_rMin + 2*dR) > _calo->_enveloppeRadius) 
                     {throw cet::exception("VaneCaloGeom") << "calorimeter radius larger than calorimeter mother \n";} 
 	   if (calozBegin < _calo->_enveloppeZ0 || calozBegin > _calo->_enveloppeZ1) 

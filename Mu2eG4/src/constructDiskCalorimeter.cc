@@ -25,6 +25,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestTorus.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
@@ -62,26 +63,36 @@ namespace mu2e {
     bool const isCalorimeterSolid   = config.getBool("calorimeter.calorimeterSolid",false);
     bool const isDiskBoxVisible     = config.getBool("calorimeter.vaneBoxVisible",true);
     bool const isDiskBoxSolid       = config.getBool("calorimeter.vaneBoxSolid",true);
+    bool const isDiskCaseVisible    = config.getBool("calorimeter.vaneCaseVisible",false);
+    bool const isDiskCaseSolid      = config.getBool("calorimeter.vaneCaseSolid",false);
     bool const isCrystalVisible     = config.getBool("calorimeter.crystalVisible",false);
     bool const isCrystalSolid       = config.getBool("calorimeter.crystalSolid",true);
     bool const forceAuxEdgeVisible  = config.getBool("g4.forceAuxEdgeVisible",false);
     G4bool const doSurfaceCheck     = config.getBool("g4.doSurfaceCheck",false);
     bool const placePV              = true;
 
-    //calorimeter mother neveloppe
+    //calorimeter mother enveloppe
     double mother_radius            = config.getDouble("calorimeter.caloMotherRadius",850); 
     double mother_z0                = config.getDouble("calorimeter.caloMotherZ0",11740); 
     double mother_z1                = config.getDouble("calorimeter.caloMotherZ1",13910); 
+
+    //calorimeter calibration system
+    int const nPipes                = config.getInt("calorimeter.nPipes");      
+    double const pipeRadius         = config.getDouble("calorimeter.pipeRadius",5); 
+    double const pipeThickness      = config.getDouble("calorimeter.pipeThickness",0.25);     
+    std::vector<double> pipeTorRadius;
+    config.getVectorDouble("calorimeter.pipeTorRadius",  pipeTorRadius, nPipes);
+
 
 
     //-- A helper class for parsing the config file.
     MaterialFinder materialFinder(config);
 
-    G4Material* diskMaterial = materialFinder.get("calorimeter.calorimeterDiskMaterial");
-    G4Material* fillMaterial = materialFinder.get("calorimeter.calorimeterFillMaterial");
-    G4Material* crysMaterial = materialFinder.get("calorimeter.crystalMaterial");
-    G4Material* wrapMaterial = materialFinder.get("calorimeter.crystalWrapper");
-    G4Material* readMaterial = materialFinder.get("calorimeter.crystalReadoutMaterial");
+    G4Material* diskMaterial   = materialFinder.get("calorimeter.calorimeterDiskMaterial");
+    G4Material* fillMaterial   = materialFinder.get("calorimeter.calorimeterFillMaterial");
+    G4Material* crysMaterial   = materialFinder.get("calorimeter.crystalMaterial");
+    G4Material* wrapMaterial   = materialFinder.get("calorimeter.crystalWrapper");
+    G4Material* readMaterial   = materialFinder.get("calorimeter.crystalReadoutMaterial");
     
 
     
@@ -225,10 +236,11 @@ namespace mu2e {
 
 
 
-    //-- Construct disks: diskInner contains the crystals, and is inside diskBox
+    //-- Construct disks: diskInner contains the crystals, and is inside diskCase. DiskBox contains the calibration pipes and diskCase
 
     const unsigned int nDisks = cal.nDisk();
     VolumeInfo diskBoxInfo[nDisks];
+    VolumeInfo diskCaseInfo[nDisks];
     VolumeInfo diskInnerInfo[nDisks];
 
 
@@ -238,55 +250,101 @@ namespace mu2e {
     for (unsigned int idisk=0;idisk<nDisks;++idisk)
     {
 
-        G4ThreeVector posDisk = cal.origin() + cal.disk(idisk).originLocal() - posCaloMother;
+	G4ThreeVector posDisk = cal.origin() + cal.disk(idisk).originLocal() - posCaloMother;
 
-	ostringstream discname1;      discname1<<"DiskCalorimeter_" <<idisk;
+	ostringstream discname0;      discname0<<"DiskCalorimeter_" <<idisk;
+	ostringstream discname1;      discname1<<"DiskCase_" <<idisk;
 	ostringstream discname2;      discname2<<"DiskInner_" <<idisk;
 
 	double radiusIn   = cal.disk(idisk).innerRadius();
 	double radiusOut  = cal.disk(idisk).outerRadius();
-	double diskDepth  = shellDepth + 2.0*cal.caseThickness();
+	double caseDepth  = shellDepth + 2.0*cal.caseThickness();
+	double diskDepth  = caseDepth  + 2.0*pipeRadius;
 
-	double diskpar1[5] = {radiusIn-cal.caseThickness(),radiusOut+cal.caseThickness(), diskDepth/2.0, 0, 2*pi};
-	double diskpar2[5] = {radiusIn,radiusOut, shellDepth/2.0, 0, 2*pi};
+	double diskpar0[5] = {radiusIn-cal.caseThickness(),radiusOut+cal.caseThickness(), diskDepth/2.0, 0, 2*pi};
+	double diskpar1[5] = {radiusIn-cal.caseThickness(),radiusOut+cal.caseThickness(), caseDepth/2.0, 0, 2*pi};
+	double diskpar2[5] = {radiusIn                    ,radiusOut                    ,shellDepth/2.0, 0, 2*pi};
 
-	diskBoxInfo[idisk] = nestTubs(discname1.str(),
-                              diskpar1,
-                              diskMaterial,
+	diskBoxInfo[idisk] =  nestTubs(discname0.str(),
+                              diskpar0,
+                              fillMaterial,
                               &cal.disk(idisk).rotation(),
                               posDisk,
                               calorimeterInfo,
                               idisk,
-                              isDiskBoxVisible,
-                              G4Colour::Yellow(),
-                              isDiskBoxSolid,
+                              isDiskCaseVisible,
+                              G4Colour::Green(),
+                              isDiskCaseSolid,
+                              forceAuxEdgeVisible,
+                              placePV,
+                              doSurfaceCheck );
+
+	diskCaseInfo[idisk] = nestTubs(discname1.str(),
+                              diskpar1,
+                              diskMaterial,
+                              0,
+                              G4ThreeVector(0.0,0.0,pipeRadius),
+                              diskBoxInfo[idisk],
+                              10*idisk,
+                              isDiskCaseVisible,
+                              G4Colour::Red(),
+                              isDiskCaseSolid,
                               forceAuxEdgeVisible,
                               placePV,
                               doSurfaceCheck );
 
 	diskInnerInfo[idisk] = nestTubs(discname2.str(),
-                              diskpar2,
-                              fillMaterial,
-                              0,
-                              G4ThreeVector(0.0,0.0,0.0),
-                              diskBoxInfo[idisk],
-                              100*idisk,
-                              isDiskBoxVisible,
-                              G4Colour::Yellow(),
-                              isDiskBoxSolid,
-                              forceAuxEdgeVisible,
-                              placePV,
-                              doSurfaceCheck );
+                               diskpar2,
+                               diskMaterial,
+                               0,
+                               G4ThreeVector(0.0,0.0,0.0),
+                               diskCaseInfo[idisk],
+                               100*idisk,
+                               isDiskBoxVisible,
+                               G4Colour::Yellow(),
+                               isDiskBoxSolid,
+                               forceAuxEdgeVisible,
+                               placePV,
+                               doSurfaceCheck );
 			      
 
 	if ( verbosityLevel > 0) 
 	{
-	    CLHEP::Hep3Vector const & CalorimeterDiskOffsetInMu2e = diskBoxInfo[idisk].centerInMu2e();
-	    double CalorimeterDiskOffsetInMu2eZ = CalorimeterDiskOffsetInMu2e[CLHEP::Hep3Vector::Z];
-	    cout << __func__ << " CalorimeterDisk center in Mu2e    : " << CalorimeterDiskOffsetInMu2e << endl;
-	    cout << __func__ << " CalorimeterDisk Z extent in Mu2e  : " << CalorimeterDiskOffsetInMu2eZ - diskDepth/2.0 << ", " << CalorimeterDiskOffsetInMu2eZ + diskDepth/2.0 << endl;
+	    cout << __func__ << " CalorimeterDisk center in Mu2e    : " << diskBoxInfo[idisk].centerInMu2e() << endl;
+	    cout << __func__ << " CalorimeterDisk Z extent in Mu2e  : " << diskBoxInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - diskDepth/2.0 << ", " << diskBoxInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + diskDepth/2.0 << endl;
+	    cout << __func__ << " CalorimeterCase center in Mu2e    : " << diskCaseInfo[idisk].centerInMu2e() << endl;
+	    cout << __func__ << " CalorimeterCase Z extent in Mu2e  : " << diskCaseInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - caseDepth/2.0 << ", " << diskCaseInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + caseDepth/2.0 << endl;
+	    cout << __func__ << " CalorimeterInner center in Mu2e    : " << diskInnerInfo[idisk].centerInMu2e() << endl;
+	    cout << __func__ << " CalorimeterInner Z extent in Mu2e  : " << diskInnerInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - shellDepth/2.0 << ", " << diskInnerInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + shellDepth/2.0 << endl;
 	}
 
+
+
+        //add pipes from calibration system
+	if (nPipes>0 && pipeRadius>0.01) 
+	{
+	   VolumeInfo caloPipe[nPipes];	
+	   for (int ipipe=0;ipipe<nPipes;++ipipe){
+
+	      ostringstream pipename;  pipename<<"CaloPipe" <<idisk<<"_"<<ipipe;
+	      double pipeParam[5] = {pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], 0, 2*pi };
+
+	      caloPipe[ipipe] = nestTorus(pipename.str(),
+                                	  pipeParam,
+                                	  diskMaterial,
+                                	  0,
+                                	  G4ThreeVector(0.0,0.0,-diskDepth/2.0+pipeRadius),
+                                	  diskBoxInfo[idisk],
+                                	  0,
+                                	  isDiskCaseVisible,
+                                	  G4Color::Cyan(),
+                                	  isDiskCaseSolid,
+                                	  forceAuxEdgeVisible,
+                                	  placePV,
+                                	  doSurfaceCheck
+                                	  );
+	   }				   
+        }
 
 
 	// -- then fill the inner disk with crystals

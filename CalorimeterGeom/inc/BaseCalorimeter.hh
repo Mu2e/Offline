@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_BaseCalorimeter_hh
 #define CalorimeterGeom_BaseCalorimeter_hh
 //
-// $Id: BaseCalorimeter.hh,v 1.1 2013/05/09 23:27:40 echenard Exp $
+// $Id: BaseCalorimeter.hh,v 1.2 2013/05/28 22:11:24 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/09 23:27:40 $
+// $Date: 2013/05/28 22:11:24 $
 //
 // Base class of a cloarimeter. Hold informations about the sections composing 
 // the calorimeterand generic algorithms to navigate between the coordinate systems
@@ -107,6 +107,10 @@ namespace mu2e {
            double                       _enveloppeRadius;
            double                       _enveloppeZ0;
            double                       _enveloppeZ1;
+	   
+	   double                       _pipeRadius;
+	   double                       _pipeThickness;
+	   
 
 
 

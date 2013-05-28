@@ -195,8 +195,8 @@ namespace mu2e {
 				   CaloHitSimPartMCCollection& );
 
 
-	 void nonLinearityCorrection(double kinetic_energy, double energy, int cryId, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations );
-	 void longitudinalResponseUniformityCorrection(double posZ, double cryhalflength, double energy, int crid,ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
+	 void nonLinearityCorrection(double kinetic_energy, double& energy, int cryId, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations );
+	 void longitudinalResponseUniformityCorrection(double posZ, double cryhalflength, double& energy, int crid,ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
 	 void fillMapById(HitMap& map,HandleVector const& crystalStepsHandles);
 
 
@@ -335,6 +335,7 @@ namespace mu2e {
 	// Loop over steps inside the crystal for a given crystal id
 	for ( StepPtrs::const_iterator i=isteps.begin(), e=isteps.end(); i != e; ++i ){
 
+
             StepPointMC const& h = **i;
 
             if ( h.eDep()<=0.0 ) continue;
@@ -342,10 +343,8 @@ namespace mu2e {
 
 	    // Calculate correction for edep
 	    CLHEP::Hep3Vector const& posInMu2e = h.position();
-	    CLHEP::Hep3Vector posInCrystal     = cal.toCrystalFrame(crid,posInMu2e);
+            double posZ = cal.crystalLongPos(crid,posInMu2e);
 
-//must check if this works for disks	
-double posZ = posInCrystal.x();
 
 	    if (_caloNonLinCorrection && h.simParticle().isNonnull())
 	    {
@@ -361,12 +360,12 @@ double posZ = posInCrystal.x();
 		     double mass = data.mass().value();
 
 		     //add non-linearity effect
-		     double trackKine = std::sqrt(h.momentum().mag2() + std::pow(mass, 2) ) - mass;
+		     double trackKine = std::sqrt(h.momentum().mag2() + mass*mass) - mass;
 
 		     if (trackKine < 1.0) nonLinearityCorrection(trackKine, edep_corr, crid, calorimeterCalibrations);
 
 		     if(_diagLevel > 0)		    
-		       std::cout<<"************************** BEFORE ? AFTER NON-LINEARITY EFFECT-> edep_corr = "<< edep_save<<"  /  "<<edep_corr<<std::endl
+		       std::cout<<"************************** BEFORE / AFTER NON-LINEARITY EFFECT-> edep_corr = "<< edep_save<<"  /  "<<edep_corr<<std::endl
 		        	<<", energyKin = "<< trackKine<<", mass = "<< mass<< ", momentum.mag2() = "<< h.momentum().mag2()<<std::endl;
 		 } 
 
@@ -553,8 +552,8 @@ double posZ = posInCrystal.x();
 
 
 
-  void MakeCaloReadoutHits::printDataProductInfo( HandleVector const& crystalStepsHandles,
-                                                  HandleVector const& readoutStepsHandles ){
+  void MakeCaloReadoutHits::printDataProductInfo( HandleVector const& crystalStepsHandles,HandleVector const& readoutStepsHandles )
+  {
       mf::LogInfo log(_messageCategory);
       log << "MakeCaloReadoutHit::produce will use StepPointMCs from: \n";
       for ( HandleVector::const_iterator i=crystalStepsHandles.begin(), e=crystalStepsHandles.end();
@@ -571,28 +570,29 @@ double posZ = posInCrystal.x();
   } 
   
   
-  void MakeCaloReadoutHits::nonLinearityCorrection(double kinetic_energy, double energy, int cryId, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations ){
-  
-		double MeV2keV = 1000.0;
-				
-		//the formula used returns positive values if tmpEnergy>(approximately) 3keV, see Mu2e doc 1748-v1
-		kinetic_energy = MeV2keV*kinetic_energy;
-		double trackKine = kinetic_energy;
-		kinetic_energy = std::log10(kinetic_energy);
-		kinetic_energy *= _randGauss.fire(calorimeterCalibrations->LINpar2(cryId), calorimeterCalibrations->LINpar2Err(cryId) );
-		kinetic_energy += _randGauss.fire(calorimeterCalibrations->LINpar1(cryId), calorimeterCalibrations->LINpar1Err(cryId) );
-		kinetic_energy = std::log10(kinetic_energy);
-		kinetic_energy *= _randGauss.fire(calorimeterCalibrations->LINpar0(cryId), calorimeterCalibrations->LINpar0Err(cryId) );
-		kinetic_energy /= _randGauss.fire(calorimeterCalibrations->LINpar3(cryId), calorimeterCalibrations->LINpar3Err(cryId) );
-		kinetic_energy /= std::log10(trackKine);
-		
-		if (kinetic_energy>0) energy *= kinetic_energy;
-		
+  void MakeCaloReadoutHits::nonLinearityCorrection(double kinetic_energy, double& energy, int cryId, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations )
+  { 
+
+      double MeV2keV = 1000.0;
+
+      //the formula used returns positive values if tmpEnergy>(approximately) 3keV, see Mu2e doc 1748-v1
+      kinetic_energy = MeV2keV*kinetic_energy;
+      double trackKine = kinetic_energy;
+      kinetic_energy = std::log10(kinetic_energy);
+      kinetic_energy *= _randGauss.fire(calorimeterCalibrations->LINpar2(cryId), calorimeterCalibrations->LINpar2Err(cryId) );
+      kinetic_energy += _randGauss.fire(calorimeterCalibrations->LINpar1(cryId), calorimeterCalibrations->LINpar1Err(cryId) );
+      kinetic_energy = std::log10(kinetic_energy);
+      kinetic_energy *= _randGauss.fire(calorimeterCalibrations->LINpar0(cryId), calorimeterCalibrations->LINpar0Err(cryId) );
+      kinetic_energy /= _randGauss.fire(calorimeterCalibrations->LINpar3(cryId), calorimeterCalibrations->LINpar3Err(cryId) );
+      kinetic_energy /= std::log10(trackKine);
+
+      if (kinetic_energy>0) energy *= kinetic_energy;		
   }
   
-  void MakeCaloReadoutHits::longitudinalResponseUniformityCorrection(double posZ, double cryhalflength, double energy, int crid, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations ){
-     posZ *= -1.0;
-     posZ += cryhalflength;
+  void MakeCaloReadoutHits::longitudinalResponseUniformityCorrection(double posZ, double cryhalflength, double& energy, int crid, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations )
+  {
+     //posZ *= -1.0;
+     //posZ += cryhalflength;
      posZ *= -_randGauss.fire(calorimeterCalibrations->LRUpar0(crid), calorimeterCalibrations->LRUpar0Err(crid) );
      posZ += 1.0;
      energy *= posZ;

@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for CaloCrystal Detectors
 //
-// $Id: CaloCrystalSD.cc,v 1.23 2013/03/08 01:22:32 echenard Exp $
+// $Id: CaloCrystalSD.cc,v 1.24 2013/05/28 22:11:24 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/03/08 01:22:32 $
+// $Date: 2013/05/28 22:11:24 $
 //
 // Original author Ivan Logashenko
 //
@@ -70,6 +70,7 @@ namespace mu2e {
 
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.
+
     _collection->
       push_back(StepPointMC(art::Ptr<SimParticle>
                             ( *_simID,
