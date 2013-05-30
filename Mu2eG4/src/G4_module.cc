@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.65 2013/03/29 05:45:03 gandr Exp $
+// $Id: G4_module.cc,v 1.66 2013/05/30 18:40:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/29 05:45:03 $
+// $Date: 2013/05/30 18:40:35 $
 //
 // Original author Rob Kutschke
 //
@@ -42,7 +42,7 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
-#include "Analyses/inc/DiagnosticsG4.hh"
+#include "Mu2eUtilities/inc/DiagnosticsG4.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/generateFieldMap.hh"
 #include "SeedService/inc/SeedService.hh"

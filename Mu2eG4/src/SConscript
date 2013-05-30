@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.38 2013/04/30 14:56:57 knoepfel Exp $
-# $Author: knoepfel $
-# $Date: 2013/04/30 14:56:57 $
+# $Id: SConscript,v 1.39 2013/05/30 18:40:35 gandr Exp $
+# $Author: gandr $
+# $Date: 2013/05/30 18:40:35 $
 #
 # Original author Rob Kutschke.
 #
@@ -159,7 +159,6 @@ mainlib = helper.make_mainlib ( [
     'art_Framework_Core',
     'art_Framework_Modules_RandomNumberSaver_module',
     'art_Framework_Services_Optional_TFileService_service',
-    'mu2e_Analyses',
     'mu2e_GeomPrimitives',
     'mu2e_GeometryService',
     'mu2e_ConditionsService',
@@ -182,7 +181,6 @@ helper.make_plugins( [
     'art_Framework_Core',
     'art_Framework_Modules_RandomNumberSaver_module',
     'art_Framework_Services_Optional_TFileService_service',
-    'mu2e_Analyses',
     'mu2e_GeometryService',
     'mu2e_ConditionsService',
     'mu2e_SeedService_SeedService_service',

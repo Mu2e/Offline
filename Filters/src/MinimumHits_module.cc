@@ -1,15 +1,15 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: MinimumHits_module.cc,v 1.11 2012/12/04 00:51:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Id: MinimumHits_module.cc,v 1.12 2013/05/30 18:40:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/30 18:40:35 $
 //
 // Contact person Rob Kutschke.
 //
 
 // Mu2e includes.
-#include "Analyses/inc/DiagnosticsG4.hh"
-#include "Analyses/inc/GeneratorSummaryHistograms.hh"
+#include "Mu2eUtilities/inc/DiagnosticsG4.hh"
+#include "Mu2eUtilities/inc/GeneratorSummaryHistograms.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepFilterMode.hh"

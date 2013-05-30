@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.4 2013/03/18 19:57:09 genser Exp $
-# $Author: genser $
-# $Date: 2013/03/18 19:57:09 $
+# $Id: SConscript,v 1.5 2013/05/30 18:40:35 gandr Exp $
+# $Author: gandr $
+# $Date: 2013/05/30 18:40:35 $
 #
 # Original author Rob Kutschke.
 #
@@ -39,7 +39,6 @@ helper.make_plugins( [ mainlib,
 		       'mu2e_GeneralUtilities',
 		       'mu2e_MCDataProducts',
 		       'mu2e_RecoDataProducts',
-		       'mu2e_Analyses' ,
 		       'CLHEP',
 		       'cetlib',
 		       rootlibs

@@ -1,10 +1,13 @@
-  $Id: v3_0_1.txt,v 1.35 2013/05/23 16:38:49 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2013/05/23 16:38:49 $
+  $Id: v3_0_1.txt,v 1.36 2013/05/30 18:40:36 gandr Exp $
+  $Author: gandr $
+  $Date: 2013/05/30 18:40:36 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+35) May 30, 2013, gandr
+    Made Analyses a leaf package.  Nothing should depend on it.
 
 34) May 23, 2013, kutschke
     Added tests of restoring random number state to Sandbox.

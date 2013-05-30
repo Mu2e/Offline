@@ -4,9 +4,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.hh,v 1.6 2013/03/29 04:35:17 gandr Exp $
+// $Id: DiagnosticsG4.hh,v 1.1 2013/05/30 18:40:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Date: 2013/05/30 18:40:35 $
 //
 // Original author Rob Kutschke
 //

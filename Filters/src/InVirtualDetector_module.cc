@@ -3,15 +3,15 @@
 // select events in which at least on of the particles has a step in
 // that virtual detector.
 //
-// $Id: InVirtualDetector_module.cc,v 1.1 2012/08/12 20:54:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/08/12 20:54:41 $
+// $Id: InVirtualDetector_module.cc,v 1.2 2013/05/30 18:40:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/30 18:40:35 $
 //
 // Contact person Rob Kutschke.
 //
 
 // Mu2e includes.
-#include "Analyses/inc/DiagnosticsG4.hh"
+#include "Mu2eUtilities/inc/DiagnosticsG4.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "MCDataProducts/inc/StatusG4.hh"

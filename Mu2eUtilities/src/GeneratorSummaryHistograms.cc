@@ -1,15 +1,15 @@
 //
 // Make histograms summarizing the information in the event generator.
 //
-// $Id: GeneratorSummaryHistograms.cc,v 1.2 2011/07/17 21:38:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/17 21:38:17 $
+// $Id: GeneratorSummaryHistograms.cc,v 1.1 2013/05/30 18:40:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/30 18:40:36 $
 //
 // Contact person Rob Kutschke
 //
 
 // Mu2e includes
-#include "Analyses/inc/GeneratorSummaryHistograms.hh"
+#include "Mu2eUtilities/inc/GeneratorSummaryHistograms.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TargetGeom/inc/zBinningForFoils.hh"
 #include "TargetGeom/inc/Target.hh"

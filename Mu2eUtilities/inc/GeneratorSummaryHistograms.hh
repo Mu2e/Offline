@@ -3,9 +3,9 @@
 //
 // Make histograms summarizing the information in the event generator.
 //
-// $Id: GeneratorSummaryHistograms.hh,v 1.3 2011/10/28 18:47:05 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:05 $
+// $Id: GeneratorSummaryHistograms.hh,v 1.1 2013/05/30 18:40:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/30 18:40:36 $
 //
 // Contact person Rob Kutschke
 //

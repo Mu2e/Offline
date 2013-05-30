@@ -1,15 +1,15 @@
 //
 // Select events with a minimum number of ExtMonUCI Hits.
-// $Id: ExtMonUCIFilter_module.cc,v 1.1 2012/04/25 00:12:38 youzy Exp $
-// $Author: youzy $
-// $Date: 2012/04/25 00:12:38 $
+// $Id: ExtMonUCIFilter_module.cc,v 1.2 2013/05/30 18:40:35 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/30 18:40:35 $
 //
 // Contact person Zhengyun You.
 //
 
 // Mu2e includes.
-#include "Analyses/inc/DiagnosticsG4.hh"
-#include "Analyses/inc/GeneratorSummaryHistograms.hh"
+#include "Mu2eUtilities/inc/DiagnosticsG4.hh"
+#include "Mu2eUtilities/inc/GeneratorSummaryHistograms.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"

@@ -2,9 +2,9 @@
 // A place to make diagnostic histograms, tables etc for G4.
 // This is called by G4_plugin at appropriate times.
 //
-// $Id: DiagnosticsG4.cc,v 1.7 2013/03/29 04:35:17 gandr Exp $
+// $Id: DiagnosticsG4.cc,v 1.1 2013/05/30 18:40:36 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Date: 2013/05/30 18:40:36 $
 //
 // Original author Rob Kutschke
 //
@@ -18,7 +18,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e includes
-#include "Analyses/inc/DiagnosticsG4.hh"
+#include "Mu2eUtilities/inc/DiagnosticsG4.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
 // ROOT includes
