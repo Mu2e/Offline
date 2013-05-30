@@ -1,9 +1,0 @@
-#include "ExtinctionMonitorFNAL/test/geom_emfMARS.txt"
-
-// bool g4SteppingAction.killerVerbose = true;
-vector<string> g4SteppingAction.killInTheseVolumes = {};
-
-// This tells emacs to view this file in c++ mode.
-// Local Variables:
-// mode:c++
-// End:

@@ -1,3 +1,0 @@
-Materials_list
-ITInBarrelAuto 0.0848996 0 0 1 1 Carbon 0 42.7 0 0 20 1 solid
-ITgasAuto 0.000727856 0 0 6 0.27932 Carbon 0 0.0804737 Silver 0 0.31395 Aluminum 0 0.0582145 Molybdenum 0 0.0586015 Hydrogen 0 0.20944 Helium 0 -10 0 0 20 1 gas

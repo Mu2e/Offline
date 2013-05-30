@@ -1,5 +1,0 @@
-EventDisplayDict.cc: EventDisplayFrame.h dict_classes/*.h LinkDef.h
-	echo "Generating ROOT dictionary for EventDisplay ..."
-	cd ../../; rootcint -f EventDisplay/src/EventDisplayDict.cc -c EventDisplay/src/EventDisplayFrame.h EventDisplay/src/dict_classes/*.h EventDisplay/src/LinkDef.h
-	echo "Done."
-
