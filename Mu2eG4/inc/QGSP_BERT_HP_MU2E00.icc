@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: QGSP_BERT_HP_MU2E00.icc,v 1.4 2012/07/30 19:38:50 genser Exp $
+// $Id: QGSP_BERT_HP_MU2E00.icc,v 1.5 2013/05/30 21:45:03 genser Exp $
 // GEANT4 tag $Name:  $
 //
 //---------------------------------------------------------------------------
@@ -58,7 +58,7 @@
 #include <iomanip>   
 
 #include "G4DecayPhysics.hh"
-#include "G4EmStandardPhysics.hh"
+#include "G4EmStandardPhysics_option3.hh"
 #include "G4EmExtraPhysics.hh"
 #include "G4IonPhysics.hh"
 #include "G4QStoppingPhysics.hh"
