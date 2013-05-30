@@ -1,10 +1,20 @@
-  $Id: v3_0_1.txt,v 1.36 2013/05/30 18:40:36 gandr Exp $
-  $Author: gandr $
-  $Date: 2013/05/30 18:40:36 $
+  $Id: v3_0_1.txt,v 1.37 2013/05/30 21:47:56 genser Exp $
+  $Author: genser $
+  $Date: 2013/05/30 21:47:56 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+36) May 30, 2013, genser
+    Added draft version of a Shielding derived Geant4 Physics List Shielding_MU2E00
+    Removed old N02 physics list; removed default from g4.physicsListName
+      Mu2eG4/inc/HadronPhysicsShielding_MU2E00.hh
+      Mu2eG4/inc/QGSP_BERT_HP_MU2E00.icc
+      Mu2eG4/inc/Shielding_MU2E00.hh
+      Mu2eG4/inc/Shielding_MU2E00.icc
+      Mu2eG4/src/HadronPhysicsShielding_MU2E00.cc
+      Mu2eG4/src/physicsListDecider.cc
 
 35) May 30, 2013, gandr
     Made Analyses a leaf package.  Nothing should depend on it.
