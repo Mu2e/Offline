@@ -1,9 +1,9 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.13 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: physicsListDecider.cc,v 1.14 2013/05/30 21:46:51 genser Exp $
+// $Author: genser $
+// $Date: 2013/05/30 21:46:51 $
 //
 // Original author Rob Kutschke
 //
@@ -34,13 +34,14 @@
 // Mu2e includes
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
-#include "Mu2eG4/inc/QGSP_BERT_MU2E00.hh"
 #include "Mu2eG4/inc/PhysicsList.hh"
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 //tmp arrangement
 #include "Mu2eG4/inc/QGSP_BERT_HP_MU2E00.hh"
+#include "Mu2eG4/inc/QGSP_BERT_MU2E00.hh"
+#include "Mu2eG4/inc/Shielding_MU2E00.hh"
 
 // G4 includes
 #include "G4PhysListFactory.hh"
@@ -55,15 +56,11 @@ namespace mu2e{
 
     G4VUserPhysicsList* physicsList(0);
 
-    string name = config.getString("g4.physicsListName","N02");
+    string name = config.getString("g4.physicsListName");
 
     // Two special cases
     if ( name  == "Minimal" ) {
       physicsList = dynamic_cast<G4VUserPhysicsList*>(new MinimalPhysicsList );
-    }
-
-    else if ( name == "N02" ){
-      physicsList = dynamic_cast<G4VUserPhysicsList*>(new PhysicsList(config) );
     }
 
     else if ( name == "QGSP" ){
@@ -80,6 +77,12 @@ namespace mu2e{
 
     else if ( name == "QGSP_BERT_HP_MU2E00" ){
       G4VModularPhysicsList* tmp = new QGSP_BERT_HP_MU2E00(config);
+      tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
+      physicsList = tmp;
+    }
+
+    else if ( name == "Shielding_MU2E00" ){
+      G4VModularPhysicsList* tmp = new Shielding_MU2E00();
       tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
       physicsList = tmp;
     }
