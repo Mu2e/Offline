@@ -1,9 +1,9 @@
 //
 // Make histograms summarizing the information in the event generator.
 //
-// $Id: GeneratorSummaryHistograms.cc,v 1.1 2013/05/30 18:40:36 gandr Exp $
+// $Id: GeneratorSummaryHistograms.cc,v 1.2 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/30 18:40:36 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Contact person Rob Kutschke
 //
@@ -11,8 +11,8 @@
 // Mu2e includes
 #include "Mu2eUtilities/inc/GeneratorSummaryHistograms.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TargetGeom/inc/zBinningForFoils.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "StoppingTargetGeom/inc/zBinningForFoils.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
 
 // Framework includes
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -62,7 +62,7 @@ namespace mu2e {
   void GeneratorSummaryHistograms::book( art::TFileDirectory& tfdir ){
 
     int nId(GenId::lastEnum);
-    GeomHandle<Target> target;
+    GeomHandle<StoppingTarget> target;
     Binning bins  = zBinningForFoils(*target,7);
     Binning bins2 = zBinningForFoils(*target,3);
 

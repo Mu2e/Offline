@@ -5,21 +5,21 @@
 //
 // See additional details in the comments in the header file.
 //
-// $Id: zBinningForFoils.cc,v 1.5 2013/05/31 18:07:29 gandr Exp $
+// $Id: zBinningForFoils.cc,v 1.1 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:29 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke
 //
 
 #include "cetlib/exception.h"
 
-#include "TargetGeom/inc/Target.hh"
-#include "TargetGeom/inc/zBinningForFoils.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "StoppingTargetGeom/inc/zBinningForFoils.hh"
 
 namespace mu2e{
 
-  Binning zBinningForFoils( Target const& target, int nBinsDZ ){
+  Binning zBinningForFoils( StoppingTarget const& target, int nBinsDZ ){
 
     int nfoils = target.nFoils();
 

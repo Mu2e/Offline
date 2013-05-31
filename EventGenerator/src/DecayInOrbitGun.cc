@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.55 2013/05/31 18:07:29 gandr Exp $
+// $Id: DecayInOrbitGun.cc,v 1.56 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:29 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke
 //
@@ -21,8 +21,8 @@
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
-#include "TargetGeom/inc/Target.hh"
-#include "TargetGeom/inc/zBinningForFoils.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "StoppingTargetGeom/inc/zBinningForFoils.hh"
 #include "TH1D.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -163,7 +163,7 @@ namespace mu2e {
 
     if ( _doHistograms ){
       // Compute a binning that ensures that the stopping target foils are at bin centers.
-      GeomHandle<Target> target;
+      GeomHandle<StoppingTarget> target;
       Binning bins = zBinningForFoils(*target,7);
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "DecayInOrbit" );

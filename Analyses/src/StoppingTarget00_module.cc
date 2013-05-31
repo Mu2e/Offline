@@ -1,9 +1,9 @@
 //
 // A first look at muons stopping in stopping targets.
 //
-// $Id: StoppingTarget00_module.cc,v 1.12 2013/05/31 18:07:18 gandr Exp $
+// $Id: StoppingTarget00_module.cc,v 1.13 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke.
 //
@@ -31,7 +31,7 @@
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
 
 // Root includes.
 #include "TH1F.h"
@@ -143,7 +143,7 @@ namespace mu2e {
     // Information about the detector coordinate system.
     //GeomHandle<DetectorSystem> det;
 
-    GeomHandle<Target> target;
+    GeomHandle<StoppingTarget> target;
 
     // Simulated particles.
     art::Handle<SimParticleCollection> simsHandle;

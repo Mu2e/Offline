@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.49 2013/05/31 18:07:18 gandr Exp $
+// $Id: GeometryService_service.cc,v 1.50 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke
 //
@@ -44,8 +44,8 @@
 #include "ProductionSolenoidGeom/inc/PSShieldMaker.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDumpMaker.hh"
-#include "TargetGeom/inc/Target.hh"
-#include "TargetGeom/inc/TargetMaker.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "StoppingTargetGeom/inc/StoppingTargetMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
 #include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorber.hh"
@@ -215,8 +215,8 @@ namespace mu2e {
     const DetectorSolenoid& ds = *tmpDS.get();
     addDetector(std::move(tmpDS));
 
-    std::unique_ptr<Target> tmptgt(TargetMaker(detSys.getOrigin(), *_config).getTargetPtr());
-    const Target& target = *tmptgt.get();
+    std::unique_ptr<StoppingTarget> tmptgt(StoppingTargetMaker(detSys.getOrigin(), *_config).getTargetPtr());
+    const StoppingTarget& target = *tmptgt.get();
     addDetector(std::move(tmptgt));
 
     if (_config->getBool("hasITracker",false)){

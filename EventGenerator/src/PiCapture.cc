@@ -3,9 +3,9 @@
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 // add internal conversion, 11/2011 rhb
 //
-// $Id: PiCapture.cc,v 1.39 2013/05/31 18:07:29 gandr Exp $
+// $Id: PiCapture.cc,v 1.40 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:29 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -24,7 +24,7 @@
 #include "EventGenerator/inc/PiCapture.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "TargetGeom/inc/zBinningForFoils.hh"
+#include "StoppingTargetGeom/inc/zBinningForFoils.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
@@ -106,7 +106,7 @@ namespace mu2e {
    
     if ( _doHistograms ) {
       // Compute a binning that ensures that the stopping target foils are at bin centers.
-      GeomHandle<Target> target;
+      GeomHandle<StoppingTarget> target;
       Binning bins = zBinningForFoils(*target,7);
 
       art::ServiceHandle<art::TFileService> tfs;

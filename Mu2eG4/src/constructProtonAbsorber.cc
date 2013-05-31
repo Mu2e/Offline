@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.22 2013/05/31 18:07:18 gandr Exp $
+// $Id: constructProtonAbsorber.cc,v 1.23 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -22,7 +22,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestCons.hh"
@@ -139,7 +139,7 @@ namespace mu2e {
       MaterialFinder materialFinder(_config);
       G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
 
-      GeomHandle<Target> target;
+      GeomHandle<StoppingTarget> target;
 
       // The proton absorber starts at the target end.
       // we add space for the virtual detector here

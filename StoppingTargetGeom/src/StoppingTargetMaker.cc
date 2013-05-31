@@ -2,9 +2,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.cc,v 1.15 2013/05/31 18:07:18 gandr Exp $
+// $Id: StoppingTargetMaker.cc,v 1.1 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Peter Shanahan
 //
@@ -18,18 +18,18 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "TargetGeom/inc/TargetMaker.hh"
+#include "StoppingTargetGeom/inc/StoppingTargetMaker.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
-#include "TargetGeom/inc/Target.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 using namespace std;
 
 namespace mu2e {
 
-  TargetMaker::TargetMaker(const CLHEP::Hep3Vector& detSysOrigin, SimpleConfig const& c)
+  StoppingTargetMaker::StoppingTargetMaker(const CLHEP::Hep3Vector& detSysOrigin, SimpleConfig const& c)
     : _detSysOrigin(detSysOrigin)
     , _rIn(0.)
   {
@@ -101,12 +101,12 @@ namespace mu2e {
   }
 
 
-  void TargetMaker::BuildIt(){
+  void StoppingTargetMaker::BuildIt(){
 
     // Build the Target Geometry.  This means MU2E internal geometry, not
     // Root, G4, or any other scheme.
 
-    _targ = unique_ptr<Target>(new Target());
+    _targ = unique_ptr<StoppingTarget>(new StoppingTarget());
 
     // create the TargetFoils
 
@@ -173,12 +173,12 @@ namespace mu2e {
 
   }//::BuildIt
 
-  void TargetMaker::PrintConfig()
+  void StoppingTargetMaker::PrintConfig()
   {
-    // printout the TargetMaker's understanding of what it needs to build.
+    // printout the StoppingTargetMaker's understanding of what it needs to build.
     //  for debugging...
 
-    std::cout<<"\n TargetMaker Input Configuration -----------------"<<std::endl;
+    std::cout<<"\n StoppingTargetMaker Input Configuration -----------------"<<std::endl;
     std::cout<<"\n Target System:"<<std::endl;
     std::cout
       <<"Stopping target Z0 in Mu2e ="<<_z0InMu2e

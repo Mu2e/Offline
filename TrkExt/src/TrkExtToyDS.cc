@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtToyDS.cc,v 1.3 2013/04/02 01:45:17 mjlee Exp $
-//  $Author: mjlee $
-//  $Date: 2013/04/02 01:45:17 $
+//  $Id: TrkExtToyDS.cc,v 1.4 2013/05/31 20:04:27 gandr Exp $
+//  $Author: gandr $
+//  $Date: 2013/05/31 20:04:27 $
 //
 //  Original author MyeongJae Lee
 //
@@ -19,8 +19,8 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "TargetGeom/inc/Target.hh"
-#include "TargetGeom/inc/TargetFoil.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "StoppingTargetGeom/inc/TargetFoil.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
 

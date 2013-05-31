@@ -84,7 +84,7 @@ namespace mu2e {
     _posAlgo ( posAlgo ),
     _timeAlgo ( timeAlgo ),
     // number of foils of the target
-    _nfoils ( GeomHandle<Target>()->nFoils() ),
+    _nfoils ( GeomHandle<StoppingTarget>()->nFoils() ),
     // Random number distributions; getEngine comes from the base class.
     _randFlat ( engine ) ,
     _randTime( engine ),
@@ -158,7 +158,7 @@ namespace mu2e {
       }
 
       // Get access to the geometry system.
-      GeomHandle<Target> target;
+      GeomHandle<StoppingTarget> target;
       TargetFoil const& foil = target->foil(_ifoil);
 
       //Pick up position
@@ -239,7 +239,7 @@ namespace mu2e {
   vector<double> FoilParticleGenerator::binnedFoilsVolume() {
 
     vector<double> volumes;
-    GeomHandle<Target> target;
+    GeomHandle<StoppingTarget> target;
     for (int i=0; i< _nfoils; ++i) {
       TargetFoil const& foil = target->foil(i);
       double rout = foil.rOut();

@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.45 2013/05/31 18:07:29 gandr Exp $
+// $Id: ConversionGun.cc,v 1.46 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:29 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke
 //
@@ -27,7 +27,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "TargetGeom/inc/zBinningForFoils.hh"
+#include "StoppingTargetGeom/inc/zBinningForFoils.hh"
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -165,7 +165,7 @@ namespace mu2e {
   void ConversionGun::bookHistograms(){
 
     // Compute a binning that ensures that the stopping target foils are at bin centers.
-    GeomHandle<Target> target;
+    GeomHandle<StoppingTarget> target;
     Binning bins = zBinningForFoils(*target,7);
     Binning bins2 = zBinningForFoils(*target,3);
 

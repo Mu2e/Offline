@@ -2,9 +2,9 @@
 // Construct and return MECOStyleProtonAbsorber
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.6 2013/05/31 18:07:18 gandr Exp $
+// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.7 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author MyeongJae Lee
 //
@@ -29,7 +29,7 @@
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -39,7 +39,7 @@ namespace mu2e {
 
   // Constructor that gets information from the config file instead of
   // from arguments.
-  MECOStyleProtonAbsorberMaker::MECOStyleProtonAbsorberMaker(SimpleConfig const& _config, const DetectorSolenoid& ds, const Target& target)
+  MECOStyleProtonAbsorberMaker::MECOStyleProtonAbsorberMaker(SimpleConfig const& _config, const DetectorSolenoid& ds, const StoppingTarget& target)
     : _ds(&ds), _target(&target)
   {
     BuildIt (_config);

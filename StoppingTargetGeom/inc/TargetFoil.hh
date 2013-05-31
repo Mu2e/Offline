@@ -1,13 +1,13 @@
-#ifndef TargetGeom_TargetFoil_hh
-#define TargetGeom_TargetFoil_hh
+#ifndef StoppingTargetGeom_TargetFoil_hh
+#define StoppingTargetGeom_TargetFoil_hh
 
 //
 // Class to represent one target foil.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: TargetFoil.hh,v 1.9 2013/05/31 18:07:18 gandr Exp $
+// $Id: TargetFoil.hh,v 1.1 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke
 //
@@ -76,10 +76,10 @@ namespace mu2e {
 
     // Half-thickness in z.
     double _t;
-               
+
     std::string _material;
 
   };
 
 }
-#endif /* TargetGeom_TargetFoil_hh */
+#endif /* StoppingTargetGeom_TargetFoil_hh */

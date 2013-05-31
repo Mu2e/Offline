@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.156 2013/05/31 15:49:57 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/05/31 15:49:57 $
+// $Id: Mu2eWorld.cc,v 1.157 2013/05/31 20:04:27 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke
 //
@@ -80,7 +80,7 @@
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/TransportSolenoid.hh"
 #include "GeometryService/inc/VirtualDetector.hh"

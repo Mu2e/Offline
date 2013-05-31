@@ -1,12 +1,12 @@
-#ifndef TargetGeom_TargetMaker_hh
-#define TargetGeom_TargetMaker_hh
+#ifndef StoppingTargetGeom_StoppingTargetMaker_hh
+#define StoppingTargetGeom_StoppingTargetMaker_hh
 //
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.hh,v 1.6 2013/05/31 18:07:18 gandr Exp $
+// $Id: StoppingTargetMaker.hh,v 1.1 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Peter Shanahan
 //
@@ -19,19 +19,19 @@
 
 namespace mu2e {
 
-class Target;
+class StoppingTarget;
 class SimpleConfig;
 
-class TargetMaker{
+class StoppingTargetMaker{
 
 public:
 
-  TargetMaker(const CLHEP::Hep3Vector& detSysOrigin, SimpleConfig const& config );
+  StoppingTargetMaker(const CLHEP::Hep3Vector& detSysOrigin, SimpleConfig const& config );
 
   // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
   // This is the accessor that will remain.
-  std::unique_ptr<Target> getTargetPtr() { return std::move(_targ); }
+  std::unique_ptr<StoppingTarget> getTargetPtr() { return std::move(_targ); }
 
 private:
 
@@ -42,7 +42,7 @@ private:
   //  SimpleConfig const& _config;
 
   // pointer to the Mu2E Geometry Target being made
-  std::unique_ptr<Target> _targ;
+  std::unique_ptr<StoppingTarget> _targ;
 
   // variables needed to build the Target.  Read in from config file,
   // data base, etc.  These (and the TargetMaker object itself) only need
@@ -69,4 +69,4 @@ private:
 
 }  //namespace mu2e
 
-#endif /* TargetGeom_TargetMaker_hh */
+#endif /* StoppingTargetGeom_StoppingTargetMaker_hh */

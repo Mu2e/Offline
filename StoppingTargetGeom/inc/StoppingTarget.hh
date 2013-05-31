@@ -1,13 +1,13 @@
-#ifndef TargetGeom_Target_hh
-#define TargetGeom_Target_hh
+#ifndef StoppingTargetGeom_StoppingTarget_hh
+#define StoppingTargetGeom_StoppingTarget_hh
 
 //
 // Class to represent the system of target foils.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: Target.hh,v 1.11 2013/05/31 18:07:18 gandr Exp $
+// $Id: StoppingTarget.hh,v 1.1 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke
 //
@@ -20,19 +20,19 @@
 
 // Includes from Mu2e
 #include "Mu2eInterfaces/inc/Detector.hh"
-#include "TargetGeom/inc/TargetFoil.hh"
+#include "StoppingTargetGeom/inc/TargetFoil.hh"
 
 namespace mu2e {
 
   // Forward reference.
   class SimpleConfig;
 
-  class Target : virtual public Detector{
+  class StoppingTarget : virtual public Detector{
 
-  friend class TargetMaker;
+  friend class StoppingTargetMaker;
 
   public:
-    Target() : _radius(), _zLen() {}
+    StoppingTarget() : _radius(), _zLen() {}
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
@@ -61,4 +61,4 @@ namespace mu2e {
 
   };
 }
-#endif /* TargetGeom_Target_hh */
+#endif /* StoppingTargetGeom_StoppingTarget_hh */

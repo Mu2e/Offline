@@ -1,5 +1,5 @@
-#ifndef TargetGeom_zBinningForFoils_hh
-#define TargetGeom_zBinningForFoils_hh
+#ifndef StoppingTargetGeom_zBinningForFoils_hh
+#define StoppingTargetGeom_zBinningForFoils_hh
 
 //
 // Free function to compute a convenient binning for a histogram that will show
@@ -14,9 +14,9 @@
 // The case of a target with one foil is handed differently.
 // This uses the DetectorSystem coordinates, not the Mu2e system.
 //
-// $Id: zBinningForFoils.hh,v 1.4 2013/05/31 18:07:29 gandr Exp $
+// $Id: zBinningForFoils.hh,v 1.1 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:29 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke
 
@@ -24,10 +24,10 @@
 
 namespace mu2e {
 
-  class Target;
+  class StoppingTarget;
 
-  Binning zBinningForFoils( Target const& target, int nBinsDZ );
+  Binning zBinningForFoils( StoppingTarget const& target, int nBinsDZ );
 
 } // namespace mu2e
 
-#endif /* TargetGeom_zBinningForFoils_hh */
+#endif /* StoppingTargetGeom_zBinningForFoils_hh */

@@ -4,9 +4,9 @@
 // Construct and return an MECOStyleProtonAbsorber.
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.hh,v 1.4 2013/05/31 18:07:18 gandr Exp $
+// $Id: MECOStyleProtonAbsorberMaker.hh,v 1.5 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author MyeongJae Lee
 //
@@ -20,13 +20,13 @@ namespace mu2e {
 class MECOStyleProtonAbsorber;
 class SimpleConfig;
 class DetectorSolenoid;
-class Target;
+class StoppingTarget;
 
 class MECOStyleProtonAbsorberMaker{
 
 public:
 
-  MECOStyleProtonAbsorberMaker(SimpleConfig const& _config, const DetectorSolenoid& ds, const Target& target);
+  MECOStyleProtonAbsorberMaker(SimpleConfig const& _config, const DetectorSolenoid& ds, const StoppingTarget& target);
 
   void BuildIt ( SimpleConfig const& _config);
 
@@ -46,7 +46,7 @@ private:
   std::unique_ptr<MECOStyleProtonAbsorber> _pabs;
 
   const DetectorSolenoid *_ds;
-  const Target *_target;
+  const StoppingTarget *_target;
 
 };
 

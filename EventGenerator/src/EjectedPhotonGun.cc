@@ -3,9 +3,9 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.
 // //
-// $Id: EjectedPhotonGun.cc,v 1.14 2013/05/31 18:07:29 gandr Exp $
+// $Id: EjectedPhotonGun.cc,v 1.15 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:29 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Gianni Onorato
 //
@@ -30,8 +30,8 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "TargetGeom/inc/Target.hh"
-#include "TargetGeom/inc/zBinningForFoils.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "StoppingTargetGeom/inc/zBinningForFoils.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -112,7 +112,7 @@ namespace mu2e {
 
     // Book histograms.
     if ( _doHistograms ){
-      GeomHandle<Target> target;
+      GeomHandle<StoppingTarget> target;
       Binning bins = zBinningForFoils(*target,7);
       Binning bins2 = zBinningForFoils(*target,3);
 

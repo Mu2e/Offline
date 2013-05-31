@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.cc,v 1.14 2013/05/31 18:07:18 gandr Exp $
+// $Id: PiEplusNuGun.cc,v 1.15 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke heavily modified by R. Bernstein
 //
@@ -26,7 +26,7 @@
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 
 // Other external includes.
@@ -87,7 +87,7 @@ namespace mu2e {
     static RandomUnitSphere randomUnitSphere( getEngine(), _czmin, _czmax, _phimin, _phimax );
 
     // Get access to the geometry system.
-    GeomHandle<Target> target;
+    GeomHandle<StoppingTarget> target;
     GeomHandle<Mu2eBuilding> building;
 
     int nFoils = target->nFoils();

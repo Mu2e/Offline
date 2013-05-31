@@ -1,9 +1,9 @@
 //
 // A module to follow the conversion electron in the events
 //
-// $Id: ConvElecHistory_module.cc,v 1.9 2013/05/31 18:07:18 gandr Exp $
+// $Id: ConvElecHistory_module.cc,v 1.10 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Gianni Onorato
 //
@@ -21,7 +21,7 @@
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
 #include "TFile.h"
 #include "TTree.h"
@@ -296,7 +296,7 @@ namespace mu2e {
     B_gencosth   = genCE.momentum().cosTheta();
     B_genphi     = genCE.momentum().phi();
 
-    GeomHandle<Target> target;
+    GeomHandle<StoppingTarget> target;
     float nfoil = 0;
     for (int i=0; i<target->nFoils(); ++i) {
       TargetFoil const& foil = target->foil(i);

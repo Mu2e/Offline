@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.23 2013/05/31 18:07:29 gandr Exp $
+// $Id: NuclearCaptureGun.cc,v 1.24 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:29 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Gianni Onorato
 //
@@ -34,8 +34,8 @@
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
-#include "TargetGeom/inc/Target.hh"
-#include "TargetGeom/inc/zBinningForFoils.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "StoppingTargetGeom/inc/zBinningForFoils.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -150,7 +150,7 @@ namespace mu2e {
 
     // Book histograms.
     if ( _doHistograms ){
-      GeomHandle<Target> target;
+      GeomHandle<StoppingTarget> target;
       Binning bins = zBinningForFoils(*target,7);
 
       art::ServiceHandle<art::TFileService> tfs;

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.28 2013/05/31 15:49:57 knoepfel Exp $
-# $Author: knoepfel $
-# $Date: 2013/05/31 15:49:57 $
+# $Id: SConscript,v 1.29 2013/05/31 20:04:27 gandr Exp $
+# $Author: gandr $
+# $Date: 2013/05/31 20:04:27 $
 #
 # Original author Rob Kutschke.
 #
@@ -30,7 +30,7 @@ mainlib = helper.make_mainlib ( [
     'mu2e_TTrackerGeom',
     'mu2e_ITrackerGeom',
     'mu2e_TrackerGeom',
-    'mu2e_TargetGeom',
+    'mu2e_StoppingTargetGeom',
     'mu2e_Mu2eBuildingGeom',
     'mu2e_ProtonBeamDumpGeom',
     'mu2e_ProductionTargetGeom',

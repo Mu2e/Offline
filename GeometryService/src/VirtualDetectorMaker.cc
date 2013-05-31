@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.19 2013/05/31 18:07:18 gandr Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.20 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
 //
 
@@ -23,7 +23,7 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
@@ -113,7 +113,7 @@ namespace mu2e {
       // VD ST_In, ST_Out are placed inside DS2, just before and after
       // stopping target
 
-      GeomHandle<Target> target;
+      GeomHandle<StoppingTarget> target;
       GeomHandle<DetectorSolenoid> ds;
 
       const CLHEP::Hep3Vector ds2centerInMu2e(ds->position().x(), ds->position().y(), ds->zLocDs23Split() - ds->halfLengthDs2());

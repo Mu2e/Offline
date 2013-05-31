@@ -21,7 +21,7 @@
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomLimitedExpo.hh"
 #include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
 
 //CLHEP includes
 #include "CLHEP/Random/RandFlat.h"

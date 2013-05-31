@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.18 2013/05/31 18:07:18 gandr Exp $
+// $Id: constructStoppingTarget.cc,v 1.19 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Peter Shanahan
 //
@@ -20,7 +20,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
@@ -54,7 +54,7 @@ namespace mu2e {
     int verbosity(config.getInt("target.verbosity",0));
     if ( verbosity > 1 ) std::cout<<"In constructStoppingTarget"<<std::endl;
     // Master geometry for the Target assembly
-    GeomHandle<Target> target;
+    GeomHandle<StoppingTarget> target;
 
     G4VSensitiveDetector* stSD = G4SDManager::GetSDMpointer()->
       FindSensitiveDetector(SensitiveDetectorName::StoppingTarget());

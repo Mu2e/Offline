@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.63 2013/05/31 18:07:18 gandr Exp $
+// $Id: DataInterface.cc,v 1.64 2013/05/31 20:04:27 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 20:04:27 $
 //
 
 #include "DataInterface.h"
@@ -43,7 +43,7 @@
 #include "ITrackerGeom/inc/SuperLayer.hh"
 #include "ITrackerGeom/inc/Cell.hh"
 #include "ITrackerGeom/inc/CellGeometryHandle.hh"
-#include "TargetGeom/inc/Target.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Principal/Run.h"
 #include "cetlib/map_vector.h"
@@ -471,9 +471,9 @@ void DataInterface::fillGeometry()
     _otherstructures.push_back(shapeToyDS);
   }
 
-  if(geom->hasElement<mu2e::Target>())
+  if(geom->hasElement<mu2e::StoppingTarget>())
   {
-    mu2e::GeomHandle<mu2e::Target> target;
+    mu2e::GeomHandle<mu2e::StoppingTarget> target;
     double radius=target->cylinderRadius();
     double length=target->cylinderLength();
     double z=target->centerInMu2e().z() - _detSysOrigin.z();
@@ -650,7 +650,7 @@ void DataInterface::fillGeometry()
       inr[0] = outr[0] - thickness;
       inr[1] = outr[1] - thickness;
       halflength = config.getDouble("protonabsorber.halfLength");
-      mu2e::GeomHandle<mu2e::Target> target;
+      mu2e::GeomHandle<mu2e::StoppingTarget> target;
       double stoppingtargetlength=target->cylinderLength();
       double stoppingtargetz=target->centerInMu2e().z() - _detSysOrigin.z();
       z = stoppingtargetz + stoppingtargetlength*0.5 + halflength;

@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtStoppingTarget.cc,v 1.2 2013/05/31 18:07:18 gandr Exp $
+//  $Id: TrkExtStoppingTarget.cc,v 1.3 2013/05/31 20:04:27 gandr Exp $
 //  $Author: gandr $
-//  $Date: 2013/05/31 18:07:18 $
+//  $Date: 2013/05/31 20:04:27 $
 //
 //  Original author MyeongJae Lee
 //
@@ -18,8 +18,8 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "TargetGeom/inc/Target.hh"
-#include "TargetGeom/inc/TargetFoil.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "StoppingTargetGeom/inc/TargetFoil.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
 
 using namespace CLHEP;
@@ -45,7 +45,7 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     Hep3Vector origin = det->toMu2e( CLHEP::Hep3Vector(0.,0.,0.) );
 
-    GeomHandle<Target> target;
+    GeomHandle<StoppingTarget> target;
     foil.clear();
     for (int i = 0 ; i < target->nFoils() ; ++i) {
       TargetFoil f = target->foil(i);
