@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // neutrons.
 //
-// $Id: EjectedNeutronGun.cc,v 1.32 2013/03/15 18:20:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 18:20:22 $
+// $Id: EjectedNeutronGun.cc,v 1.33 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 // Original author Rob Kutschke (proton gun), adapted to neutron by G. Onorato
 //
@@ -28,11 +28,13 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/EjectedNeutronGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
 #include "TargetGeom/inc/Target.hh"
+#include "TargetGeom/inc/zBinningForFoils.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -84,6 +86,8 @@ namespace mu2e {
     _STfname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("ejectedNeutronGun.nToSkip",0)),
 
+    _detSys(),
+
      // Histogram pointers
     _hMultiplicity(),
     _hKE(),
@@ -117,15 +121,20 @@ namespace mu2e {
     double pLow  = (eLow  > _mass) ? sqrt(cet::diff_of_squares(eLow, _mass)) : 0.;
     double pHigh = (eHigh > _mass) ? sqrt(cet::diff_of_squares(eHigh,_mass)) : _mass;
 
+    _detSys = &*GeomHandle<DetectorSystem>();
+
     // Book histograms.
     if ( _doHistograms ){
+      // Compute a binning that ensures that the stopping target foils are at bin centers.
+      GeomHandle<Target> target;
+      Binning bins = zBinningForFoils(*target,7);
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir  = tfs->mkdir( "EjectedNeutronGun" );
       _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "Neutron Multiplicity",                20,        0,     20   );
       _hKE           = tfdir.make<TH1D>( "hKE",           "Neutron Kinetic Energy",             100,   _kelow,   _kehi  );
       _hMomentumMeV  = tfdir.make<TH1D>( "hMomentumMeV",  "Neutron Momentum in MeV",             50,     pLow,   pHigh  );
       _hKEZoom       = tfdir.make<TH1D>( "hEZoom",        "Neutron Kinetic Energy (zoom)",      200,   _kelow,   _kehi  );
-      _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "Neutron z Position (Tracker Coord)", 200,   -6600.,   -5600. );
+      _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "Neutron z Position (Tracker Coord)", bins.nbins(), bins.low(), bins.high());
       _hcz           = tfdir.make<TH1D>( "hcz",           "Neutron cos(theta)",                 100,      -1.,       1. );
       _hphi          = tfdir.make<TH1D>( "hphi",          "Neutron azimuth",                    100,    -M_PI,    M_PI  );
       _htime         = tfdir.make<TH1D>( "htime",         "Neutron time ",                      210,    -200.,    3000. );
@@ -201,10 +210,11 @@ namespace mu2e {
 
       // Fill histograms.
       if ( _doHistograms) {
+        const CLHEP::Hep3Vector detPos(_detSys->toDetector(pos));
         _hKE->Fill( eKine );
         _hKEZoom->Fill( eKine );
         _hMomentumMeV->Fill( p );
-        _hzPosition->Fill( pos.z() );
+        _hzPosition->Fill( detPos.z() );
         _hcz->Fill( mom.cosTheta() );
         _hphi->Fill( mom.phi() );
         _htime->Fill( time );

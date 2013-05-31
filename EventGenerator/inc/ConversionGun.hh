@@ -7,9 +7,9 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.hh,v 1.21 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: ConversionGun.hh,v 1.22 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 
 // C++ includes
@@ -34,6 +34,7 @@ namespace mu2e {
 
   // Forward reference.
   class SimpleConfig;
+  class DetectorSystem;
 
   class ConversionGun: public GeneratorBase{
 
@@ -84,6 +85,8 @@ namespace mu2e {
 
     //Particle mass
     double _mass;
+
+    const DetectorSystem *_detSys;
 
     // Histograms.
     TH1F* _hMultiplicity;

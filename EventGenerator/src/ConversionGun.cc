@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.44 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: ConversionGun.cc,v 1.45 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 // Original author Rob Kutschke
 //
@@ -24,6 +24,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/ConversionGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "TargetGeom/inc/zBinningForFoils.hh"
@@ -72,6 +73,8 @@ namespace mu2e {
     // Properly initialized later.
     _mass(0),
 
+    _detSys(),
+
     // Histograms
     _hMultiplicity(0),
     _hcz(0),
@@ -112,6 +115,9 @@ namespace mu2e {
                                   _pPulseShift,
                                   _STfname,
                                   _nToSkip));
+
+    _detSys = &*GeomHandle<DetectorSystem>();
+
     if ( _doHistograms ) bookHistograms();
   }
 
@@ -140,19 +146,19 @@ namespace mu2e {
 
     if ( !_doHistograms ) return;
 
-    double genRadius = pos.perp();
-
+    const CLHEP::Hep3Vector detPos(_detSys->toDetector(pos));
+    double genRadius = detPos.perp();
     _hMultiplicity->Fill(1);
     _hcz->Fill(p3.cosTheta());
     _hphi->Fill(p3.phi());
     _hmomentum->Fill(_p);
     _hradius->Fill( genRadius );
-    _hzPos->Fill(pos.z());
+    _hzPos->Fill(detPos.z());
     _htime->Fill(time);
     _hmudelay->Fill(_fGenerator->muDelay());
     _hpulsedelay->Fill(_fGenerator->pulseDelay());
-    _hxyPos->Fill( pos.x(), pos.y()   );
-    _hrzPos->Fill( pos.z(), genRadius );
+    _hxyPos->Fill( detPos.x(), detPos.y()   );
+    _hrzPos->Fill( detPos.z(), genRadius );
 
   }
 

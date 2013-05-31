@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.39 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: EjectedProtonGun.cc,v 1.40 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -28,6 +28,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/EjectedProtonGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
@@ -75,7 +76,8 @@ namespace mu2e {
     _shape ( getEngine() , &(binnedEnergySpectrum()[0]), _nbins ),
     _nToSkip (config.getInt("ejectedProtonGun.nToSkip",0)),
     _STfname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
-    // Histogram pointers
+    _detSys(),
+   // Histogram pointers
     _hMultiplicity(0),
     _hKE(0),
     _hKEZoom(0),
@@ -111,9 +113,12 @@ namespace mu2e {
     _tmin = config.getDouble("ejectedProtonGun.tmin",  _tmin );
     _tmax = config.getDouble("ejectedProtonGun.tmax",  _tmax );
 
+    _detSys = &*GeomHandle<DetectorSystem>();
+
     // Book histograms.
     if ( _doHistograms ){
       GeomHandle<Target> target;
+      Binning bins = zBinningForFoils(*target,7);
       Binning bins2 = zBinningForFoils(*target,3);
 
       art::ServiceHandle<art::TFileService> tfs;
@@ -123,7 +128,7 @@ namespace mu2e {
       _hMomentumMeV  = tfdir.make<TH1D>( "hMomentumMeV",  "Proton Momentum;(MeV)",                   50, _elow,   _ehi  );
       _hKEZoom       = tfdir.make<TH1D>( "hEZoom",        "Proton Kinetic Energy (zoom);(MeV)",     200, _elow,   _ehi  );
       _hradius       = tfdir.make<TH1D>( "hradius",       "Proton Radius (Tracker Coord);(mm)",     150,     0.,   150. );
-      _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "Proton z Position (Tracker Coord);(mm)", 200, -6600., -5600. );
+      _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "Proton z Position (Tracker Coord);(mm)", bins.nbins(), bins.low(), bins.high());
       _hcz           = tfdir.make<TH1D>( "hcz",           "Proton cos(theta)",                      100,    -1.,     1. );
       _hphi          = tfdir.make<TH1D>( "hphi",          "Proton azimuth;(radians)",               100,  -M_PI,  M_PI  );
       _htime         = tfdir.make<TH1D>( "htime",         "Proton time;(ns)",                       210,  -200.,  3000. );
@@ -190,19 +195,20 @@ namespace mu2e {
 
         // Fill histograms.
         if ( _doHistograms) {
-          double r(pos.perp());
+          const CLHEP::Hep3Vector detPos(_detSys->toDetector(pos));
+          double r(detPos.perp());
           _hKE         ->Fill( eKine );
           _hKEZoom     ->Fill( eKine );
           _hMomentumMeV->Fill( _p );
           _hradius     ->Fill( r );
-          _hzPosition  ->Fill( pos.z() );
+          _hzPosition  ->Fill( detPos.z() );
           _hcz         ->Fill( mom.cosTheta() );
           _hphi        ->Fill( mom.phi() );
           _htime       ->Fill( time );
           _hmudelay    ->Fill(_fGenerator->muDelay());
           _hpulsedelay ->Fill(_fGenerator->pulseDelay());
-          _hyx         ->Fill( pos.x(), pos.y() );
-          _hrz         ->Fill( pos.z(), r );
+          _hyx         ->Fill( detPos.x(), detPos.y() );
+          _hrz         ->Fill( detPos.z(), r );
         }
       } // end of loop on particles
 

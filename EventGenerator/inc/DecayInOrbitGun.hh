@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.30 2013/05/17 19:35:01 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/05/17 19:35:01 $
+// $Id: DecayInOrbitGun.hh,v 1.31 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 //
 
@@ -36,6 +36,7 @@ namespace mu2e {
 
   // Forward declarations
   class SimpleConfig;
+  class DetectorSystem;
 
   class DecayInOrbitGun: public GeneratorBase{
 
@@ -113,6 +114,8 @@ namespace mu2e {
     std::string _stFname;
 
     int _nToSkip;
+
+    const DetectorSystem *_detSys;
 
     // Diagnostic histograms.
     TH1D* _hMultiplicity;

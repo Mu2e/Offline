@@ -3,9 +3,9 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.
 // //
-// $Id: EjectedPhotonGun.cc,v 1.13 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: EjectedPhotonGun.cc,v 1.14 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 // Original author Gianni Onorato
 //
@@ -27,6 +27,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/EjectedPhotonGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "TargetGeom/inc/Target.hh"
@@ -73,6 +74,8 @@ namespace mu2e {
     _STfname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("ejectedPhotonGun.nToSkip",0)),
 
+    _detSys(),
+
     // Histogram pointers
     _hMultiplicity(0),
     _hKE(0),
@@ -105,9 +108,12 @@ namespace mu2e {
     _tmin = config.getDouble("ejectedPhotonGun.tmin",  _tmin );
     _tmax = config.getDouble("ejectedPhotonGun.tmax",  _tmax );
 
+    _detSys = &*GeomHandle<DetectorSystem>();
+
     // Book histograms.
     if ( _doHistograms ){
       GeomHandle<Target> target;
+      Binning bins = zBinningForFoils(*target,7);
       Binning bins2 = zBinningForFoils(*target,3);
 
       art::ServiceHandle<art::TFileService> tfs;
@@ -117,7 +123,7 @@ namespace mu2e {
       _hMomentumMeV  = tfdir.make<TH1D>( "hMomentumMeV",  "Photon Momentum;(MeV)",                   50, _elow,   _ehi  );
       _hKEZoom       = tfdir.make<TH1D>( "hEZoom",        "Photon Energy (zoom);(MeV)",             200, _elow,   _ehi  );
       _hradius       = tfdir.make<TH1D>( "hradius",       "Photon Radius (Tracker Coord);(mm)",     150,     0.,   150. );
-      _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "Photon z Position (Tracker Coord);(mm)", 200, -6600., -5600. );
+      _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "Photon z Position (Tracker Coord);(mm)", bins.nbins(), bins.low(), bins.high());
       _hcz           = tfdir.make<TH1D>( "hcz",           "Photon cos(theta)",                      100,    -1.,     1. );
       _hphi          = tfdir.make<TH1D>( "hphi",          "Photon azimuth;(radians)",               100,  -M_PI,  M_PI  );
       _htime         = tfdir.make<TH1D>( "htime",         "Photon time;(ns)",                       210,  -200.,  3000. );
@@ -183,19 +189,20 @@ namespace mu2e {
 
         // Fill histograms.
         if ( _doHistograms) {
-          double r(pos.perp());
+          const CLHEP::Hep3Vector detPos(_detSys->toDetector(pos));
+          double r(detPos.perp());
           _hKE         ->Fill( e );
           _hKEZoom     ->Fill( e );
           _hMomentumMeV->Fill( _p );
           _hradius     ->Fill( r );
-          _hzPosition  ->Fill( pos.z() );
+          _hzPosition  ->Fill( detPos.z() );
           _hcz         ->Fill( mom.cosTheta() );
           _hphi        ->Fill( mom.phi() );
           _htime       ->Fill( time );
           _hmudelay    ->Fill(_fGenerator->muDelay());
           _hpulsedelay ->Fill(_fGenerator->pulseDelay());
-          _hyx         ->Fill( pos.x(), pos.y() );
-          _hrz         ->Fill( pos.z(), r );
+          _hyx         ->Fill( detPos.x(), detPos.y() );
+          _hrz         ->Fill( detPos.z(), r );
         }
       } // end of loop on particles
 

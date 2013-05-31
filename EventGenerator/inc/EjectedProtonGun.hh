@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.hh,v 1.21 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: EjectedProtonGun.hh,v 1.22 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 //
 
@@ -35,6 +35,7 @@ namespace mu2e {
 
   // Forward reference.
   class SimpleConfig;
+  class DetectorSystem;
 
   class EjectedProtonGun: public GeneratorBase{
 
@@ -93,6 +94,8 @@ namespace mu2e {
     int _nToSkip;
 
     std::string _STfname;
+
+    const DetectorSystem *_detSys;
 
     TH1D* _hMultiplicity;
     TH1D* _hKE;

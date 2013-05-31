@@ -6,9 +6,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.hh,v 1.11 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: NuclearCaptureGun.hh,v 1.12 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 // Original author Gianni Onorato
 
@@ -34,6 +34,7 @@ namespace mu2e {
 
   // Forward reference.
   class SimpleConfig;
+  class DetectorSystem;
 
   class NuclearCaptureGun: public GeneratorBase{
 
@@ -95,6 +96,8 @@ namespace mu2e {
     CLHEP::RandPoissonQ _randPoissonQ, _randPoissonP, _randPoissonN, _randPoissonG;
     RandomUnitSphere    _randomUnitSphere;
     CLHEP::RandGeneral _shapeP, _shapeN, _shapeG;
+
+    const DetectorSystem *_detSys;
 
     TH1D* _hNuclearCaptureMultiplicity;
     TH1D* _hProtonMultiplicity;

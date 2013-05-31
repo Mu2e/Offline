@@ -6,9 +6,9 @@
 // on an Al nucleus.  Use the MARS distribution for the kinetic energy of the
 // neutron.
 //
-// $Id: EjectedNeutronGun.hh,v 1.16 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: EjectedNeutronGun.hh,v 1.17 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 //
 
@@ -35,6 +35,7 @@ namespace mu2e {
 
   // Forward reference.
   class SimpleConfig;
+  class DetectorSystem;
 
   class EjectedNeutronGun: public GeneratorBase{
 
@@ -100,6 +101,8 @@ namespace mu2e {
     CLHEP::RandGeneral _shape;
     std::string _STfname;
     int _nToSkip;
+
+    const DetectorSystem *_detSys;
 
     TH1D* _hMultiplicity;
     TH1D* _hKE;

@@ -5,9 +5,9 @@
 //
 // See additional details in the comments in the header file.
 //
-// $Id: zBinningForFoils.cc,v 1.4 2013/05/31 18:07:18 gandr Exp $
+// $Id: zBinningForFoils.cc,v 1.5 2013/05/31 18:07:29 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Date: 2013/05/31 18:07:29 $
 //
 // Original author Rob Kutschke
 //
@@ -41,8 +41,8 @@ namespace mu2e{
     // Z positions of the centers of the first and last targets.
     TargetFoil const& f1 = target.foil(0);
     TargetFoil const& f2 = target.foil(nfoils-1);
-    double z1 = f1.centerInMu2e().z();
-    double z2 = f2.centerInMu2e().z();
+    double z1 = f1.centerInDetectorSystem().z();
+    double z2 = f2.centerInDetectorSystem().z();
 
     // Compute bin width (dz) as advertised for the general case.
     double dz = (z2-z1)/(nfoils-1)/nBinsDZ;

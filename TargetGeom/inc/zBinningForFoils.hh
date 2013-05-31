@@ -12,10 +12,11 @@
 // foils, the histogram covers N+1 foil spacings.
 //
 // The case of a target with one foil is handed differently.
+// This uses the DetectorSystem coordinates, not the Mu2e system.
 //
-// $Id: zBinningForFoils.hh,v 1.3 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: zBinningForFoils.hh,v 1.4 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 // Original author Rob Kutschke
 

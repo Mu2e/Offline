@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.54 2013/05/17 19:35:01 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/05/17 19:35:01 $
+// $Id: DecayInOrbitGun.cc,v 1.55 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 // Original author Rob Kutschke
 //
@@ -16,9 +16,13 @@
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
+#include "TargetGeom/inc/Target.hh"
+#include "TargetGeom/inc/zBinningForFoils.hh"
 #include "TH1D.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -80,6 +84,7 @@ namespace mu2e {
     _stFname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("decayinorbitGun.nToSkip",0)),
 
+    _detSys(),
 
     // Histograms.
     _hMultiplicity(0),
@@ -152,16 +157,21 @@ namespace mu2e {
     _tmin   = config.getDouble("decayinorbitGun.tmin",  0. );
     _tmax   = config.getDouble("decayinorbitGun.tmax",  accPar->deBuncherPeriod );
 
+    _detSys = &*GeomHandle<DetectorSystem>();
+
     // Make ROOT subdirectory to hold diagnostic histograms; book those histograms.
 
     if ( _doHistograms ){
+      // Compute a binning that ensures that the stopping target foils are at bin centers.
+      GeomHandle<Target> target;
+      Binning bins = zBinningForFoils(*target,7);
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "DecayInOrbit" );
       _hMultiplicity = tfdir.make<TH1D>( "hMultiplicity", "DIO Multiplicity",               100,     0.,   200.   );
       _hEElec        = tfdir.make<TH1D>( "hEElec",        "DIO Electron Energy",            100,     0.,   105.   );
       _hEElecZ       = tfdir.make<TH1D>( "hEElecZ",       "DIO Electron Energy (zoom)",     200, _elow,   _ehi     );
       _hradius       = tfdir.make<TH1D>( "hradius",       "DIO radius(Tracker Coord)",      150,     0.,   150.   );
-      _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "DIO z Position (Tracker Coord)", 200, -6600., -5600.   );
+      _hzPosition    = tfdir.make<TH1D>( "hzPosition",    "DIO z Position (Tracker Coord)", bins.nbins(), bins.low(), bins.high() );
       _hcz           = tfdir.make<TH1D>( "hcz",           "DIO cos(theta)",                 100,    -1.,     1.   );
       _hphi          = tfdir.make<TH1D>( "hphi",          "DIO azimuth",                    100,  -M_PI,   M_PI   );
       _ht            = tfdir.make<TH1D>( "ht",            "DIO time ", 210, -200., 3000. );
@@ -231,10 +241,11 @@ namespace mu2e {
       genParts.push_back( GenParticle( PDGCode::e_minus, GenId(_dioGenId), pos, mom, time));
 
       if( _doHistograms ){
+        const CLHEP::Hep3Vector detPos(_detSys->toDetector(pos));
         _hEElec     ->Fill( e );
         _hEElecZ    ->Fill( e );
-        _hradius    ->Fill( pos.perp() );
-        _hzPosition ->Fill( pos.z() );
+        _hradius    ->Fill( detPos.perp() );
+        _hzPosition ->Fill( detPos.z() );
         _hcz        ->Fill( p3.cosTheta() );
         _hphi       ->Fill( p3.phi() );
         _ht         ->Fill( time );

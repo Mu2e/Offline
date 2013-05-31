@@ -4,9 +4,9 @@
 // which results in protons, neutrons and photons
 //
 //
-// $Id: NuclearCaptureGun.cc,v 1.22 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: NuclearCaptureGun.cc,v 1.23 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 // Original author Gianni Onorato
 //
@@ -29,11 +29,13 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/NuclearCaptureGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
 #include "TargetGeom/inc/Target.hh"
+#include "TargetGeom/inc/zBinningForFoils.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -88,7 +90,7 @@ namespace mu2e {
     _shapeP ( getEngine() , &(binnedEnergySpectrumProton()[0]), _nProtonBins ),
     _shapeN ( getEngine() , &(binnedEnergySpectrumNeutron()[0]), _nNeutronBins ),
     _shapeG ( getEngine() , &(binnedEnergySpectrumPhoton()[0]), _nPhotonBins ),
-
+    _detSys(),
     // Histogram pointers
     _hNuclearCaptureMultiplicity(),
     _hProtonMultiplicity(),
@@ -144,9 +146,13 @@ namespace mu2e {
     _tmin = config.getDouble("nuclearCaptureGun.tmin",  _tmin );
     _tmax = config.getDouble("nuclearCaptureGun.tmax",  _tmax );
 
+    _detSys = &*GeomHandle<DetectorSystem>();
 
     // Book histograms.
     if ( _doHistograms ){
+      GeomHandle<Target> target;
+      Binning bins = zBinningForFoils(*target,7);
+
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir  = tfs->mkdir( "NuclearCaptureGun" );
 
@@ -155,7 +161,7 @@ namespace mu2e {
       _hProtonKE           = tfdir.make<TH1D>( "hProtonKE",           "Proton Kinetic Energy",              50, _protonElow,   _protonEhi  );
       _hProtonMomentumMeV  = tfdir.make<TH1D>( "hProtonMomentumMeV",  "Proton Momentum in MeV",             50, _protonElow,   _protonEhi  );
       _hProtonKEZoom       = tfdir.make<TH1D>( "hProtonEZoom",        "Proton Kinetic Energy (zoom)",      200, _protonElow,   _protonEhi  );
-      _hProtonzPosition    = tfdir.make<TH1D>( "hProtonzPosition",    "Proton z Position (Tracker Coord)", 200, -6600., -5600. );
+      _hProtonzPosition    = tfdir.make<TH1D>( "hProtonzPosition",    "Proton z Position (Tracker Coord)", bins.nbins(), bins.low(), bins.high());
       _hProtonCz           = tfdir.make<TH1D>( "hProtoncz",           "Proton cos(theta)",                 100,    -1.,     1. );
       _hProtonPhi          = tfdir.make<TH1D>( "hProtonphi",          "Proton azimuth",                    100,  -M_PI,  M_PI  );
       _hProtonTime         = tfdir.make<TH1D>( "hProtontime",         "Proton time ",                      210,   -200.,  3000. );
@@ -166,7 +172,7 @@ namespace mu2e {
       _hNeutronKE           = tfdir.make<TH1D>( "hNeutronKE",           "Neutron Kinetic Energy",              50, _neutronElow,   _neutronEhi  );
       _hNeutronMomentumMeV  = tfdir.make<TH1D>( "hNeutronMomentumMeV",  "Neutron Momentum in MeV",             50, _neutronElow,   _neutronEhi  );
       _hNeutronKEZoom       = tfdir.make<TH1D>( "hNeutronEZoom",        "Neutron Kinetic Energy (zoom)",      200, _neutronElow,   _neutronEhi  );
-      _hNeutronzPosition    = tfdir.make<TH1D>( "hNeutronzPosition",    "Neutron z Position (Tracker Coord)", 200, -6600., -5600. );
+      _hNeutronzPosition    = tfdir.make<TH1D>( "hNeutronzPosition",    "Neutron z Position (Tracker Coord)", bins.nbins(), bins.low(), bins.high());
       _hNeutronCz           = tfdir.make<TH1D>( "hNeutroncz",           "Neutron cos(theta)",                 100,    -1.,     1. );
       _hNeutronPhi          = tfdir.make<TH1D>( "hNeutronphi",          "Neutron azimuth",                    100,  -M_PI,  M_PI  );
       _hNeutronTime         = tfdir.make<TH1D>( "hNeutrontime",         "Neutron time ",                      210,   -200.,  3000. );
@@ -177,7 +183,7 @@ namespace mu2e {
       _hPhotonKE           = tfdir.make<TH1D>( "hPhotonKE",           "Photon Kinetic Energy",              50, _photonElow,   _photonEhi  );
       _hPhotonMomentumMeV  = tfdir.make<TH1D>( "hPhotonMomentumMeV",  "Photon Momentum in MeV",             50, _photonElow,   _photonEhi  );
       _hPhotonKEZoom       = tfdir.make<TH1D>( "hPhotonEZoom",        "Photon Kinetic Energy (zoom)",      200, _photonElow,   _photonEhi  );
-      _hPhotonzPosition    = tfdir.make<TH1D>( "hPhotonzPosition",    "Photon z Position (Tracker Coord)", 200, -6600., -5600. );
+      _hPhotonzPosition    = tfdir.make<TH1D>( "hPhotonzPosition",    "Photon z Position (Tracker Coord)", bins.nbins(), bins.low(), bins.high());
       _hPhotonCz           = tfdir.make<TH1D>( "hPhotoncz",           "Photon cos(theta)",                 100,    -1.,     1. );
       _hPhotonPhi          = tfdir.make<TH1D>( "hPhotonphi",          "Photon azimuth",                    100,  -M_PI,  M_PI  );
       _hPhotonTime         = tfdir.make<TH1D>( "hPhotontime",         "Photon time ",                      210,   -200.,  3000. );
@@ -222,6 +228,8 @@ namespace mu2e {
       double time;
       _fGenerator->generatePositionAndTime(pos, time, _timeFolding);
 
+      const CLHEP::Hep3Vector detPos(_detSys->toDetector(pos));
+
       //Define the number of protons, neutrons and photons to generate
 
       long np = (_protonMean < 0 ? static_cast<long>(-_protonMean) : _randPoissonP.fire());
@@ -257,7 +265,7 @@ namespace mu2e {
           _hProtonKE->Fill( eKine );
           _hProtonKEZoom->Fill( eKine );
           _hProtonMomentumMeV->Fill( _p );
-          _hProtonzPosition->Fill( pos.z() );
+          _hProtonzPosition->Fill( detPos.z() );
           _hProtonCz->Fill( mom.cosTheta() );
           _hProtonPhi->Fill( mom.phi() );
           _hProtonTime->Fill( time );
@@ -288,7 +296,7 @@ namespace mu2e {
           _hNeutronKE->Fill( eKine );
           _hNeutronKEZoom->Fill( eKine );
           _hNeutronMomentumMeV->Fill( _p );
-          _hNeutronzPosition->Fill( pos.z() );
+          _hNeutronzPosition->Fill( detPos.z() );
           _hNeutronCz->Fill( mom.cosTheta() );
           _hNeutronPhi->Fill( mom.phi() );
           _hNeutronTime->Fill( time );
@@ -317,7 +325,7 @@ namespace mu2e {
           _hPhotonKE->Fill( e );
           _hPhotonKEZoom->Fill( e );
           _hPhotonMomentumMeV->Fill( e );
-          _hPhotonzPosition->Fill( pos.z() );
+          _hPhotonzPosition->Fill( detPos.z() );
           _hPhotonCz->Fill( mom.cosTheta() );
           _hPhotonPhi->Fill( mom.phi() );
           _hPhotonTime->Fill( time );

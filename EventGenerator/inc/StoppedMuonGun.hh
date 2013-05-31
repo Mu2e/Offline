@@ -7,9 +7,9 @@
 // within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: StoppedMuonGun.hh,v 1.3 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: StoppedMuonGun.hh,v 1.4 2013/05/31 18:07:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:29 $
 //
 // Original author KLG somewhat based on ConversionGun
 //
@@ -36,6 +36,7 @@ namespace mu2e {
 
   // Forward reference.
   class SimpleConfig;
+  class DetectorSystem;
 
   class StoppedMuonGun: public GeneratorBase{
 
@@ -87,7 +88,9 @@ namespace mu2e {
     //Particle mass
     double _mass;
 
-    // Histograms.
+    const DetectorSystem *_detSys;
+ 
+   // Histograms.
     TH1F* _hMultiplicity;
     TH1F* _hcz;
     TH1F* _hphi;
@@ -107,5 +110,3 @@ namespace mu2e {
 } // end namespace mu2e,
 
 #endif /* EventGenerator_StoppedMuonGun_hh */
-
-

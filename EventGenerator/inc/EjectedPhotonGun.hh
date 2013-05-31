@@ -5,7 +5,7 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.
 //
-// $Id: EjectedPhotonGun.hh,v 1.6 2013/03/15 15:52:03 kutschke Exp $
+// $Id: EjectedPhotonGun.hh,v 1.7 2013/05/31 18:07:29 gandr Exp $
 // $Author: &
 // $Date: &
 //
@@ -34,6 +34,7 @@ namespace mu2e {
 
   // Forward reference.
   class SimpleConfig;
+  class DetectorSystem;
 
   class EjectedPhotonGun: public GeneratorBase{
 
@@ -87,6 +88,8 @@ namespace mu2e {
     CLHEP::RandFlat _flatmomentum;
     std::string _STfname;
     int _nToSkip;
+
+    const DetectorSystem *_detSys;
 
     TH1D* _hMultiplicity;
     TH1D* _hKE;
