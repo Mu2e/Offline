@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.cc,v 1.12 2012/07/26 19:01:01 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/26 19:01:01 $
+// $Id: PiEplusNuGun.cc,v 1.13 2013/05/31 18:06:28 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:06:28 $
 //
 // Original author Rob Kutschke heavily modified by R. Bernstein
 //
@@ -27,6 +27,7 @@
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "TargetGeom/inc/Target.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -87,6 +88,7 @@ namespace mu2e {
 
     // Get access to the geometry system.
     GeomHandle<Target> target;
+    GeomHandle<Mu2eBuilding> building;
 
     int nFoils = target->nFoils();
 
@@ -94,8 +96,8 @@ namespace mu2e {
     int ifoil = static_cast<int>(nFoils*randFlat.fire());
     TargetFoil const& foil = target->foil(ifoil);
 
-    // Foil properties.
-    CLHEP::Hep3Vector const& center = foil.center();
+    // Target geom is given in the detector system, need to convert to Mu2e
+    CLHEP::Hep3Vector const& center = foil.center() + building->relicMECOOriginInMu2e();
     const double r1 = foil.rIn();
     const double dr = foil.rOut() - r1;
 

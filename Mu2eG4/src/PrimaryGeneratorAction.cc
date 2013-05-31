@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.45 2013/05/17 19:35:01 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/05/17 19:35:01 $
+// $Id: PrimaryGeneratorAction.cc,v 1.46 2013/05/31 18:06:28 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:06:28 $
 //
 // Original author Rob Kutschke
 //
@@ -43,7 +43,6 @@
 #include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
@@ -93,10 +92,6 @@ namespace mu2e {
     // those should really be references; but because of the "if" they are not...
 
     G4ThreeVector mu2eOrigin;
-    G4ThreeVector relicMECOOrigin;
-
-    G4RotationMatrix primaryProtonGunRotation;
-    G4ThreeVector primaryProtonGunOrigin;      
 
     SimpleConfig const & _config = (*(art::ServiceHandle<GeometryService>())).config();
 
@@ -106,12 +101,6 @@ namespace mu2e {
       GeomHandle<WorldG4>  worldGeom;
       // Get the offsets to map from generator world to G4 world.
       mu2eOrigin      = worldGeom->mu2eOriginInWorld();
-      relicMECOOrigin = GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() +  mu2eOrigin;
-      GeomHandle<ProductionTarget> protonTarget;
-      primaryProtonGunRotation = protonTarget->protonBeamRotation();
-      primaryProtonGunOrigin   = mu2eOrigin + protonTarget->position() +
-        primaryProtonGunRotation*CLHEP::Hep3Vector(0., 0., protonTarget->halfLength());
-
     }
 
     // Get generated particles from the event.
@@ -129,42 +118,7 @@ namespace mu2e {
       // Transform from generator coordinate system G4 world coordinate system.
       G4ThreeVector      pos(genpart.position());
       G4ThreeVector momentum(genpart.momentum().v());
-
-      if( genpart.generatorId() == GenId::conversionGun       ||
-          genpart.generatorId() == GenId::dioShankerWanatabe  ||
-          genpart.generatorId() == GenId::dioCzarnecki        ||
-          genpart.generatorId() == GenId::dioFlat             ||
-          genpart.generatorId() == GenId::dioE5               ||
-          genpart.generatorId() == GenId::dioPolAl            ||
-          genpart.generatorId() == GenId::dioPolTi            ||
-          genpart.generatorId() == GenId::ejectedProtonGun    ||
-          genpart.generatorId() == GenId::ejectedNeutronGun   ||
-          genpart.generatorId() == GenId::ejectedPhotonGun    ||
-          genpart.generatorId() == GenId::pionCapture         ||
-          genpart.generatorId() == GenId::piEplusNuGun        ||
-          genpart.generatorId() == GenId::nuclearCaptureGun   ||
-          genpart.generatorId() == GenId::stoppedMuonGun      ||
-          genpart.generatorId() == GenId::internalRPC){
-        pos += relicMECOOrigin;
-      } else if ( genpart.generatorId() == GenId::cosmicDYB ||
-                  genpart.generatorId() == GenId::cosmic ){
-        pos += mu2eOrigin;
-      } else if ( genpart.generatorId() == GenId::primaryProtonGun ){
-        pos = primaryProtonGunRotation*pos + primaryProtonGunOrigin;
-        momentum = primaryProtonGunRotation*momentum;
-      } else if ( genpart.generatorId() == GenId::particleGun ||
-                  genpart.generatorId() == GenId::extMonFNALGun ||
-                  genpart.generatorId() == GenId::fromG4BLFile ||
-                  genpart.generatorId() == GenId::MARS ||
-                  genpart.generatorId() == GenId::fromStepPointMCs) {
-        pos += mu2eOrigin;
-      } else {
-        mf::LogError("KINEMATICS")
-          << "Do not know what to do with this generator id: "
-          << genpart.generatorId()
-          << "  Skipping this track.";
-        continue;
-      }
+      pos += mu2eOrigin;
 
       // Create a new vertex
       G4PrimaryVertex* vertex = new G4PrimaryVertex(pos,genpart.time());

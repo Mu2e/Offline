@@ -3,9 +3,9 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.21 2013/05/02 19:18:15 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2013/05/02 19:18:15 $
+// $Id: PrimaryProtonGun.cc,v 1.22 2013/05/31 18:06:28 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:06:28 $
 //
 // Original author Rob Kutschke
 //
@@ -25,9 +25,10 @@
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "TargetGeom/inc/Target.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "ProductionTargetGeom/inc/ProductionTarget.hh"
 
 // CLHEP includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -51,6 +52,10 @@ namespace mu2e {
     // The base class;
     GeneratorBase(),
 
+    _gunRotation(GeomHandle<ProductionTarget>()->protonBeamRotation()),
+    _gunOrigin(GeomHandle<ProductionTarget>()->position()
+               + _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->halfLength())),
+
     _proton_mass(GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::p_plus).ref().mass().value()),
 
     // Parameters from the run time configuration.
@@ -68,8 +73,8 @@ namespace mu2e {
     _tmax(config.getDouble("primaryProtonGun.tmax", 100.)),
     _shape(config.getString("primaryProtonGun.shape", "gaus")),
     _rmax(config.getDouble("primaryProtonGun.rmax", 100.)),
-    _doHistograms(config.getBool("primaryProtonGun.doHistograms", true)){
-
+    _doHistograms(config.getBool("primaryProtonGun.doHistograms", true))
+  {
     if ( _doHistograms ){
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "PrimaryProtonGun" );
@@ -134,7 +139,12 @@ namespace mu2e {
     mom = rot * mom;
  
     // Add the proton to the list of generated particles.
-    genParts.push_back( GenParticle( PDGCode::p_plus, GenId::primaryProtonGun, pos, mom, time));
+    genParts.push_back( GenParticle( PDGCode::p_plus, GenId::primaryProtonGun,
+                                     // Convert position to Mu2e coordinates
+                                     _gunRotation*pos + _gunOrigin,
+                                     // Convert momentum to Mu2e coordinates
+                                     _gunRotation*mom,
+                                     time));
 
     if ( _doHistograms ){
       _hKE->Fill(ekine);

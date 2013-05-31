@@ -27,6 +27,7 @@
 // Mu2e includes
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/PhysicsParams.hh"
@@ -106,8 +107,7 @@ namespace mu2e {
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     _maxtime = accPar->deBuncherPeriod;
 
-    CLHEP::Hep3Vector offset(-3904.,0,12000.);
-    _DSOffset = offset;
+    _DSOffset = GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e();
 
     // Check if nfoils is bigger than 0;
     if (_nfoils < 1) {
@@ -224,9 +224,6 @@ namespace mu2e {
         }
       */
     }
-    if (_posAlgo==muonFileInputPos) {
-      pos -= _DSOffset;           // Move to DS coordinate system
-    }
   }
   
   double FoilParticleGenerator::muDelay() {
@@ -334,8 +331,9 @@ namespace mu2e {
   // Pick up a random position within the foil
   CLHEP::Hep3Vector FoilParticleGenerator::getFlatRndPos(TargetFoil const& theFoil) {
 
-    // Foil properties.
-    CLHEP::Hep3Vector const& center = theFoil.center();
+    // Target geom is given in the detector system, need to convert to Mu2e
+    CLHEP::Hep3Vector const& center = theFoil.center() + _DSOffset;
+
     const double r1 = theFoil.rIn();
     const double dr = theFoil.rOut() - r1;
 

@@ -2,7 +2,7 @@
 #define EventGenerator_FoilParticleGenerator_hh
 
 //
-// Generate position and time of a generic particle coming from target foils.
+// Generate position (Mu2e coordinates) and time of a generic particle coming from target foils.
 //
 //
 // For now this is limited to:

@@ -3,9 +3,9 @@
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGun.hh,v 1.15 2013/05/02 19:18:24 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2013/05/02 19:18:24 $
+// $Id: PrimaryProtonGun.hh,v 1.16 2013/05/31 18:06:28 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:06:28 $
 //
 //
 // The coordinate system used in this class is:
@@ -31,6 +31,9 @@
 // Framework Includes
 #include "art/Framework/Principal/Run.h"
 
+#include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/Rotation.h"
+
 // Forward references outside of namespace mu2e
 class TH1D;
 namespace art {
@@ -51,6 +54,8 @@ namespace mu2e {
     virtual void generate( GenParticleCollection&  );
 
   private:
+    CLHEP::HepRotation _gunRotation; // rotates target frame to Mu2e frame
+    CLHEP::Hep3Vector _gunOrigin;
 
     double _proton_mass;
 
