@@ -134,7 +134,8 @@ namespace mu2e {
                                         GenId::fromStepPointMCs,
                                         i->position(),
                                         fourMom,
-                                        i->time()
+                                        i->time(),
+                                        i->properTime()
                                         ));
 
           history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),

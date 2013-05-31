@@ -5,9 +5,9 @@
 // A temporary class to hold generated particles.
 // It does not have a mother-daughter history.
 //
-// $Id: GenParticle.hh,v 1.3 2011/07/12 04:52:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/12 04:52:27 $
+// $Id: GenParticle.hh,v 1.4 2013/05/31 21:32:46 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 21:32:46 $
 //
 // Original author Rob Kutschke
 //
@@ -36,32 +36,36 @@ namespace mu2e {
   public:
 
     // This c'tor is required for ROOT.
-    GenParticle(){}
+    GenParticle() : _time(), _properTime() {}
 
     GenParticle( PDGCode::type pdgId,
                  GenId generatorId,
                  CLHEP::Hep3Vector const&       position,
                  CLHEP::HepLorentzVector const& momentum,
-                 double time):
+                 double time,
+                 double properTime = 0.):
       _pdgId(pdgId),
       _generatorId(generatorId),
       _position(position),
       _momentum(momentum),
-      _time(time){
-    }
+      _time(time),
+      _properTime(properTime)
+    {}
 
     // Differs only in the type of second argument.
     GenParticle( PDGCode::type pdgId,
                  GenId::enum_type generatorId,
                  CLHEP::Hep3Vector const&       position,
                  CLHEP::HepLorentzVector const& momentum,
-                 double time):
+                 double time,
+                 double properTime = 0.):
       _pdgId(pdgId),
       _generatorId(GenId(generatorId)),
       _position(position),
       _momentum(momentum),
-      _time(time){
-    }
+      _time(time),
+      _properTime(properTime)
+    {}
 
     // Accept compiler written versions of d'tor, copy c'tor and assignment operator.
 
@@ -69,6 +73,11 @@ namespace mu2e {
     PDGCode::type pdgId()       const { return _pdgId; }
     GenId         generatorId() const { return _generatorId; }
     double        time()        const { return _time;}
+
+    // This is for multi-stage jobs, when we want to restart a
+    // particle recorded in a previous job that already had non-zero
+    // proper time.
+    double        properTime()  const { return _properTime;}
 
     CLHEP::Hep3Vector const&       position() const { return _position;}
     CLHEP::HepLorentzVector const& momentum() const { return _momentum;}
@@ -85,7 +94,7 @@ namespace mu2e {
     CLHEP::Hep3Vector       _position;
     CLHEP::HepLorentzVector _momentum;
     double _time;
-
+    double _properTime;
   };
 
   inline std::ostream& operator<<(std::ostream& ost,
@@ -94,6 +103,7 @@ namespace mu2e {
         << genp.pdgId() << " "
         << genp.generatorId() << " "
         << genp.time() << " "
+        << genp.properTime() << " "
         << genp.position() << " "
         << genp.momentum() << " "
         << " )";
