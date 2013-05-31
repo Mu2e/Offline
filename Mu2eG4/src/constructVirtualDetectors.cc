@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.49 2013/05/31 15:49:57 knoepfel Exp $
+// $Id: constructVirtualDetectors.cc,v 1.50 2013/05/31 15:57:19 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/05/31 15:49:57 $
+// $Date: 2013/05/31 15:57:19 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -206,11 +206,9 @@ namespace mu2e {
     // detectors extend to neutron absorber minus 5 mm.
     if ( !_config.getBool("isDumbbell",false) ){
       double Ravr = _config.getDouble("toyDS.rIn");
-      double Z0 = 0;
 
       if ( _config.getBool("hasInternalNeutronAbsorber",false) ) {
         Ravr = _config.getDouble("intneutronabs.rIn1");
-        Z0   = _config.getDouble("intneutronabs.z0");
       }
 
       for( int vdId=VirtualDetectorId::ST_In; 

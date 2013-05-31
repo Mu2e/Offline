@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.183 2013/05/31 15:49:57 knoepfel Exp $
+// $Id: geom_01.txt,v 1.184 2013/05/31 15:57:19 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/05/31 15:49:57 $
+// $Date: 2013/05/31 15:57:19 $
 //
 // Original author Rob Kutschke
 //
@@ -513,7 +513,7 @@ bool   neutronabsorber.hasInternalPart = true;
 
 string neutronabsorber.materialName  = "Polyethylene092Li075d106";
 
-double intneutronabs.rOut        = 949.;
+double intneutronabs.rOut        = 999.; // default should be 949 mm 
 double intneutronabs.rIn2        = 850.;
 double intneutronabs.rIn1        = 650.;
 double intneutronabs.halfLength2 = 1000.;
