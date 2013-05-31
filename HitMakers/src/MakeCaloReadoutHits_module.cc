@@ -343,8 +343,8 @@ namespace mu2e {
 
 	    // Calculate correction for edep
 	    CLHEP::Hep3Vector const& posInMu2e = h.position();
-            double posZ = cal.crystalLongPos(crid,posInMu2e);
-
+            CLHEP::Hep3Vector posInCrystal = cal.toCrystalFrame(crid,posInMu2e);
+   	    double posZ = posInCrystal.x();
 
 	    if (_caloNonLinCorrection && h.simParticle().isNonnull())
 	    {
@@ -591,8 +591,8 @@ namespace mu2e {
   
   void MakeCaloReadoutHits::longitudinalResponseUniformityCorrection(double posZ, double cryhalflength, double& energy, int crid, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations )
   {
-     //posZ *= -1.0;
-     //posZ += cryhalflength;
+     posZ *= -1.0;
+     posZ += cryhalflength;
      posZ *= -_randGauss.fire(calorimeterCalibrations->LRUpar0(crid), calorimeterCalibrations->LRUpar0Err(crid) );
      posZ += 1.0;
      energy *= posZ;

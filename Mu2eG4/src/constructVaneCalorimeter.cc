@@ -1,9 +1,9 @@
 //
 // Free function to create the Vane calorimeter.
 //
-// $Id: constructVaneCalorimeter.cc,v 1.7 2013/05/28 22:11:24 echenard Exp $
+// $Id: constructVaneCalorimeter.cc,v 1.8 2013/05/31 01:02:50 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/28 22:11:24 $
+// $Date: 2013/05/31 01:02:50 $
 //
 // Original author Ivan Logashenko
 // Modified by Bertrand Echenard
@@ -346,28 +346,26 @@ namespace mu2e {
 	  new G4PVPlacement(0,G4ThreeVector(x,y,z),thisWrapLog,"CrysWrapPV",vaneInInfo[iv].logical,0,id,doSurfaceCheck);   	      
 	}
 
-//swapped sign from all these
-
 	// -- place crystal inside warp
-	new G4PVPlacement(0,G4ThreeVector(-cal.roHalfThickness(),0.0,0.0),CrystalLog,"CrysPV",thisWrapLog,0,id,doSurfaceCheck);
+	new G4PVPlacement(0,G4ThreeVector(cal.roHalfThickness(),0.0,0.0),CrystalLog,"CrysPV",thisWrapLog,0,id,doSurfaceCheck);
 
 	// -- add the readout
 	if (nRO==1) 
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),0,0),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
+	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(),0,0),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
 
 	if (nRO==2) 
 	{ 
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),-0.5*cal.crystalHalfTrans(),0.0),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(), 0.5*cal.crystalHalfTrans(),0.0),ROLog,"CrysROPV_1",thisWrapLog,0,roidBase+1,doSurfaceCheck);
+	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(),-0.5*cal.crystalHalfTrans(),0.0),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
+	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(), 0.5*cal.crystalHalfTrans(),0.0),ROLog,"CrysROPV_1",thisWrapLog,0,roidBase+1,doSurfaceCheck);
 	}
 
 	if (nRO==4) 
 	{ 
 	  G4double cHS = -0.5*cal.crystalHalfTrans();
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),-cHS,-cHS),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),-cHS,cHS), ROLog,"CrysROPV_1",thisWrapLog,0,roidBase+1,doSurfaceCheck);
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(), cHS,-cHS),ROLog,"CrysR0PV_2",thisWrapLog,0,roidBase+2,doSurfaceCheck);
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(), cHS,cHS), ROLog,"CrysROPV_3",thisWrapLog,0,roidBase+3,doSurfaceCheck);
+	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(),-cHS,-cHS),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
+	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(),-cHS,cHS), ROLog,"CrysROPV_1",thisWrapLog,0,roidBase+1,doSurfaceCheck);
+	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(), cHS,-cHS),ROLog,"CrysR0PV_2",thisWrapLog,0,roidBase+2,doSurfaceCheck);
+	  new G4PVPlacement(0,G4ThreeVector(-cal.crystalHalfLength(), cHS,cHS), ROLog,"CrysROPV_3",thisWrapLog,0,roidBase+3,doSurfaceCheck);
 	}
 
 
