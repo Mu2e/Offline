@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.16 2012/11/01 23:38:25 gandr Exp $     -->
-<!--  $Author: gandr $ -->
-<!--  $Date: 2012/11/01 23:38:25 $   -->
+<!--  $Id: classes_def.xml,v 1.17 2013/05/31 18:15:53 wieschie Exp $     -->
+<!--  $Author: wieschie $ -->
+<!--  $Date: 2013/05/31 18:15:53 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.16 $$Date: 2012/11/01 23:38:25 $"; -->
+<!--  rev="$Revision: 1.17 $$Date: 2013/05/31 18:15:53 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -20,6 +20,7 @@
  <class name="art::Wrapper<mu2e::FilterEfficiency>"/>
  <class name="mu2e::StrawIndex"/>
  <class name="mu2e::ExtMonFNALSensorId"/>
+ <class name="mu2e::ExtMonFNALModuleId"/>
  <class name="mu2e::ExtMonFNALChipId"/>
  <class name="mu2e::ExtMonFNALPixelId"/>
  <class name="std::vector<cet::map_vector_key>"/>
