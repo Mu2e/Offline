@@ -1,9 +1,9 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.14 2013/05/30 21:46:51 genser Exp $
+// $Id: physicsListDecider.cc,v 1.15 2013/05/31 22:24:18 genser Exp $
 // $Author: genser $
-// $Date: 2013/05/30 21:46:51 $
+// $Date: 2013/05/31 22:24:18 $
 //
 // Original author Rob Kutschke
 //
@@ -42,6 +42,7 @@
 #include "Mu2eG4/inc/QGSP_BERT_HP_MU2E00.hh"
 #include "Mu2eG4/inc/QGSP_BERT_MU2E00.hh"
 #include "Mu2eG4/inc/Shielding_MU2E00.hh"
+#include "Mu2eG4/inc/Shielding_MU2E01.hh"
 
 // G4 includes
 #include "G4PhysListFactory.hh"
@@ -83,6 +84,12 @@ namespace mu2e{
 
     else if ( name == "Shielding_MU2E00" ){
       G4VModularPhysicsList* tmp = new Shielding_MU2E00();
+      tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
+      physicsList = tmp;
+    }
+
+    else if ( name == "Shielding_MU2E01" ){
+      G4VModularPhysicsList* tmp = new Shielding_MU2E01();
       tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
       physicsList = tmp;
     }
