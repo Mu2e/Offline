@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // ******Meant for Geant4 Studies not for Mu2e Simulations**********
 //
-// $Id: Mu2eG4Study_module.cc,v 1.6 2013/04/05 00:12:01 genser Exp $
-// $Author: genser $
-// $Date: 2013/04/05 00:12:01 $
+// $Id: Mu2eG4Study_module.cc,v 1.7 2013/05/31 21:38:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 21:38:01 $
 //
 // Original author K. Genser, based on Rob's G4_module
 //
@@ -374,7 +374,7 @@ namespace mu2e {
     // Populate the output data products.
 //     GeomHandle<WorldG4>  world;
 //     GeomHandle<Mu2eBuilding>  building;
-    // addPointTrajectories( g4event, *pointTrajectories, building->relicMECOOriginInMu2e() + world->mu2eOriginInWorld());
+    // addPointTrajectories( g4event, *pointTrajectories, world->mu2eOriginInWorld());
 
     // Run self consistency checks if enabled.
     _trackingAction->endEvent(*simParticles);

@@ -2,13 +2,13 @@
 // Construct and return MECOStyleProtonAbsorber
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.7 2013/05/31 20:04:27 gandr Exp $
+// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.8 2013/05/31 21:34:46 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Date: 2013/05/31 21:34:46 $
 //
 // Original author MyeongJae Lee
 //
-// All in mu2e coordinate system, except target.z0 which is given by old Detector coordinate system. (-3904, 0, 12000)
+// All in mu2e coordinate system.
 //
 // To modify the size of MECO-style (conical) proton absorber, use :
 // bool protonabsorber.isShorterCone = true;
