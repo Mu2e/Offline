@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.47 2013/05/31 21:32:46 gandr Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.48 2013/05/31 22:50:47 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 21:32:46 $
+// $Date: 2013/05/31 22:50:47 $
 //
 // Original author Rob Kutschke
 //
@@ -26,7 +26,6 @@
 
 // G4 Includes
 #include "G4Event.hh"
-#include "G4ParticleDefinition.hh"
 #include "G4ParticleGun.hh"
 #include "G4ParticleTable.hh"
 #include "G4IonTable.hh"
@@ -59,9 +58,6 @@ namespace mu2e {
 
   PrimaryGeneratorAction::PrimaryGeneratorAction( const string& generatorModuleLabel ):
     _generatorModuleLabel(generatorModuleLabel){
-
-    G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-    _particleDefinition = particleTable->FindParticle("chargedgeantino");
 
     // Book histograms.
     art::ServiceHandle<art::TFileService> tfs;
@@ -204,60 +200,6 @@ namespace mu2e {
       event->AddPrimaryVertex( vertex );
 
     }
-
-  }
-
-  // A very simple generator for debugging G4 volumes and graphics.
-  void PrimaryGeneratorAction::testTrack(G4Event* event){
-
-    // Generator for uniform coverage of a restricted region on a unit sphere.
-    static RandomUnitSphere randomUnitSphere( *CLHEP::HepRandom::getTheEngine(), -0.7, 0.7 );
-
-    // All tracks start from the same spot.
-    GeomHandle<WorldG4>  world;
-    GeomHandle<Mu2eBuilding>  building;
-    G4ThreeVector const& position = building->relicMECOOriginInMu2e() + world->mu2eOriginInWorld();
-
-    // Magnitude of the momentum.
-    G4double p0  = 50. + 100.*G4UniformRand();
-
-    // Generate the momentum 3-vector.
-    G4ThreeVector momentum = randomUnitSphere.fire(p0);
-
-    /*
-    // Status report.
-    printf ( "Forward: %4d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f\n",
-    1,
-    position.x(),
-    position.y(),
-    position.z(),
-    momentum.x(),
-    momentum.y(),
-    momentum.z(),
-    p0
-    );
-    */
-
-    // Create a new vertex
-    G4PrimaryVertex* vertex = new G4PrimaryVertex(position,0.);
-
-    // Create a new particle.
-    G4PrimaryParticle* particle = new
-      G4PrimaryParticle(_particleDefinition,
-                        momentum.x(),
-                        momentum.y(),
-                        momentum.z()
-                        );
-    particle->SetMass( 0. );
-    particle->SetCharge( eplus );
-    particle->SetPolarization( 0., 0., 0.);
-
-    // Add the particle to the event.
-    vertex->SetPrimary( particle );
-
-    // Add the vertex to the event.
-    event->AddPrimaryVertex( vertex );
-
   }
 
 } // end namespace mu2e

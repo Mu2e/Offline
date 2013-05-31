@@ -1,14 +1,11 @@
 #ifndef Mu2eG4_PrimaryGeneratorAction_hh
 #define Mu2eG4_PrimaryGeneratorAction_hh
 //
-// Give generated tracks to G4. This implements two algorithms:
+// Give generated tracks to G4 by copying information from a GenParticleCollection.
 //
-// 1) testTrack - a trivial 1 track generator for debugging geometries.
-// 2) fromEvent - copies generated tracks from the event.
-//
-// $Id: PrimaryGeneratorAction.hh,v 1.9 2011/11/02 21:29:52 gandr Exp $
+// $Id: PrimaryGeneratorAction.hh,v 1.10 2013/05/31 22:50:47 gandr Exp $
 // $Author: gandr $
-// $Date: 2011/11/02 21:29:52 $
+// $Date: 2013/05/31 22:50:47 $
 //
 // Original author Rob Kutschke
 //
@@ -48,15 +45,11 @@ namespace mu2e {
   private:
 
     void fromEvent( G4Event* );
-    void testTrack( G4Event* );
 
     // The event we are working on;
     // Must be set before the call to GeneratePrimaries.
     // Should change to a pull method, rather than a push.
     art::Event const* _event;
-
-    // The particle I am generating.
-    G4ParticleDefinition* _particleDefinition;
 
     // Module label used to find the event generator input.
     std::string _generatorModuleLabel;
