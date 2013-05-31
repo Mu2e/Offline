@@ -2,9 +2,9 @@
 // Construct and return MECOStyleProtonAbsorber
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.5 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.6 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author MyeongJae Lee
 //
@@ -28,6 +28,9 @@
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorberMaker.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "TargetGeom/inc/Target.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
 using namespace std;
@@ -36,7 +39,8 @@ namespace mu2e {
 
   // Constructor that gets information from the config file instead of
   // from arguments.
-  MECOStyleProtonAbsorberMaker::MECOStyleProtonAbsorberMaker( SimpleConfig const& _config)
+  MECOStyleProtonAbsorberMaker::MECOStyleProtonAbsorberMaker(SimpleConfig const& _config, const DetectorSolenoid& ds, const Target& target)
+    : _ds(&ds), _target(&target)
   {
     BuildIt (_config);
 
@@ -73,15 +77,7 @@ namespace mu2e {
     }
 
     // TS and DS geometry for locating the center of Proton Absorber
-    double rTorus = _config.getDouble("toyTS.rTorus");
-    double ts5HalfLength = _config.getDouble("toyTS5.halfLength");
-    double ds2HalfLength = _config.getDouble("toyDS2.halfLength");
     double solenoidOffset = _config.getDouble("mu2e.solenoidOffset");
-
-    // Info on targets to locate the center of Proton Absorber
-    vector<double> targetRadius;  _config.getVectorDouble("target.radii", targetRadius);
-    double foilwid=_config.getDouble("target.deltaZ");
-    double z0valt =_config.getDouble("target.z0");
 
     // adding virtual detector before and after target
     double vdHL = 0.;
@@ -99,25 +95,12 @@ namespace mu2e {
     // Geometry related variables
     /////////////////////////////
 
-    // DS2 offset
-    double z0DSup = rTorus + 2.*ts5HalfLength + ds2HalfLength;
-
-    // number of target foil
-    double numoftf = (targetRadius.size()-1.0)*0.5;
-
-    // we add space for the virtual detector here, and get the half length of target
-    double taghalflen =(foilwid*numoftf) + 5.0 + 2.*vdHL; // what/why is 5.0 hardcoded here?
-
-    // target offset in mu2e coordinate
-    double tagoff =z0valt + 12000.0; 
-
     // z of target end in mu2e coordinate
-    double targetEnd = tagoff + taghalflen; 
+    // we add space for the virtual detector here
+    double targetEnd = _target->centerInMu2e().z() + 0.5*_target->cylinderLength() + 2.*vdHL;;
 
     // distance from target end to ds2-ds3 boundary
-    double targetEndToDS2End = ds2HalfLength + (z0DSup - targetEnd);
-
-
+    double targetEndToDS2End = _ds->zLocDs23Split() - targetEnd;
 
     //////////////////////////////////////
     // Decide which pabs will be turned on
@@ -211,7 +194,6 @@ namespace mu2e {
     (_pabs->_pabs2flag) = pabs2;
     (_pabs->_materialName) = materialName;
     (_pabs->_vdHL) = vdHL;
-    (_pabs->_ds2zcenter) = z0DSup;
     (_pabs->_distfromtargetend) = distFromTargetEnd;
     (_pabs->_halflength) = pabsZHalfLen;
     (_pabs->_thickness) = thick;

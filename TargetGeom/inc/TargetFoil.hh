@@ -5,9 +5,9 @@
 // Class to represent one target foil.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: TargetFoil.hh,v 1.8 2012/08/27 22:27:35 mf Exp $
-// $Author: mf $
-// $Date: 2012/08/27 22:27:35 $
+// $Id: TargetFoil.hh,v 1.9 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author Rob Kutschke
 //
@@ -26,14 +26,17 @@ namespace mu2e {
 
   public:
     TargetFoil( int id,
-                CLHEP::Hep3Vector const& c,
+                CLHEP::Hep3Vector const& foilCenterInMu2e,
                 CLHEP::Hep3Vector const& n,
                 double rOut,
                 double rIn,
                 double t,
-                std::string m):
+                std::string m,
+                const CLHEP::Hep3Vector& detSysOrigin
+                ):
       _id(id),
-      _c(c),
+      _centerInMu2e(foilCenterInMu2e),
+      _centerInDetectorSystem(foilCenterInMu2e -  detSysOrigin),
       _norm(n),
       _rOut(rOut),
       _rIn(rIn),
@@ -45,7 +48,9 @@ namespace mu2e {
 
     int id() const { return _id; }
 
-    CLHEP::Hep3Vector const& center()  const { return _c;}
+    CLHEP::Hep3Vector const& centerInMu2e()  const { return _centerInMu2e;}
+    CLHEP::Hep3Vector const& centerInDetectorSystem()  const { return _centerInDetectorSystem;}
+
     CLHEP::Hep3Vector const& normal()  const { return _norm;}
 
     double rOut()          const { return _rOut;}
@@ -59,7 +64,9 @@ namespace mu2e {
     int _id;
 
     // Center of the foil.
-    CLHEP::Hep3Vector _c;
+    CLHEP::Hep3Vector _centerInMu2e;
+    CLHEP::Hep3Vector _centerInDetectorSystem;
+
     // "+z" normal vector
     CLHEP::Hep3Vector _norm;
 

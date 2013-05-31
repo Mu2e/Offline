@@ -76,7 +76,6 @@ namespace mu2e {
 					       double pPulseShift,
 					       string STinfilename,
 					       int linesToSkip):
-    _DSOffset(),
     // time generation range
     _tmin ( tmin ),
     _tmax ( tmax ),
@@ -106,8 +105,6 @@ namespace mu2e {
 
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     _maxtime = accPar->deBuncherPeriod;
-
-    _DSOffset = GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e();
 
     // Check if nfoils is bigger than 0;
     if (_nfoils < 1) {
@@ -331,8 +328,7 @@ namespace mu2e {
   // Pick up a random position within the foil
   CLHEP::Hep3Vector FoilParticleGenerator::getFlatRndPos(TargetFoil const& theFoil) {
 
-    // Target geom is given in the detector system, need to convert to Mu2e
-    CLHEP::Hep3Vector const& center = theFoil.center() + _DSOffset;
+    CLHEP::Hep3Vector const& center = theFoil.centerInMu2e();
 
     const double r1 = theFoil.rIn();
     const double dr = theFoil.rOut() - r1;

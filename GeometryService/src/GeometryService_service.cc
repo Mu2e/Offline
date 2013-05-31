@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.48 2013/05/31 15:49:57 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/05/31 15:49:57 $
+// $Id: GeometryService_service.cc,v 1.49 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author Rob Kutschke
 //
@@ -161,7 +161,9 @@ namespace mu2e {
     checkConfig();
 
     // This must be the first detector added since other makers may wish to use it.
-    addDetector(DetectorSystemMaker::make( *_config));
+    std::unique_ptr<DetectorSystem> tmpDetSys(DetectorSystemMaker::make(*_config));
+    const DetectorSystem& detSys = *tmpDetSys.get();
+    addDetector(std::move(tmpDetSys));
 
     // Make a detector for every component present in the configuration.
 
@@ -213,10 +215,9 @@ namespace mu2e {
     const DetectorSolenoid& ds = *tmpDS.get();
     addDetector(std::move(tmpDS));
 
-    if(_config->getBool("hasTarget",false)){
-      TargetMaker targm( *_config );
-      addDetector( targm.getTargetPtr() );
-    }
+    std::unique_ptr<Target> tmptgt(TargetMaker(detSys.getOrigin(), *_config).getTargetPtr());
+    const Target& target = *tmptgt.get();
+    addDetector(std::move(tmptgt));
 
     if (_config->getBool("hasITracker",false)){
       ITrackerMaker itm( *_config );
@@ -277,7 +278,7 @@ namespace mu2e {
     }
 
     if(_config->getBool("hasProtonAbsorber",false) && !_config->getBool("protonabsorber.isHelical", false) ){
-      MECOStyleProtonAbsorberMaker mecopam( *_config );
+      MECOStyleProtonAbsorberMaker mecopam( *_config, ds, target);
       addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
     }
 

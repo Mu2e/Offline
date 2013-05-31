@@ -1,9 +1,9 @@
 //
 // Class to represent the system of MECO style Proton Absorber
 //
-// $Id: MECOStyleProtonAbsorber.cc,v 1.2 2012/05/15 20:19:00 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/05/15 20:19:00 $
+// $Id: MECOStyleProtonAbsorber.cc,v 1.3 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author MyeongJae Lee
 
@@ -16,7 +16,6 @@ namespace mu2e {
 
   MECOStyleProtonAbsorber::MECOStyleProtonAbsorber() : 
     _parts(),
-    _ds2zcenter(0),
     _vdHL(0),
     _materialName(),
     _distfromtargetend(0),

@@ -2,9 +2,9 @@
 // Free function to construct a placeholder for the stopping target.
 // Useful for some low detail graphics.
 //
-// $Id: constructDummyStoppingTarget.cc,v 1.7 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: constructDummyStoppingTarget.cc,v 1.8 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author Rob Kutschke
 //
@@ -64,9 +64,9 @@ namespace mu2e{
                                 offset,
                                 mother,
                                 0,
-                                config.getBool("target.visible",true),
+                                config.getBool("stoppingTarget.visible",true),
                                 G4Color::Yellow(),
-                                config.getBool("target.solid",true),
+                                config.getBool("stoppingTarget.solid",true),
                                 config.getBool("g4.forceAuxEdgeVisible",false),
                                 true,
                                 doSurfaceCheck

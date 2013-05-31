@@ -5,9 +5,9 @@
 //
 // See additional details in the comments in the header file.
 //
-// $Id: zBinningForFoils.cc,v 1.3 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
+// $Id: zBinningForFoils.cc,v 1.4 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author Rob Kutschke
 //
@@ -33,7 +33,7 @@ namespace mu2e{
     // on the spacing between foils.
     if ( nfoils == 1 ){
       double dz = (nBinsDZ+0.5)*target.foil(0).halfThickness();
-      double z0 = target.foil(0).center().z();
+      double z0 = target.foil(0).centerInMu2e().z();
       int nbins = 2*nBinsDZ + 1;
       return Binning( nbins, z0-dz, z0+dz );
     }
@@ -41,8 +41,8 @@ namespace mu2e{
     // Z positions of the centers of the first and last targets.
     TargetFoil const& f1 = target.foil(0);
     TargetFoil const& f2 = target.foil(nfoils-1);
-    double z1 = f1.center().z();
-    double z2 = f2.center().z();
+    double z1 = f1.centerInMu2e().z();
+    double z2 = f2.centerInMu2e().z();
 
     // Compute bin width (dz) as advertised for the general case.
     double dz = (z2-z1)/(nfoils-1)/nBinsDZ;

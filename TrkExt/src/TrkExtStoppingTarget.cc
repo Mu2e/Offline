@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtStoppingTarget.cc,v 1.1 2012/08/04 00:22:09 mjlee Exp $
-//  $Author: mjlee $
-//  $Date: 2012/08/04 00:22:09 $
+//  $Id: TrkExtStoppingTarget.cc,v 1.2 2013/05/31 18:07:18 gandr Exp $
+//  $Author: gandr $
+//  $Date: 2013/05/31 18:07:18 $
 //
 //  Original author MyeongJae Lee
 //
@@ -49,10 +49,10 @@ namespace mu2e {
     foil.clear();
     for (int i = 0 ; i < target->nFoils() ; ++i) {
       TargetFoil f = target->foil(i);
-      foil_data_type ftmp (f.rOut(), 
-          f.center().z()+12000.-f.halfThickness()-origin.z(),
-          f.center().z()+12000.-origin.z(),
-          f.center().z()+12000.+f.halfThickness()-origin.z());
+      foil_data_type ftmp (f.rOut(),
+                           f.centerInDetectorSystem().z() - f.halfThickness(),
+                           f.centerInDetectorSystem().z(),
+                           f.centerInDetectorSystem().z() + f.halfThickness());
       foil.push_back(ftmp);
     }
 

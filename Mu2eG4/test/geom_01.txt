@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.184 2013/05/31 15:57:19 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/05/31 15:57:19 $
+// $Id: geom_01.txt,v 1.185 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author Rob Kutschke
 //
@@ -323,32 +323,31 @@ string dummyStoppingTarget.material   = "WAGVacuum";
 //
 
 // material around the targets
-string         target.fillMaterial    = "DSVacuum";
+string         stoppingTarget.fillMaterial    = "DSVacuum";
 
-// All dimensions in mm in the detector coordinate system.
-// (0,0,0) = on axis in the DS at z=12000. mm
-double target.z0             = -6129.0;    // 12000-(13800.00-7929) = -6129. was -6100
-double target.deltaZ         =    50.0;
-bool   target.visible        = true;
-bool   target.solid          = false;
-int    target.verbosity      =     0;
+// All dimensions in mm
+double stoppingTarget.z0InMu2e       = 5871;    // 12000 - 6129
+double stoppingTarget.deltaZ         = 50.0;
+bool   stoppingTarget.visible        = true;
+bool   stoppingTarget.solid          = false;
+int    stoppingTarget.verbosity      =     0;
 
 // all radii must be specified, i.e., nFoils is determined from the size
 // of the radii vector.
-vector<double> target.radii  =
+vector<double> stoppingTarget.radii  =
     {  83.00,  81.89,  80.79,  79.68,  78.58,
        77.47,  76.36,  75.26,  74.15,  73.04,
        71.94,  70.83,  69.73,  68.62,  67.51,
        66.41,  65.30 };
 
 // last material given will be repeated up to number radii.size()
-vector<string> target.materials =
+vector<string> stoppingTarget.materials =
     { "G4_Al"};
 
 // Variation of locations of foil centers
 // z: variations from equal spacings according to z0 and deltaZ
 // last will be repeated...
-vector<double> target.zVars  =
+vector<double> stoppingTarget.zVars  =
     { 0., 0., 0., 0., 0.,
       0., 0., 0., 0., 0.,
       0., 0., 0., 0., 0.,
@@ -356,24 +355,24 @@ vector<double> target.zVars  =
 
 // x: relative to beam axis
 // last will be repeated...
-vector<double> target.xVars  =
+vector<double> stoppingTarget.xVars  =
     { 0.};
 
 // y: relative to beam axis
 // last will be repeated...
-vector<double> target.yVars  =
+vector<double> stoppingTarget.yVars  =
     { 0. };
 
 // last thickness given will be repeated up to number radii.size()
-vector<double> target.halfThicknesses  =
+vector<double> stoppingTarget.halfThicknesses  =
     {0.1};
 
 // last x directional cosine given will be repeated up to number radii.size()
-vector<double> target.xCos  =
+vector<double> stoppingTarget.xCos  =
     { 0.};
 
 // last y directional cosine given will be repeated up to number radii.size()
-vector<double> target.yCos  =
+vector<double> stoppingTarget.yCos  =
     { 0.};
 
 

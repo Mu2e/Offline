@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.21 2013/03/29 04:35:17 gandr Exp $
+// $Id: constructProtonAbsorber.cc,v 1.22 2013/05/31 18:07:18 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -22,6 +22,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
+#include "TargetGeom/inc/Target.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestCons.hh"
@@ -137,36 +138,21 @@ namespace mu2e {
       
       MaterialFinder materialFinder(_config);
       G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
-      
-      
-      double z0DSup   = parent1Info.centerInMu2e().z();
-      
-      // the target info should be gotten from the geometry service... not as done here
-      
-      vector<double> targetRadius;  _config.getVectorDouble("target.radii", targetRadius);
-      
-      double numoftf = (targetRadius.size()-1.0)*0.5;
-      
-      double foilwid=_config.getDouble("target.deltaZ");
-      
+
+      GeomHandle<Target> target;
+
+      // The proton absorber starts at the target end.
       // we add space for the virtual detector here
-      double taglen =(foilwid*numoftf) + 5.0 + 2.*vdHL; // what/why is 5.0 hardcoded here?
+      double pabsStartInMu2eZ = target->centerInMu2e().z() + 0.5*target->cylinderLength() + 2.*vdHL;;
 
-      double z0valt =_config.getDouble("target.z0");
-      double tagoff =z0valt - z0DSup + 12000.0;
+      // Need to split it at the DS2/DS3 boundary
+      double pabs1EndInMu2eZ = ds->zLocDs23Split();
 
-      double targetEnd = tagoff + taglen;
-      double ds2HalfLen = _config.getDouble("toyDS2.halfLength");
-      double pabs1len = ds2HalfLen - targetEnd;
-      G4ThreeVector  pabs1Offset(0.0, 0.0, (pabs1len*0.5) + targetEnd);
+      double pabs1len = pabs1EndInMu2eZ - pabsStartInMu2eZ;
+
+      G4ThreeVector  pabs1Offset(0.0, 0.0, (pabs1EndInMu2eZ+pabsStartInMu2eZ)/2. - parent1Info.centerInMu2e().z());
 
       if ( verbosityLevel > 0) {
-        cout << __func__ <<
-          " z0DSup                            : " << z0DSup << endl;
-        cout << __func__ <<
-          " tagoff                            : " << tagoff << endl;
-        cout << __func__ <<
-          " ds2HalfLen                        : " << ds2HalfLen << endl;
         cout << __func__ <<
           " pabs1len                          : " << pabs1len << endl;
       }

@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.62 2013/05/09 23:14:14 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Id: DataInterface.cc,v 1.63 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:18 $
 //
 
 #include "DataInterface.h"
@@ -23,7 +23,7 @@
 #include "EventDisplay/src/dict_classes/ComponentInfo.h"
 #include "EventDisplay/src/dict_classes/EventDisplayViewSetup.h"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "HepPID/ParticleName.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
@@ -210,9 +210,7 @@ void DataInterface::fillGeometry()
   art::ServiceHandle<mu2e::GeometryService> geom;
 
   const mu2e::SimpleConfig &config = geom->config();
-  _xOffset=config.getDouble("mu2e.solenoidOffset");    //between Mu2e and Tracker coordinates
-  _zOffset=-config.getDouble("mu2e.detectorSystemZ0"); //between Mu2e and Tracker coordinates
-  _zOffsetDS=1800.0;                                   //between DS and Tracker coordinates
+  _detSysOrigin = mu2e::GeomHandle<mu2e::DetectorSystem>()->getOrigin();
 
   if(geom->hasElement<mu2e::TTracker>())
   {
@@ -453,7 +451,7 @@ void DataInterface::fillGeometry()
     double innerRadius=ds->rIn(); 
     double outerRadius=ds->rOut();
     double zHalfLength=ds->halfLength();
-    double z=ds->position().z()+_zOffset;
+    double z=ds->position().z() - _detSysOrigin.z();
 
     boost::shared_ptr<ComponentInfo> infoToyDS(new ComponentInfo());
     char c[200];
@@ -478,7 +476,7 @@ void DataInterface::fillGeometry()
     mu2e::GeomHandle<mu2e::Target> target;
     double radius=target->cylinderRadius();
     double length=target->cylinderLength();
-    double z=target->cylinderCenter()+_zOffsetDS;
+    double z=target->centerInMu2e().z() - _detSysOrigin.z();
     unsigned int n=target->nFoils();
     for(unsigned int i=0; i<n; i++)
     {
@@ -512,9 +510,9 @@ void DataInterface::fillGeometry()
     for(unsigned int i=0; i<n; i++)
     {
       const mu2e::Vane &v=calo->vane(i);
-      double x=v.origin().x()+_xOffset;
-      double y=v.origin().y();
-      double z=v.origin().z()+_zOffset;
+      double x=v.origin().x() - _detSysOrigin.x();
+      double y=v.origin().y() - _detSysOrigin.y();
+      double z=v.origin().z() - _detSysOrigin.z();
       int    id=v.id();
       double sx=v.size().x();
       double sy=v.size().y();
@@ -554,9 +552,9 @@ void DataInterface::fillGeometry()
       double crystalHalfTrans=calo->crystalHalfTrans();
 
       const mu2e::Vane &v=calo->vane(vaneid);
-      double x=v.origin().x()+_xOffset;
-      double y=v.origin().y();
-      double z=v.origin().z()+_zOffset;
+      double x=v.origin().x() - _detSysOrigin.x();
+      double y=v.origin().y() - _detSysOrigin.y();
+      double z=v.origin().z() - _detSysOrigin.z();
       double theta=v.rotation().theta();
       double phi=v.rotation().phi();
       double psi=v.rotation().psi();
@@ -618,7 +616,7 @@ void DataInterface::fillGeometry()
     mbslen[2]  = config.getDouble("mbs.CLV2HLength");
     double mbsbstsz = config.getDouble("mbs.BSTSZ");
     double mbstotallen = (mbslen[0] + mbslen[1])*2.;
-    double mbsstartz = mbsbstsz - mbstotallen/2. + _zOffset;
+    double mbsstartz = mbsbstsz - mbstotallen/2. - _detSysOrigin.z();
     mbsz[0] = mbsstartz + mbslen[0] ;
     mbsz[1] = mbsstartz + mbslen[0]*2. + mbslen[1];
     mbsz[2] = mbsstartz +mbstotallen - mbslen[2];
@@ -654,8 +652,8 @@ void DataInterface::fillGeometry()
       halflength = config.getDouble("protonabsorber.halfLength");
       mu2e::GeomHandle<mu2e::Target> target;
       double stoppingtargetlength=target->cylinderLength();
-      double stoppingtargetz=target->cylinderCenter();
-      z = (stoppingtargetz +_zOffsetDS) + stoppingtargetlength*0.5 + halflength;
+      double stoppingtargetz=target->centerInMu2e().z() - _detSysOrigin.z();
+      z = stoppingtargetz + stoppingtargetlength*0.5 + halflength;
 
       boost::shared_ptr<ComponentInfo> infoMecoStylePA(new ComponentInfo());
       sprintf(c,"MECOStyleProtonAbsorber");
@@ -717,10 +715,10 @@ void DataInterface::fillGeometry()
           for (int ib = 0; ib < nBars; ++ib)  
           {
             mu2e::CRSScintillatorBar const & bar = layer.getBar(ib);
-            CLHEP::Hep3Vector barOffset = bar.getGlobalOffset();
-            double x=barOffset.x() +_xOffset;
+            CLHEP::Hep3Vector barOffset = bar.getGlobalOffset() - _detSysOrigin;
+            double x=barOffset.x();
             double y=barOffset.y();
-            double z=barOffset.z() +_zOffset;
+            double z=barOffset.z();
 
             char c[200];
             boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
@@ -1286,14 +1284,14 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       if(startVolume<physicalVolumeEntries && startVolume>=0) startVolumeName=physicalVolumes->at(startVolume).name();
       if(endVolume<physicalVolumeEntries && endVolume>=0) endVolumeName=physicalVolumes->at(endVolume).name();
 
-      double x1=particle.startPosition().x()+_xOffset;
-      double y1=particle.startPosition().y();
-      double z1=particle.startPosition().z()+_zOffset;
+      double x1=particle.startPosition().x() - _detSysOrigin.x();
+      double y1=particle.startPosition().y() - _detSysOrigin.y();
+      double z1=particle.startPosition().z() - _detSysOrigin.z();
       double t1=particle.startGlobalTime();
       double e1=particle.startMomentum().e();
-      double x2=particle.endPosition().x()+_xOffset;
-      double y2=particle.endPosition().y();
-      double z2=particle.endPosition().z()+_zOffset;
+      double x2=particle.endPosition().x() - _detSysOrigin.x();
+      double y2=particle.endPosition().y() - _detSysOrigin.y();
+      double z2=particle.endPosition().z() - _detSysOrigin.z();
       double t2=particle.endGlobalTime();
       double e2=particle.endMomentum().e();
       findBoundaryT(_tracksTimeMinmax, t1);
@@ -1494,8 +1492,8 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
         for(unsigned int i=0; i<pVect.size(); i++)
         {
           trajectoryStruct ts;
-          ts.v=pVect[i];
-          ts.v.setZ(pVect[i].z()+_zOffsetDS);
+          ts.v = pVect[i] - _detSysOrigin;
+          // ts.v.setZ(pVect[i].z()+_zOffsetDS);
           if(i==0) ts.t=t1;
           if(i==(pVect.size()-1)) ts.t=t2;
           trajectoryVect.push_back(ts);
@@ -1511,10 +1509,7 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
           if(particle)
           {
 // extract the start position and start time of the daughter track
-              CLHEP::Hep3Vector v;
-              v.setX(particle->startPosition().x()+_xOffset);
-              v.setY(particle->startPosition().y());
-              v.setZ(particle->startPosition().z()+_zOffset);
+              CLHEP::Hep3Vector v(particle->startPosition() - _detSysOrigin);
               double newTime=particle->startGlobalTime();
               if(newTime>t2 || newTime<t1) break;
 // try to find the point in the trajectory vector, which is closest to this starting point

@@ -1,9 +1,9 @@
 //
 // A module to follow the conversion electron in the events
 //
-// $Id: ConvElecHistory_module.cc,v 1.8 2012/02/27 06:05:35 gandr Exp $
+// $Id: ConvElecHistory_module.cc,v 1.9 2013/05/31 18:07:18 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/27 06:05:35 $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author Gianni Onorato
 //
@@ -300,8 +300,8 @@ namespace mu2e {
     float nfoil = 0;
     for (int i=0; i<target->nFoils(); ++i) {
       TargetFoil const& foil = target->foil(i);
-      if (genCE.position().z() >= foil.center().z()-foil.halfThickness() &&
-          genCE.position().z() <= foil.center().z()+foil.halfThickness() )
+      if (genCE.position().z() >= foil.centerInMu2e().z()-foil.halfThickness() &&
+          genCE.position().z() <= foil.centerInMu2e().z()+foil.halfThickness() )
         nfoil = i;
     }
     B_genfoil  = nfoil;

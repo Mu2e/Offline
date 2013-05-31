@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.31 2013/05/02 06:03:41 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2013/05/02 06:03:41 $
+// $Id: DataInterface.h,v 1.32 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author Ralf Ehrlich
 //
@@ -76,7 +76,7 @@ class DataInterface
   std::vector<boost::shared_ptr<Cube> >         _crvscintillatorbars;
   std::vector<boost::shared_ptr<VirtualShape> > _mbsstructures;
   std::vector<boost::shared_ptr<Cone> > _mecostylepastructures;
-  double            _xOffset, _zOffset, _zOffsetDS;
+  CLHEP::Hep3Vector _detSysOrigin;
   timeminmax        _hitsTimeMinmax, _tracksTimeMinmax;
   spaceminmax       _trackerMinmax, _targetMinmax, _calorimeterMinmax, _tracksMinmax;
   int               _numberHits, _numberCrystalHits;

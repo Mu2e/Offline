@@ -85,8 +85,6 @@ namespace mu2e {
 
   private:
 
-    CLHEP::Hep3Vector _DSOffset;
-
     // time generation range
     double _tmin, _tmax;
 

@@ -1,9 +1,9 @@
 //
 // A first look at muons stopping in stopping targets.
 //
-// $Id: StoppingTarget00_module.cc,v 1.11 2012/02/27 06:05:35 gandr Exp $
+// $Id: StoppingTarget00_module.cc,v 1.12 2013/05/31 18:07:18 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/02/27 06:05:35 $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author Rob Kutschke.
 //
@@ -119,9 +119,7 @@ namespace mu2e {
 
     // Information about the detector coordinate system.
     GeomHandle<DetectorSystem> det;
-    CLHEP::Hep3Vector origin = det->toMu2e( CLHEP::Hep3Vector(0.,0.,0.) );
-
-    _dsOffset.setX(origin.x());
+    _dsOffset = det->toMu2e( CLHEP::Hep3Vector(0.,0.,0.) );
 
     /*
     // Handle to information about G4 physical volumes.
@@ -362,7 +360,7 @@ namespace mu2e {
     if ( stopFoilId > -1 && mu.stoppingCode() == ProcessCode::muMinusCaptureAtRest ){
       TargetFoil const& foil = target->foil(stopFoilId);
 
-      double dz = endPos.z() - ( 12000. + foil.center().z());
+      double dz = endPos.z() - foil.centerInDetectorSystem().z();
       _hzInFoil->Fill( dz/foil.halfThickness() );
       /*
       cout << "Test: "
@@ -379,10 +377,11 @@ namespace mu2e {
           fout << "begin data" << endl;
           first = false;
         }
+        // Print out in Mu2e coordinates
         fout  << setprecision(8)
-              << endPos.x()+_dsOffset.x() << " "
-              << endPos.y() << " "
-              << endPos.z() << " "
+              << endPos.x() + _dsOffset.x() << " "
+              << endPos.y() + _dsOffset.y() << " "
+              << endPos.z() + _dsOffset.z() << " "
               << mu.endGlobalTime()
               << endl;
       }

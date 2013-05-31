@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: PiEplusNuGun.cc,v 1.13 2013/05/31 18:06:28 gandr Exp $
+// $Id: PiEplusNuGun.cc,v 1.14 2013/05/31 18:07:18 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:06:28 $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author Rob Kutschke heavily modified by R. Bernstein
 //
@@ -96,8 +96,7 @@ namespace mu2e {
     int ifoil = static_cast<int>(nFoils*randFlat.fire());
     TargetFoil const& foil = target->foil(ifoil);
 
-    // Target geom is given in the detector system, need to convert to Mu2e
-    CLHEP::Hep3Vector const& center = foil.center() + building->relicMECOOriginInMu2e();
+    CLHEP::Hep3Vector const& center = foil.centerInMu2e();
     const double r1 = foil.rIn();
     const double dr = foil.rOut() - r1;
 

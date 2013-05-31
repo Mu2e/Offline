@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.18 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
+// $Id: VirtualDetectorMaker.cc,v 1.19 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
 //
 
 #include <iostream>
@@ -24,6 +24,7 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "TargetGeom/inc/Target.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
@@ -113,23 +114,16 @@ namespace mu2e {
       // stopping target
 
       GeomHandle<Target> target;
+      GeomHandle<DetectorSolenoid> ds;
 
-      double z0    = target->cylinderCenter();
-      double zHalf = target->cylinderLength()/2.0;
-
-      double rTorus        = bg->getTS().torusRadius();
-      double ts5HalfLength = bg->getTS().getTS5().getHalfLength();
-      double ds2HalfLength = c.getDouble("toyDS2.halfLength");
-      double ds2Z0         = rTorus + 2.*ts5HalfLength + ds2HalfLength;
-
-      Hep3Vector ds2Offset(-solenoidOffset,0.,ds2Z0);
-      Hep3Vector targetOffset(0.,0.,(12000.+z0-ds2Z0));
-      Hep3Vector shift(0.,0.,zHalf+vdHL);
+      const CLHEP::Hep3Vector ds2centerInMu2e(ds->position().x(), ds->position().y(), ds->zLocDs23Split() - ds->halfLengthDs2());
+      const Hep3Vector targetOffset(target->centerInMu2e() - ds2centerInMu2e);
+      Hep3Vector shift(0., 0., vdHL + target->cylinderLength()/2);
 
       vd->addVirtualDetector( VirtualDetectorId::ST_In,
-                               ds2Offset, 0, targetOffset-shift);
+                               ds2centerInMu2e, 0, targetOffset-shift);
       vd->addVirtualDetector( VirtualDetectorId::ST_Out,
-                               ds2Offset, 0, targetOffset+shift);
+                               ds2centerInMu2e, 0, targetOffset+shift);
 
       if (c.getBool("hasTTracker",false)){
 

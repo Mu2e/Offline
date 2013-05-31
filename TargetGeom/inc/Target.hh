@@ -5,9 +5,9 @@
 // Class to represent the system of target foils.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: Target.hh,v 1.10 2012/08/27 22:27:35 mf Exp $
-// $Author: mf $
-// $Date: 2012/08/27 22:27:35 $
+// $Id: Target.hh,v 1.11 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author Rob Kutschke
 //
@@ -32,7 +32,7 @@ namespace mu2e {
   friend class TargetMaker;
 
   public:
-    Target();
+    Target() : _radius(), _zLen() {}
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
@@ -42,7 +42,7 @@ namespace mu2e {
 
     double cylinderRadius() const {return _radius;}
     double cylinderLength() const {return _zLen;}
-    double cylinderCenter() const {return _z0;}
+    const CLHEP::Hep3Vector& centerInMu2e() const {return _centerInMu2e;}
 
     std::string const fillMaterial() const {return _fillMaterial;}
 
@@ -54,8 +54,8 @@ namespace mu2e {
     // an enclosing cylinder.  This is defined to be on the z axis, in
     // detector coordinates
     double _radius;
-    double _z0; // center in Z;
     double _zLen; // Length
+    CLHEP::Hep3Vector _centerInMu2e;
 
     std::string _fillMaterial;
 

@@ -4,9 +4,9 @@
 //
 // Class to represent the system of MECO Style Proton Absorber
 //
-// $Id: MECOStyleProtonAbsorber.hh,v 1.2 2012/05/15 20:19:00 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/05/15 20:19:00 $
+// $Id: MECOStyleProtonAbsorber.hh,v 1.3 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author MyeongJae Lee
 //
@@ -37,7 +37,6 @@ namespace mu2e {
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
     MECOStyleProtonAbsorberPart const& part ( unsigned int n ) const { return _parts.at(n); }
-    double centerOfDS2()             const { return _ds2zcenter; }
     double virtualDetectorHalfLength()  const { return _vdHL; }
     std::string fillMaterial()           const { return _materialName; } 
     double distanceFromTargetEnd() const { return _distfromtargetend; }
@@ -49,7 +48,6 @@ namespace mu2e {
 
     std::vector<MECOStyleProtonAbsorberPart> _parts;
     // some variables that affects both parts
-    double _ds2zcenter;  // DS2 center
     double _vdHL;        // Virtual Detector half length
     std::string _materialName;  // Proton Absorber material
     double _distfromtargetend;  //distance from the target end to the start of proton absorber

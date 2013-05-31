@@ -4,9 +4,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: TargetMaker.hh,v 1.5 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
+// $Id: TargetMaker.hh,v 1.6 2013/05/31 18:07:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/05/31 18:07:18 $
 //
 // Original author Peter Shanahan
 //
@@ -14,6 +14,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 
@@ -24,13 +26,9 @@ class TargetMaker{
 
 public:
 
-  TargetMaker( SimpleConfig const& config );
+  TargetMaker(const CLHEP::Hep3Vector& detSysOrigin, SimpleConfig const& config );
 
   // Use compiler-generated copy c'tor, copy assignment, and d'tor
-
-  // This is deprecated and will go away soon.
-  // Still needed for root graphics version.
-  const Target& getTarget() const { return *_targ;}
 
   // This is the accessor that will remain.
   std::unique_ptr<Target> getTargetPtr() { return std::move(_targ); }
@@ -51,7 +49,9 @@ private:
   // to persist long enough to make the Target.  After that, the definition
   // resides entirely in the Target object.
 
-  double _z0 ; // nominal center of foils.
+  CLHEP::Hep3Vector _detSysOrigin;
+
+  double _z0InMu2e; // nominal center of foils.
   double _deltaZ ; // nominal spacing of foils.
   double _rIn; // inner radius of foils.  Currently 0.
 
