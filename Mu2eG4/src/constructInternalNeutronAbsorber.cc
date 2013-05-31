@@ -1,9 +1,9 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructInternalNeutronAbsorber.cc,v 1.2 2013/04/25 18:18:48 knoepfel Exp $
+// $Id: constructInternalNeutronAbsorber.cc,v 1.3 2013/05/31 15:49:57 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/04/25 18:18:48 $
+// $Date: 2013/05/31 15:49:57 $
 //
 // Original author KLG
 //
@@ -47,9 +47,6 @@ namespace mu2e {
 
     int const verbosityLevel = _config.getInt("neutronabsorber.verbosityLevel",0);
 
-    // the internal neutron absorber is placed in the DS2/3 vacuum
-    // split accordingly to deal with the ds2/ds3 split
-
     // Extract information from the config file.
     bool NAVisible             = _config.getBool("neutronabsorber.visible");
     bool NASolid               = _config.getBool("neutronabsorber.solid");
@@ -67,159 +64,64 @@ namespace mu2e {
     // Fetch InternalNeutronAborber geometry
     GeomHandle<InternalNeutronAbsorber> nai;
 
-    double const NAI1FrontZ     = nai->positionAbs1().z() - nai->halfLengthAbs1();
-    double const NAI12BoundaryZ = nai->positionAbs1().z() + nai->halfLengthAbs1();
+    double const NAI2FrontZ = nai->position().z() - nai->halfLength2();
+    double const NAI1FrontZ = nai->position().z() - nai->halfLength1();
 
     if ( verbosityLevel > 0) {
-      cout << __func__ << " NAI1OffsetInMu2e                 : " << nai->positionAbs1() << endl;
+      cout << __func__ << " NAI1 FrontZ                       : " << NAI1FrontZ    << endl;
+      cout << __func__ << " NAI2 FrontZ                       : " << NAI2FrontZ    << endl;
+      cout << __func__ << " NAI1 ExtentZ                      : " << NAI2FrontZ + 2*nai->halfLength2() << endl;
+      cout << __func__ << " NAI1 ExtentZ                      : " << NAI1FrontZ + 2*nai->halfLength1() << endl;
     }
 
-    // halflength of second neutron absorber constrained by z-extent
-    // of ToyDS3Vacuum
+    // we need to calculate where the ToyDS2Vacuum volume is;
+    // the int. neutron absorber must fit inside it
 
     // Fetch DS geom object
     GeomHandle<DetectorSolenoid> ds;
 
-    double const ds2HalfLength = ds->halfLengthDs2();
-    double const ds3FullLength = ds->coilZMax() - ds->zLocDs23Split();
-
-    double const NAIHalfLengthZ02 = (ds->coilZMax() - NAI12BoundaryZ)*0.5;
-
-    double const NAIZ02    = nai->positionAbs1().z() + nai->halfLengthAbs1() + NAIHalfLengthZ02;
-    double const NAI2EndZ  = NAIZ02 + NAIHalfLengthZ02;
-
+    double const ds2FrontZ = ds->zLocDs23Split() - 2.*ds->halfLengthDs2();
     if ( verbosityLevel > 0) {
-      cout << __func__ << " NAIZ01                           : " << nai->positionAbs1().z()  << endl;
-      cout << __func__ << " NAIZ02                           : " << NAIZ02  << endl;
-      cout << __func__ << " NAI1FrontZ                       : " << NAI1FrontZ    << endl;
-      cout << __func__ << " NAI12BoundaryZ                   : " << NAI12BoundaryZ << endl;
-      cout << __func__ << " NAI2EndZ                         : " << NAI2EndZ      << endl;
-    }
-
-    // the Z offset of the InternalNeutronAbsorber2
-
-    // we need to calculate where is the boundary of
-    // InternalNeutronAbsorber1,2 wrt boudary between ToyDS2Vacuum &
-    // ToyDS3Vacuum
-
-    if ( verbosityLevel > 0) {
-      cout << __func__ << " toyDS2Vacuum half-length                 : " <<  ds2HalfLength  << endl;
-      cout << __func__ << " toyDS3Vacuum full length in DS (polycone): " <<  ds3FullLength  << endl;
-    }
-
-    // what are the offsets of the DS2,3Vacuum in the Mu2e system?
-    // the ds2/ds3 boundary in mu2e coordinates
-
-    double const ds2FrontZG = ds->zLocDs23Split() - 2.*ds->halfLengthDs2();
-
-    if ( verbosityLevel > 0) {
-      cout << __func__ << " ds2FrontZG                       : " << ds2FrontZG    << endl;
-      cout << __func__ << " ds23BoundaryG                    : " << ds->zLocDs23Split() << endl;
-      cout << __func__ << " ds3EndZG                         : " << ds->coilZMax()      << endl;
+      cout << __func__ << " toyDS2Vacuum extent               : [" 
+           << ds2FrontZ << " , " 
+           << ds->zLocDs23Split() << endl;
     }
 
     // certain combinations are illegal; we will assume that the
     // conical absorber is fully contained in ds2
 
-    if ( ds2FrontZG>NAI1FrontZ ){
+    if ( ds2FrontZ>NAI1FrontZ ){
       throw cet::exception("GEOM")
         << "Internal Neutron Absorber 1 front is outside of DS2Vaccum \n";
     }
 
-    if ( ds->zLocDs23Split()<NAI12BoundaryZ ){
+    if ( ds->zLocDs23Split()<NAI2FrontZ+2*nai->halfLength2() ||
+         ds->zLocDs23Split()<NAI1FrontZ+2*nai->halfLength1() ){
       throw cet::exception("GEOM")
-        << "Internal Neutron Absorber 1 end is outside of DS2Vaccum \n";
-    }
-
-    if ( ds->coilZMax()<NAI2EndZ ){
-      throw cet::exception("GEOM")
-        << "Internal Neutron Absorber 2 end is outside of DS3Vaccum \n";
-    }
-
-    // tube parameters for InternalNeutronAbsorber2
-
-    // we need to construct two InternalNeutronAbsorber2 one in ds2 and another one in ds3
-    // we need to calculate their offsets
-    // x-offsets are inline with those of InternalNeutronAbsorber1
-
-    double const halfDeltaBoundary = (ds->zLocDs23Split() - NAI12BoundaryZ)*.5;
-    double const averageBoundary   = (ds->zLocDs23Split() + NAI12BoundaryZ)*.5;
-
-    CLHEP::Hep3Vector NAI23OffsetInMu2e =
-      CLHEP::Hep3Vector(nai->positionAbs1().x(),0.,NAIZ02+halfDeltaBoundary);
-
-    if ( verbosityLevel > 0) {
-      cout << __func__ << " NAI23OffsetInMu2e                : " << NAI23OffsetInMu2e << endl;
-    }
-
-    CLHEP::Hep3Vector NAI22OffsetInMu2e =
-      CLHEP::Hep3Vector(nai->positionAbs1().x(),0.,averageBoundary);
-
-    if ( verbosityLevel > 0) {
-      cout << __func__ << " NAI22OffsetInMu2e                : " << NAI22OffsetInMu2e << endl;
+        << "Internal Neutron Absorber is outside of DS2Vaccum \n";
     }
 
     // Get ToyDS2Vacuum & ToyDS3Vacuum info
     VolumeInfo const & toyDS2VacuumInfo = _helper->locateVolInfo("ToyDS2Vacuum");
-    VolumeInfo const & toyDS3VacuumInfo = _helper->locateVolInfo("ToyDS3Vacuum");
 
-    CLHEP::Hep3Vector NAI1Offset  =  nai->positionAbs1() - toyDS2VacuumInfo.centerInMu2e();
-
-    // constructing InternalNeutronAbsorber1 as concentric annular cylinders
-    for ( size_t i = 0 ; i < nai->rInAbs1Vec().size() ; i++ ) {
-      TubsParams tubsparms = ( i < nai->rInAbs1Vec().size()-1 ) ? // do inner cylinders 
-        TubsParams( nai->rInAbs1Vec().at(i), nai->rInAbs1Vec().at(i+1), nai->halfLengthAbs1() ) :
-        TubsParams( nai->rInAbs1Vec().back(), nai->rOut(), nai->halfLengthAbs1() ) ;
-        
-      ostringstream detname;
-      detname << "InternalNeutronAbsorber1_" << i;
-	  
-      G4Material* NAI1Material = findMaterialOrThrow( nai->materialAbs1Vec().at(i) );
-      nestTubs(detname.str(),
-               tubsparms,
-               NAI1Material,
-               0,
-               NAI1Offset,
-               toyDS2VacuumInfo,
-               0,
-               NAVisible,
-               G4Colour::Cyan(),
-               NASolid,
-               forceAuxEdgeVisible,
-               placePV,
-               doSurfaceCheck
-               );
-	  
-    }
-
-    //constructing split internal neutron absorber 2
-    CLHEP::Hep3Vector NAI22Offset =  NAI22OffsetInMu2e - toyDS2VacuumInfo.centerInMu2e();
-    CLHEP::Hep3Vector NAI23Offset =  NAI23OffsetInMu2e - toyDS3VacuumInfo.centerInMu2e();
+    CLHEP::Hep3Vector NAIOffset  =  nai->position() - toyDS2VacuumInfo.centerInMu2e();
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " toyDS2VacuumInfo.centerInMu2e()  : " << toyDS2VacuumInfo.centerInMu2e() << endl;
-      cout << __func__ << " toyDS3VacuumInfo.centerInMu2e()  : " << toyDS3VacuumInfo.centerInMu2e() << endl;
-      cout << __func__ << " NAI1Offset                       : " << NAI1Offset  << endl;
-      cout << __func__ << " NAI22Offset                      : " << NAI22Offset << endl;
-      cout << __func__ << " NAI23Offset                      : " << NAI23Offset << endl;
+      cout << __func__ << " NAIOffset                       : "  << NAIOffset  << endl;
     }
 
-    TubsParams NAI22Params( nai->rInAbs2(),
-                            nai->rOut(),
-                            halfDeltaBoundary);
+    TubsParams NAI2Params( nai->rIn2(), nai->rOut(), nai->halfLength2() );
+    TubsParams NAI1Params( nai->rIn1(), nai->rIn2(), nai->halfLength1() );
 
-    TubsParams NAI23Params( nai->rInAbs2(),
-                            nai->rOut(),
-                            NAIHalfLengthZ02-halfDeltaBoundary);
+    G4Material* NAI2Material = findMaterialOrThrow( nai->material2() );
+    G4Material* NAI1Material = findMaterialOrThrow( nai->material1() );
 
-
-    G4Material* NAMaterial = findMaterialOrThrow( nai->materialAbs2() );
-
-    nestTubs("InternalNeutronAbsorber22",
-             NAI22Params,
-             NAMaterial,
+    nestTubs("InternalNeutronAbsorber2",
+             NAI2Params,
+             NAI2Material,
              0,
-             NAI22Offset,
+             NAIOffset,
              toyDS2VacuumInfo,
              0,
              NAVisible,
@@ -229,31 +131,22 @@ namespace mu2e {
              placePV,
              doSurfaceCheck
              );
-    
-    VolumeInfo INA23Info  = nestTubs("InternalNeutronAbsorber23",
-                                     NAI23Params,
-                                     NAMaterial,
-                                     0,
-                                     NAI23Offset,
-                                     toyDS3VacuumInfo,
-                                     0,
-                                     NAVisible,
-                                     G4Colour::Cyan(),
-                                     NASolid,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     doSurfaceCheck
-                                     );
 
-    if ( verbosityLevel > 0) {
-      double zhl         = static_cast<G4Tubs*>(INA23Info.solid)->GetZHalfLength();
-      CLHEP::Hep3Vector const & IntNeutronAbs23OffsetInMu2e = INA23Info.centerInMu2e();
-      double IntNeutronAbs23OffsetInMu2eZ = IntNeutronAbs23OffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " INA23Info Z center in Mu2e    : " << IntNeutronAbs23OffsetInMu2eZ << endl;
-      cout << __func__ << " INA23Info Z extent in Mu2e    : " <<
-        IntNeutronAbs23OffsetInMu2eZ - zhl << ", " << IntNeutronAbs23OffsetInMu2eZ + zhl << endl;
-    } 
+    nestTubs("InternalNeutronAbsorber1",
+             NAI1Params,
+             NAI1Material,
+             0,
+             NAIOffset,
+             toyDS2VacuumInfo,
+             0,
+             NAVisible,
+             G4Colour::Cyan(),
+             NASolid,
+             forceAuxEdgeVisible,
+             placePV,
+             doSurfaceCheck
+             );
 
-  } // end of constructNeutronAbsorber;
+  } // end of constructInternalNeutronAbsorber;
 
 }

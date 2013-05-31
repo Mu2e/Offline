@@ -20,22 +20,17 @@ namespace mu2e {
   class InternalNeutronAbsorber : virtual public Detector {
   public:
 
-    // Assume fixed outer radius for entire int. neutron abs.
     double rOut() const { return _rOut; }
+    double rIn2() const { return _rIn2; }
+    double rIn1() const { return _rIn1; }
 
-    // ABS1 cylinder parameters
-    // - assumes multiple concentric cylinders
-    // - only supports concentric cylinders of constant length
-    const std::vector<double>& rInAbs1Vec() const { return _rInAbs1Vec; }
-    double halfLengthAbs1() const { return _halfLengthAbs1; }
-    const std::vector<std::string>& materialAbs1Vec() const { return _matAbs1Vec; }
+    double halfLength2() const { return _halfLength2; }
+    double halfLength1() const { return _halfLength1; }
 
-    // ABS2 cylinder parameters
-    double rInAbs2()  const { return _rInAbs2; }
-    std::string materialAbs2()   const { return _matAbs2; }
+    const CLHEP::Hep3Vector& position() const { return _position; }
 
-    // in mu2e coordinates
-    const CLHEP::Hep3Vector& positionAbs1() const { return _positionAbs1; }
+    std::string material1() const { return _mat1; }
+    std::string material2() const { return _mat2; }
 
     //----------------------------------------------------------------
   private:
@@ -45,19 +40,16 @@ namespace mu2e {
     InternalNeutronAbsorber();
 
     double _rOut;
+    double _rIn2;
+    double _rIn1;
 
-    // Abs1 private members
-    std::vector <double> _rInAbs1Vec;
-    double _halfLengthAbs1;
-    CLHEP::Hep3Vector _positionAbs1;
-    std::vector<std::string> _matAbs1Vec;
+    double _halfLength2;
+    double _halfLength1;
 
-    // Abs2 private members (the position of abs2 can be determined by
-    // positionAbs1 + halfLengthAbs1 + halfLengthAbs2
-    // - halfLengthAbs2 is constrained based on the z-extent of the DS
-    //   (so it is not included as a member here)
-    double _rInAbs2;
-    std::string _matAbs2;
+    std::string _mat2;
+    std::string _mat1;
+
+    CLHEP::Hep3Vector _position;
 
     // Needed for persistency
     //    template<class T> friend class art::Wrapper;

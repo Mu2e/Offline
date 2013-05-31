@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.47 2013/03/26 23:28:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/26 23:28:23 $
+// $Id: GeometryService_service.cc,v 1.48 2013/05/31 15:49:57 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/05/31 15:49:57 $
 //
 // Original author Rob Kutschke
 //
@@ -48,6 +48,8 @@
 #include "TargetGeom/inc/TargetMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
+#include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorber.hh"
+#include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorberMaker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TTrackerGeom/inc/TTrackerMaker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
@@ -207,7 +209,9 @@ namespace mu2e {
     addDetector(std::move(tmpbld));
 
     // beamline info used to position DS
-    addDetector( DetectorSolenoidMaker::make( *_config, beamline ) );
+    std::unique_ptr<DetectorSolenoid> tmpDS( DetectorSolenoidMaker::make( *_config, beamline ) );
+    const DetectorSolenoid& ds = *tmpDS.get();
+    addDetector(std::move(tmpDS));
 
     if(_config->getBool("hasTarget",false)){
       TargetMaker targm( *_config );
@@ -238,6 +242,10 @@ namespace mu2e {
     if(_config->getBool("hasCosmicRayShield",false)){
       CosmicRayShieldMaker crs( *_config, beamline.solenoidOffset() );
       addDetector( crs.getCosmicRayShieldPtr() );
+    }
+
+    if(_config->getBool("hasInternalNeutronAbsorber",false)){
+      addDetector( InternalNeutronAbsorberMaker::make(*_config,ds) );
     }
 
     std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, dump));

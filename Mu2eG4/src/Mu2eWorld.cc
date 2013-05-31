@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.155 2013/05/09 23:14:14 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Id: Mu2eWorld.cc,v 1.156 2013/05/31 15:49:57 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/05/31 15:49:57 $
 //
 // Original author Rob Kutschke
 //
@@ -43,7 +43,8 @@
 #include "Mu2eG4/inc/constructSteel.hh"
 #include "Mu2eG4/inc/constructCRV.hh"
 #include "Mu2eG4/inc/constructExtMonUCI.hh"
-#include "Mu2eG4/inc/constructNeutronAbsorber.hh"
+#include "Mu2eG4/inc/constructExternalNeutronAbsorber.hh"
+#include "Mu2eG4/inc/constructInternalNeutronAbsorber.hh"
 #include "Mu2eG4/inc/constructMBS.hh"
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
 #include "Mu2eG4/inc/constructVisualizationRegions.hh"
@@ -206,8 +207,12 @@ namespace mu2e {
       if(CosmicRayShieldGeomHandle->hasActiveShield()) constructCRV(hallInfo,_config);
     }
 
-    if ( _config.getBool("hasNeutronAbsorber",false) ) {
-      constructNeutronAbsorber(_config);
+    if ( _config.getBool("hasExternalNeutronAbsorber",false) ) {
+      constructExternalNeutronAbsorber(_config);
+    }
+
+    if ( _config.getBool("hasInternalNeutronAbsorber",false) ) {
+      constructInternalNeutronAbsorber(_config);
     }
 
     if ( _config.getBool("hasMBS",false) ) {

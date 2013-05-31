@@ -1,10 +1,36 @@
-  $Id: v3_0_1.txt,v 1.37 2013/05/30 21:47:56 genser Exp $
-  $Author: genser $
-  $Date: 2013/05/30 21:47:56 $
+  $Id: v3_0_1.txt,v 1.38 2013/05/31 15:49:57 knoepfel Exp $
+  $Author: knoepfel $
+  $Date: 2013/05/31 15:49:57 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v3_0_1
+
+37) May 31, 2013, knoepfel
+    Separated constructNeutronAbsorber into two files:
+      Mu2eG4/*/constructInternalNeutronAbsorber*
+      Mu2eG4/*/constructExternalNeutronAbsorber*
+    Adjusted int. neutron abs. class to conform to Dave
+    Hedin's most recent geometry choice; this configuration
+    is chosen by default (MECO design is now obsolete).
+    Modified files:
+      GeometryService/src/GeometryService_service.cc
+      GeometryService/src/SConscript
+      InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorber.hh
+      InternalNeutronAbsorberGeom/src/InternalNeutronAbsorber.cc
+      InternalNeutronAbsorberGeom/src/InternalNeutronAbsorberMaker.cc
+      Mu2eG4/src/ConstructMaterials.cc
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/constructInternalNeutronAbsorber.cc
+      Mu2eG4/test/geom_01.txt
+      Mu2eG4/src/constructVirtualDetectors.cc
+    New files: 
+      Mu2eG4/inc/constructExternalNeutronAbsorber.hh
+      Mu2eG4/src/constructExternalNeutronAbsorber.cc
+    Removed files:
+      Mu2eG4/inc/constructNeutronAbsorber.hh
+      Mu2eG4/src/constructNeutronAbsorber.cc
+
 
 36) May 30, 2013, genser
     Added draft version of a Shielding derived Geant4 Physics List Shielding_MU2E00

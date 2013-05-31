@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.182 2013/05/21 19:10:07 knoepfel Exp $
+// $Id: geom_01.txt,v 1.183 2013/05/31 15:49:57 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/05/21 19:10:07 $
+// $Date: 2013/05/31 15:49:57 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +14,8 @@ string detector.name  = "g4geom_v00";
 bool hasHall            = true;
 bool hasTarget          = true;
 bool hasProtonAbsorber  = true;
-bool hasNeutronAbsorber = true; // note the two subcomponents, see neutronabsorber section below;
+bool hasInternalNeutronAbsorber = true;
+bool hasExternalNeutronAbsorber = true;
 bool hasVaneCalorimeter = false;
 bool hasDiskCalorimeter = true;
 bool hasBFieldManager   = true;
@@ -117,7 +118,7 @@ vector<string> mu2e.materials =
     "CarbonFiber_resin", "CarbonFiber", "PolypropyleneFoam", "CFoam", "CFoam_332", 
     "CFoam_166", "CFoam_080", "KptFoam_030", 
     "Polyethylene092B050d095", "Polyethylene092B300d119",
-    "Polyethylene092Li075d106", "Polyethylene092", "StainlessSteel", "Lyso_01",
+    "Polyethylene092Li075d106", "Polyethylene092", "Polyethylene096", "StainlessSteel", "Lyso_01",
     "A95083", "NbTi", "NbTiCu", "AL999Ni001", "C_19_H_20_O_4", "C_10_H_18_O_4",
     "C_9_H_22_N_2", "Epotek301", "G10", "SCCableInsulation", "SCCable",
     "ZirconiumHydridePolyethylene", "EGlass", "G10_FR4",
@@ -510,7 +511,16 @@ double bfield.scaleFactor = 1.0;
 bool   neutronabsorber.hasExternalPart = true;
 bool   neutronabsorber.hasInternalPart = true;
 
-string neutronabsorber.materialName          = "Polyethylene092Li075d106";
+string neutronabsorber.materialName  = "Polyethylene092Li075d106";
+
+double intneutronabs.rOut        = 949.;
+double intneutronabs.rIn2        = 850.;
+double intneutronabs.rIn1        = 650.;
+double intneutronabs.halfLength2 = 1000.;
+double intneutronabs.halfLength1 = 500.;
+double intneutronabs.z0          = 5871.;
+string intneutronabs.material1Name = "Polyethylene096";
+string intneutronabs.material2Name = "Polyethylene096";
 
 double neutronabsorber.internalOuterRadius   =  940.0;
 double neutronabsorber.internalInnerRadius0  =  460.0;

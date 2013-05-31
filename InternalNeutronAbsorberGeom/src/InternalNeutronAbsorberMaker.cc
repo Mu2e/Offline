@@ -19,17 +19,17 @@ namespace mu2e {
     
     std::unique_ptr<InternalNeutronAbsorber> ina ( new InternalNeutronAbsorber() );
     
-    ina->_rOut                      = c.getDouble("intneutronabs.rOut");
+    ina->_rOut        = c.getDouble("intneutronabs.rOut");
+    ina->_rIn2        = c.getDouble("intneutronabs.rIn2");
+    ina->_rIn1        = c.getDouble("intneutronabs.rIn1");
     
-    // Set abs1 parameters
-    c.getVectorDouble("intneutronabs.abs1rIn", ina->_rInAbs1Vec );
-    ina->_halfLengthAbs1            = c.getDouble("intneutronabs.abs1HalfLength");
-    ina->_positionAbs1              = CLHEP::Hep3Vector( ds.position().x(),0,c.getDouble("intneutronabs.abs1Z0"));
-    c.getVectorString("intneutronabs.Abs1materialName", ina->_matAbs1Vec);
+    ina->_halfLength1 = c.getDouble("intneutronabs.halfLength1");
+    ina->_halfLength2 = c.getDouble("intneutronabs.halfLength2");
 
-    // Set abs2 parameters
-    ina->_rInAbs2                   = c.getDouble("intneutronabs.abs2rIn");
-    ina->_matAbs2                   = c.getString("intneutronabs.abs2materialName");
+    ina->_position    = CLHEP::Hep3Vector( ds.position().x(),0,c.getDouble("intneutronabs.z0"));
+
+    ina->_mat1        = c.getString("intneutronabs.material1Name");
+    ina->_mat2        = c.getString("intneutronabs.material2Name");
     
     return ina;
 

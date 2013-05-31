@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.39 2013/04/04 18:45:21 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/04/04 18:45:21 $
+// $Id: ConstructMaterials.cc,v 1.40 2013/05/31 15:49:57 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/05/31 15:49:57 $
 //
 // Original author Rob Kutschke
 //
@@ -181,6 +181,16 @@ namespace mu2e {
       G4Material* mH  = findMaterialOrThrow("G4_H");
       Polyethylene0956->AddMaterial( mH, 0.143711);
       Polyethylene0956->AddMaterial( mC, 0.856289);
+    }
+
+    mat = isNeeded(materialsToLoad, "Polyethylene096");
+    if ( mat.doit ){
+      G4Material* Polyethylene096 =
+        new G4Material( mat.name, 0.96*g/cm3, 2);
+      G4Material* mC  = findMaterialOrThrow("G4_C");
+      G4Material* mH  = findMaterialOrThrow("G4_H");
+      Polyethylene096->AddMaterial( mH, 0.14);
+      Polyethylene096->AddMaterial( mC, 0.86);
     }
 
     // Not real, very thin Polyethylene

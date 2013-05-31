@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.27 2013/03/26 23:28:23 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/03/26 23:28:23 $
+# $Id: SConscript,v 1.28 2013/05/31 15:49:57 knoepfel Exp $
+# $Author: knoepfel $
+# $Date: 2013/05/31 15:49:57 $
 #
 # Original author Rob Kutschke.
 #
@@ -35,6 +35,7 @@ mainlib = helper.make_mainlib ( [
     'mu2e_ProtonBeamDumpGeom',
     'mu2e_ProductionTargetGeom',
     'mu2e_ProductionSolenoidGeom',
+    'mu2e_InternalNeutronAbsorberGeom',
     'mu2e_DetectorSolenoidGeom',
     'mu2e_BeamlineGeom',
     'mu2e_MECOStyleProtonAbsorberGeom',

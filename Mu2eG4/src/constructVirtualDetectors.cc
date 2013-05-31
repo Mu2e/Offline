@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.48 2013/05/09 23:14:14 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Id: constructVirtualDetectors.cc,v 1.49 2013/05/31 15:49:57 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/05/31 15:49:57 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -206,18 +206,11 @@ namespace mu2e {
     // detectors extend to neutron absorber minus 5 mm.
     if ( !_config.getBool("isDumbbell",false) ){
       double Ravr = _config.getDouble("toyDS.rIn");
-      double deltaR = 0;
       double Z0 = 0;
-      double deltaZ = 1.0;
 
-      if ( _config.getBool("hasNeutronAbsorber",false) &&  
-           _config.getBool("neutronabsorber.hasInternalPart") ) {
-        double NAIInnerRadius0     = _config.getDouble("neutronabsorber.internalInnerRadius0");
-        double NAIInnerRadius1     = _config.getDouble("neutronabsorber.internalInnerRadius1");
-        Ravr   = (NAIInnerRadius0+NAIInnerRadius1)/2;
-        deltaR = (NAIInnerRadius1-NAIInnerRadius0);
-        Z0     = _config.getDouble("neutronabsorber.internalZ01");
-        deltaZ = 2.0 *_config.getDouble("neutronabsorber.internalHalfLengthZ01");
+      if ( _config.getBool("hasInternalNeutronAbsorber",false) ) {
+        Ravr = _config.getDouble("intneutronabs.rIn1");
+        Z0   = _config.getDouble("intneutronabs.z0");
       }
 
       for( int vdId=VirtualDetectorId::ST_In; 
@@ -229,7 +222,7 @@ namespace mu2e {
           }
 
           double zvd = vdg->getGlobal(vdId).z();
-          double rvd = Ravr + deltaR/deltaZ*(zvd-Z0) - 5.0;
+          double rvd = Ravr - 5.0;
 
           if ( verbosityLevel > 0) {
             cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
