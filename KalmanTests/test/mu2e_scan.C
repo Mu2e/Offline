@@ -107,16 +107,16 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   conspec[icut]->Scale(conscale);
 
 
-  TLegend* leg = new TLegend(0.7,0.8,0.9,0.9);
+  TLegend* leg = new TLegend(0.6,0.7,0.9,0.9);
   leg->AddEntry(diospec[icut],"DIO","L");
   leg->AddEntry(conspec[icut],"Conversion","L");
 
-  TPaveText* info = new TPaveText(0.4,0.8,0.7,0.9,"NDC");
+  TPaveText* info = new TPaveText(0.3,0.7,0.6,0.9,"NDC");
   char text[80];
-  snprintf(text,80,"%g stopped muons",nstopped);
+  snprintf(text,80,"%g#times10^{17} stopped muons",nstopped*1e-17);
   TString snstop(text);
   info->AddText(snstop);
-  snprintf(text,80,"%g Conversion Rate",conprob);
+  snprintf(text,80,"R_{#mue}=%g#times10^{-16}",conprob*1e16);
   TString sconprob(text);
   info->AddText(sconprob);
   info->SetBorderSize(0);
@@ -187,7 +187,7 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   mu2ecan->SaveAs((string("mu2e_finebins")+ssuf).c_str());
 
 
-  int nscan(40);
+  int nscan(25);
   vector<Double_t> diox,dioy,dioxerr,dioyerr;
   vector<Double_t> conx,cony,conxerr,conyerr;
   double startx = diospec[icut]->GetBinCenter(istart);
@@ -196,11 +196,11 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
     double dints = diospec[icut]->IntegralAndError(istart+ibin,istop,dints_err);
     double cints = conspec[icut]->IntegralAndError(istart+ibin,istop,cints_err);
     dioy.push_back(dints-dint);
-    diox.push_back(diospec[icut]->GetBinCenter(istart+ibin)-startx);
+    diox.push_back(1000.0*(diospec[icut]->GetBinCenter(istart+ibin)-startx));
     dioyerr.push_back(dints_err);
     dioxerr.push_back(0.0);
     cony.push_back(cints-cint);
-    conx.push_back(conspec[icut]->GetBinCenter(istart+ibin)-startx);
+    conx.push_back(1000.0*(conspec[icut]->GetBinCenter(istart+ibin)-startx));
     conyerr.push_back(cints_err);
     conxerr.push_back(0.0);
   }
@@ -210,10 +210,10 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   conscan->SetLineColor(kRed);
   dioscan->SetMarkerColor(kBlue);
   conscan->SetMarkerColor(kRed);
-  conscan->SetMaximum(5.0);
-  conscan->SetMinimum(-1.0);
-  dioscan->SetTitle("Scan of DIO Integral Lower Boundary;#Delta P (MeV/c);#Delta I");
-  conscan->SetTitle("Scan of Conversion Integral Lower Boundary;#Delta P (MeV/c);#Delta I");
+  conscan->SetMaximum(0.5);
+  conscan->SetMinimum(-0.5);
+  dioscan->SetTitle("Rate Sensitivity to lower Momentum Cut;#Delta P (KeV/c);Integral Change");
+  conscan->SetTitle("Rate Sensitivity to lower Momentum Cut;#Delta P (KeV/c);Integral Change");
   TCanvas* scancan = new TCanvas("scan","Scan of lower threshold",800,800);
   scancan->Divide(1,1);
   scancan->cd(1);
@@ -221,7 +221,26 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   dioscan->Draw("same");
   info->Draw();
   leg->Draw();
+
+  int ilow = nscan-15;
+  int ihi = nscan+15;
+
+  TLine* klow = new TLine(diox[ilow],-0.5,diox[ilow],dioy[ilow]);
+  TLine* khi = new TLine(diox[ihi],-0.5,diox[ihi],dioy[ihi]);
+  TLine* klowx = new TLine(-150,dioy[ilow],diox[ilow],dioy[ilow]);
+  TLine* khix = new TLine(-150,dioy[ihi],diox[ihi],dioy[ihi]);
+  klow->SetLineStyle(2);
+  khi->SetLineStyle(2);
+  klowx->SetLineStyle(2);
+  khix->SetLineStyle(2);
+  klow->Draw("same");
+  khi->Draw("same");
+  klowx->Draw("same");
+  khix->Draw("same");
   scancan->SaveAs((string("mu2e_scan")+ssuf).c_str());
+
+
+
 
 // some numerical values
   vector<double> dioshift,conshift,dioshift_err,conshift_err,shift,shift_err;
@@ -267,10 +286,10 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   fconscan2->SetMarkerColor(kRed);
   fconscan2->SetMaximum(3.0);
   fconscan2->SetMinimum(-1.0);
-  dioscan2->SetTitle("Integral Change vs Integral Lower Boundary Change;#Delta P (MeV/c);#Delta I");
-  conscan2->SetTitle("Integral Change vs Lower Boundary Change;#Delta P (MeV/c);#Delta I");
-  fdioscan2->SetTitle("Fractional Integral Change vs Integral Lower Boundary Change;#Delta P (MeV/c);#Delta I/I");
-  fconscan2->SetTitle("Fractional Integral Change vs Lower Boundary Change;#Delta P (MeV/c);#Delta I/I");
+  dioscan2->SetTitle("Rate Sensitivity to Lower Momentum Cut;#Delta P (MeV/c);#Delta I");
+  conscan2->SetTitle("Rate Sensitivity to Lower Momentum Cut;#Delta P (MeV/c);#Delta I");
+  fdioscan2->SetTitle("Fractional Rate Sensitivity to Lower Momentum Cut;#Delta P (MeV/c);#Delta I/I");
+  fconscan2->SetTitle("Fractional Rate Sensitivity to Lower Momentum Cut;#Delta P (MeV/c);#Delta I/I");
   TCanvas* scancan2 = new TCanvas("scan2","Scan of lower threshold",800,800);
   scancan2->Divide(1,2);
   scancan2->cd(1);

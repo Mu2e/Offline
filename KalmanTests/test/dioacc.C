@@ -1,3 +1,11 @@
+#include "TTree.h"
+#include "TCut.h"
+#include "TCanvas.h"
+#include "TStyle.h"
+#include "TH1F.h"
+#include "TLegend.h"
+
+
 void dioacc(TTree* dio, TCut acut) {
   gStyle->SetOptFit(1);
   gStyle->SetOptStat(0);
@@ -74,6 +82,8 @@ void dioacc(TTree* dio, TCut acut) {
 //  armax->Divide(armaxd);
 
   TCanvas* acan = new TCanvas("acan","acceptance",1200,800);
+  TCanvas* acan_2 = new TCanvas("acan_2","acceptance",1200,800);
+  TCanvas* acan_3 = new TCanvas("acan_3","acceptance",1200,800);
   acan->Divide(1,3);
   acan->cd(1);
   amom->SetMaximum(0.22);
