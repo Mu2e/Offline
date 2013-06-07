@@ -1,7 +1,7 @@
 //
-//  $Id: TrkExtToyDS.cc,v 1.4 2013/05/31 20:04:27 gandr Exp $
-//  $Author: gandr $
-//  $Date: 2013/05/31 20:04:27 $
+//  $Id: TrkExtToyDS.cc,v 1.5 2013/06/07 17:43:30 knoepfel Exp $
+//  $Author: knoepfel $
+//  $Date: 2013/06/07 17:43:30 $
 //
 //  Original author MyeongJae Lee
 //
@@ -50,8 +50,8 @@ namespace mu2e {
     Hep3Vector origin = det->toMu2e( CLHEP::Hep3Vector(0.,0.,0.) );
 
     GeomHandle<DetectorSolenoid> dsgeom;
-    rin = dsgeom->rIn();
-    rout = dsgeom->rOut();
+    rin = dsgeom->rIn1();
+    rout = dsgeom->rOut2();
     zmin = dsgeom->position().z() - dsgeom->halfLength() - origin.z();
     zmax = dsgeom->position().z() + dsgeom->halfLength() - origin.z();
 

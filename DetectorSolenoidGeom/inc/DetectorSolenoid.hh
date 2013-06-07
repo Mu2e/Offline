@@ -1,14 +1,5 @@
 // Geometry of the detector solenoid
 //
-// This interface accepts the following inputs:
-//  - the inner and outer radii of the DS
-//  - the half-length of the DS
-//  - the half-lengths of the three vacuum volumes 
-//    located inside of the DS volume
-//  - the half-length of the front face of the solenoid (Al)
-//  - the materials of the DS (default Al), and the vacuum 
-//    vols (default DSVacuum)
-//
 // The z-position of the DS is determined based on:
 //  - the torus radius of the TS
 //  - the half-length of TS5
@@ -37,27 +28,53 @@ namespace mu2e {
   class DetectorSolenoid : virtual public Detector {
   public:
 
-    // solenoid cylinder parameters
-    double rIn()  const { return _rIn; }
-    double rOut()  const { return _rOut; }
+    // DS cryostat
+    std::string material() const { return _materialName; }
+    std::string insideMaterial() const { return _insideMaterialName; }
+    double rIn1()  const { return _rIn1; } // inner radius of inner part of DS cryo.
+    double rIn2()  const { return _rIn2; } // outer radius of inner part of DS cryo.
+    double rOut1() const { return _rOut1; }  // inner radius of outer part of DS cryo.
+    double rOut2() const { return _rOut2; }  // outer radius of outer part of DS cryo.
     double halfLength() const { return _halfLength; }
-    double coilZMax() const { return _position[CLHEP::Hep3Vector::Z] + _halfLength; }
+    double endWallHalfLength() const { return _endWallHalfLength; }
+    double frontHalfLength() const { return _frontHalfLength; }
+    double cryoZMax() const { return _position[CLHEP::Hep3Vector::Z] + _halfLength; }
+    const CLHEP::Hep3Vector& position() const { return _position; } // in mu2e coordinates
 
-    // in mu2e coordinates 
-    const CLHEP::Hep3Vector& position() const { return _position; }
+    // DS shield
+    std::string shield_material() const { return _shield_materialName; }
+    std::string shield_insideMaterial() const { return _shield_insideMaterialName; }
+    double shield_zOffset() const { return _shield_zOffset; } // - this is a superfluous quantity since
+    double shield_halfLength() const { return _shield_halfLength; } // the thermal shield is positioned in the same
+    double shield_endWallHalfLength() const { return _shield_endWallHalfLength; } // place as the cryo above
+    double shield_rIn1() const { return _shield_rIn1; }
+    double shield_rIn2() const { return _shield_rIn2; }
+    double shield_rOut1() const { return _shield_rOut1; }
+    double shield_rOut2() const { return _shield_rOut2; }
 
+    // DS solenoid coils
+    std::string coil_material() const { return _coil_materialName; }
+    double coil_rIn() const { return _coil_rIn; }
+    int nCoils() const { return _nCoils; }
+    const std::vector<double>& coil_rOut() const { return _coil_rOut; }
+    const std::vector<double>& coil_zLength() const { return _coil_zLength; }
+    const std::vector<double>& coil_zPosition() const { return _coil_zPosition; }
+
+    // DS coil support system
+    std::string support_material() const { return _support_materialName; }
+    double support_rIn() const { return _support_rIn; }
+    double support_rOut() const { return _support_rOut; }
+    double support_halfLength() const { return _support_halfLength; }
+
+    // Vacuum volumes inside DS
+    //
     // The subdivision of the DS vacuum volume is not physical,
     // but it needs to be in Geometry because real physical
     // pieces are placed inside.
-    double halfLengthDs1() const { return _ds1HalfLength; }
-    double halfLengthDs2() const { return _ds2HalfLength; }
-    double zLocDs23Split() const { return _locationDs23Split; }
-
-    // The half-thickness of the front wall of the DS
-    double frontHalfLength() const { return _frontHalfLength; }
-
-    std::string material() const { return _materialName; }
-    std::string insideMaterial() const { return _insideMaterialName; }
+    double vac_halfLengthDs1() const { return _ds1HalfLength; }
+    double vac_halfLengthDs2() const { return _ds2HalfLength; }
+    double vac_zLocDs23Split() const { return _locationDs23Split; }
+    std::string vacuumMaterial() const { return _vacuumMaterialName; }
 
 
     //----------------------------------------------------------------
@@ -67,17 +84,48 @@ namespace mu2e {
     // Private ctr: the class should be only obtained via DetectorSolenoid::DetectorSolenoidMaker.
     DetectorSolenoid();
 
-    // solenoid features
-    double _rIn;
-    double _rOut;
-    double _halfLength;
-    CLHEP::Hep3Vector _position;
+    // DS cryostat
+    std::string _materialName; 
+    std::string _insideMaterialName; 
+    double _rIn1; 
+    double _rIn2; 
+    double _rOut1;
+    double _rOut2;
+    double _halfLength; 
+    double _endWallHalfLength; 
+    double _frontHalfLength; 
+    CLHEP::Hep3Vector _position; 
+
+    // DS shield
+    std::string _shield_materialName;
+    std::string _shield_insideMaterialName;
+    double _shield_zOffset;
+    double _shield_halfLength;
+    double _shield_endWallHalfLength;
+    double _shield_rIn1;
+    double _shield_rIn2;
+    double _shield_rOut1;
+    double _shield_rOut2;
+
+    // DS solenoid coils
+    const int _nCoils = 11;
+    std::string         _coil_materialName; 
+    double              _coil_rIn; 
+    std::vector<double> _coil_rOut; 
+    std::vector<double> _coil_zLength; 
+    std::vector<double> _coil_zPosition; 
+
+    // DS coil support system
+    std::string _support_materialName; 
+    double      _support_rIn; 
+    double      _support_rOut; 
+    double      _support_halfLength; 
+
+    // Vacuum volumes inside DS
+    std::string _vacuumMaterialName; 
     double _ds1HalfLength;
     double _ds2HalfLength;
     double _locationDs23Split;
-    double _frontHalfLength;
-    std::string _materialName;
-    std::string _insideMaterialName;
 
     // Needed for persistency
     //    template<class T> friend class art::Wrapper;

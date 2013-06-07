@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.23 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: constructProtonAbsorber.cc,v 1.24 2013/06/07 17:43:30 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/06/07 17:43:30 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -56,8 +56,8 @@ namespace mu2e {
     // Access to the G4HelperService.
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
     
-    VolumeInfo const & parent1Info  = _helper->locateVolInfo("ToyDS2Vacuum");
-    VolumeInfo const & parent2Info  = _helper->locateVolInfo("ToyDS3Vacuum");
+    VolumeInfo const & parent1Info  = _helper->locateVolInfo("DS2Vacuum");
+    VolumeInfo const & parent2Info  = _helper->locateVolInfo("DS3Vacuum");
     
     // Fetch DS geometry
     GeomHandle<DetectorSolenoid> ds;
@@ -66,7 +66,7 @@ namespace mu2e {
       if ( verbosityLevel > 0) cout << __func__ << " : Proton Absorber is Helical type" << endl;
       MaterialFinder materialFinder(_config);
       G4Material* pabsMaterial = materialFinder.get("protonabsorber.materialName");
-      double ds2HalfLen = ds->halfLengthDs2();
+      double ds2HalfLen = ds->vac_halfLengthDs2();
       double helHalfPabsLength = _config.getDouble("protonabsorber.halfLength");
       double helPabsLength = 2.0*helHalfPabsLength;
       double lengthScaleFact = 130.0/274.0; //I don't know why but in the implementation of the absorber the length is divided into 130 steps of Z and that there is a cycle over 274 number of Z steps. ????? //FIXME
@@ -146,7 +146,7 @@ namespace mu2e {
       double pabsStartInMu2eZ = target->centerInMu2e().z() + 0.5*target->cylinderLength() + 2.*vdHL;;
 
       // Need to split it at the DS2/DS3 boundary
-      double pabs1EndInMu2eZ = ds->zLocDs23Split();
+      double pabs1EndInMu2eZ = ds->vac_zLocDs23Split();
 
       double pabs1len = pabs1EndInMu2eZ - pabsStartInMu2eZ;
 
@@ -163,7 +163,7 @@ namespace mu2e {
       double pabs1rIn1  = pabs1rOut1 - thick;
 
       double pabs2len     = (2.0*pabsZHalfLen) - pabs1len;
-      double pabs2ZOffset = (pabs2len*0.5) +  ds->zLocDs23Split();
+      double pabs2ZOffset = (pabs2len*0.5) +  ds->vac_zLocDs23Split();
 
       // protonabs2 should touch protonabs1 and both of them should touch the ds2/ds3 boundary
       // it looks like the boolean solid center is in the center of ConstituentSolid(0)
@@ -174,12 +174,12 @@ namespace mu2e {
         cout << __func__ << " " << parent1Info.name << " Z offset in Mu2e    : " <<
           theZ << endl;
         cout << __func__ << " " << parent1Info.name << " Z extent in Mu2e    : " <<
-          theZ - ds->halfLengthDs2() << ", " << theZ + ds->halfLengthDs2() << endl;
+          theZ - ds->vac_halfLengthDs2() << ", " << theZ + ds->vac_halfLengthDs2() << endl;
       }
 
       if ( verbosityLevel > 0) {
         cout << __func__ << " " << parent2Info.name << " Z extent in Mu2e    : " <<
-          ds->zLocDs23Split() << ", " << ds->coilZMax() << endl;
+          ds->vac_zLocDs23Split() << ", " << ds->cryoZMax() << endl;
       }
 
       G4ThreeVector pabs2Offset(0.0, 0.0, pabs2ZOffset);
@@ -292,7 +292,7 @@ namespace mu2e {
         cout << __func__ << " " << parent1Info.name << " Z offset in Mu2e    : " <<
           theZ << endl;
         cout << __func__ << " " << parent1Info.name << " Z extent in Mu2e    : " <<
-          theZ - ds->halfLengthDs2() << ", " << theZ + ds->halfLengthDs2() << endl;
+          theZ - ds->vac_halfLengthDs2() << ", " << theZ + ds->vac_halfLengthDs2() << endl;
       }
 
       double pabs1ZOffset = CLHEP::mm * pabs->part(0).center().z() - ds2zcenter;

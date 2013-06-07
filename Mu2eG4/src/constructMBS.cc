@@ -1,9 +1,9 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.15 2013/04/02 16:09:08 knoepfel Exp $
+// $Id: constructMBS.cc,v 1.16 2013/06/07 17:43:30 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/04/02 16:09:08 $
+// $Date: 2013/06/07 17:43:30 $
 //
 // Original author KLG
 //
@@ -81,12 +81,12 @@ namespace mu2e {
     }
 
      // mother volumes
-    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
+    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("DS3Vacuum");
     VolumeInfo const & hallInfo =                _helper->locateVolInfo("HallAir");
 
     if ( verbosityLevel > 0) {
-      cout << __func__ << " z-extent of ToyDS3Vacuum portion in DS in Mu2e  : " <<
-        ds->zLocDs23Split() << ", " << ds->coilZMax() << endl;
+      cout << __func__ << " z-extent of DS3Vacuum portion in DS in Mu2e  : " <<
+        ds->vac_zLocDs23Split() << ", " << ds->cryoZMax() << endl;
     }
 
     // BSTS see WBS 5.8 for the naming conventions

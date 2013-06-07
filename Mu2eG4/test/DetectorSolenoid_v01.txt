@@ -1,3 +1,9 @@
+//------------------------------------------------
+//
+// THIS FILE NOT BACKWARDS COMPATIBLE !!!
+//
+//------------------------------------------------
+
 // A toy model of the DS, cyrostats+coils, vacuum
 //
 // The solenoid itself is a cylindrical shell.  Inside
@@ -26,7 +32,7 @@
 // Half length of DS1 has been adjusted such that given an assumed
 // rTorus of 2929 mm, and TS5 half-length of 500 mm, the start of the
 // DS is at 3239 mm, consistent with CDR.
-
+//
 double toyDS.rIn                = 1000.;
 double toyDS.rOut               = 1300.;
 double toyDS.halfLength         = 5375.;

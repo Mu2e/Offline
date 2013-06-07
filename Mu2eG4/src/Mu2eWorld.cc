@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.157 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: Mu2eWorld.cc,v 1.158 2013/06/07 17:43:30 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/06/07 17:43:30 $
 //
 // Original author Rob Kutschke
 //
@@ -256,7 +256,7 @@ namespace mu2e {
   VolumeInfo Mu2eWorld::constructTracker(){
 
     // The tracker is built inside this volume.
-    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
+    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("DS3Vacuum");
 
     // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
     double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
@@ -292,7 +292,7 @@ namespace mu2e {
   VolumeInfo Mu2eWorld::constructTarget(){
 
     // The target is built inside this volume.
-    VolumeInfo const & detSolUpstreamVacInfo   = ( _config.getBool("isDumbbell",false) ) ? _helper->locateVolInfo("ToyDS3Vacuum") : _helper->locateVolInfo("ToyDS2Vacuum");//ToyDS3Vacuum to move the targets
+    VolumeInfo const & detSolUpstreamVacInfo   = ( _config.getBool("isDumbbell",false) ) ? _helper->locateVolInfo("DS3Vacuum") : _helper->locateVolInfo("DS2Vacuum");//DS3Vacuum to move the targets
 
     if ( _verbosityLevel > 0) {
       cout << "detSolUpstreamVacInfo.centerInWorld.z()=" << detSolUpstreamVacInfo.centerInWorld.z() << endl;
@@ -321,8 +321,8 @@ namespace mu2e {
 
     // Get some information needed further
 
-    VolumeInfo const & ds2VacuumVacInfo = _helper->locateVolInfo("ToyDS2Vacuum");
-    VolumeInfo const & ds3VacuumVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
+    VolumeInfo const & ds2VacuumVacInfo = _helper->locateVolInfo("DS2Vacuum");
+    VolumeInfo const & ds3VacuumVacInfo = _helper->locateVolInfo("DS3Vacuum");
     G4LogicalVolume* ds2Vacuum = ds2VacuumVacInfo.logical;
     G4LogicalVolume* ds3Vacuum = ds3VacuumVacInfo.logical;
 
@@ -434,8 +434,8 @@ namespace mu2e {
     // Maximum step length, in mm.
     double maxStep = _config.getDouble("bfield.maxStep", 20.);
 
-    G4LogicalVolume* ds2Vacuum      = _helper->locateVolInfo("ToyDS2Vacuum").logical;
-    G4LogicalVolume* ds3Vacuum      = _helper->locateVolInfo("ToyDS3Vacuum").logical;
+    G4LogicalVolume* ds2Vacuum      = _helper->locateVolInfo("DS2Vacuum").logical;
+    G4LogicalVolume* ds3Vacuum      = _helper->locateVolInfo("DS3Vacuum").logical;
     G4LogicalVolume* tracker        = _helper->locateVolInfo("TrackerMother").logical;
     G4LogicalVolume* stoppingtarget = _helper->locateVolInfo("StoppingTargetMother").logical;
 
@@ -530,7 +530,7 @@ namespace mu2e {
   VolumeInfo Mu2eWorld::constructCal(){
 
 	// The calorimeter is built inside this volume.
-	VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("ToyDS3Vacuum");
+	VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("DS3Vacuum");
 
 	// Construct one of the calorimeters.
 	VolumeInfo calorimeterInfo;

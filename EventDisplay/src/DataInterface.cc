@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.64 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: DataInterface.cc,v 1.65 2013/06/07 17:43:30 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/06/07 17:43:30 $
 //
 
 #include "DataInterface.h"
@@ -448,8 +448,8 @@ void DataInterface::fillGeometry()
   {
     mu2e::GeomHandle<mu2e::DetectorSolenoid> ds;
 
-    double innerRadius=ds->rIn(); 
-    double outerRadius=ds->rOut();
+    double innerRadius=ds->rIn1(); 
+    double outerRadius=ds->rOut2();
     double zHalfLength=ds->halfLength();
     double z=ds->position().z() - _detSysOrigin.z();
 

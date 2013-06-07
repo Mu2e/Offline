@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.20 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
+// $Id: VirtualDetectorMaker.cc,v 1.21 2013/06/07 17:43:30 knoepfel Exp $
+// $Author: knoepfel $
 //
 
 #include <iostream>
@@ -20,6 +20,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
@@ -116,7 +117,7 @@ namespace mu2e {
       GeomHandle<StoppingTarget> target;
       GeomHandle<DetectorSolenoid> ds;
 
-      const CLHEP::Hep3Vector ds2centerInMu2e(ds->position().x(), ds->position().y(), ds->zLocDs23Split() - ds->halfLengthDs2());
+      const CLHEP::Hep3Vector ds2centerInMu2e(ds->position().x(), ds->position().y(), ds->vac_zLocDs23Split() - ds->vac_halfLengthDs2());
       const Hep3Vector targetOffset(target->centerInMu2e() - ds2centerInMu2e);
       Hep3Vector shift(0., 0., vdHL + target->cylinderLength()/2);
 
@@ -142,7 +143,7 @@ namespace mu2e {
         // middle of the ttracker shifted by the half length of vd
         // VD TT_MidInner is placed inside the ttracker at the same z position as
         // VD TT_Mid but from radius 0 to the inner radius of the ttracker
-        // mother volume. However, its mother volume is ToyDS3Vacuum
+        // mother volume. However, its mother volume is DS3Vacuum
         // which has a different offset. We will use the global offset
         // here (!) as DS is not in the geometry service yet
 
@@ -172,7 +173,7 @@ namespace mu2e {
         // absorber
 
 
-        // formally VD TT_FrontHollow, TT_FrontPA are placed in ToyDS3Vacuum, but it is a
+        // formally VD TT_FrontHollow, TT_FrontPA are placed in DS3Vacuum, but it is a
         // complicated subtraction volume, so we pretend to place them in
         // the TTracker and rely on the global offsets in the mu2e
         // detector frame (note that their local offsets are wrt TTracker)

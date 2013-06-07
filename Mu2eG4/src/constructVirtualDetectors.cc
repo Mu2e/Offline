@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.50 2013/05/31 15:57:19 knoepfel Exp $
+// $Id: constructVirtualDetectors.cc,v 1.51 2013/06/07 17:43:30 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/05/31 15:57:19 $
+// $Date: 2013/06/07 17:43:30 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -17,6 +17,7 @@
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
 
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -27,7 +28,7 @@
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
+#include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestBox.hh"
@@ -82,8 +83,8 @@ namespace mu2e {
 
     double vdHalfLength = CLHEP::mm * vdg->getHalfLength();
 
-    MaterialFinder materialFinder(_config);
-    G4Material* vacuumMaterial     = materialFinder.get("toyDS.insideMaterialName");
+    GeomHandle<DetectorSolenoid> ds;
+    G4Material* vacuumMaterial     = findMaterialOrThrow( ds->vacuumMaterial() );
 
     TubsParams vdParams(0,rVac,vdHalfLength);
 
@@ -205,7 +206,7 @@ namespace mu2e {
     // inner wall of DS2 minus 5 mm. If neutron absorber is defined, these
     // detectors extend to neutron absorber minus 5 mm.
     if ( !_config.getBool("isDumbbell",false) ){
-      double Ravr = _config.getDouble("toyDS.rIn");
+      double Ravr = ds->rIn1();
 
       if ( _config.getBool("hasInternalNeutronAbsorber",false) ) {
         Ravr = _config.getDouble("intneutronabs.rIn1");
@@ -230,8 +231,8 @@ namespace mu2e {
           TubsParams vdParamsTarget(0.,rvd,vdHalfLength);
 
           VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ? 
-            _helper->locateVolInfo("ToyDS3Vacuum") : 
-            _helper->locateVolInfo("ToyDS2Vacuum"); //ToyDS3Vacuum to move the targets
+            _helper->locateVolInfo("DS3Vacuum") : 
+            _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
 
           if (verbosityLevel >0) {
             cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z offset in Mu2e    : " <<
@@ -307,7 +308,7 @@ namespace mu2e {
 
 	  // VD TT_MidInner is placed inside the ttracker at the same z position as
 	  // VD TT_Mid but from radius 0 to the inner radius of the ttracker
-	  // mother volume. However, its mother volume is ToyDS3Vacuum
+	  // mother volume. However, its mother volume is DS3Vacuum
 	  // which has a different offset. We will use the global offset
 	  // here (!) as DS is not in the geometry service yet
 
@@ -315,7 +316,7 @@ namespace mu2e {
 
 	  TubsParams vdParamsTTrackerInner(0.,irvd-2.*vdHalfLength,vdHalfLength);
 
-	  VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	  VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
 
 	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
@@ -372,9 +373,9 @@ namespace mu2e {
 
 	  // we will create an subtraction solid 
 	  // (we will "subtract" protonAbsorber) 
-	  // and place it (the subtraction solid) in ToyDS3Vacuum
+	  // and place it (the subtraction solid) in DS3Vacuum
 
-	  VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	  VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
       
 	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 	
@@ -466,7 +467,7 @@ namespace mu2e {
 
 	  if ( verbosityLevel > 0) {
 
-	    // both protonabs2 & vd are placed in ToyDS3Vacuum, do they have proper local offsets?
+	    // both protonabs2 & vd are placed in DS3Vacuum, do they have proper local offsets?
 
 	    double theZ  = vdHollowInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
 	    double theHL = static_cast<G4Tubs*>(vdFullInfo.solid)->GetZHalfLength();
@@ -600,7 +601,7 @@ namespace mu2e {
 	      " z, r : " << vdZ << ", " << orvd << endl;
 	  }
 
-	  VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	  VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
       
 	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
@@ -644,7 +645,7 @@ namespace mu2e {
 	    " z, r : " << vdZ << ", " << orvd << endl;
 	}
 
-	VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
       
 	G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
@@ -688,7 +689,7 @@ namespace mu2e {
 	    " z, r : " << vdZ << ", " << orvd << endl;
 	}
 
-	VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
       
 	G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
@@ -734,7 +735,7 @@ namespace mu2e {
 	    " z, r : " << vdZ << ", " << irvd << endl;
 	}
 
-	VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
       
 	G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
@@ -787,7 +788,7 @@ namespace mu2e {
 	    " z, r : " << vdZ << ", " << irvd << endl;
 	}
 
-	VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
 
 	G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
@@ -830,7 +831,7 @@ namespace mu2e {
 	    " z, r : " << vdZ << ", " << irvd << endl;
 	}
 
-	VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
 
 	G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();// -G4ThreeVector(0.0,0.0,-(tModDz+vdHalfLength));
 
@@ -873,7 +874,7 @@ namespace mu2e {
 	    " z, r : " << vdZ << ", " << irvd << endl;
 	}
 
-	VolumeInfo const & parent = _helper->locateVolInfo("ToyDS3Vacuum");
+	VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
 
 	G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();// -G4ThreeVector(0.0,0.0,(tModDz+vdHalfLength));
 

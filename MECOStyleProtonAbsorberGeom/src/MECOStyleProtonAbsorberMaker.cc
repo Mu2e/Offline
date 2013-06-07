@@ -2,9 +2,9 @@
 // Construct and return MECOStyleProtonAbsorber
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.8 2013/05/31 21:34:46 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 21:34:46 $
+// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.9 2013/06/07 17:43:30 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/06/07 17:43:30 $
 //
 // Original author MyeongJae Lee
 //
@@ -100,7 +100,7 @@ namespace mu2e {
     double targetEnd = _target->centerInMu2e().z() + 0.5*_target->cylinderLength() + 2.*vdHL;;
 
     // distance from target end to ds2-ds3 boundary
-    double targetEndToDS2End = _ds->zLocDs23Split() - targetEnd;
+    double targetEndToDS2End = _ds->vac_zLocDs23Split() - targetEnd;
 
     //////////////////////////////////////
     // Decide which pabs will be turned on
