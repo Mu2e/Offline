@@ -1,9 +1,9 @@
 //
 // Free function to create DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.12 2013/06/07 17:43:30 knoepfel Exp $
+// $Id: constructDS.cc,v 1.13 2013/06/07 17:59:56 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/06/07 17:43:30 $
+// $Date: 2013/06/07 17:59:56 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -81,7 +81,7 @@ namespace mu2e {
               0,
               dsVisible,
               G4Color::Magenta(),
-              true,//dsSolid,
+              dsSolid,
               forceAuxEdgeVisible,
               placePV,
               doSurfaceCheck
@@ -177,7 +177,7 @@ namespace mu2e {
               0,
               dsShieldVisible,
               G4Color::Cyan(),
-              true,//dsShieldSolid,
+              dsShieldSolid,
               forceAuxEdgeVisible,
               placePV,
               doSurfaceCheck
