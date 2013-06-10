@@ -1,7 +1,7 @@
  //
- // $Id: CaloClusterTools.cc,v 1.4 2013/04/17 14:29:31 murat Exp $
+ // $Id: CaloClusterTools.cc,v 1.5 2013/06/10 04:10:56 murat Exp $
  // $Author: murat $
- // $Date: 2013/04/17 14:29:31 $
+ // $Date: 2013/06/10 04:10:56 $
  //
  // Original author G. Pezzullo, A. Luca' & G. Tassielli
  //
@@ -40,8 +40,9 @@
    }
    
    CaloClusterTools::CaloClusterTools(CaloCluster const &clu):
-     _cluster(clu),
-     _calorimeter(*GeomHandle<VaneCalorimeter>()){
+     _cluster(clu)
+				     //     , _calorimeter(*GeomHandle<VaneCalorimeter>())
+   {
    }
    
    double CaloClusterTools::timeFasterCrystal() const{
