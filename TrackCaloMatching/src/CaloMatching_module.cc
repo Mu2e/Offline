@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.17 2013/05/23 00:32:19 murat Exp $
-// $Author: murat $
-// $Date: 2013/05/23 00:32:19 $
+// $Id: CaloMatching_module.cc,v 1.18 2013/06/10 14:28:24 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2013/06/10 14:28:24 $
 //
 // Original author G. Pezzullo
 //
@@ -138,6 +138,7 @@ namespace mu2e {
       _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
       _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
       _diagLevel(pset.get<int>("diagLevel",0)),
+      _addEnergyToChiSquare(pset.get<int>("addEnergyToChiSquare",1)),
       _deltaTimeTollerance(pset.get<double>("deltaTimeTollerance", 50.0)),
       _outPutNtup(pset.get<int>("outPutNtup",0)),
       _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel", "makeCaloCluster")),
@@ -176,6 +177,8 @@ namespace mu2e {
     std::string _iname;
     // Diagnostic level
     int _diagLevel;
+
+    int _addEnergyToChiSquare;
 
     double _emcEnergyThreshold = 10.0;
     // this is a threshold on the time difference between impact time 
@@ -279,7 +282,10 @@ namespace mu2e {
     _timeChiSquare[index] = pow(extrT -clT, 2)/sigmaT2;
     _energyChiSquare[index] = pow(exEnergy -clEnergy, 2)/sigmaE2;
 
-    res = _posVChiSquare[index] + _posWChiSquare[index] + _energyChiSquare[index] + _timeChiSquare[index];
+    res = _posVChiSquare[index] + _posWChiSquare[index] /*+ _energyChiSquare[index]*/ + _timeChiSquare[index];
+    
+    if(_addEnergyToChiSquare == 1) res += _energyChiSquare[index];
+    
     return res;
   }
 
