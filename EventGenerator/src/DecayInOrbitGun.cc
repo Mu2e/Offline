@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.56 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: DecayInOrbitGun.cc,v 1.57 2013/06/11 16:34:53 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/06/11 16:34:53 $
 //
 // Original author Rob Kutschke
 //
@@ -262,13 +262,15 @@ namespace mu2e {
   // Input energy in MeV
   double DecayInOrbitGun::energySpectrum( double e )
   {
-    double p     = 0.;
-    double power = cet::pow<5>(_convEnergy - e);
+    double prob  = 0.;
+    double delta = _convEnergy - e;
+    if ( delta < 0. ) return prob;
+    double power = cet::pow<5>( delta );
     for ( size_t i=0; i < _coeff->size() ; i++ ) {
-      for ( size_t p=0 ; p < i ; p++ ) power *= (_convEnergy-e); 
-      p += _coeff->at(i)*power;
+      if( i > 0 ) power *= delta; 
+      prob += _coeff->at(i)*power;
     }
-    return p;
+    return prob;
   }
 
 
