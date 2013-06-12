@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.14 2013/06/10 14:28:41 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/06/10 14:28:41 $
+// $Id: Calorimeter4VanesGeom.hh,v 1.15 2013/06/12 04:42:53 murat Exp $
+// $Author: murat $
+// $Date: 2013/06/12 04:42:53 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -159,7 +159,7 @@ public :
 
         void caloExtrapol(int&          diagLevel,
 			  int           evtNumber,
-			  TrkFitDirection::FitDirection  fdir,
+			  TrkFitDirection  fdir,
 			  TrkRep const* trep,
 			  double&       lowrange, 
 			  double&       highrange,
