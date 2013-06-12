@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.186 2013/06/07 17:43:30 knoepfel Exp $
+// $Id: geom_01.txt,v 1.187 2013/06/12 19:52:05 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/06/07 17:43:30 $
+// $Date: 2013/06/12 19:52:05 $
 //
 // Original author Rob Kutschke
 //
@@ -507,11 +507,6 @@ double bfield.scaleFactor = 1.0;
 
 // Neutron Absorber (document draft dated 2010-07-16)
 
-bool   neutronabsorber.hasExternalPart = true;
-bool   neutronabsorber.hasInternalPart = true;
-
-string neutronabsorber.materialName  = "Polyethylene092Li075d106";
-
 double intneutronabs.rOut        = 949.; // default should be 949 mm 
 double intneutronabs.rIn2        = 850.;
 double intneutronabs.rIn1        = 650.;
@@ -521,22 +516,19 @@ double intneutronabs.z0          = 5871.;
 string intneutronabs.material1Name = "Polyethylene096";
 string intneutronabs.material2Name = "Polyethylene096";
 
-double neutronabsorber.internalOuterRadius   =  940.0;
-double neutronabsorber.internalInnerRadius0  =  460.0;
-double neutronabsorber.internalInnerRadius1  =  710.0;
-double neutronabsorber.internalInnerRadius2  =  850.0;
-double neutronabsorber.internalHalfLengthZ01 = 2197.5;
-double neutronabsorber.internalHalfLengthZ02 = 3515.0;
-double neutronabsorber.internalZ01           = 6202.5; // 4005+8400/2
+int    intneutronabs.verbosityLevel = 0;
+bool   intneutronabs.visible      = true;
+bool   intneutronabs.solid        = false;
 
-double neutronabsorber.externalHalfLengthZ   = 6220.0;
-double neutronabsorber.externalHalfLengthXY  = 1475.0;
-double neutronabsorber.externalHalfThickness =   75.0;
-double neutronabsorber.externalZ0            = 9219.0; // 2999+15439/2
+string extneutronabs.materialName  = "Polyethylene092Li075d106";
+double extneutronabs.halfLengthZ   = 6220.0;
+double extneutronabs.halfLengthXY  = 1475.0;
+double extneutronabs.halfThickness =   75.0;
+double extneutronabs.z0            = 9219.0; // 2999+15439/2
 
-int    neutronabsorber.verbosityLevel = 0;
-bool   neutronabsorber.visible      = true;
-bool   neutronabsorber.solid        = false;
+int    extneutronabs.verbosityLevel = 0;
+bool   extneutronabs.visible      = true;
+bool   extneutronabs.solid        = false;
 
 // Muon Beam Dump/Stop
 

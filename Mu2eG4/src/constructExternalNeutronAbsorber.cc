@@ -1,9 +1,9 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructExternalNeutronAbsorber.cc,v 1.1 2013/05/31 15:58:59 knoepfel Exp $
+// $Id: constructExternalNeutronAbsorber.cc,v 1.2 2013/06/12 19:52:03 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/05/31 15:58:59 $
+// $Date: 2013/06/12 19:52:03 $
 //
 // Original author KLG
 //
@@ -20,6 +20,7 @@
 #include "Mu2eG4/inc/constructExternalNeutronAbsorber.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "ExternalNeutronAbsorberGeom/inc/ExternalNeutronAbsorber.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -45,53 +46,28 @@ namespace mu2e {
 
   void constructExternalNeutronAbsorber(SimpleConfig const & _config){
 
-    int const verbosityLevel = _config.getInt("neutronabsorber.verbosityLevel",0);
-
-    // the absorber is split into two major pieces internal & external (wrt to the coil)
-    // the external part is placed in the hall air (and does not need to be split)
-
-    // Extract information from the config file.
-
-    string NAMaterialName      = _config.getString("neutronabsorber.materialName");
-    double NAEHalfLengthZ      = _config.getDouble("neutronabsorber.externalHalfLengthZ");
-    double NAEHalfLengthXY     = _config.getDouble("neutronabsorber.externalHalfLengthXY");
-    double NAEHalfThickness    = _config.getDouble("neutronabsorber.externalHalfThickness");
-    double NAEZ0               = _config.getDouble("neutronabsorber.externalZ0");
-
-    bool NAVisible             = _config.getBool("neutronabsorber.visible",false);
-    bool NASolid               = _config.getBool("neutronabsorber.solid");
-
+    // Flags
+    int  const verbosityLevel      = _config.getInt("extneutronabs.verbosityLevel",0);
+    bool const NAVisible           = _config.getBool("extneutronabs.visible",false);
+    bool const NASolid             = _config.getBool("extneutronabs.solid");
     bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
     bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
-    G4Material* NAMaterial = findMaterialOrThrow(NAMaterialName);
+    // Fetch ext. neutron absorber geometry
+    GeomHandle<ExternalNeutronAbsorber> nae;
+    G4Material* NAMaterial = findMaterialOrThrow( nae->material() );
 
-    // constructing External Neutron Absorber, placing it in HallAir (the name is hardcoded here...)
-
-    // Access to the G4HelperService.
+    // Access to the G4HelperService - get hall volume
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
-
     VolumeInfo const & hallInfo = _helper->locateVolInfo("HallAir");
 
-    // NAEZ0 is the offset in mu2e
-    // the Z offset in World is NAEZ0+mu2eOrigin
-
-    // Get DS geom object
-    GeomHandle<DetectorSolenoid> ds;
-
     if ( verbosityLevel > 0) {
-      cout << __func__ << " solenoidOffset                   : " << ds->position().x()  << endl;
-    }
-
-    CLHEP::Hep3Vector NAEOffsetInMu2e  = CLHEP::Hep3Vector(ds->position().x(),0.,NAEZ0);
-    
-    if ( verbosityLevel > 0) {
-      cout << __func__ << " NAEOffsetInMu2e                  : " << NAEOffsetInMu2e << endl;
+      cout << __func__ << " NAEOffsetInMu2e                  : " << nae->position().z() << endl;
     }
     
     // now local offset in hallAir
-    CLHEP::Hep3Vector NAEOffset =  NAEOffsetInMu2e - hallInfo.centerInMu2e();
+    CLHEP::Hep3Vector NAEOffset =  nae->position() - hallInfo.centerInMu2e();
     
     if ( verbosityLevel > 0) {
       cout << __func__ << " hallInfo.centerInMu2e()          : " << hallInfo.centerInMu2e() << endl;
@@ -99,12 +75,12 @@ namespace mu2e {
     }
     
     // Compute dimensions of 4 sides in Mu2e coordinates
-    double NAETopHalfX   = NAEHalfLengthXY + NAEHalfThickness;
-    double NAETopHalfY   = NAEHalfThickness;
-    double NAETopHalfZ   = NAEHalfLengthZ;
-    double NAESideHalfX  = NAEHalfThickness;
-    double NAESideHalfY  = NAEHalfLengthXY - NAEHalfThickness;
-    double NAESideHalfZ  = NAEHalfLengthZ;
+    double NAETopHalfX   = nae->halfLengthXY() + nae->halfThickness();
+    double NAETopHalfY   = nae->halfThickness();
+    double NAETopHalfZ   = nae->halfLengthZ();
+    double NAESideHalfX  = nae->halfThickness();
+    double NAESideHalfY  = nae->halfLengthXY() - nae->halfThickness();
+    double NAESideHalfZ  = nae->halfLengthZ();
     
     double NAETopDims[3] = {
       NAETopHalfX,
@@ -118,10 +94,10 @@ namespace mu2e {
       NAESideHalfZ
     };
     
-    CLHEP::Hep3Vector NAETopOffset   (0.,  NAEHalfLengthXY, 0.);
-    CLHEP::Hep3Vector NAEBottomOffset(0., -NAEHalfLengthXY, 0.);
-    CLHEP::Hep3Vector NAELeftOffset  (     NAEHalfLengthXY, 0., 0.);
-    CLHEP::Hep3Vector NAERightOffset (    -NAEHalfLengthXY, 0., 0.);
+    CLHEP::Hep3Vector NAETopOffset   (0.,  nae->halfLengthXY(), 0.);
+    CLHEP::Hep3Vector NAEBottomOffset(0., -nae->halfLengthXY(), 0.);
+    CLHEP::Hep3Vector NAELeftOffset  (     nae->halfLengthXY(), 0., 0.);
+    CLHEP::Hep3Vector NAERightOffset (    -nae->halfLengthXY(), 0., 0.);
     
     
     VolumeInfo TopInfo    = nestBox("ExternalNeutronAbsorberTop",

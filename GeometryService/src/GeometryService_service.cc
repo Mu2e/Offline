@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.50 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: GeometryService_service.cc,v 1.51 2013/06/12 19:52:01 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/06/12 19:52:01 $
 //
 // Original author Rob Kutschke
 //
@@ -48,6 +48,8 @@
 #include "StoppingTargetGeom/inc/StoppingTargetMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
+#include "ExternalNeutronAbsorberGeom/inc/ExternalNeutronAbsorber.hh"
+#include "ExternalNeutronAbsorberGeom/inc/ExternalNeutronAbsorberMaker.hh"
 #include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorber.hh"
 #include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorberMaker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
@@ -247,6 +249,10 @@ namespace mu2e {
 
     if(_config->getBool("hasInternalNeutronAbsorber",false)){
       addDetector( InternalNeutronAbsorberMaker::make(*_config,ds) );
+    }
+    
+    if(_config->getBool("hasExternalNeutronAbsorber",false)){
+      addDetector( ExternalNeutronAbsorberMaker::make(*_config,ds) );
     }
 
     std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, dump));

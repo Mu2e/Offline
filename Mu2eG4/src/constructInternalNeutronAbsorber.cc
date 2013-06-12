@@ -1,9 +1,9 @@
 //
 // Free function to create Neutron Absorbers in G4
 //
-// $Id: constructInternalNeutronAbsorber.cc,v 1.4 2013/06/07 17:43:30 knoepfel Exp $
+// $Id: constructInternalNeutronAbsorber.cc,v 1.5 2013/06/12 19:52:04 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/06/07 17:43:30 $
+// $Date: 2013/06/12 19:52:04 $
 //
 // Original author KLG
 //
@@ -45,11 +45,11 @@ namespace mu2e {
 
   void constructInternalNeutronAbsorber(SimpleConfig const & _config){
 
-    int const verbosityLevel = _config.getInt("neutronabsorber.verbosityLevel",0);
+    int const verbosityLevel = _config.getInt("intneutronabs.verbosityLevel",0);
 
     // Extract information from the config file.
-    bool NAVisible             = _config.getBool("neutronabsorber.visible");
-    bool NASolid               = _config.getBool("neutronabsorber.solid");
+    bool NAVisible             = _config.getBool("intneutronabs.visible");
+    bool NASolid               = _config.getBool("intneutronabs.solid");
 
     bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
     bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
