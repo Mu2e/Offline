@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.cc,v 1.11 2013/05/23 01:06:28 murat Exp $
+// $Id: Calorimeter4VanesGeom.cc,v 1.12 2013/06/13 16:39:09 murat Exp $
 // $Author: murat $
-// $Date: 2013/05/23 01:06:28 $
+// $Date: 2013/06/13 16:39:09 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -20,8 +20,8 @@ namespace mu2e {
 // Construct from a transform.
 //-----------------------------------------------------------------------------
   Calorimeter4VanesGeom::Calorimeter4VanesGeom(){
-    GeomHandle<Calorimeter> cg;
     art::ServiceHandle<GeometryService> geom;
+    GeomHandle<Calorimeter> cg;
     _norm.setX(0.0);
     _norm.setY(1.0);
     _norm.setZ(0.0);
@@ -48,8 +48,10 @@ namespace mu2e {
     
     if(geom->hasElement<DiskCalorimeter>()){
       GeomHandle<DiskCalorimeter> cgDisks;
-      _ZfrontFaceCalo -= _vaneHalfThickness*2.0 + cgDisks->diskSeparation(1);
-      _ZbackFaceCalo += cgDisks->diskSeparation(1) + _vaneHalfThickness*2.0 + 10.0;
+//       _ZfrontFaceCalo -= _vaneHalfThickness*2.0 + cgDisks->diskSeparation(1);
+//       _ZbackFaceCalo += cgDisks->diskSeparation(1) + _vaneHalfThickness*2.0 + 10.0;
+      _ZfrontFaceCalo += cgDisks->diskSeparation(0) - 10.;
+      _ZbackFaceCalo  += cgDisks->diskSeparation(1) + 2*cg->crystalHalfLength() + 10.0;
     }
     
     if(geom->hasElement<VaneCalorimeter>()){ 

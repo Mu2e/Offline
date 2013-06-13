@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.14 2013/06/10 14:28:24 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/06/10 14:28:24 $
+// $Id: TrkExtrapol_module.cc,v 1.15 2013/06/13 16:39:09 murat Exp $
+// $Author: murat $
+// $Date: 2013/06/13 16:39:09 $
 //
 // Original author G. Pezzullo
 //
@@ -117,6 +117,7 @@ namespace mu2e {
 
   class TrkExtrapol : public art::EDProducer {
   public:
+
     explicit TrkExtrapol(fhicl::ParameterSet const& pset):
       _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
       _tpart((TrkParticle::type)(pset.get<int>("fitparticle",
@@ -134,7 +135,7 @@ namespace mu2e {
 						    "CaloReadoutHitsMaker")),
       _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel",
 						    "CaloCrystalHitsMaker")),
-      CaloVanes(0),
+      fCaloVanes(0),
       _application(nullptr),
       _directory(0),
       _firstEvent(true),
@@ -145,13 +146,13 @@ namespace mu2e {
       // construct the data product instance name
       _iname  = _fdir.name() + _tpart.name();
       _fitDir = _fdir.fitDirection(); 
+
     }
   
     virtual ~TrkExtrapol() {
-      if(CaloVanes != 0){
-	delete CaloVanes;
-      }
+      if (fCaloVanes) delete fCaloVanes;
     }
+
     void beginJob();
     void endJob() {}
 
@@ -193,7 +194,7 @@ namespace mu2e {
 
     std::unique_ptr<MCCaloUtilities> CaloManager;
 
-    Calorimeter4VanesGeom *CaloVanes;// = new Calorimeter4VanesGeom();
+    Calorimeter4VanesGeom* fCaloVanes;
 
     bool _skipEvent;
 
@@ -225,9 +226,9 @@ namespace mu2e {
 
   };
 
-  void TrkExtrapol::beginJob(){
-    if (_outPutNtup == 1) {
+  void TrkExtrapol::beginJob() {
 
+    if (_outPutNtup == 1) {
       art::ServiceHandle<art::TFileService> tfs;
       _trkdiag       = tfs->make<TTree>("trk", "trk extrapolated info");
       _trkdiag->Branch("trkid", &_trkid  ,"trkid/I");
@@ -244,6 +245,7 @@ namespace mu2e {
       _trkdiag->Branch("trkmom[trkint]", _trkmom, "trkmom[trkint]/F");
     }
   }
+
 
   void TrkExtrapol::filltrkdiag(int itrk, Calorimeter4VanesGeom::IntersectData_t *intersec, int size, KalRep const* kalrep){
     _trkid = itrk;
@@ -267,22 +269,20 @@ namespace mu2e {
     _trkdiag->Fill();
   }
 
+//-----------------------------------------------------------------------------
   void TrkExtrapol::produce(art::Event & evt ) {
-    if(_firstEvent){
-      CaloVanes =  new Calorimeter4VanesGeom();
-		
-      if(_diagLevel>0){
-	CaloVanes->print();
-      }
-		
-      _firstEvent = false;
+
+    if (fCaloVanes == 0) {
+      fCaloVanes = new Calorimeter4VanesGeom();
+
+      if (_diagLevel>0) fCaloVanes->print();
     }
+   
     doExtrapolation(evt, _skipEvent);
+  } 
 
-  } // end of analyze
 
-
-  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
   void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
     const char* oname = "TrkExtrapol::doExtrapolation";
     double lowrange, highrange, zmin, zmax;
@@ -294,8 +294,6 @@ namespace mu2e {
   
     //Get handle to calorimeter
     art::ServiceHandle<GeometryService> geom;
-
-    Calorimeter4VanesGeom *CaloVanes = new Calorimeter4VanesGeom();
 
     art::Handle<KalRepCollection> trksHandle;
     evt.getByLabel(_fitterModuleLabel,_iname,trksHandle);
@@ -330,8 +328,8 @@ namespace mu2e {
       centerCircleX *= cos(angle);
 
       // 2013-05-23 gianipez : add 10cm tolerance
-      zmin = CaloVanes->ZfrontFaceCalo()-100.;
-      zmax = CaloVanes->ZbackFaceCalo ()+100.;
+      zmin = fCaloVanes->ZfrontFaceCalo()-100.;
+      zmax = fCaloVanes->ZbackFaceCalo ()+100.;
     
       if(_fitDir ==  TrkFitDirection::downstream){
 	lowrange  = trkHel.zFlight(zmin);  /*1740*/
@@ -361,12 +359,13 @@ namespace mu2e {
       Calorimeter4VanesGeom::IntersectData_t  intersection[100];
       int                                     nint(0);
 
-      CaloVanes->caloExtrapol(_diagLevel, (int)evt.event(), 
-			      _fitDir, trep, lowrange, highrange, 
-			      trkHel,  
-			      res0, 
-			      nint,
-			      intersection);
+      fCaloVanes->caloExtrapol(_diagLevel, 
+			       (int) evt.event(), 
+			       _fitDir, trep, lowrange, highrange, 
+			       trkHel,  
+			       res0, 
+			       nint,
+			       intersection);
     
       if (nint == 0) {
 	printf("\n%s , run / event : %d / %d, \nERROR: intersection not found : res0 = %i\nfitdirection = %s \n",

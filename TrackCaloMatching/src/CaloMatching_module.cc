@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.18 2013/06/10 14:28:24 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/06/10 14:28:24 $
+// $Id: CaloMatching_module.cc,v 1.19 2013/06/13 16:39:09 murat Exp $
+// $Author: murat $
+// $Date: 2013/06/13 16:39:09 $
 //
 // Original author G. Pezzullo
 //
@@ -19,6 +19,8 @@
 #include "fhiclcpp/ParameterSet.h"
 
 // conditions
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
 #include "KalmanTests/inc/KalRepCollection.hh"
@@ -31,7 +33,8 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-//#include "CaloCluster/inc/CaloClusterTools.hh"
+#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
+#include "CaloCluster/inc/CaloClusterTools.hh"
 #include "CaloCluster/inc/CaloClusterUtilities.hh"
 
 // Other includes.
@@ -447,25 +450,27 @@ namespace mu2e {
 
     std::unique_ptr<TrackClusterLink> trackClusterLink(new TrackClusterLink);
   
-    ClusterMapVector clusterMapVector;
+    //    ClusterMapVector clusterMapVector;
 
     if (_diagLevel > 2) {
       cout<<"CaloClusters.size() = "<< nclusters << endl;
     }
     //-----------------------------------------------------------------------------
     // why this copy is necessary ? - doesn't seem to be
+    // 2013-06-12 P.Murat: ClusterMapVector::searchVane always returns true, so one can 
+    //                     safely comment the ClusterMap thing out
     //-----------------------------------------------------------------------------
-    for(size_t icl=0; icl<caloClusters->size(); ++icl) {
-      CaloCluster  clu = (*caloClusters).at(icl);
+//     for(size_t icl=0; icl<caloClusters->size(); ++icl) {
+//       CaloCluster  clu = (*caloClusters).at(icl);
     
-      ClusterMap tmpCluMap(clu);
+//       ClusterMap tmpCluMap(clu);
 
-      clusterMapVector.push_back(tmpCluMap);
-    }
+//       clusterMapVector.push_back(tmpCluMap);
+//     }
 
-    if(_diagLevel > 10){
-      clusterMapVector.print(cout);
-    }
+//     if(_diagLevel > 10){
+//       clusterMapVector.print(cout);
+//     }
     //-----------------------------------------------------------------------------
     // define more variables
     //-----------------------------------------------------------------------------
@@ -594,7 +599,7 @@ namespace mu2e {
     
       _recoEErr   = tmpEnergyErr;
     
-      if (!clusterMapVector.searchVane(tmpVane) ) continue;
+      //      if (!clusterMapVector.searchVane(tmpVane) ) continue;
     
       thV = thetaVimpact(extrk->momentum(), extrk->vaneId());
       thW = thetaWimpact(extrk->momentum(), extrk->vaneId());
@@ -786,8 +791,9 @@ namespace mu2e {
 	// 2013-03-24 : the first w-correction below is doing smth wrong.. moving 
 	//              the cluster in e0000001/event#1 by about 60cm.. 
 	//              for now, turn both W-corrections off, leaving Z unchanged
+	// 2013-06-12: comment out remaining correction
 	//-----------------------------------------------------------------------------
-	v_correction_0(thV, tmpCOGv, tmpCOGvErr);
+	//   v_correction_0(thV, tmpCOGv, tmpCOGvErr);
 
 	//                         w_correction_0(tmpCOGw, tmpCOGwErr, tmpCluCryMaxEdepColumn);
 	//                         w_correction_1(tmpCOGw,tmpCOGwErr, tmpWsize);
