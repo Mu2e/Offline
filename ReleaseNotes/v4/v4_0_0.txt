@@ -1,10 +1,15 @@
-  $Id: v4_0_0.txt,v 1.6 2013/06/12 19:52:05 knoepfel Exp $
+  $Id: v4_0_0.txt,v 1.7 2013/06/14 16:15:04 knoepfel Exp $
   $Author: knoepfel $
-  $Date: 2013/06/12 19:52:05 $
+  $Date: 2013/06/14 16:15:04 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v4_0_0
+
+9)  June 14, 2013, knoepfel
+    Add checkForStale utility in ConfigTools, which checks
+    if deprecated variables are being used in the .txt geometry
+    files.  Implemented in (e.g.) InternalNeutronAbsorberMaker.cc.
 
 8)  June 12, 2013, knoepfel
     Add ExternalNeutronAbsorber class to Offline.  Add to GeometryService.

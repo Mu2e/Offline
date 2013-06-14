@@ -1,5 +1,6 @@
 // Mu2e includes
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "ConfigTools/inc/checkForStale.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "ExternalNeutronAbsorberGeom/inc/ExternalNeutronAbsorberMaker.hh"
 #include "ExternalNeutronAbsorberGeom/inc/ExternalNeutronAbsorber.hh"
@@ -17,17 +18,7 @@ namespace mu2e {
 
   std::unique_ptr<ExternalNeutronAbsorber> ExternalNeutronAbsorberMaker::make(const SimpleConfig& c, const DetectorSolenoid& ds ) {
     
-    // Check for deprecated variables
-    std::vector<std::string> variables;
-    c.getNames( variables );
-    std::for_each( variables.begin(),
-                   variables.end(),
-                   [](std::string var) {
-                     if ( var.find("neutronabsorber.") != std::string::npos) {
-                       throw cet::exception("GEOM") <<
-                         " Variable with name \"neutronabsorber.*\" now deprecated.\n" ;                       
-                     }
-                   } );
+    checkForStale( "neutronabsorber", c );
 
     std::unique_ptr<ExternalNeutronAbsorber> ena ( new ExternalNeutronAbsorber() );
     
