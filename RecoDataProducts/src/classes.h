@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.25 2013/03/26 23:28:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/26 23:28:23 $
+// $Id: classes.h,v 1.26 2013/06/17 22:02:51 vrusu Exp $
+// $Author: vrusu $
+// $Date: 2013/06/17 22:02:51 $
 //
 // Original author Rob Kutschke
 //
@@ -33,6 +33,7 @@
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "RecoDataProducts/inc/PIDProductCollection.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
@@ -72,6 +73,8 @@ template class art::Ptr<mu2e::TrkExtTrajPoint>;
 template class std::vector<mu2e::TrkExtTrajPoint>;
 template class art::Ptr<mu2e::TrkExtTraj>;
 template class std::vector<mu2e::TrkExtTraj>;
+template class art::Ptr<mu2e::PIDProduct>;
+template class std::vector<mu2e::PIDProduct>;
 template class std::vector<std::pair<unsigned int, unsigned int> >;
 
 template class art::Wrapper<mu2e::StrawHitCollection>;
@@ -94,6 +97,7 @@ template class art::Wrapper<mu2e::ZRotStrawHitMapCollection>;
 template class art::Wrapper<mu2e::TrackerHitByID>;
 template class art::Wrapper<mu2e::TrackSeedCollection>;
 template class art::Wrapper<mu2e::TrkExtTrajCollection>;
+template class art::Wrapper<mu2e::PIDProductCollection>;
 
 template class std::vector<mu2e::ExtMonFNALRawHit>;
 template class art::Wrapper<mu2e::ExtMonFNALRawHitCollection>;

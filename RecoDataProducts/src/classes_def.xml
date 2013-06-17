@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.27 2013/03/26 23:28:23 kutschke Exp $     -->
-<!--  $Author: kutschke $ -->
-<!--  $Date: 2013/03/26 23:28:23 $   -->
+<!--  $Id: classes_def.xml,v 1.28 2013/06/17 22:02:51 vrusu Exp $     -->
+<!--  $Author: vrusu $ -->
+<!--  $Date: 2013/06/17 22:02:51 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.27 $$Date: 2013/03/26 23:28:23 $"; -->
+<!--  rev="$Revision: 1.28 $$Date: 2013/06/17 22:02:51 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -61,6 +61,8 @@
  <class name="mu2e::TrkExtTrajPoint" />
  <class name="mu2e::TrkExtTraj" />
  <class name="mu2e::TrkExtTrajCollection" />
+ <class name="mu2e::PIDProduct" />
+ <class name="mu2e::PIDProductCollection" />
 
  <class name="art::Ptr<mu2e::CaloHit>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloHit> >"/>
@@ -88,6 +90,8 @@
  <class name="std::vector<mu2e::TrkExtTrajPoint>" />
  <class name="art::Ptr<mu2e::TrkExtTraj>" />
  <class name="std::vector<mu2e::TrkExtTraj>" />
+ <class name="art::Ptr<mu2e::PIDProduct>" />
+ <class name="std::vector<mu2e::PIDProduct>" />
  <class name="std::vector<std::pair<unsigned int, unsigned int> >"/>
 
  <class name="art::Wrapper<mu2e::StrawHitCollection>"/>
@@ -109,6 +113,7 @@
  <class name="art::Wrapper<mu2e::TrackerHitByID>"/>
  <class name="art::Wrapper<mu2e::TrackSeedCollection>"/>
  <class name="art::Wrapper<mu2e::TrkExtTrajCollection>" />
+ <class name="art::Wrapper<mu2e::PIDProductCollection>" />
 
  <class name="mu2e::ExtMonFNALRawHit" />
  <class name="std::vector<mu2e::ExtMonFNALRawHit>" />
