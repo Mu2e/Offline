@@ -18,6 +18,8 @@
 #include <vector>
 #include "TMath.h"
 
+using namespace std;
+
 // the following approximation is from Czarnecki etal, 'Muon decay in orbit:spectrum of high-energy electrons',
 // for E>85 MeV
 Double_t DIOCZ(Double_t *x, Double_t *par) {
