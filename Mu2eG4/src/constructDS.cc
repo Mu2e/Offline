@@ -1,9 +1,9 @@
 //
 // Free function to create DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.13 2013/06/07 17:59:56 knoepfel Exp $
+// $Id: constructDS.cc,v 1.14 2013/06/18 19:21:12 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/06/07 17:59:56 $
+// $Date: 2013/06/18 19:21:12 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -211,7 +211,8 @@ namespace mu2e {
       TubsParams coilParams( ds->coil_rIn(), 
                              ds->coil_rOut().at(i),
                              ds->coil_zLength().at(i)*0.5 );
-      G4ThreeVector coilPosition( dsP.x(), dsP.y(), ds->coil_zPosition().at(i) );
+      G4ThreeVector coilPosition( dsP.x(), dsP.y(), 
+                                  ds->coil_zPosition().at(i) + coilParams.zHalfLength()); 
 
       ostringstream coilname;
       coilname << "DSCoil_" << i+1;

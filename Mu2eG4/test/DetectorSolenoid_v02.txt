@@ -18,7 +18,7 @@ double ds.rIn.in             =  950.;
 double ds.rIn.out            =  970.;
 double ds.rOut.in            = 1303.;
 double ds.rOut.out           = 1328.;
-double ds.halfLength         = 5375.;
+double ds.halfLength         = 5450.;
 double ds.endWallHalfLength  =   15.;
 double ds.frontHalfLength    =   15.;
 string ds.materialName       = "StainlessSteel";
@@ -28,14 +28,14 @@ string ds.insideMaterialName = "DSVacuum";
 string dsShield.materialName       = "G4_Al";
 string dsShield.insideMaterialName = "DSVacuum";
 double dsShield.zOffset            =  132.3; // wrt inner part of DS cryo end wall
-double dsShield.halfLength         = 5212.7;
+double dsShield.halfLength         = 5287.7;
 double dsShield.endWallHalfLength  =    6.35;
 double dsShield.rIn.in             = 1010.;
 double dsShield.rIn.out            = 1022.7;
 double dsShield.rOut.in            = 1237.3;
 double dsShield.rOut.out           = 1250.;
 
-// The coils
+// The coils - a la doc-db 1328
 string dsCoil.materialName      = "NbTi";
 double dsCoil.rIn = 1050.;
 vector<double> dsCoil.rOut = {
@@ -50,18 +50,18 @@ vector<double> dsCoil.zLength = {
   1777.50,1777.50,1777.50,
   362.25 
 };
-vector<double> dsCoil.zPosition = {
-  3539.,3964.,4389.,5042.,
-  5670.,6340.,7147.,
-  8628.,10440.,12222.,
-  13297.
+vector<double> dsCoil.zPosition = { // these correspond to the START
+  3539.,3964.,4389.,5042.,          // of the coil
+  5699.,6369.,7176.,
+  7949.,9761.,11544.,
+  13326.
 };
 
 // Coil-support system
 string dsSupport.materialName = "G4_Al";
 double dsSupport.rIn          = 1091.;
 double dsSupport.rOut         = 1111.;
-double dsSupport.halfLength   = 5200.;// [10425.4-2*12.7]*0.5
+double dsSupport.halfLength   = 5275.;// [10575.4-2*12.7]*0.5
 
 // Flags
 int    ds.verbosityLevel     = 1;
