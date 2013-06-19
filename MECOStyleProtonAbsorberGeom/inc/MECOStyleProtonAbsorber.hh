@@ -4,9 +4,9 @@
 //
 // Class to represent the system of MECO Style Proton Absorber
 //
-// $Id: MECOStyleProtonAbsorber.hh,v 1.3 2013/05/31 18:07:18 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Id: MECOStyleProtonAbsorber.hh,v 1.4 2013/06/19 03:41:01 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2013/06/19 03:41:01 $
 //
 // Original author MyeongJae Lee
 //
@@ -44,6 +44,13 @@ namespace mu2e {
     double thickness() const { return _thickness;}
     bool isAvailable (int id) const ;
 
+    // outer PA
+    std::string outerPAfillMaterial() const {return _oPAmaterialName; }
+    double outerPAzcenter () const { return _oPAzcenter; }
+    double outerPAhalflength () const { return _oPAhalflength; }
+    double outerPAthickness () const { return _oPAthickness; }
+
+
   protected:
 
     std::vector<MECOStyleProtonAbsorberPart> _parts;
@@ -54,6 +61,13 @@ namespace mu2e {
     double _halflength; 
     double _thickness;  
     bool _pabs1flag, _pabs2flag;
+
+    //outer PA
+    std::string _oPAmaterialName;
+    double _oPAzcenter;
+    double _oPAhalflength;
+    double _oPAthickness;
+    bool _oPAflag;
   };
 }
 #endif 

@@ -1,9 +1,9 @@
 //
 // Class to represent the system of MECO style Proton Absorber
 //
-// $Id: MECOStyleProtonAbsorber.cc,v 1.3 2013/05/31 18:07:18 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Id: MECOStyleProtonAbsorber.cc,v 1.4 2013/06/19 03:41:01 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2013/06/19 03:41:01 $
 //
 // Original author MyeongJae Lee
 
@@ -22,7 +22,13 @@ namespace mu2e {
     _halflength(0),
     _thickness(0),
     _pabs1flag(false),
-    _pabs2flag(false)
+    _pabs2flag(false),
+    //outer PA
+    _oPAmaterialName(),
+    _oPAzcenter(0),
+    _oPAhalflength(0),
+    _oPAthickness(0),
+    _oPAflag(false)
   {}
 
 
@@ -34,6 +40,8 @@ namespace mu2e {
       case 1:
         return _pabs2flag;
         break;
+      case 2:
+        return _oPAflag;
       default:
         return false;
     }

@@ -2,9 +2,9 @@
 // Construct and return MECOStyleProtonAbsorber
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.9 2013/06/07 17:43:30 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/06/07 17:43:30 $
+// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.10 2013/06/19 03:41:01 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2013/06/19 03:41:01 $
 //
 // Original author MyeongJae Lee
 //
@@ -199,6 +199,34 @@ namespace mu2e {
     (_pabs->_thickness) = thick;
 
 
+    ///////////
+    // Outer PA
+    ///////////
+
+    if ( _config.getBool("protonabsorber.outerPA", false) ) {
+      double oPAin0               = _config.getDouble("protonabsorber.outerPAInnerRadius0", 436.0); 
+      double oPAin1               = _config.getDouble("protonabsorber.outerPAInnerRadius1", 720.0); 
+      double oPAhl                = _config.getDouble("protonabsorber.outerPAHalfLength", 2250.0); 
+      double oPAthick             = _config.getDouble("protonabsorber.outerPAThickness", 10.0); 
+      double oPAzcenter           = _config.getDouble("protonabsorber.outerPAZCenter", 6250.0); 
+      std::string oPAmaterialName = _config.getString("protonabsorber.outerPAMaterialName", "Polyethylene092");
+      double oPAout0 = oPAin0 + oPAthick;
+      double oPAout1 = oPAin1 + oPAthick;
+
+      CLHEP::Hep3Vector oPAOffset (-1.*solenoidOffset, 0.0, oPAzcenter);
+      _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 2, oPAOffset, oPAout0, oPAin0, oPAout1, oPAin1, oPAhl, oPAmaterialName));
+      
+      (_pabs->_oPAmaterialName) = oPAmaterialName;
+      (_pabs->_oPAzcenter) = oPAzcenter;
+      (_pabs->_oPAhalflength) = oPAhl;
+      (_pabs->_oPAthickness) = oPAthick;
+      (_pabs->_oPAflag) = true;
+    }
+    else {
+      (_pabs->_oPAflag) = false;
+    }
+
+
   }
 
 
@@ -223,6 +251,21 @@ namespace mu2e {
     std::cout<<" Material : " << _pabs->fillMaterial() <<  std::endl;
     std::cout<<" pabs1 is " << ( (_pabs->isAvailable(0)) ? "valid" : "invalid" ) << ", " ;
     std::cout<<" pabs2 is " << ( (_pabs->isAvailable(1)) ? "valid" : "invalid" ) << std::endl ;
+
+    if (_pabs->_oPAflag) {
+      std::cout<<" oPAlen (full length) : " << _pabs->_oPAhalflength*2. << std::endl;
+      std::cout<<" oPA extent in Mu2e : " << _pabs->_oPAzcenter - _pabs->_oPAhalflength << ", " 
+                                          << _pabs->_oPAzcenter << ", " 
+                                          << _pabs->_oPAzcenter + _pabs->_oPAhalflength << std::endl;
+      std::cout<<" [rIn, rOut] : " << std::endl;
+      std::cout<<" =  [" << _pabs->part(2).innerRadiusAtStart() << ", " << _pabs->part(2).outerRadiusAtStart() <<"], " << std::endl
+               <<"    [" << _pabs->part(2).innerRadiusAtEnd()   << ", " << _pabs->part(2).outerRadiusAtEnd()   <<"], " << std::endl;
+      std::cout<<" Material : " << _pabs->_oPAmaterialName <<  std::endl;
+    }
+    else {
+      std::cout<<" oPA is invalid" << std::endl ;
+    }
+
   }
 
 
