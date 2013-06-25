@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.65 2013/06/07 17:43:30 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/06/07 17:43:30 $
+// $Id: DataInterface.cc,v 1.66 2013/06/25 17:51:24 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/06/25 17:51:24 $
 //
 
 #include "DataInterface.h"
@@ -602,6 +602,7 @@ void DataInterface::fillGeometry()
     }
   }
   //MBS
+/*
   if(config.getBool("hasMBS", false)) {
     char c[200];
     double mbsinr[3], mbsoutr[3], mbslen[3], mbsz[3];
@@ -638,7 +639,7 @@ void DataInterface::fillGeometry()
       _mbsstructures.push_back(shapeMBS);
     }
   }
-
+*/
   //MecoStyleProtonAbsorber 
   if(config.getBool("hasProtonAbsorber", false)) {
     if (!config.getBool("protonabsorber.isHelical", false)) {
@@ -1493,7 +1494,6 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
         {
           trajectoryStruct ts;
           ts.v = pVect[i] - _detSysOrigin;
-          // ts.v.setZ(pVect[i].z()+_zOffsetDS);
           if(i==0) ts.t=t1;
           if(i==(pVect.size()-1)) ts.t=t2;
           trajectoryVect.push_back(ts);
