@@ -16,8 +16,9 @@
 #include "Mu2eInterfaces/inc/Detector.hh"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensor.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensorStack.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlane.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
 
 namespace mu2e {
@@ -31,14 +32,16 @@ namespace mu2e {
     class ExtMon : virtual public Detector {
     public:
 
-      // all sensors are the same
-      const ExtMonFNALSensor& sensor() const { return sensor_; }
+      // all modules are the same
+      const ExtMonFNALModule& module() const { return module_; }
 
       // all chips are the same
       const ExtMonFNALPixelChip& chip() const { return chip_; }
 
-      const ExtMonFNALSensorStack& up() const { return up_; }
-      const ExtMonFNALSensorStack& dn() const { return dn_; }
+      const ExtMonFNALPlane& plane() const { return plane_; }
+
+      const ExtMonFNALPlaneStack& up() const { return up_; }
+      const ExtMonFNALPlaneStack& dn() const { return dn_; }
 
       const ExtMonFNALMagnet& spectrometerMagnet() const { return spectrometerMagnet_; }
 
@@ -49,9 +52,9 @@ namespace mu2e {
       // Coordinate conversion to/from the Mu2e frame
       // The ExtMonFNAL frame is defined in the following way:
       //
-      // - The (0,0,0) is the reference point of the upstream sensor stack,
+      // - The (0,0,0) is the reference point of the upstream plane stack,
       //
-      // - The z_em axis is along the upstream stack axis (perpendicular to the sensor planes)
+      // - The z_em axis is along the upstream stack axis (perpendicular to the plane planes)
       // - The x_em axis in in the horizontal plane
       // - The y_em axis forms a right-handed (x_em, y_em, z_em) frame
       //
@@ -77,17 +80,17 @@ namespace mu2e {
       }
 
       //----------------------------------------------------------------
-      // Pixel center in the coordinate system of its SensorStack
+      // Pixel center in the coordinate system of its PlaneStack
 
-      CLHEP::Hep3Vector pixelPositionInSensorStack(const ExtMonFNALPixelId& id) const;
+      CLHEP::Hep3Vector pixelPositionInPlaneStack(const ExtMonFNALPixelId& id) const;
 
       //----------------------------------------------------------------
       // Redundant convenience accessors
       unsigned int nplanes() const { return dn_.nplanes() + up_.nplanes(); }
 
-      CLHEP::Hep3Vector sensorCenterInExtMon(unsigned iplane) const;
+      CLHEP::Hep3Vector planeCenterInExtMon(unsigned iplane) const;
 
-      bool sameSensorStack(unsigned plane1, unsigned plane2) {
+      bool samePlaneStack(unsigned plane1, unsigned plane2) {
         bool dn1 = (plane1 < dn_.nplanes());
         bool dn2 = (plane2 < dn_.nplanes());
         return !(dn1^dn2);
@@ -101,9 +104,10 @@ namespace mu2e {
       template<class T> friend class art::Wrapper;
 
       ExtMonFNALPixelChip chip_;
-      ExtMonFNALSensor sensor_;
-      ExtMonFNALSensorStack up_;
-      ExtMonFNALSensorStack dn_;
+      ExtMonFNALModule module_;
+      ExtMonFNALPlane plane_;
+      ExtMonFNALPlaneStack up_;
+      ExtMonFNALPlaneStack dn_;
       ExtMonFNALMagnet spectrometerMagnet_;
       CLHEP::HepRotationX dnToExtMonCoordinateRotation_;
     };

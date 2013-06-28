@@ -5,9 +5,9 @@
 namespace mu2e {
 
   //================================================================
-  PixelNeighbors::PixelNeighbors(const ExtMonFNALSensor& sensor,
+  PixelNeighbors::PixelNeighbors(const ExtMonFNALModule& module,
                                  const ExtMonFNALPixelChip& chip)
-    : sensor_(sensor)
+    : module_(module)
     , chip_(chip)
   {}
 
@@ -25,15 +25,15 @@ namespace mu2e {
       res.push_back(ExtMonFNALPixelId(id.chip(), id.col()-1, id.row()));
     }
     else if(0 < id.chip().chipCol()) {
-      ExtMonFNALChipId chip(id.chip().sensor(), id.chip().chipCol() - 1, id.chip().chipRow());
+      ExtMonFNALChipId chip(id.chip().module(), id.chip().chipCol() - 1, id.chip().chipRow());
       res.push_back(ExtMonFNALPixelId(chip, chip_.nColumns()-1, id.row()));
     }
 
     if(id.col() + 1 < chip_.nColumns()) {
       res.push_back(ExtMonFNALPixelId(id.chip(), id.col()+1, id.row()));
     }
-    else if(id.chip().chipCol() + 1 < sensor_.nxChips()) {
-      ExtMonFNALChipId chip(id.chip().sensor(), id.chip().chipCol() + 1, id.chip().chipRow());
+    else if(id.chip().chipCol() + 1 < module_.nxChips()) {
+      ExtMonFNALChipId chip(id.chip().module(), id.chip().chipCol() + 1, id.chip().chipRow());
       res.push_back(ExtMonFNALPixelId(chip, 0, id.row()));
     }
 
@@ -41,15 +41,15 @@ namespace mu2e {
       res.push_back(ExtMonFNALPixelId(id.chip(), id.col(), id.row()-1));
     }
     else if(0 < id.chip().chipRow()) {
-      ExtMonFNALChipId chip(id.chip().sensor(), id.chip().chipCol(), id.chip().chipRow() - 1);
+      ExtMonFNALChipId chip(id.chip().module(), id.chip().chipCol(), id.chip().chipRow() - 1);
       res.push_back(ExtMonFNALPixelId(chip, id.col(), chip_.nRows()-1));
     }
 
     if(id.row() + 1 < chip_.nRows()) {
       res.push_back(ExtMonFNALPixelId(id.chip(), id.col(), id.row()+1));
     }
-    else if(id.chip().chipRow() + 1 < sensor_.nyChips()) {
-      ExtMonFNALChipId chip(id.chip().sensor(), id.chip().chipCol(), id.chip().chipRow() + 1);
+    else if(id.chip().chipRow() + 1 < module_.nyChips()) {
+      ExtMonFNALChipId chip(id.chip().module(), id.chip().chipCol(), id.chip().chipRow() + 1);
       res.push_back(ExtMonFNALPixelId(chip, id.col(), 0));
     }
 

@@ -10,7 +10,7 @@
 namespace mu2e {
 
   namespace ExtMonFNAL { class ExtMon; }
-  class ExtMonFNALSensor;
+  class ExtMonFNALModule;
 
   class ExtMonFNALPixelChip {
   public:
@@ -29,7 +29,7 @@ namespace mu2e {
     template<class T> friend class art::Wrapper;
 
     friend class ExtMonFNAL::ExtMon;
-    friend class ExtMonFNALSensor;
+    friend class ExtMonFNALModule;
   };
 
 } // namespace mu2e

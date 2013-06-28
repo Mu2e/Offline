@@ -5,19 +5,19 @@
 #include <cassert>
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensor.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
 
 namespace mu2e {
 
   //================================================================
-  ExtMonFNALPixelIdConverter::ExtMonFNALPixelIdConverter(unsigned nSensorPlanes,
-                                                         const ExtMonFNALSensor& sensor,
+  ExtMonFNALPixelIdConverter::ExtMonFNALPixelIdConverter(unsigned nPlanes,
+                                                         const ExtMonFNALModule& module,
                                                          const ExtMonFNALPixelChip& chip)
-    : nSensorPlanes_(nSensorPlanes)
-    , sensor_(sensor)
+    : nPlanes_(nPlanes)
+    , module_(module)
     , chip_(chip)
-    , totalNumberOfPixels_(nSensorPlanes *
-                           sensor.nxChips() * sensor.nyChips() *
+    , totalNumberOfPixels_(nPlanes *
+                           module.nxChips() * module.nyChips() *
                            chip.nColumns() * chip.nRows())
   {}
 
@@ -25,8 +25,8 @@ namespace mu2e {
   ExtMonFNALPixelDenseId ExtMonFNALPixelIdConverter::densePixelNumber(const ExtMonFNALPixelId& id) const {
 
     unsigned res = (
-                    id.chip().sensor().plane() * sensor_.nxChips() * sensor_.nyChips()
-                    + id.chip().chipRow() * sensor_.nxChips() + id.chip().chipCol()
+                    id.chip().module().plane() * module_.nxChips() * module_.nyChips()
+                    + id.chip().chipRow() * module_.nxChips() + id.chip().chipCol()
                     ) * chip_.nPixels()
       +
       (
@@ -46,13 +46,28 @@ namespace mu2e {
 
     unsigned int globalChipNumber = pix.number() / chip_.nPixels();
 
-    ExtMonFNALSensorId sid(globalChipNumber/(sensor_.nxChips() * sensor_.nyChips()));
+    // WARNING: this code will break if any geometry changes are made.  It assumes 4 planes in the upstream and downstream stack.  
+    // All upstream planes have 2 modules and downstream planes have 3 modules.
+   
+ unsigned int globalModuleNumber = (globalChipNumber + 1) / 2;
+    unsigned int globalPlaneNumber = globalModuleNumber <= 8 ? ( (globalModuleNumber + 1) / 2 ) : ( (globalModuleNumber / 3) + 2 );
+    
+    mu2e::ExtMonFNALModuleId::Rotation rot = globalPlaneNumber <= 4 ? 
+      mu2e::ExtMonFNALModuleId::Rotation::UP : ( globalModuleNumber % 3 == 2 ? 
+                                                 mu2e::ExtMonFNALModuleId::Rotation::DOWN : mu2e::ExtMonFNALModuleId::Rotation::UP );
+   
+    mu2e::ExtMonFNALModuleId::Side side = globalPlaneNumber <= 4 ? 
+      ( globalModuleNumber % 2 == 1 ? 
+        mu2e::ExtMonFNALModuleId::Side::FRONT : mu2e::ExtMonFNALModuleId::Side::BACK ) : ( globalModuleNumber % 3 == 1 ? 
+                                                                                           mu2e::ExtMonFNALModuleId::Side::BACK : mu2e::ExtMonFNALModuleId::Side::FRONT );
+    
+    ExtMonFNALModuleId mid(globalPlaneNumber, side, rot, globalModuleNumber);
 
-    unsigned int chipInSensorNumber = globalChipNumber % (sensor_.nxChips() * sensor_.nyChips());
-    unsigned int chipRow = chipInSensorNumber / sensor_.nxChips();
-    unsigned int chipCol = chipInSensorNumber % sensor_.nxChips();
+    unsigned int chipInModuleNumber = globalChipNumber % (module_.nxChips() * module_.nyChips());
+    unsigned int chipRow = chipInModuleNumber / module_.nxChips();
+    unsigned int chipCol = chipInModuleNumber % module_.nxChips();
 
-    ExtMonFNALChipId cid(sid, chipCol, chipRow);
+    ExtMonFNALChipId cid(mid, chipCol, chipRow);
 
     unsigned int pixInChip = pix.number() % chip_.nPixels();
     unsigned int pixRow = pixInChip / chip_.nColumns();

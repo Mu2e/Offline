@@ -9,7 +9,7 @@
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensor.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
 
 namespace mu2e {
 
@@ -17,12 +17,12 @@ namespace mu2e {
   public:
     typedef std::vector<ExtMonFNALPixelId>  Collection;
 
-    PixelNeighbors(const ExtMonFNALSensor& sensor, const ExtMonFNALPixelChip& chip);
+    PixelNeighbors(const ExtMonFNALModule& module, const ExtMonFNALPixelChip& chip);
 
     Collection neighbors(const ExtMonFNALPixelId& id) const;
 
   private:
-    ExtMonFNALSensor sensor_;
+    ExtMonFNALModule module_;
     ExtMonFNALPixelChip chip_;
   };
 

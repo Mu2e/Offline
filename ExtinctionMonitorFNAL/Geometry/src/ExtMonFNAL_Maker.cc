@@ -20,48 +20,35 @@ namespace mu2e {
   namespace ExtMonFNAL {
 
     //================================================================
-    ExtMonFNALSensorStack ExtMonMaker::readStack(const SimpleConfig& config,
+    ExtMonFNALPlaneStack ExtMonMaker::readStack(const SimpleConfig& config,
                                                  const std::string& prefix,
                                                  const CLHEP::Hep3Vector& refPointInMu2e,
                                                  const CLHEP::HepRotation& rotationInMu2e
                                                  )
     {
-      ExtMonFNALSensorStack st;
-      st.m_stackRefPointInMu2e = refPointInMu2e;
-      st.m_stackRotationInMu2e = rotationInMu2e;
-      st.m_coordinateRotationInMu2e = st.m_stackRotationInMu2e.inverse();
+      ExtMonFNALPlaneStack pt;
+      pt.m_stackRefPointInMu2e = refPointInMu2e;
+      pt.m_stackRotationInMu2e = rotationInMu2e;
+      pt.m_coordinateRotationInMu2e = pt.m_stackRotationInMu2e.inverse();
 
-      config.getVectorDouble(prefix+".sensor_zoffset", st.m_sensor_zoffset, -1);
-      config.getVectorDouble(prefix+".sensor_xoffset", st.m_sensor_xoffset, st.m_sensor_zoffset.size());
-      config.getVectorDouble(prefix+".sensor_yoffset", st.m_sensor_yoffset, st.m_sensor_zoffset.size());
-      config.getVectorDouble(prefix+".readout_halfdz", st.m_readout_halfdz, st.m_sensor_zoffset.size());
+      config.getVectorDouble(prefix+".plane_zoffset", pt.m_plane_zoffset, -1);
+      config.getVectorDouble(prefix+".plane_xoffset", pt.m_plane_xoffset, -1);
+      config.getVectorDouble(prefix+".plane_yoffset", pt.m_plane_yoffset, -1);
+      config.getVectorDouble(prefix+".module_zoffset", pt.m_module_zoffset, -1);
+      config.getVectorDouble(prefix+".module_xoffset", pt.m_module_xoffset, -1);
+      config.getVectorDouble(prefix+".module_yoffset", pt.m_module_yoffset, -1);
+      config.getVectorDouble(prefix+".motherTransverseHalfSize", pt.m_motherTransverseHalfSize, -1);
+      pt.m_motherStartZ = config.getDouble(prefix+".motherStartZ"); 
+      pt.m_motherEndZ = config.getDouble(prefix+".motherEndZ");
 
-      if(!boost::is_sorted(st.m_sensor_zoffset)) {
+      if(!boost::is_sorted(pt.m_plane_zoffset)) {
         throw cet::exception("GEOM")<<"ExtMonFNAL_Maker: ERROR: "
-                                    <<prefix<<".sensor_zoffset must be sorted in the ascending order"
-                                    <<"\n"
-          ;
+                                    <<prefix<<".plane_zoffset must be sorted in the ascending order"
+                                    <<"\n";
       }
 
       //----------------------------------------------------------------
-      // Test material plates
-
-      config.getVectorString(prefix+".testMaterial.materials", st.m_testMaterialNames);
-      if(!st.m_testMaterialNames.empty()) {
-        const double testMaterialThickness = config.getDouble(prefix+".testMaterial.thickness");
-        const double testMaterialXY = config.getDouble(prefix+".testMaterial.halfsize");
-
-        st.m_testMaterialHalfSize.resize(3);
-        st.m_testMaterialHalfSize[0] = testMaterialXY;
-        st.m_testMaterialHalfSize[1] = testMaterialXY;
-        st.m_testMaterialHalfSize[2] = testMaterialThickness/2;
-
-        st.distanceToTestMaterials_ = config.getDouble(prefix+".testMaterial.distanceToStack");
-        st.m_testMaterialPitch = testMaterialThickness + config.getDouble(prefix+".testMaterial.spacing");
-      }
-
-      //----------------------------------------------------------------
-      return st;
+      return pt;
     }
 
     //================================================================
@@ -72,8 +59,9 @@ namespace mu2e {
 
       std::unique_ptr<ExtMon> det(new ExtMon());
 
-      config.getVectorDouble("extMonFNAL.sensorHalfSize",  det->sensor_.halfSize_, 3);
-
+      config.getVectorDouble("extMonFNAL.planeHalfSize",  det->plane_.halfSize_, 3);
+      config.getVectorDouble("extMonFNAL.sensorHalfSize", det->module_.sensorHalfSize_, -1);
+      config.getVectorDouble("extMonFNAL.chipHalfSize", det->module_.chipHalfSize_, -1);
       //----------------------------------------------------------------
       // The upstream stack
 
