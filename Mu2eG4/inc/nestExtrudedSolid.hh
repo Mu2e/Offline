@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4ExtrudedSolid inside a logical volume.
 //
-// $Id: nestExtrudedSolid.hh,v 1.5 2011/09/29 22:47:38 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/09/29 22:47:38 $
+// $Id: nestExtrudedSolid.hh,v 1.6 2013/06/28 19:51:12 wieschie Exp $
+// $Author: wieschie $
+// $Date: 2013/06/28 19:51:12 $
 //
 // Original author Rob Kutschke
 //
@@ -22,8 +22,10 @@ class G4CSGSolid;
 
 // G4 includes
 #include "G4ThreeVector.hh"
+#include "G4TwoVector.hh"
 #include "G4RotationMatrix.hh"
 #include "G4Colour.hh"
+#include "G4ExtrudedSolid.hh"
 
 
 namespace mu2e {
@@ -51,6 +53,23 @@ namespace mu2e {
                                 double hz,
                                 std::vector<double> &x,
                                 std::vector<double> &y,
+                                G4Material* material,
+                                G4RotationMatrix const* rot,
+                                const G4ThreeVector& offset,
+                                VolumeInfo const & parent,
+                                int copyNo,
+                                bool const isVisible,
+                                G4Colour const color,
+                                bool const forceSolid,
+                                bool const forceAuxEdgeVisible,
+                                bool const placePV,
+                                bool const doSurfaceCheck
+                                );
+
+  // Using VolumeInfo object and the zsections version of the solid constructor
+  VolumeInfo nestExtrudedSolid (std::string const& name,
+                                const std::vector<G4TwoVector>& polygon,
+                                const std::vector<G4ExtrudedSolid::ZSection>& zsections,
                                 G4Material* material,
                                 G4RotationMatrix const* rot,
                                 const G4ThreeVector& offset,
