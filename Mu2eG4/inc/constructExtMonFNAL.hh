@@ -6,6 +6,8 @@
 #include <string>
 
 #include "G4Helper/inc/VolumeInfo.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
+#include "G4ThreeVector.hh"
 
 namespace CLHEP { class HepRotation; }
 
@@ -34,6 +36,30 @@ namespace mu2e {
                                  const CLHEP::HepRotation& parentRotationInMu2e,
                                  const SimpleConfig& config
                                  );
+
+  void constructExtMonFNALPlanes(const VolumeInfo& mother,
+                                 const ExtMonFNALModule& module,
+                                 const ExtMonFNALPlane& plane,
+                                 const ExtMonFNALPlaneStack& stack,
+                                 const std::string& volNameSuffix,
+                                 const SimpleConfig& config,
+                                 bool const forceAuxEdgeVisible,
+                                 bool const doSurfaceCheck,
+                                 bool const placePV
+                                ); 
+
+  void constructExtMonFNALModules(const VolumeInfo& mother,
+                                  const G4ThreeVector& offset,
+                                  unsigned iplane,
+                                  const ExtMonFNALModule& module,
+                                  const ExtMonFNALPlane& plane,
+                                  const ExtMonFNALPlaneStack& stack,
+                                  const std::string& volNameSuffix,
+                                  const SimpleConfig& config,
+                                  bool const forceAuxEdgeVisible,
+                                  bool const doSurfaceCheck,
+                                  bool const placePV
+                                  );
 
 }
 
