@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.158 2013/06/07 17:43:30 knoepfel Exp $
+// $Id: Mu2eWorld.cc,v 1.159 2013/06/28 19:26:33 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/06/07 17:43:30 $
+// $Date: 2013/06/28 19:26:33 $
 //
 // Original author Rob Kutschke
 //
@@ -443,11 +443,11 @@ namespace mu2e {
     psVacua.push_back( _helper->locateVolInfo("PSVacuum").logical );
 
     vector<G4LogicalVolume*> tsVacua;
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS1Vacuum").logical );
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS2Vacuum").logical );
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS3Vacuum").logical );
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS4Vacuum").logical );
-    tsVacua.push_back( _helper->locateVolInfo("ToyTS5Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("TS1Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("TS2Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("TS3Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("TS4Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("TS5Vacuum").logical );
 
     // We may make separate G4UserLimits objects per logical volume but we choose not to.
     //_stepLimits.push_back( G4UserLimits(maxStep) );

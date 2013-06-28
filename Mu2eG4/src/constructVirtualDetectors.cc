@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.51 2013/06/07 17:43:30 knoepfel Exp $
+// $Id: constructVirtualDetectors.cc,v 1.52 2013/06/28 19:27:59 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/06/07 17:43:30 $
+// $Date: 2013/06/28 19:27:59 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -104,9 +104,10 @@ namespace mu2e {
     for( int vdId=VirtualDetectorId::Coll1_In; 
          vdId<=VirtualDetectorId::Coll1_Out; 
          ++vdId) if( vdg->exist(vdId) ) {
-        VolumeInfo const & parent = _helper->locateVolInfo("ToyTS1Vacuum");
+        VolumeInfo const & parent = _helper->locateVolInfo("TS1Vacuum");
         if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  
+               << " at " << vdg->getGlobal(vdId) << endl;
         }
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
                                   vdParams, vacuumMaterial, 0,
@@ -126,9 +127,10 @@ namespace mu2e {
     for( int vdId=VirtualDetectorId::Coll31_In;
          vdId<=VirtualDetectorId::Coll32_Out;
          ++vdId) if( vdg->exist(vdId) ) {
-        VolumeInfo const & parent = _helper->locateVolInfo("ToyTS3Vacuum");
+        VolumeInfo const & parent = _helper->locateVolInfo("TS3Vacuum");
         if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) 
+               << " at " << vdg->getGlobal(vdId) << endl;
         }
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
                                   vdParams, vacuumMaterial, 0,
@@ -148,9 +150,10 @@ namespace mu2e {
     for( int vdId=VirtualDetectorId::Coll5_In; 
          vdId<=VirtualDetectorId::Coll5_Out; 
          ++vdId) if( vdg->exist(vdId) ) {
-        VolumeInfo const & parent = _helper->locateVolInfo("ToyTS5Vacuum");
+        VolumeInfo const & parent = _helper->locateVolInfo("TS5Vacuum");
         if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  
+               << " at " << vdg->getGlobal(vdId) <<  " parent: " << parent.centerInMu2e() << endl;
         }
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
                                   vdParams, vacuumMaterial, 0,
@@ -177,10 +180,10 @@ namespace mu2e {
       // the detector is on the outer surface of the coll5
       // it is thin cylinder, NOT a thin disk
 
-      VolumeInfo const & parent = _helper->locateVolInfo("ToyTS5Vacuum");
+      VolumeInfo const & parent = _helper->locateVolInfo("TS5Vacuum");
 
       double coll5OuterRadius    = _config.getDouble("coll5.outerRadius");
-      double coll5HalfLength     = beamg->getTS().getColl5().getHalfLength();
+      double coll5HalfLength     = beamg->getTS().getColl5().halfLength();
 
       TubsParams  vdParamsColl5OutSurf(coll5OuterRadius - 2.*vdHalfLength,
                                        coll5OuterRadius,

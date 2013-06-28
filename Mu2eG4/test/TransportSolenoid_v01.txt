@@ -1,0 +1,218 @@
+// A geometric rendering of the TS, cyrostats+coils, vacuum
+double ts.rVac           =  250.; //
+double ts.rTorus         = 2929.; //
+string ts.materialName   = "StainlessSteel";
+string ts.insideMaterialName = "DSVacuum";
+
+// Cryostat
+// - radii
+double ts.ts1in.rOut       = 270.; //
+double ts.ts2in.rOut       = 270.; //
+double ts.ts3in.rOut       = 270.; //
+double ts.ts4in.rOut       = 270.; //
+double ts.ts5in.rOut       = 270.; //
+
+double ts.ts1out.rIn       = 705.0; //
+double ts.ts2out.rIn       = 812.5; //
+double ts.ts3out.rIn       = 812.5; //
+double ts.ts4out.rIn       = 812.5; //
+double ts.ts5out.rIn       = 812.5; //
+
+double ts.ts1out.rOut      = 725.0; //
+double ts.ts2out.rOut      = 832.5; //
+double ts.ts3out.rOut      = 832.5; //
+double ts.ts4out.rOut      = 832.5; //
+double ts.ts5out.rOut      = 832.5; //
+
+double ts.tsUendWall1.rIn   = 250.; //
+double ts.tsUendWall1.rOut  = 725.; //
+double ts.tsUendWall1.halfLength = 15.; //
+
+double ts.tsUendWall2.rIn   = 725.; //
+double ts.tsUendWall2.rOut  = 832.5.; //
+double ts.tsUendWall2.halfLength = 15.; //
+
+double ts.tsDendWall.rOut       = 832.5; //
+double ts.tsDendWall.halfLength = 15.; //
+
+double ts.ts1.halfLength  = 522.5; //
+double ts.ts5.halfLength  = 625.;  //
+
+// Parameters for TS volumes.
+// double toyTS.rVac        =  240.;          // Outer radius of vacuum volume
+// double toyTS.rCryo       =  700.;          // Outer radius of cryostat
+// double toyTS.rTorus      = 2929.;          // Bend radius of the torus
+// double toyTS1.halfLength =  500.;
+// double toyTS5.halfLength =  500.;
+// bool   toyTS.visible        = true;
+// bool   toyTS.solid          = false;
+
+bool ts.cryo.visible = true;
+bool ts.cryo.solid   = false;
+
+// PBAR Absorber
+bool   pbar.visible = true;
+bool   pbar.solid   = false;
+int    pbar.verbosityLevel = 0;
+// double pbar.Type = "wedge"; // default is "disk"
+double pbar.halfLength = 180.0e-3; // Use this value for the new default
+string pbar.materialName = "G4_Be";
+
+double pbarwedge.y0  = -10.;
+double pbarwedge.y1  = 239.; // Do not exceed toyTS.rVac
+double pbarwedge.dz0 = 0.001;// G4 does not like 0
+double pbarwedge.dz1 = 1.1;  // This makes total thickness changing
+                             // from 0.12 mm to 1.0 mm over the 
+                             // height of window
+// Collimators
+bool   coll.visible        = true;
+bool   coll.solid          = false;
+int    coll.verbosityLevel = 0;
+
+double coll1.halfLength = 500.0;
+// innerRadius1,2 describe the inner cone, which is a cyliner if r1==r2
+// r1 is at the smaller z
+double coll1.innerRadius1 = 150.0;
+double coll1.innerRadius2 = 150.0;
+double coll1.innerRadius3 = 160.0; 
+// r3 is outer cylinder inner radius; set it and r2 to 170mm and r1==150mm
+// and both materials to G4_Cu to get the previous setup
+string coll1.material1Name = "G4_C";
+string coll1.material2Name = "G4_Cu";
+
+double coll3.halfLength       = 400.0;
+double coll3.hole             = 50.0;
+string coll3.materialName     = "G4_Cu";
+double coll3.rotationAngle    = 0.0;
+double coll3.holeRadius       = 150.0;
+double coll3.holeHalfHeight   = 100.0;
+double coll3.holeDisplacement = 90.0;
+
+// coll5 is special; its "middle" is made out of "material"
+// its "outer/external" part, if any, is made out of "absorberMaterial"
+//
+
+double coll5.halfLength    = 500.0;
+double coll5.halfLengthU   =   0.0; // upstream insert; need to accomodate 2.*vdHalfLength in calc
+double coll5.halfLengthD   =   0.0; // downstream insert; halfLength - u -d >= 2.*vdHalfLength
+double coll5.outerRadius   = 240.0; // not to exceed toyTS.rVac
+double coll5.midRadius2    = 239.98; // not to exceed outerRadius - 2.*vdHalfLength
+double coll5.midRadius1    = 128.0; // not to be equal or exceed midRadius2; change materialName if needed
+double coll5.innerRadius   = 128.0; // not to exceed midRadius1
+string coll5.materialName = "G4_Cu";
+string coll5.absorberMaterialName = "Polyethylene092";
+
+// Muon degrader
+bool muondegrader.visible = true;
+bool muondegrader.solid   = false;
+bool muondegrader.build   = false;
+int  muondegrader.verbosityLevel = 0;
+string muondegrader.materialName = "Polyethylene0020";
+vector<double> muondegrader.R = {100,80,60};
+vector<double> muondegrader.DZB = {500.0,300.0,100.0};
+vector<double> muondegrader.DZT = { 50.0, 30.0, 10.0};
+vector<double> muondegrader.Phi = {0.5,0.2,0.2};
+
+// Coils
+// - TS1
+vector<double> ts1.coils.rIn       = { 405.0 , 405.0, 405.0 };
+vector<double> ts1.coils.rOut      = { 423.0 , 430.3, 444.9 };
+vector<double> ts1.coils.zLength   = { 172.55, 284.2, 162.4 };
+vector<double> ts1.coils.yRotAngle = {    0. ,   0. ,   0.  };
+
+// - TS2
+vector<double> ts2.coils.rIn       = 
+  { 
+    405.  , 405.  , 405.  , 405.  , 405.  , 405.  , 
+    405.  , 405.  , 405.  , 405.  , 405.  , 405.  , 
+    405.  , 405.  , 405.  , 405.  , 405.  , 405.  
+  };
+vector<double> ts2.coils.rOut      = 
+  { 
+    448.55, 448.55, 448.55, 463.15, 463.15, 463.15,
+    463.15, 466.80, 466.80, 466.80, 466.80, 470.45, 
+    470.45, 470.45, 470.45, 470.45, 477.75, 448.55
+  };
+vector<double> ts2.coils.zLength   = 
+  { 
+    172.55, 172.55, 172.55, 172.55, 172.55, 172.55, 
+    172.55, 172.55, 172.55, 172.55, 172.55, 172.55, 
+    172.55, 172.55, 172.55, 172.55, 172.55, 172.55
+  };
+vector<double> ts2.coils.yRotAngle =
+  { 
+      0.0,  -5.7, -10.5, -15.8, -21.3, -26.8,
+    -32.3, -37.8, -43.3, -48.7, -54.2, -59.7,
+    -65.2, -70.7, -76.2, -81.5, -86.3, -90.0
+  };
+
+// - TS3
+vector<double> ts3.coils.rIn       = 
+  {
+    465.  , 465.  , 465.  , 465.  , 
+    465.  , 465.  , 465.  , 465.  
+  };
+vector<double> ts3.coils.rOut      =
+  {
+    523.15, 512.20, 519.50, 621.70,
+    618.05, 512.20, 515.85, 515.85
+  };
+vector<double> ts3.coils.zLength   =
+  {
+    172.55,  81.20, 172.55,  81.20,
+     81.20, 172.55,  81.20, 172.55
+  };
+vector<double> ts3.coils.yRotAngle = 
+  {
+    -90.  , -90.  , -90.  , -90.  , 
+    -90.  , -90.  , -90.  , -90.  
+  };
+
+// - TS4
+vector<double> ts4.coils.rIn       = 
+  { 
+    405.  , 405.  , 405.  , 405.  , 405.  , 405.  , 
+    405.  , 405.  , 405.  , 405.  , 405.  , 405.  , 
+    405.  , 405.  , 405.  , 405.  , 405.  , 405.  
+  };
+vector<double> ts4.coils.rOut      = 
+  {
+    441.25, 448.55, 448.55, 459.50, 459.50, 459.50,
+    459.50, 463.15, 463.15, 463.15, 463.15, 463.15,
+    463.15, 463.15, 463.15, 455.85, 455.85, 444.90
+  };
+vector<double> ts4.coils.zLength   = 
+  { 
+    172.55, 172.55, 172.55, 172.55, 172.55, 172.55, 
+    172.55, 172.55, 172.55, 172.55, 172.55, 172.55, 
+    172.55, 172.55, 172.55, 172.55, 172.55, 172.55
+  };
+vector<double> ts4.coils.yRotAngle = 
+  { 
+    -90.0, -86.3, -81.5, -76.2, -70.7, -65.2, 
+    -59.7, -54.2, -48.7, -43.3, -37.8, -32.3, 
+    -26.8, -21.3, -15.8, -10.5,  -5.7,   0.0
+  };
+
+// - TS5
+vector<double> ts5.coils.rIn      = 
+  {
+    405.  , 405.  , 405.  , 405.  , 405.  
+  };
+vector<double> ts5.coils.rOut     = 
+  {
+    430.30, 426.65, 419.35, 415.70, 412.05
+  };
+vector<double> ts5.coils.zLength   = 
+  {
+    172.55, 172.55, 172.55, 172.55, 172.55
+  };
+vector<double> ts5.coils.yRotAngle = 
+  {
+      0.  ,   0.  ,   0.  ,   0.  ,   0.  
+  };
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

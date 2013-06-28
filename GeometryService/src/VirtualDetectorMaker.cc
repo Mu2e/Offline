@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.21 2013/06/07 17:43:30 knoepfel Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.22 2013/06/28 19:26:33 knoepfel Exp $
 // $Author: knoepfel $
 //
 
@@ -59,10 +59,10 @@ namespace mu2e {
       // collimator 1, which is placed inside TS1.
 
       //double ts1HL   = bg->getTS().getTS1().getHalfLength();
-      double coll1HL = bg->getTS().getColl1().getHalfLength();
+      double coll1HL = bg->getTS().getColl1().halfLength();
 
-      HepRotation *ts1rot = bg->getTS().getTS1().getRotation();
-      Hep3Vector   ts1pos = bg->getTS().getTS1().getGlobal();
+      HepRotation *ts1rot = bg->getTS().getTS1_in().getRotation();
+      Hep3Vector   ts1pos = bg->getTS().getTS1_in().getGlobal();
       Hep3Vector coll1pos = bg->getTS().getColl1().getLocal();
       Hep3Vector deltaZ1(0,0,coll1HL-vdHL);
 
@@ -75,11 +75,11 @@ namespace mu2e {
       // around two sections of collimator 3
 
       //double ts3HL   = bg->getTS().getTS1().getHalfLength();
-      double coll31HL = bg->getTS().getColl31().getHalfLength();
-      double coll32HL = bg->getTS().getColl32().getHalfLength();
+      double coll31HL = bg->getTS().getColl31().halfLength();
+      double coll32HL = bg->getTS().getColl32().halfLength();
 
-      HepRotation *ts3rot = bg->getTS().getTS3().getRotation();
-      Hep3Vector   ts3pos = bg->getTS().getTS3().getGlobal();
+      HepRotation *ts3rot = bg->getTS().getTS3_in().getRotation();
+      Hep3Vector   ts3pos = bg->getTS().getTS3_in().getGlobal();
 
       Hep3Vector coll31pos = bg->getTS().getColl31().getLocal();
       Hep3Vector coll32pos = bg->getTS().getColl32().getLocal();
@@ -99,11 +99,14 @@ namespace mu2e {
       // 5, which is placed inside TS5.
 
       //double ts5HL   = bg->getTS().getTS5().getHalfLength();
-      double coll5HL = bg->getTS().getColl5().getHalfLength();
+      double coll5HL = bg->getTS().getColl5().halfLength();
 
-      HepRotation *ts5rot = bg->getTS().getTS5().getRotation();
-      Hep3Vector   ts5pos = bg->getTS().getTS5().getGlobal();
+      HepRotation *ts5rot = bg->getTS().getTS5_in().getRotation();
+      Hep3Vector   ts5pos = bg->getTS().getTS5_in().getGlobal();
       Hep3Vector coll5pos = bg->getTS().getColl5().getLocal();
+
+      cout << " TS 5 pos: " << ts5pos << "   Coll 5 pos: " << coll5pos << endl;
+
       Hep3Vector deltaZ5(0,0,coll5HL-vdHL);
 
       vd->addVirtualDetector( VirtualDetectorId::Coll5_In,

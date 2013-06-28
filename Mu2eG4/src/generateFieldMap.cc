@@ -49,7 +49,7 @@ namespace mu2e {
 
     GeomHandle<Beamline> beamg;
     double R = beamg->getTS().torusRadius();
-    double L = beamg->getTS().getTS3().getHalfLength();
+    double L = beamg->getTS().getTS3_in().getHalfLength();
     double Lturn = L + 3.14159/2*R;
 
     for( int i=-1100; i<2200; i++ ) {

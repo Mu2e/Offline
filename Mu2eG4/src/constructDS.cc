@@ -1,9 +1,9 @@
 //
 // Free function to create DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.14 2013/06/18 19:21:12 knoepfel Exp $
+// $Id: constructDS.cc,v 1.15 2013/06/28 19:26:33 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/06/18 19:21:12 $
+// $Date: 2013/06/28 19:26:33 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -144,7 +144,7 @@ namespace mu2e {
     // - upstream face
     GeomHandle<Beamline> beamg;
     double dsFrontZ0 = dsP.z() - ds->halfLength() + ds->frontHalfLength();
-    TubsParams    dsFrontParams  ( beamg->getTS().outerRadius(), dsInnerCryoParams.innerRadius(), ds->frontHalfLength() );
+    TubsParams    dsFrontParams  ( beamg->getTS().getTS5_out().rOut(), dsInnerCryoParams.innerRadius(), ds->frontHalfLength() );
     G4ThreeVector dsFrontPosition( dsP.x(), dsP.y(), dsFrontZ0);
 
     nestTubs( "DSFront",
@@ -254,8 +254,8 @@ namespace mu2e {
 
     // DS vacuum volumes
     G4Material* vacuumMaterial = findMaterialOrThrow( ds->vacuumMaterial() );
-    TubsParams ds1VacParams    ( beamg->getTS().outerRadius(), ds->rIn1(), ds->vac_halfLengthDs1()   );
-    TubsParams ds2VacParams    ( 0.                          , ds->rIn1(), ds->vac_halfLengthDs2()   );
+    TubsParams ds1VacParams    ( beamg->getTS().getTS5_out().rOut(), ds->rIn1(), ds->vac_halfLengthDs1()   );
+    TubsParams ds2VacParams    ( 0.                               , ds->rIn1(), ds->vac_halfLengthDs2()   );
 
     // Compute/set positions of vacuum volumes in Mu2e coordinates.
     // - DS position is fixed by TS torus radius, and half lengths of 

@@ -56,7 +56,7 @@ namespace mu2e {
     ds->_ds1HalfLength      = c.getDouble("ds1.halfLength");
     ds->_ds2HalfLength      = c.getDouble("ds2.halfLength");
     ds->_locationDs23Split  =  bl.getTS().torusRadius() +
-      2.*bl.getTS().getTS5().getHalfLength() +
+      2.*bl.getTS().getTS5_in().getHalfLength() +
       2.*ds->vac_halfLengthDs2();
 
     // Position is computed on the fly, relative to the TS torus
@@ -64,7 +64,7 @@ namespace mu2e {
     // specified0; assumption is made that the front frace is flush
     // with the edge of the DS
     double dsPosZ      = bl.getTS().torusRadius() +
-      2.*bl.getTS().getTS5().getHalfLength() -
+      2.*bl.getTS().getTS5_in().getHalfLength() -
       2.*ds->vac_halfLengthDs1()-
       2.*ds->frontHalfLength()+
       ds->halfLength();

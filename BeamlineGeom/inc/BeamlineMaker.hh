@@ -4,9 +4,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.hh,v 1.6 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: BeamlineMaker.hh,v 1.7 2013/06/28 19:26:33 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/06/28 19:26:33 $
 //
 // Original author Peter Shanahan
 //
@@ -29,7 +29,10 @@ namespace mu2e {
 
   private:
     static void BuildBeamline(const SimpleConfig&, Beamline*);
-    static void BuildTS(const SimpleConfig&, Beamline*);
+    static void BuildTSCryostat(const SimpleConfig&, Beamline*);
+    static void BuildTSCoils(const SimpleConfig&, Beamline*);
+    static void BuildTSCollimators(const SimpleConfig&, TransportSolenoid* );
+    static void BuildPbarWindow(const SimpleConfig&, TransportSolenoid* );
   };
 
 }  //namespace mu2e

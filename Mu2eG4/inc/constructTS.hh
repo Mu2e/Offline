@@ -3,9 +3,9 @@
 //
 // Free function to create  Transport Solenoid
 //
-// $Id: constructTS.hh,v 1.4 2012/06/05 16:19:33 genser Exp $
-// $Author: genser $
-// $Date: 2012/06/05 16:19:33 $
+// $Id: constructTS.hh,v 1.5 2013/06/28 19:26:33 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/06/28 19:26:33 $
 //
 // Original author KLG
 //
@@ -14,10 +14,15 @@ namespace mu2e {
 
   class VolumeInfo;
   class SimpleConfig;
+  class Beamline;
 
-  void constructTS(VolumeInfo   const & parent,
-                   SimpleConfig const & _config
-                   );
+  void constructTS         ( VolumeInfo const& p, SimpleConfig const& c);
+
+  void constructCryostat   ( VolumeInfo const& p, SimpleConfig const& c, Beamline const& bl);
+  void constructCoils      ( VolumeInfo const& p, SimpleConfig const& c, Beamline const& bl);
+  void constructCollimators( VolumeInfo const& p, SimpleConfig const& c, Beamline const& bl);
+  void constructDegrader   ( VolumeInfo const& p, SimpleConfig const& c, Beamline const& bl);
+  void constructPbarWindow ( VolumeInfo const& p, SimpleConfig const& c, Beamline const& bl);
 
 }
 
