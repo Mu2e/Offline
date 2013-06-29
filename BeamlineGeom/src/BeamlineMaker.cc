@@ -2,9 +2,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.12 2013/06/28 19:26:33 knoepfel Exp $
+// $Id: BeamlineMaker.cc,v 1.13 2013/06/29 00:04:29 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/06/28 19:26:33 $
+// $Date: 2013/06/29 00:04:29 $
 //
 // Original author Peter Shanahan
 //
@@ -171,6 +171,8 @@ namespace mu2e {
   void BeamlineMaker::BuildTSCoils (const SimpleConfig& c, Beamline* bl ) {
 
     TransportSolenoid * ts ( &bl->_ts );
+
+    ts->_coilMaterial = c.getString("ts.coils.material");
 
     // Loop over TS regions
     for ( int iTS  = TransportSolenoid::TS1 ; iTS <= TransportSolenoid::TS5 ; iTS++ )
