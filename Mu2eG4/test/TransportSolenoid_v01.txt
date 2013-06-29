@@ -114,6 +114,11 @@ vector<double> muondegrader.DZT = { 50.0, 30.0, 10.0};
 vector<double> muondegrader.Phi = {0.5,0.2,0.2};
 
 // Coils
+bool ts.coils.visible = true;
+bool ts.coils.solid   = false;
+int  ts.coils.verbosityLevel = 0;
+string ts.coils.material = "SCCable";
+
 // - TS1
 vector<double> ts1.coils.rIn       = { 405.0 , 405.0, 405.0 };
 vector<double> ts1.coils.rOut      = { 423.0 , 430.3, 444.9 };

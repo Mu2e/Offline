@@ -77,6 +77,7 @@ namespace mu2e {
     TorusSection    const& getTS4_out() const { return _ts4out; }
 
     // Coils 
+    std::string coil_material() const { return _coilMaterial; }
     unsigned getNCoils(int i) const { return _nCoils.at(i); }
     const vector_unique_ptr<Coil>& getTSCoils(int i) const      
     { return _coilMap.find(i)->second; }
@@ -126,6 +127,7 @@ namespace mu2e {
 
 
     // Coils
+    std::string _coilMaterial;
     std::map<int,vector_unique_ptr<Coil>> _coilMap;
     const std::vector<unsigned> _nCoils { 3, 18, 8, 18, 5 };
     

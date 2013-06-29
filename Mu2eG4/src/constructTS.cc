@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.16 2013/06/28 19:26:33 knoepfel Exp $
+// $Id: constructTS.cc,v 1.17 2013/06/29 18:37:51 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/06/28 19:26:33 $
+// $Date: 2013/06/29 18:37:51 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -401,12 +401,14 @@ namespace mu2e {
                        SimpleConfig const& config,
                        Beamline const& bl ) {
 
-    int const verbosityLevel = config.getInt("coll.verbosityLevel", 0);
+    int const verbosityLevel = config.getInt("ts.coils.verbosityLevel", 0);
+    bool const visible       = config.getBool("ts.coils.visible",true);
+    bool const solid         = config.getBool("ts.coils.solid",false);
     bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
     bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
 
-    //    G4Material* coilMaterial    = findMaterialOrThrow(ts->coilMaterial());
+    G4Material* coilMaterial = findMaterialOrThrow( bl.getTS().coil_material() );
 
     // Construct TS coils
     for ( unsigned iTS = TransportSolenoid::TS1 ; iTS <= TransportSolenoid::TS5 ; iTS++ ) {
@@ -417,14 +419,14 @@ namespace mu2e {
         
         nestTubs( coilname.str(),
                   TubsParams( coil->rIn(), coil->rOut(), coil->halfLength() ),
-                  findMaterialOrThrow("G4_Al"),
+                  coilMaterial,
                   coil->getRotation(),
                   coil->getGlobal()-parent.centerInMu2e(),
                   parent,
                   0,
-                  true,
+                  visible,
                   G4Color::Green(),
-                  true,
+                  solid,
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck
