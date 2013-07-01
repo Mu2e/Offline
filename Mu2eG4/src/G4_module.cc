@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.67 2013/05/31 18:06:52 gandr Exp $
+// $Id: G4_module.cc,v 1.68 2013/07/01 20:16:10 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:06:52 $
+// $Date: 2013/07/01 20:16:10 $
 //
 // Original author Rob Kutschke
 //
@@ -46,6 +46,7 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/generateFieldMap.hh"
 #include "SeedService/inc/SeedService.hh"
+#include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -144,6 +145,8 @@ namespace mu2e {
     PhysicsProcessInfo _processInfo;
     bool _printPhysicsProcessSummary;
 
+    SimParticleCollectionPrinter _simParticlePrinter;
+
     SensitiveDetectorHelper _sensitiveDetectorHelper;
     ExtMonFNALPixelSD       *_extMonFNALPixelSD;
 
@@ -179,6 +182,7 @@ namespace mu2e {
     _physVolHelper(),
     _processInfo(),
     _printPhysicsProcessSummary(false),
+    _simParticlePrinter(pSet.get<fhicl::ParameterSet>("SimParticlePrinter", SimParticleCollectionPrinter::defaultPSet())),
     _sensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
     _extMonFNALPixelSD(),
     _tvdOutputName(StepInstanceName::timeVD),
@@ -449,6 +453,8 @@ namespace mu2e {
 
     _diagnostics.fillPA(_sensitiveDetectorHelper.steps(StepInstanceName::protonabsorber) ?
                         &_sensitiveDetectorHelper.steps(StepInstanceName::protonabsorber).ref() : nullptr );
+    
+    _simParticlePrinter.print(std::cout, *simParticles);
 
     // Add data products to the event.
     event.put(std::move(g4stat));
