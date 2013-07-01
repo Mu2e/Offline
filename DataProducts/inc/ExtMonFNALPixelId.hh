@@ -3,9 +3,9 @@
 
 // Identifier of a silicon pixel in Mu2e ExtMonFNAL detector.
 //
-// $Id: ExtMonFNALPixelId.hh,v 1.2 2012/08/28 05:02:51 gandr Exp $
+// $Id: ExtMonFNALPixelId.hh,v 1.3 2013/07/01 06:52:13 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/28 05:02:51 $
+// $Date: 2013/07/01 06:52:13 $
 //
 // Original author Andrei Gaponenko
 

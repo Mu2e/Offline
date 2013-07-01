@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.17 2013/05/31 18:15:53 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/05/31 18:15:53 $
+// $Id: classes.h,v 1.18 2013/07/01 06:52:13 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/07/01 06:52:13 $
 //
 // Original author Rob Kutschke
 //

@@ -2,9 +2,9 @@
 #
 # Script to build the files found in this directory.
 #
-# $Id: SConscript,v 1.3 2013/03/18 18:16:33 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/03/18 18:16:33 $
+# $Id: SConscript,v 1.4 2013/07/01 06:52:13 gandr Exp $
+# $Author: gandr $
+# $Date: 2013/07/01 06:52:13 $
 #
 # Original author Rob Kutschke.
 #

@@ -4,9 +4,9 @@
 // Sequential number of a silicon pixel in Mu2e ExtMonFNAL detector.
 // Zero based.
 //
-// $Id: ExtMonFNALPixelDenseId.hh,v 1.1 2012/08/28 05:05:27 gandr Exp $
+// $Id: ExtMonFNALPixelDenseId.hh,v 1.2 2013/07/01 06:52:13 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/28 05:05:27 $
+// $Date: 2013/07/01 06:52:13 $
 //
 // Original author Andrei Gaponenko
 

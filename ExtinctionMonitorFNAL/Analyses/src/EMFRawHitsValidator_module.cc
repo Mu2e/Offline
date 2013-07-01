@@ -1,3 +1,5 @@
+#if 0 /*exclude this file from compilation*/
+
 // Printout ExtMonFNAL raw hits
 //
 // Andrei Gaponenko, 2012
@@ -120,3 +122,5 @@ namespace mu2e {
 } // namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::EMFRawHitsValidator);
+
+#endif

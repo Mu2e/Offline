@@ -3,32 +3,32 @@
 
 // Identifier of a silicon chip in Mu2e ExtMonFNAL detector.
 //
-// $Id: ExtMonFNALChipId.hh,v 1.2 2012/08/28 05:02:51 gandr Exp $
+// $Id: ExtMonFNALChipId.hh,v 1.3 2013/07/01 06:52:13 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/28 05:02:51 $
+// $Date: 2013/07/01 06:52:13 $
 //
 // Original author Andrei Gaponenko
 
 #include <ostream>
 
-#include "DataProducts/inc/ExtMonFNALSensorId.hh"
+#include "DataProducts/inc/ExtMonFNALModuleId.hh"
 
 namespace mu2e {
 
   class ExtMonFNALChipId {
   public:
 
-    ExtMonFNALChipId(const ExtMonFNALSensorId& sensor, unsigned int chipCol, unsigned int chipRow);
+    ExtMonFNALChipId(const ExtMonFNALModuleId& module, unsigned int chipCol, unsigned int chipRow);
 
     // Default constructor should not be used by Mu2e code, but it is required by ROOT persistency
-    ExtMonFNALChipId() : sensor_(-1), chipCol_(), chipRow_() {}
+    ExtMonFNALChipId() : module_(), chipCol_(), chipRow_() {}
 
-    const ExtMonFNALSensorId& sensor() const { return sensor_; }
+    const ExtMonFNALModuleId& module() const { return module_; }
     unsigned int chipCol() const { return chipCol_; }
     unsigned int chipRow() const { return chipRow_; }
 
     bool operator==( ExtMonFNALChipId const& rhs) const{
-      return (sensor_ == rhs.sensor_)&&(chipRow_ == rhs.chipRow_)&&(chipCol_ == rhs.chipCol_);
+      return (module_ == rhs.module_)&&(chipRow_ == rhs.chipRow_)&&(chipCol_ == rhs.chipCol_);
     }
 
     bool operator!=( ExtMonFNALChipId const& rhs) const{
@@ -37,15 +37,15 @@ namespace mu2e {
 
     bool operator<( ExtMonFNALChipId const& rhs) const{
       return
-        (sensor_ < rhs.sensor_) ||
-        ((sensor_ == rhs.sensor_) && ((chipRow_ < rhs.chipRow_) ||
+        (module_ < rhs.module_) ||
+        ((module_ == rhs.module_) && ((chipRow_ < rhs.chipRow_) ||
                                       ((chipRow_ == rhs.chipRow_) && (chipCol_ < rhs.chipCol_))
                                       )
          );
     }
 
   private:
-    ExtMonFNALSensorId sensor_;
+    ExtMonFNALModuleId module_;
     unsigned int chipCol_;
     unsigned int chipRow_;
   };

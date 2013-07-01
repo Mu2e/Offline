@@ -312,7 +312,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector& startMom = extmon_->mu2eToExtMon_momentum(particle.startMomentum());
 
       // Make sure tha particle starts at a place where it can go through the whole detector
-      if((extmon_->up().sensor_zoffset().back() < startPos.z()) &&
+      if((extmon_->up().plane_zoffset().back() < startPos.z()) && /* FIXME: plane_zoffset plus a sensor offset */
          (startMom.z() < -1.) // <= FIXME: zero pz problematic for extrapolation
          ) {
 

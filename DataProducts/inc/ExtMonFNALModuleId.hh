@@ -10,18 +10,20 @@ namespace mu2e {
 
   class ExtMonFNALModuleId{
   public:
-    enum Side {FRONT, BACK}; // not using "enum class" because of scoping issues with L46 (inline ostream)
+    enum Side {FRONT, BACK};  // FRONT is upstream, BACK is downstream
+    enum Rotation {UP, DOWN}; // direction refers to placement of readout cables (ie. UP means end of module with cables points up)
     static const unsigned int NOPLANE = -1u;
 
-    explicit ExtMonFNALModuleId(unsigned int plane, Side side, unsigned int module) : plane_(plane), side_(side), module_(module) {}
+    explicit ExtMonFNALModuleId(unsigned int plane, Side side, Rotation rot, unsigned int module) : plane_(plane), side_(side), rot_(rot), module_(module) {}
 
     // zero based
     unsigned int plane() const { return plane_;}
     Side side() const { return side_; }
+    Rotation rot() const { return rot_; }
     unsigned int module() const { return module_;}
 
     bool operator==( ExtMonFNALModuleId const& rhs) const{
-      return (plane_ == rhs.plane_ && side_ == rhs.side_ && module_ == rhs.module_);
+      return (plane_ == rhs.plane_ && side_ == rhs.side_ && rot_ == rhs.rot_ && module_ == rhs.module_);
     }
 
     bool operator!=( ExtMonFNALModuleId const& rhs) const{
@@ -35,11 +37,12 @@ namespace mu2e {
     }
 
     // Default constructor is required by ROOT persistency
-    ExtMonFNALModuleId() : plane_(NOPLANE), side_(FRONT), module_() {}
+    ExtMonFNALModuleId() : plane_(NOPLANE), side_(FRONT), rot_(UP), module_() {}
 
   private:
     unsigned int plane_;
     Side side_;
+    Rotation rot_;
     unsigned int module_;
   };
 
@@ -51,8 +54,17 @@ namespace mu2e {
     case (BACK): side = "BACK"; break;
     default: side = "UNKNOWN"; break;
     }
-    return os<<id.plane()<<","
-             <<side
+
+    enum Rotation {UP, DOWN};
+    std::string rot;
+    switch(id.rot()) {
+    case (UP): rot = "UP"; break;
+    case (DOWN): rot = "DOWN"; break;
+    default: rot = "UNKNOWN"; break;
+    }
+    return os<<id.plane()
+             <<","<<side
+             <<","<<rot
              <<","<<id.module();
   }
 }

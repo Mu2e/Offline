@@ -1,6 +1,6 @@
-// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.8 2012/11/01 23:41:54 gandr Exp $
+// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.9 2013/07/01 06:52:13 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:41:54 $
+// $Date: 2013/07/01 06:52:13 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -63,7 +63,7 @@ namespace mu2e {
         res.endG4Status = sp.endG4Status();
         res.stoppingCode = sp.stoppingCode().id();
 
-        const ExtMonFNALSensorStack& stack = (pos.z() < 0) ? extmon.dn() : extmon.up();
+        const ExtMonFNALPlaneStack& stack = (pos.z() < 0) ? extmon.dn() : extmon.up();
         const CLHEP::Hep3Vector stackPos = stack.mu2eToStack_position(sp.endPosition());
 
         // Note: we don't cut on the z position.  A muon stopped
@@ -71,8 +71,8 @@ namespace mu2e {
         // in the transverse direction, even if it stopped in air
         // instead of silicon.
         res.stoppedInSensor =
-          (std::abs(stackPos.x()) < extmon.sensor().halfSize()[0]) &&
-          (std::abs(stackPos.y()) < extmon.sensor().halfSize()[1])
+          (std::abs(stackPos.x()) < extmon.plane().halfSize()[0]) &&
+          (std::abs(stackPos.y()) < extmon.plane().halfSize()[1])
           ;
 
         return res;

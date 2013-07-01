@@ -10,7 +10,7 @@ namespace mu2e {
   {}
 
   std::ostream& operator<<( std::ostream& os, const ExtMonFNALPixelId& id) {
-    return os<<"ExtMonFNALPixelId("<<id.chip().sensor().plane()
+    return os<<"ExtMonFNALPixelId("<<id.chip().module()
              <<", "<<id.chip().chipCol()
              <<", "<<id.chip().chipRow()
              <<", "<<id.col()

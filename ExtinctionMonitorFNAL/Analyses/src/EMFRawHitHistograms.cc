@@ -1,3 +1,5 @@
+#if 0 /*exclude this file from compilation*/
+
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 
 #include "ExtinctionMonitorFNAL/Analyses/inc/EMFRawHitHistograms.hh"
@@ -82,3 +84,4 @@ namespace mu2e {
   } // end EMFRawHitHistograms::fill()
 
 } // end namespace mu2e
+#endif

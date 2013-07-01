@@ -1,3 +1,5 @@
+#if 0 /*exclude this file from compilation*/
+
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 
 #include "ExtinctionMonitorFNAL/Analyses/inc/EMFRecoClusterHistograms.hh"
@@ -112,3 +114,5 @@ namespace mu2e {
   } // end EMFRecoClusterHistograms::fill()
 
 } // end namespace mu2e
+
+#endif

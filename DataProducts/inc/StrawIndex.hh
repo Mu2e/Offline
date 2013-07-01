@@ -7,9 +7,9 @@
 // of straws in the system.  This works for both the TTracker;
 // it also worked for the LTracker when we had one.
 //
-// $Id: StrawIndex.hh,v 1.2 2013/03/26 23:28:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/26 23:28:23 $
+// $Id: StrawIndex.hh,v 1.3 2013/07/01 06:52:13 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/07/01 06:52:13 $
 //
 // Original author Rob Kutschke
 //

@@ -7,6 +7,7 @@
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
+#include "DataProducts/inc/ExtMonFNALModuleId.hh"
 #include "CLHEP/Vector/TwoVector.h"
 
 namespace mu2e {

@@ -5,9 +5,9 @@
 // integer (the plane number), but this may change if we decide to
 // have more than one sensor per plane.
 //
-// $Id: ExtMonFNALSensorId.hh,v 1.3 2012/08/28 05:02:51 gandr Exp $
+// $Id: ExtMonFNALSensorId.hh,v 1.4 2013/07/01 06:52:13 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/08/28 05:02:51 $
+// $Date: 2013/07/01 06:52:13 $
 //
 // Original author Andrei Gaponenko
 
