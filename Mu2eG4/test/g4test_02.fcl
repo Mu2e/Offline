@@ -5,9 +5,9 @@
 #  - Run these through G4.
 #  - Event display with yz view.
 #
-# $Id: g4test_02.fcl,v 1.12 2012/03/02 17:16:22 gandr Exp $
+# $Id: g4test_02.fcl,v 1.13 2013/07/01 20:46:10 gandr Exp $
 # $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
+# $Date: 2013/07/01 20:46:10 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -61,3 +61,10 @@ services.user.SeedService.maxUniqueEngines :  20
 
 // Enable G4 graphics with the yz view.
 physics.producers.g4run.visMacro : "Mu2eG4/test/visyz.mac"
+
+// Print out sim particles
+physics.producers.g4run.SimParticlePrinter : {
+   enabled : true
+   primariesOnly : true
+   prefix : "Primary:"
+}
