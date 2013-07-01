@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: DiskCalorimeterMaker.cc,v 1.7 2013/05/28 22:11:24 echenard Exp $
+// $Id: DiskCalorimeterMaker.cc,v 1.8 2013/07/01 23:11:39 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/28 22:11:24 $
+// $Date: 2013/07/01 23:11:39 $
 
 // original authors Julie Managan and Robert Bernstein
 // quite a few changes by Bertrand Echenarrd
@@ -63,7 +63,8 @@ namespace mu2e{
 	_calo->_wrapperThickness      = config.getDouble("calorimeter.crystalWrapperThickness",0.0); 
 	_calo->_shellThickness        = config.getDouble("calorimeter.crystalShellThickness",0.0);
 
-	_calo->_enveloppeRadius       = config.getDouble("calorimeter.caloMotherRadius",850); 
+	_calo->_enveloppeInRadius     = config.getDouble("calorimeter.caloMotherInRadius",0); 
+	_calo->_enveloppeOutRadius    = config.getDouble("calorimeter.caloMotherOutRadius",765); 
         _calo->_enveloppeZ0           = config.getDouble("calorimeter.caloMotherZ0",11740); 
         _calo->_enveloppeZ1           = config.getDouble("calorimeter.caloMotherZ1",13910); 
 
@@ -90,7 +91,7 @@ namespace mu2e{
 
 	//THE CALORIMETER ORIGIN IS TAKEN AS THE POINT CLOSEST TO THE TRACKER IN MU2E COORDINATES
         double xOrigin                = -config.getDouble("mu2e.solenoidOffset");
-        double zOrigin                = config.getDouble("calorimeter.calorimeterZOrigin",11740);
+        double zOrigin                = config.getDouble("calorimeter.calorimeterZFront",11750);
 	_calo->_origin                = CLHEP::Hep3Vector(xOrigin,0,zOrigin);
      
      
@@ -149,24 +150,27 @@ namespace mu2e{
   {
       
       if( ! (_calo->_nROPerCrystal ==1 || _calo->_nROPerCrystal ==2 || _calo->_nROPerCrystal ==4) ) 
-        {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutChannelCount can only be 1,2 or 4.\n";}      
+          {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutChannelCount can only be 1,2 or 4.\n";}      
 
       // Check size of readouts      
       if( _calo->_nROPerCrystal==1 ) {
-        if(  _calo->_roHalfTrans > _calo->_crystalHalfTrans ) 
-          {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutHalfTrans > calorimeter.crystalHexsize.\n";}
+          if(  _calo->_roHalfTrans > _calo->_crystalHalfTrans ) 
+            {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutHalfTrans > calorimeter.crystalHexsize.\n";}
         
       } else {
-        if( _calo->_roHalfTrans > 0.5*_calo->_crystalHalfTrans) 
-          {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutHalfTrans > 0.5*calorimeter.crystalHalfTrans.\n";}
+          if( _calo->_roHalfTrans > 0.5*_calo->_crystalHalfTrans) 
+            {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutHalfTrans > 0.5*calorimeter.crystalHalfTrans.\n";}
       }
       
       for (unsigned int i=0;i<_calo->_nSections;++i) {
         if (_calo->_diskInnerRadius[i] > _calo->_diskOuterRadius[i]) 
             {throw cet::exception("DiskCaloGeom") << "calorimeter.diskInnerRadius > calorimeter.diskOuterRadius for index="<<i<<".\n";} 
         
-	if ( (_calo->_diskOuterRadius[i]+_calo->_caseThickness) > _calo->_enveloppeRadius) 
+	if ( (_calo->_diskOuterRadius[i]+_calo->_caseThickness) > _calo->_enveloppeOutRadius) 
                     {throw cet::exception("DiskCaloGeom") << "calorimeter.diskOuterRadius larger than calorimeter mother for index="<<i<<".\n";} 
+
+	if ( (_calo->_diskInnerRadius[i]-_calo->_caseThickness) < _calo->_enveloppeInRadius) 
+                    {throw cet::exception("DiskCaloGeom") << "calorimeter.diskInnerRadius smaller than calorimeter mother for index="<<i<<".\n";} 
 
       }  
       
@@ -175,7 +179,7 @@ namespace mu2e{
       double calozBegin   = _calo->_origin.z();
 
       if (calozBegin < (_calo->_enveloppeZ0-0.1) || calozBegin > _calo->_enveloppeZ1) 
-          {throw cet::exception("DiskCaloGeom") << "calorimeter.calorimeterZOrigin   outside calorimeter mother (need 1mm margin for virtual detectors).\n";}  
+          {throw cet::exception("DiskCaloGeom") << "calorimeter.calorimeterZFront outside calorimeter mother (need 1mm margin for virtual detectors).\n";}  
       if (calozEnd   > (_calo->_enveloppeZ1-0.1))                       
           {throw cet::exception("DiskCaloGeom") << "calorimeter z-coordinate extends outside calorimeter mother (need 1mm margin for virtual detectors).\n";}  
 

@@ -1,9 +1,9 @@
 //
 // Free function to create the Vane calorimeter.
 //
-// $Id: constructVaneCalorimeter.cc,v 1.9 2013/06/06 21:18:44 echenard Exp $
+// $Id: constructVaneCalorimeter.cc,v 1.10 2013/07/01 23:11:39 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/06/06 21:18:44 $
+// $Date: 2013/07/01 23:11:39 $
 //
 // Original author Ivan Logashenko
 // Modified by Bertrand Echenard
@@ -77,9 +77,10 @@ namespace mu2e {
 
 
     //calorimeter mother neveloppe
-    double mother_radius   = config.getDouble("calorimeter.caloMotherRadius",850); 
-    double mother_z0       = config.getDouble("calorimeter.caloMotherZ0",11740); 
-    double mother_z1       = config.getDouble("calorimeter.caloMotherZ1",13910); 
+    double mother_inRadius  = config.getDouble("calorimeter.caloMotherInRadius",0); 
+    double mother_outRadius = config.getDouble("calorimeter.caloMotherOutRadius",765); 
+    double mother_z0        = config.getDouble("calorimeter.caloMotherZ0",11740); 
+    double mother_z1        = config.getDouble("calorimeter.caloMotherZ1",13910); 
 
 
     //-- A helper class for parsing the config file.
@@ -109,7 +110,7 @@ namespace mu2e {
     G4ThreeVector posCaloMother      = G4ThreeVector(posDS3.x(), 0, mother_zCenter);
     G4ThreeVector posCaloMotherInDS  = posCaloMother - posDS3;
 
-    TubsParams caloParams(0,mother_radius,mother_zlength/2.0, 0., CLHEP::twopi);
+    TubsParams caloParams(mother_inRadius,mother_outRadius,mother_zlength/2.0, 0., CLHEP::twopi);
     VolumeInfo calorimeterInfo = nestTubs( "CalorimeterMother",
 					   caloParams,
 					   fillMaterial,

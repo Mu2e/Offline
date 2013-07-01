@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.53 2013/07/01 16:43:04 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/07/01 16:43:04 $
+// $Id: constructVirtualDetectors.cc,v 1.54 2013/07/01 23:11:39 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/07/01 23:11:39 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -1331,7 +1331,7 @@ namespace mu2e {
 					  posSurf1,
 					  parent,
 					  vdIdSurf,
-					  true,//vdIsVisible,
+					  vdIsVisible,//vdIsVisible,
 					  G4Color::Red(),
 					  vdIsSolid,
 					  forceAuxEdgeVisible,
@@ -1348,7 +1348,7 @@ namespace mu2e {
 					  posSurf2,
 					  parent,
 					  vdIdSurf,
-					  true,//vdIsVisible,
+					  vdIsVisible,//vdIsVisible,
 					  G4Color::Red(),
 					  vdIsSolid,
 					  forceAuxEdgeVisible,
@@ -1445,7 +1445,7 @@ namespace mu2e {
 					    posInner,
 					    parent,
 					    vdIdEdge, 
-					    false,
+					    vdIsVisible,
 					    G4Color::Red(), 
 					    vdIsSolid,
 					    forceAuxEdgeVisible,
@@ -1460,7 +1460,7 @@ namespace mu2e {
 					    posInner,
 					    parent,
 					    vdIdEdge, 
-					    false,
+					    vdIsVisible,
 					    G4Color::Red(), 
 					    vdIsSolid,
 					    forceAuxEdgeVisible,

@@ -65,6 +65,8 @@ namespace mu2e {
     bool const isDiskBoxSolid       = config.getBool("calorimeter.vaneBoxSolid",true);
     bool const isDiskCaseVisible    = config.getBool("calorimeter.vaneCaseVisible",false);
     bool const isDiskCaseSolid      = config.getBool("calorimeter.vaneCaseSolid",false);
+    bool const isDiskPipeVisible    = config.getBool("calorimeter.vanePipeVisible",false);
+    bool const isDiskPipeSolid      = config.getBool("calorimeter.vanePipeSolid",false);
     bool const isCrystalVisible     = config.getBool("calorimeter.crystalVisible",false);
     bool const isCrystalSolid       = config.getBool("calorimeter.crystalSolid",true);
     bool const forceAuxEdgeVisible  = config.getBool("g4.forceAuxEdgeVisible",false);
@@ -72,7 +74,8 @@ namespace mu2e {
     bool const placePV              = true;
 
     //calorimeter mother enveloppe
-    double mother_radius            = config.getDouble("calorimeter.caloMotherRadius",850); 
+    double mother_inRadius          = config.getDouble("calorimeter.caloMotherInRadius",0); 
+    double mother_outRadius         = config.getDouble("calorimeter.caloMotherOutRadius",765); 
     double mother_z0                = config.getDouble("calorimeter.caloMotherZ0",11740); 
     double mother_z1                = config.getDouble("calorimeter.caloMotherZ1",13910); 
 
@@ -209,7 +212,7 @@ namespace mu2e {
     G4ThreeVector posCaloMotherInDS  = posCaloMother - posDS3;
 
 
-    TubsParams caloParams(0,mother_radius,mother_zlength/2.0, 0., CLHEP::twopi);
+    TubsParams caloParams(mother_inRadius,mother_outRadius,mother_zlength/2.0, 0., CLHEP::twopi);
     VolumeInfo calorimeterInfo = nestTubs( "CalorimeterMother",
                                       caloParams,
                                       fillMaterial,
@@ -301,7 +304,7 @@ namespace mu2e {
                                diskCaseInfo[idisk],
                                100*idisk,
                                isDiskBoxVisible,
-                               G4Colour::Yellow(),
+                               G4Colour::Green(),
                                isDiskBoxSolid,
                                forceAuxEdgeVisible,
                                placePV,
@@ -335,10 +338,10 @@ namespace mu2e {
                                 	  0,
                                 	  G4ThreeVector(0.0,0.0,-diskDepth/2.0+pipeRadius),
                                 	  diskBoxInfo[idisk],
-                                	  0,
-                                	  isDiskCaseVisible,
+                                	  1000*ipipe,
+                                	  isDiskPipeVisible,
                                 	  G4Color::Cyan(),
-                                	  isDiskCaseSolid,
+                                	  isDiskPipeSolid,
                                 	  forceAuxEdgeVisible,
                                 	  placePV,
                                 	  doSurfaceCheck

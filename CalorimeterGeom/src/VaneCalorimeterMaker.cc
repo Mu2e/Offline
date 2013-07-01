@@ -1,9 +1,9 @@
 //
 // Make a Vane Calorimeter.
 //
-// $Id: VaneCalorimeterMaker.cc,v 1.9 2013/06/06 21:18:44 echenard Exp $
+// $Id: VaneCalorimeterMaker.cc,v 1.10 2013/07/01 23:11:39 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/06/06 21:18:44 $
+// $Date: 2013/07/01 23:11:39 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -71,7 +71,8 @@ namespace mu2e{
 	_calo->_rMin                  = config.getDouble("calorimeter.rInscribed");
 	_calo->_rMax                  = _calo->_rMin + 2.0*(_calo->_crystalHW + _calo->_wrapperThickness + _calo->_shellThickness) * _calo->_nCrystalR;
 
-	_calo->_enveloppeRadius       = config.getDouble("calorimeter.caloMotherRadius",850); 
+	_calo->_enveloppeInRadius     = config.getDouble("calorimeter.caloMotherInRadius",0); 
+	_calo->_enveloppeOutRadius    = config.getDouble("calorimeter.caloMotherOutRadius",765); 
         _calo->_enveloppeZ0           = config.getDouble("calorimeter.caloMotherZ0",11740); 
         _calo->_enveloppeZ1           = config.getDouble("calorimeter.caloMotherZ1",13910); 
 
@@ -104,7 +105,7 @@ namespace mu2e{
 
 	//THE CALORIMETER ORIGIN IS TAKEN AS THE POINT CLOSEST TO THE TRACKER IN MU2E COORDINATES
         double xOrigin               = -config.getDouble("mu2e.solenoidOffset");
-        double zOrigin               = config.getDouble("calorimeter.calorimeterZOrigin",11740);
+        double zOrigin               = config.getDouble("calorimeter.calorimeterZFront",11750);
 	_calo->_origin               = CLHEP::Hep3Vector(xOrigin,0,zOrigin);
 	
 	
@@ -172,12 +173,17 @@ namespace mu2e{
            double calozBegin = _calo->_origin.z();
            double calozEnd   = _calo->_origin.z() + 2*dZ;
 	   
-	   if ( (_calo->_rMin + 2*dR) > _calo->_enveloppeRadius) 
-                    {throw cet::exception("VaneCaloGeom") << "calorimeter radius larger than calorimeter mother \n";} 
+	   if ( (_calo->_rMin + 2*dR) > _calo->_enveloppeOutRadius) 
+                    {throw cet::exception("VaneCaloGeom") << "calorimeter outer radius larger than calorimeter mother \n";} 
+
+	   if (  _calo->_rMin < _calo->_enveloppeInRadius) 
+                    {throw cet::exception("VaneCaloGeom") << "calorimeter inner radius smaller than calorimeter mother \n";} 
+
 	   if (calozBegin < _calo->_enveloppeZ0 || calozBegin > _calo->_enveloppeZ1) 
-               {throw cet::exception("VaneCaloGeom") << "calorimeter.calorimeterZOrigin   outside calorimeter mother.\n";}  
+                    {throw cet::exception("VaneCaloGeom") << "calorimeter.calorimeterZFront   outside calorimeter mother.\n";}  
+
 	   if (calozEnd   > _calo->_enveloppeZ1)                       
-               {throw cet::exception("VaneCaloGeom") << "calorimeter z-coordinate extends outside calorimeter mother.\n";}  
+                    {throw cet::exception("VaneCaloGeom") << "calorimeter z-coordinate extends outside calorimeter mother.\n";}  
  	   
 	   
 	   // Check number of readouts
