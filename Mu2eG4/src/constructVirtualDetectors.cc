@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.52 2013/06/28 19:27:59 knoepfel Exp $
+// $Id: constructVirtualDetectors.cc,v 1.53 2013/07/01 16:43:04 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/06/28 19:27:59 $
+// $Date: 2013/07/01 16:43:04 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -182,7 +182,7 @@ namespace mu2e {
 
       VolumeInfo const & parent = _helper->locateVolInfo("TS5Vacuum");
 
-      double coll5OuterRadius    = _config.getDouble("coll5.outerRadius");
+      double coll5OuterRadius    = beamg->getTS().getColl5().rIn();
       double coll5HalfLength     = beamg->getTS().getColl5().halfLength();
 
       TubsParams  vdParamsColl5OutSurf(coll5OuterRadius - 2.*vdHalfLength,

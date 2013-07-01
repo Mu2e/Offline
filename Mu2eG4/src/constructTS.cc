@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.17 2013/06/29 18:37:51 knoepfel Exp $
+// $Id: constructTS.cc,v 1.18 2013/07/01 16:43:04 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/06/29 18:37:51 $
+// $Date: 2013/07/01 16:43:04 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -81,18 +81,12 @@ namespace mu2e {
     StraightSection   const * strsec (nullptr);
     TorusSection      const * torsec (nullptr);
 
-    const int    verbosityLevel = config.getInt("coll.verbosityLevel", 0);
-
-    
-
-    bool visible = config.getBool("ts.cryo.visible",true);
-    bool solid   = config.getBool("ts.cryo.solid",true);
-
-    MaterialFinder materialFinder(config);
-
-    bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
-    bool const placePV       = true;
+    const int  verbosityLevel      = config.getInt("ts.cryo.verbosityLevel", 0);
+    const bool visible             = config.getBool("ts.cryo.visible",true);
+    const bool solid               = config.getBool("ts.cryo.solid",true);
+    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    const bool placePV             = true;
 
     // For how all pieces are made from one of two types of material,
     // vacuum or average coils + cryostat material.
@@ -104,8 +98,35 @@ namespace mu2e {
     const double rTorus   = ts->torusRadius();
     const double rVac     = ts->innerRadius();
 
-    // Build TS1.
+    // Build upstream end wall of TS1
     strsec = &ts->getTS1_in();
+
+    CLHEP::Hep3Vector pos( strsec->getGlobal().x(), 
+                           strsec->getGlobal().y(), 
+                           strsec->getGlobal().z()-strsec->getHalfLength()-ts->endWallU1_halfLength() );
+  
+    nestTubs( "TS1UpstreamEndwall",
+              TubsParams( ts->endWallU1_rIn(),
+                          ts->endWallU1_rOut(),
+                          ts->endWallU1_halfLength() ),
+              cryoMaterial,
+              0,
+              pos-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
+              
+    if ( verbosityLevel ) {
+      cout << __func__ << " Upstream TS1 endwall at: " << pos << endl;
+    }
+
+    // Build TS1.
     VolumeInfo ts1VacInfo = nestTubs( "TS1Vacuum",
                                       TubsParams(0., rVac, strsec->getHalfLength() ),
                                       vacuumMaterial,
@@ -132,11 +153,18 @@ namespace mu2e {
                                        0,
                                        visible,
                                        G4Color::Red(),
-                                        true,//solid,
+                                       solid,
                                        forceAuxEdgeVisible,
                                        placePV,
                                        doSurfaceCheck
                                        );
+
+    if ( verbosityLevel > 0) {
+      cout << __func__ << " TS1(in)  OffsetInMu2e  : " << strsec->getGlobal()   << endl;
+      cout << __func__ << " TS1(in)  Extent        :[ " << strsec->getGlobal().z() - strsec->getHalfLength() + ts->endWallU1_halfLength() <<","  
+           << strsec->getGlobal().z() + strsec->getHalfLength() - ts->endWallU1_halfLength() << "]" << endl;
+      cout << __func__ << " TS1(in)  rotation      : " << strsec->getRotation() << endl;
+    }
 
     strsec = &ts->getTS1_out();
     VolumeInfo ts1CryoInfo2 = nestTubs( "TS1OuterCryoShell",
@@ -157,10 +185,36 @@ namespace mu2e {
                                        );
 
     if ( verbosityLevel > 0) {
-      cout << __func__ << " TS1 OffsetInMu2e  : " << strsec->getGlobal()   << endl;
-      cout << __func__ << " TS1 rotation      : " << strsec->getRotation() << endl;
+      cout << __func__ << " TS1(out) OffsetInMu2e  : " << strsec->getGlobal()   << endl;
+      cout << __func__ << " TS1(out) rotation      : " << strsec->getRotation() << endl;
     }
 
+    // Build downstream partial end wall of TS1
+    CLHEP::Hep3Vector pos2( strsec->getGlobal().x(), 
+                            strsec->getGlobal().y(), 
+                            strsec->getGlobal().z()+strsec->getHalfLength()+ts->endWallU2_halfLength() );
+  
+    nestTubs( "TS1DownstreamEndwall",
+              TubsParams( ts->endWallU2_rIn(),
+                          ts->endWallU2_rOut(),
+                          ts->endWallU2_halfLength() ),
+              cryoMaterial,
+              0,
+              pos2-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
+              
+    if ( verbosityLevel ) {
+      cout << __func__ << " Downstream TS1 endwall at: " << pos2 << endl;
+      cout << __func__ << " Donwstream TS1 extent   [: " << pos2.z()-ts->endWallU1_halfLength() << "," << pos2.z() +ts->endWallU1_halfLength() << "]" << endl;
+    }
 
     // Build TS2.
     torsec = &ts->getTS2_in();
@@ -194,7 +248,7 @@ namespace mu2e {
                                         0,
                                         visible,
                                         G4Color::Red(),
-                                        true, //solid,
+                                        solid,
                                         forceAuxEdgeVisible,
                                         placePV,
                                         doSurfaceCheck
@@ -247,7 +301,7 @@ namespace mu2e {
                                        0,
                                        visible,
                                        G4Color::Red(),
-                                        true,//solid,
+                                       solid,
                                        forceAuxEdgeVisible,
                                        placePV,
                                        doSurfaceCheck
@@ -307,7 +361,7 @@ namespace mu2e {
                                        0,
                                        visible,
                                        G4Color::Red(),
-                                        true,//solid,
+                                       solid,
                                        forceAuxEdgeVisible,
                                        placePV,
                                        doSurfaceCheck
@@ -359,7 +413,7 @@ namespace mu2e {
                                        0,
                                        visible,
                                        G4Color::Red(),
-                                        true, //solid,
+                                       solid,
                                        forceAuxEdgeVisible,
                                        placePV,
                                        doSurfaceCheck
@@ -389,7 +443,31 @@ namespace mu2e {
       cout << __func__ << " TS5  rotatio      : " << strsec->getRotation() << endl;
     }
 
-    
+    // Build downstream end wall of TS5
+    CLHEP::Hep3Vector pos3( strsec->getGlobal().x(), 
+                            strsec->getGlobal().y(), 
+                            strsec->getGlobal().z()+strsec->getHalfLength()+ts->endWallD_halfLength() );
+  
+    nestTubs( "TS5DownstreamEndwall",
+              TubsParams( ts->endWallD_rIn(),
+                          ts->endWallD_rOut(),
+                          ts->endWallD_halfLength() ),
+              cryoMaterial,
+              0,
+              pos3-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
+
+    if ( verbosityLevel ) {
+      cout << __func__ << " Downstream TS5 endwall at: " << pos3 << endl;
+    }
   } 
 
   //__________________________________
@@ -401,19 +479,20 @@ namespace mu2e {
                        SimpleConfig const& config,
                        Beamline const& bl ) {
 
-    int const verbosityLevel = config.getInt("ts.coils.verbosityLevel", 0);
-    bool const visible       = config.getBool("ts.coils.visible",true);
-    bool const solid         = config.getBool("ts.coils.solid",false);
-    bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
-    bool const placePV       = true;
+    const int  verbosityLevel      = config.getInt("ts.coils.verbosityLevel", 0);
+    const bool visible             = config.getBool("ts.coils.visible",true);
+    const bool solid               = config.getBool("ts.coils.solid",false);
+    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    const bool placePV             = true;
 
     G4Material* coilMaterial = findMaterialOrThrow( bl.getTS().coil_material() );
 
     // Construct TS coils
     for ( unsigned iTS = TransportSolenoid::TS1 ; iTS <= TransportSolenoid::TS5 ; iTS++ ) {
-      for ( unsigned iC = 0 ; iC < bl.getTS().getNCoils( iTS ) ; iC++) {
-        Coil const * coil = bl.getTS().getTSCoils( iTS ).at(iC).get();
+      auto its = (TransportSolenoid::enum_type_ts)iTS;
+      for ( unsigned iC = 0 ; iC < bl.getTS().getNCoils( its ) ; iC++) {
+        Coil const * coil = bl.getTS().getTSCoils( its ).at( iC).get();
         
         ostringstream coilname ; coilname << "TS" << iTS+1 << "_Coil" << iC+1 ;
         
@@ -431,6 +510,11 @@ namespace mu2e {
                   placePV,
                   doSurfaceCheck
                   );
+
+        if ( verbosityLevel > 0 ) {
+          cout << __func__ << coilname.str() << " placed at: " << coil->getGlobal() << endl;
+        }
+
       }
     }
      
@@ -445,47 +529,23 @@ namespace mu2e {
                              SimpleConfig const& config,
                              Beamline const& bl ) {
     
+    // Flags
+    const bool visible             = config.getBool("ts.coll.visible",true);
+    const bool solid               = config.getBool("ts.coll.solid",true);
+    const int  verbosityLevel      = config.getInt("ts.coll.verbosityLevel", 0);
+    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    const bool placePV             = true;
+
+    // Get collimators
     TransportSolenoid const& ts = bl.getTS();
 
-    Collimator const& coll1  = ts.getColl1()  ;
-    Collimator const& coll31 = ts.getColl31() ;
-    Collimator const& coll32 = ts.getColl32() ;
-    Collimator const& coll5  = ts.getColl5()  ;
+    CollimatorTS1 const& coll1  = ts.getColl1() ;
+    CollimatorTS3 const& coll31 = ts.getColl31();
+    CollimatorTS3 const& coll32 = ts.getColl32();
+    CollimatorTS5 const& coll5  = ts.getColl5() ;
 
-    double coll1InnerRadius1   = config.getDouble("coll1.innerRadius1");
-    double coll1InnerRadius2   = config.getDouble("coll1.innerRadius2");
-    double coll1InnerRadius3   = config.getDouble("coll1.innerRadius3");
-
-    double coll5InnerRadius    = config.getDouble("coll5.innerRadius");
-    double coll5MidRadius1     = config.getDouble("coll5.midRadius1");
-    double coll5MidRadius2     = config.getDouble("coll5.midRadius2");
-    double coll5OuterRadius    = config.getDouble("coll5.outerRadius");
-
-    double coll5HalfLengthU    = config.getDouble("coll5.halfLengthU");
-    double coll5HalfLengthD    = config.getDouble("coll5.halfLengthD");
-
-    MaterialFinder materialFinder(config);
-
-    G4Material* coll1Material1 = materialFinder.get("coll1.material1Name");
-    G4Material* coll1Material2 = materialFinder.get("coll1.material2Name");
-    G4Material* coll3Material  = materialFinder.get("coll3.materialName");
-    string coll5MaterialName         = config.getString("coll5.materialName");
-    string coll5AbsorberMaterialName = config.getString("coll5.absorberMaterialName");
-
-    // Special parameters for coll3
-    double coll3RotationAngle    = config.getDouble("coll3.rotationAngle");
-    double coll3HoleRadius       = config.getDouble("coll3.holeRadius");
-    double coll3HoleHalfHeight   = config.getDouble("coll3.holeHalfHeight");
-    double coll3HoleDisplacement = config.getDouble("coll3.holeDisplacement");
-
-    bool collVisible         = config.getBool("coll.visible",true);
-    bool collSolid           = config.getBool("coll.solid",true);
-
-    int const verbosityLevel = config.getInt("coll.verbosityLevel", 0);
-    bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
-    bool const placePV       = true;
-
+    // Get VDs
     GeomHandle<VirtualDetector> vdg;
     double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
 
@@ -493,8 +553,8 @@ namespace mu2e {
     // and a cylinder placed in TS1Vacuum)
 
     // the cone (which can be a tube/cylinder) inside the outer tube/cylinder
-    double coll1Param1[7] = { coll1InnerRadius1, coll1InnerRadius3,
-                              coll1InnerRadius2, coll1InnerRadius3,
+    double coll1Param1[7] = { coll1.rIn1(), coll1.rIn3(),
+                              coll1.rIn2(), coll1.rIn3(),
                               coll1.halfLength() - 2.*vdHalfLength,
                               0.0, CLHEP::twopi };
 
@@ -502,45 +562,40 @@ namespace mu2e {
 
     nestCons( "Coll11",
               coll1Param1,
-              coll1Material1,
+              findMaterialOrThrow( coll1.material1() ),
               0,
               coll1.getLocal(),
               _helper->locateVolInfo("TS1Vacuum"),
               0,
-              collVisible,
+              visible,
               G4Color::Cyan(),
-              collSolid,
+              solid,
               forceAuxEdgeVisible,
               placePV,
               doSurfaceCheck
               );
 
-    TubsParams coll1Param2 ( coll1InnerRadius3,  ts.innerRadius(), coll1.halfLength()-2.*vdHalfLength);
+    TubsParams coll1Param2 ( coll1.rIn3(),  ts.innerRadius(), coll1.halfLength()-2.*vdHalfLength);
  
     nestTubs( "Coll12",
               coll1Param2,
-              coll1Material2,
+              findMaterialOrThrow( coll1.material2() ),
               0,
               coll1.getLocal(),
               _helper->locateVolInfo("TS1Vacuum"),
               0,
-              collVisible,
+              visible,
               G4Color::Blue(),
-              collSolid,
+              solid,
               forceAuxEdgeVisible,
               placePV,
               doSurfaceCheck
               );
     
     if ( verbosityLevel > 0) {
- 
-      cout << __func__ << " TS1  OffsetInMu2e    : "
-           << ts.getTS1_in().getGlobal() << endl;
-      cout << __func__ << " Coll5 local offset   : " 
-           << ts.getColl5().getLocal() << endl;
-      cout << __func__ << " ts.getTS1().getRotation(): "
-           << ts.getTS1_in().getRotation() << endl;
-
+      cout << __func__ << " TS1  OffsetInMu2e    : " << ts.getTS1_in().getGlobal()   << endl;
+      cout << __func__ << " Coll5 local offset   : " << ts.getColl5().getLocal()     << endl;
+      cout << __func__ << " TS1  Rotation        : " << ts.getTS1_in().getRotation() << endl;
     }
 
     // Place collimator 3
@@ -553,9 +608,9 @@ namespace mu2e {
     if( hDz<coll32.halfLength() ) hDz=coll32.halfLength();
     // Hole is the intersection of box and circles
     G4Box* coll3_hole_box = new G4Box("coll3_hole_box",
-                                      coll3HoleRadius+5.0,coll3HoleHalfHeight,hDz+1.0);
+                                      coll31.holeRadius()+5.0,coll31.holeHalfHeight(),hDz+1.0);
     G4Tubs* coll3_hole_circle = new G4Tubs("coll3_hole_circle",
-                                           0.0,coll3HoleRadius,hDz+1.0,
+                                           0.0,coll31.holeRadius(),hDz+1.0,
                                            0.0, CLHEP::twopi );
     G4IntersectionSolid* coll3_hole = new G4IntersectionSolid("coll3_hole",
                                                               coll3_hole_box,
@@ -584,97 +639,86 @@ namespace mu2e {
                                               coll31_mother,
                                               coll3_hole,
                                               0,
-                                              G4ThreeVector(0,coll3HoleDisplacement,0));
+                                              G4ThreeVector(0,coll31.holeDisplacement(),0));
 
     coll32Info.solid = new G4SubtractionSolid(coll32Info.name,
                                               coll32_mother,
                                               coll3_hole,
                                               0,
-                                              G4ThreeVector(0,coll3HoleDisplacement,0));
+                                              G4ThreeVector(0,coll32.holeDisplacement(),0));
 
     // Now use finishNesting to place collimators 31 and 32
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 
     G4RotationMatrix* coll31Rot = reg.add(G4RotationMatrix());
     G4RotationMatrix* coll32Rot = reg.add(G4RotationMatrix());
-    coll31Rot->rotateZ(coll3RotationAngle*CLHEP::degree);
-    coll32Rot->rotateZ(coll3RotationAngle*CLHEP::degree);
+    coll31Rot->rotateZ(coll31.rotationAngle()*CLHEP::degree);
+    coll32Rot->rotateZ(coll32.rotationAngle()*CLHEP::degree);
 
     finishNesting(coll31Info,
-                  coll3Material,
+                  findMaterialOrThrow( coll31.material() ),
                   coll31Rot,
                   coll31.getLocal(),
                   _helper->locateVolInfo("TS3Vacuum").logical,
                   0,
-                  collVisible,
+                  visible,
                   G4Color::Gray(),
-                  collSolid,
+                  solid,
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck);
 
     finishNesting(coll32Info,
-                  coll3Material,
+                  findMaterialOrThrow( coll32.material() ),
                   coll32Rot,
                   coll32.getLocal(),
                   _helper->locateVolInfo("TS3Vacuum").logical,
                   0,
-                  collVisible,
+                  visible,
                   G4Color::Gray(),
-                  collSolid,
+                  solid,
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck);
 
     if ( verbosityLevel > 0) {
- 
-      cout << __func__ << " TS3  OffsetInMu2e    : "
-           << ts.getTS3_in().getGlobal() << endl;
-      cout << __func__ << " Coll31 local offest   : " 
-           << coll31.getLocal() << endl;
-      cout << __func__ << " Coll32 local offset   : " 
-           << coll32.getLocal() << endl;
-      cout << __func__ << " bl.getTS().getTS3().getRotation(): "
-           << ts.getTS3_in().getRotation() << endl;
-
+      cout << __func__ << " TS3  OffsetInMu2e   : " << ts.getTS3_in().getGlobal() << endl;
+      cout << __func__ << " Coll31 local offest : " << coll31.getLocal() << endl;
+      cout << __func__ << " Coll32 local offset : " << coll32.getLocal() << endl;
+      cout << __func__ << " TS3  Rotation       : " << ts.getTS3_in().getRotation() << endl;
     }
 
     // Place collimator 5
 
-    if ( coll5OuterRadius > ts.innerRadius() || 
-         coll5MidRadius2  > coll5OuterRadius - 2.*vdHalfLength || 
-         coll5MidRadius1  >= coll5MidRadius2 || 
-         coll5InnerRadius > coll5MidRadius1 ||
-         coll5InnerRadius < 0.0 ) {
+    if ( coll5.rOut() > ts.innerRadius() || 
+         coll5.rMid2()  > coll5.rOut() - 2.*vdHalfLength || 
+         coll5.rMid1()  >= coll5.rMid2() || 
+         coll5.rIn() > coll5.rMid1() ||
+         coll5.rIn() < 0.0 ) {
 
       throw cet::exception("GEOM")<< " constructTS: wrong coll5 radii: " 
                                   << "\n rVac             : " << ts.innerRadius()
-                                  << "\n coll5OuterRadius : " << coll5OuterRadius
-                                  << "\n coll5MidRadius2  : " << coll5MidRadius2
-                                  << "\n coll5MidRadius1  : " << coll5MidRadius1
-                                  << "\n coll5InnerRadiu  : " << coll5InnerRadius
+                                  << "\n coll5OuterRadius : " << coll5.rOut()
+                                  << "\n coll5MidRadius2  : " << coll5.rMid2()
+                                  << "\n coll5MidRadius1  : " << coll5.rMid1()
+                                  << "\n coll5InnerRadiu  : " << coll5.rIn()
                                   << "\n";
     }
 
-    if ( coll5HalfLengthU < 0.0 || coll5HalfLengthD < 0.0 ||
-         coll5HalfLengthU + coll5HalfLengthD > coll5.halfLength() - 2.*vdHalfLength) {
+    if ( coll5.halfLengthU() < 0.0 || coll5.halfLengthD() < 0.0 ||
+         coll5.halfLengthU() + coll5.halfLengthD() > coll5.halfLength() - 2.*vdHalfLength) {
 
       throw cet::exception("GEOM")<< " constructTS: wrong coll5 longitudinal params " 
                                   << "\n coll5HalfLength   : " << coll5.halfLength()
-                                  << "\n coll5HalfLengthU  : " << coll5HalfLengthU
-                                  << "\n coll5HalfLengthD  : " << coll5HalfLengthD
+                                  << "\n coll5HalfLengthU  : " << coll5.halfLengthU()
+                                  << "\n coll5HalfLengthD  : " << coll5.halfLengthD()
                                   << "\n";
     }
 
     if ( verbosityLevel > 0) {
-
-      cout << __func__ << " TS5  OffsetInMu2e    : "
-           << ts.getTS5_in().getGlobal() << endl;
-      cout << __func__ << " Coll5 local offset   : " 
-           << coll5.getLocal() << endl;
-      cout << __func__ << " bl.getTS().getTS5().getRotation(): "
-           << ts.getTS5_in().getRotation() << endl;
-
+      cout << __func__ << " TS5  OffsetInMu2e  : " << ts.getTS5_in().getGlobal()   << endl;
+      cout << __func__ << " Coll5 local offset : " << coll5.getLocal()             << endl;
+      cout << __func__ << " TS5  Rotation      : " << ts.getTS5_in().getRotation() << endl;
     }
 
     CLHEP::Hep3Vector coll5OffsetInMu2e = ts.getTS5_in().getGlobal() + 
@@ -683,20 +727,16 @@ namespace mu2e {
         coll5.getLocal() );
 
     if ( verbosityLevel > 0) {
-
-      cout << __func__ << "  coll5OffsetInMu2e    : "
-           << coll5OffsetInMu2e << endl;
-      cout << __func__ << "  Coll5 calc local offset : "
-           << coll5OffsetInMu2e - ts.getTS5_in().getGlobal() << endl;
-
+      cout << __func__ << "  coll5OffsetInMu2e    : "    << coll5OffsetInMu2e << endl;
+      cout << __func__ << "  Coll5 calc local offset : " << coll5OffsetInMu2e - ts.getTS5_in().getGlobal() << endl;
     }
 
     // the most outer part (with Virtual Detectors on the outer surfaces of the Coll5)
 
-    Tube coll5Param(coll5MaterialName,
+    Tube coll5Param(coll5.material(),
                     coll5OffsetInMu2e,
-                    coll5InnerRadius,
-                    coll5OuterRadius - 2.*vdHalfLength,
+                    coll5.rIn(),
+                    coll5.rOut() - 2.*vdHalfLength,
                     coll5.halfLength() - 2.*vdHalfLength);
 
     VolumeInfo coll5Info = nestTubs( "Coll5",
@@ -706,9 +746,9 @@ namespace mu2e {
                                      coll5.getLocal(),
                                      _helper->locateVolInfo("TS5Vacuum"),
                                      0,
-                                     collVisible,
+                                     visible,
                                      G4Color::Blue(),
-                                     collSolid,
+                                     solid,
                                      forceAuxEdgeVisible,
                                      placePV,
                                      doSurfaceCheck
@@ -716,23 +756,23 @@ namespace mu2e {
 
     // decide if we need to add absorber parts
 
-    if ( coll5HalfLengthD > 0.0 ) {
+    if ( coll5.halfLengthD() > 0.0 ) {
       
       // + downstream absorber
       
       CLHEP::Hep3Vector coll5AbsorberOffsetInColl5 = 
-        CLHEP::Hep3Vector (0.0, 0.0, coll5.halfLength() - 2.*vdHalfLength - coll5HalfLengthD);
+        CLHEP::Hep3Vector (0.0, 0.0, coll5.halfLength() - 2.*vdHalfLength - coll5.halfLengthD());
 
       CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
         ( ( ts.getTS5_in().getRotation() != 0x0 ) ?
           *(ts.getTS5_in().getRotation()) * coll5AbsorberOffsetInColl5 :
           coll5AbsorberOffsetInColl5 );
 
-      Tube coll5DAbsParam(coll5AbsorberMaterialName,
+      Tube coll5DAbsParam(coll5.absMaterial(),
                           coll5AbsorberOffsetInMu2e,
-                          coll5InnerRadius,
-                          coll5OuterRadius - 2.*vdHalfLength,
-                          coll5HalfLengthD);
+                          coll5.rIn(),
+                          coll5.rOut() - 2.*vdHalfLength,
+                          coll5.halfLengthD());
 
       nestTubs( "coll5DAbsorber",
                 coll5DAbsParam.getTubsParams(),
@@ -741,32 +781,32 @@ namespace mu2e {
                 coll5AbsorberOffsetInColl5,
                 coll5Info,
                 0,
-                collVisible,
+                visible,
                 G4Color::Gray(),
-                collSolid,
+                solid,
                 forceAuxEdgeVisible,
                 placePV,
                 doSurfaceCheck
                 );
     }
 
-    if ( coll5HalfLengthU > 0.0 ) {
+    if ( coll5.halfLengthU() > 0.0 ) {
 
       // + upstream absorber
     
       CLHEP::Hep3Vector coll5AbsorberOffsetInColl5 = 
-        CLHEP::Hep3Vector (0.0, 0.0, - coll5.halfLength() + 2.*vdHalfLength + coll5HalfLengthU);
+        CLHEP::Hep3Vector (0.0, 0.0, - coll5.halfLength() + 2.*vdHalfLength + coll5.halfLengthU());
 
       CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
         ( ( ts.getTS5_in().getRotation() != 0x0 ) ?
           *(ts.getTS5_in().getRotation()) * coll5AbsorberOffsetInColl5 :
           coll5AbsorberOffsetInColl5 );
 
-      Tube coll5AbsParam(coll5AbsorberMaterialName,
+      Tube coll5AbsParam(coll5.absMaterial(),
                          coll5AbsorberOffsetInMu2e,
-                         coll5InnerRadius,
-                         coll5OuterRadius - 2.*vdHalfLength,
-                         coll5HalfLengthU);
+                         coll5.rIn(),
+                         coll5.rOut() - 2.*vdHalfLength,
+                         coll5.halfLengthU());
 
       nestTubs( "coll5UAbsorber",
                 coll5AbsParam.getTubsParams(),
@@ -775,34 +815,34 @@ namespace mu2e {
                 coll5AbsorberOffsetInColl5,
                 coll5Info,
                 0,
-                collVisible,
+                visible,
                 G4Color::Gray(),
-                collSolid,
+                solid,
                 forceAuxEdgeVisible,
                 placePV,
                 doSurfaceCheck
                 );
     }
 
-    if ( coll5MidRadius1 > coll5InnerRadius ) {
+    if ( coll5.rMid1() > coll5.rIn() ) {
 
       // + "inner radius" absorber
     
       CLHEP::Hep3Vector coll5AbsorberOffsetInColl5 =
         CLHEP::Hep3Vector (0.0, 0.0,
-                           coll5HalfLengthU - coll5HalfLengthD);
+                           coll5.halfLengthU() - coll5.halfLengthD());
 
       CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
         ( ( ts.getTS5_in().getRotation() != 0x0 ) ?
           *(ts.getTS5_in().getRotation()) * coll5AbsorberOffsetInColl5 :
           coll5AbsorberOffsetInColl5 );
 
-      Tube coll5AbsParam(coll5AbsorberMaterialName,
+      Tube coll5AbsParam(coll5.absMaterial(),
                          coll5AbsorberOffsetInMu2e,
-                         coll5InnerRadius,
-                         coll5MidRadius1,
+                         coll5.rIn(),
+                         coll5.rMid1(),
                          coll5.halfLength() - 2.*vdHalfLength - 
-                         coll5HalfLengthD - coll5HalfLengthU);
+                         coll5.halfLengthD() - coll5.halfLengthU());
 
       nestTubs( "coll5IAbsorber",
                 coll5AbsParam.getTubsParams(),
@@ -811,34 +851,34 @@ namespace mu2e {
                 coll5AbsorberOffsetInColl5,
                 coll5Info,
                 0,
-                collVisible,
+                visible,
                 G4Color::Gray(),
-                collSolid,
+                solid,
                 forceAuxEdgeVisible,
                 placePV,
                 doSurfaceCheck
                 );
     }
 
-    if ( coll5MidRadius2 < coll5OuterRadius - 2.*vdHalfLength) {
+    if ( coll5.rMid2() < coll5.rOut() - 2.*vdHalfLength) {
 
       // + "outer radius" absorber
     
       CLHEP::Hep3Vector coll5AbsorberOffsetInColl5 =
         CLHEP::Hep3Vector (0.0, 0.0,
-                           coll5HalfLengthU - coll5HalfLengthD);
+                           coll5.halfLengthU() - coll5.halfLengthD());
 
       CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
         ( ( ts.getTS5_in().getRotation() != 0x0 ) ?
           *(ts.getTS5_in().getRotation()) * coll5AbsorberOffsetInColl5 :
           coll5AbsorberOffsetInColl5 );
 
-      Tube coll5AbsParam(coll5AbsorberMaterialName,
+      Tube coll5AbsParam(coll5.absMaterial(),
                          coll5AbsorberOffsetInMu2e,
-                         coll5MidRadius2,
-                         coll5OuterRadius - 2.*vdHalfLength,
+                         coll5.rMid2(),
+                         coll5.rOut() - 2.*vdHalfLength,
                          coll5.halfLength() - 2.*vdHalfLength - 
-                         coll5HalfLengthD - coll5HalfLengthU);
+                         coll5.halfLengthD() - coll5.halfLengthU());
 
       nestTubs( "coll5OAbsorber",
                 coll5AbsParam.getTubsParams(),
@@ -847,9 +887,9 @@ namespace mu2e {
                 coll5AbsorberOffsetInColl5,
                 coll5Info,
                 0,
-                collVisible,
+                visible,
                 G4Color::Gray(),
-                collSolid,
+                solid,
                 forceAuxEdgeVisible,
                 placePV,
                 doSurfaceCheck
@@ -871,9 +911,9 @@ namespace mu2e {
     // Degrader is made of several layers. 
     // Each layer is intersection of cylinder and trapezoid.
     
+    // Flag
     bool visible             = config.getBool("muondegrader.visible",false);
     bool solid               = config.getBool("muondegrader.solid" ,false);
-
     int const verbosityLevel = config.getInt("muondegrader.verbosityLevel", 0);
     bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
     bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
@@ -885,9 +925,8 @@ namespace mu2e {
     config.getVectorDouble("muondegrader.DZB", degraderDZB, vector<double>() );
     config.getVectorDouble("muondegrader.DZT", degraderDZT, vector<double>() );
     config.getVectorDouble("muondegrader.Phi", degraderPhi, vector<double>() );
-    double coll5InnerRadius    = config.getDouble("coll5.innerRadius");    
 
-    Collimator const& coll5 = bl.getTS().getColl5();
+    CollimatorTS5 const& coll5 = bl.getTS().getColl5();
 
     if( degraderR.size()!=degraderDZB.size() || degraderR.size()!=degraderDZT.size() ||
         degraderR.size()!=degraderPhi.size() ) {
@@ -910,14 +949,14 @@ namespace mu2e {
         ostringstream dsname2;  dsname2 << "MuonDegrader_trd" << i;
         
         double R1 = degraderR[i];
-        double R2 = ( i<=0 ) ? coll5InnerRadius : degraderR[i-1];
+        double R2 = ( i<=0 ) ? coll5.rIn() : degraderR[i-1];
         G4Tubs *degrader_disk = new G4Tubs(dsname1.str(),R1,R2,
                                            degraderDZB[i]/2.0,
                                            (1.5-degraderPhi[i])*CLHEP::pi, 
                                            degraderPhi[i]*CLHEP::twopi);
 
         G4Trd *degrader_trd = new G4Trd(dsname2.str(),
-                                        coll5InnerRadius,coll5InnerRadius,
+                                        coll5.rIn(),coll5.rIn(),
                                         degraderDZT[i]/2.0,degraderDZB[i]/2.0,
                                         R2/2);
 
@@ -945,6 +984,11 @@ namespace mu2e {
                       placePV,
                       doSurfaceCheck
                       );
+
+        if ( verbosityLevel > 0 ) {
+          cout << __func__ << " Degrader constructed at: " << coll5.getLocal() << " wrt. TS5 " << endl;
+        }
+
       }
 
     }
@@ -972,6 +1016,8 @@ namespace mu2e {
     bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
     bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
+    bool visible = config.getBool("pbar.visible",false);
+    bool solid   = config.getBool("pbar.solid",false);
 
     // Throw exception if pbarwedge.build is used
     if ( config.hasName("pbarwedge.build") )
@@ -981,8 +1027,6 @@ namespace mu2e {
           " To use pbar wedge specify: pbar.Type = \"wedge\" \n" ;
       }
 
-    bool visible = config.getBool("pbar.visible",false);
-    bool solid   = config.getBool("pbar.solid",false);
 
     PbarWindow const & pbarWindow = bl.getTS().getPbarWindow();
     G4Material* pbarMaterial  = findMaterialOrThrow( pbarWindow.material() );
@@ -1065,14 +1109,12 @@ namespace mu2e {
         vector<double> tmp_rInnerDs3  {239.5,0.,0.,239.5};
         
         
-        PolyconsParams polyParams( tmp_zPlanesDs3,
-                                   tmp_rInnerDs3,
-                                   tmp_rOuterDs3 );
-        
         CLHEP::Hep3Vector polyPositionInMu2e( bl.getTS().getTS3_in().getGlobal() );
         
         nestPolycone( "PbarAbsPolycone",
-                      polyParams,
+                      PolyconsParams(tmp_zPlanesDs3,
+                                     tmp_rInnerDs3,
+                                     tmp_rOuterDs3 ),
                       pbarMaterial,
                       0,
                       polyPositionInMu2e - parent.centerInMu2e(),

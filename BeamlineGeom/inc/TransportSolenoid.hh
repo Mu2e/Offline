@@ -62,7 +62,7 @@ namespace mu2e {
     std::string insideMaterial() const { return _insideMaterial; }
 
     // make non-const to allow type casting
-    TSSection* getTSCryo(int i,int j) const { return _cryoMap.find(i)->second.at(j); }
+    TSSection* getTSCryo(enum_type_ts i,enum_type_ext j) const { return _cryoMap.find(i)->second.at(j); }
 
     StraightSection const& getTS1_in()  const { return _ts1in;  }
     StraightSection const& getTS1_out() const { return _ts1out; }
@@ -78,8 +78,8 @@ namespace mu2e {
 
     // Coils 
     std::string coil_material() const { return _coilMaterial; }
-    unsigned getNCoils(int i) const { return _nCoils.at(i); }
-    const vector_unique_ptr<Coil>& getTSCoils(int i) const      
+    unsigned getNCoils(enum_type_ts i) const { return _nCoils.at( (unsigned)i); }
+    const vector_unique_ptr<Coil>& getTSCoils(enum_type_ts i) const      
     { return _coilMap.find(i)->second; }
 
     // Collimators

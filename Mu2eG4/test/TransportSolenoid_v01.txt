@@ -6,37 +6,37 @@ string ts.insideMaterialName = "DSVacuum";
 
 // Cryostat
 // - radii
-double ts.ts1in.rOut       = 270.; //
-double ts.ts2in.rOut       = 270.; //
-double ts.ts3in.rOut       = 270.; //
-double ts.ts4in.rOut       = 270.; //
-double ts.ts5in.rOut       = 270.; //
+double ts.ts1in.rOut       = 270.;  
+double ts.ts2in.rOut       = 270.;  
+double ts.ts3in.rOut       = 270.;  
+double ts.ts4in.rOut       = 270.;  
+double ts.ts5in.rOut       = 270.;  
 
-double ts.ts1out.rIn       = 705.0; //
-double ts.ts2out.rIn       = 812.5; //
-double ts.ts3out.rIn       = 812.5; //
-double ts.ts4out.rIn       = 812.5; //
-double ts.ts5out.rIn       = 812.5; //
+double ts.ts1out.rIn       = 705.0; 
+double ts.ts2out.rIn       = 812.5; 
+double ts.ts3out.rIn       = 812.5; 
+double ts.ts4out.rIn       = 812.5; 
+double ts.ts5out.rIn       = 812.5; 
 
-double ts.ts1out.rOut      = 725.0; //
-double ts.ts2out.rOut      = 832.5; //
-double ts.ts3out.rOut      = 832.5; //
-double ts.ts4out.rOut      = 832.5; //
-double ts.ts5out.rOut      = 832.5; //
+double ts.ts1out.rOut      = 725.0; 
+double ts.ts2out.rOut      = 832.5; 
+double ts.ts3out.rOut      = 832.5; 
+double ts.ts4out.rOut      = 832.5; 
+double ts.ts5out.rOut      = 832.5; 
 
-double ts.tsUendWall1.rIn   = 250.; //
-double ts.tsUendWall1.rOut  = 725.; //
-double ts.tsUendWall1.halfLength = 15.; //
+double ts.tsUendWall1.rIn   = 250.; 
+double ts.tsUendWall1.rOut  = 725.; 
+double ts.tsUendWall1.halfLength = 15.;
 
-double ts.tsUendWall2.rIn   = 725.; //
-double ts.tsUendWall2.rOut  = 832.5.; //
-double ts.tsUendWall2.halfLength = 15.; //
+double ts.tsUendWall2.rIn   = 725.; 
+double ts.tsUendWall2.rOut  = 832.5.;
+double ts.tsUendWall2.halfLength = 15.;
 
-double ts.tsDendWall.rOut       = 832.5; //
-double ts.tsDendWall.halfLength = 15.; //
+double ts.tsDendWall.rOut       = 832.5;
+double ts.tsDendWall.halfLength = 15.;
 
-double ts.ts1.halfLength  = 522.5; //
-double ts.ts5.halfLength  = 625.;  //
+double ts.ts1.halfLength  = 522.5; 
+double ts.ts5.halfLength  = 625.;  
 
 // Parameters for TS volumes.
 // double toyTS.rVac        =  240.;          // Outer radius of vacuum volume
@@ -47,6 +47,7 @@ double ts.ts5.halfLength  = 625.;  //
 // bool   toyTS.visible        = true;
 // bool   toyTS.solid          = false;
 
+int  ts.cryo.verbosityLevel = 0.;
 bool ts.cryo.visible = true;
 bool ts.cryo.solid   = false;
 
@@ -65,42 +66,42 @@ double pbarwedge.dz1 = 1.1;  // This makes total thickness changing
                              // from 0.12 mm to 1.0 mm over the 
                              // height of window
 // Collimators
-bool   coll.visible        = true;
-bool   coll.solid          = false;
-int    coll.verbosityLevel = 0;
+bool   ts.coll.visible        = true;
+bool   ts.coll.solid          = false;
+int    ts.coll.verbosityLevel = 0;
 
-double coll1.halfLength = 500.0;
+double ts.coll1.halfLength = 500.0;
 // innerRadius1,2 describe the inner cone, which is a cyliner if r1==r2
 // r1 is at the smaller z
-double coll1.innerRadius1 = 150.0;
-double coll1.innerRadius2 = 150.0;
-double coll1.innerRadius3 = 160.0; 
+double ts.coll1.innerRadius1 = 150.0;
+double ts.coll1.innerRadius2 = 150.0;
+double ts.coll1.innerRadius3 = 160.0; 
 // r3 is outer cylinder inner radius; set it and r2 to 170mm and r1==150mm
 // and both materials to G4_Cu to get the previous setup
-string coll1.material1Name = "G4_C";
-string coll1.material2Name = "G4_Cu";
+string ts.coll1.material1Name = "G4_C";
+string ts.coll1.material2Name = "G4_Cu";
 
-double coll3.halfLength       = 400.0;
-double coll3.hole             = 50.0;
-string coll3.materialName     = "G4_Cu";
-double coll3.rotationAngle    = 0.0;
-double coll3.holeRadius       = 150.0;
-double coll3.holeHalfHeight   = 100.0;
-double coll3.holeDisplacement = 90.0;
+double ts.coll3.halfLength       = 400.0;
+double ts.coll3.hole             = 50.0;
+string ts.coll3.materialName     = "G4_Cu";
+double ts.coll3.rotationAngle    = 0.0;
+double ts.coll3.holeRadius       = 150.0;
+double ts.coll3.holeHalfHeight   = 100.0;
+double ts.coll3.holeDisplacement = 90.0;
 
 // coll5 is special; its "middle" is made out of "material"
 // its "outer/external" part, if any, is made out of "absorberMaterial"
 //
 
-double coll5.halfLength    = 500.0;
-double coll5.halfLengthU   =   0.0; // upstream insert; need to accomodate 2.*vdHalfLength in calc
-double coll5.halfLengthD   =   0.0; // downstream insert; halfLength - u -d >= 2.*vdHalfLength
-double coll5.outerRadius   = 240.0; // not to exceed toyTS.rVac
-double coll5.midRadius2    = 239.98; // not to exceed outerRadius - 2.*vdHalfLength
-double coll5.midRadius1    = 128.0; // not to be equal or exceed midRadius2; change materialName if needed
-double coll5.innerRadius   = 128.0; // not to exceed midRadius1
-string coll5.materialName = "G4_Cu";
-string coll5.absorberMaterialName = "Polyethylene092";
+double ts.coll5.halfLength    = 500.0;
+double ts.coll5.halfLengthU   =   0.0; // upstream insert; need to accomodate 2.*vdHalfLength in calc
+double ts.coll5.halfLengthD   =   0.0; // downstream insert; halfLength - u -d >= 2.*vdHalfLength
+double ts.coll5.outerRadius   = 240.0; // not to exceed toyTS.rVac
+double ts.coll5.midRadius2    = 239.98; // not to exceed outerRadius - 2.*vdHalfLength
+double ts.coll5.midRadius1    = 128.0; // not to be equal or exceed midRadius2; change materialName if needed
+double ts.coll5.innerRadius   = 128.0; // not to exceed midRadius1
+string ts.coll5.materialName = "G4_Cu";
+string ts.coll5.absorberMaterialName = "Polyethylene092";
 
 // Muon degrader
 bool muondegrader.visible = true;
