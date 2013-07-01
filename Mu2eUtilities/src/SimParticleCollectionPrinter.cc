@@ -7,6 +7,7 @@ namespace mu2e {
   SimParticleCollectionPrinter::SimParticleCollectionPrinter(const fhicl::ParameterSet& pset)
     : prefix_(pset.get<std::string>("prefix", ""))
     , enabled_(pset.get<bool>("enabled", true))
+    , primariesOnly_(pset.get<bool>("primariesOnly", false))
   {}
 
   //================================================================
@@ -14,14 +15,16 @@ namespace mu2e {
     if(enabled_) {
       for(const auto& i: particles) {
         const SimParticle& p{i.second};
-        os<<prefix_
-          <<" id = "<<p.id()
-          <<", parent="<<p.parentId()
-          <<", pdgId="<<p.pdgId()
-          <<", p="<<p.startMomentum()
-          <<", start="<<p.startPosition()
-          <<", end="<<p.endPosition()
-          <<std::endl;
+        if(!primariesOnly_ || p.isPrimary()) {
+          os<<prefix_
+            <<" id = "<<p.id()
+            <<", parent="<<p.parentId()
+            <<", pdgId="<<p.pdgId()
+            <<", p="<<p.startMomentum()
+            <<", start="<<p.startPosition()
+            <<", end="<<p.endPosition()
+            <<std::endl;
+        }
       }
     }
 

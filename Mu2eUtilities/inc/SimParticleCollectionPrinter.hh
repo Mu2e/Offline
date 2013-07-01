@@ -13,6 +13,7 @@ namespace mu2e {
   class SimParticleCollectionPrinter {
     std::string prefix_;
     bool enabled_;
+    bool primariesOnly_;
   public:
 
     // Could configure printout format via pset
