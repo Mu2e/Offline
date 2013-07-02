@@ -56,7 +56,7 @@ namespace mu2e {
     ds->_ds1HalfLength      = c.getDouble("ds1.halfLength");
     ds->_ds2HalfLength      = c.getDouble("ds2.halfLength");
     ds->_locationDs23Split  =  bl.getTS().torusRadius() +
-      2.*bl.getTS().getTS5_in().getHalfLength() +
+      2.*bl.getTS().getTS5_in().getHalfLength() + 2*bl.getTS().endWallD_halfLength() +
       2.*ds->vac_halfLengthDs2();
 
     // Position is computed on the fly, relative to the TS torus

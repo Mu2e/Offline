@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.53 2013/07/02 15:57:07 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/07/02 15:57:07 $
+// $Id: GeometryService_service.cc,v 1.54 2013/07/02 18:54:18 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/02 18:54:18 $
 //
 // Original author Rob Kutschke
 //
@@ -189,7 +189,9 @@ namespace mu2e {
     addDetector(std::move(tmpPSE));
 
     // The Z coordinate of the boundary between PS and TS vacua
-    const double vacPS_TS_z = -beamline.getTS().torusRadius() - 2*beamline.getTS().getTS1_in().getHalfLength();
+    const double vacPS_TS_z = -beamline.getTS().torusRadius() - 
+      2*beamline.getTS().getTS1_in().getHalfLength() -
+      2*beamline.getTS().endWallU1_halfLength() ;
     addDetector(PSVacuumMaker::make(*_config, ps, pse, vacPS_TS_z));
 
     addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));

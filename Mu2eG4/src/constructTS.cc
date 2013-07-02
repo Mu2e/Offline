@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.18 2013/07/01 16:43:04 knoepfel Exp $
+// $Id: constructTS.cc,v 1.19 2013/07/02 18:54:18 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/01 16:43:04 $
+// $Date: 2013/07/02 18:54:18 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -512,7 +512,8 @@ namespace mu2e {
                   );
 
         if ( verbosityLevel > 0 ) {
-          cout << __func__ << coilname.str() << " placed at: " << coil->getGlobal() << endl;
+          cout << __func__ << " " << coilname.str() << " placed at: " << coil->getGlobal() << endl;
+          cout << __func__ << "            rotation: " << -coil->getRotation()->getTheta()/degree << endl;
         }
 
       }

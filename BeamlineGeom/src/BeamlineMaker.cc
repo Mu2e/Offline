@@ -2,9 +2,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.14 2013/07/01 16:43:04 knoepfel Exp $
+// $Id: BeamlineMaker.cc,v 1.15 2013/07/02 18:54:18 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/01 16:43:04 $
+// $Date: 2013/07/02 18:54:18 $
 //
 // Original author Peter Shanahan
 //
@@ -179,32 +179,31 @@ namespace mu2e {
       { 
         auto its = (TransportSolenoid::enum_type_ts)iTS;
 
-        std::vector<double> tmp_rIn, tmp_rOut, tmp_zLength, tmp_yRotAngle;
+        std::vector<double> tmp_rIn, tmp_rOut, tmp_sLength, tmp_xPos, tmp_zPos, tmp_yRotAngle;
 
         std::ostringstream prefix; 
         prefix << "ts" << iTS+1;
         c.getVectorDouble( prefix.str()+".coils.rIn"      , tmp_rIn       );
         c.getVectorDouble( prefix.str()+".coils.rOut"     , tmp_rOut      );
-        c.getVectorDouble( prefix.str()+".coils.zLength"  , tmp_zLength   );
+        c.getVectorDouble( prefix.str()+".coils.sLength"  , tmp_sLength   );
+        c.getVectorDouble( prefix.str()+".coils.xPos"     , tmp_xPos      );
+        c.getVectorDouble( prefix.str()+".coils.zPos"     , tmp_zPos      );
         c.getVectorDouble( prefix.str()+".coils.yRotAngle", tmp_yRotAngle );
 
         TransportSolenoid::checkSizeOfVectors( ts->getNCoils( its ),
-                                               { tmp_rIn, tmp_rOut, tmp_zLength, tmp_yRotAngle } );
+                                               { tmp_rIn, tmp_rOut, tmp_sLength, tmp_xPos, tmp_zPos, tmp_yRotAngle } );
 
         TransportSolenoid::vector_unique_ptr<Coil> tmp_coilvector;
 
-        const double totCoilLength = accumulate( tmp_zLength.begin(), tmp_zLength.end(), 0.);
-
         // Loop over coils per TS region
         for ( unsigned i(0) ; i < ts->getNCoils( its ) ; i++ ) {
-          std::unique_ptr<Coil> coil ( new Coil( tmp_rIn.at(i), 
-                                                 tmp_rOut.at(i),
-                                                 tmp_zLength.at(i)*0.5 ) );
+          std::unique_ptr<Coil> coil ( new Coil( tmp_xPos.at(i),  // position
+						 ts->getTSCryo(its,TransportSolenoid::IN)->getGlobal().y(), 
+						 tmp_zPos.at(i),
+						 tmp_rIn.at(i),   // tube parameters
+						 tmp_rOut.at(i),
+						 tmp_sLength.at(i)*0.5 ) );
           coil->setRotation( new HepRotation(HepRotationY(-tmp_yRotAngle.at(i)*degree) ) );
-          coil->setOrigin  ( ts->getNCoils( its ), 
-                             ts->getTSCryo( its, TransportSolenoid::IN),
-                             i, coil->getRotation(), totCoilLength );
-
           tmp_coilvector.push_back( std::move( coil ) );
         }
 

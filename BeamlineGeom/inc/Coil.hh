@@ -17,15 +17,16 @@ namespace mu2e {
 
   class Coil {
 
-  friend class BeamlineMaker;
-
   public:
 
     Coil() : _rIn(0.), _rOut(0.), _halfZ(0.) {}
     
-    Coil( double rIn, double rOut, double halfZ, CLHEP::HepRotation * rotation = nullptr ) :
+    Coil( double x, double y, double z, 
+	  double rIn, double rOut, double halfZ, 
+	  CLHEP::HepRotation * rotation = nullptr ) :
       _rIn( rIn ), _rOut( rOut ) , _halfZ( halfZ ) 
     {
+      _origin = CLHEP::Hep3Vector( x, y, z );
       _rotation.reset( rotation );
     }
 
@@ -37,39 +38,8 @@ namespace mu2e {
 
     void  setRotation( CLHEP::HepRotation * rotation ) { _rotation.reset( rotation ); }
 
-    inline void setOrigin  ( const unsigned nCoils, 
-                             TSSection*    ts,
-                             const unsigned iCoil,
-                             const CLHEP::HepRotation * rotMatrix,
-                             const double totCoilL ) {
-
-      TorusSection* torsec    ( dynamic_cast<TorusSection*>( ts ) );
-      StraightSection* strsec ( dynamic_cast<StraightSection*>( ts ) ); 
-
-      static double str_offset{};
-
-      if ( torsec ) {
-        str_offset = 0.;
-        // don't use total coil length here; spacing determined by angle
-        const double R           = torsec->torusRadius();
-        const double thetaOffset = atan( this->halfLength()/R );
-        const double thetaIncr   = (CLHEP::halfpi - 2*thetaOffset)/(nCoils - 1);
-        const double sgn    = std::copysign(1.0,torsec->getGlobal().x() ); 
-        const double theta  = sgn > 0 ? // check if torus is in upstream/downstream portion 
-          -(thetaOffset + iCoil*thetaIncr ) :
-          3*CLHEP::halfpi-(thetaOffset + iCoil*thetaIncr );
-
-        CLHEP::Hep3Vector pos( R*cos(theta), torsec->getGlobal().y(), -sgn*R*sin(theta) );
-        _origin = CLHEP::Hep3Vector( pos + torsec->getGlobal() );
-      }
-      if ( strsec ) {
-        const double spacehl = (strsec->getHalfLength() - totCoilL*.5)/(nCoils+1);
-        if ( iCoil == 0 ) str_offset -= strsec->getHalfLength();
-        str_offset += 2*spacehl + this->halfLength();
-        CLHEP::Hep3Vector pos ( 0., 0., str_offset );
-        _origin = CLHEP::Hep3Vector( (*rotMatrix)*pos + strsec->getGlobal() );
-        str_offset += this->halfLength();
-      }
+    void setOrigin  ( const double x, const double y, const double z ) {
+      _origin = CLHEP::Hep3Vector( x, y, z );
     }
 
   private:

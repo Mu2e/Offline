@@ -154,7 +154,8 @@ namespace mu2e {
       
       if ( sizeMismatches > 0 ) {
         throw cet::exception("VECTOR") 
-          << "mismatch in specified TS coil parameters and required number of coils \n" ; 
+          << "Mismatch in specified TS coil parameters and required number of coils \n" 
+          << "Should be " << nCoils; 
         
       }
       
