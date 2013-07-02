@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.24 2013/06/07 17:43:30 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/06/07 17:43:30 $
+// $Id: CosmicRayShieldMaker.cc,v 1.25 2013/07/02 15:57:07 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/07/02 15:57:07 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -35,6 +35,9 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
+
+#include "GeometryService/inc/GeomHandle.hh"
+#include "MBSGeom/inc/MBS.hh"
 
 using namespace std;
 
@@ -937,7 +940,7 @@ namespace mu2e {
     _crs->_steelShields[name] = CRSSteelShield(name,0,_HallSteelTShieldCenter + _HallSteelOffset,CRSSteelTShieldDims);
 
     double downStreamHoleRadius = _config.getBool("hasMBS",false) ?
-      _config.getDouble("mbs.SPBSOuterRadius") : 0. ;
+      GeomHandle<MBS>()->getEnvelopeRmax() : 0. ;
 
     name = "CRSSteelDShield";
     _crs->_steelShields[name] = CRSSteelShield(name,0,_HallSteelDShieldCenter + _HallSteelOffset,CRSSteelDShieldDims,

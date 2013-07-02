@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.188 2013/06/28 19:26:33 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/06/28 19:26:33 $
+// $Id: geom_01.txt,v 1.189 2013/07/02 15:57:07 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/07/02 15:57:07 $
 //
 // Original author Rob Kutschke
 //
@@ -472,43 +472,77 @@ bool   extneutronabs.solid        = false;
 
 // the initial implementation is described in doc-1519
 
-bool   mbs.hasCryoSeal      = true;
-bool   mbs.hasEndPlug       = true;
+bool   mbs.hasCryoSeal        = true;
+bool   mbs.hasEndPlug         = true;
 
-double mbs.BSTSInnerRadius  =   410.0;
-double mbs.BSTSOuterRadius  =   430.0;
-double mbs.BSTSHLength      =  1700.0;
-string mbs.BSTSMaterialName = "StainlessSteel";
-double mbs.BSTSZ            = 15150.0;
-double mbs.SPBSInnerRadius  =   430.0;
-double mbs.SPBSOuterRadius  =   452.0;
-double mbs.SPBSHLength      =  1320.0;
-string mbs.SPBSMaterialName = "G4_Pb";
-double mbs.BSTCInnerRadius  =   390.0;
-double mbs.BSTCOuterRadius  =   410.0;
-double mbs.BSTCHLength      =   375.0;
-string mbs.BSTCMaterialName = "Polyethylene092B300d119";
-double mbs.BSBSInnerRadius  =   320.0;
-double mbs.BSBSOuterRadius  =   410.0;
-string mbs.BSBSMaterialName = "Polyethylene092B300d119";
-double mbs.CLV2InnerRadius  =    50.0;
-double mbs.CLV2OuterRadius  =   320.0;
-double mbs.CLV2HLength      =    50.0;
-string mbs.CLV2MaterialName = "Polyethylene092B300d119";
+double mbs.MBSCZ              = 15258.0;
 
-double mbs.CryoSealInnerRadius  =   452.0;
+double mbs.BSTSInnerRadius    =   470.0;
+double mbs.BSTSOuterRadius    =   480.0;
+double mbs.BSTSHLength        =  2058.0;
+string mbs.BSTSMaterialName   = "StainlessSteel";
+double mbs.BSTSZrelCntr       =     0.0;
+
+double mbs.SPBSSup1InnerRadius  =   480.0;
+double mbs.SPBSSup1OuterRadius  =   700.0;
+double mbs.SPBSSup1HLength      =    20.0;
+string mbs.SPBSSup1MaterialName = "StainlessSteel";
+double mbs.SPBSSup1ZrelCntr     =  -878.0;
+double mbs.SPBSSup2InnerRadius  =   480.0;
+double mbs.SPBSSup2OuterRadius  =   700.0;
+double mbs.SPBSSup2HLength      =    20.0;
+string mbs.SPBSSup2MaterialName = "StainlessSteel";
+double mbs.SPBSSup2ZrelCntr     =  662.0;
+
+double mbs.SPBSLInnerRadius   =   480.0;
+double mbs.SPBSLOuterRadius   =   700.0;
+double mbs.SPBSLHLength       =   300.0;
+string mbs.SPBSLMaterialName  = "Polyethylene096";
+double mbs.SPBLZrelCntr       = -1198.0;
+double mbs.SPBSCInnerRadius   =   480.0;
+double mbs.SPBSCOuterRadius   =   640.0;
+double mbs.SPBSCHLength       =   750.0;
+double mbs.SPBSCminAngle      =   -67.5;
+double mbs.SPBSCmaxAngle      =   247.5;
+string mbs.SPBSCMaterialName  = "Polyethylene096";
+double mbs.SPBCZrelCntr       =  -108.0;
+double mbs.SPBSRInnerRadius   =   480.0;
+double mbs.SPBSROuterRadius   =   700.0;
+double mbs.SPBSRHLength       =   280.0;
+string mbs.SPBSRMaterialName  = "Polyethylene096";
+double mbs.SPBRZrelCntr       = 962.0;
+
+vector<double> mbs.BSTCInnerRadii  =   { 390.0, 320.0 }; 
+vector<double> mbs.BSTCOuterRadii  =   { 470.0, 470.0 };
+vector<double> mbs.BSTCLengths     =   { 600.0, 600.0 };
+string mbs.BSTCMaterialName   = "Polyethylene096";
+double mbs.BSTCZrelCntr       =  -1458.0;
+
+vector<double> mbs.BSBSInnerRadii  =   { 370.0, 320.0 };
+vector<double> mbs.BSBSOuterRadii  =   { 470.0, 470.0 };
+vector<double> mbs.BSBSLengths     =   { 1516.0, 1400.0 };
+string mbs.BSBSMaterialName   = "Polyethylene096";
+double mbs.BSBSZrelCntr            =  600.0;
+
+vector<double> mbs.CLV2InnerRadii  =   {  40.0 };
+vector<double> mbs.CLV2OuterRadii  =   { 320.0 };
+vector<double> mbs.CLV2Lengths     =   { 240.0 };
+string mbs.CLV2MaterialName   = "Polyethylene096";
+double mbs.CLV2ZrelCntr            =  1938.0;
+
+double mbs.CryoSealInnerRadius  =   700.0;  //must be equal to mbs.SPBSLOuterRadius
 double mbs.CryoSealOuterRadius  =  1000.0;
-double mbs.CryoSealZ            = 15580.0;
+double mbs.CryoSealZ            = 14289.0;
 double mbs.CryoSealHLength      =   150.0;
 string mbs.CryoSealMaterialName = "StainlessSteel";
 
-double mbs.EndPlugTubeInnerRadius =   452.0;
+double mbs.EndPlugTubeInnerRadius =   480.0;
 double mbs.EndPlugTubeOuterRadius =  1000.0;
-double mbs.EndPlugTubeZ           = 16653.0;
+double mbs.EndPlugTubeZ           = 17119.0;
 double mbs.EndPlugTubeHLength     =   197.0;
 double mbs.EndPlugDiskInnerRadius =     0.0;
 double mbs.EndPlugDiskOuterRadius =  1000.0;
-double mbs.EndPlugDiskHLength     =    50.0;
+double mbs.EndPlugDiskHLength     =    25.0;
 string mbs.EndPlugMaterialName    = "StainlessSteel";
 
 int    mbs.verbosityLevel = 0;

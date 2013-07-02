@@ -1,9 +1,9 @@
 //
 // Free function to create DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.15 2013/06/28 19:26:33 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/06/28 19:26:33 $
+// $Id: constructDS.cc,v 1.16 2013/07/02 15:57:07 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/07/02 15:57:07 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -302,8 +302,14 @@ namespace mu2e {
     GeomHandle<MBS> mbs;
 
     // Define polycone parameters
-    vector<double> tmp_zPlanesDs3 { ds->vac_zLocDs23Split(), ds->cryoZMax(), ds->cryoZMax(),         mbs->getEnvelopeZmax() };
-    vector<double> tmp_rOuterDs3  { ds->rIn1(),              ds->rIn1(),     mbs->getEnvelopeRmax(), mbs->getEnvelopeRmax() };
+    vector<double> tmp_zPlanesDs3 { ds->vac_zLocDs23Split(), ds->cryoZMax(), ds->cryoZMax(),       };
+    vector<double> tmp_rOuterDs3  { ds->rIn1(),              ds->rIn1(),     mbs->getEnvelopeRmax()};
+    Polycone const & pMBSMParams = *(mbs->getMBSMPtr());
+    for (unsigned int iPln = ((pMBSMParams.numZPlanes()>=3) ? pMBSMParams.numZPlanes() : 3) -3; iPln < pMBSMParams.numZPlanes(); ++iPln) {
+            tmp_zPlanesDs3.push_back(pMBSMParams.zPlanes().at(iPln)+pMBSMParams.originInMu2e().z());
+            tmp_rOuterDs3.push_back(pMBSMParams.rOuter().at(iPln));
+    }
+
     assert( tmp_zPlanesDs3.size() == tmp_rOuterDs3.size() );
 
     vector<double> tmp_rInnerDs3 ( tmp_rOuterDs3.size(), 0. );

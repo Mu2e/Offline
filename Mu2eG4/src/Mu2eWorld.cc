@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.159 2013/06/28 19:26:33 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/06/28 19:26:33 $
+// $Id: Mu2eWorld.cc,v 1.160 2013/07/02 15:57:07 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/07/02 15:57:07 $
 //
 // Original author Rob Kutschke
 //
@@ -73,6 +73,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
@@ -147,9 +148,7 @@ namespace mu2e {
 
     // If you play with the order of these calls, you may break things.
     GeomHandle<WorldG4> worldGeom;
-    G4ThreeVector tmpTrackercenter = GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() 
-      + worldGeom->mu2eOriginInWorld()
-      - G4ThreeVector(0.0,0.0,12000.-_config.getDouble("itracker.z0",0.0));
+    G4ThreeVector tmpTrackercenter = GeomHandle<DetectorSystem>()->getOrigin();
 
     if ( _config.getBool("hasITracker",false) ) {
       ITGasLayerSD::setMu2eDetCenterInWorld( tmpTrackercenter );
@@ -200,13 +199,6 @@ namespace mu2e {
     // This is just placeholder for now - and might be misnamed.
     constructMagnetYoke();
 
-    if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
-
-      GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
-      if(CosmicRayShieldGeomHandle->hasPassiveShield()) constructSteel(hallInfo,_config);
-      if(CosmicRayShieldGeomHandle->hasActiveShield()) constructCRV(hallInfo,_config);
-    }
-
     if ( _config.getBool("hasExternalNeutronAbsorber",false) ) {
       constructExternalNeutronAbsorber(_config);
     }
@@ -221,6 +213,13 @@ namespace mu2e {
 
     if ( _config.getBool("hasExtMonUCI",false) ) {
       constructExtMonUCI(hallInfo, _config);
+    }
+
+    if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
+
+      GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
+      if(CosmicRayShieldGeomHandle->hasPassiveShield()) constructSteel(hallInfo,_config);
+      if(CosmicRayShieldGeomHandle->hasActiveShield()) constructCRV(hallInfo,_config);
     }
 
     constructVirtualDetectors(_config); // beware of the placement order of this function

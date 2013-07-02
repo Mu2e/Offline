@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.52 2013/06/28 19:26:33 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/06/28 19:26:33 $
+// $Id: GeometryService_service.cc,v 1.53 2013/07/02 15:57:07 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/07/02 15:57:07 $
 //
 // Original author Rob Kutschke
 //
@@ -229,6 +229,11 @@ namespace mu2e {
       addDetector( ttm.getTTrackerPtr() );
     }
 
+    if(_config->getBool("hasMBS",false)){
+      MBSMaker mbs( *_config, beamline.solenoidOffset() );
+      addDetector( mbs.getMBSPtr() );
+    }
+
     if(_config->getBool("hasVaneCalorimeter",false)){
       VaneCalorimeterMaker calorm( *_config, beamline.solenoidOffset() );
       addDetector( calorm.calorimeterPtr() );
@@ -265,11 +270,6 @@ namespace mu2e {
     if(_config->getBool("hasExtMonUCI",false)){
       ExtMonUCI::ExtMonMaker extmon( *_config );
       addDetector( extmon.getDetectorPtr() );
-    }
-
-    if(_config->getBool("hasMBS",false)){
-      MBSMaker mbs( *_config, beamline.solenoidOffset() );
-      addDetector( mbs.getMBSPtr() );
     }
 
     if(_config->getBool("hasVirtualDetector",false)){
