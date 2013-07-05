@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.22 2013/06/28 19:26:33 knoepfel Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.23 2013/07/05 14:49:23 knoepfel Exp $
 // $Author: knoepfel $
 //
 
@@ -61,7 +61,7 @@ namespace mu2e {
       //double ts1HL   = bg->getTS().getTS1().getHalfLength();
       double coll1HL = bg->getTS().getColl1().halfLength();
 
-      HepRotation *ts1rot = bg->getTS().getTS1_in().getRotation();
+      const HepRotation *ts1rot = bg->getTS().getTS1_in().getRotation();
       Hep3Vector   ts1pos = bg->getTS().getTS1_in().getGlobal();
       Hep3Vector coll1pos = bg->getTS().getColl1().getLocal();
       Hep3Vector deltaZ1(0,0,coll1HL-vdHL);
@@ -78,7 +78,7 @@ namespace mu2e {
       double coll31HL = bg->getTS().getColl31().halfLength();
       double coll32HL = bg->getTS().getColl32().halfLength();
 
-      HepRotation *ts3rot = bg->getTS().getTS3_in().getRotation();
+      const HepRotation *ts3rot = bg->getTS().getTS3_in().getRotation();
       Hep3Vector   ts3pos = bg->getTS().getTS3_in().getGlobal();
 
       Hep3Vector coll31pos = bg->getTS().getColl31().getLocal();
@@ -101,7 +101,7 @@ namespace mu2e {
       //double ts5HL   = bg->getTS().getTS5().getHalfLength();
       double coll5HL = bg->getTS().getColl5().halfLength();
 
-      HepRotation *ts5rot = bg->getTS().getTS5_in().getRotation();
+      const HepRotation *ts5rot = bg->getTS().getTS5_in().getRotation();
       Hep3Vector   ts5pos = bg->getTS().getTS5_in().getGlobal();
       Hep3Vector coll5pos = bg->getTS().getColl5().getLocal();
 

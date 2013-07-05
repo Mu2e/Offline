@@ -22,30 +22,29 @@ namespace mu2e {
     TorusSection() : 
       _rTorus(0.),_rIn(0.),_rOut(0.),
       _phiBegin(0.),_deltaPhi(0.) 
-    {
-      _rotation.reset( nullptr );  
-    }
+    {}
+
 
     TorusSection(double rTorus, double rIn, double rOut, double phi0, double dPhi, 
-                 CLHEP::Hep3Vector origin, CLHEP::HepRotation *rotation) :
+                 CLHEP::Hep3Vector origin, CLHEP::HepRotation rotation = CLHEP::HepRotation()) :
       _rTorus(rTorus),_rIn(rIn),_rOut(rOut),
       _phiBegin(phi0),_deltaPhi(dPhi)
     {
       _origin=origin; // _origin is derived data member; cannot be in initialization list
-      _rotation.reset( rotation ) ;
+      _rotation=rotation;
     }
 
     ~TorusSection(){}
 
     void set(double rTorus, double rIn, double rOut, double phi0, double dPhi, 
-             CLHEP::Hep3Vector origin, CLHEP::HepRotation *rotation) {
+             CLHEP::Hep3Vector origin, CLHEP::HepRotation rotation = CLHEP::HepRotation()) {
       _rTorus=rTorus;
       _rIn=rIn;
       _rOut=rOut;
       _phiBegin=phi0;
       _deltaPhi=dPhi;
       _origin=origin;
-      _rotation.reset( rotation );
+      _rotation=rotation;
     }
 
     double torusRadius() const {return _rTorus;}

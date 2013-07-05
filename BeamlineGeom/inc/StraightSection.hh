@@ -21,27 +21,25 @@ namespace mu2e {
 
     StraightSection() :
       _rIn(0.), _rOut(0.), _halfZ(0.) 
-    {
-      _rotation.reset( nullptr );  
-    }
+    {}
 
     StraightSection(double rIn, double rOut, double halfZ, 
-                    CLHEP::Hep3Vector origin, CLHEP::HepRotation *rotation) :
+                    CLHEP::Hep3Vector origin, CLHEP::HepRotation rotation = CLHEP::HepRotation()) :
       _rIn(rIn), _rOut(rOut), _halfZ(halfZ)
     {
       _origin=origin; // _origin is derived data member; cannot be in initialization list
-      _rotation.reset( rotation );
+      _rotation=rotation;
     }
 
     ~StraightSection(){}
 
     void set(double rIn, double rOut, double halfZ, 
-             CLHEP::Hep3Vector origin, CLHEP::HepRotation *rotation) {
+             CLHEP::Hep3Vector origin, CLHEP::HepRotation rotation=CLHEP::HepRotation() ) {
       _rIn=rIn;
       _rOut=rOut;
       _halfZ=halfZ;
       _origin=origin;
-      _rotation.reset( rotation );
+      _rotation=rotation;
     }
 
     double rIn() const { return _rIn; }

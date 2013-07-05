@@ -2,11 +2,12 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.15 2013/07/02 18:54:18 knoepfel Exp $
+// $Id: BeamlineMaker.cc,v 1.16 2013/07/05 14:49:23 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/02 18:54:18 $
+// $Date: 2013/07/05 14:49:23 $
 //
 // Original author Peter Shanahan
+//                 Kyle Knoepfel (significant updates)
 //
 
 #include <cmath>
@@ -30,12 +31,6 @@
 #ifndef __CINT__
 
 namespace mu2e {
-
-  using CLHEP::Hep3Vector;
-  using CLHEP::HepRotation;
-  using CLHEP::HepRotationX;
-  using CLHEP::HepRotationY;
-  using CLHEP::degree;
 
   std::unique_ptr<Beamline> BeamlineMaker::make(const SimpleConfig& c) {
     std::unique_ptr<Beamline> res ( new Beamline() );
@@ -79,92 +74,82 @@ namespace mu2e {
     double ts1zOffset    = (-ts.torusRadius()-ts1HalfLength+ts.endWallU1_halfLength());
     double ts5zOffset    = ( ts.torusRadius()+ts5HalfLength-ts.endWallD_halfLength() );
 
-    std::vector<TSSection*> tmp_inOut;
     // Straight sections
     ts._ts1in.set( ts.innerRadius(), 
                    c.getDouble("ts.ts1in.rOut",0.),
                    ts1HalfLength - ts.endWallU1_halfLength(),
-                   Hep3Vector( bl->solenoidOffset(),0.0,ts1zOffset),
-                   nullptr );
+                   CLHEP::Hep3Vector( bl->solenoidOffset(),0.0,ts1zOffset) );
 
     ts._ts1out.set( c.getDouble("ts.ts1out.rIn",0.),
                     c.getDouble("ts.ts1out.rOut",0.),
                     ts1HalfLength - ts.endWallU1_halfLength() - ts.endWallU2_halfLength(),
-                    Hep3Vector( bl->solenoidOffset(),0.0,ts1zOffset-ts.endWallU2_halfLength() ),
-                    nullptr );
+                    CLHEP::Hep3Vector( bl->solenoidOffset(),0.0,ts1zOffset-ts.endWallU2_halfLength() ) );
     
-    tmp_inOut.push_back( dynamic_cast<TSSection*>( &ts._ts1in ) );
-    tmp_inOut.push_back( dynamic_cast<TSSection*>( &ts._ts1out ) );
-    ts._cryoMap.insert( make_pair( TransportSolenoid::TS1, std::move( tmp_inOut ) ) );
+    ts._cryoMap[TransportSolenoid::TSRegion::TS1].push_back( dynamic_cast<TSSection*>( &ts._ts1in  ) );
+    ts._cryoMap[TransportSolenoid::TSRegion::TS1].push_back( dynamic_cast<TSSection*>( &ts._ts1out ) );
 
     ts._ts3in.set( ts.innerRadius(), 
                    c.getDouble("ts.ts3in.rOut",0.),
                    ts3HalfLength,
-                   Hep3Vector(),
-                   new HepRotation(HepRotationY(90.0*degree)) );
+                   CLHEP::Hep3Vector(),
+                   CLHEP::HepRotation(CLHEP::HepRotationY(90.0*CLHEP::degree)) );
 
     ts._ts3out.set( c.getDouble("ts.ts3out.rIn",0.),
                     c.getDouble("ts.ts3out.rOut",0.),
                     ts3HalfLength,
-                    Hep3Vector(),
-                    new HepRotation(HepRotationY(90.0*degree)) );
+                    CLHEP::Hep3Vector(),
+                    CLHEP::HepRotation(CLHEP::HepRotationY(90.0*CLHEP::degree)) );
 
-    tmp_inOut.push_back( dynamic_cast<TSSection*>( &ts._ts3in ) );
-    tmp_inOut.push_back( dynamic_cast<TSSection*>( &ts._ts3out ) );
-    ts._cryoMap.insert( make_pair( TransportSolenoid::TS3, std::move( tmp_inOut ) ) );
+    ts._cryoMap[TransportSolenoid::TSRegion::TS3].push_back( dynamic_cast<TSSection*>( &ts._ts3in ) );
+    ts._cryoMap[TransportSolenoid::TSRegion::TS3].push_back( dynamic_cast<TSSection*>( &ts._ts3out ) );
 
     ts._ts5in.set( ts.innerRadius(), 
                    c.getDouble("ts.ts5in.rOut",0.),
                    ts5HalfLength - ts.endWallD_halfLength(),
-                   Hep3Vector(-bl->solenoidOffset(),0.0,ts5zOffset),
-                   nullptr );
+                   CLHEP::Hep3Vector(-bl->solenoidOffset(),0.0,ts5zOffset) );
 
     ts._ts5out.set( c.getDouble("ts.ts5out.rIn",0.),
                     c.getDouble("ts.ts5out.rOut",0.),
                     ts5HalfLength - ts.endWallD_halfLength(),
-                    Hep3Vector(-bl->solenoidOffset(),0.0,ts5zOffset),
-                    nullptr );
+                    CLHEP::Hep3Vector(-bl->solenoidOffset(),0.0,ts5zOffset) );
 
-    tmp_inOut.push_back( dynamic_cast<TSSection*>( &ts._ts5in ) );
-    tmp_inOut.push_back( dynamic_cast<TSSection*>( &ts._ts5out ) );
-    ts._cryoMap.insert( make_pair( TransportSolenoid::TS5, std::move( tmp_inOut ) ) );
+    ts._cryoMap[TransportSolenoid::TSRegion::TS5].push_back( dynamic_cast<TSSection*>( &ts._ts5in ) );
+    ts._cryoMap[TransportSolenoid::TSRegion::TS5].push_back( dynamic_cast<TSSection*>( &ts._ts5out ) );
 
     // Torus sections
     ts._ts2in.set( ts.torusRadius(),
                    ts.innerRadius(),
                    c.getDouble("ts.ts2in.rOut",0.),
                    1.5*CLHEP::pi, CLHEP::halfpi,
-                   Hep3Vector( ts.getTS3_in().getHalfLength(), 0.,-ts.torusRadius() ),
-                   new HepRotation(HepRotationX(90.0*degree)) );
+                   CLHEP::Hep3Vector( ts.getTS3_in().getHalfLength(), 0.,-ts.torusRadius() ),
+                   CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree)) );
 
     ts._ts2out.set( ts.torusRadius(),
                     c.getDouble("ts.ts2out.rIn",0.),
                     c.getDouble("ts.ts2out.rOut",0.),
                     1.5*CLHEP::pi, CLHEP::halfpi,
-                    Hep3Vector( ts.getTS3_in().getHalfLength(), 0.,-ts.torusRadius() ),
-                    new HepRotation(HepRotationX(90.0*degree)) );
+                    CLHEP::Hep3Vector( ts.getTS3_in().getHalfLength(), 0.,-ts.torusRadius() ),
+                    CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree)) );
 
-    tmp_inOut.push_back( dynamic_cast<TSSection*>( &ts._ts2in ) );
-    tmp_inOut.push_back( dynamic_cast<TSSection*>( &ts._ts2out ) );
-    ts._cryoMap.insert( make_pair( TransportSolenoid::TS2, std::move( tmp_inOut ) ) );
+    ts._cryoMap[TransportSolenoid::TSRegion::TS2].push_back( dynamic_cast<TSSection*>( &ts._ts2in ) );
+    ts._cryoMap[TransportSolenoid::TSRegion::TS2].push_back( dynamic_cast<TSSection*>( &ts._ts2out ) );
 
     ts._ts4in.set( ts.torusRadius(),
                    ts.innerRadius(),
                    c.getDouble("ts.ts4in.rOut",0.),
                    CLHEP::halfpi, CLHEP::halfpi,
-                   Hep3Vector( -ts.getTS3_in().getHalfLength(), 0.,ts.torusRadius() ),
-                   new HepRotation(HepRotationX(90.0*degree)) );
+                   CLHEP::Hep3Vector( -ts.getTS3_in().getHalfLength(), 0.,ts.torusRadius() ),
+                   CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree)) );
     
     ts._ts4out.set( ts.torusRadius(),
                     c.getDouble("ts.ts4out.rIn",0.),
                     c.getDouble("ts.ts4out.rOut",0.),
                     CLHEP::halfpi, CLHEP::halfpi,
-                    Hep3Vector( -ts.getTS3_in().getHalfLength(), 0.,ts.torusRadius() ),
-                    new HepRotation(HepRotationX(90.0*degree)) );
+                    CLHEP::Hep3Vector( -ts.getTS3_in().getHalfLength(), 0.,ts.torusRadius() ),
+                    CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree)) );
 
-    tmp_inOut.push_back( dynamic_cast<TSSection*>( &ts._ts4in ) );
-    tmp_inOut.push_back( dynamic_cast<TSSection*>( &ts._ts4out ) );
-    ts._cryoMap.insert( make_pair( TransportSolenoid::TS4, std::move( tmp_inOut ) ) );
+    ts._cryoMap[TransportSolenoid::TSRegion::TS4].push_back( dynamic_cast<TSSection*>( &ts._ts4in ) );
+    ts._cryoMap[TransportSolenoid::TSRegion::TS4].push_back( dynamic_cast<TSSection*>( &ts._ts4out ) );
 
   }
 
@@ -175,39 +160,33 @@ namespace mu2e {
     ts->_coilMaterial = c.getString("ts.coils.material");
 
     // Loop over TS regions
-    for ( unsigned iTS = TransportSolenoid::TS1 ; iTS <= TransportSolenoid::TS5 ; iTS++ )
+    for ( unsigned iTS = TransportSolenoid::TSRegion::TS1 ; iTS <= TransportSolenoid::TSRegion::TS5 ; iTS++ )
       { 
-        auto its = (TransportSolenoid::enum_type_ts)iTS;
+        auto its = (TransportSolenoid::TSRegion)iTS;
 
         std::vector<double> tmp_rIn, tmp_rOut, tmp_sLength, tmp_xPos, tmp_zPos, tmp_yRotAngle;
 
         std::ostringstream prefix; 
-        prefix << "ts" << iTS+1;
-        c.getVectorDouble( prefix.str()+".coils.rIn"      , tmp_rIn       );
-        c.getVectorDouble( prefix.str()+".coils.rOut"     , tmp_rOut      );
-        c.getVectorDouble( prefix.str()+".coils.sLength"  , tmp_sLength   );
-        c.getVectorDouble( prefix.str()+".coils.xPos"     , tmp_xPos      );
-        c.getVectorDouble( prefix.str()+".coils.zPos"     , tmp_zPos      );
-        c.getVectorDouble( prefix.str()+".coils.yRotAngle", tmp_yRotAngle );
-
-        TransportSolenoid::checkSizeOfVectors( ts->getNCoils( its ),
-                                               { tmp_rIn, tmp_rOut, tmp_sLength, tmp_xPos, tmp_zPos, tmp_yRotAngle } );
-
-        TransportSolenoid::vector_unique_ptr<Coil> tmp_coilvector;
+        prefix << "ts" << iTS;
+        c.getVectorDouble( prefix.str()+".coils.rIn"      , tmp_rIn       , ts->getNCoils(its) );
+        c.getVectorDouble( prefix.str()+".coils.rOut"     , tmp_rOut      , ts->getNCoils(its) );
+        c.getVectorDouble( prefix.str()+".coils.sLength"  , tmp_sLength   , ts->getNCoils(its) );
+        c.getVectorDouble( prefix.str()+".coils.xPos"     , tmp_xPos      , ts->getNCoils(its) );
+        c.getVectorDouble( prefix.str()+".coils.zPos"     , tmp_zPos      , ts->getNCoils(its) );
+        c.getVectorDouble( prefix.str()+".coils.yRotAngle", tmp_yRotAngle , ts->getNCoils(its) );
 
         // Loop over coils per TS region
-        for ( unsigned i(0) ; i < ts->getNCoils( its ) ; i++ ) {
-          std::unique_ptr<Coil> coil ( new Coil( tmp_xPos.at(i),  // position
-						 ts->getTSCryo(its,TransportSolenoid::IN)->getGlobal().y(), 
-						 tmp_zPos.at(i),
-						 tmp_rIn.at(i),   // tube parameters
-						 tmp_rOut.at(i),
-						 tmp_sLength.at(i)*0.5 ) );
-          coil->setRotation( new HepRotation(HepRotationY(-tmp_yRotAngle.at(i)*degree) ) );
-          tmp_coilvector.push_back( std::move( coil ) );
-        }
+        ts->_coilMap[its].reserve( ts->getNCoils( its ) );
 
-        ts->_coilMap.insert( std::make_pair( its, std::move( tmp_coilvector ) ) );
+        for ( unsigned i(0) ; i < ts->getNCoils( its ) ; i++ ) {
+          ts->_coilMap[its].emplace_back( tmp_xPos.at(i),  // position
+                                          ts->getTSCryo(its,TransportSolenoid::TSRadialPart::IN)->getGlobal().y(), 
+                                          tmp_zPos.at(i),
+                                          tmp_rIn.at(i),   // tube parameters
+                                          tmp_rOut.at(i),
+                                          tmp_sLength.at(i)*0.5,
+                                          CLHEP::HepRotation(CLHEP::HepRotationY(-tmp_yRotAngle.at(i)*CLHEP::degree) ) );
+        }
 
       }
 
@@ -226,10 +205,10 @@ namespace mu2e {
     CollimatorTS3 & coll32 ( ts->_coll32 );
     CollimatorTS5 & coll5  ( ts->_coll5 );
 
-    coll1 .set(coll1HalfLength,Hep3Vector(0.,0.,0.));
-    coll31.set(coll3HalfLength,Hep3Vector(0.,0.,-coll3HalfLength-coll3Hole/2));
-    coll32.set(coll3HalfLength,Hep3Vector(0.,0., coll3HalfLength+coll3Hole/2));
-    coll5 .set(coll5HalfLength,Hep3Vector(0.,0.,0.));
+    coll1 .set(coll1HalfLength,CLHEP::Hep3Vector(0.,0.,0.));
+    coll31.set(coll3HalfLength,CLHEP::Hep3Vector(0.,0.,-coll3HalfLength-coll3Hole/2));
+    coll32.set(coll3HalfLength,CLHEP::Hep3Vector(0.,0., coll3HalfLength+coll3Hole/2));
+    coll5 .set(coll5HalfLength,CLHEP::Hep3Vector(0.,0.,0.));
 
     // TS1
     coll1._rIn1      = c.getDouble("ts.coll1.innerRadius1",0.);
@@ -266,7 +245,7 @@ namespace mu2e {
     pbarWindow._shape    = c.getString("pbar.Type","disk");
     pbarWindow._material = c.getString("pbar.materialName");
     pbarWindow.set( c.getDouble("pbar.halfLength"),
-                    Hep3Vector() );
+                    CLHEP::Hep3Vector() );
     pbarWindow._rOut     = ts->innerRadius();
 
     // Parameters for wedge

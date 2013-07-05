@@ -19,13 +19,13 @@ namespace mu2e {
 
     virtual ~TSSection(){}
 
-    virtual CLHEP::Hep3Vector  const & getGlobal() const { return _origin; }
-    virtual CLHEP::HepRotation * getRotation()     const { return _rotation.get(); }
+    virtual CLHEP::Hep3Vector  const & getGlobal()   const { return _origin; }
+    virtual CLHEP::HepRotation const * getRotation() const { return &_rotation; }
 
   protected:
 
-    CLHEP::Hep3Vector _origin;
-    std::unique_ptr<CLHEP::HepRotation> _rotation;
+    CLHEP::Hep3Vector  _origin;
+    CLHEP::HepRotation _rotation;
 
 };
 

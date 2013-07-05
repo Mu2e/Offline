@@ -12,6 +12,8 @@
 #include "BeamlineGeom/inc/PbarWindow.hh"
 #include "BeamlineGeom/inc/TorusSection.hh"
 
+#include "GeneralUtilities/inc/EnumToStringSparse.hh"
+
 // C++ includes
 #include <algorithm>
 #include <map>
@@ -25,22 +27,64 @@ namespace mu2e {
 
   class TransportSolenoid {
     
-    template <typename T>
-    using vector_unique_ptr = std::vector<std::unique_ptr<T>>;
-    
     friend class BeamlineMaker;
 
   public:
     TransportSolenoid() :
       _rTorus(0.), _rVac(0.)
-   {}
+   {
+     // Reserve number of coils
+     for ( unsigned iTS = TSRegion::TS1 ; iTS <= TSRegion::TS5 ; iTS++ )
+       _coilMap[ (TSRegion)iTS ].reserve( getNCoils( (TSRegion)iTS ) );
+   }
 
     // use compiler-generated copy c'tor, copy assignment, and d'tor
 
     // - only the following enums should be used for the following
     //   accessors
-    enum enum_type_ts  { TS1, TS2, TS3, TS4, TS5 };
-    enum enum_type_ext { IN, OUT };
+    class TSRegionDetail {
+    public:
+      enum enum_type  { unknown, TS1, TS2, TS3, TS4, TS5 };
+      static std::string const& typeName() {
+        static std::string type("TSRegion"); return type;
+      }
+      static std::map<enum_type,std::string> const& names() {
+        static std::map<enum_type,std::string> nam;
+        
+        if ( nam.empty() ) {
+          nam[unknown] = "unknown";
+          nam[TS1]     = "TS1";
+          nam[TS2]     = "TS2";
+          nam[TS3]     = "TS3";
+          nam[TS4]     = "TS4";
+          nam[TS5]     = "TS5";
+        }
+
+        return nam;
+      }
+    };
+
+    class TSRadialPartDetail {
+    public:
+      enum enum_type  { unknown, IN, OUT };
+      static std::string const& typeName() {
+        static std::string type("TSRadialPart"); return type;
+      }
+      static std::map<enum_type,std::string> const& names() {
+        static std::map<enum_type,std::string> nam;
+
+        if ( nam.empty() ) {
+          nam[unknown] = "unknown";
+          nam[IN]      = "IN";
+          nam[OUT]     = "OUT";
+        }
+        
+        return nam;
+      }
+    };
+
+    typedef EnumToStringSparse<TSRegionDetail> TSRegion;
+    typedef EnumToStringSparse<TSRadialPartDetail> TSRadialPart;
 
     // Cryo-stat dimensions
     double torusRadius() const { return _rTorus; }
@@ -62,7 +106,7 @@ namespace mu2e {
     std::string insideMaterial() const { return _insideMaterial; }
 
     // make non-const to allow type casting
-    TSSection* getTSCryo(enum_type_ts i,enum_type_ext j) const { return _cryoMap.find(i)->second.at(j); }
+    TSSection* getTSCryo(TSRegion::enum_type i,TSRadialPart::enum_type j) const { return _cryoMap.find(i)->second.at(j); }
 
     StraightSection const& getTS1_in()  const { return _ts1in;  }
     StraightSection const& getTS1_out() const { return _ts1out; }
@@ -78,9 +122,8 @@ namespace mu2e {
 
     // Coils 
     std::string coil_material() const { return _coilMaterial; }
-    unsigned getNCoils(enum_type_ts i) const { return _nCoils.at( (unsigned)i); }
-    const vector_unique_ptr<Coil>& getTSCoils(enum_type_ts i) const      
-    { return _coilMap.find(i)->second; }
+    unsigned getNCoils(TSRegion::enum_type i) const { return _nCoils.at(i); }
+    const std::vector<Coil>& getTSCoils(TSRegion::enum_type i) const { return _coilMap.at(i); }
 
     // Collimators
     CollimatorTS1 const& getColl1()  const { return _coll1;  }
@@ -128,8 +171,14 @@ namespace mu2e {
 
     // Coils
     std::string _coilMaterial;
-    std::map<int,vector_unique_ptr<Coil>> _coilMap;
-    const std::vector<unsigned> _nCoils { 3, 18, 8, 18, 5 };
+    std::map<TSRegion::enum_type,std::vector<Coil>> _coilMap;
+    const std::map<TSRegion::enum_type,unsigned> _nCoils = {
+      {TSRegion::TS1, 3},
+      {TSRegion::TS2,18},
+      {TSRegion::TS3, 8},
+      {TSRegion::TS4,18},
+      {TSRegion::TS5, 5}
+    };
     
     // Collimators
     CollimatorTS1 _coll1;
@@ -137,30 +186,7 @@ namespace mu2e {
     CollimatorTS3 _coll32;
     CollimatorTS5 _coll5;
 
-    PbarWindow _pbarWindow;
-
-  public:
-
-    // Helper utility
-    static void checkSizeOfVectors( const unsigned nCoils, 
-                                    const std::initializer_list<std::vector<double>>& tmp_vecs ) {
-      
-      int sizeMismatches(0);
-      std::for_each( tmp_vecs.begin(),
-                     tmp_vecs.end(),
-                     [nCoils,&sizeMismatches](const std::vector<double>& tmp_vec){
-                       if ( tmp_vec.size() != nCoils ) sizeMismatches++;
-                     } );
-      
-      if ( sizeMismatches > 0 ) {
-        throw cet::exception("VECTOR") 
-          << "Mismatch in specified TS coil parameters and required number of coils \n" 
-          << "Should be " << nCoils; 
-        
-      }
-      
-    }
-    
+    PbarWindow _pbarWindow;    
   };
 
 }

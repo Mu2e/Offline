@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.19 2013/07/02 18:54:18 knoepfel Exp $
+// $Id: constructTS.cc,v 1.20 2013/07/05 14:49:23 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/02 18:54:18 $
+// $Date: 2013/07/05 14:49:23 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -489,18 +489,18 @@ namespace mu2e {
     G4Material* coilMaterial = findMaterialOrThrow( bl.getTS().coil_material() );
 
     // Construct TS coils
-    for ( unsigned iTS = TransportSolenoid::TS1 ; iTS <= TransportSolenoid::TS5 ; iTS++ ) {
-      auto its = (TransportSolenoid::enum_type_ts)iTS;
-      for ( unsigned iC = 0 ; iC < bl.getTS().getNCoils( its ) ; iC++) {
-        Coil const * coil = bl.getTS().getTSCoils( its ).at( iC).get();
+    int iC(0);
+    for ( unsigned iTS = TransportSolenoid::TSRegion::TS1 ; iTS <= TransportSolenoid::TSRegion::TS5 ; iTS++ ) {
+      auto its = (TransportSolenoid::TSRegion::enum_type)iTS;
+      for ( Coil const & coil : bl.getTS().getTSCoils( its ) ) {
         
-        ostringstream coilname ; coilname << "TS" << iTS+1 << "_Coil" << iC+1 ;
-        
+        ostringstream coilname ; coilname << "TS" << iTS+1 << "_Coil" << ++iC ;
+
         nestTubs( coilname.str(),
-                  TubsParams( coil->rIn(), coil->rOut(), coil->halfLength() ),
+                  TubsParams( coil.rIn(), coil.rOut(), coil.halfLength() ),
                   coilMaterial,
-                  coil->getRotation(),
-                  coil->getGlobal()-parent.centerInMu2e(),
+                  coil.getRotation(),
+                  coil.getGlobal()-parent.centerInMu2e(),
                   parent,
                   0,
                   visible,
@@ -512,8 +512,9 @@ namespace mu2e {
                   );
 
         if ( verbosityLevel > 0 ) {
-          cout << __func__ << " " << coilname.str() << " placed at: " << coil->getGlobal() << endl;
-          cout << __func__ << "            rotation: " << -coil->getRotation()->getTheta()/degree << endl;
+          cout << __func__ << " " << coilname.str() << " placed at: " << coil.getGlobal() << endl;
+          cout << __func__ << "            rotation: " << -coil.getRotation()->getTheta()/degree << endl;
+          cout << __func__ << "              params: " << coil.rIn() << " , " << coil.rOut() << " , " << 2*coil.halfLength() << endl;
         }
 
       }
