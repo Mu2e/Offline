@@ -1,9 +1,9 @@
 //
 // Root c++ function to compare tracking plots specified by another macro
 // 
-// $Id: g4validate_01.C,v 1.4 2013/02/14 22:33:55 genser Exp $
+// $Id: g4validate_01.C,v 1.5 2013/07/09 19:28:37 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/14 22:33:55 $
+// $Date: 2013/07/09 19:28:37 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //
@@ -86,17 +86,25 @@ void g4validate_01()
   std::vector<TPaveLabel*> fileLabel;
   std::vector<TString> fileText;
 
-  files.push_back(new TFile("g4validate_01.g4942.qgspberthp.20130211222638.root"));
-  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4942 QGSP_BERT_HP","NDC"));
-  fileText.push_back("g4942QBH");
+//    files.push_back(new TFile("g4validate_01_g4961a_20130530135752.root"));
+//    fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4961a QGSP_BERT_HP mu2e v3_0_1.34","NDC"));
+//    fileText.push_back("g4961aQBHMu2ev3_0_1_34");
 
-  files.push_back(new TFile("g4validate_01.g4952.qgspberthp.20130211234925.root"));
-  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4952 QGSP_BERT_HP","NDC"));
-  fileText.push_back("g4952QBH");
+//    files.push_back(new TFile("g4validate_01_g4962_20130530121321.root"));
+//    fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962  QGSP_BERT_HP mu2e v3_0_1.34","NDC"));
+//    fileText.push_back("g4962QBHMu2ev3_0_1_34");
 
-  files.push_back(new TFile("g4validate_01.g4961.ftfpberthp.20130212083557.root"));
-  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4961 FTFP_BERT_HP","NDC"));
-  fileText.push_back("g4961FBH");
+  files.push_back(new TFile("g4validate_01.g4962.shielding.20130531105554.root"));
+  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962 Shielding       mu2e v3_0_1.34","NDC"));
+  fileText.push_back("g4962Shldv3_0_1_34");
+
+  files.push_back(new TFile("g4validate_01.g4962.shieldingmu2e01.20130531144419.root"));
+  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962 ShieldingMu2e01 mu2e v3_0_1.34","NDC"));
+  fileText.push_back("g4962ShldMu2e01v3_0_1_34");
+
+  files.push_back(new TFile("g4validate_01.g4962.shieldingmu2e00.20130530165103.root"));
+  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962 ShieldingMu2e00 mu2e v3_0_1.34","NDC"));
+  fileText.push_back("g4962ShldMu2e00v3_0_1_34");
 
   // Base name of input file and of all plot files.
   TString basename("ktf");
