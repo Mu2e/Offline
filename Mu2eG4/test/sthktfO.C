@@ -1,9 +1,9 @@
 //
 // Root c++ function to compare plots based on steps, hits, track fits
 // 
-// $Id: sthktfO.C,v 1.1 2013/02/12 22:24:00 genser Exp $
+// $Id: sthktfO.C,v 1.2 2013/07/09 19:28:12 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/12 22:24:00 $
+// $Date: 2013/07/09 19:28:12 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //
@@ -60,11 +60,11 @@ void sthktfO()
 
   // Statistics box for histograms should include all of:
   // number of Entries, Mean, Rms, Underflows, Overflows
-  gStyle->SetOptStat("emruo");
-  // gStyle->SetOptStat(kFALSE);
+  // gStyle->SetOptStat("emruo");
+  gStyle->SetOptStat(kFALSE);
 
   // flag controlling the pause after each canvas 
-  //  bool const interactive = true;
+  // bool const interactive = true;
   bool const interactive = false;
 
   // flag controlling creation of the png files
@@ -79,26 +79,34 @@ void sthktfO()
   // Open the input file that contains histograms and ntuples
   // made by ReadStrawHits_module
 
-  std::vector<TFile*>  file;
+  std::vector<TFile*>  files;
   std::vector<TPaveLabel*> fileLabel;
   std::vector<TString> fileText;
 
-  file.push_back(new TFile("g4validate_01.g4942.qgspberthp.20130211222638.root"));
-  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4942 QGSP_BERT_HP","NDC"));
-  fileText.push_back("g4942QBH");
+//    files.push_back(new TFile("g4validate_01_g4961a_20130530135752.root"));
+//    fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4961a QGSP_BERT_HP mu2e v3_0_1.34","NDC"));
+//    fileText.push_back("g4961aQBHMu2ev3_0_1_34");
 
-  file.push_back(new TFile("g4validate_01.g4952.qgspberthp.20130211234925.root"));
-  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4952 QGSP_BERT_HP","NDC"));
-  fileText.push_back("g4952QBH");
+//    files.push_back(new TFile("g4validate_01_g4962_20130530121321.root"));
+//    fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962  QGSP_BERT_HP mu2e v3_0_1.34","NDC"));
+//    fileText.push_back("g4962QBHMu2ev3_0_1_34");
 
-  file.push_back(new TFile("g4validate_01.g4961.ftfpberthp.20130212083557.root"));
-  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4961 FTFP_BERT_HP","NDC"));
-  fileText.push_back("g4961FBH");
+  files.push_back(new TFile("g4validate_01.g4962.shielding.20130531105554.root"));
+  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962 Shielding       mu2e v3_0_1.34","NDC"));
+  fileText.push_back("g4962Shldv3_0_1_34");
+
+  files.push_back(new TFile("g4validate_01.g4962.shieldingmu2e01.20130531144419.root"));
+  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962 ShieldingMu2e01 mu2e v3_0_1.34","NDC"));
+  fileText.push_back("g4962ShldMu2e01v3_0_1_34");
+
+  files.push_back(new TFile("g4validate_01.g4962.shieldingmu2e00.20130530165103.root"));
+  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962 ShieldingMu2e00 mu2e v3_0_1.34","NDC"));
+  fileText.push_back("g4962ShldMu2e00v3_0_1_34");
 
   // Base name of input file and of all plot files.
   TString basename("steps_sh_ktf");
 
-  const Int_t nfiles = file.size();
+  const Int_t nfiles = files.size();
 
   for (Int_t ii=0; ii!=nfiles; ++ii) {
     fileLabel[ii]->SetBorderSize(0);
@@ -150,59 +158,59 @@ void sthktfO()
 
     // histograms
 
-    file[ii]->GetObject("checkhits/hMultiplicity",  _tmp); if (ii==0) {++nhistc;}
+    files[ii]->GetObject("checkhits/hMultiplicity",  _tmp); if (ii==0) {++nhistc;}
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hMultiplicity[ii]=_tmp;
-    file[ii]->GetObject("checkhits/hHitNeighbours", _tmp); if (ii==0) {++nhistc;}
+    files[ii]->GetObject("checkhits/hHitNeighbours", _tmp); if (ii==0) {++nhistc;}
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitNeighbours[ii]=_tmp;
-    file[ii]->GetObject("checkhits/hEnergyDep",     _tmp); if (ii==0) {++nhistc;}
+    files[ii]->GetObject("checkhits/hEnergyDep",     _tmp); if (ii==0) {++nhistc;}
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hEnergyDep[ii]=_tmp;
-    file[ii]->GetObject("checkhits/hStepLength",    _tmp); if (ii==0) {++nhistc;}
+    files[ii]->GetObject("checkhits/hStepLength",    _tmp); if (ii==0) {++nhistc;}
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hStepLength[ii]=_tmp;
-    file[ii]->GetObject("checkhits/hRadius",        _tmp); if (ii==0) {++nhistc;}
+    files[ii]->GetObject("checkhits/hRadius",        _tmp); if (ii==0) {++nhistc;}
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hRadius[ii]=_tmp;
-    file[ii]->GetObject("checkhits/hxHit",          _tmp); if (ii==0) {++nhistc;}
+    files[ii]->GetObject("checkhits/hxHit",          _tmp); if (ii==0) {++nhistc;}
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hxHit[ii]=_tmp;
-    file[ii]->GetObject("checkhits/hyHit",          _tmp); if (ii==0) {++nhistc;}
+    files[ii]->GetObject("checkhits/hyHit",          _tmp); if (ii==0) {++nhistc;}
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hyHit[ii]=_tmp;
-    file[ii]->GetObject("checkhits/hzHit",          _tmp); if (ii==0) {++nhistc;}
+    files[ii]->GetObject("checkhits/hzHit",          _tmp); if (ii==0) {++nhistc;}
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hzHit[ii]=_tmp;
 
-    file[ii]->GetObject("readStrawHits/hHitTime",       _tmp); if (ii==0) {++nhistc;} 
+    files[ii]->GetObject("readStrawHits/hHitTime",       _tmp); if (ii==0) {++nhistc;} 
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitTime[ii]=_tmp; 
-    file[ii]->GetObject("readStrawHits/hHitDeltaTime",  _tmp); if (ii==0) {++nhistc;} 
+    files[ii]->GetObject("readStrawHits/hHitDeltaTime",  _tmp); if (ii==0) {++nhistc;} 
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitDeltaTime[ii]=_tmp; 
-    file[ii]->GetObject("readStrawHits/hHitEnergy",     _tmp); if (ii==0) {++nhistc;} 
+    files[ii]->GetObject("readStrawHits/hHitEnergy",     _tmp); if (ii==0) {++nhistc;} 
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitEnergy[ii]=_tmp; 
-    file[ii]->GetObject("readStrawHits/hNHits",         _tmp); if (ii==0) {++nhistc;} 
+    files[ii]->GetObject("readStrawHits/hNHits",         _tmp); if (ii==0) {++nhistc;} 
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hNHits[ii]=_tmp; 
-    file[ii]->GetObject("readStrawHits/hNHitsPerWire",  _tmp); if (ii==0) {++nhistc;} 
+    files[ii]->GetObject("readStrawHits/hNHitsPerWire",  _tmp); if (ii==0) {++nhistc;} 
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hNHitsPerWire[ii]=_tmp; 
-    file[ii]->GetObject("readStrawHits/hDriftTime",     _tmp); if (ii==0) {++nhistc;} 
+    files[ii]->GetObject("readStrawHits/hDriftTime",     _tmp); if (ii==0) {++nhistc;} 
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hDriftTime[ii]=_tmp; 
-    file[ii]->GetObject("readStrawHits/hDriftDistance", _tmp); if (ii==0) {++nhistc;} 
+    files[ii]->GetObject("readStrawHits/hDriftDistance", _tmp); if (ii==0) {++nhistc;} 
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hDriftDistance[ii]=_tmp; 
-    file[ii]->GetObject("readStrawHits/hDistanceToMid", _tmp); if (ii==0) {++nhistc;} 
+    files[ii]->GetObject("readStrawHits/hDistanceToMid", _tmp); if (ii==0) {++nhistc;} 
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hDistanceToMid[ii]=_tmp; 
-    file[ii]->GetObject("readStrawHits/hNG4Steps",      _tmp); if (ii==0) {++nhistc;} 
+    files[ii]->GetObject("readStrawHits/hNG4Steps",      _tmp); if (ii==0) {++nhistc;} 
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hNG4Steps[ii]=_tmp; 
-    file[ii]->GetObject("readStrawHits/hG4StepLength",  _tmp); if (ii==0) {++nhistc;} 
+    files[ii]->GetObject("readStrawHits/hG4StepLength",  _tmp); if (ii==0) {++nhistc;} 
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hG4StepLength[ii]=_tmp; 
-    file[ii]->GetObject("readStrawHits/hG4StepRelTimes",    _tmp); if (ii==0) {++nhistc;} 
+    files[ii]->GetObject("readStrawHits/hG4StepRelTimes",    _tmp); if (ii==0) {++nhistc;} 
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hG4StepRelTimes[ii]=_tmp; 
-    file[ii]->GetObject("readStrawHits/hG4StepEdep",    _tmp); if (ii==0) {++nhistc;} 
+    files[ii]->GetObject("readStrawHits/hG4StepEdep",    _tmp); if (ii==0) {++nhistc;} 
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hG4StepEdep[ii]=_tmp; 
 
     // ntuples
 
-    file[ii]->GetObject("checkhits/ntup",     _tmpnt); if (ii==0) {++nntc;} 
+    files[ii]->GetObject("checkhits/ntup",     _tmpnt); if (ii==0) {++nntc;} 
     if (_tmpnt==0) {cerr << "missing ntuple" <<endl; return;} _nt[ii]=_tmpnt; 
 
-    file[ii]->GetObject("readStrawHits/ntup", _tmpnt); if (ii==0) {++nntc;} 
+    files[ii]->GetObject("readStrawHits/ntup", _tmpnt); if (ii==0) {++nntc;} 
     if (_tmpnt==0) {cerr << "missing ntuple" <<endl; return;} _snt[ii]=_tmpnt; 
 
     // trees
 
-    file[ii]->GetObject("RKFDownstreameMinus/trkdiag", _tmptree); if (ii==0) {++ntreec;} 
+    files[ii]->GetObject("RKFDownstreameMinus/trkdiag", _tmptree); if (ii==0) {++ntreec;} 
     if (_tmptree==0) {cerr << "missing tree" <<endl; return;} _tftree[ii]=_tmptree; 
 
   }
