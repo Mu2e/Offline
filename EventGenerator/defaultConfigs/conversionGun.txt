@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: conversionGun.txt,v 1.5 2012/03/03 00:34:08 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/03 00:34:08 $
+// $Id: conversionGun.txt,v 1.6 2013/07/12 17:17:38 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/12 17:17:38 $
 //
 // Original author Rob Kutschke
 
@@ -11,7 +11,7 @@
 bool conversionGun.do = true;
 
 //Momentum value at the spectrum nd point.
-double conversionGun.p = 104.96;
+// double conversionGun.p = 104.96; - calculated automatically, should not be used
 
 // Limits on cos(polar angle):
 double conversionGun.czmin = -1.0;

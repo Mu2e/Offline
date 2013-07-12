@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.21 2013/07/08 16:59:57 knoepfel Exp $
+// $Id: constructTS.cc,v 1.22 2013/07/12 17:17:38 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/08 16:59:57 $
+// $Date: 2013/07/12 17:17:38 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -391,11 +391,17 @@ namespace mu2e {
                                        );
     // Build TS5.
     strsec = &ts->getTS5_in();
+    
+    CLHEP::Hep3Vector globalVac5Position = CLHEP::Hep3Vector(strsec->getGlobal().x(),
+                                                             strsec->getGlobal().y(),
+                                                             strsec->getGlobal().z()+ts->endWallD_halfLength() );
+
     VolumeInfo ts5VacInfo = nestTubs( "TS5Vacuum",
-                                      TubsParams( 0., rVac, strsec->getHalfLength() ),
+                                      TubsParams( 0., rVac, 
+                                                  strsec->getHalfLength()+ts->endWallD_halfLength() ),
                                       vacuumMaterial,
                                       strsec->getRotation(),
-                                      strsec->getGlobal()-_hallOriginInMu2e,
+                                      globalVac5Position-_hallOriginInMu2e,
                                       parent,
                                       0,
                                       visible,

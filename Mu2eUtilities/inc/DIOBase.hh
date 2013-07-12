@@ -5,12 +5,17 @@
 // Base class to allow generic access to all the classes that define
 // DIO momentum spectrum.
 //
-// $Id: DIOBase.hh,v 1.3 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
+// $Id: DIOBase.hh,v 1.4 2013/07/12 17:17:38 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/12 17:17:38 $
 //
-// Original author Gianni Onorato
-//
+// Original author Kyle Knoepfel 
+//                 
+
+// C++ includes
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace mu2e {
 
@@ -24,7 +29,16 @@ namespace mu2e {
     virtual ~DIOBase() {
     }
 
-    virtual double fire() = 0;
+    virtual double getWeight(double E) = 0;
+
+  protected:
+
+    virtual void readTable() {}
+    virtual void checkTable() const;
+
+    typedef std::pair<double,double> SpectrumValue;
+
+    std::vector<SpectrumValue> _table;
 
   };
 

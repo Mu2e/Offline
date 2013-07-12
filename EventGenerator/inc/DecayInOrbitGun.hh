@@ -3,11 +3,18 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.31 2013/05/31 18:07:29 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 18:07:29 $
+// $Id: DecayInOrbitGun.hh,v 1.32 2013/07/12 17:17:38 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/12 17:17:38 $
 //
 //
+// ====================================================================
+//
+// IMPORTANT NOTE:
+//
+//    _ehi MUST BE initialized before any of the CLHEP::Rand* variables
+//
+// ====================================================================
 
 // C++ includes
 #include <memory>
@@ -19,7 +26,6 @@
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/ReadDIOSpectrum.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -58,11 +64,10 @@ namespace mu2e {
     double _elow;
     double _ehi;
     int    _nbins;
-    double _convEnergy;
 
     // Class object to generate position and time of the particle
     std::unique_ptr<FoilParticleGenerator> _fGenerator;
-    std::unique_ptr<ReadDIOSpectrum> _randEnergy;
+    std::unique_ptr<ReadDIOSpectrum> _dioSpectrum;
 
     // Limits on the generated direction.
     double _czmin;
@@ -86,10 +91,7 @@ namespace mu2e {
     double _tmin;
     double _tmax;
 
-    double _p; //particle momentum
-
     double _mass; //electron mass
-    double _mumass; //muon mass needed to pass as paramenter to ReadDIOSpectrum constructor
 
     // Histogram control.
     bool _doHistograms;
@@ -100,16 +102,7 @@ namespace mu2e {
     // Kind of spectrum to be used
     std::string _energySpectrum;
 
-    // Czarnecki parameters
-    const std::vector<double>* _coeff;
-
     // End: parameters that can be configured from the config file.
-
-    // Random number generators.
-    CLHEP::RandGeneral _randSimpleEnergy;
-    CLHEP::RandFlat _randFlatEnergy;
-    CLHEP::RandPoissonQ _randPoissonQ;
-    RandomUnitSphere _randomUnitSphere;
 
     std::string _stFname;
 

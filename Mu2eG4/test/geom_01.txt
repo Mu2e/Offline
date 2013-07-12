@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.189 2013/07/02 15:57:07 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/07/02 15:57:07 $
+// $Id: geom_01.txt,v 1.190 2013/07/12 17:17:38 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/12 17:17:38 $
 //
 // Original author Rob Kutschke
 //
@@ -212,7 +212,6 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/test/PSShield_v01.txt"
 #include "Mu2eG4/test/TransportSolenoid_v01.txt"
 
-
 // Virtual detectors
 double vd.halfLength     = 0.01; //mm
 int    vd.verbosityLevel = 0;
@@ -274,8 +273,8 @@ vector<double> stoppingTarget.radii  =
        66.41,  65.30 };
 
 // last material given will be repeated up to number radii.size()
-vector<string> stoppingTarget.materials =
-    { "G4_Al"};
+//  vector<string> stoppingTarget.materials = 
+//      { "G4_Al"};
 
 // Variation of locations of foil centers
 // z: variations from equal spacings according to z0 and deltaZ

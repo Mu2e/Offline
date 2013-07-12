@@ -1,9 +1,9 @@
 //
 // 
 //
-// $Id: decayInOrbitGun.txt,v 1.5 2012/03/03 00:34:08 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/03 00:34:08 $
+// $Id: decayInOrbitGun.txt,v 1.6 2013/07/12 17:17:38 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/12 17:17:38 $
 //
 // Original author Rob Kutschke
 // added DecayInOrbitGun process
@@ -24,7 +24,7 @@ double decayinorbitGun.phimax = 6.283185307179586;
 
 // Energy Ranges (MeV)
 double decayinorbitGun.elow =   0.1;
-double decayinorbitGun.ehi = 104.96;
+// double decayinorbitGun.ehi = 104.96; // default endpoint value is automatically calculated
 
 // Time limits in ns, relative to protons on target.
 double decayinorbitGun.tmin  =      0.;

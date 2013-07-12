@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: ConversionGun.cc,v 1.46 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: ConversionGun.cc,v 1.47 2013/07/12 17:17:38 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/12 17:17:38 $
 //
 // Original author Rob Kutschke
 //
@@ -22,6 +22,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "ConditionsService/inc/PhysicsParams.hh"
 #include "EventGenerator/inc/ConversionGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
@@ -38,10 +39,6 @@ using namespace std;
 
 namespace mu2e {
 
-  // Need a Conditions entity to hold info about conversions:  // endpoints and lifetimes for different materials etc
-  // Grab them from Andrew's minimc package?
-  static const double pEndPoint = 104.96;
-
   ConversionGun::ConversionGun( art::Run& run, const SimpleConfig& config ):
 
     // Base class
@@ -49,7 +46,7 @@ namespace mu2e {
 
     // Get initializers from the run time configuration.
     // Initialization of tmin and tmax is deferred.
-    _p     (config.getDouble("conversionGun.p", pEndPoint )),
+    _p     (config.getDouble("conversionGun.p", GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy() )),
     _czmin (config.getDouble("conversionGun.czmin", -1.0)),
     _czmax (config.getDouble("conversionGun.czmax",  1.0)),
     _phimin(config.getDouble("conversionGun.phimin", 0. )),

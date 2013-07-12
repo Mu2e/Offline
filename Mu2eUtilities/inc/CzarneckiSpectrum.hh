@@ -4,58 +4,36 @@
 // Read Czarnecki DIO spectrum from a table and merge it
 // with the spectrum coming from the endopoint region formula
 
-// $Id: CzarneckiSpectrum.hh,v 1.4 2012/05/08 19:09:59 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/05/08 19:09:59 $
+// $Id: CzarneckiSpectrum.hh,v 1.5 2013/07/12 17:17:38 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/12 17:17:38 $
 //
-// Original Author: Gianni Onorato
+// Original Author: Kyle Knoepfel
 //
-
-// C++ includes
-#include <utility>
-#include <vector>
-
-// Framework includes
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/DIOBase.hh"
 
-//CLHEP includes
-#include "CLHEP/Random/RandGeneral.h"
-
 namespace mu2e {
 
-  class CzarneckiSpectrum {
+  class CzarneckiSpectrum : public DIOBase {
 
-    struct Value{
-      double energy;
-      double weight;
-    };
-      
-      
   public:
     
-    CzarneckiSpectrum(int atomicZ);
-    
-    ~CzarneckiSpectrum();
+    CzarneckiSpectrum();
 
-    double operator()(double E);
+    double getWeight(double E) override;
 
   private:
 
-    int _znum;
-
-    std::vector<Value> _table;
-
-    void readTable();
-
-    void checkTable();
-
     //    double FitCzarnecki(double E); maybe we'll use it later
 
-    double interpulate(double E, double e1, double p1,
+    void readTable() override;
+
+    double interpolate(double E, double e1, double p1,
                        double e2, double p2, double e3, double p3);  
+
+    double interpolateE5(double E, const SpectrumValue& value);
 
   };
 

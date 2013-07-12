@@ -2,9 +2,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: StoppingTargetMaker.cc,v 1.1 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: StoppingTargetMaker.cc,v 1.2 2013/07/12 17:17:38 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/12 17:17:38 $
 //
 // Original author Peter Shanahan
 //
@@ -18,6 +18,8 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/PhysicsParams.hh"
 #include "StoppingTargetGeom/inc/StoppingTargetMaker.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "CLHEP/Vector/Rotation.h"
@@ -84,11 +86,16 @@ namespace mu2e {
     for (unsigned int ii=size; ii<_rOut.size(); ++ii)
       _yCos.push_back(_yCos[size-1]);
 
-    // materials can be repeated from last element specified
-    c.getVectorString("stoppingTarget.materials",_materials);
-    size=_materials.size();
-    for (unsigned int ii=size; ii<_rOut.size(); ++ii)
-      _materials.push_back(_materials[size-1]);
+    // Stopping target material determined from specified target material
+    // in globalConstants_01.txt file
+    GlobalConstantsHandle<PhysicsParams> phy;
+    _materials.assign( _rOut.size(), "G4_"+phy->getStoppingTarget() );
+
+    if ( c.hasName("stoppingTarget.materials") ){
+      throw cet::exception("GEOM")
+        << "Specifying stopping target material in geometry file not allowed!\n"
+        << "Material is specified in Mu2eG4/test/globalConstants_01.txt\n ";
+    }
 
     // material of the target enclosing volume
     _fillMaterial=c.getString("stoppingTarget.fillMaterial");

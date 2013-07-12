@@ -1,19 +1,20 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.57 2013/06/11 16:34:53 knoepfel Exp $
+// $Id: DecayInOrbitGun.cc,v 1.58 2013/07/12 17:17:38 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/06/11 16:34:53 $
+// $Date: 2013/07/12 17:17:38 $
 //
 // Original author Rob Kutschke
 //
 
 #include "cetlib/pow.h"
-#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandGeneral.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/PhysicsParams.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -28,30 +29,19 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+
+#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+
+
 #include <iostream>
 
 using namespace std;
 
 //using CLHEP::Hep3Vector;
 //using CLHEP::HepLorentzVector;
-//using CLHEP::RandFlat;
 //using CLHEP::twopi;
 
 namespace mu2e {
-
-  // Need a Conditions entity to hold info about conversions:
-  // endpoints and lifetimes for different materials etc
-  // Grab them from Andrew's minimc package?
-
-  // Set constants
-  
-  static const double conversionEnergyAluminum = 104.973;
-  static const double conversionEnergyTitanium = 104.173;
-
-  // Czarnecki coefficients for poly5-8 approximation, valid in region 85 MeV < E_e < endpoint
-  static const vector<double> coeffDef = {1.};
-  static const vector<double> coeffAl  = {8.64340e-17, 1.16874e-17, -1.87828e-19, 9.16327e-20};
-  static const vector<double> coeffTi  = {4.44278e-16, 9.06648e-17, -4.26245e-18, 8.19300e-19};
 
   DecayInOrbitGun::DecayInOrbitGun( art::Run& run, const SimpleConfig& config ):
 
@@ -61,7 +51,7 @@ namespace mu2e {
     // Information from config file.
     _mean(config.getDouble("decayinorbitGun.mean",1.)),
     _elow(config.getDouble("decayinorbitGun.elow",0.)),
-    _ehi(config.getDouble("decayinorbitGun.ehi",conversionEnergyAluminum)),
+    _ehi(config.getDouble("decayinorbitGun.ehi",GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy())),
     _nbins(config.getInt("decayinorbitGun.nbins",1000)),
     _czmin(config.getDouble("decayinorbitGun.czmin", -1.0)),
     _czmax(config.getDouble("decayinorbitGun.czmax",  1.0)),
@@ -77,10 +67,6 @@ namespace mu2e {
     _doHistograms(config.getBool("decayinorbitGun.doHistograms", true)),
     _spectrumResolution(config.getDouble("decayinorbitGun.spectrumResolution", 0.1)),
     _energySpectrum(config.getString("decayinorbitGun.energySpectrum", "Czarnecki")),
-    _randSimpleEnergy(getEngine(), &(binnedEnergySpectrum()[0]), _nbins ),
-    _randFlatEnergy(getEngine(),_elow,_ehi),
-    _randPoissonQ( getEngine(), std::abs(_mean) ),
-    _randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax ),
     _stFname(config.getString("FoilParticleGenerator.STfilename","ExampleDataFiles/StoppedMuons/stoppedMuons_02.txt")),
     _nToSkip (config.getInt("decayinorbitGun.nToSkip",0)),
 
@@ -103,9 +89,6 @@ namespace mu2e {
     const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
     _mass = e_data.mass().value();
 
-    const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
-    _mumass = mu_data.mass().value();
-
     // Sanity checks.
     if ( std::abs(_mean) > 99999. ) {
       throw cet::exception("RANGE")
@@ -113,9 +96,11 @@ namespace mu2e {
         << _mean
         << "\n";
     }
-    if (_ehi > (conversionEnergyAluminum+1)) { // 1 MeV of tolerance for energy range
+
+    GlobalConstantsHandle<PhysicsParams> phy;
+    if (_ehi > (phy->getEndpointEnergy()+1)) { // 1 MeV of tolerance for energy range
       throw cet::exception("RANGE")
-        << "Generation energy range must be within 0 and 104.96 (plus 1 MeV of tolerance)"
+        << "Generation energy range must be within 0 and " << phy->getEndpointEnergy() << " (plus 1 MeV of tolerance)"
         << '\n';
     }
 
@@ -123,26 +108,18 @@ namespace mu2e {
       _elow = _mass + 0.001;
       cout << "Lower bound of the DIO spectrum must be higher than electron mass. Set to electron mass + 0.001 MeV" << endl;
     }
-    if ((_energySpectrum == "simple" || _energySpectrum == "flat") && _ehi <=_mass) {
+    if ((_energySpectrum == "pol5" || _energySpectrum == "pol58" || _energySpectrum == "flat") && _ehi <=_mass) {
       throw cet::exception("RANGE")
         << "Using a not tabulated spectrum provides that the minimum energy must be higher than "
         << "electron mass"
         << '\n';
     }
 
-    if (_energySpectrum == "Czarnecki" ) {
-      _dioGenId = GenId::dioCzarnecki;
-    } else if (_energySpectrum == "ShankerWanatabe" ) {
-      _dioGenId = GenId::dioShankerWanatabe;
-    } else  if (_energySpectrum == "flat" ) {
-      _dioGenId = GenId::dioFlat;
-    } else if (_energySpectrum == "simple" ) {
-      _dioGenId   = GenId::dioE5;
-    } else if (_energySpectrum == "simplePolAl" ) {
-      _dioGenId   = GenId::dioPolAl;
-    } else if (_energySpectrum == "simplePolTi" ) {
-      _dioGenId   = GenId::dioPolTi;
-    }
+    if      ( _energySpectrum == "Czarnecki"       ) _dioGenId = GenId::dioCzarnecki;
+    else if ( _energySpectrum == "ShankerWatanabe" ) _dioGenId = GenId::dioShankerWanatabe;
+    else if ( _energySpectrum == "flat"            ) _dioGenId = GenId::dioFlat;
+    else if ( _energySpectrum == "pol5"            ) _dioGenId = GenId::dioE5;
+    else if ( _energySpectrum == "pol58"           ) _dioGenId = GenId::dioE58;
     else {
       throw cet::exception("CONFIG")
         << "Energy spectrum for DIO not allowed\n";
@@ -190,18 +167,19 @@ namespace mu2e {
                                   _stFname,
                                   _nToSkip));
 
-    if ( _energySpectrum == "ShankerWanatabe" ||
-         _energySpectrum == "Czarnecki" ) {
-      _randEnergy = unique_ptr<ReadDIOSpectrum>(new ReadDIOSpectrum(13, _mumass, _mass, _elow, _ehi, _spectrumResolution, _energySpectrum, getEngine()));
-    }
+    _dioSpectrum = unique_ptr<ReadDIOSpectrum>( new ReadDIOSpectrum( _elow, _ehi, _spectrumResolution, _energySpectrum ) );
+
   }
 
   DecayInOrbitGun::~DecayInOrbitGun(){
   }
 
   void DecayInOrbitGun::generate( GenParticleCollection& genParts ){
+
     // Choose the number of electrons to generate this event.
-    long n = (_mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire());
+    static CLHEP::RandPoissonQ randPoissonQ( getEngine(), std::abs(_mean) );
+
+    long n = (_mean < 0 ? static_cast<long>(-_mean): randPoissonQ.fire());
 
     if ( _doHistograms ) {
       _hMultiplicity->Fill(n);
@@ -217,22 +195,13 @@ namespace mu2e {
       _fGenerator->generatePositionAndTime(pos, time, _timeFolding);
 
       //Pick up energy and momentum vector
-      double e(0);
+      static CLHEP::RandGeneral randEnergy( getEngine(), _dioSpectrum->getPDF(), _dioSpectrum->getNbins() );
+      static RandomUnitSphere randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax );
 
-      if ( _dioGenId == GenId::dioCzarnecki) {
-        e = _randEnergy->fire();
-      } else if ( _dioGenId == GenId::dioShankerWanatabe) {
-        e = _randEnergy->fire();
-      } else if ( _dioGenId ==  GenId::dioE5    || 
-                  _dioGenId ==  GenId::dioPolAl || 
-                  _dioGenId ==  GenId::dioPolTi ) {
-        e = _elow + _randSimpleEnergy.fire() * (_ehi - _elow);
-      } else if ( _dioGenId == GenId::dioFlat ) {
-        e = _randFlatEnergy.fire();
-      }
+      const double e = _elow + randEnergy.fire()*(_ehi-_elow);
+      const double p = safeSqrt(e*e - _mass*_mass);
 
-      _p = safeSqrt(e*e - _mass*_mass);
-      CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_p);
+      CLHEP::Hep3Vector p3 = randomUnitSphere.fire(p);
 
       //Set Four-momentum
       CLHEP::HepLorentzVector mom(p3,e);
@@ -262,13 +231,23 @@ namespace mu2e {
   // Input energy in MeV
   double DecayInOrbitGun::energySpectrum( double e )
   {
-    double prob  = 0.;
-    double delta = _convEnergy - e;
-    if ( delta < 0. ) return prob;
+    GlobalConstantsHandle<PhysicsParams> phy;
+
+    double delta = phy->getMuonEnergy() - e - cet::pow<2>( e )/(2*phy->getAtomicMass());
+      
+    if ( phy->getEndpointEnergy()-e < 0 ) return 0.;
     double power = cet::pow<5>( delta );
-    for ( size_t i=0; i < _coeff->size() ; i++ ) {
+
+    const auto & coeffs = phy->getCzarneckiCoefficients();
+
+    if ( coeffs.empty() ) {
+      return phy->getCzarneckiCoefficient()*power;
+    }
+
+    double prob(0.);
+    for ( size_t i=0; i < coeffs.size() ; i++ ) {
       if( i > 0 ) power *= delta; 
-      prob += _coeff->at(i)*power;
+      prob += coeffs.at(i)*power;
     }
     return prob;
   }
@@ -295,27 +274,10 @@ namespace mu2e {
     std::vector<double> spectrum;
     spectrum.reserve(_nbins);
 
-    // Set Czarnecki coefficients
-    if        (_energySpectrum == "simplePolAl" ) {
-      _convEnergy = conversionEnergyAluminum; 
-      _coeff      = &coeffAl;
-    } else if (_energySpectrum == "simplePolTi" ) {
-      _convEnergy = conversionEnergyTitanium; 
-      _coeff      = &coeffTi;
-    } else {
-      _convEnergy = conversionEnergyAluminum;
-      _coeff      = &coeffDef;
-    }
-
-    if ( !_coeff ) {
-      throw cet::exception("RANGE")
-        << "Czarnecki coefficients not set!" 
-        << endl;
-    }
-
     for (int ib=0; ib<_nbins; ib++) {
       double x = _elow+(ib+0.5) * dE;
       spectrum.push_back(energySpectrum(x));
+      //      std::cout << x << " MeV: " << spectrum.back() << std::endl;
     }
 
     return spectrum;

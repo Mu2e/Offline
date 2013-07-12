@@ -2,55 +2,52 @@
 #define Mu2eUtilities_ReadDIOSpectrum_hh
 //
 // Generate a momentum for the DIO electrons, using custom
-// spectrum (so far Shanker-Wanatabe or Czarnecki
+// spectrum 
 //
-// $Id: ReadDIOSpectrum.hh,v 1.3 2012/02/24 20:05:52 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/24 20:05:52 $
+// $Id: ReadDIOSpectrum.hh,v 1.4 2013/07/12 17:17:38 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/12 17:17:38 $
 //
 // Original Author: Gianni Onorato
-//
-
-// C++ includes
-#include <vector>
-
-// Framework includes
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+//                  Kyle Knoepfel (significant updates)
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/DIOBase.hh"
 
-//CLHEP includes
-#include "CLHEP/Random/RandGeneral.h"
+// C++ includes
+#include <memory>
+#include <vector>
 
 namespace mu2e {
 
-  class ReadDIOSpectrum: public DIOBase {
+  class DIOBase;
+
+  class ReadDIOSpectrum {
 
   public:
 
-    ReadDIOSpectrum(int atomicZ, double mumass, double emass, double emin, double emax, 
-                    double spectRes, std::string spectrum, art::RandomNumberGenerator::base_engine_t & engine);
-
+    ReadDIOSpectrum( double emin, double emax, double spectRes, std::string spectrum ); 
     ~ReadDIOSpectrum();
 
-    double fire();
+    // To make accessible to CLHEP::RandGeneral, return pointer to 
+    // first spectrum entry
+    const double* getPDF()   const { return &(*_spectrum.begin() ); }
+    unsigned      getNbins() const { return _spectrum.size();       }
 
   private:
 
-    int _znum;
+    double _emin; 
+    double _emax; 
+    double _res;
+    std::string _spectrumName;
 
-    double _mumass, _emass, _emin, _emax, _res;
+    std::unique_ptr<DIOBase> _dioShape;
+    std::vector<double> _spectrum;
 
-    int calculateNBins();
-
-    int _nBinsSpectrum;
-
-    std::string _spectrum;
-
-    CLHEP::RandGeneral _randEnergy;
-
-    std::vector<double> readSpectrum();
+    inline void makeSpectrum() {
+      for ( double step = _emin ; step <= _emax ; step += _res ) 
+        _spectrum.push_back( _dioShape->getWeight(step) );
+    }
 
   };
 

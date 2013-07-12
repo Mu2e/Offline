@@ -419,7 +419,7 @@ namespace mu2e {
   double FoilParticleGenerator::getMuTimeDecay() {
 
   GlobalConstantsHandle<PhysicsParams> phyPar;
-  double tau = phyPar->decayTime;
+  double tau = phyPar->getDecayTime();
   if (tau < 0 || tau > 3500) { //bigger than muon decay time
     throw cet::exception("RANGE")
       << "nonsense decay time of bound state";

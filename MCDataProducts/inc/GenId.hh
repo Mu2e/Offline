@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.12 2013/05/17 19:35:01 knoepfel Exp $
+// $Id: GenId.hh,v 1.13 2013/07/12 17:17:38 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/05/17 19:35:01 $
+// $Date: 2013/07/12 17:17:38 $
 //
 // Original author Rob Kutschke
 //
@@ -36,25 +36,24 @@ namespace mu2e {
     enum enum_type {
       unknown,       particleGun,       conversionGun,
       cosmicToy,     cosmicDYB,         cosmic,          dioShankerWanatabe,
-      dioCzarnecki,  dioFlat,              pionCapture,
+      dioCzarnecki,  dioE5,  dioE58,  dioFlat,           pionCapture,
       muonCapture,   muonDecayInFlight, ejectedProtonGun,
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi,
       ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC,
-      extMonFNALGun, dioE5, fromStepPointMCs, stoppedMuonGun, PiCaptureCombined,
-      MARS, dioPolAl, dioPolTi, 
-      lastEnum
+      extMonFNALGun, fromStepPointMCs, stoppedMuonGun, PiCaptureCombined,
+      MARS, lastEnum
     };
 
     // Keep this in sync with the enum. Used in GenId.cc
 #define GENID_NAMES                                                     \
     "unknown",      "particleGun",       "conversionGun",               \
       "cosmicToy",    "cosmicDYB",         "cosmic",           "dioShankerWanatabe",  \
-      "dioCzarnecki",     "dioFlat",              "pionCapture",                \
+      "dioCzarnecki", "dioFlat",  "dioE5", "dioE58",           "pionCapture", \
       "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",          \
       "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi", \
       "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "internalRPC", \
-      "extMonFNALGun", "dioE5", "fromStepPointMCs", "stoppedMuonGun", "PiCaptureCombined", \
-      "MARS", "dioPolAl", "dioPolTi"
+      "extMonFNALGun", "fromStepPointMCs", "stoppedMuonGun", "PiCaptureCombined", \
+      "MARS"
   public:
 
     // The most important c'tor and accessor methods are first.
@@ -102,7 +101,7 @@ namespace mu2e {
 
     bool isDio() {
       return (_id == dioCzarnecki || _id == dioShankerWanatabe || _id == dioFlat  || 
-              _id == dioE5        || _id == dioPolAl           || _id == dioPolTi );
+              _id == dioE5        || _id == dioE58 );
     }
 
     // Accessor for the version.

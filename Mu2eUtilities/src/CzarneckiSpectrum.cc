@@ -4,72 +4,68 @@
 // in the endpoint region taken from Czarnecki spectrum
 // Czarneckki et al 10.1103/PhysRevD.84.013006
 //
-// $Id: CzarneckiSpectrum.cc,v 1.7 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: CzarneckiSpectrum.cc,v 1.8 2013/07/12 17:17:38 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/12 17:17:38 $
 //
 
+// Mu2e includes
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/PhysicsParams.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 
-#include "CLHEP/Units/PhysicalConstants.h"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+// Framework includes
 #include "cetlib/pow.h"
-#include <cmath>
+
+// C++ includes
 #include <fstream>
 #include <iostream>
-
-using namespace std;
-
-using cet::cube;
-using cet::pow;
-using cet::square;
+#include <vector>
 
 namespace mu2e {
 
-  CzarneckiSpectrum::CzarneckiSpectrum(int atomicZ):
-  //atomic number of the foil material
-    _znum ( atomicZ )
+  CzarneckiSpectrum::CzarneckiSpectrum()
   {
     readTable();
     checkTable();
   }
 
-  CzarneckiSpectrum::~CzarneckiSpectrum()
-  {
-  }
+  double CzarneckiSpectrum::getWeight(double E) {
 
-  double CzarneckiSpectrum::operator()(double E) {
+    std::vector<SpectrumValue>::iterator it = _table.begin();
+    while ((it != _table.end()) && (it->first > E)) it++;
 
-    vector<Value>::iterator it = _table.begin();
-    //    cout << "Searching for " << E << endl;
-    while ((it != _table.end()) && (it->energy > E)) {
-      //    cout << "In the table I have " << it->first << endl;
-      it++;
-    }
+    if (it == _table.end()) return 0;
+    
+    double weight (0.);
 
-    if (it == _table.end()) {
-      return 0;
-    } 
-
-    if (it->energy <= E) { 
+    if (it->first <= E) { 
       if ( it==_table.begin() || (it+1)==_table.end()) {
-	return it->weight;
+	weight = it->second;
       } else {
-	// cout << "Interpulating" << endl;
-	return interpulate(E, (it+1)->energy, (it+1)->weight,
-			   it->energy, it->weight,
-			   (it-1)->energy, (it-1)->weight);
+        //        std::cout << "Interpolating" << std::endl;
+        weight = interpolate(E, (it+1)->first, (it+1)->second,
+                             it->first, it->second,
+                             (it-1)->first, (it-1)->second);
+
+        if ( weight < 0 ) weight = interpolateE5 ( E, *it );
+        
       }
     }
-    return 0;
+
+    return weight;
   }
 
   void CzarneckiSpectrum::readTable() {
 
     ConfigFileLookupPolicy findConfig;
 
-    fstream intable(findConfig("ConditionsService/data/czarnecki.tbl").c_str(),ios::in);
+    GlobalConstantsHandle<PhysicsParams> phy;
+
+    std::string filename = findConfig("ConditionsService/data/czarnecki_"+phy->getStoppingTarget()+".tbl");
+
+    std::fstream intable(filename.c_str(),std::ios::in);
     if (!(intable.is_open())) {
       throw cet::exception("ProductNotFound")
         << "No Tabulated spectrum table file found";
@@ -77,30 +73,22 @@ namespace mu2e {
     double en, prob;
     while (!(intable.eof())) {
       intable >> en >> prob;
-      Value valueToAdd;
-      valueToAdd.energy = en;
-      valueToAdd.weight = prob;
       if (!(intable.eof())) {
-	_table.push_back(valueToAdd);
+	_table.emplace_back( en, prob );
       }
     }
+
+    // If the highest-energy entry does not have a weight of 0
+    // insert one entry with 0, spaced equidistantly wrt to the highest-energy pt.
+    if ( _table.begin()->second != 0. ) {
+      auto it0 = _table.begin();
+      auto it1 = it0+1;
+      double spacing = it0->first - it1->first;
+      _table.emplace( it0, it0->first + spacing, 0. );
+    }
+
   }
   
-  void CzarneckiSpectrum::checkTable() {
-
-    double valueToCompare = (_table.at(0).energy) + 1e9; 
-    //order check
-    for ( vector<Value>::iterator it =  _table.begin(); it != _table.end(); ++it) {
-      if (it->energy >= valueToCompare) {
-      throw cet::exception("Format")
-        << "Wrong value in the czernacki table: " << it->energy;
-      }
-    }
-    //    unsigned tablesize = _table.size();
-
-  }
-
-
   /*  double CzarneckiSpectrum::FitCzarnecki(double E) {
       
   double delta = 105.194 - E - E*E/(2*25133);
@@ -113,7 +101,7 @@ namespace mu2e {
   }*/ 
   //Maybe in a later step we might want to use the fit function (valid from 85 MeV on)
 
-  double CzarneckiSpectrum::interpulate(double E, double e1, double p1,
+  double CzarneckiSpectrum::interpolate(double E, double e1, double p1,
                                         double e2, double p2, double e3, double p3) {
     
     double discr = e1*e1*e2 + e1*e3*e3 + e2*e2*e3 - e3*e3*e2 - e1*e1*e3 - e1*e2*e2;
@@ -129,5 +117,14 @@ namespace mu2e {
 
   }
   
+  double CzarneckiSpectrum::interpolateE5(double E, const SpectrumValue& val ) {
+    
+    GlobalConstantsHandle<PhysicsParams> phy;
+
+    double b = val.second/cet::pow<5>( phy->getMuonEnergy()-val.first-cet::square(val.first)/(2*phy->getAtomicMass()));
+    if ( phy->getEndpointEnergy() - E < 0 ) return 0.;
+    else return b*cet::pow<5>( phy->getMuonEnergy() - E - cet::square(E)/(2*phy->getAtomicMass()) );
+  }
+
 }
 
