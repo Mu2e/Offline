@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: HadronPhysicsShielding_MU2E00.cc,v 1.2 2013/07/12 23:16:14 genser Exp $
+// $Id: HadronPhysicsShielding_MU2E00.cc,v 1.3 2013/07/12 23:19:14 genser Exp $
 //
 //---------------------------------------------------------------------------
 //
@@ -33,7 +33,8 @@
 //   created from HadronPhysicsFTFP_BERT
 //
 // Modified:
-//
+// 30 06 2013 K.Genser Mu2e version with BERT FTPF transition between 9.5 and 9.9 GeV
+//                     
 //----------------------------------------------------------------------------
 //
 #include <iomanip>   
