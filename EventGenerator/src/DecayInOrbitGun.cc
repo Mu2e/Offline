@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.58 2013/07/12 17:17:38 knoepfel Exp $
+// $Id: DecayInOrbitGun.cc,v 1.59 2013/07/12 17:48:01 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/12 17:17:38 $
+// $Date: 2013/07/12 17:48:01 $
 //
 // Original author Rob Kutschke
 //
@@ -225,63 +225,5 @@ namespace mu2e {
     } // End of loop over particles
 
   } // DecayInOrbitGun::generate
-
-
-  // Energy spectrum of the electron from DIO.
-  // Input energy in MeV
-  double DecayInOrbitGun::energySpectrum( double e )
-  {
-    GlobalConstantsHandle<PhysicsParams> phy;
-
-    double delta = phy->getMuonEnergy() - e - cet::pow<2>( e )/(2*phy->getAtomicMass());
-      
-    if ( phy->getEndpointEnergy()-e < 0 ) return 0.;
-    double power = cet::pow<5>( delta );
-
-    const auto & coeffs = phy->getCzarneckiCoefficients();
-
-    if ( coeffs.empty() ) {
-      return phy->getCzarneckiCoefficient()*power;
-    }
-
-    double prob(0.);
-    for ( size_t i=0; i < coeffs.size() ; i++ ) {
-      if( i > 0 ) power *= delta; 
-      prob += coeffs.at(i)*power;
-    }
-    return prob;
-  }
-
-
-  // Compute a binned representation of the energy spectrum of the electron from DIO.
-  // Not used. Still in the code until a new class can reproduce it.
-
-  std::vector<double> DecayInOrbitGun::binnedEnergySpectrum(){
-
-    // Sanity check.
-    if (_nbins <= 0) {
-      throw cet::exception("RANGE")
-        << "Nonsense nbins requested in "
-        << "DecayInOrbit = "
-        << _nbins
-        << "\n";
-    }
-
-    // Bin width.
-    double dE = (_ehi - _elow) / _nbins;
-
-    // Vector to hold the binned representation of the energy spectrum.
-    std::vector<double> spectrum;
-    spectrum.reserve(_nbins);
-
-    for (int ib=0; ib<_nbins; ib++) {
-      double x = _elow+(ib+0.5) * dE;
-      spectrum.push_back(energySpectrum(x));
-      //      std::cout << x << " MeV: " << spectrum.back() << std::endl;
-    }
-
-    return spectrum;
-  } // DecayInOrbitGun::binnedEnergySpectrum
-
 
 }

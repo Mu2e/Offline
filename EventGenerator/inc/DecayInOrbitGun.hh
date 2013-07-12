@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.32 2013/07/12 17:17:38 knoepfel Exp $
+// $Id: DecayInOrbitGun.hh,v 1.33 2013/07/12 17:48:01 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/12 17:17:38 $
+// $Date: 2013/07/12 17:48:01 $
 //
 //
 // ====================================================================
@@ -123,10 +123,6 @@ namespace mu2e {
     TH1D* _hpulsedelay;
 
     GenId::enum_type _dioGenId;
-
-    //Functions used to calculate energy spectrum of the electron
-    std::vector<double> binnedEnergySpectrum();
-    double energySpectrum( double e );
 
   };
 
