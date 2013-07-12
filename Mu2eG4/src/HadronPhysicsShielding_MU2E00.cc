@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: HadronPhysicsShielding_MU2E00.cc,v 1.1 2013/05/30 21:46:51 genser Exp $
+// $Id: HadronPhysicsShielding_MU2E00.cc,v 1.2 2013/07/12 23:16:14 genser Exp $
 //
 //---------------------------------------------------------------------------
 //
@@ -116,15 +116,19 @@ HadronPhysicsShielding_MU2E00::HadronPhysicsShielding_MU2E00(const G4String& nam
 void HadronPhysicsShielding_MU2E00::CreateModels()
 {
 
+  const G4double minFTFPEnergy         =  9.5*GeV;
+  const G4double maxBertiniEnergy      =  9.9*GeV;
+  const G4double minNonHPNeutronEnergy = 19.9*MeV;
+
   theNeutrons=new G4NeutronBuilder;
   theFTFPNeutron=new G4FTFPNeutronBuilder(QuasiElastic);
-  theFTFPNeutron->SetMinEnergy(9.5*GeV);
+  theFTFPNeutron->SetMinEnergy(minFTFPEnergy);
   theNeutrons->RegisterMe(theFTFPNeutron);
   theNeutrons->RegisterMe(theBertiniNeutron=new G4BertiniNeutronBuilder);
-  theBertiniNeutron->SetMinEnergy(19.9*MeV);
-  theBertiniNeutron->SetMaxEnergy(9.9*GeV);
+  theBertiniNeutron->SetMinEnergy(minNonHPNeutronEnergy);
+  theBertiniNeutron->SetMaxEnergy(maxBertiniEnergy);
   theNeutrons->RegisterMe(theLEPNeutron=new G4LEPNeutronBuilder);
-  theLEPNeutron->SetMinEnergy(19.9*MeV);
+  theLEPNeutron->SetMinEnergy(minNonHPNeutronEnergy);
   theLEPNeutron->SetMinInelasticEnergy(0.0*eV);   // no inelastic from LEP
   theLEPNeutron->SetMaxInelasticEnergy(0.0*eV);  
   //theNeutrons->RegisterMe(theHPNeutron=new G4NeutronHPBuilder);
@@ -138,17 +142,17 @@ void HadronPhysicsShielding_MU2E00::CreateModels()
 
   thePro=new G4ProtonBuilder;
   theFTFPPro=new G4FTFPProtonBuilder(QuasiElastic);
-  theFTFPPro->SetMinEnergy(9.5*GeV);
+  theFTFPPro->SetMinEnergy(minFTFPEnergy);
   thePro->RegisterMe(theFTFPPro);
   thePro->RegisterMe(theBertiniPro=new G4BertiniProtonBuilder);
-  theBertiniPro->SetMaxEnergy(9.9*GeV);
+  theBertiniPro->SetMaxEnergy(maxBertiniEnergy);
 
   thePiK=new G4PiKBuilder;
   theFTFPPiK=new G4FTFPPiKBuilder(QuasiElastic);
-  theFTFPPiK->SetMinEnergy(9.5*GeV);
+  theFTFPPiK->SetMinEnergy(minFTFPEnergy);
   thePiK->RegisterMe(theFTFPPiK);
   thePiK->RegisterMe(theBertiniPiK=new G4BertiniPiKBuilder);
-  theBertiniPiK->SetMaxEnergy(9.9*GeV);
+  theBertiniPiK->SetMaxEnergy(maxBertiniEnergy);
   
   theMiscCHIPS=new G4MiscCHIPSBuilder;
 }
