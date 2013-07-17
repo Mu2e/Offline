@@ -23,6 +23,7 @@ namespace mu2e {
             <<", p="<<p.startMomentum()
             <<", start="<<p.startPosition()
             <<", end="<<p.endPosition()
+            <<", stoppingCode = "<<p.stoppingCode()
             <<std::endl;
         }
       }
