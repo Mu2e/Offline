@@ -1,14 +1,15 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.18 2012/12/11 23:42:54 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/12/11 23:42:54 $
+// $Id: ReadKalFits_module.cc,v 1.19 2013/07/22 18:57:42 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/22 18:57:42 $
 //
 // Original author Rob Kutschke
 //
 
-// Mu2e includes.
+// Mu2e includes
+#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -152,7 +153,7 @@ namespace mu2e {
       double ee = _kfitmc._mcinfo._mom;
       _diowt = 1.0;
       if(_weight)
-	_diowt = DIOspectrum(ee);
+	_diowt = SimpleSpectrum::getPol58(ee);
       _kfitmc._trkdiag->Fill();
 
       // For some quantities you require the concrete representation, not
@@ -196,24 +197,9 @@ namespace mu2e {
       double ee = _kfitmc._mcinfo._mom;
       _diowt = 1.0;
       if(_weight)
-	_diowt = DIOspectrum(ee);
+	_diowt = SimpleSpectrum::getPol58(ee);
       _kfitmc._trkdiag->Fill();
     }
-  }
-
-
-  double ReadKalFits::DIOspectrum(double ee) {
-    double mal(25133);
-//    double mmu(105.654);
-    double emu(105.194);
-//    double emue(104.973);
-//    double me(0.511);
-    double a5(8.6434e-17);
-    double a6(1.16874e-17);
-    double a7(-1.87828e-19);
-    double a8(9.16327e-20);
-    double delta = emu - ee - ee*ee/(2*mal);
-    return a5*pow(delta,5) + a6*pow(delta,6) + a7*pow(delta,7) + a8*pow(delta,8);
   }
 
 }  // end namespace mu2e

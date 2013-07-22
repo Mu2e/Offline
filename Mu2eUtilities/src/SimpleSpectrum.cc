@@ -1,8 +1,8 @@
 // Simple approximations available for DIO spectrum.
 //
-// $Id: SimpleSpectrum.cc,v 1.1 2013/07/12 17:17:38 knoepfel Exp $
+// $Id: SimpleSpectrum.cc,v 1.2 2013/07/22 18:57:42 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/12 17:17:38 $
+// $Date: 2013/07/22 18:57:42 $
 //
 
 // Mu2e includes
@@ -23,12 +23,10 @@ namespace mu2e {
   SimpleSpectrum::SimpleSpectrum( Spectrum::enum_type approx ) :
     _approx ( approx ) 
   {
-    
     if ( _approx > Spectrum::Flat && 
          GlobalConstantsHandle<PhysicsParams>()->getCzarneckiCoefficients().empty() ) 
       throw cet::exception("EmptyCoefficients") <<
         " No Czarnecki coefficients available!  Cannot use this approximation.\n" ;
-    
   }
 
   SimpleSpectrum::~SimpleSpectrum() {
@@ -49,11 +47,11 @@ namespace mu2e {
   // Simple approximations below
   //========================================
 
-  double SimpleSpectrum::getFlat(double e) const {
-    return 1.; 
+  double SimpleSpectrum::getFlat(double e) {
+    return ( e > GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy() ) ? 0. : 1.; 
   }
 
-  double SimpleSpectrum::getPol5(double e) const {
+  double SimpleSpectrum::getPol5(double e) {
 
     GlobalConstantsHandle<PhysicsParams> phy;
     const double delta = phy->getMuonEnergy() - e - cet::pow<2>( e )/(2*phy->getAtomicMass());
@@ -64,7 +62,7 @@ namespace mu2e {
 
   }
 
-  double SimpleSpectrum::getPol58(double e) const {
+  double SimpleSpectrum::getPol58(double e) {
 
     GlobalConstantsHandle<PhysicsParams> phy;
     const double delta = phy->getMuonEnergy() - e - cet::pow<2>( e )/(2*phy->getAtomicMass());

@@ -1,9 +1,9 @@
 //
 // output utilities for reco modules
 //
-// $Id: kalFitOutUtils.cc,v 1.2 2012/12/04 00:51:27 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:27 $
+// $Id: kalFitOutUtils.cc,v 1.3 2013/07/22 18:57:42 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/22 18:57:42 $
 //
 
 #include "KalmanTestsI/inc/kalFitOutUtils.hh"
@@ -11,6 +11,8 @@
 #include "KalmanTests/inc/TrkDef.hh"
 #include "TrkBase/TrkMomCalculator.hh"
 #include "ConditionsService/inc/TrackerCalibrationsI.hh"
+
+#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
 
 using namespace std; 
 
@@ -132,7 +134,7 @@ void kalFitOutUtils::bookHitos()
 	}
 	if( genid==_genidcompare)
 // 	  (genid==GenId::conversionGun
-//            || genid==GenId::dioCzarnecki || genid==GenId::dioFlat || genid==GenId::dioE5 || genid==GenId::dioShankerWanatabe
+//            || genid==GenId::dioCzarnecki || genid==GenId::dioFlat || genid==GenId::dioE5 || genid==GenId::dioShankerWatanabe
 //            || genid==GenId::cosmic || genid==GenId::cosmicDYB || genid==GenId::cosmicToy
 //            || genid==GenId::PiCaptureCombined )
 	{
@@ -161,7 +163,7 @@ void kalFitOutUtils::bookHitos()
       if (_genidcompare==GenId::dioCzarnecki || 
           _genidcompare==GenId::dioFlat || 
           _genidcompare==GenId::dioE5 || 
-          _genidcompare==GenId::dioShankerWanatabe) { recoinfo.wgt = DIOspectrum(recoinfo.genmom); }
+          _genidcompare==GenId::dioShankerWatanabe) { recoinfo.wgt = SimpleSpectrum::getPol58(recoinfo.genmom); }
       
       recoinfo.genID=_genidcompare.id();
       
@@ -672,26 +674,6 @@ void kalFitOutUtils::bookHitos()
 //    return -1;
 //  }
 
-  double kalFitOutUtils::DIOspectrum(double ee) {
-    double mal(25133);
-//    double mmu(105.654);
-    double emu(105.194);
-//    double emue(104.973);
-//    double me(0.511);
-    double a5(8.6434e-17);
-    double a6(1.16874e-17);
-    double a7(-1.87828e-19);
-    double a8(9.16327e-20);
-    double delta = emu - ee - ee*ee/(2*mal);
-    double deltaPO5 = delta*delta;
-    deltaPO5*=deltaPO5;
-    deltaPO5*=delta;
-    double deltaPO6 =  deltaPO5*delta;
-    double deltaPO7 =  deltaPO6*delta;
-    double deltaPO8 =  deltaPO7*delta;
-    return a5*deltaPO5 + a6*deltaPO6 + a7*deltaPO7 + a8*deltaPO8;
-  }
-  
   void kalFitOutUtils::FillHistos(KalFitResult& kres, HelixTraj &seed, int iseed){
 
     GeomHandle<ITracker> itr;                                                                                                                                                                       

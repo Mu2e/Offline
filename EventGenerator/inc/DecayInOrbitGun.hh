@@ -3,9 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.hh,v 1.33 2013/07/12 17:48:01 knoepfel Exp $
+// $Id: DecayInOrbitGun.hh,v 1.34 2013/07/22 18:57:42 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/12 17:48:01 $
+// $Date: 2013/07/22 18:57:42 $
 //
 //
 // ====================================================================
@@ -25,7 +25,7 @@
 // Mu2e includes
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "Mu2eUtilities/inc/ReadDIOSpectrum.hh"
+#include "Mu2eUtilities/inc/BinnedSpectrum.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -44,7 +44,7 @@ namespace mu2e {
   class SimpleConfig;
   class DetectorSystem;
 
-  class DecayInOrbitGun: public GeneratorBase{
+  class DecayInOrbitGun: public GeneratorBase {
 
   public:
     DecayInOrbitGun( art::Run& run, const SimpleConfig& config );
@@ -67,7 +67,9 @@ namespace mu2e {
 
     // Class object to generate position and time of the particle
     std::unique_ptr<FoilParticleGenerator> _fGenerator;
-    std::unique_ptr<ReadDIOSpectrum> _dioSpectrum;
+
+    // DIO spectrum
+    BinnedSpectrum _dioSpectrum;
 
     // Limits on the generated direction.
     double _czmin;

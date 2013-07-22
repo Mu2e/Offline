@@ -1,9 +1,9 @@
 //
 // output utilities for reco modules
 //
-// $Id: kalFitOutUtils.hh,v 1.2 2012/12/04 00:51:26 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:26 $
+// $Id: kalFitOutUtils.hh,v 1.3 2013/07/22 18:57:42 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/22 18:57:42 $
 //
 #ifndef kalFitOutUtils_HH
 #define kalFitOutUtils_HH
@@ -102,9 +102,6 @@ public:
         //void hitDiag(const TrkCellHit* strawhit);
         //void findArcs(std::vector<const TrkCellHit*> const& straws, std::vector<TrkArc>&  arcs) const;
         //static int findArc(size_t itsh,std::vector<TrkArc>& arcs );
-
-        // DIO spectrum
-        static double DIOspectrum(double ee);
 
         void FillHistos(KalFitResult& myfit, HelixTraj &seed, int iseed=0);
 

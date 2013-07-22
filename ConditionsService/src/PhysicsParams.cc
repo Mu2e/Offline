@@ -3,6 +3,9 @@
 //
 //
 
+// C++ includes
+#include <algorithm>
+
 // CLHEP includes
 #include "CLHEP/Units/PhysicalConstants.h"
 
@@ -17,6 +20,9 @@
 namespace mu2e {
 
   PhysicsParams::PhysicsParams( SimpleConfig const& config ) :
+    _protonEnergy(0.),
+    _protonKE(0.),
+    _protonMomentum(0.),
     _decayTime(0.), 
     _atomicMass(0.), 
     _atomicNumber(0), 
@@ -28,6 +34,16 @@ namespace mu2e {
 
     const int verbosity = config.getInt("physicsParams.verbosityLevel",0);
     
+    // Load physics constants
+    const double alpha    = 1/config.getDouble("physicsParams.invFineStructureConstant");
+    const double muonMass = config.getDouble("physicsParams.muonMass");
+    const double pMass    = config.getDouble("physicsParams.protonMass");
+
+    // Proton information
+    _protonKE       = config.getDouble("physicsParams.protonKE");
+    _protonEnergy   = _protonKE + pMass;
+    _protonMomentum = std::sqrt( cet::diff_of_squares( _protonEnergy, pMass ) );
+
     // Load available stopping targets
     config.getVectorString("physicsParams.stoppingTargets",_allowedTargets);
 
@@ -40,10 +56,6 @@ namespace mu2e {
                     _chosenStoppingTarget ) == _allowedTargets.end() )
       throw cet::exception("StoppingTargetMaterial")
         << __func__ << " " << _chosenStoppingTarget << " not an allowed stopping target!\n" ;
-
-    // Load physics constants
-    const double alpha    = 1/config.getDouble("physicsParams.invFineStructureConstant");
-    const double muonMass = config.getDouble("physicsParams.muonMass");
 
     // Load relevant atomic constants
     _atomicMass     = config.getDouble("physicsParams."+_chosenStoppingTarget+".atomicMass")*CLHEP::amu_c2;

@@ -4,9 +4,9 @@
 // Read Simple DIO spectrum from a table and merge it
 // with the spectrum coming from the endopoint region formula
 
-// $Id: SimpleSpectrum.hh,v 1.1 2013/07/12 17:17:38 knoepfel Exp $
+// $Id: SimpleSpectrum.hh,v 1.2 2013/07/22 18:57:42 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/12 17:17:38 $
+// $Date: 2013/07/22 18:57:42 $
 //
 // Original Author: Kyle Knoepfel
 //
@@ -18,11 +18,10 @@
 
 // Mu2e includes
 #include "GeneralUtilities/inc/EnumToStringSparse.hh"
-#include "Mu2eUtilities/inc/DIOBase.hh"
 
 namespace mu2e {
 
-  class SimpleSpectrum : public DIOBase {
+  class SimpleSpectrum {
 
   public:
     
@@ -48,18 +47,16 @@ namespace mu2e {
 
     typedef EnumToStringSparse<SpectrumType> Spectrum;
 
-    SimpleSpectrum( Spectrum::enum_type i);
-    
+    SimpleSpectrum( Spectrum::enum_type i) ;
     ~SimpleSpectrum();
 
-    double getWeight(double E) override;
+    double getWeight(double e);
 
+    static double getFlat (double e);
+    static double getPol5 (double e);
+    static double getPol58(double e);
 
   private:
-
-    double getFlat (double e) const;
-    double getPol5 (double e) const;
-    double getPol58(double e) const;
 
     Spectrum::enum_type _approx;
 

@@ -1,9 +1,20 @@
 #ifndef ConditionsService_PhysicsParams_hh
 #define ConditionsService_PhysicsParams_hh
 //
-// Some physical parameters.
+// Physical parameters used in Mu2e.  
 //
-// Original author Gianni Onorato
+// NOTE: The muon and proton masses should come directly from the PDT;
+// but I do not think those can be loaded when calculating the
+// constants returned below as PhysicsParams and ParticleDataTable are
+// independent template arguments to GlobalConstantsService.  Because
+// of this, the muon and proton masses must be specified in the
+// SimpleConfig file which is passed as an argument to the
+// constructor.  To discourage further use of these hard-coded mass
+// values, no getProtonMass/getMuonMass accessors are provided.
+// Thoses masses can be directly accessed later on through the
+// GlobalConstantsHandle<ParticleDataTable> construct.
+//
+// Author: Kyle Knoepfel
 //
 
 // C++ includes.
@@ -17,8 +28,14 @@ namespace mu2e
 {
   class SimpleConfig;
 
-  struct PhysicsParams: virtual public ConditionsEntity{
+  struct PhysicsParams: virtual public ConditionsEntity {
 
+    // Proton parameters
+    double   getProtonEnergy()   const { return _protonEnergy;   }
+    double   getProtonKE()       const { return _protonKE;       }
+    double   getProtonMomentum() const { return _protonMomentum; }
+    
+    // Muon parameters
     double   getDecayTime()      const { return _decayTime;      }
     double   getAtomicMass()     const { return _atomicMass;     }
     unsigned getAtomicNumber()   const { return _atomicNumber;   }
@@ -52,8 +69,11 @@ namespace mu2e
     std::string _chosenStoppingTarget;
     std::vector<std::string> _allowedTargets;
 
-    double _decayTime;
+    double _protonEnergy;
+    double _protonKE;
+    double _protonMomentum;
 
+    double _decayTime;
     double   _atomicMass; 
     unsigned _atomicNumber;
     double   _approxBindingEnergy;

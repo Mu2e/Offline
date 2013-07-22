@@ -1,9 +1,9 @@
-// $Id: globalConstants_01.txt,v 1.2 2013/07/12 17:17:38 knoepfel Exp $
+// $Id: globalConstants_01.txt,v 1.3 2013/07/22 18:57:42 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/12 17:17:38 $
+// $Date: 2013/07/22 18:57:42 $
 //
 
-int   physicsParams.verbosityLevel = 1;
+int    physicsParams.verbosityLevel = 1;
 
 // Primary particle data table and the auxillary table.
 string particleDataTable.filename          = "ConditionsService/data/particle.tbl";
@@ -11,7 +11,11 @@ string particleDataTable.auxillaryFilename = "ConditionsService/data/mass_width_
 
 // Physical constants
 double physicsParams.invFineStructureConstant = 137.0359991; // PDG value (2010 CODATA)
-double physicsParams.muonMass                 = 105.65837  ; // PDG value (2010 CODATA)
+double physicsParams.muonMass                 = 105.65837  ; // PDG value (2010 CODATA) - in MeV
+double physicsParams.protonMass               = 938.2720   ; // PDG value (2010 CODATA) - in MeV
+
+// Proton Kinetic Energy
+double physicsParams.protonKE = 8000.; // - in MeV
 
 // Available stopping target materials
 vector<string> physicsParams.stoppingTargets = {"Al","Ti","Cu","Se","Sb","Au"};

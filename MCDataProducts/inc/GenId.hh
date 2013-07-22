@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.13 2013/07/12 17:17:38 knoepfel Exp $
+// $Id: GenId.hh,v 1.14 2013/07/22 18:57:42 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/12 17:17:38 $
+// $Date: 2013/07/22 18:57:42 $
 //
 // Original author Rob Kutschke
 //
@@ -35,7 +35,7 @@ namespace mu2e {
     // Need to keep the enum and the _name member in sync.
     enum enum_type {
       unknown,       particleGun,       conversionGun,
-      cosmicToy,     cosmicDYB,         cosmic,          dioShankerWanatabe,
+      cosmicToy,     cosmicDYB,         cosmic,          dioShankerWatanabe,
       dioCzarnecki,  dioE5,  dioE58,  dioFlat,           pionCapture,
       muonCapture,   muonDecayInFlight, ejectedProtonGun,
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi,
@@ -47,7 +47,7 @@ namespace mu2e {
     // Keep this in sync with the enum. Used in GenId.cc
 #define GENID_NAMES                                                     \
     "unknown",      "particleGun",       "conversionGun",               \
-      "cosmicToy",    "cosmicDYB",         "cosmic",           "dioShankerWanatabe",  \
+      "cosmicToy",    "cosmicDYB",         "cosmic",           "dioShankerWatanabe",  \
       "dioCzarnecki", "dioFlat",  "dioE5", "dioE58",           "pionCapture", \
       "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",          \
       "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi", \
@@ -100,7 +100,7 @@ namespace mu2e {
     }
 
     bool isDio() {
-      return (_id == dioCzarnecki || _id == dioShankerWanatabe || _id == dioFlat  || 
+      return (_id == dioCzarnecki || _id == dioShankerWatanabe || _id == dioFlat  || 
               _id == dioE5        || _id == dioE58 );
     }
 

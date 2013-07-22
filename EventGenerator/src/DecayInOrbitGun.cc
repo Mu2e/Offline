@@ -1,16 +1,25 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.59 2013/07/12 17:48:01 knoepfel Exp $
+// $Id: DecayInOrbitGun.cc,v 1.60 2013/07/22 18:57:42 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/12 17:48:01 $
+// $Date: 2013/07/22 18:57:42 $
 //
 // Original author Rob Kutschke
 //
 
-#include "cetlib/pow.h"
+// CLHEP includes
 #include "CLHEP/Random/RandGeneral.h"
 #include "CLHEP/Units/PhysicalConstants.h"
+
+// Framework includes
+#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "cetlib/pow.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+// Mu2e includes
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
@@ -24,22 +33,19 @@
 #include "GeneralUtilities/inc/safeSqrt.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "StoppingTargetGeom/inc/zBinningForFoils.hh"
-#include "TH1D.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
+#include "Mu2eUtilities/inc/ShankerWatanabeSpectrum.hh"
+#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
+#include "Mu2eUtilities/inc/BinnedSpectrum.hh"
 
+// ROOT includes
+#include "TH1D.h"
 
+// C++ includes
 #include <iostream>
 
 using namespace std;
-
-//using CLHEP::Hep3Vector;
-//using CLHEP::HepLorentzVector;
-//using CLHEP::twopi;
 
 namespace mu2e {
 
@@ -115,16 +121,6 @@ namespace mu2e {
         << '\n';
     }
 
-    if      ( _energySpectrum == "Czarnecki"       ) _dioGenId = GenId::dioCzarnecki;
-    else if ( _energySpectrum == "ShankerWatanabe" ) _dioGenId = GenId::dioShankerWanatabe;
-    else if ( _energySpectrum == "flat"            ) _dioGenId = GenId::dioFlat;
-    else if ( _energySpectrum == "pol5"            ) _dioGenId = GenId::dioE5;
-    else if ( _energySpectrum == "pol58"           ) _dioGenId = GenId::dioE58;
-    else {
-      throw cet::exception("CONFIG")
-        << "Energy spectrum for DIO not allowed\n";
-    }
-
     // About the ConditionsService:
     // The argument to the constructor is ignored for now.  It will be a
     // data base key.  There is a second argument that I have let take its
@@ -167,8 +163,32 @@ namespace mu2e {
                                   _stFname,
                                   _nToSkip));
 
-    _dioSpectrum = unique_ptr<ReadDIOSpectrum>( new ReadDIOSpectrum( _elow, _ehi, _spectrumResolution, _energySpectrum ) );
-
+    // Pick correct model
+    if      ( _energySpectrum == "ShankerWatanabe" ) { 
+      _dioGenId = GenId::dioShankerWatanabe;       
+      _dioSpectrum.initialize< ShankerWatanabeSpectrum >( _elow, _ehi, _spectrumResolution );
+    }
+    else if ( _energySpectrum == "Czarnecki"       ) { 
+      _dioGenId = GenId::dioCzarnecki; 
+      _dioSpectrum.initialize< CzarneckiSpectrum >( _elow, _ehi, _spectrumResolution );
+    }
+    else if ( _energySpectrum == "flat"            ) { 
+      _dioGenId = GenId::dioFlat;          
+      _dioSpectrum.initialize< SimpleSpectrum >( _elow, _ehi, _spectrumResolution, SimpleSpectrum::Spectrum::Flat );
+    }
+    else if ( _energySpectrum == "pol5"            ) { 
+      _dioGenId = GenId::dioE5; 
+      _dioSpectrum.initialize< SimpleSpectrum >( _elow, _ehi, _spectrumResolution, SimpleSpectrum::Spectrum::Pol5 );
+    }
+    else if ( _energySpectrum == "pol58"           ) { 
+      _dioGenId = GenId::dioE58;             
+      _dioSpectrum.initialize< SimpleSpectrum >( _elow, _ehi, _spectrumResolution, SimpleSpectrum::Spectrum::Pol58 );
+    }
+    else {
+      throw cet::exception("MODEL")
+        << "Wrong or not allowed DIO energy spectrum";
+    }
+    
   }
 
   DecayInOrbitGun::~DecayInOrbitGun(){
@@ -195,8 +215,8 @@ namespace mu2e {
       _fGenerator->generatePositionAndTime(pos, time, _timeFolding);
 
       //Pick up energy and momentum vector
-      static CLHEP::RandGeneral randEnergy( getEngine(), _dioSpectrum->getPDF(), _dioSpectrum->getNbins() );
-      static RandomUnitSphere randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax );
+      static CLHEP::RandGeneral randEnergy       ( getEngine(), _dioSpectrum.getPDF(), _dioSpectrum.getNbins() );
+      static RandomUnitSphere   randomUnitSphere ( getEngine(), _czmin, _czmax, _phimin, _phimax );
 
       const double e = _elow + randEnergy.fire()*(_ehi-_elow);
       const double p = safeSqrt(e*e - _mass*_mass);
@@ -207,7 +227,7 @@ namespace mu2e {
       CLHEP::HepLorentzVector mom(p3,e);
 
       // Add the particle to  the list.
-      genParts.push_back( GenParticle( PDGCode::e_minus, GenId(_dioGenId), pos, mom, time));
+      genParts.push_back( GenParticle( PDGCode::e_minus, _dioGenId, pos, mom, time));
 
       if( _doHistograms ){
         const CLHEP::Hep3Vector detPos(_detSys->toDetector(pos));

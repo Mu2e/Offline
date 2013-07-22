@@ -4,41 +4,42 @@
 // Read Watanabe data about DIO spectrum from a table and merge it
 // with the spectrum coming from the Shanker formula
 
-// $Id: ShankerWatanabeSpectrum.hh,v 1.1 2013/07/12 17:17:38 knoepfel Exp $
+// $Id: ShankerWatanabeSpectrum.hh,v 1.2 2013/07/22 18:57:42 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/12 17:17:38 $
+// $Date: 2013/07/22 18:57:42 $
 //
 //
 
 // Mu2e includes
-#include "Mu2eUtilities/inc/DIOBase.hh"
+#include "Mu2eUtilities/inc/Table.hh"
 
 namespace mu2e {
 
-  class ShankerWatanabeSpectrum : public DIOBase {
+  class ShankerWatanabeSpectrum {
 
   public:
 
     ShankerWatanabeSpectrum();
     ~ShankerWatanabeSpectrum(){}
 
-    double getWeight(double E) override;
+    double getWeight(double E);
 
   private:
 
     double _wanaEndPoint, _wanaEndPointVal, _norm;
 
-    // built-in energy tolerance (in MeV)
+    // built-in energy tolerance (in MeV) - not used currently!
     const double _tolerance = 0.0049;
 
-    void readTable() override;
+    const Table<2> _table;    
 
     double evaluateShanker (double E);
     double evaluateWatanabe(double E);
 
-    double interpolate(double E, double e1, double p1,
-                       double e2, double p2, double e3, double p3);
-
+    double interpolate(const double E, 
+                       const TableRow<2>& row_after,
+                       const TableRow<2>& row,
+                       const TableRow<2>& row_before );
 
   };
 

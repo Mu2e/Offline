@@ -3,9 +3,9 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.22 2013/05/31 18:06:28 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 18:06:28 $
+// $Id: PrimaryProtonGun.cc,v 1.23 2013/07/22 18:57:42 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/22 18:57:42 $
 //
 // Original author Rob Kutschke
 //
@@ -27,6 +27,7 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "ConditionsService/inc/PhysicsParams.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 
@@ -44,9 +45,6 @@ using namespace std;
 
 namespace mu2e {
 
-  // The kinetic energy of proton is 8 Gev; E = T + m, p = sqrt(E^2 - m^2)
-  static const double pBeam = 8888.6*CLHEP::MeV;
-
   PrimaryProtonGun::PrimaryProtonGun( art::Run& run, const SimpleConfig& config ):
 
     // The base class;
@@ -59,7 +57,7 @@ namespace mu2e {
     _proton_mass(GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::p_plus).ref().mass().value()),
 
     // Parameters from the run time configuration.
-    _p(config.getDouble("primaryProtonGun.p", pBeam )),
+    _p(config.getDouble("primaryProtonGun.p", GlobalConstantsHandle<PhysicsParams>()->getProtonMomentum() )),
     _beamDisplacementOnTarget(config.getHep3Vector("beamDisplacementOnTarget")),
     _beamRotationTheta(config.getDouble("beamRotationTheta", 0)),
     _beamRotationPhi(config.getDouble("beamRotationPhi", 0)),
@@ -75,6 +73,7 @@ namespace mu2e {
     _rmax(config.getDouble("primaryProtonGun.rmax", 100.)),
     _doHistograms(config.getBool("primaryProtonGun.doHistograms", true))
   {
+
     if ( _doHistograms ){
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "PrimaryProtonGun" );
