@@ -4,9 +4,9 @@
 // in the endpoint region taken from Czarnecki spectrum
 // Czarneckki et al 10.1103/PhysRevD.84.013006
 //
-// $Id: CzarneckiSpectrum.cc,v 1.9 2013/07/22 18:57:42 knoepfel Exp $
+// $Id: CzarneckiSpectrum.cc,v 1.10 2013/07/24 18:48:24 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/22 18:57:42 $
+// $Date: 2013/07/24 18:48:24 $
 //
 
 // Mu2e includes
@@ -32,16 +32,16 @@ namespace mu2e {
 
   double CzarneckiSpectrum::getWeight(double E) {
 
-    double weight ( _table.returnValueWithKey(E) );
+    const unsigned iRow = _table.findLowerBoundRow( E );
+    double weight       = _table( iRow ) ;
+    if ( iRow == _table.getNrows()-1 || iRow == 0 ) return weight;
 
-    auto const & it = _table.returnRowWithKey( E );
-    if ( _table.atBoundary(it) ) return weight;
+    auto const & row        = _table.row( iRow   );
+    auto const & row_before = _table.row( iRow-1 );
+    auto const & row_after  = _table.row( iRow+1 );
 
-    auto const & it_before = it-1;
-    auto const & it_after  = it+1;
-
-    weight = interpolate( E, *it_after, *it, *it_before );
-    if ( weight < 0 ) weight = interpolateE5 ( E, *it );
+    weight = interpolate( E, row_after, row, row_before );
+    if ( weight < 0 ) weight = interpolateE5 ( E, row );
 
     return weight;
   }

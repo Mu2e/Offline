@@ -1,6 +1,6 @@
-// $Id: globalConstants_01.txt,v 1.3 2013/07/22 18:57:42 knoepfel Exp $
+// $Id: globalConstants_01.txt,v 1.4 2013/07/24 18:48:24 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/22 18:57:42 $
+// $Date: 2013/07/24 18:48:24 $
 //
 
 int    physicsParams.verbosityLevel = 1;
@@ -30,6 +30,11 @@ double physicsParams.Cu.decayTime      = 164.;
 double physicsParams.Se.decayTime      = 164.;
 double physicsParams.Sb.decayTime      =  92.;
 double physicsParams.Au.decayTime      =  73.;
+
+// Decay fractions
+double physicsParams.Al.decayFraction  = 0.39;
+double physicsParams.Ti.decayFraction  = 0.15;
+double physicsParams.Au.decayFraction  = 0.03;
 
 // - Atomic numbers
 int    physicsParams.Al.atomicNumber   = 13;

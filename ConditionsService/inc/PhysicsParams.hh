@@ -37,6 +37,7 @@ namespace mu2e
     
     // Muon parameters
     double   getDecayTime()      const { return _decayTime;      }
+    double   getDecayFraction()  const { return _decayFraction;  }
     double   getAtomicMass()     const { return _atomicMass;     }
     unsigned getAtomicNumber()   const { return _atomicNumber;   }
 
@@ -73,7 +74,8 @@ namespace mu2e
     double _protonKE;
     double _protonMomentum;
 
-    double _decayTime;
+    double   _decayTime;
+    double   _decayFraction;
     double   _atomicMass; 
     unsigned _atomicNumber;
     double   _approxBindingEnergy;

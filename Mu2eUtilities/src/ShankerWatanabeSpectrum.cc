@@ -3,9 +3,9 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWatanabeSpectrum.cc,v 1.2 2013/07/22 18:57:42 knoepfel Exp $
+// $Id: ShankerWatanabeSpectrum.cc,v 1.3 2013/07/24 18:48:24 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/22 18:57:42 $
+// $Date: 2013/07/24 18:48:24 $
 //
 
 // Mu2e includes
@@ -95,14 +95,14 @@ namespace mu2e {
 
     double weight (0.);
 
-    auto const & it = _table.returnRowWithKey(E);
+    const unsigned iRow = _table.findLowerBoundRow( E );
+    if ( iRow == _table.getNrows() ) return weight;
 
-    if (it == _table.rawTable().end()) return weight;
+    auto const & row        = _table.row( iRow   );
+    auto const & row_before = _table.row( iRow-1 );
+    auto const & row_after  = _table.row( iRow+1 );
 
-    auto const & it_before = it-1;
-    auto const & it_after  = it+1;
-
-    return interpolate(E, *it_before, *it, *it_after );
+    return interpolate(E, row_before, row, row_after );
 
   }
 

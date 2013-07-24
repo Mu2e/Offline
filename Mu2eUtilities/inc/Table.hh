@@ -3,9 +3,9 @@
 //
 // Free function for loading table two-column table
 //
-// $Id: Table.hh,v 1.1 2013/07/22 18:57:42 knoepfel Exp $
+// $Id: Table.hh,v 1.2 2013/07/24 18:48:24 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/22 18:57:42 $
+// $Date: 2013/07/24 18:48:24 $
 //
 // Original author: Kyle Knoepfel
 
@@ -40,26 +40,26 @@ namespace mu2e {
     // NOTE: Prefer to use *.at(i) syntax, but bug in g++ 4_7_1 -O3
     // compilation returns nonsense value.  Bug fixed in 4_7_3 and higher.
 
-    //    const std::array<double,N>&     row( unsigned i ) const { return _rawTable.at(i);       }
-    const TableRow<N>&         row( unsigned i ) const { return _rawTable[i];  }
-    const RawTable&            rawTable()        const { return _rawTable;     }
+    //    const TableRow<N>&     row( unsigned i ) const { return _rawTable.at(i);       }
+    unsigned            getNrows()        const { return _rawTable.size(); }
+    unsigned            getNcols()        const { return N; }
+    const TableRow<N>&  row( unsigned i ) const { return _rawTable[i];  }
+    const RawTable&     rawTable()        const { return _rawTable;     }
 
-    const table_const_iterator returnRowWithKey( double e ) const {
-      return std::lower_bound( _rawTable.begin(), _rawTable.end(), e,
-                               [](TableRow<2> it, double E){ return it[0] > E; } );
+    int findLowerBoundRow( double e ) const {
+      auto const & it = getLowerBoundRow( e );
+      return ( it - _rawTable.begin() ); 
     }
 
-    double returnValueWithKey(double e, unsigned i=1) const {
-      auto const & it = returnRowWithKey(e);
-      return (*it)[i];
+    //    double operator()(unsigned i, unsigned j=1)         const { return _rawTable.at(i).at(j); }
+    double operator()( unsigned i, unsigned j=1 )       const { return _rawTable[i][j]; }
+
+    void   printRow( unsigned i )                       const {
+      for ( auto const & val : _rawTable[i] )
+        std::cout << val << " " ;
+      std::cout << std::endl;
     }
 
-    bool  atBoundary( table_const_iterator it ) const {
-      return it == _rawTable.begin() || it+1 == _rawTable.end() ;
-    }
-
-    //    double operator()(unsigned i, unsigned j)         const { return _rawTable.at(i).at(j); }
-    double operator()(unsigned i, unsigned j)         const { return _rawTable[i][j]; }
     void   printTable()                               const {
       for ( auto const & it : _rawTable ) {
         std::for_each ( it.begin(), it.end(), [](double val){ std::cout << val << " " ; } );
@@ -68,10 +68,15 @@ namespace mu2e {
     }
 
   private:
+    RawTable _rawTable;
+
+    const table_const_iterator getLowerBoundRow( double e ) const {
+      return std::lower_bound( _rawTable.begin(), _rawTable.end(), e,
+                               [](TableRow<2> it, double E){ return it[0] > E; } );
+    }
+    
     template <const unsigned M> 
     friend Table<M> loadTable( const std::string& tableFile, const bool sort );
-    
-    RawTable _rawTable;
     
   };
     

@@ -24,6 +24,7 @@ namespace mu2e {
     _protonKE(0.),
     _protonMomentum(0.),
     _decayTime(0.), 
+    _decayFraction(0.),
     _atomicMass(0.), 
     _atomicNumber(0), 
     _approxBindingEnergy(0.), 
@@ -61,6 +62,7 @@ namespace mu2e {
     _atomicMass     = config.getDouble("physicsParams."+_chosenStoppingTarget+".atomicMass")*CLHEP::amu_c2;
     _atomicNumber   = config.getInt   ("physicsParams."+_chosenStoppingTarget+".atomicNumber");
     _decayTime      = config.getDouble("physicsParams."+_chosenStoppingTarget+".decayTime" );
+    _decayFraction  = config.getDouble("physicsParams."+_chosenStoppingTarget+".decayFraction" );
 
     // Calculate approx. binding energy
     _approxBindingEnergy = muonMass*cet::square(alpha*_atomicNumber)/2.;
