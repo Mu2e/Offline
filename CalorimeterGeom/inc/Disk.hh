@@ -1,8 +1,8 @@
 #ifndef CalorimeterGeom_Disk_hh
 #define CalorimeterGeom_Disk_hh
-// $Id: Disk.hh,v 1.5 2013/05/09 23:14:14 echenard Exp $
+// $Id: Disk.hh,v 1.6 2013/07/25 23:56:46 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Date: 2013/07/25 23:56:46 $
 //
 // Hold information about a disk in the calorimter.
 //
@@ -16,6 +16,7 @@
 #include "CalorimeterGeom/inc/CaloSection.hh"
 #include "CalorimeterGeom/inc/HexMap.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
+#include "CalorimeterGeom/inc/DiskCrystalPosUtil.hh"
 
 //CLHEP includess
 #include "CLHEP/Vector/TwoVector.h"
@@ -38,6 +39,8 @@ namespace mu2e {
 
            double innerRadius() const   {return _radiusIn;}
            double outerRadius() const   {return _radiusOut;}
+	   
+	   DiskCrystalPosUtil const& positionUtil() const {return _posUtil;}
 
 
        private:
@@ -48,12 +51,11 @@ namespace mu2e {
            std::vector<int> findNeighbors(int crystalId, int level=1) const; 
 
 
-	   double           _radiusIn;
-	   double           _radiusOut;
-	   double           _cellSize;	 
-           HexMap           _hexMap;
-           std::vector<int> _mapToCrystal;
-	   std::vector<int> _crystalToMap;
+	   double             _radiusIn;
+	   double             _radiusOut;
+	   double             _cellSize;	 
+           HexMap             _hexMap;
+	   DiskCrystalPosUtil _posUtil;
 
     };
 }

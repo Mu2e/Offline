@@ -1,6 +1,6 @@
-// $Id: HexMap.cc,v 1.3 2013/03/08 01:22:31 echenard Exp $
+// $Id: HexMap.cc,v 1.4 2013/07/25 23:56:46 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/03/08 01:22:31 $
+// $Date: 2013/07/25 23:56:46 $
 //
 // Hexagon position map generator: 
 //   tesselate a plane with hexagons starting at the center of the plane
@@ -153,7 +153,7 @@ namespace mu2e {
 	 if ( (thislk._l+thislk._k) <=0 && thislk._k<nring)           segment += 3;
 	 pos += segment*nring;
 	 
-	 //add position le long du segment	 
+	 //add position along segment	 
 	 if (segment==0 || segment==3)  pos += nring - std::abs(thislk._k)-1;
 	 if (segment==1 || segment==4)  pos += nring - std::abs(thislk._l)-1;
 	 if (segment==2 || segment==5)  pos += std::abs(thislk._l)-1;
