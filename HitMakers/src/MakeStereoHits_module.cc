@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.6 2013/04/04 01:08:51 brownd Exp $
+// $Id: MakeStereoHits_module.cc,v 1.7 2013/07/26 15:33:37 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/04/04 01:08:51 $
+// $Date: 2013/07/26 15:33:37 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -26,11 +26,20 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+// root
+#include "TMath.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TLine.h"
+#include "TList.h"
+#include "TLegend.h"
+#
 // C++ includes.
 #include <iostream>
 #include <float.h>
@@ -46,6 +55,7 @@ namespace mu2e {
     // Accept compiler written d'tor.
 
     void produce( art::Event& e);
+    void beginJob();
 
   private:
 
@@ -60,6 +70,15 @@ namespace mu2e {
     double _maxTDNsig; // maximum # of TimeDivision sigmas past the active edge of a wire to allow making stereo hits
     double _maxChisq; // maximum # of TimeDivision consistency chisquared to allow making stereo hits
     bool _writepairs; // write out the stereo pairs
+    // diagnostics
+    TH1F* _nhits;
+    TH1F* _deltat;
+    TH1F* _deltaE;
+    TH1F* _dperp;
+    TH1F* _sep;
+    TH1F* _dTD;
+    TH1F* _chisq;
+    TH2F *_station0, *_station1;
   };
 
   MakeStereoHits::MakeStereoHits(fhicl::ParameterSet const& pset) :
@@ -72,21 +91,74 @@ namespace mu2e {
     _maxDPerp(pset.get<double>("maxDPerp",100)), // mm, maximum perpendicular distance between time-division points
     _maxTDNsig(pset.get<double>("maxTDNsig",5.0)),
     _maxChisq(pset.get<double>("maxChisquared",12.0)),
-    _writepairs(pset.get<bool>("WriteStereoPairs",false)) {
+    _writepairs(pset.get<bool>("WriteStereoPairs",false)),
+    _nhits(0),_deltat(0),_deltaE(0),_dperp(0),_sep(0),_dTD(0),_chisq(0),
+    _station0(0), _station1(0)
+ {
     // Tell the framework what we make.
     if(_writepairs)produces<StereoHitCollection>();
     produces<StrawHitPositionCollection>();
   }
 
-  
+   void MakeStereoHits::beginJob(){
+    // create diagnostics if requested
+    if(_diagLevel > 0){
+      art::ServiceHandle<art::TFileService> tfs;
+      _nhits = tfs->make<TH1F>("nhits","NHits",500,0,5000);
+      _deltat = tfs->make<TH1F>("deltat","#Delta t;ns",100,-200.0,200.0);
+      _deltaE = tfs->make<TH1F>("deltaE","#Delta E;MeV",100,0.0,0.05);
+      _dperp = tfs->make<TH1F>("dperp","#Delta d;mm",100,0.0,500.0);
+      _sep = tfs->make<TH1F>("sep","Face separation",6,-0.5,5.5);
+      _dTD = tfs->make<TH1F>("dTD","#Delta Time Difference;mm",100,-100.0,100.0);
+      _chisq = tfs->make<TH1F>("chisq","Chisquared",100,-1.0,50.0);
+    }
+    if(_diagLevel > 1){
+      art::ServiceHandle<art::TFileService> tfs;
+      _station0 = tfs->make<TH2F>("station0","Station 0",100,-700,700,100,-700,700);
+      _station1 = tfs->make<TH2F>("station1","Station 1",100,-700,700,100,-700,700);
+    }
+  }
+
   void
   MakeStereoHits::produce(art::Event& event) {
 
-    if ( _diagLevel > 1 ) cout << "MakeStereoHits: produce() begin; event " << event.id().event() << endl;
+    if ( _diagLevel > 0 ) cout << "MakeStereoHits: produce() begin; event " << event.id().event() << endl;
 
-    // Get a reference to one of the L or T trackers.
-    // Throw exception if not successful.
+       // Get a reference to one of the L or T trackers.
+       // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
+    static bool first(true);
+    if(_diagLevel >1 && first){
+      first = false;
+      const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
+      TH2F* stations[2] = {_station0, _station1};
+      int lowdev[2] = {0,2};
+      for(int ista=0;ista<2;++ista){
+	stations[ista]->SetStats(false);
+	TList* flist = stations[ista]->GetListOfFunctions();
+	TLegend* sleg = new TLegend(0.1,0.6,0.4,0.9);
+	flist->Add(sleg);
+	for(int idev=0;idev<2;++idev){
+	  const Device& dev = tt.getDevice(idev+lowdev[ista]);
+	  const std::vector<Sector>& sectors = dev.getSectors();
+	  for(size_t isec=0;isec<sectors.size();++isec){
+	    int iface = isec%2;
+	    const Sector& sec = sectors[isec];
+	    CLHEP::Hep3Vector spos = sec.straw0MidPoint();
+	    CLHEP::Hep3Vector sdir = sec.straw0Direction();
+	    CLHEP::Hep3Vector end0 = spos - 100.0*sdir;
+	    CLHEP::Hep3Vector end1 = spos + 100.0*sdir;
+	    TLine* sline = new TLine(end0.x(),end0.y(),end1.x(),end1.y());
+	    sline->SetLineColor(isec+1);
+	    sline->SetLineStyle(2*idev+iface+1);
+	    flist->Add(sline);
+	    char label[80];
+	    snprintf(label,80,"dev %i sec %i",idev,(int)isec);
+	    sleg->AddEntry(sline,label,"l");
+	  }
+	}
+      }
+    }
 
    // Handle to the conditions service
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -100,6 +172,8 @@ namespace mu2e {
     }
     // create a collection of StrawHitPosition, and intialize them using the time division
     size_t nsh = strawhits->size();
+    if(_diagLevel > 0)_nhits->Fill(nsh);
+
     unique_ptr<StrawHitPositionCollection> shpos(new StrawHitPositionCollection);
     shpos->reserve(2*nsh);
     for(size_t ish=0;ish<nsh;++ish){
@@ -125,12 +199,21 @@ namespace mu2e {
 	Straw const& straw2 = tracker.getStraw(sh2.strawIndex());
 	StrawHitPosition const& shp2 = (*shpos)[jsh];
 	SectorId::isep sep = straw1.id().getSectorId().separation(straw2.id().getSectorId());
+	if(_diagLevel > 1 &&  sep != SectorId::same && sep < SectorId::apart) {
+	  _deltat->Fill(sh1.time()-sh2.time());
+	  _deltaE->Fill(sh1.energyDep() - sh2.energyDep());
+	  _dperp->Fill((shp1.pos()-shp2.pos()).perp());
+	}
 	if( sep != SectorId::same && sep < SectorId::apart // hits are in the same station but not the same sector
 	    && fabs(sh1.time()-sh2.time()) < _maxDt // hits are close in time
 	    && fabs(sh1.energyDep() - sh2.energyDep())/(sh1.energyDep()+sh2.energyDep()) < _maxDE   // deposited energy is roughly consistent (should compare dE/dx but have no path yet!)
 	    && (shp1.pos()-shp2.pos()).perp() < _maxDPerp) { // transverse separation isn't too big
   // tentative stereo hit: this solves for the POCA
 	  StereoHit sth(*strawhits,tracker,ish,jsh);
+	  if(_diagLevel > 1 ) {
+	    _dTD->Fill( straw1.getDetail().activeHalfLength()-fabs(sth.wdist1()) + straw1.getDetail().outerRadius()); 
+	    _dTD->Fill( straw2.getDetail().activeHalfLength()-fabs(sth.wdist2()) + straw2.getDetail().outerRadius());
+	  }
 	  if( straw1.getDetail().activeHalfLength()-fabs(sth.wdist1()) > -straw1.getDetail().outerRadius() // stereo point is inside the active length
 	      && straw2.getDetail().activeHalfLength()-fabs(sth.wdist2()) > -straw2.getDetail().outerRadius()) { // stereo point is inside the active length
 	    // compute difference between stereo points and TD prediction
@@ -165,6 +248,10 @@ namespace mu2e {
 // now, overwrite the positions for those hits which have stereosresolve the stereo hits to find the best position for each hit that particpates.  The algorithm is:
     for(size_t ish=0; ish<nsh;++ish){
       if(minsep[ish] < SectorId::apart)shpos->at(ish) = StrawHitPosition(stereohits[ibest[ish]],ish);
+      if(_diagLevel > 0){
+	_sep->Fill(minsep[ish]);
+	_chisq->Fill(minchisq[ish]);
+      }
     }
     if(_writepairs){
       unique_ptr<StereoHitCollection> sthits(new StereoHitCollection(stereohits));
