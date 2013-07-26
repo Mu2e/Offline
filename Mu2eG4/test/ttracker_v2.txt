@@ -3,9 +3,9 @@
 // but with two layers of straws in each sector.
 // See:  Mu2e-doc-888
 //
-// $Id: ttracker_v2.txt,v 1.4 2011/08/03 16:02:41 mf Exp $
-// $Author: mf $
-// $Date: 2011/08/03 16:02:41 $
+// $Id: ttracker_v2.txt,v 1.5 2013/07/26 23:42:22 brownd Exp $
+// $Author: brownd $
+// $Date: 2013/07/26 23:42:22 $
 //
 // Original author Rob Kutschke
 //
@@ -14,12 +14,20 @@
 #include "Mu2eG4/test/ttracker_v0.txt"
 
 int    ttracker.layersPerSector             =    2;
-int    ttracker.manifoldsPerEnd             =   50; // 50, 5
 int    ttracker.strawsPerManifold           =    1; //  1,10
-double ttracker.strawGap                    =   1.0;
 double ttracker.deviceHalfSeparation        =   20.0; 
 double ttracker.supportHalfThickness        =   4.4;   
-vector<double> ttracker.manifoldHalfLengths = { 3.0, 5.0, 5.1};  // mm 3, 30
+// 96 straws.  All 3 of the following must be adjusted coherently
+int    ttracker.manifoldsPerEnd             =   48; // 50, 5
+double ttracker.strawGap             =     1.25;
+vector<double> ttracker.manifoldHalfLengths = {3.125,5.0,5.21};
+// 21 stations; NB, deviceSpacing is really station spacing.  Total length
+// of ttracker is unchanged, spacing between stations is reduced
+double ttracker.deviceSpacing        =   144.5;
+int ttracker.numDevices = 42;
+// rotation pattern: for now only the default works, without flipping
+int    ttracker.rotationPattern    =    1;
+bool ttracker.flipStation = false;
 
 //
 // This tells emacs to view this file in c++ mode.
