@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.18 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
+// $Id: TTrackerMaker.hh,v 1.19 2013/07/26 23:44:56 brownd Exp $
+// $Author: brownd $
+// $Date: 2013/07/26 23:44:56 $
 //
 // Original author Rob Kutschke
 //
@@ -76,6 +76,7 @@ namespace mu2e {
     double chooseDeviceRotation( int idev ) const;
     double chooseDeviceSpacing( int idev ) const;
     double findFirstDevZ0() const;
+    double sectorRotation(int isec,int idev) const;
 
     // Some functions for the, fully detailed support structure.
     void makeSupportStructure();
@@ -96,6 +97,8 @@ namespace mu2e {
     int    _strawsPerManifold;           // Number of straws connected to each manifold.
     int    _rotationPattern;             // Pattern of rotations from device to device.
     int    _spacingPattern;              // Pattern of spacing from device to device.
+    bool  _flipPlane;			 // Flip the rotation pattern about the X axis for odd-numbered planes
+    bool  _flipStation;			 // Flip the rotation pattern about the X axis for odd-numbered stations
     double _zCenter;                     // z position of the center of the tracker, in the Mu2e coord system.
     double _xCenter;                     // x position of the center of the tracker, in the Mu2e coord system.
     double _envelopeInnerRadius;         // Inner radius of inside of innermost straw.
@@ -105,7 +108,6 @@ namespace mu2e {
     double _deviceSpacing;               // Z-separation between adjacent stations.
     double _deviceHalfSeparation;        // Z-separation between adjacent devices.
     double _deviceRotation;              // Relative rotation of each succesive device.
-    double _sectorPhi0;                  // Azimuth of sector 0.
     double _innerSupportRadius;          // Inner radius of support frame.
     double _outerSupportRadius;          // Outer radius of support frame.
     double _supportHalfThickness;        // Thickness of support frame.
