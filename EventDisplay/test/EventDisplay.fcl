@@ -1,10 +1,6 @@
-#
-# Event display for a sample of conversion electrons.
-#
-# $Id: EventDisplay.fcl,v 1.10 2012/08/12 00:58:10 ehrlich Exp $
-# $Author: ehrlich $
-# $Date: 2012/08/12 00:58:10 $
-#
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
 
 process_name : EventDisplay
 
@@ -13,7 +9,8 @@ source :
   module_type : RootInput
   fileNames   : [ "data_03.root" ] #that's the file that gets produced after running
                                    #Mu2eG4/test/g4test_03.fcl
-                                   #replace it with your own file
+                                   #replace it with your own file either here or in the command line
+                                   #e.g. mu2e -c EventDisplay/test/EventDisplay.fcl myfile.root
 }
 
 services :
@@ -21,6 +18,7 @@ services :
   user :
   {
     GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
   }
 }
 
