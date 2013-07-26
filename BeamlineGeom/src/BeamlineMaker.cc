@@ -2,9 +2,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.16 2013/07/05 14:49:23 knoepfel Exp $
+// $Id: BeamlineMaker.cc,v 1.17 2013/07/26 18:31:50 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/05 14:49:23 $
+// $Date: 2013/07/26 18:31:50 $
 //
 // Original author Peter Shanahan
 //                 Kyle Knoepfel (significant updates)
@@ -57,7 +57,7 @@ namespace mu2e {
     // - end wall parameters
     ts._rIn_endWallU1 = c.getDouble("ts.tsUendWall1.rIn",0.); 
     ts._rIn_endWallU2 = c.getDouble("ts.tsUendWall2.rIn",0.); 
-    ts._rIn_endWallD  = c.getDouble("ts.tsDendWall.rIn",0.);  
+    ts._rIn_endWallD  = c.getDouble("ts.tsDendWall.rIn", ts.innerRadius() );  
 
     ts._rOut_endWallU1 = c.getDouble("ts.tsUendWall1.rOut",0.); 
     ts._rOut_endWallU2 = c.getDouble("ts.tsUendWall2.rOut",0.); 
