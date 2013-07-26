@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.190 2013/07/12 17:17:38 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/07/12 17:17:38 $
+// $Id: geom_01.txt,v 1.191 2013/07/26 21:55:57 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2013/07/26 21:55:57 $
 //
 // Original author Rob Kutschke
 //
@@ -434,7 +434,10 @@ vector<string> bfield.outerMaps = {
 double bfield.scaleFactor = 1.0;
 
 // Proton Absorber
-#include "Mu2eG4/test/protonAbsorber_conical.txt"
+#include "Mu2eG4/test/protonAbsorber_conical_v2.txt"
+// use following line instead of above line to go back to MECO-style PA design
+//#include "Mu2eG4/test/protonAbsorber_conical.txt"
+// use following line to use helical PA instead of above line
 //#include "Mu2eG4/test/protonAbsorber_helical.txt"
 
 // Neutron Absorber (document draft dated 2010-07-16)

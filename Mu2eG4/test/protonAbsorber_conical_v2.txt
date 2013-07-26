@@ -1,0 +1,37 @@
+//
+// Conical proton absorber geometry file.
+// Now the default is 1m inner part and 2.2m outer part.
+// See doc-3186, 3155, 3006, and 2259
+//
+// $Id: protonAbsorber_conical_v2.txt,v 1.1 2013/07/26 21:55:57 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2013/07/26 21:55:57 $
+//
+
+string protonabsorber.materialName = "Polyethylene092";
+double protonabsorber.OutRadius1   =  380.0;
+double protonabsorber.OutRadius0   =  335.2;
+double protonabsorber.thickness    =    0.5;
+int    protonabsorber.verbosityLevel = 1;
+bool   protonabsorber.visible      = true;
+bool   protonabsorber.solid        = false;
+
+// To make inner part shorter than MECO design
+bool   protonabsorber.isShorterCone = true;
+double protonabsorber.distFromTargetEnd = 0.;
+double protonabsorber.halfLength   = 500.0;
+
+// Outer part
+bool   protonabsorber.isShorterCone = true;
+bool   protonabsorber.outerPA = true;
+double protonabsorber.outerPAInnerRadius0 = 436.0;
+double protonabsorber.outerPAInnerRadius1 = 720.0;
+double protonabsorber.outerPAHalfLength = 2200.0; 
+double protonabsorber.outerPAThickness = 20.0; 
+double protonabsorber.outerPAZCenter = 6200.0; 
+string protonabsorber.outerPAMaterialName = "Polyethylene092";
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
