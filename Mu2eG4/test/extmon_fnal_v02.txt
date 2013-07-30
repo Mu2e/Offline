@@ -227,7 +227,7 @@ vector<double> extMonFNAL.dn.plane_yoffset = { 0., 0., 0., 0. };
 vector<double> extMonFNAL.dn.module_xoffset = { 0., 0., 0. };
 vector<double> extMonFNAL.dn.module_yoffset = { 18.4., 0., -18.4. };
 vector<double> extMonFNAL.dn.module_zoffset = { 1., -1., 1. }; // just determines which side of the plane; all math is handed in constructExMonFNAL
-vector<double> extMonFNAN.dn.module_rotation = { 0., 0., 180. };
+vector<double> extMonFNAL.dn.module_rotation = { 0., 0., 180. };
 
 
 //----------------------------------------------------------------
