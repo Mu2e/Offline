@@ -1,8 +1,8 @@
-#if 0 /*exclude this file from compilation*/
-
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 
 #include "ExtinctionMonitorFNAL/Analyses/inc/EMFSimHitHistograms.hh"
+
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
 
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHit.hh"
@@ -12,10 +12,13 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
+#include "cetlib/exception.h"
+
 #include "TH1D.h"
 #include "TH2D.h"
 
 #include <sstream>
+
 
 namespace mu2e {
 
@@ -30,45 +33,55 @@ namespace mu2e {
 
   // Book the histograms.
   void EMFSimHitHistograms::book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir) {
-    // assumes one sensor per plane
-    const unsigned nsensors = extmon.nplanes();
-
-    hitTimes_ = tfdir.make<TH2D>("hitTimes", "Sensor plane vs hit time",
+    hitTimes_ = tfdir.make<TH2D>("hitTimes", "Module plane vs hit time",
                                  400, -0.5, 399.5, /* ns resolution */
-                                 nsensors, -0.5, nsensors-0.5
+                                 3, -0.5, 3-0.5
                                  );
-
     hitTimes_->SetOption("colz");
 
+    moduleHits_ = tfdir.make<TH1D>("mhits","Hits per module", 150, 0., 20);
+    
     energyDeposit_ = tfdir.make<TH1D>("eion", "Ionizing energy deposit", 150, 0., 0.150);
     energyDeposit_->GetXaxis()->SetTitle("energy [MeV]");
+ 
+    ExtMonFNALModuleIdConverter con(extmon);
 
-    for(unsigned sensor = 0; sensor < nsensors; ++sensor) {
-      ExtMonFNALSensorId sid(sensor);
-      std::ostringstream osname;
-      osname<<"hitOnSensor_"<<sensor;
-      std::ostringstream ostitle;
-      ostitle<<"Local hit position for sensor "<<sid;
-
-      hitPosition_[sid] = tfdir.make<TH2D>(osname.str().c_str(),
-                                           ostitle.str().c_str(),
-                                           400, -extmon.sensor().halfSize()[0], +extmon.sensor().halfSize()[0],
-                                           400, -extmon.sensor().halfSize()[1], +extmon.sensor().halfSize()[1]
-                                           );
-
-      hitPosition_[sid]->SetOption("colz");
-    }
+    for(unsigned iplane=0; iplane<extmon.nplanes(); ++iplane) {
+         
+      ExtMonFNALPlane plane = extmon.plane(iplane);
+           
+      for(unsigned imod = 0; imod < plane.nModules(); ++imod) {
+        ExtMonFNALModuleId mid = con.getModuleId(iplane,imod);
+     
+        std::ostringstream osname;
+        osname<<"hitOnModule_"<<mid;
+        std::ostringstream ostitle;
+        ostitle<<"Local hit position for module "<<mid;
+        
+        hitPosition_[mid] = tfdir.make<TH2D>(osname.str().c_str(),
+                                             ostitle.str().c_str(),
+                                             400, -extmon.module().sensorHalfSize()[0], +extmon.module().sensorHalfSize()[0],
+                                             400, -extmon.module().sensorHalfSize()[1], +extmon.module().sensorHalfSize()[1]
+                                             );
+        
+        hitPosition_[mid]->SetOption("colz");
+        
+      } // for (unsigned imod..)
+    } // for (unsigned iplane..)
 
   } // end EMFSimHitHistograms::book()
-
+  
   void EMFSimHitHistograms::fill(const ExtMonFNALSimHitCollection& coll) {
+    //ExtMonFNALModuleIdConverter con(8);
     for(ExtMonFNALSimHitCollection::const_iterator i = coll.begin(); i != coll.end(); ++i) {
-      hitTimes_->Fill(i->startTime(), i->sensorId().plane());
+      //moduleHits_->Fill(con.denseModuleNumber(i->moduleId()).number());
+      hitTimes_->Fill(i->startTime(), i->moduleId().plane());
       energyDeposit_->Fill(i->ionizingEnergyDeposit());
-      hitPosition_[i->sensorId()]->Fill(i->localStartPosition().x(), i->localStartPosition().y());
+      if(hitPosition_[i->moduleId()] != NULL)
+        hitPosition_[i->moduleId()]->Fill(i->localStartPosition().x(), i->localStartPosition().y());
+      else throw cet::exception("RANGE")<<"module " << i->moduleId() << " not within range of booked histograms\n";
+      
     }
   } // end EMFSimHitHistograms::fill()
 
 } // end namespace mu2e
-
-#endif

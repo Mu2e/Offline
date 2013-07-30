@@ -21,12 +21,16 @@ namespace mu2e {
   public:
 
     unsigned nplanes() const { return m_plane_zoffset.size(); }
+    unsigned nModulesPerPlane() const { return planes_[0].module_zoffset().size(); }
+    unsigned nmodules() const { return (this->nplanes() * this->nModulesPerPlane()); }
+    
+    const std::vector<ExtMonFNALPlane>& planes() const { return planes_; } 
+    const int size() const { return planes_.size(); } 
+    
     const std::vector<double>& plane_zoffset() const { return m_plane_zoffset; }
     const std::vector<double>& plane_xoffset() const { return m_plane_xoffset; }
     const std::vector<double>& plane_yoffset() const { return m_plane_yoffset; }
-    const std::vector<double>& module_zoffset() const { return m_module_zoffset; }
-    const std::vector<double>& module_xoffset() const { return m_module_xoffset; }
-    const std::vector<double>& module_yoffset() const { return m_module_yoffset; }
+
     const std::vector<double>& motherTransverseHalfSize() const { return m_motherTransverseHalfSize; }
     const double motherStartZ() const { return m_motherStartZ; }
     const double motherEndZ() const { return m_motherEndZ; }
@@ -56,6 +60,7 @@ namespace mu2e {
     CLHEP::Hep3Vector stackToMu2e_position(const CLHEP::Hep3Vector& pos) const;
     CLHEP::Hep3Vector stackToMu2e_momentum(const CLHEP::Hep3Vector& mom) const;
 
+
     //----------------------------------------------------------------
     // "global" extmon plane number is obtained by adding the offset to
     // this stack's plane number
@@ -70,6 +75,9 @@ namespace mu2e {
     // For persistency
     template<class T> friend class art::Wrapper;
     
+    std::vector<ExtMonFNALPlane> planes_;
+
+
     ExtMonFNALPlane plane_;
 
     CLHEP::HepRotation m_stackRotationInMu2e;
@@ -84,11 +92,6 @@ namespace mu2e {
     std::vector<double> m_plane_zoffset;
     std::vector<double> m_plane_xoffset;
     std::vector<double> m_plane_yoffset;
-
-    // Module center positions - all the planes in a stack have identical module layouts
-    std::vector<double> m_module_zoffset;
-    std::vector<double> m_module_xoffset;
-    std::vector<double> m_module_yoffset;
 
     // data for coordinate system transformations: inverse of stack rotation
     CLHEP::HepRotation m_coordinateRotationInMu2e;

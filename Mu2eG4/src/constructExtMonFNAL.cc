@@ -1,6 +1,6 @@
-// $Id: constructExtMonFNAL.cc,v 1.26 2013/06/28 20:14:42 wieschie Exp $
+// $Id: constructExtMonFNAL.cc,v 1.27 2013/07/30 18:45:00 wieschie Exp $
 // $Author: wieschie $
-// $Date: 2013/06/28 20:14:42 $
+// $Date: 2013/07/30 18:45:00 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -14,6 +14,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4SDManager.hh"
 #include "G4ExtrudedSolid.hh"
+#include "G4Helper/inc/AntiLeakRegistry.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
@@ -30,6 +31,7 @@
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 
@@ -39,15 +41,14 @@
 namespace mu2e {
 
   //================================================================
-  void constructExtMonFNALPlaneStack( const ExtMonFNALModule& module,
-                                      const ExtMonFNALPlane& plane,
-                                      const ExtMonFNALPlaneStack& stack,
-                                      const std::string& volNameSuffix,
-                                      VirtualDetectorId::enum_type entranceVD,
-                                      const VolumeInfo& parent,
-                                      const CLHEP::HepRotation& parentRotationInMu2e,
-                                      const SimpleConfig& config
-                                      )
+  void constructExtMonFNALPlaneStack(const ExtMonFNALModule& module,
+                                     const ExtMonFNALPlaneStack& stack,
+                                     const std::string& volNameSuffix,
+                                     VirtualDetectorId::enum_type entranceVD,
+                                     const VolumeInfo& parent,
+                                     const CLHEP::HepRotation& parentRotationInMu2e,
+                                     const SimpleConfig& config
+                                     )
   {
     bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
     bool const doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
@@ -99,7 +100,6 @@ namespace mu2e {
                                           );
     constructExtMonFNALPlanes(mother,
                               module,
-                              plane,
                               stack,
                               volNameSuffix,
                               config,
@@ -188,7 +188,6 @@ namespace mu2e {
   // mounts planes in mother volume
   void constructExtMonFNALPlanes(const VolumeInfo& mother,
                                  const ExtMonFNALModule& module,
-                                 const ExtMonFNALPlane& plane,
                                  const ExtMonFNALPlaneStack& stack,
                                  const std::string& volNameSuffix,
                                  const SimpleConfig& config,
@@ -199,6 +198,9 @@ namespace mu2e {
   {
     
     for(unsigned iplane = 0; iplane < stack.nplanes(); ++iplane) {
+      std::vector<double> hs;
+      config.getVectorDouble("extMonFNAL.planeHalfSize", hs);
+      ExtMonFNALPlane plane(module, hs);
       std::ostringstream osp;
       osp<<"EMFPlane"<<volNameSuffix<<iplane;
       
@@ -220,12 +222,10 @@ namespace mu2e {
                                   placePV,
                                   doSurfaceCheck
                                   );
-      
       constructExtMonFNALModules(mother, 
                                  offset, 
                                  iplane,
                                  module,
-                                 plane,
                                  stack,
                                  volNameSuffix,
                                  config,
@@ -240,7 +240,6 @@ namespace mu2e {
                                   const G4ThreeVector& offset,
                                   unsigned iplane,
                                   const ExtMonFNALModule& module,
-                                  const ExtMonFNALPlane& plane,
                                   const ExtMonFNALPlaneStack& stack,
                                   const std::string& volNameSuffix,
                                   const SimpleConfig& config,
@@ -249,40 +248,49 @@ namespace mu2e {
                                   bool const placePV
                                )
     {
-      unsigned nmodules = stack.module_zoffset().size();
+      unsigned nmodules = stack.planes()[iplane].module_zoffset().size();
       for(unsigned imodule = 0; imodule < nmodules; ++imodule) {
         
         
         std::ostringstream osm;
         osm<<"EMFModule"<<volNameSuffix<<iplane<<imodule;
         
-        G4ThreeVector soffset = {stack.module_xoffset()[imodule] + offset[0], 
-                                 stack.module_yoffset()[imodule] + offset[1], 
-                                 stack.module_zoffset()[imodule]*(module.chipHalfSize()[2]*2 + plane.halfSize()[2]+ module.sensorHalfSize()[2]) + offset[2]};
-                
+        G4ThreeVector soffset = {stack.planes()[iplane].module_xoffset()[imodule] + offset[0], 
+                                 stack.planes()[iplane].module_yoffset()[imodule] + offset[1], 
+                                 stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2]*2 + stack.planes()[iplane].halfSize()[2]+ module.sensorHalfSize()[2]) + offset[2]};
+
+        
+        AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+        G4RotationMatrix* zRot = reg.add(new G4RotationMatrix);
+        zRot->rotateZ(stack.planes()[iplane].module_rotation()[imodule]);
+        
+        GeomHandle<ExtMonFNAL::ExtMon> extmon;
+        ExtMonFNALModuleIdConverter con(*extmon);
+        int copyno = con.getModuleDenseId(iplane + stack.planeNumberOffset(),imodule).number();
+
         VolumeInfo vsensor = nestBox(osm.str(),
-                                    module.sensorHalfSize(),
-                                    findMaterialOrThrow("G4_Si"),
-                                    NULL,
-                                    soffset,
-                                    mother,
-                                    (iplane*nmodules + imodule + stack.planeNumberOffset()),
-                                    config.getBool("extMonFNAL.moduleVisible"),
-                                    G4Colour::Red(),
-                                    config.getBool("extMonFNAL.moduleSolid"),
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    doSurfaceCheck
+                                     module.sensorHalfSize(),
+                                     findMaterialOrThrow("G4_Si"),
+                                     zRot,
+                                     soffset,
+                                     mother,
+                                     copyno,
+                                     config.getBool("extMonFNAL.moduleVisible"),
+                                     G4Colour::Red(),
+                                     config.getBool("extMonFNAL.moduleSolid"),
+                                     forceAuxEdgeVisible,
+                                     placePV,
+                                     doSurfaceCheck
                                      );
 
          G4VSensitiveDetector* emSD = G4SDManager::GetSDMpointer()->
            FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL());
-        
+         
          if(emSD) vsensor.logical->SetSensitiveDetector(emSD);
         
-         G4ThreeVector coffset0 = {stack.module_xoffset()[imodule] + module.chipHalfSize()[0] + .065 + offset[0], // +/- .065 to achieve the designed .13mm gap
-                                   stack.module_yoffset()[imodule] + offset[1] + ((imodule == 0 ? 1 : -1)*.835),   // conditional determines the intended direction of readout cables
-                                  stack.module_zoffset()[imodule]*(module.chipHalfSize()[2] + plane.halfSize()[2]) + offset[2]};
+         G4ThreeVector coffset0 = {stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + .065 + offset[0], // +/- .065 to achieve the designed .13mm gap
+                                   stack.planes()[iplane].module_yoffset()[imodule] + offset[1] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
+                                   stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2]) + offset[2]};
         
         VolumeInfo vchip0 = nestBox(osm.str() + "chip0",
                                     module.chipHalfSize(),
@@ -298,9 +306,9 @@ namespace mu2e {
                                     placePV,
                                     doSurfaceCheck
                                     );
-        G4ThreeVector coffset1 = {stack.module_xoffset()[imodule] - module.chipHalfSize()[0] - .065 + offset[0], 
-                                  stack.module_yoffset()[imodule] + offset[1] + ((imodule == 0 ? 1 : -1)*.835), 
-                                  stack.module_zoffset()[imodule]*(module.chipHalfSize()[2] + plane.halfSize()[2]) + offset[2]};
+        G4ThreeVector coffset1 = {stack.planes()[iplane].module_xoffset()[imodule] - module.chipHalfSize()[0] - .065 + offset[0], 
+                                  stack.planes()[iplane].module_yoffset()[imodule] + offset[1] + ((imodule == 0 ? 1 : -1)*.835), 
+                                  stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2]) + offset[2]};
 
         VolumeInfo vchip1 = nestBox(osm.str() + "chip1",
                                     module.chipHalfSize(),
@@ -316,8 +324,9 @@ namespace mu2e {
                                     placePV,
                                     doSurfaceCheck
                                     );
-      }
-    }
+
+      }// for
+    }// constructExtMonFNALModules
 
 
 
@@ -516,24 +525,23 @@ namespace mu2e {
     GeomHandle<ExtMonFNAL::ExtMon> extmon;
     GeomHandle<ExtMonFNALBuilding> emfb;
 
+
     constructExtMonFNALPlaneStack(extmon->module(),
-                                  extmon->plane(),
                                   extmon->dn(),
                                   "Dn",
                                   VirtualDetectorId::EMFDetectorDnEntrance,
                                   roomAir,
                                   emfb->roomRotationInMu2e(),
                                   config);
-    
+
     constructExtMonFNALPlaneStack(extmon->module(),
-                                  extmon->plane(),
                                   extmon->up(),
                                   "Up",
                                   VirtualDetectorId::EMFDetectorUpEntrance,
                                   roomAir,
                                   emfb->roomRotationInMu2e(),
                                   config);
-
+    
     constructExtMonFNALMagnet(extmon->spectrometerMagnet(),
                               roomAir,
                               "spectrometer",

@@ -1,18 +1,19 @@
 #ifndef Mu2eG4_ExtMonFNALPixelSD_hh
 #define Mu2eG4_ExtMonFNALPixelSD_hh
 //
-// $Id: ExtMonFNALPixelSD.hh,v 1.1 2012/08/23 23:36:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/23 23:36:14 $
+// $Id: ExtMonFNALPixelSD.hh,v 1.2 2013/07/30 18:45:00 wieschie Exp $
+// $Author: wieschie $
+// $Date: 2013/07/30 18:45:00 $
 //
 // Define a sensitive detector for the FNAL extinction monitor
 // Andrei Gaponenko, 2012
 //
 
 #include "G4VSensitiveDetector.hh"
-
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "art/Persistency/Provenance/ProductID.h"
 #include "art/Framework/Principal/Event.h"
+
 
 namespace mu2e {
 
@@ -32,10 +33,12 @@ namespace mu2e {
     // Information about the SimParticleCollection, needed to instantiate art::Ptr.
     art::ProductID const * _simID;
     art::Event     const * _event;
-
+    
+    const mu2e::ExtMonFNAL::ExtMon *_extmon;
+    
   public:
 
-    explicit ExtMonFNALPixelSD(const SimpleConfig& config);
+    ExtMonFNALPixelSD(const SimpleConfig& config, const mu2e::ExtMonFNAL::ExtMon& extmon);
 
     virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*);
 

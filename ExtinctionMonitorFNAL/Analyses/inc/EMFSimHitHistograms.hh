@@ -1,9 +1,9 @@
 #ifndef ExtinctionMonitorFNAL_Analyses_EMFSimHitHistograms_hh
 #define ExtinctionMonitorFNAL_Analyses_EMFSimHitHistograms_hh
 //
-// $Id: EMFSimHitHistograms.hh,v 1.3 2012/11/01 23:43:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:43:17 $
+// $Id: EMFSimHitHistograms.hh,v 1.4 2013/07/30 18:45:00 wieschie Exp $
+// $Author: wieschie $
+// $Date: 2013/07/30 18:45:00 $
 //
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 //
@@ -15,7 +15,7 @@
 
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
-#include "DataProducts/inc/ExtMonFNALSensorId.hh"
+#include "DataProducts/inc/ExtMonFNALModuleId.hh"
 
 class TH1D;
 class TH2D;
@@ -43,7 +43,8 @@ namespace mu2e {
   private:
     TH2D *hitTimes_;
     TH1D *energyDeposit_;
-    std::map<ExtMonFNALSensorId, TH2D*> hitPosition_;
+    TH1D *moduleHits_;
+    std::map<ExtMonFNALModuleId, TH2D*> hitPosition_;
   };
 
 } // end namespace mu2e

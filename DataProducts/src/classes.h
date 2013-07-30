@@ -1,16 +1,15 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.18 2013/07/01 06:52:13 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/07/01 06:52:13 $
+// $Id: classes.h,v 1.19 2013/07/30 18:45:00 wieschie Exp $
+// $Author: wieschie $
+// $Date: 2013/07/30 18:45:00 $
 //
 // Original author Rob Kutschke
 //
 
 #include "DataProducts/inc/StrawIndex.hh"
 #include "DataProducts/inc/FilterEfficiency.hh"
-#include "DataProducts/inc/ExtMonFNALSensorId.hh"
 #include "DataProducts/inc/ExtMonFNALModuleId.hh"
 #include "DataProducts/inc/ExtMonFNALChipId.hh"
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"

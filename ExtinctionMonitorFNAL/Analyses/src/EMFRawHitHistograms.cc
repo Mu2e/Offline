@@ -47,15 +47,15 @@ namespace mu2e {
 
     hitToT_ =   tfdir.make<TH1D>("hitToT", "Hit time over threshold, all hits", 16, -0.5, 15.5);
 
-    // assumes one sensor per plane
-    const unsigned nsensors = extmon.up().nplanes() + extmon.dn().nplanes();
-    for(unsigned sid = 0; sid < nsensors; ++sid) {
+    
+    const unsigned nsensors = extmon.up().nplanes()*2 + extmon.dn().nplanes()*3;
+    for(unsigned mid = 0; mid < nsensors; ++mid) {
       for(unsigned ix = 0; ix < extmon.sensor().nxChips(); ++ix) {
         for(unsigned iy = 0; iy < extmon.sensor().nyChips(); ++iy) {
-          ExtMonFNALChipId cid(ExtMonFNALSensorId(sid), ix, iy);
+          ExtMonFNALChipId cid(ExtMonFNALModuleId(mid), ix, iy);
 
           std::ostringstream osname;
-          osname<<"chipOccupancy_"<<sid<<"_"<<iy<<"_"<<ix;
+          osname<<"chipOccupancy_"<<mid<<"_"<<iy<<"_"<<ix;
           std::ostringstream ostitle;
           ostitle<<"Occupancy for "<<cid;
 

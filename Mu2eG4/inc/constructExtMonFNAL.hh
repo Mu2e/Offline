@@ -39,7 +39,6 @@ namespace mu2e {
 
   void constructExtMonFNALPlanes(const VolumeInfo& mother,
                                  const ExtMonFNALModule& module,
-                                 const ExtMonFNALPlane& plane,
                                  const ExtMonFNALPlaneStack& stack,
                                  const std::string& volNameSuffix,
                                  const SimpleConfig& config,
@@ -52,7 +51,6 @@ namespace mu2e {
                                   const G4ThreeVector& offset,
                                   unsigned iplane,
                                   const ExtMonFNALModule& module,
-                                  const ExtMonFNALPlane& plane,
                                   const ExtMonFNALPlaneStack& stack,
                                   const std::string& volNameSuffix,
                                   const SimpleConfig& config,

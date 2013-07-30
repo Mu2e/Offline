@@ -21,22 +21,19 @@ namespace mu2e {
 
     //================================================================
     ExtMonFNALPlaneStack ExtMonMaker::readStack(const SimpleConfig& config,
-                                                 const std::string& prefix,
-                                                 const CLHEP::Hep3Vector& refPointInMu2e,
-                                                 const CLHEP::HepRotation& rotationInMu2e
-                                                 )
+                                                const std::string& prefix,
+                                                const CLHEP::Hep3Vector& refPointInMu2e,
+                                                const CLHEP::HepRotation& rotationInMu2e,
+                                                const ExtMonFNALModule& module
+                                                )
     {
       ExtMonFNALPlaneStack pt;
       pt.m_stackRefPointInMu2e = refPointInMu2e;
       pt.m_stackRotationInMu2e = rotationInMu2e;
       pt.m_coordinateRotationInMu2e = pt.m_stackRotationInMu2e.inverse();
-
       config.getVectorDouble(prefix+".plane_zoffset", pt.m_plane_zoffset, -1);
       config.getVectorDouble(prefix+".plane_xoffset", pt.m_plane_xoffset, -1);
       config.getVectorDouble(prefix+".plane_yoffset", pt.m_plane_yoffset, -1);
-      config.getVectorDouble(prefix+".module_zoffset", pt.m_module_zoffset, -1);
-      config.getVectorDouble(prefix+".module_xoffset", pt.m_module_xoffset, -1);
-      config.getVectorDouble(prefix+".module_yoffset", pt.m_module_yoffset, -1);
       config.getVectorDouble(prefix+".motherTransverseHalfSize", pt.m_motherTransverseHalfSize, -1);
       pt.m_motherStartZ = config.getDouble(prefix+".motherStartZ"); 
       pt.m_motherEndZ = config.getDouble(prefix+".motherEndZ");
@@ -46,8 +43,20 @@ namespace mu2e {
                                     <<prefix<<".plane_zoffset must be sorted in the ascending order"
                                     <<"\n";
       }
-
-      //----------------------------------------------------------------
+      
+      std::vector<double> hs;
+      config.getVectorDouble("extMonFNAL.planeHalfSize",  hs, 3);
+      for(unsigned iplane = 0; iplane < pt.m_plane_zoffset.size(); ++iplane)
+        {
+          pt.planes_.emplace_back(module, hs);
+          config.getVectorDouble(prefix+".module_zoffset", pt.planes_[iplane].m_module_zoffset, -1);
+          config.getVectorDouble(prefix+".module_xoffset", pt.planes_[iplane].m_module_xoffset, -1);
+          config.getVectorDouble(prefix+".module_yoffset", pt.planes_[iplane].m_module_yoffset, -1);
+          config.getVectorDouble(prefix+".module_rotation", pt.planes_[iplane].m_module_rotation, -1);
+          for(unsigned imodule = 0; imodule < pt.nModulesPerPlane(); imodule++)
+            pt.planes_[iplane].m_module_rotation[imodule] *= CLHEP::degree;
+        }
+      
       return pt;
     }
 
@@ -59,7 +68,6 @@ namespace mu2e {
 
       std::unique_ptr<ExtMon> det(new ExtMon());
 
-      config.getVectorDouble("extMonFNAL.planeHalfSize",  det->plane_.halfSize_, 3);
       config.getVectorDouble("extMonFNAL.sensorHalfSize", det->module_.sensorHalfSize_, -1);
       config.getVectorDouble("extMonFNAL.chipHalfSize", det->module_.chipHalfSize_, -1);
       //----------------------------------------------------------------
@@ -69,7 +77,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector upRefPointInMu2e = room.filterExitInMu2e()
         + room.collimator2RotationInMu2e() * CLHEP::Hep3Vector(0, 0, -detectorDistanceToWall);
 
-      det->up_ = readStack(config, "extMonFNAL.up", upRefPointInMu2e, room.collimator2RotationInMu2e());
+      det->up_ = readStack(config, "extMonFNAL.up", upRefPointInMu2e, room.collimator2RotationInMu2e(), det->module_);
 
       //----------------------------------------------------------------
       // Spectrometer magnet
@@ -90,9 +98,10 @@ namespace mu2e {
       // The downstream stack
 
       const CLHEP::Hep3Vector dnRefPointInMu2e = magnetRefInMu2e;
-      det->dn_ = readStack(config, "extMonFNAL.dn", dnRefPointInMu2e, det->spectrometerMagnet_.outRotationInMu2e());
+      det->dn_ = readStack(config, "extMonFNAL.dn", dnRefPointInMu2e, det->spectrometerMagnet_.outRotationInMu2e(), det->module_);
 
       //----------------------------------------------------------------
+    
       det->dn_.planeNumberOffset_ = 0;
       det->up_.planeNumberOffset_ = det->dn_.nplanes();
 

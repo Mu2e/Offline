@@ -15,6 +15,10 @@ string g4.physicsListName = "QGSP_BERT_HP";
 double g4.minRangeCut = 0.010;            // mm
 bool g4.killLowEKine = false;
 double g4.eKineMin = 0.; // MeV
+bool extMonFNAL.stackMotherVisible = false;
+bool extMonFNAL.stackMotherSolid = false;
+
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

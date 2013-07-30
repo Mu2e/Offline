@@ -19,9 +19,10 @@ namespace mu2e {
 
     class ExtMonMaker {
       static ExtMonFNALPlaneStack readStack(const SimpleConfig& c,
-                                             const std::string& prefix,
-                                             const CLHEP::Hep3Vector& refPointInMu2e,
-                                             const CLHEP::HepRotation& rotationInMu2e
+                                            const std::string& prefix,
+                                            const CLHEP::Hep3Vector& refPointInMu2e,
+                                            const CLHEP::HepRotation& rotationInMu2e,
+                                            const ExtMonFNALModule& module
                                              );
 
     public:

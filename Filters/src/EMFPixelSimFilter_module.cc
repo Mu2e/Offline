@@ -1,6 +1,6 @@
-// $Id: EMFPixelSimFilter_module.cc,v 1.3 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: EMFPixelSimFilter_module.cc,v 1.4 2013/07/30 18:45:00 wieschie Exp $
+// $Author: wieschie $
+// $Date: 2013/07/30 18:45:00 $
 //
 // Andrei Gaponenko, 2012
 
@@ -96,7 +96,7 @@ namespace mu2e {
         } while(particle);
 
         // Record hit plane
-        hitPlanes.insert(i->sensorId().plane());
+        hitPlanes.insert(i->moduleId().plane());
       }
 
       const bool passed = (cutMinPlanes_ <= hitPlanes.size());
@@ -118,7 +118,7 @@ namespace mu2e {
         for(ExtMonFNALSimHitCollection::const_iterator i=inhits.begin(); i != inhits.end(); ++i) {
           art::Ptr<SimParticle> oldPtr(i->simParticle());
           art::Ptr<SimParticle> newPtr(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
-          outhits->push_back(ExtMonFNALSimHit(i->sensorId(),
+          outhits->push_back(ExtMonFNALSimHit(i->moduleId(),
                                               newPtr,
                                               i->totalEnergyDeposit(),
                                               i->nonIonizingEnergyDeposit(),

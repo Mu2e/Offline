@@ -45,23 +45,9 @@ namespace mu2e {
     assert(pix.number() < totalNumberOfPixels_);
 
     unsigned int globalChipNumber = pix.number() / chip_.nPixels();
-
-    // WARNING: this code will break if any geometry changes are made.  It assumes 4 planes in the upstream and downstream stack.  
-    // All upstream planes have 2 modules and downstream planes have 3 modules.
    
- unsigned int globalModuleNumber = (globalChipNumber + 1) / 2;
-    unsigned int globalPlaneNumber = globalModuleNumber <= 8 ? ( (globalModuleNumber + 1) / 2 ) : ( (globalModuleNumber / 3) + 2 );
-    
-    mu2e::ExtMonFNALModuleId::Rotation rot = globalPlaneNumber <= 4 ? 
-      mu2e::ExtMonFNALModuleId::Rotation::UP : ( globalModuleNumber % 3 == 2 ? 
-                                                 mu2e::ExtMonFNALModuleId::Rotation::DOWN : mu2e::ExtMonFNALModuleId::Rotation::UP );
-   
-    mu2e::ExtMonFNALModuleId::Side side = globalPlaneNumber <= 4 ? 
-      ( globalModuleNumber % 2 == 1 ? 
-        mu2e::ExtMonFNALModuleId::Side::FRONT : mu2e::ExtMonFNALModuleId::Side::BACK ) : ( globalModuleNumber % 3 == 1 ? 
-                                                                                           mu2e::ExtMonFNALModuleId::Side::BACK : mu2e::ExtMonFNALModuleId::Side::FRONT );
-    
-    ExtMonFNALModuleId mid(globalPlaneNumber, side, rot, globalModuleNumber);
+    unsigned int globalModuleNumber = (globalChipNumber + 1) / 2;
+    ExtMonFNALModuleId mid(globalModuleNumber);
 
     unsigned int chipInModuleNumber = globalChipNumber % (module_.nxChips() * module_.nyChips());
     unsigned int chipRow = chipInModuleNumber / module_.nxChips();

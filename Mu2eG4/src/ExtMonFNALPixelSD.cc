@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALPixelSD.cc,v 1.1 2012/08/23 23:36:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/23 23:36:14 $
+// $Id: ExtMonFNALPixelSD.cc,v 1.2 2013/07/30 18:45:00 wieschie Exp $
+// $Author: wieschie $
+// $Date: 2013/07/30 18:45:00 $
 //
 // Original author Andrei Gaponenko
 
@@ -19,14 +19,18 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
+#include "DataProducts/inc/ExtMonFNALModuleDenseId.hh"
 namespace mu2e {
 
   //================================================================
-  ExtMonFNALPixelSD::ExtMonFNALPixelSD(const SimpleConfig& config)
+  ExtMonFNALPixelSD::ExtMonFNALPixelSD(const SimpleConfig& config, const mu2e::ExtMonFNAL::ExtMon& extmon)
     : G4VSensitiveDetector(SensitiveDetectorName::ExtMonFNAL())
     , _sizeLimit(std::max(0, config.getInt("g4.stepsSizeLimit",0)))
     , _simID()
     , _event()
+    , _extmon(&extmon)
+
   {
     verboseLevel = config.getInt("extMonFNAL.sd.verbosityLevel");
   }
@@ -44,7 +48,6 @@ namespace mu2e {
 
   //================================================================
   G4bool ExtMonFNALPixelSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
-
     bool retval = false;
 
     G4double totalEDep = aStep->GetTotalEnergyDeposit();
@@ -65,11 +68,11 @@ namespace mu2e {
         G4ThreeVector localEndPos = transformation.TransformPoint(globalEndPos);
 
         art::Ptr<SimParticle> particle( *_simID, aStep->GetTrack()->GetTrackID(), _event->productGetter(*_simID) );
-        ExtMonFNALSensorId sid(aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber());
-
+        ExtMonFNALModuleDenseId mid(aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber());
         // Add the hit to the framework collection.
+        ExtMonFNALModuleIdConverter con(*_extmon);
         _collection->
-          push_back(ExtMonFNALSimHit(sid,
+          push_back(ExtMonFNALSimHit(con.moduleId(ExtMonFNALModuleDenseId(mid)),
                                      particle,
 
                                      totalEDep,

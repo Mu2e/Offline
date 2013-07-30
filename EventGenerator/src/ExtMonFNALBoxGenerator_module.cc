@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.11 2013/07/01 06:52:13 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/07/01 06:52:13 $
+// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.12 2013/07/30 18:45:00 wieschie Exp $
+// $Author: wieschie $
+// $Date: 2013/07/30 18:45:00 $
 //
 // Create particle flux in the ExtMonFNAL box by randomizing
 // kinematic of input particles read from a file.
@@ -655,8 +655,8 @@ namespace mu2e {
 
       Hep3Vector posExtMon(ms.muon.emx, ms.muon.emy, ms.muon.emz);
        if(ms.muon.stoppedInSensor) {
-         posExtMon.setX( 2 * extmon_->plane().halfSize()[0] * (randFlat_.fire() - 0.5));
-         posExtMon.setY( 2 * extmon_->plane().halfSize()[1] * (randFlat_.fire() - 0.5));
+         posExtMon.setX( 2 * extmon_->up().planes()[0].halfSize()[0] * (randFlat_.fire() - 0.5));
+         posExtMon.setY( 2 * extmon_->up().planes()[0].halfSize()[1] * (randFlat_.fire() - 0.5));
        }
 
       const Hep3Vector posMu2e(extmon_->extMonToMu2e_position(posExtMon));

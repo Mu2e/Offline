@@ -5,9 +5,9 @@
 // tracking step in an ExtMonFNAL silicon sensor to produce digitized
 // detector hits at a later stage.
 //
-// $Id: ExtMonFNALSimHit.hh,v 1.1 2012/08/23 23:36:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/23 23:36:14 $
+// $Id: ExtMonFNALSimHit.hh,v 1.2 2013/07/30 18:45:00 wieschie Exp $
+// $Author: wieschie $
+// $Date: 2013/07/30 18:45:00 $
 //
 // Original author Andrei Gaponenko
 //
@@ -18,7 +18,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "DataProducts/inc/ExtMonFNALSensorId.hh"
+#include "DataProducts/inc/ExtMonFNALModuleId.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 
 namespace mu2e {
@@ -27,7 +27,7 @@ namespace mu2e {
 
   public:
 
-    ExtMonFNALSimHit(const ExtMonFNALSensorId&    sid,
+    ExtMonFNALSimHit(const ExtMonFNALModuleId&    mid,
                      const art::Ptr<SimParticle>& particle,
                      double                       totalEnergyDeposit,
                      double                       nonIonizingEnergyDeposit,
@@ -36,7 +36,7 @@ namespace mu2e {
                      const CLHEP::Hep3Vector&     endPosition,
                      double                       endTime
                      )
-      : sensorId_(sid)
+      : moduleId_(mid)
       , particle_(particle)
       , totalEnergyDeposit_(totalEnergyDeposit)
       , nonIonizingEnergyDeposit_(nonIonizingEnergyDeposit)
@@ -49,10 +49,10 @@ namespace mu2e {
     // Defautl ctr required by genreflex persistency.
     // It should be not used by mu2e code.
     ExtMonFNALSimHit()
-      : sensorId_(-1), totalEnergyDeposit_(), nonIonizingEnergyDeposit_(), startTime_(), endTime_()
+      : moduleId_(-1,  -1), totalEnergyDeposit_(), nonIonizingEnergyDeposit_(), startTime_(), endTime_()
     {}
 
-    const ExtMonFNALSensorId& sensorId() const { return sensorId_; }
+    const ExtMonFNALModuleId& moduleId() const { return moduleId_; }
 
     const art::Ptr<SimParticle>& simParticle() const { return particle_; }
 
@@ -60,7 +60,7 @@ namespace mu2e {
     double nonIonizingEnergyDeposit()  const { return nonIonizingEnergyDeposit_; }
     double ionizingEnergyDeposit()     const { return totalEnergyDeposit_ - nonIonizingEnergyDeposit_; }
 
-    // Start and end positions are in the coordinates of the sensor volume.
+    // Start and end positions are in the coordinates of the module volume.
     // Start and end times are global.
     const CLHEP::Hep3Vector& localStartPosition() const { return startPosition_;  }
     double                   startTime() const { return startTime_;  }
@@ -69,7 +69,7 @@ namespace mu2e {
     double                   endTime() const { return endTime_;  }
 
   private:
-    ExtMonFNALSensorId    sensorId_;
+    ExtMonFNALModuleId    moduleId_;
 
     art::Ptr<SimParticle> particle_;
 

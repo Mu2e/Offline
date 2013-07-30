@@ -1,6 +1,6 @@
-// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.9 2013/07/01 06:52:13 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/07/01 06:52:13 $
+// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.10 2013/07/30 18:45:00 wieschie Exp $
+// $Author: wieschie $
+// $Date: 2013/07/30 18:45:00 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -71,8 +71,8 @@ namespace mu2e {
         // in the transverse direction, even if it stopped in air
         // instead of silicon.
         res.stoppedInSensor =
-          (std::abs(stackPos.x()) < extmon.plane().halfSize()[0]) &&
-          (std::abs(stackPos.y()) < extmon.plane().halfSize()[1])
+          (std::abs(stackPos.x()) < stack.planes()[0].halfSize()[0]) &&
+          (std::abs(stackPos.y()) < stack.planes()[0].halfSize()[1])
           ;
 
         return res;

@@ -34,6 +34,7 @@ namespace mu2e {
       bool booked_;
       EMFSimHitHistograms ch_;
 
+
     public:
       explicit EMFDetHistSimHits(const fhicl::ParameterSet& pset);
       virtual void beginRun(const art::Run& run);

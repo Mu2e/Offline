@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.160 2013/07/02 15:57:07 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/07/02 15:57:07 $
+// $Id: Mu2eWorld.cc,v 1.161 2013/07/30 18:45:00 wieschie Exp $
+// $Author: wieschie $
+// $Date: 2013/07/30 18:45:00 $
 //
 // Original author Rob Kutschke
 //
@@ -629,7 +629,8 @@ namespace mu2e {
     }
 
     if(true) { // this SD does not derive from Mu2eSensitiveDetector as it does not produce StepPointMCCollection
-      SDman->AddNewDetector(new ExtMonFNALPixelSD(_config));
+      GeomHandle<mu2e::ExtMonFNAL::ExtMon> extmon;
+      SDman->AddNewDetector(new ExtMonFNALPixelSD(_config, *extmon));
     }
 
     if(sdHelper_->enabled(StepInstanceName::ExtMonUCITof)) {

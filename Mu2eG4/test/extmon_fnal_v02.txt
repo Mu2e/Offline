@@ -178,6 +178,7 @@ vector<double> extMonFNAL.up.plane_yoffset = { 0.,    0.,    0.,    0. };
 vector<double> extMonFNAL.up.module_xoffset = { 0., 0. };
 vector<double> extMonFNAL.up.module_yoffset = { 9.2, -9.2. };
 vector<double> extMonFNAL.up.module_zoffset = { 1., -1. }; // just determines which side of the plane; all math is handed in constructExMonFNAL
+vector<double> extMonFNAL.up.module_rotation = { 0., 0. };
 
 //----------------------------------------------------------------
 // The spectrometer magnet.
@@ -226,6 +227,7 @@ vector<double> extMonFNAL.dn.plane_yoffset = { 0., 0., 0., 0. };
 vector<double> extMonFNAL.dn.module_xoffset = { 0., 0., 0. };
 vector<double> extMonFNAL.dn.module_yoffset = { 18.4., 0., -18.4. };
 vector<double> extMonFNAL.dn.module_zoffset = { 1., -1., 1. }; // just determines which side of the plane; all math is handed in constructExMonFNAL
+vector<double> extMonFNAN.dn.module_rotation = { 0., 0., 180. };
 
 
 //----------------------------------------------------------------

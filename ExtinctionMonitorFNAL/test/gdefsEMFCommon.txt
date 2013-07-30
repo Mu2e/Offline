@@ -18,7 +18,7 @@ int g4.particlesSizeLimit = 100000;
 // bool g4SteppingAction.killerVerbose = true;
 
 //string g4.physicsListName = "Minimal";
-string g4.physicsListName = "QGSP_BERT_HP";
+string g4.physicsListName = "QGSP_BERT";
 double g4.minRangeCut = 1.;            // mm
 bool g4.killLowEKine = true;
 double g4.eKineMin = 100.; // MeV
@@ -34,7 +34,7 @@ double g4.eKineMin = 100.; // MeV
 bool toyDS.visible           = false;
 bool crs.vetoVisible         = false;
 bool protonabsorber.visible  = false;
-bool neutronabsorber.visible = false;
+//bool neutronabsorber.visible = false;
 bool mbs.visible             = false;
 bool vd.visible              = true;
 
