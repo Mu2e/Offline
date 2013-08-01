@@ -4,9 +4,9 @@
 // Read Watanabe data about DIO spectrum from a table and merge it
 // with the spectrum coming from the Shanker formula
 
-// $Id: ShankerWatanabeSpectrum.hh,v 1.2 2013/07/22 18:57:42 knoepfel Exp $
+// $Id: ShankerWatanabeSpectrum.hh,v 1.3 2013/08/01 12:42:46 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/22 18:57:42 $
+// $Date: 2013/08/01 12:42:46 $
 //
 //
 
@@ -22,7 +22,7 @@ namespace mu2e {
     ShankerWatanabeSpectrum();
     ~ShankerWatanabeSpectrum(){}
 
-    double getWeight(double E);
+    double getWeight(double E) const;
 
   private:
 
@@ -33,13 +33,13 @@ namespace mu2e {
 
     const Table<2> _table;    
 
-    double evaluateShanker (double E);
-    double evaluateWatanabe(double E);
+    double evaluateShanker (double E) const;
+    double evaluateWatanabe(double E) const;
 
     double interpolate(const double E, 
                        const TableRow<2>& row_after,
                        const TableRow<2>& row,
-                       const TableRow<2>& row_before );
+                       const TableRow<2>& row_before ) const;
 
   };
 

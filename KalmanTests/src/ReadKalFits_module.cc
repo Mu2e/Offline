@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.19 2013/07/22 18:57:42 knoepfel Exp $
+// $Id: ReadKalFits_module.cc,v 1.20 2013/08/01 12:42:46 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/22 18:57:42 $
+// $Date: 2013/08/01 12:42:46 $
 //
 // Original author Rob Kutschke
 //
@@ -52,9 +52,6 @@ namespace mu2e {
 
     void beginJob();
     void analyze(const art::Event& e);
-
-    // DIO spectrum
-    static double DIOspectrum(double eenergy);
 
   private:
 

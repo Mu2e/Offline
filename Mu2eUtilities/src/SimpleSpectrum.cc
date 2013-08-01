@@ -1,8 +1,8 @@
 // Simple approximations available for DIO spectrum.
 //
-// $Id: SimpleSpectrum.cc,v 1.3 2013/07/24 18:48:24 knoepfel Exp $
+// $Id: SimpleSpectrum.cc,v 1.4 2013/08/01 12:42:46 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/24 18:48:24 $
+// $Date: 2013/08/01 12:42:46 $
 //
 
 // Mu2e includes
@@ -31,7 +31,7 @@ namespace mu2e {
   SimpleSpectrum::~SimpleSpectrum() {
   }
 
-  double SimpleSpectrum::getWeight(double E) {
+  double SimpleSpectrum::getWeight(double E) const {
 
     double weight(0.);
     if      ( _approx == Spectrum::Flat  ) weight = getFlat (E);
@@ -54,9 +54,7 @@ namespace mu2e {
 
     const double delta = phy.getMuonEnergy() - e - cet::pow<2>( e )/(2*phy.getAtomicMass());
     
-    if ( phy.getEndpointEnergy()-e < 0 ) return 0.;
-    
-    return phy.getCzarneckiCoefficient()*cet::pow<5>( delta );
+    return (e > phy.getEndpointEnergy() ) ? 0. : phy.getCzarneckiCoefficient()*cet::pow<5>( delta );
 
   }
 
@@ -64,7 +62,7 @@ namespace mu2e {
 
     const double delta = phy.getMuonEnergy() - e - cet::pow<2>( e )/(2*phy.getAtomicMass());
       
-    if ( phy.getEndpointEnergy()-e < 0 ) return 0.;
+    if ( e > phy.getEndpointEnergy() ) return 0.;
     
     const auto & coeffs = phy.getCzarneckiCoefficients();
 
@@ -72,8 +70,9 @@ namespace mu2e {
     double power = cet::pow<5>( delta );
     for ( size_t i=0; i < coeffs.size() ; i++ ) {
       if( i > 0 ) power *= delta; 
-      prob += coeffs.at(i)*power;
+      prob  += coeffs.at(i)*power;
     }
+
     return prob;
 
   }

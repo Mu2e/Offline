@@ -1,15 +1,23 @@
 #ifndef Mu2eUtilities_SimpleSpectrum_hh
 #define Mu2eUtilities_SimpleSpectrum_hh
-//
-// Read Simple DIO spectrum from a table and merge it
-// with the spectrum coming from the endopoint region formula
-
-// $Id: SimpleSpectrum.hh,v 1.3 2013/07/24 18:48:24 knoepfel Exp $
+// $Id: SimpleSpectrum.hh,v 1.4 2013/08/01 12:42:46 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/24 18:48:24 $
+// $Date: 2013/08/01 12:42:46 $
 //
 // Original Author: Kyle Knoepfel
 //
+
+// Read Simple DIO spectrum from a table and merge it
+// with the spectrum coming from the endpoint region formula
+//
+// Three spectrum options are available:
+//
+//   (1) "flat" : where electrons are produced uniformly in energy, up
+//                to the endpoint energy
+//   (2) "pol5" : the order-5 polynomial approximation given by
+//                Czarnecki, et al (PRD 84, 013006)
+//   (3) "pol58": the order-5 through 8 polynomial approximation given
+//                by Czarnecki, et al (PRD 84, 013006)
 
 // C++ includes
 #include <map>
@@ -52,7 +60,7 @@ namespace mu2e {
     SimpleSpectrum( Spectrum::enum_type i, const PhysicsParams& phy = *GlobalConstantsHandle<PhysicsParams>() ) ;
     ~SimpleSpectrum();
 
-    double getWeight(double e);
+    double getWeight(double e) const;
 
     static double getFlat (const double e, const PhysicsParams& phy = *GlobalConstantsHandle<PhysicsParams>() );
     static double getPol5 (const double e, const PhysicsParams& phy = *GlobalConstantsHandle<PhysicsParams>() );

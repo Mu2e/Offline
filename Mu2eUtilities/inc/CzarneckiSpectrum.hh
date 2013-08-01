@@ -4,9 +4,9 @@
 // Read Czarnecki DIO spectrum from a table and merge it
 // with the spectrum coming from the endopoint region formula
 
-// $Id: CzarneckiSpectrum.hh,v 1.6 2013/07/22 18:57:42 knoepfel Exp $
+// $Id: CzarneckiSpectrum.hh,v 1.7 2013/08/01 12:42:46 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/22 18:57:42 $
+// $Date: 2013/08/01 12:42:46 $
 //
 // Original Author: Kyle Knoepfel
 //
@@ -25,7 +25,7 @@ namespace mu2e {
     
     CzarneckiSpectrum();
 
-    double getWeight(double E);
+    double getWeight(double E) const;
 
   private:
 
@@ -34,9 +34,9 @@ namespace mu2e {
     double interpolate(const double E,
                        const TableRow<2>& row_after, 
                        const TableRow<2>& row,
-                       const TableRow<2>& row_before);
+                       const TableRow<2>& row_before) const;
 
-    double interpolateE5(double E, TableRow<2> value);
+    double interpolateE5(double E, TableRow<2> value) const;
 
   };
 

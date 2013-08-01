@@ -3,9 +3,9 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWatanabeSpectrum.cc,v 1.3 2013/07/24 18:48:24 knoepfel Exp $
+// $Id: ShankerWatanabeSpectrum.cc,v 1.4 2013/08/01 12:42:46 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/24 18:48:24 $
+// $Date: 2013/08/01 12:42:46 $
 //
 
 // Mu2e includes
@@ -36,11 +36,10 @@ namespace mu2e {
     _wanaEndPoint    = _table(0,0); 
     _wanaEndPointVal = _table(0,1);
     _norm     = _wanaEndPointVal / evaluateShanker( _wanaEndPoint );
-
   }
 
 
-  double ShankerWatanabeSpectrum::getWeight(double E) {
+  double ShankerWatanabeSpectrum::getWeight(double E) const {
 
     double value(0.);
     if ( E < _wanaEndPoint ) {
@@ -54,7 +53,7 @@ namespace mu2e {
 
   }
 
-  double ShankerWatanabeSpectrum::evaluateShanker(double E) {
+  double ShankerWatanabeSpectrum::evaluateShanker(double E) const {
 
     GlobalConstantsHandle<PhysicsParams>     phy;
     GlobalConstantsHandle<ParticleDataTable> pdt;
@@ -91,7 +90,7 @@ namespace mu2e {
 
   }
 
-  double ShankerWatanabeSpectrum::evaluateWatanabe(double E) {
+  double ShankerWatanabeSpectrum::evaluateWatanabe(double E) const {
 
     double weight (0.);
 
@@ -110,7 +109,7 @@ namespace mu2e {
   double ShankerWatanabeSpectrum::interpolate(const double E, 
                                               const TableRow<2>& row_after,
                                               const TableRow<2>& row,
-                                              const TableRow<2>& row_before ) {
+                                              const TableRow<2>& row_before ) const {
     
     const double e1(  row_after[0] );  const double p1(  row_after[1] );
     const double e2(        row[0] );  const double p2(        row[1] );
