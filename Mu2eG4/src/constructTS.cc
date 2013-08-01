@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.22 2013/07/12 17:17:38 knoepfel Exp $
+// $Id: constructTS.cc,v 1.23 2013/08/01 14:37:08 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/12 17:17:38 $
+// $Date: 2013/08/01 14:37:08 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -499,12 +499,12 @@ namespace mu2e {
     G4Material* coilMaterial = findMaterialOrThrow( bl.getTS().coil_material() );
 
     // Construct TS coils
-    int iC(0);
     for ( unsigned iTS = TransportSolenoid::TSRegion::TS1 ; iTS <= TransportSolenoid::TSRegion::TS5 ; iTS++ ) {
       auto its = (TransportSolenoid::TSRegion::enum_type)iTS;
+      int iC(0);
       for ( Coil const & coil : bl.getTS().getTSCoils( its ) ) {
         
-        ostringstream coilname ; coilname << "TS" << iTS+1 << "_Coil" << ++iC ;
+        ostringstream coilname ; coilname << "TS" << iTS << "_Coil" << ++iC ;
 
         nestTubs( coilname.str(),
                   TubsParams( coil.rIn(), coil.rOut(), coil.halfLength() ),
