@@ -9,9 +9,9 @@
 //
 //   Outputs:  TS3Vacuum, DS2Vacuum, DS3Vacuum, CRV, virtualdetector, SimParticleCollection
 //
-// $Id: FilterStepPointMCs_module.cc,v 1.1 2013/08/04 14:28:27 gandr Exp $
+// $Id: FilterStepPointMCs_module.cc,v 1.2 2013/08/04 14:28:41 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/04 14:28:27 $
+// $Date: 2013/08/04 14:28:41 $
 //
 // Andrei Gaponenko, 2013
 
@@ -86,6 +86,16 @@ namespace mu2e {
       virtual ProductIDSelector* clone() const { return new ProductIDSelector(*this); }
     };
 
+    // In art v1_00_06 the ValidHandle::id() method needed by an
+    // art::Ptr constructor is missing.  A workaround:
+    template<class PROD> struct MyHandle : public art::ValidHandle<PROD> {
+      MyHandle(const art::ValidHandle<PROD>& h) : art::ValidHandle<PROD>(h) {}
+      art::ProductID id( ) const { return this->provenance()->productID(); }
+    };
+    template<class PROD> MyHandle<PROD> makeMyHandle(const art::ValidHandle<PROD>& h) {
+      return MyHandle<PROD>(h);
+    }
+
   } // anonymous namespace
 
   //================================================================
@@ -117,6 +127,14 @@ namespace mu2e {
     unsigned numInputParticles_;
     unsigned numPassedParticles_;
 
+    unsigned numInputGenStepLinks_;
+    unsigned numPassedGenStepLinks_;
+
+    void addGPStepLink(const art::Event& event,
+                       GenParticleSPMHistory& newHistory,
+                       const art::Ptr<StepPointMC>& oldHit,
+                       const art::Ptr<StepPointMC>& newHit);
+
   public:
     explicit FilterStepPointMCs(const fhicl::ParameterSet& pset);
     virtual bool filter(art::Event& event) override;
@@ -128,6 +146,7 @@ namespace mu2e {
     : numInputEvents_(), numPassedEvents_()
     , numMainHits_(), numInputExtraHits_(), numPassedExtraHits_()
     , numInputParticles_(), numPassedParticles_()
+    , numInputGenStepLinks_(),  numPassedGenStepLinks_()
   {
     typedef std::vector<std::string> VS;
 
@@ -162,7 +181,6 @@ namespace mu2e {
       produces<SimParticleCollection>(os.str());
     }
 
-    // FIXME:
     // Need to update hits pointers in GenParticleSPMHistory objects.
     const VS gpStepLinks(pset.get<VS>("gpStepLinks", VS()));
     for(const auto& i : gpStepLinks) {
@@ -172,7 +190,8 @@ namespace mu2e {
       produces<GenParticleSPMHistory>();
     }
 
-    // Need to update hits pointers in GenParticleSPMHistory objects.
+    // FIXME:
+    // Need to update hits pointers in GenSimParticleLink objects.
     const VS gpSimLinks(pset.get<VS>("gpSimLinks", VS()));
     for(const auto& i : gpSimLinks) {
       gpSimLinkInputs_.emplace_back(i);
@@ -188,6 +207,8 @@ namespace mu2e {
     bool passed = false;
     typedef std::map<std::string, std::unique_ptr<StepPointMCCollection> > OutMap;
 
+    std::unique_ptr<GenParticleSPMHistory> newGPStepHistory(new GenParticleSPMHistory());
+
     //----------------------------------------------------------------
     // Build list of all the SimParticles we want to preserve:
     SPSuperSet toBeKept;
@@ -195,9 +216,9 @@ namespace mu2e {
     // These are all particles with hits in the "main" collections
     for(const auto& i : mainHitInputs_) {
       auto ih = event.getValidHandle<StepPointMCCollection>(i);
-      for(StepPointMCCollection::const_iterator i=ih->begin(); i!=ih->end(); ++i) {
-        const art::Ptr<SimParticle>& particle(i->simParticle());
-        toBeKept[particle.id()].insert(i->simParticle());
+      for(const auto& i : *ih) {
+        const art::Ptr<SimParticle>& particle(i.simParticle());
+        toBeKept[particle.id()].insert(i.simParticle());
       }
     }
 
@@ -285,9 +306,19 @@ namespace mu2e {
         const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
 
         StepPointMCCollection& output = *outMain[inTag.instance()];
+        const art::ProductID newHitsPID = getProductID<StepPointMCCollection>(event, inTag.instance());
 
+        art::Ptr<SimParticle> newParticle(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
         output.emplace_back(*i);
-        output.back().simParticle() = art::Ptr<SimParticle>(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
+        output.back().simParticle() = newParticle;
+
+        art::Ptr<StepPointMC> oldHitPtr(makeMyHandle(ih), std::distance(ih->begin(), i));
+        art::Ptr<StepPointMC> newHitPtr(newHitsPID, output.size()-1, event.productGetter(newHitsPID));
+
+        addGPStepLink(event,
+                      *newGPStepHistory,
+                      oldHitPtr,
+                      newHitPtr);
       }
     }
 
@@ -302,7 +333,6 @@ namespace mu2e {
       outExtra.insert(std::move(std::make_pair(i, std::move(p))));
     }
 
-    // Need to filter extra hits. Keep only those with a preserved SimParticle.
     for(const auto& inTag : extraHitInputs_) {
       auto ih = event.getValidHandle<StepPointMCCollection>(inTag);
       numInputExtraHits_ += ih->size();
@@ -311,14 +341,25 @@ namespace mu2e {
 
         art::Ptr<SimParticle> oldPtr(i->simParticle());
         if(toBeKept.isKept(oldPtr)) {
+          ++numPassedExtraHits_;
 
           art::ProductID newParticlesPID = partCollMap[oldPtr.id()];
           const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
 
           StepPointMCCollection& output = *outExtra[inTag.instance()];
+          const art::ProductID newHitsPID = getProductID<StepPointMCCollection>(event, inTag.instance());
 
+          art::Ptr<SimParticle> newParticle(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
           output.emplace_back(*i);
-          output.back().simParticle() = art::Ptr<SimParticle>(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
+          output.back().simParticle() = newParticle;
+
+          art::Ptr<StepPointMC> oldHitPtr(makeMyHandle(ih), std::distance(ih->begin(), i));
+          art::Ptr<StepPointMC> newHitPtr(newHitsPID, output.size()-1, event.productGetter(newHitsPID));
+
+          addGPStepLink(event,
+                        *newGPStepHistory,
+                        oldHitPtr,
+                        newHitPtr);
         }
       }
     }
@@ -329,10 +370,34 @@ namespace mu2e {
     }
 
     //----------------------------------------------------------------
+    if(!gpStepLinkInputs_.empty()) {
+      event.put(std::move(newGPStepHistory));
+    }
+
+    //----------------------------------------------------------------
     ++numInputEvents_;
     if(passed) ++numPassedEvents_;
 
     return passed;
+  }
+
+  //================================================================
+  void FilterStepPointMCs::addGPStepLink(const art::Event& event,
+                                         GenParticleSPMHistory& newHistory,
+                                         const art::Ptr<StepPointMC>& oldHit,
+                                         const art::Ptr<StepPointMC>& newHit) {
+
+    for(const auto& inTag : gpStepLinkInputs_) {
+      auto ih = event.getValidHandle<GenParticleSPMHistory>(inTag);
+      numInputGenStepLinks_ += ih->size();
+      for(const auto& entry : *ih) {
+        if(entry.second == oldHit) {
+          ++numPassedGenStepLinks_;
+          newHistory.addSingle(entry.first, newHit);
+        }
+      }
+    }
+
   }
 
   //================================================================
@@ -343,6 +408,7 @@ namespace mu2e {
       << numMainHits_ <<" main hits, "
       << numPassedExtraHits_ <<" / "<<numInputExtraHits_<<" extra hits, "
       << numPassedParticles_ <<" / "<<numInputParticles_<<"+ particles, "
+      << numPassedGenStepLinks_ <<" / "<<numInputGenStepLinks_<<" GenStep links"
       << "\n";
   }
 
