@@ -68,8 +68,8 @@ void init() {
   ut0err = TCut("ut0err<0.9");
   dt0err = TCut("dt0err<0.9");
 
-  umomerr = TCut("umomerr<0.18");
-  dmomerr = TCut("dmomerr<0.18");
+  umomerr = TCut("umomerr<0.25");
+  dmomerr = TCut("dmomerr<0.25");
 
   unact = TCut("unactive>=25");
   dnact = TCut("dnactive>=25");
@@ -77,8 +77,8 @@ void init() {
   ureco = TCut("ufitstat>0");
   dreco = TCut("dfitstat>0");
 
-  ufitc = TCut("ufitcon>1e-3");
-  dfitc = TCut("dfitcon>1e-3");
+  ufitc = TCut("ufitcon>2e-3");
+  dfitc = TCut("dfitcon>2e-3");
 
   ugood = ureco+unact+umomerr+ut0err+umom+utd+ufitc;
   dgood = dreco+dnact+dmomerr+dt0err+dmom+dtd+dfitc;

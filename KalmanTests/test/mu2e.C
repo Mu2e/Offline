@@ -123,9 +123,9 @@ class mu2e {
   public:
     mu2e(TTree* d, TTree* c, double dgenrange, double nd, double nc,bool weightd=true,double ns=7.56e17) : dio(d), con(c),diogenrange(dgenrange),
     ndio(nd),ncon(nc),weightdio(weightd),nstopped(ns),capfrac(0.609),rmue(1e-16),trueconvmom(104.973),
-    tdlow(0.57735027),tdhigh(1.0),t0min(710),rpc(0.025), ap(0.083333),cmu(0.041666),reco("fitstatus>0")
+    tdlow(0.57735027),tdhigh(1.0),t0min(710),rpc(0.025), ap(0.083333),cmu(0.041666),mu2ecut(2),
+    reco("fitstatus>0")
   {
-    init();
   }
     void init();
 
@@ -137,7 +137,7 @@ class mu2e {
     void Write(const char* name="mu2e_spectra.root");
     void Read(const char* name="mu2e_spectra.root");
     void fitReco(unsigned icut);
-  TTree *dio, *con;
+    TTree *dio, *con;
     double diogenrange;
     double ndio, ncon;
     bool weightdio;
@@ -162,9 +162,11 @@ class mu2e {
     TH1F* _momres;
     TLegend* _leg;
     TPaveText* _info;
+    bool _init;
 };
 
 void mu2e::init(){
+  if(_init)return;
   using namespace std;
   decayfrac = 1.0 - capfrac;
   ndecay = nstopped*decayfrac;
@@ -215,10 +217,11 @@ void mu2e::init(){
     quality[icut] = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
     final[icut] = (reco+pitch+livegate+quality[icut]+cosmic);
   } 
-  mu2ecut=2;
+  _init = true;
 }
 
 void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
+  init();
   _nbins = nbins;
   _mmin = mmin;
   _mmax = mmax;
@@ -306,10 +309,11 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,const char* suffix) 
 
     TPaveText* inttext = new TPaveText(0.15,0.4,0.45,0.9,"NDC");
     char itext[50];
-
-    snprintf(itext,50,"%3.2f #times 10^{17} stopped #mu^{-}",nstopped/1e17);
+  
+    snprintf(itext,50,"%3.2g stopped #mu^{-}",nstopped);
     TText* l = inttext->AddText(itext);
-    snprintf(itext,50,"R_{#mue} = %2.2f #times 10^{-16}",rmue*1e16);
+
+    snprintf(itext,50,"R_{#mue} = %2.2g",rmue);
     l = inttext->AddText(itext);
     l->SetTextColor(kRed);
 //    inttext->AddLine();
@@ -318,6 +322,15 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,const char* suffix) 
     snprintf(itext,50,"#int Conversion = %3.2f #pm %2.2f",cint,cint_err);
     l = inttext->AddText(itext);
     l->SetTextColor(kRed);
+
+    double ses = rmue/cint;
+    double ses_err = rmue*cint_err/cint;
+    snprintf(itext,50,"Conversion SES= %3.2g #pm %2.2g",ses,ses_err);
+    l = inttext->AddText(itext);
+    l->SetTextColor(kRed);
+
+
+
     snprintf(itext,50,"#int DIO = %3.2f #pm %2.2f",dint,dint_err);
     l = inttext->AddText(itext);
     l->SetTextColor(kBlue);
@@ -519,7 +532,7 @@ void mu2e::Write(const char* savename) {
     diospec[icut] = new TH1F(*_diospec[icut]);
     conspec[icut] = new TH1F(*_conspec[icut]);
   }
-  TH1D* recodio = new TH1D(*_recodio);
+//  TH1D* recodio = new TH1D(*_recodio);
   savefile.Write();
   savefile.Close();
 }
