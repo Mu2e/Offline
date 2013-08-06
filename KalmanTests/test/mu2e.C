@@ -121,7 +121,7 @@ Double_t crystalball (Double_t *x, Double_t *par) {
 
 class mu2e {
   public:
-    mu2e(TTree* d, TTree* c, double dgenrange, double nd, double nc,bool weightd=true,double ns=7.56e17) : dio(d), con(c),diogenrange(dgenrange),
+    mu2e(TTree* d, TTree* c, double dgenrange, double nd, double nc,bool weightd=true,double ns=5.76e17) : dio(d), con(c),diogenrange(dgenrange),
     ndio(nd),ncon(nc),weightdio(weightd),nstopped(ns),capfrac(0.609),rmue(1e-16),trueconvmom(104.973),
     tdlow(0.57735027),tdhigh(1.0),t0min(710),rpc(0.025), ap(0.083333),cmu(0.041666),mu2ecut(2),
     reco("fitstatus>0")

@@ -16,7 +16,7 @@ using namespace std;
 
 void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,bool weightdio=true,const char* suffix=".png") {
   // diogenrange is the momentum range over which the DIO events were generated
-  double nstopped(7.56e17);
+  double nstopped(5.76e17);
   double capfrac(0.609); 
   double decayfrac = 1.0 - capfrac;
   double ndecay = nstopped*decayfrac;
