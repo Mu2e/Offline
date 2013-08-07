@@ -11,6 +11,7 @@
 #include "BeamlineGeom/inc/Collimator_TS5.hh"
 #include "BeamlineGeom/inc/PbarWindow.hh"
 #include "BeamlineGeom/inc/TorusSection.hh"
+#include "BeamlineGeom/inc/TSSection.hh"
 
 #include "GeneralUtilities/inc/EnumToStringSparse.hh"
 
@@ -18,6 +19,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 // cet
@@ -32,11 +34,11 @@ namespace mu2e {
   public:
     TransportSolenoid() :
       _rTorus(0.), _rVac(0.)
-   {
-     // Reserve number of coils
-     for ( unsigned iTS = TSRegion::TS1 ; iTS <= TSRegion::TS5 ; iTS++ )
-       _coilMap[ (TSRegion)iTS ].reserve( getNCoils( (TSRegion)iTS ) );
-   }
+    {
+      // Reserve number of coils
+      for ( unsigned iTS = TSRegion::TS1 ; iTS <= TSRegion::TS5 ; iTS++ )
+        _coilMap[ (TSRegion)iTS ].reserve( getNCoils( (TSRegion)iTS ) );
+    }
 
     // use compiler-generated copy c'tor, copy assignment, and d'tor
 
@@ -105,22 +107,12 @@ namespace mu2e {
     std::string material()       const { return _material; }
     std::string insideMaterial() const { return _insideMaterial; }
 
-    // make non-const to allow type casting
-    TSSection* getTSCryo(TSRegion::enum_type i,TSRadialPart::enum_type j) const { return _cryoMap.find(i)->second.at(j); }
+    template <class T = TSSection>
+    T* getTSCryo(TSRegion::enum_type i,TSRadialPart::enum_type j) const {
+      return static_cast<T*>( _cryoMap.find(i)->second.find(j)->second.get() );        
+    }
 
-    StraightSection const& getTS1_in()  const { return _ts1in;  }
-    StraightSection const& getTS1_out() const { return _ts1out; }
-    StraightSection const& getTS3_in()  const { return _ts3in;  }
-    StraightSection const& getTS3_out() const { return _ts3out; }
-    StraightSection const& getTS5_in()  const { return _ts5in;  }
-    StraightSection const& getTS5_out() const { return _ts5out; }
-
-    TorusSection    const& getTS2_in()  const { return _ts2in;  }
-    TorusSection    const& getTS2_out() const { return _ts2out; }
-    TorusSection    const& getTS4_in()  const { return _ts4in;  }
-    TorusSection    const& getTS4_out() const { return _ts4out; }
-
-    // Coils 
+    // Coils
     std::string coil_material() const { return _coilMaterial; }
     unsigned getNCoils(TSRegion::enum_type i) const { return _nCoils.at(i); }
     const std::vector<Coil>& getTSCoils(TSRegion::enum_type i) const { return _coilMap.at(i); }
@@ -154,20 +146,9 @@ namespace mu2e {
     std::string _material;
     std::string _insideMaterial;
 
-    std::map<int,std::vector<TSSection*>> _cryoMap;
-
-    StraightSection _ts1in ;
-    StraightSection _ts1out;
-    StraightSection _ts3in ;
-    StraightSection _ts3out;
-    StraightSection _ts5in ;
-    StraightSection _ts5out;
-
-    TorusSection    _ts2in ;
-    TorusSection    _ts2out;
-    TorusSection    _ts4in ;
-    TorusSection    _ts4out;
-
+    // - cryostat map
+    typedef std::map<TSRadialPart::enum_type,std::unique_ptr<TSSection>> map_unique_ptrs_TSSection;
+    std::map<TSRegion::enum_type,map_unique_ptrs_TSSection> _cryoMap;
 
     // Coils
     std::string _coilMaterial;
@@ -186,7 +167,8 @@ namespace mu2e {
     CollimatorTS3 _coll32;
     CollimatorTS5 _coll5;
 
-    PbarWindow _pbarWindow;    
+    PbarWindow _pbarWindow;   
+
   };
 
 }

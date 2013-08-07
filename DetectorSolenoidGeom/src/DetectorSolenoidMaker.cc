@@ -1,4 +1,6 @@
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "BeamlineGeom/inc/TSSection.hh"
+#include "BeamlineGeom/inc/StraightSection.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 
@@ -55,8 +57,11 @@ namespace mu2e {
     ds->_vacuumMaterialName = c.getString("ds.vacuumMaterialName");
     ds->_ds1HalfLength      = c.getDouble("ds1.halfLength");
     ds->_ds2HalfLength      = c.getDouble("ds2.halfLength");
+
+    StraightSection const * ts5 = bl.getTS().getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::IN );
+
     ds->_locationDs23Split  =  bl.getTS().torusRadius() +
-      2.*bl.getTS().getTS5_in().getHalfLength() + 2*bl.getTS().endWallD_halfLength() +
+      2.*ts5->getHalfLength() + 2*bl.getTS().endWallD_halfLength() +
       2.*ds->vac_halfLengthDs2();
 
     // Position is computed on the fly, relative to the TS torus
@@ -64,7 +69,7 @@ namespace mu2e {
     // specified0; assumption is made that the front frace is flush
     // with the edge of the DS
     double dsPosZ      = bl.getTS().torusRadius() +
-      2.*bl.getTS().getTS5_in().getHalfLength() -
+      2.*ts5->getHalfLength() -
       2.*ds->vac_halfLengthDs1()-
       2.*ds->frontHalfLength()+
       ds->halfLength();

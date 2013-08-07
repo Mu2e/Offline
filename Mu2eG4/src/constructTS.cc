@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.23 2013/08/01 14:37:08 knoepfel Exp $
+// $Id: constructTS.cc,v 1.24 2013/08/07 20:20:10 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/01 14:37:08 $
+// $Date: 2013/08/07 20:20:10 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -12,7 +12,6 @@
 
 // Mu2e includes.
 #include "Mu2eG4/inc/constructTS.hh"
-// #include "Mu2eG4/inc/ConstructTransportSolenoid.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 
 // C++ includes
@@ -99,7 +98,7 @@ namespace mu2e {
     const double rVac     = ts->innerRadius();
 
     // Build upstream end wall of TS1
-    strsec = &ts->getTS1_in();
+    strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::IN );
 
     CLHEP::Hep3Vector pos( strsec->getGlobal().x(), 
                            strsec->getGlobal().y(), 
@@ -121,7 +120,7 @@ namespace mu2e {
               placePV,
               doSurfaceCheck
               );
-              
+
     if ( verbosityLevel ) {
       cout << __func__ << " Upstream TS1 endwall at: " << pos << endl;
     }
@@ -130,39 +129,39 @@ namespace mu2e {
     CLHEP::Hep3Vector globalPosition = CLHEP::Hep3Vector(strsec->getGlobal().x(),
                                                          strsec->getGlobal().y(),
                                                          strsec->getGlobal().z()-ts->endWallU1_halfLength() );
-    VolumeInfo ts1VacInfo = nestTubs( "TS1Vacuum",
-                                      TubsParams(0., rVac, 
-                                                 strsec->getHalfLength() + ts->endWallU1_halfLength() ),
-                                      vacuumMaterial,
-                                      strsec->getRotation(),
-                                      globalPosition-_hallOriginInMu2e,
-                                      parent,
-                                      0,
-                                      visible,
-                                      G4Color::Red(),
-                                      solid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      doSurfaceCheck
-                                      );
+    nestTubs( "TS1Vacuum",
+              TubsParams(0., rVac, 
+                         strsec->getHalfLength() + ts->endWallU1_halfLength() ),
+              vacuumMaterial,
+              strsec->getRotation(),
+              globalPosition-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
-    VolumeInfo ts1CryoInfo1 = nestTubs( "TS1InnerCryoShell",
-                                       TubsParams( strsec->rIn(),
-                                                   strsec->rOut(),
-                                                   strsec->getHalfLength() ),
-                                       cryoMaterial,
-                                       strsec->getRotation(),
-                                       strsec->getGlobal()-_hallOriginInMu2e,
-                                       parent,
-                                       0,
-                                       visible,
-                                       G4Color::Red(),
-                                       solid,
-                                       forceAuxEdgeVisible,
-                                       placePV,
-                                       doSurfaceCheck
-                                       );
-
+    nestTubs( "TS1InnerCryoShell",
+              TubsParams( strsec->rIn(),
+                          strsec->rOut(),
+                          strsec->getHalfLength() ),
+              cryoMaterial,
+              strsec->getRotation(),
+              strsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
+    
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS1(in)  OffsetInMu2e  : " << strsec->getGlobal()   << endl;
       cout << __func__ << " TS1(in)  Extent        :[ " << strsec->getGlobal().z() - strsec->getHalfLength() + ts->endWallU1_halfLength() <<","  
@@ -170,29 +169,29 @@ namespace mu2e {
       cout << __func__ << " TS1(in)  rotation      : " << strsec->getRotation() << endl;
     }
 
-    strsec = &ts->getTS1_out();
-    VolumeInfo ts1CryoInfo2 = nestTubs( "TS1OuterCryoShell",
-                                       TubsParams( strsec->rIn(),
-                                                   strsec->rOut(),
-                                                   strsec->getHalfLength() ),
-                                       cryoMaterial,
-                                       strsec->getRotation(),
-                                       strsec->getGlobal()-_hallOriginInMu2e,
-                                       parent,
-                                       0,
-                                       visible,
-                                       G4Color::Red(),
-                                       solid,
-                                       forceAuxEdgeVisible,
-                                       placePV,
-                                       doSurfaceCheck
-                                       );
-
+    strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT );
+    nestTubs( "TS1OuterCryoShell",
+              TubsParams( strsec->rIn(),
+                          strsec->rOut(),
+                          strsec->getHalfLength() ),
+              cryoMaterial,
+              strsec->getRotation(),
+              strsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
+    
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS1(out) OffsetInMu2e  : " << strsec->getGlobal()   << endl;
       cout << __func__ << " TS1(out) rotation      : " << strsec->getRotation() << endl;
     }
-
+    
     // Build downstream partial end wall of TS1
     CLHEP::Hep3Vector pos2( strsec->getGlobal().x(), 
                             strsec->getGlobal().y(), 
@@ -220,114 +219,114 @@ namespace mu2e {
       cout << __func__ << " Donwstream TS1 extent   [: " << pos2.z()-ts->endWallU1_halfLength() << "," << pos2.z() +ts->endWallU1_halfLength() << "]" << endl;
     }
 
-    // Build TS2.
-    torsec = &ts->getTS2_in();
+    // Build TS2
+    torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS2,TransportSolenoid::TSRadialPart::IN );
 
     double ts2VacParams[5]   = { 0.0,   rVac, rTorus, 
                                  torsec->phiStart(), torsec->deltaPhi() };
     double ts2Cryo1Params[5] = { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), 
                                  torsec->phiStart(), torsec->deltaPhi() };
 
-    VolumeInfo ts2VacInfo = nestTorus("TS2Vacuum",
-                                      ts2VacParams,
-                                      vacuumMaterial,
-                                      torsec->getRotation(),
-                                      torsec->getGlobal()-_hallOriginInMu2e,
-                                      parent,
-                                      0,
-                                      visible,
-                                      G4Color::Green(),
-                                      solid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      doSurfaceCheck
-                                      );
+    nestTorus("TS2Vacuum",
+              ts2VacParams,
+              vacuumMaterial,
+              torsec->getRotation(),
+              torsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Green(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
-    VolumeInfo ts2Cryo1Info = nestTorus("TS2InnerCryoShell",
-                                        ts2Cryo1Params,
-                                        cryoMaterial,
-                                        torsec->getRotation(),
-                                        torsec->getGlobal()-_hallOriginInMu2e,
-                                        parent,
-                                        0,
-                                        visible,
-                                        G4Color::Red(),
-                                        solid,
-                                        forceAuxEdgeVisible,
-                                        placePV,
-                                        doSurfaceCheck
-                                        );
+    nestTorus("TS2InnerCryoShell",
+              ts2Cryo1Params,
+              cryoMaterial,
+              torsec->getRotation(),
+              torsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
-    torsec = &ts->getTS2_out();
+    torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS2,TransportSolenoid::TSRadialPart::OUT );
     double ts2Cryo2Params[5] = { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), 
                                  torsec->phiStart(), torsec->deltaPhi() };
 
-    VolumeInfo ts2Cryo2Info = nestTorus("TS2OuterCryoShell",
-                                        ts2Cryo2Params,
-                                        cryoMaterial,
-                                        torsec->getRotation(),
-                                        torsec->getGlobal()-_hallOriginInMu2e,
-                                        parent,
-                                        0,
-                                        visible,
-                                        G4Color::Red(),
-                                        solid,
-                                        forceAuxEdgeVisible,
-                                        placePV,
-                                        doSurfaceCheck
-                                        );
+    nestTorus("TS2OuterCryoShell",
+              ts2Cryo2Params,
+              cryoMaterial,
+              torsec->getRotation(),
+              torsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
     // Build TS3.
-    strsec = &ts->getTS3_in();
-    VolumeInfo ts3VacInfo = nestTubs( "TS3Vacuum",
-                                      TubsParams( 0., rVac, strsec->getHalfLength() ),
-                                      vacuumMaterial,
-                                      strsec->getRotation(),
-                                      strsec->getGlobal()-_hallOriginInMu2e,
-                                      parent,
-                                      0,
-                                      visible,
-                                      G4Color::Green(),
-                                      solid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      doSurfaceCheck
-                                      );
+    strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::IN );
+    nestTubs( "TS3Vacuum",
+              TubsParams( 0., rVac, strsec->getHalfLength() ),
+              vacuumMaterial,
+              strsec->getRotation(),
+              strsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Green(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
-    VolumeInfo ts3CryoInfo1 = nestTubs( "TS3InnerCryoShell",
-                                       TubsParams( strsec->rIn(),
-                                                   strsec->rOut(),
-                                                   strsec->getHalfLength() ),
-                                       cryoMaterial,
-                                       strsec->getRotation(),
-                                       strsec->getGlobal()-_hallOriginInMu2e,
-                                       parent,
-                                       0,
-                                       visible,
-                                       G4Color::Red(),
-                                       solid,
-                                       forceAuxEdgeVisible,
-                                       placePV,
-                                       doSurfaceCheck
-                                       );
+    nestTubs( "TS3InnerCryoShell",
+              TubsParams( strsec->rIn(),
+                          strsec->rOut(),
+                          strsec->getHalfLength() ),
+              cryoMaterial,
+              strsec->getRotation(),
+              strsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
-    strsec = &ts->getTS3_out();
-    VolumeInfo ts3CryoInfo2 = nestTubs( "TS3OuterCryoShell",
-                                        TubsParams( strsec->rIn(),
-                                                    strsec->rOut(),
-                                                    strsec->getHalfLength() ),
-                                        cryoMaterial,
-                                        strsec->getRotation(),
-                                        strsec->getGlobal()-_hallOriginInMu2e,
-                                        parent,
-                                        0,
-                                        visible,
-                                        G4Color::Red(),
-                                        solid,
-                                        forceAuxEdgeVisible,
-                                        placePV,
-                                        doSurfaceCheck
-                                        );
+    strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::OUT );
+    nestTubs( "TS3OuterCryoShell",
+              TubsParams( strsec->rIn(),
+                          strsec->rOut(),
+                          strsec->getHalfLength() ),
+              cryoMaterial,
+              strsec->getRotation(),
+              strsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS3  OffsetInMu2e : " << strsec->getGlobal()   << endl;
@@ -335,117 +334,116 @@ namespace mu2e {
     }
 
     // Build TS4.
-    torsec = &ts->getTS4_in();
+    torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::IN );
     double ts4VacParams[5]   = { 0.0,   rVac, rTorus, 
                                  torsec->phiStart(), torsec->deltaPhi() };
     double ts4Cryo1Params[5] = { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), 
                                  torsec->phiStart(), torsec->deltaPhi() };
 
-    VolumeInfo ts4VacInfo = nestTorus("TS4Vacuum",
-                                      ts4VacParams,
-                                      vacuumMaterial,
-                                      torsec->getRotation(),
-                                      torsec->getGlobal()-_hallOriginInMu2e,
-                                      parent,
-                                      0,
-                                      visible,
-                                      G4Color::Yellow(),
-                                      solid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      doSurfaceCheck
-                                      );
+    nestTorus("TS4Vacuum",
+              ts4VacParams,
+              vacuumMaterial,
+              torsec->getRotation(),
+              torsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Yellow(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
-    VolumeInfo ts4CryoInfo1 = nestTorus("TS4InnerCryoShell",
-                                       ts4Cryo1Params,
-                                       cryoMaterial,
-                                       torsec->getRotation(),
-                                       torsec->getGlobal()-_hallOriginInMu2e,
-                                       parent,
-                                       0,
-                                       visible,
-                                       G4Color::Red(),
-                                       solid,
-                                       forceAuxEdgeVisible,
-                                       placePV,
-                                       doSurfaceCheck
-                                       );
+    nestTorus("TS4InnerCryoShell",
+              ts4Cryo1Params,
+              cryoMaterial,
+              torsec->getRotation(),
+              torsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
-    torsec = &ts->getTS4_out();
+    torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::OUT );
     double ts4Cryo2Params[5] = { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), 
                                  torsec->phiStart(), torsec->deltaPhi() };
 
-    VolumeInfo ts4CryoInfo2 = nestTorus("TS4OuterCryoShell",
-                                       ts4Cryo2Params,
-                                       cryoMaterial,
-                                       torsec->getRotation(),
-                                       torsec->getGlobal()-_hallOriginInMu2e,
-                                       parent,
-                                       0,
-                                       visible,
-                                       G4Color::Red(),
-                                       solid,
-                                       forceAuxEdgeVisible,
-                                       placePV,
-                                       doSurfaceCheck
-                                       );
+    nestTorus("TS4OuterCryoShell",
+              ts4Cryo2Params,
+              cryoMaterial,
+              torsec->getRotation(),
+              torsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
     // Build TS5.
-    strsec = &ts->getTS5_in();
-    
+    strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::IN );    
     CLHEP::Hep3Vector globalVac5Position = CLHEP::Hep3Vector(strsec->getGlobal().x(),
                                                              strsec->getGlobal().y(),
                                                              strsec->getGlobal().z()+ts->endWallD_halfLength() );
 
-    VolumeInfo ts5VacInfo = nestTubs( "TS5Vacuum",
-                                      TubsParams( 0., rVac, 
-                                                  strsec->getHalfLength()+ts->endWallD_halfLength() ),
-                                      vacuumMaterial,
-                                      strsec->getRotation(),
-                                      globalVac5Position-_hallOriginInMu2e,
-                                      parent,
-                                      0,
-                                      visible,
-                                      G4Color::Green(),
-                                      solid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      doSurfaceCheck
-                                      );
+    nestTubs( "TS5Vacuum",
+              TubsParams( 0., rVac, 
+                          strsec->getHalfLength()+ts->endWallD_halfLength() ),
+              vacuumMaterial,
+              strsec->getRotation(),
+              globalVac5Position-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Green(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
-    VolumeInfo ts5CryoInfo1 = nestTubs( "TS5InnerCryoShell",
-                                       TubsParams( strsec->rIn(),
-                                                   strsec->rOut(),
-                                                   strsec->getHalfLength() ),
-                                       cryoMaterial,
-                                       strsec->getRotation(),
-                                       strsec->getGlobal()-_hallOriginInMu2e,
-                                       parent,
-                                       0,
-                                       visible,
-                                       G4Color::Red(),
-                                       solid,
-                                       forceAuxEdgeVisible,
-                                       placePV,
-                                       doSurfaceCheck
-                                       );
+    nestTubs( "TS5InnerCryoShell",
+              TubsParams( strsec->rIn(),
+                          strsec->rOut(),
+                          strsec->getHalfLength() ),
+              cryoMaterial,
+              strsec->getRotation(),
+              strsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
-    strsec = &ts->getTS5_out();
-    VolumeInfo ts5CryoInfo2 = nestTubs( "TS5OuterCryoShell",
-                                       TubsParams( strsec->rIn(),
-                                                   strsec->rOut(),
-                                                   strsec->getHalfLength() ),
-                                       cryoMaterial,
-                                       strsec->getRotation(),
-                                       strsec->getGlobal()-_hallOriginInMu2e,
-                                       parent,
-                                       0,
-                                       visible,
-                                       G4Color::Red(),
-                                       solid,
-                                       forceAuxEdgeVisible,
-                                       placePV,
-                                       doSurfaceCheck
-                                       );
+    strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::OUT );  
+    nestTubs( "TS5OuterCryoShell",
+              TubsParams( strsec->rIn(),
+                          strsec->rOut(),
+                          strsec->getHalfLength() ),
+              cryoMaterial,
+              strsec->getRotation(),
+              strsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              visible,
+              G4Color::Red(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
     
     if ( verbosityLevel > 0) {
@@ -552,6 +550,10 @@ namespace mu2e {
     // Get collimators
     TransportSolenoid const& ts = bl.getTS();
 
+    TSSection const * ts1in = ts.getTSCryo(TransportSolenoid::TSRegion::TS1, TransportSolenoid::TSRadialPart::IN);
+    TSSection const * ts3in = ts.getTSCryo(TransportSolenoid::TSRegion::TS3, TransportSolenoid::TSRadialPart::IN);
+    TSSection const * ts5in = ts.getTSCryo(TransportSolenoid::TSRegion::TS5, TransportSolenoid::TSRadialPart::IN);
+
     CollimatorTS1 const& coll1  = ts.getColl1() ;
     CollimatorTS3 const& coll31 = ts.getColl31();
     CollimatorTS3 const& coll32 = ts.getColl32();
@@ -605,9 +607,9 @@ namespace mu2e {
               );
     
     if ( verbosityLevel > 0) {
-      cout << __func__ << " TS1  OffsetInMu2e    : " << ts.getTS1_in().getGlobal()   << endl;
-      cout << __func__ << " Coll5 local offset   : " << ts.getColl5().getLocal()     << endl;
-      cout << __func__ << " TS1  Rotation        : " << ts.getTS1_in().getRotation() << endl;
+      cout << __func__ << " TS1  OffsetInMu2e    : " << ts1in->getGlobal()       << endl;
+      cout << __func__ << " Coll5 local offset   : " << ts.getColl5().getLocal() << endl;
+      cout << __func__ << " TS1  Rotation        : " << ts1in->getRotation()     << endl;
     }
 
     // Place collimator 3
@@ -694,10 +696,10 @@ namespace mu2e {
                   doSurfaceCheck);
 
     if ( verbosityLevel > 0) {
-      cout << __func__ << " TS3  OffsetInMu2e   : " << ts.getTS3_in().getGlobal() << endl;
+      cout << __func__ << " TS3  OffsetInMu2e   : " << ts3in->getGlobal() << endl;
       cout << __func__ << " Coll31 local offest : " << coll31.getLocal() << endl;
       cout << __func__ << " Coll32 local offset : " << coll32.getLocal() << endl;
-      cout << __func__ << " TS3  Rotation       : " << ts.getTS3_in().getRotation() << endl;
+      cout << __func__ << " TS3  Rotation       : " << ts3in->getRotation() << endl;
     }
 
     // Place collimator 5
@@ -728,19 +730,19 @@ namespace mu2e {
     }
 
     if ( verbosityLevel > 0) {
-      cout << __func__ << " TS5  OffsetInMu2e  : " << ts.getTS5_in().getGlobal()   << endl;
+      cout << __func__ << " TS5  OffsetInMu2e  : " << ts5in->getGlobal()   << endl;
       cout << __func__ << " Coll5 local offset : " << coll5.getLocal()             << endl;
-      cout << __func__ << " TS5  Rotation      : " << ts.getTS5_in().getRotation() << endl;
+      cout << __func__ << " TS5  Rotation      : " << ts5in->getRotation() << endl;
     }
 
-    CLHEP::Hep3Vector coll5OffsetInMu2e = ts.getTS5_in().getGlobal() + 
-      ( ( ts.getTS5_in().getRotation() != 0x0 ) ?
-        *(ts.getTS5_in().getRotation()) * coll5.getLocal() : 
+    CLHEP::Hep3Vector coll5OffsetInMu2e = ts5in->getGlobal() + 
+      ( ( ts5in->getRotation() != 0x0 ) ?
+        *(ts5in->getRotation()) * coll5.getLocal() : 
         coll5.getLocal() );
 
     if ( verbosityLevel > 0) {
       cout << __func__ << "  coll5OffsetInMu2e    : "    << coll5OffsetInMu2e << endl;
-      cout << __func__ << "  Coll5 calc local offset : " << coll5OffsetInMu2e - ts.getTS5_in().getGlobal() << endl;
+      cout << __func__ << "  Coll5 calc local offset : " << coll5OffsetInMu2e - ts5in->getGlobal() << endl;
     }
 
     // the most outer part (with Virtual Detectors on the outer surfaces of the Coll5)
@@ -776,8 +778,8 @@ namespace mu2e {
         CLHEP::Hep3Vector (0.0, 0.0, coll5.halfLength() - 2.*vdHalfLength - coll5.halfLengthD());
 
       CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
-        ( ( ts.getTS5_in().getRotation() != 0x0 ) ?
-          *(ts.getTS5_in().getRotation()) * coll5AbsorberOffsetInColl5 :
+        ( ( ts5in->getRotation() != 0x0 ) ?
+          *(ts5in->getRotation()) * coll5AbsorberOffsetInColl5 :
           coll5AbsorberOffsetInColl5 );
 
       Tube coll5DAbsParam(coll5.absMaterial(),
@@ -810,8 +812,8 @@ namespace mu2e {
         CLHEP::Hep3Vector (0.0, 0.0, - coll5.halfLength() + 2.*vdHalfLength + coll5.halfLengthU());
 
       CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
-        ( ( ts.getTS5_in().getRotation() != 0x0 ) ?
-          *(ts.getTS5_in().getRotation()) * coll5AbsorberOffsetInColl5 :
+        ( ( ts5in->getRotation() != 0x0 ) ?
+          *(ts5in->getRotation()) * coll5AbsorberOffsetInColl5 :
           coll5AbsorberOffsetInColl5 );
 
       Tube coll5AbsParam(coll5.absMaterial(),
@@ -845,8 +847,8 @@ namespace mu2e {
                            coll5.halfLengthU() - coll5.halfLengthD());
 
       CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
-        ( ( ts.getTS5_in().getRotation() != 0x0 ) ?
-          *(ts.getTS5_in().getRotation()) * coll5AbsorberOffsetInColl5 :
+        ( ( ts5in->getRotation() != 0x0 ) ?
+          *(ts5in->getRotation()) * coll5AbsorberOffsetInColl5 :
           coll5AbsorberOffsetInColl5 );
 
       Tube coll5AbsParam(coll5.absMaterial(),
@@ -881,8 +883,8 @@ namespace mu2e {
                            coll5.halfLengthU() - coll5.halfLengthD());
 
       CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
-        ( ( ts.getTS5_in().getRotation() != 0x0 ) ?
-          *(ts.getTS5_in().getRotation()) * coll5AbsorberOffsetInColl5 :
+        ( ( ts5in->getRotation() != 0x0 ) ?
+          *(ts5in->getRotation()) * coll5AbsorberOffsetInColl5 :
           coll5AbsorberOffsetInColl5 );
 
       Tube coll5AbsParam(coll5.absMaterial(),
@@ -1121,7 +1123,8 @@ namespace mu2e {
         vector<double> tmp_rInnerDs3  {239.5,0.,0.,239.5};
         
         
-        CLHEP::Hep3Vector polyPositionInMu2e( bl.getTS().getTS3_in().getGlobal() );
+        CLHEP::Hep3Vector polyPositionInMu2e = bl.getTS().getTSCryo(TransportSolenoid::TSRegion::TS3,
+                                                                    TransportSolenoid::TSRadialPart::IN)->getGlobal();
         
         nestPolycone( "PbarAbsPolycone",
                       PolyconsParams(tmp_zPlanesDs3,

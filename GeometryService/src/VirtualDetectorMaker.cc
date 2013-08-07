@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.23 2013/07/05 14:49:23 knoepfel Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.24 2013/08/07 20:20:10 knoepfel Exp $
 // $Author: knoepfel $
 //
 
@@ -58,11 +58,12 @@ namespace mu2e {
       // VD Coll1_In and Coll1_Out are at the front and back of
       // collimator 1, which is placed inside TS1.
 
-      //double ts1HL   = bg->getTS().getTS1().getHalfLength();
       double coll1HL = bg->getTS().getColl1().halfLength();
 
-      const HepRotation *ts1rot = bg->getTS().getTS1_in().getRotation();
-      Hep3Vector   ts1pos = bg->getTS().getTS1_in().getGlobal();
+      const HepRotation *ts1rot = bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS1,
+                                                        TransportSolenoid::TSRadialPart::IN)->getRotation();
+      Hep3Vector   ts1pos = bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS1,
+                                                  TransportSolenoid::TSRadialPart::IN)->getGlobal();
       Hep3Vector coll1pos = bg->getTS().getColl1().getLocal();
       Hep3Vector deltaZ1(0,0,coll1HL-vdHL);
 
@@ -74,12 +75,13 @@ namespace mu2e {
       // VD Coll31_In, Coll31_Out, Coll32_In, Coll32_Out are placed
       // around two sections of collimator 3
 
-      //double ts3HL   = bg->getTS().getTS1().getHalfLength();
       double coll31HL = bg->getTS().getColl31().halfLength();
       double coll32HL = bg->getTS().getColl32().halfLength();
 
-      const HepRotation *ts3rot = bg->getTS().getTS3_in().getRotation();
-      Hep3Vector   ts3pos = bg->getTS().getTS3_in().getGlobal();
+      const HepRotation *ts3rot = bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS3,
+                                                        TransportSolenoid::TSRadialPart::IN)->getRotation();
+      Hep3Vector   ts3pos = bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS3,
+                                                  TransportSolenoid::TSRadialPart::IN)->getGlobal();
 
       Hep3Vector coll31pos = bg->getTS().getColl31().getLocal();
       Hep3Vector coll32pos = bg->getTS().getColl32().getLocal();
@@ -98,11 +100,12 @@ namespace mu2e {
       // VD Coll5_In, Coll5_Out are at the front and back of collimator
       // 5, which is placed inside TS5.
 
-      //double ts5HL   = bg->getTS().getTS5().getHalfLength();
       double coll5HL = bg->getTS().getColl5().halfLength();
 
-      const HepRotation *ts5rot = bg->getTS().getTS5_in().getRotation();
-      Hep3Vector   ts5pos = bg->getTS().getTS5_in().getGlobal();
+      const HepRotation *ts5rot = bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS5,
+                                                        TransportSolenoid::TSRadialPart::IN)->getRotation();
+      Hep3Vector   ts5pos = bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS5,
+                                                        TransportSolenoid::TSRadialPart::IN)->getGlobal();
       Hep3Vector coll5pos = bg->getTS().getColl5().getLocal();
 
       cout << " TS 5 pos: " << ts5pos << "   Coll 5 pos: " << coll5pos << endl;

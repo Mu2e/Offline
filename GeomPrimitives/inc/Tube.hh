@@ -3,15 +3,16 @@
 //
 // "Typical" Tube object
 //
-// $Id: Tube.hh,v 1.5 2012/08/20 14:57:56 greenc Exp $
-// $Author: greenc $
-// $Date: 2012/08/20 14:57:56 $
+// $Id: Tube.hh,v 1.6 2013/08/07 20:20:08 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/08/07 20:20:08 $
 //
 // Original author KLG
 //
 
 #include <string>
 
+#include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
@@ -26,11 +27,19 @@ namespace mu2e {
   public:
 
     Tube(double rIn,double rOut,double halfLength, double phi0, double phiMax,
-         std::string const & materialName, CLHEP::Hep3Vector const & originInMu2e);
+         std::string const & materialName, CLHEP::Hep3Vector const & originInMu2e,
+         CLHEP::HepRotation const & rotation = CLHEP::HepRotation());
+
+    Tube(double rIn,double rOut,double halfLength,
+         CLHEP::Hep3Vector const & originInMu2e,
+         CLHEP::HepRotation const & rotation = CLHEP::HepRotation(),
+         double phi0 = 0., double phiMax = CLHEP::twopi,
+         std::string const & materialName = "");
 
     Tube(std::string const & materialName, CLHEP::Hep3Vector const & originInMu2e,
          double rIn,double rOut,double halfLength,
-         double phi0 = 0., double phiMax = CLHEP::twopi);
+         double phi0 = 0., double phiMax = CLHEP::twopi,
+         CLHEP::HepRotation const & rotation = CLHEP::HepRotation() );
 
     double innerRadius() const { return _params.innerRadius(); }
     double outerRadius() const { return _params.outerRadius(); }
@@ -41,7 +50,8 @@ namespace mu2e {
 
     std::string const & materialName() const { return _materialName; }
 
-    CLHEP::Hep3Vector const & originInMu2e() const { return _originInMu2e; }
+    CLHEP::Hep3Vector const  & originInMu2e() const { return _originInMu2e; }
+    CLHEP::HepRotation const & rotation()     const { return _rotation; }
 
     TubsParams const & getTubsParams() const { return _params; }
 
@@ -50,11 +60,10 @@ namespace mu2e {
 
   private:
 
-    TubsParams        _params;
-    CLHEP::Hep3Vector _originInMu2e;
-    std::string       _materialName;
-
-    // do we need/want the rotation here?
+    TubsParams         _params;
+    CLHEP::Hep3Vector  _originInMu2e;
+    std::string        _materialName;
+    CLHEP::HepRotation _rotation; // wrt to parent volume
 
   };
 

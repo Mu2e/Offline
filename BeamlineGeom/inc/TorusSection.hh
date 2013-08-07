@@ -6,6 +6,7 @@
 //
 #include <memory>
 
+#include "GeomPrimitives/inc/Torus.hh"
 #include "BeamlineGeom/inc/TSSection.hh"
 
 #include "CLHEP/Vector/Rotation.h"
@@ -32,6 +33,17 @@ namespace mu2e {
     {
       _origin=origin; // _origin is derived data member; cannot be in initialization list
       _rotation=rotation;
+    }
+    
+    TorusSection(const Torus& torus) :
+      _rTorus(torus.torusRadius()),
+      _rIn(torus.innerRadius()),
+      _rOut(torus.outerRadius()),
+      _phiBegin(torus.phi0()),
+      _deltaPhi(torus.deltaPhi())
+    {
+      _origin=torus.originInMu2e(); // _origin is derived data member; cannot be in initialization list
+      _rotation=torus.rotation();
     }
 
     ~TorusSection(){}

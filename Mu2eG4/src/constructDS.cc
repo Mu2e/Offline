@@ -1,15 +1,16 @@
 //
 // Free function to create DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.16 2013/07/02 15:57:07 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/07/02 15:57:07 $
+// $Id: constructDS.cc,v 1.17 2013/08/07 20:20:10 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/08/07 20:20:10 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
 
 // Mu2e includes.
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "BeamlineGeom/inc/StraightSection.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/AntiLeakRegistry.hh"
@@ -143,8 +144,11 @@ namespace mu2e {
 
     // - upstream face
     GeomHandle<Beamline> beamg;
+    const StraightSection * ts5out = beamg->getTS().getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS5,
+                                                                                TransportSolenoid::TSRadialPart::OUT );
+
     double dsFrontZ0 = dsP.z() - ds->halfLength() + ds->frontHalfLength();
-    TubsParams    dsFrontParams  ( beamg->getTS().getTS5_out().rOut(), dsInnerCryoParams.innerRadius(), ds->frontHalfLength() );
+    TubsParams    dsFrontParams  ( ts5out->rOut(), dsInnerCryoParams.innerRadius(), ds->frontHalfLength() );
     G4ThreeVector dsFrontPosition( dsP.x(), dsP.y(), dsFrontZ0);
 
     nestTubs( "DSFront",
@@ -254,8 +258,8 @@ namespace mu2e {
 
     // DS vacuum volumes
     G4Material* vacuumMaterial = findMaterialOrThrow( ds->vacuumMaterial() );
-    TubsParams ds1VacParams    ( beamg->getTS().getTS5_out().rOut(), ds->rIn1(), ds->vac_halfLengthDs1()   );
-    TubsParams ds2VacParams    ( 0.                               , ds->rIn1(), ds->vac_halfLengthDs2()   );
+    TubsParams ds1VacParams    ( ts5out->rOut(), ds->rIn1(), ds->vac_halfLengthDs1()   );
+    TubsParams ds2VacParams    ( 0.            , ds->rIn1(), ds->vac_halfLengthDs2()   );
 
     // Compute/set positions of vacuum volumes in Mu2e coordinates.
     // - DS position is fixed by TS torus radius, and half lengths of 

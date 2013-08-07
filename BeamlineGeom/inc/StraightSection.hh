@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "BeamlineGeom/inc/TSSection.hh"
+#include "GeomPrimitives/inc/Tube.hh"
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -29,6 +30,15 @@ namespace mu2e {
     {
       _origin=origin; // _origin is derived data member; cannot be in initialization list
       _rotation=rotation;
+    }
+
+    StraightSection( const Tube& tube )  :
+      _rIn  ( tube.innerRadius() ),
+      _rOut ( tube.outerRadius() ),
+      _halfZ( tube.zHalfLength() ) 
+    {
+      _origin   = tube.originInMu2e();
+      _rotation = tube.rotation();
     }
 
     ~StraightSection(){}

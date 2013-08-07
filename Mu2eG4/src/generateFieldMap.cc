@@ -10,6 +10,7 @@
 // Mu2e includes.
 #include "Mu2eG4/inc/generateFieldMap.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "BeamlineGeom/inc/StraightSection.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -49,7 +50,10 @@ namespace mu2e {
 
     GeomHandle<Beamline> beamg;
     double R = beamg->getTS().torusRadius();
-    double L = beamg->getTS().getTS3_in().getHalfLength();
+
+    StraightSection const * ts3in =beamg->getTS().getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS3,
+                                                                              TransportSolenoid::TSRadialPart::IN );
+    double L = ts3in->getHalfLength();
     double Lturn = L + 3.14159/2*R;
 
     for( int i=-1100; i<2200; i++ ) {
