@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.46 2013/07/26 23:44:56 brownd Exp $
+// $Id: TTrackerMaker.cc,v 1.47 2013/08/07 19:26:58 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/07/26 23:44:56 $
+// $Date: 2013/08/07 19:26:58 $
 //
 // Original author Rob Kutschke
 //
@@ -749,9 +749,10 @@ namespace mu2e {
     double phi = dir.phi() - M_PI/2;
     if (phi < 0) phi += 2*M_PI;  // phi is now in range [0,2 pi)
     if ( (phi < 0) || (phi >= 2*M_PI) ) {
-       throw cet::exception("GEOM")
-         << "makePanel: An ill-understood phi - "
-         << dir.phi();
+//       throw cet::exception("GEOM")
+//	std::cout
+//         << "makePanel: An ill-understood phi - "
+//         << dir.phi() << phi-2*M_PI << std::endl;
     }
     pnl._phi = phi;
     double phi0 = 0.0;  // TODO -- cope with non-zero station rotation offsets
