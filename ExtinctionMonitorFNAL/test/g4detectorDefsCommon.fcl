@@ -78,7 +78,7 @@ physics : {
     eprint: [ emfSimHits ]
     out : [ FullOutput ]
 
-    trigger_paths  : [ tprint ]
+    trigger_paths  : [ gm, tprint ]
     end_paths : [ out, eprint ]
 }
 
