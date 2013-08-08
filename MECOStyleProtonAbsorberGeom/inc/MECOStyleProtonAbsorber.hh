@@ -4,9 +4,9 @@
 //
 // Class to represent the system of MECO Style Proton Absorber
 //
-// $Id: MECOStyleProtonAbsorber.hh,v 1.4 2013/06/19 03:41:01 mjlee Exp $
+// $Id: MECOStyleProtonAbsorber.hh,v 1.5 2013/08/08 19:30:17 mjlee Exp $
 // $Author: mjlee $
-// $Date: 2013/06/19 03:41:01 $
+// $Date: 2013/08/08 19:30:17 $
 //
 // Original author MyeongJae Lee
 //
@@ -25,6 +25,25 @@ namespace mu2e {
 
   // Forward reference.
   class SimpleConfig;
+
+  class ProtonAbsorberId {
+    public:
+      enum  enum_type {
+        unknown = -1,
+        pabs1 = 0,
+        pabs2 = 1,
+        opabs = 2 }; 
+      explicit ProtonAbsorberId (enum_type id):
+        _id(id)
+      {}
+      enum_type id() const { return _id; }
+      ProtonAbsorberId():
+        _id(unknown) 
+      {}
+    private:
+      enum_type _id;
+  };
+
 
   class MECOStyleProtonAbsorber : virtual public Detector{
 

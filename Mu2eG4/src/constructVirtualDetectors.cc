@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.54 2013/07/01 23:11:39 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/07/01 23:11:39 $
+// $Id: constructVirtualDetectors.cc,v 1.55 2013/08/08 19:30:17 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2013/08/08 19:30:17 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -28,6 +28,7 @@
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
+#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
@@ -206,13 +207,28 @@ namespace mu2e {
     // Virtual Detectors ST_In, ST_Out are placed inside DS2, just before and after stopping target
 
     // If there is no neutron absorber, virtual detectors 9 and 10 extend to
-    // inner wall of DS2 minus 5 mm. If neutron absorber is defined, these
-    // detectors extend to neutron absorber minus 5 mm.
+    // inner wall of DS2 minus 5 mm. 
+    // Existence of internal neutron absorber(INA) and/or outer proton absorber(OPA) is checked.
+    // Priority on radius determination goes to OPA, and next, INA, and finally DS2. 
+    // Final radius is the extention to OPA, INA or DS, minus 5 mm.
+
     if ( !_config.getBool("isDumbbell",false) ){
       double Ravr = ds->rIn1();
 
       if ( _config.getBool("hasInternalNeutronAbsorber",false) ) {
-        Ravr = _config.getDouble("intneutronabs.rIn1");
+        Ravr = _config.getDouble("intneutronabs.rIn1"); 
+      }
+
+      GeomHandle<MECOStyleProtonAbsorber> pageom;
+      bool opaflag = false;
+      double opaz0, opaz1, opari0, opari1;
+      if ( pageom->isAvailable(ProtonAbsorberId::opabs) ) {
+        opaflag = true;
+        MECOStyleProtonAbsorberPart opa = pageom->part(2);
+        opaz0 = opa.center().z()-opa.halfLength();
+        opaz1 = opa.center().z()+opa.halfLength();
+        opari0 = opa.innerRadiusAtStart();
+        opari1 = opa.innerRadiusAtEnd();
       }
 
       for( int vdId=VirtualDetectorId::ST_In; 
@@ -224,6 +240,9 @@ namespace mu2e {
           }
 
           double zvd = vdg->getGlobal(vdId).z();
+          if (opaflag) {
+            Ravr = (opari1 - opari0)/(opaz1 - opaz0) * (zvd - opaz0) + opari0;
+          }
           double rvd = Ravr - 5.0;
 
           if ( verbosityLevel > 0) {

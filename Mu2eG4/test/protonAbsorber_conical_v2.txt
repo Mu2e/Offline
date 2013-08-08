@@ -3,9 +3,9 @@
 // Now the default is 1m inner part and 2.2m outer part.
 // See doc-3186, 3155, 3006, and 2259
 //
-// $Id: protonAbsorber_conical_v2.txt,v 1.1 2013/07/26 21:55:57 mjlee Exp $
+// $Id: protonAbsorber_conical_v2.txt,v 1.2 2013/08/08 19:30:17 mjlee Exp $
 // $Author: mjlee $
-// $Date: 2013/07/26 21:55:57 $
+// $Date: 2013/08/08 19:30:17 $
 //
 
 string protonabsorber.materialName = "Polyethylene092";
@@ -24,11 +24,11 @@ double protonabsorber.halfLength   = 500.0;
 // Outer part
 bool   protonabsorber.isShorterCone = true;
 bool   protonabsorber.outerPA = true;
-double protonabsorber.outerPAInnerRadius0 = 436.0;
+double protonabsorber.outerPAInnerRadius0 = 447.6;
 double protonabsorber.outerPAInnerRadius1 = 720.0;
-double protonabsorber.outerPAHalfLength = 2200.0; 
+double protonabsorber.outerPAHalfLength = 2110.0; 
 double protonabsorber.outerPAThickness = 20.0; 
-double protonabsorber.outerPAZCenter = 6200.0; 
+double protonabsorber.outerPAZCenter = 6290.0; 
 string protonabsorber.outerPAMaterialName = "Polyethylene092";
 
 // This tells emacs to view this file in c++ mode.

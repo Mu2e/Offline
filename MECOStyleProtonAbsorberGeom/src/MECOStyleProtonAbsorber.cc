@@ -1,9 +1,9 @@
 //
 // Class to represent the system of MECO style Proton Absorber
 //
-// $Id: MECOStyleProtonAbsorber.cc,v 1.4 2013/06/19 03:41:01 mjlee Exp $
+// $Id: MECOStyleProtonAbsorber.cc,v 1.5 2013/08/08 19:30:17 mjlee Exp $
 // $Author: mjlee $
-// $Date: 2013/06/19 03:41:01 $
+// $Date: 2013/08/08 19:30:17 $
 //
 // Original author MyeongJae Lee
 
@@ -34,13 +34,13 @@ namespace mu2e {
 
   bool MECOStyleProtonAbsorber::isAvailable (int id) const {
     switch (id) {
-      case 0:
+      case ProtonAbsorberId::pabs1 :
         return _pabs1flag;
         break;
-      case 1:
+      case ProtonAbsorberId::pabs2 :
         return _pabs2flag;
         break;
-      case 2:
+      case ProtonAbsorberId::opabs :
         return _oPAflag;
       default:
         return false;
