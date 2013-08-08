@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.55 2013/08/07 20:20:10 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/07 20:20:10 $
+// $Id: GeometryService_service.cc,v 1.56 2013/08/08 16:00:32 dnbrow01 Exp $
+// $Author: dnbrow01 $
+// $Date: 2013/08/08 16:00:32 $
 //
 // Original author Rob Kutschke
 //
@@ -38,6 +38,8 @@
 #include "ProductionSolenoidGeom/inc/ProductionSolenoidMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosureMaker.hh"
+#include "ProductionSolenoidGeom/inc/PSExternalShielding.hh"
+#include "ProductionSolenoidGeom/inc/PSExternalShieldingMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "ProductionSolenoidGeom/inc/PSVacuumMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
@@ -188,6 +190,9 @@ namespace mu2e {
       tmpPSE(PSEnclosureMaker::make(*_config, ps.psEndRefPoint()));
     const PSEnclosure& pse = *tmpPSE.get();
     addDetector(std::move(tmpPSE));
+
+    std::unique_ptr<PSExternalShielding> tmpPSE2(PSExternalShieldingMaker::make(*_config));
+    addDetector(std::move(tmpPSE2));
 
     // The Z coordinate of the boundary between PS and TS vacua
     StraightSection const * ts1in = beamline.getTS().getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS1, 
