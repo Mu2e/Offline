@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.191 2013/07/26 21:55:57 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2013/07/26 21:55:57 $
+// $Id: geom_01.txt,v 1.192 2013/08/08 15:53:46 dnbrow01 Exp $
+// $Author: dnbrow01 $
+// $Date: 2013/08/08 15:53:46 $
 //
 // Original author Rob Kutschke
 //
@@ -210,6 +210,7 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/test/ProductionSolenoid_v01.txt"
 #include "Mu2eG4/test/psEnclosure_v01.txt"
 #include "Mu2eG4/test/PSShield_v01.txt"
+#include "Mu2eG4/test/PSExternalShielding_v01.txt"
 #include "Mu2eG4/test/TransportSolenoid_v01.txt"
 
 // Virtual detectors

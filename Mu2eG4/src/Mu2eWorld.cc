@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.161 2013/07/30 18:45:00 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/07/30 18:45:00 $
+// $Id: Mu2eWorld.cc,v 1.162 2013/08/08 15:53:46 dnbrow01 Exp $
+// $Author: dnbrow01 $
+// $Date: 2013/08/08 15:53:46 $
 //
 // Original author Rob Kutschke
 //
@@ -52,6 +52,7 @@
 #include "Mu2eG4/inc/constructTS.hh"
 #include "Mu2eG4/inc/constructPS.hh"
 #include "Mu2eG4/inc/constructPSEnclosure.hh"
+#include "Mu2eG4/inc/constructPSExternalShielding.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
@@ -188,6 +189,7 @@ namespace mu2e {
     constructTS(hallInfo, _config);
     constructPS(hallInfo, _config);
     constructPSEnclosure(hallInfo, _config);
+    constructPSExternalShielding(hallInfo, _config);
 
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();
