@@ -1,6 +1,6 @@
-// $Id: PSShieldMaker.cc,v 1.6 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
+// $Id: PSShieldMaker.cc,v 1.7 2013/08/09 05:13:09 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/09 05:13:09 $
 //
 // Original author Andrei Gaponenko
 
@@ -37,13 +37,11 @@ namespace mu2e {
                                               const CLHEP::Hep3Vector& productionTargetCenter
                                               )
   {
-    std::vector<double> zPlane, rIn, rOut;
-    c.getVectorDouble("PSShield.zPlane", zPlane);
-    c.getVectorDouble("PSShield.rIn",    rIn, zPlane.size());
-    c.getVectorDouble("PSShield.rOut",   rOut, zPlane.size());
+    std::unique_ptr<PSShield> res(new PSShield());
 
-    // FIXME: replace the condition with std::is_sorted() once Mu2e adopts C++0x.
-    if(std::adjacent_find(zPlane.begin(), zPlane.end(), std::greater<double>()) != zPlane.end()) {
+    std::vector<double> zPlane;
+    c.getVectorDouble("PSShield.zPlane", zPlane);
+    if(!std::is_sorted(zPlane.begin(), zPlane.end())) {
       throw cet::exception("GEOM")<<"PSShieldMaker::make(): coordinates in the zPlane vector must be non-decreasing\n";
     }
 
@@ -57,17 +55,31 @@ namespace mu2e {
                                                - zPlane[0]
                                                );
 
-    std::unique_ptr<PSShield> res(new PSShield(Polycone(
-                                                      zPlane, rIn, rOut,
-                                                      shieldOriginInMu2e,
-                                                      c.getString("PSShield.materialName")
-                                                      )
-                                             )
-                                );
+    //----------------------------------------------------------------
+    // Read in the shells
+
+    const int nShells = c.getInt("PSShield.nShells");
+    res->shells_.reserve(nShells);
+    for(int ishell = 1; ishell <= nShells; ++ishell) {
+      std::ostringstream osinner, osouter;
+      osinner << ishell;
+      osouter << ishell + 1;
+
+      std::vector<double> rIn, rOut;
+      c.getVectorDouble("PSShield.r"+osinner.str(), rIn, zPlane.size());
+      c.getVectorDouble("PSShield.r"+osouter.str(), rOut, zPlane.size());
+      const std::string material = c.getString("PSShield.material"+osinner.str());
+
+      res->shells_.emplace_back(zPlane, rIn, rOut, shieldOriginInMu2e, material);
+    }
+
+    //----------------------------------------------------------------
+    // Read in the grooves
 
     const int nGrooves = c.getInt("PSShield.nGrooves");
+    res->grooves_.reserve(nGrooves);
     for(int i=0; i<nGrooves; ++i) {
-      res->grooves_.push_back(readGroove(i, c));
+      res->grooves_.emplace_back(readGroove(i, c));
     }
 
     if(c.getInt("PSShield.verbosityLevel") > 0) {

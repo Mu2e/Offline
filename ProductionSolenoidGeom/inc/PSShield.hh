@@ -2,9 +2,9 @@
 #define ProductionSolenoidGeom_PSShield_hh
 
 //
-// $Id: PSShield.hh,v 1.4 2012/04/27 05:37:32 gandr Exp $
+// $Id: PSShield.hh,v 1.5 2013/08/09 05:13:09 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/04/27 05:37:32 $
+// $Date: 2013/08/09 05:13:09 $
 //
 // Original author Andrei Gaponenko
 //
@@ -49,26 +49,24 @@ namespace mu2e {
       Groove(); // persistency for vector<Groove> requires default ctr.
     };
 
-    const Polycone& bulk() const { return bulk_; }
-    const CLHEP::Hep3Vector& originInMu2e() const { return bulk_.originInMu2e(); }
+    const std::vector<Polycone>& shells() const { return shells_; }
 
     const std::vector<Groove>& grooves() const { return grooves_; }
     unsigned nGrooves() const { return grooves_.size(); }
 
   private:
-    friend class PSShieldMaker;
+
+    PSShield();
 
     // Private ctr: the class should only be constructed via PSShield::PSShieldMaker.
-    PSShield(const Polycone& bulk) : bulk_(bulk) {};
+    friend class PSShieldMaker;
 
     // Or read back from persistent storage
-    PSShield();
     template<class T> friend class art::Wrapper;
 
-    Polycone bulk_;
+    std::vector<Polycone> shells_;
     std::vector<Groove> grooves_;
   };
-
 
   std::ostream& operator<<(std::ostream& os, const PSShield::Groove& groove);
   std::ostream& operator<<(std::ostream& os, const PSShield& shield);

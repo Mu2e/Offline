@@ -20,9 +20,7 @@ namespace mu2e {
   {}
 
   // genreflex perstency requires default ctr
-  PSShield::PSShield()
-    : bulk_(std::vector<double>(), std::vector<double>(), std::vector<double>(), CLHEP::Hep3Vector(), "")
-  {}
+  PSShield::PSShield() : shells_() {}
 
   std::ostream& operator<<(std::ostream& os, const PSShield::Groove& g) {
     return os<<"Groove("
@@ -36,7 +34,10 @@ namespace mu2e {
 
 
   std::ostream& operator<<(std::ostream& os, const PSShield& shield) {
-    os<<"PSShield("<<shield.bulk()<<", grooves={ ";
+    os<<"PSShield( shells={ ";
+    std::copy(shield.shells().begin(), shield.shells().end(),
+              std::ostream_iterator<Polycone>(os, ", "));
+    os<<" } , grooves={ ";
     std::copy(shield.grooves().begin(), shield.grooves().end(),
               std::ostream_iterator<PSShield::Groove>(os, ", "));
     os<<" } )";
