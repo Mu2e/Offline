@@ -3,15 +3,15 @@
 //
 // Class to describe derived information from a StrawHit, in particular pos().
 //
-// $Id: StrawHitPosition.hh,v 1.4 2013/04/04 01:08:01 brownd Exp $
+// $Id: StrawHitPosition.hh,v 1.5 2013/08/09 22:09:41 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/04/04 01:08:01 $
+// $Date: 2013/08/09 22:09:41 $
 //
 // Original author David Brown
 //
 // Mu2e includes
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "ConditionsService/inc/TrackerCalibrationStructs.hh"
 // clhep includes
@@ -27,7 +27,7 @@ namespace mu2e {
 // construct from another hit, optionally with additional flag bits (these will be ORed with the existing bits
       StrawHitPosition(StrawHitPosition const& pos,StrawHitFlag const& orflag=_nullflag);
 // construct from a stereo hit
-      StrawHitPosition(StereoHit const& sthit,size_t index);
+      StrawHitPosition(StereoHitCollection const& sthits, size_t stindex, size_t shindex);
 // null constructor for root
 #endif /* __GCCXML__ */
       StrawHitPosition();
@@ -39,7 +39,7 @@ namespace mu2e {
       CLHEP::Hep3Vector const& pos() const { return _pos; }
       float wireDist() const { return _wdist; }
       float posRes(edir dir) const { return dir==phi ? _pres : _rres; }
-      float chisq() const { return _chisq; }
+      int stereoHitIndex() const { return _stindex; } // negative if there's no stereo hit
       StrawHitFlag const& flag() const { return _flag; }
 #endif /* __GCCXML__ */
     private:
@@ -47,7 +47,7 @@ namespace mu2e {
       float _wdist; // distance along the wire
       float _pres; // pos resolution along phi
       float _rres; // pos resolution perpendicular to the Z axis
-      float _chisq; // self-consistency chisquared
+      int _stindex; // index into stereo hit collection (-1 if not based on stereo)
       StrawHitFlag _flag; // bit flags for this hit
       static StrawHitFlag _nullflag; // null flag
       static double _invsqrt12; // 1/sqrt(12)
