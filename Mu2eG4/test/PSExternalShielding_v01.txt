@@ -27,7 +27,7 @@ double PSExternalShielding.Y8 = -2300;
 
 // The center of the detector relative to its parent volume (detector hall).
 
-double PSExternalShielding.centerX = 3409;
+double PSExternalShielding.centerX = 3904;
 double PSExternalShielding.centerY = 0;
 double PSExternalShielding.centerZ = -5804;
 
