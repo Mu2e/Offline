@@ -2,9 +2,9 @@
 // Standard geometry with physics turned off.
 // We need to put the control of physics elsewhere.
 //
-// $Id: transportOnlyGeom.txt,v 1.13 2013/02/08 22:13:54 genser Exp $
+// $Id: transportOnlyGeom.txt,v 1.14 2013/08/09 01:12:29 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/08 22:13:54 $
+// $Date: 2013/08/09 01:12:29 $
 //
 // Original author Rob Kutschke
 
@@ -26,47 +26,52 @@ bool PSEnclosure.vacuum.visible = false;
 
 bool PSShield.visible = false;
 
-bool calorimeter.crystalVisible = false;
-bool calorimeter.vaneBoxVisible = false;
+bool calorimeter.calorimeterVisible            = false;
+bool calorimeter.vaneBoxVisible                = false;
+bool calorimeter.vaneCaseVisible               = false;
+bool calorimeter.crystalVisible                = false;
+bool calorimeter.absorberBoxVisible            = false;
 
 bool coll.visible = false;
 
 bool crs.vetoVisible = false;
 
 //// config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.visible"),
-//Mu2eG4/test/extmon_fnal_v02.txt
+
 bool extMonFNAL.collimator1.alignmentHole.visible = false;
 bool extMonFNAL.collimator1.alignmentPlug.visible = false;
 bool extMonFNAL.collimator1.channel.visible = false;
+bool extMonFNAL.filter.magnet.iron.visible = false;
+bool extMonFNAL.filter.magnet.aperture.visible = false;
 bool extMonFNAL.collimator2.alignmentHole.visible = false;
 bool extMonFNAL.collimator2.alignmentPlug.visible = false;
 bool extMonFNAL.collimator2.channel.visible = false;
-bool extMonFNAL.collimator2.shielding.visible = false;
-bool extMonFNAL.filter.magnet.aperture.visible = false;
-bool extMonFNAL.filter.magnet.iron.visible = false;
-bool extMonFNAL.readoutPlaneVisible   = false;
-bool extMonFNAL.room.ceiling.visible   = false;
-bool extMonFNAL.room.floor.visible   = false;
+bool extMonFNAL.stackMotherVisible = false;
+bool extMonFNAL.spectrometer.magnet.iron.visible = false;
+bool extMonFNAL.spectrometer.magnet.aperture.visible = false;
 bool extMonFNAL.room.visible   = false;
 bool extMonFNAL.room.wall.visible   = false;
+bool extMonFNAL.room.ceiling.visible   = false;
+bool extMonFNAL.room.floor.visible   = false;
+bool extMonFNAL.collimator2.shielding.visible = false;
 bool extMonFNAL.sensorPlaneVisible   = false;
-bool extMonFNAL.spectrometer.magnet.aperture.visible = false;
-bool extMonFNAL.spectrometer.magnet.iron.visible = false;
-bool extMonFNAL.testMaterial.visible = false;
+bool extMonFNAL.moduleVisible        = false;
 
-bool extmon_uci.abs1Visible       = false;
-bool extmon_uci.calVisible        = false;
-bool extmon_uci.colVisible        = false;
-bool extmon_uci.killerVisible     = false;
-bool extmon_uci.magVisible        = false;
-bool extmon_uci.nshVisible        = false;
+
+bool extmon_uci.envelopeVisible   = false;
 bool extmon_uci.platformVisible   = false;
-bool extmon_uci.shdChannelVisible = false;
-bool extmon_uci.shdHoleVisible    = false;
-bool extmon_uci.shdVisible        = false;
-bool extmon_uci.sideShieldVisible = false;
-bool extmon_uci.tableVisible      = false;
+bool extmon_uci.abs1Visible       = false;
+bool extmon_uci.colVisible        = false;
+bool extmon_uci.magVisible        = false;
 bool extmon_uci.tofVisible        = false;
+bool extmon_uci.shdVisible        = false;
+bool extmon_uci.nshVisible        = false;
+bool extmon_uci.tableVisible      = false;
+bool extmon_uci.shdHoleVisible    = false;
+bool extmon_uci.shdChannelVisible = false;
+bool extmon_uci.sideShieldVisible = false;
+bool extmon_uci.killerVisible     = false;
+
 
 bool fluxcrv.visible = false;
 
@@ -77,7 +82,8 @@ bool hall.wallsVisible = false;
 
 bool mbs.visible = false;
 
-bool neutronabsorber.visible = false;
+bool intneutronabs.visible      = false;
+bool extneutronabs.visible      = false;
 
 bool protonBeamDump.coreVisible = false;
 bool protonBeamDump.dirtVisible = false;
@@ -87,24 +93,46 @@ bool protonBeamDump.shieldingVisible = false;
 
 bool protonabsorber.visible = false;
 
-bool target.visible = false;
+bool stoppingTarget.visible   = false;
+bool target.visible           = false;
+bool targetPS.visible         = false;
 
-bool targetPS.visible = false;
+bool ds.visible = false;
 
-bool toyDS.visible = false;
+bool dsCoil.visible        = false;
+bool dsShield.visible      = false;
+bool dsSupport.visible     = false;
+bool dsVacuum.visible      = false;
 
-bool toyTS.visible = false;
+bool   dsvac1.visible           = false;
+bool   dsvac2.visible           = false;
+bool   dsvac3.visible           = false;
+
+bool ts.cryo.visible         = false;
+bool pbar.visible            = false;
+bool ts.coll.visible         = false;
+bool muondegrader.visible    = false;
+bool ts.coils.visible        = false;
 
 bool ttracker.deviceEnvelopeVisible = true;
-bool ttracker.envelopeVisible =  false;
+bool ttracker.envelopeVisible       = false;
 bool ttracker.sectorEnvelopeVisible = true;
-bool ttracker.strawVisible =  false;
-bool ttracker.supportVisible = true;
+bool ttracker.strawVisible          = false;
+bool ttracker.supportVisible        = false;
+
+// Debug control for TTracker; uncomment to make only a selected sector.
+// it is not about drawing, but about the construction itself
+int    ttracker.devDraw  =   -1;
+int    ttracker.secDraw  =   -1;
+
+int    ttracker.verbosityLevel     =    0;
 
 bool vd.visible = false;
 
 bool world.boxVisible = false;
 bool world.dirt.visible = false;
+
+//bool g4.doSurfaceCheck = true;
 
 //
 // This tells emacs to view this file in c++ mode.
