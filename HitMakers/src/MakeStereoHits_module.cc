@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.7 2013/07/26 15:33:37 brownd Exp $
+// $Id: MakeStereoHits_module.cc,v 1.8 2013/08/09 22:10:08 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/07/26 15:33:37 $
+// $Date: 2013/08/09 22:10:08 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -247,7 +247,7 @@ namespace mu2e {
     }
 // now, overwrite the positions for those hits which have stereosresolve the stereo hits to find the best position for each hit that particpates.  The algorithm is:
     for(size_t ish=0; ish<nsh;++ish){
-      if(minsep[ish] < SectorId::apart)shpos->at(ish) = StrawHitPosition(stereohits[ibest[ish]],ish);
+      if(minsep[ish] < SectorId::apart)shpos->at(ish) = StrawHitPosition(stereohits,ibest[ish],ish);
       if(_diagLevel > 0){
 	_sep->Fill(minsep[ish]);
 	_chisq->Fill(minchisq[ish]);
