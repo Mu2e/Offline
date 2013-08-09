@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.61 2013/04/18 23:23:03 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.62 2013/08/09 22:10:53 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/04/18 23:23:03 $
+// $Date: 2013/08/09 22:10:53 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -20,6 +20,7 @@
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -92,10 +93,11 @@ namespace mu2e
       // configuration parameters
       int _diag,_debug;
       int _printfreq;
-      bool _addhits, _usestereo;
+      bool _addhits; 
       // event object labels
       std::string _shLabel;
       std::string _shpLabel;
+      std::string _stLabel;
       std::string _shfLabel;
       std::string _dtspecpar;
       StrawHitFlag _tsel, _hsel, _ksel;
@@ -121,6 +123,7 @@ namespace mu2e
       const StrawHitFlagCollection* _shfcol;
       StrawHitFlagCollection* _flags;
       const StrawHitPositionCollection* _shpcol;
+      const StereoHitCollection* _stcol;
       // Kalman fitters.  Seed fit has a special configuration
       KalFit _seedfit, _kfit;
       // robust helix fitter
@@ -164,7 +167,7 @@ namespace mu2e
       Int_t _device, _sector, _layer, _straw;
       Int_t _ishpeak, _ntpeak, _nshtpeak;
       Float_t _shtpeak;
-      Float_t _shpres, _shrres, _shchisq;
+      Float_t _shpres, _shrres, _shchisq, _shdt, _shdist;
       Float_t _shmct0, _shmcmom, _shmctd;
       // fit tuple variables
       Int_t _nadd,_ipeak;
@@ -189,9 +192,9 @@ namespace mu2e
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
     _addhits(pset.get<bool>("addhits",true)),
-    _usestereo(pset.get<bool>("UseStereoHits",true)),
     _shLabel(pset.get<std::string>("StrawHitCollectionLabel","makeSH")),
     _shpLabel(pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
+    _stLabel(pset.get<std::string>("StereoHitCollectionLabel","MakeStereoHits")),
     _shfLabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
     _dtspecpar(pset.get<std::string>("DeltaTSpectrumParams","nobackgroundnomarkovgoff")),
     _tsel(pset.get<std::vector<std::string> >("TimeSelectionBits")),
@@ -281,6 +284,10 @@ namespace mu2e
       findTimePeaks();
     } else {
       createTimePeak();
+    }
+    if(_diag>0){
+// fill primary particle MC truth information
+      _kfitmc.mcTrkInfo(_kfitmc.mcData()._simparts->begin()->second);
     }
     // fill diagnostics if requested
     if(_diag > 2)fillTimeDiag();
@@ -387,16 +394,20 @@ namespace mu2e
     _shcol = 0;
     _shfcol = 0;
     _shpcol = 0;
+    _stcol = 0;
     art::Handle<mu2e::StrawHitCollection> strawhitsH;
     if(evt.getByLabel(_shLabel,strawhitsH))
       _shcol = strawhitsH.product();
     art::Handle<mu2e::StrawHitPositionCollection> shposH;
     if(evt.getByLabel(_shpLabel,shposH))
       _shpcol = shposH.product();
+    art::Handle<mu2e::StereoHitCollection> stH;
+    if(evt.getByLabel(_stLabel,stH))
+      _stcol = stH.product();
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if(evt.getByLabel(_shfLabel,shflagH))
       _shfcol = shflagH.product();
-
+// don't require stereo hits: they are only used for diagnostics
     return _shcol != 0 && _shfcol != 0 && _shpcol != 0;
   }
 
@@ -583,6 +594,8 @@ namespace mu2e
     _shdiag->Branch("pres",&_shpres,"pres/F");
     _shdiag->Branch("rres",&_shrres,"rres/F");
     _shdiag->Branch("chisq",&_shchisq,"chisq/F");
+    _shdiag->Branch("dt",&_shdt,"dt/F");
+    _shdiag->Branch("dist",&_shdist,"dist/F");
     _shdiag->Branch("mct0",&_shmct0,"mct0/F");
     _shdiag->Branch("mcmom",&_shmcmom,"mcmom/F");
     _shdiag->Branch("mctd",&_shmctd,"mctd/F");
@@ -700,10 +713,19 @@ namespace mu2e
       _delta = _flags->at(istr).hasAllProperties(StrawHitFlag::delta);
       _shpres = _shpcol->at(istr).posRes(StrawHitPosition::phi);
       _shrres = _shpcol->at(istr).posRes(StrawHitPosition::rho);
-      _shchisq = _shpcol->at(istr).chisq();
       _shmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
       _shmcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
       _shmctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
+//  Info depending on stereo hits
+      if(_stcol != 0 && _shpcol->at(istr).stereoHitIndex() >= 0){
+	_shchisq = _stcol->at(_shpcol->at(istr).stereoHitIndex()).chisq();
+	_shdt = _stcol->at(_shpcol->at(istr).stereoHitIndex()).dt();
+	_shdist = _stcol->at(_shpcol->at(istr).stereoHitIndex()).dist();
+      } else {
+	_shchisq = -1.0;
+	_shdt = 0.0;
+	_shdist = -1.0;
+      }
       // compare to different time peaks
       _ntpeak = _tpeaks.size();
       _nshtpeak = 0;
@@ -883,7 +905,16 @@ namespace mu2e
     shinfo._rho = shp.pos().perp();
     shinfo._pres = shp.posRes(StrawHitPosition::phi);
     shinfo._rres = shp.posRes(StrawHitPosition::rho);
-    shinfo._chisq = shp.chisq();
+// info depending on stereo hits
+    if(_stcol != 0 && shp.stereoHitIndex() >= 0){
+      shinfo._chisq = _stcol->at(shp.stereoHitIndex()).chisq();
+      shinfo._stdt = _stcol->at(shp.stereoHitIndex()).dt();
+      shinfo._dist = _stcol->at(shp.stereoHitIndex()).dist();
+    } else {
+      shinfo._chisq = -1.0;
+      shinfo._stdt = 0.0;
+      shinfo._dist = -1.0;
+    }
     shinfo._edep = sh.energyDep();
     const Straw& straw = tracker.getStraw( sh.strawIndex() );
     shinfo._device = straw.id().getDevice();

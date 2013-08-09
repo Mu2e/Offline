@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.14 2013/04/15 22:30:10 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.15 2013/08/09 22:10:53 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/04/15 22:30:10 $
+// $Date: 2013/08/09 22:10:53 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -19,6 +19,7 @@
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -126,7 +127,7 @@ namespace mu2e
       int _diag,_debug;
       int _printfreq;
       // event object labels
-      std::string _shlabel, _shplabel, _shflabel;
+      std::string _shlabel, _shplabel, _stlabel, _shflabel;
       // straw hit selection masks
       StrawHitFlag _stmask, _deltamask, _ismask;
       // delta-ray removal parameters
@@ -140,6 +141,7 @@ namespace mu2e
 // input collections
       const StrawHitCollection* _shcol;
       const StrawHitPositionCollection* _shpcol;
+      const StereoHitCollection* _stcol;
       const StrawHitFlagCollection* _shfcol;
 // output collections
       StrawHitFlagCollection* _bkgfcol;
@@ -190,6 +192,7 @@ namespace mu2e
     _printfreq(pset.get<int>("printFrequency",101)),
     _shlabel(pset.get<std::string>("StrawHitCollectionLabel","makeSH")),
     _shplabel(pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
+    _stlabel(pset.get<std::string>("StereoHitCollectionLabel","MakeStereoHits")),
     _shflabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FlagStrawHits")),
     _stmask(StrawHitFlag::stereo),
     _deltamask(StrawHitFlag::delta),
@@ -293,16 +296,20 @@ namespace mu2e
 
   // find the input data objects 
   bool FlagBkgHits::findData(const art::Event& evt){
-    _shcol = 0; _shpcol = 0;  _shfcol = 0;
+    _shcol = 0; _shpcol = 0; _stcol = 0; _shfcol = 0;
     art::Handle<mu2e::StrawHitCollection> shH;
     if(evt.getByLabel(_shlabel,shH))
       _shcol = shH.product();
     art::Handle<mu2e::StrawHitPositionCollection> shposH;
     if(evt.getByLabel(_shplabel,shposH))
       _shpcol = shposH.product();
+    art::Handle<mu2e::StereoHitCollection> stH;
+    if(evt.getByLabel(_stlabel,stH))
+      _stcol = stH.product();
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if(evt.getByLabel(_shflabel,shflagH))
       _shfcol = shflagH.product();
+// don't require stereo hits, they are used only for diagnostics
     return _shcol != 0 && _shpcol != 0 && _shfcol != 0;
   }
 
@@ -501,7 +508,15 @@ namespace mu2e
     shinfo._rho = shp.pos().perp();
     shinfo._pres = shp.posRes(StrawHitPosition::phi);
     shinfo._rres = shp.posRes(StrawHitPosition::rho);
-    shinfo._chisq = shp.chisq();
+    if(_stcol != 0 && shp.stereoHitIndex() >= 0){
+      shinfo._chisq = _stcol->at(shp.stereoHitIndex()).chisq();
+      shinfo._stdt = _stcol->at(shp.stereoHitIndex()).dt();
+      shinfo._dist = _stcol->at(shp.stereoHitIndex()).dist();
+    } else {
+      shinfo._chisq = -1.0;
+      shinfo._stdt = 0.0;
+      shinfo._dist = -1.0;
+    }
     shinfo._edep = sh.energyDep();
     const Straw& straw = tracker.getStraw( sh.strawIndex() );
     shinfo._device = straw.id().getDevice();

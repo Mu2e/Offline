@@ -1,7 +1,7 @@
 //
-// $Id: StrawHitInfo.hh,v 1.6 2013/03/14 16:15:32 brownd Exp $
+// $Id: StrawHitInfo.hh,v 1.7 2013/08/09 22:10:53 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/14 16:15:32 $
+// $Date: 2013/08/09 22:10:53 $
 //
 // struct for hit diagnostics
 #ifndef StrawHitInfo_hh
@@ -14,7 +14,7 @@ namespace mu2e {
   struct StrawHitInfo {
     CLHEP::Hep3Vector _pos;
     Float_t _edep, _time, _rho;
-    Float_t _pres, _rres, _chisq;
+    Float_t _pres, _rres, _chisq, _stdt, _dist;
     Int_t _device, _sector, _layer, _straw;
     Bool_t _esel, _rsel, _delta, _stereo;
     Int_t _relation;
