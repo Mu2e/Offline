@@ -4,9 +4,9 @@
 //
 // Persistable information about a G4 Physical Volume.
 //
-// $Id: PhysicalVolumeInfo.hh,v 1.2 2011/07/17 01:23:02 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/07/17 01:23:02 $
+// $Id: PhysicalVolumeInfo.hh,v 1.3 2013/08/09 22:53:12 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/09 22:53:12 $
 //
 // Original author Rob Kutschke
 //
@@ -23,9 +23,12 @@ namespace mu2e {
     PhysicalVolumeInfo(){}
 
     PhysicalVolumeInfo( const std::string& pname,
-                        unsigned           pcopyNo ):
-      _name(pname),
-      _copyNo(pcopyNo){}
+                        unsigned           pcopyNo,
+                        const std::string& materialName)
+      : _name(pname)
+      , _copyNo(pcopyNo)
+      , _materialName(materialName)
+    {}
 
     // Accept compiler generated versions of the
     // destructor, copy constructor and the assignment
@@ -35,11 +38,12 @@ namespace mu2e {
 
     std::string const& name()   const { return _name;  }
     unsigned           copyNo() const { return _copyNo;}
+    std::string const& materialName() const { return _materialName;  }
 
   private:
     std::string _name;
     unsigned _copyNo;
-
+    std::string _materialName;
   };
 
   // Shift left (printing) operator.
@@ -47,7 +51,8 @@ namespace mu2e {
                                   const PhysicalVolumeInfo& vol ){
     ost << "( "
         << vol.name() << ", "
-        << vol.copyNo()
+        << vol.copyNo() <<", "
+        << vol.materialName()
         << " )";
     return ost;
   }

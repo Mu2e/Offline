@@ -2,9 +2,9 @@
 // A utility class to do indexolgy related to persistence of
 // physical volume information.
 //
-// $Id: PhysicalVolumeHelper.cc,v 1.4 2011/10/22 04:28:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/10/22 04:28:59 $
+// $Id: PhysicalVolumeHelper.cc,v 1.5 2013/08/09 22:53:12 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/09 22:53:12 $
 //
 // Original author Rob Kutschke
 //
@@ -110,7 +110,10 @@ namespace mu2e {
       }
 
       // Add volume to the persistent info.
-      _persistentInfo.push_back( PhysicalVolumeInfo( vpv->GetName(), vpv->GetCopyNo() ));
+      _persistentInfo.emplace_back(vpv->GetName(),
+                                   vpv->GetCopyNo(),
+                                   vpv->GetLogicalVolume()->GetMaterial()->GetName()
+                                   );
     }
 
   }
