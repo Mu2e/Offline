@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.9 2013/08/12 15:03:48 brownd Exp $
+// $Id: MakeStereoHits_module.cc,v 1.10 2013/08/12 16:13:14 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/08/12 15:03:48 $
+// $Date: 2013/08/12 16:13:14 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -208,6 +208,7 @@ namespace mu2e {
 	  _dperp->Fill((shp1.pos()-shp2.pos()).perp());
 	}
 	if( sep != SectorId::same && sep < SectorId::apart // hits are in the same station but not the same sector
+	    && (sep <= minsep[ish] || sep <= minsep[jsh]) // this separation is at least as good as the current best for one of the hits
 	    && fabs(sh1.time()-sh2.time()) < _maxDt // hits are close in time
 	    && fabs(sh1.energyDep() - sh2.energyDep())/(sh1.energyDep()+sh2.energyDep()) < _maxDE   // deposited energy is roughly consistent (should compare dE/dx but have no path yet!)
 	    && (shp1.pos()-shp2.pos()).perp() < _maxDPerp) { // transverse separation isn't too big
