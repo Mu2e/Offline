@@ -3,6 +3,7 @@
 #include "BeamlineGeom/inc/StraightSection.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include <iostream>
 
 #include "cetlib/exception.h"
 
@@ -11,6 +12,8 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 #include <vector>
+
+using namespace std;
 
 namespace mu2e {
 
@@ -60,19 +63,24 @@ namespace mu2e {
 
     StraightSection const * ts5 = bl.getTS().getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::IN );
 
-    ds->_locationDs23Split  =  bl.getTS().torusRadius() +
-      2.*ts5->getHalfLength() + 2*bl.getTS().endWallD_halfLength() +
-      2.*ds->vac_halfLengthDs2();
+    ds->_locationDs23Split  =  bl.getTS().torusRadius() 
+      + 2.*ts5->getHalfLength() 
+      + 2.*bl.getTS().endWallD_halfLength() 
+      + 2.*ds->vac_halfLengthDs2();
+
+    //cout << "ds->_locationDs23Split  =  " << ds->_locationDs23Split << " = " << bl.getTS().torusRadius() <<  " + 2.*" << ts5->getHalfLength() << " + 2*" << bl.getTS().endWallD_halfLength() << " + 2.*" << ds->vac_halfLengthDs2() << endl;
 
     // Position is computed on the fly, relative to the TS torus
     // radius, and the lengths of TS5 and the vacuum volumes
     // specified0; assumption is made that the front frace is flush
     // with the edge of the DS
-    double dsPosZ      = bl.getTS().torusRadius() +
-      2.*ts5->getHalfLength() -
-      2.*ds->vac_halfLengthDs1()-
-      2.*ds->frontHalfLength()+
-      ds->halfLength();
+    double dsPosZ      = bl.getTS().torusRadius() 
+      + 2.*ts5->getHalfLength() 
+      + 2.*bl.getTS().endWallD_halfLength() 
+      - 2.*ds->vac_halfLengthDs1()
+      - 2.*ds->frontHalfLength()
+      + ds->halfLength();
+    //cout << "dsPosZ      = " << dsPosZ << " = " << bl.getTS().torusRadius() << " + 2.*" << ts5->getHalfLength() << " + 2*" << bl.getTS().endWallD_halfLength() << " - 2.*" << ds->vac_halfLengthDs1() << " - 2.*" << ds->frontHalfLength() << " + " << ds->halfLength() << endl;
 
     // for x component: +1(-1)*solenoidOffset for PS (DS)
     ds->_position = CLHEP::Hep3Vector(-bl.solenoidOffset(), 0, dsPosZ );
