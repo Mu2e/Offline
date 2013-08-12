@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.20 2013/03/08 01:22:32 echenard Exp $     -->
-<!--  $Author: echenard $ -->
-<!--  $Date: 2013/03/08 01:22:32 $   -->
+<!--  $Id: classes_def.xml,v 1.21 2013/08/12 21:21:29 gandr Exp $     -->
+<!--  $Author: gandr $ -->
+<!--  $Date: 2013/08/12 21:21:29 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.20 $$Date: 2013/03/08 01:22:32 $"; -->
+<!--  rev="$Revision: 1.21 $$Date: 2013/08/12 21:21:29 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -140,5 +140,8 @@
  <class name="art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo>" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,mu2e::ExtMonFNALTrkMatchInfo> >" />
  <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo> >" />
+
+ <class name="mu2e::SimParticlePtrCollection"/>
+ <class name="art::Wrapper<mu2e::SimParticlePtrCollection>"/>
 
 </lcgdict>

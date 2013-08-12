@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.20 2013/03/08 01:22:32 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/03/08 01:22:32 $
+// $Id: classes.h,v 1.21 2013/08/12 21:21:29 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/12 21:21:29 $
 //
 // Original author Rob Kutschke
 //
@@ -37,6 +37,7 @@
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
@@ -131,3 +132,6 @@ template class std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::ExtMonFNALTr
 template class std::pair<art::Ptr<mu2e::ExtMonFNALTrkFit>,art::Ptr<mu2e::SimParticle> >;
 template class art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,mu2e::ExtMonFNALTrkMatchInfo> >;
 template class art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo> >;
+
+template class std::vector<art::Ptr<mu2e::SimParticle> >;
+template class art::Wrapper<std::vector<art::Ptr<mu2e::SimParticle> > >;
