@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.8 2013/08/09 22:10:08 brownd Exp $
+// $Id: MakeStereoHits_module.cc,v 1.9 2013/08/12 15:03:48 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/08/09 22:10:08 $
+// $Date: 2013/08/12 15:03:48 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -37,6 +37,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TLine.h"
+#include "TMarker.h"
 #include "TList.h"
 #include "TLegend.h"
 #
@@ -78,7 +79,7 @@ namespace mu2e {
     TH1F* _sep;
     TH1F* _dTD;
     TH1F* _chisq;
-    TH2F *_station0, *_station1;
+    std::vector<TH2F*> _stations;
   };
 
   MakeStereoHits::MakeStereoHits(fhicl::ParameterSet const& pset) :
@@ -92,8 +93,7 @@ namespace mu2e {
     _maxTDNsig(pset.get<double>("maxTDNsig",5.0)),
     _maxChisq(pset.get<double>("maxChisquared",12.0)),
     _writepairs(pset.get<bool>("WriteStereoPairs",false)),
-    _nhits(0),_deltat(0),_deltaE(0),_dperp(0),_sep(0),_dTD(0),_chisq(0),
-    _station0(0), _station1(0)
+    _nhits(0),_deltat(0),_deltaE(0),_dperp(0),_sep(0),_dTD(0),_chisq(0)
  {
     // Tell the framework what we make.
     if(_writepairs)produces<StereoHitCollection>();
@@ -112,11 +112,6 @@ namespace mu2e {
       _dTD = tfs->make<TH1F>("dTD","#Delta Time Difference;mm",100,-100.0,100.0);
       _chisq = tfs->make<TH1F>("chisq","Chisquared",100,-1.0,50.0);
     }
-    if(_diagLevel > 1){
-      art::ServiceHandle<art::TFileService> tfs;
-      _station0 = tfs->make<TH2F>("station0","Station 0",100,-700,700,100,-700,700);
-      _station1 = tfs->make<TH2F>("station1","Station 1",100,-700,700,100,-700,700);
-    }
   }
 
   void
@@ -131,15 +126,19 @@ namespace mu2e {
     if(_diagLevel >1 && first){
       first = false;
       const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
-      TH2F* stations[2] = {_station0, _station1};
+      art::ServiceHandle<art::TFileService> tfs;
       int lowdev[2] = {0,2};
-      for(int ista=0;ista<2;++ista){
-	stations[ista]->SetStats(false);
-	TList* flist = stations[ista]->GetListOfFunctions();
-	TLegend* sleg = new TLegend(0.1,0.6,0.4,0.9);
+      unsigned nsta = tt.nDevices()/2;
+      for(int ista=0;ista<nsta;++ista){
+	char name[100];
+	snprintf(name,100,"station%i",ista);
+	_stations.push_back( tfs->make<TH2F>(name,name,100,-700,700,100,-700,700));
+	_stations[ista]->SetStats(false);
+	TList* flist = _stations[ista]->GetListOfFunctions();
+	TLegend* sleg = new TLegend(0.1,0.6,0.3,0.9);
 	flist->Add(sleg);
 	for(int idev=0;idev<2;++idev){
-	  const Device& dev = tt.getDevice(idev+lowdev[ista]);
+	  const Device& dev = tt.getDevice(2*ista+idev+lowdev[ista%2]);
 	  const std::vector<Sector>& sectors = dev.getSectors();
 	  for(size_t isec=0;isec<sectors.size();++isec){
 	    int iface = isec%2;
@@ -152,6 +151,10 @@ namespace mu2e {
 	    sline->SetLineColor(isec+1);
 	    sline->SetLineStyle(2*idev+iface+1);
 	    flist->Add(sline);
+	    TMarker* smark = new TMarker(end0.x(),end0.y(),8);
+	    smark->SetMarkerColor(isec+1);
+	    smark->SetMarkerSize(2);
+	    flist->Add(smark);
 	    char label[80];
 	    snprintf(label,80,"dev %i sec %i",idev,(int)isec);
 	    sleg->AddEntry(sline,label,"l");
