@@ -12,12 +12,6 @@ namespace mu2e {
     static const unsigned int NOPLANE = -1u;
 
     explicit ExtMonFNALModuleId(unsigned int plane,  unsigned int module) : plane_(plane), module_(module) {}
-    explicit ExtMonFNALModuleId(unsigned int mod)
-    {
-      //TODO: remove this constructor and fix ExtMonFNALPixelIdConverter
-      plane_ = (mod < 12 ? (mod/3) : (mod/2 - 2));
-      module_ = (plane_ < 4 ? (mod-plane_*3) : (mod -12 - ((plane_-4)*2)));
-    }
       
     // zero based
     unsigned int plane() const { return plane_;}

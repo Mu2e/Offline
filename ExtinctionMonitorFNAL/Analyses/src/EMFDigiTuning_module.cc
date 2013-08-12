@@ -1,4 +1,3 @@
-#if 0
 // This module evaluates pixel sensor efficiency and other parameters
 // for digitization tuning.  It requres a specially prepared single
 // particle file, with protons shot at ExtMonFNAL that should be
@@ -126,7 +125,7 @@ namespace mu2e {
       typedef std::vector<const ExtMonFNALRawHit*> SensorHits;
       SensorHits hits;
       for(ExtMonFNALRawHitCollection::const_iterator i=allHits.begin(); i!=allHits.end(); ++i) {
-        if(i->pixelId().chip().sensor().plane() == iplane) {
+        if(i->pixelId().chip().module().plane() == iplane) {
           hits.push_back(&*i);
         }
       }
@@ -197,4 +196,3 @@ namespace mu2e {
 } // namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFDigiTuning);
-#endif

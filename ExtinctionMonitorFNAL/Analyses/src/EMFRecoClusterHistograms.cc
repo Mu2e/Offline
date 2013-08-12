@@ -1,5 +1,3 @@
-#if 0 /*exclude this file from compilation*/
-
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 
 #include "ExtinctionMonitorFNAL/Analyses/inc/EMFRecoClusterHistograms.hh"
@@ -70,9 +68,9 @@ namespace mu2e {
     clusterWidth_->GetYaxis()->SetTitle("yWidth, pixels");
 
     // Bin cluster position histograms according to pixel size
-    const unsigned nx = extmon.sensor().nxChips() * extmon.chip().nColumns();
+    const unsigned nx = extmon.module().nxChips() * extmon.chip().nColumns();
     const double   lx = nx * extmon.chip().xPitch();
-    const unsigned ny = extmon.sensor().nyChips() * extmon.chip().nRows();
+    const unsigned ny = extmon.module().nyChips() * extmon.chip().nRows();
     const double   ly = ny * extmon.chip().yPitch();
 
     clusterPosition_.resize(nplanes);
@@ -114,5 +112,3 @@ namespace mu2e {
   } // end EMFRecoClusterHistograms::fill()
 
 } // end namespace mu2e
-
-#endif

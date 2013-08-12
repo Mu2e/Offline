@@ -12,6 +12,7 @@ namespace mu2e {
 
   std::ostream& operator<<( std::ostream& os, const ExtMonFNALChipId& id) {
     return os<<"ExtMonFNALChipId("<<id.module().plane()
+             <<","<<id.module().number()
              <<","<<id.chipCol()
              <<","<<id.chipRow()
              <<" )";

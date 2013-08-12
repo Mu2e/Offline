@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.9 2013/07/01 06:52:13 gandr Exp $
-# $Author: gandr $
-# $Date: 2013/07/01 06:52:13 $
+# $Id: SConscript,v 1.10 2013/08/12 16:20:51 wieschie Exp $
+# $Author: wieschie $
+# $Date: 2013/08/12 16:20:51 $
 #
 # Original author Rob Kutschke.
 #
@@ -15,7 +15,7 @@ Import('mu2e_helper')
 helper=mu2e_helper();
 
 my_libs=[ 
-    #'mu2e_ExtinctionMonitorFNAL_Reconstruction', 
+    #'mu2e_ExtinctionMonitorFNAL_Reconstruction',
     'mu2e_ExtinctionMonitorFNAL_Utilities', 
     'mu2e_Mu2eInterfaces',
     'mu2e_Mu2eUtilities',

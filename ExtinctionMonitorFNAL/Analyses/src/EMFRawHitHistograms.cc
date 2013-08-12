@@ -1,5 +1,3 @@
-#if 0 /*exclude this file from compilation*/
-
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 
 #include "ExtinctionMonitorFNAL/Analyses/inc/EMFRawHitHistograms.hh"
@@ -10,6 +8,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
 
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -48,17 +47,17 @@ namespace mu2e {
     hitToT_ =   tfdir.make<TH1D>("hitToT", "Hit time over threshold, all hits", 16, -0.5, 15.5);
 
     
-    const unsigned nsensors = extmon.up().nplanes()*2 + extmon.dn().nplanes()*3;
-    for(unsigned mid = 0; mid < nsensors; ++mid) {
-      for(unsigned ix = 0; ix < extmon.sensor().nxChips(); ++ix) {
-        for(unsigned iy = 0; iy < extmon.sensor().nyChips(); ++iy) {
-          ExtMonFNALChipId cid(ExtMonFNALModuleId(mid), ix, iy);
+    const unsigned nmodules = extmon.nmodules();
+    ExtMonFNALModuleIdConverter con(extmon);
+    for(unsigned mid = 0; mid < nmodules; ++mid) {
+      for(unsigned ix = 0; ix < extmon.module().nxChips(); ++ix) {
+        for(unsigned iy = 0; iy < extmon.module().nyChips(); ++iy) {
+          ExtMonFNALChipId cid(con.moduleId(ExtMonFNALModuleDenseId(mid)), ix, iy);
 
           std::ostringstream osname;
-          osname<<"chipOccupancy_"<<mid<<"_"<<iy<<"_"<<ix;
+          osname<<"chipOccupancy_"<< cid;
           std::ostringstream ostitle;
           ostitle<<"Occupancy for "<<cid;
-
           chipOccupancy_[cid] = tfdir.make<TH2D>(osname.str().c_str(),
                                                  ostitle.str().c_str(),
                                                  extmon.chip().nColumns(), -0.5, extmon.chip().nColumns() - 0.5,
@@ -79,9 +78,9 @@ namespace mu2e {
       hitToT_->Fill(hit->tot());
       const ExtMonFNALPixelId& pix = hit->pixelId();
       chipOccupancy_[pix.chip()]->Fill(pix.col(), pix.row());
+      
     }
 
   } // end EMFRawHitHistograms::fill()
 
 } // end namespace mu2e
-#endif

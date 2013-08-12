@@ -19,13 +19,14 @@ namespace mu2e {
 
   //================================================================
   ExtMonFNALModuleId ExtMonFNALModuleIdConverter::moduleId(ExtMonFNALModuleDenseId did) const {
+    unsigned int module = did.number();
+    unsigned int plane = 0;
 
-    unsigned int dm = did.number();
-    unsigned int plane = (dm < extmon_->dn().nmodules() ? ( dm / extmon_->dn().nModulesPerPlane() ) 
-                          : ( (dm/extmon_->up().nModulesPerPlane()) - (extmon_->dn().nmodules() / extmon_->up().nModulesPerPlane() - extmon_->dn().nplanes()) ));
+    while ( module >= extmon_->plane(plane).nModules() ) {
+      module -= extmon_->plane(plane).nModules();
+      plane++;
+    }
 
-    unsigned int module = (plane < extmon_->dn().size() ? (dm -plane*extmon_->dn().nModulesPerPlane()) : (dm - extmon_->dn().nmodules() - (plane-extmon_->dn().nplanes())*extmon_->up().nModulesPerPlane()));
-  
     return ExtMonFNALModuleId(plane, module);
   }
 

@@ -59,11 +59,11 @@ physics : {
     tprint : [ pixelDigitization ]
 
     //eprint: [ vdprint, emfSimHits, emfprinttruth, hitValidation, emfRawHits ]
-    eprint: [ hitValidation, emfSimHits, emfRawHits ]
+    eprint: [ hitValidation, emfSimHits, emfRawHits, emfprintraw ]
     out : [ FullOutput ]
 
     trigger_paths  : [tprint]
-    end_paths : [ out, eprint ]
+    end_paths : [ out, eprint]
 }
 
 outputs: { FullOutput : { module_type : RootOutput } }

@@ -76,9 +76,7 @@ namespace mu2e {
 
     //================================================================
     void PixelNoise::add(ExtMonFNALRawHitCollection *hits) {
-      ExtMonFNALPixelIdConverter conv((**extmon_).nplanes(),
-                                      (**extmon_).sensor(),
-                                      (**extmon_).chip());
+      ExtMonFNALPixelIdConverter conv(**extmon_);
 
       const int numBCs = (**cond_).numClockTicksPerDebuncherPeriod();
 

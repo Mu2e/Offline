@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.19 2013/07/30 18:45:00 wieschie Exp $
+// $Id: classes.h,v 1.20 2013/08/12 16:20:51 wieschie Exp $
 // $Author: wieschie $
-// $Date: 2013/07/30 18:45:00 $
+// $Date: 2013/08/12 16:20:51 $
 //
 // Original author Rob Kutschke
 //
@@ -13,6 +13,8 @@
 #include "DataProducts/inc/ExtMonFNALModuleId.hh"
 #include "DataProducts/inc/ExtMonFNALChipId.hh"
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
+
+//#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 #include "art/Persistency/Common/Wrapper.h"
 #include "cetlib/map_vector.h"

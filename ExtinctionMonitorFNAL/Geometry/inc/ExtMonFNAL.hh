@@ -98,7 +98,7 @@ namespace mu2e {
       for (unsigned iplane = 0; iplane < up_.nplanes(); iplane++)
         nmod += up_.planes()[iplane].nModules();
       for (unsigned iplane = 0; iplane < dn_.nplanes(); iplane++)
-        nmod += up_.planes()[iplane].nModules();
+        nmod += dn_.planes()[iplane].nModules();
        return nmod;
     }      
     CLHEP::Hep3Vector planeCenterInExtMon(unsigned iplane) const;

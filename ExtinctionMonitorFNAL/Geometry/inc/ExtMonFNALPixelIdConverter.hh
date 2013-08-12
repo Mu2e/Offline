@@ -7,9 +7,11 @@
 
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
 #include "DataProducts/inc/ExtMonFNALPixelDenseId.hh"
+#include "DataProducts/inc/ExtMonFNALModuleDenseId.hh"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
 
 namespace mu2e {
 
@@ -24,9 +26,10 @@ namespace mu2e {
 
     unsigned int totalNumberOfPixels() const { return totalNumberOfPixels_;  }
 
-    ExtMonFNALPixelIdConverter(unsigned nPlanes, const ExtMonFNALModule& module, const ExtMonFNALPixelChip& chip);
+    explicit  ExtMonFNALPixelIdConverter(const mu2e::ExtMonFNAL::ExtMon& extmon);
 
   private:
+    const mu2e::ExtMonFNAL::ExtMon *extmon_;
     unsigned nPlanes_;
     ExtMonFNALModule module_;
     ExtMonFNALPixelChip chip_;

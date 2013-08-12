@@ -1,5 +1,3 @@
-#if 0 /*exclude this file from compilation*/
-
 // Printout ExtMonFNAL raw hits
 //
 // Andrei Gaponenko, 2012
@@ -17,7 +15,7 @@
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensor.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 
 #include "art/Framework/Core/ModuleMacros.h"
@@ -76,16 +74,26 @@ namespace mu2e {
 
     for(ExtMonFNALRawHitCollection::const_iterator i=inputs.begin(); i!=inputs.end(); ++i) {
       ++numSeenHits_;
-
-      if(i->pixelId().chip().sensor().plane() >= extmon_->up().nplanes() + extmon_->dn().nplanes()) {
+      
+      if(i->pixelId().chip().module().plane() >= extmon_->nplanes()) {
         throw cet::exception("BUG")<<*i<<": invalid plane number\n";
       }
+      
+      if(i->pixelId().chip().module().plane() < extmon_->dn().nplanes()) {
+        if(i->pixelId().chip().module().number() >= extmon_->dn().nModulesPerPlane())
+          throw cet::exception("BUG")<<*i<<": invalid module number\n";
+      }
+      
+      else if (i->pixelId().chip().module().number() >= extmon_->up().nModulesPerPlane()) {
+        throw cet::exception("BUG")<<*i<<": invalid module number\n";
+      }
 
-      if(i->pixelId().chip().chipCol() >= extmon_->sensor().nxChips()) {
+
+      if(i->pixelId().chip().chipCol() >= extmon_->module().nxChips()) {
         throw cet::exception("BUG")<<*i<<": invalid chipCol\n";
       }
 
-      if(i->pixelId().chip().chipRow() >= extmon_->sensor().nyChips()) {
+      if(i->pixelId().chip().chipRow() >= extmon_->module().nyChips()) {
         throw cet::exception("BUG")<<*i<<": invalid chipRow\n";
       }
 
@@ -122,5 +130,3 @@ namespace mu2e {
 } // namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::EMFRawHitsValidator);
-
-#endif

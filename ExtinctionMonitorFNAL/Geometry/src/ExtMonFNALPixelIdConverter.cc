@@ -5,20 +5,18 @@
 #include <cassert>
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
 
 namespace mu2e {
 
   //================================================================
-  ExtMonFNALPixelIdConverter::ExtMonFNALPixelIdConverter(unsigned nPlanes,
-                                                         const ExtMonFNALModule& module,
-                                                         const ExtMonFNALPixelChip& chip)
-    : nPlanes_(nPlanes)
-    , module_(module)
-    , chip_(chip)
-    , totalNumberOfPixels_(nPlanes *
-                           module.nxChips() * module.nyChips() *
-                           chip.nColumns() * chip.nRows())
+  ExtMonFNALPixelIdConverter::ExtMonFNALPixelIdConverter(const mu2e::ExtMonFNAL::ExtMon& extmon)
+    : extmon_(&extmon)
+    , nPlanes_(extmon.nplanes())
+    , module_(extmon.module())
+    , chip_(extmon.chip())
+    , totalNumberOfPixels_(extmon.nplanes() *
+                           extmon.module().nxChips() * extmon.module().nyChips() *
+                           extmon.chip().nColumns() * extmon.chip().nRows())
   {}
 
   //================================================================
@@ -45,14 +43,15 @@ namespace mu2e {
     assert(pix.number() < totalNumberOfPixels_);
 
     unsigned int globalChipNumber = pix.number() / chip_.nPixels();
-   
     unsigned int globalModuleNumber = (globalChipNumber + 1) / 2;
-    ExtMonFNALModuleId mid(globalModuleNumber);
+    ExtMonFNALModuleDenseId did(globalModuleNumber);
+
+    ExtMonFNALModuleIdConverter con(*extmon_);
+    ExtMonFNALModuleId mid = con.moduleId(did);
 
     unsigned int chipInModuleNumber = globalChipNumber % (module_.nxChips() * module_.nyChips());
     unsigned int chipRow = chipInModuleNumber / module_.nxChips();
     unsigned int chipCol = chipInModuleNumber % module_.nxChips();
-
     ExtMonFNALChipId cid(mid, chipCol, chipRow);
 
     unsigned int pixInChip = pix.number() % chip_.nPixels();

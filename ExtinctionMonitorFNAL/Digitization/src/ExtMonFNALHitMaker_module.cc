@@ -1,12 +1,11 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.21 2013/03/22 20:09:33 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/22 20:09:33 $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.22 2013/08/12 16:20:51 wieschie Exp $
+// $Author: wieschie $
+// $Date: 2013/08/12 16:20:51 $
 //
 // Original author Andrei Gaponenko
-//
 
 #include <string>
 #include <cmath>
@@ -44,7 +43,8 @@
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensor.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
 #include "ExtinctionMonitorFNAL/Digitization/inc/SiliconProperties.hh"
 #include "ExtinctionMonitorFNAL/Digitization/inc/PixelToTCircuit.hh"
 #include "ExtinctionMonitorFNAL/Digitization/inc/PixelNoise.hh"
@@ -157,8 +157,10 @@ namespace mu2e {
         if(chipSimInputsMode_) {
           const std::string chipFileName(chipSimPset.get<std::string>("fileName"));
           chipSimFile_.reset(new std::ofstream(chipFileName.c_str()));
+          ExtMonFNALModuleIdConverter con(*extMon_);
+          ExtMonFNALModuleId mod = con.moduleId(ExtMonFNALModuleDenseId(chipSimPset.get<int>("module")));
           
-          chipSimChipId_ = ExtMonFNALChipId(ExtMonFNALSensorId(chipSimPset.get<int>("sensor")),
+          chipSimChipId_ = ExtMonFNALChipId(mod,
                                             chipSimPset.get<unsigned>("chipCol"),
                                             chipSimPset.get<unsigned>("chipRow")
                                             );
@@ -215,7 +217,7 @@ namespace mu2e {
                              const ExtMonFNALSimHit& hit);
 
       void addCharge(PixelChargeCollection *pixcharges,
-                     ExtMonFNALSensorId sid,
+                     ExtMonFNALModuleId mid,
                      double time,
                      double charge,
                      double x_ro,
@@ -301,7 +303,7 @@ namespace mu2e {
 
         planeTOFCorrection_.resize(extMon_->nplanes());
         for(unsigned i=0; i<extMon_->nplanes(); ++i) {
-          const CLHEP::Hep3Vector pos = extMon_->sensorCenterInExtMon(i);
+          const CLHEP::Hep3Vector pos = extMon_->planeCenterInExtMon(i);
           planeTOFCorrection_[i] = -pos.z()/v;
         }
       }
@@ -312,9 +314,9 @@ namespace mu2e {
       ConditionsHandle<AcceleratorParams> condAcc("ignored");
       condAcc_ = &*condAcc;
 
-      const double sensorThickness = 2*extMon_->sensor().halfSize()[2];
+      const double moduleThickness = 2*(extMon_->module().sensorHalfSize()[2] + extMon_->module().chipHalfSize()[2]);
 
-      const double electricField = std::abs(cond->biasVoltage())/sensorThickness;
+      const double electricField = std::abs(cond->biasVoltage())/moduleThickness;
 
       siProps_.setConditions(cond->temperature(), electricField);
 
@@ -382,7 +384,7 @@ namespace mu2e {
     void ExtMonFNALHitMaker::collectIonization(PixelChargeCollection *pixcharges,
                                                const ExtMonFNALSimHit& hit)
     {
-      const double sensorHalfThickness = extMon_->sensor().halfSize()[2];
+      const double moduleHalfThickness = (extMon_->module().sensorHalfSize()[2] + extMon_->module().chipHalfSize()[2]);
       const double driftSpeed = siProps_.electronDriftMobility() * siProps_.electricField();
 
 
@@ -403,9 +405,9 @@ namespace mu2e {
         for(unsigned icluster=0; icluster<nclusters_; ++icluster) {
           const CLHEP::Hep3Vector pos = icluster*step + hit.localStartPosition();
 
-          // The readout side is at z_local = -(sensor half thickness)
+          // The readout side is at z_local = -(module half thickness)
           // Floating point rounding can give negative values here, protect with max()
-          const double driftDistance = std::max(0., pos.z() + sensorHalfThickness);
+          const double driftDistance = std::max(0., pos.z() + moduleHalfThickness);
 
           const double driftTime = driftDistance/driftSpeed;
 
@@ -419,21 +421,21 @@ namespace mu2e {
           // from the pixel vicinity.  Roughly account for this by adding driftTime.
           const double time = hit.startTime() + icluster*tstep + driftTime;
 
-          addCharge(pixcharges, hit.sensorId(), time, clusterCharge, x_ro, y_ro, hit.simParticle());
+          addCharge(pixcharges, hit.moduleId(), time, clusterCharge, x_ro, y_ro, hit.simParticle());
         }
       }
     }
 
     //================================================================
     void  ExtMonFNALHitMaker::addCharge(PixelChargeCollection *pixcharges,
-                                        ExtMonFNALSensorId sid,
+                                        ExtMonFNALModuleId mid,
                                         double time,
                                         double charge,
                                         double x_ro,
                                         double y_ro,
                                         const art::Ptr<SimParticle>& particle)
     {
-      ExtMonFNALPixelId pix = extMon_->sensor().findPixel(sid, x_ro, y_ro);
+      ExtMonFNALPixelId pix = extMon_->module().findPixel(mid, x_ro, y_ro);
       if(pix != ExtMonFNALPixelId()) {
         (*pixcharges)[pix]
           .push(PixelTimedChargeDeposit(time, charge, particle));
@@ -514,7 +516,7 @@ namespace mu2e {
                                           PixelChargeHistory& ch)
     {
       PixelToTCircuit cap(discriminatorThreshold_, qCalib_, totCalib_, condExtMon_->clockTick());
-      const unsigned iplane = pix.chip().sensor().plane();
+      const unsigned iplane = pix.chip().module().plane();
 
       double t = ch.top().time;
 

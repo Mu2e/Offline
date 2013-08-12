@@ -50,9 +50,7 @@ namespace mu2e {
 
     GeomHandle<ExtMonFNAL::ExtMon> extmon;
 
-    ExtMonFNALPixelIdConverter conv(extmon->up().nplanes() + extmon->dn().nplanes(),
-                                    extmon->sensor(),
-                                    extmon->chip());
+    ExtMonFNALPixelIdConverter conv(*extmon);
 
     const unsigned totalNumberOfPixels = conv.totalNumberOfPixels();
 
