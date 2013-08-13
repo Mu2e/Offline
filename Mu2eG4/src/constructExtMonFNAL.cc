@@ -1,6 +1,6 @@
-// $Id: constructExtMonFNAL.cc,v 1.27 2013/07/30 18:45:00 wieschie Exp $
+// $Id: constructExtMonFNAL.cc,v 1.28 2013/08/13 20:15:50 wieschie Exp $
 // $Author: wieschie $
-// $Date: 2013/07/30 18:45:00 $
+// $Date: 2013/08/13 20:15:50 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -307,7 +307,7 @@ namespace mu2e {
                                     doSurfaceCheck
                                     );
         G4ThreeVector coffset1 = {stack.planes()[iplane].module_xoffset()[imodule] - module.chipHalfSize()[0] - .065 + offset[0], 
-                                  stack.planes()[iplane].module_yoffset()[imodule] + offset[1] + ((imodule == 0 ? 1 : -1)*.835), 
+                                  stack.planes()[iplane].module_yoffset()[imodule] + offset[1] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835), 
                                   stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2]) + offset[2]};
 
         VolumeInfo vchip1 = nestBox(osm.str() + "chip1",
