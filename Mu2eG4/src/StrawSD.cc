@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.40 2013/03/26 23:28:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/26 23:28:23 $
+// $Id: StrawSD.cc,v 1.41 2013/08/14 17:06:52 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/14 17:06:52 $
 //
 // Original author Rob Kutschke
 //
@@ -122,9 +122,11 @@ namespace mu2e {
 
     static G4ThreeVector detectorOrigin = GetTrackerOrigin(touchableHandle);
 
-    //     cout << "Debugging detectorOrigin   " << detectorOrigin  << endl;
-    //     cout << "Debugging det name         " << touchableHandle->GetVolume(2)->GetName() << endl;
-    //     cout << "Debugging det G4 origin    " << cdo  << endl;
+    // this is Geant4 SD verboseLevel
+    if (verboseLevel>2) {
+      cout << __func__ << " detectorOrigin   " << detectorOrigin  << endl;
+      cout << __func__ << " det name         " << touchableHandle->GetVolume(2)->GetName() << endl;
+    }
 
     // Position at start of step point, in world system and in
     // a system in which the center of the tracking detector is the origin.
@@ -135,55 +137,45 @@ namespace mu2e {
 
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
-    //     G4int en = event->GetEventID();
-    //     G4int ti = aStep->GetTrack()->GetTrackID();
-    //     G4int cn = touchableHandle->GetCopyNumber();
-    //     G4int rn = touchableHandle->GetReplicaNumber();
+    G4int en = event->GetEventID();
+    G4int ti = aStep->GetTrack()->GetTrackID();
 
-    //     G4TouchableHistory* theTouchable =
-    //       (G4TouchableHistory*)( aStep->GetPreStepPoint()->GetTouchable() );
+    if (verboseLevel>2) {
 
-    //     cout << "Debugging history depth " <<
-    //       setw(4) << theTouchable->GetHistoryDepth() << endl;
+      G4int cn = touchableHandle->GetCopyNumber();
+      G4int rn = touchableHandle->GetReplicaNumber();
 
-    //     cout << "Debugging replica 0 1 2 " <<
-    //       setw(4) << theTouchable->GetReplicaNumber(0) <<
-    //       setw(4) << theTouchable->GetReplicaNumber(1) <<
-    //       setw(4) << theTouchable->GetReplicaNumber(2) << endl;
+      cout << __func__ << " replica 0 1 2 3 4 " <<
+        setw(4) << touchableHandle->GetReplicaNumber(0) <<
+        setw(4) << touchableHandle->GetReplicaNumber(1) <<
+        setw(4) << touchableHandle->GetReplicaNumber(2) <<
+        setw(4) << touchableHandle->GetReplicaNumber(3) <<
+        setw(4) << touchableHandle->GetReplicaNumber(4) << endl;
 
-    //     cout << "Debugging replica 0 1 2 3 4" <<
-    //       setw(4) << touchableHandle->GetReplicaNumber(0) <<
-    //       setw(4) << touchableHandle->GetReplicaNumber(1) <<
-    //       setw(4) << touchableHandle->GetReplicaNumber(2) <<
-    //       setw(4) << touchableHandle->GetReplicaNumber(3) <<
-    //       setw(4) << touchableHandle->GetReplicaNumber(4) << endl;
+      cout << __func__ << " PV Name Mother Name" <<
+        touchableHandle->GetVolume(0)->GetName() << " " <<
+        touchableHandle->GetVolume(1)->GetName() << " " <<
+        touchableHandle->GetVolume(2)->GetName() << " " <<
+        touchableHandle->GetVolume(3)->GetName() << " " <<
+        touchableHandle->GetVolume(4)->GetName() << endl;
 
-    //     cout << "Debugging PV Name Mother Name" <<
-    //       theTouchable->GetVolume(0)->GetName() << " " <<
-    //       theTouchable->GetVolume(1)->GetName() << " " <<
-    //       theTouchable->GetVolume(2)->GetName() << " " <<
-    //       theTouchable->GetVolume(3)->GetName() << " " <<
-    //       theTouchable->GetVolume(4)->GetName() << endl;
+      cout << __func__ << " hit info: event track copyn replican:        " <<
+        setw(4) << en << " " <<
+        setw(4) << ti << " " <<
+        setw(4) << cn << " " <<
+        setw(4) << rn << endl;
 
-    //     cout << "Debugging PV Name Mother Name" <<
-    //       touchableHandle->GetVolume(0)->GetName() << " " <<
-    //       touchableHandle->GetVolume(1)->GetName() << " " <<
-    //       touchableHandle->GetVolume(2)->GetName() << " " <<
-    //       touchableHandle->GetVolume(3)->GetName() << " " <<
-    //       touchableHandle->GetVolume(4)->GetName() << endl;
-
-    //     cout << "Debugging hit info event track copyn replican: " <<
-    //       setw(4) << en << " " <<
-    //       setw(4) << ti << " " <<
-    //       setw(4) << cn << " " <<
-    //       setw(4) << rn << endl;
+    }
 
     // getting the sector/device number
 
     G4int sdcn = 0;
     if ( _TrackerVersion == 3) {
-      //       cout << "Debugging _nStrawsPerDevice " << _nStrawsPerDevice << endl;
-      //       cout << "Debugging _nStrawsPerSector " << _nStrawsPerSector << endl;
+
+      if (verboseLevel>2) {
+        cout << __func__ << " _nStrawsPerDevice " << _nStrawsPerDevice << endl;
+        cout << __func__ << " _nStrawsPerSector " << _nStrawsPerSector << endl;
+      }
 
       if ( _supportModel == SupportModel::simple ){
         sdcn = touchableHandle->GetCopyNumber(1) +
@@ -203,7 +195,18 @@ namespace mu2e {
 
     }
 
-    //    cout << "Debugging sdcn " << sdcn << endl;
+    if (verboseLevel>2) {
+
+      cout << __func__ << " hit info:   event track sector device straw: " <<
+        setw(4) << en << " " <<
+        setw(4) << ti << " " <<
+        setw(4) << touchableHandle->GetReplicaNumber(2) << " " <<
+        setw(4) << touchableHandle->GetReplicaNumber(3) << " " <<
+        setw(6) << sdcn << endl;
+
+      cout << __func__ << " sdcn " << sdcn << endl;
+
+    }
 
     // We add the hit object to the framework strawHit collection created in produce
 
@@ -222,6 +225,93 @@ namespace mu2e {
                                         step,
                                         endCode
                                         ));
+
+    if (verboseLevel>2) {
+
+      art::ServiceHandle<GeometryService> geom;
+      GeomHandle<TTracker> ttracker;
+      Straw const& straw = ttracker->getStraw( StrawIndex(sdcn) );
+
+      const Device& device = ttracker->getDevice(straw.id().getDevice());
+      const Sector& sector = device.getSector(straw.id().getSector());
+
+      // Note this construction though
+
+      G4ThreeVector mid(straw.getMidPoint().y() - sector.boxOffset().y(),
+                        straw.getMidPoint().z() - sector.boxOffset().z(),
+                        straw.getMidPoint().x() - sector.boxOffset().x());
+
+      // this mid is used in the placement
+
+      G4ThreeVector stro;
+      G4ThreeVector seco;
+      G4ThreeVector devo;
+
+      G4RotationMatrix cumrot; //it is 1
+
+      const size_t idepth = 4;
+      const size_t strd = 1;
+      const size_t secd = 2;
+      const size_t devd = 3;
+
+      // one needs to reconstruct the position of the middle of the
+      // straw starting from the device position and rotation
+      // the rotations are applied to the "next" object
+      // and are cumulative
+
+      for (size_t dd=idepth-1; dd>=1; --dd) {
+        cout << __func__ << " det depth name copy#: " << dd << " " <<
+          touchableHandle->GetVolume(dd)->GetName() << " " <<
+          touchableHandle->GetVolume(dd)->GetCopyNo() << endl;
+
+        // translation
+        G4ThreeVector obtr = touchableHandle->GetVolume(dd)->GetTranslation();
+        const G4RotationMatrix* obrot = touchableHandle->GetVolume(dd+1)->GetRotation();
+
+        if (obrot) cumrot *= obrot->inverse();
+        G4ThreeVector obor = cumrot*obtr;
+
+        if (dd>=strd) stro += obor;
+        if (dd>=secd) seco += obor;
+        if (dd>=devd) devo += obor;
+        cout << __func__ << " det transl, rot: "         << obtr << ", "  << cumrot << endl;
+        cout << __func__ << " det transl, origin, cum: " << obtr << ", "  << obor << ", " << stro << endl;
+      }
+      G4double diffMag = (straw.getMidPoint() - stro).mag();
+      const G4double tolerance = 1.e-10;
+      if (diffMag>tolerance) {
+
+        cout << __func__ << " straw info: event track sector device straw: " <<
+          setw(4) << en << " " <<
+          setw(4) << ti << " " <<
+          setw(4) << straw.id().getSector() << " " <<
+          setw(4) << straw.id().getDevice() << " " <<
+          setw(6) << sdcn << endl;
+
+        cout << __func__ << " straw pos     "
+             << en << " "
+             << ti << " "       <<
+          " sdcn: "             << sdcn <<
+          ", straw.MidPoint "   << straw.getMidPoint() <<
+          ", sector.boxOffset " << sector.boxOffset() <<
+          ", device.origin "    << device.origin() <<
+          " mid: "              << mid <<
+          ", sector.boxRzAngle " << sector.boxRzAngle() <<
+          ", device.rotation "  << device.rotation() <<
+          endl;
+
+        cout << __func__ << " straw pos G4  "
+             << en << " "
+             << ti << " "       <<
+          " sdcn: "             << sdcn <<
+          ", straw.MidPoint "   << stro <<
+          ", sector.boxOffset " << seco <<
+          ", device.origin "    << devo <<
+          ", diff magnitude "   << scientific << diffMag << fixed <<
+          endl;
+
+      }
+    }
 
     // Some debugging tests.
     if ( !_debugList.inList() ) return true;
@@ -250,7 +340,7 @@ namespace mu2e {
     G4ThreeVector pTLocal( preMomLocal.x(), preMomLocal.y(), 0. );
     //G4double angleLocal = dTLocal.angle(pTLocal);
 
-    // This is took big. O(1.e-5 CLHEP::radians) or about 1% of the value. Why?
+    // This is too big. O(1.e-5 CLHEP::radians) or about 1% of the value. Why?
     //G4double diffAngle = angle-angleLocal;
 
     G4ThreeVector localOrigin(0.,0.,0.);
@@ -262,10 +352,8 @@ namespace mu2e {
     // make sure it works with the constructTTrackerv3
     //    int copy = touchableHandle->GetCopyNumber();
     int copy = sdcn;
-    int eventNo = event->GetEventID();
-
-
     /*
+    int eventNo = event->GetEventID();
     // Works for both TTracker.
     printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %10.7f %10.7f\n",
     eventNo,  _collection->size(), copy,
@@ -342,7 +430,7 @@ namespace mu2e {
       }
     }
 
-    //    cout << "Debugging: tracker depth/version: " << td << "/" << _TrackerVersion << endl;
+    verboseLevel>1 && cout << __func__ << " : tracker depth/version: " << td << "/" << _TrackerVersion << endl;
 
     size_t hdepth = touchableHandle->GetHistoryDepth();
 
@@ -352,19 +440,23 @@ namespace mu2e {
 
       if (dd>=td) cdo += touchableHandle->GetVolume(dd)->GetTranslation();
 
-      //       cout << "Debugging: det depth name copy#: " << dd << " " <<
-      //         touchableHandle->GetVolume(dd)->GetName() << " " <<
-      //         touchableHandle->GetVolume(dd)->GetCopyNo() << endl;
+      if (verboseLevel>2) {
 
-      //       G4LogicalVolume* lvp = touchableHandle->GetVolume(dd)->GetLogicalVolume();
-      //       G4int nd = lvp->GetNoDaughters();
-      //       for (G4int d = 0;d!=nd; ++d) {
-      //         cout << "Debugging: daughter: " << lvp->GetDaughter(d)->GetName() << " " <<
-      //           lvp->GetDaughter(d)->GetCopyNo() << endl;
-      //       }
+        cout << __func__ << " det depth name copy#: " << dd << " " <<
+          touchableHandle->GetVolume(dd)->GetName() << " " <<
+          touchableHandle->GetVolume(dd)->GetCopyNo() << endl;
 
-      //       cout << "Debugging det origin: " << touchableHandle->GetVolume(dd)->GetTranslation() <<
-      //         " " << cdo << endl;
+        G4LogicalVolume* lvp = touchableHandle->GetVolume(dd)->GetLogicalVolume();
+        G4int nd = lvp->GetNoDaughters();
+        for (G4int d = 0;d!=nd; ++d) {
+          cout << __func__ << " daughter: " << lvp->GetDaughter(d)->GetName() << " " <<
+            lvp->GetDaughter(d)->GetCopyNo() << endl;
+        }
+
+        cout << __func__ << " det origin: " << touchableHandle->GetVolume(dd)->GetTranslation() <<
+          " " << cdo << endl;
+
+      }
 
     }
 
