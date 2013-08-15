@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.47 2013/08/07 19:26:58 brownd Exp $
+// $Id: TTrackerMaker.cc,v 1.48 2013/08/15 14:16:05 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/08/07 19:26:58 $
+// $Date: 2013/08/15 14:16:05 $
 //
 // Original author Rob Kutschke
 //
@@ -51,8 +51,9 @@ namespace mu2e {
     _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
     _rotationPattern    = config.getInt("ttracker.rotationPattern");
     _spacingPattern     = config.getInt("ttracker.spacingPattern");
-    _flipStation        = config.getBool("ttracker.flipStation");
-
+    _devrot = config.getDouble("ttracker.deviceRotation")*CLHEP::degree;
+  
+    _oddStationRotation   =  config.getDouble("ttracker.oddStationRotation")*CLHEP::degree;
     _zCenter              =  config.getDouble("ttracker.z0")*CLHEP::mm;
     _xCenter              = -config.getDouble("mu2e.solenoidOffset")*CLHEP::mm;
     _envelopeInnerRadius  =  config.getDouble("ttracker.envelopeInnerRadius")*CLHEP::mm;
@@ -61,8 +62,6 @@ namespace mu2e {
     _strawGap             =  config.getDouble("ttracker.strawGap")*CLHEP::mm;
     _deviceSpacing        =  config.getDouble("ttracker.deviceSpacing")*CLHEP::mm;
     _deviceHalfSeparation =  config.getDouble("ttracker.deviceHalfSeparation")*CLHEP::mm;
-// this now comes from the pattern
-//    _deviceRotation       =  config.getDouble("ttracker.deviceRotation")*CLHEP::degree;
 
     _outerSupportRadius   =  config.getDouble("ttracker.outerSupportRadius")*CLHEP::mm;
     _innerSupportRadius   =  config.getDouble("ttracker.innerSupportRadius")*CLHEP::mm;
@@ -159,41 +158,50 @@ namespace mu2e {
 	_sectorZSide.push_back(+1.);
       if(_rotationPattern == 1){
 // cdr geometry, taken from DOC 888, also alternatives 1 and 3 from doc 2799
-	_deviceRotation = 30*CLHEP::degree;
-	_flipPlane = false;
 	// faces overlap by 60 degrees
-
-// currently the values of these angles are restricted to pattern 1, 0 offset,
-// as the G4 code makes assumptions when building that model FIXME!!!
+// Implicitly define the rotations for the even and odd (sequentially) sectors.
 	_sectorBaseRotations.push_back(   0.*CLHEP::degree);
 	_sectorBaseRotations.push_back(  60.*CLHEP::degree);
 	_sectorBaseRotations.push_back(  120.*CLHEP::degree);
 	_sectorBaseRotations.push_back(  180.*CLHEP::degree);
 	_sectorBaseRotations.push_back(  240.*CLHEP::degree);
 	_sectorBaseRotations.push_back(  300.*CLHEP::degree);
-//	_sectorBaseRotations.push_back(   45.*CLHEP::degree);
-//	_sectorBaseRotations.push_back(  105.*CLHEP::degree);
-//	_sectorBaseRotations.push_back(  165.*CLHEP::degree);
-//	_sectorBaseRotations.push_back(  225.*CLHEP::degree);
-//	_sectorBaseRotations.push_back(  285.*CLHEP::degree);
-//	_sectorBaseRotations.push_back(  345.*CLHEP::degree);
-      } else if(_rotationPattern==2 || _rotationPattern==3){
-      // faces overlap by 30 degrees
+	_sectorBaseRotations.push_back(   30.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  90.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  150.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  210.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  270.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  330.*CLHEP::degree);
+		
+      } else if(_rotationPattern==2){
+      	// alternative 2 from DOC 2799
+	// faces overlap by 60 degrees
 	_sectorBaseRotations.push_back(   0.*CLHEP::degree);
 	_sectorBaseRotations.push_back(  90.*CLHEP::degree);
 	_sectorBaseRotations.push_back(  120.*CLHEP::degree);
 	_sectorBaseRotations.push_back(  210.*CLHEP::degree);
 	_sectorBaseRotations.push_back(  240.*CLHEP::degree);
 	_sectorBaseRotations.push_back(  330.*CLHEP::degree);
-	// alternative 2 from DOC 2799
-	if(_rotationPattern==2){
-	  _deviceRotation = 60*CLHEP::degree;
-	  _flipPlane = false;
-	} else {
-	  // variation 4 from DOC 2799
-	  _deviceRotation = 30*CLHEP::degree;
-	  _flipPlane = true;
-	}
+	_sectorBaseRotations.push_back(   60.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  150.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  180.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  270.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  300.*CLHEP::degree);
+     	_sectorBaseRotations.push_back(   30.*CLHEP::degree);
+      } else if(_rotationPattern==3){
+      // faces overlap by 60 degrees, second device 'flipped'
+	_sectorBaseRotations.push_back(   0.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  90.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  120.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  210.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  240.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  330.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  30.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  60.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  150.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  180.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  270.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  300.*CLHEP::degree);
       } else {
 	throw cet::exception("GEOM")
 	  << "Unrecognized rotation pattern in TTrackerMaker. \n";
@@ -358,9 +366,10 @@ namespace mu2e {
 
     double devDeltaZ = chooseDeviceSpacing(idev);
     CLHEP::Hep3Vector origin( 0., 0., _z0+devDeltaZ);
-
-    double phi = chooseDeviceRotation(idev);
-
+    
+    // define the device rotation, indepedent of the sectors.  I believe it's used to number the devices (?)
+    int jdev = idev%2;
+    double phi = jdev == 0 ? 0.0 : _devrot;
     _tt->_devices.push_back(Device(devId, origin, phi));
     Device& dev = _tt->_devices.back();
     dev._sectors.reserve(_sectorsPerDevice);
@@ -497,7 +506,7 @@ namespace mu2e {
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
     // CLHEP::HepRotationZ RZ(_sectorBaseRotations.at(isec));
-    CLHEP::HepRotationZ RZ(sectorRotation(isec,layId.getDeviceId())+ device.rotation());
+    CLHEP::HepRotationZ RZ(sectorRotation(isec,layId.getDeviceId()));
 
     // Unit vector in the wire direction. (nominal is the sector 0 to the right?)
     CLHEP::Hep3Vector unit = RZ*CLHEP::Hep3Vector(0.,1.,0.);
@@ -579,8 +588,8 @@ namespace mu2e {
         << "This code only knows how to do 4 or 6 sectors per device.\n";
     }
 
-    double phi = _tt->getDevice(secId.getDevice()).rotation();
-    CLHEP::HepRotationZ RZ(phi);
+//    double phi = _tt->getDevice(secId.getDevice()).rotation();
+//    CLHEP::HepRotationZ RZ(phi);
 
 
     // manifold objects are not used for now...
@@ -854,7 +863,7 @@ namespace mu2e {
 
     sector._boxRxAngle = 0.;
     sector._boxRyAngle = 0.;
-    sector._boxRzAngle = sectorRotation(isec,dev.id() ) + dev.rotation();
+    sector._boxRzAngle = sectorRotation(isec,dev.id() );
 
     CLHEP::HepRotationZ RZ(sector._boxRzAngle);
 
@@ -1038,22 +1047,6 @@ namespace mu2e {
     return;
 
   } // end TTrackerMaker::computeConstantSectorBoxParams
-
-
-  // Compute the rotation for the given device.
-  double TTrackerMaker::chooseDeviceRotation( int idev ) const{
-    int k = idev%2;
-    int istation = idev/2;
-    if ( k == 0 ) {
-      return 0.;
-    } else {
-      if((!_flipStation) || istation%2==0){ 
-	return _deviceRotation;
-      } else {
-	return 2*M_PI - _deviceRotation;
-      }
-    }
-  } //end TTrackerMaker::chooseDeviceRotation
 
 
   // Compute the spacing for the given device.
@@ -1552,14 +1545,12 @@ namespace mu2e {
   } //end TTrackerMaker::recomputeHalfLengths
   double
   TTrackerMaker::sectorRotation(int isec,int idev) const {
-    int istation = idev/2;
-    if( ( (!_flipStation) && ((!_flipPlane) || idev%2 == 0)) || 
-	( (_flipStation && ((!_flipPlane) && istation%2==0)) || 
-			   (( _flipPlane && istation%2!=0 && idev%2 != 0 )) ) ){
-      return _sectorBaseRotations.at(isec);
-    } else {
-      return 2*M_PI - _sectorBaseRotations.at(isec);
-    }
+    int jdev = idev%2;
+    int ista = (idev/2)%2;
+    int jsec = isec + jdev*_sectorsPerDevice;
+    double phi = _sectorBaseRotations.at(jsec);
+    if(ista==1)phi += _oddStationRotation;
+    return phi;
   }
 
 } // namespace mu2e
