@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.49 2013/04/20 15:29:43 brownd Exp $
+// $Id: KalFitMC.cc,v 1.50 2013/08/15 14:12:55 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/04/20 15:29:43 $
+// $Date: 2013/08/15 14:12:55 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -493,7 +493,7 @@ namespace mu2e
 	  tshinfo._doca = -100.0;
 	tshinfo._exerr = tsh->extErr();
 	tshinfo._penerr = tsh->penaltyErr();
-	tshinfo._t0err = tsh->t0Err();
+	tshinfo._t0err = tsh->t0Err()/tsh->driftVelocity();
 	// MC information	
 	PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
 	tshinfo._mcn = mcptr.size();

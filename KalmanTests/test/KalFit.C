@@ -153,12 +153,12 @@ void KalFitHit (TTree* hits ) {
   TH1F* t0pull = new TH1F("t0pull","hit t0 pull",100,-10,10);
 //  TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
 //      100,500,4000,100,500,4000);
-  hits->Project("t0res","hitt0-mchitt0","_active");
-  hits->Project("t0pull","(hitt0-mchitt0)/hitt0err","_active");
+  hits->Project("t0res","_ht-_mcht","_active");
+  hits->Project("t0pull","(_ht-_mcht)/_t0err","_active");
   tcan->Clear();
   tcan->Divide(2,2);
   tcan->cd(1);
-  hits->Draw("hitt0:mchitt0>>dt0","_active");
+  hits->Draw("_ht:_mcht>>dt0","_active");
   tcan->cd(2);
   t0res->Fit("gaus");
   tcan->cd(3);
@@ -172,14 +172,14 @@ void KalFitHit (TTree* hits ) {
 //  TH2F* pocatd = new TH2F("pocatd","Hit POCA V;true V (mm);POCA V (mm)",
 //      100,-600,600,100,-600,600);
 
-  hits->Project("tdres","dmid-mcdmid","_active");
-  hits->Project("tdpull","(dmid-mcdmid)/dmiderr","_active");
+  hits->Project("tdres","_tddist-_mclen","_active");
+  hits->Project("tdpull","(_tddist-_mclen)/_tdderr","_active");
   tdcan->Clear();
   tdcan->Divide(2,2);
   tdcan->cd(1);
-  hits->Draw("dmid:mcdmid>>dtd","_active");
+  hits->Draw("_tddist:_mclen>>dtd","_active");
   tdcan->cd(2);
-  hits->Draw("hflt:mcdmid>>pocatd","_active");
+//  hits->Draw("_hflt:_mcdmid>>pocatd","_active");
   tdcan->cd(3);
   tdres->Fit("gaus");
   tdcan->cd(4);
