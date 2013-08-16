@@ -331,7 +331,7 @@ namespace mu2e {
 	   for (int ipipe=0;ipipe<nPipes;++ipipe){
 
 	      ostringstream pipename;  pipename<<"CaloPipe" <<idisk<<"_"<<ipipe;
-              std::array<double,5> pipeParam = {pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], 0, 2*pi };
+              std::array<double,5> pipeParam { {pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], 0, 2*pi } };
 
 	      caloPipe[ipipe] = nestTorus(pipename.str(),
                                 	  pipeParam,
