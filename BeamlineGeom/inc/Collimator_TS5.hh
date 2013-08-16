@@ -23,27 +23,17 @@ namespace mu2e {
     CollimatorTS5(double halfZ, CLHEP::Hep3Vector origin) :  
       Collimator( halfZ, origin) {}
  
-    double rIn()         const { return _rIn;         }
-    double rMid1()       const { return _rMid1;       }
-    double rMid2()       const { return _rMid2;       }
-    double rOut()        const { return _rOut;        }
-    double halfLengthU() const { return _halfLengthU; }
-    double halfLengthD() const { return _halfLengthD; }
+    double rIn()        const { return _rIn;        }
+    double rOut()       const { return _rOut;       }
 
     std::string material()    const { return _material;    }
-    std::string absMaterial() const { return _absMaterial; }
 
   private:
     
     double _rIn;
-    double _rMid1;
-    double _rMid2;
     double _rOut;
-    double _halfLengthU;
-    double _halfLengthD;
 
     std::string _material;
-    std::string _absMaterial;
 
 };
 

@@ -35,6 +35,10 @@ namespace mu2e {
     double _halfZ;
     CLHEP::Hep3Vector _origin;
 
+    void adjustOffset( const CLHEP::Hep3Vector& offset ) {
+      _origin=_origin+offset;
+    }
+
 };
 
 }

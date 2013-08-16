@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.24 2013/08/07 20:20:10 knoepfel Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.25 2013/08/16 19:54:33 knoepfel Exp $
 // $Author: knoepfel $
 //
 
@@ -64,7 +64,11 @@ namespace mu2e {
                                                         TransportSolenoid::TSRadialPart::IN)->getRotation();
       Hep3Vector   ts1pos = bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS1,
                                                   TransportSolenoid::TSRadialPart::IN)->getGlobal();
+
       Hep3Vector coll1pos = bg->getTS().getColl1().getLocal();
+
+      cout << " Coll1 pos: " << coll1pos << endl;
+
       Hep3Vector deltaZ1(0,0,coll1HL-vdHL);
 
       vd->addVirtualDetector( VirtualDetectorId::Coll1_In,

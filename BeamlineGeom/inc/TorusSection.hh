@@ -4,6 +4,7 @@
 //
 // Class to represent the transport solenoid
 //
+#include <array>
 #include <memory>
 
 #include "GeomPrimitives/inc/Torus.hh"
@@ -23,7 +24,9 @@ namespace mu2e {
     TorusSection() : 
       _rTorus(0.),_rIn(0.),_rOut(0.),
       _phiBegin(0.),_deltaPhi(0.) 
-    {}
+    {
+      fillData();
+    }
 
 
     TorusSection(double rTorus, double rIn, double rOut, double phi0, double dPhi, 
@@ -31,6 +34,7 @@ namespace mu2e {
       _rTorus(rTorus),_rIn(rIn),_rOut(rOut),
       _phiBegin(phi0),_deltaPhi(dPhi)
     {
+      fillData();
       _origin=origin; // _origin is derived data member; cannot be in initialization list
       _rotation=rotation;
     }
@@ -42,6 +46,7 @@ namespace mu2e {
       _phiBegin(torus.phi0()),
       _deltaPhi(torus.deltaPhi())
     {
+      fillData();
       _origin=torus.originInMu2e(); // _origin is derived data member; cannot be in initialization list
       _rotation=torus.rotation();
     }
@@ -50,11 +55,12 @@ namespace mu2e {
 
     void set(double rTorus, double rIn, double rOut, double phi0, double dPhi, 
              CLHEP::Hep3Vector origin, CLHEP::HepRotation rotation = CLHEP::HepRotation()) {
-      _rTorus=rTorus;
-      _rIn=rIn;
-      _rOut=rOut;
+      _rTorus  =rTorus;
+      _rIn     =rIn;
+      _rOut    =rOut;
       _phiBegin=phi0;
       _deltaPhi=dPhi;
+      fillData();
       _origin=origin;
       _rotation=rotation;
     }
@@ -65,6 +71,8 @@ namespace mu2e {
     double phiStart()    const {return _phiBegin; }
     double deltaPhi()    const {return _deltaPhi; }
 
+    const std::array<double,5>& getParameters() const { return _data; }
+
   private:
 
     // All dimensions in mm.
@@ -74,6 +82,16 @@ namespace mu2e {
 
     double _phiBegin;
     double _deltaPhi;
+
+    std::array<double,5> _data;
+
+    void fillData() {
+      _data[0] = _rIn;
+      _data[1] = _rOut;
+      _data[2] = _rTorus;
+      _data[3] = _phiBegin;
+      _data[4] = _deltaPhi;
+    }
 
 };
 

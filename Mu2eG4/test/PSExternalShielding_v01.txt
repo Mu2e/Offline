@@ -32,8 +32,8 @@ double PSExternalShielding.centerY = 0;
 double PSExternalShielding.centerZ = -5804;
 
 
-bool  PSExternalShielding.visible = true;
-bool  PSExternalShielding.solid = true;
+bool  PSExternalShielding.visible = false;
+bool  PSExternalShielding.solid   = true;
 
 int   PSExternalShielding.verbosityLevel = 1;
 

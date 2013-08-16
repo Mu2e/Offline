@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.55 2013/08/08 19:30:17 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2013/08/08 19:30:17 $
+// $Id: constructVirtualDetectors.cc,v 1.56 2013/08/16 19:54:34 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/08/16 19:54:34 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -110,6 +110,10 @@ namespace mu2e {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  
                << " at " << vdg->getGlobal(vdId) << endl;
         }
+
+        cout << __func__ << "    VD parameters: " << vdParams << endl;
+        cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
                                   vdParams, vacuumMaterial, 0,
                                   vdg->getLocal(vdId),

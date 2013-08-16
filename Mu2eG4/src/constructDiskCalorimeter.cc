@@ -14,6 +14,7 @@
 //       - wrapping is at z=shellThickness in crystal
 //  4. Disk holds the crystals but have dead space, so they are enclosed in a larger disk to simulate the casing material
 
+#include <array>
 #include <iostream>
 #include "CLHEP/Vector/TwoVector.h"
 
@@ -330,7 +331,7 @@ namespace mu2e {
 	   for (int ipipe=0;ipipe<nPipes;++ipipe){
 
 	      ostringstream pipename;  pipename<<"CaloPipe" <<idisk<<"_"<<ipipe;
-	      double pipeParam[5] = {pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], 0, 2*pi };
+              std::array<double,5> pipeParam = {pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], 0, 2*pi };
 
 	      caloPipe[ipipe] = nestTorus(pipename.str(),
                                 	  pipeParam,

@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.56 2013/08/08 16:00:32 dnbrow01 Exp $
-// $Author: dnbrow01 $
-// $Date: 2013/08/08 16:00:32 $
+// $Id: GeometryService_service.cc,v 1.57 2013/08/16 19:54:33 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/08/16 19:54:33 $
 //
 // Original author Rob Kutschke
 //
@@ -12,6 +12,7 @@
 // C++ include files
 #include <iostream>
 #include <typeinfo>
+#include <utility>
 
 // Framework include files
 #include "art/Persistency/Provenance/ModuleDescription.h"
@@ -195,11 +196,9 @@ namespace mu2e {
     addDetector(std::move(tmpPSE2));
 
     // The Z coordinate of the boundary between PS and TS vacua
-    StraightSection const * ts1in = beamline.getTS().getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS1, 
-                                                                                 TransportSolenoid::TSRadialPart::IN );
-    const double vacPS_TS_z = -beamline.getTS().torusRadius() - 
-      2*ts1in->getHalfLength() -
-      2*beamline.getTS().endWallU1_halfLength() ;
+    StraightSection const * ts1vac = beamline.getTS().getTSVacuum<StraightSection>( TransportSolenoid::TSRegion::TS1 );
+    const double vacPS_TS_z = ts1vac->getGlobal().z() - ts1vac->getHalfLength();
+
     addDetector(PSVacuumMaker::make(*_config, ps, pse, vacPS_TS_z));
 
     addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));

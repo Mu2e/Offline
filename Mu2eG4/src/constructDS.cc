@@ -1,9 +1,9 @@
 //
 // Free function to create DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.17 2013/08/07 20:20:10 knoepfel Exp $
+// $Id: constructDS.cc,v 1.18 2013/08/16 19:54:34 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/07 20:20:10 $
+// $Date: 2013/08/16 19:54:34 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -266,6 +266,10 @@ namespace mu2e {
     //   front face, DS1, and TS5
     double ds1Z0     = dsFrontZ0 + ds->frontHalfLength() + ds->vac_halfLengthDs1();
     double ds2Z0     = ds->vac_zLocDs23Split() - ds->vac_halfLengthDs2();
+
+    cout << " DS2 vacuum extent: " 
+         << " [ " << ds2Z0 - ds->vac_halfLengthDs2() << " , " 
+         << ds->vac_zLocDs23Split() << " ] " << endl;
 
     G4ThreeVector ds1Position( dsP.x(), dsP.y(), ds1Z0 );
     G4ThreeVector ds2Position( dsP.x(), dsP.y(), ds2Z0 );

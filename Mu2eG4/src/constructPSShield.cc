@@ -2,6 +2,8 @@
 //
 // Original author Andrei Gaponenko
 
+#include <iostream>
+
 #include "Mu2eG4/inc/constructPSShield.hh"
 
 #include "cetlib/exception.h"
@@ -57,6 +59,11 @@ namespace mu2e {
       VolumeInfo pss("PSShieldShell"+osnum.str(),
                      shell.originInMu2e() - parent.centerInMu2e(),
                      parent.centerInWorld);
+
+      std::cout << pss.name << " : " << std::endl;
+      for ( size_t i = 0 ; i < shell.numZPlanes() ; i++ ) {
+        std::cout << "   Plane loc. in Mu2e: " << shell.originInMu2e().z()+shell.zPlanes()[i] << std::endl;
+      }
 
       pss.solid = psssolid;
       pss.solid->SetName(pss.name);

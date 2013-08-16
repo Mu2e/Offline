@@ -19,7 +19,6 @@
 #include <algorithm>
 #include <map>
 #include <memory>
-#include <type_traits>
 #include <vector>
 
 // cet
@@ -36,10 +35,10 @@ namespace mu2e {
       _rTorus(0.), _rVac(0.)
     {
       // Reserve number of coils
-      for ( unsigned iTS = TSRegion::TS1 ; iTS <= TSRegion::TS5 ; iTS++ )
+      for ( unsigned iTS = TSRegion::TS1 ; iTS <= TSRegion::TS5 ; iTS++ ) 
         _coilMap[ (TSRegion)iTS ].reserve( getNCoils( (TSRegion)iTS ) );
     }
-
+    
     // use compiler-generated copy c'tor, copy assignment, and d'tor
 
     // - only the following enums should be used for the following
@@ -123,6 +122,12 @@ namespace mu2e {
     CollimatorTS3 const& getColl32() const { return _coll32; }
     CollimatorTS5 const& getColl5()  const { return _coll5;  }
 
+    // Vacua
+    template <class T = TSSection>
+    T* getTSVacuum(TSRegion::enum_type i) const {
+      return static_cast<T*>(_vacuumMap.find(i)->second.get() );
+    }
+
     PbarWindow const& getPbarWindow() const { return _pbarWindow; }
 
   protected:
@@ -166,6 +171,9 @@ namespace mu2e {
     CollimatorTS3 _coll31;
     CollimatorTS3 _coll32;
     CollimatorTS5 _coll5;
+
+    // Vacuum map
+    std::map<TSRegion::enum_type,std::unique_ptr<TSSection>> _vacuumMap;
 
     PbarWindow _pbarWindow;   
 

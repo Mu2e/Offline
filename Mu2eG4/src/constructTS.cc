@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.24 2013/08/07 20:20:10 knoepfel Exp $
+// $Id: constructTS.cc,v 1.25 2013/08/16 19:54:34 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/07 20:20:10 $
+// $Date: 2013/08/16 19:54:34 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -15,6 +15,8 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 
 // C++ includes
+#include <array>
+#include <cmath>
 #include <iostream>
 
 // Framework includes
@@ -22,6 +24,7 @@
 
 // Mu2e includes.
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "BeamlineGeom/inc/Collimator_TS1.hh"
 #include "BeamlineGeom/inc/PbarWindow.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -94,16 +97,12 @@ namespace mu2e {
 
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
 
-    const double rTorus   = ts->torusRadius();
-    const double rVac     = ts->innerRadius();
-
     // Build upstream end wall of TS1
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::IN );
 
     CLHEP::Hep3Vector pos( strsec->getGlobal().x(), 
                            strsec->getGlobal().y(), 
-                           strsec->getGlobal().z()-strsec->getHalfLength()-ts->endWallU1_halfLength() );
-  
+                           strsec->getGlobal().z()-strsec->getHalfLength()+ts->endWallU1_halfLength() );
     nestTubs( "TS1UpstreamEndwall",
               TubsParams( ts->endWallU1_rIn(),
                           ts->endWallU1_rOut(),
@@ -125,16 +124,15 @@ namespace mu2e {
       cout << __func__ << " Upstream TS1 endwall at: " << pos << endl;
     }
 
-    // Build TS1.
-    CLHEP::Hep3Vector globalPosition = CLHEP::Hep3Vector(strsec->getGlobal().x(),
-                                                         strsec->getGlobal().y(),
-                                                         strsec->getGlobal().z()-ts->endWallU1_halfLength() );
+    // Build TS1
+    strsec = ts->getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1);
     nestTubs( "TS1Vacuum",
-              TubsParams(0., rVac, 
-                         strsec->getHalfLength() + ts->endWallU1_halfLength() ),
+              TubsParams( strsec->rIn(),
+                          strsec->rOut(),
+                          strsec->getHalfLength() ),
               vacuumMaterial,
               strsec->getRotation(),
-              globalPosition-_hallOriginInMu2e,
+              strsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
               visible,
@@ -145,6 +143,7 @@ namespace mu2e {
               doSurfaceCheck
               );
 
+    strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::IN);
     nestTubs( "TS1InnerCryoShell",
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
@@ -164,8 +163,8 @@ namespace mu2e {
     
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS1(in)  OffsetInMu2e  : " << strsec->getGlobal()   << endl;
-      cout << __func__ << " TS1(in)  Extent        :[ " << strsec->getGlobal().z() - strsec->getHalfLength() + ts->endWallU1_halfLength() <<","  
-           << strsec->getGlobal().z() + strsec->getHalfLength() - ts->endWallU1_halfLength() << "]" << endl;
+      cout << __func__ << " TS1(in)  Extent        :[ " << strsec->getGlobal().z() - strsec->getHalfLength() <<","  
+           << strsec->getGlobal().z() + strsec->getHalfLength() << "]" << endl;
       cout << __func__ << " TS1(in)  rotation      : " << strsec->getRotation() << endl;
     }
 
@@ -216,19 +215,13 @@ namespace mu2e {
               
     if ( verbosityLevel ) {
       cout << __func__ << " Downstream TS1 endwall at: " << pos2 << endl;
-      cout << __func__ << " Donwstream TS1 extent   [: " << pos2.z()-ts->endWallU1_halfLength() << "," << pos2.z() +ts->endWallU1_halfLength() << "]" << endl;
+      cout << __func__ << " Downstream TS1 extent   [: " << pos2.z()-ts->endWallU2_halfLength() << "," << pos2.z() +ts->endWallU2_halfLength() << "]" << endl;
     }
 
     // Build TS2
-    torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS2,TransportSolenoid::TSRadialPart::IN );
-
-    double ts2VacParams[5]   = { 0.0,   rVac, rTorus, 
-                                 torsec->phiStart(), torsec->deltaPhi() };
-    double ts2Cryo1Params[5] = { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), 
-                                 torsec->phiStart(), torsec->deltaPhi() };
-
+    torsec = ts->getTSVacuum<TorusSection>(TransportSolenoid::TSRegion::TS2);
     nestTorus("TS2Vacuum",
-              ts2VacParams,
+              torsec->getParameters(),
               vacuumMaterial,
               torsec->getRotation(),
               torsec->getGlobal()-_hallOriginInMu2e,
@@ -241,6 +234,9 @@ namespace mu2e {
               placePV,
               doSurfaceCheck
               );
+
+    torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS2,TransportSolenoid::TSRadialPart::IN );
+    std::array<double,5> ts2Cryo1Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
 
     nestTorus("TS2InnerCryoShell",
               ts2Cryo1Params,
@@ -258,8 +254,7 @@ namespace mu2e {
               );
 
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS2,TransportSolenoid::TSRadialPart::OUT );
-    double ts2Cryo2Params[5] = { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), 
-                                 torsec->phiStart(), torsec->deltaPhi() };
+    std::array<double,5> ts2Cryo2Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
 
     nestTorus("TS2OuterCryoShell",
               ts2Cryo2Params,
@@ -276,10 +271,10 @@ namespace mu2e {
               doSurfaceCheck
               );
 
-    // Build TS3.
+    // Build TS3
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::IN );
     nestTubs( "TS3Vacuum",
-              TubsParams( 0., rVac, strsec->getHalfLength() ),
+              TubsParams( 0., ts->innerRadius(), strsec->getHalfLength() ),
               vacuumMaterial,
               strsec->getRotation(),
               strsec->getGlobal()-_hallOriginInMu2e,
@@ -333,15 +328,10 @@ namespace mu2e {
       cout << __func__ << " TS3  rotatio      : " << strsec->getRotation() << endl;
     }
 
-    // Build TS4.
-    torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::IN );
-    double ts4VacParams[5]   = { 0.0,   rVac, rTorus, 
-                                 torsec->phiStart(), torsec->deltaPhi() };
-    double ts4Cryo1Params[5] = { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), 
-                                 torsec->phiStart(), torsec->deltaPhi() };
-
+    // Build TS4
+    torsec = ts->getTSVacuum<TorusSection>(TransportSolenoid::TSRegion::TS4);
     nestTorus("TS4Vacuum",
-              ts4VacParams,
+              torsec->getParameters(),
               vacuumMaterial,
               torsec->getRotation(),
               torsec->getGlobal()-_hallOriginInMu2e,
@@ -355,6 +345,8 @@ namespace mu2e {
               doSurfaceCheck
               );
 
+    torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::IN );
+    std::array<double,5> ts4Cryo1Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
     nestTorus("TS4InnerCryoShell",
               ts4Cryo1Params,
               cryoMaterial,
@@ -371,8 +363,7 @@ namespace mu2e {
               );
 
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::OUT );
-    double ts4Cryo2Params[5] = { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), 
-                                 torsec->phiStart(), torsec->deltaPhi() };
+    std::array<double,5> ts4Cryo2Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
 
     nestTorus("TS4OuterCryoShell",
               ts4Cryo2Params,
@@ -392,11 +383,10 @@ namespace mu2e {
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::IN );    
     CLHEP::Hep3Vector globalVac5Position = CLHEP::Hep3Vector(strsec->getGlobal().x(),
                                                              strsec->getGlobal().y(),
-                                                             strsec->getGlobal().z()+ts->endWallD_halfLength() );
+                                                             strsec->getGlobal().z() );
 
     nestTubs( "TS5Vacuum",
-              TubsParams( 0., rVac, 
-                          strsec->getHalfLength()+ts->endWallD_halfLength() ),
+              TubsParams( 0., ts->innerRadius(), strsec->getHalfLength() ),
               vacuumMaterial,
               strsec->getRotation(),
               globalVac5Position-_hallOriginInMu2e,
@@ -448,13 +438,13 @@ namespace mu2e {
     
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS5  OffsetInMu2e : " << strsec->getGlobal()   << endl;
-      cout << __func__ << " TS5  rotatio      : " << strsec->getRotation() << endl;
+      cout << __func__ << " TS5  rotation     : " << strsec->getRotation() << endl;
     }
 
     // Build downstream end wall of TS5
     CLHEP::Hep3Vector pos3( strsec->getGlobal().x(), 
                             strsec->getGlobal().y(), 
-                            strsec->getGlobal().z()+strsec->getHalfLength()+ts->endWallD_halfLength() );
+                            strsec->getGlobal().z()+strsec->getHalfLength()-ts->endWallD_halfLength() );
   
     nestTubs( "TS5DownstreamEndwall",
               TubsParams( ts->endWallD_rIn(),
@@ -574,6 +564,21 @@ namespace mu2e {
 
     G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
 
+    CLHEP::Hep3Vector parentPos    = _helper->locateVolInfo("TS1Vacuum").centerInWorld;
+
+    std::cout << " Parent     position: " << parentPos << std::endl;
+    std::cout << " Collimator position: " << coll1.getLocal() + parentPos << std::endl;
+    std::cout << " Collimator extent  : { " 
+              << coll1.getLocal().z() + parentPos.z() - (coll1.halfLength() - 2.*vdHalfLength )
+              << " , " 
+              << coll1.getLocal().z() + parentPos.z() + (coll1.halfLength() - 2.*vdHalfLength )
+              << " ] " << std::endl;
+
+    // -- Offset of Collimator specified wrt TS1 straight section
+    // -- However, it's nested in TS1 Vacuum, whose position does not
+    // -- coincide with TS1 cryostat.  Must add offset.
+
+
     nestCons( "Coll11",
               coll1Param1,
               findMaterialOrThrow( coll1.material1() ),
@@ -608,7 +613,7 @@ namespace mu2e {
     
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS1  OffsetInMu2e    : " << ts1in->getGlobal()       << endl;
-      cout << __func__ << " Coll5 local offset   : " << ts.getColl5().getLocal() << endl;
+      cout << __func__ << " Coll1 local offset   : " << ts.getColl1().getLocal() << endl;
       cout << __func__ << " TS1  Rotation        : " << ts1in->getRotation()     << endl;
     }
 
@@ -704,31 +709,6 @@ namespace mu2e {
 
     // Place collimator 5
 
-    if ( coll5.rOut() > ts.innerRadius() || 
-         coll5.rMid2()  > coll5.rOut() - 2.*vdHalfLength || 
-         coll5.rMid1()  >= coll5.rMid2() || 
-         coll5.rIn() > coll5.rMid1() ||
-         coll5.rIn() < 0.0 ) {
-
-      throw cet::exception("GEOM")<< " constructTS: wrong coll5 radii: " 
-                                  << "\n rVac             : " << ts.innerRadius()
-                                  << "\n coll5OuterRadius : " << coll5.rOut()
-                                  << "\n coll5MidRadius2  : " << coll5.rMid2()
-                                  << "\n coll5MidRadius1  : " << coll5.rMid1()
-                                  << "\n coll5InnerRadiu  : " << coll5.rIn()
-                                  << "\n";
-    }
-
-    if ( coll5.halfLengthU() < 0.0 || coll5.halfLengthD() < 0.0 ||
-         coll5.halfLengthU() + coll5.halfLengthD() > coll5.halfLength() - 2.*vdHalfLength) {
-
-      throw cet::exception("GEOM")<< " constructTS: wrong coll5 longitudinal params " 
-                                  << "\n coll5HalfLength   : " << coll5.halfLength()
-                                  << "\n coll5HalfLengthU  : " << coll5.halfLengthU()
-                                  << "\n coll5HalfLengthD  : " << coll5.halfLengthD()
-                                  << "\n";
-    }
-
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS5  OffsetInMu2e  : " << ts5in->getGlobal()   << endl;
       cout << __func__ << " Coll5 local offset : " << coll5.getLocal()             << endl;
@@ -767,150 +747,8 @@ namespace mu2e {
                                      placePV,
                                      doSurfaceCheck
                                      );
-
-    // decide if we need to add absorber parts
-
-    if ( coll5.halfLengthD() > 0.0 ) {
-      
-      // + downstream absorber
-      
-      CLHEP::Hep3Vector coll5AbsorberOffsetInColl5 = 
-        CLHEP::Hep3Vector (0.0, 0.0, coll5.halfLength() - 2.*vdHalfLength - coll5.halfLengthD());
-
-      CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
-        ( ( ts5in->getRotation() != 0x0 ) ?
-          *(ts5in->getRotation()) * coll5AbsorberOffsetInColl5 :
-          coll5AbsorberOffsetInColl5 );
-
-      Tube coll5DAbsParam(coll5.absMaterial(),
-                          coll5AbsorberOffsetInMu2e,
-                          coll5.rIn(),
-                          coll5.rOut() - 2.*vdHalfLength,
-                          coll5.halfLengthD());
-
-      nestTubs( "coll5DAbsorber",
-                coll5DAbsParam.getTubsParams(),
-                findMaterialOrThrow(coll5DAbsParam.materialName()),
-                0,
-                coll5AbsorberOffsetInColl5,
-                coll5Info,
-                0,
-                visible,
-                G4Color::Gray(),
-                solid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
-                );
-    }
-
-    if ( coll5.halfLengthU() > 0.0 ) {
-
-      // + upstream absorber
     
-      CLHEP::Hep3Vector coll5AbsorberOffsetInColl5 = 
-        CLHEP::Hep3Vector (0.0, 0.0, - coll5.halfLength() + 2.*vdHalfLength + coll5.halfLengthU());
-
-      CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
-        ( ( ts5in->getRotation() != 0x0 ) ?
-          *(ts5in->getRotation()) * coll5AbsorberOffsetInColl5 :
-          coll5AbsorberOffsetInColl5 );
-
-      Tube coll5AbsParam(coll5.absMaterial(),
-                         coll5AbsorberOffsetInMu2e,
-                         coll5.rIn(),
-                         coll5.rOut() - 2.*vdHalfLength,
-                         coll5.halfLengthU());
-
-      nestTubs( "coll5UAbsorber",
-                coll5AbsParam.getTubsParams(),
-                findMaterialOrThrow(coll5AbsParam.materialName()),
-                0,
-                coll5AbsorberOffsetInColl5,
-                coll5Info,
-                0,
-                visible,
-                G4Color::Gray(),
-                solid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
-                );
-    }
-
-    if ( coll5.rMid1() > coll5.rIn() ) {
-
-      // + "inner radius" absorber
-    
-      CLHEP::Hep3Vector coll5AbsorberOffsetInColl5 =
-        CLHEP::Hep3Vector (0.0, 0.0,
-                           coll5.halfLengthU() - coll5.halfLengthD());
-
-      CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
-        ( ( ts5in->getRotation() != 0x0 ) ?
-          *(ts5in->getRotation()) * coll5AbsorberOffsetInColl5 :
-          coll5AbsorberOffsetInColl5 );
-
-      Tube coll5AbsParam(coll5.absMaterial(),
-                         coll5AbsorberOffsetInMu2e,
-                         coll5.rIn(),
-                         coll5.rMid1(),
-                         coll5.halfLength() - 2.*vdHalfLength - 
-                         coll5.halfLengthD() - coll5.halfLengthU());
-
-      nestTubs( "coll5IAbsorber",
-                coll5AbsParam.getTubsParams(),
-                findMaterialOrThrow(coll5AbsParam.materialName()),
-                0,
-                coll5AbsorberOffsetInColl5,
-                coll5Info,
-                0,
-                visible,
-                G4Color::Gray(),
-                solid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
-                );
-    }
-
-    if ( coll5.rMid2() < coll5.rOut() - 2.*vdHalfLength) {
-
-      // + "outer radius" absorber
-    
-      CLHEP::Hep3Vector coll5AbsorberOffsetInColl5 =
-        CLHEP::Hep3Vector (0.0, 0.0,
-                           coll5.halfLengthU() - coll5.halfLengthD());
-
-      CLHEP::Hep3Vector coll5AbsorberOffsetInMu2e = coll5OffsetInMu2e +
-        ( ( ts5in->getRotation() != 0x0 ) ?
-          *(ts5in->getRotation()) * coll5AbsorberOffsetInColl5 :
-          coll5AbsorberOffsetInColl5 );
-
-      Tube coll5AbsParam(coll5.absMaterial(),
-                         coll5AbsorberOffsetInMu2e,
-                         coll5.rMid2(),
-                         coll5.rOut() - 2.*vdHalfLength,
-                         coll5.halfLength() - 2.*vdHalfLength - 
-                         coll5.halfLengthD() - coll5.halfLengthU());
-
-      nestTubs( "coll5OAbsorber",
-                coll5AbsParam.getTubsParams(),
-                findMaterialOrThrow(coll5AbsParam.materialName()),
-                0,
-                coll5AbsorberOffsetInColl5,
-                coll5Info,
-                0,
-                visible,
-                G4Color::Gray(),
-                solid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
-                );
-    }
   }
-  
   
   //__________________________________
   //

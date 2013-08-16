@@ -2,9 +2,9 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.18 2013/08/07 20:20:07 knoepfel Exp $
+// $Id: BeamlineMaker.cc,v 1.19 2013/08/16 19:54:33 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/07 20:20:07 $
+// $Date: 2013/08/16 19:54:33 $
 //
 // Original author Peter Shanahan
 //                 Kyle Knoepfel (significant updates)
@@ -40,6 +40,7 @@ namespace mu2e {
     BuildTSCryostat   (c, res.get() );
     BuildTSCoils      (c, res.get() );
     BuildTSCollimators(c, &res->_ts );
+    BuildTSVacua      (c, &res->_ts );
     BuildPbarWindow   (c, &res->_ts );
     return res;
   }
@@ -50,31 +51,31 @@ namespace mu2e {
 
   void BeamlineMaker::BuildTSCryostat(const SimpleConfig& c, Beamline* bl ){
 
-    TransportSolenoid & ts ( bl->_ts );
+    TransportSolenoid & ts = bl->_ts;
     ts._rTorus = c.getDouble("ts.rTorus",0.);
     ts._rVac   = c.getDouble("ts.rVac",0.); 
     ts._material = c.getString("ts.materialName");
     ts._insideMaterial = c.getString("ts.insideMaterialName");
 
     // - end wall parameters
-    ts._rIn_endWallU1 = c.getDouble("ts.tsUendWall1.rIn",0.); 
+    ts._rIn_endWallU1 = c.getDouble("ts.tsUendWall1.rIn",c.getDouble("ts.ts1in.rOut") ); 
     ts._rIn_endWallU2 = c.getDouble("ts.tsUendWall2.rIn",0.); 
-    ts._rIn_endWallD  = c.getDouble("ts.tsDendWall.rIn", ts.innerRadius() );  
+    ts._rIn_endWallD  = c.getDouble("ts.tsDendWall.rIn", c.getDouble("ts.ts5in.rOut") );  
 
-    ts._rOut_endWallU1 = c.getDouble("ts.tsUendWall1.rOut",0.); 
+    ts._rOut_endWallU1 = c.getDouble("ts.tsUendWall1.rOut",c.getDouble("ts.ts1out.rIn") ); 
     ts._rOut_endWallU2 = c.getDouble("ts.tsUendWall2.rOut",0.); 
-    ts._rOut_endWallD  = c.getDouble("ts.tsDendWall.rOut",0.);  
+    ts._rOut_endWallD  = c.getDouble("ts.tsDendWall.rOut", c.getDouble("ts.ts5out.rIn") );  
 
-    ts._halfLength_endWallU1 = c.getDouble("ts.tsUendWall1.halfLength",0.); 
-    ts._halfLength_endWallU2 = c.getDouble("ts.tsUendWall2.halfLength",0.); 
-    ts._halfLength_endWallD  = c.getDouble("ts.tsDendWall.halfLength",0.);  
+    ts._halfLength_endWallU1 = c.getDouble("ts.tsUendWall1.halfLength"); 
+    ts._halfLength_endWallU2 = c.getDouble("ts.tsUendWall2.halfLength"); 
+    ts._halfLength_endWallD  = c.getDouble("ts.tsDendWall.halfLength" );  
 
     double ts1HalfLength = c.getDouble("ts.ts1.halfLength");
     double ts3HalfLength = bl->solenoidOffset() - ts.torusRadius();
     double ts5HalfLength = c.getDouble("ts.ts5.halfLength");
 
-    double ts1zOffset    = (-ts.torusRadius()-ts1HalfLength+ts.endWallU1_halfLength());
-    double ts5zOffset    = ( ts.torusRadius()+ts5HalfLength-ts.endWallD_halfLength() );
+    double ts1zOffset    = (-ts.torusRadius()-ts1HalfLength );
+    double ts5zOffset    = ( ts.torusRadius()+ts5HalfLength );
 
     // Typedefs for easier use
     typedef TransportSolenoid::TSRegion::enum_type     tsReg_enum;
@@ -92,31 +93,31 @@ namespace mu2e {
     const std::map<unsigned,Tube> straightSectionParams = {
       // Inner straight sections
       { MapIndex(tsReg_enum::TS1,tsRad_enum::IN ), Tube(ts.innerRadius(),
-                                                        c.getDouble("ts.ts1in.rOut",0.),
-                                                        ts1HalfLength - ts.endWallU1_halfLength(),
+                                                        c.getDouble("ts.ts1in.rOut"),
+                                                        ts1HalfLength,
                                                         CLHEP::Hep3Vector( bl->solenoidOffset(),0.0,ts1zOffset) ) },                                       
       { MapIndex(tsReg_enum::TS3,tsRad_enum::IN ), Tube(ts.innerRadius(),
-                                                        c.getDouble("ts.ts3in.rOut",0.),
+                                                        c.getDouble("ts.ts3in.rOut"),
                                                         ts3HalfLength,
                                                         CLHEP::Hep3Vector(),
                                                         CLHEP::HepRotation(CLHEP::HepRotationY(90.0*CLHEP::degree)) ) },
       { MapIndex(tsReg_enum::TS5,tsRad_enum::IN ), Tube(ts.innerRadius(),
-                                                        c.getDouble("ts.ts5in.rOut",0.),
-                                                        ts5HalfLength - ts.endWallD_halfLength(),
+                                                        c.getDouble("ts.ts5in.rOut"),
+                                                        ts5HalfLength,
                                                         CLHEP::Hep3Vector(-bl->solenoidOffset(),0.0,ts5zOffset) ) },
       // Outer straight sections
-      { MapIndex(tsReg_enum::TS1,tsRad_enum::OUT), Tube(c.getDouble("ts.ts1out.rIn",0.),                                                   
-                                                        c.getDouble("ts.ts1out.rOut",0.),                                                  
-                                                        ts1HalfLength - ts.endWallU1_halfLength() - ts.endWallU2_halfLength(),             
+      { MapIndex(tsReg_enum::TS1,tsRad_enum::OUT), Tube(c.getDouble("ts.ts1out.rIn"),                                                   
+                                                        c.getDouble("ts.ts1out.rOut"),                                                  
+                                                        ts1HalfLength - ts.endWallU2_halfLength(),             
                                                         CLHEP::Hep3Vector( bl->solenoidOffset(),0.0,ts1zOffset-ts.endWallU2_halfLength() ) ) },
-      { MapIndex(tsReg_enum::TS3,tsRad_enum::OUT), Tube(c.getDouble("ts.ts3out.rIn",0.),                            
-                                                        c.getDouble("ts.ts3out.rOut",0.),                           
+      { MapIndex(tsReg_enum::TS3,tsRad_enum::OUT), Tube(c.getDouble("ts.ts3out.rIn"),                            
+                                                        c.getDouble("ts.ts3out.rOut"),                           
                                                         ts3HalfLength,                                              
                                                         CLHEP::Hep3Vector(),                                        
                                                         CLHEP::HepRotation(CLHEP::HepRotationY(90.0*CLHEP::degree)) ) },
-      { MapIndex(tsReg_enum::TS5,tsRad_enum::OUT), Tube(c.getDouble("ts.ts5out.rIn",0.),                        
-                                                        c.getDouble("ts.ts5out.rOut",0.),                       
-                                                        ts5HalfLength - ts.endWallD_halfLength(),               
+      { MapIndex(tsReg_enum::TS5,tsRad_enum::OUT), Tube(c.getDouble("ts.ts5out.rIn"),                        
+                                                        c.getDouble("ts.ts5out.rOut"),                       
+                                                        ts5HalfLength,               
                                                         CLHEP::Hep3Vector(-bl->solenoidOffset(),0.0,ts5zOffset) ) },
     };
 
@@ -127,26 +128,26 @@ namespace mu2e {
       // Inner torus sections
       { MapIndex(tsReg_enum::TS2,tsRad_enum::IN ), Torus( ts.torusRadius(),                                                         
                                                           ts.innerRadius(),                                                         
-                                                          c.getDouble("ts.ts2in.rOut",0.),                                          
+                                                          c.getDouble("ts.ts2in.rOut"),                                          
                                                           1.5*CLHEP::pi, CLHEP::halfpi,                                             
                                                           CLHEP::Hep3Vector( ts3HalfLength, 0.,-ts.torusRadius() ),
                                                           CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree))               ) },     
       { MapIndex(tsReg_enum::TS4,tsRad_enum::IN ), Torus( ts.torusRadius(),                                                         
                                                           ts.innerRadius(),                                                         
-                                                          c.getDouble("ts.ts4in.rOut",0.),                                          
+                                                          c.getDouble("ts.ts4in.rOut"),                                          
                                                           CLHEP::halfpi, CLHEP::halfpi,                                             
                                                           CLHEP::Hep3Vector( -ts3HalfLength, 0.,ts.torusRadius() ),
                                                           CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree))               ) },
       // Outer torus sections
       { MapIndex(tsReg_enum::TS2,tsRad_enum::OUT), Torus( ts.torusRadius(),                                                         
-                                                          c.getDouble("ts.ts2out.rIn",0.),                                          
-                                                          c.getDouble("ts.ts2out.rOut",0.),                                         
+                                                          c.getDouble("ts.ts2out.rIn"),                                          
+                                                          c.getDouble("ts.ts2out.rOut"),                                         
                                                           1.5*CLHEP::pi, CLHEP::halfpi,                                             
                                                           CLHEP::Hep3Vector( ts3HalfLength, 0.,-ts.torusRadius() ),
                                                           CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree))               ) },
       { MapIndex(tsReg_enum::TS4,tsRad_enum::OUT), Torus( ts.torusRadius(),                                                         
-                                                          c.getDouble("ts.ts4out.rIn",0.),                                          
-                                                          c.getDouble("ts.ts4out.rOut",0.),                                         
+                                                          c.getDouble("ts.ts4out.rIn"),                                          
+                                                          c.getDouble("ts.ts4out.rOut"),                                         
                                                           CLHEP::halfpi, CLHEP::halfpi,                                             
                                                           CLHEP::Hep3Vector( -ts3HalfLength, 0.,ts.torusRadius() ),
                                                           CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree))               ) },
@@ -182,7 +183,7 @@ namespace mu2e {
 
   void BeamlineMaker::BuildTSCoils (const SimpleConfig& c, Beamline* bl ) {
 
-    TransportSolenoid * ts ( &bl->_ts );
+    TransportSolenoid * ts = &bl->_ts;
 
     ts->_coilMaterial = c.getString("ts.coils.material");
 
@@ -227,10 +228,10 @@ namespace mu2e {
     double coll5HalfLength = c.getDouble("ts.coll5.halfLength");
     double coll3Hole       = c.getDouble("ts.coll3.hole");
 
-    CollimatorTS1 & coll1  ( ts->_coll1  );
-    CollimatorTS3 & coll31 ( ts->_coll31 );
-    CollimatorTS3 & coll32 ( ts->_coll32 );
-    CollimatorTS5 & coll5  ( ts->_coll5  );
+    CollimatorTS1 & coll1  = ts->_coll1 ;
+    CollimatorTS3 & coll31 = ts->_coll31;
+    CollimatorTS3 & coll32 = ts->_coll32;
+    CollimatorTS5 & coll5  = ts->_coll5 ;
 
     coll1 .set(coll1HalfLength,CLHEP::Hep3Vector(0.,0.,c.getDouble("ts.coll1.sOffset" ,0.)));
     coll31.set(coll3HalfLength,CLHEP::Hep3Vector(0.,0.,c.getDouble("ts.coll31.sOffset",0.)-coll3HalfLength-coll3Hole/2));
@@ -254,17 +255,68 @@ namespace mu2e {
 
     // TS5
     coll5._rIn         = c.getDouble("ts.coll5.innerRadius");
-    coll5._rMid1       = c.getDouble("ts.coll5.midRadius1");
-    coll5._rMid2       = c.getDouble("ts.coll5.midRadius2");
     coll5._rOut        = c.getDouble("ts.coll5.outerRadius");
-    coll5._halfLengthU = c.getDouble("ts.coll5.halfLengthU");
-    coll5._halfLengthD = c.getDouble("ts.coll5.halfLengthD");
-
     coll5._material    = c.getString("ts.coll5.materialName");
-    coll5._absMaterial = c.getString("ts.coll5.absorberMaterialName");
 
   }
 
+  void BeamlineMaker::BuildTSVacua(const SimpleConfig& c, TransportSolenoid* ts ) {
+
+    typedef TransportSolenoid::TSRegion::enum_type     tsReg_enum;
+    typedef TransportSolenoid::TSRadialPart::enum_type tsRad_enum;
+
+    const StraightSection * ts1 = ts->getTSCryo<StraightSection>(tsReg_enum::TS1,tsRad_enum::IN);
+    const StraightSection * ts3 = ts->getTSCryo<StraightSection>(tsReg_enum::TS3,tsRad_enum::IN);
+    const StraightSection * ts5 = ts->getTSCryo<StraightSection>(tsReg_enum::TS5,tsRad_enum::IN);
+
+    // Figure things out for TS1, which is special
+    CLHEP::Hep3Vector ts1VacPos = ts1->getGlobal();
+    const double zLocCryoEdge   = ts1->getGlobal().z()-ts1->getHalfLength();
+    const double zLocCollEdge   = ts->getColl1().getLocal().z()+ts1->getGlobal().z()-ts->getColl1().halfLength();
+    const double zVacExtension  = std::abs( zLocCollEdge - zLocCryoEdge );
+
+    const CLHEP::Hep3Vector vacOffset( 0., 0., -zVacExtension*0.5 );
+    ts1VacPos = ts1VacPos + vacOffset;
+    
+    // Adjust offset of coll1 to be wrt TS1Vacuum (eventual parent
+    // volume, not wrt TS1 cryostat)
+    ts->_coll1.adjustOffset( -vacOffset );
+
+    // Vacuum map parameters - straight sections
+    const std::map<unsigned,Tube> straightSectionParams = {
+      { tsReg_enum::TS1, Tube(0., ts->innerRadius(), ts1->getHalfLength()+zVacExtension*0.5, ts1VacPos ) },
+      { tsReg_enum::TS3, Tube(0., ts->innerRadius(), ts3->getHalfLength(), ts3->getGlobal(), CLHEP::HepRotation(CLHEP::HepRotationY(90.0*CLHEP::degree)) ) },
+      { tsReg_enum::TS5, Tube(0., ts->innerRadius(), ts5->getHalfLength(), ts5->getGlobal() ) }
+     };
+
+    // Vacuum map parameters - torus sections
+    const std::map<unsigned,Torus> torusSectionParams = {
+      { tsReg_enum::TS2, Torus( ts->torusRadius(), 0., ts->innerRadius(),                                                         
+                                1.5*CLHEP::pi, CLHEP::halfpi,                                             
+                                CLHEP::Hep3Vector( ts3->getHalfLength(), 0.,-ts->torusRadius() ),
+                                CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree))               ) },     
+      { tsReg_enum::TS4, Torus( ts->torusRadius(), 0., ts->innerRadius(),                                                         
+                                CLHEP::halfpi, CLHEP::halfpi,                                             
+                                CLHEP::Hep3Vector( -ts3->getHalfLength(), 0.,ts->torusRadius() ),
+                                CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree))               ) }
+    }; 
+
+    // Set vacuum map - straight sections
+    for ( unsigned iTS = tsReg_enum::TS1 ; iTS <= tsReg_enum::TS5 ; iTS=iTS+2 ) {
+      auto its    = (tsReg_enum)iTS;
+      auto straightParam = straightSectionParams.find( its );
+      ts->_vacuumMap[its] = std::unique_ptr<TSSection>( new StraightSection ( straightParam->second ) );
+    } 
+    
+    // Set cryo map - torus sections
+    for ( unsigned iTS = tsReg_enum::TS2 ; iTS <= tsReg_enum::TS4 ; iTS=iTS+2 ) {
+      auto its = (tsReg_enum)iTS;
+      auto torusParam    = torusSectionParams.find( its );
+      ts->_vacuumMap[its] = std::unique_ptr<TSSection>( new TorusSection ( torusParam->second ) );
+    } 
+    
+  }
+  
   void BeamlineMaker::BuildPbarWindow(const SimpleConfig& c, TransportSolenoid* ts){
 
     PbarWindow & pbarWindow ( ts->_pbarWindow );
