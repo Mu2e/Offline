@@ -1,10 +1,23 @@
-  $Id: v4_0_0.txt,v 1.18 2013/08/14 17:12:08 genser Exp $
+  $Id: v4_0_0.txt,v 1.19 2013/08/18 03:13:03 genser Exp $
   $Author: genser $
-  $Date: 2013/08/14 17:12:08 $
+  $Date: 2013/08/18 03:13:03 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v4_0_0
+
+21) Aug 17, 2013, genser
+    Added, inactive under most debug levels, debugging flag/code/printout to 
+    TTrackerMaker and StrawSD; made StrawSD code more cositent
+    Corrected constructTTrackerv3.cc to allow for even more general
+    configurations (should not affect the current one)
+
+    Modified:
+      Mu2eG4/inc/StrawSD.hh
+      Mu2eG4/src/StrawSD.cc
+      Mu2eG4/src/constructTTrackerv3.cc
+      TTrackerGeom/inc/TTrackerMaker.hh
+      TTrackerGeom/src/TTrackerMaker.cc
 
 20) Aug 14, 2013, genser
     Added, inactive under most debug levels, debugging code/printout to StrawSD.cc
