@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.48 2013/08/15 14:16:05 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/08/15 14:16:05 $
+// $Id: TTrackerMaker.cc,v 1.49 2013/08/18 03:07:27 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/18 03:07:27 $
 //
 // Original author Rob Kutschke
 //
@@ -40,10 +40,70 @@ namespace mu2e {
   TTrackerMaker::TTrackerMaker( SimpleConfig const& config){
     parseConfig(config);
     buildIt( );
+
+    // print straw layout for debbugging pourposes
+
+    if (_verbosityLevel>2) {
+
+
+      int idev = -1;
+      int isec = -1;
+      int ilay = -1;
+      double iang = -36000;
+
+      size_t nstraws = (_tt->_allStraws).size();
+      for (size_t istr=0; istr!=nstraws; ++istr) {
+
+        const Straw& straw = _tt->getStraw(StrawIndex(istr));
+
+        int cdev = straw.id().getDevice();
+        int csec = straw.id().getSector();
+        int clay = straw.id().getLayer();
+
+        const Device& device = _tt->getDevice(cdev);
+        const Sector& sector = device.getSector(csec);
+        const Layer&  layer  = sector.getLayer(clay);
+
+        size_t nStrawsPerSector = sector.nLayers()  * layer.nStraws();
+        size_t nStrawsPerDevice = device.nSectors() * nStrawsPerSector;
+
+        double cang = sector.boxRzAngle()/M_PI*180.;
+        double dang = device.rotation()/M_PI*180.;
+        double sroz = (sector.boxOffset() - device.origin()).z();
+
+        size_t isecf = nStrawsPerSector*csec + nStrawsPerDevice*cdev;
+ 
+        cout << __func__ << " Straw "
+             << fixed << setw(6) << istr 
+             << " secfloor " << setw(6) << isecf << " "
+             << straw.id() 
+             << " sector rotation: " << cang
+             << " origin " << sector.boxOffset()
+             << " device rotation: " << dang
+             << " origin " << device.origin()
+             << " sec rel origin z " << sroz;
+
+        if (isec>csec && idev==cdev) cout << " <--S";
+        if (iang>cang && idev==cdev) cout << " <--A";
+        if (ilay>clay && isec==csec) cout << " <--L";
+        if ((csec%2 == 0 && sroz>0.) || (csec%2 != 0 && sroz<0.)) cout << " <--Z";
+        if (idev!=cdev) idev=cdev;
+        if (isec!=csec) isec=csec;
+        if (ilay!=clay) ilay=clay;
+
+        
+
+        cout << endl;
+
+      }
+
+    }
+
   }
 
   void TTrackerMaker::parseConfig( const SimpleConfig& config ){
 
+    _verbosityLevel     = config.getInt("ttracker.verbosityLevel",0);
     _numDevices         = config.getInt("ttracker.numDevices");
     _sectorsPerDevice   = config.getInt("ttracker.sectorsPerDevice");
     _layersPerSector    = config.getInt("ttracker.layersPerSector");

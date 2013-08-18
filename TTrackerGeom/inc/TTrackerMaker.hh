@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.20 2013/08/15 14:16:05 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/08/15 14:16:05 $
+// $Id: TTrackerMaker.hh,v 1.21 2013/08/18 03:07:27 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/18 03:07:27 $
 //
 // Original author Rob Kutschke
 //
@@ -87,6 +87,8 @@ namespace mu2e {
 
     // Some final self-consistency checks.
     void finalCheck();
+
+    int    _verbosityLevel;
 
     // Basic parameters needed to describe the TTracker.
     int    _numDevices;                  // Number of devices.
