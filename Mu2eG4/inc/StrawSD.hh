@@ -3,9 +3,9 @@
 //
 // Define a sensitive detector for Straws.
 //
-// $Id: StrawSD.hh,v 1.16 2013/01/07 04:05:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/01/07 04:05:00 $
+// $Id: StrawSD.hh,v 1.17 2013/08/18 03:04:50 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/18 03:04:50 $
 //
 // Original author Rob Kutschke
 //
@@ -41,6 +41,7 @@ namespace mu2e {
     int _TrackerVersion;
 
     SupportModel _supportModel;
+    int _verbosityLevel;
 
   };
 
