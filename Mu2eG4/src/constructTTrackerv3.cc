@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.31 2013/08/09 01:37:41 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.32 2013/08/18 03:08:20 genser Exp $
 // $Author: genser $
-// $Date: 2013/08/09 01:37:41 $
+// $Date: 2013/08/18 03:08:20 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -111,7 +111,7 @@ namespace mu2e{
       int oldWidth = cout.width(newWidth);
       std::ios::fmtflags oldFlags = cout.flags();
       cout.setf(std::ios::fixed,std::ios::floatfield);
-      cout << "Debugging tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
+      cout << __func__ << " tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
 	"   " <<
 	envelopeParams.innerRadius() << ", " <<
 	envelopeParams.outerRadius() << ", " <<
@@ -213,7 +213,7 @@ namespace mu2e{
     StrawDetail const& detail0 = straw0.getDetail();
 
     verbosityLevel > 0 &&
-      cout << "Debugging sector box isec detail0.halfLength(): " << detail0.halfLength() << endl;
+      cout << __func__ << " sector box isec detail0.halfLength(): " << detail0.halfLength() << endl;
 
 
     sectorInfo.name = "TTrackerSectorEnvelope";
@@ -248,7 +248,7 @@ namespace mu2e{
                   G4Colour::Cyan(),
                   ttrackerSectorEnvelopeSolid,
                   forceAuxEdgeVisible,
-                  false,
+                  false, // only creating a logical volume
                   doSurfaceCheck
                   );
 
@@ -257,7 +257,7 @@ namespace mu2e{
       int oldWidth = cout.width(newWidth);
       std::ios::fmtflags oldFlags = cout.flags();
       cout.setf(std::ios::fixed,std::ios::floatfield);
-      cout << "Debugging sector box isec, sector.boxHalfLengths().at(4,3,2,2,1): " <<
+      cout << __func__ << " sector box isec, sector.boxHalfLengths().at(4,3,2,2,1): " <<
         isec << ", " <<
         sector.boxHalfLengths().at(4) << ", " <<
         sector.boxHalfLengths().at(3) << ", " <<
@@ -274,7 +274,7 @@ namespace mu2e{
 
     for ( int ilay =0; ilay<sector.nLayers(); ++ilay ){
 
-      verbosityLevel > 1 &&   cout << "Debugging constructTTrackerv3 ilay: " << ilay << endl;
+      verbosityLevel > 1 &&   cout << __func__ << " constructTTrackerv3 ilay: " << ilay << endl;
 
       const Layer& layer = sector.getLayer(ilay);
 
@@ -303,19 +303,19 @@ namespace mu2e{
 
         if ( verbosityLevel > 2 ) {
 
-          cout << "Debugging istr: " << istr <<
+          cout << __func__ << " istr: " << istr <<
             " mid: " << mid <<
             ", straw.MidPoint " << straw.getMidPoint() <<
             ", sector.boxOffset " <<  sector.boxOffset() <<
             ", device.origin " << device.origin() <<
             endl;
 
-          cout << "Debugging istr: " << istr << " mid: " <<
+          cout << __func__ << " istr: " << istr << " mid: " <<
             mid << ", halflenght " << detail.halfLength() << endl;
 
           // look at StrawSD to see how the straw index is reconstructed
 
-          cout << "Debugging straw.id(), straw.index() " <<
+          cout << __func__ << " straw.id(), straw.index() " <<
             straw.id() << ", " << straw.index() << endl;
 
         }
@@ -336,7 +336,7 @@ namespace mu2e{
           int oldWidth = cout.width(newWidth);
           std::ios::fmtflags oldFlags = cout.flags();
           cout.setf(std::ios::fixed,std::ios::floatfield);
-          cout << "Debugging Straw istr, RYForTrapezoids, midpoint: " <<
+          cout << __func__ << " Straw istr, RYForTrapezoids, midpoint: " <<
             istr << ", " << RYForTrapezoids << ", " <<
             mid << ", " <<
             endl;
@@ -417,191 +417,198 @@ namespace mu2e{
 
     // Now construct the devices and place the sectors in them
 
-    // nestSomething creates a physical volume, we need a logical one first
-    // false for placing physical volume, just create a logical one
-    VolumeInfo deviceInfo  = nestTubs( "TTrackerDeviceEnvelope",
-                                       deviceEnvelopeParams,
-                                       envelopeMaterial,
-                                       0,
-                                       zeroVector, // nominal position
-                                       0,
-                                       0,
-                                       ttrackerDeviceEnvelopeVisible,
-                                       G4Colour::Magenta(),
-                                       ttrackerDeviceEnvelopeSolid,
-                                       forceAuxEdgeVisible,
-                                       false, /* we are not placing the volume yet */
-                                       doSurfaceCheck
-                                       );
+    vector<VolumeInfo>  deviceInfoVect;
+    vector<VolumeInfo> supportInfoVect;
+    int tndev = ttracker.nDevices();
+    deviceInfoVect.reserve(tndev);
+    supportInfoVect.reserve(tndev);
 
-  // placing the support material
+    // idev can't be size_t here as deviceDraw can be -1
+    for ( int idev=0; idev<tndev; ++idev ){
 
-  TubsParams ttrackerDeviceSupportParams = ttracker.getSupportParams().getTubsParams();
+      if ( deviceDraw > -1 && idev != deviceDraw )  continue;
 
-  G4Colour  lightBlue (0.0, 0.0, 0.75);
-  VolumeInfo supportInfo = nestTubs( "TTrackerDeviceSupport",
-                                     ttrackerDeviceSupportParams,
-                                     findMaterialOrThrow(ttracker.getSupportParams().materialName()),
-                                     0,
-                                     zeroVector,
-                                     deviceInfo.logical,
-                                     0, // all device supports have the same number here
-                                     ttrackerSupportVisible,
-                                     lightBlue,
-                                     ttrackerSupportSolid,
-                                     forceAuxEdgeVisible,
-                                     true,
-                                     doSurfaceCheck
-                                     );
+      const Device& device = ttracker.getDevice(idev);
 
-  if ( verbosityLevel > 0) {
-    cout << "TTrackerDeviceSupport params: "
-         << ttrackerDeviceSupportParams.innerRadius() << " "
-         << ttrackerDeviceSupportParams.outerRadius() << " "
-         << ttrackerDeviceSupportParams.zHalfLength() << " "
-         << endl;
-  }
+      std::ostringstream devs;
+      devs << idev;
 
-  // Make TTrackerDeviceSupport a sensitive detector for radiation damage studies
+      CLHEP::HepRotationZ deviceRZ(-device.rotation()); //It is arround z
+      G4RotationMatrix* deviceRotation  = reg.add(G4RotationMatrix(deviceRZ));
 
-  G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
-  FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport());
-  if(sd) supportInfo.logical->SetSensitiveDetector(sd);
-
-
-  if (verbosityLevel > 0 ) {
-    int oldPrecision = cout.precision(newPrecision);
-    int oldWidth = cout.width(newWidth);
-    std::ios::fmtflags oldFlags = cout.flags();
-    cout.setf(std::ios::fixed,std::ios::floatfield);
-    cout << "Debugging device env idev, deviceEnvelopeParams ir,or,zhl,phi0,phimax: " <<
-      idev << ", " <<
-      deviceEnvelopeParams.innerRadius() << ", " <<
-      deviceEnvelopeParams.outerRadius() << ", " <<
-      deviceEnvelopeParams.zHalfLength() << ", " <<
-      deviceEnvelopeParams.phi0()        << ", " <<
-      deviceEnvelopeParams.phiMax()      << ", " <<
-      endl;
-    cout.setf(oldFlags);
-    cout.precision(oldPrecision);
-    cout.width(oldWidth);
-  }
-
-  // we now place sectors in the devices and devices in their mother
-
-
-  // idev can't be size_t here as deviceDraw can be -1
-  for ( int idev=0; idev<ttracker.nDevices(); ++idev ){
-
-    // changes here may affect StrawSD
-
-    if ( deviceDraw > -1 && idev > deviceDraw )  continue;
-
-    verbosityLevel > 1 &&
-      cout << "Debugging dev: " << idev << " " << deviceInfo.name << " deviceDraw: " << deviceDraw << endl;
-
-    const Device& device = ttracker.getDevice(idev);
-
-    verbosityLevel > 1 &&
-      cout << "Debugging -device.rotation(): " << -device.rotation() << " " << endl;
-    verbosityLevel > 1 &&
-      cout << "Debugging device.origin(): " << device.origin() << " " << endl;
-
-    // isec can't be size_t here as sectorDraw can be -1
-    for ( int isec = 0; isec<device.nSectors(); ++isec){
-
-      if ( sectorDraw > -1 && isec > sectorDraw ) continue;
-
+      deviceInfoVect.push_back(nestTubs("TTrackerDeviceEnvelope_"  + devs.str(),
+                                        deviceEnvelopeParams,
+                                        envelopeMaterial,
+                                        deviceRotation,
+                                        device.origin(),
+                                        motherInfo.logical,
+                                        idev,
+                                        ttrackerDeviceEnvelopeVisible,
+                                        G4Colour::Magenta(),
+                                        ttrackerDeviceEnvelopeSolid,
+                                        forceAuxEdgeVisible,
+                                        true,
+                                        doSurfaceCheck
+                                        ));
+      
       verbosityLevel > 1 &&
-        cout << "Debugging sector: " << isec << " " << sectorInfo.name << " sectorDraw: " << sectorDraw << endl;
+        cout << __func__ << " placing device: " << idev << " " << device.origin() << " " 
+             << deviceInfoVect[idev].name << endl;
 
-      const Sector& sector = device.getSector(isec);
+      // placing support
 
-      // place the trapezoid in its position ready for the RZ rotation
+      TubsParams ttrackerDeviceSupportParams = ttracker.getSupportParams().getTubsParams();
 
-      CLHEP::HepRotationZ sectorRZ(sector.boxRzAngle() - device.rotation()); // we know it is only arround z...
-      // this is a relative rotation and this is what we need to calculate relative positions
-
-      // it is probably the safest to recalculate offsets from the
-      // nominal horizontal position and rotations and ignore absolute
-      // positions provided by the geometry service
-
-      verbosityLevel > 1 &&
-        cout << "Debugging sector.boxRzAngle(), device.rotation(), diff:   " 
-             << sector.boxRzAngle()/M_PI*180. << ", "
-             << device.rotation()/M_PI*180.   << ", " 
-             << ((sector.boxRzAngle() - device.rotation())/M_PI)*180. << endl;
-
-//       verbosityLevel > 1 &&
-//         cout << "Debugging sector rotation: " << isec << " " << sectorInfo.name << " " << 
-//         sector.rotation() << endl;
-
-      // we add a 180deg rotation for even sectors
-      G4RotationMatrix* sectorRotation = ((isec%2)==1) ?
-        reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*sectorRZ.inverse())):
-        reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*RX2ForTrapezoids*sectorRZ.inverse()));
-
-      // origin a.k.a offset wrt current mother volume
-      CLHEP::Hep3Vector sectorOrigin = sector.boxOffset() - device.origin();
-
-      CLHEP::Hep3Vector nominalRelPos(CLHEP::Hep3Vector(sectorOrigin.x(),sectorOrigin.y(),0.).mag(), 
-                                      0., sectorOrigin.z());
-
-      CLHEP::Hep3Vector sectorRelOrigin = sectorRZ*nominalRelPos; 
-      // we still need to do a complemetary rotation
-
-      verbosityLevel > 1 &&
-        cout << "Debugging device.origin:      " << isec << " " << deviceInfo.name << device.origin() << endl;
-      verbosityLevel > 1 &&
-        cout << "Debugging sector.origin:      " << isec << " " << sectorInfo.name << sectorOrigin << endl;
-      verbosityLevel > 1 &&
-        cout << "Debugging nominalRelPos:      " << isec << " " << sectorInfo.name << nominalRelPos << endl;
-      verbosityLevel > 1 &&
-        cout << "Debugging sectorRelOrigin:    " << isec << " " << sectorInfo.name << sectorRelOrigin << endl;
-      verbosityLevel > 1 &&
-        cout << "Debugging sector.boxOffset(): " << isec << " " << sectorInfo.name << sector.boxOffset() << endl;
-
-      // we may need to keep those pointers somewhre... (this is only the last one...)
-
-       sectorInfo.physical =  new G4PVPlacement(sectorRotation,
-                                               sectorRelOrigin,
-                                               sectorInfo.logical,
-                                               sectorInfo.name,
-                                               deviceInfo.logical,
-                                               false,
-                                               isec,
-                                               doSurfaceCheck);
-
-    } // end loop over sectors
-
-    CLHEP::HepRotationZ deviceRZ(-device.rotation()); //It is arround z
-
-    G4RotationMatrix* deviceRotation  = reg.add(G4RotationMatrix(deviceRZ));
-
-    verbosityLevel > 1 &&
-      cout << "Debugging placing device: " << idev << " " << device.origin() << " " 
-           << deviceInfo.name << endl;
-
-    // could we descend the final hierarchy and set the "true" copy numbers?
-    // we may need to keep those pointers somewhre... (this is only the last one...)
-
-    deviceInfo.physical =  new G4PVPlacement(deviceRotation,
-                                             device.origin(),
-                                             deviceInfo.logical,
-                                             deviceInfo.name,
-                                             motherInfo.logical,
-                                             false,
-                                             idev,
-                                             doSurfaceCheck);
+      G4Colour  lightBlue (0.0, 0.0, 0.75);
+      supportInfoVect.push_back(nestTubs("TTrackerDeviceSupport_" + devs.str(),
+                                         ttrackerDeviceSupportParams,
+                                         findMaterialOrThrow(ttracker.getSupportParams().materialName()),
+                                         0,
+                                         zeroVector,
+                                         deviceInfoVect[idev].logical,
+                                         idev,
+                                         ttrackerSupportVisible,
+                                         lightBlue,
+                                         ttrackerSupportSolid,
+                                         forceAuxEdgeVisible,
+                                         true,
+                                         doSurfaceCheck
+                                         ));
     
-    verbosityLevel > 1 &&
-      cout << "Debugging placed device: " << idev << " " << idev%2 << " " 
-           << deviceInfo.name << endl;
+      if ( verbosityLevel > 0 && idev==0) {
+        int oldPrecision = cout.precision(newPrecision);
+        int oldWidth = cout.width(newWidth);
+        std::ios::fmtflags oldFlags = cout.flags();
+        cout.setf(std::ios::fixed,std::ios::floatfield);
 
-  } // end loop over devices
+        cout << __func__ << " TTrackerDeviceSupport params: "
+             << ttrackerDeviceSupportParams.innerRadius() << " "
+             << ttrackerDeviceSupportParams.outerRadius() << " "
+             << ttrackerDeviceSupportParams.zHalfLength() << " "
+             << endl;
 
-  return motherInfo;
+        cout << __func__ << " device env idev, deviceEnvelopeParams ir,or,zhl,phi0,phimax: " <<
+          idev << ", " <<
+          deviceEnvelopeParams.innerRadius() << ", " <<
+          deviceEnvelopeParams.outerRadius() << ", " <<
+          deviceEnvelopeParams.zHalfLength() << ", " <<
+          deviceEnvelopeParams.phi0()        << ", " <<
+          deviceEnvelopeParams.phiMax()      << ", " <<
+          endl;
+        cout.setf(oldFlags);
+        cout.precision(oldPrecision);
+        cout.width(oldWidth);
+      }
 
-} // end of constructTTrackerv3
+      // Make TTrackerDeviceSupport a sensitive detector for radiation damage studies
+
+      G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
+        FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport());
+      if(sd) supportInfoVect[idev].logical->SetSensitiveDetector(sd);
+
+      verbosityLevel > 1 &&
+        cout << __func__ << " device: " << idev << " " 
+             << deviceInfoVect[idev].name << " deviceDraw: " << deviceDraw << endl;
+
+      if ( verbosityLevel > 1 ) {
+        cout << __func__ << " -device.rotation(): " << -device.rotation() << " " << endl;
+        cout << __func__ << " device.origin(): " << device.origin() << " " << endl;
+      }
+
+      // isec can't be size_t here as sectorDraw can be -1
+      for ( int isec = 0; isec<device.nSectors(); ++isec){
+
+        if ( sectorDraw > -1 && isec > sectorDraw ) continue;
+
+        verbosityLevel > 1 &&
+          cout << __func__ << " sector: " << isec << " " 
+               << sectorInfo.name << " sectorDraw: " << sectorDraw << endl;
+
+        const Sector& sector = device.getSector(isec);
+
+        // place the trapezoid in its position ready for the RZ rotation
+
+        CLHEP::HepRotationZ sectorRZ(sector.boxRzAngle() - device.rotation()); // we know it is only around z...
+        // this is a relative rotation and this is what we need to calculate relative positions
+
+        // it is probably the safest to recalculate offsets from the
+        // nominal horizontal position and rotations and ignore absolute
+        // positions provided by the geometry service
+
+        verbosityLevel > 1 &&
+          cout << __func__ << " sector.boxRzAngle(), device.rotation(), diff:   " 
+               << sector.boxRzAngle()/M_PI*180. << ", "
+               << device.rotation()/M_PI*180.   << ", " 
+               << ((sector.boxRzAngle() - device.rotation())/M_PI)*180. << endl;
+
+        // we add a 180deg rotation for even sectors
+        // we should eventually do it by their Z not isec%2
+
+        G4RotationMatrix* sectorRotation = ((isec%2)==1) ?
+          reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*sectorRZ.inverse())):
+          reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*RX2ForTrapezoids*sectorRZ.inverse()));
+
+        // origin a.k.a offset wrt current mother volume
+        CLHEP::Hep3Vector sectorOrigin = sector.boxOffset() - device.origin();
+
+        CLHEP::Hep3Vector nominalRelPos(CLHEP::Hep3Vector(sectorOrigin.x(),sectorOrigin.y(),0.).mag(), 
+                                        0., sectorOrigin.z());
+
+        CLHEP::Hep3Vector sectorRelOrigin = sectorRZ*nominalRelPos; 
+        // we still need to do a complemetary rotation
+
+        if ( verbosityLevel > 1 ) {
+          cout << __func__ << " device.origin:      " << idev << " " << isec 
+               << " " << deviceInfoVect[idev].name << device.origin() << endl;
+          cout << __func__ << " sector.origin:      " << idev << " " << isec 
+               << " " << sectorInfo.name << sectorOrigin << endl;
+          cout << __func__ << " nominalRelPos:      " << idev << " " << isec 
+               << " " << sectorInfo.name << nominalRelPos << endl;
+          cout << __func__ << " sectorRelOrigin:    " << idev << " " << isec 
+               << " " << sectorInfo.name << sectorRelOrigin << endl;
+          cout << __func__ << " sector.boxOffset(): " << idev << " " << isec 
+               << " " << sectorInfo.name << sector.boxOffset() << endl;
+        }
+
+        // we may need to keep those pointers somewhre... (this is only the last one...)
+
+        sectorInfo.physical =  new G4PVPlacement(sectorRotation,
+                                                 sectorRelOrigin,
+                                                 sectorInfo.logical,
+                                                 sectorInfo.name,
+                                                 deviceInfoVect[idev].logical,
+                                                 false,
+                                                 isec,
+                                                 doSurfaceCheck);
+
+
+        if (verbosityLevel > 1) {
+
+          cout << __func__ << " placed sector: " << isec << " in device " << idev << " " 
+               << sectorInfo.name << endl;
+
+          const Layer&  layer  = sector.getLayer(0);
+          int nStrawsPerSector = sector.nLayers()  * layer.nStraws();
+          int nStrawsPerDevice = device.nSectors() * nStrawsPerSector;
+
+          cout << __func__ << " first straw number in sector " << fixed << setw(4)
+               << isec << " in dev " << fixed << setw(4)
+               << idev << " should be: " << fixed << setw(8)
+               << nStrawsPerSector * isec + nStrawsPerDevice * idev
+               << endl;
+
+        }
+
+      } // end loop over sectors
+    
+      verbosityLevel > 1 &&
+        cout << __func__ << " placed device: " << idev << " " << idev%2 << " " 
+             << deviceInfoVect[idev].name << endl;
+
+    } // end loop over devices
+
+    return motherInfo;
+
+  } // end of constructTTrackerv3
 
 } // end namespace mu2e
