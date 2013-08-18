@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.41 2013/08/14 17:06:52 genser Exp $
+// $Id: StrawSD.cc,v 1.42 2013/08/18 03:05:43 genser Exp $
 // $Author: genser $
-// $Date: 2013/08/14 17:06:52 $
+// $Date: 2013/08/18 03:05:43 $
 //
 // Original author Rob Kutschke
 //
@@ -49,7 +49,8 @@ namespace mu2e {
     _nStrawsPerDevice(0),
     _nStrawsPerSector(0),
     _TrackerVersion(0),
-    _supportModel()
+    _supportModel(),
+    _verbosityLevel(0)
   {
 
     art::ServiceHandle<GeometryService> geom;
@@ -71,12 +72,18 @@ namespace mu2e {
       _nStrawsPerDevice = device.nSectors() * _nStrawsPerSector;
 
       _TrackerVersion = config.getInt("TTrackerVersion",3);
+      _verbosityLevel = max(verboseLevel,config.getInt("ttracker.verbosityLevel",0)); // Geant4 SD verboseLevel
       _supportModel   = ttracker->getSupportModel();
 
       if ( _TrackerVersion != 3) {
         throw cet::exception("StrawSD")
           << "Expected TTrackerVersion of 3 but found " << _TrackerVersion <<endl;
         // esp take a look at the detectorOrigin calculation
+      }
+
+      if (_verbosityLevel>2) {
+        cout << __func__ << " _nStrawsPerDevice " << _nStrawsPerDevice << endl;
+        cout << __func__ << " _nStrawsPerSector " << _nStrawsPerSector << endl;
       }
 
     }
@@ -123,7 +130,7 @@ namespace mu2e {
     static G4ThreeVector detectorOrigin = GetTrackerOrigin(touchableHandle);
 
     // this is Geant4 SD verboseLevel
-    if (verboseLevel>2) {
+    if (_verbosityLevel>2) {
       cout << __func__ << " detectorOrigin   " << detectorOrigin  << endl;
       cout << __func__ << " det name         " << touchableHandle->GetVolume(2)->GetName() << endl;
     }
@@ -140,17 +147,17 @@ namespace mu2e {
     G4int en = event->GetEventID();
     G4int ti = aStep->GetTrack()->GetTrackID();
 
-    if (verboseLevel>2) {
+    if (_verbosityLevel>2) {
 
       G4int cn = touchableHandle->GetCopyNumber();
       G4int rn = touchableHandle->GetReplicaNumber();
 
-      cout << __func__ << " replica 0 1 2 3 4 " <<
-        setw(4) << touchableHandle->GetReplicaNumber(0) <<
-        setw(4) << touchableHandle->GetReplicaNumber(1) <<
-        setw(4) << touchableHandle->GetReplicaNumber(2) <<
-        setw(4) << touchableHandle->GetReplicaNumber(3) <<
-        setw(4) << touchableHandle->GetReplicaNumber(4) << endl;
+      cout << __func__ << " copy 0 1 2 3 4 " <<
+        setw(4) << touchableHandle->GetCopyNumber(0) <<
+        setw(4) << touchableHandle->GetCopyNumber(1) <<
+        setw(4) << touchableHandle->GetCopyNumber(2) <<
+        setw(4) << touchableHandle->GetCopyNumber(3) <<
+        setw(4) << touchableHandle->GetCopyNumber(4) << endl;
 
       cout << __func__ << " PV Name Mother Name" <<
         touchableHandle->GetVolume(0)->GetName() << " " <<
@@ -172,19 +179,14 @@ namespace mu2e {
     G4int sdcn = 0;
     if ( _TrackerVersion == 3) {
 
-      if (verboseLevel>2) {
-        cout << __func__ << " _nStrawsPerDevice " << _nStrawsPerDevice << endl;
-        cout << __func__ << " _nStrawsPerSector " << _nStrawsPerSector << endl;
-      }
-
       if ( _supportModel == SupportModel::simple ){
         sdcn = touchableHandle->GetCopyNumber(1) +
-          _nStrawsPerSector*(touchableHandle->GetReplicaNumber(2)) +
-          _nStrawsPerDevice*(touchableHandle->GetReplicaNumber(3));
+          _nStrawsPerSector*(touchableHandle->GetCopyNumber(2)) +
+          _nStrawsPerDevice*(touchableHandle->GetCopyNumber(3));
       } else {
         sdcn = touchableHandle->GetCopyNumber(0) +
-          _nStrawsPerSector*(touchableHandle->GetReplicaNumber(1)) +
-          _nStrawsPerDevice*(touchableHandle->GetReplicaNumber(2));
+          _nStrawsPerSector*(touchableHandle->GetCopyNumber(1)) +
+          _nStrawsPerDevice*(touchableHandle->GetCopyNumber(2));
 
       }
 
@@ -195,13 +197,13 @@ namespace mu2e {
 
     }
 
-    if (verboseLevel>2) {
+    if (_verbosityLevel>2) {
 
-      cout << __func__ << " hit info:   event track sector device straw: " <<
+      cout << __func__ << " hit info: event track sector device straw:   " <<
         setw(4) << en << " " <<
         setw(4) << ti << " " <<
-        setw(4) << touchableHandle->GetReplicaNumber(2) << " " <<
-        setw(4) << touchableHandle->GetReplicaNumber(3) << " " <<
+        setw(4) << touchableHandle->GetCopyNumber(2) << " " <<
+        setw(4) << touchableHandle->GetCopyNumber(3) << " " <<
         setw(6) << sdcn << endl;
 
       cout << __func__ << " sdcn " << sdcn << endl;
@@ -226,7 +228,7 @@ namespace mu2e {
                                         endCode
                                         ));
 
-    if (verboseLevel>2) {
+    if (_verbosityLevel>2) {
 
       art::ServiceHandle<GeometryService> geom;
       GeomHandle<TTracker> ttracker;
@@ -296,7 +298,7 @@ namespace mu2e {
           ", sector.boxOffset " << sector.boxOffset() <<
           ", device.origin "    << device.origin() <<
           " mid: "              << mid <<
-          ", sector.boxRzAngle " << sector.boxRzAngle() <<
+          ", sector.boxRzAngle " << sector.boxRzAngle()/M_PI*180. <<
           ", device.rotation "  << device.rotation() <<
           endl;
 
@@ -430,7 +432,7 @@ namespace mu2e {
       }
     }
 
-    verboseLevel>1 && cout << __func__ << " : tracker depth/version: " << td << "/" << _TrackerVersion << endl;
+    _verbosityLevel>1 && cout << __func__ << " : tracker depth/version: " << td << "/" << _TrackerVersion << endl;
 
     size_t hdepth = touchableHandle->GetHistoryDepth();
 
@@ -440,7 +442,7 @@ namespace mu2e {
 
       if (dd>=td) cdo += touchableHandle->GetVolume(dd)->GetTranslation();
 
-      if (verboseLevel>2) {
+      if (_verbosityLevel>2) {
 
         cout << __func__ << " det depth name copy#: " << dd << " " <<
           touchableHandle->GetVolume(dd)->GetName() << " " <<
