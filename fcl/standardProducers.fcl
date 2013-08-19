@@ -273,6 +273,7 @@ TrkPatRec :
 		HitMinDrift 				: 0.1
 		ZeroDriftPenalty 			: 0.05
 		Neutralize 				: true
+		fieldCorrection				: true
 	}
 	TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
 	HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
