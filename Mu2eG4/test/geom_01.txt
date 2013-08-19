@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.194 2013/08/16 19:54:34 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/16 19:54:34 $
+// $Id: geom_01.txt,v 1.195 2013/08/19 20:37:36 brownd Exp $
+// $Author: brownd $
+// $Date: 2013/08/19 20:37:36 $
 //
 // Original author Rob Kutschke
 //
@@ -390,16 +390,23 @@ int    crs.verbosityLevel = 0;
 
 
 // Magnetic field
-//
-// Default setting is to use the full field everywhere, except the
-// upstream part of DS, where uniform field is used.
-
+// default is now Mau9 everywhere, including the DS
 // Form of DS field: 0 is full field;
 //                   1 is full upstream, const downstream;
 //                   2 is const throughout
-int detSolFieldForm = 1;
+int detSolFieldForm = 0;
+// Mau 9 maps
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/Mau9/Mu2e_DSMap.header",
+  "BFieldMaps/Mau9/Mu2e_PSMap.header",
+  "BFieldMaps/Mau9/Mu2e_TSuMap.header",
+  "BFieldMaps/Mau9/Mu2e_TSdMap.header",
+  "BFieldMaps/Mau9/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau9/ProtonDumpAreaMap.header"
+};
 
-// Value of the uniform magnetic field with the DS volume.
+// Value of the uniform magnetic field with the DS volume (only for
+// detSolFieldForm>0)
 double toyDS.bz            = 1.0;
 
 // Gradient of field in DS2 volume. Applied only in the case
