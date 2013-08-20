@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.32 2013/08/18 03:08:20 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.33 2013/08/20 19:17:25 genser Exp $
 // $Author: genser $
-// $Date: 2013/08/18 03:08:20 $
+// $Date: 2013/08/20 19:17:25 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -541,18 +541,29 @@ namespace mu2e{
                << device.rotation()/M_PI*180.   << ", " 
                << ((sector.boxRzAngle() - device.rotation())/M_PI)*180. << endl;
 
-        // we add a 180deg rotation for even sectors
-        // we should eventually do it by their Z not isec%2
-
-        G4RotationMatrix* sectorRotation = ((isec%2)==1) ?
-          reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*sectorRZ.inverse())):
-          reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*RX2ForTrapezoids*sectorRZ.inverse()));
 
         // origin a.k.a offset wrt current mother volume
         CLHEP::Hep3Vector sectorOrigin = sector.boxOffset() - device.origin();
+        double secRelZ = sectorOrigin.z();
 
         CLHEP::Hep3Vector nominalRelPos(CLHEP::Hep3Vector(sectorOrigin.x(),sectorOrigin.y(),0.).mag(), 
-                                        0., sectorOrigin.z());
+                                        0., secRelZ);
+
+        if (verbosityLevel > 1) {
+          cout << __func__ << " device, sector, isec%2, secRelZ : " 
+               << setw(3)  << idev << ", " 
+               << isec     << ", " 
+               << isec%2   << ", " 
+               << setw(10) << secRelZ;
+          cout  << endl;
+        }
+
+        // we add a 180deg rotation for sector on "even/upstream" side of devices
+        
+        G4RotationMatrix* sectorRotation = (secRelZ>0.0) ?
+          reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*sectorRZ.inverse())):
+          reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*RX2ForTrapezoids*sectorRZ.inverse()));
+
 
         CLHEP::Hep3Vector sectorRelOrigin = sectorRZ*nominalRelPos; 
         // we still need to do a complemetary rotation
