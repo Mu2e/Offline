@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.10 2013/08/12 16:13:14 brownd Exp $
+// $Id: MakeStereoHits_module.cc,v 1.11 2013/08/21 05:59:02 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/08/12 16:13:14 $
+// $Date: 2013/08/21 05:59:02 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -127,7 +127,6 @@ namespace mu2e {
       first = false;
       const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
       art::ServiceHandle<art::TFileService> tfs;
-      int lowdev[2] = {0,2};
       unsigned nsta = tt.nDevices()/2;
       for(int ista=0;ista<nsta;++ista){
 	char name[100];
@@ -138,7 +137,7 @@ namespace mu2e {
 	TLegend* sleg = new TLegend(0.1,0.6,0.3,0.9);
 	flist->Add(sleg);
 	for(int idev=0;idev<2;++idev){
-	  const Device& dev = tt.getDevice(2*ista+idev+lowdev[ista%2]);
+	  const Device& dev = tt.getDevice(2*ista+idev);
 	  const std::vector<Sector>& sectors = dev.getSectors();
 	  for(size_t isec=0;isec<sectors.size();++isec){
 	    int iface = isec%2;
