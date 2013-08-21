@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.14 2013/07/22 18:57:42 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/07/22 18:57:42 $
+// $Id: GenId.hh,v 1.15 2013/08/21 22:18:09 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/08/21 22:18:09 $
 //
 // Original author Rob Kutschke
 //
@@ -57,7 +57,7 @@ namespace mu2e {
   public:
 
     // The most important c'tor and accessor methods are first.
-    explicit GenId( enum_type id):
+    GenId( enum_type id):
       _id(id)
     {}
 
