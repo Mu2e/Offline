@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.1 2013/03/26 14:46:09 knoepfel Exp $
+# $Id: SConscript,v 1.2 2013/08/21 17:35:16 knoepfel Exp $
 # $Author: knoepfel $
-# $Date: 2013/03/26 14:46:09 $
+# $Date: 2013/08/21 17:35:16 $
 #
 # Original author Rob Kutschke.
 #
@@ -15,6 +15,7 @@ Import('mu2e_helper')
 helper=mu2e_helper();
 
 mainlib = helper.make_mainlib ( [ 'mu2e_BeamlineGeom',
+                                  'mu2e_GeomPrimitives',
                                   'mu2e_Mu2eInterfaces',
                                   'mu2e_Mu2eUtilities',
                                   'mu2e_ConfigTools',

@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.195 2013/08/19 20:37:36 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/08/19 20:37:36 $
+// $Id: geom_01.txt,v 1.196 2013/08/21 17:35:17 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/08/21 17:35:17 $
 //
 // Original author Rob Kutschke
 //
@@ -23,9 +23,8 @@ bool hasBeamline        = true;
 bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now;
 bool hasCosmicRayShield = true; // note the two subcomponents, see crs section below;
 bool hasMBS             = true; // note the two subcomponents, see mbs section below; 
-                                 // no MBS implies no downstream hole in Cosmic Ray Passive Shield
-                                 // and no CryoSeal and no MBS EndPlug; 
-                                 // Magnetic field may be affected as well
+                                // no MBS implies no downstream hole in Cosmic Ray Passive Shield
+                                // Magnetic field may be affected as well
 
 // Write mu2e geometry into a GDML file
 bool   writeGDML        = false;
@@ -161,7 +160,7 @@ bool   world.dirt.solid           = false;
 
 // The top surface of the world dirt is at the grade level.
 // Define it with respect to the experimental hall:
-double hall.floorTopDepthBelowGrade = 7620; // docdb-472v5 p18: (746'-0'' - 721'-0'')
+double hall.floorTopDepthBelowGrade = 7620; // docdb-472v12 p12: (746'-0'' - 721'-0'')
 
 // Positions of the hall walls
 double hall.insideXmin = -7359;
@@ -174,7 +173,7 @@ double hall.insideZPSCorner = -3359;
 double hall.insideZExtMonUCIWall = -22000; // -17129;
 
 // docdb-472v12 p16:
-// (top ceiling =  746'-6'') - (ceiling thickness = 3'-0'') - (top floor = 721'-0'')
+// (top of ceiling =  746'-6'') - (ceiling thickness = 3'-0'') - (top of floor = 721'-0'')
 //   = 22'-6'' = 6858 mm
 double hall.insideFullHeight = 6858.;
 
@@ -183,9 +182,9 @@ double hall.floorThick   = 300.;
 double hall.ceilingThick = 914.4; // 3', docdb-472v12 p16 (section "E")
 double hall.wallThick    = 300.;
 double hall.wallExtMonUCIThick  = 600.;
-string hall.wallMaterialName = "G4_CONCRETE";
+string hall.wallMaterialName    = "G4_CONCRETE";
 string hall.ceilingMaterialName = "G4_CONCRETE"; 
-string hall.insideMaterialName = "G4_AIR";
+string hall.insideMaterialName  = "G4_AIR";
 
 bool   hall.formalBoxVisible        = false;
 bool   hall.formalBoxSolid          = false;
@@ -207,6 +206,7 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 
 // Solenoids
 #include "Mu2eG4/test/DetectorSolenoid_v02.txt"
+#include "Mu2eG4/test/DSShielding_v01.txt"
 #include "Mu2eG4/test/ProductionSolenoid_v01.txt"
 #include "Mu2eG4/test/psEnclosure_v01.txt"
 #include "Mu2eG4/test/PSShield_v05.txt"
@@ -229,7 +229,6 @@ double productionTarget.zNominal = -6164.5;
 
 // Optional shift of production target from the nominal
 //vector<double> productionTarget.offset = { 0., 0., 0.};
-
 
 double targetPS_halfLength        =     80.;  // mm.
 double targetPS_rOut              =      3.15;// mm
@@ -482,9 +481,6 @@ bool   extneutronabs.solid        = false;
 
 // the initial implementation is described in doc-1519
 
-bool   mbs.hasCryoSeal        = true;
-bool   mbs.hasEndPlug         = true;
-
 double mbs.MBSCZ              = 15258.0;
 
 double mbs.BSTSInnerRadius    =   470.0;
@@ -539,21 +535,6 @@ vector<double> mbs.CLV2OuterRadii  =   { 320.0 };
 vector<double> mbs.CLV2Lengths     =   { 240.0 };
 string mbs.CLV2MaterialName   = "Polyethylene096";
 double mbs.CLV2ZrelCntr            =  1938.0;
-
-double mbs.CryoSealInnerRadius  =   700.0;  //must be equal to mbs.SPBSLOuterRadius
-double mbs.CryoSealOuterRadius  =  1000.0;
-double mbs.CryoSealZ            = 14289.0;
-double mbs.CryoSealHLength      =   150.0;
-string mbs.CryoSealMaterialName = "StainlessSteel";
-
-double mbs.EndPlugTubeInnerRadius =   480.0;
-double mbs.EndPlugTubeOuterRadius =  1000.0;
-double mbs.EndPlugTubeZ           = 17119.0;
-double mbs.EndPlugTubeHLength     =   197.0;
-double mbs.EndPlugDiskInnerRadius =     0.0;
-double mbs.EndPlugDiskOuterRadius =  1000.0;
-double mbs.EndPlugDiskHLength     =    25.0;
-string mbs.EndPlugMaterialName    = "StainlessSteel";
 
 int    mbs.verbosityLevel = 0;
 bool   mbs.visible      = true;

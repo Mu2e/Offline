@@ -1,16 +1,18 @@
+// Mu2e includes
 #include "BeamlineGeom/inc/Beamline.hh"
-#include "BeamlineGeom/inc/TSSection.hh"
 #include "BeamlineGeom/inc/StraightSection.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include <iostream>
 
+// Framework includes
 #include "cetlib/exception.h"
 
+// CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
-
+// C++ includes
+#include <iostream>
 #include <vector>
 
 using namespace std;

@@ -1,9 +1,9 @@
 //
 // Construct and return MBS
 //
-// $Id: MBSMaker.cc,v 1.4 2013/07/02 15:57:07 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/07/02 15:57:07 $
+// $Id: MBSMaker.cc,v 1.5 2013/08/21 17:35:17 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/08/21 17:35:17 $
 //
 // Original author KLG
 //
@@ -150,8 +150,8 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _BSTCOffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_BSTCZ);
 
-    int nBSTCSurfs = _BSTCLengths.size();
-    if (nBSTCSurfs != (int) _BSTCInnerRadii.size() ||  nBSTCSurfs != (int) _BSTCOuterRadii.size()) {
+    std::size_t nBSTCSurfs = _BSTCLengths.size();
+    if (nBSTCSurfs != _BSTCInnerRadii.size() ||  nBSTCSurfs != _BSTCOuterRadii.size()) {
             throw cet::exception("GEOM")
               << "BSTC has different number of radii and lengths, check the geom config file. \n";
     }
@@ -161,7 +161,7 @@ namespace mu2e {
             BSTCtotLength+=*length_it;
     }
     double tmpBSTCPntZ=/*_BSTCZ*/-0.5*BSTCtotLength;
-    for (int isurf=0; isurf<nBSTCSurfs; ++isurf) {
+    for (std::size_t isurf=0; isurf<nBSTCSurfs; ++isurf) {
             BSTCCornersZ.push_back(tmpBSTCPntZ);
             BSTCCornersInnRadii.push_back(_BSTCInnerRadii.at(isurf));
             BSTCCornersOutRadii.push_back(_BSTCOuterRadii.at(isurf));

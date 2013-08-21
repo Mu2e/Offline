@@ -3,9 +3,9 @@
 //
 // "Typical" Tube object
 //
-// $Id: Tube.hh,v 1.6 2013/08/07 20:20:08 knoepfel Exp $
+// $Id: Tube.hh,v 1.7 2013/08/21 17:35:17 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/07 20:20:08 $
+// $Date: 2013/08/21 17:35:17 $
 //
 // Original author KLG
 //
@@ -45,6 +45,8 @@ namespace mu2e {
     double outerRadius() const { return _params.outerRadius(); }
     double halfLength()  const { return _params.zHalfLength(); }
     double zHalfLength() const { return _params.zHalfLength(); }
+    double zBegin()      const { return _originInMu2e.z() - zHalfLength() ; }
+    double zEnd()        const { return _originInMu2e.z() + zHalfLength() ; }
     double phi0()        const { return _params.phi0(); }
     double phiMax()      const { return _params.phiMax(); }
 
@@ -55,6 +57,9 @@ namespace mu2e {
 
     TubsParams const & getTubsParams() const { return _params; }
 
+    std::string getName() const { return _name; }
+    void        setName( std::string name ) { _name = name; }
+
     // Genreflex can't do persistency of vector<Tube> without a default constructor
     Tube() : _params(0,0,0) {}
 
@@ -63,6 +68,7 @@ namespace mu2e {
     TubsParams         _params;
     CLHEP::Hep3Vector  _originInMu2e;
     std::string        _materialName;
+    std::string        _name;
     CLHEP::HepRotation _rotation; // wrt to parent volume
 
   };

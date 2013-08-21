@@ -1,9 +1,9 @@
 //
 // Free function to create DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.18 2013/08/16 19:54:34 knoepfel Exp $
+// $Id: constructDS.cc,v 1.19 2013/08/21 17:35:17 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/16 19:54:34 $
+// $Date: 2013/08/21 17:35:17 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -12,8 +12,8 @@
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/StraightSection.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
 #include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -52,10 +52,12 @@ namespace mu2e {
     bool dsCoilSolid         = _config.getBool("dsCoil.solid",true);
     bool dsSupportVisible    = _config.getBool("dsSupport.visible",true);
     bool dsSupportSolid      = _config.getBool("dsSupport.solid",true);
-    bool dsShieldVisible     = _config.getBool("dsShield.visible",true);
-    bool dsShieldSolid       = _config.getBool("dsShield.solid",true);
+    bool dsThShieldVisible   = _config.getBool("dsThShield.visible",true);
+    bool dsThShieldSolid     = _config.getBool("dsThShield.solid",true);
     bool dsVacuumVisible     = _config.getBool("dsVacuum.visible",true);
     bool dsVacuumSolid       = _config.getBool("dsVacuum.solid",true);
+    bool dsShieldVisible     = _config.getBool("dsShielding.visible",true);
+    bool dsShieldSolid       = _config.getBool("dsShielding.solid",true);
     bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
     bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
@@ -167,39 +169,39 @@ namespace mu2e {
               );
 
     // DS thermal shield
-    G4Material*   dsShieldMaterial = findMaterialOrThrow( ds->shield_material() );
+    G4Material*   dsThShieldMaterial = findMaterialOrThrow( ds->shield_material() );
 
     // - inner shield shell
-    G4ThreeVector dsInnerShieldPosition( dsP.x(), dsP.y(), dsP.z());
-    TubsParams    dsInnerShieldParams  ( ds->shield_rIn1(), ds->shield_rIn2(), ds->shield_halfLength() );
-    nestTubs( "DSInnerShieldShell",
-              dsInnerShieldParams,
-              dsShieldMaterial,
+    G4ThreeVector dsInnerThShieldPosition( dsP.x(), dsP.y(), dsP.z());
+    TubsParams    dsInnerThShieldParams  ( ds->shield_rIn1(), ds->shield_rIn2(), ds->shield_halfLength() );
+    nestTubs( "DSInnerThShieldShell",
+              dsInnerThShieldParams,
+              dsThShieldMaterial,
               0,
-              dsInnerShieldPosition-_hallOriginInMu2e,
+              dsInnerThShieldPosition-_hallOriginInMu2e,
               parent,
               0,
-              dsShieldVisible,
+              dsThShieldVisible,
               G4Color::Cyan(),
-              dsShieldSolid,
+              dsThShieldSolid,
               forceAuxEdgeVisible,
               placePV,
               doSurfaceCheck
               );
 
     // - outer shield shell
-    G4ThreeVector dsOuterShieldPosition( dsP.x(), dsP.y(), dsP.z());
-    TubsParams    dsOuterShieldParams  ( ds->shield_rOut1(), ds->shield_rOut2(), ds->shield_halfLength() );
-    nestTubs( "DSOuterShieldShell",
-              dsOuterShieldParams,
-              dsShieldMaterial,
+    G4ThreeVector dsOuterThShieldPosition( dsP.x(), dsP.y(), dsP.z());
+    TubsParams    dsOuterThShieldParams  ( ds->shield_rOut1(), ds->shield_rOut2(), ds->shield_halfLength() );
+    nestTubs( "DSOuterThShieldShell",
+              dsOuterThShieldParams,
+              dsThShieldMaterial,
               0,
-              dsOuterShieldPosition-_hallOriginInMu2e,
+              dsOuterThShieldPosition-_hallOriginInMu2e,
               parent,
               0,
-              dsShieldVisible,
+              dsThShieldVisible,
               G4Color::Cyan(),
-              dsShieldSolid,
+              dsThShieldSolid,
               forceAuxEdgeVisible,
               placePV,
               doSurfaceCheck
@@ -267,9 +269,11 @@ namespace mu2e {
     double ds1Z0     = dsFrontZ0 + ds->frontHalfLength() + ds->vac_halfLengthDs1();
     double ds2Z0     = ds->vac_zLocDs23Split() - ds->vac_halfLengthDs2();
 
-    cout << " DS2 vacuum extent: " 
-         << " [ " << ds2Z0 - ds->vac_halfLengthDs2() << " , " 
-         << ds->vac_zLocDs23Split() << " ] " << endl;
+    if ( verbosityLevel ) {
+      cout << " DS2 vacuum extent: " 
+           << " [ " << ds2Z0 - ds->vac_halfLengthDs2() << " , " 
+           << ds->vac_zLocDs23Split() << " ] " << endl;
+    }
 
     G4ThreeVector ds1Position( dsP.x(), dsP.y(), ds1Z0 );
     G4ThreeVector ds2Position( dsP.x(), dsP.y(), ds2Z0 );
@@ -307,16 +311,37 @@ namespace mu2e {
     // Polycone geometry allows for MBS to extend beyond solenoid
     // physical boundaries
     
-    GeomHandle<MBS> mbs;
+    GeomHandle<DetectorSolenoidShielding> dss;
 
     // Define polycone parameters
-    vector<double> tmp_zPlanesDs3 { ds->vac_zLocDs23Split(), ds->cryoZMax(), ds->cryoZMax(),       };
-    vector<double> tmp_rOuterDs3  { ds->rIn1(),              ds->rIn1(),     mbs->getEnvelopeRmax()};
-    Polycone const & pMBSMParams = *(mbs->getMBSMPtr());
-    for (unsigned int iPln = ((pMBSMParams.numZPlanes()>=3) ? pMBSMParams.numZPlanes() : 3) -3; iPln < pMBSMParams.numZPlanes(); ++iPln) {
-            tmp_zPlanesDs3.push_back(pMBSMParams.zPlanes().at(iPln)+pMBSMParams.originInMu2e().z());
-            tmp_rOuterDs3.push_back(pMBSMParams.rOuter().at(iPln));
-    }
+    vector<double> tmp_zPlanesDs3 = { 
+      ds->vac_zLocDs23Split(), 
+      dss->getVPSPmain()->zBegin(),
+      dss->getVPSPCryoSeal()->zBegin(),
+      dss->getVPSPCryoSeal()->zEnd(),
+      dss->getVPSPCryoSeal()->zEnd(),
+      dss->getVPSPendSeal()->zBegin(), 
+      dss->getVPSPendSeal()->zBegin(),
+      dss->getVPSPendFlange()->zEnd(),
+      dss->getVPSPendFlange()->zEnd(),
+      dss->getIFBmain()->zEnd(),
+      dss->getIFBendPlug()->zBegin(),
+      dss->getIFBendPlug()->zEnd() };
+
+    vector<double> tmp_rOuterDs3  = {
+      ds->rIn1(),
+      dss->getVPSPmain()->innerRadius(),
+      dss->getVPSPCryoSeal()->outerRadius(),
+      dss->getVPSPCryoSeal()->outerRadius(),
+      dss->getVPSPmain()->outerRadius(),
+      dss->getVPSPmain()->outerRadius(),
+      dss->getVPSPendSeal()->outerRadius(),
+      dss->getVPSPendFlange()->outerRadius(),
+      dss->getVPSPendFlange()->innerRadius(),
+      dss->getIFBmain()->outerRadius(),
+      dss->getIFBendPlug()->outerRadius(),
+      dss->getIFBendPlug()->outerRadius()
+    };
 
     assert( tmp_zPlanesDs3.size() == tmp_rOuterDs3.size() );
 
@@ -325,20 +350,48 @@ namespace mu2e {
     PolyconsParams    ds3PolyParams    ( tmp_zPlanesDs3, tmp_rInnerDs3, tmp_rOuterDs3 );
     CLHEP::Hep3Vector ds3positionInMu2e( dsP.x(), dsP.y(), 0.);
     
-    nestPolycone( "DS3Vacuum",
-                  ds3PolyParams,
-                  vacuumMaterial,
-                  0,
-                  ds3positionInMu2e - parent.centerInMu2e(),
-                  parent,
-                  0,
-                  dsVacuumVisible,
-                  G4Colour::Yellow(),
-                  dsVacuumSolid,
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
+    VolumeInfo dsShieldParent = nestPolycone( "DS3Vacuum",
+                                            ds3PolyParams,
+                                            vacuumMaterial,
+                                            0,
+                                            ds3positionInMu2e - parent.centerInMu2e(),
+                                            parent,
+                                            0,
+                                            dsVacuumVisible,
+                                            G4Colour::Yellow(),
+                                            dsVacuumSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
+
+    // Construct shielding downstream of DS
+    for ( const auto & shield : dss->getTubes() ) {
+
+      cout << " R-Z extent of " << shield->getName() << " : "
+           << " [ " << shield->innerRadius() 
+           << " - " << shield->outerRadius() 
+           << " | " << shield->originInMu2e().z()-shield->zHalfLength() 
+           << " - " << shield->originInMu2e().z()+shield->zHalfLength() 
+           << " ] " << endl;
+
+      nestTubs( shield->getName(),
+                shield->getTubsParams(),
+                findMaterialOrThrow(shield->materialName()),
+                0,
+                shield->originInMu2e()-dsShieldParent.centerInMu2e(),
+                dsShieldParent,
+                0,
+                dsShieldVisible,
+                G4Colour::Blue(),
+                dsShieldSolid,
+                forceAuxEdgeVisible,
+                placePV,
+                doSurfaceCheck
+                );
+
+    }
+    
 
   } // end of Mu2eWorld::constructDS;
 

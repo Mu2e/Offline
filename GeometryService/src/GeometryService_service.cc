@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.57 2013/08/16 19:54:33 knoepfel Exp $
+// $Id: GeometryService_service.cc,v 1.58 2013/08/21 17:35:17 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/16 19:54:33 $
+// $Date: 2013/08/21 17:35:17 $
 //
 // Original author Rob Kutschke
 //
@@ -21,7 +21,6 @@
 #include "art/Persistency/Provenance/SubRunID.h"
 #include "art/Persistency/Provenance/RunID.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
 
 // Mu2e include files
 #include "GeometryService/inc/GeometryService.hh"
@@ -51,6 +50,8 @@
 #include "StoppingTargetGeom/inc/StoppingTargetMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoidShieldingMaker.hh"
 #include "ExternalNeutronAbsorberGeom/inc/ExternalNeutronAbsorber.hh"
 #include "ExternalNeutronAbsorberGeom/inc/ExternalNeutronAbsorberMaker.hh"
 #include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorber.hh"
@@ -225,6 +226,9 @@ namespace mu2e {
     std::unique_ptr<DetectorSolenoid> tmpDS( DetectorSolenoidMaker::make( *_config, beamline ) );
     const DetectorSolenoid& ds = *tmpDS.get();
     addDetector(std::move(tmpDS));
+
+    // DS info used to position DS downstream shielding
+    addDetector( DetectorSolenoidShieldingMaker::make( *_config, ds ) );
 
     std::unique_ptr<StoppingTarget> tmptgt(StoppingTargetMaker(detSys.getOrigin(), *_config).getTargetPtr());
     const StoppingTarget& target = *tmptgt.get();

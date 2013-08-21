@@ -69,12 +69,12 @@ bool   ds.visible            = true;
 bool   ds.solid              = false;
 bool   dsCoil.visible        = true;
 bool   dsCoil.solid          = false;
-bool   dsShield.visible      = true;
-bool   dsShield.solid        = false;
+bool   dsThShield.visible    = true;
+bool   dsThShield.solid      = false;
 bool   dsSupport.visible     = true;
 bool   dsSupport.solid       = false;
-bool   dsVacuum.visible     = true;
-bool   dsVacuum.solid       = false;
+bool   dsVacuum.visible      = true;
+bool   dsVacuum.solid        = false;
 
 // Vacuum volumes inside DS
 string ds.vacuumMaterialName = "DSVacuum";
