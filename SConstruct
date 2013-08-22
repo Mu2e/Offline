@@ -2,9 +2,9 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.49 2013/03/20 16:53:14 kutschke Exp $
+# $Id: SConstruct,v 1.50 2013/08/22 22:47:25 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2013/03/20 16:53:14 $
+# $Date: 2013/08/22 22:47:25 $
 #
 # Original author Rob Kutschke.
 #
@@ -141,6 +141,7 @@ SetOption('warn', 'no-fortran-cxx-mix')
 env.MergeFlags('-std=c++11')
 env.MergeFlags('-rdynamic')
 env.MergeFlags('-Wall')
+env.MergeFlags('-Wno-unused-local-typedefs')
 env.MergeFlags('-g')
 if level == 'prof':
     env.MergeFlags('-O3')
