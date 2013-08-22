@@ -1,9 +1,9 @@
 //
 // Free function to create DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.19 2013/08/21 17:35:17 knoepfel Exp $
+// $Id: constructDS.cc,v 1.20 2013/08/22 14:31:33 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/21 17:35:17 $
+// $Date: 2013/08/22 14:31:33 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -269,8 +269,8 @@ namespace mu2e {
     double ds1Z0     = dsFrontZ0 + ds->frontHalfLength() + ds->vac_halfLengthDs1();
     double ds2Z0     = ds->vac_zLocDs23Split() - ds->vac_halfLengthDs2();
 
-    if ( verbosityLevel ) {
-      cout << " DS2 vacuum extent: " 
+    if ( verbosityLevel > 0 ) {
+      cout << __func__ << " DS2 vacuum extent: " 
            << " [ " << ds2Z0 - ds->vac_halfLengthDs2() << " , " 
            << ds->vac_zLocDs23Split() << " ] " << endl;
     }
@@ -367,13 +367,6 @@ namespace mu2e {
 
     // Construct shielding downstream of DS
     for ( const auto & shield : dss->getTubes() ) {
-
-      cout << " R-Z extent of " << shield->getName() << " : "
-           << " [ " << shield->innerRadius() 
-           << " - " << shield->outerRadius() 
-           << " | " << shield->originInMu2e().z()-shield->zHalfLength() 
-           << " - " << shield->originInMu2e().z()+shield->zHalfLength() 
-           << " ] " << endl;
 
       nestTubs( shield->getName(),
                 shield->getTubsParams(),

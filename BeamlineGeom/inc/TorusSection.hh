@@ -71,6 +71,9 @@ namespace mu2e {
     double phiStart()    const {return _phiBegin; }
     double deltaPhi()    const {return _deltaPhi; }
 
+    std::string getMaterial() const { return _materialName; }
+    void setMaterial( std::string material ) { _materialName = material; }
+
     const std::array<double,5>& getParameters() const { return _data; }
 
   private:
@@ -82,6 +85,8 @@ namespace mu2e {
 
     double _phiBegin;
     double _deltaPhi;
+
+    std::string _materialName;
 
     std::array<double,5> _data;
 

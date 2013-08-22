@@ -2,14 +2,15 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.cc,v 1.19 2013/08/16 19:54:33 knoepfel Exp $
+// $Id: BeamlineMaker.cc,v 1.20 2013/08/22 14:31:33 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/16 19:54:33 $
+// $Date: 2013/08/22 14:31:33 $
 //
 // Original author Peter Shanahan
 //                 Kyle Knoepfel (significant updates)
 //
 
+// C++ includes
 #include <cmath>
 #include <iomanip>
 #include <iostream>
@@ -30,6 +31,9 @@
 #include "GeomPrimitives/inc/Tube.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
+// CLHEP
+#include "CLHEP/Units/SystemOfUnits.h"
+
 #ifndef __CINT__
 
 namespace mu2e {
@@ -41,6 +45,7 @@ namespace mu2e {
     BuildTSCoils      (c, res.get() );
     BuildTSCollimators(c, &res->_ts );
     BuildTSVacua      (c, &res->_ts );
+    BuildTSPolyLining (c, &res->_ts );
     BuildPbarWindow   (c, &res->_ts );
     return res;
   }
@@ -317,6 +322,42 @@ namespace mu2e {
     
   }
   
+    void BeamlineMaker::BuildTSPolyLining(const SimpleConfig& c, TransportSolenoid* ts ) {
+
+    typedef TransportSolenoid::TSRegion::enum_type     tsReg_enum;
+    typedef TransportSolenoid::TSRadialPart::enum_type tsRad_enum;
+
+    TorusSection    const * ts2 = ts->getTSCryo<TorusSection>( tsReg_enum::TS2, tsRad_enum::IN );
+    TorusSection    const * ts4 = ts->getTSCryo<TorusSection>( tsReg_enum::TS4, tsRad_enum::IN );
+
+    // Vacuum map parameters - torus sections
+    const std::map<unsigned,Torus> torusSectionParams = {
+      { tsReg_enum::TS2, Torus( ts->torusRadius(), 
+                                c.getDouble("ts.polyliner.rIn",0.), 
+                                c.getDouble("ts.polyliner.rOut",ts->innerRadius()),
+                                ts2->phiStart()+5*CLHEP::degree,
+                                ts2->deltaPhi()-2*5*CLHEP::degree,
+                                ts2->getGlobal() ) },
+      //                                *ts2->getRotation() ) },
+      { tsReg_enum::TS4, Torus( ts->torusRadius(), 
+                                c.getDouble("ts.polyliner.rIn",0.), 
+                                c.getDouble("ts.polyliner.rOut",ts->innerRadius()),
+                                ts4->phiStart()+5*CLHEP::degree,
+                                ts4->deltaPhi()-2*5*CLHEP::degree,
+                                ts4->getGlobal() ) }
+      //                                *ts4->getRotation() ) }
+    }; 
+
+    // Set cryo map - torus sections
+    for ( unsigned iTS = tsReg_enum::TS2 ; iTS <= tsReg_enum::TS4 ; iTS=iTS+2 ) {
+      auto its = (tsReg_enum)iTS;
+      auto torusParam    = torusSectionParams.find( its );
+      ts->_polyLiningMap[its] = std::unique_ptr<TorusSection>( new TorusSection ( torusParam->second ) );
+      ts->_polyLiningMap[its]->setMaterial( c.getString("ts.polyliner.materialName") );
+    } 
+    
+  }
+
   void BeamlineMaker::BuildPbarWindow(const SimpleConfig& c, TransportSolenoid* ts){
 
     PbarWindow & pbarWindow ( ts->_pbarWindow );

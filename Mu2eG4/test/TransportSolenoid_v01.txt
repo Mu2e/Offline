@@ -32,14 +32,22 @@ double ts.tsUendWall2.halfLength = 15.;
 
 double ts.tsDendWall.halfLength = 15.;
 
-double ts.ts1.halfLength  = 522.5; 
+double ts.ts1.halfLength  = 537.5; 
 double ts.ts5.halfLength  = 625.;  
 
 int  ts.cryo.verbosityLevel = 0.;
 bool ts.cryo.visible = true;
 bool ts.cryo.solid   = false;
 
-// PBAR Absorber
+// TS polylining option
+bool   ts.polyliner.build        = false;
+string ts.polyliner.materialName = "Polyethylene092";
+double ts.polyliner.rIn          = 210.; 
+double ts.polyliner.rOut         = 249.;
+bool   ts.polyliner.visible      = true;
+bool   ts.polyliner.solid        = true;
+
+// Pbar Absorber
 bool   pbar.visible = true;
 bool   pbar.solid   = false;
 int    pbar.verbosityLevel = 0;
@@ -59,7 +67,7 @@ bool   ts.coll.solid          = false;
 int    ts.coll.verbosityLevel = 0;
 
 // Offsets of collimators wrt parent volumes (TS straight sections)
-double ts.coll1.sOffset       =  -92.5;
+double ts.coll1.sOffset       =  -77.5;
 double ts.coll31.sOffset      =    0. ;
 double ts.coll32.sOffset      =    0. ;
 double ts.coll5.sOffset       = -124.0;

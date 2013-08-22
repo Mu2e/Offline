@@ -128,6 +128,11 @@ namespace mu2e {
       return static_cast<T*>(_vacuumMap.find(i)->second.get() );
     }
 
+    // Poly-lining
+    const TorusSection* getTSPolyLining( TSRegion::enum_type i) const {
+      return _polyLiningMap.find(i)->second.get();
+    }
+
     PbarWindow const& getPbarWindow() const { return _pbarWindow; }
 
   protected:
@@ -174,6 +179,9 @@ namespace mu2e {
 
     // Vacuum map
     std::map<TSRegion::enum_type,std::unique_ptr<TSSection>> _vacuumMap;
+
+    // Poly-lining map
+    std::map<TSRegion::enum_type,std::unique_ptr<TorusSection>> _polyLiningMap;
 
     PbarWindow _pbarWindow;   
 

@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.25 2013/08/16 19:54:34 knoepfel Exp $
+// $Id: constructTS.cc,v 1.26 2013/08/22 14:31:33 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/16 19:54:34 $
+// $Date: 2013/08/22 14:31:33 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -83,11 +83,14 @@ namespace mu2e {
     StraightSection   const * strsec (nullptr);
     TorusSection      const * torsec (nullptr);
 
-    const int  verbosityLevel      = config.getInt("ts.cryo.verbosityLevel", 0);
-    const bool visible             = config.getBool("ts.cryo.visible",true);
-    const bool solid               = config.getBool("ts.cryo.solid",true);
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    const int  verbosityLevel      = config.getInt ("ts.cryo.verbosityLevel", 0     );
+    const bool polyLining          = config.getBool("ts.polyliner.build"    , false );
+    const bool polyLinerVisible    = config.getBool("ts.polyliner.visible"  , true  );
+    const bool polyLinerSolid      = config.getBool("ts.polyliner.solid"    , false );
+    const bool visible             = config.getBool("ts.cryo.visible"       , true  );
+    const bool solid               = config.getBool("ts.cryo.solid"         , true  );
+    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible", false );
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck"     , false );
     const bool placePV             = true;
 
     // For how all pieces are made from one of two types of material,
@@ -235,6 +238,25 @@ namespace mu2e {
               doSurfaceCheck
               );
 
+    torsec = ts->getTSPolyLining(TransportSolenoid::TSRegion::TS2);
+    if ( polyLining && torsec->rIn() > 0. ) {
+      VolumeInfo ts2Vacuum = art::ServiceHandle<G4Helper>()->locateVolInfo("TS2Vacuum");
+      nestTorus("TS2PolyLining",
+                torsec->getParameters(),
+                findMaterialOrThrow(torsec->getMaterial()),
+                torsec->getRotation(),
+                torsec->getGlobal()-ts2Vacuum.centerInMu2e(),
+                ts2Vacuum,
+                0,
+                polyLinerVisible,
+                G4Color::Yellow(),
+                polyLinerSolid,
+                forceAuxEdgeVisible,
+                placePV,
+                doSurfaceCheck
+                );
+    }
+
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS2,TransportSolenoid::TSRadialPart::IN );
     std::array<double,5> ts2Cryo1Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
 
@@ -344,6 +366,25 @@ namespace mu2e {
               placePV,
               doSurfaceCheck
               );
+
+    torsec = ts->getTSPolyLining(TransportSolenoid::TSRegion::TS4);
+    if ( polyLining && torsec->rIn() > 0. ) {
+      VolumeInfo ts4Vacuum = art::ServiceHandle<G4Helper>()->locateVolInfo("TS4Vacuum");
+      nestTorus("TS4PolyLining",
+                torsec->getParameters(),
+                findMaterialOrThrow( torsec->getMaterial() ),
+                torsec->getRotation(),
+                torsec->getGlobal()-ts4Vacuum.centerInMu2e(),
+                ts4Vacuum,
+                0,
+                polyLinerVisible,
+                G4Color::Yellow(),
+                polyLinerSolid,
+                forceAuxEdgeVisible,
+                placePV,
+                doSurfaceCheck
+                );
+    }
 
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::IN );
     std::array<double,5> ts4Cryo1Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
@@ -565,19 +606,6 @@ namespace mu2e {
     G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
 
     CLHEP::Hep3Vector parentPos    = _helper->locateVolInfo("TS1Vacuum").centerInWorld;
-
-    std::cout << " Parent     position: " << parentPos << std::endl;
-    std::cout << " Collimator position: " << coll1.getLocal() + parentPos << std::endl;
-    std::cout << " Collimator extent  : { " 
-              << coll1.getLocal().z() + parentPos.z() - (coll1.halfLength() - 2.*vdHalfLength )
-              << " , " 
-              << coll1.getLocal().z() + parentPos.z() + (coll1.halfLength() - 2.*vdHalfLength )
-              << " ] " << std::endl;
-
-    // -- Offset of Collimator specified wrt TS1 straight section
-    // -- However, it's nested in TS1 Vacuum, whose position does not
-    // -- coincide with TS1 cryostat.  Must add offset.
-
 
     nestCons( "Coll11",
               coll1Param1,
