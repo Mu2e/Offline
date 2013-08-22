@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.196 2013/08/21 17:35:17 knoepfel Exp $
+// $Id: geom_01.txt,v 1.197 2013/08/22 18:10:35 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/21 17:35:17 $
+// $Date: 2013/08/22 18:10:35 $
 //
 // Original author Rob Kutschke
 //
@@ -416,15 +416,6 @@ double toyDS.gradient      = 0.0; // Tesla/m
 string bfield.format  = "G4BL";
 int  bfield.verbosityLevel =  0;
 bool bfield.writeG4BLBinaries     =  false;
-
-vector<string> bfield.innerMaps = {
-  "BFieldMaps/Mau7b/Mu2e_DSMap.header",
-  "BFieldMaps/Mau7b/Mu2e_PSMap.header",
-  "BFieldMaps/Mau7b/Mu2e_TSuMap.header",
-  "BFieldMaps/Mau7b/Mu2e_TSdMap.header",
-  "BFieldMaps/Mau7b/PStoDumpAreaMap.header",
-  "BFieldMaps/Mau7b/ProtonDumpAreaMap.header"
-};
 
 vector<string> bfield.outerMaps = {
   "BFieldMaps/Mau7b/ExtMonUCIInternal1AreaMap.header",
