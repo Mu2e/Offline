@@ -17,11 +17,16 @@
 #include <math.h>
 #include <vector>
 
-void StereoTest(TTree* shdiag,const char* page="events") {
+void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring="") {
   TString spage(page);
   TCut stereohit("stereo!=0");
   TCut convhit("mcgen==2");
   TCut dhit("mcproc<20");
+  if(strcmp(cutstring,"")!= 0){
+    convhit += TCut(cutstring);
+    dhit += TCut(cutstring);
+  }
+
   unsigned ilast(4);
   unsigned ifirst(3);
   if(spage=="events"){
@@ -106,20 +111,31 @@ void StereoTest(TTree* shdiag,const char* page="events") {
     prerr->Draw("colorz");
 
   } else if(spage=="dz") {
-    TH1F* dist = new TH1F("dist","Hit #Delta z;#Delta z (mm)",100,-10,45);
-    dist->SetStats(0);
-    TProfile2D* pdist = new TProfile2D("pdist","Hit #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
-    pdist->SetStats(0);
-    shdiag->Project("dist","dist");
-    shdiag->Project("pdist","dist:shpos.y:shpos.x");
-    pdist->SetMaximum(45);
-    pdist->SetMinimum(-5);
-    TCanvas* cdist = new TCanvas("cdist","cdist",1200,600);
-    cdist->Divide(2,1);
-    cdist->cd(1);
-    dist->Draw();
-    cdist->cd(2);
-    pdist->Draw("colorz");
+    TH1F* cedz = new TH1F("cedz","CE Hit #Delta z;#Delta z (mm)",100,-10,45);
+    TH1F* dedz = new TH1F("dedz","#delta Hit #Delta z;#Delta z (mm)",100,-10,45);
+//    dist->SetStats(0);
+    TProfile2D* ceposdz = new TProfile2D("ceposdz","CE Hit #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
+    TProfile2D* deposdz = new TProfile2D("deposdz","#delta Hit #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
+    ceposdz->SetStats(0);
+    deposdz->SetStats(0);
+    shdiag->Project("cedz","dist",stereohit+convhit);
+    shdiag->Project("dedz","dist",stereohit+dhit);
+    shdiag->Project("ceposdz","dist:shpos.y:shpos.x",stereohit+convhit);
+    shdiag->Project("deposdz","dist:shpos.y:shpos.x",stereohit+dhit);
+    ceposdz->SetMaximum(45);
+    ceposdz->SetMinimum(-5);
+    deposdz->SetMaximum(45);
+    deposdz->SetMinimum(-5);
+    TCanvas* cdz = new TCanvas("cdz","cdz",1000,1000);
+    cdz->Divide(2,2);
+    cdz->cd(1);
+    deposdz->Draw("colorz");
+    cdz->cd(2);
+    ceposdz->Draw("colorz");
+    cdz->cd(3);
+    dedz->Draw();
+    cdz->cd(4);
+    cedz->Draw();
 
   } else if(spage=="sfrac"){
 
@@ -317,6 +333,14 @@ void StereoTest(TTree* shdiag,const char* page="events") {
     sdrc2->Draw("same");
     sdrc3->Draw("same");
     sdrc4->Draw("same");
+  } else if (spage == "delta") {
+    TH2F* sdce = new TH2F("sdce","#delta-ray hit flaging, true CE;Reco #delta flag;Reco stereo flag",2,-0.5,1.5,2,-0.5,1.5);
+    TH2F* sdde = new TH2F("sdce","#delta-ray hit flaging, true #delta ray;Reco #delta flag;Reco stereo flag",2,-0.5,1.5,2,-0.5,1.5);
+    sdce->GetXaxis()->SetBinLabel(0,"Not #delta");
+    sdce->GetXaxis()->SetBinLabel(1,"#delta");
+    sdce->GetYaxis()->SetBinLabel(0,"Not Stereo");
+    sdce->GetYaxis()->SetBinLabel(1,"Stereo");
+
   }
 }
 
