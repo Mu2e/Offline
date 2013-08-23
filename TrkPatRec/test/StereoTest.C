@@ -20,7 +20,7 @@
 void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring="") {
   TString spage(page);
   TCut stereohit("stereo!=0");
-  TCut convhit("mcgen==2");
+  TCut convhit("mcgen==2&&pmom>100.0");
   TCut dhit("mcproc<20");
   if(strcmp(cutstring,"")!= 0){
     convhit += TCut(cutstring);
@@ -334,13 +334,55 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     sdrc3->Draw("same");
     sdrc4->Draw("same");
   } else if (spage == "delta") {
-    TH2F* sdce = new TH2F("sdce","#delta-ray hit flaging, true CE;Reco #delta flag;Reco stereo flag",2,-0.5,1.5,2,-0.5,1.5);
-    TH2F* sdde = new TH2F("sdce","#delta-ray hit flaging, true #delta ray;Reco #delta flag;Reco stereo flag",2,-0.5,1.5,2,-0.5,1.5);
-    sdce->GetXaxis()->SetBinLabel(0,"Not #delta");
-    sdce->GetXaxis()->SetBinLabel(1,"#delta");
-    sdce->GetYaxis()->SetBinLabel(0,"Not Stereo");
-    sdce->GetYaxis()->SetBinLabel(1,"Stereo");
+    TH2F* sdce = new TH2F("sdce","#delta-ray hit flaging, true CE;Reco hit #delta flag;Reco hit stereo flag",2,-0.5,1.5,2,-0.5,1.5);
+    TH2F* sdde = new TH2F("sdde","#delta-ray hit flaging, true #delta ray;Reco hit #delta flag;Reco hit stereo flag",2,-0.5,1.5,2,-0.5,1.5);
+    sdce->GetXaxis()->SetBinLabel(1,"Not Delta");
+    sdce->GetXaxis()->SetBinLabel(2,"Delta");
+    sdce->GetYaxis()->SetBinLabel(1,"Not Stereo");
+    sdce->GetYaxis()->SetBinLabel(2,"Stereo");
+    sdde->GetXaxis()->SetBinLabel(1,"Not Delta");
+    sdde->GetXaxis()->SetBinLabel(2,"Delta");
+    sdde->GetYaxis()->SetBinLabel(1,"Not Stereo");
+    sdde->GetYaxis()->SetBinLabel(2,"Stereo");
+    sdce->GetXaxis()->SetLabelSize(0.06);
+    sdce->GetYaxis()->SetLabelSize(0.06);
+    sdde->GetXaxis()->SetLabelSize(0.06);
+    sdde->GetYaxis()->SetLabelSize(0.06);
+    sdce->GetXaxis()->SetTitleSize(0.05);
+    sdce->GetYaxis()->SetTitleSize(0.05);
+    sdde->GetXaxis()->SetTitleSize(0.05);
+    sdde->GetYaxis()->SetTitleSize(0.05);
 
+    sdce->GetYaxis()->SetTitleOffset(1.5);
+    sdde->GetYaxis()->SetTitleOffset(1.5);
+//    sdce->GetYaxis()->SetLabelOffset(-0.01);
+//    sdde->GetYaxis()->LabelsOption("V");
+
+//     sdce->LabelsDeflate("X");
+//     sdce->LabelsDeflate("Y");
+//     sdce->LabelsDeflate("X");
+
+//    sdde->SetTextAngle(30);
+//    sdce->SetTextAngle(30);
+   
+    sdce->SetFillColor(kRed);
+    sdde->SetFillColor(kCyan);
+    sdce->SetStats(0);
+    sdde->SetStats(0);
+    sdce->SetMarkerSize(3.0);
+    sdde->SetMarkerSize(3.0);
+
+    shdiag->Project("sdce","stereo:delta",convhit);
+    shdiag->Project("sdde","stereo:delta",dhit);
+
+    TCanvas* dcan = new TCanvas("dcan","dcan",400,600);
+    dcan->Divide(1,2);
+    dcan->cd(1);
+    gPad->SetLeftMargin(0.15);
+    sdce->Draw("box1:text");
+    dcan->cd(2);
+    gPad->SetLeftMargin(0.15);
+    sdde->Draw("box1:text");
   }
 }
 
