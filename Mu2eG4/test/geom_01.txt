@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.197 2013/08/22 18:10:35 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/22 18:10:35 $
+// $Id: geom_01.txt,v 1.198 2013/08/26 23:54:56 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/08/26 23:54:56 $
 //
 // Original author Rob Kutschke
 //
@@ -401,7 +401,8 @@ vector<string> bfield.innerMaps = {
   "BFieldMaps/Mau9/Mu2e_TSuMap.header",
   "BFieldMaps/Mau9/Mu2e_TSdMap.header",
   "BFieldMaps/Mau9/PStoDumpAreaMap.header",
-  "BFieldMaps/Mau9/ProtonDumpAreaMap.header"
+  "BFieldMaps/Mau9/ProtonDumpAreaMap.header",
+  "BFieldMaps/Mau9/DSExtension.header"
 };
 
 // Value of the uniform magnetic field with the DS volume (only for
