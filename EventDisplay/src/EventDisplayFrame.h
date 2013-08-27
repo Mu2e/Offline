@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.26 2013/05/02 06:03:41 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.27 2013/08/27 17:10:28 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/05/02 06:03:41 $
+// $Date: 2013/08/27 17:10:28 $
 //
 // Original author Ralf Ehrlich
 //
@@ -101,7 +101,7 @@ namespace mu2e_eventdisplay
 #endif
     double              _timeCurrent, _timeStart, _timeStop;
     int                 _minHits, _eventToFind;
-    int                 _eventNumber, _runNumber;
+    int                 _eventNumber, _subrunNumber, _runNumber;
     bool                _isClosed, _findEvent;
     bool                _saveAnim, _saveAnimRoot;
     int                 _saveAnimCounter;
@@ -114,7 +114,7 @@ namespace mu2e_eventdisplay
     TRootEmbeddedCanvas *_mainCanvas, *_infoEmbeddedCanvas;
     TGCanvas            *_infoCanvas;
     TPad                *_mainPad, *_infoPad;
-    TText               *_clock, *_eventNumberText, *_runNumberText;
+    TText               *_clock, *_eventNumberText, *_subrunNumberText, *_runNumberText;
     TTimer              *_timer;
     TGCheckButton       *_supportStructuresButton, *_crvScintillatorBarsButton, *_otherStructuresButton;
     TGCheckButton       *_muonBeamStopStructuresButton, *_mecoStyleProtonAbsorberButton;

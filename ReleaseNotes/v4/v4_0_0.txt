@@ -1,10 +1,19 @@
-  $Id: v4_0_0.txt,v 1.27 2013/08/27 01:46:14 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2013/08/27 01:46:14 $
+  $Id: v4_0_0.txt,v 1.28 2013/08/27 17:12:58 ehrlich Exp $
+  $Author: ehrlich $
+  $Date: 2013/08/27 17:12:58 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v4_0_0
+
+31) Aug 27, 2013, ehrlich
+    Removed the passive shield from the CosmicRayShieldMaker.
+    Inserted the subrun number into the EventDisplay.
+    Modified Files:
+        CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc 
+        EventDisplay/src/EventDisplayFrame.cc 
+        EventDisplay/src/EventDisplayFrame.h 
+        EventDisplay/src/TrackColorSelector.cc 
 
 30) Aug 26, 2013, kutschke
     Add DSExtension.header to the inner bfield maps.

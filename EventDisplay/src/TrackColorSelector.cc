@@ -11,7 +11,7 @@ void TrackColorSelector::setupTrackLegend()
     _legendParticleLine[i]->SetPoint(0, 0.6,0.45-i*0.05);
     _legendParticleLine[i]->SetPoint(1, 0.7,0.45-i*0.05);
     _legendParticleGroup[i]=new TText(0.6,0.44-i*0.05,"");
-    _legendParticleGroup[i]->SetTextColor(0);
+    _legendParticleGroup[i]->SetTextColor(kGray);
     _legendParticleGroup[i]->SetTextSize(0.025);
     _legendParticleText[i]=new TText(0.72,0.44-i*0.05,"");
     _legendParticleText[i]->SetTextSize(0.025);

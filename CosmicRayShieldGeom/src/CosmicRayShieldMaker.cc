@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.25 2013/07/02 15:57:07 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/07/02 15:57:07 $
+// $Id: CosmicRayShieldMaker.cc,v 1.26 2013/08/27 17:10:28 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/08/27 17:10:28 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -77,6 +77,14 @@ namespace mu2e {
 
     _hasPassiveShield =  _config.getBool("crs.hasPassiveShield");
     _hasActiveShield  =  _config.getBool("crs.hasActiveShield");
+
+    if(_hasPassiveShield == true)
+    {
+      std::cout<<"The passive (\"steel\") shield will be replaced by a new class."<<std::endl;
+      std::cout<<"The code will remain in CosmicRayShieldMaker.cc until the new class is done."<<std::endl;
+      std::cout<<"However, it will be disabled from now on."<<std::endl;
+    }
+    _hasPassiveShield = false; 
 
     if ( !_hasPassiveShield && !_hasActiveShield ){
       throw cet::exception("GEOM")

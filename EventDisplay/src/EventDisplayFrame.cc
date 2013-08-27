@@ -61,6 +61,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _timer->SetObject(this);
   _timeCurrent=NAN;
   _eventNumberText=nullptr;
+  _subrunNumberText=nullptr;
   _runNumberText=nullptr;
   _clock=nullptr;
   _isClosed=false;
@@ -572,6 +573,7 @@ void EventDisplayFrame::fillGeometry()
 void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop)
 {
   _eventNumber=event.id().event();
+  _subrunNumber=event.id().run();
   _runNumber=event.id().run();
 
   _contentSelector->setAvailableCollections(event);
@@ -597,6 +599,15 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
     _eventNumberText->Draw("same");
   }
   else _eventNumberText->SetTitle(eventInfoText);
+  sprintf(eventInfoText,"Sub Run #: %i",_subrunNumber);
+  if(_subrunNumberText==nullptr)
+  {
+    _subrunNumberText = new TText(0.6,-0.75,eventInfoText);
+    _subrunNumberText->SetTextColor(5);
+    _subrunNumberText->SetTextSize(0.025);
+    _subrunNumberText->Draw("same");
+  }
+  else _subrunNumberText->SetTitle(eventInfoText);
   sprintf(eventInfoText,"Run #: %i",_runNumber);
   if(_runNumberText==nullptr)
   {
