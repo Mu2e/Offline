@@ -1,8 +1,8 @@
 // Simple approximations available for DIO spectrum.
 //
-// $Id: SimpleSpectrum.cc,v 1.4 2013/08/01 12:42:46 knoepfel Exp $
+// $Id: SimpleSpectrum.cc,v 1.5 2013/08/27 17:23:00 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/01 12:42:46 $
+// $Date: 2013/08/27 17:23:00 $
 //
 
 // Mu2e includes
@@ -34,9 +34,9 @@ namespace mu2e {
   double SimpleSpectrum::getWeight(double E) const {
 
     double weight(0.);
-    if      ( _approx == Spectrum::Flat  ) weight = getFlat (E);
-    else if ( _approx == Spectrum::Pol5  ) weight = getPol5 (E);
-    else if ( _approx == Spectrum::Pol58 ) weight = getPol58(E);
+    if      ( _approx == Spectrum::Flat  ) weight = getFlat (E, _phy);
+    else if ( _approx == Spectrum::Pol5  ) weight = getPol5 (E, _phy);
+    else if ( _approx == Spectrum::Pol58 ) weight = getPol58(E, _phy);
 
     return weight;      
 
