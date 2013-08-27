@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.198 2013/08/26 23:54:56 kutschke Exp $
+// $Id: geom_01.txt,v 1.199 2013/08/27 01:45:29 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/08/26 23:54:56 $
+// $Date: 2013/08/27 01:45:29 $
 //
 // Original author Rob Kutschke
 //
@@ -419,10 +419,10 @@ int  bfield.verbosityLevel =  0;
 bool bfield.writeG4BLBinaries     =  false;
 
 vector<string> bfield.outerMaps = {
-  "BFieldMaps/Mau7b/ExtMonUCIInternal1AreaMap.header",
-  "BFieldMaps/Mau7b/ExtMonUCIInternal2AreaMap.header",
-  "BFieldMaps/Mau7b/ExtMonUCIAreaMap.header",
-  "BFieldMaps/Mau7b/PSAreaMap.header"
+  "BFieldMaps/Mau9/ExtMonUCIInternal1AreaMap.header",
+  "BFieldMaps/Mau9/ExtMonUCIInternal2AreaMap.header",
+  "BFieldMaps/Mau9/ExtMonUCIAreaMap.header",
+  "BFieldMaps/Mau9/PSAreaMap.header"
 };
 
 // This scale factor is of limited use.
