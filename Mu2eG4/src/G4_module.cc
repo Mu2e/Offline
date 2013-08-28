@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.71 2013/08/28 05:59:21 gandr Exp $
+// $Id: G4_module.cc,v 1.72 2013/08/28 06:00:21 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/28 05:59:21 $
+// $Date: 2013/08/28 06:00:21 $
 //
 // Original author Rob Kutschke
 //
@@ -54,6 +54,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
@@ -63,6 +64,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -91,6 +93,7 @@
 #include <cstdlib>
 #include <memory>
 #include <iomanip>
+#include <utility>
 
 using namespace std;
 
@@ -109,6 +112,8 @@ namespace mu2e {
 
     virtual void beginRun(art::Run &r);
     virtual void endRun(art::Run &);
+
+    virtual void beginSubRun(art::SubRun &sr);
 
   private:
     typedef std::vector<art::InputTag> InputTags;
@@ -144,6 +149,8 @@ namespace mu2e {
 
     art::InputTag _generatorModuleLabel;
     InputTags _genInputHitLabels;
+
+    string _inputPhysVolumeMultiInfoLabel;
 
     // Helps with indexology related to persisting info about G4 volumes.
     PhysicalVolumeHelper _physVolHelper;
@@ -189,6 +196,7 @@ namespace mu2e {
     _visMacro(pSet.get<std::string>("visMacro","")),
     _g4Macro(pSet.get<std::string>("g4Macro","")),
     _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
+    _inputPhysVolumeMultiInfoLabel(pSet.get<string>("inputPhysVolumeMultiInfoLabel", "")),
     _physVolHelper(),
     _processInfo(),
     _printPhysicsProcessSummary(false),
@@ -226,6 +234,7 @@ namespace mu2e {
     produces<PointTrajectoryCollection>();
     produces<ExtMonFNALSimHitCollection>();
     produces<PhysicalVolumeInfoCollection,art::InRun>();
+    produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
 
     // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
     createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
@@ -390,6 +399,25 @@ namespace mu2e {
     _diagnostics.book("Outputs");
 
   } // end G4::initializeG4
+
+
+  void G4::beginSubRun(art::SubRun& sr) {
+    unique_ptr<PhysicalVolumeInfoMultiCollection> mvi(new PhysicalVolumeInfoMultiCollection());
+
+    if(!_inputPhysVolumeMultiInfoLabel.empty()) {
+      // Copy over data from the previous simulation stages
+      art::Handle<PhysicalVolumeInfoMultiCollection> ih;
+      sr.getByLabel(_inputPhysVolumeMultiInfoLabel, ih);
+      mvi->reserve(1 + ih->size());
+      mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
+    }
+
+    // Append info for the current stage
+    mvi->emplace_back(std::make_pair(_simParticleNumberOffset, _physVolHelper.persistentInfo()));
+
+    sr.put(std::move(mvi));
+  }
+
 
   // Create one G4 event and copy its output to the art::event.
   void G4::produce(art::Event& event) {
