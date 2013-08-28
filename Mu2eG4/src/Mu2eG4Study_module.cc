@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // ******Meant for Geant4 Studies not for Mu2e Simulations**********
 //
-// $Id: Mu2eG4Study_module.cc,v 1.7 2013/05/31 21:38:01 gandr Exp $
+// $Id: Mu2eG4Study_module.cc,v 1.8 2013/08/28 05:59:21 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 21:38:01 $
+// $Date: 2013/08/28 05:59:21 $
 //
 // Original author K. Genser, based on Rob's G4_module
 //
@@ -21,6 +21,7 @@
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eStudyWorld.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
+#include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
 #include "Mu2eG4/inc/exportG4PDT.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -288,7 +289,7 @@ namespace mu2e {
 
     _runManager->SetUserInitialization(pL);
 
-    _genAction = new PrimaryGeneratorAction(_generatorModuleLabel);
+    _genAction = new PrimaryGeneratorAction();
     _runManager->SetUserAction(_genAction);
 
     _steppingAction = new StudySteppingAction(config);
@@ -363,7 +364,11 @@ namespace mu2e {
 
     _trackingAction->beginEvent(      gensHandle, simPartId, event );
 
-    _genAction->setEvent(event);
+    // The Study module does not support multi-stage simulations.
+    // Still need to create a parentHelper and use it along with the
+    // emtpy HitHandles to satisfy the PrimaryGeneratorAction method signature.
+    SimParticlePrimaryHelper parentHelper(event, simPartId, gensHandle);
+    _genAction->setEventData(&*gensHandle, HitHandles(), &parentHelper);
 
     _steppingAction->BeginOfEvent(*tvdHits, *steppingPoints, simPartId, event );
 

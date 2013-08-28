@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.37 2013/08/28 05:58:37 gandr Exp $
+// $Id: TrackingAction.cc,v 1.38 2013/08/28 05:59:21 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/28 05:58:37 $
+// $Date: 2013/08/28 05:59:21 $
 //
 // Original author Rob Kutschke
 //
@@ -26,6 +26,7 @@
 
 // C++ includes
 #include <iostream>
+#include <cassert>
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
@@ -33,6 +34,7 @@
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
+#include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
@@ -63,7 +65,8 @@ namespace mu2e {
     _pointTrajectoryMomentumCut(config.getDouble("g4.pointTrajectoryMomentumCut", 50)),
     _steppingAction(steppingAction),
     _processInfo(0),
-    _spHelper()
+    _spHelper(),
+    _primaryHelper()
   {
 
     string name("g4.trackingActionEventList");
@@ -130,13 +133,13 @@ namespace mu2e {
       bool operator[](cet::map_vector_key ) const { return true; }
     };
   }
-  void TrackingAction::beginEvent( art::Handle<GenParticleCollection> const& gensHandle,
-                                   const art::Handle<SimParticleCollection>& inputSimHandle,
-                                   const SimParticleHelper& spHelper) {
+  void TrackingAction::beginEvent( const art::Handle<SimParticleCollection>& inputSimHandle,
+                                   const SimParticleHelper& spHelper,
+                                   const SimParticlePrimaryHelper& primaryHelper) {
     _currentSize          = 0;
     _overflowSimParticles = false;
-    _gensHandle           = &gensHandle;
     _spHelper             = &spHelper;
+    _primaryHelper         = &primaryHelper;
 
     if(inputSimHandle.isValid()) {
       // We do not compress anything here, but use the call to reseat the pointers
@@ -170,18 +173,17 @@ namespace mu2e {
       return;
     }
 
-    key_type kid = _spHelper->particleKeyFromG4TrackID(trk->GetTrackID());
-    int parentId = trk->GetParentID();
+    const key_type kid = _spHelper->particleKeyFromG4TrackID(trk->GetTrackID());
+    const int parentId = trk->GetParentID();
 
-    // Indices into the GenParticleCollection are 0 based.
-    // The first n particles in the G4 track list are the same as the first n particles
-    // from the generator.
-    int generatorIndex = ( parentId == 0 ) ? trk->GetTrackID() - 1 : -1;
     art::Ptr<GenParticle> genPtr;
     art::Ptr<SimParticle> parentPtr;
-    if ( parentId == 0 ){
-      genPtr = art::Ptr<GenParticle>(*_gensHandle,generatorIndex);
-    } else{
+
+    if(parentId == 0) { // primary
+      genPtr = _primaryHelper->genParticlePtr(trk->GetTrackID());
+      parentPtr = _primaryHelper->simParticlePrimaryPtr(trk->GetTrackID());
+    }
+    else { // not a primary
       parentPtr = _spHelper->particlePtrFromG4TrackID(parentId);
     }
 
@@ -213,12 +215,12 @@ namespace mu2e {
                                                          )));
 
     // If this track has a parent, tell the parent about this track.
-    if ( parentId != 0 ){
-      map_type::iterator i(_transientMap.find(_spHelper->particleKeyFromG4TrackID(parentId)));
+    if ( parentPtr.isNonnull() ){
+      map_type::iterator i(_transientMap.find(SimParticleCollection::key_type(parentPtr.key())));
       if ( i == _transientMap.end() ){
         throw cet::exception("RANGE")
           << "Could not find parent SimParticle in PreUserTrackingAction.  id: "
-          << _spHelper->particleKeyFromG4TrackID(parentId)
+          << parentPtr.key()
           << "\n";
       }
       i->second.addDaughter(_spHelper->particlePtr(trk));

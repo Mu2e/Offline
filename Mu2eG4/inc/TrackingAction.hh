@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.24 2013/08/28 05:58:37 gandr Exp $
+// $Id: TrackingAction.hh,v 1.25 2013/08/28 05:59:21 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/28 05:58:37 $
+// $Date: 2013/08/28 05:59:21 $
 //
 // Original author Rob Kutschke
 //
@@ -37,6 +37,7 @@ namespace mu2e {
   class SimpleConfig;
   class SteppingAction;
   class SimParticleHelper;
+  class SimParticlePrimaryHelper;
 
   class TrackingAction: public G4UserTrackingAction{
 
@@ -52,9 +53,10 @@ namespace mu2e {
     // All methods after here are Mu2e specific.
 
     // Do all things that need to be done at the beginning/end of an event.
-    void beginEvent( art::Handle<GenParticleCollection> const& gensHandle,
-                     const art::Handle<SimParticleCollection>& inputSims,
-                     const SimParticleHelper& spHelper );
+    void beginEvent( const art::Handle<SimParticleCollection>& inputSims,
+                     const SimParticleHelper& spHelper,
+                     const SimParticlePrimaryHelper& primaryHelper
+                     );
 
     void endEvent( SimParticleCollection& simParticles );
 
@@ -111,11 +113,9 @@ namespace mu2e {
     // lifetime of pointee is one run.
     PhysicsProcessInfo *  _processInfo;
 
-    // Handle to the GenParticle collection; needed to make Ptrs into that collection.
-    art::Handle<GenParticleCollection> const * _gensHandle;
-
     // Helper to obtain SimParticle Ptr (non-owning)
     const SimParticleHelper *_spHelper;
+    const SimParticlePrimaryHelper *_primaryHelper;
 
     // Some helper functions.
     void insertOrThrow(std::pair<int,SimParticle> const& value);
@@ -125,4 +125,3 @@ namespace mu2e {
 } // end namespace mu2e
 
 #endif /* Mu2eG4_TrackingAction_hh */
-

@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.70 2013/08/28 05:58:37 gandr Exp $
+// $Id: G4_module.cc,v 1.71 2013/08/28 05:59:21 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/28 05:58:37 $
+// $Date: 2013/08/28 05:59:21 $
 //
 // Original author Rob Kutschke
 //
@@ -46,6 +46,7 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/generateFieldMap.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
+#include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 
@@ -110,6 +111,9 @@ namespace mu2e {
     virtual void endRun(art::Run &);
 
   private:
+    typedef std::vector<art::InputTag> InputTags;
+    typedef std::vector<std::string> Strings;
+
     unique_ptr<Mu2eG4RunManager> _runManager;
 
     // Do we issue warnings about multiple runs?
@@ -138,7 +142,8 @@ namespace mu2e {
     // the initialization phase.
     string _g4Macro;
 
-    string _generatorModuleLabel;
+    art::InputTag _generatorModuleLabel;
+    InputTags _genInputHitLabels;
 
     // Helps with indexology related to persisting info about G4 volumes.
     PhysicalVolumeHelper _physVolHelper;
@@ -183,7 +188,7 @@ namespace mu2e {
     _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
     _visMacro(pSet.get<std::string>("visMacro","")),
     _g4Macro(pSet.get<std::string>("g4Macro","")),
-    _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel")),
+    _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
     _physVolHelper(),
     _processInfo(),
     _printPhysicsProcessSummary(false),
@@ -194,6 +199,16 @@ namespace mu2e {
     _simParticleNumberOffset(pSet.get<unsigned>("simParticleNumberOffset", 0)),
     _inputSimParticles(pSet.get<std::string>("inputSimParticles", "")),
     _diagnostics(){
+
+    Strings genHitsStr(pSet.get<Strings>("genInputHits", Strings()));
+    for(const auto& s : genHitsStr) {
+      _genInputHitLabels.emplace_back(s);
+    }
+
+    if((_generatorModuleLabel == art::InputTag()) && _genInputHitLabels.empty()) {
+      throw cet::exception("CONFIG")
+        << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
+    }
 
     produces<StatusG4>();
     produces<SimParticleCollection>();
@@ -306,7 +321,7 @@ namespace mu2e {
 
     _runManager->SetUserInitialization(pL);
 
-    _genAction = new PrimaryGeneratorAction(_generatorModuleLabel);
+    _genAction = new PrimaryGeneratorAction();
     _runManager->SetUserAction(_genAction);
 
     _steppingAction = new SteppingAction(config);
@@ -381,7 +396,15 @@ namespace mu2e {
 
     // Handle to the generated particles; need when building art::Ptr to a GenParticle.
     art::Handle<GenParticleCollection> gensHandle;
-    event.getByLabel(_generatorModuleLabel, gensHandle);
+    if(!(_generatorModuleLabel == art::InputTag())) {
+      event.getByLabel(_generatorModuleLabel, gensHandle);
+    }
+
+    // input hits from the previous simulation stage
+    HitHandles genInputHits;
+    for(const auto& i : _genInputHitLabels) {
+      genInputHits.emplace_back(event.getValidHandle<StepPointMCCollection>(i));
+    }
 
     art::Handle<SimParticleCollection> inputSimHandle;
     if(!(art::InputTag() == _inputSimParticles)) {
@@ -398,10 +421,11 @@ namespace mu2e {
     // ProductID for the SimParticleCollection.
     art::ProductID simPartId(getProductID<SimParticleCollection>(event));
     SimParticleHelper spHelper(_simParticleNumberOffset, simPartId, event);
+    SimParticlePrimaryHelper parentHelper(event, simPartId, gensHandle);
 
-    // Some of the user actions have begein event methods. These are not G4 standards.
-    _trackingAction->beginEvent(gensHandle, inputSimHandle, spHelper);
-    _genAction->setEvent(event);
+    // Some of the user actions have begin event methods. These are not G4 standards.
+    _trackingAction->beginEvent(inputSimHandle, spHelper, parentHelper);
+    _genAction->setEventData(gensHandle.isValid() ? &*gensHandle : 0, genInputHits, &parentHelper);
     _steppingAction->BeginOfEvent(*tvdHits,  spHelper);
 
     // Connect the newly created StepPointMCCollections to their sensitive detector objects.

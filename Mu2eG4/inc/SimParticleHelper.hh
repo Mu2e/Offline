@@ -1,3 +1,6 @@
+// The job of this class is to translate between G4 track IDs and
+// keys of SimParticles produced by the current job.
+//
 // Andrei Gaponenko, 2013
 
 #ifndef Mu2eG4_inc_SimParticleHelper
