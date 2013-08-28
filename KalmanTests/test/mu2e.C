@@ -130,7 +130,7 @@ class mu2e {
     void init();
 
     void fillmu2e(unsigned nbins=151,double mmin=101.0,double mmax=106.0);
-    void drawmu2e(double momlow,double momhigh,bool log,const char* suffix=".png");
+    void drawmu2e(double momlow,double momhigh,bool log,unsigned ilow=0,unsigned ihi=3,const char* suffix=".png");
     void drawdio(double momlow,double momhigh,const char* suffix=".png");
     void smearDIO(unsigned ntrials=1e5,unsigned nres=1e5);
     void doExperiments(double momlow, double momhigh,double cprob,unsigned ispec,unsigned nexp=18, unsigned npave=0);
@@ -277,15 +277,19 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
   _info->SetBorderSize(0);
 }
 
-void mu2e::drawmu2e(double momlow, double momhigh,bool logy,const char* suffix) {
+void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsigned ihi,const char* suffix) {
   // plot results
-  TCanvas* mu2ecan = new TCanvas("mu2e","mu2e result",900,600);
-  mu2ecan->Clear();
-  mu2ecan->Divide(1,1);
   TCanvas* allcan = new TCanvas("mu2eall","mu2e results",1200,800);
   allcan->Clear();
-  allcan->Divide(2,2);
-  for(unsigned icut=0;icut<4;icut++){
+  int ncan=ihi-ilow;
+  if(ncan >=3)
+    allcan->Divide(2,2);
+  else if(ncan>1)
+    allcan->Divide(2,1);
+  else
+    allcan->Divide(1,1);
+
+  for(unsigned icut=ilow;icut<ihi+1;icut++){
     double conmax = 1.5*_conspec[icut]->GetBinContent(_conspec[icut]->GetMaximumBin());
     allcan->cd(icut+1);
     if(logy){
@@ -374,29 +378,10 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,const char* suffix) 
     TText* sigwin = new TText(0.5*(momlow+momhigh),0.9*conmax,"Signal Window");
     sigwin->SetTextAlign(21);
     sigwin->Draw();
-
-//    _leg->Draw();
-//    _info->Draw();
-    if(icut == mu2ecut){
-      mu2ecan->cd(0);
-      if(logy)gPad->SetLogy();
-      _diospec[icut]->Draw();
-      _conspec[icut]->Draw("same");
-      _flat_f[icut]->Draw("same");
-      inttext->Draw();
-//      cuttext->Draw();
-      momlowl->Draw();
-      momhighl->Draw();
-      sigline->Draw();
-      sigwin->Draw();
-//      _leg->Draw();
-//      _info->Draw();
-    }
   }
   allcan->cd(0);
   std::string ssuf(suffix);
-  allcan->SaveAs((std::string("mu2e_all")+ssuf).c_str());
-  mu2ecan->SaveAs((std::string("mu2e")+ssuf).c_str());
+  allcan->SaveAs((std::string("mu2e")+ssuf).c_str());
 }
 
 void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {

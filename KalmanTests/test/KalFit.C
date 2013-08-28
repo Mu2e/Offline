@@ -454,6 +454,7 @@ void KalFitAcc(TTree* trks) {
     racc->SetBinContent(ibin,acc->GetBinContent(ibin)/prev);
     prev = acc->GetBinContent(ibin);
   }
+  cout << "Found " << all << "Entries." << endl;
   racc->SetMaximum(1.1);
   acc->Scale(1.0/all);
   acc->SetMaximum(1.1);
@@ -562,8 +563,8 @@ void KalFitRes(TTree* trks) {
     char line[40];
     snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
     rtext->AddText(line);
-    snprintf(line,80,"t0>%5.1f nsec",t0min);
-    rtext->AddText(line);
+//    snprintf(line,80,"t0>%5.1f nsec",t0min);
+//    rtext->AddText(line);
     sprintf(line,"%s",ncuts[ires].GetTitle());
     rtext->AddText(line);
     sprintf(line,"%s",t0cuts[ires].GetTitle());
