@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.15 2013/08/09 22:10:53 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.16 2013/08/28 22:15:18 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/08/09 22:10:53 $
+// $Date: 2013/08/28 22:15:18 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -199,8 +199,8 @@ namespace mu2e
     _ismask(StrawHitFlag::isolated),
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","MLP method")),
     _dpeaktype(pset.get<std::string>("DeltaPeakTMVAType","MLP method")),
-    _gdcut(pset.get<double>("DeltaHitMVACut",0.7)),
-    _gdcore(pset.get<double>("DeltaHitMVACoreCut",0.85)),
+    _gdcut(pset.get<double>("DeltaHitMVACut",0.4)),
+    _gdcore(pset.get<double>("DeltaHitMVACoreCut",0.6)),
     _mindp(pset.get<unsigned>("MinDeltaHits",6)),
     _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.95)),
     _minflag(pset.get<int>("DeltaHitFlag",1)),
