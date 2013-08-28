@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.21 2013/08/12 21:21:29 gandr Exp $
+// $Id: classes.h,v 1.22 2013/08/28 05:59:50 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/12 21:21:29 $
+// $Date: 2013/08/28 05:59:50 $
 //
 // Original author Rob Kutschke
 //
@@ -34,7 +34,9 @@
 #include "MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfo.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
@@ -76,6 +78,7 @@ template class std::vector<mu2e::ExtMonFNALSimHit>;
 template class art::Wrapper<mu2e::GenParticleCollection>;
 template class art::Wrapper<mu2e::StepPointMCCollection>;
 template class art::Wrapper<mu2e::PhysicalVolumeInfoCollection>;
+template class art::Wrapper<mu2e::PhysicalVolumeInfoMultiCollection>;
 template class art::Wrapper<mu2e::SimParticleCollection>;
 template class art::Wrapper<mu2e::StrawHitMCTruthCollection>;
 template class art::Wrapper<mu2e::G4BeamlineInfo>;
@@ -101,6 +104,8 @@ namespace {
     mu2e::GenSimParticleLink gspl;
     mu2e::GenParticleMARSAssns gpwa;
     mu2e::SimParticleMARSAssns spwa;
+    std::pair<unsigned int, mu2e::PhysicalVolumeInfoCollection> pupvic;
+    mu2e::PhysicalVolumeInfoMultiCollection pvimc;
   };
 }
 template class art::Wrapper<mu2e::GenParticleSPMHistory>;

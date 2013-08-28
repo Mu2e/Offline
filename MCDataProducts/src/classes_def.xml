@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.21 2013/08/12 21:21:29 gandr Exp $     -->
+<!--  $Id: classes_def.xml,v 1.22 2013/08/28 05:59:50 gandr Exp $     -->
 <!--  $Author: gandr $ -->
-<!--  $Date: 2013/08/12 21:21:29 $   -->
+<!--  $Date: 2013/08/28 05:59:50 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.21 $$Date: 2013/08/12 21:21:29 $"; -->
+<!--  rev="$Revision: 1.22 $$Date: 2013/08/28 05:59:50 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -18,6 +18,8 @@
 <lcgdict>
  <class name="mu2e::PhysicalVolumeInfo"/>
  <class name="mu2e::PhysicalVolumeInfoCollection"/>
+ <class name="std::pair<unsigned int,mu2e::PhysicalVolumeInfoCollection>"/>
+ <class name="mu2e::PhysicalVolumeInfoMultiCollection"/>
  <class name="mu2e::ProcessCode"/>
  <class name="mu2e::PDGCode"/>
  <class name="art::ProductID"/>
@@ -67,6 +69,7 @@
  <class name="art::Wrapper<mu2e::GenParticleCollection>"/>
  <class name="art::Wrapper<mu2e::StepPointMCCollection>"/>
  <class name="art::Wrapper<mu2e::PhysicalVolumeInfoCollection>"/>
+ <class name="art::Wrapper<mu2e::PhysicalVolumeInfoMultiCollection>"/>
  <class name="art::Wrapper<mu2e::SimParticleCollection>"/>
  <class name="art::Wrapper<mu2e::StrawHitMCTruthCollection>"/>
  <class name="art::Wrapper<mu2e::G4BeamlineInfo>"/>
