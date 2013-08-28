@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.36 2013/08/28 05:58:17 gandr Exp $
+// $Id: TrackingAction.cc,v 1.37 2013/08/28 05:58:37 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
+// $Date: 2013/08/28 05:58:37 $
 //
 // Original author Rob Kutschke
 //
@@ -36,6 +36,7 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
+#include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
 
 // Framework includes
 #include "art/Persistency/Common/Ptr.h"
@@ -124,12 +125,28 @@ namespace mu2e {
 
   }
 
+  namespace { // to use compressSimParticleCollection
+    struct KeepAll {
+      bool operator[](cet::map_vector_key ) const { return true; }
+    };
+  }
   void TrackingAction::beginEvent( art::Handle<GenParticleCollection> const& gensHandle,
+                                   const art::Handle<SimParticleCollection>& inputSimHandle,
                                    const SimParticleHelper& spHelper) {
     _currentSize          = 0;
     _overflowSimParticles = false;
     _gensHandle           = &gensHandle;
     _spHelper             = &spHelper;
+
+    if(inputSimHandle.isValid()) {
+      // We do not compress anything here, but use the call to reseat the pointers
+      // while copying the inputs to _transientMap.
+      compressSimParticleCollection(_spHelper->productID(),
+                                    _spHelper->productGetter(),
+                                    *inputSimHandle,
+                                    KeepAll(),
+                                    _transientMap);
+    }
   }
 
   void TrackingAction::endEvent(SimParticleCollection& persistentSims ){

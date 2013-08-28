@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.69 2013/08/28 05:58:17 gandr Exp $
+// $Id: G4_module.cc,v 1.70 2013/08/28 05:58:37 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
+// $Date: 2013/08/28 05:58:37 $
 //
 // Original author Rob Kutschke
 //
@@ -68,6 +68,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art/Utilities/InputTag.h"
 
 // Geant4 includes
 #include "G4UIExecutive.hh"
@@ -155,6 +156,7 @@ namespace mu2e {
     const StepInstanceName _tvdOutputName;
 
     unsigned _simParticleNumberOffset;
+    art::InputTag _inputSimParticles;
 
     // A class to make some standard histograms.
     DiagnosticsG4 _diagnostics;
@@ -190,6 +192,7 @@ namespace mu2e {
     _extMonFNALPixelSD(),
     _tvdOutputName(StepInstanceName::timeVD),
     _simParticleNumberOffset(pSet.get<unsigned>("simParticleNumberOffset", 0)),
+    _inputSimParticles(pSet.get<std::string>("inputSimParticles", "")),
     _diagnostics(){
 
     produces<StatusG4>();
@@ -380,6 +383,11 @@ namespace mu2e {
     art::Handle<GenParticleCollection> gensHandle;
     event.getByLabel(_generatorModuleLabel, gensHandle);
 
+    art::Handle<SimParticleCollection> inputSimHandle;
+    if(!(art::InputTag() == _inputSimParticles)) {
+      event.getByLabel(_inputSimParticles, inputSimHandle);
+    }
+
     // Create empty data products.
     unique_ptr<SimParticleCollection>     simParticles(      new SimParticleCollection);
     unique_ptr<StepPointMCCollection>     tvdHits(           new StepPointMCCollection);
@@ -392,7 +400,7 @@ namespace mu2e {
     SimParticleHelper spHelper(_simParticleNumberOffset, simPartId, event);
 
     // Some of the user actions have begein event methods. These are not G4 standards.
-    _trackingAction->beginEvent(gensHandle, spHelper);
+    _trackingAction->beginEvent(gensHandle, inputSimHandle, spHelper);
     _genAction->setEvent(event);
     _steppingAction->BeginOfEvent(*tvdHits,  spHelper);
 

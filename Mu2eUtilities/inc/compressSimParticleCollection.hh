@@ -4,9 +4,9 @@
 //
 // Compress a SimParticleCollection.
 //
-// $Id: compressSimParticleCollection.hh,v 1.1 2011/12/16 23:14:20 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/12/16 23:14:20 $
+// $Id: compressSimParticleCollection.hh,v 1.2 2013/08/28 05:58:37 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:37 $
 //
 // Contact person Rob Kutschke
 //
@@ -54,12 +54,12 @@
 
 namespace mu2e {
 
-  template<typename SELECTOR>
+  template<typename SELECTOR, typename OUTCOLL>
   void compressSimParticleCollection ( art::ProductID         const& newProductID,
                                        art::EDProductGetter   const* productGetter,
                                        SimParticleCollection  const& in,
                                        SELECTOR               const& keep,
-                                       SimParticleCollection&        out  ){
+                                       OUTCOLL&        out  ){
 
     for ( SimParticleCollection::const_iterator i=in.begin(), e=in.end(); i!=e; ++i ){
       if ( keep[i->first] ){
