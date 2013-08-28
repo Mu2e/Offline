@@ -3,9 +3,9 @@
 //
 // Some helper functions to manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.hh,v 1.3 2013/03/29 05:45:03 gandr Exp $
+// $Id: SensitiveDetectorHelper.hh,v 1.4 2013/08/28 05:58:17 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/29 05:45:03 $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author Rob Kutschke
 //
@@ -32,6 +32,7 @@ namespace fhicl { class ParameterSet; }
 namespace mu2e {
 
   class SimpleConfig;
+  class SimParticleHelper;
 
   class SensitiveDetectorHelper{
 
@@ -48,8 +49,7 @@ namespace mu2e {
 
     // Attach the new per-event data products to the corresponding sensitive detector objects.
     void updateSensitiveDetectors( PhysicsProcessInfo&   info,
-                                   art::ProductID const& simsId,
-                                   art::Event&           event );
+                                   const SimParticleHelper& spHelper);
 
     // Put the data products into the event.
     void put( art::Event& event);

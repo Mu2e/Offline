@@ -1,8 +1,8 @@
 //
 //
-//  $Id: ITGasLayerSD_Hexagonal.cc,v 1.15 2013/02/07 17:56:03 genser Exp $
-//  $Author: genser $
-//  $Date: 2013/02/07 17:56:03 $
+//  $Id: ITGasLayerSD_Hexagonal.cc,v 1.16 2013/08/28 05:58:17 gandr Exp $
+//  $Author: gandr $
+//  $Date: 2013/08/28 05:58:17 $
 //
 //
 #include "Mu2eG4/inc/ITGasLayerSD_Hexagonal.hh"
@@ -250,7 +250,7 @@ namespace mu2e {
 
            // Add the hit to the framework collection.
            // The point's coordinates are saved in the mu2e coordinate system.
-           _collection->push_back( StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _event->productGetter(*_simID) ),
+            _collection->push_back( StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                                 det,
                                                 edep,
                                                 aStep->GetNonIonizingEnergyDeposit(),

@@ -3,15 +3,16 @@
 //
 // Defines a generic Mu2e sensitive detector
 //
-// $Id: Mu2eSensitiveDetector.hh,v 1.1 2012/05/29 22:52:49 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/29 22:52:49 $
+// $Id: Mu2eSensitiveDetector.hh,v 1.2 2013/08/28 05:58:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author KLG
 //
 
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
+#include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // G4 includes
@@ -42,10 +43,9 @@ namespace mu2e {
 
     virtual void EndOfEvent(G4HCofThisEvent*);
 
-    void beforeG4Event(StepPointMCCollection& outputHits, 
+    void beforeG4Event(StepPointMCCollection& outputHits,
                        PhysicsProcessInfo & processInfo,
-                       art::ProductID const& simID,
-                       art::Event const & event );
+                       const SimParticleHelper& spHelper);
 
   protected:
 
@@ -65,10 +65,8 @@ namespace mu2e {
     int _sizeLimit;
     int _currentSize;
 
-    // Information about the SimParticleCollection, needed to instantiate art::Ptr.
-    art::ProductID const * _simID;
-    art::Event     const * _event;
-
+    // A helper to create pointers to SimParticles
+    const SimParticleHelper *_spHelper;
   };
 
 } // namespace mu2e

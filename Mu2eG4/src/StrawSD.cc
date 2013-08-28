@@ -3,9 +3,9 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.42 2013/08/18 03:05:43 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/18 03:05:43 $
+// $Id: StrawSD.cc,v 1.43 2013/08/28 05:58:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author Rob Kutschke
 //
@@ -216,7 +216,7 @@ namespace mu2e {
     ProcessCode endCode(_processInfo->
                         findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
-    _collection->push_back( StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _event->productGetter(*_simID) ),
+    _collection->push_back( StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                         sdcn,
                                         edep,
                                         aStep->GetNonIonizingEnergyDeposit(),

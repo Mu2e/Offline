@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.22 2013/01/22 19:58:25 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2013/01/22 19:58:25 $
+// $Id: TrackingAction.hh,v 1.23 2013/08/28 05:58:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author Rob Kutschke
 //
@@ -36,6 +36,7 @@ namespace mu2e {
   // Forward declarations in mu2e namespace
   class SimpleConfig;
   class SteppingAction;
+  class SimParticleHelper;
 
   class TrackingAction: public G4UserTrackingAction{
 
@@ -51,9 +52,9 @@ namespace mu2e {
     // All methods after here are Mu2e specific.
 
     // Do all things that need to be done at the beginning/end of an event.
-    void beginEvent( art::Handle<GenParticleCollection> const& gensHandle, 
-                     art::ProductID const& simID, 
-                     art::Event const &event );
+    void beginEvent( art::Handle<GenParticleCollection> const& gensHandle,
+                     const SimParticleHelper& spHelper );
+
     void endEvent( SimParticleCollection& simParticles );
 
     // Record start and end points of each track created by G4.
@@ -112,11 +113,8 @@ namespace mu2e {
     // Handle to the GenParticle collection; needed to make Ptrs into that collection.
     art::Handle<GenParticleCollection> const * _gensHandle;
 
-    // Product ID of the SimParticleCollection; needed to make PTrs into that collection.
-    art::ProductID _simID;
-
-    // Non-owning pointer to the event; needed for some Ptr stuff.
-    art::Event const * _event;
+    // Helper to obtain SimParticle Ptr (non-owning)
+    const SimParticleHelper *_spHelper;
 
     // Some helper functions.
     void insertOrThrow(std::pair<int,SimParticle> const& value);

@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.68 2013/07/01 20:16:10 gandr Exp $
+// $Id: G4_module.cc,v 1.69 2013/08/28 05:58:17 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/07/01 20:16:10 $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author Rob Kutschke
 //
@@ -45,6 +45,7 @@
 #include "Mu2eUtilities/inc/DiagnosticsG4.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/generateFieldMap.hh"
+#include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 
@@ -153,6 +154,8 @@ namespace mu2e {
     // Instance name of the timeVD StepPointMC data product.
     const StepInstanceName _tvdOutputName;
 
+    unsigned _simParticleNumberOffset;
+
     // A class to make some standard histograms.
     DiagnosticsG4 _diagnostics;
 
@@ -186,6 +189,7 @@ namespace mu2e {
     _sensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
     _extMonFNALPixelSD(),
     _tvdOutputName(StepInstanceName::timeVD),
+    _simParticleNumberOffset(pSet.get<unsigned>("simParticleNumberOffset", 0)),
     _diagnostics(){
 
     produces<StatusG4>();
@@ -283,6 +287,7 @@ namespace mu2e {
       mf::LogInfo logInfo("GEOM");
       logInfo << "Initializing Geant 4 for " << run.id()
               << " with verbosity " << _rmvlevel << endl;
+      logInfo << "Configured simParticleNumberOffset = "<< _simParticleNumberOffset << endl;
     }
 
     // Create user actions and register them with G4.
@@ -384,16 +389,17 @@ namespace mu2e {
 
     // ProductID for the SimParticleCollection.
     art::ProductID simPartId(getProductID<SimParticleCollection>(event));
+    SimParticleHelper spHelper(_simParticleNumberOffset, simPartId, event);
 
     // Some of the user actions have begein event methods. These are not G4 standards.
-    _trackingAction->beginEvent( gensHandle, simPartId, event );
+    _trackingAction->beginEvent(gensHandle, spHelper);
     _genAction->setEvent(event);
-    _steppingAction->BeginOfEvent(*tvdHits,  simPartId, event );
+    _steppingAction->BeginOfEvent(*tvdHits,  spHelper);
 
     // Connect the newly created StepPointMCCollections to their sensitive detector objects.
-    _sensitiveDetectorHelper.updateSensitiveDetectors( _processInfo, simPartId, event );
+    _sensitiveDetectorHelper.updateSensitiveDetectors( _processInfo, spHelper);
     if(_extMonFNALPixelSD) {
-      _extMonFNALPixelSD->beforeG4Event(extMonFNALHits.get(), simPartId, event);
+      _extMonFNALPixelSD->beforeG4Event(extMonFNALHits.get(), spHelper);
     }
 
     // Run G4 for this event and access the completed event.
@@ -403,7 +409,7 @@ namespace mu2e {
     // Populate the output data products.
     GeomHandle<WorldG4>  world;
     GeomHandle<Mu2eBuilding>  building;
-    addPointTrajectories( g4event, *pointTrajectories, world->mu2eOriginInWorld());
+    addPointTrajectories( g4event, *pointTrajectories, spHelper, world->mu2eOriginInWorld());
 
     // Run self consistency checks if enabled.
     _trackingAction->endEvent(*simParticles);

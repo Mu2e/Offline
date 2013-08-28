@@ -2,9 +2,9 @@
 // Extract trajectories from the G4 internals and add them to the event.
 // Skip trajectories with too few points.
 //
-// $Id: addPointTrajectories.cc,v 1.3 2011/05/24 20:03:31 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/24 20:03:31 $
+// $Id: addPointTrajectories.cc,v 1.4 2013/08/28 05:58:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author Rob Kutschke
 //
@@ -20,6 +20,7 @@
 #include "G4TrajectoryContainer.hh"
 #include "G4TrajectoryPoint.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
+#include "Mu2eG4/inc/SimParticleHelper.hh"
 #include <iostream>
 #include <map>
 
@@ -29,6 +30,7 @@ namespace mu2e{
 
   void addPointTrajectories ( const G4Event*             g4event,
                               PointTrajectoryCollection& pointTrajectories,
+                              const SimParticleHelper& spHelper,
                               CLHEP::Hep3Vector const&   mu2eOriginInWorld ){
 
     typedef PointTrajectoryCollection::key_type    key_type;
@@ -49,15 +51,14 @@ namespace mu2e{
     for ( size_t i=0; i<vect.size(); ++i){
       G4VTrajectory const& traj = *vect[i];
 
-      int       id(traj.GetTrackID());
-      key_type kid(id);
+      key_type kid(spHelper.particleKeyFromG4TrackID(traj.GetTrackID()));
 
       // Cut if too few points.  Need to make this a variable.
       if ( traj.GetPointEntries() < 5 ) {
         continue;
       }
 
-      tempMap[kid] = PointTrajectory(id);
+      tempMap[kid] = PointTrajectory(kid.asInt());
     }
 
     // Phase 1 of construction of the data product.  See note 1.
@@ -68,8 +69,7 @@ namespace mu2e{
       G4VTrajectory const& traj = *vect[i];
 
       // Which trajectory are we looking for?
-      int       id(traj.GetTrackID());
-      key_type kid(id);
+      key_type kid(spHelper.particleKeyFromG4TrackID(traj.GetTrackID()));
 
       // Locate this trajectory in the data product.
       // It is OK if we do not find it since we applied cuts above.

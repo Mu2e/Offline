@@ -1,9 +1,9 @@
 //
 // Defines sensitive detector for a typicaly numbered volume using mu2e reference frame
 //
-// $Id: Mu2eSensitiveDetector.cc,v 1.4 2013/02/07 17:56:03 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/07 17:56:03 $
+// $Id: Mu2eSensitiveDetector.cc,v 1.5 2013/08/28 05:58:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author KLG
 //
@@ -18,6 +18,7 @@
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
@@ -39,8 +40,7 @@ namespace mu2e {
     _debugList(0),
     _sizeLimit(config.getInt("g4.stepsSizeLimit",0)),
     _currentSize(0),
-    _simID(0),
-    _event(0)
+    _spHelper()
   {
 
    // Get list of events for which to make debug printout.
@@ -96,10 +96,7 @@ namespace mu2e {
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
-      push_back(StepPointMC(art::Ptr<SimParticle>
-                            ( *_simID, 
-                              aStep->GetTrack()->GetTrackID(), 
-                              _event->productGetter(*_simID) ),
+      push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                             aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
                             aStep->GetTotalEnergyDeposit(),
                             aStep->GetNonIonizingEnergyDeposit(),
@@ -145,14 +142,12 @@ namespace mu2e {
   }
 
 
-  void Mu2eSensitiveDetector::beforeG4Event(StepPointMCCollection& outputHits, 
-                                           PhysicsProcessInfo& processInfo,
-                                           art::ProductID const& simID,
-                                           art::Event const & event ){
+  void Mu2eSensitiveDetector::beforeG4Event(StepPointMCCollection& outputHits,
+                                            PhysicsProcessInfo& processInfo,
+                                            const SimParticleHelper& spHelper){
     _collection  = &outputHits;
     _processInfo = &processInfo;
-    _simID       = &simID;
-    _event       = &event;
+    _spHelper    = &spHelper;
 
     return;
 

@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.21 2012/11/16 23:44:47 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/16 23:44:47 $
+// $Id: SteppingAction.hh,v 1.22 2013/08/28 05:58:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author Rob Kutschke
 //
@@ -37,6 +37,7 @@ namespace mu2e {
 
   // Forward declarations in mu2e namespace
   class SimpleConfig;
+  class SimParticleHelper;
 
   class SteppingAction : public G4UserSteppingAction{
 
@@ -47,8 +48,7 @@ namespace mu2e {
     void UserSteppingAction(const G4Step*);
 
     void BeginOfEvent(StepPointMCCollection& outputHits,
-                      art::ProductID const& simID,
-                      art::Event const &event );
+                      const SimParticleHelper& spHelper);
     void EndOfEvent();
 
     void BeginOfTrack();
@@ -135,8 +135,7 @@ namespace mu2e {
     int _currentSize;
 
     // Information about the SimParticleCollection, needed to instantiate art::Ptr.
-    art::ProductID const *      _simID;
-    art::Event const* _event;
+    const SimParticleHelper *_spHelper;
 
     // Non-owning pointer to the information about physical processes;
     // lifetime of pointee is one run.

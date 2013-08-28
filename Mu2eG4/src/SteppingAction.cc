@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.34 2013/02/07 17:56:03 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/07 17:56:03 $
+// $Id: SteppingAction.cc,v 1.35 2013/08/28 05:58:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author Rob Kutschke
 //
@@ -22,6 +22,7 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
+#include "Mu2eG4/inc/SimParticleHelper.hh"
 
 // G4 includes
 #include "G4Event.hh"
@@ -56,8 +57,7 @@ namespace mu2e {
     _collection(0),
     _sizeLimit(config.getInt("g4.steppingActionStepsSizeLimit",0)),
     _currentSize(0),
-    _simID(0),
-    _event(0) {
+    _spHelper() {
 
     // Look up parameter values in the run time configuration.
     _doKillLowEKine  = config.getBool("g4.killLowEKine",                _doKillLowEKine);
@@ -383,12 +383,10 @@ namespace mu2e {
   }
 
   void SteppingAction::BeginOfEvent(StepPointMCCollection& outputHits,
-                                    art::ProductID const& simID,
-                                    art::Event const& event ) {
+                                    const SimParticleHelper& spHelper) {
     _nKilledStepLimit = 0;
     _collection  = &outputHits;
-    _simID         = &simID;
-    _event = &event;
+    _spHelper    = &spHelper;
   }
 
   void SteppingAction::EndOfEvent() {
@@ -420,7 +418,7 @@ namespace mu2e {
 
     // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
-      push_back(StepPointMC(art::Ptr<SimParticle>( *_simID, aStep->GetTrack()->GetTrackID(), _event->productGetter(*_simID) ),
+      push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                             id,
                             0,
                             0,

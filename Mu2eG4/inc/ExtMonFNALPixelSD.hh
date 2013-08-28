@@ -1,9 +1,9 @@
 #ifndef Mu2eG4_ExtMonFNALPixelSD_hh
 #define Mu2eG4_ExtMonFNALPixelSD_hh
 //
-// $Id: ExtMonFNALPixelSD.hh,v 1.2 2013/07/30 18:45:00 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/07/30 18:45:00 $
+// $Id: ExtMonFNALPixelSD.hh,v 1.3 2013/08/28 05:58:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Define a sensitive detector for the FNAL extinction monitor
 // Andrei Gaponenko, 2012
@@ -19,6 +19,7 @@ namespace mu2e {
 
   class SimpleConfig;
   class ExtMonFNALSimHitCollection;
+  class SimParticleHelper;
 
   // This class should not derive from Mu2eSensitiveDetector because the latter
   // presumes a wrong type for the hit collection.
@@ -31,11 +32,10 @@ namespace mu2e {
     unsigned _sizeLimit;
 
     // Information about the SimParticleCollection, needed to instantiate art::Ptr.
-    art::ProductID const * _simID;
-    art::Event     const * _event;
-    
+    const SimParticleHelper *_spHelper;
+
     const mu2e::ExtMonFNAL::ExtMon *_extmon;
-    
+
   public:
 
     ExtMonFNALPixelSD(const SimpleConfig& config, const mu2e::ExtMonFNAL::ExtMon& extmon);
@@ -45,8 +45,7 @@ namespace mu2e {
     virtual void EndOfEvent(G4HCofThisEvent*);
 
     void beforeG4Event(ExtMonFNALSimHitCollection *outputHits,
-                       const art::ProductID& simID,
-                       const art::Event& event);
+                       const SimParticleHelper& spHelper);
   };
 
 } // namespace mu2e

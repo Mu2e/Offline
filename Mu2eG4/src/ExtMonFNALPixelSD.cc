@@ -1,6 +1,6 @@
-// $Id: ExtMonFNALPixelSD.cc,v 1.2 2013/07/30 18:45:00 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/07/30 18:45:00 $
+// $Id: ExtMonFNALPixelSD.cc,v 1.3 2013/08/28 05:58:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author Andrei Gaponenko
 
@@ -17,6 +17,7 @@
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
@@ -27,8 +28,7 @@ namespace mu2e {
   ExtMonFNALPixelSD::ExtMonFNALPixelSD(const SimpleConfig& config, const mu2e::ExtMonFNAL::ExtMon& extmon)
     : G4VSensitiveDetector(SensitiveDetectorName::ExtMonFNAL())
     , _sizeLimit(std::max(0, config.getInt("g4.stepsSizeLimit",0)))
-    , _simID()
-    , _event()
+    , _spHelper()
     , _extmon(&extmon)
 
   {
@@ -37,12 +37,10 @@ namespace mu2e {
 
   //================================================================
   void ExtMonFNALPixelSD::beforeG4Event(ExtMonFNALSimHitCollection *outputHits,
-                                        const art::ProductID& simID,
-                                        const art::Event& event )
+                                        const SimParticleHelper& spHelper)
   {
     _collection  = outputHits;
-    _simID       = &simID;
-    _event       = &event;
+    _spHelper    = &spHelper;
   }
 
 
@@ -67,13 +65,12 @@ namespace mu2e {
         G4ThreeVector localStartPos = transformation.TransformPoint(globalStartPos);
         G4ThreeVector localEndPos = transformation.TransformPoint(globalEndPos);
 
-        art::Ptr<SimParticle> particle( *_simID, aStep->GetTrack()->GetTrackID(), _event->productGetter(*_simID) );
         ExtMonFNALModuleDenseId mid(aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber());
         // Add the hit to the framework collection.
         ExtMonFNALModuleIdConverter con(*_extmon);
         _collection->
           push_back(ExtMonFNALSimHit(con.moduleId(ExtMonFNALModuleDenseId(mid)),
-                                     particle,
+                                     _spHelper->particlePtr(aStep->GetTrack()),
 
                                      totalEDep,
                                      aStep->GetNonIonizingEnergyDeposit(),

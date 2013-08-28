@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for TTrackerDeviceSupport
 //
-// $Id: TTrackerDeviceSupportSD.cc,v 1.5 2013/02/07 17:56:03 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/07 17:56:03 $
+// $Id: TTrackerDeviceSupportSD.cc,v 1.6 2013/08/28 05:58:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author KLG
 //
@@ -128,10 +128,7 @@ namespace mu2e {
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
-      push_back(StepPointMC(art::Ptr<SimParticle>
-                            ( *_simID,
-                              aStep->GetTrack()->GetTrackID(),
-                              _event->productGetter(*_simID) ),
+      push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                             sdcn,
                             aStep->GetTotalEnergyDeposit(),
                             aStep->GetNonIonizingEnergyDeposit(),

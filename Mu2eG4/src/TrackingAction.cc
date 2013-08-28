@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.35 2013/02/07 17:54:53 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/07 17:54:53 $
+// $Id: TrackingAction.cc,v 1.36 2013/08/28 05:58:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author Rob Kutschke
 //
@@ -32,6 +32,7 @@
 #include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
+#include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
@@ -60,7 +61,9 @@ namespace mu2e {
     _overflowSimParticles(false),
     _pointTrajectoryMomentumCut(config.getDouble("g4.pointTrajectoryMomentumCut", 50)),
     _steppingAction(steppingAction),
-    _processInfo(0){
+    _processInfo(0),
+    _spHelper()
+  {
 
     string name("g4.trackingActionEventList");
     if ( config.hasName(name) ){
@@ -121,19 +124,16 @@ namespace mu2e {
 
   }
 
-  void TrackingAction::beginEvent( art::Handle<GenParticleCollection> const& gensHandle, 
-                                   art::ProductID const& simID, 
-                                   art::Event const & event){
+  void TrackingAction::beginEvent( art::Handle<GenParticleCollection> const& gensHandle,
+                                   const SimParticleHelper& spHelper) {
     _currentSize          = 0;
     _overflowSimParticles = false;
     _gensHandle           = &gensHandle;
-    _simID                = simID;
-    _event        = &event;
-
+    _spHelper             = &spHelper;
   }
 
   void TrackingAction::endEvent(SimParticleCollection& persistentSims ){
-    Mu2eG4UserHelpers::checkCrossReferences(true,false,_transientMap);
+    Mu2eG4UserHelpers::checkCrossReferences(true,true,_transientMap);
     persistentSims.insert( _transientMap.begin(), _transientMap.end() );
     _transientMap.clear();
     if ( !_debugList.inList() ) return;
@@ -153,22 +153,19 @@ namespace mu2e {
       return;
     }
 
-    int id       = trk->GetTrackID();
+    key_type kid = _spHelper->particleKeyFromG4TrackID(trk->GetTrackID());
     int parentId = trk->GetParentID();
-
-    // Also need the ID in this format.
-    key_type kid(id);
 
     // Indices into the GenParticleCollection are 0 based.
     // The first n particles in the G4 track list are the same as the first n particles
     // from the generator.
-    int generatorIndex = ( parentId == 0 ) ? id-1: -1;
+    int generatorIndex = ( parentId == 0 ) ? trk->GetTrackID() - 1 : -1;
     art::Ptr<GenParticle> genPtr;
     art::Ptr<SimParticle> parentPtr;
     if ( parentId == 0 ){
       genPtr = art::Ptr<GenParticle>(*_gensHandle,generatorIndex);
     } else{
-      parentPtr = art::Ptr<SimParticle>( _simID, parentId, _event->productGetter(_simID));
+      parentPtr = _spHelper->particlePtrFromG4TrackID(parentId);
     }
 
     // Find the physics process that created this track.
@@ -178,7 +175,7 @@ namespace mu2e {
     if ( _transientMap.find(kid) != _transientMap.end() ){
       throw cet::exception("RANGE")
         << "SimParticle already in the event.  This should never happen. id is: "
-        << id
+        << kid
         << "\n";
     }
 
@@ -200,14 +197,14 @@ namespace mu2e {
 
     // If this track has a parent, tell the parent about this track.
     if ( parentId != 0 ){
-      map_type::iterator i(_transientMap.find(key_type(parentId)));
+      map_type::iterator i(_transientMap.find(_spHelper->particleKeyFromG4TrackID(parentId)));
       if ( i == _transientMap.end() ){
         throw cet::exception("RANGE")
           << "Could not find parent SimParticle in PreUserTrackingAction.  id: "
-          << id
+          << _spHelper->particleKeyFromG4TrackID(parentId)
           << "\n";
       }
-      i->second.addDaughter(art::Ptr<SimParticle>( _simID, id, _event->productGetter(_simID)));
+      i->second.addDaughter(_spHelper->particlePtr(trk));
     }
   }
 
@@ -216,14 +213,14 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) return;
 
-    key_type id(trk->GetTrackID());
+    key_type kid(_spHelper->particleKeyFromG4TrackID(trk->GetTrackID()));
 
     // Find the particle in the map.
-    map_type::iterator i(_transientMap.find(id));
+    map_type::iterator i(_transientMap.find(kid));
     if ( i == _transientMap.end() ){
       throw cet::exception("RANGE")
-        << "Could not find existing SimParticle in PostUserTrackingAction.  id: "
-        << id
+        << "Could not find existing SimParticle in PostUserTrackingAction::saveSimParticleEnd()  id: "
+        << kid
         << "\n";
     }
 

@@ -1,9 +1,9 @@
 //
 // A helper class manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.cc,v 1.6 2013/03/29 05:45:03 gandr Exp $
+// $Id: SensitiveDetectorHelper.cc,v 1.7 2013/08/28 05:58:17 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/03/29 05:45:03 $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author Rob Kutschke
 //
@@ -132,19 +132,18 @@ namespace mu2e {
   // Hand each sensitive detector object the StepPointMC collection that it will fill.
   // Also hand it the information needed to create art::Ptr objects.
   void SensitiveDetectorHelper::updateSensitiveDetectors( PhysicsProcessInfo&   info,
-                                                          art::ProductID const& simsId,
-                                                          art::Event&           event  ){
+                                                          const SimParticleHelper& spHelper){
 
     for ( InstanceMap::iterator i=stepInstances_.begin();
           i != stepInstances_.end(); ++i ){
       StepInstance& instance(i->second);
       if ( instance.sensitiveDetector ){
-        instance.sensitiveDetector->beforeG4Event(instance.p, info, simsId, event );
+        instance.sensitiveDetector->beforeG4Event(instance.p, info, spHelper);
       }
     }
 
     for(auto& i : lvsd_) {
-      i.second.sensitiveDetector->beforeG4Event(i.second.p, info, simsId, event );
+      i.second.sensitiveDetector->beforeG4Event(i.second.p, info, spHelper);
     }
 
   }

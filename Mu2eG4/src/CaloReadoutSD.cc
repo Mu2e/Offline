@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for calorimetric readout
 //
-// $Id: CaloReadoutSD.cc,v 1.20 2013/02/07 17:56:03 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/07 17:56:03 $
+// $Id: CaloReadoutSD.cc,v 1.21 2013/08/28 05:58:17 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/28 05:58:17 $
 //
 // Original author Ivan Logashenko
 //
@@ -82,20 +82,17 @@ namespace mu2e {
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.
 
-      _collection->push_back(StepPointMC(art::Ptr<SimParticle>
-                            ( *_simID,
-                              aStep->GetTrack()->GetTrackID(),
-                              _event->productGetter(*_simID) ),
-                            idro,
-                            aStep->GetTotalEnergyDeposit(),
-                            aStep->GetNonIonizingEnergyDeposit(),
-                            aStep->GetPreStepPoint()->GetGlobalTime(),
-                            aStep->GetPreStepPoint()->GetProperTime(),
-                            aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
-                            aStep->GetPreStepPoint()->GetMomentum(),
-                            aStep->GetStepLength(),
-                            endCode
-                            ));
+    _collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
+                                       idro,
+                                       aStep->GetTotalEnergyDeposit(),
+                                       aStep->GetNonIonizingEnergyDeposit(),
+                                       aStep->GetPreStepPoint()->GetGlobalTime(),
+                                       aStep->GetPreStepPoint()->GetProperTime(),
+                                       aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
+                                       aStep->GetPreStepPoint()->GetMomentum(),
+                                       aStep->GetStepLength(),
+                                       endCode
+                                       ));
 
     return true;
 
