@@ -3,6 +3,9 @@
 // between simulation stages (identified by the sim particle number offset
 // in the first element of the pair) and their PhysicalVolumeInfoCollections.
 //
+// Sim particle offsets (the first member of the pair) must be
+// monotonically increasing with index in the collection.
+//
 // Andrei Gaponenko, 2013
 
 
