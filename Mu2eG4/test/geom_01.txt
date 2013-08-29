@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.200 2013/08/27 17:23:00 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/27 17:23:00 $
+// $Id: geom_01.txt,v 1.201 2013/08/29 19:58:45 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/29 19:58:45 $
 //
 // Original author Rob Kutschke
 //
@@ -121,7 +121,7 @@ vector<string> mu2e.materials =
     "A95083", "NbTi", "NbTiCu", "AL999Ni001", "C_19_H_20_O_4", "C_10_H_18_O_4",
     "C_9_H_22_N_2", "Epotek301", "G10", "SCCableInsulation", "SCCable",
     "ZirconiumHydridePolyethylene", "EGlass", "G10_FR4",
-    "Polyethylene0020"
+    "Polyethylene0020", "StoppingTarget_Al"
 };
 
 // Control printout of element and material lists.

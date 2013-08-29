@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.40 2013/05/31 15:49:57 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/05/31 15:49:57 $
+// $Id: ConstructMaterials.cc,v 1.41 2013/08/29 19:58:45 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/08/29 19:58:45 $
 //
 // Original author Rob Kutschke
 //
@@ -26,6 +26,8 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/PhysicsParams.hh"
 
 // G4 includes
 #include "G4GeometryManager.hh"
@@ -911,6 +913,14 @@ namespace mu2e {
       stWallEq->AddMaterial(strwMl, 96.95e-2 );
       stWallEq->AddMaterial(strwMet1, 1.80e-2 );
       stWallEq->AddMaterial(strwMet2, 1.25e-2 );
+    }
+
+    // An alias for the stopping target material
+    mat = isNeeded(materialsToLoad, "StoppingTarget_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTarget());
+    if ( mat.doit ){
+      G4Material* met = findMaterialOrThrow("G4_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTarget());
+      G4Material* tgt = new G4Material(mat.name, met->GetDensity(), 1);
+      tgt->AddMaterial(met, 1.);
     }
 
     // Completed constructing Mu2e specific materials.
