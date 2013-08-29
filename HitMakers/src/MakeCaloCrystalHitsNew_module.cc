@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHitsNew_module.cc,v 1.1 2013/08/23 20:41:50 srsoleti Exp $
+// $Id: MakeCaloCrystalHitsNew_module.cc,v 1.2 2013/08/29 22:54:04 srsoleti Exp $
 // $Author: srsoleti $
-// $Date: 2013/08/23 20:41:50 $
+// $Date: 2013/08/29 22:54:04 $
 //
 // Original author KLG
 // for realistic modeling: reduce timeGap from 30ns to 1 ns in Mu2eG4/test/calorimeter.txt
@@ -356,14 +356,23 @@ namespace mu2e {
 	_hNotMergedAmplitudesDeltaT->GetYaxis()->SetTitle("#Deltat [ns]");
       }
 
+    for (std::vector<CaloCrystalHit>::iterator i = signals.begin(); i != signals.end(); i++) 
+      cout << i.operator->()->id() << endl;
+
     for (std::vector<CaloCrystalHit>::iterator i = signals.begin(); i != signals.end(); i=j) 
       {
-	
+	if (i==signals.end()) break;
 	firstSignal = i.operator->();
 	j = i+1;
-	if (j==signals.end()) break;
+	if (j==signals.end()) {
+	  caloCrystalHits.push_back(*firstSignal); 
+	  break; 
+	}
+	  
 	secondSignal = j.operator->();
-	
+	cout << "First: " << firstSignal->id() << endl;
+	cout << "Second: " << secondSignal->id() << endl;
+
 	if (_drawLevel)
 	  _hEnergy->Fill(firstSignal->energyDep());
 	
@@ -375,7 +384,7 @@ namespace mu2e {
 	
 	// while the second signal belongs to the same crystal of the first one
 	while (firstSignal->id() == secondSignal->id()) {
-	  
+	  if (j==signals.end()) break;
 	  A = firstSignal->energyDep()/(_tDecay-_tRise);
 	  B = secondSignal->energyDep()/(_tDecay-_tRise);
 	  
@@ -408,7 +417,7 @@ namespace mu2e {
 	      
 	      caloCrystalHits.push_back(*firstSignal);
 	      *firstSignal = *secondSignal;
-	      
+	      cout << "SOLVED" << endl;
 	    } 
 	  else 
 	    {
@@ -421,21 +430,32 @@ namespace mu2e {
 		}
 	      
 	      // add all the hits of the second signal to the first one (merging)
+	      int z = 0;
+	      cout << "Second signal hits: " << secondSignal->readouts().size() << endl;
 	      for (std::vector<art::Ptr<mu2e::CaloHit>>::const_iterator k = secondSignal->readouts().begin(); k != secondSignal->readouts().end(); k++) 
 		{
+		  cout << "I: " << z << endl;
+		  cout << secondSignal->id() << " " << firstSignal->id() << endl;
 		  if (secondSignal->readouts().size()!=0)
 		    firstSignal->addEnergyToTot(**k);	
+		  z++;
 		}
 	      
-	      
 	    }
-	  
+
+	  // if ((j+1).operator->()->id() == firstSignal->id()) {
+	  //cout << "SAME: " << secondSignal->id() << endl;
 	  if (j!=signals.end()) 
 	    {
 	      j++;
 	      secondSignal = j.operator->();
+	      cout << "Second " << secondSignal->id() << endl;
 	    }
 	  
+	  //  cout << "SAME: " << secondSignal->id() << endl;
+	  //} else break;
+	  
+
 	}
 	
 	caloCrystalHits.push_back(*firstSignal);
