@@ -112,8 +112,8 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     prerr->Draw("colorz");
 
   } else if(spage=="dz") {
-    TH1F* cedz = new TH1F("cedz","CE Hit #Delta z;#Delta z (mm)",100,-10,45);
-    TH1F* dedz = new TH1F("dedz","#delta Hit #Delta z;#Delta z (mm)",100,-10,45);
+    TH1F* cedz = new TH1F("cedz","CE Hit #Delta z;#Delta z (mm)",100,0,70);
+    TH1F* dedz = new TH1F("dedz","#delta Hit #Delta z;#Delta z (mm)",100,0,70);
 //    dist->SetStats(0);
     TProfile2D* ceposdz = new TProfile2D("ceposdz","CE Hit #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
     TProfile2D* deposdz = new TProfile2D("deposdz","#delta Hit #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
@@ -123,19 +123,19 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     shdiag->Project("dedz","dist",stereohit+dhit);
     shdiag->Project("ceposdz","dist:shpos.y:shpos.x",stereohit+convhit);
     shdiag->Project("deposdz","dist:shpos.y:shpos.x",stereohit+dhit);
-    ceposdz->SetMaximum(45);
-    ceposdz->SetMinimum(-5);
-    deposdz->SetMaximum(45);
-    deposdz->SetMinimum(-5);
+    ceposdz->SetMaximum(65);
+    ceposdz->SetMinimum(0);
+    deposdz->SetMaximum(65);
+    deposdz->SetMinimum(0);
     TCanvas* cdz = new TCanvas("cdz","cdz",1000,1000);
     cdz->Divide(2,2);
-    cdz->cd(3);
-    deposdz->Draw("colorz");
     cdz->cd(1);
-    ceposdz->Draw("colorz");
-    cdz->cd(4);
-    dedz->Draw();
+    deposdz->Draw("colorz");
     cdz->cd(2);
+    ceposdz->Draw("colorz");
+    cdz->cd(3);
+    dedz->Draw();
+    cdz->cd(4);
     cedz->Draw();
 
   } else if(spage=="sfrac"){
@@ -256,9 +256,9 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
 
     TCut st0("dist<0");
     TCut st1("");
-    TCut st2("dist>0&&dist<18");
-    TCut st3("dist>18&&dist<30");
-    TCut st4("dist>30");
+    TCut st2("dist>0&&dist<30");
+    TCut st3("dist>30&&dist<50");
+    TCut st4("dist>50");
     shdiag->Project("sdpc0","atan2(shpos.y,shpos.x)-atan2(mcshpos.y,mcshpos.x)",convhit+st0);
     shdiag->Project("sdpc1","atan2(shpos.y,shpos.x)-atan2(mcshpos.y,mcshpos.x)",convhit+st1);
     shdiag->Project("sdpc2","atan2(shpos.y,shpos.x)-atan2(mcshpos.y,mcshpos.x)",convhit+st2);
@@ -282,9 +282,9 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     shdiag->Project("sdrd4","sqrt(shpos.y^2+shpos.x^2)-sqrt(mcshpos.y^2+mcshpos.x^2)",dhit+st4);
 
     TLegend* leg = new TLegend(0.1,0.6,0.4,0.9);
-    leg->AddEntry(sdpc2,"#Delta z<18","f");
-    leg->AddEntry(sdpc3,"18 < #Delta z < 30","f");
-    leg->AddEntry(sdpc4,"#Delta z > 30","f");
+    leg->AddEntry(sdpc2,"#Delta z<30","f");
+    leg->AddEntry(sdpc3,"30 < #Delta z < 50","f");
+    leg->AddEntry(sdpc4,"#Delta z > 50","f");
     leg->AddEntry(sdpc0,"non-stereo","f");
     leg->AddEntry(sdpc1,"all","l");
 //    sdpc0->Scale(1.0/sdpc0->GetEntries());
