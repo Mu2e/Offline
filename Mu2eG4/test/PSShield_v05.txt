@@ -41,10 +41,10 @@ int PSShield.nGrooves = 0;
 // To fix its Z position we specify the offset w.r.t. to the production target center
 // of the PSShield point at the most negative z.
 //
-// From Peter Kasper's e-mail May 17, 2012:
-//     HRS downstream end z = -8018.0
+// From Peter Kasper's e-mail May 17, 2012, + updates from V. Pronskikh:
+//     HRS downstream end z = -7858.0
 //     Target center      z = -6164.5
-double PSShield.zOffsetFromProductionTarget = -1853.5;
+double PSShield.zOffsetFromProductionTarget = -1693.5;
 
 bool PSShield.visible = true;
 bool PSShield.solid = false;
