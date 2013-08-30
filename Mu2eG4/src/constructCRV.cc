@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.15 2013/03/29 04:35:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Id: constructCRV.cc,v 1.16 2013/08/30 16:46:44 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/30 16:46:44 $
 //
 // Original author KLG
 //
@@ -23,6 +23,7 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
 
@@ -221,18 +222,23 @@ namespace mu2e {
                                scintillatorBarLogical,
                                bar.name(scintillatorBarName+"_"),
                                parent.logical,
-                               0,
+                               false,
                                bar.index().asInt(),
-                               doSurfaceCheck);
+                               false);
 */
-            new G4PVPlacement(G4Transform3D( *shieldRotation,
-                               barAirOffset),
-                               scintillatorBarLogical,
-                               bar.name(scintillatorBarName+"_"),
-                               parent.logical,
-                               0,
-                               bar.index().asInt(),
-                               doSurfaceCheck);
+            // Note different G4PVPlacement choice using G4Transform3D
+            G4VPhysicalVolume* pv = new G4PVPlacement(G4Transform3D( *shieldRotation,
+                                                                     barAirOffset),
+                                                      scintillatorBarLogical,
+                                                      bar.name(scintillatorBarName+"_"),
+                                                      parent.logical,
+                                                      false,
+                                                      bar.index().asInt(),
+                                                      false);
+
+            if ( doSurfaceCheck) {
+              checkForOverlaps( pv, _config, verbosityLevel>0);
+            }
 
           }
 

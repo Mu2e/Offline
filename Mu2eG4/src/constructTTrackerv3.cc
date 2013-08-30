@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.33 2013/08/20 19:17:25 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.34 2013/08/30 16:45:05 genser Exp $
 // $Author: genser $
-// $Date: 2013/08/20 19:17:25 $
+// $Date: 2013/08/30 16:45:05 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -52,6 +52,7 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
 #include "G4Box.hh"
@@ -590,8 +591,10 @@ namespace mu2e{
                                                  deviceInfoVect[idev].logical,
                                                  false,
                                                  isec,
-                                                 doSurfaceCheck);
-
+                                                 false);
+        if ( doSurfaceCheck) {
+          checkForOverlaps( sectorInfo.physical, config, verbosityLevel>0);
+        }
 
         if (verbosityLevel > 1) {
 

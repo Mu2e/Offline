@@ -1,9 +1,9 @@
 //
 // Free function to be used by the nest... functions
 //
-// $Id: finishNesting.cc,v 1.7 2011/10/03 19:10:33 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/10/03 19:10:33 $
+// $Id: finishNesting.cc,v 1.8 2013/08/30 16:40:44 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/30 16:40:44 $
 //
 // Original author KLG based on nest... functions
 //
@@ -16,6 +16,9 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "G4Helper/inc/G4Helper.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
 #include "G4LogicalVolume.hh"
@@ -48,6 +51,8 @@ namespace mu2e {
 
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
+    GeometryService const & _geom(*(art::ServiceHandle<GeometryService>()));
+    SimpleConfig    const & _config(_geom.config());
 
     // the code below if activated prints the parameters of the solid
     // being placed
@@ -123,14 +128,14 @@ namespace mu2e {
                                                    info.logical,
                                                    info.name,
                                                    parent,
-                                                   0,
+                                                   false,
                                                    copyNo,
-                                                   doSurfaceCheck)
-                              : 0;
+                                                   false) // we do not check for overlaps at first
+                              : 0x0;
 
-    // uncomment for a more thorrow overlap check
-    // doSurfaceCheck && info.physical!=0 && info.physical->CheckOverlaps(100000,0.0,false);
-
+    if ( doSurfaceCheck && info.physical!=0x0) {
+      checkForOverlaps( info.physical, _config, verbose);
+    }
 
     if (!isVisible) {
 
