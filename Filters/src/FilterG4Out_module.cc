@@ -9,9 +9,15 @@
 //
 //   Outputs:  TS3Vacuum, DS2Vacuum, DS3Vacuum, CRV, virtualdetector, SimParticleCollection
 //
-// $Id: FilterG4Out_module.cc,v 1.1 2013/08/30 16:30:03 gandr Exp $
+// An optional vetoDaughters input specifies a set of particles whose
+// daughters (and  further descendants) should be excluded from output,
+// both the particle collection and the hits.    The intent is to
+// veto daughters of particles stopped in the stopping target, because
+// they will be simulated with a foil generator in other jobs.
+//
+// $Id: FilterG4Out_module.cc,v 1.2 2013/08/30 21:54:18 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/30 16:30:03 $
+// $Date: 2013/08/30 21:54:18 $
 //
 // Andrei Gaponenko, 2013
 
@@ -28,15 +34,15 @@
 #include "art/Framework/Principal/SelectorBase.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-
 #include "MCDataProducts/inc/GenParticleSPMHistory.hh"
 #include "MCDataProducts/inc/GenSimParticleLink.hh"
-
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "Mu2eUtilities/inc/SimParticleParentGetter.hh"
+#include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 
 namespace mu2e {
 
@@ -96,6 +102,14 @@ namespace mu2e {
       return MyHandle<PROD>(h);
     }
 
+    //----------------
+    void addDaughterTree(SPSet *res, const art::Ptr<SimParticle>& p) {
+      res->insert(p);
+      for(const auto& d : p->daughters()) {
+        addDaughterTree(res, d);
+      }
+    }
+
   } // anonymous namespace
 
   //================================================================
@@ -108,7 +122,7 @@ namespace mu2e {
     InputTags gpStepLinkInputs_;
     InputTags gpSimLinkInputs_;
 
-    InputTags particleInputs_;
+    InputTags vetoDaughtersInputs_;
 
     // Output instance names.
     typedef std::set<std::string> OutputNames;
@@ -130,6 +144,9 @@ namespace mu2e {
     unsigned numInputGenStepLinks_;
     unsigned numPassedGenStepLinks_;
 
+    unsigned numVetoedParticles_;
+    unsigned numVetoedHits_;
+
     void addGPStepLink(const art::Event& event,
                        GenParticleSPMHistory& newHistory,
                        const art::Ptr<StepPointMC>& oldHit,
@@ -147,6 +164,7 @@ namespace mu2e {
     , numMainHits_(), numInputExtraHits_(), numPassedExtraHits_()
     , numInputParticles_(), numPassedParticles_()
     , numInputGenStepLinks_(),  numPassedGenStepLinks_()
+    , numVetoedParticles_(), numVetoedHits_()
   {
     typedef std::vector<std::string> VS;
 
@@ -168,6 +186,11 @@ namespace mu2e {
     }
     for(const auto& i : extraOutputNames_) {
       produces<StepPointMCCollection>(i);
+    }
+
+    const VS vetoStrings(pset.get<VS>("vetoDaughters"));
+    for(const auto& i : vetoStrings) {
+      vetoDaughtersInputs_.emplace_back(i);
     }
 
     // We can't merge different SimParticle collections (unlike the hits)
@@ -210,19 +233,34 @@ namespace mu2e {
     std::unique_ptr<GenParticleSPMHistory> newGPStepHistory(new GenParticleSPMHistory());
 
     //----------------------------------------------------------------
+    // Build a full list of the vetoed particles
+
+    SPSet vetoedParticles;
+    for(const auto& tag : vetoDaughtersInputs_) {
+      auto ih = event.getValidHandle<SimParticlePtrCollection>(tag);
+      for(const auto& p : *ih) {
+        addDaughterTree(&vetoedParticles, p);
+      }
+    }
+
+    numVetoedParticles_ += vetoedParticles.size();
+
+    //----------------------------------------------------------------
     // Build list of all the SimParticles we want to preserve:
     SPSuperSet toBeKept;
 
-    // These are all particles with hits in the "main" collections
+    // Non-vetoed particles with hits in the "main" collections
     for(const auto& i : mainHitInputs_) {
       auto ih = event.getValidHandle<StepPointMCCollection>(i);
       for(const auto& i : *ih) {
         const art::Ptr<SimParticle>& particle(i.simParticle());
-        toBeKept[particle.id()].insert(i.simParticle());
+        if(vetoedParticles.find(particle) == vetoedParticles.end()) {
+          toBeKept[particle.id()].insert(i.simParticle());
+        }
       }
     }
 
-    // and their parents
+    // and their parents (can not be vetoed since the daughter is in)
     SimParticleParentGetter pg(event);
     for(const auto& iset : toBeKept) {
       for(const auto& ipart : iset.second) {
@@ -300,25 +338,29 @@ namespace mu2e {
       for(StepPointMCCollection::const_iterator i=ih->begin(); i!=ih->end(); ++i) {
 
         art::Ptr<SimParticle> oldPtr(i->simParticle());
-        assert(toBeKept.isKept(oldPtr));
+        if(toBeKept.isKept(oldPtr)) {
 
-        art::ProductID newParticlesPID = partCollMap[oldPtr.id()];
-        const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
+          art::ProductID newParticlesPID = partCollMap[oldPtr.id()];
+          const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
 
-        StepPointMCCollection& output = *outMain[inTag.instance()];
-        const art::ProductID newHitsPID = getProductID<StepPointMCCollection>(event, inTag.instance());
+          StepPointMCCollection& output = *outMain[inTag.instance()];
+          const art::ProductID newHitsPID = getProductID<StepPointMCCollection>(event, inTag.instance());
 
-        art::Ptr<SimParticle> newParticle(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
-        output.emplace_back(*i);
-        output.back().simParticle() = newParticle;
+          art::Ptr<SimParticle> newParticle(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
+          output.emplace_back(*i);
+          output.back().simParticle() = newParticle;
 
-        art::Ptr<StepPointMC> oldHitPtr(makeMyHandle(ih), std::distance(ih->begin(), i));
-        art::Ptr<StepPointMC> newHitPtr(newHitsPID, output.size()-1, event.productGetter(newHitsPID));
+          art::Ptr<StepPointMC> oldHitPtr(makeMyHandle(ih), std::distance(ih->begin(), i));
+          art::Ptr<StepPointMC> newHitPtr(newHitsPID, output.size()-1, event.productGetter(newHitsPID));
 
-        addGPStepLink(event,
-                      *newGPStepHistory,
-                      oldHitPtr,
-                      newHitPtr);
+          addGPStepLink(event,
+                        *newGPStepHistory,
+                        oldHitPtr,
+                        newHitPtr);
+        }
+        else {
+          ++numVetoedHits_;
+        }
       }
     }
 
@@ -360,6 +402,11 @@ namespace mu2e {
                         *newGPStepHistory,
                         oldHitPtr,
                         newHitPtr);
+        }
+        else {
+          if(vetoedParticles.find(oldPtr) != vetoedParticles.end()) {
+            ++numVetoedHits_;
+          }
         }
       }
     }
@@ -408,7 +455,9 @@ namespace mu2e {
       << numMainHits_ <<" main hits, "
       << numPassedExtraHits_ <<" / "<<numInputExtraHits_<<" extra hits, "
       << numPassedParticles_ <<" / "<<numInputParticles_<<"+ particles, "
-      << numPassedGenStepLinks_ <<" / "<<numInputGenStepLinks_<<" GenStep links"
+      << numPassedGenStepLinks_ <<" / "<<numInputGenStepLinks_<<" GenStep links, "
+      << "vetoed " << numVetoedParticles_ << " particles and "
+      << numVetoedHits_ <<" hits."
       << "\n";
   }
 
