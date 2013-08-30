@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.56 2013/08/16 19:54:34 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/16 19:54:34 $
+// $Id: constructVirtualDetectors.cc,v 1.57 2013/08/30 16:44:09 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/30 16:44:09 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -38,6 +38,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 #include "G4Helper/inc/AntiLeakRegistry.hh"
+#include "Mu2eG4/inc/checkForOverlaps.hh"
 
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -70,8 +71,6 @@ namespace mu2e {
     bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
     bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
-
-    int const nSurfaceCheckPoints = 100000; // for a more thorrow check due to the vd shape
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     GeomHandle<VirtualDetector> vdg;
@@ -123,7 +122,7 @@ namespace mu2e {
                                   placePV,
                                   false);
         // vd are very thin, a more thorough check is needed
-        doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+        doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
         vd.logical->SetSensitiveDetector(vdSD);
       }
 
@@ -146,7 +145,7 @@ namespace mu2e {
                                   placePV,
                                   false);
         // vd are very thin, a more thorough check is needed
-        doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+        doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
         vd.logical->SetSensitiveDetector(vdSD);
       }
 
@@ -169,7 +168,7 @@ namespace mu2e {
                                   placePV,
                                   false);
         // vd are very thin, a more thorough check is needed
-        doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+        doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
         vd.logical->SetSensitiveDetector(vdSD);
       }
 
@@ -203,7 +202,7 @@ namespace mu2e {
                                 placePV,
                                 false);
       // vd are very thin, a more thorough check is needed
-      doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+      doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
       vd.logical->SetSensitiveDetector(vdSD);
 
     }
@@ -278,7 +277,7 @@ namespace mu2e {
                                     placePV,
                                     false);
           // vd are very thin, a more thorough check is needed
-          doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+          doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
 
           vd.logical->SetSensitiveDetector(vdSD);
         }
@@ -322,7 +321,7 @@ namespace mu2e {
 				  placePV,
 				  false);
 	// vd are very thin, a more thorough check is needed
-	doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
 	vd.logical->SetSensitiveDetector(vdSD);
 
 	vdId = VirtualDetectorId::TT_MidInner;
@@ -361,7 +360,7 @@ namespace mu2e {
 				    placePV,
 				    false);
 	  // vd are very thin, a more thorough check is needed
-	  doSurfaceCheck && vd.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	  doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
 	  vd.logical->SetSensitiveDetector(vdSD);
 	}
 
@@ -488,8 +487,7 @@ namespace mu2e {
 			placePV,
 			false);
 	  // vd are very thin, a more thorough check is needed
-	  doSurfaceCheck && vdHollowInfo.physical->
-	    CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	  doSurfaceCheck && checkForOverlaps(vdHollowInfo.physical, _config, verbosityLevel>0);
 
 	  if ( verbosityLevel > 0) {
 
@@ -563,8 +561,7 @@ namespace mu2e {
 			  placePV,
 			  false);
 	    // vd are very thin, a more thorough check is needed
-	    doSurfaceCheck && vdIntersectionInfo.physical->
-	      CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	    doSurfaceCheck && checkForOverlaps(vdIntersectionInfo.physical, _config, verbosityLevel>0);
 
 	    if ( verbosityLevel > 0) {
 
@@ -647,7 +644,7 @@ namespace mu2e {
 				       placePV,
 				       false);
 	  // vd are very thin, a more thorough check is needed
-	  doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	  doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
 	  vdInfo.logical->SetSensitiveDetector(vdSD);
 
@@ -691,7 +688,7 @@ namespace mu2e {
 				     placePV,
 				     false);
 	// vd are very thin, a more thorough check is needed
-	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
 	vdInfo.logical->SetSensitiveDetector(vdSD);
 
@@ -737,7 +734,7 @@ namespace mu2e {
 				     placePV,
 				     false);
 	// vd are very thin, a more thorough check is needed
-	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
 	vdInfo.logical->SetSensitiveDetector(vdSD);
 
@@ -783,7 +780,7 @@ namespace mu2e {
 				     placePV,
 				     false);
 	// vd are very thin, a more thorough check is needed
-	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
 	vdInfo.logical->SetSensitiveDetector(vdSD);
 
@@ -836,7 +833,7 @@ namespace mu2e {
 				     placePV,
 				     false);
 	// vd are very thin, a more thorough check is needed
-	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
 	vdInfo.logical->SetSensitiveDetector(vdSD);
       }
@@ -879,7 +876,7 @@ namespace mu2e {
 				     placePV,
 				     false);
 	// vd are very thin, a more thorough check is needed
-	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
 	vdInfo.logical->SetSensitiveDetector(vdSD);
       }
@@ -922,7 +919,7 @@ namespace mu2e {
 				     placePV,
 				     false);
 	// vd are very thin, a more thorough check is needed
-	doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
 	vdInfo.logical->SetSensitiveDetector(vdSD);
       }
@@ -988,7 +985,7 @@ namespace mu2e {
                                   false);
 
       // vd are very thin, a more thorough check is needed
-      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
@@ -1022,7 +1019,7 @@ namespace mu2e {
                                      false
                                      );
         // vd are very thin, a more thorough check is needed
-        doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+        doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
         vdInfo.logical->SetSensitiveDetector(vdSD);
       }
@@ -1058,7 +1055,7 @@ namespace mu2e {
                                   );
 
       // vd are very thin, a more thorough check is needed
-      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
@@ -1090,7 +1087,7 @@ namespace mu2e {
                                   );
 
       // vd are very thin, a more thorough check is needed
-      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
@@ -1124,7 +1121,7 @@ namespace mu2e {
                                       );
 
           // vd are very thin, a more thorough check is needed
-          doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+          doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
           vdInfo.logical->SetSensitiveDetector(vdSD);
 
@@ -1178,7 +1175,7 @@ namespace mu2e {
                                   );
 
       // vd are very thin, a more thorough check is needed
-      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
@@ -1217,7 +1214,7 @@ namespace mu2e {
                                   );
 
       // vd are very thin, a more thorough check is needed
-      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
@@ -1298,8 +1295,8 @@ namespace mu2e {
 					  );
               ++vdIdFront;
 
-	      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-	      doSurfaceCheck && vdInfo2.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+	      doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
 	      vdInfo.logical->SetSensitiveDetector(vdSD);
  	      vdInfo2.logical->SetSensitiveDetector(vdSD);
 	      
@@ -1339,8 +1336,8 @@ namespace mu2e {
 					  );
               ++vdIdEdge;
 	      
-	      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-	      doSurfaceCheck && vdInfo2.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+	      doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
 	      vdInfo.logical->SetSensitiveDetector(vdSD);
  	      vdInfo2.logical->SetSensitiveDetector(vdSD);
 	  }
@@ -1381,8 +1378,8 @@ namespace mu2e {
 
               ++vdIdSurf;
 
-	      doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-	      doSurfaceCheck && vdInfo2.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+	      doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
 	      vdInfo.logical->SetSensitiveDetector(vdSD);
  	      vdInfo2.logical->SetSensitiveDetector(vdSD);
 	  }
@@ -1452,8 +1449,8 @@ namespace mu2e {
 					    false);
 	       ++vdIdSurf;
 
-	       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-	       doSurfaceCheck && vdInfo2.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+	       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+	       doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
 	       vdInfo.logical->SetSensitiveDetector(vdSD);
 	       vdInfo2.logical->SetSensitiveDetector(vdSD);
 	   }
@@ -1491,8 +1488,8 @@ namespace mu2e {
 					    false);
 	       ++vdIdEdge;
 
-	       doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);	  
-	       doSurfaceCheck && vdInfo2.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);	  
+	       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);	  
+	       doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
 	       vdInfo.logical->SetSensitiveDetector(vdSD);
 	       vdInfo2.logical->SetSensitiveDetector(vdSD);
 	   }
