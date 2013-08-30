@@ -5,9 +5,9 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.20 2012/08/04 00:14:08 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/08/04 00:14:08 $
+// $Id: BFMap.hh,v 1.21 2013/08/30 22:25:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/08/30 22:25:22 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time
@@ -18,6 +18,7 @@
 #include <vector>
 #include <ostream>
 #include "BFieldGeom/inc/BFMapType.hh"
+#include "BFieldGeom/inc/BFInterpolationStyle.hh"
 #include "BFieldGeom/inc/Container3D.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -41,6 +42,7 @@ namespace mu2e {
           int nz, double zmin, double dz,
           BFMapType::enum_type atype,
           double scale,
+          BFInterpolationStyle style,
           bool warnIfOutside=false):
       _key(filename),
       _warnIfOutside(warnIfOutside),
@@ -55,7 +57,8 @@ namespace mu2e {
       _isDefined(_nx,_ny,_nz,false),
       _allDefined(false),
       _type(atype),
-      _scaleFactor(scale){
+      _scaleFactor(scale),
+      _interpStyle(style){
     };
 
     // Accessors
@@ -131,6 +134,10 @@ namespace mu2e {
     // A scale factor applied overall.
     double _scaleFactor;
 
+    // Choose between meco style quadratic interpolation and G4bl style linear, or others
+    // yet to be defined.
+    BFInterpolationStyle _interpStyle;
+
     // Functions used internally and by the code that populates the maps.
 
     // method to store the neighbors
@@ -155,6 +162,9 @@ namespace mu2e {
     std::size_t iZ( double z) const {
       return static_cast<int>((z - _zmin)/_dz + 0.5);
     }
+
+    bool interpolateTriLinear(const CLHEP::Hep3Vector &, CLHEP::Hep3Vector &) const;
+    bool interpolateQuadratic(const CLHEP::Hep3Vector &, CLHEP::Hep3Vector &) const;
   };
 
   inline BFMap::GridPoint BFMap::point2grid(const CLHEP::Hep3Vector& pos) const {

@@ -1,9 +1,9 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.16 2012/08/04 00:14:08 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/08/04 00:14:08 $
+// $Id: BFieldManager.cc,v 1.17 2013/08/30 22:25:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/08/30 22:25:58 $
 //
 
 // Includes from C++
@@ -67,7 +67,8 @@ namespace mu2e {
                                  int ny, double ymin, double dy,
                                  int nz, double zmin, double dz,
                                  BFMapType::enum_type type,
-                                 double scaleFactor)
+                                 double scaleFactor,
+                                 BFInterpolationStyle interpStyle)
   {
     // If there already was another Map with the same key, then it is a hard error.
     if(!mapKeys_.insert(key).second) {
@@ -78,7 +79,7 @@ namespace mu2e {
     }
 
     // Add an empty BFMap.
-    mapContainer->push_back(BFMap(key, nx, xmin, dx, ny, ymin, dy, nz, zmin, dz, type, scaleFactor));
+    mapContainer->push_back(BFMap(key, nx, xmin, dx, ny, ymin, dy, nz, zmin, dz, type, scaleFactor, interpStyle));
 
     return mapContainer->back();
   }

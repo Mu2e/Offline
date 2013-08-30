@@ -2,9 +2,9 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFMap.cc,v 1.20 2012/08/04 00:14:08 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/08/04 00:14:08 $
+// $Id: BFMap.cc,v 1.21 2013/08/30 22:25:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/08/30 22:25:58 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution time
@@ -26,10 +26,9 @@
 
 // Other includes
 #include "CLHEP/Vector/ThreeVector.h"
+#include "cetlib/exception.h"
 #include "math.h"
 
-//using CLHEP::Hep3Vector;
-//using mu2e::Container3D;
 using namespace std;
 
 namespace mu2e {
@@ -158,9 +157,109 @@ namespace mu2e {
 
   }
 
-  // Function to return the BField for any point
   bool BFMap::getBFieldWithStatus(const CLHEP::Hep3Vector & testpoint,
                                   CLHEP::Hep3Vector & result) const {
+
+      if ( _interpStyle == BFInterpolationStyle::meco ){
+        return interpolateQuadratic( testpoint, result);
+
+      } else if ( _interpStyle == BFInterpolationStyle::trilinear ){
+        return interpolateTriLinear(testpoint, result );
+
+      }
+      throw cet::exception("GEOM")
+        << "Unrecognized style of BField: " << _interpStyle
+        << "\n";
+  }
+
+  // The algorithm is:
+  // Find the grid cube in which the point lives - this defines eight corner points.
+  // Assign a weight to each corner that is the "distance" to each corner - see below for
+  // its precise definition.  The field value at the test point is the weighted sum of
+  // each of the 8 corner points.
+  bool BFMap::interpolateTriLinear(const CLHEP::Hep3Vector & p, CLHEP::Hep3Vector & result) const {
+
+    double px = p.x();
+    double py = std::abs(p.y());
+    double pz = p.z();
+
+    // Indicies into each dimension;
+    int i = floor(( px - _xmin)/_dx);
+    int j = floor(( py - _ymin)/_dy);
+    int k = floor(( pz - _zmin)/_dz);
+
+    // Check that we are inside the map.
+    if ( i < 0 || i >= int(_nx) ||
+         j < 0 || j >= int(_ny) ||
+         k < 0 || k >= int(_nz)
+         ){
+      if ( _warnIfOutside ){
+        mf::LogWarning("GEOM")
+          << "Point is outside of the valid region of the map: " << _key << "\n"
+          << "Point in input coordinates: " << p << "\n";
+      }
+      result = CLHEP::Hep3Vector(0.,0.,0.);
+      return false;
+    }
+
+    // Trilinear fractional weighting factors.
+    double fx = 1.0 - ( px - _xmin - i*_dx ) / _dx;
+    double fy = 1.0 - ( py - _ymin - j*_dy ) / _dy;
+    double fz = 1.0 - ( pz - _zmin - k*_dz ) / _dz;
+
+    // Field values at the 8 corner points.
+    // Guess that a copy is faster than a pointer for reasons of locality
+    // of reference in the downstream code?
+    CLHEP::Hep3Vector c[8] = { _field( i,   j,   k),
+                               _field( i+1, j,   k),
+                               _field( i,   j+1, k),
+                               _field( i+1, j+1, k),
+                               _field( i,   j,   k+1),
+                               _field( i+1, j,   k+1),
+                               _field( i,   j+1, k+1),
+                               _field( i+1, j+1, k+1) };
+
+    double bx =
+      c[0].x()*fx*fy*fz +
+      c[1].x()*(1.0-fx)*fy*fz +
+      c[2].x()*fx*(1.0-fy)*fz +
+      c[3].x()*(1.0-fx)*(1.0-fy)*fz +
+      c[4].x()*fx*fy*(1.0-fz) +
+      c[5].x()*(1.0-fx)*fy*(1.0-fz) +
+      c[6].x()*fx*(1.0-fy)*(1.0-fz) +
+      c[7].x()*(1.0-fx)*(1.0-fy)*(1.0-fz);
+
+    double by =
+      c[0].y()*fx*fy*fz +
+      c[1].y()*(1.0-fx)*fy*fz +
+      c[2].y()*fx*(1.0-fy)*fz +
+      c[3].y()*(1.0-fx)*(1.0-fy)*fz +
+      c[4].y()*fx*fy*(1.0-fz) +
+      c[5].y()*(1.0-fx)*fy*(1.0-fz) +
+      c[6].y()*fx*(1.0-fy)*(1.0-fz) +
+      c[7].y()*(1.0-fx)*(1.0-fy)*(1.0-fz);
+
+    double bz =
+      c[0].z()*fx*fy*fz +
+      c[1].z()*(1.0-fx)*fy*fz +
+      c[2].z()*fx*(1.0-fy)*fz +
+      c[3].z()*(1.0-fx)*(1.0-fy)*fz +
+      c[4].z()*fx*fy*(1.0-fz) +
+      c[5].z()*(1.0-fx)*fy*(1.0-fz) +
+      c[6].z()*fx*(1.0-fy)*(1.0-fz) +
+      c[7].z()*(1.0-fx)*(1.0-fy)*(1.0-fz);
+
+    // Need the signed value of p.y() here - the variable py will not do.
+    if ( p.y() < 0 ) by = -by;
+
+    result = CLHEP::Hep3Vector( bx, by, bz);
+
+    return true;
+  }
+
+  // Function to return the BField for any point
+  bool BFMap::interpolateQuadratic(const CLHEP::Hep3Vector & testpoint,
+                                   CLHEP::Hep3Vector & result) const {
 
     result = CLHEP::Hep3Vector(0.,0.,0.);
 

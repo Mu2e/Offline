@@ -3,9 +3,9 @@
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.15 2013/03/15 15:52:03 kutschke Exp $
+// $Id: BFieldManagerMaker.hh,v 1.16 2013/08/30 22:25:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Date: 2013/08/30 22:25:22 $
 //
 
 // Includes from C++
@@ -18,6 +18,7 @@
 
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
+#include "BFieldGeom/inc/BFInterpolationStyle.hh"
 
 namespace mu2e {
 
@@ -43,15 +44,24 @@ namespace mu2e {
     // Hold the object while we are creating it. The GeometryService will take ownership.
     std::unique_ptr<BFieldManager> _bfmgr;
 
-    void loadG4BL(BFieldManager::MapContainerType *whichMap, const BFieldConfig::FileSequenceType& files, double scaleFactor);
+    void loadG4BL(BFieldManager::MapContainerType *whichMap,
+                  const BFieldConfig::FileSequenceType& files,
+                  double scaleFactor,
+                  BFInterpolationStyle interpStyle);
+
     // Create a new magnetic field map, get information from config file.
-    void loadG4BL(BFieldManager::MapContainerType *whichMap, const std::string& key, const std::string& resolvedFileName, double scaleFactor);
+    void loadG4BL(BFieldManager::MapContainerType *whichMap,
+                  const std::string& key,
+                  const std::string& resolvedFileName,
+                  double scaleFactor,
+                  BFInterpolationStyle interpStyle);
 
     // Create and fill a new magnetic field map
     void readGMCMap(const std::string& mapKey,
                     const std::string& resolvedFileName,
                     const std::vector<int>& dim,
-                    double scaleFactor
+                    double scaleFactor,
+                    BFInterpolationStyle interpStyle
                     );
 
     // Read a G4BL text format map.

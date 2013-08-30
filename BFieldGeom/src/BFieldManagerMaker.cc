@@ -1,9 +1,9 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.34 2012/04/02 18:28:56 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/02 18:28:56 $
+// $Id: BFieldManagerMaker.cc,v 1.35 2013/08/30 22:25:58 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/08/30 22:25:58 $
 //
 
 // Includes from C++
@@ -32,6 +32,7 @@
 #include "cetlib/exception.h"
 
 // Includes from Mu2e
+#include "BFieldGeom/inc/BFInterpolationStyle.hh"
 #include "BFieldGeom/inc/BFieldManagerMaker.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
@@ -91,14 +92,15 @@ namespace mu2e {
         readGMCMap(basename(config.outerMapFiles()[i]),
                    _resolveFullPath(config.outerMapFiles()[i]),
                    config.gmcDimensions()[i],
-                   config.scaleFactor()
+                   config.scaleFactor(),
+                   config.interpolationStyle()
                    );
       }
 
     } else if(config.mapType() == BFMapType::G4BL) {
 
-      loadG4BL(&_bfmgr->innerMaps_, config.innerMapFiles(), config.scaleFactor());
-      loadG4BL(&_bfmgr->outerMaps_, config.outerMapFiles(), config.scaleFactor());
+      loadG4BL(&_bfmgr->innerMaps_, config.innerMapFiles(), config.scaleFactor(), config.interpolationStyle());
+      loadG4BL(&_bfmgr->outerMaps_, config.outerMapFiles(), config.scaleFactor(), config.interpolationStyle());
 
     } else {
 
@@ -299,7 +301,9 @@ namespace mu2e {
   // Loads a sequence of G4BL files
   void BFieldManagerMaker::loadG4BL(BFieldManager::MapContainerType *mapContainer,
                                     const BFieldConfig::FileSequenceType& files,
-                                    double scaleFactor)
+                                    double scaleFactor,
+                                    BFInterpolationStyle interpStyle
+                                    )
   {
     typedef BFieldConfig::FileSequenceType::const_iterator Iter;
 
@@ -308,7 +312,7 @@ namespace mu2e {
         cout << "Reading " << *i << endl;
       }
       const std::string mapkey = basename(*i);
-      loadG4BL(mapContainer, mapkey, _resolveFullPath(*i), scaleFactor);
+      loadG4BL(mapContainer, mapkey, _resolveFullPath(*i), scaleFactor, interpStyle);
     }
   }
 
@@ -317,7 +321,8 @@ namespace mu2e {
   void BFieldManagerMaker::loadG4BL(BFieldManager::MapContainerType *mapContainer,
                                     const std::string& key,
                                     const std::string& resolvedFileName,
-                                    double scaleFactor
+                                    double scaleFactor,
+                                    BFInterpolationStyle interpStyle
                                     )
   {
     // Extract information from the header.
@@ -328,13 +333,16 @@ namespace mu2e {
     parseG4BLHeader(resolvedFileName, X0, dim, dX, G4BL_offset);
 
     // Create an empty map.
+    BFInterpolationStyle meco(BFInterpolationStyle::meco);
     BFMap& dsmap = _bfmgr->addBFMap(mapContainer,
                                     key,
                                     dim[0], X0[0], dX[0],
                                     dim[1], X0[1], dX[1],
                                     dim[2], X0[2], dX[2],
                                     BFMapType::G4BL,
-                                    scaleFactor );
+                                    scaleFactor,
+                                    interpStyle
+                                    );
 
     // Fill the map from the disk file.
     if (resolvedFileName.find(".header") != string::npos ) {
@@ -359,7 +367,8 @@ namespace mu2e {
   void BFieldManagerMaker::readGMCMap(const std::string& mapKey,
                                       const std::string& filename,
                                       const std::vector<int>& dim,
-                                      double scaleFactor)
+                                      double scaleFactor,
+                                      BFInterpolationStyle interpStyle)
   {
     assert(dim.size() == 3);
 
@@ -492,7 +501,8 @@ namespace mu2e {
                                     ny, mmY.min(), (mmY.max() - mmY.min())/(ny-1),
                                     nz, mmZ.min(), (mmZ.max() - mmZ.min())/(nz-1),
                                     BFMapType::GMC,
-                                    scaleFactor
+                                    scaleFactor,
+                                    interpStyle
                                     );
 
     // Store grid points and field values into 3D arrays

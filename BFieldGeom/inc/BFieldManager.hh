@@ -4,9 +4,9 @@
 // Manage all of the magnetic field maps for Mu2e.
 // This class holds the actual field maps, and provides an interface to compute B field.
 //
-// $Id: BFieldManager.hh,v 1.21 2012/08/04 00:14:08 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/08/04 00:14:08 $
+// $Id: BFieldManager.hh,v 1.22 2013/08/30 22:25:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/08/30 22:25:22 $
 //
 // Notes:
 // 1) This is a "dumb data" class. It does not know how to construct itself.
@@ -24,6 +24,7 @@
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/BFMap.hh"
 #include "BFieldGeom/inc/BFCacheManager.hh"
+#include "BFieldGeom/inc/BFInterpolationStyle.hh"
 
 namespace mu2e {
 
@@ -86,7 +87,8 @@ namespace mu2e {
                     int ny, double ymin, double dy,
                     int nz, double zmin, double dz,
                     BFMapType::enum_type type,
-                    double scaleFactor);
+                    double scaleFactor,
+                    BFInterpolationStyle interpStyle );
 
     // Handles caching and overlap resolution logic
     BFCacheManager cm_;

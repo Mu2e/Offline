@@ -13,6 +13,7 @@
 
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "BFieldGeom/inc/BFMapType.hh"
+#include "BFieldGeom/inc/BFInterpolationStyle.hh"
 
 namespace mu2e {
 
@@ -25,6 +26,9 @@ namespace mu2e {
 
     // G4BL vs GMC maps
     BFMapType mapType() const { return mapType_; }
+
+    // Linear vs quadratic interpolation.
+    BFInterpolationStyle interpolationStyle() const { return interpStyle_; }
 
     // The order of entries is significant for outer maps, but
     // irrelevant for inner ones.  For simplicity we'll use the same
@@ -73,6 +77,9 @@ namespace mu2e {
 
     // GMC, G4BL or possible future types.
     BFMapType mapType_;
+
+    // Linear, MECO style quadratic or possible future types.
+    BFInterpolationStyle interpStyle_;
 
     FileSequenceType innerMapFiles_;
     FileSequenceType outerMapFiles_;

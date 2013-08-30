@@ -56,7 +56,18 @@ namespace mu2e {
     const double grad = config.getDouble("toyDS.gradient", 0.);
     bfconf_->dsGradientValue_ = CLHEP::Hep3Vector( 0., 0., grad * bfconf_->scaleFactor_);
 
+    BFInterpolationStyle style( config.getString("bfield.interpolationStyle","meco") );
+    bfconf_->interpStyle_ = style;
+
     const string format = config.getString("bfield.format","GMC");
+
+    if ( format == "GMC" && style != BFInterpolationStyle::meco ){
+        throw cet::exception("GEOM")
+          << "The GMC magnetic field model must use the meco style interpolation: "
+          << " The specified interpolation style is " << bfconf_->interpolationStyle()
+          << "\n";
+    }
+
     if( format=="GMC" ) {
 
       // These maps require torus radius of 2926 mm
