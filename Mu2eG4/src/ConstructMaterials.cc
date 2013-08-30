@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.41 2013/08/29 19:58:45 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/29 19:58:45 $
+// $Id: ConstructMaterials.cc,v 1.42 2013/08/30 16:15:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/30 16:15:04 $
 //
 // Original author Rob Kutschke
 //
@@ -40,7 +40,6 @@
 #include "G4Tubs.hh"
 #include "G4LogicalVolume.hh"
 #include "G4ThreeVector.hh"
-#include "G4PVPlacement.hh"
 #include "globals.hh"
 #include "G4NistManager.hh"
 #include "G4VisAttributes.hh"

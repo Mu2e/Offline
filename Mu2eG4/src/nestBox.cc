@@ -1,9 +1,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 //
-// $Id: nestBox.cc,v 1.8 2011/11/23 18:01:15 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/11/23 18:01:15 $
+// $Id: nestBox.cc,v 1.9 2013/08/30 16:15:47 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/30 16:15:47 $
 //
 // Original author Rob Kutschke
 //
@@ -18,7 +18,6 @@
 #include "G4Box.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
-#include "G4PVPlacement.hh"
 #include "G4ThreeVector.hh"
 #include "G4VisAttributes.hh"
 
