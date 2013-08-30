@@ -5,9 +5,9 @@
 //  - See comments at the top of constructTTrackerv3.cc for additional details
 //    of the meaning of version numbers.
 //
-// $Id: constructTTrackerv3Detailed.cc,v 1.4 2013/04/03 22:23:31 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/04/03 22:23:31 $
+// $Id: constructTTrackerv3Detailed.cc,v 1.5 2013/08/30 17:01:35 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/30 17:01:35 $
 //
 // Contact person Rob Kutschke,
 //   - Based on constructTTrackerv3 by KLG
@@ -39,6 +39,7 @@
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
 #include "G4Box.hh"
@@ -673,7 +674,11 @@ namespace {
                                              devInfo.logical,
                                              many,
                                              isec,
-                                             doSurfaceCheck);
+                                             false);
+      if ( doSurfaceCheck) {
+        checkForOverlaps(sec0Info.physical, config, verbosityLevel>0);
+      }
+
     }
 
     // Place the device envelopes into the tracker mother.
@@ -705,8 +710,10 @@ namespace {
                                             motherInfo.logical,
                                             false,
                                             idev,
-                                            doSurfaceCheck);
-
+                                            false);
+      if ( doSurfaceCheck) {
+         checkForOverlaps(devInfo.physical, config, verbosityLevel>0);
+      }
 
     } // end loop over devices
 

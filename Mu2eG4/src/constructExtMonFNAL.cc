@@ -1,6 +1,6 @@
-// $Id: constructExtMonFNAL.cc,v 1.28 2013/08/13 20:15:50 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/08/13 20:15:50 $
+// $Id: constructExtMonFNAL.cc,v 1.29 2013/08/30 16:57:32 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/30 16:57:32 $
 //
 //
 // Andrei Gaponenko, 2011
@@ -34,6 +34,8 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "Mu2eG4/inc/checkForOverlaps.hh"
+
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
@@ -118,7 +120,6 @@ namespace mu2e {
 
       bool vdIsVisible         = config.getBool("vd.visible");
       bool vdIsSolid           = config.getBool("vd.solid");
-      int const nSurfaceCheckPoints = 100000; // for a more thorough check due to the vd shape
 
       MaterialFinder materialFinder(config);
       GeomHandle<DetectorSolenoid> ds;
@@ -174,7 +175,9 @@ namespace mu2e {
                                       );
 
           // vd are very thin, a more thorough check is needed
-          doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+          if (doSurfaceCheck) {
+            checkForOverlaps( vdInfo.physical, config, verbosityLevel>0);
+          }
 
           if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
         }
@@ -344,8 +347,6 @@ namespace mu2e {
     bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
     bool const placePV       = true;
 
-    int const nSurfaceCheckPoints = 100000; // for a more thorough check due to the vd shape
-
     GeomHandle<DetectorSolenoid> ds;
     G4Material* vacuumMaterial     = findMaterialOrThrow(ds->insideMaterial());
 
@@ -393,8 +394,7 @@ namespace mu2e {
                                     false);
 
         // vd are very thin, a more thorough check is needed
-        doSurfaceCheck && vdInfo.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
-
+        doSurfaceCheck && checkForOverlaps( vdInfo.physical, config, verbosityLevel>0);
         if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
       }
     } // for(vdId-2)
@@ -409,13 +409,13 @@ namespace mu2e {
                      const VolumeInfo& parent,
                      const SimpleConfig& config)
   {
+    const int verbosityLevel = config.getInt("vd.verbosityLevel");
     const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
     const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
     const bool placePV             = true;
 
     bool vdIsVisible         = config.getBool("vd.visible");
     bool vdIsSolid           = config.getBool("vd.solid");
-    int const nSurfaceCheckPoints = 100000; // for a more thorrow check due to the vd shape
 
     GeomHandle<DetectorSolenoid> ds;
     G4Material* vacuumMaterial     = findMaterialOrThrow(ds->insideMaterial());
@@ -456,7 +456,7 @@ namespace mu2e {
                                         );
 
     // vd are very thin, a more thorough check is needed
-    doSurfaceCheck && boxFront.physical->CheckOverlaps(nSurfaceCheckPoints,0.0,true);
+    doSurfaceCheck && checkForOverlaps( boxFront.physical, config, verbosityLevel>0);
 
     G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
       FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());

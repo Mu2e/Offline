@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.25 2013/06/19 03:41:01 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2013/06/19 03:41:01 $
+// $Id: constructProtonAbsorber.cc,v 1.26 2013/08/30 16:58:53 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/30 16:58:53 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -30,6 +30,7 @@
 #include "Mu2eG4/inc/HelicalProtonAbsorber.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -92,14 +93,16 @@ namespace mu2e {
       
       bool addSD   = _config.getBool("protonabsorber.saveStepPnts",false);
       
-      HelicalProtonAbsorber* hpabs = new HelicalProtonAbsorber( ds2HalfLen-helPabsLength,
-                                                                helPabsLength*lengthScaleFact,/*ScaleFact is a trick FIXME */
-                                                                innerRadii, outerRadii, innerPhis, outerPhis,
-                                                                helPabsThickness, /*numOfTurns,*/
-                                                                _config.getInt("protonabsorber.NumOfVanes"), pabsMaterial, parent1Info.logical, (addSD) ? paSD : 0x0 );
+      HelicalProtonAbsorber* hpabs = 
+        new HelicalProtonAbsorber( ds2HalfLen-helPabsLength,
+                                   helPabsLength*lengthScaleFact,/*ScaleFact is a trick FIXME */
+                                   innerRadii, outerRadii, innerPhis, outerPhis,
+                                   helPabsThickness, /*numOfTurns,*/
+                                   _config.getInt("protonabsorber.NumOfVanes"), 
+                                   pabsMaterial, parent1Info.logical, (addSD) ? paSD : 0x0 );
       
       if ( _config.getBool("g4.doSurfaceCheck",false) ) {
-        hpabs->checkOverlaps( 1000000, 0.001, true );
+        checkForOverlaps( hpabs->GetPhys(), _config, verbosityLevel>0);
       }
       
       if ( _config.getBool("protonabsorber.visible",true) ) {

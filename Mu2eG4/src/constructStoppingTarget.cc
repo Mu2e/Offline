@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.19 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: constructStoppingTarget.cc,v 1.20 2013/08/30 17:00:14 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/30 17:00:14 $
 //
 // Original author Peter Shanahan
 //
@@ -29,6 +29,7 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -47,9 +48,9 @@ namespace mu2e {
   VolumeInfo constructStoppingTarget( VolumeInfo   const& parent,
                                       SimpleConfig const& config ){
 
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
-    const bool placePV             = true;
+    const bool forceAuxEdgeVisible  = config.getBool("g4.forceAuxEdgeVisible",false);
+    const bool doSurfaceCheck       = config.getBool("g4.doSurfaceCheck",false);
+    const bool placePV              = true;
 
     int verbosity(config.getInt("target.verbosity",0));
     if ( verbosity > 1 ) std::cout<<"In constructStoppingTarget"<<std::endl;
@@ -81,6 +82,8 @@ namespace mu2e {
 
     // now create the individual targets
 
+    G4VPhysicalVolume* pv;
+
     for (int itf=0; itf<target->nFoils(); itf++) {
 
         TargetFoil foil=target->foil(itf);
@@ -110,14 +113,16 @@ namespace mu2e {
         if ( verbosity > 1 ) cout<<"foil "<<itf<<" centerInMu2e="<<foil.centerInMu2e()<<", offset="<<foilOffset<<endl;
 
         // G4 manages the lifetime of this object.
-        new G4PVPlacement( rot,
+        pv = new G4PVPlacement( rot,
                            foilOffset,
                            foilInfo.logical,
                            "TargetFoil_",
                            targetInfo.logical,
                            0,
                            itf,
-                           config.getBool("g4.doSurfaceCheck",false));
+                           false);
+
+        doSurfaceCheck && checkForOverlaps( pv, config, verbosity>0);
 
         if (!config.getBool("target.visible",true)) {
           foilInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
@@ -131,6 +136,5 @@ namespace mu2e {
 
     return targetInfo;
   }
-
 
 } // end namespace mu2e

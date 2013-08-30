@@ -1,9 +1,9 @@
 //
 // Free function to create the Vane calorimeter.
 //
-// $Id: constructVaneCalorimeter.cc,v 1.10 2013/07/01 23:11:39 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/07/01 23:11:39 $
+// $Id: constructVaneCalorimeter.cc,v 1.11 2013/08/30 17:04:07 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/30 17:04:07 $
 //
 // Original author Ivan Logashenko
 // Modified by Bertrand Echenard
@@ -36,6 +36,7 @@
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
 #include "G4Box.hh"
@@ -200,6 +201,8 @@ namespace mu2e {
     VolumeInfo neutronAbsorberInfo[nvane];
 
 
+    G4VPhysicalVolume* pv;
+
 
     for( int iv=0; iv<nvane; ++iv ) 
     {
@@ -341,34 +344,59 @@ namespace mu2e {
 	// place a shell only if it has non-zero thickness, or place the wrapper directly
 	if (cal.shellThickness()  > 0.001) 
 	{
-	  new G4PVPlacement(0,G4ThreeVector(x,y,z),thisShellLog,"CrysShellPV",vaneInInfo[iv].logical,0,id,doSurfaceCheck);   
-	  new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0.0),thisWrapLog,"CrysWrapPV",thisShellLog,0,id,doSurfaceCheck);
+	  pv = new G4PVPlacement(0,G4ThreeVector(x,y,z),thisShellLog,"CrysShellPV",
+                            vaneInInfo[iv].logical,false,id,false);
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+
+	  pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0.0),thisWrapLog,"CrysWrapPV",
+                            thisShellLog,false,id,false);
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+
 	} else {
-	  new G4PVPlacement(0,G4ThreeVector(x,y,z),thisWrapLog,"CrysWrapPV",vaneInInfo[iv].logical,0,id,doSurfaceCheck);   	      
+	  pv = new G4PVPlacement(0,G4ThreeVector(x,y,z),thisWrapLog,"CrysWrapPV",
+                            vaneInInfo[iv].logical,false,id,false);   	      
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+
 	}
 
 //swapped sign from all these
 
 	// -- place crystal inside warp
-	new G4PVPlacement(0,G4ThreeVector(-cal.roHalfThickness(),0.0,0.0),CrystalLog,"CrysPV",thisWrapLog,0,id,doSurfaceCheck);
+	pv = new G4PVPlacement(0,G4ThreeVector(-cal.roHalfThickness(),0.0,0.0),CrystalLog,"CrysPV",
+                          thisWrapLog,false,id,false);
+        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 
 	// -- add the readout
 	if (nRO==1) 
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),0,0),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
+	  pv = new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),0,0),ROLog,"CrysROPV_0",
+                            thisWrapLog,false,roidBase,false);
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 
 	if (nRO==2) 
 	{ 
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),-0.5*cal.crystalHalfTrans(),0.0),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(), 0.5*cal.crystalHalfTrans(),0.0),ROLog,"CrysROPV_1",thisWrapLog,0,roidBase+1,doSurfaceCheck);
+	  pv = new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),-0.5*cal.crystalHalfTrans(),0.0),ROLog,"CrysROPV_0",
+                            thisWrapLog,false,roidBase,false);
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+	  pv = new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(), 0.5*cal.crystalHalfTrans(),0.0),ROLog,"CrysROPV_1",
+                            thisWrapLog,false,roidBase+1,false);
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 	}
 
 	if (nRO==4) 
 	{ 
 	  G4double cHS = -0.5*cal.crystalHalfTrans();
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),-cHS,-cHS),ROLog,"CrysROPV_0",thisWrapLog,0,roidBase,doSurfaceCheck);
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),-cHS,cHS), ROLog,"CrysROPV_1",thisWrapLog,0,roidBase+1,doSurfaceCheck);
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(), cHS,-cHS),ROLog,"CrysR0PV_2",thisWrapLog,0,roidBase+2,doSurfaceCheck);
-	  new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(), cHS,cHS), ROLog,"CrysROPV_3",thisWrapLog,0,roidBase+3,doSurfaceCheck);
+	  pv = new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),-cHS,-cHS),ROLog,"CrysROPV_0"
+                            ,thisWrapLog,false,roidBase,false);
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+	  pv = new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(),-cHS,cHS), ROLog,"CrysROPV_1",
+                            thisWrapLog,false,roidBase+1,false);
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+	  pv = new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(), cHS,-cHS),ROLog,"CrysR0PV_2",
+                            thisWrapLog,false,roidBase+2,false);
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+          pv = new G4PVPlacement(0,G4ThreeVector(cal.crystalHalfLength(), cHS,cHS), ROLog,"CrysROPV_3",
+                            thisWrapLog,false,roidBase+3,false);
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 	}
 
 
