@@ -37,9 +37,9 @@ namespace mu2e {
   }
 
   //================================================================
-  class StoppedParticles : public art::EDProducer {
+  class StoppedParticlesFinder : public art::EDProducer {
   public:
-    explicit StoppedParticles(fhicl::ParameterSet const& pset);
+    explicit StoppedParticlesFinder(fhicl::ParameterSet const& pset);
     void beginSubRun(art::SubRun& sr) override;
     void produce(art::Event& evt) override;
     void endJob() override;
@@ -62,7 +62,7 @@ namespace mu2e {
   };
 
   //================================================================
-  StoppedParticles::StoppedParticles(const fhicl::ParameterSet& pset)
+  StoppedParticlesFinder::StoppedParticlesFinder(const fhicl::ParameterSet& pset)
     : particleInput_(pset.get<std::string>("particleInput"))
     , physVolInfoInput_(pset.get<std::string>("physVolInfoInput"))
     , stoppingMaterial_(pset.get<std::string>("stoppingMaterial"))
@@ -81,7 +81,7 @@ namespace mu2e {
   }
 
   //================================================================
-  void StoppedParticles::beginSubRun(art::SubRun& sr) {
+  void StoppedParticlesFinder::beginSubRun(art::SubRun& sr) {
     art::Handle<PhysicalVolumeInfoMultiCollection> volh;
     sr.getByLabel(physVolInfoInput_, volh);
     vols_ = &*volh;
@@ -100,7 +100,7 @@ namespace mu2e {
   }
 
   //================================================================
-  void StoppedParticles::produce(art::Event& event) {
+  void StoppedParticlesFinder::produce(art::Event& event) {
 
     std::unique_ptr<SimParticlePtrCollection> output(new SimParticlePtrCollection());
 
@@ -142,14 +142,14 @@ namespace mu2e {
   }
 
   //================================================================
-  bool StoppedParticles::isStopped(const SimParticle& particle) {
+  bool StoppedParticlesFinder::isStopped(const SimParticle& particle) {
     return particle.endMomentum().v().mag2() <= std::numeric_limits<double>::epsilon();
   }
 
   //================================================================
-  void StoppedParticles::endJob() {
+  void StoppedParticlesFinder::endJob() {
     mf::LogInfo("Summary")
-      <<"StoppedParticles stats:"
+      <<"StoppedParticlesFinder stats:"
       <<" accepted = "<<numRequestedMateralStops_
       <<", requested type stops = "<<numRequestedTypeStops_
       <<", total input particles = "<<numTotalParticles_
@@ -160,4 +160,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StoppedParticles);
+DEFINE_ART_MODULE(mu2e::StoppedParticlesFinder);
