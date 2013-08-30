@@ -333,7 +333,7 @@ double FMtool::obtainCEdata()
     sigEfficiency[tCutNumber].clear();
     sigEfficiency[tCutNumber].resize(nBins);
   }
-  extractFitmom ( CEfileList, sigEfficiency );
+  //extractFitmom ( CEfileList, sigEfficiency );
 
   extractFitmom ( CEfileList, sigEfficiency, false, false, true ); 
 
