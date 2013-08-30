@@ -9,9 +9,9 @@
 //
 //   Outputs:  TS3Vacuum, DS2Vacuum, DS3Vacuum, CRV, virtualdetector, SimParticleCollection
 //
-// $Id: FilterStepPointMCs_module.cc,v 1.2 2013/08/04 14:28:41 gandr Exp $
+// $Id: FilterG4Out_module.cc,v 1.1 2013/08/30 16:30:03 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/04 14:28:41 $
+// $Date: 2013/08/30 16:30:03 $
 //
 // Andrei Gaponenko, 2013
 
@@ -99,7 +99,7 @@ namespace mu2e {
   } // anonymous namespace
 
   //================================================================
-  class FilterStepPointMCs : public art::EDFilter {
+  class FilterG4Out : public art::EDFilter {
 
     typedef std::vector<art::InputTag> InputTags;
     InputTags mainHitInputs_; // define a set of SimParticles
@@ -136,13 +136,13 @@ namespace mu2e {
                        const art::Ptr<StepPointMC>& newHit);
 
   public:
-    explicit FilterStepPointMCs(const fhicl::ParameterSet& pset);
+    explicit FilterG4Out(const fhicl::ParameterSet& pset);
     virtual bool filter(art::Event& event) override;
     virtual void endJob() override;
   };
 
   //================================================================
-  FilterStepPointMCs::FilterStepPointMCs(const fhicl::ParameterSet& pset)
+  FilterG4Out::FilterG4Out(const fhicl::ParameterSet& pset)
     : numInputEvents_(), numPassedEvents_()
     , numMainHits_(), numInputExtraHits_(), numPassedExtraHits_()
     , numInputParticles_(), numPassedParticles_()
@@ -203,7 +203,7 @@ namespace mu2e {
 
   //================================================================
   // Return true is any hits are passed
-  bool FilterStepPointMCs::filter(art::Event& event) {
+  bool FilterG4Out::filter(art::Event& event) {
     bool passed = false;
     typedef std::map<std::string, std::unique_ptr<StepPointMCCollection> > OutMap;
 
@@ -244,7 +244,7 @@ namespace mu2e {
 
     if(toBeKept.size() > simPartOutNames.size()) {
       throw cet::exception("BADCONFIG")
-        <<"FilterStepPointMCs: configured numSimParticleCollections = "<<simPartOutNames.size()
+        <<"FilterG4Out: configured numSimParticleCollections = "<<simPartOutNames.size()
         <<" but used "<<toBeKept.size()<<" collections in the event\n";
     }
 
@@ -382,10 +382,10 @@ namespace mu2e {
   }
 
   //================================================================
-  void FilterStepPointMCs::addGPStepLink(const art::Event& event,
-                                         GenParticleSPMHistory& newHistory,
-                                         const art::Ptr<StepPointMC>& oldHit,
-                                         const art::Ptr<StepPointMC>& newHit) {
+  void FilterG4Out::addGPStepLink(const art::Event& event,
+                                  GenParticleSPMHistory& newHistory,
+                                  const art::Ptr<StepPointMC>& oldHit,
+                                  const art::Ptr<StepPointMC>& newHit) {
 
     for(const auto& inTag : gpStepLinkInputs_) {
       auto ih = event.getValidHandle<GenParticleSPMHistory>(inTag);
@@ -401,9 +401,9 @@ namespace mu2e {
   }
 
   //================================================================
-  void FilterStepPointMCs::endJob() {
+  void FilterG4Out::endJob() {
     mf::LogInfo("Summary")
-      << "FilterStepPointMCs_module stats: passed "
+      << "FilterG4Out_module stats: passed "
       << numPassedEvents_ <<" / "<<numInputEvents_<<" events, "
       << numMainHits_ <<" main hits, "
       << numPassedExtraHits_ <<" / "<<numInputExtraHits_<<" extra hits, "
@@ -415,4 +415,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FilterStepPointMCs);
+DEFINE_ART_MODULE(mu2e::FilterG4Out);
