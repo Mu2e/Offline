@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHitsNew_module.cc,v 1.2 2013/08/29 22:54:04 srsoleti Exp $
+// $Id: MakeCaloCrystalHitsNew_module.cc,v 1.3 2013/08/30 13:58:16 srsoleti Exp $
 // $Author: srsoleti $
-// $Date: 2013/08/29 22:54:04 $
+// $Date: 2013/08/30 13:58:16 $
 //
 // Original author KLG
 // for realistic modeling: reduce timeGap from 30ns to 1 ns in Mu2eG4/test/calorimeter.txt
@@ -259,84 +259,86 @@ namespace mu2e {
 
     for( std::vector<CaloHit const *>::const_iterator i = caloHitsSorted.begin()+1; i != caloHitsSorted.end(); ++i) 
     {
-
-	CaloHit const& hit = **i;
-	int cid = cal.crystalByRO(hit.id());
-
-	if (_drawLevel)
-	  _hCaloHitTime->Fill(hit.time());
-
-
-	if (_diagLevel) 
+      cout << "BLABLABLA" << endl;
+      CaloHit const& hit = **i;
+      int cid = cal.crystalByRO(hit.id());
+      
+      if (_drawLevel)
+	_hCaloHitTime->Fill(hit.time());
+      
+      
+      if (_diagLevel) 
 	{
-           cout << __func__ << ": Original RO hit: " << hit << endl;
-           cout << __func__ << ": old, new cid:  " << caloCrystalHit.id() << ", " << cid << endl;
-           cout << __func__ << ": old, new time: " << caloCrystalHit.time() << ", " << hit.time() << endl;
-           cout << __func__ << ": time difference, gap: " << (hit.time() - caloCrystalHit.time()) << ", "<< _minimumTimeGap << endl;
+	  cout << __func__ << ": Original RO hit: " << hit << endl;
+	  cout << __func__ << ": old, new cid:  " << caloCrystalHit.id() << ", " << cid << endl;
+	  cout << __func__ << ": old, new time: " << caloCrystalHit.time() << ", " << hit.time() << endl;
+	  cout << __func__ << ": time difference, gap: " << (hit.time() - caloCrystalHit.time()) << ", "<< _minimumTimeGap << endl;
 	}
-
-	// merge the hits if they are of the same crystal and closer than _tLeadingEdge
-	if (caloCrystalHit.id() == cid && (( hit.time() - caloCrystalHit.time()) < _tLeadingEdge) ) 
+      
+      // merge the hits if they are of the same crystal and closer than _tLeadingEdge
+      if (caloCrystalHit.id() == cid && (( hit.time() - caloCrystalHit.time()) < _tLeadingEdge) ) 
 	{
-
-             if ( hit.energyDep()>= _minimumEnergy && hit.energyDep() < _maximumEnergy ) 
-	     {
-               size_t idx = ( &hit - base );
-               caloCrystalHit.add( hit, art::Ptr<CaloHit>(caloHitsHandle,idx));
-             } else {
-               caloCrystalHit.addEnergyToTot(hit);
-             }
-             if (_diagLevel) cout << __func__ << ": Added to the hit:  " << caloCrystalHit << endl;
-
-
+	  if (hit.energyDep() > 30)
+	    cout << "MERGED SIGNALS T < LEADING EDGE TIME, Hit energy = " << hit.energyDep() << endl;
+	  
+	  if ( hit.energyDep()>= _minimumEnergy && hit.energyDep() < _maximumEnergy ) 
+	    {
+	      size_t idx = ( &hit - base );
+	      caloCrystalHit.add( hit, art::Ptr<CaloHit>(caloHitsHandle,idx));
+	    } else {
+	    caloCrystalHit.addEnergyToTot(hit);
+	  }
+	  if (_diagLevel) cout << __func__ << ": Added to the hit:  " << caloCrystalHit << endl;
+	  
+	  
 	} else {
-
-             if (caloCrystalHit.energyDep()>0.0) 
-	     {
-        	  if (_diagLevel) cout << __func__ << ": Inserting old hit: " << caloCrystalHit << endl;
-
-		  
-		  int roId = hit.id();
-
-		  if (_caloChargeProductionEffects) 
-		  {
-		      double esave = caloCrystalHit.energyDep();
-		      chargeProductionCorrection(caloCrystalHit, roId, calorimeterCalibrations);
-		      if(_diagLevel) std::cout<<"before / after ChargeProductionEffects-correction, energy = "<< esave<<" / "<<caloCrystalHit.energyDep()<<std::endl;
-		  }
-
-		  if (_caloROnoiseEffect)
-		  {
-        	    double esave = caloCrystalHit.energyDep();
-		    readoutNoiseCorrection(caloCrystalHit,roId, calorimeterCalibrations);
-		    if(_diagLevel) std::cout<<"after ROnoiseEffects-correction, energy = "<<  esave<<" / "<<caloCrystalHit.energyDep()<<std::endl;	      
-		  }
-
-		  
-		  signals.push_back(caloCrystalHit);
-             }
-
-             // this resets the caloCrystalHit and sets its id and puts one hit in
-             if ( hit.energyDep()>= _minimumEnergy && hit.energyDep() < _maximumEnergy ) {
-                 size_t idx = ( &hit - base );
-                 caloCrystalHit.assign(cid, hit, art::Ptr<CaloHit>(caloHitsHandle,idx));
-             } else {
-                 caloCrystalHit.assignEnergyToTot( cid, hit);
-             }
-             if (_diagLevel) cout << __func__ << ": Created new hit:   " << caloCrystalHit << endl;
-
+	
+	if (caloCrystalHit.energyDep()>0.0) 
+	  {
+	    if (_diagLevel) cout << __func__ << ": Inserting old hit: " << caloCrystalHit << endl;
+	    
+	    
+	    int roId = hit.id();
+	    
+	    if (_caloChargeProductionEffects) 
+	      {
+		double esave = caloCrystalHit.energyDep();
+		chargeProductionCorrection(caloCrystalHit, roId, calorimeterCalibrations);
+		if(_diagLevel) std::cout<<"before / after ChargeProductionEffects-correction, energy = "<< esave<<" / "<<caloCrystalHit.energyDep()<<std::endl;
+	      }
+	    
+	    if (_caloROnoiseEffect)
+	      {
+		double esave = caloCrystalHit.energyDep();
+		readoutNoiseCorrection(caloCrystalHit,roId, calorimeterCalibrations);
+		if(_diagLevel) std::cout<<"after ROnoiseEffects-correction, energy = "<<  esave<<" / "<<caloCrystalHit.energyDep()<<std::endl;	      
+	      }
+	    
+	    
+	    signals.push_back(caloCrystalHit);
+	  }
+	
+	// this resets the caloCrystalHit and sets its id and puts one hit in
+	if ( hit.energyDep()>= _minimumEnergy && hit.energyDep() < _maximumEnergy ) {
+	  size_t idx = ( &hit - base );
+	  caloCrystalHit.assign(cid, hit, art::Ptr<CaloHit>(caloHitsHandle,idx));
+	} else {
+	  caloCrystalHit.assignEnergyToTot( cid, hit);
 	}
-
+	if (_diagLevel) cout << __func__ << ": Created new hit:   " << caloCrystalHit << endl;
+	
+      }
+      
     }
-
-
-
+    
+    
+    
     if (caloCrystalHit.energyDep()>0.0) 
       {
 	if (_diagLevel) cout << __func__ << ": Inserting last old hit: " << caloCrystalHit << endl;
 	signals.push_back(caloCrystalHit);
       }
-
+    
     double A, B;
     double t_shift;
     double t_second_peak;
@@ -417,7 +419,7 @@ namespace mu2e {
 	      
 	      caloCrystalHits.push_back(*firstSignal);
 	      *firstSignal = *secondSignal;
-	      cout << "SOLVED" << endl;
+	      cout << "NOT MERGED SIGNALS BECAUSE NOT RESOLVABLE PILE UP" << endl;
 	    } 
 	  else 
 	    {
@@ -431,15 +433,19 @@ namespace mu2e {
 	      
 	      // add all the hits of the second signal to the first one (merging)
 	      int z = 0;
-	      cout << "Second signal hits: " << secondSignal->readouts().size() << endl;
+	      
+	      if (firstSignal->energyDep() > 30 || secondSignal->energyDep() > 30)
+		cout << "MERGED SIGNALS AFTER PILE UP First signal energy: " << firstSignal->energyDep() << "Second signal energy: " << secondSignal->energyDep() << endl;
+
+
 	      for (std::vector<art::Ptr<mu2e::CaloHit>>::const_iterator k = secondSignal->readouts().begin(); k != secondSignal->readouts().end(); k++) 
 		{
-		  cout << "I: " << z << endl;
-		  cout << secondSignal->id() << " " << firstSignal->id() << endl;
+		  
 		  if (secondSignal->readouts().size()!=0)
 		    firstSignal->addEnergyToTot(**k);	
 		  z++;
 		}
+
 	      
 	    }
 
@@ -449,7 +455,7 @@ namespace mu2e {
 	    {
 	      j++;
 	      secondSignal = j.operator->();
-	      cout << "Second " << secondSignal->id() << endl;
+	      
 	    }
 	  
 	  //  cout << "SAME: " << secondSignal->id() << endl;
