@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.201 2013/08/29 19:58:45 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/29 19:58:45 $
+// $Id: geom_01.txt,v 1.202 2013/08/30 17:08:14 genser Exp $
+// $Author: genser $
+// $Date: 2013/08/30 17:08:14 $
 //
 // Original author Rob Kutschke
 //
@@ -130,8 +130,13 @@ bool g4.printMaterials = false;
 
 // make detector volume structure visible where enabled
 bool g4.forceAuxEdgeVisible = true;
+
 // invoke volume overlap check where enabled (draws random numbers)
 bool g4.doSurfaceCheck = false;
+// number of random points on the volume surface
+int  g4.nSurfaceCheckPointsPercmsq =   1;
+int  g4.minSurfaceCheckPoints      = 100; // per volume
+int  g4.maxSurfaceCheckPoints = 10000000; // per volume
 
 // The world volume contains a formal "hall" box that is surrounded by
 // dirt at the bottom and (part way) on the sides.  The rest is filled
