@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.58 2013/08/30 22:17:33 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/30 22:17:33 $
+// $Id: constructVirtualDetectors.cc,v 1.59 2013/09/03 23:11:02 mjlee Exp $
+// $Author: mjlee $
+// $Date: 2013/09/03 23:11:02 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -226,16 +226,18 @@ namespace mu2e {
         Ravr = _config.getDouble("intneutronabs.rIn1"); 
       }
 
-      GeomHandle<MECOStyleProtonAbsorber> pageom;
       bool opaflag = false;
       double opaz0, opaz1, opari0, opari1;
-      if ( pageom->isAvailable(ProtonAbsorberId::opabs) ) {
-        opaflag = true;
-        MECOStyleProtonAbsorberPart opa = pageom->part(2);
-        opaz0 = opa.center().z()-opa.halfLength();
-        opaz1 = opa.center().z()+opa.halfLength();
-        opari0 = opa.innerRadiusAtStart();
-        opari1 = opa.innerRadiusAtEnd();
+      if ( _config.getBool("hasProtonAbsorber", true) ) {
+        GeomHandle<MECOStyleProtonAbsorber> pageom;
+        if ( pageom->isAvailable(ProtonAbsorberId::opabs) ) {
+          opaflag = true;
+          MECOStyleProtonAbsorberPart opa = pageom->part(2);
+          opaz0 = opa.center().z()-opa.halfLength();
+          opaz1 = opa.center().z()+opa.halfLength();
+          opari0 = opa.innerRadiusAtStart();
+          opari1 = opa.innerRadiusAtEnd();
+        }
       }
 
       for( int vdId=VirtualDetectorId::ST_In; 
