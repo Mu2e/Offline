@@ -9,18 +9,8 @@ source: {
 }
 
 services: {
-    message: @local::default_message
-
-//    // This does not help to get clean outputs because of BaBar singleton material printouts and other stuff
-//    message : {
-//        destinations :
-//        {
-//            log:      @local::mf_null
-//            statistics :   { stats: @local::mf_null }
-//        }
-//    }
-
-    scheduler: { defaultExceptions : false }
+    message   : @local::default_message
+    scheduler : { defaultExceptions : false }
 
     user: {
         GeometryService   : { inputFile : "Mu2eG4/test/geom_01.txt" }
@@ -32,18 +22,11 @@ services: {
 physics: {
     analyzers: {
         bftest: {
-            module_type: BFieldTest
-            x : 3904
-            y : 0
+           module_type: BFieldTest
+           beamdump : { x : 3904 y : 0  zmin : 0 zmax : -18000 npoints : 180 }
 
-            zmin :      0
-            zmax : -18000
-            npoints : 180
-
-            // // Points near the PS map boundary: one inside, one outside of the "inner" map
-            // zmin :  -9929.01
-            // zmax :  -9928.99
-            // npoints :   2
+           // Points near the PS map boundary: one inside, one outside of the "inner" map
+           boundary : { x : 3904 y : 0  zmin :  -9929.01 zmax :  -9928.99  npoints : 2 }
         }
     }
 
