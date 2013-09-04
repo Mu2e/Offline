@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.59 2013/09/03 23:11:02 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2013/09/03 23:11:02 $
+// $Id: constructVirtualDetectors.cc,v 1.60 2013/09/04 03:09:56 youzy Exp $
+// $Author: youzy $
+// $Date: 2013/09/04 03:09:56 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 //
@@ -1031,6 +1031,8 @@ namespace mu2e {
         vdInfo.logical->SetSensitiveDetector(vdSD);
       }
 
+    if ( _config.getBool("hasExtMonUCI", false) )
+    {
     // placing virtual detector infront of ExtMonUCI removable shielding
     vdId = VirtualDetectorId::EMIEntrance1;
     if( vdg->exist(vdId) ) {
@@ -1133,6 +1135,7 @@ namespace mu2e {
         }
       }
     }
+    } // hasExtMonUCI
 
     // An XY plane between the PS and anything ExtMon
     vdId = VirtualDetectorId::ExtMonCommonPlane;
