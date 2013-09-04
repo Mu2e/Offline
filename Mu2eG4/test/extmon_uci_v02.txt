@@ -11,8 +11,8 @@ bool   extmon_uci.envelopeVisible      = false;
 bool   extmon_uci.envelopeSolid        = false;
 
 //ExtMon Platform
-vector<double> extmon_uci.platformHalfLengths = {1527.0, 1175.0, 3280.0};
-vector<double> extmon_uci.platformPosition = {4593.0, -1175.0, -18704.0};
+vector<double> extmon_uci.platformHalfLengths = {1527.0, 867.0, 3280.0};
+vector<double> extmon_uci.platformPosition = {4593.0, -867.0, -18704.0};
 string extmon_uci.platformMaterialName = "ShieldingConcrete";
 bool   extmon_uci.platformVisible      = true;
 bool   extmon_uci.platformSolid        = false;
@@ -105,8 +105,8 @@ vector<double> extmon_uci.shdHalfLengths = {
         600.0, 250.0, 1225.0,  // 5: TopBack
         250.0, 200.0, 1550.0,  // 6: DownFront
         250.0, 160.0, 1225.0,  // 7: DownBack
-       1500.0,2000.0,  850.0,  // 8: FrontRemovable
-       1500.0,2000.0,  150.0   // 9: FrontRemovable Iron
+       1500.0,1692.0,  850.0,  // 8: FrontRemovable
+       1500.0,1692.0,  150.0   // 9: FrontRemovable Iron
 };
 vector<double> extmon_uci.shdPosition = {
         3843.0,  700.0, -15679.0, // 0: Front
@@ -117,8 +117,8 @@ vector<double> extmon_uci.shdPosition = {
         4020.0, 1150.0, -20254.0, // 5: TopBack
         3870.0,  200.0, -17479.0, // 6: DownFront
         3870.0,  160.0, -20254.0, // 7: DownBack
-       4565.51, -550.0, -14574.0, // 8: FrontRemovable
-       4565.51, -550.0, -13574.0  // 9: FrontRemovable Iron
+       4565.51, -242.0, -14574.0, // 8: FrontRemovable
+       4565.51, -242.0, -13574.0  // 9: FrontRemovable Iron
 };
 vector<int> extmon_uci.shieldSwitch = {1, 1, 1, 1, 1,
                                        1, 1, 1, 2, 2};
