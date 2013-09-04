@@ -51,7 +51,7 @@ namespace mu2e {
     const CLHEP::Hep3Vector& relicMECOOriginInMu2e() const { return _relicMECOOriginInMu2e; }
 
     //----------------------------------------------------------------
-    // Outlines used to create hall floor, ceiling, and walls.
+    // Outlines used to create hall floor, ceiling (and extension), and walls.
     // Points go clockwise, as requred by G4 extruded solid.
 
     // Starts at the Xmax dump shielding face corner and goes to
@@ -64,6 +64,10 @@ namespace mu2e {
     // Outline continuation that starts starts at (Xmin-wallThick) and
     // goes to the Xmin dump face shielding corner.
     const std::vector<CLHEP::Hep2Vector>& concreteOuterOutline3() const { return _concreteOuterOutline3; }
+
+    // Outline of concrete overburden extension that accounts for the
+    // thicker overburden in the TS and PS regions
+    const std::vector<CLHEP::Hep2Vector>& concreteOuterOutlineExt() const { return _concreteOuterOutlineExt; }
 
     // The inner outline of hall walls, all in one piece, clockwise
     // from the Xmax dump shielding face core around the hall and to
@@ -104,6 +108,7 @@ namespace mu2e {
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline1;
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline2;
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline3;
+    std::vector<CLHEP::Hep2Vector> _concreteOuterOutlineExt;
     std::vector<CLHEP::Hep2Vector> _hallInsideOutline;
   };
 

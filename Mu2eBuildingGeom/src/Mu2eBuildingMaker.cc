@@ -18,10 +18,10 @@
 namespace mu2e {
 
   std::unique_ptr<Mu2eBuilding> Mu2eBuildingMaker::make(const SimpleConfig& c,
-                                                      const BuildingBasics& basics,
-                                                      const ProtonBeamDump& dump)
+                                                        const BuildingBasics& basics,
+                                                        const ProtonBeamDump& dump)
   {
-    std::unique_ptr<Mu2eBuilding> b(new Mu2eBuilding(basics));
+    std::unique_ptr<Mu2eBuilding> b (new Mu2eBuilding(basics));
 
     using CLHEP::Hep2Vector;
 
@@ -74,16 +74,16 @@ namespace mu2e {
     if(b->hallWallExtMonUCIThickness() < (dump.shieldingFaceZatXmax() - concreteZmin)*tan(dump.coreRotY())) {
       // two-point case
       b->_concreteOuterOutline1.push_back(Hep2Vector(dump.shieldingFaceXmax() - b->hallWallExtMonUCIThickness(),
-                                                      dump.shieldingFaceZatXmax() - b->hallWallExtMonUCIThickness()
-                                                      /tan(dump.coreRotY())));
+                                                     dump.shieldingFaceZatXmax() - b->hallWallExtMonUCIThickness()
+                                                     /tan(dump.coreRotY())));
 
       b->_concreteOuterOutline1.push_back(Hep2Vector(dump.shieldingFaceXmax() - b->hallWallExtMonUCIThickness(),
-                                                      concreteZmin));
+                                                     concreteZmin));
     }
     else { // one-point case
       const double dz = dump.shieldingFaceZatXmax() - concreteZmin;
       b->_concreteOuterOutline1.push_back(Hep2Vector(dump.shieldingFaceXmax() - dz*tan(dump.coreRotY()),
-                                                      concreteZmin));
+                                                     concreteZmin));
     }
     b->_hallInsideOutline.push_back(Hep2Vector(dump.shieldingFaceXmax(), concreteZmin + b->hallWallThickness()));
 
@@ -92,26 +92,30 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     // Fragment 2
-    b->_concreteOuterOutline2.push_back(Hep2Vector(b->hallInsideXmax() + b->hallWallThickness(),
-                                                    b->hallInsideZDSCorner() + b->hallWallThickness()));
+    b->_concreteOuterOutline2.push_back  (Hep2Vector(b->hallInsideXmax() + b->hallWallThickness(),
+                                                     b->hallInsideZDSCorner() + b->hallWallThickness()));
+    b->_concreteOuterOutlineExt.push_back(Hep2Vector(b->hallInsideXmax() + b->hallWallThickness(),
+                                                     b->hallInsideZDSCorner() + b->hallWallThickness()));
 
     b->_hallInsideOutline.push_back(Hep2Vector(b->hallInsideXmax(), b->hallInsideZDSCorner()));
 
     //----------------
     b->_concreteOuterOutline2.push_back(Hep2Vector(b->hallInsideXDSCorner() + b->hallWallThickness(),
-                                                    b->hallInsideZDSCorner() + b->hallWallThickness()));
+                                                   b->hallInsideZDSCorner() + b->hallWallThickness()));
 
     b->_hallInsideOutline.push_back(Hep2Vector(b->hallInsideXDSCorner(), b->hallInsideZDSCorner()));
 
     //----------------
     b->_concreteOuterOutline2.push_back(Hep2Vector(b->hallInsideXDSCorner() + b->hallWallThickness(),
-                                                    b->hallInsideZmax() + b->hallWallThickness()));
+                                                   b->hallInsideZmax() + b->hallWallThickness()));
 
     b->_hallInsideOutline.push_back(Hep2Vector(b->hallInsideXDSCorner(), b->hallInsideZmax()));
 
     //----------------
-    b->_concreteOuterOutline2.push_back(Hep2Vector(b->hallInsideXmin() - b->hallWallThickness(),
-                                                    b->hallInsideZmax() + b->hallWallThickness()));
+    b->_concreteOuterOutline2.push_back(Hep2Vector  (b->hallInsideXmin() - b->hallWallThickness(),
+                                                     b->hallInsideZmax() + b->hallWallThickness()));
+    b->_concreteOuterOutlineExt.push_back(Hep2Vector(b->hallInsideXmin() - b->hallWallThickness(),
+                                                     b->hallInsideZDSCorner() + b->hallWallThickness()));
 
     b->_hallInsideOutline.push_back(Hep2Vector(b->hallInsideXmin(), b->hallInsideZmax()));
 
@@ -119,33 +123,33 @@ namespace mu2e {
     // Fragment 3
 
     b->_concreteOuterOutline3.push_back(Hep2Vector(b->hallInsideXmin() - b->hallWallThickness(),
-                                                    b->hallInsideZPSCorner() - b->hallWallThickness()));
+                                                   b->hallInsideZPSCorner() - b->hallWallThickness()));
 
     b->_hallInsideOutline.push_back(Hep2Vector(b->hallInsideXmin(), b->hallInsideZPSCorner()));
 
     //----------------
     b->_concreteOuterOutline3.push_back(Hep2Vector(b->hallInsideXPSCorner() - b->hallWallThickness(),
-                                                    b->hallInsideZPSCorner() - b->hallWallThickness()));
+                                                   b->hallInsideZPSCorner() - b->hallWallThickness()));
 
     b->_hallInsideOutline.push_back(Hep2Vector(b->hallInsideXPSCorner(), b->hallInsideZPSCorner()));
 
     //----------------
     b->_concreteOuterOutline3.push_back(Hep2Vector(b->hallInsideXPSCorner() - b->hallWallThickness(),
-                                                    b->hallInsideZPStoBeamDumpCorner() + b->hallWallThickness()*tan(dump.coreRotY()/2)
-                                                    ));
-
+                                                   b->hallInsideZPStoBeamDumpCorner() + b->hallWallThickness()*tan(dump.coreRotY()/2)
+                                                   ));
+    
     b->_hallInsideOutline.push_back(Hep2Vector(b->hallInsideXPSCorner(), b->hallInsideZPStoBeamDumpCorner()));
-
+    
     //----------------
     b->_concreteOuterOutline3.push_back(Hep2Vector(dump.shieldingFaceXmin()
-                                                    - b->hallWallThickness()*cos(dump.coreRotY())
-                                                    ,
-                                                    dump.shieldingFaceZatXmin()
-                                                    + b->hallWallThickness()*sin(dump.coreRotY())
-                                                    ));
+                                                   - b->hallWallThickness()*cos(dump.coreRotY())
+                                                   ,
+                                                   dump.shieldingFaceZatXmin()
+                                                   + b->hallWallThickness()*sin(dump.coreRotY())
+                                                   ));
 
     b->_hallInsideOutline.push_back(Hep2Vector(dump.shieldingFaceXmin(), dump.shieldingFaceZatXmin()));
-
+    
     //----------------------------------------------------------------
     const int diagLevel = c.getInt("world.verbosityLevel", 0);
     if(diagLevel > 0) {

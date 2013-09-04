@@ -1,9 +1,9 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.15 2012/09/05 22:41:23 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/09/05 22:41:23 $
+// $Id: constructHall.cc,v 1.16 2013/09/04 20:55:51 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/09/04 20:55:51 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //
@@ -85,6 +85,19 @@ namespace mu2e {
               building->concreteOuterOutline3().end(),
               std::back_inserter(horizontalConcreteOutline));
 
+    std::vector<G4TwoVector> horizontalConcreteOutlineExt; // ceiling extension
+    std::copy(building->concreteOuterOutline1().begin(),
+              building->concreteOuterOutline1().end(),
+              std::back_inserter(horizontalConcreteOutlineExt));
+
+    std::copy(building->concreteOuterOutlineExt().begin(),
+              building->concreteOuterOutlineExt().end(),
+              std::back_inserter(horizontalConcreteOutlineExt));
+
+    std::copy(building->concreteOuterOutline3().begin(),
+              building->concreteOuterOutline3().end(),
+              std::back_inserter(horizontalConcreteOutlineExt));
+
     //----------------
     static CLHEP::HepRotation horizontalConcreteRotation(CLHEP::HepRotation::IDENTITY);
     horizontalConcreteRotation.rotateX(-90*CLHEP::degree);
@@ -126,6 +139,30 @@ namespace mu2e {
                   ceilingMaterial,
                   &horizontalConcreteRotation,
                   hallCeiling.centerInParent,
+                  hallInfo.logical,
+                  0,
+                  config.getBool("hall.ceilingVisible"),
+                  G4Colour::Grey(),
+                  config.getBool("hall.ceilingSolid"),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
+
+    VolumeInfo hallCeilingExt("HallConcreteCeilingExt",
+                           CLHEP::Hep3Vector(0, building->hallInsideYmax() + 3*building->hallCeilingThickness()/2, 0)
+                           - hallInfo.centerInMu2e(),
+                           hallInfo.centerInWorld);
+
+    hallCeilingExt.solid = new G4ExtrudedSolid(hallCeilingExt.name,
+                                               horizontalConcreteOutlineExt,
+                                               building->hallCeilingThickness()/2,
+                                               G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+
+    finishNesting(hallCeilingExt,
+                  ceilingMaterial,
+                  &horizontalConcreteRotation,
+                  hallCeilingExt.centerInParent,
                   hallInfo.logical,
                   0,
                   config.getBool("hall.ceilingVisible"),
