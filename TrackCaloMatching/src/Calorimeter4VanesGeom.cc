@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.cc,v 1.12 2013/06/13 16:39:09 murat Exp $
-// $Author: murat $
-// $Date: 2013/06/13 16:39:09 $
+// $Id: Calorimeter4VanesGeom.cc,v 1.13 2013/09/05 16:42:03 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2013/09/05 16:42:03 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -59,11 +59,16 @@ namespace mu2e {
       _innerRadius = cg->innerRadius();
       _outherRadius = cg->outherRadius();
       _nVanes = cg->nVane();
-    }else {
+    }else if(geom->hasElement<DiskCalorimeter>()){
       GeomHandle<DiskCalorimeter> cg;
       _innerRadius = cg->disk(0).innerRadius();
       _outherRadius = cg->disk(0).outerRadius();
       _nVanes = cg->nDisk();
+    }else if(geom->hasElement<HybridCalorimeter>()){
+      GeomHandle<HybridCalorimeter> cg;
+      _innerRadius = cg->disk().innerRadius();
+      _outherRadius = cg->disk().outerRadius();
+      _nVanes = cg->nSections();
     }
   }
 
@@ -432,6 +437,68 @@ namespace mu2e {
 	  trjVec = fromTrkToMu2eFrame(trjVec);
 
 	  if( cg->isInsideDisk(jVane,trjVec ) ){
+	    if(!isInside[jVane]){
+	      if(diagLevel>4){
+		cout<<"Event Number : "<< evtNumber<< endl;
+		cout<<" vane "<<jVane<<
+		  "isInside : true"<<
+		  "pathLength entrance = "<<tmpRange<<endl;
+	      }
+	      isInside[jVane] = true;
+	      if(fdir.dzdt() == 1.0){
+		entr[jVane] = tmpRange - pathStepSize;
+	      }else if(fdir.dzdt() == -1.0){
+		entr[jVane] = tmpRange + pathStepSize;
+	      }
+	    }
+	  }else if(isInside[jVane]){
+	    ex[jVane] = tmpRange + pathStepSize;
+	    if(diagLevel>4){
+	      cout<<"Event Number : "<< evtNumber<< endl;
+	      cout<<" vane "<<jVane<<
+		"isInside : true"<<
+		"hasExit : true"<<
+		"pathLength entrance = "<<entr[jVane]<<
+		"pathLength exit = "<<tmpRange<<endl;
+	    }
+	    isInside[jVane] = false;
+
+	    if (NIntersections < 100) {
+	      Intersection[NIntersections].fVane  = jVane;
+	      Intersection[NIntersections].fRC    = 0;
+	      Intersection[NIntersections].fSEntr = entr[jVane];
+	      Intersection[NIntersections].fSExit = ex  [jVane];
+	      NIntersections++;
+	    }
+	    else {
+	      printf("%s ERROR: NIntersections > 100, TRUNCATE LIST\n",oname);
+	    }
+	  }
+	} 
+	if(fdir.dzdt() == 1.0){
+	  tmpRange += pathStepSize;
+	}else if(fdir.dzdt() == -1.0){
+	  tmpRange -= pathStepSize;
+	}
+      }
+    } else if(geom->hasElement<HybridCalorimeter>()){
+
+      GeomHandle<HybridCalorimeter> cg;
+      for(int iStep = 0; iStep< nAngleSteps; ++iStep){
+	for(int jVane=0; jVane<nVanes; ++jVane){
+	  trjPoint = traj.position(tmpRange);
+	  if(diagLevel>4){
+	    cout<<" tmpRange = "<< tmpRange<<
+	      ", trj.position(tmpRange) = "<<trjPoint<<endl;
+	  }
+	  
+	  trjVec.setX(trjPoint.x());
+	  trjVec.setY(trjPoint.y());
+	  trjVec.setZ(trjPoint.z());
+
+	  trjVec = fromTrkToMu2eFrame(trjVec);
+
+	  if( cg->isInsideSection(jVane,trjVec ) ){
 	    if(!isInside[jVane]){
 	      if(diagLevel>4){
 		cout<<"Event Number : "<< evtNumber<< endl;
