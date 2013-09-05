@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.58 2013/08/21 17:35:17 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/21 17:35:17 $
+// $Id: GeometryService_service.cc,v 1.59 2013/09/05 16:36:12 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2013/09/05 16:36:12 $
 //
 // Original author Rob Kutschke
 //
@@ -65,6 +65,8 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/VaneCalorimeterMaker.hh"
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
+#include "CalorimeterGeom/inc/HybridCalorimeterMaker.hh"
+#include "CalorimeterGeom/inc/HybridCalorimeter.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldConfigMaker.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
@@ -258,6 +260,11 @@ namespace mu2e {
       addDetector( calorm.calorimeterPtr() );
       addDetectorAliasToBaseClass<Calorimeter>( calorm.calorimeterPtr() );  //add an alias to detector list
     }
+if(_config->getBool("hasHybridCalorimeter",false)){
+      HybridCalorimeterMaker calorm( *_config, beamline.solenoidOffset() );
+      addDetector( calorm.calorimeterPtr() );
+      addDetectorAliasToBaseClass<Calorimeter>( calorm.calorimeterPtr() );  //add an alias to detector list
+    }
 
 
     if(_config->getBool("hasCosmicRayShield",false)){
@@ -345,7 +352,10 @@ namespace mu2e {
       allCalorimeters += " DiskCalorimeter";
       ++nCalorimeters;
     }
-
+    if ( _config->getBool("hasHybridCalorimeter",false) ) {
+      allCalorimeters += " HybridCalorimeter";
+      ++nCalorimeters;
+    }
     if ( nCalorimeters > 1 ){
       throw cet::exception("GEOM")
         << "This configuration has more than one calorimeter: "
