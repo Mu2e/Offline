@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_BaseCalorimeter_hh
 #define CalorimeterGeom_BaseCalorimeter_hh
 //
-// $Id: BaseCalorimeter.hh,v 1.3 2013/07/01 23:11:39 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/07/01 23:11:39 $
+// $Id: BaseCalorimeter.hh,v 1.4 2013/09/05 16:32:02 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2013/09/05 16:32:02 $
 //
 // Base class of a cloarimeter. Hold informations about the sections composing 
 // the calorimeterand generic algorithms to navigate between the coordinate systems
@@ -34,6 +34,7 @@ namespace mu2e {
 
        friend class VaneCalorimeterMaker;
        friend class DiskCalorimeterMaker;
+       friend class HybridCalorimeterMaker;
       
        public:
 
