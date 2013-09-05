@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.15 2013/06/12 04:42:53 murat Exp $
-// $Author: murat $
-// $Date: 2013/06/12 04:42:53 $
+// $Id: Calorimeter4VanesGeom.hh,v 1.16 2013/09/05 17:50:33 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2013/09/05 17:50:33 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -60,6 +60,7 @@
 //calorimeter include
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "CalorimeterGeom/inc/HybridCalorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
