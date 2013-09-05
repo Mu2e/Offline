@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.162 2013/08/08 15:53:46 dnbrow01 Exp $
-// $Author: dnbrow01 $
-// $Date: 2013/08/08 15:53:46 $
+// $Id: Mu2eWorld.cc,v 1.163 2013/09/05 16:40:35 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2013/09/05 16:40:35 $
 //
 // Original author Rob Kutschke
 //
@@ -92,6 +92,7 @@
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
 #include "Mu2eG4/inc/constructVaneCalorimeter.hh"
 #include "Mu2eG4/inc/constructDiskCalorimeter.hh"
+#include "Mu2eG4/inc/constructHybridCalorimeter.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -540,6 +541,9 @@ namespace mu2e {
     }
     if ( _config.getBool("hasDiskCalorimeter",false) ) {
        calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config );
+    }
+    if ( _config.getBool("hasHybridCalorimeter",false) ) {
+       calorimeterInfo = constructHybridCalorimeter( detSolDownstreamVacInfo,_config );
     }
 
     return calorimeterInfo;
