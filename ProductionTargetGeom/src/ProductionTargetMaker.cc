@@ -179,19 +179,31 @@ namespace mu2e {
 
     //const CLHEP::Hep3Vector& tgtPS_pos = tgtPS->position();
     const CLHEP::Hep3Vector center(0,0,0);
-    tgtPS->_pHubsRgtParams = std::unique_ptr<Polycone>
-      (new Polycone(HubRgtCornersZ,
+//     tgtPS->_pHubsRgtParams = std::unique_ptr<Polycone>
+//       (new Polycone(HubRgtCornersZ,
+//                       HubRgtCornersInnRadii,
+//                       HubRgtCornersOutRadii,
+//                       center,
+//                       c.getString("targetPS_Hub_materialName")));
+// 
+//     tgtPS->_pHubsLftParams = std::unique_ptr<Polycone>
+//       (new Polycone(HubLftCornersZ,
+//                       HubLftCornersInnRadii,
+//                       HubLftCornersOutRadii,
+//                       center,
+//                       c.getString("targetPS_Hub_materialName")));
+
+    tgtPS->_pHubsRgtParams = new Polycone(HubRgtCornersZ,
                       HubRgtCornersInnRadii,
                       HubRgtCornersOutRadii,
                       center,
-                      c.getString("targetPS_Hub_materialName")));
+                      c.getString("targetPS_Hub_materialName"));
 
-    tgtPS->_pHubsLftParams = std::unique_ptr<Polycone>
-      (new Polycone(HubLftCornersZ,
+    tgtPS->_pHubsLftParams = new Polycone(HubLftCornersZ,
                       HubLftCornersInnRadii,
                       HubLftCornersOutRadii,
                       center,
-                      c.getString("targetPS_Hub_materialName")));
+                      c.getString("targetPS_Hub_materialName"));
 
     return std::move(tgtPS);
   } // make()

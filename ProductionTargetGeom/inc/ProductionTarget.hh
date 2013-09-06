@@ -5,7 +5,6 @@
 #ifndef PRODUCTIONTARGET_HH
 #define PRODUCTIONTARGET_HH
 
-#include <vector>
 #include <map>
 
 #include "art/Persistency/Common/Wrapper.h"
@@ -39,10 +38,15 @@ namespace mu2e {
     // This is the inverse of protonBeamRotation.
     const CLHEP::HepRotation& productionTargetRotation() const { return _protonBeamInverseRotation; }
 
-    Polycone const * const getHubsRgtPtr() const {return _pHubsRgtParams.get();}
-    Polycone const * const getHubsLftPtr() const {return _pHubsLftParams.get();}
+    const Polycone * getHubsRgtPtr() const {return _pHubsRgtParams/*.get()*/;}
+    const Polycone * getHubsLftPtr() const {return _pHubsLftParams/*.get()*/;}
     const std::map<double, CLHEP::Hep3Vector> & anchoringPntsRgt() const { return _anchoringPntsRgt; }
     const std::map<double, CLHEP::Hep3Vector> & anchoringPntsLft() const { return _anchoringPntsLft; }
+
+    ~ProductionTarget() { 
+           if (_pHubsRgtParams!=NULL) delete _pHubsRgtParams;
+           if (_pHubsLftParams!=NULL) delete _pHubsLftParams;
+    }
 
     //----------------------------------------------------------------
 
@@ -61,8 +65,10 @@ namespace mu2e {
     // can't return by const ref if invert on the fly so need to store redundant data
     CLHEP::HepRotation _protonBeamInverseRotation;// FIXME: should be transient
 
-    std::unique_ptr<Polycone> _pHubsRgtParams;
-    std::unique_ptr<Polycone> _pHubsLftParams;
+//    std::unique_ptr<Polycone> _pHubsRgtParams;
+//    std::unique_ptr<Polycone> _pHubsLftParams;
+    Polycone * _pHubsRgtParams;
+    Polycone * _pHubsLftParams;
     std::map<double,CLHEP::Hep3Vector> _anchoringPntsRgt;
     std::map<double,CLHEP::Hep3Vector> _anchoringPntsLft;
 
@@ -73,7 +79,7 @@ namespace mu2e {
 
     // Needed for persistency
     template<class T> friend class art::Wrapper;
-    ProductionTarget() {}
+    ProductionTarget():_pHubsRgtParams(NULL), _pHubsLftParams(NULL) {}
   };
 }
 
