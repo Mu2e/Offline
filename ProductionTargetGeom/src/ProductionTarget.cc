@@ -6,6 +6,7 @@ namespace mu2e {
     , _prodTargetPosition(position)
     , _rOut(rOut)
     , _halfLength(halfLength)
+    , _envelHalfLength(halfLength)
   {
     _protonBeamRotation.rotateX(rotX).rotateY(rotY);
     _protonBeamInverseRotation = _protonBeamRotation.inverse();

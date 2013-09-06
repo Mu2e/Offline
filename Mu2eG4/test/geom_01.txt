@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.205 2013/09/05 16:39:28 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/09/05 16:39:28 $
+// $Id: geom_01.txt,v 1.206 2013/09/06 19:39:15 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/09/06 19:39:15 $
 //
 // Original author Rob Kutschke
 //
@@ -228,21 +228,7 @@ bool   vd.solid          = false;
 // // VD right in front of a hall wall
 // double vd.ExtMonCommonPlane.z = -11999.99;
 
-// Production Target in PS:
-
-// Nominal target position in the Mu2e coordinate system: at PS center in XY, at the given Z:
-double productionTarget.zNominal = -6164.5;
-
-// Optional shift of production target from the nominal
-//vector<double> productionTarget.offset = { 0., 0., 0.};
-
-double targetPS_halfLength        =     80.;  // mm.
-double targetPS_rOut              =      3.15;// mm
-double targetPS_rotX              =      0.;  // degree. Active rotation.
-double targetPS_rotY              =   14.00;  // degree.
-string targetPS_materialName      = "G4_W";
-bool   targetPS.visible           = true;
-bool   targetPS.solid             = false;
+#include "Mu2eG4/test/ProductionTargetInPS.txt"
 
 #include "Mu2eG4/test/protonBeamDump_v02.txt"
 

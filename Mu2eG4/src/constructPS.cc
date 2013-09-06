@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.18 2013/03/29 04:35:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/29 04:35:17 $
+// $Id: constructPS.cc,v 1.19 2013/09/06 19:39:18 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2013/09/06 19:39:18 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -24,6 +24,7 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/constructPS.hh"
 #include "Mu2eG4/inc/constructPSShield.hh"
+#include "Mu2eG4/inc/constructTargetPS.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
@@ -312,30 +313,30 @@ namespace mu2e {
       if(psVacuumSD) psVacuumInfo.logical->SetSensitiveDetector(psVacuumSD);
     }
 
-    // Build the production target.
-    GeomHandle<ProductionTarget> tgt;
-    TubsParams prodTargetParams( 0., tgt->rOut(), tgt->halfLength());
-
-    G4Material* prodTargetMaterial = findMaterialOrThrow(_config.getString("targetPS_materialName"));
-    
-    bool prodTargetVisible = _config.getBool("targetPS.visible",true);
-    bool prodTargetSolid   = _config.getBool("targetPS.solid",true);
-
-    VolumeInfo prodTargetInfo   = nestTubs( "ProductionTarget",
-                                            prodTargetParams,
-                                            prodTargetMaterial,
-                                            &tgt->productionTargetRotation(),
-                                            tgt->position() - psVacuumInfo.centerInMu2e(),
-                                            psVacuumInfo,
-                                            0,
-                                            prodTargetVisible,
-                                            G4Colour::Magenta(),
-                                            prodTargetSolid,
-                                            forceAuxEdgeVisible,
-                                            placePV,
-                                            doSurfaceCheck
-                                            );
-
+//    // Build the production target.
+//    GeomHandle<ProductionTarget> tgt;
+//    TubsParams prodTargetParams( 0., tgt->rOut(), tgt->halfLength());
+//
+//    G4Material* prodTargetMaterial = findMaterialOrThrow(_config.getString("targetPS_materialName"));
+//
+//    bool prodTargetVisible = _config.getBool("targetPS.visible",true);
+//    bool prodTargetSolid   = _config.getBool("targetPS.solid",true);
+//
+//    VolumeInfo prodTargetInfo   = nestTubs( "ProductionTarget",
+//                                            prodTargetParams,
+//                                            prodTargetMaterial,
+//                                            &tgt->productionTargetRotation(),
+//                                            tgt->position() - psVacuumInfo.centerInMu2e(),
+//                                            psVacuumInfo,
+//                                            0,
+//                                            prodTargetVisible,
+//                                            G4Colour::Magenta(),
+//                                            prodTargetSolid,
+//                                            forceAuxEdgeVisible,
+//                                            placePV,
+//                                            doSurfaceCheck
+//                                            );
+    constructTargetPS(psVacuumInfo, _config);
 
     // FIXME: make unconditional
     if(art::ServiceHandle<GeometryService>()->hasElement<PSShield>()) {
