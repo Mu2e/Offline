@@ -8,9 +8,9 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.hh,v 1.8 2012/03/29 22:59:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/29 22:59:43 $
+// $Id: StepPointMC.hh,v 1.9 2013/09/06 16:14:00 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/09/06 16:14:00 $
 //
 // Original author Rob Kutschke
 //
@@ -76,7 +76,10 @@ namespace mu2e {
 
     // Accept compiler generated versions of: d'tor, copy c'tor, assignment operator
 
-    void print( std::ostream& ost, bool doEndl = true ) const;
+    // Printing PDG ID of the particle requires that the _track Ptr is resolvable.
+    // This is not the case until the SimParticle collection is committed, i.e.
+    // printing PDG ID should not be enabled from withing G4 module.
+    void print( std::ostream& ost, bool doEndl = true, bool printPDGId = true ) const;
     void print() const { print(std::cout); }
 
     // Accesor and modifier; the modifier is needed for event mixing.
