@@ -1,15 +1,16 @@
 //
 // Make histograms summarizing the information in the event generator.
 //
-// $Id: GeneratorSummaryHistograms.cc,v 1.2 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: GeneratorSummaryHistograms.cc,v 1.3 2013/09/08 01:30:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/09/08 01:30:05 $
 //
 // Contact person Rob Kutschke
 //
 
 // Mu2e includes
 #include "Mu2eUtilities/inc/GeneratorSummaryHistograms.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "StoppingTargetGeom/inc/zBinningForFoils.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
@@ -29,18 +30,19 @@
 namespace mu2e {
 
   GeneratorSummaryHistograms::GeneratorSummaryHistograms():
-     hMultiplicity_(0),
-     hgenId_(0),
-     hp_(0),
-     hpt_(0),
-     hke_(0),
-     hcz_(0),
-     hphi_(0),
-     hradius_(0),
-     hz_(0),
-     htime_(0),
-     hxy_(0),
-     hrz_(0){
+    detSys_(0),
+    hMultiplicity_(0),
+    hgenId_(0),
+    hp_(0),
+    hpt_(0),
+    hke_(0),
+    hcz_(0),
+    hphi_(0),
+    hradius_(0),
+    hz_(0),
+    htime_(0),
+    hxy_(0),
+    hrz_(0){
   }
 
   // Book histograms in the root directory for the current module.
@@ -61,10 +63,14 @@ namespace mu2e {
   // Book the histograms.
   void GeneratorSummaryHistograms::book( art::TFileDirectory& tfdir ){
 
+    // Fixme: both of the GeomHandles may someday change at round boundaries.  Update the code to deal with this.
+
     int nId(GenId::lastEnum);
     GeomHandle<StoppingTarget> target;
     Binning bins  = zBinningForFoils(*target,7);
     Binning bins2 = zBinningForFoils(*target,3);
+
+    detSys_ = GeomHandle<DetectorSystem>().get();
 
     hMultiplicity_   = tfdir.make<TH1F>( "hMultiplicity",  "Generator Multiplicity",          20,    0.,    20. );
     hgenId_          = tfdir.make<TH1F>( "hgenId",         "GeneratorId",                    nId,    0.,   nId  );
@@ -95,9 +101,16 @@ namespace mu2e {
           i != e; ++i ){
       GenParticle const& gen(*i);
 
-      CLHEP::Hep3Vector const&       pos(gen.position());
+      // Position in the mu2e system.
+      CLHEP::Hep3Vector const& mu2ePos(gen.position());
+
+      // Position in the detector system.
+      const CLHEP::Hep3Vector pos(detSys_->toDetector(mu2ePos));
+
+      // Momentum
       CLHEP::Hep3Vector const&       p(gen.momentum().vect());
       CLHEP::HepLorentzVector const& p4(gen.momentum());
+
 
       double r(pos.perp());
       double z(pos.z());

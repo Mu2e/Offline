@@ -3,9 +3,9 @@
 //
 // Make histograms summarizing the information in the event generator.
 //
-// $Id: GeneratorSummaryHistograms.hh,v 1.1 2013/05/30 18:40:36 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/30 18:40:36 $
+// $Id: GeneratorSummaryHistograms.hh,v 1.2 2013/09/08 01:30:05 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/09/08 01:30:05 $
 //
 // Contact person Rob Kutschke
 //
@@ -22,6 +22,8 @@ class TH1F;
 class TH2F;
 
 namespace mu2e {
+
+  class DetectorSystem;
 
   class GeneratorSummaryHistograms{
 
@@ -47,6 +49,8 @@ namespace mu2e {
     // Not copyable or assignable.  These will not be implemented.
     GeneratorSummaryHistograms ( GeneratorSummaryHistograms const& rhs );
     GeneratorSummaryHistograms& operator=(GeneratorSummaryHistograms const& rhs);
+
+    DetectorSystem const* detSys_;
 
     TH1F* hMultiplicity_;
     TH1F* hgenId_;
