@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.61 2013/08/29 17:07:25 genser Exp $
-# $Author: genser $
-# $Date: 2013/08/29 17:07:25 $
+# $Id: setup.sh,v 1.62 2013/09/09 02:50:02 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2013/09/09 02:50:02 $
 #
 # Original author Rob Kutschke
 #
@@ -64,7 +64,7 @@ source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
 
 # Check out the BaBar code.
 # First build the symlink directory.  Then checkout the code.
-babarversion=600
+babarversion=601
 if [  -f "./BaBar/makeInclude.sh" ]; then
   source ./BaBar/makeInclude.sh
   if [ ! -f "BaBar/BaBar/include/BaBar.hh" ]; then
@@ -78,6 +78,11 @@ if [  -f "./BaBar/makeInclude.sh" ]; then
       echo "Grid job with PROCESS != 0 detected. Skipping version check of BaBar code."
     fi
   fi
+fi
+
+#
+if [ "${MU2E_BASE_RELEASE}" != `pwd` ]; then
+  source ${MU2E_BASE_RELEASE}/bin/addlocal.sh
 fi
 
 # A hack that we hope can go away soon.
