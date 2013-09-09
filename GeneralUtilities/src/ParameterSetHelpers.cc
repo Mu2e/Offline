@@ -8,6 +8,8 @@
 #include <vector>
 #include "CLHEP/Vector/ThreeVector.h"
 
+#include "GeneralUtilities/inc/Binning.hh"
+
 template<>
 bool fhicl::ParameterSet::get_if_present<CLHEP::Hep3Vector>(std::string const & key, CLHEP::Hep3Vector& value) const {
   std::vector<double> val;
@@ -20,5 +22,16 @@ bool fhicl::ParameterSet::get_if_present<CLHEP::Hep3Vector>(std::string const & 
     }
     value = CLHEP::Hep3Vector(val[0], val[1], val[2]);
   }
+  return present;
+}
+
+template<>
+bool fhicl::ParameterSet::get_if_present<Binning>(std::string const & key, Binning& value) const {
+  fhicl::ParameterSet pset;
+  const bool present = get_if_present<fhicl::ParameterSet>(key,pset);
+  double low   = pset.get<double>("low");
+  double high  = pset.get<double>("high");
+  int    nbins = pset.get<int>("nbins");
+  value = Binning(nbins,low,high);
   return present;
 }

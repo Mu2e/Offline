@@ -18,9 +18,15 @@
 
 namespace CLHEP { class Hep3Vector; }
 
+class Binning;
+
 namespace fhicl {
 
   template<> bool ParameterSet::get_if_present<CLHEP::Hep3Vector>(std::string const & key, CLHEP::Hep3Vector& value) const;
+
+  // Read a binning for a histogram, represented by:
+  // key : { n : <number of points>  low : <low edge of low bin>  high : <high edge of high bin> }
+  template<> bool ParameterSet::get_if_present<Binning>(std::string const & key, Binning& value) const;
 
 }
 
