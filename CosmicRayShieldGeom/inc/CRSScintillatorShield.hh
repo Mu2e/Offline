@@ -3,9 +3,9 @@
 //
 // Representation of one ScintillatorShield in CosmicRayShield.
 //
-// $Id: CRSScintillatorShield.hh,v 1.5 2011/12/06 22:53:01 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/06 22:53:01 $
+// $Id: CRSScintillatorShield.hh,v 1.6 2013/09/13 06:42:44 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG based on Rob Kutschke's Device
 //
@@ -20,92 +20,75 @@
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e {
+namespace mu2e 
+{
 
-  class CRSScintillatorShield{
+  class CRSScintillatorShield
+  {
 
     friend class CosmicRayShieldMaker;
 
-  public:
+    public:
 
     CRSScintillatorShield():_id(-1){}
 
-    CRSScintillatorShield(
-                          CRSScintillatorShieldId const & id,
-                          std::string       const & name,
-                          std::vector<double> const & globalRotationAngles,
-                          CLHEP::Hep3Vector const & globalOffset, // offset in World
-                          double const              halfThickness,
-                          std::vector<int>  const & numberOfModules);
+    CRSScintillatorShield(CRSScintillatorShieldId const & id, std::string const & name);
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
     // Accessors
     const CRSScintillatorShieldId id() const { return _id;}
 
-    //    const double rotation() const { return _rotation; }
+    const std::string& getName() {return _name;}
 
-    std::vector<double> const & getGlobalRotationAngles() const { return _globalRotationAngles;}
+    int nModules() const {return _modules.size();}
 
-    CLHEP::Hep3Vector const & getGlobalOffset() const { return _globalOffset; }
-
-    int nModules() const{
-      return _numberOfFullModules+_numberOfHalfModules;
-    }
-
-    int nCRSScintillatorFullModules() const{
-      return _numberOfFullModules;
-    }
-
-    const std::vector<CRSScintillatorModule>& getCRSScintillatorModules() const{
+    const std::vector<CRSScintillatorModule>& getCRSScintillatorModules() const
+    {
       return _modules;
     }
 
-    const CRSScintillatorModule& getModule( int n) const {
+    const CRSScintillatorModule& getModule( int n) const 
+    {
       return _modules.at(n);
     }
 
-    const CRSScintillatorModule& getModule( const CRSScintillatorModuleId& moduleid ) const{
+    const CRSScintillatorModule& getModule( const CRSScintillatorModuleId& moduleid ) const
+    {
       return _modules.at(moduleid.getModuleNumber());
     }
 
-    const CRSScintillatorLayer& getLayer( const CRSScintillatorLayerId& lid ) const{
+    const CRSScintillatorLayer& getLayer( const CRSScintillatorLayerId& lid ) const
+    {
       return _modules.at(lid.getModuleNumber()).getLayer(lid);
     }
 
-    CRSScintillatorBar const & getBar( const CRSScintillatorBarId& bid ) const{
+    CRSScintillatorBar const & getBar( const CRSScintillatorBarId& bid ) const
+    {
       return _modules.at(bid.getModuleNumber()).getBar(bid);
     }
 
-    // Formatted string embedding the id of the shield.
+    CRSScintillatorBarDetail const & getCRSScintillatorBarDetail() const 
+    {
+      return _barDetails;
+    }
 
+    // Formatted string embedding the id of the shield.
     std::string name( std::string const & base ) const;
 
     // On readback from persistency, recursively recompute mutable members.
     //    void fillPointers( const CosmicRayShield& cosmicRayShield ) const;
 
-  private:
+    private:
 
     CRSScintillatorShieldId _id;
 
     std::string _name;
 
-    std::vector<double> _globalRotationAngles;
-
-    // position in Mu2e
-    CLHEP::Hep3Vector _globalOffset;
-
-    // outer dimensions; the thickness for now
-    double _halfThickness;
-
-    // there are Full and Half Modules, each module "knows it"
-    // we need to know how many there will be ahead of adding them
-
-    int _numberOfFullModules;
-    int _numberOfHalfModules;
-
     std::vector<CRSScintillatorModule> _modules;
 
+    // Detailed info about scintillator bars assuming they are the same for all bars within a shield
+    CRSScintillatorBarDetail _barDetails;
   };
 
 } //namespace mu2e

@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.26 2013/08/27 17:10:28 ehrlich Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.27 2013/09/13 06:42:44 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/08/27 17:10:28 $
+// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -41,927 +41,199 @@
 
 using namespace std;
 
-namespace mu2e {
+namespace mu2e 
+{
 
   // Constructor that gets information from the config file instead of
   // from arguments.
-  CosmicRayShieldMaker::CosmicRayShieldMaker(SimpleConfig const & _config, double solenoidOffset)
+  CosmicRayShieldMaker::CosmicRayShieldMaker(SimpleConfig const & config, double solenoidOffset)
   {
-
     _crs = unique_ptr<CosmicRayShield>(new CosmicRayShield());
 
-    if( ! _config.getBool("hasCosmicRayShield",false) ) return;
+    if( ! config.getBool("hasCosmicRayShield",false) ) return;
 
-    parseConfig(_config);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " _HallSteelOffset:    "       << _HallSteelOffset    << endl;
-      cout << __func__ << " _scintillatorShieldOffset: " << _scintillatorShieldOffset << endl;
-    }
-
-    if ( _hasPassiveShield ) {
-      makeCRSSteelShield(_config);
-      _crs->_hasPassiveShield = true;
-    }
-    // this order of calculations is important
-    if ( _hasActiveShield ) {
-      makeShields();
-      _crs->_hasActiveShield = true;
-    }
+    parseConfig(config);
+    makeShields();
   }
 
-  void CosmicRayShieldMaker::parseConfig( SimpleConfig const & _config ){
+  void CosmicRayShieldMaker::parseConfig( SimpleConfig const & config )
+  {
+    _diagLevel = config.getInt("crs.verbosityLevel",0);
 
-    // we readin/store crs parameters needed in more than one function
-    _diagLevel = _config.getInt("crs.verbosityLevel",0);
+    _counterLengthDSR       = config.getDouble("crs.scintillatorBarLengthDSR");
+    _counterLengthDSL       = config.getDouble("crs.scintillatorBarLengthDSL");
+    _counterLengthDST       = config.getDouble("crs.scintillatorBarLengthDST");
+    _counterLengthDSD       = config.getDouble("crs.scintillatorBarLengthDSD");
+    _counterLengthTSR       = config.getDouble("crs.scintillatorBarLengthTSR");
+    _counterLengthTSL       = config.getDouble("crs.scintillatorBarLengthTSL");
+    _counterLengthTST       = config.getDouble("crs.scintillatorBarLengthTST");
+    _counterThickness       = config.getDouble("crs.scintillatorBarThickness");
+    _counterWidth           = config.getDouble("crs.scintillatorBarWidth");
+    _offset                 = config.getDouble("crs.layerOffset");
+    _gapLarge               = config.getDouble("crs.gapLarge");
+    _gapSmall               = config.getDouble("crs.gapSmall");
+    _gapBetweenLayers       = config.getDouble("crs.gapBetweenLayers");
+    _nLayers                = config.getInt("crs.nLayers");
+    _nModulesDSR            = config.getInt("crs.nModulesDSR");
+    _nModulesDSL            = config.getInt("crs.nModulesDSL");
+    _nModulesDST            = config.getInt("crs.nModulesDST");
+    _nModulesDSD            = config.getInt("crs.nModulesDSD");
+    _nModulesTSR            = config.getInt("crs.nModulesTSR");
+    _nModulesTSL            = config.getInt("crs.nModulesTSL");
+    _nModulesTST            = config.getInt("crs.nModulesTST");
+    _nCountersPerModule     = config.getInt("crs.nCountersPerModule");  //at one layer
+    _nCountersLastModuleDSR = config.getInt("crs.nCountersLastModuleDSR");  //at one layer
+    _nCountersLastModuleDSL = config.getInt("crs.nCountersLastModuleDSL");  //at one layer
+    _nCountersLastModuleDST = config.getInt("crs.nCountersLastModuleDST");  //at one layer
+    _nCountersLastModuleDSD = config.getInt("crs.nCountersLastModuleDSD");  //at one layer
+    _nCountersLastModuleTSR = config.getInt("crs.nCountersLastModuleTSR");  //at one layer
+    _nCountersLastModuleTSL = config.getInt("crs.nCountersLastModuleTSL");  //at one layer
+    _nCountersLastModuleTST = config.getInt("crs.nCountersLastModuleTST");  //at one layer
+    _firstCounterDSR        = config.getHep3Vector("crs.firstCounterDSR");
+    _firstCounterDSL        = config.getHep3Vector("crs.firstCounterDSL");
+    _firstCounterDST        = config.getHep3Vector("crs.firstCounterDST");
+    _firstCounterDSD        = config.getHep3Vector("crs.firstCounterDSD");
+    _firstCounterTSR        = config.getHep3Vector("crs.firstCounterTSR");
+    _firstCounterTSL        = config.getHep3Vector("crs.firstCounterTSL");
+    _firstCounterTST        = config.getHep3Vector("crs.firstCounterTST");
 
-    _hasPassiveShield =  _config.getBool("crs.hasPassiveShield");
-    _hasActiveShield  =  _config.getBool("crs.hasActiveShield");
+    _scintillatorBarMaterialName             = config.getString("crs.scintillatorBarMaterialName");
+  }
 
-    if(_hasPassiveShield == true)
+//VTNC = Vector to next counter
+  void CosmicRayShieldMaker::makeSingleShield(const std::vector<double> &counterHalfLengths, const char *name, 
+                                              const CLHEP::Hep3Vector &firstCounter, 
+                                              const CLHEP::Hep3Vector &layerOffset,
+                                              const CLHEP::Hep3Vector &VTNCLargeGap,
+                                              const CLHEP::Hep3Vector &VTNCSmallGap,
+                                              const CLHEP::Hep3Vector &VTNCBetweenModules,
+                                              int nLayers, int nModules, int nCountersPerModule, 
+                                              int nCountersLastModule=0)
+  {
+    static int ishield=0;
+    _crs->_scintillatorShields[name] = CRSScintillatorShield(CRSScintillatorShieldId(ishield), name);
+    CRSScintillatorShield &shield = _crs->_scintillatorShields[name];
+    shield._barDetails._halfLengths = counterHalfLengths;
+    shield._barDetails._materialName = _scintillatorBarMaterialName;
+  
+    for(int imodule=0; imodule<nModules; imodule++)
     {
-      std::cout<<"The passive (\"steel\") shield will be replaced by a new class."<<std::endl;
-      std::cout<<"The code will remain in CosmicRayShieldMaker.cc until the new class is done."<<std::endl;
-      std::cout<<"However, it will be disabled from now on."<<std::endl;
-    }
-    _hasPassiveShield = false; 
+      shield._modules.push_back(CRSScintillatorModule(CRSScintillatorModuleId(ishield,imodule)));
+      CRSScintillatorModule &module = shield._modules.back();
 
-    if ( !_hasPassiveShield && !_hasActiveShield ){
-      throw cet::exception("GEOM")
-        << " CosmicRayShield requested but none of the parts selected \n";
-    }
+      for(int ilayer=0; ilayer<nLayers; ilayer++)
+      {
+        module._layers.push_back(CRSScintillatorLayer(CRSScintillatorLayerId(ishield,imodule,ilayer)));
+        CRSScintillatorLayer &layer = module._layers.back();
 
-    if (_hasPassiveShield) {
-      _HallSteelHalfThick           = _config.getDouble("fluxcrv.HallSteelHalfThick");
-      _HallSteelHalfSideShieldHeight= _config.getDouble("fluxcrv.HallSteelHalfSideShieldHeight");
-      _HallSteelHalfRShieldLength   = _config.getDouble("fluxcrv.HallSteelHalfRShieldLength");
-      _HallSteelHalfLShieldLength   = _config.getDouble("fluxcrv.HallSteelHalfLShieldLength");
-      _HallSteelHalfTShieldLength   = _config.getDouble("fluxcrv.HallSteelHalfTShieldLength");
-      _HallSteelHalfTSRShieldLength = _config.getDouble("fluxcrv.HallSteelHalfTSRShieldLength");
-      _HallSteelHalfTSLShieldLength = _config.getDouble("fluxcrv.HallSteelHalfTSLShieldLength");
-      _HallSteelHalfTSTShieldLength = _config.getDouble("fluxcrv.HallSteelHalfTSTShieldLength");
-      _HallSteelMaterialName    = _config.getString("fluxcrv.HallSteelMaterialName");
-      _HallSteelHoleRadius      = _config.getDouble("fluxcrv.HallSteelHoleRadius");
-      _HallSteelOffset          = _config.getHep3Vector("fluxcrv.HallSteelOffset");
-      _HallSteelRShieldCenter   = _config.getHep3Vector("fluxcrv.HallSteelRShieldCenter");
-      _HallSteelLShieldCenter   = _config.getHep3Vector("fluxcrv.HallSteelLShieldCenter");
-      _HallSteelTShieldCenter   = _config.getHep3Vector("fluxcrv.HallSteelTShieldCenter");
-      _HallSteelDShieldCenter   = _config.getHep3Vector("fluxcrv.HallSteelDShieldCenter");
-      _HallSteelTSRShieldCenter = _config.getHep3Vector("fluxcrv.HallSteelTSRShieldCenter");
-      _HallSteelTSLShieldCenter = _config.getHep3Vector("fluxcrv.HallSteelTSLShieldCenter");
-      _HallSteelTSTShieldCenter = _config.getHep3Vector("fluxcrv.HallSteelTSTShieldCenter");
-    }
+        for(int icounter=0; icounter<nCountersPerModule; icounter++)
+        {
+          if(nCountersLastModule>0 && imodule+1==nModules && icounter+1==nCountersLastModule) break;
 
-    _scintillatorLayersPerModule  = _config.getInt("crs.scintillatorLayersPerModule");
-    _scintillatorBarsPerFullLayer = _config.getInt("crs.scintillatorBarsPerFullLayer");
+          CRSScintillatorBarIndex index(_crs->_allCRSScintillatorBars.size());
+          _crs->_allCRSScintillatorBars.push_back(CRSScintillatorBar(index,CRSScintillatorBarId(ishield,imodule,ilayer,icounter)));
+          CRSScintillatorBar &counter = _crs->_allCRSScintillatorBars.back();
 
-    if ( _scintillatorBarsPerFullLayer%2!=0) {
-      throw cet::exception("GEOM")
-        << "crs.scintillatorBarsPerFullLayer number should be even\n";
-    }
+          CLHEP::Hep3Vector counterPosition = firstCounter + ilayer * layerOffset;
+          int largeGaps=icounter/2; 
+          int smallGaps=(icounter+1)/2;
+          counterPosition += largeGaps * VTNCLargeGap + smallGaps * VTNCSmallGap;
+          int largeGapsPerModule = (nCountersPerModule-1)/2;
+          int smallGapsPerModule = nCountersPerModule/2;
+          counterPosition += imodule * (largeGapsPerModule * VTNCLargeGap + smallGapsPerModule * VTNCSmallGap);
+          counterPosition += imodule * VTNCBetweenModules;
 
-    _config.getVectorDouble("crs.scintillatorBarHalfLengths",_scintillatorBarHalfLengths,3);
-    _scintillatorBarMaterialName  = _config.getString("crs.scintillatorBarMaterialName");
-    _scintillatorLayerShift       = _config.getDouble("crs.scintillatorLayerShift");
-    _scintillatorLayerGap         = _config.getDouble("crs.scintillatorLayerGap");
+          counter._position = counterPosition;
+          counter._detail = &shield._barDetails;
 
-    _scintillatorBarPigmentationHalfThickness       =
-      _config.getDouble("crs.scintillatorBarPigmentationHalfThickness");
-    _scintillatorBarPigmentationMaterialName        =
-      _config.getString("crs.scintillatorBarPigmentationMaterialName");
-    _config.getVectorDouble("crs.scintillatorModuleOuterSheetHalfLengths",
-                            _scintillatorModuleOuterSheetHalfLengths,3);
-    _scintillatorModuleOuterSheetMaterialName       =
-      _config.getString("crs.scintillatorModuleOuterSheetMaterial");
-    _scintillatorModuleInterLayerSheetMaterialName  =
-      _config.getString("crs.scintillatorModuleInterLayerSheetMaterialName");
-    _scintillatorModuleInterLayerSheetHalfThickness =
-      _config.getDouble("crs.scintillatorModuleInterLayerSheetHalfThickness");
-    _scintillatorOverlap = _config.getDouble("crs.scintillatorOverlap");
-
-    _config.getVectorInt("crs.shieldR_NumberOfModules",_shieldR_NumberOfModules,2);
-    _config.getVectorInt("crs.shieldL_NumberOfModules",_shieldL_NumberOfModules,2);
-    _config.getVectorInt("crs.shieldD_NumberOfModules",_shieldD_NumberOfModules,2);
-    _config.getVectorInt("crs.shieldT_NumberOfModules",_shieldT_NumberOfModules,2);
-    _config.getVectorInt("crs.shieldTSR_NumberOfModules",_shieldTSR_NumberOfModules,2);
-    _config.getVectorInt("crs.shieldTSL_NumberOfModules",_shieldTSL_NumberOfModules,2);
-    _config.getVectorInt("crs.shieldTST_NumberOfModules",_shieldTST_NumberOfModules,2);
-
-    _scintillatorShieldOffset = _config.getHep3Vector("crs.scintillatorShieldOffset");
-
-    _config.getVectorDouble("crs.shieldR_Offset",_shieldR_Offset,3);
-    _config.getVectorDouble("crs.shieldL_Offset",_shieldL_Offset,3);
-    _config.getVectorDouble("crs.shieldD_Offset",_shieldD_Offset,3);
-    _config.getVectorDouble("crs.shieldT_Offset",_shieldT_Offset,3);
-    _config.getVectorDouble("crs.shieldTSR_Offset",_shieldTSR_Offset,3);
-    _config.getVectorDouble("crs.shieldTSL_Offset",_shieldTSL_Offset,3);
-    _config.getVectorDouble("crs.shieldTST_Offset",_shieldTST_Offset,3);
-
-    _config.getVectorDouble("crs.moduleUnistrutHalfLengths",_moduleUnistrutHalfLengths,3);
-    //    _wallUnistrutHalfThickness  = _config.getDouble("crs.wallUnistrutHalfThickness");
-
+          layer._bars.push_back(&counter);
+          layer._indices.push_back(index);
+        } //counters
+      } //layers
+    } //modules
+    ishield++;
   }
 
-  void CosmicRayShieldMaker::makeDetails() {
+  void CosmicRayShieldMaker::makeShields() 
+  {
+    //We need to reserve space in allCRSScintillatorBars vector so that the addresses of the entries
+    //won't change if an entry is added. This is necessary, so that we can have pointers to these entries
+    //in CRSScintillatorLayer::bars
+    int nModules=_nModulesDSR+_nModulesDSL+_nModulesDST+_nModulesDSD+_nModulesTSR+_nModulesTSL+_nModulesTST;
+    int expectedEntries=nModules*_nLayers*_nCountersPerModule;  
+    //this doesn't account for the fact that some of the last modules of less bars, but that's Ok.
+    _crs->_allCRSScintillatorBars.reserve(expectedEntries);
 
-    CRSScintillatorBarDetail& detail = _crs->_barDetails;
 
-    // there is only one detail for now; we'll stick module materials there as well
-    // this should be split once more details will be needed
+    double counterHalfLengthsArrayDSR[3]={_counterThickness/2.0, _counterLengthDSR/2.0, _counterWidth/2.0};
+    std::vector<double> counterHalfLengthsDSR(counterHalfLengthsArrayDSR, counterHalfLengthsArrayDSR+3);
+    CLHEP::Hep3Vector layerOffsetsDSR(-_counterThickness-_gapBetweenLayers, 0.0, _offset);
+//VTNC = Vector to next counter
+    CLHEP::Hep3Vector VTNCLargeGapDSR(0.0, 0.0, _counterWidth+_gapLarge);
+    CLHEP::Hep3Vector VTNCSmallGapDSR(0.0, 0.0, _counterWidth+_gapSmall);
+    CLHEP::Hep3Vector VTNCBetweenModulesDSR(0.0, 0.0, _counterWidth+_gapLarge);
+    makeSingleShield(counterHalfLengthsDSR, "CRSScintillatorDSRShield",
+              _firstCounterDSR, layerOffsetsDSR, VTNCLargeGapDSR, VTNCSmallGapDSR, VTNCBetweenModulesDSR,
+              _nLayers, _nModulesDSR, _nCountersPerModule, _nCountersLastModuleDSR);
 
-    detail._id=0;
+    double counterHalfLengthsArrayDSL[3]={_counterThickness/2.0, _counterLengthDSL/2.0, _counterWidth/2.0};
+    std::vector<double> counterHalfLengthsDSL(counterHalfLengthsArrayDSL, counterHalfLengthsArrayDSL+3);
+    CLHEP::Hep3Vector layerOffsetsDSL(_counterThickness+_gapBetweenLayers, 0.0, _offset);
+    CLHEP::Hep3Vector VTNCLargeGapDSL(0.0, 0.0, _counterWidth+_gapLarge);
+    CLHEP::Hep3Vector VTNCSmallGapDSL(0.0, 0.0, _counterWidth+_gapSmall);
+    CLHEP::Hep3Vector VTNCBetweenModulesDSL(0.0, 0.0, _counterWidth+_gapLarge);
+    makeSingleShield(counterHalfLengthsDSL, "CRSScintillatorDSLShield",
+              _firstCounterDSL, layerOffsetsDSL, VTNCLargeGapDSL, VTNCSmallGapDSL, VTNCBetweenModulesDSL,
+              _nLayers, _nModulesDSL, _nCountersPerModule, _nCountersLastModuleDSL);
 
-    detail._materialNames.push_back(_scintillatorBarMaterialName);
-    detail._materialNames.push_back(_scintillatorBarPigmentationMaterialName);
-    detail._materialNames.push_back(_scintillatorModuleOuterSheetMaterialName);
-    detail._materialNames.push_back(_scintillatorModuleInterLayerSheetMaterialName);
+    double counterHalfLengthsArrayDST[3]={_counterLengthDST/2.0, _counterThickness/2.0, _counterWidth/2.0};
+    std::vector<double> counterHalfLengthsDST(counterHalfLengthsArrayDST, counterHalfLengthsArrayDST+3);
+    CLHEP::Hep3Vector layerOffsetsDST(0.0, _counterThickness+_gapBetweenLayers, _offset);
+    CLHEP::Hep3Vector VTNCLargeGapDST(0.0, 0.0, _counterWidth+_gapLarge);
+    CLHEP::Hep3Vector VTNCSmallGapDST(0.0, 0.0, _counterWidth+_gapSmall);
+    CLHEP::Hep3Vector VTNCBetweenModulesDST(0.0, 0.0, _counterWidth+_gapLarge);
+    makeSingleShield(counterHalfLengthsDST, "CRSScintillatorDSTShield",
+              _firstCounterDST, layerOffsetsDST, VTNCLargeGapDST, VTNCSmallGapDST, VTNCBetweenModulesDST,
+              _nLayers, _nModulesDST, _nCountersPerModule, _nCountersLastModuleDST);
 
-    detail._halfLengths = _scintillatorBarHalfLengths;
+    double counterHalfLengthsArrayDSD[3]={_counterLengthDSD/2.0, _counterWidth/2.0, _counterThickness/2.0};
+    std::vector<double> counterHalfLengthsDSD(counterHalfLengthsArrayDSD, counterHalfLengthsArrayDSD+3);
+    CLHEP::Hep3Vector layerOffsetsDSD(0.0, _offset, _counterThickness+_gapBetweenLayers);
+    CLHEP::Hep3Vector VTNCLargeGapDSD(0.0, -_counterWidth-_gapLarge, 0.0);
+    CLHEP::Hep3Vector VTNCSmallGapDSD(0.0, -_counterWidth-_gapSmall, 0.0);
+    CLHEP::Hep3Vector VTNCBetweenModulesDSD(0.0, -_counterWidth-_gapLarge, 0.0);
+    makeSingleShield(counterHalfLengthsDSD, "CRSScintillatorDSDShield",
+              _firstCounterDSD, layerOffsetsDSD, VTNCLargeGapDSD, VTNCSmallGapDSD, VTNCBetweenModulesDSD,
+              _nLayers, _nModulesDSD, _nCountersPerModule, _nCountersLastModuleDSD);
 
+    double counterHalfLengthsArrayTSR[3]={_counterWidth/2.0, _counterLengthTSR/2.0, _counterThickness/2.0};
+    std::vector<double> counterHalfLengthsTSR(counterHalfLengthsArrayTSR, counterHalfLengthsArrayTSR+3);
+    CLHEP::Hep3Vector layerOffsetsTSR(_offset, 0.0, -_counterThickness-_gapBetweenLayers);
+    CLHEP::Hep3Vector VTNCLargeGapTSR(_counterWidth+_gapLarge, 0.0, 0.0);
+    CLHEP::Hep3Vector VTNCSmallGapTSR(_counterWidth+_gapSmall, 0.0, 0.0);
+    CLHEP::Hep3Vector VTNCBetweenModulesTSR(_counterWidth+_gapLarge, 0.0, 0.0);
+    makeSingleShield(counterHalfLengthsTSR, "CRSScintillatorTSRShield",
+              _firstCounterTSR, layerOffsetsTSR, VTNCLargeGapTSR, VTNCSmallGapTSR, VTNCBetweenModulesTSR,
+              _nLayers, _nModulesTSR, _nCountersPerModule, _nCountersLastModuleTSR);
+
+    double counterHalfLengthsArrayTSL[3]={_counterWidth/2.0, _counterLengthTSL/2.0, _counterThickness/2.0};
+    std::vector<double> counterHalfLengthsTSL(counterHalfLengthsArrayTSL, counterHalfLengthsArrayTSL+3);
+    CLHEP::Hep3Vector layerOffsetsTSL(_offset, 0.0, _counterThickness+_gapBetweenLayers);
+    CLHEP::Hep3Vector VTNCLargeGapTSL(_counterWidth+_gapLarge, 0.0, 0.0);
+    CLHEP::Hep3Vector VTNCSmallGapTSL(_counterWidth+_gapSmall, 0.0, 0.0);
+    CLHEP::Hep3Vector VTNCBetweenModulesTSL(_counterWidth+_gapLarge, 0.0, 0.0);
+    makeSingleShield(counterHalfLengthsTSL, "CRSScintillatorTSLShield",
+              _firstCounterTSL, layerOffsetsTSL, VTNCLargeGapTSL, VTNCSmallGapTSL, VTNCBetweenModulesTSL,
+              _nLayers, _nModulesTSL, _nCountersPerModule, _nCountersLastModuleTSL);
+
+    double counterHalfLengthsArrayTST[3]={_counterWidth/2.0, _counterThickness/2.0, _counterLengthTST/2.0};
+    std::vector<double> counterHalfLengthsTST(counterHalfLengthsArrayTST, counterHalfLengthsArrayTST+3);
+    CLHEP::Hep3Vector layerOffsetsTST(_offset, _counterThickness+_gapBetweenLayers, 0.0);
+    CLHEP::Hep3Vector VTNCLargeGapTST(_counterWidth+_gapLarge, 0.0, 0.0);
+    CLHEP::Hep3Vector VTNCSmallGapTST(_counterWidth+_gapSmall, 0.0, 0.0);
+    CLHEP::Hep3Vector VTNCBetweenModulesTST(_counterWidth+_gapLarge, 0.0, 0.0);
+    makeSingleShield(counterHalfLengthsTST, "CRSScintillatorTSTShield",
+              _firstCounterTST, layerOffsetsTST, VTNCLargeGapTST, VTNCSmallGapTST, VTNCBetweenModulesTST,
+              _nLayers, _nModulesTST, _nCountersPerModule, _nCountersLastModuleTST);
   }
-
-  void CosmicRayShieldMaker::makeShields() {
-
-    // the defining factors for a shield is the number of Full/Half modules
-    // the rest follows from that, the module size/overlaps define the size of one shield
-
-    // like Straws and ScintillatorBars the ScintillatorModules have "universal" and
-    // specific features, universal ones are their dimensions, specific are
-    // their placements and the fact if they are full or half modules
-
-    // a half module has different dimentions from the full one...
-
-    // the "universal", mainly bar, parameters are kept in  "details"
-
-    // calculate "global" parameters
-    calculateCommonCRSScintillatorParameters();
-
-    makeDetails();
-
-    // shield counter
-    int ishield=0;
-
-    // we generate/assign the names here:
-    // R Shield is the "Right" shield
-
-    // we may want to have an enumeration/function translating from
-    // R, L, T, D, TSR, TSL, TST to numbers,
-    // as of now the "translation" is done by using ishield:
-    // 0  1  2  3  4  5  6
-
-    std::string name = "CRSScintillatorRShield";
-
-    std::vector<int> numberOfModules = _shieldR_NumberOfModules;
-
-    // the shields are placed in a "nominal" postion first
-
-    CLHEP::Hep3Vector CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_shieldR_Offset[0],_shieldR_Offset[1],_shieldR_Offset[2]);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " <<
-        CRSScintillatorShieldOffset << endl;
-    }
-
-    // we set the rotation angles of the shields so that they "start" from the downstream end
-    // but we do not actually rotate the shields, modules or layers as of now, we do it for bars only
-
-    if (_hasPassiveShield) {
-        
-      CLHEP::Hep3Vector diff = CRSScintillatorShieldOffset + _scintillatorShieldOffset - 
-        _HallSteelRShieldCenter - _HallSteelOffset;
-
-      if ( fabs(diff.x())<0. ){
-        throw cet::exception("GEOM")
-          << "The CRPassiveShield && hasCRActiveShield configurations are inconsistent "
-          << name
-          << "\n";
-      }
-    }
-
-    std::vector<double> CRSScintillatorShieldRotationAngles; // x,y,z
-    CRSScintillatorShieldRotationAngles.reserve(3);
-    CRSScintillatorShieldRotationAngles.push_back(CLHEP::pi);
-    CRSScintillatorShieldRotationAngles.push_back(0.);
-    CRSScintillatorShieldRotationAngles.push_back(CLHEP::pi);
-
-    // the constructors are "simple", most work is done in the maker
-
-    _crs->_scintillatorShields[name] =
-      CRSScintillatorShield(ishield,
-                            name,
-                            CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _scintillatorShieldOffset, // in Mu2e
-                            _scintillatorShieldHalfThickness,
-                            numberOfModules);
-
-    ++ishield;
-
-    //
-
-    name = "CRSScintillatorLShield";
-
-    numberOfModules = _shieldL_NumberOfModules;
-
-    CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_shieldL_Offset[0],_shieldL_Offset[1],_shieldL_Offset[2]);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " <<
-        CRSScintillatorShieldOffset << endl;
-
-    }
-
-    if (_hasPassiveShield) {
-        
-      CLHEP::Hep3Vector diff = CRSScintillatorShieldOffset + _scintillatorShieldOffset - 
-        _HallSteelRShieldCenter - _HallSteelOffset;
-
-      if ( fabs(diff.x())<0. ){
-        throw cet::exception("GEOM")
-          << "The CRPassiveShield && hasCRActiveShield configurations are inconsistent "
-          << name
-          << "\n";
-      }
-    }
-
-    // around x, y, z
-    CRSScintillatorShieldRotationAngles.clear();
-    CRSScintillatorShieldRotationAngles.reserve(3);
-    CRSScintillatorShieldRotationAngles.push_back(CLHEP::pi);
-    CRSScintillatorShieldRotationAngles.push_back(0.);
-    CRSScintillatorShieldRotationAngles.push_back(0.);
-
-    _crs->_scintillatorShields[name] =
-      CRSScintillatorShield(ishield,
-                            name,
-                            CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _scintillatorShieldOffset,
-                            _scintillatorShieldHalfThickness,
-                            numberOfModules);
-
-    ++ishield;
-
-    //
-
-    name = "CRSScintillatorTShield";
-
-    numberOfModules = _shieldT_NumberOfModules;
-
-    CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_shieldT_Offset[0],_shieldT_Offset[1],_shieldT_Offset[2]);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " <<
-        CRSScintillatorShieldOffset << endl;
-    }
-
-    if (_hasPassiveShield) {
-        
-      CLHEP::Hep3Vector diff = CRSScintillatorShieldOffset + _scintillatorShieldOffset - 
-        _HallSteelRShieldCenter - _HallSteelOffset;
-
-      if ( fabs(diff.x())<0. ){
-        throw cet::exception("GEOM")
-          << "The CRPassiveShield && hasCRActiveShield configurations are inconsistent "
-          << name
-          << "\n";
-      }
-    }
-
-    // around x, y, z
-    CRSScintillatorShieldRotationAngles.clear();
-    CRSScintillatorShieldRotationAngles.reserve(3);
-    CRSScintillatorShieldRotationAngles.push_back(0.);
-    CRSScintillatorShieldRotationAngles.push_back(CLHEP::pi);
-    CRSScintillatorShieldRotationAngles.push_back(CLHEP::halfpi);
-
-    _crs->_scintillatorShields[name] =
-      CRSScintillatorShield(ishield,
-                            name,
-                            CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _scintillatorShieldOffset,
-                            _scintillatorShieldHalfThickness,
-                            numberOfModules);
-
-    ++ishield;
-
-    //
-
-    name = "CRSScintillatorDShield";
-
-    numberOfModules = _shieldD_NumberOfModules;
-
-    CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_shieldD_Offset[0],_shieldD_Offset[1],_shieldD_Offset[2]);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " <<
-        CRSScintillatorShieldOffset << endl;
-    }
-
-    // no good check against overlaps yet
-
-    // around x, y, z
-    CRSScintillatorShieldRotationAngles.clear();
-    CRSScintillatorShieldRotationAngles.reserve(3);
-    CRSScintillatorShieldRotationAngles.push_back(CLHEP::halfpi);
-    CRSScintillatorShieldRotationAngles.push_back(0.);
-    CRSScintillatorShieldRotationAngles.push_back(CLHEP::halfpi);
-
-    _crs->_scintillatorShields[name] =
-      CRSScintillatorShield(ishield,
-                            name,
-                            CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _scintillatorShieldOffset,
-                            _scintillatorShieldHalfThickness,
-                            numberOfModules);
-
-    ++ishield;
-
-    name = "CRSScintillatorTSRShield";
-
-    numberOfModules = _shieldTSR_NumberOfModules;
-
-    // the shields are placed in a "nominal" postion first
-
-    CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_shieldTSR_Offset[0],_shieldTSR_Offset[1],_shieldTSR_Offset[2]);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " <<
-        CRSScintillatorShieldOffset << endl;
-    }
-
-    // no good check against overlaps yet
-
-    // around x, y, z
-    CRSScintillatorShieldRotationAngles.clear();
-    CRSScintillatorShieldRotationAngles.reserve(3);
-    CRSScintillatorShieldRotationAngles.push_back(0.);
-    CRSScintillatorShieldRotationAngles.push_back(CLHEP::halfpi);
-    CRSScintillatorShieldRotationAngles.push_back(0.);
-
-    // the constructors are "simple", most work is done in the maker
-
-    _crs->_scintillatorShields[name] =
-      CRSScintillatorShield(ishield,
-                            name,
-                            CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _scintillatorShieldOffset, // in Mu2e
-                            _scintillatorShieldHalfThickness,
-                            numberOfModules);
-
-    ++ishield;
-
-    //
-
-    name = "CRSScintillatorTSLShield";
-
-    numberOfModules = _shieldTSL_NumberOfModules;
-
-    // the shields are placed in a "nominal" postion first
-
-    CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_shieldTSL_Offset[0],_shieldTSL_Offset[1],_shieldTSL_Offset[2]);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " <<
-        CRSScintillatorShieldOffset << endl;
-    }
-
-    // no good check against overlaps yet
-
-    // around x, y, z
-    CRSScintillatorShieldRotationAngles.clear();
-    CRSScintillatorShieldRotationAngles.reserve(3);
-    CRSScintillatorShieldRotationAngles.push_back(CLHEP::pi);
-    CRSScintillatorShieldRotationAngles.push_back(CLHEP::halfpi);
-    CRSScintillatorShieldRotationAngles.push_back(0);
-
-    // the constructors are "simple", most work is done in the maker
-
-    _crs->_scintillatorShields[name] =
-      CRSScintillatorShield(ishield,
-                            name,
-                            CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _scintillatorShieldOffset, // in Mu2e
-                            _scintillatorShieldHalfThickness,
-                            numberOfModules);
-
-    ++ishield;
-
-    //
-
-    name = "CRSScintillatorTSTShield";
-
-    numberOfModules = _shieldTST_NumberOfModules;
-
-    // the shields are placed in a "nominal" postion first
-
-    CRSScintillatorShieldOffset =
-      CLHEP::Hep3Vector(_shieldTST_Offset[0],_shieldTST_Offset[1],_shieldTST_Offset[2]);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " CRSScintillatorShieldOffset : " << name << " : " <<
-        CRSScintillatorShieldOffset << endl;
-    }
-
-    // no good check against overlaps yet
-
-    // around x, y, z
-    CRSScintillatorShieldRotationAngles.clear();
-    CRSScintillatorShieldRotationAngles.reserve(3);
-    CRSScintillatorShieldRotationAngles.push_back(0.);
-    CRSScintillatorShieldRotationAngles.push_back(-CLHEP::halfpi);
-    CRSScintillatorShieldRotationAngles.push_back(CLHEP::halfpi);
-
-    // the constructors are "simple", most work is done in the maker
-
-    _crs->_scintillatorShields[name] =
-      CRSScintillatorShield(ishield,
-                            name,
-                            CRSScintillatorShieldRotationAngles,
-                            CRSScintillatorShieldOffset + _scintillatorShieldOffset, // in Mu2e
-                            _scintillatorShieldHalfThickness,
-                            numberOfModules);
-
-    ++ishield;
-
-    //
-
-
-    for (std::map<std::string,CRSScintillatorShield>::iterator itshield=_crs->_scintillatorShields.begin();
-         itshield!=_crs->_scintillatorShields.end(); ++itshield) {
-
-      if ( _diagLevel > 0) {
-        cout << __func__ << " shield._name        : " << (itshield->second)._name << endl;
-        cout << __func__ << " shield._globalOffset: " << (itshield->second)._globalOffset << endl;
-      }
-
-      makeModules(itshield->second);
-
-    }
-
-  }
-
-  void CosmicRayShieldMaker::makeModules(CRSScintillatorShield& shield) {
-
-    // calculating total (half) width taken by all the modules
-
-    int numberOfFullModules = shield._numberOfFullModules;
-    int numberOfHalfModules = shield._numberOfHalfModules;
-    int numberOfModules     = numberOfFullModules + numberOfHalfModules;
-
-    double shieldHalfWidth = (2*numberOfFullModules*_scintillatorFullModuleHalfWidth +
-                              2*numberOfHalfModules*_scintillatorHalfModuleHalfWidth -
-                              (numberOfModules-1)*_scintillatorModuleOverlap)*.5;
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " Shield              : " << shield._name << endl;
-      cout << __func__ << " numberOfModules     : " << numberOfModules << endl;
-      cout << __func__ << " numberOfFullModules : " << numberOfFullModules << endl;
-      cout << __func__ << " numberOfHalfModules : " << numberOfHalfModules << endl;
-      cout << __func__ << " shieldHalfWidth     : " << shieldHalfWidth << endl;
-      cout << __func__ << " _scintillatorFullModuleHalfWidth : " << _scintillatorFullModuleHalfWidth << endl;
-      cout << __func__ << " _scintillatorModuleOverlap       : " << _scintillatorModuleOverlap << endl;
-
-      // calculate shields position in the mu2e frame
-
-      CLHEP::HepRotationX RX(shield._globalRotationAngles[0]);
-      CLHEP::HepRotationY RY(shield._globalRotationAngles[1]);
-      CLHEP::HepRotationZ RZ(shield._globalRotationAngles[2]);
-
-      CLHEP::HepRotation shieldRotation(RX*RY*RZ);
-
-      CLHEP::Hep3Vector shieldGlobalCRSOffsetRotated =
-        (shieldRotation * (shield._globalOffset - _scintillatorShieldOffset)) + _scintillatorShieldOffset;
-
-      cout << __func__ << " shieldGlobalCRSOffsetRotated : " << shield._name << " : "
-           << shieldGlobalCRSOffsetRotated << endl;
-
-      if (shield._name.compare("CRSScintillatorDShield")==0 ||
-          shield._name.compare("CRSScintillatorUShield")==0) {
-        cout << __func__ << " " << shield._name << " extent    : " <<
-          shieldGlobalCRSOffsetRotated[CLHEP::Hep3Vector::Z] - shield._halfThickness << ", " <<
-          shieldGlobalCRSOffsetRotated[CLHEP::Hep3Vector::Z] + shield._halfThickness << endl;
-      } else {
-        cout << __func__ << " " << shield._name << " extent    : " <<
-          shieldGlobalCRSOffsetRotated[CLHEP::Hep3Vector::Z] - shieldHalfWidth << ", " <<
-          shieldGlobalCRSOffsetRotated[CLHEP::Hep3Vector::Z] + shieldHalfWidth << endl;
-      }
-    }
-
-    // module counter for the given shield
-    int imodule = 0;
-    // we place/make the full modules first
-
-    double firstFullModuleLocalOffsetL = -shieldHalfWidth + _scintillatorFullModuleHalfWidth;
-
-    for (int ii = 0; ii<numberOfFullModules; ++ii) {
-
-      if ( _diagLevel > 1) {
-        cout << __func__ << " creating module          : " << imodule << endl;
-      }
-
-      // module local offsets distance from the center of the shield for a given module
-
-      double moduleLocalOffsetL = firstFullModuleLocalOffsetL +
-        ii*(2.*_scintillatorFullModuleHalfWidth-_scintillatorModuleOverlap);
-
-      if ( _diagLevel > 1) {
-        cout << __func__ << " moduleLocalOffsetL               : " << moduleLocalOffsetL << endl;
-      }
-
-      // creating an empty module (need to know if full/half)
-      // than modifying it
-
-      shield._modules.push_back(CRSScintillatorModule( CRSScintillatorModuleId(shield._id,imodule),
-                                                       _scintillatorBarsPerFullLayer));
-
-      CRSScintillatorModule& module = shield._modules.back();
-
-      module._layers.reserve(_scintillatorLayersPerModule);
-
-/*
-      // we need to shift the modules transversly as well
-      // we shall assume that the first (0th) one will be touching the steel (%2 below)
-      module._globalOffset = CLHEP::Hep3Vector( imodule%2 != 0 ?
-                                               _scintillatorModuleCoreHalfThickness :
-                                               -_scintillatorModuleCoreHalfThickness,
-                                               0., moduleLocalOffsetL)
-	+ shield._globalOffset;
-*/
-      module._globalOffset = CLHEP::Hep3Vector(0., 0., moduleLocalOffsetL)
-	                   + shield._globalOffset;
-
-      module._globalRotationAngles = shield._globalRotationAngles;
-
-      ++imodule;
-
-    }
-
-    // same for half modules (may create a function for the two)
-/*
-    double firstHalfModuleLocalOffsetL = -shieldHalfWidth +
-      numberOfFullModules*(2.*_scintillatorFullModuleHalfWidth - _scintillatorModuleOverlap)
-      + _scintillatorHalfModuleHalfWidth;
-
-    if ( _diagLevel > 1) {
-      cout << __func__ << " _scintillatorModuleOverlap       : " << _scintillatorModuleOverlap << endl;
-    }
-
-    for (int ii = 0; ii<numberOfHalfModules; ++ii) {
-
-      if ( _diagLevel > 1) {
-        cout << __func__ << " creating module          : " << imodule << endl;
-      }
-
-      double moduleLocalOffsetL = firstHalfModuleLocalOffsetL +
-        ii*(2.0*_scintillatorHalfModuleHalfWidth-_scintillatorModuleOverlap);
-
-      if ( _diagLevel > 1) {
-        cout << __func__ << " moduleLocalOffsetL               : " << moduleLocalOffsetL << endl;
-      }
-
-      // creating an empty module than modifying it
-
-      shield._modules.push_back(CRSScintillatorModule( CRSScintillatorModuleId(shield._id,imodule),
-                                                       _scintillatorBarsPerFullLayer/2 ));
-
-      CRSScintillatorModule& module = shield._modules.back();
-
-      module._layers.reserve(_scintillatorLayersPerModule);
-
-      module._globalOffset = CLHEP::Hep3Vector(0., 0., moduleLocalOffsetL) 
-	                   + shield._globalOffset;
-
-      module._globalOffset = CLHEP::Hep3Vector( imodule%2 != 0 ?
-                                               _scintillatorModuleCoreHalfThickness :
-                                               -_scintillatorModuleCoreHalfThickness,
-                                               0., moduleLocalOffsetL) 
-	+ shield._globalOffset;
-
-
-      module._globalRotationAngles = shield._globalRotationAngles;
-
-      ++imodule;
-
-    }
-*/
-    // set global offsets, make layers
-
-    for (int ii = 0; ii<numberOfModules; ++ii) {
-
-      if ( _diagLevel > 1) {
-        cout << __func__ << " making layers for module : " << ii << endl;
-      }
-
-      CRSScintillatorModule& module = shield._modules.at(ii);
-      if ( _diagLevel > 1) {
-        cout << __func__ << " module._globalOffset: " << module._globalOffset << endl;
-      }
-      makeLayers(module);
-
-    }
-
-  }
-
-  void CosmicRayShieldMaker::makeLayers(CRSScintillatorModule& module) {
-
-    // each module has the same number of layers, but not the same number of bars per layer
-
-    // each module knows its number of bars per layer
-
-    int numberOfBarsPerLayer = module._nBarsPerLayer;
-    int numberOfLayers       = _scintillatorLayersPerModule;
-
-    // calculating longitudinal offset
-
-    double firtstLayerLocalOffsetL = _scintillatorLayerShift*0.5*(1-_scintillatorLayersPerModule);
-
-    // calculating transverse offset
-
-    double scintillatorLayerShiftT = 2.0*(_scintillatorBarHalfLengths[0]+
-                                          _scintillatorModuleInterLayerSheetHalfThickness);
-
-    double firtstLayerLocalOffsetT =
-      (_scintillatorBarHalfLengths[0]+
-       _scintillatorModuleInterLayerSheetHalfThickness)*
-      (1-_scintillatorLayersPerModule);
-
-
-    for (int ii = 0; ii<numberOfLayers; ++ii) {
-
-      if ( _diagLevel > 1) {
-        cout << __func__ << " making layer : " << ii << endl;
-      }
-
-      module._layers.push_back(CRSScintillatorLayer( CRSScintillatorLayerId(module._id,ii),
-                                                     numberOfBarsPerLayer));
-      CRSScintillatorLayer& layer = module._layers.back();
-
-      // fill in the layer offsets etc...
-
-      // we will place innermost layers shifted most to the left
-      layer._globalOffset = CLHEP::Hep3Vector(firtstLayerLocalOffsetT + ii*scintillatorLayerShiftT,
-					      0.,
-					      firtstLayerLocalOffsetL + ii*_scintillatorLayerShift)
-	+ module._globalOffset;
-
-      layer._globalRotationAngles = module._globalRotationAngles;
-
-      layer._nBars = module._nBarsPerLayer;
-
-      if ( _diagLevel > 2) {
-        cout << __func__ << " layer._globalOffset: " << layer._globalOffset << endl;
-      }
-
-      makeBars(layer);
-
-    }
-
-  }
-
-  void CosmicRayShieldMaker::makeBars(CRSScintillatorLayer& layer) {
-
-    // put the bar in its global "bar registry/place"
-    int numberOfBars = layer._nBars;
-
-    layer._bars.reserve(numberOfBars);
-
-    double barSpaceHalfWidth = (numberOfBars == _scintillatorBarsPerFullLayer) ?
-      _scintillatorFullLayerHalfWidth : _scintillatorHalfLayerHalfWidth;
-
-    double firtstBarLocalOffsetL = -barSpaceHalfWidth + _scintillatorBarHalfLengths[2];
-
-    for (int ii = 0; ii<numberOfBars; ++ii) {
-
-      if ( _diagLevel > 2) {
-        cout << __func__ << " making bar   : " << ii << endl;
-      }
-
-      // calculate the bar offsets, ids, indeces and enter it into the container
-
-      CRSScintillatorBarIndex index(_crs->_allCRSScintillatorBars.size());
-
-      // local longitudinal offset wrt the center of the layer
-
-      _crs->_allCRSScintillatorBars.push_back(CRSScintillatorBar(CRSScintillatorBarId(layer._id,ii),
-                                                                 index));
-
-      CRSScintillatorBar& bar = _crs->_allCRSScintillatorBars.back();
-
-      CLHEP::Hep3Vector barLocalOffset(0.,0.,
-				       firtstBarLocalOffsetL + ii*(2.*_scintillatorBarHalfLengths[2]+
-								   _scintillatorLayerGap));
-
-      bar._globalRotationAngles = layer._globalRotationAngles;
-
-      // untill now the object positions were calculated locally
-      // wrt to the the module etc... in a "nominal" position
-
-      // we will now calculate position of the bar wrt the CRS origin and rotate it wrt that origin
-
-      CLHEP::Hep3Vector barCRSOffset = layer._globalOffset + barLocalOffset - _scintillatorShieldOffset;
-
-      CLHEP::HepRotationX RX(bar._globalRotationAngles[0]);
-      CLHEP::HepRotationY RY(bar._globalRotationAngles[1]);
-      CLHEP::HepRotationZ RZ(bar._globalRotationAngles[2]);
-
-      CLHEP::HepRotation barRotation(RX*RY*RZ);
-
-      CLHEP::Hep3Vector barCRSOffsetRotated = barRotation * barCRSOffset;
-
-      //  bar._globalOffset = layer._globalOffset + bar._localOffset;
-
-      //  note that difference, see the comments above, rotation done for the bars only so far
-
-      bar._globalOffset = barCRSOffsetRotated + _scintillatorShieldOffset;
-
-      layer._bars.push_back(&bar);
-      bar._detail = &_crs->_barDetails;
-      layer._indices.push_back(index);
-
-      if ( _diagLevel > 3) {
-        cout << __func__ << " barCRSOffset        : " << barCRSOffset        << endl;
-        cout << __func__ << " barRotation         : " << barRotation         << endl;
-        cout << __func__ << " barCRSOffsetRotated : " << barCRSOffsetRotated << endl;
-        cout << __func__ << " bar._globalOffset   : " << bar._globalOffset   << endl;
-      }
-
-    }
-
-  }
-
-  void CosmicRayShieldMaker::calculateCommonCRSScintillatorParameters() {
-
-    // the modules have struts, outerSheet, scintillator layers, interLayerSheets
-
-    // this is the combined width of the scintillator bars only
-    _scintillatorFullLayerHalfWidth =
-      _scintillatorBarsPerFullLayer*_scintillatorBarHalfLengths[2] +
-      (_scintillatorBarsPerFullLayer-1)*_scintillatorLayerGap*0.5;
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " _scintillatorFullLayerHalfWidth  : " <<
-        _scintillatorFullLayerHalfWidth << endl;
-    }
-
-//     _scintillatorHalfLayerHalfWidth = _scintillatorFullLayerHalfWidth -
-//       (_scintillatorBarsPerFullLayer/2)*(_scintillatorBarHalfLengths[2]+_scintillatorLayerGap);
-
-    _scintillatorHalfLayerHalfWidth =
-      _scintillatorBarsPerFullLayer/2*_scintillatorBarHalfLengths[2] +
-      (_scintillatorBarsPerFullLayer/2-1)*_scintillatorLayerGap*0.5;
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " _scintillatorHalfLayerHalfWidth   : " <<
-        _scintillatorHalfLayerHalfWidth << endl;
-    }
-
-    // module is longer than the layers due to the side bracket
-    _scintillatorFullModuleHalfWidth = _scintillatorModuleOuterSheetHalfLengths[2];
-    _scintillatorHalfModuleHalfWidth =
-      _scintillatorFullModuleHalfWidth - _scintillatorHalfLayerHalfWidth;
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " _scintillatorFullModuleHalfWidth : " <<
-        _scintillatorFullModuleHalfWidth << endl;
-    }
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " _scintillatorHalfModuleHalfWidth : " <<
-        _scintillatorHalfModuleHalfWidth << endl;
-    }
-
-    if (_scintillatorFullModuleHalfWidth<
-        (_scintillatorFullLayerHalfWidth + (_scintillatorLayersPerModule-1)/2*_scintillatorLayerShift)) {
-      throw cet::exception("GEOM")
-        << "inconsistent data crs.scintillatorModuleOuterSheetHalfLengths to small?\n";
-    }
-
-    _scintillatorLayerHalfLength  = _scintillatorBarHalfLengths[1];
-    _scintillatorModuleHalfLength = _scintillatorBarHalfLengths[1];
-
-    // given the required _scintillatorOverlap
-    _scintillatorModuleOverlap = _scintillatorOverlap +
-      2.*(_scintillatorFullModuleHalfWidth -
-          _scintillatorFullLayerHalfWidth -
-          (_scintillatorLayersPerModule-1)/2*_scintillatorLayerShift);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " _scintillatorModuleOverlap       : " <<
-        _scintillatorModuleOverlap << endl;
-    }
-
-    // outer thickness should be the same for all the shields/modules/layers
-    _scintillatorModuleHalfThickness =
-      2.*(_moduleUnistrutHalfLengths[0]+
-          _scintillatorModuleOuterSheetHalfLengths[0]) +
-      (_scintillatorLayersPerModule-1)*_scintillatorModuleInterLayerSheetHalfThickness +
-      _scintillatorLayersPerModule*_scintillatorBarHalfLengths[0];
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " _scintillatorModuleHalfThickness : " <<
-        _scintillatorModuleHalfThickness << endl;
-    }
-
-    _scintillatorModuleCoreHalfThickness =
-      2.*(_scintillatorModuleOuterSheetHalfLengths[0]) +
-      (_scintillatorLayersPerModule-1)*_scintillatorModuleInterLayerSheetHalfThickness +
-      _scintillatorLayersPerModule*_scintillatorBarHalfLengths[0];
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " _scintillatorModuleCoreHalfThickness : " <<
-        _scintillatorModuleCoreHalfThickness << endl;
-    }
-
-    // same calc
-    double scintillatorShieldHalfThickness1 = _scintillatorModuleHalfThickness +
-      2.*_scintillatorModuleOuterSheetHalfLengths[0] +
-      (_scintillatorLayersPerModule-1)*_scintillatorModuleInterLayerSheetHalfThickness +
-      _scintillatorLayersPerModule*_scintillatorBarHalfLengths[0];
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " scintillatorShieldHalfThickness1 : " <<
-        scintillatorShieldHalfThickness1 << endl;
-    }
-
-    _scintillatorShieldHalfThickness =
-      2.*(_scintillatorModuleHalfThickness - _moduleUnistrutHalfLengths[0]);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " _scintillatorShieldHalfThickness : " <<
-        _scintillatorShieldHalfThickness << endl;
-    }
-
-    // we need to allocate space for all the bars at once to avoid pointer invalidatation
-
-    _totalNumberOfBars =
-      (_shieldR_NumberOfModules[0] +
-       _shieldL_NumberOfModules[0] +
-       _shieldD_NumberOfModules[0] +
-       _shieldT_NumberOfModules[0] +
-       _shieldTSR_NumberOfModules[0] +
-       _shieldTSL_NumberOfModules[0] +
-       _shieldTST_NumberOfModules[0])*_scintillatorLayersPerModule*_scintillatorBarsPerFullLayer +
-      (_shieldR_NumberOfModules[1] +
-       _shieldL_NumberOfModules[1] +
-       _shieldD_NumberOfModules[1] +
-       _shieldT_NumberOfModules[1] +
-       _shieldTSR_NumberOfModules[1] +
-       _shieldTSL_NumberOfModules[1] +
-       _shieldTST_NumberOfModules[1])*_scintillatorLayersPerModule*(_scintillatorBarsPerFullLayer/2);
-
-    if ( _diagLevel > 0) {
-      cout << __func__ << " _totalNumberOfBars : " << _totalNumberOfBars << endl;
-    }
-    _crs->_allCRSScintillatorBars.reserve(_totalNumberOfBars);
-
-  }
-
-  void CosmicRayShieldMaker::makeCRSSteelShield(SimpleConfig const & _config) {
-    // first make the steel (fluxreturn)
-
-    double HallSteelDSShieldHalfWidth=(_HallSteelLShieldCenter.x()-_HallSteelRShieldCenter.x())*0.5+_HallSteelHalfThick;
-    double HallSteelTSTShieldHalfWidth=(_HallSteelTSLShieldCenter.z()-_HallSteelTSRShieldCenter.z())*0.5+_HallSteelHalfThick;
-
-    double CRSSteelRShieldDims[3] ={_HallSteelHalfThick,_HallSteelHalfSideShieldHeight,_HallSteelHalfRShieldLength};
-    double CRSSteelLShieldDims[3] ={_HallSteelHalfThick,_HallSteelHalfSideShieldHeight,_HallSteelHalfLShieldLength};
-    double CRSSteelTShieldDims[3] ={HallSteelDSShieldHalfWidth,_HallSteelHalfThick,_HallSteelHalfTShieldLength};
-    double CRSSteelDShieldDims[3] ={HallSteelDSShieldHalfWidth,_HallSteelHalfSideShieldHeight,_HallSteelHalfThick};
-    double CRSSteelTSRShieldDims[3] ={_HallSteelHalfTSRShieldLength,_HallSteelHalfSideShieldHeight,_HallSteelHalfThick};
-    double CRSSteelTSLShieldDims[3] ={_HallSteelHalfTSLShieldLength,_HallSteelHalfSideShieldHeight,_HallSteelHalfThick};
-    double CRSSteelTSTShieldDims[3] ={_HallSteelHalfTSTShieldLength,_HallSteelHalfThick,HallSteelTSTShieldHalfWidth};
-
-    // finaly create the steel shield objects (we invent/assign their names here...)
-
-    std::string name = "CRSSteelRShield";
-    _crs->_steelShields[name] = CRSSteelShield(name,0,_HallSteelRShieldCenter + _HallSteelOffset,CRSSteelRShieldDims);
-    //                                         HepRotation,    global offset in Mu2e
-
-    name = "CRSSteelLShield";
-    _crs->_steelShields[name] = CRSSteelShield(name,0,_HallSteelLShieldCenter + _HallSteelOffset,CRSSteelLShieldDims);
-
-    name = "CRSSteelTShield";
-    _crs->_steelShields[name] = CRSSteelShield(name,0,_HallSteelTShieldCenter + _HallSteelOffset,CRSSteelTShieldDims);
-
-    double downStreamHoleRadius = _config.getBool("hasMBS",false) ?
-      GeomHandle<MBS>()->getEnvelopeRmax() : 0. ;
-
-    name = "CRSSteelDShield";
-    _crs->_steelShields[name] = CRSSteelShield(name,0,_HallSteelDShieldCenter + _HallSteelOffset,CRSSteelDShieldDims,
-                                               downStreamHoleRadius, CLHEP::Hep3Vector(0.,-_HallSteelDShieldCenter.y(),0.));
-
-    name = "CRSSteelTSRShield";
-    _crs->_steelShields[name] = CRSSteelShield(name,0,_HallSteelTSRShieldCenter + _HallSteelOffset,CRSSteelTSRShieldDims);
-
-    name = "CRSSteelTSLShield";
-    _crs->_steelShields[name] = CRSSteelShield(name,0,_HallSteelTSLShieldCenter + _HallSteelOffset,CRSSteelTSLShieldDims);
-
-    name = "CRSSteelTSTShield";
-    _crs->_steelShields[name] = CRSSteelShield(name,0,_HallSteelTSTShieldCenter + _HallSteelOffset,CRSSteelTSTShieldDims);
-  }
-
 } // namespace mu2e

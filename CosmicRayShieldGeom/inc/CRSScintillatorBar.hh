@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Bar in CosmicRayShield.
 //
-// $Id: CRSScintillatorBar.hh,v 1.9 2012/03/29 22:59:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/29 22:59:13 $
+// $Id: CRSScintillatorBar.hh,v 1.10 2013/09/13 06:42:44 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's Straw
 //
@@ -19,12 +19,14 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e {
+namespace mu2e 
+{
 
   // Forward declarations.
   class CosmicRayShield;
 
-  class CRSScintillatorBar{
+  class CRSScintillatorBar
+  {
 
     friend class CRSScintillatorLayer;
     friend class CRSScintillatorModule;
@@ -32,78 +34,58 @@ namespace mu2e {
     friend class CosmicRayShield;
     friend class CosmicRayShieldMaker;
 
-  public:
+    public:
 
     CRSScintillatorBar();
 
-    CRSScintillatorBar(
-                       CRSScintillatorBarId    const & id,
-                       CRSScintillatorBarIndex const & index
-                       );
+    CRSScintillatorBar(CRSScintillatorBarIndex const &index, 
+                       CRSScintillatorBarId const &id);
 
-    CRSScintillatorBar(
-                       CRSScintillatorBarId    const & id,
-                       CRSScintillatorBarIndex const & index,
-                       std::vector<double>     const & globalRotationAngles,
-                       CLHEP::Hep3Vector       const & globalOffset
-                       );
+    CRSScintillatorBar(CRSScintillatorBarIndex const &index, 
+                       CRSScintillatorBarId const &id,
+                       CLHEP::Hep3Vector const &position);
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
-
-    const CRSScintillatorBarId& id() const { return _id;}
-    CRSScintillatorBarIndex index() const { return _index;}
+    CRSScintillatorBarIndex index() const {return _index;}
+    CRSScintillatorBarId id() const {return _id;}
 
     // Formatted string embedding the id of the ScintillatorBar.
     std::string name( std::string const & base ) const;
 
-    std::vector<double> const & getGlobalRotationAngles() const { return _globalRotationAngles;}
-
-    CLHEP::Hep3Vector const & getGlobalOffset() const {return _globalOffset;}
-
-    // CRSScintillatorBar Half lengths
-    std::vector<double> const & getHalfLengths() {
-      return _detail->getHalfLengths();
-    }
-
-    // CRSScintillatorBar Material Names
-    std::vector<std::string> const & getMaterialNames() {
-      return _detail->getMaterialNames();
-    }
+    CLHEP::Hep3Vector const & getPosition() const {return _position;}
+    std::vector<double> const & getHalfLengths() const {return _detail->getHalfLengths();}
+    std::string const & getMaterialNames() const {return _detail->getMaterialName();}
 
     // On readback from persistency, recursively recompute mutable members.
     //    void fillPointers ( const CosmicRayShield& cosmicRayShield ) const;
 
-    bool operator==(const CRSScintillatorBar other) const {
+//FIXME: what is this for?
+    bool operator==(const CRSScintillatorBar other) const 
+    {
       return _index == other.index();
     }
-    bool operator>(const CRSScintillatorBar other) const {
+    bool operator>(const CRSScintillatorBar other) const 
+    {
       return _index > other.index();
     }
-    bool operator<(const CRSScintillatorBar other) const {
+    bool operator<(const CRSScintillatorBar other) const 
+    {
       return _index < other.index();
-   }
+    }
 
-  private:
-
-    // Identifier
-    CRSScintillatorBarId _id;
+    private:
 
     // Index into the container of all ScintillatorBars.
     CRSScintillatorBarIndex _index;
 
-    std::vector<double> _globalRotationAngles;
-    // we may do rotation instead
+    // Identifier within one layer, module, shield, and shield ID
+    CRSScintillatorBarId _id;
 
     // Mid-point of the ScintillatorBar, in Mu2e
-    CLHEP::Hep3Vector _globalOffset;
+    CLHEP::Hep3Vector _position;
 
     // Detailed description of a bar
     mutable const CRSScintillatorBarDetail* _detail;
-
-    //     Nearest neighbours.// not filled out yet
-    //     std::vector<CRSScintillatorBarId>    _nearestById;
-    //     std::vector<CRSScintillatorBarIndex> _nearestByIndex;
-
   };
 
 }  //namespace mu2e

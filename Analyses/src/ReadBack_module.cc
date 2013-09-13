@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.25 2013/03/27 17:10:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/27 17:10:10 $
+// $Id: ReadBack_module.cc,v 1.26 2013/09/13 06:46:10 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/09/13 06:46:10 $
 //
 // Original author Rob Kutschke
 //
@@ -401,11 +401,9 @@ namespace mu2e {
 
     doStoppingTarget(event);
 
-    if( geom->hasElement<CosmicRayShield>() ) {
-      GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
-      if(CosmicRayShieldGeomHandle->hasActiveShield()) {
-        doCRV(event);
-      }
+    if( geom->hasElement<CosmicRayShield>() ) 
+    {
+      doCRV(event);
     }
 
     if(geom->hasElement<ExtMonUCI::ExtMon>() ) {
@@ -1173,12 +1171,6 @@ namespace mu2e {
     GeomHandle<CosmicRayShield> cosmicRayShieldGeomHandle;
     CosmicRayShield const& crv(*cosmicRayShieldGeomHandle);
 
-    CRSScintillatorBarDetail const & barDetail = crv.getCRSScintillatorBarDetail();
-
-    CLHEP::Hep3Vector barLengths = CLHEP::Hep3Vector(barDetail.getHalfLengths()[0],
-                                                     barDetail.getHalfLengths()[1],
-                                                     barDetail.getHalfLengths()[2]);
-
     art::Handle<StatusG4> g4StatusHandle;
     event.getByLabel( _g4ModuleLabel, g4StatusHandle);
     StatusG4 const& g4Status = *g4StatusHandle;
@@ -1241,14 +1233,13 @@ namespace mu2e {
 
       // Get the CRSScintillatorBar information:
       const CRSScintillatorBar&  bar = crv.getBar( hit.barIndex() );
-      CLHEP::Hep3Vector const &  mid = bar.getGlobalOffset();
+      CLHEP::Hep3Vector const &  mid = bar.getPosition();
 
-      CLHEP::HepRotationX RX(bar.getGlobalRotationAngles()[0]);
-      CLHEP::HepRotationY RY(bar.getGlobalRotationAngles()[1]);
-      CLHEP::HepRotationZ RZ(bar.getGlobalRotationAngles()[2]);
+      CLHEP::Hep3Vector barLengths = CLHEP::Hep3Vector(bar.getHalfLengths()[0],
+                                                       bar.getHalfLengths()[1],
+                                                       bar.getHalfLengths()[2]);
 
-      CLHEP::HepRotation barInvRotation((RX*RY*RZ).inverse());
-      CLHEP::Hep3Vector hitLocal  = barInvRotation*(pos-mid);
+      CLHEP::Hep3Vector hitLocal  = pos-mid;
       CLHEP::Hep3Vector hitLocalN = CLHEP::Hep3Vector(hitLocal.x()/barLengths.x(),
                                                       hitLocal.y()/barLengths.y(),
                                                       hitLocal.z()/barLengths.z());

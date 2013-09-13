@@ -1,9 +1,9 @@
 //
 // Free function to create Hall Steel
 //
-// $Id: constructSteel.cc,v 1.14 2013/03/15 16:20:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 16:20:00 $
+// $Id: constructSteel.cc,v 1.15 2013/09/13 06:42:44 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG based on Mu2eWorld constructSteel
 //
@@ -42,7 +42,7 @@ namespace mu2e {
                        ){
 
     // get the CRS parameters from the geometry service and place the steel boxes
-
+/*
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
     if(!CosmicRayShieldGeomHandle->hasPassiveShield()) return;
@@ -140,7 +140,7 @@ namespace mu2e {
       }
 
     }
-
+*/
   }
 
 }

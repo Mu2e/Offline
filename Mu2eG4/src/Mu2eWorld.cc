@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.163 2013/09/05 16:40:35 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/09/05 16:40:35 $
+// $Id: Mu2eWorld.cc,v 1.164 2013/09/13 06:42:44 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/09/13 06:42:44 $
 //
 // Original author Rob Kutschke
 //
@@ -221,8 +221,8 @@ namespace mu2e {
     if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
 
       GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
-      if(CosmicRayShieldGeomHandle->hasPassiveShield()) constructSteel(hallInfo,_config);
-      if(CosmicRayShieldGeomHandle->hasActiveShield()) constructCRV(hallInfo,_config);
+      //constructSteel(hallInfo,_config);
+      constructCRV(hallInfo,_config);
     }
 
     constructVirtualDetectors(_config); // beware of the placement order of this function

@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.16 2013/08/30 16:46:44 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/30 16:46:44 $
+// $Id: constructCRV.cc,v 1.17 2013/09/13 06:42:44 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG
 //
@@ -43,16 +43,13 @@
 
 using namespace std;
 
-namespace mu2e {
-
-  void constructCRV( VolumeInfo const & parent,
-                     SimpleConfig const &  _config
-                     ){
-
+namespace mu2e 
+{
+  void constructCRV( VolumeInfo const & parent, SimpleConfig const &  _config)
+  {
     // get the CRS parameters from the geometry service and place the veto elements
 
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
-    if(!CosmicRayShieldGeomHandle->hasActiveShield()) return;
 
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
@@ -65,189 +62,108 @@ namespace mu2e {
     bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
     bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
 
-    std::map<std::string,CRSScintillatorShield> const & shields =
-      CosmicRayShieldGeomHandle->getCRSScintillatorShields();
+    std::map<std::string,CRSScintillatorShield> const &shields = CosmicRayShieldGeomHandle->getCRSScintillatorShields();
 
     CLHEP::Hep3Vector perentCenterInMu2e = parent.centerInMu2e();
 
-    // all materials and dimensions are the same
+    std::map<std::string,CRSScintillatorShield>::const_iterator ishield;
+    for(ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
+    {
+      CRSScintillatorShield const & shield = ishield->second;
+      std::string shieldName = ishield->first;
 
-    CRSScintillatorBarDetail const & barDetail =
-      CosmicRayShieldGeomHandle->getCRSScintillatorBarDetail();
+      if(verbosityLevel > 0) cout << __func__ << " constructing            : " << shieldName << endl;
 
-    G4Material* scintillatorBarMaterial =
-      findMaterialOrThrow(barDetail.getMaterialName(0));
+    // all materials and dimensions are the same within a particular shield
+      CRSScintillatorBarDetail const & barDetail = shield.getCRSScintillatorBarDetail();
 
-    std::vector<double> const &  scintillatorBarHalfLengths = barDetail.getHalfLengths();
+      G4Material* scintillatorBarMaterial = findMaterialOrThrow(barDetail.getMaterialName());
+      std::vector<double> const &  scintillatorBarHalfLengths = barDetail.getHalfLengths();
 
     // each solid is the same,
     // is each logical volume the same?
     // but each physical volume has different name...
     // this seems not quite compatible with VolumeInfo and their registry, so we will not use it
 
-    //    VolumeInfo scintillatorBarInfo;
+    // VolumeInfo scintillatorBarInfo;
+      std::string scintillatorBarName = shieldName;
 
-    std::string scintillatorBarName = "CRSScintillatorBar";
+      G4VSolid* scintillatorBarSolid = new G4Box(scintillatorBarName,
+                                                 scintillatorBarHalfLengths[0],
+                                                 scintillatorBarHalfLengths[1],
+                                                 scintillatorBarHalfLengths[2]);
 
-    G4VSolid* scintillatorBarSolid =
-      new G4Box( scintillatorBarName,
-                 scintillatorBarHalfLengths[0],
-                 scintillatorBarHalfLengths[1],
-                 scintillatorBarHalfLengths[2]);
-
-    G4LogicalVolume* scintillatorBarLogical =
-      new G4LogicalVolume( scintillatorBarSolid,
-                           scintillatorBarMaterial,
-                           scintillatorBarName);
+      G4LogicalVolume* scintillatorBarLogical = new G4LogicalVolume(scintillatorBarSolid,
+                                                                    scintillatorBarMaterial,
+                                                                    scintillatorBarName);
 
     // visibility attributes
 
-    if (!scintillatorShieldVisible) {
-
-      scintillatorBarLogical->SetVisAttributes(G4VisAttributes::Invisible);
-
-    } else {
-      G4Colour  orange  (.75, .55, .0);
-      G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, orange));
-      visAtt->SetForceSolid(scintillatorShieldSolid);
-      visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
-      scintillatorBarLogical->SetVisAttributes(visAtt);
-
-    }
-
-    // Make each scintillatorBar a sensitive detector.
-    G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar());
-    if(sd) scintillatorBarLogical->SetSensitiveDetector(sd);
-
-    if (verbosityLevel > 1) {
-      G4SDManager::GetSDMpointer()->SetVerboseLevel(verbosityLevel-1);
-    }
-
-    for (std::map<std::string,CRSScintillatorShield>::const_iterator ishield=shields.begin();
-         ishield!=shields.end(); ++ishield) {
-
-      CRSScintillatorShield const & shield = ishield->second;
-      std::string shieldName = ishield->first;
-
-      //      if (shieldName!="CRSScintillatorDShield") continue;
-
-      verbosityLevel > 0 &&
-        cout << __func__ << " constructing            : " << shieldName << endl;
-
-      // we shall place individual scintillators skipping modules and layers for now
-      // the scintillators do have some common parameters though
-
-      CLHEP::HepRotationX RX(shield.getGlobalRotationAngles()[0]);
-      CLHEP::HepRotationY RY(shield.getGlobalRotationAngles()[1]);
-      CLHEP::HepRotationZ RZ(shield.getGlobalRotationAngles()[2]);
-
-      G4RotationMatrix* shieldRotation = reg.add(G4RotationMatrix(RX*RY*RZ));
-
-      if ( verbosityLevel > 0 ) {
-        cout << __func__ << " shieldGlobalOffset      : " << shield.getGlobalOffset() << endl;
-        cout << __func__ << " shieldAirOffset         : " << shield.getGlobalOffset() - perentCenterInMu2e << endl;
-        cout << __func__ << " getGlobalRotationAngles : " <<
-          shield.getGlobalRotationAngles()[0] << ", " <<
-          shield.getGlobalRotationAngles()[1] << ", " <<
-          shield.getGlobalRotationAngles()[2] << ", " << endl;
-        cout << __func__ << " *shieldRotation         : " << *shieldRotation << endl;
+      if (!scintillatorShieldVisible) 
+      {
+        scintillatorBarLogical->SetVisAttributes(G4VisAttributes::Invisible);
+      }
+      else 
+      {
+        G4Colour  orange  (.75, .55, .0);
+        G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, orange));
+        visAtt->SetForceSolid(scintillatorShieldSolid);
+        visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
+        scintillatorBarLogical->SetVisAttributes(visAtt);
       }
 
-      // now loop over all bars in the given shield
+    // Make each scintillatorBar a sensitive detector.
+      G4VSensitiveDetector *sd = 
+                     G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar());
+      if(sd) scintillatorBarLogical->SetSensitiveDetector(sd);
 
-      int nModules = shield.nModules();
+      if (verbosityLevel > 1) 
+      {
+        G4SDManager::GetSDMpointer()->SetVerboseLevel(verbosityLevel-1);
+      }
 
-      verbosityLevel > 0 &&
-        cout << __func__ << " nModules                : " << nModules << endl;
-
-      for (int im = 0; im < nModules; ++im) {
-
-        verbosityLevel > 0 &&
-          cout << __func__ << " working on module       : " << im << endl;
-
-        CRSScintillatorModule const & module = shield.getModule(im);
-
-        if ( verbosityLevel > 1 ) {
-          cout << __func__ << " moduleGlobalOffset      : " << module.getGlobalOffset() << endl;
-          cout << __func__ << " moduleAirOffset         : " << module.getGlobalOffset() - perentCenterInMu2e << endl;
-        }
-
-        int nLayers = module.nLayers();
-
-        verbosityLevel > 0 &&
-          cout << __func__ << " nLayers                 : " << nLayers << endl;
-
-        for (int il = 0; il < nLayers; ++il) {
-
-          verbosityLevel > 1 &&
-            cout << __func__ << " working on layer        : " << il << endl;
-
-          CRSScintillatorLayer const & layer = module.getLayer(il);
-
-          if ( verbosityLevel > 2 ) {
-            cout << __func__ << " layerGlobalOffset       : " << layer.getGlobalOffset() << endl;
-            cout << __func__ << " layerAirOffset          : " << layer.getGlobalOffset() - perentCenterInMu2e << endl;
-          }
-
-          int nBars = layer.nBars();
-
-          verbosityLevel > 0 &&
-            cout << __func__ << " nBars                   : " << nBars << endl;
-
-          for (int ib = 0; ib < nBars; ++ib) {
-
-            verbosityLevel > 2 &&
-              cout << __func__ << " working on bar          : " << ib << endl;
-
-            CRSScintillatorBar const & bar = layer.getBar(ib);
+      const std::vector<CRSScintillatorModule> &modules = shield.getCRSScintillatorModules();
+      std::vector<CRSScintillatorModule>::const_iterator imodule;
+      for(imodule=modules.begin(); imodule!=modules.end(); ++imodule) 
+      {
+        const std::vector<CRSScintillatorLayer> &layers = imodule->getLayers();
+        std::vector<CRSScintillatorLayer>::const_iterator ilayer;
+        for(ilayer=layers.begin(); ilayer!=layers.end(); ++ilayer) 
+        {
+          const std::vector<const CRSScintillatorBar*> &bars = ilayer->getBars();
+          std::vector<const CRSScintillatorBar*>::const_iterator ibar;
+          for(ibar=bars.begin(); ibar!=bars.end(); ++ibar) 
+          {
+            const CRSScintillatorBar &bar = **ibar; 
 
             // placing the bar;
-
             // we need the offsets "local" to the air
             // so we need the globaloffsets for each bar and the air (parent volume)
+            CLHEP::Hep3Vector barAirOffset = bar.getPosition() - perentCenterInMu2e;
 
-            CLHEP::Hep3Vector barAirOffset = bar.getGlobalOffset() - perentCenterInMu2e;
-
-            // the rotation is the same for each bar in a given shield
-
-            if ( verbosityLevel > 3 ) {
-              cout << __func__ << " barGlobalOffset      : " <<  bar.getGlobalOffset() << endl;
+            if ( verbosityLevel > 3 ) 
+            {
+              cout << __func__ << " barPosition          : " <<  bar.getPosition() << endl;
               cout << __func__ << " barAirOffset         : " <<  barAirOffset << endl;
             }
 
-/*
-            new G4PVPlacement( shieldRotation,
-                               barAirOffset,
-                               scintillatorBarLogical,
-                               bar.name(scintillatorBarName+"_"),
-                               parent.logical,
-                               false,
-                               bar.index().asInt(),
-                               false);
-*/
-            // Note different G4PVPlacement choice using G4Transform3D
-            G4VPhysicalVolume* pv = new G4PVPlacement(G4Transform3D( *shieldRotation,
-                                                                     barAirOffset),
-                                                      scintillatorBarLogical,
-                                                      bar.name(scintillatorBarName+"_"),
-                                                      parent.logical,
-                                                      false,
-                                                      bar.index().asInt(),
-                                                      false);
+            G4VPhysicalVolume* pv = new G4PVPlacement( NULL,
+                                                       barAirOffset,
+                                                       scintillatorBarLogical,
+                                                       bar.name("CRSScintillatorBar_"),
+                                                       parent.logical,
+                                                       false,
+                                                       bar.index().asInt(),
+                                                       false);
 
-            if ( doSurfaceCheck) {
+            if ( doSurfaceCheck) 
+            {
               checkForOverlaps( pv, _config, verbosityLevel>0);
             }
+          } //ibar
+        } //ilayer
+      } //imodule
+    } //ishield
+  } //construct CRV
 
-          }
-
-        }
-
-      }
-
-    }
-
-  }
-
-}
+} //namespace mu2e

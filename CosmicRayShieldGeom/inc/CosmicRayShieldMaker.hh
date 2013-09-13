@@ -3,9 +3,9 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.13 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: CosmicRayShieldMaker.hh,v 1.14 2013/09/13 06:42:44 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG
 //
@@ -16,128 +16,83 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e {
-
+namespace mu2e 
+{
   class CosmicRayShield;
   class SimpleConfig;
 
-  class CRSScintillatorShield;
-  class CRSScintillatorModule;
-  class CRSScintillatorLayer;
+  class CosmicRayShieldMaker 
+  {
+    public:
 
-class CosmicRayShieldMaker {
+    CosmicRayShieldMaker(SimpleConfig const & config, double solenoidOffset);
 
-public:
-
-  CosmicRayShieldMaker( SimpleConfig const & config, double solenoidOffset );
-
-  void parseConfig( SimpleConfig const & _config );
-
-  void makeCRSSteelShield(SimpleConfig const & _config);
-
-  void calculateCommonCRSScintillatorParameters();
-  void makeDetails();
-  void makeShields();
-  void makeModules(CRSScintillatorShield& shield);
-  void makeLayers(CRSScintillatorModule& module);
-  void makeBars(CRSScintillatorLayer& layer);
-
+    void parseConfig( SimpleConfig const & _config );
+    void makeShields();
+    void makeSingleShield(const std::vector<double> &counterHalfLengths, const char *name, 
+                          const CLHEP::Hep3Vector &firstCounter, 
+                          const CLHEP::Hep3Vector &layerOffset,
+                          const CLHEP::Hep3Vector &VTNCLargeGap,
+                          const CLHEP::Hep3Vector &VTNCSmallGap,
+                          const CLHEP::Hep3Vector &VTNCBetweenModules,
+                          int nLayers, int nModules, int nCountersPerModule, 
+                          int nCountersLastModule);
 
   // This is deprecated and will go away soon.
   // Still needed for root graphics version.
-  const CosmicRayShield& getCosmicRayShield() const { return *_crs;}
+    const CosmicRayShield& getCosmicRayShield() const { return *_crs;}
 
   // This is the accessor that will remain.
-  std::unique_ptr<CosmicRayShield> getCosmicRayShieldPtr() { return std::move(_crs); }
+    std::unique_ptr<CosmicRayShield> getCosmicRayShieldPtr() { return std::move(_crs); }
 
-private:
+    private:
 
-  std::unique_ptr<CosmicRayShield> _crs;
+    std::unique_ptr<CosmicRayShield> _crs;
 
-  int _diagLevel;
+    int  _diagLevel;
 
-  bool _hasPassiveShield;
-  bool _hasActiveShield;
+    double  _counterLengthDSR;
+    double  _counterLengthDSL;
+    double  _counterLengthDST;
+    double  _counterLengthDSD;
+    double  _counterLengthTSR;
+    double  _counterLengthTSL;
+    double  _counterLengthTST;
 
-  double _HallSteelHalfThick;
-  double _HallSteelHalfSideShieldHeight;
-  double _HallSteelHalfRShieldLength;
-  double _HallSteelHalfLShieldLength;
-  double _HallSteelHalfTShieldLength;
-  double _HallSteelHalfTSRShieldLength;
-  double _HallSteelHalfTSLShieldLength;
-  double _HallSteelHalfTSTShieldLength;
-  double _HallSteelHoleRadius;
+    double  _counterThickness;
+    double  _counterWidth;
+    double  _offset, _gapLarge, _gapSmall, _gapBetweenLayers;
+ 
+    int _nLayers;
 
-  CLHEP::Hep3Vector _HallSteelOffset; // aka CRPassiveShield offset
-  CLHEP::Hep3Vector _HallSteelRShieldCenter;
-  CLHEP::Hep3Vector _HallSteelLShieldCenter;
-  CLHEP::Hep3Vector _HallSteelTShieldCenter;
-  CLHEP::Hep3Vector _HallSteelDShieldCenter;
-  CLHEP::Hep3Vector _HallSteelTSRShieldCenter;
-  CLHEP::Hep3Vector _HallSteelTSLShieldCenter;
-  CLHEP::Hep3Vector _HallSteelTSTShieldCenter;
+    int _nModulesDSR;
+    int _nModulesDSL;
+    int _nModulesDST;
+    int _nModulesDSD;
+    int _nModulesTSR;
+    int _nModulesTSL;
+    int _nModulesTST;
+  
+    int _nCountersPerModule;
+    int _nCountersLastModuleDSR;
+    int _nCountersLastModuleDSL;
+    int _nCountersLastModuleDST;
+    int _nCountersLastModuleDSD;
+    int _nCountersLastModuleTSR;
+    int _nCountersLastModuleTSL;
+    int _nCountersLastModuleTST;
 
-  std::string _HallSteelMaterialName;
+    CLHEP::Hep3Vector  _firstCounterDSR;
+    CLHEP::Hep3Vector  _firstCounterDSL;
+    CLHEP::Hep3Vector  _firstCounterDST;
+    CLHEP::Hep3Vector  _firstCounterDSD;
+    CLHEP::Hep3Vector  _firstCounterTSR;
+    CLHEP::Hep3Vector  _firstCounterTSL;
+    CLHEP::Hep3Vector  _firstCounterTST;
 
-  int                 _scintillatorLayersPerModule;
-  int                 _scintillatorBarsPerFullLayer;
-  std::vector<double> _scintillatorBarHalfLengths;
-  std::string         _scintillatorBarMaterialName;
-  double              _scintillatorLayerShift;
-  double              _scintillatorLayerGap;
-  double              _scintillatorBarPigmentationHalfThickness;
-  std::string         _scintillatorBarPigmentationMaterialName;
-  std::vector<double> _scintillatorModuleOuterSheetHalfLengths;
-  std::string         _scintillatorModuleOuterSheetMaterialName;
-  std::string         _scintillatorModuleInterLayerSheetMaterialName;
-  double              _scintillatorModuleInterLayerSheetHalfThickness;
-  double              _scintillatorOverlap;
-  std::vector<double> _moduleUnistrutHalfLengths;
-  //  double              _wallUnistrutHalfThickness; // was used to displace the CRV
-
-  std::vector<int>    _shieldR_NumberOfModules;
-  std::vector<int>    _shieldL_NumberOfModules;
-  std::vector<int>    _shieldD_NumberOfModules;
-  std::vector<int>    _shieldT_NumberOfModules;
-  std::vector<int>    _shieldTSR_NumberOfModules;
-  std::vector<int>    _shieldTSL_NumberOfModules;
-  std::vector<int>    _shieldTST_NumberOfModules;
-
-  CLHEP::Hep3Vector   _scintillatorShieldOffset; // aka CRActiveShield offset
-
-  std::vector<double> _shieldR_Offset;
-  std::vector<double> _shieldL_Offset;
-  std::vector<double> _shieldD_Offset;
-  std::vector<double> _shieldT_Offset;
-  std::vector<double> _shieldTSR_Offset;
-  std::vector<double> _shieldTSL_Offset;
-  std::vector<double> _shieldTST_Offset;
-
-  // derived quantities etc...
-
-  int    _totalNumberOfBars;
-
-  double _scintillatorFullLayerHalfWidth;
-  double _scintillatorHalfLayerHalfWidth;
-  double _scintillatorLayerHalfLength;
-
-  double _scintillatorModuleCoreHalfThickness; // no unistruts
-
-  double _scintillatorFullModuleHalfWidth;
-  double _scintillatorHalfModuleHalfWidth;
-
-  double _scintillatorModuleHalfThickness;
-
-  double _scintillatorModuleHalfLength;
-
-  double _scintillatorModuleOverlap;
-
-  double _scintillatorShieldHalfThickness;
-
-// double _scintillatorShieldOffsetToTheSideOfHallSteel; // was calculated based on _wallUnistrutHalfThickness
-
-};
+    std::string _scintillatorBarMaterialName;
+    std::string _scintillatorBarPigmentationMaterialName;
+  };
 
 }  //namespace mu2e
 

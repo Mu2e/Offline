@@ -2,9 +2,9 @@
 // Representation of one Scintillator Module in  CosmicRayShield
 //
 //
-// $Id: CRSScintillatorModule.cc,v 1.4 2011/12/06 22:53:01 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/12/06 22:53:01 $
+// $Id: CRSScintillatorModule.cc,v 1.5 2013/09/13 06:42:44 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG based on Rob Kutschke's Sector
 //
@@ -15,48 +15,25 @@
 
 using namespace std;
 
-namespace mu2e {
+namespace mu2e 
+{
 
     CRSScintillatorModule::CRSScintillatorModule():
-      _id(CRSScintillatorModuleId(-1,-1)),
-      _nBarsPerLayer(0),
-      _globalRotationAngles(std::vector<double>(2)),
-      _globalOffset(CLHEP::Hep3Vector(0.,0.,0.))
+      _id(CRSScintillatorModuleId(-1,-1))
     {}
 
-    CRSScintillatorModule::CRSScintillatorModule( CRSScintillatorModuleId const& id,
-                                                  int const nBarsPerLayer ):
-      _id(id),
-      _nBarsPerLayer(nBarsPerLayer)
+    CRSScintillatorModule::CRSScintillatorModule( CRSScintillatorModuleId const& id):
+      _id(id)
     {}
 
-    CRSScintillatorModule::CRSScintillatorModule(
-                                                 CRSScintillatorModuleId const & id,
-                                                 int               const nBarsPerLayer,
-                                                 std::vector<double> const & globalRotationAngles,
-                                                 CLHEP::Hep3Vector const & globalOffset // offset in World
-                                                 ):
-      _id(id),
-      _nBarsPerLayer(nBarsPerLayer),
-      _globalRotationAngles(globalRotationAngles),
-      _globalOffset(globalOffset)
-    {}
+    string CRSScintillatorModule::name( string const& base ) const
+    {
+      ostringstream os;
 
-
-  string CRSScintillatorModule::name( string const& base ) const{
-    ostringstream os;
-
-    os << base
-       << _id.getShieldNumber() << "_"
-       << _id.getModuleNumber();
-    return os.str();
-
-  }
-
-//   void CRSScintillatorModule::fillPointers ( const CosmicRayShield& cosmicRayShield ) const {
-//     for( size_t i=0; i<_layers.size(); ++i ){
-//       _layers[i].fillPointers(cosmicRayShield);
-//     }
-//   }
+      os << base
+         << _id.getShieldNumber() << "_"
+         << _id.getModuleNumber();
+      return os.str();
+    }
 
 } // end namespace mu2e

@@ -6,9 +6,9 @@
 //
 
 //
-// $Id: CRSScintillatorLayerId.hh,v 1.4 2011/05/18 15:47:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/18 15:47:40 $
+// $Id: CRSScintillatorLayerId.hh,v 1.5 2013/09/13 06:42:44 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG; based on Rob Kutschke LayerId
 //
@@ -17,73 +17,65 @@
 
 #include "CosmicRayShieldGeom/inc/CRSScintillatorModuleId.hh"
 
-namespace mu2e {
+namespace mu2e 
+{
 
-  class CRSScintillatorLayerId{
+  class CRSScintillatorLayerId
+  {
 
     friend class CRSScintillatorBarId;
 
-  public:
+    public:
 
     CRSScintillatorLayerId():
       _moduleId(CRSScintillatorModuleId()),
-      _layerNumber(-1){
+      _layerNumber(-1)
+    {
     }
 
     CRSScintillatorLayerId( CRSScintillatorModuleId moduleId,
-                            int layerNumber
-                            ):
+                            int layerNumber):
       _moduleId(moduleId),
-      _layerNumber(layerNumber){
+      _layerNumber(layerNumber)
+    {
     }
 
-    CRSScintillatorLayerId( CRSScintillatorShieldId shieldId,
+    CRSScintillatorLayerId( int shieldNumber,
                             int moduleNumber,
-                            int layerNumber
-                            ):
-      _moduleId(CRSScintillatorModuleId(shieldId,moduleNumber)),
-      _layerNumber(layerNumber){
+                            int layerNumber):
+      _moduleId(CRSScintillatorModuleId(shieldNumber,moduleNumber)),
+      _layerNumber(layerNumber)
+    {
     }
 
     // Compiler generated d'tor, copy and assignment constructors
     // should be OK.
 
-    const CRSScintillatorShieldId getShieldId() const{
-      return _moduleId._shieldId;
-    }
-    const CRSScintillatorModuleId getModuleId() const{
-      return _moduleId;
-    }
+    const CRSScintillatorShieldId getShieldId() const{return _moduleId._shieldId;}
+    const CRSScintillatorModuleId getModuleId() const{return _moduleId;}
 
-    const int getShieldNumber() const{
-      return _moduleId._shieldId; // it is a typdef for now anyway
-    }
+    const int getShieldNumber() const{return _moduleId._shieldId;}
+    const int getModuleNumber() const{return _moduleId._moduleNumber;}
+    const int getLayerNumber() const{return _layerNumber;}
 
-    const int getModuleNumber() const{
-      return _moduleId._moduleNumber;
-    }
-
-    const int getLayerNumber() const{
-      return _layerNumber;
-    }
-
-    bool operator==(CRSScintillatorLayerId const & rhs) const{
+    bool operator==(CRSScintillatorLayerId const & rhs) const
+    {
       return ( _moduleId == rhs._moduleId && _layerNumber == rhs._layerNumber );
     }
 
-    bool operator!=(CRSScintillatorLayerId const & rhs) const{
+    bool operator!=(CRSScintillatorLayerId const & rhs) const
+    {
       return !( *this == rhs);
     }
 
-  private:
+    private:
 
     CRSScintillatorModuleId _moduleId;
     int _layerNumber;
-
   };
 
-  inline std::ostream& operator<<(std::ostream& ost,
-                                  const CRSScintillatorLayerId& layerId ){
+  inline std::ostream& operator<<(std::ostream& ost, const CRSScintillatorLayerId& layerId )
+  {
     ost << layerId.getModuleId() << " " << layerId.getLayerNumber();
     return ost;
   }

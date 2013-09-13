@@ -4,9 +4,9 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.14 2012/05/14 21:22:24 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/14 21:22:24 $
+// $Id: CosmicRayShield.hh,v 1.15 2013/09/13 06:42:44 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG
 //
@@ -25,83 +25,45 @@
 #include "Mu2eInterfaces/inc/Detector.hh"
 
 
-namespace mu2e {
+namespace mu2e 
+{
 
   // Forward reference.
   class SimpleConfig;
   class CosmicRayShieldMaker;
 
-  class CosmicRayShield : virtual public Detector {
+  class CosmicRayShield : virtual public Detector 
+  {
 
     friend class CosmicRayShieldMaker;
 
-  public:
+    public:
 
-    CosmicRayShield() {
-      _hasActiveShield = false;
-      _hasPassiveShield = false;
-    }
-
-    ~CosmicRayShield(){}
-
-    // Get SteelShield
-    CRSSteelShield         const & getCRSSteelShield(std::string name) const;
-
-    std::map<std::string,CRSSteelShield> const & getCRSSteelShields() const {
-      return _steelShields;
-    }
+    CosmicRayShield() {}
+    ~CosmicRayShield() {}
 
     // Get ScintillatorShield
     CRSScintillatorShield  const & getCRSScintillatorShield(std::string name)  const;
 
-    std::map<std::string,CRSScintillatorShield> const & getCRSScintillatorShields() const {
+    std::map<std::string,CRSScintillatorShield> const & getCRSScintillatorShields() const 
+    {
       return _scintillatorShields;
     }
 
-    CRSScintillatorBarDetail const & getCRSScintillatorBarDetail() const {
-      return _barDetails;
-    }
-
-    std::vector<CRSScintillatorBar> const & getAllCRSScintillatorBars() const {
+    std::vector<CRSScintillatorBar> const & getAllCRSScintillatorBars() const 
+    {
       return _allCRSScintillatorBars;
     }
 
-    const CRSScintillatorBar& getBar ( CRSScintillatorBarIndex index ) const {
+    const CRSScintillatorBar& getBar ( CRSScintillatorBarIndex index ) const 
+    {
       return _allCRSScintillatorBars.at(index.asInt());
     }
 
-    bool const hasActiveShield() const {
-      return _hasActiveShield;
-    }
-
-    bool const hasPassiveShield() const {
-      return _hasPassiveShield;
-    }
-
-  private:
-
-    std::map<std::string,CRSSteelShield>         _steelShields;
+    private:
 
     std::map<std::string,CRSScintillatorShield>  _scintillatorShields;
-
-    // Detailed info about scintillators etc...
-    CRSScintillatorBarDetail _barDetails;
-
-    // global holder of all scintillator bars
-    std::vector<CRSScintillatorBar>  _allCRSScintillatorBars;
-
-    bool _hasActiveShield;
-    bool _hasPassiveShield;
-
-    // for a future reference:
-
-    // given that the bars, layers and modules have the same rotation
-    // angles as their shield, one could e.g. store the rotations as
-    // HepRotation in the shields or in CosmicRayShield and point to
-    // them from the lower level objects; similarly for their half
-    // lengths, one could store layer and module half lengths as "details"
-    // in CosmicRayShield and point to them from those objects
-
+    std::vector<CRSScintillatorBar>  _allCRSScintillatorBars;  // global holder of all scintillator bars
   };
 
 }

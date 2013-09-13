@@ -1,9 +1,9 @@
 //
 // Representation of common properties of the Scintillator Bars etc...
 //
-// $Id: CRSScintillatorBarDetail.cc,v 1.4 2012/03/29 22:56:21 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/29 22:56:21 $
+// $Id: CRSScintillatorBarDetail.cc,v 1.5 2013/09/13 06:42:44 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG; somewhat based on Rob Kutschke StrawDetail
 //
@@ -14,25 +14,12 @@
 
 using namespace std;
 
-namespace mu2e {
-
-  CRSScintillatorBarDetail::CRSScintillatorBarDetail( int const id,
-                                                      std::vector<std::string> const& materialNames,
-                                                      std::vector<double> const& halfLengths
-                                                      ) :
-    _id(id),
-    _materialNames(materialNames),
+namespace mu2e 
+{
+  CRSScintillatorBarDetail::CRSScintillatorBarDetail(std::string const& materialName,
+                                                     std::vector<double> const& halfLengths) :
+    _materialName(materialName),
     _halfLengths(halfLengths)
   {}
-
-
-  // Construct a string containing the bar Id.
-  std::string CRSScintillatorBarDetail::name( std::string const& base ) const{
-    std::ostringstream os;
-    os << base
-       << _id;
-    return os.str();
-  }
-
 
 } // namespace mu2e

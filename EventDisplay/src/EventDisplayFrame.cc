@@ -573,7 +573,7 @@ void EventDisplayFrame::fillGeometry()
 void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop)
 {
   _eventNumber=event.id().event();
-  _subrunNumber=event.id().run();
+  _subrunNumber=event.id().subRun();
   _runNumber=event.id().run();
 
   _contentSelector->setAvailableCollections(event);

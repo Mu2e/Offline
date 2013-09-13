@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.66 2013/06/25 17:51:24 ehrlich Exp $
+// $Id: DataInterface.cc,v 1.67 2013/09/13 06:42:44 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/06/25 17:51:24 $
+// $Date: 2013/09/13 06:42:44 $
 //
 
 #include "DataInterface.h"
@@ -677,30 +677,20 @@ void DataInterface::fillGeometry()
   }
 
 //active CRV Shields
-
-  mu2e::GeomHandle<mu2e::CosmicRayShield> CosmicRayShieldGeomHandle;
-  if(CosmicRayShieldGeomHandle->hasActiveShield())
+  if( geom->hasElement<mu2e::CosmicRayShield>() ) 
   {
+    mu2e::GeomHandle<mu2e::CosmicRayShield> CosmicRayShieldGeomHandle;
+
     std::map<std::string,mu2e::CRSScintillatorShield> const& shields = CosmicRayShieldGeomHandle->getCRSScintillatorShields();
-    mu2e::CRSScintillatorBarDetail const& barDetail = CosmicRayShieldGeomHandle->getCRSScintillatorBarDetail();
-
-    double dx=barDetail.getHalfLengths()[0];
-    double dy=barDetail.getHalfLengths()[1];
-    double dz=barDetail.getHalfLengths()[2];
-
     for(std::map<std::string,mu2e::CRSScintillatorShield>::const_iterator ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
     {
       mu2e::CRSScintillatorShield const& shield = ishield->second;
       std::string shieldName = ishield->first;
 
-      CLHEP::HepRotationX RX(shield.getGlobalRotationAngles()[0]);
-      CLHEP::HepRotationY RY(shield.getGlobalRotationAngles()[1]);
-      CLHEP::HepRotationZ RZ(shield.getGlobalRotationAngles()[2]);
-
-      CLHEP::HepRotation shieldRotation(RX*RY*RZ);
-      double psi  =shieldRotation.getPhi();  //need to check why psi and phi is reversed
-      double theta=shieldRotation.getTheta();
-      double phi  =shieldRotation.getPsi();
+      mu2e::CRSScintillatorBarDetail const& barDetail = shield.getCRSScintillatorBarDetail();
+      double dx=barDetail.getHalfLengths()[0];
+      double dy=barDetail.getHalfLengths()[1];
+      double dz=barDetail.getHalfLengths()[2];
 
       int nModules = shield.nModules();
       for (int im = 0; im < nModules; ++im) 
@@ -716,7 +706,7 @@ void DataInterface::fillGeometry()
           for (int ib = 0; ib < nBars; ++ib)  
           {
             mu2e::CRSScintillatorBar const & bar = layer.getBar(ib);
-            CLHEP::Hep3Vector barOffset = bar.getGlobalOffset() - _detSysOrigin;
+            CLHEP::Hep3Vector barOffset = bar.getPosition() - _detSysOrigin;
             double x=barOffset.x();
             double y=barOffset.y();
             double z=barOffset.z();
@@ -726,14 +716,14 @@ void DataInterface::fillGeometry()
             sprintf(c,"CRV Scintillator %s %i %i %i",shieldName.c_str(),im,il,ib);
             info->setName(c);
             info->setText(0,c);
-            sprintf(c,"Dimension  ?x: %.f mm, ?y: %.f mm, ?z: %.f mm",2.0*dx/CLHEP::mm,2.0*dy/CLHEP::mm,2.0*dz/CLHEP::mm);
+            sprintf(c,"Dimension x: %.f mm, y: %.f mm, z: %.f mm",2.0*dx/CLHEP::mm,2.0*dy/CLHEP::mm,2.0*dz/CLHEP::mm);
             info->setText(1,c);
             sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm);
             info->setText(2,c);
-            sprintf(c,"Rotation phi: %.f °, theta: %.f °, psi: %.f °",phi/CLHEP::deg,theta/CLHEP::deg,psi/CLHEP::deg);
+            sprintf(c," ");
             info->setText(3,c);
 
-            boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  phi,theta,psi, NAN,
+            boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0, 0, 0, NAN,
                                                    _geometrymanager, _topvolume, _mainframe, info));
             _components.push_back(shape);
             _crvscintillatorbars.push_back(shape);
@@ -742,7 +732,6 @@ void DataInterface::fillGeometry()
       }
     }
   }
-
 //   if(geom->hasElement<mu2e::CosmicRayShield>())
 //   {
 //     mu2e::GeomHandle<mu2e::CosmicRayShield> crs;
