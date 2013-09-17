@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.49 2013/08/18 03:07:27 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/18 03:07:27 $
+// $Id: TTrackerMaker.cc,v 1.50 2013/09/17 21:47:12 brownd Exp $
+// $Author: brownd $
+// $Date: 2013/09/17 21:47:12 $
 //
 // Original author Rob Kutschke
 //
@@ -111,7 +111,6 @@ namespace mu2e {
     _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
     _rotationPattern    = config.getInt("ttracker.rotationPattern");
     _spacingPattern     = config.getInt("ttracker.spacingPattern");
-    _devrot = config.getDouble("ttracker.deviceRotation")*CLHEP::degree;
   
     _oddStationRotation   =  config.getDouble("ttracker.oddStationRotation")*CLHEP::degree;
     _zCenter              =  config.getDouble("ttracker.z0")*CLHEP::mm;
@@ -220,34 +219,34 @@ namespace mu2e {
 // cdr geometry, taken from DOC 888, also alternatives 1 and 3 from doc 2799
 	// faces overlap by 60 degrees
 // Implicitly define the rotations for the even and odd (sequentially) sectors.
-	_sectorBaseRotations.push_back(   0.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  60.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  120.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  180.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  240.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  300.*CLHEP::degree);
-	_sectorBaseRotations.push_back(   30.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  90.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  150.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  210.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  270.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  330.*CLHEP::degree);
+	_sectorBaseRotations.push_back(	 45.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 105.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 165.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 225.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 285.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 345.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  75.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  15.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 195.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 135.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 315.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 255.*CLHEP::degree);
 		
       } else if(_rotationPattern==2){
       	// alternative 2 from DOC 2799
 	// faces overlap by 60 degrees
-	_sectorBaseRotations.push_back(   0.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  90.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  120.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  210.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  240.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  330.*CLHEP::degree);
-	_sectorBaseRotations.push_back(   60.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  150.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  180.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  270.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  300.*CLHEP::degree);
-     	_sectorBaseRotations.push_back(   30.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  45.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  75.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 165.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 195.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 285.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 315.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 105.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  15.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 225.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 135.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 345.*CLHEP::degree);
+     	_sectorBaseRotations.push_back( 255.*CLHEP::degree);
       } else if(_rotationPattern==3){
       // faces overlap by 60 degrees, second device 'flipped'
 	_sectorBaseRotations.push_back(   0.*CLHEP::degree);
@@ -427,9 +426,8 @@ namespace mu2e {
     double devDeltaZ = chooseDeviceSpacing(idev);
     CLHEP::Hep3Vector origin( 0., 0., _z0+devDeltaZ);
     
-    // define the device rotation, indepedent of the sectors.  I believe it's used to number the devices (?)
-    int jdev = idev%2;
-    double phi = jdev == 0 ? 0.0 : _devrot;
+    // device rotation is no longer used.
+    double phi = 0.0;
     _tt->_devices.push_back(Device(devId, origin, phi));
     Device& dev = _tt->_devices.back();
     dev._sectors.reserve(_sectorsPerDevice);
