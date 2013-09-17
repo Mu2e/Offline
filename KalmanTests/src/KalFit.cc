@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.40 2013/04/03 22:08:21 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2013/04/03 22:08:21 $
+// $Id: KalFit.cc,v 1.41 2013/09/17 22:04:07 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2013/09/17 22:04:07 $
 //
 
 // the following has to come before other BaBar includes
@@ -30,6 +30,7 @@
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
 #include "KalmanTrack/KalHit.hh"
+#include "KalmanTrack/KalBend.hh"
 #include "TrkBase/HelixTraj.hh"
 #include "TrkBase/TrkHelixUtils.hh"
 #include "TrkBase/TrkHotListFull.hh"
@@ -111,6 +112,7 @@ namespace mu2e
     _maxmomdiff = pset.get<double>("MaxMomDiff",0.5);
     _momfac = pset.get<double>("MomFactor",0.0);
     _maxpardif[0] = _maxpardif[1] = pset.get<double>("MaxParameterDifference",1.0);
+
     // DOF counting subdivision is illogical, FIXME!!!!
     _mindof[0] = _mindof[2] = pset.get<double>("MinNDOF",10);
     _mindof[1] = 0;
@@ -120,6 +122,10 @@ namespace mu2e
     _bintconfig._divTolerance = pset.get<double>("BFieldIntDivTol",0.01); // 10 KeV
     _bintconfig._divPathMin = pset.get<double>("BFieldIntDivMin",10.0); // 10 mm
     _bintconfig._divStepCeiling = pset.get<double>("BFieldIntDivMax",100.0); // 100 mm
+    // field integral errors
+    double perr = pset.get<double>("BendCorrErrFrac",0.0); // fractional accuracy of trajectory
+    double berr = pset.get<double>("BFieldMapErr",0.0); // mapping and interpolation error
+//    KalBend::setErrors(perr,berr);
     // make sure we have at least one entry for additional errors
     if(_herr.size() <= 0) throw cet::exception("RECO")<<"mu2e::KalFit: no hit errors specified" << endl;
     if(_herr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
