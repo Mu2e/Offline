@@ -3,9 +3,9 @@
 // but with two layers of straws in each sector.
 // See:  Mu2e-doc-888
 //
-// $Id: ttracker_v2.txt,v 1.6 2013/08/15 14:14:36 brownd Exp $
+// $Id: ttracker_v2.txt,v 1.7 2013/09/17 21:48:13 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/08/15 14:14:36 $
+// $Date: 2013/09/17 21:48:13 $
 //
 // Original author Rob Kutschke
 //
@@ -21,18 +21,15 @@ double ttracker.supportHalfThickness        =   4.4;
 int    ttracker.manifoldsPerEnd             =   48; // 50, 5
 double ttracker.strawGap             =     1.25;
 vector<double> ttracker.manifoldHalfLengths = {3.125,5.0,5.21};
-// 21 stations; NB, deviceSpacing is really station spacing.  Total length
+// 22 stations; NB, deviceSpacing is really station spacing.  Total length
 // of ttracker is unchanged, spacing between stations is reduced
-double ttracker.deviceSpacing        =   144.5;
-int ttracker.numDevices = 42;
+double ttracker.deviceSpacing        =   140.86;
+int ttracker.numDevices = 44;
 // rotation pattern: either 1, 2, or 3, see the code for descriptions
-int    ttracker.rotationPattern    =    1;
-// this value isn't used in the geometry service, but it sets a parameter
-// in the Device that is apparently important in building the Geant model
-double ttracker.deviceRotation = 30.0;
+int    ttracker.rotationPattern    =    2;
 // odd-numbered stations can be rotated WRT even to minimize dead stereo
-// overlap
-double ttracker.oddStationRotation = 0.0;
+// overlap. The optimal number depends on the pattern
+double ttracker.oddStationRotation = 60.0;
 //
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
