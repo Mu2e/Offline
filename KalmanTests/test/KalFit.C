@@ -839,46 +839,57 @@ void KalFitResid(TTree* t) {
 
 
   TCut delta("_mcproc==17");
-  TCut ambig("_mcambig==_ambig");
+  TCut gambig("_mcambig==_ambig&&_ambig!=0");
+  TCut bambig("_mcambig!=_ambig&&_ambig!=0");
+  TCut nambig("_ambig==0");
   TCut active("fitstatus==1 && _active>0");
 
   TH1F* rdg = new TH1F("rdg","True Drift radius;radius (mm);N hits",100,-0.05,2.55);
   TH1F* rdb = new TH1F("rdb","True Drift radius;radius (mm);N hits",100,-0.05,2.55);
+  TH1F* rdn = new TH1F("rdn","True Drift radius;radius (mm);N hits",100,-0.05,2.55);
   rdg->SetLineColor(kBlue);
   rdb->SetLineColor(kRed);
+  rdn->SetLineColor(kGreen);
   rdg->SetStats(0);
   rdb->SetStats(0);
+  rdn->SetStats(0);
 
-  TH1F* rpullg = new TH1F("rpullg","Residual Pull;Pull;N hits",100,-6,6);
-  TH1F* rpullb = new TH1F("rpullb","Residual Pull;Pull;N hits",100,-6,6);
-  TH1F* rpulld = new TH1F("rpulld","Residual Pull;Pull;N hits",100,-6,6);
+  TH1F* rpullg = new TH1F("rpullg","Correct Ambiguity Residual Pull;Pull;N hits",100,-6,6);
+  TH1F* rpullb = new TH1F("rpullb","Incorrect Ambiguity Residual Pull;Pull;N hits",100,-6,6);
+  TH1F* rpulln = new TH1F("rpulln","No Assigned Ambiguity Residual Pull;Pull;N hits",100,-6,6);
   rpullg->SetLineColor(kBlue);
   rpullb->SetLineColor(kRed);
-  rpulld->SetLineColor(kGreen);
+  rpulln->SetLineColor(kGreen);
 
-  t->Project("rdg","_mcdist",mcsel+active+ambig+(!delta));
-  t->Project("rdb","_mcdist",mcsel+active+(!ambig)+(!delta));
+  t->Project("rdg","_mcdist",mcsel+active+gambig);
+  t->Project("rdb","_mcdist",mcsel+active+bambig);
+  t->Project("rdn","_mcdist",mcsel+active+nambig);
 
-  t->Project("rpullg","_resid/_residerr",mcsel+active+ambig+(!delta));
-  t->Project("rpullb","_resid/_residerr",mcsel+active+(!ambig)+(!delta));
-  t->Project("rpulld","_resid/_residerr",mcsel+active+ambig+delta);
+  t->Project("rpullg","_resid/_residerr",mcsel+active+gambig);
+  t->Project("rpullb","_resid/_residerr",mcsel+active+bambig);
+  t->Project("rpulln","_resid/_residerr",mcsel+active+nambig);
 
   TCanvas* residcan = new TCanvas("residcan","Residuals",1200,800);
   residcan->Divide(2,1);
   residcan->cd(1);
   rdg->Draw();
   rdb->Draw("same");
+  rdn->Draw("same");
 
   TLegend* leg = new TLegend(0.3,0.3,0.8,0.5);
   leg->AddEntry(rpullg,"Correct ambiguity","l");
   leg->AddEntry(rpullb,"Incorrect ambiguity","l");
-  leg->AddEntry(rpulld,"eIoni (#delta ray)","l");
+  leg->AddEntry(rpulln,"No ambiguity assigned","l");
   leg->Draw();
 
-  residcan->cd(2);
+  TPad* ppad = dynamic_cast<TPad*>(residcan->cd(2));
+  ppad->Divide(1,3);
+  ppad->cd(1);
   rpullg->Fit("gaus");
-  rpullb->Draw("same");
-  rpulld->Draw("same");
+  ppad->cd(2);
+  rpullb->Fit("gaus");
+  ppad->cd(3);
+  rpulln->Fit("gaus");
 
   residcan->cd(0);
 
@@ -886,24 +897,35 @@ void KalFitResid(TTree* t) {
 
 void KalFitCon(TTree* t) {
   if(!donecuts)KalCuts();
-  TH1F* fcon1 = new TH1F("fcon1","log_{10}(#chi^{2}) fit consistency",100,-10,0);
-  TH1F* fcon2 = new TH1F("fcon2","log_{10}(#chi^{2}) fit consistency",100,-10,0);
-  fcon1->SetLineColor(kBlue);
-  fcon2->SetLineColor(kRed);
-  fcon1->SetStats(0);
-  fcon2->SetStats(0);
+  TH1F* con1 = new TH1F("con1","#chi^{2} fit consistency",500,0.0,1.0);
+  TH1F* con2 = new TH1F("con2","#chi^{2} fit consistency",500,0.0,1.0);
+  TH1F* lcon1 = new TH1F("lcon1","log_{10}(#chi^{2}) fit consistency",100,-10,0);
+  TH1F* lcon2 = new TH1F("lcon2","log_{10}(#chi^{2}) fit consistency",100,-10,0);
+  con1->SetLineColor(kBlue);
+  con2->SetLineColor(kRed);
+  lcon1->SetLineColor(kBlue);
+  lcon2->SetLineColor(kRed);
+//  fcon1->SetStats(0);
+//  fcon2->SetStats(0);
 
-  t->Project("fcon1","log10(fitcon)",mcsel+"fitstatus==1");
-  t->Project("fcon2","log10(fitcon)",mcsel+"fitstatus==2");
+  t->Project("con1","fitcon",mcsel+"fitstatus==1");
+  t->Project("con2","fitcon",mcsel+"fitstatus==2");
+  t->Project("lcon1","log10(fitcon)",mcsel+"fitstatus==1");
+  t->Project("lcon2","log10(fitcon)",mcsel+"fitstatus==2");
 
-  TCanvas* fccan = new TCanvas("fccan","fit consistency",500,500);
-  fccan->Clear();
-  fcon1->Draw();
-  fcon2->Draw("same");
+  TCanvas* fcan = new TCanvas("fcan","fit consistency",500,800);
+  fcan->Clear();
+  fcan->Divide(1,2);
+  fcan->cd(1);
+  con1->Draw();
+  con2->Draw("same");
+  fcan->cd(2);
+  lcon1->Draw();
+  lcon2->Draw("same");
 
   TLegend* leg = new TLegend(0.1,0.6,0.4,0.8);
-  leg->AddEntry(fcon1,"Fully Converged Fit","l");
-  leg->AddEntry(fcon2,"Unconverged Fit","l");
+  leg->AddEntry(con1,"Fully Converged Fit","l");
+  leg->AddEntry(con2,"Unconverged Fit","l");
   leg->Draw();
 
 }
