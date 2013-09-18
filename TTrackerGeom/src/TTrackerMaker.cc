@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.51 2013/09/18 19:59:26 brownd Exp $
+// $Id: TTrackerMaker.cc,v 1.52 2013/09/18 20:24:12 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/09/18 19:59:26 $
+// $Date: 2013/09/18 20:24:12 $
 //
 // Original author Rob Kutschke
 //
@@ -249,17 +249,17 @@ namespace mu2e {
 //     	_sectorBaseRotations.push_back( 255.*CLHEP::degree);
 
 	_sectorBaseRotations.push_back(  0.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  90.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  30.*CLHEP::degree);
 	_sectorBaseRotations.push_back( 120.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 210.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 240.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 330.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  60.*CLHEP::degree);
 	_sectorBaseRotations.push_back( 150.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 180.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 240.*CLHEP::degree);
 	_sectorBaseRotations.push_back( 270.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  60.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 330.*CLHEP::degree);
+	_sectorBaseRotations.push_back( 180.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  90.*CLHEP::degree);
 	_sectorBaseRotations.push_back( 300.*CLHEP::degree);
-     	_sectorBaseRotations.push_back(  30.*CLHEP::degree);
+     	_sectorBaseRotations.push_back( 210.*CLHEP::degree);
       } else if(_rotationPattern==3){
       // faces overlap by 60 degrees, second device 'flipped'
 	_sectorBaseRotations.push_back(   0.*CLHEP::degree);
