@@ -839,6 +839,7 @@ void KalFitResid(TTree* t) {
 
 
   TCut delta("_mcproc==17");
+  TCut primary("_mcproc==56");
   TCut gambig("_mcambig==_ambig&&_ambig!=0");
   TCut bambig("_mcambig!=_ambig&&_ambig!=0");
   TCut nambig("_ambig==0");
@@ -857,17 +858,20 @@ void KalFitResid(TTree* t) {
   TH1F* rpullg = new TH1F("rpullg","Correct Ambiguity Residual Pull;Pull;N hits",100,-6,6);
   TH1F* rpullb = new TH1F("rpullb","Incorrect Ambiguity Residual Pull;Pull;N hits",100,-6,6);
   TH1F* rpulln = new TH1F("rpulln","No Assigned Ambiguity Residual Pull;Pull;N hits",100,-6,6);
+  TH1F* rpulld = new TH1F("rpulld","#delta-ray Residual Pull;Pull;N hits",100,-6,6);
   rpullg->SetLineColor(kBlue);
   rpullb->SetLineColor(kRed);
   rpulln->SetLineColor(kGreen);
+  rpulld->SetLineColor(kCyan);
 
-  t->Project("rdg","_mcdist",mcsel+active+gambig);
-  t->Project("rdb","_mcdist",mcsel+active+bambig);
-  t->Project("rdn","_mcdist",mcsel+active+nambig);
+  t->Project("rdg","_mcdist",reco+mcsel+active+gambig+primary);
+  t->Project("rdb","_mcdist",reco+mcsel+active+bambig+primary);
+  t->Project("rdn","_mcdist",reco+mcsel+active+nambig+primary);
 
-  t->Project("rpullg","_resid/_residerr",mcsel+active+gambig);
-  t->Project("rpullb","_resid/_residerr",mcsel+active+bambig);
-  t->Project("rpulln","_resid/_residerr",mcsel+active+nambig);
+  t->Project("rpullg","_resid/_residerr",reco+mcsel+active+gambig+primary);
+  t->Project("rpullb","_resid/_residerr",reco+mcsel+active+bambig+primary);
+  t->Project("rpulln","_resid/_residerr",reco+mcsel+active+nambig+primary);
+  t->Project("rpulld","_resid/_residerr",reco+mcsel+active+delta);
 
   TCanvas* residcan = new TCanvas("residcan","Residuals",1200,800);
   residcan->Divide(2,1);
@@ -883,13 +887,15 @@ void KalFitResid(TTree* t) {
   leg->Draw();
 
   TPad* ppad = dynamic_cast<TPad*>(residcan->cd(2));
-  ppad->Divide(1,3);
+  ppad->Divide(1,4);
   ppad->cd(1);
   rpullg->Fit("gaus");
   ppad->cd(2);
   rpullb->Fit("gaus");
   ppad->cd(3);
   rpulln->Fit("gaus");
+  ppad->cd(4);
+  rpulld->Fit("gaus");
 
   residcan->cd(0);
 
