@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.22 2013/08/28 05:59:50 gandr Exp $
+// $Id: classes.h,v 1.23 2013/09/19 21:55:14 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/28 05:59:50 $
+// $Date: 2013/09/19 21:55:14 $
 //
 // Original author Rob Kutschke
 //
@@ -57,6 +57,7 @@
 #include "MCDataProducts/inc/MARSInfoCollection.hh"
 #include "MCDataProducts/inc/GenParticleMARSAssns.hh"
 #include "MCDataProducts/inc/SimParticleMARSAssns.hh"
+#include "MCDataProducts/inc/SimParticleProtonPulseTimeMap.hh"
 
 #include "MCDataProducts/inc/StepFilterMode.hh"
 
@@ -104,6 +105,7 @@ namespace {
     mu2e::GenSimParticleLink gspl;
     mu2e::GenParticleMARSAssns gpwa;
     mu2e::SimParticleMARSAssns spwa;
+    mu2e::SimParticleProtonPulseTimeMap sppptm;
     std::pair<unsigned int, mu2e::PhysicalVolumeInfoCollection> pupvic;
     mu2e::PhysicalVolumeInfoMultiCollection pvimc;
   };
@@ -119,6 +121,8 @@ template class art::Wrapper<mu2e::GenParticleMARSAssns>;
 template class std::pair<art::Ptr<mu2e::SimParticle>, art::Ptr<mu2e::MARSInfo> >;
 template class std::pair<art::Ptr<mu2e::MARSInfo>, art::Ptr<mu2e::SimParticle> >;
 template class art::Wrapper<mu2e::SimParticleMARSAssns>;
+
+template class art::Wrapper<mu2e::SimParticleProtonPulseTimeMap>;
 
 template class std::vector<mu2e::ExtMonFNALHitTruthBits>;
 template class std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::ExtMonFNALRawHit> >;
