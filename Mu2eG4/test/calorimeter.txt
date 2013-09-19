@@ -44,6 +44,7 @@ string calorimeter.crystalMaterial             = "Lyso_01"; //"G4_PbWO4";
 
 string calorimeter.crystalWrapper              = "Polyethylene092";
 double calorimeter.crystalWrapperThickness     = 0.01 ;
+double calorimeter.crystalShellThickness       = 0.0 ;
 
 string calorimeter.crystalReadoutMaterial      = "G4_Si";
 double calorimeter.crystalReadoutHalfTrans     = 5;
