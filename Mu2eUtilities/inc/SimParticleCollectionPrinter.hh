@@ -19,8 +19,9 @@ namespace mu2e {
     // Could configure printout format via pset
     explicit SimParticleCollectionPrinter(const fhicl::ParameterSet& pset);
 
-    std::ostream& print(std::ostream& os, const SimParticleCollection& particles) const;
+    static std::ostream& print(std::ostream& os, const SimParticle& particle);
 
+    std::ostream& print(std::ostream& os, const SimParticleCollection& particles) const;
 
     // This can be used in module constructors to initialize
     // printer instances that are not enabled by default.

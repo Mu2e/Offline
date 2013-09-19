@@ -11,20 +11,26 @@ namespace mu2e {
   {}
 
   //================================================================
+  std::ostream& SimParticleCollectionPrinter::print(std::ostream& os, const SimParticle& p) {
+    os<<" id = "<<p.id()
+      <<", parent="<<p.parentId()
+      <<", pdgId="<<p.pdgId()
+      <<", p="<<p.startMomentum()
+      <<", start="<<p.startPosition()
+      <<", end="<<p.endPosition()
+      <<", stoppingCode = "<<p.stoppingCode();
+    return os;
+  }
+
+  //================================================================
   std::ostream& SimParticleCollectionPrinter::print(std::ostream& os, const SimParticleCollection& particles) const {
     if(enabled_) {
       for(const auto& i: particles) {
         const SimParticle& p{i.second};
         if(!primariesOnly_ || p.isPrimary()) {
-          os<<prefix_
-            <<" id = "<<p.id()
-            <<", parent="<<p.parentId()
-            <<", pdgId="<<p.pdgId()
-            <<", p="<<p.startMomentum()
-            <<", start="<<p.startPosition()
-            <<", end="<<p.endPosition()
-            <<", stoppingCode = "<<p.stoppingCode()
-            <<std::endl;
+          os<<prefix_;
+          print(os, p);
+          os<<std::endl;
         }
       }
     }
