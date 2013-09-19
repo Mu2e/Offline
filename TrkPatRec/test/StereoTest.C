@@ -23,9 +23,12 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
   TCut stereohit("stereo!=0");
   TCut convhit("mcgen==2&&pmom>100.0");
   TCut dhit("mcproc<20");
+  TCut addcut(cutstring);
+  TCut evenstation("(device/2)%2==0");
+  TCut oddstation("(device/2)%2==1");
   if(strcmp(cutstring,"")!= 0){
-    convhit += TCut(cutstring);
-    dhit += TCut(cutstring);
+    convhit += addcut;
+    dhit += addcut;
   }
 
   unsigned ilast(4);
@@ -112,31 +115,34 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     prerr->Draw("colorz");
 
   } else if(spage=="dz") {
-    TH1F* cedz = new TH1F("cedz","CE Hit #Delta z;#Delta z (mm)",100,0,70);
-    TH1F* dedz = new TH1F("dedz","#delta Hit #Delta z;#Delta z (mm)",100,0,70);
+    TH1F* hdz = new TH1F("hdz","Hit #Delta z;#Delta z (mm)",100,0,70);
 //    dist->SetStats(0);
-    TProfile2D* ceposdz = new TProfile2D("ceposdz","CE Hit #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
-    TProfile2D* deposdz = new TProfile2D("deposdz","#delta Hit #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
-    ceposdz->SetStats(0);
-    deposdz->SetStats(0);
-    shdiag->Project("cedz","dist",stereohit+convhit);
-    shdiag->Project("dedz","dist",stereohit+dhit);
-    shdiag->Project("ceposdz","dist:shpos.y:shpos.x",stereohit+convhit);
-    shdiag->Project("deposdz","dist:shpos.y:shpos.x",stereohit+dhit);
-    ceposdz->SetMaximum(65);
-    ceposdz->SetMinimum(0);
-    deposdz->SetMaximum(65);
-    deposdz->SetMinimum(0);
+    TProfile2D* evposdz = new TProfile2D("evposdz","Even Station #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
+    TProfile2D* odposdz = new TProfile2D("odposdz","Odd Station #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
+    TProfile2D* alposdz = new TProfile2D("alposdz","All Stations #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
+    evposdz->SetStats(0);
+    odposdz->SetStats(0);
+    alposdz->SetStats(0);
+    shdiag->Project("hdz","dist",stereohit+addcut);
+    shdiag->Project("evposdz","dist:shpos.y:shpos.x",stereohit+evenstation+addcut);
+    shdiag->Project("odposdz","dist:shpos.y:shpos.x",stereohit+oddstation+addcut);
+    shdiag->Project("alposdz","dist:shpos.y:shpos.x",stereohit+addcut);
+    evposdz->SetMaximum(65);
+    evposdz->SetMinimum(0);
+    odposdz->SetMaximum(65);
+    odposdz->SetMinimum(0);
+    alposdz->SetMaximum(65);
+    alposdz->SetMinimum(0);
     TCanvas* cdz = new TCanvas("cdz","cdz",1000,1000);
     cdz->Divide(2,2);
     cdz->cd(1);
-    deposdz->Draw("colorz");
+    alposdz->Draw("colorz");
     cdz->cd(2);
-    ceposdz->Draw("colorz");
+    evposdz->Draw("colorz");
     cdz->cd(3);
-    dedz->Draw();
+    odposdz->Draw("colorz");
     cdz->cd(4);
-    cedz->Draw();
+    hdz->Draw();
 
   } else if(spage=="sfrac"){
 
