@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: DiskCalorimeterMaker.cc,v 1.8 2013/07/01 23:11:39 echenard Exp $
+// $Id: DiskCalorimeterMaker.cc,v 1.9 2013/09/19 01:32:19 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/07/01 23:11:39 $
+// $Date: 2013/09/19 01:32:19 $
 
 // original authors Julie Managan and Robert Bernstein
 // quite a few changes by Bertrand Echenarrd
@@ -60,13 +60,13 @@ namespace mu2e{
 
 	_calo->_crystalHalfTrans      = config.getDouble("calorimeter.crystalHalfTrans");
 	_calo->_crystalHalfLength     = config.getDouble("calorimeter.crystalHalfLong");
-	_calo->_wrapperThickness      = config.getDouble("calorimeter.crystalWrapperThickness",0.0); 
-	_calo->_shellThickness        = config.getDouble("calorimeter.crystalShellThickness",0.0);
+	_calo->_wrapperThickness      = config.getDouble("calorimeter.crystalWrapperThickness"); 
+	_calo->_shellThickness        = config.getDouble("calorimeter.crystalShellThickness");
 
-	_calo->_enveloppeInRadius     = config.getDouble("calorimeter.caloMotherInRadius",0); 
-	_calo->_enveloppeOutRadius    = config.getDouble("calorimeter.caloMotherOutRadius",765); 
-        _calo->_enveloppeZ0           = config.getDouble("calorimeter.caloMotherZ0",11740); 
-        _calo->_enveloppeZ1           = config.getDouble("calorimeter.caloMotherZ1",13910); 
+	_calo->_enveloppeInRadius     = config.getDouble("calorimeter.caloMotherInRadius"); 
+	_calo->_enveloppeOutRadius    = config.getDouble("calorimeter.caloMotherOutRadius"); 
+        _calo->_enveloppeZ0           = config.getDouble("calorimeter.caloMotherZ0"); 
+        _calo->_enveloppeZ1           = config.getDouble("calorimeter.caloMotherZ1"); 
 
 	_calo->_nROPerCrystal         = config.getInt("calorimeter.crystalReadoutChannelCount");
 	_calo->_roHalfTrans           = config.getDouble("calorimeter.crystalReadoutHalfTrans");

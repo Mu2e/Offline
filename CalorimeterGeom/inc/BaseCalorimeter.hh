@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_BaseCalorimeter_hh
 #define CalorimeterGeom_BaseCalorimeter_hh
 //
-// $Id: BaseCalorimeter.hh,v 1.4 2013/09/05 16:32:02 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/09/05 16:32:02 $
+// $Id: BaseCalorimeter.hh,v 1.5 2013/09/19 01:32:19 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/09/19 01:32:19 $
 //
 // Base class of a cloarimeter. Hold informations about the sections composing 
 // the calorimeterand generic algorithms to navigate between the coordinate systems
@@ -65,15 +65,17 @@ namespace mu2e {
 	   virtual CLHEP::Hep3Vector fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const ;
 
 	   //a few accessors for convenience
-           virtual double wrapperThickness()  const  {return _wrapperThickness;}
-           virtual double shellThickness()    const  {return _shellThickness;}
-           virtual double caseThickness()     const  {return _caseThickness;}
-           virtual double roHalfSize()        const  {return _roHalfTrans;}
-           virtual double roHalfThickness()   const  {return _roHalfThickness;}
+           virtual double wrapperThickness()   const  {return _wrapperThickness;}
+           virtual double shellThickness()     const  {return _shellThickness;}
+           virtual double caseThickness()      const  {return _caseThickness;}
+           virtual double roHalfSize()         const  {return _roHalfTrans;}
+           virtual double roHalfThickness()    const  {return _roHalfThickness;}
+           virtual double enveloppeInRadius()  const  {return _enveloppeInRadius;}
+           virtual double enveloppeOutRadius() const  {return _enveloppeOutRadius;}
+           virtual double enveloppeZ0()        const  {return _enveloppeZ0;}
+           virtual double enveloppeZ1()        const  {return _enveloppeZ1;}
 
 
-	   
-	   
 	   //keep for backward compatibility, they will go away in the future,
 	   virtual double getNonuniformity()  const  {return _nonUniformity; }
 	   virtual double getTimeGap()        const  {return _timeGap; }

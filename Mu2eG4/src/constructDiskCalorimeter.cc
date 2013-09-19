@@ -75,20 +75,6 @@ namespace mu2e {
     bool const doSurfaceCheck       = config.getBool("g4.doSurfaceCheck",false);
     bool const placePV              = true;
 
-    //calorimeter mother enveloppe
-    double mother_inRadius          = config.getDouble("calorimeter.caloMotherInRadius",0); 
-    double mother_outRadius         = config.getDouble("calorimeter.caloMotherOutRadius",765); 
-    double mother_z0                = config.getDouble("calorimeter.caloMotherZ0",11740); 
-    double mother_z1                = config.getDouble("calorimeter.caloMotherZ1",13910); 
-
-    //calorimeter calibration system
-    int const nPipes                = config.getInt("calorimeter.nPipes");      
-    double const pipeRadius         = config.getDouble("calorimeter.pipeRadius",5); 
-    double const pipeThickness      = config.getDouble("calorimeter.pipeThickness",0.25);     
-    std::vector<double> pipeTorRadius;
-    config.getVectorDouble("calorimeter.pipeTorRadius",  pipeTorRadius, nPipes);
-
-
 
     //-- A helper class for parsing the config file.
     MaterialFinder materialFinder(config);
@@ -98,7 +84,14 @@ namespace mu2e {
     G4Material* crysMaterial   = materialFinder.get("calorimeter.crystalMaterial");
     G4Material* wrapMaterial   = materialFinder.get("calorimeter.crystalWrapper");
     G4Material* readMaterial   = materialFinder.get("calorimeter.crystalReadoutMaterial");
-    
+
+
+    //calorimeter calibration system
+    int const nPipes                = config.getInt("calorimeter.nPipes");      
+    double const pipeRadius         = config.getDouble("calorimeter.pipeRadius",5); 
+    double const pipeThickness      = config.getDouble("calorimeter.pipeThickness",0.25);     
+    std::vector<double> pipeTorRadius;
+    config.getVectorDouble("calorimeter.pipeTorRadius",  pipeTorRadius, nPipes);
 
     
     //-- Get all disk /crystal informations here
@@ -107,6 +100,13 @@ namespace mu2e {
         
     DiskCalorimeter const & cal    = *(GeomHandle<DiskCalorimeter>());
 
+    //calorimeter mother enveloppe
+    G4double mother_inRadius       = cal.enveloppeInRadius();
+    G4double mother_outRadius      = cal.enveloppeOutRadius();
+    G4double mother_z0             = cal.enveloppeZ0();
+    G4double mother_z1             = cal.enveloppeZ1();
+    
+    //crystal properties
     G4int    nRO                   = cal.nROPerCrystal();
     G4double ROHalfThickness       = cal.roHalfThickness();
     G4double ROHalfTrans           = cal.roHalfSize();
