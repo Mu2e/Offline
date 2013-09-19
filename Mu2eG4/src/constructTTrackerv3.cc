@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.34 2013/08/30 16:45:05 genser Exp $
+// $Id: constructTTrackerv3.cc,v 1.35 2013/09/19 17:47:27 genser Exp $
 // $Author: genser $
-// $Date: 2013/08/30 16:45:05 $
+// $Date: 2013/09/19 17:47:27 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -92,7 +92,8 @@ namespace mu2e{
     // Only instantiate sectors to be drawn.
     int deviceDraw = config.getInt("ttracker.devDraw",-1);
     int sectorDraw = config.getInt("ttracker.secDraw",-1);
-    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false) || 
+      config.getBool("ttracker.doSurfaceCheck",false);
     bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
 
     G4ThreeVector const zeroVector(0.0,0.0,0.0);
@@ -186,9 +187,9 @@ namespace mu2e{
 
     VolumeInfo sectorInfo;
 
-    size_t idev = 0;
+    const size_t idev0 = 0;
 
-    const Device& device = ttracker.getDevice(idev);
+    const Device& device0 = ttracker.getDevice(idev0);
 
     // place straws etc... wrt the envelope
 
@@ -196,9 +197,9 @@ namespace mu2e{
 
     // Construct One sector logical volume (and then place it N times)
 
-    const size_t isec = 0;
+    const size_t isec0 = 0;
 
-    const Sector& sector = device.getSector(isec);
+    const Sector& sector0 = device0.getSector(isec0);
 
     // constructing sector envelope
 
@@ -209,7 +210,7 @@ namespace mu2e{
     // reuse device attributes for now
 
     // get the length of the innermost straw
-    Layer const& layer0        = sector.getLayer(0);
+    Layer const& layer0        = sector0.getLayer(0);
     Straw const& straw0        = layer0.getStraw(0);
     StrawDetail const& detail0 = straw0.getDetail();
 
@@ -221,16 +222,16 @@ namespace mu2e{
 
     G4Box* secBox = new G4Box(sectorInfo.name+"Box",
                               detail0.halfLength(),
-                              sector.boxHalfLengths()[2],
-                              sector.boxHalfLengths()[1]
+                              sector0.boxHalfLengths()[2],
+                              sector0.boxHalfLengths()[1]
                               );
 
     G4Trd* secTrd = new G4Trd(sectorInfo.name+"Trd",
-                              sector.boxHalfLengths()[4],
-                              sector.boxHalfLengths()[3],
-                              sector.boxHalfLengths()[2],
-                              sector.boxHalfLengths()[2],
-                              sector.boxHalfLengths()[1]
+                              sector0.boxHalfLengths()[4],
+                              sector0.boxHalfLengths()[3],
+                              sector0.boxHalfLengths()[2],
+                              sector0.boxHalfLengths()[2],
+                              sector0.boxHalfLengths()[1]
                               );
 
     // one could also intersect it with a ring to decrease its radial spread
@@ -259,25 +260,29 @@ namespace mu2e{
       std::ios::fmtflags oldFlags = cout.flags();
       cout.setf(std::ios::fixed,std::ios::floatfield);
       cout << __func__ << " sector box isec, sector.boxHalfLengths().at(4,3,2,2,1): " <<
-        isec << ", " <<
-        sector.boxHalfLengths().at(4) << ", " <<
-        sector.boxHalfLengths().at(3) << ", " <<
-        sector.boxHalfLengths().at(2) << ", " <<
-        sector.boxHalfLengths().at(2) << ", " <<
-        sector.boxHalfLengths().at(1) << ", " <<
+        isec0 << ", " <<
+        sector0.boxHalfLengths().at(4) << ", " <<
+        sector0.boxHalfLengths().at(3) << ", " <<
+        sector0.boxHalfLengths().at(2) << ", " <<
+        sector0.boxHalfLengths().at(2) << ", " <<
+        sector0.boxHalfLengths().at(1) << ", " <<
         endl;
       cout.setf(oldFlags);
       cout.precision(oldPrecision);
       cout.width(oldWidth);
     }
 
+    // one has to "unrotate" the sector for the placements of the straws; see below 
+    const CLHEP::HepRotationZ sector0RZRot(-sector0.boxRzAngle()); //It is arround z
+    const G4ThreeVector unrotatedSector0Origin = sector0RZRot*sector0.boxOffset();
+
     G4RotationMatrix* rotTub = reg.add(G4RotationMatrix(RYForTrapezoids));
 
-    for ( int ilay =0; ilay<sector.nLayers(); ++ilay ){
+    for ( int ilay =0; ilay<sector0.nLayers(); ++ilay ){
 
       verbosityLevel > 1 &&   cout << __func__ << " constructTTrackerv3 ilay: " << ilay << endl;
 
-      const Layer& layer = sector.getLayer(ilay);
+      const Layer& layer = sector0.getLayer(ilay);
 
       for ( int istr=0; istr<layer.nStraws(); ++istr ){
 
@@ -296,19 +301,29 @@ namespace mu2e{
         // we are placing the straw w.r.t the trapezoid...
         // the trapezoid aka device envelope has a different coordinate system x->z, z->y, y->x
 
-        G4ThreeVector const mid(straw.getMidPoint().y() - sector.boxOffset().y(),
-                                straw.getMidPoint().z() - sector.boxOffset().z(),
-                                straw.getMidPoint().x() - sector.boxOffset().x());
+        // this only works for "unrotated sector 0"; 
+        // one has to make sure the calculation is done in that state
+
+        G4ThreeVector unrotatedStrawOrigin = sector0RZRot*straw.getMidPoint();
+
+        G4ThreeVector const unrotatedMid(unrotatedStrawOrigin.y() - unrotatedSector0Origin.y(),
+                                         unrotatedStrawOrigin.z() - unrotatedSector0Origin.z(),
+                                         unrotatedStrawOrigin.x() - unrotatedSector0Origin.x());
 
         G4ThreeVector const zeroVector(0.0,0.0,0.0);
 
         if ( verbosityLevel > 2 ) {
 
+          G4ThreeVector const mid(straw.getMidPoint().y() - sector0.boxOffset().y(),
+                                  straw.getMidPoint().z() - sector0.boxOffset().z(),
+                                  straw.getMidPoint().x() - sector0.boxOffset().x());
+
           cout << __func__ << " istr: " << istr <<
             " mid: " << mid <<
+            ", unrotated mid: " << unrotatedMid <<
             ", straw.MidPoint " << straw.getMidPoint() <<
-            ", sector.boxOffset " <<  sector.boxOffset() <<
-            ", device.origin " << device.origin() <<
+            ", sector.boxOffset " <<  sector0.boxOffset() <<
+            ", device.origin " << device0.origin() <<
             endl;
 
           cout << __func__ << " istr: " << istr << " mid: " <<
@@ -318,6 +333,18 @@ namespace mu2e{
 
           cout << __func__ << " straw.id(), straw.index() " <<
             straw.id() << ", " << straw.index() << endl;
+
+          int oldPrecision = cout.precision(newPrecision);
+          int oldWidth = cout.width(newWidth);
+          std::ios::fmtflags oldFlags = cout.flags();
+          cout.setf(std::ios::fixed,std::ios::floatfield);
+          cout << __func__ << " Straw istr, RYForTrapezoids, midpoint: " <<
+            istr << ", " << RYForTrapezoids << ", " <<
+            mid << ", " <<
+            endl;
+          cout.setf(oldFlags);
+          cout.precision(oldPrecision);
+          cout.width(oldWidth);
 
         }
 
@@ -332,25 +359,11 @@ namespace mu2e{
 
         G4Colour wireColor = G4Colour::Cyan();
 
-        if (verbosityLevel > 2) {
-          int oldPrecision = cout.precision(newPrecision);
-          int oldWidth = cout.width(newWidth);
-          std::ios::fmtflags oldFlags = cout.flags();
-          cout.setf(std::ios::fixed,std::ios::floatfield);
-          cout << __func__ << " Straw istr, RYForTrapezoids, midpoint: " <<
-            istr << ", " << RYForTrapezoids << ", " <<
-            mid << ", " <<
-            endl;
-          cout.setf(oldFlags);
-          cout.precision(oldPrecision);
-          cout.width(oldWidth);
-        }
-
         VolumeInfo strawWallInfo  = nestTubs(straw.name("TTrackerStrawWall_"),
                                              strawWallParams,
                                              findMaterialOrThrow(detail.wallMaterialName() ),
                                              rotTub,
-                                             mid,
+                                             unrotatedMid,
                                              sectorInfo.logical,
                                              straw.index().asInt(),
                                              ttrackerStrawVisible,
