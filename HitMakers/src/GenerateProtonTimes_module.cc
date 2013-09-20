@@ -51,6 +51,7 @@ namespace mu2e {
   private:
     ProtonPulseRandPDF  protonPulse_;
     art::InputTag simParticlesTag_;
+    bool mapDaughters_;
     int  verbosityLevel_;
   };
 
@@ -58,6 +59,7 @@ namespace mu2e {
   GenerateProtonTimes::GenerateProtonTimes(fhicl::ParameterSet const& pset)
     : protonPulse_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , simParticlesTag_(pset.get<std::string>("simParticlesTag"))
+    , mapDaughters_(pset.get<bool>("mapDaughters", false))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
   {
     produces<SimParticleProtonPulseTimeMap>();
@@ -77,22 +79,24 @@ namespace mu2e {
       }
     }
 
-    // Associate the offsets to the daughters as well
-    for(const auto& iter : *ih) {
-      if(!iter.second.isPrimary()) {
-        art::Ptr<SimParticle> daughter(makeMyHandle(ih), iter.first.asUint());
+    if(mapDaughters_) {
+      // Associate the offsets to the daughters as well
+      for(const auto& iter : *ih) {
+        if(!iter.second.isPrimary()) {
+          art::Ptr<SimParticle> daughter(makeMyHandle(ih), iter.first.asUint());
 
-        art::Ptr<SimParticle> mother = daughter->parent();
-        while(mother && !mother->isPrimary()) {
-          mother = mother->parent();
+          art::Ptr<SimParticle> mother = daughter->parent();
+          while(mother && !mother->isPrimary()) {
+            mother = mother->parent();
+          }
+
+          const auto pm = res->find(mother);
+          if(pm == res->end()) {
+            throw cet::exception("BADINPUTS")<<"ERROR: GenerateProtonTimes: a particle primary is not available\n";
+          }
+
+          (*res)[daughter] = pm->second;
         }
-
-        const auto pm = res->find(mother);
-        if(pm == res->end()) {
-          throw cet::exception("BADINPUTS")<<"ERROR: GenerateProtonTimes: a particle primary is not available\n";
-        }
-
-        (*res)[daughter] = pm->second;
       }
     }
 
