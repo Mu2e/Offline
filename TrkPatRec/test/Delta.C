@@ -5,11 +5,14 @@
 #include "TLegend.h"
 #include "TH1F.h"
 #include "TH2F.h"
-void Delta(TTree* ddiag, const char* page="rho") {
+void Delta(TTree* ddiag, const char* page="rho",const char* addcut="") {
   TString spage(page);
-  TCut con("pgen==2&&nprimary/nbox>0.8");
-  TCut bkg("pproc<20&&nprimary/nbox>0.8");
-  TCut cluster("nwide>=50&&nprimary/nbox>0.99");
+  TCut add(addcut);
+  TCut con("pgen==2&&nprimary/nchits>0.8");
+  con += add;
+  TCut bkg("pproc<20&&nprimary/nchits>0.8");
+  bkg += add;
+  TCut cluster("nchits>=50&&nprimary/nchits>0.99");
 
   if(spage == "rho"){
     TH1F* mrhocon = new TH1F("mrhocon","Cluster #rho;#rho (mm)",100,330,780);
@@ -128,14 +131,14 @@ void Delta(TTree* ddiag, const char* page="rho") {
 
   } else if(spage == "stations"){
 
-    TH1F* smincon = new TH1F("smincon","peak smin;smin (mm)",18,-0.5,17.5);
-    TH1F* sminbkg = new TH1F("sminbkg","peak smin;smin (mm)",18,-0.5,17.5);
-    TH1F* smaxcon = new TH1F("smaxcon","peak smax;smax (mm)",18,-0.5,17.5);
-    TH1F* smaxbkg = new TH1F("smaxbkg","peak smax;smax (mm)",18,-0.5,17.5);
-    TH1F* nsmisscon = new TH1F("nsmisscon","peak nsmiss;nsmiss (mm)",18,-0.5,17.5);
-    TH1F* nsmissbkg = new TH1F("nsmissbkg","peak nsmiss;nsmiss (mm)",18,-0.5,17.5);
-    TH1F* nscon = new TH1F("nscon","peak ns;ns (mm)",18,-0.5,17.5);
-    TH1F* nsbkg = new TH1F("nsbkg","peak ns;ns (mm)",18,-0.5,17.5);
+    TH1F* smincon = new TH1F("smincon","peak smin;smin ",22,-0.5,21.5);
+    TH1F* sminbkg = new TH1F("sminbkg","peak smin;smin ",22,-0.5,21.5);
+    TH1F* smaxcon = new TH1F("smaxcon","peak smax;smax ",22,-0.5,21.5);
+    TH1F* smaxbkg = new TH1F("smaxbkg","peak smax;smax ",22,-0.5,21.5);
+    TH1F* nsmisscon = new TH1F("nsmisscon","peak nsmiss;nsmiss ",22,-0.5,21.5);
+    TH1F* nsmissbkg = new TH1F("nsmissbkg","peak nsmiss;nsmiss ",22,-0.5,21.5);
+    TH1F* nscon = new TH1F("nscon","peak ns;ns (mm)",22,-0.5,21.5);
+    TH1F* nsbkg = new TH1F("nsbkg","peak ns;ns (mm)",22,-0.5,21.5);
 
     smincon->SetLineColor(kRed);
     sminbkg->SetLineColor(kBlue);
@@ -191,51 +194,51 @@ void Delta(TTree* ddiag, const char* page="rho") {
 
   } else if(spage == "nhits"){
 
-    TH1F* ncorecon = new TH1F("ncorecon","ncore",100,0,200);
-    TH1F* ncorebkg = new TH1F("ncorebkg","ncore",100,0,200);
-    TH1F* nwidecon = new TH1F("nwidecon","nwide",100,0,200);
-    TH1F* nwidebkg = new TH1F("nwidebkg","nwide",100,0,200);
+    TH1F* ngdhitscon = new TH1F("ngdhitscon","ngdhits",100,0,200);
+    TH1F* ngdhitsbkg = new TH1F("ngdhitsbkg","ngdhits",100,0,200);
+    TH1F* nchitscon = new TH1F("nchitscon","nchits",100,0,200);
+    TH1F* nchitsbkg = new TH1F("nchitsbkg","nchits",100,0,200);
     TH1F* cwratiocon = new TH1F("cwratiocon","Ratio core/wide",100,-0.01,1.01);
     TH1F* cwratiobkg = new TH1F("cwratiobkg","Ratio core/wide",100,-0.01,1.01);
 
-    ncorecon->SetLineColor(kRed);
-    ncorebkg->SetLineColor(kBlue);
-    nwidecon->SetLineColor(kRed);
-    nwidebkg->SetLineColor(kBlue);
+    ngdhitscon->SetLineColor(kRed);
+    ngdhitsbkg->SetLineColor(kBlue);
+    nchitscon->SetLineColor(kRed);
+    nchitsbkg->SetLineColor(kBlue);
     cwratiocon->SetLineColor(kRed);
     cwratiobkg->SetLineColor(kBlue);
 
-    ncorecon->SetStats(0);
-    ncorebkg->SetStats(0);
-    nwidecon->SetStats(0);
-    nwidebkg->SetStats(0);
+    ngdhitscon->SetStats(0);
+    ngdhitsbkg->SetStats(0);
+    nchitscon->SetStats(0);
+    nchitsbkg->SetStats(0);
     cwratiocon->SetStats(0);
     cwratiobkg->SetStats(0);
 
-    ddiag->Project("ncorecon","ncore",con);
-    ddiag->Project("ncorebkg","ncore",bkg);
-    ddiag->Project("nwidecon","nwide",con);
-    ddiag->Project("nwidebkg","nwide",bkg);
-    ddiag->Project("cwratiocon","ncore/nwide",con);
-    ddiag->Project("cwratiobkg","ncore/nwide",bkg);
+    ddiag->Project("ngdhitscon","ngdhits",con);
+    ddiag->Project("ngdhitsbkg","ngdhits",bkg);
+    ddiag->Project("nchitscon","nchits",con);
+    ddiag->Project("nchitsbkg","nchits",bkg);
+    ddiag->Project("cwratiocon","ngdhits/nchits",con);
+    ddiag->Project("cwratiobkg","ngdhits/nchits",bkg);
 
-    ncorecon->Scale(10);
-    nwidecon->Scale(10);
+    ngdhitscon->Scale(10);
+    nchitscon->Scale(10);
     cwratiocon->Scale(10);
 
     TLegend* nhleg = new TLegend(0.2,0.7,0.8,0.9);
-    nhleg->AddEntry(ncorebkg,"Background peaks","L");
-    nhleg->AddEntry(ncorecon,"Conversion peaks (X10)","L");
+    nhleg->AddEntry(ngdhitsbkg,"Background peaks","L");
+    nhleg->AddEntry(ngdhitscon,"Conversion peaks (X10)","L");
 
     TCanvas* nhcan = new TCanvas("nhcan","nhcan",1200,800);
     nhcan->Divide(2,2);
     nhcan->cd(1);
-    ncorebkg->Draw();
-    ncorecon->Draw("same");
+    ngdhitsbkg->Draw();
+    ngdhitscon->Draw("same");
     nhleg->Draw();
     nhcan->cd(2);
-    nwidebkg->Draw();
-    nwidecon->Draw("same");
+    nchitsbkg->Draw();
+    nchitscon->Draw("same");
     nhcan->cd(3);
     cwratiobkg->Draw();
     cwratiocon->Draw("same");

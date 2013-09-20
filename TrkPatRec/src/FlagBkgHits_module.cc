@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.16 2013/08/28 22:15:18 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.17 2013/09/20 23:38:45 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/08/28 22:15:18 $
+// $Date: 2013/09/20 23:38:45 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -61,49 +61,49 @@ namespace mu2e
   // structs for MVAs
   // select hits close to each other and/or to the cluster
   struct DeltaHitMVA {
-    Float_t _dphi; // phi diff to peak
-    Float_t _drho; // rho diff to peak
-    Float_t _dt;  // time diff to peak
-    Float_t _stereo;  // stereo flag
+    Float_t _dphi; // phi diff to cluster
+    Float_t _drho; // rho diff to cluster
+    Float_t _dt;  // time diff to cluster
     Float_t _rho;  // hit transverse radius
   };
 
-  struct DeltaPeakMVA {
+  struct DeltaClusterMVA {
     Float_t _prho;
     Float_t _srho;
     Float_t _zmin, _zmax, _zgap;
     Float_t _nsmiss;
     Float_t _sphi;
-    Float_t _ncore, _nhalo;
+    Float_t _ngdhits;
   };
 
   struct DeltaHitInfo {
-    DeltaHitInfo(size_t hindex,double htime, double hphi, double hrho, double hz,double hgd,int hflag) :
-      _hindex(hindex), _htime(htime), _hphi(hphi), _hrho(hrho), _hz(hz), _hgd(hgd),_hflag(hflag) {}
+    DeltaHitInfo(size_t hindex,double htime, double hphi, double hrho, double hz,double hgd,int hflag,bool stereo) :
+      _hindex(hindex), _htime(htime), _hphi(hphi), _hrho(hrho), _hz(hz), _hgd(hgd), _hflag(hflag), _stereo(stereo) {}
     size_t _hindex;
     Float_t _htime, _hphi, _hrho, _hz, _hgd, _cdist;
     Int_t _hflag;
+    Bool_t _stereo;
   };
 
   struct DeltaInfo {
-    DeltaInfo() : _tpeak(0.0), _ppeak(0.0), _rpeak(0.0),
+    DeltaInfo() : _tcluster(0.0), _pcluster(0.0), _rcluster(0.0),
       _tmed(0.0), _pmed(0.0),_rmed(0.0),
       _tmean(0.0), _pmean(0.0), _rmean(0.0),
       _trms(0.0), _prms(0.0),_rrms(0.0),
-      _nbox(0),_nwide(0),_ncore(0),
+      _nchits(0),_ngdhits(0), _ngdstereo(0),
       _zmin(0.0),_zmax(0.0),_zgap(0.0),
       _ismin(-1),_ismax(-1),_ns(-1),_nsmiss(-1),
       _idmin(-1),_idmax(-1),_nd(-1),_ndmiss(-1),
       _isdelta(false),_pmvaout(-100.0){}
-        // peak information
-    double _tpeak, _ppeak, _rpeak;
+        // cluster information
+    double _tcluster, _pcluster, _rcluster;
     // median information
     boost::accumulators::accumulator_set<double, stats<tag::median(with_p_square_quantile) > > _tacc, _pacc, _racc;
     double _tmed, _pmed, _rmed;
     double _tmean, _pmean, _rmean;
     double _trms, _prms, _rrms;
     //summary information
-    unsigned _nbox, _nwide, _ncore;
+    unsigned _nchits, _ngdhits, _ngdstereo;
     double _zmin, _zmax, _zgap;
     unsigned _ismin, _ismax, _ns, _nsmiss;
     unsigned _idmin, _idmax, _nd, _ndmiss;
@@ -132,12 +132,12 @@ namespace mu2e
       StrawHitFlag _stmask, _deltamask, _ismask;
       // delta-ray removal parameters
       double _bz; // average Z beta for deltas
-      std::string _dhittype, _dhitweights;
-      std::string _dpeaktype, _dpeakweights;
-      double _gdcut, _gdcore;
+      std::string _dhittype, _stereohitweights, _nonstereohitweights;
+      std::string _dclustertype, _nonstereoclusterweights, _stereoclusterweights;
+      double _gdstereo, _gdnonstereo;
       unsigned _mindp;
-      double _dpeakmvacut;
-      int _minflag;
+      double _stereoclusterhitfrac;
+      double _stereoclustermvacut, _nonstereoclustermvacut;
 // input collections
       const StrawHitCollection* _shcol;
       const StrawHitPositionCollection* _shpcol;
@@ -163,16 +163,16 @@ namespace mu2e
       ClusterStrawHits _clusterer;
       // delta removal diagnostics
       TTree* _ddiag;
-      TMVA::Reader *_dhReader; // assign hits to delta peaks
+      TMVA::Reader *_stereohitReader, *_nonstereohitReader; // assign hits to delta clusters
       DeltaHitMVA _dhmva; // input variables to TMVA for delta hit selection
-      DeltaPeakMVA _dpmva;
-      TMVA::Reader* _dpReader; // classify delta peaks
+      DeltaClusterMVA _dpmva;
+      TMVA::Reader *_stereoclusterReader, *_nonstereoclusterReader; // classify delta clusters
       Int_t _ip, _iev;
       Bool_t _isdelta;
       Float_t _pphi, _pt, _prho;
       Float_t _zmin, _zmax, _zgap;
       Int_t _ns, _nd, _smin, _smax, _nsmiss, _ndmiss;
-      Int_t _nbox,_nwide,_ncore;
+      Int_t _nchits,_ngdhits, _ngdstereo;
       Int_t _pid;
       Int_t _nconv, _ndelta, _ncompt, _ngconv, _nebkg, _nprot, _nprimary;
       Int_t _ppdgid,_pgen, _pproc;
@@ -183,7 +183,7 @@ namespace mu2e
       Float_t _stime, _sphi, _srho;
       Float_t _pmvaout;
       // histograms
-      TH1F* _nhits, *_niter, *_nclusters, *_nchanged;
+      TH1F *_nhits, *_niter, *_nclusters, *_nchanged;
   };
 
   FlagBkgHits::FlagBkgHits(fhicl::ParameterSet const& pset) :
@@ -198,21 +198,26 @@ namespace mu2e
     _deltamask(StrawHitFlag::delta),
     _ismask(StrawHitFlag::isolated),
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","MLP method")),
-    _dpeaktype(pset.get<std::string>("DeltaPeakTMVAType","MLP method")),
-    _gdcut(pset.get<double>("DeltaHitMVACut",0.4)),
-    _gdcore(pset.get<double>("DeltaHitMVACoreCut",0.6)),
+    _dclustertype(pset.get<std::string>("DeltaClusterTMVAType","MLP method")),
+    _gdstereo(pset.get<double>("StereoHitMVACut",0.9)),
+    _gdnonstereo(pset.get<double>("NonStereoHitMVACut",0.5)),
     _mindp(pset.get<unsigned>("MinDeltaHits",6)),
-    _dpeakmvacut(pset.get<double>("DeltaPeakMVACut",0.95)),
-    _minflag(pset.get<int>("DeltaHitFlag",1)),
+    _stereoclusterhitfrac(pset.get<double>("StereoClusterHitFraction",0.8)),
+    _stereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.8)),
+    _nonstereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.8)),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
     _clusterer(pset.get<fhicl::ParameterSet>("ClusterStrawHits",fhicl::ParameterSet()))
   {
     // location-independent files
     ConfigFileLookupPolicy configFile;
-    std::string dhitweights = pset.get<std::string>("DeltaHitTMVAWeights","TrkPatRec/test/StereoGDist_MLP.weights.xml");
-    std::string dpeakweights = pset.get<std::string>("DeltaPeakTMVAWeights","TrkPatRec/test/StereoPeak_MLP.weights.xml");
-    _dhitweights = configFile(dhitweights);
-    _dpeakweights = configFile(dpeakweights);
+    std::string stereohitweights = pset.get<std::string>("StereoHitTMVAWeights","TrkPatRec/test/StereoHits.weights.xml");
+    std::string nonstereohitweights = pset.get<std::string>("NonStereoHitTMVAWeights","TrkPatRec/test/NonStereoHits.weights.xml");
+    std::string stereoclusterweights = pset.get<std::string>("StereoClusterTMVAWeights","TrkPatRec/test/StereoClusterV2Odd.weights.xml");
+    std::string nonstereoclusterweights = pset.get<std::string>("NonStereoClusterTMVAWeights","TrkPatRec/test/NonStereoClusterV2Odd.weights.xml");
+    _stereohitweights = configFile(stereohitweights);
+    _nonstereohitweights = configFile(nonstereohitweights);
+    _stereoclusterweights = configFile(stereoclusterweights);
+    _nonstereoclusterweights = configFile(nonstereoclusterweights);
     produces<StrawHitFlagCollection>();
 // eventually, should also produce a collection of delta-rays and their properties, FIXME!!
   }
@@ -269,10 +274,10 @@ namespace mu2e
       DeltaInfo& delta = dinfo[ip];
   // fill summary information
       fillDeltaSummary(delta);
-      // if the peak is a delta, flag its hits
+      // if the cluster is a delta, flag its hits
       if(delta._isdelta){
 	for(size_t ih =0;ih <  delta._dhinfo.size();++ih){
-	  if(delta._dhinfo[ih]._hflag >= _minflag){
+	  if(delta._dhinfo[ih]._hflag >= 0){
 	    bkgfcol->at(delta._dhinfo[ih]._hindex).merge(_deltamask);
 	  }
 	}
@@ -317,30 +322,33 @@ namespace mu2e
     for (std::list<StrawHitCluster>::const_iterator icl=clusters.begin();icl!=clusters.end();++icl){
       StrawHitCluster const& cluster = *icl;
       DeltaInfo dp;
-      dp._tpeak = dp._tmed = cluster.time();
-      dp._ppeak = dp._pmed = cluster.pos().phi();
-      dp._rpeak = dp._rmed = cluster.pos().perp();
-      // find precise peak position
+      dp._tcluster = dp._tmed = cluster.time();
+      dp._pcluster = dp._pmed = cluster.pos().phi();
+      dp._rcluster = dp._rmed = cluster.pos().perp();
+      // find precise cluster position
       for(size_t ich=0;ich<cluster.hits().size();++ich){
 	size_t ish =cluster.hits()[ich]._index; 
 	StrawHit const& sh = _shcol->at(ish);
 	StrawHitPosition const& shp = _shpcol->at(ish);
 	double ct = sh.time();
-	double phi = dp._ppeak+deltaPhi(shp.pos().phi(),dp._ppeak);
+	double phi = dp._pcluster+deltaPhi(shp.pos().phi(),dp._pcluster);
 	double rho = shp.pos().perp();
-	double dphi = deltaPhi(phi,dp._ppeak);
+	double dphi = deltaPhi(phi,dp._pcluster);
 	_dhmva._dphi = dphi;
 	_dhmva._drho = rho - dp._rmed;
 	_dhmva._dt = ct - dp._tmed;
-	_dhmva._stereo = shp.flag().hasAllProperties(_stmask);
 	_dhmva._rho = rho;
-	double gd = _dhReader->EvaluateMVA(_dhittype);
+	double gd(-1.0);
 	int iflag(0);
-	if(gd > _gdcore)
-	  iflag = 2;
-	else if(gd > _gdcut)
-	  iflag = 1;
-	DeltaHitInfo dhinfo(ish,ct,phi,rho,shp.pos().z(),gd,iflag);
+	bool stereo = shp.flag().hasAllProperties(_stmask);
+	if(stereo){
+	  gd = _stereohitReader->EvaluateMVA(_dhittype);
+	  if(gd > _gdstereo)iflag = 1;
+	} else {
+	  gd = _nonstereohitReader->EvaluateMVA(_dhittype);
+	  if(gd > _gdnonstereo)iflag = 1;
+	}
+	DeltaHitInfo dhinfo(ish,ct,phi,rho,shp.pos().z(),gd,iflag,stereo);
 	dhinfo._cdist = cluster.hits()[ich]._dist;
 	dp._dhinfo.push_back(dhinfo);
       }
@@ -361,11 +369,11 @@ namespace mu2e
     std::vector<bool> stations(nstations,false);
     std::vector<double> hz;
     hz.reserve(delta._dhinfo.size());
-    delta._ncore= delta._nwide=0;
-    delta._nbox = delta._dhinfo.size();
+    delta._ngdhits = delta._ngdstereo = 0;
+    delta._nchits = delta._dhinfo.size();
     for(size_t ih =0;ih < delta._dhinfo.size();++ih){
       DeltaHitInfo& dhinfo = delta._dhinfo[ih];
-      if(dhinfo._hgd > _gdcut){
+      if(dhinfo._hflag > 0){
 	tacc(dhinfo._htime);
 	pacc(dhinfo._hphi);
 	racc(dhinfo._hrho);
@@ -375,8 +383,9 @@ namespace mu2e
 	devices[idevice] = true;
 	stations[istation] = true;
 	hz.push_back(dhinfo._hz);
-	++delta._nwide;
-	if(dhinfo._hgd > _gdcore)++delta._ncore;
+	++delta._ngdhits;
+	if(dhinfo._stereo)
+	  ++delta._ngdstereo;
       }
     }
     if(extract_result<tag::count>(tacc) > 0){
@@ -425,12 +434,21 @@ namespace mu2e
       _dpmva._zgap = delta._zgap;
       _dpmva._nsmiss = delta._nsmiss;
       _dpmva._sphi = delta._prms;
-      _dpmva._ncore = delta._ncore;
-      _dpmva._nhalo = delta._nwide-delta._ncore;
+      _dpmva._ngdhits = delta._ngdhits;
+// temporary hack
+//      _dpmva._nhalo = delta._ngdhits;
+      double sfrac = delta._ngdstereo/delta._ngdhits;
+      bool clusterdelta;
+      if(sfrac > _stereoclusterhitfrac){
+	delta._pmvaout = _stereoclusterReader->EvaluateMVA(_dclustertype);
+	clusterdelta = delta._pmvaout > _stereoclustermvacut;
+      } else {
+	delta._pmvaout = _nonstereoclusterReader->EvaluateMVA(_dclustertype);
+	clusterdelta = delta._pmvaout > _nonstereoclustermvacut;
+      }
 
-      delta._pmvaout = _dpReader->EvaluateMVA(_dpeaktype);
-      delta._isdelta = delta._nwide >= _mindp && delta._pmvaout > _dpeakmvacut;
-    } 
+      delta._isdelta = delta._ngdhits >= _mindp && clusterdelta;
+    }
   }
 
  double FlagBkgHits::deltaPhi(double phi1,double phi2) const {
@@ -455,9 +473,9 @@ namespace mu2e
       _ddiag->Branch("iev",&_iev,"iev/I");
       _ddiag->Branch("ip",&_ip,"ip/I");
       _ddiag->Branch("isdelta",&_isdelta,"isdelta/B");
-      _ddiag->Branch("nbox",&_nbox,"nbox/I");
-      _ddiag->Branch("nwide",&_nwide,"nwide/I");
-      _ddiag->Branch("ncore",&_ncore,"nwide/I");
+      _ddiag->Branch("nchits",&_nchits,"nchits/I");
+      _ddiag->Branch("ngdhits",&_ngdhits,"ngdhits/I");
+      _ddiag->Branch("ngdstereo",&_ngdstereo,"ngdstereo/I");
       _ddiag->Branch("pid",&_pid,"pid/I");
       _ddiag->Branch("ppdgid",&_ppdgid,"ppdgid/I");
       _ddiag->Branch("pgen",&_pgen,"pgen/I");
@@ -543,29 +561,45 @@ namespace mu2e
   }
 
   void FlagBkgHits::initializeReaders() {
-    // define the hit classifier
+    // define the hit classifiers
 
-    _dhReader = new TMVA::Reader();
-    _dhReader->AddVariable("_dphi",&_dhmva._dphi);
-    _dhReader->AddVariable("_drho",&_dhmva._drho);
-    _dhReader->AddVariable("_dt",&_dhmva._dt);
-    _dhReader->AddVariable("_stereo",&_dhmva._stereo);
-    _dhReader->AddVariable("_rho",&_dhmva._rho);
-    _dhReader->BookMVA(_dhittype,_dhitweights);
+    _stereohitReader = new TMVA::Reader();
+    _stereohitReader->AddVariable("_dphi",&_dhmva._dphi);
+    _stereohitReader->AddVariable("_drho",&_dhmva._drho);
+    _stereohitReader->AddVariable("_dt",&_dhmva._dt);
+    _stereohitReader->AddVariable("_rho",&_dhmva._rho);
+    _stereohitReader->BookMVA(_dhittype,_stereohitweights);
 
-    // define the peak classifier
-    _dpReader = new TMVA::Reader();
-    _dpReader->AddVariable("prho",&_dpmva._prho);
-    _dpReader->AddVariable("srho",&_dpmva._srho);
-    _dpReader->AddVariable("zmin",&_dpmva._zmin);
-    _dpReader->AddVariable("zmax",&_dpmva._zmax);
-    _dpReader->AddVariable("zgap",&_dpmva._zgap);
-    _dpReader->AddVariable("nsmiss",&_dpmva._nsmiss);
-    _dpReader->AddVariable("sphi",&_dpmva._sphi);
-    _dpReader->AddVariable("ncore",&_dpmva._ncore);
-    _dpReader->AddVariable("nhalo",&_dpmva._nhalo);
+    _nonstereohitReader = new TMVA::Reader();
+    _nonstereohitReader->AddVariable("_dphi",&_dhmva._dphi);
+    _nonstereohitReader->AddVariable("_drho",&_dhmva._drho);
+    _nonstereohitReader->AddVariable("_dt",&_dhmva._dt);
+    _nonstereohitReader->AddVariable("_rho",&_dhmva._rho);
+    _nonstereohitReader->BookMVA(_dhittype,_nonstereohitweights);
+
+    // define the cluster classifier
+    _stereoclusterReader = new TMVA::Reader();
+    _stereoclusterReader->AddVariable("prho",&_dpmva._prho);
+    _stereoclusterReader->AddVariable("srho",&_dpmva._srho);
+    _stereoclusterReader->AddVariable("zmin",&_dpmva._zmin);
+    _stereoclusterReader->AddVariable("zmax",&_dpmva._zmax);
+    _stereoclusterReader->AddVariable("zgap",&_dpmva._zgap);
+    _stereoclusterReader->AddVariable("nsmiss",&_dpmva._nsmiss);
+    _stereoclusterReader->AddVariable("sphi",&_dpmva._sphi);
+    _stereoclusterReader->AddVariable("ngdhits",&_dpmva._ngdhits);
+//
+    _nonstereoclusterReader = new TMVA::Reader();
+    _nonstereoclusterReader->AddVariable("prho",&_dpmva._prho);
+    _nonstereoclusterReader->AddVariable("srho",&_dpmva._srho);
+    _nonstereoclusterReader->AddVariable("zmin",&_dpmva._zmin);
+    _nonstereoclusterReader->AddVariable("zmax",&_dpmva._zmax);
+    _nonstereoclusterReader->AddVariable("zgap",&_dpmva._zgap);
+    _nonstereoclusterReader->AddVariable("nsmiss",&_dpmva._nsmiss);
+    _nonstereoclusterReader->AddVariable("sphi",&_dpmva._sphi);
+    _nonstereoclusterReader->AddVariable("ngdhits",&_dpmva._ngdhits);
     // load the constants
-    _dpReader->BookMVA(_dpeaktype,_dpeakweights);
+    _stereoclusterReader->BookMVA(_dclustertype,_stereoclusterweights);
+    _nonstereoclusterReader->BookMVA(_dclustertype,_nonstereoclusterweights);
 
   }
 
@@ -575,12 +609,12 @@ namespace mu2e
       DeltaInfo const& delta(deltas[ip]);
       _ip = ip;
       _isdelta = delta._isdelta;
-      _nbox = delta._nbox;
-      _nwide = delta._nwide;
-      _ncore = delta._ncore;
-      _pt = delta._tpeak;
-      _pphi = delta._ppeak;
-      _prho =  delta._rpeak;
+      _nchits = delta._nchits;
+      _ngdhits = delta._ngdhits;
+      _ngdstereo = delta._ngdstereo;
+      _pt = delta._tcluster;
+      _pphi = delta._pcluster;
+      _prho =  delta._rcluster;
       _tmed = delta._tmed;
       _pmed =  delta._pmed;
       _rmed =  delta._rmed;
@@ -641,7 +675,7 @@ namespace mu2e
 	shinfo._hflag = dhinfo._hflag;
 	shinfo._hgd = dhinfo._hgd;
 	shinfo._cdist = dhinfo._cdist;
-	shinfo._dphi = dhinfo._hphi-delta._ppeak;
+	shinfo._dphi = dhinfo._hphi-delta._pcluster;
 	shinfo._dt = dhinfo._htime-delta._tmed;
 	shinfo._drho = dhinfo._hrho-delta._rmed;
 	if(shinfo._relation==0)++_nprimary;
@@ -691,7 +725,7 @@ namespace mu2e
 	  pp.insert(spp);
       }
     }
-    // map these particles back to each other, to compress out particles generated inside the peak 
+    // map these particles back to each other, to compress out particles generated inside the cluster 
     std::map<art::Ptr<SimParticle>,art::Ptr<SimParticle> > spmap;
     // look for particles produced at the same point, like conversions.  It's not enough to look for the same parent,
     // as that parent could produce multiple daughters at different times.  Regardless of mechanism or genealogy, call these 'the same'
@@ -739,7 +773,7 @@ namespace mu2e
 	}
       }
     }
-    // find the most likely ultimate parent for this peak.  Also fill general info
+    // find the most likely ultimate parent for this cluster.  Also fill general info
     std::map<int,int> mode;
     for(std::set<art::Ptr<SimParticle> >::iterator ipp=pp.begin();ipp!=pp.end();++ipp){
       art::Ptr<SimParticle> spp = *ipp;
