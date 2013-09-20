@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.49 2013/08/28 05:59:21 gandr Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.50 2013/09/20 23:31:10 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/28 05:59:21 $
+// $Date: 2013/09/20 23:31:10 $
 //
 // Original author Rob Kutschke
 //
@@ -110,6 +110,7 @@ namespace mu2e {
                       // Transform into G4 world coordinate system
                       genpart.position() + mu2eOrigin,
                       genpart.time(),
+                      genpart.properTime(),
                       genpart.momentum());
 
         parentMapping_->addEntry(i, SimParticleCollection::key_type());
@@ -125,6 +126,7 @@ namespace mu2e {
                       // Transform into G4 world coordinate system
                       hit.position() + mu2eOrigin,
                       hit.time(),
+                      hit.properTime(),
                       hit.momentum());
 
         parentMapping_->addEntry(-1u, hit.simParticle()->id());
@@ -140,6 +142,7 @@ namespace mu2e {
                                              PDGCode::type pdgId,
                                              const G4ThreeVector& pos,
                                              double time,
+                                             double properTime,
                                              const G4ThreeVector& mom)
   {
     // Create a new vertex
@@ -213,6 +216,8 @@ namespace mu2e {
                             mom.x(),
                             mom.y(),
                             mom.z());
+
+    particle->SetProperTime(properTime);
 
     // Add the particle to the event.
     vertex->SetPrimary( particle );

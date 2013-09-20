@@ -3,9 +3,9 @@
 //
 // Give generated tracks to G4 by copying information from a GenParticleCollection.
 //
-// $Id: PrimaryGeneratorAction.hh,v 1.11 2013/08/28 05:59:21 gandr Exp $
+// $Id: PrimaryGeneratorAction.hh,v 1.12 2013/09/20 23:31:10 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/28 05:59:21 $
+// $Date: 2013/09/20 23:31:10 $
 //
 // Original author Rob Kutschke
 //
@@ -56,6 +56,7 @@ namespace mu2e {
                        PDGCode::type pdgId,
                        const G4ThreeVector& pos,
                        double time,
+                       double properTime,
                        const G4ThreeVector& mom);
 
     // Input event kinematics
