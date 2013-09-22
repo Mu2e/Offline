@@ -5,9 +5,9 @@
 // Base class to allow generic access to all the classes that define
 // a momentum spectrum.
 //
-// $Id: BinnedSpectrum.hh,v 1.2 2013/07/24 18:48:24 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/07/24 18:48:24 $
+// $Id: BinnedSpectrum.hh,v 1.3 2013/09/22 22:28:58 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/09/22 22:28:58 $
 //
 // Original author Kyle Knoepfel 
 //                 
@@ -18,6 +18,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "Mu2eUtilities/inc/Table.hh"
 
 namespace mu2e {
 
@@ -63,6 +65,21 @@ namespace mu2e {
 
       _spectrum = std::make_pair( std::move(abscissa), std::move(pdf) );
 
+    }
+
+    // To load data straight from a file, use the Table helper
+    void initialize(const Table<2>& inputs) {
+      _nBins    = inputs.getNrows();
+      _spectrum.first.reserve(_nBins);
+      _spectrum.second.reserve(_nBins);
+
+      for(const auto& row : inputs.rawTable()) {
+        _spectrum.first.emplace_back(row[0]);
+        _spectrum.second.emplace_back(row[1]);
+      }
+
+      assert(_nBins > 1);
+      _binWidth = (_spectrum.first.back() - _spectrum.first.front())/(_nBins - 1);
     }
 
   private:
