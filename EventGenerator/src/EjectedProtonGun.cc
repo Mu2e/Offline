@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.41 2013/05/31 20:04:27 gandr Exp $
+// $Id: EjectedProtonGun.cc,v 1.42 2013/09/22 22:29:16 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Date: 2013/09/22 22:29:16 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -31,6 +31,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "Mu2eUtilities/inc/EjectedProtonSpectrum.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "StoppingTargetGeom/inc/zBinningForFoils.hh"
@@ -214,58 +215,6 @@ namespace mu2e {
 
   } // end generate
 
-
-  // Energy spectrum of the electron from DIO.
-  // Input energy in MeV
-  double EjectedProtonGun::energySpectrum( double e )
-  {
-
-    //taken from GMC
-    //
-    //   Ed Hungerford  Houston University May 17 1999
-    //   Rashid Djilkibaev New York University (modified) May 18 1999
-    //
-    //   e - proton kinetic energy (MeV)
-    //   p - proton Momentum (MeV/c)
-    //
-    //   Generates a proton spectrum similar to that observed in
-    //   u capture in Si.  JEPT 33(1971)11 and PRL 20(1967)569
-
-    //these numbers are in MeV!!!!
-    static const double emn = 1.4; // replacing par1 from GMC
-    static const double par2 = 1.3279;
-    static const double par3=17844.0;
-    static const double par4=.32218;
-    static const double par5=100.;
-    static const double par6=10.014;
-    static const double par7=1050.;
-    static const double par8=5.103;
-
-    double spectrumWeight;
-
-    if (e >= 20)
-      {
-        spectrumWeight=par5*TMath::Exp(-(e-20.)/par6);
-      }
-
-    else if(e >= 8.0 && e <= 20.0)
-      {
-        spectrumWeight=par7*exp(-(e-8.)/par8);
-      }
-    else if (e > emn)
-      {
-        double xw=(1.-emn/e);
-        double xu=TMath::Power(xw,par2);
-        double xv=par3*TMath::Exp(-par4*e);
-        spectrumWeight=xv*xu;
-      }
-    else
-      {
-        spectrumWeight = 0.;
-      }
-    return spectrumWeight;
-  }
-
   // Compute a binned representation of the energy spectrum of the proton.
   std::vector<double> EjectedProtonGun::binnedEnergySpectrum(){
 
@@ -287,7 +236,7 @@ namespace mu2e {
 
     for (int ib=0; ib<_nbins; ib++) {
       double x = _elow+(ib+0.5) * dE;
-      spectrum.push_back(energySpectrum(x));
+      spectrum.push_back(EjectedProtonSpectrum::getWeight(x));
     }
 
     return spectrum;
