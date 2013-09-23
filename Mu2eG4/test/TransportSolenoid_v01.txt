@@ -51,7 +51,7 @@ bool   ts.polyliner.solid        = true;
 bool   pbar.visible = true;
 bool   pbar.solid   = false;
 int    pbar.verbosityLevel = 0;
-// double pbar.Type = "wedge"; // default is "disk"
+string pbar.Type       = "wedge"; // default is "disk"
 double pbar.halfLength = 180.0e-3; // Use this value for the new default
 string pbar.materialName = "G4_Be";
 
