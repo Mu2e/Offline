@@ -75,18 +75,18 @@ namespace mu2e {
     // Use an extruded solid to have a properly angled facet
     // at which the beam dump can be placed.
 
-    std::vector<G4TwoVector> beamDumpDirtOutiline;
+    std::vector<G4TwoVector> beamDumpDirtOutline;
 
     std::copy(building->concreteOuterOutline3().begin(),
               building->concreteOuterOutline3().end(),
-              std::back_inserter(beamDumpDirtOutiline));
+              std::back_inserter(beamDumpDirtOutline));
 
     std::copy(building->concreteOuterOutline1().begin(),
               building->concreteOuterOutline1().end(),
-              std::back_inserter(beamDumpDirtOutiline));
+              std::back_inserter(beamDumpDirtOutline));
 
     // points need to be in the clock-wise order, need to reverse:
-    std::reverse(beamDumpDirtOutiline.begin(), beamDumpDirtOutiline.end());
+    std::reverse(beamDumpDirtOutline.begin(), beamDumpDirtOutline.end());
 
     // Add points to complete the outline
     const CLHEP::Hep3Vector mu2eCenterInHall(world->mu2eOriginInWorld() - world->hallFormalCenterInWorld());
@@ -94,16 +94,16 @@ namespace mu2e {
     const double dumpDirtXmin = env->xmin();
     const double dumpDirtXmax = env->xmax();
 
-    if(dumpDirtXmin < beamDumpDirtOutiline.back().x()) {
-      beamDumpDirtOutiline.push_back(G4TwoVector(dumpDirtXmin, beamDumpDirtOutiline.back().y()));
+    if(dumpDirtXmin < beamDumpDirtOutline.back().x()) {
+      beamDumpDirtOutline.push_back(G4TwoVector(dumpDirtXmin, beamDumpDirtOutline.back().y()));
     }
 
     // Two points at the back
-    beamDumpDirtOutiline.push_back(G4TwoVector(dumpDirtXmin, hallFormalZminInMu2e));
-    beamDumpDirtOutiline.push_back(G4TwoVector(dumpDirtXmax, hallFormalZminInMu2e));
+    beamDumpDirtOutline.push_back(G4TwoVector(dumpDirtXmin, hallFormalZminInMu2e));
+    beamDumpDirtOutline.push_back(G4TwoVector(dumpDirtXmax, hallFormalZminInMu2e));
 
-    if(dumpDirtXmax > beamDumpDirtOutiline.front().x()) {
-      beamDumpDirtOutiline.push_back(G4TwoVector(dumpDirtXmax, beamDumpDirtOutiline.front().y()));
+    if(dumpDirtXmax > beamDumpDirtOutline.front().x()) {
+      beamDumpDirtOutline.push_back(G4TwoVector(dumpDirtXmax, beamDumpDirtOutline.front().y()));
     }
 
     // We want to rotate the X'Y' plane of the extruded solid
@@ -130,7 +130,7 @@ namespace mu2e {
                             - parent.centerInMu2e(),
                             parent.centerInWorld);
 
-    beamDumpDirt.solid = new G4ExtrudedSolid(beamDumpDirt.name, beamDumpDirtOutiline,
+    beamDumpDirt.solid = new G4ExtrudedSolid(beamDumpDirt.name, beamDumpDirtOutline,
                                              (dumpDirtYmax - dumpDirtYmin)/2,
                                              G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
 
