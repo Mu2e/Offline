@@ -55,13 +55,18 @@ physics : {
             numSimParticleCollections : 1
             vetoDaughters: []
         }
+        g4status: {
+            module_type: FilterStatusG4
+            input: "g4run"
+        }
     }
 
     trigFilter : [generate, g4run, g4filter ]
-    trigger_paths  : [trigFilter]
+    g4StatusFilter : [generate, g4run, g4status ]
+    trigger_paths  : [trigFilter, g4StatusFilter]
 
     //e1 : [filteredOutput, filteredEvtsOutput, fullOutput]
-    e1 : [filteredOutput]
+    e1 : [filteredOutput, truncatedEvtsOutput]
     end_paths      : [e1]
 }
 
@@ -77,6 +82,13 @@ outputs: {
         SelectEvents: { SelectEvents: [trigFilter] }
         outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "keep mu2e::StatusG4_*_*_*", "keep uintmu2e::PhysicalVolumeInfosstd::pairs_g4run_*_BeamPrimaryToTS3DS23" ]
         fileName    : "dataBeamPrimaryToTS3DS23_fe.root"
+    }
+
+    truncatedEvtsOutput : {
+        module_type : RootOutput
+        SelectEvents: { SelectEvents: ["!g4StatusFilter"] }
+        outputCommands:   [ "keep *_*_*_*", "drop *_g4filter_*_BeamPrimaryToTS3DS23"]
+        fileName    : "truncatedBeamPrimaryToTS3DS23.root"
     }
 
     fullOutput : {
