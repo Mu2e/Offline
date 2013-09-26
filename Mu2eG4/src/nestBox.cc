@@ -1,9 +1,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 //
-// $Id: nestBox.cc,v 1.9 2013/08/30 16:15:47 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/30 16:15:47 $
+// $Id: nestBox.cc,v 1.10 2013/09/26 19:06:02 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/09/26 19:06:02 $
 //
 // Original author Rob Kutschke
 //
@@ -13,6 +13,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 
 // G4 includes
 #include "G4Box.hh"
@@ -102,5 +103,42 @@ namespace mu2e {
     return info;
 
   }
+
+   VolumeInfo nestBox ( string const& name,
+                        Box const& box,
+                        G4Material* material,
+                        G4RotationMatrix const* rot,
+                        G4ThreeVector const& offset,
+                        const VolumeInfo& parent,
+                        int copyNo,
+                        bool const isVisible,
+                        G4Colour const color,
+                        bool const forceSolid,
+                        bool const forceAuxEdgeVisible,
+                        bool const placePV,
+                        bool const doSurfaceCheck
+                        ){
+
+    VolumeInfo info(name,offset,parent.centerInWorld);
+
+    info.solid   = new G4Box( name, box.getXhalfLength(), box.getYhalfLength(), box.getZhalfLength() );
+
+    finishNesting(info,
+                  material,
+                  rot,
+                  offset,
+                  parent.logical,
+                  copyNo,
+                  isVisible,
+                  color,
+                  forceSolid,
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
+
+    return info;
+
+  } 
 
 }

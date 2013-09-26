@@ -3,9 +3,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 //
-// $Id: nestBox.hh,v 1.9 2011/09/29 22:47:38 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/09/29 22:47:38 $
+// $Id: nestBox.hh,v 1.10 2013/09/26 19:06:02 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/09/26 19:06:02 $
 //
 // Original author Rob Kutschke
 //
@@ -14,6 +14,8 @@
 #include <vector>
 
 #include "G4Helper/inc/VolumeInfo.hh"
+
+class Box;
 
 class G4Material;
 class G4LogicalVolume;
@@ -120,6 +122,23 @@ namespace mu2e {
                     doSurfaceCheck
                     );
   }
+
+  // Alternate argument list (and different behavior)
+  // using VolumeInfo object
+  VolumeInfo nestBox ( std::string const& name,
+                       Box const & box,
+                       G4Material* material,
+                       G4RotationMatrix const* rot,
+                       G4ThreeVector const& offset,
+                       VolumeInfo const & parent,
+                       int copyNo,
+                       bool const isVisible,
+                       G4Colour const color,
+                       bool const forceSolid,
+                       bool const forceAuxEdgeVisible,
+                       bool const placePV,
+                       bool const doSurfaceCheck
+                       );
 
 }
 
