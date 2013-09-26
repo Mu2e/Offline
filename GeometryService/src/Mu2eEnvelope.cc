@@ -88,7 +88,7 @@ namespace mu2e {
       std::max(
                dirtFormalYmax
                ,
-               building.hallInsideYmax() + building.hallCeilingThickness()
+               building.hallInsideYmax() + 2*building.hallCeilingThickness() + 4*building.concreteBeamlineSlab(0).getYhalfLength()*2
                // + building.dirtOverburdenDepth() + 2*building.dirtCapHalfHeight()
                );
   }
