@@ -326,69 +326,78 @@ TrkPatRecDownstreampPlus : @local::TrkPatRec
 TrkPatRecDownstreampPlus.fitparticle : 2212
 TrkPatRecDownstreampPlus.fitdirection : 0
 
-stepInstanceNames   : [ "tracker", "virtualdetector", "timeVD", "stoppingtarget", "calorimeter", "calorimeterRO" ]
+stepInstanceNames   : [ "tracker", "virtualdetector", "calorimeter", "calorimeterRO" ]
 
-# DNB: the following rates apply ONLY to the files in /mu2e/data/users/kutschke/MixTest_08/TrackerOnly/.
-# different mean rates are needed when mixing calorimeter data or more modern mixing files
 dioMixer: {
    // Parameters for the MixFilter template
    module_type         : MixMCEvents
-   fileNames           : nil
+   fileNames           : @nil
    readMode            : sequential
    wrapFiles           : true
 
    // Parameters for the MixDetail class
-   mean                :  9.8
-   genModuleLabel      : generate
-   g4ModuleLabel       : g4run
-   stepInstanceNames   : @local::stepInstanceNames
-   doPointTrajectories  : false
+   detail : {
+     mean                : @nil
+     genModuleLabel      : generate
+     g4ModuleLabel       : g4run
+     g4StatusTag         : g4run
+     stepInstanceNames   : @local::stepInstanceNames
+     doPointTrajectories : false
+   }
 }
 
 protonMixer: {
    // Parameters for the MixFilter template
    module_type         : MixMCEvents
-   fileNames           : nil
+   fileNames           : @nil
    readMode            : sequential
    wrapFiles           : true
 
    // Parameters for the MixDetail class
-   mean                :  14.0
-   genModuleLabel      : generate
-   g4ModuleLabel       : g4run
-   stepInstanceNames   : @local::stepInstanceNames
-   doPointTrajectories : false
+   detail : {
+     mean                : @nil
+     genModuleLabel      : generate
+     g4ModuleLabel       : g4run
+     g4StatusTag         : g4run
+     stepInstanceNames   : @local::stepInstanceNames
+     doPointTrajectories : false
+   }
 }
 
 neutronMixer: {
    // Parameters for the MixFilter template
    module_type         : MixMCEvents
-   fileNames           : nil
+   fileNames           : @nil
    readMode            : sequential
    wrapFiles           : true
 
    // Parameters for the MixDetail class
-  // double the neutrons compared to 2351 to account for the ~50% that are captured outside the microbunch
-   mean                :  34.0
-   genModuleLabel      : generate
-   g4ModuleLabel       : g4run
-   stepInstanceNames   : @local::stepInstanceNames
-   doPointTrajectories : false
+   detail : {
+     mean                : @nil
+     genModuleLabel      : generate
+     g4ModuleLabel       : g4run
+     g4StatusTag         : g4run
+     stepInstanceNames   : @local::stepInstanceNames
+     doPointTrajectories : false
+  }
 }
 
 photonMixer: {
    // Parameters for the MixFilter template
    module_type         : MixMCEvents
-   fileNames           : nil
+   fileNames           : @nil
    readMode            : sequential
    wrapFiles           : true
 
    // Parameters for the MixDetail class
-   mean                :  47.8
-   genModuleLabel      : generate
-   g4ModuleLabel       : g4run
-   stepInstanceNames   : @local::stepInstanceNames
-   doPointTrajectories : false
+   detail : {
+     mean                :  @nil
+     genModuleLabel      : generate
+     g4ModuleLabel       : g4run
+     g4StatusTag         : g4run
+     stepInstanceNames   : @local::stepInstanceNames
+     doPointTrajectories : false
+  }
 }
 
 END_PROLOG
