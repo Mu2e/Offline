@@ -3,16 +3,16 @@
 // Now the default is 1m inner part and 2.2m outer part.
 // See doc-3186, 3155, 3006, and 2259
 //
-// $Id: protonAbsorber_conical_v2.txt,v 1.2 2013/08/08 19:30:17 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2013/08/08 19:30:17 $
+// $Id: protonAbsorber_conical_v2.txt,v 1.3 2013/09/26 19:08:20 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/09/26 19:08:20 $
 //
 
 string protonabsorber.materialName = "Polyethylene092";
 double protonabsorber.OutRadius1   =  380.0;
 double protonabsorber.OutRadius0   =  335.2;
 double protonabsorber.thickness    =    0.5;
-int    protonabsorber.verbosityLevel = 1;
+int    protonabsorber.verbosityLevel = 0;
 bool   protonabsorber.visible      = true;
 bool   protonabsorber.solid        = false;
 

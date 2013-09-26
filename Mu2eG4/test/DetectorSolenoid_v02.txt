@@ -64,7 +64,7 @@ double dsSupport.rOut         = 1111.;
 double dsSupport.halfLength   = 5275.;// [10575.4-2*12.7]*0.5
 
 // Flags
-int    ds.verbosityLevel     = 1;
+int    ds.verbosityLevel     = 0;
 bool   ds.visible            = true;
 bool   ds.solid              = false;
 bool   dsCoil.visible        = true;
