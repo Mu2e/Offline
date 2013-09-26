@@ -1,0 +1,152 @@
+// Original author David Norvil Brown
+
+int ExtNeutShieldCendBoxes.numberOfBoxes = 15;
+
+// These numbers based on G4Bl geometry 13 as of 24 August 2013
+
+// Concrete and Iron
+string ExtNeutShieldCendBoxes.b1materialName  = "ShieldingConcrete";
+string ExtNeutShieldCendBoxes.b2materialName  = "G4_Fe";
+string ExtNeutShieldCendBoxes.b3materialName  = "ShieldingConcrete";
+string ExtNeutShieldCendBoxes.b4materialName  = "G4_Fe";
+string ExtNeutShieldCendBoxes.b5materialName  = "G4_Fe";
+string ExtNeutShieldCendBoxes.b6materialName  = "G4_Fe";
+string ExtNeutShieldCendBoxes.b7materialName  = "G4_Fe";
+string ExtNeutShieldCendBoxes.b8materialName  = "ShieldingConcrete";
+string ExtNeutShieldCendBoxes.b9materialName  = "G4_Fe";
+string ExtNeutShieldCendBoxes.b10materialName  = "G4_Fe";
+string ExtNeutShieldCendBoxes.b11materialName  = "G4_Fe";
+string ExtNeutShieldCendBoxes.b12materialName  = "ShieldingConcrete";
+string ExtNeutShieldCendBoxes.b13materialName  = "ShieldingConcrete";
+string ExtNeutShieldCendBoxes.b14materialName  = "ShieldingConcrete";
+string ExtNeutShieldCendBoxes.b15materialName  = "ShieldingConcrete";
+
+
+//box lengths, widths, and heights, in mm, in mu2e frame
+double ExtNeutShieldCendBoxes.b1length = 2716;   
+double ExtNeutShieldCendBoxes.b1width = 4878.4; 
+double ExtNeutShieldCendBoxes.b1height = 916; 
+double ExtNeutShieldCendBoxes.b2length = 19;   
+double ExtNeutShieldCendBoxes.b2width = 508; 
+double ExtNeutShieldCendBoxes.b2height = 3657.6; 
+double ExtNeutShieldCendBoxes.b3length = 2716;   
+double ExtNeutShieldCendBoxes.b3width = 916; 
+double ExtNeutShieldCendBoxes.b3height = 3657.6; 
+double ExtNeutShieldCendBoxes.b4length = 19;   
+double ExtNeutShieldCendBoxes.b4width = 508; 
+double ExtNeutShieldCendBoxes.b4height = 3657.6; 
+double ExtNeutShieldCendBoxes.b5length = 254;   
+double ExtNeutShieldCendBoxes.b5width = 19; 
+double ExtNeutShieldCendBoxes.b5height = 3657.6; 
+double ExtNeutShieldCendBoxes.b6length = 254;   
+double ExtNeutShieldCendBoxes.b6width = 19; 
+double ExtNeutShieldCendBoxes.b6height = 3657.6; 
+double ExtNeutShieldCendBoxes.b7length = 19;   
+double ExtNeutShieldCendBoxes.b7width = 508; 
+double ExtNeutShieldCendBoxes.b7height = 3657.6; 
+double ExtNeutShieldCendBoxes.b8length = 2716;   
+double ExtNeutShieldCendBoxes.b8width = 916; 
+double ExtNeutShieldCendBoxes.b8height = 3657.6; 
+double ExtNeutShieldCendBoxes.b9length = 19;   
+double ExtNeutShieldCendBoxes.b9width = 508; 
+double ExtNeutShieldCendBoxes.b9height = 3657.6; 
+double ExtNeutShieldCendBoxes.b10length = 254;   
+double ExtNeutShieldCendBoxes.b10width = 19; 
+double ExtNeutShieldCendBoxes.b10height = 3657.6; 
+double ExtNeutShieldCendBoxes.b11length = 254;   
+double ExtNeutShieldCendBoxes.b11width = 19; 
+double ExtNeutShieldCendBoxes.b11height = 3657.6; 
+double ExtNeutShieldCendBoxes.b12length = 916;   
+double ExtNeutShieldCendBoxes.b12width = 3060; 
+double ExtNeutShieldCendBoxes.b12height = 3657.5; 
+double ExtNeutShieldCendBoxes.b13length = 1720.85;   
+double ExtNeutShieldCendBoxes.b13width = 1240; 
+double ExtNeutShieldCendBoxes.b13height = 458; 
+double ExtNeutShieldCendBoxes.b14length = 1720.85;   
+double ExtNeutShieldCendBoxes.b14width = 1240; 
+double ExtNeutShieldCendBoxes.b14height = 458; 
+double ExtNeutShieldCendBoxes.b15length = 876.3;   
+double ExtNeutShieldCendBoxes.b15width = 580; 
+double ExtNeutShieldCendBoxes.b15height = 458; 
+
+
+// The center of the detector relative to its parent volume (detector hall).
+// For x:  add 3904 to G4bl, for z:  subtract 7929 from G4bl
+double ExtNeutShieldCendBoxes.b1centerX = -3904;
+double ExtNeutShieldCendBoxes.b1centerY = 2038;
+double ExtNeutShieldCendBoxes.b1centerZ = 17107;
+double ExtNeutShieldCendBoxes.b2centerX = -5656.2;
+double ExtNeutShieldCendBoxes.b2centerY = -248.04;
+double ExtNeutShieldCendBoxes.b2centerZ = 15758.55;
+double ExtNeutShieldCendBoxes.b3centerX = -5892;
+double ExtNeutShieldCendBoxes.b3centerY = -248.04;
+double ExtNeutShieldCendBoxes.b3centerZ = 17107;
+double ExtNeutShieldCendBoxes.b4centerX = -5656.2;
+double ExtNeutShieldCendBoxes.b4centerY = -248.04;
+double ExtNeutShieldCendBoxes.b4centerZ = 18058.55;
+double ExtNeutShieldCendBoxes.b5centerX = -5919.7;
+double ExtNeutShieldCendBoxes.b5centerY = -248.04;
+double ExtNeutShieldCendBoxes.b5centerZ = 18176;
+double ExtNeutShieldCendBoxes.b6centerX = -5919.7;
+double ExtNeutShieldCendBoxes.b6centerY = -248.04;
+double ExtNeutShieldCendBoxes.b6centerZ = 17035.55;
+double ExtNeutShieldCendBoxes.b7centerX = -2151.8;
+double ExtNeutShieldCendBoxes.b7centerY = -248.04;
+double ExtNeutShieldCendBoxes.b7centerZ = 15758.55;
+double ExtNeutShieldCendBoxes.b8centerX = -1916;
+double ExtNeutShieldCendBoxes.b8centerY = -248.04;
+double ExtNeutShieldCendBoxes.b8centerZ = 17107;
+double ExtNeutShieldCendBoxes.b9centerX = -2151.8;
+double ExtNeutShieldCendBoxes.b9centerY = -248.04;
+double ExtNeutShieldCendBoxes.b9centerZ = 18058.55;
+double ExtNeutShieldCendBoxes.b10centerX = -1888.3;
+double ExtNeutShieldCendBoxes.b10centerY = -248.04;
+double ExtNeutShieldCendBoxes.b10centerZ = 18176;
+double ExtNeutShieldCendBoxes.b11centerX = -1888.3;
+double ExtNeutShieldCendBoxes.b11centerY = -248.04;
+double ExtNeutShieldCendBoxes.b11centerZ = 17035.55;
+double ExtNeutShieldCendBoxes.b12centerX = -3904;
+double ExtNeutShieldCendBoxes.b12centerY = -248;
+double ExtNeutShieldCendBoxes.b12centerZ = 18007;
+double ExtNeutShieldCendBoxes.b13centerX = -4814;
+double ExtNeutShieldCendBoxes.b13centerY = -1847.84;
+double ExtNeutShieldCendBoxes.b13centerZ = 16687;
+double ExtNeutShieldCendBoxes.b14centerX = -2994;
+double ExtNeutShieldCendBoxes.b14centerY = -1847.84;
+double ExtNeutShieldCendBoxes.b14centerZ = 16687;
+double ExtNeutShieldCendBoxes.b15centerX = -3904;
+double ExtNeutShieldCendBoxes.b15centerY = -1847.84;
+double ExtNeutShieldCendBoxes.b15centerZ = 17109.3;
+
+// About holes...
+bool ExtNeutShieldCendBoxes.b1hasHole = false;
+bool ExtNeutShieldCendBoxes.b2hasHole = false;
+bool ExtNeutShieldCendBoxes.b3hasHole = false;
+bool ExtNeutShieldCendBoxes.b4hasHole = false;
+bool ExtNeutShieldCendBoxes.b5hasHole = false;
+bool ExtNeutShieldCendBoxes.b6hasHole = false;
+bool ExtNeutShieldCendBoxes.b7hasHole = false;
+bool ExtNeutShieldCendBoxes.b8hasHole = false;
+bool ExtNeutShieldCendBoxes.b9hasHole = false;
+bool ExtNeutShieldCendBoxes.b10hasHole = false;
+bool ExtNeutShieldCendBoxes.b11hasHole = false;
+bool ExtNeutShieldCendBoxes.b12hasHole = true;
+bool ExtNeutShieldCendBoxes.b13hasHole = false;
+bool ExtNeutShieldCendBoxes.b14hasHole = false;
+bool ExtNeutShieldCendBoxes.b15hasHole = false;
+
+double ExtNeutShieldCendBoxes.b12holeRadius = 76.2;
+double ExtNeutShieldCendBoxes.b12holeHalfLength = 458.0;
+
+bool  ExtNeutShieldCendBoxes.holeVisible = true;
+bool  ExtNeutShieldCendBoxes.holeSolid = true;
+
+bool  ExtNeutShieldCendBoxes.visible = true;
+bool  ExtNeutShieldCendBoxes.solid   = true;
+
+int   ExtNeutShieldCendBoxes.verbosityLevel = 1;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
