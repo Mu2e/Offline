@@ -40,10 +40,10 @@ bool ts.cryo.visible = true;
 bool ts.cryo.solid   = false;
 
 // TS polylining option
-bool   ts.polyliner.build        = false;
+bool   ts.polyliner.build        = true;
 string ts.polyliner.materialName = "Polyethylene092";
 double ts.polyliner.rIn          = 210.; 
-double ts.polyliner.rOut         = 249.;
+double ts.polyliner.rOut         = 247.;
 bool   ts.polyliner.visible      = true;
 bool   ts.polyliner.solid        = true;
 
@@ -53,7 +53,7 @@ bool   pbar.solid   = false;
 int    pbar.verbosityLevel = 0;
 string pbar.Type       = "wedge"; // default is "disk"
 double pbar.halfLength = 180.0e-3; // Use this value for the new default
-string pbar.materialName = "G4_Be";
+string pbar.materialName = "G4_KAPTON";
 
 double pbarwedge.y0  = -10.;
 double pbarwedge.y1  = 239.; // Do not exceed toyTS.rVac
