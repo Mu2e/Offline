@@ -6,8 +6,8 @@ BEGIN_PROLOG
 
 automaticSeeds : {
     policy            : "autoIncrement"
-    baseSeed          : nil
-    maxUniqueEngines  : nil
+    baseSeed          : @nil
+    maxUniqueEngines  : @nil
 
     # verbosity         : 2
     # endOfJobSummary   : true
@@ -15,8 +15,8 @@ automaticSeeds : {
 
 preDefinedSeeds : {
      policy            : "preDefined"
-     baseSeed          : nil
-     maxUniqueEngines  : nil
+     baseSeed          : @nil
+     maxUniqueEngines  : @nil
 
      # An example that will work with g4test_03
      # It will create the same seeds as the automaticSeeds configuration.
