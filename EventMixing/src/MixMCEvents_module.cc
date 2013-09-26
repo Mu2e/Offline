@@ -6,9 +6,9 @@
 // are mixed; mixing of the PointTrajectoryCollections can also be turned on/off with a
 // parameter set variable.
 //
-// $Id: MixMCEvents_module.cc,v 1.13 2013/03/15 18:20:22 kutschke Exp $
+// $Id: MixMCEvents_module.cc,v 1.14 2013/09/26 17:06:28 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 18:20:22 $
+// $Date: 2013/09/26 17:06:28 $
 //
 // Contact person Rob Kutschke.
 //
@@ -183,6 +183,7 @@ public:
 private:
 
   // Run-time configurable members.
+  fhicl::ParameterSet params_;
 
   // The number of mix-in events to choose on each event.
   double mean_;
@@ -190,6 +191,9 @@ private:
   // Module labels of the producer that made the GenParticles and that which
   std::string genModuleLabel_;
   std::string g4ModuleLabel_;
+
+  // Input tag for the status block.
+  art::InputTag g4StatusTag_;
 
   // The instance names of the StepPointMCCollections to be mixed in.
   // Default is to mix all such collections.
@@ -377,11 +381,13 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
                   art::MixHelper &helper)
   :
   // Run-time configurable parameters
-  mean_(pSet.get<double>("mean")),
-  genModuleLabel_(pSet.get<string>("genModuleLabel")),
-  g4ModuleLabel_ (pSet.get<string>("g4ModuleLabel")),
-  stepInstances_(chooseStepInstances(pSet)),
-  doPointTrajectories_(pSet.get<bool>("doPointTrajectories",true)),
+  params_(pSet.get<fhicl::ParameterSet>("detail")),
+  mean_(params_.get<double>("mean")),
+  genModuleLabel_(params_.get<string>("genModuleLabel")),
+  g4ModuleLabel_ (params_.get<string>("g4ModuleLabel")),
+  g4StatusTag_   (params_.get<string>("g4StatusTag")),
+  stepInstances_(chooseStepInstances(params_)),
+  doPointTrajectories_(params_.get<bool>("doPointTrajectories",true)),
   poisson_(nullptr),
   n0_(0),
 
@@ -403,7 +409,7 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
       &MixMCEventsDetail::mixGenParticles, *this );
 
   helper.declareMixOp
-    ( art::InputTag(g4ModuleLabel_,""),
+    ( art::InputTag(g4ModuleLabel_,"s0"),
       &MixMCEventsDetail::mixSimParticles, *this );
 
   // Declare MixOps for all StepPointMCCollections.
@@ -422,7 +428,7 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
 
   // When art v1_0_0 becomes available, add the extra argument so that the mixop must return false.
   helper.declareMixOp
-    ( art::InputTag(g4ModuleLabel_,""),
+    ( g4StatusTag_,
       &MixMCEventsDetail::mixStatusG4, *this );
 
   if ( mean_ > 0 ) {
