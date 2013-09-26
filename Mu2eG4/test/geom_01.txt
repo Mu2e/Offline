@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.208 2013/09/13 06:42:44 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2013/09/13 06:42:44 $
+// $Id: geom_01.txt,v 1.209 2013/09/26 19:04:51 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/09/26 19:04:51 $
 //
 // Original author Rob Kutschke
 //
@@ -15,7 +15,7 @@ bool hasHall            = true;
 bool hasTarget          = true;
 bool hasProtonAbsorber  = true;
 bool hasInternalNeutronAbsorber = true;
-bool hasExternalNeutronAbsorber = true;
+bool hasExternalNeutronShielding = true;
 bool hasVaneCalorimeter = false;
 bool hasDiskCalorimeter = true;
 bool hasHybridCalorimeter = false;
@@ -116,13 +116,13 @@ vector<string> mu2e.materials =
     "Kapton", "Scintillator", "WAGVacuum", "DSVacuum", "MBOverburden",
     "ITGasHe_90Isob_10", "ITGasHe_90CF4_10", "ITGasMix", "ITGasHe_75Isob_25_400mbar",
     "CarbonFiber_resin", "CarbonFiber", "PolypropyleneFoam", "CFoam", "CFoam_332", 
-    "CFoam_166", "CFoam_080", "KptFoam_030", 
+    "CFoam_166", "CFoam_080", "KptFoam_030", "Polyethylene", 
     "Polyethylene092B050d095", "Polyethylene092B300d119",
     "Polyethylene092Li075d106", "Polyethylene092", "Polyethylene096", "StainlessSteel", "Lyso_01",
     "A95083", "NbTi", "NbTiCu", "AL999Ni001", "C_19_H_20_O_4", "C_10_H_18_O_4",
     "C_9_H_22_N_2", "Epotek301", "G10", "SCCableInsulation", "SCCable",
     "ZirconiumHydridePolyethylene", "EGlass", "G10_FR4",
-    "Polyethylene0020", "StoppingTarget_Al"
+    "Polyethylene0020", "StoppingTarget_Al", "CONCRETE_MARS", "BARITE", "Half_Poly"
 };
 
 // Control printout of element and material lists.
@@ -172,10 +172,10 @@ double hall.floorTopDepthBelowGrade = 7620; // docdb-472v12 p12: (746'-0'' - 721
 double hall.insideXmin = -7359;
 double hall.insideXmax = +6250;
 double hall.insideZmax = +33041;
-double hall.insideXDSCorner = -500;
-double hall.insideZDSCorner = 3359;
-double hall.insideXPSCorner = 1005;
-double hall.insideZPSCorner = -3359;
+double hall.insideXDSCorner = 0;  // Was -500, changed to accommodate CRV
+double hall.insideZDSCorner = 2779;  // Zmax of TS shielding
+double hall.insideXPSCorner =  964;
+double hall.insideZPSCorner = -3566; // Zmin of TS shielding
 double hall.insideZExtMonUCIWall = -22000; // -17129;
 
 // docdb-472v12 p16:
@@ -202,6 +202,13 @@ bool   hall.ceilingSolid            = false;
 bool   hall.wallsVisible            = true;
 bool   hall.wallsSolid              = false;
 
+// Beamline shielding slabs above concrete overburden
+int hall.beamlineSlabs.nSlabs = 4;
+double hall.beamlineSlabs.xOffsetGlobal = -2540.; // Offset of start of bottom-most slab wrt Mu2e origin (assume -10' wrt origin)
+vector<double> hall.beamlineSlabs.xOffset      = { 0., 229., 914, 2743. }; // Offsets from bottom-most slab corresponding to {0,0.75,3,9} ft
+vector<double> hall.beamlineSlabs.yThicknesses = { 914.4, 914.4, 914.4, 457.2 }; // Thicknesses of slabs in mm
+double hall.beamlineSlabs.zWidth               = 10973; // 36'
+
 // This defines the vertical position of the hall air volume
 double mu2e.origin.heightAboveHallFloor = 2312; // mm (728.58684' - 721')
 
@@ -218,6 +225,23 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/test/PSShield_v05.txt"
 #include "Mu2eG4/test/PSExternalShielding_v01.txt"
 #include "Mu2eG4/test/TransportSolenoid_v01.txt"
+
+// Neutron shielding - TS region
+#include "Mu2eG4/test/ExtNeutShieldUpstream1a_v01.txt"
+#include "Mu2eG4/test/ExtNeutShieldUpstream1b_v01.txt"
+#include "Mu2eG4/test/ExtNeutShieldUpstream2_v01.txt"
+#include "Mu2eG4/test/ExtNeutShieldUpstreamTop_v01.txt"
+#include "Mu2eG4/test/ExtNeutShieldUpstreamBottom_v01.txt"
+#include "Mu2eG4/test/ExtNeutShieldCavexRight_v01.txt"
+#include "Mu2eG4/test/ExtNeutShieldCavexRightb_v01.txt"
+#include "Mu2eG4/test/ExtNeutShieldCavexLeft_v01.txt"
+#include "Mu2eG4/test/ExtNeutShieldCavexRoof_v01.txt"
+#include "Mu2eG4/test/ExtNeutShieldLAbove_v01.txt"
+#include "Mu2eG4/test/ExtNeutShieldLCeiling_v01.txt"
+
+// Neuton shielding - DS region
+#include "Mu2eG4/test/ExtNeutShieldCryoBoxes_v01.txt"
+#include "Mu2eG4/test/ExtNeutShieldCendBoxes_v01.txt"
 
 // Virtual detectors
 double vd.halfLength     = 0.01; //mm
@@ -406,7 +430,7 @@ double bfield.scaleFactor = 1.0;
 
 // Neutron Absorber (document draft dated 2010-07-16)
 
-double intneutronabs.rOut        = 949.; // default should be 949 mm 
+double intneutronabs.rOut        = 940.; // 1cm clearance between INS and DS cryo. 
 double intneutronabs.rIn2        = 850.;
 double intneutronabs.rIn1        = 650.;
 double intneutronabs.halfLength2 = 1000.;
