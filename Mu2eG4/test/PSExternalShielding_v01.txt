@@ -5,7 +5,7 @@
 double PSExternalShielding.length = 5250; // mm
 
 // This is the only concrete-like material name I found in other classes
-string PSExternalShielding.materialName  = "ShieldingConcrete";
+string PSExternalShielding.materialName  = "CONCRETE_MARS";
 
 //vertices, in mm, in mu2e frame
 double PSExternalShielding.X1 = 1750;   
@@ -32,8 +32,8 @@ double PSExternalShielding.centerY = 0;
 double PSExternalShielding.centerZ = -5804;
 
 
-bool  PSExternalShielding.visible = false;
-bool  PSExternalShielding.solid   = true;
+bool  PSExternalShielding.visible = true;
+bool  PSExternalShielding.solid   = false;
 
 int   PSExternalShielding.verbosityLevel = 1;
 
