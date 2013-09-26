@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.43 2013/08/31 06:00:58 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/31 06:00:58 $
+// $Id: ConstructMaterials.cc,v 1.44 2013/09/26 19:10:31 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/09/26 19:10:31 $
 //
 // Original author Rob Kutschke
 //
@@ -92,43 +92,57 @@ namespace mu2e {
     vector<string> materialsToLoad;
     config.getVectorString("mu2e.materials",materialsToLoad);
 
-    CheckedG4String mat = isNeeded(materialsToLoad, "HeavyConcrete");
+    CheckedG4String mat = isNeeded(materialsToLoad, "CONCRETE_MARS" );
+    if ( mat.doit ) {
+      G4Material* ConcreteMars = new G4Material(mat.name, 2.35*g/cm3, 9 );
+      ConcreteMars->AddElement( getElementOrThrow("H") , 0.006); //Hydrogen
+      ConcreteMars->AddElement( getElementOrThrow("C") , 0.030); //Carbon
+      ConcreteMars->AddElement( getElementOrThrow("O") , 0.500); //Oxygen
+      ConcreteMars->AddElement( getElementOrThrow("Na"), 0.010); //Sodium
+      ConcreteMars->AddElement( getElementOrThrow("Al"), 0.030); //Aluminum
+      ConcreteMars->AddElement( getElementOrThrow("Si"), 0.200); //Silicon
+      ConcreteMars->AddElement( getElementOrThrow("K") , 0.010); //Potassium
+      ConcreteMars->AddElement( getElementOrThrow("Ca"), 0.200); //Calcium
+      ConcreteMars->AddElement( getElementOrThrow("Fe"), 0.014); //Iron
+    }
+
+    mat = isNeeded(materialsToLoad, "BARITE" );
+    if ( mat.doit ) {
+      G4Material* Barite = new G4Material(mat.name, 3.5*g/cm3, 9 );
+      Barite->AddElement( getElementOrThrow("H") , 0.0069); //Hydrogen
+      Barite->AddElement( getElementOrThrow("O") , 0.3386); //Oxygen
+      Barite->AddElement( getElementOrThrow("Mg"), 0.0011); //Magnesium
+      Barite->AddElement( getElementOrThrow("Al"), 0.0039); //Aluminum
+      Barite->AddElement( getElementOrThrow("Si"), 0.0100); //Silicon
+      Barite->AddElement( getElementOrThrow("S") , 0.1040); //Sulfur
+      Barite->AddElement( getElementOrThrow("Ca"), 0.0478); //Calcium
+      Barite->AddElement( getElementOrThrow("Fe"), 0.0457); //Iron
+      Barite->AddElement( getElementOrThrow("Ba"), 0.4420); //Barium - should be 0.4431, but
+                                                            //         G4 complains if fractional
+                                                            //         weights don't add up to 1.
+    }
+ 
+
+    mat = isNeeded(materialsToLoad, "HeavyConcrete");
     if ( mat.doit ) {
       G4Material* HeavyConcrete = new G4Material(mat.name, 3.295*g/cm3, 17);
-      G4Element* eH  = getElementOrThrow("H");
-      G4Element* eB  = getElementOrThrow("B");
-      G4Element* eC  = getElementOrThrow("C");
-      G4Element* eO  = getElementOrThrow("O");
-      G4Element* eF  = getElementOrThrow("F");
-      G4Element* eNa = getElementOrThrow("Na");
-      G4Element* eMg = getElementOrThrow("Mg");
-      G4Element* eAl = getElementOrThrow("Al");
-      G4Element* eSi = getElementOrThrow("Si");
-      G4Element* eP  = getElementOrThrow("P");
-      G4Element* eS  = getElementOrThrow("S");
-      G4Element* eK  = getElementOrThrow("K");
-      G4Element* eCa = getElementOrThrow("Ca");
-      G4Element* eTi = getElementOrThrow("Ti");
-      G4Element* eMn = getElementOrThrow("Mn");
-      G4Element* eFe = getElementOrThrow("Fe");
-      G4Element* eSr = getElementOrThrow("Sr");
-      HeavyConcrete->AddElement( eH , 0.01048482); //Hydrogen
-      HeavyConcrete->AddElement( eB , 0.00943758); //Boron
-      HeavyConcrete->AddElement( eC , 0.0129742);  //Carbon
-      HeavyConcrete->AddElement( eO , 0.27953541); //Oxygen
-      HeavyConcrete->AddElement( eF , 1.5175E-4);  //Fluorine
-      HeavyConcrete->AddElement( eNa, 3.7014E-4);  //Sodium
-      HeavyConcrete->AddElement( eMg, 0.08298213); //Magnesium
-      HeavyConcrete->AddElement( eAl, 0.02769028); //Aluminum
-      HeavyConcrete->AddElement( eSi, 0.06317253); //Silicon
-      HeavyConcrete->AddElement( eP , 0.00176963); //Phosphorus
-      HeavyConcrete->AddElement( eS , 5.8275E-4);  //Sulfur
-      HeavyConcrete->AddElement( eK , 4.2024E-4);  //Potassium
-      HeavyConcrete->AddElement( eCa, 0.03227609); //Calcium
-      HeavyConcrete->AddElement( eTi, 5.457E-5);   //Titanium
-      HeavyConcrete->AddElement( eMn, 0.00321757); //Manganese
-      HeavyConcrete->AddElement( eFe, 0.47423935); //Iron
-      HeavyConcrete->AddElement( eSr, 6.4097E-4);  //Strontium
+      HeavyConcrete->AddElement( getElementOrThrow("H") , 0.01048482); //Hydrogen
+      HeavyConcrete->AddElement( getElementOrThrow("B") , 0.00943758); //Boron
+      HeavyConcrete->AddElement( getElementOrThrow("C") , 0.0129742);  //Carbon
+      HeavyConcrete->AddElement( getElementOrThrow("O") , 0.27953541); //Oxygen
+      HeavyConcrete->AddElement( getElementOrThrow("F") , 1.5175E-4);  //Fluorine
+      HeavyConcrete->AddElement( getElementOrThrow("Na"), 3.7014E-4);  //Sodium
+      HeavyConcrete->AddElement( getElementOrThrow("Mg"), 0.08298213); //Magnesium
+      HeavyConcrete->AddElement( getElementOrThrow("Al"), 0.02769028); //Aluminum
+      HeavyConcrete->AddElement( getElementOrThrow("Si"), 0.06317253); //Silicon
+      HeavyConcrete->AddElement( getElementOrThrow("P") , 0.00176963); //Phosphorus
+      HeavyConcrete->AddElement( getElementOrThrow("S") , 5.8275E-4);  //Sulfur
+      HeavyConcrete->AddElement( getElementOrThrow("K") , 4.2024E-4);  //Potassium
+      HeavyConcrete->AddElement( getElementOrThrow("Ca"), 0.03227609); //Calcium
+      HeavyConcrete->AddElement( getElementOrThrow("Ti"), 5.457E-5);   //Titanium
+      HeavyConcrete->AddElement( getElementOrThrow("Mn"), 0.00321757); //Manganese
+      HeavyConcrete->AddElement( getElementOrThrow("Fe"), 0.47423935); //Iron
+      HeavyConcrete->AddElement( getElementOrThrow("Sr"), 6.4097E-4);  //Strontium
     }
 
     mat = isNeeded(materialsToLoad, "ShieldingConcrete");
@@ -137,83 +151,64 @@ namespace mu2e {
       // Concrete is 2.00 for fraction, but shielding concrete has reinforcing Iron bars:
       // www-esh.fnal.gov/TM1834_PDF_FILES/TM_1834_Revision_9.pdf
       //
-      G4Material* ShieldingConcrete =
-        new G4Material( mat.name, 2.5*g/cm3, 6);
-      G4Element* eO  = getElementOrThrow("O");
-      G4Element* eSi = getElementOrThrow("Si");
-      G4Element* eCa = getElementOrThrow("Ca");
-      G4Element* eNa = getElementOrThrow("Na");
-      G4Element* eFe = getElementOrThrow("Fe");
-      G4Element* eAl = getElementOrThrow("Al");
-      ShieldingConcrete->AddElement( eO ,  0.5200);
-      ShieldingConcrete->AddElement( eSi,  0.3250);
-      ShieldingConcrete->AddElement( eCa,  0.0600);
-      ShieldingConcrete->AddElement( eNa,  0.0150);
-      ShieldingConcrete->AddElement( eFe,  0.0400);
-      ShieldingConcrete->AddElement( eAl,  0.0400);
+      G4Material* ShieldingConcrete = new G4Material( mat.name, 2.5*g/cm3, 6);
+      ShieldingConcrete->AddElement( getElementOrThrow("O") ,  0.5200);
+      ShieldingConcrete->AddElement( getElementOrThrow("Si"),  0.3250);
+      ShieldingConcrete->AddElement( getElementOrThrow("Ca"),  0.0600);
+      ShieldingConcrete->AddElement( getElementOrThrow("Na"),  0.0150);
+      ShieldingConcrete->AddElement( getElementOrThrow("Fe"),  0.0400);
+      ShieldingConcrete->AddElement( getElementOrThrow("Al"),  0.0400);
     }
 
     mat = isNeeded(materialsToLoad, "Polyethylene");
     if ( mat.doit ){
-      G4Material* Polyethylene =
-        new G4Material( mat.name, 0.956*g/cm3, 2);
-      G4Element* eC  = getElementOrThrow("C");
-      G4Element* eH  = getElementOrThrow("H");
-      Polyethylene->AddElement( eC, 1);
-      Polyethylene->AddElement( eH, 2);
+      G4Material* Polyethylene = new G4Material( mat.name, 0.956*g/cm3, 2);
+      Polyethylene->AddElement( getElementOrThrow("C"), 1);
+      Polyethylene->AddElement( getElementOrThrow("H"), 2);
+    }
+
+    mat = isNeeded(materialsToLoad, "Half_Poly" );
+    if ( mat.doit ) {
+      G4Material* HalfPoly = new G4Material( mat.name, 0.465*g/cm3, 1);
+      HalfPoly->AddMaterial( findMaterialOrThrow("Polyethylene"), 1. );
     }
 
     // polyethylene data below as in John Caunt Scientific, also see shieldwerx
     mat = isNeeded(materialsToLoad, "Polyethylene092");
     if ( mat.doit ){
-      G4Material* Polyethylene092 =
-        new G4Material( mat.name, 0.92*g/cm3, 2);
-      G4Material* mC  = findMaterialOrThrow("G4_C");
-      G4Material* mH  = findMaterialOrThrow("G4_H");
-      Polyethylene092->AddMaterial( mH, 0.1428);
-      Polyethylene092->AddMaterial( mC, 0.8572);
+      G4Material* Polyethylene092 = new G4Material( mat.name, 0.92*g/cm3, 2);
+      Polyethylene092->AddMaterial( findMaterialOrThrow("G4_C"), 0.1428);
+      Polyethylene092->AddMaterial( findMaterialOrThrow("G4_H"), 0.8572);
     }
 
     mat = isNeeded(materialsToLoad, "Polyethylene0956");
     if ( mat.doit ){
-      G4Material* Polyethylene0956 =
-        new G4Material( mat.name, 0.956*g/cm3, 2);
-      G4Material* mC  = findMaterialOrThrow("G4_C");
-      G4Material* mH  = findMaterialOrThrow("G4_H");
-      Polyethylene0956->AddMaterial( mH, 0.143711);
-      Polyethylene0956->AddMaterial( mC, 0.856289);
+      G4Material* Polyethylene0956 = new G4Material( mat.name, 0.956*g/cm3, 2);
+      Polyethylene0956->AddMaterial( findMaterialOrThrow("G4_C"), 0.143711);
+      Polyethylene0956->AddMaterial( findMaterialOrThrow("G4_H"), 0.856289);
     }
 
     mat = isNeeded(materialsToLoad, "Polyethylene096");
     if ( mat.doit ){
-      G4Material* Polyethylene096 =
-        new G4Material( mat.name, 0.96*g/cm3, 2);
-      G4Material* mC  = findMaterialOrThrow("G4_C");
-      G4Material* mH  = findMaterialOrThrow("G4_H");
-      Polyethylene096->AddMaterial( mH, 0.14);
-      Polyethylene096->AddMaterial( mC, 0.86);
+      G4Material* Polyethylene096 = new G4Material( mat.name, 0.96*g/cm3, 2);
+      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_C"), 0.14);
+      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_H"), 0.86);
     }
 
     // Not real, very thin Polyethylene
     mat = isNeeded(materialsToLoad, "Polyethylene0010");
     if ( mat.doit ){
-      G4Material* Polyethylene0010 =
-        new G4Material( mat.name, 0.010*g/cm3, 2);
-      G4Material* mC  = findMaterialOrThrow("G4_C");
-      G4Material* mH  = findMaterialOrThrow("G4_H");
-      Polyethylene0010->AddMaterial( mH, 0.143711);
-      Polyethylene0010->AddMaterial( mC, 0.856289);
+      G4Material* Polyethylene0010 = new G4Material( mat.name, 0.010*g/cm3, 2);
+      Polyethylene0010->AddMaterial( findMaterialOrThrow("G4_C"), 0.143711);
+      Polyethylene0010->AddMaterial( findMaterialOrThrow("G4_H"), 0.856289);
     }
 
     // Not real, very thin Polyethylene
     mat = isNeeded(materialsToLoad, "Polyethylene0020");
     if ( mat.doit ){
-      G4Material* Polyethylene0020 =
-        new G4Material( mat.name, 0.020*g/cm3, 2);
-      G4Material* mC  = findMaterialOrThrow("G4_C");
-      G4Material* mH  = findMaterialOrThrow("G4_H");
-      Polyethylene0020->AddMaterial( mH, 0.143711);
-      Polyethylene0020->AddMaterial( mC, 0.856289);
+      G4Material* Polyethylene0020 = new G4Material( mat.name, 0.020*g/cm3, 2);
+      Polyethylene0020->AddMaterial( findMaterialOrThrow("G4_C"), 0.143711);
+      Polyethylene0020->AddMaterial( findMaterialOrThrow("G4_H"), 0.856289);
     }
 
     //   note that G4 has:
@@ -225,26 +220,20 @@ namespace mu2e {
     // borated polyethylene data as in John Caunt Scientific
     mat = isNeeded(materialsToLoad, "Polyethylene092B050d095");
     if ( mat.doit ){
-      G4Material* Polyethylene092B050d095 =
-        new G4Material( mat.name, 0.95*g/cm3, 2);
+      G4Material* Polyethylene092B050d095 = new G4Material( mat.name, 0.95*g/cm3, 2);
       // we will use the Polyethylene092 and add B as a material
-      G4Material* Polyethylene092 = findMaterialOrThrow("Polyethylene092");
-      G4Material* mB              = findMaterialOrThrow("G4_B");
-      double BPercentage = 5.0;
-      Polyethylene092B050d095->AddMaterial( Polyethylene092, (100.-BPercentage)*perCent);
-      Polyethylene092B050d095->AddMaterial( mB, BPercentage*perCent);
+      const double BPercentage = 5.0;
+      Polyethylene092B050d095->AddMaterial(findMaterialOrThrow("Polyethylene092"), (100.-BPercentage)*perCent);
+      Polyethylene092B050d095->AddMaterial(findMaterialOrThrow("G4_B")           , BPercentage*perCent);
     }
 
     mat = isNeeded(materialsToLoad, "Polyethylene092B300d119");
     if ( mat.doit ){
-      G4Material* Polyethylene092B300d119 =
-        new G4Material( mat.name, 1.19*g/cm3, 2);
+      G4Material* Polyethylene092B300d119 = new G4Material( mat.name, 1.19*g/cm3, 2);
       // we will use the Polyethylene092 and add B as a material
-      G4Material* Polyethylene092 = findMaterialOrThrow("Polyethylene092");
-      G4Material* mB              = findMaterialOrThrow("G4_B");
-      double BPercentage = 30.0;
-      Polyethylene092B300d119->AddMaterial( Polyethylene092, (100.-BPercentage)*perCent);
-      Polyethylene092B300d119->AddMaterial( mB, BPercentage*perCent);
+      const double BPercentage = 30.0;
+      Polyethylene092B300d119->AddMaterial(findMaterialOrThrow("Polyethylene092"), (100.-BPercentage)*perCent);
+      Polyethylene092B300d119->AddMaterial(findMaterialOrThrow("G4_B")           , BPercentage*perCent);
     }
 
     mat = isNeeded(materialsToLoad, "Polyethylene092Li075d106");
@@ -252,19 +241,16 @@ namespace mu2e {
       G4Material* Polyethylene092Li075d106 =
         new G4Material( mat.name, 1.06*g/cm3, 2);
       // we will use the Polyethylene092 and add Li as a material
-      G4Material* Polyethylene092 = findMaterialOrThrow("Polyethylene092");
-      G4Material* mLi              = findMaterialOrThrow("G4_Li");
-      double LiPercentage = 7.5;
-      Polyethylene092Li075d106->AddMaterial( Polyethylene092, (100.-LiPercentage)*perCent);
-      Polyethylene092Li075d106->AddMaterial( mLi, LiPercentage*perCent);
-    }
+      const double LiPercentage = 7.5;
+      Polyethylene092Li075d106->AddMaterial(findMaterialOrThrow("Polyethylene092"), (100.-LiPercentage)*perCent);
+      Polyethylene092Li075d106->AddMaterial(findMaterialOrThrow("G4_Li")          , LiPercentage*perCent);
+    } 
 
     // Stainless Steel (Medical Physics, Vol 25, No 10, Oct 1998) based on brachytherapy example
     // FIXME is there a better reference?
     mat = isNeeded(materialsToLoad, "StainlessSteel");
     if ( mat.doit ){
-      G4Material* StainlessSteel =
-        new G4Material( mat.name, 8.02*g/cm3, 5);
+      G4Material* StainlessSteel = new G4Material( mat.name, 8.02*g/cm3, 5);
       StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.02);
       StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Si"), 0.01);
       StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Cr"), 0.19);
@@ -277,8 +263,7 @@ namespace mu2e {
     //http://ppd-docdb.fnal.gov/cgi-bin/RetrieveFile?docid=1112;filename=MD-ENG-109.pdf;version=1
     mat = isNeeded(materialsToLoad, "A95083");
     if ( mat.doit ){
-      G4Material* A95083 =
-        new G4Material( mat.name, 2.66*g/cm3, 9);
+      G4Material* A95083 = new G4Material( mat.name, 2.66*g/cm3, 9);
       A95083->AddMaterial(findMaterialOrThrow("G4_Al"), 0.9400);
       A95083->AddMaterial(findMaterialOrThrow("G4_Mg"), 0.0450);
       A95083->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.0070);
@@ -294,8 +279,7 @@ namespace mu2e {
     // NbTi
     mat = isNeeded(materialsToLoad, "NbTi"); // FIXME verify it
     if ( mat.doit ){
-      G4Material* NbTi =
-        new G4Material( mat.name, 6.5*g/cm3, 2);
+      G4Material* NbTi = new G4Material( mat.name, 6.5*g/cm3, 2);
       NbTi->AddMaterial(findMaterialOrThrow("G4_Nb"), 0.65);
       NbTi->AddMaterial(findMaterialOrThrow("G4_Ti"), 0.35);
     }
@@ -303,8 +287,7 @@ namespace mu2e {
     // NbTiCu
     mat = isNeeded(materialsToLoad, "NbTiCu"); // FIXME verify it
     if ( mat.doit ){
-      G4Material* NbTiCu =
-        new G4Material( mat.name, 7.69*g/cm3, 2);
+      G4Material* NbTiCu = new G4Material( mat.name, 7.69*g/cm3, 2);
       NbTiCu->AddMaterial(findMaterialOrThrow("NbTi"),  0.45);
       NbTiCu->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.55);
     }
@@ -312,8 +295,7 @@ namespace mu2e {
     // AL999Ni001 by volume ?
     mat = isNeeded(materialsToLoad, "AL999Ni001"); // FIXME verify it
     if ( mat.doit ){
-      G4Material* AL999Ni001 =
-        new G4Material( mat.name, 2.706*g/cm3, 3);
+      G4Material* AL999Ni001 = new G4Material( mat.name, 2.706*g/cm3, 3);
       AL999Ni001->AddMaterial(findMaterialOrThrow("G4_Al"), 0.9967);
       AL999Ni001->AddMaterial(findMaterialOrThrow("G4_Ni"), 0.0033);
     }
@@ -323,33 +305,20 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "C_19_H_20_O_4");
     if ( mat.doit ){
-      G4Material* C_19_H_20_O_4 =
-        new G4Material( mat.name, 1.16*g/cm3, 3);
-
-      G4Element* eC  = getElementOrThrow("C");
-      G4Element* eH  = getElementOrThrow("H");
-      G4Element* eO  = getElementOrThrow("O");
-
-      C_19_H_20_O_4->AddElement( eC, 19);
-      C_19_H_20_O_4->AddElement( eH, 20);
-      C_19_H_20_O_4->AddElement( eO,  4);
-
+      G4Material* C_19_H_20_O_4 = new G4Material( mat.name, 1.16*g/cm3, 3);
+      C_19_H_20_O_4->AddElement( getElementOrThrow("C"), 19);
+      C_19_H_20_O_4->AddElement( getElementOrThrow("H"), 20);
+      C_19_H_20_O_4->AddElement( getElementOrThrow("O"),  4);
     }
 
     // C_10_H_18_O_4
 
     mat = isNeeded(materialsToLoad, "C_10_H_18_O_4");
     if ( mat.doit ){
-      G4Material* C_10_H_18_O_4 =
-        new G4Material( mat.name, 1.10*g/cm3, 3);
-
-      G4Element* eC  = getElementOrThrow("C");
-      G4Element* eH  = getElementOrThrow("H");
-      G4Element* eO  = getElementOrThrow("O");
-
-      C_10_H_18_O_4->AddElement( eC, 10);
-      C_10_H_18_O_4->AddElement( eH, 18);
-      C_10_H_18_O_4->AddElement( eO,  4);
+      G4Material* C_10_H_18_O_4 = new G4Material( mat.name, 1.10*g/cm3, 3);
+      C_10_H_18_O_4->AddElement( getElementOrThrow("C"), 10);
+      C_10_H_18_O_4->AddElement( getElementOrThrow("H"), 18);
+      C_10_H_18_O_4->AddElement( getElementOrThrow("O"),  4);
 
     }
 
@@ -357,24 +326,17 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "C_9_H_22_N_2");
     if ( mat.doit ){
-      G4Material* C_9_H_22_N_2 =
-        new G4Material( mat.name, 0.865*g/cm3, 3);
-
-      G4Element* eC  = getElementOrThrow("C");
-      G4Element* eH  = getElementOrThrow("H");
-      G4Element* eN  = getElementOrThrow("N");
-
-      C_9_H_22_N_2->AddElement( eC,  9);
-      C_9_H_22_N_2->AddElement( eH, 22);
-      C_9_H_22_N_2->AddElement( eN,  2);
+      G4Material* C_9_H_22_N_2 = new G4Material( mat.name, 0.865*g/cm3, 3);
+      C_9_H_22_N_2->AddElement( getElementOrThrow("C"),  9);
+      C_9_H_22_N_2->AddElement( getElementOrThrow("H"), 22);
+      C_9_H_22_N_2->AddElement( getElementOrThrow("N"),  2);
 
     }
 
     // http://personalpages.to.infn.it/~tosello/EngMeet/ITSmat/SDD/Epotek-301-1.html
     mat = isNeeded(materialsToLoad, "Epotek301");
     if ( mat.doit ){
-      G4Material* Epotek301 =
-        new G4Material( mat.name, 1.19*g/cm3, 3);
+      G4Material* Epotek301 = new G4Material( mat.name, 1.19*g/cm3, 3);
       Epotek301->AddMaterial(findMaterialOrThrow("C_19_H_20_O_4"), 0.56);
       Epotek301->AddMaterial(findMaterialOrThrow("C_10_H_18_O_4"), 0.24);
       Epotek301->AddMaterial(findMaterialOrThrow("C_9_H_22_N_2"),  0.20);
@@ -383,8 +345,7 @@ namespace mu2e {
    // http://personalpages.to.infn.it/~tosello/EngMeet/ITSmat/SDD/E_glass.html
     mat = isNeeded(materialsToLoad, "EGlass");
     if ( mat.doit ){
-      G4Material* EGlass =
-	new G4Material (mat.name, 2.61*g/cm3, 10);
+      G4Material* EGlass = new G4Material (mat.name, 2.61*g/cm3, 10);
       EGlass->AddMaterial(findMaterialOrThrow("G4_SILICON_DIOXIDE"), 0.54);
       EGlass->AddMaterial(findMaterialOrThrow("G4_CALCIUM_OXIDE"), 0.19 );
       EGlass->AddMaterial(findMaterialOrThrow("G4_ALUMINUM_OXIDE"), 0.13 );
@@ -401,8 +362,7 @@ namespace mu2e {
     // http://pdg.lbl.gov/2002/atomicrpp.pdf
     mat = isNeeded(materialsToLoad, "G10");
     if ( mat.doit ){
-      G4Material* G10 =
-        new G4Material( mat.name, 1.7*g/cm3, 2);
+      G4Material* G10 = new G4Material( mat.name, 1.7*g/cm3, 2);
       G10->AddMaterial(findMaterialOrThrow("G4_SILICON_DIOXIDE"), 0.60);//FIXME do e-glass etc...
       G10->AddMaterial(findMaterialOrThrow("Epotek301"), 0.40);
     }
@@ -410,8 +370,7 @@ namespace mu2e {
     // Superconducting Cable Insulation
     mat = isNeeded(materialsToLoad, "SCCableInsulation");
     if ( mat.doit ){
-      G4Material* SCCableInsulation =
-        new G4Material( mat.name, 1.54*g/cm3, 3);
+      G4Material* SCCableInsulation = new G4Material( mat.name, 1.54*g/cm3, 3);
       SCCableInsulation->AddMaterial(findMaterialOrThrow("G4_KAPTON"), 0.18);
       SCCableInsulation->AddMaterial(findMaterialOrThrow("Epotek301"), 0.16);
       SCCableInsulation->AddMaterial(findMaterialOrThrow("G10"), 0.66);
@@ -424,8 +383,7 @@ namespace mu2e {
     // Superconducting Cable
     mat = isNeeded(materialsToLoad, "SCCable"); // FIXME verify it
     if ( mat.doit ){
-      G4Material* SCCable =
-        new G4Material( mat.name, 3.95*g/cm3, 3);
+      G4Material* SCCable = new G4Material( mat.name, 3.95*g/cm3, 3);
       SCCable->AddMaterial(findMaterialOrThrow("SCCableInsulation"), 0.04);
       SCCable->AddMaterial(findMaterialOrThrow("AL999Ni001"),        0.43);
       SCCable->AddMaterial(findMaterialOrThrow("NbTiCu"),            0.53);
@@ -433,27 +391,18 @@ namespace mu2e {
 
     mat = isNeeded(materialsToLoad, "IsoButane");
     if ( mat.doit ){
-      G4Material* IsoButane =
-        new G4Material( mat.name, 0.00265*g/cm3, 2);
-      G4Element* eC  = getElementOrThrow("C");
-      G4Element* eH  = getElementOrThrow("H");
-      IsoButane->AddElement( eC, 4);
-      IsoButane->AddElement( eH, 10);
+      G4Material* IsoButane = new G4Material( mat.name, 0.00265*g/cm3, 2);
+      IsoButane->AddElement( getElementOrThrow("C"), 4);
+      IsoButane->AddElement( getElementOrThrow("H"), 10);
     }
 
     mat = isNeeded(materialsToLoad, "StrawGasArCF4");
 
     if ( mat.doit ) {
-      
-      G4Material* StrawGasArCF4 =
-        new G4Material(mat.name, 0.0028561*g/cm3, 3); // it is OK not to use kStateGas
-      G4Element* eAr = getElementOrThrow("Ar");
-      G4Element* eC  = getElementOrThrow("C");
-      G4Element* eF  = getElementOrThrow("F");
-      StrawGasArCF4->AddElement( eAr, 1);
-      StrawGasArCF4->AddElement( eC,  1);
-      StrawGasArCF4->AddElement( eF,  4);
-
+      G4Material* StrawGasArCF4 = new G4Material(mat.name, 0.0028561*g/cm3, 3); // it is OK not to use kStateGas
+      StrawGasArCF4->AddElement( getElementOrThrow("Ar"), 1);
+      StrawGasArCF4->AddElement( getElementOrThrow("C") , 1);
+      StrawGasArCF4->AddElement( getElementOrThrow("F") , 4);
     }
     
     mat = isNeeded(materialsToLoad, "StrawGas");
@@ -498,16 +447,11 @@ namespace mu2e {
       //
       // Kapton: from NIST: physics.nist.gov/cgi-bin/Star/compos.pl?matno=179
       //
-      G4Material* Kapton =
-        new G4Material(mat.name, 1.42*g/cm3, 4);
-      G4Element* eH  = getElementOrThrow("H");
-      G4Element* eC  = getElementOrThrow("C");
-      G4Element* eN  = getElementOrThrow("N");
-      G4Element* eO  = getElementOrThrow("O");
-      Kapton->AddElement( eH, 0.026362);
-      Kapton->AddElement( eC, 0.691133);
-      Kapton->AddElement( eN, 0.073270);
-      Kapton->AddElement( eO, 0.209235);
+      G4Material* Kapton = new G4Material(mat.name, 1.42*g/cm3, 4);
+      Kapton->AddElement( getElementOrThrow("H"), 0.026362);
+      Kapton->AddElement( getElementOrThrow("C"), 0.691133);
+      Kapton->AddElement( getElementOrThrow("N"), 0.073270);
+      Kapton->AddElement( getElementOrThrow("O"), 0.209235);
     }
 
     mat = isNeeded(materialsToLoad, "Scintillator");
@@ -517,12 +461,9 @@ namespace mu2e {
       // We probably want several flavors of scintillator so that we can change the
       // detector by just changing a name in the config file.
       //
-      G4Material* Sci =
-        new G4Material( mat.name, 1.032*g/cm3, 2);
-      G4Element* eC  = getElementOrThrow("C");
-      G4Element* eH  = getElementOrThrow("H");
-      Sci->AddElement( eC, 9);
-      Sci->AddElement( eH, 10);
+      G4Material* Sci = new G4Material( mat.name, 1.032*g/cm3, 2);
+      Sci->AddElement( getElementOrThrow("C"), 9);
+      Sci->AddElement( getElementOrThrow("H"), 10);
     }
 
     mat = isNeeded(materialsToLoad, "WAGVacuum");
