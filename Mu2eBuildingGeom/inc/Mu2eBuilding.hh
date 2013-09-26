@@ -17,6 +17,21 @@
 
 namespace mu2e {
 
+  class Box {
+  public:
+    Box( double x, double y, double z) :
+      _xhl(x), _yhl(y), _zhl(z){}
+    ~Box(){}
+
+    double getXhalfLength() const { return _xhl; }
+    double getYhalfLength() const { return _yhl; }
+    double getZhalfLength() const { return _zhl; }
+  private:
+    double _xhl;
+    double _yhl;
+    double _zhl;
+  };
+
   class Mu2eBuildingMaker;
 
   class Mu2eBuilding : virtual public Detector {
@@ -44,6 +59,8 @@ namespace mu2e {
     double hallWallThickness() const { return _hallWallThickness; }
     double hallWallExtMonUCIThickness() const { return _hallWallExtMonUCIThickness; }
 
+    std::size_t nBeamlineSlabs() const { return _nBeamlineSlabs; }
+
     // When we copied the MECO geometry, the elements inside the DS were described in
     // a DS-centric coordinate system.  As of July 2012, there were still a few elements
     // in the Mu2e code that use this system; they are being refactored to use the
@@ -69,6 +86,11 @@ namespace mu2e {
     // thicker overburden in the TS and PS regions
     const std::vector<CLHEP::Hep2Vector>& concreteOuterOutlineExt() const { return _concreteOuterOutlineExt; }
 
+    // Concrete slabs that go above concrete overburden extension,
+    // serving as beamline shielding
+    const Box& concreteBeamlineSlab( std::size_t iSlab ) const { return _concreteBeamlineSlabs.at(iSlab); }
+    double xPosOfSlabEnd() const { return _xPosOfSlabEnd; }
+    
     // The inner outline of hall walls, all in one piece, clockwise
     // from the Xmax dump shielding face core around the hall and to
     // the Xmin dump shielding face corner.
@@ -109,7 +131,12 @@ namespace mu2e {
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline2;
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline3;
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutlineExt;
+    std::vector<Box>               _concreteBeamlineSlabs;
     std::vector<CLHEP::Hep2Vector> _hallInsideOutline;
+
+    double _xPosOfSlabEnd;
+    std::size_t _nBeamlineSlabs;
+                                
   };
 
 }

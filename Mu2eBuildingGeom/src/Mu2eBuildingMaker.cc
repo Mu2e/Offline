@@ -1,24 +1,34 @@
-// Andrei Gaponenko, 2012
+//
+// Construct Mu2e building
+//
+// $Id: Mu2eBuildingMaker.cc,v 1.16 2013/09/26 19:16:31 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/09/26 19:16:31 $
+//
+// Original author: Andrei Gaponenko
 
-#include "Mu2eBuildingGeom/inc/Mu2eBuildingMaker.hh"
-
-#include <iostream>
-
-#include "cetlib/exception.h"
-
-#include "CLHEP/Units/SystemOfUnits.h"
-
+// Mu2e include files
 #include "ConfigTools/inc/SimpleConfig.hh"
-
+#include "BeamlineGeom/inc/Beamline.hh"
+#include "BeamlineGeom/inc/TransportSolenoid.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
-
+#include "Mu2eBuildingGeom/inc/Mu2eBuildingMaker.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
+// C++ include files
+#include <iostream>
+
+// Framework include files
+#include "cetlib/exception.h"
+
+// CLHEP include files
+#include "CLHEP/Units/SystemOfUnits.h"
 
 namespace mu2e {
 
   std::unique_ptr<Mu2eBuilding> Mu2eBuildingMaker::make(const SimpleConfig& c,
                                                         const BuildingBasics& basics,
+                                                        const Beamline& bl,
                                                         const ProtonBeamDump& dump)
   {
     std::unique_ptr<Mu2eBuilding> b (new Mu2eBuilding(basics));
@@ -149,6 +159,26 @@ namespace mu2e {
                                                    ));
 
     b->_hallInsideOutline.push_back(Hep2Vector(dump.shieldingFaceXmin(), dump.shieldingFaceZatXmin()));
+    
+    //----------------------------------------------------------------
+    // Beamline slabs
+    // - x-extent estimated as edge of TS1 cryostat
+    StraightSection const * ts1Cryo = bl.getTS().getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS1,
+                                                                             TransportSolenoid::TSRadialPart::OUT);
+    b->_xPosOfSlabEnd = ts1Cryo->getGlobal().x() - ts1Cryo->rOut();
+
+    std::vector<double> xOffset, yThicknesses;
+    b->_nBeamlineSlabs = c.getInt( "hall.beamlineSlabs.nSlabs" );
+    const double globalOffset = c.getDouble( "hall.beamlineSlabs.xOffsetGlobal" );
+    c.getVectorDouble( "hall.beamlineSlabs.xOffset"     , xOffset     , b->_nBeamlineSlabs );
+    c.getVectorDouble( "hall.beamlineSlabs.yThicknesses", yThicknesses, b->_nBeamlineSlabs );
+    const double zWidth       = c.getDouble( "hall.beamlineSlabs.zWidth" );
+
+    for ( std::size_t iSlab = 0; iSlab < b->_nBeamlineSlabs; iSlab++ ) {
+      b->_concreteBeamlineSlabs.emplace_back( 0.5*(b->xPosOfSlabEnd() - xOffset.at(iSlab) - globalOffset ),
+                                              0.5*yThicknesses.at(iSlab),
+                                              0.5*zWidth );
+    }
     
     //----------------------------------------------------------------
     const int diagLevel = c.getInt("world.verbosityLevel", 0);

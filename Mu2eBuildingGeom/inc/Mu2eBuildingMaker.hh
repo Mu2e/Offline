@@ -8,13 +8,15 @@ namespace mu2e {
   class SimpleConfig;
   class Mu2eBuilding;
   class BuildingBasics;
+  class Beamline;
   class ProtonBeamDump;
 
   class Mu2eBuildingMaker {
   public:
     static std::unique_ptr<Mu2eBuilding> make(const SimpleConfig& config,
-                                            const BuildingBasics& basics,
-                                            const ProtonBeamDump& dump);
+                                              const BuildingBasics& basics,
+                                              const Beamline& bl,
+                                              const ProtonBeamDump& dump);
   };
 }
 
