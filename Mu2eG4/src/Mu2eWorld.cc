@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.166 2013/09/27 13:59:48 knoepfel Exp $
+// $Id: Mu2eWorld.cc,v 1.167 2013/09/27 20:59:34 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/09/27 13:59:48 $
+// $Date: 2013/09/27 20:59:34 $
 //
 // Original author Rob Kutschke
 //
@@ -174,9 +174,9 @@ namespace mu2e {
       cout << __func__ << " worldVInfo.centerInWorld  : " <<  worldVInfo.centerInWorld  << endl;
     }
 
-    constructDirt(worldVInfo, _config);
-
     VolumeInfo hallInfo  = constructHall(worldVInfo, _config);
+
+    constructDirt(hallInfo, _config);
 
     if ( _verbosityLevel > 0) {
       cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;
