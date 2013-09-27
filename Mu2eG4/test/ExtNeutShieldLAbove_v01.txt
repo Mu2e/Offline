@@ -4,7 +4,6 @@
 
 double ExtNeutShieldLAbove.length = 1500; // mm
 
-// This is the only concrete-like material name I found in other classes
 string ExtNeutShieldLAbove.materialName  = "CONCRETE_MARS";
 
 //vertices, in mm, in mu2e frame

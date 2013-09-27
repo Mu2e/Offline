@@ -4,7 +4,6 @@
 
 double ExtNeutShieldLCeiling.length = 743; // mm
 
-// This is the only concrete-like material name I found in other classes
 string ExtNeutShieldLCeiling.materialName  = "CONCRETE_MARS";
 
 //vertices, in mm, in mu2e frame
@@ -28,7 +27,7 @@ double ExtNeutShieldLCeiling.rotateX = -90;
 bool  ExtNeutShieldLCeiling.visible = true;
 bool  ExtNeutShieldLCeiling.solid   = false;
 
-int   ExtNeutShieldLCeiling.verbosityLevel = 1;
+int   ExtNeutShieldLCeiling.verbosityLevel = 0;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

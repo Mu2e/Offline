@@ -4,7 +4,6 @@
 
 double ExtNeutShieldUpstream1b.length = 4436.26; // mm
 
-// This is the only concrete-like material name I found in other classes
 string ExtNeutShieldUpstream1b.materialName  = "BARITE";
 
 //vertices, in mm, in mu2e frame
@@ -32,7 +31,7 @@ double ExtNeutShieldUpstream1b.rotateX = -90;
 bool  ExtNeutShieldUpstream1b.visible = true;
 bool  ExtNeutShieldUpstream1b.solid   = false;
 
-int   ExtNeutShieldUpstream1b.verbosityLevel = 1;
+int   ExtNeutShieldUpstream1b.verbosityLevel = 0;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
