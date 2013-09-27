@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.59 2013/09/05 16:36:12 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/09/05 16:36:12 $
+// $Id: GeometryService_service.cc,v 1.60 2013/09/27 13:00:13 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/09/27 13:00:13 $
 //
 // Original author Rob Kutschke
 //
@@ -220,7 +220,7 @@ namespace mu2e {
     addDetector(std::move(tmpDump));
 
 
-    std::unique_ptr<Mu2eBuilding> tmpbld(Mu2eBuildingMaker::make(*_config, buildingBasics, dump));
+    std::unique_ptr<Mu2eBuilding> tmpbld(Mu2eBuildingMaker::make(*_config, buildingBasics, beamline, dump));
     const Mu2eBuilding& building = *tmpbld.get();
     addDetector(std::move(tmpbld));
 
