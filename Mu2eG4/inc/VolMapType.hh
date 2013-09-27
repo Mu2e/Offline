@@ -7,23 +7,22 @@
 // Given a pointer to a physical volume, return the index into the data product
 // for that volume.
 //
-// $Id: VolMapType.hh,v 1.5 2013/09/27 14:56:14 gandr Exp $
+// $Id: VolMapType.hh,v 1.6 2013/09/27 16:03:41 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/09/27 14:56:14 $
+// $Date: 2013/09/27 16:03:41 $
 //
 // Original author Rob Kutschke
 //
 
 #include <map>
-#include "cetlib/map_vector.h"
 
 class G4VPhysicalVolume;
 
 namespace mu2e{
 
-  typedef std::map<G4VPhysicalVolume*,cet::map_vector_key> VolMapType;
-  typedef std::map<G4VPhysicalVolume*,cet::map_vector_key>::iterator VolMapType_iterator;
-  typedef std::map<G4VPhysicalVolume*,cet::map_vector_key>::const_iterator VolMapType_const_iterator;
+  typedef std::map<G4VPhysicalVolume*,unsigned> VolMapType;
+  typedef std::map<G4VPhysicalVolume*,unsigned>::iterator VolMapType_iterator;
+  typedef std::map<G4VPhysicalVolume*,unsigned>::const_iterator VolMapType_const_iterator;
 
 }
 

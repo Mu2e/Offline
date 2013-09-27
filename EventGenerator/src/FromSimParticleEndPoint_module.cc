@@ -1,9 +1,9 @@
 // Read a SimParticle collection and create a GenParticleCollection from the end point of the former.
 //
 //
-// $Id: FromSimParticleEndPoint_module.cc,v 1.7 2013/09/27 14:56:14 gandr Exp $
+// $Id: FromSimParticleEndPoint_module.cc,v 1.8 2013/09/27 16:03:41 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/09/27 14:56:14 $
+// $Date: 2013/09/27 16:03:41 $
 //
 // Original author Gianni Onorato
 // 
@@ -65,7 +65,7 @@ namespace mu2e {
     bool _doHistograms;
     int _diagLevel;
     bool _firstevent;
-    vector<cet::map_vector_key> _selVolumes;
+    vector<unsigned> _selVolumes;
     TNtuple* _ntup;
     PiCaptureEffects* _piCaptCreator;
     void readVolumesToSelect(art::Event& event);
@@ -143,11 +143,12 @@ namespace mu2e {
       event.getRun().getByLabel(_inModuleLabel,volsHandle);
       PhysicalVolumeInfoCollection const& vols(*volsHandle);
 
-      for(const auto& entry : vols) {
-        PhysicalVolumeInfo const& theVol = entry.second;
+      for (size_t i=0; i<vols.size(); ++i) {
+        PhysicalVolumeInfo const& theVol = vols.at(i);
+        
         for (size_t j=0; j<_inVolumes.size(); ++j) {
           if (theVol.name().compare(0,_inVolumes[j].size(),_inVolumes[j]) == 0) {
-            _selVolumes.push_back(entry.first);
+            _selVolumes.push_back(i);
           }
         }
       }
@@ -198,8 +199,9 @@ namespace mu2e {
 
         //Check the end volume of the SimParticle
         bool findvolume = false;
-        for(const auto& sv : _selVolumes) {
-          if (sv == aParticle.endVolumeIndex()) {
+        for (vector<unsigned>::iterator volumeFinder = _selVolumes.begin(); 
+             volumeFinder != _selVolumes.end(); ++volumeFinder) {
+          if ( *volumeFinder == aParticle.endVolumeIndex()) {
             findvolume = true;
             break;
           }

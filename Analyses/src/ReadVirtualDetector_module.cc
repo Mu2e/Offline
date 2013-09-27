@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.17 2013/09/27 14:56:14 gandr Exp $
+//  $Id: ReadVirtualDetector_module.cc,v 1.18 2013/09/27 16:03:41 gandr Exp $
 //  $Author: gandr $
-//  $Date: 2013/09/27 14:56:14 $
+//  $Date: 2013/09/27 16:03:41 $
 //
 // Original author Ivan Logashenko
 //
@@ -361,11 +361,10 @@ namespace mu2e {
     if( physVolumes.isValid() ) {
 
       for ( size_t i=0; i<physVolumes->size(); ++i ) {
-        PhysicalVolumeInfoCollection::key_type key(i);
-        if( (*physVolumes)[key].name() == "TargetFoil_" ) {
-          vid_stop[i] = (*physVolumes)[key].copyNo();
+        if( (*physVolumes)[i].name() == "TargetFoil_" ) {
+          vid_stop[i] = (*physVolumes)[i].copyNo();
           cout << "ReadVirtualDetector: register stopping target volume " << i << " = "
-               << (*physVolumes)[key].name() << " " << (*physVolumes)[key].copyNo() << endl;
+               << (*physVolumes)[i].name() << " " << (*physVolumes)[i].copyNo() << endl;
         }
       }
 
@@ -614,7 +613,7 @@ namespace mu2e {
 
         // Check id of the volume there particle dies
         if( sim.endDefined() ) {
-          if( vid_stop.find(sim.endVolumeIndex().asInt()) != vid_stop.end() ) {
+          if( vid_stop.find(sim.endVolumeIndex()) != vid_stop.end() ) {
             ntp.isstop = true;
           } else {
             ntp.isstop = false;

@@ -1,9 +1,9 @@
 //
 // A module to follow the conversion electron in the events
 //
-// $Id: ConvElecHistory_module.cc,v 1.11 2013/09/27 14:56:14 gandr Exp $
+// $Id: ConvElecHistory_module.cc,v 1.12 2013/09/27 16:03:41 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/09/27 14:56:14 $
+// $Date: 2013/09/27 16:03:41 $
 //
 // Original author Gianni Onorato
 //
@@ -391,7 +391,7 @@ namespace mu2e {
     B_deady  = simCE.endPosition().y();
     B_deadz  = simCE.endPosition().z() - 10200.;
     B_deadtime  = simCE.endGlobalTime();
-    B_deadvol  = simCE.endVolumeIndex().asUint();
+    B_deadvol  = simCE.endVolumeIndex();
 
 
     GeomHandle<VirtualDetector> vdg;

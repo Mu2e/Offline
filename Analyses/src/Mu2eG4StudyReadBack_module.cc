@@ -1,9 +1,9 @@
 //
 // Plugin to read/analyze g4study output
 //
-//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.8 2013/09/27 14:56:14 gandr Exp $
+//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.9 2013/09/27 16:03:41 gandr Exp $
 //  $Author: gandr $
-//  $Date: 2013/09/27 14:56:14 $
+//  $Date: 2013/09/27 16:03:41 $
 //
 // Original author KLG somewhat based on vd read back
 //
@@ -228,10 +228,9 @@ namespace mu2e {
       // register all volumes
       for ( size_t i=0; i<physVolumes->size(); ++i ) {
         // if( (*physVolumes)[i].name() == "BoxInTheWorld" ) {
-        PhysicalVolumeInfoCollection::key_type key(i);
-        vid_stop[i] = (*physVolumes)[key].copyNo();
+        vid_stop[i] = (*physVolumes)[i].copyNo();
         cout << "Mu2eG4StudyReadBack: register volume " << i << " = "
-             << (*physVolumes)[key].name() << " " << (*physVolumes)[key].copyNo() << endl;
+             << (*physVolumes)[i].name() << " " << (*physVolumes)[i].copyNo() << endl;
         //}
       }
 
@@ -445,7 +444,7 @@ namespace mu2e {
         ttp.run = event.id().run();      // run_id
         ttp.evt = event.id().event();    // event_id
         ttp.trk = sim.id().asInt();      // track_id
-        ttp.endvol = sim.endVolumeIndex().asUint();  // track last volume
+        ttp.endvol = sim.endVolumeIndex();  // track last volume
 
         ttp.pdg = sim.pdgId();           // PDG id
 
@@ -478,7 +477,7 @@ namespace mu2e {
         // Check id of the volume where the particle died
         if( sim.endDefined() ) {
 
-          ttp.isstop = ( vid_stop.find(sim.endVolumeIndex().asInt()) != vid_stop.end() );
+          ttp.isstop = ( vid_stop.find(sim.endVolumeIndex()) != vid_stop.end() );
           ttp.tstop = sim.endGlobalTime();
           ttp.gtstop = gtime_parent+sim.endProperTime();
           CLHEP::Hep3Vector const & pos_end = sim.endPosition();

@@ -2,9 +2,9 @@
 // A utility class to do indexolgy related to persistence of
 // physical volume information.
 //
-// $Id: PhysicalVolumeHelper.cc,v 1.6 2013/09/27 14:56:14 gandr Exp $
+// $Id: PhysicalVolumeHelper.cc,v 1.7 2013/09/27 16:03:41 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/09/27 14:56:14 $
+// $Date: 2013/09/27 16:03:41 $
 //
 // Original author Rob Kutschke
 //
@@ -50,7 +50,7 @@ namespace mu2e {
   }
 
   // Return the index into _persistentInfo for the volume attached to this track.
-  PhysicalVolumeInfoCollection::key_type PhysicalVolumeHelper::index( const G4Track* track ) const{
+  int PhysicalVolumeHelper::index( const G4Track* track ) const{
     G4VPhysicalVolume* physVol  = track->GetVolume();
     VolMapType_const_iterator physVolIter = _volumeMap.find(physVol);
     if ( physVolIter == _volumeMap.end() ){
@@ -67,7 +67,7 @@ namespace mu2e {
   }
 
   // Return the index into _persistentInfo for the volume attached to this track.
-  PhysicalVolumeInfoCollection::key_type PhysicalVolumeHelper::index( G4VPhysicalVolume* physVol ) const{
+  int PhysicalVolumeHelper::index( G4VPhysicalVolume* physVol ) const{
 
     VolMapType_const_iterator physVolIter = _volumeMap.find(physVol);
     if ( physVolIter == _volumeMap.end() ){
@@ -99,10 +99,7 @@ namespace mu2e {
 
       // Add volume to the map; it's an error if its already there.
       G4VPhysicalVolume* vpv = *i;
-      // Create a unique key for each volume
-      PhysicalVolumeInfoCollection::key_type key(_volumeMap.size());
-      pair<VolMapType_iterator,bool> ret = _volumeMap.insert(std::make_pair(vpv, key));
-
+      pair<VolMapType_iterator,bool> ret = _volumeMap.insert( std::make_pair(vpv,_volumeMap.size()) );
       if ( !ret.second ){
         throw cet::exception("RANGE")
           << "Error building the persistent volume list.  Volume: "
@@ -113,11 +110,10 @@ namespace mu2e {
       }
 
       // Add volume to the persistent info.
-      // push_back() would have been more efficient, but it screws up the key.  cetlib bug?
-      _persistentInfo[key] = PhysicalVolumeInfo(vpv->GetName(),
-                                                vpv->GetCopyNo(),
-                                                vpv->GetLogicalVolume()->GetMaterial()->GetName()
-                                                );
+      _persistentInfo.emplace_back(vpv->GetName(),
+                                   vpv->GetCopyNo(),
+                                   vpv->GetLogicalVolume()->GetMaterial()->GetName()
+                                   );
     }
 
   }

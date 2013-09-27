@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.68 2013/09/27 14:56:14 gandr Exp $
+// $Id: DataInterface.cc,v 1.69 2013/09/27 16:03:41 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/09/27 14:56:14 $
+// $Date: 2013/09/27 16:03:41 $
 //
 
 #include "DataInterface.h"
@@ -1267,12 +1267,12 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclassindex=trackInfos[i].index;
       std::string particlecollection=trackInfos[i].entryText;
       std::string particlename=HepPID::particleName(particle.pdgId());
-      unsigned int startVolume=particle.startVolumeIndex().asUint();
-      unsigned int endVolume  =particle.endVolumeIndex().asUint();
+      unsigned int startVolume=particle.startVolumeIndex();
+      unsigned int endVolume  =particle.endVolumeIndex();
       std::string startVolumeName="unknown volume";
       std::string endVolumeName="unknown volume";
-      if(startVolume<physicalVolumeEntries && startVolume>=0) startVolumeName=physicalVolumes->at(particle.startVolumeIndex()).name();
-      if(endVolume<physicalVolumeEntries && endVolume>=0) endVolumeName=physicalVolumes->at(particle.endVolumeIndex()).name();
+      if(startVolume<physicalVolumeEntries && startVolume>=0) startVolumeName=physicalVolumes->at(startVolume).name();
+      if(endVolume<physicalVolumeEntries && endVolume>=0) endVolumeName=physicalVolumes->at(endVolume).name();
 
       double x1=particle.startPosition().x() - _detSysOrigin.x();
       double y1=particle.startPosition().y() - _detSysOrigin.y();
