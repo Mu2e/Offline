@@ -7,7 +7,7 @@ To run a grid job, make sure that prestageRandom.sh and mixGrid01.sh are in
 your current working directory:
 
 mu2eart --setup=<path-to-your-build-of-Offline>/setup.sh \
-        --userscript=prestageRandom.sh \
+        --userscript=EventMixing/test/prestageRandom.sh \
         --fcl=mixGrid01.fcl \
         --njobs=1 \
         --events-per-job=500 \
@@ -17,9 +17,9 @@ This will randomize the choice of the 4 mix-in files ( using bash $RANDOM ).
 
 If you want deterministic sets of the 4 mix-in files, use
 
-  --userscript=prestage.sh
+  --userscript=EventMixing/test/prestage.sh
 
-This takes mix-in files versioned _1_ for all jobs for which $process%7==0,
+this takes mix-in files versioned _1_ for all jobs for which $process%7==0,
 _2_ for all jobs for which $process%7==1 and so on.
 
 
