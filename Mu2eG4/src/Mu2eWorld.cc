@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.165 2013/09/27 13:20:16 knoepfel Exp $
+// $Id: Mu2eWorld.cc,v 1.166 2013/09/27 13:59:48 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/09/27 13:20:16 $
+// $Date: 2013/09/27 13:59:48 $
 //
 // Original author Rob Kutschke
 //
@@ -32,6 +32,7 @@
 #include "cetlib/exception.h"
 
 // Mu2e includes
+#include "ConfigTools/inc/checkForStale.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
@@ -200,6 +201,9 @@ namespace mu2e {
 
     // This is just placeholder for now - and might be misnamed.
     constructMagnetYoke();
+
+    // Check for stale names
+    checkForStale( "hasExternalNeutronAbsorber", _config );
 
     if ( _config.getBool("hasExternalNeutronShielding",false) ) {
       constructExternalNeutronShielding(hallInfo, _config);
