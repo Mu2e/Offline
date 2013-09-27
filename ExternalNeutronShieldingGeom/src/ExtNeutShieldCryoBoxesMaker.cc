@@ -18,9 +18,9 @@ namespace mu2e {
   //  namespace {
 
   std::unique_ptr<ExtNeutShieldCryoBoxes>  ExtNeutShieldCryoBoxesMaker::make(const 
-							      SimpleConfig& c)
+                                                                             SimpleConfig& c)
   {
-
+    
     int nB = c.getInt("ExtNeutShieldCryoBoxes.numberOfBoxes");
 
     std::vector<std::vector<double>> dims;

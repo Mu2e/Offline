@@ -559,7 +559,7 @@ namespace mu2e {
     for(int i = 0; i < nBox; i++)
       {
 
-	std::vector<double> lwhs = dims[i];
+	std::vector<double> lwhs = dimes[i];
 
 	//  Make the name of the box
 	std::ostringstream name;

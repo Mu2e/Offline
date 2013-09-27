@@ -1,125 +1,24 @@
 // Original author David Norvil Brown
 // These numbers based on G4Bl geometry 13 as of 24 August 2013
 
-int ExtNeutShieldCryoBoxes.numberOfBoxes = 23;
+int ExtNeutShieldCryoBoxes.numberOfBoxes = 3;
 // 
 string ExtNeutShieldCryoBoxes.b1materialName  = "CONCRETE_MARS";
-string ExtNeutShieldCryoBoxes.b2materialName  = "G4_Fe";
+string ExtNeutShieldCryoBoxes.b2materialName  = "CONCRETE_MARS";
 string ExtNeutShieldCryoBoxes.b3materialName  = "CONCRETE_MARS";
-string ExtNeutShieldCryoBoxes.b4materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b5materialName  = "CONCRETE_MARS";
-string ExtNeutShieldCryoBoxes.b6materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b7materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b8materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b9materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b10materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b11materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b12materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b13materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b14materialName  = "CONCRETE_MARS";
-string ExtNeutShieldCryoBoxes.b15materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b16materialName  = "CONCRETE_MARS";
-string ExtNeutShieldCryoBoxes.b17materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b18materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b19materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b20materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b21materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b22materialName  = "G4_Fe";
-string ExtNeutShieldCryoBoxes.b23materialName  = "G4_Fe";
 
 //box lengths, widths, and heights, in mm, in mu2e frame
 double ExtNeutShieldCryoBoxes.b1length = 12874;   
 double ExtNeutShieldCryoBoxes.b1width = 4892; 
 double ExtNeutShieldCryoBoxes.b1height = 916; 
 
-double ExtNeutShieldCryoBoxes.b2length = 19;   
-double ExtNeutShieldCryoBoxes.b2width = 508; 
-double ExtNeutShieldCryoBoxes.b2height = 3890; 
+double ExtNeutShieldCryoBoxes.b2length = 12874;   
+double ExtNeutShieldCryoBoxes.b2width = 916; 
+double ExtNeutShieldCryoBoxes.b2height = 3922; 
 
 double ExtNeutShieldCryoBoxes.b3length = 12874;   
 double ExtNeutShieldCryoBoxes.b3width = 916; 
 double ExtNeutShieldCryoBoxes.b3height = 3922; 
-
-double ExtNeutShieldCryoBoxes.b4length = 19;   
-double ExtNeutShieldCryoBoxes.b4width = 508; 
-double ExtNeutShieldCryoBoxes.b4height = 3890; 
-
-double ExtNeutShieldCryoBoxes.b5length = 5448.3;   
-double ExtNeutShieldCryoBoxes.b5width = 458; 
-double ExtNeutShieldCryoBoxes.b5height = 3885; 
-
-double ExtNeutShieldCryoBoxes.b6length = 19;   
-double ExtNeutShieldCryoBoxes.b6width = 508; 
-double ExtNeutShieldCryoBoxes.b6height = 3890; 
-
-double ExtNeutShieldCryoBoxes.b7length = 458;   
-double ExtNeutShieldCryoBoxes.b7width = 19; 
-double ExtNeutShieldCryoBoxes.b7height = 3887.6; 
-
-double ExtNeutShieldCryoBoxes.b8length = 458;   
-double ExtNeutShieldCryoBoxes.b8width = 19; 
-double ExtNeutShieldCryoBoxes.b8height = 3887.6; 
-
-double ExtNeutShieldCryoBoxes.b9length = 458;   
-double ExtNeutShieldCryoBoxes.b9width = 19; 
-double ExtNeutShieldCryoBoxes.b9height = 3887.6; 
-
-double ExtNeutShieldCryoBoxes.b10length = 458;   
-double ExtNeutShieldCryoBoxes.b10width = 19; 
-double ExtNeutShieldCryoBoxes.b10height = 3887.6; 
-
-double ExtNeutShieldCryoBoxes.b11length = 458;   
-double ExtNeutShieldCryoBoxes.b11width = 19; 
-double ExtNeutShieldCryoBoxes.b11height = 3890; 
-
-double ExtNeutShieldCryoBoxes.b12length = 458;   
-double ExtNeutShieldCryoBoxes.b12width = 19; 
-double ExtNeutShieldCryoBoxes.b12height = 3890; 
-
-double ExtNeutShieldCryoBoxes.b13length = 19;   
-double ExtNeutShieldCryoBoxes.b13width = 508; 
-double ExtNeutShieldCryoBoxes.b13height = 3890; 
-
-double ExtNeutShieldCryoBoxes.b14length = 12874;   
-double ExtNeutShieldCryoBoxes.b14width = 916; 
-double ExtNeutShieldCryoBoxes.b14height = 3922; 
-
-double ExtNeutShieldCryoBoxes.b15length = 19;   
-double ExtNeutShieldCryoBoxes.b15width = 508; 
-double ExtNeutShieldCryoBoxes.b15height = 3890; 
-
-double ExtNeutShieldCryoBoxes.b16length = 5448.3;   
-double ExtNeutShieldCryoBoxes.b16width = 458; 
-double ExtNeutShieldCryoBoxes.b16height = 3885; 
-
-double ExtNeutShieldCryoBoxes.b17length = 19;   
-double ExtNeutShieldCryoBoxes.b17width = 508; 
-double ExtNeutShieldCryoBoxes.b17height = 3890; 
-
-double ExtNeutShieldCryoBoxes.b18length = 254;   
-double ExtNeutShieldCryoBoxes.b18width = 19; 
-double ExtNeutShieldCryoBoxes.b18height = 3890; 
-
-double ExtNeutShieldCryoBoxes.b19length = 254;   
-double ExtNeutShieldCryoBoxes.b19width = 19; 
-double ExtNeutShieldCryoBoxes.b19height = 3890; 
-
-double ExtNeutShieldCryoBoxes.b20length = 254;   
-double ExtNeutShieldCryoBoxes.b20width = 19; 
-double ExtNeutShieldCryoBoxes.b20height = 3890; 
-
-double ExtNeutShieldCryoBoxes.b21length = 254;   
-double ExtNeutShieldCryoBoxes.b21width = 19; 
-double ExtNeutShieldCryoBoxes.b21height = 3890; 
-
-double ExtNeutShieldCryoBoxes.b22length = 458;   
-double ExtNeutShieldCryoBoxes.b22width = 19; 
-double ExtNeutShieldCryoBoxes.b22height = 3890; 
-
-double ExtNeutShieldCryoBoxes.b23length = 458;   
-double ExtNeutShieldCryoBoxes.b23width = 19; 
-double ExtNeutShieldCryoBoxes.b23height = 3890; 
-
 
 // The center of the detector in Mu2e coordinates
 // For x:  add 3904 to G4bl, for z:  subtract 7929 from G4bl
@@ -127,97 +26,16 @@ double ExtNeutShieldCryoBoxes.b1centerX = -3904;
 double ExtNeutShieldCryoBoxes.b1centerY = 2068;
 double ExtNeutShieldCryoBoxes.b1centerZ = 9312;
 
-double ExtNeutShieldCryoBoxes.b2centerX = -5656.2;
-double ExtNeutShieldCryoBoxes.b2centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b2centerZ = 2884.55;
+double ExtNeutShieldCryoBoxes.b2centerX = -5892;
+double ExtNeutShieldCryoBoxes.b2centerY = -351;
+double ExtNeutShieldCryoBoxes.b2centerZ = 9312;
 
-double ExtNeutShieldCryoBoxes.b3centerX = -5892;
+double ExtNeutShieldCryoBoxes.b3centerX = -1916;
 double ExtNeutShieldCryoBoxes.b3centerY = -351;
 double ExtNeutShieldCryoBoxes.b3centerZ = 9312;
 
-double ExtNeutShieldCryoBoxes.b4centerX = -5656.2;
-double ExtNeutShieldCryoBoxes.b4centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b4centerZ = 10218.85;
-
-double ExtNeutShieldCryoBoxes.b5centerX = -5656.2;
-double ExtNeutShieldCryoBoxes.b5centerY = -367.9;
-double ExtNeutShieldCryoBoxes.b5centerZ = 12977.95;
-
-double ExtNeutShieldCryoBoxes.b6centerX = -5656.2;
-double ExtNeutShieldCryoBoxes.b6centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b6centerZ = 15739.45;
-
-double ExtNeutShieldCryoBoxes.b7centerX = -5919.7;
-double ExtNeutShieldCryoBoxes.b7centerY = -368;
-double ExtNeutShieldCryoBoxes.b7centerZ = 3002;
-
-double ExtNeutShieldCryoBoxes.b8centerX = -5392.7;
-double ExtNeutShieldCryoBoxes.b8centerY = -368;
-double ExtNeutShieldCryoBoxes.b8centerZ = 3002;
-
-double ExtNeutShieldCryoBoxes.b9centerX = -5919.7;
-double ExtNeutShieldCryoBoxes.b9centerY = -368;
-double ExtNeutShieldCryoBoxes.b9centerZ = 15622;
-
-double ExtNeutShieldCryoBoxes.b10centerX = -5392.7;
-double ExtNeutShieldCryoBoxes.b10centerY = -368;
-double ExtNeutShieldCryoBoxes.b10centerZ = 15622;
-
-double ExtNeutShieldCryoBoxes.b11centerX = -5919.7;
-double ExtNeutShieldCryoBoxes.b11centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b11centerZ = 10218.85;
-
-double ExtNeutShieldCryoBoxes.b12centerX = -5392.7;
-double ExtNeutShieldCryoBoxes.b12centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b12centerZ = 10218.85;
-
-double ExtNeutShieldCryoBoxes.b13centerX = -2151.8;
-double ExtNeutShieldCryoBoxes.b13centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b13centerZ = 2884.55;
-
-double ExtNeutShieldCryoBoxes.b14centerX = -1916;
-double ExtNeutShieldCryoBoxes.b14centerY = -351;
-double ExtNeutShieldCryoBoxes.b14centerZ = 9312;
-
-double ExtNeutShieldCryoBoxes.b15centerX = -2151.8;
-double ExtNeutShieldCryoBoxes.b15centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b15centerZ = 10218.85;
-
-double ExtNeutShieldCryoBoxes.b16centerX = -2151.8;
-double ExtNeutShieldCryoBoxes.b16centerY = -367.9;
-double ExtNeutShieldCryoBoxes.b16centerZ = 12977.95;
-
-double ExtNeutShieldCryoBoxes.b17centerX = -2151.8;
-double ExtNeutShieldCryoBoxes.b17centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b17centerZ = 15739.45;
-
-double ExtNeutShieldCryoBoxes.b18centerX = -2415.3;
-double ExtNeutShieldCryoBoxes.b18centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b18centerZ = 3002;
-
-double ExtNeutShieldCryoBoxes.b19centerX = -1888.3;
-double ExtNeutShieldCryoBoxes.b19centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b19centerZ = 3002;
-
-double ExtNeutShieldCryoBoxes.b20centerX = -2415.3;
-double ExtNeutShieldCryoBoxes.b20centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b20centerZ = 15622;
-
-double ExtNeutShieldCryoBoxes.b21centerX = -1888.3;
-double ExtNeutShieldCryoBoxes.b21centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b21centerZ = 15622;
-
-double ExtNeutShieldCryoBoxes.b22centerX = -2415.3;
-double ExtNeutShieldCryoBoxes.b22centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b22centerZ = 10218.85;
-
-double ExtNeutShieldCryoBoxes.b23centerX = -1888.3;
-double ExtNeutShieldCryoBoxes.b23centerY = -365.6;
-double ExtNeutShieldCryoBoxes.b23centerZ = 10218.85;
-
-
 bool  ExtNeutShieldCryoBoxes.visible = true;
-bool  ExtNeutShieldCryoBoxes.solid   = true;
+bool  ExtNeutShieldCryoBoxes.solid   = false;
 
 int   ExtNeutShieldCryoBoxes.verbosityLevel = 0;
 
