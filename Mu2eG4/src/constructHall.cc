@@ -1,24 +1,26 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.16 2013/09/04 20:55:51 knoepfel Exp $
+// $Id: constructHall.cc,v 1.17 2013/09/27 13:23:26 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/09/04 20:55:51 $
+// $Date: 2013/09/27 13:23:26 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //
 // Notes:
 // Construct the earthen overburden
 
-// Mu2e includes.
-#include "Mu2eG4/inc/constructHall.hh"
+// Mu2e includes
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
+#include "Mu2eG4/inc/constructHall.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -172,6 +174,87 @@ namespace mu2e {
                   placePV,
                   doSurfaceCheck
                   );
+
+
+    // Create beamline shielding slabs
+    //
+    // - EMFB dirt overlaps first slab.  Introduce kludge to make
+    // - first slab not overlab with dirt; and the remaining part of
+    // - the first slab extend the full intended width (36')
+    double yElev = building->hallInsideYmax() + 2*building->hallCeilingThickness();
+
+    // Get height of dirt
+    GeomHandle<ProtonBeamDump> dump;
+    GeomHandle<ExtMonFNALBuilding> emfb;
+    //    GeomHandle<WorldG4> world;
+    
+    //    const double dumpDirtYmin =
+    //      world->hallFormalCenterInWorld()[1] - world->hallFormalHalfSize()[1]
+    //      - world->mu2eOriginInWorld()[1]
+      ;
+    const double dumpDirtYmax = std::max(
+                                         emfb->roomInsideYmax() + emfb->roomCeilingThickness() + emfb->dirtOverheadThickness()
+                                         ,
+                                         dump->frontShieldingCenterInMu2e()[1] + dump->frontShieldingHalfSize()[1]
+                                         );
+    
+    const Box &  slab2                   = building->concreteBeamlineSlab( 1 );
+    const double slab2TopHeight          = yElev + 4*slab2.getYhalfLength();
+    const double dumpDirtSlab2HeightDiff = slab2TopHeight-dumpDirtYmax;
+
+    // Portion up to dirt level
+
+    // Portion above dirt level
+
+    Box box( slab2.getXhalfLength(), 0.5*dumpDirtSlab2HeightDiff, slab2.getZhalfLength() );
+    CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(building->xPosOfSlabEnd()-box.getXhalfLength(), dumpDirtYmax+0.5*dumpDirtSlab2HeightDiff, 0)-hallInfo.centerInMu2e();
+    
+    cout << " Slab 2b: " << pos << "   " << box.getXhalfLength() << " " << box.getYhalfLength() << " " << box.getZhalfLength() << endl;
+
+    nestBox( "BeamlineSlab_2b",
+             box,
+             ceilingMaterial,
+             0,
+             pos, // position wrt hall
+             hallInfo,
+             0,
+             config.getBool("hall.ceilingVisible"),
+             G4Colour::Grey(),
+             config.getBool("hall.ceilingSolid"),
+             forceAuxEdgeVisible,
+             placePV,
+             doSurfaceCheck );
+    
+    yElev += 4*slab2.getYhalfLength();
+
+
+    for ( std::size_t iSlab = 2 ; iSlab < building->nBeamlineSlabs() ; iSlab++ ) {
+      ostringstream slab;
+      slab << "BeamlineSlab" << iSlab+1;
+
+      Box const& box = building->concreteBeamlineSlab( iSlab );
+
+      yElev += box.getYhalfLength();
+      CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(building->xPosOfSlabEnd()-box.getXhalfLength(), yElev, 0)-hallInfo.centerInMu2e();
+
+      cout << slab.str() << ": " << pos << "   " << box.getXhalfLength() << " " << box.getYhalfLength() << " " << box.getZhalfLength() << endl;
+
+      nestBox( slab.str(),
+               box,
+               ceilingMaterial,
+               0,
+               pos, // position wrt hall
+               hallInfo,
+               0,
+               config.getBool("hall.ceilingVisible"),
+               G4Colour::Grey(),
+               config.getBool("hall.ceilingSolid"),
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck );
+
+      yElev += box.getYhalfLength();
+    }
 
     //----------------------------------------------------------------
     // Create hall walls. The walls are placed inside the formal hall box.
