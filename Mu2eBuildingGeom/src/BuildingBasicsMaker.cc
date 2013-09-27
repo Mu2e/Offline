@@ -21,6 +21,7 @@ namespace mu2e {
     b->detectorHallFloorTopY_ = -c.getDouble("mu2e.origin.heightAboveHallFloor");
     b->detectorHallInsideFullHeight_ = c.getDouble("hall.insideFullHeight");
     b->detectorHallCeilingThickness_ = c.getDouble("hall.ceilingThick");
+    b->detectorHallInnerTSCeilingThickness_ = c.getDouble("hall.innerTSCeilingThick");
     b->detectorHallFloorThickness_ = c.getDouble("hall.floorThick");
     b->detectorHallFloorTopDepthBelowGrade_ = c.getDouble("hall.floorTopDepthBelowGrade");
 

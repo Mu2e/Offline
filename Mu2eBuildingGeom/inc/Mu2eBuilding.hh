@@ -56,6 +56,7 @@ namespace mu2e {
 
     double hallFloorThickness() const { return basics_.detectorHallFloorThickness(); }
     double hallCeilingThickness() const { return basics_.detectorHallCeilingThickness(); }
+    double hallInnerTSCeilingThickness() const { return basics_.detectorHallInnerTSCeilingThickness(); }
     double hallWallThickness() const { return _hallWallThickness; }
     double hallWallExtMonUCIThickness() const { return _hallWallExtMonUCIThickness; }
 
@@ -85,6 +86,10 @@ namespace mu2e {
     // Outline of concrete overburden extension that accounts for the
     // thicker overburden in the TS and PS regions
     const std::vector<CLHEP::Hep2Vector>& concreteOuterOutlineExt() const { return _concreteOuterOutlineExt; }
+
+    // Outline of concrete ceiling LOWER extension accounting for 17'
+    // ceiling height in PS and upstream TS regions
+    const std::vector<CLHEP::Hep2Vector>& concreteInnerOutlineLowerExt() const { return _concreteInnerOutlineLowerExt; }
 
     // Concrete slabs that go above concrete overburden extension,
     // serving as beamline shielding
@@ -131,6 +136,7 @@ namespace mu2e {
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline2;
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutline3;
     std::vector<CLHEP::Hep2Vector> _concreteOuterOutlineExt;
+    std::vector<CLHEP::Hep2Vector> _concreteInnerOutlineLowerExt;
     std::vector<Box>               _concreteBeamlineSlabs;
     std::vector<CLHEP::Hep2Vector> _hallInsideOutline;
 

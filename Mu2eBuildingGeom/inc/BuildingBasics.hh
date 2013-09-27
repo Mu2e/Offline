@@ -23,6 +23,7 @@ namespace mu2e {
 
     double detectorHallInsideFullHeight() const { return detectorHallInsideFullHeight_; }
     double detectorHallCeilingThickness() const { return detectorHallCeilingThickness_; }
+    double detectorHallInnerTSCeilingThickness() const { return detectorHallInnerTSCeilingThickness_; }
     double detectorHallFloorThickness()   const { return detectorHallFloorThickness_; }
 
     double detectorHallFloorTopDepthBelowGrade() const { return detectorHallFloorTopDepthBelowGrade_; }
@@ -38,6 +39,7 @@ namespace mu2e {
       : detectorHallFloorTopY_(0.)
       , detectorHallInsideFullHeight_(0.)
       , detectorHallCeilingThickness_(0.)
+      , detectorHallInnerTSCeilingThickness_(0.)
       , detectorHallFloorThickness_(0.)
       , detectorHallFloorTopDepthBelowGrade_(0.)
     {}
@@ -48,6 +50,7 @@ namespace mu2e {
     double detectorHallFloorTopY_;
     double detectorHallInsideFullHeight_;
     double detectorHallCeilingThickness_;
+    double detectorHallInnerTSCeilingThickness_;
     double detectorHallFloorThickness_;
     double detectorHallFloorTopDepthBelowGrade_;
   };

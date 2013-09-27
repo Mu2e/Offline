@@ -1,9 +1,9 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.17 2013/09/27 13:23:26 knoepfel Exp $
+// $Id: constructHall.cc,v 1.18 2013/09/27 17:19:39 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/09/27 13:23:26 $
+// $Date: 2013/09/27 17:19:39 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //
@@ -31,6 +31,8 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "G4NistManager.hh"
 
+// C++ includes
+#include <cmath>
 #include <vector>
 #include <algorithm>
 
@@ -174,6 +176,30 @@ namespace mu2e {
                   placePV,
                   doSurfaceCheck
                   );
+    
+    VolumeInfo hallInnerTSLowerCeilingExt("HallConcreteInnerTSLowerCeilingExt",
+                                          CLHEP::Hep3Vector(0, building->hallInsideYmax() - building->hallInnerTSCeilingThickness()/2, 0)
+                                          - hallInfo.centerInMu2e(),
+                                          hallInfo.centerInWorld);
+    
+    hallInnerTSLowerCeilingExt.solid = new G4ExtrudedSolid(hallInnerTSLowerCeilingExt.name,
+                                                           building->concreteInnerOutlineLowerExt(),
+                                                           building->hallInnerTSCeilingThickness()/2,
+                                                           G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+    
+    finishNesting(hallInnerTSLowerCeilingExt,
+                  ceilingMaterial,
+                  &horizontalConcreteRotation,
+                  hallInnerTSLowerCeilingExt.centerInParent,
+                  hallInfo.logical,
+                  0,
+                  config.getBool("hall.ceilingVisible"),
+                  G4Colour::Grey(),
+                  config.getBool("hall.ceilingSolid"),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
 
 
     // Create beamline shielding slabs
@@ -186,46 +212,38 @@ namespace mu2e {
     // Get height of dirt
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<ExtMonFNALBuilding> emfb;
-    //    GeomHandle<WorldG4> world;
-    
-    //    const double dumpDirtYmin =
-    //      world->hallFormalCenterInWorld()[1] - world->hallFormalHalfSize()[1]
-    //      - world->mu2eOriginInWorld()[1]
-      ;
-    const double dumpDirtYmax = std::max(
-                                         emfb->roomInsideYmax() + emfb->roomCeilingThickness() + emfb->dirtOverheadThickness()
-                                         ,
-                                         dump->frontShieldingCenterInMu2e()[1] + dump->frontShieldingHalfSize()[1]
-                                         );
-    
-    const Box &  slab2                   = building->concreteBeamlineSlab( 1 );
-    const double slab2TopHeight          = yElev + 4*slab2.getYhalfLength();
-    const double dumpDirtSlab2HeightDiff = slab2TopHeight-dumpDirtYmax;
 
-    // Portion up to dirt level
+    // Ugly kludge to account for proton beam dump dirt
+    // - fix later
+    for ( std::size_t iSlab = 0 ; iSlab < 2; iSlab++ ) {
+      ostringstream slab;
+      slab << "BeamlineSlab" << iSlab+1;
 
-    // Portion above dirt level
+      Box const& box = building->concreteBeamlineSlab( iSlab );
 
-    Box box( slab2.getXhalfLength(), 0.5*dumpDirtSlab2HeightDiff, slab2.getZhalfLength() );
-    CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(building->xPosOfSlabEnd()-box.getXhalfLength(), dumpDirtYmax+0.5*dumpDirtSlab2HeightDiff, 0)-hallInfo.centerInMu2e();
-    
-    cout << " Slab 2b: " << pos << "   " << box.getXhalfLength() << " " << box.getYhalfLength() << " " << box.getZhalfLength() << endl;
+      // Edge of building/dirt
+      const double buildingEdge = box.getZhalfLength()-std::abs(building->hallInsideZPSCorner()-building->hallWallThickness());
+      Box adjustedBox( box.getXhalfLength(), box.getYhalfLength(), box.getZhalfLength() - 0.5*buildingEdge );
 
-    nestBox( "BeamlineSlab_2b",
-             box,
-             ceilingMaterial,
-             0,
-             pos, // position wrt hall
-             hallInfo,
-             0,
-             config.getBool("hall.ceilingVisible"),
-             G4Colour::Grey(),
-             config.getBool("hall.ceilingSolid"),
-             forceAuxEdgeVisible,
-             placePV,
-             doSurfaceCheck );
-    
-    yElev += 4*slab2.getYhalfLength();
+      yElev += box.getYhalfLength();
+      CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(building->xPosOfSlabEnd()-adjustedBox.getXhalfLength(), yElev, buildingEdge*0.5 )-hallInfo.centerInMu2e();
+
+      nestBox( slab.str(),
+               adjustedBox,
+               ceilingMaterial,
+               0,
+               pos, // position wrt hall
+               hallInfo,
+               0,
+               config.getBool("hall.ceilingVisible"),
+               G4Colour::Grey(),
+               config.getBool("hall.ceilingSolid"),
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck );
+
+      yElev += box.getYhalfLength();
+    }
 
 
     for ( std::size_t iSlab = 2 ; iSlab < building->nBeamlineSlabs() ; iSlab++ ) {
@@ -236,8 +254,6 @@ namespace mu2e {
 
       yElev += box.getYhalfLength();
       CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(building->xPosOfSlabEnd()-box.getXhalfLength(), yElev, 0)-hallInfo.centerInMu2e();
-
-      cout << slab.str() << ": " << pos << "   " << box.getXhalfLength() << " " << box.getYhalfLength() << " " << box.getZhalfLength() << endl;
 
       nestBox( slab.str(),
                box,
