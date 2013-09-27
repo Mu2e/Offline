@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.60 2013/09/27 13:00:13 knoepfel Exp $
+// $Id: GeometryService_service.cc,v 1.61 2013/09/27 13:18:13 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/09/27 13:00:13 $
+// $Date: 2013/09/27 13:18:13 $
 //
 // Original author Rob Kutschke
 //
@@ -52,8 +52,32 @@
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShieldingMaker.hh"
-#include "ExternalNeutronAbsorberGeom/inc/ExternalNeutronAbsorber.hh"
-#include "ExternalNeutronAbsorberGeom/inc/ExternalNeutronAbsorberMaker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstream1a.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstream1aMaker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstream1b.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstream1bMaker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstream2.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstream2Maker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstreamTop.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstreamTopMaker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstreamBottom.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstreamBottomMaker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexRight.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexRightMaker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexLeft.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexLeftMaker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexRoof.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexRoofMaker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexRightb.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexRightbMaker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldLAbove.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldLAboveMaker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldLCeiling.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldLCeilingMaker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCryoBoxes.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCryoBoxesMaker.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxesMaker.hh"
 #include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorber.hh"
 #include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorberMaker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
@@ -275,10 +299,24 @@ if(_config->getBool("hasHybridCalorimeter",false)){
     if(_config->getBool("hasInternalNeutronAbsorber",false)){
       addDetector( InternalNeutronAbsorberMaker::make(*_config,ds) );
     }
-    
-    if(_config->getBool("hasExternalNeutronAbsorber",false)){
-      addDetector( ExternalNeutronAbsorberMaker::make(*_config,ds) );
+
+
+    if(_config->getBool("hasExternalNeutronShielding",false)) {
+      addDetector( ExtNeutShieldUpstream1aMaker::make(*_config)     );
+      addDetector( ExtNeutShieldUpstream1bMaker::make(*_config)     );
+      addDetector( ExtNeutShieldUpstream2Maker::make(*_config)      );
+      addDetector( ExtNeutShieldUpstreamTopMaker::make(*_config)    );
+      addDetector( ExtNeutShieldUpstreamBottomMaker::make(*_config) );
+      addDetector( ExtNeutShieldCavexRightMaker::make(*_config)     );
+      addDetector( ExtNeutShieldCavexRightbMaker::make(*_config)    );
+      addDetector( ExtNeutShieldCavexLeftMaker::make(*_config)      );
+      addDetector( ExtNeutShieldCavexRoofMaker::make(*_config)      );
+      addDetector( ExtNeutShieldLAboveMaker::make(*_config)         );
+      addDetector( ExtNeutShieldLCeilingMaker::make(*_config)       );
+      addDetector( ExtNeutShieldCryoBoxesMaker::make(*_config)      );
+      addDetector( ExtNeutShieldCendBoxesMaker::make(*_config)      );
     }
+
 
     std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, dump));
     const ExtMonFNALBuilding& emfb = *tmpemb.get();
