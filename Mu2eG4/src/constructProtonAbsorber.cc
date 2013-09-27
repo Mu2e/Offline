@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.26 2013/08/30 16:58:53 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/30 16:58:53 $
+// $Id: constructProtonAbsorber.cc,v 1.27 2013/09/27 13:24:43 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/09/27 13:24:43 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -357,7 +357,7 @@ namespace mu2e {
         }
       }
       else {
-        cout << __func__ << " protonabs1 disabled" << endl;
+        if( verbosityLevel > 0 ) cout << __func__ << " protonabs1 disabled" << endl;
       }
 
 
@@ -405,7 +405,7 @@ namespace mu2e {
         }
       }
       else {
-        cout << __func__ << " protonabs2 disabled" << endl;
+        if ( verbosityLevel > 0 ) cout << __func__ << " protonabs2 disabled" << endl;
       }
 
       /*
@@ -484,7 +484,7 @@ namespace mu2e {
   
       }
       else {
-        cout << __func__ << " outer protonabs disabled" << endl;
+        if ( verbosityLevel > 0 ) cout << __func__ << " outer protonabs disabled" << endl;
       }
 
     }
