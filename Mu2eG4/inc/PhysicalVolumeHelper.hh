@@ -4,9 +4,9 @@
 // A utility class to do indexolgy related to persistence of
 // physical volume information.
 //
-// $Id: PhysicalVolumeHelper.hh,v 1.4 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
+// $Id: PhysicalVolumeHelper.hh,v 1.5 2013/09/27 14:56:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/09/27 14:56:14 $
 //
 // Original author Rob Kutschke
 //
@@ -46,10 +46,10 @@ namespace mu2e {
     }
 
     // Return the index into _persistentInfo for the physical volume attached to this track.
-    int index( const G4Track* track ) const;
+    PhysicalVolumeInfoCollection::key_type index( const G4Track* track ) const;
 
     // Return the index into _persistentInfo for this physical volume.
-    int index( G4VPhysicalVolume* physVol ) const;
+    PhysicalVolumeInfoCollection::key_type index( G4VPhysicalVolume* physVol ) const;
 
   private:
 

@@ -4,9 +4,9 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.10 2012/03/07 05:56:56 gandr Exp $
+// $Id: SimParticle.hh,v 1.11 2013/09/27 14:56:14 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/03/07 05:56:56 $
+// $Date: 2013/09/27 14:56:14 $
 //
 // Original author Rob Kutschke
 //
@@ -80,7 +80,7 @@ namespace mu2e {
                  const CLHEP::HepLorentzVector& amomentum,
                  double                         astartGlobalTime,
                  double                         astartProperTime,
-                 unsigned                       astartVolumeIndex,
+                 cet::map_vector_key            astartVolumeIndex,
                  unsigned                       astartG4Status,
                  ProcessCode                    acreationCode,
                  double                         aweight=1.):
@@ -117,7 +117,7 @@ namespace mu2e {
                      CLHEP::HepLorentzVector aendMomentum,
                      double                  aendGlobalTime,
                      double                  aendProperTime,
-                     unsigned                aendVolumeIndex,
+                     cet::map_vector_key     aendVolumeIndex,
                      unsigned                aendG4Status,
                      ProcessCode             astoppingCode,
                      double                  preLastStepKE,
@@ -173,7 +173,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector const& startMomentum() const { return _startMomentum;}
     double      startGlobalTime()  const { return _startGlobalTime;}
     double      startProperTime()  const { return _startProperTime;}
-    unsigned    startVolumeIndex() const { return _startVolumeIndex;}
+    cet::map_vector_key startVolumeIndex() const { return _startVolumeIndex;}
     unsigned    startG4Status()    const { return _startG4Status;}
     ProcessCode creationCode()      const { return _creationCode;  }
 
@@ -182,7 +182,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector const& endMomentum() const { return _endMomentum;}
     double       endGlobalTime()  const { return _endGlobalTime; }
     double       endProperTime()  const { return _endProperTime; }
-    unsigned     endVolumeIndex() const { return _endVolumeIndex;}
+    cet::map_vector_key endVolumeIndex() const { return _endVolumeIndex;}
     unsigned     endG4Status()    const { return _endG4Status;   }
     ProcessCode  stoppingCode()   const { return _stoppingCode;  }
     double       preLastStepKineticEnergy() const { return _preLastStepKE; }
@@ -243,7 +243,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector _startMomentum;
     double                  _startGlobalTime;
     double                  _startProperTime;
-    unsigned                _startVolumeIndex;
+    cet::map_vector_key     _startVolumeIndex;
     unsigned                _startG4Status;
     ProcessCode             _creationCode;
 
@@ -252,7 +252,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector _endMomentum;
     double                  _endGlobalTime;
     double                  _endProperTime;
-    unsigned                _endVolumeIndex;
+    cet::map_vector_key     _endVolumeIndex;
     unsigned                _endG4Status;
     ProcessCode             _stoppingCode;
     double                  _preLastStepKE;

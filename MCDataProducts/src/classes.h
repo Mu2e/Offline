@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.23 2013/09/19 21:55:14 gandr Exp $
+// $Id: classes.h,v 1.24 2013/09/27 14:56:14 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/09/19 21:55:14 $
+// $Date: 2013/09/27 14:56:14 $
 //
 // Original author Rob Kutschke
 //
@@ -108,6 +108,8 @@ namespace {
     mu2e::SimParticleProtonPulseTimeMap sppptm;
     std::pair<unsigned int, mu2e::PhysicalVolumeInfoCollection> pupvic;
     mu2e::PhysicalVolumeInfoMultiCollection pvimc;
+    mu2e::PhysicalVolumeInfoCollection::value_type pvicvt;
+    mu2e::PhysicalVolumeInfoCollection pvic;
   };
 }
 template class art::Wrapper<mu2e::GenParticleSPMHistory>;

@@ -1,9 +1,9 @@
 //
 // A module to follow the conversion electron in the events
 //
-// $Id: DIOElecHistory_module.cc,v 1.4 2013/05/31 20:04:27 gandr Exp $
+// $Id: DIOElecHistory_module.cc,v 1.5 2013/09/27 14:56:14 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Date: 2013/09/27 14:56:14 $
 //
 // Original author Gianni Onorato
 //
@@ -376,7 +376,7 @@ namespace mu2e {
     B_deady  = simBKG.endPosition().y();
     B_deadz  = simBKG.endPosition().z() - 10200.;
     B_deadtime  = simBKG.endGlobalTime();
-    B_deadvol  = simBKG.endVolumeIndex();
+    B_deadvol  = simBKG.endVolumeIndex().asUint();
 
 
     GeomHandle<VirtualDetector> vdg;

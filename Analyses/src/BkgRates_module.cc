@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.37 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: BkgRates_module.cc,v 1.38 2013/09/27 14:56:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/09/27 14:56:14 $
 //
 // Original author Gianni Onorato
 //
@@ -374,13 +374,13 @@ namespace mu2e {
 	  tntpArray[idx++] = sim.fromGenerator();//leaf 17
 	  tntpArray[idx++] = sim.startMomentum().vect().mag(); // leaf 21
 	  tntpArray[idx++] = sim.creationCode(); // leaf 22
-	  tntpArray[idx++] = sim.startVolumeIndex(); // leaf 23
+	  tntpArray[idx++] = sim.startVolumeIndex().asUint(); // leaf 23
 	  tntpArray[idx++] = sim.startPosition().x(); // leaf 24
 	  tntpArray[idx++] = sim.startPosition().y(); // leaf 25
 	  tntpArray[idx++] = sim.startPosition().z(); // leaf 26
 	  tntpArray[idx++] = sim.startGlobalTime(); // leaf 27
 	  tntpArray[idx++] = sim.stoppingCode(); // leaf 28
-	  tntpArray[idx++] = sim.endVolumeIndex(); // leaf 29
+	  tntpArray[idx++] = sim.endVolumeIndex().asUint(); // leaf 29
 	  tntpArray[idx++] = sim.endPosition().x(); // leaf 30
 	  tntpArray[idx++] = sim.endPosition().y(); // leaf 31
 	  tntpArray[idx++] = sim.endPosition().z(); // leaf 32
@@ -616,14 +616,14 @@ namespace mu2e {
 	tntpArray[idx++] = sim.fromGenerator();//leaf 13
 	tntpArray[idx++] = sim.startMomentum().vect().mag(); // leaf 17
 	tntpArray[idx++] = sim.creationCode(); // leaf 18
-	tntpArray[idx++] = sim.startVolumeIndex(); // leaf 19
+	tntpArray[idx++] = sim.startVolumeIndex().asUint(); // leaf 19
 	tntpArray[idx++] = sim.startPosition().x(); // leaf 20
 	tntpArray[idx++] = sim.startPosition().y(); // leaf 21
 	tntpArray[idx++] = sim.startPosition().z(); // leaf 22
 	tntpArray[idx++] = sim.startGlobalTime(); // leaf 23
 	
 	tntpArray[idx++] = sim.stoppingCode(); // leaf 24
-	tntpArray[idx++] = sim.endVolumeIndex(); // leaf 25
+	tntpArray[idx++] = sim.endVolumeIndex().asUint(); // leaf 25
 	tntpArray[idx++] = sim.endPosition().x(); // leaf 26
 	tntpArray[idx++] = sim.endPosition().y(); // leaf 27
 	tntpArray[idx++] = sim.endPosition().z(); // leaf 28
@@ -855,14 +855,14 @@ namespace mu2e {
 	
 	cntpArray[idx++] = sim.startMomentum().vect().mag();
 	cntpArray[idx++] = sim.creationCode();
-	cntpArray[idx++] = sim.startVolumeIndex();
+	cntpArray[idx++] = sim.startVolumeIndex().asUint();
 	cntpArray[idx++] = sim.startPosition().x();
 	cntpArray[idx++] = sim.startPosition().y();
 	cntpArray[idx++] = sim.startPosition().z();
 	cntpArray[idx++] = sim.startGlobalTime();
 
 	cntpArray[idx++] = sim.stoppingCode();
-	cntpArray[idx++] = sim.endVolumeIndex();
+	cntpArray[idx++] = sim.endVolumeIndex().asUint();
 	cntpArray[idx++] = sim.endPosition().x();
 	cntpArray[idx++] = sim.endPosition().y();
 	cntpArray[idx++] = sim.endPosition().z();
@@ -1010,7 +1010,7 @@ namespace mu2e {
         tgtntpArray[idx++] = sim->fromGenerator();
         tgtntpArray[idx++] = sim->pdgId();
         tgtntpArray[idx++] = trackId.asInt();
-        tgtntpArray[idx++] = sim->endVolumeIndex();
+        tgtntpArray[idx++] = sim->endVolumeIndex().asUint();
         tgtntpArray[idx++] = (volInfo.name() == "TargetFoil_");
         
         _tgtNtup->Fill(tgtntpArray);

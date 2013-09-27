@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CosmicTuple_module.cc,v 1.9 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: CosmicTuple_module.cc,v 1.10 2013/09/27 14:56:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/09/27 14:56:14 $
 //
 // Original author Yury Kolomensky (Rob Kutschke)
 //
@@ -232,8 +232,8 @@ namespace mu2e {
 
       trspos = sim.startPosition();
       trsmom = sim.startMomentum();
-      trSVolume = sim.startVolumeIndex();
-      trEVolume = sim.endVolumeIndex();
+      trSVolume = sim.startVolumeIndex().asUint();
+      trEVolume = sim.endVolumeIndex().asUint();
       ProcessCode creationCode = sim.creationCode();
       ProcessCode stoppingCode = sim.stoppingCode();
       trCr = creationCode;
@@ -244,8 +244,8 @@ namespace mu2e {
         prsmom = sim_parent->startMomentum();
         prepos = sim_parent->endPosition();
         premom = sim_parent->endMomentum();
-        prSVolume = sim_parent->startVolumeIndex();
-        prEVolume = sim_parent->endVolumeIndex();
+        prSVolume = sim_parent->startVolumeIndex().asUint();
+        prEVolume = sim_parent->endVolumeIndex().asUint();
         prntPdg= sim_parent->pdgId();
         prCr   = sim_parent->creationCode();
         prSt   = sim_parent->stoppingCode();
