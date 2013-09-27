@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.164 2013/09/13 06:42:44 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2013/09/13 06:42:44 $
+// $Id: Mu2eWorld.cc,v 1.165 2013/09/27 13:20:16 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/09/27 13:20:16 $
 //
 // Original author Rob Kutschke
 //
@@ -40,10 +40,9 @@
 #include "Mu2eG4/inc/constructHall.hh"
 #include "Mu2eG4/inc/constructProtonBeamDump.hh"
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
-#include "Mu2eG4/inc/constructSteel.hh"
 #include "Mu2eG4/inc/constructCRV.hh"
 #include "Mu2eG4/inc/constructExtMonUCI.hh"
-#include "Mu2eG4/inc/constructExternalNeutronAbsorber.hh"
+#include "Mu2eG4/inc/constructExternalNeutronShielding.hh"
 #include "Mu2eG4/inc/constructInternalNeutronAbsorber.hh"
 #include "Mu2eG4/inc/constructMBS.hh"
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
@@ -202,8 +201,8 @@ namespace mu2e {
     // This is just placeholder for now - and might be misnamed.
     constructMagnetYoke();
 
-    if ( _config.getBool("hasExternalNeutronAbsorber",false) ) {
-      constructExternalNeutronAbsorber(_config);
+    if ( _config.getBool("hasExternalNeutronShielding",false) ) {
+      constructExternalNeutronShielding(hallInfo, _config);
     }
 
     if ( _config.getBool("hasInternalNeutronAbsorber",false) ) {
@@ -221,7 +220,6 @@ namespace mu2e {
     if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
 
       GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
-      //constructSteel(hallInfo,_config);
       constructCRV(hallInfo,_config);
     }
 
