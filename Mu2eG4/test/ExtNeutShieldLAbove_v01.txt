@@ -32,7 +32,7 @@ double ExtNeutShieldLAbove.rotateX = -90;
 bool  ExtNeutShieldLAbove.visible = true;
 bool  ExtNeutShieldLAbove.solid   = false;
 
-int   ExtNeutShieldLAbove.verbosityLevel = 1;
+int   ExtNeutShieldLAbove.verbosityLevel = 0;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
