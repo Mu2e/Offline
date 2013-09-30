@@ -18,11 +18,14 @@
 //
 
 // C++ includes.
-#include <iostream>
+#include <map>
 #include <vector>
 
 // Mu2e includes.
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
+
+// Framework includes
+#include "cetlib/exception.h"
 
 namespace mu2e
 {
@@ -30,29 +33,70 @@ namespace mu2e
 
   struct PhysicsParams: virtual public ConditionsEntity {
 
+    typedef std::string targetMat;
+
     // Proton parameters
-    double   getProtonEnergy()   const { return _protonEnergy;   }
-    double   getProtonKE()       const { return _protonKE;       }
+    double   getProtonEnergy  () const { return _protonEnergy;   }
+    double   getProtonKE      () const { return _protonKE;       }
     double   getProtonMomentum() const { return _protonMomentum; }
     
     // Muon parameters
-    double   getDecayTime()      const { return _decayTime;      }
-    double   getDecayFraction()  const { return _decayFraction;  }
-    double   getAtomicMass()     const { return _atomicMass;     }
-    unsigned getAtomicNumber()   const { return _atomicNumber;   }
+    double   getDecayTime     (targetMat material = "") const { 
+      const std::string allowedMaterial = checkMaterial( material );
+      return _decayTime.find(allowedMaterial)->second;      
+    }
 
-    double   getApproxEb()       const { return _approxBindingEnergy; }
-    double   getEb()             const { return _bindingEnergy; }
-    double   getMuonEnergy()     const { return _muonEnergy;     }
-    double   getEndpointEnergy() const { return _endpointEnergy; }
+    double   getDecayFraction (targetMat material = "") const { 
+      const std::string allowedMaterial = checkMaterial( material );
+      return _decayFraction.find(allowedMaterial)->second;  
+    }
 
-    std::string getStoppingTarget() const { return _chosenStoppingTarget; }
+    double   getAtomicMass    (targetMat material = "") const { 
+      const std::string allowedMaterial = checkMaterial( material );
+      return _atomicMass.find(allowedMaterial)->second;     
+    }
+
+    unsigned getAtomicNumber  (targetMat material = "") const { 
+      const std::string allowedMaterial = checkMaterial( material );
+      return _atomicNumber.find(allowedMaterial)->second;   
+    }
+
+    double   getApproxEb      (targetMat material = "") const { 
+      const std::string allowedMaterial = checkMaterial( material );
+      return _approxBindingEnergy.find(allowedMaterial)->second; 
+    }
+
+    double   getEb            (targetMat material = "") const { 
+      const std::string allowedMaterial = checkMaterial( material );
+      return _bindingEnergy.find(allowedMaterial)->second;  
+    }
+
+    double   getMuonEnergy    (targetMat material = "") const { 
+      const std::string allowedMaterial = checkMaterial( material );
+      return _muonEnergy.find(allowedMaterial)->second;     
+    }
+
+    double   getEndpointEnergy(targetMat material = "") const { 
+      const std::string allowedMaterial = checkMaterial( material );
+      return _endpointEnergy.find(allowedMaterial)->second; 
+    }
+
+    targetMat getStoppingTargetMaterial() const { 
+      return _chosenStoppingTargetMaterial; 
+    }
 
     // Return Czarnecki/Shanker coefficients
-    double getCzarneckiCoefficient() const { return _czarneckiCoefficient; }
-    const std::vector<double>& getCzarneckiCoefficients() const { return _czarneckiCoefficients; }
+    double getCzarneckiCoefficient (targetMat material = "") const { 
+      const std::string allowedMaterial = checkMaterial( material );
+      return _czarneckiCoefficient.find(allowedMaterial)->second; 
+    }
+    
+    const std::vector<double>& getCzarneckiCoefficients(targetMat material = "") const { 
+      const std::string allowedMaterial = checkMaterial( material );
+      return _czarneckiCoefficients.find(allowedMaterial)->second; 
+    }
 
-    size_t getShankerNcoeffs() const { return _shankerNcoeffs; }
+    std::size_t getShankerNcoeffs() const { return _shankerNcoeffs; }
     const std::vector<double>& getShankerDcoefficients() const { return _shankerDcoefficients; }
     const std::vector<double>& getShankerEcoefficients() const { return _shankerEcoefficients; }
     const std::vector<double>& getShankerFcoefficients() const { return _shankerFcoefficients; }
@@ -67,41 +111,44 @@ namespace mu2e
     // We want to discourage multi-phase construction.
     PhysicsParams ();
 
-    std::string _chosenStoppingTarget;
-    std::vector<std::string> _allowedTargets;
+    targetMat _chosenStoppingTargetMaterial;
+    std::vector<targetMat> _allowedTargetMaterials;
 
     double _protonEnergy;
     double _protonKE;
     double _protonMomentum;
 
-    double   _decayTime;
-    double   _decayFraction;
-    double   _atomicMass; 
-    unsigned _atomicNumber;
-    double   _approxBindingEnergy;
-    double   _bindingEnergy;
-    double   _muonEnergy;
-    double   _endpointEnergy;
+    std::map<targetMat,double>   _decayTime;
+    std::map<targetMat,double>   _decayFraction;
+    std::map<targetMat,double>   _atomicMass; 
+    std::map<targetMat,unsigned> _atomicNumber;
+    std::map<targetMat,double>   _approxBindingEnergy;
+    std::map<targetMat,double>   _bindingEnergy;
+    std::map<targetMat,double>   _muonEnergy;
+    std::map<targetMat,double>   _endpointEnergy;
 
-    double _czarneckiCoefficient;
-    std::vector<double> _czarneckiCoefficients;
+    std::map<targetMat,double> _czarneckiCoefficient;
+    std::map<targetMat,std::vector<double>> _czarneckiCoefficients;
 
-    const size_t _shankerNcoeffs = 4;
+    const std::size_t _shankerNcoeffs = 4;
     std::vector<double> _shankerDcoefficients;
     std::vector<double> _shankerEcoefficients;
     std::vector<double> _shankerFcoefficients;
 
+    inline targetMat checkMaterial( const targetMat& material ) const {
+      if ( material.empty() ) return _chosenStoppingTargetMaterial;
+
+      // Throw if not allowed
+      else if ( std::find( _allowedTargetMaterials.begin(), 
+                           _allowedTargetMaterials.end(),
+                           material ) == _allowedTargetMaterials.end() )
+        throw cet::exception("StoppingTargetMaterial")
+          << __func__ << " " << material << " not an allowed stopping target!\n" ;
+
+      else return material;      
+    }
+
   };
-
-  // Shift left (printing) operator.
-  inline std::ostream& operator<<(std::ostream& ost,
-                                  const PhysicsParams& lw ){
-    ost << "( "
-        << lw.getDecayTime() << ", "
-        << " )";
-
-    return ost;
-  }
 
 }
 

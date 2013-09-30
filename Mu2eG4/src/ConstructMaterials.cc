@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.44 2013/09/26 19:10:31 knoepfel Exp $
+// $Id: ConstructMaterials.cc,v 1.45 2013/09/30 21:01:29 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/09/26 19:10:31 $
+// $Date: 2013/09/30 21:01:29 $
 //
 // Original author Rob Kutschke
 //
@@ -856,9 +856,9 @@ namespace mu2e {
     }
 
     // An alias for the stopping target material
-    mat = isNeeded(materialsToLoad, "StoppingTarget_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTarget());
+    mat = isNeeded(materialsToLoad, "StoppingTarget_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial());
     if ( true /* Always load the stopping target material */ ){
-      G4Material* met = findMaterialOrThrow("G4_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTarget());
+      G4Material* met = findMaterialOrThrow("G4_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial());
       G4Material* tgt = new G4Material(mat.name, met->GetDensity(), 1);
       tgt->AddMaterial(met, 1.);
     }

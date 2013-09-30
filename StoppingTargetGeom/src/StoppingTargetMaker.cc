@@ -2,9 +2,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: StoppingTargetMaker.cc,v 1.4 2013/08/29 19:58:45 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/29 19:58:45 $
+// $Id: StoppingTargetMaker.cc,v 1.5 2013/09/30 21:01:29 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/09/30 21:01:29 $
 //
 // Original author Peter Shanahan
 //
@@ -95,7 +95,7 @@ namespace mu2e {
         << "Material is specified in Mu2eG4/test/globalConstants_01.txt\n ";
     }
 
-    _materials.assign( _rOut.size(), "StoppingTarget_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTarget() );
+    _materials.assign( _rOut.size(), "StoppingTarget_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial() );
 
     // Search to see if override material is specifed in geom. file
     const string overrideMaterial = c.getString("stoppingTarget.overrideMaterial","");
@@ -103,7 +103,7 @@ namespace mu2e {
       _materials.assign( _rOut.size(), overrideMaterial );
       cerr << endl
            << " WARNING: Stopping target material ( " 
-           << GlobalConstantsHandle<PhysicsParams>()->getStoppingTarget() 
+           << GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial() 
            << " ) overridden with: " << overrideMaterial << "\n" 
            << endl
            << "     You are specifying a stopping target material\n"

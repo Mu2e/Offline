@@ -4,9 +4,9 @@
 // in the endpoint region taken from Czarnecki spectrum
 // Czarneckki et al 10.1103/PhysRevD.84.013006
 //
-// $Id: CzarneckiSpectrum.cc,v 1.11 2013/08/01 12:42:46 knoepfel Exp $
+// $Id: CzarneckiSpectrum.cc,v 1.12 2013/09/30 21:01:29 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/01 12:42:46 $
+// $Date: 2013/09/30 21:01:29 $
 //
 
 // Mu2e includes
@@ -27,7 +27,7 @@ namespace mu2e {
 
   CzarneckiSpectrum::CzarneckiSpectrum() :
     _table ( loadTable<2>( "ConditionsService/data/czarnecki_"+
-                           GlobalConstantsHandle<PhysicsParams>()->getStoppingTarget()+".tbl" ) )
+                           GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial()+".tbl" ) )
   {}
 
   double CzarneckiSpectrum::getWeight(double E) const {
