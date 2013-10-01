@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.73 2013/08/28 06:00:41 gandr Exp $
+// $Id: G4_module.cc,v 1.74 2013/10/01 00:51:43 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/28 06:00:41 $
+// $Date: 2013/10/01 00:51:43 $
 //
 // Original author Rob Kutschke
 //
@@ -417,7 +417,7 @@ namespace mu2e {
     }
 
     // Append info for the current stage
-    mvi->emplace_back(std::make_pair(_simParticleNumberOffset, _physVolHelper.persistentInfo()));
+    mvi->emplace_back(std::make_pair(_simParticleNumberOffset, _physVolHelper.persistentSingleStageInfo()));
 
     sr.put(std::move(mvi));
   }

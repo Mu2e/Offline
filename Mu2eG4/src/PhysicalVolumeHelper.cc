@@ -2,9 +2,9 @@
 // A utility class to do indexolgy related to persistence of
 // physical volume information.
 //
-// $Id: PhysicalVolumeHelper.cc,v 1.7 2013/09/27 16:03:41 gandr Exp $
+// $Id: PhysicalVolumeHelper.cc,v 1.8 2013/10/01 00:51:43 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/09/27 16:03:41 $
+// $Date: 2013/10/01 00:51:43 $
 //
 // Original author Rob Kutschke
 //
@@ -92,6 +92,7 @@ namespace mu2e {
 
     _volumeMap.clear();
     _persistentInfo.clear();
+    _pSingleStage.clear();
 
     // Loop over physical volume store.
     G4PhysicalVolumeStore* pstore = G4PhysicalVolumeStore::GetInstance();
@@ -114,6 +115,8 @@ namespace mu2e {
                                    vpv->GetCopyNo(),
                                    vpv->GetLogicalVolume()->GetMaterial()->GetName()
                                    );
+
+      _pSingleStage[cet::map_vector_key(vpv->GetCopyNo())] = _persistentInfo.back();
     }
 
   }

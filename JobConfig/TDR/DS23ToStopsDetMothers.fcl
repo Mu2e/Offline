@@ -107,7 +107,7 @@ outputs: {
     beamFlashOutput : {
         module_type : RootOutput
         SelectEvents: { SelectEvents: [beamFlashFilter] }
-        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "drop *_stoppedMuonFinder_*_*", "drop *_*_*_TS3ToDS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*", "keep uintmu2e::PhysicalVolumeInfosstd::pairs_g4run_*_DS23ToStopsDetMothers" ]
+        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "drop *_stoppedMuonFinder_*_*", "drop *_*_*_TS3ToDS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*", "keep uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_DS23ToStopsDetMothers" ]
         fileName    : "beamFlashDS23ToStopsDetMothers.root"
     }
 

@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.25 2013/09/27 16:03:41 gandr Exp $
+// $Id: classes.h,v 1.26 2013/10/01 00:51:43 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/09/27 16:03:41 $
+// $Date: 2013/10/01 00:51:43 $
 //
 // Original author Rob Kutschke
 //
@@ -106,10 +106,14 @@ namespace {
     mu2e::GenParticleMARSAssns gpwa;
     mu2e::SimParticleMARSAssns spwa;
     mu2e::SimParticleProtonPulseTimeMap sppptm;
-    std::pair<unsigned int, mu2e::PhysicalVolumeInfoCollection> pupvic;
-    mu2e::PhysicalVolumeInfoMultiCollection pvimc;
   };
 }
+
+template class std::pair<cet::map_vector_key,mu2e::PhysicalVolumeInfo>;
+template class std::vector<std::pair<cet::map_vector_key,mu2e::PhysicalVolumeInfo> >;
+template class std::pair<unsigned int,cet::map_vector<mu2e::PhysicalVolumeInfo> >;
+template class std::vector<std::pair<unsigned int,cet::map_vector<mu2e::PhysicalVolumeInfo> > >;
+
 template class art::Wrapper<mu2e::GenParticleSPMHistory>;
 template class art::Wrapper<mu2e::GenSimParticleLink>;
 

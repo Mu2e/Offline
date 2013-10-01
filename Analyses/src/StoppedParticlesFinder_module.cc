@@ -92,7 +92,7 @@ namespace mu2e {
         std::cout<<"*********************************************************"<<std::endl;
         std::cout<<"SimParticleNumberOffset = "<<i.first<<", collection size = "<<i.second.size()<<std::endl;
         for(const auto& entry : i.second) {
-          std::cout<<entry<<std::endl;
+          std::cout<<entry.second<<std::endl;
         }
       }
       std::cout<<"PhysicalVolumeInfoMultiCollection dump end"<<std::endl;

@@ -32,12 +32,12 @@ namespace mu2e {
 
   const PhysicalVolumeInfo&
   PhysicalVolumeMultiHelper::startVolume(const SimParticle& p) const {
-    return (*pi_)[iSimStage(p)].second[p.startVolumeIndex()];
+    return (*pi_)[iSimStage(p)].second[cet::map_vector_key(p.startVolumeIndex())];
   }
 
   const PhysicalVolumeInfo&
   PhysicalVolumeMultiHelper::endVolume(const SimParticle& p) const {
-    return (*pi_)[iSimStage(p)].second[p.endVolumeIndex()];
+    return (*pi_)[iSimStage(p)].second[cet::map_vector_key(p.endVolumeIndex())];
   }
 
 

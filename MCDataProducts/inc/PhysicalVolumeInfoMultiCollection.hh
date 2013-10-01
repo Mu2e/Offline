@@ -15,10 +15,13 @@
 #include <vector>
 #include <utility>
 
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "cetlib/map_vector.h"
+
+#include "MCDataProducts/inc/PhysicalVolumeInfo.hh"
 
 namespace mu2e {
-  typedef std::vector<std::pair<unsigned int, PhysicalVolumeInfoCollection> > PhysicalVolumeInfoMultiCollection;
+  typedef cet::map_vector<PhysicalVolumeInfo> PhysicalVolumeInfoSingleStage;
+  typedef std::vector<std::pair<unsigned int, PhysicalVolumeInfoSingleStage> > PhysicalVolumeInfoMultiCollection;
 }
 
 #endif /* MCDataProducts_PhysicalVolumeInfoMultiCollection_hh */

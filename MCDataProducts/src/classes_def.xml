@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.25 2013/09/27 16:03:41 gandr Exp $     -->
+<!--  $Id: classes_def.xml,v 1.26 2013/10/01 00:51:43 gandr Exp $     -->
 <!--  $Author: gandr $ -->
-<!--  $Date: 2013/09/27 16:03:41 $   -->
+<!--  $Date: 2013/10/01 00:51:43 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.25 $$Date: 2013/09/27 16:03:41 $"; -->
+<!--  rev="$Revision: 1.26 $$Date: 2013/10/01 00:51:43 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -18,7 +18,10 @@
 <lcgdict>
  <class name="mu2e::PhysicalVolumeInfo"/>
  <class name="mu2e::PhysicalVolumeInfoCollection"/>
- <class name="std::pair<unsigned int,mu2e::PhysicalVolumeInfoCollection>"/>
+ <class name="std::pair<cet::map_vector_key,mu2e::PhysicalVolumeInfo>"/>
+ <class name="cet::map_vector<mu2e::PhysicalVolumeInfo>"/> 
+ <class name="std::pair<unsigned int,cet::map_vector<mu2e::PhysicalVolumeInfo> >"/>
+ <class name="std::vector<std::pair<cet::map_vector_key,mu2e::PhysicalVolumeInfo> >"/>
  <class name="mu2e::PhysicalVolumeInfoMultiCollection"/>
  <class name="mu2e::ProcessCode"/>
  <class name="mu2e::PDGCode"/>

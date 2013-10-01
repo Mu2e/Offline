@@ -73,14 +73,14 @@ physics : {
 outputs: {
     filteredOutput : {
         module_type : RootOutput
-        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "keep mu2e::StatusG4_*_*_*", "keep uintmu2e::PhysicalVolumeInfosstd::pairs_g4run_*_BeamPrimaryToTS3DS23" ]
+        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "keep mu2e::StatusG4_*_*_*", "keep uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_BeamPrimaryToTS3DS23" ]
         fileName    : "dataBeamPrimaryToTS3DS23.root"
     }
 
     filteredEvtsOutput : {
         module_type : RootOutput
         SelectEvents: { SelectEvents: [trigFilter] }
-        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "keep mu2e::StatusG4_*_*_*", "keep uintmu2e::PhysicalVolumeInfosstd::pairs_g4run_*_BeamPrimaryToTS3DS23" ]
+        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "keep mu2e::StatusG4_*_*_*", "keep uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_BeamPrimaryToTS3DS23" ]
         fileName    : "dataBeamPrimaryToTS3DS23_fe.root"
     }
 
