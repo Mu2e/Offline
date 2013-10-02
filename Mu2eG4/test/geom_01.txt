@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.210 2013/09/27 17:31:26 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/09/27 17:31:26 $
+// $Id: geom_01.txt,v 1.211 2013/10/02 21:22:03 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/02 21:22:03 $
 //
 // Original author Rob Kutschke
 //
@@ -146,12 +146,12 @@ int  g4.maxSurfaceCheckPoints = 10000000; // per volume
 // values may be increased to position Mu2e in the G4 world volume as
 // specified by world.mu2eOriginInWorld
 //
-double world.minimalMargin.top = 3000;
-double world.minimalMargin.bottom = 3000;
-double world.minimalMargin.xmin = 3000;
-double world.minimalMargin.xmax = 3000;
-double world.minimalMargin.zmin = 3000;
-double world.minimalMargin.zmax =  3000;
+double world.minimalMargin.top = 5000;
+double world.minimalMargin.bottom = 5000;
+double world.minimalMargin.xmin = 5000;
+double world.minimalMargin.xmax = 5000;
+double world.minimalMargin.zmin = 5000;
+double world.minimalMargin.zmax =  5000;
 vector<double> world.mu2eOriginInWorld = { 0, 0, 0}; // mm
 
 string world.materialName = "G4_AIR";
