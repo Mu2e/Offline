@@ -2,9 +2,9 @@
 // A utility class to do indexolgy related to persistence of
 // physical volume information.
 //
-// $Id: PhysicalVolumeHelper.cc,v 1.8 2013/10/01 00:51:43 gandr Exp $
+// $Id: PhysicalVolumeHelper.cc,v 1.9 2013/10/02 05:23:32 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/10/01 00:51:43 $
+// $Date: 2013/10/02 05:23:32 $
 //
 // Original author Rob Kutschke
 //
@@ -116,7 +116,7 @@ namespace mu2e {
                                    vpv->GetLogicalVolume()->GetMaterial()->GetName()
                                    );
 
-      _pSingleStage[cet::map_vector_key(vpv->GetCopyNo())] = _persistentInfo.back();
+      _pSingleStage[cet::map_vector_key(_persistentInfo.size()-1)] = _persistentInfo.back();
     }
 
   }
