@@ -1,0 +1,33 @@
+// Which generators to enable.
+bool conversionGun.do           = false;
+bool cosmicDYB.do               = false;
+bool picapture.do               = false;
+bool ejectedProtonGun.do        = false;
+bool ejectedNeutronGun.do       = false;
+bool ejectedPhotonGun.do        = false;
+bool decayinorbitGun.do         = false;
+bool piEplusNuGun.do            = false;
+bool fromG4BLFile.do            = false;
+bool nuclearCaptureGun.do       = false;
+bool primaryProtonGun.do        = false;
+
+//----------------------------------------------------------------
+bool particleGun.do = true;
+int particleGun.id = 13;
+
+// Assuming productionTarget.zNominal = -6164.5
+// and halfLength = 80, start muons near the target
+// and towards the TS
+vector<double> particleGun.point = {3904, 0, -6000};
+
+double particleGun.czmin = 0.5;
+double particleGun.czmax = 1;
+
+double particleGun.pmin  =    20.;
+double particleGun.pmax  =    120.;
+
+//----------------------------------------------------------------
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,11 @@
+#include "Mu2eG4/test/geom_01.txt"
+
+string g4.physicsListName = "QGSP_BERT";
+double g4.minRangeCut     = 0.100; // mm
+
+vector<string> g4SteppingAction.killInTheseVolumes = { "DS3Vacuum" };
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
