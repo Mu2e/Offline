@@ -41,7 +41,7 @@ bool ts.cryo.solid   = false;
 
 // TS polylining option
 bool   ts.polyliner.build        = true;
-string ts.polyliner.materialName = "Polyethylene092";
+string ts.polyliner.materialName = "G4_POLYETHYLENE";
 double ts.polyliner.rIn          = 210.; 
 double ts.polyliner.rOut         = 247.;
 bool   ts.polyliner.visible      = true;
@@ -85,7 +85,7 @@ string ts.coll1.material2Name = "G4_Cu";
 
 double ts.coll3.halfLength       = 400.0;
 double ts.coll3.hole             = 50.0;
-string ts.coll3.materialName     = "Polyethylene092";
+string ts.coll3.materialName     = "G4_POLYETHYLENE";
 double ts.coll3.rotationAngle    = 0.0;
 double ts.coll3.holeRadius       = 150.0;
 double ts.coll3.holeHalfHeight   = 100.0;
@@ -94,7 +94,7 @@ double ts.coll3.holeDisplacement = 90.0;
 double ts.coll5.halfLength    = 500.0;
 double ts.coll5.innerRadius   = 128.0; 
 double ts.coll5.outerRadius   = 240.0; 
-string ts.coll5.materialName = "Polyethylene092";
+string ts.coll5.materialName = "G4_POLYETHYLENE";
 
 // Muon degrader
 bool muondegrader.visible = true;
