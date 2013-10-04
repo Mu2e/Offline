@@ -22,7 +22,6 @@ TTree* getTree(const std::string& filename, const std::string& treename) {
 
 //================================================================
 TH1 *makeHisto(TTree *nt, const std::string& var, const std::string& selection, int nbins, double xmin, double xmax) {
-  std::cerr<<"makeHisto: nt = "<<nt<<std::endl;
   TH1 *hh = new TH1D(var.c_str(), var.c_str(), nbins, xmin, xmax);
   nt->Project(var.c_str(), var.c_str(), selection.c_str());
   hh->SetDirectory(0);
@@ -37,6 +36,7 @@ void plotMuonTransport(std::string singeStageFile, std::string secondStageFile) 
   TH1 *hs = makeHisto(ss, "volumeCopy", "(pdgId==13)", 6, 2.5, 8.5);
   hs->GetXaxis()->SetTitle("vd number");
   hs->GetYaxis()->SetTitle("muon count");
+  hs->SetMinimum(0.);
 
   TH1 *h2 = makeHisto(s2, "volumeCopy", "(pdgId==13)", 6, 2.5, 8.5);
   h2->SetLineColor(kRed);
