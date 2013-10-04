@@ -10,8 +10,7 @@ mu2eart --setup=<path-to-your-build-of-Offline>/setup.sh \
         --userscript=EventMixing/test/prestageRandom.sh \
         --fcl=mixGrid01.fcl \
         --njobs=1 \
-        --events-per-job=500 \
-        --test-queue
+        --events-per-job=500
 
 This will randomize the choice of the 4 mix-in files ( using bash $RANDOM ).
 
