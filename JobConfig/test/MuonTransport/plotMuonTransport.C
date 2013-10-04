@@ -44,7 +44,7 @@ void plotMuonTransport(std::string singeStageFile, std::string secondStageFile) 
   TCanvas *cc = new TCanvas();
   cc->SetGrid();
 
-  gStyle->SetTitle(0);
+  gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   hs->Draw();
   h2->Draw("sames");
