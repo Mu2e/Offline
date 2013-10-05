@@ -37,6 +37,7 @@ void plotMuonTransport(std::string singeStageFile, std::string secondStageFile) 
   hs->GetXaxis()->SetTitle("vd number");
   hs->GetYaxis()->SetTitle("muon count");
   hs->SetMinimum(0.);
+  hs->SetMarkerStyle(20);
 
   TH1 *h2 = makeHisto(s2, "volumeCopy", "(pdgId==13)", 6, 2.5, 8.5);
   h2->SetLineColor(kRed);
@@ -46,7 +47,7 @@ void plotMuonTransport(std::string singeStageFile, std::string secondStageFile) 
 
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
-  hs->Draw();
+  hs->Draw("PE");
   h2->Draw("sames");
 }
 
