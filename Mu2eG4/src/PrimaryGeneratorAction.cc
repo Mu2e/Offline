@@ -4,9 +4,9 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.50 2013/09/20 23:31:10 gandr Exp $
+// $Id: PrimaryGeneratorAction.cc,v 1.51 2013/10/05 05:04:48 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/09/20 23:31:10 $
+// $Date: 2013/10/05 05:04:48 $
 //
 // Original author Rob Kutschke
 //
@@ -216,8 +216,6 @@ namespace mu2e {
                             mom.x(),
                             mom.y(),
                             mom.z());
-
-    particle->SetProperTime(properTime);
 
     // Add the particle to the event.
     vertex->SetPrimary( particle );

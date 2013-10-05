@@ -1,10 +1,15 @@
-  $Id: v4_0_1.txt,v 1.4 2013/10/04 22:08:42 gandr Exp $
+  $Id: v4_0_1.txt,v 1.5 2013/10/05 05:04:48 gandr Exp $
   $Author: gandr $
-  $Date: 2013/10/04 22:08:42 $
+  $Date: 2013/10/05 05:04:48 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v4_0_1
+
+4) October 4, 2013 gandr
+   G4 seems to interpret proper time of G4PrimaryParticle as
+   "PreAssignedDecayProperTime", which leads to incorrect decay times.
+   Do not call the G4PrimaryParticle::SetProperTime() method.
 
 3) October 4, 2013 gandr
    Use G4_POLYETHYLENE (density 0.94 g/cm3) instead of Polyethylene092
