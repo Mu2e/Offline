@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.62 2013/08/09 22:10:53 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.63 2013/10/05 05:13:51 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/08/09 22:10:53 $
+// $Date: 2013/10/05 05:13:51 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -158,11 +158,12 @@ namespace mu2e
       Int_t _nmcsteps;
       Int_t _mcnunique,_mcnmax;
       Int_t _mcpdg,_mcgen,_mcproc;
-      threevec _mcshp, _mcop;
+      Int_t _mcppdg,_mcpgen,_mcpproc;
+      threevec _mcshp, _mcop, _mcpop;
       Float_t _mcshlen;
       Float_t _mcedep,_mcemax;
       Float_t _pdist,_pperp,_pmom;
-      Float_t _mctime;
+      Float_t _mctime, _mcptime;
       Int_t _esel,_rsel, _timesel,  _delta, _stereo, _isolated;
       Int_t _device, _sector, _layer, _straw;
       Int_t _ishpeak, _ntpeak, _nshtpeak;
@@ -572,6 +573,7 @@ namespace mu2e
     _shdiag->Branch("nshtpeak",&_nshtpeak,"nshtpeak/I");
     _shdiag->Branch("mcshpos",&_mcshp,"x/F:y/F:z/F");
     _shdiag->Branch("mcopos",&_mcop,"x/F:y/F:z/F");
+    _shdiag->Branch("mcpopos",&_mcpop,"x/F:y/F:z/F");
     _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
     _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
     _shdiag->Branch("mcemax",&_mcemax,"mcemax/F");
@@ -582,6 +584,10 @@ namespace mu2e
     _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
     _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
     _shdiag->Branch("mctime",&_mctime,"mctime/F");
+    _shdiag->Branch("mcppdg",&_mcppdg,"mcpdg/I");
+    _shdiag->Branch("mcpgen",&_mcpgen,"mcgen/I");
+    _shdiag->Branch("mcpproc",&_mcpproc,"mcproc/I");
+    _shdiag->Branch("mcptime",&_mcptime,"mctime/F");
     _shdiag->Branch("esel",&_esel,"esel/I");
     _shdiag->Branch("rsel",&_rsel,"rsel/I");
     _shdiag->Branch("tsel",&_timesel,"tsel/I");
@@ -704,6 +710,26 @@ namespace mu2e
 	if(conversion){
 	  ++_nchit;
 	}
+  // parent information
+	art::Ptr<SimParticle> sp = mcptr[0]->simParticle();
+	if(sp.isNonnull() && sp->parent().isNonnull()){
+	  const art::Ptr<SimParticle>& psp = sp->parent();
+	  _mcppdg = psp->pdgId();
+	  if( psp->genParticle().isNonnull())
+	    _mcpgen = psp->genParticle()->generatorId().id();
+	  else
+	    _mcpgen = 0;
+	  _mcpproc = psp->creationCode();
+	  _mcptime = psp->startGlobalTime();
+	  _mcpop = det->toDetector(psp->startPosition());
+	} else {
+	  _mcppdg=0;
+	  _mcpgen=-1;
+	  _mcpproc=-1;
+	  _mcptime=0.0;
+	  _mcpop = Hep3Vector(0.0,0.0,0.0);
+	}
+
       }
       _esel = _flags->at(istr).hasAllProperties(StrawHitFlag::energysel);
       _rsel = _flags->at(istr).hasAllProperties(StrawHitFlag::radsel);
