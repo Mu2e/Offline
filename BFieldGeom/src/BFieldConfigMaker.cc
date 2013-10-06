@@ -56,7 +56,7 @@ namespace mu2e {
     const double grad = config.getDouble("toyDS.gradient", 0.);
     bfconf_->dsGradientValue_ = CLHEP::Hep3Vector( 0., 0., grad * bfconf_->scaleFactor_);
 
-    BFInterpolationStyle style( config.getString("bfield.interpolationStyle","meco") );
+    BFInterpolationStyle style( config.getString("bfield.interpolationStyle","trilinear") );
     bfconf_->interpStyle_ = style;
 
     const string format = config.getString("bfield.format","GMC");

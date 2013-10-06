@@ -1,10 +1,13 @@
-  $Id: v4_0_1.txt,v 1.5 2013/10/05 05:04:48 gandr Exp $
+  $Id: v4_0_1.txt,v 1.6 2013/10/06 01:18:01 gandr Exp $
   $Author: gandr $
-  $Date: 2013/10/05 05:04:48 $
+  $Date: 2013/10/06 01:18:01 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v4_0_1
+
+5) October 5, 2013 gandr
+   Switch the default BField interpolation alorithm to trilinear.
 
 4) October 4, 2013 gandr
    G4 seems to interpret proper time of G4PrimaryParticle as

@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.211 2013/10/02 21:22:03 gandr Exp $
+// $Id: geom_01.txt,v 1.212 2013/10/06 01:18:00 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/10/02 21:22:03 $
+// $Date: 2013/10/06 01:18:00 $
 //
 // Original author Rob Kutschke
 //
@@ -402,9 +402,8 @@ double toyDS.gradient      = 0.0; // Tesla/m
 // This is recommended field map. See geom_mecofield.txt to use the meco field.
 string bfield.format  = "G4BL";
 
-// Uncomment this line to choose trilinear interpolation within the grid:
-// The default option is "meco"
-//string bfield.interpolationStyle = trilinear;
+// The other option is "meco"
+string bfield.interpolationStyle = trilinear;
 
 int  bfield.verbosityLevel =  0;
 bool bfield.writeG4BLBinaries     =  false;

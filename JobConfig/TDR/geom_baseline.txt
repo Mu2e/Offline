@@ -5,8 +5,6 @@ int g4.particlesSizeLimit = 100000;
 bool   g4.killLowEKine  = false;
 double g4.eKineMin      = -1;    // Kinetic energy in MeV
 
-string bfield.interpolationStyle = trilinear;
-
 bool crs.vetoVisible         = false;
 bool protonabsorber.visible  = false;
 bool intneutronabs.visible   = false;
