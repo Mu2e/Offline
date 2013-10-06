@@ -2,9 +2,9 @@
 # Mixing example for the mix-in files created in Sept 2013.
 # Designed for running interactively.
 #
-# $Id: mixExample01.fcl,v 1.6 2013/10/06 15:51:20 brownd Exp $
+# $Id: mixExample01.fcl,v 1.7 2013/10/06 16:21:24 brownd Exp $
 # $Author: brownd $
-# $Date: 2013/10/06 15:51:20 $
+# $Date: 2013/10/06 16:21:24 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -81,7 +81,7 @@ physics.filters.photonMixer.fileNames  : [ "/mu2e/data/users/kutschke/Background
 # These must be matched to the input files.
 physics.filters.dioMixer.detail.mean     :   6.7
 physics.filters.protonMixer.detail.mean  :  39.3
-physics.filters.neutronMixer.detail.mean : 220
+physics.filters.neutronMixer.detail.mean : 323.7
 physics.filters.photonMixer.detail.mean  :  49.8
 
 #physics.filters.dioMixer.detail.readMode     : "sequential"

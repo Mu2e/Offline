@@ -2,9 +2,9 @@
 # Mixing example for the mix-in files created in Sept 2013.
 # Designed for running on the grid.
 #
-# $Id: mixGrid01.fcl,v 1.2 2013/10/06 15:51:20 brownd Exp $
+# $Id: mixGrid01.fcl,v 1.3 2013/10/06 16:21:24 brownd Exp $
 # $Author: brownd $
-# $Date: 2013/10/06 15:51:20 $
+# $Date: 2013/10/06 16:21:24 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -80,7 +80,7 @@ physics.filters.photonMixer.fileNames  : [ "prestage/photonBG_data.root"  ]
 
 physics.filters.dioMixer.detail.mean     :   6.7
 physics.filters.protonMixer.detail.mean  :  39.3
-physics.filters.neutronMixer.detail.mean : 220
+physics.filters.neutronMixer.detail.mean : 323.7
 physics.filters.photonMixer.detail.mean  :  49.8
 
 #physics.filters.dioMixer.detail.readMode     : "sequential"
