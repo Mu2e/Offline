@@ -1,10 +1,24 @@
-  $Id: v4_0_1.txt,v 1.7 2013/10/06 01:18:17 gandr Exp $
-  $Author: gandr $
-  $Date: 2013/10/06 01:18:17 $
+  $Id: v4_0_1.txt,v 1.8 2013/10/06 16:57:11 kutschke Exp $
+  $Author: kutschke $
+  $Date: 2013/10/06 16:57:11 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v4_0_1
+
+7) October 5, 2013 gandr
+   Changes in preparation for making the new tracker support model the default.
+   The new tracker support model takes more space than the old one ( which was less
+   detailed). I need to move a few things to make room.  This is up for review later.
+
+   Mu2eG4/test/DetectorSolenoid_v02.txt
+    - Moved the DS2/3 boundary upstream by 300 mm.
+
+   Mu2eG4/test/protonAbsorber_conical_v2.txt
+     - Shortened the outer proton absorber by 61 mm;
+     - I kept the upstream end unchanged
+     - I shortened the length and reduced the radius at the downstream end to preserve
+       the pitch.
 
 6) October 5, 2013 gandr
    Switch the default physics list to Shielding_MU2E01.
