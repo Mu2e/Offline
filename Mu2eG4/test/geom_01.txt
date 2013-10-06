@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.212 2013/10/06 01:18:00 gandr Exp $
+// $Id: geom_01.txt,v 1.213 2013/10/06 01:18:17 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/10/06 01:18:00 $
+// $Date: 2013/10/06 01:18:17 $
 //
 // Original author Rob Kutschke
 //
@@ -100,7 +100,7 @@ int    g4.PiENuPolicyVerbosity = 0;
 vector<int> g4.noDecay = {};
 
 // Choose a PhysicsList and set related parameters.
-string g4.physicsListName = "QGSP_BERT_HP";
+string g4.physicsListName = "Shielding_MU2E01";
 double g4.minRangeCut     = 0.01;            // mm
 
 bool g4.printPhysicsProcessSummary = false;
