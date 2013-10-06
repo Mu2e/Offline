@@ -79,8 +79,8 @@ bool   dsVacuum.solid        = false;
 // Vacuum volumes inside DS
 string ds.vacuumMaterialName = "DSVacuum";
 
-double ds1.halfLength        =  455.; 
-double ds2.halfLength        = 2225.;
+double ds1.halfLength        =  455.;
+double ds2.halfLength        = 2080.;
 
 bool   ds1.visible           = true;
 bool   ds2.visible           = true;
