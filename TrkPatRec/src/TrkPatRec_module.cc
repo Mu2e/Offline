@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.63 2013/10/05 05:13:51 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.64 2013/10/06 23:44:38 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/10/05 05:13:51 $
+// $Date: 2013/10/06 23:44:38 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -160,6 +160,7 @@ namespace mu2e
       Int_t _mcpdg,_mcgen,_mcproc;
       Int_t _mcppdg,_mcpgen,_mcpproc;
       threevec _mcshp, _mcop, _mcpop;
+      Float_t _mcoe, _mcpoe, _mcom, _mcpom;
       Float_t _mcshlen;
       Float_t _mcedep,_mcemax;
       Float_t _pdist,_pperp,_pmom;
@@ -574,6 +575,10 @@ namespace mu2e
     _shdiag->Branch("mcshpos",&_mcshp,"x/F:y/F:z/F");
     _shdiag->Branch("mcopos",&_mcop,"x/F:y/F:z/F");
     _shdiag->Branch("mcpopos",&_mcpop,"x/F:y/F:z/F");
+    _shdiag->Branch("mcoe",&_mcoe,"F");
+    _shdiag->Branch("mcom",&_mcom,"F");
+    _shdiag->Branch("mcpoe",&_mcpoe,"F");
+    _shdiag->Branch("mcpom",&_mcpom,"F");
     _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
     _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
     _shdiag->Branch("mcemax",&_mcemax,"mcemax/F");
@@ -705,6 +710,8 @@ namespace mu2e
 	_mctime = mcsum[0]._time;
 	_mcshp = mcsum[0]._pos;
 	_mcop = det->toDetector(mcsum[0]._spp->startPosition());
+	_mcoe = mcsum[0]._spp->startMomentum().e();
+	_mcom = mcsum[0]._spp->startMomentum().vect().mag();
 	_mcshlen = (mcsum[0]._pos-straw.getMidPoint()).dot(straw.getDirection());
 	bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
 	if(conversion){
@@ -722,12 +729,15 @@ namespace mu2e
 	  _mcpproc = psp->creationCode();
 	  _mcptime = psp->startGlobalTime();
 	  _mcpop = det->toDetector(psp->startPosition());
+	  _mcpoe = psp->startMomentum().e();
+	  _mcpom = psp->startMomentum().vect().mag();
 	} else {
 	  _mcppdg=0;
 	  _mcpgen=-1;
 	  _mcpproc=-1;
 	  _mcptime=0.0;
 	  _mcpop = Hep3Vector(0.0,0.0,0.0);
+	  _mcpoe = _mcpom = -1.0;
 	}
 
       }
