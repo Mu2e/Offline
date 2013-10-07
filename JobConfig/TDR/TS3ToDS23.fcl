@@ -36,7 +36,7 @@ physics : {
             genInputHits : [ "g4filter:TS3Vacuum" ]
 
             doWriteLegacyPhysVolumeInfo : false
-            inputPhysVolumeMultiInfoLabel : "g4run"
+            inputPhysVolumeMultiInfoLabel : "compressPV"
 
             SDConfig : {
                 enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
@@ -48,6 +48,18 @@ physics : {
                 primariesOnly : false
                 prefix : "SimParticle: "
             }
+        }
+
+        compressPV : {
+            module_type: CompressPhysicalVolumes
+            volumesInput : "g4run"
+
+            hitInputs : [ "g4filter:DS2Vacuum",
+                          "g4filter:DS3Vacuum",
+                          "g4filter:CRV",
+                          "g4filter:virtualdetector"
+                        ]
+            particleInputs : [ "g4filter:s0" ]
         }
     }
 
@@ -65,7 +77,7 @@ physics : {
         }
     }
 
-    trigFilter : [g4run, g4filter]
+    trigFilter : [g4run, g4filter, compressPV]
     g4StatusFilter : [g4run, g4status ]
     trigger_paths  : [trigFilter, g4StatusFilter]
 
@@ -77,21 +89,14 @@ physics : {
 outputs: {
     filteredOutput : {
         module_type : RootOutput
-        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "drop *_*_*_BeamPrimaryToTS3DS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*", "keep uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_TS3ToDS23" ]
+        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "drop *_*_*_BeamPrimaryToTS3DS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*" ]
         fileName    : "dataTS3ToDS23.root"
-    }
-
-    filteredEvtsOutput : {
-        module_type : RootOutput
-        SelectEvents: { SelectEvents: [trigFilter] }
-        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "drop *_*_*_BeamPrimaryToTS3DS23", "keep mu2e::StatusG4_*_*_*", "keep uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_TS3ToDS23" ]
-        fileName    : "dataTS3ToDS23_fe.root"
     }
 
     truncatedEvtsOutput : {
         module_type : RootOutput
         SelectEvents: { SelectEvents: ["!g4StatusFilter"] }
-        outputCommands:   [ "keep *_*_*_*", "drop *_g4filter_*_TS3ToDS23", "drop *_*_*_BeamPrimaryToTS3DS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*"]
+        outputCommands:   [ "keep *_*_*_*", "drop *_g4filter_*_TS3ToDS23", "drop *_compressPV_*_*", "drop *_*_*_BeamPrimaryToTS3DS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*"]
         fileName    : "truncatedTS3ToDS23.root"
     }
 

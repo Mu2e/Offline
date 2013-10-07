@@ -1,12 +1,15 @@
-  $Id: v4_0_1.txt,v 1.8 2013/10/06 16:57:11 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2013/10/06 16:57:11 $
+  $Id: v4_0_1.txt,v 1.9 2013/10/07 00:01:42 gandr Exp $
+  $Author: gandr $
+  $Date: 2013/10/07 00:01:42 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v4_0_1
 
-7) October 5, 2013 gandr
+8) October 6, 2013 gandr
+   Compress the physical volumes data object in production jobs.
+
+7) October 6, 2013 kutschke
    Changes in preparation for making the new tracker support model the default.
    The new tracker support model takes more space than the old one ( which was less
    detailed). I need to move a few things to make room.  This is up for review later.
