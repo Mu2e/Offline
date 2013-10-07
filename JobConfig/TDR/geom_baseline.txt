@@ -1,7 +1,6 @@
 #include "Mu2eG4/test/geom_01.txt"
 
 double g4.pointTrajectoryMomentumCut = 999999.; // don't spend resources on trajectories
-double bfield.maxStep = 1000000.; // default is 20, only to have sensible pointTrajectories
 
 int g4.particlesSizeLimit = 100000;
 bool   g4.killLowEKine  = false;
