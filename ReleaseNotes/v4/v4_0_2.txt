@@ -1,7 +1,13 @@
-  $Id: v4_0_2.txt,v 1.1 2013/10/07 06:29:24 gandr Exp $
-  $Author: gandr $
-  $Date: 2013/10/07 06:29:24 $
+  $Id: v4_0_2.txt,v 1.2 2013/10/08 22:49:31 brownd Exp $
+  $Author: brownd $
+  $Date: 2013/10/08 22:49:31 $
 
   Still under construction
 
            Release notes for Mu2e Offline software, v4_0_2
+
+1) October 8, 2013 brownd
+   Modify the Kalman filter fit parameters governing the magnetic
+   field correction to make bigger steps.
+ 
+
