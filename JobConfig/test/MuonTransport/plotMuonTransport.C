@@ -33,13 +33,16 @@ void plotMuonTransport(std::string singeStageFile, std::string secondStageFile) 
   TTree *ss = getTree(singeStageFile, "vdDumper/nt");
   TTree *s2 = getTree(secondStageFile, "vdDumper/nt");
 
-  TH1 *hs = makeHisto(ss, "volumeCopy", "(pdgId==13)", 6, 2.5, 8.5);
+  int vdfirst = 0;
+  int vdlast = 15;
+
+  TH1 *hs = makeHisto(ss, "volumeCopy", "(pdgId==13)", 1+vdlast-vdfirst, vdfirst-0.5, vdlast+0.5);
   hs->GetXaxis()->SetTitle("vd number");
   hs->GetYaxis()->SetTitle("muon count");
   hs->SetMinimum(0.);
   hs->SetMarkerStyle(20);
 
-  TH1 *h2 = makeHisto(s2, "volumeCopy", "(pdgId==13)", 6, 2.5, 8.5);
+  TH1 *h2 = makeHisto(s2, "volumeCopy", "(pdgId==13)", 1+vdlast-vdfirst, vdfirst-0.5, vdlast+0.5);
   h2->SetLineColor(kRed);
 
   TCanvas *cc = new TCanvas();
