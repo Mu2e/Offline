@@ -52,16 +52,23 @@ physics : {
             }
         }
 
-        compressPV : {
+        compressPVFlash: {
             module_type: CompressPhysicalVolumes
             volumesInput : "g4run"
 
-            hitInputs : [ "g4filter:TrackerMother",
-                          "g4filter:CalorimeterMother",
-                          "g4filter:CRV",
-                          "g4filter:virtualdetector"
+            hitInputs : [ "flashFilter:TrackerMother",
+                          "flashFilter:CalorimeterMother",
+                          "flashFilter:CRV",
+                          "flashFilter:virtualdetector"
                         ]
-            particleInputs : [ "g4filter:s0" ]
+            particleInputs : [ "flashFilter:s0" ]
+        }
+
+        compressPVStop: {
+            module_type: CompressPhysicalVolumes
+            volumesInput : "g4run"
+            hitInputs : [ "stopFilter:virtualdetector" ]
+            particleInputs : [ "stopFilter:s0" ]
         }
 
         //----------------------------------------------------------------
@@ -78,11 +85,19 @@ physics : {
 
     //================================================================
     filters: {
-        g4filter: {
+        flashFilter: {
             module_type: FilterG4Out
-            mainHitInputs : [ "g4run:TrackerMother", "g4run:CalorimeterMother", "g4run:CRV" ]
-            extraHitInputs : [ "g4run:virtualdetector" ]
-            numSimParticleCollections : 1
+            mainHitInputs: [ "g4run:TrackerMother", "g4run:CalorimeterMother", "g4run:CRV" ]
+            extraHitInputs: [ "g4run:virtualdetector" ]
+            numSimParticleCollections: 1
+            vetoDaughters: [ "stoppedMuonFinder" ]
+        }
+        stopFilter: {
+            module_type: FilterG4Out
+            mainHitInputs: []
+            extraHitInputs: [ "g4run:virtualdetector" ]
+            mainSPPtrInputs: [ "stoppedMuonFinder" ]
+            numSimParticleCollections: 1
             vetoDaughters: [ "stoppedMuonFinder" ]
         }
         g4status: {
@@ -106,11 +121,12 @@ physics : {
     }
 
     //================================================================
-    beamFlashFilter : [g4run, stoppedMuonFinder, g4filter, compressPV]
+    beamFlashFilter : [g4run, stoppedMuonFinder, flashFilter, compressPVFlash]
+    muonStopFilter : [g4run, stoppedMuonFinder, stopFilter, compressPVStop]
     g4StatusFilter : [g4run, g4status ]
-    trigger_paths  : [beamFlashFilter, g4StatusFilter]
+    trigger_paths  : [beamFlashFilter, muonStopFilter, g4StatusFilter]
 
-    out : [beamFlashOutput, truncatedEvtsOutput]
+    out : [beamFlashOutput, muonStopOutput, truncatedEvtsOutput]
     stops : [stoppedMuonPrinter, stoppedMuonDumper]
     end_paths      : [out, stops]
 }
@@ -119,14 +135,21 @@ outputs: {
     beamFlashOutput : {
         module_type : RootOutput
         SelectEvents: { SelectEvents: [beamFlashFilter] }
-        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "drop *_stoppedMuonFinder_*_*", "drop *_*_*_TS3ToDS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*" ]
+        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "drop *_stoppedMuonFinder_*_*", "drop *_stopFilter_*_*", "drop *_compressPVStop_*_*", "drop *_*_*_TS3ToDS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*"]
         fileName    : "beamFlashDS23ToStopsDetMothers.root"
+    }
+
+    muonStopOutput : {
+        module_type : RootOutput
+        SelectEvents: { SelectEvents: [muonStopFilter] }
+        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "drop *_flashFilter_*_*", "drop *_compressPVFlash_*_*", "drop *_*_*_TS3ToDS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*" ]
+        fileName    : "muonStopsDS23ToStopsDetMothers.root"
     }
 
     truncatedEvtsOutput : {
         module_type : RootOutput
         SelectEvents: { SelectEvents: ["!g4StatusFilter"] }
-        outputCommands:   [ "keep *_*_*_*", "drop *_g4filter_*_DS23ToStopsDetMothers", "drop *_compressPV_*_DS23ToStopsDetMothers", "drop *_*_*_TS3ToDS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*"]
+        outputCommands:   [ "keep *_*_*_*", "drop *_*ilter_*_DS23ToStopsDetMothers", "drop *_compress*_*_DS23ToStopsDetMothers", "drop *_*_*_TS3ToDS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*"]
         fileName    : "truncatedDS23ToStopsDetMothers.root"
     }
 
