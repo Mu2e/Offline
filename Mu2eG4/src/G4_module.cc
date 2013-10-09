@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.74 2013/10/01 00:51:43 gandr Exp $
+// $Id: G4_module.cc,v 1.75 2013/10/09 18:09:18 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/10/01 00:51:43 $
+// $Date: 2013/10/09 18:09:18 $
 //
 // Original author Rob Kutschke
 //
@@ -443,17 +443,17 @@ namespace mu2e {
       event.getByLabel(_inputSimParticles, inputSimHandle);
     }
 
+    // ProductID for the SimParticleCollection.
+    art::ProductID simPartId(getProductID<SimParticleCollection>(event));
+    SimParticleHelper spHelper(_simParticleNumberOffset, simPartId, event);
+    SimParticlePrimaryHelper parentHelper(event, simPartId, gensHandle);
+
     // Create empty data products.
     unique_ptr<SimParticleCollection>     simParticles(      new SimParticleCollection);
     unique_ptr<StepPointMCCollection>     tvdHits(           new StepPointMCCollection);
     unique_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
     unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(   new ExtMonFNALSimHitCollection);
-    _sensitiveDetectorHelper.createProducts();
-
-    // ProductID for the SimParticleCollection.
-    art::ProductID simPartId(getProductID<SimParticleCollection>(event));
-    SimParticleHelper spHelper(_simParticleNumberOffset, simPartId, event);
-    SimParticlePrimaryHelper parentHelper(event, simPartId, gensHandle);
+    _sensitiveDetectorHelper.createProducts(event, spHelper);
 
     // Some of the user actions have begin event methods. These are not G4 standards.
     _trackingAction->beginEvent(inputSimHandle, spHelper, parentHelper);

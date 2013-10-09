@@ -1,9 +1,9 @@
 //
 // A helper class manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.cc,v 1.7 2013/08/28 05:58:17 gandr Exp $
+// $Id: SensitiveDetectorHelper.cc,v 1.8 2013/10/09 18:09:19 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
+// $Date: 2013/10/09 18:09:19 $
 //
 // Original author Rob Kutschke
 //
@@ -35,6 +35,8 @@
 // From G4.
 #include "G4VSensitiveDetector.hh"
 #include "G4SDManager.hh"
+
+#include <map>
 
 using namespace std;
 
@@ -91,6 +93,22 @@ namespace mu2e {
     }
 
     //----------------
+    // Careful here: we are in the constructor, so class methods may not be used freely.
+    // However calling the following at OK at this point (but not earlier!)
+
+    const vector<string> outputs(stepInstanceNamesToBeProduced());
+
+    //----------------
+    // New hits will be added to hits from these existing collections
+    for(const auto& s : pset.get<vector<string> >("preSimulatedHits", vector<string>())) {
+      preSimulatedHits_.emplace_back(s);
+      // check that the destination is known and enabled
+      if(std::find(outputs.begin(), outputs.end(), preSimulatedHits_.back().instance()) == outputs.end()) {
+        throw cet::exception("CONFIG")<<"SensitiveDetectorHelper: no matching destination for preSimulatedHits = "<<s<<"\n";
+      }
+    }
+
+    //----------------
   }
 
   void SensitiveDetectorHelper::instantiateLVSDs(const SimpleConfig& config){
@@ -117,15 +135,60 @@ namespace mu2e {
   }
 
   // Create new data products.  To be called at start of each event.
-  void SensitiveDetectorHelper::createProducts(){
+  void SensitiveDetectorHelper::createProducts(const art::Event& event, const SimParticleHelper& spHelper){
 
-    for ( InstanceMap::iterator i=stepInstances_.begin();
-            i != stepInstances_.end(); ++i ){
-      i->second.p.clear();
+    //----------------
+    // Read in pre-simulated hits that we want to merge into the outputs
+
+    // instance => multiple hit collections
+    typedef std::multimap<string, art::ValidHandle<StepPointMCCollection> > InHits;
+    InHits inputHits;
+    for(const auto& tag : preSimulatedHits_) {
+      inputHits.insert(make_pair(tag.instance(), event.getValidHandle<StepPointMCCollection>(tag)));
     }
 
+    //----------------
+    // Clean and pre-fill pre-defined SD collections in stepInstances_
+
+    for (auto& i : stepInstances_) {
+      auto& out = i.second.p;
+      out.clear();
+
+      // Copy all input collection with the current instance name
+      const auto rr = inputHits.equal_range(i.second.stepName);
+      for(auto in = rr.first; in != rr.second; ++in) {
+        out.insert(out.end(), in->second->cbegin(), in->second->cend());
+      }
+
+      // Update SimParticle ptr to point to the new collection
+      for(auto& hit : out) {
+        hit.simParticle() =
+          art::Ptr<SimParticle>(spHelper.productID(),
+                                hit.simParticle()->id().asUint(),
+                                spHelper.productGetter());
+      }
+    }
+
+    //----------------
+    // Clean and pre-fill the logical volume collections
+
     for(auto& i : lvsd_) {
-      i.second.p.clear();
+      auto& out = i.second.p;
+      out.clear();
+
+      // Copy all input collection with the current instance name
+      const auto rr = inputHits.equal_range(i.first);
+      for(auto in = rr.first; in != rr.second; ++in) {
+        out.insert(out.end(), in->second->cbegin(), in->second->cend());
+      }
+
+      // Update SimParticle ptr to point to the new collection
+      for(auto& hit : out) {
+        hit.simParticle() =
+          art::Ptr<SimParticle>(spHelper.productID(),
+                                hit.simParticle()->id().asUint(),
+                                spHelper.productGetter());
+      }
     }
   }
 

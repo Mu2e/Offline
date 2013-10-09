@@ -3,9 +3,9 @@
 //
 // Some helper functions to manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.hh,v 1.4 2013/08/28 05:58:17 gandr Exp $
+// $Id: SensitiveDetectorHelper.hh,v 1.5 2013/10/09 18:09:18 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
+// $Date: 2013/10/09 18:09:18 $
 //
 // Original author Rob Kutschke
 //
@@ -44,8 +44,8 @@ namespace mu2e {
     // Register the sensitive detector with this class; to be called after G4 Initialize.
     void registerSensitiveDetectors();
 
-    // Create empty data products; to be called at the start of each event.
-    void createProducts();
+    // Create data  products and pre-fill with input hits if any; to be called at the start of each event.
+    void createProducts(const art::Event& evt, const SimParticleHelper& spHelper);
 
     // Attach the new per-event data products to the corresponding sensitive detector objects.
     void updateSensitiveDetectors( PhysicsProcessInfo&   info,
@@ -86,7 +86,7 @@ namespace mu2e {
 
       // Accept compiler written d'tor, copy c'tor and assignment operator.
 
-      // See note 1 in the .cc file for why the collection is not held by pointer.
+      // See note 2 in the .cc file for why the collection is not held by pointer.
       // For historical reasons the two names are different; maybe some day we will synchronize them.
       StepPointMCCollection    p;
       std::string              stepName;
@@ -101,6 +101,10 @@ namespace mu2e {
     // Logical volumes requested to be sensitive
     typedef std::map<std::string,StepInstance> LVSDMap;
     LVSDMap lvsd_;
+
+    // Existing hit collections that should be merged into the output
+    typedef std::vector<art::InputTag> InputTags;
+    InputTags preSimulatedHits_;
   };
 
 
