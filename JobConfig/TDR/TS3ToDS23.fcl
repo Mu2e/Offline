@@ -41,6 +41,10 @@ physics : {
             SDConfig : {
                 enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
                 sensitiveVolumes: [ DS2Vacuum, DS3Vacuum ]
+                preSimulatedHits: ["g4filter:virtualdetector",
+                                   "g4filter:DS2Vacuum",
+                                   "g4filter:DS3Vacuum",
+                                   "g4filter:CRV" ]
             }
 
             SimParticlePrinter : {

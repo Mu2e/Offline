@@ -41,6 +41,7 @@ physics : {
 
             SDConfig : {
                 enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
+                preSimulatedHits : [ "g4run:virtualdetector" ]
             }
 
             SimParticlePrinter : {

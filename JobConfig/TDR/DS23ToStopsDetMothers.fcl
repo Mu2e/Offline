@@ -43,6 +43,7 @@ physics : {
             SDConfig : {
                 enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
                 sensitiveVolumes: [ "TrackerMother", "CalorimeterMother" ]
+                preSimulatedHits: ["g4filter:virtualdetector", "g4filter:CRV" ]
             }
 
             SimParticlePrinter : {
