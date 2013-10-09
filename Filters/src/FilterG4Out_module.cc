@@ -15,9 +15,12 @@
 // veto daughters of particles stopped in the stopping target, because
 // they will be simulated with a foil generator in other jobs.
 //
-// $Id: FilterG4Out_module.cc,v 1.2 2013/08/30 21:54:18 gandr Exp $
+// The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
+// Intended to write out framework files of stopped muons.
+//
+// $Id: FilterG4Out_module.cc,v 1.3 2013/10/09 18:06:34 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/08/30 21:54:18 $
+// $Date: 2013/10/09 18:06:34 $
 //
 // Andrei Gaponenko, 2013
 
@@ -104,8 +107,8 @@ namespace mu2e {
 
     //----------------
     void addDaughterTree(SPSet *res, const art::Ptr<SimParticle>& p) {
-      res->insert(p);
       for(const auto& d : p->daughters()) {
+        res->insert(d);
         addDaughterTree(res, d);
       }
     }
@@ -116,7 +119,9 @@ namespace mu2e {
   class FilterG4Out : public art::EDFilter {
 
     typedef std::vector<art::InputTag> InputTags;
-    InputTags mainHitInputs_; // define a set of SimParticles
+    InputTags mainHitInputs_; // These hits, and SimParticles referenced here, will be kept
+    InputTags mainSPPtrInputs_; // SimParticles referenced here, will be kept
+
     InputTags extraHitInputs_;  // other StepPointMCCollections to keep
 
     InputTags gpStepLinkInputs_;
@@ -176,6 +181,11 @@ namespace mu2e {
     }
     for(const auto& i : mainOutputNames_) {
       produces<StepPointMCCollection>(i);
+    }
+
+    const VS ptrStrings(pset.get<VS>("mainSPPtrInputs", VS()));
+    for(const auto& i : ptrStrings) {
+      mainSPPtrInputs_.emplace_back(i);
     }
 
     const VS extraStrings(pset.get<VS>("extraHitInputs", VS()));
@@ -250,12 +260,22 @@ namespace mu2e {
     SPSuperSet toBeKept;
 
     // Non-vetoed particles with hits in the "main" collections
-    for(const auto& i : mainHitInputs_) {
-      auto ih = event.getValidHandle<StepPointMCCollection>(i);
+    for(const auto& tag : mainHitInputs_) {
+      auto ih = event.getValidHandle<StepPointMCCollection>(tag);
       for(const auto& i : *ih) {
         const art::Ptr<SimParticle>& particle(i.simParticle());
         if(vetoedParticles.find(particle) == vetoedParticles.end()) {
-          toBeKept[particle.id()].insert(i.simParticle());
+          toBeKept[particle.id()].insert(particle);
+        }
+      }
+    }
+
+    // Non-vetoed particles explicitly requiested
+    for(const auto& tag : mainSPPtrInputs_) {
+      auto ih = event.getValidHandle<SimParticlePtrCollection>(tag);
+      for(const auto& particle : *ih) {
+        if(vetoedParticles.find(particle) == vetoedParticles.end()) {
+          toBeKept[particle.id()].insert(particle);
         }
       }
     }
