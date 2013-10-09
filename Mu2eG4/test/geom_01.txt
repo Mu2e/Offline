@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.213 2013/10/06 01:18:17 gandr Exp $
+// $Id: geom_01.txt,v 1.214 2013/10/09 18:08:39 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/10/06 01:18:17 $
+// $Date: 2013/10/09 18:08:39 $
 //
 // Original author Rob Kutschke
 //
@@ -66,6 +66,9 @@ double g4.steppingActionMaxGlobalTime = 0; //ns
 // for example { "HallAir" }.
 vector<string> g4SteppingAction.killInTheseVolumes = {};
 bool   g4SteppingAction.killerVerbose = false;
+
+// Do not stack neutrinos
+vector<int> g4.stackingActionDropPDG = { 12, -12, 14, -14, 16, -16 };
 
 // These are used in both SteppingAction and StackingAction.
 bool   g4.killLowEKine  = false;
