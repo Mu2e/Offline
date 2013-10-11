@@ -41,6 +41,9 @@ namespace mu2e {
     unsigned numInputHits_;
     unsigned numOutputHits_;
 
+    unsigned numInputEvents_;
+    unsigned numPassedEvents_;
+
   public:
     explicit FilterStepPointPDG(const fhicl::ParameterSet& pset);
     virtual bool filter(art::Event& event) override;
@@ -51,6 +54,8 @@ namespace mu2e {
   FilterStepPointPDG::FilterStepPointPDG(const fhicl::ParameterSet& pset)
     : numInputHits_()
     , numOutputHits_()
+    , numInputEvents_()
+    , numPassedEvents_()
   {
     const auto tags(pset.get<std::vector<std::string> >("inputs"));
     for(const auto& i : tags) {
@@ -126,6 +131,11 @@ namespace mu2e {
       event.put(std::move(outHits[i]), i);
     }
 
+    ++numInputEvents_;
+    if(passed) {
+      ++numPassedEvents_;
+    }
+
     return passed;
   }
 
@@ -133,7 +143,9 @@ namespace mu2e {
   void FilterStepPointPDG::endJob() {
     mf::LogInfo("Summary")<<"FilterStepPointPDG: passed "
                           <<numOutputHits_ <<" / "<<numInputHits_
-                          <<" StepPointMCs\n";
+                          <<" StepPointMCs, "
+                          <<numPassedEvents_<<" / "<<numInputEvents_
+                          <<" events\n";
   }
 
   //================================================================
