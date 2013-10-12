@@ -1,7 +1,12 @@
-  $Id: v4_0_4.txt,v 1.1 2013/10/09 21:22:35 gandr Exp $
-  $Author: gandr $
-  $Date: 2013/10/09 21:22:35 $
+  $Id: v4_0_4.txt,v 1.2 2013/10/12 00:23:57 brownd Exp $
+  $Author: brownd $
+  $Date: 2013/10/12 00:23:57 $
 
   Still under construction
 
-           Release notes for Mu2e Offline software, v4_0_3
+           Release notes for Mu2e Offline software, v4_0_4
+
+1) October 11, 2013 brownd
+   Change INA and OPA material to 5% borated polyethylene.  Introduce new
+   parts of INA (3 and 4) to help reduce tracker backgrounds. By default,
+   INA3 and INA4 are material 'DSVacuum' and so have no effect.
