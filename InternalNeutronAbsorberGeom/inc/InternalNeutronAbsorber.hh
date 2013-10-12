@@ -21,9 +21,13 @@ namespace mu2e {
   public:
 
     double rOut() const { return _rOut; }
+    double r4() const { return _r4; }
+    double rIn3() const { return _rIn3; }
     double rIn2() const { return _rIn2; }
     double rIn1() const { return _rIn1; }
 
+    double halfLength4() const { return _halfLength4; }
+    double halfLength3() const { return _halfLength3; }
     double halfLength2() const { return _halfLength2; }
     double halfLength1() const { return _halfLength1; }
 
@@ -31,6 +35,8 @@ namespace mu2e {
 
     std::string material1() const { return _mat1; }
     std::string material2() const { return _mat2; }
+    std::string material3() const { return _mat3; }
+    std::string material4() const { return _mat4; }
 
     //----------------------------------------------------------------
   private:
@@ -40,12 +46,19 @@ namespace mu2e {
     InternalNeutronAbsorber();
 
     double _rOut;
+    double _r4;
+    double _rIn3;
     double _rIn2;
     double _rIn1;
 
+    double _halfLength4;
+    double _halfLength3;
     double _halfLength2;
     double _halfLength1;
 
+    
+    std::string _mat4;
+    std::string _mat3;
     std::string _mat2;
     std::string _mat1;
 

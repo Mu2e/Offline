@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.214 2013/10/09 18:08:39 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/10/09 18:08:39 $
+// $Id: geom_01.txt,v 1.215 2013/10/12 00:19:47 brownd Exp $
+// $Author: brownd $
+// $Date: 2013/10/12 00:19:47 $
 //
 // Original author Rob Kutschke
 //
@@ -435,13 +435,20 @@ double bfield.scaleFactor = 1.0;
 // Neutron Absorber (document draft dated 2010-07-16)
 
 double intneutronabs.rOut        = 940.; // 1cm clearance between INS and DS cryo. 
+double intneutronabs.r4		 = 447; // outer radius, inner radius is TS5
+double intneutronabs.rIn3        = 890.;
 double intneutronabs.rIn2        = 850.;
 double intneutronabs.rIn1        = 650.;
+double intneutronabs.halfLength4 = 25.0;
+double intneutronabs.halfLength3 = 2000.;
 double intneutronabs.halfLength2 = 1000.;
 double intneutronabs.halfLength1 = 500.;
 double intneutronabs.z0          = 5871.;
-string intneutronabs.material1Name = "Polyethylene096";
-string intneutronabs.material2Name = "Polyethylene096";
+string intneutronabs.material1Name = "Polyethylene092B050d095";
+string intneutronabs.material2Name = "Polyethylene092B050d095";
+// piec 2 and 3 of the INA are experimental, for now turn them off
+string intneutronabs.material3Name = "DSVacuum";
+string intneutronabs.material4Name = "DSVacuum";
 
 int    intneutronabs.verbosityLevel = 0;
 bool   intneutronabs.visible      = true;
