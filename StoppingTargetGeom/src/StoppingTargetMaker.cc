@@ -2,9 +2,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: StoppingTargetMaker.cc,v 1.5 2013/09/30 21:01:29 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/09/30 21:01:29 $
+// $Id: StoppingTargetMaker.cc,v 1.6 2013/10/14 23:57:32 roehrken Exp $
+// $Author: roehrken $
+// $Date: 2013/10/14 23:57:32 $
 //
 // Original author Peter Shanahan
 //
@@ -116,6 +116,14 @@ namespace mu2e {
     // material of the target enclosing volume
     _fillMaterial=c.getString("stoppingTarget.fillMaterial");
 
+    // stopping foil target supporting structure
+    _foilTarget_supportStructure = c.getBool("stoppingTarget.foilTarget_supportStructure");
+    _foilTarget_supportStructure_number = c.getInt("stoppingTarget.foilTarget_supportStructure_number"); // number of support wires per foil
+    _foilTarget_supportStructure_angleOffset = c.getDouble("stoppingTarget.foilTarget_supportStructure_angleOffset"); // angle of first support wire wrt vertical
+    _foilTarget_supportStructure_radius = c.getDouble("stoppingTarget.foilTarget_supportStructure_radius");// radius of the support wires
+    _foilTarget_supportStructure_angleOffset = c.getDouble("stoppingTarget.foilTarget_supportStructure_angleOffset");// angle of first support wire wrt vertical
+    _foilTarget_supportStructure_fillMaterial = c.getString("stoppingTarget.foilTarget_supportStructure_fillMaterial");
+
     // debugging print...
     if ( verbosity > 0 ) PrintConfig();
 
@@ -130,6 +138,9 @@ namespace mu2e {
     // Root, G4, or any other scheme.
 
     _targ = unique_ptr<StoppingTarget>(new StoppingTarget());
+
+    // diameter for target volume at z=5461 assigned by geometry group
+    double ProtonAbsorberOuter_diameter=500;
 
     // create the TargetFoils
 
@@ -167,13 +178,51 @@ namespace mu2e {
                                            _materials[i],
                                            _detSysOrigin
                                            )
-                               );
+		      );
+      // create the TargetFoilSupportStructure
+      if (_foilTarget_supportStructure) {
+	      for ( int j=0; j<_foilTarget_supportStructure_number; ++j){
+
+
+		      double supportStructure_xPosition, supportStructure_yPosition, supportStructure_zPosition; // variables to account deviation of supporting structure center from foil center
+
+		      supportStructure_xPosition = _xVars[i] + _detSysOrigin.x(); // x position is identical with x position of the foil
+		      supportStructure_yPosition = _yVars[i] + _detSysOrigin.y(); // y position is identical with y position of the foil
+		      supportStructure_zPosition = z; // z position is identical with z position of the foil
+
+		      CLHEP::Hep3Vector supportStructure_foilCenterInMu2e(supportStructure_xPosition, supportStructure_yPosition, supportStructure_zPosition);
+
+		      // calculate support structure length
+		      double temp_foilTarget_supportStructure_length=0;
+
+		      if ( ((ProtonAbsorberOuter_diameter - 2*_rOut[i])/2.) > 0 ) {
+			      temp_foilTarget_supportStructure_length = ((ProtonAbsorberOuter_diameter - 2*_rOut[i])/2.);
+			      temp_foilTarget_supportStructure_length -= 1; // remove 1mm to avoid overlap problems with mother volume
+		      } else {
+			      temp_foilTarget_supportStructure_length=0;
+		      }
+		      // cout << "foil  " << i << "  support structure " << j << "  temp_foilTarget_supportStructure_length = " << temp_foilTarget_supportStructure_length << endl;
+
+		      _targ->_supportStructures.push_back( TargetFoilSupportStructure( j, i,
+					      supportStructure_foilCenterInMu2e,
+					      CLHEP::Hep3Vector(_xCos[i],_yCos[i],zCos),
+					      _foilTarget_supportStructure_radius,
+					      temp_foilTarget_supportStructure_length,
+					      _foilTarget_supportStructure_angleOffset,
+					      _rOut[i], // outer radius of the foil the wire connects to
+					      _foilTarget_supportStructure_fillMaterial,
+					      _detSysOrigin
+					      )
+				      );
+	      }
+      }
     }// foil i
 
 
     // calculate the parameters of the enclosing cylinder
     //find the radius - maximum of foil radius + offset from axis
     double radius=-1;
+    /*
     for (unsigned int ifoil=0; ifoil<_targ->_foils.size(); ifoil++)
       {
         double rtest=_targ->_foils[ifoil].rOut() + _targ->_foils[ifoil].centerInDetectorSystem().perp();
@@ -181,6 +230,9 @@ namespace mu2e {
       }
     // beef it up by a mm
     radius+=1;
+    */
+    // fix it to the diameter of the outer proton absorber
+    radius=ProtonAbsorberOuter_diameter/2.;
 
     // give it to the Target
     _targ->_radius=radius;

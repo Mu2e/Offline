@@ -4,9 +4,9 @@
 // Construct and return an Target.
 //
 //
-// $Id: StoppingTargetMaker.hh,v 1.1 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: StoppingTargetMaker.hh,v 1.2 2013/10/14 23:57:32 roehrken Exp $
+// $Author: roehrken $
+// $Date: 2013/10/14 23:57:32 $
 //
 // Original author Peter Shanahan
 //
@@ -64,6 +64,14 @@ private:
   std::vector<double> _yCos; // y directional cosines of foils
   std::vector<std::string> _materials; //material of foils
   std::string _fillMaterial; // material of enclosing cylinder
+
+  // stopping foil target supporting structure
+  bool   _foilTarget_supportStructure;
+  int    _foilTarget_supportStructure_number; // number of support wires per foil
+  double _foilTarget_supportStructure_angleOffset; // angle of first support wire wrt vertical
+  double _foilTarget_supportStructure_radius; // radius of the support wires
+//  double _foilTarget_supportStructure_length; // length of the support wires
+  std::string _foilTarget_supportStructure_fillMaterial;
 
 };
 

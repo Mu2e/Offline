@@ -5,9 +5,9 @@
 // Class to represent the system of target foils.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: StoppingTarget.hh,v 1.1 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: StoppingTarget.hh,v 1.2 2013/10/14 23:57:32 roehrken Exp $
+// $Author: roehrken $
+// $Date: 2013/10/14 23:57:32 $
 //
 // Original author Rob Kutschke
 //
@@ -21,6 +21,7 @@
 // Includes from Mu2e
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "StoppingTargetGeom/inc/TargetFoil.hh"
+#include "StoppingTargetGeom/inc/TargetFoilSupportStructure.hh"
 
 namespace mu2e {
 
@@ -46,10 +47,14 @@ namespace mu2e {
 
     std::string const fillMaterial() const {return _fillMaterial;}
 
+    int nSupportStructures() const { return _supportStructures.size(); }
+    TargetFoilSupportStructure const& supportStructure( unsigned int n ) const { return _supportStructures.at(n); }
+    
   protected:
 
     // All dimensions in mm.
     std::vector<TargetFoil> _foils;
+    std::vector<TargetFoilSupportStructure> _supportStructures;
 
     // an enclosing cylinder.  This is defined to be on the z axis, in
     // detector coordinates

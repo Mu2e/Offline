@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.215 2013/10/12 00:19:47 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/10/12 00:19:47 $
+// $Id: geom_01.txt,v 1.216 2013/10/14 23:57:32 roehrken Exp $
+// $Author: roehrken $
+// $Date: 2013/10/14 23:57:32 $
 //
 // Original author Rob Kutschke
 //
@@ -327,6 +327,13 @@ vector<double> stoppingTarget.xCos  =
 // last y directional cosine given will be repeated up to number radii.size()
 vector<double> stoppingTarget.yCos  =
     { 0.};
+
+// stopping foil target supporting structure
+bool   stoppingTarget.foilTarget_supportStructure = true;
+int    stoppingTarget.foilTarget_supportStructure_number = 3; // number of support wires per foil
+double stoppingTarget.foilTarget_supportStructure_angleOffset = 0; // angle of first support wire wrt vertical
+double stoppingTarget.foilTarget_supportStructure_radius = 0.0381; // radius of the support wires, 38.1micrometer radius corresponds to 3mil diameter
+string stoppingTarget.foilTarget_supportStructure_fillMaterial = "G4_W";
 
 
 // Crystal calorimeter
