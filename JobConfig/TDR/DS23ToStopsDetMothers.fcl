@@ -56,20 +56,29 @@ physics : {
         compressPVFlash: {
             module_type: CompressPhysicalVolumes
             volumesInput : "g4run"
-
-            hitInputs : [ "flashFilter:TrackerMother",
-                          "flashFilter:CalorimeterMother",
-                          "flashFilter:CRV",
-                          "flashFilter:virtualdetector"
-                        ]
+            hitInputs : []
             particleInputs : [ "flashFilter:s0" ]
+        }
+
+        compressPVCRV: {
+            module_type: CompressPhysicalVolumes
+            volumesInput : "g4run"
+            hitInputs : []
+            particleInputs : [ "crvFilter:s0" ]
         }
 
         compressPVStop: {
             module_type: CompressPhysicalVolumes
             volumesInput : "g4run"
-            hitInputs : [ "stopFilter:virtualdetector" ]
+            hitInputs : []
             particleInputs : [ "stopFilter:s0" ]
+        }
+
+        compressPVFull : {
+            module_type: CompressPhysicalVolumes
+            volumesInput : "g4run"
+            hitInputs : []
+            particleInputs : [ "g4run" ]
         }
 
         //----------------------------------------------------------------
@@ -88,7 +97,14 @@ physics : {
     filters: {
         flashFilter: {
             module_type: FilterG4Out
-            mainHitInputs: [ "g4run:TrackerMother", "g4run:CalorimeterMother", "g4run:CRV" ]
+            mainHitInputs: [ "g4run:TrackerMother", "g4run:CalorimeterMother"]
+            extraHitInputs: [ "g4run:virtualdetector" ]
+            numSimParticleCollections: 1
+            vetoDaughters: [ "stoppedMuonFinder" ]
+        }
+        crvFilter: {
+            module_type: FilterG4Out
+            mainHitInputs: [ "g4run:CRV" ]
             extraHitInputs: [ "g4run:virtualdetector" ]
             numSimParticleCollections: 1
             vetoDaughters: [ "stoppedMuonFinder" ]
@@ -127,11 +143,12 @@ physics : {
 
     //================================================================
     beamFlashFilter : [g4run, stoppedMuonFinder, flashFilter, compressPVFlash]
-    muonStopFilter : [g4run, stoppedMuonFinder, stopFilter, compressPVStop]
-    g4StatusFilter : [g4run, g4status ]
-    trigger_paths  : [beamFlashFilter, muonStopFilter, g4StatusFilter]
+    beamCRVFilter :       [g4run, stoppedMuonFinder, crvFilter, compressPVCRV]
+    muonStopFilter :  [g4run, stoppedMuonFinder, stopFilter, compressPVStop]
+    g4StatusFilter :  [g4run, "!g4status", compressPVFull ]
+    trigger_paths  : [beamFlashFilter, beamCRVFilter, muonStopFilter, g4StatusFilter]
 
-    out : [beamFlashOutput, muonStopOutput, truncatedEvtsOutput]
+    out : [beamFlashOutput, crvOutput, muonStopOutput, truncatedEvtsOutput]
     stops : [stoppedMuonPrinter, stoppedMuonDumper, genCountLogger]
     end_paths      : [out, stops]
 }
@@ -140,21 +157,56 @@ outputs: {
     beamFlashOutput : {
         module_type : RootOutput
         SelectEvents: { SelectEvents: [beamFlashFilter] }
+        outputCommands:   [ "drop *_*_*_*",
+                            "keep mu2e::GenParticles_*_*_*",
+                            "keep mu2e::GenEventCount_*_*_*",
+                            "keep mu2e::StatusG4_*_*_*",
+                            "keep *_flashFilter_*_*",
+                            "keep *_compressPVFlash_*_*"
+                          ]
+        fileName    : "beamFlash.root"
+    }
+
+    crvOutput : {
+        module_type : RootOutput
+        SelectEvents: { SelectEvents: [beamCRVFilter] }
         outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "drop *_stoppedMuonFinder_*_*", "drop *_stopFilter_*_*", "drop *_compressPVStop_*_*", "drop *_*_*_TS3ToDS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*"]
-        fileName    : "beamFlashDS23ToStopsDetMothers.root"
+
+        outputCommands:   [ "drop *_*_*_*",
+                            "keep mu2e::GenParticles_*_*_*",
+                            "keep mu2e::GenEventCount_*_*_*",
+                            "keep mu2e::StatusG4_*_*_*",
+                            "keep *_crvFilter_*_*",
+                            "keep *_compressPVCRV_*_*"
+                          ]
+        fileName    : "crvBeamHits.root"
     }
 
     muonStopOutput : {
         module_type : RootOutput
         SelectEvents: { SelectEvents: [muonStopFilter] }
-        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "drop *_flashFilter_*_*", "drop *_compressPVFlash_*_*", "drop *_*_*_TS3ToDS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*" ]
-        fileName    : "muonStopsDS23ToStopsDetMothers.root"
+        outputCommands:   [ "drop *_*_*_*",
+                            "keep mu2e::GenParticles_*_*_*",
+                            "keep mu2e::GenEventCount_*_*_*",
+                            "keep mu2e::StatusG4_*_*_*",
+                            "keep *_stoppedMuonFinder_*_*",
+                            "keep *_stopFilter_*_*",
+                            "keep *_compressPVStop_*_*"
+                          ]
+        fileName    : "muonStops.root"
     }
 
     truncatedEvtsOutput : {
         module_type : RootOutput
-        SelectEvents: { SelectEvents: ["!g4StatusFilter"] }
-        outputCommands:   [ "keep *_*_*_*", "drop *_*ilter_*_DS23ToStopsDetMothers", "drop *_compress*_*_DS23ToStopsDetMothers", "drop *_*_*_TS3ToDS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*"]
+        SelectEvents: { SelectEvents: [g4StatusFilter] }
+        outputCommands:   [ "drop *_*_*_*",
+                            "keep mu2e::GenParticles_*_*_*",
+                            "keep mu2e::GenEventCount_*_*_*",
+                            "keep mu2e::StatusG4_*_*_*",
+                            "keep *_g4run_*_*",
+                            "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_*_*_*",
+                            "keep *_compressPVFull_*_*"
+                          ]
         fileName    : "truncatedDS23ToStopsDetMothers.root"
     }
 
