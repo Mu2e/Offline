@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.26 2013/08/22 14:31:33 knoepfel Exp $
+// $Id: constructTS.cc,v 1.27 2013/10/14 18:09:26 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/22 14:31:33 $
+// $Date: 2013/10/14 18:09:26 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -84,7 +84,8 @@ namespace mu2e {
     TorusSection      const * torsec (nullptr);
 
     const int  verbosityLevel      = config.getInt ("ts.cryo.verbosityLevel", 0     );
-    const bool polyLining          = config.getBool("ts.polyliner.build"    , false );
+    const bool polyLiningUp        = config.getBool("ts.polyliner.Up.build"   , false );
+    const bool polyLiningDown      = config.getBool("ts.polyliner.Down.build" , false );
     const bool polyLinerVisible    = config.getBool("ts.polyliner.visible"  , true  );
     const bool polyLinerSolid      = config.getBool("ts.polyliner.solid"    , false );
     const bool visible             = config.getBool("ts.cryo.visible"       , true  );
@@ -239,7 +240,7 @@ namespace mu2e {
               );
 
     torsec = ts->getTSPolyLining(TransportSolenoid::TSRegion::TS2);
-    if ( polyLining && torsec->rIn() > 0. ) {
+    if ( polyLiningUp && torsec->rIn() > 0. ) {
       VolumeInfo ts2Vacuum = art::ServiceHandle<G4Helper>()->locateVolInfo("TS2Vacuum");
       nestTorus("TS2PolyLining",
                 torsec->getParameters(),
@@ -368,7 +369,7 @@ namespace mu2e {
               );
 
     torsec = ts->getTSPolyLining(TransportSolenoid::TSRegion::TS4);
-    if ( polyLining && torsec->rIn() > 0. ) {
+    if ( polyLiningDown && torsec->rIn() > 0. ) {
       VolumeInfo ts4Vacuum = art::ServiceHandle<G4Helper>()->locateVolInfo("TS4Vacuum");
       nestTorus("TS4PolyLining",
                 torsec->getParameters(),

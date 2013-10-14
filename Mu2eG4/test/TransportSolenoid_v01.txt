@@ -40,7 +40,8 @@ bool ts.cryo.visible = true;
 bool ts.cryo.solid   = false;
 
 // TS polylining option
-bool   ts.polyliner.build        = true;
+bool   ts.polyliner.Up.build     = true;
+bool   ts.polyliner.Down.build   = true;
 string ts.polyliner.materialName = "G4_POLYETHYLENE";
 double ts.polyliner.rIn          = 210.; 
 double ts.polyliner.rOut         = 247.;
