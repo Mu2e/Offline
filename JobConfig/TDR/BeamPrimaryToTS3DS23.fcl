@@ -35,6 +35,10 @@ physics : {
             inputfile            : "JobConfig/TDR/genconfig_PrimaryProtons.txt"
         }
 
+        genCounter: {
+            module_type: GenEventCounter
+        }
+
         g4run : {
             module_type          : G4
             generatorModuleLabel : generate
@@ -74,8 +78,8 @@ physics : {
         }
     }
 
-    trigFilter : [generate, g4run, g4filter, compressPV ]
-    g4StatusFilter : [generate, g4run, g4status ]
+    trigFilter : [generate, genCounter, g4run, g4filter, compressPV ]
+    g4StatusFilter : [generate, genCounter, g4run, g4status ]
     trigger_paths  : [trigFilter, g4StatusFilter]
 
     //e1 : [filteredOutput, filteredEvtsOutput, fullOutput]

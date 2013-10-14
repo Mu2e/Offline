@@ -119,7 +119,11 @@ physics : {
             inputCollection: "stoppedMuonFinder"
             writeProperTime : false
         }
+        genCountLogger: {
+            module_type: GenEventCountReader
+        }
     }
+
 
     //================================================================
     beamFlashFilter : [g4run, stoppedMuonFinder, flashFilter, compressPVFlash]
@@ -128,7 +132,7 @@ physics : {
     trigger_paths  : [beamFlashFilter, muonStopFilter, g4StatusFilter]
 
     out : [beamFlashOutput, muonStopOutput, truncatedEvtsOutput]
-    stops : [stoppedMuonPrinter, stoppedMuonDumper]
+    stops : [stoppedMuonPrinter, stoppedMuonDumper, genCountLogger]
     end_paths      : [out, stops]
 }
 
