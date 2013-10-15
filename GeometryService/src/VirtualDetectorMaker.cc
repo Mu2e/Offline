@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.26 2013/08/22 14:31:33 knoepfel Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.27 2013/10/15 17:25:52 knoepfel Exp $
 // $Author: knoepfel $
 //
 
@@ -385,6 +385,12 @@ namespace mu2e {
 
       vd->addVirtualDetector( VirtualDetectorId::Coll5_OutSurf,
                                ts5pos, ts5rot, coll5pos);
+
+      // VD DSNeutronShieldExit is at the downstream part of the
+      // aperture in the neutron shielding outside of the IFB/VPSP
+      vd->addVirtualDetector( VirtualDetectorId::DSNeutronShieldExit, 
+                              CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector() );
+                              
 
       //placing virtual detector around the calorimeter vanes
       

@@ -1,50 +1,47 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.60 2013/09/04 03:09:56 youzy Exp $
-// $Author: youzy $
-// $Date: 2013/09/04 03:09:56 $
+// $Id: constructVirtualDetectors.cc,v 1.61 2013/10/15 17:25:52 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/10/15 17:25:52 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
-//
-// C++ includes
 
+// C++ includes
 #include <iostream>
 #include <string>
 
 // Mu2e includes.
-
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
 
 #include "BeamlineGeom/inc/Beamline.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
-#include "GeomPrimitives/inc/Tube.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
-#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
-#include "MCDataProducts/inc/VirtualDetectorId.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
-#include "Mu2eG4/inc/checkForOverlaps.hh"
-
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
+#include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
+#include "G4Helper/inc/AntiLeakRegistry.hh"
+#include "G4Helper/inc/G4Helper.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
+#include "GeomPrimitives/inc/Tube.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
+#include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/checkForOverlaps.hh"
+#include "Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Mu2eG4/inc/finishNesting.hh"
+#include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestBox.hh"
+#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 // G4 includes
-
 #include "G4Material.hh"
 #include "G4SDManager.hh"
 #include "G4VSensitiveDetector.hh"
@@ -108,10 +105,9 @@ namespace mu2e {
         if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  
                << " at " << vdg->getGlobal(vdId) << endl;
+          cout << __func__ << "    VD parameters: " << vdParams << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
         }
-
-        cout << __func__ << "    VD parameters: " << vdParams << endl;
-        cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
 
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
                                   vdParams, vacuumMaterial, 0,
@@ -1226,7 +1222,46 @@ namespace mu2e {
 
     // ExtMonFNAL detector VDs - created in constructExtMonFNAL()
 
-    
+    // placing virtual detector at exit of DS neutron shielding
+    vdId = VirtualDetectorId::DSNeutronShieldExit;
+    if( vdg->exist(vdId) ) {
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+      }
+
+      VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
+
+      GeomHandle<ExtNeutShieldCendBoxes> enscendb;
+
+      // Get box with hole
+      size_t iHoleBox (0);
+      for ( ; iHoleBox < enscendb->materialNames().size() ; iHoleBox++ ) 
+        {
+          if ( enscendb->hasHole(iHoleBox) ) break;
+        }
+
+      CLHEP::Hep3Vector location = enscendb->centersOfBoxes().at(iHoleBox);
+      location.setZ( location.z() + enscendb->holeHalfLength(0) + vdg->getHalfLength() );
+
+      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                   TubsParams(0., enscendb->holeRadius(0), vdg->getHalfLength()),
+                                   vacuumMaterial,
+                                   0,
+                                   location-parent.centerInMu2e(),
+                                   parent,
+                                   vdId,
+                                   vdIsVisible,
+                                   G4Color::Red(),
+                                   vdIsSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   false
+                                   );
+      
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+      
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
     
     // placing virtual detector around the calorimeter vanes
 

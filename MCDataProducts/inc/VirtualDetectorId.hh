@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.16 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: VirtualDetectorId.hh,v 1.17 2013/10/15 17:25:52 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/10/15 17:25:52 $
 //
 // Original author Rob Kutschke
 //
@@ -75,6 +75,7 @@ namespace mu2e {
       EMC_2_SurfIn, EMC_2_SurfOut, EMC_3_SurfIn, EMC_3_SurfOut, // 69, 70, 71, 72
       EMC_Disk_0_SurfIn, EMC_Disk_0_SurfOut, EMC_Disk_1_SurfIn, EMC_Disk_1_SurfOut,// 73, 74, 75, 76
       EMC_Disk_0_EdgeIn, EMC_Disk_0_EdgeOut, EMC_Disk_1_EdgeIn, EMC_Disk_1_EdgeOut,// 77, 78, 79,80
+      DSNeutronShieldExit, // 81
       lastEnum
     };
 
@@ -111,7 +112,8 @@ namespace mu2e {
       "EMC_0_SurfIn", "EMC_0_SurfOut", "EMC_1_SurfIn", "EMC_1_SurfOut", \
       "EMC_2_SurfIn", "EMC_2_SurfOut", "EMC_3_SurfIn", "EMC_3_SurfOut", \
       "EMC_Disk_0_SurfIn", "EMC_Disk_0_SurfOut","EMC_Disk_1_SurfIn", "EMC_Disk_1_SurfOut", \
-      "EMC_Disk_0_EdgeIn", "EMC_Disk_0_EdgeOut","EMC_Disk_1_EdgeIn", "EMC_Disk_1_EdgeOut",
+      "EMC_Disk_0_EdgeIn", "EMC_Disk_0_EdgeOut","EMC_Disk_1_EdgeIn", "EMC_Disk_1_EdgeOut", \
+      "DSNeutronShieldExit"
 
   public:
 
