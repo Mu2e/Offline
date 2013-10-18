@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.216 2013/10/14 23:57:32 roehrken Exp $
-// $Author: roehrken $
-// $Date: 2013/10/14 23:57:32 $
+// $Id: geom_01.txt,v 1.217 2013/10/18 13:39:47 brownd Exp $
+// $Author: brownd $
+// $Date: 2013/10/18 13:39:47 $
 //
 // Original author Rob Kutschke
 //
@@ -455,7 +455,7 @@ string intneutronabs.material1Name = "Polyethylene092B050d095";
 string intneutronabs.material2Name = "Polyethylene092B050d095";
 // piec 2 and 3 of the INA are experimental, for now turn them off
 string intneutronabs.material3Name = "DSVacuum";
-string intneutronabs.material4Name = "DSVacuum";
+string intneutronabs.material4Name = "Polyethylene092B050d095";
 
 int    intneutronabs.verbosityLevel = 0;
 bool   intneutronabs.visible      = true;
