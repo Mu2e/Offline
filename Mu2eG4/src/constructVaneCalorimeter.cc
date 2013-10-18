@@ -1,9 +1,9 @@
 //
 // Free function to create the Vane calorimeter.
 //
-// $Id: constructVaneCalorimeter.cc,v 1.11 2013/08/30 17:04:07 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/30 17:04:07 $
+// $Id: constructVaneCalorimeter.cc,v 1.12 2013/10/18 23:47:07 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/10/18 23:47:07 $
 //
 // Original author Ivan Logashenko
 // Modified by Bertrand Echenard
@@ -65,8 +65,8 @@ namespace mu2e {
 
     bool const isCalorimeterVisible      = config.getBool("calorimeter.calorimeterVisible",false);
     bool const isCalorimeterSolid        = config.getBool("calorimeter.calorimeterSolid",false);
-    bool const isVaneBoxVisible          = config.getBool("calorimeter.vaneBoxVisible",true);
-    bool const isVaneBoxSolid            = config.getBool("calorimeter.vaneBoxSolid",true);
+    bool const isVaneBoxVisible          = config.getBool("calorimeter.boxVisible",true);
+    bool const isVaneBoxSolid            = config.getBool("calorimeter.boxSolid",true);
     bool const isAbsorberBoxVisible      = config.getBool("calorimeter.absorberBoxVisible",true);
     bool const isAbsorberBoxSolid        = config.getBool("calorimeter.absorberBoxSolid",true);
     bool const isCrystalVisible          = config.getBool("calorimeter.crystalVisible",false);

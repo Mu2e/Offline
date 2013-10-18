@@ -63,12 +63,12 @@ namespace mu2e {
     int const verbosityLevel        = config.getInt("calorimeter.verbosityLevel",0);
     bool const isCalorimeterVisible = config.getBool("calorimeter.calorimeterVisible",false);
     bool const isCalorimeterSolid   = config.getBool("calorimeter.calorimeterSolid",false);
-    bool const isDiskBoxVisible     = config.getBool("calorimeter.vaneBoxVisible",true);
-    bool const isDiskBoxSolid       = config.getBool("calorimeter.vaneBoxSolid",true);
-    bool const isDiskCaseVisible    = config.getBool("calorimeter.vaneCaseVisible",false);
-    bool const isDiskCaseSolid      = config.getBool("calorimeter.vaneCaseSolid",false);
-    bool const isDiskPipeVisible    = config.getBool("calorimeter.vanePipeVisible",false);
-    bool const isDiskPipeSolid      = config.getBool("calorimeter.vanePipeSolid",false);
+    bool const isDiskBoxVisible     = config.getBool("calorimeter.boxVisible",true);
+    bool const isDiskBoxSolid       = config.getBool("calorimeter.boxSolid",true);
+    bool const isDiskCaseVisible    = config.getBool("calorimeter.caseVisible",false);
+    bool const isDiskCaseSolid      = config.getBool("calorimeter.caseSolid",false);
+    bool const isDiskPipeVisible    = config.getBool("calorimeter.pipeVisible",false);
+    bool const isDiskPipeSolid      = config.getBool("calorimeter.pipeSolid",false);
     bool const isCrystalVisible     = config.getBool("calorimeter.crystalVisible",false);
     bool const isCrystalSolid       = config.getBool("calorimeter.crystalSolid",true);
     bool const forceAuxEdgeVisible  = config.getBool("g4.forceAuxEdgeVisible",false);
@@ -84,12 +84,13 @@ namespace mu2e {
     G4Material* crysMaterial   = materialFinder.get("calorimeter.crystalMaterial");
     G4Material* wrapMaterial   = materialFinder.get("calorimeter.crystalWrapper");
     G4Material* readMaterial   = materialFinder.get("calorimeter.crystalReadoutMaterial");
+    G4Material* pipeMaterial   = materialFinder.get("calorimeter.pipeMaterial");
 
 
     //calorimeter calibration system
-    int const nPipes                = config.getInt("calorimeter.nPipes");      
+    int const nPipes                = config.getInt("calorimeter.nPipes",0);      
     double const pipeRadius         = config.getDouble("calorimeter.pipeRadius",5); 
-    double const pipeThickness      = config.getDouble("calorimeter.pipeThickness",0.25);     
+    double const pipeThickness      = config.getDouble("calorimeter.pipeThickness",0.5);     
     std::vector<double> pipeTorRadius;
     config.getVectorDouble("calorimeter.pipeTorRadius",  pipeTorRadius, nPipes);
 
@@ -337,7 +338,7 @@ namespace mu2e {
 
 	      caloPipe[ipipe] = nestTorus(pipename.str(),
                                 	  pipeParam,
-                                	  diskMaterial,
+                                	  pipeMaterial,
                                 	  0,
                                 	  G4ThreeVector(0.0,0.0,-diskDepth/2.0+pipeRadius),
                                 	  diskBoxInfo[idisk],
