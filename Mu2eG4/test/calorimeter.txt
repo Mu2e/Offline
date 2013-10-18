@@ -42,7 +42,7 @@ vector<double> calorimeter.diskSeparation      = {0.,750.};   //mm  separation w
 //double calorimeter.crystalHexsize            = 15.0;    //mm  half distance across flats of hex crystal
 //string calorimeter.crystalMaterial           = "Lyso_01"; //"G4_PbWO4" "G4_BARIUM_FLUORIDE"    "G4_CESIUM_IODIDE";
 
-double calorimeter.crystalHalfLong             = 40.0;
+double calorimeter.crystalHalfLong             = 55.0;
 double calorimeter.crystalHalfTrans            = 15.0;
 double calorimeter.crystalHexsize              = 15.0;    //mm  half distance across flats of hex crystal
 string calorimeter.crystalMaterial             = "Lyso_01"; //"G4_PbWO4" "G4_BARIUM_FLUORIDE"    "G4_CESIUM_IODIDE";
