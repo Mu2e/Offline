@@ -1,9 +1,9 @@
 //
 // Class to describe derived information from a StrawHit, in particular position.
 // 
-// $Id: StrawHitPosition.cc,v 1.5 2013/08/09 22:09:41 brownd Exp $
+// $Id: StrawHitPosition.cc,v 1.6 2013/10/19 00:24:46 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/08/09 22:09:41 $
+// $Date: 2013/10/19 00:24:46 $
 //
 // Original author David Brown
 //
@@ -48,6 +48,7 @@ namespace mu2e {
   StrawHitPosition& StrawHitPosition::operator =(StrawHitPosition const& other) {
     if(this != &other){
       _pos = other._pos;
+      _wdist = other._wdist;
       _pres = other._pres;
       _rres = other._rres;
       _stindex = other._stindex;
