@@ -1,9 +1,9 @@
 //
 // Write the event ids of all events.
 //
-// $Id: EventLister_module.cc,v 1.1 2013/01/22 00:05:10 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/01/22 00:05:10 $
+// $Id: EventLister_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //
@@ -34,7 +34,9 @@ namespace mu2e {
 
   };
 
-  EventLister::EventLister(fhicl::ParameterSet const& pset) {}
+  EventLister::EventLister(fhicl::ParameterSet const& pset):
+        art::EDAnalyzer(pset)
+  {}
 
   void EventLister::analyze(const art::Event& event) {
     cout << "Event: " << event.id() << endl;

@@ -29,8 +29,9 @@ namespace mu2e {
   };
 
   //================================================================
-  StoppedParticlesPrinter::StoppedParticlesPrinter(const fhicl::ParameterSet& pset)
-    : input_(pset.get<std::string>("inputCollection"))
+  StoppedParticlesPrinter::StoppedParticlesPrinter(const fhicl::ParameterSet& pset):
+    art::EDAnalyzer(pset),
+    input_(pset.get<std::string>("inputCollection"))
   {
     const std::string outFileName(pset.get<std::string>("outFileName"));
     outFile_.open(outFileName.c_str());

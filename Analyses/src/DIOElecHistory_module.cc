@@ -1,9 +1,9 @@
 //
 // A module to follow the conversion electron in the events
 //
-// $Id: DIOElecHistory_module.cc,v 1.6 2013/09/27 16:03:41 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/09/27 16:03:41 $
+// $Id: DIOElecHistory_module.cc,v 1.7 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Gianni Onorato
 //
@@ -57,6 +57,7 @@ namespace mu2e {
   class DIOElecHistory : public art::EDAnalyzer {
   public:
     explicit DIOElecHistory(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
       _diagLevel(pset.get<int>("diagLevel",0)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),

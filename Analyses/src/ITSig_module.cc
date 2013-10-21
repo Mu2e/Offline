@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: ITSig_module.cc,v 1.2 2012/12/04 00:51:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Id: ITSig_module.cc,v 1.3 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Gianni Onorato
 //
@@ -58,6 +58,7 @@ namespace mu2e {
   public:
     
     explicit ITSig(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
       _diagLevel(pset.get<int>("diagLevel",0)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _swiresStepPoints(pset.get<string>("swiresStepPoints","trackerSWires")),

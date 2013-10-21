@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CaloExample_module.cc,v 1.1 2013/03/08 01:22:31 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/03/08 01:22:31 $
+// $Id: CaloExample_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Bertrand Echenard
 
@@ -175,6 +175,7 @@ namespace mu2e {
 
 
   CaloExample::CaloExample(fhicl::ParameterSet const& pset) :
+     art::EDAnalyzer(pset),
     _diagLevel(pset.get<int>("diagLevel",0)),
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),

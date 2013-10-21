@@ -1,9 +1,9 @@
 //
 // Count decays of charged pions to check that the pi e nu code is working properly.
 //
-// $Id: CountPionDecays_module.cc,v 1.1 2012/07/10 21:16:53 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/10 21:16:53 $
+// $Id: CountPionDecays_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //
@@ -61,6 +61,7 @@ namespace mu2e {
   };
 
   CountPionDecays::CountPionDecays(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _nPi(2,0),
     _nPiDecays(2,0),

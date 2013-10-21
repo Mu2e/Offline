@@ -1,9 +1,9 @@
 //
 // An EDProducer Module that checks radiative pi decays
 //
-// $Id: RPC_module.cc,v 1.14 2012/03/01 19:30:06 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/01 19:30:06 $
+// $Id: RPC_module.cc,v 1.15 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author R. Bernstein
 //
@@ -71,6 +71,7 @@ namespace mu2e {
     typedef SimParticleCollection::key_type key_type;
 
     RPC(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
 
       //
       // Run time parameters

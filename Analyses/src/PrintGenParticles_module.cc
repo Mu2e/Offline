@@ -1,8 +1,8 @@
 // Prints out all GenParticles in a collection.
 //
-// $Id: PrintGenParticles_module.cc,v 1.1 2012/07/23 20:08:59 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/07/23 20:08:59 $
+// $Id: PrintGenParticles_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Andrei Gaponenko
 //
@@ -34,9 +34,10 @@ namespace mu2e {
     std::string instanceName_;
   };
 
-  PrintGenParticles::PrintGenParticles(const fhicl::ParameterSet& pset)
-    : moduleLabel_(pset.get<std::string>("inputModuleLabel"))
-    , instanceName_(pset.get<std::string>("inputInstanceName"))
+  PrintGenParticles::PrintGenParticles(const fhicl::ParameterSet& pset) : 
+    art::EDAnalyzer(pset),
+    moduleLabel_(pset.get<std::string>("inputModuleLabel")),
+    instanceName_(pset.get<std::string>("inputInstanceName"))
   {}
 
   void PrintGenParticles::analyze(const art::Event& event) {

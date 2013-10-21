@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back ExtMonUCI hits created by G4 and makes trees.
 //
-// $Id: ExtMonUCIReadBack_module.cc,v 1.2 2012/03/29 13:32:35 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/29 13:32:35 $
+// $Id: ExtMonUCIReadBack_module.cc,v 1.3 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -98,6 +98,7 @@ namespace mu2e {
   };
 
   ExtMonUCIReadBack::ExtMonUCIReadBack(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     // Run time parameters
     _diagLevel(pset.get<int>("diagLevel",0)),

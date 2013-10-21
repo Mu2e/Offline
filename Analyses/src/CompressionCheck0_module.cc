@@ -1,9 +1,9 @@
 //
 // Check the output of FilterG4Out
 //
-// $Id: CompressionCheck0_module.cc,v 1.1 2013/09/09 02:46:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/09/09 02:46:04 $
+// $Id: CompressionCheck0_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //
@@ -109,7 +109,7 @@ namespace mu2e {
   };
 
   CompressionCheck0::CompressionCheck0(fhicl::ParameterSet const& pset) :
-
+    art::EDAnalyzer(pset),
     g4ModuleLabel_    (pset.get<string>("g4ModuleLabel")),
     filterModuleLabel_(pset.get<string>("filterModuleLabel")),
 

@@ -31,9 +31,10 @@ namespace mu2e {
     GeneratorSummaryHistograms genSummary_;
   };
 
-  GenParticlesAnalyzer::GenParticlesAnalyzer(const fhicl::ParameterSet& pset)
-    : inputs_(pset.get<std::string>("inputs"))
-    , genSummary_()
+  GenParticlesAnalyzer::GenParticlesAnalyzer(const fhicl::ParameterSet& pset) : 
+      art::EDAnalyzer(pset),
+      inputs_(pset.get<std::string>("inputs")),
+      genSummary_()
   {}
 
   // Can't book GeneratorSummaryHistograms in beginJob

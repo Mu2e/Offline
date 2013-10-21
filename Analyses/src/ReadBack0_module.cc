@@ -2,9 +2,9 @@
 // An EDAnalyzer module that serves as a first introduction to Mu2e software.
 // Make a few histograms about tracker and calorimeter information found in the event.
 //
-// $Id: ReadBack0_module.cc,v 1.6 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: ReadBack0_module.cc,v 1.7 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //
@@ -77,6 +77,7 @@ namespace mu2e {
   };
 
   ReadBack0::ReadBack0(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     // These will become run time parameters in a later example.
     _g4ModuleLabel("g4run"),

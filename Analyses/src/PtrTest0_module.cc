@@ -1,9 +1,9 @@
 //
 // Test of Ptr to GenParticles and SimParticles.
 //
-// $Id: PtrTest0_module.cc,v 1.7 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: PtrTest0_module.cc,v 1.8 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //
@@ -40,7 +40,9 @@ namespace mu2e {
 
   };
 
-  PtrTest0::PtrTest0(fhicl::ParameterSet const& pset){}
+  PtrTest0::PtrTest0(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset)
+  {}
 
   void PtrTest0::analyze(const art::Event& event) {
 

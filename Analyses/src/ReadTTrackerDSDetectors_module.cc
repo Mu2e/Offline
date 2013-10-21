@@ -1,9 +1,9 @@
 //
 // example Plugin to read TTracker DeviceSupport Detectors data and create ntuples
 //
-//  $Id: ReadTTrackerDSDetectors_module.cc,v 1.1 2012/01/26 22:37:15 genser Exp $
+//  $Id: ReadTTrackerDSDetectors_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
 //  $Author: genser $
-//  $Date: 2012/01/26 22:37:15 $
+//  $Date: 2013/10/21 20:44:04 $
 //
 // Original author KLG
 //
@@ -83,6 +83,7 @@ namespace mu2e {
   };
 
   ReadTTrackerDSDetectors::ReadTTrackerDSDetectors(fhicl::ParameterSet const& pset) : 
+    art::EDAnalyzer(pset),
     // Run time parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
     _hitMakerModuleLabel(pset.get<string>("hitMakerModuleLabel","g4run")),

@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadTrkExt_module.cc,v 1.7 2013/04/02 01:36:11 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2013/04/02 01:36:11 $
+// $Id: ReadTrkExt_module.cc,v 1.8 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author MyeongJae Lee
 //
@@ -90,6 +90,7 @@ namespace mu2e {
   };
 
   ReadTrkExt::ReadTrkExt(fhicl::ParameterSet const& pset):
+    art::EDAnalyzer(pset),
     _fitterModuleLabelArray(pset.get<std::vector<std::string> >("fitterModuleLabelArray")),
     _fitparticleArray(pset.get<std::vector<int> >("fitparticleArray")),
     _fitdirectionArray(pset.get<std::vector<int> >("fitdirectionArray")),

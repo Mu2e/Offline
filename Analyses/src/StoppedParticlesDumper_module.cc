@@ -62,10 +62,11 @@ namespace mu2e {
   };
 
   //================================================================
-  StoppedParticlesDumper::StoppedParticlesDumper(const fhicl::ParameterSet& pset)
-    : input_(pset.get<std::string>("inputCollection"))
-    , writeProperTime_(pset.get<bool>("writeProperTime"))
-    , nt_()
+  StoppedParticlesDumper::StoppedParticlesDumper(const fhicl::ParameterSet& pset) :
+    art::EDAnalyzer(pset),
+    input_(pset.get<std::string>("inputCollection")),
+    writeProperTime_(pset.get<bool>("writeProperTime")),
+    nt_()
   {}
 
   //================================================================

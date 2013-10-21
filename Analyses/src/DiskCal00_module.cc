@@ -1,9 +1,9 @@
 //
 // Check self consistency of hits in the Disk Calorimeter.
 //
-// $Id: DiskCal00_module.cc,v 1.6 2013/05/09 23:14:14 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Id: DiskCal00_module.cc,v 1.7 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //
@@ -86,6 +86,7 @@ namespace mu2e {
   };
 
   DiskCal00::DiskCal00(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     _apdHitMakerModuleLabel("CaloReadoutHitsMaker"),
     _crystalHitMakerModuleLabel("CaloCrystalHitsMaker"),

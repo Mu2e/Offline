@@ -1,9 +1,9 @@
 //
 // Check self consistency of all SimParticleCollections in the event.
 //
-// $Id: SimParticleCheck00_module.cc,v 1.2 2012/10/20 23:14:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/10/20 23:14:04 $
+// $Id: SimParticleCheck00_module.cc,v 1.3 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //
@@ -59,6 +59,7 @@ namespace mu2e {
   };
 
   SimParticleCheck00::SimParticleCheck00(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     nSims(0),
     nBornBeforeParent(0),

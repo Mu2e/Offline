@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: Summary01_module.cc,v 1.9 2013/09/27 16:03:41 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/09/27 16:03:41 $
+// $Id: Summary01_module.cc,v 1.10 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke.
 //
@@ -42,6 +42,7 @@ namespace mu2e {
   class Summary01 : public art::EDAnalyzer {
   public:
     explicit Summary01(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
       g4ModuleLabel_(pset.get<std::string>("g4ModuleLabel")),
       strawHitMakerModuleLabel_(pset.get<std::string>("strawHitMakerModuleLabel")),
       trackerStepPoints_(pset.get<std::string>("trackerStepPoints")),

@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.26 2013/09/13 06:46:10 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2013/09/13 06:46:10 $
+// $Id: ReadBack_module.cc,v 1.27 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //
@@ -189,6 +189,7 @@ namespace mu2e {
 
   };
   ReadBack::ReadBack(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     // Run time parameters
     _diagLevel(pset.get<int>("diagLevel",0)),

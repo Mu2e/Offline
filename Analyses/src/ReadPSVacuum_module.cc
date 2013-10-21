@@ -1,9 +1,9 @@
 //
 // Plugin to read StepPoints in PS Vacuum and create ntuples
 //
-//  $Id: ReadPSVacuum_module.cc,v 1.1 2012/06/22 18:14:56 youzy Exp $
-//  $Author: youzy $
-//  $Date: 2012/06/22 18:14:56 $
+//  $Id: ReadPSVacuum_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
+//  $Author: genser $
+//  $Date: 2013/10/21 20:44:04 $
 //
 // Original author Zhengyun You
 //
@@ -46,6 +46,7 @@ namespace mu2e {
     typedef SimParticleCollection::key_type key_type;
 
     explicit ReadPSVacuum(fhicl::ParameterSet const& pset) :
+      art::EDAnalyzer(pset),
       _psVacuumStepPoints(pset.get<string>("psVacuumStepPoints","PSVacuum")),
       _nAnalyzed(0),
       _maxPrint(pset.get<int>("maxPrint",0)),

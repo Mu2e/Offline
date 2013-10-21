@@ -1,9 +1,9 @@
 //
 // A plugin to test using root interactively.
 //
-// $Id: Histforpabs_module.cc,v 1.6 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: Histforpabs_module.cc,v 1.7 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //
@@ -75,6 +75,7 @@ namespace mu2e {
   };
 
   Histforpabs::Histforpabs(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     // Run time parameters
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),

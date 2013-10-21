@@ -1,9 +1,9 @@
 //
 // Plugin to read/analyze g4study output
 //
-//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.9 2013/09/27 16:03:41 gandr Exp $
-//  $Author: gandr $
-//  $Date: 2013/09/27 16:03:41 $
+//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.10 2013/10/21 20:44:04 genser Exp $
+//  $Author: genser $
+//  $Date: 2013/10/21 20:44:04 $
 //
 // Original author KLG somewhat based on vd read back
 //
@@ -90,6 +90,7 @@ namespace mu2e {
     typedef SimParticleCollection::key_type key_type;
 
     explicit Mu2eG4StudyReadBack(fhicl::ParameterSet const& pset) :
+      art::EDAnalyzer(pset),
       _stepperStepPoints(pset.get<string>("stepperStepPoints","stepper")),
       _tvdStepPoints(pset.get<string>("tvdStepPoints","timeVD")),
       _nAnalyzed(0),

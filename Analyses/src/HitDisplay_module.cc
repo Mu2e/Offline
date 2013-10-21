@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // A half-interactive 2D event display. 
 //
-// $Id: HitDisplay_module.cc,v 1.21 2013/05/03 03:32:49 murat Exp $
-// $Author: murat $
-// $Date: 2013/05/03 03:32:49 $
+// $Id: HitDisplay_module.cc,v 1.22 2013/10/21 20:44:04 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/21 20:44:04 $
 //
 // Contact person:  Pavel Murat, Gianantonio Pezzulo
 //
@@ -178,6 +178,7 @@ namespace mu2e {
 
 
   HitDisplay::HitDisplay(fhicl::ParameterSet const& pset):
+    art::EDAnalyzer(pset),
     moduleLabel_              (pset.get<std::string>("module_label"                )),
     generatorModuleLabel_     (pset.get<std::string>("generatorModuleLabel"        )),
     g4ModuleLabel_            (pset.get<std::string>("g4ModuleLabel"               )),
