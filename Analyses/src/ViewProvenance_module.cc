@@ -1,9 +1,9 @@
 //
 //  A module to look at the provenance of a product.
 //
-//  $Id: ViewProvenance_module.cc,v 1.3 2013/03/31 14:48:14 kutschke Exp $
+//  $Id: ViewProvenance_module.cc,v 1.4 2013/10/21 21:15:46 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2013/03/31 14:48:14 $
+//  $Date: 2013/10/21 21:15:46 $
 //
 //  Original author Rob Kutschke
 //
@@ -29,7 +29,7 @@ namespace mu2e {
   class ViewProvenance : public art::EDAnalyzer {
 
   public:
-    explicit ViewProvenance(fhicl::ParameterSet const& pset){}
+    explicit ViewProvenance(fhicl::ParameterSet const& pset);
 
     void analyze(const art::Event& event) override;
 
@@ -38,6 +38,10 @@ namespace mu2e {
     void printProvenance( art::Provenance const& );
 
   };
+
+  ViewProvenance::ViewProvenance(fhicl::ParameterSet const& pset)
+    : art::EDAnalyzer(pset){
+  }
 
   void ViewProvenance::analyze(const art::Event& event){
 

@@ -1,9 +1,9 @@
 //
 // A first look at muons stopping in stopping targets.
 //
-// $Id: StoppingTarget00_module.cc,v 1.13 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: StoppingTarget00_module.cc,v 1.14 2013/10/21 21:15:46 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:15:46 $
 //
 // Original author Rob Kutschke.
 //
@@ -85,6 +85,7 @@ namespace mu2e {
   };
 
   StoppingTarget00::StoppingTarget00(fhicl::ParameterSet const& pset):
+    art::EDAnalyzer(pset),
     _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel"))
     ,_targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget"))
     ,_vdStepPoints(pset.get<string>("vdStepPoints","virtualdetector"))

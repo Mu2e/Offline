@@ -1,9 +1,9 @@
 //
 // Plugin to show how to use the SimParticlesWithHits class.
 //
-// $Id: SimParticlesWithHitsExample_module.cc,v 1.5 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: SimParticlesWithHitsExample_module.cc,v 1.6 2013/10/21 21:13:18 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:13:18 $
 //
 // Original author Rob Kutschke.
 //
@@ -30,6 +30,7 @@ namespace mu2e {
   class SimParticlesWithHitsExample : public art::EDAnalyzer {
   public:
     explicit SimParticlesWithHitsExample(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
       _hitMakerModuleLabel(pset.get<std::string>("hitMakerModuleLabel")),
       _trackerStepPoints(pset.get<std::string>("trackerStepPoints")),

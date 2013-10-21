@@ -27,7 +27,8 @@ namespace mu2e {
   //================================================================
   template<class Coll>
   GenericCollectionPrinter<Coll>::GenericCollectionPrinter(const fhicl::ParameterSet& pset)
-    : _inModuleLabel(pset.get<std::string>("inputModuleLabel"))
+    : art::EDAnalyzer(pset)
+    , _inModuleLabel(pset.get<std::string>("inputModuleLabel"))
     , _inInstanceName(pset.get<std::string>("inputInstanceName"))
   {}
 
