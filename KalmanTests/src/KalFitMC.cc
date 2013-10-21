@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.50 2013/08/15 14:12:55 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2013/08/15 14:12:55 $
+// $Id: KalFitMC.cc,v 1.51 2013/10/21 22:47:59 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2013/10/21 22:47:59 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -560,7 +560,7 @@ namespace mu2e
 	  isp != _mcdata._simparts->end(); ++isp ){
 	SimParticle const& sp = isp->second;
 	// find photons with parent = the conversion electron created by brems
-	if(sp.parent() != 0 && sp.parent()->id() == trkid && sp.pdgId() == PDGCode::gamma  && sp.creationCode() == ProcessCode::eBrem){
+	if(sp.hasParent() && sp.parent()->id() == trkid && sp.pdgId() == PDGCode::gamma  && sp.creationCode() == ProcessCode::eBrem){
 	  CLHEP::Hep3Vector pos = det->toDetector(sp.startPosition());
 	  if(pos.z() > _trkminz && pos.z() < _trkmaxz){
 	    double de = sp.startMomentum().e();

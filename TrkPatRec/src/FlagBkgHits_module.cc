@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.17 2013/09/20 23:38:45 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2013/09/20 23:38:45 $
+// $Id: FlagBkgHits_module.cc,v 1.18 2013/10/21 22:47:58 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2013/10/21 22:47:58 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -767,7 +767,7 @@ namespace mu2e
       changed = false;
       for(std::map<art::Ptr<SimParticle>,art::Ptr<SimParticle> >::iterator im = spmap.begin();im!=spmap.end();++im){
 	std::map<art::Ptr<SimParticle>,art::Ptr<SimParticle> >::iterator ifnd = spmap.find(im->second);
-	if(ifnd->second != ifnd->first){
+	if( !(ifnd->second == ifnd->first)){
 	  changed = true;
 	  spmap[im->first] = ifnd->second;
 	}
