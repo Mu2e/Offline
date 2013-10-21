@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_HexMapTest_hh
 #define CalorimeterGeom_HexMapTest_hh
 //
-// $Id: HexMap.hh,v 1.5 2013/07/25 23:56:46 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/07/25 23:56:46 $
+// $Id: HexMap.hh,v 1.6 2013/10/21 20:53:36 murat Exp $
+// $Author: murat $
+// $Date: 2013/10/21 20:53:36 $
 //
 
 //C++ includes
@@ -45,12 +45,11 @@ namespace mu2e {
 
 	    std::vector<int>  neighbors(int thisIndex, int level=1) const;
 
-
-	private:
-
 	    HexLK lk(int index)    const;
 	    int   index(HexLK& lk) const;
 	    int   ring(HexLK& lk)  const;
+
+	private:
 
 	    std::vector<HexLK>  _step;
     };
