@@ -1,9 +1,9 @@
 //
 // identification and track parameter extraction modules
 //
-// $Id: TrackReco_module.cc,v 1.6 2013/04/03 22:11:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/04/03 22:11:28 $
+// $Id: TrackReco_module.cc,v 1.7 2013/10/21 21:01:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:01:22 $
 //
 // Original author G. Tassielli
 //
@@ -441,6 +441,7 @@ namespace mu2e {
   };
 
   TrackReco::TrackReco(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     // Run time parameters
     //_makerModuleLabel(pset.get<string>("makerModuleLabel")),

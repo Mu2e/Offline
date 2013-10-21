@@ -1,9 +1,9 @@
 //
 //  The TestFofM1 module.
 //
-//  $Id: TestFofM1_module.cc,v 1.4 2012/08/27 22:19:43 mf Exp $
-//  $Author: mf $
-//  $Date: 2012/08/27 22:19:43 $
+//  $Id: TestFofM1_module.cc,v 1.5 2013/10/21 21:01:22 kutschke Exp $
+//  $Author: kutschke $
+//  $Date: 2013/10/21 21:01:22 $
 //
 //  Original author Mark Fischler
 //
@@ -165,7 +165,7 @@ namespace mu2e {
   class TestFofM1 : public art::EDAnalyzer {
 
   public:
-    explicit TestFofM1(fhicl::ParameterSet const& pset){}
+    explicit TestFofM1(fhicl::ParameterSet const& pset);
 
     virtual void beginRun(art::Run const &);
     void analyze(const art::Event& event);
@@ -173,6 +173,11 @@ namespace mu2e {
   private:
 
   };
+
+  TestFofM1::TestFofM1(fhicl::ParameterSet const& pset)
+    : art::EDAnalyzer(pset){
+  }
+
 
   void TestFofM1::analyze(const art::Event& event){
     cout << "This is TestFofM1.  From analyze: "

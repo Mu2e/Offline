@@ -1,9 +1,9 @@
 //
 //  A second hello world plugin, with a little more detail.
 //
-//  $Id: HelloWorld2_module.cc,v 1.4 2011/10/28 18:47:06 greenc Exp $
-//  $Author: greenc $
-//  $Date: 2011/10/28 18:47:06 $
+//  $Id: HelloWorld2_module.cc,v 1.5 2013/10/21 21:01:22 kutschke Exp $
+//  $Author: kutschke $
+//  $Date: 2013/10/21 21:01:22 $
 //
 //  Original author Rob Kutschke
 //
@@ -27,6 +27,7 @@ namespace mu2e {
 
   public:
     explicit HelloWorld2(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
       _magicNumber(pset.get<int>("magicNumber",-1)){
 
       cerr << "Hello, world.  From constructor. "

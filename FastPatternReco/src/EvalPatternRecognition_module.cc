@@ -1,9 +1,9 @@
 //
 // performance evaluation of the Pattern Recognition modules
 //
-// $Id: EvalPatternRecognition_module.cc,v 1.4 2013/04/03 22:13:11 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/04/03 22:13:11 $
+// $Id: EvalPatternRecognition_module.cc,v 1.5 2013/10/21 21:01:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:01:22 $
 //
 // Original author G. Tassielli
 //
@@ -161,6 +161,7 @@ namespace mu2e {
   };
 
   EvalPatternRecognition::EvalPatternRecognition(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     // Run time parameters
     _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),

@@ -143,7 +143,8 @@ namespace mu2e {
 
     //================================================================
     TrackExtrapolatorTest2::TrackExtrapolatorTest2(const fhicl::ParameterSet& pset)
-      : particleModuleLabel_(pset.get<std::string>("particleModuleLabel"))
+      : art::EDAnalyzer(pset)
+      , particleModuleLabel_(pset.get<std::string>("particleModuleLabel"))
       , particleInstanceName_(pset.get<std::string>("particleInstanceName", ""))
       , recoClusterModuleLabel_(pset.get<std::string>("recoClusterModuleLabel"))
       , recoClusterInstanceName_(pset.get<std::string>("recoClusterInstanceName", ""))

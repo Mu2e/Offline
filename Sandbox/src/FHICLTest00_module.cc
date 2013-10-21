@@ -1,9 +1,9 @@
 //
 // Plugin to test some features of FHICL.
 //
-// $Id: FHICLTest00_module.cc,v 1.3 2012/01/25 22:46:13 kutschke Exp $
+// $Id: FHICLTest00_module.cc,v 1.4 2013/10/21 21:01:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/01/25 22:46:13 $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Original author Rob Kutschke.
 //
@@ -35,7 +35,8 @@ namespace mu2e {
 
   };
 
-  FHICLTest00::FHICLTest00(fhicl::ParameterSet const& pset){
+  FHICLTest00::FHICLTest00(fhicl::ParameterSet const& pset):
+    art::EDAnalyzer(pset){
 
     mf::LogVerbatim("Tracing") << "FHICLTest00:analyze: pset:    " << pset;
 

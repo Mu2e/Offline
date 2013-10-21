@@ -1,9 +1,9 @@
 //
 // Test the BarService
 //
-// $Id: BarTest_module.cc,v 1.1 2012/07/24 20:01:16 kutschke Exp $
+// $Id: BarTest_module.cc,v 1.2 2013/10/21 21:01:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/07/24 20:01:16 $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Contact person Rob Kutschke
 //
@@ -29,7 +29,8 @@ namespace mu2e {
 
   };
 
-  BarTest::BarTest(fhicl::ParameterSet const& pset){
+  BarTest::BarTest(fhicl::ParameterSet const& pset):
+    art::EDAnalyzer(pset){
     std::cout << "BarTest: constructor:" << std::endl;
   }
 

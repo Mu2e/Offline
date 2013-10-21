@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: materailsPropStudy_module.cc,v 1.1 2013/04/03 22:24:58 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2013/04/03 22:24:58 $
+// $Id: materailsPropStudy_module.cc,v 1.2 2013/10/21 21:01:23 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2013/10/21 21:01:23 $
 //
 
 // framework
@@ -115,6 +115,7 @@ namespace mu2e
   };
 
   materailsPropStudy::materailsPropStudy(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
     //_materialdb(pset.get<std::string>("materialdb", "")),
     _matname(pset.get<std::string>("matname", "")),
     _tpart((TrkParticle::type)(pset.get<int>("particle",TrkParticle::e_minus))),

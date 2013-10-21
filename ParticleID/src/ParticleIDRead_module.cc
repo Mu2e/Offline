@@ -73,6 +73,7 @@ namespace mu2e {
   };
 
   ParticleIDRead::ParticleIDRead(fhicl::ParameterSet const& pset):
+    art::EDAnalyzer(pset),
     _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
     _verbosity(pset.get<int>("verbosity",0)),
     _maxPrint(pset.get<int>("maxPrint",0)),

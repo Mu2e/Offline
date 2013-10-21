@@ -41,7 +41,8 @@ namespace mu2e {
 
   //================================================================
   PixelIdConverterTest::PixelIdConverterTest(const fhicl::ParameterSet& pset)
-    : numTries_(pset.get<unsigned>("numTries"))
+    : art::EDAnalyzer(pset),
+    , numTries_(pset.get<unsigned>("numTries"))
     , randFlat_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
   {}
 

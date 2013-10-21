@@ -1,9 +1,9 @@
 //
 //  Study energy desposited in straws 
 //
-// $Id: StrawEnergy_module.cc,v 1.4 2012/09/26 12:52:08 brownd Exp $
+// $Id: StrawEnergy_module.cc,v 1.5 2013/10/21 21:01:23 kutschke Exp $
 // $Author: 
-// $Date: 2012/09/26 12:52:08 $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Original author David Brown
 //
@@ -68,6 +68,7 @@ namespace mu2e {
 
 
   StrawEnergy::StrawEnergy(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
     // Run time parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
     _makerModuleLabel(pset.get<string>("makerModuleLabel","makeSH"))

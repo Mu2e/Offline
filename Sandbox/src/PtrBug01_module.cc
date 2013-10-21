@@ -1,9 +1,9 @@
 //
 // Tests for the bad Ptr bug
 //
-// $Id: PtrBug01_module.cc,v 1.4 2012/01/25 22:46:13 kutschke Exp $
+// $Id: PtrBug01_module.cc,v 1.5 2013/10/21 21:01:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/01/25 22:46:13 $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Original author Rob Kutschke
 //
@@ -56,7 +56,8 @@ namespace mu2e {
 
   };
 
-  PtrBug01::PtrBug01(fhicl::ParameterSet const& ) {
+  PtrBug01::PtrBug01(fhicl::ParameterSet const& pset )
+    : art::EDAnalyzer(pset){
     cerr << "Select a test by entering a number: " << endl;
     cerr << "   1 - From std::vector into another std::vector." << endl;
     cerr << "   2 - From std::vector into a map_vector." << endl;

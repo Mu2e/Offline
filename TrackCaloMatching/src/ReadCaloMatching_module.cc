@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.14 2013/06/12 14:55:35 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/06/12 14:55:35 $
+// $Id: ReadCaloMatching_module.cc,v 1.15 2013/10/21 21:01:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Original author G. Pezzullo
 //
@@ -171,6 +171,7 @@ static int ncalls(0);
 class ReadCaloMatching : public art::EDAnalyzer {
 public:
         explicit ReadCaloMatching(fhicl::ParameterSet const& pset):
+          art::EDAnalyzer(pset),
         _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
         _diagLevel(pset.get<int>("diagLevel",0)),
         _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),

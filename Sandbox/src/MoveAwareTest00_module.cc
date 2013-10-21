@@ -1,9 +1,9 @@
 //
 // Use TacerProduct to study emplace_back.
 //
-// $Id: MoveAwareTest00_module.cc,v 1.1 2013/04/07 19:41:54 kutschke Exp $
+// $Id: MoveAwareTest00_module.cc,v 1.2 2013/10/21 21:01:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/04/07 19:41:54 $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Original author Rob Kutschke.
 //
@@ -23,13 +23,17 @@ namespace mu2e {
 
   class MoveAwareTest00 : public art::EDAnalyzer {
   public:
-    explicit MoveAwareTest00(fhicl::ParameterSet const& ){}
+    explicit MoveAwareTest00(fhicl::ParameterSet const& );
 
     void analyze( art::Event const& e);
 
   private:
 
   };
+
+  MoveAwareTest00::MoveAwareTest00(fhicl::ParameterSet const& pset )
+    : art::EDAnalyzer(pset){
+  }
 
   void
   MoveAwareTest00::analyze(art::Event const& event) {

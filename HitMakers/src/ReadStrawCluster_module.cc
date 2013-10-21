@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawCluster_module.cc,v 1.22 2012/03/01 02:35:28 kutschke Exp $
+// $Id: ReadStrawCluster_module.cc,v 1.23 2013/10/21 21:01:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/03/01 02:35:28 $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Original author Hans Wenzel
 //
@@ -158,6 +158,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
   class ReadStrawCluster : public art::EDAnalyzer {
   public:
     explicit ReadStrawCluster(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
       _diagLevel(pset.get<int>("diagLevel",0)),
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),

@@ -1,9 +1,9 @@
 //
 // this is a old version, visualization and embedded implementation of the bck rejection algorithm
 //
-// $Id: TTDisplayData_module.cc,v 1.10 2013/03/15 15:52:04 kutschke Exp $
+// $Id: TTDisplayData_module.cc,v 1.11 2013/10/21 21:01:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Date: 2013/10/21 21:01:22 $
 //
 // Original author G. Tassielli
 //
@@ -436,6 +436,7 @@ namespace mu2e {
   };
 
   TTDisplayData::TTDisplayData(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     // Run time parameters
     _moduleLabel(pset.get<string>("module_label")),/*@module_label*/

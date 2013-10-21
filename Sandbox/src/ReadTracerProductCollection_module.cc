@@ -1,9 +1,9 @@
 //
 // Plugin to readback the TracerProductCollection
 //
-// $Id: ReadTracerProductCollection_module.cc,v 1.4 2012/06/11 05:22:43 kutschke Exp $
+// $Id: ReadTracerProductCollection_module.cc,v 1.5 2013/10/21 21:01:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/06/11 05:22:43 $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Original author Rob Kutschke.
 //
@@ -31,7 +31,7 @@ namespace mu2e {
   //
   class ReadVectorTracerProduct00 : public art::EDAnalyzer {
   public:
-    explicit ReadVectorTracerProduct00(fhicl::ParameterSet const& ){}
+    explicit ReadVectorTracerProduct00(fhicl::ParameterSet const& pset );
     virtual ~ReadVectorTracerProduct00() { }
 
     void analyze( art::Event const& e);
@@ -39,6 +39,10 @@ namespace mu2e {
   private:
 
   };
+
+  ReadVectorTracerProduct00::ReadVectorTracerProduct00(fhicl::ParameterSet const& pset)
+    : art::EDAnalyzer(pset){
+  }
 
   void
   ReadVectorTracerProduct00::analyze(art::Event const& event) {

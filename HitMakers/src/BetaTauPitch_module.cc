@@ -6,9 +6,9 @@
 // Starts from ReadDPIStrawCluster_plugin.cc, adding the quantities of
 // interest to these angles, and gradually eliminating the rest.
 //
-// $Id: BetaTauPitch_module.cc,v 1.14 2012/02/21 22:26:23 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/21 22:26:23 $
+// $Id: BetaTauPitch_module.cc,v 1.15 2013/10/21 21:01:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Original author: Mark Fischler modifying code by Hans Wenzel
 //
@@ -170,6 +170,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
   class BetaTauPitch : public art::EDAnalyzer {
   public:
     explicit BetaTauPitch(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
       _diagLevel(pset.get<int>("diagLevel",0)),
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),

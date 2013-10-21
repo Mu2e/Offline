@@ -148,6 +148,7 @@ namespace mu2e {
   };
 
   ITDisplayData::ITDisplayData(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     // Run time parameters
     _moduleLabel(pset.get<string>("module_label")),

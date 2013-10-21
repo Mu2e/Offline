@@ -1,9 +1,9 @@
 //
 // Fast Patter recognition bck rejection algorithm based on geometry considerations
 //
-// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.11 2013/04/03 22:15:29 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/04/03 22:15:29 $
+// $Id: BkgTrackRejecterByGeomTplg_module.cc,v 1.12 2013/10/21 21:01:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:01:22 $
 //
 // Original author G. Tassielli
 //
@@ -23,7 +23,6 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
-//#include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
@@ -328,7 +327,6 @@ typedef art::Ptr<TrackerHitTimeCluster> TrackerHitTimeClusterPtr;
 
 
   class BkgTrackRejecterByGeomTplg : public art::EDProducer {
-//  class BkgTrackRejecterByGeomTplg : public art::EDAnalyzer {
 
   public:
 

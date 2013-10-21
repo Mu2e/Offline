@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.20 2013/03/31 14:49:15 kutschke Exp $
+// $Id: ReadStrawHit_module.cc,v 1.21 2013/10/21 21:01:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/31 14:49:15 $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by KLG
@@ -111,6 +111,7 @@ namespace mu2e {
   };
 
   ReadStrawHit::ReadStrawHit(fhicl::ParameterSet const& pset):
+    art::EDAnalyzer(pset),
     _diagLevel(pset.get<int>("diagLevel",0)),
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),

@@ -1,9 +1,9 @@
 //
 // performance evaluation of the Bkg rejection modules
 //
-// $Id: EvalBkgTrackRejection_module.cc,v 1.8 2013/03/15 15:52:04 kutschke Exp $
+// $Id: EvalBkgTrackRejection_module.cc,v 1.9 2013/10/21 21:01:22 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Date: 2013/10/21 21:01:22 $
 //
 // Original author G. Tassielli
 //
@@ -169,6 +169,7 @@ namespace mu2e {
   };
 
   EvalBkgTrackRejection::EvalBkgTrackRejection(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     // Run time parameters
     _makerModuleLabel(pset.get<string>("makerModuleLabel")),

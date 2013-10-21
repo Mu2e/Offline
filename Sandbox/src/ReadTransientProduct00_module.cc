@@ -1,9 +1,9 @@
 //
 // Plugin to readback the transient data product.
 //
-// $Id: ReadTransientProduct00_module.cc,v 1.4 2012/01/25 22:46:13 kutschke Exp $
+// $Id: ReadTransientProduct00_module.cc,v 1.5 2013/10/21 21:01:23 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2012/01/25 22:46:13 $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Original author Rob Kutschke.
 //
@@ -29,7 +29,7 @@ namespace mu2e {
   //
   class ReadTransientProduct00 : public art::EDAnalyzer {
   public:
-    explicit ReadTransientProduct00(fhicl::ParameterSet const& ){}
+    explicit ReadTransientProduct00(fhicl::ParameterSet const& );
     virtual ~ReadTransientProduct00() { }
 
     void analyze( art::Event const& e);
@@ -37,6 +37,11 @@ namespace mu2e {
   private:
 
   };
+
+  ReadTransientProduct00::ReadTransientProduct00(fhicl::ParameterSet const& pset)
+    : art::EDAnalyzer(pset){
+  }
+
 
   void
   ReadTransientProduct00::analyze(art::Event const& event) {

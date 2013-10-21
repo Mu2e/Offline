@@ -2,9 +2,9 @@
 // Look for particles coming from the calorimeter and reflecting back in the
 // magnetic mirror
 //
-// $Id: Reflect_module.cc,v 1.8 2013/03/11 23:17:44 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/03/11 23:17:44 $
+// $Id: Reflect_module.cc,v 1.9 2013/10/21 21:01:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -122,6 +122,7 @@ namespace mu2e {
   };
 
   Reflect::Reflect(fhicl::ParameterSet const& pset):
+    art::EDAnalyzer(pset),
     _fitterPrefix(pset.get<string>("fitterPrefix","TPR")),
     _extModName(pset.get<string>("ExtrapolationModuleName","TrkExt")),
     _ipart(pset.get<int>("ParticleCode",11)),

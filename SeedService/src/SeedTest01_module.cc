@@ -1,9 +1,9 @@
 //
 //  Test the SeedService.
 //
-//  $Id: SeedTest01_module.cc,v 1.1 2012/02/04 00:12:48 kutschke Exp $
+//  $Id: SeedTest01_module.cc,v 1.2 2013/10/21 21:01:23 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2012/02/04 00:12:48 $
+//  $Date: 2013/10/21 21:01:23 $
 //
 //  Contact person Rob Kutschke
 //
@@ -48,6 +48,7 @@ namespace mu2e {
   };
 
   SeedTest01::SeedTest01(fhicl::ParameterSet const& pSet):
+    art::EDAnalyzer(pSet),
     testMode_(pSet.get<int>("testMode")),
     label_(),
     instanceNames_(pSet.get<vector<string> >("instanceNames")){

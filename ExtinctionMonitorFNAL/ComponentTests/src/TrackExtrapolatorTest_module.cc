@@ -31,7 +31,8 @@ namespace mu2e {
     };
 
     //================================================================
-    TrackExtrapolatorTest::TrackExtrapolatorTest(const fhicl::ParameterSet& pset) {}
+    TrackExtrapolatorTest::TrackExtrapolatorTest(const fhicl::ParameterSet& pset)
+      : art::EDAnalyzer(pset) {}
 
     //================================================================
     void TrackExtrapolatorTest::analyze(const art::Event&) {

@@ -1,9 +1,9 @@
 //
 // example of a module to read Data of the Electrons tracks that came from the targets
 //
-// $Id: TestMapTrackerHitByID_module.cc,v 1.1 2012/05/15 07:50:01 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/15 07:50:01 $
+// $Id: TestMapTrackerHitByID_module.cc,v 1.2 2013/10/21 21:01:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:01:22 $
 //
 // Original author G. Tassielli
 //
@@ -74,6 +74,7 @@ namespace mu2e {
   };
 
   TestMapTrackerHitByID::TestMapTrackerHitByID(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     // Run time parameters
     _mapTrackerHitByID(pset.get<string>("mapTrackerHitByID"))

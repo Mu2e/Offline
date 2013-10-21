@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.20 2013/08/01 12:42:46 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/01 12:42:46 $
+// $Id: ReadKalFits_module.cc,v 1.21 2013/10/21 21:01:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Original author Rob Kutschke
 //
@@ -88,6 +88,7 @@ namespace mu2e {
   };
 
   ReadKalFits::ReadKalFits(fhicl::ParameterSet const& pset):
+    art::EDAnalyzer(pset),
     _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),

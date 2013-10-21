@@ -1,8 +1,8 @@
 //_p// compare 2 particle fits of the same track
 //
-// $Id: CompareFits_module.cc,v 1.2 2013/03/11 23:17:44 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/03/11 23:17:44 $
+// $Id: CompareFits_module.cc,v 1.3 2013/10/21 21:01:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -112,6 +112,7 @@ namespace mu2e {
   };
 
   CompareFits::CompareFits(fhicl::ParameterSet const& pset):
+    art::EDAnalyzer(pset),
     _fitterPrefix(pset.get<string>("fitterPrefix","TPR")),
     _extModName(pset.get<string>("ExtrapolationModuleName","TrkExt")),
     _pprimary((TrkParticle::type)pset.get<int>("PrimaryParticleCode",TrkParticle::e_minus)),

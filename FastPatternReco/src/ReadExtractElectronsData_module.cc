@@ -1,9 +1,9 @@
 //
 // example of a module to read Data of the Electrons tracks that came from the targets
 //
-// $Id: ReadExtractElectronsData_module.cc,v 1.8 2013/04/03 22:10:25 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/04/03 22:10:25 $
+// $Id: ReadExtractElectronsData_module.cc,v 1.9 2013/10/21 21:01:22 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:01:22 $
 //
 // Original author G. Tassielli
 //
@@ -147,6 +147,7 @@ namespace mu2e {
   };
 
   ReadExtractElectronsData::ReadExtractElectronsData(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
 
     // Run time parameters
     _extractElectronsData(pset.get<string>("elextractModuleLabel")),

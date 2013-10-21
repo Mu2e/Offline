@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadExtrapol_module.cc,v 1.12 2013/05/18 00:23:25 murat Exp $
-// $Author: murat $
-// $Date: 2013/05/18 00:23:25 $
+// $Id: ReadExtrapol_module.cc,v 1.13 2013/10/21 21:01:23 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/10/21 21:01:23 $
 //
 // Original author G. Pezzullo
 //
@@ -185,6 +185,8 @@ namespace mu2e {
   class ReadExtrapol : public art::EDAnalyzer {
   public:
     explicit ReadExtrapol(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
+
       _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
       _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
       _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
