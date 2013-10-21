@@ -2,9 +2,9 @@
 // An EDProducer Module that reads ExtMonUCITofHit Stepping MC objects and turns them into
 // ExtMonUCITofHit objects, collection
 //
-// $Id: MakeExtMonUCITofHits_module.cc,v 1.9 2013/03/15 15:52:04 kutschke Exp $
+// $Id: MakeExtMonUCITofHits_module.cc,v 1.10 2013/10/21 22:52:08 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Date: 2013/10/21 22:52:08 $
 //  
 //  
 
@@ -470,7 +470,7 @@ namespace mu2e {
           else 
           {
             simp_parent = simp->parent();
-            while ( simp_parent != 0 && simp_parent->parent() != 0 ) 
+            while ( simp_parent  && simp_parent->parent() ) 
             {
               simp_parent = simp_parent->parent();
             }
