@@ -1,9 +1,9 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.22 2013/03/15 16:20:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 16:20:00 $
+// $Id: EventDisplay_module.cc,v 1.23 2013/10/21 20:34:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/21 20:34:14 $
 //
 
 #include <iostream>
@@ -60,6 +60,7 @@ namespace mu2e
 
   EventDisplay::EventDisplay(fhicl::ParameterSet const &pset)
     :
+    art::EDAnalyzer(pset),
     _frame(0),
     _firstLoop(true),
     _pset(pset)

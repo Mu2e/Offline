@@ -1,7 +1,7 @@
 //
-// $Id: ClusterParticleTrajectory_module.cc,v 1.5 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: ClusterParticleTrajectory_module.cc,v 1.6 2013/10/21 20:34:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/21 20:34:14 $
 //
 //Original author Giovanni Onoratto
 
@@ -66,6 +66,7 @@ namespace mu2e {
   class ClusterParticleTrajectory : public art::EDAnalyzer {
   public:
     explicit ClusterParticleTrajectory(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
       _clusterModuleLabel(pset.get<std::string>("clusterModuleLabel", "makeCaloCluster")),

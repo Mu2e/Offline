@@ -1,9 +1,9 @@
 //
 // implementation of different algorithm to reconstruct the impact position on the electrons on the calorimeter
 //
-// $Id: CaloClusterCog_module.cc,v 1.11 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: CaloClusterCog_module.cc,v 1.12 2013/10/21 20:34:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/21 20:34:14 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -145,6 +145,7 @@ static int ncalls(0);
 class CaloClusterCog : public art::EDAnalyzer {
 public:
         explicit CaloClusterCog(fhicl::ParameterSet const& pset):
+        art::EDAnalyzer(pset),
         _diagLevel(pset.get<int>("diagLevel",0)),
         _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
         _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),

@@ -1,9 +1,9 @@
 //
 // Visualization of pile up on the calorimeter clusters
 //
-// $Id: CaloClusterPileUp_module.cc,v 1.6 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: CaloClusterPileUp_module.cc,v 1.7 2013/10/21 20:34:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/21 20:34:14 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -160,6 +160,7 @@ static int ncalls(0);
 class CaloClusterPileUp : public art::EDAnalyzer {
 public:
         explicit CaloClusterPileUp(fhicl::ParameterSet const& pset):
+        art::EDAnalyzer(pset),
         _diagLevel(pset.get<int>("diagLevel",1)),
         _qualityCuts(pset.get<int>("qualityCuts",2)),
         _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),

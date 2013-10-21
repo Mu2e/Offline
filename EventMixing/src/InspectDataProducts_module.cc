@@ -5,9 +5,9 @@
 // pointees. The printout does not include indices/keys because these
 // may be changed by mixing.
 //
-// $Id: InspectDataProducts_module.cc,v 1.4 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: InspectDataProducts_module.cc,v 1.5 2013/10/21 20:34:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/21 20:34:14 $
 //
 // Original author Rob Kutschke
 //
@@ -76,7 +76,7 @@ namespace mu2e {
 
   };
   InspectDataProducts::InspectDataProducts(fhicl::ParameterSet const& pset) :
-
+    art::EDAnalyzer(pset),
     // Run time parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
     _mixerModuleLabel(pset.get<string>("mixerModuleLabel","mixer")),

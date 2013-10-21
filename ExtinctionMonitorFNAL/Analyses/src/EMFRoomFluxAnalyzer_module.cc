@@ -1,8 +1,8 @@
 // Precompute particle randomization from MARS inputs for g4s1 ExtMonFNALRoom jobs.
 //
-// $Id: EMFRoomFluxAnalyzer_module.cc,v 1.5 2012/11/01 23:40:42 gandr Exp $
+// $Id: EMFRoomFluxAnalyzer_module.cc,v 1.6 2013/10/21 20:34:14 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:40:42 $
+// $Date: 2013/10/21 20:34:14 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -174,7 +174,9 @@ namespace mu2e {
 
     //================================================================
     EMFRoomFluxAnalyzer::EMFRoomFluxAnalyzer(const fhicl::ParameterSet& pset)
-      : verbosityLevel_(pset.get<int>("verbosityLevel"))
+      : art::EDAnalyzer(pset)
+
+      , verbosityLevel_(pset.get<int>("verbosityLevel"))
 
       , generatorModuleLabel_(pset.get<std::string>("generatorModuleLabel"))
       , generatorInstanceName_(pset.get<std::string>("generatorInstanceName", ""))

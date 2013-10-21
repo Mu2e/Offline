@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: TestTO_module.cc,v 1.2 2012/12/04 00:51:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
+// $Id: TestTO_module.cc,v 1.3 2013/10/21 20:34:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/21 20:34:14 $
 //
 // Original author Gianni Onorato
 //
@@ -62,6 +62,7 @@ namespace mu2e {
     typedef vector<int> Vint;
 
     explicit TestTO(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
       _diagLevel(pset.get<int>("diagLevel",0)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),

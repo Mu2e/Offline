@@ -38,7 +38,8 @@ namespace mu2e {
 
   //================================================================
   GenEventCountReader::GenEventCountReader(const fhicl::ParameterSet& pset)
-    : numEvents_(0)
+    : art::EDAnalyzer(pset)
+    , numEvents_(0)
     , numSubRuns_(0)
     , makeHistograms_(pset.get<bool>("makeHistograms", true))
   {}

@@ -1,9 +1,9 @@
 //
 //  Look at all provenances stored in the registry
 //
-//  $Id: ViewAllProvenances_module.cc,v 1.1 2013/03/31 14:50:49 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2013/03/31 14:50:49 $
+//  $Id: ViewAllProvenances_module.cc,v 1.2 2013/10/21 20:34:14 gandr Exp $
+//  $Author: gandr $
+//  $Date: 2013/10/21 20:34:14 $
 //
 //  Original author Rob Kutschke
 //
@@ -26,7 +26,7 @@ namespace mu2e {
   class ViewAllProvenances : public art::EDAnalyzer {
 
   public:
-    explicit ViewAllProvenances(fhicl::ParameterSet const& pset){}
+    explicit ViewAllProvenances(fhicl::ParameterSet const& pset) : art::EDAnalyzer(pset) {}
 
     void analyze(const art::Event& event) override;
 

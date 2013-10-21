@@ -4,9 +4,9 @@
 // This is just a temporary tool to help learn how to write the
 // PatRec geometry understander.
 //
-// $Id: Small_module.cc,v 1.13 2012/01/08 17:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/01/08 17:52:03 $
+// $Id: Small_module.cc,v 1.14 2013/10/21 20:34:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/21 20:34:14 $
 //
 // Original author: Mark Fischler
 //
@@ -120,6 +120,7 @@ namespace mu2e {;
   class GrokGeometry : public art::EDAnalyzer {
   public:
     explicit GrokGeometry(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
       _diagLevel(pset.get<int>("diagLevel",0)),
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),

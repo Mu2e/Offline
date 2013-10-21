@@ -44,7 +44,8 @@ namespace mu2e {
 
   //================================================================
   EMFDetPrintRecoClusterTruth::EMFDetPrintRecoClusterTruth(const fhicl::ParameterSet& pset)
-    : clusterModuleLabel_(pset.get<std::string>("clusterModuleLabel"))
+    : art::EDAnalyzer(pset)
+    , clusterModuleLabel_(pset.get<std::string>("clusterModuleLabel"))
     , clusterInstanceName_(pset.get<std::string>("clusterInstanceName", ""))
     , truthModuleLabel_(pset.get<std::string>("truthModuleLabel"))
     , truthInstanceName_(pset.get<std::string>("truthInstanceName", ""))

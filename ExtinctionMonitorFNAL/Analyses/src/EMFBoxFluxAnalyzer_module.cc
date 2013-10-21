@@ -1,9 +1,9 @@
 // Read in a set of particles hitting ExtMonFNAL VD box (from g4s1 room jobs)
 // compute randomization parameters, and write out as an ntuple.
 //
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.12 2012/11/01 23:41:54 gandr Exp $
+// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.13 2013/10/21 20:34:14 gandr Exp $
 // $Author: gandr $
-// $Date: 2012/11/01 23:41:54 $
+// $Date: 2013/10/21 20:34:14 $
 //
 // Original author Andrei Gaponenko, 2012
 
@@ -349,8 +349,8 @@ namespace mu2e {
 
     //================================================================
     EMFBoxFluxAnalyzer::EMFBoxFluxAnalyzer(const fhicl::ParameterSet& pset)
-      : verbosityLevel_(pset.get<int>("verbosityLevel"))
-
+      : art::EDAnalyzer(pset)
+      , verbosityLevel_(pset.get<int>("verbosityLevel"))
       , hitsModuleLabel_(pset.get<std::string>("hitsModuleLabel"))
       , hitsInstanceName_(pset.get<std::string>("hitsInstanceName", ""))
 

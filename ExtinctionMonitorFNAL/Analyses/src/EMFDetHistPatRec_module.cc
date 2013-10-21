@@ -61,7 +61,8 @@ namespace mu2e {
 
     //================================================================
     EMFDetHistPatRec::EMFDetHistPatRec(const fhicl::ParameterSet& pset)
-      : patRecModuleLabel_(pset.get<std::string>("patRecModuleLabel"))
+      : art::EDAnalyzer(pset)
+      , patRecModuleLabel_(pset.get<std::string>("patRecModuleLabel"))
       , patRecInstanceName_(pset.get<std::string>("patRecInstanceName", ""))
       , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
       , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))

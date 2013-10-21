@@ -2,9 +2,9 @@
 // module for the calculation of the efficiency Vs energy cluster cut and other distributions related to the efficiency
 //
 
-// $Id: CaloClusterEff_module.cc,v 1.9 2013/05/09 23:14:14 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Id: CaloClusterEff_module.cc,v 1.10 2013/10/21 20:34:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/21 20:34:14 $
 
 //
 // Original author G. Pezzullo & G. Tassielli
@@ -129,6 +129,7 @@ static int ncalls(0);
 class CaloClusterEff : public art::EDAnalyzer {
 public:
         explicit CaloClusterEff(fhicl::ParameterSet const& pset):
+        art::EDAnalyzer(pset),
         _diagLevel(pset.get<int>("diagLevel",0)),
         _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
         _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),

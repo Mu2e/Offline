@@ -1,9 +1,9 @@
 //
 // Read the mixed events.
 //
-// $Id: MixAnalyzer_module.cc,v 1.3 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: MixAnalyzer_module.cc,v 1.4 2013/10/21 20:34:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/21 20:34:14 $
 //
 // Contact person Rob Kutschke.
 //
@@ -27,7 +27,7 @@ namespace mu2e {
 
   class MixAnalyzer : public art::EDAnalyzer {
   public:
-    explicit MixAnalyzer(fhicl::ParameterSet const& pset){}
+    explicit MixAnalyzer(fhicl::ParameterSet const& pset) : art::EDAnalyzer(pset) {}
     virtual ~MixAnalyzer() { }
 
     void analyze( art::Event const& e);

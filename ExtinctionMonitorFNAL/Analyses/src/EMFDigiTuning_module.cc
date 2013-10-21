@@ -75,7 +75,8 @@ namespace mu2e {
 
     //================================================================
     EMFDigiTuning::EMFDigiTuning(const fhicl::ParameterSet& pset)
-      : hitsModuleLabel_(pset.get<std::string>("hitsModuleLabel"))
+      : art::EDAnalyzer(pset)
+      , hitsModuleLabel_(pset.get<std::string>("hitsModuleLabel"))
       , hitsInstanceName_(pset.get<std::string>("hitsInstanceName", ""))
       , clustersModuleLabel_(pset.get<std::string>("clustersModuleLabel"))
       , clustersInstanceName_(pset.get<std::string>("clustersInstanceName", ""))

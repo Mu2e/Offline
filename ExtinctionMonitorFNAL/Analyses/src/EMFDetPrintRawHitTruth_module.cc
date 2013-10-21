@@ -47,7 +47,8 @@ namespace mu2e {
 
     //================================================================
     EMFDetPrintRawHitTruth::EMFDetPrintRawHitTruth(const fhicl::ParameterSet& pset)
-      : hitsModuleLabel_(pset.get<std::string>("hitsModuleLabel"))
+      : art::EDAnalyzer(pset)
+      , hitsModuleLabel_(pset.get<std::string>("hitsModuleLabel"))
       , truthModuleLabel_(pset.get<std::string>("truthModuleLabel"))
       , simParticleMarsLabel_(pset.get<std::string>("simParticleMarsLabel"))
       , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))

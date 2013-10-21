@@ -105,7 +105,8 @@ namespace mu2e {
 
     //================================================================
     EMFDetMCHistPatRec::EMFDetMCHistPatRec(const fhicl::ParameterSet& pset)
-      : patRecModuleLabel_(pset.get<std::string>("patRecModuleLabel"))
+      : art::EDAnalyzer(pset)
+      , patRecModuleLabel_(pset.get<std::string>("patRecModuleLabel"))
       , patRecInstanceName_(pset.get<std::string>("patRecInstanceName", ""))
       , trkTruthModuleLabel_(pset.get<std::string>("trkTruthModuleLabel"))
       , trkTruthInstanceName_(pset.get<std::string>("trkTruthInstanceName", ""))

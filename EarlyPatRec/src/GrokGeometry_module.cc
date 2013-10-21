@@ -4,9 +4,9 @@
 // This is a geometry understander so that pattern recognition can work
 // with a convenient set of concepts, yet those will have the proper data.
 //
-// $Id: GrokGeometry_module.cc,v 1.13 2011/10/28 18:47:06 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/10/28 18:47:06 $
+// $Id: GrokGeometry_module.cc,v 1.14 2013/10/21 20:34:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/21 20:34:14 $
 //
 // Original author: Mark Fischler
 //
@@ -116,6 +116,7 @@ namespace mu2e {;
   class GrokGeometry : public art::EDAnalyzer {
   public:
     explicit GrokGeometry(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
       _diagLevel(pset.get<int>("diagLevel",0)),
       _maxFullPrint(pset.get<int>("maxFullPrint",5)),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),

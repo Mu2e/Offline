@@ -32,7 +32,8 @@ namespace mu2e {
     unsigned int numPassedHits_;
   public:
     explicit EMFRawHitsValidator(const fhicl::ParameterSet& pset)
-      : inModuleLabel_(pset.get<std::string>("inputModuleLabel"))
+      : art::EDAnalyzer(pset)
+      , inModuleLabel_(pset.get<std::string>("inputModuleLabel"))
       , inInstanceName_(pset.get<std::string>("inputInstanceName"))
       , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
       , geomInstanceName_(pset.get<std::string>("geomInstanceName"))

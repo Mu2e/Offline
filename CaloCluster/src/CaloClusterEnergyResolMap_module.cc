@@ -1,9 +1,9 @@
 //
 // Visualization of the energy resolution  on the rows and on the columns
 //
-// $Id: CaloClusterEnergyResolMap_module.cc,v 1.14 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: CaloClusterEnergyResolMap_module.cc,v 1.15 2013/10/21 20:34:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/21 20:34:14 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -146,6 +146,7 @@ static int ncalls(0);
 class CaloClusterEnergyResolMap : public art::EDAnalyzer {
 public:
         explicit CaloClusterEnergyResolMap(fhicl::ParameterSet const& pset):
+        art::EDAnalyzer(pset),
         _diagLevel(pset.get<int>("diagLevel",1)),
         _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
         _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),

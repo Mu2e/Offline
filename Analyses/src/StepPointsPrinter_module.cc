@@ -27,7 +27,8 @@ namespace mu2e {
 
   //================================================================
   StepPointsPrinter::StepPointsPrinter(const fhicl::ParameterSet& pset)
-    : input_(pset.get<std::string>("inputCollection"))
+    : art::EDAnalyzer(pset)
+    , input_(pset.get<std::string>("inputCollection"))
   {}
 
   //================================================================

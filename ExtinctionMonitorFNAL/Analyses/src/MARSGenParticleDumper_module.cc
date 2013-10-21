@@ -170,7 +170,8 @@ namespace mu2e {
 
     //================================================================
     MARSGenParticleDumper::MARSGenParticleDumper(const fhicl::ParameterSet& pset)
-      : geomModuleLabel_(pset.get<std::string>("geomModuleLabel", ""))
+      : art::EDAnalyzer(pset)
+      , geomModuleLabel_(pset.get<std::string>("geomModuleLabel", ""))
       , inputModuleLabel_(pset.get<std::string>("inputModuleLabel"))
       , inputInstanceName_(pset.get<std::string>("inputInstanceName"))
       , dump_(0)

@@ -1,7 +1,7 @@
 //
-// $Id: CrystalHits_module.cc,v 1.4 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: CrystalHits_module.cc,v 1.5 2013/10/21 20:34:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/10/21 20:34:14 $
 //
 //Original author Giovanni Onorato
 
@@ -65,6 +65,7 @@ namespace mu2e {
   class CrystalHits : public art::EDAnalyzer {
   public:
     explicit CrystalHits(fhicl::ParameterSet const& pset):
+      art::EDAnalyzer(pset),
       _diagLevel(pset.get<int>("diagLevel",0)),   
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),

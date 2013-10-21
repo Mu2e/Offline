@@ -143,7 +143,8 @@ namespace mu2e {
 
   //================================================================
   StepPointMCDumper::StepPointMCDumper(const fhicl::ParameterSet& pset)
-    : hitsInputTag_(pset.get<std::string>("hitsInputTag"))
+    : art::EDAnalyzer(pset)
+    , hitsInputTag_(pset.get<std::string>("hitsInputTag"))
     , nt_(0)
   {}
 

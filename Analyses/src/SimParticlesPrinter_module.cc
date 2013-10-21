@@ -28,7 +28,8 @@ namespace mu2e {
 
   //================================================================
   SimParticlesPrinter::SimParticlesPrinter(const fhicl::ParameterSet& pset)
-    : input_(pset.get<std::string>("inputCollection"))
+    : art::EDAnalyzer(pset)
+    , input_(pset.get<std::string>("inputCollection"))
     , pr_(pset.get<fhicl::ParameterSet>("printer", fhicl::ParameterSet()))
   {}
 

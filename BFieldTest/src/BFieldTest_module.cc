@@ -115,6 +115,7 @@ namespace mu2e {
 
   public:
     explicit BFieldTest01(const fhicl::ParameterSet& pset)
+      : art::EDAnalyzer(pset)
     {
 
       std::vector<std::string> pskeys = pset.get_pset_keys();
