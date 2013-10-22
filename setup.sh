@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.66 2013/10/22 20:48:51 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/10/22 20:48:51 $
+# $Id: setup.sh,v 1.67 2013/10/22 23:35:39 brownd Exp $
+# $Author: brownd $
+# $Date: 2013/10/22 23:35:39 $
 #
 # Original author Rob Kutschke
 #
@@ -65,7 +65,7 @@ source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
 
 # Check out the BaBar code.
 # First build the symlink directory.  Then checkout the code.
-babarversion=601
+babarversion=605
 if [  -f "./BaBar/makeInclude.sh" ]; then
   source ./BaBar/makeInclude.sh
   if [ ! -f "BaBar/BaBar/include/BaBar.hh" ]; then
