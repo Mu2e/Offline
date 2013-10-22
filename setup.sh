@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.65 2013/10/21 23:29:09 kutschke Exp $
+# $Id: setup.sh,v 1.66 2013/10/22 20:48:51 kutschke Exp $
 # $Author: kutschke $
-# $Date: 2013/10/21 23:29:09 $
+# $Date: 2013/10/22 20:48:51 $
 #
 # Original author Rob Kutschke
 #
@@ -51,7 +51,7 @@ setup -B geant4 v4_9_6_p02 -q+e4:+prof
 
 # Other libraries we need.
 setup -B heppdt v3_04_01 -q+e4:+prof
-setup    splines v1_02_00 -q+e4:+prof
+setup -B splines v1_02_01 -q+e4:+prof
 
 # The build system.
 setup -B scons v2_3_0a
