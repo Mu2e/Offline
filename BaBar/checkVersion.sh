@@ -8,8 +8,8 @@
 #
 # This code only prints warnings; it does not do an update.
 #
-# $Id: checkVersion.sh,v 1.3 2013/04/24 19:01:19 kutschke Exp $
-# $Date: 2013/04/24 19:01:19 $
+# $Id: checkVersion.sh,v 1.4 2013/10/22 23:54:13 kutschke Exp $
+# $Date: 2013/10/22 23:54:13 $
 # $Author: kutschke $
 #
 # Contact person Rob Kutschke
@@ -57,4 +57,11 @@ done
 
 if [ -z "${badBaBarPackage}" ]; then
   echo "All BaBar packages pass the version check."
+else
+  echo " "
+  echo "Some BaBar packages have an incorrect version."
+  echo "To update to the correct version issue the following command: "
+  echo " "
+  echo "BaBar/update.sh " ${requiredVersion}
+  echo " "
 fi
