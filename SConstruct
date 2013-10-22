@@ -2,9 +2,9 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.50 2013/08/22 22:47:25 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/08/22 22:47:25 $
+# $Id: SConstruct,v 1.51 2013/10/22 22:12:42 genser Exp $
+# $Author: genser $
+# $Date: 2013/10/22 22:12:42 $
 #
 # Original author Rob Kutschke.
 #
@@ -69,7 +69,7 @@ babarlibs = [ 'mu2e_BaBar_KalmanTrack',     'mu2e_BaBar_DetectorModel',      'mu
 
 # Define scons-local environment - it will be exported later.
 osenv = {}
-for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',  'ROOTSYS' ]:
+for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',  'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR', 'SQLITE_DIR' ]:
     if var in os.environ.keys():
         osenv[var] = os.environ[var]
         pass
