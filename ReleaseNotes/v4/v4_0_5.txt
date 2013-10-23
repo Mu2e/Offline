@@ -1,8 +1,15 @@
-  $Id: v4_0_5.txt,v 1.5 2013/10/23 17:25:12 genser Exp $
+  $Id: v4_0_5.txt,v 1.6 2013/10/23 20:54:01 genser Exp $
   $Author: genser $
-  $Date: 2013/10/23 17:25:12 $
+  $Date: 2013/10/23 20:54:01 $
 
            Release notes for Mu2e Offline software, v4_0_5
+
+7) October 23, 2013 genser
+   Updated files in mucapture module:
+     in preparation for Geant4 version 10 used 
+     CLHEP/Units/SystemOfUnits.h or CLHEP/Units/PhysicalConstants.h
+     and conditionaly used G4ExceptionDescription to remove 
+     warnings about obsolete strstream
 
 6) October 23, 2013 genser
    Changed the way Geant4 version is handled to prepare for version 10
