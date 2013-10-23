@@ -4,6 +4,9 @@
 //      History: first implementation, Kevin Lynch, February 12 2010
 // ----------------------------------------------------------------
 
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
+
 #include "G4GenericMuAtom.hh"
 #include "G4ParticleTable.hh"
 #include "globals.hh"
@@ -28,7 +31,7 @@ G4GenericMuAtom* G4GenericMuAtom::GenericMuAtomDefinition(){
   // FIXME ... should this be a dynamic_cast or a static_cast
   G4GenericMuAtom* anInstance = static_cast<G4GenericMuAtom*>(pTable->FindParticle(name));
   if( anInstance == 0 )
-    theInstance = new G4GenericMuAtom(name, 10.*GeV, 1, 1, 0, 0);
+    theInstance = new G4GenericMuAtom(name, 10.*CLHEP::GeV, 1, 1, 0, 0);
   return theInstance;
 }
 
