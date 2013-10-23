@@ -1,8 +1,14 @@
-  $Id: v4_0_5.txt,v 1.4 2013/10/22 22:16:14 genser Exp $
+  $Id: v4_0_5.txt,v 1.5 2013/10/23 17:25:12 genser Exp $
   $Author: genser $
-  $Date: 2013/10/22 22:16:14 $
+  $Date: 2013/10/23 17:25:12 $
 
            Release notes for Mu2e Offline software, v4_0_5
+
+6) October 23, 2013 genser
+   Changed the way Geant4 version is handled to prepare for version 10
+      Mu2eG4/src/SConscript
+      Mu2eG4/src/checkMSCmodel.cc
+      mucapture/src/SConscript
 
 5) October 22, 2013 genser
    SConstruct
