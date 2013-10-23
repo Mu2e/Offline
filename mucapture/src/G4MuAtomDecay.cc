@@ -4,6 +4,9 @@
 //      History: first implementation, cloned from G4Decay
 //      20 February 2010 Kevin Lynch
 
+// CLHEP includes
+#include "CLHEP/Units/PhysicalConstants.h"
+
 #include "G4MuAtom.hh"
 #include "G4MuAtomDecay.hh"
 #include "G4DynamicParticle.hh"
@@ -44,7 +47,7 @@ G4bool G4MuAtomDecay::IsApplicable(const G4ParticleDefinition& aParticleType)
    // check if the particle is stable?
    if (aParticleType.GetPDGLifeTime() <0.0) {
      return false;
-   } else if (aParticleType.GetPDGMass() <= 0.0*MeV) {
+   } else if (aParticleType.GetPDGMass() <= 0.0*CLHEP::MeV) {
      return false;
    } else if (aParticleType.GetParticleType() == "MuAtom") {
      return true; 
@@ -74,7 +77,7 @@ G4double G4MuAtomDecay::GetMeanLifeTime(const G4Track& aTrack  ,
 
 #ifdef G4VERBOSE
    if (GetVerboseLevel()>1) {
-     G4cout << "mean life time: "<< meanlife/ns << "[ns]" << G4endl;
+     G4cout << "mean life time: "<< meanlife/CLHEP::ns << "[ns]" << G4endl;
    }
 #endif
 
@@ -92,7 +95,7 @@ G4double G4MuAtomDecay::GetMeanFreePath(const G4Track& aTrack,G4double, G4ForceC
 
     // returns the mean free path in GEANT4 internal units
    G4double pathlength;
-   G4double aCtau = c_light * aLife;
+   G4double aCtau = CLHEP::c_light * aLife;
 
    // check if the particle is stable?
    if (aParticleDef->GetPDGStable()) {
@@ -115,7 +118,7 @@ G4double G4MuAtomDecay::GetMeanFreePath(const G4Track& aTrack,G4double, G4ForceC
        if (GetVerboseLevel()>1) {
 	 G4cout << "G4MuAtomDecay::GetMeanFreePath()   !!particle stops!!";
          G4cout << aParticleDef->GetParticleName() << G4endl;
-	 G4cout << "KineticEnergy:" << aParticle->GetKineticEnergy()/GeV <<"[GeV]";
+	 G4cout << "KineticEnergy:" << aParticle->GetKineticEnergy()/CLHEP::GeV <<"[GeV]";
        }
 #endif
        pathlength = DBL_MIN;
@@ -228,8 +231,8 @@ G4VParticleChange* G4MuAtomDecay::DecayIt(const G4Track& aTrack, const G4Step& )
     if (GetVerboseLevel()>0) {
       G4cout << "G4MuAtomDecay::DoIt  : Total Energy is less than its mass" << G4endl;
       G4cout << " Particle: " << aParticle->GetDefinition()->GetParticleName();
-      G4cout << " Energy:"    << ParentEnergy/MeV << "[MeV]";
-      G4cout << " Mass:"    << ParentMass/MeV << "[MeV]";
+      G4cout << " Energy:"    << ParentEnergy/CLHEP::MeV << "[MeV]";
+      G4cout << " Mass:"    << ParentMass/CLHEP::MeV << "[MeV]";
       G4cout << G4endl;
     }
   }
@@ -259,10 +262,10 @@ G4VParticleChange* G4MuAtomDecay::DecayIt(const G4Track& aTrack, const G4Step& )
 #ifdef G4VERBOSE
   if (GetVerboseLevel()>1) {
     G4cout << "G4MuAtomDecay::DoIt  : Decay vertex :";
-    G4cout << " Time: " << finalGlobalTime/ns << "[ns]";
-    G4cout << " X:" << (aTrack.GetPosition()).x() /cm << "[cm]";
-    G4cout << " Y:" << (aTrack.GetPosition()).y() /cm << "[cm]";
-    G4cout << " Z:" << (aTrack.GetPosition()).z() /cm << "[cm]";
+    G4cout << " Time: " << finalGlobalTime/CLHEP::ns << "[ns]";
+    G4cout << " X:" << (aTrack.GetPosition()).x() /CLHEP::cm << "[cm]";
+    G4cout << " Y:" << (aTrack.GetPosition()).y() /CLHEP::cm << "[cm]";
+    G4cout << " Z:" << (aTrack.GetPosition()).z() /CLHEP::cm << "[cm]";
     G4cout << G4endl;
     G4cout << "G4MuAtomDecay::DoIt  : decay products in Lab. Frame" << G4endl;
     products->DumpInfo();
@@ -340,7 +343,7 @@ G4double G4MuAtomDecay::PostStepGetPhysicalInteractionLength(
       // subtract NumberOfInteractionLengthLeft 
       SubtractNumberOfInteractionLengthLeft(previousStepSize);
       if(theNumberOfInteractionLengthLeft<0.){
-	theNumberOfInteractionLengthLeft=perMillion;
+	theNumberOfInteractionLengthLeft=CLHEP::perMillion;
       }
       fRemainderLifeTime = theNumberOfInteractionLengthLeft*aLife;
     }
@@ -352,7 +355,7 @@ G4double G4MuAtomDecay::PostStepGetPhysicalInteractionLength(
       G4cout << "G4MuAtomDecay::PostStepGetPhysicalInteractionLength " << G4endl;
       track.GetDynamicParticle()->DumpInfo();
       G4cout << " in Material  " << track.GetMaterial()->GetName() <<G4endl;
-      G4cout << "MeanFreePath = " << currentInteractionLength/cm << "[cm]" <<G4endl;
+      G4cout << "MeanFreePath = " << currentInteractionLength/CLHEP::cm << "[cm]" <<G4endl;
     }
 #endif
 
@@ -378,7 +381,7 @@ G4double G4MuAtomDecay::PostStepGetPhysicalInteractionLength(
       rvalue = (fRemainderLifeTime/aLife)*GetMeanFreePath(track, previousStepSize, condition);
     } else {
      // shortlived particle
-      rvalue = c_light * fRemainderLifeTime;
+      rvalue = CLHEP::c_light * fRemainderLifeTime;
      // by using normalized kinetic energy (= Ekin/mass)
      G4double   aMass =  track.GetDynamicParticle()->GetMass();
      rvalue *= track.GetDynamicParticle()->GetTotalMomentum()/aMass;

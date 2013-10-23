@@ -10,6 +10,9 @@
 #include "G4NucleiProperties.hh"
 #include "G4IonTable.hh"
 
+// CLHEP includes
+#include "CLHEP/Units/PhysicalConstants.h"
+
 #include <sstream>
 #include <string>
 
@@ -37,7 +40,7 @@ G4MuAtom* G4MuAtom::MuAtomDefinition(G4int Z, G4int A, G4int iSpin){
   G4String const name = G4MuAtom::MakeName(Z,A,iSpin);
 
   // FIXME ... ought to be able to get this from somewhere!
-  G4double const muon_mass_c2 = 0.1056584*GeV;
+  G4double const muon_mass_c2 = 0.1056584*CLHEP::GeV;
   // FIXME ... subtract the binding energy!
   G4double const mass = G4NucleiProperties::GetNuclearMass(A,Z) + muon_mass_c2;
 
@@ -66,7 +69,7 @@ G4MuAtom::G4MuAtom(const G4String&  aName,
   //               type    lepton number  baryon number   PDG encoding
   //             stable         lifetime    decay table
   //             shortlived      subType    anti_encoding
-  : G4ParticleDefinition( aName,mass,0,(Z-1)*eplus,iSpin,0,0,0,0,0,
+  : G4ParticleDefinition( aName,mass,0,(Z-1)*CLHEP::eplus,iSpin,0,0,0,0,0,
 			  "MuAtom",-1,A,encoding,false,0.,0,
 			  false,"",0),
     fMuAtomDecayTable(0), fCaptureTable(0)

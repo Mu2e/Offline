@@ -15,6 +15,8 @@
 #include "G4HadronicProcessType.hh"
 #include "G4HadronicProcessStore.hh"
 
+// CLHEP includes
+#include "CLHEP/Units/PhysicalConstants.h"
 
 G4MuonMinusAtomicCapture::  
 G4MuonMinusAtomicCapture(G4String const& name, G4ProcessType type) : 
@@ -82,18 +84,17 @@ G4MuonMinusAtomicCapture::AtRestDoIt(const G4Track& track, const G4Step& step){
   G4int charge = table->ChargeModel(targetZ, targetA)->GetCharge(step); // this is also channel insertion
   dynMuAtom->SetCharge(charge); // sets in units of eplus
   // FIXME ... need to include the electron binding energy contribution...
-  dynMuAtom->SetMass(electron_mass_c2*(targetZ-1)+muAtom->GetPDGMass());
+  dynMuAtom->SetMass(CLHEP::electron_mass_c2*(targetZ-1)+muAtom->GetPDGMass());
   G4Track* muAtomTrack = new G4Track(dynMuAtom, globalTime, position);
   muAtomTrack->SetTouchableHandle( track.GetTouchableHandle() );
   ++nSecondaries;
 
   // Run the electromagnetic cascade model
   
-  if( G4MuonMinusAtomicCaptureCascadeModel * model = 
-      table->CascadeModel(targetZ, targetA) ){
-    // IMPLEMENT_ME ???
-  }
-
+  // if( G4MuonMinusAtomicCaptureCascadeModel * model = 
+  //     table->CascadeModel(targetZ, targetA) ){
+  //   // IMPLEMENT_ME ???
+  // }
 
   // it looks like the entire em cascade, capture, decay of bound muon is missing???
   // but what is in G4MuAtomGenericCaptureChannel???

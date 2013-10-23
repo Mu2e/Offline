@@ -18,6 +18,9 @@
 
 #include "G4HadronicProcessStore.hh"
 
+// CLHEP includes
+#include "CLHEP/Units/PhysicalConstants.h"
+
 #include <cmath>
 
 template<class T>
@@ -68,7 +71,7 @@ PostStepGetPhysicalInteractionLength(const G4Track& track,
       // subtract NumberOfInteractionLengthLeft 
       SubtractNumberOfInteractionLengthLeft(previousStepSize);
       if(theNumberOfInteractionLengthLeft<0.){
-	theNumberOfInteractionLengthLeft=perMillion;
+	theNumberOfInteractionLengthLeft=CLHEP::perMillion;
       }
       fRemainderLifeTime = theNumberOfInteractionLengthLeft*aLife;
     }
@@ -80,7 +83,7 @@ PostStepGetPhysicalInteractionLength(const G4Track& track,
       G4cout << "G4TNuclearCapture::PostStepGetPhysicalInteractionLength " << G4endl;
       track.GetDynamicParticle()->DumpInfo();
       G4cout << " in Material  " << track.GetMaterial()->GetName() <<G4endl;
-      G4cout << "MeanFreePath = " << currentInteractionLength/cm << "[cm]" <<G4endl;
+      G4cout << "MeanFreePath = " << currentInteractionLength/CLHEP::cm << "[cm]" <<G4endl;
     }
 #endif
 
@@ -107,7 +110,7 @@ PostStepGetPhysicalInteractionLength(const G4Track& track,
 	GetMeanFreePath(track, previousStepSize, condition);
     } else {
      // shortlived particle
-      rvalue = c_light * fRemainderLifeTime;
+      rvalue = CLHEP::c_light * fRemainderLifeTime;
      // by using normalized kinetic energy (= Ekin/mass)
      G4double   aMass =  track.GetDynamicParticle()->GetMass();
      rvalue *= track.GetDynamicParticle()->GetTotalMomentum()/aMass;
@@ -143,7 +146,7 @@ GetMeanFreePath(const G4Track& aTrack, G4double /*previousStepSize*/,
 
     // returns the mean free path in GEANT4 internal units
    G4double pathlength;
-   G4double aCtau = c_light * aLife;
+   G4double aCtau = CLHEP::c_light * aLife;
 
    // check if the particle is stable?
    if (aParticleDef->GetPDGStable()) {
@@ -167,7 +170,7 @@ GetMeanFreePath(const G4Track& aTrack, G4double /*previousStepSize*/,
        if (GetVerboseLevel()>1) {
 	 G4cout << "G4TNuclearCapture::GetMeanFreePath()   !!particle stops!!";
          G4cout << aParticleDef->GetParticleName() << G4endl;
-	 G4cout << "KineticEnergy:" << aParticle->GetKineticEnergy()/GeV <<"[GeV]";
+	 G4cout << "KineticEnergy:" << aParticle->GetKineticEnergy()/CLHEP::GeV <<"[GeV]";
        }
 #endif
        pathlength = DBL_MIN;
@@ -189,7 +192,7 @@ GetMeanLifeTime(const G4Track& aTrack, G4ForceCondition* /*condition*/){
 #ifdef G4VERBOSE
   if (GetVerboseLevel()>1) {
     G4cout << "capture rate: " << rate << "[1/ns]" << G4endl;
-    G4cout << "mean life time: "<< 1./rate/ns << "[ns]" << G4endl;
+    G4cout << "mean life time: "<< 1./rate/CLHEP::ns << "[ns]" << G4endl;
   }
 #endif  
   return 1./rate;
@@ -266,8 +269,8 @@ CaptureIt(const G4Track& aTrack, const G4Step& /*aStep*/){
       G4cout << "G4TNuclearCapture::CaptureIt  : "
 	"Total Energy is less than its mass" << G4endl;
       G4cout << " Particle: " << aParticle->GetDefinition()->GetParticleName();
-      G4cout << " Energy:"    << ParentEnergy/MeV << "[MeV]";
-      G4cout << " Mass:"    << ParentMass/MeV << "[MeV]";
+      G4cout << " Energy:"    << ParentEnergy/CLHEP::MeV << "[MeV]";
+      G4cout << " Mass:"    << ParentMass/CLHEP::MeV << "[MeV]";
       G4cout << G4endl;
     }
 #endif
@@ -293,10 +296,10 @@ CaptureIt(const G4Track& aTrack, const G4Step& /*aStep*/){
 #ifdef G4VERBOSE
   if (GetVerboseLevel()>1) {
     G4cout << "G4TNuclearCapture::CaptureIt  : Capture vertex :";
-    G4cout << " Time: " << finalGlobalTime/ns << "[ns]";
-    G4cout << " X:" << (aTrack.GetPosition()).x() /cm << "[cm]";
-    G4cout << " Y:" << (aTrack.GetPosition()).y() /cm << "[cm]";
-    G4cout << " Z:" << (aTrack.GetPosition()).z() /cm << "[cm]";
+    G4cout << " Time: " << finalGlobalTime/CLHEP::ns << "[ns]";
+    G4cout << " X:" << (aTrack.GetPosition()).x() /CLHEP::cm << "[cm]";
+    G4cout << " Y:" << (aTrack.GetPosition()).y() /CLHEP::cm << "[cm]";
+    G4cout << " Z:" << (aTrack.GetPosition()).z() /CLHEP::cm << "[cm]";
     G4cout << G4endl;
     G4cout << "G4TNuclearCapture::CaptureIt"
       "  : capture products in Lab. Frame" << G4endl;

@@ -5,6 +5,9 @@
 //      20 February 2010 Kevin Lynch
 // ------------------------------------------------------------
 
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
+
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTable.hh"
 #include "G4DecayTable.hh"
@@ -317,10 +320,10 @@ void G4VMuAtomDecayChannel::FillDaughters()
      G4cout << "    Energy/Momentum conserevation breaks " <<G4endl;
      if (GetVerboseLevel()>1) {
        G4cout << "    parent:" << *parent_name;
-       G4cout << " mass:" << parentmass/GeV << "[GeV/c/c]" <<G4endl;
+       G4cout << " mass:" << parentmass/CLHEP::GeV << "[GeV/c/c]" <<G4endl;
        for (index=0; index < numberOfDaughters; index++){
 	 G4cout << "     daughter " << index << ":" << *daughters_name[index];
-	 G4cout << " mass:" << daughters[index]->GetPDGMass()/GeV;
+	 G4cout << " mass:" << daughters[index]->GetPDGMass()/CLHEP::GeV;
 	 G4cout << "[GeV/c/c]" <<G4endl;
        }
      }

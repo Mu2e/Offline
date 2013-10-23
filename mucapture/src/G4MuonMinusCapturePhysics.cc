@@ -8,9 +8,9 @@
 //
 //----------------------------------------------------------------------------
 //
-// $Id: G4MuonMinusCapturePhysics.cc,v 1.1 2012/07/30 19:38:12 genser Exp $
+// $Id: G4MuonMinusCapturePhysics.cc,v 1.2 2013/10/23 20:50:02 genser Exp $
 // $Author: genser $
-// $Date: 2012/07/30 19:38:12 $
+// $Date: 2013/10/23 20:50:02 $
 
 #include "globals.hh"
 
@@ -123,8 +123,8 @@ void G4MuonMinusCapturePhysics::ConstructParticle()
   muatom->SetMuAtomDecayTable(dt);
   G4MuAtomCaptureKineticsTable *ckt = new G4MuAtomCaptureKineticsTable(muatom); // FIXME leak
   //  ckt->Insert(new G4MuPCaptureChannel(muatom));
-  //  ckt->Insert(new muPHyperfineStoT(muatom,1./(2197.*ns)));
-  ckt->Insert(new PmuPFormationChannel(muatom,1./(2197.*ns)));
+  //  ckt->Insert(new muPHyperfineStoT(muatom,1./(2197.*CLHEP::ns)));
+  ckt->Insert(new PmuPFormationChannel(muatom,1./(2197.*CLHEP::ns)));
   muatom->CaptureKineticsTable(ckt);
 
   // Triplet muP
@@ -135,8 +135,8 @@ void G4MuonMinusCapturePhysics::ConstructParticle()
   muatom->SetMuAtomDecayTable(dt);
   ckt = new G4MuAtomCaptureKineticsTable(muatom); // FIXME leak
   //  ckt->Insert(new G4MuPCaptureChannel(muatom));
-  //  ckt->Insert(new muPHyperfineTtoS(muatom, 1./(2197.*ns)));
-  ckt->Insert(new PmuPFormationChannel(muatom,1./(2197.*ns)));
+  //  ckt->Insert(new muPHyperfineTtoS(muatom, 1./(2197.*CLHEP::ns)));
+  ckt->Insert(new PmuPFormationChannel(muatom,1./(2197.*CLHEP::ns)));
   muatom->CaptureKineticsTable(ckt);
 
   // muD
@@ -166,9 +166,9 @@ void G4MuonMinusCapturePhysics::ConstructParticle()
   dt->Insert(new G4MuAtomDIOChannel(muatom->GetParticleName(), 1.));
   muatom->SetMuAtomDecayTable(dt);
   ckt = new G4MuAtomCaptureKineticsTable(muatom); // FIXME leak
-  ckt->Insert(new G4MuHe3ProtonChannel(muatom, 1.e6/(2197.*ns)));
-  ckt->Insert(new G4MuHe3DeuteronChannel(muatom, 1./(2197.*ns)));
-  ckt->Insert(new G4MuHe3TritonChannel(muatom, 1./(2197.*ns)));
+  ckt->Insert(new G4MuHe3ProtonChannel(muatom, 1.e6/(2197.*CLHEP::ns)));
+  ckt->Insert(new G4MuHe3DeuteronChannel(muatom, 1./(2197.*CLHEP::ns)));
+  ckt->Insert(new G4MuHe3TritonChannel(muatom, 1./(2197.*CLHEP::ns)));
   muatom->CaptureKineticsTable(ckt);
 
   // mu_He4
@@ -191,7 +191,7 @@ void G4MuonMinusCapturePhysics::ConstructParticle()
   muatom->SetMuAtomDecayTable(dt);
   ckt = new G4MuAtomCaptureKineticsTable(muatom);  // FIXME leak
   ckt->Insert(new G4MuAtomGenericCaptureChannel(muatom));
-  ckt->Insert(new G4Mu2eConversionChannel(muatom, 1./(2197.*ns))); //FIXME constant
+  ckt->Insert(new G4Mu2eConversionChannel(muatom, 1./(2197.*CLHEP::ns))); //FIXME constant
   muatom->CaptureKineticsTable(ckt);
 
   // FIXME remove this crosscheck
@@ -234,11 +234,11 @@ void G4MuonMinusCapturePhysics::ConstructParticle()
   if (verboseLevel>0) G4cout << mumol->GetParticleName() << G4endl;
   G4MuMoleculeCaptureKineticsTable *molckt =
     new G4MuMoleculeCaptureKineticsTable(mumol); // FIXME leak
-  molckt->Insert( new G4DMuDFusionHe3Channel(mumol,1/(2197.*ns)) );
-  molckt->Insert( new G4DMuDFusionMuHe3Channel(mumol,1/(2197.*ns)) );
-  molckt->Insert( new G4DMuDFusionTChannel(mumol,1/(2197.*ns)) );
-  molckt->Insert( new G4DMuDFusionMuTChannel(mumol,1/(2197.*ns)) );
-  molckt->Insert( new G4DMuDFusionHe4Channel(mumol,1/(2197.*ns)) );
+  molckt->Insert( new G4DMuDFusionHe3Channel(mumol,1/(2197.*CLHEP::ns)) );
+  molckt->Insert( new G4DMuDFusionMuHe3Channel(mumol,1/(2197.*CLHEP::ns)) );
+  molckt->Insert( new G4DMuDFusionTChannel(mumol,1/(2197.*CLHEP::ns)) );
+  molckt->Insert( new G4DMuDFusionMuTChannel(mumol,1/(2197.*CLHEP::ns)) );
+  molckt->Insert( new G4DMuDFusionHe4Channel(mumol,1/(2197.*CLHEP::ns)) );
   mumol->CaptureKineticsTable(molckt);
 
 }
@@ -267,6 +267,7 @@ void G4MuonMinusCapturePhysics::ConstructProcess()
 
   // FIXME use some sort of verboseLevel in SetVerboseLevel below
 
+#if G4VERSION<4099
   if(verboseLevel > 1) G4cout << "### G4MuonMinusCapturePhysics::ConstructProcess theParticleIterator " 
                               << theParticleIterator << G4endl;
 
@@ -274,6 +275,16 @@ void G4MuonMinusCapturePhysics::ConstructProcess()
 
   while( (*theParticleIterator)() ) {
     G4ParticleDefinition* particle = theParticleIterator->value();
+#else
+  if(verboseLevel > 1) G4cout << "### G4MuonMinusCapturePhysics::ConstructProcess aParticleIterator " 
+                              << aParticleIterator << G4endl;
+
+  aParticleIterator->reset();
+
+  while( (*aParticleIterator)() ) {
+    G4ParticleDefinition* particle = aParticleIterator->value();
+#endif
+
     G4ProcessManager* pmanager = particle->GetProcessManager();
 
     G4String pNameToRemove("Decay");

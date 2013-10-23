@@ -3,13 +3,16 @@
 //
 //      History: first implementation, Kevin Lynch, March 12 2010
 // ----------------------------------------------------------------
-// $Id: G4MuAtomGenericCaptureChannel.cc,v 1.2 2012/03/26 17:59:56 genser Exp $
+// $Id: G4MuAtomGenericCaptureChannel.cc,v 1.3 2013/10/23 20:50:02 genser Exp $
 // $Author: genser $
-// $Date: 2012/03/26 17:59:56 $
+// $Date: 2013/10/23 20:50:02 $
 
 #include "G4MuAtomGenericCaptureChannel.hh"
 
 #include <cmath>
+
+// CLHEP includes
+#include "CLHEP/Units/PhysicalConstants.h"
 
 #include "G4MuAtom.hh"
 #include "G4Nucleon.hh"
@@ -126,7 +129,7 @@ CaptureIt(G4DynamicParticle const* pParticle){
     G4ThreeVector bst = theCMS.boostVector();
 
     G4double Ecms = theCMS.mag();
-    G4double Enu  = 0.5*(Ecms - neutron_mass_c2*neutron_mass_c2/Ecms);
+    G4double Enu  = 0.5*(Ecms - CLHEP::neutron_mass_c2*CLHEP::neutron_mass_c2/Ecms);
     eEx = 0.0;
 
     if(Enu > 0.0) {
@@ -146,8 +149,8 @@ CaptureIt(G4DynamicParticle const* pParticle){
       eEx = momResidual.mag();
       if(GetVerboseLevel() > 1)
 	G4cout << "G4MuAtomGenericCaptureChannel::DoMuCapture: " 
-	       << " Eex(MeV)= " << (eEx-residualMass)/MeV
-	       << " Enu(MeV)= "<<aNu->GetTotalEnergy()/MeV
+	       << " Eex(MeV)= " << (eEx-residualMass)/CLHEP::MeV
+	       << " Enu(MeV)= "<<aNu->GetTotalEnergy()/CLHEP::MeV
 	       <<G4endl;
     }
   } while(eEx <= residualMass);

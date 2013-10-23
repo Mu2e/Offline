@@ -19,8 +19,9 @@
 #include "G4ThreeVector.hh"
 #include "G4DecayProducts.hh"
 
-#include <sstream>
+#if G4VERSION<4095
 #include <strstream>
+#endif
 
 // D_mu_D -> He3 + n + mu
 
@@ -49,14 +50,21 @@ G4DecayProducts* G4DMuDFusionHe3Channel::CaptureIt(G4DynamicParticle const* p){
 
 void G4DMuDFusionHe3Channel::CheckIsApplicable() const {
   if( part->GetParticleName().substr(0,6) != "D_mu_D" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o << "The channel " << GetChannelName() 
-      << " is only applicable to D_mu_D molecules, not "
-      << part->GetParticleName();
+#if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed  << "The channel " << GetChannelName() 
+	<< " is only applicable to D_mu_D molecules, not "
+	<< part->GetParticleName();
     G4Exception("G4DMuDFusionHe3Channel::CheckIsApplicable",
                 "DMUDF0001", FatalException, 
-                o.str());
+#if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif
   }
 }
 
@@ -87,14 +95,21 @@ G4DecayProducts* G4DMuDFusionMuHe3Channel::CaptureIt(G4DynamicParticle const* p)
 
 void G4DMuDFusionMuHe3Channel::CheckIsApplicable() const {
   if( part->GetParticleName().substr(0,6) != "D_mu_D" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o << "The channel " << GetChannelName() 
-      << " is only applicable to D_mu_D molecules, not "
-      << part->GetParticleName();
+#if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed << "The channel " << GetChannelName() 
+       << " is only applicable to D_mu_D molecules, not "
+       << part->GetParticleName();
     G4Exception("G4DMuDFusionMuHe3Channel::CheckIsApplicable",
                 "DMUDF0002", FatalException, 
-                o.str());
+ #if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif
   }
 }
 
@@ -126,15 +141,21 @@ G4DecayProducts* G4DMuDFusionTChannel::CaptureIt(G4DynamicParticle const* p){
 
 void G4DMuDFusionTChannel::CheckIsApplicable() const {
   if( part->GetParticleName().substr(0,6) != "D_mu_D" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o << "The channel " << GetChannelName() 
-      << " is only applicable to D_mu_D molecules, not "
-      << part->GetParticleName();
+#if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed << "The channel " << GetChannelName() 
+       << " is only applicable to D_mu_D molecules, not "
+       << part->GetParticleName();
     G4Exception("G4DMuDFusionTChannel::CheckIsApplicable",
                 "DMUDF0003", FatalException, 
-                o.str());
-
+#if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif
   }
 }
 
@@ -166,14 +187,21 @@ G4DecayProducts* G4DMuDFusionMuTChannel::CaptureIt(G4DynamicParticle const* p){
 
 void G4DMuDFusionMuTChannel::CheckIsApplicable() const {
   if( part->GetParticleName().substr(0,6) != "D_mu_D" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o << "The channel " << GetChannelName() 
-      << " is only applicable to D_mu_D molecules, not "
-      << part->GetParticleName();
+#if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed << "The channel " << GetChannelName() 
+       << " is only applicable to D_mu_D molecules, not "
+       << part->GetParticleName();
     G4Exception("G4DMuDFusionMuTChannel::CheckIsApplicable",
                 "DMUDF0004", FatalException, 
-                o.str());
+#if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif		
   }
 }
 
@@ -205,14 +233,21 @@ G4DecayProducts* G4DMuDFusionHe4Channel::CaptureIt(G4DynamicParticle const* p){
 
 void G4DMuDFusionHe4Channel::CheckIsApplicable() const {
   if( part->GetParticleName().substr(0,6) != "D_mu_D" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o << "The channel " << GetChannelName() 
-      << " is only applicable to D_mu_D molecules, not "
-      << part->GetParticleName();
+#if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed << "The channel " << GetChannelName() 
+       << " is only applicable to D_mu_D molecules, not "
+       << part->GetParticleName();
     G4Exception("G4DMuDFusionHe4Channel::CheckIsApplicable",
                 "DMUDF0005", FatalException, 
-                o.str());    
+#if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif		
   }
 }
 

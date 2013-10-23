@@ -11,8 +11,9 @@
 #include "G4ThreeVector.hh"
 #include "G4MuAtomTable.hh"
 
-#include <sstream>
+#if G4VERSION<4095
 #include <strstream>
+#endif
 
 // base class
 
@@ -46,12 +47,19 @@ G4DecayProducts* G4MuDCaptureChannel::CaptureIt(G4DynamicParticle const* pPartic
 
 void G4MuDCaptureChannel::CheckIsApplicable() const {
   if( part->GetParticleName().substr(0,4) != "mu_D" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o<< "Channel " << GetChannelName() << " is not applicable to particle "
-     << part->GetParticleName();
+#if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed << "Channel " << GetChannelName() << " is not applicable to particle "
+       << part->GetParticleName();
     G4Exception("G4MuDCaptureChannel::CheckIsApplicable",
                 "MUDC0001", FatalException, 
-                o.str());
+#if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif
   }
 }

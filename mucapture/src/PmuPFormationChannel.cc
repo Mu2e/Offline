@@ -11,7 +11,9 @@
 
 #include "RandomUtilities.hh"
 
+#if G4VERSION<4095
 #include <strstream>
+#endif
 
 // base class
 
@@ -36,12 +38,19 @@ G4DecayProducts* PmuPFormationChannel::CaptureIt(G4DynamicParticle const* pParti
 
 void PmuPFormationChannel::CheckIsApplicable() const {
   if( part->GetParticleName().substr(0,4) != "mu_P" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o<< "Channel " << GetChannelName() << " is not applicable to particle "
-     << part->GetParticleName();
+#if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed << "Channel " << GetChannelName() << " is not applicable to particle "
+       << part->GetParticleName();
     G4Exception("PmuPFormationChannel::CheckIsApplicable",
                 "PMUPF0001", FatalException, 
-                o.str());        
+#if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif
   }
 }

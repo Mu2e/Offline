@@ -8,6 +8,9 @@
 
 #include "G4MuHe4CaptureChannels.hh"
 
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
+
 #include "G4Proton.hh"
 #include "G4Neutron.hh"
 #include "G4Deuteron.hh"
@@ -17,7 +20,9 @@
 #include "G4ThreeVector.hh"
 #include "G4MuAtomTable.hh"
 
+#if G4VERSION<4095
 #include <strstream>
+#endif
 
 // Proton Channel
 G4MuHe4ProtonChannel::
@@ -45,7 +50,7 @@ G4MuHe4ProtonChannel(G4MuAtom const* p, G4int verboseLevel) :
   G4int const iSpin = p->GetPDGiSpin();
   G4MuAtomTable const* table = G4MuAtomTable::GetInstance();
   G4MuAtomCaptureRateModel const* model = table->CaptureRateModel(Z,A);
-  rate = model->GetCaptureRate(Z,A,iSpin)*0.25*perCent; // Measday
+  rate = model->GetCaptureRate(Z,A,iSpin)*0.25*CLHEP::perCent; // Measday
 }
 
 G4DecayProducts* 
@@ -58,13 +63,20 @@ G4MuHe4ProtonChannel::CaptureIt(G4DynamicParticle const* pParticle){
 
 void G4MuHe4ProtonChannel::CheckIsApplicable() const {
   if( part->GetParticleName().substr(0,6) != "mu_He4" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o<< "Channel " << GetChannelName() << " is not applicable to particle "
+#if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed << "Channel " << GetChannelName() << " is not applicable to particle "
      << part->GetParticleName();
     G4Exception("G4MuHe4ProtonChannel::CheckIsApplicable",
                 "MUHE40001", FatalException, 
-                o.str());    
+#if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif
   }
 }
 
@@ -86,7 +98,7 @@ G4MuHe4DeuteronChannel(G4MuAtom const* p, G4int verboseLevel) :
   G4int const iSpin = p->GetPDGiSpin();
   G4MuAtomTable const* table = G4MuAtomTable::GetInstance();
   G4MuAtomCaptureRateModel const* model = table->CaptureRateModel(Z,A);
-  rate = model->GetCaptureRate(Z,A,iSpin)*2.*perCent; // Measday
+  rate = model->GetCaptureRate(Z,A,iSpin)*2.*CLHEP::perCent; // Measday
 }
 
 G4DecayProducts* 
@@ -99,13 +111,20 @@ G4MuHe4DeuteronChannel::CaptureIt(G4DynamicParticle const* pParticle){
 
 void G4MuHe4DeuteronChannel::CheckIsApplicable() const {
   if( part->GetParticleName().substr(0,6) != "mu_He4" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o<< "Channel " << GetChannelName() << " is not applicable to particle "
+#if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed << "Channel " << GetChannelName() << " is not applicable to particle "
      << part->GetParticleName();
     G4Exception("G4MuHe4DeuteronChannel::CheckIsApplicable",
                 "MUHE40002", FatalException, 
-                o.str());    
+#if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif
   }
 }
 
@@ -127,7 +146,7 @@ G4MuHe4TritonChannel(G4MuAtom const* p, G4int verboseLevel) :
   G4int const iSpin = p->GetPDGiSpin();
   G4MuAtomTable const* table = G4MuAtomTable::GetInstance();
   G4MuAtomCaptureRateModel const* model = table->CaptureRateModel(Z,A);
-  rate = model->GetCaptureRate(Z,A,iSpin)*97.75*perCent; // Measday
+  rate = model->GetCaptureRate(Z,A,iSpin)*97.75*CLHEP::perCent; // Measday
 }
 
 G4DecayProducts* 
@@ -140,12 +159,19 @@ G4MuHe4TritonChannel::CaptureIt(G4DynamicParticle const* pParticle){
 
 void G4MuHe4TritonChannel::CheckIsApplicable() const {
   if( part->GetParticleName().substr(0,6) != "mu_He4" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o<< "Channel " << GetChannelName() << " is not applicable to particle "
+ #if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed<< "Channel " << GetChannelName() << " is not applicable to particle "
      << part->GetParticleName();
     G4Exception("G4MuHe4TritonChannel::CheckIsApplicable",
                 "MUHE40003", FatalException, 
-                o.str());    
+#if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif
   }
 }

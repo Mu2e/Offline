@@ -2,7 +2,9 @@
 
 #include "G4MuAtom.hh"
 
+#if G4VERSION<4095
 #include <strstream>
+#endif
 
 // singlet to triplet
 
@@ -29,13 +31,20 @@ G4DecayProducts* muPHyperfineStoT::CaptureIt(G4DynamicParticle const* part){
 
 void muPHyperfineStoT::CheckIsApplicable() const{
   if( part->GetParticleName().substr(0,4) != "mu_P" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o<< "Channel " << GetChannelName() << " is not applicable to particle "
-     << part->GetParticleName();
+#if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed << "Channel " << GetChannelName() << " is not applicable to particle "
+       << part->GetParticleName();
     G4Exception("muPHyperfineStoT::CheckIsApplicable",
                 "MUPH0001", FatalException, 
-                o.str());    
+#if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif
     }
 }
 
@@ -63,13 +72,20 @@ G4DecayProducts* muPHyperfineTtoS::CaptureIt(G4DynamicParticle const* part){
 
 void muPHyperfineTtoS::CheckIsApplicable() const{
   if( part->GetParticleName().substr(0,4) != "mu_P" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o<< "Channel " << GetChannelName() << " is not applicable to particle "
-     << part->GetParticleName();
+#if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed << "Channel " << GetChannelName() << " is not applicable to particle "
+       << part->GetParticleName();
     G4Exception("muPHyperfineTtoS::CheckIsApplicable",
                 "MUPH0002", FatalException, 
-                o.str());    
+#if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif
   }
 }
 

@@ -13,7 +13,9 @@
 
 #include "RandomUtilities.hh"
 
+#if G4VERSION<4095
 #include <strstream>
+#endif
 
 // base class
 
@@ -61,13 +63,19 @@ G4DecayProducts* G4MuPCaptureChannel::CaptureIt(G4DynamicParticle const* pPartic
 
 void G4MuPCaptureChannel::CheckIsApplicable() const {
   if( part->GetParticleName().substr(0,4) != "mu_P" ){
-    //    std::ostringstream o;
-    std::ostrstream o;
-    o<< "Channel " << GetChannelName() << " is not applicable to particle "
-     << part->GetParticleName();
+#if G4VERSION<4095
+    std::ostrstream ed;
+#else
+    G4ExceptionDescription ed;
+#endif
+    ed << "Channel " << GetChannelName() << " is not applicable to particle "
+       << part->GetParticleName();
     G4Exception("G4MuPCaptureChannel::CheckIsApplicable",
-                "MUPC0001", FatalException, 
-                o.str());    
-
+                "MUPC0001", FatalException,
+#if G4VERSION<4095
+                ed.str());
+#else
+                ed);
+#endif
   }
 }

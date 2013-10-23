@@ -11,6 +11,9 @@
 #include "G4NucleiProperties.hh"
 #include "G4IonTable.hh"
 
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
+
 #include <sstream>
 #include <utility>
 
@@ -38,7 +41,7 @@ G4MuMolecule::Definition(G4int Z1, G4int A1, G4int Z2, G4int A2, G4int iSpin){
     G4String const name = G4MuMolecule::MakeName(Z1,A1,Z2,A2,iSpin);
     G4int const encoding = G4MuMolecule::MakeEncoding(Z1,A1,Z2,A2);
     // FIXME ... ought to be able to get this from somewhere!
-    G4double const muon_mass_c2 = 0.1056584*GeV;
+    G4double const muon_mass_c2 = 0.1056584*CLHEP::GeV;
     G4double mass = G4NucleiProperties::GetNuclearMass(A1,Z1) + 
       G4NucleiProperties::GetNuclearMass(A2,Z2) +
       muon_mass_c2;
@@ -61,7 +64,7 @@ G4MuMolecule::G4MuMolecule(G4String const& name,
   //               type    lepton number  baryon number   PDG encoding
   //             stable         lifetime    decay table
   //             shortlived      subType    anti_encoding
-  G4ParticleDefinition( name,mass,0,(Z1+Z2-1)*eplus,iSpin,0,0,0,0,0,
+  G4ParticleDefinition( name,mass,0,(Z1+Z2-1)*CLHEP::eplus,iSpin,0,0,0,0,0,
 			"MuMolecule",-1,A1+A2,encoding,false,0.,0,
 			false,"",0),
   Z1(Z1), A1(A1), Z2(Z2), A2(A2), fCaptureTable(0) {}
