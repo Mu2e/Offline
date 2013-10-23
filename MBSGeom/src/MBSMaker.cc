@@ -1,9 +1,9 @@
 //
 // Construct and return MBS
 //
-// $Id: MBSMaker.cc,v 1.5 2013/08/21 17:35:17 knoepfel Exp $
+// $Id: MBSMaker.cc,v 1.6 2013/10/23 20:37:39 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/21 17:35:17 $
+// $Date: 2013/10/23 20:37:39 $
 //
 // Original author KLG
 //
@@ -66,31 +66,36 @@ namespace mu2e {
     mbs._originInMu2e = _MBSMOffsetInMu2e;
 
     std::vector<double> MBSMCornersZ, MBSMCornersInnRadii, MBSMCornersOutRadii;
-    MBSMCornersZ.push_back(-_BSTSHLength);
+    MBSMCornersZ       .push_back(_BSTSZ-_BSTSHLength);
     MBSMCornersInnRadii.push_back(mbs._rMin);
     MBSMCornersOutRadii.push_back(_BSTSOuterRadius);
-    MBSMCornersZ.push_back(_SPBSLZ-_SPBSLHLength);
+
+    MBSMCornersZ       .push_back(_SPBSLZ-_SPBSLHLength);
     MBSMCornersInnRadii.push_back(mbs._rMin);
     MBSMCornersOutRadii.push_back(_BSTSOuterRadius);
-    MBSMCornersZ.push_back(_SPBSLZ-_SPBSLHLength);
+
+    MBSMCornersZ       .push_back(_SPBSLZ-_SPBSLHLength);
     MBSMCornersInnRadii.push_back(mbs._rMin);
     MBSMCornersOutRadii.push_back(mbs._rMax);
-    MBSMCornersZ.push_back(_SPBSRZ+_SPBSRHLength);
+
+    MBSMCornersZ       .push_back(_SPBSRZ+_SPBSRHLength);
     MBSMCornersInnRadii.push_back(mbs._rMin);
     MBSMCornersOutRadii.push_back(mbs._rMax);
-    MBSMCornersZ.push_back(_SPBSRZ+_SPBSRHLength);
+
+    MBSMCornersZ       .push_back(_SPBSRZ+_SPBSRHLength);
     MBSMCornersInnRadii.push_back(mbs._rMin);
     MBSMCornersOutRadii.push_back(_BSTSOuterRadius);
-    MBSMCornersZ.push_back(_BSTSHLength);
+
+    MBSMCornersZ       .push_back(_BSTSZ+_BSTSHLength);
     MBSMCornersInnRadii.push_back(mbs._rMin);
     MBSMCornersOutRadii.push_back(_BSTSOuterRadius);
 
     mbs._pMBSMParams = std::unique_ptr<Polycone>
       (new Polycone(MBSMCornersZ,
-                      MBSMCornersInnRadii,
-                      MBSMCornersOutRadii,
-                      _MBSMOffsetInMu2e,
-                      "DSVacuum"));
+                    MBSMCornersInnRadii,
+                    MBSMCornersOutRadii,
+                    _MBSMOffsetInMu2e,
+                    "DSVacuum"));
 
     CLHEP::Hep3Vector _BSTSOffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_BSTSZ);
 

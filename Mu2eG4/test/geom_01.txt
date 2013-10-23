@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.217 2013/10/18 13:39:47 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/10/18 13:39:47 $
+// $Id: geom_01.txt,v 1.218 2013/10/23 20:37:39 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/10/23 20:37:39 $
 //
 // Original author Rob Kutschke
 //
@@ -484,9 +484,9 @@ double mbs.MBSCZ              = 15258.0;
 
 double mbs.BSTSInnerRadius    =   470.0;
 double mbs.BSTSOuterRadius    =   480.0;
-double mbs.BSTSHLength        =  2058.0;
+double mbs.BSTSHLength        =  2043.0;
 string mbs.BSTSMaterialName   = "StainlessSteel";
-double mbs.BSTSZrelCntr       =     0.0;
+double mbs.BSTSZrelCntr       =    15.0;
 
 double mbs.SPBSSup1InnerRadius  =   480.0;
 double mbs.SPBSSup1OuterRadius  =   700.0;
@@ -519,15 +519,15 @@ double mbs.SPBRZrelCntr       = 962.0;
 
 vector<double> mbs.BSTCInnerRadii  =   { 390.0, 320.0 }; 
 vector<double> mbs.BSTCOuterRadii  =   { 470.0, 470.0 };
-vector<double> mbs.BSTCLengths     =   { 600.0, 600.0 };
+vector<double> mbs.BSTCLengths     =   { 570.0, 600.0 };
 string mbs.BSTCMaterialName   = "Polyethylene096";
-double mbs.BSTCZrelCntr       =  -1458.0;
+double mbs.BSTCZrelCntr       =  -1428.0;
 
 vector<double> mbs.BSBSInnerRadii  =   { 370.0, 320.0 };
 vector<double> mbs.BSBSOuterRadii  =   { 470.0, 470.0 };
-vector<double> mbs.BSBSLengths     =   { 1516.0, 1400.0 };
+vector<double> mbs.BSBSLengths     =   { 1486.0, 1400.0 };
 string mbs.BSBSMaterialName   = "Polyethylene096";
-double mbs.BSBSZrelCntr            =  600.0;
+double mbs.BSBSZrelCntr            =  615.0;
 
 vector<double> mbs.CLV2InnerRadii  =   {  40.0 };
 vector<double> mbs.CLV2OuterRadii  =   { 320.0 };
