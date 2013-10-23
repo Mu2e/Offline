@@ -1,9 +1,9 @@
 //
 // In case of use of the ITracker, check if the MSC model matches the ITracker requirements
 //
-// $Id: checkMSCmodel.cc,v 1.2 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: checkMSCmodel.cc,v 1.3 2013/10/23 17:22:32 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/23 17:22:32 $
 //
 
 #include "Mu2eG4/inc/checkMSCmodel.hh"
@@ -19,7 +19,7 @@
 #include "G4ProcessManager.hh"
 
 #include "G4eMultipleScattering.hh"
-#if G4VERSION<495
+#if G4VERSION<4095
   #include "G4UrbanMscModel92.hh"
 #endif
 
@@ -30,7 +30,7 @@ namespace mu2e{
   void checkMSCmodel( SimpleConfig const& config ){
 
           if (config.getBool("hasITracker",false)) {
-          #if G4VERSION<495
+          #if G4VERSION<4095
                   bool change = false;
                   if (  config.getBool("itracker.changeMSC",false) ) {
                           G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();

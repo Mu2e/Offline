@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.39 2013/05/30 18:40:35 gandr Exp $
-# $Author: gandr $
-# $Date: 2013/05/30 18:40:35 $
+# $Id: SConscript,v 1.40 2013/10/23 17:22:32 genser Exp $
+# $Author: genser $
+# $Date: 2013/10/23 17:22:32 $
 #
 # Original author Rob Kutschke.
 #
@@ -27,7 +27,10 @@ g4futureinc = '../inc'
 g4libdir = os.environ['G4LIBDIR']
 g4_version = os.environ['GEANT4_VERSION']
 g4_version=g4_version.replace('_','')
-g4_version = g4_version[1:4]
+if g4_version[2] == '9':
+    g4_version = g4_version[1]+'0'+g4_version[2:4]
+else:
+    g4_version = g4_version[1:5]
 
 # Compiler switches needed by the default G4 build.
 G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
@@ -143,7 +146,7 @@ G4GLOBALIBS = [
               'libG4zlib'
               ]
 
-if g4_version < '495':
+if g4_version < '4095':
     G4LIBS = G4GRANULARLIBS
 else:
     G4LIBS = G4GLOBALIBS
