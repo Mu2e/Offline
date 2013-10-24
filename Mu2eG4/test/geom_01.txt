@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.218 2013/10/23 20:37:39 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/10/23 20:37:39 $
+// $Id: geom_01.txt,v 1.219 2013/10/24 22:16:38 echenard Exp $
+// $Author: echenard $
+// $Date: 2013/10/24 22:16:38 $
 //
 // Original author Rob Kutschke
 //
@@ -337,7 +337,8 @@ string stoppingTarget.foilTarget_supportStructure_fillMaterial = "G4_W";
 
 
 // Crystal calorimeter
-#include "Mu2eG4/test/calorimeter.txt"
+//#include "Mu2eG4/test/calorimeter_LYSO.txt"
+#include "Mu2eG4/test/calorimeter_BaF2.txt"
 
 double          crs.scintillatorBarLengthDSR     =  4527;
 double          crs.scintillatorBarLengthDSL     =  4527;

@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: DiskCalorimeterMaker.cc,v 1.9 2013/09/19 01:32:19 echenard Exp $
+// $Id: DiskCalorimeterMaker.cc,v 1.10 2013/10/24 22:16:38 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/09/19 01:32:19 $
+// $Date: 2013/10/24 22:16:38 $
 
 // original authors Julie Managan and Robert Bernstein
 // quite a few changes by Bertrand Echenarrd
@@ -85,6 +85,11 @@ namespace mu2e{
 	_calo->_apdQuantumEff         = config.getDouble("calorimeter.quantumEffAPD", 0.68);
 	_calo->_lightCollectEffAPD    = config.getDouble("calorimeter.lightCollectEffAPD", 0.11);
 
+	_calo->_nPipes                = config.getInt("calorimeter.nPipes",0);    
+	_calo->_pipeRadius            = config.getDouble("calorimeter.pipeRadius",5); 
+	_calo->_pipeThickness         = config.getDouble("calorimeter.pipeThickness",0.5);   
+	config.getVectorDouble("calorimeter.pipeTorRadius", _calo->_pipeTorRadius, _calo->_nPipes);
+	
         _verbosityLevel               = config.getInt("calorimeter.verbosityLevel",0);
 
      
@@ -93,7 +98,8 @@ namespace mu2e{
         double xOrigin                = -config.getDouble("mu2e.solenoidOffset");
         double zOrigin                = config.getDouble("calorimeter.calorimeterZFront",11750);
 	_calo->_origin                = CLHEP::Hep3Vector(xOrigin,0,zOrigin);
-     
+	
+    
      
 	//COORDINATE OF CENTER OF VOLUME CONTAINING THE CRYSTALS ONLY (NO READOUT,..) W.R.T CENTER OF OUTMOST DISK VOLUME
 	// outmost disk volume = volume ___originLocal vector____ points to, i.e outermost disk volume 
@@ -139,7 +145,7 @@ namespace mu2e{
 
   	  if (_verbosityLevel) std::cout<<"Constructed Disk "<<thisDisk->id()<<":  Rin="<<thisDisk->innerRadius()<<"  Rout="<<thisDisk->outerRadius()
         	                        <<" (X,Y,Z)="<<thisDisk->origin()<<"  local_(X,Y,Z)="<<thisDisk->originLocal()<<"  with "<<thisDisk->nCrystals()<<" crystals"<<std::endl;
-
+          
       }
 
   }
@@ -183,6 +189,19 @@ namespace mu2e{
       if (calozEnd   > (_calo->_enveloppeZ1-0.1))                       
           {throw cet::exception("DiskCaloGeom") << "calorimeter z-coordinate extends outside calorimeter mother (need 1mm margin for virtual detectors).\n";}  
 
+  
+      for (unsigned int i=0;i<_calo->_nPipes;++i) 
+      {      
+        if ( (_calo->_pipeTorRadius[i]- _calo->_pipeRadius) <  _calo->_enveloppeInRadius)           
+	  {throw cet::exception("DiskCaloGeom") << "element "<<i<<" of calorimeter.pipeTorRadius is smaller than disk inner radius\n";}  
+
+        if ( (_calo->_pipeTorRadius[i]+ _calo->_pipeRadius) >  _calo->_enveloppeOutRadius)           
+	  {throw cet::exception("DiskCaloGeom") << "element "<<i<<" of calorimeter.pipeTorRadius is larger than disk outer radius\n";}        
+      }
+      
+ 
+  
+  
   }
 
 

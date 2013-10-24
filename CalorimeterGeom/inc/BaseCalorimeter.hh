@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_BaseCalorimeter_hh
 #define CalorimeterGeom_BaseCalorimeter_hh
 //
-// $Id: BaseCalorimeter.hh,v 1.5 2013/09/19 01:32:19 echenard Exp $
+// $Id: BaseCalorimeter.hh,v 1.6 2013/10/24 22:16:38 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/09/19 01:32:19 $
+// $Date: 2013/10/24 22:16:38 $
 //
 // Base class of a cloarimeter. Hold informations about the sections composing 
 // the calorimeterand generic algorithms to navigate between the coordinate systems
@@ -74,6 +74,11 @@ namespace mu2e {
            virtual double enveloppeOutRadius() const  {return _enveloppeOutRadius;}
            virtual double enveloppeZ0()        const  {return _enveloppeZ0;}
            virtual double enveloppeZ1()        const  {return _enveloppeZ1;}
+ 
+           virtual int    nPipes()             const  {return _nPipes;}
+           virtual double pipeRadius()         const  {return _pipeRadius;}
+           virtual double pipeThickness()      const  {return _pipeThickness;}
+           virtual std::vector<double> const& pipeTorRadius() const  {return _pipeTorRadius;}
 
 
 	   //keep for backward compatibility, they will go away in the future,
@@ -112,9 +117,10 @@ namespace mu2e {
            double                       _enveloppeZ0;
            double                       _enveloppeZ1;
 	   
+	   unsigned int                 _nPipes;
 	   double                       _pipeRadius;
 	   double                       _pipeThickness;
-	   
+	   std::vector<double>          _pipeTorRadius;
 
 
 

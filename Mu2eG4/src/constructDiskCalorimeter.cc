@@ -87,12 +87,6 @@ namespace mu2e {
     G4Material* pipeMaterial   = materialFinder.get("calorimeter.pipeMaterial");
 
 
-    //calorimeter calibration system
-    int const nPipes                = config.getInt("calorimeter.nPipes",0);      
-    double const pipeRadius         = config.getDouble("calorimeter.pipeRadius",5); 
-    double const pipeThickness      = config.getDouble("calorimeter.pipeThickness",0.5);     
-    std::vector<double> pipeTorRadius;
-    config.getVectorDouble("calorimeter.pipeTorRadius",  pipeTorRadius, nPipes);
 
     
     //-- Get all disk /crystal informations here
@@ -130,6 +124,11 @@ namespace mu2e {
     G4double wrapZPos              = (shellDepth-wrapDepth)/2.0;
 
 
+    //calorimeter calibration system
+    G4int nPipes                      = cal.nPipes();      
+    G4double pipeRadius               = cal.pipeRadius();
+    G4double pipeThickness            = cal.pipeThickness();
+    std::vector<double> pipeTorRadius = cal.pipeTorRadius();
 
 
     //-- Definition for hexagon dimensions for shell/wrap/crystals   - zplanes, rinner and router define hexagon
