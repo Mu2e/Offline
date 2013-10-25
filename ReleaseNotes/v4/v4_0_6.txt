@@ -1,0 +1,35 @@
+  $Id: v4_0_6.txt,v 1.1 2013/10/25 20:39:47 gandr Exp $
+  $Author: gandr $
+  $Date: 2013/10/25 20:39:47 $
+
+           Release notes for Mu2e Offline software, v4_0_6
+
+10) October 25, 2013 gandr
+    Moved some of the messages from v4_0_5 into v4_0_6 where they belong.
+
+9) October 25, 2013 genser
+   Added more Geant4 processes to ProcessCode
+
+8) October 24, 2013 ehrlich
+   Updated files in CosmicRayShieldGeom and Mu2eG4/src/constructCRV.cc
+    inserted a G4Box for the CRV layers 
+    to speed up the surface check
+
+7) October 23, 2013 genser
+   Updated files in mucapture module:
+     in preparation for Geant4 version 10 used 
+     CLHEP/Units/SystemOfUnits.h or CLHEP/Units/PhysicalConstants.h
+     and conditionaly used G4ExceptionDescription to remove 
+     warnings about obsolete strstream
+
+6) October 23, 2013 genser
+   Changed the way Geant4 version is handled to prepare for version 10
+      Mu2eG4/src/SConscript
+      Mu2eG4/src/checkMSCmodel.cc
+      mucapture/src/SConscript
+
+5) October 22, 2013 genser
+   SConstruct
+   per Ron R et al adding more environment variables to be exported
+   to make it work with the new scons/python
+
