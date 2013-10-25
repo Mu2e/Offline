@@ -1,9 +1,9 @@
 //
 // G4 interface to the Detector Solenoid full magnetic field.
 //
-// $Id: Mu2eGlobalField.cc,v 1.2 2012/02/21 22:25:02 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/21 22:25:02 $
+// $Id: Mu2eGlobalField.cc,v 1.3 2013/10/25 18:49:44 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/25 18:49:44 $
 //
 // Original author Julie Managan and Bob Bernstein
 // Major rewrite by Rob Kutschke at version 1.4
@@ -17,7 +17,8 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 
-// Other includes.
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 using CLHEP::Hep3Vector;
