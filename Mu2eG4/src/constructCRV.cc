@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.18 2013/10/25 02:33:25 ehrlich Exp $
+// $Id: constructCRV.cc,v 1.19 2013/10/25 05:06:33 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/10/25 02:33:25 $
+// $Date: 2013/10/25 05:06:33 $
 //
 // Original author KLG
 //
@@ -125,7 +125,7 @@ namespace mu2e
         for(ilayer=layers.begin(); ilayer!=layers.end(); ++ilayer) 
         {
 
-          //construct a logical volume around all bars of a layer to speed up the surface checks
+          //construct a G4Box around all bars of a layer to speed up the surface checks
           std::vector<double> layerHalflengths(3);
           CLHEP::Hep3Vector   layerCenterInMu2e;
           ilayer->getDimensions(layerHalflengths, layerCenterInMu2e);

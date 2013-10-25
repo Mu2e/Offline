@@ -2,9 +2,9 @@
 // Representation of one Scintillator Layer in CosmicRayShield
 //
 //
-// $Id: CRSScintillatorLayer.cc,v 1.5 2013/10/25 02:33:25 ehrlich Exp $
+// $Id: CRSScintillatorLayer.cc,v 1.6 2013/10/25 05:06:33 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/10/25 02:33:25 $
+// $Date: 2013/10/25 05:06:33 $
 //
 // Original author KLG based on Rob Kutschke's Layer
 //
@@ -33,6 +33,7 @@ namespace mu2e
 
   void CRSScintillatorLayer::getDimensions(std::vector<double> &halflengths, CLHEP::Hep3Vector &center) const
   {
+
     double min[3], max[3];
     for(int i=0; i<3; i++)
     {
@@ -59,6 +60,7 @@ namespace mu2e
       halflengths[i]=(max[i]-min[i])/2.0;
       center[i]=(max[i]+min[i])/2.0;
     }
+
   }
 
   string CRSScintillatorLayer::name( string const& base ) const
