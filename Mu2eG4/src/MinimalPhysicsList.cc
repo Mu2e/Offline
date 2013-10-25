@@ -2,13 +2,17 @@
 // Define a minimal physics list.
 // Just transportation; used for debugging geometry.
 //
-// $Id: MinimalPhysicsList.cc,v 1.5 2012/10/25 20:23:58 genser Exp $
+// $Id: MinimalPhysicsList.cc,v 1.6 2013/10/25 18:47:09 genser Exp $
 // $Author: genser $
-// $Date: 2012/10/25 20:23:58 $
+// $Date: 2013/10/25 18:47:09 $
 //
 // Original author Rob Kutschke
 //
 
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
+
+// Geant4 includes
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
 #include "Mu2eG4/inc/addStepLimiter.hh"
 
@@ -19,7 +23,7 @@
 
 namespace mu2e {
   MinimalPhysicsList::MinimalPhysicsList():  G4VUserPhysicsList(){
-    defaultCutValue = 1.0*cm;
+    defaultCutValue = 1.0*CLHEP::cm;
     SetVerboseLevel(1);
   }
 

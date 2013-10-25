@@ -2,9 +2,9 @@
 //
 // Helical Proton Absorber main class
 //
-// $Id: HelicalProtonAbsorber.cc,v 1.1 2012/05/30 15:55:44 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/30 15:55:44 $
+// $Id: HelicalProtonAbsorber.cc,v 1.2 2013/10/25 18:44:31 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/25 18:44:31 $
 //
 // Original author Suerfu, implemented by G. Tassielli
 //
@@ -70,7 +70,7 @@ HelicalProtonAbsorber::HelicalProtonAbsorber(double z_start, double length_i, do
         material = plastic;
         World = world;
         PAbs_length = length_i;
-        //k = num_of_turns/PAbs_length*twopi;
+        //k = num_of_turns/PAbs_length*CLHEP::twopi;
 
         //std::cout<<"k = "<<k*CLHEP::m<<"1/m\n";
         //std::cout<<"k = "<<k*CLHEP::cm<<"1/cm\n";
@@ -179,11 +179,11 @@ G4ThreeVector HelicalProtonAbsorber::rail_eq1(double z_init, int vane_id)
         // The radius and the angle is given as the function of Z coordinate.
 
         double z = z_init;
-        double phi =  phi_i[0] + phi_i[1]*z_init + phi_i[2]*pow(z_init,2) + twopi/vane_num*vane_id;
+        double phi =  phi_i[0] + phi_i[1]*z_init + phi_i[2]*pow(z_init,2) + CLHEP::twopi/vane_num*vane_id;
         double radius = r_i[0] + r_i[1]*z_init + r_i[2]*pow(z_init,2);
 
 
-        /*double ang_displacement = twopi/vane_num*vane_id; //vane id goes from 0 to vane_num-1
+        /*double ang_displacement = CLHEP::twopi/vane_num*vane_id; //vane id goes from 0 to vane_num-1
 
     double x = radius*cos(k*z_init + ang_displacement);
     double y = radius*sin(k*z_init + ang_displacement);
@@ -220,7 +220,7 @@ G4ThreeVector HelicalProtonAbsorber::rail_eq3(double z_init, int vane_id)
         //double radius = radius_final;
         //double taper_length = 1*PAbs_length;
 
-        // double phi = k*(z_init + z_init*z_init/PAbs_length) + twopi/vane_num*vane_id;
+        // double phi = k*(z_init + z_init*z_init/PAbs_length) + CLHEP::twopi/vane_num*vane_id;
 
         // if(z_init<taper_length)
         // {
@@ -244,7 +244,7 @@ G4ThreeVector HelicalProtonAbsorber::rail_eq3(double z_init, int vane_id)
 G4ThreeVector HelicalProtonAbsorber::rail_eq4(double z_init,int vane_id)
 {
         double z = z_init;
-        double phi =  phi_o[0] + phi_o[1]*z_init + phi_o[2]*pow(z_init,2) + twopi/vane_num*vane_id;
+        double phi =  phi_o[0] + phi_o[1]*z_init + phi_o[2]*pow(z_init,2) + CLHEP::twopi/vane_num*vane_id;
         double radius = r_o[0] + r_o[1]*z_init + r_o[2]*pow(z_init,2);
 
         // if(z_init<taper_length)
