@@ -12,7 +12,6 @@
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandExponential.h"
 #include "CLHEP/Random/RandGeneral.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
@@ -65,7 +64,6 @@ namespace mu2e {
 
     PDGCode::type pdgId_;
     double mass_;
-    double lifeTime_;
 
     enum SpectrumVar { TOTAL_ENERGY, KINETIC_ENERY };
     SpectrumVar spectrumVariable_;
@@ -83,7 +81,6 @@ namespace mu2e {
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandFlat randFlat_;
-    CLHEP::RandExponential randExp_;
     CLHEP::RandGeneral randSpectrum_;
     RandomUnitSphere randomUnitSphere_;
 
@@ -105,8 +102,6 @@ namespace mu2e {
     , psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , pdgId_(PDGCode::type(psphys_.get<int>("pdgId")))
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
-    , lifeTime_(psphys_.get<double>("stoppedParticleLifeTime",
-                                    GlobalConstantsHandle<PhysicsParams>()->getDecayTime()))
     , spectrumVariable_(parseSpectrumVar(psphys_.get<std::string>("spectrumVariable")))
     , elow_()
     , ehi_()
@@ -114,7 +109,6 @@ namespace mu2e {
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , randFlat_(eng_)
-    , randExp_(eng_)
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
     , randomUnitSphere_(eng_)
   {
@@ -127,7 +121,6 @@ namespace mu2e {
       std::cout<<"StoppedParticleReactionGun: producing particle "
                <<pdgId_
                <<", mass = "<<mass_
-               <<", bound state life time = "<<lifeTime_
                <<std::endl;
     }
   }
@@ -247,8 +240,6 @@ namespace mu2e {
 
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
-    const double reactionTime = stop.t + randExp_.fire(lifeTime_);
-
     const double energy = generateEnergy();
     const double p = energy * sqrt(1 - std::pow(mass_/energy,2));
 
@@ -259,7 +250,7 @@ namespace mu2e {
                          GenId::StoppedParticleReactionGun,
                          pos,
                          fourmom,
-                         reactionTime);
+                         stop.t);
 
     event.put(std::move(output));
   }
