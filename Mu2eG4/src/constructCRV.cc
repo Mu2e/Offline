@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.17 2013/09/13 06:42:44 ehrlich Exp $
+// $Id: constructCRV.cc,v 1.18 2013/10/25 02:33:25 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/09/13 06:42:44 $
+// $Date: 2013/10/25 02:33:25 $
 //
 // Original author KLG
 //
@@ -24,6 +24,7 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
+#include "Mu2eG4/inc/nestBox.hh"
 
 // G4 includes
 
@@ -47,8 +48,6 @@ namespace mu2e
 {
   void constructCRV( VolumeInfo const & parent, SimpleConfig const &  _config)
   {
-    // get the CRS parameters from the geometry service and place the veto elements
-
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
@@ -62,9 +61,11 @@ namespace mu2e
     bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
     bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
 
+    std::string hallAirMaterialName = _config.getString("hall.insideMaterialName");
+
     std::map<std::string,CRSScintillatorShield> const &shields = CosmicRayShieldGeomHandle->getCRSScintillatorShields();
 
-    CLHEP::Hep3Vector perentCenterInMu2e = parent.centerInMu2e();
+    CLHEP::Hep3Vector parentCenterInMu2e = parent.centerInMu2e();
 
     std::map<std::string,CRSScintillatorShield>::const_iterator ishield;
     for(ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
@@ -74,18 +75,12 @@ namespace mu2e
 
       if(verbosityLevel > 0) cout << __func__ << " constructing            : " << shieldName << endl;
 
-    // all materials and dimensions are the same within a particular shield
+      // all materials and dimensions are the same within a particular shield
       CRSScintillatorBarDetail const & barDetail = shield.getCRSScintillatorBarDetail();
 
       G4Material* scintillatorBarMaterial = findMaterialOrThrow(barDetail.getMaterialName());
       std::vector<double> const &  scintillatorBarHalfLengths = barDetail.getHalfLengths();
 
-    // each solid is the same,
-    // is each logical volume the same?
-    // but each physical volume has different name...
-    // this seems not quite compatible with VolumeInfo and their registry, so we will not use it
-
-    // VolumeInfo scintillatorBarInfo;
       std::string scintillatorBarName = shieldName;
 
       G4VSolid* scintillatorBarSolid = new G4Box(scintillatorBarName,
@@ -97,8 +92,7 @@ namespace mu2e
                                                                     scintillatorBarMaterial,
                                                                     scintillatorBarName);
 
-    // visibility attributes
-
+      // visibility attributes
       if (!scintillatorShieldVisible) 
       {
         scintillatorBarLogical->SetVisAttributes(G4VisAttributes::Invisible);
@@ -112,7 +106,7 @@ namespace mu2e
         scintillatorBarLogical->SetVisAttributes(visAtt);
       }
 
-    // Make each scintillatorBar a sensitive detector.
+      // Make each scintillatorBar a sensitive detector.
       G4VSensitiveDetector *sd = 
                      G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar());
       if(sd) scintillatorBarLogical->SetSensitiveDetector(sd);
@@ -130,28 +124,49 @@ namespace mu2e
         std::vector<CRSScintillatorLayer>::const_iterator ilayer;
         for(ilayer=layers.begin(); ilayer!=layers.end(); ++ilayer) 
         {
+
+          //construct a logical volume around all bars of a layer to speed up the surface checks
+          std::vector<double> layerHalflengths(3);
+          CLHEP::Hep3Vector   layerCenterInMu2e;
+          ilayer->getDimensions(layerHalflengths, layerCenterInMu2e);
+          CLHEP::Hep3Vector layerAirOffset = layerCenterInMu2e - parentCenterInMu2e;
+
+          G4Material* hallAirMaterial = findMaterialOrThrow(hallAirMaterialName);
+          VolumeInfo layerInfo = nestBox(ilayer->name("CRSScintillatorLayer_"),
+                                         layerHalflengths,
+                                         hallAirMaterial,
+                                         NULL/*rotation*/,
+                                         layerAirOffset,
+                                         parent.logical,
+                                         0/*copyNumber*/,
+                                         false/*visible*/,
+                                         G4Colour::Yellow(),
+                                         false/*solid*/,
+                                         forceAuxEdgeVisible,
+                                         true/*placePV*/,
+                                         doSurfaceCheck);
+
           const std::vector<const CRSScintillatorBar*> &bars = ilayer->getBars();
           std::vector<const CRSScintillatorBar*>::const_iterator ibar;
           for(ibar=bars.begin(); ibar!=bars.end(); ++ibar) 
           {
             const CRSScintillatorBar &bar = **ibar; 
 
-            // placing the bar;
-            // we need the offsets "local" to the air
-            // so we need the globaloffsets for each bar and the air (parent volume)
-            CLHEP::Hep3Vector barAirOffset = bar.getPosition() - perentCenterInMu2e;
+            //bar.getPosition() returns the bar position in Mu2e coordinates
+            CLHEP::Hep3Vector barLayerOffset = bar.getPosition() - layerCenterInMu2e; 
 
             if ( verbosityLevel > 3 ) 
             {
               cout << __func__ << " barPosition          : " <<  bar.getPosition() << endl;
-              cout << __func__ << " barAirOffset         : " <<  barAirOffset << endl;
+              cout << __func__ << " barShieldOffset      : " <<  barLayerOffset << endl;
+              cout << __func__ << " shieldAirOffset      : " <<  layerAirOffset << endl;
             }
 
             G4VPhysicalVolume* pv = new G4PVPlacement( NULL,
-                                                       barAirOffset,
+                                                       barLayerOffset,
                                                        scintillatorBarLogical,
                                                        bar.name("CRSScintillatorBar_"),
-                                                       parent.logical,
+                                                       layerInfo.logical,
                                                        false,
                                                        bar.index().asInt(),
                                                        false);

@@ -3,9 +3,9 @@
 //
 // Representation of one Scintillator Layer in  CosmicRayShield
 //
-// $Id: CRSScintillatorLayer.hh,v 1.7 2013/09/13 06:42:44 ehrlich Exp $
+// $Id: CRSScintillatorLayer.hh,v 1.8 2013/10/25 02:33:25 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/09/13 06:42:44 $
+// $Date: 2013/10/25 02:33:25 $
 //
 // Original author KLG; somewhat based on  Rob Kutschke's Layer
 //
@@ -51,6 +51,8 @@ namespace mu2e
     }
 
     const std::vector<const CRSScintillatorBar*>& getBars() const { return _bars; }
+
+    void getDimensions(std::vector<double> &halflengths, CLHEP::Hep3Vector &center) const;
 
     // Formatted string embedding the id of the layer.
     std::string name( std::string const & base ) const;

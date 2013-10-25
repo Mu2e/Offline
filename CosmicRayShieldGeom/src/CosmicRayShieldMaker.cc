@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.27 2013/09/13 06:42:44 ehrlich Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.28 2013/10/25 02:33:25 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/09/13 06:42:44 $
+// $Date: 2013/10/25 02:33:25 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -97,7 +97,7 @@ namespace mu2e
     _firstCounterTSL        = config.getHep3Vector("crs.firstCounterTSL");
     _firstCounterTST        = config.getHep3Vector("crs.firstCounterTST");
 
-    _scintillatorBarMaterialName             = config.getString("crs.scintillatorBarMaterialName");
+    _scintillatorBarMaterialName = config.getString("crs.scintillatorBarMaterialName");
   }
 
 //VTNC = Vector to next counter

@@ -2,9 +2,9 @@
 // Representation of one Scintillator Layer in CosmicRayShield
 //
 //
-// $Id: CRSScintillatorLayer.cc,v 1.4 2013/09/13 06:42:44 ehrlich Exp $
+// $Id: CRSScintillatorLayer.cc,v 1.5 2013/10/25 02:33:25 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/09/13 06:42:44 $
+// $Date: 2013/10/25 02:33:25 $
 //
 // Original author KLG based on Rob Kutschke's Layer
 //
@@ -30,6 +30,36 @@ namespace mu2e
   CRSScintillatorLayer::CRSScintillatorLayer(CRSScintillatorLayerId const& id):
     _id(id)
   {}
+
+  void CRSScintillatorLayer::getDimensions(std::vector<double> &halflengths, CLHEP::Hep3Vector &center) const
+  {
+    double min[3], max[3];
+    for(int i=0; i<3; i++)
+    {
+      min[i]=NAN; max[i]=NAN;
+    }
+
+    std::vector<const CRSScintillatorBar*>::const_iterator ibar;
+    for(ibar=_bars.begin(); ibar!=_bars.end(); ++ibar) 
+    {
+      const CRSScintillatorBar &bar = **ibar; 
+      const CLHEP::Hep3Vector &barPosition = bar.getPosition();
+      const std::vector<double> &barHalfLengths = bar.getHalfLengths();
+      for(int i=0; i<3; i++)
+      {
+        double minPositionI = barPosition[i]-barHalfLengths[i];
+        double maxPositionI = barPosition[i]+barHalfLengths[i];
+        if(minPositionI<min[i] || std::isnan(min[i])) min[i]=minPositionI;
+        if(maxPositionI>max[i] || std::isnan(max[i])) max[i]=maxPositionI;
+      }
+    }
+
+    for(int i=0; i<3; i++)
+    {
+      halflengths[i]=(max[i]-min[i])/2.0;
+      center[i]=(max[i]+min[i])/2.0;
+    }
+  }
 
   string CRSScintillatorLayer::name( string const& base ) const
   {
