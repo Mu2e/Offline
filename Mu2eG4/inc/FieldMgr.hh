@@ -4,9 +4,9 @@
 // Create a G4FieldManager object. Provide accessors to the field manager
 // and to the parts from which it is made.
 //
-// $Id: FieldMgr.hh,v 1.9 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: FieldMgr.hh,v 1.10 2013/10/25 21:42:02 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/25 21:42:02 $
 //
 // Original author Rob Kutschke
 //
@@ -45,6 +45,10 @@
 #include <memory>
 #include <string>
 
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
+
+// G4 includes
 #include "G4ChordFinder.hh"
 #include "G4FieldManager.hh"
 #include "G4MagIntegratorStepper.hh"

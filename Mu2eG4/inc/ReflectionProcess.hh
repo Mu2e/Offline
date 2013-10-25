@@ -6,12 +6,16 @@
 // A discrete process that reverses particle momentum and charge.
 // It is used for debugging/tuning code for propagation in magnetic fields.
 //
-//   $Id: ReflectionProcess.hh,v 1.1 2012/03/02 23:57:18 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2012/03/02 23:57:18 $
+//   $Id: ReflectionProcess.hh,v 1.2 2013/10/25 21:46:26 genser Exp $
+//   $Author: genser $
+//   $Date: 2013/10/25 21:46:26 $
 //
 // Original author R. Bernstein
 
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
+
+// Geant4 includes
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTable.hh"
 #include "G4Step.hh"
@@ -28,7 +32,7 @@ namespace mu2e{
     ReflectionProcess(
                       const G4String& startingVolume, //need to do the string; G4 may not have
                       const G4String& endingVolume,   //made the volume yet
-                      const double toleranceForQuitting = 0.001*meter):
+                      const double toleranceForQuitting = 0.001*CLHEP::meter):
       G4VDiscreteProcess("ReflectionProcess",fUserDefined),
       _startingVolume(startingVolume),
       _endingVolume(endingVolume),
