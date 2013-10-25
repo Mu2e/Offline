@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e detector with the Mu2e G4 world.
 //
-// $Id: DetectorConstruction.cc,v 1.5 2011/05/20 21:31:24 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 21:31:24 $
+// $Id: DetectorConstruction.cc,v 1.6 2013/10/25 18:37:07 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/25 18:37:07 $
 //
 // Original author Rob Kutschke
 //
@@ -13,6 +13,10 @@
 
 #include "Mu2eG4/inc/DetectorConstruction.hh"
 
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
+
+// Geant4 includes
 #include "G4Material.hh"
 #include "G4Box.hh"
 #include "G4LogicalVolume.hh"
@@ -64,11 +68,11 @@ namespace mu2e {
   G4VPhysicalVolume* DetectorConstruction::Construct(){
 
     // Some made up parameters to describe vacuum.
-    G4double density     = 1.e-10*g/cm3;
-    G4double pressure    = 3.e-18*pascal;
-    G4double temperature = 2.73*kelvin;
+    G4double density     = 1.e-10*CLHEP::g/CLHEP::cm3;
+    G4double pressure    = 3.e-18*CLHEP::pascal;
+    G4double temperature = 2.73*CLHEP::kelvin;
     G4Material* vacuum =
-      new G4Material( "Vacuum", 1., 1.01*g/mole,
+      new G4Material( "Vacuum", 1., 1.01*CLHEP::g/CLHEP::mole,
                       density, kStateGas, temperature, pressure);
 
     // Print all the materials defined.
@@ -93,7 +97,7 @@ namespace mu2e {
     const G4VisAttributes visRefBox(true,G4Color::Red());
 
     // Magnetic Vector.
-    const G4ThreeVector bfield(0.,0.,1.*tesla);
+    const G4ThreeVector bfield(0.,0.,1.*CLHEP::tesla);
 
     // Compute some derived parameters.
 
