@@ -15,7 +15,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 
 namespace mu2e {
-  typedef std::map<art::Ptr<SimParticle>, double>  SimParticleProtonPulseTimeMap;
+  typedef std::map<art::Ptr<SimParticle>, double>  SimParticleTimeMap;
 }
 
 #endif/*SimParticleProtonPulseTimeAssns_hh*/

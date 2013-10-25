@@ -20,7 +20,7 @@
 
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleProtonPulseTimeMap.hh"
+#include "MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
@@ -62,12 +62,12 @@ namespace mu2e {
     , mapDaughters_(pset.get<bool>("mapDaughters", false))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
   {
-    produces<SimParticleProtonPulseTimeMap>();
+    produces<SimParticleTimeMap>();
   }
 
   //================================================================
   void GenerateProtonTimes::produce(art::Event& event) {
-    std::unique_ptr<SimParticleProtonPulseTimeMap> res(new SimParticleProtonPulseTimeMap);
+    std::unique_ptr<SimParticleTimeMap> res(new SimParticleTimeMap);
 
     auto ih = event.getValidHandle<SimParticleCollection>(simParticlesTag_);
 
