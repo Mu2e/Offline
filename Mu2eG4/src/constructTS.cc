@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.27 2013/10/14 18:09:26 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/10/14 18:09:26 $
+// $Id: constructTS.cc,v 1.28 2013/10/25 21:38:29 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/25 21:38:29 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -18,6 +18,9 @@
 #include <array>
 #include <cmath>
 #include <iostream>
+
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
 
 // Framework includes
 #include "cetlib/exception.h"
@@ -553,7 +556,7 @@ namespace mu2e {
 
         if ( verbosityLevel > 0 ) {
           cout << __func__ << " " << coilname.str() << " placed at: " << coil.getGlobal() << endl;
-          cout << __func__ << "            rotation: " << -coil.getRotation()->getTheta()/degree << endl;
+          cout << __func__ << "            rotation: " << -coil.getRotation()->getTheta()/CLHEP::degree << endl;
           cout << __func__ << "              params: " << coil.rIn() << " , " << coil.rOut() << " , " << 2*coil.halfLength() << endl;
         }
 

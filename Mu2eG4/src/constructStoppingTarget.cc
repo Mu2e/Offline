@@ -1,9 +1,9 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.21 2013/10/14 23:57:32 roehrken Exp $
-// $Author: roehrken $
-// $Date: 2013/10/14 23:57:32 $
+// $Id: constructStoppingTarget.cc,v 1.22 2013/10/25 21:37:29 genser Exp $
+// $Author: genser $
+// $Date: 2013/10/25 21:37:29 $
 //
 // Original author Peter Shanahan
 //
@@ -13,6 +13,9 @@
 // C++ includes
 #include <iostream>
 #include <string>
+
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
 
 //boost includes
 #include <boost/lexical_cast.hpp>
@@ -166,7 +169,7 @@ namespace mu2e {
 
         // rotation matrices to rotate the orientation of the supporting wires. First rotate into xy-plane by 90deg rotation around y-axis, then rotate within xy-plane by appropiate rotation around z-axis
         CLHEP::HepRotationY secRy(-M_PI/2.);
-        CLHEP::HepRotationZ secRz( -supportStructure.support_id() * 360.*deg / (target->nSupportStructures()/target->nFoils()) - 90.*deg - supportStructure.angleOffset()*deg);
+        CLHEP::HepRotationZ secRz( -supportStructure.support_id() * 360.*CLHEP::deg / (target->nSupportStructures()/target->nFoils()) - 90.*CLHEP::deg - supportStructure.angleOffset()*CLHEP::deg);
         G4RotationMatrix* supportStructure_rotMatrix = reg.add(G4RotationMatrix(secRy*secRz));
 
 	if ( verbosity > 1 ) std::cout << "supportStructure_rotMatrix = " << *supportStructure_rotMatrix << std::endl;
@@ -176,7 +179,7 @@ namespace mu2e {
 
         if ( verbosity > 1 ) cout<<"FoilSupportStructure "<<itf<<" centerInMu2e="<<supportStructure.centerInMu2e()<<", offset="<<supportStructureOffset<<endl;
 
-        G4ThreeVector vector_supportStructure_Orientation( (supportStructure.length()/2.+supportStructure.foil_outer_radius()) * std::cos(supportStructure.support_id() * 360.*deg / (target->nSupportStructures()/target->nFoils()) + 90.*deg + supportStructure.angleOffset()*deg), (supportStructure.length()/2.+supportStructure.foil_outer_radius()) * std::sin(supportStructure.support_id() * 360.*deg / (target->nSupportStructures()/target->nFoils()) + 90.*deg + supportStructure.angleOffset()*deg), 0);
+        G4ThreeVector vector_supportStructure_Orientation( (supportStructure.length()/2.+supportStructure.foil_outer_radius()) * std::cos(supportStructure.support_id() * 360.*CLHEP::deg / (target->nSupportStructures()/target->nFoils()) + 90.*CLHEP::deg + supportStructure.angleOffset()*CLHEP::deg), (supportStructure.length()/2.+supportStructure.foil_outer_radius()) * std::sin(supportStructure.support_id() * 360.*CLHEP::deg / (target->nSupportStructures()/target->nFoils()) + 90.*CLHEP::deg + supportStructure.angleOffset()*CLHEP::deg), 0);
 	if ( verbosity > 1 ) std::cout << "vector_supportStructure_Orientation = " << vector_supportStructure_Orientation << std::endl;
 
 	supportStructureOffset += vector_supportStructure_Orientation; // second add vector to support wire tube center

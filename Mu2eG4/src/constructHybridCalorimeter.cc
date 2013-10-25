@@ -15,6 +15,9 @@
 //  4. Disk holds the crystals but have dead space, so they are enclosed in a larger disk to simulate the casing material
 
 #include <iostream>
+
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/TwoVector.h"
 
 // Mu2e includes.
@@ -137,7 +140,7 @@ namespace mu2e {
     G4double crystalShellRinner[2]  = {0,0};
     G4double crystalShellRouter[2]  = {shellHexsize,shellHexsize};
     G4Polyhedra* crystalShell       = new G4Polyhedra("CrystalShell",
-						      0,2*pi, //phi start phi end
+						      0,CLHEP::twopi, //phi start phi end
 						      6,2,      //numside ,numzplanes
 						      crystalShellZplanes,crystalShellRinner,crystalShellRouter);
 
@@ -145,7 +148,7 @@ namespace mu2e {
     G4double crystalWrapRinner[2]  = {0,0};
     G4double crystalWrapRouter[2]  = {wrapHexsize,wrapHexsize};
     G4Polyhedra* crystalWrap       = new G4Polyhedra("CrystalWrap",
-						     0,2*pi, //phi start phi end
+						     0,CLHEP::twopi, //phi start phi end
 						     6,2,    //numside ,numzplanes
 						     crystalWrapZplanes,crystalWrapRinner,crystalWrapRouter);
 
@@ -153,7 +156,7 @@ namespace mu2e {
     G4double crystalRinner[2]  = {0,0};
     G4double crystalRouter[2]  = {crystalHexsize,crystalHexsize};
     G4Polyhedra* crystal       = new G4Polyhedra("Crystal",
-						 0,2*pi, //phi start phi end
+						 0,CLHEP::twopi, //phi start phi end
 						 6,2,    //numside//numzplanes
 						 crystalZplanes,crystalRinner,crystalRouter);
 
@@ -341,9 +344,9 @@ namespace mu2e {
     double caseDepth  = shellDepth + 2.0*cal.caseThickness();
     double diskDepth  = caseDepth  + 2.0*pipeRadius;
 
-    double diskpar0[5] = {radiusIn-cal.caseThickness(),radiusOut+cal.caseThickness(), diskDepth/2.0, 0, 2*pi};
-    double diskpar1[5] = {radiusIn-cal.caseThickness(),radiusOut+cal.caseThickness(), caseDepth/2.0, 0, 2*pi};
-    double diskpar2[5] = {radiusIn                    ,radiusOut                    ,shellDepth/2.0, 0, 2*pi};
+    double diskpar0[5] = {radiusIn-cal.caseThickness(),radiusOut+cal.caseThickness(), diskDepth/2.0, 0,CLHEP::twopi};
+    double diskpar1[5] = {radiusIn-cal.caseThickness(),radiusOut+cal.caseThickness(), caseDepth/2.0, 0,CLHEP::twopi};
+    double diskpar2[5] = {radiusIn                    ,radiusOut                    ,shellDepth/2.0, 0,CLHEP::twopi};
 
     diskBoxInfo[idisk] =  nestTubs(discname0.str(),
 				   diskpar0,
@@ -407,7 +410,7 @@ namespace mu2e {
 	   for (int ipipe=0;ipipe<nPipes;++ipipe){
 
 	      ostringstream pipename;  pipename<<"CaloPipe" <<idisk<<"_"<<ipipe;
-              std::array<double,5> pipeParam { {pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], 0, 2*pi } };
+              std::array<double,5> pipeParam { {pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], 0,CLHEP::twopi } };
 
 	      caloPipe[ipipe] = nestTorus(pipename.str(),
                                 	  pipeParam,
@@ -531,7 +534,7 @@ namespace mu2e {
     double barrelpar0[5] = {radiusIn,//cal.caseThickness(),
 			    radiusOut,// + dist ,// cal.caseThickness(),
 			    barrelCaseDepth/2.0,
-			    0, 2*pi};
+			    0,CLHEP::twopi};
     if ( verbosityLevel > 0) 
       {
 	printf("barrelpar0 = {%.1f, %.1f, %.1f, %.1f, %.1f}\n",
@@ -541,7 +544,7 @@ namespace mu2e {
     double barrelpar1[5] = {radiusIn, //cal.caseThickness(),
 			    radiusOut,// + dist,//cal.caseThickness(),
 			    barrelCaseDepth/2.0,
-			    0, 2*pi};
+			    0,CLHEP::twopi};
     if ( verbosityLevel > 0) 
       {
 	printf("barrelpar1 = {%.1f, %.1f, %.1f, %.1f, %.1f}\n",
@@ -551,7 +554,7 @@ namespace mu2e {
     double barrelpar2[5] = {radiusIn,
 			    radiusOut - dist,
 			    barrelShellDepth/2.0,
-			    0, 2*pi};
+			    0,CLHEP::twopi};
     
     if ( verbosityLevel > 0) 
       {
@@ -629,7 +632,7 @@ namespace mu2e {
     // 	  for (int ipipe=0;ipipe<nPipes;++ipipe){
 
     // 	    ostringstream pipename;  pipename<<"CaloPipe" <<idisk<<"_"<<ipipe;
-    // 	    double pipeParam[5] = {pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], 0, 2*pi };
+    // 	    double pipeParam[5] = {pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], 0,CLHEP::twopi };
 
     // 	    caloPipe[ipipe] = nestTorus(pipename.str(),
     // 					pipeParam,
@@ -687,7 +690,7 @@ namespace mu2e {
 	G4RotationMatrix *rotCry = new G4RotationMatrix();//RForTrapezoids);
 
 	rotCry->rotateZ(tmpAngle);
-	rotCry->rotateX(90*deg);
+	rotCry->rotateX(90.*CLHEP::deg);
 
 	// place a shell only if it has non-zero thickness, or place the wrapper directly
 	if (shellThickness > 0.001)
