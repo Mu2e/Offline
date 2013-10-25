@@ -5,9 +5,9 @@
 //    with cvs tag: version 1.12 2008/09/22 16:41:20 maire
 //
 //
-// $Id: PhysicsList.cc,v 1.12 2012/10/26 17:27:14 genser Exp $
+// $Id: PhysicsList.cc,v 1.13 2013/10/25 18:53:09 genser Exp $
 // $Author: genser $
-// $Date: 2012/10/26 17:27:14 $
+// $Date: 2013/10/25 18:53:09 $
 //
 // Original author Rob Kutschke
 //
@@ -20,6 +20,9 @@
 #include "Mu2eG4/inc/addStepLimiter.hh"
 #include "Mu2eG4/inc/ReflectionProcess.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
 
 // G4 includes
 #include "globals.hh"
@@ -59,7 +62,7 @@ namespace mu2e{
     G4VUserPhysicsList(),
     _config(&config){
 
-    defaultCutValue = 1.0*cm;
+    defaultCutValue = 1.0*CLHEP::cm;
     SetVerboseLevel(1);
   }
 
@@ -250,7 +253,7 @@ namespace mu2e{
         ReflectionProcess* theReflectionProcess = new ReflectionProcess(
                                                                      "TargetFoil_",
                                                                      "ToyDSDownstreamVacuum",
-                                                                     .001*meter);
+                                                                     .001*CLHEP::meter);
         theParticleIterator->reset();
         while( (*theParticleIterator)() ){
           G4ParticleDefinition* particle = theParticleIterator->value();
