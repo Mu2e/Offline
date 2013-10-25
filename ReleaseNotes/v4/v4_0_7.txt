@@ -1,3 +1,22 @@
   Still under construction
 
            Release notes for Mu2e Offline software, v4_0_7
+
+1) October 25, genser
+   
+   Added CLHEP:: to units and constants and explicitly added clhep
+   SystemOfUnits or PhysicalConstants header where needed in
+   preparation for a future use of Geant4 v10
+
+      Mu2eG4/inc/FieldMgr.hh
+      Mu2eG4/inc/ReflectionProcess.hh
+      Mu2eG4/src/ConstructMaterials.cc
+      Mu2eG4/src/DetectorConstruction.cc
+      Mu2eG4/src/HelicalProtonAbsorber.cc
+      Mu2eG4/src/MinimalPhysicsList.cc
+      Mu2eG4/src/Mu2eGlobalField.cc
+      Mu2eG4/src/PhysicsList.cc
+      Mu2eG4/src/constructDiskCalorimeter.cc
+      Mu2eG4/src/constructHybridCalorimeter.cc
+      Mu2eG4/src/constructStoppingTarget.cc
+      Mu2eG4/src/constructTS.cc
