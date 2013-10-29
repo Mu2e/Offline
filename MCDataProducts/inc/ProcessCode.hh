@@ -7,9 +7,9 @@
 // that the particle is a primary particle and other enum entries to
 // indicate that a particle was killed in one of the user actions written by G4.
 //
-// $Id: ProcessCode.hh,v 1.13 2013/10/25 18:19:19 genser Exp $
+// $Id: ProcessCode.hh,v 1.14 2013/10/29 21:12:08 genser Exp $
 // $Author: genser $
-// $Date: 2013/10/25 18:19:19 $
+// $Date: 2013/10/29 21:12:08 $
 //
 // Original author Rob Kutschke
 //
@@ -70,7 +70,7 @@ namespace mu2e {
       lambdaInelastic,        neutronInelastic,        omega_MinusInelastic, pi_PlusInelastic,
       pi_MinusInelastic,      protonInelastic,         sigma_PlusInelastic, sigma_MinusInelastic,
       sigma0Inelastic,        xi_MinusInelastic,       xi0Inelastic,        positronNuclear,
-      electronNuclear,        photonNuclear,
+      electronNuclear,        photonNuclear,           antilambdaInelastic,
       lastEnum,
 
       // An alias for backward compatibility
@@ -107,7 +107,7 @@ namespace mu2e {
     "lambdaInelastic",        "neutronInelastic",        "omega-Inelastic",        "pi+Inelastic", \
     "pi-Inelastic",           "protonInelastic",         "sigma+Inelastic",        "sigma-Inelastic", \
     "sigma0Inelastic",        "xi-Inelastic",            "xi0Inelastic",           "positronNuclear", \
-    "electronNuclear",        "photonNuclear"
+    "electronNuclear",        "photonNuclear",           "anti-lambdaInelastic"
 
   public:
 
