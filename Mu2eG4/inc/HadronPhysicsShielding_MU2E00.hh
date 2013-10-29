@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: HadronPhysicsShielding_MU2E00.hh,v 1.1 2013/05/30 21:45:37 genser Exp $
+// $Id: HadronPhysicsShielding_MU2E00.hh,v 1.2 2013/10/29 21:40:39 genser Exp $
 //
 //---------------------------------------------------------------------------
 //
@@ -42,7 +42,9 @@
 #include "G4ios.hh"
 
 #include "G4VPhysicsConstructor.hh"
+#if G4VERSION<4099
 #include "G4MiscCHIPSBuilder.hh"
+#endif
 
 #include "G4PiKBuilder.hh"
 #include "G4BertiniPiKBuilder.hh"
@@ -90,9 +92,11 @@ class HadronPhysicsShielding_MU2E00 : public G4VPhysicsConstructor
     G4ProtonBuilder * thePro;
     G4BertiniProtonBuilder * theBertiniPro;
     G4FTFPProtonBuilder * theFTFPPro;    
-    
+
+#if G4VERSION<4099 
     G4MiscCHIPSBuilder * theMiscCHIPS;
-    
+#endif    
+
     G4bool QuasiElastic;
     G4VCrossSectionDataSet * theCHIPSInelastic;
     G4VCrossSectionDataSet * BGGxsNeutron;

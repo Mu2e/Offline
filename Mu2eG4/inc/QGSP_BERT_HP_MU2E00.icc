@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: QGSP_BERT_HP_MU2E00.icc,v 1.5 2013/05/30 21:45:03 genser Exp $
+// $Id: QGSP_BERT_HP_MU2E00.icc,v 1.6 2013/10/29 21:40:39 genser Exp $
 // GEANT4 tag $Name:  $
 //
 //---------------------------------------------------------------------------
@@ -61,11 +61,17 @@
 #include "G4EmStandardPhysics_option3.hh"
 #include "G4EmExtraPhysics.hh"
 #include "G4IonPhysics.hh"
+#if G4VERSION<4099
 #include "G4QStoppingPhysics.hh"
+#include "HadronPhysicsQGSP_BERT_HP.hh"
+#else
+#include "G4StoppingPhysics.hh"
+#include "G4HadronPhysicsQGSP_BERT_HP.hh"
+#endif
+
 #include "G4HadronElasticPhysicsHP.hh"
 
 #include "G4DataQuestionaire.hh"
-#include "HadronPhysicsQGSP_BERT_HP.hh"
 
 // FIXME once migrated to G4
 #include "mucapture/inc/G4MuonMinusCapturePhysics.hh"
@@ -95,13 +101,16 @@ template<class T> TQGSP_BERT_HP_MU2E00<T>::TQGSP_BERT_HP_MU2E00(mu2e::SimpleConf
   this->RegisterPhysics( new G4HadronElasticPhysicsHP(ver) );
 
   // Hadron Physics
-  this->RegisterPhysics( new HadronPhysicsQGSP_BERT_HP(ver));
-
   // Stopping Physics
+#if G4VERSION<4099
+  this->RegisterPhysics( new HadronPhysicsQGSP_BERT_HP(ver));
   this->RegisterPhysics( new G4QStoppingPhysics(ver));
-  // this->RegisterPhysics( new G4QStoppingPhysics("stopping",ver,true));
+#else
+  this->RegisterPhysics( new G4HadronPhysicsQGSP_BERT_HP(ver));
+  this->RegisterPhysics( new G4StoppingPhysics(ver));
+#endif
 
-  // use the new  muon stopping FIXME (this should go inside G4QStoppingPhysics)
+  // use Kevin's muon stopping 
   if ( config.getBool( "g4.useNewMuMinusAtomicCapture", false) ) {
     this->RegisterPhysics( new G4MuonMinusCapturePhysics(ver));
   }

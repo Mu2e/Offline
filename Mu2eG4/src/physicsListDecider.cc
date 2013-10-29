@@ -1,9 +1,9 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.15 2013/05/31 22:24:18 genser Exp $
+// $Id: physicsListDecider.cc,v 1.16 2013/10/29 21:41:08 genser Exp $
 // $Author: genser $
-// $Date: 2013/05/31 22:24:18 $
+// $Date: 2013/10/29 21:41:08 $
 //
 // Original author Rob Kutschke
 //
@@ -30,6 +30,7 @@
 
 // Framework includes
 #include "cetlib/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/physicsListDecider.hh"
@@ -47,7 +48,9 @@
 // G4 includes
 #include "G4PhysListFactory.hh"
 #include "G4VUserPhysicsList.hh"
+#if G4VERSION<4099
 #include "QGSP.hh"
+#endif
 
 using namespace std;
 
@@ -64,32 +67,46 @@ namespace mu2e{
       physicsList = dynamic_cast<G4VUserPhysicsList*>(new MinimalPhysicsList );
     }
 
+#if G4VERSION<4099
     else if ( name == "QGSP" ){
       G4VModularPhysicsList* tmp = new QGSP();
       tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
       physicsList = tmp;
     }
+#endif
 
     else if ( name == "QGSP_BERT_MU2E00" ){
       G4VModularPhysicsList* tmp = new QGSP_BERT_MU2E00();
       tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
+      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified";
+      G4cout << "Warning: This Mu2e Physics List has not been certified" << G4endl;
       physicsList = tmp;
     }
 
     else if ( name == "QGSP_BERT_HP_MU2E00" ){
       G4VModularPhysicsList* tmp = new QGSP_BERT_HP_MU2E00(config);
+      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified";
+      G4cout << "Warning: This Mu2e Physics List has not been certified" << G4endl;
       tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
       physicsList = tmp;
     }
 
     else if ( name == "Shielding_MU2E00" ){
       G4VModularPhysicsList* tmp = new Shielding_MU2E00();
+#if G4VERSION>4099
+      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
+      G4cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << G4endl;
+#endif
       tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
       physicsList = tmp;
     }
 
     else if ( name == "Shielding_MU2E01" ){
       G4VModularPhysicsList* tmp = new Shielding_MU2E01();
+#if G4VERSION>4099
+      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
+      cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
+#endif
       tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
       physicsList = tmp;
     }

@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: HadronPhysicsShielding_MU2E00.cc,v 1.3 2013/07/12 23:19:14 genser Exp $
+// $Id: HadronPhysicsShielding_MU2E00.cc,v 1.4 2013/10/29 21:41:08 genser Exp $
 //
 //---------------------------------------------------------------------------
 //
@@ -37,7 +37,9 @@
 //                     
 //----------------------------------------------------------------------------
 //
-#include <iomanip>   
+#include <iomanip>
+
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "HadronPhysicsShielding_MU2E00.hh"
 
@@ -80,7 +82,9 @@ HadronPhysicsShielding_MU2E00::HadronPhysicsShielding_MU2E00( G4int )
     , thePro(0)
     , theBertiniPro(0)
     , theFTFPPro(0)
+#if G4VERSION<4099
     , theMiscCHIPS(0)
+#endif
     , QuasiElastic(false)
     , theCHIPSInelastic(0)
     , BGGxsNeutron(0)
@@ -103,7 +107,9 @@ HadronPhysicsShielding_MU2E00::HadronPhysicsShielding_MU2E00(const G4String& nam
     , thePro(0)
     , theBertiniPro(0)
     , theFTFPPro(0)
+#if G4VERSION<4099
     , theMiscCHIPS(0)
+#endif
     , QuasiElastic(quasiElastic)
     , theCHIPSInelastic(0)
     , BGGxsNeutron(0)
@@ -116,6 +122,11 @@ HadronPhysicsShielding_MU2E00::HadronPhysicsShielding_MU2E00(const G4String& nam
 #include "G4NeutronLENDBuilder.hh"
 void HadronPhysicsShielding_MU2E00::CreateModels()
 {
+
+#if G4VERSION>4099
+  mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
+  G4cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << G4endl;
+#endif
 
   const G4double minFTFPEnergy         =  9.5*GeV;
   const G4double maxBertiniEnergy      =  9.9*GeV;
@@ -155,7 +166,10 @@ void HadronPhysicsShielding_MU2E00::CreateModels()
   thePiK->RegisterMe(theBertiniPiK=new G4BertiniPiKBuilder);
   theBertiniPiK->SetMaxEnergy(maxBertiniEnergy);
   
+#if G4VERSION<4099
   theMiscCHIPS=new G4MiscCHIPSBuilder;
+#endif
+
 }
 
 HadronPhysicsShielding_MU2E00::~HadronPhysicsShielding_MU2E00()
@@ -174,7 +188,9 @@ HadronPhysicsShielding_MU2E00::~HadronPhysicsShielding_MU2E00()
   delete theBertiniPro;
   delete theFTFPPro;    
     
+#if G4VERSION<4099
   delete theMiscCHIPS;
+#endif
   delete theCHIPSInelastic;
   delete BGGxsNeutron;
   delete NeutronHPJENDLHEInelastic;
@@ -224,5 +240,8 @@ void HadronPhysicsShielding_MU2E00::ConstructProcess()
   G4PhysListUtil::FindInelasticProcess(G4KaonZeroShort::KaonZeroShort())->AddDataSet(registry->GetCrossSectionDataSet(G4ChipsKaonZeroInelasticXS::Default_Name()));
   G4PhysListUtil::FindInelasticProcess(G4KaonZeroLong::KaonZeroLong())->AddDataSet(registry->GetCrossSectionDataSet(G4ChipsKaonZeroInelasticXS::Default_Name()));
 
+#if G4VERSION<4099
   theMiscCHIPS->Build();
+#endif
+
 }

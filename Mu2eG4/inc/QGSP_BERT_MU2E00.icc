@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: QGSP_BERT_MU2E00.icc,v 1.1 2011/06/30 20:15:16 genser Exp $
+// $Id: QGSP_BERT_MU2E00.icc,v 1.2 2013/10/29 21:40:39 genser Exp $
 // Mu2e version by KLG based on QGSP_BERT
 // GEANT4 tag $Name:  $
 //
@@ -63,12 +63,19 @@
 #include "G4EmStandardPhysics_option3.hh"
 #include "G4EmExtraPhysics.hh"
 #include "G4IonPhysics.hh"
+
+#if G4VERSION<4099
 #include "G4QStoppingPhysics.hh"
+#include "HadronPhysicsQGSP_BERT.hh"
+#else
+#include "G4StoppingPhysics.hh"
+#include "G4HadronPhysicsQGSP_BERT_HP.hh"
+#endif
+
 #include "G4HadronElasticPhysics.hh"
 #include "G4NeutronTrackingCut.hh"
 
 #include "G4DataQuestionaire.hh"
-#include "HadronPhysicsQGSP_BERT.hh"
 
 template<class T> TQGSP_BERT_MU2E00<T>::TQGSP_BERT_MU2E00(G4int ver):  T()
 {
@@ -93,10 +100,14 @@ template<class T> TQGSP_BERT_MU2E00<T>::TQGSP_BERT_MU2E00(G4int ver):  T()
   this->RegisterPhysics( new G4HadronElasticPhysics(ver) );
 
   // Hadron Physics
-  this->RegisterPhysics( new HadronPhysicsQGSP_BERT(ver));
-
   // Stopping Physics
+#if G4VERSION<4099
+  this->RegisterPhysics( new HadronPhysicsQGSP_BERT(ver));
   this->RegisterPhysics( new G4QStoppingPhysics(ver) );
+#else
+  this->RegisterPhysics( new G4HadronPhysicsQGSP_BERT_HP(ver));
+  this->RegisterPhysics( new G4StoppingPhysics(ver));
+#endif
 
   // Ion Physics
   this->RegisterPhysics( new G4IonPhysics(ver));

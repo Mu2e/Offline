@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: Shielding_MU2E00.icc,v 1.1 2013/05/30 21:45:37 genser Exp $
+// $Id: Shielding_MU2E00.icc,v 1.2 2013/10/29 21:40:39 genser Exp $
 //
 //---------------------------------------------------------------------------
 //
@@ -135,8 +135,6 @@ G4cout << LEN_model << G4endl;
      //G4cout << "Will use neutron HP package." <<G4endl;
   }
   this->RegisterPhysics( hps );
-  //this->RegisterPhysics( new HadronPhysicsShielding_MU2E00(verbose,lend));
-
 
   // Stopping Physics
   this->RegisterPhysics( new G4StoppingPhysics(verbose) );
