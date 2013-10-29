@@ -2,6 +2,20 @@
 
            Release notes for Mu2e Offline software, v4_0_7
 
+
+2) October 29, genser
+
+   Added more Geant4 processes to  MCDataProducts/inc/ProcessCode.hh
+   Made the following files to conditionlly compile with Geant4 v10
+   Added warning about the Mu2e specific physics lists not being 
+   certified for use when it is the case
+
+      Mu2eG4/inc/HadronPhysicsShielding_MU2E00.hh
+      Mu2eG4/inc/QGSP_BERT_HP_MU2E00.icc
+      Mu2eG4/inc/QGSP_BERT_MU2E00.icc
+      Mu2eG4/src/HadronPhysicsShielding_MU2E00.cc
+      Mu2eG4/src/physicsListDecider.cc
+
 1) October 25, genser
    
    Added CLHEP:: to units and constants and explicitly added clhep
