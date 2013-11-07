@@ -53,11 +53,11 @@ physics : {
             }
         }
 
-        compressPVFlash: {
+        compressPVMothers: {
             module_type: CompressPhysicalVolumes
             volumesInput : "g4run"
             hitInputs : []
-            particleInputs : [ "flashFilter:s0" ]
+            particleInputs : [ "mothersFilter:s0" ]
         }
 
         compressPVStop: {
@@ -88,7 +88,7 @@ physics : {
 
     //================================================================
     filters: {
-        flashFilter: {
+        mothersFilter: {
             module_type: FilterG4Out
             mainHitInputs: [ "g4run:TrackerMother", "g4run:CalorimeterMother", "g4run:CRV"]
             extraHitInputs: [ "g4run:virtualdetector" ]
@@ -128,28 +128,28 @@ physics : {
 
 
     //================================================================
-    beamFlashFilter : [g4run, stoppedMuonFinder, flashFilter, compressPVFlash]
+    motherFilter : [g4run, stoppedMuonFinder, mothersFilter, compressPVMothers]
     muonStopFilter :  [g4run, stoppedMuonFinder, stopFilter, compressPVStop]
     g4StatusFilter :  [g4run, "!g4status", compressPVFull ]
-    trigger_paths  : [beamFlashFilter, muonStopFilter, g4StatusFilter]
+    trigger_paths  : [motherFilter, muonStopFilter, g4StatusFilter]
 
-    out : [beamFlashOutput, muonStopOutput, truncatedEvtsOutput]
+    out : [mothersOutput, muonStopOutput, truncatedEvtsOutput]
     stops : [stoppedMuonPrinter, stoppedMuonDumper, genCountLogger]
     end_paths      : [out, stops]
 }
 
 outputs: {
-    beamFlashOutput : {
+    mothersOutput : {
         module_type : RootOutput
-        SelectEvents: { SelectEvents: [beamFlashFilter] }
+        SelectEvents: { SelectEvents: [motherFilter] }
         outputCommands:   [ "drop *_*_*_*",
                             "keep mu2e::GenParticles_*_*_*",
                             "keep mu2e::GenEventCount_*_*_*",
                             "keep mu2e::StatusG4_*_*_*",
-                            "keep *_flashFilter_*_*",
-                            "keep *_compressPVFlash_*_*"
+                            "keep *_mothersFilter_*_*",
+                            "keep *_compressPVMothers_*_*"
                           ]
-        fileName    : "beamFlash.root"
+        fileName    : "beamFlashOnMothers.root"
     }
 
     muonStopOutput : {
