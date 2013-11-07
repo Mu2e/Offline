@@ -60,13 +60,6 @@ physics : {
             particleInputs : [ "flashFilter:s0" ]
         }
 
-        compressPVCRV: {
-            module_type: CompressPhysicalVolumes
-            volumesInput : "g4run"
-            hitInputs : []
-            particleInputs : [ "crvFilter:s0" ]
-        }
-
         compressPVStop: {
             module_type: CompressPhysicalVolumes
             volumesInput : "g4run"
@@ -97,14 +90,7 @@ physics : {
     filters: {
         flashFilter: {
             module_type: FilterG4Out
-            mainHitInputs: [ "g4run:TrackerMother", "g4run:CalorimeterMother"]
-            extraHitInputs: [ "g4run:virtualdetector" ]
-            numSimParticleCollections: 1
-            vetoDaughters: [ "stoppedMuonFinder" ]
-        }
-        crvFilter: {
-            module_type: FilterG4Out
-            mainHitInputs: [ "g4run:CRV" ]
+            mainHitInputs: [ "g4run:TrackerMother", "g4run:CalorimeterMother", "g4run:CRV"]
             extraHitInputs: [ "g4run:virtualdetector" ]
             numSimParticleCollections: 1
             vetoDaughters: [ "stoppedMuonFinder" ]
@@ -143,12 +129,11 @@ physics : {
 
     //================================================================
     beamFlashFilter : [g4run, stoppedMuonFinder, flashFilter, compressPVFlash]
-    beamCRVFilter :       [g4run, stoppedMuonFinder, crvFilter, compressPVCRV]
     muonStopFilter :  [g4run, stoppedMuonFinder, stopFilter, compressPVStop]
     g4StatusFilter :  [g4run, "!g4status", compressPVFull ]
-    trigger_paths  : [beamFlashFilter, beamCRVFilter, muonStopFilter, g4StatusFilter]
+    trigger_paths  : [beamFlashFilter, muonStopFilter, g4StatusFilter]
 
-    out : [beamFlashOutput, crvOutput, muonStopOutput, truncatedEvtsOutput]
+    out : [beamFlashOutput, muonStopOutput, truncatedEvtsOutput]
     stops : [stoppedMuonPrinter, stoppedMuonDumper, genCountLogger]
     end_paths      : [out, stops]
 }
@@ -165,21 +150,6 @@ outputs: {
                             "keep *_compressPVFlash_*_*"
                           ]
         fileName    : "beamFlash.root"
-    }
-
-    crvOutput : {
-        module_type : RootOutput
-        SelectEvents: { SelectEvents: [beamCRVFilter] }
-        outputCommands:   [ "keep *_*_*_*", "drop *_g4run_*_*", "drop *_stoppedMuonFinder_*_*", "drop *_stopFilter_*_*", "drop *_compressPVStop_*_*", "drop *_*_*_TS3ToDS23", "keep mu2e::StatusG4_*_*_*", "keep mu2e::GenParticles_*_*_*"]
-
-        outputCommands:   [ "drop *_*_*_*",
-                            "keep mu2e::GenParticles_*_*_*",
-                            "keep mu2e::GenEventCount_*_*_*",
-                            "keep mu2e::StatusG4_*_*_*",
-                            "keep *_crvFilter_*_*",
-                            "keep *_compressPVCRV_*_*"
-                          ]
-        fileName    : "crvBeamHits.root"
     }
 
     muonStopOutput : {
