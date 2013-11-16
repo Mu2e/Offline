@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: Shielding_MU2E01.hh,v 1.1 2013/05/31 22:22:10 genser Exp $
+// $Id: Shielding_MU2E01.hh,v 1.2 2013/11/16 00:26:45 genser Exp $
 //
 //---------------------------------------------------------------------------
 //
@@ -32,7 +32,8 @@
 // Author: 2010  Tatsumi Koi, Gunter Folger
 //   created from FTFP_BERT
 //
-// Modified:
+// Modified: KLG to include new muon related code and mu2e::SimpleConfig parameter
+
 //
 //----------------------------------------------------------------------------
 //
@@ -45,13 +46,15 @@
 #include "G4VModularPhysicsList.hh"
 #include "CompileTimeConstraints.hh"
 
+// Mu2e include
+#include "ConfigTools/inc/SimpleConfig.hh"
+
 template<class T>
 class TShielding_MU2E01: public T
 {
 public:
-  //TShielding_MU2E01(G4int ver = 1);
-  //TShielding_MU2E01(G4int ver = 1, G4bool rad=true, G4bool lend=false);
-  TShielding_MU2E01( G4int verbose = 1 , G4String low_energy_neutron_model = "HP" );
+  TShielding_MU2E01(mu2e::SimpleConfig const & config, 
+		    G4int verbose = 1 , G4String low_energy_neutron_model = "HP" );
   virtual ~TShielding_MU2E01();
   
 public:
