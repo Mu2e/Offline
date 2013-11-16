@@ -1,9 +1,9 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.16 2013/10/29 21:41:08 genser Exp $
+// $Id: physicsListDecider.cc,v 1.17 2013/11/16 00:27:07 genser Exp $
 // $Author: genser $
-// $Date: 2013/10/29 21:41:08 $
+// $Date: 2013/11/16 00:27:07 $
 //
 // Original author Rob Kutschke
 //
@@ -102,7 +102,7 @@ namespace mu2e{
     }
 
     else if ( name == "Shielding_MU2E01" ){
-      G4VModularPhysicsList* tmp = new Shielding_MU2E01();
+      G4VModularPhysicsList* tmp = new Shielding_MU2E01(config);
 #if G4VERSION>4099
       mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
       cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
