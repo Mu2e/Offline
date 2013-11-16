@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.167 2013/09/27 20:59:34 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/09/27 20:59:34 $
+// $Id: Mu2eWorld.cc,v 1.168 2013/11/16 00:23:20 genser Exp $
+// $Author: genser $
+// $Date: 2013/11/16 00:23:20 $
 //
 // Original author Rob Kutschke
 //
@@ -117,6 +117,7 @@
 #include "G4UniformMagField.hh"
 #include "G4FieldManager.hh"
 #include "G4Mag_UsualEqRhs.hh"
+#include "G4Mag_SpinEqRhs.hh"
 #include "G4ExactHelixStepper.hh"
 #include "G4ChordFinder.hh"
 #include "G4TransportationManager.hh"
@@ -358,10 +359,18 @@ namespace mu2e {
     // Create global field managers; don't use FieldMgr here to avoid problem with ownership
 
     G4MagneticField * _field = new Mu2eGlobalField(worldGeom->mu2eOriginInWorld());
-    G4Mag_UsualEqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
+    G4Mag_EqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
     if ( stepper  == "G4ClassicalRK4" ) {
       _stepper = new G4ClassicalRK4(_rhs);
+    } else if ( stepper  == "G4ClassicalRK4WSpin" ) {
+      delete _rhs; // FIXME: avoid the delete
+      _rhs  = new G4Mag_SpinEqRhs(_field);
+      _stepper = new G4ClassicalRK4(_rhs, 12);
+      if ( _verbosityLevel > 0) {
+	cout << __func__ << " Replaced G4Mag_UsualEqRhs with G4ClassicalRK4WSpin " 
+	     << "and used G4ClassicalRK4 with Spin" << endl;
+      }
     } else if ( stepper  == "G4ImplicitEuler" ) {
       _stepper = new G4ImplicitEuler(_rhs);
     } else if ( stepper  == "G4ExplicitEuler" ) {
