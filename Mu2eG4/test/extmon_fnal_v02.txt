@@ -1,6 +1,6 @@
 // Extinction monitor parameters
 //
-// Andrei Gaponenko, 2011
+// Andrei Gaponenko, 2013
 
 bool           hasExtMonFNAL = true;
 
@@ -55,28 +55,27 @@ double extMonFNAL.dirtOverhead.horizontalMargin = 2000;
 // and this determines its length.
 //
 
-// Transverse size of the aperture (vector since upstream and downstream halfs
+// Channel aperture (vector since upstream and downstream halves
 // may be different):  {upstream size, downstream size}
-vector<double> extMonFNAL.collimator1.channelWidth  = {50., 50.};
-vector<double> extMonFNAL.collimator1.channelHeigh  = {50., 50.};
-// the alignment plug:
-vector<double> extMonFNAL.collimator1.alignmentPlugRadius = { 100, 177.8  };
-vector<double> extMonFNAL.collimator1.alignmentHoleRClearance = { 12.7, 12.7 };
+vector<double> extMonFNAL.collimator1.channelDiameter  = {50., 50.};
+vector<double> extMonFNAL.collimator1.alignmentPlugDiameter = { 219.1, 355.6 };
+vector<double> extMonFNAL.collimator1.alignmentHoleDiameter = { 247.7, 381.0 };
+// Transition between the two radii of the plug and hole happens over dz.
 double extMonFNAL.collimator1.radiusTransitiondZ = 0;
 
 // The entrance point on the face of the beam dump enclosure,
 // transverse to the beam coordinates (horiz, vertical).  The offsets
 // are w.r.t to the core center position (== the nominal beam entrance
 // point).
-double         extMonFNAL.entranceOffsetX = 1000;
+double         extMonFNAL.entranceOffsetX = 325;
 double         extMonFNAL.entranceOffsetY = 1250;
 
 // Filter channel orientation: angles in horizontal and vertical
 // planes w.r.t dump core. Note that angleH is the same for all filter
 // elements, while angleV is different.  We specify angleV at the
 // filter entrance.
-double         extMonFNAL.angleH = 0.0940; //radians
-double         extMonFNAL.entranceAngleV = 0.1645; //radians
+double         extMonFNAL.angleH = 0.0316; //radians
+double         extMonFNAL.entranceAngleV = 0.1654; //radians
 
 bool extMonFNAL.collimator1.alignmentHole.visible = true;
 bool extMonFNAL.collimator1.alignmentHole.solid = false;
@@ -91,26 +90,29 @@ bool extMonFNAL.collimator1.channel.solid = false;
 double extMonFNAL.magnetRoomLength = 4200.;
 
 // The magnet
-vector<double> extMonFNAL.filter.magnet.outerHalfSize = {95., 150., 1778. }; // mm
-double extMonFNAL.filter.magnet.apertureWidth  =  50.; // mm
-double extMonFNAL.filter.magnet.apertureHeight = 100.; // mm
+vector<double> extMonFNAL.filter.magnet.outerHalfSize = { 120.65, 147.85, 1841.5 }; // mm
+double extMonFNAL.filter.magnet.apertureWidth  = 51.6; // mm
+double extMonFNAL.filter.magnet.apertureHeight = 99.9; // mm
 string extMonFNAL.filter.magnet.material  = "G4_Fe";
-double extMonFNAL.filter.magnet.fieldStrength = 0.222; // Tesla
+double extMonFNAL.filter.magnet.magneticLength = 3556.0; //mm
+double extMonFNAL.filter.magnet.BdL = 822.; // T*mm
 
 bool extMonFNAL.filter.magnet.iron.visible = true;
 bool extMonFNAL.filter.magnet.iron.solid = false;
 bool extMonFNAL.filter.magnet.aperture.visible = true;
 bool extMonFNAL.filter.magnet.aperture.solid = false;
 
-// Along dump Z, the geometrical center of the magnet is placed at
-double extMonFNAL.filter.magnet.refDistanceToUpstreamWall = 2100;
+// Distance from the point where the reference trajectory
+// crosses the (physical) magnet face to the upstream wall.
+double extMonFNAL.filter.magnet.distanceToUpstreamWall = 342.9; // mm
 
 // The magnet is placed in such a way that a positive particle with
-// the nominal momentum given below, travelling at the bottom of
-// collimator1 channel (at exit) parallel to the collimator1 axis,
-// will enter the magnet aperture at the bottom and exit at at the
-// bottom after being deflected by the magnetic field.
-double extMonFNAL.filter.nominalMomentum = 3000.; // MeV/c
+// the nominal momentum given below, travelling along the axis of
+// collimator1 will enter the magnet aperture at the above distance
+// from the upstream shielding, and will exit the magnet at a
+// mirror-symmetric point on the back end.
+double extMonFNAL.filter.nominalMomentum = 4200.; // MeV/c
+
 // double extMonFNAL.maxG4StepLength = 10.; // mm
 
 //----------------------------------------------------------------
@@ -121,12 +123,11 @@ double         extMonFNAL.collimator2.shielding.thickness = 2000.;
 double         extMonFNAL.collimator2.shielding.dumpXmin  = -2050.; // to outside the wall
 double         extMonFNAL.collimator2.shielding.dumpXmax  = +2822.; // touch the wall
 
-// the downstream half of the channel is wider
-vector<double> extMonFNAL.collimator2.channelWidth  = {50., 75.};
-vector<double> extMonFNAL.collimator2.channelHeigh  = {50., 75.};
-// the alignment plug:
-vector<double> extMonFNAL.collimator2.alignmentPlugRadius = { 100, 177.8  };
-vector<double> extMonFNAL.collimator2.alignmentHoleRClearance = { 12.7, 12.7 };
+// Channel aperture (vector since upstream and downstream halves
+// may be different):  {upstream size, downstream size}
+vector<double> extMonFNAL.collimator2.channelDiameter  = {50., 75.};
+vector<double> extMonFNAL.collimator2.alignmentPlugDiameter = { 219.1, 355.6 };
+vector<double> extMonFNAL.collimator2.alignmentHoleDiameter = { 247.7, 381.0 };
 double extMonFNAL.collimator2.radiusTransitiondZ = 0;
 
 bool extMonFNAL.collimator2.alignmentHole.visible = true;
@@ -136,6 +137,29 @@ bool extMonFNAL.collimator2.alignmentPlug.solid = false;
 bool extMonFNAL.collimator2.channel.visible = true;
 bool extMonFNAL.collimator2.channel.solid = false;
 
+//----------------------------------------------------------------
+// The spectrometer magnet.
+
+vector<double> extMonFNAL.spectrometer.magnet.outerHalfSize = {73.25, 146.05, 266.70 }; // mm
+double extMonFNAL.spectrometer.magnet.apertureWidth  =  52.; // mm
+double extMonFNAL.spectrometer.magnet.apertureHeight = 228.6; // mm
+string extMonFNAL.spectrometer.magnet.material  = "G4_Fe";
+double extMonFNAL.spectrometer.magnet.magneticLength = 508.0; //mm
+double extMonFNAL.spectrometer.magnet.BdL = 140.; // T*mm
+
+bool extMonFNAL.spectrometer.magnet.iron.visible = true;
+bool extMonFNAL.spectrometer.magnet.iron.solid = false;
+bool extMonFNAL.spectrometer.magnet.aperture.visible = true;
+bool extMonFNAL.spectrometer.magnet.aperture.solid = false;
+
+// The spectrometer is tuned to the filter momentum + the adjustment.
+// Put a negative value here to account for momentum loss between
+// filter and spectometer magnets.
+double extMonFNAL.spectrometer.nominalMomentumAdjustment = 0; // MeV/c
+
+// Distance from the upstream ExtMonFNAL detector room wall
+// and the point where the reference trajectory enters the magnet
+double extMonFNAL.spectrometer.magnet.distanceToUpstreamWall = 639.1; // mm
 
 //================================================================
 // Silicon sensor parameters
@@ -146,22 +170,17 @@ vector<double> extMonFNAL.sensorHalfSize = { 20.66, 9.295, 0.10 };
 vector<double> extMonFNAL.planeHalfSize  = { 60.,   60.,   0.80 };
 string         extMonFNAL.planeMaterial = "G4_C";
 
-
 bool extMonFNAL.stackMotherVisible = true;
 bool extMonFNAL.stackMotherSolid = true;
-
 
 //================================================================
 // The upstream stack of the sensors.
 //
 // Location in room: the center is on the continuation of
 // collimator2 center line, the axis is parallel to the line.
-// Need to specify just one additional parameter.
-// We use the distance along the collimator2 axis between the
-// wall (inside the room surface) and reference point of the detector.
-// This is a common reference point for the upstream stack, downstream
-// stack, and the spectrometer magnet.
-double extMonFNAL.detectorDistanceToWall = 750;
+// A common reference point for the upstream stack, downstream
+// stack, and the spectrometer magnet is the magnet bend point.
+// (the "reference point" of the detectors in the code).
 
 // Details of the detector.  All of these vectors should be
 // of the same size: one entry per detector plane.
@@ -179,29 +198,6 @@ vector<double> extMonFNAL.up.module_xoffset = { 0., 0. };
 vector<double> extMonFNAL.up.module_yoffset = { 9.2, -9.2. };
 vector<double> extMonFNAL.up.module_zoffset = { 1., -1. }; // just determines which side of the plane; all math is handed in constructExMonFNAL
 vector<double> extMonFNAL.up.module_rotation = { 0., 0. };
-
-//----------------------------------------------------------------
-// The spectrometer magnet.
-//
-// PDSM magnet: 2''x5''x20'' aperture.  We derive the effective
-// fieldStrength from the known field integral of 0.14 T*m
-
-vector<double> extMonFNAL.spectrometer.magnet.outerHalfSize = {95., 150., 254. }; // mm
-double extMonFNAL.spectrometer.magnet.apertureWidth  =  50.; // mm
-double extMonFNAL.spectrometer.magnet.apertureHeight = 127.; // mm
-string extMonFNAL.spectrometer.magnet.material  = "G4_Fe";
-double extMonFNAL.spectrometer.magnet.fieldStrength = 0.2756; // Tesla
-
-bool extMonFNAL.spectrometer.magnet.iron.visible = true;
-bool extMonFNAL.spectrometer.magnet.iron.solid = false;
-bool extMonFNAL.spectrometer.magnet.aperture.visible = true;
-bool extMonFNAL.spectrometer.magnet.aperture.solid = false;
-
-// The spectrometer is tuned to the filter momentum + the adjustment.
-// Put a negative value here to account for momentum loss between
-// filter and spectometer magnets.
-
-double extMonFNAL.spectrometer.nominalMomentumAdjustment = 0; // MeV/c
 
 //================================================================
 // The downstream stack of the sensors.

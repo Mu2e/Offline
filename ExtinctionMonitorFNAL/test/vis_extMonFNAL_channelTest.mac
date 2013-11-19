@@ -26,19 +26,13 @@
 # Settings for top volume ==HallAir
 
 ### View trajectories from a side.  
-# Beam dump rotation: 
-#/vis/viewer/set/viewpointThetaPhi 103.78 0
-#
-## Filter channel rotation for the 900 mm version: 103.78 - 0.0856*180/m_pi
-#/vis/viewer/set/viewpointThetaPhi 98.88 0
-#
-## Filter channel rotation for the twogrooves version: 103.78 - 0.0317 * 180/m_pi
-/vis/viewer/set/viewpointThetaPhi 101.96 0
+## Filter channel rotation: 90 + 13.78 - 0.0316 * 180/m_pi = 101.97 degrees
+/vis/viewer/set/viewpointThetaPhi 101.97 0
 
-# # Trajectories through the whole channel
-# /vis/viewer/set/viewpointThetaPhi 103.78 0
-# /vis/viewer/panTo 23 1.5 m
-# /vis/viewer/zoomTo 10
+# Trajectories through the whole channel
+/vis/viewer/set/viewpointThetaPhi 103.78 0
+/vis/viewer/panTo 23 1.5 m
+/vis/viewer/zoomTo 10
 
 ## Magnet entrance
 #/vis/viewer/panTo 21.5 1.5 m
@@ -52,9 +46,9 @@
 #/vis/viewer/panTo 23.45 1.75 m
 #/vis/viewer/zoomTo 40
 
-# Detector
-/vis/viewer/panTo 28.5 2.5 m
-/vis/viewer/zoomTo 20
+# # Detector
+# /vis/viewer/panTo 28.5 2.5 m
+# /vis/viewer/zoomTo 20
 
 # # ExtMonFNAL detector and collimator2
 # /vis/viewer/set/viewpointThetaPhi 103.78 0

@@ -18,8 +18,8 @@ namespace mu2e {
 
     static ExtMonFNALMagnet read(const SimpleConfig& c,
                                  const std::string& prefix,
-                                 const CLHEP::Hep3Vector& magnetRefPointInMu2e,
-                                 const CLHEP::HepRotation& magnetInRotation,
+                                 const CLHEP::HepRotation& magnetInRotationInMu2e, // of the input arm of ref trajectory
+                                 const CLHEP::Hep3Vector& refTrajMagnetEntranceInMu2e,
                                  double nominalMomentum);
   };
 }

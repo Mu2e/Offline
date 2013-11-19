@@ -41,25 +41,19 @@ physics : {
             module_type          : G4
             generatorModuleLabel : generate
         }
-
-        geom : { module_type : GeometryRecorder }
     }
 
     analyzers: {
         vdprint: {
-            module_type: EMFCPrint
-            inputModuleLabel  : "g4run"
-            inputInstanceName : "virtualdetector"
-            acceptedVD   : 19
+            module_type: StepPointsPrinter
+            inputCollection  : "g4run:virtualdetector"
         }
     }
 
     tprint : [ generate, g4run ]
-    gm  : [ geom ]
-
     eprint: [ vdprint ]
 
-    trigger_paths  : [gm, tprint]
+    trigger_paths  : [tprint]
     end_paths : [ eprint ]
 }
 

@@ -9,6 +9,8 @@ mu2e::ExtMonFNALMagnet::ExtMonFNALMagnet()
   : outerHalfSize_()
   , apertureWidth_()
   , apertureHeight_()
+  , magneticLength_()
+  , nominalMomentum_()
 {}
 
 //================================================================
@@ -30,12 +32,12 @@ double mu2e::ExtMonFNALMagnet::trackBendHalfAngle(double momentum) const {
   // momentum constraint is tighter because of other pieces of
   // geometry.
 
-  if(rTrack < outerHalfSize_[2]) {
+  if(rTrack < 0.5*magneticLength_) {
     throw cet::exception("GEOM")<<"ExtMonFNALBuilding::FilterMagnetExtMonFNAL::trackBendHalfAngle(): "
                                 <<"requested momentum p="<<momentum/CLHEP::GeV<<" GeV is too low ";
   }
 
-  return asin(outerHalfSize_[2]/rTrack);
+  return asin(0.5*magneticLength_/rTrack);
 }
 
 //================================================================

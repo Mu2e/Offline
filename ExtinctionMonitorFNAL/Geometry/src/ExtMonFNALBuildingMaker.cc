@@ -19,6 +19,13 @@
 
 namespace mu2e {
 
+  namespace {
+    std::vector<double> d2r(std::vector<double> v) {
+      for(auto& x : v) { x/=2; }
+      return v;
+    }
+  }
+
   //================================================================
   ExtMonFNALBuilding::CollimatorExtMonFNAL
   ExtMonFNALBuildingMaker::readCollimatorExtMonFNAL(const std::string& name,
@@ -31,10 +38,25 @@ namespace mu2e {
 
     col._name = name;
     col._horizontalLength = zLength;
-    c.getVectorDouble("extMonFNAL."+name+".channelWidth",            col._channelWidth           , 2);
-    c.getVectorDouble("extMonFNAL."+name+".channelHeigh",            col._channelHeight          , 2);
-    c.getVectorDouble("extMonFNAL."+name+".alignmentPlugRadius",     col._alignmentPlugRadius    , 2);
-    c.getVectorDouble("extMonFNAL."+name+".alignmentHoleRClearance", col._alignmentHoleRClearance, 2);
+
+    {
+      std::vector<double> tmp;
+      c.getVectorDouble("extMonFNAL."+name+".channelDiameter", tmp, 2);
+      col._channelRadius = d2r(tmp);
+    }
+
+    {
+      std::vector<double> tmp;
+      c.getVectorDouble("extMonFNAL."+name+".alignmentPlugDiameter", tmp, 2);
+      col._alignmentPlugRadius = d2r(tmp);
+    }
+
+    {
+      std::vector<double> tmp;
+      c.getVectorDouble("extMonFNAL."+name+".alignmentHoleDiameter", tmp, 2);
+      col._alignmentHoleRadius = d2r(tmp);
+    }
+
     col._radiusTransitiondZ = c.getDouble("extMonFNAL."+name+".radiusTransitiondZ");
     col._angleH = angleH;
     col._angleV = angleV;
@@ -100,27 +122,34 @@ namespace mu2e {
       emfb->_collimator1RotationInMu2e = dump.coreRotationInMu2e() * tmp;
     }
 
+    const Hep3Vector collimator1ExitInDump(emfb->filterEntranceOffsetX()
+                                           + 1.*col1zLength*tan(emfb->collimator1().angleH()),
+
+                                           emfb->filterEntranceOffsetY()
+                                           + 1.*col1zLength*tan(emfb->collimator1().angleV())/cos(emfb->filterAngleH()),
+
+                                           dump.coreCenterDistanceToShieldingFace() - col1zLength
+                                           );
+
     //----------------------------------------------------------------
-    // Filter magnet
+    // Filter magnet positioning
 
-    const double magnetRefZdump = dump.coreCenterDistanceToShieldingFace()
-      - 2*dump.frontShieldingHalfSize()[2]
-      - c.getDouble("extMonFNAL.filter.magnet.refDistanceToUpstreamWall");
+    // the distance between the exit point of the reference trajectory from the upstream wall
+    // and its entrance to the magnet, on the magnet physical face.
+    const double filterMagToColl = c.getDouble("extMonFNAL.filter.magnet.distanceToUpstreamWall")
+      / (cos(angleH) * cos(entranceAngleV));
 
-    const double magnetRefXdump = collimator1CenterInDump[0]
-      + (collimator1CenterInDump[2] - magnetRefZdump) * tan(angleH);
-
-    const double magnetRefYdump = collimator1CenterInDump[1]
-      + (collimator1CenterInDump[2] - magnetRefZdump) * tan(entranceAngleV)/cos(angleH);
-
-    const CLHEP::Hep3Vector magnetRefInDump(magnetRefXdump, magnetRefYdump, magnetRefZdump);
+    // The point where the reference trajectory crosses the magnet face, in the dump coordinates
+    const CLHEP::Hep3Vector refTrajFMEntranceInDump = collimator1ExitInDump +
+      Hep3Vector(0,0, -filterMagToColl).rotateX(entranceAngleV).rotateY(-angleH);
 
     const double pNominal = c.getDouble("extMonFNAL.filter.nominalMomentum") * CLHEP::MeV;
     emfb->_filterMagnet = ExtMonFNALMagnetMaker::read(c, "extMonFNAL.filter.magnet",
-                                                      dump.beamDumpToMu2e_position(magnetRefInDump),
                                                       emfb->_collimator1RotationInMu2e,
-                                                      pNominal
-                                                      );
+                                                      dump.beamDumpToMu2e_position(refTrajFMEntranceInDump),
+                                                      pNominal);
+
+    const Hep3Vector magnetRefInDump = dump.mu2eToBeamDump_position(emfb->_filterMagnet.refPointInMu2e());
 
     //----------------------------------------------------------------
     // collimator2
@@ -159,6 +188,9 @@ namespace mu2e {
                <<", c2.angleV() = "<<emfb->collimator2().angleV()<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": collimator1CenterInMu2e = "<<emfb->_collimator1CenterInMu2e<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": collimator1.horizontalLength = "<<emfb->_collimator1._horizontalLength<<std::endl;
+      std::cout<<"ExtMonFNALBuildingMaker"<<": collimator1 exit in Mu2e = "<< dump.beamDumpToMu2e_position(collimator1ExitInDump)<<std::endl;
+
+      std::cout<<"ExtMonFNALBuildingMaker"<<": ref traj entrace to filter magnet in Mu2e = "<< dump.beamDumpToMu2e_position(refTrajFMEntranceInDump)<<std::endl;
 
       std::cout<<"ExtMonFNALBuildingMaker"<<": filterMagnet().refPointInMu2e() = "<<emfb->_filterMagnet.refPointInMu2e()<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": filterMagnet().geometricCenterInMu2e() = "<<emfb->_filterMagnet.geometricCenterInMu2e()<<std::endl;

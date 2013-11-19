@@ -20,6 +20,7 @@ namespace mu2e {
     double apertureHeight_;
 
     CLHEP::Hep3Vector bfield_;
+    double magneticLength_;
 
     double nominalMomentum_;
 
@@ -41,6 +42,7 @@ namespace mu2e {
     double apertureHeight() const { return apertureHeight_; }
 
     const CLHEP::Hep3Vector& bfield() const { return bfield_; }
+    double magneticLength() const { return magneticLength_; }
 
     double nominalMomentum() const { return nominalMomentum_; }
 

@@ -105,10 +105,10 @@ namespace mu2e {
     // Alignment hole
 
     double rAlignmentHole[] = {
-      collimator.alignmentPlugRadius()[1] + collimator.alignmentHoleRClearance()[1],
-      collimator.alignmentPlugRadius()[1] + collimator.alignmentHoleRClearance()[1],
-      collimator.alignmentPlugRadius()[0] + collimator.alignmentHoleRClearance()[0],
-      collimator.alignmentPlugRadius()[0] + collimator.alignmentHoleRClearance()[0]
+      collimator.alignmentHoleRadius()[1],
+      collimator.alignmentHoleRadius()[1],
+      collimator.alignmentHoleRadius()[0],
+      collimator.alignmentHoleRadius()[0]
     };
 
     G4Polycone *holeCylinder = reg.add(new G4Polycone(collimator.name()+"holecomponent", 0, 2*M_PI,
@@ -189,65 +189,38 @@ namespace mu2e {
                   );
 
     //----------------------------------------------------------------
-    // Collimator channel: the upstream half
+    // Collimator channel
 
-    G4Box *upbox = reg.add(new G4Box(collimator.name()+"upbox",
-                                     0.5*collimator.channelWidth()[0],
-                                     0.5*collimator.channelHeight()[0],
-                                     0.5*cylHalfLength
-                                     )
-                           );
+    double rChannel[] = {
+      collimator.channelRadius()[1],
+      collimator.channelRadius()[1],
+      collimator.channelRadius()[0],
+      collimator.channelRadius()[0]
+    };
 
-    VolumeInfo channelUp(collimator.name()+"ChannelUp",
-                         CLHEP::Hep3Vector(0, 0, 0),
-                         alignmentPlug.centerInWorld);
+    G4Polycone *channelCylinder = reg.add(new G4Polycone(collimator.name()+"channel", 0, 2*M_PI,
+                                                         sizeof(zPlane)/sizeof(zPlane[0]),
+                                                         zPlane,
+                                                         rzero,
+                                                         rChannel
+                                                         )
+                                          );
 
-    channelUp.solid = new G4IntersectionSolid(channelUp.name,
-                                              cutbox,
-                                              upbox,
-                                              colrot,
-                                              colrot->inverse()*CLHEP::Hep3Vector(0,0,0.5*cylHalfLength)
-                                              );
+    VolumeInfo channel(collimator.name()+"Channel",
+                       CLHEP::Hep3Vector(0,0,0),
+                       alignmentPlug.centerInWorld);
 
-    finishNesting(channelUp,
+    channel.solid = new G4IntersectionSolid(channel.name,
+                                            cutbox,
+                                            channelCylinder,
+                                            colrot,
+                                            CLHEP::Hep3Vector(0,0,0)
+                                            );
+
+    finishNesting(channel,
                   materialFinder.get("hall.insideMaterialName"),
                   0,
-                  channelUp.centerInParent,
-                  alignmentPlug.logical,
-                  0,
-                  config.getBool("extMonFNAL."+collimator.name()+".channel.visible"),
-                  G4Colour::Yellow(),
-                  config.getBool("extMonFNAL."+collimator.name()+".channel.solid"),
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
-
-    //----------------------------------------------------------------
-    // Collimator channel: the downstream half
-
-    G4Box *downbox = reg.add(new G4Box(collimator.name()+"downbox",
-                                       0.5*collimator.channelWidth()[1],
-                                       0.5*collimator.channelHeight()[1],
-                                       0.5*cylHalfLength
-                                       )
-                             );
-
-    VolumeInfo channelDown(collimator.name()+"ChannelDown",
-                           CLHEP::Hep3Vector(0, 0, 0),
-                           alignmentPlug.centerInWorld);
-
-    channelDown.solid = new G4IntersectionSolid(channelDown.name,
-                                                cutbox,
-                                                downbox,
-                                                colrot,
-                                                colrot->inverse()*CLHEP::Hep3Vector(0, 0, -0.5*cylHalfLength)
-                                                );
-
-    finishNesting(channelDown,
-                  materialFinder.get("hall.insideMaterialName"),
-                  0,
-                  channelDown.centerInParent,
+                  channel.centerInParent,
                   alignmentPlug.logical,
                   0,
                   config.getBool("extMonFNAL."+collimator.name()+".channel.visible"),
@@ -313,7 +286,7 @@ namespace mu2e {
     std::vector<double> apertureHalfSize(3);
     apertureHalfSize[0] = 0.5*mag.apertureWidth();
     apertureHalfSize[1] = 0.5*mag.apertureHeight();
-    apertureHalfSize[2] = mag.outerHalfSize()[2];
+    apertureHalfSize[2] = mag.magneticLength()/2;
 
     VolumeInfo magnetAperture = nestBox("ExtMonFNAL"+volNameSuffix+"MagnetAperture",
                                         apertureHalfSize,
@@ -328,6 +301,50 @@ namespace mu2e {
                                         placePV,
                                         doSurfaceCheck
                                         );
+
+    // The non-magnetic "margins" of the aperture to account for the difference
+    // of physical and magnetic lengths
+    if(mag.outerHalfSize()[2] - mag.magneticLength()/2 < 0) {
+      throw cet::exception("GEOM")
+        << "ExtMon magnet length/2 = "<<mag.outerHalfSize()[2]<<" < magnetic length/2 = "<< mag.magneticLength()/2 <<"for "<<volNameSuffix<<"\n";
+    }
+
+    std::vector<double> apertureMarginHalfSize(3);
+    apertureMarginHalfSize[0] = 0.5*mag.apertureWidth();
+    apertureMarginHalfSize[1] = 0.5*mag.apertureHeight();
+    apertureMarginHalfSize[2] = (mag.outerHalfSize()[2] - mag.magneticLength()/2)/2;
+
+    const double apertureMarginOffset = (mag.magneticLength()/2 + mag.outerHalfSize()[2])/2;
+
+    VolumeInfo apertureMarginUp =
+      nestBox("ExtMonFNAL"+volNameSuffix+"MagnetApertureMarginUp",
+              apertureMarginHalfSize,
+              materialFinder.get("hall.insideMaterialName"),
+              0,
+              CLHEP::Hep3Vector(0, 0, +apertureMarginOffset),
+              magnetIron.logical, 0,
+              config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.visible"),
+              G4Colour::Grey(),
+              config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.solid"),
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
+
+    VolumeInfo apertureMarginDn = 
+      nestBox("ExtMonFNAL"+volNameSuffix+"MagnetApertureMarginDn",
+              apertureMarginHalfSize,
+              materialFinder.get("hall.insideMaterialName"),
+              0,
+              CLHEP::Hep3Vector(0, 0, -apertureMarginOffset),
+              magnetIron.logical, 0,
+              config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.visible"),
+              G4Colour::Grey(),
+              config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.solid"),
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+              );
 
 
     //----------------------------------------------------------------
@@ -365,8 +382,11 @@ namespace mu2e {
             <<", deltaOneStep = "<<manager->GetDeltaOneStep()
             );
 
-    //magnetAperture.logical->SetFieldManager(manager, true);
+
     magnetIron.logical->SetFieldManager(manager, true);
+    // No field in the margins
+    apertureMarginUp.logical->SetFieldManager(0, true);
+    apertureMarginDn.logical->SetFieldManager(0, true);
   }
 
   //================================================================

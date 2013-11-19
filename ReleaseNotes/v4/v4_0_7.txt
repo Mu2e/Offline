@@ -2,6 +2,11 @@
 
            Release notes for Mu2e Offline software, v4_0_7
 
+3) November 19, gandr
+
+   Update ExtMonFNAL filter channel geometry: reference trajectory,
+   magnet parameters, round instead of rectangular collimator holes.
+
 3) November 15, genser
 
    Added Geant4 (free) muon spin related code (deactivated by default)

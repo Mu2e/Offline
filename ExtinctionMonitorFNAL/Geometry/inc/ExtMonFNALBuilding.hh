@@ -29,10 +29,9 @@ namespace mu2e {
 
       std::string _name;
       double _horizontalLength;
-      std::vector<double> _channelWidth;
-      std::vector<double> _channelHeight;
+      std::vector<double> _channelRadius;
       std::vector<double> _alignmentPlugRadius;
-      std::vector<double> _alignmentHoleRClearance;
+      std::vector<double> _alignmentHoleRadius;
       double _radiusTransitiondZ;
       double _angleH;
       double _angleV;
@@ -45,10 +44,11 @@ namespace mu2e {
       // Half length along axis
       double halfLength() const;
 
-      const std::vector<double> &channelWidth() const { return _channelWidth; }
-      const std::vector<double> &channelHeight() const { return _channelHeight; }
+      const std::vector<double> &channelRadius() const { return _channelRadius; }
       const std::vector<double> &alignmentPlugRadius() const { return _alignmentPlugRadius; }
-      const std::vector<double> &alignmentHoleRClearance() const { return _alignmentHoleRClearance; }
+      const std::vector<double> &alignmentHoleRadius() const { return _alignmentHoleRadius; }
+
+      // 0 means sharp jumb between the radii, >0 is linear change from r1 at -dz to r2 at +dz
       double radiusTransitiondZ() const { return _radiusTransitiondZ; }
 
       // these two are not just "positioning" parameters but also affect the shape
