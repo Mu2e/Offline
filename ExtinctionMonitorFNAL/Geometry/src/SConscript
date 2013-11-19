@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.6 2013/08/07 20:42:11 wieschie Exp $
-# $Author: wieschie $
-# $Date: 2013/08/07 20:42:11 $
+# $Id: SConscript,v 1.7 2013/11/19 14:47:10 gandr Exp $
+# $Author: gandr $
+# $Date: 2013/11/19 14:47:10 $
 #
 # Original author Rob Kutschke.
 #
@@ -20,7 +20,7 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ProtonBeamDumpGeom',
                                   'mu2e_ConfigTools',
                                   'CLHEP' ] )
 
-helper.make_dict_and_map( [ mainlib, ] )
+#helper.make_dict_and_map( [ mainlib, ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
