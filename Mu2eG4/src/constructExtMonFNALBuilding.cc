@@ -95,11 +95,10 @@ namespace mu2e {
     double rzero[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
-    G4Box* cutbox = reg.add(new G4Box(collimator.name()+"cutbox",
-                                      cutboxdx,
-                                      cutboxdy,
-                                      0.5*collimator.horizontalLength())
-                            );
+    G4Box* cutbox = new G4Box(collimator.name()+"cutbox",
+                              cutboxdx,
+                              cutboxdy,
+                              0.5*collimator.horizontalLength());
 
     //----------------------------------------------------------------
     // Alignment hole
@@ -111,13 +110,11 @@ namespace mu2e {
       collimator.alignmentHoleRadius()[0]
     };
 
-    G4Polycone *holeCylinder = reg.add(new G4Polycone(collimator.name()+"holecomponent", 0, 2*M_PI,
-                                                      sizeof(zPlane)/sizeof(zPlane[0]),
-                                                      zPlane,
-                                                      rzero,
-                                                      rAlignmentHole
-                                                      )
-                                       );
+    G4Polycone *holeCylinder = new G4Polycone(collimator.name()+"holecomponent", 0, 2*M_PI,
+                                              sizeof(zPlane)/sizeof(zPlane[0]),
+                                              zPlane,
+                                              rzero,
+                                              rAlignmentHole);
 
 
     VolumeInfo alignmentHole(collimator.name()+"AlignmentHole",
@@ -155,13 +152,11 @@ namespace mu2e {
       collimator.alignmentPlugRadius()[0]
     };
 
-    G4Polycone *plugCylinder = reg.add(new G4Polycone(collimator.name()+"plugcomponent", 0, 2*M_PI,
-                                                      sizeof(zPlane)/sizeof(zPlane[0]),
-                                                      zPlane,
-                                                      rzero,
-                                                      rAlignmentPlug
-                                                      )
-                                       );
+    G4Polycone *plugCylinder = new G4Polycone(collimator.name()+"plugcomponent", 0, 2*M_PI,
+                                              sizeof(zPlane)/sizeof(zPlane[0]),
+                                              zPlane,
+                                              rzero,
+                                              rAlignmentPlug);
 
     VolumeInfo alignmentPlug(collimator.name()+"AlignmentPlug",
                              CLHEP::Hep3Vector(0,0,0),
@@ -198,13 +193,11 @@ namespace mu2e {
       collimator.channelRadius()[0]
     };
 
-    G4Polycone *channelCylinder = reg.add(new G4Polycone(collimator.name()+"channel", 0, 2*M_PI,
-                                                         sizeof(zPlane)/sizeof(zPlane[0]),
-                                                         zPlane,
-                                                         rzero,
-                                                         rChannel
-                                                         )
-                                          );
+    G4Polycone *channelCylinder = new G4Polycone(collimator.name()+"channel", 0, 2*M_PI,
+                                                 sizeof(zPlane)/sizeof(zPlane[0]),
+                                                 zPlane,
+                                                 rzero,
+                                                 rChannel);
 
     VolumeInfo channel(collimator.name()+"Channel",
                        CLHEP::Hep3Vector(0,0,0),
