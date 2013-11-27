@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.19 2013/03/15 15:52:03 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2013/03/15 15:52:03 $
+  $Id: EventGenerator_module.cc,v 1.20 2013/11/27 16:05:13 rhbob Exp $
+  $Author: rhbob $
+  $Date: 2013/11/27 16:05:13 $
 
   Original author Rob Kutschke
 
@@ -52,6 +52,7 @@
 #include "EventGenerator/inc/PiEplusNuGun.hh"
 #include "EventGenerator/inc/PrimaryProtonGun.hh"
 #include "EventGenerator/inc/ExtMonFNALGun.hh"
+#include "EventGenerator/inc/BremElectronGun.hh"
 #include "SeedService/inc/SeedService.hh"
 
 // Includes from art and its toolchain.
@@ -165,6 +166,7 @@ namespace mu2e {
     bool doNuclearCapture       = config.getBool( "nuclearCaptureGun.do",false );
     bool doExtMonFNALGun        = config.getBool( "extMonFNALGun.do",    false );
     bool doStoppedMuonGun       = config.getBool( "stoppedMuonGun.do",   false );
+    bool doBremElectronGun      = config.getBool( "bremElectronGun.do",   false );
 
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
@@ -181,6 +183,7 @@ namespace mu2e {
     if ( doNuclearCapture)       _generators.push_back( GeneratorBasePtr( new NuclearCaptureGun(run, config)) );
     if ( doExtMonFNALGun)        _generators.push_back( GeneratorBasePtr( new ExtMonFNALGun(    run, config)) );
     if ( doStoppedMuonGun)       _generators.push_back( GeneratorBasePtr( new StoppedMuonGun(   run, config)) );
+    if ( doBremElectronGun)      _generators.push_back( GeneratorBasePtr( new BremElectronGun(   run, config)) );
 
     if ( _generators.size() == 0 ){
       mf::LogWarning("CONTROL")

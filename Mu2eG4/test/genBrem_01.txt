@@ -1,0 +1,27 @@
+//
+// Run-time config info for the event generators.
+//
+// $Id: genBrem_01.txt,v 1.1 2013/11/27 16:07:14 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2013/11/27 16:07:14 $
+//
+// Original author Rob Kutschke
+
+// Which generators to enable.
+bool bremElectronGun.do    = true;
+
+// Limits on cos(polar angle):
+double bremElectronGun.czmin = +1.0;
+double bremElectronGun.czmax =  1.0;
+
+// Time limits in ns, relative to protons on target.
+double bremElectronGun.tmin  =    0.;
+double bremElectronGun.tmax  =    1.;
+
+double bremElectronGun.p = 40.;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
+
