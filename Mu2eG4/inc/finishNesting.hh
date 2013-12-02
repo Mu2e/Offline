@@ -3,26 +3,23 @@
 //
 // Free function to be used by the nest... functions
 //
-// $Id: finishNesting.hh,v 1.5 2011/10/03 19:10:33 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/10/03 19:10:33 $
+// $Id: finishNesting.hh,v 1.6 2013/12/02 20:06:13 genser Exp $
+// $Author: genser $
+// $Date: 2013/12/02 20:06:13 $
 //
 // Original author KLG
 //
 
-
-//class G4RotationMatrix;
-//class G4ThreeVector;
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
-
-class VolumeInfo;
 
 class G4Material;
 class G4LogicalVolume;
 class G4Colour;
 
 namespace mu2e {
+
+  class VolumeInfo;
 
   void finishNesting(VolumeInfo& info,
                      G4Material* material,
