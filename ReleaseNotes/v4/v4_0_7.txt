@@ -2,7 +2,24 @@
 
            Release notes for Mu2e Offline software, v4_0_7
 
-3) November 19, gandr
+5) December  2, genser
+
+   Added conditional changing of muMinusCaptureAtRest daugther
+   products proces names if appropraite names were added at the
+   production stage using G4VUserTrackInformation;
+   Extended UserTrackInformation and ProcessCode to accomodate it;
+      MCDataProducts/inc/ProcessCode.hh
+      Mu2eG4/inc/UserTrackInformation.hh
+      Mu2eG4/src/StudySteppingAction.cc
+      Mu2eG4/src/StudyTrackingAction.cc
+      Mu2eG4/src/TrackingAction.cc
+      Mu2eG4/src/UserTrackInformation.cc
+
+   Moved mu2e class forward declarations to mu2e namespace
+      Mu2eG4/inc/finishNesting.hh
+      Mu2eG4/inc/nestPolycone.hh
+
+4) November 19, gandr
 
    Update ExtMonFNAL filter channel geometry: reference trajectory,
    magnet parameters, round instead of rectangular collimator holes.
