@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: StudySteppingAction.cc,v 1.7 2013/02/27 03:49:59 genser Exp $
+// $Id: StudySteppingAction.cc,v 1.8 2013/12/02 20:15:40 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/27 03:49:59 $
+// $Date: 2013/12/02 20:15:40 $
 //
 // Original author Rob Kutschke
 //
@@ -181,7 +181,7 @@ namespace mu2e {
     _preStepEK = prept->GetKineticEnergy();
 
     G4VUserTrackInformation* info = track->GetUserInformation();
-    UserTrackInformation * tinfo   = (UserTrackInformation*)info;
+    UserTrackInformation* tinfo   = static_cast<UserTrackInformation*>(info);
 
     tinfo->setStepInfo(_preStepEK, _nSteps);
 
@@ -371,7 +371,7 @@ namespace mu2e {
 
     // Get user track informaton object from the track.
     G4VUserTrackInformation* info = track->GetUserInformation();
-    UserTrackInformation* tinfo = (UserTrackInformation*)info;
+    UserTrackInformation* tinfo   = static_cast<UserTrackInformation*>(info);
 
     // Record why the track was killed.
     tinfo->setProcessCode(ProcessCode(code));
