@@ -3,9 +3,9 @@
 //
 // Mu2e specific information about one G4 track.
 //
-// $Id: UserTrackInformation.hh,v 1.5 2012/02/20 20:22:48 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/20 20:22:48 $
+// $Id: UserTrackInformation.hh,v 1.6 2013/12/02 20:12:58 genser Exp $
+// $Author: genser $
+// $Date: 2013/12/02 20:12:58 $
 //
 // Original author Rob Kutschke
 //
@@ -29,6 +29,10 @@ namespace mu2e{
       _code = code;
     }
 
+    void setMuCapCode ( ProcessCode code){
+      _muCapCode = code;
+    }
+
     void setStepInfo (double kineticEnergy, int nSteps ) {
       _preLastStepKE = kineticEnergy;
       _nSteps = nSteps;
@@ -38,7 +42,7 @@ namespace mu2e{
     ProcessCode  code()    const { return _code; }
     double       preLastStepKE() const { return _preLastStepKE; }
     int          nSteps() const { return _nSteps; }
-
+    ProcessCode  muCapCode() const { return _muCapCode; }
 
     virtual void Print() const;
 
@@ -55,6 +59,10 @@ namespace mu2e{
 
     // Number of G4 steps the track if made of
     int _nSteps;
+
+    // Label of muMinusCaptureAtRest daugter particles (if any)
+
+    ProcessCode _muCapCode;
 
   };
 
