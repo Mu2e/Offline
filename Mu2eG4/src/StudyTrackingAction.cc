@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: StudyTrackingAction.cc,v 1.5 2013/02/23 01:09:24 genser Exp $
+// $Id: StudyTrackingAction.cc,v 1.6 2013/12/02 20:15:08 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/23 01:09:24 $
+// $Date: 2013/12/02 20:15:08 $
 //
 // Original author Rob Kutschke
 //
@@ -90,14 +90,31 @@ namespace mu2e {
 
   void StudyTrackingAction::PreUserTrackingAction(const G4Track* trk){
 
+    // Create a user track information object and attach it to the track.
+    G4VUserTrackInformation* tui = trk->GetUserInformation();
+    UserTrackInformation* ti =  new UserTrackInformation();
+    if (tui) {
+      // G4cout << __func__ 
+      // 	     << " the track was labeled as " << tui->GetType() << G4endl;
+      ProcessCode cCode = Mu2eG4UserHelpers::findCreationCode(trk);
+      if (cCode == ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
+	ti->setMuCapCode(ProcessCode::findByName((tui->GetType()).c_str()));
+	// G4cout << __func__ << " set UserTrackInformation  muCapCode " 
+	//        << ti->muCapCode()  << G4endl;
+      }
+    } 
+    // else {
+    //   G4cout << __func__ 
+    // 	     << " the track was not labeled" << G4endl;
+    // }
+
+    // Need to cast away const-ness to do this.
+    const_cast<G4Track*>(trk)->SetUserInformation(ti);
+
     // saveSimParticle must be called before controlTrajectorySaving.
+    // but after attaching the  user track information
     saveSimParticleStart(trk);
     Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize, _pointTrajectoryMomentumCut);
-
-    // Create a user trackinformation object and attach it to the track.
-    // Need to cast away const-ness to do this.
-    UserTrackInformation* ti =  new UserTrackInformation();
-    ((G4Track *)trk)->SetUserInformation(ti);
 
     _steppingAction->BeginOfTrack();
 
@@ -134,7 +151,7 @@ namespace mu2e {
   }
 
   void StudyTrackingAction::endEvent(SimParticleCollection& persistentSims ){
-    Mu2eG4UserHelpers::checkCrossReferences(true,false,_transientMap);
+    Mu2eG4UserHelpers::checkCrossReferences(true,true,_transientMap);
     persistentSims.insert( _transientMap.begin(), _transientMap.end() );
     _transientMap.clear();
     if ( !_debugList.inList() ) return;
@@ -154,8 +171,8 @@ namespace mu2e {
       return;
     }
 
-    int id       = trk->GetTrackID();
-    int parentId = trk->GetParentID();
+    const int id       = trk->GetTrackID();
+    const int parentId = trk->GetParentID();
 
     // Also need the ID in this format.
     key_type kid(id);
@@ -174,6 +191,34 @@ namespace mu2e {
 
     // Find the physics process that created this track.
     ProcessCode creationCode = Mu2eG4UserHelpers::findCreationCode(trk);
+    // we shall replace creationCode with muCapCode from UserTrackInformation if needed/present
+    if (creationCode==ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
+
+      // G4cout << __func__ 
+      // 	     << " particle created by " << creationCode.name()
+      // 	     << " will try to replace the creation code "
+      // 	     << G4endl;
+
+      // G4VUserTrackInformation* tui = trk->GetUserInformation();
+      // if (tui) {
+      // 	G4cout << __func__ 
+      // 	       << " the track is labeled as " << tui->GetType() 
+      // 	       << G4endl;
+      // 	G4cout << __func__ 
+      // 	       << " muCapCode is: " 
+      // 	       << (static_cast<UserTrackInformation*>(tui))->muCapCode()
+      // 	       << G4endl;
+      // }
+
+      ProcessCode utic = 
+	(static_cast<UserTrackInformation*>(trk->GetUserInformation()))->muCapCode();
+      if (utic!=ProcessCode(ProcessCode::unknown)) {
+	creationCode=utic;
+      }
+    }
+    // G4cout << __func__ 
+    // 	   << " saving particle as created by " << creationCode.name()
+    // 	   << G4endl;
 
     // Track should not yet be in the map.  Add a debug clause to skip this test?
     if ( _transientMap.find(kid) != _transientMap.end() ){
@@ -232,9 +277,21 @@ namespace mu2e {
     G4String pname  = Mu2eG4UserHelpers::findTrackStoppingProcessName(trk);
     ProcessCode stoppingCode(_processInfo->findAndCount(pname));
 
+    // G4cout << __func__ 
+    // 	   << " stopping process pname is " << pname << G4endl;
+
+    // if ( pname == "muMinusCaptureAtRest") {
+
+    //   G4VUserTrackInformation* tui = trk->GetUserInformation();
+    //   if (tui) {
+    // 	G4cout << __func__ 
+    // 	       << " the track is labeled as " << tui->GetType() << G4endl;
+    //   }
+
+    // }
+
     //Get kinetic energy at the begin of the last step
     double preLastStepKE = Mu2eG4UserHelpers::getPreLastStepKE(trk);
-
 
     //Get number od steps the track is made of
     int nSteps = Mu2eG4UserHelpers::getNSteps(trk);
