@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Polycone, place inside a logical volume.
 //
-// $Id: nestPolycone.hh,v 1.1 2013/04/30 14:56:57 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/04/30 14:56:57 $
+// $Id: nestPolycone.hh,v 1.2 2013/12/02 20:12:16 genser Exp $
+// $Author: genser $
+// $Date: 2013/12/02 20:12:16 $
 //
 // Original author Rob Kutschke
 //
@@ -19,8 +19,6 @@ class G4CSGSolid;
 class G4LogicalVolume;
 class G4Material;
 class G4VPhysicalVolume;
-class Polycone;
-class PolyconsParams;
 
 // G4 includes
 #include "G4Polycone.hh"
@@ -30,6 +28,9 @@ class PolyconsParams;
 
 
 namespace mu2e {
+
+  class Polycone;
+  class PolyconsParams;
 
   VolumeInfo nestPolycone ( std::string const& name,
                             PolyconsParams const & polyObj,
