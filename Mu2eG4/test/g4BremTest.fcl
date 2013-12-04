@@ -8,9 +8,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4BremTest.fcl,v 1.1 2013/11/27 16:06:53 rhbob Exp $
+# $Id: g4BremTest.fcl,v 1.2 2013/12/04 18:00:26 rhbob Exp $
 # $Author: rhbob $
-# $Date: 2013/11/27 16:06:53 $
+# $Date: 2013/12/04 18:00:26 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -19,16 +19,19 @@
 # Give this job a name.
 process_name : G4BremTest
 
+#  module_type : EmptyEvent
+#  maxEvents : 200
 # Start form an empty source
 source : {
-  module_type : EmptyEvent
-  maxEvents : 200
+  module_type : RootInput
+  fileNames : ["/mu2e/data/tdr/beam/g4s2/tdr.beam.g4s2.ts3.1025a_1025a.12204850/good/00001/dataTS3ToDS23.root"]
+  maxEvents : 10
 }
 
 services : {
 
   message               : @local::default_message
-  TFileService          : { fileName : "g4BremTest.root" }
+  TFileService          : { fileName : "rhbob_g4BremTest.root" }
   RandomNumberGenerator : { }
 
   user : {
@@ -44,13 +47,13 @@ services : {
 physics : {
 
   producers: {
-
+#
     # Generate the event
 #    generate: @local::generate
-   generate: {
-     module_type          : EventGenerator
-     inputfile            : "Mu2eG4/test/genBrem_01.txt"
-   }
+#   generate: {
+#     module_type          : EventGenerator
+#     inputfile            : "Mu2eG4/test/genBrem_01.txt"
+#   }
 
 
     # Run G4 and add its output to the event.
@@ -72,8 +75,16 @@ physics : {
 
   analyzers: {
 
+    # Look at the StepPointMCs from virtualdetectors
+    readvd: {
+      module_type      : ReadVirtualDetector
+      vdStepPoints     : virtualdetector
+      savePDG          : [22]
+      maxPrint         : 200
+    }
+
     checkhits: {
-      module_type            : Mu2eG4StudyReadBack
+      module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
       caloReadoutModuleLabel : CaloReadoutHitsMaker
@@ -91,8 +102,8 @@ physics : {
 
   }
 
-  p1 : [generate, g4run, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
-  e1 : [checkhits, readStrawHits, outfile]
+  p1 : [g4run, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
+  e1 : [checkhits, readStrawHits, readvd, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -103,7 +114,7 @@ outputs: {
 
   outfile : {
     module_type : RootOutput
-    fileName    : "data_03.root"
+    fileName    : "rhbob_data_03.root"
   }
 
 }
@@ -119,3 +130,8 @@ physics.producers.CaloReadoutHitsMaker.diagLevel : 0
 physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
 physics.producers.CaloCrystalHitsMaker.diagLevel : 0
 physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
+
+physics.producers.g4run.generatorModuleLabel    : ""
+physics.producers.g4run.genInputHits            : [ "g4filter:DS2Vacuum" ]
+physics.producers.g4run.inputSimParticles       : "g4filter:s0"
+physics.producers.g4run.simParticleNumberOffset : 200000
