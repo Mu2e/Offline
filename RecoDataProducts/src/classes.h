@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.26 2013/06/17 22:02:51 vrusu Exp $
-// $Author: vrusu $
-// $Date: 2013/06/17 22:02:51 $
+// $Id: classes.h,v 1.27 2013/12/07 19:50:42 brownd Exp $
+// $Author: brownd $
+// $Date: 2013/12/07 19:50:42 $
 //
 // Original author Rob Kutschke
 //
@@ -11,6 +11,7 @@
 #define ENABLE_MU2E_GENREFLEX_HACKS
 
 #include <vector>
+//#include <array>
 
 #include "art/Persistency/Common/Wrapper.h"
 #include "art/Persistency/Common/Assns.h"
@@ -46,6 +47,8 @@
 #include "RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
+
+#include "RecoDataProducts/inc/StrawDigiCollection.hh"
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
@@ -123,5 +126,11 @@ template class std::pair<art::Ptr<mu2e::ExtMonFNALTrkParam>, art::Ptr<mu2e::ExtM
 template class std::vector<mu2e::ExtMonFNALTrkClusterResiduals>;
 template class std::vector<mu2e::ExtMonFNALTrkFit>;
 template class art::Wrapper<mu2e::ExtMonFNALTrkFitCollection>;
+
+//template class std::array<unsigned short,10>; // used in StrawDigi
+//template class std:array<unsigned long,2>; // used in StrawDigi
+template class art::Ptr<mu2e::StrawDigi>;
+template class std::vector<art::Ptr<mu2e::StrawDigi> >;
+template class art::Wrapper<mu2e::StrawDigiCollection>;
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS
