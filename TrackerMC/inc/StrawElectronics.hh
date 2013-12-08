@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.1 2013/12/07 19:51:42 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.2 2013/12/08 21:10:12 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/07 19:51:42 $
+// $Date: 2013/12/08 21:10:12 $
 //
 // Original author David Brown, LBNL
 //
@@ -32,11 +32,16 @@ namespace mu2e {
       // construct from parameters
       StrawElectronics(fhicl::ParameterSet const& pset);
       virtual ~StrawElectronics();
-      // analog response 
-      virtual double amplifierResponse(double time,StrawHitlet const& hitlet) const; // mvolts per pCoulomb
+      // analog response to a single hitlet.  Note that this does NOT include saturation effects,
+      // since those are cumulative and cannot be computed per-hitlet
+      double hitletResponse(double time,StrawHitlet const& hitlet) const; // mvolts per pCoulomb
+      // Given a (linear) total voltage, compute the saturated voltage
+      double saturatedResponse(double lineearresponse) const;
+      // relative time when hitlet response is maximal
+      double maxResponseTime() const { return _tmax; }
   // digization
-      virtual unsigned short adcResponse(double mvolts) const; // ADC response to analog inputs
-      virtual unsigned long tdcResponse(double time) const; // TDC response to a given time
+      unsigned short adcResponse(double mvolts) const; // ADC response to analog inputs
+      unsigned long tdcResponse(double time) const; // TDC response to a given time
       void digitizeWaveform(std::vector<double> const& wf,StrawDigi::ADCWaveform& adc) const;
       void digitizeTimes(std::array<double,2> const& times,StrawDigi::TDCValues& tdc) const;
       bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
@@ -50,10 +55,15 @@ namespace mu2e {
       double adcOffset() const { return _ADCOffset; }
       unsigned maxDTDC() const { return _maxDTDC; } // maximum TDC difference between ends
       void adcTimes(double time, std::vector<double>& adctimes) const; // sampling times of ADC
+      double saturationVoltage() const { return _vsat; }
+      double maximumVoltage() const { return _vmax; }
     private:
       // scale factor between charge and voltage (milliVolts from picoCoulombs)
       double _dVdQ;
-      double _trise, _tfall, _norm; // rise and fall times.  These should depend on hitlet type, FIXME!! 
+      double _trise, _tfall; // rise and fall times.  These should depend on hitlet type, FIXME!! 
+      double _norm; // normalization factor, computed from trise and tfall
+      double _tmax; // relative time at which hitlet signal reaches maximum, computed from trise and tfall
+      double _vmax, _vsat; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
       // add some noise parameter: FIXME!!!
       double _ADCLSB; // least-significant bit of ADC (mVolts)
       unsigned short _maxADC; // maximum ADC value

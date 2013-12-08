@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.1 2013/12/07 19:51:42 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.2 2013/12/08 21:10:12 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/12/07 19:51:42 $
+// $Date: 2013/12/08 21:10:12 $
 //
 // Original author David Brown, LBNL
 //
@@ -18,6 +18,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "SeedService/inc/SeedService.hh"
+#include "cetlib/exception.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -66,6 +67,7 @@ namespace mu2e {
     typedef map<StrawIndex,StrawHitletSequencePair> StrawHitletMap;  // hitlets by straw 
     typedef vector<art::Ptr<StepPointMC> > StrawSPMCPV; // vector of associated StepPointMCs for a single straw/particle
     typedef list<WFX> WFXList;
+    typedef vector<WFXList::const_iterator> WFXP;
 
     explicit StrawDigisFromStepPointMCs(fhicl::ParameterSet const& pset);
     // Accept compiler written d'tor.
@@ -123,8 +125,10 @@ namespace mu2e {
     void addGhosts(StrawHitlet const& hitlet,StrawHitletSequence& shs); 
     void addCrosstalk(StrawHitletMap& hmap);
     void addNoise(StrawHitletMap& hmap);
-    void findThresholdCrossings(StrawHitletSequencePair const& hsp, WFXList& crosses);
-    void fillDigis(WFXList const& crosses, StrawWaveform const& primarywf, StrawDigiCollection* digis);
+    void findThresholdCrossings(StrawHitletSequencePair const& hsp, WFXList& xings);
+    void fillDigis(WFXList const& xings,StrawWaveform const& wf, StrawDigiCollection* digis);
+    void createDigi(WFXP const& xpair, StrawWaveform const& primarywf, StrawDigiCollection* digis);
+ 
     // the following should be delegated to a straw physics description object, FIXME!!
     double strawGain(Straw const& straw, double driftdist, double driftphi) const;
     void distanceToTime(Straw const& straw, double driftdist, double driftphi,
@@ -199,14 +203,15 @@ namespace mu2e {
 // loop over the hitlet sequences
     for(auto ihsp=hmap.begin();ihsp!= hmap.end();++ihsp){
 // find the threshold crossing points along this hitlet sequence
-      WFXList crosses;
-      findThresholdCrossings(ihsp->second,crosses);
+      WFXList xings;
+      findThresholdCrossings(ihsp->second,xings);
 // convert the crossing points into digis, and add them to the event data
-      if(crosses.size() > 0){
-	// find the primary (=ADC) end of this straw, and instantiate the waveform for it
-	StrawEnd primaryend = primaryEnd(crosses.begin()->_ihitlet->strawIndex());
+      if(xings.size() > 0){
+// instantiate a waveform for the primary end of this straw
+	StrawEnd primaryend = primaryEnd(ihsp->second.strawIndex());
 	StrawWaveform primarywf(ihsp->second.hitletSequence(primaryend),_strawele);
-	fillDigis(crosses,primarywf,digis.get());
+// create digis
+	fillDigis(xings,primarywf,digis.get());
       }
     }
 // store the digis in the event
@@ -396,82 +401,79 @@ namespace mu2e {
   }
 
   void
-  StrawDigisFromStepPointMCs::findThresholdCrossings(StrawHitletSequencePair const& hsp, WFXList& crosses){
-    crosses.clear();
+  StrawDigisFromStepPointMCs::findThresholdCrossings(StrawHitletSequencePair const& hsp, WFXList& xings){
+    xings.clear();
     // loop over the ends of this straw
     for(size_t iend=0;iend<2;++iend){
       StrawEnd end(static_cast<StrawEnd::strawend>(iend));
     // convert the hitlet list from this end to waveforms.  This is a light-weight process
-      HitletList const& hlist = hsp.hitletSequence(end).hitletList();
       StrawWaveform swf(hsp.hitletSequence(end),_strawele);
 // iterate sequentially over hitlets inside the sequence
-      WFX wfx(0.0,hlist.begin()); // start at the begining of the microbunch, at the begining of the wavelets
-      // find where the waveform crosses threshold.  This updates the waveform sample
+      WFX wfx(swf); // start at the begining of the microbunch, at the begining of the wavelets
+      // find where the waveform xings threshold.  This updates the waveform sample
       // Skip any points outside the microbunch readout window
-      while(swf.crossesThreshold(_vthresh,StrawWaveform::increasing,wfx) && wfx._time < _mbtime){
+      while(swf.crossesThreshold(_vthresh,wfx) && wfx._time < _mbtime){
       // keep these in time-order
-	auto iwfxl = crosses.begin();
-	while(iwfxl != crosses.end() && iwfxl->_time < wfx._time)++iwfxl;
-	crosses.insert(iwfxl,wfx);
-      // push forward in time until the waveform is below threshold again
-	if(!swf.crossesThreshold(_vthresh,StrawWaveform::decreasing,wfx))break;
+	auto iwfxl = xings.begin();
+	while(iwfxl != xings.end() && iwfxl->_time < wfx._time)++iwfxl;
+	xings.insert(iwfxl,wfx);
       }
     }
   }
 
   void
-  StrawDigisFromStepPointMCs::fillDigis(WFXList const& crosses,StrawWaveform const& primarywf,
+  StrawDigisFromStepPointMCs::fillDigis(WFXList const& xings, StrawWaveform const& primarywf,
     StrawDigiCollection* digis){
-    auto iwfxl = crosses.begin();
-// find the primary (=ADC) end of this straw, and instantiate the waveform for it
-    StrawEnd primaryend = primarywf.hitlets().strawEnd();
-// convert crossings into digis.  First, look for associated pairs of crossings at
-// opposite ends within the maximum propagation time difference, and associate them.
-    while(iwfxl!= crosses.end()){
-// pre-initialize the waveform and time arrays for this digi
-      vector<double> wf(_strawele.nADCSamples(),0.0);
-      array<double,2> crosstimes = {0.0,0.0};
-      if(iwfxl->_ihitlet->strawEnd() == primaryend){
-	crosstimes[0] = iwfxl->_time; // primary end is TDC 0;
-// sample the ADC
-	vector<double> adctimes;
-	_strawele.adcTimes(iwfxl->_time,adctimes);
-	primarywf.sampleWaveform(adctimes,wf);
-      } else {
-	crosstimes[1] = iwfxl->_time; // non-primary end is TDC 1;
-      }
-// look ahead to the next crossing.  See if it's in the time window and is the opposite end
-// if so, associate these 2 hits.  Eventually we may want a more sophisticated algorithm for
-// associating ends, depending on how the hardware is finally designed.  FIXME!!!
+// loop over crossings
+    auto iwfxl = xings.begin();
+    while(iwfxl!= xings.end()){
+      WFXP xpair(1,iwfxl);
+ // associate adjacent crossing if they are on opposite ends within the maximum propagation time difference
       auto jwfxl = ++iwfxl;
-      if(jwfxl != crosses.end() &&
-	iwfxl->_ihitlet->strawEnd() != jwfxl->_ihitlet->strawEnd() &&
-	_strawele.combineEnds(iwfxl->_time,jwfxl->_time)) {
-	if(jwfxl->_ihitlet->strawEnd() == primaryend){
-	  crosstimes[0] = jwfxl->_time; // primary end is TDC 0;
-	  vector<double> adctimes;
-	  _strawele.adcTimes(jwfxl->_time,adctimes);
-	  primarywf.sampleWaveform(adctimes,wf);
-	} else {
-	  crosstimes[1] = jwfxl->_time; // non-primary end is TDC 1;
-	}
-// advance iterator past these points
+      if(jwfxl != xings.end() &&
+	  iwfxl->_ihitlet->strawEnd() == jwfxl->_ihitlet->strawEnd() &&
+	  jwfxl != xings.end() && _strawele.combineEnds(iwfxl->_time,jwfxl->_time)) {
+	xpair.push_back(jwfxl);
 	iwfxl = ++jwfxl;
-      } else {
-// this was a single-end hit. Just advance to the next
-	++iwfxl;
-      }
-// digitize the data
-      StrawDigi::ADCWaveform adc;
-      _strawele.digitizeWaveform(wf,adc);
-// digitize the times
-      StrawDigi::TDCValues tdc;
-      _strawele.digitizeTimes(crosstimes,tdc);
-// create the digi from this
-      digis->push_back(StrawDigi(primarywf.hitlets().strawIndex(),tdc,adc));
-// fill map entry to record association with StepPointMC
-// FIXME!!!!
+      } else
+	iwfxl = jwfxl;
+// create a digi from this pair or singleton
+      createDigi(xpair,primarywf,digis);
     }
+  }
+
+  void StrawDigisFromStepPointMCs::createDigi(WFXP const& xpair, StrawWaveform const& primarywf,
+    StrawDigiCollection* digis){
+// storage for MC match can be more than 1 StepPointMCs
+    set<art::Ptr<StepPointMC>> mcmatch;
+// initialize the float variables that we later digitize
+    array<double,2> xtimes = {0.0,0.0};
+    vector<double> wf(_strawele.nADCSamples(),0.0);
+// loop over the associated crossings
+    for(auto iwfx = xpair.begin();iwfx!= xpair.end();++iwfx){
+      WFX const& wfx = **iwfx;
+    // primary end times is index 0, other end is index 1
+      size_t index(1);
+      if(wfx._ihitlet->strawEnd() == primarywf.hitlets().strawEnd()){
+	index = 0;
+// sample the waveform at the primary end
+	vector<double> adctimes;
+	_strawele.adcTimes(wfx._time,adctimes);
+	primarywf.sampleWaveform(adctimes,wf);
+      }
+      xtimes[index] = wfx._time; // non-primary end is TDC 1;
+  // record MC match if it isn't already recorded
+      mcmatch.insert(wfx._ihitlet->stepPointMC());
+    }
+// digitize
+    StrawDigi::ADCWaveform adc;
+    _strawele.digitizeWaveform(wf,adc);
+    StrawDigi::TDCValues tdc;
+    _strawele.digitizeTimes(xtimes,tdc);
+// create the digi from this
+    digis->push_back(StrawDigi(primarywf.hitlets().strawIndex(),tdc,adc));
+// fill map entry to record association of this digi with StepPointMC.
+// FIXME!!!!
   }
 
   StrawEnd
