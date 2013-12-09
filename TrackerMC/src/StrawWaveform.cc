@@ -3,9 +3,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.cc,v 1.2 2013/12/08 21:10:12 brownd Exp $
+// $Id: StrawWaveform.cc,v 1.3 2013/12/09 05:09:50 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/08 21:10:12 $
+// $Date: 2013/12/09 05:09:50 $
 //
 // Original author David Brown, LBNL
 //
@@ -22,18 +22,35 @@ namespace mu2e {
   bool StrawWaveform::crossesThreshold(double threshold,WFX& wfx) const {
     bool retval(false);
     static double epsilon(1.0e-5); // small time to avoid problems with 0 rise times
+    static double timestep(0.1); // small step to sample waveform
   // loop forward from this hitlet
     while(wfx._ihitlet != _hseq.hitletList().end()){
   // sample the wavefom just before the referenced hitlet
-      double pre = sampleWaveform(wfx._ihitlet->time()-epsilon);
+      double pretime =wfx._ihitlet->time()-epsilon;
+      double presample = sampleWaveform(pretime);
 // if pre-hitlet response is below threshold, check for crossing
-      if(pre < threshold){
+      if(presample < threshold){
 // check response at maximum
-	double post = sampleWaveform(wfx._ihitlet->time() + _strawele.maxResponseTime());
-	if(post > threshold){
-// this hitlet pushes us over threshold
+	double posttime = pretime + _strawele.maxResponseTime();
+	double postsample = sampleWaveform(posttime);
+	if(postsample > threshold && posttime < posttime){
+// this hitlet pushes the waveform over threshold
 	  retval = true;
-// compute the actual crossing time
+// compute the actual crossing time, using linear interpolation
+// this could be made faster by doing a binary search, FIXME!!
+	  double t = pretime;
+	  double s = presample;
+	  double sold, told;
+	  while(s < threshold && t < posttime){
+	    told = t;
+	    t += timestep;
+	    sold = s;
+	    s = sampleWaveform(t);
+	  }
+// linear interpolation
+	  double slope = timestep/(s-sold);
+	  wfx._time = told + slope*(threshold-sold);
+// smear the time for electronics noise: FIXME!!
 	  break;
 	}
       }

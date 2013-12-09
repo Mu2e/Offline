@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.2 2013/12/08 21:10:12 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.3 2013/12/09 05:09:50 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/12/08 21:10:12 $
+// $Date: 2013/12/09 05:09:50 $
 //
 // Original author David Brown, LBNL
 //
@@ -36,7 +36,13 @@
 //CLHEP
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"
-// C++
+// root 
+#include "TMath.h"
+#include "TFile.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TTree.h"
+#// C++
 #include <map>
 using namespace std;
 
@@ -115,6 +121,13 @@ namespace mu2e {
     fhicl::ParameterSet _deadStraws;
     // Access the live/dead status of the straw.
     DeadStrawList _strawStatus;
+// diagnostics
+    TTree* _sddiag;
+    Int_t _device, _sector, _layer, _straw;
+    Float_t _time0, _time1, _mctime;
+    vector<unsigned> _adc;
+    Int_t _t0, _t1;
+    TH1F* _waveforms;
 //  helper functions
     void fillHitletMap(art::Event const& event, StrawHitletMap & hmap);
     void addStep(art::Ptr<StepPointMC>& spmcptr, Straw const& straw, StrawHitletSequencePair& shsp);
@@ -174,6 +187,24 @@ namespace mu2e {
     }
 
   void StrawDigisFromStepPointMCs::beginJob(){
+    if(_diagLevel > 0){
+      art::ServiceHandle<art::TFileService> tfs;
+      _sddiag =tfs->make<TTree>("sddiag","StrawDigi diagnostics");
+      _sddiag->Branch("device",&_device,"device/I");
+      _sddiag->Branch("sector",&_sector,"sector/I");
+      _sddiag->Branch("layer",&_layer,"layer/I");
+      _sddiag->Branch("straw",&_straw,"straw/I");
+      _sddiag->Branch("time0",&_time0,"time0/F");
+      _sddiag->Branch("time1",&_time1,"time1/F");
+      _sddiag->Branch("t0",&_t0,"t0/I");
+      _sddiag->Branch("t1",&_t1,"t1/I");
+      _sddiag->Branch("adc",&_adc);
+      _sddiag->Branch("mctime",&_mctime,"mctime/F");
+    }
+    if(_diagLevel > 1){
+// record a few waveforms
+
+    }
   }
 
   void StrawDigisFromStepPointMCs::beginRun( art::Run& run ){
@@ -439,6 +470,28 @@ namespace mu2e {
 	iwfxl = jwfxl;
 // create a digi from this pair or singleton
       createDigi(xpair,primarywf,digis);
+      if(_diagLevel > 0){
+	const Tracker& tracker = getTrackerOrThrow();
+	const Straw& straw = tracker.getStraw( primarywf.hitlets().strawIndex() );
+	_device = straw.id().getDevice();
+	_sector = straw.id().getSector();
+	_layer = straw.id().getLayer();
+	_straw = straw.id().getStraw();
+	for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
+	  if((*ixp)->_ihitlet->strawEnd() == primarywf.hitlets().strawEnd())
+	    _time0 =(*ixp)->_time;
+	  else
+	    _time1 =(*ixp)->_time;
+	}
+	_mctime = xpair[0]->_ihitlet->stepPointMC()->time();
+	StrawDigi const& digi = digis->back();
+	_t0 = digi.TDC(StrawDigi::zero);
+	_t1 = digi.TDC(StrawDigi::one);
+	_adc.clear();
+	for(auto iadc=digi.adcWaveform().begin();iadc!=digi.adcWaveform().end();++iadc){
+	  _adc.push_back(*iadc);
+	}
+      }
     }
   }
 
