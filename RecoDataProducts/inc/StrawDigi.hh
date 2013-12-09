@@ -8,9 +8,9 @@
 // the conversion from digital to physical units and the waveform frequency and
 // phase are stored in conditions objects.
 //
-// $Id: StrawDigi.hh,v 1.1 2013/12/07 19:50:42 brownd Exp $
+// $Id: StrawDigi.hh,v 1.2 2013/12/09 05:09:30 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/07 19:50:42 $
+// $Date: 2013/12/09 05:09:30 $
 //
 // Original author David Brown, LBNL
 //
@@ -44,7 +44,7 @@ namespace mu2e {
       StrawDigi& operator=(StrawDigi const& other);
       StrawIndex strawIndex() const { return _strawIndex; }
 // TDC data are indexed according to electronics channel
-      unsigned long TDC(TDCChannel channel) { return _tdc[(size_t)channel]; }
+      unsigned long TDC(TDCChannel channel) const { return _tdc[(size_t)channel]; }
 // TDC according to the physical straw end.  This requires accessing conditions data
       unsigned long TDC(StrawEnd end) const;
       ADCWaveform const& adcWaveform() const { return _adc; }
