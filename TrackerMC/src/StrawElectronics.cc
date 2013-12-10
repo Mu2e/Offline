@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.3 2013/12/10 01:32:51 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.4 2013/12/10 21:43:45 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/10 01:32:51 $
+// $Date: 2013/12/10 21:43:45 $
 //
 // Original author David Brown, LBNL
 //
@@ -15,12 +15,12 @@ using namespace std;
 namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdQ(pset.get<double>("dVdQ",1.0)),
+    _dVdQ(pset.get<double>("dVdQ",1e4)),
     _trise(pset.get<double>("RiseTime",0.0)),
     _tfall(pset.get<double>("FallTime",50.0)),
-    _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mV max
-    _vsat(pset.get<double>("SaturationVoltage",800.0)),
-    _ADCLSB(pset.get<double>("ADCLSB",0.1)),
+    _vmax(pset.get<double>("MaximumVoltage",1200.0)), // 1000 mV max
+    _vsat(pset.get<double>("SaturationVoltage",1000.0)),
+    _ADCLSB(pset.get<double>("ADCLSB",1.0)),
     _maxADC(pset.get<unsigned>("maxADC",1047)),
     _nADC(pset.get<unsigned>("nADC",10)),
     _ADCPeriod(pset.get<double>("ADCPeriod",15.4)),
@@ -38,10 +38,11 @@ namespace mu2e {
     // normalization is given by rise and fall times
     _norm = (_trise+_tfall)/(_tfall*_tfall);
     // relative time at maximum
+    static const double epsilon(1.0e-3);
     if(_trise > 0.0){
       _tmax = _trise*(log(_tfall + _trise) - log(_trise));
     } else
-      _tmax = 0.0;
+      _tmax = epsilon;
   }
 
   StrawElectronics::~StrawElectronics() {}

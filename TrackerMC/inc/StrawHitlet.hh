@@ -7,9 +7,9 @@
 // such as avalanche fluctuations, trapping, gas quenching, and propagation
 // effects such as drift time, wire propagation time delay, and dispersion
 //
-// $Id: StrawHitlet.hh,v 1.1 2013/12/07 19:51:42 brownd Exp $
+// $Id: StrawHitlet.hh,v 1.2 2013/12/10 21:43:45 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/07 19:51:42 $
+// $Date: 2013/12/10 21:43:45 $
 //
 // Original author David Brown, LBNL
 //
@@ -48,9 +48,9 @@ namespace mu2e {
       HitletType type() const { return _type; }
       StrawIndex strawIndex() const { return _strawIndex; }
       StrawEnd strawEnd() const { return _end; }
-      float   time()       const { return _time;}
-      float   charge()  const { return _charge; }
-      float   wireDistance() const { return _wdist; } 
+      double   time()       const { return _time;}
+      double   charge()  const { return _charge; }
+      double   wireDistance() const { return _wdist; } 
       art::Ptr<StepPointMC> const&  stepPointMC() const { return _stepMC; }
       // Print contents of the object.
       void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
@@ -58,9 +58,9 @@ namespace mu2e {
       HitletType _type; // type of hitlet
       StrawIndex  _strawIndex;      // Straw index
       StrawEnd	_end;		  // which end of the straw
-      float     _time;            // microbunch time at the wire end, in ns
-      float     _charge;          // charge at the wire end, in units of pC
-      float	_wdist;		  // distance along the wire the charge has traveled, used to calculate dispersion
+      double     _time;            // microbunch time at the wire end, in ns
+      double     _charge;          // charge at the wire end, in units of pC
+      double	_wdist;		  // distance along the wire the charge has traveled, used to calculate dispersion
       art::Ptr<StepPointMC>  _stepMC;	  // Ptr into StepPointMC collection
   };
 

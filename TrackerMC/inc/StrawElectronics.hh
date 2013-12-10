@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.2 2013/12/08 21:10:12 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.3 2013/12/10 21:43:45 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/08 21:10:12 $
+// $Date: 2013/12/10 21:43:45 $
 //
 // Original author David Brown, LBNL
 //
@@ -57,6 +57,8 @@ namespace mu2e {
       void adcTimes(double time, std::vector<double>& adctimes) const; // sampling times of ADC
       double saturationVoltage() const { return _vsat; }
       double maximumVoltage() const { return _vmax; }
+      double riseTime() const { return _trise; }
+      double fallTime() const { return _tfall; }
     private:
       // scale factor between charge and voltage (milliVolts from picoCoulombs)
       double _dVdQ;

@@ -3,9 +3,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.cc,v 1.3 2013/12/09 05:09:50 brownd Exp $
+// $Id: StrawWaveform.cc,v 1.4 2013/12/10 21:43:45 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/09 05:09:50 $
+// $Date: 2013/12/10 21:43:45 $
 //
 // Original author David Brown, LBNL
 //
@@ -21,8 +21,8 @@ namespace mu2e {
 
   bool StrawWaveform::crossesThreshold(double threshold,WFX& wfx) const {
     bool retval(false);
-    static double epsilon(1.0e-5); // small time to avoid problems with 0 rise times
-    static double timestep(0.1); // small step to sample waveform
+    static double epsilon(1.0e-3); // small time to avoid problems with 0 rise times
+    static double timestep(0.010); // interpolation minimum to use linear threshold crossing calculation
   // loop forward from this hitlet
     while(wfx._ihitlet != _hseq.hitletList().end()){
   // sample the wavefom just before the referenced hitlet
@@ -31,25 +31,28 @@ namespace mu2e {
 // if pre-hitlet response is below threshold, check for crossing
       if(presample < threshold){
 // check response at maximum
-	double posttime = pretime + _strawele.maxResponseTime();
+	double posttime = wfx._ihitlet->time() + _strawele.maxResponseTime();
 	double postsample = sampleWaveform(posttime);
-	if(postsample > threshold && posttime < posttime){
+	if(postsample > threshold){
 // this hitlet pushes the waveform over threshold
 	  retval = true;
 // compute the actual crossing time, using linear interpolation
-// this could be made faster by doing a binary search, FIXME!!
-	  double t = pretime;
-	  double s = presample;
-	  double sold, told;
-	  while(s < threshold && t < posttime){
-	    told = t;
-	    t += timestep;
-	    sold = s;
-	    s = sampleWaveform(t);
-	  }
+	  double dt = posttime-pretime;
+	  do {
+	    dt *= 0.5;
+	    double t = pretime + dt;
+	    double s = sampleWaveform(t);
+	    if(s>threshold){
+	      posttime = t;
+	      postsample = s;
+	    } else {
+	      pretime = t;
+	      presample = s;
+	    }
 // linear interpolation
-	  double slope = timestep/(s-sold);
-	  wfx._time = told + slope*(threshold-sold);
+	    double slope = dt/(postsample-presample);
+	    wfx._time = pretime + slope*(threshold-presample);
+	  } while(dt > timestep);
 // smear the time for electronics noise: FIXME!!
 	  break;
 	}
