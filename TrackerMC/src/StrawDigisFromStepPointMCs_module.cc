@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.3 2013/12/09 05:09:50 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.4 2013/12/10 01:32:51 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/12/09 05:09:50 $
+// $Date: 2013/12/10 01:32:51 $
 //
 // Original author David Brown, LBNL
 //
@@ -26,7 +26,7 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "HitMakers/inc/DeadStrawList.hh"
+//#include "HitMakers/inc/DeadStrawList.hh"
 // data
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -111,6 +111,7 @@ namespace mu2e {
     double _vthresh; // threshold voltage for electronics discriminator
     StrawElectronics _strawele; // models of straw response to stimuli
     // Random number distributions
+    art::RandomNumberGenerator::base_engine_t& _engine;
     CLHEP::RandGaussQ _gaussian;
     CLHEP::RandFlat _randflat;
     // A category for the error logger.
@@ -118,9 +119,7 @@ namespace mu2e {
     // Give some informationation messages only on the first event.
     bool _firstEvent;
     // List of dead straws as a parameter set; needed at beginRun time.
-    fhicl::ParameterSet _deadStraws;
-    // Access the live/dead status of the straw.
-    DeadStrawList _strawStatus;
+//    DeadStrawList _strawStatus;
 // diagnostics
     TTree* _sddiag;
     Int_t _device, _sector, _layer, _straw;
@@ -161,7 +160,7 @@ namespace mu2e {
     _EIonize(pset.get<double>("EnergyPerIonization",27.0e-6)), // 27 ev
     _QIonize(pset.get<double>("ChargePerIonization",1.6e-7)), // e, pC
     _gasgain(pset.get<double>("GasGain",1.0e5)),
-    _attlen(pset.get<double>("PropagationAttentuationLength",1000.0)), // mm
+    _attlen(pset.get<double>("PropagationAttentuationLength",10000.0)), // mm
     _vdrift(pset.get<double>("DriftVelocity",0.05)), // mm/nsec
     _vdrifterr(pset.get<double>("DriftVelocity",0.001)), // mm/nsec
     _mbbuffer(pset.get<double>("TimeFoldingBuffer",200.0)), // nsec
@@ -169,18 +168,16 @@ namespace mu2e {
     _strawele(pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())),
 
     // Random number distributions
-    _gaussian( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
-    _randflat( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
+    _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
+    _gaussian( _engine ),
+    _randflat( _engine ),
 
     _messageCategory("HITS"),
 
     // Control some information messages.
-    _firstEvent(true),
-
-    _deadStraws(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet())),
-    _strawStatus(_deadStraws) 
+    _firstEvent(true)
+//    _strawStatus(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet()))
     {
- 
 // Tell the framework what we make.
       produces<StrawDigiCollection>();
 // should also produce a MC truth map from StrawDigis to StepPointMCs:  FIXME!!
@@ -208,7 +205,7 @@ namespace mu2e {
   }
 
   void StrawDigisFromStepPointMCs::beginRun( art::Run& run ){
-    _strawStatus.reset(_deadStraws);
+//    _strawStatus.reset(_deadStraws);
   }
 
   void
@@ -284,7 +281,7 @@ namespace mu2e {
 	// lookup straw here, to avoid having to find the tracker for every step
         Straw const& straw = tracker.getStraw(straw_id);
 	// Skip dead straws.
-	if ( _strawStatus.isDead(straw_id)) continue;
+//	if ( _strawStatus.isDead(straw_id)) continue;
 	// Skip steps that occur in the deadened region near the end of each wire.
 	double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
 	if(wpos >  straw.getDetail().activeHalfLength())continue;
@@ -491,6 +488,7 @@ namespace mu2e {
 	for(auto iadc=digi.adcWaveform().begin();iadc!=digi.adcWaveform().end();++iadc){
 	  _adc.push_back(*iadc);
 	}
+	_sddiag->Fill();
       }
     }
   }
@@ -549,6 +547,6 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::StrawDigisFromStepPointMCs;
-DEFINE_ART_MODULE(StrawDigisFromStepPointMCs)
+DEFINE_ART_MODULE(StrawDigisFromStepPointMCs);
 
 

@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.2 2013/12/08 21:10:12 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.3 2013/12/10 01:32:51 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/08 21:10:12 $
+// $Date: 2013/12/10 01:32:51 $
 //
 // Original author David Brown, LBNL
 //
@@ -43,6 +43,8 @@ namespace mu2e {
     } else
       _tmax = 0.0;
   }
+
+  StrawElectronics::~StrawElectronics() {}
 
   double StrawElectronics::hitletResponse(double time,StrawHitlet const& hitlet) const {
 // in future, split response by hitlet type. FIXME!!!

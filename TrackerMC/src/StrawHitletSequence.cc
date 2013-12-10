@@ -1,9 +1,9 @@
 //
 // StrawHitletSequence is a time-ordered sequence of StrawHitlets
 //
-// $Id: StrawHitletSequence.cc,v 1.1 2013/12/07 19:51:42 brownd Exp $
+// $Id: StrawHitletSequence.cc,v 1.2 2013/12/10 01:32:51 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/07 19:51:42 $
+// $Date: 2013/12/10 01:32:51 $
 //
 // Original author David Brown, LBNL
 //
@@ -63,8 +63,8 @@ namespace mu2e {
     } else {
       // loop over the contents and insert in the correct place
       HitletList::iterator ibefore = _hlist.begin();
-      while(ibefore->time() < hitlet.time())
-	if(ibefore != _hlist.end())++ibefore;
+      while(ibefore != _hlist.end() && ibefore->time() < hitlet.time())
+	++ibefore;
       retval = _hlist.insert(ibefore,hitlet);
     }
     return retval;

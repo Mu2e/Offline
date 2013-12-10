@@ -1,8 +1,8 @@
 //
 // StrawHitlet
-// $Id: StrawHitlet.cc,v 1.1 2013/12/07 19:51:42 brownd Exp $
+// $Id: StrawHitlet.cc,v 1.2 2013/12/10 01:32:51 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/07 19:51:42 $
+// $Date: 2013/12/10 01:32:51 $
 // Original author David Brown, LBNL
 //
 // mu2e includes
@@ -22,6 +22,11 @@ namespace mu2e {
       double wdist,
       art::Ptr<StepPointMC> const& stepmc) : _type(type), _strawIndex(sindex), _end(end), _time(time),
   _charge(charge), _wdist(wdist), _stepMC(stepmc) 
+  {}
+
+  StrawHitlet::StrawHitlet(const StrawHitlet& other) :
+    _type(other._type), _strawIndex(other._strawIndex), _end(other._end),
+    _time(other._time), _charge(other._charge), _wdist(other._wdist) 
   {}
 
 // delegating constructors in C++11!
