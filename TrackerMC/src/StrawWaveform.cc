@@ -3,9 +3,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.cc,v 1.4 2013/12/10 21:43:45 brownd Exp $
+// $Id: StrawWaveform.cc,v 1.5 2013/12/12 00:39:24 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/10 21:43:45 $
+// $Date: 2013/12/12 00:39:24 $
 //
 // Original author David Brown, LBNL
 //
@@ -21,43 +21,45 @@ namespace mu2e {
 
   bool StrawWaveform::crossesThreshold(double threshold,WFX& wfx) const {
     bool retval(false);
-    static double epsilon(1.0e-3); // small time to avoid problems with 0 rise times
     static double timestep(0.010); // interpolation minimum to use linear threshold crossing calculation
   // loop forward from this hitlet
-    while(wfx._ihitlet != _hseq.hitletList().end()){
-  // sample the wavefom just before the referenced hitlet
-      double pretime =wfx._ihitlet->time()-epsilon;
-      double presample = sampleWaveform(pretime);
-// if pre-hitlet response is below threshold, check for crossing
-      if(presample < threshold){
-// check response at maximum
-	double posttime = wfx._ihitlet->time() + _strawele.maxResponseTime();
-	double postsample = sampleWaveform(posttime);
-	if(postsample > threshold){
-// this hitlet pushes the waveform over threshold
-	  retval = true;
-// compute the actual crossing time, using linear interpolation
-	  double dt = posttime-pretime;
-	  do {
-	    dt *= 0.5;
-	    double t = pretime + dt;
-	    double s = sampleWaveform(t);
-	    if(s>threshold){
-	      posttime = t;
-	      postsample = s;
-	    } else {
-	      pretime = t;
-	      presample = s;
+    while(wfx._ihitlet != _hseq.hitletList().end() ){
+  // require the hitlet be beyond the input time
+      if(wfx._ihitlet->time() > wfx._time){
+	// sample the wavefom just before the referenced hitlet
+	double pretime =wfx._ihitlet->time();
+	double presample = sampleWaveform(pretime);
+	// if pre-hitlet response is below threshold, check for crossing
+	if(presample < threshold){
+	  // check response at maximum
+	  double posttime = pretime + _strawele.maxResponseTime();
+	  double postsample = sampleWaveform(posttime);
+	  if(postsample > threshold){
+	    // this hitlet pushes the waveform over threshold
+	    retval = true;
+	    // compute the actual crossing time, using linear interpolation
+	    double dt = posttime-pretime;
+	    while(dt > timestep) {
+	      dt *= 0.5;
+	      double t = pretime + dt;
+	      double s = sampleWaveform(t);
+	      if(s>threshold){
+		posttime = t;
+		postsample = s;
+	      } else {
+		pretime = t;
+		presample = s;
+	      }
 	    }
-// linear interpolation
+	    // linear interpolation
 	    double slope = dt/(postsample-presample);
 	    wfx._time = pretime + slope*(threshold-presample);
-	  } while(dt > timestep);
-// smear the time for electronics noise: FIXME!!
-	  break;
+	    // smear the time for electronics noise: FIXME!!
+	    break;
+	  }
 	}
       }
-  // advance to next hitlet
+	// advance to next hitlet
       ++(wfx._ihitlet);
     }
     return retval;

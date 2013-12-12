@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.5 2013/12/10 21:43:45 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.6 2013/12/12 00:39:24 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/12/10 21:43:45 $
+// $Date: 2013/12/12 00:39:24 $
 //
 // Original author David Brown, LBNL
 //
@@ -26,6 +26,8 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+// utiliities
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 //#include "HitMakers/inc/DeadStrawList.hh"
 // data
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
@@ -59,6 +61,7 @@ namespace mu2e {
   struct WireCharge { // charge at the wire after drift
     double _charge; // charge at the wire, in units of pC
     double _time; // relative time at the wire, relative to ionzation time (ns)
+    double _dd;  // transverse distance drifted to the wrie
     double _wpos; // position long the wire, WRT the wire center, signed by the wire direction
   };
 
@@ -129,15 +132,17 @@ namespace mu2e {
     Int_t _nhitlet;
     Int_t _nsteppoint;
     Int_t _npart;
+    Float_t _tmin, _tmax;
     TTree* _sddiag;
     Int_t _sddevice, _sdsector, _sdlayer, _sdstraw;
     Int_t _nend, _nstep;
-    Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _wdist0, _wdist1;
+    Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _ddist0, _ddist1, _wdist0, _wdist1;
     Float_t _vmax;
-    Float_t _mctime, _mcenergy;
+    Float_t _mctime, _mcenergy, _mcdca;
     vector<unsigned> _adc;
     Int_t _tdc0, _tdc1;
-    vector<TGraph*> _waveforms;
+//    vector<TGraph*> _waveforms;
+    vector<TH1F*> _waveforms;
 //  helper functions
     void fillHitletMap(art::Event const& event, StrawHitletMap & hmap);
     void addStep(art::Ptr<StepPointMC>& spmcptr, Straw const& straw, StrawHitletSequencePair& shsp);
@@ -163,7 +168,7 @@ namespace mu2e {
 
 // diagnostic parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
-    _maxhist(pset.get<unsigned>("MaxHist",10)),
+    _maxhist(pset.get<unsigned>("MaxHist",2)),
     // Parameters
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
@@ -177,7 +182,7 @@ namespace mu2e {
     _vdrift(pset.get<double>("DriftVelocity",0.05)), // mm/nsec
     _vdrifterr(pset.get<double>("DriftVelocity",0.001)), // mm/nsec
     _mbbuffer(pset.get<double>("TimeFoldingBuffer",200.0)), // nsec
-    _vthresh(pset.get<double>("DiscriminatorThreshold",50.0)), //mVolt
+    _vthresh(pset.get<double>("DiscriminatorThreshold",5.0)), //mVolt
     _strawele(pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())),
     // Random number distributions
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
@@ -206,6 +211,8 @@ namespace mu2e {
       _sdiag->Branch("nhitlet",&_nhitlet,"straw/I");
       _sdiag->Branch("nstep",&_nsteppoint,"straw/I");
       _sdiag->Branch("npart",&_npart,"straw/I");
+      _sdiag->Branch("tmin",&_tmin,"tmin/F");
+      _sdiag->Branch("tmax",&_tmax,"tmax/F");
 
       _sddiag =tfs->make<TTree>("sddiag","StrawDigi diagnostics");
       _sddiag->Branch("device",&_sddevice,"device/I");
@@ -222,12 +229,15 @@ namespace mu2e {
       _sddiag->Branch("charge1",&_charge1,"charge1/F");
       _sddiag->Branch("wdist0",&_wdist0,"wdist0/F");
       _sddiag->Branch("wdist1",&_wdist1,"wdist1/F");
+      _sddiag->Branch("ddist0",&_ddist0,"ddist0/F");
+      _sddiag->Branch("ddist1",&_ddist1,"ddist1/F");
       _sddiag->Branch("tdc0",&_tdc0,"tdc0/I");
       _sddiag->Branch("tdc1",&_tdc1,"tdc1/I");
       _sddiag->Branch("adc",&_adc);
       _sddiag->Branch("vmax",&_vmax,"vmax/F");
       _sddiag->Branch("mctime",&_mctime,"mctime/F");
       _sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
+      _sddiag->Branch("mcdca",&_mcdca,"mcdca/F");
     }
   }
 
@@ -341,10 +351,10 @@ namespace mu2e {
 	WireEndCharge weq;
 	propagateCharge(straw,wireq,end,weq);
 	// compute the total time, modulo the microbunch
-	double gtime = step.time()+weq._time + weq._time;
+	double gtime = step.time()+wireq._time + weq._time;
 	double htime = microbunchTime(gtime);
 	// create the hitlet
-	StrawHitlet hitlet(StrawHitlet::primary,straw_id,end,htime,weq._charge,weq._wdist,spmcptr);
+	StrawHitlet hitlet(StrawHitlet::primary,straw_id,end,htime,weq._charge,wireq._dd,weq._wdist,spmcptr);
 	// add the hitlets to the appropriate sequence.
 	shsp.hitletSequence(end).insert(hitlet);
 	// if required, add a 'ghost' copy of this hitlet
@@ -397,8 +407,12 @@ namespace mu2e {
     // time is smeared proportional to drift time
     double dtime, dtimeerr;
     distanceToTime(straw,dd,dphi,dtime,dtimeerr);
-    wireq._time = _gaussian.shoot(dtime,dtimeerr);
+    // distance to time error is broken!  don't use for now, FIXME!!!
+//    wireq._time = _gaussian.shoot(dtime,dtimeerr);
+    wireq._time = dtime; 
+    wireq._dd = dd;
     // position along wire
+    // need to add Lorentz effects, FIXME!!!
     wireq._wpos = cpos.dot(straw.getDirection());
   }
 
@@ -469,21 +483,21 @@ namespace mu2e {
       // find where the waveform xings threshold.  This updates the waveform sample
       // Skip any points outside the microbunch readout window
       while(swf.crossesThreshold(_vthresh,wfx) && wfx._time < _mbtime){
-	if(wfx._time > 0.0){ // ignore ghost crossings
-	  // keep these in time-order
-	  auto iwfxl = xings.begin();
-	  while(iwfxl != xings.end() && iwfxl->_time < wfx._time)++iwfxl;
-	  xings.insert(iwfxl,wfx);
-	}
-	  // skip to the next hitlet
+	// keep these in time-order
+	auto iwfxl = xings.begin();
+	while(iwfxl != xings.end() && iwfxl->_time < wfx._time)
+	  ++iwfxl;
+	xings.insert(iwfxl,wfx);
+	// skip to the next hitlet, and insure a minimum time buffer between crossings
 	++(wfx._ihitlet);
+	wfx._time += _strawele.deadTime();
       }
     }
   }
 
   void
   StrawDigisFromStepPointMCs::fillDigis(WFXList const& xings, StrawWaveform const& primarywf,
-    StrawDigiCollection* digis){
+      StrawDigiCollection* digis){
     const Tracker& tracker = getTrackerOrThrow();
     if(_diagLevel > 0){
       const Straw& straw = tracker.getStraw( primarywf.hitlets().strawIndex() );
@@ -500,16 +514,18 @@ namespace mu2e {
 	  steps.insert(ihitl->stepPointMC());
 	  parts.insert(ihitl->stepPointMC()->simParticle());
 	}
-	_nstep = steps.size();
+	_nsteppoint = steps.size();
 	_npart = parts.size();
       }
-      if(_diagLevel > 1 && _event < _maxhist){
+      _tmin = hitlets.begin()->time();
+      _tmax = hitlets.rbegin()->time();
+      _sdiag->Fill();
+      if(_diagLevel > 2 && _event < _maxhist){
 // histogram the waveforms
-	const double tstep(1.0); // 1 nsec steps
-	const double nfall(4.0); // 4 lambda past last fall time
+	const double tstep(0.5); // 0.5
+	const double nfall(3.0); // 4 lambda past last fall time
 	double tstart = hitlets.begin()->time()-tstep;
-//	double tfall = _strawele.fallTime();
-	double tfall = 100.0;
+	double tfall = _strawele.fallTime();
 	double tend = hitlets.rbegin()->time() + nfall*tfall;
 	vector<double> times, volts;
 	double t = tstart;
@@ -518,10 +534,13 @@ namespace mu2e {
 	  t += tstep;
 	}
 	primarywf.sampleWaveform(times,volts);
-	_waveforms.push_back(new TGraph(times.size(),times.data(),volts.data()));
-//	char title[60];
-//	snprintf(60,"SWF%i_%i",primarywf.hitlets().strawIndex().asInt(),_event);
-	
+	art::ServiceHandle<art::TFileService> tfs;
+	char name[60];
+	snprintf(name,60,"SWF%i_%i",primarywf.hitlets().strawIndex().asInt(),_event);
+	TH1F* wf = tfs->make<TH1F>(name,name,volts.size(),times.front(),times.back());
+	for(size_t ibin=0;ibin<times.size();++ibin)
+	  wf->SetBinContent(ibin+1,volts[ibin]);
+	_waveforms.push_back(wf);
       }
     }
     // loop over crossings
@@ -529,17 +548,18 @@ namespace mu2e {
     while(iwfxl!= xings.end()){
       WFXP xpair(1,iwfxl);
  // associate adjacent crossing if they are on opposite ends within the maximum propagation time difference
-      auto jwfxl = ++iwfxl;
+      auto jwfxl = iwfxl; ++jwfxl;
       if(jwfxl != xings.end() &&
-	  iwfxl->_ihitlet->strawEnd() == jwfxl->_ihitlet->strawEnd() &&
-	  jwfxl != xings.end() && _strawele.combineEnds(iwfxl->_time,jwfxl->_time)) {
+	  iwfxl->_ihitlet->strawEnd() != jwfxl->_ihitlet->strawEnd() &&
+	  _strawele.combineEnds(iwfxl->_time,jwfxl->_time)) {
 	xpair.push_back(jwfxl);
-	iwfxl = ++jwfxl;
-      } else
 	iwfxl = jwfxl;
+      } 
+      ++iwfxl;
 // create a digi from this pair or singleton
       createDigi(xpair,primarywf,digis);
-      if(_diagLevel > 0){
+  // diagnostics
+      if(_diagLevel > 1){
 	const Straw& straw = tracker.getStraw( primarywf.hitlets().strawIndex() );
 	_sddevice = straw.id().getDevice();
 	_sdsector = straw.id().getSector();
@@ -549,17 +569,20 @@ namespace mu2e {
 	_htime0 = _htime1 = -1000.0;
 	_charge0 = _charge1 = -1000.0;
 	_wdist0 = _wdist1 = -1000.0;
+	_ddist0 = _ddist1 = -1000.0;
 	_nend = xpair.size();
 	for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
 	  if((*ixp)->_ihitlet->strawEnd() == primarywf.hitlets().strawEnd()) {
 	    _xtime0 =(*ixp)->_time;
 	    _htime0 = (*ixp)->_ihitlet->time();
 	    _charge0 = (*ixp)->_ihitlet->charge();
+	    _ddist0 = (*ixp)->_ihitlet->driftDistance();
 	    _wdist0 = (*ixp)->_ihitlet->wireDistance();
 	  } else {
 	    _xtime1 =(*ixp)->_time;
 	    _htime1 = (*ixp)->_ihitlet->time();
 	    _charge1 = (*ixp)->_ihitlet->charge();
+	    _ddist1 = (*ixp)->_ihitlet->driftDistance();
 	    _wdist1 = (*ixp)->_ihitlet->wireDistance();
 	  }
 	}
@@ -570,8 +593,6 @@ namespace mu2e {
 	double tmax = _htime0 > 0 ? _htime0 : _htime1;
 	tmax += _strawele.maxResponseTime();
 	_vmax = primarywf.sampleWaveform(tmax);
-	_mctime = xpair[0]->_ihitlet->stepPointMC()->time();
-	_mcenergy = xpair[0]->_ihitlet->stepPointMC()->ionizingEdep();
 	StrawDigi const& digi = digis->back();
 	_tdc0 = digi.TDC(StrawDigi::zero);
 	_tdc1 = digi.TDC(StrawDigi::one);
@@ -579,6 +600,19 @@ namespace mu2e {
 	for(auto iadc=digi.adcWaveform().begin();iadc!=digi.adcWaveform().end();++iadc){
 	  _adc.push_back(*iadc);
 	}
+	// mc truth information
+	art::Ptr<StepPointMC> const& spmc = xpair[0]->_ihitlet->stepPointMC();
+	if(!spmc.isNull()){
+	  _mctime = spmc->time();
+	  _mcenergy = spmc->ionizingEdep();
+// compute the DOCA for this step
+	  TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(), 
+	      spmc->position(), spmc->momentum().unit() );
+	  _mcdca = pca.dca(); 
+	} else {
+	  _mctime = _mcenergy = _mcdca = -1000.0;
+	}
+	// fill the tree entry
 	_sddiag->Fill();
       }
     }

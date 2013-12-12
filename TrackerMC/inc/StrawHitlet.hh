@@ -7,9 +7,9 @@
 // such as avalanche fluctuations, trapping, gas quenching, and propagation
 // effects such as drift time, wire propagation time delay, and dispersion
 //
-// $Id: StrawHitlet.hh,v 1.2 2013/12/10 21:43:45 brownd Exp $
+// $Id: StrawHitlet.hh,v 1.3 2013/12/12 00:39:24 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/10 21:43:45 $
+// $Date: 2013/12/12 00:39:24 $
 //
 // Original author David Brown, LBNL
 //
@@ -39,6 +39,7 @@ namespace mu2e {
 		  StrawEnd end,
 		  double time,
 		  double charge,
+		  double ddist,
 		  double wiredist,
 		  art::Ptr<StepPointMC> const& stepmc);
 
@@ -50,6 +51,7 @@ namespace mu2e {
       StrawEnd strawEnd() const { return _end; }
       double   time()       const { return _time;}
       double   charge()  const { return _charge; }
+      double   driftDistance() const { return _ddist; }
       double   wireDistance() const { return _wdist; } 
       art::Ptr<StepPointMC> const&  stepPointMC() const { return _stepMC; }
       // Print contents of the object.
@@ -60,6 +62,7 @@ namespace mu2e {
       StrawEnd	_end;		  // which end of the straw
       double     _time;            // microbunch time at the wire end, in ns
       double     _charge;          // charge at the wire end, in units of pC
+      double	_ddist;		  // drift distance charge traveled to the wire
       double	_wdist;		  // distance along the wire the charge has traveled, used to calculate dispersion
       art::Ptr<StepPointMC>  _stepMC;	  // Ptr into StepPointMC collection
   };

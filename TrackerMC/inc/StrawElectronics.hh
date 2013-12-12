@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.3 2013/12/10 21:43:45 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.4 2013/12/12 00:39:24 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/10 21:43:45 $
+// $Date: 2013/12/12 00:39:24 $
 //
 // Original author David Brown, LBNL
 //
@@ -59,10 +59,12 @@ namespace mu2e {
       double maximumVoltage() const { return _vmax; }
       double riseTime() const { return _trise; }
       double fallTime() const { return _tfall; }
+      double deadTime() const { return _tdead; }
     private:
       // scale factor between charge and voltage (milliVolts from picoCoulombs)
       double _dVdQ;
       double _trise, _tfall; // rise and fall times.  These should depend on hitlet type, FIXME!! 
+      double _tdead; // minimum deadtime to digitize and latch 1 signal
       double _norm; // normalization factor, computed from trise and tfall
       double _tmax; // relative time at which hitlet signal reaches maximum, computed from trise and tfall
       double _vmax, _vsat; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts

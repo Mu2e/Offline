@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.4 2013/12/10 21:43:45 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.5 2013/12/12 00:39:24 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/10 21:43:45 $
+// $Date: 2013/12/12 00:39:24 $
 //
 // Original author David Brown, LBNL
 //
@@ -15,22 +15,23 @@ using namespace std;
 namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdQ(pset.get<double>("dVdQ",1e4)),
-    _trise(pset.get<double>("RiseTime",0.0)),
+    _dVdQ(pset.get<double>("dVdQ",1e5)),
+    _trise(pset.get<double>("RiseTime",1.0e-3)),
     _tfall(pset.get<double>("FallTime",50.0)),
+    _tdead(pset.get<double>("DeadTime",10.0)),
     _vmax(pset.get<double>("MaximumVoltage",1200.0)), // 1000 mV max
     _vsat(pset.get<double>("SaturationVoltage",1000.0)),
     _ADCLSB(pset.get<double>("ADCLSB",1.0)),
-    _maxADC(pset.get<unsigned>("maxADC",1047)),
+    _maxADC(pset.get<unsigned>("maxADC",1023)),
     _nADC(pset.get<unsigned>("nADC",10)),
     _ADCPeriod(pset.get<double>("ADCPeriod",15.4)),
-    _ADCOffset(pset.get<double>("ADCOffset",40.0)),
+    _ADCOffset(pset.get<double>("ADCOffset",-40.0)),
     _TDCLSB(pset.get<double>("TDCLSB",0.037)),
     _maxTDC(pset.get<unsigned>("maxTDC",65535)),
-    _maxDTDC(pset.get<unsigned>("maxDeltaTDC",200))
+    _maxDTDC(pset.get<unsigned>("maxDeltaTDC",250))
   {
   // insure times are positive
-      if(_trise < 0.0 || _tfall < 0.0){
+      if(_trise < 1.0e-3 || _tfall < 0.0){
       throw cet::exception("SIM") 
 	<< "mu2e::StrawElectronics: negative rise or fall time!" 
 	<< endl;
@@ -38,11 +39,7 @@ namespace mu2e {
     // normalization is given by rise and fall times
     _norm = (_trise+_tfall)/(_tfall*_tfall);
     // relative time at maximum
-    static const double epsilon(1.0e-3);
-    if(_trise > 0.0){
-      _tmax = _trise*(log(_tfall + _trise) - log(_trise));
-    } else
-      _tmax = epsilon;
+    _tmax = _trise*(log(_tfall + _trise) - log(_trise));
   }
 
   StrawElectronics::~StrawElectronics() {}
@@ -59,7 +56,7 @@ namespace mu2e {
       if(_trise > 0.0)
 	rise = (1.0-exp(-dt/_trise));
       double fall = exp(-dt/_tfall);
-      retval = hitlet.charge()*_dVdQ*rise*fall;
+      retval = hitlet.charge()*_dVdQ*rise*fall*_norm;
 // smear this by electronics noise FIXME!!!
 // should make some smearing for dispersion here, based on the wire distance traveled. FIXME!!
     }
@@ -78,12 +75,12 @@ namespace mu2e {
 
   unsigned short StrawElectronics::adcResponse(double mvolts) const {
     static unsigned short zero(0);
-    return min(max(static_cast<unsigned short>(floor(mvolts*_ADCLSB)),zero),_maxADC);
+    return min(max(static_cast<unsigned short>(floor(mvolts/_ADCLSB)),zero),_maxADC);
   }
 
   unsigned long StrawElectronics::tdcResponse(double time) const {
     static unsigned long zero(0);
-    return min(max(static_cast<unsigned long>(floor(time*_TDCLSB)),zero),_maxTDC);
+    return min(max(static_cast<unsigned long>(floor(time/_TDCLSB)),zero),_maxTDC);
   }
 
   void StrawElectronics::digitizeWaveform(vector<double> const& wf,StrawDigi::ADCWaveform& adc) const{
@@ -111,7 +108,7 @@ namespace mu2e {
   }
   
   bool StrawElectronics::combineEnds(double t1, double t2) const {
-    return fabs(t1-t2)*_TDCLSB < _maxDTDC;
+    return fabs(t1-t2)/_TDCLSB < _maxDTDC;
   }
 
 

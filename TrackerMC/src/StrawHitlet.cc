@@ -1,8 +1,8 @@
 //
 // StrawHitlet
-// $Id: StrawHitlet.cc,v 1.3 2013/12/10 21:43:45 brownd Exp $
+// $Id: StrawHitlet.cc,v 1.4 2013/12/12 00:39:24 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/10 21:43:45 $
+// $Date: 2013/12/12 00:39:24 $
 // Original author David Brown, LBNL
 //
 // mu2e includes
@@ -12,21 +12,22 @@
 using namespace std;
 namespace mu2e {
 
-  StrawHitlet::StrawHitlet() : _type(unknown), _strawIndex(0), _end(StrawEnd::unknown), _time(0.0), _charge(0.0), _wdist(0.0)
+  StrawHitlet::StrawHitlet() : _type(unknown), _strawIndex(0), _end(StrawEnd::unknown), _time(0.0), _charge(0.0), _ddist(0.0), _wdist(0.0)
   {}
 
   StrawHitlet::StrawHitlet(HitletType type,StrawIndex sindex,
       StrawEnd end,
       double time,
       double charge,
+      double ddist,
       double wdist,
       art::Ptr<StepPointMC> const& stepmc) : _type(type), _strawIndex(sindex), _end(end), _time(time),
-  _charge(charge), _wdist(wdist), _stepMC(stepmc) 
+  _charge(charge), _ddist(ddist), _wdist(wdist), _stepMC(stepmc) 
   {}
 
   StrawHitlet::StrawHitlet(const StrawHitlet& other) :
     _type(other._type), _strawIndex(other._strawIndex), _end(other._end),
-    _time(other._time), _charge(other._charge), _wdist(other._wdist), _stepMC(other._stepMC) 
+    _time(other._time), _charge(other._charge), _ddist(other._ddist), _wdist(other._wdist), _stepMC(other._stepMC) 
   {}
 
 // delegating constructors in C++11!
@@ -48,6 +49,7 @@ namespace mu2e {
       _end = other._end;
       _time = other._time;
       _charge = other._charge;
+      _ddist = other._ddist;
       _wdist = other._wdist;
       _stepMC = other._stepMC;
     }
@@ -60,7 +62,8 @@ namespace mu2e {
     << " end " << _end 
     << " time " << _time
     << " charge " << _charge
-    << " wire distance " << _wdist
+    << " drift distance " << _ddist
+    << " wire propagation distance " << _wdist
     << " StepPointMC ";
     _stepMC->print(ost,doEndl);
   }
