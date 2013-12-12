@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.4 2013/12/12 00:39:24 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.5 2013/12/12 19:08:29 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/12 00:39:24 $
+// $Date: 2013/12/12 19:08:29 $
 //
 // Original author David Brown, LBNL
 //
@@ -45,6 +45,10 @@ namespace mu2e {
       void digitizeWaveform(std::vector<double> const& wf,StrawDigi::ADCWaveform& adc) const;
       void digitizeTimes(std::array<double,2> const& times,StrawDigi::TDCValues& tdc) const;
       bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
+  // interpretation of digital data
+      void tdcTimes(StrawDigi::TDCValues const& tdc, std::array<double,2>& times) const;
+      double adcVoltage(unsigned short adcval) const; // mVolts
+      double adcCharge(unsigned short adcval) const; // pCoulombs
 // accessors
       double adcLSB() const { return _ADCLSB; } //LSB in mvolts
       double tdcLSB() const { return _TDCLSB; } //LSB in nseconds

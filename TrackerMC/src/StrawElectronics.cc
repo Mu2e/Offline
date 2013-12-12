@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.5 2013/12/12 00:39:24 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.6 2013/12/12 19:08:29 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/12 00:39:24 $
+// $Date: 2013/12/12 19:08:29 $
 //
 // Original author David Brown, LBNL
 //
@@ -111,6 +111,16 @@ namespace mu2e {
     return fabs(t1-t2)/_TDCLSB < _maxDTDC;
   }
 
+  void StrawElectronics::tdcTimes(StrawDigi::TDCValues const& tdc, std::array<double,2>& times) const {
+    for(size_t itime=0;itime<2;++itime)
+      times[itime] = tdc[itime]*_TDCLSB;
+  }
+  
+  double StrawElectronics::adcVoltage(unsigned short adcval) const {
+    return adcval*_ADCLSB;
+  }
 
-
+  double StrawElectronics::adcCharge(unsigned short adcval) const {
+    return adcVoltage(adcval)/_dVdQ;
+  }
 }
