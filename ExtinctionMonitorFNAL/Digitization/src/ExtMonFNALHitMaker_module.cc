@@ -1,9 +1,9 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.22 2013/08/12 16:20:51 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/08/12 16:20:51 $
+// $Id: ExtMonFNALHitMaker_module.cc,v 1.23 2013/12/12 20:06:14 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/12/12 20:06:14 $
 //
 // Original author Andrei Gaponenko
 
@@ -617,6 +617,22 @@ namespace mu2e {
         const double twalk = tstart - timeStamp(tstart) * condExtMon_->clockTick();
 
         const double tot = tend - tstart;
+
+        //----------------------------------------------------------------
+        // Date: Thu, 21 Feb 2013 00:02:04
+        // From: Dario Gnani <dgnani@lbl.gov>
+        // To: Andrei Gaponenko <gandr@fnal.gov>
+        // Cc: maurice <mgarcia-sciveres@lbl.gov>, David Brown <Dave_Brown@lbl.gov>
+        // Subject: Re: FE-I4 sim for Mu2e
+        //
+        // [...]
+        //
+        // the pixel address encoding for (col,row) with col in [1:80] and row in [1:336] is
+        // pix_addr=336*(col-1)+(row-1)
+        // Physically -looking at the ASIC with the pads at the bottom, column
+        // 1 is on the left and row 1 at the top
+        //
+        // AG: in Mu2e Offline we use 0 based pixel col and row, so:
 
         const int pixelAddress = 336 * pix.col() + pix.row();
 
