@@ -3,9 +3,9 @@
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGun.hh,v 1.16 2013/05/31 18:06:28 gandr Exp $
+// $Id: PrimaryProtonGun.hh,v 1.17 2013/12/13 21:35:07 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/05/31 18:06:28 $
+// $Date: 2013/12/13 21:35:07 $
 //
 //
 // The coordinate system used in this class is:
@@ -33,6 +33,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
+#include "CLHEP/Random/RandPoissonQ.h"
 
 // Forward references outside of namespace mu2e
 class TH1D;
@@ -91,6 +92,9 @@ namespace mu2e {
     // radius max, for flat distribution
     double _rmax;
 
+    double _mean;  // poisson mean; negative for non-random abs(mean)
+    CLHEP::RandPoissonQ _randPoissonQ;
+
     // Make histograms or not.
     bool _doHistograms;
 
@@ -105,6 +109,8 @@ namespace mu2e {
     TH1D* _hposz;
     TH1D* _hcosTheta;
     TH1D* _htime;
+
+    virtual void generateOne( GenParticleCollection&  );
   };
 
 } // end namespace mu2e,

@@ -3,9 +3,9 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.23 2013/07/22 18:57:42 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/07/22 18:57:42 $
+// $Id: PrimaryProtonGun.cc,v 1.24 2013/12/13 21:35:07 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/12/13 21:35:07 $
 //
 // Original author Rob Kutschke
 //
@@ -71,6 +71,8 @@ namespace mu2e {
     _tmax(config.getDouble("primaryProtonGun.tmax", 100.)),
     _shape(config.getString("primaryProtonGun.shape", "gaus")),
     _rmax(config.getDouble("primaryProtonGun.rmax", 100.)),
+    _mean(config.getDouble("primaryProtonGun.mean", -1.)),
+    _randPoissonQ( getEngine(), std::abs(_mean) ),
     _doHistograms(config.getBool("primaryProtonGun.doHistograms", true))
   {
 
@@ -92,6 +94,13 @@ namespace mu2e {
   }
 
   void PrimaryProtonGun::generate( GenParticleCollection& genParts ){
+    long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
+    for ( int j =0; j<n; ++j ){
+      generateOne(genParts);
+    }
+  }
+
+  void PrimaryProtonGun::generateOne( GenParticleCollection& genParts ){
 
     // For all distributions, use the engine managed by the RandomNumberGenerator.
     static CLHEP::RandFlat   randFlat        ( getEngine() );
