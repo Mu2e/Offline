@@ -5,17 +5,24 @@
 
 
 //----------------------------------------------------------------
-// Dump core positioning:  numbers from the spreadsheet
-// "20120221 Facility data for MARS.xlsx"
-// for Dump_Aluminum:
+// 2013-12-13 Update angle and center position per the e-mail:
+// 
+// Date: Fri, 13 Dec 2013 14:01:12
+// From: Peter H Kasper <kasper@fnal.gov>
+// To: Andrei Gaponenko <gandr@fnal.gov>
+// Subject: FW: Local dump coordinates
+// Parts/Attachments:
+//   1 Shown    ~50 lines  Text (charset: Windows-1252)
+//   2          235 KB     Application, "dump-location.xlsx"
 //
-//  position = 413.1   529  -20399.4
-// angle = 13.779, core full size { 1500, 1500, 2000. }
-//
-// Translated from MARS to G4 convention:
-//
-vector<double> protonBeamDump.coreCenterInMu2e = {651.3,  529., -19428.2};
-double         protonBeamDump.coreRotY = 13.78; // degrees
+// From: Rick Coleman
+// Sent: Friday, December 13, 2013 10:16 AM
+// To: Carol J Johnstone; Horst W Friedsam; Andy Stefanik; Larry M. Bartoszek; Vitaly Pronskikh
+// Cc: Peter H Kasper; Rick Coleman
+// Subject: Local dump coordinates
+
+vector<double> protonBeamDump.coreCenterInMu2e = {661.90,  527.40, -19428.2};
+double         protonBeamDump.coreRotY = 13.72; // degrees
 
 // Sizes below are given in mm in this order:
 //  {horizontal transverse to beam, vertical, horizontal along beam}
