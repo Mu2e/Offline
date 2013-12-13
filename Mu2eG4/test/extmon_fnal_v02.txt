@@ -67,15 +67,15 @@ double extMonFNAL.collimator1.radiusTransitiondZ = 0;
 // transverse to the beam coordinates (horiz, vertical).  The offsets
 // are w.r.t to the core center position (== the nominal beam entrance
 // point).
-double         extMonFNAL.entranceOffsetX = 325;
+double         extMonFNAL.entranceOffsetX = 315;
 double         extMonFNAL.entranceOffsetY = 1250;
 
 // Filter channel orientation: angles in horizontal and vertical
 // planes w.r.t dump core. Note that angleH is the same for all filter
 // elements, while angleV is different.  We specify angleV at the
 // filter entrance.
-double         extMonFNAL.angleH = 0.0316; //radians
-double         extMonFNAL.entranceAngleV = 0.1654; //radians
+double         extMonFNAL.angleH = 0.0303; //radians
+double         extMonFNAL.entranceAngleV = 0.1653; //radians
 
 bool extMonFNAL.collimator1.alignmentHole.visible = true;
 bool extMonFNAL.collimator1.alignmentHole.solid = false;
