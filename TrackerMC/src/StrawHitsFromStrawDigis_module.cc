@@ -2,9 +2,9 @@
 // This module transforms StrawDigi objects into StrawHit objects
 // It also builds the truth match map (if MC truth info for the StrawDigis exists)
 //
-// $Id: StrawHitsFromStrawDigis_module.cc,v 1.2 2013/12/12 19:08:29 brownd Exp $
+// $Id: StrawHitsFromStrawDigis_module.cc,v 1.3 2013/12/14 00:58:06 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/12/12 19:08:29 $
+// $Date: 2013/12/14 00:58:06 $
 //
 // Original author David Brown, LBNL
 //
@@ -42,33 +42,33 @@ namespace mu2e {
 
     virtual void beginJob();
     virtual void beginRun( art::Run& run );
-    void produce( art::Event& e);
+    virtual void produce( art::Event& e);
 
   private:
 
     // Diagnostics level.
-    int _diagLevel;
+    int _printLevel, _diagLevel;
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
 
     // Name of the StrawDigi collection
     std::string _strawDigis;
-    std::string _strawDigiMCPtrs;
     double _G4dEdQ; // G4 equivalence of energy (MeV) and ionization charge (pCoulomb).  Should
     // come from a materials database, it depends FIXME!!
     StrawElectronics _strawele; // models of straw response to stimuli
   };
 
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
+    _printLevel(pset.get<int>("printLevel",1)),
     _diagLevel(pset.get<int>("diagLevel",0)),
-    _strawDigis(pset.get<string>("StrawDigis")),
-    _strawDigiMCPtrs(pset.get<string>("StrawDigiMCPtrs","StrawDigiMCPtr")),
-    _G4dEdQ(pset.get<double>("G4EnergyperCharge",169)), // 169 MeV/pCoulombs
+    _strawDigis(pset.get<string>("StrawDigis","makeSD")),
+    _G4dEdQ(pset.get<double>("G4EnergyperCharge",5.6e-3)), // MeV/AMPLIFIED pCoulombs
     _strawele(pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet()))
     {
       produces<StrawHitCollection>();
       produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
+      if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis constructor " << endl;
     }
 
   void StrawHitsFromStrawDigis::beginJob(){
@@ -78,6 +78,7 @@ namespace mu2e {
   }
 
   void StrawHitsFromStrawDigis::produce(art::Event& event) {
+    if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis produce " << endl;
     unique_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
     unique_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
 
@@ -92,7 +93,7 @@ namespace mu2e {
   // find the associated MC truth collection.  Note this doesn't have to exist!
     const PtrStepPointMCVectorCollection * mcptrdigis(0);
     art::Handle<PtrStepPointMCVectorCollection> mcptrdigiH;
-    if(event.getByLabel(_strawDigiMCPtrs,"StrawDigiMCPtr",mcptrdigiH))
+    if(event.getByLabel(_strawDigis,"StrawDigiMCPtr",mcptrdigiH))
       mcptrdigis = mcptrdigiH.product();
   // loop over digis.  Note the MC truth is in sequence
     size_t ndigi = strawdigis->size();
@@ -131,4 +132,6 @@ namespace mu2e {
 
   }
 }
+using mu2e::StrawHitsFromStrawDigis;
+DEFINE_ART_MODULE(StrawHitsFromStrawDigis);
 

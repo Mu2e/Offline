@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.6 2013/12/12 19:08:29 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.7 2013/12/14 00:58:06 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/12 19:08:29 $
+// $Date: 2013/12/14 00:58:06 $
 //
 // Original author David Brown, LBNL
 //
@@ -15,20 +15,20 @@ using namespace std;
 namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdQ(pset.get<double>("dVdQ",1e5)),
-    _trise(pset.get<double>("RiseTime",1.0e-3)),
-    _tfall(pset.get<double>("FallTime",50.0)),
-    _tdead(pset.get<double>("DeadTime",10.0)),
-    _vmax(pset.get<double>("MaximumVoltage",1200.0)), // 1000 mV max
-    _vsat(pset.get<double>("SaturationVoltage",1000.0)),
-    _ADCLSB(pset.get<double>("ADCLSB",1.0)),
-    _maxADC(pset.get<unsigned>("maxADC",1023)),
-    _nADC(pset.get<unsigned>("nADC",10)),
-    _ADCPeriod(pset.get<double>("ADCPeriod",15.4)),
-    _ADCOffset(pset.get<double>("ADCOffset",-40.0)),
-    _TDCLSB(pset.get<double>("TDCLSB",0.037)),
-    _maxTDC(pset.get<unsigned>("maxTDC",65535)),
-    _maxDTDC(pset.get<unsigned>("maxDeltaTDC",250))
+    _dVdQ(pset.get<double>("dVdQ",1e4)), // mVolt/pCoulombs
+    _trise(pset.get<double>("RiseTime",1.0e-3)), // rise time for signal, after shaping
+    _tfall(pset.get<double>("FallTime",50.0)), // fall time for signal, after shaping
+    _tdead(pset.get<double>("DeadTime",10.0)), // nsec dead after threshold crossing (electronics processing time)
+    _vmax(pset.get<double>("MaximumVoltage",120.0)), // 120 mV max
+    _vsat(pset.get<double>("SaturationVoltage",100.0)), // 100 mV saturation starts
+    _ADCLSB(pset.get<double>("ADCLSB",0.125)), // mv/count
+    _maxADC(pset.get<unsigned>("maxADC",1023)), // 10-bit ADC
+    _nADC(pset.get<unsigned>("nADC",10)), // number of ADC samples
+    _ADCPeriod(pset.get<double>("ADCPeriod",15.4)), // nsec
+    _ADCOffset(pset.get<double>("ADCOffset",-40.0)), // nsec 
+    _TDCLSB(pset.get<double>("TDCLSB",0.037)),  // psed
+    _maxTDC(pset.get<unsigned>("maxTDC",65535)), // 16-bit TDC
+    _maxDTDC(pset.get<unsigned>("maxDeltaTDC",250))  // TDC range for which 2 end digitizations are combined
   {
   // insure times are positive
       if(_trise < 1.0e-3 || _tfall < 0.0){
@@ -121,6 +121,7 @@ namespace mu2e {
   }
 
   double StrawElectronics::adcCharge(unsigned short adcval) const {
-    return adcVoltage(adcval)/_dVdQ;
+  // this includes the effects from normalization of the pulse shape
+    return adcVoltage(adcval)/(_dVdQ*_norm);
   }
 }

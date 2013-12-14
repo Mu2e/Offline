@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.7 2013/12/12 19:08:29 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.8 2013/12/14 00:58:06 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/12/12 19:08:29 $
+// $Date: 2013/12/14 00:58:06 $
 //
 // Original author David Brown, LBNL
 //
@@ -86,7 +86,7 @@ namespace mu2e {
 
     virtual void beginJob();
     virtual void beginRun( art::Run& run );
-    void produce( art::Event& e);
+    virtual void produce( art::Event& e);
 
   private:
 
@@ -111,7 +111,7 @@ namespace mu2e {
     double _attlen; // attenuation length of charge down the wire
     double _vprop; // propagation time of signals down the wire, mm/nsec
     double _vdrift; // electron drift velocity
-    double _vdrifterr; // drift velocity error
+    double _vdrifterr; // relative drift velocity error
     double _mbtime; // period of 1 microbunch
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
     double _vthresh; // threshold voltage for electronics discriminator
@@ -180,14 +180,14 @@ namespace mu2e {
     _addXtalk(pset.get<bool>("addCrossTalkHits",false)),
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _minsteplen(pset.get<double>("MinimumIonClusterStep",0.1)), // 100 microns
-    _EIonize(pset.get<double>("EnergyPerIonization",27.0e-6)), // 27 ev/ionization for 100% Ar! FIXME!!
+    _EIonize(pset.get<double>("EnergyPerIonization",27.0e-6)), // 27 ev/ionization for 100% Ar! , should use Ar/CO2 FIXME!!
     _QIonize(pset.get<double>("ChargePerIonization",1.6e-7)), // e, pC
     _gasgain(pset.get<double>("GasGain",3.0e4)),
     _attlen(pset.get<double>("PropagationAttentuationLength",10000.0)), // mm
     _vdrift(pset.get<double>("DriftVelocity",0.05)), // mm/nsec
-    _vdrifterr(pset.get<double>("DriftVelocity",0.001)), // mm/nsec
+    _vdrifterr(pset.get<double>("RelativeDriftVelocityError",0.05)), // 5%
     _mbbuffer(pset.get<double>("TimeFoldingBuffer",200.0)), // nsec
-    _vthresh(pset.get<double>("DiscriminatorThreshold",5.0)), //mVolt
+    _vthresh(pset.get<double>("DiscriminatorThreshold",1.0)), //mVolt
     _strawele(pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())),
     // Random number distributions
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
@@ -202,7 +202,6 @@ namespace mu2e {
     {
 // Tell the framework what we make.
       produces<StrawDigiCollection>();
-// should produce a MC truth map from StrawDigis to StepPointMCs:  FIXME!!
       produces<PtrStepPointMCVectorCollection>("StrawDigiMCPtr");
     }
 
@@ -448,9 +447,10 @@ namespace mu2e {
 //    tcal->TimeToDistance(straw().index(),tdrift,tdir,t2d);
     // I'm using t2d to compute dfit time, which isn't right, since t2d refers to tracks and this is for clusters
     // FIXME!!
-//    drifttime =  driftdist/t2d._vdrift;
-    drifttime =  driftdist/_vdrift;
-    drifttimeerr = driftdist/_vdrifterr;
+// assume drift time error is proporitional to drift distance (ie error is constant in velocity).
+    double dtime = driftdist/_vdrift;
+    drifttimeerr = driftdist*_vdrifterr;
+    drifttime =  _gaussian.shoot(dtime,drifttimeerr);
   }
 
   void
