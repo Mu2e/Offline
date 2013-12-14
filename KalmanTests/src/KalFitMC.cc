@@ -1,13 +1,14 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.51 2013/10/21 22:47:59 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2013/10/21 22:47:59 $
+// $Id: KalFitMC.cc,v 1.52 2013/12/14 15:58:51 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2013/12/14 15:58:51 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
@@ -19,12 +20,12 @@
 #include "art/Framework/Principal/Event.h"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
+// Utilities
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -86,7 +87,6 @@ namespace mu2e
  KalFitMC::~KalFitMC(){}
   
   KalFitMC::KalFitMC(fhicl::ParameterSet const& pset) :
-    _mcstrawhitslabel(pset.get<std::string>("MCStrawHitsLabel","makeSH")),
     _mcptrlabel(pset.get<std::string>("MCPtrLabel","makeSH")),
     _mcstepslabel(pset.get<std::string>("MCStepsLabel","g4run")),
     _simpartslabel(pset.get<std::string>("SimParticleLabel","g4run")),
@@ -244,12 +244,19 @@ namespace mu2e
     _use = strawhit->usability();
 // mc information
     unsigned istraw = strawhit->index();
-    StrawHitMCTruth const& mcstrawhit = (_mcdata._mcstrawhits->at(istraw));
-    _mcrdrift = mcstrawhit.driftDistance();
-    _mcdmid = mcstrawhit.distanceToMid();
+
     CLHEP::Hep3Vector mcpos;
     PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(istraw));
     _nmcsteps = mcptr.size();
+    if(_nmcsteps > 0){
+      const Tracker& tracker = getTrackerOrThrow();
+      Straw const& straw = tracker.getStraw(mcptr[0]->strawIndex());
+      TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(), 
+	  mcptr[0]->position(), mcptr[0]->momentum().unit() );
+      _mcrdrift = pca.dca();
+      _mcdmid = pca.s1();
+    }
+// sums
     double esum(0.0);
     double mct0(0.0);
     _pdist = 0.0;
@@ -726,9 +733,6 @@ namespace mu2e
   KalFitMC::findMCData(const art::Event& evt) {
     _mcdata.clear();
     _mchitsums.clear();
-    art::Handle<StrawHitMCTruthCollection> truthHandle;
-    if(evt.getByLabel(_mcstrawhitslabel,truthHandle))
-      _mcdata._mcstrawhits = truthHandle.product();
   // Get the persistent data about pointers to StepPointMCs
     art::Handle<PtrStepPointMCVectorCollection> mchitptrHandle;
     if(evt.getByLabel(_mcptrlabel,"StrawHitMCPtr",mchitptrHandle))

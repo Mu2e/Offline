@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.32 2013/04/20 15:29:43 brownd Exp $
+// $Id: KalFitMC.hh,v 1.33 2013/12/14 15:58:51 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/04/20 15:29:43 $
+// $Date: 2013/12/14 15:58:51 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -11,9 +11,7 @@
 #include "art/Framework/Principal/fwd.h"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
@@ -118,15 +116,14 @@ namespace mu2e
   };
 
   struct MCEvtData {
-    MCEvtData(const StrawHitMCTruthCollection* mcstrawhits,
+    MCEvtData(
       const PtrStepPointMCVectorCollection* mchitptr,
       const StepPointMCCollection *mcsteps,
-      const StepPointMCCollection *mcvdsteps) : _mcstrawhits(mcstrawhits),_mchitptr(mchitptr),
+      const StepPointMCCollection *mcvdsteps) : _mchitptr(mchitptr),
       _mcsteps(mcsteps),_mcvdsteps(mcvdsteps){}
-    void clear() {_mcstrawhits = 0; _mchitptr = 0; _mcsteps = 0; _mcvdsteps = 0; _simparts = 0; }
+    void clear() { _mchitptr = 0; _mcsteps = 0; _mcvdsteps = 0; _simparts = 0; }
     MCEvtData() {clear();}
-    bool good() { return _mcstrawhits != 0 && _mchitptr != 0 && _mcsteps != 0 && _mcvdsteps != 0; }
-    const StrawHitMCTruthCollection* _mcstrawhits;
+    bool good() { return _mchitptr != 0 && _mcsteps != 0 && _mcvdsteps != 0; }
     const PtrStepPointMCVectorCollection* _mchitptr;
     const StepPointMCCollection *_mcsteps, *_mcvdsteps;
     const SimParticleCollection *_simparts;
