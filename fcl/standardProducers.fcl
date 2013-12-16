@@ -15,6 +15,7 @@ g4run :
   module_type          : G4
   generatorModuleLabel : generate
   diagLevel            : 0
+  visGUIMacro          : "Mu2eG4/test/visqtGUI.mac"
   trackingVerbosityLevel : 0
   simParticleNumberOffset : 0
 
