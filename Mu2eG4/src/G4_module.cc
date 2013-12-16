@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.75 2013/10/09 18:09:18 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/10/09 18:09:18 $
+// $Id: G4_module.cc,v 1.76 2013/12/16 21:59:35 genser Exp $
+// $Author: genser $
+// $Date: 2013/12/16 21:59:35 $
 //
 // Original author Rob Kutschke
 //
@@ -49,6 +49,7 @@
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
+#include "Mu2eG4/inc/Mu2eVisCommands.hh"
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -140,8 +141,9 @@ namespace mu2e {
     int _tmvlevel;
     int _checkFieldMap;
 
-    // Name of a macro file for visualization.
-    string _visMacro;
+    // Names of macro files for visualization.
+    string _visMacro;  // init
+    string _visGUIMacro; // end of Event GUI
 
     // Name of a macro file to be used for controling G4 parameters after
     // the initialization phase.
@@ -195,6 +197,7 @@ namespace mu2e {
     _tmvlevel(pSet.get<int>("trackingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
     _visMacro(pSet.get<std::string>("visMacro","")),
+    _visGUIMacro(pSet.get<std::string>("visGUIMacro","")),
     _g4Macro(pSet.get<std::string>("g4Macro","")),
     _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
     _inputPhysVolumeMultiInfoLabel(pSet.get<string>("inputPhysVolumeMultiInfoLabel", "")),
@@ -386,7 +389,7 @@ namespace mu2e {
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
-      _visManager = std::unique_ptr<G4VisManager>(new G4VisExecutive);
+      _visManager = std::unique_ptr<G4VisManager>(new G4VisExecutive());
       _visManager->Initialize();
 
       ConfigFileLookupPolicy visPath;
@@ -540,29 +543,79 @@ namespace mu2e {
     if ( !_visMacro.empty() ){
 
       // Prompt to continue and wait for reply.
-      cout << "Enter a character to go to the next event (q quits, v enters G4 interactive session)" <<
-        endl;
-      cout << "(Once in G4 interactive session to quit it type exit): ";
+      cout << "Enter a character to go to the next event" << endl;
+      cout << "q quits, s enters G4 interactive session, g enters a GUI session (if available)"
+	   << endl;
+      cout << "Once in G4 interactive session to quit it type \"exit\" "
+	   << endl;
+
       string userinput;
       cin >> userinput;
       G4cout << userinput << G4endl;
 
       // Check if user is requesting an early termination of the event loop.
       if ( !userinput.empty() ){
-        // Checks only the first character; we should check first non-blank.
+        // Check only the first character; >> skips whitespace by default
         char c = tolower( userinput[0] );
         if ( c == 'q' ){
           throw cet::exception("CONTROL")
             << "Early end of event loop requested inside G4, \n";
-        } else if ( c == 'v' ){
+        } else if ( c == 's' || c == 'g' || c == 'v' ){
+	  // v is for backward compatibility
           G4int argc=1;
           // Cast away const-ness; required by the G4 interface ...
           char* dummy = (char *)"dummy";
           char** argv = &dummy;
-          G4UIExecutive* UIE = new G4UIExecutive(argc, argv);
-          UIE->SessionStart();
+          G4UIExecutive* UIE = ( c == 's' || c == 'v' ) ? 
+	    new G4UIExecutive(argc, argv,"tcsh") :
+	    new G4UIExecutive(argc, argv);
+	  
+	  if (UIE->IsGUI()) {
+
+	    // we add a command here and initialize it (/vis/sceneHandler has to exist prior to this)
+	    Mu2eVisCommandSceneHandlerDrawEvent* drEv = new Mu2eVisCommandSceneHandlerDrawEvent();
+	    _visManager->RegisterMessenger(drEv); // assumes ownership;
+	    // drEv->SetVisManager(_visManager.get());  
+	    // vis manager pointer is static member of the drEv base class so the above is not needed
+
+	    if ( !_visGUIMacro.empty() ){
+	      G4String command("/control/execute ");
+	      ConfigFileLookupPolicy visPath;
+	      command += visPath(_visGUIMacro);
+	      _UI->ApplyCommand( command );
+
+	      cout << "In GUI interactive session use the \"Draw Current Event\" "
+		   << "button in the Vis menu"
+		   << endl;
+
+	    } else {
+	      cout << __func__ << " WARNING: visGUIMacro empty, may need to be defined in fcl" << endl;
+	    }
+
+	  } // end UIE->IsGUI()
+          UIE->SessionStart(); 
           delete UIE;
-        }
+
+	  //If current scene is scene-0 and if scene-handler-0 has viewer-0 we
+	  //will select it if not current to deal with a case which may occur
+	  //e.g. in a simultaneous use of OGL & Qt
+
+	  // basically _UI->ApplyCommand("/vis/viewer/select viewer-0"); // to have tracks drawn
+
+	  G4String viewerToLookFor("viewer-0");
+	  G4VViewer* pViewer = _visManager->GetViewer(viewerToLookFor);
+	  if (pViewer) {
+	    if (pViewer != _visManager->GetCurrentViewer()) {
+	      _visManager->SetCurrentViewer(pViewer);
+	    }
+	  }
+	  // G4VGraphicsSystem* gsys = _visManager->GetCurrentGraphicsSystem();
+	  // if (gsys) {
+	  //   cout << __func__ << " current GraphicsSystem Name " << gsys->GetName() <<  endl;
+	  // }
+
+	} // end c == 'q'
+
       } // end !userinput.empty()
 
     }   // end !_visMacro.empty()
