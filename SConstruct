@@ -2,9 +2,9 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.51 2013/10/22 22:12:42 genser Exp $
+# $Id: SConstruct,v 1.52 2013/12/16 21:55:35 genser Exp $
 # $Author: genser $
-# $Date: 2013/10/22 22:12:42 $
+# $Date: 2013/12/16 21:55:35 $
 #
 # Original author Rob Kutschke.
 #
@@ -24,6 +24,16 @@ AddOption('--mu2elevel',
           metavar='DIR',
           default='prof',
           help='Select debug build')
+
+# Tell scons about a new command line option that controls the selection of graphics
+AddOption('--mu2egs',
+          dest='mu2egs',
+          type='string',
+          nargs=1,
+          action='store',
+          metavar='DIR',
+          default='OGL',
+          help='Select graphics system')
 
 # Extract information from the shell environment.
 art_inc       = os.environ['ART_INC']
@@ -135,6 +145,33 @@ if not level in known_levels:
     print 'Unrecognized value for --mu2elevel ' + level
     print '   The value must be one of the known levels: '  + str(known_levels)
     raise Exception('foo')
+
+graphicssys = GetOption('mu2egs')
+known_gs = ['OGL', 'Qt' ]
+if not graphicssys in known_gs:
+    print 'Unrecognized value for --mu2egs ' + graphicssys
+    print '   The value must be one of the known systems: ' + str(known_gs)
+    raise Exception('gs')
+
+# the following may not be needed as the compiler rebuilds it all, but
+# we may still want to "latch" to qt
+
+qtfilename='.isqt'
+if os.path.exists(qtfilename):
+    qtf = open(qtfilename,'r')
+    rgs = qtf.readline(100)
+    rgs.strip()
+    if graphicssys!=rgs:
+        print 'Inconsitent build; the previous --mu2egs was: ' \
+            + str(rgs) + ' current one is ' + graphicssys
+        print 'inspect (remove?) file: ' +  qtfilename + ' or verify option --mu2egs'
+        raise Exception('gs')
+else:
+    if graphicssys == 'Qt':
+        qtf = open(qtfilename,'w')
+        qtf.write(graphicssys)
+
+env.Append( MU2EOPTS = [level, graphicssys] );
 
 # Set compile and link flags.
 SetOption('warn', 'no-fortran-cxx-mix')
