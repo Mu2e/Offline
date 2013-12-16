@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.17 2013/10/15 17:25:52 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/10/15 17:25:52 $
+// $Id: VirtualDetectorId.hh,v 1.18 2013/12/16 01:00:37 youzy Exp $
+// $Author: youzy $
+// $Date: 2013/12/16 01:00:37 $
 //
 // Original author Rob Kutschke
 //
@@ -76,6 +76,7 @@ namespace mu2e {
       EMC_Disk_0_SurfIn, EMC_Disk_0_SurfOut, EMC_Disk_1_SurfIn, EMC_Disk_1_SurfOut,// 73, 74, 75, 76
       EMC_Disk_0_EdgeIn, EMC_Disk_0_EdgeOut, EMC_Disk_1_EdgeIn, EMC_Disk_1_EdgeOut,// 77, 78, 79,80
       DSNeutronShieldExit, // 81
+      PSTargetSurf, // 82
       lastEnum
     };
 
@@ -113,7 +114,8 @@ namespace mu2e {
       "EMC_2_SurfIn", "EMC_2_SurfOut", "EMC_3_SurfIn", "EMC_3_SurfOut", \
       "EMC_Disk_0_SurfIn", "EMC_Disk_0_SurfOut","EMC_Disk_1_SurfIn", "EMC_Disk_1_SurfOut", \
       "EMC_Disk_0_EdgeIn", "EMC_Disk_0_EdgeOut","EMC_Disk_1_EdgeIn", "EMC_Disk_1_EdgeOut", \
-      "DSNeutronShieldExit"
+      "DSNeutronShieldExit", \
+      "PSTargetSurf"
 
   public:
 
@@ -182,6 +184,10 @@ namespace mu2e {
     
     bool isDiskCalorimeter1() const{
       return ( _id == EMC_Disk_1_SurfIn || _id == EMC_Disk_1_SurfOut || _id == EMC_Disk_1_EdgeIn || _id == EMC_Disk_1_EdgeOut);
+    }
+
+    bool isPSTargetSurf() const{
+      return (_id == PSTargetSurf);
     }
     
     // ROOT requires a default c'tor.
