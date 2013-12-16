@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.40 2013/10/23 17:22:32 genser Exp $
+# $Id: SConscript,v 1.41 2013/12/16 21:56:10 genser Exp $
 # $Author: genser $
-# $Date: 2013/10/23 17:22:32 $
+# $Date: 2013/12/16 21:56:10 $
 #
 # Original author Rob Kutschke.
 #
@@ -42,8 +42,18 @@ G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
                '-DG4VERSION='+g4_version
             ]
 
-# Compiler switches if we want to build G4 with OPENGL
-G4OGL_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL' ]
+# Compiler switches if we want to build G4 with OPENGL and possibly Qt
+
+mu2eopts = env['MU2EOPTS'];
+
+if mu2eopts[1] == 'Qt':
+    G4GS_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL',
+                      '-DG4UI_USE_QT',          '-DG4VIS_USE_OPENGLQT' ]
+else:
+    G4GS_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL' ]
+
+#G4OGL_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL' ]
+#G4QT_CPPFLAGS  = [ '-DG4UI_USE_QT',          '-DG4VIS_USE_OPENGLQT' ]
 
 # The granular version of the G4 libraries.
 G4GRANULARLIBS = [
@@ -113,36 +123,36 @@ G4GRANULARLIBS = [
 
 # geant4 9.5 and above uses G4GLOBALIBS
 G4GLOBALIBS = [
+              'libG4FR',
+              'libG4GMocren',
+              'libG4OpenGL',
+              'libG4RayTracer',
+              'libG4Tree',
+              'libG4VRML',
               'libG4analysis',
               'libG4digits_hits',
               'libG4error_propagation',
               'libG4event',
-              'libG4FR',
               'libG4geometry',
               'libG4gl2ps',
               'libG4global',
-              'libG4GMocren',
               'libG4graphics_reps',
               'libG4intercoms',
               'libG4interfaces',
               'libG4materials',
               'libG4modeling',
-              'libG4OpenGL',
               'libG4parmodels',
               'libG4particles',
               'libG4persistency',
               'libG4physicslists',
               'libG4processes',
-              'libG4RayTracer',
               'libG4readout',
               'libG4run',
               'libG4track',
               'libG4tracking',
-              'libG4Tree',
               'libG4visHepRep',
-              'libG4vis_management',
               'libG4visXXX',
-              'libG4VRML',
+              'libG4vis_management',
               'libG4zlib'
               ]
 
@@ -151,8 +161,13 @@ if g4_version < '4095':
 else:
     G4LIBS = G4GLOBALIBS
 
-# Link libraries needed to build G4 with OPENGL.
-OPENGL_LIBS = [ 'GLU', 'GL' ]
+# Link libraries needed to build G4 with OPENGL and possibly Qt
+#OPENGL_LIBS = [ 'GLU', 'GL' ]
+
+if mu2eopts[1] == 'Qt':
+    GS_LIBS = [ 'GLU', 'GL', 'QtOpenGL', 'QtGui', 'QtCore' ]
+else:
+    GS_LIBS = [ 'GLU', 'GL']
 
 # Link libraries needed to build G4 with XERCESC
 XERCESC_LIBS = [ 'xerces-c' ]
@@ -172,10 +187,10 @@ mainlib = helper.make_mainlib ( [
     'mu2e_GeneralUtilities',
     G4LIBS,
     'CLHEP',
-    OPENGL_LIBS,
+    GS_LIBS,
     XERCESC_LIBS
     ],
-                                [  G4CPPFLAGS, G4OGL_CPPFLAGS ],
+                                [  G4CPPFLAGS, G4GS_CPPFLAGS ],
                                 [ '-L'+g4libdir, '-I'+g4inc, '-I'+g4futureinc ]
                                 )
 
@@ -193,12 +208,12 @@ helper.make_plugins( [
     'mu2e_GeneralUtilities',
     G4LIBS,
     'CLHEP',
-    OPENGL_LIBS,
+    GS_LIBS,
     XERCESC_LIBS,
     'Tree'
     ],
                      [],
-                     [ G4CPPFLAGS, G4OGL_CPPFLAGS ],
+                     [ G4CPPFLAGS, G4GS_CPPFLAGS ],
                      [ '-L'+g4libdir, '-I'+g4inc ]
                      )
 
