@@ -1,9 +1,9 @@
 # Variant of g4test_03 but with transport only.
 #
 #
-# $Id: transportOnly.fcl,v 1.13 2013/12/16 22:48:34 genser Exp $
+# $Id: transportOnly.fcl,v 1.14 2013/12/17 21:52:33 genser Exp $
 # $Author: genser $
-# $Date: 2013/12/16 22:48:34 $
+# $Date: 2013/12/17 21:52:33 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -46,12 +46,12 @@ physics : {
       module_type          : G4
       diagLevel            : 1
       generatorModuleLabel : generate
-#      visMacro             : "Mu2eG4/test/vismqt.mac"
 #      visMacro             : "Mu2eG4/test/visxy.mac"
 #      visMacro             : "Mu2eG4/test/visxz.mac"
 #      visMacro             : "Mu2eG4/test/visyz.mac"
 #      visMacro             : "Mu2eG4/test/vis45.mac"
 #      visMacro             : "Mu2eG4/test/visTree.mac"
+#      visMacro             : "Mu2eG4/test/vismqt.mac"
        visGUIMacro          : "Mu2eG4/test/visqtGUI.mac"
 # visGUIMacro is used with the Qt GUI
     }
