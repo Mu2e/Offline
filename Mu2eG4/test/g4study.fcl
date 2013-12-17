@@ -2,9 +2,9 @@
 # fcl config file to perform Geant4 studies using the Mu2e framework infrastructure and simple geometry
 #
 #
-# $Id: g4study.fcl,v 1.3 2013/04/05 00:12:37 genser Exp $
+# $Id: g4study.fcl,v 1.4 2013/12/17 21:51:46 genser Exp $
 # $Author: genser $
-# $Date: 2013/04/05 00:12:37 $
+# $Date: 2013/12/17 21:51:46 $
 #
 # Original author K. Genser
 #
@@ -42,6 +42,7 @@ physics : {
 
   producers:  {
 
+    generate : @local::generate
     generate:
     {
       module_type          : EventGenerator
@@ -50,6 +51,7 @@ physics : {
       messageOnReplacement : true
     }
 
+    g4run :  @local::g4run
     g4run :
     {
       module_type          : Mu2eG4Study
@@ -63,13 +65,15 @@ physics : {
       // // Make arbitrary LogicalVolumes sensitive:
       // sensitiveVolumes: []
       }
-
 #      visMacro             : "Mu2eG4/test/visxy.mac"
 #      visMacro             : "Mu2eG4/test/visxz.mac"
 #      visMacro             : "Mu2eG4/test/visyz.mac"
 #      visMacro             : "Mu2eG4/test/vis45.mac"
 #      visMacro             : "Mu2eG4/test/vis4530.mac"
 #      visMacro             : "Mu2eG4/test/visTree.mac"
+#      visMacro             : "Mu2eG4/test/vismqt.mac"
+       visGUIMacro          : "Mu2eG4/test/visqtGUI.mac"
+# visGUIMacro is used with the Qt GUI
     }
 
     randomsaver          : @local::randomsaver
@@ -111,4 +115,4 @@ outputs:  {
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.user.SeedService.baseSeed         :  0
 services.user.SeedService.maxUniqueEngines :  20
-
+#services.message.destinations.log.noTimeStamps : true
