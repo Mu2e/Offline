@@ -51,6 +51,26 @@ makeSH :
     deadStraws  : [ ]
   }
 }
+# straw digis
+makeSD : {
+  module_type : StrawDigisFromStepPointMCs
+  g4ModuleLabel : g4run
+  deadStrawList        : {
+    verbosity   : 0
+    deadDevices : [ ]
+    deadSectors : [ ]
+    deadLayers  : [ ]
+    deadStraws  : [ ]
+  }
+}
+
+
+#  straw hit making from straw digis
+makeSHfromSD : {
+  module_type : StrawHitsFromStrawDigis
+  StrawDigis : makeSD
+}
+
 
 
 # Form DCHHits (DcH).
