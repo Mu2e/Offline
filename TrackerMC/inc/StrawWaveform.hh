@@ -5,9 +5,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.hh,v 1.2 2013/12/08 21:10:12 brownd Exp $
+// $Id: StrawWaveform.hh,v 1.3 2013/12/18 02:20:56 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/08 21:10:12 $
+// $Date: 2013/12/18 02:20:56 $
 //
 // Original author David Brown, LBNL
 //
@@ -53,6 +53,7 @@ namespace mu2e {
 
   struct WFX { // waveform crossing
     double _time; // time waveform crossed threhold.  Note this includes noise effects
+    double _slope; // dt/dV of waveform at crossing
     HitletList::const_iterator _ihitlet; // iterator to hitlet associated with this crossing
     WFX() = delete; // disallow
     WFX(StrawWaveform const& wf) : _time(0.0), _ihitlet(wf.hitlets().hitletList().begin())  {}

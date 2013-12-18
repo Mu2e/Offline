@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.8 2013/12/14 00:58:06 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.9 2013/12/18 02:20:56 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/12/14 00:58:06 $
+// $Date: 2013/12/18 02:20:56 $
 //
 // Original author David Brown, LBNL
 //
@@ -95,7 +95,6 @@ namespace mu2e {
     unsigned _maxhist;
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
-
     // Name of the tracker StepPoint collection
     string _trackerStepPoints;
 
@@ -111,10 +110,9 @@ namespace mu2e {
     double _attlen; // attenuation length of charge down the wire
     double _vprop; // propagation time of signals down the wire, mm/nsec
     double _vdrift; // electron drift velocity
-    double _vdrifterr; // relative drift velocity error
+    double _drifterr; // drift time error
     double _mbtime; // period of 1 microbunch
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
-    double _vthresh; // threshold voltage for electronics discriminator
     StrawElectronics _strawele; // models of straw response to stimuli
     // Random number distributions
     art::RandomNumberGenerator::base_engine_t& _engine;
@@ -128,9 +126,10 @@ namespace mu2e {
     // List of dead straws as a parameter set; needed at beginRun time.
 //    DeadStrawList _strawStatus;
 // diagnostics
-    TTree* _sdiag;
+    TTree* _swdiag;
     Int_t _sdevice, _ssector, _slayer, _sstraw;
     Int_t _nhitlet;
+    Float_t _hqsum, _sesum;
     Int_t _nsteppoint;
     Int_t _npart;
     Float_t _tmin, _tmax;
@@ -180,14 +179,13 @@ namespace mu2e {
     _addXtalk(pset.get<bool>("addCrossTalkHits",false)),
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _minsteplen(pset.get<double>("MinimumIonClusterStep",0.1)), // 100 microns
-    _EIonize(pset.get<double>("EnergyPerIonization",27.0e-6)), // 27 ev/ionization for 100% Ar! , should use Ar/CO2 FIXME!!
+    _EIonize(pset.get<double>("EnergyPerIonization",100.0e-6)), // 100% Ar is between 27 ev/ionization and 100 ev/ionization, not sure what model G4 uses, also should use Ar/CO2 FIXME!!
     _QIonize(pset.get<double>("ChargePerIonization",1.6e-7)), // e, pC
     _gasgain(pset.get<double>("GasGain",3.0e4)),
-    _attlen(pset.get<double>("PropagationAttentuationLength",10000.0)), // mm
+    _attlen(pset.get<double>("PropagationAttentuationLength",25000.0)), // 25000 mm
     _vdrift(pset.get<double>("DriftVelocity",0.05)), // mm/nsec
-    _vdrifterr(pset.get<double>("RelativeDriftVelocityError",0.05)), // 5%
+    _drifterr(pset.get<double>("DriftTimeError",1.5)), // nsec
     _mbbuffer(pset.get<double>("TimeFoldingBuffer",200.0)), // nsec
-    _vthresh(pset.get<double>("DiscriminatorThreshold",1.0)), //mVolt
     _strawele(pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())),
     // Random number distributions
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
@@ -208,16 +206,18 @@ namespace mu2e {
   void StrawDigisFromStepPointMCs::beginJob(){
     if(_diagLevel > 0){
       art::ServiceHandle<art::TFileService> tfs;
-      _sdiag =tfs->make<TTree>("sdiag","StrawDigi diagnostics");
-      _sdiag->Branch("device",&_sdevice,"device/I");
-      _sdiag->Branch("sector",&_ssector,"sector/I");
-      _sdiag->Branch("layer",&_slayer,"layer/I");
-      _sdiag->Branch("straw",&_sstraw,"straw/I");
-      _sdiag->Branch("nhitlet",&_nhitlet,"straw/I");
-      _sdiag->Branch("nstep",&_nsteppoint,"straw/I");
-      _sdiag->Branch("npart",&_npart,"straw/I");
-      _sdiag->Branch("tmin",&_tmin,"tmin/F");
-      _sdiag->Branch("tmax",&_tmax,"tmax/F");
+      _swdiag =tfs->make<TTree>("swdiag","StrawWaveform diagnostics");
+      _swdiag->Branch("device",&_sdevice,"device/I");
+      _swdiag->Branch("sector",&_ssector,"sector/I");
+      _swdiag->Branch("layer",&_slayer,"layer/I");
+      _swdiag->Branch("straw",&_sstraw,"straw/I");
+      _swdiag->Branch("nhitlet",&_nhitlet,"nhitlet/I");
+      _swdiag->Branch("hqsum",&_hqsum,"hqsum/F");
+      _swdiag->Branch("nstep",&_nsteppoint,"nstep/I");
+      _swdiag->Branch("sesum",&_sesum,"sesum/F");
+      _swdiag->Branch("npart",&_npart,"npart/I");
+      _swdiag->Branch("tmin",&_tmin,"tmin/F");
+      _swdiag->Branch("tmax",&_tmax,"tmax/F");
 
       if(_diagLevel > 1){
 	_sddiag =tfs->make<TTree>("sddiag","StrawDigi diagnostics");
@@ -393,7 +393,7 @@ namespace mu2e {
       vector<double> lengths(ndiv,0.0);
 // the following assumes StepPointMC::position is at the begining of the step
       _randflat.shootArray(ndiv,lengths.data(),0.0,step.stepLength());
-// sort these.  I'm not sure this is necessary CHECKME!!!
+// sort these
       sort(lengths.begin(),lengths.end());
 // make clusters for each
       CLHEP::Hep3Vector dir = step.momentum().unit();
@@ -439,18 +439,10 @@ namespace mu2e {
   void
   StrawDigisFromStepPointMCs::distanceToTime(Straw const& straw, double driftdist, double driftphi,
     double& drifttime, double& drifttimeerr) const {
-// again need a better model here, FIXME!!
-  // I'm not sure how expensive this call is: it could be performed once/event then passed in FIXME!!
-//    ConditionsHandle<TrackerCalibrations> tcal("ignored");
-//    static T2D t2d;
-//    static CLHEP::Hep3Vector tdir(0.0,0.0,1.0);
-//    tcal->TimeToDistance(straw().index(),tdrift,tdir,t2d);
-    // I'm using t2d to compute dfit time, which isn't right, since t2d refers to tracks and this is for clusters
-    // FIXME!!
-// assume drift time error is proporitional to drift distance (ie error is constant in velocity).
+// need an external model object here, FIXME!!
     double dtime = driftdist/_vdrift;
-    drifttimeerr = driftdist*_vdrifterr;
-    drifttime =  _gaussian.shoot(dtime,drifttimeerr);
+// smear with a fixed resolution
+    drifttime =  _gaussian.shoot(dtime,_drifterr);
   }
 
   void
@@ -497,7 +489,7 @@ namespace mu2e {
       WFX wfx(swf); // start at the begining of the microbunch, at the begining of the wavelets
       // find where the waveform xings threshold.  This updates the waveform sample
       // Skip any points outside the microbunch readout window
-      while(swf.crossesThreshold(_vthresh,wfx) && wfx._time < _mbtime){
+      while(swf.crossesThreshold(_strawele.threshold(),wfx) && wfx._time < _mbtime){
 	// keep these in time-order
 	auto iwfxl = xings.begin();
 	while(iwfxl != xings.end() && iwfxl->_time < wfx._time)
@@ -528,11 +520,13 @@ namespace mu2e {
       ++iwfxl;
 // create a digi from this pair or singleton
       createDigi(xpair,primarywf,digis);
-// fill associated MC truth matching
+// fill associated MC truth matching.  Only count the same step once
+      set<art::Ptr<StepPointMC> > xmcsp;
+      for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp)
+	xmcsp.insert((*ixp)->_ihitlet->stepPointMC());
       PtrStepPointMCVector mcptr;
-      for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
-	mcptr.push_back((*ixp)->_ihitlet->stepPointMC());
-      }
+      for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
+	mcptr.push_back(*ixmcsp);
       mcptrs->push_back(mcptr);
 // diagnostics
       if(_diagLevel > 1)digiDiag(xpair,digis->back());
@@ -558,7 +552,8 @@ namespace mu2e {
 	_strawele.adcTimes(wfx._time,adctimes);
 	primarywf.sampleWaveform(adctimes,wf);
       }
-      xtimes[index] = wfx._time; // non-primary end is TDC 1;
+      // smear the times for electronics noise
+      xtimes[index] = _gaussian.shoot(wfx._time,_strawele.thresholdNoise()*wfx._slope);
       // record MC match if it isn't already recorded
       mcmatch.insert(wfx._ihitlet->stepPointMC());
     }
@@ -603,17 +598,22 @@ namespace mu2e {
     _nhitlet = hitlets.size();
     set<art::Ptr<StepPointMC> > steps;
     set<art::Ptr<SimParticle> > parts;
+    _hqsum = 0.0;
     for(auto ihitl=hitlets.begin();ihitl!=hitlets.end();++ihitl){
       if(ihitl->stepPointMC().isNonnull()){
 	steps.insert(ihitl->stepPointMC());
 	parts.insert(ihitl->stepPointMC()->simParticle());
+	_hqsum += ihitl->charge();
       }
-      _nsteppoint = steps.size();
-      _npart = parts.size();
     }
+    _nsteppoint = steps.size();
+    _npart = parts.size();
+    _sesum = 0.0;
+    for(auto istep=steps.begin();istep!=steps.end();++istep)
+      _sesum += (*istep)->ionizingEdep();
     _tmin = hitlets.begin()->time();
     _tmax = hitlets.rbegin()->time();
-    _sdiag->Fill();
+    _swdiag->Fill();
     if(_diagLevel > 2 && _event < _maxhist){
       // histogram the waveforms
       const double tstep(0.5); // 0.5

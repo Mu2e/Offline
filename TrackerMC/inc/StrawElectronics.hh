@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.5 2013/12/12 19:08:29 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.6 2013/12/18 02:20:55 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/12 19:08:29 $
+// $Date: 2013/12/18 02:20:55 $
 //
 // Original author David Brown, LBNL
 //
@@ -48,7 +48,7 @@ namespace mu2e {
   // interpretation of digital data
       void tdcTimes(StrawDigi::TDCValues const& tdc, std::array<double,2>& times) const;
       double adcVoltage(unsigned short adcval) const; // mVolts
-      double adcCharge(unsigned short adcval) const; // pCoulombs
+      double adcCurrent(unsigned short adcval) const; // microAmps
 // accessors
       double adcLSB() const { return _ADCLSB; } //LSB in mvolts
       double tdcLSB() const { return _TDCLSB; } //LSB in nseconds
@@ -61,18 +61,22 @@ namespace mu2e {
       void adcTimes(double time, std::vector<double>& adctimes) const; // sampling times of ADC
       double saturationVoltage() const { return _vsat; }
       double maximumVoltage() const { return _vmax; }
+      double threshold() const { return _vthresh; }
+      double thresholdNoise() const { return _vthreshnoise; }
       double riseTime() const { return _trise; }
       double fallTime() const { return _tfall; }
       double deadTime() const { return _tdead; }
     private:
-      // scale factor between charge and voltage (milliVolts from picoCoulombs)
-      double _dVdQ;
+      // scale factor between current and voltage (milliVolts per microAmps)
+      double _dVdI;
       double _trise, _tfall; // rise and fall times.  These should depend on hitlet type, FIXME!! 
       double _tdead; // minimum deadtime to digitize and latch 1 signal
       double _norm; // normalization factor, computed from trise and tfall
       double _tmax; // relative time at which hitlet signal reaches maximum, computed from trise and tfall
       double _vmax, _vsat; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
-      // add some noise parameter: FIXME!!!
+      double _vthresh; // threshold voltage for electronics discriminator (mVolt)
+      double _vthreshnoise; // threshold voltage noise width (mVolt)
+// add some noise parameter: FIXME!!!
       double _ADCLSB; // least-significant bit of ADC (mVolts)
       unsigned short _maxADC; // maximum ADC value
       size_t _nADC; // Number of ADC samples

@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.7 2013/12/14 00:58:06 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.8 2013/12/18 02:20:56 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/14 00:58:06 $
+// $Date: 2013/12/18 02:20:56 $
 //
 // Original author David Brown, LBNL
 //
@@ -15,13 +15,15 @@ using namespace std;
 namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdQ(pset.get<double>("dVdQ",1e4)), // mVolt/pCoulombs
-    _trise(pset.get<double>("RiseTime",1.0e-3)), // rise time for signal, after shaping
-    _tfall(pset.get<double>("FallTime",50.0)), // fall time for signal, after shaping
-    _tdead(pset.get<double>("DeadTime",10.0)), // nsec dead after threshold crossing (electronics processing time)
-    _vmax(pset.get<double>("MaximumVoltage",120.0)), // 120 mV max
-    _vsat(pset.get<double>("SaturationVoltage",100.0)), // 100 mV saturation starts
-    _ADCLSB(pset.get<double>("ADCLSB",0.125)), // mv/count
+    _dVdI(pset.get<double>("dVdI",100.0)), // mVolt/uAmps
+    _trise(pset.get<double>("RiseTime",2.0)), // rise time for signal, after shaping
+    _tfall(pset.get<double>("FallTime",15.0)), // fall time for signal, after shaping
+    _tdead(pset.get<double>("DeadTime",50.0)), // nsec dead after threshold crossing (electronics processing time)
+    _vmax(pset.get<double>("MaximumVoltage",1000.0)), // mV max output
+    _vsat(pset.get<double>("SaturationVoltage",800.0)), // mV saturation effects starts
+    _vthresh(pset.get<double>("DiscriminatorThreshold",10.0)), //mVolt
+    _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",1.0)), //mVolt
+    _ADCLSB(pset.get<double>("ADCLSB",1.0)), // mv/count
     _maxADC(pset.get<unsigned>("maxADC",1023)), // 10-bit ADC
     _nADC(pset.get<unsigned>("nADC",10)), // number of ADC samples
     _ADCPeriod(pset.get<double>("ADCPeriod",15.4)), // nsec
@@ -36,8 +38,8 @@ namespace mu2e {
 	<< "mu2e::StrawElectronics: negative rise or fall time!" 
 	<< endl;
       }
-    // normalization is given by rise and fall times
-    _norm = (_trise+_tfall)/(_tfall*_tfall);
+    // normalization is given by rise and fall times.  Scale change from pC/nsec to uamp is also made
+    _norm = 1.0e3*(_trise+_tfall)/(_tfall*_tfall);
     // relative time at maximum
     _tmax = _trise*(log(_tfall + _trise) - log(_trise));
   }
@@ -56,7 +58,7 @@ namespace mu2e {
       if(_trise > 0.0)
 	rise = (1.0-exp(-dt/_trise));
       double fall = exp(-dt/_tfall);
-      retval = hitlet.charge()*_dVdQ*rise*fall*_norm;
+      retval = hitlet.charge()*_dVdI*rise*fall*_norm;
 // smear this by electronics noise FIXME!!!
 // should make some smearing for dispersion here, based on the wire distance traveled. FIXME!!
     }
@@ -120,8 +122,8 @@ namespace mu2e {
     return adcval*_ADCLSB;
   }
 
-  double StrawElectronics::adcCharge(unsigned short adcval) const {
+  double StrawElectronics::adcCurrent(unsigned short adcval) const {
   // this includes the effects from normalization of the pulse shape
-    return adcVoltage(adcval)/(_dVdQ*_norm);
+    return adcVoltage(adcval)/_dVdI;
   }
 }
