@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.53 2013/09/19 20:47:32 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/09/19 20:47:32 $
+// $Id: TTrackerMaker.cc,v 1.54 2013/12/20 20:10:20 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/12/20 20:10:20 $
 //
 // Original author Rob Kutschke
 //
@@ -104,6 +104,13 @@ namespace mu2e {
   void TTrackerMaker::parseConfig( const SimpleConfig& config ){
 
     _verbosityLevel     = config.getInt("ttracker.verbosityLevel",0);
+
+
+    _motherRIn        = config.getDouble("ttracker.mother.rIn"        )*CLHEP::mm;
+    _motherROut       = config.getDouble("ttracker.mother.rOut"       )*CLHEP::mm;
+    _motherHalfLength = config.getDouble("ttracker.mother.halfLength" )*CLHEP::mm;
+    _motherZ0         = config.getDouble("ttracker.mother.z0"         )*CLHEP::mm;
+
     _numDevices         = config.getInt("ttracker.numDevices");
     _sectorsPerDevice   = config.getInt("ttracker.sectorsPerDevice");
     _layersPerSector    = config.getInt("ttracker.layersPerSector");
@@ -111,7 +118,7 @@ namespace mu2e {
     _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
     _rotationPattern    = config.getInt("ttracker.rotationPattern");
     _spacingPattern     = config.getInt("ttracker.spacingPattern");
-  
+
     _oddStationRotation   =  config.getDouble("ttracker.oddStationRotation")*CLHEP::degree;
     _zCenter              =  config.getDouble("ttracker.z0")*CLHEP::mm;
     _xCenter              = -config.getDouble("mu2e.solenoidOffset")*CLHEP::mm;
@@ -128,7 +135,6 @@ namespace mu2e {
     _wireRadius           =  config.getDouble("ttracker.wireRadius")*CLHEP::mm;
     _manifoldYOffset      =  config.getDouble("ttracker.manifoldYOffset")*CLHEP::mm;
     _virtualDetectorHalfLength = config.getDouble("vd.halfLength")*CLHEP::mm;
-
 
 
     // station
@@ -321,6 +327,8 @@ namespace mu2e {
     // Make an empty TTracker.
     _tt = unique_ptr<TTracker>(new TTracker());
 
+    makeMother();
+
     computeLayerSpacingAndShift();
     computeManifoldEdgeExcessSpace();
 
@@ -392,6 +400,14 @@ namespace mu2e {
 
   } //end TTrackerMaker::buildIt.
 
+  void TTrackerMaker::makeMother(){
+
+    _tt->_mother = PlacedTubs ( "TrackerMother",
+                                TubsParams( _motherRIn, _motherROut, _motherHalfLength),
+                                CLHEP::Hep3Vector( _xCenter, 0., _motherZ0),
+                                _envelopeMaterial );
+
+  } //end TTrackerMaker::makeStayClear
 
   // In the present code the straw positions are computed using the manifold information.
   // The channel position is computed using the SupportStructure information.  These two

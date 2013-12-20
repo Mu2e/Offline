@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.21 2013/08/18 03:07:27 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/18 03:07:27 $
+// $Id: TTrackerMaker.hh,v 1.22 2013/12/20 20:10:20 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/12/20 20:10:20 $
 //
 // Original author Rob Kutschke
 //
@@ -47,6 +47,7 @@ namespace mu2e {
     // Fill the details of the different straw types.
     void makeDetails();
 
+    void makeMother();
     void makeDevice( DeviceId devId );
     void makeSector( const SectorId& secId, Device& dev );
     void makeLayer ( const LayerId& layId,  Sector& sec );
@@ -89,6 +90,13 @@ namespace mu2e {
     void finalCheck();
 
     int    _verbosityLevel;
+
+    // Properties of the mother volume.
+    double _motherRIn;               // Inner radius of the mother volume
+    double _motherROut;              // Outer radius of the mother volume
+    double _motherHalfLength;        // Half length, in z, of the mother
+    double _motherZ0;                // Mother volume is centered on the DS axis; the z of the center is NOT
+                                     // necessarily the same as the center of the instrumented region of the tracker.
 
     // Basic parameters needed to describe the TTracker.
     int    _numDevices;                  // Number of devices.

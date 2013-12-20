@@ -5,9 +5,9 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.13 2013/01/07 04:01:16 kutschke Exp $
+// $Id: TTracker.hh,v 1.14 2013/12/20 20:10:20 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/01/07 04:01:16 $
+// $Date: 2013/12/20 20:10:20 $
 //
 // Original author Rob Kutschke
 //
@@ -25,6 +25,7 @@
 #include "TrackerGeom/inc/StrawDetail.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
+#include "GeomPrimitives/inc/PlacedTubs.hh"
 
 #include "TTrackerGeom/inc/Station.hh"
 
@@ -151,6 +152,10 @@ namespace mu2e {
       return _innerTrackerEnvelopeParams;
     }
 
+    PlacedTubs mother() const{
+      return _mother;
+    }
+
 #ifndef __CINT__
 
     // Loop over all straws and call F.
@@ -216,6 +221,9 @@ namespace mu2e {
 
     // Deprecated: part of the ancient MECO TTracker design.  A few vestiges not yet removed.
     std::vector<Manifold> _allManifolds;
+
+    // Outer envelope that holds the new style support structure.
+    PlacedTubs _mother;
 
     // The envelope that holds all of the devices in the tracker, including the device supports.
     TubsParams _innerTrackerEnvelopeParams;

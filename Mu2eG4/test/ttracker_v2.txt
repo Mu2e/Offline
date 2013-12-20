@@ -3,9 +3,9 @@
 // but with two layers of straws in each sector.
 // See:  Mu2e-doc-888
 //
-// $Id: ttracker_v2.txt,v 1.7 2013/09/17 21:48:13 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/09/17 21:48:13 $
+// $Id: ttracker_v2.txt,v 1.8 2013/12/20 20:10:20 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/12/20 20:10:20 $
 //
 // Original author Rob Kutschke
 //
@@ -13,10 +13,18 @@
 
 #include "Mu2eG4/test/ttracker_v0.txt"
 
+// The stay clear volume in which the whole tracker plus supports must fit.
+// Tracker need not be centered in the stay clear volume.
+// This volume is on the axis of the DS.
+double ttracker.mother.rIn         =   380.; // mm
+double ttracker.mother.rOut        =   840.; // mm
+double ttracker.mother.halfLength  =  1635.; // mm
+double ttracker.mother.z0          = 10175.; // mm
+
 int    ttracker.layersPerSector             =    2;
 int    ttracker.strawsPerManifold           =    1; //  1,10
-double ttracker.deviceHalfSeparation        =   20.0; 
-double ttracker.supportHalfThickness        =   4.4;   
+double ttracker.deviceHalfSeparation        =   20.0;
+double ttracker.supportHalfThickness        =   4.4;
 // 96 straws.  All 3 of the following must be adjusted coherently
 int    ttracker.manifoldsPerEnd             =   48; // 50, 5
 double ttracker.strawGap             =     1.25;
