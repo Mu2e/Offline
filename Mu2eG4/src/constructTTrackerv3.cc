@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.35 2013/09/19 17:47:27 genser Exp $
-// $Author: genser $
-// $Date: 2013/09/19 17:47:27 $
+// $Id: constructTTrackerv3.cc,v 1.36 2013/12/20 20:09:02 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/12/20 20:09:02 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -71,8 +71,7 @@ using namespace std;
 
 namespace mu2e{
 
-  VolumeInfo constructTTrackerv3( VolumeInfo const& mother,
-                                  double zOff,
+  VolumeInfo constructTTrackerv3( VolumeInfo const& ds3Vac,
                                   SimpleConfig const& config ){
 
     // Master geometry for the TTracker.
@@ -80,7 +79,7 @@ namespace mu2e{
 
     // The more detailed version has its own function.
     if ( ttracker.getSupportModel() == SupportModel::detailedv0 ) {
-      return constructTTrackerv3Detailed(mother, zOff, config);
+      return constructTTrackerv3Detailed(ds3Vac, config);
     }
 
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
@@ -92,50 +91,52 @@ namespace mu2e{
     // Only instantiate sectors to be drawn.
     int deviceDraw = config.getInt("ttracker.devDraw",-1);
     int sectorDraw = config.getInt("ttracker.secDraw",-1);
-    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false) || 
+    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false) ||
       config.getBool("ttracker.doSurfaceCheck",false);
     bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
 
     G4ThreeVector const zeroVector(0.0,0.0,0.0);
 
-
-    // Make the envelope volume that holds the tracker devices - not the end rings and staves.
-
     // The devices are now called planes in the CDR
-
-    TubsParams envelopeParams = ttracker.getInnerTrackerEnvelopeParams();
 
     static int const newPrecision = 8;
     static int const newWidth = 14;
+
+    // Parameters of the new style mother volume ( replaces the envelope volume ).
+    PlacedTubs const& mother = ttracker.mother();
+
+    // Offset of the center of the tracker within its mother volume.
+    CLHEP::Hep3Vector motherOffset = mother.position() - ds3Vac.centerInWorld;
 
     if (verbosityLevel > 0) {
       int oldPrecision = cout.precision(newPrecision);
       int oldWidth = cout.width(newWidth);
       std::ios::fmtflags oldFlags = cout.flags();
       cout.setf(std::ios::fixed,std::ios::floatfield);
-      cout << __func__ << " tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
+      cout << __func__ << " tracker mother tubsParams ir,or,zhl,phi0,phimax:            " <<
 	"   " <<
-	envelopeParams.innerRadius() << ", " <<
-	envelopeParams.outerRadius() << ", " <<
-	envelopeParams.zHalfLength() << ", " <<
-	envelopeParams.phi0()        << ", " <<
-	envelopeParams.phiMax()      << ", " <<
+	mother.tubsParams().innerRadius() << ", " <<
+	mother.tubsParams().outerRadius() << ", " <<
+	mother.tubsParams().zHalfLength() << ", " <<
+	mother.tubsParams().phi0()        << ", " <<
+	mother.tubsParams().phiMax()      << ", " <<
 	endl;
       cout.setf(oldFlags);
       cout.precision(oldPrecision);
       cout.width(oldWidth);
     }
 
-    G4ThreeVector trackerOffset( 0., 0., ttracker.z0()-zOff );
+    // The z position of the tracker origin in the system attached to mother volume.
+    CLHEP::Hep3Vector originOffset( 0., 0., ttracker.z0()-mother.position().z());
 
     G4Material* envelopeMaterial = findMaterialOrThrow(ttracker.envelopeMaterial());
 
     VolumeInfo motherInfo = nestTubs( "TrackerMother",
-                                      envelopeParams,
+                                      mother.tubsParams(),
                                       envelopeMaterial,
                                       0,
-                                      trackerOffset,
-                                      mother,
+                                      motherOffset,
+                                      ds3Vac,
                                       0,
                                       config.getBool("ttracker.envelopeVisible",false),
                                       G4Colour::Blue(),
@@ -450,11 +451,15 @@ namespace mu2e{
       CLHEP::HepRotationZ deviceRZ(-device.rotation()); //It is arround z
       G4RotationMatrix* deviceRotation  = reg.add(G4RotationMatrix(deviceRZ));
 
+      // device.origin() is in detector coordinates.
+      // devOrigin is in the coordinate system of the mother volume.
+      CLHEP::Hep3Vector devOrigin = device.origin() + originOffset;
+
       deviceInfoVect.push_back(nestTubs("TTrackerDeviceEnvelope_"  + devs.str(),
                                         deviceEnvelopeParams,
                                         envelopeMaterial,
                                         deviceRotation,
-                                        device.origin(),
+                                        devOrigin,
                                         motherInfo.logical,
                                         idev,
                                         ttrackerDeviceEnvelopeVisible,
@@ -466,7 +471,7 @@ namespace mu2e{
                                         ));
       
       verbosityLevel > 1 &&
-        cout << __func__ << " placing device: " << idev << " " << device.origin() << " " 
+        cout << __func__ << " placing device: " << idev << " " << devOrigin << " " 
              << deviceInfoVect[idev].name << endl;
 
       // placing support
