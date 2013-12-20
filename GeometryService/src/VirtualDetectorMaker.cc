@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.28 2013/10/15 21:06:18 knoepfel Exp $
-// $Author: knoepfel $
+// $Id: VirtualDetectorMaker.cc,v 1.29 2013/12/20 20:10:57 kutschke Exp $
+// $Author: kutschke $
 //
 
 #include <iostream>
@@ -172,9 +172,15 @@ namespace mu2e {
         //         }
         //       }
 
+        // Global position is in Mu2e coordinates; local position in the detector system.
+        double zFrontGlobal = ttracker.mother().position().z()-ttracker.mother().tubsParams().zHalfLength()-vdHL;
+        double zBackGlobal  = ttracker.mother().position().z()+ttracker.mother().tubsParams().zHalfLength()+vdHL;
+        double zFrontLocal  = zFrontGlobal - ttracker.z0();
+        double zBackLocal   = zBackGlobal  - ttracker.z0();
+
         Hep3Vector vdTTFrontOffset(0.,
                                    0.,
-                                   -ttracker.getInnerTrackerEnvelopeParams().zHalfLength()-vdHL);
+                                   zFrontLocal);
 
         // VD TT_FrontHollow is placed outside the ttracker mother
         // volume in front of the ttracker "outside" of the proton
@@ -203,7 +209,7 @@ namespace mu2e {
 
         Hep3Vector vdTTBackOffset(0.,
                                   0.,
-                                  ttracker.getInnerTrackerEnvelopeParams().zHalfLength()+vdHL);
+                                  zBackLocal);
 
         vd->addVirtualDetector( VirtualDetectorId::TT_Back,
                                  ttOffset,
@@ -213,7 +219,7 @@ namespace mu2e {
         // these next two detectors are also thin, but they are not disks but cylinders
         // placed on the inner and outer surface of the ttracker envelope
 
-        Hep3Vector vdTTOutSurfOffset(0.,0.,0.);
+        Hep3Vector vdTTOutSurfOffset(0.,0.,ttracker.mother().position().z()-ttracker.z0());
 
         vd->addVirtualDetector( VirtualDetectorId::TT_OutSurf,
                                  ttOffset, 0, vdTTOutSurfOffset);
