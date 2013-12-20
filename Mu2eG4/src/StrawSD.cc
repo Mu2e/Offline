@@ -3,9 +3,12 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// $Id: StrawSD.cc,v 1.43 2013/08/28 05:58:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
+// This version only works for the TTracker.  It also allows that the tracker may not
+// be centered in its mother volume.
+//
+// $Id: StrawSD.cc,v 1.44 2013/12/20 20:09:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/12/20 20:09:45 $
 //
 // Original author Rob Kutschke
 //
@@ -24,6 +27,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LinePointPCA.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -96,7 +100,7 @@ namespace mu2e {
 
     if ( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in " 
+        mf::LogWarning("G4") << "Maximum number of particles reached in "
                              << SensitiveDetectorName
                              << ": "
                              << _currentSize << endl;
@@ -127,7 +131,7 @@ namespace mu2e {
 
     const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
 
-    static G4ThreeVector detectorOrigin = GetTrackerOrigin(touchableHandle);
+    static G4ThreeVector detectorOrigin = GetTrackerOrigin();
 
     // this is Geant4 SD verboseLevel
     if (_verbosityLevel>2) {
@@ -416,54 +420,22 @@ namespace mu2e {
   }
 
 
-  G4ThreeVector StrawSD::GetTrackerOrigin(const G4TouchableHandle & touchableHandle) {
-
-    // how deep in the hierachy is the tracker a.k.a tracker depth
-    // (depends on the tracker version)
-    // the tracker version is set in the constructor
-
-    size_t td = 3;
+  // The previous version of this code assumed that the tracker was centered in its mother.
+  // That is no longer true.
+  G4ThreeVector StrawSD::GetTrackerOrigin() {
 
     art::ServiceHandle<GeometryService> geom;
     if ( geom->hasElement<TTracker>() ) {
-      td =_TrackerVersion +1;
-      if ( _supportModel == SupportModel::detailedv0 ){
-        td = 3;
+      GeomHandle<DetectorSystem> det;
+      CLHEP::Hep3Vector val = det->toMu2e(CLHEP::Hep3Vector());
+      if (_verbosityLevel>1) {
+        cout << __func__ << " Detector origin used for making straw hits is: " << val << endl;
       }
+      return val;
     }
 
-    _verbosityLevel>1 && cout << __func__ << " : tracker depth/version: " << td << "/" << _TrackerVersion << endl;
-
-    size_t hdepth = touchableHandle->GetHistoryDepth();
-
-    G4ThreeVector cdo;
-
-    for (size_t dd=0; dd!=hdepth; ++dd) {
-
-      if (dd>=td) cdo += touchableHandle->GetVolume(dd)->GetTranslation();
-
-      if (_verbosityLevel>2) {
-
-        cout << __func__ << " det depth name copy#: " << dd << " " <<
-          touchableHandle->GetVolume(dd)->GetName() << " " <<
-          touchableHandle->GetVolume(dd)->GetCopyNo() << endl;
-
-        G4LogicalVolume* lvp = touchableHandle->GetVolume(dd)->GetLogicalVolume();
-        G4int nd = lvp->GetNoDaughters();
-        for (G4int d = 0;d!=nd; ++d) {
-          cout << __func__ << " daughter: " << lvp->GetDaughter(d)->GetName() << " " <<
-            lvp->GetDaughter(d)->GetCopyNo() << endl;
-        }
-
-        cout << __func__ << " det origin: " << touchableHandle->GetVolume(dd)->GetTranslation() <<
-          " " << cdo << endl;
-
-      }
-
-    }
-
-    return cdo;
-
+    throw cet::exception("GEOM")
+      << "StrawSD::GetTrackerOrigin this version only supports the TTracker.\n";
   }
 
 } //namespace mu2e

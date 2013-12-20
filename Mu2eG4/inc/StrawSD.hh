@@ -3,9 +3,9 @@
 //
 // Define a sensitive detector for Straws.
 //
-// $Id: StrawSD.hh,v 1.17 2013/08/18 03:04:50 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/18 03:04:50 $
+// $Id: StrawSD.hh,v 1.18 2013/12/20 20:09:45 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/12/20 20:09:45 $
 //
 // Original author Rob Kutschke
 //
@@ -34,7 +34,7 @@ namespace mu2e {
 
   private:
 
-    G4ThreeVector GetTrackerOrigin(const G4TouchableHandle & touchableHandle);
+    G4ThreeVector GetTrackerOrigin();
 
     int _nStrawsPerDevice;
     int _nStrawsPerSector;
