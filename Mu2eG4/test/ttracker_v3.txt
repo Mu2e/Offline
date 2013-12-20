@@ -3,9 +3,9 @@
 //   All lengths are given in mm.
 //   All angles are given in degrees.
 //
-// $Id: ttracker_v3.txt,v 1.2 2013/04/03 22:23:31 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/04/03 22:23:31 $
+// $Id: ttracker_v3.txt,v 1.3 2013/12/20 20:11:43 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/12/20 20:11:43 $
 //
 // Most paramaters are from Mu2e-doc-888-v5
 // Parameters not found in that document are:
@@ -42,17 +42,13 @@
 //
 
 // Tell the TTracker object that we using the detailed support structure.
-int ttrackerSupport.model = "detailedv0";
-
-// Move DS2/DS3 boundary upstream.
-double toyDS2.halfLength = 2300.;
-double toyDS3.halfLength = 3450.5;
+string ttrackerSupport.model = "detailedv0";
 
 // Adjust spacings and rotations within the TTracker to match Mu2e-doc-888-v5
 double ttracker.deviceHalfSeparation        =    23.5;
-double ttracker.deviceSpacing               =   174.;
+double ttracker.deviceSpacing               =   140.8;
 double ttracker.supportHalfThickness        =     2.5;
-vector<double> ttracker.manifoldHalfLengths = { 3.0, 5.0, 8.5};
+vector<double> ttracker.manifoldHalfLengths = { 3.125, 5.0, 8.5};
 double ttracker.manifoldYOffset             =     0.;
 double ttracker.sectorPhi0                  =    45.; // degrees
 
@@ -70,10 +66,13 @@ double ttrackerSupport.endRing.halfLength  =   50.;
 double ttrackerSupport.endRing.zOffset     = 1610.;
 string ttrackerSupport.endRing.material    = "G4_Al";
 
-int    ttrackerSupport.stave.nstaves       =  4;
-double ttrackerSupport.stave.phi0          = 30.;
+vector<int> ttrackerSupport.midRing.slot  = { 19, 20 };
+double ttrackerSupport.midRing.halfLength = 10.;
+
+int    ttrackerSupport.stave.nstaves       =  3;
+double ttrackerSupport.stave.phi0          =  0.;
 double ttrackerSupport.stave.phiWidth      = 30.;
-double ttrackerSupport.stave.material      = "G4_Al";
+string ttrackerSupport.stave.material      = "G4_Al";
 
 double ttrackerSupport.innerRing.innerRadius  = 700.;
 double ttrackerSupport.innerRing.outerRadius  = 710.;
@@ -104,13 +103,13 @@ string ttrackerSupport.electronicsSpace.material =  "StrawGas";
 
 // Define the parameters of the metal coatings on the straws and wires.
 double ttracker.straw.wallOuterMetal.thickness  = 0.00005;
-double ttracker.straw.wallOuterMetal.material   = "G4_Al";
+string ttracker.straw.wallOuterMetal.material   = "G4_Al";
 double ttracker.straw.wallInnerMetal1.thickness = 0.00005;
-double ttracker.straw.wallInnerMetal1.material  = "G4_Al";
+string ttracker.straw.wallInnerMetal1.material  = "G4_Al";
 double ttracker.straw.wallInnerMetal2.thickness = 0.00002;
-double ttracker.straw.wallInnerMetal2.material  = "G4_Au";
+string ttracker.straw.wallInnerMetal2.material  = "G4_Au";
 double ttracker.straw.wirePlate.thickness       = 0.00025;
-double ttracker.straw.wirePlate.material        = "G4_Au";
+string ttracker.straw.wirePlate.material        = "G4_Au";
 
 bool   ttracker.ActiveWr_Wl_SD    = false;   //Active the Sensitive Detector for the wires and straw wall.
 
