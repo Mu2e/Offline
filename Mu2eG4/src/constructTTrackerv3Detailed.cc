@@ -5,9 +5,9 @@
 //  - See comments at the top of constructTTrackerv3.cc for additional details
 //    of the meaning of version numbers.
 //
-// $Id: constructTTrackerv3Detailed.cc,v 1.5 2013/08/30 17:01:35 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/30 17:01:35 $
+// $Id: constructTTrackerv3Detailed.cc,v 1.6 2013/12/20 20:08:21 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/12/20 20:08:21 $
 //
 // Contact person Rob Kutschke,
 //   - Based on constructTTrackerv3 by KLG
@@ -94,7 +94,6 @@ namespace {
 
 
   VolumeInfo constructTTrackerv3Detailed( VolumeInfo const& mother,
-                                          double zOff,
                                           SimpleConfig const& config ){
 
     G4Helper& _helper      = *(art::ServiceHandle<G4Helper>());
@@ -138,7 +137,7 @@ namespace {
       cout.width(oldWidth);
     }
 
-    G4ThreeVector trackerOffset( 0., 0., ttracker.z0()-zOff );
+    G4ThreeVector trackerOffset( 0., 0., ttracker.z0() );
 
     G4Material* envelopeMaterial = findMaterialOrThrow(ttracker.envelopeMaterial());
 
@@ -171,6 +170,12 @@ namespace {
       cout.precision(oldPrecision);
     }
 
+    // Temporary while debugging the new mother volume.
+    if ( config.getBool("rkk.disableTT",false ) ){
+      cout << "Will not create TTracker because of a user request " << endl;
+      return motherInfo;
+    }
+
     // Now place the endRings and Staves.
     // FixME: add the cut-outs for services within the staves.
     if ( ttracker.getSupportModel() == SupportModel::detailedv0 ) {
@@ -179,8 +184,8 @@ namespace {
       PlacedTubs const& up        = sup.endRingUpstream();
       PlacedTubs const& down      = sup.endRingDownstream();
 
-      CLHEP::Hep3Vector offsetUp  (0.,0., up.position().z()-zOff);
-      CLHEP::Hep3Vector offsetDown(0.,0., down.position().z()-zOff);
+      CLHEP::Hep3Vector offsetUp  (0.,0., up.position().z());
+      CLHEP::Hep3Vector offsetDown(0.,0., down.position().z());
 
       G4Material* upMaterial   = findMaterialOrThrow(up.materialName());
       G4Material* downMaterial = findMaterialOrThrow(down.materialName());
@@ -220,7 +225,7 @@ namespace {
             i != e; ++i ){
 
         PlacedTubs const& stave(*i);
-        CLHEP::Hep3Vector offset(0.,0., stave.position().z()-zOff);
+        CLHEP::Hep3Vector offset(0.,0., stave.position().z());
         nestTubs( stave.name(),
                   stave.tubsParams(),
                   findMaterialOrThrow(stave.materialName()),
