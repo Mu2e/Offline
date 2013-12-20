@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.222 2013/12/13 21:40:36 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/12/13 21:40:36 $
+// $Id: geom_01.txt,v 1.223 2013/12/20 20:12:30 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/12/20 20:12:30 $
 //
 // Original author Rob Kutschke
 //
@@ -262,7 +262,6 @@ bool   vd.solid          = false;
 #include "Mu2eG4/test/protonBeamDump_v02.txt"
 
 #include "Mu2eG4/test/extmon_fnal_v02.txt"
-#include "Mu2eG4/test/extmon_uci_v02.txt"
 
 // Describe dummy stopping target that is just one big G4TUBS.
 double dummyStoppingTarget.rIn        =     0.;
