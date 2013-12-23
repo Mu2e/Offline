@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.62 2013/12/20 20:10:57 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/12/20 20:10:57 $
+// $Id: constructVirtualDetectors.cc,v 1.63 2013/12/23 20:20:07 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/12/23 20:20:07 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 
@@ -805,9 +805,7 @@ namespace mu2e {
                                      placePV,
                                      false);
 
-        //doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-        checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+        doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
         vdInfo.logical->SetSensitiveDetector(vdSD);
 
