@@ -35,10 +35,13 @@ namespace mu2e {
 
       float tau = p->endProperTime();
 
-      // Check if mother PID equals daughter PID
-      art::Ptr<SimParticle> part (p);
+      // The mu2ePrimary code means that G4 track was created by our PrimaryGeneratorAction.
+      // If the particle is "mu2ePrimary" but still has a parent, it is a continuation
+      // of a particle from the previous simulation stage, and their proper times should
+      // be combined.
 
-      while ( part->parent().isNonnull() && (part->parent()->pdgId() == part->pdgId()) ) {
+      art::Ptr<SimParticle> part (p);
+      while ((part->creationCode() == ProcessCode::mu2ePrimary) && part->parent().isNonnull()) {
         part = part->parent();
         
         // Find matches in hit collections
