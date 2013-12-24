@@ -85,6 +85,8 @@ bool ExtNeutShieldCendBoxes.b7hasHole = false;
 
 double ExtNeutShieldCendBoxes.b4holeRadius = 76.2;
 double ExtNeutShieldCendBoxes.b4holeHalfLength = 458.0;
+double ExtNeutShieldCendBoxes.b4holeDeltaR   = 0.;
+double ExtNeutShieldCendBoxes.b4holeDeltaPhi = 0.;
 
 bool  ExtNeutShieldCendBoxes.holeVisible = true;
 bool  ExtNeutShieldCendBoxes.holeSolid = false;

@@ -35,6 +35,7 @@ namespace mu2e {
     const bool hasHole( int i ) const { return _hasHole[i]; }
     const int holeIndex( int i ) const { return _holeIndexes[i]; }
     const double holeRadius( int i ) const { return _holeRadius[i]; }
+    const CLHEP::Hep3Vector& holeLocation( int i ) const { return _holeLocations[i]; }
     const double holeHalfLength( int i ) const { return _holeHalfLength[i]; }
 
   private:
@@ -42,15 +43,23 @@ namespace mu2e {
     friend class ExtNeutShieldCendBoxesMaker;
 
     // Private ctr: the class should only be constructed via ExtNeutShieldCendBoxes::ExtNeutShieldCendBoxesMaker.
-    ExtNeutShieldCendBoxes(const std::vector<std::vector<double>>& dims, const std::vector<std::string>& mats, const std::vector<CLHEP::Hep3Vector>& sites, const std::vector<bool>& holey, const std::vector<int>& whatHole, const std::vector<double>& rads, const std::vector<double>& hlengs )
-      : _dimensions(dims),
-        _materialNames(mats),
-	_centerPositions(sites),
-	_hasHole(holey),
-	_holeIndexes(whatHole),
-	_holeRadius(rads),
-	_holeHalfLength(hlengs)
-    { }
+//     ExtNeutShieldCendBoxes(const std::vector<std::vector<double>>& dims, 
+//                            const std::vector<std::string>& mats, 
+//                            const std::vector<CLHEP::Hep3Vector>& sites, 
+//                            const std::vector<bool>& holey, 
+//                            const std::vector<int>& whatHole, 
+//                            const std::vector<CLHEP::Hep3Vector>& holeLocs,
+//                            const std::vector<double>& rads, 
+//                            const std::vector<double>& hlengs )
+//       : _dimensions(dims),
+//         _materialNames(mats),
+// 	_centerPositions(sites),
+// 	_hasHole(holey),
+// 	_holeIndexes(whatHole),
+//         _holeLocations(holeLocs),
+// 	_holeRadius(rads),
+// 	_holeHalfLength(hlengs)
+//     { }
 
     // Or read back from persistent storage
     ExtNeutShieldCendBoxes();
@@ -65,6 +74,7 @@ namespace mu2e {
     std::vector<CLHEP::Hep3Vector> _centerPositions;
     std::vector<bool> _hasHole;
     std::vector<int> _holeIndexes;
+    std::vector<CLHEP::Hep3Vector> _holeLocations;
     std::vector<double> _holeRadius;
     std::vector<double> _holeHalfLength;
   };

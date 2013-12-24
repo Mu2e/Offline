@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.63 2013/12/23 20:20:07 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/12/23 20:20:07 $
+// $Id: constructVirtualDetectors.cc,v 1.64 2013/12/24 17:05:38 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/12/24 17:05:38 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 
@@ -1262,8 +1262,10 @@ namespace mu2e {
           if ( enscendb->hasHole(iHoleBox) ) break;
         }
 
-      CLHEP::Hep3Vector location = enscendb->centersOfBoxes().at(iHoleBox);
+      CLHEP::Hep3Vector location = enscendb->holeLocation(iHoleBox);
       location.setZ( location.z() + enscendb->holeHalfLength(0) + vdg->getHalfLength() );
+
+      cout << " DSNeutronShieldExit VD location: " << location << endl;
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    TubsParams(0., enscendb->holeRadius(0), vdg->getHalfLength()),

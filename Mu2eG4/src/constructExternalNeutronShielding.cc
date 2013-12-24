@@ -88,14 +88,14 @@ namespace mu2e {
 	      std::back_inserter(ensu1aOutline));
 
     VolumeInfo ensu1aShield("ExtNeutShieldUpstream1a",
-		      ensu1a->centerOfShield()-parent.centerInMu2e(),
-		      parent.centerInWorld);
+                            ensu1a->centerOfShield()-parent.centerInMu2e(),
+                            parent.centerInWorld);
 
     ensu1aShield.solid = new G4ExtrudedSolid(ensu1aShield.name,
-				       ensu1aOutline,
-				       ensu1a->getLength()/2.,
-				       G4TwoVector(0,0), 1.,
-				       G4TwoVector(0,0), 1.);
+                                             ensu1aOutline,
+                                             ensu1a->getLength()/2.,
+                                             G4TwoVector(0,0), 1.,
+                                             G4TwoVector(0,0), 1.);
 
     // rotation, needed for next call
     static CLHEP::HepRotation ensu1aRotat(CLHEP::HepRotation::IDENTITY);
@@ -128,14 +128,14 @@ namespace mu2e {
 	      std::back_inserter(ensu1bOutline));
 
     VolumeInfo ensu1bShield("ExtNeutShieldUpstream1b",
-		      ensu1b->centerOfShield()-parent.centerInMu2e(),
-		      parent.centerInWorld);
+                            ensu1b->centerOfShield()-parent.centerInMu2e(),
+                            parent.centerInWorld);
 
     ensu1bShield.solid = new G4ExtrudedSolid(ensu1bShield.name,
-				       ensu1bOutline,
-				       ensu1b->getLength()/2.,
-				       G4TwoVector(0,0), 1.,
-				       G4TwoVector(0,0), 1.);
+                                             ensu1bOutline,
+                                             ensu1b->getLength()/2.,
+                                             G4TwoVector(0,0), 1.,
+                                             G4TwoVector(0,0), 1.);
 
     // rotation, needed for next call
     static CLHEP::HepRotation ensu1bRotat(CLHEP::HepRotation::IDENTITY);
@@ -168,14 +168,14 @@ namespace mu2e {
 	      std::back_inserter(ensu2Outline));
 
     VolumeInfo ensu2Shield("ExtNeutShieldUpstream2",
-		      ensu2->centerOfShield()-parent.centerInMu2e(),
-		      parent.centerInWorld);
+                           ensu2->centerOfShield()-parent.centerInMu2e(),
+                           parent.centerInWorld);
 
     ensu2Shield.solid = new G4ExtrudedSolid(ensu2Shield.name,
-				       ensu2Outline,
-				       ensu2->getLength()/2.,
-				       G4TwoVector(0,0), 1.,
-				       G4TwoVector(0,0), 1.);
+                                            ensu2Outline,
+                                            ensu2->getLength()/2.,
+                                            G4TwoVector(0,0), 1.,
+                                            G4TwoVector(0,0), 1.);
 
     // rotation, needed for next call
     static CLHEP::HepRotation ensu2Rotat(CLHEP::HepRotation::IDENTITY);
@@ -208,14 +208,14 @@ namespace mu2e {
 	      std::back_inserter(ensutopOutline));
 
     VolumeInfo ensutopShield("ExtNeutShieldUpstreamTop",
-		      ensutop->centerOfShield()-parent.centerInMu2e(),
-		      parent.centerInWorld);
+                             ensutop->centerOfShield()-parent.centerInMu2e(),
+                             parent.centerInWorld);
 
     ensutopShield.solid = new G4ExtrudedSolid(ensutopShield.name,
-				       ensutopOutline,
-				       ensutop->getLength()/2.,
-				       G4TwoVector(0,0), 1.,
-				       G4TwoVector(0,0), 1.);
+                                              ensutopOutline,
+                                              ensutop->getLength()/2.,
+                                              G4TwoVector(0,0), 1.,
+                                              G4TwoVector(0,0), 1.);
 
     // rotation, needed for next call
     static CLHEP::HepRotation ensutopRotat(CLHEP::HepRotation::IDENTITY);
@@ -248,14 +248,14 @@ namespace mu2e {
 	      std::back_inserter(ensubotOutline));
 
     VolumeInfo ensubotShield("ExtNeutShieldUpstreamBottom",
-		      ensubot->centerOfShield()-parent.centerInMu2e(),
-		      parent.centerInWorld);
+                             ensubot->centerOfShield()-parent.centerInMu2e(),
+                             parent.centerInWorld);
 
     ensubotShield.solid = new G4ExtrudedSolid(ensubotShield.name,
-				       ensubotOutline,
-				       ensubot->getLength()/2.,
-				       G4TwoVector(0,0), 1.,
-				       G4TwoVector(0,0), 1.);
+                                              ensubotOutline,
+                                              ensubot->getLength()/2.,
+                                              G4TwoVector(0,0), 1.,
+                                              G4TwoVector(0,0), 1.);
 
     // rotation, needed for next call
     static CLHEP::HepRotation ensubotRotat(CLHEP::HepRotation::IDENTITY);
@@ -288,14 +288,14 @@ namespace mu2e {
 	      std::back_inserter(enscerOutline));
 
     VolumeInfo enscerShield("ExtNeutShieldCavexRight",
-		      enscer->centerOfShield()-parent.centerInMu2e(),
-		      parent.centerInWorld);
+                            enscer->centerOfShield()-parent.centerInMu2e(),
+                            parent.centerInWorld);
 
     enscerShield.solid = new G4ExtrudedSolid(enscerShield.name,
-				       enscerOutline,
-				       enscer->getLength()/2.,
-				       G4TwoVector(0,0), 1.,
-				       G4TwoVector(0,0), 1.);
+                                             enscerOutline,
+                                             enscer->getLength()/2.,
+                                             G4TwoVector(0,0), 1.,
+                                             G4TwoVector(0,0), 1.);
 
     // rotation, needed for next call
     static CLHEP::HepRotation enscerRotat(CLHEP::HepRotation::IDENTITY);
@@ -327,14 +327,14 @@ namespace mu2e {
 	      std::back_inserter(enscerbOutline));
 
     VolumeInfo enscerbShield("ExtNeutShieldCavexRightb",
-		      enscerb->centerOfShield()-parent.centerInMu2e(),
-		      parent.centerInWorld);
+                             enscerb->centerOfShield()-parent.centerInMu2e(),
+                             parent.centerInWorld);
 
     enscerbShield.solid = new G4ExtrudedSolid(enscerbShield.name,
-				       enscerbOutline,
-				       enscerb->getLength()/2.,
-				       G4TwoVector(0,0), 1.,
-				       G4TwoVector(0,0), 1.);
+                                              enscerbOutline,
+                                              enscerb->getLength()/2.,
+                                              G4TwoVector(0,0), 1.,
+                                              G4TwoVector(0,0), 1.);
 
     // rotation, needed for next call
     static CLHEP::HepRotation enscerbRotat(CLHEP::HepRotation::IDENTITY);
@@ -366,14 +366,14 @@ namespace mu2e {
 	      std::back_inserter(enscelOutline));
 
     VolumeInfo enscelShield("ExtNeutShieldCavexLeft",
-		      enscel->centerOfShield()-parent.centerInMu2e(),
-		      parent.centerInWorld);
+                            enscel->centerOfShield()-parent.centerInMu2e(),
+                            parent.centerInWorld);
 
     enscelShield.solid = new G4ExtrudedSolid(enscelShield.name,
-				       enscelOutline,
-				       enscel->getLength()/2.,
-				       G4TwoVector(0,0), 1.,
-				       G4TwoVector(0,0), 1.);
+                                             enscelOutline,
+                                             enscel->getLength()/2.,
+                                             G4TwoVector(0,0), 1.,
+                                             G4TwoVector(0,0), 1.);
 
     // rotation, needed for next call
     static CLHEP::HepRotation enscelRotat(CLHEP::HepRotation::IDENTITY);
@@ -405,14 +405,14 @@ namespace mu2e {
 	      std::back_inserter(ensceroOutline));
 
     VolumeInfo ensceroShield("ExtNeutShieldCavexRoof",
-		      enscero->centerOfShield()-parent.centerInMu2e(),
-		      parent.centerInWorld);
+                             enscero->centerOfShield()-parent.centerInMu2e(),
+                             parent.centerInWorld);
 
     ensceroShield.solid = new G4ExtrudedSolid(ensceroShield.name,
-				       ensceroOutline,
-				       enscero->getLength()/2.,
-				       G4TwoVector(0,0), 1.,
-				       G4TwoVector(0,0), 1.);
+                                              ensceroOutline,
+                                              enscero->getLength()/2.,
+                                              G4TwoVector(0,0), 1.,
+                                              G4TwoVector(0,0), 1.);
 
     // rotation, needed for next call
     static CLHEP::HepRotation ensceroRotat(CLHEP::HepRotation::IDENTITY);
@@ -444,14 +444,14 @@ namespace mu2e {
 	      std::back_inserter(enslaOutline));
 
     VolumeInfo enslaShield("ExtNeutShieldLAbove",
-		      ensla->centerOfShield()-parent.centerInMu2e(),
-		      parent.centerInWorld);
+                           ensla->centerOfShield()-parent.centerInMu2e(),
+                           parent.centerInWorld);
 
     enslaShield.solid = new G4ExtrudedSolid(enslaShield.name,
-				       enslaOutline,
-				       ensla->getLength()/2.,
-				       G4TwoVector(0,0), 1.,
-				       G4TwoVector(0,0), 1.);
+                                            enslaOutline,
+                                            ensla->getLength()/2.,
+                                            G4TwoVector(0,0), 1.,
+                                            G4TwoVector(0,0), 1.);
 
     // rotation, needed for next call
     static CLHEP::HepRotation enslaRotat(CLHEP::HepRotation::IDENTITY);
@@ -483,14 +483,14 @@ namespace mu2e {
 	      std::back_inserter(enslcOutline));
 
     VolumeInfo enslcShield("ExtNeutShieldLCeiling",
-		      enslc->centerOfShield()-parent.centerInMu2e(),
-		      parent.centerInWorld);
+                           enslc->centerOfShield()-parent.centerInMu2e(),
+                           parent.centerInWorld);
 
     enslcShield.solid = new G4ExtrudedSolid(enslcShield.name,
-				       enslcOutline,
-				       enslc->getLength()/2.,
-				       G4TwoVector(0,0), 1.,
-				       G4TwoVector(0,0), 1.);
+                                            enslcOutline,
+                                            enslc->getLength()/2.,
+                                            G4TwoVector(0,0), 1.,
+                                            G4TwoVector(0,0), 1.);
 
     // rotation, needed for next call
     static CLHEP::HepRotation enslcRotat(CLHEP::HepRotation::IDENTITY);
@@ -570,8 +570,6 @@ namespace mu2e {
 
 	// Build each box here
 
-        //        if ( mates[i] != "CONCRETE_MARS" ) continue;
-
 	if ( enscendb->hasHole(i) ) {
 
 	  // This box has a window.  Build specially
@@ -602,13 +600,10 @@ namespace mu2e {
  				      enscendb->holeHalfLength(hID)  //obvious?
  				      );
 
- 	  const CLHEP::Hep3Vector vacCenter(0.0,248*CLHEP::mm,0.0);
-
-
  	  nestTubs ( name.str(), windparams,
  		     findMaterialOrThrow("DSVacuum"),
  		     0,
- 		     vacCenter+awindBox.centerInMu2e(),
+ 		     enscendb->holeLocation(i)-sitees[i],
  		     awindBox,
  		     0,
  		     config.getBool("ExtNeutShieldCendBoxes.holeVisible"),

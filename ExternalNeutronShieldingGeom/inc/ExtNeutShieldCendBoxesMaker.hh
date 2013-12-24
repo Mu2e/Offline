@@ -19,8 +19,7 @@ namespace mu2e {
   class ExtNeutShieldCendBoxesMaker {
   public:
 
-    static std::unique_ptr<ExtNeutShieldCendBoxes>  make(const SimpleConfig& 
-						      config );
+    static std::unique_ptr<ExtNeutShieldCendBoxes>  make(const SimpleConfig& config, double solenoidOffsetInX );
 
   };
 

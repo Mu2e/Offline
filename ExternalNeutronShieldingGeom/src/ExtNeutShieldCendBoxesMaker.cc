@@ -17,26 +17,38 @@ namespace mu2e {
 
   //  namespace {
 
-  std::unique_ptr<ExtNeutShieldCendBoxes>  ExtNeutShieldCendBoxesMaker::make(const 
-							      SimpleConfig& c)
+  std::unique_ptr<ExtNeutShieldCendBoxes>  ExtNeutShieldCendBoxesMaker::make(const SimpleConfig& c,
+                                                                             double solenoidOffsetInX )
   {
 
+    const int nB = c.getInt("ExtNeutShieldCendBoxes.numberOfBoxes");
 
-    int nB = c.getInt("ExtNeutShieldCendBoxes.numberOfBoxes");
+    std::unique_ptr<ExtNeutShieldCendBoxes> shield ( new ExtNeutShieldCendBoxes );
+    shield->_dimensions     .reserve(nB);
+    shield->_materialNames  .reserve(nB);
+    shield->_centerPositions.reserve(nB);
+    shield->_hasHole        .reserve(nB);
+    shield->_holeIndexes    .reserve(nB);
+    shield->_holeLocations  .reserve(nB);
+    shield->_holeRadius     .reserve(nB);
+    shield->_holeHalfLength .reserve(nB);
 
-    std::vector<std::vector<double>> dims;
-    dims.reserve(nB);
-    std::vector<std::string> mats;
-    mats.reserve(nB);
-    std::vector<CLHEP::Hep3Vector> sites;
-    sites.reserve(nB);
-    std::vector<bool> holey;
-    holey.reserve(nB);
-    std::vector<int> holeID;
-    holeID.reserve(nB);
-    // For now, only one hole, so don't need to reserve extra space in vector
-    std::vector<double> rads;
-    std::vector<double> hlengs;
+//     std::vector<std::vector<double>> dims;
+//     dims.reserve(nB);
+//     std::vector<std::string> mats;
+//     mats.reserve(nB);
+//     std::vector<CLHEP::Hep3Vector> sites;
+//     sites.reserve(nB);
+//     std::vector<bool> holey;
+//     holey.reserve(nB);
+//     std::vector<int> holeID;
+//     holeID.reserve(nB);
+//     std::vector<CLHEP::Hep3Vector> holeLocs;
+//     holeLocs.reserve(nB);
+//     // For now, only one hole, so don't need to reserve extra space in vector
+//     std::vector<double> rads;
+//     std::vector<double> hlengs;
+    
 
     std::string baseName="ExtNeutShieldCendBoxes.b";
     int nHoles = 0;
@@ -45,86 +57,76 @@ namespace mu2e {
     for ( int icb = 1; icb <= nB; icb++ ) {
       // A stream for reading in data - easy to use with loop
       std::ostringstream variableStream;
+      variableStream << baseName << icb;
 
-      // Get the material name for the box
-      variableStream << baseName << icb << "materialName";
-      std::string amat = c.getString(variableStream.str());
-      mats.push_back(amat);
-      variableStream.str("");
+      shield->_materialNames.push_back(c.getString(variableStream.str()+"materialName") );
 
       // Get the length, width, and height of each box.  Make half dim for G4
       // width is x dimension
       // height is y dimension
       // length is z dimension
       std::vector<double> tempdim;
-      variableStream << baseName << icb << "width";
-      tempdim.push_back(c.getDouble(variableStream.str())*CLHEP::mm/2.);
-      variableStream.str("");
-      variableStream << baseName << icb << "height";
-      tempdim.push_back(c.getDouble(variableStream.str())*CLHEP::mm/2.);
-      variableStream.str("");
-      variableStream << baseName << icb << "length";
-      tempdim.push_back(c.getDouble(variableStream.str())*CLHEP::mm/2.);
-      dims.push_back(tempdim);
+      tempdim.push_back(c.getDouble(variableStream.str()+"width" )*CLHEP::mm/2.);
+      tempdim.push_back(c.getDouble(variableStream.str()+"height")*CLHEP::mm/2.);
+      tempdim.push_back(c.getDouble(variableStream.str()+"length")*CLHEP::mm/2.);
+      shield->_dimensions.push_back(tempdim);
 
       // Location of the center of the box relative to the parent volume
       // (the detector hall).
-      variableStream.str("");
-      variableStream << baseName << icb << "centerX";
-      double tempX = c.getDouble(variableStream.str());
-      variableStream.str("");
-      variableStream << baseName << icb << "centerY";
-      double tempY = c.getDouble(variableStream.str());
-      variableStream.str("");
-      variableStream << baseName << icb << "centerZ";
-      double tempZ = c.getDouble(variableStream.str());
+      CLHEP::Hep3Vector loc( c.getDouble(variableStream.str()+"centerX")*CLHEP::mm,
+			     c.getDouble(variableStream.str()+"centerY")*CLHEP::mm,
+			     c.getDouble(variableStream.str()+"centerZ")*CLHEP::mm);
 
-      CLHEP::Hep3Vector loc(tempX * CLHEP::mm,
-			    tempY * CLHEP::mm,
-			    tempZ * CLHEP::mm);
-      sites.push_back(loc);
+      shield->_centerPositions.push_back( loc );
+      shield->_holeLocations  .push_back( loc );
 
       // Check on whether box has hole
-      variableStream.str("");
-      variableStream << baseName << icb << "hasHole";
-      bool hasHole = c.getBool(variableStream.str());
-      holey.push_back(hasHole);
+      shield->_hasHole.push_back(c.getBool(variableStream.str()+"hasHole"));
 
-      if ( hasHole ) {
+      if ( shield->_hasHole.back() ) {
 	// The index of this hole in the vectors of radius and length
-	holeID.push_back(nHoles);
+	shield->_holeIndexes.push_back(nHoles);
+        shield->_holeLocations.back().setY( 0. );
 	nHoles++;
 
 	// Read in radius and length of box.
-	variableStream.str("");
-	variableStream << baseName << icb << "holeRadius";
-	rads.push_back(c.getDouble(variableStream.str())*CLHEP::mm);
-	variableStream.str("");
-	variableStream << baseName << icb << "holeHalfLength";
-	hlengs.push_back(c.getDouble(variableStream.str())*CLHEP::mm);
+	shield->_holeRadius    .push_back( c.getDouble(variableStream.str()+"holeRadius"    )*CLHEP::mm );
+	shield->_holeHalfLength.push_back( c.getDouble(variableStream.str()+"holeHalfLength")*CLHEP::mm );
+
+        // Translate position of hole wrt beamline
+        const double deltaR   = c.getDouble( variableStream.str()+"holeDeltaR"   );
+        const double deltaPhi = c.getDouble( variableStream.str()+"holeDeltaPhi" );
+
+        if ( deltaR > 0 ) {
+          // (-) in front of solenoidOffsetInX, which is positive by
+          // definition, since we're in the DS portion of Mu2e
+          shield->_holeLocations.back().setX( deltaR*cos(deltaPhi*CLHEP::degree) - solenoidOffsetInX );
+          shield->_holeLocations.back().setY( deltaR*sin(deltaPhi*CLHEP::degree) );
+        }
 
       } else {
-	holeID.push_back(-1);
+	shield->_holeIndexes.push_back(-1);
       }
 
     }
 			       
-    std::unique_ptr<ExtNeutShieldCendBoxes> res(new ExtNeutShieldCendBoxes(
+    /*    std::unique_ptr<ExtNeutShieldCendBoxes> res(new ExtNeutShieldCendBoxes(
 								     dims,
 								     mats,
 								     sites,
 								     holey,
 								     holeID,
+                                                                     holeLocs,
 								     rads,
 								     hlengs)
-					     );
+                                                                     );*/
 
     //----------------------------------------------------------------
     if(c.getInt("ExtNeutShieldCendBoxes.verbosityLevel") > 0) {
-      std::cout<<*res<<std::endl;
+      std::cout<<*shield<<std::endl;
     }
 
-    return res;
+    return shield;
   }
 
 } // namespace mu2e

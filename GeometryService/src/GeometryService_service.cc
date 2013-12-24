@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.61 2013/09/27 13:18:13 knoepfel Exp $
+// $Id: GeometryService_service.cc,v 1.62 2013/12/24 17:05:38 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/09/27 13:18:13 $
+// $Date: 2013/12/24 17:05:38 $
 //
 // Original author Rob Kutschke
 //
@@ -314,7 +314,7 @@ if(_config->getBool("hasHybridCalorimeter",false)){
       addDetector( ExtNeutShieldLAboveMaker::make(*_config)         );
       addDetector( ExtNeutShieldLCeilingMaker::make(*_config)       );
       addDetector( ExtNeutShieldCryoBoxesMaker::make(*_config)      );
-      addDetector( ExtNeutShieldCendBoxesMaker::make(*_config)      );
+      addDetector( ExtNeutShieldCendBoxesMaker::make(*_config, beamline.solenoidOffset() )      );
     }
 
 
