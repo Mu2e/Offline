@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.64 2013/12/24 17:05:38 knoepfel Exp $
+// $Id: constructVirtualDetectors.cc,v 1.65 2013/12/24 17:15:57 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/12/24 17:05:38 $
+// $Date: 2013/12/24 17:15:57 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 
@@ -316,8 +316,8 @@ namespace mu2e {
         VolumeInfo const & parent = _helper->locateVolInfo("TrackerMother");
 
         CLHEP::Hep3Vector vdPos = vdg->getGlobal(vdId)-parent.centerInMu2e();
-        cout << "foo: TT_Mid: " << vdPos << " " << vdg->getLocal(vdId) << endl;
-        cout << "foo: TT_Mid: " << vdParamsTTracker << endl;
+        //        cout << "foo: TT_Mid: " << vdPos << " " << vdg->getLocal(vdId) << endl;
+        //        cout << "foo: TT_Mid: " << vdParamsTTracker << endl;
 
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
                                   vdParamsTTracker, vacuumMaterial, 0,
@@ -359,8 +359,8 @@ namespace mu2e {
               " z, r : " << zvd  << ", " << irvd << endl;
           }
 
-        cout << "foo: TT_MidInner: " << vdLocalOffset         << endl;
-        cout << "foo: TT_MidInner: " << vdParamsTTrackerInner << endl;
+          //        cout << "foo: TT_MidInner: " << vdLocalOffset         << endl;
+          //        cout << "foo: TT_MidInner: " << vdParamsTTrackerInner << endl;
 
           VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
                                     vdParamsTTrackerInner, vacuumMaterial, 0,
@@ -644,8 +644,8 @@ namespace mu2e {
 
           TubsParams  vdParamsTTrackerFrontFull(0.,orvd,vdHalfLength);
 
-          cout << "foo: TT_Front: " << vdLocalOffset             << endl;
-          cout << "foo: TT_Front: " << vdParamsTTrackerFrontFull << endl;
+          //          cout << "foo: TT_Front: " << vdLocalOffset             << endl;
+          //          cout << "foo: TT_Front: " << vdParamsTTrackerFrontFull << endl;
           VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                        vdParamsTTrackerFrontFull,
                                        vacuumMaterial,
@@ -690,8 +690,8 @@ namespace mu2e {
 
         TubsParams  vdParamsTTrackerBackFull(0.,orvd,vdHalfLength);
 
-        cout << "foo: TT_Back: " << vdLocalOffset    << endl;
-        cout << "foo: TT_Back: " << vdParamsTTrackerBackFull << endl;
+        //        cout << "foo: TT_Back: " << vdLocalOffset    << endl;
+        //        cout << "foo: TT_Back: " << vdParamsTTrackerBackFull << endl;
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                      vdParamsTTrackerBackFull,
@@ -739,8 +739,8 @@ namespace mu2e {
         // it is thin cylinder, NOT a thin disk
         TubsParams  vdParamsTTrackerOutSurf(orvd,orvd+2.*vdHalfLength,motherParams.zHalfLength());
 
-        cout << "foo: TT_OutSurf: " << vdLocalOffset         << endl;
-        cout << "foo: TT_OutSurf: " << vdParamsTTrackerOutSurf << endl;
+        //        cout << "foo: TT_OutSurf: " << vdLocalOffset         << endl;
+        //        cout << "foo: TT_OutSurf: " << vdParamsTTrackerOutSurf << endl;
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                      vdParamsTTrackerOutSurf,
@@ -788,8 +788,8 @@ namespace mu2e {
         // it is thin cylinder, NOT a thin disk
         TubsParams  vdParamsTTrackerInSurf(irvd-2.*vdHalfLength,irvd,motherParams.zHalfLength());
 
-        cout << "foo: TT_InSurf: " << vdLocalOffset         << endl;
-        cout << "foo: TT_InSurf: " << vdParamsTTrackerInSurf << endl;
+        //        cout << "foo: TT_InSurf: " << vdLocalOffset         << endl;
+        //        cout << "foo: TT_InSurf: " << vdParamsTTrackerInSurf << endl;
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                      vdParamsTTrackerInSurf,
@@ -1264,8 +1264,6 @@ namespace mu2e {
 
       CLHEP::Hep3Vector location = enscendb->holeLocation(iHoleBox);
       location.setZ( location.z() + enscendb->holeHalfLength(0) + vdg->getHalfLength() );
-
-      cout << " DSNeutronShieldExit VD location: " << location << endl;
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    TubsParams(0., enscendb->holeRadius(0), vdg->getHalfLength()),

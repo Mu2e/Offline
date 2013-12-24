@@ -33,23 +33,6 @@ namespace mu2e {
     shield->_holeRadius     .reserve(nB);
     shield->_holeHalfLength .reserve(nB);
 
-//     std::vector<std::vector<double>> dims;
-//     dims.reserve(nB);
-//     std::vector<std::string> mats;
-//     mats.reserve(nB);
-//     std::vector<CLHEP::Hep3Vector> sites;
-//     sites.reserve(nB);
-//     std::vector<bool> holey;
-//     holey.reserve(nB);
-//     std::vector<int> holeID;
-//     holeID.reserve(nB);
-//     std::vector<CLHEP::Hep3Vector> holeLocs;
-//     holeLocs.reserve(nB);
-//     // For now, only one hole, so don't need to reserve extra space in vector
-//     std::vector<double> rads;
-//     std::vector<double> hlengs;
-    
-
     std::string baseName="ExtNeutShieldCendBoxes.b";
     int nHoles = 0;
 
@@ -110,17 +93,6 @@ namespace mu2e {
 
     }
 			       
-    /*    std::unique_ptr<ExtNeutShieldCendBoxes> res(new ExtNeutShieldCendBoxes(
-								     dims,
-								     mats,
-								     sites,
-								     holey,
-								     holeID,
-                                                                     holeLocs,
-								     rads,
-								     hlengs)
-                                                                     );*/
-
     //----------------------------------------------------------------
     if(c.getInt("ExtNeutShieldCendBoxes.verbosityLevel") > 0) {
       std::cout<<*shield<<std::endl;
