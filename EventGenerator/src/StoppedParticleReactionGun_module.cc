@@ -59,6 +59,8 @@ namespace mu2e {
   class StoppedParticleReactionGun : public art::EDProducer {
     std::vector<std::string> inputFiles_;
     std::string treeName_;
+    long averageStopsToUseLimit_;
+    double stopUseFraction_;
 
     fhicl::ParameterSet psphys_;
 
@@ -85,6 +87,7 @@ namespace mu2e {
     RandomUnitSphere randomUnitSphere_;
 
     std::vector<InputStop> mustops_;
+    long countInputStops();
     void loadInputFiles();
     void addStoppedMuons(TFile* infile);
     double generateEnergy();
@@ -99,6 +102,8 @@ namespace mu2e {
   StoppedParticleReactionGun::StoppedParticleReactionGun(const fhicl::ParameterSet& pset)
     : inputFiles_(pset.get<std::vector<std::string> >("inputFiles"))
     , treeName_(pset.get<std::string>("treeName"))
+    , averageStopsToUseLimit_(pset.get<long>("averageStopsToUseLimit", 0))
+    , stopUseFraction_(1.)
     , psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , pdgId_(PDGCode::type(psphys_.get<int>("pdgId")))
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
@@ -183,23 +188,65 @@ namespace mu2e {
     loadInputFiles();
 
     if(verbosityLevel_ > 0) {
-      std::cout<<"StoppedParticleReactionGun inputs: num input muons = "
+      std::cout<<"StoppedParticleReactionGun: using = "
                <<mustops_.size()
+               <<" stopped particles"
                <<std::endl;
     }
+  }
+
+  //================================================================
+  long StoppedParticleReactionGun::countInputStops() {
+    long res=0;
+    art::ServiceHandle<art::TFileService> tfs;
+    for(const auto& fn : inputFiles_) {
+      const std::string resolvedFileName = ConfigFileLookupPolicy()(fn);
+      TFile *infile = tfs->make<TFile>(resolvedFileName.c_str(), "READ");
+      TTree *nt = dynamic_cast<TTree*>(infile->Get(treeName_.c_str()));
+      if(!nt) {
+        throw cet::exception("BADINPUT")<<"Could not get tree \""<<treeName_
+                                        <<"\" from file \""<<infile->GetName()
+                                        <<"\"\n";
+      }
+
+      const Long64_t nTreeEntries = nt->GetEntries();
+      if(verbosityLevel_ > 1) {
+        std::cout<<"StoppedParticleReactionGun: found "<<nTreeEntries<<" stops in input file "<<resolvedFileName<<std::endl;
+      }
+
+      res += nTreeEntries;
+    }
+
+    return res;
   }
 
   //================================================================
   void StoppedParticleReactionGun::loadInputFiles() {
     art::ServiceHandle<art::TFileService> tfs;
 
+    if(averageStopsToUseLimit_) {
+      const long totalStops = countInputStops();
+      if(averageStopsToUseLimit_ < totalStops) {
+        stopUseFraction_ = averageStopsToUseLimit_/double(totalStops);
+        if(verbosityLevel_ > 0) {
+          std::cout<<"StoppedParticleReactionGun: stopUseFraction = "<<stopUseFraction_
+                   <<" for the requested limit = "<<averageStopsToUseLimit_
+                   <<" and total number of input stops = "<<totalStops
+                   <<std::endl;
+        }
+      }
+      else {
+        if(verbosityLevel_ > 0) {
+          std::cout<<"StoppedParticleReactionGun: stopUseFraction = "<<1
+                   <<" for the requested limit = "<<averageStopsToUseLimit_
+                   <<" and total number of input stops = "<<totalStops
+                   <<std::endl;
+        }
+      }
+    }
+
     for(const auto& fn : inputFiles_) {
       const std::string resolvedFileName = ConfigFileLookupPolicy()(fn);
-
-      if(verbosityLevel_ > 0) {
-        std::cout<<"StoppedParticleReactionGun: reading input file "<<resolvedFileName<<std::endl;
-      }
-
       TFile *infile = tfs->make<TFile>(resolvedFileName.c_str(), "READ");
       addStoppedMuons(infile);
     }
@@ -216,8 +263,11 @@ namespace mu2e {
     }
 
     const Long64_t nTreeEntries = nt->GetEntries();
-    if(verbosityLevel_>0) {
-      std::cout<<"StoppedParticleReactionGun: nTreeEntries for stopped muons = "<<nTreeEntries<<std::endl;
+    if(verbosityLevel_ > 0) {
+      std::cout<<"StoppedParticleReactionGun: reading "<<nTreeEntries
+               <<" entries.  Tree "<<treeName_
+               <<", file "<<infile->GetName()
+               <<std::endl;
     }
 
     InputStop mu;
@@ -227,7 +277,11 @@ namespace mu2e {
     mustops_.reserve(mustops_.size() + nTreeEntries);
     for(Long64_t i=0; i<nTreeEntries; ++i) {
       bmu->GetEntry(i);
-      mustops_.emplace_back(mu);
+
+      if(!averageStopsToUseLimit_ || (randFlat_.fire() < stopUseFraction_)) {
+        mustops_.emplace_back(mu);
+      }
+
     }
   }
 
