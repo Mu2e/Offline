@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.76 2013/12/16 21:59:35 genser Exp $
-// $Author: genser $
-// $Date: 2013/12/16 21:59:35 $
+// $Id: G4_module.cc,v 1.77 2013/12/30 20:53:36 gandr Exp $
+// $Author: gandr $
+// $Date: 2013/12/30 20:53:36 $
 //
 // Original author Rob Kutschke
 //
@@ -444,6 +444,10 @@ namespace mu2e {
     art::Handle<SimParticleCollection> inputSimHandle;
     if(!(art::InputTag() == _inputSimParticles)) {
       event.getByLabel(_inputSimParticles, inputSimHandle);
+      if(!inputSimHandle.isValid()) {
+        throw cet::exception("CONFIG")
+          << "Error retrieving inputSimParticles for "<<_inputSimParticles<<"\n";
+      }
     }
 
     // ProductID for the SimParticleCollection.
