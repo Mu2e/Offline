@@ -135,92 +135,88 @@ namespace mu2e {
     // Pick a foil
 
     time = -1000;
-    while (!(time >= _tmin && time <=_tmax)) {
+    if  ( _tmin >= _tmax ) time = _tmin;
+    else {
+      while (!(time >= _tmin && time <=_tmax)) {
 
-      //      cout << "time condition failed: " << time << '\t' << _tmin << endl; 
-      // cout << "pos is :" << pos << endl;
-
-      switch (_foilAlgo) {
-      case flatFoil:
-        _ifoil = getFlatRndFoil();
-        break;
-      case volWeightFoil:
-        _ifoil = getVolumeRndFoil();
-        break;
-      case expoVolWeightFoil:
-        _ifoil = getVolumeAndExpoRndFoil();
-        break;
-      case muonFileInputFoil:
-        _ifoil = 0;
-        break;
-      default:
-        break;
-      }
-
-      // Get access to the geometry system.
-      GeomHandle<StoppingTarget> target;
-      TargetFoil const& foil = target->foil(_ifoil);
-
-      //Pick up position
-      switch (_posAlgo) {
-      case flatPos:
-        pos = getFlatRndPos(foil);
-        break;
-      case muonFileInputPos:
-        getInfoFromFile(pos, time);
-	_pPulseDelay = false;
-	_PTtoSTdelay = false;
-        break;
-      default:
-        break;
-      }
-
-      double addtime = 0;
-
-      //Pick up time
-      switch (_timeAlgo) {
-      case flatTime:
-        time = getFlatRndTime();
-        break;
-      case limitedExpoTime:
-        time = getLimitedExpRndTime();
-        break;
-      case negExp:
-	addtime = getNegativeExpoRndTime();
-	if (_posAlgo == muonFileInputPos) {
-	  _muDelay = time;
-	} 
-	//	cout << "adding " << addtime << endl;
-        time += addtime;
-	break;
-      default:
-        break;
-      }
-      if (_pPulseDelay) {
-	_pulseDelay = includePulseDelay();
-	time += _pulseDelay;
-      }
-      
-      _pulseDelay += _pPulseShift;
-      time += _pPulseShift;
-
-      if (_PTtoSTdelay) {
-        _muDelay = includeTimeDelay();
-        time += _muDelay;
-      }
-
-
-      if (foldingTimeOption) {
-        int periods = static_cast<int>(time/_maxtime);
-        time = time - (periods*_maxtime);
-      }
-      /*
-        while (time > _maxtime && countOverlay<MaxTimeCicleOverlay) {
-	time -= _maxtime;
-	countOverlay++;
+        // Determine foil option
+        switch (_foilAlgo) {
+        case flatFoil:
+          _ifoil = getFlatRndFoil();
+          break;
+        case volWeightFoil:
+          _ifoil = getVolumeRndFoil();
+          break;
+        case expoVolWeightFoil:
+          _ifoil = getVolumeAndExpoRndFoil();
+          break;
+        case muonFileInputFoil:
+          _ifoil = 0;
+          break;
+        default:
+          break;
         }
-      */
+
+        // Get access to the geometry system.
+        GeomHandle<StoppingTarget> target;
+        TargetFoil const& foil = target->foil(_ifoil);
+
+        //Pick up position
+        switch (_posAlgo) {
+        case flatPos:
+          pos = getFlatRndPos(foil);
+          break;
+        case muonFileInputPos:
+          getInfoFromFile(pos, time);
+          _pPulseDelay = false;
+          _PTtoSTdelay = false;
+          break;
+        default:
+          break;
+        }
+
+        double addtime = 0;
+
+        //Pick up time
+        switch (_timeAlgo) {
+        case flatTime:
+          time = getFlatRndTime();
+          break;
+        case limitedExpoTime:
+          time = getLimitedExpRndTime();
+          break;
+        case negExp:
+          addtime = getNegativeExpoRndTime();
+          if (_posAlgo == muonFileInputPos) {
+            _muDelay = time;
+          } 
+          time += addtime;
+          break;
+        default:
+          break;
+        }
+        if (_pPulseDelay) {
+          _pulseDelay = includePulseDelay();
+          time += _pulseDelay;
+        }
+      
+        _pulseDelay += _pPulseShift;
+        time += _pPulseShift;
+
+        if (_PTtoSTdelay) {
+          _muDelay = includeTimeDelay();
+          time += _muDelay;
+        }
+
+        if (foldingTimeOption) {
+          int periods = static_cast<int>(time/_maxtime);
+          time = time - (periods*_maxtime);
+        }
+      }
     }
+
+    std::cerr << __LINE__ << " Time : " << time << std::endl;
+
   }
   
   double FoilParticleGenerator::muDelay() {
