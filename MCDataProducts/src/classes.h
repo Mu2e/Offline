@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.28 2013/10/25 20:29:46 gandr Exp $
+// $Id: classes.h,v 1.29 2014/01/06 19:38:25 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/10/25 20:29:46 $
+// $Date: 2014/01/06 19:38:25 $
 //
 // Original author Rob Kutschke
 //
@@ -61,6 +61,7 @@
 
 #include "MCDataProducts/inc/StepFilterMode.hh"
 #include "MCDataProducts/inc/GenEventCount.hh"
+#include "MCDataProducts/inc/EventWeight.hh"
 
 // For cet::map_vector<T> instantiate the component pair<> and vector<pair<>> templates.
 template class std::pair<cet::map_vector_key,mu2e::SimParticle>;
@@ -151,3 +152,4 @@ template class std::vector<art::Ptr<mu2e::SimParticle> >;
 template class art::Wrapper<std::vector<art::Ptr<mu2e::SimParticle> > >;
 
 template class art::Wrapper<mu2e::GenEventCount>;
+template class art::Wrapper<mu2e::EventWeight>;
