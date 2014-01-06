@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.22 2013/12/20 20:10:20 kutschke Exp $
+// $Id: TTrackerMaker.hh,v 1.23 2014/01/06 20:55:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/12/20 20:10:20 $
+// $Date: 2014/01/06 20:55:27 $
 //
 // Original author Rob Kutschke
 //
@@ -81,6 +81,7 @@ namespace mu2e {
     // Some functions for the, fully detailed support structure.
     void makeSupportStructure();
     void makeStrawTubs();
+    void makeThinSupportRings();
 
     // An ugly hack for the detailed support structure; must be called after all
     // straws have been created.
@@ -187,6 +188,8 @@ namespace mu2e {
     double       _endRingHalfLength;
     double       _endRingZOffset;
     std::string  _endRingMaterial;
+    std::vector<int> _midRingSlot;
+    double           _midRingHalfLength;
 
     double      _innerRingInnerRadius;
     double      _innerRingOuterRadius;

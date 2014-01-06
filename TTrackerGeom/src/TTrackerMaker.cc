@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.54 2013/12/20 20:10:20 kutschke Exp $
+// $Id: TTrackerMaker.cc,v 1.55 2014/01/06 20:55:27 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/12/20 20:10:20 $
+// $Date: 2014/01/06 20:55:27 $
 //
 // Original author Rob Kutschke
 //
@@ -164,6 +164,10 @@ namespace mu2e {
       _endRingHalfLength       = config.getDouble( "ttrackerSupport.endRing.halfLength"  );
       _endRingZOffset          = config.getDouble( "ttrackerSupport.endRing.zOffset"     );
       _endRingMaterial         = config.getString( "ttrackerSupport.endRing.material"    );
+
+      config.getVectorInt( "ttrackerSupport.midRing.slot", _midRingSlot );
+      _midRingHalfLength       = config.getDouble(    "ttrackerSupport.midRing.halfLength" );
+
 
       _nStaves                 = config.getInt   ( "ttrackerSupport.stave.nstaves"       );
       _stavePhi0               = config.getDouble( "ttrackerSupport.stave.phi0"          );
@@ -391,7 +395,15 @@ namespace mu2e {
     recomputeHalfLengths();
     makeStrawTubs();
 
+    // This uses information from the devices
+    makeThinSupportRings();
+
+
     finalCheck();
+
+    if ( _verbosityLevel > 0 ) {
+      cout << "TTracker Support Structure: \n" << _tt->_supportStructure << endl;
+    }
 
     // Test the forAll methods.
     //_tt->forAllLayers( lptest);
@@ -407,7 +419,7 @@ namespace mu2e {
                                 CLHEP::Hep3Vector( _xCenter, 0., _motherZ0),
                                 _envelopeMaterial );
 
-  } //end TTrackerMaker::makeStayClear
+  } //end TTrackerMaker::makeMother
 
   // In the present code the straw positions are computed using the manifold information.
   // The channel position is computed using the SupportStructure information.  These two
@@ -1331,21 +1343,36 @@ namespace mu2e {
 
     // Positions for the next few objects in Mu2e coordinates.
     TubsParams endRingTubs( _endRingInnerRadius, _endRingOuterRadius, _endRingHalfLength);
-    sup._endRingUpstream   = PlacedTubs ( "TTrackerEndRingUpstream",   endRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter-_endRingZOffset), _endRingMaterial );
-    sup._endRingDownstream = PlacedTubs ( "TTrackerEndRingDownstream", endRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter+_endRingZOffset), _endRingMaterial );
+
+    TubsParams midRingTubs ( _endRingInnerRadius, _endRingOuterRadius, _midRingHalfLength);
+    sup._stiffRings.push_back(PlacedTubs ( "TTrackerEndRingUpstream",   endRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter-_endRingZOffset), _endRingMaterial ));
 
     {
-      double halfLength = _endRingZOffset-_endRingHalfLength;
+      if ( _numDevices%2 !=0 ){
+        throw cet::exception("GEOM")
+          << "TTrackerMaker::makeSupportStructure expected and even number of devices. Saw " << _numDevices << " devices.\n";
+      }
+
+      // From upsgream end of most upstream station to the downstream end of the most downstream station.
+      // Including all materials.
+      double overallLength = (_numDevices/2-1)*_deviceSpacing + 2.*_deviceHalfSeparation + 2.* _innerRingHalfLength;
+
+      // Staves touch the big ring at the upstream end; they end flush with the downstream edge of the most downstream station.
+      double z1 = -(_endRingZOffset-_endRingHalfLength);
+      double z2 = overallLength/2.;
+      double zoff = (z1+z2)/2.;
+      double zHalf = ( z2-z1)/2.;
+
       double dphi       = 360*CLHEP::degree/_nStaves;
       double phi0       = _stavePhi0*CLHEP::degree;
       double pad        = 2.*_virtualDetectorHalfLength;
-      TubsParams staveTubsParams( _outerRingOuterRadius+pad, _endRingOuterRadius, halfLength, 0., _stavePhiWidth*CLHEP::degree);
+      TubsParams staveTubsParams( _outerRingOuterRadius+pad, _endRingOuterRadius, zHalf, 0., _stavePhiWidth*CLHEP::degree);
       for ( int i=0; i<_nStaves; ++i ){
         double phi = phi0 + i*dphi;
         CLHEP::HepRotationZ rot(phi);
         ostringstream os;
         os << "TTrackerStave_" << i;
-        sup._staveBody.push_back( PlacedTubs ( os.str(), staveTubsParams, CLHEP::Hep3Vector(_xCenter,0., _zCenter), rot, _staveMaterial) );
+        sup._staveBody.push_back( PlacedTubs ( os.str(), staveTubsParams, CLHEP::Hep3Vector(_xCenter,0., _zCenter+zoff), rot, _staveMaterial) );
       }
     }
 
@@ -1402,6 +1429,37 @@ namespace mu2e {
       TubsParams cuTubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsCuHhalfLength);
       sup._cuUpstream   = PlacedTubs ( "TTrackerSupportElecCuUpstream",   cuTubs, CLHEP::Hep3Vector(0.,0.,_electronicsCuHhalfLength), _electronicsCuMaterial);
       sup._cuDownstream = PlacedTubs ( "TTrackerSupportElecCuDownstream", cuTubs, CLHEP::Hep3Vector(0.,0.,_electronicsCuHhalfLength), _electronicsCuMaterial);
+    }
+
+  }
+
+  // This needs to know the z positions of the
+  void TTrackerMaker::makeThinSupportRings(){
+    SupportStructure& sup  = _tt->_supportStructure;
+
+    TubsParams thinRingTubs ( _endRingInnerRadius, _outerRingOuterRadius, _midRingHalfLength);
+
+    for ( size_t i=0; i< _midRingSlot.size(); ++i){
+      ostringstream name;
+      int station = _midRingSlot.at(i);
+      int idev1 = station*2+1;
+      int idev2 = idev1+1;
+      if ( idev2 >= _tt->nDevices() ){
+        throw cet::exception("GEOM")
+          << "Requested a thin support after station: "
+          << station
+          << " This is between devices: "
+          << idev1 << " and "
+          << idev2 << "\n"
+          << "But there are only "
+          << _tt->nDevices()
+          << " devices\n";
+      }
+      name << "ThinSupportRing_" << i;
+
+      // Center the support in the gap between two stations.
+      double z = 0.5*( _tt->getDevice(idev1).origin().z() +  _tt->getDevice(idev2).origin().z());
+      sup._stiffRings.push_back(PlacedTubs ( name.str(),  thinRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter+z), _endRingMaterial ));
     }
 
   }
