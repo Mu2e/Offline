@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.36 2013/12/20 20:09:02 kutschke Exp $
+// $Id: constructTTrackerv3.cc,v 1.37 2014/01/06 20:47:13 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/12/20 20:09:02 $
+// $Date: 2014/01/06 20:47:13 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -48,6 +48,7 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/constructTTracker.hh"
+#include "Mu2eG4/inc/ConstructTTrackerTDR.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
@@ -79,7 +80,8 @@ namespace mu2e{
 
     // The more detailed version has its own function.
     if ( ttracker.getSupportModel() == SupportModel::detailedv0 ) {
-      return constructTTrackerv3Detailed(ds3Vac, config);
+      ConstructTTrackerTDR tt(ds3Vac, config);
+      return tt.motherInfo();
     }
 
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
