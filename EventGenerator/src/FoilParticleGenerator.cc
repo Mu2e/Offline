@@ -215,8 +215,6 @@ namespace mu2e {
       }
     }
 
-    std::cerr << __LINE__ << " Time : " << time << std::endl;
-
   }
   
   double FoilParticleGenerator::muDelay() {
