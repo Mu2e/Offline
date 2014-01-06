@@ -274,7 +274,11 @@ namespace mu2e {
     TBranch *bmu = nt->GetBranch("stops");
     bmu->SetAddress(&mu);
 
-    mustops_.reserve(mustops_.size() + nTreeEntries);
+    mustops_.reserve(mustops_.size()
+                     // Add "mean + 3sigma": do not re-allocate in most cases.
+                     + stopUseFraction_*nTreeEntries
+                     + 3*stopUseFraction_*sqrt(double(nTreeEntries)));
+
     for(Long64_t i=0; i<nTreeEntries; ++i) {
       bmu->GetEntry(i);
 
