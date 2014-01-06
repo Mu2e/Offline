@@ -5,9 +5,9 @@
 //  - See comments at the top of constructTTrackerv3.cc for additional details
 //    of the meaning of version numbers.
 //
-// $Id: constructTTrackerv3Detailed.cc,v 1.6 2013/12/20 20:08:21 kutschke Exp $
+// $Id: constructTTrackerv3Detailed.cc,v 1.7 2014/01/06 20:46:39 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/12/20 20:08:21 $
+// $Date: 2014/01/06 20:46:39 $
 //
 // Contact person Rob Kutschke,
 //   - Based on constructTTrackerv3 by KLG
@@ -90,11 +90,85 @@ namespace {
     mu2e::VolumeInfo const* mother;
     bool                    visible;
   };
-}
+
+  void addSupports(){
+  }
+
+  void addSectors( int idev,
+                   VolumeInfo const& devInfo,
+                   VolumeInfo& sec0Info,
+                   double sectorCenterPhi,
+                   AntiLeakRegistry& reg,
+                   SimpleConfig const& config ){
+
+    TTracker const& ttracker = *(GeomHandle<TTracker>());
+    Device const& dev        = ttracker.getDevice(idev);
+
+    int secDraw         = config.getInt ("ttracker.secDraw",-1);
+    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    int verbosityLevel  = config.getInt ("ttracker.verbosityLevel",0);
 
 
-  VolumeInfo constructTTrackerv3Detailed( VolumeInfo const& mother,
+    // Needed to get the center position in local z.
+    PlacedTubs const& chanUp(ttracker.getSupportStructure().innerChannelUpstream());
+
+    // Place the sector envelope into the device envelope, one placement per sector.
+    for ( int isec=0; isec<dev.nSectors(); ++isec){
+
+      // For debugging, only place the one requested sector.
+      if ( secDraw > -1  && isec != secDraw ) continue;
+      //if ( secDraw > -1  && isec%2 == 0 ) continue;
+
+      // Choose a representative straw from this this (device,sector).
+      Straw const& straw = ttracker.getStraw( StrawId(idev,isec,0,0) );
+
+      // Azimuth of the midpoint of the wire.
+      CLHEP::Hep3Vector const& mid = straw.getMidPoint();
+      double phimid = mid.phi();
+      if ( phimid < 0 ) phimid += 2.*M_PI;
+
+      // Is this sector on the front or back face of the plane?
+      double sign   = ((mid.z() - dev.origin().z())>0. ? 1.0 : -1.0 );
+      CLHEP::Hep3Vector sectorPosition(0.,0., sign*std::abs(chanUp.position().z()) );
+
+      // The rotation that will make the straw mid point have the correct azimuth.
+      // Sectors on the downstream side are flipped front/back by rotation about Y.
+      // so the sense of the z rotation changes sign.
+      double phi0 = sectorCenterPhi-phimid;
+      if ( sign > 0 ){
+        phi0 = sectorCenterPhi + M_PI +phimid;
+      }
+
+      CLHEP::HepRotationZ rotZ(phi0);
+      CLHEP::HepRotationY rotY(M_PI);
+      G4RotationMatrix* rotation  = (sign < 0 )?
+        reg.add(G4RotationMatrix(rotZ)) :
+        reg.add(G4RotationMatrix(rotZ*rotY));
+
+      bool many(false);
+      sec0Info.physical =  new G4PVPlacement(rotation,
+                                             sectorPosition,
+                                             sec0Info.logical,
+                                             sec0Info.name,
+                                             devInfo.logical,
+                                             many,
+                                             isec,
+                                             false);
+      if ( doSurfaceCheck) {
+        checkForOverlaps(sec0Info.physical, config, verbosityLevel>0);
+      }
+
+    }
+
+  } // end addSectors
+
+} // end anonymous namespace
+
+
+  VolumeInfo constructTTrackerv3Detailed( VolumeInfo const& ds3Vac,
                                           SimpleConfig const& config ){
+
+    cout << "Mark Detailed. " << endl;
 
     G4Helper& _helper      = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
@@ -104,17 +178,23 @@ namespace {
     // Control of graphics for debugging the geometry.
     // Only instantiate sectors to be drawn.
     int devDraw = config.getInt("ttracker.devDraw",-1);
-    int secDraw = config.getInt("ttracker.secDraw",-1);
+    //int secDraw = config.getInt("ttracker.secDraw",-1);
     bool const doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
     bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
 
     G4ThreeVector const zeroVector(0.0,0.0,0.0);
+    bool place(true);
+    bool doNotPlace(false);
+    G4RotationMatrix* noRotation(0);
 
     // Master geometry for the TTracker.
     TTracker const & ttracker = *(GeomHandle<TTracker>());
 
+    // Parameters of the new style mother volume ( replaces the envelope volume ).
+    PlacedTubs const& mother = ttracker.mother();
+
     // Make the envelope volume that holds the tracker devices - not the end rings and staves.
-    TubsParams envelopeParams = ttracker.getInnerTrackerEnvelopeParams();
+    //TubsParams envelopeParams = ttracker.getInnerTrackerEnvelopeParams();
 
     static int const newPrecision = 8;
     static int const newWidth = 14;
@@ -126,33 +206,40 @@ namespace {
       cout.setf(std::ios::fixed,std::ios::floatfield);
       cout << "Debugging tracker env envelopeParams ir,or,zhl,phi0,phimax:            " <<
 	"   " <<
-	envelopeParams.innerRadius() << ", " <<
-	envelopeParams.outerRadius() << ", " <<
-	envelopeParams.zHalfLength() << ", " <<
-	envelopeParams.phi0()        << ", " <<
-	envelopeParams.phiMax()      << ", " <<
+	mother.innerRadius() << ", " <<
+	mother.outerRadius() << ", " <<
+	mother.zHalfLength() << ", " <<
+	mother.phi0()        << ", " <<
+	mother.phiMax()      << ", " <<
 	endl;
       cout.setf(oldFlags);
       cout.precision(oldPrecision);
       cout.width(oldWidth);
     }
 
-    G4ThreeVector trackerOffset( 0., 0., ttracker.z0() );
+    //G4ThreeVector trackerOffset( 0., 0., ttracker.z0() );
+    // Offset of the center of the tracker within its mother volume.
 
+    // Offset of the center of the tracker within its mother volume.
+    CLHEP::Hep3Vector motherOffset(0., 0., ttracker.z0()-mother.position().z() );
+    cout << "Centers: " << mother.position() << " " << ds3Vac.centerInWorld << " " << ttracker.z0() << endl;
+    cout << "         " << motherOffset << endl;
+
+    // All mother/envelope volumes are made of this material.
     G4Material* envelopeMaterial = findMaterialOrThrow(ttracker.envelopeMaterial());
 
     VolumeInfo motherInfo = nestTubs( "TrackerMother",
-                                      envelopeParams,
+                                      mother.tubsParams(),
                                       envelopeMaterial,
-                                      0,
-                                      trackerOffset,
-                                      mother,
+                                      noRotation,
+                                      mother.position() - ds3Vac.centerInWorld,
+                                      ds3Vac,
                                       0,
                                       config.getBool("ttracker.envelopeVisible",false),
                                       G4Colour::Blue(),
                                       config.getBool("ttracker.envelopeSolid",true),
                                       forceAuxEdgeVisible,
-                                      true,
+                                      place,
                                       doSurfaceCheck
                                       );
 
@@ -170,78 +257,63 @@ namespace {
       cout.precision(oldPrecision);
     }
 
-    // Temporary while debugging the new mother volume.
-    if ( config.getBool("rkk.disableTT",false ) ){
-      cout << "Will not create TTracker because of a user request " << endl;
-      return motherInfo;
-    }
-
     // Now place the endRings and Staves.
     // FixME: add the cut-outs for services within the staves.
     if ( ttracker.getSupportModel() == SupportModel::detailedv0 ) {
 
       SupportStructure const& sup = ttracker.getSupportStructure();
-      PlacedTubs const& up        = sup.endRingUpstream();
-      PlacedTubs const& down      = sup.endRingDownstream();
 
-      CLHEP::Hep3Vector offsetUp  (0.,0., up.position().z());
-      CLHEP::Hep3Vector offsetDown(0.,0., down.position().z());
+      for ( auto const& ring : sup.stiffRings() ){
 
-      G4Material* upMaterial   = findMaterialOrThrow(up.materialName());
-      G4Material* downMaterial = findMaterialOrThrow(down.materialName());
+        cout << "Ring Position: "
+             << ring.position() << " "
+             << motherInfo.centerInWorld << " "
+             << ring.position()-motherInfo.centerInWorld
+             << endl;
 
-      VolumeInfo endRingUpInfo = nestTubs( up.name(),
-                                           up.tubsParams(),
-                                           upMaterial,
-                                           0,
-                                           offsetUp,
-                                           mother,
-                                           0,
-                                           config.getBool("ttracker.envelopeVisible",false),
-                                           G4Colour::Red(),
-                                           config.getBool("ttracker.envelopeSolid",true),
-                                           forceAuxEdgeVisible,
-                                           true,
-                                           doSurfaceCheck
-                                           );
+        VolumeInfo info = nestTubs( ring.name(),
+                                    ring.tubsParams(),
+                                    findMaterialOrThrow(ring.materialName()),
+                                    noRotation,
+                                    ring.position()-motherInfo.centerInWorld,
+                                    motherInfo,
+                                    0,
+                                    config.getBool("ttracker.envelopeVisible",false),
+                                    G4Colour::Red(),
+                                    config.getBool("ttracker.envelopeSolid",true),
+                                    forceAuxEdgeVisible,
+                                    place,
+                                    doSurfaceCheck
+                                    );
 
-      VolumeInfo endRingDownInfo = nestTubs( down.name(),
-                                             down.tubsParams(),
-                                             downMaterial,
-                                             0,
-                                             offsetDown,
-                                             mother,
-                                             0,
-                                             config.getBool("ttracker.envelopeVisible",false),
-                                             G4Colour::Green(),
-                                             config.getBool("ttracker.envelopeSolid",true),
-                                             forceAuxEdgeVisible,
-                                             true,
-                                             doSurfaceCheck
-                                             );
+      }
 
-      std::vector<PlacedTubs> const& staves = sup.staveBody();
-      for ( std::vector<PlacedTubs>::const_iterator i=staves.begin(), e=staves.end();
-            i != e; ++i ){
+      for ( auto const& stave : sup.staveBody() ){
 
-        PlacedTubs const& stave(*i);
-        CLHEP::Hep3Vector offset(0.,0., stave.position().z());
+        cout << "Stave Position: "
+             << stave.position() << " "
+             << motherInfo.centerInWorld << " "
+             << stave.position()-motherInfo.centerInWorld
+             << endl;
+
         nestTubs( stave.name(),
                   stave.tubsParams(),
                   findMaterialOrThrow(stave.materialName()),
                   &stave.rotation(),
-                  offset,
-                  mother,
+                  stave.position()-motherInfo.centerInWorld,
+                  motherInfo,
                   0,
                   config.getBool("ttracker.envelopeVisible",false),
                   G4Colour::Yellow(),
                   config.getBool("ttracker.envelopeSolid",true),
                   forceAuxEdgeVisible,
-                  true,
+                  place,
                   doSurfaceCheck
                   );
 
+
       }
+
     }
 
     TubsParams deviceEnvelopeParams = ttracker.getDeviceEnvelopeParams();
@@ -254,22 +326,20 @@ namespace {
     bool sectorEnvelopeSolid   = config.getBool("ttracker.sectorEnvelopeSolid",true);
     bool strawVisible          = config.getBool("ttracker.strawVisible",false);
     bool strawSolid            = config.getBool("ttracker.strawSolid",true);
-    bool strawLayeringVisible  = config.getBool("ttracker.strawLayeringVisible",false);
-    bool strawLayeringSolid    = config.getBool("ttracker.strawLayeringSolid",false);
-    bool drawAxes              = config.getBool("ttracker.drawAxes",false);
+    //bool strawLayeringVisible  = config.getBool("ttracker.strawLayeringVisible",false);
+    // bool strawLayeringSolid    = config.getBool("ttracker.strawLayeringSolid",false);
+    //bool drawAxes              = config.getBool("ttracker.drawAxes",false);
 
-    bool ttrackerActiveWr_Wl_SD        = config.getBool("ttracker.ActiveWr_Wl_SD",false);
+    //bool ttrackerActiveWr_Wl_SD = config.getBool("ttracker.ActiveWr_Wl_SD",false);
 
-    // Internally, all devices are the same.  They differ only in the translation and rotation.
-    // Construct one logical device envelope ( using device # 0) but do not place it.
-    // Fill it with support structure and straws; then place the envelope many times.
+    // The devices differ only in the rotations of their sectors (panels).
+    // Construct one device but do not place it until its insides have been populated.
 
-    const Device& device0 = ttracker.getDevice(0);
     string trackerEnvelopeName("TTrackerDeviceEnvelope");
     VolumeInfo devInfo = nestTubs( trackerEnvelopeName,
                                    deviceEnvelopeParams,
                                    envelopeMaterial,
-                                   0,
+                                   noRotation,
                                    zeroVector,
                                    0,
                                    0,
@@ -277,12 +347,19 @@ namespace {
                                    G4Colour::Magenta(),
                                    deviceEnvelopeSolid,
                                    forceAuxEdgeVisible,
-                                   false,
+                                   doNotPlace,
                                    doSurfaceCheck
                                    );
     if ( verbosityLevel > 0 ){
       cout << "Device Envelope parameters: " << deviceEnvelopeParams << endl;
     }
+
+    // Temporary while debugging the new mother volume.
+    if ( config.getBool("rkk.disableTT",false ) ){
+      cout << "Will not create TTracker because of a user request " << endl;
+      return motherInfo;
+    }
+
 
     // Many parts of the support structure are G4Tubs objects.  Place all of them,
     SupportStructure const& sup = ttracker.getSupportStructure();
@@ -308,7 +385,7 @@ namespace {
       i->info = nestTubs( part.name(),
                           part.tubsParams(),
                           findMaterialOrThrow(part.materialName()),
-                          0,
+                          noRotation,
                           part.position(),
                           i->mother->logical,
                           0,
@@ -410,6 +487,7 @@ namespace {
     }
 
     // Construct one sector envelope.
+    // In this model, sector envelopes are arcs of a disk.
 
     // Sectors are identical other than placement - so get required properties from device 0, sector 0.
     Sector const& sec00(ttracker.getSector(SectorId(0,0)));
@@ -440,9 +518,10 @@ namespace {
                                     G4Colour::Magenta(),
                                     sectorEnvelopeSolid,
                                     true,                  // edge visible
-                                    false,                 // place
+                                    doNotPlace,
                                     doSurfaceCheck
                                     );
+
 
     // The rotation matrix that will place the straw inside the sector envelope.
     // For straws on the upstream side of the support, the sign of the X rotation was chosen to put the
@@ -470,11 +549,15 @@ namespace {
 
       Layer const& lay(*i);
 
+      if ( lay.id().getLayer() != 0 ) continue;
+
       for ( std::vector<Straw const*>::const_iterator j=lay.getStraws().begin();
             j != lay.getStraws().end(); ++j ){
 
         Straw const&       straw(**j);
         StrawDetail const& detail(straw.getDetail());
+
+        //if ( straw.id().getStraw()%8 != 0 ) continue;
 
         // Mid point of the straw in Mu2e coordinates.
         CLHEP::Hep3Vector const& pos(straw.getMidPoint());
@@ -503,7 +586,7 @@ namespace {
                                          placeIt,
                                          doSurfaceCheck
                                          );
-
+        /*
         // Make the gas volume of this straw a sensitive detector.
         G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
           FindSensitiveDetector(SensitiveDetectorName::TrackerGas());
@@ -608,7 +691,7 @@ namespace {
                         wireVol.logical->SetSensitiveDetector(sd);
                         platingVol.logical->SetSensitiveDetector(sd);
                 }
-                
+
                 sd = nullptr;
                 sd = G4SDManager::GetSDMpointer()->
                                 FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
@@ -619,6 +702,7 @@ namespace {
                         innerMetal2Vol.logical->SetSensitiveDetector(sd);
                 }
         }
+        */
 
         if ( verbosityLevel > 1 ){
           cout << "Detail for: " << straw.id() << " " << detail.Id()            << endl;
@@ -632,93 +716,52 @@ namespace {
           cout << "           wirePlate:       " << detail.wirePlate()          << detail.wirePlateMaterialName()       << endl;
           cout << "           wireCore:        " << detail.wireCore()           << detail.wireCoreMaterialName()        << endl;
         }
-      }
-    }
 
-    // Place the sector envelope into the device envelope, one placement per sector.
-    for ( int isec=0; isec<device0.nSectors(); ++isec){
+      } // end loop over straws within a layer
+    } // end loop over layers
 
-      // For debugging, only place the one requested sector.
-      if ( secDraw > -1  && isec != secDraw ) continue;
-
-      // Determine the rotation of this sector about the z axis.
-      //   Presume that all devices are identical, other than rotation and offset.
-      //   Presume that all sectors are identical, other than rotation and offset.
-      //   Presume all straws within a sector are parallel.
-      // Therefore I can determine this from any straw in the sector.
-      Straw  const& straw = ttracker.getStraw( StrawId(0,isec,0,0) );
-
-      // Azimuth of the midpoint of the wire.
-      CLHEP::Hep3Vector const& mid = straw.getMidPoint();
-      double phimid = mid.phi();
-      if ( phimid < 0 ) phimid += 2.*M_PI;
-
-      // Is this sector on the front or back face of the plane?
-      double sign   = ((mid.z() - device0.origin().z())>0. ? 1.0 : -1.0 );
-      CLHEP::Hep3Vector sectorPosition(0.,0., sign*std::abs(chanUp.position().z()) );
-
-      // The rotation that will make the straw mid point have the correct azimuth.
-      // Sectors on the downstream side are flipped front/back by rotation about Y.
-      // so the sense of the z rotatin changes sign.
-      double phi0 = sectorCenterPhi-phimid;
-      if ( sign > 0 ){
-        phi0 = sectorCenterPhi + M_PI +phimid;
-      }
-
-      CLHEP::HepRotationZ rotZ(phi0);
-      CLHEP::HepRotationY rotY(M_PI);
-      G4RotationMatrix* rotation  = (sign < 0 )?
-        reg.add(G4RotationMatrix(rotZ)) :
-        reg.add(G4RotationMatrix(rotZ*rotY));
-
-      bool many(false);
-      sec0Info.physical =  new G4PVPlacement(rotation,
-                                             sectorPosition,
-                                             sec0Info.logical,
-                                             sec0Info.name,
-                                             devInfo.logical,
-                                             many,
-                                             isec,
-                                             false);
-      if ( doSurfaceCheck) {
-        checkForOverlaps(sec0Info.physical, config, verbosityLevel>0);
-      }
-
-    }
 
     // Place the device envelopes into the tracker mother.
     for ( int idev=0; idev<ttracker.nDevices(); ++idev ){
 
       // changes here affect StrawSD
 
+      //if ( devDraw > -1 && idev != devDraw ) continue;
       if ( devDraw > -1 && idev > devDraw ) continue;
 
       verbosityLevel > 1 &&
         cout << "Debugging dev: " << idev << " " << devInfo.name << " devDraw: " << devDraw << endl;
 
       const Device& device = ttracker.getDevice(idev);
-      CLHEP::HepRotationZ RZ(-device.rotation());
-      G4RotationMatrix* devRotation  = reg.add(G4RotationMatrix(RZ));
 
-      verbosityLevel > 1 &&
+      // devPosition - is in the coordinate system of the Tracker mother volume.
+      // device.origin() is in the detector coordinate system.
+      CLHEP::Hep3Vector devPosition = device.origin()+motherOffset;
+
+      if ( verbosityLevel > 1 ){
         cout << "Debugging -device.rotation(): " << -device.rotation() << " " << endl;
-      verbosityLevel > 1 &&
-        cout << "Debugging device.origin(): " << device.origin() << " " << endl;
+        cout << "Debugging device.origin():    " << device.origin() << " " << endl;
+        cout << "Debugging position in mother: " << devPosition << endl;
+      }
 
       // could we descend the final hierarchy and set the "true" copy numbers?
 
       // we may need to keep those pointers somewhre... (this is only the last one...)
-      devInfo.physical =  new G4PVPlacement(devRotation,
-                                            device.origin(),
+      bool pMany(false);
+      bool pSurfChk(false);
+      devInfo.physical =  new G4PVPlacement(noRotation,
+                                            devPosition,
                                             devInfo.logical,
                                             devInfo.name,
                                             motherInfo.logical,
-                                            false,
+                                            pMany,
                                             idev,
-                                            false);
+                                            pSurfChk);
       if ( doSurfaceCheck) {
          checkForOverlaps(devInfo.physical, config, verbosityLevel>0);
       }
+
+      addSectors ( idev, devInfo, sec0Info, sectorCenterPhi, reg, config );
 
     } // end loop over devices
 
@@ -727,17 +770,17 @@ namespace {
 
     // Draw three boxes to mark the coordinate axes.
     // Dimensions and positions chosen to look right when drawing the first plane or the first station.
-    if ( drawAxes ) {
+    cout << "Doing draw axes: " << config.getBool("ttracker.drawAxes",false) << endl;
+    if ( config.getBool("ttracker.drawAxes",false) ) {
 
       double blockWidth(20.);
       double blockLength(100.);
       double extra(10.);
-      double z0   = device0.origin().z() + blockWidth + extra;
+      double z0   = blockWidth + extra;
       double xOff = blockLength + blockWidth + extra;
       double yOff = blockLength + blockWidth + extra;
       double zOff = z0 + blockLength + blockWidth + extra;
 
-      G4RotationMatrix* noRot(0);
       int copyNo(0);
       int isVisible(true);
       int isSolid(true);
@@ -750,13 +793,14 @@ namespace {
       halfDimX[1] = blockWidth;
       halfDimX[2] = blockWidth;
       CLHEP::Hep3Vector xAxisPos(xOff,0.,z0);
+      CLHEP::Hep3Vector trackerOffset(0.,0.,11800.);
       xAxisPos += trackerOffset;
       nestBox( "xAxis",
                halfDimX,
-               findMaterialOrThrow(chanUp.materialName()),
-               noRot,
+               envelopeMaterial,
+               noRotation,
                xAxisPos,
-               mother,
+               ds3Vac,
                copyNo,
                isVisible,
                G4Colour::Blue(),
@@ -775,10 +819,10 @@ namespace {
       yAxisPos += trackerOffset;
       nestBox( "yAxis",
                halfDimY,
-               findMaterialOrThrow(chanUp.materialName()),
-               noRot,
+               envelopeMaterial,
+               noRotation,
                yAxisPos,
-               mother,
+               ds3Vac,
                copyNo,
                isVisible,
                G4Colour::Red(),
@@ -797,10 +841,10 @@ namespace {
       zAxisPos += trackerOffset;
       nestBox( "zAxis",
                halfDimZ,
-               findMaterialOrThrow(chanUp.materialName()),
-               noRot,
+               envelopeMaterial,
+               noRotation,
                zAxisPos,
-               mother,
+               ds3Vac,
                copyNo,
                isVisible,
                G4Colour::Green(),
@@ -809,6 +853,8 @@ namespace {
                placeIt,
                doSurfaceCheck
                );
+
+      cout << "Pos: " << xAxisPos << " " << yAxisPos << " "<< zAxisPos << endl;
     }
 
     return motherInfo;
