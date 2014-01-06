@@ -1,9 +1,9 @@
 //
 // A model for the TTracker supports described in Mu2e-doc-888-v5 (current as of Dec, 2012).
 //
-//  $Id: SupportStructure.cc,v 1.2 2013/03/19 01:13:16 kutschke Exp $
+//  $Id: SupportStructure.cc,v 1.3 2014/01/06 20:50:40 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2013/03/19 01:13:16 $
+//  $Date: 2014/01/06 20:50:40 $
 //
 //  Original author Rob Kutschke
 //
@@ -28,16 +28,21 @@ namespace mu2e {
     _g10Downstream(),
     _cuUpstream(),
     _cuDownstream(),
-    _endRingUpstream(),
-    _endRingDownstream(),
+    _stiffRings(),
     _staveBody(),
     _staveServices(){
   }
 
   void SupportStructure::print ( std::ostream& ost ) const{
 
-    ost << "\nEnd Ring Upstream:      " <<  _endRingUpstream       << std::endl;
-    ost << "\nEnd Ring Downstream:    " <<  _endRingDownstream     << std::endl;
+    ost << "\nNumber of Stiffening rings: " << _stiffRings.size() << std::endl;
+    for ( size_t i=0; i<_stiffRings.size(); ++i ){
+      ost << "\nStiff ring: "
+          << i << "    "
+          << _stiffRings[i]
+          << std::endl;
+    }
+
 
     for ( size_t i=0; i<_staveBody.size(); ++i ){
       ost << "\nStave body: "

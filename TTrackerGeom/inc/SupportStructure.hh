@@ -5,9 +5,9 @@
 // A model for the TTracker support structure described in Mu2e-doc-888-v5
 // (current as of Dec, 2012).
 //
-//  $Id: SupportStructure.hh,v 1.1 2013/01/07 03:56:08 kutschke Exp $
+//  $Id: SupportStructure.hh,v 1.2 2014/01/06 20:50:40 kutschke Exp $
 //  $Author: kutschke $
-//  $Date: 2013/01/07 03:56:08 $
+//  $Date: 2014/01/06 20:50:40 $
 //
 //  Original author Rob Kutschke
 //
@@ -47,8 +47,7 @@ namespace mu2e {
     PlacedTubs const& cuDownstream()            const { return _cuDownstream;}
 
     // Accessors for outer support structure.
-    PlacedTubs const& endRingUpstream()           const { return _endRingUpstream;}
-    PlacedTubs const& endRingDownstream()         const { return _endRingDownstream;}
+    std::vector<PlacedTubs> const& stiffRings()   const { return _stiffRings;    }
     std::vector<PlacedTubs> const& staveBody()    const { return _staveBody;     }
     std::vector<PlacedTubs> const& staveService() const { return _staveServices; }
 
@@ -77,9 +76,8 @@ namespace mu2e {
     PlacedTubs _cuUpstream;
     PlacedTubs _cuDownstream;
 
-    // The thick outer rings.
-    PlacedTubs _endRingUpstream;
-    PlacedTubs _endRingDownstream;
+    // Rings
+    std::vector<PlacedTubs> _stiffRings;
 
     // Each stave is represented by a body plus an average material to represent the
     // services that are present in the cut-out.
