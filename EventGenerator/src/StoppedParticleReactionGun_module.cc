@@ -30,6 +30,7 @@
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/EventWeight.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 #include "Mu2eUtilities/inc/SimpleSpectrum.hh"
@@ -61,6 +62,9 @@ namespace mu2e {
     std::string treeName_;
     long averageStopsToUseLimit_;
     double stopUseFraction_;
+
+    bool computeWeightFromProperTime_;
+    double weightProperLifeTime_;
 
     fhicl::ParameterSet psphys_;
 
@@ -104,6 +108,8 @@ namespace mu2e {
     , treeName_(pset.get<std::string>("treeName"))
     , averageStopsToUseLimit_(pset.get<long>("averageStopsToUseLimit", 0))
     , stopUseFraction_(1.)
+    , computeWeightFromProperTime_(pset.get<bool>("computeWeightFromProperTime", false))
+    , weightProperLifeTime_(computeWeightFromProperTime_ ? pset.get<double>("weightProperLifeTime") : 0.)
     , psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , pdgId_(PDGCode::type(psphys_.get<int>("pdgId")))
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
@@ -118,6 +124,10 @@ namespace mu2e {
     , randomUnitSphere_(eng_)
   {
     produces<mu2e::GenParticleCollection>();
+    if(computeWeightFromProperTime_) {
+      produces<mu2e::EventWeight>();
+    }
+
     if(inputFiles_.empty()) {
       throw cet::exception("BADCONFIG")<<"Error: no inputFiles";
     }
@@ -311,6 +321,12 @@ namespace mu2e {
                          stop.t);
 
     event.put(std::move(output));
+
+    if(computeWeightFromProperTime_) {
+      const double weight = exp(-stop.tau/weightProperLifeTime_);
+      std::unique_ptr<EventWeight> pw(new EventWeight(weight));
+      event.put(std::move(pw));
+    }
   }
 
   //================================================================
