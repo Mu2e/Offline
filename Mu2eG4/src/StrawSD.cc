@@ -6,9 +6,9 @@
 // This version only works for the TTracker.  It also allows that the tracker may not
 // be centered in its mother volume.
 //
-// $Id: StrawSD.cc,v 1.44 2013/12/20 20:09:45 kutschke Exp $
+// $Id: StrawSD.cc,v 1.45 2014/01/06 20:56:15 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/12/20 20:09:45 $
+// $Date: 2014/01/06 20:56:15 $
 //
 // Original author Rob Kutschke
 //
@@ -189,9 +189,7 @@ namespace mu2e {
           _nStrawsPerDevice*(touchableHandle->GetCopyNumber(3));
       } else {
         sdcn = touchableHandle->GetCopyNumber(0) +
-          _nStrawsPerSector*(touchableHandle->GetCopyNumber(1)) +
-          _nStrawsPerDevice*(touchableHandle->GetCopyNumber(2));
-
+          _nStrawsPerSector*(touchableHandle->GetCopyNumber(1));
       }
 
     } else {
