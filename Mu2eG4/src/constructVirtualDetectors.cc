@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.65 2013/12/24 17:15:57 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/12/24 17:15:57 $
+// $Id: constructVirtualDetectors.cc,v 1.66 2014/01/06 20:59:01 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/01/06 20:59:01 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 
@@ -304,6 +304,18 @@ namespace mu2e {
         TTracker const & ttracker = *(GeomHandle<TTracker>());
         double orvd = ttracker.mother().tubsParams().outerRadius();
         double irvd = ttracker.mother().tubsParams().innerRadius();
+
+        if ( ttracker.getSupportModel() == SupportModel::detailedv0 ) {
+          auto const& staves =  ttracker.getSupportStructure().staveBody();
+          if ( staves.empty() ){
+            throw cet::exception("GEOM")
+              << "Cannot create virtual detector " << VirtualDetectorId(vdId).name()
+              << " unless staves are defined\n";
+
+          }
+          orvd = staves.at(0).tubsParams().innerRadius();
+        }
+
 
         if ( verbosityLevel > 0) {
           double zvd = vdg->getGlobal(vdId).z();
