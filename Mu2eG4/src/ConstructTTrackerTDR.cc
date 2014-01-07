@@ -12,9 +12,9 @@
 //
 // Class to construct the TDR version of the TTracker
 //
-// $Id: ConstructTTrackerTDR.cc,v 1.1 2014/01/06 20:41:07 kutschke Exp $
+// $Id: ConstructTTrackerTDR.cc,v 1.2 2014/01/07 21:01:49 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2014/01/06 20:41:07 $
+// $Date: 2014/01/07 21:01:49 $
 //
 // Original author Rob Kutschke
 //
@@ -407,8 +407,6 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   for ( std::vector<Layer>::const_iterator i=sec00.getLayers().begin(); i != sec00.getLayers().end(); ++i ){
 
     Layer const& lay(*i);
-
-    if ( lay.id().getLayer() != 0 ) continue;
 
     for ( std::vector<Straw const*>::const_iterator j=lay.getStraws().begin();
           j != lay.getStraws().end(); ++j ){
