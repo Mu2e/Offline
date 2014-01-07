@@ -1,6 +1,6 @@
-// $Id: globalConstants_01.txt,v 1.5 2013/09/30 21:01:29 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/09/30 21:01:29 $
+// $Id: globalConstants_01.txt,v 1.6 2014/01/07 06:29:19 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/01/07 06:29:19 $
 //
 
 int    physicsParams.verbosityLevel = 1;
@@ -16,6 +16,11 @@ double physicsParams.protonMass               = 938.2720   ; // PDG value (2010 
 
 // Proton Kinetic Energy
 double physicsParams.protonKE = 8000.; // - in MeV
+
+// charged pion and kaon
+vector<int> physicsParams.freeLifePDGId = { 211, 312 };
+// in Mu2e units (ns), per PDG 2013 partial update
+vector<double> physicsParams.freeLifetime =  { 26.033, 12.38 };
 
 // Available stopping target materials
 vector<string> physicsParams.stoppingTargets = {"Al","Ti","Cu","Se","Sb","Au"};

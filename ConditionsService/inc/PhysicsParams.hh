@@ -24,6 +24,9 @@
 // Mu2e includes.
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 
+// The use of this header  does not introduce a library dependency.
+#include "MCDataProducts/inc/PDGCode.hh"
+
 // Framework includes
 #include "cetlib/exception.h"
 
@@ -39,7 +42,12 @@ namespace mu2e
     double   getProtonEnergy  () const { return _protonEnergy;   }
     double   getProtonKE      () const { return _protonKE;       }
     double   getProtonMomentum() const { return _protonMomentum; }
-    
+
+    // Lifetimes of free (not stopped) particles.  We provide them
+    // here because values coming from HepPDT are not accurate, and
+    // are in wrong units.
+    double getParticleLifetime(PDGCode::type pdgId) const;
+
     // Muon parameters
     double   getDecayTime     (targetMat material = "") const { 
       const std::string allowedMaterial = checkMaterial( material );
@@ -117,6 +125,9 @@ namespace mu2e
     double _protonEnergy;
     double _protonKE;
     double _protonMomentum;
+
+    typedef std::map<PDGCode::type, double> FreeLifeMap;
+    FreeLifeMap freeLifetime_;
 
     std::map<targetMat,double>   _decayTime;
     std::map<targetMat,double>   _decayFraction;

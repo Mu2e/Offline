@@ -15,6 +15,7 @@
 
 // Framework includes
 #include "cetlib/pow.h"
+#include "cetlib/exception.h"
 
 namespace mu2e {
 
@@ -35,6 +36,24 @@ namespace mu2e {
     _protonKE       = config.getDouble("physicsParams.protonKE");
     _protonEnergy   = _protonKE + pMass;
     _protonMomentum = std::sqrt( cet::diff_of_squares( _protonEnergy, pMass ) );
+
+    std::vector<int> tmpPDGId;
+    config.getVectorInt("physicsParams.freeLifePDGId", tmpPDGId, tmpPDGId);
+    std::vector<double> tmpLifetime;
+    config.getVectorDouble("physicsParams.freeLifetime", tmpLifetime, tmpLifetime);
+    if(tmpPDGId.size() != tmpLifetime.size()) {
+      throw cet::exception("BADINPUTS")
+        <<"physicsParams.freeLifePDGId and physicsParams.freeLifetime must have the same number of entries\n";
+    }
+    for(unsigned i=0; i<tmpPDGId.size(); ++i) {
+      freeLifetime_[PDGCode::type(tmpPDGId[i])] = tmpLifetime[i];
+      // assume CPT
+      if(tmpPDGId[i] < 0) {
+        std::cerr<<"PhysicsParams() WARNING: ignoring PDG code sign for physicsParams.freeLifePDGId entry "
+                 <<tmpPDGId[i]<<std::endl;
+      }
+      freeLifetime_[PDGCode::type(-tmpPDGId[i])] = tmpLifetime[i];
+    }
 
     // Specify chosen stopping target; default is "Al"
     _chosenStoppingTargetMaterial = config.getString("physicsParams.chosenStoppingTargetMaterial","Al");
@@ -89,4 +108,15 @@ namespace mu2e {
 
   }
 
+  //================================================================
+  double PhysicsParams::getParticleLifetime(PDGCode::type pdgId) const {
+    FreeLifeMap::const_iterator i = freeLifetime_.find(pdgId);
+    if(i == freeLifetime_.end()) {
+      throw cet::exception("BADINPUTS")
+        <<"PhysicsParams::getParticleLifetime(): no information for pdgId = "<<pdgId<<"\n";
+    }
+    return i->second;
+  }
+
+  //================================================================
 }
