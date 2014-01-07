@@ -1,8 +1,10 @@
 # Print information about all data products in a file.
 #
-# $Id: dumpDataProducts.fcl,v 1.3 2011/10/28 18:47:06 greenc Exp $
-# $Author: greenc $
-# $Date: 2011/10/28 18:47:06 $
+# Also see fileDumper.fcl, which illustrates a more powerful tool.
+#
+# $Id: dumpDataProducts.fcl,v 1.4 2014/01/07 21:20:33 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2014/01/07 21:20:33 $
 #
 # Original author Rob Kutschke
 
