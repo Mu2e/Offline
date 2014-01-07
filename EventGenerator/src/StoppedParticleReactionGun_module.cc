@@ -50,9 +50,9 @@ namespace mu2e {
       float y;
       float z;
       float t;
-      float tau; // proper time, for stopped pion weights
+      float tauNormalized; // proper time normalized to lifetime
 
-      InputStop() : x(), y(), z(), t(), tau() {}
+      InputStop() : x(), y(), z(), t(), tauNormalized() {}
     };
   } // namespace {}
 
@@ -64,7 +64,6 @@ namespace mu2e {
     double stopUseFraction_;
 
     bool computeWeightFromProperTime_;
-    double weightProperLifeTime_;
 
     fhicl::ParameterSet psphys_;
 
@@ -109,7 +108,6 @@ namespace mu2e {
     , averageStopsToUseLimit_(pset.get<long>("averageStopsToUseLimit", 0))
     , stopUseFraction_(1.)
     , computeWeightFromProperTime_(pset.get<bool>("computeWeightFromProperTime", false))
-    , weightProperLifeTime_(computeWeightFromProperTime_ ? pset.get<double>("weightProperLifeTime") : 0.)
     , psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , pdgId_(PDGCode::type(psphys_.get<int>("pdgId")))
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
@@ -323,7 +321,7 @@ namespace mu2e {
     event.put(std::move(output));
 
     if(computeWeightFromProperTime_) {
-      const double weight = exp(-stop.tau/weightProperLifeTime_);
+      const double weight = exp(-stop.tauNormalized);
       std::unique_ptr<EventWeight> pw(new EventWeight(weight));
       event.put(std::move(pw));
     }
