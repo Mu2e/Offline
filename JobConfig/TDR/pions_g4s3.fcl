@@ -89,6 +89,7 @@ physics : {
             module_type: StoppedParticlesDumper
             inputCollection: "stoppedPionFinder"
             writeProperTime : true
+            decayOffPDGCodes: [ -211, 211 ]
             hitCollections: ["g4filter:TS3Vacuum", "g4filter:DS2Vacuum"]
         }
         genCountLogger: {
