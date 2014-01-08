@@ -6,10 +6,7 @@ process_name : StopsToHitsDIO
 services.TFileService.fileName: "histStopsToHitsDIO.root"
 outputs.detectorOutput.fileName:  "dsStopsToHitsDIO.root"
 outputs.crvOutput.fileName: "crvStopsToHitsDIO.root"
-
-// Do not write out the "truncated" stream because of the large file size.
-// // outputs.truncatedEvtsOutput.fileName: "truncatedStopsToHitsDIO.root"
-physics.out : [detectorOutput, crvOutput]
+outputs.truncatedEvtsOutput.fileName: "truncatedStopsToHitsDIO.root"
 
 physics.producers.generate.physics: {
     pdgId : 11
