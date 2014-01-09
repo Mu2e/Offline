@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.55 2014/01/06 20:55:27 kutschke Exp $
+// $Id: TTrackerMaker.cc,v 1.56 2014/01/09 03:58:32 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2014/01/06 20:55:27 $
+// $Date: 2014/01/09 03:58:32 $
 //
 // Original author Rob Kutschke
 //
@@ -156,6 +156,8 @@ namespace mu2e {
     _envelopeMaterial = config.getString("ttracker.mat.vacuum");
     _supportMaterial = config.getString("ttracker.mat.support");
 
+    _passivationMargin        =  config.getDouble("ttracker.passivationMargin")*CLHEP::mm;
+
     // For the detailv0 support model there are lots of extra parameters.
     _supportModel = SupportModel( config.getString("ttrackerSupport.model","simple"));
     if ( _supportModel == SupportModel::detailedv0 ) {
@@ -196,8 +198,6 @@ namespace mu2e {
       _channelDepth             = config.getDouble( "ttrackerSupport.channel.depth"              );
       _channelMaterial          = config.getString( "ttrackerSupport.channel.material"           );
       _electronicsSpaceMaterial = config.getString( "ttrackerSupport.electronicsSpace.material"  );
-
-      _passivationMargin        =  config.getDouble("ttracker.passivationMargin")*CLHEP::mm;
 
       _wallOuterMetalThickness  = config.getDouble("ttracker.straw.wallOuterMetal.thickness")*CLHEP::mm;
       _wallInnerMetal1Thickness = config.getDouble("ttracker.straw.wallInnerMetal1.thickness")*CLHEP::mm;
@@ -885,6 +885,7 @@ namespace mu2e {
   void TTrackerMaker::computeStrawHalfLengths(){
 
     _strawHalfLengths.clear();
+    _strawActiveHalfLengths.clear();
 
     for ( int i=0; i<_manifoldsPerEnd; ++i ){
       double xA =
@@ -902,6 +903,12 @@ namespace mu2e {
       double yA = sqrt( diff_of_squares(_innerSupportRadius, xA) );
       double yB = yA + _manifoldYOffset;
       _strawHalfLengths.push_back(yB);
+
+      // This variable is only used if SupportModel==simple.
+      double activeHLen=sqrt( diff_of_squares(_innerSupportRadius,xA+2.5))-_passivationMargin;
+      activeHLen = std::max( activeHLen, 1.0);
+      _strawActiveHalfLengths.push_back(activeHLen);
+
     }
 
   } // end TTrackerMaker::computeStrawHalfLengths
@@ -925,7 +932,7 @@ namespace mu2e {
             _strawOuterRadius,
             _strawWallThickness,
             _strawHalfLengths.at(i),
-            _strawHalfLengths.at(i),
+            _strawActiveHalfLengths.at(i),
             _wireRadius
             )
           );
@@ -1608,6 +1615,7 @@ namespace mu2e {
 
         // Active half-length of the straw.
         double activeHalfLen = sqrt( diff_of_squares(rmin,r0) )-_passivationMargin;
+        activeHalfLen = std::max( activeHalfLen, 1.0);
 
         if ( activeHalfLen > hlen ){
           ++nIllegalActive;

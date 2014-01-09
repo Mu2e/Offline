@@ -2,9 +2,9 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.21 2013/10/21 21:01:23 kutschke Exp $
+// $Id: ReadStrawHit_module.cc,v 1.22 2014/01/09 03:58:32 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/10/21 21:01:23 $
+// $Date: 2014/01/09 03:58:32 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by KLG
@@ -101,6 +101,7 @@ namespace mu2e {
     TH1F* _hDriftTime;
     TH1F* _hDriftDistance;
     TH1F* _hDistanceToMid;
+    TH1F* _hFractionalDistanceToMid;
     TH1F* _hNG4Steps;
     TH1F* _hG4StepLength;
     TH1F* _hG4StepEdep;
@@ -130,6 +131,7 @@ namespace mu2e {
     _hDriftTime(0),
     _hDriftDistance(0),
     _hDistanceToMid(0),
+    _hFractionalDistanceToMid(0),
     _hNG4Steps(0),
     _hG4StepLength(0),
     _hG4StepEdep(0),
@@ -160,13 +162,15 @@ namespace mu2e {
     _hDriftTime    = tfs->make<TH1F>( "hDriftTime",    "Drift time, ns", 100, 0., 100. );
     _hDriftDistance= tfs->make<TH1F>( "hDriftDistance","Drift Distance, mm", 100, 0., 3. );
     _hDistanceToMid= tfs->make<TH1F>( "hDistanceToMid","Distance to wire center, mm", 160, -1600., 1600. );
+    _hFractionalDistanceToMid
+                   = tfs->make<TH1F>( "hFractionalDistanceToMid","(Distance to wire center)(half length of wire)", 100, -1., 1. );
     _hNG4Steps     = tfs->make<TH1F>( "hNG4Steps",     "Number of G4Steps per hit", 100, 0., 100. );
     _hG4StepLength = tfs->make<TH1F>( "hG4StepLength", "Length of G4Steps, mm", 100, 0., 10. );
     _hG4StepEdep   = tfs->make<TH1F>( "hG4StepEdep",   "Energy deposition of G4Steps, keV", 100, 0., 10. );
     _hG4StepRelTimes = tfs->make<TH1F>( "hG4StepRelTimes", "Hit Relative Times of G4Steps, ns", 100, -100., 100.);
 
     _ntup          = tfs->make<TNtuple>( "ntup", "Straw Hit ntuple",
-                                         "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid:id:hitx:hity:hitz");
+                                         "evt:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz:time:dtime:eDep:driftT:driftDistance:distanceToMid:id:hitx:hity:hitz:fracDistanceToMid");
     _detntup          = tfs->make<TNtuple>( "detntup", "Straw ntuple",
                                             "id:lay:did:sec:hl:mpx:mpy:mpz:dirx:diry:dirz");
   }
@@ -311,6 +315,7 @@ namespace mu2e {
       DeviceId did = sid.getDeviceId();
       SectorId secid = sid.getSectorId();
 
+      double fracDist = truth.distanceToMid()/str.getHalfLength();
 
       if ( ncalls < _maxFullPrint && _diagLevel > 3 ) {
 
@@ -333,6 +338,7 @@ namespace mu2e {
              << " driftTNonSm=" << spmcshp->_driftTimeNonSm
              << " driftT=" << spmcshp->_driftTime
              << " distToMid=" << spmcshp->_distanceToMid
+             << " fracDistToMid- " << fracDist
              << " t1=" << spmcshp->_t1
              << " t2=" << spmcshp->_t2
              << " edep=" << spmcshp->_edep
@@ -348,6 +354,7 @@ namespace mu2e {
       _hDriftTime->Fill(truth.driftTime());
       _hDriftDistance->Fill(truth.driftDistance());
       _hDistanceToMid->Fill(truth.distanceToMid());
+      _hFractionalDistanceToMid->Fill(fracDist);
 
       const CLHEP::Hep3Vector smidp  = str.getMidPoint();
       const CLHEP::Hep3Vector sdir   = str.getDirection();
@@ -381,6 +388,7 @@ namespace mu2e {
       nt[18] = strawHitInfo._pos.getX();
       nt[19] = strawHitInfo._pos.getY();
       nt[20] = strawHitInfo._pos.getZ();
+      nt[21] = fracDist;
 
       _ntup->Fill(nt);
 

@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.23 2014/01/06 20:55:27 kutschke Exp $
+// $Id: TTrackerMaker.hh,v 1.24 2014/01/09 03:58:32 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2014/01/06 20:55:27 $
+// $Date: 2014/01/09 03:58:32 $
 //
 // Original author Rob Kutschke
 //
@@ -152,6 +152,10 @@ namespace mu2e {
 
     // Lengths of straws indexed by manifold, from innermost radius, outwards.
     std::vector<double> _strawHalfLengths;
+
+    // Same for the active length of the straw.
+    // This is only valid for SupportModel==simple
+    std::vector<double> _strawActiveHalfLengths;
 
     // sector box half lengths
     std::vector<double> _sectorBoxHalfLengths;
