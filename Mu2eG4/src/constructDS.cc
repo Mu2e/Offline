@@ -1,9 +1,9 @@
 //
 // Free function to create DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.20 2013/08/22 14:31:33 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/22 14:31:33 $
+// $Id: constructDS.cc,v 1.21 2014/01/09 18:15:21 ejbarnes Exp $
+// $Author: ejbarnes $
+// $Date: 2014/01/09 18:15:21 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -24,6 +24,7 @@
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestPolycone.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+#include "Mu2eG4/inc/MaterialFinder.hh"
 
 // G4 includes
 #include "G4ThreeVector.hh"
@@ -43,7 +44,7 @@ namespace mu2e {
   void constructDS( const VolumeInfo& parent,
                     SimpleConfig const & _config
                     ){
-    
+    MaterialFinder materialFinder(_config);
     // Flags
     int const verbosityLevel = _config.getInt("ds.verbosityLevel",0);
     bool dsVisible           = _config.getBool("ds.visible",true);
@@ -268,6 +269,12 @@ namespace mu2e {
     //   front face, DS1, and TS5
     double ds1Z0     = dsFrontZ0 + ds->frontHalfLength() + ds->vac_halfLengthDs1();
     double ds2Z0     = ds->vac_zLocDs23Split() - ds->vac_halfLengthDs2();
+    double ds2HalfLength     = _config.getDouble("ds2.halfLength");
+    
+    bool piondegVisible = _config.getBool("piondeg.visible",true);
+    bool piondegSolid   = _config.getBool("piondeg.solid",true);
+ 
+    
 
     if ( verbosityLevel > 0 ) {
       cout << __func__ << " DS2 vacuum extent: " 
@@ -293,7 +300,8 @@ namespace mu2e {
               doSurfaceCheck
               );
 
-    nestTubs( "DS2Vacuum",
+    VolumeInfo ds2VacInfo = 
+      nestTubs( "DS2Vacuum",
               ds2VacParams,
               vacuumMaterial,
               0,
@@ -385,7 +393,49 @@ namespace mu2e {
 
     }
     
+    bool addPionDegrader  = _config.getBool("piondegrader.build",false);
+    double piondegXoffset        = _config.getDouble("piondeg.xoffset");
+    double piondegZoffset        = _config.getDouble("piondeg.zoffset");
+    double piondegHalfLength     = _config.getDouble("piondeg.halfLength");
+    double piondegRadius = _config.getDouble("piondeg.radius");
+    double piondegParams[5]  = { 0.0,  piondegRadius, piondegHalfLength, 0.0, CLHEP::twopi };
 
+    if( addPionDegrader ) {
+      std::cout<<" pion degrader position:\t"
+	       <<" x offset: "<<piondegXoffset
+	       <<" z position: "<<-ds2HalfLength + piondegZoffset + piondegHalfLength
+	       <<" Pion degrader halflength:"<<piondegHalfLength
+	       <<std::endl;
+
+
+
+      G4Material* piondegMaterial  = materialFinder.get("piondeg.materialName");
+      VolumeInfo piondegInfo = nestTubs( "PiondegAbs",
+					 piondegParams,
+					 piondegMaterial,
+					 0,
+					 G4ThreeVector(piondegXoffset,0.,-ds2HalfLength + piondegZoffset + piondegHalfLength),
+					 ds2VacInfo,
+					 0,
+					 piondegVisible,
+					 G4Color::Blue(),
+					 piondegSolid,
+					 forceAuxEdgeVisible,
+					 placePV,
+					 doSurfaceCheck
+					 );
+      
+      if ( verbosityLevel > 0) {
+      cout << __func__ << 
+	" PiondegAbs Z offset in Mu2e       : " << -ds2HalfLength + piondegZoffset + piondegHalfLength << endl;
+      cout << __func__ << 
+	" piondegZoffset                    : " << piondegZoffset    << endl;
+       cout << __func__ << 
+	" piondegHalfLength                : " << piondegHalfLength << endl;
+      }
+	//std::cout<<"piondegInfo\t"<<piondegParams<<std::endl;
+
+ }
   } // end of Mu2eWorld::constructDS;
 
 }

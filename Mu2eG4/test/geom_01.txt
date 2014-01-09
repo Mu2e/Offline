@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.224 2014/01/06 21:03:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/06 21:03:43 $
+// $Id: geom_01.txt,v 1.225 2014/01/09 18:15:51 ejbarnes Exp $
+// $Author: ejbarnes $
+// $Date: 2014/01/09 18:15:51 $
 //
 // Original author Rob Kutschke
 //
@@ -230,6 +230,18 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/test/PSShield_v05.txt"
 #include "Mu2eG4/test/PSExternalShielding_v01.txt"
 #include "Mu2eG4/test/TransportSolenoid_v01.txt"
+
+// Pion degrader 
+bool   piondegrader.build = true;
+double piondeg.xoffset = 0.0;
+double piondeg.zoffset =5.0;//-2350;
+double piondeg.radius = 250.0;
+double piondeg.halfLength = 1.75;
+string piondeg.materialName = "G4_Be";
+bool   piondeg.visible = true;
+bool   piondeg.solid = true;
+
+
 
 // Neutron shielding - TS region
 #include "Mu2eG4/test/ExtNeutShieldUpstream1a_v01.txt"
