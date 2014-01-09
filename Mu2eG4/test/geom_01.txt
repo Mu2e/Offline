@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.225 2014/01/09 18:15:51 ejbarnes Exp $
+// $Id: geom_01.txt,v 1.226 2014/01/09 18:19:01 ejbarnes Exp $
 // $Author: ejbarnes $
-// $Date: 2014/01/09 18:15:51 $
+// $Date: 2014/01/09 18:19:01 $
 //
 // Original author Rob Kutschke
 //
@@ -232,7 +232,7 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/test/TransportSolenoid_v01.txt"
 
 // Pion degrader 
-bool   piondegrader.build = true;
+bool   piondegrader.build = false;
 double piondeg.xoffset = 0.0;
 double piondeg.zoffset =5.0;//-2350;
 double piondeg.radius = 250.0;
