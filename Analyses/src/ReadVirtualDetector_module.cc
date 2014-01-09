@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.20 2014/01/08 20:48:01 rhbob Exp $
+//  $Id: ReadVirtualDetector_module.cc,v 1.21 2014/01/09 17:31:25 rhbob Exp $
 //  $Author: rhbob $
-//  $Date: 2014/01/08 20:48:01 $
+//  $Date: 2014/01/09 17:31:25 $
 //
 // Original author Ivan Logashenko
 //
@@ -251,9 +251,9 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
 
     _ntvd = tfs->make<TNtuple>( "ntvd", "Virtual Detectors ntuple",
-                                "evt:trk:sid:pdg:code:time:x:y:z:px:py:pz:"
+                                "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
                                 "xl:yl:zl:pxl:pyl:pzl:gtime:"
-                                "g4bl_weight:g4bl_time:run:ke:subrun");
+                                "g4bl_weight:g4bl_time:run:ke:subrun:code");
 
     _nttvd = tfs->make<TNtuple>( "nttvd", "Time Virtual Detectors ntuple",
                                  "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
@@ -452,26 +452,25 @@ namespace mu2e {
       nt[1]  = trackId.asInt();
       nt[2]  = hit.volumeId();
       nt[3]  = pdgId;
-      nt[4] =  sim.creationCode();
-      nt[5]  = hit.time();
-      nt[6]  = pos.x();
-      nt[7]  = pos.y();
-      nt[8]  = pos.z();
-      nt[9]  = mom.x();
-      nt[10]  = mom.y();
-      nt[11] = mom.z();
-      nt[12] = lpos.x();
-      nt[13] = lpos.y();
-      nt[14] = lpos.z();
-      nt[15] = lmom.x();
-      nt[16] = lmom.y();
-      nt[17] = lmom.z();
-      nt[18] = hit.properTime();
-      nt[19] = event.id().run();
+      nt[4]  = hit.time();
+      nt[5]  = pos.x();
+      nt[6]  = pos.y();
+      nt[7]  = pos.z();
+      nt[8]  = mom.x();
+      nt[9]  = mom.y();
+      nt[10] = mom.z();
+      nt[11] = lpos.x();
+      nt[12] = lpos.y();
+      nt[13] = lpos.z();
+      nt[14] = lmom.x();
+      nt[15] = lmom.y();
+      nt[16] = lmom.z();
+      nt[17] = hit.properTime();
+      nt[20] = event.id().run();
   // compute kinetic energy: this is what Geant cuts on
-      nt[20] = sqrt(mom.mag2()+mass*mass)-mass;
-      nt[21] = event.id().subRun();
-
+      nt[21] = sqrt(mom.mag2()+mass*mass)-mass;
+      nt[22] = event.id().subRun();
+      nt[23] =  sim.creationCode();
       _ntvd->Fill(nt);
 	}
       }
