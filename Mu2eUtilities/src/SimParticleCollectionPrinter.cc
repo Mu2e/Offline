@@ -15,10 +15,16 @@ namespace mu2e {
     os<<" id = "<<p.id()
       <<", parent="<<p.parentId()
       <<", pdgId="<<p.pdgId()
-      <<", p="<<p.startMomentum()
       <<", start="<<p.startPosition()
+      <<", pstart="<<p.startMomentum()
       <<", end="<<p.endPosition()
-      <<", stoppingCode = "<<p.stoppingCode();
+      <<", pend="<<p.endMomentum()
+      <<", nSteps = "<<p.nSteps()
+      <<", preLastStepKE = "<<p.preLastStepKineticEnergy()
+      <<", creationCode = "<<p.creationCode()
+      <<", stoppingCode = "<<p.stoppingCode()
+      <<", startG4Status = "<<p.startG4Status()
+      <<", endG4Status = "<<p.endG4Status();
     return os;
   }
 
