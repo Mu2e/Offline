@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.21 2013/10/21 21:01:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/10/21 21:01:23 $
+// $Id: ReadKalFits_module.cc,v 1.22 2014/01/10 18:51:20 ejbarnes Exp $
+// $Author: ejbarnes $
+// $Date: 2014/01/10 18:51:20 $
 //
 // Original author Rob Kutschke
 //
@@ -36,6 +36,9 @@ using namespace CLHEP;
 #include <iostream>
 #include <string>
 
+//G4Beamline includes
+#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+
 // This is fragile and needs to be last until CLHEP is
 // properly qualified and included in the BaBar classes.
 #include "KalmanTests/inc/KalRepCollection.hh"
@@ -57,11 +60,14 @@ namespace mu2e {
 
     // Module label of the module that performed the fits.
     std::string _fitterModuleLabel;
+    // Label of the generator.
+    std::string _generatorModuleLabel;
     TrkParticle _tpart;
     TrkFitDirection _fdir;
     std::string _iname;
     // whether to weight the DIO or not
-    bool _weight;
+    bool _weight; 
+    bool haveG4BL;// = g4beamlineData.isValid();
     // diagnostic of Kalman fit
     KalFitMC _kfitmc;
 
@@ -84,12 +90,14 @@ namespace mu2e {
 
     Int_t _trkid,_eventid;
     Float_t _diowt;
+    Float_t g4bl_weight;
 
   };
 
   ReadKalFits::ReadKalFits(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
     _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
+    _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _weight(pset.get<bool>("WeightEvents",true)),
@@ -121,6 +129,7 @@ namespace mu2e {
     _trkdiag->Branch("eventid",&_eventid,"eventid/I");
     _trkdiag->Branch("trkid",&_trkid,"trkid/I");
     _trkdiag->Branch("diowt",&_diowt,"diowt/f");
+    _trkdiag->Branch("g4bl_weight",&g4bl_weight,"g4bl_weight/f");
     _eventid = 0;
   }
 
@@ -135,6 +144,11 @@ namespace mu2e {
     event.getByLabel(_fitterModuleLabel,_iname,trksHandle);
     KalRepCollection const& trks = *trksHandle;
 
+    art::Handle<G4BeamlineInfoCollection> g4beamlineData;
+    event.getByLabel(_generatorModuleLabel, g4beamlineData);
+    haveG4BL = g4beamlineData.isValid();
+    if ( haveG4BL ) haveG4BL = (g4beamlineData->size()==1);
+    
     if ( _verbosity > 0 && _eventid <= _maxPrint ){
       cout << "ReadKalmanFits  for event: " << event.id() << "  Number of fitted tracks: " << trks.size() << endl;
     }
@@ -172,6 +186,15 @@ namespace mu2e {
       _hdp->Fill(dp);
 
       _hz0->Fill(pos0.z());
+
+      
+      
+      if( haveG4BL ) { 
+	G4BeamlineInfo const& extra = g4beamlineData->at(0);
+      	g4bl_weight=extra.weight();
+      }
+
+
 
       if ( _verbosity > 1 && _eventid <= _maxPrint ){
         cout << "   Fitted track: "
