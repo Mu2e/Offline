@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.22 2014/01/10 18:51:20 ejbarnes Exp $
+// $Id: ReadKalFits_module.cc,v 1.23 2014/01/13 21:45:16 ejbarnes Exp $
 // $Author: ejbarnes $
-// $Date: 2014/01/10 18:51:20 $
+// $Date: 2014/01/13 21:45:16 $
 //
 // Original author Rob Kutschke
 //
@@ -187,11 +187,15 @@ namespace mu2e {
 
       _hz0->Fill(pos0.z());
 
-      
+      //	g4bl_weight=1;
+
       
       if( haveG4BL ) { 
 	G4BeamlineInfo const& extra = g4beamlineData->at(0);
       	g4bl_weight=extra.weight();
+      }
+      else{
+      	g4bl_weight=1;
       }
 
 
