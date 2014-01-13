@@ -1,9 +1,9 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.46 2013/10/25 18:35:39 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/25 18:35:39 $
+// $Id: ConstructMaterials.cc,v 1.47 2014/01/13 22:36:39 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/01/13 22:36:39 $
 //
 // Original author Rob Kutschke
 //
@@ -180,38 +180,38 @@ namespace mu2e {
     mat = isNeeded(materialsToLoad, "Polyethylene092");
     if ( mat.doit ){
       G4Material* Polyethylene092 = new G4Material( mat.name, 0.92*CLHEP::g/CLHEP::cm3, 2);
-      Polyethylene092->AddMaterial( findMaterialOrThrow("G4_C"), 0.1428);
-      Polyethylene092->AddMaterial( findMaterialOrThrow("G4_H"), 0.8572);
+      Polyethylene092->AddMaterial( findMaterialOrThrow("G4_H"), 0.1428);
+      Polyethylene092->AddMaterial( findMaterialOrThrow("G4_C"), 0.8572);
     }
 
     mat = isNeeded(materialsToLoad, "Polyethylene0956");
     if ( mat.doit ){
       G4Material* Polyethylene0956 = new G4Material( mat.name, 0.956*CLHEP::g/CLHEP::cm3, 2);
-      Polyethylene0956->AddMaterial( findMaterialOrThrow("G4_C"), 0.143711);
-      Polyethylene0956->AddMaterial( findMaterialOrThrow("G4_H"), 0.856289);
+      Polyethylene0956->AddMaterial( findMaterialOrThrow("G4_H"), 0.143711);
+      Polyethylene0956->AddMaterial( findMaterialOrThrow("G4_C"), 0.856289);
     }
 
     mat = isNeeded(materialsToLoad, "Polyethylene096");
     if ( mat.doit ){
       G4Material* Polyethylene096 = new G4Material( mat.name, 0.96*CLHEP::g/CLHEP::cm3, 2);
-      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_C"), 0.14);
-      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_H"), 0.86);
+      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_H"), 0.14);
+      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
     }
 
     // Not real, very thin Polyethylene
     mat = isNeeded(materialsToLoad, "Polyethylene0010");
     if ( mat.doit ){
       G4Material* Polyethylene0010 = new G4Material( mat.name, 0.010*CLHEP::g/CLHEP::cm3, 2);
-      Polyethylene0010->AddMaterial( findMaterialOrThrow("G4_C"), 0.143711);
-      Polyethylene0010->AddMaterial( findMaterialOrThrow("G4_H"), 0.856289);
+      Polyethylene0010->AddMaterial( findMaterialOrThrow("G4_H"), 0.143711);
+      Polyethylene0010->AddMaterial( findMaterialOrThrow("G4_C"), 0.856289);
     }
 
     // Not real, very thin Polyethylene
     mat = isNeeded(materialsToLoad, "Polyethylene0020");
     if ( mat.doit ){
       G4Material* Polyethylene0020 = new G4Material( mat.name, 0.020*CLHEP::g/CLHEP::cm3, 2);
-      Polyethylene0020->AddMaterial( findMaterialOrThrow("G4_C"), 0.143711);
-      Polyethylene0020->AddMaterial( findMaterialOrThrow("G4_H"), 0.856289);
+      Polyethylene0020->AddMaterial( findMaterialOrThrow("G4_H"), 0.143711);
+      Polyethylene0020->AddMaterial( findMaterialOrThrow("G4_C"), 0.856289);
     }
 
     //   note that G4 has:
