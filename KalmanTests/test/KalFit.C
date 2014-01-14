@@ -481,7 +481,7 @@ void KalFitAcc(TTree* trks) {
   racc->Draw("histtext0");
 }
 
-void KalFitRes(TTree* trks) {
+void KalFitRes(TTree* trks,int mincut=0,int maxcut=3) {
   if(!donecuts)KalCuts();
 //  TF1* sgau = new TF1("sgau",splitgaus,-1.5,1.5,7);
 //  sgau->SetParName(0,"Norm");
@@ -519,10 +519,16 @@ void KalFitRes(TTree* trks) {
  
   TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
   rcan->Clear();
-  rcan->Divide(2,2);
+  unsigned ncan = maxcut-mincut+1;
+  if(ncan==1)
+    rcan->Divide(1,1);
+  else if(ncan==2)
+    rcan->Divide(2,1);
+  else
+    rcan->Divide(2,2);
   gStyle->SetOptFit(111111);
   gStyle->SetOptStat("oumr");
-  for(unsigned ires=0;ires<4;ires++){
+  for(unsigned ires=mincut;ires<maxcut+1;ires++){
     rcan->cd(ires+1);
     gPad->SetLogy();
     char mname[50];
@@ -540,7 +546,9 @@ void KalFitRes(TTree* trks) {
     cball->SetParLimits(5,0.001,0.4);
     cball->SetParLimits(6,0.1,momres[ires]->GetRMS());
 
-    momres[ires]->Fit("cball","LIR");
+    momres[ires]->SetMinimum(0.5);
+    momres[ires]->Fit("cball","LRQ");
+    momres[ires]->Fit("cball","LRM");
     fitmomres[ires] = new TF1(*cball);
     fitmomres[ires]->SetName(fitname);
     gDirectory->Append(fitmomres[ires]);
@@ -573,7 +581,7 @@ void KalFitRes(TTree* trks) {
     rtext->AddText(line);
     sprintf(line,"%s",fitcuts[ires].GetTitle());
     rtext->AddText(line);
-    sprintf(line,"Eff=%4.3f",keff);
+    sprintf(line,"Eff=%4.4f",keff);
     rtext->AddText(line);
     rtext->Draw();
  
