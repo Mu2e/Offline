@@ -2,46 +2,41 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.8 2013/12/18 02:20:56 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.9 2014/01/14 23:28:27 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/18 02:20:56 $
+// $Date: 2014/01/14 23:28:27 $
 //
 // Original author David Brown, LBNL
 //
 #include "TrackerMC/inc/StrawElectronics.hh"
 #include "cetlib/exception.h"
+#include <math.h>
 
 using namespace std;
 namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
     _dVdI(pset.get<double>("dVdI",100.0)), // mVolt/uAmps
-    _trise(pset.get<double>("RiseTime",2.0)), // rise time for signal, after shaping
-    _tfall(pset.get<double>("FallTime",15.0)), // fall time for signal, after shaping
+    _tshape(pset.get<double>("ShapingTime",40.0)),
+    _tpow(pset.get<double>("ShapingPower",1.0)),
     _tdead(pset.get<double>("DeadTime",50.0)), // nsec dead after threshold crossing (electronics processing time)
-    _vmax(pset.get<double>("MaximumVoltage",1000.0)), // mV max output
-    _vsat(pset.get<double>("SaturationVoltage",800.0)), // mV saturation effects starts
+    _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mV max
+    _vsat(pset.get<double>("SaturationVoltage",800.0)),
+    _disp(pset.get<double>("Dispersion",1.0e-4)), // 100 ps/m
     _vthresh(pset.get<double>("DiscriminatorThreshold",10.0)), //mVolt
     _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",1.0)), //mVolt
-    _ADCLSB(pset.get<double>("ADCLSB",1.0)), // mv/count
-    _maxADC(pset.get<unsigned>("maxADC",1023)), // 10-bit ADC
-    _nADC(pset.get<unsigned>("nADC",10)), // number of ADC samples
-    _ADCPeriod(pset.get<double>("ADCPeriod",15.4)), // nsec
-    _ADCOffset(pset.get<double>("ADCOffset",-40.0)), // nsec 
-    _TDCLSB(pset.get<double>("TDCLSB",0.037)),  // psed
-    _maxTDC(pset.get<unsigned>("maxTDC",65535)), // 16-bit TDC
-    _maxDTDC(pset.get<unsigned>("maxDeltaTDC",250))  // TDC range for which 2 end digitizations are combined
-  {
-  // insure times are positive
-      if(_trise < 1.0e-3 || _tfall < 0.0){
-      throw cet::exception("SIM") 
-	<< "mu2e::StrawElectronics: negative rise or fall time!" 
-	<< endl;
-      }
-    // normalization is given by rise and fall times.  Scale change from pC/nsec to uamp is also made
-    _norm = 1.0e3*(_trise+_tfall)/(_tfall*_tfall);
-    // relative time at maximum
-    _tmax = _trise*(log(_tfall + _trise) - log(_trise));
+    _ADCLSB(pset.get<double>("ADCLSB",0.25)),
+    _maxADC(pset.get<unsigned>("maxADC",4095)),
+    _nADC(pset.get<unsigned>("nADC",10)),
+    _ADCPeriod(pset.get<double>("ADCPeriod",15.4)),
+    _ADCOffset(pset.get<double>("ADCOffset",40.0)),
+    _TDCLSB(pset.get<double>("TDCLSB",0.037)),
+    _maxTDC(pset.get<unsigned>("maxTDC",65535)),
+    _maxDTDC(pset.get<unsigned>("maxDeltaTDC",250))
+ {
+    // calcluate normalization
+    _teff = _tshape/_tpow;
+    _norm = 1.0/(_teff*tgamma(_tpow));
   }
 
   StrawElectronics::~StrawElectronics() {}
@@ -51,15 +46,9 @@ namespace mu2e {
     double retval(0.0);
     // There is no response before the hitlets own time
     if(time >  hitlet.time()){
-// response is relative to the hitlets own time.
-      double dt = time - hitlet.time();
-   // 0 risetime is allowed
-      double rise(1.0);
-      if(_trise > 0.0)
-	rise = (1.0-exp(-dt/_trise));
-      double fall = exp(-dt/_tfall);
-      retval = hitlet.charge()*_dVdI*rise*fall*_norm;
-// smear this by electronics noise FIXME!!!
+// response is relative to the hitlets own time, normalized by the shaping time.
+      double dt = (time - hitlet.time())/_teff;
+      retval = hitlet.charge()*_dVdI*_norm*pow(dt,_tpow)*exp(-dt);
 // should make some smearing for dispersion here, based on the wire distance traveled. FIXME!!
     }
     return retval;

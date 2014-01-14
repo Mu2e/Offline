@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.9 2013/12/18 02:20:56 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.10 2014/01/14 23:28:27 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/12/18 02:20:56 $
+// $Date: 2014/01/14 23:28:27 $
 //
 // Original author David Brown, LBNL
 //
@@ -619,7 +619,7 @@ namespace mu2e {
       const double tstep(0.5); // 0.5
       const double nfall(3.0); // 4 lambda past last fall time
       double tstart = hitlets.begin()->time()-tstep;
-      double tfall = _strawele.fallTime();
+      double tfall = _strawele.shapingTime();
       double tend = hitlets.rbegin()->time() + nfall*tfall;
       vector<double> times, volts;
       double t = tstart;

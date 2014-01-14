@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.6 2013/12/18 02:20:55 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.7 2014/01/14 23:28:27 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/18 02:20:55 $
+// $Date: 2014/01/14 23:28:27 $
 //
 // Original author David Brown, LBNL
 //
@@ -38,7 +38,7 @@ namespace mu2e {
       // Given a (linear) total voltage, compute the saturated voltage
       double saturatedResponse(double lineearresponse) const;
       // relative time when hitlet response is maximal
-      double maxResponseTime() const { return _tmax; }
+      double maxResponseTime() const { return _tshape; }
   // digization
       unsigned short adcResponse(double mvolts) const; // ADC response to analog inputs
       unsigned long tdcResponse(double time) const; // TDC response to a given time
@@ -61,19 +61,22 @@ namespace mu2e {
       void adcTimes(double time, std::vector<double>& adctimes) const; // sampling times of ADC
       double saturationVoltage() const { return _vsat; }
       double maximumVoltage() const { return _vmax; }
+      double shapingTime() const { return _tshape; }
+      double shapingPower() const { return _tpow; }
+      double dispersion(double dlen) const { return _disp*dlen; } // dispersion width is linear in propagation length
       double threshold() const { return _vthresh; }
       double thresholdNoise() const { return _vthreshnoise; }
-      double riseTime() const { return _trise; }
-      double fallTime() const { return _tfall; }
       double deadTime() const { return _tdead; }
     private:
-      // scale factor between current and voltage (milliVolts per microAmps)
+      // scale factor between charge and voltage (milliVolts from picoCoulombs)
       double _dVdI;
-      double _trise, _tfall; // rise and fall times.  These should depend on hitlet type, FIXME!! 
-      double _tdead; // minimum deadtime to digitize and latch 1 signal
+      double _tshape, _tpow; // Shaping time and power.  These should depend on hitlet type, FIXME!
+      double _teff; // effective shaping time
+      double _tdead; // electronics dead time
+      // scale factor between current and voltage (milliVolts per microAmps)
       double _norm; // normalization factor, computed from trise and tfall
-      double _tmax; // relative time at which hitlet signal reaches maximum, computed from trise and tfall
       double _vmax, _vsat; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
+      double _disp; // dispersion in ns/mm;
       double _vthresh; // threshold voltage for electronics discriminator (mVolt)
       double _vthreshnoise; // threshold voltage noise width (mVolt)
 // add some noise parameter: FIXME!!!
