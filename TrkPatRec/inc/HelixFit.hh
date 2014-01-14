@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.hh,v 1.4 2013/03/08 04:33:26 brownd Exp $
+// $Id: HelixFit.hh,v 1.5 2014/01/14 22:49:39 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/08 04:33:26 $
+// $Date: 2014/01/14 22:49:39 $
 //
 #ifndef HelixFit_HH
 #define HelixFit_HH
@@ -157,7 +157,6 @@ namespace mu2e
     double _maxdz, _maxdot; // stereo selection parameters
     double _rbias;  // robust fit parameter bias
     double _efac; // error factor
-    double _rhomin, _rhomax; // crude cuts on tranvservse radius for stereo hits
     double _mindist; // minimum distance between points used in circle initialization
     double _maxdist; // maximum distance in hits
     double _pmin, _pmax; // range of total momentum
