@@ -3,7 +3,7 @@
   se->Project("ecomp","edep:mcedep");
   ecomp->SetStats(0);
   TCanvas* ec = new TCanvas("ec","Energy comparison",1000,600);
-  ec->Divide(2,1);
+  ec->Divide(2,2);
   ec->cd(1);
   ecomp->Draw("box");
   TH1F* eedep = new TH1F("eedep","Straw Hit Energy;MeV",100,0,0.04);
@@ -21,4 +21,18 @@
   leg->AddEntry(eedep,"Electrons","l");
   leg->AddEntry(pedep,"Protons","l");
   leg->Draw();
+
+  TH1F* emcedep = new TH1F("emcedep","MC True EDep;MeV",100,0,0.04);
+  TH1F* pmcedep = new TH1F("pmcedep","MC True EDep;MeV",100,0,0.04);
+  se->Project("emcedep","mcedep");
+  sp->Project("pmcedep","mcedep");
+  emcedep->SetLineColor(kRed);
+  pmcedep->SetLineColor(kBlue);
+  emcedep->SetStats(0);
+  pmcedep->SetStats(0);
+  ec->cd(3);
+  emcedep->Draw();
+  pmcedep->Draw("same");
+  leg->Draw();
+
 }
