@@ -6,9 +6,9 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: TTrackerSig.fcl,v 1.1 2013/04/03 22:18:48 tassiell Exp $
+# $Id: TTrackerSig.fcl,v 1.2 2014/01/15 17:15:33 tassiell Exp $
 # $Author: tassiell $
-# $Date: 2013/04/03 22:18:48 $
+# $Date: 2014/01/15 17:15:33 $
 #
 # Original author Gianni Onorato.
 
@@ -46,7 +46,7 @@ services :
 
     ConditionsService :
     {
-      conditionsfile : "Mu2eG4/test/conditions_01_it.txt"
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
     }
 
     GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
