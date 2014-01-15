@@ -2,9 +2,9 @@
 // Read particles from a file in G4beamline input format.
 // Position of the GenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.29 2012/07/15 22:06:17 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:17 $
+// $Id: FromG4BLFile.cc,v 1.30 2014/01/15 17:07:30 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2014/01/15 17:07:30 $
 //
 // Original author Rob Kutschke
 //
@@ -77,7 +77,7 @@ namespace mu2e {
   FromG4BLFile::FromG4BLFile( art::Run const& , const SimpleConfig& config ):
 
     // Base class.
-    GeneratorBase(),
+    GeneratorBase(true),
 
     // From run time configuration file.
     _mean(config.getDouble("fromG4BLFile.mean",-1.)),

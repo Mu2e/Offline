@@ -3,9 +3,9 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.20 2013/11/27 16:05:13 rhbob Exp $
-  $Author: rhbob $
-  $Date: 2013/11/27 16:05:13 $
+  $Id: EventGenerator_module.cc,v 1.21 2014/01/15 17:07:30 tassiell Exp $
+  $Author: tassiell $
+  $Date: 2014/01/15 17:07:30 $
 
   Original author Rob Kutschke
 
@@ -36,6 +36,7 @@
 #include "ConfigTools/inc/requireUniqueKey.hh"
 #include "MCDataProducts/inc/GenId.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 
 // Particular generators that this code knows about.
 #include "EventGenerator/inc/ConversionGun.hh"
@@ -102,6 +103,8 @@ namespace mu2e {
     // Print final config file after all replacements.
     bool _printConfig;
 
+    bool doFromG4BLFile;
+
     // A collection of all of the generators that we will run.
     typedef  boost::shared_ptr<GeneratorBase> GeneratorBasePtr;
     std::vector<GeneratorBasePtr> _generators;
@@ -119,6 +122,7 @@ namespace mu2e {
     _printConfig(          pSet.get<bool>       ("printConfig",           false)){
 
     produces<GenParticleCollection>();
+    produces<G4BeamlineInfoCollection>();
 
     // A common random engine for the generators to use.
     createEngine( art::ServiceHandle<SeedService>()->getSeed() );
@@ -162,7 +166,7 @@ namespace mu2e {
     bool doDIO                  = config.getBool( "decayinorbitGun.do",  false );
     bool doPiEplusNu            = config.getBool( "piEplusNuGun.do",     false );
     bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", false );
-    bool doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
+         doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
     bool doNuclearCapture       = config.getBool( "nuclearCaptureGun.do",false );
     bool doExtMonFNALGun        = config.getBool( "extMonFNALGun.do",    false );
     bool doStoppedMuonGun       = config.getBool( "stoppedMuonGun.do",   false );
@@ -199,17 +203,25 @@ namespace mu2e {
 
     // Make the collection to hold the output.
     unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
+    unique_ptr<G4BeamlineInfoCollection> g4beamlineData(new G4BeamlineInfoCollection);
 
     // Run all of the registered generators.
     for ( std::vector<GeneratorBasePtr>::const_iterator
             i = _generators.begin(),
             e = _generators.end();
           i !=e; ++i ){
-      (*i)->generate(*genParticles);
+            if ((*i)->isFromG4bl()) {
+                    ((FromG4BLFile*)i->get())->generate(*genParticles,g4beamlineData.get());
+            } else {
+                    (*i)->generate(*genParticles);
+            }
     }
 
     // Put the generated particles into the event.
     evt.put(std::move(genParticles));
+    if (doFromG4BLFile) {
+            evt.put(std::move(g4beamlineData));
+    }
 
   }
 
