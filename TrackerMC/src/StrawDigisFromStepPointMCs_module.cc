@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.10 2014/01/14 23:28:27 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.11 2014/01/15 06:22:30 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/01/14 23:28:27 $
+// $Date: 2014/01/15 06:22:30 $
 //
 // Original author David Brown, LBNL
 //
@@ -252,45 +252,45 @@ namespace mu2e {
   }
 
   void
-    StrawDigisFromStepPointMCs::produce(art::Event& event) {
-      if ( _printLevel > 0 ) cout << "StrawDigisFromStepPointMCs: produce() begin; event " << event.id().event() << endl;
-      static int ncalls(0);
-      ++ncalls;
-      // update conditions caches.  The conditions handles themselves should be data members FIXME!!
-      ConditionsHandle<AcceleratorParams> accPar("ignored");
-      _mbtime = accPar->deBuncherPeriod;
-      // Containers to hold the output information.
-      unique_ptr<StrawDigiCollection> digis(new StrawDigiCollection);
-      unique_ptr<PtrStepPointMCVectorCollection> mcptrs(new PtrStepPointMCVectorCollection);
-      // Handle to the conditions service
-      ConditionsHandle<TrackerCalibrations> trackerCalibrations("ignored");
-      // create the StrawHitlet map
-      StrawHitletMap hmap;
-      // fill this from the event
-      fillHitletMap(event,hmap);
-      // introduce cross-talk hitlets
+  StrawDigisFromStepPointMCs::produce(art::Event& event) {
+    if ( _printLevel > 0 ) cout << "StrawDigisFromStepPointMCs: produce() begin; event " << event.id().event() << endl;
+    static int ncalls(0);
+    ++ncalls;
+    // update conditions caches.  The conditions handles themselves should be data members FIXME!!
+    ConditionsHandle<AcceleratorParams> accPar("ignored");
+    _mbtime = accPar->deBuncherPeriod;
+    // Containers to hold the output information.
+    unique_ptr<StrawDigiCollection> digis(new StrawDigiCollection);
+    unique_ptr<PtrStepPointMCVectorCollection> mcptrs(new PtrStepPointMCVectorCollection);
+    // Handle to the conditions service
+    ConditionsHandle<TrackerCalibrations> trackerCalibrations("ignored");
+    // create the StrawHitlet map
+    StrawHitletMap hmap;
+    // fill this from the event
+    fillHitletMap(event,hmap);
+    // introduce cross-talk hitlets
     if(_addXtalk)addCrosstalk(hmap);
-// add noise hitlets
+    // add noise hitlets
     if(_addNoise)addNoise(hmap);
-// loop over the hitlet sequences
+    // loop over the hitlet sequences
     for(auto ihsp=hmap.begin();ihsp!= hmap.end();++ihsp){
-// find the threshold crossing points along this hitlet sequence
+      // find the threshold crossing points along this hitlet sequence
       WFXList xings;
       findThresholdCrossings(ihsp->second,xings);
-// convert the crossing points into digis, and add them to the event data
+      // convert the crossing points into digis, and add them to the event data
       if(xings.size() > 0){
-// instantiate a waveform for the primary end of this straw
+	// instantiate a waveform for the primary end of this straw
 	StrawEnd primaryend = primaryEnd(ihsp->second.strawIndex());
 	StrawWaveform primarywf(ihsp->second.hitletSequence(primaryend),_strawele);
-// create digis
+	// create digis
 	fillDigis(xings,primarywf,digis.get(),mcptrs.get());
-// diagnostics
-        if(_diagLevel > 0)waveformDiag(primarywf);
+	// diagnostics
+	if(_diagLevel > 0)waveformDiag(primarywf);
       }
     }
-// store the digis in the event
+    // store the digis in the event
     event.put(move(digis));
-// store MC truth match
+    // store MC truth match
     event.put(move(mcptrs),"StrawDigiMCPtr");
     if ( _printLevel > 0 ) cout << "StrawDigisFromStepPointMCs: produce() end" << endl;
     // Done with the first event; disable some messages.
@@ -617,7 +617,7 @@ namespace mu2e {
     if(_diagLevel > 2 && _event < _maxhist){
       // histogram the waveforms
       const double tstep(0.5); // 0.5
-      const double nfall(3.0); // 4 lambda past last fall time
+      const double nfall(5.0); // 5 lambda past last fall time
       double tstart = hitlets.begin()->time()-tstep;
       double tfall = _strawele.shapingTime();
       double tend = hitlets.rbegin()->time() + nfall*tfall;
