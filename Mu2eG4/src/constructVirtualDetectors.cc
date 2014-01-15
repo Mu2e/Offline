@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.66 2014/01/06 20:59:01 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/06 20:59:01 $
+// $Id: constructVirtualDetectors.cc,v 1.67 2014/01/15 17:12:05 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2014/01/15 17:12:05 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 
@@ -1060,6 +1060,70 @@ namespace mu2e {
 
         vdInfo.logical->SetSensitiveDetector(vdSD);
       }
+
+    if (_config.getBool("targetPS.hasVD.backward", false)) {
+            vdId = VirtualDetectorId::PT_Back;
+            if ( vdg->exist(vdId) )
+            {
+                    const VolumeInfo& parent = _helper->locateVolInfo("ProductionTargetMother");
+                    G4Tubs *PTMoth = (G4Tubs *) parent.solid;
+
+                    TubsParams vdParams(0., PTMoth->GetOuterRadius(), vdg->getHalfLength());
+
+                    G4ThreeVector vdCenterInParent(0., 0., -PTMoth->GetDz() + vdg->getHalfLength());
+
+                    VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                    vdParams,
+                                    vacuumMaterial,
+                                    0,
+                                    vdCenterInParent,
+                                    parent,
+                                    vdId,
+                                    vdIsVisible,
+                                    G4Color::Red(),
+                                    vdIsSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    false
+                    );
+
+                    doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+
+                    vdInfo.logical->SetSensitiveDetector(vdSD);
+            }
+    }
+
+    if (_config.getBool("targetPS.hasVD.forward", false)) {
+            vdId = VirtualDetectorId::PT_Front;
+            if ( vdg->exist(vdId) )
+            {
+                    const VolumeInfo& parent = _helper->locateVolInfo("ProductionTargetMother");
+                    G4Tubs *PTMoth = (G4Tubs *) parent.solid;
+
+                    TubsParams vdParams(0., PTMoth->GetOuterRadius(), vdg->getHalfLength());
+
+                    G4ThreeVector vdCenterInParent(0., 0., PTMoth->GetDz() - vdg->getHalfLength());
+
+                    VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                    vdParams,
+                                    vacuumMaterial,
+                                    0,
+                                    vdCenterInParent,
+                                    parent,
+                                    vdId,
+                                    vdIsVisible,
+                                    G4Color::Red(),
+                                    vdIsSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    false
+                    );
+
+                    doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+
+                    vdInfo.logical->SetSensitiveDetector(vdSD);
+            }
+    }
 
     if ( _config.getBool("hasExtMonUCI", false) )
     {

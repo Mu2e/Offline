@@ -176,6 +176,9 @@ namespace mu2e {
     tgtPS->_envelHalfLength *= cos(trgtMaxAngle);
     tgtPS->_envelHalfLength += HubRgtCornersOutRadii.at(0)*sin(trgtMaxAngle);
 
+    bool   const _has_virtualDet              = c.getBool("targetPS.hasVD.backward",false) || c.getBool("targetPS.hasVD.forward",false);
+    double const _sideVD_thickness            = 2.0*c.getDouble("vd.halfLength",0.0);
+    if (_has_virtualDet) { tgtPS->_envelHalfLength+=_sideVD_thickness; }
 
     //const CLHEP::Hep3Vector& tgtPS_pos = tgtPS->position();
     const CLHEP::Hep3Vector center(0,0,0);

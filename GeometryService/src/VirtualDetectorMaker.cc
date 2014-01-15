@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.29 2013/12/20 20:10:57 kutschke Exp $
-// $Author: kutschke $
+// $Id: VirtualDetectorMaker.cc,v 1.30 2014/01/15 17:12:05 tassiell Exp $
+// $Author: tassiell $
 //
 
 #include <iostream>
@@ -25,6 +25,7 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
@@ -276,6 +277,26 @@ namespace mu2e {
         vd->addVirtualDetector(VirtualDetectorId::PS_FrontExit,
                                 vzero, 0, vzero
                                 );
+
+        if (c.getBool("targetPS.hasVD.backward",false)) {
+
+                GeomHandle<ProductionTarget> tgt;
+                const CLHEP::Hep3Vector vBCKWOff(0,0,-tgt->halfLength()+c.getDouble("vd.halfLength",0.0));
+
+                vd->addVirtualDetector(VirtualDetectorId::PT_Back,
+                                        vzero, 0, vBCKWOff
+                                        );
+        }
+        if (c.getBool("targetPS.hasVD.forward",false)) {
+
+                GeomHandle<ProductionTarget> tgt;
+                const CLHEP::Hep3Vector vFRNWOff(0,0,tgt->halfLength()-c.getDouble("vd.halfLength",0.0));
+
+                vd->addVirtualDetector(VirtualDetectorId::PT_Front,
+                                        vzero, 0, vFRNWOff
+                                        );
+        }
+
       }
 
       if(geom->hasElement<ExtMonUCI::ExtMon>()) {

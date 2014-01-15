@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.18 2013/12/16 01:00:37 youzy Exp $
-// $Author: youzy $
-// $Date: 2013/12/16 01:00:37 $
+// $Id: VirtualDetectorId.hh,v 1.19 2014/01/15 17:12:05 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2014/01/15 17:12:05 $
 //
 // Original author Rob Kutschke
 //
@@ -77,6 +77,7 @@ namespace mu2e {
       EMC_Disk_0_EdgeIn, EMC_Disk_0_EdgeOut, EMC_Disk_1_EdgeIn, EMC_Disk_1_EdgeOut,// 77, 78, 79,80
       DSNeutronShieldExit, // 81
       PSTargetSurf, // 82
+      PT_Front, PT_Back,                                        // 83, 84:  Forward and backward side of the production targets
       lastEnum
     };
 
@@ -115,7 +116,8 @@ namespace mu2e {
       "EMC_Disk_0_SurfIn", "EMC_Disk_0_SurfOut","EMC_Disk_1_SurfIn", "EMC_Disk_1_SurfOut", \
       "EMC_Disk_0_EdgeIn", "EMC_Disk_0_EdgeOut","EMC_Disk_1_EdgeIn", "EMC_Disk_1_EdgeOut", \
       "DSNeutronShieldExit", \
-      "PSTargetSurf"
+      "PSTargetSurf", \
+      "PT_Front", "PT_Back"
 
   public:
 
