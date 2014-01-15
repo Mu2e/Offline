@@ -1,0 +1,19 @@
+// $Author: tassiell $
+// $Date: 2014/01/15 17:21:20 $
+//
+// Original author Rob Kutschke
+
+// Start with the standard geometry.
+#include "Mu2eG4/test/geom_01.txt"
+
+// Disable all physics except transport.
+string g4.physicsListName = "Minimal";
+
+// Choose BField interpolation method (no longer needed, only to be sure that the desired interpolation method is used)
+string bfield.interpolationStyle = trilinear; //meco;
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

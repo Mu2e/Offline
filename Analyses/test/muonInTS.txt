@@ -1,0 +1,20 @@
+bool conversionGun.do    = false;
+bool primaryProtonGun.do = false;
+bool particleGun.do      = false;
+bool fromG4BLFile.do     = true;
+// FromG4BLFile
+// Read individual tracks
+
+bool   fromG4BLFile.targetFrame  = false;
+double fromG4BLFile.mean         = -1;
+string fromG4BLFile.filename     = "Analyses/test/muonData_2000ev.txt";
+//string fromG4BLFile.filename     = "/mu2e/data/outstage/tassiell/transportMuonStudy.12509989/muonData.txt";
+//string fromG4BLFile.filename     = "/mu2e/data/outstage/tassiell/transportMuonStudy.13379843/muonData.txt";
+//string fromG4BLFile.filename     = "/mu2e/data/outstage/tassiell/transportMuonStudy.13379844/muonData.txt";
+bool   fromG4BLFile.doHistograms = true;
+bool   fromG4BLFile.duplicateParticles = false;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
