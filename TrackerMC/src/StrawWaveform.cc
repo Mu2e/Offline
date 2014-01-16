@@ -3,9 +3,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.cc,v 1.6 2013/12/18 02:20:56 brownd Exp $
+// $Id: StrawWaveform.cc,v 1.7 2014/01/16 21:03:22 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/18 02:20:56 $
+// $Date: 2014/01/16 21:03:22 $
 //
 // Original author David Brown, LBNL
 //
@@ -52,8 +52,8 @@ namespace mu2e {
 	      }
 	    }
 	    // linear interpolation
-	    wfx._slope = dt/(postsample-presample);
-	    wfx._time = pretime + wfx._slope*(threshold-presample);
+	    double slope = dt/(postsample-presample);
+	    wfx._time = pretime + slope*(threshold-presample);
 	    break;
 	  }
 	}

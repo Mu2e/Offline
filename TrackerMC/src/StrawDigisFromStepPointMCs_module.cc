@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.11 2014/01/15 06:22:30 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.12 2014/01/16 21:03:22 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/01/15 06:22:30 $
+// $Date: 2014/01/16 21:03:22 $
 //
 // Original author David Brown, LBNL
 //
@@ -113,6 +113,7 @@ namespace mu2e {
     double _drifterr; // drift time error
     double _mbtime; // period of 1 microbunch
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
+    double _mbflash; //time flash comes in microbunch.  This is the 'folding' point
     StrawElectronics _strawele; // models of straw response to stimuli
     // Random number distributions
     art::RandomNumberGenerator::base_engine_t& _engine;
@@ -155,6 +156,7 @@ namespace mu2e {
     void findThresholdCrossings(StrawHitletSequencePair const& hsp, WFXList& xings);
     void fillDigis(WFXList const& xings,StrawWaveform const& wf,
       StrawDigiCollection* digis, PtrStepPointMCVectorCollection* mcptrs );
+    bool validXP(WFXP const& xpair) const;
     void createDigi(WFXP const& xpair, StrawWaveform const& primarywf, StrawDigiCollection* digis);
 // diagnostic functions
     void waveformDiag(StrawWaveform const& wf);
@@ -182,10 +184,11 @@ namespace mu2e {
     _EIonize(pset.get<double>("EnergyPerIonization",100.0e-6)), // 100% Ar is between 27 ev/ionization and 100 ev/ionization, not sure what model G4 uses, also should use Ar/CO2 FIXME!!
     _QIonize(pset.get<double>("ChargePerIonization",1.6e-7)), // e, pC
     _gasgain(pset.get<double>("GasGain",3.0e4)),
-    _attlen(pset.get<double>("PropagationAttentuationLength",25000.0)), // 25000 mm
+    _attlen(pset.get<double>("PropagationAttentuationLength",27000.0)), // from ATLAS TRT measurement
     _vdrift(pset.get<double>("DriftVelocity",0.05)), // mm/nsec
     _drifterr(pset.get<double>("DriftTimeError",1.5)), // nsec
-    _mbbuffer(pset.get<double>("TimeFoldingBuffer",200.0)), // nsec
+    _mbbuffer(pset.get<double>("TimeFoldingBuffer",100.0)), // nsec
+    _mbflash(pset.get<double>("MicrobunchFlashTime",200.0)), // nsec
     _strawele(pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())),
     // Random number distributions
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
@@ -466,14 +469,27 @@ namespace mu2e {
 
   double
   StrawDigisFromStepPointMCs::microbunchTime(double globaltime) const {
-    return fmod(globaltime,_mbtime);
+  // fold time relative to MB frequency, with an offset to center around the flash
+    return fmod(globaltime-_mbflash,_mbtime)+_mbflash;
+  }
+
+  bool
+  StrawDigisFromStepPointMCs::validXP(WFXP const& xpair) const {
+    bool retval(true);
+    for(auto iwfx = xpair.begin();iwfx!= xpair.end();++iwfx){
+      WFX const& wfx = **iwfx;
+      retval &= (wfx._time > _mbflash && wfx._time < _mbtime+_mbflash);
+    }
+    return retval;
   }
 
   void
   StrawDigisFromStepPointMCs::addGhosts(StrawHitlet const& hitlet,StrawHitletSequence& shs) {
-    if(hitlet.time() < _mbbuffer)
+  // folding is relative to the 'flash' time
+    double dt = hitlet.time() - _mbflash;
+    if(dt < _mbbuffer)
       shs.insert(StrawHitlet(hitlet,_mbtime));
-    if(_mbtime-hitlet.time() < _mbbuffer)
+    if(_mbtime-dt < _mbbuffer)
       shs.insert(StrawHitlet(hitlet,-_mbtime));
   }
 
@@ -486,10 +502,12 @@ namespace mu2e {
     // convert the hitlet list from this end to waveforms.  This is a light-weight process
       StrawWaveform swf(hsp.hitletSequence(end),_strawele);
 // iterate sequentially over hitlets inside the sequence
-      WFX wfx(swf); // start at the begining of the microbunch, at the begining of the wavelets
+      WFX wfx(swf,-_mbbuffer); // start at the begining of the microbunch, including the buffer
       // find where the waveform xings threshold.  This updates the waveform sample
-      // Skip any points outside the microbunch readout window
-      while(swf.crossesThreshold(_strawele.threshold(),wfx) && wfx._time < _mbtime){
+      // Skip any points outside the microbunch readout window (including buffer)
+      //randomize the threshold to account for electronics noise
+      double threshold = _gaussian.shoot(_strawele.threshold(),_strawele.thresholdNoise());
+      while(swf.crossesThreshold(threshold,wfx) && wfx._time < _mbtime+_mbbuffer){
 	// keep these in time-order
 	auto iwfxl = xings.begin();
 	while(iwfxl != xings.end() && iwfxl->_time < wfx._time)
@@ -498,6 +516,8 @@ namespace mu2e {
 	// skip to the next hitlet, and insure a minimum time buffer between crossings
 	++(wfx._ihitlet);
 	wfx._time += _strawele.deadTime();
+	// update threshold
+	threshold = _gaussian.shoot(_strawele.threshold(),_strawele.thresholdNoise());
       }
     }
   }
@@ -518,18 +538,21 @@ namespace mu2e {
 	iwfxl = jwfxl;
       } 
       ++iwfxl;
-// create a digi from this pair or singleton
-      createDigi(xpair,primarywf,digis);
-// fill associated MC truth matching.  Only count the same step once
-      set<art::Ptr<StepPointMC> > xmcsp;
-      for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp)
-	xmcsp.insert((*ixp)->_ihitlet->stepPointMC());
-      PtrStepPointMCVector mcptr;
-      for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
-	mcptr.push_back(*ixmcsp);
-      mcptrs->push_back(mcptr);
-// diagnostics
-      if(_diagLevel > 1)digiDiag(xpair,digis->back());
+      // only accept the pair if both times are inside the MB
+      if(validXP(xpair)){
+	// create a digi from this pair or singleton
+	createDigi(xpair,primarywf,digis);
+	// fill associated MC truth matching.  Only count the same step once
+	set<art::Ptr<StepPointMC> > xmcsp;
+	for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp)
+	  xmcsp.insert((*ixp)->_ihitlet->stepPointMC());
+	PtrStepPointMCVector mcptr;
+	for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
+	  mcptr.push_back(*ixmcsp);
+	mcptrs->push_back(mcptr);
+	// diagnostics
+	if(_diagLevel > 1)digiDiag(xpair,digis->back());
+      }
     }
   }
 
@@ -547,13 +570,17 @@ namespace mu2e {
       size_t index(1);
       if(wfx._ihitlet->strawEnd() == primarywf.hitlets().strawEnd()){
 	index = 0;
-	// sample the waveform at the primary end
+	// get the sample times from the electroincs
 	vector<double> adctimes;
 	_strawele.adcTimes(wfx._time,adctimes);
+	// sample the waveform at the primary end at these times
 	primarywf.sampleWaveform(adctimes,wf);
+	// randomize waveform voltage values for electronics noise
+	for(auto iwf=wf.begin();iwf!=wf.end();++iwf)
+	  *iwf += _gaussian.shoot(0.0,_strawele.thresholdNoise());
       }
-      // smear the times for electronics noise
-      xtimes[index] = _gaussian.shoot(wfx._time,_strawele.thresholdNoise()*wfx._slope);
+      // record the crossing time for this end.  These already include noise effects
+      xtimes[index] = wfx._time;
       // record MC match if it isn't already recorded
       mcmatch.insert(wfx._ihitlet->stepPointMC());
     }

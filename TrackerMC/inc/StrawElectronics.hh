@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.7 2014/01/14 23:28:27 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.8 2014/01/16 21:03:21 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/01/14 23:28:27 $
+// $Date: 2014/01/16 21:03:21 $
 //
 // Original author David Brown, LBNL
 //
@@ -54,9 +54,11 @@ namespace mu2e {
       double tdcLSB() const { return _TDCLSB; } //LSB in nseconds
       unsigned short maxADC() const { return _maxADC; }
       unsigned long maxTDC() const { return _maxTDC; }
+      unsigned short ADCPedestal() const { return _ADCped; };
       size_t nADCSamples() const { return _nADC; }
+      size_t nADCPreSamples() const { return _nADCpre; }
       double adcPeriod() const { return _ADCPeriod; } // period of ADC clock in nsec
-      double adcOffset() const { return _ADCOffset; }
+      double adcOffset() const { return _ADCOffset; } // offset WRT clock edge for digitization
       unsigned maxDTDC() const { return _maxDTDC; } // maximum TDC difference between ends
       void adcTimes(double time, std::vector<double>& adctimes) const; // sampling times of ADC
       double saturationVoltage() const { return _vsat; }
@@ -82,7 +84,8 @@ namespace mu2e {
 // add some noise parameter: FIXME!!!
       double _ADCLSB; // least-significant bit of ADC (mVolts)
       unsigned short _maxADC; // maximum ADC value
-      size_t _nADC; // Number of ADC samples
+      unsigned short _ADCped; // ADC pedestal (reading for 0 volts)
+      size_t _nADC,_nADCpre; // Number of ADC samples, presamples
       double _ADCPeriod; // ADC period in nsec
       double _ADCOffset; // Offset of 1st ADC sample WRT threshold crossing (nsec)
       double _TDCLSB; // least-significant bit of TDC (nsecs)

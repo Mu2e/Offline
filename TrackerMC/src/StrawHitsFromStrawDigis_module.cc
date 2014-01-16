@@ -2,9 +2,9 @@
 // This module transforms StrawDigi objects into StrawHit objects
 // It also builds the truth match map (if MC truth info for the StrawDigis exists)
 //
-// $Id: StrawHitsFromStrawDigis_module.cc,v 1.4 2013/12/18 02:20:56 brownd Exp $
+// $Id: StrawHitsFromStrawDigis_module.cc,v 1.5 2014/01/16 21:03:22 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/12/18 02:20:56 $
+// $Date: 2014/01/16 21:03:22 $
 //
 // Original author David Brown, LBNL
 //
@@ -118,7 +118,9 @@ namespace mu2e {
 // FIXME!!
       static const double pcfactor(1.0e-3);
       StrawDigi::ADCWaveform const& adc = digi.adcWaveform();
-      double baseline = (adc[0] + adc[1])/2.0;
+      // note: pedestal is being subtracting inside strawele, in the real experiment we will need
+      // per-channel version of this FIXME!!!
+      double baseline = (_strawele.adcCurrent(adc[0]) + _strawele.adcCurrent(adc[1]))/2.0;
       double charge(0.0);
       for(size_t iadc=2;iadc<adc.size();++iadc){
 	charge += (_strawele.adcCurrent(adc[iadc])-baseline)*_strawele.adcPeriod()*pcfactor;

@@ -28,6 +28,9 @@ void SDTest(TTree* sddiag) {
   adcwf->Draw("box");
   adc->cd(2);
   adcwfp->Draw();
-
+  TCanvas* tdc = new TCanvas("tdc","TDC",800,800);
+  TH1F* dtdc = new TH1F("dtdc","#Delta TDC",200,-500,500);
+  sddiag->Project("dtdc","tdc1-tdc0");
+  dtdc->Draw();
 }
 

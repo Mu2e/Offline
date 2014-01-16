@@ -2,34 +2,37 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.10 2014/01/15 06:22:30 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.11 2014/01/16 21:03:22 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/01/15 06:22:30 $
+// $Date: 2014/01/16 21:03:22 $
 //
 // Original author David Brown, LBNL
 //
 #include "TrackerMC/inc/StrawElectronics.hh"
 #include "cetlib/exception.h"
 #include <math.h>
+#include <algorithm>
 
 using namespace std;
 namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
     _dVdI(pset.get<double>("dVdI",200.0)), // mVolt/uAmps
-    _tshape(pset.get<double>("ShapingTime",25.0)),
+    _tshape(pset.get<double>("ShapingTime",15.0)),
     _tpow(pset.get<double>("ShapingPower",1.0)),
-    _tdead(pset.get<double>("DeadTime",50.0)), // nsec dead after threshold crossing (electronics processing time)
+    _tdead(pset.get<double>("DeadTime",10.0)), // nsec dead after threshold crossing (electronics processing time)
     _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mV max
     _vsat(pset.get<double>("SaturationVoltage",800.0)),
     _disp(pset.get<double>("Dispersion",1.0e-4)), // 100 ps/m
-    _vthresh(pset.get<double>("DiscriminatorThreshold",2.5)), //mVolt
+    _vthresh(pset.get<double>("DiscriminatorThreshold",5.0)), //mVolt
     _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",0.5)), //mVolt
     _ADCLSB(pset.get<double>("ADCLSB",0.25)),
     _maxADC(pset.get<unsigned>("maxADC",4095)),
+    _ADCped(pset.get<unsigned>("ADCPedetal",64)),
     _nADC(pset.get<unsigned>("nADC",10)),
+    _nADCpre(pset.get<unsigned>("nADCPresamples",2)),
     _ADCPeriod(pset.get<double>("ADCPeriod",20.0)),
-    _ADCOffset(pset.get<double>("ADCOffset",-30.0)),
+    _ADCOffset(pset.get<double>("ADCOffset",2.0)),
     _TDCLSB(pset.get<double>("TDCLSB",0.037)),
     _maxTDC(pset.get<unsigned>("maxTDC",65535)),
     _maxDTDC(pset.get<unsigned>("maxDeltaTDC",250))
@@ -66,7 +69,7 @@ namespace mu2e {
 
   unsigned short StrawElectronics::adcResponse(double mvolts) const {
     static unsigned short zero(0);
-    return min(max(static_cast<unsigned short>(floor(mvolts/_ADCLSB)),zero),_maxADC);
+    return min(max(static_cast<unsigned short>(floor(mvolts/_ADCLSB)+_ADCped),zero),_maxADC);
   }
 
   unsigned long StrawElectronics::tdcResponse(double time) const {
@@ -91,10 +94,13 @@ namespace mu2e {
   }
 
   void StrawElectronics::adcTimes(double time, vector<double>& adctimes) const {
+// clock has a fixed phase; Assume we digitize with a fixed delay relative to the leading edge
     adctimes.clear();
     adctimes.reserve(_nADC);
+// find the phase immediately proceeding this time.  Subtract presamples
+    size_t phase = std::max((int)0,int(ceil(time/_ADCPeriod))-(int)_nADCpre);
     for(unsigned itime=0;itime<_nADC;++itime){
-      adctimes.push_back(time+_ADCOffset+itime*_ADCPeriod);
+      adctimes.push_back((phase+itime)*_ADCPeriod+_ADCOffset);
     }
   }
   
@@ -108,7 +114,7 @@ namespace mu2e {
   }
   
   double StrawElectronics::adcVoltage(unsigned short adcval) const {
-    return adcval*_ADCLSB;
+    return (adcval-_ADCped)*_ADCLSB;
   }
 
   double StrawElectronics::adcCurrent(unsigned short adcval) const {
