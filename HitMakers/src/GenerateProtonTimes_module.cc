@@ -37,14 +37,12 @@ namespace mu2e {
 
   private:
     ProtonPulseRandPDF  protonPulse_;
-    art::InputTag simParticlesTag_;
     int  verbosityLevel_;
   };
 
   //================================================================
   GenerateProtonTimes::GenerateProtonTimes(fhicl::ParameterSet const& pset)
     : protonPulse_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
-    , simParticlesTag_(pset.get<std::string>("simParticlesTag"))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
   {
     produces<SimParticleTimeMap>();
@@ -54,13 +52,16 @@ namespace mu2e {
   void GenerateProtonTimes::produce(art::Event& event) {
     std::unique_ptr<SimParticleTimeMap> res(new SimParticleTimeMap);
 
-    auto ih = event.getValidHandle<SimParticleCollection>(simParticlesTag_);
+    std::vector<art::Handle<SimParticleCollection> > colls;
+    event.getManyByType(colls);
 
     // Generate and record offsets for all primaries
-    for(const auto& iter : *ih) {
-      if(iter.second.isPrimary()) {
-        art::Ptr<SimParticle> part(ih, iter.first.asUint());
-        (*res)[part] = protonPulse_.fire();
+    for(const auto& ih : colls) {
+      for(const auto& iter : *ih) {
+        if(iter.second.isPrimary()) {
+          art::Ptr<SimParticle> part(ih, iter.first.asUint());
+          (*res)[part] = protonPulse_.fire();
+        }
       }
     }
 
