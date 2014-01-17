@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.13 2014/01/17 01:09:39 gandr Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.14 2014/01/17 01:09:50 gandr Exp $
 // $Author: gandr $ 
-// $Date: 2014/01/17 01:09:39 $
+// $Date: 2014/01/17 01:09:50 $
 //
 // Original author David Brown, LBNL
 //
@@ -28,6 +28,7 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // utiliities
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 //#include "HitMakers/inc/DeadStrawList.hh"
 // data
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
@@ -115,6 +116,7 @@ namespace mu2e {
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
     double _mbflash; //time flash comes in microbunch.  This is the 'folding' point
     StrawElectronics _strawele; // models of straw response to stimuli
+    SimParticleTimeOffset _toff;
     // Random number distributions
     art::RandomNumberGenerator::base_engine_t& _engine;
     CLHEP::RandGaussQ _gaussian;
@@ -190,6 +192,7 @@ namespace mu2e {
     _mbbuffer(pset.get<double>("TimeFoldingBuffer",100.0)), // nsec
     _mbflash(pset.get<double>("MicrobunchFlashTime",200.0)), // nsec
     _strawele(pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())),
+    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     // Random number distributions
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
     _gaussian( _engine ),
@@ -262,6 +265,7 @@ namespace mu2e {
     // update conditions caches.  The conditions handles themselves should be data members FIXME!!
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     _mbtime = accPar->deBuncherPeriod;
+    _toff.updateMap(event);
     // Containers to hold the output information.
     unique_ptr<StrawDigiCollection> digis(new StrawDigiCollection);
     unique_ptr<PtrStepPointMCVectorCollection> mcptrs(new PtrStepPointMCVectorCollection);
@@ -365,7 +369,7 @@ namespace mu2e {
 	WireEndCharge weq;
 	propagateCharge(straw,wireq,end,weq);
 	// compute the total time, modulo the microbunch
-	double gtime = step.time()+wireq._time + weq._time;
+	double gtime = _toff.timeWithOffsetsApplied(step) + wireq._time + weq._time;
 	double htime = microbunchTime(gtime);
 	// create the hitlet
 	StrawHitlet hitlet(StrawHitlet::primary,straw_id,end,htime,weq._charge,wireq._dd,weq._wdist,spmcptr);
@@ -710,7 +714,7 @@ namespace mu2e {
     // mc truth information
     art::Ptr<StepPointMC> const& spmc = xpair[0]->_ihitlet->stepPointMC();
     if(!spmc.isNull()){
-      _mctime = spmc->time();
+      _mctime = _toff.timeWithOffsetsApplied(*spmc);
       _mcenergy = spmc->ionizingEdep();
       // compute the DOCA for this step
       TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(), 
