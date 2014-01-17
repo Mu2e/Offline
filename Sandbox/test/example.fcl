@@ -1,0 +1,12 @@
+#
+# Example of a standalone .fcl file
+#
+BEGIN_PROLOG
+
+foo : 42
+
+END_PROLOG
+
+bar : {
+  foo : @local::foo
+}

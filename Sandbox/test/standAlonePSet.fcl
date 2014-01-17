@@ -1,0 +1,33 @@
+# Example of how to read a standalone .fcl file
+#
+# $Id: standAlonePSet.fcl,v 1.1 2014/01/17 19:41:51 kutschke Exp $
+# $Author: kutschke $
+# $Id: standAlonePSet.fcl,v 1.1 2014/01/17 19:41:51 kutschke Exp $
+#
+
+#include "minimalMessageService.fcl"
+
+process_name : standAlonePSet
+
+source : {
+  module_type : EmptyEvent
+  maxEvents   : 1
+}
+
+services : {
+  message      : @local::default_message
+}
+
+physics : {
+
+  analyzers : {
+    pSetTest : {
+      module_type : StandAloneParameterSet
+      psetFile    : "Sandbox/test/example.fcl"
+    }
+  }
+
+  e1 : [ pSetTest  ]
+  end_paths      : [e1]
+
+}
