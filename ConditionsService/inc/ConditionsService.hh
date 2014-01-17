@@ -5,9 +5,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.19 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: ConditionsService.hh,v 1.20 2014/01/17 19:23:51 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/01/17 19:23:51 $
 //
 // Original author Rob Kutschke
 //
@@ -51,6 +51,7 @@ namespace mu2e {
     SimpleConfig const& config() const { return _config;}
 
   private:
+    fhicl::ParameterSet _pset;
 
     // The name of the input file.  Later will be a db key or similar.
     std::string _conditionsFile;

@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.16 2013/03/15 16:20:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 16:20:00 $
+// $Id: ConditionsService_service.cc,v 1.17 2014/01/17 19:23:51 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/01/17 19:23:51 $
 //
 // Original author Rob Kutschke
 //
@@ -33,6 +33,7 @@ namespace mu2e {
 
   ConditionsService::ConditionsService(fhicl::ParameterSet const& pset,
                                        art::ActivityRegistry&iRegistry) :
+    _pset(pset),
     _conditionsFile(       pset.get<std::string>("conditionsfile","conditions.txt")),
     _allowReplacement(     pset.get<bool>       ("allowReplacement",      true)),
     _messageOnReplacement( pset.get<bool>       ("messageOnReplacement",  false)),
