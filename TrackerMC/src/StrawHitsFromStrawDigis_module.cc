@@ -2,9 +2,9 @@
 // This module transforms StrawDigi objects into StrawHit objects
 // It also builds the truth match map (if MC truth info for the StrawDigis exists)
 //
-// $Id: StrawHitsFromStrawDigis_module.cc,v 1.5 2014/01/16 21:03:22 brownd Exp $
+// $Id: StrawHitsFromStrawDigis_module.cc,v 1.6 2014/01/17 19:51:50 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/01/16 21:03:22 $
+// $Date: 2014/01/17 19:51:50 $
 //
 // Original author David Brown, LBNL
 //
@@ -25,7 +25,6 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "TrackerMC/inc/StrawElectronics.hh"
 //CLHEP
-#include "CLHEP/Random/RandGaussQ.h"
 // data
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -71,7 +70,7 @@ namespace mu2e {
     _gasgain(pset.get<double>("GasGain",3.0e4)),
     _strawele(pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet()))
     {
-    // this should be computed per straw, including calibration effects FIXME!!!
+      // this should be computed per straw, including calibration effects FIXME!!!
       _G4dEdQ = _EIonize/(_QIonize*_gasgain);
       produces<StrawHitCollection>();
       produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
@@ -111,7 +110,7 @@ namespace mu2e {
 // convert the digi to a hit
       array<double,2> times;
       _strawele.tdcTimes(digi.TDC(),times);
-// hit wants primary time and dt.  Note we may have conflicting definitions of the sign of dt, FIXME!!
+// hit wants primary time and dt.
       double time = times[0];
       double dt = times[1]-times[0];
 // to get the charge we should fit the whole waveform: for now, just integrage  minus the baseline

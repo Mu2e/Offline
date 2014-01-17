@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.14 2014/01/17 01:09:50 gandr Exp $
-// $Author: gandr $ 
-// $Date: 2014/01/17 01:09:50 $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.15 2014/01/17 19:51:50 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2014/01/17 19:51:50 $
 //
 // Original author David Brown, LBNL
 //
@@ -114,7 +114,6 @@ namespace mu2e {
     double _drifterr; // drift time error
     double _mbtime; // period of 1 microbunch
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
-    double _mbflash; //time flash comes in microbunch.  This is the 'folding' point
     StrawElectronics _strawele; // models of straw response to stimuli
     SimParticleTimeOffset _toff;
     // Random number distributions
@@ -190,7 +189,6 @@ namespace mu2e {
     _vdrift(pset.get<double>("DriftVelocity",0.05)), // mm/nsec
     _drifterr(pset.get<double>("DriftTimeError",1.5)), // nsec
     _mbbuffer(pset.get<double>("TimeFoldingBuffer",100.0)), // nsec
-    _mbflash(pset.get<double>("MicrobunchFlashTime",200.0)), // nsec
     _strawele(pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     // Random number distributions
@@ -473,24 +471,25 @@ namespace mu2e {
 
   double
   StrawDigisFromStepPointMCs::microbunchTime(double globaltime) const {
-  // fold time relative to MB frequency, with an offset to center around the flash
-    return fmod(globaltime-_mbflash,_mbtime)+_mbflash;
+  // fold time relative to MB frequency, offset by the TDC clock start time
+    return fmod(globaltime-_strawele.clockStart(),_mbtime)+_strawele.clockStart();
   }
 
   bool
   StrawDigisFromStepPointMCs::validXP(WFXP const& xpair) const {
-    bool retval(true);
+    double tmin(_mbtime+_strawele.clockStart()+_mbbuffer);
     for(auto iwfx = xpair.begin();iwfx!= xpair.end();++iwfx){
       WFX const& wfx = **iwfx;
-      retval &= (wfx._time > _mbflash && wfx._time < _mbtime+_mbflash);
+      tmin = min(tmin,wfx._time);
     }
+    // times are limited by flash blanking
+    bool retval = (tmin > _strawele.flashEnd() && tmin < _mbtime+_strawele.flashStart());
     return retval;
   }
 
   void
   StrawDigisFromStepPointMCs::addGhosts(StrawHitlet const& hitlet,StrawHitletSequence& shs) {
-  // folding is relative to the 'flash' time
-    double dt = hitlet.time() - _mbflash;
+    double dt = hitlet.time()-_strawele.clockStart();
     if(dt < _mbbuffer)
       shs.insert(StrawHitlet(hitlet,_mbtime));
     if(_mbtime-dt < _mbbuffer)
@@ -565,8 +564,10 @@ namespace mu2e {
     // storage for MC match can be more than 1 StepPointMCs
     set<art::Ptr<StepPointMC>> mcmatch;
     // initialize the float variables that we later digitize
-    array<double,2> xtimes = {0.0,0.0};
+    array<double,2> xtimes = {2*_mbtime,2*_mbtime}; // overflow signals missing information
     vector<double> wf(_strawele.nADCSamples(),0.0);
+    // smear (coherently) both times for the TDC clock jitter
+    double dt = _gaussian.shoot(0.0,_strawele.clockJitter());
     // loop over the associated crossings
     for(auto iwfx = xpair.begin();iwfx!= xpair.end();++iwfx){
       WFX const& wfx = **iwfx;
@@ -583,11 +584,12 @@ namespace mu2e {
 	for(auto iwf=wf.begin();iwf!=wf.end();++iwf)
 	  *iwf += _gaussian.shoot(0.0,_strawele.thresholdNoise());
       }
-      // record the crossing time for this end.  These already include noise effects
-      xtimes[index] = wfx._time;
+      // record the crossing time for this end, including clock jitter  These already include noise effects
+      xtimes[index] = wfx._time+dt;
       // record MC match if it isn't already recorded
       mcmatch.insert(wfx._ihitlet->stepPointMC());
     }
+
     // digitize
     StrawDigi::ADCWaveform adc;
     _strawele.digitizeWaveform(wf,adc);

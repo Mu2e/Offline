@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.8 2014/01/16 21:03:21 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.9 2014/01/17 19:51:50 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/01/16 21:03:21 $
+// $Date: 2014/01/17 19:51:50 $
 //
 // Original author David Brown, LBNL
 //
@@ -60,6 +60,8 @@ namespace mu2e {
       double adcPeriod() const { return _ADCPeriod; } // period of ADC clock in nsec
       double adcOffset() const { return _ADCOffset; } // offset WRT clock edge for digitization
       unsigned maxDTDC() const { return _maxDTDC; } // maximum TDC difference between ends
+      double flashStart() const { return _flashStart; } // time flash blanking starts
+      double flashEnd() const { return _flashEnd; } // time flash blanking ends
       void adcTimes(double time, std::vector<double>& adctimes) const; // sampling times of ADC
       double saturationVoltage() const { return _vsat; }
       double maximumVoltage() const { return _vmax; }
@@ -69,6 +71,8 @@ namespace mu2e {
       double threshold() const { return _vthresh; }
       double thresholdNoise() const { return _vthreshnoise; }
       double deadTime() const { return _tdead; }
+      double clockStart() const { return _clockStart; }
+      double clockJitter() const { return _clockJitter; }
     private:
       // scale factor between charge and voltage (milliVolts from picoCoulombs)
       double _dVdI;
@@ -91,6 +95,8 @@ namespace mu2e {
       double _TDCLSB; // least-significant bit of TDC (nsecs)
       unsigned long _maxTDC; // maximum TDC value
       unsigned _maxDTDC; // maximum TDC difference for digitizer to combine to hits in different ends to the same straw digi
+      double _clockStart, _clockJitter; // time TDC clock starts, and its error (common to both ends!!)
+      double _flashStart, _flashEnd; // flash blanking period (no digitizations during this time!!!)
   };
 }
 
