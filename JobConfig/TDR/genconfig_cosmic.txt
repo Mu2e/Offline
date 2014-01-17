@@ -13,9 +13,9 @@ bool piEplusNuGun.do = false;
 double cosmicDYB.mean =  -1.1; 
 double cosmicDYB.muEMin = 1e3;
 double cosmicDYB.muEMax = 300e3;
-double cosmicDYB.dx     = 5000;
-double cosmicDYB.dz     = 15000;
-double cosmicDYB.y0     = -2928.1;
+double cosmicDYB.dx     = 10000;
+double cosmicDYB.dz     = 30000;
+double cosmicDYB.y0     = 0;
 
 string cosmicDYB.refPointChoice = "Tracker";
 
