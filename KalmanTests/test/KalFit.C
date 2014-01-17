@@ -131,8 +131,8 @@ void KalFitHit (TTree* hits ) {
   TCanvas* dcan = new TCanvas("driftcan","driftcan",1200,800);
   TH1F* dres = new TH1F("dres","Drift radius resolution;mm",100,-1,1);
   TH1F* dpull = new TH1F("dpull","Drift radius pull",100,-10,10);
-//  TH2F* drad = new TH2F("drad","Drift radius;true drift radius (mm);reco drift radius (mm)",
-//      100,-0.3,2.8,100,-0.3,2.8);
+  TH2F* drad = new TH2F("drad","Drift radius;true drift radius (mm);reco drift radius (mm)",
+      100,-0.3,2.8,100,-0.3,2.8);
   TH1F* rpull = new TH1F("rpull","residual pull",100,-10,10);
   hits->Project("dres","_rdrift-_mcdist","_active");
   hits->Project("dpull","(_rdrift-_mcdist)/_rdrifterr","_active");
@@ -150,9 +150,9 @@ void KalFitHit (TTree* hits ) {
 
   TCanvas* tcan = new TCanvas("ht0can","hit_t0can",1200,800);
   TH1F* t0res = new TH1F("t0res","hit t0 resolution;nsec",100,-10,10);
-  TH1F* t0pull = new TH1F("t0pull","hit t0 pull",100,-10,10);
-//  TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
-//      100,500,4000,100,500,4000);
+  TH1F* t0pull = new TH1F("t0pull","hit t0 pull",200,-30,30);
+  TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
+      100,0,2000,100,0,2000);
   hits->Project("t0res","_ht-_mcht","_active");
   hits->Project("t0pull","(_ht-_mcht)/_t0err","_active");
   tcan->Clear();
@@ -165,10 +165,10 @@ void KalFitHit (TTree* hits ) {
   t0pull->Fit("gaus");
 
   TCanvas* tdcan = new TCanvas("tdcan","tdcan",1200,800);
-  TH1F* tdres = new TH1F("tdres","#Deltat V resolution;mm",100,-200,200);
-  TH1F* tdpull = new TH1F("tdpull","#Deltat V pull",100,-10,10);
-//  TH2F* dtd = new TH2F("dtd","Hit V position;true V (mm);#Deltat V (mm)",
-//      100,-600,600,100,-600,600);
+  TH1F* tdres = new TH1F("tdres","#Deltat V resolution;mm",100,-300,300);
+  TH1F* tdpull = new TH1F("tdpull","#Deltat V pull",100,-15,15);
+  TH2F* dtd = new TH2F("dtd","Hit V position;true V (mm);#Deltat V (mm)",
+      100,-600,600,100,-600,600);
 //  TH2F* pocatd = new TH2F("pocatd","Hit POCA V;true V (mm);POCA V (mm)",
 //      100,-600,600,100,-600,600);
 
