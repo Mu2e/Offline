@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.12 2014/01/16 21:03:22 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2014/01/16 21:03:22 $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.13 2014/01/17 01:09:39 gandr Exp $
+// $Author: gandr $ 
+// $Date: 2014/01/17 01:09:39 $
 //
 // Original author David Brown, LBNL
 //
@@ -145,7 +145,7 @@ namespace mu2e {
     vector<TH1F*> _waveforms;
 //  helper functions
     void fillHitletMap(art::Event const& event, StrawHitletMap & hmap);
-    void addStep(art::Ptr<StepPointMC>& spmcptr, Straw const& straw, StrawHitletSequencePair& shsp);
+    void addStep(art::Ptr<StepPointMC> const& spmcptr, Straw const& straw, StrawHitletSequencePair& shsp);
     void divideStep(StepPointMC const& step, vector<IonCluster>& clusters);
     void driftCluster(Straw const& straw, IonCluster const& cluster, WireCharge& wireq);
     void propagateCharge(Straw const& straw, WireCharge const& wireq, StrawEnd end, WireEndCharge& weq);
@@ -346,7 +346,7 @@ namespace mu2e {
   }
 
   void
-  StrawDigisFromStepPointMCs::addStep(art::Ptr<StepPointMC>& spmcptr,
+  StrawDigisFromStepPointMCs::addStep(art::Ptr<StepPointMC> const& spmcptr,
       Straw const& straw,  
       StrawHitletSequencePair& shsp) {
     StepPointMC const& step = *spmcptr;
