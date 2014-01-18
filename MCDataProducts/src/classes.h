@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.29 2014/01/06 19:38:25 gandr Exp $
-// $Author: gandr $
-// $Date: 2014/01/06 19:38:25 $
+// $Id: classes.h,v 1.30 2014/01/18 03:08:56 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/01/18 03:08:56 $
 //
 // Original author Rob Kutschke
 //
@@ -37,6 +37,7 @@
 #include "MCDataProducts/inc/PhysicalVolumeInfo.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
+#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
@@ -66,9 +67,10 @@
 // For cet::map_vector<T> instantiate the component pair<> and vector<pair<>> templates.
 template class std::pair<cet::map_vector_key,mu2e::SimParticle>;
 template class std::pair<cet::map_vector_key,mu2e::PointTrajectory>;
-
+template class std::pair<art::Ptr<mu2e::SimParticle>, mu2e::MCTrajectory>;
 template class std::vector<std::pair<cet::map_vector_key,mu2e::SimParticle> >;
 template class std::vector<std::pair<cet::map_vector_key,mu2e::PointTrajectory> >;
+template class std::map<art::Ptr<mu2e::SimParticle>, mu2e::MCTrajectory>;
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::StepPointMC>;
@@ -91,6 +93,7 @@ template class art::Wrapper<mu2e::CaloHitSimPartMCCollection>;
 template class art::Wrapper<mu2e::CaloCrystalOnlyHitCollection>;
 template class art::Wrapper<mu2e::ExtMonUCITofHitMCTruthCollection>;
 template class art::Wrapper<mu2e::PointTrajectoryCollection>;
+template class art::Wrapper<mu2e::MCTrajectoryCollection>;
 template class art::Wrapper<mu2e::StatusG4>;
 template class art::Wrapper<mu2e::PtrStepPointMCVectorCollection>;
 template class art::Wrapper<mu2e::MixingSummary>;
