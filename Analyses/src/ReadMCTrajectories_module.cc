@@ -1,8 +1,8 @@
 //
 //
-// $Id: ReadMCTrajectories_module.cc,v 1.1 2014/01/18 03:25:15 kutschke Exp $
+// $Id: ReadMCTrajectories_module.cc,v 1.2 2014/01/18 04:04:50 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2014/01/18 03:25:15 $
+// $Date: 2014/01/18 04:04:50 $
 //
 // Contact person Rob Kutschke
 //
@@ -22,6 +22,7 @@
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 
+#include "TH1F.h"
 #include "TNtuple.h"
 
 using namespace std;
@@ -43,6 +44,9 @@ namespace mu2e {
     int maxPrint_;
     int nPrint_;
 
+    TH1F*    nTraj_;
+    TH1F*    nPoints1_;
+    TH1F*    nPoints2_;
     TNtuple* ntup_;
 
   };
@@ -52,13 +56,19 @@ namespace mu2e {
     trajectoriesTag_(pset.get<std::string>("trajectoriesTag")),
     maxPrint_(pset.get<int>("maxPrint",20)),
     nPrint_(0),
+    nTraj_(nullptr),
+    nPoints1_(nullptr),
+    nPoints2_(nullptr),
     ntup_(nullptr){
   }
 
   void ReadMCTrajectories::beginJob(){
 
     art::ServiceHandle<art::TFileService> tfs;
-    ntup_ = tfs->make<TNtuple>( "ntup", "Hit ntuple", "evt:x:y:z:t");
+    nTraj_   = tfs->make<TH1F>("nTraj",     "Number of Stored Trajectories per Event",  20, 0.,   20.);
+    nPoints1_ = tfs->make<TH1F>("nPoints1", "Number of Points per Stored Trajectory",   20, 0.,   20.);
+    nPoints2_ = tfs->make<TH1F>("nPoints2", "Number of Points per Stored Trajectory",  100, 0., 2000.);
+    ntup_    = tfs->make<TNtuple>( "ntup",  "Hit ntuple", "evt:x:y:z:t");
 
   }
 
@@ -68,6 +78,7 @@ namespace mu2e {
     bool doPrint = ( ++nPrint_ <= maxPrint_ );
 
     auto trajectories = event.getValidHandle<MCTrajectoryCollection>(trajectoriesTag_);
+    nTraj_->Fill(trajectories->size());
 
     float nt[5];
 
@@ -81,6 +92,8 @@ namespace mu2e {
              << traj.size()
              << endl;
       }
+      nPoints1_->Fill( traj.size() );
+      nPoints2_->Fill( traj.size() );
       nt[0] = event.id().event();
       for ( auto const& pos : traj.points() ){
         nt[1] = pos.x();
