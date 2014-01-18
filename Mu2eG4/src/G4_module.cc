@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.77 2013/12/30 20:53:36 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/12/30 20:53:36 $
+// $Id: G4_module.cc,v 1.78 2014/01/18 03:09:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/01/18 03:09:59 $
 //
 // Original author Rob Kutschke
 //
@@ -60,6 +60,7 @@
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 
 // From art and its tool chain.
 #include "art/Framework/Principal/Event.h"
@@ -237,6 +238,7 @@ namespace mu2e {
     produces<StepPointMCCollection>(_tvdOutputName.name());
 
     produces<PointTrajectoryCollection>();
+    produces<MCTrajectoryCollection>();
     produces<ExtMonFNALSimHitCollection>();
     produces<PhysicalVolumeInfoCollection,art::InRun>();
     produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
@@ -456,14 +458,15 @@ namespace mu2e {
     SimParticlePrimaryHelper parentHelper(event, simPartId, gensHandle);
 
     // Create empty data products.
-    unique_ptr<SimParticleCollection>     simParticles(      new SimParticleCollection);
-    unique_ptr<StepPointMCCollection>     tvdHits(           new StepPointMCCollection);
-    unique_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
-    unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(   new ExtMonFNALSimHitCollection);
+    unique_ptr<SimParticleCollection>      simParticles(      new SimParticleCollection);
+    unique_ptr<StepPointMCCollection>      tvdHits(           new StepPointMCCollection);
+    unique_ptr<PointTrajectoryCollection>  pointTrajectories( new PointTrajectoryCollection);
+    unique_ptr<MCTrajectoryCollection>     mcTrajectories(    new MCTrajectoryCollection);
+    unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(    new ExtMonFNALSimHitCollection);
     _sensitiveDetectorHelper.createProducts(event, spHelper);
 
     // Some of the user actions have begin event methods. These are not G4 standards.
-    _trackingAction->beginEvent(inputSimHandle, spHelper, parentHelper);
+    _trackingAction->beginEvent(inputSimHandle, spHelper, parentHelper, *mcTrajectories );
     _genAction->setEventData(gensHandle.isValid() ? &*gensHandle : 0, genInputHits, &parentHelper);
     _steppingAction->BeginOfEvent(*tvdHits,  spHelper);
 
@@ -538,6 +541,7 @@ namespace mu2e {
     event.put(std::move(simParticles));
     event.put(std::move(tvdHits),          _tvdOutputName.name()          );
     event.put(std::move(pointTrajectories));
+    event.put(std::move(mcTrajectories));
     if(_extMonFNALPixelSD) {
       event.put(std::move(extMonFNALHits));
     }

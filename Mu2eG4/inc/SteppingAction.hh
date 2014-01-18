@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.22 2013/08/28 05:58:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
+// $Id: SteppingAction.hh,v 1.23 2014/01/18 03:09:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/01/18 03:09:59 $
 //
 // Original author Rob Kutschke
 //
@@ -21,6 +21,7 @@
 
 // G4 includes
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/LorentzVector.h"
 #include "G4UserSteppingAction.hh"
 #include "G4TrackStatus.hh"
 #include "G4ThreeVector.hh"
@@ -68,6 +69,16 @@ namespace mu2e {
 
     void setZRef( G4double zref){
       _zref=zref;
+    }
+
+    std::vector<CLHEP::HepLorentzVector> const&  trajectory() { return _trajectory; }
+
+    // Give away ownership of the trajectory information ( to the data product ).
+    // This is called from TrackingAction::addTrajectory which is called from
+    // TrackingAction::PostUserTrackingAction.  The result is that the
+    // _trajectory data member is empty.
+    void swapTrajectory( std::vector<CLHEP::HepLorentzVector>& trajectory){
+      std::swap( trajectory, _trajectory);
     }
 
     // A helper function to manage the printout.
@@ -149,6 +160,9 @@ namespace mu2e {
 
     // Add time virtual detector hit to the collection
     G4bool addTimeVDHit(const G4Step*, int);
+
+    // Store point and time at each G4Step; cleared at beginOfTrack time.
+    std::vector<CLHEP::HepLorentzVector> _trajectory;
 
   };
 

@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.36 2013/12/02 20:15:40 genser Exp $
-// $Author: genser $
-// $Date: 2013/12/02 20:15:40 $
+// $Id: SteppingAction.cc,v 1.37 2014/01/18 03:09:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/01/18 03:09:59 $
 //
 // Original author Rob Kutschke
 //
@@ -188,6 +188,8 @@ namespace mu2e {
     // Pre and post stepping points.
     G4StepPoint const* prept  = step->GetPreStepPoint();
     G4StepPoint const* postpt = step->GetPostStepPoint();
+
+    _trajectory.emplace_back ( prept->GetPosition(), prept->GetGlobalTime() );
 
     // Get kinetic energy at the begin of the step
     _preStepEK = prept->GetKineticEnergy();
@@ -394,6 +396,8 @@ namespace mu2e {
 
   void SteppingAction::BeginOfTrack() {
     _nSteps = 0;
+    _trajectory.clear();
+    _trajectory.reserve(10);
   }
 
   void SteppingAction::EndOfTrack() {

@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.39 2013/12/02 20:14:52 genser Exp $
-// $Author: genser $
-// $Date: 2013/12/02 20:14:52 $
+// $Id: TrackingAction.cc,v 1.40 2014/01/18 03:09:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/01/18 03:09:59 $
 //
 // Original author Rob Kutschke
 //
@@ -59,10 +59,12 @@ namespace mu2e {
     _debugList(),
     _physVolHelper(0),
     _timer(),
+    _trajectories(nullptr),
     _sizeLimit(config.getInt("g4.particlesSizeLimit",0)),
     _currentSize(0),
     _overflowSimParticles(false),
     _pointTrajectoryMomentumCut(config.getDouble("g4.pointTrajectoryMomentumCut", 50.)),
+    _mcTrajectoryMinHits(config.getInt("g4.mcTrajectoryMinHits", 5)),
     _steppingAction(steppingAction),
     _processInfo(0),
     _spHelper(),
@@ -89,6 +91,7 @@ namespace mu2e {
     _physVolHelper = &physVolHelper;
     _processInfo   = &processInfo;
     _mu2eOrigin    =  mu2eOrigin;
+
   }
 
   void TrackingAction::endRun(){
@@ -137,7 +140,13 @@ namespace mu2e {
     // This is safe even if it was never started.
     _timer.stop();
 
+    // Finalize the SimParticle
     saveSimParticleEnd(trk);
+
+    // If this particle passes the cuts, add the trajectory information to the data product.
+    swapTrajectory(trk);
+
+    // Any other clean up.
     _steppingAction->EndOfTrack();
 
     if ( !_debugList.inList() ) return;
@@ -152,11 +161,14 @@ namespace mu2e {
   }
   void TrackingAction::beginEvent( const art::Handle<SimParticleCollection>& inputSimHandle,
                                    const SimParticleHelper& spHelper,
-                                   const SimParticlePrimaryHelper& primaryHelper) {
+                                   const SimParticlePrimaryHelper& primaryHelper,
+                                   MCTrajectoryCollection&  trajectories
+                                   ) {
     _currentSize          = 0;
     _overflowSimParticles = false;
     _spHelper             = &spHelper;
-    _primaryHelper         = &primaryHelper;
+    _primaryHelper        = &primaryHelper;
+    _trajectories         = &trajectories;
 
     if(inputSimHandle.isValid()) {
       // We do not compress anything here, but use the call to reseat the pointers
@@ -173,6 +185,7 @@ namespace mu2e {
     Mu2eG4UserHelpers::checkCrossReferences(true,true,_transientMap);
     persistentSims.insert( _transientMap.begin(), _transientMap.end() );
     _transientMap.clear();
+
     if ( !_debugList.inList() ) return;
   }
 
@@ -322,6 +335,50 @@ namespace mu2e {
                           preLastStepKE,
                           nSteps
                           );
+
+  }
+
+  // If the track passes the cuts needed to store the trajectory object, then store
+  // it in the output data product.  For efficiency, the store uses a swap.
+  void TrackingAction::swapTrajectory(const G4Track* trk){
+
+    key_type kid(_spHelper->particleKeyFromG4TrackID(trk->GetTrackID()));
+
+    std::vector<CLHEP::HepLorentzVector> const& trajectory = _steppingAction->trajectory();
+    if ( int(trajectory.size()) < _mcTrajectoryMinHits ) return;
+
+    // Find the particle in the map.
+    map_type::iterator i(_transientMap.find(kid));
+    if ( i == _transientMap.end() ){
+      throw cet::exception("RANGE")
+        << "Could not find existing SimParticle in TrackingAction::addTrajectory  id: "
+        << kid
+        << "\n";
+    }
+
+    CLHEP::HepLorentzVector const& p0 = i->second.startMomentum();
+    if ( p0.vect().mag() < _pointTrajectoryMomentumCut ) return;
+
+    art::Ptr<SimParticle> sim = _spHelper->particlePtr(trk);
+
+    // Default construct the trajectory object in the output data product.
+    auto retval = _trajectories->insert( MCTrajectoryCollection::value_type( sim, MCTrajectory(sim) ));
+
+    if ( !retval.second ){
+      throw cet::exception("RANGE")
+        << "In TrackingAction::addTrajectory the MCTrajectory was already present for id: "
+        << kid
+        << "\n";
+    }
+
+    // The data product takes ownership of the array of points that was created in SteppingAction.
+    // This leaves SteppingAction with an empty array.
+    MCTrajectory& traj = retval.first->second;
+    _steppingAction->swapTrajectory( traj.points() );
+
+    // So far the trajectory holds the starting point of each step.
+    // Add the end point of the last step.
+    traj.points().emplace_back( trk->GetPosition()-_mu2eOrigin, trk->GetGlobalTime() );
 
   }
 
