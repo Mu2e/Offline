@@ -2,6 +2,18 @@
 
            Release notes for Mu2e Offline software, v4_1_2
 
+ 3) January 17, 2014 kutschke
+    The old style PointTrajectoryCollection data product now
+    obeys the following parameter from the geometry file:
+
+     int g4.mcTrajectoryMinSteps = 5;
+
+    Files changed:
+
+      Mu2eG4/src/G4_module.cc
+      Mu2eG4/inc/addPointTrajectories.hh
+      Mu2eG4/src/addPointTrajectories.cc
+
  2) January 17, 2014 kutschke
     New class that will supercede PointTrajectoryCollection.
     For now, keep the PointTrajectoryCollection objects too.
@@ -18,6 +30,23 @@
        Mu2eG4/inc/TrackingAction.hh
        Mu2eG4/src/SteppingAction.cc
        Mu2eG4/src/TrackingAction.cc
+
+    There is a new geometry file parameter:
+
+     int g4.mcTrajectoryMinSteps = 5;
+
+    Only MCTrajectories with more than this many steps are stored.
+
+    The existing parameter geometry file parameter:
+
+      double g4.pointTrajectoryMomentumCut = 50.
+
+    also controls which MCTrajectory objects are written to the
+    data products.  Only objects for SimParticles born with more
+    than this momentum are written.
+
+    Yeah, the names are weird.  But the g4.PointTrajectory names will
+    get renamed to g4.MCTrajectory once we get rid of PointTrajectory.
 
     Readback the data product, put it into an ntuple and
     draw some event pictures.  Uses the output file from
