@@ -2,9 +2,9 @@
 // Extract trajectories from the G4 internals and add them to the event.
 // Skip trajectories with too few points.
 //
-// $Id: addPointTrajectories.cc,v 1.4 2013/08/28 05:58:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
+// $Id: addPointTrajectories.cc,v 1.5 2014/01/18 04:31:53 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/01/18 04:31:53 $
 //
 // Original author Rob Kutschke
 //
@@ -30,8 +30,9 @@ namespace mu2e{
 
   void addPointTrajectories ( const G4Event*             g4event,
                               PointTrajectoryCollection& pointTrajectories,
-                              const SimParticleHelper& spHelper,
-                              CLHEP::Hep3Vector const&   mu2eOriginInWorld ){
+                              const SimParticleHelper&   spHelper,
+                              CLHEP::Hep3Vector const&   mu2eOriginInWorld,
+                              int                        minSteps ){
 
     typedef PointTrajectoryCollection::key_type    key_type;
     typedef PointTrajectoryCollection::mapped_type mapped_type;
@@ -54,7 +55,7 @@ namespace mu2e{
       key_type kid(spHelper.particleKeyFromG4TrackID(traj.GetTrackID()));
 
       // Cut if too few points.  Need to make this a variable.
-      if ( traj.GetPointEntries() < 5 ) {
+      if ( traj.GetPointEntries() < minSteps ) {
         continue;
       }
 

@@ -3,9 +3,9 @@
 //
 // Dig the trajectories out of the G4 internals and add them to the event.
 //
-// $Id: addPointTrajectories.hh,v 1.4 2013/08/28 05:58:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
+// $Id: addPointTrajectories.hh,v 1.5 2014/01/18 04:31:53 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/01/18 04:31:53 $
 //
 // Original author Rob Kutschke
 //
@@ -25,8 +25,9 @@ namespace mu2e{
   // Public entry point.
   void addPointTrajectories ( const G4Event*             event,
                               PointTrajectoryCollection& hits,
-                              const SimParticleHelper& spHelper,
-                              CLHEP::Hep3Vector const&   mu2eOriginInWorld );
+                              const SimParticleHelper&   spHelper,
+                              CLHEP::Hep3Vector const&   mu2eOriginInWorld,
+                              int                        minSteps );
 
 }  // end namespace mu2e
 
