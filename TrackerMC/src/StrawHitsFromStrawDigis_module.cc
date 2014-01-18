@@ -2,9 +2,9 @@
 // This module transforms StrawDigi objects into StrawHit objects
 // It also builds the truth match map (if MC truth info for the StrawDigis exists)
 //
-// $Id: StrawHitsFromStrawDigis_module.cc,v 1.6 2014/01/17 19:51:50 brownd Exp $
+// $Id: StrawHitsFromStrawDigis_module.cc,v 1.7 2014/01/18 17:33:34 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/01/17 19:51:50 $
+// $Date: 2014/01/18 17:33:34 $
 //
 // Original author David Brown, LBNL
 //
@@ -23,7 +23,8 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "TrackerMC/inc/StrawElectronics.hh"
+#include "TrackerConditions/inc/StrawElectronics.hh"
+#include "TrackerConditions/inc/StrawPhysics.hh"
 //CLHEP
 // data
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
@@ -53,25 +54,15 @@ namespace mu2e {
 
     // Name of the StrawDigi collection
     std::string _strawDigis;
-    double _EIonize; // Geant energy of each ionization (MeV)
-    double _QIonize; // charge of a single ionization (=e, pC)
-    double _gasgain; // avalanche gain
-    double _G4dEdQ; // G4 equivalence of energy (MeV) and ionization charge (pCoulomb).  Should
-    // come from a materials database, it depends FIXME!!
-    StrawElectronics _strawele; // models of straw response to stimuli
+    ConditionsHandle<StrawElectronics> _strawele; // models of straw response to stimuli
+    ConditionsHandle<StrawPhysics> _strawphys; // models of straw response to stimuli
   };
 
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
     _printLevel(pset.get<int>("printLevel",1)),
     _diagLevel(pset.get<int>("diagLevel",0)),
-    _strawDigis(pset.get<string>("StrawDigis","makeSD")),
-    _EIonize(pset.get<double>("EnergyPerIonization",100.0e-6)), // 27 ev/ionization for 100% Ar! , should use Ar/CO2 FIXME!!
-    _QIonize(pset.get<double>("ChargePerIonization",1.6e-7)), // e, pC
-    _gasgain(pset.get<double>("GasGain",3.0e4)),
-    _strawele(pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet()))
+    _strawDigis(pset.get<string>("StrawDigis","makeSD"))
     {
-      // this should be computed per straw, including calibration effects FIXME!!!
-      _G4dEdQ = _EIonize/(_QIonize*_gasgain);
       produces<StrawHitCollection>();
       produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
       if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis constructor " << endl;
@@ -85,6 +76,10 @@ namespace mu2e {
 
   void StrawHitsFromStrawDigis::produce(art::Event& event) {
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis produce " << endl;
+// update conditions
+    
+    _strawele = ConditionsHandle<StrawElectronics>("ignored");
+    _strawphys = ConditionsHandle<StrawPhysics>("ignored");
     unique_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
     unique_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
 
@@ -109,7 +104,7 @@ namespace mu2e {
       StrawDigi const& digi = (*strawdigis)[isd];
 // convert the digi to a hit
       array<double,2> times;
-      _strawele.tdcTimes(digi.TDC(),times);
+      _strawele->tdcTimes(digi.TDC(),times);
 // hit wants primary time and dt.
       double time = times[0];
       double dt = times[1]-times[0];
@@ -119,13 +114,15 @@ namespace mu2e {
       StrawDigi::ADCWaveform const& adc = digi.adcWaveform();
       // note: pedestal is being subtracting inside strawele, in the real experiment we will need
       // per-channel version of this FIXME!!!
-      double baseline = (_strawele.adcCurrent(adc[0]) + _strawele.adcCurrent(adc[1]))/2.0;
+      double baseline = (_strawele->adcCurrent(adc[0]) + _strawele->adcCurrent(adc[1]))/2.0;
       double charge(0.0);
       for(size_t iadc=2;iadc<adc.size();++iadc){
-	charge += (_strawele.adcCurrent(adc[iadc])-baseline)*_strawele.adcPeriod()*pcfactor;
+	charge += (_strawele->adcCurrent(adc[iadc])-baseline)*_strawele->adcPeriod()*pcfactor;
       }
-      // double the energy, since we only digitize 1 end of the straw
-      double energy = 2.0*charge*_G4dEdQ;
+      // double the energy, since we only digitize 1 end of the straw.
+      // use time division to correct for attenuation FIXME!!
+      // the gain should come from a straw-dependent database FIXME!!
+      double energy = 2.0*_strawphys->ionizationEnergy(charge/_strawphys->strawGain(2.0,0.0));
   // crate the straw hit and append it to the list
       StrawHit newhit(digi.strawIndex(),time,dt,energy);
       strawHits->push_back(newhit);

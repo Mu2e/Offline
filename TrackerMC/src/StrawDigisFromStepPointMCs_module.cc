@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.15 2014/01/17 19:51:50 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.16 2014/01/18 17:33:34 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/01/17 19:51:50 $
+// $Date: 2014/01/18 17:33:34 $
 //
 // Original author David Brown, LBNL
 //
@@ -21,11 +21,12 @@
 #include "cetlib/exception.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "TrackerConditions/inc/StrawElectronics.hh"
+#include "TrackerConditions/inc/StrawPhysics.hh"
 // utiliities
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -34,9 +35,8 @@
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-// MC structures
+// MC structuresi
 #include "TrackerMC/inc/StrawHitletSequencePair.hh"
-#include "TrackerMC/inc/StrawElectronics.hh"
 #include "TrackerMC/inc/StrawWaveform.hh"
 //CLHEP
 #include "CLHEP/Random/RandGaussQ.h"
@@ -103,18 +103,12 @@ namespace mu2e {
     bool   _addXtalk; // should we add cross talk hits?
     bool   _addNoise; // should we add noise hits?
     string _g4ModuleLabel;  // Name of the module that made these hits.
-    double _minsteplen; // minimum step size for ionization cluster
-// the following parmeters describe straw drift and should be in a separate calibration object FIXME!!
-    double _EIonize; // Geant energy of each ionization (MeV)
-    double _QIonize; // charge of a single ionization (=e, pC)
-    double _gasgain; // avalanche gain
-    double _attlen; // attenuation length of charge down the wire
-    double _vprop; // propagation time of signals down the wire, mm/nsec
-    double _vdrift; // electron drift velocity
-    double _drifterr; // drift time error
     double _mbtime; // period of 1 microbunch
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
-    StrawElectronics _strawele; // models of straw response to stimuli
+    double _minsteplen; // minimum step size for splitting charge into ion clusters
+  // models of straw response to stimuli
+    ConditionsHandle<StrawPhysics> _strawphys;
+    ConditionsHandle<StrawElectronics> _strawele; 
     SimParticleTimeOffset _toff;
     // Random number distributions
     art::RandomNumberGenerator::base_engine_t& _engine;
@@ -163,10 +157,6 @@ namespace mu2e {
     void waveformDiag(StrawWaveform const& wf);
     void digiDiag(WFXP const& xpair, StrawDigi const& digi);
 
-    // the following should be delegated to a straw physics description object, FIXME!!
-    double strawGain(Straw const& straw, double driftdist, double driftphi) const;
-    void distanceToTime(Straw const& straw, double driftdist, double driftphi,
-	double& drifttime, double& drifttimeerr) const;
     StrawEnd primaryEnd(StrawIndex straw_id) const;
   };
 
@@ -181,15 +171,8 @@ namespace mu2e {
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _addXtalk(pset.get<bool>("addCrossTalkHits",false)),
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
-    _minsteplen(pset.get<double>("MinimumIonClusterStep",0.1)), // 100 microns
-    _EIonize(pset.get<double>("EnergyPerIonization",100.0e-6)), // 100% Ar is between 27 ev/ionization and 100 ev/ionization, not sure what model G4 uses, also should use Ar/CO2 FIXME!!
-    _QIonize(pset.get<double>("ChargePerIonization",1.6e-7)), // e, pC
-    _gasgain(pset.get<double>("GasGain",3.0e4)),
-    _attlen(pset.get<double>("PropagationAttentuationLength",27000.0)), // from ATLAS TRT measurement
-    _vdrift(pset.get<double>("DriftVelocity",0.05)), // mm/nsec
-    _drifterr(pset.get<double>("DriftTimeError",1.5)), // nsec
     _mbbuffer(pset.get<double>("TimeFoldingBuffer",100.0)), // nsec
-    _strawele(pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())),
+    _minsteplen(pset.get<double>("MinimumIonClusterStep",0.1)), // 100 microns
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     // Random number distributions
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
@@ -260,15 +243,15 @@ namespace mu2e {
     if ( _printLevel > 0 ) cout << "StrawDigisFromStepPointMCs: produce() begin; event " << event.id().event() << endl;
     static int ncalls(0);
     ++ncalls;
-    // update conditions caches.  The conditions handles themselves should be data members FIXME!!
+    // update conditions caches. 
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     _mbtime = accPar->deBuncherPeriod;
     _toff.updateMap(event);
+    _strawele = ConditionsHandle<StrawElectronics>("ignored");
+    _strawphys = ConditionsHandle<StrawPhysics>("ignored");
     // Containers to hold the output information.
     unique_ptr<StrawDigiCollection> digis(new StrawDigiCollection);
     unique_ptr<PtrStepPointMCVectorCollection> mcptrs(new PtrStepPointMCVectorCollection);
-    // Handle to the conditions service
-    ConditionsHandle<TrackerCalibrations> trackerCalibrations("ignored");
     // create the StrawHitlet map
     StrawHitletMap hmap;
     // fill this from the event
@@ -307,7 +290,6 @@ namespace mu2e {
   StrawDigisFromStepPointMCs::fillHitletMap(art::Event const& event, StrawHitletMap & hmap){
     // get conditions
     const Tracker& tracker = getTrackerOrThrow();
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
     // Get all of the tracker StepPointMC collections from the event:
     typedef std::vector< art::Handle<StepPointMCCollection> > HandleVector;
     // This selector will select only data products with the given instance name.
@@ -387,13 +369,12 @@ namespace mu2e {
 // NB: only some of the G4 energy is ionization, the fraction being particle species and
 // energy dependent.  The ionizingEdep() function does NOT take this into account correctly
 // FIXME!!!!
-      IonCluster cluster(step.position(),_QIonize*step.ionizingEdep()/_EIonize); 
+      IonCluster cluster(step.position(),_strawphys->ionizationCharge(step.ionizingEdep())); 
       clusters.push_back(cluster);
     } else {
 // subdivide into units of fundamental charge, but no smaller than the smallest step size
       unsigned maxndiv = static_cast<unsigned>(ceil(step.stepLength()/_minsteplen));
-      static unsigned one(1);
-      unsigned ndiv = min(maxndiv,max(one,static_cast<unsigned>(rint(step.ionizingEdep()/_EIonize))));
+      unsigned ndiv = min(maxndiv,_strawphys->nIonization(_strawphys->ionizationCharge(step.ionizingEdep())));
 // generate random points for each ionization
       vector<double> lengths(ndiv,0.0);
 // the following assumes StepPointMC::position is at the begining of the step
@@ -402,7 +383,7 @@ namespace mu2e {
       sort(lengths.begin(),lengths.end());
 // make clusters for each
       CLHEP::Hep3Vector dir = step.momentum().unit();
-      double qdiv = _QIonize*step.ionizingEdep()/(_EIonize*ndiv); 
+      double qdiv = _strawphys->ionizationCharge(step.ionizingEdep()/ndiv); 
       for(auto ilen=lengths.begin();ilen!=lengths.end();++ilen){
 	CLHEP::Hep3Vector pos = step.position() + (*ilen)*dir;
 	IonCluster cluster(pos,qdiv);
@@ -419,77 +400,55 @@ namespace mu2e {
     // drift distance perp to wire, and angle WRT magnetic field (for Lorentz effect)
     double dd = cpos.perp(straw.getDirection());
     double dphi = cpos.azimAngle(straw.getDirection());
-    double gain = strawGain(straw,dd,dphi);
+    double gain = _strawphys->strawGain(dd,dphi);
     // smear the charge by the gas gain statistics 
     double dgain = _gaussian.shoot(0.0,sqrt(gain));
     wireq._charge = cluster._charge*(gain+dgain);
-    // time is smeared proportional to drift time
-    double dtime, dtimeerr;
-    distanceToTime(straw,dd,dphi,dtime,dtimeerr);
-    // distance to time error is broken!  don't use for now, FIXME!!!
-//    wireq._time = _gaussian.shoot(dtime,dtimeerr);
-    wireq._time = dtime; 
+// smear drift time
+    wireq._time = _gaussian.shoot(_strawphys->driftDistanceToTime(dd,dphi),
+      _strawphys->driftTimeSpread(dd,dphi));
     wireq._dd = dd;
     // position along wire
-    // need to add Lorentz effects, FIXME!!!
+    // need to add Lorentz effects, this should be in StrawPhysics, FIXME!!!
     wireq._wpos = cpos.dot(straw.getDirection());
-  }
-
-  double
-  StrawDigisFromStepPointMCs::strawGain(Straw const& straw, double driftdist, double driftphi) const {
-      // someday need a physics model and calibration constants here, FIXME!!!
-      return _gasgain;
-  }
-
-  void
-  StrawDigisFromStepPointMCs::distanceToTime(Straw const& straw, double driftdist, double driftphi,
-    double& drifttime, double& drifttimeerr) const {
-// need an external model object here, FIXME!!
-    double dtime = driftdist/_vdrift;
-// smear with a fixed resolution
-    drifttime =  _gaussian.shoot(dtime,_drifterr);
   }
 
   void
   StrawDigisFromStepPointMCs::propagateCharge(Straw const& straw,
       WireCharge const& wireq, StrawEnd end, WireEndCharge& weq) {
-  // I'm not sure how expensive this call is: it could be performed once/event then cached or passed in FIXME!!
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    double vwire = tcal->SignalVelocity(straw.index());
     // compute distance to the appropriate end
     double wlen = straw.getDetail().halfLength(); // use the full length, not the active length
-  // NB: the following logic assumes the straw direction points in increasing azimuth.  FIXME!
+  // NB: the following assumes the straw direction points in increasing azimuth.  FIXME!
     if(end == StrawEnd::plus)
       weq._wdist = wlen - wireq._wpos;
     else
       weq._wdist = wlen + wireq._wpos;
     // split the charge, and attenuate it according to the distance
-    weq._charge = 0.5*wireq._charge*exp(-weq._wdist/_attlen);
-    // linear time propagation.  Dispersion is handled elsewhere
-    weq._time = weq._wdist/vwire;
+    weq._charge = 0.5*wireq._charge*_strawphys->propagationAttenuation(weq._wdist);    // linear time propagation.  Dispersion is handled elsewhere
+    weq._time = _strawphys->propagationTime(weq._wdist);
   }
 
   double
   StrawDigisFromStepPointMCs::microbunchTime(double globaltime) const {
   // fold time relative to MB frequency, offset by the TDC clock start time
-    return fmod(globaltime-_strawele.clockStart(),_mbtime)+_strawele.clockStart();
+    return fmod(globaltime-_strawele->clockStart(),_mbtime)+_strawele->clockStart();
   }
 
   bool
   StrawDigisFromStepPointMCs::validXP(WFXP const& xpair) const {
-    double tmin(_mbtime+_strawele.clockStart()+_mbbuffer);
+    double tmin(_mbtime+_strawele->clockStart()+_mbbuffer);
     for(auto iwfx = xpair.begin();iwfx!= xpair.end();++iwfx){
       WFX const& wfx = **iwfx;
       tmin = min(tmin,wfx._time);
     }
     // times are limited by flash blanking
-    bool retval = (tmin > _strawele.flashEnd() && tmin < _mbtime+_strawele.flashStart());
+    bool retval = (tmin > _strawele->flashEnd() && tmin < _mbtime+_strawele->flashStart());
     return retval;
   }
 
   void
   StrawDigisFromStepPointMCs::addGhosts(StrawHitlet const& hitlet,StrawHitletSequence& shs) {
-    double dt = hitlet.time()-_strawele.clockStart();
+    double dt = hitlet.time()-_strawele->clockStart();
     if(dt < _mbbuffer)
       shs.insert(StrawHitlet(hitlet,_mbtime));
     if(_mbtime-dt < _mbbuffer)
@@ -509,7 +468,7 @@ namespace mu2e {
       // find where the waveform xings threshold.  This updates the waveform sample
       // Skip any points outside the microbunch readout window (including buffer)
       //randomize the threshold to account for electronics noise
-      double threshold = _gaussian.shoot(_strawele.threshold(),_strawele.thresholdNoise());
+      double threshold = _gaussian.shoot(_strawele->threshold(),_strawele->thresholdNoise());
       while(swf.crossesThreshold(threshold,wfx) && wfx._time < _mbtime+_mbbuffer){
 	// keep these in time-order
 	auto iwfxl = xings.begin();
@@ -518,9 +477,9 @@ namespace mu2e {
 	xings.insert(iwfxl,wfx);
 	// skip to the next hitlet, and insure a minimum time buffer between crossings
 	++(wfx._ihitlet);
-	wfx._time += _strawele.deadTime();
+	wfx._time += _strawele->deadTime();
 	// update threshold
-	threshold = _gaussian.shoot(_strawele.threshold(),_strawele.thresholdNoise());
+	threshold = _gaussian.shoot(_strawele->threshold(),_strawele->thresholdNoise());
       }
     }
   }
@@ -536,7 +495,7 @@ namespace mu2e {
       auto jwfxl = iwfxl; ++jwfxl;
       if(jwfxl != xings.end() &&
 	  iwfxl->_ihitlet->strawEnd() != jwfxl->_ihitlet->strawEnd() &&
-	  _strawele.combineEnds(iwfxl->_time,jwfxl->_time)) {
+	  _strawele->combineEnds(iwfxl->_time,jwfxl->_time)) {
 	xpair.push_back(jwfxl);
 	iwfxl = jwfxl;
       } 
@@ -565,9 +524,9 @@ namespace mu2e {
     set<art::Ptr<StepPointMC>> mcmatch;
     // initialize the float variables that we later digitize
     array<double,2> xtimes = {2*_mbtime,2*_mbtime}; // overflow signals missing information
-    vector<double> wf(_strawele.nADCSamples(),0.0);
+    vector<double> wf(_strawele->nADCSamples(),0.0);
     // smear (coherently) both times for the TDC clock jitter
-    double dt = _gaussian.shoot(0.0,_strawele.clockJitter());
+    double dt = _gaussian.shoot(0.0,_strawele->clockJitter());
     // loop over the associated crossings
     for(auto iwfx = xpair.begin();iwfx!= xpair.end();++iwfx){
       WFX const& wfx = **iwfx;
@@ -577,12 +536,12 @@ namespace mu2e {
 	index = 0;
 	// get the sample times from the electroincs
 	vector<double> adctimes;
-	_strawele.adcTimes(wfx._time,adctimes);
+	_strawele->adcTimes(wfx._time,adctimes);
 	// sample the waveform at the primary end at these times
 	primarywf.sampleWaveform(adctimes,wf);
 	// randomize waveform voltage values for electronics noise
 	for(auto iwf=wf.begin();iwf!=wf.end();++iwf)
-	  *iwf += _gaussian.shoot(0.0,_strawele.thresholdNoise());
+	  *iwf += _gaussian.shoot(0.0,_strawele->thresholdNoise());
       }
       // record the crossing time for this end, including clock jitter  These already include noise effects
       xtimes[index] = wfx._time+dt;
@@ -592,9 +551,9 @@ namespace mu2e {
 
     // digitize
     StrawDigi::ADCWaveform adc;
-    _strawele.digitizeWaveform(wf,adc);
+    _strawele->digitizeWaveform(wf,adc);
     StrawDigi::TDCValues tdc;
-    _strawele.digitizeTimes(xtimes,tdc);
+    _strawele->digitizeTimes(xtimes,tdc);
     // create the digi from this
     digis->push_back(StrawDigi(primarywf.hitlets().strawIndex(),tdc,adc));
     // fill map entry to record association of this digi with StepPointMC.
@@ -652,7 +611,7 @@ namespace mu2e {
       const double tstep(0.5); // 0.5
       const double nfall(5.0); // 5 lambda past last fall time
       double tstart = hitlets.begin()->time()-tstep;
-      double tfall = _strawele.shapingTime();
+      double tfall = _strawele->shapingTime();
       double tend = hitlets.rbegin()->time() + nfall*tfall;
       vector<double> times, volts;
       double t = tstart;

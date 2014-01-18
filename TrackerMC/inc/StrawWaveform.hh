@@ -5,9 +5,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.hh,v 1.4 2014/01/16 21:03:22 brownd Exp $
+// $Id: StrawWaveform.hh,v 1.5 2014/01/18 17:33:34 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/01/16 21:03:22 $
+// $Date: 2014/01/18 17:33:34 $
 //
 // Original author David Brown, LBNL
 //
@@ -21,7 +21,8 @@
 // Mu2e includes
 #include "DataProducts/inc/StrawIndex.hh"
 #include "RecoDataProducts/inc/StrawEnd.hh"
-#include "TrackerMC/inc/StrawElectronics.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerMC/inc/StrawHitletSequence.hh"
 
 namespace mu2e {
@@ -30,7 +31,7 @@ namespace mu2e {
   class StrawWaveform{
     public:
       // construct from a hitlet sequence and response object
-      StrawWaveform(StrawHitletSequence const& hseqq, StrawElectronics const& sresponse); 
+      StrawWaveform(StrawHitletSequence const& hseqq, ConditionsHandle<StrawElectronics> const& sresponse); 
 // disallow copy and assignment
       StrawWaveform() = delete; // don't allow default constructor, references can't be assigned empty
       StrawWaveform(StrawWaveform const& other) = delete;
@@ -44,11 +45,11 @@ namespace mu2e {
       void sampleWaveform(std::vector<double> const& times,std::vector<double>& volts) const;
   //accessors
       StrawHitletSequence const& hitlets() const { return _hseq; }
-      StrawElectronics const& strawElectronics() const { return _strawele; }
+      ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }
     private:
 // hitlet sequence used in this waveform
       StrawHitletSequence const& _hseq;
-      StrawElectronics const& _strawele; // straw response object
+      ConditionsHandle<StrawElectronics> const& _strawele; // straw response object
   };
 
   struct WFX { // waveform crossing

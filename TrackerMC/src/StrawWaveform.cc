@@ -3,9 +3,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.cc,v 1.7 2014/01/16 21:03:22 brownd Exp $
+// $Id: StrawWaveform.cc,v 1.8 2014/01/18 17:33:34 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/01/16 21:03:22 $
+// $Date: 2014/01/18 17:33:34 $
 //
 // Original author David Brown, LBNL
 //
@@ -15,7 +15,7 @@
 using namespace std;
 namespace mu2e {
 
-  StrawWaveform::StrawWaveform(StrawHitletSequence const& hseq, StrawElectronics const& strawele) :
+  StrawWaveform::StrawWaveform(StrawHitletSequence const& hseq, ConditionsHandle<StrawElectronics> const& strawele) :
    _hseq(hseq), _strawele(strawele) 
   {}
 
@@ -32,7 +32,7 @@ namespace mu2e {
 	// if pre-hitlet response is below threshold, check for crossing
 	if(presample < threshold){
 	  // check response at maximum
-	  double posttime = pretime + _strawele.maxResponseTime();
+	  double posttime = pretime + _strawele->maxResponseTime();
 	  double postsample = sampleWaveform(posttime);
 	  if(postsample > threshold){
 	    // this hitlet pushes the waveform over threshold
@@ -70,13 +70,13 @@ namespace mu2e {
     double retval(0.0);
     auto ihitlet = hlist.begin();
     while(ihitlet != hlist.end() && ihitlet->time() < time){
-    // cmopute the straw electronics response to this charge.  This is pre-saturation 
-      retval += _strawele.hitletResponse(time,*ihitlet);
+    // cmopute the linear straw electronics response to this charge.  This is pre-saturation 
+      retval += _strawele->linearResponse(time-ihitlet->time(),ihitlet->charge());
     // move to next hitlet
       ++ihitlet;
     }
     // apply saturation effects
-    retval = _strawele.saturatedResponse(retval);
+    retval = _strawele->saturatedResponse(retval);
     return retval;
   }
   
