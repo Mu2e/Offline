@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.40 2014/01/18 03:09:59 kutschke Exp $
+// $Id: TrackingAction.cc,v 1.41 2014/01/18 04:31:10 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2014/01/18 03:09:59 $
+// $Date: 2014/01/18 04:31:10 $
 //
 // Original author Rob Kutschke
 //
@@ -64,7 +64,7 @@ namespace mu2e {
     _currentSize(0),
     _overflowSimParticles(false),
     _pointTrajectoryMomentumCut(config.getDouble("g4.pointTrajectoryMomentumCut", 50.)),
-    _mcTrajectoryMinHits(config.getInt("g4.mcTrajectoryMinHits", 5)),
+    _mcTrajectoryMinSteps(config.getInt("g4.mcTrajectoryMinSteps", 5)),
     _steppingAction(steppingAction),
     _processInfo(0),
     _spHelper(),
@@ -345,7 +345,7 @@ namespace mu2e {
     key_type kid(_spHelper->particleKeyFromG4TrackID(trk->GetTrackID()));
 
     std::vector<CLHEP::HepLorentzVector> const& trajectory = _steppingAction->trajectory();
-    if ( int(trajectory.size()) < _mcTrajectoryMinHits ) return;
+    if ( int(trajectory.size()) < _mcTrajectoryMinSteps ) return;
 
     // Find the particle in the map.
     map_type::iterator i(_transientMap.find(kid));
