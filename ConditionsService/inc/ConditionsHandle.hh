@@ -4,9 +4,9 @@
 //
 // A safe pointer to a ConditionsEntity.
 //
-// $Id: ConditionsHandle.hh,v 1.6 2011/05/18 02:27:15 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:15 $
+// $Id: ConditionsHandle.hh,v 1.7 2014/01/18 17:31:59 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/01/18 17:31:59 $
 //
 // Original author Rob Kutschke
 //
@@ -33,10 +33,16 @@ namespace mu2e {
     ENTITY const * operator->() { return _entity;}
     ENTITY const & operator*()  { return *_entity;}
 
-  private:
-    ConditionsHandle(const ConditionsHandle&);
-    ConditionsHandle& operator=(const ConditionsHandle&);
+    ConditionsHandle() : _entity(0) {}
+    ConditionsHandle(const ConditionsHandle& other ) : _entity(other._entity) {}
+    ConditionsHandle& operator=(const ConditionsHandle& other) {
+      if(this != &other){
+	_entity = other._entity;
+      }
+      return *this;
+    }
 
+  private:
     // unnecessary
     ENTITY* operator&();
 

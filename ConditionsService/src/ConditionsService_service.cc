@@ -2,9 +2,9 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService_service.cc,v 1.17 2014/01/17 19:23:51 gandr Exp $
-// $Author: gandr $
-// $Date: 2014/01/17 19:23:51 $
+// $Id: ConditionsService_service.cc,v 1.18 2014/01/18 17:31:59 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/01/18 17:31:59 $
 //
 // Original author Rob Kutschke
 //
@@ -26,6 +26,9 @@
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "ConditionsService/inc/TrackerCalibrationsI.hh"
 #include "ConditionsService/inc/ExtMonFNALConditions.hh"
+// sources of served objects
+#include "TrackerConditions/inc/StrawElectronics.hh"
+#include "TrackerConditions/inc/StrawPhysics.hh"
 
 using namespace std;
 
@@ -92,6 +95,11 @@ namespace mu2e {
       addEntity( std::move(std::unique_ptr<TrackerCalibrations>( new TrackerCalibrations(_config))) );
     }
     addEntity( std::move(std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config))) );
+
+     addEntity(std::move(std::unique_ptr<StrawElectronics>(new StrawElectronics(_pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())))) );
+
+   addEntity(std::move(std::unique_ptr<StrawPhysics>(new StrawPhysics(_pset.get<fhicl::ParameterSet>("StrawPhysics",fhicl::ParameterSet())))) );
+
   }
 
   // Check that the configuration is self consistent.
