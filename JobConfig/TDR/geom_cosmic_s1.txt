@@ -3,7 +3,7 @@
 vector<string> g4SteppingAction.killInTheseVolumes = { "TrackerMother", "CalorimeterMother"};
 
 // We do want to have trajectories for cosmic sims
-double g4.pointTrajectoryMomentumCut = 80.;
+double g4.mcTrajectoryMomentumCut = 80.;
 
 int g4.steppingActionMaxSteps = 50000;
 
