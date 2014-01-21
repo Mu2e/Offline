@@ -18,9 +18,9 @@
 // The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
 // Intended to write out framework files of stopped muons.
 //
-// $Id: FilterG4Out_module.cc,v 1.4 2014/01/21 17:47:10 gandr Exp $
+// $Id: FilterG4Out_module.cc,v 1.5 2014/01/21 17:47:24 gandr Exp $
 // $Author: gandr $
-// $Date: 2014/01/21 17:47:10 $
+// $Date: 2014/01/21 17:47:24 $
 //
 // Andrei Gaponenko, 2013
 
@@ -39,8 +39,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/GenParticleSPMHistory.hh"
-#include "MCDataProducts/inc/GenSimParticleLink.hh"
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "Mu2eUtilities/inc/SimParticleParentGetter.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
@@ -114,9 +112,6 @@ namespace mu2e {
 
     InputTags extraHitInputs_;  // other StepPointMCCollections to keep
 
-    InputTags gpStepLinkInputs_;
-    InputTags gpSimLinkInputs_;
-
     InputTags vetoDaughtersInputs_;
 
     // Output instance names.
@@ -136,16 +131,8 @@ namespace mu2e {
     unsigned numInputParticles_;
     unsigned numPassedParticles_;
 
-    unsigned numInputGenStepLinks_;
-    unsigned numPassedGenStepLinks_;
-
     unsigned numVetoedParticles_;
     unsigned numVetoedHits_;
-
-    void addGPStepLink(const art::Event& event,
-                       GenParticleSPMHistory& newHistory,
-                       const art::Ptr<StepPointMC>& oldHit,
-                       const art::Ptr<StepPointMC>& newHit);
 
   public:
     explicit FilterG4Out(const fhicl::ParameterSet& pset);
@@ -158,7 +145,6 @@ namespace mu2e {
     : numInputEvents_(), numPassedEvents_()
     , numMainHits_(), numInputExtraHits_(), numPassedExtraHits_()
     , numInputParticles_(), numPassedParticles_()
-    , numInputGenStepLinks_(),  numPassedGenStepLinks_()
     , numVetoedParticles_(), numVetoedHits_()
   {
     typedef std::vector<std::string> VS;
@@ -203,25 +189,6 @@ namespace mu2e {
       simPartOutNames.insert(os.str());
       produces<SimParticleCollection>(os.str());
     }
-
-    // Need to update hits pointers in GenParticleSPMHistory objects.
-    const VS gpStepLinks(pset.get<VS>("gpStepLinks", VS()));
-    for(const auto& i : gpStepLinks) {
-      gpStepLinkInputs_.emplace_back(i);
-    }
-    if(!gpStepLinkInputs_.empty()) {
-      produces<GenParticleSPMHistory>();
-    }
-
-    // FIXME:
-    // Need to update hits pointers in GenSimParticleLink objects.
-    const VS gpSimLinks(pset.get<VS>("gpSimLinks", VS()));
-    for(const auto& i : gpSimLinks) {
-      gpSimLinkInputs_.emplace_back(i);
-    }
-    if(!gpSimLinkInputs_.empty()) {
-      produces<GenSimParticleLink>();
-    }
   }
 
   //================================================================
@@ -229,8 +196,6 @@ namespace mu2e {
   bool FilterG4Out::filter(art::Event& event) {
     bool passed = false;
     typedef std::map<std::string, std::unique_ptr<StepPointMCCollection> > OutMap;
-
-    std::unique_ptr<GenParticleSPMHistory> newGPStepHistory(new GenParticleSPMHistory());
 
     //----------------------------------------------------------------
     // Build a full list of the vetoed particles
@@ -363,10 +328,6 @@ namespace mu2e {
           art::Ptr<StepPointMC> oldHitPtr(ih, std::distance(ih->begin(), i));
           art::Ptr<StepPointMC> newHitPtr(newHitsPID, output.size()-1, event.productGetter(newHitsPID));
 
-          addGPStepLink(event,
-                        *newGPStepHistory,
-                        oldHitPtr,
-                        newHitPtr);
         }
         else {
           ++numVetoedHits_;
@@ -408,10 +369,6 @@ namespace mu2e {
           art::Ptr<StepPointMC> oldHitPtr(ih, std::distance(ih->begin(), i));
           art::Ptr<StepPointMC> newHitPtr(newHitsPID, output.size()-1, event.productGetter(newHitsPID));
 
-          addGPStepLink(event,
-                        *newGPStepHistory,
-                        oldHitPtr,
-                        newHitPtr);
         }
         else {
           if(vetoedParticles.find(oldPtr) != vetoedParticles.end()) {
@@ -427,34 +384,10 @@ namespace mu2e {
     }
 
     //----------------------------------------------------------------
-    if(!gpStepLinkInputs_.empty()) {
-      event.put(std::move(newGPStepHistory));
-    }
-
-    //----------------------------------------------------------------
     ++numInputEvents_;
     if(passed) ++numPassedEvents_;
 
     return passed;
-  }
-
-  //================================================================
-  void FilterG4Out::addGPStepLink(const art::Event& event,
-                                  GenParticleSPMHistory& newHistory,
-                                  const art::Ptr<StepPointMC>& oldHit,
-                                  const art::Ptr<StepPointMC>& newHit) {
-
-    for(const auto& inTag : gpStepLinkInputs_) {
-      auto ih = event.getValidHandle<GenParticleSPMHistory>(inTag);
-      numInputGenStepLinks_ += ih->size();
-      for(const auto& entry : *ih) {
-        if(entry.second == oldHit) {
-          ++numPassedGenStepLinks_;
-          newHistory.addSingle(entry.first, newHit);
-        }
-      }
-    }
-
   }
 
   //================================================================
@@ -465,7 +398,6 @@ namespace mu2e {
       << numMainHits_ <<" main hits, "
       << numPassedExtraHits_ <<" / "<<numInputExtraHits_<<" extra hits, "
       << numPassedParticles_ <<" / "<<numInputParticles_<<"+ particles, "
-      << numPassedGenStepLinks_ <<" / "<<numInputGenStepLinks_<<" GenStep links, "
       << "vetoed " << numVetoedParticles_ << " particles and "
       << numVetoedHits_ <<" hits."
       << "\n";
