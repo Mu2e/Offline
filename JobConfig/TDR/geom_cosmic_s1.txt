@@ -13,7 +13,7 @@ double world.minimalMargin.zmin = 500000;
 double world.minimalMargin.zmax = 500000;
 
 double g4.minRangeCut     = 1.0;            // mm
-bool g4.doCosmicKiller    = true;
+bool g4.doCosmicKiller    = false;
 int  g4.cosmicVerbose     = 0;
 
 // Optimize for speed but where it does not impact the physics.
