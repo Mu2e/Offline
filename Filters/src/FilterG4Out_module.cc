@@ -18,9 +18,9 @@
 // The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
 // Intended to write out framework files of stopped muons.
 //
-// $Id: FilterG4Out_module.cc,v 1.3 2013/10/09 18:06:34 gandr Exp $
+// $Id: FilterG4Out_module.cc,v 1.4 2014/01/21 17:47:10 gandr Exp $
 // $Author: gandr $
-// $Date: 2013/10/09 18:06:34 $
+// $Date: 2014/01/21 17:47:10 $
 //
 // Andrei Gaponenko, 2013
 
@@ -94,16 +94,6 @@ namespace mu2e {
       ProductIDSelector(const art::Event& evt, const art::ProductID& pid) : evt_(&evt), pid_(pid) {}
       virtual ProductIDSelector* clone() const { return new ProductIDSelector(*this); }
     };
-
-    // In art v1_00_06 the ValidHandle::id() method needed by an
-    // art::Ptr constructor is missing.  A workaround:
-    template<class PROD> struct MyHandle : public art::ValidHandle<PROD> {
-      MyHandle(const art::ValidHandle<PROD>& h) : art::ValidHandle<PROD>(h) {}
-      art::ProductID id( ) const { return this->provenance()->productID(); }
-    };
-    template<class PROD> MyHandle<PROD> makeMyHandle(const art::ValidHandle<PROD>& h) {
-      return MyHandle<PROD>(h);
-    }
 
     //----------------
     void addDaughterTree(SPSet *res, const art::Ptr<SimParticle>& p) {
@@ -370,7 +360,7 @@ namespace mu2e {
           output.emplace_back(*i);
           output.back().simParticle() = newParticle;
 
-          art::Ptr<StepPointMC> oldHitPtr(makeMyHandle(ih), std::distance(ih->begin(), i));
+          art::Ptr<StepPointMC> oldHitPtr(ih, std::distance(ih->begin(), i));
           art::Ptr<StepPointMC> newHitPtr(newHitsPID, output.size()-1, event.productGetter(newHitsPID));
 
           addGPStepLink(event,
@@ -415,7 +405,7 @@ namespace mu2e {
           output.emplace_back(*i);
           output.back().simParticle() = newParticle;
 
-          art::Ptr<StepPointMC> oldHitPtr(makeMyHandle(ih), std::distance(ih->begin(), i));
+          art::Ptr<StepPointMC> oldHitPtr(ih, std::distance(ih->begin(), i));
           art::Ptr<StepPointMC> newHitPtr(newHitsPID, output.size()-1, event.productGetter(newHitsPID));
 
           addGPStepLink(event,
