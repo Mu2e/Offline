@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.79 2014/01/18 04:31:53 kutschke Exp $
+// $Id: G4_module.cc,v 1.80 2014/01/21 06:20:41 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2014/01/18 04:31:53 $
+// $Date: 2014/01/21 06:20:41 $
 //
 // Original author Rob Kutschke
 //
@@ -178,7 +178,7 @@ namespace mu2e {
     DiagnosticsG4 _diagnostics;
 
     // A parameter extracted from the geometry file at beginRun and used in produce.
-    int _mcTrajectoryMinSteps;
+    int _pointTrajectoryMinSteps;
 
     // Do the G4 initialization that must be done only once per job, not once per run
     void initializeG4( GeometryService& geom, art::Run const& run );
@@ -216,7 +216,7 @@ namespace mu2e {
     _simParticleNumberOffset(pSet.get<unsigned>("simParticleNumberOffset", 0)),
     _inputSimParticles(pSet.get<std::string>("inputSimParticles", "")),
     _diagnostics(),
-    _mcTrajectoryMinSteps(-1){
+    _pointTrajectoryMinSteps(-1){
 
     Strings genHitsStr(pSet.get<Strings>("genInputHits", Strings()));
     for(const auto& s : genHitsStr) {
@@ -315,7 +315,7 @@ namespace mu2e {
     SimpleConfig const& config  = geom->config();
     _printPhysicsProcessSummary = config.getBool("g4.printPhysicsProcessSummary",false);
 
-    _mcTrajectoryMinSteps = config.getInt("g4.mcTrajectoryMinSteps",5);
+    _pointTrajectoryMinSteps = config.getInt("g4.pointTrajectoryMinSteps",5);
 
   }
 
@@ -489,7 +489,7 @@ namespace mu2e {
     // Populate the output data products.
     GeomHandle<WorldG4>  world;
     GeomHandle<Mu2eBuilding>  building;
-    addPointTrajectories( g4event, *pointTrajectories, spHelper, world->mu2eOriginInWorld(), _mcTrajectoryMinSteps);
+    addPointTrajectories( g4event, *pointTrajectories, spHelper, world->mu2eOriginInWorld(), _pointTrajectoryMinSteps);
 
     // Run self consistency checks if enabled.
     _trackingAction->endEvent(*simParticles);
