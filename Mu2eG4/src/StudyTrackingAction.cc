@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: StudyTrackingAction.cc,v 1.6 2013/12/02 20:15:08 genser Exp $
-// $Author: genser $
-// $Date: 2013/12/02 20:15:08 $
+// $Id: StudyTrackingAction.cc,v 1.7 2014/01/21 06:19:49 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/01/21 06:19:49 $
 //
 // Original author Rob Kutschke
 //
@@ -59,7 +59,7 @@ namespace mu2e {
     _sizeLimit(config.getInt("g4.particlesSizeLimit",0)),
     _currentSize(0),
     _overflowSimParticles(false),
-    _pointTrajectoryMomentumCut(config.getDouble("g4.pointTrajectoryMomentumCut", 0.)),
+    _saveTrajectoryMomentumCut(config.getDouble("g4.saveTrajectoryMomentumCut", 0.)),
     _steppingAction(steppingAction),
     _processInfo(0){
 
@@ -114,7 +114,7 @@ namespace mu2e {
     // saveSimParticle must be called before controlTrajectorySaving.
     // but after attaching the  user track information
     saveSimParticleStart(trk);
-    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize, _pointTrajectoryMomentumCut);
+    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize, _saveTrajectoryMomentumCut);
 
     _steppingAction->BeginOfTrack();
 
