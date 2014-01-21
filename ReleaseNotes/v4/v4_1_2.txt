@@ -2,6 +2,36 @@
 
            Release notes for Mu2e Offline software, v4_1_2
 
+ 4) January 20, 2014 kutschke
+    The previous few changes left the geometry file variables that control mcTrajectory and pointTrajectory saving in a mixed up state.
+    This has been cleaned up.  The variables that now are used are:
+
+    double g4.saveTrajectoryMomentumCut = 50.;
+      - If a track has a starting mometum above this cut, G4 will save the 3-position of every point on the trajectory.
+      - This controls G4 graphics.
+      - This indirectly controls saving of PointTrajectories because these are copied from the G4 graphics buffer.
+      - previously g4.pointTrajectoryMomentumCut was used for this purpose - the name has been changed since pointTrajectory
+        objects will soon go away but we want to still be able to control G4 graphics.
+
+    int g4.pointTrajectoryMinSteps  =  5;
+      - A new variable. PointTrajectories are saved if they have at least this many steps..
+      - This will soon become obsolete - it was renamed to make it easy to find and remove when the time comes.
+
+    double g4.mcTrajectoryMomentumCut = 50.;
+    int    g4.mcTrajectoryMinSteps    =  5;
+       - These strictly control the saving of MCTrajectory objects.  They do not control G4 graphics.
+       - These will stay for the long term.
+
+    The defaults have been set that no default behaviour changes.
+
+    Files changed:
+       Mu2eG4/src/StudyTrackingAction.cc
+       Mu2eG4/inc/StudyTrackingAction.hh
+       Mu2eG4/src/G4_module.cc
+       Mu2eG4/src/TrackingAction.cc
+       Mu2eG4/inc/TrackingAction.hh
+       Mu2eG4/test/geom_01.txt
+ 
  3) January 17, 2014 kutschke
     The old style PointTrajectoryCollection data product now
     obeys the following parameter from the geometry file:
