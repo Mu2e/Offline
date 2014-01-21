@@ -1,6 +1,9 @@
 #include "Mu2eG4/test/geom_01.txt"
 
-double g4.pointTrajectoryMomentumCut = 999999.; // don't spend resources on trajectories
+double g4.pointTrajectoryMomentumCut = 999999.; // don't spend resources on trajectories. This variable is going away in v4_1_2.
+// Both of these are needed since v4_1_2.
+double g4.saveTrajectoryMomentumCut = 999999.; // don't spend resources on trajectories
+double g4.mcTrajectoryMomentumCut = 999999.; // don't spend resources on trajectories
 
 int g4.particlesSizeLimit = 100000;
 bool   g4.killLowEKine  = false;
