@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.41 2014/01/18 04:31:10 kutschke Exp $
+// $Id: TrackingAction.cc,v 1.42 2014/01/21 06:22:33 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2014/01/18 04:31:10 $
+// $Date: 2014/01/21 06:22:33 $
 //
 // Original author Rob Kutschke
 //
@@ -63,7 +63,8 @@ namespace mu2e {
     _sizeLimit(config.getInt("g4.particlesSizeLimit",0)),
     _currentSize(0),
     _overflowSimParticles(false),
-    _pointTrajectoryMomentumCut(config.getDouble("g4.pointTrajectoryMomentumCut", 50.)),
+    _mcTrajectoryMomentumCut(config.getDouble("g4.mcTrajectoryMomentumCut", 50.)),
+    _saveTrajectoryMomentumCut(config.getDouble("g4.saveTrajectoryMomentumCut", 50.)),
     _mcTrajectoryMinSteps(config.getInt("g4.mcTrajectoryMinSteps", 5)),
     _steppingAction(steppingAction),
     _processInfo(0),
@@ -123,7 +124,7 @@ namespace mu2e {
     // saveSimParticle must be called before controlTrajectorySaving.
     // but after attaching the  user track information
     saveSimParticleStart(trk);
-    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize, _pointTrajectoryMomentumCut);
+    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize, _saveTrajectoryMomentumCut);
 
     _steppingAction->BeginOfTrack();
 
@@ -357,7 +358,7 @@ namespace mu2e {
     }
 
     CLHEP::HepLorentzVector const& p0 = i->second.startMomentum();
-    if ( p0.vect().mag() < _pointTrajectoryMomentumCut ) return;
+    if ( p0.vect().mag() < _mcTrajectoryMomentumCut ) return;
 
     art::Ptr<SimParticle> sim = _spHelper->particlePtr(trk);
 

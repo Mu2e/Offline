@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.27 2014/01/18 04:31:10 kutschke Exp $
+// $Id: TrackingAction.hh,v 1.28 2014/01/21 06:22:33 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2014/01/18 04:31:10 $
+// $Date: 2014/01/21 06:22:33 $
 //
 // Original author Rob Kutschke
 //
@@ -110,7 +110,8 @@ namespace mu2e {
     int _sizeLimit;
     int _currentSize;
     bool _overflowSimParticles;
-    double _pointTrajectoryMomentumCut;
+    double _mcTrajectoryMomentumCut;
+    double _saveTrajectoryMomentumCut;
     int    _mcTrajectoryMinSteps;
 
     // Non-owning pointer to stepping action; lifetime of pointee is one run.
