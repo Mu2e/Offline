@@ -18,9 +18,9 @@
 // The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
 // Intended to write out framework files of stopped muons.
 //
-// $Id: FilterG4Out_module.cc,v 1.6 2014/01/21 17:47:36 gandr Exp $
+// $Id: FilterG4Out_module.cc,v 1.7 2014/01/21 17:47:57 gandr Exp $
 // $Author: gandr $
-// $Date: 2014/01/21 17:47:36 $
+// $Date: 2014/01/21 17:47:57 $
 //
 // Andrei Gaponenko, 2013
 
@@ -328,15 +328,10 @@ namespace mu2e {
           const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
 
           StepPointMCCollection& output = *outMain[inTag.instance()];
-          const art::ProductID newHitsPID = getProductID<StepPointMCCollection>(event, inTag.instance());
 
           art::Ptr<SimParticle> newParticle(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
           output.emplace_back(*i);
           output.back().simParticle() = newParticle;
-
-          art::Ptr<StepPointMC> oldHitPtr(ih, std::distance(ih->begin(), i));
-          art::Ptr<StepPointMC> newHitPtr(newHitsPID, output.size()-1, event.productGetter(newHitsPID));
-
         }
         else {
           ++numVetoedHits_;
@@ -369,15 +364,10 @@ namespace mu2e {
           const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
 
           StepPointMCCollection& output = *outExtra[inTag.instance()];
-          const art::ProductID newHitsPID = getProductID<StepPointMCCollection>(event, inTag.instance());
 
           art::Ptr<SimParticle> newParticle(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
           output.emplace_back(*i);
           output.back().simParticle() = newParticle;
-
-          art::Ptr<StepPointMC> oldHitPtr(ih, std::distance(ih->begin(), i));
-          art::Ptr<StepPointMC> newHitPtr(newHitsPID, output.size()-1, event.productGetter(newHitsPID));
-
         }
         else {
           if(vetoedParticles.find(oldPtr) != vetoedParticles.end()) {
