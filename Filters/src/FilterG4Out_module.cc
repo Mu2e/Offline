@@ -18,9 +18,9 @@
 // The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
 // Intended to write out framework files of stopped muons.
 //
-// $Id: FilterG4Out_module.cc,v 1.5 2014/01/21 17:47:24 gandr Exp $
+// $Id: FilterG4Out_module.cc,v 1.6 2014/01/21 17:47:36 gandr Exp $
 // $Author: gandr $
-// $Date: 2014/01/21 17:47:24 $
+// $Date: 2014/01/21 17:47:36 $
 //
 // Andrei Gaponenko, 2013
 
@@ -39,6 +39,8 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/MCTrajectory.hh"
+#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "Mu2eUtilities/inc/SimParticleParentGetter.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
@@ -112,6 +114,8 @@ namespace mu2e {
 
     InputTags extraHitInputs_;  // other StepPointMCCollections to keep
 
+    art::InputTag mcTrajectoryInput_; // Optionally, filter and keep MCTrajectoryCollection
+
     InputTags vetoDaughtersInputs_;
 
     // Output instance names.
@@ -142,7 +146,8 @@ namespace mu2e {
 
   //================================================================
   FilterG4Out::FilterG4Out(const fhicl::ParameterSet& pset)
-    : numInputEvents_(), numPassedEvents_()
+    : mcTrajectoryInput_(pset.get<std::string>("mcTrajectoryInput", ""))
+    , numInputEvents_(), numPassedEvents_()
     , numMainHits_(), numInputExtraHits_(), numPassedExtraHits_()
     , numInputParticles_(), numPassedParticles_()
     , numVetoedParticles_(), numVetoedHits_()
@@ -172,6 +177,10 @@ namespace mu2e {
     }
     for(const auto& i : extraOutputNames_) {
       produces<StepPointMCCollection>(i);
+    }
+
+    if(mcTrajectoryInput_ != art::InputTag()) {
+      produces<MCTrajectoryCollection>();
     }
 
     const VS vetoStrings(pset.get<VS>("vetoDaughters"));
@@ -381,6 +390,31 @@ namespace mu2e {
     for(const auto& i : extraOutputNames_) {
       numPassedExtraHits_ += outExtra[i]->size();
       event.put(std::move(outExtra[i]), i);
+    }
+
+    //----------------------------------------------------------------
+    if(mcTrajectoryInput_ != art::InputTag()) {
+
+      std::unique_ptr<MCTrajectoryCollection> outTrajectory(new MCTrajectoryCollection());
+
+      auto ih = event.getValidHandle<MCTrajectoryCollection>(mcTrajectoryInput_);
+
+      for(MCTrajectoryCollection::const_iterator i=ih->begin(); i!=ih->end(); ++i) {
+
+        art::Ptr<SimParticle> oldPtr(i->first);
+
+        if(toBeKept.isKept(oldPtr)) {
+
+          art::ProductID newParticlesPID = partCollMap[oldPtr.id()];
+          const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
+          art::Ptr<SimParticle> newParticle(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
+
+          (*outTrajectory)[newParticle] = i->second;
+          (*outTrajectory)[newParticle].sim() = newParticle;
+        }
+      }
+
+      event.put(std::move(outTrajectory));
     }
 
     //----------------------------------------------------------------
