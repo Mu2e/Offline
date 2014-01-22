@@ -6,7 +6,7 @@
 #include <vector>
 #include <math.h>
 
-void Timing(std::vector<std::string> names ){
+void Timing(std::vector<std::string> names,double maxtime=0.1 ){
   std::vector<TH1F*> histos;
   TCanvas* tcan = new TCanvas("timing","timing",800,800);
   unsigned nlin = rint(ceil(sqrt(names.size())));
@@ -17,7 +17,7 @@ void Timing(std::vector<std::string> names ){
   ifstream fs;
   for(size_t iname=0;iname<names.size();++iname){
     std::string title= names[iname]+" timing;seconds;events";
-    histos.push_back(new TH1F(names[iname].c_str(),title.c_str(),100,0,0.1));
+    histos.push_back(new TH1F(names[iname].c_str(),title.c_str(),100,0,maxtime));
     std::string file = names[iname]+".dat";
     std::cout << "Opening file " << file << std::endl;
     fs.open(file.c_str());
