@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.17 2013/11/27 16:06:02 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2013/11/27 16:06:02 $
+// $Id: GenId.hh,v 1.18 2014/01/23 20:46:06 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/01/23 20:46:06 $
 //
 // Original author Rob Kutschke
 //
@@ -102,6 +102,10 @@ namespace mu2e {
     bool isDio() {
       return (_id == dioCzarnecki || _id == dioShankerWatanabe || _id == dioFlat  || 
               _id == dioE5        || _id == dioE58 );
+    }
+
+    bool isCosmic() {
+      return (_id == cosmicToy || _id == cosmicDYB || _id == cosmic);
     }
 
     // Accessor for the version.
