@@ -60,7 +60,12 @@ namespace mu2e {
       for(const auto& iter : *ih) {
         if(iter.second.isPrimary()) {
           art::Ptr<SimParticle> part(ih, iter.first.asUint());
-          (*res)[part] = protonPulse_.fire();
+          if(!part->genParticle()->generatorId().isCosmic()) {
+            (*res)[part] = protonPulse_.fire();
+          }
+          else {
+            (*res)[part] = 0;
+          }
         }
       }
     }
