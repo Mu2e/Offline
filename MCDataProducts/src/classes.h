@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.30 2014/01/18 03:08:56 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/18 03:08:56 $
+// $Id: classes.h,v 1.31 2014/01/24 21:14:10 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/01/24 21:14:10 $
 //
 // Original author Rob Kutschke
 //
@@ -132,6 +132,7 @@ template class std::pair<art::Ptr<mu2e::MARSInfo>, art::Ptr<mu2e::SimParticle> >
 template class art::Wrapper<mu2e::SimParticleMARSAssns>;
 
 template class art::Wrapper<mu2e::SimParticleTimeMap>;
+template class std::pair<art::Ptr<mu2e::SimParticle>,double>;
 
 template class std::vector<mu2e::ExtMonFNALHitTruthBits>;
 template class std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::ExtMonFNALRawHit> >;
