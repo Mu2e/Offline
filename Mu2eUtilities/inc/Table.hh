@@ -3,9 +3,9 @@
 //
 // Free function for loading table two-column table
 //
-// $Id: Table.hh,v 1.2 2013/07/24 18:48:24 knoepfel Exp $
+// $Id: Table.hh,v 1.3 2014/01/27 22:20:17 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/24 18:48:24 $
+// $Date: 2014/01/27 22:20:17 $
 //
 // Original author: Kyle Knoepfel
 
@@ -37,13 +37,9 @@ namespace mu2e {
 
   public:
 
-    // NOTE: Prefer to use *.at(i) syntax, but bug in g++ 4_7_1 -O3
-    // compilation returns nonsense value.  Bug fixed in 4_7_3 and higher.
-
-    //    const TableRow<N>&     row( unsigned i ) const { return _rawTable.at(i);       }
     unsigned            getNrows()        const { return _rawTable.size(); }
     unsigned            getNcols()        const { return N; }
-    const TableRow<N>&  row( unsigned i ) const { return _rawTable[i];  }
+    const TableRow<N>&  row( unsigned i ) const { return _rawTable.at(i);  }
     const RawTable&     rawTable()        const { return _rawTable;     }
 
     int findLowerBoundRow( double e ) const {
@@ -51,8 +47,7 @@ namespace mu2e {
       return ( it - _rawTable.begin() ); 
     }
 
-    //    double operator()(unsigned i, unsigned j=1)         const { return _rawTable.at(i).at(j); }
-    double operator()( unsigned i, unsigned j=1 )       const { return _rawTable[i][j]; }
+    double operator()(unsigned i, unsigned j=1)         const { return _rawTable.at(i).at(j); }
 
     void   printRow( unsigned i )                       const {
       for ( auto const & val : _rawTable[i] )

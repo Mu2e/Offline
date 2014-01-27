@@ -4,17 +4,25 @@
 //  
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.hh,v 1.3 2011/06/17 21:08:27 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2011/06/17 21:08:27 $
+// $Id: ProtonPulseRandPDF.hh,v 1.4 2014/01/27 22:20:17 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/01/27 22:20:17 $
 //
-// Original author Gianni Onorato
-//
+// Original author: Gianni Onorato
+//                  Kyle Knoepfel (significant updates)
 //
 
+// Mu2e includes
+#include "Mu2eUtilities/inc/Table.hh"
+
+// CLHEP includes
 #include "CLHEP/Random/RandGeneral.h"
 #include "CLHEP/Random/RandomEngine.h"
+
+// Framework includes
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+
+// C++ includes
 #include <vector>
 
 namespace mu2e {
@@ -24,22 +32,22 @@ namespace mu2e {
   public:
 
     ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine);
-
-    ~ProtonPulseRandPDF();
+    ~ProtonPulseRandPDF(){}
 
     double fire();
-
-    int calculateNBins();
+    const std::vector<double>& getSpectrum() const { return _spectrum; }
 
   private:
 
-    int _nBinsSpectrum;
-
+    const Table<2> _pulseShape;
+    const Table<2> _acdipole;
+    std::vector<double> _spectrum;
+    double _timeMin;
+    double _timeMax;
     CLHEP:: RandGeneral _randSpectrum;
 
     //PDF description
-    std::vector<double> ProtonPulseSpectrum();
-
+    std::vector<double> setSpectrum();
 
   };
 

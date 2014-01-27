@@ -1,23 +1,21 @@
-//
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.7 2013/03/28 17:21:11 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.cc,v 1.8 2014/01/27 22:20:17 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/03/28 17:21:11 $
+// $Date: 2014/01/27 22:20:17 $
 //
-// Original author Gianni Onorato
-//
+// Original author: Gianni Onorato
+//                  Kyle Knoepfel (significant updates)
+
+// Mu2e includes
+#include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
 
 // Framework includes
-#include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-//C++ includes
+// C++ includes
+#include <iostream>
 #include <cmath>
-#include <fstream>
-//#include <utility>
-//CLHEP includes
-#include "CLHEP/Random/RandFlat.h"
 
 // The following defines the proton pulse shape parameters (pdf width,
 // pdf step and differential distribution).  Please note that it is
@@ -25,58 +23,46 @@
 // pulse during framework jobs, and then to convolute the obtained
 // timing distributions with the desired shape after the fact.
 //
-// The shape below supersedes "ProtonPulseSpectrum.txt" and is current
-// as of Mar. 2013.  Also note that in any framework jobs that have
-// the proton pulse shape enabled, the center of the pulse will be
-// shifted 200 ns wrt 0.
-
-using namespace std;
-
-static const double _PDFwidth = 400; //time in nanosecond
-static const double _PDFstep  = 2.; 
-static const string _FILEname = "ConditionsService/data/ProtonPulseSpectrum_01.txt";
+// Previous read-in tables (as of Jan. 27, 2014) are deprecated, as
+// the pdf width and stepsize needed to be explicitly stated because
+// the tables were only one column wide.  
+//
+// Please note that no pdf interpolation is currently supported for
+// the proton time pulse.
 
 namespace mu2e{
   
   ProtonPulseRandPDF::ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine):
-    _nBinsSpectrum( calculateNBins() ),
-    _randSpectrum(engine, &(ProtonPulseSpectrum()[0]), _nBinsSpectrum )
+    _pulseShape ( loadTable<2>( "ConditionsService/data/ProtonPulseSpectrum_02.txt", false ) ),
+    _acdipole   ( loadTable<2>( "ConditionsService/data/ACdipoleTransmissionFunction.txt"  ) ),
+    _spectrum   ( setSpectrum() ),
+    _timeMin    ( _pulseShape(0,0) ),
+    _timeMax    ( _pulseShape( _pulseShape.getNrows()-1, 0 ) ),
+    _randSpectrum(engine, &_spectrum.front(), _pulseShape.getNrows() )
   {
   }   
   
-  ProtonPulseRandPDF::~ProtonPulseRandPDF()
-  {}
-  
   double ProtonPulseRandPDF::fire() {
-    
-    return _PDFwidth * _randSpectrum.fire();
-    
-  }
-  
-  int ProtonPulseRandPDF::calculateNBins() {
-    
-    int nbins = int(_PDFwidth / _PDFstep);
-    return nbins;
-  }
-  
-  vector<double> ProtonPulseRandPDF::ProtonPulseSpectrum() {
 
-    int count = 0;
+    static const double pdfWidth = _timeMax-_timeMin;
+    return pdfWidth*(_randSpectrum.fire() - 0.5) ; // subtractive constant centers pulse at 0.
     
-    vector<double> spectrum;
-    ConfigFileLookupPolicy findConfig;
-    const string infile = findConfig( _FILEname );
-    fstream inst(infile.c_str(), ios::in);
-    if (!inst.is_open()) {
-      throw cet::exception("ProductNotFound")
-	<< "No proton spill input file found";
+  }
+  
+  std::vector<double> ProtonPulseRandPDF::setSpectrum() {
+
+    std::vector<double> shape;
+    for ( unsigned iRow(0) ; iRow < _pulseShape.getNrows() ; iRow++ ) { 
+      const double time          = _pulseShape( iRow, 0 );
+      const unsigned acdipoleRow = std::abs( time ) > 200. ? 0 : _acdipole.findLowerBoundRow( time );
+
+      const double pulseWeight    = _pulseShape( iRow        );
+      const double acdipoleWeight = _acdipole  ( acdipoleRow );
+ 
+      shape.push_back( pulseWeight*acdipoleWeight );
     }
-    double invalue;
-    while (!(inst.eof())) {
-      inst >> invalue;
-      count++;
-      spectrum.push_back(invalue);
-    }
-    return spectrum;
+    
+    return shape;
+
   }
 }

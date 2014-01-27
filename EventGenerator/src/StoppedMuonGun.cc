@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: StoppedMuonGun.cc,v 1.5 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: StoppedMuonGun.cc,v 1.6 2014/01/27 22:20:17 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/01/27 22:20:17 $
 //
 // Original author KLG somewhat based on ConversionGun
 //
@@ -189,7 +189,7 @@ namespace mu2e {
                                        300, 0., 2000. );
     _hpulsedelay   = tfdir.make<TH1F>( "hpdelay",
                                        "Production delay due to the proton pulse;(ns)",
-                                       60, 0., 300. );
+                                       60, -150., 150. );
     _hxyPos        = tfdir.make<TH2F>( "hxyPos",
                                        "Conversion Electron (x,y) at Production;(mm)",
                                        60,  -120., 120., 60, -120., 120. );

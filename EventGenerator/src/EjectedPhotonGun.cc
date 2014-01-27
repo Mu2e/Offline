@@ -3,9 +3,9 @@
 // Simulate the photons coming from the stopping target when muons are captured
 // by an Al nucleus.
 // //
-// $Id: EjectedPhotonGun.cc,v 1.15 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: EjectedPhotonGun.cc,v 1.16 2014/01/27 22:20:17 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/01/27 22:20:17 $
 //
 // Original author Gianni Onorato
 //
@@ -128,7 +128,7 @@ namespace mu2e {
       _hphi          = tfdir.make<TH1D>( "hphi",          "Photon azimuth;(radians)",               100,  -M_PI,  M_PI  );
       _htime         = tfdir.make<TH1D>( "htime",         "Photon time;(ns)",                       210,  -200.,  3000. );
       _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 300, 0., 2000. );
-      _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)",      60, 0.,  300. );
+      _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)",      60, -150.,  150. );
       _hyx           = tfdir.make<TH2D>( "hxyPos",         "Ejected photons (x,y) at Production;(mm);(mm)",
                                          60,  -120., 120., 60, -120., 120. );
       _hrz           = tfdir.make<TH2D>( "hrzPos",         "Ejected photonsd (z,r) at Production;(mm);(mm)",

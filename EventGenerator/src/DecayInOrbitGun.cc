@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.60 2013/07/22 18:57:42 knoepfel Exp $
+// $Id: DecayInOrbitGun.cc,v 1.61 2014/01/27 22:20:17 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/07/22 18:57:42 $
+// $Date: 2014/01/27 22:20:17 $
 //
 // Original author Rob Kutschke
 //
@@ -149,7 +149,7 @@ namespace mu2e {
       _hphi          = tfdir.make<TH1D>( "hphi",          "DIO azimuth",                    100,  -M_PI,   M_PI   );
       _ht            = tfdir.make<TH1D>( "ht",            "DIO time ", 210, -200., 3000. );
       _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 300, 0., 2000. );
-      _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, 0., 300. );
+      _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, -150., 150. );
     }
 
     _fGenerator = unique_ptr<FoilParticleGenerator>

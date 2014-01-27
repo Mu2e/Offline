@@ -3,9 +3,9 @@
 // Based on Ivano Sarra's model described in mu2e Doc 665-v2
 // add internal conversion, 11/2011 rhb
 //
-// $Id: PiCapture.cc,v 1.40 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: PiCapture.cc,v 1.41 2014/01/27 22:20:17 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/01/27 22:20:17 $
 //
 // Original author Rob Kutschke/P. Shanahan
 //
@@ -124,7 +124,7 @@ namespace mu2e {
       _hphi        = tfdir.make<TH1D>( "hphi",    "PiCapture azimuth",                100,  -M_PI,   M_PI );
       _ht          = tfdir.make<TH1D>( "ht",     "PiCapture time ",                  210,   -200.,  2000. );
       _hmudelay    = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 600, 0., 3000. );
-      _hpulsedelay = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, 0., 300. );  
+      _hpulsedelay = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)", 60, -150., 150. );  
       _hFoilNumber = tfdir.make<TH1D>( "hFoilNumber", "Foil Number", 20,0.,20.);
       
     }

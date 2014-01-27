@@ -3,9 +3,9 @@
 // from a random spot within the target system at
 // a random time during the accelerator cycle.
 //
-// $Id: BremElectronGun.cc,v 1.1 2013/11/27 16:04:23 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2013/11/27 16:04:23 $
+// $Id: BremElectronGun.cc,v 1.2 2014/01/27 22:20:17 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/01/27 22:20:17 $
 //
 // Original author Rob Kutschke
 //
@@ -201,7 +201,7 @@ namespace mu2e {
                                        300, 0., 2000. );
     _hpulsedelay   = tfdir.make<TH1F>( "hpdelay",
                                        "Production delay due to the proton pulse;(ns)",
-                                       60, 0., 300. );
+                                       60, -150., 150. );
     _hxyPos        = tfdir.make<TH2F>( "hxyPos",
                                        "BremElectron Electron (x,y) at Production;(mm)",
                                        60,  -120., 120., 60, -120., 120. );

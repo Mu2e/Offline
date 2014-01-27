@@ -4,9 +4,9 @@
 // on an Al nucleus.  Use the MECO distribution for the kinetic energy of the
 // protons.
 //
-// $Id: EjectedProtonGun.cc,v 1.42 2013/09/22 22:29:16 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/09/22 22:29:16 $
+// $Id: EjectedProtonGun.cc,v 1.43 2014/01/27 22:20:17 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/01/27 22:20:17 $
 //
 // Original author Rob Kutschke, heavily modified by R. Bernstein
 //
@@ -134,7 +134,7 @@ namespace mu2e {
       _hphi          = tfdir.make<TH1D>( "hphi",          "Proton azimuth;(radians)",               100,  -M_PI,  M_PI  );
       _htime         = tfdir.make<TH1D>( "htime",         "Proton time;(ns)",                       210,  -200.,  3000. );
       _hmudelay      = tfdir.make<TH1D>( "hmudelay",      "Production delay due to muons arriving at ST;(ns)", 300, 0., 2000. );
-      _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)",      60, 0.,  300. );
+      _hpulsedelay   = tfdir.make<TH1D>( "hpdelay",       "Production delay due to the proton pulse;(ns)",      60, -150.,  150. );
       _hyx           = tfdir.make<TH2D>( "hxyPos",         "Conversion Electron (x,y) at Production;(mm);(mm)",
                                          60,  -120., 120., 60, -120., 120. );
       _hrz           = tfdir.make<TH2D>( "hrzPos",         "Conversion Electron (z,r) at Production;(mm);(mm)",
