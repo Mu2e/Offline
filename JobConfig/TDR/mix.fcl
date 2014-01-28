@@ -66,9 +66,10 @@ outputs: {
     }
 }
 
-// FIXME: the numbers are for 31.5M protons/uBunch and for TS poly in config
-physics.filters.dioMixer.detail.mean     :   315.28   // 325. // 6.7
-physics.filters.neutronMixer.detail.mean :   647.67   // 579.5 // 323.7
-physics.filters.photonMixer.detail.mean  :   336.21   // 380.5 // 49.8
-physics.filters.protonMixer.detail.mean  :    52.75   // 28.5 // 39.3
-physics.filters.flashMixer.detail.mean  :   3606.3 // 200ns time cut
+// 31M protons/uBunch with poly liner
+// 200 ns time cut on beam flash step points
+physics.filters.flashMixer.detail.mean  :   3549.1
+physics.filters.dioMixer.detail.mean     :   345.71
+physics.filters.neutronMixer.detail.mean :   637.40
+physics.filters.photonMixer.detail.mean  :   330.88
+physics.filters.protonMixer.detail.mean  :    51.91
