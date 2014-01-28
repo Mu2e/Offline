@@ -1,0 +1,74 @@
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+BEGIN_PROLOG
+stepInstanceNames   : [ "tracker", "virtualdetector", "calorimeter", "calorimeterRO" ]
+mixerTemplate: {
+   module_type         : MixMCEvents
+   fileNames           : @nil
+   readMode            : randomLimReplace
+   wrapFiles           : true
+   coverageFraction    : 10000
+   detail : {
+     mean                : @nil
+     genModuleLabel      : generate
+     g4ModuleLabel       : detectorFilter
+     g4StatusTag         : g4run
+     stepInstanceNames   : @local::stepInstanceNames
+     doPointTrajectories : false
+   }
+}
+END_PROLOG
+
+process_name : mix
+
+source : { module_type : RootInput }
+
+services : {
+  message               : @local::default_message
+  TFileService          : { fileName : "hist_mix.root" }
+  RandomNumberGenerator : { }
+
+  user : {
+    SeedService            : @local::automaticSeeds
+  }
+}
+
+physics: {
+
+  filters: {
+   dioMixer     : @local::mixerTemplate
+   protonMixer  : @local::mixerTemplate
+   neutronMixer : @local::mixerTemplate
+   photonMixer  : @local::mixerTemplate
+   flashMixer   : @local::mixerTemplate
+  }
+
+  analyzers: {
+    genCountLogger: {
+      module_type: GenEventCountReader
+    }
+  }
+
+  p1 : [dioMixer, protonMixer, neutronMixer, photonMixer, flashMixer]
+  trigger_paths  : [p1]
+
+  out : [ genCountLogger, fullOutput ]
+  end_paths      : [out]
+
+}
+
+outputs: {
+    fullOutput : {
+        module_type : RootOutput
+        fileName    : "data_mix.root"
+    }
+}
+
+// FIXME: the numbers are for 31.5M protons/uBunch and for TS poly in config
+physics.filters.dioMixer.detail.mean     :   315.28   // 325. // 6.7
+physics.filters.neutronMixer.detail.mean :   647.67   // 579.5 // 323.7
+physics.filters.photonMixer.detail.mean  :   336.21   // 380.5 // 49.8
+physics.filters.protonMixer.detail.mean  :    52.75   // 28.5 // 39.3
+physics.filters.flashMixer.detail.mean  :   3606.3 // 200ns time cut
