@@ -1,0 +1,77 @@
+// Configuration to mix just the background hits, with no signal.
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+BEGIN_PROLOG
+stepInstanceNames   : [ "tracker", "virtualdetector", "calorimeter", "calorimeterRO" ]
+mixerTemplate: {
+   module_type         : MixMCEvents
+   fileNames           : @nil
+   readMode            : randomLimReplace
+   wrapFiles           : true
+   coverageFraction    : 10000
+   detail : {
+     mean                : @nil
+     genModuleLabel      : generate
+     g4ModuleLabel       : detectorFilter
+     g4StatusTag         : g4run
+     stepInstanceNames   : @local::stepInstanceNames
+     doPointTrajectories : false
+   }
+}
+END_PROLOG
+
+process_name : mixBG
+
+source : { module_type : EmptyEvent maxEvents :  @nil }
+
+services : {
+  message               : @local::default_message
+  TFileService          : { fileName : "hist_mixBG.root" }
+  RandomNumberGenerator : { }
+
+  user : {
+    SeedService            : @local::automaticSeeds
+  }
+}
+
+physics: {
+
+  filters: {
+   dioMixer     : @local::mixerTemplate
+   protonMixer  : @local::mixerTemplate
+   neutronMixer : @local::mixerTemplate
+   photonMixer  : @local::mixerTemplate
+   flashMixer   : @local::mixerTemplate
+  }
+
+  analyzers: {
+    genCountLogger: {
+      module_type: GenEventCountReader
+    }
+  }
+
+  p1 : [dioMixer, protonMixer, neutronMixer, photonMixer, flashMixer]
+  trigger_paths  : [p1]
+
+  out : [ genCountLogger, fullOutput ]
+  end_paths      : [out]
+
+}
+
+outputs: {
+    fullOutput : {
+        module_type : RootOutput
+        fileName    : "data_mixBG.root"
+    }
+}
+
+// 31M protons/uBunch with poly liner
+// 200 ns time cut on beam flash step points
+physics.filters.flashMixer.detail.mean  :   3549.1
+physics.filters.dioMixer.detail.mean     :   345.71
+physics.filters.neutronMixer.detail.mean :   637.40
+physics.filters.photonMixer.detail.mean  :   330.88
+physics.filters.protonMixer.detail.mean  :    51.91
