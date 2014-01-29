@@ -57,7 +57,7 @@ physics: {
     }
   }
 
-  p1 : [dioMixer, protonMixer, neutronMixer, photonMixer, flashMixer]
+  p1 : [genCounter, dioMixer, protonMixer, neutronMixer, photonMixer, flashMixer]
   trigger_paths  : [p1]
 
   out : [ genCountLogger, fullOutput ]
