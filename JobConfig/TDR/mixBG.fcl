@@ -39,6 +39,10 @@ services : {
 
 physics: {
 
+  producers: {
+    genCounter: { module_type: GenEventCounter }
+  }
+
   filters: {
    dioMixer     : @local::mixerTemplate
    protonMixer  : @local::mixerTemplate
