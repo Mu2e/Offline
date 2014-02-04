@@ -38,7 +38,10 @@ namespace mu2e {
   public:
 
     RootTreeSampler(art::RandomNumberGenerator::base_engine_t& engine,
-                    const fhicl::ParameterSet& pset);
+                    const fhicl::ParameterSet& pset,
+                    // a rudimentary protection against wrong input trees, which
+                    // can cause memory overwrites
+                    unsigned nBranchLeaves);
 
     const Record& fire() { return records_.at(randFlat_.fireInt(records_.size())); }
 
@@ -73,7 +76,8 @@ namespace mu2e {
 
   template<class Record> RootTreeSampler<Record>::
   RootTreeSampler(art::RandomNumberGenerator::base_engine_t& engine,
-                  const fhicl::ParameterSet& pset)
+                  const fhicl::ParameterSet& pset,
+                  unsigned nBranchLeaves)
     : randFlat_(engine)
   {
     const auto inputFiles(pset.get<std::vector<std::string> >("inputFiles"));
@@ -118,7 +122,7 @@ namespace mu2e {
 
       TTree *nt = dynamic_cast<TTree*>(infile->Get(treeName.c_str()));
       if(!nt) {
-        throw cet::exception("BADINPUT")<<"Could not get tree \""<<treeName
+        throw cet::exception("BADINPUT")<<"RootTreeSampler: Could not get tree \""<<treeName
                                         <<"\" from file \""<<infile->GetName()
                                         <<"\"\n";
       }
@@ -133,6 +137,22 @@ namespace mu2e {
 
       Record rr;
       TBranch *bb = nt->GetBranch(branchName.c_str());
+      if(!bb) {
+        throw cet::exception("BADINPUT")<<"RootTreeSampler: Could not get branch \""<<branchName
+                                        <<"\" in tree \""<<treeName
+                                        <<"\" from file \""<<infile->GetName()
+                                        <<"\"\n";
+      }
+
+      if(bb->GetNleaves() != nBranchLeaves) {
+        throw cet::exception("BADINPUT")<<"RootTreeSampler: wrong number of leaves: expect "
+                                        <<nBranchLeaves<<", but branch \""<<branchName
+                                        <<"\", tree \""<<treeName
+                                        <<"\" in file \""<<infile->GetName()
+                                        <<"\" has "<<bb->GetNleaves()
+                                        <<"\n";
+      }
+
       bb->SetAddress(&rr);
 
       records_.reserve(records_.size()

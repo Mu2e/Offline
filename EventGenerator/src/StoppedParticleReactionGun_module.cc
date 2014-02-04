@@ -11,7 +11,6 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandomEngine.h"
-#include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGeneral.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
@@ -51,16 +50,13 @@ namespace mu2e {
       float y;
       float z;
       float t;
-      float tauNormalized; // proper time normalized to lifetime
 
-      InputStop() : x(), y(), z(), t(), tauNormalized() {}
+      InputStop() : x(), y(), z(), t() {}
     };
   } // namespace {}
 
   //================================================================
   class StoppedParticleReactionGun : public art::EDProducer {
-    bool computeWeightFromProperTime_;
-
     fhicl::ParameterSet psphys_;
 
     PDGCode::type pdgId_;
@@ -81,7 +77,6 @@ namespace mu2e {
     int verbosityLevel_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
-    CLHEP::RandFlat randFlat_;
     CLHEP::RandGeneral randSpectrum_;
     RandomUnitSphere randomUnitSphere_;
 
@@ -96,8 +91,7 @@ namespace mu2e {
 
   //================================================================
   StoppedParticleReactionGun::StoppedParticleReactionGun(const fhicl::ParameterSet& pset)
-    : computeWeightFromProperTime_(pset.get<bool>("computeWeightFromProperTime", false))
-    , psphys_(pset.get<fhicl::ParameterSet>("physics"))
+    : psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , pdgId_(PDGCode::type(psphys_.get<int>("pdgId")))
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
     , spectrumVariable_(parseSpectrumVar(psphys_.get<std::string>("spectrumVariable")))
@@ -106,15 +100,11 @@ namespace mu2e {
     , spectrum_(parseSpectrumShape(psphys_, pdgId_, &elow_, &ehi_))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
-    , randFlat_(eng_)
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
     , randomUnitSphere_(eng_)
-    , stops_(eng_, pset.get<fhicl::ParameterSet>("muonStops"))
+    , stops_(eng_, pset.get<fhicl::ParameterSet>("muonStops"), sizeof(InputStop)/sizeof(float))
   {
     produces<mu2e::GenParticleCollection>();
-    if(computeWeightFromProperTime_) {
-      produces<mu2e::EventWeight>();
-    }
 
     if(verbosityLevel_ > 0) {
       std::cout<<"StoppedParticleReactionGun: using = "
@@ -204,12 +194,6 @@ namespace mu2e {
                          stop.t);
 
     event.put(std::move(output));
-
-    if(computeWeightFromProperTime_) {
-      const double weight = exp(-stop.tauNormalized);
-      std::unique_ptr<EventWeight> pw(new EventWeight(weight));
-      event.put(std::move(pw));
-    }
   }
 
   //================================================================
