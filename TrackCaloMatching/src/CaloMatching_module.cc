@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.19 2013/06/13 16:39:09 murat Exp $
+// $Id: CaloMatching_module.cc,v 1.20 2014/02/04 00:26:59 murat Exp $
 // $Author: murat $
-// $Date: 2013/06/13 16:39:09 $
+// $Date: 2014/02/04 00:26:59 $
 //
 // Original author G. Pezzullo
 //
@@ -155,8 +155,9 @@ namespace mu2e {
       produces<TrackClusterLink>();
       _iname = _fdir.name() + _tpart.name();
     }
+
     virtual ~CaloMatching() {
-      delete _cluTool;
+      //      delete _cluTool;
     }
 
     void beginJob();
@@ -271,7 +272,7 @@ namespace mu2e {
 
 
     bool _firstEvent;
-    CaloClusterTools *_cluTool;
+    //    CaloClusterTools *_cluTool;
 
   };
 
@@ -714,24 +715,23 @@ namespace mu2e {
     
       //    chi2_best = chi2_max;
       for (int icl=0; icl<nclusters; icl++) {
-	//-----------------------------------------------------------------------------
-	// why it is 'indexVecCluster[j]' and not just 'j' ?
-	//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// why it is 'indexVecCluster[j]' and not just 'j' ?
+//-----------------------------------------------------------------------------
 	cl  = &(*caloClusters).at(icl);
-	_cluTool = new CaloClusterTools(*cl);
+	CaloClusterTools cluTool(*cl);
 
-	if (cl->vaneId() != tmpVane)    goto NEXT_CLUSTER;
-	if (cl->energyDep() < _emcEnergyThreshold)    goto NEXT_CLUSTER;
-	if (std::fabs(_cluTool->timeFasterCrystal() - _recoTime ) > _deltaTimeTollerance)    goto NEXT_CLUSTER;
-	//-----------------------------------------------------------------------------
-	// 2013-03-24 P.Murat: cluster center of gravity is determined in the GLOBAL 
-	//                     coordinate system, 
-	// clustering needs to be fixed to define cluster coordinates in the local frame system
-	// for now - transform back to the local coordinate system
-	//-----------------------------------------------------------------------------
-	// cogVaneFrame                    = clu.cog3Vector();
+	if (cl->vaneId() != tmpVane)                                                    goto NEXT_CLUSTER;
+	if (cl->energyDep() < _emcEnergyThreshold)                                      goto NEXT_CLUSTER;
+	if (std::fabs(cluTool.timeFasterCrystal() - _recoTime ) > _deltaTimeTollerance) goto NEXT_CLUSTER;
+//-----------------------------------------------------------------------------
+// 2013-03-24 P.Murat: cluster center of gravity is determined in the GLOBAL 
+//                     coordinate system, 
+// clustering needs to be fixed to define cluster coordinates in the local frame system
+// for now - transform back to the local coordinate system
+//-----------------------------------------------------------------------------
+        // cogVaneFrame                    = clu.cog3Vector();
 	if(geom->hasElement<VaneCalorimeter>()){
-	  CaloClusterTools cluTool(*cl);
 	  tmpCluCryMaxEdepRow      = cluTool.cryEnergydepMaxRow();
 	  tmpCluCryMaxEdepColumn   = cluTool.cryEnergydepMaxColumn();
 	  tmpWsize                 = cluTool.wSize();
