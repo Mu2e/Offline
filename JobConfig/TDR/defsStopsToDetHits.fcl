@@ -30,12 +30,17 @@ physics : {
 
         generate: {
             module_type: StoppedParticleReactionGun
-            inputFiles: @nil // use --fclinput for grid submission
+	    verbosityLevel : 1
 
-            averageStopsToUseLimit: 500000
-            treeName: "stoppedMuonDumper/stops"
-            verbosityLevel : 1
             physics: @nil
+
+            muonStops : {
+                inputFiles: @nil // use --fclinput for grid submission
+                averageNumRecordsToUse: 500000
+                treeName: "stoppedMuonDumper/stops"
+                branchName : "stops"
+                verbosityLevel : 1
+            }
         }
 
         genCounter: {
