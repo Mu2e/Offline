@@ -1,8 +1,8 @@
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.8 2014/01/27 22:20:17 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.cc,v 1.9 2014/02/07 14:48:44 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/01/27 22:20:17 $
+// $Date: 2014/02/07 14:48:44 $
 //
 // Original author: Gianni Onorato
 //                  Kyle Knoepfel (significant updates)
@@ -40,7 +40,7 @@ namespace mu2e{
     _timeMax    ( _pulseShape( _pulseShape.getNrows()-1, 0 ) ),
     _randSpectrum(engine, &_spectrum.front(), _pulseShape.getNrows() )
   {
-  }   
+  }  
   
   double ProtonPulseRandPDF::fire() {
 

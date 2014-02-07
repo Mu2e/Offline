@@ -4,9 +4,9 @@
 //  
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.hh,v 1.4 2014/01/27 22:20:17 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.hh,v 1.5 2014/02/07 14:48:44 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/01/27 22:20:17 $
+// $Date: 2014/02/07 14:48:44 $
 //
 // Original author: Gianni Onorato
 //                  Kyle Knoepfel (significant updates)
@@ -44,7 +44,7 @@ namespace mu2e {
     std::vector<double> _spectrum;
     double _timeMin;
     double _timeMax;
-    CLHEP:: RandGeneral _randSpectrum;
+    CLHEP::RandGeneral _randSpectrum;
 
     //PDF description
     std::vector<double> setSpectrum();
