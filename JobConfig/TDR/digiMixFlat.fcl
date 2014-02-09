@@ -1,0 +1,17 @@
+// See digiMixConversion.fcl for instructions.
+//
+// Andrei Gaponenko, 2014
+
+#include "JobConfig/TDR/defsDigiMix.fcl"
+
+process_name : DigiMixFlat
+services.TFileService.fileName: "histDigiMixFlat.root"
+outputs.detectorOutput.fileName:  "dataDigiMixFlat.root"
+
+physics.producers.generate.physics: {
+    pdgId : 11
+    spectrumShape: flat
+    spectrumVariable: totalEnergy
+    elow: 95.  // MeV
+    ehi: 105. // MeV
+}
