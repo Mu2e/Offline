@@ -2,6 +2,13 @@
 
            Release notes for Mu2e Offline software, v4_1_2
 
+ 7) February 10, 2014 ehrlich
+    Added aluminum sheets as absorber between CRV counters
+    Removed TSL CRV shield
+    CosmicRayShieldGeom
+    Mu2eG4/test/geom_01.txt
+    Mu2eG4/src/constructCRV.cc
+
  6) February 5, 2014 knoepfel
 
     Add new random number-pair generator that uses the accept/reject
