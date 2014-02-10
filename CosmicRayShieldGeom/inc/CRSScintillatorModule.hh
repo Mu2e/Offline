@@ -5,9 +5,9 @@
 //
 
 //
-// $Id: CRSScintillatorModule.hh,v 1.7 2013/09/13 06:42:44 ehrlich Exp $
+// $Id: CRSScintillatorModule.hh,v 1.8 2014/02/10 14:23:03 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/09/13 06:42:44 $
+// $Date: 2014/02/10 14:23:03 $
 //
 // Original author KLG somewhat based on Rob Kutschke' Sector
 //
@@ -16,6 +16,7 @@
 
 #include "CosmicRayShieldGeom/inc/CRSScintillatorModuleId.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
+#include "CosmicRayShieldGeom/inc/CRSAbsorberLayer.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -67,6 +68,26 @@ namespace mu2e
       return _layers.at(moduleid.getLayerNumber()).getBar(moduleid);
     }
 
+    const std::vector<CRSAbsorberLayer>& getAbsorberLayers() const
+    {
+      return _absorberLayers;
+    }
+
+    int nAbsorberLayers() const
+    {
+      return _absorberLayers.size();
+    }
+
+    const CRSAbsorberLayer& getAbsorberLayer ( int n ) const 
+    {
+      return _absorberLayers.at(n);
+    }
+
+    const CRSAbsorberLayer& getAbsorberLayer ( CRSScintillatorLayerId const & lid) const 
+    {
+      return _absorberLayers.at(lid.getLayerNumber());
+    }
+
     // Formatted string embedding the id of the module.
     std::string name( std::string const & base ) const;
 
@@ -78,6 +99,7 @@ namespace mu2e
     CRSScintillatorModuleId _id;
 
     std::vector<CRSScintillatorLayer> _layers;
+    std::vector<CRSAbsorberLayer> _absorberLayers;
   };
 
 }  //namespace mu2e

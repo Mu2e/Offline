@@ -3,9 +3,9 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.14 2013/09/13 06:42:44 ehrlich Exp $
+// $Id: CosmicRayShieldMaker.hh,v 1.15 2014/02/10 14:23:03 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/09/13 06:42:44 $
+// $Date: 2014/02/10 14:23:03 $
 //
 // Original author KLG
 //
@@ -29,7 +29,9 @@ namespace mu2e
 
     void parseConfig( SimpleConfig const & _config );
     void makeShields();
-    void makeSingleShield(const std::vector<double> &counterHalfLengths, const char *name, 
+    void makeSingleShield(const std::vector<double> &counterHalfLengths, 
+                          const std::vector<double> &absorberHalfLengths,
+                          const char *name, 
                           const CLHEP::Hep3Vector &firstCounter, 
                           const CLHEP::Hep3Vector &layerOffset,
                           const CLHEP::Hep3Vector &VTNCLargeGap,
@@ -91,7 +93,7 @@ namespace mu2e
     CLHEP::Hep3Vector  _firstCounterTST;
 
     std::string _scintillatorBarMaterialName;
-    std::string _scintillatorBarPigmentationMaterialName;
+    std::string _absorberMaterialName;
   };
 
 }  //namespace mu2e

@@ -1,9 +1,9 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.19 2013/10/25 05:06:33 ehrlich Exp $
+// $Id: constructCRV.cc,v 1.20 2014/02/10 14:23:03 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/10/25 05:06:33 $
+// $Date: 2014/02/10 14:23:03 $
 //
 // Original author KLG
 //
@@ -126,9 +126,8 @@ namespace mu2e
         {
 
           //construct a G4Box around all bars of a layer to speed up the surface checks
-          std::vector<double> layerHalflengths(3);
-          CLHEP::Hep3Vector   layerCenterInMu2e;
-          ilayer->getDimensions(layerHalflengths, layerCenterInMu2e);
+          const std::vector<double> &layerHalflengths=ilayer->getHalfLengths();
+          const CLHEP::Hep3Vector &layerCenterInMu2e=ilayer->getPosition();
           CLHEP::Hep3Vector layerAirOffset = layerCenterInMu2e - parentCenterInMu2e;
 
           G4Material* hallAirMaterial = findMaterialOrThrow(hallAirMaterialName);
@@ -177,6 +176,56 @@ namespace mu2e
             }
           } //ibar
         } //ilayer
+
+        //absorber sheet
+        const std::vector<CRSAbsorberLayer> &absorberLayers = imodule->getAbsorberLayers();
+        std::vector<CRSAbsorberLayer>::const_iterator iabsorberlayer;
+        for(iabsorberlayer=absorberLayers.begin(); iabsorberlayer!=absorberLayers.end(); ++iabsorberlayer) 
+        {
+          const std::vector<double> &absorberLayerHalflengths=iabsorberlayer->getHalfLengths();
+          const CLHEP::Hep3Vector &absorberLayerCenterInMu2e=iabsorberlayer->getPosition();
+          CLHEP::Hep3Vector absorberLayerAirOffset = absorberLayerCenterInMu2e - parentCenterInMu2e;
+
+          const std::string &absorberMaterialName = shield.getAbsorberMaterialName();
+          G4Material* absorberMaterial = findMaterialOrThrow(absorberMaterialName);
+
+          std::string absorberName = iabsorberlayer->name("CRSAbsorber_");
+
+          G4VSolid* absorberSolid = new G4Box(absorberName,
+                                              absorberLayerHalflengths[0],
+                                              absorberLayerHalflengths[1],
+                                              absorberLayerHalflengths[2]);
+
+          G4LogicalVolume* absorberLogical = new G4LogicalVolume(absorberSolid,
+                                                                 absorberMaterial,
+                                                                 absorberName);
+
+          if(!scintillatorShieldVisible) 
+          {
+            absorberLogical->SetVisAttributes(G4VisAttributes::Invisible);
+          }
+          else 
+          {
+            G4Colour  darkorange  (.45, .25, .0);
+            G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, darkorange));
+            visAtt->SetForceSolid(absorberSolid);
+            visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
+            absorberLogical->SetVisAttributes(visAtt);
+          }
+
+          G4VPhysicalVolume* pv = new G4PVPlacement(NULL,
+                                                    absorberLayerAirOffset,
+                                                    absorberLogical,
+                                                    absorberName,
+                                                    parent.logical,
+                                                    false,
+                                                    0,
+                                                    false);
+          if(doSurfaceCheck) 
+          {
+            checkForOverlaps( pv, _config, verbosityLevel>0);
+          }
+        } //iabsorber
       } //imodule
     } //ishield
   } //construct CRV

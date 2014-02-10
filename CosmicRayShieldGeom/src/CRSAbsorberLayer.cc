@@ -1,8 +1,8 @@
 //
-// Representation of one Scintillator Layer in CosmicRayShield
+// Representation of one Absorber Layer in CosmicRayShield
 //
 //
-// $Id: CRSScintillatorLayer.cc,v 1.7 2014/02/10 14:23:03 ehrlich Exp $
+// $Id: CRSAbsorberLayer.cc,v 1.1 2014/02/10 14:23:03 ehrlich Exp $
 // $Author: ehrlich $
 // $Date: 2014/02/10 14:23:03 $
 //
@@ -11,7 +11,7 @@
 
 #include <sstream>
 
-#include "CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
+#include "CosmicRayShieldGeom/inc/CRSAbsorberLayer.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
 #ifndef __CINT__
@@ -23,15 +23,15 @@ using CLHEP::Hep3Vector;
 namespace mu2e 
 {
 
-  CRSScintillatorLayer::CRSScintillatorLayer():
+  CRSAbsorberLayer::CRSAbsorberLayer():
     _id(CRSScintillatorLayerId())
   {}
 
-  CRSScintillatorLayer::CRSScintillatorLayer(CRSScintillatorLayerId const& id):
+  CRSAbsorberLayer::CRSAbsorberLayer(CRSScintillatorLayerId const& id):
     _id(id)
   {}
 
-  string CRSScintillatorLayer::name( string const& base ) const
+  string CRSAbsorberLayer::name( string const& base ) const
   {
     ostringstream os;
     os << base

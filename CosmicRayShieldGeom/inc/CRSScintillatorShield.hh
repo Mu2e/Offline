@@ -3,9 +3,9 @@
 //
 // Representation of one ScintillatorShield in CosmicRayShield.
 //
-// $Id: CRSScintillatorShield.hh,v 1.6 2013/09/13 06:42:44 ehrlich Exp $
+// $Id: CRSScintillatorShield.hh,v 1.7 2014/02/10 14:23:03 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/09/13 06:42:44 $
+// $Date: 2014/02/10 14:23:03 $
 //
 // Original author KLG based on Rob Kutschke's Device
 //
@@ -73,6 +73,11 @@ namespace mu2e
       return _barDetails;
     }
 
+    const std::string &getAbsorberMaterialName() const 
+    {
+      return _absorberMaterialName;
+    }
+
     // Formatted string embedding the id of the shield.
     std::string name( std::string const & base ) const;
 
@@ -89,6 +94,8 @@ namespace mu2e
 
     // Detailed info about scintillator bars assuming they are the same for all bars within a shield
     CRSScintillatorBarDetail _barDetails;
+
+    std::string _absorberMaterialName;
   };
 
 } //namespace mu2e
