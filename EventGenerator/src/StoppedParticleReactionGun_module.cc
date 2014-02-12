@@ -20,16 +20,14 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "ConditionsService/inc/PhysicsParams.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/EventWeight.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 #include "Mu2eUtilities/inc/SimpleSpectrum.hh"
@@ -37,9 +35,6 @@
 #include "Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Mu2eUtilities/inc/Table.hh"
 #include "Mu2eUtilities/inc/RootTreeSampler.hh"
-
-#include "TTree.h"
-#include "TFile.h"
 
 namespace mu2e {
 
