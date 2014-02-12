@@ -2,6 +2,9 @@
 // made by the StoppedParticleReactionGun generator, and 0 offsets to
 // particles from other origins.
 //
+// 20140211: conversionGun handling is added; this is a kludge to keep
+// using the existing Kalman fit tuning and analysis code.
+//
 // Andrei Gaponenko, 2014
 
 #include <string>
@@ -81,12 +84,15 @@ namespace mu2e {
       for(const auto& iter : *ih) {
         if(iter.second.isPrimary()) {
           art::Ptr<SimParticle> part(ih, iter.first.asUint());
-          if(part->genParticle()->generatorId() == GenId::StoppedParticleReactionGun) {
-            (*res)[part] = rexp_.fire(mean_);
-          }
-          else {
-            (*res)[part] = 0;
-          }
+          if(part->genParticle()->generatorId() == GenId::StoppedParticleReactionGun ||
+             part->genParticle()->generatorId() == GenId::conversionGun)
+            {
+              (*res)[part] = rexp_.fire(mean_);
+            }
+          else
+            {
+              (*res)[part] = 0;
+            }
         }
       }
     }

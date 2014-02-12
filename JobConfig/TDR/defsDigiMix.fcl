@@ -1,10 +1,18 @@
 // Andrei Gaponenko, 2014
 
+BEGIN_PROLOG
+muonStops : {
+    inputFiles: @nil // use --fclinput for grid submission
+    averageNumRecordsToUse: 500000
+    treeName: "stoppedMuonDumper/stops"
+    branchName : "stops"
+    verbosityLevel : 1
+}
+END_PROLOG
+
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
-
-# Give this job a name.
 
 source : { module_type : RootInput }
 
@@ -31,16 +39,8 @@ physics : {
         generate: {
             module_type: StoppedParticleReactionGun
 	    verbosityLevel : 1
-
             physics: @nil
-
-            muonStops : {
-                inputFiles: @nil // use --fclinput for grid submission
-                averageNumRecordsToUse: 500000
-                treeName: "stoppedMuonDumper/stops"
-                branchName : "stops"
-                verbosityLevel : 1
-            }
+            muonStops : @local::muonStops
         }
 
         g4run : {

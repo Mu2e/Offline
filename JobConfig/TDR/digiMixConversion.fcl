@@ -34,8 +34,7 @@ process_name : DigiMixConversion
 services.TFileService.fileName: "histDigiMixConversion.root"
 outputs.detectorOutput.fileName:  "dataDigiMixConversion.root"
 
-physics.producers.generate.physics: {
-    pdgId : 11
-    spectrumShape: conversion
-    spectrumVariable: totalEnergy
+physics.producers.generate: {
+    module_type: StoppedMuonConversionGun
+    muonStops: @local::muonStops
 }
