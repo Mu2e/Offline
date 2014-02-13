@@ -2,9 +2,9 @@
 // This module transforms StrawDigi objects into StrawHit objects
 // It also builds the truth match map (if MC truth info for the StrawDigis exists)
 //
-// $Id: StrawHitsFromStrawDigis_module.cc,v 1.7 2014/01/18 17:33:34 brownd Exp $
+// $Id: StrawHitsFromStrawDigis_module.cc,v 1.8 2014/02/13 14:11:38 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/01/18 17:33:34 $
+// $Date: 2014/02/13 14:11:38 $
 //
 // Original author David Brown, LBNL
 //
@@ -59,7 +59,7 @@ namespace mu2e {
   };
 
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
-    _printLevel(pset.get<int>("printLevel",1)),
+    _printLevel(pset.get<int>("printLevel",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
     _strawDigis(pset.get<string>("StrawDigis","makeSD"))
     {
