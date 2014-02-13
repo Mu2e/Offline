@@ -1,14 +1,16 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.23 2014/01/13 21:45:16 ejbarnes Exp $
-// $Author: ejbarnes $
-// $Date: 2014/01/13 21:45:16 $
+// $Id: ReadKalFits_module.cc,v 1.24 2014/02/13 18:52:15 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/02/13 18:52:15 $
 //
 // Original author Rob Kutschke
 //
 
 // Mu2e includes
+#include "GeneralUtilities/inc/artHelper.hh"
+#include "MCDataProducts/inc/EventWeight.hh"
 #include "Mu2eUtilities/inc/SimpleSpectrum.hh"
 
 // Framework includes.
@@ -58,15 +60,18 @@ namespace mu2e {
 
   private:
 
+    typedef vector<string> VS;
+
     // Module label of the module that performed the fits.
     std::string _fitterModuleLabel;
     // Label of the generator.
     std::string _generatorModuleLabel;
+    // Label of the event-weighting module
+    vector<art::InputTag> _evtWtModules;
     TrkParticle _tpart;
     TrkFitDirection _fdir;
     std::string _iname;
-    // whether to weight the DIO or not
-    bool _weight; 
+
     bool haveG4BL;// = g4beamlineData.isValid();
     // diagnostic of Kalman fit
     KalFitMC _kfitmc;
@@ -89,7 +94,7 @@ namespace mu2e {
 
 
     Int_t _trkid,_eventid;
-    Float_t _diowt;
+    Double_t _evtwt; 
     Float_t g4bl_weight;
 
   };
@@ -98,9 +103,9 @@ namespace mu2e {
     art::EDAnalyzer(pset),
     _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
     _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
+    _evtWtModules( artInputTagVector( pset.get<VS>("eventWeightModules",VS() )) ),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _weight(pset.get<bool>("WeightEvents",true)),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
     _verbosity(pset.get<int>("verbosity",0)),
     _maxPrint(pset.get<int>("maxPrint",0)),
@@ -111,8 +116,8 @@ namespace mu2e {
     _hmomentum0(0),
     _hdp(0),
     _hz0(0),
-    _trkdiag(0){
-// construct the data product instance name
+    _trkdiag(0) {
+    // construct the data product instance name
     _iname = _fdir.name() + _tpart.name();
   }
 
@@ -125,17 +130,17 @@ namespace mu2e {
     _hdp        = tfs->make<TH1F>( "hdp",       "Momentum Change across Tracker",     100,   -10.,    0. );
     _hz0        = tfs->make<TH1F>( "hz0",       "z of start valid region (cm)",       100, -1500., -800. );
     _trkdiag    = _kfitmc.createTrkDiag();
-// add local branches
+    // add local branches
     _trkdiag->Branch("eventid",&_eventid,"eventid/I");
     _trkdiag->Branch("trkid",&_trkid,"trkid/I");
-    _trkdiag->Branch("diowt",&_diowt,"diowt/f");
+    _trkdiag->Branch("evtwt",&_evtwt,"evtwt/d");
     _trkdiag->Branch("g4bl_weight",&g4bl_weight,"g4bl_weight/f");
     _eventid = 0;
   }
 
   // For each event, look at tracker hits and calorimeter hits.
   void ReadKalFits::analyze(const art::Event& event) {
-//    cout << "Enter ReadKalFits:: analyze: " << _verbosity << endl;
+    //    cout << "Enter ReadKalFits:: analyze: " << _verbosity << endl;
 
     _eventid++;
     _kfitmc.findMCData(event);
@@ -153,19 +158,21 @@ namespace mu2e {
       cout << "ReadKalmanFits  for event: " << event.id() << "  Number of fitted tracks: " << trks.size() << endl;
     }
 
+    // Modify event weight
+    _evtwt = 1.;
+    for ( const auto& ievtWt : _evtWtModules ) {
+      _evtwt *= event.getValidHandle<EventWeight>( ievtWt )->weight();
+    }
+
     _hNTracks->Fill( trks.size() );
     _trkid = -1;
+
     for ( size_t i=0; i< trks.size(); ++i ){
       _trkid = i;
       KalRep const* krep = trks[i];
       if ( !krep ) continue;
 
       _kfitmc.kalDiag(krep,false);
-      // DIO spectrum weight; use the generated momenum magnitude
-      double ee = _kfitmc._mcinfo._mom;
-      _diowt = 1.0;
-      if(_weight)
-	_diowt = SimpleSpectrum::getPol58(ee);
       _kfitmc._trkdiag->Fill();
 
       // For some quantities you require the concrete representation, not
@@ -216,13 +223,9 @@ namespace mu2e {
       }
 
     }
-// if there are no tracks, enter dummies
+    // if there are no tracks, enter dummies
     if(trks.size() == 0 && _processEmpty){
       _kfitmc.kalDiag(0,false);
-      double ee = _kfitmc._mcinfo._mom;
-      _diowt = 1.0;
-      if(_weight)
-	_diowt = SimpleSpectrum::getPol58(ee);
       _kfitmc._trkdiag->Fill();
     }
   }
