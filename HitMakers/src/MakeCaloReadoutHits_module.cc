@@ -41,6 +41,7 @@
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "HitMakers/inc/CaloReadoutUtilities.hh"
@@ -51,6 +52,7 @@
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "SeedService/inc/SeedService.hh"
 
 // Other includes.
@@ -142,6 +144,8 @@ namespace mu2e {
 	 _stepPoints(pset.get<string>("calorimeterStepPoints","calorimeter")),
 	 _rostepPoints(pset.get<string>("calorimeterROStepPoints","calorimeterRO")),
 	 _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+	 _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
+	 _mbbuffer(pset.get<double>("TimeFoldingBuffer",100.0)), // nsec
 	 _messageCategory("CaloReadoutHitsMakerNew"){
 
 	 // Tell the framework what we make.
@@ -169,18 +173,20 @@ namespace mu2e {
 	 typedef std::map<int,StepPtrs > HitMap;
 
 	 
-	 int _diagLevel;  
-	 int _maxFullPrint;
-         bool _fillDetailedHit;
-         bool _caloLRUcorrection;
-	 bool _caloNonLinCorrection;
+	 int   _diagLevel;  
+	 int   _maxFullPrint;
+         bool  _fillDetailedHit;
+         bool  _caloLRUcorrection;
+	 bool  _caloNonLinCorrection;
          CLHEP::RandGaussQ _randGauss;
 
 	 std::string _stepPoints;
 	 std::string _rostepPoints;
-	 string _g4ModuleLabel;  // Name of the module that made these hits.
+	 std::string _g4ModuleLabel;   // Name of the module that made these hits.
 
-
+	 SimParticleTimeOffset _toff;  // time offset smearing
+	 double _mbtime;               // period of 1 microbunch
+	 double _mbbuffer;             // buffer on that for ghost hits (wrapping)
 
 	 const std::string _messageCategory;
 
@@ -226,7 +232,11 @@ namespace mu2e {
     if( !(geom->hasElement<Calorimeter>()) ) return;
    
 
-    
+    //update condition cache
+    ConditionsHandle<AcceleratorParams> accPar("ignored");
+    _mbtime = accPar->deBuncherPeriod;
+    _toff.updateMap(event);
+   
     // A container to hold the output hits.
     unique_ptr<CaloHitCollection>               caloHits         (new CaloHitCollection);
     unique_ptr<CaloHitMCTruthCollection>        caloMCHits       (new CaloHitMCTruthCollection);
@@ -252,7 +262,7 @@ namespace mu2e {
       printDataProductInfo( crystalStepsHandles, readoutStepsHandles);
       firstEvent = false;
     }
-
+    
 
     makeCalorimeterHits(crystalStepsHandles, readoutStepsHandles,
                         *caloHits, *caloMCHits, *caloCrystalMCHits,
@@ -291,7 +301,9 @@ namespace mu2e {
 
 
 
-
+  // The simulation is expected to follow the data reconstruction, i.e. read the n readouts for each crystal 
+  // (n=2 as of Oct 2013), then combine these n readouts to form a crystal hit.
+  // The simulation collects the hits in a crystal, not a readout, so we create first readout hits (this module)
 
 
   void MakeCaloReadoutHits::makeCalorimeterHits (HandleVector const& crystalStepsHandles,
@@ -324,14 +336,19 @@ namespace mu2e {
     CaloReadoutUtilities readoutUtil;
 
 
-    //loop over each crystal, collect hits in the crystal, then create RO hits
-    for(HitMap::const_iterator crIter = hitmapCrystal.begin(); crIter != hitmapCrystal.end(); ++crIter ) {
-      
+   // First step, we loop over the StepPoints of each crystal and create a Hit for each stepPoint.
+   // Faster than looping over the readouts and associating the same crystal hits several times
+   for (HitMap::const_iterator crIter = hitmapCrystal.begin(); crIter != hitmapCrystal.end(); ++crIter ) {
+      	
+	
 	
 	vector<ROHit> cr_hits;
 	int crid = crIter->first;
 	StepPtrs const& isteps = crIter->second;
 
+	
+	
+	
 	// Loop over steps inside the crystal for a given crystal id
 	for ( StepPtrs::const_iterator i=isteps.begin(), e=isteps.end(); i != e; ++i ){
 
@@ -344,7 +361,6 @@ namespace mu2e {
 	    // Calculate correction for edep
 	    CLHEP::Hep3Vector const& posInMu2e = h.position();
             double posZ = cal.crystalLongPos(crid,posInMu2e);
-
 
 	    if (_caloNonLinCorrection && h.simParticle().isNonnull())
 	    {
@@ -379,7 +395,13 @@ namespace mu2e {
 		if (_diagLevel > 0) std::cout<<"***************BEFORE /  AFTER LRU EFFECT-> edep_corr = "<< edep_save<<"  /  "<<edep_corr<<std::endl;	  
 	    }
 
-            cr_hits.push_back(ROHit(*i,h.eDep(),edep_corr,ROHit::crystal,h.time()));
+            
+	   // time folding and Adding ghost hits to properly treat boundary conditions with folding, see docdb-3425
+	   double hitTimeUnfolded = _toff.timeWithOffsetsApplied(h);
+	   double hitTime = fmod(hitTimeUnfolded,_mbtime);
+	   cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime));
+	   if (hitTimeUnfolded > _mbtime && hitTime < _mbbuffer) cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime + _mbtime));
+	   if (hitTimeUnfolded > _mbtime && hitTime > (_mbtime-_mbbuffer)) cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime - _mbtime));
 	}
 
 
@@ -387,14 +409,16 @@ namespace mu2e {
 
 
 	
-	//loop over all RO for a given crystal id (Roid = Roidbase + j, j=0,nROPerCrystal-1)
+	//Second, loop over all RO for a given crystal id (Roid = Roidbase + j, j=0,nROPerCrystal-1)
 	//for each readout, assign hits in the crystal + hits in the readout
+		
 	int ROidBase = cal.ROBaseByCrystal(crid);
 	int ROidEnd  = ROidBase+cal.nROPerCrystal();
-
+	
 	for (int roid=ROidBase;roid<ROidEnd;++roid)
 	{
 
+	     //copy hits from the crystal
 	     vector<ROHit> ro_hits(cr_hits);
 
 	     //find the entry in RO map and add the RO hits
@@ -407,9 +431,17 @@ namespace mu2e {
 
         	    StepPointMC const& h = **i;
         	    // There is no cut on energy deposition here - may be, we need to add one?
-        	    ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,h.time()));
+		    		    
+		    // time folding and Adding ghost hits to properly treat boundary conditions with folding, see docdb-3425
+		    double hitTimeUnfolded = _toff.timeWithOffsetsApplied(h);
+		    double hitTime = fmod(hitTimeUnfolded,_mbtime);
+		    ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime));
+		    if (hitTimeUnfolded > _mbtime && hitTime < _mbbuffer) ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime + _mbtime));
+		    if (hitTimeUnfolded > _mbtime && hitTime > (_mbtime-_mbbuffer)) ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime - _mbtime));
+
 		}
              }
+
 
 
 	     // Sort hits by time
@@ -433,19 +465,24 @@ namespace mu2e {
 	     ROHit::step_type h_type = ro_hits[0]._type;
 	     addPtr( ro_hits[0] );
 
-	     for( size_t i=1; i<ro_hits.size(); ++i ) {
+	     for( size_t i=1; i<ro_hits.size(); ++i )
+	     {
 
-        	 if( (ro_hits[i]._time- h_time) > timeGap ) {
+        	 if( (ro_hits[i]._time - h_time) > timeGap )
+		 {
 
-		   // Save current hit
-		   CaloHitSimPartMC  caloHitSimPartMC;
-		   if (_fillDetailedHit) readoutUtil.fillSimMother(cal,mcptr_crystal,caloHitSimPartMC);
-		   
-		   caloHits.push_back(       CaloHit(       roid,h_time,h_edepc+h_type*addEdep));
-        	   caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_type));
-        	   caloHitsMCCrystalPtr.push_back(mcptr_crystal);
-        	   caloHitsMCReadoutPtr.push_back(mcptr_readout);
-                   caloMCSimParts.push_back(caloHitSimPartMC);	   
+		   // Save current hit only, but not if it is a ghost
+		   if (h_time>0 && h_time < _mbtime)
+		   {
+		      CaloHitSimPartMC  caloHitSimPartMC;
+		      if (_fillDetailedHit) readoutUtil.fillSimMother(cal,mcptr_crystal,caloHitSimPartMC);
+
+		      caloHits.push_back(       CaloHit(       roid,h_time,h_edepc+h_type*addEdep));
+        	      caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_type));
+        	      caloHitsMCCrystalPtr.push_back(mcptr_crystal);
+        	      caloHitsMCReadoutPtr.push_back(mcptr_readout);
+                      caloMCSimParts.push_back(caloHitSimPartMC);	
+		   }   
         	   
 		   // ...and create new hit
         	   mcptr_crystal.clear();
@@ -484,7 +521,7 @@ namespace mu2e {
 
 
 
-
+    // Finally, collect the unsmeared crystal hits for each crystal
     for(HitMap::const_iterator cr = hitmapCrystal.begin(); cr != hitmapCrystal.end(); ++cr) {
 
 	CaloCrystalOnlyHitCollection cr_hits;
@@ -501,12 +538,14 @@ namespace mu2e {
 	// now form final hits if they are close enough in time
 	CaloCrystalOnlyHitCollection::value_type cHitMCTruth  = cr_hits[0];
 
-	for ( size_t i=1; i<cr_hits.size(); ++i ) {
+	for ( size_t i=1; i<cr_hits.size(); ++i )
+	{
 
           if ( (cr_hits[i].time()-cr_hits[i-1].time()) > timeGap ) {
 
-            // Save current hit and create new onw
-            caloCrystalHitsMCTruth.push_back(cHitMCTruth);
+            // Save current hit and create new onw, reject ghost as well
+	    
+            if (cr_hits[i-1].time()>0) caloCrystalHitsMCTruth.push_back(cHitMCTruth);
             cHitMCTruth  = cr_hits[i];
 
           } else {
