@@ -401,7 +401,7 @@ namespace mu2e {
 	   double hitTime = fmod(hitTimeUnfolded,_mbtime);
 	   cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime));
 	   if (hitTimeUnfolded > _mbtime && hitTime < _mbbuffer) cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime + _mbtime));
-	   if (hitTimeUnfolded > _mbtime && hitTime > (_mbtime-_mbbuffer)) cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime - _mbtime));
+	   if (hitTime > (_mbtime-_mbbuffer)) cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime - _mbtime));
 	}
 
 
@@ -437,7 +437,7 @@ namespace mu2e {
 		    double hitTime = fmod(hitTimeUnfolded,_mbtime);
 		    ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime));
 		    if (hitTimeUnfolded > _mbtime && hitTime < _mbbuffer) ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime + _mbtime));
-		    if (hitTimeUnfolded > _mbtime && hitTime > (_mbtime-_mbbuffer)) ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime - _mbtime));
+		    if (hitTime > (_mbtime-_mbbuffer)) ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime - _mbtime));
 
 		}
              }
