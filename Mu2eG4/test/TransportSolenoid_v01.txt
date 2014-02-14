@@ -52,12 +52,12 @@ bool   ts.polyliner.solid        = true;
 bool   pbar.visible = true;
 bool   pbar.solid   = false;
 int    pbar.verbosityLevel = 0;
+double pbar.halfLength = 60.0e-3; // Use this 0.06 in conjuction with wedgte
 string pbar.Type       = "wedge"; // default is "disk"
-double pbar.halfLength = 180.0e-3; // Use this value for the new default
 string pbar.materialName = "G4_KAPTON";
 
 double pbarwedge.y0  = -10.;
-double pbarwedge.y1  = 239.; // Do not exceed toyTS.rVac
+double pbarwedge.y1  = 239.; // Do not exceed ts.rVac
 double pbarwedge.dz0 = 0.001;// G4 does not like 0
 double pbarwedge.dz1 = 1.1;  // This makes total thickness changing
                              // from 0.12 mm to 1.0 mm over the 

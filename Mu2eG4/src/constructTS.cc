@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.28 2013/10/25 21:38:29 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/25 21:38:29 $
+// $Id: constructTS.cc,v 1.29 2014/02/14 15:36:04 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/02/14 15:36:04 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -915,26 +915,30 @@ namespace mu2e {
     PbarWindow const & pbarWindow = bl.getTS().getPbarWindow();
     G4Material* pbarMaterial  = findMaterialOrThrow( pbarWindow.material() );
 
-    if ( pbarWindow.shape() == "disk" ) 
-      {
-        double pbarParams[5]  = { 0.0, pbarWindow.rOut(), pbarWindow.halfLength(), 0.0, CLHEP::twopi };
         
-        VolumeInfo pbarInfo = nestTubs( "PbarAbs",
-                                        pbarParams,
-                                        pbarMaterial,
-                                        0,
-                                        pbarWindow.getLocal(),
-                                        parent,
-                                        0,
-                                        visible,
-                                        G4Color::Yellow(),
-                                        solid,
-                                        forceAuxEdgeVisible,
-                                        placePV,
-                                        doSurfaceCheck
-                                        );
-      }        
-    else if( pbarWindow.shape() == "wedge" ) 
+    if ( pbarWindow.shape() == "wedge" ||
+         pbarWindow.shape() == "disk" ) {
+
+      double pbarParams[5]  = { 0.0, pbarWindow.rOut(), pbarWindow.halfLength(), 0.0, CLHEP::twopi };
+
+      nestTubs( "PbarAbs",
+                pbarParams,
+                pbarMaterial,
+                0,
+                pbarWindow.getLocal(),
+                parent,
+                0,
+                visible,
+                G4Color::Yellow(),
+                solid,
+                forceAuxEdgeVisible,
+                placePV,
+                doSurfaceCheck
+                );
+      
+    }
+        
+    if( pbarWindow.shape() == "wedge" ) 
       {
         // -- pbar wedge        
         double pbarWedge_y0  = pbarWindow.getY0();
