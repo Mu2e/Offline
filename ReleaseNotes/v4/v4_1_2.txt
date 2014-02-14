@@ -2,6 +2,16 @@
 
            Release notes for Mu2e Offline software, v4_1_2
 
+ 8) February 13, 2014 ehrlich
+    Updated the CRV geometry to the numbers in doc-db 3433-v4
+    Increased the width (x-direction) of the DS hall
+    Modified Files:
+    CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh 
+    CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc 
+    Mu2eG4/test/geom_01.txt 
+    Added Files:
+    Mu2eG4/test/crv_counters.txt 
+
  7) February 10, 2014 ehrlich
     Added aluminum sheets as absorber between CRV counters
     Removed TSL CRV shield

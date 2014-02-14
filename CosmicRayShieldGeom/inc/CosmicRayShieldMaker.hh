@@ -3,9 +3,9 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.15 2014/02/10 14:23:03 ehrlich Exp $
+// $Id: CosmicRayShieldMaker.hh,v 1.16 2014/02/14 04:10:50 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2014/02/10 14:23:03 $
+// $Date: 2014/02/14 04:10:50 $
 //
 // Original author KLG
 //
@@ -30,15 +30,14 @@ namespace mu2e
     void parseConfig( SimpleConfig const & _config );
     void makeShields();
     void makeSingleShield(const std::vector<double> &counterHalfLengths, 
-                          const std::vector<double> &absorberHalfLengths,
-                          const char *name, 
+                          const CLHEP::Hep3Vector &thicknessDirection,
+                          const std::string &name, 
                           const CLHEP::Hep3Vector &firstCounter, 
-                          const CLHEP::Hep3Vector &layerOffset,
-                          const CLHEP::Hep3Vector &VTNCLargeGap,
+                          const CLHEP::Hep3Vector *layerOffsets,
                           const CLHEP::Hep3Vector &VTNCSmallGap,
+                          const CLHEP::Hep3Vector &VTNCLargeGap,
                           const CLHEP::Hep3Vector &VTNCBetweenModules,
-                          int nLayers, int nModules, int nCountersPerModule, 
-                          int nCountersLastModule);
+                          int nModules, int nCounters);
 
   // This is deprecated and will go away soon.
   // Still needed for root graphics version.
@@ -53,44 +52,15 @@ namespace mu2e
 
     int  _diagLevel;
 
-    double  _counterLengthDSR;
-    double  _counterLengthDSL;
-    double  _counterLengthDST;
-    double  _counterLengthDSD;
-    double  _counterLengthTSR;
-    double  _counterLengthTSL;
-    double  _counterLengthTST;
+    double  _counterThickness, _counterWidth;
+    double  _offset, _gapLarge, _gapSmall, _gapBetweenModules;
+    int     _nShields, _nLayers;
 
-    double  _counterThickness;
-    double  _counterWidth;
-    double  _offset, _gapLarge, _gapSmall, _gapBetweenLayers;
- 
-    int _nLayers;
-
-    int _nModulesDSR;
-    int _nModulesDSL;
-    int _nModulesDST;
-    int _nModulesDSD;
-    int _nModulesTSR;
-    int _nModulesTSL;
-    int _nModulesTST;
-  
-    int _nCountersPerModule;
-    int _nCountersLastModuleDSR;
-    int _nCountersLastModuleDSL;
-    int _nCountersLastModuleDST;
-    int _nCountersLastModuleDSD;
-    int _nCountersLastModuleTSR;
-    int _nCountersLastModuleTSL;
-    int _nCountersLastModuleTST;
-
-    CLHEP::Hep3Vector  _firstCounterDSR;
-    CLHEP::Hep3Vector  _firstCounterDSL;
-    CLHEP::Hep3Vector  _firstCounterDST;
-    CLHEP::Hep3Vector  _firstCounterDSD;
-    CLHEP::Hep3Vector  _firstCounterTSR;
-    CLHEP::Hep3Vector  _firstCounterTSL;
-    CLHEP::Hep3Vector  _firstCounterTST;
+    std::vector<double> _gapBetweenLayers;
+    double              _counterLength[18];
+    int                 _nModules[18];
+    int                 _nCountersPerModule[18];
+    CLHEP::Hep3Vector   _firstCounter[18];
 
     std::string _scintillatorBarMaterialName;
     std::string _absorberMaterialName;

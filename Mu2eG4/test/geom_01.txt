@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.230 2014/02/10 14:23:03 ehrlich Exp $
+// $Id: geom_01.txt,v 1.231 2014/02/14 04:10:50 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2014/02/10 14:23:03 $
+// $Date: 2014/02/14 04:10:50 $
 //
 // Original author Rob Kutschke
 //
@@ -181,10 +181,10 @@ bool   world.dirt.solid           = false;
 double hall.floorTopDepthBelowGrade = 7620; // docdb-472v12 p12: (746'-0'' - 721'-0'')
 
 // Positions of the hall walls
-double hall.insideXmin = -7359;
+double hall.insideXmin = -7714;
 double hall.insideXmax = +6250;
 double hall.insideZmax = +33041;
-double hall.insideXDSCorner = 0;  // Was -500, changed to accommodate CRV
+double hall.insideXDSCorner =  -94;
 double hall.insideZDSCorner = 2779;  // Zmax of TS shielding
 double hall.insideXPSCorner =  964;
 double hall.insideZPSCorner = -3566; // Zmin of TS shielding
@@ -360,51 +360,8 @@ string stoppingTarget.foilTarget_supportStructure_fillMaterial = "G4_W";
 //#include "Mu2eG4/test/calorimeter_LYSO.txt"
 #include "Mu2eG4/test/calorimeter_BaF2.txt"
 
-double          crs.scintillatorBarLengthDSR     =  4527;
-double          crs.scintillatorBarLengthDSL     =  4527;
-double          crs.scintillatorBarLengthDST     =  5600;
-double          crs.scintillatorBarLengthDSD     =  5600;
-double          crs.scintillatorBarLengthTSR     =  4527;
-double          crs.scintillatorBarLengthTSL     =  4527;
-double          crs.scintillatorBarLengthTST     =  5345;
-double          crs.scintillatorBarThickness     =  20;
-double          crs.scintillatorBarWidth         =  50;
-double          crs.layerOffset                  =  10;  //mm
-double          crs.gapLarge                     =  3;   //mm
-double          crs.gapSmall                     =  0;   //mm
-double          crs.gapBetweenLayers             =  5.4; //mm
-int             crs.nLayers                      =  4;
-int             crs.nModulesDSR                  =  34;
-int             crs.nModulesDSL                  =  26;
-int             crs.nModulesDST                  =  35;
-int             crs.nModulesDSD                  =  4;
-int             crs.nModulesTSR                  =  11;
-int             crs.nModulesTSL                  =  2;
-int             crs.nModulesTST                  =  2;
-int             crs.nCountersPerModule           =  12;  //at one layer
-int             crs.nCountersLastModuleDSR       =  7;  //at one layer
-int             crs.nCountersLastModuleDSL       =  7;
-int             crs.nCountersLastModuleDST       =  8;
-int             crs.nCountersLastModuleDSD       =  6;
-int             crs.nCountersLastModuleTSR       =  8;
-int             crs.nCountersLastModuleTSL       =  8;
-int             crs.nCountersLastModuleTST       =  6;
-vector<double>  crs.firstCounterDSR              =  {-6460,    263.5, -2225}; //in mu2e coordinates
-vector<double>  crs.firstCounterDSL              =  {-1348,    263.5,  2720};
-vector<double>  crs.firstCounterDST              =  {-3904,   2637,   -2475};
-vector<double>  crs.firstCounterDSD              =  {-3904,   2472,   18575};
-vector<double>  crs.firstCounterTSR              =  {-6679,    263.5, -2360};
-vector<double>  crs.firstCounterTSL              =  {-1146.8,  263.5,  2705};
-vector<double>  crs.firstCounterTST              =  {-1079,   2637,     172.5};
-string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
-string          crs.absorberMaterialName         = "G4_Al";
-
-bool   crs.vetoVisible    = true;
-bool   crs.vetoSolid      = true;
-int    crs.verbosityLevel = 0;
-
-
-
+//CRV counters
+#include "Mu2eG4/test/crv_counters.txt"
 
 // Magnetic field
 // default is now Mau9 everywhere, including the DS
