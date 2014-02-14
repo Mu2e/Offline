@@ -2,6 +2,19 @@
 
            Release notes for Mu2e Offline software, v4_1_2
 
+ 9) February 13, 2014 knoepfel
+
+    Add free function to GeneralUtilities to convert vector of
+    std::string's to vector of art::InputTag's.  Modify how event
+    weights are handled in ReadKalFits_module.cc.
+
+    New files:
+      GeneralUtilities/inc/artHelper.hh
+      GeneralUtilities/src/artHelper.cc
+      EventGenerator/src/DecayInOrbitWeight_module.cc
+    Modified file:
+      KalmanTests/src/ReadKalFits_module.cc
+
  8) February 13, 2014 ehrlich
     Updated the CRV geometry to the numbers in doc-db 3433-v4
     Increased the width (x-direction) of the DS hall
