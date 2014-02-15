@@ -201,7 +201,7 @@ namespace mu2e {
 				   CaloHitSimPartMCCollection& );
 
 
-	 void nonLinearityCorrection(double kinetic_energy, double& energy, int cryId, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations );
+	 void nonLinearityCorrection(StepPointMC const& h, double& energy, int cryId, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations,GlobalConstantsHandle<ParticleDataTable>& pdt );
 	 void longitudinalResponseUniformityCorrection(double posZ, double cryhalflength, double& energy, int crid,ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
 	 void fillMapById(HitMap& map,HandleVector const& crystalStepsHandles);
 
@@ -338,22 +338,19 @@ namespace mu2e {
 
    // First step, we loop over the StepPoints of each crystal and create a Hit for each stepPoint.
    // Faster than looping over the readouts and associating the same crystal hits several times
-   for (HitMap::const_iterator crIter = hitmapCrystal.begin(); crIter != hitmapCrystal.end(); ++crIter ) {
-      	
-	
+   for (auto const& crIter : hitmapCrystal)
+   {      	
 	
 	vector<ROHit> cr_hits;
-	int crid = crIter->first;
-	StepPtrs const& isteps = crIter->second;
+	int crid = crIter.first;
+	StepPtrs const& isteps = crIter.second;
 
-	
-	
 	
 	// Loop over steps inside the crystal for a given crystal id
-	for ( StepPtrs::const_iterator i=isteps.begin(), e=isteps.end(); i != e; ++i ){
-
-
-            StepPointMC const& h = **i;
+	for (StepPtrs::const_iterator i=isteps.begin(), e=isteps.end(); i != e; ++i )
+	{
+         
+	    StepPointMC const& h = **i;
 
             if ( h.eDep()<=0.0 ) continue;
 	    double edep_corr = h.eDep();
@@ -362,46 +359,16 @@ namespace mu2e {
 	    CLHEP::Hep3Vector const& posInMu2e = h.position();
             double posZ = cal.crystalLongPos(crid,posInMu2e);
 
-	    if (_caloNonLinCorrection && h.simParticle().isNonnull())
-	    {
-
-		 double edep_save(edep_corr);
-
-		 art::Ptr<SimParticle> const& simptr = h.simParticle();
-		 SimParticle const& sim = *simptr;
-
-		 if( (std::abs(sim.pdgId()) == 11 || sim.pdgId() == 22))
-		 {
-		     const HepPDT::ParticleData& data = pdt->particle(sim.pdgId()).ref();
-		     double mass = data.mass().value();
-
-		     //add non-linearity effect
-		     double trackKine = std::sqrt(h.momentum().mag2() + mass*mass) - mass;
-
-		     if (trackKine < 1.0) nonLinearityCorrection(trackKine, edep_corr, crid, calorimeterCalibrations);
-
-		     if(_diagLevel > 0)		    
-		       std::cout<<"************************** BEFORE / AFTER NON-LINEARITY EFFECT-> edep_corr = "<< edep_save<<"  /  "<<edep_corr<<std::endl
-		        	<<", energyKin = "<< trackKine<<", mass = "<< mass<< ", momentum.mag2() = "<< h.momentum().mag2()<<std::endl;
-		 } 
-
-	    }
-
-
-	    if (_caloLRUcorrection)
-	    {
-		double edep_save(edep_corr);
-		longitudinalResponseUniformityCorrection(posZ, cryhalflength, edep_corr,crid, calorimeterCalibrations);
-		if (_diagLevel > 0) std::cout<<"***************BEFORE /  AFTER LRU EFFECT-> edep_corr = "<< edep_save<<"  /  "<<edep_corr<<std::endl;	  
-	    }
-
+	    //should probably go to another class when the code for these corrections grows larger
+	    if (_caloNonLinCorrection && h.simParticle().isNonnull()) nonLinearityCorrection(h, edep_corr, crid, calorimeterCalibrations, pdt);
+	    if (_caloLRUcorrection) longitudinalResponseUniformityCorrection(posZ, cryhalflength, edep_corr,crid, calorimeterCalibrations);
             
-	   // time folding and Adding ghost hits to properly treat boundary conditions with folding, see docdb-3425
-	   double hitTimeUnfolded = _toff.timeWithOffsetsApplied(h);
-	   double hitTime = fmod(hitTimeUnfolded,_mbtime);
-	   cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime));
-	   if (hitTimeUnfolded > _mbtime && hitTime < _mbbuffer) cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime + _mbtime));
-	   if (hitTime > (_mbtime-_mbbuffer)) cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime - _mbtime));
+	    // time folding and Adding ghost hits to properly treat boundary conditions with folding, see docdb-3425
+	    double hitTimeUnfolded = _toff.timeWithOffsetsApplied(h);
+	    double hitTime = fmod(hitTimeUnfolded,_mbtime);
+	    cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime));
+	    if (hitTime < _mbbuffer) cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime + _mbtime));
+	    if (hitTime > (_mbtime-_mbbuffer)) cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime - _mbtime));
 	}
 
 
@@ -424,11 +391,11 @@ namespace mu2e {
 	     //find the entry in RO map and add the RO hits
 	     HitMap::const_iterator irIter = hitmapRO.find(roid);
 
-	     if (irIter != hitmapRO.end() ){
-
+	     if (irIter != hitmapRO.end() )
+	     {
 		StepPtrs const& irosteps = irIter->second;
-		for( StepPtrs::const_iterator i=irosteps.begin(); i!=irosteps.end(); ++i ){
-
+		for( StepPtrs::const_iterator i=irosteps.begin(); i!=irosteps.end(); ++i )
+		{
         	    StepPointMC const& h = **i;
         	    // There is no cut on energy deposition here - may be, we need to add one?
 		    		    
@@ -436,7 +403,7 @@ namespace mu2e {
 		    double hitTimeUnfolded = _toff.timeWithOffsetsApplied(h);
 		    double hitTime = fmod(hitTimeUnfolded,_mbtime);
 		    ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime));
-		    if (hitTimeUnfolded > _mbtime && hitTime < _mbbuffer) ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime + _mbtime));
+		    if (hitTime < _mbbuffer) ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime + _mbtime));
 		    if (hitTime > (_mbtime-_mbbuffer)) ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime - _mbtime));
 
 		}
@@ -471,7 +438,7 @@ namespace mu2e {
         	 if( (ro_hits[i]._time - h_time) > timeGap )
 		 {
 
-		   // Save current hit only, but not if it is a ghost
+		   // Save current hit , remove ghosts
 		   if (h_time>0 && h_time < _mbtime)
 		   {
 		      CaloHitSimPartMC  caloHitSimPartMC;
@@ -495,7 +462,8 @@ namespace mu2e {
         	   h_type    = ro_hits[i]._type;
 
         	 } else {
-        	   // Append data to hit
+        	   
+		   // Append data to hit
         	   h_edep  += ro_hits[i]._edep;
         	   h_edepc += ro_hits[i]._edep_corr;
         	   if( ro_hits[i]._type != ROHit::crystal ) h_type = ROHit::readout; // this does not count the charge...
@@ -522,13 +490,16 @@ namespace mu2e {
 
 
     // Finally, collect the unsmeared crystal hits for each crystal
-    for(HitMap::const_iterator cr = hitmapCrystal.begin(); cr != hitmapCrystal.end(); ++cr) {
+    for (auto const& cr: hitmapCrystal){
 
 	CaloCrystalOnlyHitCollection cr_hits;
 
-	int cid = cr->first;
-	for( size_t i=0; i<cr->second.size(); i++ ) {
-           StepPointMC const& h2 = *cr->second[i];
+	int cid = cr.first;
+	StepPtrs const& steps = cr.second;
+
+	for( size_t i=0; i<steps.size(); i++ )
+	{
+           StepPointMC const& h2 = *(steps[i]);
            cr_hits.push_back(CaloCrystalOnlyHit(cid,h2.time(),h2.eDep()));
 	}
 
@@ -537,24 +508,18 @@ namespace mu2e {
 
 	// now form final hits if they are close enough in time
 	CaloCrystalOnlyHitCollection::value_type cHitMCTruth  = cr_hits[0];
-
 	for ( size_t i=1; i<cr_hits.size(); ++i )
 	{
+           if ( (cr_hits[i].time()-cr_hits[i-1].time()) > timeGap ) 
+	   {
+             // Save current hit and create new onw, reject ghost as well	    
+             if (cr_hits[i-1].time()>0) caloCrystalHitsMCTruth.push_back(cHitMCTruth);
+             cHitMCTruth  = cr_hits[i];
 
-          if ( (cr_hits[i].time()-cr_hits[i-1].time()) > timeGap ) {
-
-            // Save current hit and create new onw, reject ghost as well
-	    
-            if (cr_hits[i-1].time()>0) caloCrystalHitsMCTruth.push_back(cHitMCTruth);
-            cHitMCTruth  = cr_hits[i];
-
-          } else {
-
-            // Add energy to the old hit (keep the "earlier" time)
-            cHitMCTruth.setEnergyDep(cHitMCTruth.energyDep()+cr_hits[i].energyDep());
-
-          }
-
+           } else {
+             // Add energy to the old hit (keep the "earlier" time)
+             cHitMCTruth.setEnergyDep(cHitMCTruth.energyDep()+cr_hits[i].energyDep());
+           }
 	}
 
 	caloCrystalHitsMCTruth.push_back(cHitMCTruth);
@@ -609,10 +574,22 @@ namespace mu2e {
   } 
   
   
-  void MakeCaloReadoutHits::nonLinearityCorrection(double kinetic_energy, double& energy, int cryId, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations )
+
+  void MakeCaloReadoutHits::nonLinearityCorrection(StepPointMC const& h, double& energy, int cryId, 
+                                                   ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations, 
+						   GlobalConstantsHandle<ParticleDataTable>& pdt  )
   { 
 
+      double edep_save(energy);
       double MeV2keV = 1000.0;
+
+      int particleCode = std::abs(h.simParticle()->pdgId());
+      if (particleCode!= 11 && particleCode != 22 ) return;
+
+      const HepPDT::ParticleData& data = pdt->particle(particleCode).ref();
+      double mass = data.mass().value();
+      double kinetic_energy = std::sqrt(h.momentum().mag2() + mass*mass) - mass;
+      if (kinetic_energy > 1.0) return;
 
       //the formula used returns positive values if tmpEnergy>(approximately) 3keV, see Mu2e doc 1748-v1
       kinetic_energy = MeV2keV*kinetic_energy;
@@ -626,15 +603,25 @@ namespace mu2e {
       kinetic_energy /= std::log10(trackKine);
 
       if (kinetic_energy>0) energy *= kinetic_energy;		
+
+      if(_diagLevel > 0)		    
+	std::cout<<"************************** BEFORE / AFTER NON-LINEARITY EFFECT-> edep_corr = "<< edep_save<<"  /  "<<energy<<std::endl
+		 <<", energyKin = "<< trackKine<<", mass = "<< mass<< ", momentum.mag2() = "<< h.momentum().mag2()<<std::endl;
+
   }
   
+
   void MakeCaloReadoutHits::longitudinalResponseUniformityCorrection(double posZ, double cryhalflength, double& energy, int crid, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations )
   {
+     double edep_save(energy);
+
      //posZ *= -1.0;
      //posZ += cryhalflength;
      posZ *= -_randGauss.fire(calorimeterCalibrations->LRUpar0(crid), calorimeterCalibrations->LRUpar0Err(crid) );
      posZ += 1.0;
      energy *= posZ;
+     
+     if (_diagLevel > 0) std::cout<<"***************BEFORE /  AFTER LRU EFFECT-> edep_corr = "<< edep_save<<"  /  "<<energy<<std::endl;	  
   }
 
 
