@@ -269,7 +269,7 @@ namespace mu2e {
                         *caloMCptrHits, *caloMCroptrHits, *caloMCSimParts);
 
 
-    if ( ncalls < _maxFullPrint && _diagLevel > 2 ) {
+    if ( ncalls < _maxFullPrint && _diagLevel > 0 ) {
       cout << "MakeCaloReadoutHits: Total number of calorimeter hits = "
            << caloHits->size()
            << endl;
@@ -366,9 +366,9 @@ namespace mu2e {
 	    // time folding and Adding ghost hits to properly treat boundary conditions with folding, see docdb-3425
 	    double hitTimeUnfolded = _toff.timeWithOffsetsApplied(h);
 	    double hitTime = fmod(hitTimeUnfolded,_mbtime);
-	    cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime));
-	    if (hitTime < _mbbuffer) cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime + _mbtime));
-	    if (hitTime > (_mbtime-_mbbuffer)) cr_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime - _mbtime));
+            cr_hits.push_back(ROHit(*i,h.eDep(),edep_corr,ROHit::crystal,hitTime));
+	    if (hitTime < _mbbuffer) cr_hits.push_back(ROHit(*i,h.eDep(),edep_corr,ROHit::crystal,hitTime + _mbtime));
+	    if (hitTime > (_mbtime-_mbbuffer)) cr_hits.push_back(ROHit(*i,h.eDep(),edep_corr,ROHit::crystal,hitTime - _mbtime));
 	}
 
 
@@ -410,7 +410,6 @@ namespace mu2e {
              }
 
 
-
 	     // Sort hits by time
 	     sort(ro_hits.begin(), ro_hits.end());
 
@@ -434,13 +433,15 @@ namespace mu2e {
 
 	     for( size_t i=1; i<ro_hits.size(); ++i )
 	     {
-
         	 if( (ro_hits[i]._time - h_time) > timeGap )
 		 {
 
 		   // Save current hit , remove ghosts
 		   if (h_time>0 && h_time < _mbtime)
 		   {
+		      if(_diagLevel > 1) std::cout<<"MakeCaloReadoutHits:: insert hit roid="<<roid<<" with time="<< h_time
+		                                  <<"and energy = "<<h_edepc+h_type*addEdep<<std::endl;		      		    
+                      
 		      CaloHitSimPartMC  caloHitSimPartMC;
 		      if (_fillDetailedHit) readoutUtil.fillSimMother(cal,mcptr_crystal,caloHitSimPartMC);
 
@@ -471,8 +472,12 @@ namespace mu2e {
         	 }
 	     }
 
+             if(_diagLevel > 1) std::cout<<"MakeCaloReadoutHits:: insert hit roid="<<roid<<" with time="<< h_time
+		                         <<"and energy = "<<h_edepc+h_type*addEdep<<std::endl;
+					 		      		    
 	     CaloHitSimPartMC  caloHitSimPartMC;
 	     if (_fillDetailedHit) readoutUtil.fillSimMother(cal,mcptr_crystal,caloHitSimPartMC);
+
 	     
 	     caloHits.push_back(       CaloHit(roid,h_time,h_edepc+h_type*addEdep));
 	     caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_type));
@@ -604,7 +609,7 @@ namespace mu2e {
 
       if (kinetic_energy>0) energy *= kinetic_energy;		
 
-      if(_diagLevel > 0)		    
+      if(_diagLevel > 2)		    
 	std::cout<<"************************** BEFORE / AFTER NON-LINEARITY EFFECT-> edep_corr = "<< edep_save<<"  /  "<<energy<<std::endl
 		 <<", energyKin = "<< trackKine<<", mass = "<< mass<< ", momentum.mag2() = "<< h.momentum().mag2()<<std::endl;
 
@@ -621,7 +626,7 @@ namespace mu2e {
      posZ += 1.0;
      energy *= posZ;
      
-     if (_diagLevel > 0) std::cout<<"***************BEFORE /  AFTER LRU EFFECT-> edep_corr = "<< edep_save<<"  /  "<<energy<<std::endl;	  
+     if (_diagLevel > 2) std::cout<<"***************BEFORE /  AFTER LRU EFFECT-> edep_corr = "<< edep_save<<"  /  "<<energy<<std::endl;	  
   }
 
 

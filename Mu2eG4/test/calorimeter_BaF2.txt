@@ -1,6 +1,6 @@
 // Crystal calorimeter
 
-double calorimeter.caloMotherInRadius           = 359.9;   
+double calorimeter.caloMotherInRadius           = 349;   
 double calorimeter.caloMotherOutRadius          = 765;   
 double calorimeter.caloMotherZ0                 = 11842;   
 double calorimeter.caloMotherZ1                 = 13220;   
@@ -28,8 +28,8 @@ double calorimeter.neutronAbsorberHalfThickness = 0.0;
 
 //disk description
 int    calorimeter.numberOfDisks               =  2;
-vector<double> calorimeter.diskInnerRadius     = {360.,360.}; //mm
-vector<double> calorimeter.diskOuterRadius     = {670.,670.}; //mm
+vector<double> calorimeter.diskInnerRadius     = {351.,351.}; //mm
+vector<double> calorimeter.diskOuterRadius     = {660.,660.}; //mm
 vector<double> calorimeter.diskRotationAngle   = {0.,0.};     //rad
 vector<double> calorimeter.diskSeparation      = {0.,700.};   //mm  separation w.r.t first disk
 
@@ -37,13 +37,13 @@ vector<double> calorimeter.diskSeparation      = {0.,700.};   //mm  separation w
 
 //crystal characteristics
 
-double calorimeter.crystalHalfLong             = 105.0;
-double calorimeter.crystalHalfTrans            = 16.0;
-double calorimeter.crystalHexsize              = 16.0;  //mm  half distance across flats of hex crystal
+double calorimeter.crystalHalfLong             = 100.0;
+double calorimeter.crystalHalfTrans            = 16.5;
+double calorimeter.crystalHexsize              = 16.5;  //mm  half distance across flats of hex crystal
 string calorimeter.crystalMaterial             = "G4_BARIUM_FLUORIDE"; //"G4_PbWO4" "G4_BARIUM_FLUORIDE" "Lyso_01"
 
 string calorimeter.crystalWrapper              = "Polyethylene092";
-double calorimeter.crystalWrapperThickness     = 0.01 ;
+double calorimeter.crystalWrapperThickness     = 0.065; //mm
 double calorimeter.crystalShellThickness       = 0.0 ;
 
 string calorimeter.crystalReadoutMaterial      = "G4_Si";
@@ -81,4 +81,4 @@ bool calorimeter.crystalSolid                 = false;
 bool calorimeter.absorberBoxVisible           = false;
 bool calorimeter.absorberBoxSolid             = false;
 
-int  calorimeter.verbosityLevel               = 0;
+int  calorimeter.verbosityLevel               = 1;
