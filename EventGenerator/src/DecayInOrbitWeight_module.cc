@@ -42,8 +42,29 @@ namespace mu2e {
   //================================================================
   class DecayInOrbitWeight : public art::EDProducer {
 
+    class SpectrumType {
+    public:
+      enum enum_type { unknown, Pol5, Pol58 };
+      static std::string const& typeName() {
+        static std::string type("SpectrumType"); return type;
+      }
+      static std::map<enum_type,std::string> const& names() {
+        static std::map<enum_type,std::string> nam;
+        
+        if ( nam.empty() ) {
+          nam[unknown] = "unknown";
+          nam[Pol5]    = "pol5";
+          nam[Pol58]   = "pol58";
+        }
+
+        return nam;
+      }
+    };
+
+    typedef EnumToStringSparse<SpectrumType> SpectrumChoice;
+
     art::InputTag input_;
-    std::string weightingScheme_;
+    SpectrumChoice weightingScheme_;
 
     int verbosityLevel_;
   public:
@@ -84,8 +105,8 @@ namespace mu2e {
     for ( const auto& i: *genColl ) {
       const double energy = i.momentum().e();
       
-      if      ( weightingScheme_ == "pol5"            ) weight = SimpleSpectrum::getPol5( energy ); 
-      else if ( weightingScheme_ == "pol58"           ) weight = SimpleSpectrum::getPol58( energy ); 
+      if      ( weightingScheme_ == SpectrumChoice::Pol5  ) weight = SimpleSpectrum::getPol5 ( energy ); 
+      else if ( weightingScheme_ == SpectrumChoice::Pol58 ) weight = SimpleSpectrum::getPol58( energy ); 
       else {
         throw cet::exception("MODEL")
           << "Wrong or not allowed DIO energy spectrum";

@@ -1,8 +1,8 @@
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.10 2014/02/18 20:21:25 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.cc,v 1.11 2014/02/18 22:08:44 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/02/18 20:21:25 $
+// $Date: 2014/02/18 22:08:44 $
 //
 // Original author: Kyle Knoepfel
 
@@ -60,7 +60,7 @@ namespace mu2e{
     _pulseShape ( loadTable<2>( "ConditionsService/data/ProtonPulseSpectrum_02.txt"      , false ) ),
     _acdipole   ( loadTable<2>( "ConditionsService/data/ACdipoleTransmissionFunction.txt", false ) ),
     _ootPulse   ( loadTable<2>( "ConditionsService/data/OutOfTimeSpectrum.txt"           , false ) ),
-    _pulseEnum  ( getPulseEnum(pulseType) ),
+    _pulseEnum  ( pulseType ),
     _nPoints    ( calculateNpoints() ),
     _extFactor  ( 1e-10 ),
     _spectrum   ( setSpectrum() ),
@@ -84,17 +84,17 @@ namespace mu2e{
 
     const double pdfBinWidth = std::min( std::min( potBinWidth, acBinWidth ), ootBinWidth );
 
-    if ( _pulseEnum == DEFAULT ) { 
+    if ( _pulseEnum == PotSpectrum::DEFAULT ) { 
       _timeMax    = _pulseShape( _pulseShape.getNrows()-1, 0 ); 
       _timeMin    = _pulseShape(0,0);
       _fireOffset = 0.5; // Pulse should start at beginning of POT pulse
     }
-    if ( _pulseEnum == TOTAL   ) { 
+    if ( _pulseEnum == PotSpectrum::TOTAL   ) { 
       _timeMax    = ootCycle-potWidth/2;                        
       _timeMin    = _pulseShape(0,0);
       _fireOffset = -_timeMin/(_timeMax-_timeMin); // Pulse should start at beginning of POT pulse
     }
-    if ( _pulseEnum == OOT     ) { 
+    if ( _pulseEnum == PotSpectrum::OOT     ) { 
       _timeMax    = ootCycle-potWidth/2;                        
       _timeMin    = 0.;              
       _fireOffset = 0.; // Pulse should start at t = 0. 
@@ -166,9 +166,9 @@ namespace mu2e{
 
     for ( std::size_t i(0) ; i < _nPoints ; i++ ) { 
       double weight(0.);
-      if ( _pulseEnum == TOTAL   ) weight = potShape.at(i)*dipoleShape.at(i) + ootShape.at(i);
-      if ( _pulseEnum == DEFAULT ) weight = potShape.at(i)*dipoleShape.at(i);
-      if ( _pulseEnum == OOT     ) weight = ootShape.at(i);
+      if ( _pulseEnum == PotSpectrum::TOTAL   ) weight = potShape.at(i)*dipoleShape.at(i) + ootShape.at(i);
+      if ( _pulseEnum == PotSpectrum::DEFAULT ) weight = potShape.at(i)*dipoleShape.at(i);
+      if ( _pulseEnum == PotSpectrum::OOT     ) weight = ootShape.at(i);
       spectrum.push_back( weight );
     }
     
@@ -176,18 +176,6 @@ namespace mu2e{
 
   }
 
-  ProtonPulseRandPDF::enum_type
-  ProtonPulseRandPDF::getPulseEnum( const std::string& pulseString ) const {
-    enum_type pulseType;
-
-    if      ( pulseString == "default" ) pulseType = DEFAULT;
-    else if ( pulseString == "total"   ) pulseType = TOTAL;
-    else if ( pulseString == "oot"     ) pulseType = OOT;
-    else throw cet::exception("POT-PULSE")
-      << "Pulse shape " << pulseString << " not allowed\n";
-    
-    return pulseType;
-  }
 
   void ProtonPulseRandPDF::renormalizeShape( std::vector<double>& shape, const double norm ) const {
     

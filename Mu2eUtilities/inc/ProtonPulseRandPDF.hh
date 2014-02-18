@@ -4,15 +4,16 @@
 //  
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.hh,v 1.6 2014/02/18 20:21:25 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.hh,v 1.7 2014/02/18 22:08:44 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/02/18 20:21:25 $
+// $Date: 2014/02/18 22:08:44 $
 //
 // Original author: Gianni Onorato
 //                  Kyle Knoepfel (significant updates)
 //
 
 // Mu2e includes
+#include "GeneralUtilities/inc/EnumToStringSparse.hh"
 #include "Mu2eUtilities/inc/Table.hh"
 
 // CLHEP includes
@@ -31,8 +32,28 @@ namespace mu2e {
 
   public:
 
-    enum enum_type { DEFAULT, TOTAL, OOT };
+    class PotSpectrumType {
+    public:
+      enum enum_type { unknown, DEFAULT, TOTAL, OOT };
+      static std::string const& typeName() {
+        static std::string type("PotSpectrumType"); return type;
+      }
+      static std::map<enum_type,std::string> const& names() {
+        static std::map<enum_type,std::string> nam;
+        
+        if ( nam.empty() ) {
+          nam[unknown] = "unknown";
+          nam[DEFAULT] = "default";
+          nam[TOTAL]   = "total";
+          nam[OOT]     = "oot";
+        }
 
+        return nam;
+      }
+    };
+
+    typedef EnumToStringSparse<PotSpectrumType> PotSpectrum;
+    
     ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine,
                        const std::string pulseString = "default" );
     ~ProtonPulseRandPDF(){}
@@ -56,7 +77,7 @@ namespace mu2e {
     const Table<2> _acdipole;
     const Table<2> _ootPulse;
 
-    const enum_type _pulseEnum;
+    const PotSpectrum _pulseEnum;
     const std::size_t _nPoints;
 
     const double _extFactor;
@@ -64,8 +85,6 @@ namespace mu2e {
     std::vector<double> _spectrum;
 
     CLHEP::RandGeneral _randSpectrum;
-
-    enum_type getPulseEnum( const std::string& pulseString ) const;
 
     std::size_t calculateNpoints();
 
