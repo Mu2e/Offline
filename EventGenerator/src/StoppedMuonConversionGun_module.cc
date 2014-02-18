@@ -45,6 +45,10 @@ namespace mu2e {
     double conversionMomentum_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
+    double           czmin_;
+    double           czmax_;
+    double           phimin_;
+    double           phimax_;
     RandomUnitSphere randomUnitSphere_;
 
     RootTreeSampler<InputStop> stops_;
@@ -64,9 +68,13 @@ namespace mu2e {
     , conversionMomentum_(conversionEnergy_*
                           sqrt(1 - std::pow(electronMass()/conversionEnergy_,2))
                           )
-    , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
-    , randomUnitSphere_(eng_)
-    , stops_(eng_, pset.get<fhicl::ParameterSet>("muonStops"), sizeof(InputStop)/sizeof(float))
+    , eng_             (createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    , czmin_           (pset.get<double>("czmin" , -1.0))
+    , czmax_           (pset.get<double>("czmax" ,  1.0))
+    , phimin_          (pset.get<double>("phimin",  0. ))
+    , phimax_          (pset.get<double>("phimax", CLHEP::twopi ))
+    , randomUnitSphere_(eng_,czmin_,czmax_,phimin_,phimax_)
+    , stops_           (eng_, pset.get<fhicl::ParameterSet>("muonStops"), sizeof(InputStop)/sizeof(float))
   {
     produces<mu2e::GenParticleCollection>();
   }
