@@ -42,7 +42,8 @@ namespace mu2e {
 
   //================================================================
   GenerateProtonTimes::GenerateProtonTimes(fhicl::ParameterSet const& pset)
-    : protonPulse_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    : protonPulse_(createEngine(art::ServiceHandle<SeedService>()->getSeed()), 
+                   pset.get<std::string>("pulseType","default") )
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
   {
     produces<SimParticleTimeMap>();

@@ -2,6 +2,18 @@
 
            Release notes for Mu2e Offline software, v4_1_2
 
+11) February 18, 2013 knoepfel
+
+    Include out-of-time POT pulse from Eric Prebys.  Significantly
+    adjust ProtonPulseRandPDF class to accommodate changes.
+
+    New files:
+      ConditionsService/data/OutOfTimeSpectrum.txt
+    Modified files:
+      HitMakers/src/GenerateProtonTimes_module.cc
+      Mu2eUtilities/inc/ProtonPulseRandPDF.hh
+      Mu2eUtilities/src/ProtonPulseRandPDF.cc
+
 10) February 14, 2013 knoepfel
 
     Correct pbar window bug.  Vacuum wall now created in addition to

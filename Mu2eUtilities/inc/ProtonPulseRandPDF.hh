@@ -4,9 +4,9 @@
 //  
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.hh,v 1.5 2014/02/07 14:48:44 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.hh,v 1.6 2014/02/18 20:21:25 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/02/07 14:48:44 $
+// $Date: 2014/02/18 20:21:25 $
 //
 // Original author: Gianni Onorato
 //                  Kyle Knoepfel (significant updates)
@@ -31,7 +31,10 @@ namespace mu2e {
 
   public:
 
-    ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine);
+    enum enum_type { DEFAULT, TOTAL, OOT };
+
+    ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine,
+                       const std::string pulseString = "default" );
     ~ProtonPulseRandPDF(){}
 
     double fire();
@@ -39,15 +42,38 @@ namespace mu2e {
 
   private:
 
-    const Table<2> _pulseShape;
-    const Table<2> _acdipole;
-    std::vector<double> _spectrum;
+    std::vector<double> _potSpectrum;
+    std::vector<double> _dipoleSpectrum;
+    std::vector<double> _ootSpectrum;
+
+    std::vector<double> _times;
+
     double _timeMin;
     double _timeMax;
+    double _fireOffset;
+
+    const Table<2> _pulseShape;
+    const Table<2> _acdipole;
+    const Table<2> _ootPulse;
+
+    const enum_type _pulseEnum;
+    const std::size_t _nPoints;
+
+    const double _extFactor;
+
+    std::vector<double> _spectrum;
+
     CLHEP::RandGeneral _randSpectrum;
 
+    enum_type getPulseEnum( const std::string& pulseString ) const;
+
+    std::size_t calculateNpoints();
+
     //PDF description
-    std::vector<double> setSpectrum();
+    std::vector<double> setSpectrum() const;
+    
+    std::vector<double> getShape( const Table<2>& table, const double timeOffset = 0. ) const;
+    void renormalizeShape( std::vector<double>& shape, const double norm ) const;
 
   };
 
