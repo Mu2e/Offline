@@ -1,11 +1,10 @@
 #include <algorithm>
-#include "Ttree.h"
+#include "TTree.h"
 #include "TCut.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TLegend.h"
 #include "TCanvas.h"
-#include "TRoot.h"
 #include "TLine.h"
 #include "TStyle.h"
 #include <iostream>

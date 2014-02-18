@@ -15,8 +15,8 @@ void Delta(TTree* ddiag, const char* page="rho",const char* addcut="") {
   TCut cluster("nchits>=50&&nprimary/nchits>0.99");
 
   if(spage == "rho"){
-    TH1F* mrhocon = new TH1F("mrhocon","Cluster #rho;#rho (mm)",100,330,780);
-    TH1F* mrhobkg = new TH1F("mrhobkg","Cluster #rho;#rho (mm)",100,330,780);
+    TH1F* mrhocon = new TH1F("mrhocon","Cluster #rho;#rho (mm)",100,330,800);
+    TH1F* mrhobkg = new TH1F("mrhobkg","Cluster #rho;#rho (mm)",100,330,800);
     mrhocon->SetLineColor(kRed);
     mrhobkg->SetLineColor(kBlue);
 
@@ -41,10 +41,10 @@ void Delta(TTree* ddiag, const char* page="rho",const char* addcut="") {
 
   } else if(spage == "spread"){
 
-    TH1F* srhocon = new TH1F("srhocon","Sigma of hit #rho distribution;#sigma #rho (mm)",100,0,20);
-    TH1F* srhobkg = new TH1F("srhobkg","Sigma of hit #rho distribution;#sigma #rho (mm)",100,0,20);
-    TH1F* sphicon = new TH1F("sphicon","Sigma of hit #phi distribution;#sigma #phi",100,0,0.15);
-    TH1F* sphibkg = new TH1F("sphibkg","Sigma of hit #phi distribution;#sigma #phi",100,0,0.15);
+    TH1F* srhocon = new TH1F("srhocon","Sigma of hit #rho distribution;#sigma #rho (mm)",100,0,50);
+    TH1F* srhobkg = new TH1F("srhobkg","Sigma of hit #rho distribution;#sigma #rho (mm)",100,0,50);
+    TH1F* sphicon = new TH1F("sphicon","Sigma of hit #phi distribution;#sigma #phi",100,0,0.20);
+    TH1F* sphibkg = new TH1F("sphibkg","Sigma of hit #phi distribution;#sigma #phi",100,0,0.20);
 
     srhocon->SetLineColor(kRed);
     srhobkg->SetLineColor(kBlue);
@@ -131,14 +131,14 @@ void Delta(TTree* ddiag, const char* page="rho",const char* addcut="") {
 
   } else if(spage == "stations"){
 
-    TH1F* smincon = new TH1F("smincon","peak smin;smin ",22,-0.5,21.5);
-    TH1F* sminbkg = new TH1F("sminbkg","peak smin;smin ",22,-0.5,21.5);
-    TH1F* smaxcon = new TH1F("smaxcon","peak smax;smax ",22,-0.5,21.5);
-    TH1F* smaxbkg = new TH1F("smaxbkg","peak smax;smax ",22,-0.5,21.5);
-    TH1F* nsmisscon = new TH1F("nsmisscon","peak nsmiss;nsmiss ",22,-0.5,21.5);
-    TH1F* nsmissbkg = new TH1F("nsmissbkg","peak nsmiss;nsmiss ",22,-0.5,21.5);
-    TH1F* nscon = new TH1F("nscon","peak ns;ns (mm)",22,-0.5,21.5);
-    TH1F* nsbkg = new TH1F("nsbkg","peak ns;ns (mm)",22,-0.5,21.5);
+    TH1F* smincon = new TH1F("smincon","peak smin;smin ",23,-0.5,22.5);
+    TH1F* sminbkg = new TH1F("sminbkg","peak smin;smin ",23,-0.5,22.5);
+    TH1F* smaxcon = new TH1F("smaxcon","peak smax;smax ",23,-0.5,22.5);
+    TH1F* smaxbkg = new TH1F("smaxbkg","peak smax;smax ",23,-0.5,22.5);
+    TH1F* nsmisscon = new TH1F("nsmisscon","peak nsmiss;nsmiss ",23,-0.5,22.5);
+    TH1F* nsmissbkg = new TH1F("nsmissbkg","peak nsmiss;nsmiss ",23,-0.5,22.5);
+    TH1F* nscon = new TH1F("nscon","peak ns;ns (mm)",23,-0.5,22.5);
+    TH1F* nsbkg = new TH1F("nsbkg","peak ns;ns (mm)",23,-0.5,22.5);
 
     smincon->SetLineColor(kRed);
     sminbkg->SetLineColor(kBlue);
