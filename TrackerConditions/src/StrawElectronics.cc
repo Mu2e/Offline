@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.1 2014/01/18 17:31:23 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.2 2014/02/18 20:25:25 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/01/18 17:31:23 $
+// $Date: 2014/02/18 20:25:25 $
 //
 // Original author David Brown, LBNL
 //
@@ -28,7 +28,7 @@ namespace mu2e {
     _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",0.5)), //mVolt
     _ADCLSB(pset.get<double>("ADCLSB",0.25)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
-    _ADCped(pset.get<unsigned>("ADCPedetal",64)),
+    _ADCped(pset.get<unsigned>("ADCPedestal",128)),
     _nADC(pset.get<unsigned>("nADC",10)),
     _nADCpre(pset.get<unsigned>("nADCPresamples",2)),
     _ADCPeriod(pset.get<double>("ADCPeriod",20.0)), // nsec
@@ -38,7 +38,7 @@ namespace mu2e {
     _maxDTDC(pset.get<unsigned>("maxDeltaTDC",251)),
     _clockStart(pset.get<double>("clockStart",200.0)), // nsec
     _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
-    _flashStart(pset.get<double>("FlashStart",100.0)), //nsec
+    _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
     _flashEnd(pset.get<double>("FlashEnd",300.0)) // nsec
  {
     // calcluate normalization
