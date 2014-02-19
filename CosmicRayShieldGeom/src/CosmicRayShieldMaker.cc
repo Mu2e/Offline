@@ -1,9 +1,9 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.31 2014/02/14 04:10:50 ehrlich Exp $
+// $Id: CosmicRayShieldMaker.cc,v 1.32 2014/02/19 18:55:52 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2014/02/14 04:10:50 $
+// $Date: 2014/02/19 18:55:52 $
 //
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
@@ -80,6 +80,7 @@ namespace mu2e
 17	CRV-C3 (cryo top)
 */
     _nShields = 18;
+    _nLayers  = 4; 
 
     _counterLength[0]       = config.getDouble("crs.scintillatorBarLengthR1");
     _counterLength[1]       = config.getDouble("crs.scintillatorBarLengthR2");
@@ -182,7 +183,6 @@ namespace mu2e
                                               int nModules, int nCounters)
   {
     static int ishield=0;
-    int nLayers=4;
     _crs->_scintillatorShields[name] = CRSScintillatorShield(CRSScintillatorShieldId(ishield), name);
     CRSScintillatorShield &shield = _crs->_scintillatorShields[name];
     shield._barDetails._halfLengths = counterHalfLengths;
@@ -194,7 +194,7 @@ namespace mu2e
       shield._modules.push_back(CRSScintillatorModule(CRSScintillatorModuleId(ishield,imodule)));
       CRSScintillatorModule &module = shield._modules.back();
 
-      for(int ilayer=0; ilayer<nLayers; ilayer++)
+      for(int ilayer=0; ilayer<_nLayers; ilayer++)
       {
         module._layers.push_back(CRSScintillatorLayer(CRSScintillatorLayerId(ishield,imodule,ilayer)));
         CRSScintillatorLayer &layer = module._layers.back();
@@ -239,7 +239,7 @@ namespace mu2e
         for(int i=0; i<3; i++) layer._halfLengths[i] = abs(0.5*(layerStart[i] - layerEnd[i]))+counterHalfLengths[i];
 
         //Absorber layer position and dimension
-        if(ilayer<nLayers-1)
+        if(ilayer<_nLayers-1)
         {
           module._absorberLayers.push_back(CRSAbsorberLayer(CRSScintillatorLayerId(ishield,imodule,ilayer)));
           CRSAbsorberLayer &absorberLayer = module._absorberLayers.back();
@@ -269,9 +269,8 @@ namespace mu2e
     int nBars=0;
     for(int i=0; i<_nShields; i++)
     {
-      nBars=_nModules[i]*_nLayers*_nCountersPerModule[i];
+      nBars+=_nModules[i]*_nLayers*_nCountersPerModule[i];
     }
-    //this doesn't account for the fact that some of the last modules of less bars, but that's Ok.
     _crs->_allCRSScintillatorBars.reserve(nBars);
 
     double HT=_counterThickness/2.0;
