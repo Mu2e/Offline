@@ -1,0 +1,18 @@
+process_name: malloctest
+
+source: {
+    module_type: EmptyEvent
+    maxEvents: 1
+}
+
+physics: {
+    analyzers: {
+        mtest: {
+            module_type: malloc
+            nbytes: 12884901888 // 12 GiB
+        }
+    }
+
+    e1: [ mtest ]
+    end_paths: [e1]
+}
