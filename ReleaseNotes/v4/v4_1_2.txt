@@ -2,6 +2,23 @@
 
            Release notes for Mu2e Offline software, v4_1_2
 
+12) February 21, 2014, ehrlich
+    Added DiskCalorimeter and MCTrajectory to the EventDisplay.
+    Modified Files:
+      MCDataProducts/inc/MCTrajectory.hh EventDisplay/src/Cone.h 
+      EventDisplay/src/ContentSelector.cc 
+      EventDisplay/src/ContentSelector.h EventDisplay/src/Cube.h 
+      EventDisplay/src/Cylinder.h EventDisplay/src/DataInterface.cc 
+      EventDisplay/src/DataInterface.h 
+      EventDisplay/src/EventDisplayFrame.cc 
+      EventDisplay/src/LinkDef.h EventDisplay/src/Sphere.h 
+      EventDisplay/src/Straw.h EventDisplay/src/Track.h 
+      EventDisplay/src/VirtualShape.h 
+      EventDisplay/src/dict_classes/EventDisplayViewSetup.h 
+    Added Files:
+      EventDisplay/src/Hexagon.h 
+      EventDisplay/src/dict_classes/EventDisplayGeoVolumePgon.h 
+
 11) February 18, 2013 knoepfel
 
     Include out-of-time POT pulse from Eric Prebys.  Significantly
