@@ -4,13 +4,14 @@
 // A trajectory defined as a collection of 3D points + time.
 // The points are defined in the Mu2e coordinate system.
 //
-// $Id: MCTrajectory.hh,v 1.1 2014/01/18 03:08:28 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/18 03:08:28 $
+// $Id: MCTrajectory.hh,v 1.2 2014/02/22 01:52:17 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2014/02/22 01:52:17 $
 //
 // Contact person Rob Kutschke
 //
 
+#include "MCDataProducts/inc/SimParticle.hh"
 #include "art/Persistency/Common/Ptr.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "cetlib/map_vector.h"

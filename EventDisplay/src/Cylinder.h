@@ -1,9 +1,9 @@
 //
 // Class for all static (i.e. time-independent) cylinder structures, e.g. TTracker, target. The structure is displayed via EventDisplayGeoVolumeTube (inherited from TGeoVolume) which holds a TGeoTube. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class).
 //
-// $Id: Cylinder.h,v 1.11 2012/09/14 17:17:34 ehrlich Exp $
+// $Id: Cylinder.h,v 1.12 2014/02/22 01:52:18 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/09/14 17:17:34 $
+// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //
@@ -55,7 +55,6 @@ class Cylinder: public VirtualShape
     }
   };
   std::map<layersegment_struct,line_struct> _lines;
-  bool _notDrawn;
 
   void addline(double x1, double y1, double z1, double x2, double y2, double z2,
                int layer, int segment, int direction, EventDisplayFrame *mainframe)
@@ -69,7 +68,6 @@ class Cylinder: public VirtualShape
     newline.z2=z2;
     newline.line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
     newline.line->SetLineWidth(1);
-    newline.line->SetLineColor(getDefaultColor());
     newline.line->SetPoint(0,x1,y1,z1);
     newline.line->SetPoint(1,x2,y2,z2);
     layersegment_struct layersegment;
@@ -86,18 +84,15 @@ class Cylinder: public VirtualShape
            double innerRadius, double outerRadius, double startTime,
            const TGeoManager *geomanager, TGeoVolume *topvolume,
            EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
-           bool defaultVisibility):
-           VirtualShape(geomanager, topvolume, mainframe, info, true)
+           bool isGeometry):
+           VirtualShape(geomanager, topvolume, mainframe, info, isGeometry)
   {
     setStartTime(startTime);
-    setDefaultVisibility(defaultVisibility);
     _notDrawn=true;
 
     _volume = new EventDisplayGeoVolumeTube(innerRadius, outerRadius, halflength, mainframe, _info);
     _volume->SetVisibility(0);
     _volume->SetLineWidth(1);
-    _volume->SetLineColor(getDefaultColor());
-    _volume->SetFillColor(getDefaultColor());
     _rotation = new TGeoRotation("",phi*180.0/TMath::Pi(),theta*180.0/TMath::Pi(),psi*180.0/TMath::Pi());
     _translation = new TGeoCombiTrans(x,y,z,_rotation);
     int i=0;
@@ -196,41 +191,28 @@ class Cylinder: public VirtualShape
 
   void start()
   {
-    std::map<layersegment_struct,line_struct>::iterator iter;
-    if(getDefaultVisibility())
+    _volume->SetVisibility(0);
+    if(_notDrawn==false)
     {
-      _volume->SetVisibility(1);
-      _volume->SetLineColor(getDefaultColor());
-      _volume->SetFillColor(getDefaultColor());
-      if(_notDrawn==true)
+      std::map<layersegment_struct,line_struct>::iterator iter;
+      for(iter=_lines.begin(); iter!=_lines.end(); iter++)
       {
-        for(iter=_lines.begin(); iter!=_lines.end(); iter++)
-        {
-          line_struct &l=iter->second;
-          l.line->SetLineColor(getDefaultColor());
-          l.line->Draw();
-        }
+        line_struct &l=iter->second;
+        //gPad->RecursiveRemove(l.line.get());
+        gPad->GetListOfPrimitives()->Remove(l.line.get());
       }
-      _notDrawn=false;
     }
-    else
-    {
-      _volume->SetVisibility(0);
-      if(_notDrawn==false)
-      {
-        for(iter=_lines.begin(); iter!=_lines.end(); iter++)
-        {
-          line_struct &l=iter->second;
-          gPad->RecursiveRemove(l.line.get());
-        }
-      }
-      _notDrawn=true;
-    }
+    _notDrawn=true;
   }
 
   void update(double time)
   {
-    if(time<getStartTime() || isnan(getStartTime())) return;
+    if(time<getStartTime() || isnan(getStartTime()) || getStartTime()<_minTime || getStartTime()>_maxTime)
+    {
+      start();
+      return;
+    }
+
     _volume->SetVisibility(1);
     _volume->SetLineColor(getColor());
     _volume->SetFillColor(getColor());
@@ -242,6 +224,25 @@ class Cylinder: public VirtualShape
       if(_notDrawn==true) l.line->Draw();
     }
     _notDrawn=false;
+  }
+
+  void makeGeometryVisible(bool visible)
+  {
+    if(visible)
+    {
+      _volume->SetVisibility(1);
+      _volume->SetLineColor(getDefaultColor());
+      _volume->SetFillColor(getDefaultColor());
+      std::map<layersegment_struct,line_struct>::iterator iter;
+      for(iter=_lines.begin(); iter!=_lines.end(); iter++)
+      {
+        line_struct &l=iter->second;
+        l.line->SetLineColor(getDefaultColor());
+        if(_notDrawn==true) l.line->Draw();
+      }
+      _notDrawn=false;
+    }
+    else start();
   }
 };
 

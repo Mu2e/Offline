@@ -2,9 +2,9 @@
 // Virtual base class for all shapes.
 // Container class for the geometry object(s) with information on how they are to be displayed and updated for specific times.
 //
-// $Id: VirtualShape.h,v 1.12 2013/05/02 06:03:41 ehrlich Exp $
+// $Id: VirtualShape.h,v 1.13 2014/02/22 01:52:18 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/05/02 06:03:41 $
+// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //
@@ -33,8 +33,6 @@ class VirtualShape : public TObject
 
   double _startTime;
   double _endTime;
-  bool   _defaultVisibility;   //i.e. visibility of straws before hit, unhit straws,
-                              //permanent structures, etc.
   bool   _isGeometry;
   int    _color;
 
@@ -43,6 +41,8 @@ class VirtualShape : public TObject
   TGeoVolume        *_topvolume;
   EventDisplayFrame *_mainframe;
   boost::shared_ptr<ComponentInfo> _info;
+  bool   _notDrawn;
+  double _minTime, _maxTime; //filter
 
   public:
 
@@ -50,7 +50,7 @@ class VirtualShape : public TObject
                EventDisplayFrame *mainframe,
                const boost::shared_ptr<ComponentInfo> info, bool isGeometry):
                _startTime(NAN),_endTime(NAN),
-               _defaultVisibility(true), _isGeometry(isGeometry), _color(kGray),
+               _isGeometry(isGeometry), _color(kGray),
                _geomanager(geomanager), _topvolume(topvolume), 
                _mainframe(mainframe), _info(info)
   {}
@@ -67,9 +67,7 @@ class VirtualShape : public TObject
   double getStartTime() const {return _startTime;}
   double getEndTime() const {return _endTime;}
 
-  void setDefaultVisibility(bool v) {_defaultVisibility=v;}
   void setIsPermanent(bool g) {_isGeometry=g;}
-  bool getDefaultVisibility() const {return _defaultVisibility;}
   bool isGeometry() const {return _isGeometry;}
 
   void setColor(int c) {_color=c;}
@@ -79,6 +77,19 @@ class VirtualShape : public TObject
   virtual void start()=0;
   virtual void update(double time)=0;
   virtual void makeGeometryVisible(bool visible) {;}
+  virtual void toForeground() {;}
+
+  void resetFilter()
+  {
+    _minTime=NAN;
+    _maxTime=NAN;
+  }
+
+  void setFilter(double minTime, double maxTime)
+  {
+    _minTime=minTime;
+    _maxTime=maxTime;
+  }
 
   static void rotate(double oldX, double oldY, double oldZ,
                      double &newX, double &newY, double &newZ,

@@ -117,7 +117,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
 
   _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, trackBox, _g4ModuleLabel));
 
-  _supportStructuresButton = new TGCheckButton(_subFrame,"Show Tracker Supports, Calo Vanes, Target",32);
+  _supportStructuresButton = new TGCheckButton(_subFrame,"Show Tracker Supports, Calo Disks, Target",32);
   _supportStructuresButton->SetState(kButtonDown);
   _subFrame->AddFrame(_supportStructuresButton, lh1);
   _supportStructuresButton->Associate(this);
@@ -143,21 +143,25 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _mecoStyleProtonAbsorberButton->Associate(this);
 
   TGHorizontalFrame *subFrameView   = new TGHorizontalFrame(_subFrame,300,15);
-  TGTextButton *endViewButton       = new TGTextButton(subFrameView, "___  End View", 70, buttoncontext);
-  TGTextButton *sideViewButton      = new TGTextButton(subFrameView, "___  Side View", 71, buttoncontext);
-  TGTextButton *allTracksViewButton = new TGTextButton(subFrameView, "_____  All Tracks View", 72, buttoncontext);
-  TGTextButton *resetViewButton     = new TGTextButton(subFrameView, "___  Reset View", 73, buttoncontext);
+  TGTextButton *endViewButton       = new TGTextButton(subFrameView, "___  End V", 70, buttoncontext);
+  TGTextButton *sideViewButton      = new TGTextButton(subFrameView, "___  Side V", 71, buttoncontext);
+  TGTextButton *topViewButton       = new TGTextButton(subFrameView, "___  Top V", 72, buttoncontext);
+  TGTextButton *allTracksViewButton = new TGTextButton(subFrameView, "_____  All Tracks", 73, buttoncontext);
+  TGTextButton *resetViewButton     = new TGTextButton(subFrameView, "___  Reset View", 74, buttoncontext);
   shrinkButton(endViewButton);
   shrinkButton(sideViewButton);
+  shrinkButton(topViewButton);
   shrinkButton(allTracksViewButton);
   shrinkButton(resetViewButton);
   subFrameView->AddFrame(endViewButton, lh1);
   subFrameView->AddFrame(sideViewButton, lh1);
+  subFrameView->AddFrame(topViewButton, lh1);
   subFrameView->AddFrame(allTracksViewButton, lh1);
   subFrameView->AddFrame(resetViewButton, lh1);
   _subFrame->AddFrame(subFrameView, lh0);
   endViewButton->Associate(this);
   sideViewButton->Associate(this);
+  topViewButton->Associate(this);
   allTracksViewButton->Associate(this);
   resetViewButton->Associate(this);
 
@@ -650,6 +654,7 @@ void EventDisplayFrame::updateTimeIntervalFields(bool allTracks)
   }
 
   char c[50];
+  if(maxt<mint) {mint=NAN; maxt=NAN;}
   sprintf(c,"%.0f",mint); _timeIntervalField1->SetText(c);
   sprintf(c,"%.0f",maxt); _timeIntervalField2->SetText(c);
 }
@@ -679,6 +684,7 @@ void EventDisplayFrame::updateHitLegend(bool draw)
         double mint=_dataInterface->getHitsTimeBoundary().mint;
         double maxt=_dataInterface->getHitsTimeBoundary().maxt;
         double t=i*(maxt-mint)/20.0+mint;
+        if(maxt<=mint) t=NAN;
         char s[50];
         sprintf(s,"%+.3e ns",t);
         _legendText[i]=new TText(0.72,0.54+i*0.02,s);
@@ -834,20 +840,21 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _timeCurrent=NAN;
                            gApplication->Terminate();
                          }
-                         if(param1>=70 && param1<=73)
+                         if(param1>=70 && param1<=74)
                          {
                            _mainPad->cd();
-                           DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, param1==72);
+                           DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, param1==73);
                            _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
-                           if(param1<72)
+                           if(param1<73)
                            {
                              if(param1==70) EventDisplayViewSetup::endview();
-                             else EventDisplayViewSetup::sideview();
+                             if(param1==71) EventDisplayViewSetup::sideview();
+                             if(param1==72) EventDisplayViewSetup::topview();
                              _parallelButton->SetState(kButtonDown);
                              _perspectiveButton->SetState(kButtonUp);
                              _mainPad->GetView()->SetParallel();
                            }
-                           if(param1==73)
+                           if(param1==74)
                            {
                              EventDisplayViewSetup::perspectiveview();
                              _parallelButton->SetState(kButtonUp);
@@ -970,6 +977,8 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          if(param1==63)
                          {
                            new FilterDialog(gClient->GetRoot(), _dataInterface, _contentSelector);
+                           _dataInterface->useHitColors(_useHitColors, _whiteBackground);
+                           updateHitLegend(_useHitColors);
                            drawEverything();
                          }
                          if(param1==64)

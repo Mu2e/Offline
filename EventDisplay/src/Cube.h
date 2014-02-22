@@ -1,9 +1,9 @@
 //
 // Class for all cube structures, e.g. vanes, crystals. The structure is displayed via EventDisplayGeoVolumeBox (inherited from TGeoVolume) which holds a TGeoBox. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class).
 //
-// $Id: Cube.h,v 1.11 2013/05/02 06:03:41 ehrlich Exp $
+// $Id: Cube.h,v 1.12 2014/02/22 01:52:18 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/05/02 06:03:41 $
+// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //
@@ -37,7 +37,6 @@ class Cube: public VirtualShape
     boost::shared_ptr<EventDisplayPolyLine3D> line;
   };
   std::vector<line_struct> _lines;
-  bool _notDrawn;
 
   struct points{double x,y,z;};
 
@@ -76,8 +75,9 @@ class Cube: public VirtualShape
   Cube(double x, double y, double z, double dx, double dy, double dz,
            double phi, double theta, double psi, double time,
            const TGeoManager *geomanager, TGeoVolume *topvolume,
-           EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info) : 
-           VirtualShape(geomanager, topvolume, mainframe, info, true)
+           EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
+           bool isGeometry) : 
+           VirtualShape(geomanager, topvolume, mainframe, info, isGeometry)
   {
     setStartTime(time);
     _notDrawn=true;
@@ -85,8 +85,6 @@ class Cube: public VirtualShape
     _volume = new EventDisplayGeoVolumeBox(dx, dy, dz, mainframe, _info);
     _volume->SetVisibility(0);
     _volume->SetLineWidth(1);
-    _volume->SetLineColor(getDefaultColor());
-    _volume->SetFillColor(getDefaultColor());
     _rotation = new TGeoRotation("",phi*180.0/TMath::Pi(),theta*180.0/TMath::Pi(),psi*180.0/TMath::Pi());
     _translation = new TGeoCombiTrans(x,y,z,_rotation);
     int i=0;
@@ -115,7 +113,6 @@ class Cube: public VirtualShape
     {
       newline.line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
       newline.line->SetLineWidth(1);
-      newline.line->SetLineColor(getDefaultColor());
       newline.line->SetPoint(0,p[i].x,p[i].y,p[i].z);
       newline.line->SetPoint(1,p[i+4].x,p[i+4].y,p[i+4].z);
       _lines.push_back(newline);
@@ -124,7 +121,6 @@ class Cube: public VirtualShape
     {
       newline.line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
       newline.line->SetLineWidth(1);
-      newline.line->SetLineColor(getDefaultColor());
       newline.line->SetPoint(0,p[i].x,p[i].y,p[i].z);
       if(i<3) newline.line->SetPoint(1,p[i+1].x,p[i+1].y,p[i+1].z);
       else newline.line->SetPoint(1,p[0].x,p[0].y,p[0].z);
@@ -134,7 +130,6 @@ class Cube: public VirtualShape
     {
       newline.line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
       newline.line->SetLineWidth(1);
-      newline.line->SetLineColor(getDefaultColor());
       newline.line->SetPoint(0,p[i].x,p[i].y,p[i].z);
       if(i<7) newline.line->SetPoint(1,p[i+1].x,p[i+1].y,p[i+1].z);
       else newline.line->SetPoint(1,p[4].x,p[4].y,p[4].z);
@@ -154,6 +149,7 @@ class Cube: public VirtualShape
 
   void start()
   {
+    resetFilter();
     _volume->SetVisibility(0);
     if(_notDrawn==false)
     {
@@ -161,7 +157,8 @@ class Cube: public VirtualShape
       for(iter=_lines.begin(); iter!=_lines.end(); iter++)
       {
         line_struct &l=*iter;
-        gPad->RecursiveRemove(l.line.get());
+//        gPad->RecursiveRemove(l.line.get());
+        gPad->GetListOfPrimitives()->Remove(l.line.get());
       }
     }
     _notDrawn=true;
@@ -175,7 +172,8 @@ class Cube: public VirtualShape
       for(iter=_lines.begin(); iter!=_lines.end(); iter++)
       {
         line_struct &l=*iter;
-        gPad->RecursiveRemove(l.line.get());
+//        gPad->RecursiveRemove(l.line.get());
+        gPad->GetListOfPrimitives()->Remove(l.line.get());
         l.line->Draw();
       }
     }
@@ -183,7 +181,12 @@ class Cube: public VirtualShape
 
   void update(double time)
   {
-    if(time<getStartTime() || isnan(getStartTime())) return;
+    if(time<getStartTime() || isnan(getStartTime()) || getStartTime()<_minTime || getStartTime()>_maxTime)
+    {
+      start();
+      return;
+    }
+
     _volume->SetVisibility(1);
     _volume->SetLineColor(getColor());
     _volume->SetFillColor(getColor());

@@ -1,9 +1,9 @@
 //
 // Container class for all detector straws. Straws are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). Straws which are hit are drawn in a particular color which depends on the hit time.
 //
-// $Id: Straw.h,v 1.12 2013/05/02 06:03:41 ehrlich Exp $
+// $Id: Straw.h,v 1.13 2014/02/22 01:52:18 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/05/02 06:03:41 $
+// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //
@@ -28,17 +28,17 @@ class Straw: public VirtualShape
   Straw& operator=(const Straw &);
 
   boost::shared_ptr<EventDisplayPolyLine3D> _line;
-  bool _notDrawn;
-  int  _hitNumber;
-  bool _invisible;
+  int   _hitNumber;
+  bool  _invisible;
 
   public:
 
   Straw(double x, double y, double z, double t1,
         double theta, double phi, double halflength,
         const TGeoManager *geomanager, TGeoVolume *topvolume,
-        EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info):
-        VirtualShape(geomanager, topvolume, mainframe, info, true)
+        EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
+        bool isGeometry):
+        VirtualShape(geomanager, topvolume, mainframe, info, isGeometry)
   {
     setStartTime(t1);
     _hitNumber=-1;
@@ -55,20 +55,20 @@ class Straw: public VirtualShape
     double y2=y+halflength*st*cp;
     double z2=z-halflength*ct;
     _line->SetLineWidth(1);
-    _line->SetLineColor(getDefaultColor());
     _line->SetPoint(0,x1,y1,z1);
     _line->SetPoint(1,x2,y2,z2);
     start();
   }
 
   virtual ~Straw()
-  {
+  {    //since _line is a shared pointer, it gets automatically removed if Straw gets removed
   }
 
   void start()
   {
-    _invisible=false;
-    if(_notDrawn==false) gPad->RecursiveRemove(_line.get());
+    resetFilter();
+//    if(_notDrawn==false) //gPad->RecursiveRemove(_line.get());
+    if(_notDrawn==false) gPad->GetListOfPrimitives()->Remove(_line.get());
     _notDrawn=true;
   }
 
@@ -76,19 +76,17 @@ class Straw: public VirtualShape
   {
     if(_notDrawn==false)
     {
-      gPad->RecursiveRemove(_line.get());
+      //gPad->RecursiveRemove(_line.get());
+      gPad->GetListOfPrimitives()->Remove(_line.get());
       _line->Draw();
     }
   }
 
   void update(double time)
   {
-    if(time<getStartTime() || isnan(getStartTime())) return;
-
-    if(_invisible)
+    if(time<getStartTime() || isnan(getStartTime()) || getStartTime()<_minTime || getStartTime()>_maxTime)
     {
-      if(_notDrawn==false) gPad->RecursiveRemove(_line.get());
-      _notDrawn=true;
+      start();
       return;
     }
 
@@ -100,8 +98,17 @@ class Straw: public VirtualShape
     }
   }
  
-  void setInvisible(bool invisible)
+  void resetFilter()
   {
+    _minTime=NAN;
+    _maxTime=NAN;
+    _invisible=false;
+  }
+
+  void setFilter(double minTime, double maxTime, bool invisible)
+  {
+    _minTime=minTime;
+    _maxTime=maxTime;
     _invisible=invisible; //true, if the flag value is not satisfied for this hit
   }
  

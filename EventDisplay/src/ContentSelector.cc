@@ -155,6 +155,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   }
 
 //PointTrajectories
+  event.getManyByType(_mcTrajectoryVector);
   event.getManyByType(_pointTrajectoryVector);
 
 //Other
@@ -346,6 +347,19 @@ const mu2e::PhysicalVolumeInfoCollection* ContentSelector::getPhysicalVolumeInfo
 {
   if(_hasPhysicalVolumes) return(_physicalVolumes.product());
   else return(nullptr);
+}
+
+const mu2e::MCTrajectoryCollection* ContentSelector::getMCTrajectoryCollection(const trackInfoStruct &t) const
+{
+  typedef std::vector<art::Handle<mu2e::MCTrajectoryCollection> > CollectionVector;
+  typedef typename CollectionVector::const_iterator itertype;
+  itertype iter;
+  for(iter=_mcTrajectoryVector.begin(); iter!=_mcTrajectoryVector.end(); iter++)
+  {
+    if(t.moduleLabel==iter->provenance()->moduleLabel() && t.productInstanceName==iter->provenance()->productInstanceName()) 
+      return(iter->product());
+  }
+  return(nullptr);
 }
 
 const mu2e::PointTrajectoryCollection* ContentSelector::getPointTrajectoryCollection(const trackInfoStruct &t) const

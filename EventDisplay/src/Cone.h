@@ -1,9 +1,9 @@
 //
 // Class for all static (i.e. time-independent) cone structures. Now only used for MecoStyleProtonAbsorber. The structure is displayed via EventDisplayGeoVolumeCone (inherited from TGeoVolume) which holds a TGeoCone. 
 //
-// $Id: Cone.h,v 1.2 2013/05/02 06:03:41 ehrlich Exp $
+// $Id: Cone.h,v 1.3 2014/02/22 01:52:18 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/05/02 06:03:41 $
+// $Date: 2014/02/22 01:52:18 $
 //
 // Original author MyeongJae Lee, based on Ralf Ehrlich's Tube.h.
 //
@@ -31,7 +31,6 @@ class Cone: public VirtualShape
   EventDisplayGeoVolumeCone *_volume;
   TGeoRotation *_rotation;
   TGeoCombiTrans *_translation;
-  bool _notDrawn;
   struct line_struct
   {
     double x1, y1, z1, x2, y2, z2;
@@ -71,7 +70,6 @@ class Cone: public VirtualShape
     newline.z2=z2;
     newline.line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
     newline.line->SetLineWidth(1);
-    newline.line->SetLineColor(getDefaultColor());
     newline.line->SetPoint(0,x1,y1,z1);
     newline.line->SetPoint(1,x2,y2,z2);
 /*    layersegment_struct layersegment;
@@ -91,18 +89,15 @@ class Cone: public VirtualShape
            double startTime,
            const TGeoManager *geomanager, TGeoVolume *topvolume,
            EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
-           bool defaultVisibility):
-           VirtualShape(geomanager, topvolume, mainframe, info, true)
+           bool isGeometry):
+           VirtualShape(geomanager, topvolume, mainframe, info, isGeometry)
   {
     setStartTime(startTime);
-    setDefaultVisibility(defaultVisibility);
     _notDrawn=true;
 
     _volume = new EventDisplayGeoVolumeCone(innerRadius1, outerRadius1, innerRadius2, outerRadius2, halflength, mainframe, _info);
     _volume->SetVisibility(0);
     _volume->SetLineWidth(1);
-    _volume->SetLineColor(getDefaultColor());
-    _volume->SetFillColor(getDefaultColor());
     _rotation = new TGeoRotation("",phi*180.0/TMath::Pi(),theta*180.0/TMath::Pi(),psi*180.0/TMath::Pi());
     _translation = new TGeoCombiTrans(x,y,z,_rotation);
     int i=0;
@@ -216,7 +211,8 @@ class Cone: public VirtualShape
       {
         //line_struct &l=iter->second;
         line_struct &l=*iter;
-        gPad->RecursiveRemove(l.line.get());
+        //gPad->RecursiveRemove(l.line.get());
+        gPad->GetListOfPrimitives()->Remove(l.line.get());
       }
     }
     _notDrawn=true;
@@ -224,7 +220,12 @@ class Cone: public VirtualShape
 
   void update(double time)
   {
-    if(time<getStartTime() || isnan(getStartTime())) return;
+    if(time<getStartTime() || isnan(getStartTime()) || getStartTime()<_minTime || getStartTime()>_maxTime)
+    {
+      start();
+      return;
+    }
+
     _volume->SetVisibility(1);
     _volume->SetLineColor(getColor());
     _volume->SetFillColor(getColor());

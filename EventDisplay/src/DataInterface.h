@@ -1,9 +1,9 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.32 2013/05/31 18:07:18 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
+// $Id: DataInterface.h,v 1.33 2014/02/22 01:52:18 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //
@@ -64,11 +64,11 @@ class DataInterface
                                    //ROOT needs a bare pointer to this object when dealing
                                    //with context menus (the function which gets called
                                    //from the context menu belongs to this object)
-  std::list<boost::shared_ptr<VirtualShape> >   _components;
-  std::map<int, boost::shared_ptr<Straw> >      _straws;
-  std::map<int, boost::shared_ptr<Cube> >       _crystals;
+  std::list<boost::shared_ptr<VirtualShape> >       _components;
+  std::map<int, boost::shared_ptr<Straw> >          _straws;
+  std::map<int, boost::shared_ptr<VirtualShape> >   _crystals;
   std::vector<boost::shared_ptr<Straw> >        _hits;
-  std::vector<boost::shared_ptr<Cube> >         _crystalhits;
+  std::vector<boost::shared_ptr<VirtualShape> > _crystalhits;
   std::vector<boost::shared_ptr<Cylinder> >     _driftradii;
   std::vector<boost::shared_ptr<Track> >        _tracks;
   std::vector<boost::shared_ptr<VirtualShape> > _supportstructures;
@@ -142,8 +142,9 @@ class DataInterface
   int getNumberHits() {return _numberHits;}
   int getNumberCrystalHits() {return _numberCrystalHits;}
 
-  timeminmax getHitsTimeBoundary() {return _hitsTimeMinmax;}
-  timeminmax getTracksTimeBoundary() {return _tracksTimeMinmax;}
+  timeminmax getHitsTimeBoundary(); 
+  timeminmax getTracksTimeBoundary();
+
   spaceminmax getTrackerBoundary() {return _trackerMinmax;}
   spaceminmax getTargetBoundary() {return _targetMinmax;}
   spaceminmax getCalorimeterBoundary() {return _calorimeterMinmax;}

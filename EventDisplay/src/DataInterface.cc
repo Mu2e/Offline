@@ -1,14 +1,15 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.69 2013/09/27 16:03:41 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/09/27 16:03:41 $
+// $Id: DataInterface.cc,v 1.70 2014/02/22 01:52:18 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2014/02/22 01:52:18 $
 //
 
 #include "DataInterface.h"
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/Rotation.h"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -17,6 +18,7 @@
 #include "EventDisplay/src/Cylinder.h"
 #include "EventDisplay/src/Cone.h"
 #include "EventDisplay/src/EventDisplayFrame.h"
+#include "EventDisplay/src/Hexagon.h"
 #include "EventDisplay/src/Straw.h"
 #include "EventDisplay/src/Track.h"
 #include "EventDisplay/src/TrackColorSelector.h"
@@ -27,6 +29,7 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "HepPID/ParticleName.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -91,11 +94,7 @@ DataInterface::~DataInterface()
 
 void DataInterface::startComponents()
 {
-  std::list<boost::shared_ptr<VirtualShape> >::const_iterator iter;
-  for(iter=_components.begin(); iter!=_components.end(); iter++)
-  {
-    (*iter)->start();
-  }
+//  removeNonGeometryComponents();
 }
 
 void DataInterface::updateComponents(double time, boost::shared_ptr<ContentSelector> contentSelector)
@@ -116,33 +115,35 @@ void DataInterface::updateComponents(double time, boost::shared_ptr<ContentSelec
     if(hitFlagCollection!=nullptr)
     {
       //flag collection selected --> show only hits which have certain hit flags
-      (*hit)->setInvisible(true);
+      (*hit)->setFilter(_minTime, _maxTime, true);
       if(hitnumber<static_cast<int>(hitFlagCollection->size()) && hitnumber>=0)
       {
         const mu2e::StrawHitFlag& hitFlag = (*hitFlagCollection)[hitnumber];
         if(hitFlag.hasAnyProperty(_hitFlagSetting))
         {
-          (*hit)->setInvisible(false);
+          (*hit)->setFilter(_minTime, _maxTime, false);
         } 
       }
     }
     else
     {
       //no flag collection selected --> show all hits
-      (*hit)->setInvisible(false);
+      (*hit)->setFilter(_minTime, _maxTime, false);
     }
     (*hit)->update(time);
   }
 
-  std::vector<boost::shared_ptr<Cube> >::const_iterator crystalhit; //iterate only over hit crystals
+  std::vector<boost::shared_ptr<VirtualShape> >::const_iterator crystalhit; //iterate only over hit crystals
   for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
   {
+    (*crystalhit)->setFilter(_minTime, _maxTime);
     (*crystalhit)->update(time);
   }
   
   std::vector<boost::shared_ptr<Cylinder> >::const_iterator driftradius;
   for(driftradius=_driftradii.begin(); driftradius!=_driftradii.end(); driftradius++)
   {
+    (*driftradius)->setFilter(_minTime, _maxTime);
     (*driftradius)->update(time);
   }
 }
@@ -181,6 +182,22 @@ void DataInterface::setFilterValues(unsigned int minPoints, double minTime, doub
     _showNeutrons=showNeutrons;
     _showOthers=showOthers;
     _hitFlagSetting=hitFlagSetting;
+}
+
+DataInterface::timeminmax DataInterface::getHitsTimeBoundary() 
+{
+  DataInterface::timeminmax toReturn=_hitsTimeMinmax;
+  if(_minTime>toReturn.mint) toReturn.mint=_minTime;
+  if(_maxTime<toReturn.maxt) toReturn.maxt=_maxTime;
+  return toReturn;
+}
+
+DataInterface::timeminmax DataInterface::getTracksTimeBoundary() 
+{
+  DataInterface::timeminmax toReturn=_tracksTimeMinmax;
+  if(_minTime>toReturn.mint) toReturn.mint=_minTime;
+  if(_maxTime<toReturn.maxt) toReturn.maxt=_maxTime;
+  return toReturn;
 }
 
 void DataInterface::createGeometryManager()
@@ -241,7 +258,8 @@ void DataInterface::fillGeometry()
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       info->setName(c);
       info->setText(0,c);
-      boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, info));
+      boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, 
+                                               _geometrymanager, _topvolume, _mainframe, info, true));
       _components.push_back(shape);
       _straws[index]=shape;
     }
@@ -267,6 +285,7 @@ void DataInterface::fillGeometry()
     boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,0, 0,0,0,
                                           zHalfLength,innerRadius,outerRadius, NAN, 
                                           _geometrymanager, _topvolume, _mainframe, info, true));
+    shape->makeGeometryVisible(true);
     _components.push_back(shape);
     _supportstructures.push_back(shape);
 
@@ -288,6 +307,7 @@ void DataInterface::fillGeometry()
     boost::shared_ptr<Cylinder> shapeEnvelope(new Cylinder(0,0,0, 0,0,0,
                                                   zHalfLength,innerRadius,outerRadius, NAN,
                                                   _geometrymanager, _topvolume, _mainframe, infoEnvelope, true));
+    shapeEnvelope->makeGeometryVisible(true);
     _components.push_back(shapeEnvelope);
     _supportstructures.push_back(shapeEnvelope);
   } 
@@ -342,8 +362,13 @@ void DataInterface::fillGeometry()
                                     boost::shared_ptr<ComponentInfo> infoDnS(new ComponentInfo());
                                     infoDnS->setName(c);
                                     infoDnS->setText(0,c);
-                                    //boost::shared_ptr<Straw> shapeDnS(new Straw(wCntPos[0],wCntPos[1],wCntPos[2], NAN, theta, phi, wl, _geometrymanager, _topvolume, _mainframe, infoDnS));
-                                    boost::shared_ptr<Straw> shapeDnS(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, infoDnS));
+                                    //boost::shared_ptr<Straw> shapeDnS(new Straw(wCntPos[0],wCntPos[1],wCntPos[2], 
+                                    //                                  NAN, theta, phi, wl, 
+                                    //                                  _geometrymanager, _topvolume, _mainframe, 
+                                    //                                  infoDnS, true));
+                                    boost::shared_ptr<Straw> shapeDnS(new Straw(x,y,z, NAN, theta, phi, l, 
+                                                                      _geometrymanager, _topvolume, _mainframe, 
+                                                                      infoDnS, true));
                                     _components.push_back(shapeDnS);
                                     _straws[index]=shapeDnS;
 
@@ -367,8 +392,13 @@ void DataInterface::fillGeometry()
                                     boost::shared_ptr<ComponentInfo> infoUpS(new ComponentInfo());
                                     infoUpS->setName(c);
                                     infoUpS->setText(0,c);
-                                    //boost::shared_ptr<Straw> shapeUpS(new Straw(wCntPos[0],wCntPos[1],wCntPos[2], NAN, theta, phi, wl, _geometrymanager, _topvolume, _mainframe, infoUpS));
-                                    boost::shared_ptr<Straw> shapeUpS(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, infoUpS));
+                                    //boost::shared_ptr<Straw> shapeUpS(new Straw(wCntPos[0],wCntPos[1],wCntPos[2], 
+                                    //                                  NAN, theta, phi, wl, 
+                                    //                                  _geometrymanager, _topvolume, _mainframe, 
+                                    //                                  infoUpS, true));
+                                    boost::shared_ptr<Straw> shapeUpS(new Straw(x,y,z, NAN, theta, phi, l, 
+                                                                      _geometrymanager, _topvolume, _mainframe, 
+                                                                      infoUpS, true));
                                     _components.push_back(shapeUpS);
                                     _straws[index]=shapeUpS;
 
@@ -388,7 +418,9 @@ void DataInterface::fillGeometry()
                                     boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
                                     info->setName(c);
                                     info->setText(0,c);
-                                    boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, _geometrymanager, _topvolume, _mainframe, info));
+                                    boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, 
+                                                                   _geometrymanager, _topvolume, _mainframe, 
+                                                                   info, true));
                                     _components.push_back(shape);
                                     _straws[index]=shape;
                             }
@@ -439,6 +471,7 @@ void DataInterface::fillGeometry()
     boost::shared_ptr<Cylinder> shapeEnvelope(new Cylinder(0,0,zoff, 0,0,0,
                                                   zHalfLength,innerRadius,outerRadius, NAN,
                                                   _geometrymanager, _topvolume, _mainframe, infoEnvelope, true));
+    shapeEnvelope->makeGeometryVisible(true);
     _components.push_back(shapeEnvelope);
     _supportstructures.push_back(shapeEnvelope);
   }
@@ -466,7 +499,7 @@ void DataInterface::fillGeometry()
     infoToyDS->setText(3,c);
     boost::shared_ptr<Cylinder> shapeToyDS(new Cylinder(0,0,z, 0,0,0,
                                                zHalfLength,innerRadius,outerRadius, NAN,
-                                               _geometrymanager, _topvolume, _mainframe, infoToyDS, false));
+                                               _geometrymanager, _topvolume, _mainframe, infoToyDS, true));
     _components.push_back(shapeToyDS);
     _otherstructures.push_back(shapeToyDS);
   }
@@ -499,11 +532,70 @@ void DataInterface::fillGeometry()
     info->setText(3,c);
     boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,z, 0,0,0, length/2.0,0,radius, NAN, 
                                           _geometrymanager, _topvolume, _mainframe, info, true));
+    shape->makeGeometryVisible(true);
     _components.push_back(shape);
     _supportstructures.push_back(shape);
   }
 
-  if(geom->hasElement<mu2e::VaneCalorimeter>())
+  if(geom->hasElement<mu2e::DiskCalorimeter>())
+  {
+    mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
+    double rmax = calo->crystalHalfTrans();
+    double crystalHalflength = calo->crystalHalfLength();
+
+
+    int crystalIdOffset=0;
+    for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++)
+    {
+      const CLHEP::Hep3Vector &diskPos = calo->disk(idisk).origin() - _detSysOrigin;
+      double innerRadius = calo->disk(idisk).size()[0];
+      double outerRadius = calo->disk(idisk).size()[1];
+      double diskHalflength = calo->disk(idisk).size()[2];
+
+      findBoundaryP(_calorimeterMinmax, diskPos.x()+outerRadius, diskPos.y()+innerRadius, diskPos.z()+diskHalflength);
+      findBoundaryP(_calorimeterMinmax, diskPos.x()-outerRadius, diskPos.y()-outerRadius, diskPos.z()-diskHalflength);
+
+      char c[200];
+      boost::shared_ptr<ComponentInfo> diskInfo(new ComponentInfo());
+      sprintf(c,"Disk %i",idisk);
+      diskInfo->setName(c);
+      diskInfo->setText(0,c);
+      sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",diskPos.x(),diskPos.y(),diskPos.z());
+      diskInfo->setText(1,c);
+      sprintf(c,"Outer radius: %.f mm, Inner radius: %.f mm, Thickness: %.f mm",outerRadius,innerRadius,2.0*diskHalflength);
+      diskInfo->setText(2,c);
+      boost::shared_ptr<Cylinder> calodisk(new Cylinder(diskPos.x(),diskPos.y(),diskPos.z(),  0,0,0,
+                                                        diskHalflength, innerRadius, outerRadius, NAN, 
+                                                        _geometrymanager, _topvolume, _mainframe, diskInfo, true));
+      calodisk->makeGeometryVisible(true);
+      _components.push_back(calodisk);
+      _supportstructures.push_back(calodisk);
+
+      int nCrystalInThisDisk = calo->disk(idisk).nCrystals();			
+      for(int ic=0; ic<nCrystalInThisDisk; ic++)
+      {
+        int id=crystalIdOffset+ic;
+	const CLHEP::Hep3Vector &pos = calo->crystalOrigin(crystalIdOffset+ic)-_detSysOrigin;
+
+        boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+        sprintf(c,"Disk %i, Crystal %i",idisk,id);
+        info->setName(c);
+        info->setText(0,c);
+        sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",pos.x(),pos.y(),pos.z()+crystalHalflength);
+        info->setText(1,c);
+        sprintf(c,"Size: %.f mm, Thickness: %.f mm",rmax,2.0*crystalHalflength);
+        info->setText(2,c);
+        //these position were meant for Geant4, where the "z position of [the] hexagon is their base, not their center"
+        //since this Hexagon class uses the center as a reference for, crystalHalflength needs to be added 
+        boost::shared_ptr<Hexagon> shape(new Hexagon(pos.x(),pos.y(),pos.z()+crystalHalflength,
+                                                     rmax,crystalHalflength,360, NAN,
+                                                     _geometrymanager, _topvolume, _mainframe, info, true));
+        _components.push_back(shape);
+        _crystals[id]=shape;
+      }
+      crystalIdOffset +=nCrystalInThisDisk;
+    }
+  } else if(geom->hasElement<mu2e::VaneCalorimeter>())
   {
     mu2e::GeomHandle<mu2e::VaneCalorimeter> calo;
     unsigned int n=calo->nVane();
@@ -536,7 +628,8 @@ void DataInterface::fillGeometry()
       sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm);
       info->setText(3,c);
       boost::shared_ptr<Cube> shape(new Cube(x,y,z,  sx,sy,sz,  phi,theta,psi,   NAN,
-                                        _geometrymanager, _topvolume, _mainframe, info));
+                                        _geometrymanager, _topvolume, _mainframe, info, true));
+      shape->makeGeometryVisible(true);
       _components.push_back(shape);
       _supportstructures.push_back(shape);
     }
@@ -588,15 +681,15 @@ void DataInterface::fillGeometry()
       sprintf(c,"Vane %i, Crystal %i",vaneid,crystalid);
       info->setName(c);
       info->setText(0,c);
-      sprintf(c,"Dimension  ?x: %.f mm, ?y: %.f mm, ?z: %.f mm",sx/CLHEP::mm,crystalHalfTrans/CLHEP::mm,crystalHalfTrans/CLHEP::mm);
-      info->setText(1,c);
-      sprintf(c,"Rotation phi: %.f °, theta: %.f °, psi: %.f °",phi/CLHEP::deg,theta/CLHEP::deg,psi/CLHEP::deg);
-      info->setText(2,c);
       sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",(x+rotatedX)/CLHEP::mm,(y+rotatedY)/CLHEP::mm,(z+rotatedZ)/CLHEP::mm);
+      info->setText(1,c);
+      sprintf(c,"Dimension  ?x: %.f mm, ?y: %.f mm, ?z: %.f mm",sx/CLHEP::mm,crystalHalfTrans/CLHEP::mm,crystalHalfTrans/CLHEP::mm);
+      info->setText(2,c);
+      sprintf(c,"Rotation phi: %.f °, theta: %.f °, psi: %.f °",phi/CLHEP::deg,theta/CLHEP::deg,psi/CLHEP::deg);
       info->setText(3,c);
       boost::shared_ptr<Cube> shape(new Cube(x+rotatedX,y+rotatedY,z+rotatedZ,  sx,crystalHalfTrans,crystalHalfTrans,
                                         phi,theta,psi,  NAN,
-                                        _geometrymanager, _topvolume, _mainframe, info));
+                                        _geometrymanager, _topvolume, _mainframe, info, true));
       _components.push_back(shape);
       _crystals[crystalid]=shape;
     }
@@ -634,7 +727,7 @@ void DataInterface::fillGeometry()
       infoMBS->setText(3,c);
       boost::shared_ptr<Cylinder> shapeMBS(new Cylinder(0,0,mbsz[i], 0,0,0,
                                                mbslen[i], mbsinr[i], mbsoutr[i], NAN,
-                                               _geometrymanager, _topvolume, _mainframe, infoMBS, false));
+                                               _geometrymanager, _topvolume, _mainframe, infoMBS, true));
       _components.push_back(shapeMBS);
       _mbsstructures.push_back(shapeMBS);
     }
@@ -670,7 +763,7 @@ void DataInterface::fillGeometry()
       infoMecoStylePA->setText(4,c);
       boost::shared_ptr<Cone> shapePA(new Cone(0,0,z, 0,0,0,
                                                 halflength, inr[0], outr[0], inr[1], outr[1],
-                                                NAN, _geometrymanager, _topvolume, _mainframe, infoMecoStylePA, false));
+                                                NAN, _geometrymanager, _topvolume, _mainframe, infoMecoStylePA, true));
       _components.push_back(shapePA);
       _mecostylepastructures.push_back(shapePA);
     }
@@ -724,7 +817,7 @@ void DataInterface::fillGeometry()
             info->setText(3,c);
 
             boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0, 0, 0, NAN,
-                                                   _geometrymanager, _topvolume, _mainframe, info));
+                                                   _geometrymanager, _topvolume, _mainframe, info, true));
             _components.push_back(shape);
             _crvscintillatorbars.push_back(shape);
           }
@@ -763,7 +856,7 @@ void DataInterface::fillGeometry()
 //       if(holeRadius==0)
 //       {
 //         boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0,0,0, NAN,
-//                                           _geometrymanager, _topvolume, _mainframe, info));
+//                                           _geometrymanager, _topvolume, _mainframe, info, true));
 //         _components.push_back(shape);
 //         _otherstructures.push_back(shape);
 //       }
@@ -771,7 +864,7 @@ void DataInterface::fillGeometry()
 //       {
 // //TODO: This needs to be replaced by a shape with a hole
 //         boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0,0,0, NAN,
-//                                           _geometrymanager, _topvolume, _mainframe, info));
+//                                           _geometrymanager, _topvolume, _mainframe, info, true));
 //         _components.push_back(shape);
 //         _otherstructures.push_back(shape);
 //       }
@@ -848,7 +941,7 @@ void DataInterface::toForeground()
     straw->second->toForeground();
   }
 
-  std::map<int,boost::shared_ptr<Cube> >::const_iterator crystal;
+  std::map<int,boost::shared_ptr<VirtualShape> >::const_iterator crystal;
   for(crystal=_crystals.begin(); crystal!=_crystals.end(); crystal++)
   {
     crystal->second->toForeground();
@@ -863,29 +956,31 @@ void DataInterface::toForeground()
 
 void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
 {
+  double mint=getHitsTimeBoundary().mint;
+  double maxt=getHitsTimeBoundary().maxt;
   std::vector<boost::shared_ptr<Straw> >::const_iterator hit;
   for(hit=_hits.begin(); hit!=_hits.end(); hit++)
   {
     double time=(*hit)->getStartTime();
     if(hitcolors)
     {
-      int color=TMath::FloorNint(20.0*(time-_hitsTimeMinmax.mint)/(_hitsTimeMinmax.maxt-_hitsTimeMinmax.mint));
+      int color=TMath::FloorNint(20.0*(time-mint)/(maxt-mint));
       if(color>=20) color=19;
-      if(color<=0) color=0;
+      if(color<=0 || isnan(color)) color=0;
       color+=2000;
       (*hit)->setColor(color);
     }
     else (*hit)->setColor(whitebackground?1:0);
   }
-  std::vector<boost::shared_ptr<Cube> >::const_iterator crystalhit;
+  std::vector<boost::shared_ptr<VirtualShape> >::const_iterator crystalhit;
   for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
   {
     double time=(*crystalhit)->getStartTime();
     if(hitcolors)
     {
-      int color=TMath::FloorNint(20.0*(time-_hitsTimeMinmax.mint)/(_hitsTimeMinmax.maxt-_hitsTimeMinmax.mint));
+      int color=TMath::FloorNint(20.0*(time-mint)/(maxt-mint));
       if(color>=20) color=19;
-      if(color<=0) color=0;
+      if(color<=0 || isnan(color)) color=0;
       color+=2000;
       (*crystalhit)->setColor(color);
     }
@@ -897,9 +992,9 @@ void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
     double time=(*driftradius)->getStartTime();
     if(hitcolors)
     {
-      int color=TMath::FloorNint(20.0*(time-_hitsTimeMinmax.mint)/(_hitsTimeMinmax.maxt-_hitsTimeMinmax.mint));
+      int color=TMath::FloorNint(20.0*(time-mint)/(maxt-mint));
       if(color>=20) color=19;
-      if(color<=0) color=0;
+      if(color<=0 || isnan(color)) color=0;
       color+=2000;
       (*driftradius)->setColor(color);
     }
@@ -1164,7 +1259,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   }
 #endif
 
-
   const mu2e::CaloCrystalHitCollection *calocrystalhits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>();
   if(calocrystalhits!=nullptr)
   {
@@ -1176,7 +1270,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int crystalid = calohit.id();
       double time = calohit.time();
       double energy = calohit.energyDep();
-      std::map<int,boost::shared_ptr<Cube> >::iterator crystal=_crystals.find(crystalid);
+      std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
       if(crystal!=_crystals.end() && !isnan(time))
       {
         double previousStartTime=crystal->second->getStartTime();
@@ -1186,15 +1280,15 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           crystal->second->setStartTime(time);
           char c[100];
           sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
-          crystal->second->getComponentInfo()->setText(1,c);
-          sprintf(c,"deposited energy(s): %geV",energy/CLHEP::eV);
           crystal->second->getComponentInfo()->setText(2,c);
+          sprintf(c,"deposited energy(s): %geV",energy/CLHEP::eV);
+          crystal->second->getComponentInfo()->setText(3,c);
           _crystalhits.push_back(crystal->second);
         }
         else
         {
-          crystal->second->getComponentInfo()->expandLine(1,time/CLHEP::ns,"ns");
-          crystal->second->getComponentInfo()->expandLine(2,energy/CLHEP::eV,"eV");
+          crystal->second->getComponentInfo()->expandLine(2,time/CLHEP::ns,"ns");
+          crystal->second->getComponentInfo()->expandLine(3,energy/CLHEP::eV,"eV");
         }
       }
     }
@@ -1214,7 +1308,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int crystalid=calo->crystalByRO(roid);
       double time = calohit.time();
       double energy = calohit.energyDep();
-      std::map<int,boost::shared_ptr<Cube> >::iterator crystal=_crystals.find(crystalid);
+      std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
       if(crystal!=_crystals.end() && !isnan(time))
       {
         double previousStartTime=crystal->second->getStartTime();
@@ -1224,18 +1318,18 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           crystal->second->setStartTime(time);
           char c[100];
           sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
-          crystal->second->getComponentInfo()->setText(1,c);
-          sprintf(c,"deposited energy(s): %geV",energy/CLHEP::eV);
           crystal->second->getComponentInfo()->setText(2,c);
-          sprintf(c,"RO ID(s): %i",roid);
+          sprintf(c,"deposited energy(s): %geV",energy/CLHEP::eV);
           crystal->second->getComponentInfo()->setText(3,c);
+          sprintf(c,"RO ID(s): %i",roid);
+          crystal->second->getComponentInfo()->setText(4,c);
           _crystalhits.push_back(crystal->second);
         }
         else
         {
-          crystal->second->getComponentInfo()->expandLine(1,time/CLHEP::ns,"ns");
-          crystal->second->getComponentInfo()->expandLine(2,energy/CLHEP::eV,"eV");
-          crystal->second->getComponentInfo()->expandLine(3,roid,"");
+          crystal->second->getComponentInfo()->expandLine(2,time/CLHEP::ns,"ns");
+          crystal->second->getComponentInfo()->expandLine(3,energy/CLHEP::eV,"eV");
+          crystal->second->getComponentInfo()->expandLine(4,roid,"");
         }
       }
     }
@@ -1258,10 +1352,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=simParticles->begin(); iter!=simParticles->end(); iter++)
     {
       const mu2e::SimParticle& particle = iter->second;
-      const cet::map_vector_key& particleKey = iter->first;
-      int id = particle.id().asInt();
-      int parentid = -1;
-      if(particle.hasParent()) parentid = particle.parent()->id().asInt();
+      int id = particle.id().asInt();   //is identical with cet::map_vector_key& particleKey = iter->first;
+      int parentid = particle.parentId().asInt();
       int particleid=particle.pdgId();
       int trackclass=trackInfos[i].classID;
       int trackclassindex=trackInfos[i].index;
@@ -1310,9 +1402,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       {
         info->expandLine(4,daughter->asInt(),"");
       }
-      boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, trackclass, trackclassindex, e1, 
-                                               _geometrymanager, _topvolume, _mainframe, info));
-      findTrajectory(contentSelector,shape,particleKey, t1,t2, simParticles,particle.daughterIds(), trackInfos[i]);
+      boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, 
+                                               particleid, trackclass, trackclassindex, e1, 
+                                               _geometrymanager, _topvolume, _mainframe, info, false));
+      findTrajectory(contentSelector,shape,particle.id(), t1,t2, simParticles,particle.daughterIds(), trackInfos[i]);
       _components.push_back(shape);
       _tracks.push_back(shape);
     }
@@ -1389,8 +1482,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         double z2=kalrep->position(fltLMax).z();
         double t1=kalrep->arrivalTime(fltLMin)+offset;
         double t2=kalrep->arrivalTime(fltLMax)+offset;
-        boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, trackclass, trackclassindex, p1, 
-                                                 _geometrymanager, _topvolume, _mainframe, info));
+        boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2, 
+                                                 particleid, trackclass, trackclassindex, p1, 
+                                                 _geometrymanager, _topvolume, _mainframe, info, false));
         _components.push_back(track);
         _tracks.push_back(track);
 
@@ -1447,8 +1541,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       double z2 = trkExtTraj.back().z();
       double t1 = 0;
       double t2 = 0;
-      boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2, particleid, trackclass, trackclassindex, p1, 
-                                                 _geometrymanager, _topvolume, _mainframe, info));
+      boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2, 
+                                               particleid, trackclass, trackclassindex, p1, 
+                                               _geometrymanager, _topvolume, _mainframe, info, false));
       _components.push_back(track);
       _tracks.push_back(track);
 
@@ -1468,6 +1563,29 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
                                    const std::vector<cet::map_vector_key> &daughterVect,
                                    const ContentSelector::trackInfoStruct &trackInfo)
 {
+  const mu2e::MCTrajectoryCollection *mcTrajectories=contentSelector->getMCTrajectoryCollection(trackInfo);
+  if(mcTrajectories!=nullptr)
+  {
+    std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator traj_iter;
+    for(traj_iter=mcTrajectories->begin(); traj_iter!=mcTrajectories->end(); traj_iter++)
+    {
+      if(traj_iter->first->id()==id) 
+      {
+        const std::vector<CLHEP::HepLorentzVector> &points = traj_iter->second.points();
+        std::vector<CLHEP::HepLorentzVector>::const_iterator point_iter;
+        for(point_iter=points.begin(); point_iter!=points.end(); point_iter++)
+        {
+          track->addTrajectoryPoint(point_iter->x()-_detSysOrigin.x(),
+                                    point_iter->y()-_detSysOrigin.y(),
+                                    point_iter->z()-_detSysOrigin.z(),
+                                    point_iter->t());
+        }
+      }
+    }
+    return;  //otherwise try point trajectories
+  }
+
+
 #ifdef USETRAJECTORY
   const mu2e::PointTrajectoryCollection *pointTrajectories=contentSelector->getPointTrajectoryCollection(trackInfo);
   if(pointTrajectories!=nullptr)
@@ -1565,13 +1683,8 @@ void DataInterface::removeNonGeometryComponents()
   std::list<boost::shared_ptr<VirtualShape> >::iterator iter=_components.begin();
   while(iter!=_components.end())
   {
-    if(!(*iter)->isGeometry()) {iter=_components.erase(iter);}
-    else
-    {
-      (*iter)->setStartTime(NAN);
-      (*iter)->start();
-      iter++;
-    }
+    if(!(*iter)->isGeometry()) {iter=_components.erase(iter);} //things like tracks and drift radii
+    else iter++;
   }
 
   std::vector<boost::shared_ptr<Straw> >::const_iterator hit;
@@ -1580,18 +1693,22 @@ void DataInterface::removeNonGeometryComponents()
     for(int i=1; i<5; i++) (*hit)->getComponentInfo()->removeLine(i);  //keep first line
     (*hit)->getComponentInfo()->getHistVector().clear();
     (*hit)->setHitNumber(-1);
+    (*hit)->setStartTime(NAN);
+    (*hit)->start();
   }
-  std::vector<boost::shared_ptr<Cube> >::const_iterator crystalhit;
+  std::vector<boost::shared_ptr<VirtualShape> >::const_iterator crystalhit;
   for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
   {
     for(int i=1; i<5; i++) (*crystalhit)->getComponentInfo()->removeLine(i); //keep first line
     (*crystalhit)->getComponentInfo()->getHistVector().clear();
+    (*crystalhit)->setStartTime(NAN);
+    (*crystalhit)->start();
   }
 
   _hits.clear();
   _crystalhits.clear();
-  _tracks.clear();
-  _driftradii.clear();
+  _tracks.clear();  //will call the d'tors of all tracks, since they aren't used anywhere anymore
+  _driftradii.clear(); //will call the d'tors of all driftradii, since they aren't used anywhere anymore
 
   _mainframe->getHistDrawVector().clear();
 }

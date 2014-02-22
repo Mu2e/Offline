@@ -1,9 +1,9 @@
 //
 // Class which sets up the 3D view of the main pad. It also provides functions that can handle user commands for zuum, rotate, etc.
 //
-// $Id: EventDisplayViewSetup.h,v 1.6 2013/05/02 20:59:03 ehrlich Exp $
+// $Id: EventDisplayViewSetup.h,v 1.7 2014/02/22 01:52:18 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/05/02 20:59:03 $
+// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //
@@ -112,6 +112,15 @@ class EventDisplayViewSetup
     int irep=0;
     gPad->GetView()->SetView(180,90,90,irep);
     gPad->SetPhi(-90-180);
+    gPad->SetTheta(90-90);
+  }
+
+  static void topview()
+  {
+    aspectratio(2, 0);
+    int irep=0;
+    gPad->GetView()->SetView(90,90,90,irep);
+    gPad->SetPhi(-90-90);
     gPad->SetTheta(90-90);
   }
 

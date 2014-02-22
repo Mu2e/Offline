@@ -1,9 +1,9 @@
 //
 // Class for all non-static (i.e. time-dependent) sphere structures, e.g. drift radii. The structure is displayed via EventDisplayPolyLine3D (inherited from ROOT's TPolyLine3D) lines which allows the user to right-click the structure and get a contect menu.
 //
-// $Id: Sphere.h,v 1.3 2012/09/14 17:17:34 ehrlich Exp $
+// $Id: Sphere.h,v 1.4 2014/02/22 01:52:18 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/09/14 17:17:34 $
+// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //
@@ -28,7 +28,6 @@ class Sphere: public VirtualShape
 
   std::vector<boost::shared_ptr<EventDisplayPolyLine3D> > _pVec;
   double _x0, _y0, _z0, _r0;
-  bool _notDrawn;
 
   void drawSphere(double radius)
   {
@@ -90,8 +89,9 @@ class Sphere: public VirtualShape
 
   Sphere(double x, double y, double z, double radius, double t1,
          const TGeoManager *geomanager, TGeoVolume *topvolume,
-         EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info) : 
-         VirtualShape(geomanager, topvolume, mainframe, info, false),
+         EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
+         bool isGeometry) : 
+         VirtualShape(geomanager, topvolume, mainframe, info, isGeometry),
          _x0(x), _y0(y), _z0(z), _r0(radius)
   {
     _notDrawn=true;
@@ -122,7 +122,8 @@ class Sphere: public VirtualShape
     {
       if(*iter)
       {
-        gPad->RecursiveRemove((*iter).get());
+        //gPad->RecursiveRemove((*iter).get());
+        gPad->GetListOfPrimitives()->Remove((*iter).get());
         (*iter)->Draw();
       }
     }
@@ -130,8 +131,13 @@ class Sphere: public VirtualShape
 
   void update(double time)
   {
-    if(time<getStartTime()) return;
-    if(time>=getStartTime() || isnan(time))
+    if(time<getStartTime() || isnan(getStartTime()) || getStartTime()<_minTime || getStartTime()>_maxTime)
+    {
+      start();
+      return;
+    }
+
+    if(time>=getStartTime())
     {
       if(_notDrawn)
       {

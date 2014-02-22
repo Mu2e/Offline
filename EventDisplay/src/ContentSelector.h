@@ -1,9 +1,9 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.15 2013/05/02 06:03:41 ehrlich Exp $
+// $Id: ContentSelector.h,v 1.16 2014/02/22 01:52:18 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/05/02 06:03:41 $
+// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //
@@ -14,6 +14,7 @@
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -51,6 +52,7 @@ class ContentSelector
   std::vector<art::Handle<mu2e::CaloCrystalHitCollection> > _caloCrystalHitVector;
   std::vector<art::Handle<mu2e::CaloHitCollection> > _caloHitVector;
   std::vector<art::Handle<mu2e::SimParticleCollection> > _simParticleVector;
+  std::vector<art::Handle<mu2e::MCTrajectoryCollection> > _mcTrajectoryVector;
   std::vector<art::Handle<mu2e::PointTrajectoryCollection> > _pointTrajectoryVector;
 #ifdef BABARINSTALLED
   std::vector<art::Handle<mu2e::KalRepCollection> > _trkRecoTrkVector;
@@ -107,6 +109,7 @@ class ContentSelector
   template<typename CollectionType> const CollectionType* getSelectedCaloHitCollection() const;
   template<typename CollectionType> std::vector<const CollectionType*> getSelectedTrackCollection(std::vector<trackInfoStruct> &v) const;
   const mu2e::PhysicalVolumeInfoCollection *getPhysicalVolumeInfoCollection() const;
+  const mu2e::MCTrajectoryCollection *getMCTrajectoryCollection(const trackInfoStruct &t) const;
   const mu2e::PointTrajectoryCollection *getPointTrajectoryCollection(const trackInfoStruct &t) const;
 
   //for filter and setup dialog

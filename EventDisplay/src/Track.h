@@ -1,9 +1,9 @@
 //
 // Container class for all particle tracks. Tracks are displayed via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class). The displayed length of the track depends is time-dependent.
 //
-// $Id: Track.h,v 1.15 2012/09/14 17:17:34 ehrlich Exp $
+// $Id: Track.h,v 1.16 2014/02/22 01:52:18 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/09/14 17:17:34 $
+// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //
@@ -35,8 +35,6 @@ class Track: public VirtualShape
   double _momentum;
 
   unsigned int _minPoints;
-  double _minTime;
-  double _maxTime;
   double _minMomentum;
   bool _showElectrons;
   bool _showMuons;
@@ -53,8 +51,9 @@ class Track: public VirtualShape
         int particleId, int trackClass, int trackClassIndex, 
         double momentum, 
         const TGeoManager *geomanager, TGeoVolume *topvolume,
-        EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info):
-        VirtualShape(geomanager, topvolume, mainframe, info, false)
+        EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
+        bool isGeometry):
+        VirtualShape(geomanager, topvolume, mainframe, info, isGeometry)
   {
     resetFilter();
     _momentum=momentum;
@@ -76,6 +75,7 @@ class Track: public VirtualShape
     _trackClassIndex=trackClassIndex;
     _trajectory=false;
     _line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
+    _line->SetLineWidth(1);
     _line->Draw();
     start();
   }
@@ -115,8 +115,6 @@ class Track: public VirtualShape
   {
     _line->SetPolyLine(0); //needed, e.g if animation is restarted
     _line->SetPoint(0,_pVec[0].x,_pVec[0].y,_pVec[0].z);
-    _line->SetLineColor(getColor());
-    _line->SetLineWidth(1);
   }
 
   int getParticleId() {return _particleId;}
@@ -125,7 +123,8 @@ class Track: public VirtualShape
 
   void toForeground()
   {
-    gPad->RecursiveRemove(_line.get());
+    //gPad->RecursiveRemove(_line.get());
+    gPad->GetListOfPrimitives()->Remove(_line.get());
     _line->Draw();
   }
 
@@ -188,13 +187,18 @@ class Track: public VirtualShape
       return;
     }
 
-    if(time<getStartTime()) return;
+    if(time<getStartTime()) 
+    {
+      start();  //shortens the track to a length of 0
+      return;
+    }
+
     for(unsigned int i=1; i<_pVec.size(); i++)
     {
+      _line->SetLineColor(getColor());
       if(time>_pVec[i].t || isnan(time))
       {
         _line->SetPoint(i,_pVec[i].x,_pVec[i].y,_pVec[i].z);
-        _line->SetLineColor(getColor());
       }
       if(time<=_pVec[i].t)
       {
@@ -203,7 +207,11 @@ class Track: public VirtualShape
         double y_tmp=_pVec[i-1].y+(_pVec[i].y-_pVec[i-1].y)*scale;
         double z_tmp=_pVec[i-1].z+(_pVec[i].z-_pVec[i-1].z)*scale;
         _line->SetPoint(i,x_tmp,y_tmp,z_tmp);
-        _line->SetLineColor(getColor());
+        
+        for(int j=i+1; j<_line->Size(); j++) 
+        {                 //needed, e.g if animation is restarted at an earlier time, which leaves
+          _line->SetPoint(j,x_tmp,y_tmp,z_tmp);   //unused points which need to be overwritten
+        }                                         //with the same point as the last one
         break;
       }
     }
