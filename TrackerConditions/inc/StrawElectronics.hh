@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.1 2014/01/18 17:31:23 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.2 2014/02/22 03:14:25 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/01/18 17:31:23 $
+// $Date: 2014/02/22 03:14:25 $
 //
 // Original author David Brown, LBNL
 //
@@ -74,15 +74,21 @@ namespace mu2e {
       double deadTime() const { return _tdead; }
       double clockStart() const { return _clockStart; }
       double clockJitter() const { return _clockJitter; }
+      double currentToVoltage() const { return _dVdI; }
+      double normalization() const { return _norm; }
+      double maxLinearResponse(double charge=1.0) const { return _linmax*charge; }
     private:
       // scale factor between charge and voltage (milliVolts from picoCoulombs)
       double _dVdI;
-      double _tshape, _tpow; // Shaping time and power.  These should depend on hitlet type, FIXME!
-      double _teff; // effective shaping time
+      double _tshape; // shaping time
+      unsigned _tpow; // Shaping power
+      double _teff, _feff; // effective shaping time (and it's associated frequency)
+      double _tmax; // maximum time to consider response non-zero
+      double _linmax; // linear response to unit charge at maximum
       double _tdead; // electronics dead time
       // scale factor between current and voltage (milliVolts per microAmps)
       double _norm; // normalization factor, computed from trise and tfall
-      double _vmax, _vsat; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
+      double _vmax, _vsat, _vdiff; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
       double _disp; // dispersion in ns/mm;
       double _vthresh; // threshold voltage for electronics discriminator (mVolt)
       double _vthreshnoise; // threshold voltage noise width (mVolt)
@@ -98,6 +104,8 @@ namespace mu2e {
       unsigned _maxDTDC; // maximum TDC difference for digitizer to combine to hits in different ends to the same straw digi
       double _clockStart, _clockJitter; // time TDC clock starts, and its error (common to both ends!!)
       double _flashStart, _flashEnd; // flash blanking period (no digitizations during this time!!!)
+  // helper functions
+      static inline double mypow(double,unsigned);
   };
 }
 

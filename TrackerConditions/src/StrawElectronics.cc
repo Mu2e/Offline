@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.2 2014/02/18 20:25:25 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.3 2014/02/22 03:14:25 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/02/18 20:25:25 $
+// $Date: 2014/02/22 03:14:25 $
 //
 // Original author David Brown, LBNL
 //
@@ -19,7 +19,7 @@ namespace mu2e {
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
     _dVdI(pset.get<double>("dVdI",200.0)), // mVolt/uAmps (transimpedance gain)
     _tshape(pset.get<double>("ShapingTime",15.0)), // nsec
-    _tpow(pset.get<double>("ShapingPower",1.0)),
+    _tpow(pset.get<unsigned>("ShapingPower",1)),
     _tdead(pset.get<double>("DeadTime",10.0)), // nsec dead after threshold crossing (electronics processing time)
     _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mVolt
     _vsat(pset.get<double>("SaturationVoltage",800.0)), // mVolt
@@ -41,9 +41,17 @@ namespace mu2e {
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
     _flashEnd(pset.get<double>("FlashEnd",300.0)) // nsec
  {
+    // check
+    if(_tpow < 1 || _tpow > 5)
+      throw cet::exception("SIM")<<"mu2e::StrawElectronics: Invalid shaping power " <<  _tpow << endl;
     // calcluate normalization
     _teff = _tshape/_tpow;
-    _norm = 1.0/(_tshape*tgamma(_tpow));
+    _feff = 1.0/_teff;
+    _norm = 1000.0*_dVdI/(_tshape*tgamma(_tpow)); // this includes unit conversion to microamps from charge in picoC and time in nsec
+
+    _vdiff = _vmax-_vsat;
+    _tmax = _teff*pset.get<double>("MaxTime",10.0);
+    _linmax = linearResponse(_tshape,1.0); // response to unit charge (without saturation!)
   }
 
   StrawElectronics::~StrawElectronics() {}
@@ -51,11 +59,10 @@ namespace mu2e {
   double StrawElectronics::linearResponse(double time,double charge) const {
     double retval(0.0);
     // There is no response before the hitlets own time
-    if(time >  0.0){
+    if(time >  0.0 && time < _tmax){
 // response is relative to the time normalized by the shaping time.
-      double dt = time/_teff;
-      retval = 1000.0*charge*_dVdI*_norm*pow(dt,_tpow)*exp(-dt); // unit conversion to microamps
-// should make some smearing for dispersion here, based on the wire distance traveled. FIXME!!
+      double tau = time*_feff;
+      retval = charge*_norm*mypow(tau,_tpow)*exp(-tau);     
     }
     return retval;
   }
@@ -65,8 +72,11 @@ namespace mu2e {
   // up to saturation voltage the response is linear
     if(vlin < _vsat)
       retval = vlin;
-    else
-      retval = _vmax - (_vmax-_vsat)*exp(-(vlin-_vsat)/(_vmax-_vsat));
+    else if (vlin > _vmax)
+      retval = _vmax;
+    else {
+      retval = _vmax - _vdiff*exp(-(vlin-_vsat)/_vdiff);
+    }
     return retval;
   }
 
@@ -123,4 +133,22 @@ void StrawElectronics::digitizeWaveform(vector<double> const& wf, ADCWaveform& a
   // this includes the effects from normalization of the pulse shape
     return adcVoltage(adcval)/_dVdI;
   }
+
+  double StrawElectronics::mypow(double val,unsigned n) {
+    switch ( n ) {
+      case 1:
+	return val; break;
+      case 2:
+	return val*val; break;
+      case 3:
+	return val*val*val; break;
+      case 4:
+	return val*val*val*val; break;
+      case 5:
+	return val*val*val*val*val; break;
+      default:
+	return 0.0; break;
+    }
+  }
+
 }
