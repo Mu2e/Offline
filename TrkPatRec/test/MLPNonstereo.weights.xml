@@ -1,0 +1,157 @@
+<?xml version="1.0"?>
+<MethodSetup Method="MLP::MLP">
+  <GeneralInfo>
+    <Info name="TMVA Release" value="4.1.4 [262404]"/>
+    <Info name="ROOT Release" value="5.34/09 [336393]"/>
+    <Info name="Creator" value="dding"/>
+    <Info name="Date" value="Fri Feb 21 14:17:13 2014"/>
+    <Info name="Host" value="Linux patdskmf.fnal.gov 2.6.18-308.20.1.el5 #1 SMP Tue Nov 13 11:54:02 EST 2012 x86_64 x86_64 x86_64 GNU/Linux"/>
+    <Info name="Dir" value="/home/online1/dding/DeltaRemovalCode/trainMacro"/>
+    <Info name="Training events" value="174346"/>
+    <Info name="TrainingTime" value="9.66963456e+02"/>
+    <Info name="AnalysisType" value="Classification"/>
+  </GeneralInfo>
+  <Options>
+    <Option name="NCycles" modified="No">500</Option>
+    <Option name="HiddenLayers" modified="No">N,N-1</Option>
+    <Option name="NeuronType" modified="No">sigmoid</Option>
+    <Option name="RandomSeed" modified="No">1</Option>
+    <Option name="EstimatorType" modified="No">MSE</Option>
+    <Option name="NeuronInputType" modified="No">sum</Option>
+    <Option name="V" modified="Yes">False</Option>
+    <Option name="VerbosityLevel" modified="No">Default</Option>
+    <Option name="VarTransform" modified="Yes">N</Option>
+    <Option name="H" modified="Yes">True</Option>
+    <Option name="CreateMVAPdfs" modified="No">False</Option>
+    <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+    <Option name="TrainingMethod" modified="No">BP</Option>
+    <Option name="LearningRate" modified="No">2.000000e-02</Option>
+    <Option name="DecayRate" modified="No">1.000000e-02</Option>
+    <Option name="TestRate" modified="No">10</Option>
+    <Option name="EpochMonitoring" modified="No">False</Option>
+    <Option name="Sampling" modified="No">1.000000e+00</Option>
+    <Option name="SamplingEpoch" modified="No">1.000000e+00</Option>
+    <Option name="SamplingImportance" modified="No">1.000000e+00</Option>
+    <Option name="SamplingTraining" modified="No">True</Option>
+    <Option name="SamplingTesting" modified="No">False</Option>
+    <Option name="ResetStep" modified="No">50</Option>
+    <Option name="Tau" modified="No">3.000000e+00</Option>
+    <Option name="BPMode" modified="No">sequential</Option>
+    <Option name="BatchSize" modified="No">-1</Option>
+    <Option name="ConvergenceImprove" modified="No">1.000000e-30</Option>
+    <Option name="ConvergenceTests" modified="No">-1</Option>
+    <Option name="UseRegulator" modified="No">False</Option>
+    <Option name="UpdateLimit" modified="No">10000</Option>
+    <Option name="CalculateErrors" modified="No">False</Option>
+    <Option name="WeightRange" modified="No">1.000000e+00</Option>
+  </Options>
+  <Variables NVar="4">
+    <Variable VarIndex="0" Expression="_dphi" Label="_dphi" Title="Azimuthal Angular Distance" Unit="F" Internal="_dphi" Type="F" Min="-4.43912923e-01" Max="4.14662302e-01"/>
+    <Variable VarIndex="1" Expression="_drho" Label="_drho" Title="Radial Distance" Unit="F" Internal="_drho" Type="F" Min="-1.66916397e+02" Max="1.66530701e+02"/>
+    <Variable VarIndex="2" Expression="_dt" Label="_dt" Title="Temporal Distance" Unit="F" Internal="_dt" Type="F" Min="-1.93645767e+02" Max="1.60122696e+02"/>
+    <Variable VarIndex="3" Expression="_rho" Label="_rho" Title="Transverse Radius of Peak" Unit="F" Internal="_rho" Type="F" Min="3.75669189e+02" Max="1.13839359e+05"/>
+  </Variables>
+  <Spectators NSpec="0"/>
+  <Classes NClass="2">
+    <Class Name="Signal" Index="0"/>
+    <Class Name="Background" Index="1"/>
+  </Classes>
+  <Transformations NTransformations="1">
+    <Transform Name="Normalize">
+      <Selection>
+        <Input NInputs="4">
+          <Input Type="Variable" Label="_dphi" Expression="_dphi"/>
+          <Input Type="Variable" Label="_drho" Expression="_drho"/>
+          <Input Type="Variable" Label="_dt" Expression="_dt"/>
+          <Input Type="Variable" Label="_rho" Expression="_rho"/>
+        </Input>
+        <Output NOutputs="4">
+          <Output Type="Variable" Label="_dphi" Expression="_dphi"/>
+          <Output Type="Variable" Label="_drho" Expression="_drho"/>
+          <Output Type="Variable" Label="_dt" Expression="_dt"/>
+          <Output Type="Variable" Label="_rho" Expression="_rho"/>
+        </Output>
+      </Selection>
+      <Class ClassIndex="0">
+        <Ranges>
+          <Range Index="0" Min="-3.9292597770690918e-01" Max="4.0254908800125122e-01"/>
+          <Range Index="1" Min="-1.3113079833984375e+02" Max="1.4679763793945312e+02"/>
+          <Range Index="2" Min="-8.1342285156250000e+01" Max="8.6290245056152344e+01"/>
+          <Range Index="3" Min="3.7777432250976562e+02" Max="1.1383935937500000e+05"/>
+        </Ranges>
+      </Class>
+      <Class ClassIndex="1">
+        <Ranges>
+          <Range Index="0" Min="-4.4391292333602905e-01" Max="4.1466230154037476e-01"/>
+          <Range Index="1" Min="-1.6691639709472656e+02" Max="1.6653070068359375e+02"/>
+          <Range Index="2" Min="-1.9364576721191406e+02" Max="1.6012269592285156e+02"/>
+          <Range Index="3" Min="3.7566918945312500e+02" Max="1.1381653125000000e+05"/>
+        </Ranges>
+      </Class>
+      <Class ClassIndex="2">
+        <Ranges>
+          <Range Index="0" Min="-4.4391292333602905e-01" Max="4.1466230154037476e-01"/>
+          <Range Index="1" Min="-1.6691639709472656e+02" Max="1.6653070068359375e+02"/>
+          <Range Index="2" Min="-1.9364576721191406e+02" Max="1.6012269592285156e+02"/>
+          <Range Index="3" Min="3.7566918945312500e+02" Max="1.1383935937500000e+05"/>
+        </Ranges>
+      </Class>
+    </Transform>
+  </Transformations>
+  <MVAPdfs/>
+  <Weights>
+    <Layout NLayers="4">
+      <Layer Index="0" NNeurons="5">
+        <Neuron NSynapses="4">
+          -3.9323607991455858e-02 1.0421046460801922e+01 -5.9365629774169140e+00 3.8789183173956236e-02 
+        </Neuron>
+        <Neuron NSynapses="4">
+          -2.3908255285972668e+01 1.7470290223253302e+00 1.1981490026841417e+00 8.6921158571246764e+00 
+        </Neuron>
+        <Neuron NSynapses="4">
+          -3.1438708199661564e-01 -8.7176376619136828e+00 -1.0708156745379901e+01 -1.0403036629734876e+01 
+        </Neuron>
+        <Neuron NSynapses="4">
+          -1.0064482597186832e+00 2.0197173361448311e+00 1.0762297007811312e+00 -1.6857762813360682e+00 
+        </Neuron>
+        <Neuron NSynapses="4">
+          -2.3626767014065342e+00 7.5069617259620292e-01 1.0609752647169157e+00 3.0566484247472103e-01 
+        </Neuron>
+      </Layer>
+      <Layer Index="1" NNeurons="5">
+        <Neuron NSynapses="3">
+          -8.4666935754425621e-01 -9.5403733426804394e+00 -2.0633037249677755e+00 
+        </Neuron>
+        <Neuron NSynapses="3">
+          1.7094300208220248e-01 -5.3907525489043522e+00 -4.9608750338810568e+00 
+        </Neuron>
+        <Neuron NSynapses="3">
+          3.7696017726853942e-01 -7.0282989453947948e+00 -6.5684652851243772e+00 
+        </Neuron>
+        <Neuron NSynapses="3">
+          2.5826234915725332e-02 7.9442050532867539e+00 8.3639397164256746e+00 
+        </Neuron>
+        <Neuron NSynapses="3">
+          -2.3221932555239380e+00 -3.1641332123633954e+00 -3.4588550641983682e+00 
+        </Neuron>
+      </Layer>
+      <Layer Index="2" NNeurons="4">
+        <Neuron NSynapses="1">
+          -4.5270957072358786e-01 
+        </Neuron>
+        <Neuron NSynapses="1">
+          -2.3755124176799662e+00 
+        </Neuron>
+        <Neuron NSynapses="1">
+          2.3834722780798243e+00 
+        </Neuron>
+        <Neuron NSynapses="1">
+          4.1883333521851446e-02 
+        </Neuron>
+      </Layer>
+      <Layer Index="3" NNeurons="1">
+        <Neuron NSynapses="0"/>
+      </Layer>
+    </Layout>
+  </Weights>
+</MethodSetup>

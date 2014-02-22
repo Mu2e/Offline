@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.19 2014/02/22 20:30:19 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.20 2014/02/22 23:12:32 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/22 20:30:19 $
+// $Date: 2014/02/22 23:12:32 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -199,7 +199,7 @@ namespace mu2e
     _ismask(StrawHitFlag::isolated),
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","MLP method")),
     _dclustertype(pset.get<std::string>("DeltaClusterTMVAType","MLP method")),
-    _gdstereo(pset.get<double>("StereoHitMVACut",0.9)),
+    _gdstereo(pset.get<double>("StereoHitMVACut",0.5)),
     _gdnonstereo(pset.get<double>("NonStereoHitMVACut",0.5)),
     _mindp(pset.get<unsigned>("MinDeltaHits",0)),
     _minns(pset.get<unsigned>("MinNStations",2)),

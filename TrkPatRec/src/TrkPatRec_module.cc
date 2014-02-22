@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.65 2014/02/18 20:45:27 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.66 2014/02/22 23:12:32 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/18 20:45:27 $
+// $Date: 2014/02/22 23:12:32 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -203,7 +203,7 @@ namespace mu2e
     _hsel(pset.get<std::vector<std::string> >("HelixFitSelectionBits")),
     _ksel(pset.get<std::vector<std::string> >("KalmanFitSelectionBits")),
     _bkgsel(pset.get<std::vector<std::string> >("BackgroundSelectionBits")),
-    _maxedep(pset.get<double>("MaxStrawEDep",0.007)),
+    _maxedep(pset.get<double>("MaxStrawEDep",0.003)),
     _maxdt(pset.get<double>("DtMax",40.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
     _fbf(pset.get<double>("PhiEdgeBuffer",1.1)),
