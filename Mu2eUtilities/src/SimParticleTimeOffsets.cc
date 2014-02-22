@@ -27,18 +27,27 @@ namespace mu2e {
       auto m = evt.getValidHandle<SimParticleTimeMap>(tag);
       offsets_.emplace_back(*m);
     }
+    umap_.clear();
   }
 
   double SimParticleTimeOffset::totalTimeOffset(art::Ptr<SimParticle> p) const {
+    auto ifnd = umap_.find(p);
+    art::Ptr<SimParticle> up = p;
+    if(ifnd != umap_.end()){
+      up = ifnd->second;
+    } else {
     // Navigate to the primary
-    while(p->parent()) {
-      p = p->parent();
+      while(up->parent()) {
+	up = up->parent();
+      }
+      umap_[p]=up;
     }
+    //p = p->ultimateParent();
 
     // Look up primary in all the maps, and add up the offsets
     double dt = 0;
     for(const auto& m : offsets_) {
-      const auto it = m.find(p);
+      const auto it = m.find(up);
       if(it != m.end()) {
         dt += it->second;
       }
