@@ -5,9 +5,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.hh,v 1.5 2014/01/18 17:33:34 brownd Exp $
+// $Id: StrawWaveform.hh,v 1.6 2014/02/22 02:17:09 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/01/18 17:33:34 $
+// $Date: 2014/02/22 02:17:09 $
 //
 // Original author David Brown, LBNL
 //
@@ -50,13 +50,21 @@ namespace mu2e {
 // hitlet sequence used in this waveform
       StrawHitletSequence const& _hseq;
       ConditionsHandle<StrawElectronics> const& _strawele; // straw response object
+// helper functions
+      void returnCrossing(double threshold, WFX& wfx) const;
+      bool roughCrossing(double threshold, WFX& wfx) const;
+      bool fineCrossing(double threshold, double vmax, WFX& wfx) const;
   };
 
   struct WFX { // waveform crossing
     double _time; // time waveform crossed threhold.  Note this includes noise effects
+    double _vstart; // starting voltage, at time 0 of the referenced hitlet
     HitletList::const_iterator _ihitlet; // iterator to hitlet associated with this crossing
     WFX() = delete; // disallow
-    WFX(StrawWaveform const& wf,double time=0.0) : _time(time), _ihitlet(wf.hitlets().hitletList().begin())  {}
+    WFX(StrawWaveform const& wf) : _time(0.0), _vstart(0.0),
+    _ihitlet(wf.hitlets().hitletList().begin()) {
+      if(_ihitlet != wf.hitlets().hitletList().end())_time = _ihitlet->time()-0.01;// buffer time to insure inclusion
+    }
     // sorting function
     bool operator < (WFX const& other) { return _time < other._time; }
   };

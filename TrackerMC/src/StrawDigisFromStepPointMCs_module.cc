@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.16 2014/01/18 17:33:34 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.17 2014/02/22 02:17:09 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/01/18 17:33:34 $
+// $Date: 2014/02/22 02:17:09 $
 //
 // Original author David Brown, LBNL
 //
@@ -464,7 +464,7 @@ namespace mu2e {
     // convert the hitlet list from this end to waveforms.  This is a light-weight process
       StrawWaveform swf(hsp.hitletSequence(end),_strawele);
 // iterate sequentially over hitlets inside the sequence
-      WFX wfx(swf,-_mbbuffer); // start at the begining of the microbunch, including the buffer
+      WFX wfx(swf); // start at the begining of the microbunch, including the buffer
       // find where the waveform xings threshold.  This updates the waveform sample
       // Skip any points outside the microbunch readout window (including buffer)
       //randomize the threshold to account for electronics noise

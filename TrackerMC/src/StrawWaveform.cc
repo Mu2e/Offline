@@ -3,14 +3,15 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.cc,v 1.8 2014/01/18 17:33:34 brownd Exp $
+// $Id: StrawWaveform.cc,v 1.9 2014/02/22 02:17:09 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/01/18 17:33:34 $
+// $Date: 2014/02/22 02:17:09 $
 //
 // Original author David Brown, LBNL
 //
 #include "TrackerMC/inc/StrawWaveform.hh"
 #include <math.h>
+#include <boost/math/special_functions/binomial.hpp>
 
 using namespace std;
 namespace mu2e {
@@ -21,47 +22,113 @@ namespace mu2e {
 
   bool StrawWaveform::crossesThreshold(double threshold,WFX& wfx) const {
     bool retval(false);
-    static double timestep(0.010); // interpolation minimum to use linear threshold crossing calculation
-  // loop forward from this hitlet
-    while(wfx._ihitlet != _hseq.hitletList().end() ){
-  // require the hitlet be beyond the input time
-      if(wfx._ihitlet->time() > wfx._time){
-	// sample the wavefom just before the referenced hitlet
-	double pretime =wfx._ihitlet->time();
-	double presample = sampleWaveform(pretime);
-	// if pre-hitlet response is below threshold, check for crossing
-	if(presample < threshold){
-	  // check response at maximum
-	  double posttime = pretime + _strawele->maxResponseTime();
-	  double postsample = sampleWaveform(posttime);
-	  if(postsample > threshold){
-	    // this hitlet pushes the waveform over threshold
-	    retval = true;
-	    // compute the actual crossing time, using linear interpolation
-	    double dt = posttime-pretime;
-	    while(dt > timestep) {
-	      dt *= 0.5;
-	      double t = pretime + dt;
-	      double s = sampleWaveform(t);
-	      if(s>threshold){
-		posttime = t;
-		postsample = s;
-	      } else {
-		pretime = t;
-		presample = s;
-	      }
+    // advance to the hitlet just before the time specified.  Buffer should be a parameter FIXME!!!
+    while(wfx._ihitlet != _hseq.hitletList().end() && 
+      wfx._ihitlet->time() + 1.0 < wfx._time){
+	++(wfx._ihitlet);
+    }
+    if(wfx._ihitlet != _hseq.hitletList().end()){
+      // sample initial voltage for this hitlet
+      wfx._vstart = sampleWaveform(wfx._ihitlet->time());
+      // if we start above threhold, scan forward till we're below
+      if(wfx._vstart > threshold)
+	returnCrossing(threshold, wfx);
+      // scan ahead quickly from there to where there's enough integral charge to possibly cross threshold.
+      if(roughCrossing(threshold,wfx)) {
+	// start the fine scan from this hitlet.  
+	while(wfx._ihitlet != _hseq.hitletList().end() ){
+	  // First, get the starting voltage
+	  wfx._vstart = sampleWaveform(wfx._ihitlet->time());
+	  // check if this hitlet could cross threshold
+	  if(wfx._vstart + _strawele->maxLinearResponse(wfx._ihitlet->charge()) > threshold){
+	    // check the actual response 
+	    double maxtime = wfx._ihitlet->time() + _strawele->maxResponseTime();
+	    double maxresp = sampleWaveform(maxtime);
+	    if(maxresp > threshold){
+	      retval = true;
+	      // interpolate to find the precise crossing
+	      fineCrossing(threshold,maxresp,wfx);
+	      break;
 	    }
-	    // linear interpolation
-	    double slope = dt/(postsample-presample);
-	    wfx._time = pretime + slope*(threshold-presample);
-	    break;
 	  }
+	  // advance to next hitlet
+	  ++(wfx._ihitlet);
 	}
       }
-	// advance to next hitlet
-      ++(wfx._ihitlet);
     }
     return retval;
+  }
+
+  void StrawWaveform::returnCrossing(double threshold, WFX& wfx) const {
+    while(wfx._ihitlet != _hseq.hitletList().end() && wfx._vstart > threshold) {
+      // move forward in time at least as twice the time to the maxium for this hitlet
+      double time = wfx._ihitlet->time() + 2*_strawele->maxResponseTime(); 
+      while(wfx._ihitlet != _hseq.hitletList().end() && 
+	  wfx._ihitlet->time() < time){
+	++(wfx._ihitlet);
+      }
+      if(wfx._ihitlet != _hseq.hitletList().end())
+	wfx._vstart = sampleWaveform(wfx._ihitlet->time());
+	wfx._time =wfx._ihitlet->time();
+    }
+  }
+
+  bool StrawWaveform::roughCrossing(double threshold, WFX& wfx) const {
+    // add voltage till we go over threshold by simple linear sum.  That's a minimum requirement
+    // for actually crossing threshold
+    double resp = wfx._vstart;
+    while(wfx._ihitlet != _hseq.hitletList().end()){
+      resp += _strawele->maxLinearResponse(wfx._ihitlet->charge());
+      if(resp > threshold)break;
+      ++(wfx._ihitlet);
+    }
+    // update time
+    if(wfx._ihitlet != _hseq.hitletList().end() )
+      wfx._time = wfx._ihitlet->time();
+
+    return wfx._ihitlet != _hseq.hitletList().end() && resp > threshold;
+  }
+
+  bool StrawWaveform::fineCrossing(double threshold,double maxresp, WFX& wfx) const {
+    static double timestep(0.010); // interpolation minimum to use linear threshold crossing calculation
+    double pretime = wfx._ihitlet->time();
+    double posttime = pretime + _strawele->maxResponseTime();
+    double presample = wfx._vstart;
+    double postsample = maxresp;
+    static const unsigned maxstep(10); // 10 steps max
+    unsigned nstep(0);
+    double deltat = posttime-pretime;
+    double dt = deltat;
+    double slope = deltat/(postsample-presample);
+    double time = pretime + slope*(threshold-presample);
+    // linear interpolation
+    while(dt > timestep && nstep < maxstep) {
+      double sample = sampleWaveform(time);
+      if(sample > threshold){
+	posttime = time;
+	postsample = sample;
+      } else {
+	pretime = time;
+	presample = sample;
+      }
+      deltat = posttime-pretime;
+      slope = deltat/(postsample-presample);
+      double oldtime = time;
+      time = pretime + slope*(threshold-presample);
+      dt = fabs(time-oldtime);
+      ++nstep;
+    }     
+    // set crossing time
+    wfx._time = time;
+    // update the referenced hitlet: this can be different than the one we started with!
+    while(wfx._ihitlet != _hseq.hitletList().end() && 
+      wfx._ihitlet->time() < wfx._time){
+      ++(wfx._ihitlet);
+    }
+    // back off one
+    if(wfx._ihitlet != _hseq.hitletList().begin())--(wfx._ihitlet);
+    // return on convergence
+    return dt < timestep;
   }
 
   double StrawWaveform::sampleWaveform(double time) const {
@@ -87,6 +154,6 @@ namespace mu2e {
       volts.push_back(sampleWaveform(*itime));
     }
   }
-  
+
 }
 
