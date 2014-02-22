@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.18 2013/10/21 22:47:58 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2013/10/21 22:47:58 $
+// $Id: FlagBkgHits_module.cc,v 1.19 2014/02/22 20:30:19 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2014/02/22 20:30:19 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -135,7 +135,7 @@ namespace mu2e
       std::string _dhittype, _stereohitweights, _nonstereohitweights;
       std::string _dclustertype, _nonstereoclusterweights, _stereoclusterweights;
       double _gdstereo, _gdnonstereo;
-      unsigned _mindp;
+      unsigned _mindp, _minns;
       double _stereoclusterhitfrac;
       double _stereoclustermvacut, _nonstereoclustermvacut;
 // input collections
@@ -201,7 +201,8 @@ namespace mu2e
     _dclustertype(pset.get<std::string>("DeltaClusterTMVAType","MLP method")),
     _gdstereo(pset.get<double>("StereoHitMVACut",0.9)),
     _gdnonstereo(pset.get<double>("NonStereoHitMVACut",0.5)),
-    _mindp(pset.get<unsigned>("MinDeltaHits",6)),
+    _mindp(pset.get<unsigned>("MinDeltaHits",0)),
+    _minns(pset.get<unsigned>("MinNStations",2)),
     _stereoclusterhitfrac(pset.get<double>("StereoClusterHitFraction",0.8)),
     _stereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.8)),
     _nonstereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.8)),
@@ -447,7 +448,7 @@ namespace mu2e
 	clusterdelta = delta._pmvaout > _nonstereoclustermvacut;
       }
 
-      delta._isdelta = delta._ngdhits >= _mindp && clusterdelta;
+      delta._isdelta = delta._ngdhits >= _mindp && delta._ns >= _minns && clusterdelta;
     }
   }
 
