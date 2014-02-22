@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.11 2013/08/21 05:59:02 brownd Exp $
+// $Id: MakeStereoHits_module.cc,v 1.12 2014/02/22 13:37:36 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/08/21 05:59:02 $
+// $Date: 2014/02/22 13:37:36 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -106,7 +106,7 @@ namespace mu2e {
       art::ServiceHandle<art::TFileService> tfs;
       _nhits = tfs->make<TH1F>("nhits","NHits",500,0,5000);
       _deltat = tfs->make<TH1F>("deltat","#Delta t;ns",100,-200.0,200.0);
-      _deltaE = tfs->make<TH1F>("deltaE","#Delta E;MeV",100,0.0,0.05);
+      _deltaE = tfs->make<TH1F>("deltaE","#Delta E;MeV",100,-0.2,0.2);
       _dperp = tfs->make<TH1F>("dperp","#Delta d;mm",100,0.0,500.0);
       _sep = tfs->make<TH1F>("sep","Face separation",6,-0.5,5.5);
       _dTD = tfs->make<TH1F>("dTD","#Delta Time Difference;mm",100,-100.0,100.0);
