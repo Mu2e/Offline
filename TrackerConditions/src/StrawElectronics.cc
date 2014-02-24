@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.3 2014/02/22 03:14:25 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.4 2014/02/24 22:55:48 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/02/22 03:14:25 $
+// $Date: 2014/02/24 22:55:48 $
 //
 // Original author David Brown, LBNL
 //
@@ -23,13 +23,13 @@ namespace mu2e {
     _tdead(pset.get<double>("DeadTime",10.0)), // nsec dead after threshold crossing (electronics processing time)
     _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mVolt
     _vsat(pset.get<double>("SaturationVoltage",800.0)), // mVolt
-    _disp(pset.get<double>("Dispersion",1.0e-4)), // 100 ps/m
-    _vthresh(pset.get<double>("DiscriminatorThreshold",5.0)), //mVolt
+    _disp(pset.get<double>("Dispersion",1.0e-4)), // 0.1 ps/mm
+    _vthresh(pset.get<double>("DiscriminatorThreshold",25.0)), //mVolt, post amplification
     _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",0.5)), //mVolt
     _ADCLSB(pset.get<double>("ADCLSB",0.25)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
     _ADCped(pset.get<unsigned>("ADCPedestal",128)),
-    _nADC(pset.get<unsigned>("nADC",10)),
+    _nADC(pset.get<unsigned>("nADC",7)),
     _nADCpre(pset.get<unsigned>("nADCPresamples",2)),
     _ADCPeriod(pset.get<double>("ADCPeriod",20.0)), // nsec
     _ADCOffset(pset.get<double>("ADCOffset",2.0)), // nsec
