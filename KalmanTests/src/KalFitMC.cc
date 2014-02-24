@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.52 2013/12/14 15:58:51 brownd Exp $
+// $Id: KalFitMC.cc,v 1.53 2014/02/24 22:54:07 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/12/14 15:58:51 $
+// $Date: 2014/02/24 22:54:07 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -530,6 +530,7 @@ namespace mu2e
 	  tshinfo._mcdist = fabs(dperp);
 	  tshinfo._mcambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
 	  tshinfo._mclen = mcsep.dot(tsh->straw().getDirection());
+	  tshinfo._xtalk = mcsum[0]._sid != tsh->strawHit().strawIndex();
 	}
 	_tshinfo.push_back(tshinfo);
 // count active conversion hits

@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.33 2013/12/14 15:58:51 brownd Exp $
+// $Id: KalFitMC.hh,v 1.34 2014/02/24 22:54:07 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/12/14 15:58:51 $
+// $Date: 2014/02/24 22:54:07 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -42,12 +42,13 @@ namespace mu2e
     art::Ptr<SimParticle> _spp;
     int _pdgid;
     int _gid,_pid;
+    StrawIndex _sid;
     double _time;
     CLHEP::Hep3Vector _pos;
     CLHEP::Hep3Vector _mom;
-    MCHitSum() : _esum(0.0),_count(0),_pdgid(0),_gid(0),_time(0.0) {}
+    MCHitSum() : _esum(0.0),_count(0),_pdgid(0),_gid(0), _sid(0), _time(0.0) {}
     MCHitSum(StepPointMC const& mchit,art::Ptr<SimParticle>& spp) : _esum(mchit.eDep()),_count(1),
-    _spp(spp),_pdgid(0),_gid(-1),_pid(-1),
+    _spp(spp),_pdgid(0),_gid(-1),_pid(-1),_sid(mchit.strawIndex()),
     _time(mchit.time()),
     _pos(mchit.position()),
     _mom(mchit.momentum()){
@@ -102,6 +103,7 @@ namespace mu2e
     Int_t _mcpdg, _mcgen, _mcproc;
     Float_t _mcht, _mcdist, _mclen;
     Int_t _mcambig;
+    Bool_t _xtalk;
 // root 
     ClassDef(TrkStrawHitInfo,1)
   };

@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.66 2014/02/22 23:12:32 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.67 2014/02/24 22:54:30 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/22 23:12:32 $
+// $Date: 2014/02/24 22:54:30 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -171,6 +171,7 @@ namespace mu2e
       Float_t _shtpeak;
       Float_t _shpres, _shrres, _shchisq, _shdt, _shdist;
       Float_t _shmct0, _shmcmom, _shmctd;
+      Bool_t _xtalk;
       // fit tuple variables
       Int_t _nadd,_ipeak;
       Float_t _hcx, _hcy, _hr, _hdfdz, _hfz0;
@@ -611,6 +612,7 @@ namespace mu2e
     _shdiag->Branch("mct0",&_shmct0,"mct0/F");
     _shdiag->Branch("mcmom",&_shmcmom,"mcmom/F");
     _shdiag->Branch("mctd",&_shmctd,"mctd/F");
+    _shdiag->Branch("xtalk",&_xtalk,"xtalk/B");
     // extend the KalFitMC track diagnostic tuple
     TTree* trkdiag = _kfitmc.createTrkDiag();
     trkdiag->Branch("eventid",&_eventid,"eventid/I");
@@ -741,7 +743,9 @@ namespace mu2e
 	  _mcpop = Hep3Vector(0.0,0.0,0.0);
 	  _mcpoe = _mcpom = -1.0;
 	}
-
+	_xtalk = mcsum[0]._sid != sh.strawIndex();
+      } else {
+	_xtalk = false;
       }
       _esel = _flags->at(istr).hasAllProperties(StrawHitFlag::energysel);
       _rsel = _flags->at(istr).hasAllProperties(StrawHitFlag::radsel);
