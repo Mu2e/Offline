@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: MergePatRec_module.cc,v 1.1 2014/02/23 00:56:35 murat Exp $
+// $Id: MergePatRec_module.cc,v 1.2 2014/02/24 18:25:38 murat Exp $
 // $Author: murat $ 
-// $Date: 2014/02/23 00:56:35 $
+// $Date: 2014/02/24 18:25:38 $
 // takes inputs from two track finding algorithms, produces one track collection 
 // on output to be used for analysis
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ namespace mu2e {
     _calPatRecLabel(pset.get<std::string>("calPatReclabel","CalPatRec"))
   {
     // tag the data product instance by the direction and particle type found by this module
-    produces<KalRepCollection>("MergePatRec");
+    produces<KalRepCollection>("DownstreameMinus");
   }
 
   MergePatRec::~MergePatRec(){
@@ -87,8 +87,8 @@ namespace mu2e {
 
     unique_ptr<KalRepCollection> tracks(new KalRepCollection );
 
-    AnEvent.getByLabel(_trkPatRecLabel,tpr_h);
-    AnEvent.getByLabel(_calPatRecLabel,cpr_h);
+    AnEvent.getByLabel(_trkPatRecLabel,"DownstreameMinus",tpr_h);
+    AnEvent.getByLabel(_calPatRecLabel,"DownstreameMinus",cpr_h);
 
     list_of_kreps_tpr = (mu2e::KalRepCollection*) &(*tpr_h);
     list_of_kreps_cpr = (mu2e::KalRepCollection*) &(*cpr_h);
@@ -147,7 +147,7 @@ namespace mu2e {
     }
 
 
-    AnEvent.put(std::move(tracks),"MergePatRec");
+    AnEvent.put(std::move(tracks),"DownstreameMinus");
   }
 
   void MergePatRec::endJob() {
