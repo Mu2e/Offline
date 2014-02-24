@@ -34,8 +34,7 @@ namespace mu2e {
     std::vector<art::InputTag> inputs_;
 
     typedef std::vector<SimParticleTimeMap> Maps;
-    Maps offsets_;
-    mutable std::map<art::Ptr<SimParticle>,art::Ptr<SimParticle>  > umap_; // ultimate parent map
+    mutable Maps offsets_;
   };
 }
 
