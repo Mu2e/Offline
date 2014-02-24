@@ -5,9 +5,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.hh,v 1.6 2014/02/22 02:17:09 brownd Exp $
+// $Id: StrawWaveform.hh,v 1.7 2014/02/24 22:56:08 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/02/22 02:17:09 $
+// $Date: 2014/02/24 22:56:08 $
 //
 // Original author David Brown, LBNL
 //
@@ -26,15 +26,26 @@
 #include "TrackerMC/inc/StrawHitletSequence.hh"
 
 namespace mu2e {
+// struct to represent cross-talk.
+  struct XTalk {
+    XTalk(StrawIndex const& sid) : _source(sid), _dest(sid), _preamp(0.0), _postamp(1.0)  {} // self x-talk constructor
+    XTalk(StrawIndex const& source, StrawIndex const& dest,double preamp, double postamp) :
+      _source(source), _dest(dest), _preamp(preamp), _postamp(postamp) {} // true x-talk constructor
+    bool self() const { return _dest==_source; }
+    StrawIndex _source; // index of the straw which is the source of the x-talk
+    StrawIndex _dest; // index of the straw in which x-talk is observed
+    double _preamp; // scaling before amplification
+    double _postamp; // scaling after amplificiation
+  };
 
   struct WFX;
   class StrawWaveform{
     public:
-      // construct from a hitlet sequence and response object
-      StrawWaveform(StrawHitletSequence const& hseqq, ConditionsHandle<StrawElectronics> const& sresponse); 
+      // construct from a hitlet sequence and response object.  Scale affects the voltage
+      StrawWaveform(StrawHitletSequence const& hseqq, ConditionsHandle<StrawElectronics> const& sresponse,XTalk const& xtalk); 
 // disallow copy and assignment
       StrawWaveform() = delete; // don't allow default constructor, references can't be assigned empty
-      StrawWaveform(StrawWaveform const& other) = delete;
+      StrawWaveform(StrawWaveform const& other);
       StrawWaveform & operator=(StrawWaveform const& other) = delete;
 // find the next point the waveform crosses threhold.  Waveform crossing
 // is both input (determines starting point) and output
@@ -46,15 +57,18 @@ namespace mu2e {
   //accessors
       StrawHitletSequence const& hitlets() const { return _hseq; }
       ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }
+      XTalk const& xtalk() const { return _xtalk; }
     private:
 // hitlet sequence used in this waveform
       StrawHitletSequence const& _hseq;
       ConditionsHandle<StrawElectronics> const& _strawele; // straw response object
+      XTalk _xtalk; // X-talk applied to all voltages
 // helper functions
       void returnCrossing(double threshold, WFX& wfx) const;
       bool roughCrossing(double threshold, WFX& wfx) const;
       bool fineCrossing(double threshold, double vmax, WFX& wfx) const;
-  };
+      double maxLinearResponse(HitletList::const_iterator const& ihitlet) const;
+};
 
   struct WFX { // waveform crossing
     double _time; // time waveform crossed threhold.  Note this includes noise effects

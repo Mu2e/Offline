@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.17 2014/02/22 02:17:09 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.18 2014/02/24 22:56:08 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/22 02:17:09 $
+// $Date: 2014/02/24 22:56:08 $
 //
 // Original author David Brown, LBNL
 //
@@ -102,7 +102,8 @@ namespace mu2e {
     // Parameters
     bool   _addXtalk; // should we add cross talk hits?
     bool   _addNoise; // should we add noise hits?
-    string _g4ModuleLabel;  // Name of the module that made these hits.
+    double _preampxtalk, _postampxtalk; // x-talk parameters; these should come from conditions, FIXME!!
+    string _g4ModuleLabel;  // Nameg of the module that made these hits.
     double _mbtime; // period of 1 microbunch
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
     double _minsteplen; // minimum step size for splitting charge into ion clusters
@@ -134,6 +135,7 @@ namespace mu2e {
     Int_t _nend, _nstep;
     Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _ddist0, _ddist1, _wdist0, _wdist1;
     Float_t _mctime, _mcenergy, _mcdca;
+    Bool_t _xtalk;
     vector<unsigned> _adc;
     Int_t _tdc0, _tdc1;
 //    vector<TGraph*> _waveforms;
@@ -146,18 +148,21 @@ namespace mu2e {
     void propagateCharge(Straw const& straw, WireCharge const& wireq, StrawEnd end, WireEndCharge& weq);
     double microbunchTime(double globaltime) const;
     void addGhosts(StrawHitlet const& hitlet,StrawHitletSequence& shs); 
-    void addCrosstalk(StrawHitletMap& hmap);
     void addNoise(StrawHitletMap& hmap);
-    void findThresholdCrossings(StrawHitletSequencePair const& hsp, WFXList& xings);
-    void fillDigis(WFXList const& xings,StrawWaveform const& wf,
-      StrawDigiCollection* digis, PtrStepPointMCVectorCollection* mcptrs );
+    void findThresholdCrossings(StrawWaveform const& swf, WFXList& xings);
+    void createDigis(StrawHitletSequencePair const& hsp,
+	XTalk const& xtalk, 
+	StrawDigiCollection* digis, PtrStepPointMCVectorCollection* mcptrs );
+    void fillDigis(WFXList const& xings,StrawWaveform const& wf, StrawIndex index,
+	StrawDigiCollection* digis, PtrStepPointMCVectorCollection* mcptrs );
     bool validXP(WFXP const& xpair) const;
-    void createDigi(WFXP const& xpair, StrawWaveform const& primarywf, StrawDigiCollection* digis);
+    void createDigi(WFXP const& xpair, StrawWaveform const& primarywf, StrawIndex index, StrawDigiCollection* digis);
+    void findCrossTalkStraws(Straw const& straw,vector<XTalk>& xtalk);
 // diagnostic functions
     void waveformDiag(StrawWaveform const& wf);
     void digiDiag(WFXP const& xpair, StrawDigi const& digi);
 
-    StrawEnd primaryEnd(StrawIndex straw_id) const;
+    StrawEnd primaryEnd(StrawIndex strawind) const;
   };
 
   StrawDigisFromStepPointMCs::StrawDigisFromStepPointMCs(fhicl::ParameterSet const& pset) :
@@ -169,10 +174,12 @@ namespace mu2e {
     // Parameters
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-    _addXtalk(pset.get<bool>("addCrossTalkHits",false)),
+    _addXtalk(pset.get<bool>("addCrossTalk",false)),
+    _preampxtalk(pset.get<double>("preAmplificationCrossTalk",0.0)),
+    _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.01)), // dimensionless relative coupling
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _mbbuffer(pset.get<double>("TimeFoldingBuffer",100.0)), // nsec
-    _minsteplen(pset.get<double>("MinimumIonClusterStep",0.1)), // 100 microns
+    _minsteplen(pset.get<double>("MinimumIonClusterStep",0.2)), // mm
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     // Random number distributions
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
@@ -230,6 +237,7 @@ namespace mu2e {
 	_sddiag->Branch("mctime",&_mctime,"mctime/F");
 	_sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
 	_sddiag->Branch("mcdca",&_mcdca,"mcdca/F");
+	_sddiag->Branch("xtalk",&_xtalk,"xtalk/B");
       }
     }
   }
@@ -249,6 +257,7 @@ namespace mu2e {
     _toff.updateMap(event);
     _strawele = ConditionsHandle<StrawElectronics>("ignored");
     _strawphys = ConditionsHandle<StrawPhysics>("ignored");
+    const Tracker& tracker = getTrackerOrThrow();
     // Containers to hold the output information.
     unique_ptr<StrawDigiCollection> digis(new StrawDigiCollection);
     unique_ptr<PtrStepPointMCVectorCollection> mcptrs(new PtrStepPointMCVectorCollection);
@@ -256,24 +265,22 @@ namespace mu2e {
     StrawHitletMap hmap;
     // fill this from the event
     fillHitletMap(event,hmap);
-    // introduce cross-talk hitlets
-    if(_addXtalk)addCrosstalk(hmap);
     // add noise hitlets
     if(_addNoise)addNoise(hmap);
     // loop over the hitlet sequences
     for(auto ihsp=hmap.begin();ihsp!= hmap.end();++ihsp){
-      // find the threshold crossing points along this hitlet sequence
-      WFXList xings;
-      findThresholdCrossings(ihsp->second,xings);
-      // convert the crossing points into digis, and add them to the event data
-      if(xings.size() > 0){
-	// instantiate a waveform for the primary end of this straw
-	StrawEnd primaryend = primaryEnd(ihsp->second.strawIndex());
-	StrawWaveform primarywf(ihsp->second.hitletSequence(primaryend),_strawele);
-	// create digis
-	fillDigis(xings,primarywf,digis.get(),mcptrs.get());
-	// diagnostics
-	if(_diagLevel > 0)waveformDiag(primarywf);
+      StrawHitletSequencePair const& hsp = ihsp->second;
+      // create primary digis from this hitlet sequence
+      XTalk self(hsp.strawIndex()); // this object represents the straws coupling to itself, ie 100%
+      createDigis(hsp,self,digis.get(),mcptrs.get());
+      // if we're applying x-talk, look for nearby coupled straws
+      if(_addXtalk){
+	vector<XTalk> xtalk;
+        Straw const& straw = tracker.getStraw(hsp.strawIndex());
+	findCrossTalkStraws(straw,xtalk);
+	for(auto ixtalk=xtalk.begin();ixtalk!=xtalk.end();++ixtalk){
+	  createDigis(hsp,*ixtalk,digis.get(),mcptrs.get());
+	}
       }
     }
     // store the digis in the event
@@ -285,6 +292,30 @@ namespace mu2e {
     _firstEvent = false;
     ++_event;
   } // end produce
+
+  void
+  StrawDigisFromStepPointMCs::createDigis(StrawHitletSequencePair const& hsp,
+      XTalk const& xtalk, 
+      StrawDigiCollection* digis, PtrStepPointMCVectorCollection* mcptrs ) {
+    // instantiate waveforms for both ends of this straw
+    StrawWaveform waveforms[2] {StrawWaveform(hsp.hitletSequence(StrawEnd::minus),_strawele,xtalk),
+      StrawWaveform(hsp.hitletSequence(StrawEnd::plus),_strawele,xtalk) };
+    // find the threshold crossing points for these waveforms
+    WFXList xings;
+    // loop over the ends of this straw
+    for(size_t iend=0;iend<2;++iend){
+      findThresholdCrossings(waveforms[iend],xings);
+    }
+    // convert the crossing points into digis, and add them to the event data
+    if(xings.size() > 0){
+      // Use the primary end of this straw to define the ADC waveform
+      StrawEnd primaryend = primaryEnd(hsp.strawIndex());
+      // fill digis from these crossings
+      fillDigis(xings,waveforms[primaryend._end],xtalk._dest,digis,mcptrs);
+      // diagnostics
+      if(_diagLevel > 0)waveformDiag(waveforms[primaryend._end]);
+    }
+  }
 
   void
   StrawDigisFromStepPointMCs::fillHitletMap(art::Event const& event, StrawHitletMap & hmap){
@@ -313,18 +344,18 @@ namespace mu2e {
  // Loop over the StepPointMCs in this collection
       for (size_t ispmc =0; ispmc<steps.size();++ispmc){
       // find straw index
-        StrawIndex const & straw_id = steps[ispmc].strawIndex();
+        StrawIndex const & strawind = steps[ispmc].strawIndex();
 	// lookup straw here, to avoid having to find the tracker for every step
-        Straw const& straw = tracker.getStraw(straw_id);
+        Straw const& straw = tracker.getStraw(strawind);
 	// Skip dead straws.
-//	if ( _strawStatus.isDead(straw_id)) continue;
+//	if ( _strawStatus.isDead(strawind)) continue;
 	// Skip steps that occur in the deadened region near the end of each wire.
 	double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
 	if(wpos >  straw.getDetail().activeHalfLength())continue;
 	// create ptr to MC truth, used for references
 	art::Ptr<StepPointMC> spmcptr(handle,ispmc);
 	// create a hitlet from this step, and add it to the hitlet map
-	addStep(spmcptr,straw,hmap[straw_id]);
+	addStep(spmcptr,straw,hmap[strawind]);
       }
     }
   }
@@ -334,7 +365,7 @@ namespace mu2e {
       Straw const& straw,  
       StrawHitletSequencePair& shsp) {
     StepPointMC const& step = *spmcptr;
-    StrawIndex const & straw_id = step.strawIndex();
+    StrawIndex const & strawind = step.strawIndex();
     // Subdivide the StepPointMC into ionization clusters
     vector<IonCluster> clusters;
     divideStep(step,clusters);
@@ -352,7 +383,7 @@ namespace mu2e {
 	double gtime = _toff.timeWithOffsetsApplied(step) + wireq._time + weq._time;
 	double htime = microbunchTime(gtime);
 	// create the hitlet
-	StrawHitlet hitlet(StrawHitlet::primary,straw_id,end,htime,weq._charge,wireq._dd,weq._wdist,spmcptr);
+	StrawHitlet hitlet(StrawHitlet::primary,strawind,end,htime,weq._charge,wireq._dd,weq._wdist,spmcptr);
 	// add the hitlets to the appropriate sequence.
 	shsp.hitletSequence(end).insert(hitlet);
 	// if required, add a 'ghost' copy of this hitlet
@@ -456,42 +487,34 @@ namespace mu2e {
   }
 
   void
-  StrawDigisFromStepPointMCs::findThresholdCrossings(StrawHitletSequencePair const& hsp, WFXList& xings){
-    xings.clear();
-    // loop over the ends of this straw
-    for(size_t iend=0;iend<2;++iend){
-      StrawEnd end(static_cast<StrawEnd::strawend>(iend));
-    // convert the hitlet list from this end to waveforms.  This is a light-weight process
-      StrawWaveform swf(hsp.hitletSequence(end),_strawele);
-// iterate sequentially over hitlets inside the sequence
-      WFX wfx(swf); // start at the begining of the microbunch, including the buffer
-      // find where the waveform xings threshold.  This updates the waveform sample
-      // Skip any points outside the microbunch readout window (including buffer)
-      //randomize the threshold to account for electronics noise
-      double threshold = _gaussian.shoot(_strawele->threshold(),_strawele->thresholdNoise());
-      while(swf.crossesThreshold(threshold,wfx) && wfx._time < _mbtime+_mbbuffer){
-	// keep these in time-order
-	auto iwfxl = xings.begin();
-	while(iwfxl != xings.end() && iwfxl->_time < wfx._time)
-	  ++iwfxl;
-	xings.insert(iwfxl,wfx);
-	// skip to the next hitlet, and insure a minimum time buffer between crossings
-	++(wfx._ihitlet);
-	wfx._time += _strawele->deadTime();
-	// update threshold
-	threshold = _gaussian.shoot(_strawele->threshold(),_strawele->thresholdNoise());
-      }
+  StrawDigisFromStepPointMCs::findThresholdCrossings(StrawWaveform const& swf, WFXList& xings){
+    // iterate sequentially over hitlets inside the sequence
+    WFX wfx(swf); // start at the begining of the microbunch
+    //randomize the threshold to account for electronics noise
+    double threshold = _gaussian.shoot(_strawele->threshold(),_strawele->thresholdNoise());
+    while(swf.crossesThreshold(threshold,wfx) && wfx._time < _mbtime+_mbbuffer){
+      // keep these in time-order
+      auto iwfxl = xings.begin();
+      while(iwfxl != xings.end() && iwfxl->_time < wfx._time)
+	++iwfxl;
+      xings.insert(iwfxl,wfx);
+      // skip to the next hitlet, and insure a minimum time buffer between crossings
+      ++(wfx._ihitlet);
+      wfx._time += _strawele->deadTime();
+      // update threshold
+      threshold = _gaussian.shoot(_strawele->threshold(),_strawele->thresholdNoise());
     }
   }
 
   void
   StrawDigisFromStepPointMCs::fillDigis(WFXList const& xings, StrawWaveform const& primarywf,
+      StrawIndex index,
       StrawDigiCollection* digis, PtrStepPointMCVectorCollection* mcptrs ){
     // loop over crossings
     auto iwfxl = xings.begin();
     while(iwfxl!= xings.end()){
       WFXP xpair(1,iwfxl);
- // associate adjacent crossing if they are on opposite ends within the maximum propagation time difference
+      // associate adjacent crossing if they are on opposite ends within the maximum propagation time difference
       auto jwfxl = iwfxl; ++jwfxl;
       if(jwfxl != xings.end() &&
 	  iwfxl->_ihitlet->strawEnd() != jwfxl->_ihitlet->strawEnd() &&
@@ -503,7 +526,7 @@ namespace mu2e {
       // only accept the pair if both times are inside the MB
       if(validXP(xpair)){
 	// create a digi from this pair or singleton
-	createDigi(xpair,primarywf,digis);
+	createDigi(xpair,primarywf,index,digis);
 	// fill associated MC truth matching.  Only count the same step once
 	set<art::Ptr<StepPointMC> > xmcsp;
 	for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp)
@@ -519,7 +542,7 @@ namespace mu2e {
   }
 
   void StrawDigisFromStepPointMCs::createDigi(WFXP const& xpair, StrawWaveform const& primarywf,
-      StrawDigiCollection* digis){
+      StrawIndex index, StrawDigiCollection* digis){
     // storage for MC match can be more than 1 StepPointMCs
     set<art::Ptr<StepPointMC>> mcmatch;
     // initialize the float variables that we later digitize
@@ -548,35 +571,38 @@ namespace mu2e {
       // record MC match if it isn't already recorded
       mcmatch.insert(wfx._ihitlet->stepPointMC());
     }
-
     // digitize
     StrawDigi::ADCWaveform adc;
     _strawele->digitizeWaveform(wf,adc);
     StrawDigi::TDCValues tdc;
     _strawele->digitizeTimes(xtimes,tdc);
     // create the digi from this
-    digis->push_back(StrawDigi(primarywf.hitlets().strawIndex(),tdc,adc));
-    // fill map entry to record association of this digi with StepPointMC.
-    // FIXME!!!!
+    digis->push_back(StrawDigi(index,tdc,adc));
   }
 
-  StrawEnd
-    StrawDigisFromStepPointMCs::primaryEnd(StrawIndex straw_id) const {
-      // Here, Im assuming the plus end is the primary, whereas in the real detector the primary
-      // ends will alternate and needs to be looked up in an electronics map FIXME!!!!!
-      return StrawEnd(StrawEnd::plus);
+  StrawEnd StrawDigisFromStepPointMCs::primaryEnd(StrawIndex strawind) const {
+    // Here, Im assuming the plus end is the primary, whereas in the real detector the primary
+    // ends will alternate and needs to be looked up in an electronics map FIXME!!!!!
+    return StrawEnd(StrawEnd::plus);
+  }
+  // find straws which couple to the given one, and record them and their couplings in XTalk objects.
+  // For now, this is just a fixed number for adjacent straws,
+  // the couplings and straw identities should eventually come from a database, FIXME!!!
+  void StrawDigisFromStepPointMCs::findCrossTalkStraws(Straw const& straw, vector<XTalk>& xtalk) {
+    StrawIndex selfind = straw.index();
+// find nearest neighgors
+    vector<StrawIndex> const& neighbors = straw.nearestNeighboursByIndex();
+    // convert these to cross-talk
+    xtalk.clear();
+    for(auto isind=neighbors.begin();isind!=neighbors.end();++isind){
+      xtalk.push_back(XTalk(selfind,*isind,_preampxtalk,_postampxtalk));
     }
+  }
 
   // functions that need implementing:: FIXME!!!!!!
-  void  StrawDigisFromStepPointMCs::addCrosstalk(StrawHitletMap& hmap) {
-    // loop over straws
-  // find nearby straws with non-zero coupling constants
-  // create secondary hitlets from the primary ones, and insert them into the coulpled straw hitlet sequence
-  }
   void StrawDigisFromStepPointMCs::addNoise(StrawHitletMap& hmap){
   // create random noise hitlets and add them to the sequences of random straws.
   }
-
 // diagnostic functions
   void
   StrawDigisFromStepPointMCs::waveformDiag(StrawWaveform const& wf) {
@@ -684,6 +710,8 @@ namespace mu2e {
     } else {
       _mctime = _mcenergy = _mcdca = -1000.0;
     }
+    // check for x-talk
+    _xtalk = digi.strawIndex() != spmc->strawIndex();
     // fill the tree entry
     _sddiag->Fill();
   }

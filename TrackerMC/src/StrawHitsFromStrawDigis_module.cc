@@ -2,9 +2,9 @@
 // This module transforms StrawDigi objects into StrawHit objects
 // It also builds the truth match map (if MC truth info for the StrawDigis exists)
 //
-// $Id: StrawHitsFromStrawDigis_module.cc,v 1.8 2014/02/13 14:11:38 brownd Exp $
+// $Id: StrawHitsFromStrawDigis_module.cc,v 1.9 2014/02/24 22:56:08 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/13 14:11:38 $
+// $Date: 2014/02/24 22:56:08 $
 //
 // Original author David Brown, LBNL
 //
@@ -46,6 +46,8 @@ namespace mu2e {
 
   private:
 
+    // # of ADC digitizations to sum to define baseline
+    unsigned _nbase;
     // Diagnostics level.
     int _printLevel, _diagLevel;
 
@@ -59,6 +61,7 @@ namespace mu2e {
   };
 
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
+    _nbase(pset.get<unsigned>("NumADCBaseline",1)),
     _printLevel(pset.get<int>("printLevel",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
     _strawDigis(pset.get<string>("StrawDigis","makeSD"))
@@ -114,9 +117,13 @@ namespace mu2e {
       StrawDigi::ADCWaveform const& adc = digi.adcWaveform();
       // note: pedestal is being subtracting inside strawele, in the real experiment we will need
       // per-channel version of this FIXME!!!
-      double baseline = (_strawele->adcCurrent(adc[0]) + _strawele->adcCurrent(adc[1]))/2.0;
+      double baseline(0.0);
+      for(unsigned ibase=0;ibase<_nbase;++ibase){
+	baseline += _strawele->adcCurrent(adc[ibase]);
+      }
+      baseline /= double(_nbase);	
       double charge(0.0);
-      for(size_t iadc=2;iadc<adc.size();++iadc){
+      for(size_t iadc=_nbase;iadc<adc.size();++iadc){
 	charge += (_strawele->adcCurrent(adc[iadc])-baseline)*_strawele->adcPeriod()*pcfactor;
       }
       // double the energy, since we only digitize 1 end of the straw.
