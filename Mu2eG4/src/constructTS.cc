@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.29 2014/02/14 15:36:04 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/02/14 15:36:04 $
+// $Id: constructTS.cc,v 1.30 2014/02/25 23:26:26 youzy Exp $
+// $Author: youzy $
+// $Date: 2014/02/25 23:26:26 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -731,6 +731,46 @@ namespace mu2e {
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck);
+
+    // Now add a Recorder at the Coll31 exit and Coll32 entrance
+    // (do not use VirtualDetector because of _ in its volume name)
+    TubsParams coll31OutRecordParam ( 0,  ts.innerRadius(), vdHalfLength );
+    G4ThreeVector coll31OutRecordTrans( coll31.getLocal().x(),
+                                        coll31.getLocal().y(),
+                                        coll31.getLocal().z() + coll31.halfLength() + vdHalfLength );
+    nestTubs( "Coll31OutRecord",
+              coll31OutRecordParam,
+              findMaterialOrThrow(ts.insideMaterial()),
+              coll31Rot,
+              coll31OutRecordTrans,
+              _helper->locateVolInfo("TS3Vacuum"),
+              0,
+              visible,
+              G4Color::Blue(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+            );
+
+    TubsParams coll32InRecordParam ( 0,  ts.innerRadius(), vdHalfLength );
+    G4ThreeVector coll32InRecordTrans( coll32.getLocal().x(),
+                                       coll32.getLocal().y(),
+                                       coll32.getLocal().z() - coll32.halfLength() - vdHalfLength );
+    nestTubs( "Coll32InRecord",
+              coll32InRecordParam,
+              findMaterialOrThrow(ts.insideMaterial()),
+              coll32Rot,
+              coll32InRecordTrans,
+              _helper->locateVolInfo("TS3Vacuum"),
+              0,
+              visible,
+              G4Color::Blue(),
+              solid,
+              forceAuxEdgeVisible,
+              placePV,
+              doSurfaceCheck
+            );
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS3  OffsetInMu2e   : " << ts3in->getGlobal() << endl;

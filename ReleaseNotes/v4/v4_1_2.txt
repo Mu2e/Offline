@@ -2,6 +2,36 @@
 
            Release notes for Mu2e Offline software, v4_1_2
 
+18) February 25, 2014, youzy
+    Added moudles for multiple stages Anti-proton simulation.
+    Modified files:
+      MCDataProducts/inc/GenId.hh
+      Mu2eG4/src/constructTS.cc      
+    Added Files:
+      Analyses/src/SimParticleDumperCompact_module.cc
+      Analyses/src/StepPointMCDumperCompact_module.cc
+      EventGenerator/src/FromSimParticleCompact_module.cc
+      EventGenerator/src/FromSimParticleStartPoint_module.cc
+      EventGenerator/src/FromStepPointMCsRotateTarget_module.cc
+      Filters/src/FilterStepPointAngleVsTarget_module.cc
+      Filters/src/FilterStepPointPositionMomentum_module.cc
+      Filters/src/FilterStepPointPzVsTarget_module.cc
+      JobConfig/TDR/geom_pbar_s2.txt
+      JobConfig/TDR/geom_pbar_s3.txt
+      JobConfig/TDR/geom_pbar_s4.txt
+      JobConfig/TDR/geom_pbar_s5.txt
+      JobConfig/TDR/geom_pbar_s6.txt
+      JobConfig/TDR/pbar_s2.fcl
+      JobConfig/TDR/pbar_s3.fcl
+      JobConfig/TDR/pbar_s4.fcl
+      JobConfig/TDR/pbar_s5.fcl
+      JobConfig/TDR/pbar_s6.fcl
+
+17) February 25, 2014, youzy
+    Added a flag to save all PDG in ntpart of readback output      
+    Modified files:
+      Analyses/src/ReadVirtualDetector_module.cc
+
 16) February 25, 2014, knoepfel 
     Adjusted SimpleSpectrum functions to be more intuitive.
     SimpleSpectrum::SpectrumType::Flat is no longer truncated at the
