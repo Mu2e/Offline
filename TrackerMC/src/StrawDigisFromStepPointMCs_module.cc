@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.20 2014/02/25 18:54:47 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.21 2014/02/25 21:34:59 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/25 18:54:47 $
+// $Date: 2014/02/25 21:34:59 $
 //
 // Original author David Brown, LBNL
 //
@@ -126,7 +126,7 @@ namespace mu2e {
     TTree* _swdiag;
     Int_t _sdevice, _ssector, _slayer, _sstraw;
     Int_t _nhitlet;
-    Float_t _hqsum, _sesum;
+    Float_t _hqsum, _vmax, _sesum;
     Int_t _nsteppoint;
     Int_t _npart;
     Float_t _tmin, _tmax;
@@ -209,6 +209,7 @@ namespace mu2e {
       _swdiag->Branch("straw",&_sstraw,"straw/I");
       _swdiag->Branch("nhitlet",&_nhitlet,"nhitlet/I");
       _swdiag->Branch("hqsum",&_hqsum,"hqsum/F");
+      _swdiag->Branch("vmax",&_vmax,"vmax/F");
       _swdiag->Branch("nstep",&_nsteppoint,"nstep/I");
       _swdiag->Branch("sesum",&_sesum,"sesum/F");
       _swdiag->Branch("npart",&_npart,"npart/I");
@@ -621,11 +622,14 @@ namespace mu2e {
     set<art::Ptr<StepPointMC> > steps;
     set<art::Ptr<SimParticle> > parts;
     _hqsum = 0.0;
+    _vmax = 0.0;
     for(auto ihitl=hitlets.begin();ihitl!=hitlets.end();++ihitl){
       if(ihitl->stepPointMC().isNonnull()){
 	steps.insert(ihitl->stepPointMC());
 	parts.insert(ihitl->stepPointMC()->simParticle());
 	_hqsum += ihitl->charge();
+	double vout = wf.sampleWaveform(ihitl->time()+_strawele->maxResponseTime());
+	if(vout > _vmax)_vmax = vout;
       }
     }
     _nsteppoint = steps.size();
