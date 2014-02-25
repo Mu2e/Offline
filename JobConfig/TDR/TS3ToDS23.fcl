@@ -40,8 +40,9 @@ physics : {
 
             SDConfig : {
                 enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
-                sensitiveVolumes: [ DS2Vacuum, DS3Vacuum ]
+                sensitiveVolumes: [ TS5Vacuum, DS2Vacuum, DS3Vacuum ]
                 preSimulatedHits: ["g4filter:virtualdetector",
+                                   "g4filter:TS5Vacuum",
                                    "g4filter:DS2Vacuum",
                                    "g4filter:DS3Vacuum",
                                    "g4filter:CRV" ]
@@ -72,7 +73,7 @@ physics : {
     filters: {
         g4filter: {
             module_type: FilterG4Out
-            mainHitInputs : [ "g4run:DS2Vacuum", "g4run:DS3Vacuum", "g4run:CRV" ]
+            mainHitInputs : [ "g4run:TS5Vacuum", "g4run:DS2Vacuum", "g4run:DS3Vacuum", "g4run:CRV" ]
             extraHitInputs : [ "g4run:virtualdetector" ]
             numSimParticleCollections : 1
             vetoDaughters: []

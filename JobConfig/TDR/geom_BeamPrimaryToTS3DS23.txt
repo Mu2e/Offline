@@ -1,6 +1,6 @@
 #include "JobConfig/TDR/geom_baseline.txt"
 
-vector<string> g4SteppingAction.killInTheseVolumes = { "TS3Vacuum", "DS2Vacuum", "DS3Vacuum"};
+vector<string> g4SteppingAction.killInTheseVolumes = { "TS3Vacuum", "TS5Vacuum", "DS2Vacuum", "DS3Vacuum"};
 
 double g4.minRangeCut     = 1.; // mm
 

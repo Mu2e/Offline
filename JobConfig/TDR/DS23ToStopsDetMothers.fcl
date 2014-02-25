@@ -35,7 +35,7 @@ physics : {
             simParticleNumberOffset : 200000
 
             generatorModuleLabel : ""
-            genInputHits : [ "g4filter:DS2Vacuum", "g4filter:DS3Vacuum" ]
+            genInputHits : [ "g4filter:TS5Vacuum", "g4filter:DS2Vacuum", "g4filter:DS3Vacuum" ]
 
             doWriteLegacyPhysVolumeInfo : false
             inputPhysVolumeMultiInfoLabel : "compressPV"
