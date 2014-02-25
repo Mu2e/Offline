@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.4 2014/02/24 22:55:48 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.5 2014/02/25 06:50:31 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/02/24 22:55:48 $
+// $Date: 2014/02/25 06:50:31 $
 //
 // Original author David Brown, LBNL
 //
@@ -20,7 +20,7 @@ namespace mu2e {
     _dVdI(pset.get<double>("dVdI",200.0)), // mVolt/uAmps (transimpedance gain)
     _tshape(pset.get<double>("ShapingTime",15.0)), // nsec
     _tpow(pset.get<unsigned>("ShapingPower",1)),
-    _tdead(pset.get<double>("DeadTime",10.0)), // nsec dead after threshold crossing (electronics processing time)
+    _tdead(pset.get<double>("DeadTime",20.0)), // nsec dead after threshold crossing (electronics processing time)
     _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mVolt
     _vsat(pset.get<double>("SaturationVoltage",800.0)), // mVolt
     _disp(pset.get<double>("Dispersion",1.0e-4)), // 0.1 ps/mm
@@ -35,7 +35,6 @@ namespace mu2e {
     _ADCOffset(pset.get<double>("ADCOffset",2.0)), // nsec
     _TDCLSB(pset.get<double>("TDCLSB",0.037)),  // nsec
     _maxTDC(pset.get<unsigned>("maxTDC",65535)),
-    _maxDTDC(pset.get<unsigned>("maxDeltaTDC",251)),
     _clockStart(pset.get<double>("clockStart",200.0)), // nsec
     _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
@@ -116,7 +115,9 @@ void StrawElectronics::digitizeWaveform(vector<double> const& wf, ADCWaveform& a
   }
   
   bool StrawElectronics::combineEnds(double t1, double t2) const {
-    return fabs(t1-t2)/_TDCLSB < _maxDTDC;
+  // use deadtime to define when ends should be combined: that
+  // must be longer than the propagaion + resolution time!
+    return fabs(t1-t2) < _tdead;
   }
 
   void StrawElectronics::tdcTimes(TDCValues const& tdc, std::array<double,2>& times) const {

@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.2 2014/02/22 03:14:25 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.3 2014/02/25 06:50:31 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/02/22 03:14:25 $
+// $Date: 2014/02/25 06:50:31 $
 //
 // Original author David Brown, LBNL
 //
@@ -60,7 +60,6 @@ namespace mu2e {
       size_t nADCPreSamples() const { return _nADCpre; }
       double adcPeriod() const { return _ADCPeriod; } // period of ADC clock in nsec
       double adcOffset() const { return _ADCOffset; } // offset WRT clock edge for digitization
-      unsigned maxDTDC() const { return _maxDTDC; } // maximum TDC difference between ends
       double flashStart() const { return _flashStart; } // time flash blanking starts
       double flashEnd() const { return _flashEnd; } // time flash blanking ends
       void adcTimes(double time, std::vector<double>& adctimes) const; // sampling times of ADC
@@ -101,7 +100,6 @@ namespace mu2e {
       double _ADCOffset; // Offset of 1st ADC sample WRT threshold crossing (nsec)
       double _TDCLSB; // least-significant bit of TDC (nsecs)
       unsigned long _maxTDC; // maximum TDC value
-      unsigned _maxDTDC; // maximum TDC difference for digitizer to combine to hits in different ends to the same straw digi
       double _clockStart, _clockJitter; // time TDC clock starts, and its error (common to both ends!!)
       double _flashStart, _flashEnd; // flash blanking period (no digitizations during this time!!!)
   // helper functions
