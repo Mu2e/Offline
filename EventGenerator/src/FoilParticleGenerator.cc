@@ -168,7 +168,7 @@ namespace mu2e {
           break;
         case muonFileInputPos:
           getInfoFromFile(pos, time);
-          //          _pPulseDelay = false;
+          _pPulseDelay = false;
           _PTtoSTdelay = false;
           break;
         default:

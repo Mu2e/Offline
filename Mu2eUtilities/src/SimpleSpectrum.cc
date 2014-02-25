@@ -1,8 +1,8 @@
 // Simple approximations available for DIO spectrum.
 //
-// $Id: SimpleSpectrum.cc,v 1.5 2013/08/27 17:23:00 knoepfel Exp $
+// $Id: SimpleSpectrum.cc,v 1.6 2014/02/25 17:14:10 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/27 17:23:00 $
+// $Date: 2014/02/25 17:14:10 $
 //
 
 // Mu2e includes
@@ -23,7 +23,7 @@ namespace mu2e {
     _approx ( approx ) ,  
     _phy    ( physicsParams )
   {
-    if ( _approx > Spectrum::Flat && _phy.getCzarneckiCoefficients().empty() )
+    if ( _approx > Spectrum::FlatTrunc && _phy.getCzarneckiCoefficients().empty() )
       throw cet::exception("EmptyCoefficients") <<
         " No Czarnecki coefficients available!  Cannot use this approximation.\n" ;
   }
@@ -34,9 +34,10 @@ namespace mu2e {
   double SimpleSpectrum::getWeight(double E) const {
 
     double weight(0.);
-    if      ( _approx == Spectrum::Flat  ) weight = getFlat (E, _phy);
-    else if ( _approx == Spectrum::Pol5  ) weight = getPol5 (E, _phy);
-    else if ( _approx == Spectrum::Pol58 ) weight = getPol58(E, _phy);
+    if      ( _approx == Spectrum::Flat        ) weight = getFlat     (E, _phy);
+    else if ( _approx == Spectrum::FlatTrunc   ) weight = getFlatTrunc(E, _phy);
+    else if ( _approx == Spectrum::Pol5        ) weight = getPol5     (E, _phy);
+    else if ( _approx == Spectrum::Pol58       ) weight = getPol58    (E, _phy);
 
     return weight;      
 
@@ -47,6 +48,10 @@ namespace mu2e {
   //========================================
 
   double SimpleSpectrum::getFlat(const double e, const PhysicsParams& phy ) {
+    return  1.; 
+  }
+
+  double SimpleSpectrum::getFlatTrunc(const double e, const PhysicsParams& phy ) {
     return ( e > phy.getEndpointEnergy() ) ? 0. : 1.; 
   }
 

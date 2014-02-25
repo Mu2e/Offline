@@ -1,9 +1,9 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: DecayInOrbitGun.cc,v 1.61 2014/01/27 22:20:17 knoepfel Exp $
+// $Id: DecayInOrbitGun.cc,v 1.62 2014/02/25 17:14:10 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/01/27 22:20:17 $
+// $Date: 2014/02/25 17:14:10 $
 //
 // Original author Rob Kutschke
 //
@@ -174,7 +174,7 @@ namespace mu2e {
     }
     else if ( _energySpectrum == "flat"            ) { 
       _dioGenId = GenId::dioFlat;          
-      _dioSpectrum.initialize< SimpleSpectrum >( _elow, _ehi, _spectrumResolution, SimpleSpectrum::Spectrum::Flat );
+      _dioSpectrum.initialize< SimpleSpectrum >( _elow, _ehi, _spectrumResolution, SimpleSpectrum::Spectrum::FlatTrunc );
     }
     else if ( _energySpectrum == "pol5"            ) { 
       _dioGenId = GenId::dioE5; 

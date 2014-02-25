@@ -1,8 +1,8 @@
 #ifndef Mu2eUtilities_SimpleSpectrum_hh
 #define Mu2eUtilities_SimpleSpectrum_hh
-// $Id: SimpleSpectrum.hh,v 1.4 2013/08/01 12:42:46 knoepfel Exp $
+// $Id: SimpleSpectrum.hh,v 1.5 2014/02/25 17:14:10 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/01 12:42:46 $
+// $Date: 2014/02/25 17:14:10 $
 //
 // Original Author: Kyle Knoepfel
 //
@@ -37,7 +37,7 @@ namespace mu2e {
     
     class SpectrumType {
     public:
-      enum enum_type { unknown, Flat, Pol5, Pol58 };
+      enum enum_type { unknown, Flat, FlatTrunc, Pol5, Pol58 };
       static std::string const& typeName() {
         static std::string type("SimpleSpectrumType"); return type;
       }
@@ -45,10 +45,11 @@ namespace mu2e {
         static std::map<enum_type,std::string> nam;
         
         if ( nam.empty() ) {
-          nam[unknown] = "unknown";
-          nam[Flat]    = "flat";
-          nam[Pol5]    = "pol5";
-          nam[Pol58]   = "pol58";
+          nam[unknown]     = "unknown";
+          nam[Flat]        = "flat";
+          nam[FlatTrunc]   = "flatTrunc";
+          nam[Pol5]        = "pol5";
+          nam[Pol58]       = "pol58";
         }
 
         return nam;
@@ -62,9 +63,10 @@ namespace mu2e {
 
     double getWeight(double e) const;
 
-    static double getFlat (const double e, const PhysicsParams& phy = *GlobalConstantsHandle<PhysicsParams>() );
-    static double getPol5 (const double e, const PhysicsParams& phy = *GlobalConstantsHandle<PhysicsParams>() );
-    static double getPol58(const double e, const PhysicsParams& phy = *GlobalConstantsHandle<PhysicsParams>() );
+    static double getFlat     (const double e, const PhysicsParams& phy = *GlobalConstantsHandle<PhysicsParams>() );
+    static double getFlatTrunc(const double e, const PhysicsParams& phy = *GlobalConstantsHandle<PhysicsParams>() );
+    static double getPol5     (const double e, const PhysicsParams& phy = *GlobalConstantsHandle<PhysicsParams>() );
+    static double getPol58    (const double e, const PhysicsParams& phy = *GlobalConstantsHandle<PhysicsParams>() );
 
   private:
 
