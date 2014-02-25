@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.21 2014/01/09 17:31:25 rhbob Exp $
-//  $Author: rhbob $
-//  $Date: 2014/01/09 17:31:25 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.22 2014/02/25 23:16:49 youzy Exp $
+//  $Author: youzy $
+//  $Date: 2014/02/25 23:16:49 $
 //
 // Original author Ivan Logashenko
 //
@@ -145,6 +145,7 @@ namespace mu2e {
       _vd_required(pset.get<int>("requireVD",0)),
       _timeCut(pset.get<double>("timeCut",0.0)),
       _stopped_only(pset.get<bool>("saveStopped",false)),
+      _save_all_pdg(pset.get<bool>("saveAllPDG",false)),
       _add_proper_time(pset.get<bool>("addProperTime",false))
     {
 
@@ -210,6 +211,9 @@ namespace mu2e {
     // Pointers to the physical volumes we are interested in
     // -- stopping target
     map<int,int> vid_stop;
+
+    // Save all particles
+    bool _save_all_pdg;
 
     // List of particles of interest for the particles ntuple
     set<int> pdg_save;
@@ -570,7 +574,7 @@ namespace mu2e {
     } // end loop over hits.
 
     // Fill tracks ntuple
-    if( haveSimPart && pdg_save.size()>0 ) {
+    if( haveSimPart && (pdg_save.size()>0 || _save_all_pdg) ) {
 
       // Go through SimParticle container and analyze one particle at a time
       for ( SimParticleCollection::const_iterator isp=simParticles->begin();
@@ -578,7 +582,7 @@ namespace mu2e {
         SimParticle const& sim = isp->second;
 
         // It particle PDG ID is not in the list - skip it
-        if( pdg_save.find(sim.pdgId()) == pdg_save.end() ) continue;
+        if( !_save_all_pdg && pdg_save.find(sim.pdgId()) == pdg_save.end() ) continue;
 
         // Save SimParticle header info
         ntp.run = event.id().run();      // run_id
