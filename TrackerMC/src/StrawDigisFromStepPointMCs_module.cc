@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.19 2014/02/25 06:52:51 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.20 2014/02/25 18:54:47 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/25 06:52:51 $
+// $Date: 2014/02/25 18:54:47 $
 //
 // Original author David Brown, LBNL
 //
@@ -176,12 +176,12 @@ namespace mu2e {
     // Parameters
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-    _addXtalk(pset.get<bool>("addCrossTalk",true)),
+    _addXtalk(pset.get<bool>("addCrossTalk",false)),
     _preampxtalk(pset.get<double>("preAmplificationCrossTalk",0.0)),
     _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
-    _mbbuffer(pset.get<double>("TimeFoldingBuffer",100.0)), // nsec
-    _minsteplen(pset.get<double>("MinimumIonClusterStep",0.2)), // mm
+    _mbbuffer(pset.get<double>("TimeFoldingBuffer",50.0)), // nsec
+    _minsteplen(pset.get<double>("MinimumIonClusterStep",0.4)), // mm
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     // Random number distributions
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
