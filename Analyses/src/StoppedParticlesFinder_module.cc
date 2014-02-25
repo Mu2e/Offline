@@ -14,6 +14,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 // Mu2e includes.
 #include "MCDataProducts/inc/PDGCode.hh"
@@ -21,6 +23,8 @@
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
+
+#include "TH1D.h"
 
 namespace mu2e {
 
@@ -39,6 +43,8 @@ namespace mu2e {
     typedef std::set<PDGCode::type> PDGCodeSet;
     PDGCodeSet particleTypes_;
 
+    TH1* hStopMaterials_;
+
     const PhysicalVolumeInfoMultiCollection *vols_;
 
     bool isStopped(const SimParticle& particle);
@@ -54,6 +60,7 @@ namespace mu2e {
     , physVolInfoInput_(pset.get<std::string>("physVolInfoInput"))
     , stoppingMaterial_(pset.get<std::string>("stoppingMaterial"))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+    , hStopMaterials_(art::ServiceHandle<art::TFileService>()->make<TH1D>("stopmat", "Stopping materials", 1, 0., 1.))
     , vols_()
     , numTotalParticles_()
     , numRequestedTypeStops_()
@@ -109,6 +116,8 @@ namespace mu2e {
                      <<" in volume "<<vi.endVolume(particle)
                      <<std::endl;
           }
+
+          hStopMaterials_->Fill(vi.endVolume(particle).materialName().c_str(), 1.);
 
           // Check if the stop is in a material of interest.  The
           // string comparison in this loop looks inefficient, however
