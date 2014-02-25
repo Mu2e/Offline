@@ -24,19 +24,6 @@
 
 namespace mu2e {
 
-  namespace {
-    // In art v1_00_06 the ValidHandle::id() method needed by an
-    // art::Ptr constructor is missing.  A workaround:
-    template<class PROD> struct MyHandle : public art::ValidHandle<PROD> {
-      MyHandle(const art::ValidHandle<PROD>& h) : art::ValidHandle<PROD>(h) {}
-      art::ProductID id( ) const { return this->provenance()->productID(); }
-    };
-    template<class PROD> MyHandle<PROD> makeMyHandle(const art::ValidHandle<PROD>& h) {
-      return MyHandle<PROD>(h);
-    }
-  }
-
-  //================================================================
   class StoppedParticlesFinder : public art::EDProducer {
   public:
     explicit StoppedParticlesFinder(fhicl::ParameterSet const& pset);
@@ -133,7 +120,7 @@ namespace mu2e {
              (vi.endVolume(particle).materialName() == stoppingMaterial_))
             {
               ++numRequestedMateralStops_;
-              output->emplace_back(makeMyHandle(ih), particle.id().asUint());
+              output->emplace_back(ih, particle.id().asUint());
             }
         }
     }
