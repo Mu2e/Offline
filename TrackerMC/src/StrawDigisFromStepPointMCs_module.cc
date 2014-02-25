@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.18 2014/02/24 22:56:08 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.19 2014/02/25 06:52:51 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/24 22:56:08 $
+// $Date: 2014/02/25 06:52:51 $
 //
 // Original author David Brown, LBNL
 //
@@ -130,11 +130,13 @@ namespace mu2e {
     Int_t _nsteppoint;
     Int_t _npart;
     Float_t _tmin, _tmax;
+    Bool_t _wfxtalk;
     TTree* _sddiag;
     Int_t _sddevice, _sdsector, _sdlayer, _sdstraw;
     Int_t _nend, _nstep;
-    Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _ddist0, _ddist1, _wdist0, _wdist1;
+    Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _ddist0, _ddist1, _wdist0, _wdist1, _vstart0, _vstart1;
     Float_t _mctime, _mcenergy, _mcdca;
+    Int_t _mcpdg;
     Bool_t _xtalk;
     vector<unsigned> _adc;
     Int_t _tdc0, _tdc1;
@@ -174,9 +176,9 @@ namespace mu2e {
     // Parameters
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-    _addXtalk(pset.get<bool>("addCrossTalk",false)),
+    _addXtalk(pset.get<bool>("addCrossTalk",true)),
     _preampxtalk(pset.get<double>("preAmplificationCrossTalk",0.0)),
-    _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.01)), // dimensionless relative coupling
+    _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _mbbuffer(pset.get<double>("TimeFoldingBuffer",100.0)), // nsec
     _minsteplen(pset.get<double>("MinimumIonClusterStep",0.2)), // mm
@@ -212,6 +214,7 @@ namespace mu2e {
       _swdiag->Branch("npart",&_npart,"npart/I");
       _swdiag->Branch("tmin",&_tmin,"tmin/F");
       _swdiag->Branch("tmax",&_tmax,"tmax/F");
+      _swdiag->Branch("xtalk",&_wfxtalk,"xtalk/B");
 
       if(_diagLevel > 1){
 	_sddiag =tfs->make<TTree>("sddiag","StrawDigi diagnostics");
@@ -237,6 +240,7 @@ namespace mu2e {
 	_sddiag->Branch("mctime",&_mctime,"mctime/F");
 	_sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
 	_sddiag->Branch("mcdca",&_mcdca,"mcdca/F");
+	_sddiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
 	_sddiag->Branch("xtalk",&_xtalk,"xtalk/B");
       }
     }
@@ -631,6 +635,7 @@ namespace mu2e {
       _sesum += (*istep)->ionizingEdep();
     _tmin = hitlets.begin()->time();
     _tmax = hitlets.rbegin()->time();
+    _wfxtalk = !wf.xtalk().self();
     _swdiag->Fill();
     if(_diagLevel > 2 && _event < _maxhist){
       // histogram the waveforms
@@ -672,6 +677,7 @@ namespace mu2e {
     _charge0 = _charge1 = -1000.0;
     _wdist0 = _wdist1 = -1000.0;
     _ddist0 = _ddist1 = -1000.0;
+    _vstart0 = _vstart1 = -1000.0;
     _nend = xpair.size();
     for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
       if((*ixp)->_ihitlet->strawEnd() == primaryend) {
@@ -680,12 +686,14 @@ namespace mu2e {
 	_charge0 = (*ixp)->_ihitlet->charge();
 	_ddist0 = (*ixp)->_ihitlet->driftDistance();
 	_wdist0 = (*ixp)->_ihitlet->wireDistance();
+	_vstart0 = (*ixp)->_vstart;
       } else {
 	_xtime1 =(*ixp)->_time;
 	_htime1 = (*ixp)->_ihitlet->time();
 	_charge1 = (*ixp)->_ihitlet->charge();
 	_ddist1 = (*ixp)->_ihitlet->driftDistance();
 	_wdist1 = (*ixp)->_ihitlet->wireDistance();
+      	_vstart1 = (*ixp)->_vstart;
       }
     }
     if(xpair.size() < 2 || xpair[0]->_ihitlet->stepPointMC() == xpair[1]->_ihitlet->stepPointMC())
@@ -699,6 +707,8 @@ namespace mu2e {
       _adc.push_back(*iadc);
     }
     // mc truth information
+    _mcpdg = 0;
+    _mctime = _mcenergy = _mcdca = -1000.0;
     art::Ptr<StepPointMC> const& spmc = xpair[0]->_ihitlet->stepPointMC();
     if(!spmc.isNull()){
       _mctime = _toff.timeWithOffsetsApplied(*spmc);
@@ -707,8 +717,8 @@ namespace mu2e {
       TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(), 
 	  spmc->position(), spmc->momentum().unit() );
       _mcdca = pca.dca(); 
-    } else {
-      _mctime = _mcenergy = _mcdca = -1000.0;
+      if(!spmc->simParticle().isNull())
+	_mcpdg = spmc->simParticle()->pdgId();
     }
     // check for x-talk
     _xtalk = digi.strawIndex() != spmc->strawIndex();

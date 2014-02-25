@@ -2,9 +2,9 @@
 // This module transforms StrawDigi objects into StrawHit objects
 // It also builds the truth match map (if MC truth info for the StrawDigis exists)
 //
-// $Id: StrawHitsFromStrawDigis_module.cc,v 1.9 2014/02/24 22:56:08 brownd Exp $
+// $Id: StrawHitsFromStrawDigis_module.cc,v 1.10 2014/02/25 06:52:51 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/24 22:56:08 $
+// $Date: 2014/02/25 06:52:51 $
 //
 // Original author David Brown, LBNL
 //
@@ -19,6 +19,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
@@ -48,7 +49,10 @@ namespace mu2e {
 
     // # of ADC digitizations to sum to define baseline
     unsigned _nbase;
-    // Diagnostics level.
+    double _mbtime; // period of 1 microbunch
+    double _mbbuffer; // buffer on that for ghost hits (wrapping)
+    bool _singledigi; // turn single-end digitizations into hits
+// Diagnostics level.
     int _printLevel, _diagLevel;
 
     // Limit on number of events for which there will be full printout.
@@ -62,6 +66,8 @@ namespace mu2e {
 
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
     _nbase(pset.get<unsigned>("NumADCBaseline",1)),
+    _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
+    _singledigi(pset.get<bool>("UseSingleDigis",false)), // use or not single-end digitizations
     _printLevel(pset.get<int>("printLevel",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
     _strawDigis(pset.get<string>("StrawDigis","makeSD"))
@@ -85,6 +91,8 @@ namespace mu2e {
     _strawphys = ConditionsHandle<StrawPhysics>("ignored");
     unique_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
     unique_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
+    ConditionsHandle<AcceleratorParams> accPar("ignored");
+    _mbtime = accPar->deBuncherPeriod;
 
     // find the digis
     art::Handle<mu2e::StrawDigiCollection> strawdigisH; 
@@ -108,34 +116,51 @@ namespace mu2e {
 // convert the digi to a hit
       array<double,2> times;
       _strawele->tdcTimes(digi.TDC(),times);
-// hit wants primary time and dt.
-      double time = times[0];
-      double dt = times[1]-times[0];
+// hit wants primary time and dt.  Check if both ends digitized, or if
+// this is a single-end digitization
+      double time(-_mbtime), dt(-_mbtime);
+      bool makehit(true);
+      if(times[0] < _mbtime+_mbbuffer && times[1] < _mbtime+_mbbuffer){
+	time = times[0];
+	dt = times[1]-times[0];
+      } else if(_singledigi){
+// single-ended hit.  Take the valid time, and set delta_t to 0.  This needs
+// to be flaged in StrawHit, FIXME!!!
+	if(times[0] < _mbtime+_mbbuffer)
+	  time = times[0];
+	else if(times[1] < _mbtime+_mbbuffer)
+	  time = times[1];
+	else
+	  makehit = false;
+      } else
+	makehit = false;
+      if(makehit){
 // to get the charge we should fit the whole waveform: for now, just integrage  minus the baseline
 // FIXME!!
-      static const double pcfactor(1.0e-3);
-      StrawDigi::ADCWaveform const& adc = digi.adcWaveform();
-      // note: pedestal is being subtracting inside strawele, in the real experiment we will need
-      // per-channel version of this FIXME!!!
-      double baseline(0.0);
-      for(unsigned ibase=0;ibase<_nbase;++ibase){
-	baseline += _strawele->adcCurrent(adc[ibase]);
-      }
-      baseline /= double(_nbase);	
-      double charge(0.0);
-      for(size_t iadc=_nbase;iadc<adc.size();++iadc){
-	charge += (_strawele->adcCurrent(adc[iadc])-baseline)*_strawele->adcPeriod()*pcfactor;
-      }
-      // double the energy, since we only digitize 1 end of the straw.
-      // use time division to correct for attenuation FIXME!!
-      // the gain should come from a straw-dependent database FIXME!!
-      double energy = 2.0*_strawphys->ionizationEnergy(charge/_strawphys->strawGain(2.0,0.0));
-  // crate the straw hit and append it to the list
-      StrawHit newhit(digi.strawIndex(),time,dt,energy);
-      strawHits->push_back(newhit);
+	static const double pcfactor(1.0e-3);
+	StrawDigi::ADCWaveform const& adc = digi.adcWaveform();
+	// note: pedestal is being subtracting inside strawele, in the real experiment we will need
+	// per-channel version of this FIXME!!!
+	double baseline(0.0);
+	for(unsigned ibase=0;ibase<_nbase;++ibase){
+	  baseline += _strawele->adcCurrent(adc[ibase]);
+	}
+	baseline /= double(_nbase);	
+	double charge(0.0);
+	for(size_t iadc=_nbase;iadc<adc.size();++iadc){
+	  charge += (_strawele->adcCurrent(adc[iadc])-baseline)*_strawele->adcPeriod()*pcfactor;
+	}
+	// double the energy, since we only digitize 1 end of the straw.
+	// use time division to correct for attenuation FIXME!!
+	// the gain should come from a straw-dependent database FIXME!!
+	double energy = 2.0*_strawphys->ionizationEnergy(charge/_strawphys->strawGain(2.0,0.0));
+	// crate the straw hit and append it to the list
+	StrawHit newhit(digi.strawIndex(),time,dt,energy);
+	strawHits->push_back(newhit);
 // copy MC truth from digi to hit.  These are exactly the same as for the digi
-      if(mcptrdigis != 0){
-	mcptrHits->push_back((*mcptrdigis)[isd]);
+	if(mcptrdigis != 0){
+	  mcptrHits->push_back((*mcptrdigis)[isd]);
+	}
       }
     }
 // put objects into event
