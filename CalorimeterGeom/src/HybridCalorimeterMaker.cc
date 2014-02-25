@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: HybridCalorimeterMaker.cc,v 1.1 2013/09/05 17:12:09 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/09/05 17:12:09 $
+// $Id: HybridCalorimeterMaker.cc,v 1.2 2014/02/25 01:09:42 echenard Exp $
+// $Author: echenard $
+// $Date: 2014/02/25 01:09:42 $
 
 // original authors Julie Managan and Robert Bernstein
 // quite a few changes by G. Pezzullo
@@ -125,6 +125,7 @@ namespace mu2e{
     CheckIt();
 
     // Create disk and barrel
+    _calo->_nCrystalTot = 0;
     MakeDisk();
     MakeBarrel();
 
@@ -154,6 +155,7 @@ namespace mu2e{
     thisDisk->setRotation(    (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationZ(_calo->_diskRotAngle) );
     thisDisk->setOriginLocal( originLocal );
     thisDisk->setOrigin(      originLocal + _calo->origin() );
+    _calo->_nCrystalTot += thisDisk->nCrystals();
 
     if (_verbosityLevel) std::cout<<"Constructed Disk "<<thisDisk->id()<<":  Rin="<<thisDisk->innerRadius()<<"  Rout="<<thisDisk->outerRadius()
 				  <<" (X,Y,Z)="<<thisDisk->origin()<<"  local_(X,Y,Z)="<<thisDisk->originLocal()<<"  with "<<thisDisk->nCrystals()<<" crystals"<<std::endl;
@@ -183,6 +185,7 @@ void HybridCalorimeterMaker::MakeBarrel(void)
     thisBarrel->setRotation(    (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationZ(_calo->_barrelRotAngle) );
     thisBarrel->setOriginLocal( originLocal );
     thisBarrel->setOrigin(      originLocal + _calo->origin() );
+    _calo->_nCrystalTot += thisBarrel->nCrystals();
 
     if (_verbosityLevel) std::cout<<"Constructed Barrel "<<thisBarrel->id()<<":  Rin="<<thisBarrel->innerRadius()<<"  Rout="<<thisBarrel->outerRadius()
 				  <<" (X,Y,Z)="<<thisBarrel->origin()<<"  local_(X,Y,Z)="<<thisBarrel->originLocal()<<"  with "<<thisBarrel->nCrystals()<<" crystals"<<std::endl;

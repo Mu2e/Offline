@@ -11,6 +11,7 @@
 // Mu2e includes
 #include "CalorimeterGeom/inc/BaseCalorimeter.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
+#include "cetlib/exception.h"
 
 //other includes
 #include "CLHEP/Vector/Rotation.h"
@@ -22,6 +23,8 @@ namespace mu2e {
 
     int BaseCalorimeter::caloSectionId(int crystalId) const
     {          
+        if ( crystalId >= _nCrystalTot) throw cet::exception("Calorimeter") << "Tried to access crystal Id "<<crystalId<<" but maximum is "<<_nCrystalTot-1<<"! \n";      
+
         for (unsigned int i=0;i<_nSections;++i) 
         {
            if (crystalId < section(i).nCrystals()) return i;
@@ -32,7 +35,9 @@ namespace mu2e {
 
     int BaseCalorimeter::localCrystalId(int crystalId) const
     {     
-        for (unsigned int i=0;i<_nSections;++i) 
+        if ( crystalId >= _nCrystalTot) throw cet::exception("Calorimeter") << "Tried to access crystal Id "<<crystalId<<" but maximum is "<<_nCrystalTot-1<<"! \n";      
+        
+	for (unsigned int i=0;i<_nSections;++i) 
         {
           if (crystalId < section(i).nCrystals()) return crystalId;
           crystalId -= section(i).nCrystals();

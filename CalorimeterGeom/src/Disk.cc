@@ -13,7 +13,9 @@
 
 // C++ includes
 #include <iostream>
+#include <fstream>
 #include <cmath>
+#include <algorithm>
 
 // Mu2e includes
 #include "CalorimeterGeom/inc/CaloSection.hh"
@@ -62,10 +64,7 @@ namespace mu2e {
 
 
 	    // precalculate nearest neighbours list for each crystal
-	    for (unsigned int i=0;i<_crystalList.size();++i)
-	    {
-	 	  _crystalList[i].setNearestNeighbours(findNeighbors(i,1));
-	    }
+	    for (unsigned int i=0;i<_crystalList.size();++i) _crystalList[i].setNearestNeighbours(findNeighbors(i,1));
 
       }
 
@@ -110,7 +109,7 @@ namespace mu2e {
 
       std::vector<int> Disk::neighbors(int crystalId, int level) const
       {
-	   if (level==1) return _crystalList.at(crystalId).nearestNeighbours();
+	   if (level==1) return std::move(_crystalList.at(crystalId).nearestNeighbours());
 	   return findNeighbors(crystalId,level);
       }
       
@@ -129,21 +128,28 @@ namespace mu2e {
       }
 
 
+      
+      //Slightly inefficient but robust integration. Divide the area between the disk and 
+      //the first few crystals into tiny squares, and sum squares outside the crystals
       double Disk::estimateEmptySpace(void) const
       {
-	    double sum(0),dx(0.02),dy(0.02);
-	    for (double x=0;x<=1.5*_radiusIn;x+=dx){
-
-              double y0 = (x<_radiusIn) ? sqrt(_radiusIn*_radiusIn-x*x) : 0;
-	      for (double y=y0;y<=y0+5*_cellSize;y+=dy){
-		 int mapIdx = _hexMap.indexFromXY(x/_cellSize,y/_cellSize);
+	    double sum(0),delta(0.1);
+	    double RadiusMax=_radiusIn + 0.2*(_radiusOut-_radiusIn);
+	    
+	    for (double x=delta/2.0; x <= RadiusMax; x+=delta)
+	    {
+              double y0 = (x < _radiusIn) ? sqrt(_radiusIn*_radiusIn - x*x) + delta/2.0  : delta/2.0;
+	      double ymax = sqrt(RadiusMax*RadiusMax-x*x);
+	      for (double y=y0; y <= ymax; y+=delta)
+	      {
+		 int mapIdx = _hexMap.indexFromXY( x/_cellSize,y/_cellSize);
 		 int iCry   = _posUtil.mapToCrystal(mapIdx);
-		 if (iCry==-1) sum+=dx*dy;		 
+		 if (iCry==-1) sum+=delta*delta;		 
 	      }  
 	    }
-            return 4.0*sum;
+	    return 4.0*sum;
       }
 
-
+    
 }
 

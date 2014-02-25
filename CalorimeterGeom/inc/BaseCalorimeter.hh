@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_BaseCalorimeter_hh
 #define CalorimeterGeom_BaseCalorimeter_hh
 //
-// $Id: BaseCalorimeter.hh,v 1.6 2013/10/24 22:16:38 echenard Exp $
+// $Id: BaseCalorimeter.hh,v 1.7 2014/02/25 01:09:42 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/10/24 22:16:38 $
+// $Date: 2014/02/25 01:09:42 $
 //
 // Base class of a cloarimeter. Hold informations about the sections composing 
 // the calorimeterand generic algorithms to navigate between the coordinate systems
@@ -104,6 +104,7 @@ namespace mu2e {
 	   std::vector<CaloSectionPtr > _sections;
 	   CLHEP::Hep3Vector            _origin;
  	   CLHEP::Hep3Vector            _crystalShift;
+	   unsigned int                 _nCrystalTot;
 
 	   unsigned int                 _nROPerCrystal;
            double                       _wrapperThickness;

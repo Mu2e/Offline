@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: DiskCalorimeterMaker.cc,v 1.10 2013/10/24 22:16:38 echenard Exp $
+// $Id: DiskCalorimeterMaker.cc,v 1.11 2014/02/25 01:09:42 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/10/24 22:16:38 $
+// $Date: 2014/02/25 01:09:42 $
 
 // original authors Julie Managan and Robert Bernstein
 // quite a few changes by Bertrand Echenarrd
@@ -57,7 +57,6 @@ namespace mu2e{
         config.getVectorDouble("calorimeter.diskOuterRadius",  _calo->_diskOuterRadius, _calo->_nSections);
         config.getVectorDouble("calorimeter.diskRotationAngle",_calo->_diskRotAngle,    _calo->_nSections);
         config.getVectorDouble("calorimeter.diskSeparation",   _calo->_diskSeparation,  _calo->_nSections);
-
 	_calo->_crystalHalfTrans      = config.getDouble("calorimeter.crystalHalfTrans");
 	_calo->_crystalHalfLength     = config.getDouble("calorimeter.crystalHalfLong");
 	_calo->_wrapperThickness      = config.getDouble("calorimeter.crystalWrapperThickness"); 
@@ -111,6 +110,8 @@ namespace mu2e{
 
 	// Create vanes
 	MakeDisks();
+ 
+ 
 
   }
 
@@ -125,6 +126,7 @@ namespace mu2e{
       double crystalCellRadius  = _calo->_crystalHalfTrans + _calo->_wrapperThickness + _calo->_shellThickness;      
       CLHEP::Hep3Vector crystalShiftInDisk(0,0,-_calo->_roHalfThickness);
       
+      _calo->_nCrystalTot = 0;
             
       for (unsigned int idisk=0; idisk<_calo->_nSections; ++idisk)
       {			 
@@ -142,12 +144,22 @@ namespace mu2e{
           thisDisk->setRotation(    (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationZ(_calo->_diskRotAngle[idisk]) );
           thisDisk->setOriginLocal( originLocal );
           thisDisk->setOrigin(      originLocal + _calo->origin() );
+	  _calo->_nCrystalTot += thisDisk->nCrystals();
 
   	  if (_verbosityLevel) std::cout<<"Constructed Disk "<<thisDisk->id()<<":  Rin="<<thisDisk->innerRadius()<<"  Rout="<<thisDisk->outerRadius()
         	                        <<" (X,Y,Z)="<<thisDisk->origin()<<"  local_(X,Y,Z)="<<thisDisk->originLocal()<<"  with "<<thisDisk->nCrystals()<<" crystals"<<std::endl;
           
-      }
+	  if (_verbosityLevel > 1)
+	  {
+	      double espa          = thisDisk->estimateEmptySpace();
+              double diskVolume    = 3.1415926*(thisDisk->outerRadius()*thisDisk->outerRadius()-thisDisk->innerRadius()*thisDisk->innerRadius());
+              double crystalVolume = 3.4641016*crystalCellRadius*crystalCellRadius*thisDisk->nCrystals();
 
+              std::cout<<"Estimated empty space between the disks and the crystals "<<std::endl;
+	      std::cout<<"Inner edge and crystals = "<<espa<<std::endl;
+              std::cout<<"Outer edge and crystals = "<<diskVolume-crystalVolume-espa<<" "<<std::endl;
+	  }   
+      }
   }
 
  

@@ -1,9 +1,9 @@
 //
 // Make a Vane Calorimeter.
 //
-// $Id: VaneCalorimeterMaker.cc,v 1.10 2013/07/01 23:11:39 echenard Exp $
+// $Id: VaneCalorimeterMaker.cc,v 1.11 2014/02/25 01:09:42 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/07/01 23:11:39 $
+// $Date: 2014/02/25 01:09:42 $
 
 // original authors Julie Managan and Robert Bernstein
 
@@ -143,6 +143,7 @@ namespace mu2e{
 	  double radius = _calo->_rMin + dR - _calo->_caseThickness;
 	  double dphi   = 2*CLHEP::pi/_calo->_nSections;
 
+          _calo->_nCrystalTot = 0;
 
 	  for (unsigned int i=0; i<_calo->_nSections; ++i ) 
 	  {
@@ -157,6 +158,8 @@ namespace mu2e{
              thisVane->setRotation(    (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationZ(CLHEP::pi/2 - i*dphi) );
              thisVane->setOriginLocal( localOrigin );
              thisVane->setOrigin(      localOrigin + _calo->origin() );
+   	     
+	     _calo->_nCrystalTot += thisVane->nCrystals();
 	  }
 
       }
