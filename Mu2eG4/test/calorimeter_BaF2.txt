@@ -59,7 +59,7 @@ double calorimeter.electronMinEnergyAPD        = 0.1;    // MeV
 
 // calibrtion system
 int    calorimeter.nPipes                      = 6;   // claibration pipe radius
-vector<double> calorimeter.pipeTorRadius       = {370,430,490,550,610,660}; //mm
+vector<double> calorimeter.pipeTorRadius       = {360,420,480,540,600,650}; //mm
 double calorimeter.pipeRadius                  = 5;    // claibration pipe radius //mm
 double calorimeter.pipeThickness               = 0.5; // claibration pipe thickness //mm
 string calorimeter.pipeMaterial                = "G4_Al";
