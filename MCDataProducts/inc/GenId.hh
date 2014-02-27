@@ -4,9 +4,9 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.20 2014/02/25 23:26:26 youzy Exp $
-// $Author: youzy $
-// $Date: 2014/02/25 23:26:26 $
+// $Id: GenId.hh,v 1.21 2014/02/27 21:56:34 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/02/27 21:56:34 $
 //
 // Original author Rob Kutschke
 //
@@ -42,7 +42,8 @@ namespace mu2e {
       ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC,
       extMonFNALGun, fromStepPointMCs, stoppedMuonGun, PiCaptureCombined,
       MARS, StoppedParticleReactionGun, bremElectronGun, muonicXRayGun,
-      fromSimParticleStartPoint, fromSimParticleCompact, lastEnum
+      fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun,
+      lastEnum
     };
 
     // Keep this in sync with the enum. Used in GenId.cc
@@ -55,7 +56,7 @@ namespace mu2e {
       "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "internalRPC", \
       "extMonFNALGun", "fromStepPointMCs", "stoppedMuonGun", "PiCaptureCombined", \
       "MARS", "StoppedParticleReactionGun","bremElectronGun", "muonicXRayGun", \
-      "fromSimParticleStartPoint", "fromSimParticleCompact"
+      "fromSimParticleStartPoint", "fromSimParticleCompact", "StoppedParticleG4Gun"
   public:
 
     // The most important c'tor and accessor methods are first.
