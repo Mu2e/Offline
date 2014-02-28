@@ -47,7 +47,7 @@ namespace mu2e {
     , pdgId_(pset.get<int>("pdgId"))
     , hStoppingCodes_(tfs()->make<TH1D>("stoppingCodes", "stopping codes", 1, 0., 1.))
     , hDaugherCreationCodes_(tfs()->make<TH1D>("creationCodes", "daughter creation codes", 1, 0., 1.))
-    , hDaugherMultiplicity_(tfs()->make<TH2D>("multiplicity", "daughter multiplicity", 1, 0., 1., 25, -0.5, 24.5))
+    , hDaugherMultiplicity_(tfs()->make<TH2D>("multiplicity", "daughter multiplicity", 1, 0., 1., 25, 0.5, 25.5))
   {
     hDaugherMultiplicity_->SetOption("colz");
   }
