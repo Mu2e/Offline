@@ -356,7 +356,8 @@ const mu2e::MCTrajectoryCollection* ContentSelector::getMCTrajectoryCollection(c
   itertype iter;
   for(iter=_mcTrajectoryVector.begin(); iter!=_mcTrajectoryVector.end(); iter++)
   {
-    if(t.moduleLabel==iter->provenance()->moduleLabel() && t.productInstanceName==iter->provenance()->productInstanceName()) 
+//    if(t.moduleLabel==iter->provenance()->moduleLabel() && t.productInstanceName==iter->provenance()->productInstanceName()) 
+    if(t.moduleLabel==iter->provenance()->moduleLabel()) //TODO: why no check for product instance name?
       return(iter->product());
   }
   return(nullptr);
