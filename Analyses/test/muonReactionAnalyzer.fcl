@@ -1,0 +1,20 @@
+#include "standardServices.fcl"
+
+process_name: muonReactionAnalyzer
+
+source: { module_type: RootInput }
+
+services: { TFileService: { fileName: "muonReactionAnalyzer.root" }}
+
+physics: {
+    analyzers: {
+        muonReactions: {
+            module_type: G4ReactionAnalyzer
+            inputs: "g4run"
+            pdgId: 13	// Muon.  pbar pdgId is -2212.
+        }
+    }
+
+    an: [muonReactions]
+    end_paths: [an]
+}
