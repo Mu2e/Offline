@@ -1,16 +1,18 @@
 //
 // Input file for the prototype conditions system.
 //
-// $Id: conditions_01.txt,v 1.15 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: conditions_01.txt,v 1.16 2014/02/28 21:11:19 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/02/28 21:11:19 $
 //
 
 // Times in ns
 double DAQParams.t0 = 700.;
 
-// Times in ns
-double acceleratorParams.deBuncherPeriod = 1694.;
+// Accelerator parameters
+double acceleratorParams.deBuncherPeriod   = 1694.; // ns
+double acceleratorParams.intrinsicExt      = 4.e-5;
+double acceleratorParams.limitingHalfWidth = 125. ; // ns 
 
 // Tracker Calibration information; these correspond to Vadim's June 2012 measurement using 90 Sr
 // for the resolution at the straw center, and his 55 Fe measurement for the

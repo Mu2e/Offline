@@ -1,9 +1,9 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.27 2013/09/27 13:24:43 knoepfel Exp $
+// $Id: constructProtonAbsorber.cc,v 1.28 2014/02/28 21:11:19 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/09/27 13:24:43 $
+// $Date: 2014/02/28 21:11:19 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
@@ -24,8 +24,10 @@
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestCons.hh"
+#include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/HelicalProtonAbsorber.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
@@ -486,9 +488,57 @@ namespace mu2e {
       else {
         if ( verbosityLevel > 0 ) cout << __func__ << " outer protonabs disabled" << endl;
       }
+      
+      if ( pabs->buildSupports() ) {
 
+        AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+
+        const InnerProtonAbsSupport* ipaSup = pabs->getIPAsupport();
+        int iS(0);
+        for ( std::size_t iSet(0); iSet < ipaSup->nSets(); iSet++) {
+
+          const double pabs1rOut0 = pabs->part(0).outerRadiusAtStart();
+          const double pabs1rOut1 = pabs->part(0).outerRadiusAtEnd();
+          const double pabs1len   = pabs->part(0).halfLength() *2.;
+
+          const double zstartOfIPA = pabs->part(0).center().z()-pabs->part(0).halfLength();
+
+          int iW(0);
+          for ( std::size_t iWire(0); iWire < ipaSup->nWiresPerSet() ; iWire++ ) {
+
+            Tube supportWire = ipaSup->getWire( iSet, iWire );
+
+            ostringstream wirename ; wirename << "IPAsupport_set" << ++iS << "_wire" << ++iW ;
+
+            const double rStartOfWire = pabs1rOut0+(supportWire.originInMu2e().z()-zstartOfIPA)/pabs1len*(pabs1rOut1-pabs1rOut0);
+
+            CLHEP::Hep3Vector additionalOffset ( (supportWire.halfLength()+0.005+rStartOfWire) * std::cos(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() ),
+                                                 (supportWire.halfLength()+0.005+rStartOfWire) * std::sin(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() ), 
+                                                 0);
+
+            // Now get appropriate rotation angles
+            G4RotationMatrix* supportRot = reg.add(G4RotationMatrix());
+            supportRot->rotateY(-M_PI/2.);
+            supportRot->rotateZ(-iW*360.*CLHEP::deg / ipaSup->nWiresPerSet() );
+
+            nestTubs( wirename.str() ,
+                      supportWire.getTubsParams(),
+                      findMaterialOrThrow( supportWire.materialName() ),
+                      supportRot,
+                      supportWire.originInMu2e()+additionalOffset-parent1Info.centerInMu2e(),
+                      parent1Info,
+                      0,
+                      pabsIsVisible,
+                      G4Color::Red(),
+                      pabsIsSolid,
+                      forceAuxEdgeVisible,
+                      placePV,
+                      doSurfaceCheck );
+
+          } // wire loop
+        } // set loop
+      } // build ipa supports
     }
   }
-
-
 }
+

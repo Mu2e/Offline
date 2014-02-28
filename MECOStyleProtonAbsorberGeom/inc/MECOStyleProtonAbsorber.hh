@@ -4,9 +4,9 @@
 //
 // Class to represent the system of MECO Style Proton Absorber
 //
-// $Id: MECOStyleProtonAbsorber.hh,v 1.5 2013/08/08 19:30:17 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2013/08/08 19:30:17 $
+// $Id: MECOStyleProtonAbsorber.hh,v 1.6 2014/02/28 21:11:19 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/02/28 21:11:19 $
 //
 // Original author MyeongJae Lee
 //
@@ -16,8 +16,10 @@
 
 // Includes from C++
 #include <vector>
+#include <memory>
 
 // Includes from Mu2e
+#include "GeomPrimitives/inc/Tube.hh"
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorberPart.hh"
 
@@ -44,6 +46,26 @@ namespace mu2e {
       enum_type _id;
   };
 
+  class InnerProtonAbsSupport {
+
+    friend class MECOStyleProtonAbsorberMaker;
+
+  public:
+
+    InnerProtonAbsSupport( std::size_t nSets, std::size_t nWiresPerSet ) 
+      : _nSets ( nSets ) , _nWiresPerSet ( nWiresPerSet ) {}
+    ~InnerProtonAbsSupport(){}
+
+    const Tube& getWire( std::size_t iSet, std::size_t iWire ) const { return _supportWireMap.at(iSet).at(iWire); }
+    std::size_t nSets() const { return _nSets; }
+    std::size_t nWiresPerSet() const { return _nWiresPerSet; }
+
+  private:
+    std::size_t _nSets;
+    std::size_t _nWiresPerSet;
+    std::vector<std::vector<Tube>> _supportWireMap;
+    
+  };
 
   class MECOStyleProtonAbsorber : virtual public Detector{
 
@@ -51,7 +73,6 @@ namespace mu2e {
 
   public:
     MECOStyleProtonAbsorber() ;
-
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
@@ -69,6 +90,9 @@ namespace mu2e {
     double outerPAhalflength () const { return _oPAhalflength; }
     double outerPAthickness () const { return _oPAthickness; }
 
+    // support structure for inner PA
+    bool buildSupports() const { return _buildSupports; }
+    const InnerProtonAbsSupport* getIPAsupport() const { return _ipaSupport.get(); }
 
   protected:
 
@@ -87,6 +111,11 @@ namespace mu2e {
     double _oPAhalflength;
     double _oPAthickness;
     bool _oPAflag;
+
+    // support structure for inner PA
+    bool _buildSupports;
+    std::unique_ptr<InnerProtonAbsSupport> _ipaSupport;
+
   };
 }
 #endif 

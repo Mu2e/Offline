@@ -2,9 +2,9 @@
 // Construct and return MECOStyleProtonAbsorber
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.10 2013/06/19 03:41:01 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2013/06/19 03:41:01 $
+// $Id: MECOStyleProtonAbsorberMaker.cc,v 1.11 2014/02/28 21:11:19 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/02/28 21:11:19 $
 //
 // Original author MyeongJae Lee
 //
@@ -31,7 +31,10 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+
+// CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/Rotation.h"
 
 using namespace std;
 
@@ -224,6 +227,50 @@ namespace mu2e {
     }
     else {
       (_pabs->_oPAflag) = false;
+    }
+
+    ////////////////////////
+    // Support Wires for IPA
+    ////////////////////////
+
+    const std::size_t supportSets   = _config.getInt   ("protonabsorber.ipa.nSets"        ,0 );
+    const std::size_t wiresPerSet   = _config.getInt   ("protonabsorber.ipa.nWiresPerSet" ,0 );
+    const double      wireRadius    = _config.getDouble( "protonabsorber.ipa.wireRadius"  ,0.);
+    const string      wireMaterial  = _config.getString( "protonabsorber.ipa.wireMaterial"   );
+
+    _pabs->_buildSupports = _config.getBool("protonabsorber.ipa.buildSupports"   );
+    _pabs->_ipaSupport.reset( new InnerProtonAbsSupport( supportSets, wiresPerSet ) );
+
+    // Calculate zPosition spacing
+    const double zSpacing = 2*pabs1halflen/(supportSets+1);
+
+    const double ipazstart = targetEnd + distFromTargetEnd;
+    const double opazstart = _pabs->_oPAzcenter - _pabs->_oPAhalflength;
+    const double oPAin0    = _config.getDouble("protonabsorber.outerPAInnerRadius0", 436.0); 
+    const double oPAin1    = _config.getDouble("protonabsorber.outerPAInnerRadius1", 720.0); 
+
+    for ( std::size_t iS(0); iS < _pabs->_ipaSupport->nSets() ; iS++ ) {
+      std::vector<Tube> wireVector;
+
+      const double zPosition       = ipazstart + zSpacing*(iS+1);
+      const double wireOuterRadius = oPAin0 + ( zPosition-opazstart )*(oPAin1-oPAin0)/(2*_pabs->_oPAhalflength);
+
+      const double wireInnerRadius = pabs1rOut0 + ( zPosition-ipazstart )*(pabs1rOut1-pabs1rOut0)/(2*pabs1halflen);
+      const double wireLength      = wireOuterRadius - wireInnerRadius;
+
+      for ( std::size_t iW(0); iW < _pabs->_ipaSupport->nWiresPerSet() ; iW++ ) {
+        wireVector.push_back( Tube( 0. ,
+                                    wireRadius , 
+                                    wireLength*0.5-0.01, // 0.01 offset to avoid run-ins with the absorbvers
+                                    CLHEP::Hep3Vector( -3904, 0., zPosition ),
+                                    CLHEP::HepRotation(), // put in identiy matrix and determine rotation later
+                                    0,
+                                    CLHEP::twopi,
+                                    wireMaterial
+                                    ) 
+                              );
+      }
+      _pabs->_ipaSupport->_supportWireMap.push_back( wireVector );
     }
 
 

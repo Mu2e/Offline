@@ -3,9 +3,9 @@
 //
 // Some parameters of the accelerator complex.
 //
-// $Id: AcceleratorParams.hh,v 1.5 2012/02/24 20:55:48 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/24 20:55:48 $
+// $Id: AcceleratorParams.hh,v 1.6 2014/02/28 21:11:19 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/02/28 21:11:19 $
 //
 // Original author Rob Kutschke
 //
@@ -24,6 +24,8 @@ namespace mu2e
 
     // The nominal debuncher orbital period.
     double deBuncherPeriod;
+    double intrinsicExtinction;
+    double limitingHalfWidth;
 
     AcceleratorParams ( SimpleConfig const& config );
 
@@ -42,6 +44,8 @@ namespace mu2e
                                   const AcceleratorParams& lw ){
     ost << "( "
         << lw.deBuncherPeriod << ", "
+        << lw.intrinsicExtinction << ", "
+        << lw.limitingHalfWidth 
         << " )";
 
     return ost;
