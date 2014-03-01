@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.8 2014/03/01 11:16:49 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.9 2014/03/01 16:32:16 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/01 11:16:49 $
+// $Date: 2014/03/01 16:32:16 $
 //
 // Original author David Brown, LBNL
 //
@@ -17,15 +17,16 @@ using namespace std;
 namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI(pset.get<double>("dVdI",175.0)), // mVolt/uAmps (transimpedance gain)
-    _tshape(pset.get<double>("ShapingTime",4.0)), // nsec
-    _tpow(pset.get<unsigned>("ShapingPower",1)),
+    _dVdI{pset.get<double>("thresholddVdI",120.0),
+	pset.get<double>("adcdVdI",550.0) }, // mVolt/uAmps (transimpedance gain)
+    _tshape{pset.get<double>("thresholdShapingTime",2.0),
+	pset.get<double>("adcShapingTime",25.0) }, // nsec
     _tdead(pset.get<double>("DeadTime",20.0)), // nsec dead after threshold crossing (electronics processing time)
     _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mVolt
     _vsat(pset.get<double>("SaturationVoltage",800.0)), // mVolt
     _disp(pset.get<double>("Dispersion",1.0e-4)), // 0.1 ps/mm
-    _vthresh(pset.get<double>("DiscriminatorThreshold",10.0)), //mVolt, post amplification
-    _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",1.0)), //mVolt
+    _vthresh(pset.get<double>("DiscriminatorThreshold",20.0)), //mVolt, post amplification
+    _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",4.0)), //mVolt
     _ADCLSB(pset.get<double>("ADCLSB",0.25)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
     _ADCped(pset.get<unsigned>("ADCPedestal",128)),
@@ -40,28 +41,25 @@ namespace mu2e {
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
     _flashEnd(pset.get<double>("FlashEnd",300.0)) // nsec
  {
-    // check
-    if(_tpow < 1 || _tpow > 5)
-      throw cet::exception("SIM")<<"mu2e::StrawElectronics: Invalid shaping power " <<  _tpow << endl;
     // calcluate normalization
-    _teff = _tshape/_tpow;
-    _feff = 1.0/_teff;
-    _norm = 1000.0*_dVdI/(_tshape*tgamma(_tpow)); // this includes unit conversion to microamps from charge in picoC and time in nsec
-
-    _vdiff = _vmax-_vsat;
-    _tmax = _teff*pset.get<double>("MaxTime",10.0);
-    _linmax = linearResponse(_tshape,1.0); // response to unit charge (without saturation!)
-  }
+   for(int ipath=0;ipath<2;++ipath){ 
+     _fshape[ipath] = 1.0/_tshape[ipath];
+     _norm[ipath] = 1000.0*_dVdI[ipath]/(_tshape[ipath]); // this includes unit conversion to microamps from charge in picoC and time in nsec
+     _tmax[ipath] = _tshape[ipath]*pset.get<double>("MaxTime",10.0);
+     _linmax[ipath] = linearResponse(static_cast<path>(ipath),_tshape[ipath],1.0); // response to unit charge (without saturation!)
+   }
+   _vdiff = _vmax-_vsat;
+ }
 
   StrawElectronics::~StrawElectronics() {}
 
-  double StrawElectronics::linearResponse(double time,double charge) const {
+  double StrawElectronics::linearResponse(path ipath,double time,double charge) const {
     double retval(0.0);
     // There is no response before the hitlets own time
-    if(time >  0.0 && time < _tmax){
+    if(time >  0.0 && time < _tmax[ipath]){
 // response is relative to the time normalized by the shaping time.
-      double tau = time*_feff;
-      retval = charge*_norm*mypow(tau,_tpow)*exp(-tau);     
+      double tau = time*_fshape[ipath];
+      retval = charge*_norm[ipath]*tau*exp(-tau);     
     }
     return retval;
   }
@@ -132,7 +130,7 @@ void StrawElectronics::digitizeWaveform(vector<double> const& wf, ADCWaveform& a
 
   double StrawElectronics::adcCurrent(unsigned short adcval) const {
   // this includes the effects from normalization of the pulse shape
-    return adcVoltage(adcval)/_dVdI;
+    return adcVoltage(adcval)/_dVdI[adc];
   }
 
   double StrawElectronics::mypow(double val,unsigned n) {

@@ -5,9 +5,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.hh,v 1.7 2014/02/24 22:56:08 brownd Exp $
+// $Id: StrawWaveform.hh,v 1.8 2014/03/01 16:32:16 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/02/24 22:56:08 $
+// $Date: 2014/03/01 16:32:16 $
 //
 // Original author David Brown, LBNL
 //
@@ -51,9 +51,9 @@ namespace mu2e {
 // is both input (determines starting point) and output
       bool crossesThreshold(double threshold,WFX& wfx) const;
 // sample the waveform at a given time.  Return value is in units of volts 
-      double sampleWaveform(double time) const;
+      double sampleWaveform(StrawElectronics::path ipath,double time) const;
 // sample the waveform at a series of points
-      void sampleWaveform(std::vector<double> const& times,std::vector<double>& volts) const;
+      void sampleWaveform(StrawElectronics::path ipath, std::vector<double> const& times,std::vector<double>& volts) const;
   //accessors
       StrawHitletSequence const& hitlets() const { return _hseq; }
       ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }

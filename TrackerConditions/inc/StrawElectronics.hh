@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.4 2014/03/01 11:16:49 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.5 2014/03/01 16:32:16 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/01 11:16:49 $
+// $Date: 2014/03/01 16:32:16 $
 //
 // Original author David Brown, LBNL
 //
@@ -27,7 +27,7 @@ namespace mu2e {
   class StrawElectronics : virtual public ConditionsEntity {
     public:
 // separately describe the 2 analog paths
-      enum path{discriminator=0,waveform=1};
+      enum path{thresh=0,adc};
 // these are copied from StrawDigi, but I don't want a direct dependency
       typedef unsigned long TDCValues[2];
       typedef std::vector<unsigned short> ADCWaveform;
@@ -37,11 +37,11 @@ namespace mu2e {
       virtual ~StrawElectronics();
       // linear response to a charge pulse.  This does NOT include saturation effects,
       // since those are cumulative and cannot be computed for individual charges
-      double linearResponse(double time,double charge) const; // mvolts per pCoulomb
+      double linearResponse(path ipath, double time,double charge) const; // mvolts per pCoulomb
       // Given a (linear) total voltage, compute the saturated voltage
       double saturatedResponse(double lineearresponse) const;
       // relative time when linear response is maximal
-      double maxResponseTime() const { return _tshape; }
+      double maxResponseTime(path ipath) const { return _tshape[ipath]; }
   // digization
       unsigned short adcResponse(double mvolts) const; // ADC response to analog inputs
       unsigned long tdcResponse(double time) const; // TDC response to a given time
@@ -67,28 +67,26 @@ namespace mu2e {
       void adcTimes(double time, std::vector<double>& adctimes) const; // sampling times of ADC
       double saturationVoltage() const { return _vsat; }
       double maximumVoltage() const { return _vmax; }
-      double shapingTime() const { return _tshape; }
-      double shapingPower() const { return _tpow; }
+      double shapingTime(path ipath) const { return _tshape[ipath]; }
       double dispersion(double dlen) const { return _disp*dlen; } // dispersion width is linear in propagation length
       double threshold() const { return _vthresh; }
       double thresholdNoise() const { return _vthreshnoise; }
       double deadTime() const { return _tdead; }
       double clockStart() const { return _clockStart; }
       double clockJitter() const { return _clockJitter; }
-      double currentToVoltage() const { return _dVdI; }
-      double normalization() const { return _norm; }
-      double maxLinearResponse(double charge=1.0) const { return _linmax*charge; }
+      double currentToVoltage(path ipath) const { return _dVdI[ipath]; }
+      double normalization(path ipath) const { return _norm[ipath]; }
+      double maxLinearResponse(path ipath,double charge=1.0) const { return _linmax[ipath]*charge; }
     private:
       // scale factor between charge and voltage (milliVolts from picoCoulombs)
-      double _dVdI;
-      double _tshape; // shaping time
-      unsigned _tpow; // Shaping power
-      double _teff, _feff; // effective shaping time (and it's associated frequency)
-      double _tmax; // maximum time to consider response non-zero
-      double _linmax; // linear response to unit charge at maximum
+      double _dVdI[2];
+      double _tshape[2]; // shaping time
+      double _fshape[2]; // shaping frequency
+      double _tmax[2]; // maximum time to consider response non-zero
+      double _linmax[2]; // linear response to unit charge at maximum
+      double _norm[2]; // normalization factor, computed from trise and tfall
       double _tdead; // electronics dead time
       // scale factor between current and voltage (milliVolts per microAmps)
-      double _norm; // normalization factor, computed from trise and tfall
       double _vmax, _vsat, _vdiff; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
       double _disp; // dispersion in ns/mm;
       double _vthresh; // threshold voltage for electronics discriminator (mVolt)

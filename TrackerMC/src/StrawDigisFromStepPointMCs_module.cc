@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.22 2014/03/01 11:17:45 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.23 2014/03/01 16:32:16 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/01 11:17:45 $
+// $Date: 2014/03/01 16:32:16 $
 //
 // Original author David Brown, LBNL
 //
@@ -112,6 +112,7 @@ namespace mu2e {
     ConditionsHandle<StrawPhysics> _strawphys;
     ConditionsHandle<StrawElectronics> _strawele; 
     SimParticleTimeOffset _toff;
+    StrawElectronics::path _diagpath; // electronics path for waveform diagnostics
     // Random number distributions
     art::RandomNumberGenerator::base_engine_t& _engine;
     CLHEP::RandGaussQ _gaussian;
@@ -120,7 +121,6 @@ namespace mu2e {
     const string _messageCategory;
     // Give some informationation messages only on the first event.
     bool _firstEvent;
-    unsigned _event;
     // List of dead straws as a parameter set; needed at beginRun time.
 //    DeadStrawList _strawStatus;
 // diagnostics
@@ -175,7 +175,7 @@ namespace mu2e {
 // diagnostic parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
     _printLevel(pset.get<int>("printLevel",0)),
-    _maxhist(pset.get<unsigned>("MaxHist",2)),
+    _maxhist(pset.get<unsigned>("MaxHist",1000)),
     _xtalkhist(pset.get<bool>("CrossTalkHist",false)),
     // Parameters
     _maxFullPrint(pset.get<int>("maxFullPrint",2)),
@@ -187,6 +187,7 @@ namespace mu2e {
     _mbbuffer(pset.get<double>("TimeFoldingBuffer",50.0)), // nsec
     _minsteplen(pset.get<double>("MinimumIonClusterStep",0.5)), // mm
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
+    _diagpath(static_cast<StrawElectronics::path>(pset.get<int>("WaveformDiagPath",StrawElectronics::thresh))),
     // Random number distributions
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
     _gaussian( _engine ),
@@ -306,7 +307,6 @@ namespace mu2e {
     if ( _printLevel > 0 ) cout << "StrawDigisFromStepPointMCs: produce() end" << endl;
     // Done with the first event; disable some messages.
     _firstEvent = false;
-    ++_event;
   } // end produce
 
   void
@@ -578,7 +578,7 @@ namespace mu2e {
 	vector<double> adctimes;
 	_strawele->adcTimes(wfx._time,adctimes);
 	// sample the waveform at the primary end at these times
-	primarywf.sampleWaveform(adctimes,wf);
+	primarywf.sampleWaveform(StrawElectronics::adc,adctimes,wf);
 	// randomize waveform voltage values for electronics noise
 	for(auto iwf=wf.begin();iwf!=wf.end();++iwf)
 	  *iwf += _gaussian.shoot(0.0,_strawele->thresholdNoise());
@@ -650,7 +650,7 @@ namespace mu2e {
 	steps.insert(ihitl->stepPointMC());
 	parts.insert(ihitl->stepPointMC()->simParticle());
 	_hqsum += ihitl->charge();
-	double vout = wf.sampleWaveform(ihitl->time()+_strawele->maxResponseTime());
+	double vout = wf.sampleWaveform(_diagpath,ihitl->time()+_strawele->maxResponseTime(_diagpath));
 	if(vout > _vmax){
 	  _vmax = vout;
 	  _wmcpdg = ihitl->stepPointMC()->simParticle()->pdgId();
@@ -670,13 +670,15 @@ namespace mu2e {
     _tmax = hitlets.rbegin()->time();
     _wfxtalk = !wf.xtalk().self();
     _swdiag->Fill();
-    if(_diagLevel > 2 && _event < _maxhist &&
+    static unsigned nhist(0);
+    ++nhist;
+    if(_diagLevel > 2 && nhist < _maxhist &&
     ( ((!_xtalkhist) && (!_wfxtalk)) || (_xtalkhist && _wfxtalk)) ) {
       // histogram the waveforms
       const double tstep(0.5); // 0.5
       const double nfall(5.0); // 5 lambda past last fall time
       double tstart = hitlets.begin()->time()-tstep;
-      double tfall = _strawele->shapingTime();
+      double tfall = _strawele->shapingTime(_diagpath);
       double tend = hitlets.rbegin()->time() + nfall*tfall;
       vector<double> times, volts;
       double t = tstart;
@@ -684,12 +686,12 @@ namespace mu2e {
 	times.push_back(t);
 	t += tstep;
       }
-      wf.sampleWaveform(times,volts);
+      wf.sampleWaveform(_diagpath,times,volts);
       art::ServiceHandle<art::TFileService> tfs;
       char name[60];
       char title[100];
-      snprintf(name,60,"SWF%i_%i",wf.hitlets().strawIndex().asInt(),_event);
-      snprintf(title,100,"Electronic output for straw %i event %i;time (nSec);mVolts",wf.hitlets().strawIndex().asInt(),_event);
+      snprintf(name,60,"SWF%i_%i",wf.hitlets().strawIndex().asInt(),nhist);
+      snprintf(title,100,"Electronic output for straw %i event %i;time (nSec);mVolts",wf.hitlets().strawIndex().asInt(),nhist);
       TH1F* wf = tfs->make<TH1F>(name,title,volts.size(),times.front(),times.back());
       for(size_t ibin=0;ibin<times.size();++ibin)
 	wf->SetBinContent(ibin+1,volts[ibin]);

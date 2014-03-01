@@ -3,9 +3,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.cc,v 1.10 2014/02/24 22:56:08 brownd Exp $
+// $Id: StrawWaveform.cc,v 1.11 2014/03/01 16:32:16 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/02/24 22:56:08 $
+// $Date: 2014/03/01 16:32:16 $
 //
 // Original author David Brown, LBNL
 //
@@ -33,7 +33,7 @@ namespace mu2e {
     }
     if(wfx._ihitlet != _hseq.hitletList().end()){
       // sample initial voltage for this hitlet
-      wfx._vstart = sampleWaveform(wfx._ihitlet->time());
+      wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._ihitlet->time());
       // if we start above threhold, scan forward till we're below
       if(wfx._vstart > threshold)
 	returnCrossing(threshold, wfx);
@@ -42,12 +42,12 @@ namespace mu2e {
 	// start the fine scan from this hitlet.  
 	while(wfx._ihitlet != _hseq.hitletList().end() ){
 	  // First, get the starting voltage
-	  wfx._vstart = sampleWaveform(wfx._ihitlet->time());
+	  wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._ihitlet->time());
 	  // check if this hitlet could cross threshold
 	  if(wfx._vstart + maxLinearResponse(wfx._ihitlet) > threshold){
 	    // check the actual response 
-	    double maxtime = wfx._ihitlet->time() + _strawele->maxResponseTime();
-	    double maxresp = sampleWaveform(maxtime);
+	    double maxtime = wfx._ihitlet->time() + _strawele->maxResponseTime(StrawElectronics::thresh);
+	    double maxresp = sampleWaveform(StrawElectronics::thresh,maxtime);
 	    if(maxresp > threshold){
 	      retval = true;
 	      // interpolate to find the precise crossing
@@ -66,13 +66,13 @@ namespace mu2e {
   void StrawWaveform::returnCrossing(double threshold, WFX& wfx) const {
     while(wfx._ihitlet != _hseq.hitletList().end() && wfx._vstart > threshold) {
       // move forward in time at least as twice the time to the maxium for this hitlet
-      double time = wfx._ihitlet->time() + 2*_strawele->maxResponseTime(); 
+      double time = wfx._ihitlet->time() + 2*_strawele->maxResponseTime(StrawElectronics::thresh); 
       while(wfx._ihitlet != _hseq.hitletList().end() && 
 	  wfx._ihitlet->time() < time){
 	++(wfx._ihitlet);
       }
       if(wfx._ihitlet != _hseq.hitletList().end())
-	wfx._vstart = sampleWaveform(wfx._ihitlet->time());
+	wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._ihitlet->time());
 	wfx._time =wfx._ihitlet->time();
     }
   }
@@ -96,7 +96,7 @@ namespace mu2e {
   bool StrawWaveform::fineCrossing(double threshold,double maxresp, WFX& wfx) const {
     static double timestep(0.010); // interpolation minimum to use linear threshold crossing calculation
     double pretime = wfx._ihitlet->time();
-    double posttime = pretime + _strawele->maxResponseTime();
+    double posttime = pretime + _strawele->maxResponseTime(StrawElectronics::thresh);
     double presample = wfx._vstart;
     double postsample = maxresp;
     static const unsigned maxstep(10); // 10 steps max
@@ -107,7 +107,7 @@ namespace mu2e {
     double time = pretime + slope*(threshold-presample);
     // linear interpolation
     while(dt > timestep && nstep < maxstep) {
-      double sample = sampleWaveform(time);
+      double sample = sampleWaveform(StrawElectronics::thresh,time);
       if(sample > threshold){
 	posttime = time;
 	postsample = sample;
@@ -140,19 +140,19 @@ namespace mu2e {
 
   double StrawWaveform::maxLinearResponse(HitletList::const_iterator const& ihitlet) const {
   // ignore saturation effects
-    double linresp = _strawele->maxLinearResponse(ihitlet->charge());
+    double linresp = _strawele->maxLinearResponse(StrawElectronics::thresh,ihitlet->charge());
     linresp *= (_xtalk._preamp + _xtalk._postamp);
     return linresp;
   }
 
-  double StrawWaveform::sampleWaveform(double time) const {
+  double StrawWaveform::sampleWaveform(StrawElectronics::path ipath,double time) const {
 // loop over all hitlets and add their response at this time
     HitletList const& hlist = _hseq.hitletList();
     double linresp(0.0);
     auto ihitlet = hlist.begin();
     while(ihitlet != hlist.end() && ihitlet->time() < time){
     // compute the linear straw electronics response to this charge.  This is pre-saturation 
-      linresp += _strawele->linearResponse(time-ihitlet->time(),ihitlet->charge());
+      linresp += _strawele->linearResponse(ipath,time-ihitlet->time(),ihitlet->charge());
     // move to next hitlet
       ++ihitlet;
     }
@@ -164,11 +164,11 @@ namespace mu2e {
     return satresp;
   }
   
-  void StrawWaveform::sampleWaveform(std::vector<double> const& times,std::vector<double>& volts) const {
+  void StrawWaveform::sampleWaveform(StrawElectronics::path ipath,std::vector<double> const& times,std::vector<double>& volts) const {
     volts.clear();
     volts.reserve(times.size());
     for(auto itime=times.begin();itime!=times.end();++itime){
-      volts.push_back(sampleWaveform(*itime));
+      volts.push_back(sampleWaveform(ipath,*itime));
     }
   }
 
