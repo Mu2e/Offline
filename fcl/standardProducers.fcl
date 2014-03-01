@@ -299,10 +299,11 @@ TrkPatRec :
 		ambiguityStrategy    			: [ 0, 0, 2, 2, 2, 2, 2, 2, 2 ]
 		t0Tolerance				: [2.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.2, 0.2, 0.1]
 		HitAmbigPenalty 			: false
-		HitMinDrift 				: 0.1
-		ZeroDriftPenalty 			: 0.05
+		HitMinDrift 				: 0.2
+		ZeroDriftPenalty 			: 0.15
 		Neutralize 				: true
 		fieldCorrection				: true
+                maxhitchi                               : 3.5
 	}
 	TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
 	HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
