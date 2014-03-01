@@ -1,18 +1,16 @@
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.12 2014/02/28 21:11:19 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.cc,v 1.13 2014/03/01 18:56:01 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/02/28 21:11:19 $
+// $Date: 2014/03/01 18:56:01 $
 //
 // Original author: Kyle Knoepfel
 
 // Mu2e includes
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
 
-// cetlib includes
+// Framework includes
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "cetlib/exception.h"
 
 // C++ includes
@@ -47,8 +45,12 @@
 // The distance between the dipole and the tungsten target corresponds
 // to a timing offset of roughly 500 ns.
 
-namespace { 
-  const double ootOffset = 500. ; // ns 
+namespace {
+
+  const double ootCycle  = 1700.; // ns
+  const double ootOffset = 500. ; // ns
+  const double potWidth  = 260. ; // ns
+
 }
 
 namespace mu2e{
@@ -75,8 +77,6 @@ namespace mu2e{
   
   std::size_t ProtonPulseRandPDF::calculateNpoints() {
     
-    ConditionsHandle<AcceleratorParams> accPar ("ignored");
-
     // Determine min. pulse bin width (assume all bins uniformly distributed)
     const double potBinWidth = std::abs( _pulseShape(1,0)-_pulseShape(0,0) );
     const double acBinWidth  = std::abs( _acdipole  (1,0)-_acdipole  (0,0) );
@@ -90,12 +90,12 @@ namespace mu2e{
       _fireOffset = 0.5; // Pulse should start at beginning of POT pulse
     }
     if ( _pulseEnum == PotSpectrum::TOTAL   ) { 
-      _timeMax    = accPar->deBuncherPeriod - accPar->limitingHalfWidth;                        
+      _timeMax    = ootCycle-potWidth/2;                        
       _timeMin    = _pulseShape(0,0);
       _fireOffset = -_timeMin/(_timeMax-_timeMin); // Pulse should start at beginning of POT pulse
     }
     if ( _pulseEnum == PotSpectrum::OOT     ) { 
-      _timeMax    = accPar->deBuncherPeriod - accPar->limitingHalfWidth;
+      _timeMax    = ootCycle-potWidth/2;                        
       _timeMin    = 0.;              
       _fireOffset = 0.; // Pulse should start at t = 0. 
     }
@@ -179,7 +179,8 @@ namespace mu2e{
 
   void ProtonPulseRandPDF::renormalizeShape( std::vector<double>& shape, const double norm ) const {
     
-    const double integral = std::accumulate( shape.begin(), shape.end(), 0. );
+    double integral(0.);
+    std::for_each( shape.begin(), shape.end(), [&](double& pt){ integral += pt;      } );
     std::for_each( shape.begin(), shape.end(), [&](double& pt){ pt *= norm/integral; } );
 
   }
