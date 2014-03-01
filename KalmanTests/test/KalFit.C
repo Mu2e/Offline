@@ -128,41 +128,73 @@ Double_t crystalball (Double_t *x, Double_t *par) {
 
 void KalFitHit (TTree* hits ) {
   if(!donecuts)KalCuts();
+  TCut goodhit = reco+ncuts[icut]+momcuts[icut]+"_active";
+
   TCanvas* dcan = new TCanvas("driftcan","driftcan",1200,800);
   TH1F* dres = new TH1F("dres","Drift radius resolution;mm",100,-1,1);
   TH1F* dpull = new TH1F("dpull","Drift radius pull",100,-10,10);
-  TH2F* drad = new TH2F("drad","Drift radius;true drift radius (mm);reco drift radius (mm)",
-      100,-0.3,2.8,100,-0.3,2.8);
-  TH1F* rpull = new TH1F("rpull","residual pull",100,-10,10);
-  hits->Project("dres","_rdrift-_mcdist","_active");
-  hits->Project("dpull","(_rdrift-_mcdist)/_rdrifterr","_active");
-  hits->Project("rpull","_resid/_residerr","_active");
+   TH1F* rpull = new TH1F("rpull","residual pull",100,-10,10);
+  hits->Project("dres","_rdrift-_mcdist",goodhit);
+  hits->Project("dpull","(_rdrift-_mcdist)/_rdrifterr",goodhit);
+  hits->Project("rpull","_resid/_residerr",goodhit);
   dcan->Clear();
   dcan->Divide(2,2);
   dcan->cd(1);
-  hits->Draw("_rdrift:_mcdist>>drad","_active");
-  dcan->cd(2);
   dres->Fit("gaus");
-  dcan->cd(3);
+  dcan->cd(2);
   dpull->Fit("gaus");
-  dcan->cd(4);
+  dcan->cd(3);
   rpull->Fit("gaus");
 
-  TCanvas* tcan = new TCanvas("ht0can","hit_t0can",1200,800);
-  TH1F* t0res = new TH1F("t0res","hit t0 resolution;nsec",100,-10,10);
-  TH1F* t0pull = new TH1F("t0pull","hit t0 pull",200,-30,30);
-  TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
-      100,0,2000,100,0,2000);
-  hits->Project("t0res","_ht-_mcht","_active");
-  hits->Project("t0pull","(_ht-_mcht)/_t0err","_active");
-  tcan->Clear();
-  tcan->Divide(2,2);
-  tcan->cd(1);
-  hits->Draw("_ht:_mcht>>dt0","_active");
-  tcan->cd(2);
-  t0res->Fit("gaus");
-  tcan->cd(3);
-  t0pull->Fit("gaus");
+
+  TCanvas* t2dcan = new TCanvas("t2dcan","t2dcan",1200,800);
+  TH2F* drad = new TH2F("drad","Drift radius;true drift radius (mm);reco drift radius (mm)",
+      55,-0.1,2.6,55,-0.1,2.6);
+  TH2F* dresid = new TH2F("dresid","Drift Residual vs drift radius;reco drift radius (mm);reco - true radius (mm)",25,0.0,2.5,25,-0.5,0.8);
+  TH2F* dresidt = new TH2F("dresidt","Drift Residual vs true drift radius;MC true drift radius (mm);reco - true radius (mm)",25,0.0,2.5,25,-0.5,0.8);
+  hits->Project("drad","_rdrift:_mcdist",goodhit);
+  hits->Project("dresid","_rdrift-_mcdist:_rdrift",goodhit);
+  hits->Project("dresidt","_rdrift-_mcdist:_mcdist",goodhit);
+  dresidt->SetLineColor(kBlue);
+  dresidt->SetFillColor(kBlue);
+  dresid->SetLineColor(kCyan);
+  dresid->SetFillColor(kCyan);
+  dresid->FitSlicesY();
+  TH1D *dresid_1 = (TH1D*)gDirectory->Get("dresid_1");
+  TH1D *dresid_2 = (TH1D*)gDirectory->Get("dresid_2");
+  dresid_1->SetLineColor(kCyan);
+  dresid_2->SetLineColor(kCyan);
+
+
+  t2dcan->Divide(3,2);
+  t2dcan->cd(1);
+  drad->Draw("colorZ");
+  t2dcan->cd(2);
+  dresid->Draw("box");
+  t2dcan->cd(3);
+  dresidt->Draw("box");
+  t2dcan->cd(4);
+  dresid_1->Fit("pol2");
+  t2dcan->cd(5);
+  dresid_2->Fit("pol2");
+ 
+
+
+//  TCanvas* tcan = new TCanvas("ht0can","hit_t0can",1200,800);
+//  TH1F* t0res = new TH1F("t0res","hit t0 resolution;nsec",100,-10,10);
+//  TH1F* t0pull = new TH1F("t0pull","hit t0 pull",200,-30,30);
+//  TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
+//      100,0,2000,100,0,2000);
+//  hits->Project("t0res","_ht-_mcht","_active");
+//  hits->Project("t0pull","(_ht-_mcht)/_t0err","_active");
+//  tcan->Clear();
+//  tcan->Divide(2,2);
+//  tcan->cd(1);
+//  hits->Draw("_ht:_mcht>>dt0","_active");
+//  tcan->cd(2);
+//  t0res->Fit("gaus");
+//  tcan->cd(3);
+//  t0pull->Fit("gaus");
 
   TCanvas* tdcan = new TCanvas("tdcan","tdcan",1200,800);
   TH1F* tdres = new TH1F("tdres","#Deltat V resolution;mm",100,-300,300);
