@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.20 2014/02/22 23:12:32 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.21 2014/03/01 11:16:08 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/22 23:12:32 $
+// $Date: 2014/03/01 11:16:08 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -64,7 +64,6 @@ namespace mu2e
     Float_t _dphi; // phi diff to cluster
     Float_t _drho; // rho diff to cluster
     Float_t _dt;  // time diff to cluster
-    Float_t _rho;  // hit transverse radius
   };
 
   struct DeltaClusterMVA {
@@ -199,8 +198,8 @@ namespace mu2e
     _ismask(StrawHitFlag::isolated),
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","MLP method")),
     _dclustertype(pset.get<std::string>("DeltaClusterTMVAType","MLP method")),
-    _gdstereo(pset.get<double>("StereoHitMVACut",0.5)),
-    _gdnonstereo(pset.get<double>("NonStereoHitMVACut",0.5)),
+    _gdstereo(pset.get<double>("StereoHitMVACut",0.8)),
+    _gdnonstereo(pset.get<double>("NonStereoHitMVACut",0.8)),
     _mindp(pset.get<unsigned>("MinDeltaHits",0)),
     _minns(pset.get<unsigned>("MinNStations",2)),
     _stereoclusterhitfrac(pset.get<double>("StereoClusterHitFraction",0.8)),
@@ -213,8 +212,8 @@ namespace mu2e
     ConfigFileLookupPolicy configFile;
     std::string stereohitweights = pset.get<std::string>("StereoHitTMVAWeights","TrkPatRec/test/StereoHits.weights.xml");
     std::string nonstereohitweights = pset.get<std::string>("NonStereoHitTMVAWeights","TrkPatRec/test/NonStereoHits.weights.xml");
-    std::string stereoclusterweights = pset.get<std::string>("StereoClusterTMVAWeights","TrkPatRec/test/StereoClusterV2Odd.weights.xml");
-    std::string nonstereoclusterweights = pset.get<std::string>("NonStereoClusterTMVAWeights","TrkPatRec/test/NonStereoClusterV2Odd.weights.xml");
+    std::string stereoclusterweights = pset.get<std::string>("StereoClusterTMVAWeights","TrkPatRec/test/StereoCluster.weights.xml");
+    std::string nonstereoclusterweights = pset.get<std::string>("NonStereoClusterTMVAWeights","TrkPatRec/test/NonStereoCluster.weights.xml");
     _stereohitweights = configFile(stereohitweights);
     _nonstereohitweights = configFile(nonstereohitweights);
     _stereoclusterweights = configFile(stereoclusterweights);
@@ -338,7 +337,6 @@ namespace mu2e
 	_dhmva._dphi = dphi;
 	_dhmva._drho = rho - dp._rmed;
 	_dhmva._dt = ct - dp._tmed;
-	_dhmva._rho = rho;
 	double gd(-1.0);
 	int iflag(0);
 	bool stereo = shp.flag().hasAllProperties(_stmask);
@@ -568,14 +566,12 @@ namespace mu2e
     _stereohitReader->AddVariable("_dphi",&_dhmva._dphi);
     _stereohitReader->AddVariable("_drho",&_dhmva._drho);
     _stereohitReader->AddVariable("_dt",&_dhmva._dt);
-    _stereohitReader->AddVariable("_rho",&_dhmva._rho);
     _stereohitReader->BookMVA(_dhittype,_stereohitweights);
 
     _nonstereohitReader = new TMVA::Reader();
     _nonstereohitReader->AddVariable("_dphi",&_dhmva._dphi);
     _nonstereohitReader->AddVariable("_drho",&_dhmva._drho);
     _nonstereohitReader->AddVariable("_dt",&_dhmva._dt);
-    _nonstereohitReader->AddVariable("_rho",&_dhmva._rho);
     _nonstereohitReader->BookMVA(_dhittype,_nonstereohitweights);
 
     // define the cluster classifier
