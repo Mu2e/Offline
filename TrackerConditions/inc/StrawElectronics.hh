@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.3 2014/02/25 06:50:31 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.4 2014/03/01 11:16:49 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/02/25 06:50:31 $
+// $Date: 2014/03/01 11:16:49 $
 //
 // Original author David Brown, LBNL
 //
@@ -26,6 +26,8 @@
 namespace mu2e {
   class StrawElectronics : virtual public ConditionsEntity {
     public:
+// separately describe the 2 analog paths
+      enum path{discriminator=0,waveform=1};
 // these are copied from StrawDigi, but I don't want a direct dependency
       typedef unsigned long TDCValues[2];
       typedef std::vector<unsigned short> ADCWaveform;
