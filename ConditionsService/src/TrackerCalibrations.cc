@@ -1,9 +1,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.13 2013/01/26 18:16:38 brownd Exp $
+// $Id: TrackerCalibrations.cc,v 1.14 2014/03/01 11:13:30 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/01/26 18:16:38 $
+// $Date: 2014/03/01 11:13:30 $
 //
 
 // Mu2e include files
@@ -23,7 +23,9 @@ namespace mu2e {
     _tdresopar1 = config.getDouble("TDResolution_1",60.7);
     // simplistic placeholder for drift calibration parameters
     _vdrift = config.getDouble("DriftVelocity",0.05); // mm/ns
-    _rres = config.getDouble("DriftRadiusResolution",0.1); //mm
+    _rres_min = config.getDouble("MinDriftRadiusResolution",0.09); //mm
+    _rres_max = config.getDouble("MaxDriftRadiusResolution",0.15); //mm
+    _rres_rad = config.getDouble("DriftRadiusResolutionRadius",1.5); //mm
     _distvsdeltat = config.getDouble("SignalVelocity",231.); //mm/ns
     _edepToAmpl = config.getDouble("EdepToAmpl",1.0); // mV/MeV
     _amplRes = config.getDouble("AmplRes", 0.0); //   relative
@@ -35,13 +37,21 @@ namespace mu2e {
     // Note that negative drift radii are allowed: this is necessary to allow continuous derivatives at the wire.
     // Calling classes that require a positive time should pass abs(rdrift).
     d2t._tdrift = rdrift/_vdrift;
-    d2t._tdrifterr = _rres/_vdrift;
+    double rres = _rres_min;
+    if(rdrift<_rres_rad){
+      rres = _rres_min+_rres_max*(_rres_rad-rdrift)/_rres_rad;
+    }
+    d2t._tdrifterr = rres/_vdrift;
     d2t._vdrift = _vdrift;
   }
 
   void TrackerCalibrations::TimeToDistance(StrawIndex strawIndex, double tdrift, CLHEP::Hep3Vector const& tdir,T2D& t2d) const {
     t2d._rdrift = tdrift*_vdrift;
-    t2d._rdrifterr = _rres;
+    double rres = _rres_min;
+    if(t2d._rdrift<_rres_rad){
+      rres = _rres_min+_rres_max*(_rres_rad-t2d._rdrift)/_rres_rad;
+    }
+    t2d._rdrifterr = rres;
     t2d._vdrift = _vdrift;
   }
 
