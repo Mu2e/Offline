@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.70 2014/02/22 01:52:18 ehrlich Exp $
+// $Id: DataInterface.cc,v 1.71 2014/03/02 21:30:56 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2014/02/22 01:52:18 $
+// $Date: 2014/03/02 21:30:56 $
 //
 
 #include "DataInterface.h"
@@ -1258,6 +1258,45 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 #endif
+
+  const mu2e::StepPointMCCollection *calosteppoints=contentSelector->getSelectedCaloHitCollection<mu2e::StepPointMCCollection>();
+  if(calosteppoints!=nullptr)
+  {
+    _numberCrystalHits=calosteppoints->size();
+    std::vector<mu2e::StepPointMC>::const_iterator iter;
+    for(iter=calosteppoints->begin(); iter!=calosteppoints->end(); iter++)
+    {
+      const mu2e::StepPointMC& calohit = *iter;
+      int crystalid = calohit.volumeId();
+      int trackid = calohit.trackId().asInt();
+      double time = calohit.time();
+      double energy = calohit.eDep();
+      std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
+      if(crystal!=_crystals.end() && !isnan(time))
+      {
+        double previousStartTime=crystal->second->getStartTime();
+        if(isnan(previousStartTime))
+        {
+          findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
+          crystal->second->setStartTime(time);
+          char c[100];
+          sprintf(c,"hit time(s): %gns",time/CLHEP::ns);
+          crystal->second->getComponentInfo()->setText(2,c);
+          sprintf(c,"deposited energy(s): %geV",energy/CLHEP::eV);
+          crystal->second->getComponentInfo()->setText(3,c);
+          sprintf(c,"track ID(s): %i",trackid);
+          crystal->second->getComponentInfo()->setText(4,c);
+          _crystalhits.push_back(crystal->second);
+        }
+        else
+        {
+          crystal->second->getComponentInfo()->expandLine(2,time/CLHEP::ns,"ns");
+          crystal->second->getComponentInfo()->expandLine(3,energy/CLHEP::eV,"eV");
+          crystal->second->getComponentInfo()->expandLine(4,trackid,"");
+        }
+      }
+    }
+  }
 
   const mu2e::CaloCrystalHitCollection *calocrystalhits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>();
   if(calocrystalhits!=nullptr)

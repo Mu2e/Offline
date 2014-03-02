@@ -1,9 +1,9 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.16 2014/02/22 01:52:18 ehrlich Exp $
+// $Id: ContentSelector.h,v 1.17 2014/03/02 21:30:56 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2014/02/22 01:52:18 $
+// $Date: 2014/03/02 21:30:56 $
 //
 // Original author Ralf Ehrlich
 //
@@ -46,6 +46,7 @@ class ContentSelector
   ContentSelector& operator=(const ContentSelector &);
 
   std::vector<art::Handle<mu2e::StepPointMCCollection> > _stepPointMCVector;
+  std::vector<art::Handle<mu2e::StepPointMCCollection> > _caloStepPointMCVector;
   std::vector<art::Handle<mu2e::StrawHitCollection> > _strawHitVector;
   std::vector<art::Handle<mu2e::StrawHitFlagCollection> > _strawHitFlagVector;
   std::vector<art::Handle<mu2e::StrawHitPositionCollection> > _strawHitPositionVector;
