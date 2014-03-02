@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.53 2014/02/24 22:54:07 brownd Exp $
+// $Id: KalFitMC.cc,v 1.54 2014/03/02 17:49:41 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/24 22:54:07 $
+// $Date: 2014/03/02 17:49:41 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -12,6 +12,9 @@
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
 // services
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
@@ -188,15 +191,18 @@ namespace mu2e
         }
         if(indices.size() >= _minnhits && indices.size() <= _maxnhits){
 // nominal magnetic field.
-          GeomHandle<BFieldConfig> bfconf;
           HepVector parvec(5,0);
 // Babar interface still uses HepPoint: FIXME!!!!
 // use the z component of th enominal field to define the initial helix parameters.  Off-axis terms are
 // ignored anyways by this interface
           double hflt(0.0);
-          TrkHelixUtils::helixFromMom( parvec, hflt, 
+	  GeomHandle<BFieldManager> bfmgr;
+	  GeomHandle<DetectorSystem> det;
+	  CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
+	  double bz = bfmgr->getBField(vpoint_mu2e).z();
+	  TrkHelixUtils::helixFromMom( parvec, hflt, 
             HepPoint(pos.x(),pos.y(),pos.z()),
-            mom,charge,bfconf->getDSUniformValue().z());
+            mom,charge,bz);
   // dummy covariance matrix; this should be set according to measured values, FIXME!!!!!
           HepSymMatrix dummy(5,1); 
           dummy(1,1)=1.; dummy(2,2)=0.1*0.1;dummy(3,3)=1e-2*1e-2;
@@ -863,7 +869,6 @@ namespace mu2e
   KalFitMC::fillMCTrkInfo(MCStepItr const& imcs, MCTrkInfo& einfo) const {
     GlobalConstantsHandle<ParticleDataTable> pdt;
     GeomHandle<DetectorSystem> det;
-    GeomHandle<BFieldConfig> bfconf;
 
     einfo._time = imcs->time();
     einfo._pdgid = imcs->simParticle()->pdgId(); 
@@ -876,8 +881,11 @@ namespace mu2e
     einfo._pos = pos;
     double hflt(0.0);
     HepVector parvec(5,0);
+    GeomHandle<BFieldManager> bfmgr;
+    CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
+    double bz = bfmgr->getBField(vpoint_mu2e).z();
     TrkHelixUtils::helixFromMom( parvec, hflt,ppos,
-	mom,charge,bfconf->getDSUniformValue().z());
+	mom,charge,bz);
     einfo._hpar = helixpar(parvec);
   }
 
@@ -885,8 +893,6 @@ namespace mu2e
   KalFitMC::fillMCTrkInfo(SimParticle const& sp, MCTrkInfo& einfo) const {
     GlobalConstantsHandle<ParticleDataTable> pdt;
     GeomHandle<DetectorSystem> det;
-    GeomHandle<BFieldConfig> bfconf;
-
     einfo._time = sp.startGlobalTime();
     einfo._pdgid = sp.pdgId();
     double charge = pdt->particle(sp.pdgId()).ref().charge();
@@ -898,8 +904,11 @@ namespace mu2e
     einfo._pos = pos;
     double hflt(0.0);
     HepVector parvec(5,0);
+    GeomHandle<BFieldManager> bfmgr;
+    CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
+    double bz = bfmgr->getBField(vpoint_mu2e).z();
     TrkHelixUtils::helixFromMom( parvec, hflt,ppos,
-	mom,charge,bfconf->getDSUniformValue().z());
+	mom,charge,bz);
     einfo._hpar = helixpar(parvec);
   }
 
