@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.23 2014/03/01 16:32:16 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.24 2014/03/02 17:51:13 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/01 16:32:16 $
+// $Date: 2014/03/02 17:51:13 $
 //
 // Original author David Brown, LBNL
 //
@@ -27,6 +27,12 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "BaBar/include/BField/BField.hh"
 // utiliities
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -95,6 +101,7 @@ namespace mu2e {
     int _diagLevel, _printLevel;
     unsigned _maxhist;
     bool _xtalkhist;
+    int _minnxinghist;
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
     // Name of the tracker StepPoint collection
@@ -108,6 +115,7 @@ namespace mu2e {
     double _mbtime; // period of 1 microbunch
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
     double _minsteplen; // minimum step size for splitting charge into ion clusters
+    double _minsteptime; // minimum time to propagate a StepPointMC
   // models of straw response to stimuli
     ConditionsHandle<StrawPhysics> _strawphys;
     ConditionsHandle<StrawElectronics> _strawele; 
@@ -121,6 +129,8 @@ namespace mu2e {
     const string _messageCategory;
     // Give some informationation messages only on the first event.
     bool _firstEvent;
+    // record the BField at the tracker center
+    double _bz;
     // List of dead straws as a parameter set; needed at beginRun time.
 //    DeadStrawList _strawStatus;
 // diagnostics
@@ -137,7 +147,7 @@ namespace mu2e {
     TTree* _sddiag;
     Int_t _sddevice, _sdsector, _sdlayer, _sdstraw;
     Int_t _nend, _nstep;
-    Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _ddist0, _ddist1, _wdist0, _wdist1, _vstart0, _vstart1;
+    Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _ddist0, _ddist1, _wdist0, _wdist1, _vstart0, _vstart1, _vcross0, _vcross1;
     Float_t _mctime, _mcenergy, _mcdca;
     Int_t _mcpdg;
     Bool_t _xtalk;
@@ -149,7 +159,7 @@ namespace mu2e {
     void fillHitletMap(art::Event const& event, StrawHitletMap & hmap);
     void addStep(art::Ptr<StepPointMC> const& spmcptr, Straw const& straw, StrawHitletSequencePair& shsp);
     void divideStep(StepPointMC const& step, vector<IonCluster>& clusters);
-    bool driftCluster(Straw const& straw, IonCluster const& cluster, WireCharge& wireq);
+    void driftCluster(Straw const& straw, IonCluster const& cluster, WireCharge& wireq);
     void propagateCharge(Straw const& straw, WireCharge const& wireq, StrawEnd end, WireEndCharge& weq);
     double microbunchTime(double globaltime) const;
     void addGhosts(StrawHitlet const& hitlet,StrawHitletSequence& shs); 
@@ -177,6 +187,7 @@ namespace mu2e {
     _printLevel(pset.get<int>("printLevel",0)),
     _maxhist(pset.get<unsigned>("MaxHist",1000)),
     _xtalkhist(pset.get<bool>("CrossTalkHist",false)),
+    _minnxinghist(pset.get<int>("MinNXingHist",0)),
     // Parameters
     _maxFullPrint(pset.get<int>("maxFullPrint",2)),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
@@ -185,7 +196,8 @@ namespace mu2e {
     _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _mbbuffer(pset.get<double>("TimeFoldingBuffer",50.0)), // nsec
-    _minsteplen(pset.get<double>("MinimumIonClusterStep",0.5)), // mm
+    _minsteplen(pset.get<double>("MinimumIonClusterStep",0.25)), // mm
+    _minsteptime(pset.get<double>("MinimumStepPointMCTime",200.0)), // nsec
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _diagpath(static_cast<StrawElectronics::path>(pset.get<int>("WaveformDiagPath",StrawElectronics::thresh))),
     // Random number distributions
@@ -205,6 +217,7 @@ namespace mu2e {
     }
 
   void StrawDigisFromStepPointMCs::beginJob(){
+ 
     if(_diagLevel > 0){
       art::ServiceHandle<art::TFileService> tfs;
       _swdiag =tfs->make<TTree>("swdiag","StrawWaveform diagnostics");
@@ -245,6 +258,10 @@ namespace mu2e {
 	_sddiag->Branch("charge1",&_charge1,"charge1/F");
 	_sddiag->Branch("wdist0",&_wdist0,"wdist0/F");
 	_sddiag->Branch("wdist1",&_wdist1,"wdist1/F");
+	_sddiag->Branch("vstart0",&_vstart0,"vstart0/F");
+	_sddiag->Branch("vstart1",&_vstart1,"vstart1/F");
+	_sddiag->Branch("vcross0",&_vcross0,"vcross0/F");
+	_sddiag->Branch("vcross1",&_vcross1,"vcross1/F");
 	_sddiag->Branch("ddist0",&_ddist0,"ddist0/F");
 	_sddiag->Branch("ddist1",&_ddist1,"ddist1/F");
 	_sddiag->Branch("tdc0",&_tdc0,"tdc0/I");
@@ -261,6 +278,12 @@ namespace mu2e {
 
   void StrawDigisFromStepPointMCs::beginRun( art::Run& run ){
     //    _strawStatus.reset(_deadStraws);
+    // field at the center of the tracker
+    // GeomHandle<BFieldManager> bfmgr;
+    //  GeomHandle<DetectorSystem> det;
+    //  CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
+    // scale the field for the curvature
+    //  _bz = BField::mmTeslaToMeVc*bfmgr->getBField(vpoint_mu2e).z();
   }
 
   void
@@ -386,10 +409,15 @@ namespace mu2e {
     // Subdivide the StepPointMC into ionization clusters
     vector<IonCluster> clusters;
     divideStep(step,clusters);
-    // drift these clusters to the wire, and record the charge at the wire
-    for(auto iclu=clusters.begin(); iclu != clusters.end(); ++iclu){
-      WireCharge wireq;
-      if(driftCluster(straw,*iclu,wireq)){
+    // get time offset for this step
+    double tstep = _toff.timeWithOffsetsApplied(step);
+    // test if this microbunch is worth simulating
+    double mbtime = microbunchTime(tstep);
+    if(mbtime > _minsteptime && mbtime < _mbtime) {
+      // drift these clusters to the wire, and record the charge at the wire
+      for(auto iclu=clusters.begin(); iclu != clusters.end(); ++iclu){
+	WireCharge wireq;
+	driftCluster(straw,*iclu,wireq);
 	// propagate this charge to each end of the wire
 	for(size_t iend=0;iend<2;++iend){
 	  StrawEnd end(static_cast<StrawEnd::strawend>(iend));
@@ -397,7 +425,7 @@ namespace mu2e {
 	  WireEndCharge weq;
 	  propagateCharge(straw,wireq,end,weq);
 	  // compute the total time, modulo the microbunch
-	  double gtime = _toff.timeWithOffsetsApplied(step) + wireq._time + weq._time;
+	  double gtime = tstep + wireq._time + weq._time;
 	  double htime = microbunchTime(gtime);
 	  // create the hitlet
 	  StrawHitlet hitlet(StrawHitlet::primary,strawind,end,htime,weq._charge,wireq._dd,weq._wdist,spmcptr);
@@ -414,9 +442,9 @@ namespace mu2e {
   StrawDigisFromStepPointMCs::divideStep(StepPointMC const& step,
       vector<IonCluster>& clusters) {
     unsigned ndiv(1);
-// if the step is already small enough, don't subdivide
+    // if the step is already small enough, don't subdivide
     if(step.stepLength() > _minsteplen) {
-// subdivide into units of fundamental charge, but no smaller than the smallest step size
+	// subdivide into units of fundamental charge, but no smaller than the smallest step size
       unsigned maxndiv = static_cast<unsigned>(ceil(step.stepLength()/_minsteplen));
       ndiv = min(maxndiv,_strawphys->nIonization(_strawphys->ionizationCharge(step.ionizingEdep())));
     }
@@ -428,45 +456,48 @@ namespace mu2e {
     sort(lengths.begin(),lengths.end());
 // make clusters for each
     CLHEP::Hep3Vector dir = step.momentum().unit();
+// calculate the sagitta for this step
+//    static double oneeighth(1.0/8.0);
+//    double dperp = step.stepLength()*dir.perp();
+//    double crad = step.momentum().perp()/_bz;
+//    double sag = oneeighth*(dperp*dperp)/crad;
     double qdiv = _strawphys->ionizationCharge(step.ionizingEdep()/ndiv); 
     for(auto ilen=lengths.begin();ilen!=lengths.end();++ilen){
+// linear approx works for small steps or large curvature radius.
+// otherwise I should use a helix, FIXME!!!
       CLHEP::Hep3Vector pos = step.position() + (*ilen)*dir;
       IonCluster cluster(pos,qdiv);
       clusters.push_back(cluster);
     }
   }
 
-  bool StrawDigisFromStepPointMCs::driftCluster(Straw const& straw,
+  void StrawDigisFromStepPointMCs::driftCluster(Straw const& straw,
       IonCluster const& cluster, WireCharge& wireq) {
-// Compute the vector from the cluster to the wire
+    // Compute the vector from the cluster to the wire
     CLHEP::Hep3Vector cpos = cluster._pos-straw.getMidPoint();
     // drift distance perp to wire, and angle WRT magnetic field (for Lorentz effect)
-    double dd = cpos.perp(straw.getDirection());
-    // filter clusters outside the physical straw.  Not sure where these come from ???? FIXME!!
-    if(dd < straw.getDetail().innerRadius()){
-      double dphi = cpos.azimAngle(straw.getDirection());
-      double gain = _strawphys->strawGain(dd,dphi);
-      // smear the charge by the gas gain statistics 
-      double dgain = _gaussian.shoot(0.0,sqrt(gain));
-      wireq._charge = cluster._charge*(gain+dgain);
-      // smear drift time
-      wireq._time = _gaussian.shoot(_strawphys->driftDistanceToTime(dd,dphi),
-	  _strawphys->driftTimeSpread(dd,dphi));
-      wireq._dd = dd;
-      // position along wire
-      // need to add Lorentz effects, this should be in StrawPhysics, FIXME!!!
-      wireq._wpos = cpos.dot(straw.getDirection());
-      return true;
-    } else
-      return false;
+    double dd = min(cpos.perp(straw.getDirection()),straw.getDetail().innerRadius());
+    // for now ignore Lorentz effects FIXME!!! 
+    double dphi = 0.0;
+    double gain = _strawphys->strawGain(dd,dphi);
+    // smear the charge by the gas gain statistics 
+    double dgain = _gaussian.shoot(0.0,sqrt(gain));
+    wireq._charge = cluster._charge*(gain+dgain);
+    // smear drift time
+    wireq._time = _gaussian.shoot(_strawphys->driftDistanceToTime(dd,dphi),
+	_strawphys->driftTimeSpread(dd,dphi));
+    wireq._dd = dd;
+    // position along wire
+    // need to add Lorentz effects, this should be in StrawPhysics, FIXME!!!
+    wireq._wpos = cpos.dot(straw.getDirection());
   }
 
   void
     StrawDigisFromStepPointMCs::propagateCharge(Straw const& straw,
-      WireCharge const& wireq, StrawEnd end, WireEndCharge& weq) {
-    // compute distance to the appropriate end
-    double wlen = straw.getDetail().halfLength(); // use the full length, not the active length
-  // NB: the following assumes the straw direction points in increasing azimuth.  FIXME!
+	WireCharge const& wireq, StrawEnd end, WireEndCharge& weq) {
+      // compute distance to the appropriate end
+      double wlen = straw.getDetail().halfLength(); // use the full length, not the active length
+      // NB: the following assumes the straw direction points in increasing azimuth.  FIXME!
     if(end == StrawEnd::plus)
       weq._wdist = wlen - wireq._wpos;
     else
@@ -673,6 +704,7 @@ namespace mu2e {
     static unsigned nhist(0);
     ++nhist;
     if(_diagLevel > 2 && nhist < _maxhist &&
+    _nxing >= _minnxinghist &&
     ( ((!_xtalkhist) && (!_wfxtalk)) || (_xtalkhist && _wfxtalk)) ) {
       // histogram the waveforms
       const double tstep(0.5); // 0.5
@@ -714,6 +746,7 @@ namespace mu2e {
     _wdist0 = _wdist1 = -1000.0;
     _ddist0 = _ddist1 = -1000.0;
     _vstart0 = _vstart1 = -1000.0;
+    _vcross0 = _vcross1 = -1000.0;
     _nend = xpair.size();
     for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
       if((*ixp)->_ihitlet->strawEnd() == primaryend) {
@@ -723,6 +756,7 @@ namespace mu2e {
 	_ddist0 = (*ixp)->_ihitlet->driftDistance();
 	_wdist0 = (*ixp)->_ihitlet->wireDistance();
 	_vstart0 = (*ixp)->_vstart;
+	_vcross0 = (*ixp)->_vcross;
       } else {
 	_xtime1 =(*ixp)->_time;
 	_htime1 = (*ixp)->_ihitlet->time();
@@ -730,6 +764,7 @@ namespace mu2e {
 	_ddist1 = (*ixp)->_ihitlet->driftDistance();
 	_wdist1 = (*ixp)->_ihitlet->wireDistance();
       	_vstart1 = (*ixp)->_vstart;
+	_vcross1 = (*ixp)->_vcross;
       }
     }
     if(xpair.size() < 2 || xpair[0]->_ihitlet->stepPointMC() == xpair[1]->_ihitlet->stepPointMC())

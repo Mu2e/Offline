@@ -3,9 +3,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.cc,v 1.11 2014/03/01 16:32:16 brownd Exp $
+// $Id: StrawWaveform.cc,v 1.12 2014/03/02 17:51:13 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/01 16:32:16 $
+// $Date: 2014/03/02 17:51:13 $
 //
 // Original author David Brown, LBNL
 //
@@ -94,7 +94,7 @@ namespace mu2e {
   }
 
   bool StrawWaveform::fineCrossing(double threshold,double maxresp, WFX& wfx) const {
-    static double timestep(0.010); // interpolation minimum to use linear threshold crossing calculation
+    static double timestep(0.020); // interpolation minimum to use linear threshold crossing calculation
     double pretime = wfx._ihitlet->time();
     double posttime = pretime + _strawele->maxResponseTime(StrawElectronics::thresh);
     double presample = wfx._vstart;
@@ -106,7 +106,7 @@ namespace mu2e {
     double slope = deltat/(postsample-presample);
     double time = pretime + slope*(threshold-presample);
     // linear interpolation
-    while(dt > timestep && nstep < maxstep) {
+    while(fabs(dt) > timestep && nstep < maxstep) {
       double sample = sampleWaveform(StrawElectronics::thresh,time);
       if(sample > threshold){
 	posttime = time;
@@ -119,11 +119,13 @@ namespace mu2e {
       slope = deltat/(postsample-presample);
       double oldtime = time;
       time = pretime + slope*(threshold-presample);
-      dt = fabs(time-oldtime);
+      dt = time-oldtime;
       ++nstep;
     }     
     // set crossing time
     wfx._time = time;
+    // record the threshold 
+    wfx._vcross = threshold;
     // update the referenced hitlet: this can be different than the one we started with!
     while(wfx._ihitlet != _hseq.hitletList().end() && 
       wfx._ihitlet->time() < wfx._time){
@@ -133,7 +135,7 @@ namespace mu2e {
     if(wfx._ihitlet != _hseq.hitletList().begin())--(wfx._ihitlet);
 
   // apply dispersion effects.  This changes the slope of the voltage response FIXME!!!
-
+    
     // return on convergence
     return dt < timestep;
   }
