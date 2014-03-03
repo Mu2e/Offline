@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.21 2014/03/01 11:16:08 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.22 2014/03/03 05:56:38 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/01 11:16:08 $
+// $Date: 2014/03/03 05:56:38 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -204,7 +204,7 @@ namespace mu2e
     _minns(pset.get<unsigned>("MinNStations",2)),
     _stereoclusterhitfrac(pset.get<double>("StereoClusterHitFraction",0.8)),
     _stereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.8)),
-    _nonstereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.8)),
+    _nonstereoclustermvacut(pset.get<double>("NonStereoClusterMVACut",0.8)),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
     _clusterer(pset.get<fhicl::ParameterSet>("ClusterStrawHits",fhicl::ParameterSet()))
   {
