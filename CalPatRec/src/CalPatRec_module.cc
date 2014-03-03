@@ -1,6 +1,6 @@
-// $Id: TrkPatRecHack_module.cc,v 1.1 2014/02/23 00:56:35 murat Exp $
-// $Author: murat $ 
-// $Date: 2014/02/23 00:56:35 $
+// $Id: CalPatRec_module.cc,v 1.1 2014/03/03 20:52:41 gianipez Exp $
+// $Author: gianipez $ 
+// $Date: 2014/03/03 20:52:41 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -83,12 +83,12 @@ using namespace boost::accumulators;
 
 namespace mu2e 
 {
-  class TrkPatRecHack : public art::EDProducer
+  class CalPatRec : public art::EDProducer
   {
     public:
       enum fitType {helixFit=0,seedFit,kalFit};
-      explicit TrkPatRecHack(fhicl::ParameterSet const&);
-      virtual ~TrkPatRecHack();
+      explicit CalPatRec(fhicl::ParameterSet const&);
+      virtual ~CalPatRec();
       virtual void beginJob();
       virtual void beginRun(art::Run&);
       virtual void produce(art::Event& event ); 
@@ -194,7 +194,7 @@ namespace mu2e
     THackData* fHackData;
   };
 
-  TrkPatRecHack::TrkPatRecHack(fhicl::ParameterSet const& pset) :
+  CalPatRec::CalPatRec(fhicl::ParameterSet const& pset) :
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
@@ -242,9 +242,9 @@ namespace mu2e
     // location-independent files
   }
 
-  TrkPatRecHack::~TrkPatRecHack(){}
+  CalPatRec::~CalPatRec(){}
 
-  void TrkPatRecHack::beginJob(){
+  void CalPatRec::beginJob(){
     // create diagnostics if requested
     if(_diag > 0)createDiagnostics();
     // create a histogram of throughput: this is a basic diagnostic that should ALWAYS be on
@@ -253,9 +253,9 @@ namespace mu2e
     _eventid = 0;
   }
 
-  void TrkPatRecHack::beginRun(art::Run& ){}
+  void CalPatRec::beginRun(art::Run& ){}
 
-  void TrkPatRecHack::produce(art::Event& event ) {
+  void CalPatRec::produce(art::Event& event ) {
 
     static int first_call(1.);
     if (first_call) {
@@ -267,7 +267,7 @@ namespace mu2e
     unique_ptr<KalRepCollection> tracks(new KalRepCollection );
     // event printout
     _iev=event.id().event();
-    if((_iev%_printfreq)==0)cout<<"TrkPatRecHack: event="<<_iev<<endl;
+    if((_iev%_printfreq)==0)cout<<"CalPatRec: event="<<_iev<<endl;
     // find the data
     if(!findData(event)){
       cout << "No straw hits found " << endl;
@@ -400,13 +400,13 @@ namespace mu2e
     event.put(std::move(flags),_iname);
   }
 
-  void TrkPatRecHack::endJob(){
+  void CalPatRec::endJob(){
     // does this cause the file to close?
     art::ServiceHandle<art::TFileService> tfs;
   }
 
   // find the input data objects 
-  bool TrkPatRecHack::findData(const art::Event& evt){
+  bool CalPatRec::findData(const art::Event& evt){
     _shcol = 0;
     _shfcol = 0;
     _shpcol = 0;
@@ -427,7 +427,7 @@ namespace mu2e
     return _shcol != 0 && _shfcol != 0 && _shpcol != 0;
   }
 
-  void TrkPatRecHack::findTimePeaks() {
+  void CalPatRec::findTimePeaks() {
     TSpectrum tspec(_maxnpeak);
     TH1F timespec("timespec","time spectrum",_nbins,_tmin,_tmax);
     // loop over straws hits and fill time spectrum plot for tight hits
@@ -464,7 +464,7 @@ namespace mu2e
     std::sort(_tpeaks.begin(),_tpeaks.end(),greater<TrkTimePeak>());
   }
 
-  void TrkPatRecHack::createTimePeak() {
+  void CalPatRec::createTimePeak() {
 // find the median time
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > tacc;
     unsigned nstrs = _shcol->size();
@@ -488,7 +488,7 @@ namespace mu2e
     }
   }
 
-  void TrkPatRecHack::filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec){
+  void CalPatRec::filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec){
     //  Trajectory info
     Hep3Vector tdir;
     HepPoint tpos;
@@ -534,7 +534,7 @@ namespace mu2e
     mytrk.setIndices(goodhits);
   }
 
-  void TrkPatRecHack::findMissingHits(KalFitResult& kalfit,std::vector<hitIndex>& misshits) {
+  void CalPatRec::findMissingHits(KalFitResult& kalfit,std::vector<hitIndex>& misshits) {
     const Tracker& tracker = getTrackerOrThrow();
     //  Trajectory info
     Hep3Vector tdir;
@@ -569,7 +569,7 @@ namespace mu2e
   }
 
 
-  void TrkPatRecHack::createDiagnostics() {
+  void CalPatRec::createDiagnostics() {
     art::ServiceHandle<art::TFileService> tfs;
     // straw hit tuple
     _shdiag=tfs->make<TTree>("shdiag","strawhit diagnostics");
@@ -652,7 +652,7 @@ namespace mu2e
     trkdiag->Branch("helixfilt",&_hfilt);
   }
 
-  void TrkPatRecHack::fillStrawDiag() {
+  void CalPatRec::fillStrawDiag() {
     GeomHandle<DetectorSystem> det;
     const Tracker& tracker = getTrackerOrThrow();
     _nchit = 0;
@@ -766,7 +766,7 @@ namespace mu2e
     }
   }
 
-  void TrkPatRecHack::fillTimeDiag() {
+  void CalPatRec::fillTimeDiag() {
     art::ServiceHandle<art::TFileService> tfs;
     TH1F *ctsp, *rtsp, *ttsp, *ltsp, *tdtsp;
 
@@ -823,7 +823,7 @@ namespace mu2e
     tspec.Search(tdtsp,1,_dtspecpar.c_str(),thresh);
   }
 
-  void TrkPatRecHack::fillFitDiag(int ipeak,HelixFitHackResult const& helixfit,
+  void CalPatRec::fillFitDiag(int ipeak,HelixFitHackResult const& helixfit,
       KalFitResult const& seedfit, KalFitResult const& kalfit) {
     // convenience numbers
     static const double pi(M_PI);
@@ -912,7 +912,7 @@ namespace mu2e
   }
 
 
-  void TrkPatRecHack::fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const {
+  void CalPatRec::fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const {
     const Tracker& tracker = getTrackerOrThrow();
     StrawHit const& sh = _shcol->at(ish);
     StrawHitPosition const& shp = _shpcol->at(ish);
@@ -956,5 +956,5 @@ namespace mu2e
     }
   }
 }
-using mu2e::TrkPatRecHack;
-DEFINE_ART_MODULE(TrkPatRecHack);
+using mu2e::CalPatRec;
+DEFINE_ART_MODULE(CalPatRec);

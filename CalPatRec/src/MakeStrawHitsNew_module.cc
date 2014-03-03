@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStrawHitsNew_module.cc,v 1.1 2014/02/23 23:41:22 murat Exp $
-// $Author: murat $
-// $Date: 2014/02/23 23:41:22 $
+// $Id: MakeStrawHitsNew_module.cc,v 1.2 2014/03/03 20:52:41 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2014/03/03 20:52:41 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -139,7 +139,8 @@ namespace mu2e {
   {
     // Tell the framework what we make.
     produces<StrawHitCollection>();
-    produces<StrawHitMCTruthCollection>();
+    //03 - 02 - 2014 Gianipez added the following change for alligning the code with Dave changes
+    //    produces<StrawHitMCTruthCollection>();
     produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
   }
 
@@ -174,10 +175,11 @@ namespace mu2e {
     if(strawhits == 0){
       throw cet::exception("RECO")<<"mu2e::MakeStrawHitsNew: No StrawHit collection found for label " <<  _shLabel << endl;
     } 
-    
-    art::Handle<StrawHitMCTruthCollection> truthHandle;
-    event.getByLabel(_shLabel, truthHandle);
-    const StrawHitMCTruthCollection* hits_truth = truthHandle.product();
+
+    //03 - 02 - 2014 Gianipez added the following change for alligning the code with Dave changes
+    // art::Handle<StrawHitMCTruthCollection> truthHandle;
+//     event.getByLabel(_shLabel, truthHandle);
+//     const StrawHitMCTruthCollection* hits_truth = truthHandle.product();
 
     art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
     event.getByLabel(_shLabel,"StrawHitMCPtr",mcptrHandle);
@@ -228,7 +230,8 @@ namespace mu2e {
     size_t nsh = strawhits->size();
 
     unique_ptr<StrawHitCollection> shcol(new StrawHitCollection);
-    unique_ptr<StrawHitMCTruthCollection>      truthHits(new StrawHitMCTruthCollection);
+    //03 - 02 - 2014 Gianipez added the following change for alligning the code with Dave changes
+    //    unique_ptr<StrawHitMCTruthCollection>      truthHits(new StrawHitMCTruthCollection);
     unique_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
     
 
@@ -258,9 +261,10 @@ namespace mu2e {
 				      hit.time(),
 				      hit.dt(),
 				      hit.energyDep()) );
-	    truthHits->push_back(StrawHitMCTruth(hits_truth->at(ish).driftTime(),
-						 hits_truth->at(ish).driftDistance(),
-						 hits_truth->at(ish).distanceToMid()) );
+    //03 - 02 - 2014 Gianipez added the following change for alligning the code with Dave changes    
+	    // truthHits->push_back(StrawHitMCTruth(hits_truth->at(ish).driftTime(),
+// 						 hits_truth->at(ish).driftDistance(),
+// 						 hits_truth->at(ish).distanceToMid()) );
 	    mcptrHits->push_back(PtrStepPointMCVector(hits_mcptr->at(ish)) );
 	    if(_diagLevel > 0)
 	      {
@@ -271,7 +275,8 @@ namespace mu2e {
     
     // NEXT_EVENT:;
     event.put(std::move(shcol));
-    event.put(std::move(truthHits)); 
+    //03 - 02 - 2014 Gianipez added the following change for alligning the code with Dave changes
+    //event.put(std::move(truthHits)); 
     event.put(std::move(mcptrHits),"StrawHitMCPtr");
   } // end MakeStrawHitsNew::produce.
 

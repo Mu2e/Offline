@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: MergePatRec_module.cc,v 1.2 2014/02/24 18:25:38 murat Exp $
-// $Author: murat $ 
-// $Date: 2014/02/24 18:25:38 $
+// $Id: MergePatRec_module.cc,v 1.3 2014/03/03 20:52:41 gianipez Exp $
+// $Author: gianipez $ 
+// $Date: 2014/03/03 20:52:41 $
 // takes inputs from two track finding algorithms, produces one track collection 
 // on output to be used for analysis
 ///////////////////////////////////////////////////////////////////////////////
@@ -125,15 +125,20 @@ namespace mu2e {
 					// decide that track is the same, 
 					// use the version which has more hits
 
-	  if (tpr->nDof() > cpr->nDof()) {
+	  if (tpr->nDof() >= cpr->nDof()) {
 	    tracks->push_back(tpr->clone());
-	    cpr_flag[i2] = 0;
 	  }
 	  else {	
 	    tracks->push_back(cpr->clone());
-	    tpr_flag[i2] = 0;
 	  }
+	  tpr_flag[i1] = 0;
+	  cpr_flag[i2] = 0;
+	  break;
 	}
+      }
+
+      if (tpr_flag[i1] == 1) {
+	tracks->push_back(tpr->clone());
       }
     }
 //-----------------------------------------------------------------------------
