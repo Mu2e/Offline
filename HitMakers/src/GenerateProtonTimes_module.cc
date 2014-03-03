@@ -16,6 +16,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Utilities/InputTag.h"
 
 #include "MCDataProducts/inc/SimParticle.hh"
@@ -33,20 +34,30 @@ namespace mu2e {
 
     explicit GenerateProtonTimes(const fhicl::ParameterSet& pset);
 
-    virtual void produce(art::Event& e) override;
+    virtual void beginRun(art::Run&   r) override;
+    virtual void produce (art::Event& e) override;
 
   private:
-    ProtonPulseRandPDF  protonPulse_;
+    art::RandomNumberGenerator::base_engine_t& engine_;
+    std::string pulseType_;
     int  verbosityLevel_;
+
+    std::unique_ptr<ProtonPulseRandPDF>  protonPulse_;
+
   };
 
   //================================================================
   GenerateProtonTimes::GenerateProtonTimes(fhicl::ParameterSet const& pset)
-    : protonPulse_(createEngine(art::ServiceHandle<SeedService>()->getSeed()), 
-                   pset.get<std::string>("pulseType","default") )
-    , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+    : engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()) )
+    , pulseType_(pset.get<std::string>("pulseType","default") )
+    , verbosityLevel_(pset.get<int>("verbosityLevel", 0)) 
   {
     produces<SimParticleTimeMap>();
+  }
+
+  //================================================================
+  void GenerateProtonTimes::beginRun(art::Run& run) {
+    protonPulse_.reset( new ProtonPulseRandPDF( engine_, pulseType_ ) );
   }
 
   //================================================================
@@ -62,7 +73,7 @@ namespace mu2e {
         if(iter.second.isPrimary()) {
           art::Ptr<SimParticle> part(ih, iter.first.asUint());
           if(!part->genParticle()->generatorId().isCosmic()) {
-            (*res)[part] = protonPulse_.fire();
+            (*res)[part] = protonPulse_->fire();
           }
           else {
             (*res)[part] = 0;
