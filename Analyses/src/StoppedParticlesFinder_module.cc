@@ -7,6 +7,8 @@
 #include <vector>
 #include <limits>
 
+#include "cetlib/exception.h"
+
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
@@ -38,6 +40,8 @@ namespace mu2e {
     art::InputTag particleInput_;
     art::InputTag physVolInfoInput_;
     std::string stoppingMaterial_;
+    std::vector<std::string> vetoedMaterials_;
+
     int verbosityLevel_;
 
     typedef std::set<PDGCode::type> PDGCodeSet;
@@ -47,7 +51,8 @@ namespace mu2e {
 
     const PhysicalVolumeInfoMultiCollection *vols_;
 
-    bool isStopped(const SimParticle& particle);
+    bool isStopped(const SimParticle& particle) const;
+    bool materialAccepted(const std::string& material) const;
 
     unsigned numTotalParticles_;
     unsigned numRequestedTypeStops_;
@@ -58,7 +63,8 @@ namespace mu2e {
   StoppedParticlesFinder::StoppedParticlesFinder(const fhicl::ParameterSet& pset)
     : particleInput_(pset.get<std::string>("particleInput"))
     , physVolInfoInput_(pset.get<std::string>("physVolInfoInput"))
-    , stoppingMaterial_(pset.get<std::string>("stoppingMaterial"))
+    , stoppingMaterial_(pset.get<std::string>("stoppingMaterial", ""))
+    , vetoedMaterials_(pset.get<std::vector<std::string> >("vetoedMaterials", std::vector<std::string>()))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , hStopMaterials_(art::ServiceHandle<art::TFileService>()->make<TH1D>("stopmat", "Stopping materials", 1, 0., 1.))
     , vols_()
@@ -66,12 +72,16 @@ namespace mu2e {
     , numRequestedTypeStops_()
     , numRequestedMateralStops_()
   {
+    produces<SimParticlePtrCollection>();
+
     auto pt(pset.get<std::vector<int> >("particleTypes"));
     for(const auto& pid : pt) {
       particleTypes_.insert(PDGCode::type(pid));
     }
 
-    produces<SimParticlePtrCollection>();
+    if( !stoppingMaterial_.empty() &&  !vetoedMaterials_.empty()) {
+      throw cet::exception("BADCONFIG")<<"Only one stoppingMaterial or vetoedMaterials may be requested.";
+    }
   }
 
   //================================================================
@@ -117,20 +127,13 @@ namespace mu2e {
                      <<std::endl;
           }
 
-          hStopMaterials_->Fill(vi.endVolume(particle).materialName().c_str(), 1.);
+          const std::string material = vi.endVolume(particle).materialName();
+          hStopMaterials_->Fill(material.c_str(), 1.);
 
-          // Check if the stop is in a material of interest.  The
-          // string comparison in this loop looks inefficient, however
-          // only a small fraction of particles are stopped.  One
-          // could pre-compute a lookup table for stopping volume
-          // index, but that would require going through all of the
-          // O(10^4) volumes at the initialization stage.
-          if(stoppingMaterial_.empty() ||
-             (vi.endVolume(particle).materialName() == stoppingMaterial_))
-            {
-              ++numRequestedMateralStops_;
-              output->emplace_back(ih, particle.id().asUint());
-            }
+          if(materialAccepted(material)) {
+            ++numRequestedMateralStops_;
+            output->emplace_back(ih, particle.id().asUint());
+          }
         }
     }
 
@@ -138,8 +141,34 @@ namespace mu2e {
   }
 
   //================================================================
-  bool StoppedParticlesFinder::isStopped(const SimParticle& particle) {
+  bool StoppedParticlesFinder::isStopped(const SimParticle& particle) const {
     return particle.endMomentum().v().mag2() <= std::numeric_limits<double>::epsilon();
+  }
+
+  //================================================================
+  bool StoppedParticlesFinder::materialAccepted(const std::string& material) const {
+    // Check if the stop is in a material of interest.  The string
+    // comparison looks inefficient, however this is called only for
+    // stopped particles that are a small fraction of all particles.
+    // One could pre-compute a lookup table for stopping volume index,
+    // (rather than the material name string) but that would require
+    // going through all of the O(10^4) volumes at the initialization
+    // stage.
+
+    bool ret = false;
+    if(stoppingMaterial_.empty()) {
+      ret = true;
+      for(const auto& i : vetoedMaterials_) {
+        if(i == material) {
+          ret = false;
+        }
+      }
+    }
+    else {
+      ret = (material == stoppingMaterial_);
+    }
+
+    return ret;
   }
 
   //================================================================
