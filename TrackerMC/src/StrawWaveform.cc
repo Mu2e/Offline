@@ -3,9 +3,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.cc,v 1.12 2014/03/02 17:51:13 brownd Exp $
+// $Id: StrawWaveform.cc,v 1.13 2014/03/03 05:57:20 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/02 17:51:13 $
+// $Date: 2014/03/03 05:57:20 $
 //
 // Original author David Brown, LBNL
 //
@@ -174,5 +174,12 @@ namespace mu2e {
     }
   }
 
+  StrawEnd StrawWaveform::strawEnd() const {
+    if(!_hseq.hitletList().empty())
+      return _hseq.hitletList().begin()->strawEnd();
+    else
+      return StrawEnd(StrawEnd::unknown);
+
+  }
 }
 

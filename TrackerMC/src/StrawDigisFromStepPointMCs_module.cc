@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.24 2014/03/02 17:51:13 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.25 2014/03/03 05:57:20 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/02 17:51:13 $
+// $Date: 2014/03/03 05:57:20 $
 //
 // Original author David Brown, LBNL
 //
@@ -53,6 +53,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TGraph.h"
+#include "TMarker.h"
 #include "TTree.h"
 #// C++
 #include <map>
@@ -669,7 +670,7 @@ namespace mu2e {
     _txing = _mbtime+_mbbuffer;
     if(_nxing > 0){
       for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
-	_txing = min(_txing,static_cast<Float_t>(ixing->_time));
+	_txing = min(_txing,static_cast<float_t>(ixing->_time));
       }
     }
     _hqsum = 0.0;
@@ -724,10 +725,19 @@ namespace mu2e {
       char title[100];
       snprintf(name,60,"SWF%i_%i",wf.hitlets().strawIndex().asInt(),nhist);
       snprintf(title,100,"Electronic output for straw %i event %i;time (nSec);mVolts",wf.hitlets().strawIndex().asInt(),nhist);
-      TH1F* wf = tfs->make<TH1F>(name,title,volts.size(),times.front(),times.back());
+      TH1F* wfh = tfs->make<TH1F>(name,title,volts.size(),times.front(),times.back());
       for(size_t ibin=0;ibin<times.size();++ibin)
-	wf->SetBinContent(ibin+1,volts[ibin]);
-      _waveforms.push_back(wf);
+	wfh->SetBinContent(ibin+1,volts[ibin]);
+      TList* flist = wfh->GetListOfFunctions();
+      for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
+	if(ixing->_ihitlet->strawEnd() == wf.strawEnd()){
+	  TMarker* smark = new TMarker(ixing->_time,ixing->_vcross,8);
+	  smark->SetMarkerColor(kGreen);
+	  smark->SetMarkerSize(2);
+	  flist->Add(smark);
+	}
+      } 
+      _waveforms.push_back(wfh);
     }
   }
 

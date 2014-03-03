@@ -5,9 +5,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.hh,v 1.9 2014/03/02 17:51:13 brownd Exp $
+// $Id: StrawWaveform.hh,v 1.10 2014/03/03 05:57:20 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/02 17:51:13 $
+// $Date: 2014/03/03 05:57:20 $
 //
 // Original author David Brown, LBNL
 //
@@ -58,6 +58,7 @@ namespace mu2e {
       StrawHitletSequence const& hitlets() const { return _hseq; }
       ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }
       XTalk const& xtalk() const { return _xtalk; }
+      StrawEnd strawEnd() const;
     private:
 // hitlet sequence used in this waveform
       StrawHitletSequence const& _hseq;
