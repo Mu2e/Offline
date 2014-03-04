@@ -15,12 +15,15 @@
 // veto daughters of particles stopped in the stopping target, because
 // they will be simulated with a foil generator in other jobs.
 //
+// vetoParticles works similar, but also vetoes the particle listed, not
+// just the daughters.
+//
 // The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
 // Intended to write out framework files of stopped muons.
 //
-// $Id: FilterG4Out_module.cc,v 1.7 2014/01/21 17:47:57 gandr Exp $
+// $Id: FilterG4Out_module.cc,v 1.8 2014/03/04 19:39:39 gandr Exp $
 // $Author: gandr $
-// $Date: 2014/01/21 17:47:57 $
+// $Date: 2014/03/04 19:39:39 $
 //
 // Andrei Gaponenko, 2013
 
@@ -117,6 +120,7 @@ namespace mu2e {
     art::InputTag mcTrajectoryInput_; // Optionally, filter and keep MCTrajectoryCollection
 
     InputTags vetoDaughtersInputs_;
+    InputTags vetoParticlesInputs_;
 
     // Output instance names.
     typedef std::set<std::string> OutputNames;
@@ -183,9 +187,14 @@ namespace mu2e {
       produces<MCTrajectoryCollection>();
     }
 
-    const VS vetoStrings(pset.get<VS>("vetoDaughters"));
-    for(const auto& i : vetoStrings) {
+    const VS vdStrings(pset.get<VS>("vetoDaughters", VS()));
+    for(const auto& i : vdStrings) {
       vetoDaughtersInputs_.emplace_back(i);
+    }
+
+    const VS vpStrings(pset.get<VS>("vetoParticles", VS()));
+    for(const auto& i : vpStrings) {
+      vetoParticlesInputs_.emplace_back(i);
     }
 
     // We can't merge different SimParticle collections (unlike the hits)
@@ -210,9 +219,18 @@ namespace mu2e {
     // Build a full list of the vetoed particles
 
     SPSet vetoedParticles;
+
     for(const auto& tag : vetoDaughtersInputs_) {
       auto ih = event.getValidHandle<SimParticlePtrCollection>(tag);
       for(const auto& p : *ih) {
+        addDaughterTree(&vetoedParticles, p);
+      }
+    }
+
+    for(const auto& tag : vetoParticlesInputs_) {
+      auto ih = event.getValidHandle<SimParticlePtrCollection>(tag);
+      for(const auto& p : *ih) {
+        vetoedParticles.insert(p);
         addDaughterTree(&vetoedParticles, p);
       }
     }
