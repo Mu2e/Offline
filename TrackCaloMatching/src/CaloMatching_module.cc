@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.20 2014/02/04 00:26:59 murat Exp $
-// $Author: murat $
-// $Date: 2014/02/04 00:26:59 $
+// $Id: CaloMatching_module.cc,v 1.21 2014/03/04 01:21:43 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2014/03/04 01:21:43 $
 //
 // Original author G. Pezzullo
 //
@@ -551,7 +551,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // track index, important: store one, the best, intersection per track per vane
 //-----------------------------------------------------------------------------
-      ltrk  = krep-krep0;
+      ltrk  = extrk->trackNumber();
       if (ltrk > 100) {
 	printf(">>> ERROR in %s: more than 100 tracks, ltrk = %i, skip the rest\n",
 	       oname,ltrk);

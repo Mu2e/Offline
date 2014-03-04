@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.15 2013/06/13 16:39:09 murat Exp $
-// $Author: murat $
-// $Date: 2013/06/13 16:39:09 $
+// $Id: TrkExtrapol_module.cc,v 1.16 2014/03/04 01:21:43 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2014/03/04 01:21:43 $
 //
 // Original author G. Pezzullo
 //
@@ -392,6 +392,7 @@ namespace mu2e {
 	KalRepPtr tmpRecTrk(trksHandle,itrk);
 	tmpExtrapolatedTracks.push_back(
 					TrkToCaloExtrapol(intersection[i].fVane,
+							  itrk,
 							  tmpRecTrk,
 							  intersection[i].fSEntr,
 							  intersection[i].fSExit)

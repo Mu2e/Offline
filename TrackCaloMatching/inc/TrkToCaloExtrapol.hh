@@ -1,9 +1,9 @@
 //
 // container for the info of the extrapolated trajectory on the calorimeter
 //
-// $Id: TrkToCaloExtrapol.hh,v 1.5 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
+// $Id: TrkToCaloExtrapol.hh,v 1.6 2014/03/04 01:21:43 gianipez Exp $
+// $Author: gianipez $
+// $Date: 2014/03/04 01:21:43 $
 //
 // Original author G. Pezzullo
 //
@@ -38,71 +38,74 @@
 
 namespace mu2e {
 
-typedef  art::Ptr< const KalRep * const  >            KalRepPtr;
+  typedef  art::Ptr< const KalRep * const  >            KalRepPtr;
 
-struct TrkToCaloExtrapol{
+  struct TrkToCaloExtrapol{
 
-private:
-        int                                            _vaneId;    //vane index, runs from 0 to nVanes
-        KalRepPtr                                     _trk;
-        double                             _pathLengthEntrance;
-        double                                 _pathLengthExit;
-
-
-
-public:
-
-        TrkToCaloExtrapol():_vaneId(-1),
-        _pathLengthEntrance(0.0),
-        _pathLengthExit(0.0){}
+  private:
+    int                                            _vaneId;    //vane index, runs from 0 to nVanes
+    int                                       _trackNumber; //track numeber
+    KalRepPtr                                     _trk;
+    double                             _pathLengthEntrance;
+    double                                 _pathLengthExit;
 
 
 
-        TrkToCaloExtrapol(int& vane, KalRepPtr& trk, double& entrance, double& exit):
-                _vaneId(vane),
-                _trk(trk),
-                _pathLengthEntrance(entrance),
-                _pathLengthExit(exit){
-        }
-        ~TrkToCaloExtrapol(){}
+  public:
 
-        //Accessors
-        int                                             vaneId() const;
-        double                                            time() const;
-        double                                         timeErr() const;
-        double                              pathLengthEntrance() const;
-        double                           pathLenghtEntranceErr() const;
-        double                                  pathLengthExit() const;
-        double                                  fitConsistency() const;
-        double                                              t0() const;
-        double                                           t0Err() const;
-        double                                              tOrigin() const;
-  double                                           tOriginErr() const;
-        Hep3Vector                                  t0Momentum() const;
-        BbrVectorErr                             t0MomentumErr() const;
-        HepPoint                              entrancePosition() const;
-        BbrPointErr                        entrancePositionErr() const;
-        HepPoint                                  exitPosition() const;
-        BbrPointErr                            exitPositionErr() const;
-        Hep3Vector                                    momentum() const;
-        BbrVectorErr                               momentumErr() const;
-        KalRepPtr const&                               trk() const{ return _trk; }
+    TrkToCaloExtrapol():_vaneId(-1),
+			_pathLengthEntrance(0.0),
+			_pathLengthExit(0.0){}
 
 
-        void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
-        bool           operator == (const TrkToCaloExtrapol & other) const ;
+    TrkToCaloExtrapol(int& vane, int trkNumber, KalRepPtr& trk, double& entrance, double& exit):
+      _vaneId(vane),
+      _trackNumber(trkNumber),
+      _trk(trk),
+      _pathLengthEntrance(entrance),
+      _pathLengthExit(exit){
+    }
+    ~TrkToCaloExtrapol(){}
 
-        bool           operator<( const TrkToCaloExtrapol& other) const{
-                return ( _pathLengthEntrance< other._pathLengthEntrance);
-        }
+    //Accessors
+    int                                             vaneId() const;
+    int                                        trackNumber() const {return _trackNumber;}
+    double                                            time() const;
+    double                                         timeErr() const;
+    double                              pathLengthEntrance() const;
+    double                           pathLenghtEntranceErr() const;
+    double                                  pathLengthExit() const;
+    double                                  fitConsistency() const;
+    double                                              t0() const;
+    double                                           t0Err() const;
+    double                                              tOrigin() const;
+    double                                           tOriginErr() const;
+    Hep3Vector                                  t0Momentum() const;
+    BbrVectorErr                             t0MomentumErr() const;
+    HepPoint                              entrancePosition() const;
+    BbrPointErr                        entrancePositionErr() const;
+    HepPoint                                  exitPosition() const;
+    BbrPointErr                            exitPositionErr() const;
+    Hep3Vector                                    momentum() const;
+    BbrVectorErr                               momentumErr() const;
+    KalRepPtr const&                               trk() const{ return _trk; }
 
-};
 
-inline std::ostream& operator<<( std::ostream& ost,TrkToCaloExtrapol const& t){
-        t.print(ost,false);
-        return ost;
-}
+    void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
+
+    bool           operator == (const TrkToCaloExtrapol & other) const ;
+
+    bool           operator<( const TrkToCaloExtrapol& other) const{
+      return ( _pathLengthEntrance< other._pathLengthEntrance);
+    }
+
+  };
+
+  inline std::ostream& operator<<( std::ostream& ost,TrkToCaloExtrapol const& t){
+    t.print(ost,false);
+    return ost;
+  }
 
 } // namespace mu2e
 
