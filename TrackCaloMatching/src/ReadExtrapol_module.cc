@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadExtrapol_module.cc,v 1.13 2013/10/21 21:01:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/10/21 21:01:23 $
+// $Id: ReadExtrapol_module.cc,v 1.14 2014/03/04 14:36:18 murat Exp $
+// $Author: murat $
+// $Date: 2014/03/04 14:36:18 $
 //
 // Original author G. Pezzullo
 //
@@ -1231,7 +1231,7 @@ namespace mu2e {
 
 	KalRepPtr tmpRecTrk(trksHandle, i);
 	missExtrapolatedTracks.push_back(
-					 TrkToCaloExtrapol( tmpVane,tmpRecTrk,lowrange, highrange) );
+					 TrkToCaloExtrapol( tmpVane,i,tmpRecTrk,lowrange, highrange) );
 
 	if(_diagLevel>2){
 	  cout<<"Trajectory reconstructed without intersections with the calorimeter volume..."<<endl;
