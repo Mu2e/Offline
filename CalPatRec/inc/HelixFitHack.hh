@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.hh,v 1.1 2014/02/23 00:56:35 murat Exp $
-// $Author: murat $ 
-// $Date: 2014/02/23 00:56:35 $
+// $Id: HelixFitHack.hh,v 1.2 2014/03/04 20:42:02 gianipez Exp $
+// $Author: gianipez $ 
+// $Date: 2014/03/04 20:42:02 $
 //
 #ifndef HelixFitHack_HH
 #define HelixFitHack_HH
@@ -25,7 +25,7 @@
 //#include "CLHEP/Matrix/Vector.h"
 //root
 
-#include "CalPatRec/inc/LsqSums4.hh"
+#include "LsqSums4.hh"
 class TH1F;
 class TFile;
 // C+

@@ -1,6 +1,6 @@
-// $Id: CalPatRec_module.cc,v 1.1 2014/03/03 20:52:41 gianipez Exp $
+// $Id: CalPatRec_module.cc,v 1.2 2014/03/04 20:42:02 gianipez Exp $
 // $Author: gianipez $ 
-// $Date: 2014/03/03 20:52:41 $
+// $Date: 2014/03/04 20:42:02 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -417,9 +417,9 @@ namespace mu2e
     art::Handle<mu2e::StrawHitPositionCollection> shposH;
     if(evt.getByLabel(_shpLabel,shposH))
       _shpcol = shposH.product();
-    art::Handle<mu2e::StereoHitCollection> stH;
-    if(evt.getByLabel(_stLabel,stH))
-      _stcol = stH.product();
+//     art::Handle<mu2e::StereoHitCollection> stH;
+//     if(evt.getByLabel(_stLabel,stH))
+//       _stcol = stH.product();
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if(evt.getByLabel(_shfLabel,shflagH))
       _shfcol = shflagH.product();

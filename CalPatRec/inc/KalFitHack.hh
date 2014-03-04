@@ -1,9 +1,9 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFitHack.hh,v 1.1 2014/02/23 00:56:35 murat Exp $
-// $Author: murat $ 
-// $Date: 2014/02/23 00:56:35 $
+// $Id: KalFitHack.hh,v 1.2 2014/03/04 20:42:02 gianipez Exp $
+// $Author: gianipez $ 
+// $Date: 2014/03/04 20:42:02 $
 //
 #ifndef KalFitHack_HH
 #define KalFitHack_HH
@@ -30,7 +30,7 @@
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // C++
-#include "CalPatRec/inc/THackData.hh"
+#include "THackData.hh"
 
 
 namespace mu2e 
