@@ -5,9 +5,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.hh,v 1.10 2014/03/03 05:57:20 brownd Exp $
+// $Id: StrawWaveform.hh,v 1.11 2014/03/04 00:29:17 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/03 05:57:20 $
+// $Date: 2014/03/04 00:29:17 $
 //
 // Original author David Brown, LBNL
 //
@@ -77,10 +77,8 @@ namespace mu2e {
     double _vcross; // crossing voltage
     HitletList::const_iterator _ihitlet; // iterator to hitlet associated with this crossing
     WFX() = delete; // disallow
-    WFX(StrawWaveform const& wf) : _time(0.0), _vstart(0.0), _vcross(0.0),
-    _ihitlet(wf.hitlets().hitletList().begin()) {
-      if(_ihitlet != wf.hitlets().hitletList().end())_time = _ihitlet->time()-0.01;// buffer time to insure inclusion
-    }
+    WFX(StrawWaveform const& wf, double time) : _time(time), _vstart(0.0), _vcross(0.0),
+    _ihitlet(wf.hitlets().hitletList().begin()) {}
     // sorting function
     bool operator < (WFX const& other) { return _time < other._time; }
   };

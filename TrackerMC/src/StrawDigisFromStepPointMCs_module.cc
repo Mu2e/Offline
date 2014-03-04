@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.25 2014/03/03 05:57:20 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.26 2014/03/04 00:29:17 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/03 05:57:20 $
+// $Date: 2014/03/04 00:29:17 $
 //
 // Original author David Brown, LBNL
 //
@@ -114,9 +114,9 @@ namespace mu2e {
     double _preampxtalk, _postampxtalk; // x-talk parameters; these should come from conditions, FIXME!!
     string _g4ModuleLabel;  // Nameg of the module that made these hits.
     double _mbtime; // period of 1 microbunch
-    double _mbbuffer; // buffer on that for ghost hits (wrapping)
+    double _mbbuffer; // buffer on that for ghost hitlets (for waveform)
     double _minsteplen; // minimum step size for splitting charge into ion clusters
-    double _minsteptime; // minimum time to propagate a StepPointMC
+    double _steptimebuf; // buffer for MC step point times 
   // models of straw response to stimuli
     ConditionsHandle<StrawPhysics> _strawphys;
     ConditionsHandle<StrawElectronics> _strawele; 
@@ -171,7 +171,6 @@ namespace mu2e {
 	StrawDigiCollection* digis, PtrStepPointMCVectorCollection* mcptrs );
     void fillDigis(WFXList const& xings,StrawWaveform const& wf, StrawIndex index,
 	StrawDigiCollection* digis, PtrStepPointMCVectorCollection* mcptrs );
-    bool validXP(WFXP const& xpair) const;
     void createDigi(WFXP const& xpair, StrawWaveform const& primarywf, StrawIndex index, StrawDigiCollection* digis);
     void findCrossTalkStraws(Straw const& straw,vector<XTalk>& xtalk);
 // diagnostic functions
@@ -196,9 +195,8 @@ namespace mu2e {
     _preampxtalk(pset.get<double>("preAmplificationCrossTalk",0.0)),
     _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
-    _mbbuffer(pset.get<double>("TimeFoldingBuffer",50.0)), // nsec
     _minsteplen(pset.get<double>("MinimumIonClusterStep",0.25)), // mm
-    _minsteptime(pset.get<double>("MinimumStepPointMCTime",200.0)), // nsec
+    _steptimebuf(pset.get<double>("StepPointMCTimeBuffer",100.0)), // nsec
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _diagpath(static_cast<StrawElectronics::path>(pset.get<int>("WaveformDiagPath",StrawElectronics::thresh))),
     // Random number distributions
@@ -218,7 +216,7 @@ namespace mu2e {
     }
 
   void StrawDigisFromStepPointMCs::beginJob(){
- 
+
     if(_diagLevel > 0){
       art::ServiceHandle<art::TFileService> tfs;
       _swdiag =tfs->make<TTree>("swdiag","StrawWaveform diagnostics");
@@ -299,6 +297,8 @@ namespace mu2e {
     _strawele = ConditionsHandle<StrawElectronics>("ignored");
     _strawphys = ConditionsHandle<StrawPhysics>("ignored");
     const Tracker& tracker = getTrackerOrThrow();
+    // compute the microbunch buffer
+    _mbbuffer = _strawele->nADCSamples()*_strawele->adcPeriod();
     // Containers to hold the output information.
     unique_ptr<StrawDigiCollection> digis(new StrawDigiCollection);
     unique_ptr<PtrStepPointMCVectorCollection> mcptrs(new PtrStepPointMCVectorCollection);
@@ -414,7 +414,8 @@ namespace mu2e {
     double tstep = _toff.timeWithOffsetsApplied(step);
     // test if this microbunch is worth simulating
     double mbtime = microbunchTime(tstep);
-    if(mbtime > _minsteptime && mbtime < _mbtime) {
+    if( mbtime > _strawele->flashEnd()-_steptimebuf 
+      || mbtime <  _strawele->flashStart() ) {
       // drift these clusters to the wire, and record the charge at the wire
       for(auto iclu=clusters.begin(); iclu != clusters.end(); ++iclu){
 	WireCharge wireq;
@@ -510,47 +511,38 @@ namespace mu2e {
 
   double
   StrawDigisFromStepPointMCs::microbunchTime(double globaltime) const {
-  // fold time relative to MB frequency, offset by the TDC clock start time
-    return fmod(globaltime-_strawele->clockStart(),_mbtime)+_strawele->clockStart();
-  }
-
-  bool
-  StrawDigisFromStepPointMCs::validXP(WFXP const& xpair) const {
-    double tmin(_mbtime+_strawele->clockStart()+_mbbuffer);
-    for(auto iwfx = xpair.begin();iwfx!= xpair.end();++iwfx){
-      WFX const& wfx = **iwfx;
-      tmin = min(tmin,wfx._time);
-    }
-    // times are limited by flash blanking
-    bool retval = (tmin > _strawele->flashEnd() && tmin < _mbtime+_strawele->flashStart());
-    return retval;
+  // fold time relative to MB frequency
+    return fmod(globaltime,_mbtime);
   }
 
   void
   StrawDigisFromStepPointMCs::addGhosts(StrawHitlet const& hitlet,StrawHitletSequence& shs) {
-    double dt = hitlet.time()-_strawele->clockStart();
-    if(dt < _mbbuffer)
+  // add enough buffer to cover both the flash blanking and the ADC waveform
+    if(hitlet.time() < _strawele->flashStart()+_mbbuffer)
       shs.insert(StrawHitlet(hitlet,_mbtime));
-    if(_mbtime-dt < _mbbuffer)
-      shs.insert(StrawHitlet(hitlet,-_mbtime));
   }
 
   void
   StrawDigisFromStepPointMCs::findThresholdCrossings(StrawWaveform const& swf, WFXList& xings){
-    // iterate sequentially over hitlets inside the sequence
-    WFX wfx(swf); // start at the begining of the microbunch
+     // start when the electronics becomes enabled
+    WFX wfx(swf,_strawele->flashEnd());
     //randomize the threshold to account for electronics noise
     double threshold = _gaussian.shoot(_strawele->threshold(),_strawele->thresholdNoise());
-    while(swf.crossesThreshold(threshold,wfx) && wfx._time < _mbtime+_mbbuffer){
+    // iterate sequentially over hitlets inside the sequence.  Note we fold
+    // the flash blanking to AFTER the end of the microbunch
+    while(swf.crossesThreshold(threshold,wfx) && wfx._time < _mbtime+_strawele->flashStart() ){
       // keep these in time-order
       auto iwfxl = xings.begin();
       while(iwfxl != xings.end() && iwfxl->_time < wfx._time)
 	++iwfxl;
       xings.insert(iwfxl,wfx);
-      // skip to the next hitlet, and insure a minimum time buffer between crossings
-      ++(wfx._ihitlet);
+      // insure a minimum time buffer between crossings
       wfx._time += _strawele->deadTime();
-      // update threshold
+      if(wfx._time >_mbtime+_strawele->flashStart())
+	break;
+      // skip to the hitlet before the next time (at least 1!)
+      ++(wfx._ihitlet);
+// update threshold
       threshold = _gaussian.shoot(_strawele->threshold(),_strawele->thresholdNoise());
     }
   }
@@ -572,21 +564,18 @@ namespace mu2e {
 	iwfxl = jwfxl;
       } 
       ++iwfxl;
-      // only accept the pair if both times are inside the MB
-      if(validXP(xpair)){
-	// create a digi from this pair or singleton
-	createDigi(xpair,primarywf,index,digis);
-	// fill associated MC truth matching.  Only count the same step once
-	set<art::Ptr<StepPointMC> > xmcsp;
-	for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp)
-	  xmcsp.insert((*ixp)->_ihitlet->stepPointMC());
-	PtrStepPointMCVector mcptr;
-	for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
-	  mcptr.push_back(*ixmcsp);
-	mcptrs->push_back(mcptr);
-	// diagnostics
-	if(_diagLevel > 1)digiDiag(xpair,digis->back());
-      }
+      // create a digi from this pair or singleton
+      createDigi(xpair,primarywf,index,digis);
+      // fill associated MC truth matching.  Only count the same step once
+      set<art::Ptr<StepPointMC> > xmcsp;
+      for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp)
+	xmcsp.insert((*ixp)->_ihitlet->stepPointMC());
+      PtrStepPointMCVector mcptr;
+      for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
+	mcptr.push_back(*ixmcsp);
+      mcptrs->push_back(mcptr);
+      // diagnostics
+      if(_diagLevel > 1)digiDiag(xpair,digis->back());
     }
   }
 

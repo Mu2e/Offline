@@ -3,9 +3,9 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.cc,v 1.13 2014/03/03 05:57:20 brownd Exp $
+// $Id: StrawWaveform.cc,v 1.14 2014/03/04 00:29:17 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/03 05:57:20 $
+// $Date: 2014/03/04 00:29:17 $
 //
 // Original author David Brown, LBNL
 //
@@ -26,11 +26,11 @@ namespace mu2e {
 
   bool StrawWaveform::crossesThreshold(double threshold,WFX& wfx) const {
     bool retval(false);
-    // advance to the hitlet just before the time specified.  Buffer should be a parameter FIXME!!!
-    while(wfx._ihitlet != _hseq.hitletList().end() && 
-      wfx._ihitlet->time() + 1.0 < wfx._time){
-	++(wfx._ihitlet);
+    // make sure we start past the input time
+    while(wfx._ihitlet->time()< wfx._time && wfx._ihitlet != _hseq.hitletList().end()){
+      ++(wfx._ihitlet);
     }
+// loop till we're at the end or we go over threshold
     if(wfx._ihitlet != _hseq.hitletList().end()){
       // sample initial voltage for this hitlet
       wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._ihitlet->time());
@@ -49,9 +49,10 @@ namespace mu2e {
 	    double maxtime = wfx._ihitlet->time() + _strawele->maxResponseTime(StrawElectronics::thresh);
 	    double maxresp = sampleWaveform(StrawElectronics::thresh,maxtime);
 	    if(maxresp > threshold){
-	      retval = true;
 	      // interpolate to find the precise crossing
 	      fineCrossing(threshold,maxresp,wfx);
+
+	      retval = true;
 	      break;
 	    }
 	  }
