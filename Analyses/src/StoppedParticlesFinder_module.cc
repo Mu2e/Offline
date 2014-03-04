@@ -5,6 +5,9 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <iterator>
+#include <iostream>
 #include <limits>
 
 #include "cetlib/exception.h"
@@ -44,6 +47,8 @@ namespace mu2e {
 
     int verbosityLevel_;
 
+    unsigned offsetThreshold_; // to select particles from the current simulation stage
+
     typedef std::set<PDGCode::type> PDGCodeSet;
     PDGCodeSet particleTypes_;
 
@@ -66,6 +71,7 @@ namespace mu2e {
     , stoppingMaterial_(pset.get<std::string>("stoppingMaterial", ""))
     , vetoedMaterials_(pset.get<std::vector<std::string> >("vetoedMaterials", std::vector<std::string>()))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+    , offsetThreshold_(pset.get<unsigned>("particleOffsetThreshold", 0))
     , hStopMaterials_(art::ServiceHandle<art::TFileService>()->make<TH1D>("stopmat", "Stopping materials", 1, 0., 1.))
     , vols_()
     , numTotalParticles_()
@@ -79,9 +85,29 @@ namespace mu2e {
       particleTypes_.insert(PDGCode::type(pid));
     }
 
+    //----------------
+    if(verbosityLevel_ > 0) {
+      std::ostringstream os;
+      os<<"Particle types: [ ";
+      std::copy(particleTypes_.begin(), particleTypes_.end(), std::ostream_iterator<int>(os, ", "));
+      os<<" ]"<<std::endl;
+
+      os<<"offsetThreshold  = "<<offsetThreshold_<<std::endl;
+
+      os<<"stoppingMaterial = "<<stoppingMaterial_<<std::endl;
+
+      os<<"vetoedMaterials = [ ";
+      std::copy(vetoedMaterials_.begin(), vetoedMaterials_.end(), std::ostream_iterator<std::string>(os, ", "));
+      os<<" ]"<<std::endl;
+
+      mf::LogInfo("Info")<<os.str();
+    }
+
+    //----------------
     if( !stoppingMaterial_.empty() &&  !vetoedMaterials_.empty()) {
       throw cet::exception("BADCONFIG")<<"Only one stoppingMaterial or vetoedMaterials may be requested.";
     }
+
   }
 
   //================================================================
@@ -90,7 +116,7 @@ namespace mu2e {
     sr.getByLabel(physVolInfoInput_, volh);
     vols_ = &*volh;
 
-    if(verbosityLevel_ > 0) {
+    if(verbosityLevel_ > 1) {
       std::cout<<"PhysicalVolumeInfoMultiCollection dump begin"<<std::endl;
       for(const auto& i : *vols_) {
         std::cout<<"*********************************************************"<<std::endl;
@@ -113,12 +139,13 @@ namespace mu2e {
     numTotalParticles_ += ih->size();
     for(const auto& i : *ih) {
       const SimParticle& particle = i.second;
-      if((particleTypes_.find(particle.pdgId()) != particleTypes_.end())
+      if((particle.id().asUint() >= offsetThreshold_)
+         &&(particleTypes_.find(particle.pdgId()) != particleTypes_.end())
          && isStopped(particle))
         {
           ++numRequestedTypeStops_;
 
-          if(verbosityLevel_ > 1) {
+          if(verbosityLevel_ > 2) {
             std::cout<<"stopped particle "<<particle.pdgId()
                      <<" at pos="<<particle.endPosition()
                      <<" time="<<particle.endGlobalTime()
