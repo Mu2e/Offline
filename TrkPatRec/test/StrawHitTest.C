@@ -185,7 +185,7 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     bcan->Clear();
     bcan->Divide(1,2);
     bcan->cd(1);
-    //gPad->SetLogy();
+    gPad->SetLogy();
     /*    edio->Draw();
 	  econv->Draw("same");
 	  ep->Draw("same");
@@ -196,6 +196,10 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
      */
     edelta->GetXaxis()->SetRangeUser(-0.005,0.04);
     edelta->SetMinimum(econv->GetMaximum()/100.0);
+    double maxv = edelta->GetMaximum();
+    maxv = max(maxv, ep->GetMaximum());
+    maxv = max(maxv, ex->GetMaximum());
+    edelta->SetMaximum(1.1*maxv);
     edelta->Draw();
     ep->Draw("same");
     econv->Draw("same");
@@ -204,7 +208,7 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
 //    eneut->Draw("same");
 //    ephot->Draw("same");
 
-    TLine* ecut_t = new TLine(0.004,0.0,0.004,edelta->GetMaximum());
+    TLine* ecut_t = new TLine(0.003,0.0,0.003,edelta->GetMaximum());
     ecut_t->SetLineColor(kBlack);
     ecut_t->SetLineStyle(2);
     ecut_t->SetLineWidth(2);
@@ -213,7 +217,7 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     ecut_l->SetLineStyle(3);
     ecut_l->SetLineWidth(2);
     ecut_t->Draw();
-    ecut_l->Draw();
+//    ecut_l->Draw();
 
     TLegend* leg2 = new TLegend(0.55,0.6,0.9,0.9);
     leg2->AddEntry(rconv,"Conv. Electrons","l");
@@ -224,13 +228,13 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     leg2->AddEntry(rp,"Protons","l");
     leg2->AddEntry(rx,"X-talk","l");
     leg2->Draw();
-    TLegend* leg3 = new TLegend(0.55,0.5,0.9,0.6);
+    TLegend* leg3 = new TLegend(0.55,0.55,0.9,0.6);
     leg3->AddEntry(ecut_t,"Tight cut","l");
-    leg3->AddEntry(ecut_l,"Loose cut","l");
+//    leg3->AddEntry(ecut_l,"Loose cut","l");
     leg3->Draw();
 
     bcan->cd(2);
-    //gPad->SetLogy();
+    gPad->SetLogy();
 
     rdelta->SetMinimum(rconv->GetMaximum()/100.);
     rdelta->Draw();
@@ -241,7 +245,7 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
 //    rneut->Draw("same");
  //   rphot->Draw("same");
 
-    TLine* rmin_t = new TLine(410,0.0,410,rdelta->GetMaximum());
+    TLine* rmin_t = new TLine(370,0.0,370,rdelta->GetMaximum());
     rmin_t->SetLineColor(kBlack);
     rmin_t->SetLineStyle(2);
     rmin_t->SetLineWidth(2);
@@ -250,7 +254,7 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     rmin_l->SetLineStyle(3);
     rmin_l->SetLineWidth(2);
 
-    TLine* rmax_t = new TLine(630,0.0,630,rdelta->GetMaximum());
+    TLine* rmax_t = new TLine(650,0.0,650,rdelta->GetMaximum());
     rmax_t->SetLineColor(kBlack);
     rmax_t->SetLineStyle(2);
     rmax_t->SetLineWidth(2);
@@ -259,9 +263,9 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     rmax_l->SetLineStyle(3);
     rmax_l->SetLineWidth(2);
     rmin_t->Draw();
-    rmin_l->Draw();
+//    rmin_l->Draw();
     rmax_t->Draw();
-    rmax_l->Draw();
+//    rmax_l->Draw();
 
     /*    
 	  bcan->cd(4);
