@@ -1,7 +1,7 @@
 #
-# $Id: setup.sh,v 1.67 2013/10/22 23:35:39 brownd Exp $
-# $Author: brownd $
-# $Date: 2013/10/22 23:35:39 $
+# $Id: setup.sh,v 1.68 2014/03/05 05:41:14 gandr Exp $
+# $Author: gandr $
+# $Date: 2014/03/05 05:41:14 $
 #
 # Original author Rob Kutschke
 #
@@ -47,7 +47,7 @@ echo "MU2E_SEARCH_PATH:   "  $MU2E_SEARCH_PATH
 setup -B art v1_08_09 -q+e4:+mu2e:+prof
 
 # Geant4 and its cross-section files.
-setup -B geant4 v4_9_6_p02 -q+e4:+prof
+setup -B geant4 v4_9_6_p02a -q+e4:+prof
 
 # Other libraries we need.
 setup -B heppdt v3_04_01 -q+e4:+prof
