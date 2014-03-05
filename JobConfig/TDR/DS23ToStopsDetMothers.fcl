@@ -1,5 +1,4 @@
 // Andrei Gaponenko, 2013
-
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
@@ -82,7 +81,31 @@ physics : {
             physVolInfoInput : "g4run"
             stoppingMaterial : "StoppingTarget_Al"
             particleTypes : [ 13 ] // mu-
+            particleOffsetThreshold: 200000
+            verbosityLevel: 1
         }
+
+	stoppedMuonDaughters: {
+            module_type: SimParticleDaughterSelector
+            particleInput: "stoppedMuonFinder"
+            // EMCascade should not be vetoed because we do not re-simulate it
+            processes: [ "DIO", "NuclearCapture" ]
+	}
+ 
+        outOfTargetMuonFinder : {
+            module_type : StoppedParticlesFinder
+            particleInput : "g4run"
+            physVolInfoInput : "g4run"
+            vetoedMaterials : [ "StoppingTarget_Al" ]
+            particleTypes : [ 13 ] // mu-
+            particleOffsetThreshold: 200000
+            verbosityLevel: 1
+        }
+	outOfTargetMuonDaughters: {
+            module_type: SimParticleDaughterSelector
+            particleInput: "outOfTargetMuonFinder"
+            processes: [ "DIO", "NuclearCapture", "EMCascade" ]
+	}
 
     } // producers
 
@@ -93,15 +116,14 @@ physics : {
             mainHitInputs: [ "g4run:TrackerMother", "g4run:CalorimeterMother", "g4run:CRV"]
             extraHitInputs: [ "g4run:virtualdetector" ]
             numSimParticleCollections: 1
-            vetoDaughters: [ "stoppedMuonFinder" ]
+            vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ] 
         }
         stopFilter: {
             module_type: FilterG4Out
             mainHitInputs: []
             extraHitInputs: [ "g4run:virtualdetector" ]
-            mainSPPtrInputs: [ "stoppedMuonFinder" ]
+            mainSPPtrInputs: [ "stoppedMuonFinder", "outOfTargetMuonFinder" ]
             numSimParticleCollections: 1
-            vetoDaughters: [ "stoppedMuonFinder" ]
         }
         g4status: {
             module_type: FilterStatusG4
@@ -111,16 +133,17 @@ physics : {
 
     //================================================================
     analyzers: {
-        stoppedMuonPrinter : {
-            module_type: StoppedParticlesPrinter
-            inputCollection: "stoppedMuonFinder"
-            outFileName: "mustops.txt"
-        }
-        stoppedMuonDumper : {
+        stoppedMuonDumper: {
             module_type: StoppedParticlesDumper
             inputCollection: "stoppedMuonFinder"
             writeProperTime : false
         }
+	outOfTargetDumper: {
+            module_type: StoppedParticlesDumper
+            inputCollection: "outOfTargetMuonFinder"
+            writeProperTime : false
+        }
+
         genCountLogger: {
             module_type: GenEventCountReader
         }
@@ -128,14 +151,20 @@ physics : {
 
 
     //================================================================
-    motherFilter : [g4run, stoppedMuonFinder, mothersFilter, compressPVMothers]
-    muonStopFilter :  [g4run, stoppedMuonFinder, stopFilter, compressPVStop]
+    motherFilter: [ g4run,
+                    stoppedMuonFinder, stoppedMuonDaughters, 
+                    outOfTargetMuonFinder, outOfTargetMuonDaughters,
+                    mothersFilter, compressPVMothers
+    ]
+
+    muonStopFilter :  [g4run, stoppedMuonFinder, outOfTargetMuonFinder, stopFilter, compressPVStop]
     g4StatusFilter :  [g4run, "!g4status", compressPVFull ]
     trigger_paths  : [motherFilter, muonStopFilter, g4StatusFilter]
 
     out : [mothersOutput, muonStopOutput, truncatedEvtsOutput]
-    stops : [stoppedMuonPrinter, stoppedMuonDumper, genCountLogger]
-    end_paths      : [out, stops]
+    stops : [stoppedMuonDumper, outOfTargetDumper]
+    gcl : [genCountLogger]
+    end_paths      : [out, stops, gcl]
 }
 
 outputs: {
@@ -160,6 +189,7 @@ outputs: {
                             "keep mu2e::GenEventCount_*_*_*",
                             "keep mu2e::StatusG4_*_*_*",
                             "keep *_stoppedMuonFinder_*_*",
+                            "keep *_outOfTargetMuonFinder_*_*",
                             "keep *_stopFilter_*_*",
                             "keep *_compressPVStop_*_*"
                           ]
