@@ -6,14 +6,14 @@ void dio(){
   Double_t dmhi = trueconvmom;
   Double_t dmlow = trueconvmom - diogenrange;
   TH1F* diogen = new TH1F("diogen","True DIO momentum;MeV",nbins,dmlow,dmhi);
-  TH1F* diowt = new TH1F("diowt","True DIO momentum;MeV",nbins,dmlow,dmhi);
-//  diowt->Sumw2();
+  TH1F* evtwt = new TH1F("evtwt","True DIO momentum;MeV",nbins,dmlow,dmhi);
+//  evtwt->Sumw2();
   dio->Project("diogen","mcmom");
-  dio->Project("diowt","mcmom","diowt");
-  diowt->Scale(dioscale);
-  diowt->SetLineColor(kBlue);
+  dio->Project("evtwt","mcmom","evtwt");
+  evtwt->Scale(dioscale);
+  evtwt->SetLineColor(kBlue);
   diogen->SetLineColor(kRed);
-  diowt->SetStats(0);
+  evtwt->SetStats(0);
   diogen->SetStats(0);
 
 
@@ -37,9 +37,9 @@ void dio(){
 
     TCut quality = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
     TCut final = (reco+pitch+livegate+quality);
-    dio->Project(diogenname,"mcentmom","diowt"*(final+momwin));
+    dio->Project(diogenname,"mcentmom","evtwt"*(final+momwin));
     diogenwin[icut]->SetFillColor(colors[icut]);
-    dio->Project(diodiffname,"fitmom-mcentmom","diowt"*(final+momwin));
+    dio->Project(diodiffname,"fitmom-mcentmom","evtwt"*(final+momwin));
     diodiffwin[icut]->SetFillColor(colors[icut]);
     dgenwinleg->AddEntry(diogenwin[icut],cutset[icut],"f");
   }
@@ -50,12 +50,12 @@ void dio(){
 // dead-reconing on spectrum, accounting for bins
   double diofscale = ndecay*(dmhi-dmlow)/nbins;
   diocz_f->SetParameter(0,diofscale);
-  diowt->Draw();
+  evtwt->Draw();
   diocz_f->Draw("same");
   diogen->Draw("same");
   TLegend* dioleg = new TLegend(.2,.4,.6,.6);
   dioleg->AddEntry(diogen,"Generated","l");
-  dioleg->AddEntry(diowt,"Weighted","l");
+  dioleg->AddEntry(evtwt,"Weighted","l");
   dioleg->AddEntry(diocz_f,"Czarnecki etal","l");
   dioleg->Draw();
 

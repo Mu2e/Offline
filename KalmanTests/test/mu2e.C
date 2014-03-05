@@ -246,7 +246,7 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
     _conspec[icut]->SetLineColor(kRed);
     _conspec[icut]->Sumw2();
 
-    dio->Project(dioname,"fitmom","diowt"*final[icut]);
+    dio->Project(dioname,"fitmom","evtwt"*final[icut]);
     _diospec[icut]->Scale(dioscale);
     _diospec[icut]->SetMinimum(0.08*_diocz_f->Eval(trueconvmom-0.1)*ndecay*mevperbin);
     _diospec[icut]->SetMaximum(0.08*_diocz_f->Eval(_mmin)*ndecay*mevperbin);
@@ -391,14 +391,14 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   Double_t dmhi = trueconvmom;
   Double_t dmlow = trueconvmom - diogenrange;
   TH1F* diogen = new TH1F("diogen","True DIO momentum;MeV",_nbins,dmlow,dmhi);
-  TH1F* diowt = new TH1F("diowt","True DIO momentum;MeV",_nbins,dmlow,dmhi);
-  //  diowt->Sumw2();
+  TH1F* evtwt = new TH1F("evtwt","True DIO momentum;MeV",_nbins,dmlow,dmhi);
+  //  evtwt->Sumw2();
   dio->Project("diogen","mcmom");
-  dio->Project("diowt","mcmom","diowt");
-  diowt->Scale(dioscale);
-  diowt->SetLineColor(kBlue);
+  dio->Project("evtwt","mcmom","evtwt");
+  evtwt->Scale(dioscale);
+  evtwt->SetLineColor(kBlue);
   diogen->SetLineColor(kRed);
-  diowt->SetStats(0);
+  evtwt->SetStats(0);
   diogen->SetStats(0);
 
   char ctext[80];
@@ -421,9 +421,9 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
     diodiffwin[icut] = new TH1F(diodiffname,"Reco - true momentum of DIO in signal box;MeV",100,-1,2);
     diodiffwin[icut]->SetStats(0);
 
-    dio->Project(diogenname,"mcentmom","diowt"*(final[icut]+momwin));
+    dio->Project(diogenname,"mcentmom","evtwt"*(final[icut]+momwin));
     diogenwin[icut]->SetFillColor(colors[icut]);
-    dio->Project(diodiffname,"fitmom-mcentmom","diowt"*(final[icut]+momwin));
+    dio->Project(diodiffname,"fitmom-mcentmom","evtwt"*(final[icut]+momwin));
     diodiffwin[icut]->SetFillColor(colors[icut]);
     dgenwinleg->AddEntry(diogenwin[icut],cutset[icut],"f");
   }
@@ -433,12 +433,12 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   // dead-reconing on spectrum, accounting for bins
   double diofscale = ndecay*diogenrange/_nbins;
   _diocz_f->SetParameter(0,diofscale);
-  diowt->Draw();
+  evtwt->Draw();
   _diocz_f->Draw("same");
   diogen->Draw("same");
   TLegend* dioleg = new TLegend(.2,.4,.6,.6);
   dioleg->AddEntry(diogen,"Generated","l");
-  dioleg->AddEntry(diowt,"Weighted","l");
+  dioleg->AddEntry(evtwt,"Weighted","l");
   dioleg->AddEntry(_diocz_f,"Czarnecki etal","l");
   dioleg->Draw();
 
@@ -642,10 +642,10 @@ void mu2e::smearDIO(unsigned ntrials,unsigned nres) {
   for(unsigned itrial=0;itrial<ntrials;++itrial){
 // make the range bigger than expected, to account for smearing
     double diomom = gRandom->Uniform(_mmin-buffer,trueconvmom);
-    double diowt = diocz_f->Eval(diomom);
+    double evtwt = diocz_f->Eval(diomom);
     double acc = _racc->Eval(diomom);
-    double recowt = diowt*acc;
-    rawdio->Fill(diomom,diowt);
+    double recowt = evtwt*acc;
+    rawdio->Fill(diomom,evtwt);
     for(unsigned ires=0;ires<nres;++ires){
       double mres = _cball->GetRandom();
       double recomom = diomom+mres;

@@ -100,7 +100,7 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   TCut quality = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
   TCut final = (reco+pitch+livegate+quality+cosmic);
 
-  dio->Project(dioname,"fitmom","diowt"*final);
+  dio->Project(dioname,"fitmom","evtwt"*final);
   diospec[icut]->Scale(dioscale);
 
   con->Project(conname,"fitmom",final);
