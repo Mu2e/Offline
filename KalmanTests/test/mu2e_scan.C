@@ -23,11 +23,11 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   double ncap = nstopped*capfrac;
   double conprob(1e-16);
   double trueconvmom(104.973);
-  double momlow(103.38);
-  double momhigh(104.8);
+  double momlow(103.5);
+  double momhigh(105);
 
-  unsigned nbins(1000);
-  double mmin(101);
+  unsigned nbins(251);
+  double mmin(100);
   double mmax(106);
 
   double conscale = ncap*conprob/ncon;
@@ -187,7 +187,7 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   mu2ecan->SaveAs((string("mu2e_finebins")+ssuf).c_str());
 
 
-  int nscan(25);
+  int nscan(10);
   vector<Double_t> diox,dioy,dioxerr,dioyerr;
   vector<Double_t> conx,cony,conxerr,conyerr;
   double startx = diospec[icut]->GetBinCenter(istart);
@@ -222,21 +222,25 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   info->Draw();
   leg->Draw();
 
-  int ilow = nscan-15;
-  int ihi = nscan+15;
+  int ilow = nscan-4;
+  int ihi = nscan+4;
 
-  TLine* klow = new TLine(diox[ilow],-0.5,diox[ilow],dioy[ilow]);
-  TLine* khi = new TLine(diox[ihi],-0.5,diox[ihi],dioy[ihi]);
-  TLine* klowx = new TLine(-150,dioy[ilow],diox[ilow],dioy[ilow]);
-  TLine* khix = new TLine(-150,dioy[ihi],diox[ihi],dioy[ihi]);
-  klow->SetLineStyle(2);
-  khi->SetLineStyle(2);
-  klowx->SetLineStyle(2);
-  khix->SetLineStyle(2);
-  klow->Draw("same");
-  khi->Draw("same");
-  klowx->Draw("same");
-  khix->Draw("same");
+  TLine* dlow = new TLine(diox[ilow],-0.5,diox[ilow],dioy[ilow]);
+  TLine* dhi = new TLine(diox[ihi],-0.5,diox[ihi],dioy[ihi]);
+  TLine* dlowx = new TLine(diox[0],dioy[ilow],diox[ilow],dioy[ilow]);
+  TLine* dhix = new TLine(diox[0],dioy[ihi],diox[ihi],dioy[ihi]);
+  dlow->SetLineStyle(2);
+  dhi->SetLineStyle(2);
+  dlowx->SetLineStyle(2);
+  dhix->SetLineStyle(2);
+  dlow->SetLineColor(kBlue);
+  dhi->SetLineColor(kBlue);
+  dlowx->SetLineColor(kBlue);
+  dhix->SetLineColor(kBlue);
+  dlow->Draw("same");
+  dhi->Draw("same");
+  dlowx->Draw("same");
+  dhix->Draw("same");
   scancan->SaveAs((string("mu2e_scan")+ssuf).c_str());
 
 

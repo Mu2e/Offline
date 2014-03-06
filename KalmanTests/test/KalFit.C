@@ -163,8 +163,15 @@ void KalFitHit (TTree* hits ) {
   TH1D *dresid_1 = (TH1D*)gDirectory->Get("dresid_1");
   TH1D *dresid_2 = (TH1D*)gDirectory->Get("dresid_2");
   dresid_1->SetLineColor(kCyan);
+  dresid_1->SetTitle("Drift Residual Mean vs Drift Radius;reco drift radius (mm);Residual mean (mm)");
+  dresid_1->SetStats(0);
   dresid_2->SetLineColor(kCyan);
-
+  dresid_2->SetTitle("Drift Residual Sigma vs Drift Radius;reco drift radius (mm);Residual #sigma (mm)");
+  dresid_2->SetStats(0);
+  drad->SetStats(0);
+  dresid->SetStats(0);
+  dresidt->SetStats(0);
+  //dres->SetStats(0);
 
   t2dcan->Divide(3,2);
   t2dcan->cd(1);
@@ -177,7 +184,8 @@ void KalFitHit (TTree* hits ) {
   dresid_1->Fit("pol2");
   t2dcan->cd(5);
   dresid_2->Fit("pol2");
- 
+  t2dcan->cd(6);
+  dres->Draw();
 
 
 //  TCanvas* tcan = new TCanvas("ht0can","hit_t0can",1200,800);

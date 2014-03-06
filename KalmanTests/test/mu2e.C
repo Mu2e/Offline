@@ -972,7 +972,12 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
       }
       leg->Draw();
       ipave++;
-      if(ipave>npave*npave)++ican;
+      if(ipave>npave*npave){
+	char cfile[50];
+	snprintf(cfile,50,"mu2e_exp_%i.png",ican);
+	cans[ican]->SaveAs(cfile);
+	++ican;
+      }
     } else {
       delete conexp_h;
       delete dioexp_h;
