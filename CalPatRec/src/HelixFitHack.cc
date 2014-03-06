@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.cc,v 1.3 2014/03/04 20:42:02 gianipez Exp $
+// $Id: HelixFitHack.cc,v 1.4 2014/03/06 20:13:05 gianipez Exp $
 // $Author: gianipez $ 
-// $Date: 2014/03/04 20:42:02 $
+// $Date: 2014/03/06 20:13:05 $
 //
 //
 // the following has to come before other BaBar includes
@@ -1306,7 +1306,8 @@ namespace mu2e
       }
       if(chi2 < 1e10) {
 	//if(chi2 < chi2_min) {
-	if(countGoodPoints>countGoodPoints_max){
+	if((countGoodPoints>countGoodPoints_max) ||
+	   ((countGoodPoints == countGoodPoints_max) && (chi2 < chi2_min))){
 	  countGoodPoints_max = countGoodPoints;
 	  seedIndex   = i;  
 	  //targetIndex = j;
@@ -1377,6 +1378,7 @@ namespace mu2e
     double distGoodPoint(600.);//(1e5);
     double dist(0.0);
     double tollMin(100.), tollMax(500.);
+    double tollXmin(50.), tollYmin(50.);
 
     int goodPoint(-999);
     //2014-01-29 gianipez added the followign line
@@ -1384,13 +1386,14 @@ namespace mu2e
     //--------------------------------------------------//
 
     double weight(0.0);
-    double deltaZ(0.), deltaZMax(1e10);
+    double deltaZ(0.), deltaX(0.), deltaY(0.);
     bool removeTarget(true);
     bool isStored(false);
 
     //parameter used for calculating ''manually'' the value of dfdz
     double z0,z1,phi_0,phi_1;
     double dfdz = tanLambda/radius;
+    double dZ = p3.z() - p2.z();
 
     int nmodes=20;
     double chi2min(1e10);
@@ -1462,9 +1465,7 @@ namespace mu2e
 	
 	isStored = false;
 
-	if(// ( deltaZ > tollMin) &&
-	   // ( deltaZ < tollMax) && 
-	    ( dist <= distGoodPoint ) ){
+	if( dist <= distGoodPoint ){
 	  ++countGoodPoints;
 	  for(int j=0; j<np; ++j){
 	    if(rejectList[j] == i)
@@ -1472,11 +1473,13 @@ namespace mu2e
 	  }
 	  
 	  if(!isStored){
-	  
-	    if( ( deltaZ > tollMin) &&
-		( deltaZ < tollMax)  ){
+	    deltaY = std::fabs(p2.y() - xyzp[i]._pos.y());
+	    deltaX = std::fabs(p2.x() - xyzp[i]._pos.x());
+	    if( ( deltaZ > tollMin ) &&
+		( deltaZ < tollMax ) &&
+		( deltaX > tollXmin) &&
+		( deltaY > tollYmin) ){
 	      goodPoint = i;
-	      //deltaZMax = deltaZ;
 	    }
 	  }
 	}
@@ -1545,7 +1548,8 @@ namespace mu2e
 	       dfdz,
 	       mode);
 	//	if(chi2<chi2min){
-	if(countGoodPoints > countGoodPoints_end){
+	if( (countGoodPoints > countGoodPoints_end) ||
+	    ((countGoodPoints==countGoodPoints_end) && (chi2 < chi2min)) ){
 	  countGoodPoints_end = countGoodPoints;
 	  //2014-01-29 gianipez added the following line
 	  if(goodPoint>=0) goodPoint_end = goodPoint; //hack->fData[3] = goodPoint;
@@ -1589,7 +1593,7 @@ namespace mu2e
       mytrk._radius = radius_end;
       //now calculate the phi coordinate at z = 0
       mytrk._fz0    = phi0_end + dfdz_end*(0.0 - p2.z()) ;
-      mytrk._dfdz   = dfdz_end*radius_end;
+      mytrk._dfdz   = dfdz_end;
 
       printf("[HelixFitHack:calculateTrackParameters]              POINTS USED      \n");
       printf("[HelixFitHack:calculateTrackParameters]    %5.3f   %5.3f  %5.3f\n", p1.x(), p1.y(), p1.z());
@@ -1608,13 +1612,13 @@ namespace mu2e
 	if (xyzp[i].isOutlier()) goto NEXT;
 
 	deltaZ = xyzp[i]._pos.z() - p2.z();
-	phi = phi0 + (deltaZ)*dfdz_end;//tanLambda/radius;
+	phi = phi0_end + (deltaZ)*dfdz_end;//tanLambda/radius;
 
 	dx = p0.x() + radius_end*std::cos(phi);
 	dx -=  xyzp[i]._pos.x();
 	dx2 = dx*dx;
       
-	dy = p0.y() + radius*std::sin(phi);
+	dy = p0.y() + radius_end*std::sin(phi);
 	dy -=  xyzp[i]._pos.y();
 	dy2 = dy*dy;
 	dist = dx2 + dy2;
@@ -1631,14 +1635,7 @@ namespace mu2e
       }//end loop on strawhits for doing cleanup
     }
 
-    if(cleanPattern){
-      mytrk._dfdz   =  dfdz_end;
-      if(hack->fData[3]>=0) p1 = xyzp[hack->fData[3]]._pos;
-      printf("[HelixFitHack:calculateTrackParameters]              POINTS USED for dfdz    \n");
-      printf("[HelixFitHack:calculateTrackParameters]    %5.3f   %5.3f  %5.3f\n", p1.x(), p1.y(), p1.z());
-      printf("[HelixFitHack:doPatternRecognition] outliers found = %d\n", k);
-
-    }
+    
   END:;
   }
   
@@ -1689,11 +1686,14 @@ namespace mu2e
     double deltaZ = p3.z() - p2.z();
     //    radius    = std::sqrt(x0*x0 + y0*y0);
     radius    = std::sqrt((x0 - p3.x())*(x0 - p3.x()) + (y0 - p3.y())*(y0 - p3.y()));
-    phi0      = std::acos( (p2.x() - x0)/radius);
+
+    double delta2Y = (p2.y() - y0);
+    double delta2X = (p2.x() - x0);
+    phi0      = std::acos( delta2X/radius);
     //now compute phi0 using y coordinates so to estabilish which sign phi0 must have
-    double phi0_fromY = std::asin( (p2.y() - y0)/radius);
+    double phi0_fromY = std::asin( delta2Y/radius);
     //    phi0     = phi0*phi0_fromY/std::fabs(phi0_fromY);
-    double phi0_fromXY = std::atan2( (p2.x() - x0), (p2.y() - y0) );
+    double phi0_fromXY = std::atan2(  delta2Y, delta2X);//std::atan2(  (p2.y() - y0), (p2.x() - x0));
     //2014 - 02 - 01 gianipez resolved a bug?
     //if( phi0*phi0_fromY < 0.)
     //  phi0     = phi0*phi0_fromY/std::fabs(phi0_fromY);
@@ -1701,9 +1701,19 @@ namespace mu2e
 	   phi0, phi0_fromY, phi0_fromXY);
     phi0 = phi0_fromXY;
 
-    double tanLambda_0 = (radius/deltaZ)*(std::atan2(deltaX,deltaY) - phi0);
-    printf("[HelixFitHack:calculateTrackParameters] tanLambda = %5.5f \n", tanLambda_0);
-    tanLambda = std::fabs( (radius/deltaZ)*(std::atan2(deltaX,deltaY) - phi0) );
+    double deltaPhi_0 = std::atan2(deltaY,deltaX) - phi0;
+    double deltaPhi_1 = std::atan(deltaY/deltaX) - phi0;
+    printf("[HelixFitHack:calculateTrackParameters] deltaPhi_0 = %5.5f deltaPhi_1 = %5.5f\n",
+	   deltaPhi_0,
+	   deltaPhi_1);
+    
+    if(deltaPhi_0 < 0.) 
+      deltaPhi_0 += 2.*M_PI;
+
+    tanLambda = (radius/deltaZ)*deltaPhi_0;//(radius/deltaZ)*std::fabs(deltaPhi_0);
+
+    printf("[HelixFitHack:calculateTrackParameters] dfdz = %5.8f \n", tanLambda/radius);
+    
   }
   
   void 
