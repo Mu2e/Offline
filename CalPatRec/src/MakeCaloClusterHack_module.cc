@@ -307,6 +307,7 @@ class MakeCaloClusterHack : public art::EDProducer {
 	  while( ! caloCrystalHitsWork.empty() ){       
 	    
 	      CaloCrystalList_iter crystalSeed = caloCrystalHitsWork.begin();
+	      if ( (*crystalSeed)->energyDep() < 1. ) break;
 	      double crystalTime = (*crystalSeed)->time();
 
 	      // find cluster if the crystal timing is compatible with the list of energetic clusters
@@ -391,7 +392,10 @@ class MakeCaloClusterHack : public art::EDProducer {
 	      averageTime /= float(thisList.size());
               
 	      int mainIndex = findMainCluster((*thisList.begin())->time(), protoClusterTimingList);
-              double minDist = closestDistance(thisList, protoClusterList[mainIndex],cal);
+
+	      double minDist;
+	      if (mainIndex >= 0) minDist = closestDistance(thisList, protoClusterList[mainIndex],cal);
+	      else                minDist = 1.e6;
    	      
 	      CLHEP::Hep3Vector cog = calculateCog(thisList,cal,1);
 
