@@ -2,9 +2,9 @@
 // StrawPhysics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawPhysics.cc,v 1.5 2014/03/02 17:50:10 brownd Exp $
+// $Id: StrawPhysics.cc,v 1.6 2014/03/07 19:49:48 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/02 17:50:10 $
+// $Date: 2014/03/07 19:49:48 $
 //
 // Original author David Brown, LBNL
 //
@@ -23,7 +23,7 @@ namespace mu2e {
     _longfrac(pset.get<double>("LongAttenuationFraction",0.92)),
     _vdrift(pset.get<double>("DriftVelocity",0.05)), // mm/nsec
     _drifterr(pset.get<double>("DriftTimeError",1.5)), // nsec
-    _vprop(pset.get<double>("PropagationVelocity",231.0)), //mm/nsec
+    _vprop(pset.get<double>("PropagationVelocity",273.0)), //mm/nsec
     _vdisp(pset.get<double>("PropagationVelocityDispersion",0.01)) //1/nsec
   {}
 

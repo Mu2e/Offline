@@ -1,9 +1,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.14 2014/03/01 11:13:30 brownd Exp $
+// $Id: TrackerCalibrations.cc,v 1.15 2014/03/07 19:49:48 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/01 11:13:30 $
+// $Date: 2014/03/07 19:49:48 $
 //
 
 // Mu2e include files
@@ -17,16 +17,18 @@
 namespace mu2e {
 
   TrackerCalibrations::TrackerCalibrations( SimpleConfig const& config ){
-
+// Tracker Calibration information; these correspond to Vadim's June 2012 measurement using 90 Sr
+// for the resolution at the straw center, and his 55 Fe measurement for the
+// position dependence
     // Here we should eventually interface to some database
-    _tdresopar0 = config.getDouble("TDResolution_0",64.2);
-    _tdresopar1 = config.getDouble("TDResolution_1",60.7);
+    _tdresopar0 = config.getDouble("TDResolution_0",34.0);
+    _tdresopar1 = config.getDouble("TDResolution_1",32.9);
     // simplistic placeholder for drift calibration parameters
     _vdrift = config.getDouble("DriftVelocity",0.05); // mm/ns
     _rres_min = config.getDouble("MinDriftRadiusResolution",0.09); //mm
     _rres_max = config.getDouble("MaxDriftRadiusResolution",0.15); //mm
     _rres_rad = config.getDouble("DriftRadiusResolutionRadius",1.5); //mm
-    _distvsdeltat = config.getDouble("SignalVelocity",231.); //mm/ns
+    _distvsdeltat = config.getDouble("SignalVelocity",273.); //mm/ns
     _edepToAmpl = config.getDouble("EdepToAmpl",1.0); // mV/MeV
     _amplRes = config.getDouble("AmplRes", 0.0); //   relative
     _crossTalk = config.getDouble("Crosstalk",0.0); //   relative
