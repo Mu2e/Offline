@@ -2,9 +2,9 @@
 // This module transforms StrawDigi objects into StrawHit objects
 // It also builds the truth match map (if MC truth info for the StrawDigis exists)
 //
-// $Id: StrawHitsFromStrawDigis_module.cc,v 1.10 2014/02/25 06:52:51 brownd Exp $
+// $Id: StrawHitsFromStrawDigis_module.cc,v 1.11 2014/03/07 23:22:37 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/25 06:52:51 $
+// $Date: 2014/03/07 23:22:37 $
 //
 // Original author David Brown, LBNL
 //
@@ -51,6 +51,7 @@ namespace mu2e {
     unsigned _nbase;
     double _mbtime; // period of 1 microbunch
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
+    double _maxdt; // maximum time difference between end times
     bool _singledigi; // turn single-end digitizations into hits
 // Diagnostics level.
     int _printLevel, _diagLevel;
@@ -67,6 +68,7 @@ namespace mu2e {
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
     _nbase(pset.get<unsigned>("NumADCBaseline",1)),
     _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
+    _maxdt(pset.get<double>("MaxTimeDifferenc",8.0)), // nsec
     _singledigi(pset.get<bool>("UseSingleDigis",false)), // use or not single-end digitizations
     _printLevel(pset.get<int>("printLevel",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
@@ -118,11 +120,11 @@ namespace mu2e {
       _strawele->tdcTimes(digi.TDC(),times);
 // hit wants primary time and dt.  Check if both ends digitized, or if
 // this is a single-end digitization
-      double time(-_mbtime), dt(-_mbtime);
+      double time(times[0]);
+      double dt = times[1]-times[0];
       bool makehit(true);
-      if(times[0] < _mbtime+_mbbuffer && times[1] < _mbtime+_mbbuffer){
+      if(time < _mbtime+_mbbuffer && fabs(dt)<_maxdt ){
 	time = times[0];
-	dt = times[1]-times[0];
       } else if(_singledigi){
 // single-ended hit.  Take the valid time, and set delta_t to 0.  This needs
 // to be flaged in StrawHit, FIXME!!!
