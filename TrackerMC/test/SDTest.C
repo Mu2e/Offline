@@ -6,6 +6,7 @@
 #include "TPaveText.h"
 #include "TCanvas.h"
 #include "TH2F.h"
+#include "TH1D.h"
 #include "TStyle.h"
 #include "TCut.h"
 #include "TMath.h"
@@ -37,6 +38,25 @@ void SDTest(TTree* sddiag, char* page ="adc",TCut cut=TCut()) {
     TH1F* dtdc = new TH1F("dtdc","#Delta TDC",200,-500,500);
     sddiag->Project("dtdc","tdc1-tdc0");
     dtdc->Draw();
+  } else if(spage=="dvdt") {
+    TH2F* dvdt = new TH2F("dvdt","#Delta V vs #Delta t;#Delta t (nsec);#Delta V (mm)",100,-6,6,100,-1200,1200);
+    sddiag->Project("dvdt","wdist1-wdist0:xtime1-xtime0","vcross0>0&&vcross1>0");
+    dvdt->FitSlicesY(0,20,80);
+    TProfile* dtdcdt = new TProfile("dtdcdt","#Delta TDC vs #Delta t;#Delta t (ns):#Delta TDC",100,-6,6,-200,200);
+    sddiag->Project("dvdt","wdist1-wdist0:xtime1-xtime0","vcross0>0&&vcross1>0");
+    sddiag->Project("dtdcdt","tdc1-tdc0:xtime1-xtime0","vcross0>0&&vcross1>0");
+    dvdt->FitSlicesY(0,20,80);
+    TCanvas* dvdtcan = new TCanvas("dvdtcan","dvdtcan",1200,800);
+    dvdtcan->Divide(2,2);
+    dvdtcan->cd(1);
+    dvdt->Draw("box");
+    TH1D* dvdt_1 = (TH1D*)gDirectory->Get("dvdt_1");
+    dvdt_1->SetTitle("Average #Delta V vs #Delta t;#Delta t (ns);#Delta V (mm)");
+    dvdtcan->cd(2);
+    dvdt_1->Fit("pol1");
+    dvdtcan->cd(3);
+    dtdcdt->Fit("pol1");
+
   }
 }
 

@@ -40,5 +40,6 @@ void SWTest(TTree* sw){
   can->cd(3);
   nclusvs->Draw("box");
   can->cd(4);
+  vmce->Fit("gaus","","",20,180);
   
 }
