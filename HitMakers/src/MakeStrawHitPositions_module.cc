@@ -1,9 +1,9 @@
 //
 // A module to create strawhitpositions out of the strawhits
 //
-// $Id: MakeStrawHitPositions_module.cc,v 1.1 2014/02/23 03:33:18 murat Exp $
+// $Id: MakeStrawHitPositions_module.cc,v 1.2 2014/03/07 03:16:46 murat Exp $
 // $Author: murat $
-// $Date: 2014/02/23 03:33:18 $
+// $Date: 2014/03/07 03:16:46 $
 // 
 //  Original Author: David Brown, LBNL
 //  changes from G. Pezzullo, P. Murat
@@ -66,6 +66,7 @@ namespace mu2e {
 
     void produce( art::Event& e);
     void beginJob();
+    void beginRun(art::Run& Run);
     void printHits(const StrawHit& Hit, StrawHitPosition& Pos, int &banner);
     
   private:
@@ -113,9 +114,11 @@ namespace mu2e {
       _chisq = tfs->make<TH1F>("chisq","Chisquared",100,-1.0,50.0);
     }
 
-    _tracker = &getTrackerOrThrow();
   }
 
+  void MakeStrawHitPositions::beginRun(art::Run& Run) {
+    _tracker = &getTrackerOrThrow();
+  }
 
   void MakeStrawHitPositions::printHits(const StrawHit& Hit, StrawHitPosition& Pos, int &banner) {
     double x,y,z;
@@ -159,7 +162,7 @@ namespace mu2e {
       first = false;
       const TTracker& tt = dynamic_cast<const TTracker&>(*_tracker);
       art::ServiceHandle<art::TFileService> tfs;
-      unsigned nsta = tt.nDevices()/2;
+      int nsta = tt.nDevices()/2;
       for(int ista=0;ista<nsta;++ista){
 	char name[100];
 	snprintf(name,100,"station%i",ista);
