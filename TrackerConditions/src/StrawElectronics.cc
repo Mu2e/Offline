@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.10 2014/03/02 17:50:10 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.11 2014/03/08 00:55:21 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/02 17:50:10 $
+// $Date: 2014/03/08 00:55:21 $
 //
 // Original author David Brown, LBNL
 //
@@ -17,10 +17,10 @@ using namespace std;
 namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI{pset.get<double>("thresholddVdI",120.0),
-	pset.get<double>("adcdVdI",600.0) }, // mVolt/uAmps (transimpedance gain)
-    _tshape{pset.get<double>("thresholdShapingTime",2.0),
-	pset.get<double>("adcShapingTime",25.0) }, // nsec
+    _dVdI{pset.get<double>("thresholddVdI",85.0),
+      pset.get<double>("adcdVdI",600.0) }, // mVolt/uAmps (transimpedance gain)
+    _tshape{pset.get<double>("thresholdShapingTime",4.0),
+      pset.get<double>("adcShapingTime",25.0) }, // nsec
     _tdead(pset.get<double>("DeadTime",60.0)), // nsec dead after threshold crossing (electronics processing time)
     _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mVolt
     _vsat(pset.get<double>("SaturationVoltage",800.0)), // mVolt

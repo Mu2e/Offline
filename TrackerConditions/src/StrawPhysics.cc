@@ -2,9 +2,9 @@
 // StrawPhysics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawPhysics.cc,v 1.6 2014/03/07 19:49:48 brownd Exp $
+// $Id: StrawPhysics.cc,v 1.7 2014/03/08 00:55:21 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/07 19:49:48 $
+// $Date: 2014/03/08 00:55:21 $
 //
 // Original author David Brown, LBNL
 //
@@ -16,15 +16,15 @@
 using namespace std;
 namespace mu2e {
   StrawPhysics::StrawPhysics(fhicl::ParameterSet const& pset) :
-    _EIonize(pset.get<double>("EnergyPerIonization",200.0e-6)), // 100% Ar is between 27 ev/ionization and 100 ev/ionization, not sure what model G4 uses, also should use Ar/CO2 FIXME!!
+    _EIonize(pset.get<double>("EnergyPerIonization",100.0e-6)), // 100% Ar is between 27 ev/ionization and 100 ev/ionization, not sure what model G4 uses, also should use Ar/CO2 FIXME!!
     _QIonize(pset.get<double>("ChargePerIonization",1.6e-7)), // e, pC
     _gasgain(pset.get<double>("GasGain",3.0e4)),
     _attlen{pset.get<double>("ShortAttentuationLength",50.0),pset.get<double>("LongAttentuationLength",27000.0)}, // from ATLAS TRT measurement
     _longfrac(pset.get<double>("LongAttenuationFraction",0.92)),
-    _vdrift(pset.get<double>("DriftVelocity",0.05)), // mm/nsec
-    _drifterr(pset.get<double>("DriftTimeError",1.5)), // nsec
     _vprop(pset.get<double>("PropagationVelocity",273.0)), //mm/nsec
-    _vdisp(pset.get<double>("PropagationVelocityDispersion",0.01)) //1/nsec
+    _vdisp(pset.get<double>("PropagationVelocityDispersion",0.01)), //1/nsec
+    _cdpoly(pset.get<vector<double> >("ClusterDriftPolynomial",std::vector<double>{0.0,16.0})),
+    _cdsigmapoly(pset.get<vector<double> >("ClusterDriftSigmaPolynomial",std::vector<double>{0.2, 0.5}))
   {}
 
   StrawPhysics::~StrawPhysics() {}
@@ -35,11 +35,23 @@ namespace mu2e {
   }
 
   double StrawPhysics::driftDistanceToTime(double ddist, double phi) const {
-    return ddist/_vdrift;
+    double retval(0.0);
+    double arg(1.0);
+    for(size_t ipow=0;ipow<_cdpoly.size();++ipow){
+      retval += arg*_cdpoly[ipow];
+      arg*=ddist;
+    }
+    return max(0.0,retval);
   }
 
   double StrawPhysics::driftTimeSpread(double ddist, double phi) const {
-    return _drifterr;
+    double retval(0.0);
+    double arg(1.0);
+    for(size_t ipow=0;ipow<_cdsigmapoly.size();++ipow){
+      retval += arg*_cdsigmapoly[ipow];
+      arg*=ddist;
+    }
+    return max(0.0,retval);
   }
   
   double StrawPhysics::propagationAttenuation(double wdist) const {

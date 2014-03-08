@@ -4,9 +4,9 @@
 // StrawPhysics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawPhysics.hh,v 1.1 2014/01/18 17:31:23 brownd Exp $
+// $Id: StrawPhysics.hh,v 1.2 2014/03/08 00:55:21 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/01/18 17:31:23 $
+// $Date: 2014/03/08 00:55:21 $
 //
 // Original author David Brown, LBNL
 //
@@ -36,9 +36,9 @@ namespace mu2e {
       double ionizationEnergy(double ionizationCharge) const;
       unsigned nIonization(double charge) const; 
       double strawGain(double ddist, double phi) const;
-      double driftDistanceToTime(double ddist, double phi) const;
-      double driftTimeSpread(double ddist, double phi) const;
-      double propagationAttenuation(double wdist) const;
+      double driftDistanceToTime(double ddist, double phi) const;  // single cluster!
+      double driftTimeSpread(double ddist, double phi) const; // single cluster!
+      double propagationAttenuation(double wdist) const; 
       double propagationTime(double wdist) const;
       double velocityDispersion() const { return _vdisp; } 
 
@@ -50,10 +50,12 @@ namespace mu2e {
       // there is a short and a long component, each with it's own amplitude
       double _attlen[2];
       double _longfrac;
-      double _vdrift; // electron drift velocity
-      double _drifterr; // drift time error
       double _vprop; // (average) propagation velocity
       double _vdisp; // dispersion of propagation velocity (dv/dl)
+    // parameters describing cluster DtoT
+      std::vector<double> _cdpoly;
+      std::vector<double> _cdsigmapoly;
+
   };
 }
 #endif
