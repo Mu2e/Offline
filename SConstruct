@@ -2,9 +2,9 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.52 2013/12/16 21:55:35 genser Exp $
+# $Id: SConstruct,v 1.53 2014/03/08 00:10:30 genser Exp $
 # $Author: genser $
-# $Date: 2013/12/16 21:55:35 $
+# $Date: 2014/03/08 00:10:30 $
 #
 # Original author Rob Kutschke.
 #
@@ -346,6 +346,24 @@ Export('mu2e_helper')
 
 # Tell scons to operate on all of the SConscript files found by walking the directory tree.
 env.SConscript(ss)
+
+# for -c remove all files from ./tmp and ./lib directories to avoid stale files
+cleanopt = GetOption('clean')
+if (cleanopt and not COMMAND_LINE_TARGETS):
+    print "running with -c and no specific target"
+    print "will also remove all files in tmp and lib directories"
+
+    for top, dirs, files in os.walk("./lib"):
+        for name in files:
+            ff =  os.path.join(top, name)
+            print "removing file ", ff
+            os.unlink (ff)
+
+    for top, dirs, files in os.walk("./tmp"):
+        for name in files:
+            ff =  os.path.join(top, name)
+            print "removing file ", ff
+            os.unlink (ff)
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
