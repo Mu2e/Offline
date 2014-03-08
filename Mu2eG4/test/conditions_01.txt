@@ -1,9 +1,9 @@
 //
 // Input file for the prototype conditions system.
 //
-// $Id: conditions_01.txt,v 1.19 2014/03/07 19:49:48 brownd Exp $
+// $Id: conditions_01.txt,v 1.20 2014/03/08 00:56:34 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/07 19:49:48 $
+// $Date: 2014/03/08 00:56:34 $
 //
 
 // Times in ns
@@ -17,6 +17,8 @@ double acceleratorParams.limitingHalfWidth = 125. ; // ns
 double MinDriftRadiusResolution = 0.1; // mm
 double MaxDriftRadiusResolution = 0.1; // mm
 double DriftRadiusResolutionRadius = 2.0; // mm
+double DriftVelocity = 0.0625; // mm/nsec
+//double DriftVelocity = 0.05; // mm/nsec
 
 // uncoment to enable non "null operation" e2a conversion
 // double EdepToAmpl = 1.0;
