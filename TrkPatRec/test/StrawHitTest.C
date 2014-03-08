@@ -27,7 +27,7 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
   TCut xtalk("xtalk");
   TCut direct("!xtalk");
 
-  TCut goodevt("mcmom>100&&mctd<1&&mctd>0.577&&time>770&&time<1700");
+  TCut goodevt("mcmom>100&&mctd<1&&mctd>0.577");
   TCut goodpeak("abs(tpeak-mct0-25)<30");
   if(spage =="scan"){
     TCanvas* scan = new TCanvas("scan","simulation",1200,800);
@@ -232,6 +232,18 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     leg3->AddEntry(ecut_t,"Tight cut","l");
 //    leg3->AddEntry(ecut_l,"Loose cut","l");
     leg3->Draw();
+
+    int istart = ex->FindFixBin(0.0);
+    int istop = ex->FindFixBin(0.003);
+    double xtint = ex->Integral(istart,istop);
+    double ceint = econv->Integral(istart,istop);
+    double pint = ep->Integral();
+    double dint1 = edelta->Integral(istart,istop);
+    double dint2 = edelta->Integral(istop,edelta->GetNbinsX());
+    std::cout << "cross-talk integral = " << xtint
+    << " conversion integral = " << ceint 
+    << " proton integral = " << pint
+    << " delta integral = " << dint1 << " " << dint2 << std::endl;
 
     bcan->cd(2);
     gPad->SetLogy();

@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.67 2014/02/24 22:54:30 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.68 2014/03/08 00:57:19 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/24 22:54:30 $
+// $Date: 2014/03/08 00:57:19 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -205,15 +205,15 @@ namespace mu2e
     _ksel(pset.get<std::vector<std::string> >("KalmanFitSelectionBits")),
     _bkgsel(pset.get<std::vector<std::string> >("BackgroundSelectionBits")),
     _maxedep(pset.get<double>("MaxStrawEDep",0.003)),
-    _maxdt(pset.get<double>("DtMax",40.0)),
-    _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
+    _maxdt(pset.get<double>("DtMax",30.0)),
+    _maxdtmiss(pset.get<double>("DtMaxMiss",45.0)),
     _fbf(pset.get<double>("PhiEdgeBuffer",1.1)),
     _findtpeak(pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",0)),
     _tmin(pset.get<double>("tmin",0.0)),
-    _tmax(pset.get<double>("tmax",2000.0)),
-    _tbin(pset.get<double>("tbin",20.0)),
+    _tmax(pset.get<double>("tmax",1700.0)),
+    _tbin(pset.get<double>("tbin",15.0)),
     _ymin(pset.get<double>("ymin",4)),
     _1dthresh(pset.get<double>("OneDPeakThreshold",4.0)),
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
