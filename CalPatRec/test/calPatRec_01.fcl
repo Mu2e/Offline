@@ -1,7 +1,7 @@
 # -*- mode: tcl -*-
-# $Id: calPatRec_01.fcl,v 1.1 2014/03/10 19:35:15 gianipez Exp $
+# $Id: calPatRec_01.fcl,v 1.2 2014/03/10 21:24:58 gianipez Exp $
 # $Author: gianipez $
-# $Date: 2014/03/10 19:35:15 $
+# $Date: 2014/03/10 21:24:58 $
 #
 # Original author Rob Kutschke
 
@@ -129,7 +129,7 @@ physics : {
 	    TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    KalmanFitSelectionBits : []
-	    BackgroundSelectionBits : ["DeltaRay","Isolated"]
+	    BackgroundSelectionBits : []#"DeltaRay","Isolated"]
 	}
 
 	makeCaloCluster: {
