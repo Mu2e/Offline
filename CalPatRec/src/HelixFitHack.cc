@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.cc,v 1.4 2014/03/06 20:13:05 gianipez Exp $
+// $Id: HelixFitHack.cc,v 1.5 2014/03/10 23:06:23 gianipez Exp $
 // $Author: gianipez $ 
-// $Date: 2014/03/06 20:13:05 $
+// $Date: 2014/03/10 23:06:23 $
 //
 //
 // the following has to come before other BaBar includes
@@ -194,6 +194,7 @@ namespace mu2e
     _maxzsep(pset.get<double>("maxzsep",500.0)),
     _maxdz(pset.get<double>("maxdz",35.0)),
     _maxdot(pset.get<double>("maxdot",0.9)),
+    _maxDfDz(pset.get<double>("maxDfDz",0.01)),
     _rbias(pset.get<double>("radialBias",0.0)),
     _efac(pset.get<double>("ErrorFactor",1.0)),
     _rhomin(pset.get<double>("rhomin",350.0)),
@@ -789,8 +790,8 @@ namespace mu2e
     i=0;
     iworst = -1;
     jworst = -1;
-    //chi2min = 1e10;
-    chi2min = myhel._srphi.chi2rphiDofCircle();
+    chi2min = 1e10;
+    //chi2min = myhel._srphi.chi2rphiDofCircle();
     for(int ixyzp=0; ixyzp < N; ++ixyzp){
       if (xyzp[ixyzp].isOutlier()) goto NEXT_P;
       srphi.init(myhel._srphi);
@@ -1378,7 +1379,10 @@ namespace mu2e
     double distGoodPoint(600.);//(1e5);
     double dist(0.0);
     double tollMin(100.), tollMax(500.);
-    double tollXmin(50.), tollYmin(50.);
+    //2014-03-10 gianipez changed the values of the following tollerance
+    // for X and Y distance to avoid delta electron for corrupting the pattern-reco
+    //    double tollXmin(50.), tollYmin(50.);
+    double tollXmin(100.), tollYmin(100.);
 
     int goodPoint(-999);
     //2014-01-29 gianipez added the followign line
@@ -1393,7 +1397,6 @@ namespace mu2e
     //parameter used for calculating ''manually'' the value of dfdz
     double z0,z1,phi_0,phi_1;
     double dfdz = tanLambda/radius;
-    double dZ = p3.z() - p2.z();
 
     int nmodes=20;
     double chi2min(1e10);
@@ -1443,9 +1446,13 @@ namespace mu2e
       hack->fData[3] = -9999;
       //--------------------------------------------------//
 
+    
+      //2014-03-10 Gianipez and Pasha set a limit on th dfdz value
+      // still need to be optimized
+      if(std::fabs(dfdz*double(j)) > _maxDfDz) break; //0.01) break;
       //now set the mode of dfdz to study
       dfdz = dfdz*double(j);
-       
+
       for (int i=0; i<np; i++) {
 	if (xyzp[i].isOutlier()) goto NEXT_POINT;
 	weight = 0.5;
@@ -1601,7 +1608,7 @@ namespace mu2e
       printf("[HelixFitHack:calculateTrackParameters]    %5.3f   %5.3f  %5.3f\n", p3.x(), p3.y(), p3.z());
       //     printf("[HelixFitHack:calculateTrackParameters]    %5.3f   %5.3f  %5.3f\n", x_m,y_m,0.0);
       //     printf("[HelixFitHack:calculateTrackParameters]    %5.3f   %5.3f  %5.3f\n",x_n,y_n,0.0 );
-      printf("[HelixFitHack:calculateTrackParameters] x0 = %5.3f y0 = %5.3f radius = %5.3e phi0 = %5.3f dfdz = %5.5f\n",x0_end, y0_end, radius_end, mytrk._fz0, dfdz_end);
+      printf("[HelixFitHack:calculateTrackParameters] x0 = %5.3f y0 = %5.3f radius = %5.3e phi_0 = %5.3f dfdz = %5.5f\n",x0_end, y0_end, radius_end, mytrk._fz0, dfdz_end);
     }
     
     //    if(countGoodPoints <2) chi2 = 1e10;
@@ -1724,7 +1731,7 @@ namespace mu2e
     if(deltaPhi < 0.0) deltaPhi += 2.*M_PI;
     dfdz = deltaPhi/(z1 - z0);
     if(dfdz>0.0) 
-      printf("[HeliFitHack:c:alculateDfDZ] phi_0 = %5.3f phi_1 = %5.3f z0 = %5.3f z1 = %5.3f dfdz = %5.5f\n", phi0, phi1, z0, z1, dfdz);
+      printf("[HeliFitHack::calculateDfDZ] phi_0 = %5.3f phi_1 = %5.3f z0 = %5.3f z1 = %5.3f dfdz = %5.5f\n", phi0, phi1, z0, z1, dfdz);
   }
   
 }

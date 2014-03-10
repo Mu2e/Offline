@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.hh,v 1.2 2014/03/04 20:42:02 gianipez Exp $
+// $Id: HelixFitHack.hh,v 1.3 2014/03/10 23:06:23 gianipez Exp $
 // $Author: gianipez $ 
-// $Date: 2014/03/04 20:42:02 $
+// $Date: 2014/03/10 23:06:23 $
 //
 #ifndef HelixFitHack_HH
 #define HelixFitHack_HH
@@ -194,6 +194,11 @@ namespace mu2e
     double _nssigma; // # of sigma for filtering stereo time division
     double _minzsep, _maxzsep; // Z separation of points for pitch estimate
     double _maxdz, _maxdot; // stereo selection parameters
+
+    //2014-03-10 Gianipez and P. Murat introduced the following paramter for limiting 
+    // the dfdz value in the pattern-recognitio stage
+    double _maxDfDz;
+
     double _rbias;  // robust fit parameter bias
     double _efac; // error factor
     double _rhomin, _rhomax; // crude cuts on tranvservse radius for stereo hits
@@ -214,9 +219,7 @@ namespace mu2e
 // and direction
     double _rmin, _rmax, _smin, _smax, _dfdzsign;
 
- //ROOT file for collecting histograms//
-    // TFile *_fOut;
-//-    -------------------------------------------------//
+   
   };
 }
 #endif
