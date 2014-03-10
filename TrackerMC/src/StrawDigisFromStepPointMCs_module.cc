@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.26 2014/03/04 00:29:17 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.27 2014/03/10 18:05:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/04 00:29:17 $
+// $Date: 2014/03/10 18:05:00 $
 //
 // Original author David Brown, LBNL
 //
@@ -185,7 +185,7 @@ namespace mu2e {
 // diagnostic parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
     _printLevel(pset.get<int>("printLevel",0)),
-    _maxhist(pset.get<unsigned>("MaxHist",1000)),
+    _maxhist(pset.get<unsigned>("MaxHist",100)),
     _xtalkhist(pset.get<bool>("CrossTalkHist",false)),
     _minnxinghist(pset.get<int>("MinNXingHist",0)),
     // Parameters
@@ -697,7 +697,7 @@ namespace mu2e {
     _nxing >= _minnxinghist &&
     ( ((!_xtalkhist) && (!_wfxtalk)) || (_xtalkhist && _wfxtalk)) ) {
       // histogram the waveforms
-      const double tstep(0.5); // 0.5
+      const double tstep(0.1); // 0.1 ns
       const double nfall(5.0); // 5 lambda past last fall time
       double tstart = hitlets.begin()->time()-tstep;
       double tfall = _strawele->shapingTime(_diagpath);
