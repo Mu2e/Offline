@@ -219,7 +219,10 @@ void KalFitHit (TTree* hits ) {
   tdcan->cd(1);
   hits->Draw("_tddist:_mclen>>dtd","_active");
   tdcan->cd(2);
-//  hits->Draw("_hflt:_mcdmid>>pocatd","_active");
+  dtd->FitSlicesY(0,20,80);
+  TH1D* dtd_1 = (TH1D*)gDirectory->Get("dtd_1");
+  dtd_1->SetTitle("Average reco #Delta-t V vs true V;true V (mm);reco V (mm)");
+  dtd_1->Fit("pol1");
   tdcan->cd(3);
   tdres->Fit("gaus");
   tdcan->cd(4);
