@@ -1,7 +1,11 @@
 # -*- mode: tcl -*-
-# $Id: calPatRec_01.fcl,v 1.2 2014/03/10 21:24:58 gianipez Exp $
-# $Author: gianipez $
-# $Date: 2014/03/10 21:24:58 $
+#------------------------------------------------------------------------------
+# this .FCL file assumes that the input data file has the digitized 
+# straw tracker and calorimeter hits stored in it
+#------------------------------------------------------------------------------
+# $Id: calPatRec_01.fcl,v 1.3 2014/03/11 15:19:55 murat Exp $
+# $Author: murat $
+# $Date: 2014/03/11 15:19:55 $
 #
 # Original author Rob Kutschke
 
@@ -260,12 +264,9 @@ source.firstRun                            :  1
 physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_DownstreameMinus.txt"
 
 physics.producers.MakeStereoHits.StrawHitCollectionLabel : makeSHnew
-
 physics.producers.FlagStrawHits.StrawHitCollectionLabel  : makeSHnew
-
 physics.producers.FlagBkgHits.StrawHitCollectionLabel    : makeSHnew
-
-physics.producers.calPatRec.StrawHitCollectionLabel  : makeSHnew
+physics.producers.calPatRec.StrawHitCollectionLabel      : makeSHnew
 
 
 physics.producers.makeSD.TimeOffsets               :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
