@@ -114,6 +114,7 @@ class MakeCaloClusterHack : public art::EDProducer {
            _EnoiseCut(pset.get<double>("EnoiseCut", 0.090)),//MeV 3 sigma noise
            _ExpandCut(pset.get<double>("ExpandCut", 0.090)),//MeV
            _EminCluster(pset.get<double>("EminCluster", 10)),//MeV
+           _MinCalPatRecSeedEnergy(pset.get<double>("MinCalPatRecSeedEnergy", 60.)),//MeV
            _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
            _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel", "CaloCrystalHitsMaker")),
            _caloClusterAlgorithm(pset.get<std::string>("caloClusterAlgorithm", "closest")),
@@ -158,6 +159,9 @@ class MakeCaloClusterHack : public art::EDProducer {
            double _EnoiseCut;
            double _ExpandCut;
            double _EminCluster;
+
+  double _MinCalPatRecSeedEnergy;
+
            string _g4ModuleLabel;  // Name of the module that made these hits.
            string _caloReadoutModuleLabel;
            string _caloCrystalModuleLabel;
@@ -204,7 +208,7 @@ class MakeCaloClusterHack : public art::EDProducer {
 
    void MakeCaloClusterHack::produce(art::Event& event) {
      int           ncl;
-     double        max_energy(70.);
+     //     double        max_energy(70.);
      CaloCluster   *cl, *cl_max(NULL);
 
      // Check that calorimeter geometry description exists
@@ -229,7 +233,7 @@ class MakeCaloClusterHack : public art::EDProducer {
        std::sort(caloClusters->begin(),caloClusters->end(),mu2e::caloClusterEnergyPredicate);
 
        cl =  &caloClusters->at(0);
-       if (cl->energyDep() > max_energy) {
+       if (cl->energyDep() > _MinCalPatRecSeedEnergy) {
 	 cl_max     = cl;
        }
 
@@ -307,7 +311,7 @@ class MakeCaloClusterHack : public art::EDProducer {
 	  while( ! caloCrystalHitsWork.empty() ){       
 	    
 	      CaloCrystalList_iter crystalSeed = caloCrystalHitsWork.begin();
-	      if ( (*crystalSeed)->energyDep() < 1. ) break;
+	      if ( (*crystalSeed)->energyDep() < 2. ) break;
 	      double crystalTime = (*crystalSeed)->time();
 
 	      // find cluster if the crystal timing is compatible with the list of energetic clusters
