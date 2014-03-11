@@ -2,14 +2,15 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.11 2014/03/08 00:55:21 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.12 2014/03/11 16:18:01 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/08 00:55:21 $
+// $Date: 2014/03/11 16:18:01 $
 //
 // Original author David Brown, LBNL
 //
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "cetlib/exception.h"
+#include "TMath.h"
 #include <math.h>
 #include <algorithm>
 
@@ -17,9 +18,9 @@ using namespace std;
 namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI{pset.get<double>("thresholddVdI",85.0),
-      pset.get<double>("adcdVdI",600.0) }, // mVolt/uAmps (transimpedance gain)
-    _tshape{pset.get<double>("thresholdShapingTime",4.0),
+    _dVdI{pset.get<double>("thresholddVdI",0.3),
+      pset.get<double>("adcdVdI",500.0) }, // mVolt/uAmps (transimpedance gain)
+    _tau{pset.get<double>("thresholdFallTime",25.0),  // nsec
       pset.get<double>("adcShapingTime",25.0) }, // nsec
     _tdead(pset.get<double>("DeadTime",60.0)), // nsec dead after threshold crossing (electronics processing time)
     _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mVolt
@@ -41,14 +42,26 @@ namespace mu2e {
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
     _flashEnd(pset.get<double>("FlashEnd",300.0)) // nsec
  {
-    // calcluate normalization
-   for(int ipath=0;ipath<2;++ipath){ 
-     _fshape[ipath] = 1.0/_tshape[ipath];
-     _norm[ipath] = 1000.0*_dVdI[ipath]/(_tshape[ipath]); // this includes unit conversion to microamps from charge in picoC and time in nsec
-     _tmax[ipath] = _tshape[ipath]*pset.get<double>("MaxTime",10.0);
-     _linmax[ipath] = linearResponse(static_cast<path>(ipath),_tshape[ipath],1.0); // response to unit charge (without saturation!)
-   }
-   _vdiff = _vmax-_vsat;
+    // calcluate normalization.  Formulas are different, first threshold
+    _tband = 1.0/(TMath::TwoPi()*pset.get<double>("preampBandwidth",0.25)); //GHz
+    double nlambda = pset.get<double>("MaxNLambda",10.0); 
+    double ratio = _tband/_tau[thresh];
+    _voff =TMath::Erf(ratio/TMath::Sqrt2());
+    _toff = _tband*ratio;
+// normalization includes unit conversion to microamps from charge in picoC and time in nsec
+    _norm[thresh] = 1000.0*_dVdI[thresh]*exp(-0.5*(ratio*ratio))*_tau[adc];
+    _tmax[thresh] = _toff + _tband*TMath::ErfInverse(exp(-0.5*ratio*ratio));
+    
+    _norm[adc] = 1000.0*_dVdI[adc]/_tau[adc];
+    _tmax[adc] = _tau[adc];
+
+    for(int ipath=0;ipath<2;++ipath){
+      _freq[ipath] = 1.0/_tau[ipath];
+      _ttrunc[ipath] = _tau[ipath]*nlambda;
+      _linmax[ipath] = linearResponse(static_cast<path>(ipath),_tmax[ipath],1.0); // response to unit charge (without saturation!)
+    }
+    // saturation parameters
+    _vdiff = _vmax-_vsat;
  }
 
   StrawElectronics::~StrawElectronics() {}
@@ -56,10 +69,18 @@ namespace mu2e {
   double StrawElectronics::linearResponse(path ipath,double time,double charge) const {
     double retval(0.0);
     // There is no response before the hitlets own time
-    if(time >  0.0 && time < _tmax[ipath]){
+    if(time >  0.0 && time < _ttrunc[ipath]){
 // response is relative to the time normalized by the shaping time.
-      double tau = time*_fshape[ipath];
-      retval = charge*_norm[ipath]*tau*exp(-tau);     
+      double tau = time*_freq[ipath];
+      double base = charge*_norm[ipath]*exp(-tau);
+      if(ipath == adc)
+	retval = base*tau;
+      else if(ipath == thresh){
+	if(time > 5.0*_tband)
+	  retval = base*(_voff + 1.0);
+	else
+	  retval = base*(_voff + TMath::Erf( (time-_toff)/(_tband*TMath::Sqrt2()) ) );
+      }
     }
     return retval;
   }

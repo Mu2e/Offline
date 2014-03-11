@@ -22,7 +22,7 @@ void SWTest(TTree* sw){
   sw->Project("npart","npart");
 
 //  TH1F* nclus = new TH1F("nclus","N clusters",50,-0.5,49.5);
-  TH2F* nclusvs = new TH2F("nclusvs","N clusters vs steplength;steplength (mm);N clusters",50,0,10.0,25,-0.5,24.5);
+  TH2F* nclusvs = new TH2F("nclusvs","N clusters vs steplength;steplength (mm);N clusters",50,0,10.0,50,-0.5,49.5);
   nclusvs->SetStats(0);
 //  sw->Project("nclus","nhitlet","npAart==1&&nstep==1");
   sw->Project("nclusvs","nhitlet:slen","npart==1&&nstep==1");

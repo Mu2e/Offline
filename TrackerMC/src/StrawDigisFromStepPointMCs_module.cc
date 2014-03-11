@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.27 2014/03/10 18:05:00 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.28 2014/03/11 16:18:01 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/10 18:05:00 $
+// $Date: 2014/03/11 16:18:01 $
 //
 // Original author David Brown, LBNL
 //
@@ -137,7 +137,7 @@ namespace mu2e {
 // diagnostics
     TTree* _swdiag;
     Int_t _sdevice, _ssector, _slayer, _sstraw;
-    Int_t _nhitlet;
+    Int_t _nhitlet,_ihitlet;
     Float_t _hqsum, _vmax, _sesum;
     Int_t _wmcpdg, _wmcproc, _nxing;
     Float_t _mce, _slen, _sedep;
@@ -225,6 +225,7 @@ namespace mu2e {
       _swdiag->Branch("layer",&_slayer,"layer/I");
       _swdiag->Branch("straw",&_sstraw,"straw/I");
       _swdiag->Branch("nhitlet",&_nhitlet,"nhitlet/I");
+      _swdiag->Branch("ihitlet",&_ihitlet,"ihitlet/I");
       _swdiag->Branch("hqsum",&_hqsum,"hqsum/F");
       _swdiag->Branch("vmax",&_vmax,"vmax/F");
       _swdiag->Branch("mcpdg",&_wmcpdg,"mcpdg/I");
@@ -653,6 +654,7 @@ namespace mu2e {
     _sstraw = straw.id().getStraw();
     HitletList const& hitlets = wf.hitlets().hitletList();
     _nhitlet = hitlets.size();
+    _ihitlet = -1;
     set<art::Ptr<StepPointMC> > steps;
     set<art::Ptr<SimParticle> > parts;
     _nxing = xings.size();
@@ -660,6 +662,14 @@ namespace mu2e {
     if(_nxing > 0){
       for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
 	_txing = min(_txing,static_cast<float_t>(ixing->_time));
+	if(ixing->_ihitlet->strawEnd() == wf.strawEnd()){
+  // find the hitlet of the 1st crossing
+	  _ihitlet = 0;
+	  for(auto ih=hitlets.begin();ih!= hitlets.end();++ih){
+	    if(ih == xings.front()._ihitlet)break;
+	    ++_ihitlet;
+	  }
+	}
       }
     }
     _hqsum = 0.0;
@@ -700,7 +710,7 @@ namespace mu2e {
       const double tstep(0.1); // 0.1 ns
       const double nfall(5.0); // 5 lambda past last fall time
       double tstart = hitlets.begin()->time()-tstep;
-      double tfall = _strawele->shapingTime(_diagpath);
+      double tfall = _strawele->fallTime(_diagpath);
       double tend = hitlets.rbegin()->time() + nfall*tfall;
       vector<double> times, volts;
       double t = tstart;

@@ -4,9 +4,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawElectronics.hh,v 1.5 2014/03/01 16:32:16 brownd Exp $
+// $Id: StrawElectronics.hh,v 1.6 2014/03/11 16:18:01 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/01 16:32:16 $
+// $Date: 2014/03/11 16:18:01 $
 //
 // Original author David Brown, LBNL
 //
@@ -41,7 +41,7 @@ namespace mu2e {
       // Given a (linear) total voltage, compute the saturated voltage
       double saturatedResponse(double lineearresponse) const;
       // relative time when linear response is maximal
-      double maxResponseTime(path ipath) const { return _tshape[ipath]; }
+      double maxResponseTime(path ipath) const { return _tmax[ipath]; }
   // digization
       unsigned short adcResponse(double mvolts) const; // ADC response to analog inputs
       unsigned long tdcResponse(double time) const; // TDC response to a given time
@@ -67,7 +67,7 @@ namespace mu2e {
       void adcTimes(double time, std::vector<double>& adctimes) const; // sampling times of ADC
       double saturationVoltage() const { return _vsat; }
       double maximumVoltage() const { return _vmax; }
-      double shapingTime(path ipath) const { return _tshape[ipath]; }
+      double fallTime(path ipath) const { return _tau[ipath]; }
       double dispersion(double dlen) const { return _disp*dlen; } // dispersion width is linear in propagation length
       double threshold() const { return _vthresh; }
       double thresholdNoise() const { return _vthreshnoise; }
@@ -78,13 +78,16 @@ namespace mu2e {
       double normalization(path ipath) const { return _norm[ipath]; }
       double maxLinearResponse(path ipath,double charge=1.0) const { return _linmax[ipath]*charge; }
     private:
-      // scale factor between charge and voltage (milliVolts from picoCoulombs)
-      double _dVdI[2];
-      double _tshape[2]; // shaping time
-      double _fshape[2]; // shaping frequency
-      double _tmax[2]; // maximum time to consider response non-zero
+    // generic waveform parameters
+      double _dVdI[2]; // scale factor between charge and voltage (milliVolts/picoCoulombs)
+      double _tmax[2]; // time at which value is maximum
+      double _ttrunc[2]; // time to truncate signal to 0
       double _linmax[2]; // linear response to unit charge at maximum
-      double _norm[2]; // normalization factor, computed from trise and tfall
+      double _norm[2]; // normalization factor
+// adc path parameters
+      double _tau[2], _freq[2]; // shaping time and associated frequency
+// threshold path parameters
+      double _tband, _voff, _toff;
       double _tdead; // electronics dead time
       // scale factor between current and voltage (milliVolts per microAmps)
       double _vmax, _vsat, _vdiff; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
