@@ -1,0 +1,24 @@
+// Andrei Gaponenko, 2014
+
+#include "JobConfig/TDR/defsStopsToDetHits.fcl"
+
+process_name : StopsToHitsOOT
+services.TFileService.fileName: "histStopsToHitsOOT.root"
+outputs.detectorOutput.fileName:  "dsStopsToHitsOOT.root"
+outputs.crvOutput.fileName: "crvStopsToHitsOOT.root"
+outputs.truncatedEvtsOutput.fileName: "truncatedStopsToHitsOOT.root"
+
+physics.producers.generate: {
+    module_type: StoppedParticleG4Gun
+    verbosityLevel : 1
+    pdgId: 13 // mu-
+    muonStops : {
+        inputFiles: @nil // use --fclinput for grid submission
+        averageNumRecordsToUse: 500000
+        treeName: "outOfTargetDumper/stops"
+        branchName : "stops"
+        verbosityLevel : 1
+    }
+}
+
+//test: physics.producers.generate.muonStops.inputFiles: [ "mergedMuonStops/mustops.1025a_1425a_1504a.15318715.root" ]
