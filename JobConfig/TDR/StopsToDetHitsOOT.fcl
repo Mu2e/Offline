@@ -21,4 +21,4 @@ physics.producers.generate: {
     }
 }
 
-//test: physics.producers.generate.muonStops.inputFiles: [ "mergedMuonStops/mustops.1025a_1425a_1504a.15318715.root" ]
+//test: physics.producers.generate.muonStops.inputFiles: [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
