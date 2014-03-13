@@ -4,3 +4,7 @@ process_name: fileMerge
 source: { module_type: RootInput }
 physics: { e1: [out]  end_paths: [e1] }
 outputs: { out: { module_type: RootOutput fileName: "dataMerged.root" } }
+
+// We guarantee that our subruns are atomic. The following line is 
+// supposed to prevent excessive memory use.
+services.scheduler.fileMode: MERGE
