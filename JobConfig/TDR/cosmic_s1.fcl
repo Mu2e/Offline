@@ -85,12 +85,19 @@ physics : {
         }
     }
 
+    analyzers: {
+        genCountLogger: {
+            module_type: GenEventCountReader
+        }
+    }
+
     trigFilter : [generate, genCounter, g4run, hitMomentumFilter, g4filter, compressPV ]
     g4StatusFilter : [generate, genCounter, g4run, "!g4status", compressPVFull ]
     trigger_paths  : [trigFilter, g4StatusFilter]
 
-    e1 : [filteredOutput, truncatedEvtsOutput]
-    end_paths      : [e1]
+    an: [genCountLogger]
+    out: [filteredOutput, truncatedEvtsOutput]
+    end_paths      : [an, out]
 }
 
 outputs: {
