@@ -60,6 +60,22 @@ physics : {
         genCountLogger: {
             module_type: GenEventCountReader
         }
+
+        hitTimesTracker: {
+            module_type: ExtremeHitTimes
+	    inputs: [ "detectorFilter:tracker" ]
+        }
+
+        hitTimesCalo: {
+            module_type: ExtremeHitTimes
+	    inputs: [ "detectorFilter:calorimeter",  "detectorFilter:calorimeterRO" ]
+        }
+
+	// tracker or calo
+        hitTimesTOC: {
+            module_type: ExtremeHitTimes
+	    inputs: [ "detectorFilter:tracker", "detectorFilter:calorimeter",  "detectorFilter:calorimeterRO" ]
+        }
     }
 
     //================================================================
@@ -67,7 +83,7 @@ physics : {
     trigger_paths  : [detPath]
 
     out : [beamFlashOutput]
-    an : [genCountLogger]
+    an : [genCountLogger, hitTimesTracker, hitTimesCalo, hitTimesTOC]
     end_paths      : [out, an]
 }
 
