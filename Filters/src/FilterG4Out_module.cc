@@ -21,9 +21,9 @@
 // The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
 // Intended to write out framework files of stopped muons.
 //
-// $Id: FilterG4Out_module.cc,v 1.8 2014/03/04 19:39:39 gandr Exp $
+// $Id: FilterG4Out_module.cc,v 1.9 2014/03/13 15:02:42 gandr Exp $
 // $Author: gandr $
-// $Date: 2014/03/04 19:39:39 $
+// $Date: 2014/03/13 15:02:42 $
 //
 // Andrei Gaponenko, 2013
 
@@ -117,7 +117,7 @@ namespace mu2e {
 
     InputTags extraHitInputs_;  // other StepPointMCCollections to keep
 
-    art::InputTag mcTrajectoryInput_; // Optionally, filter and keep MCTrajectoryCollection
+    InputTags trajectoryInputs_; // Optionally, filter and keep MCTrajectoryCollection
 
     InputTags vetoDaughtersInputs_;
     InputTags vetoParticlesInputs_;
@@ -150,8 +150,7 @@ namespace mu2e {
 
   //================================================================
   FilterG4Out::FilterG4Out(const fhicl::ParameterSet& pset)
-    : mcTrajectoryInput_(pset.get<std::string>("mcTrajectoryInput", ""))
-    , numInputEvents_(), numPassedEvents_()
+    : numInputEvents_(), numPassedEvents_()
     , numMainHits_(), numInputExtraHits_(), numPassedExtraHits_()
     , numInputParticles_(), numPassedParticles_()
     , numVetoedParticles_(), numVetoedHits_()
@@ -183,7 +182,11 @@ namespace mu2e {
       produces<StepPointMCCollection>(i);
     }
 
-    if(mcTrajectoryInput_ != art::InputTag()) {
+    const VS trajectoryStrings(pset.get<VS>("mcTrajectoryInputs", VS()));
+    for(const auto& i : trajectoryStrings) {
+      trajectoryInputs_.emplace_back(i);
+    }
+    if(!trajectoryInputs_.empty()) {
       produces<MCTrajectoryCollection>();
     }
 
@@ -401,24 +404,27 @@ namespace mu2e {
     }
 
     //----------------------------------------------------------------
-    if(mcTrajectoryInput_ != art::InputTag()) {
+    if(!trajectoryInputs_.empty()) {
 
       std::unique_ptr<MCTrajectoryCollection> outTrajectory(new MCTrajectoryCollection());
 
-      auto ih = event.getValidHandle<MCTrajectoryCollection>(mcTrajectoryInput_);
+      for(const auto& in : trajectoryInputs_) {
 
-      for(MCTrajectoryCollection::const_iterator i=ih->begin(); i!=ih->end(); ++i) {
+        auto ih = event.getValidHandle<MCTrajectoryCollection>(in);
 
-        art::Ptr<SimParticle> oldPtr(i->first);
+        for(MCTrajectoryCollection::const_iterator i=ih->begin(); i!=ih->end(); ++i) {
 
-        if(toBeKept.isKept(oldPtr)) {
+          art::Ptr<SimParticle> oldPtr(i->first);
 
-          art::ProductID newParticlesPID = partCollMap[oldPtr.id()];
-          const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
-          art::Ptr<SimParticle> newParticle(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
+          if(toBeKept.isKept(oldPtr)) {
 
-          (*outTrajectory)[newParticle] = i->second;
-          (*outTrajectory)[newParticle].sim() = newParticle;
+            art::ProductID newParticlesPID = partCollMap[oldPtr.id()];
+            const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
+            art::Ptr<SimParticle> newParticle(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
+
+            (*outTrajectory)[newParticle] = i->second;
+            (*outTrajectory)[newParticle].sim() = newParticle;
+          }
         }
       }
 
