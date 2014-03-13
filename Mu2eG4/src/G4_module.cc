@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.80 2014/01/21 06:20:41 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/21 06:20:41 $
+// $Id: G4_module.cc,v 1.81 2014/03/13 18:33:07 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/03/13 18:33:07 $
 //
 // Original author Rob Kutschke
 //
@@ -302,17 +302,19 @@ namespace mu2e {
     // not once per run, but which need to be done after the call to
     // BeamOnBeginRun.
 
+
+    // Get some run-time configuration information that is stored in the geometry file.
+    SimpleConfig const& config  = geom->config();
+
     if ( ncalls == 1 ) {
 
-      _steppingAction->finishConstruction();
+      _steppingAction->finishConstruction(config);
 
       if( _checkFieldMap>0 ) generateFieldMap(worldGeom->mu2eOriginInWorld(),_checkFieldMap);
 
       if ( _exportPDTStart ) exportG4PDT( "Start:" );
     }
 
-    // Get some run-time configuration information that is stored in the geometry file.
-    SimpleConfig const& config  = geom->config();
     _printPhysicsProcessSummary = config.getBool("g4.printPhysicsProcessSummary",false);
 
     _pointTrajectoryMinSteps = config.getInt("g4.pointTrajectoryMinSteps",5);

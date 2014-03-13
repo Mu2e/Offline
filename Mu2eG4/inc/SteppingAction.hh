@@ -3,9 +3,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.hh,v 1.23 2014/01/18 03:09:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/18 03:09:59 $
+// $Id: SteppingAction.hh,v 1.24 2014/03/13 18:33:07 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/03/13 18:33:07 $
 //
 // Original author Rob Kutschke
 //
@@ -62,7 +62,7 @@ namespace mu2e {
 
     // Called by G4_plugin: the final phase of the c'tor cannot be completed until after
     // G4 has initialized itself.
-    void finishConstruction();
+    void finishConstruction(const SimpleConfig& config);
 
     G4ThreeVector const& lastPosition() const { return _lastPosition; }
     G4ThreeVector const& lastMomentum() const { return _lastMomentum; }
@@ -111,6 +111,11 @@ namespace mu2e {
 
     // Maximum global time of particle
     double _maxGlobalTime;
+
+    // MCTrajectory point filtering cuts
+    double mcTrajectoryDefaultMinPointDistance_;
+    typedef std::map<const G4VPhysicalVolume*, double> VolumeCutMap;
+    VolumeCutMap mcTrajectoryVolumePtDistances_;
 
     // Lists of events and tracks for which to enable debug printout.
     EventNumberList _debugEventList;
@@ -164,6 +169,8 @@ namespace mu2e {
     // Store point and time at each G4Step; cleared at beginOfTrack time.
     std::vector<CLHEP::HepLorentzVector> _trajectory;
 
+    // per-volume or the default
+    double mcTrajectoryMinDistanceCut(const G4VPhysicalVolume* vol) const;
   };
 
 } // end namespace mu2e

@@ -1,9 +1,9 @@
 //
 // Called at every G4 step.
 //
-// $Id: SteppingAction.cc,v 1.37 2014/01/18 03:09:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/18 03:09:59 $
+// $Id: SteppingAction.cc,v 1.38 2014/03/13 18:33:07 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/03/13 18:33:07 $
 //
 // Original author Rob Kutschke
 //
@@ -168,7 +168,7 @@ namespace mu2e {
 
   }
 
-  void SteppingAction::finishConstruction(){
+  void SteppingAction::finishConstruction(const SimpleConfig& config) {
 
     for(unsigned i=0; i<_killInTheseVolumes.size(); ++i) {
       if ( true ){
@@ -177,6 +177,24 @@ namespace mu2e {
       _killerVolumes.insert(getPhysicalVolumeOrThrow(_killInTheseVolumes[i]));
     }
 
+    std::vector<std::string> mctv;
+    config.getVectorString("g4.mcTrajectoryVolumes", mctv, std::vector<std::string>());
+    std::vector<double> mctcuts;
+    config.getVectorDouble("g4.mcTrajectoryVolumePtDistances", mctcuts, std::vector<double>());
+    if(mctv.size() != mctcuts.size() ) {
+      throw cet::exception("BADCONFIG")<<"SteppingAction::finishConstruction(): size mismatch for vectors"
+                                       <<" g4.mcTrajectoryVolumes = "<<mctv.size()
+                                       <<" and g4.mcTrajectoryVolumePtDistances = "<<mctcuts.size()
+                                       <<"\n";
+    }
+
+    mcTrajectoryDefaultMinPointDistance_ = config.getDouble("g4.mcTrajectoryDefaultMinPointDistance", 0.);
+    std::cout<<"SteppingAction: mcTrajectoryDefaultMinPointDistance = "<<mcTrajectoryDefaultMinPointDistance_<<std::endl;
+    for(unsigned i=0; i<mctv.size(); ++i) {
+      auto vol = getPhysicalVolumeOrThrow(mctv[i]);
+      mcTrajectoryVolumePtDistances_[vol] = mctcuts[i];
+      std::cout<<"SteppingAction: mcTrajectory distance cut = "<<mctcuts[i]<<" for volume "<<mctv[i]<<std::endl;
+    }
   }
 
   void SteppingAction::UserSteppingAction(const G4Step* step){
@@ -189,8 +207,14 @@ namespace mu2e {
     G4StepPoint const* prept  = step->GetPreStepPoint();
     G4StepPoint const* postpt = step->GetPostStepPoint();
 
-    _trajectory.emplace_back ( prept->GetPosition(), prept->GetGlobalTime() );
-
+    // Determine whether we add the current step to MCTrajectory
+    const double mcTrajCurrentCut = mcTrajectoryMinDistanceCut(prept->GetPhysicalVolume());
+    // In some cases we know to accept the point even without computing the distance
+    bool computeMCTrajDistance = (!_trajectory.empty()) && (mcTrajCurrentCut > 0.);
+    if(!computeMCTrajDistance || ((prept->GetPosition() -  _trajectory.back().vect()).mag() >= mcTrajCurrentCut)) {
+      _trajectory.emplace_back ( prept->GetPosition(), prept->GetGlobalTime() );
+    }
+    
     // Get kinetic energy at the begin of the step
     _preStepEK = prept->GetKineticEnergy();
 
@@ -436,6 +460,12 @@ namespace mu2e {
 
     return true;
 
+  }
+
+
+  double SteppingAction::mcTrajectoryMinDistanceCut(const G4VPhysicalVolume* vol) const {
+    const auto it = mcTrajectoryVolumePtDistances_.find(vol);
+    return (it != mcTrajectoryVolumePtDistances_.end()) ? it->second : mcTrajectoryDefaultMinPointDistance_;
   }
 
 } // end namespace mu2e
