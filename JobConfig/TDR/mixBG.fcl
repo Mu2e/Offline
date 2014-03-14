@@ -11,7 +11,7 @@ mixerTemplate: {
    fileNames           : @nil
    readMode            : randomLimReplace
    wrapFiles           : true
-   coverageFraction    : 10000
+   coverageFraction    : 1000000
    detail : {
      mean                : @nil
      genModuleLabel      : generate
@@ -44,11 +44,12 @@ physics: {
   }
 
   filters: {
-   dioMixer     : @local::mixerTemplate
-   protonMixer  : @local::mixerTemplate
-   neutronMixer : @local::mixerTemplate
-   photonMixer  : @local::mixerTemplate
-   flashMixer   : @local::mixerTemplate
+    flashMixer   : @local::mixerTemplate
+    ootMixer     : @local::mixerTemplate
+    dioMixer     : @local::mixerTemplate
+    neutronMixer : @local::mixerTemplate
+    photonMixer  : @local::mixerTemplate
+    protonMixer  : @local::mixerTemplate
   }
 
   analyzers: {
@@ -57,12 +58,11 @@ physics: {
     }
   }
 
-  p1 : [genCounter, dioMixer, protonMixer, neutronMixer, photonMixer, flashMixer]
+  p1 : [genCounter, dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer]
   trigger_paths  : [p1]
 
   out : [ genCountLogger, fullOutput ]
   end_paths      : [out]
-
 }
 
 outputs: {
@@ -72,10 +72,11 @@ outputs: {
     }
 }
 
-// 31M protons/uBunch with poly liner
+// mixp3 config, see docdb-3774
 // 200 ns time cut on beam flash step points
-physics.filters.flashMixer.detail.mean  :   3549.1
-physics.filters.dioMixer.detail.mean     :   345.71
-physics.filters.neutronMixer.detail.mean :   637.40
-physics.filters.photonMixer.detail.mean  :   330.88
-physics.filters.protonMixer.detail.mean  :    51.91
+physics.filters.flashMixer.detail.mean   :  2302.6 
+physics.filters.ootMixer.detail.mean     :  1595.0
+physics.filters.dioMixer.detail.mean     :   342.1
+physics.filters.neutronMixer.detail.mean :   610.0
+physics.filters.photonMixer.detail.mean  :   318.1
+physics.filters.protonMixer.detail.mean  :    55.9
