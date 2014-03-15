@@ -95,8 +95,8 @@ outputs: {
                             "keep mu2e::GenParticles_*_*_*",
                             "keep mu2e::GenEventCount_*_*_*",
                             "keep mu2e::StatusG4_*_*_*",
-                            "keep *_detectorFilter_*_TimeFilterBeamFlash",
-                            "keep *_compressPVDetector_*_TimeFilterBeamFlash"
+                            "keep *_detectorFilter_*_TimeFilterDetectorBeamFlash",
+                            "keep *_compressPVDetector_*_TimeFilterDetectorBeamFlash"
                           ]
         fileName    : "detectorBeamFlash.root"
     }
