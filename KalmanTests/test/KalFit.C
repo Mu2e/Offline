@@ -150,11 +150,19 @@ void KalFitHit (TTree* hits ) {
   TCanvas* t2dcan = new TCanvas("t2dcan","t2dcan",1200,800);
   TH2F* drad = new TH2F("drad","Drift radius;true drift radius (mm);reco drift radius (mm)",
       55,-0.1,2.6,55,-0.1,2.6);
+  TProfile* pdresid = new TProfile("pdresid","Drift Residual vs drift radius;reco drift radius (mm);reco - true radius (mm)",25,0.0,2.5,0,2.5,"s");
+  TProfile* pdresidt = new TProfile("pdresidt","Drift Residual vs true drift radius;MC true drift radius (mm);reco - true radius (mm)",25,0.0,2.5,0.,2.5,"s");
   TH2F* dresid = new TH2F("dresid","Drift Residual vs drift radius;reco drift radius (mm);reco - true radius (mm)",25,0.0,2.5,25,-0.5,0.8);
   TH2F* dresidt = new TH2F("dresidt","Drift Residual vs true drift radius;MC true drift radius (mm);reco - true radius (mm)",25,0.0,2.5,25,-0.5,0.8);
   hits->Project("drad","_rdrift:_mcdist",goodhit);
+  hits->Project("pdresid","_rdrift-_mcdist:_rdrift",goodhit);
+  hits->Project("pdresidt","_rdrift-_mcdist:_mcdist",goodhit);
   hits->Project("dresid","_rdrift-_mcdist:_rdrift",goodhit);
   hits->Project("dresidt","_rdrift-_mcdist:_mcdist",goodhit);
+  TH1F* pdresid_1 = new TH1F("pdresid_1","Mean drift residual vs drift radius;reco drift radius (mm); mean reco - true radius (mm)",25,0.0,2.5);
+  TH1F* pdresid_2 = new TH1F("pdresid_2","Drift residual RMS vs drift radius;reco drift radius (mm); RMS reco - true radius (mm)",25,0.0,2.5);
+  TH1F* pdresidt_1 = new TH1F("pdresidt_1","Mean drift residual vs true radius;true radius (mm); mean reco - true radius (mm)",25,0.0,2.5);
+  TH1F* pdresidt_2 = new TH1F("pdresidt_2","Drift residual RMS vs true radius;true radius (mm); RMS reco - true radius (mm)",25,0.0,2.5);
   dresidt->SetLineColor(kBlue);
   dresidt->SetFillColor(kBlue);
   dresid->SetLineColor(kCyan);
@@ -171,8 +179,15 @@ void KalFitHit (TTree* hits ) {
   drad->SetStats(0);
   dresid->SetStats(0);
   dresidt->SetStats(0);
-  //dres->SetStats(0);
 
+  for(unsigned ibin=0;ibin<25;++ibin){
+    pdresid_1->Fill(pdresid->GetBinCenter(ibin+1),pdresid->GetBinContent(ibin+1));
+    pdresid_2->Fill(pdresid->GetBinCenter(ibin+1),pdresid->GetBinError(ibin+1));
+    pdresidt_1->Fill(pdresidt->GetBinCenter(ibin+1),pdresidt->GetBinContent(ibin+1));
+    pdresidt_2->Fill(pdresidt->GetBinCenter(ibin+1),pdresidt->GetBinError(ibin+1));
+  }
+
+  //dres->SetStats(0);
   t2dcan->Divide(3,2);
   t2dcan->cd(1);
   drad->Draw("colorZ");
@@ -187,6 +202,16 @@ void KalFitHit (TTree* hits ) {
   t2dcan->cd(6);
   dres->Draw();
 
+  TCanvas* drcan = new TCanvas("drcan","drcan",1200,800);
+  drcan->Divide(2,2);
+  drcan->cd(1);
+  pdresid_1->Draw();
+  drcan->cd(2);
+  pdresid_2->Draw();
+  drcan->cd(3);
+  pdresidt_1->Draw();
+  drcan->cd(4);
+  pdresidt_2->Draw();
 
 //  TCanvas* tcan = new TCanvas("ht0can","hit_t0can",1200,800);
 //  TH1F* t0res = new TH1F("t0res","hit t0 resolution;nsec",100,-10,10);
