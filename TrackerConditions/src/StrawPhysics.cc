@@ -2,9 +2,9 @@
 // StrawPhysics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawPhysics.cc,v 1.7 2014/03/08 00:55:21 brownd Exp $
+// $Id: StrawPhysics.cc,v 1.8 2014/03/16 15:12:54 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/08 00:55:21 $
+// $Date: 2014/03/16 15:12:54 $
 //
 // Original author David Brown, LBNL
 //
@@ -16,7 +16,7 @@
 using namespace std;
 namespace mu2e {
   StrawPhysics::StrawPhysics(fhicl::ParameterSet const& pset) :
-    _EIonize(pset.get<double>("EnergyPerIonization",100.0e-6)), // 100% Ar is between 27 ev/ionization and 100 ev/ionization, not sure what model G4 uses, also should use Ar/CO2 FIXME!!
+    _EIonize(pset.get<double>("EnergyPerIonization",50.0e-6)), // 100% Ar is between 27 ev/ionization and 100 ev/ionization, not sure what model G4 uses, also should use Ar/CO2 FIXME!!
     _QIonize(pset.get<double>("ChargePerIonization",1.6e-7)), // e, pC
     _gasgain(pset.get<double>("GasGain",3.0e4)),
     _attlen{pset.get<double>("ShortAttentuationLength",50.0),pset.get<double>("LongAttentuationLength",27000.0)}, // from ATLAS TRT measurement
