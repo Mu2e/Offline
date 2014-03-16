@@ -27,6 +27,7 @@ namespace mu2e {
   //================================================================
   class SelectStepPointsByTime : public art::EDProducer {
     art::InputTag input_;
+    std::string outInstanceName_;
     double cutTimeMin_;
     double cutTimeMax_;
 
@@ -43,12 +44,13 @@ namespace mu2e {
   //================================================================
   SelectStepPointsByTime::SelectStepPointsByTime(const fhicl::ParameterSet& pset)
     : input_(pset.get<std::string>("input"))
+    , outInstanceName_(pset.get<std::string>("outInstanceName"))
     , cutTimeMin_(pset.get<double>("cutTimeMin",std::numeric_limits<double>::min()))
     , cutTimeMax_(pset.get<double>("cutTimeMax",std::numeric_limits<double>::max()))
     , numInputHits_()
     , numOutputHits_()
   {
-    produces<StepPointMCCollection>();
+    produces<StepPointMCCollection>(outInstanceName_);
     mf::LogInfo("Info")<<"SelectStepPointsByTime: cuts for "
                        <<input_
                        <<" are: min = "<<cutTimeMin_
@@ -71,7 +73,7 @@ namespace mu2e {
     numInputHits_ += ih->size();
     numOutputHits_ += out->size();
 
-    event.put(std::move(out));
+    event.put(std::move(out), outInstanceName_);
   }
 
   //================================================================

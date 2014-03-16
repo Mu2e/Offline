@@ -21,18 +21,21 @@ physics : {
         trackerHits: {
 	    module_type: SelectStepPointsByTime
 	    input: "detectorFilter:tracker"
+	    outInstanceName: "tracker"
 	    cutTimeMin: 200
 	}
 
         caloHits: {
 	    module_type: SelectStepPointsByTime
 	    input: "detectorFilter:calorimeter"
+	    outInstanceName: "calorimeter"
 	    cutTimeMin: 200
 	}
 
         caloROHits: {
 	    module_type: SelectStepPointsByTime
 	    input: "detectorFilter:calorimeterRO"
+	    outInstanceName: "calorimeterRO"
 	    cutTimeMin: 200
 	}
 
@@ -48,7 +51,7 @@ physics : {
     filters: {
         detectorFilter: {
             module_type: FilterG4Out
-            mainHitInputs: [ "trackerHits", "caloHits", "caloROHits"]
+            mainHitInputs: [ "trackerHits:tracker", "caloHits:calorimeter", "caloROHits:calorimeterRO"]
             extraHitInputs: [ "detectorFilter:virtualdetector" ]
             numSimParticleCollections: 1
             vetoDaughters: []
