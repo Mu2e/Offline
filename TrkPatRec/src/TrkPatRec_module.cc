@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.68 2014/03/08 00:57:19 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.69 2014/03/16 15:13:35 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/08 00:57:19 $
+// $Date: 2014/03/16 15:13:35 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -58,6 +58,7 @@
 #include "TSpectrum2.h"
 #include "TSpectrum3.h"
 #include "TMVA/Reader.h"
+#include "TMarker.h"
 // boost
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -794,18 +795,20 @@ namespace mu2e
 
   void TrkPatRec::fillTimeDiag() {
     art::ServiceHandle<art::TFileService> tfs;
-    TH1F *ctsp, *rtsp, *ttsp, *ltsp, *tdtsp;
+    TH1F *ctsp, *rtsp, *ttsp, *ltsp, *tdtsp, *ptsp;
 
     char rsname[100];
     char csname[100];
     char tsname[100];
     char lsname[100];
     char tdsname[100];
+    char tpsname[100];
     snprintf(rsname,100,"rawtspectrum%i",_iev);
     snprintf(csname,100,"convtspectrum%i",_iev);
     snprintf(tsname,100,"tighttspectrum%i",_iev);
     snprintf(lsname,100,"loosetspectrum%i",_iev);
     snprintf(tdsname,100,"tightnodeltatspectrum%i",_iev);
+    snprintf(tpsname,100,"protontspectrum%i",_iev);
     ttsp = tfs->make<TH1F>(tsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
     ttsp->SetLineColor(kCyan);
     ltsp = tfs->make<TH1F>(lsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
@@ -814,6 +817,10 @@ namespace mu2e
     rtsp->SetLineColor(kBlue);
     ctsp = tfs->make<TH1F>(csname,"time spectrum;nsec",_nbins,_tmin,_tmax);
     ctsp->SetLineColor(kRed);
+    ctsp->SetFillColor(kRed);
+    ptsp = tfs->make<TH1F>(tpsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
+    ptsp->SetLineColor(kBlack);
+    ptsp->SetFillColor(kBlack);
     tdtsp = tfs->make<TH1F>(tdsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
     tdtsp->SetLineColor(kOrange);
 
@@ -821,10 +828,12 @@ namespace mu2e
     for(unsigned istr=0; istr<nstrs;++istr){
       double time = _shcol->at(istr).time();
       bool conversion(false);
+      bool proton(false);
       // summarize the MC truth for this strawhit
       if(_kfitmc.mcData()._mcsteps != 0) {
 	const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
 	conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
+	proton = mcsum[0]._pdgid==2212;
       }
       // fill plots
       rtsp->Fill(time);
@@ -836,17 +845,20 @@ namespace mu2e
       }
       if(_flags->at(istr).hasAllProperties(_ksel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
 	ltsp->Fill(time);
-      }
-      if(conversion){
-	ctsp->Fill(time);
+	if(conversion)
+	  ctsp->Fill(time);
+	if(proton)
+	  ptsp->Fill(time);
       }
     }
-    // find peaks, so they show up on diagnostic plot too
-    TSpectrum tspec(_maxnpeak);
-    Double_t mb = tdtsp->GetMaximum();
-    double thresh(0.1);
-    if(mb > _1dthresh) thresh = _1dthresh/mb;
-    tspec.Search(tdtsp,1,_dtspecpar.c_str(),thresh);
+    // plot time peaks
+    TList* flist = tdtsp->GetListOfFunctions();
+    for(auto ipeak=_tpeaks.begin();ipeak!=_tpeaks.end();++ipeak){
+      TMarker* smark = new TMarker(ipeak->_tpeak,ipeak->_peakmax,23);
+      smark->SetMarkerColor(kRed);
+      smark->SetMarkerSize(1.5);
+      flist->Add(smark);
+    }
   }
 
   void TrkPatRec::fillFitDiag(int ipeak,HelixFitResult const& helixfit,

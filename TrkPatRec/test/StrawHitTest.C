@@ -5,6 +5,7 @@
 #include "TH2F.h"
 #include "TLegend.h"
 #include "TCanvas.h"
+#include "THStack.h"
 #include "TLine.h"
 #include "TStyle.h"
 #include <iostream>
@@ -15,6 +16,7 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
   TString spage(page);
   gStyle->SetOptStat(0);
   TCut conv("mcpdg==11&&mcgen==2");
+  TCut oele("abs(mcpdg)==11&&mcgen!=2");
   TCut dio("mcpdg==11&&mcgen==6");
   TCut delta("mcpdg==11&&mcgen<0&&mcproc==17");
   TCut pconv("mcpdg==11&&mcgen<0&&mcproc==11");
@@ -26,6 +28,7 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
   TCut bkgo("abs(mcpdg)!=11&&mcpdg!=2212");
   TCut xtalk("xtalk");
   TCut direct("!xtalk");
+  TCut opart=!(conv||oele||proton);
 
   TCut goodevt("mcmom>100&&mctd<1&&mctd>0.577");
   TCut goodpeak("abs(tpeak-mct0-25)<30");
@@ -93,6 +96,50 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
 
     scan->cd(4);
     hits->Draw("edep:mcedep>>eve","","",10000);
+
+  } else if(spage =="tcan"){
+    THStack* tstack = new THStack("tc","Reco Hit Time by source;Hit Time (ns);Hits/event/ns");
+    TH1F* ctime = new TH1F("ctime","Conversion Reco Hit Time",150,250,1750);
+    TH1F* ptime = new TH1F("ptime","Proton Reco Hit Time",150,250,1750);
+    TH1F* etime = new TH1F("etime","Electron Reco Hit Time",150,250,1750);
+    TH1F* otime = new TH1F("otime","Other Reco Hit Time",150,250,1750);
+    ctime->SetFillColor(kRed);
+    ptime->SetFillColor(kBlack);
+    etime->SetFillColor(kBlue);
+    otime->SetFillColor(kGreen);
+
+    hits->Project("otime","time",opart);
+    otime->Scale(1e-4);
+    tstack->Add(otime);
+    hits->Project("ctime","time",conv);
+    ctime->Scale(1e-4);
+    tstack->Add(ctime);
+    hits->Project("ptime","time",proton);
+    ptime->Scale(1e-4);
+    tstack->Add(ptime);
+    hits->Project("etime","time",oele);
+    etime->Scale(1e-4);
+    tstack->Add(etime);
+    
+    cout << "other integral = " << otime->Integral() 
+    << "CE inegral = " << ctime->Integral()
+    << "P inegral = " << ptime->Integral()
+    << "e inegral = " << etime->Integral() << endl;
+
+    TLegend* tleg = new TLegend(.6,.7,.9,.9);
+    char title[50];
+    snprintf(title,50,"CE, #int=%4.0f",ctime->Integral()*10.0);
+    tleg->AddEntry(ctime,title,"F");
+    snprintf(title,50,"Proton, #int=%4.0f",ptime->Integral()*10.0);
+    tleg->AddEntry(ptime,title,"F");
+    snprintf(title,50,"Other e^{-}, #int=%4.0f",etime->Integral()*10.0);
+    tleg->AddEntry(etime,title,"F");
+    snprintf(title,50,"Other Particles, #int=%4.0f",otime->Integral()*10.0);
+    tleg->AddEntry(otime,title,"F");
+
+    TCanvas* tcan = new TCanvas("tcan","tcan",800,800);
+    tstack->Draw();
+    tleg->Draw();
 
   } else if(spage == "bcan"){
 
