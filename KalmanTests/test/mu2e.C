@@ -155,7 +155,7 @@ class mu2e {
     TF1* _cball;
     TF1* _racc;
     TF1* _reco_f;
-    TF1* _flat_f[4];
+//    TF1* _flat_f[4];
     TH1F* _diospec[4];
     TH1F* _conspec[4];
     TH1D* _recodio;
@@ -185,8 +185,8 @@ void mu2e::init(){
     dioscale = dioint*ndecay/ndio;
   }
   cout << "DIO scale factor = " << dioscale << endl;
-  flat = rpc+ap+cmu;
-  cout << "Flat rate = " << flat << " counts/MeV/c" << endl;
+//  flat = rpc+ap+cmu;
+//  cout << "Flat rate = " << flat << " counts/MeV/c" << endl;
   // basic cuts
   char ctext[80];
   snprintf(ctext,80,"td>%f&&td<%f",tdlow,tdhigh);
@@ -231,8 +231,8 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
     snprintf(dioname,50,"diospec%i",icut);
     char conname[50];
     snprintf(conname,50,"conspec%i",icut);
-    char flatname[50];
-    snprintf(flatname,50,"flat_f%i",icut);
+//    char flatname[50];
+//    snprintf(flatname,50,"flat_f%i",icut);
 
     char dtitle[100];
     snprintf(dtitle,100,"Reconstructed e^{-} Momentum;p (MeV/c);N Events/%2.2f MeV/c",mevperbin);
@@ -254,24 +254,24 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
     con->Project(conname,"fitmom",final[icut]);
     _conspec[icut]->Scale(conscale);
     
-    _flat_f[icut] = new TF1(flatname,"[0]",_mmin,_mmax);
-    _flat_f[icut]->SetLineColor(kGreen);
-    double acc(1.0);
-    if(icut>0)acc = _conspec[icut]->Integral()/_conspec[0]->Integral();
-    _flat_f[icut]->SetParameter(0,flat*mevperbin*acc);
+//    _flat_f[icut] = new TF1(flatname,"[0]",_mmin,_mmax);
+//    _flat_f[icut]->SetLineColor(kGreen);
+//    double acc(1.0);
+//    if(icut>0)acc = _conspec[icut]->Integral()/_conspec[0]->Integral();
+//    _flat_f[icut]->SetParameter(0,flat*mevperbin*acc);
   }
 
   _leg = new TLegend(0.6,0.7,0.9,0.9);
   _leg->AddEntry(_diospec[0],"DIO","L");
   _leg->AddEntry(_conspec[0],"Conversion","L");
-  _leg->AddEntry(_flat_f[0],"RPC+AP+cosmic","L");
+//  _leg->AddEntry(_flat_f[0],"RPC+AP+cosmic","L");
 
   _info = new TPaveText(0.4,0.8,0.7,0.9,"NDC");
   char text[80];
-  snprintf(text,80,"%g stopped #mu^{-}",nstopped);
+  snprintf(text,80,"%5.2e stopped #mu^{-}",nstopped);
   TString snstop(text);
   _info->AddText(snstop);
-  snprintf(text,80,"%g Conversion Rate",rmue);
+  snprintf(text,80,"%e Conversion Rate",rmue);
   TString srmue(text);
   _info->AddText(srmue);
   _info->SetBorderSize(0);
@@ -300,7 +300,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     }
     _diospec[icut]->Draw();
     _conspec[icut]->Draw("same");
-    _flat_f[icut]->Draw("same");
+//    _flat_f[icut]->Draw("same");
     
     int istart = _diospec[icut]->FindFixBin(momlow+0.5*mevperbin);
     int istop = _diospec[icut]->FindFixBin(momhigh-0.5*mevperbin);
@@ -309,12 +309,12 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     double dint_err, cint_err;
     double dint = _diospec[icut]->IntegralAndError(istart,istop,dint_err);
     double cint = _conspec[icut]->IntegralAndError(istart,istop,cint_err);
-    double fint = _flat_f[icut]->Integral(momlow,momhigh)/mevperbin;
+//    double fint = _flat_f[icut]->Integral(momlow,momhigh)/mevperbin;
 
-    TPaveText* inttext = new TPaveText(0.15,0.4,0.45,0.9,"NDC");
+    TPaveText* inttext = new TPaveText(0.1,0.5,0.35,0.9,"NDC");
     char itext[50];
   
-    snprintf(itext,50,"%3.2g stopped #mu^{-}",nstopped);
+    snprintf(itext,50,"%5.2e stopped #mu^{-}",nstopped);
     TText* l = inttext->AddText(itext);
 
     snprintf(itext,50,"R_{#mue} = %2.2g",rmue);
@@ -323,13 +323,13 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
 //    inttext->AddLine();
 //    snprintf(itext,50,"%4.2f MeV/c < P < %4.2f MeV/c",momlow,momhigh);
 //    inttext->AddText(itext);
-    snprintf(itext,50,"#int Conversion = %3.2f #pm %2.2f",cint,cint_err);
+    snprintf(itext,50,"#int CE = %3.2f #pm %2.2f",cint,cint_err);
     l = inttext->AddText(itext);
     l->SetTextColor(kRed);
 
     double ses = rmue/cint;
     double ses_err = rmue*cint_err/cint;
-    snprintf(itext,50,"Conversion SES= %3.2g #pm %2.2g",ses,ses_err);
+    snprintf(itext,50,"CE SES= %4.2e #pm %2.0e",ses,ses_err);
     l = inttext->AddText(itext);
     l->SetTextColor(kRed);
 
@@ -337,10 +337,10 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
 
     snprintf(itext,50,"#int DIO = %3.2f #pm %2.2f",dint,dint_err);
     l = inttext->AddText(itext);
+//    l->SetTextColor(kBlue);
+//    snprintf(itext,50,"#int RPC+AP+Cosmic = %2.2f",fint);
+//    l = inttext->AddText(itext);
     l->SetTextColor(kBlue);
-    snprintf(itext,50,"#int RPC+AP+Cosmic = %2.2f",fint);
-    l = inttext->AddText(itext);
-    l->SetTextColor(kGreen);
     inttext->Draw();
 
     TPaveText* cuttext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");  
@@ -529,8 +529,8 @@ void mu2e::Read(const char* savename) {
     snprintf(dioname,50,"diospec%i",icut);
     char conname[50];
     snprintf(conname,50,"conspec%i",icut);
-    char flatname[50];
-    snprintf(flatname,50,"flat_f%i",icut);
+//    char flatname[50];
+//    snprintf(flatname,50,"flat_f%i",icut);
     TH1F* diospec= dynamic_cast<TH1F*>(savefile->Get(dioname));
     TH1F* conspec = dynamic_cast<TH1F*>(savefile->Get(conname));
     if(diospec == 0 || conspec == 0){
@@ -547,17 +547,17 @@ void mu2e::Read(const char* savename) {
       mevperbin = (_mmax-_mmin)/_nbins;
     }
 
-    _flat_f[icut] = new TF1(flatname,"[0]",_mmin,_mmax);
-    _flat_f[icut]->SetLineColor(kGreen);
+//    _flat_f[icut] = new TF1(flatname,"[0]",_mmin,_mmax);
+ //   _flat_f[icut]->SetLineColor(kGreen);
     double acc(1.0);
-    if(icut>0)acc = _conspec[icut]->Integral()/_conspec[0]->Integral();
-    _flat_f[icut]->SetParameter(0,flat*mevperbin*acc);
+//    if(icut>0)acc = _conspec[icut]->Integral()/_conspec[0]->Integral();
+//    _flat_f[icut]->SetParameter(0,flat*mevperbin*acc);
   }
 
   _leg = new TLegend(0.7,0.8,0.9,0.9);
   _leg->AddEntry(_diospec[0],"DIO","L");
   _leg->AddEntry(_conspec[0],"Conversion","L");
-  _leg->AddEntry(_flat_f[0],"RPC+AP+cosmic","L");
+//  _leg->AddEntry(_flat_f[0],"RPC+AP+cosmic","L");
 
 //  savefile.Close();
 }
@@ -605,8 +605,8 @@ void mu2e::fitReco(unsigned icut) {
   _cball->SetParameters(integral,_momres->GetMean()+0.07,0.3*_momres->GetRMS(),3.0,1.0,0.001,0.2);
 //  _cball->SetParLimits(5,0.00001,0.01);
 //  _cball->SetParLimits(6,0.1,_momres->GetRMS());
-  _cball->FixParameter(5,0.0);
-  _cball->FixParameter(6,0.1);
+//  _cball->FixParameter(5,0.0);
+//  _cball->FixParameter(6,0.1);
   _momres->Fit(_cball,"0");
   _momres->Fit(_cball,"L0");
   _momres->Fit(_cball,"L");
@@ -812,8 +812,10 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
 
   double conmean = _conspec[ispec]->Integral()*cprob/rmue;
   double diomean = _diospec[ispec]->Integral();
-  double flatmean = _flat_f[ispec]->Integral(_mmin,_mmax)/mevperbin;
-  cout << "conv mean = " << conmean << " dio mean = " << diomean << " flat mean = " << flatmean << endl;
+//  double flatmean = _flat_f[ispec]->Integral(_mmin,_mmax)/mevperbin;
+  cout << "conv mean = " << conmean << " dio mean = " << diomean 
+//  << " flat mean = " << flatmean i
+  << endl;
 
   int istart = _diospec[ispec]->FindFixBin(momlow+0.5*mevperbin);
   int istop = _diospec[ispec]->FindFixBin(momhigh-0.5*mevperbin);
@@ -830,7 +832,7 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
   unsigned ipave=1;
   char dioname[50];
   char conname[50];
-  char flatname[50];
+  //char flatname[50];
   TLegend* leg(0);
 // fit each experiment DIO spectrum OUTSIDE THE SIGNAL BOX
   TF1* dioexp_f = new TF1("dioexp_f",RECOFITDIO,_mmin,momlow-1.0,7);
@@ -873,16 +875,16 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
     dioexp_h->SetMinimum(1e-1);
     dioexp_h->SetMaximum(2.0*dioexp_f->Eval(_mmin));
 
-    snprintf(flatname,50,"flatexp%i",iexp);
-    TH1F* flatexp_h = new TH1F(flatname,etitle,_nbins,_mmin,_mmax);
-    flatexp_h->SetStats(0);
-    flatexp_h->SetLineColor(kGreen);
-    flatexp_h->SetMarkerStyle(7);
-    flatexp_h->SetMarkerColor(kGreen);
+//    snprintf(flatname,50,"flatexp%i",iexp);
+//    TH1F* flatexp_h = new TH1F(flatname,etitle,_nbins,_mmin,_mmax);
+//    flatexp_h->SetStats(0);
+//    flatexp_h->SetLineColor(kGreen);
+//    flatexp_h->SetMarkerStyle(7);
+//    flatexp_h->SetMarkerColor(kGreen);
     
     unsigned nconexp = gRandom->Poisson(conmean);
     unsigned ndioexp = gRandom->Poisson(diomean);
-    unsigned nflatexp = gRandom->Poisson(flatmean);
+//    unsigned nflatexp = gRandom->Poisson(flatmean);
 
     for(unsigned idio=0;idio<ndioexp;++idio){
       dioexp_h->Fill(_diospec[ispec]->GetRandom());
@@ -890,9 +892,9 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
     for(unsigned icon=0;icon<nconexp;++icon){
       conexp_h->Fill(_conspec[ispec]->GetRandom());
     }
-    for(unsigned iflat=0;iflat<nflatexp;++iflat){
-      flatexp_h->Fill(_flat_f[ispec]->GetRandom());
-    }
+//    for(unsigned iflat=0;iflat<nflatexp;++iflat){
+//      flatexp_h->Fill(_flat_f[ispec]->GetRandom());
+//    }
     
     dioexp_h->Fit("dioexp_f","qLR0","P");
     TF1* ff = dioexp_h->GetFunction("dioexp_f");
@@ -908,7 +910,7 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
       gPad->SetLogy();
       dioexp_h->Draw("H");
       ff->Draw("same");
-      flatexp_h->Draw("sameP");
+//      flatexp_h->Draw("sameP");
       conexp_h->Draw("sameP");
       momlowl->Draw();
       momhighl->Draw();
@@ -916,8 +918,9 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
 
     double dint = dioexp_h->Integral(istart,istop);
     double cint = conexp_h->Integral(istart,istop);
-    double fint = flatexp_h->Integral(istart,istop);
-    double tint = dint+cint+fint;
+//    double fint = flatexp_h->Integral(istart,istop);
+//    double tint = dint+cint+fint;
+    double tint = dint+cint;
     double bkgprob = TMath::PoissonI(tint,avgbkg);
     if(bkgprob < plevel)++npass;
 
@@ -926,7 +929,7 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
     double dfint = ff->Integral(momlow,momhigh)/mevperbin;
     double dfint_err = ff->IntegralError(momlow,momhigh)/mevperbin;
     ndio_h->Fill(dint);
-    nobk_h->Fill(fint);
+//    nobk_h->Fill(fint);
     ncon_h->Fill(cint);
     diofscale->Fill(scale);
     diofshift->Fill(shift);
@@ -940,10 +943,10 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
 
       TPaveText* inttext = new TPaveText(0.6,0.5,0.9,0.9,"NDC");
       char text[80];
-      snprintf(text,80,"%g stopped muons",nstopped);
+      snprintf(text,80,"%5.2e stopped muons",nstopped);
       TString snstop(text);
       inttext->AddText(snstop);
-      snprintf(text,80,"R_{#mu e} = %g",cprob);
+      snprintf(text,80,"R_{#mu e} = %e",cprob);
       TString srmue(text);
       inttext->AddText(srmue);
       inttext->SetBorderSize(1);
@@ -952,8 +955,8 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
       inttext->AddText(itext);
       snprintf(itext,50,"N DIO = %2.0f",dint);
       inttext->AddText(itext);
-      snprintf(itext,50,"N RPC+AP+Cosmic = %2.0f",fint);
-      inttext->AddText(itext);
+//      snprintf(itext,50,"N RPC+AP+Cosmic = %2.0f",fint);
+//      inttext->AddText(itext);
       snprintf(itext,50,"N Conversion = %2.0f",cint);
       inttext->AddText(itext);
 //      snprintf(itext,50,"DIO Fit Shift = %3.3f #pm %3.3f",ff->GetParameter(5),ff->GetParError(5));
@@ -968,7 +971,7 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
 	leg = new TLegend(0.15,0.7,0.6,0.9);
 	leg->AddEntry(dioexp_h,"DIO","L");
 	leg->AddEntry(conexp_h,"Conversions","P");
-	leg->AddEntry(flatexp_h,"RPC+AP+Cosmics","P");
+//	leg->AddEntry(flatexp_h,"RPC+AP+Cosmics","P");
       }
       leg->Draw();
       ipave++;
@@ -981,7 +984,7 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
     } else {
       delete conexp_h;
       delete dioexp_h;
-      delete flatexp_h;
+//      delete flatexp_h;
     }
   }
   TCanvas* expcan1 = new TCanvas("expcan1","Toy Experiments",800,800);

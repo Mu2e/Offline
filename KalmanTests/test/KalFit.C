@@ -16,14 +16,14 @@
 
 double tdlow(0.57735027);
 double tdhigh(1.0);
-double t0min(720);
+double t0min(710);
 double momlow(103.35);
 double momhigh(104.75);
 int minnhits(20);
 size_t icut=2;
 unsigned minnactive[4] = {20,22,25,30};
 double maxt0err[4] = {1.5,0.95,0.9,0.8};
-double maxmomerr[4] = {0.3,0.328,0.25,0.22};
+double maxmomerr[4] = {0.3,0.28,0.25,0.22};
 double minfitcon[4] = {1e-6,1e-3,2e-3,1e-2};
 
 TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
@@ -36,11 +36,11 @@ void KalCuts() {
     char cutstring[100];
     snprintf(cutstring,100,"nactive>=%i",minnactive[ic]);
     ncuts[ic] = TCut(cutstring);
-    snprintf(cutstring,100,"t0err<%f",maxt0err[ic]);
+    snprintf(cutstring,100,"t0err<%3.2f",maxt0err[ic]);
     t0cuts[ic] = TCut(cutstring);
-    snprintf(cutstring,100,"fitmomerr<%f",maxmomerr[ic]);
+    snprintf(cutstring,100,"fitmomerr<%4.3f",maxmomerr[ic]);
     momcuts[ic] = TCut(cutstring);
-    snprintf(cutstring,100,"fitcon>%f",minfitcon[ic]);
+    snprintf(cutstring,100,"fitcon>%5.4f",minfitcon[ic]);
     fitcuts[ic] = TCut(cutstring);
   }
   char ctext[80];
@@ -535,7 +535,7 @@ void KalFitAcc(TTree* trks) {
   acc->GetYaxis()->SetTitleSize(0.05);
   racc->GetYaxis()->SetTitleSize(0.05);
 
-  gStyle->SetPaintTextFormat("5.3f");
+  gStyle->SetPaintTextFormat("5.4f");
   TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
   acan->Clear();
   acan->Divide(1,2);
@@ -583,7 +583,7 @@ void KalFitRes(TTree* trks,int mincut=0,int maxcut=3) {
   TH1F* momres[4];
   TF1*  fitmomres[4];
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
-  trks->Project("effnorm","mcentmom",mcsel);
+  trks->Project("effnorm","mcentmom",mcsel+livegate);
  
   TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
   rcan->Clear();
@@ -605,8 +605,8 @@ void KalFitRes(TTree* trks,int mincut=0,int maxcut=3) {
     snprintf(fitname,50,"fitmomres%i",ires);
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",251,-4,4);
 //  momres[ires]->SetStats(0);
-    TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
-    TCut final = reco+quality+mcsel;
+    TCut quality = ncuts[ires]+t0cuts[ires]+momcuts[ires]+fitcuts[ires];
+    TCut final = reco+quality+rpitch+cosmic+livegate;
     trks->Project(mname,"fitmom-mcentmom",final);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
     cout << "Integral = " << integral << " mean = " << momres[ires]->GetMean() << " rms = " << momres[ires]->GetRMS() << endl;
@@ -627,20 +627,20 @@ void KalFitRes(TTree* trks,int mincut=0,int maxcut=3) {
   
     double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
 
-    TPaveText* ttext = new TPaveText(0.1,0.75,0.4,0.9,"NDC");  
-    ttext->AddText("Truth Cuts");
-    ttext->AddText(nmch.GetTitle());
-    ttext->AddText(tmom.GetTitle());
-    ttext->AddText(tpitch.GetTitle());
-    ttext->Draw();
+//    TPaveText* ttext = new TPaveText(0.1,0.75,0.4,0.9,"NDC");  
+//    ttext->AddText("Truth Cuts");
+//    ttext->AddText(nmch.GetTitle());
+//    ttext->AddText(tmom.GetTitle());
+//    ttext->AddText(tpitch.GetTitle());
+//    ttext->Draw();
  
-    TPaveText* rtext = new TPaveText(0.1,0.4,0.4,0.75,"NDC");
+    TPaveText* rtext = new TPaveText(0.1,0.5,0.4,0.9,"NDC");
     rtext->AddText("Reco Cuts");
     char line[40];
     snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
     rtext->AddText(line);
-//    snprintf(line,80,"t0>%5.1f nsec",t0min);
-//    rtext->AddText(line);
+    snprintf(line,80,"t0>%5.1f nsec",t0min);
+    rtext->AddText(line);
     sprintf(line,"%s",ncuts[ires].GetTitle());
     rtext->AddText(line);
     sprintf(line,"%s",t0cuts[ires].GetTitle());
