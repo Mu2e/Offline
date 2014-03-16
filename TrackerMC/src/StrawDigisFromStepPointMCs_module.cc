@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.28 2014/03/11 16:18:01 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.29 2014/03/16 15:12:03 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/11 16:18:01 $
+// $Date: 2014/03/16 15:12:03 $
 //
 // Original author David Brown, LBNL
 //
@@ -195,7 +195,7 @@ namespace mu2e {
     _preampxtalk(pset.get<double>("preAmplificationCrossTalk",0.0)),
     _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
-    _minsteplen(pset.get<double>("MinimumIonClusterStep",0.25)), // mm
+    _minsteplen(pset.get<double>("MinimumIonClusterStep",0.2)), // mm
     _steptimebuf(pset.get<double>("StepPointMCTimeBuffer",100.0)), // nsec
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _diagpath(static_cast<StrawElectronics::path>(pset.get<int>("WaveformDiagPath",StrawElectronics::thresh))),
