@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.12 2014/03/11 16:18:01 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.13 2014/03/16 15:13:12 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/11 16:18:01 $
+// $Date: 2014/03/16 15:13:12 $
 //
 // Original author David Brown, LBNL
 //
@@ -18,15 +18,15 @@ using namespace std;
 namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI{pset.get<double>("thresholddVdI",0.3),
-      pset.get<double>("adcdVdI",500.0) }, // mVolt/uAmps (transimpedance gain)
+    _dVdI{pset.get<double>("thresholddVdI",0.12),
+      pset.get<double>("adcdVdI",160.0) }, // mVolt/uAmps (transimpedance gain)
     _tau{pset.get<double>("thresholdFallTime",25.0),  // nsec
       pset.get<double>("adcShapingTime",25.0) }, // nsec
     _tdead(pset.get<double>("DeadTime",60.0)), // nsec dead after threshold crossing (electronics processing time)
     _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mVolt
     _vsat(pset.get<double>("SaturationVoltage",800.0)), // mVolt
     _disp(pset.get<double>("Dispersion",1.0e-4)), // 0.1 ps/mm
-    _vthresh(pset.get<double>("DiscriminatorThreshold",20.0)), //mVolt, post amplification
+    _vthresh(pset.get<double>("DiscriminatorThreshold",30.0)), //mVolt, post amplification
     _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",3.0)), //mVolt
     _ADCLSB(pset.get<double>("ADCLSB",0.25)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
