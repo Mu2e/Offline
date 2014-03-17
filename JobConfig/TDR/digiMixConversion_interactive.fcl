@@ -16,7 +16,7 @@
 
 #include "JobConfig/TDR/digiMixConversion.fcl"
 
-physics.producers.generate.muonStops.inputFiles: [ "mergedMuonStops/mustops.1009a_1025a_1316a.14278088.root" ]
+physics.producers.generate.muonStops.inputFiles: [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
 
 // Initialze seeding of random engines
 services.user.SeedService.baseSeed         :  0
