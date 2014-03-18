@@ -32,8 +32,6 @@
 
 namespace mu2e {
 
-  class Mu2eCoordinates {};
-
   //================================================================
   double getCharge(PDGCode::type pdgId) {
     // unlike generic conditions, MC particle data
@@ -104,8 +102,7 @@ namespace mu2e {
     {}
 
     //----------------------------------------------------------------
-    // Constructor using mu2e coords
-    VDHit(const Mu2eCoordinates& , const SimParticleTimeOffset& toff, const StepPointMC& hit)
+    VDHit(const SimParticleTimeOffset& toff, const StepPointMC& hit)
       : x(hit.position().x())
       , y(hit.position().y())
       , z(hit.position().z())
@@ -164,7 +161,7 @@ namespace mu2e {
     toff_.updateMap(event);
     const auto& ih = event.getValidHandle<StepPointMCCollection>(hitsInputTag_);
     for(const auto& i : *ih) {
-      hit_ = VDHit(Mu2eCoordinates(), toff_, i);
+      hit_ = VDHit(toff_, i);
       nt_->Fill();
     }
 
