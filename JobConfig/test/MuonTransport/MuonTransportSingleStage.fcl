@@ -57,6 +57,7 @@ physics : {
         vdDumper : {
             module_type: StepPointMCDumper
             hitsInputTag: "g4run:virtualdetector"
+	    TimeOffsets: {}
         }
     }
 

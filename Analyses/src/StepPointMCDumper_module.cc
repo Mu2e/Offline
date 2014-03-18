@@ -28,6 +28,7 @@
 
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 namespace mu2e {
 
@@ -104,12 +105,12 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     // Constructor using mu2e coords
-    VDHit(const Mu2eCoordinates& , const StepPointMC& hit)
+    VDHit(const Mu2eCoordinates& , const SimParticleTimeOffset& toff, const StepPointMC& hit)
       : x(hit.position().x())
       , y(hit.position().y())
       , z(hit.position().z())
 
-      , time(hit.time())
+      , time(toff.timeWithOffsetsApplied(hit))
 
       , px(hit.momentum().x())
       , py(hit.momentum().y())
@@ -130,6 +131,7 @@ namespace mu2e {
   //================================================================
   class StepPointMCDumper : public art::EDAnalyzer {
     art::InputTag hitsInputTag_;
+    SimParticleTimeOffset toff_;
 
     // Members needed to write the ntuple
     TTree *nt_;
@@ -145,6 +147,7 @@ namespace mu2e {
   StepPointMCDumper::StepPointMCDumper(const fhicl::ParameterSet& pset)
     : art::EDAnalyzer(pset)
     , hitsInputTag_(pset.get<std::string>("hitsInputTag"))
+    , toff_(pset.get<fhicl::ParameterSet>("TimeOffsets"))
     , nt_(0)
   {}
 
@@ -158,9 +161,10 @@ namespace mu2e {
 
   //================================================================
   void StepPointMCDumper::analyze(const art::Event& event) {
+    toff_.updateMap(event);
     const auto& ih = event.getValidHandle<StepPointMCCollection>(hitsInputTag_);
     for(const auto& i : *ih) {
-      hit_ = VDHit(Mu2eCoordinates(), i);
+      hit_ = VDHit(Mu2eCoordinates(), toff_, i);
       nt_->Fill();
     }
 
