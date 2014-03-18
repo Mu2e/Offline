@@ -42,6 +42,10 @@ namespace mu2e {
     std::string pulseType_;
     int  verbosityLevel_;
 
+    typedef std::set<GenId::enum_type> GenIdSet;
+    GenIdSet ignoredGenIds_;
+    GenIdSet applyToGenIds_;
+
     std::unique_ptr<ProtonPulseRandPDF>  protonPulse_;
 
   };
@@ -50,9 +54,41 @@ namespace mu2e {
   GenerateProtonTimes::GenerateProtonTimes(fhicl::ParameterSet const& pset)
     : engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()) )
     , pulseType_(pset.get<std::string>("pulseType","default") )
-    , verbosityLevel_(pset.get<int>("verbosityLevel", 0)) 
+    , verbosityLevel_(pset.get<int>("verbosityLevel", 1)) 
   {
     produces<SimParticleTimeMap>();
+
+    typedef std::vector<std::string> VS;
+
+    std::ostringstream osIgnored;
+
+    const auto ig(pset.get<VS>("ignoredGenIds", VS{"cosmicToy", "cosmicDYB", "cosmic"}));
+    for(const auto i: ig) {
+      ignoredGenIds_.insert(GenId::findByName(i).id());
+      osIgnored<<i<<", ";
+    }
+
+    std::ostringstream osApplied;
+    const auto ia(pset.get<VS>("applyToGenIds", VS()));
+    for(const auto i: ia) {
+      applyToGenIds_.insert(GenId::findByName(i).id());
+      osApplied<<i<<", ";
+    }
+
+    if(!applyToGenIds_.empty() && !ignoredGenIds_.empty()) {
+      throw cet::exception("BADCONFIG")
+        <<"If applyToGenIds is set, ignoredGenIds should be empty.  Got: applyToGenIds = [ "
+        <<osApplied.str()<<" ], ignoredGenIds = [ "<<osIgnored.str()<<"]\n";
+    }
+
+    if(verbosityLevel_ > 0) {
+      if(applyToGenIds_.empty()) {
+        mf::LogInfo("Info")<<"pulseType = "<<pulseType_<<", ignoring genIds [ "<<osIgnored.str()<<" ]\n";
+      }
+      else {
+        mf::LogInfo("Info")<<"pulseType = "<<pulseType_<<", applying to genIds [ "<<osApplied.str()<<" ]\n";
+      }
+    }
   }
 
   //================================================================
@@ -72,12 +108,15 @@ namespace mu2e {
       for(const auto& iter : *ih) {
         if(iter.second.isPrimary()) {
           art::Ptr<SimParticle> part(ih, iter.first.asUint());
-          if(!part->genParticle()->generatorId().isCosmic()) {
-            (*res)[part] = protonPulse_->fire();
-          }
-          else {
-            (*res)[part] = 0;
-          }
+          const auto genId = part->genParticle()->generatorId();
+
+          const bool apply= applyToGenIds_.empty() ?
+            // do all particles, except the explicitly vetoed ones
+            (ignoredGenIds_.find(genId.id()) == ignoredGenIds_.end())
+            // do just explicitly listed GenIds
+            : (applyToGenIds_.find(genId.id()) != applyToGenIds_.end());
+
+          (*res)[part] = apply ? protonPulse_->fire() : 0.;
         }
       }
     }
