@@ -25,6 +25,9 @@ physics: {
     }
 
     analyzers: {
+        genCountLogger: {
+            module_type: GenEventCountReader
+        }
         trackerFlash: {
             module_type: StepPointMCDumper
             hitsInputTag: "flashMixer:tracker"
@@ -60,7 +63,7 @@ physics: {
   p1 : [protonTimeMap, muonTimeMap]
   trigger_paths: [p1]
 
-  e1 : [ trackerFlash, trackerOOT, trackerDIO, trackerNeutron, trackerPhoton, trackerProton]
+  e1 : [ genCountLogger,trackerFlash, trackerOOT, trackerDIO, trackerNeutron, trackerPhoton, trackerProton]
   end_paths      : [e1]
 }
 
