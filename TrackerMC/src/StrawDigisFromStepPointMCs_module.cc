@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.29 2014/03/16 15:12:03 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.30 2014/03/19 14:00:42 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/16 15:12:03 $
+// $Date: 2014/03/19 14:00:42 $
 //
 // Original author David Brown, LBNL
 //
@@ -101,7 +101,7 @@ namespace mu2e {
     // Diagnostics level.
     int _diagLevel, _printLevel;
     unsigned _maxhist;
-    bool _xtalkhist;
+    bool _xtalkhist,_noxhist;
     int _minnxinghist;
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
@@ -187,6 +187,7 @@ namespace mu2e {
     _printLevel(pset.get<int>("printLevel",0)),
     _maxhist(pset.get<unsigned>("MaxHist",100)),
     _xtalkhist(pset.get<bool>("CrossTalkHist",false)),
+    _noxhist(pset.get<bool>("NoCrossingHist",false)),
     _minnxinghist(pset.get<int>("MinNXingHist",0)),
     // Parameters
     _maxFullPrint(pset.get<int>("maxFullPrint",2)),
@@ -702,10 +703,12 @@ namespace mu2e {
     _wfxtalk = !wf.xtalk().self();
     _swdiag->Fill();
     static unsigned nhist(0);
-    ++nhist;
+    bool histhis = _noxhist && _nxing==0;
+    histhis |= _xtalkhist && _wfxtalk;
+    histhis |= (!_xtalkhist) && (!_noxhist);
     if(_diagLevel > 2 && nhist < _maxhist &&
-    _nxing >= _minnxinghist &&
-    ( ((!_xtalkhist) && (!_wfxtalk)) || (_xtalkhist && _wfxtalk)) ) {
+    _nxing >= _minnxinghist && histhis){
+      ++nhist;
       // histogram the waveforms
       const double tstep(0.1); // 0.1 ns
       const double nfall(5.0); // 5 lambda past last fall time
