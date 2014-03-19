@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.30 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
+// $Id: CosmicDYB.cc,v 1.31 2014/03/19 18:47:29 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2014/03/19 18:47:29 $
 //
 // Original author Yury Kolomensky
 //
@@ -116,8 +116,7 @@ namespace mu2e {
 
 
   , _choice(UNDEFINED)
-
-  , _filterDistance(config.getDouble("cosmicDYB.filterDistance",0.) )
+  , _directionChoice(ALL)
 
   {
     mf::LogInfo log("COSMIC");
@@ -135,7 +134,7 @@ namespace mu2e {
     }
 
     //set _choice to desired cosmic ray generator coordinates
-    const std::string refPointChoice = config.getString("cosmicDYB.refPointChoice");
+    const std::string refPointChoice = config.getString("cosmicDYB.refPointChoice", "Customized");
     log << "cosmicDYB.refPointChoice = " << refPointChoice << "\n";
     if (refPointChoice == "Tracker") {
       _choice = TRACKER;
@@ -147,6 +146,17 @@ namespace mu2e {
 
     else if(refPointChoice == "Calorimeter") {
       _choice = CALO;
+    }
+
+    else if(refPointChoice == "Customized") {
+      _choice = CUSTOMIZED;
+      _cosmicReferencePointInMu2e = config.getHep3Vector("cosmicDYB.cosmicReferencePointInMu2e");
+      const std::string directionChoice = config.getString("cosmicDYB.directionChoice");
+      log << "cosmicDYB.directionChoice = " << directionChoice << "\n";
+      if(directionChoice=="ALL") _directionChoice=ALL;
+      else if(directionChoice=="Positive_z") _directionChoice=POSITIVE_Z;
+      else if(directionChoice=="Negative_x") _directionChoice=NEGATIVE_X;
+      else throw cet::exception("Configuration")<<"Unknown cosmicDYB.directionChoice\n";
     }
 
     else {
@@ -223,6 +233,8 @@ namespace mu2e {
     // rate is per cm^2. The constants are 2*CLHEP::pi times the area
     double tRate = dim_sum*M_PI*0.08*_dx*_dz;
     log << "Total cosmic rate = " << tRate << " Hz\n";
+    if(_directionChoice==POSITIVE_Z || _directionChoice==NEGATIVE_X)
+    log << "NOTE: Since only half of the azimuth angles are considered, the rate is only half of the above value.\n";
 
   }  // CosmicDYB()
 
@@ -236,23 +248,24 @@ namespace mu2e {
 
     // here: take different values depending on config
     // e.g. extMonFNAL->detectorCenterInMu2e()
-    CLHEP::Hep3Vector cosmicReferencePointInMu2e;
     switch (_choice){
     case TRACKER:
-      cosmicReferencePointInMu2e =  Hep3Vector(detsys->getOrigin().x(),
+      _cosmicReferencePointInMu2e =  Hep3Vector(detsys->getOrigin().x(),
                                          _y0,
                                          detsys->getOrigin().z());
       break;
     case EXTMONFNAL:
-      cosmicReferencePointInMu2e = Hep3Vector(extMonFNAL->detectorCenterInMu2e().x(),
+      _cosmicReferencePointInMu2e = Hep3Vector(extMonFNAL->detectorCenterInMu2e().x(),
                                               _y0,
                                               extMonFNAL->detectorCenterInMu2e().z());
       break;
     case CALO:
     // distance from tracker to calo center is hardcoded, FIXME!!!!!
-      cosmicReferencePointInMu2e =  Hep3Vector(detsys->getOrigin().x(),
+      _cosmicReferencePointInMu2e =  Hep3Vector(detsys->getOrigin().x(),
                                          _y0,
                                          detsys->getOrigin().z() + 2500.);
+      break;
+    case CUSTOMIZED:
       break;
     default:
       throw cet::exception("Configuration")
@@ -265,7 +278,7 @@ namespace mu2e {
       {
         _checkedProductionPlane=true;
 
-        if(_verbose>0)std::cout<<"CosmicDYB: cosmicReferencePointInMu2e = "<<cosmicReferencePointInMu2e<<std::endl;
+        std::cout<<"cosmicDYB: cosmicReferencePointInMu2e = "<<_cosmicReferencePointInMu2e<<std::endl;
 
         art::ServiceHandle<GeometryService> geom;
 
@@ -275,12 +288,12 @@ namespace mu2e {
           Hep3Vector const& mu2eOrigin = worldGeom->mu2eOriginInWorld();
           std::vector<double> const& halfLengths = worldGeom->halfLengths();
 
-          double marginXMin = halfLengths[0] + (cosmicReferencePointInMu2e.x()-_dx + mu2eOrigin.x());
-          double marginZMin = halfLengths[2] + (cosmicReferencePointInMu2e.z()-_dz + mu2eOrigin.z());
-          double marginXMax = halfLengths[0] - (cosmicReferencePointInMu2e.x()+_dx + mu2eOrigin.x());
-          double marginZMax = halfLengths[2] - (cosmicReferencePointInMu2e.z()+_dz + mu2eOrigin.z());
-          double marginYMin = halfLengths[1] + (cosmicReferencePointInMu2e.y()+env->ymax() + mu2eOrigin.y());
-          double marginYMax = halfLengths[1] - (cosmicReferencePointInMu2e.y()+env->ymax() + mu2eOrigin.y());
+          double marginXMin = halfLengths[0] + (_cosmicReferencePointInMu2e.x()-_dx + mu2eOrigin.x());
+          double marginZMin = halfLengths[2] + (_cosmicReferencePointInMu2e.z()-_dz + mu2eOrigin.z());
+          double marginXMax = halfLengths[0] - (_cosmicReferencePointInMu2e.x()+_dx + mu2eOrigin.x());
+          double marginZMax = halfLengths[2] - (_cosmicReferencePointInMu2e.z()+_dz + mu2eOrigin.z());
+          double marginYMin = halfLengths[1] + (_cosmicReferencePointInMu2e.y()+env->ymax() + mu2eOrigin.y());
+          double marginYMax = halfLengths[1] - (_cosmicReferencePointInMu2e.y()+env->ymax() + mu2eOrigin.y());
 
           if(_verbose>0)std::cout<<std::endl<<"distances from the edges of the cosmic ray production plane to the borders of the world volume:"<<std::endl
                    <<"in negative x direction: "<<marginXMin<<std::endl
@@ -336,12 +349,22 @@ namespace mu2e {
 
       CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), E);
 
+      switch (_directionChoice)
+      {
+        case POSITIVE_Z: 
+             if(mom.z()<0) mom.setZ(-mom.z());
+             break;
+        case NEGATIVE_X: 
+             if(mom.x()>0) mom.setX(-mom.x());
+             break;
+      }
+
       // Position in reference plane
       double x = (1.-2.*_randFlat.fire())*_dx;
       double y = 0.0;
       double z = (1.-2.*_randFlat.fire())*_dz;
       CLHEP::Hep3Vector pos( x, y, z );
-      CLHEP::Hep3Vector refposInMu2eCoordinates=pos + cosmicReferencePointInMu2e;
+      CLHEP::Hep3Vector refposInMu2eCoordinates=pos + _cosmicReferencePointInMu2e;
 
 // move this to a position just above the ground
       double ymax = env->ymax();
@@ -374,7 +397,7 @@ namespace mu2e {
       _cosmicChargeH->Fill(-pid/abs(pid));
 
       // Add the cosmic to  the list.
-      if(filterGeneratedMuons(posInMu2eCoordinates, mom))
+      if(filterGeneratedMuons(posInMu2eCoordinates))
       genParts.push_back( GenParticle( pid, GenId::cosmicDYB, posInMu2eCoordinates, mom, time));
 
     }
@@ -386,7 +409,7 @@ namespace mu2e {
                                              <<"Increase "<<name<<" by at least "<<-margin<<"\n";
   }
 
-  bool CosmicDYB::filterGeneratedMuons(CLHEP::Hep3Vector const &posInMu2eCoordinates, CLHEP::HepLorentzVector const &direction)
+  bool CosmicDYB::filterGeneratedMuons(CLHEP::Hep3Vector const &posInMu2eCoordinates)
   {
 
     art::ServiceHandle<GeometryService> geom;
@@ -403,21 +426,6 @@ namespace mu2e {
 	  halfLengths[2] - fabs(diff.z()) < margin) return false;
     }
 
-
-    if(_filterDistance==0) return true;  //don't apply filter
-
-    CLHEP::Hep3Vector const& detectorSystemOriginInMu2eCoordinates = GeomHandle<DetectorSystem>()->getOrigin();
-    CLHEP::Hep2Vector dir(direction.x(),direction.y());
-    CLHEP::Hep2Vector p(posInMu2eCoordinates.x(),posInMu2eCoordinates.y());
-    CLHEP::Hep2Vector a(detectorSystemOriginInMu2eCoordinates.x(),detectorSystemOriginInMu2eCoordinates.y());
-    CLHEP::Hep2Vector b=a-p;
-    double alpha=b.angle(dir);
-    double b_mag=b.mag();
-    double distance=b_mag*sin(alpha);
-
-    if(distance<=_filterDistance) return true;
-
-    if(_verbose>1)std::cout<<"generated muon removed since it is too far away from the detector axis."<<std::endl;
-    return false;
+    return true;
   }
 }
