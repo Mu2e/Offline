@@ -68,7 +68,11 @@ physics : {
     }
 
     filters: {
-        g4filter2: {
+        trackerStepPointFilter : {
+            module_type : TrackerStepPointFilter 
+        }
+
+        g4filter: {
             module_type: FilterG4Out
             mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
             extraHitInputs: [ "g4run:virtualdetector", "g4run:CRV" ]
@@ -82,12 +86,19 @@ physics : {
         }
     }
 
-    trigFilter : [g4run, g4filter2, compressPV]
+    analyzers: {
+        genCountLogger: {
+            module_type: GenEventCountReader
+        }
+    }
+
+    trigFilter : [g4run, trackerStepPointFilter, g4filter, compressPV]
     g4StatusFilter : [g4run, "!g4status", compressPVFull ]
     trigger_paths  : [trigFilter, g4StatusFilter]
 
-    e1 : [filteredOutput, truncatedEvtsOutput]
-    end_paths      : [e1]
+    an: [genCountLogger]
+    out: [filteredOutput, truncatedEvtsOutput]
+    end_paths      : [an, out]
 }
 
 outputs: {
@@ -98,7 +109,7 @@ outputs: {
                             "keep mu2e::GenParticles_*_*_*",
                             "keep mu2e::GenEventCount_*_*_*",
                             "keep mu2e::StatusG4_*_*_*",
-                            "keep *_g4filter2_*_*",
+                            "keep *_g4filter_*_*",
                             "keep *_compressPV_*_*"
                           ]
         fileName    : "data_cosmic_s2.root"

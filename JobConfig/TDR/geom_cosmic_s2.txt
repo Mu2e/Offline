@@ -2,8 +2,11 @@
 
 // We do want to have trajectories for cosmic sims
 double g4.mcTrajectoryMomentumCut =  0.;
+vector<string> g4.mcTrajectoryVolumes = { "worldDirtBottom", "worldDirtNW", "worldDirtSW", "worldDirtSE", "worldDirtNE", "HallConcreteFloor", "HallConcreteCeiling", "HallWalls", "PSVacuum", "TS1Vacuum", "TS2Vacuum", "TS3Vacuum", "TS4Vacuum", "TS5Vacuum", "DS1Vacuum", "DS2Vacuum", "DS3Vacuum"};
+vector<double> g4.mcTrajectoryVolumePtDistances = { 500., 500., 500., 500., 500., 500., 500., 500., 15., 15., 15., 15., 15., 15., 15., 15., 15. };
 
 int g4.steppingActionMaxSteps = 50000;
+int g4.particlesSizeLimit = 1000000;
 
 double world.minimalMargin.xmin = 500000;
 double world.minimalMargin.xmax = 500000;
