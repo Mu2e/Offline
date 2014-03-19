@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.13 2014/03/16 15:13:12 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.14 2014/03/19 14:02:54 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/16 15:13:12 $
+// $Date: 2014/03/19 14:02:54 $
 //
 // Original author David Brown, LBNL
 //
@@ -18,7 +18,7 @@ using namespace std;
 namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI{pset.get<double>("thresholddVdI",0.12),
+    _dVdI{pset.get<double>("thresholddVdI",0.13),
       pset.get<double>("adcdVdI",160.0) }, // mVolt/uAmps (transimpedance gain)
     _tau{pset.get<double>("thresholdFallTime",25.0),  // nsec
       pset.get<double>("adcShapingTime",25.0) }, // nsec
@@ -26,8 +26,8 @@ namespace mu2e {
     _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mVolt
     _vsat(pset.get<double>("SaturationVoltage",800.0)), // mVolt
     _disp(pset.get<double>("Dispersion",1.0e-4)), // 0.1 ps/mm
-    _vthresh(pset.get<double>("DiscriminatorThreshold",30.0)), //mVolt, post amplification
-    _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",3.0)), //mVolt
+    _vthresh(pset.get<double>("DiscriminatorThreshold",25.0)), //mVolt, post amplification
+    _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",2.5)), //mVolt
     _ADCLSB(pset.get<double>("ADCLSB",0.25)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
     _ADCped(pset.get<unsigned>("ADCPedestal",128)),
@@ -43,7 +43,7 @@ namespace mu2e {
     _flashEnd(pset.get<double>("FlashEnd",300.0)) // nsec
  {
     // calcluate normalization.  Formulas are different, first threshold
-    _tband = 1.0/(TMath::TwoPi()*pset.get<double>("preampBandwidth",0.25)); //GHz
+    _tband = 1.0/(TMath::TwoPi()*pset.get<double>("preampBandwidth",0.2)); //GHz
     double nlambda = pset.get<double>("MaxNLambda",10.0); 
     double ratio = _tband/_tau[thresh];
     _voff =TMath::Erf(ratio/TMath::Sqrt2());
