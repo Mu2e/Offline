@@ -6,9 +6,9 @@
 // are mixed; mixing of the PointTrajectoryCollections can also be turned on/off with a
 // parameter set variable.
 //
-// $Id: MixMCEvents_module.cc,v 1.14 2013/09/26 17:06:28 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/09/26 17:06:28 $
+// $Id: MixMCEvents_module.cc,v 1.15 2014/03/20 16:17:02 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/03/20 16:17:02 $
 //
 // Contact person Rob Kutschke.
 //
@@ -427,9 +427,11 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
   }
 
   // When art v1_0_0 becomes available, add the extra argument so that the mixop must return false.
-  helper.declareMixOp
-    ( g4StatusTag_,
-      &MixMCEventsDetail::mixStatusG4, *this );
+  if(g4StatusTag_ != art::InputTag()) {
+    helper.declareMixOp
+      ( g4StatusTag_,
+        &MixMCEventsDetail::mixStatusG4, *this );
+  }
 
   if ( mean_ > 0 ) {
     art::RandomNumberGenerator::base_engine_t& engine = art::ServiceHandle<art::RandomNumberGenerator>()->getEngine();
