@@ -6,9 +6,9 @@
 // are mixed; mixing of the PointTrajectoryCollections can also be turned on/off with a
 // parameter set variable.
 //
-// $Id: MixMCEvents_module.cc,v 1.15 2014/03/20 16:17:02 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/03/20 16:17:02 $
+// $Id: MixMCEvents_module.cc,v 1.16 2014/03/20 18:35:10 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/03/20 18:35:10 $
 //
 // Contact person Rob Kutschke.
 //
@@ -144,7 +144,7 @@ public:
                     art::MixHelper &helper);
 
   // Called at the start of each event.
-  void startEvent();
+  void startEvent(const art::Event&);
 
   // Return number of events to be read from the input file for this primary event.
   size_t nSecondaries();
@@ -451,7 +451,7 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
 // Initialize state for each event,
 void
 mu2e::MixMCEventsDetail::
-startEvent() {
+startEvent(const art::Event&) {
   summary_.reset(new mu2e::MixingSummary());
   stepCollectionCount_ = -1;
 }
