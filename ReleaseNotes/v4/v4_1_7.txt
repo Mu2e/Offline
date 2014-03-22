@@ -2,6 +2,16 @@
 
            Release notes for Mu2e Offline software, v4_1_7
 
+3) March 22, 2014, ehrlich
+   Added an option for vertical production planes in the 
+   cosmic ray event generator, and fixed some bugs.
+   Modified files:
+     EventGenerator/inc/CosmicDYB.hh
+     EventGenerator/inc/hrndg2.hh
+     EventGenerator/src/CosmicDYB.cc
+     EventGenerator/src/d2_integral.f
+     EventGenerator/src/hrndg2.f
+
 2) March 19, 2014, ehrlich
     Added more configuration options to the CosmicRay event generator.
     Modified Files:
