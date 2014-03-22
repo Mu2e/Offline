@@ -3,9 +3,9 @@
 //
 // Muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.hh,v 1.12 2014/03/19 18:52:20 ehrlich Exp $
+// $Id: CosmicDYB.hh,v 1.13 2014/03/22 21:40:43 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2014/03/19 18:52:20 $
+// $Date: 2014/03/22 21:40:43 $
 //
 // Original author Yury Kolomensky
 //
@@ -57,6 +57,7 @@ namespace mu2e {
 
     // half area to generate events (cm)
     double _dx;
+    double _dy;
     double _dz;
     double _y0;  // reference depth
 
@@ -92,10 +93,11 @@ namespace mu2e {
     void checkCosmicRayProductionPlane(double margin, std::string name);
 
     enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL, CALO, CUSTOMIZED};
-    enum DirectionChoice {ALL, POSITIVE_Z, NEGATIVE_X};
+    enum DirectionChoice {ALL, POSITIVE_X, NEGATIVE_X, POSITIVE_Z, NEGATIVE_Z};
     RefPointChoice _choice;
     DirectionChoice _directionChoice;
     CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
+    bool _vertical;
 
     // Checks whether the distance of closest approach to the detector axis is larger than the cutoff value
     bool filterGeneratedMuons(CLHEP::Hep3Vector const &posInMu2eCoordinates);

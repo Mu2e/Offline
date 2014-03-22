@@ -1,9 +1,9 @@
 C
 C  Part of the Daya Bay Cosmic code.
 C
-C  $Id: d2_integral.f,v 1.2 2011/05/18 02:27:16 wb Exp $
-C  $Author: wb $
-C  $Date: 2011/05/18 02:27:16 $
+C  $Id: d2_integral.f,v 1.3 2014/03/22 21:40:44 ehrlich Exp $
+C  $Author: ehrlich $
+C  $Date: 2014/03/22 21:40:44 $
 C
 C  Original Mu2e author Yury Kolomensky
 C
@@ -12,7 +12,7 @@ C
 * do integral of the Funcation ||
 *  method Divide to sub mini bins & add content ||
 *********************************************************************
-      Subroutine d2_integral(a1,a2,b1,b2,sum,m,n)
+      Subroutine d2_integral(a1,a2,b1,b2,sum,m,n,vert)
       implicit none
       real*8 gaisser
       EXTERNAL gaisser
@@ -21,6 +21,7 @@ C
       real*8 sum,sumbox,binx,biny
       real*8 x,y
       Real*8 fff(m,n)
+      logical vert
 
 **********************************
       binx=(a2-a1)/m
@@ -33,7 +34,11 @@ C
        do j=1,n
          x=a1+binx*(i-0.5)
          y=b1+biny*(j-0.5)
-         fff(i,j)=gaisser(x,y)
+         IF(vert) THEN
+           fff(i,j)=gaisser(x,y)*SIN(ACOS(y))
+         ELSE
+           fff(i,j)=gaisser(x,y)*y
+         ENDIF
          sumbox=fff(i,j)+sumbox
        enddo
       enddo

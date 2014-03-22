@@ -1,9 +1,9 @@
 //
 // Cosmic ray muon generator, uses Daya Bay libraries
 //
-// $Id: CosmicDYB.cc,v 1.31 2014/03/19 18:47:29 ehrlich Exp $
+// $Id: CosmicDYB.cc,v 1.32 2014/03/22 21:40:44 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2014/03/19 18:47:29 $
+// $Date: 2014/03/22 21:40:44 $
 //
 // Original author Yury Kolomensky
 //
@@ -117,6 +117,7 @@ namespace mu2e {
 
   , _choice(UNDEFINED)
   , _directionChoice(ALL)
+  , _vertical(false)
 
   {
     mf::LogInfo log("COSMIC");
@@ -153,9 +154,11 @@ namespace mu2e {
       _cosmicReferencePointInMu2e = config.getHep3Vector("cosmicDYB.cosmicReferencePointInMu2e");
       const std::string directionChoice = config.getString("cosmicDYB.directionChoice");
       log << "cosmicDYB.directionChoice = " << directionChoice << "\n";
-      if(directionChoice=="ALL") _directionChoice=ALL;
-      else if(directionChoice=="Positive_z") _directionChoice=POSITIVE_Z;
+      if(directionChoice=="All") _directionChoice=ALL;
+      else if(directionChoice=="Positive_x") _directionChoice=POSITIVE_X;
       else if(directionChoice=="Negative_x") _directionChoice=NEGATIVE_X;
+      else if(directionChoice=="Positive_z") _directionChoice=POSITIVE_Z;
+      else if(directionChoice=="Negative_z") _directionChoice=NEGATIVE_Z;
       else throw cet::exception("Configuration")<<"Unknown cosmicDYB.directionChoice\n";
     }
 
@@ -164,6 +167,23 @@ namespace mu2e {
         << "Unknown CosmicDYB.refPointChoice"
         << "\n";
     }
+
+    _vertical = config.getBool("cosmicDYB.vertical", false);
+    if(_vertical)
+    {
+      if(_choice!=CUSTOMIZED) 
+         throw cet::exception("Configuration")
+         <<"Vertical production planes require cosmicDYB.refPointChoice: Customized\n";
+      if(_directionChoice==ALL) 
+         throw cet::exception("Configuration")
+         <<"Vertical production planes require a cosmicDYB.directionChoice other than All\n"
+         <<"e.g. Positive_z or Negative_x\n";
+      if(_dx!=0 && _dz!=0)
+         throw cet::exception("Configuration")
+         <<"Vertical production planes must have either cosmicDYB.dx:0 or cosmicDYB.dz:0 \n";
+      _dy=config.getDouble("cosmicDYB.dy");
+    }
+    else _dy=0;
 
 
     // Allocate hrndg2 working space on the heap.
@@ -174,11 +194,15 @@ namespace mu2e {
         << ", cosmicDYB.muEMax = " << _muEMax << "\n"
         << "cosmicDYB.muCosThMin = " << _muCosThMin
         << ", cosmicDYB.muCosThMax = " << _muCosThMax << "\n"
-        << "cosmicDYB.dx = " << _dx
-        << ", cosmicDYB.dz = " << _dz
-        << ", cosmicDYB.y0 = " << _y0
         << ", working space dimenions ("
         << _ne << "," << _nth << ")" << "\n";
+    log << "cosmicDYB.vertical = " << _vertical
+        << ", cosmicDYB.dx = " << _dx;
+    if(_vertical) log << ", cosmicDYB.dy = " << _dy;
+    log << ", cosmicDYB.dz = " << _dz;
+    if(_choice!=CUSTOMIZED) log << ", cosmicDYB.y0 = " << _y0;
+    else log << ", cosmicDYB.cosmicReferencePointInMu2e = " << _cosmicReferencePointInMu2e;
+    log << "\n";
 
     // Access conditions data.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
@@ -228,13 +252,17 @@ namespace mu2e {
 
     double dim_sum,E,cosTh;
     hrndg2(_workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax,
-           dim_sum,E,cosTh,par);
+           dim_sum,E,cosTh,par,_vertical);
 
     // rate is per cm^2. The constants are 2*CLHEP::pi times the area
     double tRate = dim_sum*M_PI*0.08*_dx*_dz;
+    if(!_vertical && _directionChoice!=ALL) tRate = dim_sum*M_PI*0.04*_dx*_dz;
+    if(_vertical && _dx!=0) tRate = dim_sum*0.08*_dx*_dy;
+    if(_vertical && _dz!=0) tRate = dim_sum*0.08*_dz*_dy;
     log << "Total cosmic rate = " << tRate << " Hz\n";
-    if(_directionChoice==POSITIVE_Z || _directionChoice==NEGATIVE_X)
-    log << "NOTE: Since only half of the azimuth angles are considered, the rate is only half of the above value.\n";
+
+    if(_directionChoice!=ALL)
+    log << "NOTE: The rate above takes into account that only half of the azimuth angles are considered.\n";
 
   }  // CosmicDYB()
 
@@ -289,19 +317,24 @@ namespace mu2e {
           std::vector<double> const& halfLengths = worldGeom->halfLengths();
 
           double marginXMin = halfLengths[0] + (_cosmicReferencePointInMu2e.x()-_dx + mu2eOrigin.x());
+          double marginYMin = halfLengths[1] + (_cosmicReferencePointInMu2e.y()-_dy + mu2eOrigin.y());
           double marginZMin = halfLengths[2] + (_cosmicReferencePointInMu2e.z()-_dz + mu2eOrigin.z());
           double marginXMax = halfLengths[0] - (_cosmicReferencePointInMu2e.x()+_dx + mu2eOrigin.x());
+          double marginYMax = halfLengths[1] - (_cosmicReferencePointInMu2e.y()+_dy + mu2eOrigin.y());
           double marginZMax = halfLengths[2] - (_cosmicReferencePointInMu2e.z()+_dz + mu2eOrigin.z());
-          double marginYMin = halfLengths[1] + (_cosmicReferencePointInMu2e.y()+env->ymax() + mu2eOrigin.y());
-          double marginYMax = halfLengths[1] - (_cosmicReferencePointInMu2e.y()+env->ymax() + mu2eOrigin.y());
+          double marginYMinSurface = halfLengths[1] + (env->ymax() + mu2eOrigin.y());
+          double marginYMaxSurface = halfLengths[1] - (env->ymax() + mu2eOrigin.y());
 
-          if(_verbose>0)std::cout<<std::endl<<"distances from the edges of the cosmic ray production plane to the borders of the world volume:"<<std::endl
+          if(_verbose>0) std::cout<<std::endl<<"distances between the edges of the cosmic ray production plane and the borders of the world volume:"<<std::endl
                    <<"in negative x direction: "<<marginXMin<<std::endl
                    <<"in positive x direction: "<<marginXMax<<std::endl
                    <<"in negative y direction: "<<marginYMin<<std::endl
                    <<"in positive y direction: "<<marginYMax<<std::endl
                    <<"in negative z direction: "<<marginZMin<<std::endl
                    <<"in positive z direction: "<<marginZMax<<std::endl<<std::endl;
+          if(_verbose>0) std::cout<<std::endl<<"distances between the surface where the generated particles are projected to and the borders of the world volume:"<<std::endl
+                   <<"in negative y direction: "<<marginYMinSurface<<std::endl
+                   <<"in positive y direction: "<<marginYMaxSurface<<std::endl;
 
           checkCosmicRayProductionPlane(marginXMin, "world.margin.xmin");
           checkCosmicRayProductionPlane(marginXMax, "world.margin.xmax");
@@ -309,6 +342,8 @@ namespace mu2e {
           checkCosmicRayProductionPlane(marginYMax, "world.margin.bottom");
           checkCosmicRayProductionPlane(marginZMin, "world.margin.zmin");
           checkCosmicRayProductionPlane(marginZMax, "world.margin.zmax");
+          checkCosmicRayProductionPlane(marginYMinSurface, "world.margin.top");
+          checkCosmicRayProductionPlane(marginYMaxSurface, "world.margin.bottom");
         }
       }
 
@@ -324,7 +359,7 @@ namespace mu2e {
       float par = 111.;  // double precision
       double dim_sum,E,cosTh;
       hrndg2( _workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax,
-              dim_sum,E,cosTh,par);
+              dim_sum,E,cosTh,par,_vertical);
 
       // energy is in GeV, convert to MeV
       E *= GeV;
@@ -351,17 +386,25 @@ namespace mu2e {
 
       switch (_directionChoice)
       {
-        case POSITIVE_Z: 
-             if(mom.z()<0) mom.setZ(-mom.z());
+        case ALL: 
+             break;
+        case POSITIVE_X: 
+             if(mom.x()<0) mom.setX(-mom.x());
              break;
         case NEGATIVE_X: 
              if(mom.x()>0) mom.setX(-mom.x());
+             break;
+        case POSITIVE_Z: 
+             if(mom.z()<0) mom.setZ(-mom.z());
+             break;
+        case NEGATIVE_Z: 
+             if(mom.z()>0) mom.setZ(-mom.z());
              break;
       }
 
       // Position in reference plane
       double x = (1.-2.*_randFlat.fire())*_dx;
-      double y = 0.0;
+      double y = (1.-2.*_randFlat.fire())*_dy;  //_dy is 0 for horizontal production planes
       double z = (1.-2.*_randFlat.fire())*_dz;
       CLHEP::Hep3Vector pos( x, y, z );
       CLHEP::Hep3Vector refposInMu2eCoordinates=pos + _cosmicReferencePointInMu2e;
