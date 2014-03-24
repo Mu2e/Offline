@@ -33,6 +33,8 @@ physics : {
             inputSimParticles : "g4filter:s0"
             simParticleNumberOffset : 100000 // safe b/c of g4.particlesSizeLimit in stage1
 
+	    inputMCTrajectories: "g4filter"
+
             generatorModuleLabel : ""
             genInputHits : [ "g4filter:TrackerMother", "g4filter:CalorimeterMother"] 
 
@@ -76,7 +78,7 @@ physics : {
             module_type: FilterG4Out
             mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
             extraHitInputs: [ "g4run:virtualdetector", "g4run:CRV" ]
-            mcTrajectoryInputs : [ "g4run", "g4filter" ]
+            mcTrajectoryInputs : [ "g4filter" ]
             numSimParticleCollections: 1
             vetoDaughters: []
         }

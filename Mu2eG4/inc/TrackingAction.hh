@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.28 2014/01/21 06:22:33 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/21 06:22:33 $
+// $Id: TrackingAction.hh,v 1.29 2014/03/24 21:39:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/03/24 21:39:01 $
 //
 // Original author Rob Kutschke
 //
@@ -56,6 +56,7 @@ namespace mu2e {
 
     // Do all things that need to be done at the beginning/end of an event.
     void beginEvent( const art::Handle<SimParticleCollection>& inputSims,
+                     const art::Handle<MCTrajectoryCollection>& inputMCTraj,
                      const SimParticleHelper& spHelper,
                      const SimParticlePrimaryHelper& primaryHelperm,
                      MCTrajectoryCollection& mcTrajectories

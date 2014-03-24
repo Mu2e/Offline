@@ -2,9 +2,9 @@
 // A Producer Module that runs Geant4 and adds its output to the event.
 // Still under development.
 //
-// $Id: G4_module.cc,v 1.81 2014/03/13 18:33:07 gandr Exp $
+// $Id: G4_module.cc,v 1.82 2014/03/24 21:39:01 gandr Exp $
 // $Author: gandr $
-// $Date: 2014/03/13 18:33:07 $
+// $Date: 2014/03/24 21:39:01 $
 //
 // Original author Rob Kutschke
 //
@@ -173,6 +173,7 @@ namespace mu2e {
 
     unsigned _simParticleNumberOffset;
     art::InputTag _inputSimParticles;
+    art::InputTag _inputMCTrajectories;
 
     // A class to make some standard histograms.
     DiagnosticsG4 _diagnostics;
@@ -215,6 +216,7 @@ namespace mu2e {
     _tvdOutputName(StepInstanceName::timeVD),
     _simParticleNumberOffset(pSet.get<unsigned>("simParticleNumberOffset", 0)),
     _inputSimParticles(pSet.get<std::string>("inputSimParticles", "")),
+    _inputMCTrajectories(pSet.get<std::string>("inputMCTrajectories", "")),
     _diagnostics(),
     _pointTrajectoryMinSteps(-1){
 
@@ -460,6 +462,15 @@ namespace mu2e {
       }
     }
 
+    art::Handle<MCTrajectoryCollection> inputMCTracjectoryHandle;
+    if(!(art::InputTag() == _inputMCTrajectories)) {
+      event.getByLabel(_inputMCTrajectories, inputMCTracjectoryHandle);
+      if(!inputMCTracjectoryHandle.isValid()) {
+        throw cet::exception("CONFIG")
+          << "Error retrieving inputMCTrajectories for "<<_inputMCTrajectories<<"\n";
+      }
+    }
+
     // ProductID for the SimParticleCollection.
     art::ProductID simPartId(getProductID<SimParticleCollection>(event));
     SimParticleHelper spHelper(_simParticleNumberOffset, simPartId, event);
@@ -474,7 +485,9 @@ namespace mu2e {
     _sensitiveDetectorHelper.createProducts(event, spHelper);
 
     // Some of the user actions have begin event methods. These are not G4 standards.
-    _trackingAction->beginEvent(inputSimHandle, spHelper, parentHelper, *mcTrajectories );
+    _trackingAction->beginEvent(inputSimHandle, inputMCTracjectoryHandle,
+                                spHelper, parentHelper, *mcTrajectories );
+
     _genAction->setEventData(gensHandle.isValid() ? &*gensHandle : 0, genInputHits, &parentHelper);
     _steppingAction->BeginOfEvent(*tvdHits,  spHelper);
 

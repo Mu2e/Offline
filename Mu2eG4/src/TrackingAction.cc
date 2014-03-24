@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.42 2014/01/21 06:22:33 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/21 06:22:33 $
+// $Id: TrackingAction.cc,v 1.43 2014/03/24 21:39:01 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/03/24 21:39:01 $
 //
 // Original author Rob Kutschke
 //
@@ -161,6 +161,7 @@ namespace mu2e {
     };
   }
   void TrackingAction::beginEvent( const art::Handle<SimParticleCollection>& inputSimHandle,
+                                   const art::Handle<MCTrajectoryCollection>& inputTraj,
                                    const SimParticleHelper& spHelper,
                                    const SimParticlePrimaryHelper& primaryHelper,
                                    MCTrajectoryCollection&  trajectories
@@ -180,6 +181,23 @@ namespace mu2e {
                                     KeepAll(),
                                     _transientMap);
     }
+
+    if(inputTraj.isValid()) {
+      // Read trajectories from the previous simulation step,  reseat the pointers.
+      for(const auto& i : *inputTraj) {
+        const MCTrajectory& tr(i.second);
+        art::Ptr<SimParticle> newSim(_spHelper->productID(), tr.sim().key(), _spHelper->productGetter());
+        auto retval = _trajectories->insert(MCTrajectoryCollection::value_type(newSim, MCTrajectory(newSim)));
+        if ( !retval.second ){
+          throw cet::exception("RANGE")
+            << "In TrackingAction::beginEvent(): error adding pre-simulated MCTrajectory for particle id "
+            << newSim->id()
+            << "\n";
+        }
+        MCTrajectory& newTraj = retval.first->second;
+        newTraj.points() = tr.points();
+      }
+    }
   }
 
   void TrackingAction::endEvent(SimParticleCollection& persistentSims ){
@@ -198,7 +216,7 @@ namespace mu2e {
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
         mf::LogWarning("G4") << "Maximum number of particles reached in TrackingAction: "
-                              << _currentSize << endl;
+                             << _currentSize << endl;
         _overflowSimParticles = true;
       }
       return;
