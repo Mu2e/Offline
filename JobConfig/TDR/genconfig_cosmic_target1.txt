@@ -13,11 +13,15 @@ bool piEplusNuGun.do = false;
 double cosmicDYB.mean =  -1.1; 
 double cosmicDYB.muEMin = 0.5e3;
 double cosmicDYB.muEMax = 1000e3;
-double cosmicDYB.dx     = 10000;
-double cosmicDYB.dz     = 20000;
+double cosmicDYB.dx     = 0;
+double cosmicDYB.dy     = 5000;
+double cosmicDYB.dz     = 5000;
 double cosmicDYB.y0     = 0;
 
-string cosmicDYB.refPointChoice = "Tracker";
+string cosmicDYB.refPointChoice  = "Customized";
+bool   cosmicDYB.vertical        = true;
+string cosmicDYB.directionChoice = "Negative_x";
+vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-104,200,0};
 
 //
 // This tells emacs to view this file in c++ mode.

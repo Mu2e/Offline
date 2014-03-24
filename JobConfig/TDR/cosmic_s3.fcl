@@ -12,7 +12,7 @@ source : { module_type : RootInput }
 services : {
 
     message               : @local::default_message
-    TFileService          : { fileName : "hist_cosmic_stage2.root" }
+    TFileService          : { fileName : "hist_cosmic_stage3.root" }
     RandomNumberGenerator : { }
 
     user : {
@@ -49,11 +49,18 @@ physics : {
                   }
     }
 
+    analyzers: {
+        genCountLogger: {
+            module_type: GenEventCountReader
+        }
+    }
+
     trigFilter : [makeSH, MakeStereoHits, FlagStrawHits, FlagBkgHits, CaloReadoutHitsMaker, CaloCrystalHitsMaker, TrkPatRec1, TrkPatRec2, TrkPatRec3, TrkPatRec4, TrkPatRecFilter]
     trigger_paths  : [trigFilter]
 
-    e1 : [filteredOutput]
-    end_paths      : [e1]
+    an: [genCountLogger]
+    out: [filteredOutput]
+    end_paths      : [an, out]
 }
 
 outputs: {
