@@ -1,9 +1,22 @@
 #include "JobConfig/TDR/geom_baseline.txt"
 
+// We start with cosmic ray hitting a detector volume.
+// Let's not simulate any punch through that goes through the dirt
+// after crossing the detector.  That loses the backsplash, but this
+// should be a small effect compared to the "direct" CR background.
+//
+// Using "HallAir" as the killer is not safe; we'll need to be more
+// creative.  List close by solids that intercept most of the punch
+// through first,  then make sure any leftovers do not make
+// showers outside of the hall.
+vector<string> g4SteppingAction.killInTheseVolumes = { "DSOuterCryoShell", "DSDownEndWallShell",
+                                                       "VPSP_EndSeal", "IFB_EndPlug", "IFB_EndSeal", "IFB_Main",
+                                                       "DSUpEndWallShell", "DSFront",
+                                                       "HallConcreteFloor", "HallWalls", "HallConcreteCeiling",
+                                                       "worldDirtBottom", "worldDirtNW", "worldDirtSW", "worldDirtSE", "worldDirtNE" };
+
 // We do want to have trajectories for cosmic sims
 double g4.mcTrajectoryMomentumCut =  1.;
-vector<string> g4.mcTrajectoryVolumes = { "worldDirtBottom", "worldDirtNW", "worldDirtSW", "worldDirtSE", "worldDirtNE", "HallConcreteFloor", "HallConcreteCeiling", "HallWalls", "PSVacuum", "TS1Vacuum", "TS2Vacuum", "TS3Vacuum", "TS4Vacuum", "TS5Vacuum", "DS1Vacuum", "DS2Vacuum", "DS3Vacuum"};
-vector<double> g4.mcTrajectoryVolumePtDistances = { 500., 500., 500., 500., 500., 500., 500., 500., 15., 15., 15., 15., 15., 15., 15., 15., 15. };
 
 int g4.steppingActionMaxSteps = 50000;
 int g4.particlesSizeLimit = 1000000;
