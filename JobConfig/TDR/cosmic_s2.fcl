@@ -78,7 +78,7 @@ physics : {
             module_type: FilterG4Out
             mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
             extraHitInputs: [ "g4run:virtualdetector", "g4run:CRV" ]
-            mcTrajectoryInputs : [ "g4filter" ]
+            mcTrajectoryInputs : [ "g4run" ]
             numSimParticleCollections: 1
             vetoDaughters: []
         }
@@ -112,7 +112,8 @@ outputs: {
                             "keep mu2e::GenEventCount_*_*_*",
                             "keep mu2e::StatusG4_*_*_*",
                             "keep *_g4filter_*_*",
-                            "keep *_compressPV_*_*"
+                            "keep *_compressPV_*_*",
+                            "drop mu2e::SimParticle*_*_*_cosmics1"
                           ]
         fileName    : "data_cosmic_s2.root"
     }
