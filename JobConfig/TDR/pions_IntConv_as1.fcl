@@ -1,14 +1,14 @@
-# Configuration file for RPCs
+# Configuration file for pions_as1 (internal conversions)
 
-# $Id: pions_RPC_s1.fcl,v 1.1 2014/02/25 18:42:36 knoepfel Exp $
+# $Id: pions_IntConv_as1.fcl,v 1.1 2014/03/25 13:53:40 knoepfel Exp $
 # $Author: knoepfel $
-# $Date: 2014/02/25 18:42:36 $
+# $Date: 2014/03/25 13:53:40 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-process_name : RPCs1
+process_name : IntConvas1
 
 source : {
   module_type : EmptyEvent
@@ -17,7 +17,7 @@ source : {
 services :
 {
   message               : @local::default_message
-  TFileService          : { fileName: "piCapture_RPC_s1.root" }
+  TFileService          : { fileName: "piCapture_IntConv_as1.root" }
   RandomNumberGenerator : { }
 
   user :
@@ -37,7 +37,7 @@ physics : {
 
     generate : {
 
-        module_type : StoppedParticleRPCGun
+        module_type : StoppedParticleIntConvGun
 
         pionStops: {
            inputFiles: @nil
@@ -68,7 +68,7 @@ physics : {
         SDConfig : {
             // do not want e.g. the "stoppingtarget" SD, thus do not use enableAllSDs
             // Instead explicitly list all the detectors we want
-            enableSD : [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]
+            enableSD : [ tracker, virtualdetector ]
             sensitiveVolumes: []
         }
     
@@ -87,8 +87,8 @@ physics : {
         detectorFilter: {
 
 	    module_type: FilterStepPointMomentum
-            inputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
-            cutMomentumMin : 10. // MeV/c
+            inputs: [ "g4run:tracker" ]
+            cutMomentumMin : 100. // MeV/c
 
         }
 
@@ -109,10 +109,7 @@ outputs: {
         SelectEvents: { SelectEvents: [p1] }
         fileName    : @nil
     }
+
 }
 
-// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
-
-outputs.detectorOutput.fileName: "dsStopsToHitsRPCs.root"
+outputs.detectorOutput.fileName: "dsStopsToHitsIntConvs_as1.root"
