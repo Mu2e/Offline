@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.31 2014/01/24 21:14:10 gandr Exp $
-// $Author: gandr $
-// $Date: 2014/01/24 21:14:10 $
+// $Id: classes.h,v 1.32 2014/03/25 22:13:20 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/03/25 22:13:20 $
 //
 // Original author Rob Kutschke
 //
@@ -44,6 +44,7 @@
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/MixingSummary.hh"
 #include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
@@ -86,6 +87,7 @@ template class art::Wrapper<mu2e::PhysicalVolumeInfoCollection>;
 template class art::Wrapper<mu2e::PhysicalVolumeInfoMultiCollection>;
 template class art::Wrapper<mu2e::SimParticleCollection>;
 template class art::Wrapper<mu2e::StrawHitMCTruthCollection>;
+template class art::Wrapper<mu2e::StrawDigiMCCollection>;
 template class art::Wrapper<mu2e::G4BeamlineInfo>;
 template class art::Wrapper<mu2e::G4BeamlineInfoCollection>;
 template class art::Wrapper<mu2e::CaloHitMCTruthCollection>;
