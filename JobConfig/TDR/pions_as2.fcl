@@ -1,16 +1,15 @@
-# Configuration file for G4Test03
-#
-#  - Generate 200 events including one conversion and no backgrounds.
+# Configuration file for pion analysis-stage 2 
+#  - Note that this .fcl file should not/cannot be used for event mixing
 
-# $Id: pions_s2.fcl,v 1.1 2014/02/25 18:42:36 knoepfel Exp $
+# $Id: pions_as2.fcl,v 1.1 2014/03/25 13:58:06 knoepfel Exp $
 # $Author: knoepfel $
-# $Date: 2014/02/25 18:42:36 $
+# $Date: 2014/03/25 13:58:06 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-process_name : s2
+process_name : as2
 
 source : {
   module_type : RootInput
@@ -19,7 +18,7 @@ source : {
 services :
 {
   message               : @local::default_message
-  TFileService          : { fileName : "piCapture_s2.root" }
+  TFileService          : { fileName : "piCapture_as2.root" }
   RandomNumberGenerator : { }
 
   user :
@@ -71,10 +70,6 @@ physics : {
   end_paths      : [e1]
 
 }
-
-// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
 
 physics.producers.makeSD.TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 physics.producers.makeSH.printLevel : 0

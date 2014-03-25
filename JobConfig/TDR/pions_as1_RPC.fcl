@@ -1,14 +1,14 @@
-# Configuration file for pions_as1 (internal conversions)
+# Configuration file for RPCs
 
-# $Id: pions_IntConv_as1.fcl,v 1.1 2014/03/25 13:53:40 knoepfel Exp $
+# $Id: pions_as1_RPC.fcl,v 1.1 2014/03/25 13:58:06 knoepfel Exp $
 # $Author: knoepfel $
-# $Date: 2014/03/25 13:53:40 $
+# $Date: 2014/03/25 13:58:06 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-process_name : IntConvas1
+process_name : RPCas1
 
 source : {
   module_type : EmptyEvent
@@ -17,7 +17,7 @@ source : {
 services :
 {
   message               : @local::default_message
-  TFileService          : { fileName: "piCapture_IntConv_as1.root" }
+  TFileService          : { fileName: "piCapture_RPC_as1.root" }
   RandomNumberGenerator : { }
 
   user :
@@ -37,7 +37,7 @@ physics : {
 
     generate : {
 
-        module_type : StoppedParticleIntConvGun
+        module_type : StoppedParticleRPCGun
 
         pionStops: {
            inputFiles: @nil
@@ -109,7 +109,6 @@ outputs: {
         SelectEvents: { SelectEvents: [p1] }
         fileName    : @nil
     }
-
 }
 
-outputs.detectorOutput.fileName: "dsStopsToHitsIntConvs_as1.root"
+outputs.detectorOutput.fileName: "dsStopsToHitsRPCs_as1.root"
