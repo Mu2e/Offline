@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.30 2014/03/19 14:00:42 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.31 2014/03/25 22:14:39 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/19 14:00:42 $
+// $Date: 2014/03/25 22:14:39 $
 //
 // Original author David Brown, LBNL
 //
@@ -41,12 +41,14 @@
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 // MC structuresi
 #include "TrackerMC/inc/StrawHitletSequencePair.hh"
 #include "TrackerMC/inc/StrawWaveform.hh"
 //CLHEP
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Vector/LorentzVector.h"
 // root 
 #include "TMath.h"
 #include "TFile.h"
@@ -168,9 +170,11 @@ namespace mu2e {
     void findThresholdCrossings(StrawWaveform const& swf, WFXList& xings);
     void createDigis(StrawHitletSequencePair const& hsp,
 	XTalk const& xtalk, 
-	StrawDigiCollection* digis, PtrStepPointMCVectorCollection* mcptrs );
+	StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
+	PtrStepPointMCVectorCollection* mcptrs );
     void fillDigis(WFXList const& xings,StrawWaveform const& wf, StrawIndex index,
-	StrawDigiCollection* digis, PtrStepPointMCVectorCollection* mcptrs );
+	StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
+	PtrStepPointMCVectorCollection* mcptrs );
     void createDigi(WFXP const& xpair, StrawWaveform const& primarywf, StrawIndex index, StrawDigiCollection* digis);
     void findCrossTalkStraws(Straw const& straw,vector<XTalk>& xtalk);
 // diagnostic functions
@@ -214,6 +218,7 @@ namespace mu2e {
 // Tell the framework what we make.
       produces<StrawDigiCollection>();
       produces<PtrStepPointMCVectorCollection>("StrawDigiMCPtr");
+      produces<StrawDigiMCCollection>("StrawDigiMC");
     }
 
   void StrawDigisFromStepPointMCs::beginJob(){
@@ -299,10 +304,11 @@ namespace mu2e {
     _strawele = ConditionsHandle<StrawElectronics>("ignored");
     _strawphys = ConditionsHandle<StrawPhysics>("ignored");
     const Tracker& tracker = getTrackerOrThrow();
-    // compute the microbunch buffer
+    // make the microbunch buffer long enough to get the full waveform
     _mbbuffer = _strawele->nADCSamples()*_strawele->adcPeriod();
     // Containers to hold the output information.
     unique_ptr<StrawDigiCollection> digis(new StrawDigiCollection);
+    unique_ptr<StrawDigiMCCollection> mcdigis(new StrawDigiMCCollection);
     unique_ptr<PtrStepPointMCVectorCollection> mcptrs(new PtrStepPointMCVectorCollection);
     // create the StrawHitlet map
     StrawHitletMap hmap;
@@ -315,20 +321,21 @@ namespace mu2e {
       StrawHitletSequencePair const& hsp = ihsp->second;
       // create primary digis from this hitlet sequence
       XTalk self(hsp.strawIndex()); // this object represents the straws coupling to itself, ie 100%
-      createDigis(hsp,self,digis.get(),mcptrs.get());
+      createDigis(hsp,self,digis.get(),mcdigis.get(),mcptrs.get());
       // if we're applying x-talk, look for nearby coupled straws
       if(_addXtalk){
 	vector<XTalk> xtalk;
         Straw const& straw = tracker.getStraw(hsp.strawIndex());
 	findCrossTalkStraws(straw,xtalk);
 	for(auto ixtalk=xtalk.begin();ixtalk!=xtalk.end();++ixtalk){
-	  createDigis(hsp,*ixtalk,digis.get(),mcptrs.get());
+	  createDigis(hsp,*ixtalk,digis.get(),mcdigis.get(),mcptrs.get());
 	}
       }
     }
     // store the digis in the event
     event.put(move(digis));
     // store MC truth match
+    event.put(move(mcdigis),"StrawDigiMC");
     event.put(move(mcptrs),"StrawDigiMCPtr");
     if ( _printLevel > 0 ) cout << "StrawDigisFromStepPointMCs: produce() end" << endl;
     // Done with the first event; disable some messages.
@@ -338,7 +345,8 @@ namespace mu2e {
   void
   StrawDigisFromStepPointMCs::createDigis(StrawHitletSequencePair const& hsp,
       XTalk const& xtalk, 
-      StrawDigiCollection* digis, PtrStepPointMCVectorCollection* mcptrs ) {
+      StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
+      PtrStepPointMCVectorCollection* mcptrs ) {
     // instantiate waveforms for both ends of this straw
     StrawWaveform waveforms[2] {StrawWaveform(hsp.hitletSequence(StrawEnd::minus),_strawele,xtalk),
       StrawWaveform(hsp.hitletSequence(StrawEnd::plus),_strawele,xtalk) };
@@ -354,7 +362,7 @@ namespace mu2e {
       // Use the primary end of this straw to define the ADC waveform
       StrawEnd primaryend = primaryEnd(hsp.strawIndex());
       // fill digis from these crossings
-      fillDigis(xings,waveforms[primaryend._end],xtalk._dest,digis,mcptrs);
+      fillDigis(xings,waveforms[primaryend._end],xtalk._dest,digis,mcdigis,mcptrs);
       // diagnostics
     }
     if(_diagLevel > 0)waveformDiag(waveforms[primaryend._end],xings);
@@ -365,7 +373,7 @@ namespace mu2e {
     // get conditions
     const Tracker& tracker = getTrackerOrThrow();
     // Get all of the tracker StepPointMC collections from the event:
-    typedef std::vector< art::Handle<StepPointMCCollection> > HandleVector;
+    typedef vector< art::Handle<StepPointMCCollection> > HandleVector;
     // This selector will select only data products with the given instance name.
     art::ProductInstanceNameSelector selector("tracker");
     HandleVector stepsHandles;
@@ -432,7 +440,8 @@ namespace mu2e {
 	  double gtime = tstep + wireq._time + weq._time;
 	  double htime = microbunchTime(gtime);
 	  // create the hitlet
-	  StrawHitlet hitlet(StrawHitlet::primary,strawind,end,htime,weq._charge,wireq._dd,weq._wdist,spmcptr);
+	  StrawHitlet hitlet(StrawHitlet::primary,strawind,end,htime,weq._charge,wireq._dd,weq._wdist,
+	  spmcptr,CLHEP::HepLorentzVector(iclu->_pos,mbtime));
 	  // add the hitlets to the appropriate sequence.
 	  shsp.hitletSequence(end).insert(hitlet);
 	  // if required, add a 'ghost' copy of this hitlet
@@ -552,7 +561,8 @@ namespace mu2e {
   void
   StrawDigisFromStepPointMCs::fillDigis(WFXList const& xings, StrawWaveform const& primarywf,
       StrawIndex index,
-      StrawDigiCollection* digis, PtrStepPointMCVectorCollection* mcptrs ){
+      StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
+      PtrStepPointMCVectorCollection* mcptrs ){
     // loop over crossings
     auto iwfxl = xings.begin();
     while(iwfxl!= xings.end()){
@@ -570,12 +580,39 @@ namespace mu2e {
       createDigi(xpair,primarywf,index,digis);
       // fill associated MC truth matching.  Only count the same step once
       set<art::Ptr<StepPointMC> > xmcsp;
-      for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp)
+      double wetime[2] ={-100.,-100.};
+      CLHEP::HepLorentzVector cpos[2];
+      art::Ptr<StepPointMC> stepMC[2];
+      double ptime(-1000.0);
+      for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
 	xmcsp.insert((*ixp)->_ihitlet->stepPointMC());
+	// index according to the primary end
+	size_t iend = (*ixp)->_ihitlet->strawEnd() == primarywf.strawEnd() ? 0 : 1;
+	wetime[iend] = (*ixp)->_ihitlet->time();
+	cpos[iend] = (*ixp)->_ihitlet->clusterPosition();
+	stepMC[iend] = (*ixp)->_ihitlet->stepPointMC();
+	if((*ixp)->_ihitlet->strawEnd() == primaryEnd(index))
+	  ptime = (*ixp)->_ihitlet->time();
+      }
+     // pickup all StepPointMCs associated with hitlets from the primary waveform inside the time window of the ADC digitizations (after the threshold)
+      set<art::Ptr<StepPointMC> > spmcs;
+      if(ptime > 0.0){
+	for(auto ih=primarywf.hitlets().hitletList().begin();ih!= primarywf.hitlets().hitletList().end();++ih){
+	  if(ih->time() >= ptime && ih->time() < ptime + 
+	  ( _strawele->nADCSamples()-_strawele->nADCPreSamples())*_strawele->adcPeriod())
+	    spmcs.insert(ih->stepPointMC());
+	}
+      }
+      vector<art::Ptr<StepPointMC>> stepMCs;
+      stepMCs.reserve(spmcs.size());
+      for(auto ispmc=spmcs.begin(); ispmc!= spmcs.end(); ++ispmc){
+	stepMCs.push_back(*ispmc);
+      }
       PtrStepPointMCVector mcptr;
       for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
 	mcptr.push_back(*ixmcsp);
       mcptrs->push_back(mcptr);
+      mcdigis->push_back(StrawDigiMC(index,wetime,cpos,stepMC,stepMCs));
       // diagnostics
       if(_diagLevel > 1)digiDiag(xpair,digis->back());
     }

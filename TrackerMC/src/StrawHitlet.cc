@@ -1,8 +1,8 @@
 //
 // StrawHitlet
-// $Id: StrawHitlet.cc,v 1.4 2013/12/12 00:39:24 brownd Exp $
+// $Id: StrawHitlet.cc,v 1.5 2014/03/25 22:14:39 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/12 00:39:24 $
+// $Date: 2014/03/25 22:14:39 $
 // Original author David Brown, LBNL
 //
 // mu2e includes
@@ -21,13 +21,14 @@ namespace mu2e {
       double charge,
       double ddist,
       double wdist,
-      art::Ptr<StepPointMC> const& stepmc) : _type(type), _strawIndex(sindex), _end(end), _time(time),
-  _charge(charge), _ddist(ddist), _wdist(wdist), _stepMC(stepmc) 
+      art::Ptr<StepPointMC> const& stepmc,
+      CLHEP::HepLorentzVector const& cpos) : _type(type), _strawIndex(sindex), _end(end), _time(time),
+  _charge(charge), _ddist(ddist), _wdist(wdist), _stepMC(stepmc) , _cpos(cpos)
   {}
 
   StrawHitlet::StrawHitlet(const StrawHitlet& other) :
     _type(other._type), _strawIndex(other._strawIndex), _end(other._end),
-    _time(other._time), _charge(other._charge), _ddist(other._ddist), _wdist(other._wdist), _stepMC(other._stepMC) 
+    _time(other._time), _charge(other._charge), _ddist(other._ddist), _wdist(other._wdist), _stepMC(other._stepMC), _cpos(other._cpos)
   {}
 
 // delegating constructors in C++11!
@@ -52,6 +53,7 @@ namespace mu2e {
       _ddist = other._ddist;
       _wdist = other._wdist;
       _stepMC = other._stepMC;
+      _cpos = other._cpos;
     }
     return *this;
   }

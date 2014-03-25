@@ -7,9 +7,9 @@
 // such as avalanche fluctuations, trapping, gas quenching, and propagation
 // effects such as drift time, wire propagation time delay, and dispersion
 //
-// $Id: StrawHitlet.hh,v 1.3 2013/12/12 00:39:24 brownd Exp $
+// $Id: StrawHitlet.hh,v 1.4 2014/03/25 22:14:39 brownd Exp $
 // $Author: brownd $
-// $Date: 2013/12/12 00:39:24 $
+// $Date: 2014/03/25 22:14:39 $
 //
 // Original author David Brown, LBNL
 //
@@ -21,7 +21,9 @@
 #include "DataProducts/inc/StrawIndex.hh"
 #include "RecoDataProducts/inc/StrawEnd.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
+// toolkit includes
 #include "art/Persistency/Common/Ptr.h"
+#include "CLHEP/Vector/LorentzVector.h"
 
 namespace mu2e {
   class StrawHitlet{
@@ -41,7 +43,8 @@ namespace mu2e {
 		  double charge,
 		  double ddist,
 		  double wiredist,
-		  art::Ptr<StepPointMC> const& stepmc);
+		  art::Ptr<StepPointMC> const& stepmc,
+		  CLHEP::HepLorentzVector const& cpos);
 
       StrawHitlet& operator = (StrawHitlet const& other);
 
@@ -54,6 +57,7 @@ namespace mu2e {
       double   driftDistance() const { return _ddist; }
       double   wireDistance() const { return _wdist; } 
       art::Ptr<StepPointMC> const&  stepPointMC() const { return _stepMC; }
+      CLHEP::HepLorentzVector const& clusterPosition() const { return _cpos; }
       // Print contents of the object.
       void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
     private:
@@ -65,6 +69,7 @@ namespace mu2e {
       double	_ddist;		  // drift distance charge traveled to the wire
       double	_wdist;		  // distance along the wire the charge has traveled, used to calculate dispersion
       art::Ptr<StepPointMC>  _stepMC;	  // Ptr into StepPointMC collection
+      CLHEP::HepLorentzVector _cpos; // position and time of the cluster that created this hitlet
   };
 
 } // namespace mu2e

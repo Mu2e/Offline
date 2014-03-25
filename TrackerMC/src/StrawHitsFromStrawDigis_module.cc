@@ -2,9 +2,9 @@
 // This module transforms StrawDigi objects into StrawHit objects
 // It also builds the truth match map (if MC truth info for the StrawDigis exists)
 //
-// $Id: StrawHitsFromStrawDigis_module.cc,v 1.11 2014/03/07 23:22:37 brownd Exp $
+// $Id: StrawHitsFromStrawDigis_module.cc,v 1.12 2014/03/25 22:14:39 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/07 23:22:37 $
+// $Date: 2014/03/25 22:14:39 $
 //
 // Original author David Brown, LBNL
 //
@@ -31,6 +31,7 @@
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 
 using namespace std;
 namespace mu2e {
@@ -68,7 +69,7 @@ namespace mu2e {
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
     _nbase(pset.get<unsigned>("NumADCBaseline",1)),
     _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
-    _maxdt(pset.get<double>("MaxTimeDifferenc",8.0)), // nsec
+    _maxdt(pset.get<double>("MaxTimeDifference",8.0)), // nsec
     _singledigi(pset.get<bool>("UseSingleDigis",false)), // use or not single-end digitizations
     _printLevel(pset.get<int>("printLevel",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
@@ -76,6 +77,7 @@ namespace mu2e {
     {
       produces<StrawHitCollection>();
       produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
+      produces<StrawDigiMCCollection>("StrawHitMC");
       if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis constructor " << endl;
     }
 
@@ -93,6 +95,7 @@ namespace mu2e {
     _strawphys = ConditionsHandle<StrawPhysics>("ignored");
     unique_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
     unique_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
+    unique_ptr<StrawDigiMCCollection> mchits(new StrawDigiMCCollection);
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     _mbtime = accPar->deBuncherPeriod;
 
@@ -109,9 +112,14 @@ namespace mu2e {
     art::Handle<PtrStepPointMCVectorCollection> mcptrdigiH;
     if(event.getByLabel(_strawDigis,"StrawDigiMCPtr",mcptrdigiH))
       mcptrdigis = mcptrdigiH.product();
+    const StrawDigiMCCollection * mcdigis(0);
+    art::Handle<StrawDigiMCCollection> mcdigiH;
+    if(event.getByLabel(_strawDigis,"StrawDigiMC",mcdigiH))
+      mcdigis = mcdigiH.product();
   // loop over digis.  Note the MC truth is in sequence
     size_t ndigi = strawdigis->size();
-    if(mcptrdigis != 0 && mcptrdigis->size() != ndigi)
+    if( (mcptrdigis != 0 && mcptrdigis->size() != ndigi) ||
+	(mcdigis != 0 && mcdigis->size() != ndigi) )
       throw cet::exception("RECO")<<"mu2e::StrawHitsFromStrawDigis: MCPtrDigi collection size doesn't match StrawDigi collection size" << endl;
     for(size_t isd=0;isd<ndigi;++isd){
       StrawDigi const& digi = (*strawdigis)[isd];
@@ -163,12 +171,15 @@ namespace mu2e {
 	if(mcptrdigis != 0){
 	  mcptrHits->push_back((*mcptrdigis)[isd]);
 	}
+	if(mcdigis != 0){
+	  mchits->push_back((*mcdigis)[isd]);
+	}
       }
     }
 // put objects into event
     event.put(std::move(strawHits));
     if(mcptrdigis != 0)event.put(std::move(mcptrHits),"StrawHitMCPtr");
-
+    if(mchits != 0)event.put(move(mchits),"StrawHitMC");
   }
 }
 using mu2e::StrawHitsFromStrawDigis;
