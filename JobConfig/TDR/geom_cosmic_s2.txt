@@ -15,6 +15,7 @@ vector<string> g4SteppingAction.killInTheseVolumes = { "HallConcreteFloor", "Hal
 
 // We do want to have trajectories for cosmic sims
 double g4.mcTrajectoryMomentumCut =  1.;
+double g4.mcTrajectoryDefaultMinPointDistance = 500.; // mm
 vector<string> g4.mcTrajectoryVolumes = { "PSVacuum", "TS1Vacuum", "TS2Vacuum", "TS3Vacuum", "TS4Vacuum", "TS5Vacuum", "DS1Vacuum", "DS2Vacuum", "DS3Vacuum"};
 vector<double> g4.mcTrajectoryVolumePtDistances = { 15., 15., 15., 15., 15., 15., 15., 15., 15. };
 
