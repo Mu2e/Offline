@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.34 2014/02/24 22:54:07 brownd Exp $
+// $Id: KalFitMC.hh,v 1.35 2014/03/25 22:15:19 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/02/24 22:54:07 $
+// $Date: 2014/03/25 22:15:19 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -13,6 +13,7 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 // tracker
@@ -43,32 +44,15 @@ namespace mu2e
     int _pdgid;
     int _gid,_pid;
     StrawIndex _sid;
-    double _time;
+    double _t0, _time;
     CLHEP::Hep3Vector _pos;
     CLHEP::Hep3Vector _mom;
     MCHitSum() : _esum(0.0),_count(0),_pdgid(0),_gid(0), _sid(0), _time(0.0) {}
-    MCHitSum(StepPointMC const& mchit,art::Ptr<SimParticle>& spp) : _esum(mchit.eDep()),_count(1),
-    _spp(spp),_pdgid(0),_gid(-1),_pid(-1),_sid(mchit.strawIndex()),
-    _time(mchit.time()),
-    _pos(mchit.position()),
-    _mom(mchit.momentum()){
-      if(spp.isNonnull() ){
-	_pdgid = spp->pdgId();
-	_pid = spp->creationCode();
-	if( spp->genParticle().isNonnull())
-	  _gid = spp->genParticle()->generatorId().id();
-      }
-    }
+    MCHitSum(StepPointMC const& mchit,art::Ptr<SimParticle>& spp);
+    MCHitSum(StrawDigiMC const& mcdigi);
     bool operator == (const MCHitSum& other) { return _spp == other._spp; }
     bool operator < (const MCHitSum& other) { return _spp < other._spp; }
-    void append(StepPointMC const& mchit)  {
-      double eold = _esum;
-      _esum += mchit.eDep();
-      _time = _time*eold/_esum + mchit.time()*mchit.eDep()/_esum;
-      _pos = _pos*(eold/_esum) + mchit.position()*(mchit.eDep()/_esum);
-      _mom = _mom*(eold/_esum) + mchit.momentum()*(mchit.eDep()/_esum);
-      _count++;
-    }
+    void append(StepPointMC const& mchit);
 // comparison functor for ordering according to energy
     struct ecomp : public std::binary_function<MCHitSum,MCHitSum, bool> {
       bool operator()(MCHitSum const& t1, MCHitSum const& t2) { return t1._esum > t2._esum; }
@@ -95,13 +79,14 @@ namespace mu2e
     Int_t _active, _usable, _device, _sector, _layer, _straw;
     Float_t _z, _phi, _rho;
     Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
-    Float_t _doca, _exerr, _penerr, _t0err;
+    Float_t _doca, _exerr, _penerr, _t0, _t0err;
     Float_t _ht, _tddist, _tdderr, _hlen;
     Float_t _edep, _dx;
     Int_t _ambig;
     Int_t _mcn, _mcnunique, _mcppdg, _mcpgen, _mcpproc;
     Int_t _mcpdg, _mcgen, _mcproc;
-    Float_t _mcht, _mcdist, _mclen;
+    Float_t _mct0, _mcht, _mcdist, _mclen;
+    Float_t _mcedep;
     Int_t _mcambig;
     Bool_t _xtalk;
 // root 
@@ -123,11 +108,12 @@ namespace mu2e
       const StepPointMCCollection *mcsteps,
       const StepPointMCCollection *mcvdsteps) : _mchitptr(mchitptr),
       _mcsteps(mcsteps),_mcvdsteps(mcvdsteps){}
-    void clear() { _mchitptr = 0; _mcsteps = 0; _mcvdsteps = 0; _simparts = 0; }
+    void clear() { _mchitptr = 0; _mcsteps = 0; _mcvdsteps = 0; _simparts = 0; _mcdigis = 0; }
     MCEvtData() {clear();}
     bool good() { return _mchitptr != 0 && _mcsteps != 0 && _mcvdsteps != 0; }
     const PtrStepPointMCVectorCollection* _mchitptr;
     const StepPointMCCollection *_mcsteps, *_mcvdsteps;
+    const StrawDigiMCCollection *_mcdigis;
     const SimParticleCollection *_simparts;
   };
  
@@ -208,6 +194,7 @@ namespace mu2e
     std::string _mcptrlabel;
     std::string _mcstepslabel;
     std::string _simpartslabel;
+    std::string _mcdigislabel;
     std::string _strawhitslabel;
 // helper functions
     static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );

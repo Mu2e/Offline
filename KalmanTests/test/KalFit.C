@@ -16,7 +16,7 @@
 
 double tdlow(0.57735027);
 double tdhigh(1.0);
-double t0min(710);
+double t0min(700);
 double momlow(103.35);
 double momhigh(104.75);
 int minnhits(20);

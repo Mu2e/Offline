@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.54 2014/03/02 17:49:41 brownd Exp $
+// $Id: KalFitMC.cc,v 1.55 2014/03/25 22:15:19 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/02 17:49:41 $
+// $Date: 2014/03/25 22:15:19 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -60,7 +60,6 @@
 
 using namespace std; 
  
- 
 namespace mu2e 
 {
   // comparison functor for ordering step points
@@ -86,13 +85,56 @@ namespace mu2e
     unsigned _count;
   };
 
+  MCHitSum::MCHitSum(StepPointMC const& mchit,art::Ptr<SimParticle>& spp) :
+    _esum(mchit.eDep()),_count(1),
+  _spp(spp),_pdgid(0),_gid(-1),_pid(-1),_sid(mchit.strawIndex()),
+  _t0(mchit.time()),_time(mchit.time()),
+  _pos(mchit.position()),
+  _mom(mchit.momentum()){
+    if(spp.isNonnull() ){
+      _pdgid = spp->pdgId();
+      _pid = spp->creationCode();
+      if( spp->genParticle().isNonnull())
+	_gid = spp->genParticle()->generatorId().id();
+    }
+  }
+  MCHitSum::MCHitSum(StrawDigiMC const& mcdigi) : _esum(mcdigi.energySum()),
+  _count(mcdigi.stepPointMCs().size()),
+  _pdgid(0),_gid(-1),_pid(-1),_sid(mcdigi.strawIndex()),_time(-1000.0)
+  {
+  // primary end is end '0'
+    StrawDigi::TDCChannel itdc = StrawDigi::zero;
+    if(mcdigi.hasTDC(itdc)){
+      _pos = mcdigi.stepPointMC(itdc)->position();
+      _mom = mcdigi.stepPointMC(itdc)->momentum();
+      _t0 = mcdigi.clusterPosition(itdc).t();
+      _time = mcdigi.wireEndTime(itdc);
+      _pos = mcdigi.clusterPosition(itdc);
+      _spp = mcdigi.stepPointMC(itdc)->simParticle();
+      if(_spp.isNonnull() ){
+	_pdgid = _spp->pdgId();
+	_pid = _spp->creationCode();
+	if( _spp->genParticle().isNonnull())
+	  _gid = _spp->genParticle()->generatorId().id();
+      }
+    }
+  }
+  void MCHitSum::append(StepPointMC const& mchit)  {
+    double eold = _esum;
+    _esum += mchit.eDep();
+    _time = _time*eold/_esum + mchit.time()*mchit.eDep()/_esum;
+    _pos = _pos*(eold/_esum) + mchit.position()*(mchit.eDep()/_esum);
+    _mom = _mom*(eold/_esum) + mchit.momentum()*(mchit.eDep()/_esum);
+    _count++;
+  }
 
- KalFitMC::~KalFitMC(){}
+  KalFitMC::~KalFitMC(){}
   
   KalFitMC::KalFitMC(fhicl::ParameterSet const& pset) :
     _mcptrlabel(pset.get<std::string>("MCPtrLabel","makeSH")),
     _mcstepslabel(pset.get<std::string>("MCStepsLabel","g4run")),
     _simpartslabel(pset.get<std::string>("SimParticleLabel","g4run")),
+    _mcdigislabel(pset.get<std::string>("StrawHitMCLabel","makeSH")),
     _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
     _mintrkmom(pset.get<double>("minTrkMom",60.0)),
     _mct0err(pset.get<double>("mcT0Err",0.1)),
@@ -496,7 +538,8 @@ namespace mu2e
 	tshinfo._dx = sqrt(std::max(0.0,rstraw*rstraw-tshinfo._rdrift*tshinfo._rdrift));
 	tshinfo._trklen = tsh->fltLen();
 	tshinfo._hlen = tsh->hitLen();
-	tshinfo._ht = tsh->hitT0()._t0;
+	tshinfo._t0 = tsh->hitT0()._t0;
+	tshinfo._ht = tsh->time();
 	tshinfo._tddist = tsh->timeDiffDist();
 	tshinfo._tdderr = tsh->timeDiffDistErr();
 	tshinfo._ambig = tsh->ambig();
@@ -510,27 +553,29 @@ namespace mu2e
 	// MC information	
 	PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(tsh->index()));
 	tshinfo._mcn = mcptr.size();
-	if(_mcdata._mcsteps != 0){
-	  std::vector<MCHitSum> mcsum;
+	std::vector<MCHitSum> mcsum;
+	if(_mcdata._mcdigis != 0)
+	  mcsum.push_back(_mcdata._mcdigis->at(tsh->index()));
+	else if(_mcdata._mcsteps != 0)
 	  fillMCHitSum(mcptr,mcsum);
-	  tshinfo._mcnunique = mcsum.size();
+	tshinfo._mcnunique = mcsum.size();
+	if(mcsum.size() > 0){
 	  tshinfo._mcppdg = mcsum[0]._pdgid;
 	  tshinfo._mcpgen = mcsum[0]._gid;
 	  tshinfo._mcpproc = mcsum[0]._pid;
 // first hit is the one that set t0
-	  tshinfo._mcht = mcptr[0]->time();
-	  art::Ptr<SimParticle> sp = mcptr[0]->simParticle();
+	  tshinfo._mct0 = mcsum[0]._t0;
+	  tshinfo._mcht = mcsum[0]._time;
+	  art::Ptr<SimParticle> sp = mcsum[0]._spp;
 	  tshinfo._mcpdg = sp->pdgId();
 	  tshinfo._mcproc = sp->creationCode();
+	  tshinfo._mcedep = mcsum[0]._esum;
 	  tshinfo._mcgen = -1;
 	  if(sp->genParticle().isNonnull())
 	    tshinfo._mcgen = sp->genParticle()->generatorId().id();
 // find the step midpoint
-	  Hep3Vector start = mcptr[0]->position();
-	  Hep3Vector dir = mcptr[0]->momentum().unit();
-	  Hep3Vector end = start + dir*mcptr[0]->stepLength();
-	  Hep3Vector mid = 0.5*(start+end);
-	  Hep3Vector mcsep = mid-tsh->straw().getMidPoint();
+	  Hep3Vector mcsep = mcsum[0]._pos-tsh->straw().getMidPoint();
+	  Hep3Vector dir = mcsum[0]._mom.unit();
 	  Hep3Vector mcperp = (dir.cross(tsh->straw().getDirection())).unit();
 	  double dperp = mcperp.dot(mcsep);
 	  tshinfo._mcdist = fabs(dperp);
@@ -593,9 +638,11 @@ namespace mu2e
     size_t nsh = _mcdata._mchitptr->size();
     _mchitsums.reserve(nsh);
     for(size_t ish=0;ish<nsh;++ish){
-      PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(ish));
+//      PtrStepPointMCVector const& mcptr(_mcdata._mchitptr->at(ish));
       std::vector<MCHitSum> mcsum;
-      fillMCHitSum(mcptr,mcsum); 
+//      fillMCHitSum(mcptr,mcsum);
+      if(mcData()._mcdigis != 0)
+	mcsum.push_back(MCHitSum(mcData()._mcdigis->at(ish)));
       _mchitsums.push_back(mcsum);
     }
   }
@@ -754,6 +801,9 @@ namespace mu2e
     art::Handle<SimParticleCollection> simParticlesHandle;
     if(evt.getByLabel(_simpartslabel,simParticlesHandle))
       _mcdata._simparts = simParticlesHandle.product();
+    art::Handle<StrawDigiMCCollection> mcdigisHandle;
+    if(evt.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle))
+      _mcdata._mcdigis = mcdigisHandle.product();
 // fill hit summary
     fillMCHitSummary();
     if( _mcdata.good()) {
