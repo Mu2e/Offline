@@ -1,7 +1,7 @@
 #include "JobConfig/TDR/geom_baseline.txt"
 
 vector<string> g4SteppingAction.killInTheseVolumes = { "TrackerMother", "CalorimeterMother",
-                                                       "HallConcreteFloor", "worldDirtBottom" }
+                                                       "HallConcreteFloor", "worldDirtBottom" };
 
 // We do want to have trajectories for cosmic sims
 double g4.mcTrajectoryMomentumCut = 80.;
