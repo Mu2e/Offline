@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.30 2014/01/15 17:12:05 tassiell Exp $
-// $Author: tassiell $
+// $Id: VirtualDetectorMaker.cc,v 1.31 2014/03/26 15:14:49 rhbob Exp $
+// $Author: rhbob $
 //
 
 #include <iostream>
@@ -134,6 +134,16 @@ namespace mu2e {
                                ds2centerInMu2e, 0, targetOffset-shift);
       vd->addVirtualDetector( VirtualDetectorId::ST_Out,
                                ds2centerInMu2e, 0, targetOffset+shift);
+
+
+      /*******new virtual detector for STM Upstream halfway between coll5Out and STIn   ****/
+
+      std::cout << "coll 5 " << coll5pos.z() << " " << deltaZ5.z() << " " << targetOffset.z() << " " << shift.z() << std::endl;
+      const Hep3Vector STMOffset(targetOffset.x()-shift.x(),targetOffset.y()-shift.y(), targetOffset.z()-shift.z() - 0.5*( (coll5pos.z()+deltaZ5.z()) - (targetOffset.z()-shift.z()) ));
+      vd->addVirtualDetector( VirtualDetectorId::STMUpstream,
+			      ds2centerInMu2e,0,STMOffset);
+
+
 
       if (c.getBool("hasTTracker",false)){
 

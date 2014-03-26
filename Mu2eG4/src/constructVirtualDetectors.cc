@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.67 2014/01/15 17:12:05 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2014/01/15 17:12:05 $
+// $Id: constructVirtualDetectors.cc,v 1.68 2014/03/26 15:13:47 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2014/03/26 15:13:47 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 
@@ -185,7 +185,7 @@ namespace mu2e {
 
       VolumeInfo const & parent = _helper->locateVolInfo("TS5Vacuum");
 
-      double coll5OuterRadius    = beamg->getTS().getColl5().rIn();
+      double coll5OuterRadius    = beamg->getTS().getColl5().rOut();
       double coll5HalfLength     = beamg->getTS().getColl5().halfLength();
 
       TubsParams  vdParamsColl5OutSurf(coll5OuterRadius - 2.*vdHalfLength,
@@ -206,6 +206,83 @@ namespace mu2e {
       vd.logical->SetSensitiveDetector(vdSD);
 
     }
+
+    /*************************************************/
+    /* new virtual detector**************************/
+
+  
+    if ( !_config.getBool("isDumbbell",false) ){
+      double Ravr = ds->rIn1();
+
+      if ( _config.getBool("hasInternalNeutronAbsorber",false) ) {
+        Ravr = _config.getDouble("intneutronabs.rIn1");
+      }
+
+      bool opaflag = false;
+      double opaz0, opaz1, opari0, opari1;
+      if ( _config.getBool("hasProtonAbsorber", true) ) {
+        GeomHandle<MECOStyleProtonAbsorber> pageom;
+        if ( pageom->isAvailable(ProtonAbsorberId::opabs) ) {
+          opaflag = true;
+          MECOStyleProtonAbsorberPart opa = pageom->part(2);
+          opaz0 = opa.center().z()-opa.halfLength();
+          opaz1 = opa.center().z()+opa.halfLength();
+          opari0 = opa.innerRadiusAtStart();
+          opari1 = opa.innerRadiusAtEnd();
+        }
+      }
+      vdId = VirtualDetectorId::STMUpstream;
+          if( vdg->exist(vdId) ) {
+
+          if ( verbosityLevel > 0) {
+            cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+          }
+    
+          double zvd = vdg->getGlobal(vdId).z();
+          if (opaflag) {
+            Ravr = (opari1 - opari0)/(opaz1 - opaz0) * (zvd - opaz0) + opari0;
+          }
+          double rvd = Ravr - 5.0;
+
+          if ( verbosityLevel > 0) {
+            cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+              " z, r : " << zvd << ", " << rvd << endl;
+          }
+
+          TubsParams vdParamsSTMUpstream(0.,rvd,vdHalfLength);
+
+          VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
+            _helper->locateVolInfo("DS3Vacuum") :
+            _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
+
+          if (verbosityLevel >0) {
+            cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z offset in Mu2e    : " <<
+              zvd << endl;
+            cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z extent in Mu2e    : " <<
+              zvd - vdHalfLength << ", " << zvd + vdHalfLength << "\n" 
+               << " at " << vdg->getGlobal(vdId) <<  " parent: " << parent.centerInMu2e() << endl;
+         }
+
+          VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
+                                    vdParamsSTMUpstream, vacuumMaterial, 0,
+                                    vdg->getLocal(vdId),
+                                    parent,
+                                    vdId,
+                                    vdIsVisible,
+                                    G4Color::Red(), vdIsSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    false);
+
+          doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
+
+          vd.logical->SetSensitiveDetector(vdSD);
+        }
+    }
+
+
+    /*****************end of new virtual detector************************/
+
 
     // Virtual Detectors ST_In, ST_Out are placed inside DS2, just before and after stopping target
 
