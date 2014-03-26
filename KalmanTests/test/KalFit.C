@@ -255,6 +255,29 @@ void KalFitHit (TTree* hits ) {
 
 }
 
+void KalFitT2d(TTree* trks){
+  TH2F* rt2d = new TH2F("rt2d","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,100,-0.05,2.55);
+  TH2F* tt2d = new TH2F("tt2d","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,100,-0.05,2.55);
+  TProfile* rt2dp = new TProfile("rt2dp","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,-0.05,2.55);
+  TProfile* tt2dp = new TProfile("tt2dp","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55);
+  trks->Project("tt2d","_mcdist:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
+  trks->Project("rt2d","_rdrift:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
+  trks->Project("tt2dp","_mcdist:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
+  trks->Project("rt2dp","_rdrift:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
+
+  TCanvas* t2dcan = new TCanvas("t2dcan","t2dcan",1200,800);
+  t2dcan->Divide(2,2);
+  t2dcan->cd(1);
+  rt2d->Draw(); 
+  t2dcan->cd(2);
+  tt2d->Draw(); 
+  t2dcan->cd(3);
+  rt2dp->Fit("pol1","","",0,43);
+  t2dcan->cd(4);
+  tt2dp->Fit("pol3","","",0,43);
+
+}
+
 void KalFitTrk (TTree* trks ) {
   if(!donecuts)KalCuts();
   TCanvas* tcan = new TCanvas("tt0can","trk_t0can",1200,800);
