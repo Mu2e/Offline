@@ -36,6 +36,8 @@ namespace mu2e {
   //================================================================
   FilterStepPointMomentum::FilterStepPointMomentum(const fhicl::ParameterSet& pset)
     : cutMomentumMin_(pset.get<double>("cutMomentumMin"))
+    , numInputEvents_(0)
+    , numPassedEvents_(0)
   {
     typedef std::vector<std::string> VS;
     const VS in(pset.get<VS>("inputs"));
