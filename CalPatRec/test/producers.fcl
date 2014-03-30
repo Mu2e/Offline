@@ -1,0 +1,83 @@
+# -*- mode: tcl -*-
+BEGIN_PROLOG
+#------------------------------------------------------------------------------
+# module, supplying T0 of the most energetic cluster to tracking
+#------------------------------------------------------------------------------
+MakeCaloClusterHack        : {
+    module_type            : MakeCaloClusterHack
+    diagLevel              : 0
+    maxFullPrint           : 201
+    generatorModuleLabel   : generate
+    caloCrystalModuleLabel : CaloCrystalHitsMaker
+    g4ModuleLabel          : g4run
+    caloClusterAlgorithm   : closest
+    caloClusterSeeding     : energy
+    deltaTimePlus          : 5.0 # ns
+    deltaTimeMinus         : 5.0 # ns
+    nCryPerCrystal         : 1
+    EnoiseCut              : 0.00 # MeV
+    EclusterCut            : 5.00 # MeV  
+}
+#------------------------------------------------------------------------------
+# straw hit coll maker seeded by the calorimeter
+#------------------------------------------------------------------------------	
+MakeStrawHitsNew: {
+    module_type             : MakeStrawHitsNew
+    diagLevel               : 1
+    StrawHitCollectionLabel : makeSH
+    caloClusterModuleLabel  : MakeCaloCluster
+    maxEemc                 :  60.0     # MeV
+    t1                      : -70.0     # ns
+    t2                      :  40.0     # ns
+}
+#------------------------------------------------------------------------------
+# this is a modified version which uses T0 defined by the calorimeter cluster
+#------------------------------------------------------------------------------
+CalPatRec            : {
+    module_type                             : CalPatRec
+    includeCaloInfo				: 0
+    FindTimePeaks                           : false
+    # Kalman fit configuration for the helix seed fit
+    SeedFit : {
+	debugLevel                              : 0
+	maxiter                                 : 3
+	materialCorrection                      : false
+	seedsmear       			: 10000
+	maxhitchi                               : 5.0
+	hiterr                                  : [ 5.0, 1.44 ]
+	ambiguityStrategy       		: [0,0]
+	t0Tolerance				: [5.0,5.0]
+	initT0					: true 
+	updateT0				: false
+    }
+    # Kalman fit configuration for the final track fit
+    KalFit : {
+	debugLevel                              : 0
+	materialCorrection                      : true
+	mingap					: 1.0
+	hiterr 					: [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
+	ambiguityStrategy    			: [ 0, 0, 2, 2, 2, 2, 2, 2, 2 ]
+	t0Tolerance				: [2.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.2, 0.2, 0.1]
+	initT0					: true
+	updateT0				: true
+	HitAmbigPenalty 			: false
+	HitMinDrift 				: 0.1
+	ZeroDriftPenalty 			: 0.05
+	Neutralize 				: true
+	fieldCorrection				: true
+    }
+    TimeSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
+    HelixFitSelectionBits   : ["EnergySelection","TimeSelection","RadiusSelection"]
+    KalmanFitSelectionBits  : []
+    BackgroundSelectionBits : []
+}
+
+MergePatRec : {
+    module_type                  : MergePatRec
+    diagLevel                    : 0
+    debugLevel                   : 0
+    trkPatReclabel               : TrkPatRec
+    calPatReclabel               : CalPatRec
+}
+
+END_PROLOG

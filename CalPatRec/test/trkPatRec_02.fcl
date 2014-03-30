@@ -1,0 +1,277 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# remake all hits starting from StepPointMCs
+#------------------------------------------------------------------------------
+# $Id: trkPatRec_02.fcl,v 1.1 2014/03/30 01:51:50 murat Exp $
+# $Author: murat $
+# $Date: 2014/03/30 01:51:50 $
+#
+# Original author Rob Kutschke
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+#                             Give this process a name
+process_name : trkPatRec
+
+# Read events from a file (made by example 3)
+source : {
+#    module_type : EmptyEvent
+    module_type : RootInput
+    maxEvents   : 100
+}
+
+#------------------------------------------------------------------------------
+# services
+#------------------------------------------------------------------------------
+services : {
+    message : @local::mf_debugging
+
+    # Adjust configuration of message logger:
+    # Load the standard message logger configuration:
+    # Threshold=Info (from using mf_interactive). 
+    # Limit of 5 per category; then exponential backoff.
+    #  message.destinations.log.default.limit : 5
+    
+    
+    TFileService : { fileName   : "trkPatRec.root" }
+    RandomNumberGenerator : { }
+
+    user : {
+	
+	GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
+	
+	ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+	GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+	G4Helper : { }
+	
+	SeedService : @local::automaticSeeds
+    }
+
+} # close of services block
+#------------------------------------------------------------------------------
+# physics
+#------------------------------------------------------------------------------
+physics : {
+    
+    producers : {
+
+	# Generate the event
+	generate: @local::generate
+
+	# Run G4 and add hits to the event
+	g4run : @local::g4run
+
+
+	protonTimeMap : { module_type : GenerateProtonTimes }
+	muonTimeMap   : { module_type : GenerateMuonLife }
+
+	# Form StrawHits (SH).
+	makeSD : @local::makeSD
+	makeSH : @local::makeSHfromSD
+
+	trkPatRec   : @local::TrkPatRecDownstreameMinus
+	
+	makeSHnew: {
+	    module_type             : MakeStrawHitsNew
+	    diagLevel               : 1
+	    StrawHitCollectionLabel : makeSH
+	    caloClusterModuleLabel  : makeCaloCluster
+	    maxEemc                 : 60.0
+	    t1                      : -70.0
+	    t2                      : 40.0
+	}
+
+	MakeStereoHits: {
+	    module_type             :  MakeStrawHitPositions
+	}
+
+	FlagStrawHits  : @local::FlagStrawHits
+	
+	FlagBkgHits    : @local::FlagBkgHits
+
+	# Form CaloHits (APD hits)
+	CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+
+	# Form CaloCrystalHits (reconstruct crystals from APDs)
+	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+
+	calPatRec     : {
+	    module_type                             : CalPatRec
+	    includeCaloInfo				: 0
+	    FindTimePeaks                           : false
+	    # Kalman fit configuration for the helix seed fit
+	    SeedFit :
+	    {
+                maxiter                                 : 3
+                materialCorrection                      : false
+                seedsmear       			: 10000
+                maxhitchi                               : 5.0
+                hiterr                                  : [ 5.0, 1.44 ]
+                ambiguityStrategy       		: [0,0]
+		t0Tolerance				: [5.0,5.0]
+		initT0					: true 
+		updateT0				: false
+	    }
+	    # Kalman fit configuration for the final track fit
+	    KalFit :
+	    {
+                materialCorrection                      : true
+		mingap					: 1.0
+		hiterr 					: [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
+		ambiguityStrategy    			: [ 0, 0, 2, 2, 2, 2, 2, 2, 2 ]
+		t0Tolerance				: [2.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.2, 0.2, 0.1]
+		initT0					: true
+		updateT0				: true
+		HitAmbigPenalty 			: false
+		HitMinDrift 				: 0.1
+		ZeroDriftPenalty 			: 0.05
+		Neutralize 				: true
+		fieldCorrection				: true
+	    }
+	    TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
+	    HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
+	    KalmanFitSelectionBits : []
+	    BackgroundSelectionBits : ["DeltaRay","Isolated"]
+	}
+
+	makeCaloCluster: {
+	    module_type            : MakeCaloClusterHack
+	    diagLevel              : 0
+	    generatorModuleLabel   : generate
+	    caloCrystalModuleLabel : CaloCrystalHitsMaker
+	    g4ModuleLabel          : g4run
+	    caloClusterAlgorithm   : closest
+	    caloClusterSeeding     : energy
+	    nCryPerCrystal         : 1
+	    EnoiseCut              : 0.00 #MeV
+	    EclusterCut            : 0.00 #MeV  
+	    maxFullPrint           : 201
+	}
+
+	trkExtrapol : {
+	    module_type                  : TrkExtrapol
+	    diagLevel                    : 1
+	    fitterModuleLabel            : trkPatRec
+	    maxNumberStoresPoints        : 1
+	    # MC truth finder, analyzer configuration
+	    KalFitMC : {
+	    }        
+	}
+
+	caloMatching : {
+	    module_type                  : CaloMatching
+	    diagLevel                    : 1
+	    fitterModuleLabel            : trkPatRec
+	    trkToCaloExtrapolModuleLabel : trkExtrapol
+	    caloClusterModuleLabel       : makeCaloCluster
+	    outPutNtup                   : 0
+	    caloClusterAlgorithm         : closest
+	    caloClusterSeeding           : energy
+	}
+	
+
+    }
+
+    filters : {  
+
+	muHitDisplay: {
+	    module_type                  : MuHitDisplay # the class name
+	    debugBits                    : { }          # need for TAnaModule
+	    interactiveMode              : 1
+	    
+#	    generatorModuleLabel         : generate
+	    generatorModuleLabel         : dioMixer
+	    g4ModuleLabel                : g4run
+	    strawHitMakerModuleLabel     : makeSH
+	    strawHitPosMakerModuleLabel  : MakeStereoHits
+	    strawHitFlagMakerModuleLabel : FlagStrawHits
+	    caloClusterModuleLabel       : makeCaloCluster
+	    trkExtrapol                  : trkExtrapol
+	    trkCalMatch                  : caloMatching
+	    trkPatRecModuleLabel         : trkPatRec
+	    
+	    # if set to true, all hits will be displayed unconditionally
+	    # otherwise, display only hits with right flags
+	    displayBackgroundHits        : true
+	    useStereoHits                : true
+
+	    #      goodHitMask                 : ["EnergySelection","RadiusSelection","TimeSelection"]
+	    goodHitMask                  : ["EnergySelection", "RadiusSelection"]
+	    badHitMask                   : ["DeltaRay", "Isolated"]
+	    
+	    trackerStepPoints            : tracker
+	    minHits                      : 5
+	    clickToAdvance               : true
+	    printHits                    : false
+	    timeWindow                   : 100000.
+	    #      timeWindow           : 50.
+	}
+    }
+
+
+    analyzers: {  }
+    #------------------------------------------------------------------------------
+    # paths
+    #------------------------------------------------------------------------------
+    p1 : [#generate, 
+	  g4run,
+	  protonTimeMap, muonTimeMap, 
+	  makeSD, makeSH,
+	  MakeStereoHits, FlagStrawHits, FlagBkgHits, 
+	  trkPatRec,
+	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,
+	  makeCaloCluster, 
+
+	  # makeSHnew,  # this one is neded for CalPatRec
+
+	  trkExtrapol, caloMatching,
+	  muHitDisplay
+	 ]
+
+    e1 : [
+	  #outfile
+	 ]
+
+
+    trigger_paths  : [p1]
+    end_paths      : [e1]
+    
+}
+
+outputs: {
+    outfile : {
+	module_type    : RootOutput
+	fileName       : "calPatRec_outFile.root"
+	SelectEvents  : { SelectEvents: [ p1 ] }
+	outputCommands : ['keep *_*_*_*'
+			  #                   , 'drop mu2eStrawDigis_*_*_*'
+			  #                   , 'drop mu2eStrawHits_*_*_*'
+			  # Uncomment the above line to reduce file size.
+			 ]  
+    }
+}
+services.scheduler.wantSummary: true
+#------------------------------------------------------------------------------
+# print per event timing for ::event entry points
+#------------------------------------------------------------------------------
+#     services.Timing: { }
+#------------------------------------------------------------------------------
+# print timing summary
+#------------------------------------------------------------------------------
+# services.scheduler.wantSummary: true
+source.firstRun                            :  1 
+services.user.SeedService.baseSeed         :  1
+services.user.SeedService.maxUniqueEngines :  20
+
+physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_DownstreameMinus.txt"
+
+# physics.producers.MakeStereoHits.StrawHitCollectionLabel : makeSHnew
+# physics.producers.FlagStrawHits.StrawHitCollectionLabel  : makeSHnew
+# physics.producers.FlagBkgHits.StrawHitCollectionLabel    : makeSHnew
+# physics.producers.calPatRec.StrawHitCollectionLabel      : makeSHnew
+
+
+physics.producers.makeSD.TimeOffsets               :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+physics.producers.CaloReadoutHitsMaker.TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
