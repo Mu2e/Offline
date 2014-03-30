@@ -256,6 +256,12 @@ randomsaver:
   module_type          : RandomNumberSaver
 }
 # pattern recognition precursors
+
+MakeStrawHitPositions : {
+  module_type             : MakeStrawHitPositions
+  StrawHitCollectionLabel : "makeSH"
+}
+
 MakeStereoHits : {
   module_type : MakeStereoHits
 }
