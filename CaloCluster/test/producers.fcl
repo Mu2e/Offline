@@ -1,0 +1,22 @@
+# -*- mode: tcl -*-
+BEGIN_PROLOG
+
+MakeCaloCluster: {
+    module_type             : MakeCaloClusterNew
+    diagLevel               : 0
+    generatorModuleLabel    : generate
+    caloCrystalModuleLabel  : CaloCrystalHitsMaker
+    g4ModuleLabel           : g4run
+    #caloReadoutModuleLabel : CaloReadoutHitsMaker
+#
+    caloClusterAlgorithm    : closest
+    caloClusterSeeding      : energy
+    #caloClusterSeeding     : time
+    deltaTime               : 10.0 # ns
+    nCryPerCrystal          : 1
+    EclusterCut             : 2.0  # MeV  
+    EnoiseCut               : 0.1  # MeV
+    maxFullPrint            : 201
+}
+
+END_PROLOG
