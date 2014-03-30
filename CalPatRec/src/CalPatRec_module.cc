@@ -1,6 +1,6 @@
-// $Id: CalPatRec_module.cc,v 1.2 2014/03/04 20:42:02 gianipez Exp $
-// $Author: gianipez $ 
-// $Date: 2014/03/04 20:42:02 $
+// $Id: CalPatRec_module.cc,v 1.3 2014/03/30 01:50:47 murat Exp $
+// $Author: murat $ 
+// $Date: 2014/03/30 01:50:47 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -128,7 +128,7 @@ namespace mu2e
       const StrawHitFlagCollection* _shfcol;
       StrawHitFlagCollection* _flags;
       const StrawHitPositionCollection* _shpcol;
-      const StereoHitCollection* _stcol;
+    //      const StereoHitCollection* _stcol;
       // Kalman fitters.  Seed fit has a special configuration
       KalFitHack _seedfit, _kfit;
       // robust helix fitter
@@ -410,16 +410,13 @@ namespace mu2e
     _shcol = 0;
     _shfcol = 0;
     _shpcol = 0;
-    _stcol = 0;
+    //    _stcol = 0;
     art::Handle<mu2e::StrawHitCollection> strawhitsH;
     if(evt.getByLabel(_shLabel,strawhitsH))
       _shcol = strawhitsH.product();
     art::Handle<mu2e::StrawHitPositionCollection> shposH;
     if(evt.getByLabel(_shpLabel,shposH))
       _shpcol = shposH.product();
-//     art::Handle<mu2e::StereoHitCollection> stH;
-//     if(evt.getByLabel(_stLabel,stH))
-//       _stcol = stH.product();
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if(evt.getByLabel(_shfLabel,shflagH))
       _shfcol = shflagH.product();
@@ -731,17 +728,12 @@ namespace mu2e
       _shrres = _shpcol->at(istr).posRes(StrawHitPosition::rho);
       _shmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
       _shmcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
-      _shmctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
-//  Info depending on stereo hits
-      if(_stcol != 0 && _shpcol->at(istr).stereoHitIndex() >= 0){
-	_shchisq = _stcol->at(_shpcol->at(istr).stereoHitIndex()).chisq();
-	_shdt = _stcol->at(_shpcol->at(istr).stereoHitIndex()).dt();
-	_shdist = _stcol->at(_shpcol->at(istr).stereoHitIndex()).dist();
-      } else {
-	_shchisq = -1.0;
-	_shdt = 0.0;
-	_shdist = -1.0;
-      }
+      _shmctd  = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
+
+      _shchisq = -1.0;
+      _shdt    = 0.0;
+      _shdist  = -1.0;
+
       // compare to different time peaks
       _ntpeak = _tpeaks.size();
       _nshtpeak = 0;
@@ -921,16 +913,11 @@ namespace mu2e
     shinfo._rho = shp.pos().perp();
     shinfo._pres = shp.posRes(StrawHitPosition::phi);
     shinfo._rres = shp.posRes(StrawHitPosition::rho);
-// info depending on stereo hits
-    if(_stcol != 0 && shp.stereoHitIndex() >= 0){
-      shinfo._chisq = _stcol->at(shp.stereoHitIndex()).chisq();
-      shinfo._stdt = _stcol->at(shp.stereoHitIndex()).dt();
-      shinfo._dist = _stcol->at(shp.stereoHitIndex()).dist();
-    } else {
-      shinfo._chisq = -1.0;
-      shinfo._stdt = 0.0;
-      shinfo._dist = -1.0;
-    }
+
+    shinfo._chisq = -1.0;
+    shinfo._stdt  = 0.0;
+    shinfo._dist  = -1.0;
+
     shinfo._edep = sh.energyDep();
     const Straw& straw = tracker.getStraw( sh.strawIndex() );
     shinfo._device = straw.id().getDevice();
