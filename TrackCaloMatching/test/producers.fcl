@@ -1,0 +1,25 @@
+# -*- mode: tcl -*-
+BEGIN_PROLOG
+
+TrkExtrapol : {
+    module_type                  : TrkExtrapol
+    diagLevel                    : 0
+    fitterModuleLabel            : TrkPatRec
+    maxNumberStoresPoints        : 1
+    # MC truth finder, analyzer configuration
+    KalFitMC : {
+    }        
+}
+
+CaloMatching : {
+    module_type                  : CaloMatching
+    diagLevel                    : 0
+    fitterModuleLabel            : TrkPatRec
+    trkToCaloExtrapolModuleLabel : TrkExtrapol
+    caloClusterModuleLabel       : MakeCaloCluster
+    outPutNtup                   : 0
+    caloClusterAlgorithm         : closest
+    caloClusterSeeding           : energy
+}
+
+END_PROLOG
