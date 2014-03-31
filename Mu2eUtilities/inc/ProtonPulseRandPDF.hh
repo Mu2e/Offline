@@ -4,9 +4,9 @@
 //  
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.hh,v 1.7 2014/02/18 22:08:44 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.hh,v 1.8 2014/03/31 15:13:07 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/02/18 22:08:44 $
+// $Date: 2014/03/31 15:13:07 $
 //
 // Original author: Gianni Onorato
 //                  Kyle Knoepfel (significant updates)
@@ -34,7 +34,7 @@ namespace mu2e {
 
     class PotSpectrumType {
     public:
-      enum enum_type { unknown, DEFAULT, TOTAL, OOT };
+      enum enum_type { unknown, DEFAULT, TOTAL, OOT, OOTFLAT, ALLFLAT };
       static std::string const& typeName() {
         static std::string type("PotSpectrumType"); return type;
       }
@@ -46,6 +46,8 @@ namespace mu2e {
           nam[DEFAULT] = "default";
           nam[TOTAL]   = "total";
           nam[OOT]     = "oot";
+          nam[OOTFLAT] = "ootflat";
+          nam[ALLFLAT] = "allflat";
         }
 
         return nam;
@@ -60,6 +62,7 @@ namespace mu2e {
 
     double fire();
     const std::vector<double>& getSpectrum() const { return _spectrum; }
+    const std::vector<double>& getTimes()    const { return _times; }
 
   private:
 

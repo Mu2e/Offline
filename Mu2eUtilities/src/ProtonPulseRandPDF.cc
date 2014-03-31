@@ -1,8 +1,8 @@
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.14 2014/03/03 16:19:12 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.cc,v 1.15 2014/03/31 15:13:07 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/03/03 16:19:12 $
+// $Date: 2014/03/31 15:13:07 $
 //
 // Original author: Kyle Knoepfel
 
@@ -85,21 +85,27 @@ namespace mu2e{
     const double pdfBinWidth = std::min( std::min( potBinWidth, acBinWidth ), ootBinWidth );
 
     if ( _pulseEnum == PotSpectrum::DEFAULT ) { 
-      _timeMax    = _pulseShape( _pulseShape.getNrows()-1, 0 ); 
-      _timeMin    = _pulseShape(0,0);
-      _fireOffset = 0.5; // Pulse should start at beginning of POT pulse
+      _timeMax    = accPar->limitingHalfWidth;
+      _timeMin    = -accPar->limitingHalfWidth;
     }
     if ( _pulseEnum == PotSpectrum::TOTAL   ) { 
       _timeMax    = accPar->deBuncherPeriod - accPar->limitingHalfWidth;                        
       _timeMin    = _pulseShape(0,0);
-      _fireOffset = -_timeMin/(_timeMax-_timeMin); // Pulse should start at beginning of POT pulse
     }
     if ( _pulseEnum == PotSpectrum::OOT     ) { 
       _timeMax    = accPar->deBuncherPeriod - accPar->limitingHalfWidth;
-      _timeMin    = 0.;              
-      _fireOffset = 0.; // Pulse should start at t = 0. 
+      _timeMin    = accPar->limitingHalfWidth;              
+    }
+    if ( _pulseEnum == PotSpectrum::OOTFLAT ) {
+      _timeMax    = accPar->deBuncherPeriod - accPar->limitingHalfWidth;
+      _timeMin    = accPar->limitingHalfWidth;
+    }
+    if ( _pulseEnum == PotSpectrum::ALLFLAT ) {
+      _timeMax    = accPar->deBuncherPeriod - accPar->limitingHalfWidth;
+      _timeMin    = -accPar->limitingHalfWidth;
     }
 
+    _fireOffset =  -_timeMin/(_timeMax-_timeMin);
     const std::size_t nbins = (_timeMax - _timeMin)/pdfBinWidth+1;
 
     // Set time axis
@@ -154,11 +160,13 @@ namespace mu2e{
     renormalizeShape( potShape, 1. );
 
     // Get AC dipole transmission function and out-of-time shape
-    std::vector<double> dipoleShape = getShape( _acdipole   ); 
-    std::vector<double> ootShape    = getShape( _ootPulse, ootOffset );
+    std::vector<double> dipoleShape  = getShape( _acdipole   ); 
+    std::vector<double> ootShape     = getShape( _ootPulse, ootOffset );
+    std::vector<double> flatShape ( _nPoints, 1. ); 
 
-    // Normalize ootShape given extinction factor
-    renormalizeShape( ootShape, _extFactor );
+    // Normalize out-of-time shapes given extinction factor
+    renormalizeShape( ootShape  , _extFactor );
+    renormalizeShape( flatShape , _extFactor );
 
     // Set the spectrum given shapes above
     std::vector<double> spectrum;
@@ -169,6 +177,8 @@ namespace mu2e{
       if ( _pulseEnum == PotSpectrum::TOTAL   ) weight = potShape.at(i)*dipoleShape.at(i) + ootShape.at(i);
       if ( _pulseEnum == PotSpectrum::DEFAULT ) weight = potShape.at(i)*dipoleShape.at(i);
       if ( _pulseEnum == PotSpectrum::OOT     ) weight = ootShape.at(i);
+      if ( _pulseEnum == PotSpectrum::OOTFLAT ) weight = flatShape.at(i);
+      if ( _pulseEnum == PotSpectrum::ALLFLAT ) weight = flatShape.at(i);
       spectrum.push_back( weight );
     }
     
