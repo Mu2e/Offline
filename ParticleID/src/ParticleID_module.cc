@@ -327,13 +327,11 @@ int findlowhist(float d){
 	 hit->resid(resid,residerr,true);
 	 
 	 bool activehit = hit->isActive();
-	 double aresd = (hit->poca()->doca()>0?resid:-resid);
-	 double normflt = hit->fltLen() -  krep.flt0();
-	 double normresd = aresd/residerr;
-
-
-	 
 	 if (activehit){
+	   double aresd = (hit->poca()->doca()>0?resid:-resid);
+	   double normflt = hit->fltLen() -  krep.flt0();
+	   double normresd = aresd/residerr;
+
 	   vresd.push_back(normresd);
 	   vflt.push_back(normflt);
 	   evresd.push_back(1.);
