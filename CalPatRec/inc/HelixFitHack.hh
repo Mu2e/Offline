@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.hh,v 1.3 2014/03/10 23:06:23 gianipez Exp $
+// $Id: HelixFitHack.hh,v 1.4 2014/03/31 21:55:17 gianipez Exp $
 // $Author: gianipez $ 
-// $Date: 2014/03/10 23:06:23 $
+// $Date: 2014/03/31 21:55:17 $
 //
 #ifndef HelixFitHack_HH
 #define HelixFitHack_HH
@@ -198,6 +198,11 @@ namespace mu2e
     //2014-03-10 Gianipez and P. Murat introduced the following paramter for limiting 
     // the dfdz value in the pattern-recognitio stage
     double _maxDfDz;
+
+    //201-03-31 Gianipez added th following parameter for changing the value of the 
+    // squared distance requed bewtween the strawhits and the theretical position
+    // used in the patter recognition procedure
+    double _distPatRec;
 
     double _rbias;  // robust fit parameter bias
     double _efac; // error factor

@@ -3,9 +3,9 @@
 # this .FCL file assumes that the input data file has the digitized 
 # straw tracker and calorimeter hits stored in it
 #------------------------------------------------------------------------------
-# $Id: calPatRec_01.fcl,v 1.3 2014/03/11 15:19:55 murat Exp $
-# $Author: murat $
-# $Date: 2014/03/11 15:19:55 $
+# $Id: calPatRec_01.fcl,v 1.4 2014/03/31 21:55:16 gianipez Exp $
+# $Author: gianipez $
+# $Date: 2014/03/31 21:55:16 $
 #
 # Original author Rob Kutschke
 
@@ -41,7 +41,7 @@ services : {
 
     user : {
 	
-	GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
+	GeometryService        : { inputFile : "Mu2eG4/test/geom_01_tdr.txt" }
 	
 	ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
 	GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
@@ -79,7 +79,7 @@ physics : {
 	    StrawHitCollectionLabel : makeSH
 	    caloClusterModuleLabel  : makeCaloCluster
 	    maxEemc                 : 60.0
-	    t1                      : -70.0
+	    t1                      : -60.0
 	    t2                      : 40.0
 	}
 
@@ -129,6 +129,12 @@ physics : {
 		ZeroDriftPenalty 			: 0.05
 		Neutralize 				: true
 		fieldCorrection				: true
+	    }
+	    # HelixFitHack configuraton
+	    HelixFit : 
+	    {
+		debugLevel                              : 1
+		distPatRec                              : 1600.
 	    }
 	    TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]

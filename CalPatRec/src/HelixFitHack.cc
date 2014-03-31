@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.cc,v 1.6 2014/03/11 15:18:34 murat Exp $
-// $Author: murat $ 
-// $Date: 2014/03/11 15:18:34 $
+// $Id: HelixFitHack.cc,v 1.7 2014/03/31 21:55:16 gianipez Exp $
+// $Author: gianipez $ 
+// $Date: 2014/03/31 21:55:16 $
 //
 //
 // the following has to come before other BaBar includes
@@ -195,6 +195,7 @@ namespace mu2e
     _maxdz(pset.get<double>("maxdz",35.0)),
     _maxdot(pset.get<double>("maxdot",0.9)),
     _maxDfDz(pset.get<double>("maxDfDz",0.01)),
+    _distPatRec(pset.get<double>("distPatRec",600.0)),
     _rbias(pset.get<double>("radialBias",0.0)),
     _efac(pset.get<double>("ErrorFactor",1.0)),
     _rhomin(pset.get<double>("rhomin",350.0)),
@@ -1408,7 +1409,8 @@ namespace mu2e
       rejectList[i] = -9999;
     }
     //------------------------------------------------------------//
-    double distGoodPoint(600.);//(1e5);
+    //    double distGoodPoint(600.);//(1e5);
+    double distGoodPoint(_distPatRec);//(1e5);
     double dist(0.0);
     double tollMin(100.), tollMax(500.);
     //2014-03-10 gianipez changed the values of the following tollerance
