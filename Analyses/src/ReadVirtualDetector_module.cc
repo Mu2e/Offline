@@ -1,9 +1,9 @@
 //
 // Plugin to read virtual detectors data and create ntuples
 //
-//  $Id: ReadVirtualDetector_module.cc,v 1.22 2014/02/25 23:16:49 youzy Exp $
-//  $Author: youzy $
-//  $Date: 2014/02/25 23:16:49 $
+//  $Id: ReadVirtualDetector_module.cc,v 1.23 2014/03/31 15:12:51 knoepfel Exp $
+//  $Author: knoepfel $
+//  $Date: 2014/03/31 15:12:51 $
 //
 // Original author Ivan Logashenko
 //
@@ -137,6 +137,7 @@ namespace mu2e {
       art::EDAnalyzer(pset),
       _vdStepPoints(pset.get<string>("vdStepPoints","virtualdetector")),
       _tvdStepPoints(pset.get<string>("tvdStepPoints","timeVD")),
+      _simParticleColl(pset.get<string>("simParticleColl","s0")),
       _nAnalyzed(0),
       _maxPrint(pset.get<int>("maxPrint",0)),
       _ntvd(0), _nttvd(0), _ntpart(0), _ntpart1(0),
@@ -195,6 +196,7 @@ namespace mu2e {
     // Name of the VD and TVD StepPoint collections
     std::string  _vdStepPoints;
     std::string _tvdStepPoints;
+    std::string _simParticleColl;
 
     // Control printed output.
     int _nAnalyzed;
@@ -211,9 +213,6 @@ namespace mu2e {
     // Pointers to the physical volumes we are interested in
     // -- stopping target
     map<int,int> vid_stop;
-
-    // Save all particles
-    bool _save_all_pdg;
 
     // List of particles of interest for the particles ntuple
     set<int> pdg_save;
@@ -240,6 +239,9 @@ namespace mu2e {
 
     // Save only stopped particles in the particles ntuple
     bool _stopped_only;
+
+    // Save all particles
+    bool _save_all_pdg;
 
     // Should we add together proper time for the whole decay chain
     bool _add_proper_time;
@@ -384,6 +386,8 @@ namespace mu2e {
     // Access virtual detectors geometry information
     // If not virtual detectors are defined, skip the rest
 
+    
+
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;
     GlobalConstantsHandle<ParticleDataTable> pdt;
@@ -396,7 +400,7 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel,_tvdStepPoints,thits);
 
     art::Handle<SimParticleCollection> simParticles;
-    event.getByLabel(_g4ModuleLabel, simParticles);
+    event.getByLabel(_g4ModuleLabel, _simParticleColl, simParticles);
     bool haveSimPart = simParticles.isValid();
     if ( haveSimPart ) haveSimPart = !(simParticles->empty());
 
