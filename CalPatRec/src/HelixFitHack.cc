@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.cc,v 1.7 2014/03/31 21:55:16 gianipez Exp $
+// $Id: HelixFitHack.cc,v 1.8 2014/03/31 21:56:29 gianipez Exp $
 // $Author: gianipez $ 
-// $Date: 2014/03/31 21:55:16 $
+// $Date: 2014/03/31 21:56:29 $
 //
 //
 // the following has to come before other BaBar includes
@@ -195,7 +195,7 @@ namespace mu2e
     _maxdz(pset.get<double>("maxdz",35.0)),
     _maxdot(pset.get<double>("maxdot",0.9)),
     _maxDfDz(pset.get<double>("maxDfDz",0.01)),
-    _distPatRec(pset.get<double>("distPatRec",600.0)),
+    _distPatRec(pset.get<double>("distPatRec",1600.0)),
     _rbias(pset.get<double>("radialBias",0.0)),
     _efac(pset.get<double>("ErrorFactor",1.0)),
     _rhomin(pset.get<double>("rhomin",350.0)),
