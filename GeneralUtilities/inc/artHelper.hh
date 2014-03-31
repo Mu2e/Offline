@@ -3,9 +3,9 @@
 
 // Some helpers for interfacing art with Mu2e code
 //
-// $Id: artHelper.hh,v 1.1 2014/02/13 18:52:15 knoepfel Exp $
+// $Id: artHelper.hh,v 1.2 2014/03/31 15:16:54 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/02/13 18:52:15 $
+// $Date: 2014/03/31 15:16:54 $
 //
 // Original author: Kyle Knoepfel
 
@@ -18,7 +18,8 @@
 namespace mu2e {
 
   // Convert vector of std::string's to vector of art::InputTag's
-  std::vector<art::InputTag> artInputTagVector( const std::vector<std::string>& sv ); 
+  std::vector<art::InputTag> artInputTagVector( const std::vector<std::string>& sv,
+                                                const std::string str = "" ); 
 
 }
 
