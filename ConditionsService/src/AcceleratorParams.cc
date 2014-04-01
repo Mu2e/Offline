@@ -1,9 +1,9 @@
 //
 // Some parameters of the accelerator complex.
 //
-// $Id: AcceleratorParams.cc,v 1.4 2014/02/28 21:11:19 knoepfel Exp $
+// $Id: AcceleratorParams.cc,v 1.5 2014/04/01 15:03:16 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/02/28 21:11:19 $
+// $Date: 2014/04/01 15:03:16 $
 //
 
 // Mu2e include files
@@ -20,6 +20,10 @@ namespace mu2e {
     deBuncherPeriod     = config.getDouble("acceleratorParams.deBuncherPeriod"   );
     intrinsicExtinction = config.getDouble("acceleratorParams.intrinsicExt"      );
     limitingHalfWidth   = config.getDouble("acceleratorParams.limitingHalfWidth" );
+
+    potPulse  = config.getString("acceleratorParams.potPulse" );  
+    acDipole  = config.getString("acceleratorParams.acDipole" );
+    outOfTime = config.getString("acceleratorParams.outOfTime");
 
   }
 

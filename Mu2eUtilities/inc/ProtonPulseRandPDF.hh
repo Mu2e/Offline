@@ -4,15 +4,16 @@
 //  
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.hh,v 1.8 2014/03/31 15:13:07 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.hh,v 1.9 2014/04/01 15:03:16 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/03/31 15:13:07 $
+// $Date: 2014/04/01 15:03:16 $
 //
 // Original author: Gianni Onorato
 //                  Kyle Knoepfel (significant updates)
 //
 
 // Mu2e includes
+#include "ConditionsService/inc/AcceleratorParams.hh"
 #include "GeneralUtilities/inc/EnumToStringSparse.hh"
 #include "Mu2eUtilities/inc/Table.hh"
 
@@ -61,33 +62,35 @@ namespace mu2e {
     ~ProtonPulseRandPDF(){}
 
     double fire();
-    const std::vector<double>& getSpectrum() const { return _spectrum; }
-    const std::vector<double>& getTimes()    const { return _times; }
+    const std::vector<double>& getSpectrum() const { return spectrum_; }
+    const std::vector<double>& getTimes()    const { return times_; }
 
   private:
 
-    std::vector<double> _potSpectrum;
-    std::vector<double> _dipoleSpectrum;
-    std::vector<double> _ootSpectrum;
+    const AcceleratorParams* accPar_;
 
-    std::vector<double> _times;
+    std::vector<double> potSpectrum_;
+    std::vector<double> dipoleSpectrum_;
+    std::vector<double> ootSpectrum_;
 
-    double _timeMin;
-    double _timeMax;
-    double _fireOffset;
+    std::vector<double> times_;
 
-    const Table<2> _pulseShape;
-    const Table<2> _acdipole;
-    const Table<2> _ootPulse;
+    double timeMin_;
+    double timeMax_;
+    double fireOffset_;
 
-    const PotSpectrum _pulseEnum;
-    const std::size_t _nPoints;
+    const Table<2> pulseShape_;
+    const Table<2> acdipole_;
+    const Table<2> ootPulse_;
 
-    const double _extFactor;
+    const PotSpectrum pulseEnum_;
+    const std::size_t nPoints_;
 
-    std::vector<double> _spectrum;
+    const double extFactor_;
 
-    CLHEP::RandGeneral _randSpectrum;
+    std::vector<double> spectrum_;
+
+    CLHEP::RandGeneral randSpectrum_;
 
     std::size_t calculateNpoints();
 

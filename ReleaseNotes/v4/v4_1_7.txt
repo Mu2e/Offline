@@ -2,6 +2,22 @@
 
            Release notes for Mu2e Offline software, v4_1_7
 
+6) April 1, 2014, knoepfel
+
+   Add proton pulse shapes, located in ConditionsService/data/, to
+   conditions database, and remove explicit instances from
+   ProtonPulseRandPDF.  This allows one to specify a desired proton
+   shape in the loaded conditions*.txt file in the user's .fcl.
+   
+   Modified files:
+     ConditionsService/inc/AcceleratorParams.hh
+     ConditionsService/src/AcceleratorParams.cc
+     HitMakers/src/GenerateProtonTimes_module.cc
+     Mu2eG4/test/conditions_01.txt
+     Mu2eUtilities/inc/ProtonPulseRandPDF.hh
+     Mu2eUtilities/src/ProtonPulseRandPDF.cc
+
+
 5) March 25, 2014, brownd
     Introduce StrawDigiMC, which summarizes the MC truth information that goes
     into making a StrawDigi.  In particular, this object remembers the MC time
@@ -11,6 +27,7 @@
     the StrawDigi collection, and there's a separate collection of the same
     objects in paralle with the StrawHits.  Reimplement the MC truth testing
     in ReadKalfits to use the StrawDigiMC.
+
 4) March 24, 2014, gandr
    Implement merging of MCTrajectories from previous simulations steps
    into the current collection in G4.

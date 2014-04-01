@@ -3,9 +3,9 @@
 //
 // Some parameters of the accelerator complex.
 //
-// $Id: AcceleratorParams.hh,v 1.6 2014/02/28 21:11:19 knoepfel Exp $
+// $Id: AcceleratorParams.hh,v 1.7 2014/04/01 15:03:16 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/02/28 21:11:19 $
+// $Date: 2014/04/01 15:03:16 $
 //
 // Original author Rob Kutschke
 //
@@ -26,6 +26,10 @@ namespace mu2e
     double deBuncherPeriod;
     double intrinsicExtinction;
     double limitingHalfWidth;
+
+    std::string potPulse;
+    std::string acDipole;
+    std::string outOfTime;
 
     AcceleratorParams ( SimpleConfig const& config );
 

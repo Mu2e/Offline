@@ -1,9 +1,9 @@
 //
 // Input file for the prototype conditions system.
 //
-// $Id: conditions_01.txt,v 1.20 2014/03/08 00:56:34 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/03/08 00:56:34 $
+// $Id: conditions_01.txt,v 1.21 2014/04/01 15:03:16 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/04/01 15:03:16 $
 //
 
 // Times in ns
@@ -13,6 +13,10 @@ double DAQParams.t0 = 700.;
 double acceleratorParams.deBuncherPeriod   = 1694.; // ns
 double acceleratorParams.intrinsicExt      = 4.e-5;
 double acceleratorParams.limitingHalfWidth = 125. ; // ns 
+
+string acceleratorParams.potPulse  = "ConditionsService/data/ProtonPulseSpectrum_02.txt";      
+string acceleratorParams.acDipole  = "ConditionsService/data/ACdipoleTransmissionFunction.txt";
+string acceleratorParams.outOfTime = "ConditionsService/data/OutOfTimeSpectrum.txt";           
 
 double MinDriftRadiusResolution = 0.1; // mm
 double MaxDriftRadiusResolution = 0.1; // mm

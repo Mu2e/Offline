@@ -94,6 +94,17 @@ namespace mu2e {
   //================================================================
   void GenerateProtonTimes::beginRun(art::Run& run) {
     protonPulse_.reset( new ProtonPulseRandPDF( engine_, pulseType_ ) );
+
+    if ( verbosityLevel_ > 10 ) {
+      std::ostringstream timeSpectrum;
+      for ( std::size_t i(0) ; i < protonPulse_->getTimes().size(); i++ ) {
+        timeSpectrum << "   POT time: " 
+                     << protonPulse_->getTimes().at(i) 
+                     << "     "
+                     << protonPulse_->getSpectrum().at(i) << "\n";
+      }
+      mf::LogInfo("Info") << "Longitudinal POT time distribution\n" << timeSpectrum.str();
+    }
   }
 
   //================================================================
