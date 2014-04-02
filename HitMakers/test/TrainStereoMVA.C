@@ -1,4 +1,4 @@
-// @(#)root/tmva $Id: TrainStereoMVA.C,v 1.1 2014/04/02 05:28:38 brownd Exp $
+// @(#)root/tmva $Id: TrainStereoMVA.C,v 1.2 2014/04/02 06:28:24 brownd Exp $
 /**********************************************************************************
  * Project   : TMVA - a ROOT-integrated toolkit for multivariate data analysis    *
  * Package   : TMVA                                                               *
@@ -190,8 +190,8 @@ void TrainStereoMVA( TString myMethodList = "", TTree* inputTree=NULL)
   factory->AddVariable("dt", 'F');
   factory->AddVariable("chi2",'F');
   factory->AddVariable("rho", 'F');
-  factory->AddVariable("ddot",'F');
-  factory->AddVariable("dz", 'F');
+//  factory->AddVariable("ddot",'F');
+//  factory->AddVariable("dz", 'F');
 
   // You can add so-called "Spectator variables", which are not used in the MVA training,
   // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the
