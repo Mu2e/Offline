@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.55 2014/03/25 22:15:19 brownd Exp $
+// $Id: KalFitMC.cc,v 1.56 2014/04/02 14:18:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/25 22:15:19 $
+// $Date: 2014/04/02 14:18:00 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -539,7 +539,8 @@ namespace mu2e
 	tshinfo._trklen = tsh->fltLen();
 	tshinfo._hlen = tsh->hitLen();
 	tshinfo._t0 = tsh->hitT0()._t0;
-	tshinfo._ht = tsh->time();
+	// include signal propagation time correction
+	tshinfo._ht = tsh->time()-tsh->signalTime();
 	tshinfo._tddist = tsh->timeDiffDist();
 	tshinfo._tdderr = tsh->timeDiffDistErr();
 	tshinfo._ambig = tsh->ambig();
@@ -960,6 +961,19 @@ namespace mu2e
     TrkHelixUtils::helixFromMom( parvec, hflt,ppos,
 	mom,charge,bz);
     einfo._hpar = helixpar(parvec);
+  }
+  
+  KalFitMC::relation KalFitMC::relationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2) {
+    art::Ptr<SimParticle> ptr1, ptr2;
+    if(mcd1.stepPointMC(StrawDigi::zero).isNonnull())
+      ptr1 = mcd1.stepPointMC(StrawDigi::zero)->simParticle();
+    else if(mcd1.stepPointMC(StrawDigi::one).isNonnull())
+      ptr1 = mcd1.stepPointMC(StrawDigi::one)->simParticle();
+    if(mcd2.stepPointMC(StrawDigi::zero).isNonnull())
+      ptr2 = mcd2.stepPointMC(StrawDigi::zero)->simParticle();
+    else if(mcd2.stepPointMC(StrawDigi::one).isNonnull())
+      ptr2 = mcd2.stepPointMC(StrawDigi::one)->simParticle();
+    return relationship(ptr1,ptr2);
   }
 
   KalFitMC::relation KalFitMC::relationship(art::Ptr<SimParticle> const& sppi,art::Ptr<SimParticle> const& sppj) {

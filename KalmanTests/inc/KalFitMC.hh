@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.35 2014/03/25 22:15:19 brownd Exp $
+// $Id: KalFitMC.hh,v 1.36 2014/04/02 14:18:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/25 22:15:19 $
+// $Date: 2014/04/02 14:18:00 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -16,6 +16,7 @@
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/StrawDigiMC.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -182,6 +183,7 @@ namespace mu2e
     void fillMCTrkInfo(MCStepItr const& imcs, MCTrkInfo& trkinfo) const;
     void fillMCTrkInfo(SimParticle const& sp, MCTrkInfo& einfo) const;
     static relation relationship(art::Ptr<SimParticle> const& sppi,art::Ptr<SimParticle> const& sppj);
+    static relation relationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2);
 
   private:
 // cache of event data
