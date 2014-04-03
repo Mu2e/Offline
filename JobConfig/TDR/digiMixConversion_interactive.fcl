@@ -6,7 +6,7 @@
 // 1) Symlink muon stop inputs files to your Offline
 //
 //    cd Offline
-//    ln -s /mu2e/data/tdr/beam/g4s3p3/mergedMuonStops .
+//    ln -s /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops .
 //
 // 2) Run the job
 //

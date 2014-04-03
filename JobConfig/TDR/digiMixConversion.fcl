@@ -12,10 +12,10 @@
 // example of grid submission
 //
 // ## prepare event inputs.  Use only 1 file to run 1 job for this example.
-// ls /mu2e/data/tdr/beam/mixp2/tdr.beam.mix.bg.1316b.14615792/good/*/data*.root | head -1 > events.txt
+// ls /mu2e/data/tdr/beam/mixp3-test/tdr.beam.mix.bgonly-test.1516a.15405463/good/00000/data_mixBG.root > events.txt
 //
 // # prepare stopped muon inputs.
-// ls /mu2e/data/tdr/beam/g4s3p4/mergedMuonStops/*.root > mustops.txt
+// ls /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops/*.root > mustops.txt
 //
 // # submit the job
 // mu2eart --setup=setup.sh --fcl=JobConfig/TDR/digiMixConversion.fcl \
