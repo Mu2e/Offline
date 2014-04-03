@@ -1,9 +1,9 @@
 //
 // Root c++ function to compare tracking plots specified by another macro
 // 
-// $Id: g4validate_01.C,v 1.5 2013/07/09 19:28:37 genser Exp $
+// $Id: g4validate_01.C,v 1.6 2014/04/03 22:13:53 genser Exp $
 // $Author: genser $
-// $Date: 2013/07/09 19:28:37 $
+// $Date: 2014/04/03 22:13:53 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //
@@ -22,7 +22,13 @@
 // 5) overlaythe histograms, run Kolmogorov test on them
 //
 
-// run it in root e.g. like .x g4validate_01.C++ (or .x g4validate_01.C++g)
+// run it in root e.g. like .x ...the path to.../g4validate_01.C++
+// (or .x .../g4validate_01.C++g)
+// or .x .../g4validate_01.C++g(0)      if using linear scale
+// or .x .../g4validate_01.C++g(0,true) if using linear scale and interactive mode
+
+// Note the isInteractive & islog parameters controling the behavior of the function
+// the input files are specified below in the code
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -49,10 +55,14 @@
 #include <fstream>
 #include <sstream>
 
+#include <cfloat>
+
 #include "KalmanTests/test/TrkFitDiag.C"
+#include "Mu2eG4/test/StepsDiag.C"
 //#include "KalmanTests/test/TrkHitDiag.C"
 
-void g4validate_01()
+// paramenters control the interactivity and the scale
+void g4validate_01(Int_t isLog=1,bool isInteractive=false)
 {
 
   // With this you can reinvoke the script without exiting root.
@@ -67,8 +77,7 @@ void g4validate_01()
   // gStyle->SetOptStat(kFALSE);
 
   // flag controlling the pause after each canvas 
-  //  bool const interactive = true;
-  bool const interactive = false;
+  // bool const isInteractive = true;
 
   // flag controlling creation of the png files
   //  bool const createpng = true;
@@ -86,28 +95,46 @@ void g4validate_01()
   std::vector<TPaveLabel*> fileLabel;
   std::vector<TString> fileText;
 
-//    files.push_back(new TFile("g4validate_01_g4961a_20130530135752.root"));
-//    fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4961a QGSP_BERT_HP mu2e v3_0_1.34","NDC"));
-//    fileText.push_back("g4961aQBHMu2ev3_0_1_34");
+  // files.push_back(new TFile("g4validate_01.g4962.shieldingmu2e01.20140311114704.root"));
+  // fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962 ShieldingMu2e01 mu2e v4_1_6.1","NDC"));
+  // fileText.push_back("g4962ShldMu2e01v4_1_6_1");
 
-//    files.push_back(new TFile("g4validate_01_g4962_20130530121321.root"));
-//    fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962  QGSP_BERT_HP mu2e v3_0_1.34","NDC"));
-//    fileText.push_back("g4962QBHMu2ev3_0_1_34");
+  // files.push_back(new TFile("g4validate_01.g4962a.shieldingmu2e00.20140311140850.root"));
+  // fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962a ShieldingMu2e00 mu2e v4_1_6.1","NDC"));
+  // fileText.push_back("g4962aShldMu2e00v4_1_6_1");
 
-  files.push_back(new TFile("g4validate_01.g4962.shielding.20130531105554.root"));
-  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962 Shielding       mu2e v3_0_1.34","NDC"));
-  fileText.push_back("g4962Shldv3_0_1_34");
+  // files.push_back(new TFile("g4validate_01.g4962a.shieldingmu2e02.20140311122649.root"));
+  // fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962a ShieldingMu2e02 mu2e v4_1_6.1","NDC"));
+  // fileText.push_back("g4962aShldMu2e02v4_1_6_1");
 
-  files.push_back(new TFile("g4validate_01.g4962.shieldingmu2e01.20130531144419.root"));
-  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962 ShieldingMu2e01 mu2e v3_0_1.34","NDC"));
-  fileText.push_back("g4962ShldMu2e01v3_0_1_34");
+  // files.push_back(new TFile("g4validate_01.g4962a.shieldingmu2e01.20140401161111.root"));
+  // fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962a ShieldingMu2e01 mu2e v4_1_7.6","NDC"));
+  // fileText.push_back("g4962aShldMu2e01v4_1_7_6");
 
-  files.push_back(new TFile("g4validate_01.g4962.shieldingmu2e00.20130530165103.root"));
-  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4962 ShieldingMu2e00 mu2e v3_0_1.34","NDC"));
-  fileText.push_back("g4962ShldMu2e00v3_0_1_34");
+  // files.push_back(new TFile("g4validate_01.g4963.shieldingmu2e01.20140401161119.root"));
+  // fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4963 ShieldingMu2e01 mu2e v4_1_7.6","NDC"));
+  // fileText.push_back("g4963ShldMu2e02v4_1_7_6");
+
+  // files.push_back(new TFile("g4validate_01.g4963a.shieldingmu2e01.20140401224712.root"));
+  // fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4963a ShieldingMu2e01 mu2e v4_1_7.6","NDC"));
+  // fileText.push_back("g4963aShldMu2e01v4_1_7_6");
+
+  files.push_back(new TFile("g4validate_01.g4963a.shieldingmu2e00.20140401224532.root"));
+  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4963a ShieldingMu2e00 mu2e v4_1_7.6","NDC"));
+  fileText.push_back("g4963aShldMu2e00v4_1_7_6");
+
+  files.push_back(new TFile("g4validate_01.g4963a.shieldingmu2e01.20140401224712.root"));
+  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4963a ShieldingMu2e01 mu2e v4_1_7.6","NDC"));
+  fileText.push_back("g4963aShldMu2e01v4_1_7_6");
+
+  files.push_back(new TFile("g4validate_01.g4963a.shieldingmu2e02.20140402112702.root"));
+  fileLabel.push_back(new TPaveLabel(0.50,0.90,0.78,0.955,"g4963a ShieldingMu2e02 mu2e v4_1_7.6","NDC"));
+  fileText.push_back("g4963aShldMu2e02v4_1_7_6");
 
   // Base name of input file and of all plot files.
-  TString basename("ktf");
+  TString basename("stpsktf");
+
+  basename = isLog ? basename + "_log" : basename + "_lin" ;
 
   const unsigned nfiles = files.size();
 
@@ -131,6 +158,7 @@ void g4validate_01()
 
     // we fetch histograms from files
 
+    StepsDiag(files[ff],histograms[ff]);
     TrkFitDiag(files[ff],histograms[ff]);
 //    TrkHitDiag(files[ff],histograms[ff]);
 
@@ -175,14 +203,12 @@ void g4validate_01()
   // Open a multi-page output pdf file .
   canvas->Print( pdffile+"[");
 
-  // log scale?
-  Int_t islog(0);
-
   TLegend* leg = new TLegend();
 
   unsigned canvasCounter(0);
 
   Float_t vscalemax = 0.;
+  Float_t vscalemin = FLT_MAX;
 
   for (unsigned hh=0; hh!=nhistograms; ++hh) {
 
@@ -196,7 +222,7 @@ void g4validate_01()
     // cd(n): move to graphics pad number "n".
     // "H9": draw outline histogram ("H") in high resolution mode (9)
     
-    islog = (hh==1000) ? 0 : 1; // decide on the log scale; could be per histogram if needed
+    //    isLog = (hh==1000) ? 0 : 1; // decide on the log scale; could be per histogram if needed
 
     delete leg;
     leg = new TLegend(0.70,0.90,0.90,1.00);
@@ -204,21 +230,28 @@ void g4validate_01()
 
     // drawing original histograms from each file
 
-    // first get their maxima
+    // first get their maxima/minima
     vscalemax = 0;
+    vscalemin = FLT_MAX;
     for (unsigned ff=0; ff!=nfiles; ++ff) {
       if ( vscalemax < histograms[ff][hh]->GetMaximum() ) {
         vscalemax = histograms[ff][hh]->GetMaximum();
       }
+      if ( vscalemin > histograms[ff][hh]->GetMinimum() ) {
+        vscalemin = histograms[ff][hh]->GetMinimum();
+      }
     }
 
     cout << "vscalemax = " << vscalemax << endl;
-    vscalemax = islog ? vscalemax*2.0 : vscalemax*1.1;
+    vscalemax = isLog ? vscalemax*2.0 : vscalemax*1.1;
+    cout << "vscalemin = " << vscalemin << endl;
+    vscalemin = isLog ? vscalemin*0.5 : vscalemin*0.9;
+    if (isLog && vscalemin==0.) vscalemin=0.5;
 
     for (unsigned ff=0; ff!=nfiles; ++ff) {
 
       canvas->cd(ff+1);
-      gPad->SetLogy(islog);
+      gPad->SetLogy(isLog);
       cout << hh << " " << ff << " Drawing " << histograms[ff][hh]->GetTitle() 
            << ", " << fileLabel[ff]->GetLabel() 
            << ", " << fileText[ff]
@@ -232,6 +265,7 @@ void g4validate_01()
       // collecting legend info
       leg->AddEntry(histograms[ff][hh],fileText[ff],"L");
       histograms[ff][hh]->SetMaximum(vscalemax);
+      histograms[ff][hh]->SetMinimum(vscalemin);
       histograms[ff][hh]->Draw("H9");
       fileLabel[ff]->Draw("9");
       
@@ -241,7 +275,7 @@ void g4validate_01()
     canvas->cd(nfiles+1);
     for (unsigned ff=0; ff!=nfiles; ++ff) {
 
-      gPad->SetLogy(islog);
+      gPad->SetLogy(isLog);
       cout << hh << " " << ff << " Drawing " << histograms[ff][hh]->GetTitle() 
            << ", " << fileLabel[ff]->GetLabel() 
            << ", " << fileText[ff]
@@ -292,7 +326,7 @@ void g4validate_01()
     // Add this canvas to the pdf file.
     canvas->Print(pdffile);
 
-    if (interactive) {
+    if (isInteractive) {
       // Prompt and wait for response before continuing.
       cerr << "Double click in the last active pad to continue: " ;
       gPad->WaitPrimitive();
