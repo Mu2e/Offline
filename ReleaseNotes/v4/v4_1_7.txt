@@ -2,6 +2,14 @@
 
            Release notes for Mu2e Offline software, v4_1_7
 
+8) April 2, 2014, genser
+    Moved functionality of the sthktfO.C macro to StepsDiag.C and
+    g4validate_01.C; upgraded g4validate_01.C functionality
+    Modified files:
+      Mu2eG4/test/sthktfO.C
+      Mu2eG4/test/StepsDiag.C
+      Mu2eG4/test/g4validate_01.C
+
 7) April 1, 2014, brownd
     Added an MVA to pair straw hits into stereo hits.  This recovers
     efficiency lost due to non-Gaussian tails in the time division
