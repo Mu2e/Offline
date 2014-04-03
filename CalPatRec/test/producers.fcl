@@ -34,9 +34,9 @@ MakeStrawHitsNew: {
 # this is a modified version which uses T0 defined by the calorimeter cluster
 #------------------------------------------------------------------------------
 CalPatRec            : {
-    module_type                             : CalPatRec
+    module_type                                 : CalPatRec
     includeCaloInfo				: 0
-    FindTimePeaks                           : false
+    FindTimePeaks                               : false
     # Kalman fit configuration for the helix seed fit
     SeedFit : {
 	debugLevel                              : 0
@@ -49,6 +49,11 @@ CalPatRec            : {
 	t0Tolerance				: [5.0,5.0]
 	initT0					: true 
 	updateT0				: false
+    }
+    # HelixFitHack configuraton
+    HelixFit : {
+	debugLevel                              : 0
+	distPatRec                              : 1600.
     }
     # Kalman fit configuration for the final track fit
     KalFit : {
@@ -66,6 +71,7 @@ CalPatRec            : {
 	Neutralize 				: true
 	fieldCorrection				: true
     }
+    MaxStrawEDep            : 0.005
     TimeSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
     HelixFitSelectionBits   : ["EnergySelection","TimeSelection","RadiusSelection"]
     KalmanFitSelectionBits  : []

@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: calPatRec_display.fcl,v 1.1 2014/03/30 01:51:51 murat Exp $
+# $Id: calPatRec_display.fcl,v 1.2 2014/04/03 23:18:48 murat Exp $
 #------------------------------------------------------------------------------
 # read data from the input file,
 # assume the file contains the digitized hits
@@ -21,6 +21,16 @@ source : {
 #    module_type : EmptyEvent
     module_type : RootInput
     maxEvents   : 100
+
+#     inputCommands : ['keep *_*_*_*'
+# 		     , 'drop mu2eStrawDigis_*_*_*'
+# 		     , 'drop mu2eStrawHits_*_*_*'
+# 		     , 'drop *_muonTimeMap_*_*'
+# 		     , 'drop *_protonTimeMap_*_*'
+# 		     , 'drop *_CaloReadoutHitsMaker_*_*'
+# 		     , 'drop *_CaloCrystalHitsMaker_*_*'
+# # Uncomment the above line to reduce file size.
+# 		     ]  
 }
 #------------------------------------------------------------------------------
 # services
@@ -39,6 +49,7 @@ services : {
 
     user : {
 	GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
+#	GeometryService        : { inputFile : "murat/test/geom_01_BaF2_r_1_1.txt" }
 	ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
 	GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 	G4Helper               : { }
@@ -90,9 +101,9 @@ physics : {
 #------------------------------------------------------------------------------
     p1 : [
 	  # generate, g4run,
-	  # protonTimeMap, muonTimeMap, 
-	  # makeSD, makeSH,
-	  # CaloReadoutHitsMaker, CaloCrystalHitsMaker,
+# 	  protonTimeMap, muonTimeMap, 
+# 	  makeSD, makeSH,
+# 	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,
 	  MakeCaloCluster, 
 	  MakeSHnew,
 	  MakeStrawHitPositions, FlagStrawHits, FlagBkgHits, 
@@ -149,8 +160,8 @@ physics.producers.FlagBkgHits.StrawHitPositionCollectionLabel   : MakeStrawHitPo
 
 physics.producers.CalPatRec.StrawHitCollectionLabel             : MakeSHnew
 physics.producers.CalPatRec.StrawHitPositionCollectionLabel     : MakeStrawHitPositions
-physics.producers.CalPatRec.SeedFit.debugLevel                  : 1
-physics.producers.CalPatRec.HelixFit.debugLevel                 : 1
+# physics.producers.CalPatRec.SeedFit.debugLevel                  : 1
+# physics.producers.CalPatRec.HelixFit.debugLevel                 : 1
 #------------------------------------------------------------------------------
 # analysis and event display
 #------------------------------------------------------------------------------

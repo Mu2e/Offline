@@ -34,23 +34,18 @@ mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   extrarootlibs
                                 ] )
 
-helper.make_plugins( [ mainlib,
-                       'art_Framework_Core',
+helper.make_plugins( [ 'art_Framework_Core',
                        'art_Framework_Services_Optional_TFileService_service',
-                       babarlibs,
-                       'mu2e_GeometryService',
-                       'mu2e_ConditionsService',
                        'mu2e_Mu2eUtilities',
                        'mu2e_GeneralUtilities',
+                       'CLHEP',
                        'mu2e_MCDataProducts',
                        'mu2e_RecoDataProducts',
                        'mu2e_KalmanTests',
-                       'CLHEP',
-                       extrarootlibs
+                        extrarootlibs
                      ] )
 
-helper.make_dict_and_map( [ mainlib,
-                          ] )
+helper.make_dict_and_map( [ ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

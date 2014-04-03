@@ -1,6 +1,6 @@
-// $Id: CalPatRec_module.cc,v 1.3 2014/03/30 01:50:47 murat Exp $
+// $Id: CalPatRec_module.cc,v 1.4 2014/04/03 23:18:49 murat Exp $
 // $Author: murat $ 
-// $Date: 2014/03/30 01:50:47 $
+// $Date: 2014/04/03 23:18:49 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -81,115 +81,121 @@
 using namespace std; 
 using namespace boost::accumulators;
 
-namespace mu2e 
-{
-  class CalPatRec : public art::EDProducer
-  {
-    public:
-      enum fitType {helixFit=0,seedFit,kalFit};
-      explicit CalPatRec(fhicl::ParameterSet const&);
-      virtual ~CalPatRec();
-      virtual void beginJob();
-      virtual void beginRun(art::Run&);
-      virtual void produce(art::Event& event ); 
-      void endJob();
-    private:
-      unsigned _iev;
-      // configuration parameters
-      int _diag,_debug;
-      int _printfreq;
-      bool _addhits; 
-      // event object labels
-      std::string _shLabel;
-      std::string _shpLabel;
-      std::string _stLabel;
-      std::string _shfLabel;
-      std::string _dtspecpar;
-      StrawHitFlag _tsel, _hsel, _ksel;
-      StrawHitFlag _bkgsel;
-      double _maxedep, _maxdt, _maxdtmiss;
-      double _fbf;
-      // time spectrum parameters
-      bool _findtpeak;
-      unsigned _maxnpeak;
-      unsigned _minnhits;
-      double _tmin;
-      double _tmax;
-      double _tbin;
-      unsigned _nbins;
-      double _ymin;
-      double _1dthresh;
-      // outlier cuts
-      double _maxseeddoca,_maxhelixdoca,_maxadddoca, _maxaddchi;
-      TrkParticle _tpart; // particle type being searched for
-      TrkFitDirection _fdir;  // fit direction in search
-      // cache of event objects
-      const StrawHitCollection* _shcol;
-      const StrawHitFlagCollection* _shfcol;
-      StrawHitFlagCollection* _flags;
-      const StrawHitPositionCollection* _shpcol;
-    //      const StereoHitCollection* _stcol;
-      // Kalman fitters.  Seed fit has a special configuration
-      KalFitHack _seedfit, _kfit;
-      // robust helix fitter
-      HelixFitHack _hfit;
-      // cache of time peaks
-      std::vector<TrkTimePeak> _tpeaks;
-      std::string _iname; // data instance name
-      //
-      PayloadSaver _payloadSaver;
-      // helper functions
-      bool findData(const art::Event& e);
-      void findTimePeaks();
-      void createTimePeak();
-      void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
-      void findMissingHits(KalFitResult& kalfit, std::vector<hitIndex>& indices);
-      void createDiagnostics();
-      void fillStrawDiag();
-      void fillTimeDiag();
-      void fillFitDiag(int ipeak, HelixFitHackResult const& helixfit,
-	  KalFitResult const& seedfit,KalFitResult const& kalfit);
-      void fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const;
+namespace mu2e {
+  class CalPatRec : public art::EDProducer {
+  public:
+    enum fitType {helixFit=0,seedFit,kalFit};
+    explicit CalPatRec(fhicl::ParameterSet const&);
+    virtual ~CalPatRec();
+    
+    virtual void beginJob();
+    virtual void beginRun(art::Run&);
+    virtual void produce(art::Event& event ); 
+    virtual void endJob();
 
-      void initializeReaders();
-      // MC tools
-      KalFitMC _kfitmc;
-      // strawhit tuple variables
-      TTree* _shdiag;
-      Int_t _eventid;
-      threevec _shp;
-      Float_t _edep;
-      Float_t _time, _rho;
-      Int_t _nmcsteps;
-      Int_t _mcnunique,_mcnmax;
-      Int_t _mcpdg,_mcgen,_mcproc;
-      threevec _mcshp, _mcop;
-      Float_t _mcshlen;
-      Float_t _mcedep,_mcemax;
-      Float_t _pdist,_pperp,_pmom;
-      Float_t _mctime;
-      Int_t _esel,_rsel, _timesel,  _delta, _stereo, _isolated;
-      Int_t _device, _sector, _layer, _straw;
-      Int_t _ishpeak, _ntpeak, _nshtpeak;
-      Float_t _shtpeak;
-      Float_t _shpres, _shrres, _shchisq, _shdt, _shdist;
-      Float_t _shmct0, _shmcmom, _shmctd;
-      // fit tuple variables
-      Int_t _nadd,_ipeak;
-      Float_t _hcx, _hcy, _hr, _hdfdz, _hfz0;
-      Float_t _mccx, _mccy, _mcr, _mcdfdz, _mcfz0;
-      Int_t _helixfail,_seedfail,_kalfail;
-      helixpar _hpar,_spar;
-      helixpar _hparerr,_sparerr;
-      Int_t _snhits, _snactive, _sniter, _sndof, _snweediter;
-      Float_t _schisq, _st0;
-      Int_t _nchit;
-      Int_t _npeak, _nmc;
-      Float_t _peakmax, _tpeak;
+  private:
+    unsigned     _iev;
+					// configuration parameters
+    int          _diag,_debug;
+    int          _printfreq;
+    bool         _addhits; 
+					// event object labels
+    std::string  _shLabel;
+    std::string  _shpLabel;
+    std::string  _stLabel;
+    std::string  _shfLabel;
+    std::string  _dtspecpar;
+    StrawHitFlag _tsel, _hsel, _ksel;
+    StrawHitFlag _bkgsel;
+    double       _maxedep, _maxdt, _maxdtmiss;
+    double       _fbf;
+					// time spectrum parameters
+    bool         _findtpeak;
+    unsigned     _maxnpeak;
+    unsigned     _minnhits;
+    double       _tmin;
+    double       _tmax;
+    double       _tbin;
+    unsigned     _nbins;
+    double       _ymin;
+    double       _1dthresh;
+					// outlier cuts
+    double           _maxseeddoca;
+    double           _maxhelixdoca,_maxadddoca, _maxaddchi;
+    TrkParticle      _tpart; // particle type being searched for
+    TrkFitDirection  _fdir;  // fit direction in search
+
+					// cache of event objects
+
+    const StrawHitCollection*         _shcol;
+    const StrawHitFlagCollection*     _shfcol;
+    StrawHitFlagCollection*           _flags;
+    const StrawHitPositionCollection* _shpcol;
+
+					// Kalman fitters.  Seed fit has a special configuration
+    KalFitHack _seedfit, _kfit;
+					// robust helix fitter
+    HelixFitHack _hfit;
+					// cache of time peaks
+    std::vector<TrkTimePeak> _tpeaks;
+    std::string _iname;			// data instance name
+    //
+    PayloadSaver _payloadSaver;
+//-----------------------------------------------------------------------------
+// helper functions
+//-----------------------------------------------------------------------------
+    bool findData(const art::Event& e);
+    void findTimePeaks();
+    void createTimePeak();
+    void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
+    void findMissingHits(KalFitResult& kalfit, std::vector<hitIndex>& indices);
+    void createDiagnostics();
+    void fillStrawDiag();
+    void fillTimeDiag();
+    void fillFitDiag(int ipeak, HelixFitHackResult const& helixfit,
+		     KalFitResult const& seedfit,KalFitResult const& kalfit);
+
+    void fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const;
+
+    //      void initializeReaders();
+					// MC tools
+    KalFitMC _kfitmc;
+					// strawhit tuple variables
+    TTree*   _shdiag;
+    Int_t    _eventid;
+    threevec _shp;
+    Float_t  _edep;
+    Float_t  _time, _rho;
+    Int_t    _nmcsteps;
+    Int_t    _mcnunique,_mcnmax;
+    Int_t    _mcpdg,_mcgen,_mcproc;
+    threevec _mcshp, _mcop;
+    Float_t  _mcshlen;
+    Float_t  _mcedep,_mcemax;
+    Float_t  _pdist,_pperp,_pmom;
+    Float_t  _mctime;
+    Int_t    _esel,_rsel, _timesel,  _delta, _stereo, _isolated;
+    Int_t _device, _sector, _layer, _straw;
+    Int_t _ishpeak, _ntpeak, _nshtpeak;
+    Float_t _shtpeak;
+    Float_t _shpres, _shrres, _shchisq, _shdt, _shdist;
+    Float_t _shmct0, _shmcmom, _shmctd;
+    // fit tuple variables
+    Int_t _nadd,_ipeak;
+    Float_t _hcx, _hcy, _hr, _hdfdz, _hfz0;
+    Float_t _mccx, _mccy, _mcr, _mcdfdz, _mcfz0;
+    Int_t _helixfail,_seedfail,_kalfail;
+    helixpar _hpar,_spar;
+    helixpar _hparerr,_sparerr;
+    Int_t _snhits, _snactive, _sniter, _sndof, _snweediter;
+    Float_t _schisq, _st0;
+    Int_t _nchit;
+    Int_t _npeak, _nmc;
+    Float_t _peakmax, _tpeak;
       // hit filtering tuple variables
-      std::vector<TrkHitFilter> _sfilt, _hfilt;
+    std::vector<TrkHitFilter> _sfilt, _hfilt;
       // flow diagnostic
-      TH1F* _cutflow;
+    TH1F* _cutflow;
 
     THackData* fHackData;
   };
@@ -208,7 +214,7 @@ namespace mu2e
     _hsel(pset.get<std::vector<std::string> >("HelixFitSelectionBits")),
     _ksel(pset.get<std::vector<std::string> >("KalmanFitSelectionBits")),
     _bkgsel(pset.get<std::vector<std::string> >("BackgroundSelectionBits")),
-    _maxedep(pset.get<double>("MaxStrawEDep",0.007)),
+    _maxedep(pset.get<double>("MaxStrawEDep",0.005)),
     _maxdt(pset.get<double>("DtMax",40.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",55.0)),
     _fbf(pset.get<double>("PhiEdgeBuffer",1.1)),
@@ -255,159 +261,12 @@ namespace mu2e
 
   void CalPatRec::beginRun(art::Run& ){}
 
-  void CalPatRec::produce(art::Event& event ) {
 
-    static int first_call(1.);
-    if (first_call) {
-      fHackData = (THackData*) gROOT->GetRootFolder()->FindObject("HackData");
-    }
-    _eventid = event.event();
-    _cutflow->Fill(0.0);
-    // create output
-    unique_ptr<KalRepCollection> tracks(new KalRepCollection );
-    // event printout
-    _iev=event.id().event();
-    if((_iev%_printfreq)==0)cout<<"CalPatRec: event="<<_iev<<endl;
-    // find the data
-    if(!findData(event)){
-      cout << "No straw hits found " << endl;
-      return;
-    }
-    // copy in the existing flags
-    _flags = new StrawHitFlagCollection(*_shfcol);
-    unique_ptr<StrawHitFlagCollection> flags(_flags );
-    // tighten the energy cut
-    static StrawHitFlag esel(StrawHitFlag::energysel);
-    for(size_t ish=0;ish<_flags->size();++ish){
-      if(_shcol->at(ish).energyDep() > _maxedep && _flags->at(ish).hasAllProperties(esel))
-	_flags->at(ish).clear(esel);
-    }
-    // find mc truth if we're making diagnostics
-    if(_diag > 0){
-      if(!_kfitmc.findMCData(event)){
-	cout<<"MC information missing "<< endl;
-	//	return;
-      }
-    }
-    // find the time peaks in the time spectrum of selected hits.  Otherwise, take all
-    // selected hits as a peak
-    _tpeaks.clear();
-    if(_findtpeak){
-      findTimePeaks();
-    } else {
-      createTimePeak();
-    }
-    if(_diag>0){
-// fill primary particle MC truth information
-      _kfitmc.mcTrkInfo(_kfitmc.mcData()._simparts->begin()->second);
-    }
-    // fill diagnostics if requested
-    if(_diag > 2)fillTimeDiag();
-    if(_diag > 1)fillStrawDiag();
-    // dummy objects
-    static TrkDef dummydef;
-    static HelixDef dummyhdef;
-    static HelixFitHackResult dummyhfit(dummyhdef);
-    static KalFitResult dummykfit(dummydef);
-    // loop over the accepted time peaks
-    if(_tpeaks.size()>0)_cutflow->Fill(1.0);
-    bool findhelix(false), findseed(false), findkal(false);
-    for(unsigned ipeak=0;ipeak<_tpeaks.size();++ipeak){
-      // create track definitions for the helix fit from this initial information 
-      HelixDef helixdef(_shcol,_shpcol,_tpeaks[ipeak]._trkptrs,_tpart,_fdir);
-      // set some identifiers
-      helixdef.setEventId(_eventid);
-      helixdef.setTrackId(ipeak);
-      // copy this for the other fits
-      TrkDef seeddef(helixdef);
-      TrkDef kaldef(helixdef);
-      // track fitting objects for this peak
-      HelixFitHackResult helixfit(helixdef);
-      KalFitResult seedfit(seeddef);
-      KalFitResult kalfit(kaldef);
-      // initialize filters.  These are used only for diagnostics
-      _hfilt.clear();
-      _sfilt.clear();
-      // robust helix fit
-      if(_hfit.findHelix(helixfit)){
-	findhelix = true;
-	// convert the result to standard helix parameters, and initialize the seed definition helix
-	HepVector hpar;
-	HepVector hparerr;
-	_hfit.helixParams(helixfit,hpar,hparerr);
-	HepSymMatrix hcov = vT_times_v(hparerr);
-	seeddef.setHelix(HelixTraj(hpar,hcov));
-	// Filter outliers using this helix
-	filterOutliers(seeddef,seeddef.helix(),_maxhelixdoca,_hfilt);
-	// now, fit the seed helix from the filtered hits
-	_seedfit.makeTrack(seedfit, fHackData);
-	if(seedfit._fit.success()){
-	  findseed = true;
-	  // find the helix parameters from the helix fit, and initialize the full Kalman fit with this
-	  double locflt;
-	  const HelixTraj* shelix = dynamic_cast<const HelixTraj*>(seedfit._krep->localTrajectory(seedfit._krep->flt0(),locflt));
-	  kaldef.setHelix(*shelix);
-	  // filter the outliers
-	  filterOutliers(kaldef,seedfit._krep->traj(),_maxseeddoca,_sfilt);
-
-//  2013-09-16: use HackData
-	  fHackData->fSHelix = shelix;
-
-	  _kfit.makeTrack(kalfit, fHackData);
-	  // if successfull, try to add missing hits
-	  if(kalfit._fit.success()){
-	    findkal = true;
-	    if(_addhits){
-	      // first, add back the hits on this track
-	      _kfit.unweedHits(kalfit,_maxaddchi);
-	      std::vector<hitIndex> misshits;
-	      findMissingHits(kalfit,misshits);
-	      if(misshits.size() > 0){
-		_kfit.addHits(kalfit,_shcol,misshits,_maxaddchi);
-	      }
-	    }
-	  }
-	}
-      }
-      // fill fit diagnostics if requested
-      if(_diag > 0)
-	fillFitDiag(ipeak,helixfit,seedfit,kalfit);
-      if(kalfit._fit.success()){
-	// flag the hits used in this track.  This should use the track id, FIXME!!! (in the BaBar code)
-	if(ipeak<16){
-	  for(size_t ihit=0;ihit<kalfit._hits.size();++ihit){
-	    const TrkStrawHit* tsh = kalfit._hits[ihit];
-	    if(tsh->isActive())_flags->at(tsh->index()).merge(StrawHitFlag::trackBit(ipeak));
-	  }
-	}
-	// save successful kalman fits in the event
-	tracks->push_back( kalfit.stealTrack() );
-      } else
-	kalfit.deleteTrack();
-      // cleanup the seed fit
-      seedfit.deleteTrack();
-    }
-    if(findhelix)_cutflow->Fill(2.0);
-    if(findseed)_cutflow->Fill(3.0);
-    if(findkal)_cutflow->Fill(4.0);
-    // add a dummy entry in case there are no peaks
-    if(_diag > 0 && _tpeaks.size() == 0)
-      fillFitDiag(-1,dummyhfit,dummykfit,dummykfit);
-    // put the tracks into the event
-    art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
-    _payloadSaver.put(*tracks, tracksID, event);
-    event.put(std::move(tracks),_iname);
-    event.put(std::move(flags),_iname);
-  }
-
-  void CalPatRec::endJob(){
-    // does this cause the file to close?
-    art::ServiceHandle<art::TFileService> tfs;
-  }
-
-  // find the input data objects 
-  bool CalPatRec::findData(const art::Event& evt){
-    _shcol = 0;
+//-----------------------------------------------------------------------------
+// find the input data objects 
+//-----------------------------------------------------------------------------
+  bool CalPatRec::findData(const art::Event& evt) {
+    _shcol  = 0;
     _shfcol = 0;
     _shpcol = 0;
     //    _stcol = 0;
@@ -420,10 +279,223 @@ namespace mu2e
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if(evt.getByLabel(_shfLabel,shflagH))
       _shfcol = shflagH.product();
+//-----------------------------------------------------------------------------
 // don't require stereo hits: they are only used for diagnostics
+//-----------------------------------------------------------------------------
     return _shcol != 0 && _shfcol != 0 && _shpcol != 0;
   }
 
+//-----------------------------------------------------------------------------
+// event entry point
+//-----------------------------------------------------------------------------
+  void CalPatRec::produce(art::Event& event ) {
+
+    bool findhelix (false), findseed (false), findkal (false);
+    int  nhits;
+					// dummy objects
+    static TrkDef             dummydef;
+    static HelixDef           dummyhdef;
+    static HelixFitHackResult dummyhfit(dummyhdef);
+    static KalFitResult       dummykfit(dummydef);
+    static StrawHitFlag       esel(StrawHitFlag::energysel), flag;
+
+    static int first_call(1.);
+    if (first_call) {
+      fHackData = (THackData*) gROOT->GetRootFolder()->FindObject("HackData");
+    }
+					// event printout
+    _eventid = event.event();
+    _iev     = event.id().event();
+
+    if ((_iev%_printfreq) == 0) cout<<"CalPatRec: event="<<_iev<<endl;
+
+    _cutflow->Fill(0.0);
+
+					// create output
+
+    unique_ptr<KalRepCollection>       tracks(new KalRepCollection );
+    
+    _flags = new StrawHitFlagCollection();
+    unique_ptr<StrawHitFlagCollection> flags (_flags);
+
+					// find the data
+    if (!findData(event)) {
+      printf("CalPatRec::produce ERROR: No straw hits found, RETURN\n");
+                                                            goto END;
+    }
+//-----------------------------------------------------------------------------
+// all needed pieces of data have been found, tighten the energy cut and 
+// copy flags
+//-----------------------------------------------------------------------------
+    nhits = _shcol->size();
+    for (int i=0; i<nhits; i++) {
+      flag = _shfcol->at(i);
+      if (_shcol->at(i).energyDep() > _maxedep && flag.hasAllProperties(esel))
+	flag.clear(esel);
+      _flags->push_back(flag);
+    }
+//-----------------------------------------------------------------------------
+// find mc truth if we're making diagnostics
+//-----------------------------------------------------------------------------
+    if (_diag > 0){
+      if(!_kfitmc.findMCData(event)){
+	cout<<"MC information missing "<< endl;
+      }
+    }
+//-----------------------------------------------------------------------------
+// find the time peaks in the time spectrum of selected hits.  
+// Otherwise, take all selected hits as a peak
+//-----------------------------------------------------------------------------
+    _tpeaks.clear();
+    if(_findtpeak) {
+      findTimePeaks();
+    } else {
+      createTimePeak();
+    }
+//-----------------------------------------------------------------------------
+// diagnostics, MC truth
+//-----------------------------------------------------------------------------
+    if(_diag>0){
+      _kfitmc.mcTrkInfo(_kfitmc.mcData()._simparts->begin()->second);
+    }
+    if (_diag > 2)fillTimeDiag();
+    if (_diag > 1)fillStrawDiag();
+    if (_tpeaks.size()>0)_cutflow->Fill(1.0);
+//-----------------------------------------------------------------------------
+// loop over found time peaks - for us, - "eligible" calorimeter clusters 
+//-----------------------------------------------------------------------------
+    for (unsigned ipeak=0; ipeak<_tpeaks.size(); ++ipeak) {
+
+      // create track definitions for the helix fit from this initial information 
+
+      HelixDef helixdef(_shcol,_shpcol,_tpeaks[ipeak]._trkptrs,_tpart,_fdir);
+
+					// set some identifiers
+      helixdef.setEventId(_eventid);
+      helixdef.setTrackId(ipeak);
+					// copy this for the other fits
+
+      TrkDef             seeddef(helixdef);
+      TrkDef             kaldef (helixdef);
+
+					// track fitting objects for this peak
+
+      HelixFitHackResult helixfit(helixdef);
+      KalFitResult       seedfit (seeddef);
+      KalFitResult       kalfit  (kaldef);
+
+					// initialize filters. These are used only for diagnostics
+      _hfilt.clear();
+      _sfilt.clear();
+//-----------------------------------------------------------------------------
+// pattern recognition step - find initial approximation for Kalman fitter
+//-----------------------------------------------------------------------------
+      int rc = _hfit.findHelix(helixfit);
+      if (rc) {
+//-----------------------------------------------------------------------------
+// pattern recognition succeeded
+// convert the result to standard helix parameters, and initialize the seed definition helix
+//-----------------------------------------------------------------------------
+	findhelix = true;
+	HepVector hpar;
+	HepVector hparerr;
+	_hfit.helixParams(helixfit,hpar,hparerr);
+	HepSymMatrix hcov = vT_times_v(hparerr);
+	seeddef.setHelix(HelixTraj(hpar,hcov));
+
+					// Filter outliers using this helix
+
+	filterOutliers(seeddef,seeddef.helix(),_maxhelixdoca,_hfilt);
+
+					// now, fit the seed helix from the filtered hits
+
+	_seedfit.makeTrack(seedfit, fHackData);
+	if(seedfit._fit.success()){
+	  findseed = true;
+	  // find the helix parameters from the helix fit, and initialize the full Kalman fit with this
+	  double locflt;
+	  const HelixTraj* shelix = dynamic_cast<const HelixTraj*>(seedfit._krep->localTrajectory(seedfit._krep->flt0(),locflt));
+	  kaldef.setHelix(*shelix);
+					// filter the outliers
+	  filterOutliers(kaldef,seedfit._krep->traj(),_maxseeddoca,_sfilt);
+
+					// 2013-09-16: use HackData
+	  fHackData->fSHelix = shelix;
+
+	  _kfit.makeTrack(kalfit, fHackData);
+					// if successfull, try to add missing hits
+	  if(kalfit._fit.success()){
+	    findkal = true;
+	    if(_addhits){
+					// first, add back the hits on this track
+	      _kfit.unweedHits(kalfit,_maxaddchi);
+	      std::vector<hitIndex> misshits;
+	      findMissingHits(kalfit,misshits);
+	      if(misshits.size() > 0){
+		_kfit.addHits(kalfit,_shcol,misshits,_maxaddchi);
+	      }
+	    }
+	  }
+	}
+      }
+//-----------------------------------------------------------------------------
+//  fill fit diagnostics histograms if requested
+//-----------------------------------------------------------------------------
+      if (_diag > 0) fillFitDiag(ipeak,helixfit,seedfit,kalfit);
+
+      if (kalfit._fit.success()) {
+					// flag hits used in this track.  
+					// This should use the track id, FIXME!!! (in the BaBar code)
+	if (ipeak<16) {
+	  for (size_t ihit=0;ihit<kalfit._hits.size();++ihit){
+	    const TrkStrawHit* tsh = kalfit._hits[ihit];
+	    if(tsh->isActive())_flags->at(tsh->index()).merge(StrawHitFlag::trackBit(ipeak));
+	  }
+	}
+//-----------------------------------------------------------------------------
+// save successful kalman fits in the event
+//-----------------------------------------------------------------------------
+	tracks->push_back(kalfit.stealTrack());
+      } 
+      else {
+	kalfit.deleteTrack();
+      }
+//-----------------------------------------------------------------------------
+// cleanup the seed fit
+//-----------------------------------------------------------------------------
+      seedfit.deleteTrack();
+    }
+//-----------------------------------------------------------------------------
+// diagnostics in the end
+//-----------------------------------------------------------------------------
+    if (findhelix) _cutflow->Fill(2.0);
+    if (findseed ) _cutflow->Fill(3.0);
+    if (findkal  ) _cutflow->Fill(4.0);
+
+    // add a dummy entry in case there are no peaks
+    if(_diag > 0 && _tpeaks.size() == 0)
+      fillFitDiag(-1,dummyhfit,dummykfit,dummykfit);
+//-----------------------------------------------------------------------------
+// put tracks into the event
+//-----------------------------------------------------------------------------
+  END:;
+    art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
+    _payloadSaver.put(*tracks, tracksID, event);
+    event.put(std::move(tracks),_iname);
+    event.put(std::move(flags ),_iname);
+  }
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+  void CalPatRec::endJob(){
+    // does this cause the file to close?
+    art::ServiceHandle<art::TFileService> tfs;
+  }
+
+//-----------------------------------------------------------------------------
+// 
+//-----------------------------------------------------------------------------
   void CalPatRec::findTimePeaks() {
     TSpectrum tspec(_maxnpeak);
     TH1F timespec("timespec","time spectrum",_nbins,_tmin,_tmax);
@@ -460,7 +532,9 @@ namespace mu2e
     // sort the peaks so that the largest comes first
     std::sort(_tpeaks.begin(),_tpeaks.end(),greater<TrkTimePeak>());
   }
-
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
   void CalPatRec::createTimePeak() {
 // find the median time
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > tacc;
@@ -484,18 +558,25 @@ namespace mu2e
       _tpeaks.push_back(tpeak);
     }
   }
-
-  void CalPatRec::filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec){
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+  void CalPatRec::filterOutliers(TrkDef&                    mytrk  , 
+				 Trajectory const&          traj   , 
+				 double                     maxdoca, 
+				 std::vector<TrkHitFilter>& thfvec ) {
     //  Trajectory info
     Hep3Vector tdir;
-    HepPoint tpos;
+    HepPoint   tpos;
     traj.getInfo(0.0,tpos,tdir);
+
     // tracker and conditions
     const Tracker& tracker = getTrackerOrThrow();
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     const StrawHitCollection* hits = mytrk.strawHitCollection();
     const std::vector<hitIndex>& indices = mytrk.strawHitIndices();
     std::vector<hitIndex> goodhits;
+
     for(unsigned ihit=0;ihit<indices.size();++ihit){
       StrawHit const& sh = hits->at(indices[ihit]._index);
       Straw const& straw = tracker.getStraw(sh.strawIndex());
@@ -531,11 +612,15 @@ namespace mu2e
     mytrk.setIndices(goodhits);
   }
 
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
   void CalPatRec::findMissingHits(KalFitResult& kalfit,std::vector<hitIndex>& misshits) {
     const Tracker& tracker = getTrackerOrThrow();
-    //  Trajectory info
+					//  Trajectory info
     Hep3Vector tdir;
-    HepPoint tpos;
+    HepPoint   tpos;
+
     kalfit._krep->pieceTraj().getInfo(0.0,tpos,tdir);
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
@@ -565,7 +650,9 @@ namespace mu2e
     }
   }
 
-
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
   void CalPatRec::createDiagnostics() {
     art::ServiceHandle<art::TFileService> tfs;
     // straw hit tuple
@@ -649,6 +736,9 @@ namespace mu2e
     trkdiag->Branch("helixfilt",&_hfilt);
   }
 
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
   void CalPatRec::fillStrawDiag() {
     GeomHandle<DetectorSystem> det;
     const Tracker& tracker = getTrackerOrThrow();
@@ -718,21 +808,21 @@ namespace mu2e
 	  ++_nchit;
 	}
       }
-      _esel = _flags->at(istr).hasAllProperties(StrawHitFlag::energysel);
-      _rsel = _flags->at(istr).hasAllProperties(StrawHitFlag::radsel);
-      _timesel = _flags->at(istr).hasAllProperties(StrawHitFlag::timesel);
-      _stereo = _flags->at(istr).hasAllProperties(StrawHitFlag::stereo);
+      _esel     = _flags->at(istr).hasAllProperties(StrawHitFlag::energysel);
+      _rsel     = _flags->at(istr).hasAllProperties(StrawHitFlag::radsel);
+      _timesel  = _flags->at(istr).hasAllProperties(StrawHitFlag::timesel);
+      _stereo   = _flags->at(istr).hasAllProperties(StrawHitFlag::stereo);
       _isolated = _flags->at(istr).hasAllProperties(StrawHitFlag::isolated);
-      _delta = _flags->at(istr).hasAllProperties(StrawHitFlag::delta);
-      _shpres = _shpcol->at(istr).posRes(StrawHitPosition::phi);
-      _shrres = _shpcol->at(istr).posRes(StrawHitPosition::rho);
-      _shmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
-      _shmcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
-      _shmctd  = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
+      _delta    = _flags->at(istr).hasAllProperties(StrawHitFlag::delta);
+      _shpres   = _shpcol->at(istr).posRes(StrawHitPosition::phi);
+      _shrres   = _shpcol->at(istr).posRes(StrawHitPosition::rho);
+      _shmct0   = _kfitmc.MCT0(KalFitMC::trackerMid);
+      _shmcmom  = _kfitmc.MCMom(KalFitMC::trackerMid);
+      _shmctd   = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
 
-      _shchisq = -1.0;
-      _shdt    = 0.0;
-      _shdist  = -1.0;
+      _shchisq  = -1.0;
+      _shdt     = 0.0;
+      _shdist   = -1.0;
 
       // compare to different time peaks
       _ntpeak = _tpeaks.size();
@@ -807,7 +897,7 @@ namespace mu2e
 	ctsp->Fill(time);
       }
     }
-    // find peaks, so they show up on diagnostic plot too
+					// find peaks, so they show up on diagnostic plot too
     TSpectrum tspec(_maxnpeak);
     Double_t mb = tdtsp->GetMaximum();
     double thresh(0.1);
@@ -815,18 +905,21 @@ namespace mu2e
     tspec.Search(tdtsp,1,_dtspecpar.c_str(),thresh);
   }
 
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
   void CalPatRec::fillFitDiag(int ipeak,HelixFitHackResult const& helixfit,
       KalFitResult const& seedfit, KalFitResult const& kalfit) {
     // convenience numbers
-    static const double pi(M_PI);
-    static const double twopi(2*pi);
-    static const double halfpi(0.5*pi);
+    static const double pi     (M_PI);
+    static const double twopi  (2*pi);
+    static const double halfpi (0.5*pi);
     // initialize some variables
     _ipeak = ipeak;
     _nmc = 0;
     if(ipeak >= 0){
       const TrkTimePeak& tpeak = _tpeaks[ipeak];
-      // time peak information
+					// time peak information
       _peakmax = tpeak._peakmax;
       _tpeak = tpeak._tpeak;
       _npeak = tpeak._trkptrs.size();
@@ -903,43 +996,49 @@ namespace mu2e
     _kfitmc.kalDiag(kalfit._krep);
   }
 
-
+//-----------------------------------------------------------------------------
+// 2014-04-03 P.M.: as far as I understand, this routine is not being used
+//-----------------------------------------------------------------------------
   void CalPatRec::fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const {
+
     const Tracker& tracker = getTrackerOrThrow();
-    StrawHit const& sh = _shcol->at(ish);
+
+    StrawHit const& sh          = _shcol->at(ish);
     StrawHitPosition const& shp = _shpcol->at(ish);
-    shinfo._pos = shp.pos();
-    shinfo._time = sh.time();
-    shinfo._rho = shp.pos().perp();
-    shinfo._pres = shp.posRes(StrawHitPosition::phi);
-    shinfo._rres = shp.posRes(StrawHitPosition::rho);
+
+    shinfo._pos   = shp.pos();
+    shinfo._time  = sh.time();
+    shinfo._rho   = shp.pos().perp();
+    shinfo._pres  = shp.posRes(StrawHitPosition::phi);
+    shinfo._rres  = shp.posRes(StrawHitPosition::rho);
 
     shinfo._chisq = -1.0;
     shinfo._stdt  = 0.0;
     shinfo._dist  = -1.0;
 
-    shinfo._edep = sh.energyDep();
+    shinfo._edep  = sh.energyDep();
     const Straw& straw = tracker.getStraw( sh.strawIndex() );
+
     shinfo._device = straw.id().getDevice();
     shinfo._sector = straw.id().getSector();
-    shinfo._layer = straw.id().getLayer();
-    shinfo._straw = straw.id().getStraw();
-    shinfo._esel = shp.flag().hasAllProperties(StrawHitFlag::energysel);
-    shinfo._rsel = shp.flag().hasAllProperties(StrawHitFlag::radsel);
-    shinfo._delta = shp.flag().hasAllProperties(StrawHitFlag::delta);
+    shinfo._layer  = straw.id().getLayer();
+    shinfo._straw  = straw.id().getStraw();
+    shinfo._esel   = shp.flag().hasAllProperties(StrawHitFlag::energysel);
+    shinfo._rsel   = shp.flag().hasAllProperties(StrawHitFlag::radsel);
+    shinfo._delta  = shp.flag().hasAllProperties(StrawHitFlag::delta);
     shinfo._stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
 
     if(_kfitmc.mcData()._mcsteps != 0) {
       const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
-      shinfo._mcpdg = mcsum[0]._pdgid;
-      shinfo._mcgen = mcsum[0]._gid;
+      shinfo._mcpdg  = mcsum[0]._pdgid;
+      shinfo._mcgen  = mcsum[0]._gid;
       shinfo._mcproc = mcsum[0]._pid;
-      shinfo._mcpos = mcsum[0]._pos;
+      shinfo._mcpos  = mcsum[0]._pos;
       shinfo._mctime = mcsum[0]._time;
       shinfo._mcedep = mcsum[0]._esum;
-      shinfo._mct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
-      shinfo._mcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
-      shinfo._mctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
+      shinfo._mct0   = _kfitmc.MCT0(KalFitMC::trackerMid);
+      shinfo._mcmom  = _kfitmc.MCMom(KalFitMC::trackerMid);
+      shinfo._mctd   = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
     }
   }
 }

@@ -232,9 +232,15 @@ class MakeCaloClusterHack : public art::EDProducer {
 //-----------------------------------------------------------------------------
        std::sort(caloClusters->begin(),caloClusters->end(),mu2e::caloClusterEnergyPredicate);
 
-       cl =  &caloClusters->at(0);
-       if (cl->energyDep() > _MinCalPatRecSeedEnergy) {
-	 cl_max     = cl;
+       float emax = _MinCalPatRecSeedEnergy;
+
+       for (int i=0; i<ncl; i++) {
+	 cl =  &caloClusters->at(i);
+	 if ((cl->time() > 400.) && (cl->energyDep() > emax)) {
+	   cl_max     = cl;
+	   emax       = cl->energyDep();
+	   break;
+	 }
        }
 
        if (cl_max != NULL) {
