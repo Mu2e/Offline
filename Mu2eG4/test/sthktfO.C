@@ -1,9 +1,9 @@
 //
 // Root c++ function to compare plots based on steps, hits, track fits
 // 
-// $Id: sthktfO.C,v 1.2 2013/07/09 19:28:12 genser Exp $
+// $Id: sthktfO.C,v 1.3 2014/04/03 22:26:32 genser Exp $
 // $Author: genser $
-// $Date: 2013/07/09 19:28:12 $
+// $Date: 2014/04/03 22:26:32 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //
@@ -23,6 +23,9 @@
 //
 
 // run it in root e.g. like .x sthktfO.C++ (or .x sthktfO.C++g)
+
+// deprecated
+// >>>>>>>>>>>> please use g4validate_01.C with StepsDiag.C instead <<<<<<<<<<<<
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -707,6 +710,9 @@ void sthktfO()
 
   cout << "Closing " << pdffile
          <<endl;
+
+  cout << "deprecated" << endl;
+  cout << ">>>>>>>>>>>> please use g4validate_01.C with StepsDiag.C instead <<<<<<<<<<<<" << endl;
 
   // Close the pdf file.
   canvas->Print(pdffile+"]");
