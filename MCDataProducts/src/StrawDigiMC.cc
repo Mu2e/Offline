@@ -17,6 +17,11 @@ using namespace std;
 
 namespace mu2e {
 
+  // Default constructor is required for persistable classes
+  StrawDigiMC::StrawDigiMC()
+    : _strawIndex(StrawIndex::NO_STRAW)
+  {}
+
   StrawDigiMC::StrawDigiMC(StrawIndex index, double wetime[2], CLHEP::HepLorentzVector cpos[2], 
       art::Ptr<StepPointMC> stepMC[2], vector<art::Ptr<StepPointMC> > const& stepMCs) :
     _strawIndex(index), _stepMCs(stepMCs)
