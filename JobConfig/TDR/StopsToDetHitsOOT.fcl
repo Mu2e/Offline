@@ -12,13 +12,9 @@ physics.producers.generate: {
     module_type: StoppedParticleG4Gun
     verbosityLevel : 1
     pdgId: 13 // mu-
-    muonStops : {
-        inputFiles: @nil // use --fclinput for grid submission
-        averageNumRecordsToUse: 500000
-        treeName: "outOfTargetDumper/stops"
-        branchName : "stops"
-        verbosityLevel : 1
-    }
+    muonStops : @local::muonStops
 }
+
+physics.producers.generate.muonStops.treeName: "outOfTargetDumper/stops"
 
 //test: physics.producers.generate.muonStops.inputFiles: [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]

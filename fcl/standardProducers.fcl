@@ -428,4 +428,16 @@ photonMixer: {
   }
 }
 
+//================================================================
+// Defs for StoppedParticleReactionGun and others
+
+muonStops : {
+    inputFiles: @nil // use --fclinput for grid submission
+    averageNumRecordsToUse: 500000
+    treeName: "stoppedMuonDumper/stops"
+    branchName : "stops"
+    verbosityLevel : 1
+}
+
+
 END_PROLOG
