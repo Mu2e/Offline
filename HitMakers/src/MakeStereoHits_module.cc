@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.14 2014/04/04 17:08:47 brownd Exp $
+// $Id: MakeStereoHits_module.cc,v 1.15 2014/04/04 22:56:22 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/04/04 17:08:47 $
+// $Date: 2014/04/04 22:56:22 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -116,7 +116,7 @@ namespace mu2e {
     _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
     _maxDt(pset.get<double>("maxDt",40.0)), // nsec
     _maxDE(pset.get<double>("maxDE",0.99)), // dimensionless, from 0 to 1
-    _maxDZ(pset.get<double>("maxDZ",100)), // mm, maximum perpendicular distance between time-division points
+    _maxDZ(pset.get<double>("maxDZ",40.)), // mm, maximum perpendicular distance between time-division points
     _minDdot(pset.get<double>("minDdot",-0.01)),
     _minDL(pset.get<double>("minDL",-5.0)),
     _maxChisq(pset.get<double>("maxChisquared",100.0)),
