@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.13 2014/04/02 14:19:01 brownd Exp $
+// $Id: MakeStereoHits_module.cc,v 1.14 2014/04/04 17:08:47 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/04/02 14:19:01 $
+// $Date: 2014/04/04 17:08:47 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -198,9 +198,9 @@ namespace mu2e {
     // Get a reference to one of the L or T trackers.
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
-      static bool first(true);
-      if(_diagLevel >0 && first){
-	first = false;
+    static bool first(true);
+    if(_diagLevel >0 && first){
+      first = false;
       const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
       art::ServiceHandle<art::TFileService> tfs;
       unsigned nsta = tt.nDevices()/2;
