@@ -267,15 +267,9 @@ MakeStereoHits : {
 }
 FlagStrawHits  : {
   module_type : FlagStrawHits
-  maximumRadius : [680,640]
 }
 FlagBkgHits : {
   module_type : FlagBkgHits
-  ClusterStrawHits  : 
-  {
-    BackgroundMask : []
-    SignalMask : ["EnergySelection","TimeSelection"]
-  }
 }
 
 # pattern reconition protype
@@ -311,10 +305,6 @@ TrkPatRec :
 		fieldCorrection				: true
                 maxhitchi                               : 3.5
 	}
-	TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
-	HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
-	KalmanFitSelectionBits : []
-	BackgroundSelectionBits : ["DeltaRay","Isolated"]
 } # end TrkPatRec
 # variants of TrkPatRec for specific particle species and directions. These constitute the 'standard' fits
 # in future we need names instead of values for the particle type
