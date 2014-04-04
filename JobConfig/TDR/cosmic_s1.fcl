@@ -68,13 +68,13 @@ physics : {
 	hitMomentumFilter: {
             module_type: FilterStepPointMomentum
             inputs : [ "g4run:TrackerMother", "g4run:CalorimeterMother" ]
-            cutMomentumMin: 80. // MeV/c
+            cutMomentumMin: 45. // MeV/c to accommodate muons decaying into electrons with a momentum of 80 MeV/c
 	}
 
         g4filter: {
             module_type: FilterG4Out
-            mainHitInputs : [ "g4run:TrackerMother", "g4run:CalorimeterMother" ]
-            extraHitInputs : [ "g4run:virtualdetector", "g4run:CRV" ]
+            mainHitInputs : [ "g4run:TrackerMother", "g4run:CalorimeterMother", "g4run:CRV" ]
+            extraHitInputs : [ "g4run:virtualdetector" ]
             mcTrajectoryInputs : [ "g4run" ]
             numSimParticleCollections : 1
             vetoDaughters: []

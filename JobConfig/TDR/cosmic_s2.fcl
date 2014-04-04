@@ -76,8 +76,8 @@ physics : {
 
         g4filter: {
             module_type: FilterG4Out
-            mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
-            extraHitInputs: [ "g4run:virtualdetector", "g4run:CRV" ]
+            mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO", "g4run:CRV"]
+            extraHitInputs: [ "g4run:virtualdetector" ]
             mcTrajectoryInputs : [ "g4run" ]
             numSimParticleCollections: 1
             vetoDaughters: []
