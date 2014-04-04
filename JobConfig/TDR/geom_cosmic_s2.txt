@@ -20,7 +20,7 @@ vector<string> g4.mcTrajectoryVolumes = { "PSVacuum", "TS1Vacuum", "TS2Vacuum", 
 vector<double> g4.mcTrajectoryVolumePtDistances = { 15., 15., 15., 15., 15., 15., 15., 15., 15. };
 
 int g4.steppingActionMaxSteps = 50000;
-int g4.particlesSizeLimit = 1000000;
+int g4.particlesSizeLimit = 2000000;
 
 double world.minimalMargin.xmin = 500000;
 double world.minimalMargin.xmax = 500000;
