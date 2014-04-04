@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: ClusterStrawHits.cc,v 1.6 2013/03/20 00:05:56 brownd Exp $
+// $Id: ClusterStrawHits.cc,v 1.7 2014/04/04 22:58:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/20 00:05:56 $
+// $Date: 2014/04/04 22:58:00 $
 //
 //
 #include "TrkPatRec/inc/ClusterStrawHits.hh"
@@ -26,11 +26,12 @@
 #include <vector>
 #include <algorithm>
 using namespace boost::accumulators;
+using namespace std;
 namespace mu2e 
 {
   unsigned StrawHitCluster::_currentid(0);
 
-  struct ncomp : public std::binary_function<StrawHitCluster, StrawHitCluster, bool> {
+  struct ncomp : public binary_function<StrawHitCluster, StrawHitCluster, bool> {
     bool operator()(StrawHitCluster const& c1, StrawHitCluster const& c2) { return c2.hits().size() < c1.hits().size(); }
   };
 
@@ -38,8 +39,8 @@ namespace mu2e
     addHit(hit);
   }
 // construct from the collection and a list of hits
-  StrawHitCluster::StrawHitCluster(std::vector<ClusterHit> const& hits) : _id(++_currentid),_hits(hits) {
-    for(std::vector<ClusterHit>::iterator ih=_hits.begin();ih!= _hits.end();++ih){
+  StrawHitCluster::StrawHitCluster(vector<ClusterHit> const& hits) : _id(++_currentid),_hits(hits) {
+    for(vector<ClusterHit>::iterator ih=_hits.begin();ih!= _hits.end();++ih){
       accumulate(*ih);
     }
     updateCache();
@@ -48,7 +49,7 @@ namespace mu2e
   // copy, etc
   StrawHitCluster::StrawHitCluster(StrawHitCluster const& other) : _pos(other._pos),_time(other._time),_id(other._id),
   _hits(other._hits){
-    for(std::vector<ClusterHit>::iterator ih=_hits.begin();ih!= _hits.end();++ih){
+    for(vector<ClusterHit>::iterator ih=_hits.begin();ih!= _hits.end();++ih){
       accumulate(*ih);
     }
   }
@@ -61,7 +62,7 @@ namespace mu2e
       _id = other._id;
       _hits.clear();
       _hits = other._hits;
-      for(std::vector<ClusterHit>::iterator ih=_hits.begin();ih!= _hits.end();++ih){
+      for(vector<ClusterHit>::iterator ih=_hits.begin();ih!= _hits.end();++ih){
 	accumulate(*ih);
       }
     }
@@ -83,7 +84,7 @@ namespace mu2e
   }
 
   void StrawHitCluster::merge(StrawHitCluster const& other){
-    std::vector<ClusterHit> const& ohits = other.hits();
+    vector<ClusterHit> const& ohits = other.hits();
     for(size_t oh=0;oh<ohits.size();++oh){
       addHit(ohits[oh]);
     }
@@ -95,7 +96,7 @@ namespace mu2e
  //   _pos.y() = mean(_yacc);
 //    _time  = mean(_tacc);
 // there is a bug in boost, the median is not calculated correctly if there are only a few entries
-    if(count(_xacc) > 2){
+    if( boost::accumulators::extract::count(_xacc) > 2){
       double x = median(_xacc);
       double y = median(_yacc);
       _pos = CLHEP::Hep3Vector(x,y,0.0);
@@ -116,19 +117,17 @@ namespace mu2e
 //    _yacc = accumulator_set<double, stats<tag::mean > >();
 //    _tacc = accumulator_set<double, stats<tag::mean > >();
   }
-  std::vector<std::string> ClusterStrawHits::_nullsvec;
-
   ClusterStrawHits::ClusterStrawHits(fhicl::ParameterSet const& pset) :
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
-    _bkgmask(pset.get<std::vector<std::string> >("BackgroundMask",_nullsvec)),
-    _sigmask(pset.get<std::vector<std::string> >("SignalMask",_nullsvec)),
+    _bkgmask(pset.get<vector<string> >("BackgroundMask",vector<string>{})),
+    _sigmask(pset.get<vector<string> >("SignalMask",vector<string>{"EnergySelection","RadiusSelection"})),
     _dseed(pset.get<double>("SeedDistance",10.0)), // # of sigma to define a new cluster
     _dhit(pset.get<unsigned>("HitDistance",6.0)), // # of sigma to add hits
     _dmerge(pset.get<double>("MergeDistance",6.0)), // # of sigma to merge clusters
     _dlarge(pset.get<double>("LargestDistance",10000.0)),
     _dd(pset.get<double>("ClusterDiameter",10.0)), // mm: the natural cluster size
-    _dt(pset.get<double>("TimeDiference",60.0)), // nsec: the natural time spread
+    _dt(pset.get<double>("TimeDifference",40.0)), // nsec: the natural time spread
     _trms(pset.get<double>("TimeRMS",5.0)), //nsec: individual hit time resolution
     _srms(pset.get<double>("StereoRMS",5.0)), //mm: individual hit resolution
     _nsrms(pset.get<double>("NonStereoRMS",25.)), // mmm: twice the individual hit resolution
@@ -155,7 +154,7 @@ namespace mu2e
       double psig2 = stereo ? _srms2 : _nsrms2;
       if(_mode == hitcluster){
 	double dperp = (cluster.pos()-hit._pos).perp();
-	retval = sqrt(pow(std::max(0.0,dperp-_dd),2)/psig2 + pow(std::max(0.0,dt-_dt),2)/_trms2);
+	retval = sqrt(pow(fmax(0.0,dperp-_dd),2)/psig2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
       } else  {
 // loop over all hits in the cluster, and determine the distance to the closests one
 	double mindp2(FLT_MAX);
@@ -163,7 +162,7 @@ namespace mu2e
 	  double dp2 = (cluster.hits()[ih]._pos-hit._pos).perp();
 	  if(dp2 < mindp2)mindp2 = dp2;
 	}
-	retval = sqrt(pow(std::max(0.0,sqrt(mindp2)-_dd),2)/psig2 + pow(std::max(0.0,dt-_dt),2)/_trms2);
+	retval = sqrt(pow(fmax(0.0,sqrt(mindp2)-_dd),2)/psig2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
       }
     }
     return retval;
@@ -175,7 +174,7 @@ namespace mu2e
     if( dt < 2*_dt){
       if(_mode == hitcluster) {
 	double dperp = (c1.pos()-c2.pos()).perp();
-	retval = sqrt(pow(std::max(0.0,dperp-_dd),2)/_srms2 + pow(std::max(0.0,dt-_dt),2)/_trms2);
+	retval = sqrt(pow(fmax(0.0,dperp-_dd),2)/_srms2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
       } else {
 	double mindp2(FLT_MAX);
 	for(size_t ih=0;ih<c1.hits().size();++ih){
@@ -184,7 +183,7 @@ namespace mu2e
 	    if(dp2 < mindp2)mindp2 = dp2;
 	  }
 	}
-	retval = sqrt(pow(std::max(0.0,sqrt(mindp2)-_dd),2)/_srms2 + pow(std::max(0.0,dt-_dt),2)/_trms2);
+	retval = sqrt(pow(fmax(0.0,sqrt(mindp2)-_dd),2)/_srms2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
       }
     }
     return retval;
@@ -196,16 +195,16 @@ namespace mu2e
       StrawHitClusterList& clusters) const {
 // require consistency
     if(shcol.size() != shpcol.size() || shcol.size() != shfcol.size()){
-      std::ostringstream os;
+      ostringstream os;
       os <<  " ClusterStrawHits: inconsistent collection lengths ";
-      throw std::out_of_range( os.str() );
+      throw out_of_range( os.str() );
     }
 // reset
     clusters._clist.clear();
     StrawHitCluster::resetId();
-    clusters._cids = std::vector<int>(shcol.size(),-2);
+    clusters._cids = vector<int>(shcol.size(),-2);
     // loop over the straw hits and create ClusterHits
-    std::vector<ClusterHit> chits;
+    vector<ClusterHit> chits;
     chits.reserve(shcol.size());
     for(size_t ish=0;ish<shcol.size();++ish){
       if(shfcol[ish].hasAllProperties(_sigmask) && !shfcol[ish].hasAnyProperty(_bkgmask)){
@@ -228,19 +227,19 @@ namespace mu2e
     }
   }
 
-  unsigned ClusterStrawHits::formClusters(std::vector<ClusterHit> const& chits, StrawHitClusterList& clusters) const {
+  unsigned ClusterStrawHits::formClusters(vector<ClusterHit> const& chits, StrawHitClusterList& clusters) const {
     unsigned  nchanged(0);
     bool update=_updatefirst && clusters._niter==0;
 // clear out the hits
-    for(std::list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
+    for(list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
       ic->clearHits();
     }
  //loop over clusterhits, seeding clusters or appending hits to them, as appropriate
     for(size_t ich=0;ich<chits.size();++ich){
       ClusterHit const& chit = chits[ich];
       double mindist(FLT_MAX);
-      std::list<StrawHitCluster>::iterator minc = clusters._clist.end();
-      for(std::list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
+      list<StrawHitCluster>::iterator minc = clusters._clist.end();
+      for(list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
 	double dist = distance(*ic,chit);
 	if(dist < mindist){
 	  mindist = dist;
@@ -266,11 +265,11 @@ namespace mu2e
       }
     }
 // final cluster update
-    for(std::list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
+    for(list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
       ic->updateCache();
     }
 // sort the list
-//    std::sort(clusters.begin(),clusters.end(),ncomp());
+//    sort(clusters.begin(),clusters.end(),ncomp());
 // merge the clusters
 //    unsigned nbefore = clusters.size();
     nchanged += mergeClusters(clusters);
@@ -280,10 +279,10 @@ namespace mu2e
 
   unsigned ClusterStrawHits::mergeClusters(StrawHitClusterList& clusters) const {
     unsigned nmerged(0);
-    for(std::list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
-      std::list<StrawHitCluster>::iterator jc=ic;jc++;
+    for(list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
+      list<StrawHitCluster>::iterator jc=ic;jc++;
       double mindist(FLT_MAX);
-      std::list<StrawHitCluster>::iterator imin=clusters._clist.end();
+      list<StrawHitCluster>::iterator imin=clusters._clist.end();
       for(;jc!=clusters._clist.end();++jc){
 	double dist = distance(*ic,*jc);
 	if(dist < mindist){

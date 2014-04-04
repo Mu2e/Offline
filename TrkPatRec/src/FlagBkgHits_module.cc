@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.22 2014/03/03 05:56:38 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.23 2014/04/04 22:58:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/03 05:56:38 $
+// $Date: 2014/04/04 22:58:00 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -198,8 +198,8 @@ namespace mu2e
     _ismask(StrawHitFlag::isolated),
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","MLP method")),
     _dclustertype(pset.get<std::string>("DeltaClusterTMVAType","MLP method")),
-    _gdstereo(pset.get<double>("StereoHitMVACut",0.8)),
-    _gdnonstereo(pset.get<double>("NonStereoHitMVACut",0.8)),
+    _gdstereo(pset.get<double>("StereoHitMVACut",0.4)),
+    _gdnonstereo(pset.get<double>("NonStereoHitMVACut",0.3)),
     _mindp(pset.get<unsigned>("MinDeltaHits",0)),
     _minns(pset.get<unsigned>("MinNStations",2)),
     _stereoclusterhitfrac(pset.get<double>("StereoClusterHitFraction",0.8)),
@@ -282,10 +282,9 @@ namespace mu2e
 	  }
 	}
       }
-    }
-    // flag the unclustered hits as 'isolated'
-    for(size_t ish=0;ish<nsh;++ish){
-      if(clusters._cids[ish]<0)bkgfcol->at(ish).merge(_ismask);
+  // flag single-hit clusters as 'isolated'
+      if(delta._dhinfo.size()==1)
+	bkgfcol->at(delta._dhinfo[0]._hindex).merge(_ismask);
     }
     // diagnostics
     if(_diag > 0)

@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.69 2014/03/16 15:13:35 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.70 2014/04/04 22:58:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/16 15:13:35 $
+// $Date: 2014/04/04 22:58:00 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -96,15 +96,14 @@ namespace mu2e
       int _printfreq;
       bool _addhits; 
       // event object labels
-      std::string _shLabel;
-      std::string _shpLabel;
-      std::string _stLabel;
-      std::string _shfLabel;
-      std::string _dtspecpar;
-      StrawHitFlag _tsel, _hsel, _ksel;
-      StrawHitFlag _bkgsel;
-      double _maxedep, _maxdt, _maxdtmiss;
-      double _fbf;
+      string _shLabel;
+      string _shpLabel;
+      string _stLabel;
+      string _shfLabel;
+      string _dtspecpar;
+      StrawHitFlag _tsel, _hsel, _addsel;
+      StrawHitFlag _tbkg, _hbkg, _addbkg;
+      double _maxdt, _maxdtmiss;
       // time spectrum parameters
       bool _findtpeak;
       unsigned _maxnpeak;
@@ -130,16 +129,16 @@ namespace mu2e
       // robust helix fitter
       HelixFit _hfit;
       // cache of time peaks
-      std::vector<TrkTimePeak> _tpeaks;
-      std::string _iname; // data instance name
+      vector<TrkTimePeak> _tpeaks;
+      string _iname; // data instance name
       //
       PayloadSaver _payloadSaver;
       // helper functions
       bool findData(const art::Event& e);
       void findTimePeaks();
       void createTimePeak();
-      void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
-      void findMissingHits(KalFitResult& kalfit, std::vector<hitIndex>& indices);
+      void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,vector<TrkHitFilter>& thfvec);
+      void findMissingHits(KalFitResult& kalfit, vector<hitIndex>& indices);
       void createDiagnostics();
       void fillStrawDiag();
       void fillTimeDiag();
@@ -155,7 +154,7 @@ namespace mu2e
       Int_t _eventid;
       threevec _shp;
       Float_t _edep;
-      Float_t _time, _rho;
+      Float_t _time, _deltat, _rho;
       Int_t _nmcsteps;
       Int_t _mcnunique,_mcnmax;
       Int_t _mcpdg,_mcgen,_mcproc;
@@ -186,7 +185,7 @@ namespace mu2e
       Int_t _npeak, _nmc;
       Float_t _peakmax, _tpeak;
       // hit filtering tuple variables
-      std::vector<TrkHitFilter> _sfilt, _hfilt;
+      vector<TrkHitFilter> _sfilt, _hfilt;
       // flow diagnostic
       TH1F* _cutflow;
   };
@@ -196,19 +195,19 @@ namespace mu2e
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
     _addhits(pset.get<bool>("addhits",true)),
-    _shLabel(pset.get<std::string>("StrawHitCollectionLabel","makeSH")),
-    _shpLabel(pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
-    _stLabel(pset.get<std::string>("StereoHitCollectionLabel","MakeStereoHits")),
-    _shfLabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
-    _dtspecpar(pset.get<std::string>("DeltaTSpectrumParams","nobackgroundnomarkovgoff")),
-    _tsel(pset.get<std::vector<std::string> >("TimeSelectionBits")),
-    _hsel(pset.get<std::vector<std::string> >("HelixFitSelectionBits")),
-    _ksel(pset.get<std::vector<std::string> >("KalmanFitSelectionBits")),
-    _bkgsel(pset.get<std::vector<std::string> >("BackgroundSelectionBits")),
-    _maxedep(pset.get<double>("MaxStrawEDep",0.003)),
+    _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
+    _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
+    _stLabel(pset.get<string>("StereoHitCollectionLabel","MakeStereoHits")),
+    _shfLabel(pset.get<string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
+    _dtspecpar(pset.get<string>("DeltaTSpectrumParams","nobackgroundnomarkovgoff")),
+    _tsel(pset.get<vector<string> >("TimeSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"} )),
+    _hsel(pset.get<vector<string> >("HelixFitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"} )),
+    _addsel(pset.get<vector<string> >("AddHitSelectionBits",vector<string>{} )),
+    _tbkg(pset.get<vector<string> >("TimeBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
+    _hbkg(pset.get<vector<string> >("HelixFitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
+    _addbkg(pset.get<vector<string> >("AddHitBackgroundBits",vector<string>{})),
     _maxdt(pset.get<double>("DtMax",30.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",45.0)),
-    _fbf(pset.get<double>("PhiEdgeBuffer",1.1)),
     _findtpeak(pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",0)),
@@ -268,12 +267,6 @@ namespace mu2e
     // copy in the existing flags
     _flags = new StrawHitFlagCollection(*_shfcol);
     unique_ptr<StrawHitFlagCollection> flags(_flags );
-    // tighten the energy cut
-    static StrawHitFlag esel(StrawHitFlag::energysel);
-    for(size_t ish=0;ish<_flags->size();++ish){
-      if(_shcol->at(ish).energyDep() > _maxedep && _flags->at(ish).hasAllProperties(esel))
-	_flags->at(ish).clear(esel);
-    }
     // find mc truth if we're making diagnostics
     if(_diag > 0){
       if(!_kfitmc.findMCData(event)){
@@ -348,7 +341,7 @@ namespace mu2e
 	    if(_addhits){
 	      // first, add back the hits on this track
 	      _kfit.unweedHits(kalfit,_maxaddchi);
-	      std::vector<hitIndex> misshits;
+	      vector<hitIndex> misshits;
 	      findMissingHits(kalfit,misshits);
 	      if(misshits.size() > 0){
 		_kfit.addHits(kalfit,_shcol,misshits,_maxaddchi);
@@ -384,8 +377,8 @@ namespace mu2e
     // put the tracks into the event
     art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
     _payloadSaver.put(*tracks, tracksID, event);
-    event.put(std::move(tracks),_iname);
-    event.put(std::move(flags),_iname);
+    event.put(move(tracks),_iname);
+    event.put(move(flags),_iname);
   }
 
   void TrkPatRec::endJob(){
@@ -421,7 +414,7 @@ namespace mu2e
     // loop over straws hits and fill time spectrum plot for tight hits
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
-      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
+      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
 	double time = _shcol->at(istr).time();
 	timespec.Fill(time);
       }
@@ -440,7 +433,7 @@ namespace mu2e
       if(yp > _ymin){
 	// record hits in time with each peak, and accept them if they have a minimum # of hits
 	for(unsigned istr=0; istr<nstrs;++istr){
-	  if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
+	  if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
 	    double time = _shcol->at(istr).time();
 	    if(fabs(time-xp) < _maxdt)tpeak._trkptrs.push_back(istr);
 	  }
@@ -449,7 +442,7 @@ namespace mu2e
       }
     }
     // sort the peaks so that the largest comes first
-    std::sort(_tpeaks.begin(),_tpeaks.end(),greater<TrkTimePeak>());
+    sort(_tpeaks.begin(),_tpeaks.end(),greater<TrkTimePeak>());
   }
 
   void TrkPatRec::createTimePeak() {
@@ -457,7 +450,7 @@ namespace mu2e
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > tacc;
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
-      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
+      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
 	double time = _shcol->at(istr).time();
 	tacc(time);
       }
@@ -468,7 +461,7 @@ namespace mu2e
 // create a time peak from the full subset of selected hits
       TrkTimePeak tpeak(mtime,(double)nstrs);
       for(unsigned istr=0; istr<nstrs;++istr){
-	if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
+	if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
 	  tpeak._trkptrs.push_back(istr);
 	}
       }
@@ -476,7 +469,7 @@ namespace mu2e
     }
   }
 
-  void TrkPatRec::filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec){
+  void TrkPatRec::filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,vector<TrkHitFilter>& thfvec){
     //  Trajectory info
     Hep3Vector tdir;
     HepPoint tpos;
@@ -485,8 +478,8 @@ namespace mu2e
     const Tracker& tracker = getTrackerOrThrow();
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     const StrawHitCollection* hits = mytrk.strawHitCollection();
-    const std::vector<hitIndex>& indices = mytrk.strawHitIndices();
-    std::vector<hitIndex> goodhits;
+    const vector<hitIndex>& indices = mytrk.strawHitIndices();
+    vector<hitIndex> goodhits;
     for(unsigned ihit=0;ihit<indices.size();++ihit){
       StrawHit const& sh = hits->at(indices[ihit]._index);
       Straw const& straw = tracker.getStraw(sh.strawIndex());
@@ -510,7 +503,7 @@ namespace mu2e
 	thfilter._pos = CLHEP::Hep3Vector(tpos.x(),tpos.y(),tpos.z());
 	thfilter._doca = hitpoca.doca();
 	if(_kfitmc.mcData()._mcsteps != 0){
-	  const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ihit);
+	  const vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ihit);
 	  thfilter._mcpdg = mcsum[0]._pdgid;
 	  thfilter._mcgen = mcsum[0]._gid;
 	  thfilter._mcproc = mcsum[0]._pid;
@@ -522,7 +515,7 @@ namespace mu2e
     mytrk.setIndices(goodhits);
   }
 
-  void TrkPatRec::findMissingHits(KalFitResult& kalfit,std::vector<hitIndex>& misshits) {
+  void TrkPatRec::findMissingHits(KalFitResult& kalfit,vector<hitIndex>& misshits) {
     const Tracker& tracker = getTrackerOrThrow();
     //  Trajectory info
     Hep3Vector tdir;
@@ -530,11 +523,11 @@ namespace mu2e
     kalfit._krep->pieceTraj().getInfo(0.0,tpos,tdir);
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
-      if(_flags->at(istr).hasAllProperties(_ksel)&& !_flags->at(istr).hasAnyProperty(_bkgsel)){
+      if(_flags->at(istr).hasAllProperties(_addsel)&& !_flags->at(istr).hasAnyProperty(_addbkg)){
 	StrawHit const& sh = _shcol->at(istr);
 	if(fabs(_shcol->at(istr).time()-kalfit._krep->t0()._t0) < _maxdtmiss) {
 	  // make sure we haven't already used this hit
-	  std::vector<TrkStrawHit*>::iterator ifnd = find_if(kalfit._hits.begin(),kalfit._hits.end(),FindTrkStrawHit(sh));
+	  vector<TrkStrawHit*>::iterator ifnd = find_if(kalfit._hits.begin(),kalfit._hits.end(),FindTrkStrawHit(sh));
 	  if(ifnd == kalfit._hits.end()){
 	    // good in-time hit.  Compute DOCA of the wire to the trajectory
 	    Straw const& straw = tracker.getStraw(sh.strawIndex());
@@ -565,6 +558,7 @@ namespace mu2e
     _shdiag->Branch("shpos",&_shp,"x/F:y/F:z/F");
     _shdiag->Branch("edep",&_edep,"edep/F");
     _shdiag->Branch("time",&_time,"time/F");
+    _shdiag->Branch("deltat",&_deltat,"deltat/F");
     _shdiag->Branch("rho",&_rho,"rho/F");
     _shdiag->Branch("device",&_device,"device/I");
     _shdiag->Branch("sector",&_sector,"sector/I");
@@ -669,6 +663,7 @@ namespace mu2e
       _stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
       _edep = sh.energyDep();
       _time = sh.time();
+      _deltat = sh.dt();
       _rho = shp.pos().perp();
       // find proximity for different radii
       double esum(0.0);
@@ -698,11 +693,11 @@ namespace mu2e
       }
       // summarize the MC truth for this strawhit
       if(_kfitmc.mcData()._mcsteps != 0){
-	const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
+	const vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
 	_mcnunique = mcsum.size();
 	// compute energy sum
 	_mcedep = 0.0;
-	for(std::vector<MCHitSum>::const_iterator isum=mcsum.begin(); isum != mcsum.end(); ++isum){
+	for(vector<MCHitSum>::const_iterator isum=mcsum.begin(); isum != mcsum.end(); ++isum){
 	  _mcedep += isum->_esum;
 	}
 	// first entry
@@ -777,8 +772,8 @@ namespace mu2e
       hitIndex myindex(istr);
       if(_shmcmom >0){
 	for(unsigned ipeak=0;ipeak<_tpeaks.size();++ipeak){
-	  std::vector<hitIndex>::iterator ifind =
-	    std::find(_tpeaks[ipeak]._trkptrs.begin(),_tpeaks[ipeak]._trkptrs.end(),myindex);
+	  vector<hitIndex>::iterator ifind =
+	    find(_tpeaks[ipeak]._trkptrs.begin(),_tpeaks[ipeak]._trkptrs.end(),myindex);
 	  if(ifind != _tpeaks[ipeak]._trkptrs.end()){
 	    _ishpeak = ipeak;
 	    break;
@@ -831,7 +826,7 @@ namespace mu2e
       bool proton(false);
       // summarize the MC truth for this strawhit
       if(_kfitmc.mcData()._mcsteps != 0) {
-	const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
+	const vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
 	conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
 	proton = mcsum[0]._pdgid==2212;
       }
@@ -840,10 +835,10 @@ namespace mu2e
       if(_flags->at(istr).hasAllProperties(_tsel)){
 	ttsp->Fill(time);
       }
-      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
+      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
 	tdtsp->Fill(time);
       }
-      if(_flags->at(istr).hasAllProperties(_ksel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
+      if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
 	ltsp->Fill(time);
 	if(conversion)
 	  ctsp->Fill(time);
@@ -876,10 +871,10 @@ namespace mu2e
       _peakmax = tpeak._peakmax;
       _tpeak = tpeak._tpeak;
       _npeak = tpeak._trkptrs.size();
-      for(std::vector<hitIndex>::const_iterator istr= tpeak._trkptrs.begin(); istr != tpeak._trkptrs.end(); ++istr){
+      for(vector<hitIndex>::const_iterator istr= tpeak._trkptrs.begin(); istr != tpeak._trkptrs.end(); ++istr){
 	// summarize the MC truth for this strawhit
 	if(_kfitmc.mcData()._mcsteps != 0) {
-	  const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr->_index); 
+	  const vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr->_index); 
 	  if(mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2)
 	    ++_nmc;
 	}
@@ -942,7 +937,7 @@ namespace mu2e
     }
     // count # of added hits
     _nadd = 0;
-    for(std::vector<TrkStrawHit*>::const_iterator ish=kalfit._hits.begin();ish!=kalfit._hits.end();++ish){
+    for(vector<TrkStrawHit*>::const_iterator ish=kalfit._hits.begin();ish!=kalfit._hits.end();++ish){
       if((*ish)->usability()==3)++_nadd;
     }
     // fill kalman fit info.  This needs to be last, as it calls TTree::Fill().
@@ -981,7 +976,7 @@ namespace mu2e
     shinfo._stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
 
     if(_kfitmc.mcData()._mcsteps != 0) {
-      const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
+      const vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
       shinfo._mcpdg = mcsum[0]._pdgid;
       shinfo._mcgen = mcsum[0]._gid;
       shinfo._mcproc = mcsum[0]._pid;

@@ -2,9 +2,9 @@
 // A module to flag StrawHits for track reconstruction and delta ray 
 // identification
 //
-// $Id: FlagStrawHits_module.cc,v 1.9 2014/03/02 17:51:41 brownd Exp $
+// $Id: FlagStrawHits_module.cc,v 1.10 2014/04/04 22:58:00 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/02 17:51:41 $
+// $Date: 2014/04/04 22:58:00 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -50,25 +50,25 @@ namespace mu2e {
     // Diagnostics level.
     int _diag;
     // input collection labels
-    std::string _shLabel;
-    std::string _shpLabel; 
+    string _shLabel;
+    string _shpLabel; 
     // Parameters; these are vectors for the number of quality selections
     double _minE, _maxE;  // minimum and maximum charge (units??)
     double _minT, _maxT; // minimum and maximum hit time
     double _minR;
-    std::vector<double> _maxR; // minimum and maximum transverse radius
+    vector<double> _maxR; // minimum and maximum transverse radius
   };
 
   FlagStrawHits::FlagStrawHits(fhicl::ParameterSet const& pset) :
     _diag(pset.get<int>("diagLevel",0)),
-    _shLabel(pset.get<std::string>("StrawHitCollectionLabel","makeSH")),
-    _shpLabel(pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
+    _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
+    _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _minE(pset.get<double>("minimumEnergy",0.0)),
     _maxE(pset.get<double>("maximumEnergy",0.003)),
     _minT(pset.get<double>("minimumTime",0)),
     _maxT(pset.get<double>("maximumTime",2000)),
-    _minR(pset.get<double>("minimumRadius",370.0)),
-    _maxR(pset.get<std::vector<double> >("maximumRadius"))
+    _minR(pset.get<double>("minimumRadius",395.0)),
+    _maxR(pset.get<vector<double> >("maximumRadius",vector<double>{650,650}))
     {
       if(_maxR.size() != 2)
 	throw cet::exception("RECO")<<"mu2e::FlagStrawHits: illegal maximumRadius size specified" << endl;
@@ -108,7 +108,7 @@ namespace mu2e {
 	flag.merge(StrawHitFlag::radsel);
        shfcol->push_back(flag);
     }
-    event.put(std::move(shfcol));
+    event.put(move(shfcol));
 
   } // end FlagStrawHits::produce.
 } // end namespace mu2e
