@@ -1,9 +1,9 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.15 2014/03/07 19:49:48 brownd Exp $
+// $Id: TrackerCalibrations.cc,v 1.16 2014/04/04 17:11:34 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/07 19:49:48 $
+// $Date: 2014/04/04 17:11:34 $
 //
 
 // Mu2e include files
@@ -87,18 +87,27 @@ namespace mu2e {
 
   void TrackerCalibrations::StrawHitInfo(Straw const& straw, StrawHit const& strawhit, SHInfo&
   shinfo) const {
+    double shlen = straw.getDetail().activeHalfLength();
+    double vwire = SignalVelocity(strawhit.strawIndex());
    // compute the position as being on the wire the distance specified by time division.  Note this can
 // be beyond the physical wire!
-    double vwire = SignalVelocity(strawhit.strawIndex());
-    shinfo._tddist = TimeDiffToDistance(strawhit.strawIndex(),strawhit.dt());
+    double tddist = TimeDiffToDistance(strawhit.strawIndex(),strawhit.dt());
+    // resolution depends on position along the wire
+// constrain to a physical length
+    if(fabs(tddist) < shlen) {
+      shinfo._tddist = tddist;
+      shinfo._tdres = TimeDivisionResolution(straw.index(),0.5*(shlen-tddist)/shlen);
+    } else {
+// increase the error if we're beyond the physical limit
+      shinfo._tddist = copysign(shlen,tddist);
+      shinfo._tdres = fmax(fabs(shlen-tddist),TimeDivisionResolution(straw.index(),1.0));
+    }
     shinfo._pos = straw.getMidPoint() + shinfo._tddist*straw.getDirection();
-// this time represents when the particle passed by the wire.
-    double shlen = straw.getHalfLength();
-    shinfo._time = strawhit.time() - (shlen-shinfo._tddist)/vwire;
-// Position error along the wire is given by the time division
-    shinfo._tdres = TimeDivisionResolution(straw.index(),0.5*(shlen-shinfo._tddist)/shlen);
 // time resolution is due to intrinsic timing resolution and time difference resolution
     shinfo._timeres = shinfo._tdres/vwire;
+// this time represents when the particle passed by the wire.
+// Position error along the wire is given by the time division
+    shinfo._time = strawhit.time() - (shlen-shinfo._tddist)/vwire;
   }
 
 
