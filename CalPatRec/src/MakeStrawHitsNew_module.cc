@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStrawHitsNew_module.cc,v 1.2 2014/03/03 20:52:41 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2014/03/03 20:52:41 $
+// $Id: MakeStrawHitsNew_module.cc,v 1.3 2014/04/04 21:23:34 murat Exp $
+// $Author: murat $
+// $Date: 2014/04/04 21:23:34 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -77,11 +77,10 @@ namespace mu2e {
     string _shLabel;
     
     // Label of the calo clusters  maker
-    std::string _caloClusterModuleLabel;
-
-    string _caloClusterAlgorithm;
-    string _caloClusterSeeding;
-    string _producerName;
+    std::string  _caloClusterModuleLabel;
+    std::string  _caloClusterAlgorithm;
+    std::string  _caloClusterSeeding;
+    std::string  _producerName;
 
     int _nbins;
     double _tmin, _tmax;

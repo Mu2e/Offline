@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFitHack.cc,v 1.2 2014/03/04 20:42:02 gianipez Exp $
-// $Author: gianipez $ 
-// $Date: 2014/03/04 20:42:02 $
+// $Id: KalFitHack.cc,v 1.3 2014/04/04 21:23:34 murat Exp $
+// $Author: murat $ 
+// $Date: 2014/04/04 21:23:34 $
 //
 
 // the following has to come before other BaBar includes
@@ -575,21 +575,21 @@ namespace mu2e
     t0._t0err = (tmax-tmin)/sqrt(12*nind);
   }
 
-  void
-  KalFitHack::updateCalT0(KalFitResult& kres, THackData* fHackData) {
+//-----------------------------------------------------------------------------
+// 
+//-----------------------------------------------------------------------------
+  void KalFitHack::updateCalT0(KalFitResult& kres, THackData* fHackData) {
     TrkT0 t0;
-
-    //find global fltlen associated with z=0
+					//find global fltlen associated with z=0
     double flt0(0.0);
     bool converged = TrkHelixUtils::findZFltlen(kres._krep->traj(),0.0,flt0);
 
     //get helix from kalrep
     HelixTraj trkHel(kres._krep->helix(flt0).params(),kres._krep->helix(flt0).covariance());
     
-    // get flight distance of z=0
+					// get flight distance of z=0
     double t0flt = trkHel.zFlight(0.0);
     
-
     if(converged){
       // estimate the momentum at that point using the helix parameters.  This is
       // assumed constant for this crude estimate

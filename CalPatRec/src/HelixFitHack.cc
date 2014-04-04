@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.cc,v 1.8 2014/03/31 21:56:29 gianipez Exp $
-// $Author: gianipez $ 
-// $Date: 2014/03/31 21:56:29 $
+// $Id: HelixFitHack.cc,v 1.9 2014/04/04 21:23:34 murat Exp $
+// $Author: murat $ 
+// $Date: 2014/04/04 21:23:34 $
 //
 //
 // the following has to come before other BaBar includes
@@ -138,7 +138,7 @@ namespace mu2e
   
   void
   HelixFitHack::helixParams(HelixFitHackResult const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const {
-    HelixDef const& mytrk = helix._hdef;
+    HelixDefHack const& mytrk = helix._hdef;
     static const double pi(M_PI);
     //    static const double twopi(2*pi);
     static const double halfpi(pi/2.0);
@@ -258,7 +258,7 @@ namespace mu2e
 
   bool
   HelixFitHack::findHelix(HelixFitHackResult& myhel) {
-    HelixDef const& mytrk = myhel._hdef;
+    HelixDefHack const& mytrk = myhel._hdef;
     //  compute the allowed range in radius for this fit
     double pb = fabs((CLHEP::c_light*1e-3)/(bz()*mytrk.particle().charge()));
     _rmin = _pmin/(pb*sqrt(1.0+_tdmax*_tdmax));
@@ -522,7 +522,7 @@ namespace mu2e
 
 
   void
-  HelixFitHack::plotXY(HelixDef const& mytrk, XYZPVector const& xyzp,
+  HelixFitHack::plotXY(HelixDefHack const& mytrk, XYZPVector const& xyzp,
 		       HelixFitHackResult const& myhel) const {
     unsigned igraph = 10*mytrk.eventId()+mytrk.trackId();
     art::ServiceHandle<art::TFileService> tfs;
@@ -874,7 +874,7 @@ namespace mu2e
   }
 
   void
-  HelixFitHack::plotZ(HelixDef const& mytrk, XYZPVector const& xyzp, HelixFitHackResult const& myhel) const {
+  HelixFitHack::plotZ(HelixDefHack const& mytrk, XYZPVector const& xyzp, HelixFitHackResult const& myhel) const {
     unsigned igraph = 10*mytrk.eventId()+mytrk.trackId();
     art::ServiceHandle<art::TFileService> tfs;
     char gname[100];
@@ -1061,7 +1061,7 @@ namespace mu2e
     return retval;
   }
 
-  void HelixFitHack::fillXYZP(HelixDef const& mytrk, XYZPVector& xyzp) {
+  void HelixFitHack::fillXYZP(HelixDefHack const& mytrk, XYZPVector& xyzp) {
     //12-09-2013 gianipez modified this procedure to avoid the doubling of the 
     // same stereohitposition 
     //-------------------------------------------------------------------------
