@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.14 2014/03/19 14:02:54 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.15 2014/04/04 22:56:55 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/03/19 14:02:54 $
+// $Date: 2014/04/04 22:56:55 $
 //
 // Original author David Brown, LBNL
 //
@@ -26,8 +26,8 @@ namespace mu2e {
     _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mVolt
     _vsat(pset.get<double>("SaturationVoltage",800.0)), // mVolt
     _disp(pset.get<double>("Dispersion",1.0e-4)), // 0.1 ps/mm
-    _vthresh(pset.get<double>("DiscriminatorThreshold",25.0)), //mVolt, post amplification
-    _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",2.5)), //mVolt
+    _vthresh(pset.get<double>("DiscriminatorThreshold",20.0)), //mVolt, post amplification
+    _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",3.0)), //mVolt
     _ADCLSB(pset.get<double>("ADCLSB",0.25)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
     _ADCped(pset.get<unsigned>("ADCPedestal",128)),
