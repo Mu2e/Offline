@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.31 2014/03/25 22:14:39 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.32 2014/04/04 17:02:36 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/03/25 22:14:39 $
+// $Date: 2014/04/04 17:02:36 $
 //
 // Original author David Brown, LBNL
 //
@@ -152,7 +152,7 @@ namespace mu2e {
     Int_t _nend, _nstep;
     Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _ddist0, _ddist1, _wdist0, _wdist1, _vstart0, _vstart1, _vcross0, _vcross1;
     Float_t _mctime, _mcenergy, _mcdca;
-    Int_t _mcpdg;
+    Int_t _dmcpdg, _dmcproc;
     Bool_t _xtalk;
     vector<unsigned> _adc;
     Int_t _tdc0, _tdc1;
@@ -179,7 +179,7 @@ namespace mu2e {
     void findCrossTalkStraws(Straw const& straw,vector<XTalk>& xtalk);
 // diagnostic functions
     void waveformDiag(StrawWaveform const& wf,WFXList const& xings);
-    void digiDiag(WFXP const& xpair, StrawDigi const& digi);
+    void digiDiag(WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi);
 
     StrawEnd primaryEnd(StrawIndex strawind) const;
   };
@@ -276,7 +276,8 @@ namespace mu2e {
 	_sddiag->Branch("mctime",&_mctime,"mctime/F");
 	_sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
 	_sddiag->Branch("mcdca",&_mcdca,"mcdca/F");
-	_sddiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
+	_sddiag->Branch("mcpdg",&_dmcpdg,"mcpdg/I");
+	_sddiag->Branch("mcproc",&_dmcproc,"mcproc/I");
 	_sddiag->Branch("xtalk",&_xtalk,"xtalk/B");
       }
     }
@@ -614,7 +615,7 @@ namespace mu2e {
       mcptrs->push_back(mcptr);
       mcdigis->push_back(StrawDigiMC(index,wetime,cpos,stepMC,stepMCs));
       // diagnostics
-      if(_diagLevel > 1)digiDiag(xpair,digis->back());
+      if(_diagLevel > 1)digiDiag(xpair,digis->back(),mcdigis->back());
     }
   }
 
@@ -781,7 +782,7 @@ namespace mu2e {
   }
 
   void
-    StrawDigisFromStepPointMCs::digiDiag(WFXP const& xpair, StrawDigi const& digi) {
+    StrawDigisFromStepPointMCs::digiDiag(WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi) {
       const Tracker& tracker = getTrackerOrThrow();
     StrawEnd primaryend = primaryEnd(digi.strawIndex());
     const Straw& straw = tracker.getStraw( digi.strawIndex() );
@@ -827,19 +828,21 @@ namespace mu2e {
       _adc.push_back(*iadc);
     }
     // mc truth information
-    _mcpdg = 0;
+    _dmcpdg = _dmcproc = 0;
     _mctime = _mcenergy = _mcdca = -1000.0;
     art::Ptr<StepPointMC> const& spmc = xpair[0]->_ihitlet->stepPointMC();
     if(!spmc.isNull()){
       _mctime = _toff.timeWithOffsetsApplied(*spmc);
-      _mcenergy = spmc->ionizingEdep();
       // compute the DOCA for this step
       TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(), 
 	  spmc->position(), spmc->momentum().unit() );
       _mcdca = pca.dca(); 
-      if(!spmc->simParticle().isNull())
-	_mcpdg = spmc->simParticle()->pdgId();
+      if(!spmc->simParticle().isNull()){
+	_dmcpdg = spmc->simParticle()->pdgId();
+	_dmcproc = spmc->simParticle()->creationCode();
+      }
     }
+    _mcenergy = mcdigi.energySum();
     // check for x-talk
     _xtalk = digi.strawIndex() != spmc->strawIndex();
     // fill the tree entry
