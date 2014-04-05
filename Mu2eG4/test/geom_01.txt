@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.234 2014/03/13 18:33:07 gandr Exp $
-// $Author: gandr $
-// $Date: 2014/03/13 18:33:07 $
+// $Id: geom_01.txt,v 1.235 2014/04/05 00:32:13 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2014/04/05 00:32:13 $
 //
 // Original author Rob Kutschke
 //
@@ -203,7 +203,7 @@ double hall.insideFullHeight = 5944.;
 
 // Hall wall details
 double hall.floorThick   = 300.;
-double hall.ceilingThick = 914.4; // 3', docdb-472v12 p16 (section "E")
+double hall.ceilingThick = 1828.8; // 6', docdb-3494-v3 
 double hall.innerTSCeilingThick = 762.; // accounts for 2'6" lower ceiling in
                                          // upstream TS and PS region
 double hall.wallThick    = 300.;

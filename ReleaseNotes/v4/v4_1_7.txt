@@ -2,6 +2,11 @@
 
            Release notes for Mu2e Offline software, v4_1_7
 
+9) April 4, 2014, ehrlich
+    Changed the overburden thickness from 3ft to 6ft.
+    Modiefied file:
+      Mu2eG4/test/geom_01.txt
+
 8) April 2, 2014, genser
     Moved functionality of the sthktfO.C macro to StepsDiag.C and
     g4validate_01.C; upgraded g4validate_01.C functionality
