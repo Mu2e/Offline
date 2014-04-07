@@ -5,14 +5,16 @@
 #include "TLegend.h"
 #include "TH1F.h"
 #include "TH2F.h"
-void Delta(TTree* ddiag, const char* page="rho",const char* addcut="") {
+void Delta(TTree* ddiag, const char* page="rho",bool train=false) {
   TString spage(page);
-  TCut add(addcut);
-  TCut con("pgen==2&&nprimary/nchits>0.8");
-  con += add;
-  TCut bkg("pproc<20&&nprimary/nchits>0.8");
-  bkg += add;
-  TCut cluster("nchits>=50&&nprimary/nchits>0.99");
+  TCut cluster("nchits>4");
+  if(train)cluster += TCut("nprimary/nchits>0.8");
+  TCut con("pgen==2");
+  TCut bkg("pproc<20");
+  TCut primary("_relation>=0");
+  TCut norel("_relation<0");
+  TCut stht("_stereo");
+  TCut nstht("!_stereo");
 
   if(spage == "rho"){
     TH1F* mrhocon = new TH1F("mrhocon","Cluster #rho;#rho (mm)",100,330,800);
@@ -23,8 +25,8 @@ void Delta(TTree* ddiag, const char* page="rho",const char* addcut="") {
     mrhocon->SetStats(0);
     mrhobkg->SetStats(0);
 
-    ddiag->Project("mrhocon","rmed",con);
-    ddiag->Project("mrhobkg","rmed",bkg);
+    ddiag->Project("mrhocon","rmean",cluster+con);
+    ddiag->Project("mrhobkg","rmean",cluster+bkg);
 
     mrhocon->Scale(10);
 
@@ -56,10 +58,10 @@ void Delta(TTree* ddiag, const char* page="rho",const char* addcut="") {
     sphicon->SetStats(0);
     sphibkg->SetStats(0);
 
-    ddiag->Project("srhocon","srho",con);
-    ddiag->Project("srhobkg","srho",bkg);
-    ddiag->Project("sphicon","sphi",con);
-    ddiag->Project("sphibkg","sphi",bkg);
+    ddiag->Project("srhocon","srho",cluster+con);
+    ddiag->Project("srhobkg","srho",cluster+bkg);
+    ddiag->Project("sphicon","sphi",cluster+con);
+    ddiag->Project("sphibkg","sphi",cluster+bkg);
 
     srhocon->Scale(10);
     sphicon->Scale(10);
@@ -101,12 +103,12 @@ void Delta(TTree* ddiag, const char* page="rho",const char* addcut="") {
     zgapcon->SetStats(0);
     zgapbkg->SetStats(0);
 
-    ddiag->Project("zmincon","zmin",con);
-    ddiag->Project("zminbkg","zmin",bkg);
-    ddiag->Project("zmaxcon","zmax",con);
-    ddiag->Project("zmaxbkg","zmax",bkg);
-    ddiag->Project("zgapcon","zgap",con);
-    ddiag->Project("zgapbkg","zgap",bkg);
+    ddiag->Project("zmincon","zmin",cluster+con);
+    ddiag->Project("zminbkg","zmin",cluster+bkg);
+    ddiag->Project("zmaxcon","zmax",cluster+con);
+    ddiag->Project("zmaxbkg","zmax",cluster+bkg);
+    ddiag->Project("zgapcon","zgap",cluster+con);
+    ddiag->Project("zgapbkg","zgap",cluster+bkg);
 
     zmincon->Scale(10);
     zmaxcon->Scale(10);
@@ -158,14 +160,14 @@ void Delta(TTree* ddiag, const char* page="rho",const char* addcut="") {
     nscon->SetStats(0);
     nsbkg->SetStats(0);
 
-    ddiag->Project("smincon","smin",con);
-    ddiag->Project("sminbkg","smin",bkg);
-    ddiag->Project("smaxcon","smax",con);
-    ddiag->Project("smaxbkg","smax",bkg);
-    ddiag->Project("nsmisscon","nsmiss",con);
-    ddiag->Project("nsmissbkg","nsmiss",bkg);
-    ddiag->Project("nscon","ns",con);
-    ddiag->Project("nsbkg","ns",bkg);
+    ddiag->Project("smincon","smin",con+cluster);
+    ddiag->Project("sminbkg","smin",bkg+cluster);
+    ddiag->Project("smaxcon","smax",con+cluster);
+    ddiag->Project("smaxbkg","smax",bkg+cluster);
+    ddiag->Project("nsmisscon","nsmiss",con+cluster);
+    ddiag->Project("nsmissbkg","nsmiss",bkg+cluster);
+    ddiag->Project("nscon","ns",con+cluster);
+    ddiag->Project("nsbkg","ns",bkg+cluster);
 
     smincon->Scale(10);
     smaxcon->Scale(10);
@@ -215,12 +217,12 @@ void Delta(TTree* ddiag, const char* page="rho",const char* addcut="") {
     cwratiocon->SetStats(0);
     cwratiobkg->SetStats(0);
 
-    ddiag->Project("ngdhitscon","ngdhits",con);
-    ddiag->Project("ngdhitsbkg","ngdhits",bkg);
-    ddiag->Project("nchitscon","nchits",con);
-    ddiag->Project("nchitsbkg","nchits",bkg);
-    ddiag->Project("cwratiocon","ngdhits/nchits",con);
-    ddiag->Project("cwratiobkg","ngdhits/nchits",bkg);
+    ddiag->Project("ngdhitscon","ngdhits",con+cluster);
+    ddiag->Project("ngdhitsbkg","ngdhits",bkg+cluster);
+    ddiag->Project("nchitscon","nchits",con+cluster);
+    ddiag->Project("nchitsbkg","nchits",bkg+cluster);
+    ddiag->Project("cwratiocon","ngdhits/nchits",con+cluster);
+    ddiag->Project("cwratiobkg","ngdhits/nchits",bkg+cluster);
 
     ngdhitscon->Scale(10);
     nchitscon->Scale(10);
@@ -255,5 +257,113 @@ void Delta(TTree* ddiag, const char* page="rho",const char* addcut="") {
     csize->Draw("colorz");
     scan->cd(2);
     tsize->Draw();
+  } else if (spage=="clustermva") {
+    TH1F* stclmvacon = new TH1F("stclmvacon","Stereo Cluster MVA output",200,-0.2,1.2);
+    TH1F* stclmvabkg = new TH1F("stclmvabkg","Stereo Cluster MVA output",200,-0.2,1.2);
+    stclmvacon->SetLineColor(kRed);
+    stclmvabkg->SetLineColor(kBlue);
+    TH1F* nstclmvacon = new TH1F("nstclmvacon","Non-Stereo Cluster MVA output",200,-0.2,1.2);
+    TH1F* nstclmvabkg = new TH1F("nstclmvabkg","Non-Stereo Cluster MVA output",200,-0.2,1.2);
+    nstclmvacon->SetLineColor(kRed);
+    nstclmvabkg->SetLineColor(kBlue);
+    TCut stcl("ngdstereo/ngdhits>0.5");
+    TCut nstcl("ngdstereo/ngdhits<0.5");
+    ddiag->Project("stclmvacon","pmvaout",con+cluster+stcl);
+    ddiag->Project("stclmvabkg","pmvaout",bkg+cluster+stcl);
+    ddiag->Project("nstclmvacon","pmvaout",con+cluster+nstcl);
+    ddiag->Project("nstclmvabkg","pmvaout",bkg+cluster+nstcl);
+    TLegend* mcleg = new TLegend(0.2,0.7,0.6,0.9);
+    mcleg->AddEntry(stclmvabkg,"#delta Background","L");
+    mcleg->AddEntry(stclmvacon,"Conversion (X10)","L");
+    Double_t factor(20.0);
+    stclmvacon->Scale(factor);
+    nstclmvacon->Scale(factor);
+    TCanvas* can = new TCanvas("cmvacan","Cluster MVA output",800,400);
+    can->Divide(2,1);
+    can->cd(1);
+    stclmvabkg->Draw();
+    stclmvacon->Draw("same");
+    mcleg->Draw();
+    can->cd(2);
+    nstclmvabkg->Draw();
+    nstclmvacon->Draw("same");
+
+
+  } else if(spage=="hitmva") {
+    TH1F* sthtmvap = new TH1F("sthtmvap","Stereo Hit MVA output",200,-0.2,1.2);
+    TH1F* sthtmvau = new TH1F("sthtmvau","Stereo Hit MVA output",200,-0.2,1.2);
+    sthtmvap->SetLineColor(kRed);
+    sthtmvau->SetLineColor(kBlue);
+    TH1F* nsthtmvap = new TH1F("nsthtmvap","Non-Stereo Hit MVA output",200,-0.2,1.2);
+    TH1F* nsthtmvau = new TH1F("nsthtmvau","Non-Stereo Hit MVA output",200,-0.2,1.2);
+    nsthtmvap->SetLineColor(kBlue);
+    nsthtmvau->SetLineColor(kRed);
+
+    ddiag->Project("sthtmvap","_hgd",bkg+cluster+stht+primary);
+    ddiag->Project("sthtmvau","_hgd",bkg+cluster+stht+norel);
+    ddiag->Project("nsthtmvap","_hgd",bkg+cluster+nstht+primary);
+    ddiag->Project("nsthtmvau","_hgd",bkg+cluster+nstht+norel);
+
+    TLegend* mhleg = new TLegend(0.2,0.7,0.6,0.9);
+    mhleg->AddEntry(sthtmvau,"#delta primary hits","L");
+    mhleg->AddEntry(sthtmvap,"#delta unrelated","L");
+
+    Double_t factor(20.0);
+    sthtmvap->Scale(factor);
+    nsthtmvap->Scale(factor);
+
+    TCanvas* can = new TCanvas("hmvacan","Hit MVA output",800,400);
+    can->Divide(2,1);
+    can->cd(1);
+    sthtmvau->Draw();
+    sthtmvap->Draw("same");
+    can->cd(2);
+    nsthtmvau->Draw();
+    nsthtmvap->Draw("same");
+  }  else if(spage=="hits") {
+//    TH1F* drhoconp = new TH1F("drhoconp","CE Hit #rho difference;#Delta #rho (mm)",100,0,150.0);
+//    TH1F* dphiconp = new TH1F("dphiconp","CE Hit #phi difference;#Delta #phi",100,0,0.3);
+//    TH1F* dtconp = new TH1F("dtconp","CE Hit time difference;#Delta t (nsec)",100,0,50);
+//    TH1F* drhoconn = new TH1F("drhoconn","CE Hit #rho difference;#Delta #rho (mm)",100,0,150.0);
+//    TH1F* dphiconn = new TH1F("dphiconn","CE Hit #phi difference;#Delta #phi",100,0,0.3);
+//    TH1F* dtconn = new TH1F("dtconn","CE Hit time difference;#Delta t (nsec)",100,0,50);
+
+    TH1F* drhobkgp = new TH1F("drhobkgp","Bkg Hit #rho difference;#Delta #rho (mm)",100,0,150.0);
+    TH1F* dphibkgp = new TH1F("dphibkgp","Bkg Hit #phi difference;#Delta #phi",100,0,0.3);
+    TH1F* dtbkgp = new TH1F("dtbkgp","Bkg Hit time difference;#Delta t (nsec)",100,0,50);
+    TH1F* drhobkgn = new TH1F("drhobkgn","Bkg Hit #rho difference;#Delta #rho (mm)",100,0,150.0);
+    TH1F* dphibkgn = new TH1F("dphibkgn","Bkg Hit #phi difference;#Delta #phi",100,0,0.3);
+    TH1F* dtbkgn = new TH1F("dtbkgn","Bkg Hit time difference;#Delta t (nsec)",100,0,50);
+    drhobkgp->SetLineColor(kBlue);
+    dphibkgp->SetLineColor(kBlue);
+    dtbkgp->SetLineColor(kBlue);
+    drhobkgn->SetLineColor(kRed);
+    dphibkgn->SetLineColor(kRed);
+    dtbkgn->SetLineColor(kRed);
+
+    ddiag->Project("drhobkgp","_drho",bkg+cluster+primary);
+    ddiag->Project("dphibkgp","_dphi",bkg+cluster+primary);
+    ddiag->Project("dtbkgp","_dt",bkg+cluster+primary);
+    ddiag->Project("drhobkgn","_drho",bkg+cluster+norel);
+    ddiag->Project("dphibkgn","_dphi",bkg+cluster+norel);
+    ddiag->Project("dtbkgn","_dt",bkg+cluster+norel);
+    TCanvas* dhcan = new TCanvas("dhcan","Delta hits",1200,800);
+    dhcan->Divide(2,2);
+    dhcan->cd(1);
+    drhobkgp->Draw();
+    drhobkgn->Draw("same");
+
+
+    TLegend* hleg = new TLegend(0.2,0.7,0.6,0.9);
+    hleg->AddEntry(drhobkgp,"#delta Primary hit","L");
+    hleg->AddEntry(drhobkgn,"#delta unrelated hit","L");
+
+    dhcan->cd(2);
+    dphibkgp->Draw();
+    dphibkgn->Draw("same");
+    dhcan->cd(3);
+    dtbkgp->Draw();
+    dtbkgn->Draw("same");
+    
   }
 }

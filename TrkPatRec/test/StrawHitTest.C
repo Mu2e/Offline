@@ -259,12 +259,12 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     ecut_t->SetLineColor(kBlack);
     ecut_t->SetLineStyle(2);
     ecut_t->SetLineWidth(2);
-    TLine* ecut_l = new TLine(0.0055,0.0,0.0055,edelta->GetMaximum());
+    TLine* ecut_l = new TLine(0.0,0.0,0.0,edelta->GetMaximum());
     ecut_l->SetLineColor(kBlack);
-    ecut_l->SetLineStyle(3);
+    ecut_l->SetLineStyle(2);
     ecut_l->SetLineWidth(2);
     ecut_t->Draw();
-//    ecut_l->Draw();
+    ecut_l->Draw();
 
     TLegend* leg2 = new TLegend(0.55,0.6,0.9,0.9);
     leg2->AddEntry(rconv,"Conv. Electrons","l");
@@ -304,7 +304,7 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
 //    rneut->Draw("same");
  //   rphot->Draw("same");
 
-    TLine* rmin_t = new TLine(370,0.0,370,rdelta->GetMaximum());
+    TLine* rmin_t = new TLine(395,0.0,395,rdelta->GetMaximum());
     rmin_t->SetLineColor(kBlack);
     rmin_t->SetLineStyle(2);
     rmin_t->SetLineWidth(2);

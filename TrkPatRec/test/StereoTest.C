@@ -494,14 +494,15 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     sbk->SetMarkerSize(3.0);
     TCut esel("esel>0");
     TCut tsel("tsel>0");
+    TCut rsel("rsel>0");
     TCut isolated("isolated>0");
     TCut delta("delta>0");
 
-    shdiag->Project("sdce","stereo:delta",convhit+esel+tsel+(!isolated));
-    shdiag->Project("sdde","stereo:delta",dhit+esel+tsel+(!isolated));
+    shdiag->Project("sdce","stereo:delta",convhit+esel+rsel+(!isolated));
+    shdiag->Project("sdde","stereo:delta",dhit+esel+rsel+(!isolated));
 
-    shdiag->Project("sce","stereo:!(esel&&tsel&&(!isolated)&&(!delta))",convhit);
-    shdiag->Project("sbk","stereo:!(esel&&tsel&&(!isolated)&&(!delta))",!convhit);
+    shdiag->Project("sce","stereo:!(esel&&rsel&&(!isolated)&&(!delta))",convhit);
+    shdiag->Project("sbk","stereo:!(esel&&rsel&&(!isolated)&&(!delta))",!convhit);
 
     TCanvas* dcan = new TCanvas("dcan","dcan",800,600);
     dcan->Divide(2,2);

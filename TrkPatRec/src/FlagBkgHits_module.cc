@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.23 2014/04/04 22:58:00 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.24 2014/04/07 22:50:31 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/04/04 22:58:00 $
+// $Date: 2014/04/07 22:50:31 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -70,7 +70,7 @@ namespace mu2e
     Float_t _prho;
     Float_t _srho;
     Float_t _zmin, _zmax, _zgap;
-    Float_t _nsmiss;
+    Float_t _ns, _nsmiss;
     Float_t _sphi;
     Float_t _ngdhits;
   };
@@ -96,8 +96,9 @@ namespace mu2e
       _isdelta(false),_pmvaout(-100.0){}
         // cluster information
     double _tcluster, _pcluster, _rcluster;
-    // median information
-    boost::accumulators::accumulator_set<double, stats<tag::median(with_p_square_quantile) > > _tacc, _pacc, _racc;
+    // accumulators for cluster center 
+//    boost::accumulators::accumulator_set<double, stats<tag::median(with_p_square_quantile) > > _tacc, _pacc, _racc;
+    boost::accumulators::accumulator_set<double, stats<tag::mean > > _tacc, _pacc, _racc;
     double _tmed, _pmed, _rmed;
     double _tmean, _pmean, _rmean;
     double _trms, _prms, _rrms;
@@ -130,11 +131,11 @@ namespace mu2e
       // straw hit selection masks
       StrawHitFlag _stmask, _deltamask, _ismask;
       // delta-ray removal parameters
-      double _bz; // average Z beta for deltas
       std::string _dhittype, _stereohitweights, _nonstereohitweights;
       std::string _dclustertype, _nonstereoclusterweights, _stereoclusterweights;
       double _gdstereo, _gdnonstereo;
-      unsigned _mindp, _minns;
+      bool _flagall;
+      unsigned _mindh, _minns;
       double _stereoclusterhitfrac;
       double _stereoclustermvacut, _nonstereoclustermvacut;
 // input collections
@@ -199,12 +200,13 @@ namespace mu2e
     _dhittype(pset.get<std::string>("DeltaHitTMVAType","MLP method")),
     _dclustertype(pset.get<std::string>("DeltaClusterTMVAType","MLP method")),
     _gdstereo(pset.get<double>("StereoHitMVACut",0.4)),
-    _gdnonstereo(pset.get<double>("NonStereoHitMVACut",0.3)),
-    _mindp(pset.get<unsigned>("MinDeltaHits",0)),
+    _gdnonstereo(pset.get<double>("NonStereoHitMVACut",0.4)),
+    _flagall(pset.get<bool>("FlagAllHits",true)), // flag all hits in the cluster, regardless of MVA value
+    _mindh(pset.get<unsigned>("MinDeltaHits",5)),
     _minns(pset.get<unsigned>("MinNStations",2)),
     _stereoclusterhitfrac(pset.get<double>("StereoClusterHitFraction",0.8)),
-    _stereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.8)),
-    _nonstereoclustermvacut(pset.get<double>("NonStereoClusterMVACut",0.8)),
+    _stereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.95)),
+    _nonstereoclustermvacut(pset.get<double>("NonStereoClusterMVACut",0.9)),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
     _clusterer(pset.get<fhicl::ParameterSet>("ClusterStrawHits",fhicl::ParameterSet()))
   {
@@ -275,9 +277,10 @@ namespace mu2e
   // fill summary information
       fillDeltaSummary(delta);
       // if the cluster is a delta, flag its hits
+      // (or optionally flag all the hits in the cluster)
       if(delta._isdelta){
 	for(size_t ih =0;ih <  delta._dhinfo.size();++ih){
-	  if(delta._dhinfo[ih]._hflag >= 0){
+	  if(_flagall || delta._dhinfo[ih]._hflag > 0 ){
 	    bkgfcol->at(delta._dhinfo[ih]._hindex).merge(_deltamask);
 	  }
 	}
@@ -333,9 +336,9 @@ namespace mu2e
 	double phi = dp._pcluster+deltaPhi(shp.pos().phi(),dp._pcluster);
 	double rho = shp.pos().perp();
 	double dphi = deltaPhi(phi,dp._pcluster);
-	_dhmva._dphi = dphi;
-	_dhmva._drho = rho - dp._rmed;
-	_dhmva._dt = ct - dp._tmed;
+	_dhmva._dphi = fabs(dphi);
+	_dhmva._drho = fabs(rho - dp._rmed);
+	_dhmva._dt = fabs(ct - dp._tmed);
 	double gd(-1.0);
 	int iflag(0);
 	bool stereo = shp.flag().hasAllProperties(_stmask);
@@ -360,7 +363,7 @@ namespace mu2e
     const TTracker& tracker = dynamic_cast<const TTracker&>(getTrackerOrThrow());
     unsigned ndevices = tracker.nDevices();
     unsigned nstations = ndevices/2;
-    // fill the BDT information about each hit, compared to the medians
+    // fill the BDT information about each hit, compared to the centroid
     // also accumulate information about selected hits
     accumulator_set<double, stats<tag::mean,tag::variance(lazy)> > tacc,pacc,racc;
     std::vector<bool> devices(ndevices,false);
@@ -430,6 +433,7 @@ namespace mu2e
       _dpmva._zmin = delta._zmin;
       _dpmva._zmax = delta._zmax;
       _dpmva._zgap = delta._zgap;
+      _dpmva._ns = delta._ns;
       _dpmva._nsmiss = delta._nsmiss;
       _dpmva._sphi = delta._prms;
       _dpmva._ngdhits = delta._ngdhits;
@@ -445,7 +449,7 @@ namespace mu2e
 	clusterdelta = delta._pmvaout > _nonstereoclustermvacut;
       }
 
-      delta._isdelta = delta._ngdhits >= _mindp && delta._ns >= _minns && clusterdelta;
+      delta._isdelta = delta._ngdhits >= _mindh && delta._ns >= _minns && clusterdelta;
     }
   }
 
@@ -530,7 +534,7 @@ namespace mu2e
       shinfo._dist = _stcol->at(shp.stereoHitIndex()).dist();
     } else {
       shinfo._chisq = -1.0;
-      shinfo._stdt = 0.0;
+      shinfo._stdt = -1000.0;
       shinfo._dist = -1.0;
     }
     shinfo._edep = sh.energyDep();
@@ -580,6 +584,7 @@ namespace mu2e
     _stereoclusterReader->AddVariable("zmin",&_dpmva._zmin);
     _stereoclusterReader->AddVariable("zmax",&_dpmva._zmax);
     _stereoclusterReader->AddVariable("zgap",&_dpmva._zgap);
+    _stereoclusterReader->AddVariable("ns",&_dpmva._ns);
     _stereoclusterReader->AddVariable("nsmiss",&_dpmva._nsmiss);
     _stereoclusterReader->AddVariable("sphi",&_dpmva._sphi);
     _stereoclusterReader->AddVariable("ngdhits",&_dpmva._ngdhits);
@@ -590,6 +595,7 @@ namespace mu2e
     _nonstereoclusterReader->AddVariable("zmin",&_dpmva._zmin);
     _nonstereoclusterReader->AddVariable("zmax",&_dpmva._zmax);
     _nonstereoclusterReader->AddVariable("zgap",&_dpmva._zgap);
+    _nonstereoclusterReader->AddVariable("ns",&_dpmva._ns);
     _nonstereoclusterReader->AddVariable("nsmiss",&_dpmva._nsmiss);
     _nonstereoclusterReader->AddVariable("sphi",&_dpmva._sphi);
     _nonstereoclusterReader->AddVariable("ngdhits",&_dpmva._ngdhits);
@@ -671,9 +677,9 @@ namespace mu2e
 	shinfo._hflag = dhinfo._hflag;
 	shinfo._hgd = dhinfo._hgd;
 	shinfo._cdist = dhinfo._cdist;
-	shinfo._dphi = dhinfo._hphi-delta._pcluster;
-	shinfo._dt = dhinfo._htime-delta._tmed;
-	shinfo._drho = dhinfo._hrho-delta._rmed;
+	shinfo._dphi = fabs(dhinfo._hphi-delta._pcluster);
+	shinfo._dt = fabs(dhinfo._htime-delta._tmed);
+	shinfo._drho = fabs(dhinfo._hrho-delta._rmed);
 	if(shinfo._relation==0)++_nprimary;
 	if(shinfo._mcgen == 2)++_nconv;
 	if(abs(shinfo._mcpdg) == PDGCode::e_minus && shinfo._mcgen <0){
