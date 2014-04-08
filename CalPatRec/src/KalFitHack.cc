@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFitHack.cc,v 1.3 2014/04/04 21:23:34 murat Exp $
+// $Id: KalFitHack.cc,v 1.4 2014/04/08 04:25:46 murat Exp $
 // $Author: murat $ 
-// $Date: 2014/04/04 21:23:34 $
+// $Date: 2014/04/08 04:25:46 $
 //
 
 // the following has to come before other BaBar includes
@@ -153,66 +153,86 @@ namespace mu2e
     delete _bfield;
   }
 
-  void KalFitHack::makeTrack(KalFitResult& kres, THackData* fHackData) {
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+  void KalFitHack::makeTrack(KalFitResult& kres, CalTimePeak* TPeak) {
+
     kres._fit = TrkErrCode(TrkErrCode::fail);
-// test if fitable
-    if(fitable(kres._tdef)){
-// first, find t0
+
+					// test if fitable
+    if (fitable(kres._tdef)) {
+					// first, find t0
       TrkT0 t0;
       bool caloInitCond(false);
-      if(fHackData && (fHackData->ClusterT0() > 0.0) ){
+      if (TPeak->Cluster() != NULL){
 	caloInitCond = true;
       }
 
-      if(_initt0)
-	if(!caloInitCond) {
+      if (_initt0) {
+	if (!caloInitCond) {
 	  initT0(kres._tdef, t0);
-	}else {
-	  initCaloT0(fHackData, kres._tdef, t0);
-
+	} 
+	else {
+	  initCaloT0(TPeak, kres._tdef, t0);
 	}
-      else
+      }
+      else {
 	t0 = kres._tdef.t0();
-// create the hits
+      }
+//-----------------------------------------------------------------------------
+// knowing t0, create the hits
+//-----------------------------------------------------------------------------
       makeHits(kres, t0);
-      
-
+//-----------------------------------------------------------------------------
 // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
 // This will go away when we cleanup the BaBar hit storage, FIXME!!!
+//-----------------------------------------------------------------------------
       TrkHotListFull* hotlist = new TrkHotListFull();
       for(std::vector<TrkStrawHit*>::iterator ihit=kres._hits.begin();ihit!=kres._hits.end();ihit++){
         TrkStrawHit* trkhit = *ihit;
 	hotlist->append(trkhit);
       }
+//-----------------------------------------------------------------------------
 // Find the wall and gas material description objects for these hits
-      if(_matcorr)makeMaterials(kres);
+//-----------------------------------------------------------------------------
+      if (_matcorr) makeMaterials(kres);
 // create Kalman rep
       kres._krep = new KalRep(kres._tdef.helix(), hotlist, kres._detinter, *this, kres._tdef.particle());
       assert(kres._krep != 0);
 // initialize krep t0; eventually, this should be in the constructor, FIXME!!!
       double flt0 = kres._tdef.helix().zFlight(0.0);
       kres._krep->setT0(t0,flt0);
+//-----------------------------------------------------------------------------
 // now fit
-      
-
-//10-07-2013 giani added the following line. It updates the hit times
-//following the changes in the t0 value
+// 10-07-2013 giani added the following line. It updates the hit times
+//            following the changes in the t0 value
+//-----------------------------------------------------------------------------
       if(caloInitCond) updateHitTimes(kres);
 
       //09 - 26 - 2013 
       //giani changed these following lines in order to include also the calorimeter
       // information (whene these are avaiable) to the fit procedure
-      if(caloInitCond){
-	fitTrack(kres, fHackData);
-      }else{
+      if (caloInitCond) {
+	fitTrack(kres, TPeak);
+      } 
+      else {
 	fitTrack(kres);
       }
-      if(_removefailed)kres.removeFailed();
+      if (_removefailed) kres.removeFailed();
     }
   }
 
-  void KalFitHack::addHits(KalFitResult& kres,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi) {
-// there must be a valid Kalman fit to add hits to
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+  void KalFitHack::addHits(KalFitResult&              kres   , 
+			   const StrawHitCollection*  straws , 
+			   std::vector<hitIndex>      indices, 
+			   double                     maxchi ) {
+
+					// there must be a valid Kalman fit to add hits to
+
     if(kres._krep != 0 && kres._fit.success()){
       ConditionsHandle<TrackerCalibrations> tcal("ignored");
       const Tracker& tracker = getTrackerOrThrow();
@@ -276,18 +296,19 @@ namespace mu2e
 
   //09 - 26 - 2013
   //giani added the calorimeter info in the fittrack procedure
-  void KalFitHack::fitTrack(KalFitResult& kres, THackData* fHackData){
+
+  void KalFitHack::fitTrack(KalFitResult& kres, CalTimePeak* TPeak) {
     // loop over external hit errors, ambiguity assignment, t0 toleratnce
 //10-03-2013 giani changed this loop. now it loops on all the stations
 //and store the last fit that converges
-    int fitIndex(-1);    
+//    int fitIndex(-1);    
     //double chisqN(1e10);
     // bool condition(false);
 
     for(size_t iherr=0;iherr < _herr.size(); ++iherr){
       //      condition = false;
-      if(fHackData){
-	fitIteration(kres,iherr,fHackData);
+      if(TPeak){
+	fitIteration(kres,iherr,TPeak);
       } else{
 	fitIteration(kres,iherr);
       }
@@ -304,18 +325,14 @@ namespace mu2e
 // 	chisqN   = kres._krep->chisq();
 //       }
     }
-//10-03-2013 giani added the following if
-    
-   //  if(fHackData){
-//        fitIteration(kres,fitIndex,fHackData);
-//      } else{
-//        fitIteration(kres,fitIndex);
-//      }
-    
+
     if(kres._krep != 0) kres._krep->addHistory(kres._fit,"KalFitHack");
   }
 
-  void KalFitHack::fitIteration(KalFitResult& kres, size_t iherr, THackData* fHackData){
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+  void KalFitHack::fitIteration(KalFitResult& kres, size_t iherr, CalTimePeak* TPeak) {
     // update the external hit errors.  This isn't strictly necessary on the 1st iteration.
     for(std::vector<TrkStrawHit*>::iterator itsh = kres._hits.begin(); itsh != kres._hits.end(); ++itsh){
       (*itsh)->setExtErr(_herr[iherr]);
@@ -333,8 +350,8 @@ namespace mu2e
       kres.fit();
       if(! kres._fit.success())break;
       if(_updatet0){
-	if(fHackData){
-	  updateCalT0(kres, fHackData);
+	if(TPeak != NULL){
+	  updateCalT0(kres,TPeak);
 	} else{
 	  updateT0(kres);
 	}
@@ -502,8 +519,11 @@ namespace mu2e
     return 0;
   }
 
-  void
-  KalFitHack::initCaloT0(THackData* fHackData, TrkDef const& tdef, TrkT0& t0) {
+//-----------------------------------------------------------------------------
+// time initialization
+//-----------------------------------------------------------------------------
+  void KalFitHack::initCaloT0(CalTimePeak* TPeak, TrkDef const& tdef, TrkT0& t0) {
+
     // get flight distance of z=0
     double t0flt = tdef.helix().zFlight(0.0);
     // estimate the momentum at that point using the helix parameters.  This is
@@ -511,12 +531,13 @@ namespace mu2e
     double mom = TrkMomCalculator::vecMom(tdef.helix(),bField(),t0flt).mag();
     // compute the particle velocity
     double vflt = tdef.particle().beta(mom)*CLHEP::c_light;
+//-----------------------------------------------------------------------------
+// Calculate the path length of the particle from the middle of the Tracker to the 
+// calorimeter, TPeak->Z() is calculated wrt the tracker center 
+//-----------------------------------------------------------------------------
+    double path = TPeak->ClusterZ()/tdef.helix().sinDip();
 
-    // Calculate the path length of the particle from the middle of the Tracker to the 
-    // calorimeter
-    double path = fHackData->ClusterZ() / tdef.helix().sinDip();
-
-    t0._t0 = fHackData->ClusterT0() - path / vflt;
+    t0._t0 = TPeak->ClusterT0() - path/vflt;
     
     //Set dummy error value
     t0._t0err = 0.2;
@@ -578,48 +599,45 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------
-  void KalFitHack::updateCalT0(KalFitResult& kres, THackData* fHackData) {
+  void KalFitHack::updateCalT0(KalFitResult& kres, CalTimePeak* TPeak) {
     TrkT0 t0;
-					//find global fltlen associated with z=0
-    double flt0(0.0);
+    double mom, vflt, path, t0flt, flt0(0.0);
     bool converged = TrkHelixUtils::findZFltlen(kres._krep->traj(),0.0,flt0);
 
     //get helix from kalrep
     HelixTraj trkHel(kres._krep->helix(flt0).params(),kres._krep->helix(flt0).covariance());
     
 					// get flight distance of z=0
-    double t0flt = trkHel.zFlight(0.0);
+    t0flt = trkHel.zFlight(0.0);
     
-    if(converged){
-      // estimate the momentum at that point using the helix parameters.  This is
-      // assumed constant for this crude estimate
-      double mom = TrkMomCalculator::vecMom(trkHel,bField(),t0flt).mag();
-      // compute the particle velocity
-      double vflt = kres._tdef.particle().beta(mom)*CLHEP::c_light;
-      
-      // Calculate the path length of the particle from the middle of the Tracker to the 
-      // calorimeter
-      double path = fHackData->ClusterZ() / trkHel.sinDip();
-      
-      t0._t0 = fHackData->ClusterT0() - path / vflt;
-      
-      //Set dummy error value
+    if (converged) {
+//-----------------------------------------------------------------------------
+// estimate the momentum at that point using the helix parameters.  
+// This is assumed constant for this crude estimate
+// compute the particle velocity
+//-----------------------------------------------------------------------------
+      mom  = TrkMomCalculator::vecMom(trkHel,bField(),t0flt).mag();
+      vflt = kres._tdef.particle().beta(mom)*CLHEP::c_light;
+//-----------------------------------------------------------------------------
+// path length of the particle from the middle of the Tracker to the  calorimeter
+// set dummy error value
+//-----------------------------------------------------------------------------
+      path      = TPeak->ClusterZ()/trkHel.sinDip();
+      t0._t0    = TPeak->ClusterT0() - path/vflt;
       t0._t0err = 1.0;
       
       kres._krep->setT0(t0,flt0);
       updateHitTimes(kres);
-
     }
   }
   
-  bool
-  KalFitHack::updateT0(KalFitResult& kres){
+  bool KalFitHack::updateT0(KalFitResult& kres) {
     using namespace boost::accumulators;
     bool retval(false);
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     KalRep* krep = kres._krep;
 // need to have a valid fit
-    if(krep->fitValid()){
+    if(krep->fitValid()) {
 // find the global fltlen associated with z=0. 
       double flt0(0.0);
       bool converged = TrkHelixUtils::findZFltlen(krep->traj(),0.0,flt0);
