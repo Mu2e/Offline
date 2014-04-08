@@ -30,6 +30,7 @@ double minfitcon[4] = {1e-6,1e-3,2e-3,1e-2};
 TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
 TCut reco,goodfit,cosmic,rmom,rpitch,livegate;
 TCut tpitch, tt0,tmom,nmch,mcsel;
+TCut rmomloose("fitmom>100.0");
 
 bool donecuts(false);
 void KalCuts() {
@@ -627,7 +628,7 @@ void KalFitRes(TTree* trks,int mincut=0,int maxcut=3) {
   TH1F* momres[4];
   TF1*  fitmomres[4];
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
-  trks->Project("effnorm","mcentmom",mcsel+livegate);
+  trks->Project("effnorm","mcentmom",mcsel);
  
   TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
   rcan->Clear();
@@ -650,7 +651,7 @@ void KalFitRes(TTree* trks,int mincut=0,int maxcut=3) {
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",251,-4,4);
 //  momres[ires]->SetStats(0);
     TCut quality = ncuts[ires]+t0cuts[ires]+momcuts[ires]+fitcuts[ires];
-    TCut final = reco+quality+rpitch+cosmic+livegate;
+    TCut final = reco+quality+rpitch+cosmic+livegate+rmomloose;
     trks->Project(mname,"fitmom-mcentmom",final);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
     cout << "Integral = " << integral << " mean = " << momres[ires]->GetMean() << " rms = " << momres[ires]->GetRMS() << endl;
@@ -692,6 +693,8 @@ void KalFitRes(TTree* trks,int mincut=0,int maxcut=3) {
     sprintf(line,"%s",momcuts[ires].GetTitle());
     rtext->AddText(line);
     sprintf(line,"%s",fitcuts[ires].GetTitle());
+    rtext->AddText(line);
+    sprintf(line,"%s",rmomloose.GetTitle());
     rtext->AddText(line);
     sprintf(line,"Eff=%4.4f",keff);
     rtext->AddText(line);

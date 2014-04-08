@@ -98,7 +98,7 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     hits->Draw("edep:mcedep>>eve","","",10000);
 
   } else if(spage =="tcan"){
-    THStack* tstack = new THStack("tc","Reco Hit Time by source;Hit Time (ns);Hits/event/ns");
+    THStack* tstack = new THStack("tc","All reco Hit Time by source;Hit Time (ns);Hits/event/ns");
     TH1F* ctime = new TH1F("ctime","Conversion Reco Hit Time",150,250,1750);
     TH1F* ptime = new TH1F("ptime","Proton Reco Hit Time",150,250,1750);
     TH1F* etime = new TH1F("etime","Electron Reco Hit Time",150,250,1750);
@@ -108,23 +108,56 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     etime->SetFillColor(kBlue);
     otime->SetFillColor(kGreen);
 
+
+    TCut sel("esel&&rsel&&tsel&&(!delta)&&(!isolated)");
+    THStack* tstacks = new THStack("tcs","Selected reco Hit Time by source;Hit Time (ns);Hits/event/ns");
+    TH1F* ctimes = new TH1F("ctimes","Conversion Reco Hit Time",150,250,1750);
+    TH1F* ptimes = new TH1F("ptimes","Proton Reco Hit Time",150,250,1750);
+    TH1F* etimes = new TH1F("etimes","Electron Reco Hit Time",150,250,1750);
+    TH1F* otimes = new TH1F("otimes","Other Reco Hit Time",150,250,1750);
+    ctimes->SetFillColor(kRed);
+    ptimes->SetFillColor(kBlack);
+    etimes->SetFillColor(kBlue);
+    otimes->SetFillColor(kGreen);
+
+    double nevents(100);
+    double scale = 10.0/nevents;
     hits->Project("otime","time",opart);
-    otime->Scale(1e-4);
+    otime->Scale(scale);
     tstack->Add(otime);
     hits->Project("ctime","time",conv);
-    ctime->Scale(1e-4);
+    ctime->Scale(scale);
     tstack->Add(ctime);
     hits->Project("ptime","time",proton);
-    ptime->Scale(1e-4);
+    ptime->Scale(scale);
     tstack->Add(ptime);
     hits->Project("etime","time",oele);
-    etime->Scale(1e-4);
+    etime->Scale(scale);
     tstack->Add(etime);
+
+
+    hits->Project("otimes","time",sel+opart);
+    otimes->Scale(scale);
+    tstacks->Add(otimes);
+    hits->Project("ctimes","time",sel+conv);
+    ctimes->Scale(scale);
+    tstacks->Add(ctimes);
+    hits->Project("ptimes","time",sel+proton);
+    ptimes->Scale(scale);
+    tstacks->Add(ptimes);
+    hits->Project("etimes","time",sel+oele);
+    etimes->Scale(scale);
+    tstacks->Add(etimes);
     
-    cout << "other integral = " << otime->Integral() 
+    cout << "All other integral = " << otime->Integral() 
     << "CE inegral = " << ctime->Integral()
     << "P inegral = " << ptime->Integral()
     << "e inegral = " << etime->Integral() << endl;
+
+    cout << "Selected other integral = " << otimes->Integral() 
+    << "CE inegral = " << ctimes->Integral()
+    << "P inegral = " << ptimes->Integral()
+    << "e inegral = " << etimes->Integral() << endl;
 
     TLegend* tleg = new TLegend(.6,.7,.9,.9);
     char title[50];
@@ -137,9 +170,13 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     snprintf(title,50,"Other Particles, #int=%4.0f",otime->Integral()*10.0);
     tleg->AddEntry(otime,title,"F");
 
-    TCanvas* tcan = new TCanvas("tcan","tcan",800,800);
+    TCanvas* tcan = new TCanvas("tcan","tcan",800,600);
+    tcan->Divide(2,1);
+    tcan->cd(1);
     tstack->Draw();
     tleg->Draw();
+    tcan->cd(2);
+    tstacks->Draw();
 
   } else if(spage == "bcan"){
 
