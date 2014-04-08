@@ -7,7 +7,7 @@
 //     --fclinput=1:@bgHitFiles:/mu2e/data/tdr/beam/mixp3/filelist.txt
 //
 // option to mu2eart command line.  For interactive tests, uncomment the
-// following PROLOG definition.  DO NOT LEAVE IT UNCOMMENTED, as it 
+// following PROLOG definition of bgHitFiles.  DO NOT LEAVE IT UNCOMMENTED, as it 
 // will cause grid jobs to silently use the same file over and over again.
 //
 // Andrei Gaponenko, 2014
