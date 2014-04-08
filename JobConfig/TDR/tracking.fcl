@@ -27,6 +27,7 @@ physics : {
   }
 
   analyzers:{
+    genCountLogger: { module_type: GenEventCountReader }
     RKFDownstreameMinus : {
       module_type       : ReadKalFits
       fitterModuleLabel : TPRDownstreameMinus
@@ -36,6 +37,6 @@ physics : {
   p1 : [MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDownstreameMinus ]
   trigger_paths  : [p1]
 
-  e1 : [RKFDownstreameMinus]
+  e1 : [genCountLogger, RKFDownstreameMinus]
   end_paths      : [e1]
 }
