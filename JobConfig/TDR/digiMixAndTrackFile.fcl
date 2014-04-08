@@ -6,7 +6,15 @@
 //
 //     --fclinput=1:@bgHitFiles:/mu2e/data/tdr/beam/mixp3/filelist.txt
 //
-// option to mu2eart command line.  For interactive tests, uncomment the
+// option to mu2eart command line.  
+//
+// An example of analyzing one file (1000 generated conversions):
+// 
+//     ls /mu2e/data/tdr/beam/g4s4p5/tdr.beam.g4s4.conversion.1504a.15729672/good/00000/dsStopsToHitsConversion.root > filelist.txt
+//     
+//     mu2eart --setup=setup.sh  --fclinput=1:@bgHitFiles:/mu2e/data/tdr/beam/mixp3/filelist.txt --inputs=filelist.txt --fcl=JobConfig/TDR/digiMixFile.fcl --njobs=1
+//
+// For interactive tests, uncomment the
 // following PROLOG definition of bgHitFiles.  DO NOT LEAVE IT UNCOMMENTED, as it 
 // will cause grid jobs to silently use the same file over and over again.
 //
