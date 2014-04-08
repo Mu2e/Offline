@@ -1,0 +1,26 @@
+// Andrei Gaponenko, 2014
+
+BEGIN_PROLOG
+muonStops : {
+    inputFiles: @nil // use --fclinput for grid submission
+    averageNumRecordsToUse: 500000
+    treeName: "stoppedMuonDumper/stops"
+    branchName : "stops"
+    verbosityLevel : 1
+}
+END_PROLOG
+
+#include "JobConfig/TDR/defsStopsToDetHits.fcl"
+
+process_name : StopsToHitsConversion
+services.TFileService.fileName: "histStopsToHitsConversion.root"
+outputs.detectorOutput.fileName:  "dsStopsToHitsConversion.root"
+outputs.crvOutput.fileName: "crvStopsToHitsConversion.root"
+outputs.truncatedEvtsOutput.fileName: "truncatedStopsToHitsConversion.root"
+
+physics.producers.generate: {
+    module_type: StoppedMuonConversionGun
+    muonStops: @local::muonStops
+}
+
+//test:  physics.producers.generate.muonStops.inputFiles: [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
