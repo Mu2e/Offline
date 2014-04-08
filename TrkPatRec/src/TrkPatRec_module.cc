@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.70 2014/04/04 22:58:00 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.71 2014/04/08 04:25:10 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/04/04 22:58:00 $
+// $Date: 2014/04/08 04:25:10 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -206,8 +206,8 @@ namespace mu2e
     _tbkg(pset.get<vector<string> >("TimeBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _hbkg(pset.get<vector<string> >("HelixFitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _addbkg(pset.get<vector<string> >("AddHitBackgroundBits",vector<string>{})),
-    _maxdt(pset.get<double>("DtMax",30.0)),
-    _maxdtmiss(pset.get<double>("DtMaxMiss",45.0)),
+    _maxdt(pset.get<double>("DtMax",25.0)),
+    _maxdtmiss(pset.get<double>("DtMaxMiss",40.0)),
     _findtpeak(pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",0)),
