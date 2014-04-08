@@ -1,6 +1,6 @@
-// $Id: CalPatRec_module.cc,v 1.6 2014/04/08 04:25:46 murat Exp $
+// $Id: CalPatRec_module.cc,v 1.7 2014/04/08 21:56:33 murat Exp $
 // $Author: murat $ 
-// $Date: 2014/04/08 04:25:46 $
+// $Date: 2014/04/08 21:56:33 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -234,7 +234,7 @@ namespace mu2e {
     _printfreq   (pset.get<int>        ("printFrequency",100)),
     _addhits     (pset.get<bool>       ("addhits",true)),
     _shLabel     (pset.get<std::string>("StrawHitCollectionLabel"        ,"makeSH")),
-    _shpLabel    (pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
+    _shpLabel    (pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStrawHitPositions")),
     _shfLabel    (pset.get<std::string>("StrawHitFlagCollectionLabel"    ,"FlagBkgHits"   )),
     _ccmLabel    (pset.get<std::string>("caloClusterModuleLabel"         ,"MakeCaloCluster")),
     _ccAlgorithm (pset.get<std::string>("caloClusterAlgorithm"           , "closest")),
@@ -614,8 +614,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // Loop over calorimeter clusters
 //-----------------------------------------------------------------------------
-    mu2e::GeomHandle<mu2e::DiskCalorimeter> ch;
-    const mu2e::DiskCalorimeter* cal = ch.get();
+//     mu2e::GeomHandle<mu2e::DiskCalorimeter> ch;
+//     const mu2e::DiskCalorimeter* cal = ch.get();
 
     mu2e::GeomHandle<mu2e::TTracker> ttH;
     const mu2e::TTracker* tracker = ttH.get();
@@ -668,7 +668,7 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-//
+// 2014-04-08 P.M.: I don't think this function is called any more
 //-----------------------------------------------------------------------------
   void CalPatRec::createTimePeak(CalTimePeakCollection* TimePeakColl) {
 // find the median time

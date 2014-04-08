@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: calPatRec_display.fcl,v 1.3 2014/04/08 04:25:46 murat Exp $
+# $Id: calPatRec_display.fcl,v 1.4 2014/04/08 21:56:33 murat Exp $
 #------------------------------------------------------------------------------
 # read data from the input file,
 # assume the file contains the digitized hits
@@ -76,7 +76,6 @@ physics : {
 # CalPatRec and modules it brings in
 #------------------------------------------------------------------------------
 	MakeCaloCluster      : @local::MakeCaloClusterHack
-	MakeSHnew            : @local::MakeStrawHitsNew
 
 	MakeStrawHitPositions: @local::MakeStrawHitPositions
 	FlagStrawHits        : @local::FlagStrawHits
@@ -105,7 +104,6 @@ physics : {
 # 	  makeSD, makeSH,
 # 	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,
 	  MakeCaloCluster, 
-#	  MakeSHnew,
 	  MakeStrawHitPositions, FlagStrawHits, FlagBkgHits, 
 	  CalPatRec,
 	  TrkExtrapol, CaloMatching,
@@ -150,19 +148,20 @@ services.user.SeedService.maxUniqueEngines :  20
 #------------------------------------------------------------------------------
 # event reconstruction
 #------------------------------------------------------------------------------
-physics.producers.MakeStrawHitPositions.StrawHitCollectionLabel : makeSH # MakeSHnew
+physics.producers.MakeStrawHitPositions.StrawHitCollectionLabel : makeSH
 
-physics.producers.FlagStrawHits.StrawHitCollectionLabel         : makeSH # MakeSHnew
+physics.producers.FlagStrawHits.StrawHitCollectionLabel         : makeSH
 physics.producers.FlagStrawHits.StrawHitPositionCollectionLabel : MakeStrawHitPositions
 
-physics.producers.FlagBkgHits.StrawHitCollectionLabel           : makeSH # MakeSHnew
+physics.producers.FlagBkgHits.StrawHitCollectionLabel           : makeSH
 physics.producers.FlagBkgHits.StrawHitPositionCollectionLabel   : MakeStrawHitPositions
 
-physics.producers.CalPatRec.StrawHitCollectionLabel             : makeSH # MakeSHnew
-physics.producers.CalPatRec.StrawHitPositionCollectionLabel     : MakeStrawHitPositions
+physics.producers.MakeCaloCluster.EnoiseCut                      : 0.10 # MeV
+physics.producers.MakeCaloCluster.EclusterCut                    : 1.0  # MeV  
+
+# physics.producers.CalPatRec.StrawHitCollectionLabel             : makeSH
+# physics.producers.CalPatRec.StrawHitPositionCollectionLabel     : MakeStrawHitPositions
 physics.producers.CalPatRec.debugLevel                          : 1
-physics.producers.CalPatRec.StrawHitCollectionLabel             :  makeSH # MakeSHnew
-physics.producers.CalPatRec.FindTimePeaks                       : true
 # physics.producers.CalPatRec.SeedFit.debugLevel                  : 1
 # physics.producers.CalPatRec.HelixFit.debugLevel                 : 1
 #------------------------------------------------------------------------------
@@ -172,6 +171,6 @@ physics.producers.TrkExtrapol.fitterModuleLabel                 : CalPatRec
 physics.producers.CaloMatching.fitterModuleLabel                : CalPatRec
 physics.producers.ParticleID.fitterModuleLabel                  : CalPatRec
 
-physics.filters.MuHitDisplay.strawHitMakerModuleLabel           : makeSH # MakeSHnew
+# physics.filters.MuHitDisplay.strawHitMakerModuleLabel           : makeSH
 physics.filters.MuHitDisplay.strawHitPosMakerModuleLabel        : MakeStrawHitPositions
 physics.filters.MuHitDisplay.trkPatRecModuleLabel               : CalPatRec

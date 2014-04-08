@@ -36,8 +36,9 @@ MakeStrawHitsNew: {
 CalPatRec            : {
     module_type                                 : CalPatRec
     caloClusterModuleLabel                      : "MakeCaloCluster"
+    StrawHitPositionCollectionLabel             : "MakeStrawHitPositions"
     includeCaloInfo				: 0
-    FindTimePeaks                               : false
+    FindTimePeaks                               : true
     # Kalman fit configuration for the helix seed fit
     SeedFit : {
 	debugLevel                              : 0
