@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.15 2014/04/04 22:56:22 brownd Exp $
+// $Id: MakeStereoHits_module.cc,v 1.16 2014/04/11 09:02:35 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/04/04 22:56:22 $
+// $Date: 2014/04/11 09:02:35 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -120,7 +120,7 @@ namespace mu2e {
     _minDdot(pset.get<double>("minDdot",-0.01)),
     _minDL(pset.get<double>("minDL",-5.0)),
     _maxChisq(pset.get<double>("maxChisquared",100.0)),
-    _minMVA(pset.get<double>("minMVA",0.25)),
+    _minMVA(pset.get<double>("minMVA",0.7)),
     _writepairs(pset.get<bool>("WriteStereoPairs",false)),
     _MVAType(pset.get<std::string>("MVAType","MLP method")),
     _nhits(0),_deltat(0),_deltaE(0),_deltaz(0),_fsep(0),_dTD(0),_mva(0),
