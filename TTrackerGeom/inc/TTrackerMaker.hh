@@ -3,9 +3,9 @@
 //
 // Construct and return a TTracker.
 //
-// $Id: TTrackerMaker.hh,v 1.24 2014/01/09 03:58:32 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/09 03:58:32 $
+// $Id: TTrackerMaker.hh,v 1.25 2014/04/11 04:40:37 genser Exp $
+// $Author: genser $
+// $Date: 2014/04/11 04:40:37 $
 //
 // Original author Rob Kutschke
 //
@@ -226,6 +226,8 @@ namespace mu2e {
     double      _stavePhi0;
     double      _stavePhiWidth;
     std::string _staveMaterial;
+
+    std::vector<int>  _nonExistingDevices;
 
   };
 

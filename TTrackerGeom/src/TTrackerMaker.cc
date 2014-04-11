@@ -2,9 +2,9 @@
 // Construct and return a TTracker.
 //
 //
-// $Id: TTrackerMaker.cc,v 1.56 2014/01/09 03:58:32 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/09 03:58:32 $
+// $Id: TTrackerMaker.cc,v 1.57 2014/04/11 04:40:46 genser Exp $
+// $Author: genser $
+// $Date: 2014/04/11 04:40:46 $
 //
 // Original author Rob Kutschke
 //
@@ -81,7 +81,9 @@ namespace mu2e {
              << " origin " << sector.boxOffset()
              << " device rotation: " << dang
              << " origin " << device.origin()
-             << " sec rel origin z " << sroz;
+             << " sec rel origin z " << sroz
+	     << " straw exists " << _tt->strawExists(StrawIndex(istr))
+	     << " device exists " << device.exists();
 
         if (isec>csec && idev==cdev) cout << " <--S";
         if (iang>cang && idev==cdev) cout << " <--A";
@@ -90,8 +92,6 @@ namespace mu2e {
         if (idev!=cdev) idev=cdev;
         if (isec!=csec) isec=csec;
         if (ilay!=clay) ilay=clay;
-
-        
 
         cout << endl;
 
@@ -136,6 +136,13 @@ namespace mu2e {
     _manifoldYOffset      =  config.getDouble("ttracker.manifoldYOffset")*CLHEP::mm;
     _virtualDetectorHalfLength = config.getDouble("vd.halfLength")*CLHEP::mm;
 
+    config.getVectorInt("ttracker.nonExistingDevices", _nonExistingDevices,  vector<int>() );
+
+    _verbosityLevel > 0 && _nonExistingDevices.size()>0 &&
+      cout << __func__ << " inactive devices : f/l   " 
+	   << _nonExistingDevices.front() << " / "
+	   << _nonExistingDevices.back()
+	   << endl;
 
     // station
     // TODO Maybe -- These might eventually want to be config parameter driven
@@ -364,6 +371,9 @@ namespace mu2e {
       _manifoldsPerEnd * _strawsPerManifold;
     //_tt->_allStraws.reserve(_nStrawsToReserve); // see makeLayer
 
+    // we need to be able to assign true/false for a given straw index
+    _tt->_strawExists.resize(_nStrawsToReserve);
+
     _tt->_devices.reserve(_numDevices);
     // Construct the devices and their internals.
     for ( int idev=0; idev<_numDevices; ++idev ){
@@ -459,6 +469,9 @@ namespace mu2e {
     double phi = 0.0;
     _tt->_devices.push_back(Device(devId, origin, phi));
     Device& dev = _tt->_devices.back();
+    dev._exists = ( find ( _nonExistingDevices.begin(), _nonExistingDevices.end(), idev) == 
+		      _nonExistingDevices.end() );
+
     dev._sectors.reserve(_sectorsPerDevice);
 
     for ( int isec=0; isec<_sectorsPerDevice; ++isec ){
@@ -630,6 +643,8 @@ namespace mu2e {
         CLHEP::Hep3Vector offset = RZ*mid;
 
         StrawIndex index(allStraws.size());
+
+	_tt->_strawExists[index.asInt()] = device.exists();
 
         allStraws.push_back( Straw( StrawId( layId, _istraw),
                                     index,
