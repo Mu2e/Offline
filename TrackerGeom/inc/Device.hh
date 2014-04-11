@@ -3,9 +3,9 @@
 //
 // Hold information about one device in a tracker.
 //
-// $Id: Device.hh,v 1.9 2013/03/26 23:28:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/26 23:28:23 $
+// $Id: Device.hh,v 1.10 2014/04/11 04:39:13 genser Exp $
+// $Author: genser $
+// $Date: 2014/04/11 04:39:13 $
 //
 // Original author Rob Kutschke
 //
@@ -34,14 +34,15 @@ namespace mu2e {
     // A free function, returning void, that takes a const Device& as an argument.
     typedef void (*DeviceFunction)( const Device& s);
 
-    Device():_id(-1){}
+    Device():_id(-1),_rotation(0.),_origin(),_sectors(),_exists(true){}
 
-    Device( const DeviceId& id,
+    explicit Device( const DeviceId& id,
             CLHEP::Hep3Vector const& origin = CLHEP::Hep3Vector(0.,0.,0.),
-            double rotation = 0. ):
+            double rotation = 0., bool exists = true ):
       _id(id),
       _rotation(rotation),
-      _origin(origin){
+      _origin(origin),
+      _exists(exists) {
     }
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
@@ -83,6 +84,10 @@ namespace mu2e {
     // On readback from persistency, recursively recompute mutable members.
     void fillPointers ( const Tracker& tracker ) const;
 
+    bool exists() const {
+      return _exists;
+    }
+
 #ifndef __CINT__
 
     // Loop over all straws and call F.
@@ -121,7 +126,7 @@ namespace mu2e {
     double              _rotation;
     CLHEP::Hep3Vector   _origin;
     std::vector<Sector> _sectors;
-
+    bool                _exists;
   };
 
 } //namespace mu2e
