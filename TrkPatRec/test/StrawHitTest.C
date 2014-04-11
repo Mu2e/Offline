@@ -120,8 +120,8 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     etimes->SetFillColor(kBlue);
     otimes->SetFillColor(kGreen);
 
-    double nevents(100);
-    double scale = 10.0/nevents;
+    double nevents(1000);
+    double scale = 0.1/nevents;
     hits->Project("otime","time",opart);
     otime->Scale(scale);
     tstack->Add(otime);
@@ -170,6 +170,16 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     snprintf(title,50,"Other Particles, #int=%4.0f",otime->Integral()*10.0);
     tleg->AddEntry(otime,title,"F");
 
+    TLegend* tlegs = new TLegend(.6,.7,.9,.9);
+    snprintf(title,50,"CE, #int=%4.0f",ctimes->Integral()*10.0);
+    tlegs->AddEntry(ctime,title,"F");
+    snprintf(title,50,"Proton, #int=%4.0f",ptimes->Integral()*10.0);
+    tlegs->AddEntry(ptime,title,"F");
+    snprintf(title,50,"Other e^{-}, #int=%4.0f",etimes->Integral()*10.0);
+    tlegs->AddEntry(etime,title,"F");
+    snprintf(title,50,"Other Particles, #int=%4.0f",otimes->Integral()*10.0);
+    tlegs->AddEntry(otime,title,"F");
+
     TCanvas* tcan = new TCanvas("tcan","tcan",800,600);
     tcan->Divide(2,1);
     tcan->cd(1);
@@ -177,6 +187,7 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     tleg->Draw();
     tcan->cd(2);
     tstacks->Draw();
+    tlegs->Draw();
 
   } else if(spage == "bcan"){
 

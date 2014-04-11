@@ -20,20 +20,20 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
     char canname[100];
     char rname[100];
     char tname[100];
-    char lname[100];
+//    char lname[100];
     char cname[100];
     char pname[100];
     snprintf(rname,100,"rawtspectrum%lu",ievt);
     snprintf(tname,100,"tightnodeltatspectrum%lu",ievt);
-    snprintf(lname,100,"loosetspectrum%lu",ievt);
+  //  snprintf(lname,100,"loosetspectrum%lu",ievt);
     snprintf(cname,100,"convtspectrum%lu",ievt);
     snprintf(pname,100,"protontspectrum%i",ievt);
     TH1F* rh = (TH1F*)tdir->Get(rname);
     TH1F* th = (TH1F*)tdir->Get(tname);
-    TH1F* lh = (TH1F*)tdir->Get(lname);
+//    TH1F* lh = (TH1F*)tdir->Get(lname);
     TH1F* ch = (TH1F*)tdir->Get(cname);
     TH1F* ph = (TH1F*)tdir->Get(pname);
-    if(rh != 0 && th != 0 &&lh != 0 && ch != 0 && ph != 0){
+    if(rh != 0 && th != 0 && ch != 0 && ph != 0){
       div_t divide = div(iplot,nps*nps);
       //      std::cout << "divide " << iplot << " by " << nps << " gives  quot " << divide.quot << " rem " << divide.rem << std::endl;
       if(divide.rem == 0){
@@ -47,7 +47,7 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
       cans[ican]->cd(ipave);
       rh->SetStats(0);
       th->SetStats(0);
-      lh->SetStats(0);
+//      lh->SetStats(0);
       ch->SetStats(0);
       ph->SetStats(0);
 //
@@ -58,8 +58,8 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
       rh->GetYaxis()->SetTitle("# hits");
       rh->Draw();
       //        th->SetLineWidth(2);
-      lh->SetFillColor(kYellow);
-      lh->Draw("same");
+//      lh->SetFillColor(kYellow);
+//      lh->Draw("same");
       th->SetFillColor(kGreen);
       th->Draw("same");
       ch->SetLineStyle(1);
@@ -68,10 +68,10 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
       ph->Draw("same");
       TLegend* leg(0);
       if(ipave==1){
-	leg = new TLegend(0.4,0.7,0.9,0.9);
+	leg = new TLegend(0.1,0.7,0.5,0.9);
 	leg->AddEntry(rh,"All hits","l");
-	leg->AddEntry(th,"Tight Selected hits","F");
-	leg->AddEntry(lh,"Loose Selected hits","F");
+	leg->AddEntry(th,"Selected hits","F");
+//	leg->AddEntry(lh,"Loose Selected hits","F");
 	leg->AddEntry(ch,"Conversion hits","LF");
 	leg->AddEntry(ph,"Proton hits","LF");
 	leg->AddEntry(dummy,"Reconstructed Time Peak","P");

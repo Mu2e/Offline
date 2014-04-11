@@ -31,8 +31,8 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     dhit += addcut;
   }
 
-  unsigned ilast(4);
-  unsigned ifirst(3);
+  unsigned ilast(10);
+  unsigned ifirst(1);
   if(spage=="bkgevents"){
     double rmax(750);
     const size_t nevt = ilast-ifirst+1;
