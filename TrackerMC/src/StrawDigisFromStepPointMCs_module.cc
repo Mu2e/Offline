@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.32 2014/04/04 17:02:36 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.33 2014/04/11 09:05:23 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/04/04 17:02:36 $
+// $Date: 2014/04/11 09:05:23 $
 //
 // Original author David Brown, LBNL
 //
@@ -36,7 +36,7 @@
 // utiliities
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-//#include "HitMakers/inc/DeadStrawList.hh"
+#include "HitMakers/inc/DeadStrawList.hh"
 // data
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -135,7 +135,8 @@ namespace mu2e {
     // record the BField at the tracker center
     double _bz;
     // List of dead straws as a parameter set; needed at beginRun time.
-//    DeadStrawList _strawStatus;
+    fhicl::ParameterSet _deadStraws;
+    DeadStrawList _strawStatus;
 // diagnostics
     TTree* _swdiag;
     Int_t _sdevice, _ssector, _slayer, _sstraw;
@@ -212,8 +213,8 @@ namespace mu2e {
     _messageCategory("HITS"),
 
     // Control some information messages.
-    _firstEvent(true)
-//    _strawStatus(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet()))
+    _firstEvent(true),
+    _strawStatus(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet()))
     {
 // Tell the framework what we make.
       produces<StrawDigiCollection>();
@@ -284,7 +285,7 @@ namespace mu2e {
   }
 
   void StrawDigisFromStepPointMCs::beginRun( art::Run& run ){
-    //    _strawStatus.reset(_deadStraws);
+    _strawStatus.reset(_deadStraws);
     // field at the center of the tracker
     // GeomHandle<BFieldManager> bfmgr;
     //  GeomHandle<DetectorSystem> det;
@@ -372,7 +373,7 @@ namespace mu2e {
   void
   StrawDigisFromStepPointMCs::fillHitletMap(art::Event const& event, StrawHitletMap & hmap){
     // get conditions
-    const Tracker& tracker = getTrackerOrThrow();
+    const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
     // Get all of the tracker StepPointMC collections from the event:
     typedef vector< art::Handle<StepPointMCCollection> > HandleVector;
     // This selector will select only data products with the given instance name.
@@ -397,29 +398,31 @@ namespace mu2e {
       for (size_t ispmc =0; ispmc<steps.size();++ispmc){
       // find straw index
         StrawIndex const & strawind = steps[ispmc].strawIndex();
-	// lookup straw here, to avoid having to find the tracker for every step
-        Straw const& straw = tracker.getStraw(strawind);
-	// Skip dead straws.
-//	if ( _strawStatus.isDead(strawind)) continue;
-	// Skip steps that occur in the deadened region near the end of each wire.
-	double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
-	if(wpos >  straw.getDetail().activeHalfLength())continue;
-	// create ptr to MC truth, used for references
-	art::Ptr<StepPointMC> spmcptr(handle,ispmc);
-	// create a hitlet from this step, and add it to the hitlet map
-	addStep(spmcptr,straw,hmap[strawind]);
+	// Skip dead straws, and straws that don't exist
+	if(tracker.strawExists(strawind)
+	    && !_strawStatus.isDead(strawind)) {
+	  // lookup straw here, to avoid having to find the tracker for every step
+	  Straw const& straw = tracker.getStraw(strawind);
+	  // Skip steps that occur in the deadened region near the end of each wire.
+	  double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
+	  if(wpos >  straw.getDetail().activeHalfLength())continue;
+	  // create ptr to MC truth, used for references
+	  art::Ptr<StepPointMC> spmcptr(handle,ispmc);
+	  // create a hitlet from this step, and add it to the hitlet map
+	  addStep(spmcptr,straw,hmap[strawind]);
+	}
       }
     }
   }
 
   void
-  StrawDigisFromStepPointMCs::addStep(art::Ptr<StepPointMC> const& spmcptr,
-      Straw const& straw,  
-      StrawHitletSequencePair& shsp) {
-    StepPointMC const& step = *spmcptr;
-    StrawIndex const & strawind = step.strawIndex();
-    // Subdivide the StepPointMC into ionization clusters
-    vector<IonCluster> clusters;
+    StrawDigisFromStepPointMCs::addStep(art::Ptr<StepPointMC> const& spmcptr,
+	Straw const& straw,  
+	StrawHitletSequencePair& shsp) {
+      StepPointMC const& step = *spmcptr;
+      StrawIndex const & strawind = step.strawIndex();
+      // Subdivide the StepPointMC into ionization clusters
+      vector<IonCluster> clusters;
     divideStep(step,clusters);
     // get time offset for this step
     double tstep = _toff.timeWithOffsetsApplied(step);
