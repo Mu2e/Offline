@@ -5,9 +5,9 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.14 2013/12/20 20:10:20 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/12/20 20:10:20 $
+// $Id: TTracker.hh,v 1.15 2014/04/11 04:39:44 genser Exp $
+// $Author: genser $
+// $Date: 2014/04/11 04:39:44 $
 //
 // Original author Rob Kutschke
 //
@@ -156,6 +156,11 @@ namespace mu2e {
       return _mother;
     }
 
+    // presence info for each straw.
+    bool strawExists(StrawIndex const index) const {
+      return _strawExists[index.asInt()];
+    }
+
 #ifndef __CINT__
 
     // Loop over all straws and call F.
@@ -247,6 +252,9 @@ namespace mu2e {
 
     // Inner radius of inside edge of innermost straw.
     double _envelopeInnerRadius;
+
+    // presence info for each straw.
+    std::vector<bool> _strawExists;
 
   };
 
