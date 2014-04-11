@@ -12,9 +12,9 @@
 //
 // Class to construct the TDR version of the TTracker
 //
-// $Id: ConstructTTrackerTDR.cc,v 1.2 2014/01/07 21:01:49 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/07 21:01:49 $
+// $Id: ConstructTTrackerTDR.cc,v 1.3 2014/04/11 04:42:06 genser Exp $
+// $Author: genser $
+// $Date: 2014/04/11 04:42:06 $
 //
 // Original author Rob Kutschke
 //
@@ -263,10 +263,17 @@ mu2e::ConstructTTrackerTDR::constructStations(){
 
     if ( devDraw > -1 && idev > devDraw ) continue;
 
-    _verbosityLevel > 1 &&
+    if (_verbosityLevel > 0 ) {
       cout << "Debugging dev: " << idev << " devDraw: " << devDraw << endl;
+      cout << __func__ << " working on device:   " << idev << endl;
+    }
 
     const Device& device = _ttracker.getDevice(idev);
+
+    if (!device.exists()) continue;
+    if (_verbosityLevel > 0 ) {
+      cout << __func__ << " existing   device:   " << idev << endl;
+    }
 
     // device.origin() is in the detector coordinate system.
     // devPosition - is in the coordinate system of the Tracker mother volume.

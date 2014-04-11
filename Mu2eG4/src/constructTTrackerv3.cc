@@ -1,9 +1,9 @@
 //
 // Free function to construct version 3 of the TTracker
 //
-// $Id: constructTTrackerv3.cc,v 1.37 2014/01/06 20:47:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/06 20:47:13 $
+// $Id: constructTTrackerv3.cc,v 1.38 2014/04/11 04:42:06 genser Exp $
+// $Author: genser $
+// $Date: 2014/04/11 04:42:06 $
 //
 // Original author KLG based on RKK's version using different methodology
 //
@@ -445,7 +445,16 @@ namespace mu2e{
 
       if ( deviceDraw > -1 && idev != deviceDraw )  continue;
 
+      if (verbosityLevel > 0 ) {
+        cout << __func__ << " working on device:   " << idev << endl;
+      }
+
       const Device& device = ttracker.getDevice(idev);
+
+      if (!device.exists()) continue;
+      if (verbosityLevel > 0 ) {
+	cout << __func__ << " existing   device:   " << idev << endl;
+      }
 
       std::ostringstream devs;
       devs << idev;
