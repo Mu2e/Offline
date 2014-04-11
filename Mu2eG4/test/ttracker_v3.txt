@@ -3,9 +3,9 @@
 //   All lengths are given in mm.
 //   All angles are given in degrees.
 //
-// $Id: ttracker_v3.txt,v 1.4 2014/01/06 21:03:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/06 21:03:22 $
+// $Id: ttracker_v3.txt,v 1.5 2014/04/11 04:42:50 genser Exp $
+// $Author: genser $
+// $Date: 2014/04/11 04:42:50 $
 //
 // Most paramaters are from Mu2e-doc-888-v5
 // Parameters not found in that document are:
@@ -67,6 +67,7 @@ int    ttracker.numDevices                  = 44;
 int    ttracker.rotationPattern             =    2;
 double ttracker.oddStationRotation          = 60.0;
 
+//vector<int> ttracker.nonExistingDevices = { 8,9,16,17,26,27,34,35 };
 
 // Bug fixes
 string ttracker.mat.vacuum             = "DSVacuum";
