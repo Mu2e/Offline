@@ -1,9 +1,9 @@
 C
 C  Part of the Daya Bay Cosmic code.
 C
-C  $Id: d2_integral.f,v 1.3 2014/03/22 21:40:44 ehrlich Exp $
+C  $Id: d2_integral.f,v 1.4 2014/04/11 07:44:48 ehrlich Exp $
 C  $Author: ehrlich $
-C  $Date: 2014/03/22 21:40:44 $
+C  $Date: 2014/04/11 07:44:48 $
 C
 C  Original Mu2e author Yury Kolomensky
 C
@@ -35,7 +35,7 @@ C
          x=a1+binx*(i-0.5)
          y=b1+biny*(j-0.5)
          IF(vert) THEN
-           fff(i,j)=gaisser(x,y)*SIN(ACOS(y))
+           fff(i,j)=gaisser(x,y)*sqrt(1-y*y)
          ELSE
            fff(i,j)=gaisser(x,y)*y
          ENDIF
