@@ -107,6 +107,8 @@ CaloReadoutHitsMaker :
   caloNonLinCorrection : false
   maxFullPrint         : 0
   g4ModuleLabel        : g4run
+  blindTime            : 300.   // ignore hits with T< 300 ns
+  timeGap              :   0.   // pileup handled by CaloCrystaHitsNew  
 }
 
 # Form CaloCrystalHits (reconstruct crystals from APDs)
